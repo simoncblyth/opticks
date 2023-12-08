@@ -1,4 +1,5 @@
 #include <iostream>
+#include <csignal>
 
 #include "scuda.h"
 #include "squad.h"
@@ -50,6 +51,7 @@ void test_Convert()
 
     int rc = qat4::compare( *t, *trd_t, 1e-7 ) ; 
     assert( rc == 0 ); 
+    if(rc!=0) std::raise(SIGINT); 
 
 
     std::cout  << *trd << std::endl ; 

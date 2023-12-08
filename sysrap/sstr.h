@@ -585,7 +585,7 @@ template<typename T>
 inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static 
 {
     bool valid = spec != nullptr && strlen(spec) > 0 ; 
-    assert(valid); 
+    if(!valid) return 0 ; 
     bool is_digit = isdigit_(spec[0]);  
     const char* e = is_digit ? spec : spec + 1 ; 
     T value = To<T>( e) ; 

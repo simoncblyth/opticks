@@ -7,8 +7,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt* evt = SEvt::Create(0); 
-    assert(evt); 
+    SEvt::Create(0); 
 
     bool ip = SEvt::HasInputPhoton(0) ; 
 

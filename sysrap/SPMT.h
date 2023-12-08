@@ -77,6 +77,7 @@ Related developments
 **/
 
 #include <cstdio>
+#include <csignal>
 
 #include "NPFold.h"
 #include "scuda.h"
@@ -355,8 +356,13 @@ inline void SPMT::init_rindex_thickness()
     int MPT_sub = MPT->get_num_subfold() ; 
     int CONST_items = CONST->num_items() ; 
 
-    assert( MPT_sub == NUM_PMTCAT );    // NUM_PMTCAT:3
-    assert( CONST_items == NUM_PMTCAT ); 
+    bool MPT_sub_expect = MPT_sub == NUM_PMTCAT  ;
+    if(!MPT_sub_expect) std::raise(SIGINT); 
+    assert( MPT_sub_expect );    // NUM_PMTCAT:3
+
+    bool CONST_items_expect = CONST_items == NUM_PMTCAT  ;
+    if(!CONST_items_expect) std::raise(SIGINT); 
+    assert( CONST_items_expect ); 
 
     double dscale = 1e-6 ;  // make energy domain scale consistent 
 
@@ -1043,7 +1049,9 @@ inline NPFold* SPMT::make_sscan() const
               {
                   float minus_cos_theta_0 = get_minus_cos_theta_linear_angle(k, nk );  
                   float minus_cos_theta_diff = std::abs( minus_cos_theta - minus_cos_theta_0 ); 
-                  assert( minus_cos_theta_diff < 1e-6 ); 
+                  bool minus_cos_theta_diff_expect = minus_cos_theta_diff < 1e-6 ;
+                  assert( minus_cos_theta_diff_expect ); 
+                  if(!minus_cos_theta_diff_expect) std::cerr << "SPMT::get_ARTE minus_cos_theta_diff_expect " << std::endl ; 
                   float sin_theta_0 = sqrt( 1.f - minus_cos_theta*minus_cos_theta ); 
                   float sin_theta_diff = std::abs(sin_theta - sin_theta_0)  ; 
                   bool sin_theta_expect = sin_theta_diff < 1e-6 ; 
@@ -1184,7 +1192,11 @@ inline NP* SPMT::get_lpmtcat(const NP* lpmtid ) const
     int num = lpmtid->shape[0] ; 
     NP* lpmtcat = NP::Make<int>(num);  
     int num2 = get_lpmtcat( lpmtcat->values<int>(), lpmtid->cvalues<int>(), num ) ; 
-    assert( num2 == num ); 
+
+    bool num_expect = num2 == num ; 
+    assert( num_expect ); 
+    if(!num_expect) std::raise(SIGINT); 
+
     return lpmtcat ; 
 }
 

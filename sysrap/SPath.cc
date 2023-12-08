@@ -19,6 +19,7 @@
 
 #include <string>
 #include <cstring>
+#include <csignal>
 #include <cassert>
 #include <sstream>
 #include <fstream>
@@ -390,9 +391,8 @@ void SPath::chdir(const char* path, int create_dirs)  // static
 
     const char* p = SPath::Resolve(path, create_dirs);  
 
-    std::cout << "SPath::chdir " << p << std::endl ; 
-
     int rc = ::chdir(p) ; 
+    std::cout << "SPath::chdir " << p << " rc " << rc << std::endl ; 
 
     assert( rc == 0 ); 
 }
@@ -451,6 +451,8 @@ void SPath::Copy( const char* dst__, const char* src__ )
     const char* dst_ = SPath::Resolve( dst__, FILEPATH ); 
 
     bool same = strcmp(dst_, src_) == 0 ; 
+    if(same) std::cerr << "SPath::Copy : ERR SAME  " << std::endl ; 
+    if(same) std::raise(SIGINT) ; 
     assert( same == false ); 
 
     std::ifstream  src(src_, std::ios::binary);
@@ -464,6 +466,8 @@ void SPath::Copy( const char* dstname, const char* srcname, const char* dir )
     const char* dst_ = SPath::Resolve( dir, dstname, FILEPATH ); 
 
     bool same = strcmp(dst_, src_) == 0 ; 
+    if(same) std::cerr << "SPath::Copy : ERR SAME  " << std::endl ; 
+    if(same) std::raise(SIGINT) ; 
     assert( same == false ); 
 
     std::ifstream  src(src_, std::ios::binary);

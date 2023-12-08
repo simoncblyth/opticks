@@ -59,12 +59,14 @@ inline void sdebug::zero(){ *this = {} ; }
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <csignal>
 
 inline std::string sdebug::desc() const 
 {
     std::vector<std::string> vars ; 
     sstr::PrefixSuffixParse(vars, PREFIX, SUFFIX, LABELS ); 
     bool expected_size = sizeof(sdebug) == sizeof(int)*vars.size();
+    if(!expected_size) std::raise(SIGINT); 
     assert( expected_size ); 
     //const int* first = &addGenstep ;
     const int* first = (int*)this ;

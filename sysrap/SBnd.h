@@ -15,6 +15,7 @@ Principal user QBnd.hh
 **/
 
 #include <cassert>
+#include <csignal>
 #include <string>
 #include <vector>
 #include <array>
@@ -464,6 +465,7 @@ inline NP* SBnd::getPropertyGroup(const char* qname, int k) const
 {
     int i, j ; 
     bool found = findName(i, j, qname); 
+    if(!found) std::raise(SIGINT) ; 
     assert(found); 
     return bnd->spawn_item(i,j,k);  
 }
@@ -490,12 +492,14 @@ inline void SBnd::getProperty(std::vector<T>& out, const char* qname, const char
     int boundary, species ; 
     bool found_qname = findName(boundary, species, qname); 
     assert(found_qname); 
+    if(!found_qname) std::raise(SIGINT); 
 
     //const SBndProp* bp = FindMaterialProp(propname); 
 
     const sproplist* pm = sproplist::Material(); 
     const sprop* bp = pm->findProp(propname) ; 
     assert(bp); 
+    if(!bp) std::raise(SIGINT);
 
     int group = bp->group ; 
     int prop = bp->prop  ; 

@@ -252,10 +252,15 @@ void stranRotateTest<T>::test_a2b()
     //test_make_rotate_a2b_0<T>(1u); 
 
     T d3 = make_rotate_a2b_3(1000); 
-    assert( d3 < MAX_DEVIATION ); 
+    bool d3_expect = d3 < MAX_DEVIATION  ;
+    assert( d3_expect ); 
+    if(!d3_expect) std::raise(SIGINT);
 
     T d4 = make_rotate_a2b_4(1000); 
-    assert( d4 < MAX_DEVIATION ); 
+    bool d4_expect = d4 < MAX_DEVIATION  ;
+    assert( d4_expect ); 
+    if(!d4_expect) std::raise(SIGINT);
+
 }
 
 

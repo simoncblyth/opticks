@@ -1,3 +1,4 @@
+#include <csignal>
 #include "NP.hh"
 
 #include "scuda.h"
@@ -324,7 +325,10 @@ void SEvent::ExpectedSeeds(std::vector<int>& seeds, const std::vector<int>& coun
         int np = counts[i] ; 
         for(int p=0 ; p < np ; p++) seeds.push_back(i) ; 
     }   
-    assert( seeds.size() == total );  
+
+    bool seeds_expect = seeds.size() == total ; 
+    if(!seeds_expect) std::raise(SIGINT); 
+    assert( seeds_expect );  
 }
 
 int SEvent::CompareSeeds( const int* seeds, const int* xseeds, int num_seed ) // static 

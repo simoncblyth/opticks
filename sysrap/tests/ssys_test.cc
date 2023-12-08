@@ -179,6 +179,7 @@ void test_is_listed()
 {
     std::vector<std::string> names = {"red", "green", "blue" } ; 
     const std::vector<std::string>* nn = &names ; 
+    std::cout << __FUNCTION__ << " nn->size " << nn->size() << std::endl ; 
 
     assert( ssys::is_listed(nn, "red")   == true ); 
     assert( ssys::is_listed(nn, "green") == true ); 

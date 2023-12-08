@@ -60,7 +60,10 @@ inline int sndtree::CommonTree_PlaceLeaves( const std::vector<int>& leaves, int 
 
     int num_leaves_placed = 0 ; 
     int root = Build_r(n, num_leaves_placed, leaves, 0 );  
-    assert( num_leaves_placed == num_leaves );  
+
+    bool expect_leaves = num_leaves_placed == num_leaves ;
+    if(!expect_leaves) std::cerr << "sndtree::CommonTree_PlaceLeaves UNEXPECTED LEAVES " << std::endl; 
+    assert( expect_eaves );  
 
     delete n ; 
 
@@ -88,7 +91,9 @@ inline int sndtree::Build_r(sn* n, int& num_leaves_placed, const std::vector<int
     {
         int op = n->typecode ; 
         int nc = n->num_child();  
-        assert( nc == 2 ); 
+        bool nc_expect = nc == 2 ; 
+        if(!nc_expect) std::cerr << "sndtree::Build_r nc_expect " << std::endl ; 
+        assert( nc_expect ); 
         sn* l = n->get_child(0); 
         sn* r = n->get_child(1); 
         int L = Build_r(l, num_leaves_placed, leaves, d+1) ; 

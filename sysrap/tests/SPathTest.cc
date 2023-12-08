@@ -20,6 +20,7 @@
 // om-;TEST=SPathTest om-t 
 
 #include <cassert>
+#include <csignal>
 #include <vector>
 #include <string>
 #include <iomanip>
@@ -39,7 +40,10 @@ void test_Stem()
     const char* name = "hello.cu" ; 
     const char* stem = SPath::Stem(name); 
     const char* x_stem = "hello" ; 
-    assert( strcmp( stem, x_stem ) == 0 ); 
+
+    bool stem_expect =  strcmp( stem, x_stem ) == 0 ; 
+    assert(stem_expect ); 
+    if(!stem_expect) std::raise(SIGINT); 
 }
 
 void test_GetHomePath()
@@ -63,7 +67,9 @@ void test_IsReadable()
     //assert( readable == true ); 
 
     bool readable_non = SPath::IsReadable(non); 
-    assert( readable_non == false ); 
+    bool readable_non_expect = readable_non == false ;
+    if(!readable_non_expect) std::raise(SIGINT) ; 
+    assert( readable_non_expect ); 
 }
 
 
@@ -236,8 +242,11 @@ void test_ChangeName()
     const char* srcpath = "/some/long/path/ending/with/pixels.jpg" ;  
     const char* path = SPath::ChangeName(srcpath, "posi.npy" ); 
     const char* xpath = "/some/long/path/ending/with/posi.npy" ;  
+    bool path_expect = 0 == strcmp( path, xpath )  ;
+
     LOG(info) << path ; 
-    assert( 0 == strcmp( path, xpath ) ) ;
+    assert( path_expect ) ;
+    if(!path_expect) std::raise(SIGINT); 
 }
 
 void test_MakeDirs()
@@ -287,7 +296,10 @@ void test_MakeName()
     const char* ext = ".jpg" ; 
     std::string name = SPath::MakeName( stem, index, ext ); 
     const char* x_name = "cogent_stem_00101.jpg" ; 
-    assert( strcmp( name.c_str(), x_name) == 0 ); 
+
+    bool name_expect = strcmp( name.c_str(), x_name) == 0 ;
+    assert(name_expect); 
+    if(!name_expect) std::raise(SIGINT); 
 }
 
 void test_Make()
@@ -300,15 +312,22 @@ void test_Make()
 
     const char* path_0 = SPath::Make(base, relname, stem, index, ext, FILEPATH ); 
     const char* x_path_0 = "/tmp/SPathTest/base/some/informative/relname/cogent_stem_00101.jpg" ; 
-    assert( strcmp( path_0, x_path_0) == 0 ); 
+
+    bool path_0_expect = strcmp( path_0, x_path_0) == 0 ;
+    assert(path_0_expect ); 
+    if(!path_0_expect) std::raise(SIGINT);
 
     const char* path_1 = SPath::Make(base, nullptr, stem, index, ext, FILEPATH ); 
     const char* x_path_1 = "/tmp/SPathTest/base/cogent_stem_00101.jpg" ; 
-    assert( strcmp( path_1, x_path_1) == 0 ); 
+    bool path_1_expect = strcmp( path_1, x_path_1) == 0  ;
+    assert(path_1_expect); 
+    if(!path_1_expect) std::raise(SIGINT);
 
     const char* path_2 = SPath::Make(base, nullptr, stem, -1, ext, FILEPATH ); 
     const char* x_path_2 = "/tmp/SPathTest/base/cogent_stem_.jpg" ; 
-    assert( strcmp( path_2, x_path_2) == 0 ); 
+    bool path_2_expect = strcmp( path_2, x_path_2) == 0  ;
+    assert(path_2_expect); 
+    if(!path_2_expect) std::raise(SIGINT);
 }
 
 

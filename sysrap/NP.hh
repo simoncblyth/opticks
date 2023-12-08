@@ -1240,6 +1240,8 @@ See tests/NPchange_shapeTest.cc
 inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm, int no)
 {
     int size2 = NPS::change_shape(shape, ni, nj, nk, nl, nm, no); 
+    bool expect =  size == size2  ;
+    if(!expect) std::raise(SIGINT) ; 
     assert( size == size2 ); 
 }
 inline void NP::change_shape_to_3D() 
@@ -1423,6 +1425,8 @@ inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const
     unsigned ll = l < 0 ? 0 : l ; 
     unsigned mm = m < 0 ? 0 : m ; 
     unsigned oo = o < 0 ? 0 : o ; 
+
+    if(!(ii <  ni)) std::cerr << "NP::index0 ii/ni " << ii << "/" << ni  << std::endl ; 
 
     assert( ii < ni ); 
     assert( jj < nj ); 
@@ -2691,6 +2695,7 @@ inline NP* NP::copy_if(std::function<bool(const S*)> predicate ) const
     int si = count_if<S>(predicate) ; 
     int sj = sizeof(S) / sizeof(T) ; 
 
+
     assert( si <= ni ); 
     std::vector<int> sh(shape) ; 
     int nd = sh.size(); 
@@ -2700,7 +2705,10 @@ inline NP* NP::copy_if(std::function<bool(const S*)> predicate ) const
 
     int itemcheck = 1 ; 
     for(int i=1 ; i < nd ; i++) itemcheck *= sh[i] ; 
-    assert( itemcheck == sj ); 
+
+    bool sj_expect = itemcheck == sj ;
+    if(!sj_expect) std::raise(SIGINT) ; 
+    assert( sj_expect ); 
 
     const S* aa = cvalues<S>();  
 
@@ -3734,7 +3742,10 @@ template<typename T> inline T NP::interp(T x, int item) const
     assert( ndim == 2 || ndim == 3 ); 
 
     unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
-    assert( item < int(num_items) ); 
+    bool num_items_expect = item < int(num_items)  ;
+    assert( num_items_expect );
+    if(!num_items_expect) std::raise(SIGINT); 
+ 
     unsigned ni = shape[ndim-2]; 
     unsigned nj = shape[ndim-1];  // typically 2 but can be more
     unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
@@ -3977,12 +3988,17 @@ template<typename T> inline T NP::combined_interp_5(int i, int j, int k, T x) co
     int ni = shape[0] ; 
     int nj = shape[1] ; 
     int nk = shape[2] ; 
-    assert( i < ni && j < nj && k < nk ); 
+    bool args_expect =  i < ni && j < nj && k < nk ;
+    assert( args_expect ); 
+    if(!args_expect) std::raise(SIGINT); 
 
     int nl = shape[ndim-2] ; 
     int nm = shape[ndim-1] ; 
-    assert( nl > 1 );   // require more than one domain items  
-    assert( nm == 2 ); 
+
+    bool shape_expect = nl > 1 && nm == 2  ;
+    // require more than one domain items  
+    assert( shape_expect );   
+    if(!shape_expect) std::raise(SIGINT); 
 
     int stride = shape[ndim-2]*shape[ndim-1] ; 
     int iprop = i*nj*nk+j*nk+k ;   
@@ -4504,7 +4520,7 @@ inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
         const char* v = vals[i].c_str(); 
         bool looks_like_prof  = U::LooksLikeProfileTriplet(v); 
         assert( looks_like_prof );
-
+        if(!looks_like_prof) continue ; 
   
         char* end = nullptr ; 
         int64_t st = strtoll( v,   &end, 10 ) ; 
@@ -4867,6 +4883,7 @@ inline int NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::stri
         for( int idx=idx0 ; idx < idx1 ; idx++)
         {
             int n = snprintf(keybuf, N, key, idx ) ;  
+            if(!(n < N)) std::cerr << "NP::FormattedKeyIndex ERR n " << n << std::endl ; 
             assert( n < N ); 
             k = KeyIndex(keys, keybuf ) ; 
             if( k > -1 ) 
@@ -4962,6 +4979,7 @@ inline NP* NP::makeMetaKVS_ranges(const char* ranges_ ) const
 NP::MakeMetaKVS_ranges
 -----------------------
 
+TODO: totals within annotation groups 
 
 
 **/
@@ -5044,7 +5062,10 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
 
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
-        assert( ta > 0 && tb > 0 ); 
+
+        bool expect = ta > 0 && tb > 0 ; 
+        if(!expect) std::cerr << "NP::MakeMetaKVS_ranges MISSING KEY " << std::endl ;   
+        assert(expect ); 
 
         stt[i] = ta ;   
     } 
@@ -5492,13 +5513,19 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate, const NP
     for(unsigned i=1 ; i < aa.size() ; i++)
     { 
         const NP* a = aa[i]; 
-        assert( strcmp( a->dtype, dtype0 ) == 0 && "input arrays must all have same dtype" ); 
+        bool dtype_expect = strcmp( a->dtype, dtype0 ) == 0  ;
+        if(!dtype_expect) std::cerr << "NP::Combine : input arrays must all have same dtype " << std::endl; 
+        assert( dtype_expect ); 
 
         unsigned ndim = a->shape.size() ; 
-        assert( ndim == ndim0 && "input arrays must all have an equal number of dimensions" ); 
+        bool ndim_expect = ndim == ndim0  ;
+        if(!ndim_expect) std::cerr << "NP::Combine : input arrays must all have an equal number of dimensions " << std::endl; 
+        assert( ndim_expect ); 
 
         unsigned ldim = a->shape[ndim-1] ; 
-        assert( ldim == ldim0 && "last dimension of the input arrays must be equal" ); 
+        bool ldim_expect = ldim == ldim0 ;
+        if(!ldim_expect) std::cerr << "NP::Combine : last dimension of the input arrays must be equal " << std::endl ; 
+        assert( ldim_expect ); 
 
         unsigned fdim = a->shape[0] ; 
         if( fdim > fdim_mx ) fdim_mx = fdim ; 
@@ -5794,8 +5821,8 @@ inline void NP::save(const char* path_) const
     if(path == nullptr) std::cerr << "NP::save failed to U::Resolve path_ " << ( path_ ? path_ : "-" ) << std::endl ; 
     if(path == nullptr) return ; 
  
-    if(VERBOSE) std::cout << "NP::save path [" << ( path ? path : "-" ) << "]" << std::endl ; 
     int rc = U::MakeDirsForFile(path); 
+    if(VERBOSE) std::cout << "NP::save path [" << ( path ? path : "-" ) << "] rc:" << rc  << std::endl ; 
     assert( rc == 0 ); 
 
     std::string hdr = make_header(); 
@@ -6085,6 +6112,7 @@ inline void NP::WriteNames(
 {
     // if(names.size() == 0) return ;   DONT EARLY EXIT AS MORE REASONABLE TO TRUNCATE THE FILE WHEN THERE ARE NO NAMES 
     int rc = U::MakeDirsForFile(path); 
+    if( rc != 0 ) std::cerr << "NP::WriteNames ERR creating dirs " << std::endl ; 
     assert( rc == 0 ); 
 
     unsigned names_size = names.size() ; 
@@ -6118,6 +6146,7 @@ inline void NP::WriteNames_Simple(
     const std::vector<std::string>& names )
 {
     int rc = U::MakeDirsForFile(path); 
+    if( rc != 0 ) std::cerr << "NP::WriteNames_Simple ERR creating dirs " << std::endl ; 
     assert( rc == 0 ); 
 
     int num_names = names.size(); 

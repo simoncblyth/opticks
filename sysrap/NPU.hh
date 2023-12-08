@@ -1421,6 +1421,7 @@ inline void U::Trim(std::vector<std::string>& names, const char* ext)
         std::string& name = names[i]; 
         const char* n = name.c_str();
         bool ends_with_ext =  strlen(n) > strlen(ext)  && strncmp(n + strlen(n) - strlen(ext), ext, strlen(ext) ) == 0 ;
+        if(!ends_with_ext) std::cerr << "U::Trim NOT ends_with_ext " << std::endl ; 
         assert( ends_with_ext );
         name = name.substr(0, strlen(n) - strlen(ext));
     }
@@ -1992,6 +1993,7 @@ inline void NPU::parse_header(std::vector<int>& shape, std::string& descr, char&
 
     char last = dict[dict.size()-1] ; 
     bool ends_with_newline = last == '\n' ;   
+    if(!ends_with_newline) std::cerr << "NPU::parse_header UNEXPECTED ends_with_newline  " << std::endl ; 
     assert(ends_with_newline) ; 
     dict[dict.size()-1] = '\0' ; 
 

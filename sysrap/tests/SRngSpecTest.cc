@@ -1,4 +1,5 @@
 #include <sstream>
+#include <csignal>
 #include <vector>
 #include "SRngSpec.hh"
 #include "SEvt.hh"
@@ -30,7 +31,9 @@ int main(int argc, char** argv)
 
         const SRngSpec* spec = new SRngSpec(rngmax, seed, offset); 
         const char* path2 = spec->getCURANDStatePath(); 
-        assert( strcmp(path1, path2) == 0 ); 
+        bool path_expect = strcmp(path1, path2) == 0 ;
+        if(!path_expect) std::raise(SIGINT); 
+        assert(path_expect); 
 
         std::cout << spec->desc() << std::endl ; 
 

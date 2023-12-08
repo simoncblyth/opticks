@@ -508,17 +508,31 @@ NP* SSim::AddOptical(
     const std::vector<std::string>& specs )
 {
     unsigned ndim = optical->shape.size() ; 
-    assert( ndim == 2 ); 
+    bool ndim_expect = ndim == 2 ;
+    assert( ndim_expect ); 
+    if(!ndim_expect) std::raise(SIGINT); 
+
     unsigned num_bnd = bnames.size() ; 
     unsigned num_add = specs.size()  ; 
     unsigned ni = optical->shape[0] ; 
     unsigned nj = optical->shape[1] ; 
-    assert( 4*num_bnd == ni ); 
-    assert( nj == 4 ); 
-    assert( optical->ebyte == 4 && optical->uifc == 'u' ); 
+
+    bool num_bnd_expect = 4*num_bnd == ni ;
+    bool nj_expect = nj == 4  ;
+    bool optical_expect = optical->ebyte == 4 && optical->uifc == 'u' ;
+
+    assert( num_bnd_expect ); 
+    assert( nj_expect ); 
+    assert( optical_expect ) ; 
+   
+    if(!num_bnd_expect) std::raise(SIGINT); 
+    if(!nj_expect) std::raise(SIGINT); 
+    if(!optical_expect) std::raise(SIGINT); 
 
     unsigned item_bytes = optical->ebyte*optical->itemsize_(0); 
-    assert( item_bytes == 16u ); 
+    bool item_bytes_expect = item_bytes == 16u ;
+    assert( item_bytes_expect ); 
+    if(!item_bytes_expect ) std::raise(SIGINT);
 
     NP* opticalplus = new NP(optical->dtype); 
     std::vector<int> opticalplus_shape(optical->shape); 
@@ -613,7 +627,10 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
     const NP* src = NP::MakeNarrowIfWide(dsrc) ;  
 
     unsigned ndim = src->shape.size() ; 
-    assert( ndim == 5 ); 
+    bool ndim_expect = ndim == 5  ;
+    assert( ndim_expect );
+    if(!ndim_expect) std::raise(SIGINT); 
+ 
     unsigned ni = src->shape[0] ; 
     unsigned nj = src->shape[1] ; 
     unsigned nk = src->shape[2] ; 
@@ -625,14 +642,19 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
         << " src.desc " << src->desc() 
         ; 
 
-    assert( src->ebyte == 4 ); 
-    assert( ni > 0 );  
-    assert( nj == 4 );   // expecting 2nd dimension to be 4: omat/osur/isur/imat 
+    bool src_expect = src->ebyte == 4 && ni > 0  && nj == 4 ; 
+    // expecting 2nd dimension to be 4: omat/osur/isur/imat 
+    assert( src_expect ) ; 
+    if(!src_expect) std::raise(SIGINT);
+
 
     unsigned src_bytes = src->arr_bytes() ; 
     unsigned bnd_bytes = src->ebyte*src->itemsize_(0) ; 
     unsigned sub_bytes = src->ebyte*src->itemsize_(0,0) ; 
-    assert( bnd_bytes == 4*sub_bytes ); 
+
+    bool bnd_bytes_expect =  bnd_bytes == 4*sub_bytes ;
+    assert( bnd_bytes_expect ); 
+    if(!bnd_bytes_expect) std::raise(SIGINT); 
 
     NP* dst = new NP(src->dtype);
 

@@ -29,6 +29,7 @@ CUDA_VISIBLE_DEVICES envvar is read earlier than previously.
 
 **/
 
+#include <csignal>
 #include "sdevice.h"
 
 struct scontext
@@ -54,6 +55,7 @@ inline scontext::scontext()
     if(VERBOSE) std::cout << " scontext::scontext dirpath " << ( dirpath ? dirpath : "-" )  << std::endl ; 
 
     int rc = sdirectory::MakeDirs(dirpath, 0); 
+    if(rc!=0) std::raise(SIGINT); 
     assert(rc == 0); 
 
     // the below only saves when CUDA_VISIBLE_DEVICES envvar is not defined, so all dev visible

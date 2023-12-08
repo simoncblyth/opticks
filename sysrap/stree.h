@@ -190,6 +190,7 @@ When SSim not in use can also use::
 **/
 
 #include <cstdint>
+#include <csignal>
 #include <vector>
 #include <string>
 #include <map>
@@ -1408,7 +1409,9 @@ inline int stree::find_lvid_node( const char* q_spec ) const
     int middle  = q_middle  ? std::atoi(q_middle)  : 0 ; 
     int ordinal = q_ordinal ? std::atoi(q_ordinal) : 0 ; 
 
-    assert( middle == 0 ); // slated for use with global addressing (like MOI)
+    bool middle_expect = middle == 0  ;
+    if(!middle_expect) std::cerr << "stree::find_lvid_node middle_expect " << std::endl ; 
+    assert( middle_expect ); // slated for use with global addressing (like MOI)
 
     int nidx = find_lvid_node(q_soname, ordinal); 
     return nidx ; 
@@ -3303,7 +3306,9 @@ inline int stree::add_surface( const char* name )
         suname.push_back(name) ;   
         suindex.push_back(idx); 
         int idx2 = stree::GetValueIndex<std::string>( suname, name ) ; 
-        assert( idx2 == idx ); 
+        bool idx_expect = idx2 == idx ; 
+        assert( idx_expect );
+        if(!idx_expect) std::raise(SIGINT);  
     }   
     return idx ; 
 } 
@@ -3388,7 +3393,9 @@ inline int stree::add_boundary( const int4& bd_ )
         vbd.push_back(bd_) ; 
         bdname.push_back(bdn.c_str()) ; 
         boundary = GetValueIndex<int4>( vbd, bd_ ) ; 
-        assert( num_bd_check == boundary );  
+        bool boundary_expect = num_bd_check == boundary ;
+        assert( boundary_expect );  
+        if(!boundary_expect) std::raise(SIGINT); 
     }
     return boundary ; 
 }

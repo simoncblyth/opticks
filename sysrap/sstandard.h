@@ -79,6 +79,7 @@ In the old X4/GGeo workflow, the bnd buffer was created with::
 
 #include <limits>
 #include <array>
+#include <csignal>
 
 #include "NPFold.h"
 #include "NPX.h"
@@ -448,17 +449,24 @@ inline NP* sstandard::make_bnd(
 
     int num_bnd = vbd.size() ; 
     int num_bdname = bdname.size() ; 
-    assert( num_bnd == num_bdname );  
+
+    bool num_bnd_expect = num_bnd == num_bdname ;
+    if(!num_bnd_expect) std::raise(SIGINT) ; 
+    assert( num_bnd_expect);  
 
     int4 mn ; 
     int4 mx ;
     column_range(mn, mx, vbd ); 
     if(VERBOSE) std::cout << " sstandard::bnd mn " << mn << " mx " << mx << std::endl ;  
 
-    assert( mx.x < num_mat ); 
-    assert( mx.y < num_sur ); 
-    assert( mx.z < num_sur ); 
-    assert( mx.w < num_mat ); 
+    bool mat_expect = mx.x < num_mat && mx.w < num_mat ;
+    bool sur_expect = mx.y < num_sur && mx.z < num_sur ;
+
+    if(!mat_expect) std::raise(SIGINT); 
+    if(!sur_expect) std::raise(SIGINT); 
+
+    assert( mat_expect ); 
+    assert( sur_expect ); 
 
     int ni = num_bnd ;                // ~53                 
     int nj = sprop::NUM_MATSUR ;      //   4  (omat,osur,isur,imat)

@@ -291,7 +291,10 @@ int SPPM::read( const char* path, std::vector<unsigned char>& img, unsigned& wid
     f >> s;
     if (s == "P3") mode = 3;
     else if (s == "P6") mode = 6;
-    assert( mode == 6 ); 
+
+    bool expect_mode =  mode == 6 ;
+    if(!expect_mode) std::cerr << "SPPM::read : unexpected mode " << mode << std::endl ; 
+    assert(expect_mode); 
     
     f >> width ;
     f >> height ;
@@ -341,7 +344,9 @@ int SPPM::read( const char* path, std::vector<unsigned char>& img, unsigned& wid
 void SPPM::AddBorder( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip )
 {
     int size = width*height*ncomp ; 
-    assert( int(img.size()) == size ); 
+    bool expect_size =  int(img.size()) == size ;
+    if(!expect_size) std::cerr << "SPPM::AddBorder unexpected size " << size << std::endl ; 
+    assert( expect_size ); 
     unsigned char* imgdata = img.data();  
     AddBorder( imgdata, width, height, ncomp, yflip ); 
 }
@@ -375,7 +380,9 @@ void SPPM::AddBorder( unsigned char* imgdata, const int width, const int height,
 void SPPM::AddMidline( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip )
 {
     int size = width*height*ncomp ; 
-    assert( int(img.size()) == size ); 
+    bool expect_size =  int(img.size()) == size ;
+    if(!expect_size) std::cerr << "SPPM::AddMidline unexpected size " << size << std::endl ; 
+    assert( expect_size ); 
     unsigned char* imgdata = img.data();  
     AddMidline( imgdata, width, height, ncomp, yflip ); 
 }
@@ -409,7 +416,10 @@ void SPPM::AddMidline( unsigned char* imgdata, const int width, const int height
 void SPPM::AddQuadline( std::vector<unsigned char>& img, const int width, const int height, const int ncomp, const bool yflip )
 {
     int size = width*height*ncomp ; 
-    assert( int(img.size()) == size ); 
+    bool expect_size =  int(img.size()) == size ;
+    if(!expect_size) std::cerr << "SPPM::AddQuadline unexpected size " << size << std::endl ; 
+    assert( expect_size ); 
+
     unsigned char* imgdata = img.data();  
     AddQuadline( imgdata, width, height, ncomp, yflip ); 
 }

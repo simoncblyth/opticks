@@ -412,7 +412,9 @@ void SEvt::setInputGenstep(NP* ig)
     input_genstep = ig ; 
     assert( input_genstep->has_shape(-1,6,4) ); 
     int numgenstep = input_genstep->shape[0] ; 
-    assert( numgenstep > 0 ); 
+    bool numgenstep_expect = numgenstep > 0 ;
+    if(!numgenstep_expect) std::raise(SIGINT) ; 
+    assert( numgenstep_expect ); 
 }
 NP* SEvt::getInputGenstep() const { return input_genstep ; }
 bool SEvt::hasInputGenstep() const { return input_genstep != nullptr ; }
@@ -451,9 +453,14 @@ void SEvt::setInputPhoton(NP* p)
 {
     if(p == nullptr) return ; 
     input_photon = p ; 
-    assert( input_photon->has_shape(-1,4,4) ); 
+    bool input_photon_expect = input_photon->has_shape(-1,4,4) ;
+    if(!input_photon_expect) std::raise(SIGINT) ; 
+    assert( input_photon_expect ); 
+
     int numphoton = input_photon->shape[0] ; 
-    assert( numphoton > 0 ); 
+    bool numphoton_expect = numphoton > 0 ; 
+    if(!numphoton_expect) std::raise(SIGINT) ; 
+    assert( numphoton_expect  ); 
 }
 
 
@@ -861,6 +868,7 @@ void SEvt::setFrame(unsigned ins_idx)
     assert(cf); 
     sframe fr ; 
     int rc = cf->getFrame(fr, ins_idx) ; 
+    if(rc!=0) std::raise(SIGINT); 
     assert( rc == 0 );  
     fr.prepare();     
 
@@ -2455,7 +2463,9 @@ void SEvt::resumePhoton(const spho& label)
     LOG(LEVEL) << label.desc() ; 
 
     unsigned idx = label.id ; 
-    assert( idx < pho.size() );  
+    bool idx_expect = idx < pho.size() ;
+    if(!idx_expect ) std::raise(SIGINT) ; 
+    assert( idx_expect );  
 }
 
 
@@ -2479,7 +2489,9 @@ void SEvt::rjoin_resumePhoton(const spho& label)
     LOG(LEVEL) << label.desc() ; 
 
     unsigned idx = label.id ; 
-    assert( idx < pho.size() );  
+    bool idx_expect = idx < pho.size() ;
+    if(!idx_expect ) std::raise(SIGINT) ; 
+    assert( idx_expect );  
 }
 
 
@@ -2516,8 +2528,11 @@ void SEvt::rjoinPhoton(const spho& label)
 
     // check labels of parent and child are as expected
     const spho& parent_label = pho[idx]; 
-    assert( label.isSameLineage( parent_label) ); 
-    assert( label.gen() == parent_label.gen() + 1 ); 
+
+    bool label_expect = label.isSameLineage( parent_label) && label.gen() == parent_label.gen() + 1  ;
+    if(!label_expect) std::raise(SIGINT); 
+    assert( label_expect ); 
+
 
     // every G4Track has its own label but for reemission the lineage 
     // through the generations is reflected by multiple such track labels 
@@ -2527,12 +2542,15 @@ void SEvt::rjoinPhoton(const spho& label)
 
     const sgs& _gs = get_gs(label);  
     bool expected_gentype = OpticksGenstep_::IsExpected(_gs.gentype);  // SI/CK/TO 
+    if(!expected_gentype) std::raise(SIGINT); 
     assert(expected_gentype);  
     // NB: within scintillator, photons of any gentype may undergo reemission  
 
     const sphoton& parent_photon = photon[idx] ; 
     unsigned parent_idx = parent_photon.idx() ; 
-    assert( parent_idx == idx ); 
+    bool parent_idx_expect = parent_idx == idx  ;
+    if(parent_idx_expect) std::raise(SIGINT); 
+    assert( parent_idx_expect ); 
 
 
     // replace pho[idx] and current_pho with the new generation label 

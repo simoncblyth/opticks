@@ -22,6 +22,7 @@ enum {
 #include <string>
 #include <sstream>
 #include <iomanip>
+#include <csignal>
 
 struct smatsur
 {
@@ -66,7 +67,9 @@ inline std::string smatsur::Desc()
        int type = TypeFromChar(c) ; 
        const char* name = Name(type) ;  
        int type2 = Type(name) ; 
-       assert( type == type2 ); 
+       bool type_expect = type == type2 ;
+       if(!type_expect) std::raise(SIGINT); 
+       assert( type_expect ); 
        ss 
            << " c " << std::setw(3) << ( c == '\0' ? '0' : c ) 
            << " type " << std::setw(2) << type

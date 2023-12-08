@@ -198,7 +198,9 @@ const char* SStr::FormatInt( const char* fmt, int value )
 {
     char buf[SIZE]; 
     size_t cx = snprintf( buf, SIZE, fmt, value );   
-    assert( cx < SIZE && "snprintf truncation detected" );  
+    bool expect = cx < SIZE ;
+    if(!expect) std::cerr << "SStr::FormatInt TRUNCATION " << std::endl; 
+    assert( expect && "snprintf truncation detected" );  
     return strdup(buf);
 }
 
@@ -223,7 +225,9 @@ const char* SStr::Format1( const char* fmt, const char* value )
 {
     char buf[SIZE]; 
     size_t cx = snprintf( buf, SIZE, fmt, value );   
-    assert( cx < SIZE && "snprintf truncation detected" );  
+    bool expect = cx < SIZE ;
+    if(!expect) std::cerr << "SStr::Format1 TRUNCATION " << std::endl; 
+    assert( expect && "snprintf truncation detected" );  
     return strdup(buf);
 }
 
@@ -232,7 +236,9 @@ const char* SStr::Format2( const char* fmt, const char* value1, const char* valu
 {
     char buf[SIZE]; 
     size_t cx = snprintf( buf, SIZE, fmt, value1, value2 );   
-    assert( cx < SIZE && "snprintf truncation detected" );  
+    bool expect = cx < SIZE ;
+    if(!expect) std::cerr << "SStr::Format2 TRUNCATION " << std::endl; 
+    assert( expect && "snprintf truncation detected" );  
     return strdup(buf);
 }
 
@@ -241,7 +247,9 @@ const char* SStr::Format3( const char* fmt, const char* value1, const char* valu
 {
     char buf[SIZE]; 
     size_t cx = snprintf( buf, SIZE, fmt, value1, value2, value3 );   
-    assert( cx < SIZE && "snprintf truncation detected" );  
+    bool expect = cx < SIZE ;
+    if(!expect) std::cerr << "SStr::Format3 TRUNCATION " << std::endl; 
+    assert( expect && "snprintf truncation detected" );  
     return strdup(buf);
 }
 

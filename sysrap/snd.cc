@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <algorithm>
+#include <csignal>
 
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
@@ -388,7 +389,9 @@ void snd::GetLVID( std::vector<snd>& nds, int lvid )  // static
     int num_nd = nds.size(); 
     assert( num_nd > 0 ); 
     const snd& last = nds[num_nd-1] ; 
-    assert( last.is_root() ); 
+    bool last_expect =  last.is_root()  ;
+    if(!last_expect) std::cerr << "snd::GetLVID last_expect " << std::endl ; 
+    assert( last_expect ); 
 }
 
 /**
@@ -725,7 +728,15 @@ bool snd::hasAABB() const   // not-nullptr and not all zero
 
 void snd::setLabel( const char* label_ )
 {
-    strncpy( &label[0], label_, sizeof(label) );
+    // strncpy( &label[0], label_, sizeof(label) );
+    //
+    // above gives warning: specified bound 16 equals destination size [-Wstringop-truncation]
+    // but truncation of the null terminator is intended 
+    // so switch to memcpy to avoid the warning 
+
+    memset( &label[0], 0, sizeof(label) ); 
+    memcpy( &label[0], label_, std::min(strlen(label_), sizeof(label))  ); 
+ 
 }
 
 void snd::setLVID(int lvid_)
@@ -1425,8 +1436,9 @@ void snd::check_z() const
     const spa& pa = POOL->param[param] ; 
     const sbb& bb = POOL->aabb[aabb] ; 
 
-    assert( pa.zmin() == bb.zmin() ); 
-    assert( pa.zmax() == bb.zmax() ); 
+    bool pa_expect = pa.zmin() == bb.zmin() && pa.zmax() == bb.zmax()  ;
+    if(!pa_expect) std::raise(SIGINT); 
+    assert( pa_expect ); 
 }
 
 
@@ -1764,7 +1776,9 @@ int snd::UnionTree(const std::vector<int>& prims )
 {
     int idx = sndtree::CommonTree_PlaceLeaves( prims, CSG_UNION ); 
     snd* n = Get_(idx); 
-    assert( n->sibdex == 0 ) ;  // root sibdex to 0 
+    bool n_expect =  n->sibdex == 0  ;
+    if(!n_expect) std::raise(SIGINT) ; 
+    assert( n_expect ) ;  // root sibdex to 0 
     return idx ; 
 }
 

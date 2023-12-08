@@ -24,6 +24,7 @@ and metadata recording is handled with sdevice.h scontext.h
 #include <string>
 #include <cstring>
 #include <cassert>
+#include <csignal>
 #include <sstream>
 #include <cstdlib>
 #include <fstream>
@@ -369,6 +370,7 @@ inline void sdevice::Save( const std::vector<sdevice>& devices, const char* dirp
 {
     const char* dirpath = spath::Resolve(dirpath_) ; 
     int rc = sdirectory::MakeDirs(dirpath, 0); 
+    if(rc!=0) std::raise(SIGINT); 
     assert(rc == 0); 
 
 

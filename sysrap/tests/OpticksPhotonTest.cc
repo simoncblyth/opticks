@@ -1,5 +1,6 @@
 // om-;TEST=OpticksPhotonTest om-t    ## faster building when just making changes to this test  
 #include <cstring>
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 #include "SStr.hh"
 #include "OpticksPhoton.h"
@@ -96,9 +97,14 @@ void test_AbbrevToFlag()
         
 
     unsigned flag_non_existing = OpticksPhoton::AbbrevToFlag("ZZ") ; 
-    assert( flag_non_existing == 0 );
+    bool flag_non_existing_expect = flag_non_existing == 0 ;
+    assert( flag_non_existing_expect );
+    if(!flag_non_existing_expect ) std::raise(SIGINT); 
+
     unsigned flag_NULL = OpticksPhoton::AbbrevToFlag(NULL) ; 
-    assert( flag_NULL == 0 );
+    bool flag_NULL_expect = flag_NULL == 0 ;
+    assert( flag_NULL_expect );
+    if(!flag_NULL_expect) std::raise(SIGINT); 
 
 
 }
@@ -190,7 +196,9 @@ void test_AbbrevSequenceToMask()
     char delim = ',' ; 
     unsigned mask = OpticksPhoton::AbbrevSequenceToMask( abrseq, delim ); 
 
-    assert( mask == x_mask ) ; 
+    bool mask_expect =  mask == x_mask ;
+    assert( mask_expect ) ; 
+    if(!mask_expect) std::raise(SIGINT); 
 
     LOG(info) 
           << " abrseq " << abrseq 

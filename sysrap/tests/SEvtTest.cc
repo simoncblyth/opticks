@@ -1,4 +1,5 @@
 // ~/opticks/sysrap/tests/SEvtTest.sh 
+#include <csignal>
 
 #include "OPTICKS_LOG.hh"
 #include "OpticksGenstep.h"
@@ -39,7 +40,9 @@ const char* SEvtTest::TEST = ssys::getenvvar("TEST", "CountNibbles" );
 void SEvtTest::AddGenstep()
 {
    SEvt* evt = SEvt::Create(0) ; 
-   assert( SEvt::Get(0) == evt );  
+   bool evt_expect = SEvt::Get(0) == evt ;
+   assert( evt_expect );  
+   if(!evt_expect) std::raise(SIGINT); 
 
    for(unsigned i=0 ; i < 10 ; i++)
    {
@@ -84,7 +87,10 @@ void SEvtTest::LifeCycle()
     bounce0 = evt->slot[label.id] ;  
     evt->pointPhoton(label);  
     bounce1 = evt->slot[label.id] ;  
-    assert( bounce1 == bounce0 + 1 ); 
+
+    bool bounce_expect = bounce1 == bounce0 + 1 ;
+    assert( bounce_expect ); 
+    if(!bounce_expect) std::raise(SIGINT); 
 
     std::cout 
          << " i " << std::setw(3) << -1

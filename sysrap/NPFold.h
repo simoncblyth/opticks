@@ -74,6 +74,7 @@ Hid fts.h usage behind WITH_FTS as getting compilation error on Linux::
 #include <map> 
 #include <set> 
 #include <cstdlib>
+#include <csignal>
 #include <cstdio>
 #include <sys/types.h>
 
@@ -2672,6 +2673,7 @@ inline void NPFold::SubCommonKV(std::vector<std::string>& okey, std::vector<std:
         {
             std::string v = subs[j]->get_meta_string(k) ; 
             bool has_key = !v.empty(); 
+            if(!has_key) std::raise(SIGINT) ; 
             assert(has_key); 
 
             total += 1 ; 

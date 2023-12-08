@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <csignal>
 #include "S_freopen_redirect.hh"
 #include "spath.h"
 #include "sdirectory.h"
@@ -56,6 +57,7 @@ void test_runpython()
     //int rc = ssys::run("python -c 'print \"hello\"' " );
     int rc = ssys::run("python -c 'import sys ; sys.stderr.write(\"hello stderr\\n\")' " );
     //int rc = ssys::run("python -c 'import sys ; sys.stdout.write(\"hello stdout\\n\")' " );
+    if(rc) std::raise(SIGINT); 
     assert( rc == 0 );
 }
 

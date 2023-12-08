@@ -44,6 +44,7 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 #include <sstream>
 #include <iomanip>
 #include <cassert>
+#include <csignal>
 #include <functional>
 #include <algorithm>
 
@@ -2497,6 +2498,7 @@ but that doesnt stop it being an issue.
 inline void sn::ZNudgeOverlapJoint(int lvid, int i, sn* lower, sn* upper, bool enable, std::ostream* out  ) // static
 {
     bool can_znudge_ = lower->can_znudge() && upper->can_znudge() ; 
+    if(!can_znudge_) std::raise(SIGINT) ; 
     assert( can_znudge_ ); 
     
     double dz = 1. ; 
