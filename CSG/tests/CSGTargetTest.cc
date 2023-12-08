@@ -24,6 +24,7 @@ Check a few different iidx of midx 120::
 
 
 **/
+#include <csignal>
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SSim.hh"
@@ -89,6 +90,7 @@ void CSGTargetTest::dumpMOI( const char* MOI )
         fd->getCenterExtent(ce, midx, mord, iidx, &q0 );  
         fd->getTransform(q1, midx, mord, iidx ); 
         bool q_match = qat4::compare(q0, q1, 0.f) == 0 ; 
+        
 
         if( pass == 0 )
         {
@@ -118,6 +120,7 @@ void CSGTargetTest::dumpMOI( const char* MOI )
                 ;
         }
         assert( q_match ); 
+        if(!q_match) std::raise(SIGINT); 
     }
 }
 

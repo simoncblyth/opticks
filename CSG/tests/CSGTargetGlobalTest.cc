@@ -5,6 +5,8 @@ CSGTargetGlobalTest
 MOI=solidXJfixture:64 CSGTargetGlobalTest
 
 **/
+#include <csignal>
+
 #include "NP.hh"
 #include "SPath.hh"
 #include "SSys.hh"
@@ -78,6 +80,7 @@ int main(int argc, char** argv)
             ;
 
         assert( q_match ); 
+        if(!q_match) std::raise(SIGINT); 
     }
 
     const char* base = "$TMP/CSGTargetGlobalTest" ; 

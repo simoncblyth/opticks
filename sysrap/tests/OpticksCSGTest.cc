@@ -19,6 +19,7 @@
 
 
 #include <cstring>
+#include <csignal>
 #include <iostream>
 #include <sstream>
 #include <iomanip>
@@ -172,8 +173,15 @@ void test_OffsetType()
               << " CSG::IsLeaf(type) " << std::setw(2) << CSG::IsLeaf(type)
               << std::endl
               ;
-         assert( type2 == type ); 
-         assert( type3 == type ); 
+
+         bool type2_expect = type2 == type ; 
+         bool type3_expect = type3 == type ; 
+
+         assert( type2_expect ); 
+         assert( type3_expect ); 
+
+         if(!type2_expect) std::raise(SIGINT); 
+         if(!type3_expect) std::raise(SIGINT); 
     }
 }
 

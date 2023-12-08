@@ -20,6 +20,8 @@
 #include <sstream>
 #include <string>
 #include <limits>
+#include <csignal>
+
 #include "SSys.hh"
 
 #include "OPTICKS_LOG.hh"
@@ -53,7 +55,9 @@ void test_RC()
     {
         int xrc = irc & 0xff ;   // beyond 0xff return codes get truncated 
         rc = test_RC(irc);       
-        assert( rc == xrc ); 
+        bool xrc_expect =  rc == xrc ;  
+        assert( xrc_expect ); 
+        if(!xrc_expect) std::raise(SIGINT); 
     } 
 }
 
@@ -75,9 +79,12 @@ void test_IsNegativeZero()
     float f = -0.f ; 
     float z = 0.f ; 
 
-    assert( SSys::IsNegativeZero(f) == true ); 
-    assert( SSys::IsNegativeZero(z) == false ); 
-    assert( SSys::IsNegativeZero(-1.f) == false ); 
+    bool expect = SSys::IsNegativeZero(f) == true 
+               && SSys::IsNegativeZero(z) == false
+               && SSys::IsNegativeZero(-1.f) == false
+               ; 
+    assert( expect );  
+    if(!expect) std::raise(SIGINT); 
 }
 
 void test_hostname()

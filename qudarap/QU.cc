@@ -49,6 +49,8 @@ char QU::typecode()
     return c ; 
 }  
 
+template char QU::typecode<float>() ; 
+template char QU::typecode<double>() ; 
 
 
 template <typename T>

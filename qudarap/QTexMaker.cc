@@ -1,3 +1,4 @@
+#include <csignal>
 #include "QTexMaker.hh"
 
 #include "scuda.h"
@@ -43,11 +44,17 @@ QTex<float4>* QTexMaker::Make2d_f4_( const NP* a, char filterMode, bool normaliz
 {
     assert( a->ebyte == 4 && "need to narrow double precision arrays first ");  
     unsigned ndim = a->shape.size(); 
-    assert( ndim == 3 );      
+    bool ndim_expect = ndim == 3  ;
+    assert( ndim_expect );      
+    if(!ndim_expect) std::raise(SIGINT); 
 
     unsigned ni = a->shape[0] ; 
     unsigned nj = a->shape[1] ; 
-    unsigned nk = a->shape[2] ; assert( nk == 4 ); 
+    unsigned nk = a->shape[2] ; 
+
+    bool nk_expect = nk == 4 ; 
+    assert( nk_expect ); 
+    if(!nk_expect) std::raise(SIGINT); 
 
     size_t height = ni ; 
     size_t  width = nj ; 

@@ -19,8 +19,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt* evt = SEvt::Create(SEvt::EGPU) ;
-    assert( evt );  
+    SEvt::Create(SEvt::EGPU) ;
 
     LOG(info) << "[ SSim::Load " ; 
     const SSim* sim = SSim::Load(); 

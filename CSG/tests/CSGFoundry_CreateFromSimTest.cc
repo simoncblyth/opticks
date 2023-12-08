@@ -11,6 +11,7 @@ Creates CSGFoundry from SSim and SSim/stree
 
 **/
 
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 #include "SSim.hh"
 #include "spath.h"
@@ -36,7 +37,11 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::CreateFromSim() ; // adopts SSim::INSTANCE 
     //fd->save("$FOLD") ; 
-    assert( fd->sim == sim ); 
+
+    bool fd_expect = fd->sim == sim ;
+    assert( fd_expect  ); 
+    if(!fd_expect) std::raise(SIGINT); 
+
 
     return 0 ;  
 }

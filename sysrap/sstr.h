@@ -102,6 +102,10 @@ struct sstr
     template<typename T>
     static std::vector<T>* ParseIntSpecList( const char* spec, char delim=',' ) ; 
 
+
+    static void truncated_copy( char* dst, const char* src, int dst_size ); 
+
+
 };
 
 inline void sstr::Write(const char* path, const char* txt )
@@ -672,3 +676,8 @@ inline std::vector<T>* sstr::ParseIntSpecList( const char* spec, char delim )
     return ls ; 
 }
 
+inline void sstr::truncated_copy( char* dst, const char* src, int dst_size ) ; 
+{
+    memset(dst, 0, dst_size); 
+    memcpy(dst, src, std::min(dst_size, strlen(src)) ; 
+}

@@ -1,3 +1,5 @@
+
+#include <csignal>
 #include "spath.h"
 #include "sdirectory.h"
 
@@ -73,6 +75,9 @@ void test_MakeWriteRead()
     int rc = SPPM::read( path, img, width2, height2, ncomp, yflip ); 
 
     assert( rc == 0 ); 
+    if(rc!=0) std::raise(SIGINT); 
+
+
     assert( width2 == width ); 
     assert( height2 == height ); 
 

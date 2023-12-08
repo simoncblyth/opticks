@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <csignal>
 #include <vector>
 
 #include "SLOG.hh"
@@ -228,6 +229,7 @@ int GDXMLRead::checkDuplicatedMatrix()
 
                     bool expect = im.values.compare(jm.values) == 0 ; 
                     assert(expect) ;  
+                    if(!expect) std::raise(SIGINT); 
                 } 
             }
         }

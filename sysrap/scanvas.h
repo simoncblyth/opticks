@@ -116,7 +116,7 @@ inline void scanvas::drawf(int ix, int iy, int dx, int dy, float val, const char
 
 inline void scanvas::draw(int ix, int iy, int dx, int dy, int val)
 {
-    char tmp[10] ;
+    char tmp[16] ;
     int rc = sprintf(tmp, "%d", val );
     bool expect = rc == int(strlen(tmp)) ; 
     assert( expect );

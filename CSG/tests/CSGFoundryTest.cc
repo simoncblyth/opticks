@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <csignal>
 
 #include "scuda.h"
 #include "sqat4.h"
@@ -23,6 +24,14 @@ void test_layered()
     CSGSolid* s1 = mk->makeLayered("sphere", 1000.f, 10 ); 
     CSGSolid* s2 = mk->makeLayered("sphere", 50.f, 5 ); 
     CSGSolid* s3 = mk->makeSphere() ; 
+
+    std::cout 
+       << " s0 " << ( s0 ? "Y" : "N" ) 
+       << " s1 " << ( s1 ? "Y" : "N" ) 
+       << " s2 " << ( s2 ? "Y" : "N" ) 
+       << " s3 " << ( s3 ? "Y" : "N" ) 
+       << std::endl 
+       ;
 
     fd.dump(); 
 
@@ -172,13 +181,31 @@ void test_setMeta_getMeta()
     std::string  s0_ = fd.getMeta<std::string>("s0", ""); 
     std::string  s1_ = fd.getMeta<std::string>("s1", ""); 
 
-    assert( i0 == i0_ ); 
-    assert( i1 == i1_ ); 
-    assert( u == u_ ); 
-    assert( f == f_ ); 
-    assert( d == d_ ); 
-    assert( strcmp(s0.c_str(), s0_.c_str()) == 0 ); 
-    assert( strcmp(s1.c_str(), s1_.c_str()) == 0 ); 
+
+    bool i0_expect = i0 == i0_ ;
+    bool i1_expect = i1 == i1_ ;
+    bool u_expect = u == u_ ;
+    bool f_expect = f == f_ ;
+    bool d_expect = d == d_ ;
+    bool s0_expect = strcmp(s0.c_str(), s0_.c_str()) == 0  ;
+    bool s1_expect = strcmp(s1.c_str(), s1_.c_str()) == 0  ;
+
+    assert( i0_expect ); 
+    assert( i1_expect ); 
+    assert( u_expect ); 
+    assert( f_expect ); 
+    assert( d_expect ); 
+    assert( s0_expect ); 
+    assert( s1_expect ); 
+
+    if(!i0_expect) std::raise(SIGINT); 
+    if(!i1_expect) std::raise(SIGINT); 
+    if(!u_expect) std::raise(SIGINT); 
+    if(!f_expect) std::raise(SIGINT); 
+    if(!d_expect) std::raise(SIGINT); 
+    if(!s0_expect) std::raise(SIGINT); 
+    if(!s0_expect) std::raise(SIGINT); 
+   
 }
 
 void test_setPrimBoundary()

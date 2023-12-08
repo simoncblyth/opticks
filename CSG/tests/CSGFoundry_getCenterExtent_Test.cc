@@ -20,6 +20,7 @@ See also CSGTargetTest.cc
 
 **/
 
+#include <csignal>
 #include "SSys.hh"
 #include "SStr.hh"
 #include "SSim.hh"
@@ -57,6 +58,7 @@ int main(int argc, char** argv)
         float4 gce = make_float4( 0.f, 0.f, 0.f, 0.f ); 
         int rc = fd->getCenterExtent(gce, midx, mord, iidx, &q) ;
         assert( rc == 0 ); 
+        if(rc!=0) std::raise(SIGINT); 
 
         std::cout
             << " MOI " << moi 

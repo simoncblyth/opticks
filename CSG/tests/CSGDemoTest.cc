@@ -16,6 +16,7 @@ Render the geometries with::
 
 **/
 
+#include <csignal>
 #include "SSys.hh"
 #include "SPath.hh"
 #include "OPTICKS_LOG.hh"
@@ -68,7 +69,10 @@ void CSGDemoTest::save() const
     fd.save(cfbase, rel );  
 
     CSGFoundry* lfd = CSGFoundry::Load(cfbase, rel);  // load foundary and check identical bytes
-    assert( 0 == CSGFoundry::Compare(&fd, lfd ) );
+    bool lfd_expect = CSGFoundry::Compare(&fd, lfd ) == 0 ; 
+    assert(lfd_expect);
+    if(!lfd_expect) std::raise(SIGINT); 
+
 }
 
 

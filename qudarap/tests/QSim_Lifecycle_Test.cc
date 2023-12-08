@@ -39,8 +39,7 @@ int main(int argc, char** argv)
     if(prd->rc != 0 ) return 1 ; 
 
 
-    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
-    assert(evt);  
+    SEvt::Create(SEvt::EGPU) ; 
 
     return 0 ; 
 }

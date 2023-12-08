@@ -3005,7 +3005,10 @@ const SSim* CSGFoundry::getSim() const
 void CSGFoundry::setFold(const char* fold_)
 {
     const char* rel = SPath::Basename(fold_); 
-    assert( strcmp( rel, "CSGFoundry" ) == 0 ); 
+
+    bool rel_expect = strcmp( rel, "CSGFoundry" ) == 0 ; 
+    assert( rel_expect ); 
+    if(!rel_expect) std::raise(SIGINT); 
 
     fold = strdup(fold_);  
     cfbase = SPath::Dirname(fold_) ; 

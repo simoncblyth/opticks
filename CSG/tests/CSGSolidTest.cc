@@ -1,10 +1,11 @@
 // ./CSGSolidTest.sh
+#include <iostream>
+#include <csignal>
 
 #include "OPTICKS_LOG.hh"
 #include "scuda.h"
 #include "CSGSolid.h"
 #include "NP.hh"
-#include <iostream>
 
 void test_Make_Write(const char* path)
 {
@@ -37,7 +38,10 @@ void test_Make_Write(const char* path)
     unsigned num_items = so.size(); 
     assert( num_items == 6 );
     unsigned num_values = sizeof(CSGSolid)/sizeof(int) ; 
-    assert( num_values == num_quad*4 ); 
+
+    bool num_values_expect = num_values == num_quad*4 ;
+    assert( num_values_expect ); 
+    if(!num_values_expect) std::raise(SIGINT); 
 
     NP::Write( path, (int*)so.data(), num_items, num_values ) ;
 }
@@ -67,8 +71,9 @@ void test_ParseLabel()
     char t1 ; 
     unsigned idx1 ; 
     int rc = CSGSolid::ParseLabel(label.c_str(), t1, idx1 ); 
-
     assert( rc == 0 ); 
+    if(rc!=0) std::raise(SIGINT); 
+
     assert( t0 == t1 ); 
     assert( idx0 == idx1 );  
 }
@@ -85,7 +90,9 @@ void test_get_ridx()
     unsigned primOffset = 0 ; 
     CSGSolid so = CSGSolid::Make(label.c_str(), numPrim, primOffset );  
 
-    assert( so.get_ridx() == int(idx0) ); 
+    bool ridx_expect = so.get_ridx() == int(idx0) ;
+    assert(ridx_expect ); 
+    if(!ridx_expect) std::raise(SIGINT); 
 }
 
 

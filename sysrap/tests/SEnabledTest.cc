@@ -1,5 +1,6 @@
 
 #include <vector>
+#include <csignal>
 #include <algorithm>
 #include "SEnabled.hh"
 #include "OPTICKS_LOG.hh"
@@ -13,7 +14,9 @@ void test_isEnabled(const char* spec, const std::vector<unsigned>& e)
     {
         bool expect = std::find(e.begin(), e.end(), i) != e.end() ; 
         bool enabled = idx->isEnabled(i) ; 
-        assert( expect == enabled );  
+        bool enabled_expect = expect == enabled ;
+        assert(enabled_expect);
+        if(!enabled_expect) std::raise(SIGINT);   
     }
 }
 

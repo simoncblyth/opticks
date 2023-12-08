@@ -1,4 +1,5 @@
 
+#include <csignal>
 #include "scuda.h"
 #include "sqat4.h"
 #include "ssys.h"
@@ -161,7 +162,9 @@ void CSGCopy::copy()
         copySolidPrim(solid_bb, dPrimOffset, sso);  
 
         unsigned numSelectedPrimCheck = dst->prim.size() - dPrimOffset ; 
-        assert( numSelectedPrim == numSelectedPrimCheck );  
+        bool numSelectedPrim_expect = numSelectedPrim == numSelectedPrimCheck ;
+        assert( numSelectedPrim_expect );  
+        if(!numSelectedPrim_expect) std::raise(SIGINT); 
 
         if(identical_bbox_cheat) // only admissable when no selection 
         { 

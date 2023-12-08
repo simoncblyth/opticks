@@ -1,3 +1,4 @@
+#include <csignal>
 #include "SLOG.hh"
 #include "scuda.h"
 #include "squad.h"
@@ -61,6 +62,7 @@ void SThetaCut::PrepareParam( quad& q0, quad& q1, double startTheta_pi, double d
     double theta1_pi = startTheta_pi + deltaTheta_pi ;
     bool has_thetacut = theta0_pi > 0. || theta1_pi < 1. ; 
     assert(has_thetacut);  
+    if(!has_thetacut) std::raise(SIGINT); 
 
     assert( theta0_pi >= 0. && theta0_pi <= 1.) ; 
     assert( theta1_pi >= 0. && theta1_pi <= 1.) ; 

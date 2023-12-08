@@ -19,6 +19,7 @@
 
 
 #include <string>
+#include <csignal>
 #include "SMap.hh"
 
 #include "SYSRAP_LOG.hh"
@@ -42,7 +43,10 @@ int main(int argc, char** argv)
 
 
     unsigned nv = SMap<K,V>::ValueCount(m, v) ; 
-    assert( nv == 2);
+
+    bool nv_expect = nv == 2 ;
+    assert( nv_expect );
+    if(!nv_expect) std::raise(SIGINT); 
 
     bool dump = true ; 
 

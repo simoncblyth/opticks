@@ -1,3 +1,5 @@
+
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 #include "ssys.h"
 #include "SEventConfig.hh"
@@ -43,6 +45,7 @@ void QEvent_Lifecycle_Test::Test()
 
         int rc = event->setGenstep(); 
         assert( rc == 0 );
+        if(rc!=0) std::raise(SIGINT); 
         // QEvent::setGenstep 
         //    1. SEvt::gatherGenstep yielding NP* gs 
         //    2. SEvt::clear which clears vectors and NPFold::clear which deletes arrays 

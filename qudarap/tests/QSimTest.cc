@@ -5,6 +5,7 @@ QSimTest.cc
 **/
 
 #include <sstream>
+#include <csignal>
 
 #include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"
@@ -156,11 +157,17 @@ void QSimTest::boundary_lookup_all()
     unsigned height = qs->getBoundaryTexHeight(); 
     const NP* src = qs->getBoundaryTexSrc(); 
 
-    assert( height % 8 == 0 ); 
-    unsigned num_bnd = height/8 ;  
 
+    bool height_expect = height % 8 == 0 ; 
+    assert( height_expect ); 
+    if(!height_expect) std::raise(SIGINT); 
+
+    unsigned num_bnd = height/8 ;  
     NP* l = qs->boundary_lookup_all( width, height ); 
-    assert( l->has_shape( num_bnd, 4, 2, width, 4 ) ); 
+
+    bool l_expect = l->has_shape( num_bnd, 4, 2, width, 4 ) ;
+    assert( l_expect ); 
+    if(!l_expect ) std::raise(SIGINT) ; 
 
     l->save("$FOLD/lookup_all.npy" ); 
     src->save("$FOLD/lookup_all_src.npy" ); 
@@ -559,7 +566,10 @@ void QSimTest::photon_launch_mutate()
 
     LOG(info) << " loaded " << a->sstr() << " from src_subfold " << src_subfold ; 
     unsigned num_photon_ = a->shape[0] ; 
-    assert( num_photon_ == num_photon ); 
+
+    bool num_photon_expect = num_photon_ == num_photon ;
+    assert( num_photon_expect ); 
+    if(!num_photon_expect) std::raise(SIGINT); 
 
     sphoton* photons = (sphoton*)a->bytes() ; 
     qs->photon_launch_mutate( photons, num_photon, type ); 
@@ -725,8 +735,7 @@ int main(int argc, char** argv)
 
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
 
-    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
-    assert(evt);  
+    SEvt::Create(SEvt::EGPU) ; 
 
     QSimTest qst(type, num, prd)  ; 
     qst.main(); 

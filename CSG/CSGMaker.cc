@@ -1,4 +1,5 @@
 #include <array>
+#include <csignal>
 
 #include "scuda.h"
 #include "squad.h"
@@ -866,12 +867,23 @@ CSGSolid* CSGMaker::makeUnionListBoxSphere( const char* label, float radius, flo
     CSGNode* r    = fd->addNode(right); 
     CSGNode* s    = fd->addNode(sub); 
 
-    assert( op.subNum() == 3 && root->subNum() == 3 ); 
-     
-    assert( root->typecode() == CSG_UNION ); 
-    assert( l->typecode() == CSG_BOX3 ); 
-    assert( r->typecode() == CSG_CONTIGUOUS ); 
-    assert( s->typecode() == CSG_SPHERE ); 
+    bool root_expect = root->typecode() == CSG_UNION ;
+    bool l_expect = l->typecode() == CSG_BOX3 ;
+    bool r_expect = r->typecode() == CSG_CONTIGUOUS ; 
+    bool s_expect = s->typecode() == CSG_SPHERE ; 
+    bool op_expect =  op.subNum() == 3 && root->subNum() == 3  ; 
+
+    assert( root_expect ); 
+    assert( l_expect ); 
+    assert( r_expect ); 
+    assert( s_expect ); 
+    assert( op_expect ); 
+
+    if(!root_expect) std::raise(SIGINT); 
+    if(!l_expect) std::raise(SIGINT); 
+    if(!r_expect) std::raise(SIGINT); 
+    if(!s_expect) std::raise(SIGINT); 
+    if(!op_expect) std::raise(SIGINT); 
 
     AABB bb = {} ;
     bb.include_aabb( right.AABB() ); 

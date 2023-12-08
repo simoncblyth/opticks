@@ -1,5 +1,6 @@
 #include "OPTICKS_LOG.hh"
 
+#include <csignal>
 #include <cuda_runtime.h>
 
 #include "OpticksGenstep.h"
@@ -49,8 +50,10 @@ void QEventTest::setGenstep_one()
     //LOG(info) << " event.desc (aft QEvent::setGenstep) " << event->desc() ; 
 
     int num_photon = event->getNumPhoton();  
+    bool num_photon_expect = x_num_photon == num_photon ;
     //LOG(info) << " num_photon " << num_photon << " x_num_photon " << x_num_photon ; 
-    assert( x_num_photon == num_photon ); 
+    assert( num_photon_expect ); 
+    if(!num_photon_expect) std::raise(SIGINT); 
 
 #ifndef PRODUCTION
 
@@ -122,7 +125,9 @@ void QEventTest::setGenstep_many()
         event->setGenstepUpload(gs[i]); 
 
         int num_photon = event->getNumPhoton();  
-        assert( x_num_photon[i] == num_photon ); 
+        bool num_photon_expect = x_num_photon[i] == num_photon ;
+        assert( num_photon_expect ); 
+        if(!num_photon_expect) std::raise(SIGINT); 
 
 
 #ifndef PRODUCTION
@@ -162,7 +167,9 @@ void QEventTest::setGenstep_loaded(NP* gs)
     event->setGenstepUpload(gs); 
 
     unsigned num_photon = event->getNumPhoton() ; 
-    assert( num_photon > 0); 
+    bool num_photon_expect = num_photon > 0 ;
+    assert( num_photon_expect ); 
+    if(!num_photon_expect) std::raise(SIGINT); 
 
     LOG(info) << event->desc() ; 
     //event->seed->download_dump("event->seed", 10); 
@@ -241,9 +248,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt* evt = SEvt::Create(SEvt::EGPU) ;
-    assert( evt );  
-
+    SEvt::Create(SEvt::EGPU) ;
 
     QEventTest::setGenstep_one(); 
     QEventTest::setGenstep_many(); 

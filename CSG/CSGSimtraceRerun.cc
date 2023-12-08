@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <cstdlib>
+#include <csignal>
 
 #include "ssys.h"
 #include "spath.h"
@@ -102,7 +103,11 @@ unsigned  CSGSimtraceRerun::intersect_again(quad4& isect1, const quad4& isect0 )
     assert( code < 4 ); 
     code_count[code] += 1 ; 
     code_count[4] += 1 ; 
-    assert( valid_isect == valid_isect1 );  
+
+    bool valid_isect_expect = valid_isect == valid_isect1 ;
+    assert( valid_isect_expect );  
+    if(!valid_isect_expect) std::raise(SIGINT); 
+
     return code ; 
 }
 

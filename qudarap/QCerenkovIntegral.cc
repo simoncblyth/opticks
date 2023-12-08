@@ -1,5 +1,6 @@
 #include <sstream>
 #include <algorithm>
+#include <csignal>
 
 #include "SLOG.hh"
 #include "spath.h"
@@ -102,7 +103,10 @@ NP* QCerenkovIntegral::GetAverageNumberOfPhotons_s2_(T& emin,  T& emax, const T 
     const T* vv = dsrc->cvalues<T>(); 
     unsigned ni = dsrc->shape[0] ; 
     unsigned nj = dsrc->shape[1] ; 
-    assert( nj == 2 && ni > 1 ); 
+
+    bool dsrc_expect = nj == 2 && ni > 1 ;
+    assert(dsrc_expect); 
+    if(!dsrc_expect) std::raise(SIGINT); 
 
     T s2integral(0.) ;  
 
@@ -502,7 +506,9 @@ template <typename T> NP* QCerenkovIntegral::getS2Integral_WithCut_( T& emin, T&
     const T* vv = dsrc->cvalues<T>(); 
     unsigned ni = dsrc->shape[0] ; 
     unsigned nj = dsrc->shape[1] ; 
-    assert( nj == 2 && ni > 1 ); 
+    bool dsrc_expect = nj == 2 && ni > 1  ;
+    assert(dsrc_expect ); 
+    if(!dsrc_expect) std::raise(SIGINT); 
 
     NP* s2i = NP::Make<T>(ni);
     T* s2i_vv = s2i->values<T>();  
@@ -646,7 +652,10 @@ NP* QCerenkovIntegral::getS2Integral_SplitBin(const T BetaInverse, unsigned mul,
 
     unsigned ri_ni = dsrc->shape[0] ; 
     unsigned ri_nj = dsrc->shape[1] ; 
-    assert( ri_nj == 2 && ri_ni > 1 );
+
+    bool dsrc_expect = ri_nj == 2 && ri_ni > 1 ; 
+    assert(dsrc_expect );
+    if(!dsrc_expect) std::raise(SIGINT); 
 
     unsigned ns = 1+mul ;                // sub divisions of one bin 
     unsigned s2_edges = getNumEdges_SplitBin<T>(mul); 

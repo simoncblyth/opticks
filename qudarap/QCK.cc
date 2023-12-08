@@ -2,6 +2,8 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <csignal>
+
 
 #include "NP.hh"
 #include "QCK.hh"
@@ -286,9 +288,13 @@ template<typename T> T QCK<T>::energy_sample_( const T emin, const T emax, const
 template<typename T> NP* QCK<T>::energy_lookup( const T BetaInverse, const NP* uu, NP* tt, bool icdf_ ) const 
 {
     unsigned ndim = uu->shape.size() ; 
-    assert( ndim == 1 ); 
+    bool ndim_expect = ndim == 1  ;
+    assert( ndim_expect ); 
+    if(!ndim_expect) std::raise(SIGINT); 
+
     unsigned ni = uu->shape[0] ; 
     const T* uu_v = uu->cvalues<T>(); 
+
 
     if(tt) assert( tt->shape.size() == 1u && unsigned(tt->shape[0]) == ni ); 
     T* tt_v = tt ? tt->values<T>() : nullptr ; 

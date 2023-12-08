@@ -7,6 +7,7 @@ DUMP=2 NUM=210 CSGQueryTest A
 
 **/
 
+#include <csignal>
 #include "SSim.hh"
 #include "SSys.hh"
 #include "SPath.hh"
@@ -321,12 +322,14 @@ void CSGQueryTest::Load()
     int nk = a->shape[2] ;  
     int nl = a->shape[3] ;
 
-    assert( nk == 4 && nl == 4 ); 
-
     int ny = ni ; 
     int nx = nj ; 
-    assert( ix < nx ); 
-    assert( iy < ny ); 
+
+
+    bool a_expect = nk == 4 && nl == 4 && ix < nx && iy < ny ;
+    assert(a_expect ); 
+    if(!a_expect) std::raise(SIGINT); 
+
 
     quad4 load_isect ; 
     load_isect.zero(); 

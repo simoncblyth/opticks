@@ -1,4 +1,5 @@
 #include <cassert>
+#include <signal>
 #include "scuda.h"
 #include "QU.hh"
 
@@ -20,7 +21,10 @@ void test_set_pointer()
 
     test_not_set_pointer( p ); 
     printf("test_not_set_pointer  p %p \n", p ); 
-    assert( p == p0 && "test_not_set_pointer :  expected to NOT set the pointer in the calling scope"); 
+
+    bool p_expect = p == p0 ; 
+    assert( p_expect && "test_not_set_pointer :  expected to NOT set the pointer in the calling scope"); 
+    if(!p_expect) std::raise(SIGINT); 
 
     test_set_pointer( &p ); 
     printf("test_set_pointer  p %p \n", p ); 

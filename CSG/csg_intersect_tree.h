@@ -96,8 +96,8 @@ float distance_tree( const float3& global_position, const CSGNode* node, const f
         }
         else
         {
-            float lhs ;  
-            float rhs ;  
+            float lhs(0.f) ;  
+            float rhs(0.f) ;  
             stack.pop2( lhs, rhs ); 
 
             switch( typecode )

@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <sstream>
 #include <map>
+#include <csignal>
 
 #include "SBnd.h"
 #include "NP.hh"
@@ -136,11 +137,15 @@ QTex<float4>* QBnd::MakeBoundaryTex(const NP* buf )   // static
     unsigned nl = buf->shape[3];  // (39 or 761)   number of wavelength samples of the property
     unsigned nm = buf->shape[4];  // (4)    number of prop within the float4
 
+
+
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
     LOG(LEVEL) << " buf " << ( buf ? buf->desc() : "-" ) ;  
 #endif
-    assert( nm == 4 ); 
+    bool nm_expect = nm == 4 ;
+    assert( nm_expect ); 
+    if(!nm_expect) std::raise(SIGINT); 
 
     unsigned nx = nl ;           // wavelength samples
     unsigned ny = ni*nj*nk ;     

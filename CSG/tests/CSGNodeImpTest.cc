@@ -1,5 +1,6 @@
 // ./CSGNodeTest.sh 
 
+#include <csignal>
 #include <bitset>
 #include <vector>
 #include <iomanip>
@@ -93,10 +94,15 @@ void test_change_transform()
         nd.setTransform( u1 );   
 
         bool c1 = nd.is_complement(); 
-        assert( c0 == c1 ); 
+        bool c_expect = c0 == c1 ; 
+        assert( c_expect ); 
+        if(!c_expect) std::raise(SIGINT); 
 
         unsigned u1_chk = nd.gtransformIdx();  
-        assert( u1_chk == u1 ); 
+        bool u1_expect = u1_chk == u1 ;
+        assert( u1_expect ); 
+        if(!u1_expect) std::raise(SIGINT); 
+
     }
 }
 

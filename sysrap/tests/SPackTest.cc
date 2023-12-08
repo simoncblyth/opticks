@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <cassert>
+#include <csignal>
 #include <iomanip>
 #include "SPack.hh"
 #include "OPTICKS_LOG.hh"
@@ -108,7 +109,9 @@ void test_Encode13_Decode13()
     unsigned expect  = 0xffffffff ; 
 
     unsigned value = SPack::Encode13( c, ccc );  
-    assert( value == expect ); 
+    bool value_expect = value == expect ; 
+    assert( value_expect ); 
+    if(!value_expect) std::raise(SIGINT); 
 
     unsigned char c2 ; 
     unsigned int  ccc2 ; 
@@ -127,18 +130,27 @@ void test_Encode22_Decode22()
     unsigned expect  = 0xdeadbeef ; 
 
     unsigned value = SPack::Encode22( a0, b0 );  
-    assert( value == expect ); 
+    bool value_expect = value == expect ; 
+    assert( value_expect ); 
+    if(!value_expect) std::raise(SIGINT); 
+
 
     unsigned a1 ; 
     unsigned b1 ; 
     SPack::Decode22( value, a1, b1 ); 
-    assert( a0 == a1 ); 
-    assert( b0 == b1 ); 
+
+    bool decode22_expect = a0 == a1 && b0 == b1 ;
+    assert( decode22_expect ); 
+    if(!decode22_expect) std::raise(SIGINT);
 
     unsigned a2 = SPack::Decode22a( value ); 
     unsigned b2 = SPack::Decode22b( value ); 
-    assert( a0 == a2 ); 
-    assert( b0 == b2 ); 
+
+    bool decode22a_expect = a0 == a2 && b0 == b2 ;
+    assert( decode22a_expect ); 
+    if(!decode22a_expect) std::raise(SIGINT);
+
+
 
 }
 
@@ -359,7 +371,10 @@ void test_reinterpret_cast()
     //unsigned u2 = reinterpret_cast<uint32_t&>(uif.f) ; 
     unsigned u2 = reinterpret_cast<unsigned&>(uif.f) ; 
     LOG(info) << " uif.f " << uif.f << " u2 " << u2 ; 
-    assert( u2 == u ); 
+
+    bool u_expect = u2 == u  ;
+    assert( u_expect ); 
+    if(!u_expect) std::raise(SIGINT) ; 
 }
 
 void dummy_optixTrace(unsigned& p0 )

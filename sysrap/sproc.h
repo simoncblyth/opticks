@@ -154,26 +154,30 @@ inline int sproc::Query(int32_t& virtual_size, int32_t& resident_size )
 
 inline float sproc::VirtualMemoryUsageKB()
 {
-    int32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb(0) ;  
+    int32_t resident_size_kb(0) ; 
     Query(virtual_size_kb, resident_size_kb) ; 
     return virtual_size_kb ;
 }
 inline float sproc::ResidentSetSizeKB()
 {
-    int32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb(0) ; 
+    int32_t resident_size_kb(0) ; 
     Query(virtual_size_kb, resident_size_kb ) ; 
     return resident_size_kb ;
 }
 inline float sproc::VirtualMemoryUsageMB()
 {
-    int32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb(0) ; 
+    int32_t resident_size_kb(0) ; 
     Query(virtual_size_kb, resident_size_kb) ; 
     float size_mb = virtual_size_kb/K ;
     return size_mb  ;
 }
 inline float sproc::ResidentSetSizeMB()
 {
-    int32_t virtual_size_kb, resident_size_kb ; 
+    int32_t virtual_size_kb(0) ; 
+    int32_t resident_size_kb(0) ; 
     Query(virtual_size_kb, resident_size_kb) ; 
     float size_mb = resident_size_kb/K ;
     return size_mb  ;

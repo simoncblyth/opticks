@@ -1038,6 +1038,7 @@ void QSim::fake_propagate( const NP* prd, unsigned type )
 
     int rc = event->setGenstep();   
     assert( rc == 0 ); 
+    if(rc!=0) std::raise(SIGINT); 
 
     sev->add_array("prd0", prd );  
     // NB QEvent::setGenstep calls SEvt/clear so this addition 

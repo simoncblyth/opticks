@@ -1,3 +1,6 @@
+#include <sstream>
+#include <csignal>
+
 
 #include "SLOG.hh"
 #include "SSys.hh"
@@ -6,7 +9,6 @@
 #include "sphoton.h"
 #include "sscint.h"
 
-#include <sstream>
 
 #include "NP.hh"
 #include "QUDA_CHECK.h"
@@ -81,18 +83,16 @@ QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static
 {
     bool expected_shape = src->has_shape(1,4096,1) ||  src->has_shape(3,4096,1) ; 
     LOG_IF(fatal, !expected_shape) << " unexpected shape of src " << ( src ? src->sstr() : "-" ) ; 
-
     assert( expected_shape ); 
-    assert( src->uifc == 'f' ); 
-    assert( src->ebyte == 4 );    // expecting float src array, possible narrowed from double dsrc array  
 
     unsigned ni = src->shape[0]; 
     unsigned nj = src->shape[1]; 
     unsigned nk = src->shape[2]; 
 
-    assert( ni == 1 || ni == 3); 
-    assert( nj == 4096 ); 
-    assert( nk == 1 ); 
+    bool src_expect = src->uifc == 'f' && src->ebyte == 4 && ( ni == 1 || ni == 3 ) && nj == 4096 && nk == 1  ;
+    assert( src_expect ); 
+    if(!src_expect) std::raise(SIGINT); 
+
 
     unsigned ny = ni ; // height : 1 or 3  (3 is primitive multi-resolution for improved tail resolution) 
     unsigned nx = nj ; // width 

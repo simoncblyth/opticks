@@ -19,6 +19,7 @@
  */
 
 #include <cmath>
+#include <csignal>
 #include <algorithm>
 #include "SVec.hh"
 
@@ -37,7 +38,9 @@ void test_MaxDiff()
     float md_x = 0.4f ; 
     float md_d = std::fabs(md - md_x) ; 
 
-    assert( md_d < epsilon );
+    bool md_d_expect = md_d < epsilon ; 
+    assert( md_d_expect );
+    if(!md_d_expect) std::raise(SIGINT); 
 }
 
 void test_FindIndexOfValue()
@@ -46,10 +49,15 @@ void test_FindIndexOfValue()
     int idx ;  
 
     idx = SVec<float>::FindIndexOfValue( a, 3.3f, 1e-6f );
-    assert( idx == 2 );
+    bool idx_expect = idx == 2 ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
 
     idx = SVec<float>::FindIndexOfValue( a, 5.5f, 1e-6f );
-    assert( idx == -1 );
+    idx_expect = idx == -1  ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
+
 }
 
 
@@ -60,10 +68,15 @@ void test_FindIndexOfValue_NoTolerance_float()
     int idx ;  
 
     idx = SVec<float>::FindIndexOfValue( a, 3.3f);
-    assert( idx == 2 );
+    bool idx_expect = idx == 2 ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
+
 
     idx = SVec<float>::FindIndexOfValue( a, 5.5f);
-    assert( idx == -1 );
+    idx_expect = idx == -1  ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
 }
 
 void test_FindIndexOfValue_NoTolerance_int()
@@ -73,13 +86,21 @@ void test_FindIndexOfValue_NoTolerance_int()
     int idx ;  
 
     idx = SVec<int>::FindIndexOfValue( a, 1);
-    assert( idx == 0 );
+    bool idx_expect = idx == 0 ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
+
 
     idx = SVec<int>::FindIndexOfValue( a, 42);
-    assert( idx == 7 );
+    bool idx_expect = idx == 7 ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
 
     idx = SVec<int>::FindIndexOfValue( a, 1000 );
-    assert( idx == -1 );
+    bool idx_expect = idx == -1 ;
+    assert( idx_expect );
+    if(!idx_expect) std::raise(SIGINT);
+
 }
 
 

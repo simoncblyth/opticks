@@ -100,7 +100,11 @@ void Scan::init()
     for(unsigned m=0 ; m < modes->size() ; m++)
     {
         int mode = (*modes)[m]; 
-        float vx, vy, ox, oy ; 
+        float vx(0.f); 
+        float vy(0.f); 
+        float ox(0.f);
+        float oy(0.f);
+ 
         for(int i=0 ; i < num ; i++)
         {
             int j = i - num/2 ; 

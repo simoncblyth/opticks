@@ -54,6 +54,8 @@ void test_Strip()
            << std::setw(50) << name
            << " : "
            << std::setw(50) << sname
+           << " : "
+           << std::setw(50) << xname
            << std::endl
            ;
 

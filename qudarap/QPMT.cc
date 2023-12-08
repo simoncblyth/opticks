@@ -26,6 +26,7 @@ QPMT::mct_lpmtid_
 #include <cuda_runtime.h>
 #endif
 
+#include <csignal>
 #include <vector_types.h>
 #include "QPMT.hh"
 
@@ -85,8 +86,14 @@ inline void QPMT<T>::init()
                                     // -----------------
                                     // 3*4*2 = 24
 
-    assert( src_rindex->has_shape(ni, nj, nk, -1, 2 )); 
-    assert( src_thickness->has_shape(ni, nj, 1 )); 
+    bool src_rindex_expect = src_rindex->has_shape(ni, nj, nk, -1, 2 ) ;
+    bool src_thickness_expect = src_thickness->has_shape(ni, nj, 1 ) ;
+
+    assert( src_rindex_expect); 
+    assert( src_thickness_expect );
+
+    if(!src_rindex_expect) std::raise(SIGINT);  
+    if(!src_thickness_expect) std::raise(SIGINT);  
 
     pmt->rindex_prop = rindex_prop->getDevicePtr() ;  
     pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;
@@ -198,7 +205,11 @@ extern void QPMT_mct_lpmtid(
 template<typename T>
 void QPMT<T>::lpmtcat_check( int etype, const NP* domain, const NP* lookup) const 
 {
-    assert( domain->shape.size() == 1 && domain->shape[0] > 0 ); 
+
+    bool domain_expect = domain->shape.size() == 1 && domain->shape[0] > 0 ;
+    assert( domain_expect ); 
+    if(!domain_expect) std::raise(SIGINT); 
+
     unsigned num_domain = domain->shape[0] ; 
     unsigned num_domain_1 = 0 ; 
 
@@ -210,7 +221,11 @@ void QPMT<T>::lpmtcat_check( int etype, const NP* domain, const NP* lookup) cons
     {
         num_domain_1 = lookup->shape[lookup->shape.size()-3] ;  // (4,4) payload
     }
-    assert( num_domain == num_domain_1 ); 
+
+    bool num_domain_expect = num_domain == num_domain_1 ;
+    assert( num_domain_expect ); 
+    if(!num_domain_expect) std::raise(SIGINT) ; 
+
 }
 
 

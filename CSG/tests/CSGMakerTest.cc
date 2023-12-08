@@ -11,7 +11,7 @@ SO SHOULD DO THINGS IN NON-STANDARD MANUAL WAY
 
 **/
 
-
+#include <csignal>
 #include "ssys.h"
 #include "spath.h"
 #include "SSim.hh"
@@ -54,6 +54,7 @@ int main(int argc, char** argv)
 
      SSim* sim = SSim::Create(); 
      assert(sim); 
+     if(!sim) std::raise(SIGINT); 
 
      std::vector<std::string> names ; 
      GetNames(names, listnames); 
@@ -79,6 +80,7 @@ int main(int argc, char** argv)
 
          int rc = CSGFoundry::Compare(fd, lfd );  
          assert( 0 == rc );
+         if(0!=rc) std::raise(SIGINT); 
      }
 
      return 0 ; 

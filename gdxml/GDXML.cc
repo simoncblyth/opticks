@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstring>
+#include <csignal>
 #include <sstream>
 #include <xercesc/util/PlatformUtils.hpp>
 
@@ -36,7 +37,10 @@ void GDXML::Fix(const char* dstpath, const char* srcpath)  // static
     xercesc::XMLPlatformUtils::Initialize();  // HMM: might clash with Geant4 ? 
 
     bool same = strcmp(dstpath, srcpath) == 0 ; 
-    assert( same == false ); 
+    bool expect = same == false ; 
+    assert(expect); 
+    if(!expect) std::raise(SIGINT);  
+
     GDXML gd(srcpath);  
     gd.write(dstpath);  
 }

@@ -9,6 +9,7 @@ For a slightly higher level test see CSGNodeScanTest.cc
 
 #include "OPTICKS_LOG.hh"
 #include <cmath>
+#include <csignal>
 
 #include "scuda.h"
 #include "squad.h"
@@ -77,7 +78,9 @@ int main(int argc, char** argv)
         ray_origin.x = x ; 
         bool i0 = intersect( isect, post, q0, q1, ' ', t_min, ray_origin, ray_direction ); 
         bool i1 = intersect( isect, post, q0, q1, 'L', t_min, ray_origin, ray_direction ); 
-        assert( i0 == i1 ); 
+        bool i_expect = i0 == i1 ;  
+        assert( i_expect ); 
+        if(!i_expect) std::raise(SIGINT); 
     }
 
     printf("// z scan \n"); 
@@ -93,7 +96,9 @@ int main(int argc, char** argv)
         ray_origin.z = z ;
         bool i0 = intersect( isect, post, q0, q1, ' ', t_min, ray_origin, ray_direction ); 
         bool i1 = intersect( isect, post, q0, q1, 'L', t_min, ray_origin, ray_direction ); 
-        assert( i0 == i1 ); 
+        bool i_expect = i0 == i1 ;  
+        assert( i_expect ); 
+        if(!i_expect) std::raise(SIGINT); 
     }
 
 

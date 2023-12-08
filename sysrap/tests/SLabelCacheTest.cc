@@ -1,4 +1,5 @@
 #include <cstring>
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 #include "SLabelCache.hh"
 
@@ -50,12 +51,16 @@ int main(int argc, char** argv)
         const void* o = oo[i] ; 
         cache.add(o, int(i)); 
         int idx = cache.find(o); 
-        assert( idx == int(i) ); 
+        bool idx_expect = idx == int(i) ;
+        assert( idx_expect ); 
+        if(!idx_expect) std::raise(SIGINT); 
     }
 
     const void* anon = (const void*)m ; 
     int idx_m = cache.find(anon) ;  
-    assert( idx_m == 4 ); 
+    bool idx_m_expect = idx_m == 4 ;
+    assert( idx_m_expect ); 
+    if(!idx_m_expect) std::raise(SIGINT); 
 
     return 0 ; 
 }

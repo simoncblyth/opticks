@@ -1,3 +1,4 @@
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 #include "SBit.hh"
 
@@ -5,14 +6,29 @@ void test_FromString_0()
 {
     unsigned long long ull_0 = SBit::FromString("0b11111111") ; 
     LOG(info) << " ull_0 " << ull_0 ; 
-    assert( ull_0 == 255 ); 
+
+    bool ull_0_expect = ull_0 == 255 ;
+    assert( ull_0_expect ); 
+    if(!ull_0_expect) std::raise(SIGINT); 
+
     unsigned long long ull_1 = SBit::FromString("0xff") ; 
-    assert( ull_1 == 255 ); 
+    bool ull_1_expect = ull_1 == 255 ;
+    assert( ull_1_expect ); 
+    if(!ull_1_expect) std::raise(SIGINT); 
+
     unsigned long long ull_2 = SBit::FromString("255") ; 
-    assert( ull_2 == 255 ); 
+    bool ull_2_expect = ull_2 == 255 ;
+    assert( ull_2_expect ); 
+    if(!ull_2_expect) std::raise(SIGINT); 
+
     unsigned long long ull_3 = SBit::FromString("0,1,2,3,4,5,6,7") ; 
     LOG(info) << " ull_3 " << ull_3 ; 
-    assert( ull_3 == 255 ); 
+    bool ull_3_expect = ull_3 == 255 ;
+    assert( ull_3_expect ); 
+    if(!ull_3_expect) std::raise(SIGINT); 
+
+
+
 }
 
 

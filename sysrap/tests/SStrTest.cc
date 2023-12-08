@@ -20,6 +20,7 @@
 // om-;TEST=SStrTest om-t 
 
 #include <cassert>
+#include <csignal>
 #include <string>
 #include <iostream>
 #include <iomanip>
@@ -65,7 +66,9 @@ void test_FromULL()
         ;
 
     ULL v0 = SStr::ToULL(NULL) ; 
-    assert( v0 == 0ull ); 
+    bool v0_expect = v0 == 0ull ;
+    assert( v0_expect); 
+    if(!v0_expect) std::raise(SIGINT); 
 
 }
 
@@ -78,7 +81,10 @@ void test_Format1()
     const char* value = "world" ; 
     const char* result = SStr::Format1<256>(fmt, value );
     const char* expect = "hello world hello" ; 
-    assert( strcmp( result, expect) == 0 ); 
+
+    bool result_expect = strcmp( result, expect) == 0 ;
+    assert(result_expect ); 
+    if(!result_expect) std::raise(SIGINT); 
 
     // this asserts from truncation 
     //const char* result2 = SStr::Format1<16>(fmt, value );
@@ -129,21 +135,25 @@ void test_FormatIndex()
 void test_Contains()
 {
     const char* s = "/hello/there/Cathode/World" ; 
-    assert( SStr::Contains(s, "Cathode") == true ); 
-    assert( SStr::Contains(s, "cathode") == false ); 
+
+    bool expect = SStr::Contains(s, "Cathode") == true && SStr::Contains(s, "cathode") == false  ;
+    assert( expect ); 
+    if(!expect) std::raise(SIGINT); 
 }
 void test_EndsWith()
 {
     const char* s = "/hello/there/Cathode/World" ; 
-    assert( SStr::EndsWith(s, "Cathode") == false ); 
-    assert( SStr::EndsWith(s, "World") == true ); 
+    bool expect = SStr::EndsWith(s, "Cathode") == false && SStr::EndsWith(s, "World") == true  ;
+    assert( expect ); 
+    if(!expect) std::raise(SIGINT); 
 }
 
 void test_StartsWith()
 {
     const char* s = "/hello/there/Cathode/World" ; 
-    assert( SStr::StartsWith(s, "/hello") == true ); 
-    assert( SStr::StartsWith(s, "World") == false ); 
+    bool expect = SStr::StartsWith(s, "/hello") == true && SStr::StartsWith(s, "World") == false ;
+    assert( expect ); 
+    if(!expect) std::raise(SIGINT); 
 }
 
 
@@ -186,7 +196,9 @@ void test_HasPointerSuffix()
 void test_HasPointerSuffix2()
 {
     const char* name = "World0x7fc10641cbb0" ; 
-    assert( SStr::HasPointerSuffix( name, 9, 12 ) == true ); 
+    bool expect = SStr::HasPointerSuffix( name, 9, 12 ) == true ;
+    assert(expect) ; 
+    if(!expect) std::raise(SIGINT) ; 
 
     assert( SStr::GetPointerSuffixDigits("World0x7fc10641cbb0") == 12 ); 
     assert( SStr::GetPointerSuffixDigits("World0x7fc10641cbb") == 11 ); 
@@ -213,7 +225,10 @@ void test_Replace()
     const char* name = "TITAN RTX " ; 
     const char* xname2 = "TITAN_RTX_" ; 
     const char* name2 = SStr::Replace(name, ' ', '_' ); 
-    assert( strcmp(name2, xname2) == 0 );  
+
+    bool expect = strcmp(name2, xname2) == 0 ;
+    assert(expect);  
+    if(!expect) std::raise(SIGINT) ; 
 }
 
 void test_ReplaceEnd()
@@ -221,7 +236,9 @@ void test_ReplaceEnd()
     const char* name = "/some/path/to/hello.ppm" ; 
     const char* xname2 = "/some/path/to/hello.npy" ; 
     const char* name2 = SStr::ReplaceEnd(name, ".ppm", ".npy" ); 
-    assert( strcmp(name2, xname2) == 0 );  
+    bool expect = strcmp(name2, xname2) == 0 ;
+    assert(expect);  
+    if(!expect) std::raise(SIGINT) ; 
 }
 
 void test_ArrayToString()
@@ -341,7 +358,9 @@ void test_AsInt()
 {
     const char* arg = "00000" ; 
     int i = SStr::AsInt(arg); 
-    assert( i == 0 ); 
+    bool i_expect = i == 0 ;
+    assert( i_expect ); 
+    if(!i_expect) std::raise(SIGINT); 
 }
 
 
@@ -501,7 +520,11 @@ blue
         const char* s = line.c_str(); 
         const char* sp = SStr::StripPrefix(s, "/dd/Materials/", "_dd_Materials_" );          
         const char* sp2 = SStr::MaterialBaseName(s); 
-        assert( strcmp( sp, sp2 ) == 0 ); 
+
+        bool sp_expect = strcmp( sp, sp2 ) == 0  ;
+        assert(sp_expect); 
+        if(!sp_expect) std::raise(SIGINT); 
+
         std::cout 
             << std::setw(50) << line 
             << " : "
@@ -780,9 +803,17 @@ void test_ParseStringIntInt()
     int z1 = 0 ; 
     const char* x1 = SStr::ParseStringIntInt(triplet, y1, z1); 
 
-    assert( strcmp(x0,x1) == 0 ); 
-    assert( y0 == y1 ) ; 
-    assert( z0 == z1 ) ; 
+    bool x_expect =  strcmp(x0,x1) == 0 ;
+    bool y_expect = y0 == y1 ;
+    bool z_expect = z0 == z1 ;
+
+    assert( x_expect );
+    assert( y_expect );
+    assert( z_expect );
+
+    if(!x_expect) std::raise(SIGINT); 
+    if(!y_expect) std::raise(SIGINT); 
+    if(!z_expect) std::raise(SIGINT); 
 
     LOG(info); 
 }

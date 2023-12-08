@@ -319,6 +319,8 @@ void CSGGeometry::intersectSelected(const char* path)
 
     bool expected_shape = a->has_shape(-1,4,4) ;  
     assert(expected_shape); 
+    if(!expected_shape) std::raise(SIGINT); 
+
     LOG(info) << " load SELECTED_ISECT from " << path << " a.sstr " << a->sstr() ; 
 
     unsigned num_isect = a->shape[0] ;

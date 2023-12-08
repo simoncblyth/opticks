@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <csignal>
+
 #include "scuda.h"
 #include "squad.h"
 #include "SU.hh"
@@ -80,7 +82,9 @@ void test_monolithic()
 
     SU::deprecated_select_copy_device_to_host( &hit, num_hit, d_pp, num_p, selector );
 
-    assert( x_num_hit == num_hit );  
+    bool num_hit_expect = x_num_hit == num_hit ; 
+    assert( num_hit_expect );  
+    if(!num_hit_expect) std::raise(SIGINT); 
 
     dump( hit, num_hit, mask );
 }

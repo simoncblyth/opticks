@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <cstring>
 
+#include "sstr.h"
 #include "SLOG.hh"
 
 const plog::Severity CSGSolid::LEVEL = SLOG::EnvLevel("CSGSolid", "DEBUG") ; 
@@ -25,7 +26,9 @@ CSGSolid CSGSolid::Make( const char* label_, int numPrim_, int primOffset_ )
 {
     CSGSolid so = {} ; 
 
-    strncpy( so.label, label_, sizeof(so.label) );
+    //strncpy( so.label, label_, sizeof(so.label) );
+    sstr::truncated_copy( so.label, label_, sizeof(so.label) );  
+
     so.numPrim = numPrim_ ; 
     so.primOffset = primOffset_ ; 
     so.type = STANDARD_SOLID ;  

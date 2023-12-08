@@ -73,6 +73,8 @@ inline void SDir::Trim(std::vector<std::string>& names, const char* ext)
         const char* n = name.c_str();
         bool ends_with_ext =  strlen(n) > strlen(ext)  && strncmp(n + strlen(n) - strlen(ext), ext, strlen(ext) ) == 0 ; 
         assert( ends_with_ext ); 
+        if(!ends_with_ext) std::raise(SIGINT); 
+
         name = name.substr(0, strlen(n) - strlen(ext)); 
     }
 }
