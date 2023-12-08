@@ -301,28 +301,30 @@ inline sreport_Creator::sreport_Creator( const char* dirp_ )
     run(fold_valid ? fold->get("run") : nullptr),
     report(new sreport)
 {
+    std::cout << "[sreport_Creator::sreport_Creator" << std::endl ;
     init(); 
+    std::cout << "]sreport_Creator::sreport_Creator" << std::endl ;
 }
 
 inline void sreport_Creator::init() 
 {
-    if(VERBOSE) std::cout << "-sreport_Creator::init.0" << std::endl ; 
+    std::cout << "-sreport_Creator::init.0" << std::endl ; 
     report->runprof = run ? run->makeMetaKVProfileArray("Index") : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.1" << std::endl ; 
+    std::cout << "-sreport_Creator::init.1" << std::endl ; 
     report->run     = run ? run->copy() : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.2" << std::endl ; 
+    std::cout << "-sreport_Creator::init.2" << std::endl ; 
     report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.3" << std::endl ; 
+    std::cout << "-sreport_Creator::init.3" << std::endl ; 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.4" << std::endl ; 
+    std::cout << "-sreport_Creator::init.4" << std::endl ; 
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.5" << std::endl ; 
+    std::cout << "-sreport_Creator::init.5" << std::endl ; 
     report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.6" << std::endl ; 
+    std::cout << "-sreport_Creator::init.6" << std::endl ; 
     report->submeta_NumPhotonCollected = fold_valid ? fold->subfold_summary("submeta:NumPhotonCollected", ASEL, BSEL) : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.7" << std::endl ; 
+    std::cout << "-sreport_Creator::init.7" << std::endl ; 
     report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ; 
-    if(VERBOSE) std::cout << "-sreport_Creator::init.8" << std::endl ; 
+    std::cout << "-sreport_Creator::init.8" << std::endl ; 
 }
 
 inline std::string sreport_Creator::desc() const
