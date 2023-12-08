@@ -102,40 +102,40 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
     quad6 _gs ;
     _gs.zero() ; 
     
-    sscint& gs = (sscint&)_gs ;   // warning: dereferencing type-punned pointer will break strict-aliasing rules
+    sscint* gs = (sscint*)(&_gs) ;   // warning: dereferencing type-punned pointer will break strict-aliasing rules
 
-    gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
-    gs.trackid = aTrack->GetTrackID() ;
-    gs.matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
-    gs.numphoton = numPhotons ;  
+    gs->gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
+    gs->trackid = aTrack->GetTrackID() ;
+    gs->matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
+    gs->numphoton = numPhotons ;  
 
-    // note that gs.matline is not currently used for scintillation, 
+    // note that gs->matline is not currently used for scintillation, 
     // but done here as check of SEvt::addGenstep mtindex to mtline mapping 
 
-    gs.pos.x = x0.x() ; 
-    gs.pos.y = x0.y() ; 
-    gs.pos.z = x0.z() ; 
-    gs.time = t0 ; 
+    gs->pos.x = x0.x() ; 
+    gs->pos.y = x0.y() ; 
+    gs->pos.z = x0.z() ; 
+    gs->time = t0 ; 
 
-    gs.DeltaPosition.x = deltaPosition.x() ; 
-    gs.DeltaPosition.y = deltaPosition.y() ; 
-    gs.DeltaPosition.z = deltaPosition.z() ; 
-    gs.step_length = aStep->GetStepLength() ;
+    gs->DeltaPosition.x = deltaPosition.x() ; 
+    gs->DeltaPosition.y = deltaPosition.y() ; 
+    gs->DeltaPosition.z = deltaPosition.z() ; 
+    gs->step_length = aStep->GetStepLength() ;
 
-    gs.code = aParticle->GetDefinition()->GetPDGEncoding() ;
-    gs.charge = aParticle->GetDefinition()->GetPDGCharge() ;
-    gs.weight = aTrack->GetWeight() ;
-    gs.meanVelocity = meanVelocity ; 
+    gs->code = aParticle->GetDefinition()->GetPDGEncoding() ;
+    gs->charge = aParticle->GetDefinition()->GetPDGCharge() ;
+    gs->weight = aTrack->GetWeight() ;
+    gs->meanVelocity = meanVelocity ; 
 
-    gs.scnt = scnt ; 
-    gs.f41 = 0.f ;  
-    gs.f42 = 0.f ;  
-    gs.f43 = 0.f ; 
+    gs->scnt = scnt ; 
+    gs->f41 = 0.f ;  
+    gs->f42 = 0.f ;  
+    gs->f43 = 0.f ; 
 
-    gs.ScintillationTime = ScintillationTime ;
-    gs.f51 = 0.f ;
-    gs.f52 = 0.f ;
-    gs.f53 = 0.f ;
+    gs->ScintillationTime = ScintillationTime ;
+    gs->f51 = 0.f ;
+    gs->f52 = 0.f ;
+    gs->f53 = 0.f ;
 
     return _gs ; 
 }
@@ -212,37 +212,37 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
     quad6 _gs ;
     _gs.zero() ; 
     
-    scerenkov& gs = (scerenkov&)_gs ;  // warning: dereferencing type-punned pointer will break strict-aliasing rules
+    scerenkov* gs = (scerenkov*)(&_gs) ; 
 
-    gs.gentype = OpticksGenstep_G4Cerenkov_modified ;  
-    gs.trackid = aTrack->GetTrackID() ;
-    gs.matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
-    gs.numphoton = numPhotons ;  
+    gs->gentype = OpticksGenstep_G4Cerenkov_modified ;  
+    gs->trackid = aTrack->GetTrackID() ;
+    gs->matline = aMaterial->GetIndex() + SEvt::G4_INDEX_OFFSET ;  // offset signals that a mapping must be done in SEvt::setGenstep
+    gs->numphoton = numPhotons ;  
 
-    gs.pos.x = x0.x() ; 
-    gs.pos.y = x0.y() ; 
-    gs.pos.z = x0.z() ; 
-    gs.time = t0 ; 
+    gs->pos.x = x0.x() ; 
+    gs->pos.y = x0.y() ; 
+    gs->pos.z = x0.z() ; 
+    gs->time = t0 ; 
 
-    gs.DeltaPosition.x = deltaPosition.x() ; 
-    gs.DeltaPosition.y = deltaPosition.y() ; 
-    gs.DeltaPosition.z = deltaPosition.z() ; 
-    gs.step_length = aStep->GetStepLength() ;
+    gs->DeltaPosition.x = deltaPosition.x() ; 
+    gs->DeltaPosition.y = deltaPosition.y() ; 
+    gs->DeltaPosition.z = deltaPosition.z() ; 
+    gs->step_length = aStep->GetStepLength() ;
 
-    gs.code = aParticle->GetDefinition()->GetPDGEncoding() ;
-    gs.charge = aParticle->GetDefinition()->GetPDGCharge() ;
-    gs.weight = aTrack->GetWeight() ;
-    gs.preVelocity = pPreStepPoint->GetVelocity() ;
+    gs->code = aParticle->GetDefinition()->GetPDGEncoding() ;
+    gs->charge = aParticle->GetDefinition()->GetPDGCharge() ;
+    gs->weight = aTrack->GetWeight() ;
+    gs->preVelocity = pPreStepPoint->GetVelocity() ;
 
-    gs.BetaInverse = betaInverse ; 
-    gs.Wmin = Wmin_nm ;  
-    gs.Wmax = Wmax_nm   ;  
-    gs.maxCos = maxCos ; 
+    gs->BetaInverse = betaInverse ; 
+    gs->Wmin = Wmin_nm ;  
+    gs->Wmax = Wmax_nm   ;  
+    gs->maxCos = maxCos ; 
 
-    gs.maxSin2 = maxSin2 ;
-    gs.MeanNumberOfPhotons1 = meanNumberOfPhotons1 ;
-    gs.MeanNumberOfPhotons2 = meanNumberOfPhotons2 ;
-    gs.postVelocity = pPostStepPoint->GetVelocity() ;
+    gs->maxSin2 = maxSin2 ;
+    gs->MeanNumberOfPhotons1 = meanNumberOfPhotons1 ;
+    gs->MeanNumberOfPhotons2 = meanNumberOfPhotons2 ;
+    gs->postVelocity = pPostStepPoint->GetVelocity() ;
 
     return _gs ; 
 }
