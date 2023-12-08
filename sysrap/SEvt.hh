@@ -659,6 +659,8 @@ public:
 
     unsigned getNumPhoton() const ; 
     unsigned getNumHit() const ; 
+    std::string descSimulate() const ; 
+
 
     void getPhoton(sphoton& p, unsigned idx) const ; 
     void getHit(   sphoton& p, unsigned idx) const ; 

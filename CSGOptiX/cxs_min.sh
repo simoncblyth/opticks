@@ -111,6 +111,7 @@ case $VERSION in
  2) opticks_event_mode=HitPhoton ;; 
  3) opticks_event_mode=HitPhoton ;; 
  4) opticks_event_mode=HitPhotonSeq ;; 
+ 5) opticks_event_mode=HitSeq ;; 
 99) opticks_event_mode=StandardFullDebug ;;
 esac 
 

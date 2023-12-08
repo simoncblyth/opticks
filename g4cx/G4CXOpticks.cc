@@ -305,7 +305,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     fd = fd_ ; 
     LOG(LEVEL) << "[ fd " << fd ; 
 
-    init_SEvt(); 
+    // init_SEvt();   MOVED THIS DOWN TO CSGOptiX::InitEvt
 
     if(NoGPU == false)
     {
@@ -343,31 +343,34 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 }
 
 /**
-G4CXOpticks::init_SEvt
-------------------------
+G4CXOpticks::init_SEvt   MOVING THIS DOWN TO CSGOptiX::InitEvt
+-----------------------------------------------------------------
 
 This invoked one only from `G4CXOpticks::setGeometry_`
 
 A single SEvt::EGPU instance is instanciated, which is 
 reused for each simulate call.  
 
-**/
 
 void G4CXOpticks::init_SEvt()
 {
-    sim->serialize() ;  
+    sim->serialize() ;  // SSim::serialize stree::serialize into NPFold 
+
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
+
 
     sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  A: YES, Essential set_matline of Cerenkov Genstep 
 
-    std::string gm = sim->getGPUMeta() ; 
 
     std::string* rms = SEvt::RunMetaString() ; 
     assert(rms); 
     
     bool stamp = false ; 
     smeta::Collect(*rms, "G4CXOpticks__init_SEvt", stamp ); 
+
+    std::string gm = sim->getGPUMeta() ;   // (SSim) scontext sdevice::brief
     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+
 
     std::string switches = QSim::Switches() ;
     SEvt::SetRunMetaString("QSim__Switches", switches.c_str() ); 
@@ -380,6 +383,7 @@ void G4CXOpticks::init_SEvt()
 #endif
 
 }
+**/
 
 
 
@@ -418,27 +422,15 @@ void G4CXOpticks::setupFrame()
 }
 
 
-
 std::string G4CXOpticks::descSimulate() const
 {
     SEvt* sev = SEvt::Get_EGPU() ;  
     assert(sev); 
-
-    int sev_index = sev->getIndex() ;
-    unsigned num_genstep = sev->getNumGenstepFromGenstep(); 
-    unsigned num_photon  = sev->getNumPhotonCollected(); 
-    unsigned num_hit = sev->getNumHit() ; 
-    bool is_undef = num_hit == SEvt::UNDEF ; 
-
     std::stringstream ss ;  
-    ss << "G4CXOpticks::descSimulate"
-       << " sev_instance " << sev->instance 
-       << " sev_index " << sev_index 
-       << " num_genstep " << num_genstep 
-       << " num_photon " << num_photon 
-       << " num_hit " << num_hit 
-       << " num_hit.is_undef " << ( is_undef ? "YES" : "NO " )
-       << " sev.brief " << sev->brief()  
+    ss 
+       << "[G4CXOpticks::descSimulate" << std::endl 
+       << sev->descSimulate()
+       << "]G4CXOpticks::descSimulate" << std::endl 
        ;
 
     std::string str = ss.str(); 
@@ -510,22 +502,9 @@ This is called from G4CXOpticks::setGeometry after geometry translation when::
     export G4CXOpticks__setGeometry_saveGeometry=1
     export G4CXOpticks=INFO       # to see the directory path 
 
-What is saved::
-
-    N[blyth@localhost ~]$ l /tmp/blyth/opticks/GEOM/ntds3/G4CXOpticks/
-    total 41012
-        0 drwxr-xr-x.  4 blyth blyth      109 Oct  5 18:21 .
-        4 -rw-rw-r--.  1 blyth blyth      201 Oct  5 18:21 origin_gdxml_report.txt
-    20504 -rw-rw-r--.  1 blyth blyth 20992917 Oct  5 18:21 origin.gdml
-    20504 -rw-rw-r--.  1 blyth blyth 20994470 Oct  5 18:21 origin_raw.gdml
-        0 drwxrwxr-x. 15 blyth blyth      273 Oct  5 18:21 GGeo
-        0 drwxr-xr-x.  3 blyth blyth      190 Oct  5 18:21 CSGFoundry
-        0 drwxr-xr-x.  3 blyth blyth       25 Oct  5 18:21 ..
-    N[blyth@localhost ~]$ 
-
+What is saved includes the gdml and CSGFoundry folder. 
 Grab that locally::
 
-    GEOM      ## set the envvar 
     GEOM get  ## grab the remote geometry to local 
 
 **/

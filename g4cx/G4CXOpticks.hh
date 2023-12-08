@@ -71,7 +71,7 @@ private:
     static const char* setGeometry_saveGeometry ; 
     void setGeometry(CSGFoundry* fd); 
     void setGeometry_(CSGFoundry* fd); 
-    void init_SEvt(); 
+    //void init_SEvt(); 
     void setupFrame(); 
 public: 
     std::string descSimulate() const ; 

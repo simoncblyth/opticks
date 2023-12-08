@@ -4,6 +4,35 @@ oxrap-hunt-for-f64-in-ptx
 context :doc:`rtxmode-performance-jumps-by-factor-3-or-4-after-flipping-with-torus-switch-off`
 
 
+
+
+Update
+----------
+
+
+::
+
+    ~/o/bin/ptx.py $(opticks-prefix)/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx
+
+    N[blyth@localhost ~]$ ~/o/bin/ptx.py $(opticks-prefix)/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx
+    ptx.py /home/blyth/junotop/ExternalLibs/opticks/head/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx
+     518 : TOTAL .f64 lines in function regions of the PTX 
+     518 :  line:0090 : .visible .entry __raygen__rg()  
+       0 :  line:12612 : .visible .entry __miss__ms()  
+       0 :  line:12647 : .visible .entry __closesthit__ch()  
+       0 :  line:13312 : .visible .entry __intersection__is()  
+    N[blyth@localhost ~]$ 
+
+    N[blyth@localhost ~]$ grep f64 $(opticks-prefix)/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx | wc -l 
+    637
+
+    N[blyth@localhost ~]$ grep printf $(opticks-prefix)/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx | wc -l 
+    95
+
+
+TODO: ptx report to compare before PRODUCTION switch 
+
+
 Avoidable Sources of .f64 in OptiX 6.0.0. PTX 
 ------------------------------------------------
 

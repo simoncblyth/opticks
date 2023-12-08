@@ -4081,6 +4081,36 @@ unsigned SEvt::getNumHit() const
     return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
 }
 
+std::string SEvt::descSimulate() const
+{
+    unsigned num_hit = getNumHit() ;
+    bool is_undef = num_hit == SEvt::UNDEF ;
+
+    std::stringstream ss ;
+    ss << "SEvt::descSimulate"
+       << " instance " << getInstance()
+       << " index " << getIndex()
+       << " num_genstep " << getNumGenstepFromGenstep()
+       << " num_photon " << getNumPhotonCollected()
+       << " num_hit " << getNumHit() 
+       << " num_hit.is_undef " << ( is_undef ? "YES" : "NO " )
+       << " sev.brief " << brief()
+       ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
+
+
+
+
+
+
+
 void SEvt::getPhoton(sphoton& p, unsigned idx) const  // global
 {
     const NP* photon = getPhoton(); 
@@ -4406,4 +4436,9 @@ NP* SEvt::CountNibbles_Table( const NP* seqnib ) // static
     }
     return seqnib_table ; 
 }
+
+
+
+
+
 

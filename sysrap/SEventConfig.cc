@@ -260,6 +260,7 @@ void SEventConfig::SetMinimal(){            SetEventMode(Minimal)           ; }
 void SEventConfig::SetHit(){                SetEventMode(Hit)               ; }
 void SEventConfig::SetHitPhoton(){          SetEventMode(HitPhoton)         ; }
 void SEventConfig::SetHitPhotonSeq(){       SetEventMode(HitPhotonSeq)      ; }
+void SEventConfig::SetHitSeq(){             SetEventMode(HitSeq)            ; }
 
 bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
 bool SEventConfig::IsStandardFullDebug(){ return _EventMode && strcmp(_EventMode, StandardFullDebug) == 0 ; }
@@ -267,6 +268,7 @@ bool SEventConfig::IsMinimal(){           return _EventMode && strcmp(_EventMode
 bool SEventConfig::IsHit(){               return _EventMode && strcmp(_EventMode, Hit) == 0 ; }
 bool SEventConfig::IsHitPhoton(){         return _EventMode && strcmp(_EventMode, HitPhoton) == 0 ; }
 bool SEventConfig::IsHitPhotonSeq(){      return _EventMode && strcmp(_EventMode, HitPhotonSeq) == 0 ; }
+bool SEventConfig::IsHitSeq(){            return _EventMode && strcmp(_EventMode, HitSeq) == 0 ; }
 
 std::string SEventConfig::DescEventMode()  // static
 {
@@ -283,6 +285,8 @@ std::string SEventConfig::DescEventMode()  // static
        << HitPhoton
        << std::endl
        << HitPhotonSeq
+       << std::endl
+       << HitSeq
        << std::endl
        ;
    
@@ -384,6 +388,13 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
         LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhotonSeq()" ; 
         gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP  ; 
         save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP ;   
+        SetMaxSeq(1);  
+    }
+    else if(IsRGModeSimulate() && IsHitSeq())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitSeq()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP ;   
         SetMaxSeq(1);  
     }
     else if(IsRGModeSimulate())
@@ -751,7 +762,7 @@ int SEventConfig::Initialize() // static
     {
         SetComp() ;
     }
-    else if(IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() )
+    else if(IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() || IsHitSeq() )
     {
         SetComp() ;  
     }

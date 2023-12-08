@@ -194,6 +194,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* Hit = "Hit" ; 
     static constexpr const char* HitPhoton = "HitPhoton" ; 
     static constexpr const char* HitPhotonSeq = "HitPhotonSeq" ; 
+    static constexpr const char* HitSeq = "HitSeq" ; 
 
     static void SetDefault(); 
     static void SetStandardFullDebug(); 
@@ -201,6 +202,7 @@ struct SYSRAP_API SEventConfig
     static void SetHit();
     static void SetHitPhoton();
     static void SetHitPhotonSeq();
+    static void SetHitSeq();
 
     static bool IsDefault(); 
     static bool IsStandardFullDebug(); 
@@ -208,6 +210,7 @@ struct SYSRAP_API SEventConfig
     static bool IsHit();
     static bool IsHitPhoton();
     static bool IsHitPhotonSeq();
+    static bool IsHitSeq();
 
     static std::string DescEventMode() ; 
 

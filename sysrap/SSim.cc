@@ -133,9 +133,10 @@ std::string SSim::GetGPUMeta() // static
     SSim* ss = Get(); 
     return ss ? ss->getGPUMeta() : "ERR-NO-SSim" ; 
 }
+
 std::string SSim::getGPUMeta() const 
 {
-    std::string meta = sctx ? sctx->brief() : "no-sctx" ; 
+    std::string meta = sctx ? sctx->brief() : "no-sctx" ;   // scontext::brief device info 
     return meta ; 
 }
 
@@ -854,6 +855,9 @@ bool SSim::findName( int& i, int& j, const char* qname ) const
     const NP* bnd = get_bnd(); 
     return bnd ? SBnd::FindName(i, j, qname, bnd->names) : false ; 
 }
+
+
+
 
 
 

@@ -42,6 +42,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 // sysrap
 #include "sproc.h"
 #include "ssys.h"
+#include "smeta.h"
 #include "SProf.hh"
 
 #include "SGLM.h"
@@ -227,6 +228,81 @@ const char* CSGOptiX::desc() const
     return strdup(s.c_str()); 
 }
 
+
+
+
+/**
+CSGOptiX::InitEvt
+-------------------
+
+**/
+
+void CSGOptiX::InitEvt( CSGFoundry* fd  )
+{
+    // sim->serialize() ;  // SSim::serialize stree::serialize into NPFold 
+
+    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
+
+    sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  A: YES, Essential set_matline of Cerenkov Genstep 
+
+    std::string* rms = SEvt::RunMetaString() ; 
+    assert(rms); 
+        
+    bool stamp = false ; 
+    smeta::Collect(*rms, "CSGOptiX__InitEvt", stamp );  
+}
+
+/**
+CSGOptiX::InitMeta
+-------------------
+
+**/
+
+void CSGOptiX::InitMeta(const SSim* ssim  )
+{
+    std::string gm = ssim->getGPUMeta() ;   // (SSim) scontext sdevice::brief
+    SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+
+    std::string switches = QSim::Switches() ;
+    SEvt::SetRunMetaString("QSim__Switches", switches.c_str() );  
+
+#ifdef WITH_CUSTOM4
+    std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
+    SEvt::SetRunMetaString("C4Version", c4.c_str()); 
+#else
+    SEvt::SetRunMetaString("C4Version", "NOT-WITH_CUSTOM4" );  
+#endif
+
+}
+
+
+/**
+CSGOptiX::InitSim
+-------------------
+
+Instanciation of QSim/QEvent requires an SEvt instance 
+
+**/
+
+void CSGOptiX::InitSim( SSim* ssim  )
+{
+    LOG(LEVEL) << "[" ; ; 
+
+    if(SEventConfig::IsRGModeRender()) return ; 
+
+    LOG_IF(fatal, ssim == nullptr ) << "simulate/simtrace modes require SSim/QSim setup" ;
+    assert(ssim);  
+
+    ssim->serialize() ;  // SSim::serialize stree::serialize into NPFold  (moved from InitEvt)
+
+    QSim::UploadComponents(ssim);  
+
+    QSim* qs = QSim::Create() ; 
+
+    LOG(LEVEL) << "]" << qs->desc() ; 
+}
+
+
 /**
 CSGOptiX::InitGeo
 -------------------
@@ -246,27 +322,6 @@ void CSGOptiX::InitGeo(  CSGFoundry* fd )
     LOG(LEVEL) << "]" ; ; 
 }
 
-/**
-CSGOptiX::InitSim
--------------------
-
-Instanciation of QSim/QEvent requires an SEvt instance 
-
-**/
-
-void CSGOptiX::InitSim( const SSim* ssim  )
-{
-    LOG(LEVEL) << "[" ; ; 
-    if(SEventConfig::IsRGModeRender()) return ; 
-
-    LOG_IF(fatal, ssim == nullptr ) << "simulate/simtrace modes require SSim/QSim setup" ;
-    assert(ssim);  
-
-    QSim::UploadComponents(ssim);  
-
-    QSim* qs = QSim::Create() ; 
-    LOG(LEVEL) << "]" << qs->desc() ; 
-}
 
 
 /**
@@ -282,7 +337,9 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 
     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
 
-    InitSim(fd->sim); // uploads SSim arrays instanciating QSim
+    InitEvt(fd); 
+    InitMeta(fd->sim); // recording GPU, switches etc.. into run metadata
+    InitSim( const_cast<SSim*>(fd->sim) ); // uploads SSim arrays instanciating QSim
     InitGeo(fd);      // uploads geometry 
 
     CSGOptiX* cx = new CSGOptiX(fd) ; 
