@@ -2673,6 +2673,14 @@ inline void NPFold::SubCommonKV(std::vector<std::string>& okey, std::vector<std:
         {
             std::string v = subs[j]->get_meta_string(k) ; 
             bool has_key = !v.empty(); 
+            if(!has_key) std::cerr 
+                 << "NPFold::SubCommonKV MISSING KEY " 
+                 << " num_sub " << num_sub
+                 << " num_ukey " << num_ukey
+                 << ( k ? k : "-" ) 
+                 << ( v ? v : "-" ) 
+                 << std::endl
+                 ;   
             if(!has_key) std::raise(SIGINT) ; 
             assert(has_key); 
 
