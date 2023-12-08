@@ -178,6 +178,8 @@ void CSGOptiX::SimulateMain() // static
     SProf::UnsetTag(); 
     SProf::Add("CSGOptiX__SimulateMain_TAIL"); 
     SProf::Write("run_meta.txt", true ); // append:true 
+    cx->write_Ctx_log(); 
+
 }
 
 /**
@@ -1214,7 +1216,14 @@ void CSGOptiX::save(const char* dir) const
     LOG(LEVEL) << "] dir " << ( dir ? dir : "-" ) ; 
 }
 
-
+void CSGOptiX::write_Ctx_log(const char* dir) const
+{
+#if OPTIX_VERSION < 70000
+#else
+    std::string ctxlog = ctx->loglines() ; 
+    spath::Write(ctxlog, dir, CTX_LOGNAME  );     
+#endif
+}
 
 
 /**

@@ -19,6 +19,7 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 #include <iostream>
 
 #include "sproc.h"
+#include "sdirectory.h"
 
 struct spath
 {
@@ -79,6 +80,13 @@ public:
     static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
     static bool Read( std::string& str , const char* path ); 
+
+
+    static bool Write(const char* txt, const char* base, const char* name );
+    static bool Write(const char* txt, const char* path );
+private:
+    static bool Write_( const char* str , const char* path ); 
+
 
 };
 
@@ -635,13 +643,38 @@ inline bool spath::Read( std::string& str , const char* path_ )  // static
 {
     const char* path = Resolve(path_); 
     std::ifstream fp(path);
-    if( fp.good() )
+    bool good = fp.good() ; 
+    if( good )
     {   
         std::stringstream content ;
         content << fp.rdbuf();
         str = content.str();
-        return true;
     }   
-    return false;
+    return good ;
 }
+
+
+inline bool spath::Write( const char* str , const char* base, const char* name )  // static
+{
+    const char* path = base == nullptr ? Resolve(name) : Resolve(base, name); 
+    return Write_(str, path ); 
+}
+inline bool spath::Write( const char* str , const char* path_ )  // static
+{
+    const char* path = Resolve(path_); 
+    return Write_(str, path ); 
+}
+inline bool spath::Write_( const char* str , const char* path )  // static
+{
+    sdirectory::MakeDirsForFile(path) ; 
+    std::ofstream fp(path);
+    bool good = fp.good() ; 
+    if( good ) fp << str ; 
+    return good ; 
+}
+
+
+
+
+
 

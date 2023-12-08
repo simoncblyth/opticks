@@ -33,6 +33,8 @@ struct spath_test
    static void Remove(); 
 
    static void _Check(); 
+   static void Write(); 
+
 };
 
 
@@ -302,7 +304,39 @@ void spath_test::_Check()
 }
 
 
+void spath_test::Write()
+{
+    const char* path = "$TMP/spath_test_Write/some/deep/path/spath_test.txt" ; 
+    bool ok0 = spath::Write("hello\n", path ); 
+    std::cout << __FUNCTION__ << std::endl << path << " ok0 " << ( ok0 ? "YES" : "NO " ) << std::endl; 
 
+    const char* base = "$TMP/spath_test_Write/some/deep/path" ;
+    const char* name = "spath_test.txt" ; 
+    bool ok1 = spath::Write("world\n", base, name ); 
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << base << std::endl 
+        << name << std::endl 
+        << " ok1 " << ( ok1 ? "YES" : "NO " ) 
+        << std::endl
+        ; 
+
+   /*
+    // comment as writes into invoking directory 
+
+    bool ok2 = spath::Write("jelly\n", nullptr, name ); 
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " base " << ( base ? base : "-" )  << std::endl 
+        << " name " << ( name ? name : "-" ) << std::endl 
+        << " ok2 " << ( ok2 ? "YES" : "NO " ) 
+        << std::endl
+        ; 
+   */
+
+
+}
+ 
 
 int main(int argc, char** argv)
 {
@@ -326,9 +360,14 @@ int main(int argc, char** argv)
     spath_test::Resolve(); 
     spath_test::ResolveToken1(); 
     spath_test::Resolve1(); 
+    spath_test::_Check(); 
     */
 
-    spath_test::_Check(); 
+    spath_test::Write(); 
 
     return 0 ; 
 }
+
+// ~/opticks/sysrap/tests/spath_test.sh
+
+
