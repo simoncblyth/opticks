@@ -102,7 +102,7 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
     quad6 _gs ;
     _gs.zero() ; 
     
-    sscint& gs = (sscint&)_gs ; 
+    sscint& gs = (sscint&)_gs ;   // warning: dereferencing type-punned pointer will break strict-aliasing rules
 
     gs.gentype = OpticksGenstep_DsG4Scintillation_r4695 ;
     gs.trackid = aTrack->GetTrackID() ;
@@ -212,7 +212,7 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
     quad6 _gs ;
     _gs.zero() ; 
     
-    scerenkov& gs = (scerenkov&)_gs ; 
+    scerenkov& gs = (scerenkov&)_gs ;  // warning: dereferencing type-punned pointer will break strict-aliasing rules
 
     gs.gentype = OpticksGenstep_G4Cerenkov_modified ;  
     gs.trackid = aTrack->GetTrackID() ;

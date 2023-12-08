@@ -362,6 +362,15 @@ union uif_t {
    float    f ; 
 };  
 
+
+void dummy_optixTrace(unsigned& p0 )
+{
+    p0 += 100u ; 
+}
+
+
+
+#ifdef DEREFERENCING_TYPE_PUNNED_POINTER
 void test_reinterpret_cast()
 {
     unsigned u = 42 ; 
@@ -377,11 +386,6 @@ void test_reinterpret_cast()
     if(!u_expect) std::raise(SIGINT) ; 
 }
 
-void dummy_optixTrace(unsigned& p0 )
-{
-    p0 += 100u ; 
-}
-
 void test_reinterpret_cast_arg()
 {
     uif_t uif ; 
@@ -391,6 +395,7 @@ void test_reinterpret_cast_arg()
     LOG(info) << " uif.f " << uif.f << " uif.u " << uif.u  ; 
     assert( uif.u == 142u  );  
 }
+#endif
 
 void test_unsigned_as_double()
 {

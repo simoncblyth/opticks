@@ -1097,7 +1097,7 @@ void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, std::vector<G
 
         const G4VPhysicalVolume* pv_n = new G4PVPlacement(rot, tla, lv, iname, mother_lv, pMany_unused, pCopyNo ); // 1st ctor
         assert( pv_n );  
-        if(!pb_n) std::raise(SIGINT); 
+        if(!pv_n) std::raise(SIGINT); 
 
     }
 }

@@ -180,7 +180,10 @@ inline void U4Engine::RestoreState( const NP* states, int idx ) // static
     unsigned niv = states->num_itemvalues() ; 
     std::vector<unsigned long> state ; 
     states->slice(state, idx, -1 );  // -1: terminates the dimensions to select on  
-    assert( state.size() == niv ); 
+
+    bool niv_expect = state.size() == niv ;
+    assert( niv_expect ); 
+    if(!niv_expect) std::raise(SIGINT); 
 
     CLHEP::HepRandomEngine* engine = CLHEP::HepRandom::getTheEngine() ; 
     

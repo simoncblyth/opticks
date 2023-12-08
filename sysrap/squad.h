@@ -399,6 +399,7 @@ struct quad6
 #else
     SQUAD_METHOD void zero();
     SQUAD_METHOD const float* cdata() const ;
+    SQUAD_METHOD std::string desc() const ; 
 
     SQUAD_METHOD unsigned gentype() const {   return q0.u.x ; }
     SQUAD_METHOD unsigned trackid() const {   return q0.u.y ; }
@@ -445,6 +446,24 @@ inline void quad6::zero()
 } 
 
 inline const float* quad6::cdata() const { return &q0.f.x ; }
+
+
+inline std::string quad6::desc() const 
+{
+    std::stringstream ss ;
+    ss 
+        << " q0.i " << q0.i << std::endl
+        << " q1.f " << q1.f << std::endl
+        << " q2.f " << q2.f << std::endl
+        << " q3.f " << q3.f << std::endl
+        << " q4.f " << q4.f << std::endl
+        << " q5.f " << q5.f << std::endl
+        ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 #endif
 

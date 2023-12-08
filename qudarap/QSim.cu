@@ -591,9 +591,8 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
     int idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= evt->num_photon ) return;
 
-    qbase* base = sim->base ;  
-
 #ifdef DEBUG_PIDX
+    qbase* base = sim->base ;  
     if( idx == base->pidx )
     printf("//_QSim_mock_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
 #endif

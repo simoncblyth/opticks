@@ -24,6 +24,7 @@ if [ "${arg/build}" != "$arg" ]; then
            -DMOCK_CURAND \
            -I.. \
            -I/usr/local/cuda/include \
+           -I$OPTICKS_PREFIX/externals/glm/glm \
            -I$OPTICKS_PREFIX/externals/plog/include \
            -L$OPTICKS_PREFIX/lib \
            -lSysRap \

@@ -69,7 +69,7 @@ float distance_tree( const float3& global_position, const CSGNode* node, const f
     unsigned endIdx   = 0 ;            // parent of root 
     unsigned nodeIdx = beginIdx ; 
 
-    F4_Stack stack ; 
+    F4_Stack stack = {} ; 
     stack.curr = -1 ; 
     float distance = 0.f ; 
 

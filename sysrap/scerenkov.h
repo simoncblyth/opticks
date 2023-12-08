@@ -23,14 +23,6 @@ scerenkov.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/cerenkov
 #include "squad.h"
 
 
-// HMM could have scerenkovtype.h (like scerenkovtype.h) if need to handle different versions 
-
-/**
-
-Hmm some flip-flop between energy and wavelength ranges, see G4Opticks::collectGenstep_G4Cerenkov_1042
-
-**/
-
 struct scerenkov
 {
     // ctrl
@@ -147,8 +139,4 @@ inline std::string scerenkov::desc() const
     return s ; 
 } 
 #endif
-
-
-
-
 
