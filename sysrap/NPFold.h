@@ -2678,7 +2678,7 @@ inline void NPFold::SubCommonKV(std::vector<std::string>& okey, std::vector<std:
                  << " num_sub " << num_sub
                  << " num_ukey " << num_ukey
                  << ( k ? k : "-" ) 
-                 << ( v ? v : "-" ) 
+                 << ( v.empty() ? "-" : v ) 
                  << std::endl
                  ;   
             if(!has_key) std::raise(SIGINT) ; 
