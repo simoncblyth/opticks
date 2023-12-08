@@ -3601,8 +3601,12 @@ opticks-cfbase(){ cd $(opticks-cfbase-) ; }
 opticks-cf-(){  echo $(opticks-cfbase-)/CSGFoundry ; }
 opticks-cf(){   cd $(opticks-cf-) ; }
 
+
+
+
 dbg__()
 {
+   : opticks/opticks.bash 
    case $(uname) in 
       Darwin) lldb__ $* ;; 
       Linux) gdb__ $* ;;
@@ -3631,4 +3635,24 @@ gdb__ ()
     eval $runline;
     date
 }
+
+
+opticks-ptx-(){ echo $(opticks-prefix)/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx ; }
+
+opticks-ptx(){
+
+   local ptx=$(opticks-ptx-)
+   if [ ! -f "$ptx" ];  then  
+       ptx=/tmp/CSGOptiX_generated_CSGOptiX7.cu.ptx 
+   fi 
+
+   local num_printf_lines=$(grep printf $ptx | wc -l )
+   local num_f64_lines=$(grep \\.f64 $ptx | wc -l )
+
+   vars="BASH_SOURCE FUNCNAME ptx num_printf_lines num_f64_lines" 
+   for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+
+}
+
+
 

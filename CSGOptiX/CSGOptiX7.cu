@@ -338,7 +338,10 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     if (idx >= evt->num_simtrace) return;
 
     unsigned genstep_id = evt->seed[idx] ; 
+
+#if defined(DEBUG_PIDX)
     if(idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d genstep_id %d evt->num_simtrace %d \n", idx, genstep_id, evt->num_simtrace ); 
+#endif
 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
@@ -492,7 +495,6 @@ extern "C" __global__ void __closesthit__ch()
 
     prd->set_identity( identity ) ;
     prd->set_iindex(   iindex ) ;
-    //printf("//__closesthit__ch prd.boundary %d \n", prd->boundary() );  // boundary set in IS for WITH_PRD
     float3* normal = prd->normal(); 
     *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
 
@@ -549,7 +551,6 @@ extern "C" __global__ void __intersection__is()
         const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
         const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
-        //printf("//__intersection__is boundary %d \n", boundary ); 
 
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
@@ -558,7 +559,6 @@ extern "C" __global__ void __intersection__is()
             prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one 
             prd->set_boundary(boundary) ; 
             prd->set_lposcost(lposcost); 
-            //printf("//__intersection__is prd.set_boundary %d \n", boundary ); 
         }   
 #else
         unsigned a0, a1, a2, a3, a4, a5  ; // MUST CORRESPOND TO num_attribute_values in PIP::PIP 

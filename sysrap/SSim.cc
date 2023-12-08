@@ -380,6 +380,15 @@ NPFold layout::
    SSim/extra  
    SSim/stree
 
+
+This is invoked by::
+
+    CSGOptiX::InitSim
+    SSim::save 
+
+Q: Is this needed other than for saving ? How so ? 
+
+
 **/
 
 
