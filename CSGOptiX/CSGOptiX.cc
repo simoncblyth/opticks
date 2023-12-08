@@ -1220,8 +1220,8 @@ void CSGOptiX::write_Ctx_log(const char* dir) const
 {
 #if OPTIX_VERSION < 70000
 #else
-    std::string ctxlog = ctx->loglines() ; 
-    spath::Write(ctxlog, dir, CTX_LOGNAME  );     
+    std::string ctxlog = Ctx::GetLOG() ; 
+    spath::Write(ctxlog.c_str() , dir, CTX_LOGNAME  );     
 #endif
 }
 

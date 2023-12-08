@@ -18,17 +18,18 @@ struct Properties ;
 struct Ctx 
 {
     static const plog::Severity LEVEL ; 
+    static std::vector<std::string> LOGLINES ; 
+    static std::string GetLOG(); 
+
     static OptixDeviceContext context ;
     static void log_cb( unsigned int level, const char* tag, const char* message, void* /*cbdata */); 
 
    
     Properties* props  ; 
-    std::vector<std::string> log ; 
 
     Ctx(); 
 
     std::string desc() const ; 
-    std::string loglines() const ; 
 
 };
 

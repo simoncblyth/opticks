@@ -19,6 +19,18 @@
 
 const plog::Severity Ctx::LEVEL = SLOG::EnvLevel("Ctx", "DEBUG") ; 
 
+std::vector<std::string> Ctx::LOGLINES = {} ; 
+
+std::string Ctx::GetLOG()
+{
+    std::stringstream ss ; 
+    ss << "[Ctx::GetLOG" << std::endl ; 
+    for(int i=0 ; i < int(LOGLINES.size()) ; i++) ss << LOGLINES[i] << std::endl ; 
+    ss << "]Ctx::GetLOG" << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 OptixDeviceContext Ctx::context = nullptr ;
 
@@ -27,7 +39,7 @@ void Ctx::log_cb( unsigned int level, const char* tag, const char* message, void
     std::stringstream ss ; 
     ss << "[" << std::setw(2) << level << "][" << std::setw( 12 ) << tag << "]: " << message ;
     std::string line = ss.str() ; 
-    log.push_back(line); 
+    LOGLINES.push_back(line); 
     LOG(LEVEL) << line ; 
 }
 
@@ -62,17 +74,6 @@ std::string Ctx::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
-
-std::string Ctx::loglines() const 
-{
-    std::stringstream ss ; 
-    ss << "[Ctx::loglines" << std::endl ; 
-    for(int i=0 ; i < int(log.size()) ; i++) ss << log[i] << std::endl ; 
-    ss << "]Ctx::loglines" << std::endl ; 
-    std::string str = ss.str(); 
-    return str ; 
-}
-
 
 
 
