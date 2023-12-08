@@ -1,3 +1,4 @@
+#include <csignal>
 #include "G4Orb.hh"
 #include "G4Box.hh"
 #include "G4UnionSolid.hh"
@@ -62,6 +63,7 @@ int main(int argc, char** argv)
 #else
     s_csg* csg = new s_csg ; 
     assert(csg); 
+    if(!csg) std::raise(SIGINT); 
 #endif
 
     test_Orb(); 

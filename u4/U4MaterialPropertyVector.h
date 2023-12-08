@@ -13,6 +13,7 @@ After X4MaterialPropertyVector.hh
 **/
 
 
+#include <csignal>
 #include "G4MaterialPropertyVector.hh"
 #include "G4SystemOfUnits.hh"
 
@@ -58,7 +59,9 @@ inline G4MaterialPropertyVector* U4MaterialPropertyVector::FromArray(const NP* a
     
     size_t ni = a->shape[0] ;
     size_t nj = a->shape[1] ;
-    assert( nj == 2 );
+    bool nj_expect = nj == 2 ; 
+    assert( nj_expect );
+    if(!nj_expect) std::raise(SIGINT); 
     
     G4double* energy = new G4double[ni] ;
     G4double* value = new G4double[ni] ;
@@ -106,7 +109,9 @@ inline void U4MaterialPropertyVector::Import_MSV( std::map<std::string, G4Materi
 {
     int num_sub = sub->get_num_subfold();
     unsigned num_items = sub->num_items();
-    assert( num_sub == 0 );
+    bool num_sub_expect = num_sub == 0  ;
+    assert( num_sub_expect );
+    if(!num_sub_expect) std::raise(SIGINT); 
 
     for(unsigned idx=0 ; idx < num_items ; idx++)
     {

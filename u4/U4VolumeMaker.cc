@@ -443,6 +443,7 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapRockWater( std::vector<G4LogicalVolu
 
     G4LogicalBorderSurface* water_rock_bs = U4Surface::MakePerfectAbsorberBorderSurface("water_rock_bs", water_pv, rock_pv );  
     assert( water_rock_bs ); 
+    if(!water_rock_bs) std::raise(SIGINT); 
 
     LOG(LEVEL) << "]"  ; 
     return rock_pv ; 
@@ -498,7 +499,10 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapAroundItem( const char* name, std::v
     WrapAround(prefix, trs, items_lv, water_lv );  
     // item_lv placed inside water_lv once for each transform
 
-    const G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  assert( water_pv ); 
+    const G4VPhysicalVolume* water_pv = Place(water_lv,  rock_lv);  
+    assert( water_pv ); 
+    if(!water_pv) std::raise(SIGINT); 
+
     const G4VPhysicalVolume* rock_pv  = Place(rock_lv,  nullptr );  
 
     return rock_pv ; 
@@ -541,7 +545,10 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv )
 
     G4LogicalVolume*   vac_lv  = Box_(halfside, "Vacuum" );
  
-    const G4VPhysicalVolume* item_pv = Place(item_lv, vac_lv);   assert( item_pv ); 
+    const G4VPhysicalVolume* item_pv = Place(item_lv, vac_lv);   
+    assert( item_pv ); 
+    if(!item_pv) std::raise(SIGINT); 
+
     const G4VPhysicalVolume* vac_pv  = Place(vac_lv, nullptr );
 
     return vac_pv ;      
@@ -623,6 +630,7 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapLVGrid( std::vector<G4LogicalVolume*
            ;
         const G4VPhysicalVolume* pv_n = new G4PVPlacement(0, tla, ulv ,iname,world_lv,false,0);
         assert( pv_n );  
+        if(!pv_n) std::raise(SIGINT); 
     }   
     return world_pv ; 
 }
@@ -712,6 +720,7 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapLVCube( G4LogicalVolume* lv, double 
         const char* iname = GridName(name.c_str(), int(px), int(py), int(pz), "" );    
         const G4VPhysicalVolume* pv = new G4PVPlacement(0,tla,lv,iname,world_lv,false,0);
         assert( pv );  
+        if(!pv) std::raise(SIGINT); 
     }
     return world_pv ;  
 }
@@ -955,6 +964,7 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
     G4LogicalBorderSurface* medium_container_bs = U4Surface::MakePerfectAbsorberBorderSurface(
        "medium_container_bs", medium_pv, container_pv );  
     assert( medium_container_bs ); 
+    if(!medium_container_bs) std::raise(SIGINT); 
 
     if(sd)
     {
@@ -963,6 +973,8 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
 
         G4LogicalBorderSurface* medium_drop_bs = U4Surface::MakePerfectDetectorBorderSurface("medium_drop_bs", medium_pv, drop_pv );  
         assert( medium_drop_bs ); 
+        if(!medium_drop_bs) std::raise(SIGINT); 
+
     }
     return universe_pv ; 
 }
@@ -1085,6 +1097,8 @@ void U4VolumeMaker::WrapAround( const char* prefix, const NP* trs, std::vector<G
 
         const G4VPhysicalVolume* pv_n = new G4PVPlacement(rot, tla, lv, iname, mother_lv, pMany_unused, pCopyNo ); // 1st ctor
         assert( pv_n );  
+        if(!pb_n) std::raise(SIGINT); 
+
     }
 }
 

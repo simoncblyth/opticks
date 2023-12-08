@@ -1,3 +1,4 @@
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 #include "spath.h"
 #include "stree.h"
@@ -28,6 +29,7 @@ int main(int argc, char** argv)
 
         U4Tree* tr = U4Tree::Create(st, world) ; 
         assert( tr ); 
+        if(!tr) std::raise(SIGINT); 
         //LOG(info) << tr->desc() ; 
 
         LOG(info) << " save stree to FOLD " << FOLD ; 

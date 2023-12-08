@@ -13,6 +13,8 @@ Note the inverted API naming, "get" is restoring and "put" is saving.
 For MixMaxRng the vector length is 17*2+4 = 38 and 32 bit unsigned long is OK
 
 **/
+
+#include <csignal>
 #include "CLHEP/Random/Randomize.h"
 #include "CLHEP/Random/RandomEngine.h"
 #include "U4_API_EXPORT.hh"
@@ -161,7 +163,10 @@ inline void U4Engine::SaveState( NP* states, int idx ) // static
     std::vector<unsigned long> state = engine->put() ; // NB: back-to-front API name 
     unsigned niv = states->num_itemvalues() ; 
     unsigned size = states->item_bytes();
-    assert( niv*sizeof(unsigned long) == size ); 
+
+    bool niv_expect = niv*sizeof(unsigned long) == size ;
+    assert( niv_expect ); 
+    if(!niv_expect) std::raise(SIGINT); 
 
     assert( state.size() == niv ); 
     memcpy( states->bytes() + size*idx,  state.data(), size  ); 
@@ -181,5 +186,6 @@ inline void U4Engine::RestoreState( const NP* states, int idx ) // static
     
     bool rc = engine->get(state);  // HUH: back-to-front API name ?
     assert( rc ); 
+    if(!rc) std::raise(SIGINT) ; 
 }
 

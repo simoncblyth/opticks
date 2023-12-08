@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cassert>
+#include <csignal>
 #include <cstdlib>
 
 #include "G4VParticleChange.hh"
@@ -341,7 +342,10 @@ void U4::GenPhotonBegin( int genloop_idx )
     pho = gs.MakePho(genloop_idx, ancestor);  
 
     int align_id = ancestor.isPlaceholder() ? gs.offset + genloop_idx : ancestor.id ; 
-    assert( pho.id == align_id );     
+
+    bool align_id_expect = pho.id == align_id ;
+    assert( align_id_expect );     
+    if(!align_id_expect) std::raise(SIGINT); 
 
 #ifdef DEBUG
     if(dump) std::cout 

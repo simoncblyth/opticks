@@ -1,5 +1,5 @@
 #include <cassert>
-#include <signal>
+#include <csignal>
 #include "scuda.h"
 #include "QU.hh"
 

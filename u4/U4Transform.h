@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <csignal>
+
 #include "G4VPhysicalVolume.hh"
 #include "G4Transform3D.hh"
 #include "G4RotationMatrix.hh"
@@ -125,7 +127,10 @@ template<typename T>
 inline void U4Transform::Convert(glm::tmat4x4<T>& d,  const std::array<T,16>& s ) // static
 {
     unsigned n = Check(s);
-    assert( n == 0);
+    bool n_expect = n == 0 ;
+    assert( n_expect );
+    if(!n_expect) std::raise(SIGINT); 
+
     memcpy( glm::value_ptr(d), s.data(), sizeof(T)*16 );  
 }
 
@@ -252,7 +257,9 @@ inline void U4Transform::Convert_TranslateThenRotate(glm::tmat4x4<T>& d,  const 
              RTx   , RTy  , RTz  , one   }} ; 
 
     unsigned n = Check(a);
-    assert( n == 0);
+    bool n_expect = n == 0 ; 
+    assert( n_expect );
+    if(!n_expect) std::raise(SIGINT); 
     memcpy( glm::value_ptr(d), a.data(), sizeof(T)*16 );  
 }
 

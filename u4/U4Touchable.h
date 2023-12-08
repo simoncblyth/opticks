@@ -13,6 +13,7 @@ A version of this is also available within the monolith at
 
 #include <string>
 #include <cstring>
+#include <csignal>
 #include <sstream>
 #include <iomanip>
 
@@ -228,6 +229,7 @@ inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch, const char* repl
 
         bool hierarchy = dpv->GetMotherLogical() == mlv ; 
         assert(hierarchy); 
+        if(!hierarchy) std::raise(SIGINT); 
 
         const char* dlv_name = dlv->GetName().c_str() ; 
         bool name_skip = replica_name_select && strstr(dlv_name, replica_name_select) == nullptr ; 

@@ -394,13 +394,21 @@ G4VParticleChange* Local_G4Cerenkov_modified::PostStepDoIt(const G4Track& aTrack
 #endif
 
 #ifdef FLOAT_TEST
-      float rand, rand0, rand1 ;
-      float sampledEnergy, sampledRI; 
-      float cosTheta, sin2Theta;
+      float rand(0.f); 
+      float rand0(0.f);
+      float rand1(0.f) ;
+      float sampledEnergy(0.f);
+      float sampledRI(0.f); 
+      float cosTheta(0.f) ; 
+      float sin2Theta(0.f) ;
 #else
-      G4double rand, rand0, rand1 ;
-      G4double sampledEnergy, sampledRI; 
-      G4double cosTheta, sin2Theta;
+      G4double rand(0.); 
+      G4double rand0(0.);
+      G4double rand1(0.) ;
+      G4double sampledEnergy(0.);
+      G4double sampledRI(0.); 
+      G4double cosTheta(0.);
+      G4double sin2Theta(0.);
 #endif
 
 #ifdef INSTRUMENTED

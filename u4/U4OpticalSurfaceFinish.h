@@ -23,6 +23,7 @@ Only finish types used by active geometries have any hope of being supported.
 
 #include <cstring>
 #include <cassert>
+#include <csignal>
 #include "G4OpticalSurface.hh"
 
 struct U4OpticalSurfaceFinish
@@ -78,6 +79,7 @@ inline unsigned U4OpticalSurfaceFinish::Finish(const char* name)
 
     bool match = strcmp( Name(finish), name ) == 0 ;  
     assert( match ); 
+    if(!match) std::raise(SIGINT); 
 
     return finish ; 
 }

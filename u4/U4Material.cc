@@ -3,6 +3,7 @@
 #include <vector>
 #include <sstream>
 #include <limits>
+#include <csignal>
 
 #include "ssys.h"
 #include "spath.h"
@@ -902,7 +903,9 @@ void U4Material::LoadOri()
         LOG(LEVEL) << n ; 
         G4Material* mat = LoadOri(n); 
         const G4String& name_ = mat->GetName(); 
-        assert( strcmp(name_.c_str(), n ) == 0 ); 
+        bool name_expect = strcmp(name_.c_str(), n ) == 0 ;
+        assert(name_expect ); 
+        if(!name_expect) std::raise(SIGINT); 
 
     }
     num_mat[1] = G4Material::GetNumberOfMaterials(); 

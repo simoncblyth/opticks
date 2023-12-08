@@ -676,8 +676,11 @@ inline std::vector<T>* sstr::ParseIntSpecList( const char* spec, char delim )
     return ls ; 
 }
 
-inline void sstr::truncated_copy( char* dst, const char* src, int dst_size ) ; 
+inline void sstr::truncated_copy( char* dst, const char* src, int dst_size ) 
 {
     memset(dst, 0, dst_size); 
-    memcpy(dst, src, std::min(dst_size, strlen(src)) ; 
+
+    int srclen = strlen(src) ;
+    int num_char = std::min(dst_size, srclen); 
+    memcpy(dst, src, num_char) ; 
 }

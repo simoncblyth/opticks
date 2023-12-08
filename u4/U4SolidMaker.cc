@@ -1,4 +1,5 @@
 #include <cstring>
+#include <csignal>
 #include "SStr.hh"
 #include "NP.hh"
 
@@ -1667,7 +1668,9 @@ const G4VSolid* U4SolidMaker::LHCbRichSphMirr(const char* qname)  // static
 
         G4double sag_max = SagittaMax( InnerRadius, OuterRadius, SegmentSizeY, SegmentSizeZ ); 
         G4double SagMax = 80.*mm ; 
-        assert( SagMax > sag_max ); 
+        bool sag_max_expect = SagMax > sag_max ;
+        assert( sag_max_expect ); 
+        if(!sag_max_expect) std::raise(SIGINT); 
         G4double FullDepthX = Thickness + SagMax ; 
        
         G4Box* cutbox = new G4Box("cutbox", FullDepthX/2. , SegmentSizeY/2. , SegmentSizeZ/2. );  

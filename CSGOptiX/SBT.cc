@@ -236,7 +236,9 @@ void SBT::createGAS_Standard()
 
         bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx) ;
         bool enabled2 = emm & ( 0x1 << gas_idx ) ;  
-        assert( enabled == enabled2 );  
+        bool enabled_expect = enabled == enabled2 ;  
+        assert( enabled_expect );  
+        if(!enabled_expect) std::raise(SIGINT); 
 
         if( enabled )
         {
@@ -315,7 +317,10 @@ void SBT::createIAS()
 void SBT::createIAS_Standard()
 {
     unsigned num_ias = foundry->getNumUniqueIAS() ; 
-    assert( num_ias == 1 );  
+    bool num_ias_expect = num_ias == 1 ; 
+    assert( num_ias_expect );  
+    if(!num_ias_expect) std::raise(SIGINT); 
+
     unsigned ias_idx = 0 ; 
     createIAS(ias_idx); 
 }
@@ -910,7 +915,10 @@ void SBT::createHitgroup()
                     ; 
 
                 */
-                assert( check_sbt_offset == sbt_offset  ); 
+
+                bool sbt_offset_expect = check_sbt_offset == sbt_offset ; 
+                assert( sbt_offset_expect  ); 
+                if(!sbt_offset_expect) std::raise(SIGINT); 
 
                 hg++ ; 
                 sbt_offset++ ; 

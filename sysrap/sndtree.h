@@ -63,7 +63,7 @@ inline int sndtree::CommonTree_PlaceLeaves( const std::vector<int>& leaves, int 
 
     bool expect_leaves = num_leaves_placed == num_leaves ;
     if(!expect_leaves) std::cerr << "sndtree::CommonTree_PlaceLeaves UNEXPECTED LEAVES " << std::endl; 
-    assert( expect_eaves );  
+    assert( expect_leaves );  
 
     delete n ; 
 

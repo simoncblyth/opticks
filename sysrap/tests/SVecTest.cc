@@ -85,19 +85,21 @@ void test_FindIndexOfValue_NoTolerance_int()
     std::vector<int> a = {1, 2, 10, 20, 30, 11, 81, 42, 101 } ;
     int idx ;  
 
+    bool idx_expect ; 
+
     idx = SVec<int>::FindIndexOfValue( a, 1);
-    bool idx_expect = idx == 0 ;
+    idx_expect = idx == 0 ;
     assert( idx_expect );
     if(!idx_expect) std::raise(SIGINT);
 
 
     idx = SVec<int>::FindIndexOfValue( a, 42);
-    bool idx_expect = idx == 7 ;
+    idx_expect = idx == 7 ;
     assert( idx_expect );
     if(!idx_expect) std::raise(SIGINT);
 
     idx = SVec<int>::FindIndexOfValue( a, 1000 );
-    bool idx_expect = idx == -1 ;
+    idx_expect = idx == -1 ;
     assert( idx_expect );
     if(!idx_expect) std::raise(SIGINT);
 

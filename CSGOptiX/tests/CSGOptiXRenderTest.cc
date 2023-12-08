@@ -111,7 +111,9 @@ void CSGOptiXRenderTest::initArgs()
     unsigned num_select = cx->solid_selection.size();  
     if( solid_selection )
     {
-        assert( num_select > 0 ); 
+        bool num_select_expect = num_select > 0 ;
+        assert( num_select_expect ); 
+        if(!num_select_expect) std::raise(SIGINT); 
     }
 
     std::vector<std::string>* arglist = SGeoConfig::Arglist() ;

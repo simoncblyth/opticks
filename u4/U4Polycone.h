@@ -368,6 +368,7 @@ inline void U4Polycone::init_RZ()
     } 
     bool all_z_ascending  = checkZOrder(true  ); 
     assert( all_z_ascending ); 
+    if(!all_z_ascending) std::raise(SIGINT); 
 
     GetMinMax(R_inner_min, R_inner_max, R_inner); 
     GetMinMax(R_outer_min, R_outer_max, R_outer); 
@@ -381,7 +382,9 @@ inline void U4Polycone::init_RZ()
     double startPhi = ph->Start_angle/CLHEP::radian ;  
     double deltaPhi = ph->Opening_angle/CLHEP::radian ;
     bool has_phi_segment = startPhi > 0. || deltaPhi < 2.0*CLHEP::pi  ;
-    assert( has_phi_segment == false );  
+    bool has_phi_segment_expect = has_phi_segment == false ;
+    assert( has_phi_segment_expect );  
+    if(!has_phi_segment_expect) std::raise(SIGINT); 
 }
 
 /**
@@ -509,6 +512,7 @@ void U4Polycone::collectPrims(std::vector<sn*>& prims,  bool outside  )
 
         bool z_ascending = z2 > z1 ;
         assert(z_ascending);
+        if(!z_ascending) std::raise(SIGINT); 
 
         bool is_cylinder = r1 == r2 ;  
         int idx = -1 ; 

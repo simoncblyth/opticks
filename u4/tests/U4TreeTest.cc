@@ -1,3 +1,5 @@
+
+#include <csignal>
 #include "OPTICKS_LOG.hh"
 
 #include "spath.h"
@@ -88,8 +90,14 @@ void test_get_pv_0(const U4Tree* tree)
     int nidx0_ = tree->get_nidx(pv0) ; 
     int nidx1_ = tree->get_nidx(pv1) ; 
 
-    assert( nidx0_ == nidx0 ); 
-    assert( nidx1_ == nidx1 ); 
+    bool nidx0_expect = nidx0_ == nidx0 ;
+    bool nidx1_expect = nidx1_ == nidx1 ;
+
+    assert( nidx0_expect ); 
+    assert( nidx1_expect ); 
+
+    if(!nidx0_expect) std::raise(SIGINT); 
+    if(!nidx1_expect) std::raise(SIGINT); 
 
     int cp0_ = pv0 ? pv0->GetCopyNo() : -1 ; 
     int cp1_ = pv1 ? pv1->GetCopyNo() : -1 ; 
@@ -97,8 +105,14 @@ void test_get_pv_0(const U4Tree* tree)
     int cp0 = tree->get_pv_copyno(nidx0); 
     int cp1 = tree->get_pv_copyno(nidx1); 
 
-    assert( cp0_ == cp0 ); 
-    assert( cp1_ == cp1 ); 
+    bool cp0_expect = cp0_ == cp0 ;
+    bool cp1_expect = cp1_ == cp1 ;
+
+    assert( cp0_expect ); 
+    assert( cp1_expect ); 
+
+    if(!cp0_expect) std::raise(SIGINT);
+    if(!cp1_expect) std::raise(SIGINT);
 
     std::cout << " q_spec0 " << q_spec0 <<  " nidx0 " << nidx0 << " cp0 " << cp0 << std::endl ;  
     std::cout << " q_spec1 " << q_spec1 <<  " nidx1 " << nidx1 << " cp1 " << cp1 << std::endl ;  
@@ -226,7 +240,9 @@ void test_get_pv_1(const U4Tree* tree, const char* q_soname)
         copyno = tree->get_pv_copyno(nidx);  
 
         int copyno_0 = tree->st->get_copyno(nidx); 
-        assert( copyno == copyno_0 ); 
+        bool copyno_expect = copyno == copyno_0 ;
+        assert( copyno_expect ); 
+        if(!copyno_expect) std::raise(SIGINT); 
 
         if( i < edge || (i > (nodes.size() - edge))) 
             std::cout 

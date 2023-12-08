@@ -1,5 +1,6 @@
 
 #include <cassert>
+#include <csignal>
 #include <cstring>
 #include <iostream>
 #include <iomanip>
@@ -169,7 +170,10 @@ void GAS_Builder::BoilerPlate(GAS& gas)   // static
 { 
     //std::cout << "GAS_Builder::BoilerPlate" << std::endl ;  
     unsigned num_bi = gas.bis.size() ;
-    assert( num_bi == 1 ); 
+
+    bool num_bi_expect =  num_bi == 1 ;
+    assert( num_bi_expect ); 
+    if(!num_bi_expect) std::raise(SIGINT); 
 
     std::vector<OptixBuildInput> buildInputs ; 
     for(unsigned i=0 ; i < gas.bis.size() ; i++)

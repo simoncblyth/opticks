@@ -25,6 +25,7 @@ npy/NNodeUncoincide npy/NNodeNudger
 
 
 #include <set>
+#include <csignal>
 
 #include "ssys.h"
 #include "scuda.h"
@@ -506,7 +507,10 @@ inline sn* U4Solid::init_Sphere_(char layer)
     double startPhi = sphere->GetStartPhiAngle()/CLHEP::radian ;
     double deltaPhi = sphere->GetDeltaPhiAngle()/CLHEP::radian ;
     bool has_deltaPhi = startPhi != 0. || deltaPhi != 2.*CLHEP::pi  ;
-    assert( has_deltaPhi == false ); 
+
+    bool has_deltaPhi_expect = has_deltaPhi == false ;
+    assert( has_deltaPhi_expect ); 
+    if(!has_deltaPhi_expect) std::raise(SIGINT); 
 
 #ifdef WITH_SND
     return z_slice ? snd::ZSphere( radius, zmin, zmax ) : snd::Sphere(radius ) ; 
@@ -881,7 +885,10 @@ inline void U4Solid::init_BooleanSolid()
 
     bool is_left_displaced = dynamic_cast<G4DisplacedSolid*>(left) != nullptr ;
     bool is_right_displaced = dynamic_cast<G4DisplacedSolid*>(right) != nullptr ;
-    assert( !is_left_displaced && "not expecting left displacement " );
+
+    bool is_left_displaced_expect = is_left_displaced == false ; 
+    assert( is_left_displaced_expect && "not expecting left displacement " );
+    if(!is_left_displaced_expect) std::raise(SIGINT); 
 
 #ifdef WITH_SND
     int l = Convert( left, lvid, depth+1 , level ); 
@@ -959,6 +966,7 @@ inline void U4Solid::init_DisplacedSolid()
 
     bool single_disp = dynamic_cast<const G4DisplacedSolid*>(moved) == nullptr ; 
     assert(single_disp && "only single disp is expected" );
+    if(!single_disp) std::raise(SIGINT); 
 
 #ifdef WITH_SND
     root = Convert( moved, lvid, depth+1, level ); 

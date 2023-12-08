@@ -44,6 +44,7 @@ controlled via envvar::
 #include <algorithm>
 #include <string>
 #include <sstream>
+#include <csignal>
 
 #include <glm/glm.hpp>
 #include "G4VPhysicalVolume.hh"
@@ -600,7 +601,10 @@ A: YES, U4Tree::initSurfaces collects the vector of surfaces before initNodes
 inline void U4Tree::initNodes()
 {
     int nidx = initNodes_r(top, nullptr, 0, -1, -1 ); 
-    assert( 0 == nidx ); 
+    bool nidx_expect = nidx == 0 ; 
+    assert( nidx_expect );
+    if(!nidx_expect) std::raise(SIGINT);  
+    
 }
 
 /**
@@ -1056,7 +1060,10 @@ inline void U4Tree::simtrace_scan(const char* base ) const
         const char* soname = st->soname[i].c_str(); 
         const G4VSolid* solid = solids[i] ; 
         G4String name = solid->GetName();  // bizarre by value 
-        assert( strcmp( name.c_str(), soname ) == 0 );  
+
+        bool soname_expect = strcmp( name.c_str(), soname ) == 0  ;
+        assert(soname_expect);  
+        if(!soname_expect) std::raise(SIGINT);
 
         LOG(info) << " i " << std::setw(3) << i << " RGMode: " << SEventConfig::RGModeLabel() ; 
         SSimtrace::Scan(solid, base) ;   

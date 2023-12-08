@@ -204,7 +204,7 @@ void test_setMeta_getMeta()
     if(!f_expect) std::raise(SIGINT); 
     if(!d_expect) std::raise(SIGINT); 
     if(!s0_expect) std::raise(SIGINT); 
-    if(!s0_expect) std::raise(SIGINT); 
+    if(!s1_expect) std::raise(SIGINT); 
    
 }
 

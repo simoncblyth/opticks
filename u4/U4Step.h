@@ -1,5 +1,7 @@
 #pragma once
 
+#include <csignal>
+
 class G4Step ; 
 class G4StepPoint ; 
 class G4LogicalSurface ; 
@@ -339,6 +341,7 @@ inline unsigned U4Step::Classify(const G4Step* step)
 
     bool expect_exclusive = int(pre_is_post_mother) + int(pre_mother_is_post) + int(pre_mother_is_post_mother) <= 1 ; 
     assert( expect_exclusive ) ;   // otherwise broken geometry ? 
+    if(!expect_exclusive) std::raise(SIGINT);  
 
     unsigned type = U4Step_UNSET ; 
     if(      pre_is_post_mother )        type = U4Step_MOTHER_TO_CHILD ; 
@@ -485,8 +488,15 @@ inline std::string U4Step::Spec(const G4Step* step) // static
     const G4VPhysicalVolume* pre_pv = pre->GetPhysicalVolume();
     const G4VPhysicalVolume* post_pv = post->GetPhysicalVolume();
 
-    assert( pv == pre_pv );  
-    assert( next_pv == post_pv );  
+
+    bool pre_pv_expect = pv == pre_pv ;
+    bool post_pv_expect = next_pv == post_pv ;
+
+    assert( pre_pv_expect );  
+    assert( post_pv_expect );  
+
+    if(!pre_pv_expect) std::raise(SIGINT);  
+    if(!post_pv_expect) std::raise(SIGINT);  
 
 
     const G4Material* pre_mat = pre->GetMaterial(); 

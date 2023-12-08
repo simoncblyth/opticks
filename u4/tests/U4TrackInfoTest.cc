@@ -1,4 +1,4 @@
-
+#include <csignal>
 #include "spho.h"
 #include "U4Track.h"
 #include "STrackInfo.h"
@@ -16,11 +16,15 @@ int main(int argc, char** argv)
 
     spho p1 = STrackInfo<spho>::Get(ctrack); 
 
-    assert( p1.isIdentical(p0) ); 
+    bool p1_expect = p1.isIdentical(p0) ; 
+    assert( p1_expect ); 
+    if(!p1_expect) std::raise(SIGINT); 
 
     spho* p2 = STrackInfo<spho>::GetRef(ctrack); 
 
-    assert( p2->isIdentical(p0) ); 
+    bool p2_expect = p2->isIdentical(p0) ;
+    assert( p2_expect ); 
+    if(!p2_expect) std::raise(SIGINT); 
 
     p2->uc4.w = 'Z' ; 
 
