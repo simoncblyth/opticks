@@ -1,6 +1,7 @@
 #include "Deprecated_U4PhotonInfo.h"
 #include "U4Track.h"
 #include <iostream>
+#include <csignal>
 
 
 void test_SetGet()
@@ -26,11 +27,14 @@ void test_GetRef()
     Deprecated_U4PhotonInfo::Set(track, p0 ); 
     const G4Track* ctrack = track ; 
     spho p1 = Deprecated_U4PhotonInfo::Get(ctrack); 
-    assert( p1.isIdentical(p0) ); 
+    bool p1_expect = p1.isIdentical(p0) ;
+    assert( p1_expect ); 
+    if(!p1_expect) std::raise(SIGINT); 
 
     spho* p2 = Deprecated_U4PhotonInfo::GetRef(ctrack); 
-
-    assert( p2->isIdentical(p0) ); 
+    bool p2_expect =  p2->isIdentical(p0) ;
+    assert( p2_expect ); 
+    if(!p2_expect) std::raise(SIGINT); 
 
     std::cout << " p2 " << p2->desc() << " p2 from Deprecated_U4PhotonInfo::GetRef(ctrack) " << std::endl ; 
 
