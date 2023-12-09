@@ -479,7 +479,8 @@ class Ranges_SPAN(object):
     def __init__(self, fold, symbol="fold"):
 
         NPC = fold.submeta_NumPhotonCollected.a[:,0]
-        title = "Ranges_SPAN : Total Process Time Accounting : ~20 evt from 0.1 M to 100M photons"
+        #title = "Ranges_SPAN : Total Process Time Accounting : ~20 evt from 0.1 M to 100M photons"
+        title = RUN_META.Title(fold)  
         print(title)
 
         print("NPC:%s" % str(NPC))
@@ -607,7 +608,7 @@ if __name__ == '__main__':
     if PLOT.startswith("Ranges_ONE") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
         Ranges_ONE(fold, symbol="fold")
     if PLOT.startswith("Ranges_SPAN") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
-        Ranges_SPAN(fold, symbol="fold")
+        Ranges_SPAN(fold, symbol="fold")  ## colorfull process activity plot 
     pass
     if PLOT.startswith("Substamp_ALL") and hasattr(fold, "substamp"):
         if PLOT.startswith("Substamp_ALL_Etime_vs_Photon"): Substamp_ALL_Etime_vs_Photon(  fold, symbol="fold.substamp" )
@@ -623,10 +624,10 @@ if __name__ == '__main__':
         pass
     pass
     if PLOT.startswith("Subprofile_ALL") and hasattr(fold, "subprofile"):
-        Subprofile_ALL(fold, symbol="fold.subprofile")
+        Subprofile_ALL(fold, symbol="fold.subprofile")  ## failing 
     pass
     if PLOT.startswith("Runprof_ALL") and hasattr(fold, "runprof"):
-        Runprof_ALL(fold, symbol="fold.runprof" )
+        Runprof_ALL(fold, symbol="fold.runprof" )  ## RSS vs time : profile plot 
     pass
 pass
 

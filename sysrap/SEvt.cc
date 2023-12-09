@@ -2549,8 +2549,8 @@ void SEvt::rjoinPhoton(const spho& label)
     const sphoton& parent_photon = photon[idx] ; 
     unsigned parent_idx = parent_photon.idx() ; 
     bool parent_idx_expect = parent_idx == idx  ;
-    if(parent_idx_expect) std::raise(SIGINT); 
     assert( parent_idx_expect ); 
+    if(!parent_idx_expect) std::raise(SIGINT); 
 
 
     // replace pho[idx] and current_pho with the new generation label 
