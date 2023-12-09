@@ -103,8 +103,10 @@ fi
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 #job=N5
-#job=N7
-job=S7
+
+job=N7   # blyth:Debug
+#job=S7  # simon:Release
+
 JOB=${JOB:-$job}
 
 DIR=unknown 
@@ -175,7 +177,7 @@ if [ "${arg/noa}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    export COMMANDLINE="PLOT=$PLOT PICK=$PICK ~/opticks/sreport.sh"
+    export COMMANDLINE="JOB=$JOB PLOT=$PLOT ~/o/sreport.sh"
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi
@@ -186,7 +188,7 @@ fi
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs
-    export CAP_REL=cxs_min   ## HUH: DEPENDS ON JOB
+    export CAP_REL=cxs_min
     export CAP_STEM=$STEM
     case $arg in  
        mpcap) source mpcap.sh cap  ;;  

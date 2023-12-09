@@ -51,6 +51,7 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 export EVT=${EVT:-A000}
 export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
+export SCRIPT=$(basename $BASH_SOURCE)
 
 
 knobs()
@@ -115,12 +116,8 @@ case $VERSION in
 99) opticks_event_mode=StandardFullDebug ;;
 esac 
 
-# only for SRM_TORCH RUNNING
-
-
 test=reference
 TEST=${TEST:-$test}
-
 
 if [ "$TEST" == "reference" ]; then 
 

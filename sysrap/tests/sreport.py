@@ -39,7 +39,9 @@ def format_large_number(number):
 COMMANDLINE = os.environ.get("COMMANDLINE", "")
 STEM =  os.environ.get("STEM", "")
 HEADLINE = "%s ## %s " % (COMMANDLINE, STEM ) 
+JOB =  os.environ.get("JOB", "")
 PLOT =  os.environ.get("PLOT", "")
+STEM =  os.environ.get("STEM", "")
 MODE =  int(os.environ.get("MODE", "2"))
 PICK =  os.environ.get("PICK", "AB")
 TLIM =  np.array(list(map(int,os.environ.get("TLIM", "0,0").split(","))),dtype=np.int32)
@@ -319,7 +321,7 @@ class Substamp_ALL_Hit_vs_Photon(object):
 class Substamp_ALL_Etime_vs_Photon(object):
     def __init__(self, fold, symbol="fold.substamp"):
         base = eval(symbol)
-        title = "PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport.sh  ## from cxs_min.sh run "
+        title = RUN_META.Title(fold)
         fontsize = 20 
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
@@ -328,7 +330,6 @@ class Substamp_ALL_Etime_vs_Photon(object):
                 f = getattr(base, sym)
 
                 etime = Substamp.ETime(f) 
-                # _subcount_photon = Substamp.Subcount(f, "photon")
                 p_symbol = "fold.submeta_NumPhotonCollected.%s[:,0]" % sym 
                 _photon = eval(p_symbol)
                 photon = _photon/1e6
@@ -340,6 +341,8 @@ class Substamp_ALL_Etime_vs_Photon(object):
                 ax.scatter( photon, etime, label="%s : etime(s)_vs_photon (millions)" % sym.upper() )
                 ax.plot( photon, linefit(photon), label=linefit_label )
             pass
+            ax.set_xlim( -5, 105 ); 
+            ax.set_ylim( 1e-2, 50 ); 
             ax.set_yscale('log')
             ax.set_ylabel("Event time (seconds)", fontsize=fontsize )
             ax.set_xlabel("Number of Photons (Millions)", fontsize=fontsize )
@@ -549,13 +552,44 @@ class Ranges_ONE(object):
         self.ax = ax
 
 
+class RUN_META(object):
+    @classmethod
+    def QSim__Switches(cls, fold):
+        """
+        eg: 'CONFIG_Release PRODUCTION WITH_CHILD WITH_CUSTOM4 PLOG_LOCAL '
+        """
+        SKIPS = "WITH_CHILD PLOG_LOCAL".split(); 
+        switches = list(filter(lambda _:not _.startswith("NOT-"), fold.run_meta.QSim__Switches.split(","))) 
+        switches = list(filter(lambda _:not _ in SKIPS, switches )) 
+        return " ".join(switches)  
+
+    @classmethod
+    def Title(cls, fold):
+        SCRIPT = getattr(fold.run_meta, 'SCRIPT', "cxs_min.sh")  
+        GPUMeta = fold.run_meta.GPUMeta 
+        topline = "%s ## %s : %s " % ( COMMANDLINE, SCRIPT, GPUMeta )
+        SWITCHES = cls.QSim__Switches(fold)
+        cvar = ["RUNNING_MODE","EVENT_MODE","MAX_BOUNCE","MAX_PHOTON"] 
+        #cvar += ["NUM_PHOTON"]
+
+        ctrls = [] 
+        for var in cvar:
+            val = getattr(fold.run_meta, "OPTICKS_%s" % var, "?" )
+            ctrls.append("%s:%s" % (var,val)) 
+        pass
+        ctrl = " ".join(ctrls)
+
+        title = "\n".join([topline, SWITCHES, ctrl])
+        return title 
 
 
 if __name__ == '__main__':
     fold = Fold.Load(symbol="fold")
 
     print(repr(fold))
-    print("MODE:%d PICK:%s " % (MODE, PICK) ) 
+    SWITCHES = RUN_META.QSim__Switches(fold)
+    print("MODE:%d PICK:%s SWITCHES:%s " % (MODE, PICK, SWITCHES) ) 
+    print("COMMANDLINE:%s" % COMMANDLINE)
 
     if PLOT.startswith("Substamp_ONE") and hasattr(fold, "substamp"):
         for e in PICK:
