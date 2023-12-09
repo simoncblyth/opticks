@@ -5,6 +5,106 @@ context :doc:`rtxmode-performance-jumps-by-factor-3-or-4-after-flipping-with-tor
 
 
 
+Compare Release and Debug PTX on S
+--------------------------------------
+
+::
+
+    [simon@localhost ~]$ opticks-ptx
+                       BASH_SOURCE : /home/simon/opticks/opticks.bash 
+                          FUNCNAME : opticks-ptx 
+                               ptx : /data/simon/local/opticks_Debug/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx 
+                  num_printf_lines : 95 
+                     num_f64_lines : 518 
+
+
+    [simon@localhost ~]$ opticks-ptx
+                       BASH_SOURCE : /home/simon/opticks/opticks.bash 
+                          FUNCNAME : opticks-ptx 
+                               ptx : /data/simon/local/opticks_Release/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx 
+                  num_printf_lines : 4 
+                     num_f64_lines : 8 
+    [simon@localhost ~]$ 
+
+
+
+
+The doubles maybe from::
+
+     37 template<> inline double scurand<double>::uniform( curandStateXORWOW* rng )
+     38 {
+     39 #ifdef FLIP_RANDOM
+     40     return 1. - curand_uniform_double(rng) ;
+     41 #else
+     42     return curand_uniform_double(rng) ;
+     43 #endif
+     44 }
+
+
+
+::
+
+      402 
+      403     setp.lt.u32     %p14, %r593, 51;
+      404     @%p14 bra   $L__BB0_16;
+      405 
+      406     st.local.u32    [%rd7], %r587;
+      407     cvt.ftz.f64.f32     %fd1, %f14;
+      408     st.local.f64    [%rd7+8], %fd1;
+      409     cvt.ftz.f64.f32     %fd2, %f16;
+      410     cvt.ftz.f64.f32     %fd3, %f15;
+      411     st.local.v2.f64     [%rd7+16], {%fd3, %fd2};
+      412     cvt.ftz.f64.f32     %fd4, %f13;
+      413     st.local.f64    [%rd7+32], %fd4;
+      414     add.s32     %r1638, %r31, 1;
+      415     st.local.v2.u32     [%rd7+40], {%r1638, %r24};
+      416     mov.u64     %rd55, $str;
+      417     cvta.global.u64     %rd56, %rd55;
+      418     { // callseq 0, 0
+      419     .reg .b32 temp_param_reg;
+      420     .param .b64 param0;
+
+
+
+      402 
+      403     setp.lt.u32     %p14, %r593, 51;
+      404     @%p14 bra   $L__BB0_16;
+      405 
+      406     st.local.u32    [%rd7], %r587;
+
+
+
+
+      412     cvt.ftz.f64.f32     %fd4, %f13;
+      413     st.local.f64    [%rd7+32], %fd4;
+
+      407     cvt.ftz.f64.f32     %fd1, %f14;
+      408     st.local.f64    [%rd7+8], %fd1;
+
+      410     cvt.ftz.f64.f32     %fd3, %f15;
+      409     cvt.ftz.f64.f32     %fd2, %f16;
+      411     st.local.v2.f64     [%rd7+16], {%fd3, %fd2};
+
+      /// store local v2.f64 (double2) from 2 f32 converted into f64 
+
+      415     st.local.v2.u32     [%rd7+40], {%r1638, %r24};
+
+      /// store local v2.u32 (uint2) from ? 
+
+      414     add.s32     %r1638, %r31, 1;
+      416     mov.u64     %rd55, $str;
+      417     cvta.global.u64     %rd56, %rd55;
+
+
+      418     { // callseq 0, 0
+      419     .reg .b32 temp_param_reg;
+      420     .param .b64 param0;
+
+
+
+
+
+
 
 Update
 ----------

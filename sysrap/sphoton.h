@@ -532,6 +532,12 @@ inline std::ostream& operator<<(std::ostream& os, const sphoton& p )
 
 
 
+union qphoton
+{
+    quad4   q ; 
+    sphoton p ; 
+}; 
+
 
 struct sphoton_selector
 {
@@ -541,6 +547,10 @@ struct sphoton_selector
     SPHOTON_METHOD bool operator() (const sphoton* p) const { return ( p->flagmask & hitmask ) == hitmask  ; }   // require all bits of the mask to be set 
 };
 
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
 
 struct sphotond
 {
@@ -559,19 +569,14 @@ struct sphotond
     unsigned long long flagmask ; 
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
    SPHOTON_METHOD static void FromFloat( sphotond& d, const sphoton& s );  
    SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx ); 
    SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>& tr,  bool normalize=true ); 
    SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true ); 
-#endif 
 
 
 };
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
 
 SPHOTON_METHOD void sphotond::FromFloat( sphotond& d, const sphoton& s )
 {
@@ -631,41 +636,5 @@ SPHOTON_METHOD void sphotond::transform( const glm::tmat4x4<double>& tr, bool no
 #endif 
 
 
-/*
-template<typename T>
-void Tran<T>::photon_transform( sphoton& p, bool normalize ) const 
-{
-    T one(1.); 
-    T zero(0.); 
-
-    unsigned count = 1 ; 
-    unsigned stride = 4*4 ; // effectively not used as count is 1
-
-    assert( sizeof(p) == sizeof(float)*16 ); 
-    float* p0 = (float*)&p ; 
-    ApplyToFloat( t, p0, one,  count, stride, 0, false );      // transform pos as position
-    ApplyToFloat( t, p0, zero, count, stride, 4, normalize );  // transform mom as direction
-    ApplyToFloat( t, p0, zero, count, stride, 8, normalize );  // transform pol as direction
-}
-
-template<typename T>
-void Tran<T>::photon_transform( sphotond& p, bool normalize ) const 
-{
-
- 
-*/
-
-
-
-
-
-
-
-
-union qphoton
-{
-    quad4   q ; 
-    sphoton p ; 
-}; 
 
 

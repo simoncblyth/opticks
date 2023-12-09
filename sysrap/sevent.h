@@ -76,10 +76,15 @@ struct float4 ;
 struct float2 ; 
 struct quad4 ; 
 struct quad6 ; 
+
+#if !defined(PRODUCTION)
 struct srec ; 
 struct sseq ; 
 struct stag ; 
 struct sflat ; 
+#endif
+
+
 struct sphoton ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -148,9 +153,11 @@ struct sevent
     sphoton* hit ;        //QEvent::gatherHit_ allocates event by event depending on num_hit
     sphoton* photon ;     //QEvent::device_alloc_photon
 
+
     sphoton* record ; 
     srec*    rec ; 
     sseq*    seq ; 
+
     quad2*   prd ; 
     stag*    tag ; 
     sflat*   flat ;     

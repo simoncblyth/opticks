@@ -130,8 +130,13 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $src -g -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
+    #gcc $src -O3 -DNDEBUG -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
 fi
+
+
+
+
 
 if [ "${arg/dbg}" != "$arg" ]; then 
     cd $DIR
