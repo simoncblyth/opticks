@@ -1036,19 +1036,19 @@ bool SEvt::isEGPU() const { return instance == EGPU ; }
 bool SEvt::isECPU() const { return instance == ECPU ; }
 
 /**
-SEvt::isFirstEvt SEvt::isLastEvt
------------------------------------
+SEvt::isFirstEvtInstance SEvt::isLastEvtInstance
+--------------------------------------------------
 
 When have both ECPU and EGPU the ECPU is first 
 otherwise when there is only one event 
 whatever it is is inevitably first(and last). 
 
 **/
-bool SEvt::isFirstEvt() const 
+bool SEvt::isFirstEvtInstance() const 
 {
     return Exists_EGPU() && Exists_ECPU() ? isECPU() : true ; 
 }
-bool SEvt::isLastEvt() const 
+bool SEvt::isLastEvtInstance() const 
 {
     return Exists_EGPU() && Exists_ECPU() ? isEGPU() : true ; 
 }
@@ -1439,6 +1439,10 @@ void SEvt::setRunProf_Annotated(const char* hdr) const
 SEvt::SaveRunMeta
 -------------------
 
+Saving only at the end of run is problematic
+when jobs are prone to memory failure. So 
+better to save at the end of every event, not
+just the last. 
 
 **/
 
@@ -1542,7 +1546,7 @@ as still need to collect the gensteps.
 
 void SEvt::beginOfEvent(int eventID)
 {
-    if(isFirstEvt() && eventID == 0) BeginOfRun() ; 
+    if(isFirstEvtInstance() && eventID == 0) BeginOfRun() ; 
     if(eventID == 0) SetRunProf( isEGPU() ? "SEvt__beginOfEvent_FIRST_EGPU" : "SEvt__beginOfEvent_FIRST_ECPU" ) ; 
 
     setStage(SEvt__beginOfEvent); 
@@ -1597,23 +1601,29 @@ void SEvt::endOfEvent(int eventID)
     clear_output(); 
     clear_genstep(); 
 
-    //sprof::Stamp(p_SEvt__endOfEvent_1);  
-    // HMM: misses the boat of being saved with the SEvt
 
-    bool is_last_eventID = eventID == SEventConfig::NumEvent()-1 ; 
+    SaveRunMeta(); // saving run_meta.txt at end of every event incase of crashes
+
+        
+    bool is_last_eventID = SEventConfig::IsLastEvent(eventID) ; 
     if(is_last_eventID)
     {
-        SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
-        bool is_last_evt = isLastEvt() ; 
+        //SetRunProf( isEGPU() ? "SEvt__endOfEvent_LAST_EGPU" : "SEvt__endOfEvent_LAST_ECPU" ) ; 
+        bool is_last_evt_instance = isLastEvtInstance() ; 
 
         LOG(LEVEL) 
             << " is_last_eventID " << ( is_last_eventID ? "YES" : "NO " ) 
-            << " is_last_evt " << ( is_last_evt ? "YES" : "NO " ) 
+            << " is_last_evt_instance " << ( is_last_evt_instance ? "YES" : "NO " ) 
             ;
             
-        if(is_last_evt) SEvt::EndOfRun();   // invokes SaveRunMeta
+        if(is_last_evt_instance) SEvt::EndOfRun();   // invokes SaveRunMeta
     }
+
+
 }
+
+
+
 
 void SEvt::endMeta()
 {

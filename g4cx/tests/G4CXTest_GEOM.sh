@@ -118,7 +118,8 @@ esac
 
 
 
-test=reference
+#test=reference
+test=large_scan
 TEST=${TEST:-$test}
 
 if [ "$TEST" == "reference" ]; then 

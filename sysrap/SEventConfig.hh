@@ -321,7 +321,8 @@ struct SYSRAP_API SEventConfig
     static int               NumEvent();         // some tests use event count and nned to detect last event 
     static int               EventIndex(int idx) ; 
     static int               EventIndexArg(int index) ; 
- 
+    static bool              IsFirstEvent(int idx);   // 0-based idx (such as Geant4 eventID)
+    static bool              IsLastEvent(int idx);    // 0-based idx (such as Geant4 eventID)
 
     static const char* _G4StateSpec ; 
     static int         _G4StateRerun ; 

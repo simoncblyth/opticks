@@ -15,8 +15,8 @@ sysrap/tests/SGLM_set_frame_test.sh
 
 ::
 
-    EYE=0.2,0.2,0.2 TMIN=0.1 ./cxr_min.sh
-    EYE=0.3,0.3,0.3 TMIN=0.1 ./cxr_min.sh
+    EYE=0.2,0.2,0.2 TMIN=0.1 ~/o/cxr_min.sh
+    EYE=0.3,0.3,0.3 TMIN=0.1 ~/o/cxr_min.sh
 
     ELV=t:Water_solid,Rock_solid  ./cxr_min.sh    # with colon not working 
 

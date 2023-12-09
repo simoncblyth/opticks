@@ -367,8 +367,8 @@ public:
 
     bool isEGPU() const ; 
     bool isECPU() const ; 
-    bool isFirstEvt() const ; 
-    bool isLastEvt() const ; 
+    bool isFirstEvtInstance() const ;  // within the event
+    bool isLastEvtInstance() const ;   // within the event 
 
     SEvt* getSibling() const ; 
 
