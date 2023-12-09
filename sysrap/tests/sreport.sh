@@ -102,10 +102,10 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-#job=N5
+job=N5
 
-job=N7   # blyth:Debug
-#job=S7  # simon:Release
+#job=N7   
+#job=S7  
 
 JOB=${JOB:-$job}
 
@@ -116,7 +116,8 @@ case $JOB in
   N2) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
   N3) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
   N4) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
-  N5) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;
+  N5) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;   ## blyth:Debug 
+  S5) DIR=/data/simon/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;   ## simon:Release TODO 
   N6) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
   N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "blyth" account Debug build 
   S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "simon" account Release build 

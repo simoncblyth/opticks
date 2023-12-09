@@ -16,9 +16,9 @@ and saved to allow plotting from python.
 +-----+---------------------------------+-------------------------+
 | key | SEvt/NPFold path prefix         |  SEvt type              |
 +=====+=================================+=========================+
-| a   | "//p" eg: //p001 //p002         | Opticks/QSim SEvt       |
+| a   | "//A" eg: //A000 //A001         | Opticks/QSim SEvt       |
 +-----+---------------------------------+-------------------------+
-| b   | "//n" eg: //n001 //n002         | Geant4/U4Recorder SEvt  |
+| b   | "//B" eg: //B000 //B001         | Geant4/U4Recorder SEvt  |
 +-----+---------------------------------+-------------------------+
 
 The tables are presented with row and column labels and the 
@@ -39,9 +39,9 @@ Usage from report directory loads and presents the report::
     epsilon:ALL3 blyth$ cd ../ALL3_sreport/
     epsilon:ALL3_sreport blyth$ sreport        
 
-Note that this means that can only rsync the small report directory 
-and still be able to present the report on laptop concerening run folders
-with many large arrays left on the server. 
+Note that this means that can rsync just the small report directory 
+and still be able to present the report and make plots on laptop concerning 
+run folders with many large arrays left on the server. 
 
 **/
 

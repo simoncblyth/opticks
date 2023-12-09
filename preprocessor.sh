@@ -9,7 +9,7 @@ file with no includes.
 
 The reason to do this is to have easy search access 
 to all the code that is being compiled. For example
-to find inadvertent printf or double. 
+to find inadvertant printf or double. 
 
 
 https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html

@@ -107,13 +107,12 @@ class Subprofile(object):
 
 
 class Subprofile_ALL(object):
-    def __init__(self, base, symbol="fold.subprofile"):
-        title = ["Subprofile_ALL "]  
-        for sym in base.ff:
-            f = getattr(base, sym)
-            title.append(Subprofile.Title(f))
-        pass
-        label = "\n".join(title)
+    """
+    RSS vs time for both "a" and "b"
+    """
+    def __init__(self, fold, symbol="fold.subprofile"):
+        base = eval(symbol)
+        label = RUN_META.Title(fold)
 
         fontsize = Subprofile.FONTSIZE
         if MODE == 2:
@@ -184,7 +183,7 @@ class Subprofile_ONE(object):
         meta = f.subprofile_meta
         names = f.subprofile_names
         labels = f.subprofile_labels
-        title = make_title(meta, method="Subprofile_ONE", symbol=symbol)
+        title = RUN_META.Title(fold) 
 
         tp,vm,rs = Subprofile.Time_VM_RS(f)
 
@@ -243,18 +242,20 @@ class Substamp_ONE_Etime(object):
     Switches from using subcount_photon to submeta_NumPhotonCollected 
     as that avoids needing to gather and save large photons arrays. 
     """
-    def __init__(self, fold, symbol="fold.substamp.a", p_symbol="fold.submeta_NumPhotonCollected.a[:,0]"):
-        photon = eval(p_symbol)/1e6
+    def __init__(self, fold, symbol="fold.substamp.a", esym="a" ):
 
         f = eval(symbol)
+
         substamp = f.substamp
         meta = f.substamp_meta
         names = f.substamp_names
         delta = f.delta_substamp 
 
+        photon = SUB_META.NumPhotonCollected(fold, esym)/1e6
         etime = Substamp.ETime(f) 
 
-        title = Substamp.Title(f, symbol=symbol)
+        title = RUN_META.Title(fold)
+        #title = Substamp.Title(f, symbol=symbol)
         hdr = Substamp.Hdr(f)
 
         desc = "\n".join([title, hdr, symbol, repr(delta)])
@@ -285,7 +286,7 @@ class Substamp_ONE_Etime(object):
 class Substamp_ALL_Hit_vs_Photon(object):
     def __init__(self, fold, symbol="fold.substamp", ):
         base = eval(symbol)
-        title = "PLOT=Substamp_ALL_Hit_vs_Photon ~/o/sreport.sh ## from cxs_min.sh run "
+        title = RUN_META.Title(fold)
         fontsize = 20 
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
@@ -342,7 +343,8 @@ class Substamp_ALL_Etime_vs_Photon(object):
                 ax.plot( photon, linefit(photon), label=linefit_label )
             pass
             ax.set_xlim( -5, 105 ); 
-            ax.set_ylim( 1e-2, 50 ); 
+            #ax.set_ylim( 1e-2, 50 ); 
+            ax.set_ylim( 1e-2, 1e4 );  # 50*200 = 1e4
             ax.set_yscale('log')
             ax.set_ylabel("Event time (seconds)", fontsize=fontsize )
             ax.set_xlabel("Number of Photons (Millions)", fontsize=fontsize )
@@ -358,7 +360,9 @@ class Substamp_ALL_RATIO_vs_Photon(object):
     """
     def __init__(self, fold, symbol="fold.substamp"):
         base = eval(symbol)
-        title = "Substamp_ALL_RATIO_vs_Photon"
+        #title = "Substamp_ALL_RATIO_vs_Photon"
+        title = RUN_META.Title(fold)
+
         fontsize = 20 
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
@@ -375,11 +379,14 @@ class Substamp_ALL_RATIO_vs_Photon(object):
             boa_etime = b_etime/a_etime 
 
             ax.scatter( a_photon, boa_etime, label="boa_etime(s)_vs_photon (millions)"  )
+            ax.plot( a_photon, boa_etime, label=None, linestyle="dotted" )  
             pass
-            ax.set_ylabel("B/A Event time ratio", fontsize=fontsize )
+            ax.set_ylabel("Geant4/Opticks Event time ratio", fontsize=fontsize )
             ax.set_xlabel("Number of Photons (Millions)", fontsize=fontsize )
-            ax.set_ylim( 0, 300)
+            ax.set_ylim( 0, 250)
+            ax.set_xlim( -5, 105)
             #ax.set_yscale('log')
+            #ax.set_xscale('log')
             ax.legend(loc="lower right")
             fig.show()
         pass
@@ -389,7 +396,9 @@ class Substamp_ONE_Delta(object):
     def __init__(self, fold, symbol="fold.substamp.a" ):
         f = eval(symbol)
         delta = f.delta_substamp 
-        title = Substamp.Title(f, symbol=symbol)
+        #title = Substamp.Title(f, symbol=symbol)
+        title = RUN_META.Title(fold)
+
         labels_s = Substamp.Labels(f)
  
         ax = None
@@ -412,13 +421,11 @@ class Substamp_ONE_Delta(object):
         self.ax = ax
 
 class Substamp_ONE_maxb_scan(object):
-    def __init__(self, fold, symbol="fold.substamp.a", p_symbol="fold.submeta_NumPhotonCollected.a[:,0]" ):
+    def __init__(self, fold, symbol="fold.substamp.a", esym="a" ):
         f = eval(symbol) 
         delta = f.delta_substamp 
-
-        #_photon = Substamp.Subcount(f, "photon")
-        _photon = eval(p_symbol)/1e6
-        u_photon = np.unique(_photon)
+        photon = SUB_META.NumPhotonCollected(fold, esym)/1e6
+        u_photon = np.unique(photon)
         assert len(u_photon) == 1, u_photon
         n_photon = u_photon[0]
         num = format_large_number(n_subcount_photon)
@@ -506,6 +513,7 @@ class Ranges_SPAN(object):
             pass
             ax.legend(loc="center right")
             #ax.set_yscale('log')
+            ax.set_xlim(-5,180)
             ax.set_xlabel("cxr_min.sh (CSGOptiXSMTest) Process Run Time[s]", fontsize=20 ); 
             fig.show()
         pass  
@@ -519,16 +527,14 @@ class Ranges_ONE(object):
     PLOT=Ranges_ONE ~/o/sreport.sh 
     """
     def __init__(self, fold, symbol="fold"):
-        print("Ranges_ONE")
 
         NPC = fold.submeta_NumPhotonCollected.a[:,0]
         print("NPC:%s" % str(NPC))
+        title = RUN_META.Title(fold)
+        print(title)
 
         names = ["simulate", "download", "upload_genstep" ]
 
-        context = "NVIDIA TITAN RTX (24G), OptiX 7.5, CUDA 11.7"
-        commandline = "PLOT=Ranges_ONE ~/o/sreport.sh  ## using cxs_min.sh SEvt "
-        title = "\n".join([commandline, context] )
 
         COLORS = ["red", "green", "blue" ]
         ax = None
@@ -545,12 +551,24 @@ class Ranges_ONE(object):
             pass
             ax.legend(loc="center right")
             ax.set_yscale('log')
-
+            ax.set_ylim(5e-4,50)
+            ax.set_xlim(-5,105)
             ax.set_ylabel("Time (seconds)", fontsize=20); 
             ax.set_xlabel("Number of \"TORCH\" Photons from CD center (Millions)", fontsize=20 ); 
             fig.show()
         pass  
         self.ax = ax
+
+
+
+
+class SUB_META(object):
+    @classmethod
+    def NumPhotonCollected(cls, fold, esym):
+        assert esym in ["a", "b"]
+        p_symbol = "fold.submeta_NumPhotonCollected.%s[:,0]" % esym 
+        photon = eval(p_symbol)
+        return photon
 
 
 class RUN_META(object):
@@ -594,19 +612,19 @@ if __name__ == '__main__':
 
     if PLOT.startswith("Substamp_ONE") and hasattr(fold, "substamp"):
         for e in PICK:
-            f = getattr(fold.substamp, e.lower(), None)
-            symbol = "fold.substamp.%s" % e.lower() 
-            p_symbol = "fold.submeta_NumPhotonCollected.%s[:,0]" % e.lower() 
+            esym = e.lower()
+            f = getattr(fold.substamp, esym, None)
+            symbol = "fold.substamp.%s" % esym 
             pass
             if f is None: continue 
-            # changes args from f to fold 
             if PLOT.startswith("Substamp_ONE_Delta"): Substamp_ONE_Delta(fold, symbol=symbol )
-            if PLOT.startswith("Substamp_ONE_Etime"): Substamp_ONE_Etime(fold, symbol=symbol, p_symbol=p_symbol)
-            if PLOT.startswith("Substamp_ONE_maxb_scan"): Substamp_ONE_maxb_scan(fold, symbol=symbol, p_symbol=p_symbol)
+            if PLOT.startswith("Substamp_ONE_Etime"): Substamp_ONE_Etime(fold, symbol=symbol, esym=esym )
+            if PLOT.startswith("Substamp_ONE_maxb_scan"): Substamp_ONE_maxb_scan(fold, symbol=symbol, esym=esym )
         pass
     pass  
+    ## Ranges only working for cxs_min.sh : based on SProf.hh run metadata : that needs work for G4CXTest
     if PLOT.startswith("Ranges_ONE") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
-        Ranges_ONE(fold, symbol="fold")
+        Ranges_ONE(fold, symbol="fold")  ## process activity line plots 
     if PLOT.startswith("Ranges_SPAN") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
         Ranges_SPAN(fold, symbol="fold")  ## colorfull process activity plot 
     pass
@@ -620,11 +638,11 @@ if __name__ == '__main__':
             f = getattr(fold.subprofile, e.lower(), None)
             symbol = "fold.subprofile.%s" % e.lower() 
             if f is None: continue
-            Subprofile_ONE(fold, symbol=symbol)
+            Subprofile_ONE(fold, symbol=symbol)   ## RSS vs time : technical 
         pass
     pass
     if PLOT.startswith("Subprofile_ALL") and hasattr(fold, "subprofile"):
-        Subprofile_ALL(fold, symbol="fold.subprofile")  ## failing 
+        Subprofile_ALL(fold, symbol="fold.subprofile")  ## RSS vs time 
     pass
     if PLOT.startswith("Runprof_ALL") and hasattr(fold, "runprof"):
         Runprof_ALL(fold, symbol="fold.runprof" )  ## RSS vs time : profile plot 

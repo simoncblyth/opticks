@@ -57,14 +57,15 @@ export VERSION    ## used in SEvt output directory name ALL$VERSION
 
 
 TMP=${TMP:-/tmp/$USER/opticks}
+export SCRIPT=$(basename $BASH_SOURCE)
 export BASE=$TMP/GEOM/$GEOM
-export LOGBASE=$BASE/$bin/ALL$VERSION
-export AFOLD=$LOGBASE/A000 
-export BFOLD=$LOGBASE/B000 
+export LOGDIR=$BASE/$bin/ALL$VERSION
+export AFOLD=$LOGDIR/A000 
+export BFOLD=$LOGDIR/B000 
 #export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/A000  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
 
-mkdir -p $LOGBASE
-cd $LOGBASE            ## logfile written in invoking directory 
+mkdir -p $LOGDIR
+cd $LOGDIR            ## logfile written in invoking directory 
 
 
 #export G4CXOpticks__SaveGeometry_DIR=$BASE  ## optionally save geom into BASE for debug 
@@ -224,7 +225,7 @@ defarg="info_env_run_report_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE LOGBASE AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
+vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE LOGDIR AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -257,9 +258,15 @@ if [ "${arg/plot}" != "$arg" ]; then
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $SDIR/../../bin/rsync.sh $LOGBASE    ## widen to BASE to include the debug geometry save 
+    source $SDIR/../../bin/rsync.sh $LOGDIR   ## COULD BE VERY LARGE : BETTER TO GRAB SINGLE EVT  
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
 fi
+
+if [ "${arg/gevt}" != "$arg" ]; then
+    source $OPTICKS_HOME/bin/rsync.sh $AFOLD
+    source $OPTICKS_HOME/bin/rsync.sh $BFOLD
+fi 
+
 
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script 

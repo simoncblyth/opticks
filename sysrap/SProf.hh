@@ -1,4 +1,17 @@
 #pragma once
+/**
+SProf.hh
+=========
+
+HMM: collecting a full process lifecycle into SProf
+is convenient, however have to avoid only saving 
+at end of run : as with jobs prone to run out of 
+memory want to have the run meta even when the 
+job fails.   Hence better to write the run meta 
+at the end of every event overwriting what was 
+there before.
+
+**/
 
 #include <vector>
 #include <fstream>
