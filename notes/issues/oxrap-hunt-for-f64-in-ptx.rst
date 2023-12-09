@@ -26,6 +26,18 @@ Compare Release and Debug PTX on S
                      num_f64_lines : 8 
     [simon@localhost ~]$ 
 
+After some help from ~/opticks/preprocessor.sh to examine the flattened 
+sources and some study of the PTX::
+
+    [simon@localhost ~]$ opticks-ptx
+                       BASH_SOURCE : /home/simon/opticks/opticks.bash 
+                          FUNCNAME : opticks-ptx 
+                               ptx : /data/simon/local/opticks_Release/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx 
+                  num_printf_lines : 0 
+                     num_f64_lines : 0 
+    [simon@localhost ~]$ 
+
+
 
 
 

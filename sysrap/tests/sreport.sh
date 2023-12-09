@@ -102,20 +102,22 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
+#job=N5
 #job=N7
-job=N5
+job=S7
 JOB=${JOB:-$job}
 
 DIR=unknown 
 case $JOB in 
   L1) DIR=/hpcfs/juno/junogpu/blyth/tmp/GEOM/$GEOM/jok-tds/ALL0 ;;
-  N1) DIR=/data/$USER/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
-  N2) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
-  N3) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
-  N4) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
-  N5) DIR=/data/$USER/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;
-  N6) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
-  N7) DIR=/data/$USER/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;
+  N1) DIR=/data/blyth/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
+  N2) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
+  N3) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
+  N4) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
+  N5) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;
+  N6) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
+  N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "blyth" account Debug build 
+  S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "simon" account Release build 
 esac
 
 export STEM=${JOB}_${PLOT}_${PICK}
@@ -149,10 +151,17 @@ fi
 if [ "${arg/run}" != "$arg" ]; then 
     cd $DIR
     [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR && exit 0 
-
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
+
+if [ "${arg/desc}" != "$arg" ]; then 
+    cd $FOLD
+    [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR FOLD $FOLD  && exit 0 
+    $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE : desc error && exit 3
+fi
+
 
 if [ "${arg/grab}" != "$arg" ]; then 
     echo $BASH_SOURCE : grab FOLD $FOLD 

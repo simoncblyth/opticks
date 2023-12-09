@@ -371,9 +371,11 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     int  typecode = nd ? nd->typecode : CSG_ZERO ; 
     bool leaf = CSG::IsLeaf(typecode) ; 
-    bool expect_external_bbox = CSG::ExpectExternalBBox(typecode); 
-    assert( !expect_external_bbox && "DEFERRED EXTERNAL BBOX SUPPORT UNTIL HAVE SOME EXAMPLES TO WORK ON" ); 
-    if(!expect_external_bbox) std::raise(SIGINT); 
+    bool external_bbox_is_expected = CSG::ExpectExternalBBox(typecode); 
+    bool expect = external_bbox_is_expected == false ; 
+    LOG_IF(fatal, !expect) << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED : DEFERRED UNTIL HAVE EXAMPLES " ; 
+    assert(expect); 
+    if(!expect) std::raise(SIGINT); 
 
     std::array<double,6> bb ; 
     double* aabb = leaf ? bb.data() : nullptr ;
