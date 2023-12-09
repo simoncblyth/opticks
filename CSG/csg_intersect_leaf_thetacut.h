@@ -268,8 +268,6 @@ here with the one from the more precise plane
 }
 
 
-
-
 /**
 SCB comments on intersect_leaf_thetacut_lucas
 
@@ -368,4 +366,5 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
 
     return valid;
 }
+
 

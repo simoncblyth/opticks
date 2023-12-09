@@ -1,4 +1,5 @@
 #pragma once
+
 /**
 intersect_leaf_newcone
 ------------------------
@@ -31,6 +32,18 @@ huh : is there a simpler way to get normal ? just from cone param ?
 * https://www.geometrictools.com/Documentation/IntersectionLineCone.pdf
 
 **/
+
+
+LEAF_FUNC
+float z_apex_cone( const quad& q0 )
+{
+    float r1 = q0.f.x ; 
+    float z1 = q0.f.y ; 
+    float r2 = q0.f.z ; 
+    float z2 = q0.f.w ;   // z2 > z1
+    float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
+    return z0 ; 
+}
 
 
 LEAF_FUNC

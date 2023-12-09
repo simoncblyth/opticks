@@ -92,11 +92,23 @@ list(APPEND INTERSECT_HEADERS
     csg_intersect_node.h 
     csg_intersect_tree.h 
 
-    csg_intersect_leaf_thetacut.h 
-    csg_intersect_leaf_phicut.h 
-    csg_intersect_leaf_newcone.h 
-    csg_intersect_leaf_oldcone.h 
-    csg_intersect_leaf_oldcylinder.h 
+    csg_intersect_leaf_box3.h
+    csg_intersect_leaf_convexpolyhedron.h
+    csg_intersect_leaf_cylinder.h
+    csg_intersect_leaf_disc.h
+    csg_intersect_leaf_head.h
+    csg_intersect_leaf_hyperboloid.h
+    csg_intersect_leaf_infcylinder.h
+    csg_intersect_leaf_newcone.h
+    csg_intersect_leaf_oldcone.h
+    csg_intersect_leaf_oldcylinder.h
+    csg_intersect_leaf_phicut.h
+    csg_intersect_leaf_plane.h
+    csg_intersect_leaf_slab.h
+    csg_intersect_leaf_sphere.h
+    csg_intersect_leaf_templated.h
+    csg_intersect_leaf_thetacut.h
+    csg_intersect_leaf_zsphere.h
 
     csg_robust_quadratic_roots.h
     csg_classify.h

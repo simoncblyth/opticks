@@ -17,7 +17,9 @@ For a slightly higher level test see CSGNodeScanTest.cc
 #include "SThetaCut.hh"
 
 #define DEBUG 1 
-#include "csg_intersect_leaf.h"
+#include "csg_intersect_leaf_head.h"
+#include "csg_intersect_leaf_thetacut.h"
+
 
 
 bool intersect( float4& is, float4& p, const quad& q0, const quad& q1, char imp, float t_min, const float3& o, const float3& d )

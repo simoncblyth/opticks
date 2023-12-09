@@ -16,10 +16,8 @@ For a slightly higher level test see CSGNodeScanTest.cc
 #include "sqat4.h"
 
 #define DEBUG 1 
-#include "csg_intersect_leaf.h"
-//#include "csg_intersect_node.h"
-//#include "csg_intersect_tree.h"
-
+#include "csg_intersect_leaf_head.h"
+#include "csg_intersect_leaf_phicut.h"
 
 
 int main(int argc, char** argv)
