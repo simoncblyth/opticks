@@ -77,12 +77,12 @@ struct float2 ;
 struct quad4 ; 
 struct quad6 ; 
 
-#if !defined(PRODUCTION)
+//#if !defined(PRODUCTION)
 struct srec ; 
 struct sseq ; 
 struct stag ; 
 struct sflat ; 
-#endif
+//#endif
 
 
 struct sphoton ; 
