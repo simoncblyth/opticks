@@ -189,7 +189,8 @@ struct SYSRAP_API SEventConfig
     static void SaveCompList( std::vector<unsigned>& save_comp ) ; 
 
     static constexpr const char* Default = "Default" ; 
-    static constexpr const char* StandardFullDebug = "StandardFullDebug" ; 
+    static constexpr const char* DebugHeavy = "DebugHeavy" ; 
+    static constexpr const char* DebugLite = "DebugLite" ; 
     static constexpr const char* Minimal = "Minimal" ; 
     static constexpr const char* Hit = "Hit" ; 
     static constexpr const char* HitPhoton = "HitPhoton" ; 
@@ -197,7 +198,8 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* HitSeq = "HitSeq" ; 
 
     static void SetDefault(); 
-    static void SetStandardFullDebug(); 
+    static void SetDebugHeavy(); 
+    static void SetDebugLite(); 
     static void SetMinimal();
     static void SetHit();
     static void SetHitPhoton();
@@ -205,7 +207,8 @@ struct SYSRAP_API SEventConfig
     static void SetHitSeq();
 
     static bool IsDefault(); 
-    static bool IsStandardFullDebug(); 
+    static bool IsDebugHeavy(); 
+    static bool IsDebugLite(); 
     static bool IsMinimal();
     static bool IsHit();
     static bool IsHitPhoton();

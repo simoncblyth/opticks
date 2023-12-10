@@ -45,7 +45,7 @@ moi=ALL
 
 # SEventConfig
 export MOI=${MOI:-$moi}
-#export OPTICKS_EVENT_MODE=StandardFullDebug
+#export OPTICKS_EVENT_MODE=DebugLite
 #export OPTICKS_MAX_BOUNCE=31
 
 export OPTICKS_INTEGRATION_MODE=1

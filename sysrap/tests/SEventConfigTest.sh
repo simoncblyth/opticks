@@ -7,8 +7,8 @@ SEventConfigTest.sh
 
     ~/opticks/sysrap/tests/SEventConfigTest.sh
 
-    OEM=StandardFullDebug ~/opticks/sysrap/tests/SEventConfigTest.sh 
-    OEM=StandardFullDebug ~/opticks/sysrap/tests/SEventConfigTest.sh 
+    OEM=DebugLite ~/opticks/sysrap/tests/SEventConfigTest.sh 
+    OEM=DebugLite ~/opticks/sysrap/tests/SEventConfigTest.sh 
 
 
 
@@ -18,13 +18,13 @@ EOU
 cd $(dirname $BASH_SOURCE)
 name=SEventConfigTest
 
-#oem=StandardFullDebug
+#oem=DebugLite
 #oem=Default
 oem=Minimal
 export OPTICKS_EVENT_MODE=${OEM:-$oem}
 
 case $OPTICKS_EVENT_MODE in 
-   Default|Minimal|StandardFullDebug|HitOnly|HitAndPhoton)   ok=1 ;; 
+   Default|Minimal|DebugLite|DebugHeavy|HitOnly|HitAndPhoton)   ok=1 ;; 
    *) ok=0 ;;  
 esac
 

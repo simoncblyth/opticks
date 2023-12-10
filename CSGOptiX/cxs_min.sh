@@ -113,7 +113,8 @@ case $VERSION in
  3) opticks_event_mode=HitPhoton ;; 
  4) opticks_event_mode=HitPhotonSeq ;; 
  5) opticks_event_mode=HitSeq ;; 
-99) opticks_event_mode=StandardFullDebug ;;
+98) opticks_event_mode=DebugLite ;;
+99) opticks_event_mode=DebugHeavy ;;  # formerly StandardFullDebug
 esac 
 
 test=reference

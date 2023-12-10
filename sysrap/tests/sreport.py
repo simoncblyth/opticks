@@ -5,8 +5,27 @@ sreport.py
 
 ::
 
-    ~/o/sreport.sh ana
+    PLOT=Substamp_ONE_Delta PICK=A ~/o/sreport.sh
+    PLOT=Substamp_ONE_Delta PICK=B ~/o/sreport.sh
 
+    PLOT=Substamp_ONE_Etime PICK=A ~/o/sreport.sh
+    PLOT=Substamp_ONE_Etime PICK=B ~/o/sreport.sh
+    
+    PLOT=Substamp_ONE_maxb_scan PICK=A ~/o/sreport.sh
+    PLOT=Substamp_ONE_maxb_scan PICK=B ~/o/sreport.sh
+
+    PLOT=Ranges_ONE ~/o/sreport.sh
+    PLOT=Ranges_SPAN ~/o/sreport.sh
+
+    PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport.sh
+    PLOT=Substamp_ALL_Hit_vs_Photon   ~/o/sreport.sh
+    PLOT=Substamp_ALL_RATIO_vs_Photon ~/o/sreport.sh
+
+    PLOT=Subprofile_ONE PICK=A ~/o/sreport.sh
+    PLOT=Subprofile_ONE PICK=B ~/o/sreport.sh
+ 
+    PLOT=Subprofile_ALL ~/o/sreport.sh
+    PLOT=Runprof_ALL    ~/o/sreport.sh    
 
 """
 
@@ -602,6 +621,10 @@ class RUN_META(object):
         return title 
 
 
+
+
+
+
 if __name__ == '__main__':
     fold = Fold.Load(symbol="fold")
 
@@ -648,4 +671,5 @@ if __name__ == '__main__':
         Runprof_ALL(fold, symbol="fold.runprof" )  ## RSS vs time : profile plot 
     pass
 pass
+
 

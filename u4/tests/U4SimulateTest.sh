@@ -129,7 +129,7 @@ esac
 ## sysrap/SEventConfig 
 export OPTICKS_RUNNING_MODE=$running_mode   # see SEventConfig::RunningMode
 export OPTICKS_MAX_BOUNCE=31                # can go upto 31 now that extended sseq.h 
-export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_EVENT_MODE=DebugLite
 export OPTICKS_G4STATE_SPEC=${NUM_PHOTONS}:38       # default is only 1000:38 to keep state files small 
 
 export SEvent_MakeGenstep_num_ph=${NUM_PHOTONS}

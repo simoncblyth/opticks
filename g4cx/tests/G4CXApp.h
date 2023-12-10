@@ -95,7 +95,7 @@ struct G4CXApp
     static G4RunManager* InitRunManager(); 
     static G4CXApp*        Create(); 
     void                 BeamOn() ;
-    static void          Main(); 
+    static int           Main(); 
 
 };
 
@@ -344,10 +344,11 @@ void G4CXApp::BeamOn()
     LOG(info) << "]" ; 
 }
 
-void G4CXApp::Main()  // static 
+int G4CXApp::Main()  // static 
 {
     G4CXApp* app = G4CXApp::Create() ;   
     app->BeamOn(); 
     delete app ;  // avoids "Attempt to delete the (physical volume/logical volume/solid/region) store while geometry closed" warnings 
+    return 0 ; 
 }
 

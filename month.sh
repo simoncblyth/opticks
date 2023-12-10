@@ -35,14 +35,16 @@ fi
 
 [ "$mo" == "h" ] && usage && exit 0 
 
+log=lg
+LOG=${LOG:-$log}
 
 month=$(printf "%0.2d" $mo)
 
 if [ "$mo" == "0" ]; then 
-    cmd="git lg --after $logyear-01-01 --before $logyear-12-31"
+    cmd="git $LOG --after $logyear-01-01 --before $logyear-12-31"
 
 else 
-    cmd="git lg --after $logyear-$month-01 --before $logyear-$month-31"
+    cmd="git $LOG --after $logyear-$month-01 --before $logyear-$month-31"
 fi 
 
 if [ "$rev" == "1" ]; then 

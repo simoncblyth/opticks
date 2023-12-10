@@ -30,7 +30,7 @@ cd $(dirname $BASH_SOURCE)
 export GEOM=SEVT_LIFECYCLE_TEST
 
 export OPTICKS_INPUT_PHOTON=RainXZ100_f4.npy
-export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_EVENT_MODE=DebugLite
 export OPTICKS_MAX_BOUNCE=31 
 
 evt=p001

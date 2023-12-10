@@ -19,7 +19,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     SEventConfig::SetRGModeSimulate(); 
-    SEventConfig::SetStandardFullDebug(); 
+    SEventConfig::SetDebugLite(); 
 
     SEvt* evt = SEvt::Create(0) ; 
 

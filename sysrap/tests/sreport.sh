@@ -24,7 +24,29 @@ by this sreport.sh script.
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab      ## from remove to local 
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana       ## local plotting 
 
-   runprof=1 ~/opticks/sysrap/tests/sreport.sh ana   
+
+   PLOT=Substamp_ONE_Delta PICK=A ~/o/sreport.sh
+   PLOT=Substamp_ONE_Delta PICK=B ~/o/sreport.sh
+
+   PLOT=Substamp_ONE_Etime PICK=A ~/o/sreport.sh
+   PLOT=Substamp_ONE_Etime PICK=B ~/o/sreport.sh
+   
+   PLOT=Substamp_ONE_maxb_scan PICK=A ~/o/sreport.sh
+   PLOT=Substamp_ONE_maxb_scan PICK=B ~/o/sreport.sh
+
+   PLOT=Ranges_ONE ~/o/sreport.sh
+   PLOT=Ranges_SPAN ~/o/sreport.sh
+
+   PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport.sh
+   PLOT=Substamp_ALL_Hit_vs_Photon   ~/o/sreport.sh
+   PLOT=Substamp_ALL_RATIO_vs_Photon ~/o/sreport.sh
+
+   PLOT=Subprofile_ONE PICK=A ~/o/sreport.sh
+   PLOT=Subprofile_ONE PICK=B ~/o/sreport.sh
+ 
+   PLOT=Subprofile_ALL ~/o/sreport.sh
+   PLOT=Runprof_ALL    ~/o/sreport.sh    
+
 
 
 
@@ -102,7 +124,8 @@ fi
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-job=N5
+#job=N5
+job=S5
 
 #job=N7   
 #job=S7  

@@ -258,7 +258,8 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 
  
 void SEventConfig::SetDefault(){            SetEventMode(Default)           ; } 
-void SEventConfig::SetStandardFullDebug(){  SetEventMode(StandardFullDebug) ; }
+void SEventConfig::SetDebugHeavy(){         SetEventMode(DebugHeavy) ; }
+void SEventConfig::SetDebugLite(){          SetEventMode(DebugLite) ; }
 void SEventConfig::SetMinimal(){            SetEventMode(Minimal)           ; }
 void SEventConfig::SetHit(){                SetEventMode(Hit)               ; }
 void SEventConfig::SetHitPhoton(){          SetEventMode(HitPhoton)         ; }
@@ -266,7 +267,8 @@ void SEventConfig::SetHitPhotonSeq(){       SetEventMode(HitPhotonSeq)      ; }
 void SEventConfig::SetHitSeq(){             SetEventMode(HitSeq)            ; }
 
 bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
-bool SEventConfig::IsStandardFullDebug(){ return _EventMode && strcmp(_EventMode, StandardFullDebug) == 0 ; }
+bool SEventConfig::IsDebugHeavy(){        return _EventMode && strcmp(_EventMode, DebugHeavy) == 0 ; }
+bool SEventConfig::IsDebugLite(){         return _EventMode && strcmp(_EventMode, DebugLite) == 0 ; }
 bool SEventConfig::IsMinimal(){           return _EventMode && strcmp(_EventMode, Minimal) == 0 ; }
 bool SEventConfig::IsHit(){               return _EventMode && strcmp(_EventMode, Hit) == 0 ; }
 bool SEventConfig::IsHitPhoton(){         return _EventMode && strcmp(_EventMode, HitPhoton) == 0 ; }
@@ -279,7 +281,9 @@ std::string SEventConfig::DescEventMode()  // static
     ss << "SEventConfig::DescEventMode" << std::endl 
        << Default 
        << std::endl
-       << StandardFullDebug 
+       << DebugHeavy 
+       << std::endl
+       << DebugLite
        << std::endl
        << Minimal
        << std::endl
@@ -727,20 +731,17 @@ SEventConfig::Initialize
 
 Canonically invoked from SEvt::SEvt 
 
-* Formerly this was invoked from G4CXOpticks::init, but that is 
-  too high level as SEvt is needed for purely G4 running such as the U4 tests 
-
 * NB must make any static call adjustments before SEvt instanciation 
   for them to have any effect 
 
-
-TODO: check if still conflation between the comps to gather and comp existance ?
-      need to split those, eg photon comp is always needed but not always gathered
+Former "StandardFullDebug" renamed "DebugHeavy" 
+is far too heavy for most debugging/validation, 
+"DebugLite" mode with photon, record, seq,  genstep 
+covers most needs.  
 
 **/
 
 int SEventConfig::Initialize_COUNT = 0 ; 
-
 int SEventConfig::Initialize() // static
 {
     LOG_IF(LEVEL, Initialize_COUNT > 0 ) 
@@ -753,7 +754,7 @@ int SEventConfig::Initialize() // static
     Initialize_COUNT += 1 ; 
 
     const char* mode = EventMode(); 
-    LOG(LEVEL) <<  " EventMode() " << mode ;  // eg Default, StandardFullDebug
+    LOG(LEVEL) <<  " EventMode() " << mode ;  // eg Default, DebugHeavy
     LOG(LEVEL) 
         <<  " RunningMode() " << RunningMode() 
         <<  " RunningModeLabel() " << RunningModeLabel() 
@@ -769,19 +770,21 @@ int SEventConfig::Initialize() // static
     {
         SetComp() ;  
     }
-    else if(IsStandardFullDebug())
+    else if(IsDebugHeavy() || IsDebugLite())
     {
-        SEventConfig::SetMaxRecord(max_bounce+1); 
-        //SEventConfig::SetMaxRec(max_bounce+1); 
         SEventConfig::SetMaxRec(0); 
-        SEventConfig::SetMaxPrd(max_bounce+1); 
-        SEventConfig::SetMaxAux(max_bounce+1); 
-
-        // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
+        SEventConfig::SetMaxRecord(max_bounce+1); 
         SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
-        SEventConfig::SetMaxTag(1);   
-        SEventConfig::SetMaxFlat(1); 
-        SEventConfig::SetMaxSup(1); 
+
+        if(IsDebugHeavy())
+        {
+            SEventConfig::SetMaxPrd(max_bounce+1); 
+            SEventConfig::SetMaxAux(max_bounce+1); 
+            // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
+            SEventConfig::SetMaxTag(1);   
+            SEventConfig::SetMaxFlat(1); 
+            SEventConfig::SetMaxSup(1); 
+        }
 
         SetComp() ;   // comp set based on Max values   
     }

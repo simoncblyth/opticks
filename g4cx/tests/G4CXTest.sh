@@ -105,7 +105,7 @@ export G4CXOpticks__saveGeometry_saveGGeo=1
 
 export OPTICKS_RUNNING_MODE=SRM_TORCH
 export OPTICKS_MAX_BOUNCE=31  
-export OPTICKS_EVENT_MODE=StandardFullDebug
+export OPTICKS_EVENT_MODE=DebugLite
 export OPTICKS_INTEGRATION_MODE=3
 
 export OPTICKS_MAX_PHOTON=${NUM_PHOTONS}

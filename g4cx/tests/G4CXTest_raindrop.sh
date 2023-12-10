@@ -75,7 +75,7 @@ oim=3  # GPU and CPU optical simulation
 export OPTICKS_INTEGRATION_MODE=$oim 
 
 mode=Minimal
-#mode=StandardFullDebug
+#mode=DebugLite
 export OPTICKS_EVENT_MODE=$mode   # configure what to gather and save
 
 # below directories match those used by SEvt saving 

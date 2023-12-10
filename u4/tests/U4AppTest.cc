@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     LOG(info) << " desc " << desc ; 
     SEvt::SetReldir(desc.c_str() ); 
 
-    SEventConfig::SetStandardFullDebug(); 
+    SEventConfig::SetDebugLite(); 
     SEvt* evt = SEvt::Create(SEvt::EGPU) ;  // ECPU would be more appropriate
      // SEvt must be instanciated before QEvent
     const char* outdir = evt->getOutputDir(); 

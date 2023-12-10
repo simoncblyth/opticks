@@ -44,13 +44,17 @@ if __name__ == '__main__':
     print(repr(b))
     ee = {'A':a, 'B':b} 
 
-    print("[--- ab = SAB(a,b) ----")
-    ab = None if a is None or b is None else SAB(a,b) 
-    print("]--- ab = SAB(a,b) ----")
+    if "SAB" in os.environ: 
+        print("[--- ab = SAB(a,b) ----")
+        ab = None if a is None or b is None else SAB(a,b) 
+        print("]--- ab = SAB(a,b) ----")
 
-    print("[----- repr(ab) ")
-    print(repr(ab))
-    print("]----- repr(ab) ")
+        print("[----- repr(ab) ")
+        print(repr(ab))
+        print("]----- repr(ab) ")
+    else:
+        print("skip SAB(a,b) as SAB not in os.environ")
+    pass
 
 
     # EXPR_ = r"""
@@ -63,6 +67,8 @@ if __name__ == '__main__':
     context = "PICK=%s MODE=%d  ~/opticks/g4cx/tests/G4CXTest_GEOM.sh " % (PICK, MODE )
     print(context)
 
+    HITONLY = "HITONLY" in os.environ
+
     for Q in PICK:
         e = ee.get(Q,None)
         if e is None:continue
@@ -70,11 +76,6 @@ if __name__ == '__main__':
         elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
         label = context + " ## " + elabel
 
-        if hasattr(e.f, 'photon'): 
-            pos = e.f.photon[:,0,:3]
-        else:
-            pos = None
-        pass
 
         if hasattr(e.f, 'hit'): 
             hit = e.f.hit[:,0,:3]
@@ -82,7 +83,13 @@ if __name__ == '__main__':
             hit = None
         pass
 
-        if hasattr(e.f, 'record'):
+        if hasattr(e.f, 'photon') and not HITONLY: 
+            pos = e.f.photon[:,0,:3]
+        else:
+            pos = None
+        pass
+
+        if hasattr(e.f, 'record') and not HITONLY:
             sel = np.where(e.f.record[:,:,2,3] > 0) # select on wavelength to avoid unfilled zeros
             poi = e.f.record[:,:,0,:3][sel]
         else:
@@ -103,7 +110,9 @@ if __name__ == '__main__':
                 pl.add_points( hit, color="cyan", point_size=3.0 )
             pass
 
-            pl.show_grid()
+            if not "NOGRID" in os.environ:
+                pl.show_grid()
+            pass
             cp = pl.show()
         pass
     pass

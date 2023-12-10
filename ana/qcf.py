@@ -131,7 +131,7 @@ class QCF(object):
 
         c2pv = chi2_pvalue( c2sum, int(c2n) )
         c2pvm = "> 0.05 : null-hyp " if c2pv > 0.05 else "< 0.05 : NOT:null-hyp "  
-        c2pvd = "pv[%3.2f,%s] " % (c2pv, c2pvm)
+        c2pvd = "pv[%4.3f,%s] " % (c2pv, c2pvm)
         # null-hyp consistent means there is no significant difference between 
         # the frequency counts in the A and B samples at a certain confidence
         # level (normally 5%) 
@@ -170,6 +170,13 @@ class QCF(object):
         self.sli = slice(None)
 
     def __getitem__(self, sli):
+        """
+
+        Change slice with::
+
+           ab.qcf[:100]  
+
+        """
         self.sli = sli
         print("sli: %s " % str(sli))
         return self

@@ -32,7 +32,7 @@ int main(int argc, char** argv)
     cudaDeviceSynchronize(); 
     LOG(info) << "] cu first " ; 
 
-    SEventConfig::SetStandardFullDebug(); // controls which and dimensions of SEvt arrays 
+    SEventConfig::SetDebugLite(); // controls which and dimensions of SEvt arrays 
 
     G4CXOpticks* gx = G4CXOpticks::SetGeometry() ;  
 

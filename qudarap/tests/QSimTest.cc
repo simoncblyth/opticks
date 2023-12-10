@@ -606,7 +606,7 @@ void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
         int maxbounce = prd->getNumBounce(); 
 
         SEventConfig::SetMaxBounce(maxbounce); 
-        SEventConfig::SetEventMode("StandardFullDebug"); 
+        SEventConfig::SetEventMode("DebugLite"); 
         SEventConfig::Initialize();   
 
         SEventConfig::SetMaxGenstep(1);        // FAKE_PROPAGATE starts from input photons but uses a single placeholder genstep 

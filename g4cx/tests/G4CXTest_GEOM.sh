@@ -16,6 +16,9 @@ Laptop::
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh grab 
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_GEOM.sh ana
 
+    ~/opticks/g4cx/tests/G4CXTest_GEOM.sh pvcap 
+
+
 
 Where possible its better to use pure Opticks simulation (no bi-simulation) 
 booting from a persisted geometry during testing due to the ~2s initialization time, eg with::
@@ -51,7 +54,7 @@ source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for findi
 
 
 
-version=3
+version=99
 VERSION=${VERSION:-$version}
 export VERSION    ## used in SEvt output directory name ALL$VERSION
 
@@ -63,6 +66,16 @@ export LOGDIR=$BASE/$bin/ALL$VERSION
 export AFOLD=$LOGDIR/A000 
 export BFOLD=$LOGDIR/B000 
 #export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/A000  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
+
+pick=A
+export PICK=${PICK:-$pick}  ## PICK is only used by ana, not running 
+case $PICK in 
+    A) FOLD=$AFOLD ;; 
+    B) FOLD=$BFOLD ;; 
+   AB) FOLD=$AFOLD ;;
+esac
+export FOLD 
+export STEM=G4CXTest_GEOM_${PICK}
 
 mkdir -p $LOGDIR
 cd $LOGDIR            ## logfile written in invoking directory 
@@ -113,13 +126,14 @@ case $VERSION in
  3) opticks_event_mode=HitPhoton ;;    ## USING 3 FOR LEAK TEST 
  4) opticks_event_mode=HitPhotonSeq ;; 
  5) opticks_event_mode=HitSeq ;; 
-99) opticks_event_mode=StandardFullDebug ;;
+98) opticks_event_mode=DebugLite ;;
+99) opticks_event_mode=DebugHeavy ;;
 esac 
 
 
 
-#test=reference
-test=large_scan
+test=reference
+#test=large_scan
 TEST=${TEST:-$test}
 
 if [ "$TEST" == "reference" ]; then 
@@ -240,27 +254,27 @@ fi
 if [ "${arg/run}" != "$arg" ]; then
     rm -f $bin.log
     $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 fi 
 
 if [ "${arg/report}" != "$arg" ]; then
     sreport
-    [ $? -ne 0 ] && echo $BASH_SOURCE : sreport error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1 
 fi 
 
 if [ "${arg/plot}" != "$arg" ]; then
     runprof=1 $SDIR/../../sysrap/tests/sreport.sh ana
-    [ $? -ne 0 ] && echo $BASH_SOURCE : sreport.plot error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE sreport.plot error && exit 1 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then
     source $SDIR/../../bin/rsync.sh $LOGDIR   ## COULD BE VERY LARGE : BETTER TO GRAB SINGLE EVT  
-    [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3 
+    [ $? -ne 0 ] && echo $BASH_SOURCE grab error && exit 3 
 fi
 
 if [ "${arg/gevt}" != "$arg" ]; then
@@ -268,10 +282,24 @@ if [ "${arg/gevt}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $BFOLD
 fi 
 
-
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script 
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error with script $script && exit 4
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error with script $script && exit 4
+fi 
+
+if [ "$arg" == "mpcap" -o "$arg" == "mppub" -o "$arg" == "pvcap" -o "$arg" == "pvpub" ]; then
+    export CAP_BASE=$FOLD/figs
+    export CAP_REL=G4CXTest_GEOM
+    export CAP_STEM=$STEM
+    case $arg in  
+       mpcap) source mpcap.sh cap  ;;  
+       pvcap) source pvcap.sh cap  ;;  
+       mppub) source mpcap.sh env  ;;  
+       pvpub) source pvcap.sh env  ;;  
+    esac
+    if [ "$arg" == "mppub" -o "$arg" == "pvpub" ]; then 
+        source epub.sh 
+    fi  
 fi 
 
 exit 0 
