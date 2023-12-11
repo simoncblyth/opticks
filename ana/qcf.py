@@ -13,12 +13,15 @@ class QU(object):
     def __init__(self, q, symbol="q"):
         """
         QU : Unique value table 
+       
+        q is a char array of dtype "|S96" (32*3=96 each point taking 3 chars  "TO " "BT ")
 
         u : unique values within q
         x : first index within q of the unique value
         n : count of occurrence of the unique values in q 
         """
-
+        assert q.dtype == "|S96"   
+  
         expr = "np.c_[n,x,u][o][lim]"
         label = "uniques in descending count order with first index x"
 

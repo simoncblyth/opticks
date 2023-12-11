@@ -37,6 +37,23 @@ TODO
 revisit optix7c-cd and SDK 
 
 
+
+OptiX 7.5 SDK
+---------------
+
+::
+
+   cp -r /cvmfs/opticks.ihep.ac.cn/external/OptiX_750                             /data/blyth/
+   cp -r /cvmfs/opticks.ihep.ac.cn/external/NVIDIA-OptiX-SDK-7.5.0-linux64-x86_64 /data/blyth/
+
+
+
+
+
+
+
+
+
 NVIDIA Ai Denoiser
 --------------------
 

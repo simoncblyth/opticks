@@ -82,6 +82,9 @@ struct sseq
     SSEQ_METHOD std::string desc() const ; 
     SSEQ_METHOD std::string desc_seqhis() const ; 
     SSEQ_METHOD std::string brief() const ; 
+    SSEQ_METHOD std::string seqhis_() const ; 
+    SSEQ_METHOD bool operator< (const sseq& other) const ; 
+    SSEQ_METHOD bool operator==(const sseq& other) const ; 
 #endif
 };
 
@@ -211,6 +214,63 @@ SSEQ_METHOD std::string sseq::brief() const
     std::string fseq = OpticksPhoton::FlagSequence_(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
     return sstr::TrimTrailing(fseq.c_str()) ; 
 } 
+
+SSEQ_METHOD std::string sseq::seqhis_() const
+{
+    return OpticksPhoton::FlagSequence_(&seqhis[0], NSEQ) ;  // HMM: bring this within sseq ? 
+} 
+SSEQ_METHOD bool sseq::operator< (const sseq& other) const 
+{
+    return seqhis[1] == other.seqhis[1] ? seqhis[0] < other.seqhis[0] : seqhis[1] < other.seqhis[1] ; 
+}
+SSEQ_METHOD bool sseq::operator==(const sseq& other) const 
+{
+    return seqhis[1] == other.seqhis[1] && seqhis[0] == other.seqhis[0] ; 
+}
+
+
+
+
+
+// hash specialization allowing sseq to be used as a map key 
+template<>
+struct std::hash<sseq> 
+{
+    std::size_t operator()(const sseq& k) const 
+    {
+        std::size_t h1 = std::hash<uint64_t>()(k.seqhis[1]);
+        std::size_t h2 = std::hash<uint64_t>()(k.seqhis[0]);
+        return h1 ^ (h2 << 1);
+    }
+};
+
+
+
+
+
+struct sseq_unique
+{
+    sseq q ; 
+    int  first ;
+    int  count ; 
+
+    bool operator< (const sseq_unique& other) const ; 
+    std::string desc() const ; 
+}; 
+
+SSEQ_METHOD bool sseq_unique::operator< (const sseq_unique& other) const 
+{
+    return count < other.count ; 
+}  
+
+SSEQ_METHOD std::string sseq_unique::desc() const
+{
+    std::stringstream ss ;  
+    ss << q.seqhis_() << " : " << std::setw(7) << count << " : " << std::setw(7) << first  ;  
+    std::string str = ss.str(); 
+    return str ; 
+} 
+
 
 
 

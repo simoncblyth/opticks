@@ -7,6 +7,7 @@
 
 #include "scuda.h"
 #include "squad.h"
+#include "ssys.h"
 #include "sseq.h"
 #include "spath.h"
 
@@ -339,17 +340,54 @@ void test_shiftwrap()
 void test_load_seq()
 {
     const char* path = spath::Resolve("$TMP/GEOM/$GEOM/$EXECUTABLE/ALL$VERSION/$EVT/seq.npy") ; 
-    NP* a = NP::Load(path); 
+    NP* a = NP::LoadIfExists(path); 
     std::cout << " path " << path << " a " << ( a ? a->sstr() : "-" ) << std::endl ; 
+    if(!a) return ;  
 
     std::vector<sseq> qq ; 
     NPX::VecFromArray<sseq>(qq, a ); 
 
-    for(int i=0 ; i < std::min(int(qq.size()), 100) ; i++)
+    int num = ssys::getenvint("NUM", 100); 
+    std::cout << " dumping first " << num << std::endl ; 
+    for(int i=0 ; i < std::min(int(qq.size()), num) ; i++)
+    {
+        const sseq& q = qq[i] ; 
+        //std::cout << q.desc_seqhis() << std::endl ;  
+        std::string seqhis = q.seqhis_();  
+        std::cout << "[" << seqhis << "]" << std::endl ;  
+    }
+}
+
+void test_sort_seq()
+{
+    const char* path = spath::Resolve("$TMP/GEOM/$GEOM/$EXECUTABLE/ALL$VERSION/$EVT/seq.npy") ; 
+    NP* a = NP::LoadIfExists(path); 
+    std::cout << " path " << path << " a " << ( a ? a->sstr() : "-" ) << std::endl ; 
+    if(!a) return ;  
+
+    std::vector<sseq> qq ; 
+    NPX::VecFromArray<sseq>(qq, a ); 
+
+    std::sort(qq.begin(), qq.end() ); 
+
+    int num = ssys::getenvint("NUM", 100); 
+    for(int i=0 ; i < std::min(int(qq.size()), num) ; i++)
     {
         const sseq& q = qq[i] ; 
         std::cout << q.desc_seqhis() << std::endl ;  
+        //std::cout << "[" << q.seqhis_() << "]" << std::endl ;  
     }
+}
+
+
+
+void test_unique_seq_counts_with_first_index()
+{
+    const char* path = spath::Resolve("$TMP/GEOM/$GEOM/$EXECUTABLE/ALL$VERSION/$EVT/seq.npy") ; 
+    NP* a = NP::LoadIfExists(path); 
+    std::cout << " path " << path << " a " << ( a ? a->sstr() : "-" ) << std::endl ; 
+    if(!a) return ;  
+
 }
 
 
@@ -368,10 +406,11 @@ int main()
     test_desc_seqhis_0();    
     test_desc_seqhis_1();    
     test_shiftwrap();    
+    test_load_seq(); 
+    test_sort_seq(); 
     */
 
-    test_load_seq(); 
-
+    test_unique_seq_counts_with_first_index(); 
 
     return 0 ; 
 }
