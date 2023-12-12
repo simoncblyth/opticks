@@ -13,12 +13,18 @@ from opticks.ana.p import *  # including cf boundary___
 
 
 MODE = int(os.environ.get("MODE","3"))
+SEL = int(os.environ.get("SEL","0"))
 PICK = os.environ.get("PICK","A")
+SAB = "SAB" in os.environ
+
+H,V = 0,2  # X, Z
+
+
 
 if MODE in [2,3]:
     try:
         import pyvista as pv
-        from opticks.ana.pvplt import pvplt_plotter, pvplt_viewpoint
+        from opticks.ana.pvplt import pvplt_plotter, pvplt_viewpoint, mpplt_plotter, mpplt_focus_aspect
     except ImportError:
         pv = None
     pass
@@ -41,13 +47,23 @@ pass
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    a = SEvt.Load("$AFOLD", symbol="a")
-    print(repr(a))
-    b = SEvt.Load("$BFOLD", symbol="b")
-    print(repr(b))
+    if PICK == "A" or PICK == "AB" or SAB:
+        a = SEvt.Load("$AFOLD", symbol="a")
+        print(repr(a))
+    else: 
+        a = None
+    pass
+
+    if PICK == "B" or PICK == "AB" or SAB:
+        b = SEvt.Load("$BFOLD", symbol="b")
+        print(repr(b))
+    else:
+        b = None
+    pass
+
     ee = {'A':a, 'B':b} 
 
-    if "SAB" in os.environ: 
+    if SAB: 
         print("[--- ab = SAB(a,b) ----")
         ab = None if a is None or b is None else SAB(a,b) 
         print("]--- ab = SAB(a,b) ----")
@@ -99,7 +115,34 @@ if __name__ == '__main__':
             poi = None
         pass
 
-        if MODE == 3 and not pv is None:
+        if MODE == 2:
+            pl = mpplt_plotter(label=label)
+            fig, axs = pl
+            assert len(axs) == 1
+            ax = axs[0]
+
+            xlim, ylim = mpplt_focus_aspect()
+            if not xlim is None:
+                ax.set_xlim(xlim) 
+                ax.set_ylim(ylim) 
+            else:
+                log.info("mpplt_focus_aspect not enabled, use eg FOCUS=0,0,100 to enable ")
+            pass 
+
+            if SEL == 1:
+                #sel = np.logical_and( np.abs(u_pos[:,H]) < 500, np.abs(u_pos[:,V]) < 500 )
+                sel = pos[:,V] > 28000
+
+                u_pos = pos[sel]
+            else:
+                u_pos = pos
+            pass
+
+            ax.scatter( u_pos[:,H], u_pos[:,V], s=0.1 )
+
+            fig.show()
+
+        elif MODE == 3 and not pv is None:
             pl = pvplt_plotter(label)
             pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
 

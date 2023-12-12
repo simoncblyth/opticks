@@ -71,8 +71,7 @@ private:
     static const char* setGeometry_saveGeometry ; 
     void setGeometry(CSGFoundry* fd); 
     void setGeometry_(CSGFoundry* fd); 
-    //void init_SEvt(); 
-    void setupFrame(); 
+    //void setupFrame();   // moved down to CSGOptiX::initFrame
 public: 
     std::string descSimulate() const ; 
     void simulate(int eventID); 

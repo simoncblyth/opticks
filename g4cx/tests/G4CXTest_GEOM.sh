@@ -51,7 +51,8 @@ EOU
 SDIR=$(dirname $(realpath $BASH_SOURCE))
 
 bin=G4CXTest
-script=$SDIR/G4CXTest_GEOM.py 
+ana_script=$SDIR/G4CXTest_GEOM.py 
+dna_script=$SDIR/G4CXTest.py 
 
 source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for finding geometry
 
@@ -262,7 +263,7 @@ defarg="info_env_run_report_ana"
 #defarg="info_dbg_ana"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE LOGDIR AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES script" 
+vars="BASH_SOURCE SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPath VERSION TMP BASE LOGDIR AFOLD BFOLD CVD CUDA_VISIBLE_DEVICES ana_script" 
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -311,9 +312,18 @@ if [ "${arg/chi2}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $script 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error with script $script && exit 4
+    ${IPYTHON:-ipython} --pdb -i $ana_script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error with ana_script $ana_script && exit 4
 fi 
+
+if [ "${arg/dna}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $dna_script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE dna error with dna_script $dna_script && exit 4
+fi 
+
+
+
+
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" -o "$arg" == "pvcap" -o "$arg" == "pvpub" ]; then
     export CAP_BASE=$FOLD/figs

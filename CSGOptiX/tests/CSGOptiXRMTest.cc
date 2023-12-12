@@ -10,8 +10,7 @@ CSGOptiXRMTest : minimal variant of CSGOptiXRenderTest for debugging single rend
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    CSGOptiX::RenderMain(); 
-    return 0 ;
+    return CSGOptiX::RenderMain(); 
 }
 
 

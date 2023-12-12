@@ -54,10 +54,10 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static CSGOptiX*   Get(); 
     static int         Version(); 
 
-    static void        RenderMain();    // used by tests/CSGOptiXRdrTest.cc 
-    static void        SimtraceMain();  // used by tests/CSGOptiXTMTest.cc
-    static void        SimulateMain();  // used by tests/CSGOptiXSMTest.cc 
-    static void        Main(); 
+    static int         RenderMain();    // used by tests/CSGOptiXRdrTest.cc 
+    static int         SimtraceMain();  // used by tests/CSGOptiXTMTest.cc
+    static int         SimulateMain();  // used by tests/CSGOptiXSMTest.cc 
+    static int         Main();          // NOT USED
 
     static const char* Desc(); 
 
@@ -127,6 +127,7 @@ private:
     void initGeometry();
     void initRender();
     void initSimulate();
+    void initFrame(); 
  private: 
     void setTop(const char* tspec); 
  public: 

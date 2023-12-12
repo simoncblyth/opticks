@@ -3,16 +3,27 @@ usage(){ cat << EOU
 cxt_min.sh : Simtrace minimal executable and script for shakedown
 ===================================================================
 
+Workstation::
+
+   ~/o/cxt_min.sh
+
+Laptop::
+
+   ~/o/cxt_min.sh grab
+   NOGRID=1 MODE=2 ~/o/cxt_min.sh ana
+
 EOU
 }
 
-REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-REALNAME=$(basename $BASH_SOURCE)
-REALSTEM=${REALNAME/.sh}
+
+SDIR=$(dirname $(realpath $BASH_SOURCE))
+SNAME=$(basename $BASH_SOURCE)
+SSTEM=${SNAME/.sh}
+script=$SDIR/$SSTEM.py 
+
 
 case $(uname) in
    Linux) defarg=run_info ;;
-   #Linux) defarg=dbg_info ;;
    Darwin) defarg=grab_ana ;;
 esac
 
@@ -24,39 +35,40 @@ bin=CSGOptiXTMTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
-GDIR=.opticks/GEOM/$GEOM
-export ${GEOM}_CFBaseFromGEOM=$HOME/$GDIR  # configure geometry to load
-
-export BASE=$GDIR/$bin   # rsync special cases paths starting with . 
-export EVT=${EVT:-p001}
-export LOGDIR=$HOME/$BASE
-
-mkdir -p $LOGDIR 
-cd $LOGDIR 
-LOG=$bin.log
-
-moi=ALL
+#moi=ALL
 #moi=sWorld:0:0
 #moi=NNVT:0:0
 #moi=NNVT:0:50
 #moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
-#moi=sChimneyAcrylic 
+moi=sChimneyAcrylic:0:0
 
-# SEventConfig
-export MOI=${MOI:-$moi}
-#export OPTICKS_EVENT_MODE=DebugLite
-#export OPTICKS_MAX_BOUNCE=31
+export MOI=${MOI:-$moi}  # SEventConfig
+
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+
+export EVT=${EVT:-A000}
+export BASE=$TMP/GEOM/$GEOM
+export BINBASE=$BASE/$bin
+export LOGDIR=$BINBASE/$MOI
+export FOLD=$LOGDIR/$EVT
+
+export SCRIPT=$(basename $BASH_SOURCE)
+
+version=1
+VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
+
+mkdir -p $LOGDIR 
+cd $LOGDIR 
+LOG=$bin.log
 
 export OPTICKS_INTEGRATION_MODE=1
 
 
-## HMM: simtrace replaced ALL with the MOI value  MAYBE: STANDARDIZE ON ALL ?
-export FOLD=$HOME/$GDIR/$bin/$MOI/$EVT
-
-
-#export CEGS=16:0:9:1000   # XZ default 
-export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
+export CEGS=16:0:9:1000   # XZ default 
+#export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
 #export CEGS=16:9:0:1000    # try XY 
 
 cvd=1   # default 1:TITAN RTX
@@ -70,7 +82,7 @@ logging(){
 #logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES REALDIR REALNAME REALSTEM FOLD"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR SNAME SSTEM FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -99,11 +111,17 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 
-if [ "${arg/grab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
+
+if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
+    ## THIS OLD GRAB SYNCING TOO MUCH 
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
 fi 
 
+if [ "${arg/grab}" != "$arg" ]; then 
+    source $OPTICKS_HOME/bin/rsync.sh $FOLD
+fi 
+
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/$REALSTEM.py
+    ${IPYTHON:-ipython} --pdb -i $script
 fi 
 

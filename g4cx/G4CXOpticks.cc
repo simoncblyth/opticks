@@ -277,7 +277,7 @@ const char* G4CXOpticks::setGeometry_saveGeometry = ssys::getenvvar("G4CXOpticks
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
     setGeometry_(fd_); 
-    setupFrame();    // EXPT: MOVED HERE TO INITIALIZATION
+   //  setupFrame();     : MOVED DOWN TO CSGOptiX::initFrame
 }
 
 
@@ -342,84 +342,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     }
 }
 
-/**
-G4CXOpticks::init_SEvt   MOVING THIS DOWN TO CSGOptiX::InitEvt
------------------------------------------------------------------
 
-This invoked one only from `G4CXOpticks::setGeometry_`
-
-A single SEvt::EGPU instance is instanciated, which is 
-reused for each simulate call.  
-
-
-void G4CXOpticks::init_SEvt()
-{
-    sim->serialize() ;  // SSim::serialize stree::serialize into NPFold 
-
-    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
-
-
-    sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  A: YES, Essential set_matline of Cerenkov Genstep 
-
-
-    std::string* rms = SEvt::RunMetaString() ; 
-    assert(rms); 
-    
-    bool stamp = false ; 
-    smeta::Collect(*rms, "G4CXOpticks__init_SEvt", stamp ); 
-
-    std::string gm = sim->getGPUMeta() ;   // (SSim) scontext sdevice::brief
-    SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
-
-
-    std::string switches = QSim::Switches() ;
-    SEvt::SetRunMetaString("QSim__Switches", switches.c_str() ); 
-
-#ifdef WITH_CUSTOM4
-    std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
-    SEvt::SetRunMetaString("C4Version", c4.c_str()); 
-#else
-    SEvt::SetRunMetaString("C4Version", "NOT-WITH_CUSTOM4" ); 
-#endif
-
-}
-**/
-
-
-
-
-/**
-G4CXOpticks::setupFrame
--------------------------
-
-The frame used depends on envvars INST, MOI, OPTICKS_INPUT_PHOTON_FRAME 
-it comprises : fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
-
-This setupFrame was formerly called from G4CXOpticks::simulate and G4CXOpticks::simtrace
-it is now moved to G4CXOpticks::setGeometry to facilitate transformation 
-of input photons. 
-
-Q: why is the frame needed ?
-A: cx rendering viewpoint, input photon frame and the simtrace genstep grid 
-   are all based on the frame center, extent and transforms 
-
-Q: Given the sframe and SEvt are from sysrap it feels too high level to do this here, 
-   should be at CSG or sysrap level perhaps ? 
-   And then CSGOptix could grab the SEvt frame at its initialization. 
-
-**/
-
-void G4CXOpticks::setupFrame()
-{
-    // TODO: see CSGFoundry::AfterLoadOrCreate for auto frame hookup
-
-    sframe fr = fd->getFrameE() ; 
-    LOG(LEVEL) << fr ; 
-
-    SEvt::SetFrame(fr) ; 
-
-    if(cx) cx->setFrame(fr);  
-}
 
 
 std::string G4CXOpticks::descSimulate() const

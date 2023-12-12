@@ -154,21 +154,23 @@ same way as simtrace and simulate, but it could do in future.
 
 **/
 
-void CSGOptiX::RenderMain() // static
+int CSGOptiX::RenderMain() // static
 {
     SEventConfig::SetRGModeRender(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->render(); 
+    return 0 ; 
 }
-void CSGOptiX::SimtraceMain()
+int CSGOptiX::SimtraceMain()
 {
     SEventConfig::SetRGModeSimtrace(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->simtrace(0); 
+    return 0 ; 
 }
-void CSGOptiX::SimulateMain() // static
+int CSGOptiX::SimulateMain() // static
 {
     SProf::Add("CSGOptiX__SimulateMain_HEAD"); 
     SEventConfig::SetRGModeSimulate(); 
@@ -179,7 +181,7 @@ void CSGOptiX::SimulateMain() // static
     SProf::Add("CSGOptiX__SimulateMain_TAIL"); 
     SProf::Write("run_meta.txt", true ); // append:true 
     cx->write_Ctx_log(); 
-
+    return 0 ; 
 }
 
 /**
@@ -193,11 +195,12 @@ so instead use three separate executables that each use the
 corresponding Main static method. 
 
 **/
-void CSGOptiX::Main() // static
+int CSGOptiX::Main() // static
 {
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->proceed(); 
+    return 0 ; 
 }
 
 const char* CSGOptiX::Desc()
@@ -361,10 +364,21 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
         qs->setLauncher(cx); 
     } 
 
+
+
+
     LOG(LEVEL) << "]" ; 
     SProf::Add("CSGOptiX__Create_TAIL"); 
     return cx ; 
 }
+
+
+
+
+
+
+
+
 
 
 Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
@@ -438,6 +452,7 @@ void CSGOptiX::init()
     initGeometry();
     initRender(); 
     initSimulate(); 
+    initFrame(); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -592,6 +607,37 @@ void CSGOptiX::initSimulate()
 }
 
 
+
+/**
+CSGOptiX::initFrame (formerly G4CXOpticks::setupFrame)
+---------------------------------------------------------
+
+The frame used depends on envvars INST, MOI, OPTICKS_INPUT_PHOTON_FRAME 
+it comprises : fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+
+Q: why is the frame needed ?
+A: cx rendering viewpoint, input photon frame and the simtrace genstep grid 
+   are all based on the frame center, extent and transforms 
+
+Q: Given the sframe and SEvt are from sysrap it feels too high level to do this here, 
+   should be at CSG or sysrap level perhaps ? 
+   And then CSGOptix could grab the SEvt frame at its initialization. 
+
+TODO: see CSGFoundry::AfterLoadOrCreate for maybe auto frame hookup
+
+**/
+
+void CSGOptiX::initFrame()
+{
+    sframe _fr = foundry->getFrameE() ; 
+    LOG(LEVEL) << _fr ; 
+    SEvt::SetFrame(_fr) ; 
+    setFrame(_fr);  
+}
+
+
+
+
 /**
 CSGOptiX::simulate
 --------------------
@@ -622,7 +668,7 @@ CSGOptiX::simtrace_launch via the SCSGOptiX.h protocol
 double CSGOptiX::simtrace(int eventID)
 {
     assert(sim); 
-    double dt = sim->simtrace(eventID) ;
+    double dt = sim->simtrace(eventID) ;  // (QSim)
     return dt ; 
 }
 
