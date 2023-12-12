@@ -1,4 +1,4 @@
-// name=s_seq_test ; gcc $name.cc -I.. -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name
+// ~/o/sysrap/tests/s_seq_test.sh
 
 #include <iostream>
 #include "s_seq.h"
@@ -22,4 +22,5 @@ int main()
     return 0 ; 
 }; 
 
+// ~/o/sysrap/tests/s_seq_test.sh
 

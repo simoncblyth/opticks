@@ -391,7 +391,7 @@ inline std::string sseq_index_ab::desc(const char* opt) const
         const sseq_qab& qab = u[i] ; 
 
         // hmm : inclusion based on max count OR sum of counts ? 
-        int abx = std::max( qab.a.count, qab.b.count ) ; 
+        //int abx = std::max( qab.a.count, qab.b.count ) ; 
         //if( abx < min_abx ) continue ; 
 
         bool c2_inc(false); 

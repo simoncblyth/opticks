@@ -137,6 +137,7 @@ esac
 
 
 
+#test=small
 test=reference
 #test=large_scan
 TEST=${TEST:-$test}
@@ -146,6 +147,13 @@ if [ "$TEST" == "reference" ]; then
    opticks_num_photon=M1
    opticks_max_photon=M1
    opticks_num_event=1
+
+elif [ "$TEST" == "small" ]; then 
+
+   opticks_num_photon=H1
+   opticks_max_photon=M1
+   opticks_num_event=1
+
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
@@ -191,10 +199,9 @@ if [ -n "$PRECOOKED" ]; then
     ## SPECIAL SETTING TO GET G4CXApp::GeneratePrimaries
     ## TO USE THE SAME RANDOMS AS CURAND : SO CAN COMPARE 
     ## WITH THE SAME START PHOTONS
-    ## THIS LIMITS NUM PHOTONS TO 1M (AS THATS WHATS PRECOOKED)
     export SGenerate__GeneratePhotons_RNG_PRECOOKED=1
+    export s_seq__SeqPath_DEFAULT_LARGE=1   ## enable M1, without this are limited to K100 
 fi 
-
 
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
