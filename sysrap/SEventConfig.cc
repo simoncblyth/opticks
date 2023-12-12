@@ -770,21 +770,26 @@ int SEventConfig::Initialize() // static
     {
         SetComp() ;  
     }
-    else if(IsDebugHeavy() || IsDebugLite())
+    else if(IsDebugHeavy())
     {
         SEventConfig::SetMaxRec(0); 
         SEventConfig::SetMaxRecord(max_bounce+1); 
         SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
 
-        if(IsDebugHeavy())
-        {
-            SEventConfig::SetMaxPrd(max_bounce+1); 
-            SEventConfig::SetMaxAux(max_bounce+1); 
-            // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
-            SEventConfig::SetMaxTag(1);   
-            SEventConfig::SetMaxFlat(1); 
-            SEventConfig::SetMaxSup(1); 
-        }
+        SEventConfig::SetMaxPrd(max_bounce+1); 
+        SEventConfig::SetMaxAux(max_bounce+1); 
+        // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else  
+        SEventConfig::SetMaxTag(1);   
+        SEventConfig::SetMaxFlat(1); 
+        SEventConfig::SetMaxSup(1); 
+
+        SetComp() ;   // comp set based on Max values   
+    }
+    else if(IsDebugLite())
+    {
+        SEventConfig::SetMaxRec(0); 
+        SEventConfig::SetMaxRecord(max_bounce+1); 
+        SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
 
         SetComp() ;   // comp set based on Max values   
     }

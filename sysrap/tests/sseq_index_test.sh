@@ -20,7 +20,9 @@ name=sseq_index_test
 export FOLD=$TMP/$name
 mkdir -p $FOLD
 
-bin=$FOLD/$name
+#bin=$FOLD/$name   ## dev binary built here
+bin=$name          ## installed binary built by om   
+
 script=$SDIR/sseq_index_test.py 
 
 

@@ -51,7 +51,13 @@ A: YES, see SGenerate__test.sh : MOCK_CURAND is to allow
 inline NP* SGenerate::GeneratePhotons(const NP* gs_ )
 {
     bool rng_precooked = ssys::getenvbool(EKEY); 
-    if(rng_precooked) std::cerr << EKEY << " IS ENABLED " << std::endl ; 
+    std::cerr 
+        << "SGenerate::GeneratePhotons"
+        << " " << EKEY 
+        << " : "
+        << ( rng_precooked ? "YES" : "NO " ) 
+        << std::endl 
+        ; 
 
     const quad6* gg = (quad6*)gs_->bytes() ; 
     NP* se = SEvent::MakeSeed(gs_) ;

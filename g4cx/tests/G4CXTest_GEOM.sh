@@ -11,6 +11,11 @@ Workstation::
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg
     LOG=1 BP=C4CustomART::doIt ~/opticks/g4cx/tests/G4CXTest_GEOM.sh dbg  
 
+
+    PRECOOKED=1 ~/o/G4CXTest_GEOM.sh
+
+
+
 Laptop::
 
     ~/opticks/g4cx/tests/G4CXTest_GEOM.sh grab 
@@ -54,7 +59,7 @@ source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for findi
 
 
 
-version=99
+version=98
 VERSION=${VERSION:-$version}
 export VERSION    ## used in SEvt output directory name ALL$VERSION
 

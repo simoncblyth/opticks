@@ -249,6 +249,7 @@ inline void sseq_index_ab_chi2::init()
     sum = 0 ; 
     ndf = 0 ; 
     absum_min = ssys::getenvint(EKEY,DEFAULT_ABSUM_MIN) ; 
+    spare = 0 ; 
 }
 
 std::string sseq_index_ab_chi2::desc() const 
