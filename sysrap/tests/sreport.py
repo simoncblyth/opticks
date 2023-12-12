@@ -626,7 +626,7 @@ class RUN_META(object):
 
 
 if __name__ == '__main__':
-    fold = Fold.Load(symbol="fold")
+    fold = Fold.Load("$SREPORT_FOLD", symbol="fold")
 
     print(repr(fold))
     SWITCHES = RUN_META.QSim__Switches(fold)

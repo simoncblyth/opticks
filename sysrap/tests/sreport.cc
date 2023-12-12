@@ -398,7 +398,7 @@ int main(int argc, char** argv)
 
     if( is_executable_sibling_path == false )  // not in eg ALL3_sreport directory 
     {
-        U::SetEnvDefaultExecutableSiblingPath("FOLD", argv0, dirp );
+        U::SetEnvDefaultExecutableSiblingPath("SREPORT_FOLD", argv0, dirp );
         std::cout << "[sreport.main : CREATING REPORT " << std::endl ; 
         sreport_Creator creator(dirp); 
         std::cout << creator.desc() ; 
@@ -406,13 +406,13 @@ int main(int argc, char** argv)
 
         sreport* report = creator.report ; 
         std::cout << report->desc() ; 
-        report->save("$FOLD"); 
+        report->save("$SREPORT_FOLD"); 
         std::cout << "]sreport.main : CREATED REPORT " << std::endl ; 
 
         if(getenv("CHECK") != nullptr )
         {        
             std::cout << "[sreport.main : CHECK LOADED REPORT " << std::endl ; 
-            sreport* report2 = sreport::Load("$FOLD") ;  
+            sreport* report2 = sreport::Load("$SREPORT_FOLD") ;  
             std::cout << report2->desc() ; 
             std::cout << "]sreport.main : CHECK LOADED REPORT " << std::endl ; 
         }

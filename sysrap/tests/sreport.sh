@@ -1,6 +1,6 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-sreport.sh : summarize SEvt metadata into eg ALL0_sreport FOLD 
+sreport.sh : summarize SEvt metadata into eg ALL0_sreport SREPORT_FOLD 
 ================================================================
 
 The output NPFold and summary NPFold from several scripts are managed 
@@ -60,13 +60,13 @@ by this sreport.sh script.
 **run**  
    sreport loads the SEvt subfolders "p001" "n001" etc beneath 
    the invoking directory in NoData(metadata only) mode and 
-   writes a summary NPFold into FOLD directory 
+   writes a summary NPFold into SREPORT_FOLD directory 
    
    NB DEV=1 uses the standalone binary built by this script, and 
    not defining DEV uses that standardly intalled sreport binary 
 
 **grab**
-   grab command just rsyncs the summary FOLD back to laptop for 
+   grab command just rsyncs the summary SREPORT_FOLD back to laptop for 
    metadata plotting without needing to transfer the potentially 
    large SEvt folders. 
 
@@ -90,7 +90,7 @@ by invoking it from appropriate directories, examples are shown below.
 
 Invoking Directory 
    /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
-Summary "FOLD" Directory 
+Summary "SREPORT_FOLD" Directory 
    /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport
 
 EOU
@@ -147,10 +147,10 @@ case $JOB in
 esac
 
 export STEM=${JOB}_${PLOT}_${PICK}
-export FOLD=${DIR}_${name}   ## FOLD is output directory used by binary, export it for python 
-export MODE=2                ## 2:matplotlib plotting 
+export SREPORT_FOLD=${DIR}_${name}   ## SREPORT_FOLD is output directory used by binary, export it for python 
+export MODE=2                        ## 2:matplotlib plotting 
 
-vars="0 BASH_SOURCE SDIR JOB DIR FOLD MODE name bin script STEM"
+vars="0 BASH_SOURCE SDIR JOB DIR SREPORT_FOLD MODE name bin script STEM"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
@@ -182,16 +182,16 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/desc}" != "$arg" ]; then 
-    cd $FOLD
-    [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR FOLD $FOLD  && exit 0 
+    cd $SREPORT_FOLD
+    [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR SREPORT_FOLD $SREPORT_FOLD  && exit 0 
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : desc error && exit 3
 fi
 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    echo $BASH_SOURCE : grab FOLD $FOLD 
-    source $OPTICKS_HOME/bin/rsync.sh $FOLD
+    echo $BASH_SOURCE : grab SREPORT_FOLD $SREPORT_FOLD 
+    source $OPTICKS_HOME/bin/rsync.sh $SREPORT_FOLD
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 4
 fi
 
@@ -211,7 +211,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
-    export CAP_BASE=$FOLD/figs
+    export CAP_BASE=$SREPORT_FOLD/figs
     export CAP_REL=cxs_min
     export CAP_STEM=$STEM
     case $arg in  

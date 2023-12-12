@@ -79,7 +79,7 @@ case $PICK in
     B) FOLD=$BFOLD ;; 
    AB) FOLD=$AFOLD ;;
 esac
-export FOLD 
+export FOLD    ## changed sreport to use SREPORT_FOLD to avoid clash 
 export STEM=G4CXTest_GEOM_${PICK}
 
 mkdir -p $LOGDIR
