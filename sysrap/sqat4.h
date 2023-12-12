@@ -344,7 +344,7 @@ struct qat4
 
     QAT4_METHOD void getIdentity(int& ins_idx, int& gas_idx, int& sensor_identifier, int& sensor_index ) const 
     {
-        ins_idx           = q0.i.w ;   // formerly used unsigbed and "- 1" 
+        ins_idx           = q0.i.w ;   // formerly used unsigned and "- 1" 
         gas_idx           = q1.i.w ; 
         sensor_identifier = q2.i.w ; 
         sensor_index      = q3.i.w  ; 

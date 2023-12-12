@@ -14,7 +14,7 @@ rather than the widely used sysrap library.
 struct NP ; 
 struct SGenerate
 {
-    //static NP* GeneratePhotons(int idx);  
+    static constexpr const char* EKEY = "SGenerate__GeneratePhotons_RNG_PRECOOKED" ; 
     static NP* GeneratePhotons(const NP* gs);  
 }; 
 
@@ -36,79 +36,23 @@ struct SGenerate
 SGenerate::GeneratePhotons
 ----------------------------
 
-NB only the below gentypes are implemented::
-
-    INPUT_PHOTONS
-    CARRIER
-    TORCH 
-
-Called for example from U4VPrimaryGenerator::GeneratePrimaries
-
-inline NP* SGenerate::GeneratePhotons(int idx)
-{
-    NP* gs = SEvt::GatherGenstep(idx);  // LOOKS GENERAL, BUT ISNT 
-
-   
-
-    if( gs == nullptr )
-    {
-        std::cerr << "SGenerate::GeneratePhotons FATAL SEvt::GatherGenstep returns null " << std::endl ; 
-        std::cerr << "user code needs to instanciate SEvt and AddGenstep " << std::endl ;  
-        std::cerr << "NB even input photon running requires a genstep" << std::endl ;  
-        return nullptr ;  
-    }
-
-    assert( gs->shape[0] == 1 );  // MAKING THE POINT THAT THIS CODE LOOKS MORE GENERAL THAN IT IS 
-
-
-    NP* ph = nullptr ; 
-    if(OpticksGenstep_::IsInputPhoton(SGenstep::GetGencode(gs,0)))
-    {
-        ph = SEvt::GetInputPhoton(idx); 
-    }
-    else
-    {
-        ph = GeneratePhotons(gs);
-    }
-
-    // HMM: should this selection be done here OR later 
-    int rerun_id = SEventConfig::G4StateRerun() ;
-    NP* phs = rerun_id > -1 ? NP::MakeSelectCopy(ph, rerun_id ) : NP::MakeCopy(ph) ;
-    // NB: the array now carries idlist metadata with the rerun_id 
-
-    if(rerun_id > -1 )
-    {
-        std::cout 
-            << "SGenerate::GeneratePhotons"
-            << " rerun_id " << rerun_id
-            << " ph " << ( ph ? ph->brief() : "-" ) 
-            << " phs " << ( phs ? phs->brief() : "-" ) 
-            << " (" << SEventConfig::kG4StateRerun << ") " 
-            << std::endl 
-            ; 
-    }
-
-    return phs ;  
-}
-**/
-
-
-
-
-/**
-SGenerate::GeneratePhotons
-----------------------------
-
 Does high level genstep handling, prepares MOCK CURAND, 
 creates seeds, creates photon array. 
 The details of the generation are done by storch::generate or scarrier:generate
 
 NB : currently only limited gentype can be generated with this
 
+Q: Does MOCK_CURAND generate the same photons as without ? 
+A: YES, see SGenerate__test.sh : MOCK_CURAND is to allow 
+   code intended to run via CUDA to see GPU like API on the CPU 
+
 **/
 
-inline NP* SGenerate::GeneratePhotons(const NP* gs_)
+inline NP* SGenerate::GeneratePhotons(const NP* gs_ )
 {
+    bool rng_precooked = ssys::getenvbool(EKEY); 
+    if(rng_precooked) std::cerr << EKEY << " IS ENABLED " << std::endl ; 
+
     const quad6* gg = (quad6*)gs_->bytes() ; 
     NP* se = SEvent::MakeSeed(gs_) ;
     const int*   seed = (int*)se->bytes() ;   
@@ -130,15 +74,16 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_)
         unsigned genstep_id = seed[photon_id] ; 
         sphoton& p = pp[photon_id] ; 
         const quad6& gs = gg[genstep_id] ;   
-
         int gencode = SGenstep::GetGencode(gs);  
 
+        if(rng_precooked) rng.setSequenceIndex(i);  
         switch(gencode)
         {    
             case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ; 
             case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ; 
             case OpticksGenstep_INPUT_PHOTON:    assert(0)  ; break ; 
         }    
+        if(rng_precooked) rng.setSequenceIndex(-1);  
     }
     delete se ; 
     return ph ;

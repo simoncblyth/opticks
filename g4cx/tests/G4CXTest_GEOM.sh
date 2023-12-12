@@ -182,6 +182,16 @@ export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration
 export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 
+if [ -n "$PRECOOKED" ]; then 
+    ## SPECIAL SETTING TO GET G4CXApp::GeneratePrimaries
+    ## TO USE THE SAME RANDOMS AS CURAND : SO CAN COMPARE 
+    ## WITH THE SAME START PHOTONS
+    ## THIS LIMITS NUM PHOTONS TO 1M (AS THATS WHATS PRECOOKED)
+    export SGenerate__GeneratePhotons_RNG_PRECOOKED=1
+fi 
+
+
+
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
     #export SEvent_MakeGenstep_num_ph=$NUM   ## trumped by OPTICKS_NUM_PHOTON
     #src="rectangle"

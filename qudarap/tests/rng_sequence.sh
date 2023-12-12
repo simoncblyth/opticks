@@ -13,9 +13,15 @@ Usage::
    ./rng_sequence.sh ana      # load the random .npy arrays 
 
 
+HMM: QSimTest is too complicated, better to split off this 
+functionality into a separate executable 
+
+
 EOU
 }
 
+SDIR=$(dirname $(realpath $BASH_SOURCE))
+cd $SDIR 
 
 arg=${1:-ana}
 

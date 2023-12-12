@@ -9,6 +9,9 @@ from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt, SAB
 from opticks.ana.nbase import chi2_pvalue
 
+from opticks.ana.p import *  # including cf boundary___
+
+
 MODE = int(os.environ.get("MODE","3"))
 PICK = os.environ.get("PICK","A")
 

@@ -92,14 +92,12 @@ if __name__ == '__main__':
     print("at\n",at)
     print("bt\n",bt)
 
-    if not a is None and not b is None:
-        ab = SAB(a,b)
+    if "SAB" in os.environ:
+        ab = SAB(a,b) if not a is None and not b is None else None
         print(repr(ab))
     else:
-        ab = None
+        print(" ab = SAB(a,b) ## SKIPPED as SAB not on os.environ ")
     pass
-
-
 
 
     assert PICK in ["A","B","AB","BA", "CF"]

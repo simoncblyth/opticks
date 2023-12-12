@@ -3,20 +3,18 @@
 s_mock_curand.h
 =================
 
-This is conditionally included by scurand.h 
+s_mock_curand provides a wrapper for the random 
+generation of srng that allows CUDA intended code
+to be tricked into running on CPU. 
 
+This is conditionally included by scurand.h 
 
 Mocking *curand_uniform* enables code developed for use 
 with the standard CUDA *curand_uniform* to be tested on CPU without change, 
 other than switching headers. 
 
-TODO: 
-   provide option to hook into the precooked randoms (see SRngSpec)
-   so the "generated" values actually match curand_uniform on device  
-   
-   * this requires setting an index like OpticksRandom.hh does 
-
-HMM: instanciation API does not match the real one, does that matter ?
+Note that instanciation API does not match the real one, 
+but that does that matter as instanciation doesnt need testing. 
 
 **/
 

@@ -1,4 +1,26 @@
 #pragma once
+/**
+srng.h : C++ standard random number generation
+=================================================
+
+Instead of generating randoms it is also possible to 
+use curand precooked randoms by calling the below method 
+with the photon index as argument::
+
+    srng::setSequenceIndex
+
+This is done by SGenerate::GeneratePhotons when the below EKEY is set::
+
+    export SGenerate__GeneratePhotons_RNG_PRECOOKED=1
+
+Using this limits the number of photons that can be
+generated to the number of rng_sequence that have been precooked 
+and persisted to ~/.opticks/precooked.
+To extend that see::
+  
+   ~/opticks/qudarap/tests/rng_sequence.sh
+
+**/
 
 #include <random>
 #include "s_seq.h"
@@ -10,6 +32,7 @@ struct srng
     std::uniform_real_distribution<double>  ddist ; 
     double                                  fake ; 
     s_seq*                                  seq ; 
+
 
     srng(unsigned seed_=1); 
     std::string desc() const ; 
@@ -88,6 +111,5 @@ inline std::string srng::demo(int n)
     std::string str = ss.str(); 
     return str ; 
 }
-
 
 
