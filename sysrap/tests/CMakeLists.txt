@@ -132,7 +132,7 @@ set(TEST_SOURCES
    SProfTest.cc
 
    SEvt_test.cc
-
+   sseq_index_test.cc
 
 )
 

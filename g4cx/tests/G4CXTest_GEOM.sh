@@ -282,6 +282,12 @@ if [ "${arg/gevt}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $BFOLD
 fi 
 
+if [ "${arg/chi2}" != "$arg" ]; then
+    #sseq_index_test
+    $OPTICKS_HOME/sysrap/tests/sseq_index_test.sh info_run_ana
+    [ $? -ne 0 ] && echo $BASH_SOURCE sseq_index_test chi2 ERROR && exit 3 
+fi 
+
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error with script $script && exit 4

@@ -248,31 +248,6 @@ struct std::hash<sseq>
 
 
 
-struct sseq_unique
-{
-    sseq q ; 
-    int  first ;
-    int  count ; 
-
-    bool operator< (const sseq_unique& other) const ; 
-    std::string desc() const ; 
-}; 
-
-SSEQ_METHOD bool sseq_unique::operator< (const sseq_unique& other) const 
-{
-    return count < other.count ; 
-}  
-
-SSEQ_METHOD std::string sseq_unique::desc() const
-{
-    std::stringstream ss ;  
-    ss << q.seqhis_() << " : " << std::setw(7) << count << " : " << std::setw(7) << first  ;  
-    std::string str = ss.str(); 
-    return str ; 
-} 
-
-
-
 
 #endif
 

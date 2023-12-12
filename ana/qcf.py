@@ -92,6 +92,8 @@ class QCF(object):
 
         log.info("QCF.__init__ [ qu loop")
         for i, q in enumerate(qu):
+
+            # here are finding all indices when just want the first  
             ai_ = np.where(aqu.u == q )[0]           # find indices in the a and b unique lists 
             bi_ = np.where(bqu.u == q )[0]
             ai = ai_[0] if len(ai_) == 1 else -1
@@ -107,15 +109,17 @@ class QCF(object):
                 log.info("QCF.__init__ . qu loop %d " % i )
             pass
 
-            ab[i,0,0] = ai
-            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1  ## index of first occurrence
-            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0   ## count in each 
+            ab[i,0,0] = ai                            ## internal index into the A unique list 
+            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1  ## index of first occurrence in original A seq list
+            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0   ## count in A or 0 when not present 
 
-            ab[i,0,1] = bi
-            ab[i,1,1] = bqu.x[bi] if bi > -1 else -1
-            ab[i,2,1] = bqu.n[bi] if bi > -1 else 0
+            ab[i,0,1] = bi                            ## internal index into the B unique list 
+            ab[i,1,1] = bqu.x[bi] if bi > -1 else -1  ## index of first occurrence in original B seq list
+            ab[i,2,1] = bqu.n[bi] if bi > -1 else 0   ## count in B or 0 when not present 
         pass
         log.info("QCF.__init__ ] qu loop")
+
+        # last dimension 0,1 corresponding to A,B 
 
         abx = np.max(ab[:,2,:], axis=1 )   # max of aqn, bqn counts 
         abxo = np.argsort(abx)[::-1]       # descending count order indices

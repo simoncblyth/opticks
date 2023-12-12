@@ -53,7 +53,7 @@ if __name__ == '__main__':
         print(repr(ab))
         print("]----- repr(ab) ")
     else:
-        print("skip SAB(a,b) as SAB not in os.environ")
+        print("ab = SAB(a,b) ## skipped as SAB not in os.environ")
     pass
 
 
