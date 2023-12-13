@@ -3026,7 +3026,7 @@ As gensteps always originate on CPU its kinda silly to call access gather-ing.
 
 **/
 
-NP* SEvt::gatherGenstep() const { return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; }
+NP* SEvt::gatherGenstep() const { return getGenstepArray() ; }
 
 
 quad6* SEvt::getGenstepVecData() const 
@@ -3036,6 +3036,11 @@ quad6* SEvt::getGenstepVecData() const
 int SEvt::getGenstepVecSize() const 
 {
     return genstep.size(); 
+}
+
+NP* SEvt::getGenstepArray() const 
+{
+    return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; 
 }
 
 
@@ -3472,13 +3477,22 @@ void SEvt::gather_components()   // *GATHER*
 
     int num_comp = gather_comp.size() ; 
 
+    LOG(LEVEL) << " num_comp " << num_comp ; 
+
     for(int i=0 ; i < num_comp ; i++)
     {
         unsigned cmp = gather_comp[i] ;   
         const char* k = SComp::Name(cmp);    
         NP* a = provider->gatherComponent(cmp); 
-        LOG(LEVEL) << " k " << std::setw(15) << k << " a " << ( a ? a->brief() : "-" ) ; 
-        if(a == nullptr) continue ;  
+        bool null_component = a == nullptr ;
+
+        LOG(LEVEL) 
+            << " k " << std::setw(15) << k 
+            << " a " << ( a ? a->brief() : "-" ) 
+            << " null_component " << ( null_component ? "YES" : "NO " ) 
+            ; 
+
+        if(null_component) continue ;  
         fold->add(k, a); 
 
         int num = a->shape[0] ;  

@@ -546,6 +546,7 @@ public:
     NP*    gatherGenstep() const ;  // from genstep vector
     quad6* getGenstepVecData() const ; 
     int    getGenstepVecSize() const ; 
+    NP*    getGenstepArray() const ; 
 
 
     bool haveGenstepVec() const ; 

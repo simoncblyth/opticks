@@ -186,25 +186,19 @@ int QEvent::setGenstep()  // onto device
 {
     LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
 
-#ifndef PRODUCTION 
-    sev->t_setGenstep_0 = sstamp::Now(); 
-#endif
 
+    /*
     quad6* qq = sev->getGenstepVecData() ; 
     int num_qq = sev->getGenstepVecSize() ; 
-
     LOG_IF(fatal, qq == nullptr ) << "Must add gensteps to SEvt::EGPU before QEvent::setGenstep call " ; 
     if(qq == nullptr) std::raise(SIGINT); 
-
-#ifndef PRODUCTION 
-    sev->t_setGenstep_1 = sstamp::Now(); 
-#endif
-
-#ifndef PRODUCTION 
-    sev->t_setGenstep_2 = sstamp::Now(); 
-#endif
-
     int rc = setGenstepUpload(qq, num_qq) ; 
+    */
+
+    NP* gs_ = sev->getGenstepArray();  
+    LOG_IF(fatal, gs_ == nullptr ) << "Must add gensteps to SEvt::EGPU before QEvent::setGenstep call " ; 
+    if(gs_ == nullptr) std::raise(SIGINT); 
+    int rc = setGenstepUpload_NP(gs_) ; 
 
     LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
 
@@ -215,8 +209,8 @@ int QEvent::setGenstep()  // onto device
 
 
 /**
-QEvent::setGenstepUpload
----------------------------
+QEvent::setGenstepUpload_NP
+------------------------------
 
 Recall that even with input photon running, still have gensteps.  
 If the number of gensteps is zero there are no photons and no launch. 
@@ -246,11 +240,14 @@ If the number of gensteps is zero there are no photons and no launch.
 **/
 
 
-int QEvent::setGenstepUpload(const NP* gs_) 
+int QEvent::setGenstepUpload_NP(const NP* gs_) 
 {
     gs = gs_ ; 
     SGenstep::Check(gs); 
-    LOG(LEVEL) << SGenstep::Desc(gs, 10) ;
+    LOG(LEVEL) 
+        << " gs " << ( gs ? gs->sstr() : "-" )
+        << SGenstep::Desc(gs, 10)
+        ;
 
     int num_genstep = gs_->shape[0] ;
     const char* data = gs_->bytes() ;
@@ -264,6 +261,8 @@ QEvent::setGenstepUpload
 
 Switch to quad6* arg to allow direct from vector upload, 
 avoiding the intermediate array.
+
+HMM: but then (NP)gs stays null so nothing to gather 
 
 **/
 
@@ -519,7 +518,9 @@ void QEvent::count_genstep_photons_and_fill_seed_buffer()
 
 NP* QEvent::getGenstep() const 
 {
-    return const_cast<NP*>(gs) ;  // const_cast so can use QEvent::gatherComponent_
+    NP* _gs = const_cast<NP*>(gs) ; // const_cast so can use QEvent::gatherComponent_
+    LOG(LEVEL) << " _gs " << ( _gs ? _gs->sstr() : "-" ) ; 
+    return _gs ; 
 }
 NP* QEvent::getInputPhoton() const 
 {

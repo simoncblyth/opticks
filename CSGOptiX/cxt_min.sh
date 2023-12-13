@@ -19,7 +19,7 @@ EOU
 SDIR=$(dirname $(realpath $BASH_SOURCE))
 SNAME=$(basename $BASH_SOURCE)
 SSTEM=${SNAME/.sh}
-script=$SDIR/$SSTEM.py 
+ana_script=$SDIR/$SSTEM.py 
 
 
 case $(uname) in
@@ -41,9 +41,9 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 #moi=sWorld:0:0
 #moi=NNVT:0:0
 #moi=NNVT:0:50
-#moi=NNVT:0:1000
+moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
-moi=sChimneyAcrylic:0:0
+#moi=sChimneyAcrylic:0:0
 
 export MOI=${MOI:-$moi}  # SEventConfig
 
@@ -78,7 +78,7 @@ export CEGS=16:0:9:2000   # XZ default
 
 ## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000 
 
-export CE_OFFSET=CE
+#export CE_OFFSET=CE    ## offsets the grid by the CE 
 
 
 cvd=1   # default 1:TITAN RTX
@@ -93,7 +93,7 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR SNAME SSTEM FOLD"
+vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR SNAME SSTEM FOLD script"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -129,6 +129,6 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $script
+    ${IPYTHON:-ipython} --pdb -i $ana_script
 fi 
 

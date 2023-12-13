@@ -428,6 +428,14 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
     {
         if(MaxGenstep()>0){   gather_mask |= SCOMP_GENSTEP  ;  save_mask |= SCOMP_GENSTEP ;  }
         if(MaxSimtrace()>0){  gather_mask |= SCOMP_SIMTRACE ;  save_mask |= SCOMP_SIMTRACE ; }
+
+        LOG(LEVEL) 
+            << " MaxGenstep " << MaxGenstep()
+            << " MaxSimtrace " << MaxSimtrace()
+            << " gather_mask " << gather_mask 
+            << " save_mask " << save_mask 
+            ;
+
     } 
     else if(IsRGModeRender())
     {

@@ -93,7 +93,7 @@ public:
 
 private:
     int setGenstepUpload(const quad6* qq, int num_genstep ) ; 
-    int  setGenstepUpload(const NP* gs);
+    int  setGenstepUpload_NP(const NP* gs);
     void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
     void checkInputPhoton() const ; 

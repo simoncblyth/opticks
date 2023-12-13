@@ -46,7 +46,7 @@ void QEventTest::setGenstep_one()
 
     QEvent* event = new QEvent ; 
     //LOG(info) << " event.desc (bef QEvent::setGenstep) " << event->desc() ; 
-    event->setGenstepUpload(gs); 
+    event->setGenstepUpload_NP(gs); 
     //LOG(info) << " event.desc (aft QEvent::setGenstep) " << event->desc() ; 
 
     int num_photon = event->getNumPhoton();  
@@ -122,7 +122,7 @@ void QEventTest::setGenstep_many()
     {
         int i = j % 3 ; 
 
-        event->setGenstepUpload(gs[i]); 
+        event->setGenstepUpload_NP(gs[i]); 
 
         int num_photon = event->getNumPhoton();  
         bool num_photon_expect = x_num_photon[i] == num_photon ;
@@ -164,7 +164,7 @@ void QEventTest::setGenstep_many()
 void QEventTest::setGenstep_loaded(NP* gs)
 {
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload(gs); 
+    event->setGenstepUpload_NP(gs); 
 
     unsigned num_photon = event->getNumPhoton() ; 
     bool num_photon_expect = num_photon > 0 ;
@@ -211,7 +211,7 @@ void QEventTest::setGenstep_checkEvt()
     assert( x_num_photon == x_total ) ; 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload(gs); 
+    event->setGenstepUpload_NP(gs); 
     event->checkEvt(); 
 }
 
@@ -233,7 +233,7 @@ void QEventTest::setGenstep_quad6()
 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload( a_gs );  
+    event->setGenstepUpload_NP( a_gs );  
 
     event->gs->dump(); 
     event->checkEvt(); 
