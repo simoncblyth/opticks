@@ -190,7 +190,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
     LOG_IF(fatal, !with_offset) << "ce_offset vector of float3 needs at least one entry " ; 
     assert( with_offset ); 
 
-    assert(!getenv("CE_SCALE") && "CE_SCALE ENVVAR IS NO LONGER USED :CHANGE YOUR SCRIPT" )
+    assert(!getenv("CE_SCALE") && "CE_SCALE ENVVAR IS NO LONGER USED :CHANGE YOUR SCRIPT" ); 
 
     bool ce_scale_off = ssys::getenvbool("CE_SCALE_OFF") ;
 
@@ -223,7 +223,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
         LOG(LEVEL) << " key " << key << " cehigh.size " << cehigh.size() ;  
         if(cehigh.size() == 8)
         {
-            NP* gs_cehigh = MakeCenterExtentGenstep(ce, cehigh, gridscale, geotran, ce_offset, ce_scale );
+            NP* gs_cehigh = MakeCenterExtentGenstep(ce, cehigh, gridscale, geotran, ce_offset, !ce_scale_off );
             gsl.push_back(gs_cehigh) ; 
         }
     }
@@ -238,7 +238,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
     gs->set_meta<int>("mord", fr.mord() );
     gs->set_meta<int>("gord", fr.gord() );
     gs->set_meta<float>("gridscale", fr.gridscale() );
-    gs->set_meta<int>("ce_scale", int(ce_scale) ); 
+    gs->set_meta<int>("ce_scale", int(!ce_scale_off) ); 
 
     return gs ; 
 }
