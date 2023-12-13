@@ -45,7 +45,12 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 #moi=PMT_20inch_veto:0:1000
 moi=sChimneyAcrylic:0:0
 
-export GRIDSCALE=100    ## WITHOUT THIS THE GRID DEFAULTS TO BEING TO SMALL 
+#export GRIDSCALE=100    ## WITHOUT THIS THE GRID DEFAULTS TO BEING TO SMALL 
+
+# SUSPECT THE BELOW SETTINGS NEEDED WITH GLOBAL NON-INSTANCED VOLS 
+export CE_SCALE=1 
+export CE_OFFSET=CE
+
 
 export MOI=${MOI:-$moi}  # SEventConfig
 
@@ -66,7 +71,7 @@ VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OP
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
-LOG=$bin.log
+LOGNAME=$bin.log
 
 export OPTICKS_INTEGRATION_MODE=1
 
@@ -108,9 +113,9 @@ fi
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 
-   if [ -f "$LOG" ]; then 
-       echo $BASH_SOURCE : run/dbg : delete prior LOG $LOG 
-       rm "$LOG" 
+   if [ -f "$LOGNAME" ]; then 
+       echo $BASH_SOURCE : run/dbg : delete prior LOGNAME $LOGNAME 
+       rm "$LOGNAME" 
    fi 
 
    if [ "${arg/run}" != "$arg" ]; then

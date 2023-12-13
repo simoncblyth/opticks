@@ -343,7 +343,7 @@ struct CSG_API CSGFoundry : public SGeo
     void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, int gas_idx ) const ;  // collecting pointers to the actual instances 
 
     int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ; 
-    const qat4* getInstanceGAS(int gas_idx_ , unsigned ordinal=0) const  ;
+    const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
 
     // id 
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 

@@ -27,7 +27,9 @@ Overview
 
   * presumably because Chimney is global not instanced
 
-
+YES: getting identity transform is actually correct, which 
+means must special case handle global geometry being 
+offset from the origin 
 
 
 sframe with PMT
@@ -140,6 +142,11 @@ sframe with chimney
     141 }
 
 
+
+getFrameComponents_called_twice
+----------------------------------
+
+:doc:`getFrameComponents_called_twice`
 
 Issue with cxt_min.sh 
 -------------------------

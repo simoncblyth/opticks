@@ -136,7 +136,7 @@ void test_getInstanceTransformsGAS()
 
 }
 
-void test_getInstanceGAS()
+void test_getInstance_with_GAS_ordinal()
 {
     CSGFoundry fd ; 
     fd.maker->makeDemoGrid(); 
@@ -145,7 +145,7 @@ void test_getInstanceGAS()
     unsigned gas_idx = fd.getNumSolid()/2 ; 
     unsigned ordinal = 0 ; 
 
-    const qat4* q = fd.getInstanceGAS(gas_idx, ordinal); 
+    const qat4* q = fd.getInstance_with_GAS_ordinal(gas_idx, ordinal); 
 
     assert(q) ; 
     LOG(info) << *q ; 
@@ -264,7 +264,7 @@ int main(int argc, char** argv)
     test_Compare(); 
     test_Load(); 
     test_getInstanceTransformsGAS() ;
-    test_getInstanceGAS() ;
+    test_getInstance_with_GAS_ordinal() ;
     test_setMeta_getMeta(); 
     test_setPrimBoundary(); 
     test_Load(); 

@@ -521,7 +521,7 @@ struct qat4
         }
     }
 
-    // return index of the ordinal-th instance with the provided gas_idx or -1 if not found
+    // return absolute instance index of the ordinal-th instance with the provided gas_idx or -1 if not found
     static QAT4_METHOD int find_instance_gas(const std::vector<qat4>& qv, int gas_idx_, unsigned ordinal  )
     {
         unsigned count = 0 ;

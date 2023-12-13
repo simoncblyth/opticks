@@ -154,7 +154,7 @@ Used by CSGFoundry::getCenterExtent
 *mord*
     solid (aka mesh) ordinal : pick between shapes when there are more than one, used with global(non-instanced) geometry 
 *iidx*
-    instance index, >-1 for global instance, -1 for local non-instanced 
+    instance index, >-1 for instance, -1 for local non-instanced 
 
 
 
@@ -316,17 +316,20 @@ CSGTarget::getGlobalCenterExtent
     identity integers in its fourth column 
 
 
-TODO: check this with global non-instanced geometry 
+
+
+
+HMM with global non-instanced geometry the transforms should be identity
 
 **/
 
-int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, qat4* m2w, qat4* w2m ) const 
+int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int gord, qat4* m2w, qat4* w2m ) const 
 {
-    const qat4* t = getInstanceTransform(midx, mord, iidx); 
+    const qat4* t = getInstanceTransform(midx, mord, gord); 
     const qat4* v = t ? Tran<double>::Invert(t ) : nullptr ; 
 
     LOG_IF(fatal, t == nullptr) 
-        << " failed to get InstanceTransform (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ")" ;
+        << " failed to get InstanceTransform (midx mord gord) " << "(" << midx << " " << mord << " " << gord << ")" ;
 
     LOG_IF(fatal, v == nullptr) 
         << " failed Tran<double>::Invert " ;
@@ -400,9 +403,9 @@ CSGTarget::getTransform TODO eliminate this switching instead to getInstanceTran
 
 **/
 
-int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const 
+int CSGTarget::getTransform(qat4& q, int midx, int mord, int gord) const 
 {
-    const qat4* qi = getInstanceTransform(midx, mord, iidx); 
+    const qat4* qi = getInstanceTransform(midx, mord, gord); 
     if( qi == nullptr )
     {
         return 1 ; 
@@ -412,17 +415,20 @@ int CSGTarget::getTransform(qat4& q, int midx, int mord, int iidx) const
 }
 
 /**
-CSGTarget::getInstanceTransform (midx,mord) CSGPrim -> repeatIdx -> which with iidx -> instance transform  
+CSGTarget::getInstanceTransform (midx,mord) CSGPrim -> repeatIdx -> which with gord -> instance transform  
 ------------------------------------------------------------------------------------------------------------
 
-1. *CSGFoundry::getMeshPrim* finds the (midx, mord) CSGPrim which gives the repeatIdx (aka:gas_idx or compound solid index) 
-2. *CSGFoundry::getInstanceGAS* finds the (gas_idx, iidx) instance transform 
+1. *CSGFoundry::getMeshPrim* finds the (midx, mord) (CSGPrim)lpr
+2. (CSGPrim)lpr gives the repeatIdx (aka:gas_idx or compound solid index) 
+3. *CSGFoundry::getInstance_with_GAS_ordinal* finds the (gas_idx, gord) instance transform 
+
+NB gord was previously named iidx (but that clashes with other uses of that)   
 
 This method avoids duplication between CSGTarget::getTransform and  CSGTarget::getGlobalCenterExtent 
 
 **/
 
-const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int iidx) const 
+const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int gord) const 
 {
     const CSGPrim* lpr = foundry->getMeshPrim(midx, mord);  
     if(!lpr)
@@ -437,14 +443,14 @@ const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int iidx) const
     unsigned gas_idx = repeatIdx ; 
 
     LOG(LEVEL) 
-        << " (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ") "
+        << " (midx mord gord) " << "(" << midx << " " << mord << " " << gord << ") "
         << " lpr " << lpr
         << " repeatIdx " << repeatIdx
         << " primIdx " << primIdx
         << " local_ce " << local_ce 
         ; 
 
-    const qat4* qi = foundry->getInstanceGAS(gas_idx, iidx ); 
+    const qat4* qi = foundry->getInstance_with_GAS_ordinal(gas_idx, gord ); 
     return qi ; 
 }
 

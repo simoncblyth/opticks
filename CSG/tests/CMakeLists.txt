@@ -32,6 +32,7 @@ set(TEST_SOURCES
     CSGTargetGlobalTest.cc
     CSGFoundry_MakeCenterExtentGensteps_Test.cc
     CSGFoundry_getFrame_Test.cc
+    CSGFoundry_getFrameE_Test.cc 
     CSGFoundry_getMeshName_Test.cc
     CSGFoundry_SGeo_SEvt_Test.cc
 

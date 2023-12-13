@@ -3165,7 +3165,11 @@ void CSGFoundry::getInstancePointersGAS(std::vector<const qat4*>& select_qi, int
 CSGFoundry::getInstanceIndex
 ------------------------------
 
-Returns index of the ordinal-th instance with the provided gas_idx or -1 if not found
+Via searching the inst vector this returns teh absolute instance index of the ordinal-th 
+instance with the provided gas_idx or -1 if not found.  
+
+Note that this does not help with globals as they are all clumped into instance zero. 
+
 Note that the gas ordinal is confusingly referred to as the iidx in many places.
 BUT that iidx is not the global instance index it is the index 
 within occurences of the gas_idx_ GAS/compositeSolid
@@ -3177,8 +3181,8 @@ int CSGFoundry::getInstanceIndex(int gas_idx_ , unsigned ordinal) const
 }
 
 /**
-CSGFoundry::getInstanceGAS
-----------------------------
+CSGFoundry::getInstance_with_GAS_ordinal  (formerly getInstanceGAS)
+--------------------------------------------------------------------
 
 Instance transform using gas local ordinal (not the global instance index).
 
@@ -3187,7 +3191,7 @@ from the global instance index argument.
 
 **/
 
-const qat4* CSGFoundry::getInstanceGAS(int gas_idx_ , unsigned ordinal) const 
+const qat4* CSGFoundry::getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal) const 
 {
     int index = getInstanceIndex(gas_idx_, ordinal); 
     return index > -1 ? &inst[index] : nullptr ; 
@@ -3324,9 +3328,9 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
     bool looks_like_moi = sstr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
     if(looks_like_moi)
     {
-        int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
-        parseMOI(midx, mord, iidx,  frs );  
-        rc = getFrame(fr, midx, mord, iidx); 
+        int midx, mord, gord ;  // mesh-index, mesh-ordinal, gas-ordinal 
+        parseMOI(midx, mord, gord,  frs );  
+        rc = getFrame(fr, midx, mord, gord); 
     }
     else
     {
@@ -3348,7 +3352,7 @@ int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
 }
 
 
-int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const 
+int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int gord) const 
 {
     int rc = 0 ; 
     if( midx == -1 )
@@ -3358,7 +3362,7 @@ int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
     }
     else
     {
-        rc = target->getFrame( fr, midx, mord, iidxg );  
+        rc = target->getFrame( fr, midx, mord, gord );  
     }
     return rc ; 
 }
@@ -3443,8 +3447,8 @@ void CSGFoundry::AfterLoadOrCreate() // static
 
     sframe fr = fd->getFrameE() ; 
     LOG(LEVEL) << fr ; 
-
     SEvt::SetFrame(fr); // now only needs to be done once to transform input photons
+
 }
 
 
