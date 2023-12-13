@@ -24,8 +24,8 @@ source ~/.opticks/GEOM/GEOM.sh
 #moi=Hama:0:1000
 #moi=sChimneyAcrylic:0:0
 #moi=sChimneyAcrylic:0:-1  # gord:-1
-moi=sChimneyAcrylic:0:-2   # gord:-2 XYZ frame obtained from CE 
-#moi=sChimneyAcrylic:0:-3   # gord:-3 RTP tangential frame obtained from CE
+moi=sChimneyAcrylic:0:-2   # gord:-2 fabricate XYZ frame obtained from CE 
+#moi=sChimneyAcrylic:0:-3   # gord:-3 fabricate RTP tangential frame obtained from CE
 
 export MOI=${MOI:-$moi}
 

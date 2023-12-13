@@ -142,11 +142,12 @@ SFrameGenstep::MakeCenterExtentGensteps
 
 Canonical usage is from SEvt::setFrame for simtrace running. 
 
-NOTE: changed CE_SCALE default to be 1, enabling it
-To switch off CE scaling set CE_SCALE envvar to "0" 
+Default is to apply extent scaling. 
+To switch that off (eg whilse debugging) use::
 
-HMM as the typical CEGS is 16:0:9:500 to conform to standard aspect 
-ratio GRIDSCALE of 0.1 is more reasonable than 1 ? 
+    export CE_SCALE_OFF=1  
+
+Default GRIDSCALE is 0.1 to conform with default CEGS of 16:0:9:500 
 
 The sframe argument is used for its *ce* and the details
 of the grid config are saved into the sframe 
@@ -189,14 +190,16 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
     LOG_IF(fatal, !with_offset) << "ce_offset vector of float3 needs at least one entry " ; 
     assert( with_offset ); 
 
-    bool ce_scale = ssys::getenvbool("CE_SCALE") ;
+    assert(!getenv("CE_SCALE") && "CE_SCALE ENVVAR IS NO LONGER USED :CHANGE YOUR SCRIPT" )
+
+    bool ce_scale_off = ssys::getenvbool("CE_SCALE_OFF") ;
 
     //Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
     Tran<double>* geotran = fr.getTransform(); 
 
 
     std::vector<NP*> gsl ; 
-    NP* gs_base = MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+    NP* gs_base = MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, !ce_scale_off );
     gsl.push_back(gs_base) ; 
 
     std::vector<std::string> keys = {{

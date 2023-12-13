@@ -44,14 +44,13 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 #moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
 moi=sChimneyAcrylic:0:-2    # gord:-2 XYZ frame from SCenterExtentFrame.h (now without extent scaling)
-
-#export GRIDSCALE=100    ## WITHOUT THIS THE GRID DEFAULTS TO BEING TO SMALL 
-# SUSPECT THE BELOW SETTINGS NEEDED WITH GLOBAL NON-INSTANCED VOLS 
-#export CE_SCALE=1 
-#export CE_OFFSET=CE
-
-
 export MOI=${MOI:-$moi}  # SEventConfig
+
+# BELOW SETTINGS ARE KLUDGES : THEY SHOULD NOT BE NEEDED
+#export GRIDSCALE=100    ## WITHOUT THIS THE GRID DEFAULTS TO BEING TO SMALL 
+#export CE_OFFSET=CE
+#export CE_SCALE_OFF=1
+
 
 
 tmp=/tmp/$USER/opticks

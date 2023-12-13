@@ -35,7 +35,7 @@ customgeom()
 
     export GEOM=${GEOM:-$geom}
     ce_offset=0,0,0
-    ce_scale=1   
+    #ce_scale=1   
     gridscale=0.10
 
     if [ "$GEOM" == "sWorld_XZ" ]; then
@@ -60,18 +60,18 @@ customgeom()
 
         ## see CSGTarget::getCenterExtent
 
-        #iidx=0       # default 
-        #iidx=-1
-        #iidx=-2
-        iidx=-3       # model2world_rtpw = translate * scale * rotate 
-        #iidx=-4
-        #iidx=-5
+        #gord=0       # default 
+        #gord=-1
+        #gord=-2
+        gord=-3       # model2world_rtpw = translate * scale * rotate 
+        #gord=-4
+        #gord=-5
 
-        moi="solidXJfixture:10:$iidx"
+        moi="solidXJfixture:10:$gord"
 
         #cegs=16:0:9:100                # XZ/RP     (XYZ)->(RTP) 
         cegs=0:16:9:-24                 # YZ/TP
-        gridscale=0.05
+        #gridscale=0.05
     fi 
 }
 
@@ -80,14 +80,20 @@ source $HOME/.opticks/GEOM/GEOM.sh
 
 moi=sChimneyAcrylic:0:0
 cegs=16:0:9:100
-ce_offset=CE
+#ce_offset=CE
 
 
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
-export CE_OFFSET=${CE_OFFSET:-$ce_offset}
-export CE_SCALE=${CE_SCALE:-$ce_scale}
+
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
+
+
+# THESE SHOULDNT BE NEEDED
+#export CE_OFFSET=${CE_OFFSET:-$ce_offset}
+#export CE_SCALE=${CE_SCALE:-$ce_scale}
+
+
 
 
 logging(){

@@ -69,7 +69,7 @@ EOU
 
 export GEOM=${GEOM:-$geom}
 
-if [ -z "$moi" -o -z "$cegs" -o -z "$ce_offset" -o -z "$ce_scale" -o -z "$gridscale" ]; then 
+if [ -z "$moi" -o -z "$cegs" -o -z "$ce_offset" -o -z "$gridscale" ]; then 
 
     echo $cxs_msg the cxs.sh script must now be sourced from other scripts that define a set of local variables
     echo $cxs_msg see for example cxs_solidXJfixture.sh
@@ -77,7 +77,7 @@ if [ -z "$moi" -o -z "$cegs" -o -z "$ce_offset" -o -z "$ce_scale" -o -z "$gridsc
     [ -z "$moi" ]  && echo $cxs_msg missing moi 
     [ -z "$cegs" ] && echo $cxs_msg missing cegs
     [ -z "$ce_offset" ] && echo $cxs_msg missing ce_offset
-    [ -z "$ce_scale" ] && echo $cxs_msg missing ce_scale
+   # [ -z "$ce_scale" ] && echo $cxs_msg missing ce_scale
     [ -z "$gridscale" ] && echo $cxs_msg missing gridscale 
 
     exit 1     
@@ -92,7 +92,7 @@ export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}"
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
-export CE_SCALE=${CE_SCALE:-$ce_scale}
+#export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 export GSPLOT=${GSPLOT:-$gsplot}
 export NOTE=${NOTE:-$note}
