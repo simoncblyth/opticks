@@ -164,24 +164,43 @@ Used by CSGFoundry::getCenterExtent
 
 -2:world2model_rtpw : scale down and rotate    ( world2model = irotate * iscale * itranslate ) 
 
- MOI solidXJfixture:10:-2 midx 88 mord 10 iidx -2 gce (-17336.020,-4160.728,-809.117,66.045) 
- q (-0.015, 0.001, 0.004, 0.000) (-0.004, 0.000,-0.015, 0.000) (-0.001,-0.015, 0.000, 0.000) (-270.221,-0.000, 0.000, 1.000) 
+ MOI solidXJfixture:10:-2 
+    midx 88 mord 10 iidx -2 
+    gce (-17336.020,-4160.728,-809.117,66.045) 
+    q (-0.015, 0.001, 0.004, 0.000) 
+      (-0.004, 0.000,-0.015, 0.000) 
+      (-0.001,-0.015, 0.000, 0.000) 
+      (-270.221,-0.000, 0.000, 1.000) 
 
 -3:model2world_rtpw : scale up and rotate      ( model2world = translate * scale * rotate )
 
- MOI solidXJfixture:10:-3 midx 88 mord 10 iidx -3 gce (-17336.020,-4160.728,-809.117,66.045) 
- q (-64.155,-15.397,-2.994, 0.000) ( 2.912, 0.699,-65.977, 0.000) (15.413,-64.221, 0.000, 0.000) (-17336.020,-4160.728,-809.117, 1.000) 
+ MOI solidXJfixture:10:-3 
+    midx 88 mord 10 iidx -3 
+    gce (-17336.020,-4160.728,-809.117,66.045) 
+    q (-64.155,-15.397,-2.994, 0.000) 
+      ( 2.912, 0.699,-65.977, 0.000) 
+      (15.413,-64.221, 0.000, 0.000) 
+      (-17336.020,-4160.728,-809.117, 1.000) 
 
 -4:world2model_xyzw : uniform scaling down only, no rotation
 
- MOI solidXJfixture:10:-4 midx 88 mord 10 iidx -4 gce (-17336.020,-4160.728,-809.117,66.045) 
- q ( 0.015, 0.000, 0.000, 0.000) ( 0.000, 0.015, 0.000, 0.000) ( 0.000, 0.000, 0.015, 0.000) (262.489,62.999,12.251, 1.000) 
+ MOI solidXJfixture:10:-4 
+    midx 88 mord 10 iidx -4 
+    gce (-17336.020,-4160.728,-809.117,66.045) 
+    q ( 0.015, 0.000, 0.000, 0.000) 
+      ( 0.000, 0.015, 0.000, 0.000) 
+      ( 0.000, 0.000, 0.015, 0.000) 
+      (262.489,62.999,12.251, 1.000) 
 
 -5:model2world_xyzw  : uniform scaling up only, no rotation
 
- MOI solidXJfixture:10:-5 midx 88 mord 10 iidx -5 gce (-17336.020,-4160.728,-809.117,66.045) 
- q (66.045, 0.000, 0.000, 0.000) ( 0.000,66.045, 0.000, 0.000) ( 0.000, 0.000,66.045, 0.000) (-17336.020,-4160.728,-809.117, 1.000) 
-
+ MOI solidXJfixture:10:-5 
+    midx 88 mord 10 iidx -5 
+    gce (-17336.020,-4160.728,-809.117,66.045) 
+    q (66.045, 0.000, 0.000, 0.000) 
+      ( 0.000,66.045, 0.000, 0.000) 
+      ( 0.000, 0.000,66.045, 0.000) 
+      (-17336.020,-4160.728,-809.117, 1.000) 
 
 **/
 
@@ -305,7 +324,6 @@ int CSGTarget::getGlobalCenterExtent(float4& gce, int midx, int mord, int iidx, 
 {
     const qat4* t = getInstanceTransform(midx, mord, iidx); 
     const qat4* v = t ? Tran<double>::Invert(t ) : nullptr ; 
-    // TODO: avoid this Invert by collecting paired instance transforms from Geant4 source 
 
     LOG_IF(fatal, t == nullptr) 
         << " failed to get InstanceTransform (midx mord iidx) " << "(" << midx << " " << mord << " " << iidx << ")" ;

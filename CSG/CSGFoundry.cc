@@ -12,6 +12,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "sstr.h"
 #include "ssys.h"
 #include "sproc.h"
 #include "SProf.hh"
@@ -3319,9 +3320,8 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 int CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
-
     int rc = 0 ; 
-    bool looks_like_moi = SStr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
+    bool looks_like_moi = sstr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
     if(looks_like_moi)
     {
         int midx, mord, iidx ;  // mesh-index, mesh-ordinal, gas-instance-index
@@ -3403,7 +3403,6 @@ sframe CSGFoundry::getFrameE() const
     }
     else if(ssys::getenvbool("MOI"))  
     {
-        // TODO: get rid of MOI, as doing almost same as OPTICKS_INPUT_PHOTON_FRAME
         const char* MOI = ssys::getenvvar("MOI", nullptr) ; 
         LOG(LEVEL) << " MOI " << MOI ;  
         fr = getFrame() ; 

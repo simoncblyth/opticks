@@ -13,6 +13,132 @@ Workflow
 
     ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
 
+    ~/o/cxt_min.sh          
+    ~/o/cxt_min.sh grab 
+    ~/o/cxt_min.sh ana
+
+
+Overview
+-----------
+
+* changed QEvent back to using NP gs so have gensteps to debug 
+* find that with adhoc GRIDSCALE of 100 can get OK traces for PMTs
+* but that doesnt work for the Chimney, grid is still mid-CD
+
+  * presumably because Chimney is global not instanced
+
+
+
+
+sframe with PMT
+------------------
+
+::
+
+    In [1]: sf                                                                                                                                 
+    Out[1]: 
+    sframe       : 
+    path         : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXTMTest/NNVT:0:1000/A000/sframe.npy
+    meta         : creator:sframe::getFrameArray
+    frs:NNVT:0:1000
+    ek:MOI
+    ev:NNVT:0:1000
+    ekvid:sframe_MOI_NNVT_0_1000
+    ce           : array([-3156.737, 10406.367, 16012.954,   348.289], dtype=float32)
+    grid         : ix0  -16 ix1   16 iy0    0 iy1    0 iz0   -9 iz1    9 num_photon 2000 gridscale   100.0000
+    bbox         : array([[-557262.5 ,       0.  , -313460.16],
+           [ 557262.5 ,       0.  ,  313460.16]], dtype=float32)
+    target       : midx    109 mord      0 iidx   1000       inst       0   
+    qat4id       : ins_idx     -1 gas_idx   -1   -1 
+    m2w          : 
+    array([[    0.24 ,    -0.792,     0.562,     0.   ],
+           [   -0.957,    -0.29 ,     0.   ,     0.   ],
+           [    0.163,    -0.538,    -0.827,     0.   ],
+           [-3169.384, 10448.06 , 16077.108,     1.   ]], dtype=float32)
+
+    w2m          : 
+    array([[    0.24 ,    -0.957,     0.163,     0.   ],
+           [   -0.792,    -0.29 ,    -0.538,     0.   ],
+           [    0.562,    -0.   ,    -0.827,     0.   ],
+           [   -0.005,     0.001, 19434.   ,     1.   ]], dtype=float32)
+
+    id           : 
+    array([[ 1.   , -0.   , -0.   ,  0.   ],
+           [ 0.   ,  1.   , -0.   ,  0.   ],
+           [-0.   , -0.   ,  1.   ,  0.   ],
+           [ 0.001,  0.   ,  0.   ,  1.   ]], dtype=float32)
+    ins_gas_ias  :  ins      0 gas    0 ias    0 
+
+    In [2]:                               
+
+
+
+
+sframe with chimney
+----------------------
+
+::
+
+    sframe       : 
+    path         : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXTMTest/sChimneyAcrylic:0:0/A000/sframe.npy
+    meta         : creator:sframe::getFrameArray
+    frs:sChimneyAcrylic:0:0
+    ek:MOI
+    ev:sChimneyAcrylic:0:0
+    ekvid:sframe_MOI_sChimneyAcrylic_0_0
+    ce           : array([    0.,     0., 18124.,   524.], dtype=float32)
+    grid         : ix0  -16 ix1   16 iy0    0 iy1    0 iz0   -9 iz1    9 num_photon 2000 gridscale   100.0000
+    bbox         : array([[-838400.,       0., -471600.],
+           [ 838400.,       0.,  471600.]], dtype=float32)
+    target       : midx    123 mord      0 iidx      0       inst       0   
+    qat4id       : ins_idx     -1 gas_idx   -1   -1 
+    m2w          : 
+    array([[1., 0., 0., 0.],
+           [0., 1., 0., 0.],
+           [0., 0., 1., 0.],
+           [0., 0., 0., 1.]], dtype=float32)
+
+    w2m          : 
+    array([[ 1., -0.,  0.,  0.],
+           [-0.,  1., -0.,  0.],
+           [ 0., -0.,  1.,  0.],
+           [-0.,  0., -0.,  1.]], dtype=float32)
+
+    id           : 
+    array([[1., 0., 0., 0.],
+           [0., 1., 0., 0.],
+           [0., 0., 1., 0.],
+           [0., 0., 0., 1.]], dtype=float32)
+    ins_gas_ias  :  ins      0 gas    0 ias    0 
+
+    In [2]:                             
+
+
+::
+
+    3351 int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int iidxg) const
+    3352 {
+    3353     int rc = 0 ;
+    3354     if( midx == -1 )
+    3355     {
+    3356         unsigned long long emm = 0ull ;   // hmm instance var ?
+    3357         iasCE(fr.ce, emm);
+    3358     }
+    3359     else
+    3360     {
+    3361         rc = target->getFrame( fr, midx, mord, iidxg );
+    3362     }
+    3363     return rc ;
+    3364 }
+
+    135 int CSGTarget::getFrame(sframe& fr,  int midx, int mord, int iidxg ) const
+    136 {
+    137     fr.set_midx_mord_iidx( midx, mord, iidxg );
+    138     int rc = getFrameComponents( fr.ce, midx, mord, iidxg, &fr.m2w , &fr.w2m );
+    139     LOG(LEVEL) << " midx " << midx << " mord " << mord << " iidxg " << iidxg << " rc " << rc ;
+    140     return rc ;
+    141 }
+
 
 
 Issue with cxt_min.sh 
@@ -25,7 +151,6 @@ MOI=ALL
 MOI=sChimneyAcrylic:0:0 
    gives unexpected simtrace with just a circle and blip looking like the simtrace 
    grid is at center of CD rather than in the throat of the chimney as intended
-
 
 ::
 

@@ -41,9 +41,11 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 #moi=sWorld:0:0
 #moi=NNVT:0:0
 #moi=NNVT:0:50
-moi=NNVT:0:1000
+#moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
-#moi=sChimneyAcrylic:0:0
+moi=sChimneyAcrylic:0:0
+
+export GRIDSCALE=100    ## WITHOUT THIS THE GRID DEFAULTS TO BEING TO SMALL 
 
 export MOI=${MOI:-$moi}  # SEventConfig
 
@@ -85,10 +87,11 @@ cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 logging(){ 
-    export CSGOptiX=INFO
-    export QEvent=INFO 
-    export QSim=INFO
-    export SFrameGenstep=INFO
+    #export CSGOptiX=INFO
+    #export QEvent=INFO 
+    #export QSim=INFO
+    #export SFrameGenstep=INFO
+    export CSGTarget=INFO
 }
 [ -n "$LOG" ] && logging
 
