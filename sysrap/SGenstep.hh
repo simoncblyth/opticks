@@ -1,4 +1,27 @@
 #pragma once
+/**
+SGenstep.hh : genstep static utilities
+========================================
+
+Used by:
+
+sysrap/SGenerate.h
+   GetGencode
+
+sysrap/SFrameGenstep.cc
+   GenstepID, ConfigureGenstep, MakeArray, GridAxes, GridAxesName
+ 
+sysrap/SCenterExtentGenstep.cc
+   [ON WAY OUT] GridAxes, GridAxesName
+
+sysrap/SEvent.cc
+   ConfigureGenstep, MakeArray used by SEvent::MakeCountGenstep
+
+qudarap/QEvent.cc
+   Check, Desc, GetGencode used by QEvent::setGenstepUpload
+
+
+**/
 
 #include <string>
 #include <vector>

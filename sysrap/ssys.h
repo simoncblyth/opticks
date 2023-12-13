@@ -86,7 +86,10 @@ struct ssys
     template<typename T>
     static std::vector<T>* getenv_vec(const char* ekey, const char* fallback, char delim=','); 
 
-     static std::vector<int>* getenvintvec(const char* envkey, char delim=','); 
+    // THESE METHODS ARE TO ASSIST MIGRATION FROM THE OLD SSys.hh
+    static std::vector<int>*   getenvintvec( const char* envkey, char delim=','); 
+    static void getenvintvec( const char* ekey, std::vector<int>& vec, char delim, const char* fallback ) ; 
+    static std::vector<float>* getenvfloatvec(const char* envkey, const char* fallback, char delim=','); 
 
 
     template<typename T>
@@ -501,6 +504,21 @@ inline std::vector<int>* ssys::getenvintvec(const char* envkey, char delim)
 {
     return getenv_vec<int>(envkey, nullptr, delim);  
 }
+
+inline void ssys::getenvintvec( const char* ekey, std::vector<int>& vec, char delim, const char* fallback )
+{
+    fill_evec<int>( vec, ekey, fallback, delim ); 
+}
+
+
+
+
+inline std::vector<float>* ssys::getenvfloatvec(const char* envkey, const char* fallback, char delim)
+{
+    return getenv_vec<float>(envkey, fallback, delim);  
+}
+
+
 
 
 

@@ -3,18 +3,12 @@
 #include "SLOG.hh"
 
 
-#include "scuda.h"
-#include "sqat4.h"
-#include "sframe.h"
 #include "spath.h"
 #include "ssys.h"
-#include "smeta.h"
 
 #include "SEvt.hh"
 #include "SSim.hh"
-#include "SGeo.hh"
 #include "SOpticksResource.hh"
-#include "SFrameGenstep.hh"
 
 #include "U4VolumeMaker.hh"
 #include "U4Recorder.hh"
@@ -277,7 +271,6 @@ const char* G4CXOpticks::setGeometry_saveGeometry = ssys::getenvvar("G4CXOpticks
 void G4CXOpticks::setGeometry(CSGFoundry* fd_)
 {
     setGeometry_(fd_); 
-   //  setupFrame();     : MOVED DOWN TO CSGOptiX::initFrame
 }
 
 

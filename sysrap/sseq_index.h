@@ -184,7 +184,7 @@ sseq_index::order_seq
 
 inline void sseq_index::order_seq()
 {
-    for(auto it=m.begin() ; it != m.end() ; it++) u.push_back( { it->first, it->second.index, it->second.count } );  
+    for(auto it=m.begin() ; it != m.end() ; it++) u.push_back( { it->first, {it->second.index, it->second.count} } );  
 
     auto descending_order = [](const sseq_unique& a, const sseq_unique& b) { return a.ic.count > b.ic.count ; } ; 
 

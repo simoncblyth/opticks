@@ -27,6 +27,8 @@ case $(uname) in
    Darwin) defarg=grab_ana ;;
 esac
 
+[ -n "$BP" ] && defarg="info_dbg" 
+
 arg=${1:-$defarg}
 
 export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
@@ -67,7 +69,10 @@ LOG=$bin.log
 export OPTICKS_INTEGRATION_MODE=1
 
 
-export CEGS=16:0:9:1000   # XZ default 
+# pushing this too high tripped M3 max photon limit
+# 16*9*2000 = 0.288 (HMM must be 
+export CEGS=16:0:9:2000   # XZ default 
+#export CEGS=16:0:9:1000   # XZ default 
 #export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
 #export CEGS=16:9:0:1000    # try XY 
 
@@ -78,8 +83,9 @@ logging(){
     export CSGOptiX=INFO
     export QEvent=INFO 
     export QSim=INFO
+    export SFrameGenstep=INFO
 }
-#logging
+[ -n "$LOG" ] && logging
 
 
 vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR SNAME SSTEM FOLD"

@@ -6,9 +6,9 @@
 
 #include "sc4u.h"
 #include "ssincos.h"
+#include "ssys.h"
 
 #include "SLOG.hh"
-#include "SSys.hh"
 #include "SRng.hh"
 #include "SGenstep.hh"
 #include "OpticksGenstep.h"
@@ -34,7 +34,7 @@ the offset to be set to the ce provided by the argument.
 void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce ) // static
 {
     const char* ekey = "CE_OFFSET" ; 
-    const char* val = SSys::getenvvar(ekey); 
+    const char* val = ssys::getenvvar(ekey); 
 
     bool is_CE = val == nullptr ? false : ( strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0 )  ; 
     float3 offset = make_float3(0.f, 0.f, 0.f ); 
@@ -48,7 +48,7 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
     }
     else
     {
-        std::vector<float>* fvec = SSys::getenvfloatvec(ekey, "0,0,0"); 
+        std::vector<float>* fvec = ssys::getenvfloatvec(ekey, "0,0,0"); 
         unsigned num_values = fvec->size() ;  
         assert(fvec); 
 
@@ -105,7 +105,8 @@ std::string SFrameGenstep::Desc(const std::vector<int>& cegs )
 
 void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback )
 {
-    SSys::getenvintvec(ekey, cegs, delim, fallback );
+    ssys::getenvintvec(ekey, cegs, delim, fallback );
+
     StandardizeCEGS(cegs); 
     assert( cegs.size() == 0 || cegs.size() == 8 );
     LOG(LEVEL) << " ekey " << ekey << " Desc " << Desc(cegs)  ; 
@@ -137,7 +138,7 @@ const char* SFrameGenstep::CEGS_XZ = "16:0:9:1000" ;  // default
 NP* SFrameGenstep::MakeCenterExtentGenstep(sframe& fr)
 {
     const float4& ce = fr.ce ; 
-    float gridscale = SSys::getenvfloat("GRIDSCALE", 0.1 ) ; 
+    float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1 ) ; 
 
     // CSGGenstep::init
     std::vector<int> cegs ; 
@@ -153,7 +154,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(sframe& fr)
         ;
 
 
-    int ce_scale = SSys::getenvint("CE_SCALE", 1) ; // TODO: ELIMINATE AFTER RTP CHECK 
+    int ce_scale = ssys::getenvint("CE_SCALE", 1) ; // TODO: ELIMINATE AFTER RTP CHECK 
     LOG_IF(fatal, ce_scale == 0) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
  
 
@@ -272,7 +273,13 @@ This allows high resolution regions without changes to indexing.
 
 **/
 
-NP* SFrameGenstep::MakeCenterExtentGenstep(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) // static
+NP* SFrameGenstep::MakeCenterExtentGenstep(
+    const float4& ce, 
+    const std::vector<int>& cegs,
+    float gridscale, 
+    const Tran<double>* geotran, 
+    const std::vector<float3>& ce_offset, 
+    bool ce_scale ) // static
 {
     std::vector<quad6> gensteps ;
     quad6 gs ; gs.zero();
