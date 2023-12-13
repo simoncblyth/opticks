@@ -1,67 +1,80 @@
 #!/bin/bash -l 
-
 usage(){ cat << EOU
 CSGFoundry_MakeCenterExtentGensteps_Test.sh
 ===============================================
 
+::
+
+   ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
+
 This checks the center-extent-gensteps used in CSGOptiX/cxs.sh 
 by generating some photons on CPU from them and loading into python. 
-
-
-2022-01-03 15:04:33.973 INFO  [5323710] [CSGGenstep::locate@115]  rc 0 MOI.ce (-10093.4 11882.9 11467.3 365.057)
-2022-01-03 15:04:33.973 INFO  [5323710] [CSGGenstep::locate@118] 
-qt( 0.384,-0.452, 0.806, 0.000) (-0.762,-0.647, 0.000, 0.000) ( 0.522,-0.614,-0.593, 0.000) (-10135.104,11931.969,11514.693, 1.000) 
 
 EOU
 }
 
-#geom=HamaXZ_0
-geom=HamaXZ_1000
-#geom=XJfixtureConstruction_0
-#geom=sWorld_XZ
 
-export GEOM=${GEOM:-$geom}
-ce_offset=0,0,0
-ce_scale=1   
-gridscale=0.10
+SDIR=$(dirname $(realpath $BASH_SOURCE))
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
 
+name="CSGFoundry_MakeCenterExtentGensteps_Test"
+script=$SDIR/$name.py 
 
-if [ "$GEOM" == "sWorld_XZ" ]; then
-
-    moi=sWorld
-    cegs=16:0:9:-24   
-
-elif [ "$GEOM" == "HamaXZ_0" ]; then
-
-    moi=Hama
-    cegs=16:0:9:-24
-
-elif [ "$GEOM" == "HamaXZ_1000" ]; then
-
-    moi=Hama:0:1000
-    cegs=16:0:9:-24   
-    #gridscale=0.10
-    ce_offset=0,-666.6,0
-
-elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
+export PYVISTA_KILL_DISPLAY=1
+export FOLD=$TMP/$name
 
 
-    ## see CSGTarget::getCenterExtent
+customgeom()
+{
+    #local geom=HamaXZ_0
+    local geom=HamaXZ_1000
+    #local geom=XJfixtureConstruction_0
+    #local geom=sWorld_XZ
 
-    #iidx=0       # default 
-    #iidx=-1
-    #iidx=-2
-    iidx=-3       # model2world_rtpw = translate * scale * rotate 
-    #iidx=-4
-    #iidx=-5
+    export GEOM=${GEOM:-$geom}
+    ce_offset=0,0,0
+    ce_scale=1   
+    gridscale=0.10
 
-    moi="solidXJfixture:10:$iidx"
+    if [ "$GEOM" == "sWorld_XZ" ]; then
 
-    #cegs=16:0:9:100                # XZ/RP     (XYZ)->(RTP) 
-    cegs=0:16:9:-24                 # YZ/TP
-    gridscale=0.05
+        moi=sWorld
+        cegs=16:0:9:-24   
 
-fi 
+    elif [ "$GEOM" == "HamaXZ_0" ]; then
+
+        moi=Hama
+        cegs=16:0:9:-24
+
+    elif [ "$GEOM" == "HamaXZ_1000" ]; then
+
+        moi=Hama:0:1000
+        cegs=16:0:9:-24   
+        #gridscale=0.10
+        ce_offset=0,-666.6,0
+
+    elif [ "$GEOM" == "XJfixtureConstruction_0" ]; then
+
+
+        ## see CSGTarget::getCenterExtent
+
+        #iidx=0       # default 
+        #iidx=-1
+        #iidx=-2
+        iidx=-3       # model2world_rtpw = translate * scale * rotate 
+        #iidx=-4
+        #iidx=-5
+
+        moi="solidXJfixture:10:$iidx"
+
+        #cegs=16:0:9:100                # XZ/RP     (XYZ)->(RTP) 
+        cegs=0:16:9:-24                 # YZ/TP
+        gridscale=0.05
+    fi 
+}
+
+source $HOME/.opticks/GEOM/GEOM.sh 
 
 
 export MOI=${MOI:-$moi}
@@ -70,32 +83,30 @@ export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
 
-bin=CSGFoundry_MakeCenterExtentGensteps_Test
 
-arg=${1:-run_ana}
+defarg="into_run_ana"
+arg=${1:-$defarg}
 
+vars="BASH_SOURCE SDIR MOI CEGS CE_OFFSET CE_SCALE GRIDSCALE"
+
+if [ "${arg/info}" != "$arg" ]; then  
+   for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
+fi
 
 if [ "${arg/run}" != "$arg" ]; then  
+   $name
+   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+fi
 
-     $bin
-    [ $? -ne 0 ] && echo $msg runtime error && exit 1 
-
-elif [ "${arg/dbg}" != "$arg" ]; then  
-
-    if [ "$(uname)" == "Darwin" ]; then
-        lldb__ $bin
-    else
-        gdb $bin
-    fi 
-    [ $? -ne 0 ] && echo $msg runtime error && exit 1 
+if [ "${arg/dbg}" != "$arg" ]; then  
+   dbg__ $name
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then  
-    export PYVISTA_KILL_DISPLAY=1
-    export FOLD=/tmp/$USER/opticks/CSG/$bin
-    ${IPYTHON:-ipython} --pdb -i $bin.py 
+   ${IPYTHON:-ipython} --pdb -i $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi
 
 exit 0 
-
 

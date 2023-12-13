@@ -1,9 +1,21 @@
 cxt_min_simtrace_frame_targeting_not_working
 ==============================================
 
+
+Workflow
+---------
+
+::
+
+    LOG=1 ~/o/cxt_min.sh
+
+    ~/o/sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.sh
+
+    ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
+
+
 Issue with cxt_min.sh 
 -------------------------
-
 
 
 MOI=ALL
@@ -39,4 +51,13 @@ MOI=sChimneyAcrylic:0:0
     (gdb) 
 
 
+::
+
+     630 void CSGOptiX::initFrame()
+     631 {
+     632     sframe _fr = foundry->getFrameE() ;
+     633     LOG(LEVEL) << _fr ;
+     634     SEvt::SetFrame(_fr) ;
+     635     setFrame(_fr);
+     636 }
 

@@ -724,7 +724,7 @@ void SEvt::addInputGenstep()
             SEvt::SetReldir(frs);  
         }
   
-        NP* gs = SFrameGenstep::MakeCenterExtentGenstep(frame);  
+        NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);  
         LOG(LEVEL) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ; 
         addGenstep(gs); 
 

@@ -9,48 +9,6 @@ TODO: contrast this with SCenterExtentGenstep and replace all use of that with t
   providing a central object on which to hang metadata that is 
   available both from C++ and python 
 
-
-
-::
-
-    epsilon:opticks blyth$ opticks-fl SFrameGenstep
-    ./ana/framegensteps.py
-    ./CSGOptiX/cxs_Hama.sh
-    ./CSGOptiX/tests/CSGOptiXSimtraceTest.cc
-    ./CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.cc
-    ./extg4/X4Simtrace.cc
-    ./sysrap/SFrameGenstep.hh
-    ./sysrap/CMakeLists.txt
-    ./sysrap/SCenterExtentFrame.h
-    ./sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.sh
-    ./sysrap/tests/CMakeLists.txt
-    ./sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.cc
-    ./sysrap/tests/SEventTest.cc
-    ./sysrap/SFrameGenstep.cc
-    ./sysrap/SCenterExtentGenstep.cc
-    ./sysrap/sframe.h
-    ./sysrap/SEvt.cc
-    ./sysrap/SCenterExtentGenstep.hh
-    ./g4cx/G4CXOpticks.cc
-    ./g4cx/gxt.sh
-
-    epsilon:opticks blyth$ opticks-fl SCenterExtentGenstep
-    ./CSG/CSGGeometry.cc
-    ./CSG/CSGQuery.cc
-    ./CSG/tests/CSGIntersectSolidTest.py
-    ./CSG/CSGGenstep.h
-    ./extg4/X4Intersect.hh
-    ./extg4/X4Intersect.cc
-    ./sysrap/SFrameGenstep.hh
-    ./sysrap/CMakeLists.txt
-    ./sysrap/SCenterExtentGenstep.py
-    ./sysrap/tests/CMakeLists.txt
-    ./sysrap/tests/SEventTest.cc
-    ./sysrap/tests/SCenterExtentGenstepTest.cc
-    ./sysrap/SCenterExtentGenstep.cc
-    ./sysrap/SCenterExtentGenstep.sh
-    ./sysrap/SCenterExtentGenstep.hh
-
 **/
 
 #include <vector>
@@ -70,26 +28,53 @@ struct SYSRAP_API SFrameGenstep
     static std::string Desc(const std::vector<float3>& ce_offset ); 
     static std::string Desc(const std::vector<int>& cegs ); 
 
-    static void GetGridConfig(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback ); 
+    static void GetGridConfig(
+        std::vector<int>& cegs,  
+        const char* ekey, 
+        char delim, 
+        const char* fallback ); 
 
     static const char* CEGS_XY ; 
     static const char* CEGS_XZ ;  // default 
 
-    static NP* MakeCenterExtentGenstep(sframe& fr); 
-    static NP* MakeCenterExtentGenstep(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, const std::vector<float3>& ce_offset, bool ce_scale ) ;
+    static NP* MakeCenterExtentGenstep_FromFrame(sframe& fr); 
+    static NP* MakeCenterExtentGenstep(
+        const float4& ce, 
+        const std::vector<int>& cegs, 
+        float gridscale, 
+        const Tran<double>* geotran, 
+        const std::vector<float3>& ce_offset, 
+        bool ce_scale ) ;
 
     static void StandardizeCEGS( std::vector<int>& cegs );
-    static void GetBoundingBox( float3& mn, float3& mx, const float4& ce, const std::vector<int>& standardized_cegs, float gridscale, const float3& ce_offset ) ; 
+    static void GetBoundingBox( 
+        float3& mn, 
+        float3& mx, 
+        const float4& ce, 
+        const std::vector<int>& standardized_cegs, 
+        float gridscale, 
+        const float3& ce_offset ) ; 
 
-    static void GenerateCenterExtentGenstepPhotons( std::vector<quad4>& pp, const NP* gsa, float gridscale ); 
-    static NP* GenerateCenterExtentGenstepPhotons_( const NP* gsa, float gridscale ) ; 
+    static void GenerateCenterExtentGenstepPhotons( 
+        std::vector<quad4>& pp, 
+        const NP* gsa, 
+        float gridscale ); 
 
-    static void GenerateSimtracePhotons( std::vector<quad4>& simtrace, const std::vector<quad6>& genstep ); 
+    static NP* GenerateCenterExtentGenstepPhotons_(
+        const NP* gsa, 
+        float gridscale ) ; 
 
+    static void GenerateSimtracePhotons( 
+        std::vector<quad4>& simtrace, 
+        const std::vector<quad6>& genstep ); 
 
-    static void SetGridPlaneDirection( float4& dir, int gridaxes, double cosPhi, double sinPhi, double cosTheta, double sinTheta ); 
+    static void SetGridPlaneDirection( 
+        float4& dir, 
+        int gridaxes, 
+        double cosPhi, 
+        double sinPhi, 
+        double cosTheta, 
+        double sinTheta ); 
 };
-
-
 
 

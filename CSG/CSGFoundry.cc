@@ -2939,7 +2939,7 @@ const char* CSGFoundry::ResolveCFBase() // static
     bool readable = cfbase == nullptr ? false : SPath::IsReadable(cfbase, "CSGFoundry") ; 
     LOG(LEVEL) << " cfbase " << cfbase << " readable " << readable ; 
 
-    LOG_IF(fatal, !readable) << " cfbase/CSGFoundy directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
+    LOG_IF(fatal, !readable) << " cfbase/CSGFoundry directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ; 
    
     return readable ? cfbase : nullptr ; 
 }

@@ -76,6 +76,9 @@ export CEGS=16:0:9:2000   # XZ default
 #export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
 #export CEGS=16:9:0:1000    # try XY 
 
+## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000 
+
+
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
@@ -108,12 +111,8 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    if [ "${arg/run}" != "$arg" ]; then
        $bin
    elif [ "${arg/dbg}" != "$arg" ]; then
-       case $(uname) in
-          Linux) gdb__ $bin ;;
-          Darwin) lldb__ $bin ;;  
-       esac
+       dbg__ $bin
    fi 
-
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
 

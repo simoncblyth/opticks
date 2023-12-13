@@ -124,16 +124,17 @@ int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
    
-    /*
     test_Load(); 
+
+    /*
     test_findName(); 
     test_addFake();     
     test_addFake_ellipsis();     
     test_get_bnd(); 
     test_Create(); 
+    test_Load_get(); 
     */
 
-    test_Load_get(); 
 
 
     return 0 ; 

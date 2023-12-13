@@ -128,6 +128,9 @@ SSim* SSim::Load(const char* base, const char* reldir)
     return sim ; 
 }
 
+
+
+
 std::string SSim::GetGPUMeta() // static 
 {
     SSim* ss = Get(); 
@@ -140,6 +143,8 @@ std::string SSim::getGPUMeta() const
     return meta ; 
 }
 
+
+
 SSim::SSim()
     :
     relp(ssys::getenvvar("SSim__RELP", RELP_DEFAULT )), // alt: "extra/GGeo"
@@ -150,6 +155,17 @@ SSim::SSim()
 {
     init(); 
 }
+
+/**
+SSim::init
+------------
+
+HMM: SSim is used in many situations when the GPU is
+irrelevant so it seems the wrong place to instanciate sctx 
+
+TODO: move sctx into QSim where the GPU is always relevant 
+
+**/
 
 void SSim::init()
 {

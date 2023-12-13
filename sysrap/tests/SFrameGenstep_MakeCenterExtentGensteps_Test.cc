@@ -4,25 +4,16 @@
 #include "SFrameGenstep.hh"
 #include "NP.hh"
 
-const char* FOLD = getenv("FOLD") ; 
-
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
+
     sframe fr ;  
     fr.ce.w = 100.f ; 
 
-    NP* gs = SFrameGenstep::MakeCenterExtentGenstep(fr);
+    NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr);
     LOG(info) << " gs " << ( gs ? gs->sstr() : "-" ) ;  
-
-    if(FOLD)
-    {
-        gs->save(FOLD, "gs.npy"); 
-    }
-    else
-    {
-        LOG(error) << "define FOLD envvar to save the gensteps array " ; 
-    }
+    gs->save("$FOLD/gs.npy"); 
 
     return 0 ; 
 

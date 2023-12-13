@@ -3,10 +3,9 @@
 #include "squad.h"
 #include "sqat4.h"
 #include "sframe.h"
+#include "spath.h"
 
 #include "SSim.hh"
-#include "SSys.hh"
-#include "SPath.hh"
 #include "SEvt.hh"
 #include "SFrameGenstep.hh"
 #include "NP.hh"
@@ -17,21 +16,22 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    SEvt::Create(0) ;
+    SEvt::Create_ECPU() ;
 
-    SSim::Create(); 
+    SSim::Create();   // this is creating (scontext)sctx : checking GPU 
+
+
 
     CSGFoundry* fd = CSGFoundry::Load();
 
     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame 
 
-    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGenstep(fr) ); 
+    SEvt::AddGenstep( SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ); 
 
-    NP* gs = SEvt::GatherGenstep(0); 
+    NP* gs = SEvt::GatherGenstep(SEvt::ECPU); 
     NP* pp = SFrameGenstep::GenerateCenterExtentGenstepPhotons_( gs, fr.gridscale() );  
 
     std::cout << " fr " << std::endl << fr << std::endl ; 
-
 
 
     // HMM: want to use SEvt for saving not QEvent 
@@ -40,7 +40,6 @@ int main(int argc, char** argv)
     gs->save(dir, "genstep.npy"); 
     pp->save(dir, "photon.npy"); 
     fr.save(dir) ; 
-
 
     return 0 ; 
 }

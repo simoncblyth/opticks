@@ -34,7 +34,7 @@ CUDA_VISIBLE_DEVICES envvar is read earlier than previously.
 
 struct scontext
 {
-    static constexpr const bool VERBOSE = false ; 
+    static constexpr const bool VERBOSE = true ; 
 
     scontext(); 
     std::vector<sdevice> visible_devices ;    
