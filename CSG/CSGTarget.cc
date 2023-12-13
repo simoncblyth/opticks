@@ -226,9 +226,9 @@ int CSGTarget::getFrameComponents(float4& ce, int midx, int mord, int gord, qat4
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
     }
-    else if( gord == -2 || gord == -3 || gord )
+    else if( gord == -2 || gord == -3 )
     {
-        LOG(info) << "(gord == -2/-3  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
+        LOG(LEVEL) << "(gord == -2/-3  EXPERIMENTAL qptr transform will be set to SCenterExtentFrame transforms " ; 
         int lrc = getLocalCenterExtent(ce, midx, mord); 
         if(lrc != 0) return 1 ; 
 
@@ -276,7 +276,7 @@ int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const
     foundry->getMeshPrimCopies(prim, midx );  
     bool mord_in_range = mord < int(prim.size()) ; 
 
-    LOG(info)  
+    LOG(LEVEL)  
         << " midx " << midx
         << " mord " << mord 
         << " prim.size " << prim.size()
@@ -294,7 +294,7 @@ int CSGTarget::getLocalCenterExtent(float4& lce, int midx, int mord) const
     lce.z = localCE.z ; 
     lce.w = localCE.w ; 
 
-    LOG(info) << " lce " << lce  ;   
+    LOG(LEVEL) << " lce " << lce  ;   
     return 0 ; 
 }
 

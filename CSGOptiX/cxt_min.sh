@@ -41,9 +41,9 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar
 #moi=sWorld:0:0
 #moi=NNVT:0:0
 #moi=NNVT:0:50
-#moi=NNVT:0:1000
+moi=NNVT:0:1000
 #moi=PMT_20inch_veto:0:1000
-moi=sChimneyAcrylic:0:-2    # gord:-2 XYZ frame from SCenterExtentFrame.h (now without extent scaling)
+#moi=sChimneyAcrylic:0:-2    # gord:-2 XYZ frame from SCenterExtentFrame.h (now without extent scaling)
 export MOI=${MOI:-$moi}  # SEventConfig
 
 # BELOW SETTINGS ARE KLUDGES : THEY SHOULD NOT BE NEEDED
