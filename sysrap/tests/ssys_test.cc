@@ -153,7 +153,7 @@ void test_replace_envvar_token()
 
 void test_getenvfloat()
 {
-    float f = ssys::getenvfloat("f",0.f) ; 
+    float f = ssys::getenvfloat("f",0.314f) ; 
     std::cout << "f:" << std::scientific << f << std::endl ; 
 }
 
@@ -174,6 +174,21 @@ void test_getenvvar()
         << std::endl
         ;
 }
+
+
+void test_getenvfloatvec_fallback()
+{
+    const char* ekey = "UKEY" ; 
+    std::vector<float>* fvec = ssys::getenvfloatvec(ekey, "0,0,0"); 
+    int num_values = fvec ? fvec->size() : -1 ; 
+    std::cout 
+         << __FUNCTION__
+         << " ekey " << ekey 
+         << " num_values " << num_values
+         << std::endl 
+         ;
+}  
+
 
 void test_is_listed()
 {
@@ -402,6 +417,23 @@ void test_getenv_with_prefix()
 
 }
 
+void test_getenvintvec()
+{
+    const char* ekey = "CEGS" ; 
+    char delim = ':' ; 
+    const char* fallback = "16:0:9:1000" ; 
+  
+    std::vector<int> cegs ; 
+    ssys::getenvintvec(ekey, cegs, delim, fallback );
+
+    std::cout << "cegs[" ; 
+    for(int i=0 ; i < int(cegs.size()) ; i++) std::cout << cegs[i] << " " ; 
+    std::cout << "]" << std::endl ; 
+
+    assert( cegs.size() == 4 ); 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -438,9 +470,11 @@ int main(int argc, char** argv)
     test_Desc(); 
     test_PWD(); 
     test_getenv_ParseInt(); 
-    */
-
     test_getenv_with_prefix(); 
+    test_getenvintvec(); 
+    */
+    test_getenvfloatvec_fallback(); 
+
  
     return 0 ; 
 }

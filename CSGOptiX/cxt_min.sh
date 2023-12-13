@@ -78,6 +78,8 @@ export CEGS=16:0:9:2000   # XZ default
 
 ## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000 
 
+export CE_OFFSET=CE
+
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}

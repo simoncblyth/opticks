@@ -36,10 +36,11 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
     const char* ekey = "CE_OFFSET" ; 
     const char* val = ssys::getenvvar(ekey); 
 
-    bool is_CE = val == nullptr ? false : ( strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0 )  ; 
+    bool is_CE_string = val == nullptr ? false : ( strcmp(val, "CE")== 0 || strcmp(val, "ce")== 0 )  ; 
     float3 offset = make_float3(0.f, 0.f, 0.f ); 
 
-    if(is_CE)   // this is not typically used anymore
+
+    if(is_CE_string)   // this is not typically used anymore
     {
         offset.x = ce.x ; 
         offset.y = ce.y ; 
@@ -50,12 +51,20 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
     {
         std::vector<float>* fvec = ssys::getenvfloatvec(ekey, "0,0,0"); 
         unsigned num_values = fvec->size() ;  
+        bool multiple_of_3 = num_values % 3 == 0 ;
+        unsigned num_offset = num_values/3 ; 
         assert(fvec); 
 
-        bool multiple_of_3 = num_values % 3 == 0 ;
+        LOG(LEVEL) 
+           << " ekey " << ekey 
+           << " num_values " << num_values
+           << " multiple_of_3 " << multiple_of_3
+           << " num_offset " << num_offset 
+           ; 
+
         LOG_IF(fatal, !multiple_of_3) << " not multiple_of_3 num_values " << num_values << " ekey " << ekey  ; 
         assert(multiple_of_3); 
-        unsigned num_offset = num_values/3 ; 
+
         for(unsigned i=0 ; i < num_offset ; i++)
         {
             offset.x = (*fvec)[i*3+0] ; 
@@ -65,15 +74,21 @@ void SFrameGenstep::CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce )
         }
     }
 
+    bool with_offset = ce_offset.size() > 0 ; 
     LOG(LEVEL) 
          << "ekey " << ekey 
          << " val " << val 
-         << " is_CE " << is_CE
+         << " is_CE_string " << is_CE_string
          << " ce_offset.size " << ce_offset.size() 
          << " ce " << ce 
+         << " with_offset " << ( with_offset ? "YES" : "NO " ) 
          ; 
 
     LOG(LEVEL) << Desc(ce_offset) ; 
+
+    LOG_IF(fatal, !with_offset) << " at least one ce_offset is required " ; 
+    assert(with_offset); 
+
 
 }
 
@@ -106,6 +121,13 @@ std::string SFrameGenstep::Desc(const std::vector<int>& cegs )
 void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback )
 {
     ssys::getenvintvec(ekey, cegs, delim, fallback );
+    LOG(LEVEL)
+        << " ekey " << ( ekey ? ekey : "-" )
+        << " fallback " << ( fallback ? fallback : "-" )
+        << " delim " << delim 
+        << " cegs.size " << cegs.size()
+        ;
+
 
     StandardizeCEGS(cegs); 
     assert( cegs.size() == 0 || cegs.size() == 8 );
@@ -124,7 +146,7 @@ NOTE: changed CE_SCALE default to be 1, enabling it
 To switch off CE scaling set CE_SCALE envvar to "0" 
 
 HMM as the typical CEGS is 16:0:9:500 to conform to standard aspect 
-ratio GRIDSCALE of 0.1 is more resonable than 1 ? 
+ratio GRIDSCALE of 0.1 is more reasonable than 1 ? 
 
 The sframe argument is used for its *ce* and the details
 of the grid config are saved into the sframe 
@@ -138,11 +160,21 @@ const char* SFrameGenstep::CEGS_XZ = "16:0:9:1000" ;  // default
 NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
 {
     const float4& ce = fr.ce ; 
-    float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1 ) ; 
+
+    char* _GRIDSCALE = getenv("GRIDSCALE") ; 
+
+    float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1f ) ; 
 
     // CSGGenstep::init
     std::vector<int> cegs ; 
     GetGridConfig(cegs, "CEGS", ':', CEGS_XZ ); 
+
+    LOG(LEVEL)
+       << " cegs.size " << cegs.size()
+       << " _GRIDSCALE [" << ( _GRIDSCALE ? _GRIDSCALE : "-" ) << "]" 
+       << " GRIDSCALE " << gridscale 
+       ; 
+
     fr.set_grid(cegs, gridscale); 
 
     std::vector<float3> ce_offset ; 
@@ -153,10 +185,11 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
         << " ce_offset.size " << ce_offset.size() 
         ;
 
+    bool with_offset = ce_offset.size() > 0 ; 
+    LOG_IF(fatal, !with_offset) << "ce_offset vector of float3 needs at least one entry " ; 
+    assert( with_offset ); 
 
-    int ce_scale = ssys::getenvint("CE_SCALE", 1) ; // TODO: ELIMINATE AFTER RTP CHECK 
-    LOG_IF(fatal, ce_scale == 0) << "warning CE_SCALE is not enabled : NOW THINK THIS SHOULD ALWAYS BE ENABLED " ; 
- 
+    bool ce_scale = ssys::getenvbool("CE_SCALE") ;
 
     //Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 ); 
     Tran<double>* geotran = fr.getTransform(); 
@@ -208,7 +241,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
 }
 
 /**
-SFrameGenstep::MakeCenterExtentGensteps
+SFrameGenstep::MakeCenterExtentGenstep
 -----------------------------------------
     
 Creates grid of gensteps centered at ce.xyz with the grid specified 
@@ -281,12 +314,13 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     const std::vector<float3>& ce_offset, 
     bool ce_scale ) // static
 {
-    std::vector<quad6> gensteps ;
-    quad6 gs ; gs.zero();
+
+    quad6 gs ; 
+    gs.zero();
 
     assert( cegs.size() == 8 );
 
-    int high = cegs[7] ; 
+    int high = cegs[7] ;  // > 1 increases resolution 
     assert( high == 1 || high == 2 || high == 3 || high == 4 ); 
     double scale = double(gridscale)/double(high) ; 
 
@@ -298,7 +332,6 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     int iz1 = cegs[5]*high ;
 
     int photons_per_genstep = cegs[6] ;
-
 
     int nx = (ix1 - ix0)/2 ; 
     int ny = (iy1 - iy0)/2 ; 
@@ -318,6 +351,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
         << " high " << high
         << " gridscale " << gridscale
         << " scale " << scale 
+        << " photons_per_genstep " << photons_per_genstep
         ;
 
     double local_scale = ce_scale ? scale*ce.w : scale ; // ce_scale:true is almost always expected 
@@ -326,7 +360,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     // THIS IS CONFUSING : TODO FIND WAY TO AVOID THE CONFUSION BY MAKING THE DIFFERENT TYPES OF TRANSFORM MORE CONSISTENT
 
     unsigned photon_offset = 0 ; 
-
+    std::vector<quad6> gensteps ;
 
     for(int ip=0 ; ip < num_offset ; ip++)   // planes
     {

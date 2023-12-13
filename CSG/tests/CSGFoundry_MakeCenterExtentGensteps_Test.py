@@ -23,9 +23,9 @@ from opticks.sysrap.sframe import sframe
 import pyvista as pv 
 
 if __name__ == '__main__':
-    t = Fold.Load()
-
-    print(t)
+    t = Fold.Load(symbol="t")
+     
+    print(repr(t))
 
     gs = t.genstep
     p = t.photon

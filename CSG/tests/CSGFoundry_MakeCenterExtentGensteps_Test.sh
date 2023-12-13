@@ -6,6 +6,7 @@ CSGFoundry_MakeCenterExtentGensteps_Test.sh
 ::
 
    ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
+   LOG=1 ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
 
 This checks the center-extent-gensteps used in CSGOptiX/cxs.sh 
 by generating some photons on CPU from them and loading into python. 
@@ -77,11 +78,23 @@ customgeom()
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 
+moi=sChimneyAcrylic:0:0
+cegs=16:0:9:100
+ce_offset=CE
+
+
 export MOI=${MOI:-$moi}
 export CEGS=${CEGS:-$cegs}
 export CE_OFFSET=${CE_OFFSET:-$ce_offset}
 export CE_SCALE=${CE_SCALE:-$ce_scale}
 export GRIDSCALE=${GRIDSCALE:-$gridscale}
+
+
+logging(){
+   export SFrameGenstep=INFO
+}
+[ -n "$LOG" ] && logging 
+
 
 
 defarg="into_run_ana"

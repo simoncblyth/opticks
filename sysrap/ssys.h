@@ -382,7 +382,8 @@ template<typename T>
 inline T ssys::getenv_(const char* ekey, T fallback)
 {
     char* v = getenv(ekey);
-    return v == nullptr ? fallback : parse<T>(v) ;  
+    int len = v ? strlen(v) : 0 ; 
+    return len == 0  ? fallback : parse<T>(v) ;  
 }
 
 template int      ssys::getenv_(const char*, int ); 
@@ -489,7 +490,8 @@ template<typename T>
 inline std::vector<T>* ssys::getenv_vec(const char* ekey, const char* fallback, char delim )
 {
     char* line = getenv(ekey);
-    return make_vec<T>( line ? line : fallback, delim );  
+    bool valid = line && strlen(line) > 0 ;  // blanks line are not valid 
+    return make_vec<T>( valid ? line : fallback, delim );  
 }
 
 
