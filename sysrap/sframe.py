@@ -111,14 +111,14 @@ class sframe(object):
         gridscale = a[0,2,3]               # q2.f.w
 
 
-        midx, mord, iidx = i[0,3,:3]       # q3.i.xyz
+        midx, mord, gord = i[0,3,:3]       # q3.i.xyz
         inst = i[0,3,3]     # q3.i.w
 
 
 
         self.midx = midx
         self.mord = mord
-        self.iidx = iidx
+        self.gord = gord
         self.inst = inst
          
         ## replacing ana/gridspec.py:GridSpec
@@ -148,7 +148,7 @@ class sframe(object):
 
 
 
-        target = "midx %(midx)6d mord %(mord)6d iidx %(iidx)6d       inst %(inst)7d   " % locals() 
+        target = "midx %(midx)6d mord %(mord)6d gord %(gord)6d       inst %(inst)7d   " % locals() 
         self.target = target 
 
 
@@ -217,7 +217,7 @@ class sframe(object):
         """
         replacing ana/gridspec.py 
         """
-        iidx = self.iidx  
+        gord = self.gord  
         ix0 = self.ix0 
         ix1 = self.ix1 
         iy0 = self.iy0 
@@ -232,7 +232,7 @@ class sframe(object):
         nx = (ix1 - ix0)//2   
         ny = (iy1 - iy0)//2
         nz = (iz1 - iz0)//2
-        coords = "RTP" if iidx == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
+        coords = "RTP" if gord == -3 else "XYZ"   ## NB RTP IS CORRECT ORDERING radiusUnitVec:thetaUnitVec:phiUnitVec
         axes = self.DetermineAxes(nx, ny, nz)
         other_axis = Axes.OtherAxis(axes)
         planar = len(axes) == 2 

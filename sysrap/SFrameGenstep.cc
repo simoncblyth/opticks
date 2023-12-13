@@ -233,7 +233,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
 
     gs->set_meta<int>("midx", fr.midx() );
     gs->set_meta<int>("mord", fr.mord() );
-    gs->set_meta<int>("iidx", fr.iidx() );
+    gs->set_meta<int>("gord", fr.gord() );
     gs->set_meta<float>("gridscale", fr.gridscale() );
     gs->set_meta<int>("ce_scale", int(ce_scale) ); 
 
@@ -268,7 +268,7 @@ gridscale
 ce_offset:vector of float3 
    typically local frame origin (0.,0.,0.) 
    the grid is repeated for each offset float3 
-   This is used for example to create intesects in multiple planes.  
+   This is used for example to create intersects in multiple planes.  
 
 ce_scale:true
    grid translate offsets *local_scale* set to ce.w*gridscale 
@@ -320,7 +320,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
 
     assert( cegs.size() == 8 );
 
-    int high = cegs[7] ;  // > 1 increases resolution 
+    int high = cegs[7] ;  // > 1 scales grid resolution 
     assert( high == 1 || high == 2 || high == 3 || high == 4 ); 
     double scale = double(gridscale)/double(high) ; 
 
@@ -379,11 +379,10 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
             double ty = double(iy)*local_scale ;
             double tz = double(iz)*local_scale ;
 
-            const Tran<double>* local_translate = Tran<double>::make_translate( tx, ty, tz ); 
-            // grid shifts 
+            const Tran<double>* grid_shift = Tran<double>::make_translate( tx, ty, tz ); 
 
             bool reverse = false ;
-            const Tran<double>* transform = Tran<double>::product( geotran, local_translate, reverse );
+            const Tran<double>* transform = Tran<double>::product( geotran, grid_shift, reverse );
 
             qat4* qc = Tran<double>::ConvertFrom( transform->t ) ;
 

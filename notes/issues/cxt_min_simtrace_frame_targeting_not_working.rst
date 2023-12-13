@@ -18,6 +18,9 @@ Workflow
     ~/o/cxt_min.sh ana
 
 
+    ~/o/CSG/tests/CSGFoundry_getFrameE_Test.sh 
+
+
 Overview
 -----------
 
@@ -30,6 +33,10 @@ Overview
 YES: getting identity transform is actually correct, which 
 means must special case handle global geometry being 
 offset from the origin 
+
+* perhaps special case set geotran when detect global geometry in
+  SFrameGenstep::MakeCenterExtentGenstep_FromFrame 
+
 
 
 sframe with PMT

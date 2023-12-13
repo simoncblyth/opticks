@@ -36,7 +36,7 @@ if __name__ == '__main__':
     all_one = np.all( gs_pos[:,3] == 1. )
     all_zero = np.all( gs_pos[:,:3]  == 0 )
     assert all_one  # SHOULD ALWAYS BE 1. 
-    assert all_zero # NOT ALWAYS I GUESS ? 
+    #assert all_zero # NOT ZERO WHEN USING CE_OFFSET=CE CE_SCALE=1 
     gs_tra = gs[:,2:]
     assert gs_tra.shape[1:] == (4,4) 
 

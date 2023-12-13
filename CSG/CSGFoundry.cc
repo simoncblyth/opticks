@@ -3331,6 +3331,7 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
         int midx, mord, gord ;  // mesh-index, mesh-ordinal, gas-ordinal 
         parseMOI(midx, mord, gord,  frs );  
         rc = getFrame(fr, midx, mord, gord); 
+        // NB gas ordinal is not the same as gas index 
     }
     else
     {
@@ -3351,6 +3352,22 @@ int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
     return target->getFrame( fr, inst_idx ); 
 }
 
+/**
+CSGFoundry::getFrame
+----------------------
+
+midx
+    mesh index (aka lv)
+mord
+    mesh ordinal (picking between multipler occurrences of midx
+gord
+    GAS ordinal [NB this is not the GAS index]
+
+
+NB the GAS index is determined from (midx, mord)
+and then gord picks between potentially multiple occurrences 
+
+**/
 
 int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int gord) const 
 {
@@ -3471,24 +3488,26 @@ CSGFoundry::getCenterExtent
 For midx -1 returns ce obtained from the ias bbox, 
 otherwise uses CSGTarget to lookup the center extent. 
 
-For global geometry which typically means a default iidx of 0 
-there is special handling for iidx -1/-2/-3 in CSGTarget::getCenterExtent
+For global geometry which typically means a default gord of 0 
+there is special handling for gord -1/-2/-3 in CSGTarget::getCenterExtent
 
-iidxg -1
+gord -1
     uses getLocalCenterExtent
 
-iidxg -2
+gord -2
     uses SCenterExtentFrame xyzw : ordinary XYZ frame 
 
-iidxg -3
+gord -3
     uses SCenterExtentFrame rtpw : tangential RTP frame 
 
 
-NB iidxg is the gas ordinal index, that is NOT the global instance index 
+NB gord is the gas ordinal index 
+(it was formerly named iidx which was confusing as this is NOT the global instance index)
+
 
 **/
 
-int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4* m2w, qat4* w2m  ) const 
+int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int gord, qat4* m2w, qat4* w2m  ) const 
 {
     int rc = 0 ; 
     if( midx == -1 )
@@ -3498,7 +3517,7 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4*
     }
     else
     {
-        rc = target->getFrameComponents(ce, midx, mord, iidxg, m2w, w2m );   
+        rc = target->getFrameComponents(ce, midx, mord, gord, m2w, w2m );   
     }
 
     if( rc != 0 )
@@ -3509,9 +3528,9 @@ int CSGFoundry::getCenterExtent(float4& ce, int midx, int mord, int iidxg, qat4*
 }
 
 
-int CSGFoundry::getTransform(qat4& q, int midx, int mord, int iidx) const 
+int CSGFoundry::getTransform(qat4& q, int midx, int mord, int gord) const 
 {
-    return target->getTransform(q, midx, mord, iidx); 
+    return target->getTransform(q, midx, mord, gord); 
 }
 
 

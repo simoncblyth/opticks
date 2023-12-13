@@ -354,7 +354,7 @@ struct CSG_API CSGFoundry : public SGeo
     sframe getFrame(const char* moi_or_iidx) const ; 
 
     int getFrame(sframe& fr, const char* frs ) const ; 
-    int getFrame(sframe& fr, int midx, int mord, int iidxg) const ; 
+    int getFrame(sframe& fr, int midx, int mord, int gord) const ; 
     int getFrame(sframe& fr, int ins_idx ) const ; 
 
     sframe getFrameE() const ; 
@@ -362,8 +362,8 @@ struct CSG_API CSGFoundry : public SGeo
 
 
     // target  
-    int getCenterExtent(float4& ce, int midx, int mord, int iidx=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
-    int getTransform(   qat4& q   , int midx, int mord, int iidx=-1) const ;
+    int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
+    int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
 
     template <typename T> void setMeta( const char* key, T value ); 
     template <typename T> T    getMeta( const char* key, T fallback); 

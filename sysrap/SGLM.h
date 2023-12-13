@@ -139,6 +139,9 @@ struct SYSRAP_API SGLM
 
     bool rtp_tangential ; 
     void set_rtp_tangential( bool rtp_tangential_ ); 
+
+    bool extent_scale ; 
+    void set_extent_scale( bool extent_scale_ ); 
  
     // matrices taken from fr or derived from ce when fr only holds identity
     glm::mat4 model2world ; 
@@ -313,6 +316,7 @@ inline const char* SGLM::ESCALE_Label(){   return SBAS::Name(ESCALE) ; }
 inline SGLM::SGLM() 
     :
     rtp_tangential(false),
+    extent_scale(false),
     model2world(1.f), 
     world2model(1.f),
     updateModelMatrix_branch(-1), 
@@ -447,6 +451,14 @@ inline void SGLM::set_rtp_tangential(bool rtp_tangential_ )
     addlog("set_rtp_tangential", rtp_tangential );
 }
 
+inline void SGLM::set_extent_scale(bool extent_scale_ )
+{
+    extent_scale = extent_scale_ ; 
+    addlog("set_extent_scale", extent_scale );
+}
+
+
+
 /**
 SGLM::updateModelMatrix
 ------------------------
@@ -483,7 +495,7 @@ inline void SGLM::updateModelMatrix()
     else if( rtp_tangential )
     {
         updateModelMatrix_branch = 2 ; 
-        SCenterExtentFrame<double> cef( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w, rtp_tangential );
+        SCenterExtentFrame<double> cef( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w, rtp_tangential, extent_scale );
         model2world = cef.model2world ;
         world2model = cef.world2model ;
         // HMM: these matrix might have extent scaling already ? 

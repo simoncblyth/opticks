@@ -23,11 +23,10 @@ name=CSGFoundry_getFrame_Test
 script=$SDIR/$name.py 
 
 
-source $DIR/../../bin/OPTICKS_INPUT_PHOTON.sh 
+source $SDIR/../../bin/OPTICKS_INPUT_PHOTON.sh 
 
 source ~/.opticks/GEOM/GEOM.sh  # sets GEOM envvar, edit with GEOM bash function
 
-# export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # now setting this in GEOM.sh 
 
 ipf=Hama:0:1000
 export OPTICKS_INPUT_PHOTON_FRAME=${OPTICKS_INPUT_PHOTON_FRAME:-$ipf}

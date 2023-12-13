@@ -4,10 +4,19 @@
 sframe.h
 ===========
 
+
+
+
+
+
 TODO: once bring in U4Tree.h/stree.h translation up this to double precision 
 
 
 Provided by CSGFoundry::getFrame methods 
+
+* for MOI lookups CSGTarget::getFrameComponents sets the transforms
+
+
 
 Persisted into (4,4,4) array.
 Any extension should be in quad4 blocks 
@@ -112,10 +121,10 @@ struct sframe
 
     const char* get_name() const ; // returns nullptr when frs is default  
 
-    void set_midx_mord_iidx(int midx, int mord, int iidx); 
+    void set_midx_mord_gord(int midx, int mord, int gord); 
     int midx() const ; 
     int mord() const ; 
-    int iidx() const ; 
+    int gord() const ; 
 
    
 
@@ -214,7 +223,7 @@ inline std::string sframe::desc() const
        << std::endl 
        << " midx " << std::setw(4) << midx()
        << " mord " << std::setw(4) << mord()
-       << " iidx " << std::setw(4) << iidx()
+       << " gord " << std::setw(4) << gord()
        << std::endl 
        << " inst " << std::setw(4) << inst()
        << std::endl 
@@ -341,15 +350,15 @@ inline const char* sframe::get_name() const
     return f ? f : DEFAULT_NAME ; 
 }
 
-inline void sframe::set_midx_mord_iidx(int midx, int mord, int iidx)
+inline void sframe::set_midx_mord_gord(int midx, int mord, int gord)
 {
     q3.i.x = midx ; 
     q3.i.y = mord ; 
-    q3.i.z = iidx ; 
+    q3.i.z = gord ; 
 }
 inline int sframe::midx() const { return q3.i.x ; }
 inline int sframe::mord() const { return q3.i.y ; }
-inline int sframe::iidx() const { return q3.i.z ; }
+inline int sframe::gord() const { return q3.i.z ; }
 
 
 inline void sframe::set_inst(int inst){ q3.i.w = inst ; }

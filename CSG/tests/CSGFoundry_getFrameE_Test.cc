@@ -27,6 +27,10 @@ int main(int argc, char** argv)
     fr.save_extras("$FOLD"); 
     std::cout << " ] fr.save_extras " << std::endl ; 
 
+
+    std::cout << fr << std::endl ; 
+
+
     return 0 ; 
 }
 
