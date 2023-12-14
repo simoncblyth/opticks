@@ -25,9 +25,9 @@ see the below page to find the URLs.
 
 * https://github.com/simoncblyth/opticks/tags
 
-For example download the v0.2.1 zip with::
+For example download the v0.2.2 zip with::
 
-    curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.1.zip
+    curl -L -O https://github.com/simoncblyth/opticks/archive/refs/tags/v0.2.2.zip
 
 Note that the tarball does not include git information, it simply provides
 a snapshot of the state of the repository at a particular commit that has been 
@@ -44,7 +44,7 @@ An alternative way to use a tag starting from a clone clone
     git fetch origin 
     git fetch --all --tags               # fetch from upstream 
     git tag                              # list the tags 
-    git checkout tags/v0.2.1 -b v021     # create branch for a tag and checkout into it 
+    git checkout tags/v0.2.2 -b v022     # create branch for a tag and checkout into it 
     git branch                           # list branches
     git checkout master                  # return to master with the latest
 
@@ -53,7 +53,7 @@ An alternative way to use a tag starting from a clone clone
 
 git clone https://github.com/simoncblyth/opticks.git
 cd opticks
-git checkout v0.2.1
+git checkout v0.2.2
 
 
 
@@ -62,17 +62,17 @@ git checkout v0.2.1
 Snapshot Tags History
 ----------------------
 
-+------------+---------+-------------------------+----------------------------+---------------------------------------------------------------------------------+  
-| date       | tag     | OPTICKS_VERSION_NUMBER  | GEOCACHE_CODE_VERSION      | Notes                                                                           |
-+============+=========+=========================+============================+=================================================================================+  
-| 2023/10/20 | v0.2.1  | 21                      | NO CURRENT EQUIVALENT      | Fix stale dependencies issue reported by Hans, remove opticksaux from externals |
-+------------+---------+-------------------------+----------------------------+---------------------------------------------------------------------------------+  
-| 2023/10/12 | v0.2.0  | 20                      | NO CURRENT EQUIVALENT      | Resume tagging after 2 years of changes : huge change from prior release        |
-+------------+---------+-------------------------+----------------------------+---------------------------------------------------------------------------------+  
-
++------------+---------+-------------------------+---------------------------------------------------------------------------------+  
+| date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                           |
++============+=========+=========================+=================================================================================+  
+| 2023/12/14 | v0.2.2  | 22                      | Addition of profiling machinery, introduce Release build, fix CK generation bug |  
++------------+---------+-------------------------+---------------------------------------------------------------------------------+  
+| 2023/10/20 | v0.2.1  | 21                      | Fix stale dependencies issue reported by Hans, remove opticksaux from externals |
++------------+---------+-------------------------+---------------------------------------------------------------------------------+  
+| 2023/10/12 | v0.2.0  | 20                      | Resume tagging after 2 years of changes : huge change from prior release        |
++------------+---------+-------------------------+---------------------------------------------------------------------------------+  
 
 For a record of ancient tags see the "Snapshot pre-History" section at the end of this page. 
-
 
 
 Workflow for adding "snapshot" tag to github and bitbucket
