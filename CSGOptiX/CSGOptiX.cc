@@ -659,12 +659,19 @@ NB the distinction between this and simulate_launch, this
 uses QSim::simulate to do genstep setup prior to calling 
 CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
 
+The QSim::simulate argument end:true is used in order 
+to invoke SEvt::endOfEvent after the save, this is because
+at CSGOptiX level there us no need to allow the user to 
+copy hits or other content from SEvt elsewhere. 
+
+
 **/
 double CSGOptiX::simulate(int eventID)
 {
     SProf::SetTag(eventID, "A%0.3d_" ) ; 
     assert(sim); 
-    double dt = sim->simulate(eventID) ; // (QSim)
+    bool end = true ;  
+    double dt = sim->simulate(eventID, end) ; // (QSim)
     return dt ; 
 }
 

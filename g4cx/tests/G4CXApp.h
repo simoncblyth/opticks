@@ -299,7 +299,8 @@ void G4CXApp::EndOfEventAction(const G4Event* event)
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks* gx = G4CXOpticks::Get() ;
-        gx->simulate(eventID) ;
+        bool end = true ; 
+        gx->simulate(eventID, end ) ;
     }
 }
 

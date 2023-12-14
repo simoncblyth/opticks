@@ -56,11 +56,13 @@ inline void U4HitGet::FromEvt_EGPU(U4Hit& hit, unsigned idx ){ FromEvt(hit, idx,
 inline void U4HitGet::FromEvt_ECPU(U4Hit& hit, unsigned idx ){ FromEvt(hit, idx, SEvt::ECPU); }
 inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx, int eidx )
 {
-    sphoton global, local  ;
+    sphoton global ;  
+    sphoton local ;
+
     SEvt* sev = SEvt::Get(eidx); 
     sev->getHit( global, idx);
 
-    sphit ht ; 
+    sphit ht ;  // extra hit info : iindex, sensor_identifier, sensor_index
     sev->getLocalHit( ht, local,  idx);
 
     ConvertFromPhoton(hit, global, local, ht ); 

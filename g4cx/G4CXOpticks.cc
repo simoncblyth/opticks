@@ -362,21 +362,50 @@ GPU launch doing generation and simulation done here
 **/
 
 
-void G4CXOpticks::simulate(int eventID)
+void G4CXOpticks::simulate(int eventID, bool end )
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
     if(NoGPU) return ; 
 
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "[ "  << eventID; 
     LOG(LEVEL) << desc() ; 
 
     assert(cx); 
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
 
-    qs->simulate(eventID);   
-    LOG(LEVEL) << "]" ; 
+    qs->simulate(eventID, end );   
+    LOG(LEVEL) << "] " << eventID ; 
 }
+
+/**
+G4CXOpticks::simulate_end
+---------------------------
+
+This only needs to be called after invoking G4CXOpticks::simulate
+with end:false in order to copy hits from the opticks/SEvt 
+into other collections. 
+
+**/
+
+void G4CXOpticks::simulate_end(int eventID)
+{
+    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
+    if(NoGPU) return ; 
+
+    assert( SEventConfig::IsRGModeSimulate() ); 
+    assert(qs); 
+
+    LOG(LEVEL) << "[ " << eventID ; 
+
+    qs->simulate_end(eventID);   
+
+    LOG(LEVEL) << "] " << eventID  ; 
+}
+
+
+
+
 
 void G4CXOpticks::simtrace(int eventID)
 {
@@ -445,7 +474,6 @@ void G4CXOpticks::saveGeometry(const char* dir_) const
 
     if(wd) U4GDML::Write(wd, dir, "origin.gdml" );  // world 
     if(fd) fd->save(dir) ; 
-    //if(cx) cx->save(dir);  // debug serialization of OptixInstance that was never used 
 
     LOG(LEVEL) << "] " << ( dir ? dir : "-" ) ; 
 }

@@ -97,7 +97,9 @@ private:
 public:
     void setLauncher(SCSGOptiX* cx_ ); 
 
-    double simulate(int eventID);  // via cx launch 
+    double simulate(int eventID, bool end );      // via cx launch 
+    void   simulate_end(int eventID);  
+
     double simtrace(int eventID);
 
 

@@ -345,7 +345,7 @@ the launch.
 
 **/
 
-double QSim::simulate(int eventID)
+double QSim::simulate(int eventID, bool end)
 {
     SProf::Add("QSim__simulate_HEAD"); 
 
@@ -362,6 +362,7 @@ double QSim::simulate(int eventID)
     sev->t_PreLaunch = sstamp::Now() ; 
     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
     sev->t_PostLaunch = sstamp::Now() ; 
+    sev->t_Launch = dt ; 
 
     SProf::Add("QSim__simulate_POST"); 
 
@@ -372,16 +373,24 @@ double QSim::simulate(int eventID)
         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
         << " ph " << std::setw(10) << num_ph 
         << " ph/M " << std::setw(10) << num_ph/M 
+        << " end " << ( end ? "YES" : "NO " ) 
         ; 
 
-    sev->t_Launch = dt ; 
-    sev->endOfEvent(eventID);
-    LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
+    if(end) simulate_end(eventID) ; 
 
-   
-    SProf::Add("QSim__simulate_TAIL"); 
     return dt ; 
 }
+
+
+void QSim::simulate_end(int eventID)
+{
+    sev->endOfEvent(eventID);
+    LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
+   
+    SProf::Add("QSim__simulate_TAIL"); 
+}
+
+
 
 /**
 QSim::simtrace

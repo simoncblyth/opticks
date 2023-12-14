@@ -6,8 +6,8 @@
 #include "G4ThreeVector.hh"
 
 /**1
-U4Hit : formerly G4OpticksHit
---------------------------------
+U4Hit 
+------
 
 Type used in G4Opticks interface, NB all Geant4 types no Opticks ones.
 

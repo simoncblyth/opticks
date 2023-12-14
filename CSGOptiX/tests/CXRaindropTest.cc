@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     SEventConfig::SetRGModeSimulate(); 
     SEventConfig::SetDebugLite(); 
 
-    SEvt* evt = SEvt::Create(0) ; 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
 
     const char* Rock_Air = "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air" ; 
     const char* Air_Water = "Air///Water" ; 
@@ -49,9 +49,11 @@ int main(int argc, char** argv)
 
     QSim* qs = cx->sim ; 
 
-    if(!SEvt::HasInputPhoton(0)) SEvt::AddTorchGenstep();      
+    if(!SEvt::HasInputPhoton(SEvt::EGPU)) SEvt::AddTorchGenstep();      
 
-    qs->simulate(0);  
+    int eventID = 0 ; 
+    bool end = true ; 
+    qs->simulate(eventID, end);  
 
     cudaDeviceSynchronize(); 
 

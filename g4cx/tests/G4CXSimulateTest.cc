@@ -36,8 +36,10 @@ int main(int argc, char** argv)
 
     G4CXOpticks* gx = G4CXOpticks::SetGeometry() ;  
 
-    gx->simulate(0); 
-    // cudaDeviceSynchronize();   HMM: maybe moving the save downwards will have cudaDeviceSynchronize issue ? 
+    int eventID = 0 ; 
+    bool end = true ; 
+
+    gx->simulate(eventID, end); 
 
     return 0 ; 
 }

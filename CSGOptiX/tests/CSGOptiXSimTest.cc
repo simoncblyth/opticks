@@ -36,7 +36,10 @@ int main(int argc, char** argv)
 
     QSim* qs = cx->sim ; 
 
-    qs->simulate(0);  // this internally calls CSGOptiX::simulate following genstep uploading by QSim
+    int eventID = 0 ; 
+    bool end = true ; 
+
+    qs->simulate(eventID, end);  // internally calls CSGOptiX::simulate_launch following genstep uploading by QSim
 
     cudaDeviceSynchronize(); 
 
