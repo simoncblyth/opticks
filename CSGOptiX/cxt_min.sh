@@ -35,22 +35,8 @@ export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
 bin=CSGOptiXTMTest
 
-source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
-
-#moi=ALL
-#moi=sWorld:0:0
-#moi=NNVT:0:0
-#moi=NNVT:0:50
-moi=NNVT:0:1000
-#moi=PMT_20inch_veto:0:1000
-#moi=sChimneyAcrylic:0:-2    # gord:-2 XYZ frame from SCenterExtentFrame.h (now without extent scaling)
-export MOI=${MOI:-$moi}  # SEventConfig
-
-# BELOW SETTINGS ARE KLUDGES : THEY SHOULD NOT BE NEEDED
-#export GRIDSCALE=100    ## WITHOUT THIS THE GRID DEFAULTS TO BEING TO SMALL 
-#export CE_OFFSET=CE
-#export CE_SCALE_OFF=1
-
+source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
+source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit 
 
 
 tmp=/tmp/$USER/opticks

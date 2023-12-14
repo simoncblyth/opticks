@@ -25,11 +25,9 @@ notes(){ cat << EON
 ~/.opticks/GEOM/GEOM.sh
 =========================
 
-* THIS IS NOT UNDER SOURCE CONTROL BECAUSE IT IDENTIFIES A SPECIFIC GEOM 
-* NB keeping this as minimal as possible 
-* JUST EXPORT THE DEFAULT GEOM : NOTHING MORE 
-* any associated utility functions such as scp/grab/vi 
-  should be kept under source control in the opticks.bash GEOM bash function 
+* GEOM.sh IS NOT UNDER SOURCE CONTROL BECAUSE IT IDENTIFIES A SPECIFIC GEOM 
+* associated utility functions such as scp/grab/vi 
+  are kept under source control in the opticks.bash GEOM bash function 
 
 EON
 }
@@ -41,6 +39,71 @@ export GEOM=\$geom
 #
 EOT
 }
+
+MOI_TEMPLATE(){ cat << EOT
+#!/bin/bash -l 
+notes(){ cat << EON
+~/.opticks/GEOM/MOI.sh : exports MOI midx:mord:gord configuring a frame in a geometry
+======================================================================================
+
+* MOI.sh IS NOT UNDER SOURCE CONTROL BECAUSE IT IS GEOMETRY SPECIFIC 
+
+The MOI envvar is used to pick a frame within a geometry.
+MOI enables targeted 3D ray trace rendering and 2D simtrace slicing
+to be oriented with respect to the chosen frame. 
+
+The closely related OPTICKS_INPUT_PHOTON_FRAME envvar uses the same 
+implementation to orient input photons within the chosen frame.  
+
+The colon delimited fields of the MOI variable are:
+
+midx
+   mesh index (aka lvid) that can be specified by solid name 
+mord
+   mesh ordinal (usually 0) to pick between multiple occurrences 
+gord
+   GAS ordinal to pick between instances of instanced geometry, 
+   and with global volumes to configure how to conjure the frame
+   transforms from the global center-extent CE of the solid
+   (as global volumes do not have individual transforms, unlike 
+    instanced volumes)
+
++-----------+------------------------------------------------------------------------+
+| gord      |   notes, see CSGTarget::getFrameComponents for impl                    | 
++===========+========================================================================+
+| 0,1,2,..  | for instanced volumes this picks the instance and uses its frame       |
++-----------+------------------------------------------------------------------------+
+|  -1       |                                                                        |
++-----------+------------------------------------------------------------------------+
+|  -2       |  XYZ frame constructed from CE using SCenterExtentFrame.h              |
++-----------+------------------------------------------------------------------------+
+|  -3       |  RTP tangential frame constructed from CE using SCenterExtentFrame.h   |
+|           |  (this is useful for orienting wrt volumes placed on a sphere)         |
++-----------+------------------------------------------------------------------------+
+
+* see CSGTarget::getFrameComponents to follow the gord:-2:XYZ gord:-3:RTP branching 
+
+EON
+}
+
+moi=ALL
+#moi=sWorld:0:0
+#moi=NNVT:0:0
+#moi=NNVT:0:50
+#moi=NNVT:0:1000
+#moi=PMT_20inch_veto:0:1000  # gord:1000 [0...] GAS-ordinal selection of the instance transform to use  
+#moi=sChimneyAcrylic:0:-2   # gord:-2/-3 are appropriate for global (non-instanced) geometry 
+
+#export MOI=\${MOI:-\$moi} 
+export MOI=\$moi     
+
+EOT
+}
+
+
+
+
+
 
 GEOM_help(){ cat << EOH
 GEOM_help : bash function help
@@ -117,6 +180,26 @@ TMP(){
    cd ${TMP:-/tmp/$USER/opticks} 
    pwd
 }
+
+
+MOI(){ 
+  : opticks/opticks.bash
+
+  local script=.opticks/GEOM/MOI.sh 
+  if [ ! -f "$HOME/$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $HOME/$script 
+     MOI_TEMPLATE > $HOME/$script
+  fi 
+  local defarg="vi"
+  local arg=${1:-$defarg} 
+  if [ "$arg" == "vi" ]; then 
+     cmd="vi $HOME/$script"  
+  fi  
+  echo $cmd
+  eval $cmd
+}
+
+
 
 GEOM(){ 
   : opticks/opticks.bash GEOM vi/grab/scp

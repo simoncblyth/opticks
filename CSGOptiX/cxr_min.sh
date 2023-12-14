@@ -57,21 +57,8 @@ export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
 
 bin=CSGOptiXRMTest
 
-source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
-
-# now done in GEOM.sh 
-# export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM  # configure geometry to load
-
-
-moi=ALL
-#moi=sWorld:0:0
-#moi=NNVT:0:0
-#moi=NNVT:0:50
-#moi=NNVT:0:1000
-#moi=PMT_20inch_veto:0:1000
-#moi=sChimneyAcrylic 
-
-export MOI=${MOI:-$moi}
+source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
+source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit  
 
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878
@@ -92,9 +79,10 @@ case $MOI in
    PMT_20inch_veto:0:1000) eye=1,1,5     ; tmin=0.4  ;;
    NNVT:0:1000)            eye=1,0,5     ; zoom=2 ;;
    UP_sChimneyAcrylic)     eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
-   sChimneyAcrylic)        eye=-10,0,0   ; tmin=0.1 ; zoom=0.5 ;; 
+   sChimneyAcrylic*)       eye=-10,0,0   ; tmin=0.1 ; zoom=0.5 ;; 
    NEW_sChimneyAcrylic)    eye=-30,0,5   ; tmin=25  ; icam=1 ;; 
 esac
+
 
 export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}

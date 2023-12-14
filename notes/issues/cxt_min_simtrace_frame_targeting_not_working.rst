@@ -21,6 +21,9 @@ Workflow
     ~/o/CSG/tests/CSGFoundry_getFrameE_Test.sh 
 
 
+    EYE=0,1.5,0 TMIN=1.3 ZOOM=4 ~/o/cxr_min.sh
+
+
 Overview
 -----------
 
