@@ -42,7 +42,6 @@ struct SPMT ;
 struct SYSRAP_API SSim
 {
     const char* relp ; 
-    scontext* sctx ; 
     NPFold*   top ; 
     NPFold*   extra ;  
     stree*    tree ;    // instanciated with SSim::SSim
@@ -71,8 +70,6 @@ struct SYSRAP_API SSim
     static SSim* Load_(const char* dir); 
     static SSim* Load(const char* base, const char* reldir=RELDIR ); 
 
-    static std::string GetGPUMeta();
-    std::string getGPUMeta() const ; 
 private:
     SSim(); 
     void init(); 

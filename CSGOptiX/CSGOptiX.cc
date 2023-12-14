@@ -43,6 +43,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "sproc.h"
 #include "ssys.h"
 #include "smeta.h"
+#include "scontext.h"   // GPU metadata
 #include "SProf.hh"
 
 #include "SGLM.h"
@@ -258,30 +259,6 @@ void CSGOptiX::InitEvt( CSGFoundry* fd  )
 }
 
 /**
-CSGOptiX::InitMeta
--------------------
-
-**/
-
-void CSGOptiX::InitMeta(const SSim* ssim  )
-{
-    std::string gm = ssim->getGPUMeta() ;   // (SSim) scontext sdevice::brief
-    SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
-
-    std::string switches = QSim::Switches() ;
-    SEvt::SetRunMetaString("QSim__Switches", switches.c_str() );  
-
-#ifdef WITH_CUSTOM4
-    std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
-    SEvt::SetRunMetaString("C4Version", c4.c_str()); 
-#else
-    SEvt::SetRunMetaString("C4Version", "NOT-WITH_CUSTOM4" );  
-#endif
-
-}
-
-
-/**
 CSGOptiX::InitSim
 -------------------
 
@@ -307,13 +284,37 @@ void CSGOptiX::InitSim( SSim* ssim  )
     {
         LOG(LEVEL) << " NOT calling SSim::serialize : as already done, loaded ? " ;  
     }
-    
 
     QSim::UploadComponents(ssim);  
 
     QSim* qs = QSim::Create() ; 
 
     LOG(LEVEL) << "]" << qs->desc() ; 
+}
+
+
+
+/**
+CSGOptiX::InitMeta
+-------------------
+
+**/
+
+void CSGOptiX::InitMeta(const SSim* ssim  )
+{
+    std::string gm = GetGPUMeta() ;            // (QSim) scontext sdevice::brief
+    SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+
+    std::string switches = QSim::Switches() ;
+    SEvt::SetRunMetaString("QSim__Switches", switches.c_str() );  
+
+#ifdef WITH_CUSTOM4
+    std::string c4 = "TBD" ; //C4Version::Version(); // octal version number bug in Custom4 v0.1.8 : so skip the version metadata 
+    SEvt::SetRunMetaString("C4Version", c4.c_str()); 
+#else
+    SEvt::SetRunMetaString("C4Version", "NOT-WITH_CUSTOM4" );  
+#endif
+
 }
 
 
@@ -349,12 +350,13 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     SProf::Add("CSGOptiX__Create_HEAD"); 
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
 
+    SetSCTX(); 
     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
 
     InitEvt(fd); 
-    InitMeta(fd->sim); // recording GPU, switches etc.. into run metadata
-    InitSim( const_cast<SSim*>(fd->sim) ); // uploads SSim arrays instanciating QSim
-    InitGeo(fd);      // uploads geometry 
+    InitSim( const_cast<SSim*>(fd->sim) ); // QSim instanciation after uploading SSim arrays
+    InitMeta(fd->sim);                     // recording GPU, switches etc.. into run metadata
+    InitGeo(fd);                           // uploads geometry 
 
     CSGOptiX* cx = new CSGOptiX(fd) ; 
 
@@ -363,8 +365,6 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
         QSim* qs = QSim::Get() ; 
         qs->setLauncher(cx); 
     } 
-
-
 
 
     LOG(LEVEL) << "]" ; 
@@ -387,6 +387,18 @@ Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
     return new Params(raygenmode, sglm->Width(), sglm->Height(), 1 ) ; 
     LOG(LEVEL) << "]" ; 
 }
+
+
+scontext* CSGOptiX::SCTX = nullptr ; 
+void CSGOptiX::SetSCTX()
+{ 
+    LOG(LEVEL) << "[ new scontext" ;  
+    SCTX = new scontext ; // sometimes hangs for few seconds checking for GPU 
+    LOG(LEVEL) << "] new scontext" ; 
+    LOG(LEVEL) << SCTX->desc() ;    
+}
+
+std::string CSGOptiX::GetGPUMeta(){ return SCTX ? SCTX->brief() : "ERR-NO-CSGOptiX-SCTX" ; }
 
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
@@ -418,6 +430,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 #endif
     meta(new SMeta),
     dt(0.),
+    sctx(nullptr),
     sim(QSim::Get()),  
     event(sim == nullptr  ? nullptr : sim->event)
 {
@@ -1111,7 +1124,7 @@ double CSGOptiX::render( const char* stem_ )
     const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
-    std::string _extra = SSim::GetGPUMeta();  // scontext::brief giving GPU name 
+    std::string _extra = GetGPUMeta();  // scontext::brief giving GPU name 
     const char* extra = strdup(_extra.c_str()) ;  
 
     std::string bottom_line = CSGOptiX::Annotation(dt, botline_, extra ); 
@@ -1213,7 +1226,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
         js["cfmeta"] = foundry->meta ; 
     }
 
-    std::string extra = SSim::GetGPUMeta(); 
+    std::string extra = GetGPUMeta(); 
     js["scontext"] = extra.empty() ? "-" : strdup(extra.c_str()) ; 
 
     const std::vector<double>& t = launch_times ;

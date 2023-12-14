@@ -18,6 +18,7 @@ struct quad6 ;
 struct qat4 ; 
 struct float4 ; 
 
+struct scontext ; 
 struct SGLM ; 
 struct SSim ; 
 
@@ -98,6 +99,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     SMeta* meta ; 
     double dt ; 
 
+    scontext*    sctx ; 
     QSim*        sim ; 
     QEvent*      event ;  
 
@@ -112,6 +114,10 @@ private:
 
 public:
     static CSGOptiX* Create(CSGFoundry* foundry ); 
+
+    static scontext* SCTX ; 
+    static void SetSCTX(); 
+    static std::string GetGPUMeta(); 
 
     CSGOptiX(const CSGFoundry* foundry ); 
 

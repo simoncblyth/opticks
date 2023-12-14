@@ -6,7 +6,6 @@
 #include "squad.h"
 #include "sdigest.h"
 #include "stree.h"
-#include "scontext.h"
 
 #include "SLOG.hh"
 #include "SStr.hh"
@@ -131,24 +130,10 @@ SSim* SSim::Load(const char* base, const char* reldir)
 
 
 
-std::string SSim::GetGPUMeta() // static 
-{
-    SSim* ss = Get(); 
-    return ss ? ss->getGPUMeta() : "ERR-NO-SSim" ; 
-}
-
-std::string SSim::getGPUMeta() const 
-{
-    std::string meta = sctx ? sctx->brief() : "no-sctx" ;   // scontext::brief device info 
-    return meta ; 
-}
-
-
 
 SSim::SSim()
     :
     relp(ssys::getenvvar("SSim__RELP", RELP_DEFAULT )), // alt: "extra/GGeo"
-    sctx(nullptr),
     top(nullptr),
     extra(nullptr),
     tree(new stree)
@@ -160,26 +145,13 @@ SSim::SSim()
 SSim::init
 ------------
 
-HMM: SSim is used in many situations when the GPU is
-irrelevant so it seems the wrong place to instanciate sctx 
-
-TODO: move sctx into QSim where the GPU is always relevant 
-
 **/
 
 void SSim::init()
 {
     INSTANCE = this ; 
     tree->set_level(stree_level); 
-
-    // suspect may sometimes take many seconds checking for GPU ? 
-    LOG(LEVEL) << "[ new scontext" ;  
-    sctx = new scontext ; 
-    LOG(LEVEL) << "] new scontext" ; 
-
-    LOG(LEVEL) << sctx->desc() ;     
 }
-
 
 
 stree* SSim::get_tree() const { return tree ; }
