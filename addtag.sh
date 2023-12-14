@@ -7,6 +7,10 @@ NB RUNNING THIS SCRIPT ONLY EMITS COMMANDS TO STDOUT : PIPE TO SHELL TO RUN THEM
 
 Workflow for adding Opticks tags:
 
+0. check if now is an appropriate time to tag, by running tests::
+
+   opticks-t
+
 1. edit okconf/OpticksVersionNumber.hh increasing OPTICKS_VERSION_NUMBER
    to correspond to the next intended tag string and add table entry for the next tag 
    to notes/releases-and-versioning.rst::
