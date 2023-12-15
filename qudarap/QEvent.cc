@@ -196,8 +196,8 @@ int QEvent::setGenstep()  // onto device
     */
 
     NP* gs_ = sev->getGenstepArray();  
-    LOG_IF(fatal, gs_ == nullptr ) << "Must add gensteps to SEvt::EGPU before QEvent::setGenstep call " ; 
-    if(gs_ == nullptr) std::raise(SIGINT); 
+    LOG_IF(warning, gs_ == nullptr ) << "No gensteps in SEvt::EGPU early exit QEvent::setGenstep " ; 
+    if(gs_ == nullptr) return 1 ;  
     int rc = setGenstepUpload_NP(gs_) ; 
 
     LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 

@@ -29,6 +29,7 @@ struct SEvtTest
     static void setMetaProf(); 
     static void hostside_running_resize_(); 
     static void CountNibbles(); 
+    static void getGenstepArray(); 
 
     static void Main(); 
  
@@ -314,6 +315,14 @@ void SEvtTest::CountNibbles()
     fold->save("$FOLD"); 
 }
 
+void SEvtTest::getGenstepArray()
+{
+    SEvt::Create_EGPU() ; 
+    SEvt* evt = SEvt::Get_EGPU(); 
+
+    NP* gs = evt->getGenstepArray(); 
+    std::cout << " gs " << ( gs ? gs->sstr() : "-" ) << std::endl ;  
+}
 
 
 
@@ -327,6 +336,7 @@ void SEvtTest::Main()
     if( strcmp(TEST, "setMetaProf") == 0 ) setMetaProf();
     if( strcmp(TEST, "hostside_running_resize_") == 0 ) hostside_running_resize_();
     if( strcmp(TEST, "CountNibbles") == 0 ) CountNibbles();
+    if( strcmp(TEST, "getGenstepArray") == 0 ) getGenstepArray();
 }
 
 int main(int argc, char** argv)
