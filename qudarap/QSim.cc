@@ -366,6 +366,11 @@ double QSim::simulate(int eventID, bool end)
 
     SProf::Add("QSim__simulate_POST"); 
 
+    sev->gather(); 
+
+    SProf::Add("QSim__simulate_TAIL"); 
+
+    int num_ht = sev->getNumHit() ; 
     int num_ph = event->getNumPhoton() ; 
 
     LOG(info) 
@@ -373,6 +378,8 @@ double QSim::simulate(int eventID, bool end)
         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
         << " ph " << std::setw(10) << num_ph 
         << " ph/M " << std::setw(10) << num_ph/M 
+        << " ht " << std::setw(10) << num_ht 
+        << " ht/M " << std::setw(10) << num_ht/M 
         << " end " << ( end ? "YES" : "NO " ) 
         ; 
 

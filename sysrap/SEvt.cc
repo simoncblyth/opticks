@@ -1591,8 +1591,6 @@ so can switch off all saving wuth that config.
 
 void SEvt::endOfEvent(int eventID)
 {
-    LOG_IF(error, gather_done) << " gather_done SKIP eventID " << eventID ; 
-    if(gather_done) return ; 
 
     setStage(SEvt__endOfEvent); 
     LOG_IF(info, LIFECYCLE) << id() ; 
@@ -3898,42 +3896,32 @@ void SEvt::onload()
 
 
 /**
-SEvt::save (HMM: gather_and_save might be more appropriate)
---------------------------------------------------------------
-
-This method always needs to be run even when no arrays are intended 
-to be saved. The default is to not save anything but some arrays
-are usually gathered. 
+SEvt::save
+-------------
 
 Saving arrays is a debugging activity configured 
 with SEventConfig::SaveCompLabel that has a large impact on performance. 
 
 Gathering arrays (eg downloading them from device buffers to host) 
-is something that will always need to be done. The arrays to 
-gather are configured with SEventConfig::GatherCompLabel
-
+was formerly invoked from here, but the *gather* has now been moved upwards 
+to QSim::simulate to allow collecting hits into other collections. 
+The arrays to gather are configured with SEventConfig::GatherCompLabel
+separately from the arrays to save. Clearly its necessary to gather 
+a component in order to save it. 
 
 If an index has been set with SEvt::setIndex SEvt::SetIndex 
 and not unset with SEvt::UnsetIndex SEvt::unsetIndex
 then the directory is suffixed with the index::
 
-    /some/directory/001
-    /some/directory/002
-    /some/directory/003
-   
-HMM: what about a save following a gather ? does the download happen twice ?
-
-
-Note that now that have *instance* do not actually need to fiddle
-around with paired index.
+    /some/directory/A001
 
 **/
 
 void SEvt::save(const char* dir_) 
 {
     LOG_IF(info, LIFECYCLE) << id() ; 
-    gather(); 
 
+    //  gather();   MOVING gather upwards to allow copying hits into other collections  
 
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 

@@ -319,9 +319,7 @@ void U4Recorder::EndOfEventAction_(int eventID_)
     sev->add_array("TRS.npy", U4VolumeMaker::GetTransforms() );
     sev->add_array("U4R.npy", MakeMetaArray() ); 
     sev->addEventConfigArray(); 
-
-    // SEvt::endOfEvent THIS TAKES IMPORTANT ACTIONS
-    // BUT USING THE RECORDER IS OPTIONAL ? 
+    sev->gather() ; 
     sev->endOfEvent(eventID_);  // does save and clear
 
     const char* savedir = sev->getSaveDir() ; 
