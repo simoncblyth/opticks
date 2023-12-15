@@ -2242,7 +2242,7 @@ being configured to zero via SEventConfig.
 
 void SEvt::hostside_running_resize_()
 {
-    LOG(info) 
+    LOG(LEVEL) 
         << " photon.size " << photon.size() 
         << " photon.size/M " << photon.size()/M 
         << " => "
@@ -3569,7 +3569,7 @@ void SEvt::gather()
 
 void SEvt::add_array( const char* k, const NP* a )
 {
-    LOG(info) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
+    LOG(LEVEL) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
     fold->add(k, a);  
 }
 

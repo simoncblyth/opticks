@@ -325,7 +325,7 @@ void U4Recorder::EndOfEventAction_(int eventID_)
     sev->endOfEvent(eventID_);  // does save and clear
 
     const char* savedir = sev->getSaveDir() ; 
-    LOG(info) << " savedir " << ( savedir ? savedir : "-" );
+    LOG(LEVEL) << " savedir " << ( savedir ? savedir : "-" );
     SaveMeta(savedir);  
 
 }
@@ -687,7 +687,7 @@ void U4Recorder::SaveMeta(const char* savedir)  // static
 NP* U4Recorder::MakeMetaArray() // static
 {
     std::string descfakes = U4Recorder::DescFakes() ;
-    LOG(info) << descfakes ; 
+    LOG(LEVEL) << descfakes ; 
 
     NP* u4r = NP::Make<int>(1) ; // dummy array providing somewhere to hang the SPECS
     u4r->fill(0) ; 
