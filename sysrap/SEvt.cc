@@ -41,6 +41,7 @@
 #include "SComp.h"
 
 
+bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 
@@ -950,7 +951,10 @@ std::string SEvt::descProvider() const
 {
     bool is_self_provider = isSelfProvider() ; 
     std::stringstream ss ; 
-    ss << "SEvt::descProvider provider: " << provider << " that address is: " << ( is_self_provider ? "SELF" : "another object" ) ; 
+    ss << "SEvt::descProvider" 
+       << " provider.getTypeName " << provider->getTypeName() 
+       << " that address is: " << ( is_self_provider ? "SELF" : "another object" ) 
+       ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -3477,7 +3481,9 @@ void SEvt::gather_components()   // *GATHER*
 
     int num_comp = gather_comp.size() ; 
 
-    LOG(LEVEL) << " num_comp " << num_comp ; 
+    LOG(LEVEL) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ; 
+    LOG_IF(info, GATHER) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ; 
+
 
     for(int i=0 ; i < num_comp ; i++)
     {
@@ -3491,6 +3497,15 @@ void SEvt::gather_components()   // *GATHER*
             << " a " << ( a ? a->brief() : "-" ) 
             << " null_component " << ( null_component ? "YES" : "NO " ) 
             ; 
+
+        LOG_IF(info, GATHER) 
+            << " k " << std::setw(15) << k 
+            << " a " << ( a ? a->brief() : "-" ) 
+            << " null_component " << ( null_component ? "YES" : "NO " ) 
+            ; 
+
+
+
 
         if(null_component) continue ;  
         fold->add(k, a); 

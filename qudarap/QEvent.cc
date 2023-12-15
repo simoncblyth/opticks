@@ -187,14 +187,6 @@ int QEvent::setGenstep()  // onto device
     LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
 
 
-    /*
-    quad6* qq = sev->getGenstepVecData() ; 
-    int num_qq = sev->getGenstepVecSize() ; 
-    LOG_IF(fatal, qq == nullptr ) << "Must add gensteps to SEvt::EGPU before QEvent::setGenstep call " ; 
-    if(qq == nullptr) std::raise(SIGINT); 
-    int rc = setGenstepUpload(qq, num_qq) ; 
-    */
-
     NP* gs_ = sev->getGenstepArray();  
     LOG_IF(warning, gs_ == nullptr ) << "No gensteps in SEvt::EGPU early exit QEvent::setGenstep " ; 
     if(gs_ == nullptr) return 1 ;  

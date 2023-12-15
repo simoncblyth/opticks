@@ -15,6 +15,10 @@ Dev Notes
 
 * notes/issues/packaging-opticks-and-externals-for-use-on-gpu-cluster.rst
 
+* **test installation has been moved to opticks-install-tests**
+
+
+
 Recall the many trees 
 ------------------------
 

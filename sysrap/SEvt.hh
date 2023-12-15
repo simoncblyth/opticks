@@ -92,6 +92,10 @@ struct SYSRAP_API SEvt : public SCompProvider
 {
     friend struct SEvtTest ; 
 
+
+    static constexpr const char* SEvt__GATHER = "SEvt__GATHER" ; 
+    static bool GATHER ; 
+
     static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ; 
     static bool LIFECYCLE ; 
 

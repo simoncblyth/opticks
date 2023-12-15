@@ -375,7 +375,9 @@ void G4CXOpticks::simulate(int eventID, bool end )
     assert( SEventConfig::IsRGModeSimulate() ); 
 
     qs->simulate(eventID, end );   
+
     LOG(LEVEL) << "] " << eventID ; 
+
 }
 
 /**
@@ -396,11 +398,13 @@ void G4CXOpticks::simulate_end(int eventID)
     assert( SEventConfig::IsRGModeSimulate() ); 
     assert(qs); 
 
-    LOG(LEVEL) << "[ " << eventID ; 
+    unsigned num_hit_0 = SEvt::GetNumHit_EGPU() ;
+    LOG(LEVEL) << "[ " << eventID << " num_hit_0 " << num_hit_0  ; 
 
     qs->simulate_end(eventID);   
 
-    LOG(LEVEL) << "] " << eventID  ; 
+    unsigned num_hit_1 = SEvt::GetNumHit_EGPU() ;
+    LOG(LEVEL) << "] " << eventID << " num_hit_1 " << num_hit_1  ; 
 }
 
 

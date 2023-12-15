@@ -242,19 +242,22 @@ fi
 
 logging()
 {
-   export SSim=INFO
-   export QSim=INFO
-   export QPMT=INFO
+   #export SSim=INFO
+   #export QSim=INFO
+   #export QPMT=INFO
    #export SEvt=INFO
    #export U4Recorder=INFO
    #export U4StepPoint=INFO
-   export U4Physics=INFO
+   #export U4Physics=INFO
    #export CSGFoundry=INFO
    #export CSGTarget=INFO
 
    #export U4GDML__VERBOSE=1 
    #export SPMTAccessor__VERBOSE=1
-   export SEvt__LIFECYCLE=1  ## sparse SEvt debug output, works well alone  
+   #export SEvt__LIFECYCLE=1  ## sparse SEvt debug output, works well alone  
+  
+   export G4CXOpticks=INFO
+
 }
 [ -n "$LOG" ] && logging
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
