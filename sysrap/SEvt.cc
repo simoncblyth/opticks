@@ -1086,15 +1086,15 @@ bool SEvt::Exists_EGPU(){ return Exists(EGPU) ; }
 
 SEvt* SEvt::CreateOrReuse(int idx) 
 {  
-    SEvt* evt = Exists(idx) ? Get(idx) : Create(idx) ; 
+    SEvt* sev = Exists(idx) ? Get(idx) : Create(idx) ; 
     LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
-    return evt ; 
+    return sev ; 
 }
 SEvt* SEvt::HighLevelCreateOrReuse(int idx)
 {
-    SEvt* evt = Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
+    SEvt* sev = Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
     LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
-    return evt ; 
+    return sev ; 
 }
 
 

@@ -375,8 +375,8 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
     if(IsRGModeSimulate() && IsMinimal())
     {
         LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ; 
-        gather_mask = SCOMP_HIT | SCOMP_GENSTEP  ; 
-        save_mask = SCOMP_GENSTEP  ;  
+        gather_mask = SCOMP_HIT ; 
+        save_mask = 0 ;  
     }
     else if(IsRGModeSimulate() && IsHit())
     {

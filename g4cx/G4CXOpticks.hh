@@ -74,8 +74,8 @@ private:
 public: 
     std::string descSimulate() const ; 
 
-    void simulate(    int eventID, bool end );  // end:false -> call simulate_end after copying hits to avoid leak  
-    void simulate_end(int eventID ); 
+    void simulate( int eventID, bool reset ); 
+    void reset(    int eventID ); 
 
     void simtrace(int eventID); 
     void render(); 

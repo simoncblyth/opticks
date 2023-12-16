@@ -362,7 +362,7 @@ GPU launch doing generation and simulation done here
 **/
 
 
-void G4CXOpticks::simulate(int eventID, bool end )
+void G4CXOpticks::simulate(int eventID, bool reset_ )
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
     if(NoGPU) return ; 
@@ -374,23 +374,24 @@ void G4CXOpticks::simulate(int eventID, bool end )
     assert(qs); 
     assert( SEventConfig::IsRGModeSimulate() ); 
 
-    qs->simulate(eventID, end );   
+    qs->simulate(eventID, reset_ );   
 
     LOG(LEVEL) << "] " << eventID ; 
 
 }
 
 /**
-G4CXOpticks::simulate_end
----------------------------
+G4CXOpticks::reset
+---------------------
 
-This only needs to be called after invoking G4CXOpticks::simulate
-with end:false in order to copy hits from the opticks/SEvt 
-into other collections. 
+This needs to be called after invoking G4CXOpticks::simulate
+when argument reset:false has been used in order to allow copy hits 
+from the opticks/SEvt into other collections prior to invoking 
+the reset. 
 
 **/
 
-void G4CXOpticks::simulate_end(int eventID)
+void G4CXOpticks::reset(int eventID)
 {
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ; 
     if(NoGPU) return ; 
@@ -401,7 +402,7 @@ void G4CXOpticks::simulate_end(int eventID)
     unsigned num_hit_0 = SEvt::GetNumHit_EGPU() ;
     LOG(LEVEL) << "[ " << eventID << " num_hit_0 " << num_hit_0  ; 
 
-    qs->simulate_end(eventID);   
+    qs->reset(eventID);   
 
     unsigned num_hit_1 = SEvt::GetNumHit_EGPU() ;
     LOG(LEVEL) << "] " << eventID << " num_hit_1 " << num_hit_1  ; 
@@ -532,7 +533,7 @@ G4VSensitiveDetector::Initialize
 
 void G4CXOpticks::SensitiveDetector_Initialize(int eventID)
 {
-    LOG(error) << " eventID " << eventID ; 
+    LOG(LEVEL) << " eventID " << eventID ; 
     U4Recorder* recorder = U4Recorder::Get(); 
     if(recorder)
     {
@@ -549,7 +550,8 @@ Optional lifecycle method intended to be called from Geant4 integration
 G4VSensitiveDetector::EndOfEvent
 
 The Geant4 call order gleaned from g4-cls G4EventManager
-with the related calls to G4CXOpticks and U4Recorder::
+with the related calls to G4CXOpticks and U4Recorder
+that were used previously::
 
     G4VSensitiveDetector::Initialize      
 
@@ -561,9 +563,9 @@ with the related calls to G4CXOpticks and U4Recorder::
     G4UserEventAction::EndOfEventAction    ==> U4Recorder::EndOfEventAction 
 
 
-This call order presents complications as the simulate call needs the gensteps 
+The old call order presented complications as the simulate call needs the gensteps 
 from the SEvt::ECPU that is only wrapped up at U4Recorder::EndOfEventAction.
-This pair of methods enables rearranging the order::
+This SensitiveDetector pair of methods enables rearranging the order::
 
     G4VSensitiveDetector::Initialize       ==> U4Recorder::BeginOfEventAction
 
@@ -582,7 +584,7 @@ the U4Recorder can proceed unchanged by this.
 
 void G4CXOpticks::SensitiveDetector_EndOfEvent(int eventID)
 {
-    LOG(error) << " eventID " << eventID ; 
+    LOG(LEVEL) << " eventID " << eventID ; 
     U4Recorder* recorder = U4Recorder::Get(); 
     if(recorder)
     {

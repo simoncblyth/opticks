@@ -345,7 +345,7 @@ the launch.
 
 **/
 
-double QSim::simulate(int eventID, bool end)
+double QSim::simulate(int eventID, bool reset_)
 {
     SProf::Add("QSim__simulate_HEAD"); 
 
@@ -368,7 +368,7 @@ double QSim::simulate(int eventID, bool end)
 
     sev->gather(); 
 
-    SProf::Add("QSim__simulate_TAIL"); 
+    SProf::Add("QSim__simulate_DOWN"); 
 
     int num_ht = sev->getNumHit() ; 
     int num_ph = event->getNumPhoton() ; 
@@ -380,21 +380,31 @@ double QSim::simulate(int eventID, bool end)
         << " ph/M " << std::setw(10) << num_ph/M 
         << " ht " << std::setw(10) << num_ht 
         << " ht/M " << std::setw(10) << num_ht/M 
-        << " end " << ( end ? "YES" : "NO " ) 
+        << " reset_ " << ( reset_ ? "YES" : "NO " ) 
         ; 
 
-    if(end) simulate_end(eventID) ; 
-
+    if(reset_) reset(eventID) ; 
+    SProf::Add("QSim__simulate_TAIL"); 
     return dt ; 
 }
 
+/**
+QSim::reset
+------------
 
-void QSim::simulate_end(int eventID)
+When *QSim::simulate* is called with argument *reset:true* the
+*QSim::reset* method is called automatically to clean 
+up the SEvt after saving any configured arrays.
+
+When *QSim::simulate* is called with argument *reset:false*
+(in order to copy gathered arrays into non-Opticks collections)  
+the *QSim::reset* method must be called to avoid a memory leak. 
+
+**/
+void QSim::reset(int eventID)
 {
     sev->endOfEvent(eventID);
     LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
-   
-    SProf::Add("QSim__simulate_TAIL"); 
 }
 
 
