@@ -805,7 +805,11 @@ int SEventConfig::Initialize() // static
     {
         LOG(fatal) << "mode [" << mode << "] IS NOT RECOGNIZED "  ;         
         LOG(fatal) << " options " << std::endl << DescEventMode() ; 
-        assert(0); 
+
+        std::cerr << "mode [" << mode << "] IS NOT RECOGNIZED " << std::endl   ;         
+        std::cerr << " options " << std::endl << DescEventMode() << std::endl ; 
+        
+        std::raise(SIGINT);  
     }
 
     LOG(LEVEL) << Desc() ; 
