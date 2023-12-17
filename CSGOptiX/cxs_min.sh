@@ -128,7 +128,8 @@ case $VERSION in
 99) opticks_event_mode=DebugHeavy ;;  # formerly StandardFullDebug
 esac 
 
-test=reference
+#test=reference
+test=input_genstep
 TEST=${TEST:-$test}
 
 if [ "$TEST" == "reference" ]; then 
@@ -136,37 +137,47 @@ if [ "$TEST" == "reference" ]; then
    opticks_num_photon=M1
    opticks_max_photon=M1
    opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
    opticks_num_photon=K1:10
    opticks_max_photon=M1
    opticks_num_event=10
+   opticks_running_mode=SRM_TORCH
 
 elif [ "$TEST" == "large_scan" ]; then 
 
    opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
    opticks_max_photon=M100   ## cost: QRng init time + VRAM 
    opticks_num_event=20
+   opticks_running_mode=SRM_TORCH
 
 elif [ "$TEST" == "large_evt" ]; then 
 
    opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
    opticks_max_photon=M200   ## cost: QRng init time + VRAM 
    opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+
+elif [ "$TEST" == "input_genstep" ]; then
+
+   opticks_num_photon=     # ignored ?
+   opticks_max_photon=M1 
+   opticks_num_event=1000 
+   opticks_running_mode=SRM_INPUT_GENSTEP
+   opticks_event_mode=Nothing
 
 fi 
+
+#opticks_running_mode=SRM_DEFAULT
+#opticks_running_mode=SRM_INPUT_PHOTON
+#opticks_running_mode=SRM_GUN
 
 
 opticks_start_index=0
 opticks_max_bounce=31
 opticks_integration_mode=1
-
-#opticks_running_mode=SRM_DEFAULT
-opticks_running_mode=SRM_TORCH
-#opticks_running_mode=SRM_INPUT_PHOTON
-#opticks_running_mode=SRM_INPUT_GENSTEP
-#opticks_running_mode=SRM_GUN
 
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
 export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon} 
@@ -181,8 +192,8 @@ export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
 
-    igs=$BASE/jok-tds/ALL0/p001/genstep.npy 
-    ##igs=$BASE/jok-tds/ALL0   # TODO: impl handling a sequence of input genstep 
+    igs=$BASE/jok-tds/ALL0/A000/genstep.npy 
+    # TODO: impl handling a sequence of input genstep 
     export OPTICKS_INPUT_GENSTEP=$igs
     [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
 

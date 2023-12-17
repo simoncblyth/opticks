@@ -18,6 +18,27 @@ Most likely culprits, as more dynamic allocation handling are:
 
 
 
+0.003 GB/s is 10GB in ~55min::
+
+    In [1]: 10/0.003
+    Out[1]: 3333.3333333333335
+
+    In [2]: (10/0.003)/60 
+    Out[2]: 55.55555555555556
+
+
+
+PROGRESS : managed to get cxs_min.sh to leak using gensteps from okjob.sh
+---------------------------------------------------------------------------
+
+Using real input genstep from okjob.sh within cxs_min.sh succeeds to leak
+Thats great, because cxs_min.sh can boot in <2s::
+
+    TEST=input_genstep ~/o/cxs_min.sh  
+
+
+TEST=setGenstep_many ~/o/qudarap/tests/QEventTest.sh   ## NO LEAK
+---------------------------------------------------------------------
 
 compute sanitizer
 ------------------
