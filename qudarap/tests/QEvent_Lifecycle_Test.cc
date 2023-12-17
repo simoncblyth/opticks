@@ -33,8 +33,12 @@ void QEvent_Lifecycle_Test::Test()
 
     QEvent* event = new QEvent ; // grabs SEvt::EGPU  
 
-    for(int i = 0 ; i < 10 ; i++)
+    int num_event = SEventConfig::NumEvent() ;
+    std::cout << " num_event " << num_event << std::endl ; 
+
+    for(int i = 0 ; i < num_event ; i++)
     { 
+        //std::cout << i << std::endl ; 
         // follow pattern of QSim::simulate
 
         int eventID = i ; 
@@ -57,8 +61,6 @@ void QEvent_Lifecycle_Test::Test()
 
 
         sev->endOfEvent(eventID); 
-        // invoked SEvt::save and SEvt::clear_except("hit")
-
     }
 }
 

@@ -50,6 +50,20 @@ if __name__ == '__main__':
     start = np.where( np.diff( usedGpuMemory_GB ) > 0.001 )[0][2]   
     sel = slice(start, None)
 
+    expr = "np.c_[t[sel], usedGpuMemory_GB[sel]]"
+    print(expr)
+    print(eval(expr))
+
+    _dmem = "(usedGpuMemory_GB[sel][-1]-usedGpuMemory_GB[sel][0])"
+    dmem = eval(_dmem)
+    print("dmem %10.3f  %s " % ( dmem, _dmem )) 
+
+    _dt = "(t[sel][-1]-t[sel][0])"
+    dt = eval(_dt)
+    print("dt   %10.3f  %s " % ( dt, _dt )) 
+    print("dmem/dt  %10.3f  " % (dmem/dt))
+
+
     deg = 1  # linear   
     pfit = np.polyfit(t[sel], usedGpuMemory_GB[sel], deg)
     linefit = np.poly1d(pfit)

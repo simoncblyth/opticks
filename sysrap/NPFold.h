@@ -269,8 +269,9 @@ public:
     void save(const char* base) ; 
     void save_verbose(const char* base) ; 
 
+    int _save_local_item_count() const ; 
     void _save(const char* base) ; 
-    void _save_arrays(const char* base); 
+    int  _save_arrays(const char* base); 
     void _save_subfold_r(const char* base); 
 
     void load_array(const char* base, const char* relp); 
@@ -1264,8 +1265,10 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
     // SplitKeys adds .npy to keys if not already present 
 
     int count = count_keys(&keys) ; 
-    if( count == 0 ) std::cerr
+    
+    if( count == 0 && VERBOSE) std::cerr
         << "NPFold::copy"
+        << " VERBOSE " << ( VERBOSE ? "YES" : "NO " ) 
         << " NOTE COUNT_KEYS GIVING ZERO "
         << " keylist [" << ( keylist ? keylist : "-" ) << "]" 
         << " keylist.keys [" << DescKeys(keys, delim) << "]"  
@@ -1575,29 +1578,55 @@ inline void NPFold::save_verbose(const char* base_)  // not const as calls _save
 }
 
 
+/**
+NPFold::_save_local_item_count
+--------------------------------
+
+This is used by SEvt::_save to avoid writing 
+empty dirs
+
+TODO: using NP directory making could allow to 
+encapsulate this within here 
+
+**/
+
+inline int NPFold::_save_local_item_count() const 
+{
+    bool with_meta = !meta.empty() ; 
+    return kk.size() + ff.size() + names.size() + int(with_meta) ; 
+}
+
 inline void NPFold::_save(const char* base)  // not const as sets savedir
 {
     assert( !nodata ); 
     savedir = strdup(base); 
 
-    NP::WriteNames(base, INDEX, kk );  
-
     _save_arrays(base); 
 
-    NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX  
+    int slic = _save_local_item_count(); 
 
-    _save_subfold_r(base); 
+    if(slic > 0) 
+    {
+        NP::WriteNames(base, INDEX, kk );  
 
-    if(!meta.empty()) U::WriteString(base, META, meta.c_str() );  
+        NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX  
 
-    NP::WriteNames_Simple(base, NAMES, names) ; 
+        _save_subfold_r(base); 
+
+        bool with_meta = !meta.empty() ; 
+
+        if(with_meta) U::WriteString(base, META, meta.c_str() );  
+
+        NP::WriteNames_Simple(base, NAMES, names) ; 
+    }
 }
 
 
 
 
-inline void NPFold::_save_arrays(const char* base) // using the keys with .npy ext as filenames
+inline int NPFold::_save_arrays(const char* base) // using the keys with .npy ext as filenames
 {
+    int count = 0 ; 
     for(unsigned i=0 ; i < kk.size() ; i++) 
     {
         const char* k = kk[i].c_str() ; 
@@ -1615,9 +1644,11 @@ inline void NPFold::_save_arrays(const char* base) // using the keys with .npy e
         else
         { 
             a->save(base, k );  
+            count += 1 ; 
         }
     }
     // this motivated adding directory creation to NP::save 
+    return count ; 
 }
 
 inline void NPFold::_save_subfold_r(const char* base)  // NB recursively called via NPFold::save

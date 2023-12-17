@@ -481,11 +481,24 @@ void SEventConfig::GatherCompList( std::vector<unsigned>& gather_comp )
 {
     SComp::CompListMask(gather_comp, GatherComp() ); 
 }  
+int SEventConfig::NumGatherComp()
+{
+    return SComp::CompListCount(GatherComp() ); 
+} 
 
 void SEventConfig::SaveCompList( std::vector<unsigned>& save_comp )
 {
     SComp::CompListMask(save_comp, SaveComp() ); 
 }  
+int SEventConfig::NumSaveComp()
+{
+    return SComp::CompListCount(SaveComp() ); 
+}  
+
+
+
+
+
 
 
 

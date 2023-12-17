@@ -85,6 +85,8 @@ struct SYSRAP_API SComp
     static unsigned    Mask(const char* names, char delim=','); 
     static void CompListAll( std::vector<unsigned>& comps ); 
     static void CompListMask(std::vector<unsigned>& comps, unsigned mask ); 
+    static int  CompListCount(unsigned mask ); 
+
 
     static bool IsGenstep( unsigned mask){ return mask & SCOMP_GENSTEP ; }
     static bool IsPhoton(  unsigned mask){ return mask & SCOMP_PHOTON ; }
@@ -229,6 +231,15 @@ inline void SComp::CompListMask(std::vector<unsigned>& comps, unsigned mask )
     std::bitset<32> msk(mask); 
     for(unsigned i=0 ; i < msk.size() ; i++) if(msk[i]) comps.push_back( 0x1 << i ) ; 
 }
+inline int SComp::CompListCount(unsigned mask )
+{
+    std::vector<unsigned> comps; 
+    CompListMask(comps, mask); 
+    return comps.size() ; 
+}
+
+
+
 
 inline unsigned SComp::Mask(const char* names, char delim)
 {

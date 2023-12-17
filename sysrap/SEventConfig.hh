@@ -186,7 +186,10 @@ struct SYSRAP_API SEventConfig
     static std::string SaveCompLabel(); 
 
     static void GatherCompList( std::vector<unsigned>& gather_comp ) ; 
+    static int NumGatherComp(); 
+
     static void SaveCompList( std::vector<unsigned>& save_comp ) ; 
+    static int NumSaveComp(); 
 
     static constexpr const char* Default = "Default" ; 
     static constexpr const char* DebugHeavy = "DebugHeavy" ; 

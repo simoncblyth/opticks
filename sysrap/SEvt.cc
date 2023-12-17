@@ -3921,7 +3921,7 @@ void SEvt::save(const char* dir_)
 {
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    //  gather();   MOVING gather upwards to allow copying hits into other collections  
+    //  gather();   MOVED gather upwards to allow copying hits into other collections  
 
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 
@@ -3934,27 +3934,42 @@ void SEvt::save(const char* dir_)
     if(save_fold == nullptr) return ;  
 
     const NP* seq = save_fold->get("seq"); 
-    NP* seqnib       = seq   ? CountNibbles(seq) : nullptr ; 
-    NP* seqnib_table = seqnib? CountNibbles_Table(seqnib) : nullptr ; 
-    save_fold->add("seqnib", seqnib );           
-    save_fold->add("seqnib_table", seqnib_table );   
-    // NPFold::add does nothing with nullptr array 
+    NP* seqnib = nullptr ; 
+    NP* seqnib_table = nullptr ; 
+    if(seq)
+    {
+        seqnib = CountNibbles(seq) ; 
+        seqnib_table = CountNibbles_Table(seqnib) ; 
+        save_fold->add("seqnib", seqnib );           
+        save_fold->add("seqnib_table", seqnib_table );   
+        // NPFold::add does nothing with nullptr array 
+    }
 
 
-    const char* dir = getOutputDir(dir_); 
-    LOG(info) << dir << " " << save_comp ; 
-    LOG(LEVEL) << descSaveDir(dir_) ; 
+    int slic = save_fold->_save_local_item_count(); 
+    if( slic > 0 )
+    {
+        const char* dir = getOutputDir(dir_);   // THIS CREATES DIRECTORY
+        LOG(info) << dir << " [" << save_comp << "]"  ; 
+        LOG(LEVEL) << descSaveDir(dir_) ; 
 
+        LOG(LEVEL) << "[ save_fold.save " << dir ; 
+        save_fold->save(dir); 
+        LOG(LEVEL) << "] save_fold.save " << dir ; 
 
-    LOG(LEVEL) << "[ save_fold.save " << dir ; 
-    save_fold->save(dir); 
-    LOG(LEVEL) << "] save_fold.save " << dir ; 
+        int num_save_comp = SEventConfig::NumSaveComp();  
+        if(num_save_comp > 0 ) saveFrame(dir);   
+        // could add frame to the fold ?  
+        // for now just restrict to saving frame when other components are saved
+    }
+    else
+    {
+        LOG(LEVEL) << "SKIP SAVE AS NPFold::_save_local_item_count zero " ; 
+    }
 
     // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS 
     delete seqnib ;  
-
-    saveFrame(dir);   
-    // could add to the fold ?  
+    delete seqnib_table ;  
 }
 
 void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
