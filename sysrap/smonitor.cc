@@ -37,6 +37,7 @@ struct smon
 
 struct smonitor
 {
+    static constexpr const bool VERBOSE = false ; 
     static smonitor* INSTANCE ; 
     static uint64_t Stamp(); 
     static void signal_callback_handler(int signum); 
@@ -111,15 +112,15 @@ inline void smonitor::check()
         nvmlMemory_t memory ; 
         NVML_CHECK( nvmlDeviceGetMemoryInfo(device, &memory ) ); 
 
-        printf(" memory.free %llu memory.total %llu memory.used %llu \n", 
-                 memory.free,     memory.total,     memory.used ); 
+        if(VERBOSE) printf(" memory.free %llu memory.total %llu memory.used %llu \n", 
+                             memory.free,     memory.total,     memory.used ); 
 
         unsigned proc_count(0) ; 
         nvmlReturn_t rc = nvmlDeviceGetComputeRunningProcesses_v3(device, &proc_count, nullptr );
 
         if( rc == NVML_ERROR_INSUFFICIENT_SIZE )  // documented that get this 
         {
-            printf("proc_count %d \n", proc_count ); 
+            if(VERBOSE) printf("proc_count %d \n", proc_count ); 
 
             unsigned proc_alloc = proc_count + 3 ; 
             nvmlProcessInfo_t* procs = new nvmlProcessInfo_t[proc_alloc] ; 
@@ -128,9 +129,13 @@ inline void smonitor::check()
 
             for(unsigned p=0 ; p <  proc_alloc ; p++)
             {
+                int num_mon = mon.size(); 
                 const nvmlProcessInfo_t& proc = procs[p] ; 
-                printf(" proc.computeInstanceId  %u  proc.gpuInstanceId %u  proc.pid %u  proc.usedGpuMemory %llu \n", 
-                         proc.computeInstanceId, proc.gpuInstanceId, proc.pid, proc.usedGpuMemory ); 
+
+                //printf(" proc.computeInstanceId  %u  proc.gpuInstanceId %u  proc.pid %u  proc.usedGpuMemory %llu \n", 
+                //         proc.computeInstanceId, proc.gpuInstanceId, proc.pid, proc.usedGpuMemory ); 
+
+                printf(" num_mon %5d proc_count %2d proc.pid %u  proc.usedGpuMemory %llu \n", num_mon, proc_count, proc.pid, proc.usedGpuMemory ); 
 
                 smon m ; 
 

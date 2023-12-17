@@ -1,6 +1,24 @@
 okjob_GPU_memory_leak
 =======================
 
+
+
+smonitor monitoring
+---------------------
+
+
+Switching to event mode Nothing doesnt change the leak::
+
+    epsilon:opticks blyth$ ~/o/sysrap/smonitor.sh ana
+    smonitor.sh device 0 total_GB 25.8 pid 175410 
+    line fit:  slope      0.012 [GB/s] intercept     -0.170 
+
+
+
+nvidia-smi monitoring
+------------------------
+
+
 During 1000 event run monitor with::
 
     nvidia-smi -lms 500    # every half second 

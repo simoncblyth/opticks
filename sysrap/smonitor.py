@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+smonitor.py 
+============
+
+~/o/sysrap/smonitor.sh ana
+
+"""
+
 import numpy as np
 import matplotlib.pyplot as mp
 SIZE=np.array([1280, 720])
@@ -37,8 +45,20 @@ if __name__ == '__main__':
 
     assert _proc_count == 1 
 
+
+
+    start = np.where( np.diff( usedGpuMemory_GB ) > 0.001 )[0][2]   
+    sel = slice(start, None)
+
+    deg = 1  # linear   
+    pfit = np.polyfit(t[sel], usedGpuMemory_GB[sel], deg)
+    linefit = np.poly1d(pfit)
+    linefit_label = "line fit:  slope %10.3f [GB/s] intercept %10.3f " % (linefit.coef[0], linefit.coef[1])
  
-    title = "smonitor.sh device %(_device)s total_GB %(_total)4.1f pid %(_pid)s " % locals()
+    headline = "smonitor.sh device %(_device)s total_GB %(_total)4.1f pid %(_pid)s " % locals()
+    title = "\n".join([headline, linefit_label])
+    print(title)
+
     fig, ax = mp.subplots(figsize=SIZE/100.)
     fig.suptitle(title)
 
@@ -47,9 +67,10 @@ if __name__ == '__main__':
     ax.plot( t, total_GB , label="total_GB" )
     ax.plot( t, free_GB , label="free_GB" )
     ax.plot( t, used_GB , label="used_GB" )
-    ax.plot( t, usedGpuMemory_GB , label="proc.usedGpuMemory_GB"  )
-    ax.scatter( t, usedGpuMemory_GB )
 
+    #ax.plot( t, usedGpuMemory_GB , label="proc.usedGpuMemory_GB"  )
+    ax.scatter( t, usedGpuMemory_GB, label="proc.usedGpuMemory_GB"  )
+    ax.plot( t[sel], linefit(t[sel]), label=linefit_label )
 
 
     ax.legend()    
