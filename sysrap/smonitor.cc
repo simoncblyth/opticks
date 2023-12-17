@@ -135,7 +135,8 @@ inline void smonitor::check()
                 //printf(" proc.computeInstanceId  %u  proc.gpuInstanceId %u  proc.pid %u  proc.usedGpuMemory %llu \n", 
                 //         proc.computeInstanceId, proc.gpuInstanceId, proc.pid, proc.usedGpuMemory ); 
 
-                printf(" num_mon %5d proc_count %2d proc.pid %u  proc.usedGpuMemory %llu \n", num_mon, proc_count, proc.pid, proc.usedGpuMemory ); 
+                printf(" num_mon %5d proc_count %2d proc.pid %u  proc.usedGpuMemory %llu [%10.3f GB] \n", 
+                        num_mon, proc_count, proc.pid, proc.usedGpuMemory, float(proc.usedGpuMemory)/1e9 ); 
 
                 smon m ; 
 

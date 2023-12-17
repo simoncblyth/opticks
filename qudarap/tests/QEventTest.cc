@@ -9,9 +9,11 @@
 
 #include "QBuf.hh"
 
+#include "ssys.h"
 #include "spath.h"
 #include "scuda.h"
 #include "squad.h"
+#include "sstamp.h"
 
 #include "SEvt.hh"
 #include "SEvent.hh"
@@ -27,6 +29,8 @@ struct QEventTest
     static void setGenstep_loaded(); 
     static void setGenstep_checkEvt(); 
     static void setGenstep_quad6(); 
+
+    static int main(); 
 };
 
 /**
@@ -115,7 +119,11 @@ void QEventTest::setGenstep_many()
 
     QEvent* event = new QEvent ; 
 
-    int nj = num_v*10 ; 
+    int num_event = SEventConfig::NumEvent(); 
+
+    std::cout << " num_event " << num_event << std::endl ;
+
+    int nj = num_v*num_event ; 
     //int nj = 2 ; 
 
     for(int j=0 ; j < nj ; j++)
@@ -131,6 +139,8 @@ void QEventTest::setGenstep_many()
 
 
 #ifndef PRODUCTION
+        sstamp::sleep_us(100000); 
+
         NP* seed_ = event->gatherSeed(); 
         const int* seed = seed_->values<int>();   
         int num_seed = seed_->shape[0] ;
@@ -144,9 +154,10 @@ void QEventTest::setGenstep_many()
             << " x_num_photon[i] " << std::setw(5) << x_num_photon[i] 
             << " num_photon " << std::setw(5) << num_photon 
             << " seed_mismatch " << std::setw(5) << seed_mismatch 
-            << event->desc() 
+           //  << event->desc() 
             << std::endl 
             ;
+
 
         if( seed_mismatch > 0 )
         { 
@@ -244,20 +255,32 @@ void QEventTest::setGenstep_quad6()
 
 
 
+int QEventTest::main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "ALL") ; 
+    if(strcmp(TEST, "ALL") == 0 )
+    {
+        setGenstep_one(); 
+        setGenstep_many(); 
+        setGenstep_loaded(); 
+        setGenstep_checkEvt(); 
+        setGenstep_quad6(); 
+        setGenstep_many(); 
+    }
+    else if( strcmp(TEST, "setGenstep_many") == 0 )
+    {
+        setGenstep_many(); 
+    }
+    return 0 ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     SEvt::Create(SEvt::EGPU) ;
 
-    QEventTest::setGenstep_one(); 
-    QEventTest::setGenstep_many(); 
-    QEventTest::setGenstep_loaded(); 
-    QEventTest::setGenstep_checkEvt(); 
-    QEventTest::setGenstep_quad6(); 
-
-
-
-    return 0 ; 
+    return QEventTest::main(); 
 }
 

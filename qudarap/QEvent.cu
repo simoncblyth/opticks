@@ -189,6 +189,7 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt )
             sevent::genstep_numphoton_offset, sevent::genstep_itemsize ); 
 #endif
 
+
     strided_range<Iterator> gs_pho( 
         t_gs + sevent::genstep_numphoton_offset, 
         t_gs + evt->num_genstep*sevent::genstep_itemsize , 
@@ -216,6 +217,12 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt )
     thrust::device_ptr<int> t_seed = thrust::device_pointer_cast(evt->seed) ; 
 
     //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
+
+#ifdef DEBUG_QEVENT
+    printf("//QEvent_count_genstep_photons_and_fill_seed_buffer iexpand \n" );      
+#endif
+
+
 
     iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
 
