@@ -2,9 +2,60 @@ okjob_GPU_memory_leak
 =======================
 
 
+Overview
+----------
 
-smonitor monitoring
----------------------
+* okjob.sh gun:1 is leaking steadily at 0.003 [GB/s] measured with smonitor.sh 
+* cxs_min.sh torch running does not leak at a measureable level 
+
+
+Most likely culprits, as more dynamic allocation handling are:
+
+1. hits
+2. gensteps 
+
+
+cxs_min.sh : NOT LEAKING 
+---------------------------
+
+Workstation::
+
+    ~/o/sysrap/smonitor.sh build
+    ~/o/sysrap/smonitor.sh run
+
+    TEST=large_scan ~/o/cxs_min.sh 
+
+    CTRL-C the smonitor
+
+
+::
+
+    .
+     [167.325  12.735]
+     [168.327  12.735]
+     [169.328  12.735]
+     [170.332  12.735]
+     [171.334  12.735]
+     [172.336  12.735]
+     [173.338  12.735]]
+    dmem      0.002  (usedGpuMemory_GB[sel][-1]-usedGpuMemory_GB[sel][0]) 
+    dt      153.299  (t[sel][-1]-t[sel][0]) 
+    dmem/dt       0.000  
+    smonitor.sh device 0 total_GB 25.8 pid 96770 
+    line fit:  slope      0.001 [GB/s] intercept     12.702 
+
+
+
+QEvent_Lifecycle_Test.sh : NOT LEAKING
+------------------------------------------
+
+::
+
+    ~/o/qudarap/tests/QEvent_Lifecycle_Test.sh 
+
+
+implemented smonitor monitoring
+-----------------------------------
 
 * tried changing to event mode Nothing : but thats too bit a change for comparable numbers 
 
@@ -127,6 +178,9 @@ Then proceeds steadily upwards ending after 1000 launches at 1414MiB::
 Leaking about 0.1 MB per launch 
 
 
+
+pynvml
+----------
 
 Install pynvml with conda::
 

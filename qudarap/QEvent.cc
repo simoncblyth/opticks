@@ -43,6 +43,8 @@
 
 template struct QBuf<quad6> ; 
 
+bool QEvent::LIFECYCLE = ssys::getenvbool(QEvent__LIFECYCLE) ;
+
 const plog::Severity QEvent::LEVEL = SLOG::EnvLevel("QEvent", "DEBUG"); 
 QEvent* QEvent::INSTANCE = nullptr ; 
 QEvent* QEvent::Get(){ return INSTANCE ; }
@@ -101,6 +103,7 @@ QEvent::QEvent()
     upload_count(0)
 {
     LOG(LEVEL); 
+    LOG_IF(info, LIFECYCLE) ; 
     INSTANCE = this ; 
     init(); 
 }
@@ -269,6 +272,7 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     evt->num_genstep = num_genstep ; 
     bool not_allocated = evt->genstep == nullptr && evt->seed == nullptr ; 
 
+    LOG_IF(info, LIFECYCLE) << " not_allocated " << ( not_allocated ? "YES" : "NO" ) ;  
 
     LOG(LEVEL) 
         << " evt.num_genstep " << evt->num_genstep 
@@ -343,6 +347,7 @@ the hostside sevent.h "evt->genstep" "evt->seed"
 
 void QEvent::device_alloc_genstep_and_seed()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     LOG(LEVEL) << " device_alloc genstep and seed " ; 
     evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "QEvent::setGenstep/device_alloc_genstep_and_seed:quad6" ) ; 
     evt->seed    = QU::device_alloc<int>(   evt->max_photon , "QEvent::setGenstep/device_alloc_genstep_and_seed:int seed" )  ;
@@ -395,6 +400,7 @@ This is a private method invoked only from QEvent::setGenstep
 
 void QEvent::setInputPhoton()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     LOG(LEVEL); 
     input_photon = sev->gatherInputPhoton(); 
     checkInputPhoton(); 
@@ -496,12 +502,14 @@ and the genstep required to generate it.
 extern "C" void QEvent_fill_seed_buffer(sevent* evt ); 
 void QEvent::fill_seed_buffer()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     QEvent_fill_seed_buffer( evt ); 
 }
 
 extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt ); 
 void QEvent::count_genstep_photons_and_fill_seed_buffer()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     QEvent_count_genstep_photons_and_fill_seed_buffer( evt ); 
 }
 
@@ -718,6 +726,7 @@ unsigned QEvent::getNumHit() const
 {
     assert( evt->photon ); 
     assert( evt->num_photon ); 
+    LOG_IF(info, LIFECYCLE) ; 
 
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );    
 
@@ -785,6 +794,7 @@ NP* QEvent::gatherHit() const
 
 NP* QEvent::gatherHit_() const 
 {
+    LOG_IF(info, LIFECYCLE) ; 
     evt->hit = QU::device_alloc<sphoton>( evt->num_hit, "QEvent::gatherHit_:sphoton" ); 
 
     SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
@@ -885,6 +895,7 @@ when collecting records : that is ok as running with records is regarded as debu
 
 void QEvent::setNumPhoton(unsigned num_photon )
 {
+    LOG_IF(info, LIFECYCLE) << " num_photon " << num_photon ; 
     LOG(LEVEL); 
 
     sev->setNumPhoton(num_photon); 
@@ -914,6 +925,7 @@ into hostside sevent.h "evt"
 
 void QEvent::device_alloc_photon()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     SetAllocMeta( QU::alloc, evt );   // do this first as memory errors likely to happen in following lines
 
     LOG(LEVEL) 
@@ -958,6 +970,7 @@ void QEvent::SetAllocMeta(salloc* alloc, const sevent* evt)  // static
  
 void QEvent::device_alloc_simtrace()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace, "QEvent::device_alloc_simtrace/max_simtrace" ) ; 
     LOG(LEVEL) 
         << " evt.num_simtrace " << evt->num_simtrace 
@@ -979,6 +992,7 @@ Note that the evt->genstep and evt->photon pointers are not updated, so the same
 
 void QEvent::uploadEvt()
 {
+    LOG_IF(info, LIFECYCLE) ; 
     LOG(LEVEL) << std::endl << evt->desc() ; 
     QU::copy_host_to_device<sevent>(d_evt, evt, 1 );  
 }

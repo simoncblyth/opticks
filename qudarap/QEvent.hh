@@ -51,6 +51,9 @@ struct QUDARAP_API QEvent : public SCompProvider
     friend struct QEventTest ; 
     friend struct QEvent_setInputPhoton_Test ; 
 
+    static constexpr const char* QEvent__LIFECYCLE = "QEvent__LIFECYCLE" ; 
+    static bool LIFECYCLE ; 
+
     static const plog::Severity LEVEL ; 
     static QEvent* INSTANCE ; 
     static QEvent* Get(); 

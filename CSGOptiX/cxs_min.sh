@@ -5,10 +5,10 @@ cxs_min.sh : minimal executable and script for shakedown
 
 Usage::
 
-    ~/opticks/CSGOptiX/cxs_min.sh
-    ~/opticks/CSGOptiX/cxs_min.sh info
-    ~/opticks/CSGOptiX/cxs_min.sh run       ## create SEvt 
-    ~/opticks/CSGOptiX/cxs_min.sh report    ## summarize SEvt metadata   
+    ~/o/cxs_min.sh
+    ~/o/cxs_min.sh info
+    ~/o/cxs_min.sh run       ## create SEvt 
+    ~/o/cxs_min.sh report    ## summarize SEvt metadata   
 
 Debug::
 
@@ -17,15 +17,26 @@ Debug::
 
 Analysis/Plotting::
 
-    ~/opticks/CSGOptiX/cxs_min.sh grab 
-    EVT=p012 ~/opticks/CSGOptiX/cxs_min.sh ana
+    ~/o/cxs_min.sh grab 
+    EVT=A000 ~/o/cxs_min.sh ana
 
-    MODE=2 SEL=1 ~/opticks/CSGOptiX/cxs_min.sh ana 
-    EVT=p005     ~/opticks/CSGOptiX/cxs_min.sh ana 
-    EVT=p010     ~/opticks/CSGOptiX/cxs_min.sh ana
-
+    MODE=2 SEL=1 ~/o/cxs_min.sh ana 
+    EVT=A005     ~/o/cxs_min.sh ana 
+    EVT=A010     ~/o/cxs_min.sh ana
 
     PLOT=scatter MODE=3 ~/o/cxs_min.sh pvcap 
+
+Monitor for GPU memory leaks::
+
+    ~/o/sysrap/smonitor.sh build_run  # start monitor
+
+    TEST=large_scan ~/o/cxs_min.sh   
+
+    # CTRL-C smonitor.sh session sending SIGINT to process which saves smonitor.npy
+
+    ~/o/sysrap/smonitor.sh grab  ## back to laptop
+    ~/o/sysrap/smonitor.sh ana   ## plot 
+    
 
 EOU
 }

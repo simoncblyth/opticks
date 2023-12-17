@@ -45,10 +45,11 @@ if __name__ == '__main__':
 
     assert _proc_count == 1 
 
+    delta_usedGpuMemory_GB = np.diff( usedGpuMemory_GB ) 
+    w_delta_usedGpuMemory_GB = np.where( delta_usedGpuMemory_GB > 0.001 )[0]
 
-
-    start = np.where( np.diff( usedGpuMemory_GB ) > 0.001 )[0][2]   
-    sel = slice(start, None)
+    start = w_delta_usedGpuMemory_GB[2] if len(w_delta_usedGpuMemory_GB) > 2 else None   
+    sel = slice(start, None) 
 
     expr = "np.c_[t[sel], usedGpuMemory_GB[sel]]"
     print(expr)
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     print("dt   %10.3f  %s " % ( dt, _dt )) 
     print("dmem/dt  %10.3f  " % (dmem/dt))
 
-
+    
     deg = 1  # linear   
     pfit = np.polyfit(t[sel], usedGpuMemory_GB[sel], deg)
     linefit = np.poly1d(pfit)
