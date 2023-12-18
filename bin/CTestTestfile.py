@@ -3,7 +3,7 @@
 CTestTestfile.py
 ==================
 
-Used from okdist-;okdist-install-tests
+Used from opticks-full/opticks-install-extras/opticks-install-tests
 
 This enables ctest running of installed tests, 
 without the full build tree.
@@ -85,6 +85,9 @@ class BuildTree(object):
             shutil.copytree( src, dst,  symlinks=False, ignore=self ) 
         pass
         top = os.path.join( dstbase, self.NAME )
+        if not os.path.isdir(dstbase):
+            os.makedirs(dstbase)
+        pass
         return top 
 
     def skipdir(self, name):
