@@ -10,6 +10,10 @@ struct salloc ;
 struct QUDARAP_API QU
 {
     static const plog::Severity LEVEL ; 
+
+    static constexpr const char* _MEMCHECK = "QU__MEMCHECK" ; 
+    static bool MEMCHECK ; 
+
     static salloc* alloc ; 
 
     template <typename T>

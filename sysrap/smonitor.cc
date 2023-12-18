@@ -37,11 +37,14 @@ struct smon
 
 struct smonitor
 {
+    static constexpr const char* SLEEP_US = "smonitor__SLEEP_US" ; 
     static constexpr const bool VERBOSE = false ; 
     static smonitor* INSTANCE ; 
     static uint64_t Stamp(); 
+    static void SleepMicroseconds(int us); 
     static void signal_callback_handler(int signum); 
 
+    int       sleep_us ; 
     unsigned  device_count ;
     std::vector<smon> mon ; 
 
@@ -63,12 +66,20 @@ inline uint64_t smonitor::Stamp()
     return std::chrono::duration_cast<Unit>(t0.time_since_epoch()).count() ;   
 }
 
+inline void smonitor::SleepMicroseconds(int us) 
+{
+    std::chrono::microseconds dura(us);
+    std::this_thread::sleep_for( dura );
+}
+
 inline smonitor::smonitor()
+    :
+    sleep_us(U::GetEnvInt(SLEEP_US, 1000000))
 {
     INSTANCE = this ; 
     NVML_CHECK( nvmlInit() );
     NVML_CHECK( nvmlDeviceGetCount(&device_count) ); 
-    printf("device_count: %u \n", device_count );
+    printf("device_count: %u  %s=%d \n", device_count, SLEEP_US, sleep_us  );
 
     signal(SIGINT, signal_callback_handler);
 }
@@ -88,12 +99,14 @@ inline void smonitor::save()
     a->save("smonitor.npy"); 
 }
 
+
+
 inline void smonitor::runloop()
 {
     while(true)
     {
         check(); 
-        sleep(1);
+        SleepMicroseconds(sleep_us);
     }
 }
 

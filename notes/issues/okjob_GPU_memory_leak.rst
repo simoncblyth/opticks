@@ -28,6 +28,53 @@ Most likely culprits, as more dynamic allocation handling are:
 
 
 
+
+::
+
+   MEMCHECK=1 BP="cudaMalloc cudaFree" ~/o/cxs_min.sh 
+
+
+gdb investigate
+------------------
+
+* 53 cudaMalloc to first setGenstep cudaMalloc
+
+::
+
+    In [2]: 6*4*4*3000000   ## 3M gensteps
+    Out[2]: 288000000
+
+
+
+
+
+::
+
+    (gdb) bt
+    #0  0x00007ffff7586100 in cudaMalloc () from /data/blyth/junotop/ExternalLibs/opticks/head/lib/../lib64/libQUDARap.so
+    #1  0x00007ffff74eb5b2 in QU::_cudaMalloc (p2p=0x7fffffff0040, size=288000000, 
+        label=0x7ffff75b7aa8 "QEvent::setGenstep/device_alloc_genstep_and_seed:quad6") at /home/blyth/junotop/opticks/qudarap/QU.cc:219
+    #2  0x00007ffff74f8383 in QU::device_alloc<quad6> (num_items=3000000, 
+        label=0x7ffff75b7aa8 "QEvent::setGenstep/device_alloc_genstep_and_seed:quad6") at /home/blyth/junotop/opticks/qudarap/QU.cc:256
+    #3  0x00007ffff74de61a in QEvent::device_alloc_genstep_and_seed (this=0xad900f0) at /home/blyth/junotop/opticks/qudarap/QEvent.cc:352
+    #4  0x00007ffff74de018 in QEvent::setGenstepUpload (this=0xad900f0, qq=0xc94bbe0, num_genstep=140)
+        at /home/blyth/junotop/opticks/qudarap/QEvent.cc:284
+    #5  0x00007ffff74ddc34 in QEvent::setGenstepUpload_NP (this=0xad900f0, gs_=0xc8d5950) at /home/blyth/junotop/opticks/qudarap/QEvent.cc:250
+    #6  0x00007ffff74dd8ef in QEvent::setGenstep (this=0xad900f0) at /home/blyth/junotop/opticks/qudarap/QEvent.cc:196
+    #7  0x00007ffff74a1b4b in QSim::simulate (this=0xad90040, eventID=0, reset_=true) at /home/blyth/junotop/opticks/qudarap/QSim.cc:357
+    #8  0x00007ffff7e59897 in CSGOptiX::simulate (this=0xad9ecc0, eventID=0) at /home/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:674
+    #9  0x00007ffff7e56583 in CSGOptiX::SimulateMain () at /home/blyth/junotop/opticks/CSGOptiX/CSGOptiX.cc:180
+    #10 0x0000000000405b15 in main (argc=1, argv=0x7fffffff21f8) at /home/blyth/junotop/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) i b 
+
+
+
+
+::
+
+    BP="cudaMalloc cudaFree" ~/o/cxs_min.sh 
+
+
 PROGRESS : managed to get cxs_min.sh to leak using gensteps from okjob.sh
 ---------------------------------------------------------------------------
 

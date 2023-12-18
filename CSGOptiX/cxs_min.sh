@@ -128,8 +128,8 @@ case $VERSION in
 99) opticks_event_mode=DebugHeavy ;;  # formerly StandardFullDebug
 esac 
 
-#test=reference
-test=input_genstep
+test=reference
+#test=input_genstep
 TEST=${TEST:-$test}
 
 if [ "$TEST" == "reference" ]; then 
@@ -262,6 +262,7 @@ logging(){
 }
 [ -n "$LOG" ] && logging
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
+[ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
 
 
 vars="GEOM LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"

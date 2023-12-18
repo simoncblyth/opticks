@@ -219,14 +219,20 @@ extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt )
     //thrust::for_each( gs_pho.begin(), gs_pho.end(), printf_functor() );  
 
 #ifdef DEBUG_QEVENT
-    printf("//QEvent_count_genstep_photons_and_fill_seed_buffer iexpand \n" );      
+    printf("//[QEvent_count_genstep_photons_and_fill_seed_buffer iexpand \n" );      
 #endif
-
 
 
     iexpand( gs_pho.begin(), gs_pho.end(), t_seed, t_seed + evt->num_seed );  
 
     //thrust::for_each( t_seed,  t_seed + evt->num_seed, printf_functor() );  
+
+
+#ifdef DEBUG_QEVENT
+    printf("//]QEvent_count_genstep_photons_and_fill_seed_buffer iexpand \n" );      
+#endif
+
+
 
 }
 

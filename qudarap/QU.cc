@@ -7,6 +7,7 @@
 #include "sdirectory.h"
 #include "scuda.h"
 #include "squad.h"
+#include "ssys.h"
 
 #ifndef PRODUCTION
 #include "srec.h"
@@ -35,6 +36,8 @@
 
 
 const plog::Severity QU::LEVEL = SLOG::EnvLevel("QU", "DEBUG") ; 
+bool QU::MEMCHECK = ssys::getenvbool(_MEMCHECK); 
+
 salloc* QU::alloc = nullptr ;   // used to monitor allocations, instanciated in CSGOptiX::Create
 
 template <typename T> 
@@ -116,6 +119,13 @@ T* QU::UploadArray(const T* array, unsigned num_items, const char* label ) // st
        << " label " << ( label ? label : "-" )
        ;
 
+    LOG_IF(info, MEMCHECK) 
+       << " num_items " << num_items
+       << " size " << size 
+       << " label " << ( label ? label : "-" )
+       ;
+
+
     if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
 
     T* d_array = nullptr ; 
@@ -196,6 +206,8 @@ template<typename T>
 void QU::device_free_and_alloc(T** dd, unsigned num_items ) // dd: pointer-to-device-pointer
 {
     size_t size = num_items*sizeof(T) ; 
+    LOG_IF(info, MEMCHECK) << " size " << size << " num_items " << num_items ; 
+
     QUDA_CHECK( cudaFree( reinterpret_cast<void*>( *dd ) ) );
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( dd ), size )); 
     assert( *dd ); 
@@ -249,10 +261,16 @@ T* QU::device_alloc( unsigned num_items, const char* label )
         << " label " << std::setw(15) << label 
         ; 
 
+    LOG_IF(info, MEMCHECK) 
+        << " num_items " << std::setw(10) << num_items 
+        << " size " << std::setw(10) << size 
+        << " label " << std::setw(15) << label 
+        ; 
+
+
     if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
 
     T* d ;  
-   // QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
     _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
 
     return d ; 
@@ -291,10 +309,16 @@ T* QU::device_alloc_zero(unsigned num_items, const char* label)
         << " label " << std::setw(15) << label 
         ; 
 
+    LOG_IF(info, MEMCHECK) 
+        << " num_items " << std::setw(10) << num_items 
+        << " size " << std::setw(10) << size 
+        << " label " << std::setw(15) << label 
+        ; 
+
+
     if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
 
     T* d ;  
-    //QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d ), size )); 
     _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
 
     int value = 0 ; 
@@ -341,6 +365,9 @@ template void     QU::device_memset<sphoton>(sphoton*, int, unsigned ) ;
 template<typename T>
 void QU::device_free( T* d)
 {
+    LOG_IF(info, MEMCHECK) ; 
+    // HMM: could use salloc to find the label ?
+
     QUDA_CHECK( cudaFree(d) ); 
 }
 

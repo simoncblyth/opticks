@@ -46,6 +46,8 @@ cd $FOLD
 LOGDIR=$PWD
 
 export STEM=okjob_smonitor
+export smonitor__SLEEP_US=100000  # 0.1s 
+
 
 defarg="info_build_run"
 arg=${1:-$defarg}
