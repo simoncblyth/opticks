@@ -2116,21 +2116,25 @@ opticks-install-tests()
    local msg="=== $FUNCNAME :"
    local bdir=$(opticks-bdir)
    local dest=$(opticks-dir)/tests
-   echo $msg bdir $bdir dest $dest
+   local script=$(opticks-dir)/bin/CTestTestfile.py
+   local fold=$(opticks-fold)
+
+   local vars="FUNCNAME bdir dest script fold"
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 
    : using the source tree for PYTHONPATH as this is needed 
    : as part of the installation
 
-   PYTHONPATH=$(opticks-fold) CTestTestfile.py $bdir --dest $dest
-   local script=$dest/ctest.sh 
+   PYTHONPATH=$fold $script $bdir --dest $dest
+   local testscript=$dest/ctest.sh 
 
-   cat << EOT > $script
+   cat << EOT > $testscript
 #!/bin/bash -l 
 #ctest -N 
 ctest --output-on-failure
 EOT
 
-   chmod ugo+x $script 
+   chmod ugo+x $testscript 
 }
 
 opticks-install-cmake-modules()
@@ -2138,12 +2142,13 @@ opticks-install-cmake-modules()
    : formerly this was okdist-install-cmake-modules
    local msg="=== $FUNCNAME :"
    local home=$(opticks-home)
-   local dest=$(opticks-dir)
+   local dest=$(opticks-prefix)
+   local script=$(opticks-prefix)/bin/CMakeModules.py
 
-   echo $msg home $home dest $dest 
+   local vars="FUNCNAME home dest script"
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 
-
-   CMakeModules.py --home $home --dest $dest
+   $script --home $home --dest $dest
 }
 
 
