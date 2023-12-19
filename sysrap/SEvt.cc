@@ -4183,8 +4183,8 @@ void SEvt::getHit(sphoton& p, unsigned idx) const
 }
 
 /**
-SEvt::getLocalPhoton SEvt::getLocalHit
------------------------------------------
+SEvt::getLocalPhoton
+--------------------
 
 sphoton::iindex instance index used to get instance frame
 from (SGeo*)cf which is used to transform the photon  
@@ -4211,6 +4211,19 @@ Canonical usage from U4HitGet::FromEvt
 
    * TODO: check sensor_identifier, it should now be done GPU side already ? 
 
+
+Dec 19,2023 : Added sensor_identifier subtract one 
+to correspond to the addition of one in::
+
+   CSGFoundry::addInstance firstcall:true
+   CSGFoundry::addInstanceVector
+
+Complication arises from optixInstance identifier 
+range limitation meaning that need zero to mean not-a-sensor
+and not -1 0xffffffff
+
+
+
 **/
 
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
@@ -4222,7 +4235,7 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     fr.transform_w2m(lp); 
 
     ht.iindex = fr.inst() ; 
-    ht.sensor_identifier = fr.sensor_identifier(); 
+    ht.sensor_identifier = fr.sensor_identifier() - 1 ; 
     ht.sensor_index = fr.sensor_index(); 
 }
 

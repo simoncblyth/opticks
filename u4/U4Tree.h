@@ -942,7 +942,7 @@ inline void U4Tree::identifySensitiveInstances()
             }
 
             snode& nd = st->nds[nidx] ; 
-            nd.sensor_id = sensor_id ; 
+            nd.sensor_id = sensor_id ;  // -1:not-a-sensor-at-this-juncture
             nd.sensor_index = sensor_index ; 
             nd.sensor_name = sensor_name ; 
 
