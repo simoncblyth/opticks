@@ -31,7 +31,6 @@ QMultiFilm::QMultiFilm(const NP* lut )
     makeMultiFilmAllTex();
     INSTANCE = this ; 
     init();
-    //uploadMultifilmlut();
 }
 
 qmultifilm* QMultiFilm::getDevicePtr() const
@@ -64,7 +63,7 @@ void QMultiFilm::uploadMultifilmlut()
 
 void QMultiFilm::makeMultiFilmAllTex(){
    
-    assert( src->has_shape(3,2,2,1024,1024,4));
+    assert( src->has_shape(3,2,128,256,4));
     std::vector<std::string> pmtTypeList;
     src -> get_names( pmtTypeList );
     assert( pmtTypeList.size() == 3);
@@ -95,27 +94,20 @@ void QMultiFilm::makeMultiFilmOnePMTTex(  int pmtcatIdx , QTex<float4> ** tex_pm
  //   int bndDimIdx = src->get_meta<int>("boundary");
  //   int resDimIdx = src->get_meta<int>("resolution");
 
-    int bnd_dim = src->shape[1];
-    int resolution_dim = src->shape[2];
+    int resolution_dim = src->shape[1];
    
-    assert(bnd_dim == 2) ;
+    //assert(bnd_dim == 2) ;
     assert(resolution_dim == 2);
     
-    for(int i = 0 ; i < bnd_dim ; i++){
-         for(int j = 0; j < resolution_dim ; j++ ){
-
-              //NP* sub_src = src->spawn_item(i,j);
-	      int offset = i*resolution_dim+j;
-              tex_pmt[offset] = makeMultiFilmOneTex( pmtcatIdx , i , j );               
+         for(int i = 0; i < resolution_dim ; i++){
+	          int offset = i;
+              tex_pmt[offset] = makeMultiFilmOneTex( pmtcatIdx , i );               
          }
-    }     
 }
 
-QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int resIdx ){
+QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int resIdx ){
   
       
-//    assert( src->has_shape(2048,2048,4));
-//    assert( src->has_shape(3,2,2,2048,2048,4) );
     assert( src->uifc == 'f' ); 
     assert( src->ebyte == 4 );    // expecting float src array, possible narrowed from double dsrc array  
 
@@ -126,23 +118,21 @@ QTex<float4>* QMultiFilm::makeMultiFilmOneTex( int pmtcatIdx , int bndIdx , int 
     int aoiDimIdx = src->get_meta<int>("aoi");
     int payDimIdx = src->get_meta<int>("payload");
     */
-    int bnd_dim = src->shape[1];
-    int resolution_dim = src->shape[2];
-    assert(bnd_dim == 2) ;
+    int resolution_dim = src->shape[1];
     assert(resolution_dim == 2);
 
-    unsigned ni = src->shape[3]; 
-    unsigned nj = src->shape[4]; 
-    unsigned nk = src->shape[5]; 
+    unsigned ni = src->shape[2]; 
+    unsigned nj = src->shape[3]; 
+    unsigned nk = src->shape[4]; 
 
-    assert( ni == 1024); 
-    assert( nj == 1024); 
+    assert( ni == 128); 
+    assert( nj == 256); 
     assert( nk == 4 ); 
 
     unsigned ny = ni ; // height  
     unsigned nx = nj ; // width 
   
-    int offset = pmtcatIdx*bnd_dim*resolution_dim*ni*nj*nk + bndIdx*resolution_dim*ni*nj*nk + resIdx * ni*nj*nk;    
+    int offset = pmtcatIdx*resolution_dim*ni*nj*nk + resIdx * ni*nj*nk;    
 
     bool qmultifilmlut_disable_interpolation = SSys::getenvbool("QMULTIFILMLUT_DISABLE_INTERP"); 
     char filterMode = qmultifilmlut_disable_interpolation ? 'P' : 'L' ; 

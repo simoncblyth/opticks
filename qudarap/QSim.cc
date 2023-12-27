@@ -193,7 +193,7 @@ void QSim::UploadComponents( const SSim* ssim  )
         ; 
 
 
-/*
+
     const NP* multifilm = ssim->get(snam::MULTIFILM); 
     if(multifilm == nullptr)
     {
@@ -205,7 +205,7 @@ void QSim::UploadComponents( const SSim* ssim  )
         LOG(LEVEL) << mul->desc();
     }
     LOG(LEVEL) << "] ssim " << ssim ; 
-*/
+
 
 
 }
