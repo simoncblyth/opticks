@@ -1,5 +1,5 @@
 
-# huh : this imperfectly duplicates om-subs--all 
+# $huh : this imperfectly duplicates om-subs--all 
 opticks-all-projs-(){ cat << EOP
 sysrap
 brap
