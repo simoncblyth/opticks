@@ -46,7 +46,7 @@ void QMultiFilm::init(){
 
 void QMultiFilm::uploadMultifilmlut()
 {
-    int num = 4 ;
+    int num = 2 ;
     for(int i = 0 ; i < num ; i++)
     {
         multifilm->nnvt_normal_tex[i] = tex_nnvt_normal[i]->texObj ;
@@ -185,15 +185,16 @@ std::string QMultiFilm::desc() const
        << " dsrc " << ( dsrc ? dsrc->desc() : "-" )
        << " src " << ( src ? src->desc() : "-" )
        ; 
-    for(int i = 0 ; i < 4 ;i++){
+	int num = 2;
+    for(int i = 0 ; i < num ;i++){
        ss<<" tex_hama["<<i<<"]" << ( tex_hama[i] ? tex_hama[i] ->desc(): "-") << std::endl;
     }
 
-    for(int i = 0 ; i < 4 ;i++){
+    for(int i = 0 ; i < num ;i++){
        ss<<" tex_nnvt_normal["<<i<<"]" << ( tex_nnvt_normal[i] ? tex_nnvt_normal[i] ->desc(): "-")<<std::endl;
     }
     
-    for(int i = 0 ; i < 4 ;i++){
+    for(int i = 0 ; i < num ;i++){
        ss<<" tex_nnvt_highqe["<<i<<"]" << ( tex_nnvt_highqe[i] ? tex_nnvt_highqe[i] ->desc(): "-")<<std::endl;
     }
 
@@ -259,10 +260,10 @@ void QMultiFilm::check( QTex<float4> *tex )
     cudaDeviceSynchronize();
 }
 
-NP* QMultiFilm::lookup(int pmtcatIdx , int bndIdx , int resIdx ){
+NP* QMultiFilm::lookup(int pmtcatIdx , int resIdx ){
     
     QTex<float4> **tex = choose_tex(pmtcatIdx);
-    int offset = bndIdx*2+ resIdx;
+    int offset = resIdx;
     NP* out =  lookup(tex[offset]);
     return out;
 }
@@ -358,3 +359,46 @@ void QMultiFilm::dump( float4* lookup, unsigned num_lookup, unsigned edgeitems  
     }
 }
 
+/**/
+NP* QMultiFilm::mock_lookup( NP * input_arr )
+{
+	assert(input_arr->has_shape(128,256,2,4));
+	
+    int height = input_arr->shape[0]; 
+    int width = input_arr->shape[1] ; 
+    int num_lookup = width*height ; 
+    
+    LOG(LEVEL)
+        << " width " << width
+        << " height " << height
+        << " lookup " << num_lookup
+        ;
+
+	//upload input_array
+	quad2* qd2 = (quad2*)input_arr->values<float>();
+	quad2* d_input = QU::UploadArray<quad2>(qd2, num_lookup,"multifilm_mock_lookup");
+    
+	//malloc for output array 
+    NP* out = NP::Make<float>(height, width, 4 ); 
+	float4* h_out = (float4*)out->values<float>();
+
+    float4* d_out = nullptr; 
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_out ), size )); 
+
+    mock_lookup( d_input, d_out , num_lookup , width, height); 
+
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>(h_out), d_out, size, cudaMemcpyDeviceToHost )); 
+    QUDA_CHECK( cudaFree(d_out) ); 
+    QUDA_CHECK( cudaFree(d_input) ); 
+
+    return out ; 
+}
+
+
+void* QMultiFilm::mock_lookup( quad2* d_input, float4* out_v, int num_lookup, int width, int height ){
+
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    configureLaunch( numBlocks, threadsPerBlock, width, height ); 
+
+}

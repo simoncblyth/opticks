@@ -1041,6 +1041,7 @@ quad2* QSim::UploadFakePRD(const NP* ip, const NP* prd) // static
 
 
 /**
+
 QSim::fake_propagate (formerly mock_propagate)
 -----------------------------------------------
 

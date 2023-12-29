@@ -43,7 +43,13 @@ extern "C" void QMultiFilm_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaText
     printf("//QMultiFilm_lookup num_lookup %d width %d height %d \n", num_lookup, width, height);  
     _QMultiFilm_lookup<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height );
 } 
-
+/*
+extern "C" void QMultiFilm_mock_multifilm_lookup(dim3 numBlocks, dim3 threadsPerBlock, qmultifilm* d_multifilm, float4* res, unsigned num_lookup, unsigned width, unsigned height) 
+{
+    printf("//QMultiFilm_lookup num_lookup %d width %d height %d \n", num_lookup, width, height);  
+    _QMultiFilm_lookup<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height );
+} 
+*/
 extern "C" void QMultiFilm_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height ) 
 {
     printf("//QMultiFilm_check width %d height %d threadsPerBlock.x %d threadsPerBlock.y %d  numBlocks.x %d numBlocks.y %d \n", width, height,threadsPerBlock.x, threadsPerBlock.y , numBlocks.x, numBlocks.y);  

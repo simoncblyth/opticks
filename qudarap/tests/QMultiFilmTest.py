@@ -17,8 +17,8 @@ log = logging.getLogger(__name__)
 import matplotlib.pyplot as plt
 import matplotlib.cm  as cm
 
-class QMultiFilmLUTTest(object):
-    BASE = os.path.expandvars("/tmp/$USER/opticks/QMultiFilmLUTTest") 
+class QMultiFilmTest(object):
+    BASE = os.path.expandvars("/tmp/$USER/opticks/QMultiFilmTest") 
     def __init__(self):
         path = os.path.join(self.BASE,"src.npy")
         self.src = np.load(path)
@@ -26,11 +26,10 @@ class QMultiFilmLUTTest(object):
     def test_all_lookup(self):
         src = self.src
         for pmtcatIdx in range(src.shape[0]):
-            for bndIdx in range(src.shape[1]):
-                for resIdx in range(src.shape[2]):
-                    dst_file_name = "pmtcat_{}bnd_{}resolution_{}.npy".format(pmtcatIdx,bndIdx,resIdx)
-                    self.subsrc = self.src[pmtcatIdx, bndIdx ,resIdx ,:,:,:]
-                    self.test_lookup(dst_file_name)
+            for resIdx in range(src.shape[1]):
+                dst_file_name = "pmtcat_{}resolution_{}.npy".format(pmtcatIdx,resIdx)
+                self.subsrc = self.src[pmtcatIdx,resIdx ,:,:,:]
+                self.test_lookup(dst_file_name)
                     
     def test_lookup(self, dst_file_name):
         path = os.path.join(self.BASE,dst_file_name)
@@ -38,7 +37,7 @@ class QMultiFilmLUTTest(object):
         print("dst.shape = {} dst = {} , src.shape = {}".format(dst.shape, dst , self.src.shape))
         
         subsrc = self.subsrc
-        fig, axs = plt.subplots(3,4)
+        fig, axs = plt.subplots(3,4,figsize=(12,8))
         #for i in range(2):
         for j in range(4):
             plt.cla()
@@ -53,7 +52,7 @@ class QMultiFilmLUTTest(object):
             plt.colorbar(mappable=imz, ax=axs[2,j])
         #fig.show()
         #fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),ax=axs)
-        plt.suptitle(dst_file_name + "\n Rs_Ts_Rp_Tp",fontsize = 30 )
+        plt.suptitle(dst_file_name + " Rs_Ts_Rp_Tp",fontsize = 16 )
         plt.show()
 
         '''
@@ -72,7 +71,7 @@ class QMultiFilmLUTTest(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    t = QMultiFilmLUTTest()
+    t = QMultiFilmTest()
     t.test_all_lookup()
 
     

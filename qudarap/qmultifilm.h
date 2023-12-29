@@ -15,13 +15,13 @@ qmultifilm.h
 
 struct qmultifilm
 {
-    cudaTextureObject_t nnvt_normal_tex[4];
-    cudaTextureObject_t nnvt_highqe_tex[4];
-    cudaTextureObject_t hama_tex[4];
+    cudaTextureObject_t nnvt_normal_tex[2];
+    cudaTextureObject_t nnvt_highqe_tex[2];
+    cudaTextureObject_t hama_tex[2];
     
-    quad4*              nnvt_normal_meta[4];
-    quad4*              nnvt_highqe_meta[4];
-    quad4*              hama_meta[4];
+    quad4*              nnvt_normal_meta[2];
+    quad4*              nnvt_highqe_meta[2];
+    quad4*              hama_meta[2];
  
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -62,7 +62,7 @@ inline QMULTIFILM_METHOD float4 qmultifilm::lookup(unsigned pmtType, unsigned bo
     float aoi_substep = (aoi_subhigh-aoi_sublow)/(nx-1);
    
     int resolution = ( aoi > aoi_sublow && aoi < aoi_subhigh )? 1 : 0 ;
-    int tex_index = boundary * 2 + resolution ;
+    int tex_index = resolution ;
    
     cudaTextureObject_t tex = 0 ;
     switch(pmtType)

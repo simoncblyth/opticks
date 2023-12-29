@@ -27,18 +27,18 @@ struct QUDARAP_API QMultiFilm
 
     const NP*      dsrc ; 
     const NP*      src ; 
-    QTex<float4>* tex_nnvt_normal[4];
-    QTex<float4>* tex_nnvt_highqe[4];
-    QTex<float4>* tex_hama[4];
+    QTex<float4>* tex_nnvt_normal[2];
+    QTex<float4>* tex_nnvt_highqe[2];
+    QTex<float4>* tex_hama[2];
 
     qmultifilm*   multifilm ;
     qmultifilm*   d_multifilm ;
  
-    /* 4 = 2 * 2 ( boundary , resolution)     */
+    /* 2: resolution dimension (normal fine)    */
    
     void makeMultiFilmAllTex();
     void makeMultiFilmOnePMTTex(int pmtcatIdx , QTex<float4> ** tex_pmt);
-    QTex<float4>* makeMultiFilmOneTex(int pmtcatIdx , int bndIdx , int resIdx);
+    QTex<float4>* makeMultiFilmOneTex(int pmtcatIdx , int resIdx);
 
 
     QMultiFilm(const NP* lut ); 
@@ -52,7 +52,7 @@ struct QUDARAP_API QMultiFilm
 
     void check();
     void check(QTex<float4>* tex);
-    NP*  lookup(int pmtcatIdx , int bndIdx , int resIdx);
+    NP*  lookup(int pmtcatIdx ,int resIdx);
     NP*  lookup(QTex<float4>* tex);
 
     void lookup( QTex<float4>* tex, float4* lookup, unsigned num_lookup, unsigned width, unsigned height); 
