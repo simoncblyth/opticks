@@ -16,6 +16,7 @@ void test_check(QMultiFilm& sc)
 
 void test_mock_lookup(QMultiFilm& sc){
 	
+
 	const char* input_path = "/tmp/debug_multi_film_table/test_texture.npy";
     NP* input_arr = NP::LoadIfExists(input_path); 
 	assert(input_arr->has_shape(128,256,2,4));
@@ -23,21 +24,41 @@ void test_mock_lookup(QMultiFilm& sc){
 	int height = input_arr->shape[0];
 	int width  = input_arr->shape[1];
 	int num_item = height*width;
-	int edge_item = 20;
+	int edge_item = 10;
 	quad2* arr_v = (quad2*)input_arr->values<float>();
 
-	for(int i = 0 ; i < edge_item || i > num_item - edge_item; i++){
-		quad2 qd2 = arr_v[i];
-		std::cout<<" pmtcat = "<< qd2.q0.i.x 
-				 <<" wv_nm = " << qd2.q0.f.y
-				 <<" aoi = "   << qd2.q0.f.z 
+	for(int i = 0 ; i < num_item; i++){
+		if(i < edge_item || i > (num_item - edge_item)){
+			quad2 qd2 = arr_v[i];
+			std::cout<<" pmtcat = "<< qd2.q0.i.x 
+					 <<" wv_nm = " << qd2.q0.f.y
+					 <<" aoi = "   << qd2.q0.f.z 
 
-				 <<" R_s = "   << qd2.q1.f.x 
-				 <<" T_s = "   << qd2.q1.f.y 
-				 <<" R_p = "   << qd2.q1.f.z 
-				 <<" T_p = "   << qd2.q1.f.w 
-				 << std::endl; 
+					 <<" R_s = "   << qd2.q1.f.x 
+					 <<" T_s = "   << qd2.q1.f.y 
+					 <<" R_p = "   << qd2.q1.f.z 
+					 <<" T_p = "   << qd2.q1.f.w 
+	 				 << std::endl;
+		}
 	}
+	std::cout<<'\n';
+	NP* res = sc.mock_lookup(input_arr);
+
+	float4* res4 = (float4*)res->values<float>();
+	for(int i = 0 ; i<num_item ; i++){
+		if(i < edge_item || i > (num_item - edge_item)){
+			std::cout<<" Rs = "<< res4[i].x
+					 <<" Ts = "<< res4[i].y
+					 <<" Rp = "<< res4[i].z
+					 <<" Tp = "<< res4[i].w
+					 <<std::endl;
+		}
+	}
+    int create_dirs = 2 ; // 2:dirpath
+    const char* FOLD = SPath::Resolve("$TMP/QMultiFilmTest", create_dirs) ; 
+	//const char * FOLD = "/tmp/debug_multi_film_table/";
+	res->save(FOLD, "gpu_texture_interp.npy");
+	input_arr->save(FOLD, "test_texture.npy");
 }
 
 void test_lookup(QMultiFilm& sc)

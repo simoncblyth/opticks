@@ -13,6 +13,7 @@ For the 3 PMT Types : boundary * resolution * wavelength * aoi * payload
 #include "plog/Severity.h"
 
 union quad;
+struct quad2;
 struct dim3 ; 
 struct NP ; 
 struct float4;
@@ -58,8 +59,11 @@ struct QUDARAP_API QMultiFilm
     void lookup( QTex<float4>* tex, float4* lookup, unsigned num_lookup, unsigned width, unsigned height); 
     void dump(   float4* lookup, unsigned num_lookup, unsigned edgeitems=10 ); 
   
-    float4 multifilm_lookup( unsigned pmtType, unsigned boundary, float nm, float aoi );
+    //float4 multifilm_lookup( unsigned pmtType, unsigned boundary, float nm, float aoi );
     QTex<float4> ** choose_tex(int pmtcatIdx);
+	
+	NP* mock_lookup(NP* input_arr);
+	void * mock_lookup(quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height);
 };
 
 

@@ -359,14 +359,16 @@ void QMultiFilm::dump( float4* lookup, unsigned num_lookup, unsigned edgeitems  
     }
 }
 
-/**/
+/* */
+extern "C" void QMultiFilm_mock_lookup(dim3 numBlocks, dim3 threadsPerBlock, qmultifilm* d_multifilm, quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height); 
+
 NP* QMultiFilm::mock_lookup( NP * input_arr )
 {
 	assert(input_arr->has_shape(128,256,2,4));
 	
-    int height = input_arr->shape[0]; 
-    int width = input_arr->shape[1] ; 
-    int num_lookup = width*height ; 
+    unsigned height = input_arr->shape[0]; 
+    unsigned width = input_arr->shape[1] ; 
+    unsigned num_lookup = width*height ; 
     
     LOG(LEVEL)
         << " width " << width
@@ -380,9 +382,10 @@ NP* QMultiFilm::mock_lookup( NP * input_arr )
     
 	//malloc for output array 
     NP* out = NP::Make<float>(height, width, 4 ); 
-	float4* h_out = (float4*)out->values<float>();
-
+	float4* h_out = out->values<float4>();
     float4* d_out = nullptr; 
+
+	size_t size = num_lookup*sizeof(float4);
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_out ), size )); 
 
     mock_lookup( d_input, d_out , num_lookup , width, height); 
@@ -390,15 +393,18 @@ NP* QMultiFilm::mock_lookup( NP * input_arr )
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>(h_out), d_out, size, cudaMemcpyDeviceToHost )); 
     QUDA_CHECK( cudaFree(d_out) ); 
     QUDA_CHECK( cudaFree(d_input) ); 
-
+    cudaDeviceSynchronize();
+	
+	dump(h_out, num_lookup);
     return out ; 
 }
 
 
-void* QMultiFilm::mock_lookup( quad2* d_input, float4* out_v, int num_lookup, int width, int height ){
+void* QMultiFilm::mock_lookup( quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height ){
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, width, height ); 
 
+    QMultiFilm_mock_lookup(numBlocks, threadsPerBlock, d_multifilm, d_input, d_out, num_lookup, width, height);  
 }
