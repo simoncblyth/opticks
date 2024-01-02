@@ -99,6 +99,30 @@ class QMultiFilmTest(object):
         plt.show()
 
 
+        fig,ax = plt.subplots( figsize=(8,6) )
+        bins = np.logspace(-5,0,50)
+        ax.hist((a_Rs - b_Rs).flatten(), bins, label= r"$R_s$",histtype ="step", color='b',linewidth = 2)
+        ax.hist((a_Ts - b_Ts).flatten(), bins, label= r"$T_s$",histtype ="step", color='g',linewidth = 2)
+        ax.hist((a_Rp - b_Rp).flatten(), bins, label= r"$R_p$",histtype ="step", color='r',linewidth = 2)
+        ax.hist((a_Tp - b_Tp).flatten(), bins, label= r"$T_p$",histtype ="step", color='m',linewidth = 2)
+        ax.legend()	
+        ax.set_xlabel("Difference")
+        ax.set_xscale("log")
+        ax.set_ylabel("Entry")
+        ax.set_yscale("log")
+        ax.tick_params(left= True, bottom = True, right =True, top= True, which = "both", direction = "in")
+        ax.tick_params(left= True, bottom = True, right =True, top=True, which = "both", width = 1.5)
+        ax.tick_params(left= True, bottom = True, right =True, top= True, which = "minor", length = 6)
+        ax.tick_params(left= True, bottom = True, right =True, top= True, which = "major", length = 12)
+        ax.minorticks_on()
+        
+        ax.grid(axis="both",linestyle="--")
+        ax.spines['bottom'].set_linewidth(1.5)
+        ax.spines['top'].set_linewidth(1.5)
+        ax.spines['left'].set_linewidth(1.5)
+        ax.spines['right'].set_linewidth(1.5)
+        
+        plt.show()
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     t = QMultiFilmTest()
