@@ -7,6 +7,7 @@ NPX.h : NP.hh related extras such as static converters
 **/
 
 #include "NP.hh"
+#include <unordered_map>
 
 
 struct NPX
@@ -71,6 +72,18 @@ struct NPX
     static void DiscoMapFromArray( std::map<int, S>& m, const NP* a ); 
     template<typename S>
     static std::string DescDiscoMap( const std::map<int, S>& m ); 
+
+
+    template<typename S>
+    static NP* ArrayFromDiscoMapUnordered( const std::unordered_map<int, S>& m ); 
+    template<typename S>
+    static void DiscoMapUnorderedFromArray( std::unordered_map<int, S>& m, const NP* a ); 
+    template<typename S>
+    static std::string DescDiscoMapUnordered( const std::unordered_map<int, S>& m ); 
+
+
+
+
 
     template<typename T> 
     static NP* FromNumpyString(const char* str) ;  
@@ -520,6 +533,17 @@ inline NP* NPX::ArrayFromDiscoMap( const std::map<int, S>& m )
 {
     return nullptr ;    
 }
+
+template<typename S>
+inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int, S>& m )
+{
+    return nullptr ;    
+}
+
+
+
+
+
 template<>
 inline NP* NPX::ArrayFromDiscoMap( const std::map<int,int>& m )
 {
@@ -541,8 +565,44 @@ inline NP* NPX::ArrayFromDiscoMap( const std::map<int,int>& m )
 }
 
 
+template<>
+inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int,int>& m )
+{
+    int ni = m.size() ; 
+    int nj = 2 ; 
+    NP* a = NP::Make<int>(ni, nj) ;  
+    int* aa = a->values<int>(); 
+
+    typedef std::unordered_map<int,int> MII ; 
+    MII::const_iterator it = m.begin(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        aa[i*nj+0] = it->first ;  
+        aa[i*nj+1] = it->second ;  
+        it++ ; 
+    }
+    return a ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 template<typename S>
 inline void NPX::DiscoMapFromArray( std::map<int, S>& m, const NP* a ){}
+
+template<typename S>
+inline void NPX::DiscoMapUnorderedFromArray( std::unordered_map<int, S>& m, const NP* a ){}
+
+
+
 
 template<>
 inline void NPX::DiscoMapFromArray( std::map<int, int>& m, const NP* a )
@@ -561,6 +621,33 @@ inline void NPX::DiscoMapFromArray( std::map<int, int>& m, const NP* a )
     }
 }
 
+
+template<>
+inline void NPX::DiscoMapUnorderedFromArray( std::unordered_map<int, int>& m, const NP* a )
+{
+    assert( a && a->uifc == 'i' && a->ebyte == 4 && a->shape.size() == 2 ); 
+    int ni = a->shape[0] ; 
+    int nj = a->shape[1] ;
+    assert( nj == 2 );  
+
+    const int* aa = a->cvalues<int>(); 
+    for(int i=0 ; i < ni ; i++)
+    {
+        int k = aa[i*nj+0] ;  
+        int v = aa[i*nj+1] ;  
+        m[k] = v ;  
+    }
+}
+
+
+
+
+
+
+
+
+
+
 template<typename S>
 inline std::string NPX::DescDiscoMap( const std::map<int, S>& m )
 {
@@ -569,6 +656,18 @@ inline std::string NPX::DescDiscoMap( const std::map<int, S>& m )
     std::string s = ss.str();    
     return s ; 
 }
+
+template<typename S>
+inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int, S>& m )
+{
+    std::stringstream ss ; 
+    ss << "NPX::DescDiscoMapUnordered" << std::endl << " m.size " << m.size() ; 
+    std::string s = ss.str();    
+    return s ; 
+}
+
+
+
 
 template<>
 inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
@@ -586,6 +685,33 @@ inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
     std::string s = ss.str();    
     return s ; 
 }
+
+
+template<>
+inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int,int>& m )
+{
+    int ni = m.size() ; 
+    typedef std::unordered_map<int,int> MII ; 
+    MII::const_iterator it = m.begin(); 
+    std::stringstream ss ; 
+    ss << "NPX::DescDiscoMapUnordered" << std::endl << " m.size " << ni << std::endl ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        ss << "( " << it->first << " : " << it->second << " ) " << std::endl ;   
+        it++ ; 
+    }
+    std::string s = ss.str();    
+    return s ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 
