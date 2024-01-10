@@ -10,6 +10,8 @@ QPMT_Test.sh : standalone build variant of standardly build QPMTTest.sh
   directly operate from the sysrap sources : but the tree of dependencies
   needs pruning to make that workable in addition to making more of 
   sysrap header only 
+
+
    
 EOU
 }
@@ -35,13 +37,18 @@ logging(){
 logging
 
 
-custom4_prefix=${OPTICKS_PREFIX}_externals/custom4/0.1.6
+custom4_prefix=${OPTICKS_PREFIX/_Debug}_externals/custom4/0.1.9
 CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="BASH_SOURCE REALDIR REALFOLD FOLD GEOM name CUSTOM4_PREFIX CUDA_PREFIX"
+
+GEOMDIR=$HOME/.opticks/GEOM/$GEOM
+JPMTDIR=$GEOMDIR/CSGFoundry/SSim/extra/jpmt
+
+
+vars="BASH_SOURCE REALDIR REALFOLD FOLD GEOM name CUSTOM4_PREFIX CUDA_PREFIX GEOMDIR JPMTDIR"
 
 
 if [ "${arg/info}" != "$arg" ]; then 

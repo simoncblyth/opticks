@@ -35,6 +35,7 @@ struct spath_test
    static void _Check(); 
    static void Write(); 
 
+   static int Main();  
 };
 
 
@@ -336,37 +337,44 @@ void spath_test::Write()
 
 
 }
+
+int spath_test::Main()
+{
+/*
+    Resolve_defaultOutputPath();
+    Resolve_with_undefined_token();
+    Resolve_with_undefined_TMP();
+    Resolve_inline();
+    ResolveToken(); 
+    Resolve(); 
+    Exists(); 
+    Exists2(); 
+    Basename(); 
+    Name(); 
+    Remove(); 
+    IsTokenWithFallback(); 
+    ResolveTokenWithFallback(); 
+
+    ResolveTokenWithFallback(); 
+    _ResolveToken(); 
+    Resolve(); 
+    ResolveToken1(); 
+    Resolve1(); 
+    _Check(); 
+    Write(); 
+*/
+    ResolveToken1(); 
+
+    return 0 ; 
+}
+
  
 
 int main(int argc, char** argv)
 {
-    /*
-    spath_test::Resolve_defaultOutputPath();
-    spath_test::Resolve_with_undefined_token();
-    spath_test::Resolve_with_undefined_TMP();
-    spath_test::Resolve_inline();
-    spath_test::ResolveToken(); 
-    spath_test::Resolve(); 
-    spath_test::Exists(); 
-    spath_test::Exists2(); 
-    spath_test::Basename(); 
-    spath_test::Name(); 
-    spath_test::Remove(); 
-    spath_test::IsTokenWithFallback(); 
-    spath_test::ResolveTokenWithFallback(); 
-
-    spath_test::ResolveTokenWithFallback(); 
-    spath_test::_ResolveToken(); 
-    spath_test::Resolve(); 
-    spath_test::ResolveToken1(); 
-    spath_test::Resolve1(); 
-    spath_test::_Check(); 
-    */
-
-    spath_test::Write(); 
-
-    return 0 ; 
+    return spath_test::Main(); 
 }
+
 
 // ~/opticks/sysrap/tests/spath_test.sh
 
