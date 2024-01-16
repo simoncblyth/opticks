@@ -68,9 +68,8 @@ appropriate NVIDIA Driver. In order to use versions combinations
 that are as standard as possible (ie used by very many others already)
 the runfile approach is recommended. While package managers claim to 
 be able to install CUDA, I do not trust them. Also package 
-managers have a tendency to update inappropriately. 
-As Opticks builds against both CUDA and OptiX and the OptiX implementation
-is provided within the driver the version matching is more  
+managers have a tendency to update inappropriately.  More control is 
+needed when building against packages that build against CUDA. 
 
 
 
