@@ -316,7 +316,7 @@ struct NP
     template<typename T> void psplit(std::vector<T>& domain, std::vector<T>& values) const ; 
     template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
     template<typename T> T    interp(T x, int item=-1) const ;                  // requires pshaped 
-    //template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
+    template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
 
 
     template<typename T> T    interpHD(T u, unsigned hd_factor, int item=-1 ) const ; 
@@ -3725,6 +3725,72 @@ but you should be able to get very close.
 
 
 **/
+template<typename T> inline T  NP::interp2D(T x, T y, int item) const 
+{
+    int ndim = shape.size() ; 
+    assert( ndim == 2 || ndim == 3 ); 
+
+    int num_items = ndim == 3 ? shape[0] : 1 ; 
+    assert( item < num_items ); 
+    int ni = shape[ndim-2]; 
+    int nj = shape[ndim-1];  // typically 2, but can be more 
+    int item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
+
+    const T* vv = cvalues<T>() + item_offset ; 
+    
+    T xB = x - T(0.5) ; 
+    T yB = y - T(0.5) ; 
+    // decompose floating point value into integral and fractional parts 
+    T xBint ; 
+    T xBfra = std::modf(xB, &xBint);
+    int j = int(xBint) ; 
+
+    T yBint ; 
+    T yBfra = std::modf(yB, &yBint);
+    int i = int(yBint) ; 
+
+    const T one(1.);
+
+#ifdef VERBOSE 
+    std::cout
+        << " ni = " << ni
+        << " nj = " << nj
+        << " i = "  << i 
+        << " j = "  << j 
+        << std::endl
+       ;
+#endif
+
+    assert( i < ni && i > -1 ); 
+    assert( j < nj && j > -1 );
+    // (i,j) => (y,x)
+    T v00 = vv[(i+0)*nj+(j+0)];  T v01 = vv[(i+0)*nj+(j+1)];   // v01 at j+1 (at large x than v00)    
+    T v10 = vv[(i+1)*nj+(j+0)];  T v11 = vv[(i+1)*nj+(j+1)];     
+
+#ifdef VERBOSE 
+    std::cout
+       << "NP::interp2D[ "
+       << " T[ij] = " << v00
+       << " T[i+1,j] = "<< v10
+       << " T[i,j+1] = "<< v01
+       << " T[i+1,j+1] = "<< v11
+       << " NP::interp2D]"
+       << std::endl
+       ;
+#endif
+      
+    // v10 is i+1  
+    
+    // tex(x,y)=(1?¦Á(1?¦ÂT[i,j]+¦Á1?¦ÂT[i+1,j]+(1?¦Á¦Â[i,j+1]+¦fÂ[i+1,j+1] 
+    // hmm does this need a y-flip ?
+
+    T z =  (one - xBfra)*(one - yBfra)*v00 +   
+                  xBfra *(one - yBfra)*v01 +   
+           (one - xBfra)*       yBfra *v10 +   
+                  xBfra *       yBfra *v11 ; 
+
+    return z ; 
+}
 
 
 /**
