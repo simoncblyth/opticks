@@ -2265,8 +2265,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         else if( ems == smatsur_Surface_zplus_sensor_CustomART )
         {
 #if defined(WITH_CUSTOM4)
-            //command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
-            command = propagate_at_multifilm(flag, rng, ctx ) ; 
+            command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
+            //command = propagate_at_multifilm(flag, rng, ctx ) ; 
 #endif
         }
     }
