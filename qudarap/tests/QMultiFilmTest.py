@@ -31,7 +31,7 @@ class QMultiFilmTest(object):
                 dst_file_name = "pmtcat_{}resolution_{}.npy".format(pmtcatIdx,resIdx)
                 self.subsrc = self.src[pmtcatIdx,resIdx ,:,:,:]
                 self.test_lookup(dst_file_name)         
-	        
+        
     def test_lookup(self, dst_file_name):
         path = os.path.join(self.BASE,dst_file_name)
         dst = np.load(path)

@@ -1583,11 +1583,11 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
     const float energy_eV = pmt->hc_eVnm/wv_nm ; 
     const float _qe = pmt->get_lpmtcat_qe(pmtcat, energy_eV);   // TODO: need to get _qe 
     //const float D = _qe/An ;
-	
-	const float& theAbsorption = A;
-	const float& theTransmittance = T/(one-A);
-	const float& theEfficiency = _qe/An; 
-
+    
+    const float& theAbsorption = A;
+    const float& theTransmittance = T/(one-A);
+    const float& theEfficiency = _qe/An; 
+    
     float u_theAbsorption = curand_uniform(&rng);
     int action = u_theAbsorption < theAbsorption  ? BREAK : CONTINUE ;
 
@@ -1600,9 +1600,9 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
     {
         propagate_at_boundary( flag, rng, ctx, theTransmittance  );  
     } 
-	
-	printf("//qsim.propagate_at_multifilm idx %d lpmtid %d ART ( %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n", 
-    ctx.idx, lpmtid, ART.x, ART.y, ART.z, u_theAbsorption, action);   
+    
+    //printf("//qsim.propagate_at_multifilm idx %d lpmtid %d ART ( %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n", 
+    //ctx.idx, lpmtid, ART.x, ART.y, ART.z, u_theAbsorption, action);   
 
     return action ; 
     /* 
