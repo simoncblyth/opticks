@@ -7,15 +7,29 @@
 #include "SComp.h"
 
 
-void test_Desc()
+struct SEventConfigTest
+{
+    static void Desc(); 
+    static void OutPath(); 
+    static void GatherCompList();
+    static void SaveCompList();
+    static void CompAuto();
+    static void SetCompAuto();
+    static void SetDefault();
+    static void Save();
+    static void InputGenstep(); 
+
+    static int main(); 
+
+}; 
+
+void SEventConfigTest::Desc()
 {
     LOG(info); 
     std::cout << SEventConfig::Desc() << std::endl ; 
 }
 
-
-
-void test_OutPath()
+void SEventConfigTest::OutPath()
 {
     LOG(info); 
     const char* path_0 = SEventConfig::OutPath("stem", 101, ".npy" ); 
@@ -28,25 +42,21 @@ void test_OutPath()
 }
 
 
-void test_GatherCompList()
+void SEventConfigTest::GatherCompList()
 {
     std::vector<unsigned> gather_comps ; 
     SEventConfig::GatherCompList(gather_comps) ; 
     std::cout << SComp::Desc(gather_comps) << std::endl ; 
 }
 
-void test_SaveCompList()
+void SEventConfigTest::SaveCompList()
 {
     std::vector<unsigned> save_comps ; 
     SEventConfig::SaveCompList(save_comps) ; 
     std::cout << SComp::Desc(save_comps) << std::endl ; 
 }
 
-
-
-
-
-void test_CompAuto()
+void SEventConfigTest::CompAuto()
 {
     unsigned gather_mask = 0 ; 
     unsigned save_mask = 0 ; 
@@ -58,10 +68,10 @@ void test_CompAuto()
 }
 
 
-void test_SetCompAuto()
+void SEventConfigTest::SetCompAuto()
 {
     std::cout 
-        << "test_SetCompAuto.0"
+        << "SEventConfigTest::SetCompAuto.0"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
@@ -71,7 +81,7 @@ void test_SetCompAuto()
     SEventConfig::SetCompAuto() ;     // NOW DONE BY SEventConfig::Initialize
 
     std::cout 
-        << "test_SetCompAuto.1"
+        << "SEventConfigTest::SetCompAuto.1"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
@@ -79,10 +89,10 @@ void test_SetCompAuto()
     */
 }
 
-void test_SetDefault()
+void SEventConfigTest::SetDefault()
 {
     std::cout 
-        << "test_SetDefault.0"
+        << "SEventConfigTest::SetDefault.0"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
@@ -91,16 +101,48 @@ void test_SetDefault()
     SEventConfig::SetDefault() ;     
 
     std::cout 
-        << "test_SetDefault.1"
+        << "SEventConfigTest::SetDefault.1"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
         ; 
 }
 
-void test_Save()
+void SEventConfigTest::Save()
 {
     SEventConfig::Save("$FOLD"); 
+}
+
+void SEventConfigTest::InputGenstep()
+{
+    for(int idx=0 ; idx < 100 ; idx++)
+    {
+        const char* path = SEventConfig::InputGenstep(idx) ; 
+        std::cout << " idx " << std::setw(4) << idx <<  " path " << ( path ? path : "-" ) << std::endl ; 
+    }
+
+}
+
+
+int SEventConfigTest::main()
+{
+    SEventConfig::Initialize(); 
+
+    /*
+    OutPath(); 
+    GatherCompList(); 
+    SaveCompList(); 
+    CompAuto(); 
+    SetCompAuto(); 
+    SetDefault(); 
+    Save(); 
+    Desc(); 
+    SetCompAuto(); 
+    */
+
+    InputGenstep(); 
+
+    return 0 ; 
 }
 
 
@@ -108,23 +150,5 @@ void test_Save()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    SEventConfig::Initialize(); 
-
-    /*
-    test_OutPath(); 
-    test_GatherCompList(); 
-    test_SaveCompList(); 
-    test_CompAuto(); 
-    test_SetCompAuto(); 
-    test_SetDefault(); 
-    test_Save(); 
-    test_Desc(); 
-    test_SetCompAuto(); 
-    */
-
-    test_Desc(); 
-
-
-    return 0 ; 
+    return SEventConfigTest::main() ; 
 }

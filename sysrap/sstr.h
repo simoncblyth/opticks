@@ -364,14 +364,18 @@ inline void sstr::chop( char** head, char** tail, const char* delim, const char*
     *tail = p ? p + strlen(delim) : nullptr ; 
 }
 
+/**
+sstr::Format_
+---------------
 
+See sysrap/tests/StringFormatTest.cc
+
+
+**/
 
 template<typename ... Args>
 inline std::string sstr::Format_( const char* fmt, Args ... args )
 {
-    // see sysrap/tests/StringFormatTest.cc
-    //std::vector<const char*> args_ = {args...};
-
     int sz = std::snprintf( nullptr, 0, fmt, args ... ) + 1 ; // +1 for null termination
     assert( sz > 0 );   
     std::vector<char> buf(sz) ;    

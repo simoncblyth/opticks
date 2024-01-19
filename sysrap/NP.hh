@@ -3725,16 +3725,16 @@ but you should be able to get very close.
 
 
 **/
-template<typename T> inline T  NP::interp2D(T x, T y, int item) const {
-
-    unsigned ndim = shape.size() ; 
+template<typename T> inline T  NP::interp2D(T x, T y, int item) const 
+{
+    int ndim = shape.size() ; 
     assert( ndim == 2 || ndim == 3 ); 
 
-    unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
-    assert( item < int(num_items) ); 
-    unsigned ni = shape[ndim-2]; 
-    unsigned nj = shape[ndim-1];  // typically 2, but can be more 
-    unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
+    int num_items = ndim == 3 ? shape[0] : 1 ; 
+    assert( item < num_items ); 
+    int ni = shape[ndim-2]; 
+    int nj = shape[ndim-1];  // typically 2, but can be more 
+    int item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
 
     const T* vv = cvalues<T>() + item_offset ; 
     
@@ -3750,25 +3750,34 @@ template<typename T> inline T  NP::interp2D(T x, T y, int item) const {
     int i = int(yBint) ; 
 
     const T one(1.);
- 
-	/*std::cout<<" ni = " << ni
-			 <<" nj = " << nj
-             <<" i = " <<i 
-		     <<" j = " <<j 
-			 << std::endl;*/
+
+#ifdef VERBOSE 
+    std::cout
+        << " ni = " << ni
+        << " nj = " << nj
+        << " i = "  << i 
+        << " j = "  << j 
+        << std::endl
+       ;
+#endif
+
     assert( i < ni && i > -1 ); 
     assert( j < nj && j > -1 );
     // (i,j) => (y,x)
     T v00 = vv[(i+0)*nj+(j+0)];  T v01 = vv[(i+0)*nj+(j+1)];   // v01 at j+1 (at large x than v00)    
     T v10 = vv[(i+1)*nj+(j+0)];  T v11 = vv[(i+1)*nj+(j+1)];     
- 
-    /*std::cout<<" NP::interp2D[ "
-             <<" T[ij] = " << v00
-		     <<" T[i+1,j] = "<<v10
-             <<" T[i,j+1] = "<<v01
-             <<" T[i+1,j+1] = "<<v11
-             <<" NP::interp2D]"<<std::endl;
-     */                          	      
+
+#ifdef VERBOSE 
+    std::cout
+       << "NP::interp2D[ "
+       << " T[ij] = " << v00
+       << " T[i+1,j] = "<< v10
+       << " T[i,j+1] = "<< v01
+       << " T[i+1,j+1] = "<< v11
+       << " NP::interp2D]"
+       << std::endl
+       ;
+#endif
       
     // v10 is i+1  
     
@@ -3782,12 +3791,6 @@ template<typename T> inline T  NP::interp2D(T x, T y, int item) const {
 
     return z ; 
 }
-
-
-
-
-
-
 
 
 /**

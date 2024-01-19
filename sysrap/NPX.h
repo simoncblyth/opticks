@@ -7,6 +7,7 @@ NPX.h : NP.hh related extras such as static converters
 **/
 
 #include "NP.hh"
+#include <unordered_map>
 
 
 struct NPX
@@ -57,13 +58,36 @@ struct NPX
 
     template<typename S>
     static int VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool contiguous_key=true ); 
+
+    template<typename S>
+    static int VecFromMapUnordered( 
+        std::vector<S>& v,  
+        const std::unordered_map<int, S>& m, 
+        const std::vector<int>& key_order, 
+        bool& all_contiguous_key ); 
+
+
     template<typename S>
     static void MapFromVec( std::map<int, S>& m,  const std::vector<S>& v, int k0=0, bool contiguous_key=true ); 
 
+    template<typename S>
+    static void MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std::vector<S>& v, int k0=0, bool contiguous_key=true ); 
+
+
     template<typename T, typename S>
     static NP* ArrayFromMap( const std::map<int, S>& m, bool contiguous_key=true ); 
+
+    template<typename T, typename S>
+    static NP* ArrayFromMapUnordered( 
+        const std::unordered_map<int, S>& m, const std::vector<int>& key_order  ); 
+
+
     template<typename S>
     static void MapFromArray( std::map<int, S>& m, const NP* a ); 
+
+    template<typename S>
+    static void MapUnorderedFromArray( std::unordered_map<int, S>& m, const NP* a ); 
+
 
     template<typename S>
     static NP* ArrayFromDiscoMap( const std::map<int, S>& m ); 
@@ -71,6 +95,18 @@ struct NPX
     static void DiscoMapFromArray( std::map<int, S>& m, const NP* a ); 
     template<typename S>
     static std::string DescDiscoMap( const std::map<int, S>& m ); 
+
+
+    template<typename S>
+    static NP* ArrayFromDiscoMapUnordered( const std::unordered_map<int, S>& m ); 
+    template<typename S>
+    static void DiscoMapUnorderedFromArray( std::unordered_map<int, S>& m, const NP* a ); 
+    template<typename S>
+    static std::string DescDiscoMapUnordered( const std::unordered_map<int, S>& m ); 
+
+
+
+
 
     template<typename T> 
     static NP* FromNumpyString(const char* str) ;  
@@ -334,6 +370,14 @@ inline NP* NPX::ArrayFromVec_(const std::vector<S>& v, const char* str_itemshape
 
 
 
+/**
+NPX::VecFromArray
+-------------------
+
+Direct mapping assuming type S is correct. 
+
+**/
+
 
 template<typename S> 
 inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
@@ -375,6 +419,18 @@ inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
 NPX::VecFromMap
 ---------------
 
+Populate vector using map values in the default key order of the map 
+
+1. clear and resize the vector to match size of the map 
+2. record k0, first key in map
+3. iterate through the map copying S values from the map into the vector
+4. return k0 
+
+contiguous_key:true
+   an assert verifies that keys are contiguously incrementing from the first key
+
+Used by NPX::ArrayFromMap
+
 **/
 
 
@@ -403,11 +459,56 @@ inline int NPX::VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool 
 }
 
 /**
+NPX::VecFromMapUnordered
+--------------------------
+
+Populate vector using unordered_map values using key_order vector ordering.
+All key_order keys are required to be present in the unordered map.   
+
+**/
+
+template<typename S>
+inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_map<int, S>& m, const std::vector<int>& key_order, bool& all_contiguous_key )
+{
+    int ni = int(key_order.size()) ; 
+    v.clear(); 
+    v.resize(ni); 
+
+    int k0 = -999 ; 
+    int count(0) ; 
+
+    for(int idx=0 ; idx < ni ; idx++)
+    {   
+        int k = key_order[idx] ; 
+        if( idx == 0 ) 
+        {
+            k0 = k ; 
+            count += 1 ; 
+        } 
+        else
+        {
+            if( k == k0 + idx ) count += 1  ; 
+        } 
+
+        const S& s = m.at(k); 
+        v[idx] = s ; 
+    }
+ 
+    all_contiguous_key = ni > 0 && count == ni  ; 
+    return k0 ; 
+}
+
+
+
+
+
+/**
 NPX::MapFromVec
 ----------------
 
 HMM: to support contiguous_key:false would need type S to follow 
 some convention such as keeping int keys within the first 32 bit member. 
+OR just store keys and values as separate arrays within an NPFold.
 
 **/
 
@@ -426,6 +527,39 @@ inline void NPX::MapFromVec( std::map<int, S>& m,  const std::vector<S>& v, int 
         m[key] = item ; 
     }
 }
+
+
+
+
+/**
+NPX::MapUnorderedFromVec
+---------------------------
+
+
+**/
+
+template<typename S>
+inline void NPX::MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std::vector<S>& v, int k0, bool contiguous_key )
+{
+    assert( contiguous_key == true ); 
+
+    int ni = int(v.size()) ; 
+    m.clear(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const S& item = v[i] ; 
+        int key = k0 + i ;  
+        m[key] = item ; 
+    }
+}
+
+
+
+
+
+
+
 
 
 /**
@@ -469,6 +603,45 @@ inline NP* NPX::ArrayFromMap( const std::map<int, S>& m, bool contiguous_key )
     return a ;
 }
 
+
+/**
+NPX::ArrayFromMapUnordered
+-----------------------------
+
+HMM: mostly only useful when the keys are contiguous from zero 
+as key values not persisted. 
+array with the keys and keep the map in a folder ?)
+
+**/
+
+
+template<typename T, typename S>
+inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, const std::vector<int>& key_order  )
+{
+    assert( sizeof(S) >= sizeof(T) );
+
+    std::vector<S> v ;    
+    bool all_contiguous_key(false) ; 
+    int k0 = NPX::VecFromMapUnordered<S>( v, m, key_order, all_contiguous_key ); 
+    NP* a = NPX::ArrayFromVec<T,S>(v) ;
+
+    a->set_meta<int>("k0", k0) ;
+    a->set_meta<int>("ContiguousKey", all_contiguous_key ) ;
+    a->set_meta<std::string>("Creator", "NPX::ArrayFromMapUnordered" ); 
+
+    return a ;
+}
+
+
+
+
+
+
+
+
+
+
+
 template<typename S>
 inline void NPX::MapFromArray( std::map<int, S>& m, const NP* a )
 {
@@ -490,6 +663,26 @@ inline void NPX::MapFromArray( std::map<int, S>& m, const NP* a )
 }
 
 
+
+template<typename S>
+inline void NPX::MapUnorderedFromArray( std::unordered_map<int, S>& m, const NP* a )
+{
+    if(a == nullptr || a->shape.size() == 0 ) return ; 
+
+    int k0 = a->get_meta<int>("k0"); 
+    int ContiguousKey = a->get_meta<int>("ContiguousKey") ; 
+    if(NP::VERBOSE) std::cout 
+        << "NPX::MapUnorderedFromArray"
+        << " k0 " << k0
+        << " ContiguousKey " << ContiguousKey
+        << std::endl 
+        ;
+
+    std::vector<S> v ;    
+    NPX::VecFromArray<S>(v, a); 
+    
+    NPX::MapUnorderedFromVec<S>(m, v, k0, ContiguousKey == 1 ); 
+}
 
 
 
@@ -520,6 +713,17 @@ inline NP* NPX::ArrayFromDiscoMap( const std::map<int, S>& m )
 {
     return nullptr ;    
 }
+
+template<typename S>
+inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int, S>& m )
+{
+    return nullptr ;    
+}
+
+
+
+
+
 template<>
 inline NP* NPX::ArrayFromDiscoMap( const std::map<int,int>& m )
 {
@@ -541,8 +745,44 @@ inline NP* NPX::ArrayFromDiscoMap( const std::map<int,int>& m )
 }
 
 
+template<>
+inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int,int>& m )
+{
+    int ni = m.size() ; 
+    int nj = 2 ; 
+    NP* a = NP::Make<int>(ni, nj) ;  
+    int* aa = a->values<int>(); 
+
+    typedef std::unordered_map<int,int> MII ; 
+    MII::const_iterator it = m.begin(); 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        aa[i*nj+0] = it->first ;  
+        aa[i*nj+1] = it->second ;  
+        it++ ; 
+    }
+    return a ; 
+}
+
+
+
+
+
+
+
+
+
+
+
 template<typename S>
 inline void NPX::DiscoMapFromArray( std::map<int, S>& m, const NP* a ){}
+
+template<typename S>
+inline void NPX::DiscoMapUnorderedFromArray( std::unordered_map<int, S>& m, const NP* a ){}
+
+
+
 
 template<>
 inline void NPX::DiscoMapFromArray( std::map<int, int>& m, const NP* a )
@@ -561,6 +801,33 @@ inline void NPX::DiscoMapFromArray( std::map<int, int>& m, const NP* a )
     }
 }
 
+
+template<>
+inline void NPX::DiscoMapUnorderedFromArray( std::unordered_map<int, int>& m, const NP* a )
+{
+    assert( a && a->uifc == 'i' && a->ebyte == 4 && a->shape.size() == 2 ); 
+    int ni = a->shape[0] ; 
+    int nj = a->shape[1] ;
+    assert( nj == 2 );  
+
+    const int* aa = a->cvalues<int>(); 
+    for(int i=0 ; i < ni ; i++)
+    {
+        int k = aa[i*nj+0] ;  
+        int v = aa[i*nj+1] ;  
+        m[k] = v ;  
+    }
+}
+
+
+
+
+
+
+
+
+
+
 template<typename S>
 inline std::string NPX::DescDiscoMap( const std::map<int, S>& m )
 {
@@ -569,6 +836,18 @@ inline std::string NPX::DescDiscoMap( const std::map<int, S>& m )
     std::string s = ss.str();    
     return s ; 
 }
+
+template<typename S>
+inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int, S>& m )
+{
+    std::stringstream ss ; 
+    ss << "NPX::DescDiscoMapUnordered" << std::endl << " m.size " << m.size() ; 
+    std::string s = ss.str();    
+    return s ; 
+}
+
+
+
 
 template<>
 inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
@@ -586,6 +865,33 @@ inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
     std::string s = ss.str();    
     return s ; 
 }
+
+
+template<>
+inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int,int>& m )
+{
+    int ni = m.size() ; 
+    typedef std::unordered_map<int,int> MII ; 
+    MII::const_iterator it = m.begin(); 
+    std::stringstream ss ; 
+    ss << "NPX::DescDiscoMapUnordered" << std::endl << " m.size " << ni << std::endl ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        ss << "( " << it->first << " : " << it->second << " ) " << std::endl ;   
+        it++ ; 
+    }
+    std::string s = ss.str();    
+    return s ; 
+}
+
+
+
+
+
+
+
+
+
 
 
 

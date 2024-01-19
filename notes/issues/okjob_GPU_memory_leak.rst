@@ -1,6 +1,26 @@
 okjob_GPU_memory_leak
 =======================
 
+
+Speeddial
+-------------
+
+::
+
+   nvidia-smi -lms 500    # every half second  
+
+
+
+Strategy
+-------------
+
+GPU memory monitoring is coarser than CPU and done separately 
+so the approach is very different to CPU where can just add more
+profiling stamps to find where memory gets consumed. 
+
+Have to adopt indirect approaches. Start by trying to get 
+a QEvent test to exhibit the GPU memory leak. 
+
 Overview
 ----------
 
@@ -14,7 +34,7 @@ Most likely culprits, as more dynamic allocation handling are:
   this has plenty of both gensteps and hits 
 
 * "TEST=large_scan cxs_min.sh" torch running does not leak, this has millions of hits but only one small genstep 
-  suggesting hit handling is OK
+  suggesting hit handling is OK : so genstep handling is under suspicion
 
 
 
@@ -27,11 +47,178 @@ Most likely culprits, as more dynamic allocation handling are:
     Out[2]: 55.55555555555556
 
 
+::
+
+   MEMCHECK=1 BP="cudaMalloc cudaFree" ~/o/cxs_min.sh 
+
+
+
+TODO : implement input genstep running from a file path pattern 
+-----------------------------------------------------------------
+
+::
+
+    193 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
+    194 
+    195     igs=$BASE/jok-tds/ALL0/A000/genstep.npy
+    196     # TODO: impl handling a sequence of input genstep 
+    197     export OPTICKS_INPUT_GENSTEP=$igs
+    198     [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
+    199 
+
+
+
+
+review from top
+-----------------
+
+::
+
+    G4CXOpticks::simulate
+    QSim::simulate
+       SEvt::beginOfEvent
+       QEvent::setGenstep
+       CSGOptiX::simulate_launch
+       SEvt::gather
+       SEvt::reset   (when reset:true)
+          SEvt::endOfEvent
+
+    
+HMM : pure opticks input genstep run would be good for faster interation
+--------------------------------------------------------------------------
+
+
+
+smonitor.sh run of okjob.sh shows 0.003 GB/s leak
+----------------------------------------------------
+
+Workstation::
+
+    GDB=1 ~/j/okjob.sh 
+    ~/o/sysrap/smonitor.sh 
+
+Laptop::
+
+    ~/o/sysrap/smonitor.sh grab
+    ~/o/sysrap/smonitor.sh ana
+
+
+Getting okjob.sh going on N
+-----------------------------
+
+* had to rename /hpcfs to /old_hpcfs
+* getting scrubbing of terminal output by somthing running after the primary job (sreport perhaps?)
+* hit handling SEGV at end of job 
+* adhoc leak check with "nvidia-smi -lms 1000"    does show leak : but arduous (3min init, and have to watch 
+  as terminal output getting scrubbed
+ 
+::
+
+    GDB=1 ~/j/okjob.sh   ## delays the scrubbing 
 
 
 ::
 
-   MEMCHECK=1 BP="cudaMalloc cudaFree" ~/o/cxs_min.sh 
+    egin of Event --> 116
+    2024-01-19 15:32:27.108 INFO  [306385] [QSim::simulate@376]  eventID 116 dt    0.009264 ph       9204 ph/M          0 ht       1748 ht/M          0 reset_ NO 
+    2024-01-19 15:32:27.133 INFO  [306385] [SEvt::save@3953] /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/A116 [genstep,hit]
+    junoSD_PMT_v2::EndOfEvent eventID 116 opticksMode 1 hitCollection 1748 hcMuon 0 GPU YES
+    hitCollectionTT.size: 0	userhitCollectionTT.size: 0
+    junotoptask:DetSimAlg.DataModelWriterWithSplit.EndOfEventAction  INFO: writing events with split begin. 2024-01-19 07:32:27.134933000Z
+    junotoptask:DetSimAlg.DataModelWriterWithSplit.EndOfEventAction  INFO: writing events with split end. 2024-01-19 07:32:27.137078000Z
+    junotoptask:DetSimAlg.execute   INFO: DetSimAlg Simulate An Event (117) 
+    junoSD_PMT_v2::Initialize eventID 117
+    Begin of Event --> 117
+    2024-01-19 15:32:27.148 INFO  [306385] [QSim::simulate@376]  eventID 117 dt    0.009222 ph       8753 ph/M          0 ht       1673 ht/M          0 reset_ NO 
+    2024-01-19 15:32:27.172 INFO  [306385] [SEvt::save@3953] /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/A117 [genstep,hit]
+    junoSD_PMT_v2::EndOfEvent eventID 117 opticksMode 1 hitCollection 1673 hcMuon 0 GPU YES
+    hitCollectionTT.size: 0	userhitCollectionTT.size: 0
+    junotoptask:DetSimAlg.DataModelWriterWithSplit.EndOfEventAction  INFO: writing events with split begin. 2024-01-19 07:32:27.173474000Z
+
+    Thread 1 "python" received signal SIGSEGV, Segmentation fault.
+    0x00007fffc8288da5 in DataModelWriterWithSplit::fill_hits(JM::SimEvt*, G4Event const*) () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/junosw/InstallArea/lib64/libAnalysisCode.so
+    (gdb) 
+
+
+    #0  0x00007fffc8288da5 in DataModelWriterWithSplit::fill_hits(JM::SimEvt*, G4Event const*) ()
+       from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/junosw/InstallArea/lib64/libAnalysisCode.so
+    #1  0x00007fffc828abf9 in DataModelWriterWithSplit::EndOfEventAction(G4Event const*) ()
+       from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/junosw/InstallArea/lib64/libAnalysisCode.so
+    #2  0x00007fffc7f27558 in MgrOfAnaElem::EndOfEventAction(G4Event const*) ()
+       from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/junosw/InstallArea/lib64/libDetSimAlg.so
+    #3  0x00007fffd1164242 in G4EventManager::DoProcessing(G4Event*) ()
+       from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4event.so
+    #4  0x00007fffc8403630 in G4SvcRunManager::SimulateEvent(int) () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/junosw/InstallArea/lib64/libG4SvcLib.so
+    #5  0x00007fffc7f1d63a in DetSimAlg::execute() () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/junosw/InstallArea/lib64/libDetSimAlg.so
+    #6  0x00007fffd4e3e511 in Task::execute() () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/sniper/InstallArea/lib64/libSniperKernel.so
+    #7  0x00007fffd4e42c1d in TaskWatchDog::run() () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/sniper/InstallArea/lib64/libSniperKernel.so
+    #8  0x00007fffd4e3e0b4 in Task::run() () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/sniper/InstallArea/lib64/libSniperKernel.so
+    #9  0x00007fffd4ef8943 in boost::python::objects::caller_py_function_impl<boost::python::detail::caller<bool (Task::*)(), boost::python::default_call_policies, boost::mpl::vector2<bool, Task&> > >::operator()(_object*, _object*) () from /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/sniper/InstallArea/python/Sniper/libSniperPython.so
+    #10 0x00007fffd4de65d5 in boost::python::objects::function::call(_object*, _object*) const ()
+
+
+    
+HUH, typing "bt" caused the scrubbing too. Some TERM messup ?   
+But when the error is avoided by switching off edm get no scrubbing. 
+
+
+
+
+Thrust Memory Management
+--------------------------
+
+* https://stackoverflow.com/questions/59265053/using-thrust-functions-with-raw-pointers-controlling-the-allocation-of-memory
+
+ Checking code : i see no obvious mistakes. 
+
+
+
+okjob.sh : terminal output is getting scrubbed
+------------------------------------------------
+
+::
+
+      45608 sid    32396
+      45609 sid    32397
+      45610 sid    32398
+      45611 sid    32399
+    ]]stree::postcreate
+    sdevice::Load failed read from  dirpath_ /hpcfs/juno/junogpu/blyth/.opticks/scontext dirpath /hpcfs/juno/junogpu/blyth/.opticks/scontext path /hpcfs/juno/junogpu/blyth/.opticks/scontext/sdevice.bin
+    sdevice::Load failed read from  dirpath_ /hpcfs/juno/junogpu/blyth/.opticks/scontext dirpath /hpcfs/juno/junogpu/blyth/.opticks/scontext path /hpcfs/juno/junogpu/blyth/.opticks/scontext/sdevice.bin
+    2024-01-19 15:06:29.294 FATAL [226832] [QRng::Load@79]  unabled to open file [/hpcfs/juno/junogpu/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin]
+    2024-01-19 15:06:29.294 ERROR [226832] [QRng::Load@80] 
+    QRng::Load_FAIL_NOTES
+    =======================
+
+    QRng::Load failed to load the curandState files. 
+    These files should to created during *opticks-full* installation 
+    by the bash function *opticks-prepare-installation* 
+    which runs *qudarap-prepare-installation*. 
+
+    Investigate by looking at the contents of the curandState directory, 
+    as shown below::
+
+        epsilon:~ blyth$ ls -l  ~/.opticks/rngcache/RNG/
+        total 892336
+        -rw-r--r--  1 blyth  staff   44000000 Oct  6 19:43 QCurandState_1000000_0_0.bin
+        -rw-r--r--  1 blyth  staff  132000000 Oct  6 19:53 QCurandState_3000000_0_0.bin
+        epsilon:~ blyth$ 
+
+
+
+    python: /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120_opticks/Pre-Release/J23.1.0-rc6/opticks/qudarap/QRng.cc:81: static curandState* QRng::Load(long int&, const char*): Assertion `!failed' failed.
+     *** Break *** abort
+
+
+
+
+QEventTest::setGenstep_many : NOT LEAKING
+-------------------------------------------
+
+Simple check shows no leak, staying at 653MiB throughout 
+
+1. ~/o/qudarap/tests/QEventTest.sh
+2. nvidia-smi -lms 500    # every half second  
 
 
 gdb investigate
