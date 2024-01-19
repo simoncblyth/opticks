@@ -192,7 +192,8 @@ export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
 
-    igs=$BASE/jok-tds/ALL0/A000/genstep.npy 
+    #igs=$BASE/jok-tds/ALL0/A000/genstep.npy 
+    igs=$BASE/jok-tds/ALL0/A%0.3d/genstep.npy 
     # TODO: impl handling a sequence of input genstep 
     export OPTICKS_INPUT_GENSTEP=$igs
     [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1

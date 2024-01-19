@@ -34,7 +34,7 @@ Most likely culprits, as more dynamic allocation handling are:
   this has plenty of both gensteps and hits 
 
 * "TEST=large_scan cxs_min.sh" torch running does not leak, this has millions of hits but only one small genstep 
-  suggesting hit handling is OK
+  suggesting hit handling is OK : so genstep handling is under suspicion
 
 
 
@@ -53,6 +53,56 @@ Most likely culprits, as more dynamic allocation handling are:
 
 
 
+TODO : implement input genstep running from a file path pattern 
+-----------------------------------------------------------------
+
+::
+
+    193 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
+    194 
+    195     igs=$BASE/jok-tds/ALL0/A000/genstep.npy
+    196     # TODO: impl handling a sequence of input genstep 
+    197     export OPTICKS_INPUT_GENSTEP=$igs
+    198     [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
+    199 
+
+
+
+
+review from top
+-----------------
+
+::
+
+    G4CXOpticks::simulate
+    QSim::simulate
+       SEvt::beginOfEvent
+       QEvent::setGenstep
+       CSGOptiX::simulate_launch
+       SEvt::gather
+       SEvt::reset   (when reset:true)
+          SEvt::endOfEvent
+
+    
+HMM : pure opticks input genstep run would be good for faster interation
+--------------------------------------------------------------------------
+
+
+
+smonitor.sh run of okjob.sh shows 0.003 GB/s leak
+----------------------------------------------------
+
+Workstation::
+
+    GDB=1 ~/j/okjob.sh 
+    ~/o/sysrap/smonitor.sh 
+
+Laptop::
+
+    ~/o/sysrap/smonitor.sh grab
+    ~/o/sysrap/smonitor.sh ana
+
+
 Getting okjob.sh going on N
 -----------------------------
 
@@ -64,7 +114,7 @@ Getting okjob.sh going on N
  
 ::
 
-    GDB=1 ~/j/okjob.sh   ## avoids the scrubbing 
+    GDB=1 ~/j/okjob.sh   ## delays the scrubbing 
 
 
 ::
@@ -109,12 +159,8 @@ Getting okjob.sh going on N
 
     
 HUH, typing "bt" caused the scrubbing too. Some TERM messup ?   
+But when the error is avoided by switching off edm get no scrubbing. 
 
-
-
-
-
- 
 
 
 

@@ -170,7 +170,9 @@ struct SYSRAP_API SEventConfig
     static unsigned SaveComp(); 
 
     static float PropagateEpsilon(); 
-    static const char* InputGenstep(); 
+
+    static const char* _InputGenstepPath(int idx=-1); 
+    static const char* InputGenstep(int idx=-1); 
     static const char* InputPhoton(); 
     static const char* InputPhotonFrame(); 
 

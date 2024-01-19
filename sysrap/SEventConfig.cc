@@ -242,7 +242,16 @@ unsigned SEventConfig::SaveComp(){    return _SaveComp ; }
 
 float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
 
-const char* SEventConfig::InputGenstep(){   return _InputGenstep ; }
+
+const char* SEventConfig::_InputGenstepPath(int idx)
+{
+    std::string str = sstr::Format_(_InputGenstep, idx ) ; 
+    return strdup(str.c_str()) ; 
+}
+const char* SEventConfig::InputGenstep(int idx)
+{
+    return ( idx == -1 || _InputGenstep == nullptr ) ? _InputGenstep : _InputGenstepPath(idx) ; 
+}
 const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
 const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 
