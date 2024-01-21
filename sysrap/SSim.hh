@@ -149,8 +149,10 @@ public:
 
     static std::string GetItemDigest( const NP* bnd, int i, int j, int w ); 
     bool   findName( int& i, int& j, const char* qname ) const ; 
-
-
+public:
+    void set_extra(const char * k , const NP* f );
+    const NP* get_extra(const char * k ) const;
+    static void AddMultiFilm(const char* k, const NP* f);
 };
 
 

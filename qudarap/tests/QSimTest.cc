@@ -260,20 +260,21 @@ void QSimTest::prop_lookup( int iprop, T x0, T x1, unsigned nx )
 void QSimTest::multifilm_lookup_all(){
 
     /*
-     sample.npy : num * 8 array 
-      
-      pmtType , bnd , wavelength , aoi , R_s, T_s , R_p, T_p ,           
+     test_texture.npy :  (height, width,2,4)
+     
+	  2*4 : means quad2 type: 
+      pmtType , wv_nm , aoi , undefined;
+	  R_s,      T_s ,   R_p,  T_p      ;
      */
-    NP * sample = NP::Load("/tmp/debug_multi_film_table/","sample.npy");
+    NP * sample = NP::Load("/tmp/debug_multi_film_table/","test_texture.npy");
        
     assert(sample);
-    float * h_sample = sample->values<float>();
+    quad2 * h_quad2_sample = (quad2*)sample->values<float>();
     
-    unsigned num_item = sample->shape[1];
-    unsigned num_sample = sample->shape[0];
      
-    unsigned width = 512 ;
-    unsigned height= num_sample/width;
+    unsigned height= sample->shape[0];
+    unsigned width = sample->shape[1];
+    unsigned num_sample = height*width;
     std::cout<<"  width  = "<< width
              <<"  height = "<< height
              <<"  num_sample ="<< num_sample
@@ -281,43 +282,24 @@ void QSimTest::multifilm_lookup_all(){
    
     assert( height*width == num_sample);
     // convert float to quad2  
-    
-    quad2 h_quad2_sample[num_sample];
-    for(unsigned i = 0 ; i < num_sample ; i++){
-        h_quad2_sample[i].q0.u.x = (unsigned) h_sample[num_item*i+0];
-        h_quad2_sample[i].q0.u.y = (unsigned) h_sample[num_item*i+1];
-                      // SCB :    ^^^^ this is casting when should be reinterpreting ?                                                
 
-        h_quad2_sample[i].q0.f.z =  h_sample[num_item*i+2];
-        h_quad2_sample[i].q0.f.w =  h_sample[num_item*i+3];
-        h_quad2_sample[i].q1.f.x =  h_sample[num_item*i+4];
-        h_quad2_sample[i].q1.f.y =  h_sample[num_item*i+5];
-        h_quad2_sample[i].q1.f.z =  h_sample[num_item*i+6];
-        h_quad2_sample[i].q1.f.w =  h_sample[num_item*i+7];
-   }   
-
-
-   quad2 h_quad2_result[num_sample];
-
+   	quad2 h_quad2_result[num_sample];
     qs->multifilm_lookup_all(  h_quad2_sample ,  h_quad2_result ,  width,  height );
 
     assert(h_quad2_result);
-    NP * result = NP::Make<float>(width*height , num_item);
-    float* output =  result->values<float>();
+    NP * result = NP::Make<float>(height,width , 4);
+    float4* output = (float4*) result->values<float>();
     // convert quad2 to float
-    
-    for(unsigned i = 0 ; i < num_sample; i++){
-         output[i*num_item+0] =(float)(h_quad2_result[i].q0.u.x);
-         output[i*num_item+1] =(float)(h_quad2_result[i].q0.u.y);
-         output[i*num_item+2] = h_quad2_result[i].q0.f.z;
-         output[i*num_item+3] = h_quad2_result[i].q0.f.w;
-         output[i*num_item+4] = h_quad2_result[i].q1.f.x;
-         output[i*num_item+5] = h_quad2_result[i].q1.f.y;
-         output[i*num_item+6] = h_quad2_result[i].q1.f.z;
-         output[i*num_item+7] = h_quad2_result[i].q1.f.w;
-    }   
-        
 
+	for(unsigned i = 0 ; i < height ; i++){
+		for(unsigned j = 0 ; j < width ; j++ ){
+			unsigned index = i*width + j;
+			output[index].x = h_quad2_result[index].q1.f.x;
+			output[index].y = h_quad2_result[index].q1.f.y;
+			output[index].z = h_quad2_result[index].q1.f.z;
+			output[index].w = h_quad2_result[index].q1.f.w;
+		}
+	}
     result->save("$FOLD/multifilm_lut_result.npy");
 }
 

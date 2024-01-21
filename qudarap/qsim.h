@@ -102,7 +102,7 @@ struct qsim
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) 
-    QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi);
+    QSIM_METHOD float4  multifilm_lookup(unsigned pmtType, float nm, float aoi);
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND )  || defined(MOCK_CUDA)
@@ -387,9 +387,9 @@ qsim::multifilm_lookup
  
 */
 
-inline QSIM_METHOD float4 qsim::multifilm_lookup(unsigned pmtType, unsigned boundary, float nm, float aoi)
+inline QSIM_METHOD float4 qsim::multifilm_lookup(unsigned pmtType, float nm, float aoi)
 {
-    float4 value = multifilm->lookup(pmtType, boundary, nm, aoi);
+    float4 value = multifilm->lookup(pmtType, nm, aoi);
     return value;
 }
 
@@ -1526,53 +1526,85 @@ TODO:
 #if defined(__CUDACC__) || defined(__CUDABE__) 
 inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
 { 
-    sphoton& p = ctx.p ; 
-    sstate& s = ctx.s ;  
+   
+	const float one = 1.0f; 
+    const sphoton& p = ctx.p ; 
+    const float3* normal = (float3*)&ctx.prd->q0.f.x ; 
+    int   lpmtid = ctx.prd->identity() - 1 ;  // identity comes from optixInstance.instanceId where 0 means not-a-sensor
 
-    const float& n1 = s.material1.x ; 
-    const float& n2 = s.material2.x ;    
-    const float eta = n1/n2 ;  
+    float minus_cos_theta = dot(p.mom, *normal); 
+    int pmtcat = pmt->get_lpmtcat(lpmtid);
+    float wv_nm = p.wavelength;
 
-    const float3* normal = ctx.prd->normal() ;
-    const float _c1 = dot(p.mom,(*normal));
-    const float3 oriented_normal = _c1 < 0.f ? (*normal) : -(*normal) ;
+    float4 RsTsRpTp = multifilm->lookup(pmtcat, wv_nm, minus_cos_theta);
+  
+    //sstate& s = ctx.s ;  
 
-    const float c1 = fabs(_c1) ;  
-    const float s1 = sqrtf(1.f-c1*c1);
+    //const float& n1 = s.material1.x ; 
+    //const float& n2 = s.material2.x ;    
+    //const float eta = n1/n2 ;  
+
+    //const float3* normal = ctx.prd->normal() ;
+    //const float _c1 = dot(p.mom,(*normal));
+    //const float3 oriented_normal = _c1 < 0.f ? (*normal) : -(*normal) ;
+
+    const float c1 = fabs(minus_cos_theta) ;  
+    const float s1 = sqrtf(one -c1*c1);
 
     float EsEs = s1 > 0.f ? dot(p.pol, cross( p.mom, *normal))/s1 : 0. ;
     EsEs *= EsEs;   //   orienting normal doesnt matter as squared : this is S_vs_P power fraction
 
 
-    unsigned boundaryIdx = _c1 < 0.f ? 0u : 1u ; // if _c1 < 0 , thus the photon position is in glass ( kInGlass = 0 ) . 
-    unsigned pmtType = 0u ;  //Fix me the pmtType need to find  
-    float wavelength = p.wavelength ; 
+    //unsigned boundaryIdx = _c1 < 0.f ? 0u : 1u ; // if _c1 < 0 , thus the photon position is in glass ( kInGlass = 0 ) . 
+    //unsigned pmtType = 0u ;  //Fix me the pmtType need to find  
+    //float wavelength = p.wavelength ; 
     //boundaryIdx = 1u ;//just use to test
      
-    float4 RsTsRpTp = multifilm->lookup(pmtType, boundaryIdx, wavelength, c1);
    
     float3 ART ;
-    ART.z = RsTsRpTp.y*EsEs + RsTsRpTp.w*(1.f - EsEs);
-    ART.y = RsTsRpTp.x*EsEs + RsTsRpTp.z*(1.f - EsEs);
-    ART.x = 1.f - (ART.y+ART.z);
+    ART.z = RsTsRpTp.y*EsEs + RsTsRpTp.w*(one - EsEs);
+    ART.y = RsTsRpTp.x*EsEs + RsTsRpTp.z*(one - EsEs);
+    ART.x = one - (ART.y+ART.z);
 
     const float& A = ART.x ; 
-    const float& R = ART.y ; 
-    //const float& T = ART.z ; 
+    //const float& R = ART.y ; 
+    const float& T = ART.z ; 
 
 
-    float4 RsTsRpTpNormal = multifilm->lookup(pmtType, 0u, wavelength, 1.f ); 
-     // photon is in glass, aoi = 90deg cos_theta = 1.f
+    float4 RsTsRpTpNormal = multifilm->lookup(pmtcat, wv_nm, -one ); 
+    // photon is in glass, aoi = 90deg cos_theta = 1.f
 
     float3 ART_normal;
     ART_normal.z = 0.5f*(RsTsRpTpNormal.y + RsTsRpTpNormal.w); // T:0.5f*(Ts+Tp)
     ART_normal.y = 0.5f*(RsTsRpTpNormal.x + RsTsRpTpNormal.z); // R:0.5f*(Rs+Rp)
-    ART_normal.x = 1.f -(ART_normal.y + ART_normal.z) ;        // 1.f - (R+T) 
+    ART_normal.x = one -(ART_normal.y + ART_normal.z) ;        // 1.f - (R+T) 
 
     const float& An = ART_normal.x ;  
-    const float _qe = 0.0f;   // TODO: need to get _qe 
-    const float D = _qe/An ;
+    const float energy_eV = pmt->hc_eVnm/wv_nm ; 
+    const float _qe = pmt->get_lpmtcat_qe(pmtcat, energy_eV);   // TODO: need to get _qe 
+    //const float D = _qe/An ;
+    
+    const float& theAbsorption = A;
+    const float& theTransmittance = T/(one-A);
+    const float& theEfficiency = _qe/An; 
+    
+    float u_theAbsorption = curand_uniform(&rng);
+    int action = u_theAbsorption < theAbsorption  ? BREAK : CONTINUE ;
 
+    if( action == BREAK )
+    {
+        float u_theEfficiency = curand_uniform(&rng) ; 
+        flag = u_theEfficiency < theEfficiency ? SURFACE_DETECT : SURFACE_ABSORB ;  
+    }
+    else
+    {
+        propagate_at_boundary( flag, rng, ctx, theTransmittance  );  
+    } 
+    
+    //printf("//qsim.propagate_at_multifilm idx %d lpmtid %d ART ( %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n", 
+    //ctx.idx, lpmtid, ART.x, ART.y, ART.z, u_theAbsorption, action);   
+
+    return action ; 
     /* 
     HUH: why the complex math here ?  s1, eta are real so s2,c2 are real also 
 
@@ -1583,37 +1615,37 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
     cuComplex c2 = tcomplex::cuSqrtf( cuCsubf( one,s2s2) );
     */
 
-    const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
-    bool tir = c2c2 < 0.f ; 
-    const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f 
+    //const float c2c2 = 1.f - eta*eta*(1.f - c1 * c1 ) ;   // Snells law and trig identity 
+    //bool tir = c2c2 < 0.f ; 
+    //const float c2 = tir ? 0.f : sqrtf(c2c2) ;   // c2 chosen +ve, set to 0.f for TIR => reflection_coefficient = 1.0f 
 
-    // TODO: how to handle TIR, does the TMM stack calc already handle that ? 
+    //// TODO: how to handle TIR, does the TMM stack calc already handle that ? 
 
-    const float u0 = curand_uniform(&rng) ;
-    const float u1 = curand_uniform(&rng) ;
+    //const float u0 = curand_uniform(&rng) ;
+    //const float u1 = curand_uniform(&rng) ;
 
-    flag =  u0 < A ? 
-                      ( u1 < D ? SURFACE_DETECT : SURFACE_ABSORB )
-                   : 
-                      ( u0 < A + R ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ) 
-                   ; 
+    //flag =  u0 < A ? 
+    //                  ( u1 < D ? SURFACE_DETECT : SURFACE_ABSORB )
+    //               : 
+    //                  ( u0 < A + R ? BOUNDARY_REFLECT : BOUNDARY_TRANSMIT ) 
+    //               ; 
 
 
 
-    if(flag == BOUNDARY_REFLECT)
-    {
-        p.mom -= 2.f * dot( p.mom, oriented_normal)*oriented_normal ;
-        p.pol -= 2.f * dot( p.pol, oriented_normal)*oriented_normal ; // TODO: WHERE DOES THIS COME FROM ?
-    }
-    else if( flag == BOUNDARY_TRANSMIT )
-    {
-        p.mom = eta*p.mom + (eta*c1 - c2)*oriented_normal ;   // inherently normalized, see qsim.h:propagate_at_boundary
-        p.pol = normalize((p.pol - dot(p.pol,p.mom)*p.mom));  // TODO: WHERE DOES THIS COME FROM ?
-    }
+    //if(flag == BOUNDARY_REFLECT)
+    //{
+    //    p.mom -= 2.f * dot( p.mom, oriented_normal)*oriented_normal ;
+    //    p.pol -= 2.f * dot( p.pol, oriented_normal)*oriented_normal ; // TODO: WHERE DOES THIS COME FROM ?
+    //}
+    //else if( flag == BOUNDARY_TRANSMIT )
+    //{
+    //    p.mom = eta*p.mom + (eta*c1 - c2)*oriented_normal ;   // inherently normalized, see qsim.h:propagate_at_boundary
+    //    p.pol = normalize((p.pol - dot(p.pol,p.mom)*p.mom));  // TODO: WHERE DOES THIS COME FROM ?
+    //}
 
-    // TODO: compare these pol with propagate_at_boundary : maybe pull out some common code 
+    //// TODO: compare these pol with propagate_at_boundary : maybe pull out some common code 
 
-    return ( flag == SURFACE_DETECT || flag == SURFACE_ABSORB ) ? BREAK : CONTINUE ; 
+    //return ( flag == SURFACE_DETECT || flag == SURFACE_ABSORB ) ? BREAK : CONTINUE ; 
 }
 
 #endif
@@ -2234,6 +2266,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         {
 #if defined(WITH_CUSTOM4)
             command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
+            //command = propagate_at_multifilm(flag, rng, ctx ) ; 
 #endif
         }
     }

@@ -193,8 +193,8 @@ void QSim::UploadComponents( const SSim* ssim  )
         ; 
 
 
-/*
-    const NP* multifilm = ssim->get(snam::MULTIFILM); 
+
+    const NP* multifilm = ssim->get_extra(snam::MULTIFILM); 
     if(multifilm == nullptr)
     {
         LOG(LEVEL) << " multifilm null, snam::MULTIFILM " << snam::MULTIFILM ;
@@ -205,7 +205,7 @@ void QSim::UploadComponents( const SSim* ssim  )
         LOG(LEVEL) << mul->desc();
     }
     LOG(LEVEL) << "] ssim " << ssim ; 
-*/
+
 
 
 }
@@ -1041,6 +1041,7 @@ quad2* QSim::UploadFakePRD(const NP* ip, const NP* prd) // static
 
 
 /**
+
 QSim::fake_propagate (formerly mock_propagate)
 -----------------------------------------------
 

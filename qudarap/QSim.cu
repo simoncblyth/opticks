@@ -718,17 +718,16 @@ __global__ void _QSim_multifilm_lookup_all(qsim* sim, quad2* sample,  quad2* res
     if (ix >= width | iy >= height ) return;
     
     unsigned pmtType = sample[index].q0.u.x;
-    unsigned bnd =     sample[index].q0.u.y;
     
-    float    wv      = sample[index].q0.f.z;
-    float    aoi     = sample[index].q0.f.w;
+    float    wv      = sample[index].q0.f.y;
+    float    aoi     = sample[index].q0.f.z;
 
-    float4 res = sim->multifilm_lookup( pmtType , bnd , wv, aoi );
+    float4 res = sim->multifilm_lookup( pmtType , wv, aoi );
      
     result[index].q0.u.x = pmtType;
-    result[index].q0.u.y = bnd ;
-    result[index].q0.f.z = wv ;
-    result[index].q0.f.w = aoi;
+    result[index].q0.f.y = wv ;
+    result[index].q0.f.z = aoi;
+
     result[index].q1.f.x = res.x;
     result[index].q1.f.y = res.y;
     result[index].q1.f.z = res.z;

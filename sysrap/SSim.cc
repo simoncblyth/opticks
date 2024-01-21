@@ -307,6 +307,31 @@ void SSim::add_extra_subfold(const char* k, NPFold* f )
 }
 
 /**
+SSim::AddMultiFilm
+
+*/
+
+void SSim::AddMultiFilm(const char*k, const NP* f){
+
+
+    SSim* ss = CreateOrReuse(); 
+    LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not instanciated yet " ; 
+    if(ss == nullptr) return ; 
+    ss->set_extra(k, f); 
+}
+void SSim::set_extra(const char* k,  const NP* f){
+    assert(f);
+    if( extra == nullptr ) extra = new NPFold ; 
+    extra->add(k, f);  
+    
+}
+
+const NP* SSim::get_extra(const char* k) const{
+
+    return extra ? extra->get(k) : nullptr ; 
+    
+}
+/**
 SSim::save
 ------------
 
