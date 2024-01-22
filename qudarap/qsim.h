@@ -1580,10 +1580,12 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
     ART_normal.x = one -(ART_normal.y + ART_normal.z) ;        // 1.f - (R+T) 
 
     const float& An = ART_normal.x ;  
-    const float energy_eV = pmt->hc_eVnm/wv_nm ; 
-    const float _qe = pmt->get_lpmtcat_qe(pmtcat, energy_eV);   // TODO: need to get _qe 
-    //const float D = _qe/An ;
+    const float energy_eV = pmt->hc_eVnm/wv_nm ;
+    const float qe_scale = pmt->get_qescale(lpmtid); 
+    const float qe_shape = pmt->get_lpmtcat_qe(pmtcat, energy_eV);
     
+    const float _qe = minus_cos_theta > 0. ? 0.0 : qe_scale * qe_shape;   // TODO: need to get _qe 
+
     const float& theAbsorption = A;
     const float& theTransmittance = T/(one-A);
     const float& theEfficiency = _qe/An; 
@@ -2265,8 +2267,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         else if( ems == smatsur_Surface_zplus_sensor_CustomART )
         {
 #if defined(WITH_CUSTOM4)
-            command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
-            //command = propagate_at_multifilm(flag, rng, ctx ) ; 
+            //command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
+            command = propagate_at_multifilm(flag, rng, ctx ) ; 
 #endif
         }
     }
