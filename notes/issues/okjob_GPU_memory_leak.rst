@@ -83,19 +83,94 @@ review from top
        SEvt::reset   (when reset:true)
           SEvt::endOfEvent
 
+
+
+
+
     
-HMM : pure opticks input genstep run would be good for faster interation
---------------------------------------------------------------------------
+DONE : added pure opticks input genstep running 
+------------------------------------------------
+
+* adhoc look at nvidia-smi -l 1 during ~/o/CSGOptiX/cxs_min_igs.sh suggests 
+  GPU leak is still apparent with input genstep running
+
+* advantage of course is <1s init time and a lot less code being run
+
+* with QSim__simulate_DEBUG_SKIP_LAUNCH dont see the leak, so its not from QEvent::setGenstep
+
+  
 
 ::
 
-    epsilon:opticks blyth$ opticks-f SEventConfig::InputGenstep
-    ./sysrap/SEventConfig.cc:const char* SEventConfig::InputGenstep(int idx)
-    ./sysrap/tests/SEventConfigTest.cc:        const char* path = SEventConfig::InputGenstep(idx) ; 
-    ./sysrap/SEvt.cc:    const char* spec = SEventConfig::InputGenstep(); 
-    ./sysrap/SEvt.cc:    const char* ig = SEventConfig::InputGenstep() ; 
-    ./sysrap/SEvt.cc:    ss << std::setw(c1) << " SEventConfig::InputGenstep "      << div << ( ig  ? ig  : "-" ) << std::endl ; 
-    epsilon:opticks blyth$ 
+     01 #!/bin/bash -l 
+      2 usage(){ cat << EOU
+      3 cxs_min_igs.sh
+      4 ===============
+      5 
+      6 ::
+      7 
+      8    ~/o/CSGOptiX/cxs_min_igs.sh 
+      9 
+     10 * skipping the launch, dont see the leak : GPU mem stays 1283 MiB
+     11 * with the launch, clear continuous growth from 1283 MiB across 1000 evt 
+     12 * skipping the gather only (not the launch) still leaking the same
+     13 
+     14 EOU
+     15 }
+
+
+
+ 
+
+review the cxs_min.sh code
+-----------------------------
+
+
+::
+
+     174 int CSGOptiX::SimulateMain() // static
+     175 {
+     176     SProf::Add("CSGOptiX__SimulateMain_HEAD");
+     177     SEventConfig::SetRGModeSimulate();
+     178     CSGFoundry* fd = CSGFoundry::Load();
+     179     CSGOptiX* cx = CSGOptiX::Create(fd) ;
+     180     for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i);
+     181     SProf::UnsetTag();
+     182     SProf::Add("CSGOptiX__SimulateMain_TAIL");
+     183     SProf::Write("run_meta.txt", true ); // append:true 
+     184     cx->write_Ctx_log();
+     185     return 0 ;
+     186 }
+
+
+     669 double CSGOptiX::simulate(int eventID)
+     670 {
+     671     SProf::SetTag(eventID, "A%0.3d_" ) ;
+     672     assert(sim);
+     673     bool end = true ;
+     674     double dt = sim->simulate(eventID, end) ; // (QSim)
+     675     return dt ;
+     676 }
+
+
+
+
+::
+
+    N[blyth@localhost opticks]$ git log -n2
+    commit 1761e9e4b69c3fd85eea7be8892dc59d1cdea255 (HEAD -> master, origin/master, origin/HEAD)
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Jan 22 13:42:59 2024 +0800
+
+        implement running from a sequence of input gensteps such that cxs_min_igs.sh can redo the pure Opticks GPU optical propagation for gensteps persisted from a prior Geant4+Opticks eg okjob/jok-tds job
+
+    commit 507af61007daec200c3f0a912490950f3c910fba
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Jan 22 12:08:46 2024 +0800
+
+        add NPFold::set_allowempty_r to address opticks/notes/issues/avoiding_NPFold_save_of_empties_has_consequences_for_Galactic_material_with_no_props.rst used from U4Material::MakePropertyFold
+    N[blyth@localhost opticks]$ 
+
 
 
 

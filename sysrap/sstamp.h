@@ -99,6 +99,20 @@ inline void sstamp::sleep(int seconds)
     std::this_thread::sleep_for( dura );
 }
 
+/**
+sstamp::sleep_us
+------------------
+
++--------------+--------------+
+| microseconds |   seconds    |
++==============+==============+
+| 1,000,000    |  1           |
++--------------+--------------+
+|   100,000    |  0.1         |
++--------------+--------------+
+
+**/
+
 inline void sstamp::sleep_us(int us)
 {
     std::chrono::microseconds dura(us);

@@ -47,7 +47,46 @@ OptiX 7.5 SDK
    cp -r /cvmfs/opticks.ihep.ac.cn/external/NVIDIA-OptiX-SDK-7.5.0-linux64-x86_64 /data/blyth/
 
 
+Forum Tips
+-----------
 
+
+* https://forums.developer.nvidia.com/t/optix-7-5-memory-access-problem/250890/16
+
+
+If the optixLaunch and the native CUDA kernels run on the same CUDA stream,
+there is no need to synchronize between them. CUDA will automatically execute
+the kernels in the order they have been submitted to the stream.
+
+The crucial parts missing in your loop are how the actual data transport
+between host and device happens for the rays and the results. That’s where
+potential synchronizations are either necessary or could be avoided as well.
+
+Note that there exist synchronous and asynchronous CUDA memcpy functions, but a
+lot of care has to be taken when using asynchronous memcpy operations to have
+the correct data inside the host memory locations at the time the asynchronous
+memcpy actually happens!
+
+If all host memory pointers (source data and result data) are in disjunct
+memory locations the whole loop could run using asynchronous calls and you
+would only need to synchronize once at the end of the algorithm to make sure
+the result data has finished copying.
+
+I would recommend implementing the data transport with synchronous CUDA memcpy
+calls first to get the algorithm working.
+
+Afterwards analyze the performance with Nsight Systems and determine if it’s
+possible to change to asynchronous memcpy operations correctly and analyze the
+performance again.
+
+Once that is all working use Nsight Compute and analyze your OptiX and native
+CUDA kernels to see if they could also be optimized.
+
+> Can you tell me some sample code that shows the interoperability of a native
+> CUDA kernel with OptiX?
+
+The OptiX SDK example optixRaycasting is using OptiX only to do ray-triangle
+intersections.  Ray generation and shading happens in native CUDA kernels.
 
 
 

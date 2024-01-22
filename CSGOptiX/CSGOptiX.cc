@@ -670,8 +670,8 @@ double CSGOptiX::simulate(int eventID)
 {
     SProf::SetTag(eventID, "A%0.3d_" ) ; 
     assert(sim); 
-    bool end = true ;  
-    double dt = sim->simulate(eventID, end) ; // (QSim)
+    bool reset = true ;   // reset:true calls SEvt::endOfEvent for cleanup after simulate 
+    double dt = sim->simulate(eventID, reset) ; // (QSim)
     return dt ; 
 }
 
@@ -974,6 +974,8 @@ Depending on params.raygenmode the "render" or "simulate" method is called.
 
 double CSGOptiX::launch()
 {
+    bool DEBUG_SKIP_LAUNCH = ssys::getenvbool("CSGOptiX__launch_DEBUG_SKIP_LAUNCH") ;
+
     prepareParam(); 
     if(raygenmode != SRG_RENDER) assert(event) ; 
 
@@ -998,20 +1000,24 @@ double CSGOptiX::launch()
          << " width " << width 
          << " height " << height 
          << " depth " << depth
+         << " DEBUG_SKIP_LAUNCH " << ( DEBUG_SKIP_LAUNCH ? "YES" : "NO " ) 
          ;
 
 #if OPTIX_VERSION < 70000
     assert( width <= 1000000 ); 
     six->launch(width, height, depth ); 
 #else
-    CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
-    assert( d_param && "must alloc and upload params before launch"); 
-    CUstream stream;
-    CUDA_CHECK( cudaStreamCreate( &stream ) );
-    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
-    CUDA_SYNC_CHECK();    
-    // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
-    // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
+    if(DEBUG_SKIP_LAUNCH == false)
+    {
+        CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
+        assert( d_param && "must alloc and upload params before launch"); 
+        CUstream stream;
+        CUDA_CHECK( cudaStreamCreate( &stream ) );
+        OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+        CUDA_SYNC_CHECK();    
+        // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
+        // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
+    }
 #endif
 
     TP t1 = std::chrono::high_resolution_clock::now();
