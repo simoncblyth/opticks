@@ -10,8 +10,9 @@ cxs_min_igs.sh
 * skipping the launch, dont see the leak : GPU mem stays 1283 MiB
 * with the launch, clear continuous growth from 1283 MiB across 1000 evt 
 * skipping the gather only (not the launch) still leaking the same
+* OPTICKS_MAX_BOUNCE=0 ie only generate, seems no difference to leak 
 
-
+* TODO: early exit the launch, making it do "nothing" : does it still leak ?
 
 * https://forums.developer.nvidia.com/search?q=optix%20GPU%20memory%20leak%20
 
