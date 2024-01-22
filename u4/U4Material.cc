@@ -336,6 +336,13 @@ U4Material::MakePropertyFold
 Canonically invoked from U4Tree::convertMaterials
 with result going into st.material
 
+Note that NPFold::set_allowempty_r is invoked 
+after populating the material fold. 
+This allows the material fold and it subfold recursively 
+to be empty without supression. This is a workaround
+to avoid suppressing some converted Geant4 materials 
+that lack any properties (for example JUNO Galactic).  
+
 **/
 
 NPFold* U4Material::MakePropertyFold()
@@ -351,6 +358,7 @@ NPFold* U4Material::MakePropertyFold()
         NPFold* matfold = MakePropertyFold(mat) ; 
         fold->add_subfold( matname, matfold ); 
     }  
+    fold->set_allowempty_r(true); 
     return fold ; 
 }
 
