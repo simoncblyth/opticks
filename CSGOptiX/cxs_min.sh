@@ -64,7 +64,6 @@ export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export SCRIPT=$(basename $BASH_SOURCE)
 
-
 knobs()
 {
    type $FUNCNAME 
@@ -194,9 +193,13 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
 
     #igs=$BASE/jok-tds/ALL0/A000/genstep.npy 
     igs=$BASE/jok-tds/ALL0/A%0.3d/genstep.npy 
-    # TODO: impl handling a sequence of input genstep 
+    if [ "${igs/\%}" != "$igs" ]; then
+        igs0=$(printf "$igs" 0) 
+    else
+        igs0=$igs
+    fi 
+    [ ! -f "$igs0" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs0 $igs0 igs $igs && exit 1
     export OPTICKS_INPUT_GENSTEP=$igs
-    [ ! -f "$igs" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs $igs && exit 1
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then 
 

@@ -87,6 +87,18 @@ review from top
 HMM : pure opticks input genstep run would be good for faster interation
 --------------------------------------------------------------------------
 
+::
+
+    epsilon:opticks blyth$ opticks-f SEventConfig::InputGenstep
+    ./sysrap/SEventConfig.cc:const char* SEventConfig::InputGenstep(int idx)
+    ./sysrap/tests/SEventConfigTest.cc:        const char* path = SEventConfig::InputGenstep(idx) ; 
+    ./sysrap/SEvt.cc:    const char* spec = SEventConfig::InputGenstep(); 
+    ./sysrap/SEvt.cc:    const char* ig = SEventConfig::InputGenstep() ; 
+    ./sysrap/SEvt.cc:    ss << std::setw(c1) << " SEventConfig::InputGenstep "      << div << ( ig  ? ig  : "-" ) << std::endl ; 
+    epsilon:opticks blyth$ 
+
+
+
 
 
 smonitor.sh run of okjob.sh shows 0.003 GB/s leak

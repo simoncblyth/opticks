@@ -281,7 +281,7 @@ public:
     static const char* ResolveInputArray(const char* spec, const char* dir) ; 
     static NP* LoadInputArray(const char* path) ; 
 
-    static NP* LoadInputGenstep(); 
+    static NP* LoadInputGenstep(int idx); 
     static NP* LoadInputGenstep(const char* spec); 
 
     static NP* LoadInputPhoton(); 
@@ -293,6 +293,7 @@ public:
     void setInputGenstep(NP* g); 
     NP* getInputGenstep() const ; 
     bool hasInputGenstep() const ; 
+    bool hasInputGenstepPath() const ; 
 
 
     void initInputPhoton(); 

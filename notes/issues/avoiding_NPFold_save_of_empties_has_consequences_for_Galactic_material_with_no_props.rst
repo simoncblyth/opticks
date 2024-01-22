@@ -1,5 +1,30 @@
-avoiding_NPFold_save_of_empties_has_consequences_for_Galactic_material_with_no_props
-======================================================================================
+FIXED : avoiding_NPFold_save_of_empties_has_consequences_for_Galactic_material_with_no_props
+===============================================================================================
+
+
+FIXED ?
+---------
+
+::
+
+    epsilon:opticks blyth$ git log -n2
+    commit 507af61007daec200c3f0a912490950f3c910fba (HEAD -> master, origin/master, origin/HEAD)
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Jan 22 12:08:46 2024 +0800
+
+        add NPFold::set_allowempty_r to address opticks/notes/issues/avoiding_NPFold_save_of_empties_has_consequences_for_Galactic_material_with_no_props.rst used from U4Material::MakePropertyFold
+
+    commit 6c66ce012afb4162c89386244247e2c89638b2f0
+    Merge: 461bbc03f f2ffe12ac
+    Author: huyuxiang <huyuxiang@ihep.ac.cn>
+    Date:   Sun Jan 21 08:44:36 2024 +0000
+
+        Merged in master (pull request #4), big texture ART approach from Yuxiang
+
+
+
+issue
+-------
 
 
 ::
