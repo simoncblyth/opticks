@@ -150,6 +150,12 @@ PIP::PIP(const char* ptx_path_, const Properties* properties_ )
     init(); 
 }
 
+
+PIP::~PIP()
+{
+    destroy(); 
+}
+
 /**
 PIP::init
 -----------
@@ -169,6 +175,17 @@ void PIP::init()
 
     LOG(LEVEL)  << "]" ; 
 }
+
+
+void PIP::destroy()
+{
+    destroyPipeline(); 
+    destroyRaygenPG();
+    destroyMissPG();
+    destroyHitgroupPG();
+    destroyModule(); 
+}
+
 
 /**
 PIP::CreateModule
@@ -266,6 +283,12 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     return module ; 
 }
 
+void PIP::destroyModule()
+{
+    OPTIX_CHECK( optixModuleDestroy( module ) );
+}
+
+
 /**
 PIP::createRaygenPG
 ---------------------
@@ -278,10 +301,14 @@ Creates member raygen_pg
 
 void PIP::createRaygenPG()
 {
+    bool DUMMY = ssys::getenvbool("PIP__createRaygenPG_DUMMY"); 
+    LOG(LEVEL) << " DUMMY " << ( DUMMY ? "YES" : "NO " ) ; 
+
+
     OptixProgramGroupDesc desc    = {}; 
     desc.kind                     = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
     desc.raygen.module            = module;
-    desc.raygen.entryFunctionName = RG ;
+    desc.raygen.entryFunctionName = DUMMY ? RG_DUMMY : RG ;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
@@ -300,6 +327,13 @@ void PIP::createRaygenPG()
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
 }
+
+void PIP::destroyRaygenPG()
+{
+    OPTIX_CHECK( optixProgramGroupDestroy( raygen_pg ) );
+}
+
+
 
 /**
 PIP::createMissPG
@@ -333,6 +367,14 @@ void PIP::createMissPG()
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
 }
+
+void PIP::destroyMissPG()
+{
+    OPTIX_CHECK( optixProgramGroupDestroy( miss_pg ) );
+}
+
+
+
 
 /**
 PIP::createHitgroupPG
@@ -371,6 +413,11 @@ void PIP::createHitgroupPG()
 
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
+}
+
+void PIP::destroyHitgroupPG()
+{
+    OPTIX_CHECK( optixProgramGroupDestroy( hitgroup_pg ) );
 }
 
 
@@ -436,6 +483,11 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 
     if(sizeof_log > 0) std::cout << log << std::endl ; 
     assert( sizeof_log == 0); 
+}
+
+void PIP::destroyPipeline()
+{
+    OPTIX_CHECK( optixPipelineDestroy( pipeline ) );
 }
 
 

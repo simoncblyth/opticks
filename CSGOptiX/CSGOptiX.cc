@@ -161,6 +161,7 @@ int CSGOptiX::RenderMain() // static
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->render(); 
+    delete cx ; 
     return 0 ; 
 }
 int CSGOptiX::SimtraceMain()
@@ -169,6 +170,7 @@ int CSGOptiX::SimtraceMain()
     CSGFoundry* fd = CSGFoundry::Load(); 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     cx->simtrace(0); 
+    delete cx ; 
     return 0 ; 
 }
 int CSGOptiX::SimulateMain() // static
@@ -182,8 +184,12 @@ int CSGOptiX::SimulateMain() // static
     SProf::Add("CSGOptiX__SimulateMain_TAIL"); 
     SProf::Write("run_meta.txt", true ); // append:true 
     cx->write_Ctx_log(); 
+    delete cx ; 
     return 0 ; 
 }
+
+
+
 
 /**
 CSGOptiX::Main
@@ -379,8 +385,6 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 
 
 
-
-
 Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
 {
     LOG(LEVEL) << "[" ; 
@@ -400,6 +404,10 @@ void CSGOptiX::SetSCTX()
 
 std::string CSGOptiX::GetGPUMeta(){ return SCTX ? SCTX->brief() : "ERR-NO-CSGOptiX-SCTX" ; }
 
+CSGOptiX::~CSGOptiX()
+{
+    destroy(); 
+}
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
@@ -649,6 +657,17 @@ void CSGOptiX::initFrame()
 }
 
 
+void CSGOptiX::destroy()
+{
+    LOG(LEVEL); 
+#if OPTIX_VERSION < 70000
+#else
+    delete sbt ; 
+    delete pip ; 
+#endif
+}
+
+
 
 
 /**
@@ -659,7 +678,7 @@ NB the distinction between this and simulate_launch, this
 uses QSim::simulate to do genstep setup prior to calling 
 CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
 
-The QSim::simulate argument end:true is used in order 
+The QSim::simulate argument reset:true is used in order 
 to invoke SEvt::endOfEvent after the save, this is because
 at CSGOptiX level there us no need to allow the user to 
 copy hits or other content from SEvt elsewhere. 
@@ -969,6 +988,8 @@ CSGOptiX::launch
 
 For what happens next, see CSGOptiX7.cu::__raygen__rg OR CSGOptiX6.cu::raygen
 Depending on params.raygenmode the "render" or "simulate" method is called. 
+
+Using the default stream seems to avoid a memory leak of ~14kb for each launch
  
 **/
 
@@ -1011,9 +1032,19 @@ double CSGOptiX::launch()
     {
         CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
         assert( d_param && "must alloc and upload params before launch"); 
-        CUstream stream;
+
+        /*
+        // this way leaking 14kb for every launch 
+        CUstream stream ;
         CUDA_CHECK( cudaStreamCreate( &stream ) );
         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+        */
+
+        // Using the default stream seems to avoid 14k VRAM leak at every launch. 
+        // Does that mean every launch gets to use the same single default stream ?  
+        CUstream stream = 0 ;
+        OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+
         CUDA_SYNC_CHECK();    
         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
         // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  

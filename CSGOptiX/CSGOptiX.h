@@ -60,6 +60,9 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static int         SimulateMain();  // used by tests/CSGOptiXSMTest.cc 
     static int         Main();          // NOT USED
 
+
+
+
     static const char* Desc(); 
 
     static const char* TOP ; 
@@ -119,6 +122,7 @@ public:
     static void SetSCTX(); 
     static std::string GetGPUMeta(); 
 
+    virtual ~CSGOptiX(); 
     CSGOptiX(const CSGFoundry* foundry ); 
 
 private:
@@ -134,6 +138,8 @@ private:
     void initRender();
     void initSimulate();
     void initFrame(); 
+ public: 
+    void destroy(); 
  private: 
     void setTop(const char* tspec); 
  public: 

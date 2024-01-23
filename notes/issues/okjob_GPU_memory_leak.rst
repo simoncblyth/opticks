@@ -120,6 +120,47 @@ DONE : added pure opticks input genstep running
 
 
 
+Look at OptiX SDK examples to see what I am doing differently
+----------------------------------------------------------------
+
+/Developer/OptiX_750/SDK/optixRaycasting/optixRaycasting.cpp::
+
+    291 void launch( RaycastingState& state )
+    292 {
+    293     CUstream stream_1 = 0;
+    294     CUstream stream_2 = 0;
+    295     CUDA_CHECK( cudaStreamCreate( &stream_1 ) );
+    296     CUDA_CHECK( cudaStreamCreate( &stream_2 ) );
+    297 
+    298     Params* d_params            = 0;
+    299     Params* d_params_translated = 0;
+    300     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_params ), sizeof( Params ) ) );
+    301     CUDA_CHECK( cudaMemcpyAsync( reinterpret_cast<void*>( d_params ), &state.params, sizeof( Params ),
+    302                                  cudaMemcpyHostToDevice, stream_1 ) );
+    303 
+    304     OPTIX_CHECK( optixLaunch( state.pipeline_1, stream_1, reinterpret_cast<CUdeviceptr>( d_params ), sizeof( Params ),
+    305                               &state.sbt, state.width, state.height, 1 ) );
+    306 
+    307     // Translated
+    308     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_params_translated ), sizeof( Params ) ) );
+    309     CUDA_CHECK( cudaMemcpyAsync( reinterpret_cast<void*>( d_params_translated ), &state.params_translated,
+    310                                  sizeof( Params ), cudaMemcpyHostToDevice, stream_2 ) );
+    311 
+    312     OPTIX_CHECK( optixLaunch( state.pipeline_2, stream_2, reinterpret_cast<CUdeviceptr>( d_params_translated ),
+    313                               sizeof( Params ), &state.sbt, state.width, state.height, 1 ) );
+    314 
+    315     CUDA_SYNC_CHECK();
+    316 
+    317     CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_params ) ) );
+    318     CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_params_translated ) ) );
+    319 }
+
+
+Params are cudaMalloc and cudaFree for each launch, 
+but I alloc once at initialization ?
+
+
+
  
 
 review the cxs_min.sh code
