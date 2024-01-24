@@ -1034,7 +1034,11 @@ double CSGOptiX::launch()
         assert( d_param && "must alloc and upload params before launch"); 
 
         /*
-        // this way leaking 14kb for every launch 
+        // this way leaking 14kb for every launch  : see 
+        //
+        //       ~/opticks/notes/issues/okjob_GPU_memory_leak.rst
+        //       ~/opticks/CSGOptiX/cxs_min_igs.sh 
+        // 
         CUstream stream ;
         CUDA_CHECK( cudaStreamCreate( &stream ) );
         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );

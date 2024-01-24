@@ -99,6 +99,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ; 
     static bool LIFECYCLE ; 
 
+    static constexpr const char* SEvt__MINIMAL = "SEvt__MINIMAL" ; 
+    static bool MINIMAL ; 
+
     static constexpr const char* SEvt__CLEAR_SIGINT = "SEvt__CLEAR_SIGINT" ; 
     static bool CLEAR_SIGINT ; 
 

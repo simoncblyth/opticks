@@ -358,37 +358,23 @@ double QSim::simulate(int eventID, bool reset_)
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
 
-    bool DEBUG_SKIP_LAUNCH = ssys::getenvbool("QSim__simulate_DEBUG_SKIP_LAUNCH") ; 
-    bool DEBUG_SKIP_GATHER = ssys::getenvbool("QSim__simulate_DEBUG_SKIP_GATHER") ; 
-    double dt = -2. ; 
-
     SProf::Add("QSim__simulate_PREL"); 
 
-    if(DEBUG_SKIP_LAUNCH == false)
-    {
-        sev->t_PreLaunch = sstamp::Now() ; 
-        dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
-        sev->t_PostLaunch = sstamp::Now() ; 
-        sev->t_Launch = dt ; 
-    }
-    else
-    {
-        sstamp::sleep_us(100000) ; // 0.1s
-    }
+    sev->t_PreLaunch = sstamp::Now() ; 
+    double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
+    sev->t_PostLaunch = sstamp::Now() ; 
+    sev->t_Launch = dt ; 
 
     SProf::Add("QSim__simulate_POST"); 
 
-    if(DEBUG_SKIP_GATHER == false)
-    {
-        sev->gather(); 
-    }
+    sev->gather(); 
 
     SProf::Add("QSim__simulate_DOWN"); 
 
     int num_ht = sev->getNumHit() ;   // NB from fold, so requires hits array gathering to be configured to get non-zero 
     int num_ph = event->getNumPhoton() ; 
 
-    LOG(info) 
+    LOG_IF(info, SEvt::MINIMAL) 
         << " eventID " << eventID 
         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
         << " ph " << std::setw(10) << num_ph 
@@ -396,8 +382,6 @@ double QSim::simulate(int eventID, bool reset_)
         << " ht " << std::setw(10) << num_ht 
         << " ht/M " << std::setw(10) << num_ht/M 
         << " reset_ " << ( reset_ ? "YES" : "NO " ) 
-        << " DEBUG_SKIP_LAUNCH " << ( DEBUG_SKIP_LAUNCH ? "YES" : "NO " ) 
-        << " DEBUG_SKIP_GATHER " << ( DEBUG_SKIP_GATHER ? "YES" : "NO " ) 
         ; 
 
     if(reset_) reset(eventID) ; 

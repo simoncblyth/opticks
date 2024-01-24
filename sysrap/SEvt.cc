@@ -43,6 +43,7 @@
 
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
+bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ; 
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 
 
@@ -3963,7 +3964,7 @@ void SEvt::save(const char* dir_)
     if( slic > 0 )
     {
         const char* dir = getOutputDir(dir_);   // THIS CREATES DIRECTORY
-        LOG(info) << dir << " [" << save_comp << "]"  ; 
+        LOG_IF(info, MINIMAL) << dir << " [" << save_comp << "]"  ; 
         LOG(LEVEL) << descSaveDir(dir_) ; 
 
         LOG(LEVEL) << "[ save_fold.save " << dir ; 

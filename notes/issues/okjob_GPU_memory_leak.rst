@@ -2,6 +2,45 @@ okjob_GPU_memory_leak
 =======================
 
 
+FIXED : was caused by using separate CUDA stream for every launch
+--------------------------------------------------------------------
+
+::
+
+    1027 #if OPTIX_VERSION < 70000
+    1028     assert( width <= 1000000 );
+    1029     six->launch(width, height, depth );
+    1030 #else
+    1031     if(DEBUG_SKIP_LAUNCH == false)
+    1032     {
+    1033         CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
+    1034         assert( d_param && "must alloc and upload params before launch");
+    1035 
+    1036         /*
+    1037         // this way leaking 14kb for every launch  : see 
+    1038         //
+    1039         //       ~/opticks/notes/issues/okjob_GPU_memory_leak.rst
+    1040         //       ~/opticks/CSGOptiX/cxs_min_igs.sh 
+    1041         // 
+    1042         CUstream stream ;
+    1043         CUDA_CHECK( cudaStreamCreate( &stream ) );
+    1044         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+    1045         */
+    1046 
+    1047         // Using the default stream seems to avoid 14k VRAM leak at every launch. 
+    1048         // Does that mean every launch gets to use the same single default stream ?  
+    1049         CUstream stream = 0 ;
+    1050         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+    1051 
+    1052         CUDA_SYNC_CHECK();
+    1053         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
+    1054         // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
+    1055     }
+    1056 #endif
+
+
+
+
 Speeddial
 -------------
 
@@ -9,6 +48,13 @@ Speeddial
 
    nvidia-smi -lms 500    # every half second  
 
+
+Investigations using input gensteps
+-------------------------------------
+
+::
+
+    ~/o/CSGOptiX/cxs_min_igs.sh
 
 
 Strategy
@@ -20,6 +66,9 @@ profiling stamps to find where memory gets consumed.
 
 Have to adopt indirect approaches. Start by trying to get 
 a QEvent test to exhibit the GPU memory leak. 
+
+
+
 
 Overview
 ----------
@@ -53,7 +102,7 @@ Most likely culprits, as more dynamic allocation handling are:
 
 
 
-TODO : implement input genstep running from a file path pattern 
+DONE : implement input genstep running from a file path pattern 
 -----------------------------------------------------------------
 
 ::

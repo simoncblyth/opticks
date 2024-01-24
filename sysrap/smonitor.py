@@ -12,7 +12,7 @@ import matplotlib.pyplot as mp
 SIZE=np.array([1280, 720])
 
 if __name__ == '__main__':
-    mon = np.load("smonitor.npy")
+    mon = np.load("smonitor.npy").astype(np.int64) 
 
     stamp = mon[:,0]
     device = mon[:,1]
