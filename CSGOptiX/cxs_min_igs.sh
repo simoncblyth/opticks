@@ -4,7 +4,7 @@ cxs_min_igs.sh : Standalone pure Opticks Optical Propagation using sequence of 1
 ==========================================================================================================
 
 This was used to hunt down the cause of VRAM memory leak that incremented
-memory usage by 14kb every launch.  
+memory usage by 14kb every launch.  See ~/opticks/notes/issues/okjob_GPU_memory_leak.rst 
 
 ::
 
@@ -220,7 +220,7 @@ EOU
 #export PIP=INFO 
 #export LIFECYCLE=1
 
-export SEvt__MINIMAL=1
+#export SEvt__MINIMAL=1
 
 
 SDIR=$(dirname $(realpath $BASH_SOURCE))
