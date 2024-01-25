@@ -256,7 +256,7 @@ const char* SEventConfig::InputGenstep(int idx)
 bool SEventConfig::InputGenstepPathExists(int idx)
 {
     const char* path = SEventConfig::InputGenstep(idx); 
-    return spath::Exists(path);  
+    return path ? spath::Exists(path) : false ;  
 }
 
 

@@ -238,6 +238,17 @@ om-prefix-clean(){
 
 #om-cmake-generator(){ echo $(opticks-cmake-generator) ; }
 om-cmake-generator(){ echo "Unix Makefiles" ; }
+
+
+om-bdir-trim-tests()
+{
+    local iwd=$(pwd)
+    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
+    local bdir=$(om-bdir $name)
+    echo $bdir  
+}
+
+
 om-bdir(){  
    : TODO separate bdir depending on Release/Debug so its faster to switch 
    local gen=$(om-cmake-generator)
@@ -254,6 +265,8 @@ om-sdir(){
            *) echo $(om-home)/$1 ;;
    esac
 }
+om-bdir-real(){ echo $(realpath $(om-bdir)) ; }
+om-sdir-real(){ echo $(realpath $(om-sdir)) ; }
  
 
 om-url(){ echo http://bitbucket.org/simoncblyth/$(om-name)/src/$(om-rdir) ; }
@@ -1089,15 +1102,8 @@ om-find-one(){
 
 
 
-om-bdir-()
-{
-    local iwd=$(pwd)
-    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
-    local bdir=$(om-bdir $name)
-    echo $bdir  
-}
 
-om-test-log(){ echo $(om-bdir-)/ctest.log ; }
+om-test-log(){ echo $(om-bdir-trim-tests)/ctest.log ; }
 om-tl(){ cat $(om-test-log) ; }
 
 
@@ -1181,9 +1187,9 @@ om-mk()
 
 om-pdir() 
 { 
-    local here=$(pwd -P);
-    local stop=$(om-sdir);
-    local btop=$(om-bdir);
+    local here=$(realpath $(pwd -P));
+    local stop=$(om-sdir-real);
+    local btop=$(om-bdir-real);
     stop=${stop%/}  
     btop=${btop%/}   
     :  remove trailing slash 
