@@ -16,6 +16,7 @@
 struct qbase
 {
     unsigned pidx ; 
+    unsigned custom_lut ;
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     QBASE_METHOD std::string desc() const ; 

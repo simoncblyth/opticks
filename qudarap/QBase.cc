@@ -2,6 +2,7 @@
 #include <limits>
 
 #include "ssys.h"
+#include "SSys.hh"
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 #else
@@ -25,6 +26,7 @@ qbase* QBase::MakeInstance() // static
 {
     qbase* base = new qbase ; 
     base->pidx = ssys::getenvunsigned_fallback_max("PIDX") ; 
+    base->custom_lut = SSys::getenvunsigned("QBase__CUSTOM_LUT", 0u);
     return base ; 
 }
 
