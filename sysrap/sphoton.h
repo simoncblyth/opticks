@@ -26,6 +26,7 @@ sphoton.h
 
 iindex
     instance index of intersected geometry
+    (see squad.h:quad2 for details)
 
 boundary (16 bit)
     boundary index of intersected geometry
@@ -36,7 +37,8 @@ flag (16 bit)
     OpticksPhoton.h history flag enum eg: TO CK SI BT BR SR AB RE ...
 
 identity (32 bit)
-    combination of primIdx and instanceId of intersected geometry 
+    currently sensor_identfier (see squad.h:quad2 for details)
+    Formerly was combination of primIdx and instanceId of intersected geometry.
 
 orient (1 bit)
     set according to the sign of cosTheta 
@@ -46,7 +48,9 @@ idx (31 bit)
     photon index, always exists even before any intersect
 
 flagmask (32 bit)
-    bitwise-OR of step point flag, always exists even before any intersect 
+    bitwise-OR of step point flag enumeration 
+    (see sysrap/OpticksPhoton.h sysrap/OpticksPhoton.hh for details)
+    Always exists even before any intersect with the generation flag CK/SI/TO. 
 
 
 
