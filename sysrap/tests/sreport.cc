@@ -318,10 +318,13 @@ inline void sreport_Creator::init()
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
     std::cout << "-sreport_Creator::init.4" << std::endl ; 
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
+
+#ifdef WITH_SUBMETE
     std::cout << "-sreport_Creator::init.5" << std::endl ; 
     report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ; 
     std::cout << "-sreport_Creator::init.6" << std::endl ; 
     report->submeta_NumPhotonCollected = fold_valid ? fold->subfold_summary("submeta:NumPhotonCollected", ASEL, BSEL) : nullptr ; 
+#endif
     std::cout << "-sreport_Creator::init.7" << std::endl ; 
     report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ; 
     std::cout << "-sreport_Creator::init.8" << std::endl ; 
