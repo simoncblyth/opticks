@@ -2,6 +2,45 @@ okjob_GPU_memory_leak
 =======================
 
 
+FIXED : was caused by using separate CUDA stream for every launch
+--------------------------------------------------------------------
+
+::
+
+    1027 #if OPTIX_VERSION < 70000
+    1028     assert( width <= 1000000 );
+    1029     six->launch(width, height, depth );
+    1030 #else
+    1031     if(DEBUG_SKIP_LAUNCH == false)
+    1032     {
+    1033         CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
+    1034         assert( d_param && "must alloc and upload params before launch");
+    1035 
+    1036         /*
+    1037         // this way leaking 14kb for every launch  : see 
+    1038         //
+    1039         //       ~/opticks/notes/issues/okjob_GPU_memory_leak.rst
+    1040         //       ~/opticks/CSGOptiX/cxs_min_igs.sh 
+    1041         // 
+    1042         CUstream stream ;
+    1043         CUDA_CHECK( cudaStreamCreate( &stream ) );
+    1044         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+    1045         */
+    1046 
+    1047         // Using the default stream seems to avoid 14k VRAM leak at every launch. 
+    1048         // Does that mean every launch gets to use the same single default stream ?  
+    1049         CUstream stream = 0 ;
+    1050         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+    1051 
+    1052         CUDA_SYNC_CHECK();
+    1053         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
+    1054         // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
+    1055     }
+    1056 #endif
+
+
+
+
 Speeddial
 -------------
 
@@ -9,6 +48,13 @@ Speeddial
 
    nvidia-smi -lms 500    # every half second  
 
+
+Investigations using input gensteps
+-------------------------------------
+
+::
+
+    ~/o/CSGOptiX/cxs_min_igs.sh
 
 
 Strategy
@@ -20,6 +66,9 @@ profiling stamps to find where memory gets consumed.
 
 Have to adopt indirect approaches. Start by trying to get 
 a QEvent test to exhibit the GPU memory leak. 
+
+
+
 
 Overview
 ----------
@@ -53,7 +102,7 @@ Most likely culprits, as more dynamic allocation handling are:
 
 
 
-TODO : implement input genstep running from a file path pattern 
+DONE : implement input genstep running from a file path pattern 
 -----------------------------------------------------------------
 
 ::
@@ -83,9 +132,137 @@ review from top
        SEvt::reset   (when reset:true)
           SEvt::endOfEvent
 
+
+
+
+
     
-HMM : pure opticks input genstep run would be good for faster interation
---------------------------------------------------------------------------
+DONE : added pure opticks input genstep running 
+------------------------------------------------
+
+* adhoc look at nvidia-smi -l 1 during ~/o/CSGOptiX/cxs_min_igs.sh suggests 
+  GPU leak is still apparent with input genstep running
+
+* advantage of course is <1s init time and a lot less code being run
+
+* with QSim__simulate_DEBUG_SKIP_LAUNCH dont see the leak, so its not from QEvent::setGenstep
+
+  
+
+::
+
+     01 #!/bin/bash -l 
+      2 usage(){ cat << EOU
+      3 cxs_min_igs.sh
+      4 ===============
+      5 
+      6 ::
+      7 
+      8    ~/o/CSGOptiX/cxs_min_igs.sh 
+      9 
+     10 * skipping the launch, dont see the leak : GPU mem stays 1283 MiB
+     11 * with the launch, clear continuous growth from 1283 MiB across 1000 evt 
+     12 * skipping the gather only (not the launch) still leaking the same
+     13 
+     14 EOU
+     15 }
+
+
+
+Look at OptiX SDK examples to see what I am doing differently
+----------------------------------------------------------------
+
+/Developer/OptiX_750/SDK/optixRaycasting/optixRaycasting.cpp::
+
+    291 void launch( RaycastingState& state )
+    292 {
+    293     CUstream stream_1 = 0;
+    294     CUstream stream_2 = 0;
+    295     CUDA_CHECK( cudaStreamCreate( &stream_1 ) );
+    296     CUDA_CHECK( cudaStreamCreate( &stream_2 ) );
+    297 
+    298     Params* d_params            = 0;
+    299     Params* d_params_translated = 0;
+    300     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_params ), sizeof( Params ) ) );
+    301     CUDA_CHECK( cudaMemcpyAsync( reinterpret_cast<void*>( d_params ), &state.params, sizeof( Params ),
+    302                                  cudaMemcpyHostToDevice, stream_1 ) );
+    303 
+    304     OPTIX_CHECK( optixLaunch( state.pipeline_1, stream_1, reinterpret_cast<CUdeviceptr>( d_params ), sizeof( Params ),
+    305                               &state.sbt, state.width, state.height, 1 ) );
+    306 
+    307     // Translated
+    308     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_params_translated ), sizeof( Params ) ) );
+    309     CUDA_CHECK( cudaMemcpyAsync( reinterpret_cast<void*>( d_params_translated ), &state.params_translated,
+    310                                  sizeof( Params ), cudaMemcpyHostToDevice, stream_2 ) );
+    311 
+    312     OPTIX_CHECK( optixLaunch( state.pipeline_2, stream_2, reinterpret_cast<CUdeviceptr>( d_params_translated ),
+    313                               sizeof( Params ), &state.sbt, state.width, state.height, 1 ) );
+    314 
+    315     CUDA_SYNC_CHECK();
+    316 
+    317     CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_params ) ) );
+    318     CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_params_translated ) ) );
+    319 }
+
+
+Params are cudaMalloc and cudaFree for each launch, 
+but I alloc once at initialization ?
+
+
+
+ 
+
+review the cxs_min.sh code
+-----------------------------
+
+
+::
+
+     174 int CSGOptiX::SimulateMain() // static
+     175 {
+     176     SProf::Add("CSGOptiX__SimulateMain_HEAD");
+     177     SEventConfig::SetRGModeSimulate();
+     178     CSGFoundry* fd = CSGFoundry::Load();
+     179     CSGOptiX* cx = CSGOptiX::Create(fd) ;
+     180     for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i);
+     181     SProf::UnsetTag();
+     182     SProf::Add("CSGOptiX__SimulateMain_TAIL");
+     183     SProf::Write("run_meta.txt", true ); // append:true 
+     184     cx->write_Ctx_log();
+     185     return 0 ;
+     186 }
+
+
+     669 double CSGOptiX::simulate(int eventID)
+     670 {
+     671     SProf::SetTag(eventID, "A%0.3d_" ) ;
+     672     assert(sim);
+     673     bool end = true ;
+     674     double dt = sim->simulate(eventID, end) ; // (QSim)
+     675     return dt ;
+     676 }
+
+
+
+
+::
+
+    N[blyth@localhost opticks]$ git log -n2
+    commit 1761e9e4b69c3fd85eea7be8892dc59d1cdea255 (HEAD -> master, origin/master, origin/HEAD)
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Jan 22 13:42:59 2024 +0800
+
+        implement running from a sequence of input gensteps such that cxs_min_igs.sh can redo the pure Opticks GPU optical propagation for gensteps persisted from a prior Geant4+Opticks eg okjob/jok-tds job
+
+    commit 507af61007daec200c3f0a912490950f3c910fba
+    Author: Simon C Blyth <simoncblyth@gmail.com>
+    Date:   Mon Jan 22 12:08:46 2024 +0800
+
+        add NPFold::set_allowempty_r to address opticks/notes/issues/avoiding_NPFold_save_of_empties_has_consequences_for_Galactic_material_with_no_props.rst used from U4Material::MakePropertyFold
+    N[blyth@localhost opticks]$ 
+
+
+
 
 
 

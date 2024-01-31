@@ -43,6 +43,7 @@
 
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
+bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ; 
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 
 
@@ -242,7 +243,7 @@ void SEvt::init()
     LOG(LEVEL) << " SEventConfig::GatherCompLabel "  << SEventConfig::GatherCompLabel() ;   // CompMaskLabel 
     LOG(LEVEL) << descComp() ; 
 
-    initInputGenstep(); 
+    //initInputGenstep();   // for per-event genstep moved to SEvt::beginOfEvent/SEvt::addInputGenstep 
     initInputPhoton(); 
 
     initG4State();        // HMM: G4State not an every-event thing ? first event only ?
@@ -343,15 +344,17 @@ SEvt::LoadInputGenstep
     export OPTICKS_INPUT_GENSTEP=$BASE/jok-tds/ALL0/p001/genstep.npy
     ##export OPTICKS_INPUT_GENSTEP=$BASE/jok-tds/ALL0
 
-HMM: could implement config with a directory to input 
-a sequence of gensteps
+
+HMM: when using a sequence of InputGenstep files need to 
+do this for every event, invoking with an idx argument ..
+so this cannot be static 
 
 **/
 
 
-NP* SEvt::LoadInputGenstep() // static 
+NP* SEvt::LoadInputGenstep(int idx) // static 
 {
-    const char* spec = SEventConfig::InputGenstep(); 
+    const char* spec = SEventConfig::InputGenstep(idx); 
     return spec ? LoadInputGenstep(spec) : nullptr ; 
 }
 NP* SEvt::LoadInputGenstep(const char* spec) // static
@@ -400,11 +403,14 @@ NP* SEvt::LoadInputPhoton(const char* spec)
 SEvt::initInputGenstep
 -----------------------
 
+Invoked from SEvt::beginOfEvent after SEvt::setIndex 
+Formerly invoked once only from SEvt::init
+
 **/
 
 void SEvt::initInputGenstep()
 {
-    NP* ig = LoadInputGenstep() ;
+    NP* ig = LoadInputGenstep(index) ;
     setInputGenstep(ig); 
 }
 void SEvt::setInputGenstep(NP* ig)
@@ -419,6 +425,7 @@ void SEvt::setInputGenstep(NP* ig)
 }
 NP* SEvt::getInputGenstep() const { return input_genstep ; }
 bool SEvt::hasInputGenstep() const { return input_genstep != nullptr ; }
+bool SEvt::hasInputGenstepPath() const { return SEventConfig::InputGenstepPathExists(index) ; }
 
 
 
@@ -694,7 +701,7 @@ void SEvt::transformInputPhoton()
 SEvt::addInputGenstep  (formerly addFrameGenstep) 
 --------------------------------------------------
 
-This is invoked from SEvt::beginOfEvent together with SEvt::setIndex
+This is invoked from SEvt::beginOfEvent after invokation of SEvt::setIndex
 
 For hostside simtrace and input photon running this must be called 
 at the start of every event cycle to add the gensteps which trigger 
@@ -733,10 +740,10 @@ void SEvt::addInputGenstep()
     }   
     else if(SEventConfig::IsRGModeSimulate()) 
     {   
-        bool has_torch = SEventConfig::IsRunningModeTorch()  ; 
-        int inputs = int(hasInputGenstep()) + int(hasInputPhoton()) + int(has_torch) ; 
-        // HMM: could call it InputTorch too 
+        bool has_torch = SEventConfig::IsRunningModeTorch() ; // TODO: rename to InputTorch
+        int inputs = int(hasInputGenstepPath()) + int(hasInputPhoton()) + int(has_torch) ; 
 
+        LOG_IF(info, LIFECYCLE) << " inputs " << inputs  ; 
         LOG_IF(fatal, inputs > 1 ) 
             << " CANNOT COMBINE INPUTS : input_photon/input_genstep/torch "
             << " index " << index 
@@ -746,8 +753,9 @@ void SEvt::addInputGenstep()
         {
             assertZeroGenstep(); 
             NP* igs = nullptr ; 
-            if( hasInputGenstep() )
+            if( hasInputGenstepPath() )
             {
+                initInputGenstep();  
                 igs = getInputGenstep() ; 
             }
             else if( hasInputPhoton())
@@ -1503,9 +1511,7 @@ Called from::
      QSim::simulate (SEvt::EGPU instance ) 
      U4Recorder::BeginOfEventAction  (SEvt::ECPU instance)
 
-Note that eventID from Geant4 is zero based but the 
-index used for SEvt::SetIndex is 1-based to allow (+ve,-ve) pairs. 
-
+Note that eventID from both Geant4 and now Opticks is zero based 
 
 Lifecycle::
     
@@ -1858,6 +1864,14 @@ void SEvt::endIndex(int index_arg)
 
     setRunProf_Annotated("SEvt__endIndex_" ); 
 }
+
+/**
+SEvt::getIndexArg
+------------------
+
+0-based index in range 0..num-1 even when a non-zero startIndex offset is in use 
+
+**/
 
 int SEvt::getIndexArg() const 
 {
@@ -3950,7 +3964,7 @@ void SEvt::save(const char* dir_)
     if( slic > 0 )
     {
         const char* dir = getOutputDir(dir_);   // THIS CREATES DIRECTORY
-        LOG(info) << dir << " [" << save_comp << "]"  ; 
+        LOG_IF(info, MINIMAL) << dir << " [" << save_comp << "]"  ; 
         LOG(LEVEL) << descSaveDir(dir_) ; 
 
         LOG(LEVEL) << "[ save_fold.save " << dir ; 

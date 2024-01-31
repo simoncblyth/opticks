@@ -173,6 +173,9 @@ struct SYSRAP_API SEventConfig
 
     static const char* _InputGenstepPath(int idx=-1); 
     static const char* InputGenstep(int idx=-1); 
+    static bool InputGenstepPathExists(int idx); 
+
+
     static const char* InputPhoton(); 
     static const char* InputPhotonFrame(); 
 

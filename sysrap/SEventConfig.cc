@@ -252,6 +252,14 @@ const char* SEventConfig::InputGenstep(int idx)
 {
     return ( idx == -1 || _InputGenstep == nullptr ) ? _InputGenstep : _InputGenstepPath(idx) ; 
 }
+
+bool SEventConfig::InputGenstepPathExists(int idx)
+{
+    const char* path = SEventConfig::InputGenstep(idx); 
+    return path ? spath::Exists(path) : false ;  
+}
+
+
 const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
 const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 

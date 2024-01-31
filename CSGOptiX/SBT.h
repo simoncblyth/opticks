@@ -19,10 +19,6 @@ Aim to minimize geometry specifics in here ...
 #include "IAS.h"
 #include "sqat4.h"
 
-
-class Opticks ; 
-// TODO: replace use of Opticks here (only used for solid selection) with a less coupled approach.
-
 struct PIP ; 
 struct CSGFoundry ; 
 struct CSGPrim ; 
@@ -55,7 +51,7 @@ struct SBT
     std::vector<IAS> vias ; 
 
     SBT(const PIP* pip_ ); 
-
+    ~SBT(); 
 
     AS* getAS(const char* spec) const ;
     void setTop(const char* spec) ;
@@ -63,16 +59,21 @@ struct SBT
     AS* getTop() const ;
 
     void init();  
+    void destroy(); 
+
     void createRaygen();  
+    void destroyRaygen();  
     void updateRaygen();  
 
     void createMiss();  
+    void destroyMiss();  
     void updateMiss();  
 
     void setFoundry(const CSGFoundry* foundry); 
 
     void createGeom();  
     void createHitgroup();
+    void destroyHitgroup();
     void checkHitgroup();
 
     void createIAS();

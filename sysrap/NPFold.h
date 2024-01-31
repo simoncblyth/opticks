@@ -109,6 +109,7 @@ struct NPFold
 
     // nodata:true used for lightweight access to metadata from many arrays
     bool                      nodata ; 
+    bool                      allowempty ; 
     bool                      verbose_ ; 
 
     static constexpr const int UNDEF = -1 ; 
@@ -159,6 +160,10 @@ struct NPFold
     // CTOR
     NPFold(); 
     void set_verbose( bool v=true ); 
+    void set_allowempty( bool v=true ); 
+    void set_allowempty_r( bool v=true ); 
+    static int SetAllowempty_r(NPFold* nd, bool v) ; 
+
 private:
     void check_integrity() const ; 
 public:
@@ -613,6 +618,7 @@ inline NPFold::NPFold()
     savedir(nullptr),
     loaddir(nullptr),
     nodata(false),
+    allowempty(false),
     verbose_(VERBOSE)
 {
     if(verbose_) std::cerr << "NPFold::NPFold" << std::endl ; 
@@ -622,6 +628,37 @@ inline void NPFold::set_verbose( bool v )
 {
     verbose_ = v ;  
 }
+inline void NPFold::set_allowempty( bool v )
+{
+    allowempty = v ; 
+}
+inline void NPFold::set_allowempty_r( bool v )
+{
+    SetAllowempty_r(this, v); 
+}
+
+inline int NPFold::SetAllowempty_r(NPFold* nd, bool v)
+{
+    nd->set_allowempty(v); 
+    int tot_fold = 1 ; 
+
+    assert( nd->subfold.size() == nd->ff.size() ); 
+    int num_sub = nd->subfold.size(); 
+    for(int i=0 ; i < num_sub ; i++) 
+    {
+        NPFold* sub = nd->subfold[i] ; 
+        int num = SetAllowempty_r( sub, v );  
+        tot_fold += num ; 
+    }
+    return tot_fold ; 
+}
+
+
+
+
+
+
+
 
 
 /**
@@ -1605,7 +1642,7 @@ inline void NPFold::_save(const char* base)  // not const as sets savedir
 
     int slic = _save_local_item_count(); 
 
-    if(slic > 0) 
+    if(slic > 0 || ( slic == 0 && allowempty == true )) 
     {
         NP::WriteNames(base, INDEX, kk );  
 

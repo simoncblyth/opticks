@@ -5,7 +5,8 @@ PIP : OptiX 7 Ray Trace Program Pipeline
 
 Aiming to keep this geometry independent 
 
-This is used by CSGOptiX.cc and SBT.cc
+The pip(PIP) instance is instanciated in CSGOptiX::initPIP
+and passed as ctor argument to SBT
 
 **/
 
@@ -50,15 +51,20 @@ struct PIP
     static std::string Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options ); 
 
     static OptixModule CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options );
+    void destroyModule(); 
+
 
 
 
     PIP(const char* ptx_path_, const Properties* properties_ ); 
+    ~PIP(); 
+
     const char* desc() const ; 
 
     void init(); 
+    void destroy(); 
 
-
+    static constexpr const char* RG_DUMMY = "__raygen__rg_dummy" ; 
     static constexpr const char* RG = "__raygen__rg" ; 
     static constexpr const char* MS = "__miss__ms" ; 
     static constexpr const char* IS = "__intersection__is" ; 
@@ -66,13 +72,21 @@ struct PIP
     static constexpr const char* AH = "__anyhit__ah" ; 
 
     void createRaygenPG();
+    void destroyRaygenPG();
+
     void createMissPG();
+    void destroyMissPG();
+
     void createHitgroupPG();
+    void destroyHitgroupPG();
 
 
     static const char* linkPipeline_debugLevel ; 
     std::string Desc_PipelineLinkOptions(const OptixPipelineLinkOptions& pipeline_link_options ); 
     void linkPipeline(unsigned max_trace_depth);
+    void destroyPipeline(); 
+
+
     void configureStack(); 
 }; 
 

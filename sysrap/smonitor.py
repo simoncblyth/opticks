@@ -7,12 +7,12 @@ smonitor.py
 
 """
 
-import numpy as np
+import os, numpy as np
 import matplotlib.pyplot as mp
 SIZE=np.array([1280, 720])
 
 if __name__ == '__main__':
-    mon = np.load("smonitor.npy")
+    mon = np.load("smonitor.npy").astype(np.int64) 
 
     stamp = mon[:,0]
     device = mon[:,1]
@@ -48,21 +48,34 @@ if __name__ == '__main__':
     delta_usedGpuMemory_GB = np.diff( usedGpuMemory_GB ) 
     w_delta_usedGpuMemory_GB = np.where( delta_usedGpuMemory_GB > 0.001 )[0]
 
-    start = w_delta_usedGpuMemory_GB[2] if len(w_delta_usedGpuMemory_GB) > 2 else None   
+    auto_start = w_delta_usedGpuMemory_GB[2] if len(w_delta_usedGpuMemory_GB) > 2 else 0
+    env_start = int(os.environ["START"]) if "START" in os.environ else 0
+    start = env_start if env_start > 0 else auto_start
+    message = "auto_start:%(auto_start)2d START:%(env_start)2d start:%(start)2d " % locals()
+
+
+    idx = np.arange( len(usedGpuMemory_GB) )  
     sel = slice(start, None) 
 
-    expr = "np.c_[t[sel], usedGpuMemory_GB[sel]]"
+    expr = "np.c_[idx[sel], t[sel], usedGpuMemory_GB[sel], usedGpuMemory[sel] ]"
     print(expr)
     print(eval(expr))
 
-    _dmem = "(usedGpuMemory_GB[sel][-1]-usedGpuMemory_GB[sel][0])"
-    dmem = eval(_dmem)
-    print("dmem %10.3f  %s " % ( dmem, _dmem )) 
+    _dgb = "(usedGpuMemory_GB[sel][-1]-usedGpuMemory_GB[sel][0])"
+    dgb = eval(_dgb)
+    print("dgb %10.3f  %s " % ( dgb, _dgb )) 
+
+    _db = "(usedGpuMemory[sel][-1]-usedGpuMemory[sel][0])"
+    db = eval(_db)
+    print("db  %10.3f  %s " % ( db, _db )) 
+
+
 
     _dt = "(t[sel][-1]-t[sel][0])"
     dt = eval(_dt)
     print("dt   %10.3f  %s " % ( dt, _dt )) 
-    print("dmem/dt  %10.3f  " % (dmem/dt))
+    print("dgb/dt  %10.3f  " % (dgb/dt))
+    print("db/dt   %10.3f  " % (db/dt))
 
     
     deg = 1  # linear   
@@ -71,7 +84,8 @@ if __name__ == '__main__':
     linefit_label = "line fit:  slope %10.3f [GB/s] intercept %10.3f " % (linefit.coef[0], linefit.coef[1])
  
     headline = "smonitor.sh device %(_device)s total_GB %(_total)4.1f pid %(_pid)s " % locals()
-    title = "\n".join([headline, linefit_label])
+    publine = "%s : %s " % (message, os.environ.get("PUB", "no-PUB" ))
+    title = "\n".join([headline, linefit_label, publine])
     print(title)
 
     fig, ax = mp.subplots(figsize=SIZE/100.)

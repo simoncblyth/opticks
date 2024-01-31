@@ -99,6 +99,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ; 
     static bool LIFECYCLE ; 
 
+    static constexpr const char* SEvt__MINIMAL = "SEvt__MINIMAL" ; 
+    static bool MINIMAL ; 
+
     static constexpr const char* SEvt__CLEAR_SIGINT = "SEvt__CLEAR_SIGINT" ; 
     static bool CLEAR_SIGINT ; 
 
@@ -281,7 +284,7 @@ public:
     static const char* ResolveInputArray(const char* spec, const char* dir) ; 
     static NP* LoadInputArray(const char* path) ; 
 
-    static NP* LoadInputGenstep(); 
+    static NP* LoadInputGenstep(int idx); 
     static NP* LoadInputGenstep(const char* spec); 
 
     static NP* LoadInputPhoton(); 
@@ -293,6 +296,7 @@ public:
     void setInputGenstep(NP* g); 
     NP* getInputGenstep() const ; 
     bool hasInputGenstep() const ; 
+    bool hasInputGenstepPath() const ; 
 
 
     void initInputPhoton(); 

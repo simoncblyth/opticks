@@ -371,6 +371,10 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 for angular efficiency need intersection point in object frame to get the angles  
 **/
 
+extern "C" __global__ void __raygen__rg_dummy()
+{
+}
+
 extern "C" __global__ void __raygen__rg()
 {
     const uint3 idx = optixGetLaunchIndex();

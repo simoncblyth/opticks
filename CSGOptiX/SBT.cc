@@ -67,6 +67,12 @@ SBT::SBT(const PIP* pip_)
     init(); 
 }
 
+SBT::~SBT()
+{
+    destroy(); 
+}
+
+
 void SBT::init()
 {
     LOG(LEVEL) << "[" ; 
@@ -76,6 +82,15 @@ void SBT::init()
     updateMiss(); 
     LOG(LEVEL) << "]" ; 
 }
+
+
+void SBT::destroy()
+{
+    destroyRaygen(); 
+    destroyMiss(); 
+    destroyHitgroup(); 
+}
+
 
 
 /**
@@ -140,6 +155,13 @@ void SBT::createMiss()
     sbt.missRecordCount             = 1;
 }
 
+void SBT::destroyMiss()
+{
+    CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_miss ) ) );
+}
+
+
+
 void SBT::updateMiss()
 {
     //float3 purple = make_float3(0.3f, 0.1f, 0.5f); 
@@ -173,6 +195,15 @@ void SBT::createRaygen()
     sbt.raygenRecord = d_raygen;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip->raygen_pg,   raygen ) );
 }
+
+void SBT::destroyRaygen()
+{
+    CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_raygen ) ) );
+}
+
+
+
+
 
 void SBT::updateRaygen()
 {
@@ -934,6 +965,13 @@ void SBT::createHitgroup()
     sbt.hitgroupRecordCount = tot_rec ;
 }
 
+void SBT::destroyHitgroup()
+{
+    CUDA_CHECK( cudaFree( reinterpret_cast<void*>( d_hitgroup ) ) );
+}
+
+
+
 void SBT::setPrimData( HitGroupData& data, const CSGPrim* prim)
 {
     data.numNode = prim->numNode(); 
@@ -966,25 +1004,6 @@ void SBT::checkHitgroup()
         << " num_solid " << num_solid
         << " num_prim " << num_prim
         ; 
-
-    //assert( num_prim == num_sbt );   // not with emm enabled
-
-   // hmm this is not so easy with skips
-
-/*
-    check = new HitGroup[num_prim] ; 
-    CUDA_CHECK( cudaMemcpy(check, reinterpret_cast<void*>( sbt.hitgroupRecordBase ), sizeof( HitGroup )*num_sbt, cudaMemcpyDeviceToHost ));
-    HitGroup* hg = check ; 
-    for(unsigned i=0 ; i < num_sbt ; i++)
-    {
-        unsigned globalPrimIdx = i ; 
-        const CSGPrim* prim = foundry->getPrim(globalPrimIdx);         
-        checkPrimData( hg->data, prim ); 
-        hg++ ; 
-    }
-    delete [] check ; 
-
-*/
 
 }
 

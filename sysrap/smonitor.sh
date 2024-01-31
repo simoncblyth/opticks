@@ -21,6 +21,12 @@ Usage:
     ~/o/sysrap/smonitor.sh ana 
 
 
+5. screen capture the plot with annotation 
+
+    ~/o/sysrap/smonitor.sh mpcap 
+    PUB=cxs_min_igs_with_rg_dummy ~/o/sysrap/smonitor.sh mppub 
+
+
 EOU
 }
 
@@ -34,7 +40,7 @@ cuda_prefix=/usr/local/cuda-11.7
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 CUDA_TARGET=$CUDA_PREFIX/targets/x86_64-linux
 
-tmp=/tmp/$USER/opticks
+tmp=/tmp/$USER/opticksGG
 TMP=${TMP:-$tmp}
 export FOLD=$TMP/$name
 mkdir -p $FOLD
@@ -45,7 +51,12 @@ script=$SDIR/$name.py
 cd $FOLD
 LOGDIR=$PWD
 
-export STEM=okjob_smonitor
+#stem=smonitor_okjob
+stem=smonitor_cxs_min_igs
+pub=no-PUB
+export STEM=${STEM:-$stem}
+export PUB=${PUB:-$pub}
+
 export smonitor__SLEEP_US=100000  # 0.1s 
 
 
@@ -84,7 +95,7 @@ fi
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs
     export CAP_REL=smonitor
-    export CAP_STEM=$STEM
+    export CAP_STEM=${STEM}_${PUB}
     case $arg in  
        mpcap) source mpcap.sh cap  ;;  
        mppub) source mpcap.sh env  ;;  
@@ -94,5 +105,4 @@ if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     fi  
 fi 
 
-exit 0 
-
+exit 0

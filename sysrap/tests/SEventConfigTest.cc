@@ -136,11 +136,11 @@ int SEventConfigTest::main()
     SetCompAuto(); 
     SetDefault(); 
     Save(); 
-    Desc(); 
     SetCompAuto(); 
-    */
-
     InputGenstep(); 
+    */
+    Desc(); 
+
 
     return 0 ; 
 }

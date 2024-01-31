@@ -79,6 +79,10 @@ struct SYSRAP_API OpticksPhoton
     static bool IsSurfaceDetectOrAbsorbFlag(const unsigned flag); 
     static bool IsSurfaceDetectFlag(const unsigned flag); 
 
+    static bool HasCerenkovFlag(const unsigned flagmask); 
+    static bool HasScintillationFlag(const unsigned flagmask); 
+    static bool HasTorchFlag(const unsigned flagmask); 
+
     static const char* Flag(  const unsigned flag);
     static const char* Abbrev(const unsigned flag);
     static void FlagAbbrevPairs( std::vector<std::pair<const char*, const char*>>& pairs ) ; 
@@ -143,6 +147,25 @@ inline bool OpticksPhoton::IsSurfaceDetectFlag(const unsigned flag) // static : 
 {
     return flag == SURFACE_DETECT ; 
 }
+
+
+
+inline bool OpticksPhoton::HasCerenkovFlag(const unsigned flagmask)
+{
+    return ( flagmask & CERENKOV ) != 0 ;  
+}
+inline bool OpticksPhoton::HasScintillationFlag(const unsigned flagmask)
+{
+    return ( flagmask & SCINTILLATION ) != 0 ;  
+}
+inline bool OpticksPhoton::HasTorchFlag(const unsigned flagmask)
+{
+    return ( flagmask & TORCH ) != 0 ;  
+}
+
+
+
+
 
 
 

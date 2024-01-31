@@ -357,6 +357,7 @@ double QSim::simulate(int eventID, bool reset_)
     int rc = event->setGenstep() ;    // QEvent 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
+
     SProf::Add("QSim__simulate_PREL"); 
 
     sev->t_PreLaunch = sstamp::Now() ; 
@@ -370,10 +371,10 @@ double QSim::simulate(int eventID, bool reset_)
 
     SProf::Add("QSim__simulate_DOWN"); 
 
-    int num_ht = sev->getNumHit() ; 
+    int num_ht = sev->getNumHit() ;   // NB from fold, so requires hits array gathering to be configured to get non-zero 
     int num_ph = event->getNumPhoton() ; 
 
-    LOG(info) 
+    LOG_IF(info, SEvt::MINIMAL) 
         << " eventID " << eventID 
         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
         << " ph " << std::setw(10) << num_ph 
