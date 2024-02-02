@@ -448,7 +448,7 @@ struct U
     static std::string Summarize_( const char* label, int wid ); 
 
 
-    static void LineVector( std::vector<std::string>& lines, const char* LINES ); 
+    static void LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX=nullptr ); 
 
     static void LiteralTrim( std::string& line ); 
     static void Literal(    std::vector<std::string>& lines, const char* LINES ); 
@@ -1159,19 +1159,25 @@ U::LineVector
 --------------
 
 
-
 **/
 
-inline void U::LineVector( std::vector<std::string>& lines, const char* LINES )
+inline void U::LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX )
 {
     std::stringstream fss(LINES);
-    std::string line ; 
-    while(getline(fss, line))
+    std::string _line ; 
+    while(getline(fss, _line))
     {
-        if(strlen(line.c_str())==0) continue ; 
+        const char* line = _line.c_str();  
+        size_t len = strlen(line) ; 
+        if(len==0) continue ; 
+        bool match = PREFIX == nullptr ? true : len >= strlen(PREFIX) && strncmp(line, PREFIX, strlen(PREFIX)) == 0 ;  
+        if(!match) continue ; 
         lines.push_back(line); 
     }
 }
+
+
+
 
 
 inline void U::LiteralTrim( std::string& line )
