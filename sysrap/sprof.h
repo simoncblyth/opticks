@@ -3,6 +3,19 @@
 sprof.h
 =========
 
+Assuming sprof are persisted into an array rp of shape (n,3) with a two name layout::
+
+    In [10]: fold.runprof_names[:4]
+    Out[10]: array(['SEvt__setIndex_A000', 'SEvt__endIndex_A000', 'SEvt__setIndex_A001', 'SEvt__endIndex_A001'], dtype='<U19')
+
+Then obtain times and VM, RS with::
+
+    tp = (rp[:,0] - rp[0,0])/1e6         # seconds from first profile stamp
+    vm = rp[:,1]/1e6                     # GB
+    rs = rp[:,2]/1e6                     # GB
+    drm = (rp[1::2,2] - rp[0::2,2])/1e3  # MB between each pair  
+
+See for example ~/opticks/sysrap/tests/sleak.py 
 
 **/
 

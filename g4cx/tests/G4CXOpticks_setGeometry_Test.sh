@@ -82,7 +82,7 @@ EOU
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
 
-defarg=info_dbg_ana
+defarg=info_run_ana
 arg=${1:-$defarg}
 
 bin=G4CXOpticks_setGeometry_Test
