@@ -67,8 +67,11 @@ class Runprof_ALL(object):
             vm = rp[:,1]/1e6              # GB
             rs = rp[:,2]/1e6              # GB
 
-            tpm = tp[0::2]
-            drm = (rp[1::2,2] - rp[0::2,2])/1e3  # MB 
+            #tpm = tp[0::2]
+            #drm = (rp[1::2,2] - rp[0::2,2])/1e3  # MB 
+            
+            tpm = tp[2::2]
+            drm = np.diff(rp[0::2,2])/1e3  # MB 
             slm = slice(1,None)
             tpm = tpm[slm]
             drm = drm[slm]

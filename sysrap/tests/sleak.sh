@@ -22,7 +22,7 @@ arg=${1:-$defarg}
 DIR=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0
 export SLEAK_FOLD=${DIR}_${name}   ## SLEAK_FOLD is output directory used by binary and analysis
 
-vars="0 BASH_SOURCE SDIR"
+vars="0 BASH_SOURCE SDIR DIR SLEAK_FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 

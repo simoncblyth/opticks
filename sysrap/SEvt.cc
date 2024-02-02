@@ -39,6 +39,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "SComp.h"
+#include "SProf.hh"
 
 
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
@@ -1400,6 +1401,9 @@ void SEvt::EndOfRun()
 { 
     SetRunProf("SEvt__EndOfRun"); 
     SaveRunMeta(); 
+
+    // HMM: could append onto run_meta.txt but that would complicate analysis
+    SProf::Write("SEvt__EndOfRun_SProf.txt", false ) ; // append:false
 } 
 
 
