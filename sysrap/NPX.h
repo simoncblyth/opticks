@@ -63,7 +63,7 @@ struct NPX
     static int VecFromMapUnordered( 
         std::vector<S>& v,  
         const std::unordered_map<int, S>& m, 
-        const std::vector<int>& key_order, 
+        const std::vector<int>* key_order, 
         bool& all_contiguous_key ); 
 
 
@@ -79,7 +79,7 @@ struct NPX
 
     template<typename T, typename S>
     static NP* ArrayFromMapUnordered( 
-        const std::unordered_map<int, S>& m, const std::vector<int>& key_order  ); 
+        const std::unordered_map<int, S>& m, const std::vector<int>* key_order=nullptr  ); 
 
 
     template<typename S>
@@ -464,13 +464,23 @@ NPX::VecFromMapUnordered
 
 Populate vector using unordered_map values using key_order vector ordering.
 All key_order keys are required to be present in the unordered map.   
+When the key_order argumnent is nullptr the keys are assumed to 
+be contiguous integers starting from zero. 
+
+1. clear vector and resize to the size of the key_order vector
+2. iterate over key from key_order vector, for each key:
+
+   * count if the key is a contiguous offset from the firsy key, k0
+   * use the key to lookup a value from the map and place that value into the idx vector position
+   * NB all keys in the unorderd_map must be present in the key_order vector,
+     otherwise an unordedmap::at failure will occur
 
 **/
 
 template<typename S>
-inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_map<int, S>& m, const std::vector<int>& key_order, bool& all_contiguous_key )
+inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_map<int, S>& m, const std::vector<int>* key_order, bool& all_contiguous_key )
 {
-    int ni = int(key_order.size()) ; 
+    int ni = key_order ? int(key_order->size()) : int(m.size())  ; 
     v.clear(); 
     v.resize(ni); 
 
@@ -479,7 +489,9 @@ inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_ma
 
     for(int idx=0 ; idx < ni ; idx++)
     {   
-        int k = key_order[idx] ; 
+        int k = key_order ? (*key_order)[idx] : idx  ; 
+
+        // counting keys that are contiguous offsets from k0 
         if( idx == 0 ) 
         {
             k0 = k ; 
@@ -487,7 +499,7 @@ inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_ma
         } 
         else
         {
-            if( k == k0 + idx ) count += 1  ; 
+            if( k == k0 + idx ) count += 1  ;  
         } 
 
         const S& s = m.at(k); 
@@ -495,6 +507,8 @@ inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_ma
     }
  
     all_contiguous_key = ni > 0 && count == ni  ; 
+    if(key_order == nullptr) assert(all_contiguous_key) ; 
+
     return k0 ; 
 }
 
@@ -616,7 +630,7 @@ array with the keys and keep the map in a folder ?)
 
 
 template<typename T, typename S>
-inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, const std::vector<int>& key_order  )
+inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, const std::vector<int>* key_order  )
 {
     assert( sizeof(S) >= sizeof(T) );
 
@@ -745,22 +759,38 @@ inline NP* NPX::ArrayFromDiscoMap( const std::map<int,int>& m )
 }
 
 
+/**
+NPX::ArrayFromDiscoMapUnordered
+---------------------------------
+
+1. collect keys from the unordered_map
+2. sort the keys into ascending order
+3. interate through the sorted keys lookinhg up values from the unordered_map
+   and populating the array 
+
+**/
+
 template<>
 inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int,int>& m )
 {
+    std::vector<int> keys ; 
+    typedef std::unordered_map<int,int> MII ; 
+    for(MII::const_iterator it=m.begin() ; it != m.end() ; it++) keys.push_back(it->first); 
+    std::sort(keys.begin(), keys.end());
+
     int ni = m.size() ; 
+    assert( int(keys.size()) == ni ); 
+ 
     int nj = 2 ; 
     NP* a = NP::Make<int>(ni, nj) ;  
     int* aa = a->values<int>(); 
 
-    typedef std::unordered_map<int,int> MII ; 
-    MII::const_iterator it = m.begin(); 
-
     for(int i=0 ; i < ni ; i++)
     {
-        aa[i*nj+0] = it->first ;  
-        aa[i*nj+1] = it->second ;  
-        it++ ; 
+        int key = keys[i] ; 
+        int val = m.at(key) ; 
+        aa[i*nj+0] = key ;  
+        aa[i*nj+1] = val ;  
     }
     return a ; 
 }

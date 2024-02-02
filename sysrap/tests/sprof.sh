@@ -22,6 +22,8 @@ DIR=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0
 export SPROF_FOLD=${DIR}
 export SPROF_PATH=${DIR}/SEvt__EndOfRun_SProf.txt 
 export SPROF_PTN=QSim__
+export SPROF_DUMMY_LAST="QSim__reset_TAIL_DUMMY_LAST" 
+
 export COMMANDLINE="~/o/sysrap/tests/sprof.sh"
 
 

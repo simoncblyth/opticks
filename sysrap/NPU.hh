@@ -505,6 +505,7 @@ struct U
     static std::vector<T>* GetEnvVec(const char* ekey, const char* fallback, char delim=','); 
     static int         GetEnvInt( const char* envkey, int fallback );  
     static const char* GetEnv(    const char* envkey, const char* fallback); 
+    static bool        HasEnv( const char* envkey ); 
 
     template<typename T>
     static T           GetE(const char* ekey, T fallback);  
@@ -746,6 +747,12 @@ inline const char* U::GetEnv(const char* envkey, const char* fallback)
     const char* evalue = getenv(envkey);
     return evalue ? evalue : fallback ; 
 } 
+
+inline bool U::HasEnv(const char* envkey)
+{
+    const char* evalue = getenv(envkey);
+    return evalue ? true : false ; 
+}
 
 
 template<typename T>

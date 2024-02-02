@@ -34,7 +34,7 @@ pass
 if __name__ == '__main__':
     fold = Fold.Load("$SPROF_FOLD", symbol="fold")
     print(repr(fold))
-    rp = fold.SEvt__EndOfRun_SProf_txt.reshape(-1,5,3)
+    rp = fold.SEvt__EndOfRun_SProf_txt.reshape(-1,7,3)
 pass
 
 
