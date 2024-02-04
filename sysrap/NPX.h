@@ -60,18 +60,21 @@ struct NPX
     static int VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool contiguous_key=true ); 
 
     template<typename S>
-    static int VecFromMapUnordered( 
+    static void VecFromMapUnordered( 
         std::vector<S>& v,  
         const std::unordered_map<int, S>& m, 
         const std::vector<int>* key_order, 
-        bool& all_contiguous_key ); 
+        bool* all_contiguous_key,
+        int* _k0,
+        int* _k1
+        ); 
 
 
     template<typename S>
     static void MapFromVec( std::map<int, S>& m,  const std::vector<S>& v, int k0=0, bool contiguous_key=true ); 
 
     template<typename S>
-    static void MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std::vector<S>& v, int k0=0, bool contiguous_key=true ); 
+    static void MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std::vector<S>& v, int kmin=0, bool is_contiguous_key=true ); 
 
 
     template<typename T, typename S>
@@ -79,8 +82,10 @@ struct NPX
 
     template<typename T, typename S>
     static NP* ArrayFromMapUnordered( 
-        const std::unordered_map<int, S>& m, const std::vector<int>* key_order=nullptr  ); 
+        const std::unordered_map<int, S>& m, const std::vector<int>* key_order=nullptr ); 
 
+    template<typename S>
+    static void KeyRangeMapUnordered( int* _k0, int* _k1, const std::unordered_map<int, S>& m );
 
     template<typename S>
     static void MapFromArray( std::map<int, S>& m, const NP* a ); 
@@ -463,53 +468,83 @@ NPX::VecFromMapUnordered
 --------------------------
 
 Populate vector using unordered_map values using key_order vector ordering.
-All key_order keys are required to be present in the unordered map.   
-When the key_order argumnent is nullptr the keys are assumed to 
-be contiguous integers starting from zero. 
 
-1. clear vector and resize to the size of the key_order vector
-2. iterate over key from key_order vector, for each key:
+When the key_order argument is not nullptr it must point to 
+a vector that contains all the keys that are present in the
+unordered map in the desired order. 
+When the key_order argument is nullptr the keys are assumed to 
+be contiguous integers starting from the minimum key that 
+is present in the unordered_map.  
+
+1. clear vector and resize vector to the size of the map
+2. when key_order points to a vector iterate over keys, for each key:
 
    * count if the key is a contiguous offset from the firsy key, k0
    * use the key to lookup a value from the map and place that value into the idx vector position
    * NB all keys in the unorderd_map must be present in the key_order vector,
      otherwise an unordedmap::at failure will occur
 
+3. when key_order is nullptr determine the range of keys and use the smallest key *_k0
+   as the base for all keys, that are assumed to be contiguous.  If the unorderd_map keys 
+   are not within a contiguous range of integers then this method 
+   will fail with an unordedmap::at failure. In this situation it is necesssary 
+   to provide a pointer to a key_order vector contaning all the keys in the unordered_map.
+
 **/
 
 template<typename S>
-inline int NPX::VecFromMapUnordered( std::vector<S>& v,  const std::unordered_map<int, S>& m, const std::vector<int>* key_order, bool& all_contiguous_key )
+inline void NPX::VecFromMapUnordered( 
+    std::vector<S>& v,  
+    const std::unordered_map<int, S>& m, 
+    const std::vector<int>* key_order, 
+    bool* all_contiguous_key,
+    int* _k0, 
+    int* _k1 
+    )
 {
-    int ni = key_order ? int(key_order->size()) : int(m.size())  ; 
+    int ni = m.size()  ; 
     v.clear(); 
     v.resize(ni); 
 
-    int k0 = -999 ; 
+    if(key_order)
+    {
+        assert( key_order->size() == m.size() ) ; 
+    }
+
     int count(0) ; 
+    if( key_order == nullptr ) KeyRangeMapUnordered(_k0, _k1, m ) ; 
+
+
+    int k0_check(-999) ; 
 
     for(int idx=0 ; idx < ni ; idx++)
     {   
-        int k = key_order ? (*key_order)[idx] : idx  ; 
+        int k = key_order ? (*key_order)[idx] : *_k0 + idx  ; 
 
-        // counting keys that are contiguous offsets from k0 
+        // counting keys that are contiguous offsets from the idx 0 key  
         if( idx == 0 ) 
         {
-            k0 = k ; 
+            k0_check = k ; 
             count += 1 ; 
         } 
         else
         {
-            if( k == k0 + idx ) count += 1  ;  
+            if( k == k0_check + idx ) count += 1  ;  
         } 
 
         const S& s = m.at(k); 
         v[idx] = s ; 
     }
  
-    all_contiguous_key = ni > 0 && count == ni  ; 
-    if(key_order == nullptr) assert(all_contiguous_key) ; 
+    *all_contiguous_key = ni > 0 && count == ni  ; 
 
-    return k0 ; 
+    if(key_order == nullptr) 
+    {
+        assert( *all_contiguous_key ) ; 
+        assert( *_k1 - *_k0 + 1 == ni ) ; 
+        assert( k0_check == *_k0 ); 
+    }
+
 }
 
 
@@ -553,17 +588,17 @@ NPX::MapUnorderedFromVec
 **/
 
 template<typename S>
-inline void NPX::MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std::vector<S>& v, int k0, bool contiguous_key )
+inline void NPX::MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std::vector<S>& v, int kmin, bool is_contiguous_key )
 {
-    assert( contiguous_key == true ); 
+    assert( is_contiguous_key == true ); 
 
     int ni = int(v.size()) ; 
     m.clear(); 
 
-    for(int i=0 ; i < ni ; i++)
+    for(int idx=0 ; idx < ni ; idx++)
     {
-        const S& item = v[i] ; 
-        int key = k0 + i ;  
+        const S& item = v[idx] ; 
+        int key = kmin + idx ;  
         m[key] = item ; 
     }
 }
@@ -622,24 +657,31 @@ inline NP* NPX::ArrayFromMap( const std::map<int, S>& m, bool contiguous_key )
 NPX::ArrayFromMapUnordered
 -----------------------------
 
-HMM: mostly only useful when the keys are contiguous from zero 
+Only useful when the keys are contiguous 
 as key values not persisted. 
-array with the keys and keep the map in a folder ?)
+
+See also NPX::MapUnorderedFromArray that 
+does the reverse, recreating the unordered_map 
+from the array. 
 
 **/
 
 
 template<typename T, typename S>
-inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, const std::vector<int>* key_order  )
+inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, const std::vector<int>* key_order )
 {
     assert( sizeof(S) >= sizeof(T) );
 
     std::vector<S> v ;    
     bool all_contiguous_key(false) ; 
-    int k0 = NPX::VecFromMapUnordered<S>( v, m, key_order, all_contiguous_key ); 
+    int kmin(0) ; 
+    int kmax(0) ; 
+
+    NPX::VecFromMapUnordered<S>( v, m, key_order, &all_contiguous_key, &kmin, &kmax ); 
     NP* a = NPX::ArrayFromVec<T,S>(v) ;
 
-    a->set_meta<int>("k0", k0) ;
+    a->set_meta<int>("kmin", kmin) ;
+    a->set_meta<int>("kmax", kmax) ;
     a->set_meta<int>("ContiguousKey", all_contiguous_key ) ;
     a->set_meta<std::string>("Creator", "NPX::ArrayFromMapUnordered" ); 
 
@@ -648,7 +690,23 @@ inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, cons
 
 
 
+template<typename S>
+inline void NPX::KeyRangeMapUnordered( int* _k0, int* _k1, const std::unordered_map<int, S>& m ) 
+{
+    assert( _k0 ); 
+    assert( _k1 ); 
 
+    *_k0 = std::numeric_limits<int>::max() ; 
+    *_k1 = std::numeric_limits<int>::min() ;
+ 
+    typedef std::unordered_map<int,S> UIS ; 
+    for(typename UIS::const_iterator it=m.begin() ; it != m.end() ; it++ ) 
+    {
+        int k = it->first ; 
+        if( k < *_k0 ) *_k0 = k ; 
+        if( k > *_k1 ) *_k1 = k ; 
+    }
+}
 
 
 
@@ -683,19 +741,24 @@ inline void NPX::MapUnorderedFromArray( std::unordered_map<int, S>& m, const NP*
 {
     if(a == nullptr || a->shape.size() == 0 ) return ; 
 
-    int k0 = a->get_meta<int>("k0"); 
+    int kmin = a->get_meta<int>("kmin"); 
+    int kmax = a->get_meta<int>("kmax"); 
     int ContiguousKey = a->get_meta<int>("ContiguousKey") ; 
+    bool is_contiguous_key = ContiguousKey == 1 ;  
+
+
     if(NP::VERBOSE) std::cout 
         << "NPX::MapUnorderedFromArray"
-        << " k0 " << k0
-        << " ContiguousKey " << ContiguousKey
+        << " kmin " << kmin
+        << " kmax " << kmax
+        << " is_contiguous_key " << ( is_contiguous_key ? "YES" : "NO " ) 
         << std::endl 
         ;
 
     std::vector<S> v ;    
     NPX::VecFromArray<S>(v, a); 
     
-    NPX::MapUnorderedFromVec<S>(m, v, k0, ContiguousKey == 1 ); 
+    NPX::MapUnorderedFromVec<S>(m, v, kmin, is_contiguous_key ); 
 }
 
 
