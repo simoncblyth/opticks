@@ -1034,14 +1034,14 @@ Q: Does all SEvt creation use this ?
 SEvt* SEvt::Create_EGPU(){ return Create(EGPU) ; }
 SEvt* SEvt::Create_ECPU(){ return Create(ECPU) ; }
  
-SEvt* SEvt::Create(int idx)  // static
+SEvt* SEvt::Create(int ins)  // static
 { 
-    assert( idx == 0 || idx == 1); 
+    assert( ins == 0 || ins == 1); 
     SEvt* ev = new SEvt ; 
-    ev->setInstance(idx) ; 
-    INSTANCES[idx] = ev  ; 
-    assert( Get(idx) == ev ); 
-    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
+    ev->setInstance(ins) ; 
+    INSTANCES[ins] = ev  ; 
+    assert( Get(ins) == ev ); 
+    LOG(LEVEL) << " ins " << ins  << " " << DescINSTANCE()  ; 
     return ev  ; 
 }
 
@@ -1308,13 +1308,15 @@ A: Guess so, Loading should regain the state before the save
 
 **/
 
-SEvt* SEvt::LoadRelative(const char* rel)  // static 
+SEvt* SEvt::LoadRelative(const char* rel, int ins, int idx  )  // static 
 {
     LOG(LEVEL) << "[" ; 
 
     if(rel != nullptr) SetReldir(rel); 
 
-    SEvt* ev = new SEvt ; 
+    SEvt* ev = SEvt::Create(ins) ; 
+    if(idx > -1) ev->setIndex(idx); 
+
     int rc = ev->load() ; 
     if(rc != 0) ev->is_loadfail = true ; 
 
@@ -4294,11 +4296,14 @@ std::string SEvt::descNum() const
 std::string SEvt::descPhoton(unsigned max_print) const 
 {
     unsigned num_photon = getNumPhoton(); 
-    unsigned num_print = std::min(max_print, num_photon); 
+    bool num_photon_unset =  (int)num_photon == -1 ; 
+
+    unsigned num_print = num_photon_unset ? 0 : std::min(max_print, num_photon); 
 
     std::stringstream ss ; 
     ss << "SEvt::descPhoton" 
        << " num_photon " <<  num_photon 
+       << " num_photon_unset " <<  ( num_photon_unset ? "YES" : "NO " )   
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
        << std::endl 
@@ -4330,11 +4335,13 @@ Hence caution wrt which frame is applicable for local photon.
 std::string SEvt::descLocalPhoton(unsigned max_print) const 
 {
     unsigned num_photon = getNumPhoton(); 
-    unsigned num_print = std::min(max_print, num_photon) ; 
+    bool num_photon_unset =  (int)num_photon == -1 ; 
+    unsigned num_print = num_photon_unset ? 0 : std::min(max_print, num_photon); 
 
     std::stringstream ss ; 
     ss << "SEvt::descLocalPhoton"
        << " num_photon " <<  num_photon 
+       << " num_photon_unset " <<  ( num_photon_unset ? "YES" : "NO " )   
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
        << std::endl 

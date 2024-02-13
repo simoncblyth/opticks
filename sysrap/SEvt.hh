@@ -398,7 +398,7 @@ public:
     void addTorchGenstep(); 
 
     static SEvt* LoadAbsolute(const char* dir); 
-    static SEvt* LoadRelative(const char* rel=nullptr);  // formerly Load
+    static SEvt* LoadRelative(const char* rel=nullptr, int ins=0, int idx=-1); 
 
     static void ClearOutput(); 
     static void ClearGenstep(); 
