@@ -79,7 +79,6 @@ Find users of stree.h
     ./sysrap/CMakeLists.txt
     ./sysrap/SBnd.h
     ./sysrap/sphit.h
-    ./sysrap/sframe.h
     ./sysrap/SSim.cc
     ./ggeo/GGeo.cc
     ./ggeo/tests/GGeoLoadFromDirTest.cc
@@ -229,6 +228,7 @@ When SSim not in use can also use::
 #include "smatsur.h"
 #include "snam.h"
 #include "SBnd.h"
+
 
 
 struct stree_standin
@@ -562,6 +562,11 @@ struct stree
     void narrow_inst(); 
     void clear_inst(); 
     std::string desc_inst() const ;
+    const glm::tmat4x4<double>* get_inst(int idx) const ; 
+    const glm::tmat4x4<double>* get_iinst(int idx) const ; 
+    const glm::tmat4x4<float>*  get_inst_f4(int idx) const ; 
+    const glm::tmat4x4<float>*  get_iinst_f4(int idx) const ; 
+
 
     void get_mtindex_range(int& mn, int& mx ) const ; 
     std::string desc_mt() const ; 
@@ -3145,6 +3150,37 @@ inline std::string stree::desc_inst() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
+inline const glm::tmat4x4<double>* stree::get_inst(int idx) const 
+{
+    return idx > -1 && idx < int(inst.size()) ? &inst[idx] : nullptr ; 
+}
+inline const glm::tmat4x4<double>* stree::get_iinst(int idx) const 
+{
+    return idx > -1 && idx < int(iinst.size()) ? &iinst[idx] : nullptr ; 
+}
+
+inline const glm::tmat4x4<float>* stree::get_inst_f4(int idx) const 
+{
+    return idx > -1 && idx < int(inst_f4.size()) ? &inst_f4[idx] : nullptr ; 
+}
+inline const glm::tmat4x4<float>* stree::get_iinst_f4(int idx) const 
+{
+    return idx > -1 && idx < int(iinst_f4.size()) ? &iinst_f4[idx] : nullptr ; 
+}
+
+
+
+
+
+
+
+
+
+
 
 /**
 stree::get_mtindex_range

@@ -87,13 +87,12 @@ inline U4HitTest::U4HitTest()
 
 inline void U4HitTest::init()
 {
-    LOG(info) << desc() ;  
     sev->setGeo(fd); 
 
     assert( sev->hasInstance() );  // check that the instance is persisted and retrieved (via domain metadata)
     assert( sev == SEvt::Get(sev->instance) );  // check the loaded SEvt got slotted in expected slot 
 
-    LOG(info) << "sev->descFull" << std::endl << sev->descFull() ; 
+
 }
 
 
@@ -130,11 +129,13 @@ inline std::string U4HitTest::smry() const
     ss << "U4HitTest::smry" << std::endl
        << " num_hit " << num_hit 
        << " SProf::Range_RS " << range_rs 
+       << " SProf::Range_RS/num_hit " << std::setw(10) << std::fixed << std::setprecision(4) << double(range_rs)/double(num_hit) 
        << std::endl 
        ;
     std::string str = ss.str(); 
     return str ;  
 }
+
 
 inline void U4HitTest::convertHit(unsigned hidx, bool is_repeat)
 {
@@ -143,7 +144,6 @@ inline void U4HitTest::convertHit(unsigned hidx, bool is_repeat)
 
     sev->getHit(global, hidx); 
     sev->getLocalHit( ht, local,  hidx); 
-
     U4HitGet::ConvertFromPhoton(hit,global,local, ht); 
 
     SProf::Add("Tail"); 
@@ -171,8 +171,8 @@ inline void U4HitTest::convertHits()
         delta_rs = 0 ; 
         convertHit(hit_idx, false); 
 
-        if( delta_rs > 0 ) convertHit(hit_idx, true);   
-        // for leaky hit, do it again to check reproducibility
+        // if( delta_rs > 0 ) convertHit(hit_idx, true);   
+        // for leaky hit, do it again to check reproducibility : it doesnt 
     }
 }
 
@@ -192,7 +192,12 @@ int main(int argc, char** argv)
 
     SSim::Create();    // needed before CSGFoundry::Load
     U4HitTest test ; 
+
+    LOG(info) << test.desc() ;  
+    //LOG(info) << "test.sev->descFull" << std::endl << test.sev->descFull() ; 
+
     if(test.num_hit == 0) return 0 ; 
+
     test.convertHits(); 
     test.save(); 
 

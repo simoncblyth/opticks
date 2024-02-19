@@ -370,6 +370,10 @@ std::string CSGFoundry::desc_mt() const
     return sim->desc_mt() ;  
 }
 
+stree* CSGFoundry::getTree() const
+{
+    return sim ? sim->tree : nullptr ; 
+}
 
 
 

@@ -52,7 +52,7 @@ EOU
 }
 
 
-SDIR=$(dirname $BASH_SOURCE)
+SDIR=$(dirname $(realpath $BASH_SOURCE))
 
 #defarg="info_build_run_ana"
 defarg="info_build_run"
@@ -63,12 +63,10 @@ arg=${1:-$defarg}
 name=stree_load_test 
 bin=/tmp/$name/$name 
 
+source $HOME/.opticks/GEOM/GEOM.sh 
 
-if [ -n "$GEOM" ]; then 
-    base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
-else
-    base=/tmp/$USER/opticks/U4TreeCreateTest 
-fi   
+base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
+#base=/tmp/$USER/opticks/U4TreeCreateTest 
 export BASE=${BASE:-$base}
 
 cuda_prefix=/usr/local/cuda
@@ -85,7 +83,6 @@ fi
 export stree_level=1 
 export FOLD=$BASE/stree
 
-
 vars="BASH_SOURCE BASE FOLD opt"
 
 
@@ -101,6 +98,8 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     mkdir -p $(dirname $bin)
+
+    # WITH_SND is the old way thats no longer used ?  
     if [ "${opt/WITH_SND}" != "$opt" ]; then
          gcc \
           $opt \

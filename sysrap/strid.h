@@ -375,7 +375,7 @@ inline std::string strid::Desc( const glm::tmat4x4<T>& tr )
         }
         else
         {
-            ss << spc << std::setw(16) << std::hex << col3[r] << std::dec ; break ; 
+            ss << spc << std::setw(16) << std::dec << col3[r] << std::dec ; break ; 
         }
         if( i == 15 ) ss << std::endl ; 
     }

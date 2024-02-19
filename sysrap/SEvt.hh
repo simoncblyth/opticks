@@ -85,6 +85,7 @@ struct NPFold ;
 struct SGeo ; 
 struct S4RandomArray ;  
 struct stimer ; 
+struct stree ; 
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -180,6 +181,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     const SCompProvider*  provider ; 
     NPFold*               fold ; 
     const SGeo*           cf ; 
+    const stree*          tree ; 
 
     bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running 
     bool              gather_done ; 
@@ -674,8 +676,9 @@ public:
     void getPhoton(sphoton& p, unsigned idx) const ; 
     void getHit(   sphoton& p, unsigned idx) const ; 
 
-    void getLocalPhoton(sphoton& p, unsigned idx) const ; 
-    void getLocalHit(   sphit& ht, sphoton& p, unsigned idx) const ; 
+    void getLocalPhoton(  sphoton& p, unsigned idx) const ; 
+    void getLocalHit(     sphit& ht, sphoton& p, unsigned idx) const ; 
+    void getLocalHit_ALT( sphit& ht, sphoton& p, unsigned idx) const ; 
     void getPhotonFrame( sframe& fr, const sphoton& p ) const ; 
 
     std::string descNum() const ; 

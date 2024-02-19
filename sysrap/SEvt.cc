@@ -19,6 +19,8 @@
 #include "sctx.h"
 #include "sdebug.h"
 #include "stran.h"
+#include "stree.h"
+#include "strid.h"
 #include "stimer.h"
 #include "spath.h"
 #include "sdirectory.h"
@@ -859,6 +861,7 @@ TODO: replace this with stree.h based approach
 void SEvt::setGeo(const SGeo* cf_)
 {
     cf = cf_ ; 
+    tree = cf->getTree(); 
 }
 
 /**
@@ -4242,7 +4245,7 @@ Complication arises from optixInstance identifier
 range limitation meaning that need zero to mean not-a-sensor
 and not -1 0xffffffff
 
-
+TODO: As this is called for every hit it needs an overhaul, see below _ALT
 
 **/
 
@@ -4252,8 +4255,8 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 
     sframe fr = {} ;
 
-    getPhotonFrame(fr, lp); 
-    fr.transform_w2m(lp); 
+    getPhotonFrame(fr, lp);
+    fr.transform_w2m(lp);
 
     ht.iindex = fr.inst() ; 
     ht.sensor_identifier = fr.sensor_identifier() - 1 ; 
@@ -4261,8 +4264,41 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 }
 
 /**
-SEvt::getPhotonFrame
----------------------
+SEvt::getLocalHit_ALT
+------------------------
+
+Try eliminating the sframe, instead just use
+the stree to give the transforms 
+
+**/
+
+void SEvt::getLocalHit_ALT(sphit& ht, sphoton& lp, unsigned idx) const
+{
+    getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
+    int iindex = lp.iindex ; 
+
+    const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;  // HMM: inst or iinst ?
+
+    LOG_IF(fatal, tr == nullptr) << " failed to get instance transform for iindex " << iindex ; 
+    assert( tr ); 
+ 
+    bool normalize = true ;  
+    lp.transform( *tr, normalize );  
+
+    glm::tvec4<int64_t> col3 = {} ;
+    strid::Decode( *tr, col3 ); 
+
+    ht.iindex = col3[0] ;  // ?? 
+    ht.sensor_identifier = col3[2] - 1 ; 
+    ht.sensor_index = col3[3] ; 
+}
+
+
+
+
+/**
+SEvt::getPhotonFrame  (TODO: replace with "getInstanceFrame" with iindex integer argument)
+----------------------------------------------------------------------------------------------
 
 Note that this relies on the photon iindex which 
 may not be set for photons ending in some places. 

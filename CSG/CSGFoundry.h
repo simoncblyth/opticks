@@ -387,6 +387,7 @@ struct CSG_API CSGFoundry : public SGeo
     int getMeshIndexWithName(const char* name, bool startswith) const ; 
     int lookup_mtline(int mtindex) const ; 
     std::string desc_mt() const ; 
+    stree* getTree() const ; 
 
 
 
