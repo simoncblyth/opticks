@@ -89,6 +89,8 @@ int CSGTarget::getFrame(sframe& fr, int inst_idx ) const
     qat4::copy(fr.m2w,  t);   
     qat4::copy(fr.w2m, *v); 
 
+    delete v ; 
+
     // identity info IS NOT cleared by Tran::Invert
     // as there is special handling to retain it (see stran.h) 
     // the explicit clearing below fixes a bug revealed during 

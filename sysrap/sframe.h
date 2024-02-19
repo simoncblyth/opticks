@@ -92,6 +92,8 @@ struct sframe
     const char* ev = nullptr ; 
     const char* ekvid = nullptr ; 
 
+    sframe(); 
+    ~sframe(); 
     void zero() ; 
     bool is_zero() const ; 
 
@@ -179,6 +181,19 @@ struct sframe
 }; 
 
 
+// ctor
+inline sframe::sframe()
+{
+}
+
+// dtor
+inline sframe::~sframe()
+{
+    delete tr_m2w ; 
+    delete tr_w2m ; 
+}
+
+
 inline void sframe::zero()
 {
     ce = {} ;   // 0
@@ -195,6 +210,9 @@ inline void sframe::zero()
     ek = nullptr ; 
     ev = nullptr ; 
 }
+
+
+
 
 inline bool sframe::is_zero() const 
 {

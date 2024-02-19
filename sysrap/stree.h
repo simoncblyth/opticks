@@ -3108,8 +3108,6 @@ inline void stree::add_inst()
         for(unsigned j=0 ; j < nodes.size() ; j++)
         {
             int nidx = nodes[j]; 
-            //get_m2w_product(tr_m2w, nidx, false); 
-            //get_w2m_product(tr_w2m, nidx, true ); 
 
             bool local = false ; 
             bool reverse = false ; 

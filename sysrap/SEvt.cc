@@ -4250,7 +4250,8 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
 
-    sframe fr ; 
+    sframe fr = {} ;
+
     getPhotonFrame(fr, lp); 
     fr.transform_w2m(lp); 
 
@@ -4267,6 +4268,11 @@ Note that this relies on the photon iindex which
 may not be set for photons ending in some places. 
 It should always be set for photons ending on PMTs
 assuming properly instanced geometry. 
+
+The use of geometry information from this low level 
+struct is accomplished using the SGeo(cf) instance 
+that is fullfilled from higher level CSGFoundry 
+instance
 
 **/
 

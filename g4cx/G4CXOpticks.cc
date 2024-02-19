@@ -221,13 +221,6 @@ and a live original world : as need to do things a bit differently in each case.
   (but thats kinda heavy way to determine one bit) OR by passing a signal along with the 
   world to show that it has been re-animated  
 
-
-Q: Is stree.h/st in actual use yet ? Where ? What parts of GGeo does that replace ?
-A: YES, stree.h is already playing a vital role as *tree* member of CSG_GGeo/CSG_GGeo_Convert.cc 
-   see CSG_GGeo_Convert::addInstances where the sensor identifier gets incorporated 
-   into the instances
-
-
 **/
 
 
