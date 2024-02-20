@@ -166,6 +166,7 @@ struct sphoton
 
 
 
+
     SPHOTON_METHOD void zero()
     { 
        pos.x = 0.f ; pos.y = 0.f ; pos.z = 0.f ; time = 0.f ; 
@@ -197,6 +198,10 @@ struct sphoton
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ; 
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ; 
 
+    SPHOTON_METHOD static float  DeltaMax( const float* aa, const float* bb, int num ); 
+    SPHOTON_METHOD static float4 DeltaMax( const sphoton& a, const sphoton& b ) ; 
+    SPHOTON_METHOD static bool EqualFlags( const sphoton& a, const sphoton& b) ; 
+
     SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx ); 
     SPHOTON_METHOD static void Get( std::vector<sphoton>& pp, const NP* a ); 
 
@@ -205,6 +210,23 @@ struct sphoton
 #endif 
 
 }; 
+
+
+/**
+sphoton::set_prd
+-----------------
+
+This is canonically invoked GPU side by qsim::propagate 
+copying geometry info from the quad2 PRD struct into the sphoton.
+
+TODO: relocate identity - 1 offsetting into here as this
+marks the transition from geometry to event information
+and would allow the offsetting to be better hidden.  
+
+See ~/opticks/notes/issues/sensor_identifier_offset_by_one_wrinkle.rst
+
+**/
+
 
 SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_, unsigned iindex_ )
 {
@@ -435,6 +457,41 @@ SPHOTON_METHOD bool sphoton::digest_match( const sphoton& a, const sphoton& b, u
     std::string bdig = b.digest(numval); 
     return strcmp( adig.c_str(), bdig.c_str() ) == 0 ;
 } 
+
+SPHOTON_METHOD float sphoton::DeltaMax( const float* aa, const float* bb, int num )  // static
+{
+    float dmax = 0.f ; 
+    for(int i=0 ; i < num ; i++)
+    {
+        float a = *(aa+i) ; 
+        float b = *(bb+i) ; 
+        float ab = std::abs(a - b); 
+        if(ab > dmax) dmax = ab ; 
+    }
+    return dmax ; 
+}
+
+SPHOTON_METHOD float4 sphoton::DeltaMax( const sphoton& a, const sphoton& b )  // static
+{
+    float4 dmax = make_float4( 0.f, 0.f, 0.f, 0.f ); 
+    dmax.x = DeltaMax( &a.pos.x, &b.pos.x, 3 );   
+    dmax.y = DeltaMax( &a.mom.x, &b.mom.x, 3 ); 
+    dmax.z = DeltaMax( &a.pol.x, &b.pol.x, 3 ); 
+    dmax.w = std::max( DeltaMax( &a.time,  &b.time, 1 ), DeltaMax( &a.wavelength,  &b.wavelength, 1 ) ) ; 
+    return dmax ; 
+}
+
+
+SPHOTON_METHOD bool sphoton::EqualFlags( const sphoton& a, const sphoton& b) // static 
+{
+    return a.iindex == b.iindex && 
+           a.boundary_flag == b.boundary_flag &&
+           a.identity == b.identity &&
+           a.orient_idx == b.orient_idx &&
+           a.flagmask == b.flagmask 
+           ;
+
+}
 
 
 

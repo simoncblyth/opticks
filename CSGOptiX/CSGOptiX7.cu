@@ -468,13 +468,19 @@ extern "C" __global__ void __miss__ms()
 __closesthit__ch : pass attributes from __intersection__ into setPayload
 ============================================================================
 
-optixGetInstanceId 
-    flat instance_idx over all transforms in the single IAS, 
-    JUNO maximum ~50,000 (fits within 0xffff = 65535)
+optixGetInstanceIndex (aka iindex)
+    0-based index within IAS
 
-optixGetPrimitiveIndex
+optixGetInstanceId (aka identity)
+    user supplied instanceId, 
+    see IAS_Builder::Build, sysrap/sqat4.h sqat4::get_IAS_OptixInstance_instanceId
+    from July 2023: carries sensor_identifier+1 as needed for QPMT 
+
+optixGetPrimitiveIndex (aka prim_idx)
+    (not currently propagated)
     local index of AABB within the GAS, 
-    instanced solids adds little to the number of AABB, 
+    see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS).
+    Note that instanced solids adds little to the number of AABB, 
     most come from unfortunate repeated usage of prims in the non-instanced global
     GAS with repeatIdx 0 (JUNO up to ~4000)
 
@@ -482,17 +488,12 @@ optixGetRayTmax
     In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
     if no hit has been reported
 
-
 **/
 
 extern "C" __global__ void __closesthit__ch()
 {
-    unsigned iindex = optixGetInstanceIndex() ;    // 0-based index within IAS
-    unsigned instance_id = optixGetInstanceId() ;  // user supplied instanceId, see IAS_Builder::Build 
-    unsigned prim_idx = optixGetPrimitiveIndex() ; // GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS)
-
-    //unsigned identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ; 
-    unsigned identity = instance_id ;  // CHANGED July 2023, as now carrying sensor_identifier, see sysrap/sqat4.h 
+    unsigned iindex = optixGetInstanceIndex() ; 
+    unsigned identity = optixGetInstanceId() ;  
 
 #ifdef WITH_PRD
     quad2* prd = getPRD<quad2>(); 

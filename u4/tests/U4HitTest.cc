@@ -11,7 +11,7 @@ U4HitTest.cc
 
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
-#include "SSys.hh"
+#include "ssys.h"
 #include "SSim.hh"
 #include "SProf.hh"
 #include "spath.h"
@@ -24,6 +24,7 @@ U4HitTest.cc
 
 struct U4HitTest
 {
+    const char* METHOD ; 
     const char* rel ; 
     int ins ;   // SEvt::EGPU
     int idx ;   // 1st valid index : A000 
@@ -36,6 +37,10 @@ struct U4HitTest
     sphit ht = {}  ; 
     sphoton local = {}  ; 
     U4Hit hit = {} ; 
+
+    sphit ht_alt = {}  ; 
+    sphoton local_alt = {}  ; 
+
 
     int32_t delta_rs ; 
     int32_t range_rs ; 
@@ -51,6 +56,9 @@ struct U4HitTest
     std::string smry() const ; 
 
     void convertHit(unsigned hidx, bool is_repeat); 
+    void convertHit_ALT(unsigned hidx, bool is_repeat); 
+    void convertHit_COMPARE(unsigned hidx, bool is_repeat); 
+
     void convertHits(); 
     void save() const ; 
 }; 
@@ -71,6 +79,7 @@ inline std::string U4HitTest::desc() const
 
 inline U4HitTest::U4HitTest()
     :
+    METHOD(ssys::getenvvar("METHOD", "convertHit")),
     rel(nullptr),
     ins(0),
     idx(0),  
@@ -91,8 +100,6 @@ inline void U4HitTest::init()
 
     assert( sev->hasInstance() );  // check that the instance is persisted and retrieved (via domain metadata)
     assert( sev == SEvt::Get(sev->instance) );  // check the loaded SEvt got slotted in expected slot 
-
-
 }
 
 
@@ -127,6 +134,7 @@ inline std::string U4HitTest::smry() const
 {
     std::stringstream ss ; 
     ss << "U4HitTest::smry" << std::endl
+       << " METHOD " << METHOD
        << " num_hit " << num_hit 
        << " SProf::Range_RS " << range_rs 
        << " SProf::Range_RS/num_hit " << std::setw(10) << std::fixed << std::setprecision(4) << double(range_rs)/double(num_hit) 
@@ -144,6 +152,67 @@ inline void U4HitTest::convertHit(unsigned hidx, bool is_repeat)
 
     sev->getHit(global, hidx); 
     sev->getLocalHit( ht, local,  hidx); 
+ 
+    U4HitGet::ConvertFromPhoton(hit,global,local, ht); 
+
+    SProf::Add("Tail"); 
+    delta_rs = SProf::Delta_RS(); 
+    range_rs = SProf::Range_RS(); 
+    //LOG_IF(info, delta_rs > 0) << dump() ; 
+    LOG_IF(info, delta_rs > 0 || is_repeat) << brief() ; 
+}
+
+inline void U4HitTest::convertHit_ALT(unsigned hidx, bool is_repeat)
+{
+    SProf::SetTag(hidx); 
+    SProf::Add("Head"); 
+
+    sev->getHit(global, hidx); 
+    sev->getLocalHit_ALT( ht_alt, local_alt,  hidx); 
+ 
+    U4HitGet::ConvertFromPhoton(hit,global,local_alt, ht_alt); 
+
+    SProf::Add("Tail"); 
+    delta_rs = SProf::Delta_RS(); 
+    range_rs = SProf::Range_RS(); 
+    //LOG_IF(info, delta_rs > 0) << dump() ; 
+    LOG_IF(info, delta_rs > 0 || is_repeat) << brief() ; 
+}
+
+inline void U4HitTest::convertHit_COMPARE(unsigned hidx, bool is_repeat)
+{
+    SProf::SetTag(hidx); 
+    SProf::Add("Head"); 
+
+    sev->getHit(global, hidx); 
+    sev->getLocalHit( ht, local,  hidx); 
+    sev->getLocalHit_ALT( ht_alt, local_alt,  hidx); 
+
+    bool local_equal_flags = sphoton::EqualFlags(local, local_alt) ; 
+
+    LOG_IF(fatal, !local_equal_flags) 
+         << "sphoton::EqualFlags FAIL "
+         << " hidx : " << hidx 
+         << " local_equal_flags " << local_equal_flags
+         << std::endl  
+         << " local " << std::endl << local << std::endl 
+         << " local_alt " << std::endl << local_alt << std::endl 
+         ;
+
+    float4 local_delta = sphoton::DeltaMax(local, local_alt ) ; 
+    std::cout << " local_delta " << local_delta << std::endl ; 
+
+    bool ht_match = ht == ht_alt ; 
+    LOG_IF(fatal, !ht_match )
+         << " hidx : " << hidx 
+         << " FATAL : NOT ht_match "
+         << std::endl 
+         << " ht     : " << ht.desc()   
+         << std::endl
+         << " ht_alt : " << ht_alt.desc() 
+         ;   
+
+
     U4HitGet::ConvertFromPhoton(hit,global,local, ht); 
 
     SProf::Add("Tail"); 
@@ -169,10 +238,22 @@ inline void U4HitTest::convertHits()
     for(hit_idx=0 ; hit_idx < num_hit ; hit_idx++ )
     {
         delta_rs = 0 ; 
-        convertHit(hit_idx, false); 
+
+        if(strcmp(METHOD, "convertHit") == 0 )
+        {
+            convertHit(hit_idx, false); 
+        }
+        else if(strcmp(METHOD, "convertHit_COMPARE") == 0 )
+        {
+            convertHit_COMPARE(hit_idx, false); 
+        }
+        else if(strcmp(METHOD, "convertHit_ALT") == 0 )
+        {
+            convertHit_ALT(hit_idx, false); 
+        }
 
         // if( delta_rs > 0 ) convertHit(hit_idx, true);   
-        // for leaky hit, do it again to check reproducibility : it doesnt 
+        // for leaky hit, do it again to check reproducibility : it doesnt reproduce the leak 
     }
 }
 
@@ -184,13 +265,16 @@ inline void U4HitTest::save() const
     SProf::Write(path, append); 
 }
 
-
 int main(int argc, char** argv)
 { 
     OPTICKS_LOG(argc, argv); 
     LOG(info) ;  
 
-    SSim::Create();    // needed before CSGFoundry::Load
+    // SSim Create/Load needed before CSGFoundry::Load
+
+    //SSim::Create();    // this creates an empty stree
+    SSim::Load();   // imports GEOM default persisted stree 
+
     U4HitTest test ; 
 
     LOG(info) << test.desc() ;  

@@ -4234,7 +4234,6 @@ Canonical usage from U4HitGet::FromEvt
 
    * TODO: check sensor_identifier, it should now be done GPU side already ? 
 
-
 Dec 19,2023 : Added sensor_identifier subtract one 
 to correspond to the addition of one in::
 
@@ -4267,8 +4266,67 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 SEvt::getLocalHit_ALT
 ------------------------
 
-Try eliminating the sframe, instead just use
-the stree to give the transforms 
+TODO: rename SEvt::getLocalHit_ALT to SEvt::getLocalHit changing above to SEvt::getLocalHit_OLD
+
+
+This ALT implementation gets the w2m instance transform 
+directly using stree::get_iinst avoiding the use of the sframe.h 
+
+The advantages are:
+
+1. avoids transform inversion gymnastics for every hit 
+   by using the inverse transform from the stree.iinst(double) 
+   instead of using the CSGFoundry qat4(float) transforms 
+
+2. double precision transform handling means the local positions
+   suffer from less precision loss
+
+3. avoids unidentified memory leak in the sframe.h/qat4.h 
+   transform handling 
+
+4. avoids complications from the sensor_identifier offsetting 
+
+
+
+Wrinkle on sensor_identifier subtracting one 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To match SEvt::getLocalHit sensor_identifier in u4/tests/U4HitTest.sh 
+found that did not need to subtract one from sensor_identifier. 
+This is probably an artifact of the testing that runs from previously persisted 
+hits so the subtraction was done already the first time when hits are pulled
+off the GPU. 
+
+HMM: How to detect the different situation ? Need to distinguish hits
+fresh from GPU from others. 
+
+Why the -1 fiddle ? How to contain it better ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Dec 19,2023 : Added sensor_identifier subtract one 
+to SEvt::getLocalHit corresponding to the addition of one in::
+
+   CSGFoundry::addInstance firstcall:true
+   CSGFoundry::addInstanceVector
+
+That was done in a hurry as a bug fix: need to reconsider
+how to do this better. 
+
+The need for the offset by one arises from the optixInstance identifier 
+range limitation meaning that need zero to mean not-a-sensor
+and not -1 0xffffffff
+
+BUT: the limitation is on the GPU side geometry optixInstance identifier, 
+the limitation does not apply to::
+
+1. photon/hit struct in GPU or CPU
+2. stree inst/iinst that only exist CPU side
+
+So could this offsetting be done GPU side when info from the geometry 
+is copied into the photon to avoid the need to offset hits way 
+out here ? Actually the reason for not needing -1 is simpler than that. 
+It is only the sqat4.h identity that is incremented, the source identity
+from the stree.h/iinst is never incremented (as never uploaded).  
 
 **/
 
@@ -4277,19 +4335,24 @@ void SEvt::getLocalHit_ALT(sphit& ht, sphoton& lp, unsigned idx) const
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
     int iindex = lp.iindex ; 
 
-    const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;  // HMM: inst or iinst ?
+    const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;  
 
-    LOG_IF(fatal, tr == nullptr) << " failed to get instance transform for iindex " << iindex ; 
+    LOG_IF(fatal, tr == nullptr) 
+         << " FAILED TO GET INSTANCE TRANSFORM : WHEN TESTING NEEDS SSim::Load NOT SSim::Create" 
+         << " iindex " << iindex 
+         << " tree " << ( tree ? "YES" : "NO " )
+         << " tree.desc_inst " << ( tree ? tree->desc_inst() : "-" ) 
+         ; 
     assert( tr ); 
  
     bool normalize = true ;  
-    lp.transform( *tr, normalize );  
+    lp.transform( *tr, normalize );    
 
     glm::tvec4<int64_t> col3 = {} ;
     strid::Decode( *tr, col3 ); 
 
-    ht.iindex = col3[0] ;  // ?? 
-    ht.sensor_identifier = col3[2] - 1 ; 
+    ht.iindex = col3[0] ;  
+    ht.sensor_identifier = col3[2] ;  // NB : NO "-1" HERE : SEE ABOVE COMMENT 
     ht.sensor_index = col3[3] ; 
 }
 
