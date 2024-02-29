@@ -19,8 +19,8 @@
 ##
 
 
-opticks-
-optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
+
+optix-prefix(){ echo ${OPTICKS_OPTIX_PREFIX} ; }
 [ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
 
 
