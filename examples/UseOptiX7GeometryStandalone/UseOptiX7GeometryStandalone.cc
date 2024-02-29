@@ -282,18 +282,18 @@ int main(int argc, char** argv)
                     cudaMemcpyHostToDevice
                     ) );
 
-        OptixBuildInput aabb_input = {};
+        OptixBuildInput buildInput = {};
 
-        aabb_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-        aabb_input.aabbArray.aabbBuffers   = &d_aabb_buffer;
-        aabb_input.aabbArray.numPrimitives = 1;
+        buildInput.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+        buildInput.customPrimitiveArray.aabbBuffers   = &d_aabb_buffer;
+        buildInput.customPrimitiveArray.numPrimitives = 1;
 
-        uint32_t aabb_input_flags[1]       = {OPTIX_GEOMETRY_FLAG_NONE};
-        aabb_input.aabbArray.flags         = aabb_input_flags;
-        aabb_input.aabbArray.numSbtRecords = 1;
+        uint32_t buildInput_flags[1]       = {OPTIX_GEOMETRY_FLAG_NONE};
+        buildInput.customPrimitiveArray.flags         = buildInput_flags;
+        buildInput.customPrimitiveArray.numSbtRecords = 1;
 
         OptixAccelBufferSizes gas_buffer_sizes;
-        OPTIX_CHECK( optixAccelComputeMemoryUsage( context, &accel_options, &aabb_input, 1, &gas_buffer_sizes ) );
+        OPTIX_CHECK( optixAccelComputeMemoryUsage( context, &accel_options, &buildInput, 1, &gas_buffer_sizes ) );
         CUdeviceptr d_temp_buffer_gas;
         CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_temp_buffer_gas ), gas_buffer_sizes.tempSizeInBytes ) );
 
@@ -312,7 +312,7 @@ int main(int argc, char** argv)
         OPTIX_CHECK( optixAccelBuild( context,
                                       0,                  // CUDA stream
                                       &accel_options,
-                                      &aabb_input,
+                                      &buildInput,
                                       1,                  // num build inputs
                                       d_temp_buffer_gas,
                                       gas_buffer_sizes.tempSizeInBytes,
@@ -363,7 +363,7 @@ int main(int argc, char** argv)
         OptixModuleCompileOptions module_compile_options = {};
         module_compile_options.maxRegisterCount     = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
         module_compile_options.optLevel             = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-        module_compile_options.debugLevel           = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO;
+        module_compile_options.debugLevel           = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL;
 
         pipeline_compile_options.usesMotionBlur        = false;
         pipeline_compile_options.traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS;
@@ -459,7 +459,7 @@ int main(int argc, char** argv)
         OptixPipelineLinkOptions pipeline_link_options = {};
         pipeline_link_options.maxTraceDepth          = 5;
         pipeline_link_options.debugLevel             = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
-        pipeline_link_options.overrideUsesMotionBlur = false;
+        //pipeline_link_options.overrideUsesMotionBlur = false;
         size_t sizeof_log = sizeof( log );
         OPTIX_CHECK_LOG( optixPipelineCreate(
                     context,

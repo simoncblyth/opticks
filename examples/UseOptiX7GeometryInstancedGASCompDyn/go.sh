@@ -1,34 +1,6 @@
 #!/bin/bash -l
-##
-## Copyright (c) 2019 Opticks Team. All Rights Reserved.
-##
-## This file is part of Opticks
-## (see https://bitbucket.org/simoncblyth/opticks).
-##
-## Licensed under the Apache License, Version 2.0 (the "License"); 
-## you may not use this file except in compliance with the License.  
-## You may obtain a copy of the License at
-##
-##   http://www.apache.org/licenses/LICENSE-2.0
-##
-## Unless required by applicable law or agreed to in writing, software 
-## distributed under the License is distributed on an "AS IS" BASIS, 
-## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-## See the License for the specific language governing permissions and 
-## limitations under the License.
-##
 
-
-# try to make this work without opticks bash hookup
-# just needs an OPTIX_PREFIX envvar set in .bash_profile/.bashrc
-if [ -n "$OPTIX_PREFIX" ]; then 
-    echo using OPTIX_PREFIX $OPTIX_PREFIX envvar not the opticks bash hookup 
-    optix-prefix(){ echo $OPTIX_PREFIX ; }
-else
-    opticks-
-    optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
-fi 
-
+optix-prefix(){ echo ${OPTICKS_OPTIX_PREFIX} ; }
 [ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
 
 

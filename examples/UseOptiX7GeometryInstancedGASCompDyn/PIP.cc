@@ -101,7 +101,7 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     OptixModuleCompileOptions module_compile_options = {};
     module_compile_options.maxRegisterCount     = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT;
     module_compile_options.optLevel             = OPTIX_COMPILE_OPTIMIZATION_DEFAULT;
-    module_compile_options.debugLevel           = OPTIX_COMPILE_DEBUG_LEVEL_LINEINFO;
+    module_compile_options.debugLevel           = OPTIX_COMPILE_DEBUG_LEVEL_MINIMAL ;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; // For error reporting from OptiX creation functions
@@ -263,7 +263,7 @@ void PIP::linkPipeline(unsigned max_trace_depth)
     OptixPipelineLinkOptions pipeline_link_options = {};
     pipeline_link_options.maxTraceDepth          = max_trace_depth ;
     pipeline_link_options.debugLevel             = OPTIX_COMPILE_DEBUG_LEVEL_FULL;
-    pipeline_link_options.overrideUsesMotionBlur = false;
+    //pipeline_link_options.overrideUsesMotionBlur = false;
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
