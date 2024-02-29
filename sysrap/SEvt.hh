@@ -677,8 +677,8 @@ public:
     void getHit(   sphoton& p, unsigned idx) const ; 
 
     void getLocalPhoton(  sphoton& p, unsigned idx) const ; 
-    void getLocalHit(     sphit& ht, sphoton& p, unsigned idx) const ; 
-    void getLocalHit_ALT( sphit& ht, sphoton& p, unsigned idx) const ; 
+    void getLocalHit_LEAKY( sphit& ht, sphoton& p, unsigned idx) const ; 
+    void getLocalHit(       sphit& ht, sphoton& p, unsigned idx) const ; 
     void getPhotonFrame( sframe& fr, const sphoton& p ) const ; 
 
     std::string descNum() const ; 

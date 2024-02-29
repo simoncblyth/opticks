@@ -4224,10 +4224,10 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
 }
 
 /**
-SEvt::getLocalHit
-------------------
+SEvt::getLocalHit_LEAKY
+------------------------
 
-Canonical usage from U4HitGet::FromEvt
+This impl was formerly SEvt::getLocalHit
 
 1. copy *idx* hit from NP array into sphoton& lp struct 
 2. uses lp.iindex (instance index) to lookup the frame from the SGeo* cf geometry  
@@ -4240,15 +4240,25 @@ to correspond to the addition of one in::
    CSGFoundry::addInstance firstcall:true
    CSGFoundry::addInstanceVector
 
-Complication arises from optixInstance identifier 
+The need for the offset by one arises from the optixInstance identifier 
 range limitation meaning that need zero to mean not-a-sensor
 and not -1 0xffffffff
 
-TODO: As this is called for every hit it needs an overhaul, see below _ALT
+BUT: the limitation is on the GPU side geometry optixInstance identifier, 
+the limitation does not apply to::
+
+1. photon/hit struct in GPU or CPU
+2. stree inst/iinst that only exist CPU side
+
+Actually the reason for not needing -1 in the new impl 
+is simpler than that. 
+
+It is only the sqat4.h identity that is incremented, the source identity
+from the stree.h/iinst is never incremented (as never uploaded).  
 
 **/
 
-void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
+void SEvt::getLocalHit_LEAKY(sphit& ht, sphoton& lp, unsigned idx) const 
 {
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
 
@@ -4263,13 +4273,12 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 }
 
 /**
-SEvt::getLocalHit_ALT
-------------------------
+SEvt::getLocalHit
+-------------------
 
-TODO: rename SEvt::getLocalHit_ALT to SEvt::getLocalHit changing above to SEvt::getLocalHit_OLD
+Canonical usage from U4HitGet::FromEvt
 
-
-This ALT implementation gets the w2m instance transform 
+This implementation gets the w2m instance transform 
 directly using stree::get_iinst avoiding the use of the sframe.h 
 
 The advantages are:
@@ -4287,50 +4296,20 @@ The advantages are:
 4. avoids complications from the sensor_identifier offsetting 
 
 
+Note that GPU side geometry has -1 fiddle : but that doesnt effect stree geometry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Wrinkle on sensor_identifier subtracting one 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To match SEvt::getLocalHit sensor_identifier in u4/tests/U4HitTest.sh 
-found that did not need to subtract one from sensor_identifier. 
-This is probably an artifact of the testing that runs from previously persisted 
-hits so the subtraction was done already the first time when hits are pulled
-off the GPU. 
-
-HMM: How to detect the different situation ? Need to distinguish hits
-fresh from GPU from others. 
-
-Why the -1 fiddle ? How to contain it better ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Dec 19,2023 : Added sensor_identifier subtract one 
-to SEvt::getLocalHit corresponding to the addition of one in::
+GPU side geometry must offset the sensor_identifier by one due to 
+optixInstance identifier range limitation. The offset being 
+done in the below geometry preparation methods::
 
    CSGFoundry::addInstance firstcall:true
    CSGFoundry::addInstanceVector
 
-That was done in a hurry as a bug fix: need to reconsider
-how to do this better. 
-
-The need for the offset by one arises from the optixInstance identifier 
-range limitation meaning that need zero to mean not-a-sensor
-and not -1 0xffffffff
-
-BUT: the limitation is on the GPU side geometry optixInstance identifier, 
-the limitation does not apply to::
-
-1. photon/hit struct in GPU or CPU
-2. stree inst/iinst that only exist CPU side
-
-So could this offsetting be done GPU side when info from the geometry 
-is copied into the photon to avoid the need to offset hits way 
-out here ? Actually the reason for not needing -1 is simpler than that. 
-It is only the sqat4.h identity that is incremented, the source identity
-from the stree.h/iinst is never incremented (as never uploaded).  
 
 **/
 
-void SEvt::getLocalHit_ALT(sphit& ht, sphoton& lp, unsigned idx) const
+void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
     int iindex = lp.iindex ; 
