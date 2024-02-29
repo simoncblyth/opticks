@@ -59,9 +59,9 @@ static __forceinline__ __device__ void trace(
         )
 {
     uint32_t p0, p1, p2, p3;
-    p0 = float_as_int( prd->x );
-    p1 = float_as_int( prd->y );
-    p2 = float_as_int( prd->z );
+    p0 = __float_as_int( prd->x );
+    p1 = __float_as_int( prd->y );
+    p2 = __float_as_int( prd->z );
     p3 = *iidx ;
 
     unsigned SBToffset = 0u ; 
@@ -82,27 +82,27 @@ static __forceinline__ __device__ void trace(
             SBTstride,
             missSBTIndex,
             p0, p1, p2, p3 );
-    prd->x = int_as_float( p0 );
-    prd->y = int_as_float( p1 );
-    prd->z = int_as_float( p2 );
+    prd->x = __int_as_float( p0 );
+    prd->y = __int_as_float( p1 );
+    prd->z = __int_as_float( p2 );
     *iidx = p3 ; 
 }
 
 
 static __forceinline__ __device__ void setPayload( float3 p, unsigned instance_idx)
 {
-    optixSetPayload_0( float_as_int( p.x ) );
-    optixSetPayload_1( float_as_int( p.y ) );
-    optixSetPayload_2( float_as_int( p.z ) );
+    optixSetPayload_0( __float_as_int( p.x ) );
+    optixSetPayload_1( __float_as_int( p.y ) );
+    optixSetPayload_2( __float_as_int( p.z ) );
     optixSetPayload_3( instance_idx );
 }
 
 /**
 static __forceinline__ __device__ void getPayload(float3& p, unsigned& instance_idx)
 {
-    p.x = int_as_float( optixGetPayload_0() );
-    p.y = int_as_float( optixGetPayload_1() );
-    p.z = int_as_float( optixGetPayload_2() );
+    p.x = __int_as_float( optixGetPayload_0() );
+    p.y = __int_as_float( optixGetPayload_1() );
+    p.z = __int_as_float( optixGetPayload_2() );
     instance_idx = optixGetPayload_3() ; 
 }
 **/
@@ -205,9 +205,9 @@ extern "C" __global__ void __intersection__is()
         const float        root11        = 0.0f;
         const float3       shading_normal = ( O + ( root1 + root11 ) * D ) / radius;
         unsigned int p0, p1, p2;
-        p0 = float_as_int( shading_normal.x );
-        p1 = float_as_int( shading_normal.y );
-        p2 = float_as_int( shading_normal.z );
+        p0 = __float_as_int( shading_normal.x );
+        p1 = __float_as_int( shading_normal.y );
+        p2 = __float_as_int( shading_normal.z );
 
         optixReportIntersection(
                 root1,      // t hit
@@ -221,9 +221,9 @@ extern "C" __global__ void __closesthit__ch()
 {
     const float3 shading_normal =
         make_float3(
-                int_as_float( optixGetAttribute_0() ),
-                int_as_float( optixGetAttribute_1() ),
-                int_as_float( optixGetAttribute_2() )
+                __int_as_float( optixGetAttribute_0() ),
+                __int_as_float( optixGetAttribute_1() ),
+                __int_as_float( optixGetAttribute_2() )
                 );
 
     //OptixTraversableHandle gas = optixGetGASTraversableHandle(); 

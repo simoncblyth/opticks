@@ -91,14 +91,14 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
                 cudaMemcpyHostToDevice
                 ) );
 
-    OptixBuildInput build_input = {};
-    build_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    OptixBuildInput buildInput = {};
+    buildInput.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
 
-    OptixBuildInputCustomPrimitiveArray& aabbArray = build_input.aabbArray ;  
+    OptixBuildInputCustomPrimitiveArray& customPrimitiveArray = buildInput.customPrimitiveArray ;  
 
-    aabbArray.aabbBuffers   = &d_aabb_buffer;
-    aabbArray.numPrimitives = num_bb ;
-    aabbArray.numSbtRecords = num_bb ;   // ? 
+    customPrimitiveArray.aabbBuffers   = &d_aabb_buffer;
+    customPrimitiveArray.numPrimitives = num_bb ;
+    customPrimitiveArray.numSbtRecords = num_bb ;   // ? 
 
 
     //unsigned flag = OPTIX_GEOMETRY_FLAG_NONE ;
@@ -113,8 +113,8 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
         sbt_index[i] = i ; 
     } 
 
-    aabbArray.numSbtRecords = num_bb ; 
-    aabbArray.flags         = flags;
+    customPrimitiveArray.numSbtRecords = num_bb ; 
+    customPrimitiveArray.flags         = flags;
      
     // optixWhitted sets up sbtOffsets 
     // see p18 for setting up offsets 
@@ -128,12 +128,12 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
                        sbt_index, sbt_index_size, 
                         cudaMemcpyHostToDevice ) ); 
 
-        aabbArray.sbtIndexOffsetBuffer  = d_sbt_index ;
-        aabbArray.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
-        aabbArray.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
+        customPrimitiveArray.sbtIndexOffsetBuffer  = d_sbt_index ;
+        customPrimitiveArray.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);
+        customPrimitiveArray.sbtIndexOffsetStrideInBytes = sizeof(unsigned);
     }
 
-    GAS gas = Build(build_input); 
+    GAS gas = Build(buildInput); 
 
     delete[] flags ; 
     CUDA_CHECK( cudaFree( (void*)d_aabb_buffer ) );

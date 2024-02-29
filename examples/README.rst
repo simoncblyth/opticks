@@ -367,7 +367,7 @@ UseOptiX7GeometryStandalone
     Start from the SDK optixSphere example
     This example uses custom(aka analytic or non-triangulated) geometry.
     Follows the monolithic main layout of optixSphere, just adapting to use glm for 
-    viewpoint math.
+    viewpoint math. (Feb 2024: updated for OptiX 7.5+)
 
 UseOptiX7GeometryModular
     Start from UseOptiX7GeometryStandalone
@@ -384,30 +384,33 @@ UseOptiX7GeometryModular
 
     Revisited this, tidying up the headers aiming to 
     eliminate optix types from high levels in order to hide the version.
-
+    (Feb 2024: updated for OptiX 7.5+)
 
 UseOptiX7GeometryInstanced
     Attempting to switch UseOptiX7GeometryModular to use an
     instanced custom geometry for lots of spheres.
+    (Feb 2024: updated for OptiX 7.5+)
 
 UseOptiX7GeometryInstancedGAS
     Started from UseOptiX7GeometryInstanced.
 
     1. pulled out the higher level geometry setup into Geo
     2. uses a single IAS with multiple GAS
-    2. create big sphere containing a cube grid of two radii, 
+    3. create big sphere containing a cube grid of two radii, 
        where the intersect program gets its sphere radius from 
        Sbt record
 
+    (Feb 2024: updated for OptiX 7.5+)
+   
+
 UseOptiX7GeometryInstancedGASComp
     Started from UseOptiX7GeometryInstancedGAS.
-
-    * compound GAS, still not working 
+    (Feb 2024: updated for OptiX 7.5+)
     
 UseOptiX7GeometryInstancedGASCompDyn    
     SBT mechanics worked out, using vectors of BI structs to keep count 
     Find that have to fudge the bbox larger to get expected results ?
-
+    (Feb 2024: updated for OptiX 7.5+)
 
 
 
