@@ -24,6 +24,8 @@ int main()
     printf("Got 70600 : vers %s \n", vers ); 
 #elif OPTIX_VERSION == 70700
     printf("Got 70700 : vers %s \n", vers ); 
+#elif OPTIX_VERSION == 80000
+    printf("Got 80000 : vers %s \n", vers ); 
 #else
     printf("Got unexpected version %s\n", vers ); 
 #endif 

@@ -31,8 +31,10 @@ const plog::Severity PIP::LEVEL = SLOG::EnvLevel("PIP", "DEBUG");
 bool PIP::OptiXVersionIsSupported()  // static
 {
     bool ok = false ; 
-#if OPTIX_VERSION == 70000 || OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
+#if OPTIX_VERSION == 70000 || OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600 
     ok = true ; 
+#elif OPTIX_VERSION >= 80000
+    ok = true ;
 #endif
     return ok ; 
 }
