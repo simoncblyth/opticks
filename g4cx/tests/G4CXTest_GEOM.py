@@ -15,7 +15,7 @@ from opticks.ana.p import *  # including cf boundary___
 MODE = int(os.environ.get("MODE","3"))
 SEL = int(os.environ.get("SEL","0"))
 PICK = os.environ.get("PICK","A")
-SAB = "SAB" in os.environ
+SAB_ = "SAB" in os.environ
 
 H,V = 0,2  # X, Z
 
@@ -47,14 +47,14 @@ pass
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
-    if PICK == "A" or PICK == "AB" or SAB:
+    if PICK == "A" or PICK == "AB" or SAB_:
         a = SEvt.Load("$AFOLD", symbol="a")
         print(repr(a))
     else: 
         a = None
     pass
 
-    if PICK == "B" or PICK == "AB" or SAB:
+    if PICK == "B" or PICK == "AB" or SAB_:
         b = SEvt.Load("$BFOLD", symbol="b")
         print(repr(b))
     else:
@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     ee = {'A':a, 'B':b} 
 
-    if SAB: 
+    if SAB_: 
         print("[--- ab = SAB(a,b) ----")
         ab = None if a is None or b is None else SAB(a,b) 
         print("]--- ab = SAB(a,b) ----")

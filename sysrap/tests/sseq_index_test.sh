@@ -7,6 +7,10 @@ sseq_index_test.sh
 
     ~/opticks/sysrap/tests/sseq_index_test.sh info
 
+    VERSION=99 C2CUT=200 ~/opticks/sysrap/tests/sseq_index_test.sh 
+    VERSION=98 C2CUT=200 ~/opticks/sysrap/tests/sseq_index_test.sh 
+
+
 EOU
 }
 
@@ -24,6 +28,11 @@ mkdir -p $FOLD
 bin=$name          ## installed binary built by om   
 
 script=$SDIR/sseq_index_test.py 
+
+
+c2cut=40
+export C2CUT=${C2CUT:-$c2cut}
+export sseq_index_ab_chi2_ABSUM_MIN=$C2CUT
 
 
 executable=G4CXTest 
