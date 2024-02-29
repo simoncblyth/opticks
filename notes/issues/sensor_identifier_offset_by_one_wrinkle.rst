@@ -12,6 +12,30 @@ Thats because the stree/iinst identity is never incremented
 unlike the CSGFoundry one which need to be uploaded.  
 
 
+Commits
+---------
+
+::
+
+    epsilon:opticks blyth$ git commit -m "testing SEvt::getLocalHit_ALT based on stree/iinst with u4/tests/U4HitTest.sh shows that it reduces hit handling leak by factor of 10 down to difficult to measure regime, review the sensor_identifier offsetting and how to better encapsulate : no action yet" 
+    [master 345255288] testing SEvt::getLocalHit_ALT based on stree/iinst with u4/tests/U4HitTest.sh shows that it reduces hit handling leak by factor of 10 down to difficult to measure regime, review the sensor_identifier offsetting and how to better encapsulate : no action yet
+     8 files changed, 454 insertions(+), 29 deletions(-)
+     create mode 100644 notes/issues/sensor_identifier_offset_by_one_wrinkle.rst
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ 
+    epsilon:opticks blyth$ git push 
+    Connection to bitbucket.org port 22 [tcp/ssh] succeeded!
+    Counting objects: 17, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (17/17), done.
+    Writing objects: 100% (17/17), 7.24 KiB | 2.41 MiB/s, done.
+    Total 17 (delta 15), reused 0 (delta 0)
+    To bitbucket.org:simoncblyth/opticks.git
+       8de33e21d..345255288  master -> master
+    epsilon:opticks blyth$ 
+
+
+
 Why the -1 fiddle ? How to contain it better ?
 ------------------------------------------------
 
