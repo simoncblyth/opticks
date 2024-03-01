@@ -281,6 +281,7 @@ struct stree
     static constexpr const char* FACTOR = "factor.npy" ;
     static constexpr const char* MATERIAL = "material" ;
     static constexpr const char* SURFACE = "surface" ;
+    static constexpr const char* MESH = "mesh" ;
     static constexpr const char* STANDARD = "standard" ;
 
 
@@ -346,7 +347,7 @@ struct stree
 
     NPFold* material ;   // material properties from G4 MPTs
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
-
+    NPFold* mesh ; // triangulation of all solids 
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
@@ -634,7 +635,8 @@ inline stree::stree()
 #endif
     standard(new sstandard),
     material(new NPFold),
-    surface(new NPFold)
+    surface(new NPFold),
+    mesh(new NPFold)
 {
     init(); 
 }
@@ -720,6 +722,10 @@ inline std::string stree::desc() const
        << " stree::desc.surface "  
        << std::endl
        << ( surface ? surface->desc() : "-" )
+       << std::endl
+       << " stree::desc.mesh "  
+       << std::endl
+       << ( mesh ? mesh->desc() : "-" )
        << std::endl
        << " stree::desc.csg "  
        << std::endl
@@ -2146,6 +2152,7 @@ inline NPFold* stree::serialize() const
 
     if(material) fold->add_subfold( MATERIAL, material );  
     if(surface)  fold->add_subfold( SURFACE,  surface );  
+    if(mesh)     fold->add_subfold( MESH,     mesh );  
 
 
     fold->add( SUNAME,   NPX::Holder(suname) ); 
@@ -2343,6 +2350,7 @@ inline void stree::import(const NPFold* fold)
 
     material = fold->get_subfold( MATERIAL) ;
     surface  = fold->get_subfold( SURFACE ) ;
+    mesh     = fold->get_subfold( MESH ) ;
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   fold->get(INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  fold->get(IINST)); 

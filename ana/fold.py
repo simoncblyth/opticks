@@ -277,9 +277,11 @@ class Fold(object):
         symbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.names = self.get_names(base)
 
+        enough_symbols = len(self.names) <= len(symbols)
+
         for i, name in enumerate(self.names):
             path = os.path.join(base, name)
-            symbol = symbols[i]
+            symbol = symbols[i] if enough_symbols else "sym%d" % i 
             stem = name[:-4] if name.endswith(".npy") or name.endswith(".txt") else name
 
             self.paths.append(path)

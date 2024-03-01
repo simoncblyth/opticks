@@ -37,6 +37,7 @@ cudalin-(){          . $(externals-dir)/cudalin.bash           && cudalin-env $*
 cu-(){               . $(externals-dir)/cuda.bash              && cuda-env $* ; }
 optix-(){            . $(externals-dir)/optix.bash             && optix-env $* ; }
 optix7-(){           . $(externals-dir)/optix7.bash            && optix7-env $* ; }
+optix7sdk-(){        . $(externals-dir)/optix7sdk.bash         && optix7sdk-env $* ; }
 optix7c-(){          . $(externals-dir)/optix7c.bash           && optix7c-env $* ; }
 rcs-(){              . $(externals-dir)/rcs.bash               && rcs-env $* ; }
 optixnote-(){        . $(externals-dir)/optixnote.bash         && optixnote-env $* ; }

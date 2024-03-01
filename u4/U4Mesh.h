@@ -24,18 +24,17 @@ struct U4Mesh
     int             nv, nf ; 
     NP*             vtx ; 
     double*         vtx_ ; 
-    NP*             fpd ; 
+    NP*             fpd ;  // funny pyvista irregular 3/4 vertex face format
 
-#ifdef U4MESH_EXTRA
     NP*             face ;  // can include tri and quad
     int*            face_ ; 
     int             nt ; 
-    NP*             tri ;   // only tri 
-    int*            tri_ ; 
-    NP*             tpd ; 
-#endif
+    NP*             tri ;  // only triangle indices (more standard gltf suitable layout than other face formats) 
+    int*            tri_ ;  
+    NP*             tpd ;  // funny pyvista face format, but with all 3 vertex
 
     static void Save(const G4VSolid* solid, const char* base="$FOLD"); 
+    static NPFold* MakeFold(const std::vector<const G4VSolid*>& solids ) ; 
     static NPFold* Serialize(const G4VSolid* solid) ; 
     U4Mesh(const G4VSolid* solid);     
     void init(); 
@@ -45,11 +44,9 @@ struct U4Mesh
     void save(const char* base) const ; 
     std::string desc() const  ; 
 
-#ifdef U4MESH_EXTRA
     void init_face(); 
     void init_tri();
     void init_tpd();
-#endif
  
 };
 
@@ -57,6 +54,20 @@ inline void U4Mesh::Save(const G4VSolid* solid, const char* base) // static
 {
     NPFold* fold = U4Mesh::Serialize(solid) ; 
     fold->save(base); 
+}
+inline NPFold* U4Mesh::MakeFold(const std::vector<const G4VSolid*>& solids ) // static
+{
+    NPFold* mesh = new NPFold ; 
+    int num_solid = solids.size(); 
+    for(int i=0 ; i < num_solid ; i++)
+    {
+        const G4VSolid* so = solids[i];
+        G4String name = so->GetName() ;  // CAUTION: BY VALUE 
+        const char* key = name.c_str() ; 
+        NPFold* sub = Serialize(so) ;    
+        mesh->add_subfold( key, sub ); 
+    }
+    return mesh ; 
 }
 
 inline NPFold* U4Mesh::Serialize(const G4VSolid* solid) // static
@@ -74,14 +85,12 @@ inline U4Mesh::U4Mesh(const G4VSolid* solid_):
     vtx(NP::Make<double>(nv, 3)),
     vtx_(vtx->values<double>()),
     fpd(nullptr)
-#ifdef U4MESH_EXTRA
    ,face(NP::Make<int>(nf,4)),
     face_(face->values<int>()),
     nt(0),
     tri(nullptr),
     tri_(nullptr),
     tpd(nullptr)
-#endif
 {
     init(); 
 }
@@ -90,11 +99,11 @@ inline void U4Mesh::init()
 {
     init_vtx() ; 
     init_fpd() ; 
-#ifdef U4MESH_EXTRA
+
     init_face() ; 
     init_tri() ; 
     init_tpd() ; 
-#endif
+
 }
 
 inline void U4Mesh::init_vtx()
@@ -163,11 +172,11 @@ inline NPFold* U4Mesh::serialize() const
     NPFold* fold = new NPFold ; 
     fold->add("vtx",  vtx ); 
     fold->add("fpd",  fpd ); 
-#ifdef U4MESH_EXTRA
+
     fold->add("face", face ); 
     fold->add("tri",  tri ); 
     fold->add("tpd",  tpd ); 
-#endif
+
     return fold ; 
 }
 
@@ -192,7 +201,6 @@ inline std::string U4Mesh::desc() const
 }
 
 
-#ifdef U4MESH_EXTRA
 /**
 U4Mesh::init_face
 -------------------
@@ -242,13 +250,13 @@ Quads are split into two tri::
 
            +-------z
            |     / |
-           |   /   |
-           | /     |
+           |   /   |   1:(x->y->z)   0,1,2 
+           | /  (1)|
            x-------y
 
            w-------z
-           |     / |
-           |   /   |
+           | (2) / |
+           |   /   |   2:(x->z->w)  0,2,3
            | /     |
            x-------+
 
@@ -338,6 +346,5 @@ inline void U4Mesh::init_tpd()
     }
     tpd = NPX::Make<int>(_tpd); 
 }
-#endif
 
 

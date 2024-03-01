@@ -13,6 +13,9 @@ struct BI
 
     OptixBuildInputCustomPrimitiveArray&       getBuildInputCPA()  ; 
     const OptixBuildInputCustomPrimitiveArray& getBuildInputCPA() const ; 
+
+    OptixBuildInputTriangleArray& getBuildInputTA() ; 
+    const OptixBuildInputTriangleArray& getBuildInputTA() const ; 
     
 };
 
@@ -32,5 +35,17 @@ inline const OptixBuildInputCustomPrimitiveArray& BI::getBuildInputCPA() const
     return buildInput.customPrimitiveArray ;  
 #endif
 }
+
+
+inline OptixBuildInputTriangleArray& BI::getBuildInputTA()
+{
+    return buildInput.triangleArray ; 
+}
+inline const OptixBuildInputTriangleArray& BI::getBuildInputTA() const
+{
+    return buildInput.triangleArray ; 
+}
+
+
 
 

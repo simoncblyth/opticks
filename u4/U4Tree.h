@@ -79,6 +79,7 @@ controlled via envvar::
 #include "U4SurfacePerfect.h"
 #include "U4SurfaceArray.h"
 
+#include "U4Mesh.h"
 #include "U4Scint.h"
 
 #include "U4Solid.h"
@@ -518,6 +519,7 @@ cf X4PhysicalVolume::convertSolids
 inline void U4Tree::initSolids()
 {
     initSolids_r(top); 
+    st->mesh = U4Mesh::MakeFold(solids) ; 
 }
 inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
 {
@@ -581,6 +583,9 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
     solids.push_back(so);
     st->soname.push_back(name); 
     st->solids.push_back(root); 
+
+    
+
 } 
 
 

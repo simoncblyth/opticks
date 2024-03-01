@@ -149,6 +149,9 @@ set(HEADERS
     U4SurfaceType.h 
     U4SurfacePerfect.h
     U4SurfaceArray.h 
+
+    U4Mesh.h
+
 )
 
 

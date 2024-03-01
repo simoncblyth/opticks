@@ -6,7 +6,7 @@ U4TreeCreateSSimTest.sh  : loads GDML, runs U4Tree::Create populating SSim/stree
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+SDIR=$(dirname $(realpath $BASH_SOURCE))
 
 bin=U4TreeCreateSSimTest 
 defarg="info_run_ana"
@@ -42,15 +42,18 @@ if [ ! -f "$gdmlpath" ]; then
 fi 
 export ${GEOM}_GDMLPath=$gdmlpath
 
-
-fold=/tmp/$USER/opticks/$bin
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+fold=$TMP/$bin
+mkdir -p $fold
 
 export BASE=$fold   # where SSim loaded from when executable has any argumnent
 export FOLD=$fold   # where SSim saved 
 
+
 script=$SDIR/$bin.py 
 
-vars="BASH_SOURCE SDIR bin GEOM gdmlpath BASE FOLD script"
+vars="BASH_SOURCE SDIR bin GEOM gdmlpath tmp TMP BASE FOLD script"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
@@ -71,10 +74,7 @@ if [ "${arg/load}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    case $(uname) in
-    Darwin) lldb__ $bin ;;
-    Linux)  gdb__ $bin ;;
-    esac
+    dbg__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 

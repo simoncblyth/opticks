@@ -56,7 +56,7 @@ struct U4HitTest
     std::string smry() const ; 
 
     void convertHit(unsigned hidx, bool is_repeat); 
-    void convertHit_ALT(unsigned hidx, bool is_repeat); 
+    void convertHit_LEAKY(unsigned hidx, bool is_repeat); 
     void convertHit_COMPARE(unsigned hidx, bool is_repeat); 
 
     void convertHits(); 
@@ -162,13 +162,13 @@ inline void U4HitTest::convertHit(unsigned hidx, bool is_repeat)
     LOG_IF(info, delta_rs > 0 || is_repeat) << brief() ; 
 }
 
-inline void U4HitTest::convertHit_ALT(unsigned hidx, bool is_repeat)
+inline void U4HitTest::convertHit_LEAKY(unsigned hidx, bool is_repeat)
 {
     SProf::SetTag(hidx); 
     SProf::Add("Head"); 
 
     sev->getHit(global, hidx); 
-    sev->getLocalHit_ALT( ht_alt, local_alt,  hidx); 
+    sev->getLocalHit_LEAKY( ht_alt, local_alt,  hidx); 
  
     U4HitGet::ConvertFromPhoton(hit,global,local_alt, ht_alt); 
 
@@ -186,7 +186,7 @@ inline void U4HitTest::convertHit_COMPARE(unsigned hidx, bool is_repeat)
 
     sev->getHit(global, hidx); 
     sev->getLocalHit( ht, local,  hidx); 
-    sev->getLocalHit_ALT( ht_alt, local_alt,  hidx); 
+    sev->getLocalHit_LEAKY( ht_alt, local_alt,  hidx); 
 
     bool local_equal_flags = sphoton::EqualFlags(local, local_alt) ; 
 
@@ -247,9 +247,9 @@ inline void U4HitTest::convertHits()
         {
             convertHit_COMPARE(hit_idx, false); 
         }
-        else if(strcmp(METHOD, "convertHit_ALT") == 0 )
+        else if(strcmp(METHOD, "convertHit_LEAKY") == 0 )
         {
-            convertHit_ALT(hit_idx, false); 
+            convertHit_LEAKY(hit_idx, false); 
         }
 
         // if( delta_rs > 0 ) convertHit(hit_idx, true);   
