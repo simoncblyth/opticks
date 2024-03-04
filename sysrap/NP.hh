@@ -309,7 +309,11 @@ struct NP
     template<typename T> void pscale(T scale, unsigned column);
     template<typename T> void pscale_add(T scale, T add, unsigned column);
     template<typename T> void pdump(const char* msg="NP::pdump", T d_scale=1., T v_scale=1.) const ; 
+
     template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
+    template<int N, typename T> void minmax2D_reshaped(T* mn, T* mx, int item_stride=1, int item_offset=0) ; // not-const as temporarily changes shape
+    template<typename T>        void minmax2D(T* mn, T* mx, int item_stride=1, int item_offset=0 ) const ; 
+
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
     template<typename T> NP*  trapz() const ;                      // composite trapezoidal integration, requires pshaped
 
@@ -3393,6 +3397,69 @@ template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j, int item ) 
 }
 
 
+
+/**
+NP::minmax2D_reshaped<N,T>
+--------------------------
+
+1. Temporarily change shape to (-1,N) : ie array of items with N element of type T 
+2. invoked minmax2D determining value range of the items
+3. return the shape back to the original 
+
+Consider array of shape (1000,32,4,4) with (position,time) in [:,:,0]
+After reshaping that becomes (1000*32*4, 4 ) 
+BUT only every fourth 4-plet is (position, time)
+
+So (item_stride, item_offset) needs to be (4,0) where the 
+item is the 4-plet chosen with the N template parameter.
+
+**/
+template<int N, typename T> inline void NP::minmax2D_reshaped(T* mn, T* mx, int item_stride, int item_offset ) 
+{
+    std::vector<int> sh = shape ; 
+    change_shape(-1,N); 
+
+    assert( shape.size() == 2 ); 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+    assert( nj == N && ni > 0 ); 
+
+    minmax2D<T>(mn, mx, item_stride, item_offset ); 
+
+    reshape(sh); 
+}
+
+/**
+NP::minmax2D
+-------------
+
+Assuming shape (-1, N) where N is typically small (eg 4)
+and the mn, mx arguments point to structures 
+with at least N elements. 
+
+**/
+
+template<typename T> inline void NP::minmax2D(T* mn, T* mx, int item_stride, int item_offset ) const 
+{
+    assert( shape.size() == 2 ); 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+
+    for(int j=0 ; j < nj ; j++) mn[j] = std::numeric_limits<T>::max() ; 
+    for(int j=0 ; j < nj ; j++) mx[j] = std::numeric_limits<T>::min() ; 
+
+    const T* vv = cvalues<T>() ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        if( i % item_stride != item_offset ) continue ; 
+        for(int j=0 ; j < nj ; j++)
+        {
+            int idx = i*nj + j ; 
+            if( vv[idx] < mn[j] ) mn[j] = vv[idx] ;   
+            if( vv[idx] > mx[j] ) mx[j] = vv[idx] ;   
+        }
+    }
+}
 
 
 /**
