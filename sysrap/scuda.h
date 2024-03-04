@@ -2666,6 +2666,10 @@ struct scuda
     static std::string serialize( const float3& v ); 
     static std::string serialize( const float4& v ); 
 
+    static float4 center_extent_( const float* mn, const float* mx ); 
+    static float4 center_extent( const float3& mn, const float3& mx );
+    static float4 center_extent( const float4& mn, const float4& mx );
+
 };
 
 template<typename T>
@@ -2780,8 +2784,31 @@ inline std::string scuda::serialize(const float4& v )
 }
 
 
+/**
+scuda::center_extent
+----------------------
 
+The aim of center_extent "ce" is to define a box 
+that contains all the points of a point cloud
+here defined by the mn and mx coordinate points.
 
+**/
+inline float4 scuda::center_extent_( const float* mn, const float* mx )
+{
+    float3 center = make_float3( (mn[0]+mx[0])/2.f, (mn[1]+mx[1])/2.f, (mn[2]+mx[2])/2.f ) ;   
+    float3 mx_rel = make_float3( mx[0],mx[1],mx[2] ) - center ; 
+    float3 mn_rel = center - make_float3( mn[0],mn[1],mn[2] ) ; 
+    float extent = fmaxf( fmaxf(mx_rel), fmaxf(mn_rel) ) ; 
+    return make_float4( center, extent ); 
+}
+inline float4 scuda::center_extent( const float3& mn, const float3& mx )
+{
+    return center_extent_(&mn.x, &mx.x); 
+}
+inline float4 scuda::center_extent( const float4& mn, const float4& mx )
+{
+    return center_extent_(&mn.x, &mx.x); 
+}
 
 
 inline std::ostream& operator<<(std::ostream& os, const float2& v)

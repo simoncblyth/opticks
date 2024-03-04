@@ -48,7 +48,7 @@ class AttrBase(object):
         self.__dict__["_prefix"] = prefix
         self.__dict__["_publish"] = publish
 
-    def __setattr__(self, name:str, value):    
+    def __setattr__(self, name, value):    
         self.__dict__[name] = value
         key = "%s%s" % (self._prefix, name)
         if self._publish and not name.startswith("_"):

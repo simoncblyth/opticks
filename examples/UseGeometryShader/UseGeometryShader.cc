@@ -2,11 +2,18 @@
 UseGeometryShader : flying point visualization of uncompressed step-by-step photon records
 =============================================================================================
 
+Usage::
+
+    ~/o/examples/UseGeometryShader/build.sh   ## non-CMake build
+    ~/o/examples/UseGeometryShader/go.sh      ## CMake build
+
 * started from https://www.glfw.org/docs/latest/quick.html#quick_example
 * reference on geometry shaders https://open.gl/geometry
 * see notes/issues/geometry-shader-flying-photon-visualization.rst
 
 TODO: 
+
+0. avoid hardcoded assumptions on record positions and times
 
 1. more encapsulation/centralization of GLFW/OpenGL mechanics and viz math down 
    into the header only imps: SGLFW.h and SGLM.h
@@ -18,16 +25,21 @@ TODO:
 4. rotation 
 
 
-Both compressed and full record visualization work but currently they 
-need adhoc time+space scalings to make them behave similar to each other.
-Need a better way to make them behave like each other and automate the setting 
-of extents. 
-
 Attempt to control everything via domain uniforms adds lots of complication, 
-is there a better way ?
+is there a better way ? 
 
-    ARG=r ./go.sh run   ## this is default 
-    ARG=c ./go.sh run
+
+WIP: remove record array position/time hardcoding
+---------------------------------------------------
+
+::
+
+    In [15]: np.min(t.record[:,:,0].reshape(-1,4),axis=0)
+    Out[15]: array([-9.,  0., -9.,  0.], dtype=float32)
+
+    In [16]: np.max(t.record[:,:,0].reshape(-1,4),axis=0)
+    Out[16]: array([9., 0., 9., 9.], dtype=float32)
+
 
 **/
 
@@ -39,6 +51,7 @@ is there a better way ?
 #include <string>
 #include <sstream>
 
+#include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sframe.h"
@@ -53,10 +66,15 @@ static const char* fragment_shader_text = U::ReadString("$SHADER_FOLD/frag.glsl"
 
 int main(int argc, char** argv)
 {
-    //const char* ARRAY_PATH = "$ARRAY_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
-    const char* ARRAY_PATH = "$ARRAY_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
-    NP* a = NP::Load(ARRAY_PATH) ;   
-    if(a==nullptr) std::cout << "FAILED to load [" << ARRAY_PATH << "]" << std::endl ; 
+    std::cout << " vertex_shader_text " << ( vertex_shader_text ? "YES" : "NO" ) << std::endl ; 
+    std::cout << " geometry_shader_text " << ( geometry_shader_text ? "YES" : "NO" ) << std::endl ; 
+    std::cout << " fragment_shader_text " << ( fragment_shader_text ? "YES" : "NO" ) << std::endl ; 
+
+
+    //const char* RECORD_PATH = "$RECORD_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
+    const char* RECORD_PATH = "$RECORD_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
+    NP* a = NP::Load(RECORD_PATH) ;   
+    if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ; 
     assert(a); 
 
     assert(a->shape.size() == 4);   
@@ -67,7 +85,8 @@ int main(int argc, char** argv)
     GLsizei a_count = a->shape[0]*a->shape[1] ;   // all step points across all photon
 
     std::cout 
-        << " ARRAY_PATH " << ARRAY_PATH
+        << "UseGeometryShader.main "
+        << " RECORD_PATH " << RECORD_PATH
         << " a.sstr " << a->sstr() 
         << " is_compressed " << is_compressed 
         << " a_first " << a_first 
@@ -75,35 +94,90 @@ int main(int argc, char** argv)
         << std::endl 
         ; 
 
-    float4 post_center = make_float4( 0.f, 0.f, 0.f,  0.f ); 
-    float4 post_extent = make_float4( 1.f, 1.f, 1.f, 10.f ); 
+    float4 mn = {} ; 
+    float4 mx = {} ; 
+    static const int N = 4 ;   
 
-    // Param.w is incremented from .x to .y by ,z  
-    glm::vec4 Param(0.f, post_extent.w, post_extent.w/1000.f , 0.f);    // t0, t1, dt, tc 
+    int item_stride = 4 ; 
+    int item_offset = 0 ; 
+
+    a->minmax2D_reshaped<N,float>(&mn.x, &mx.x, item_stride, item_offset ); 
+    // temporarily 2D array with item: 4-element space-time points
+
+    // HMM: with sparse "post" cloud this might miss the action
+    // by trying to see everything ? 
+
+    float4 ce = scuda::center_extent( mn, mx ); 
+
+    std::cout 
+        << "UseGeometryShader.main "
+        << std::endl   
+        << std::setw(20) << " mn " << mn 
+        << std::endl   
+        << std::setw(20) << " mx " << mx 
+        << std::endl   
+        << std::setw(20) << " ce " << ce
+        << std::endl   
+        ;
+
+    // Param holds time range and step with Param.w incremented in 
+    // the render loop to scrub the time from .x to .y by steps of .z  
+
+    float t0 = ssys::getenvfloat("T0", mn.w ); 
+    float t1 = ssys::getenvfloat("T1", mx.w ); 
+    float ts = ssys::getenvfloat("TS", 1000. ); 
+
+    std::cout 
+        << "UseGeometryShader.main "
+        << std::endl   
+        << " T0 "
+        << std::fixed << std::setw(10) << std::setprecision(4) << t0 
+        << " T1 "
+        << std::fixed << std::setw(10) << std::setprecision(4) << t1
+        << " TS "
+        << std::fixed << std::setw(10) << std::setprecision(4) << ts
+        << std::endl 
+        ;
+  
+
+    glm::vec4 Param(t0, t1, (t1-t0)/ts, t0);    // t0, t1, dt, tc 
 
     sframe fr ; 
-    fr.ce.x = 0.f ; 
-    fr.ce.y = 0.f ; 
-    fr.ce.z = 0.f ; 
-    fr.ce.w = 10.f ; 
+    fr.ce = ce ; 
+
+    /*
+    float4 post_center = make_float4( ce.x, ce.y, ce.z,  mn.w  );        // minimum time as "center" of time 
+    float4 post_extent = make_float4( ce.w, ce.w, ce.w,  mx.w - mn.w );  // time range as "extent" of time 
+
+    HMM: THESE CURRENTLY NOT USED IN geom.glsl 
+    SHOULD THEY BE ? NO, THE VALUES COME IN THE RECORD POINTS 
+    SO THEY DONT NEED TO BE USED THERE.
+    AHHA: I RECALL THE ORIGIN OF THESE WAS WHEN WAS USING DOMAIN COMPRESSED REC.
+    THE POST_CENTER AND POST_EXTENT WAS USED TO DO THE UNCOMPRESSION.
+    THE DETAILS ARE AN ARTIFACT OF HOW THE DOMAIN COMPRESSION WAS DONE.
+   
+    BUT: THE CENTER EXTENT IS NEEDED FOR sframe IN ORDER TO TARGET THE 
+    VIEW AT THE POINTS. 
+    */
+
 
     SGLM sglm ; 
     sglm.set_frame(fr); 
     sglm.update(); 
     //sglm.dump();
 
-    const char* title = ARRAY_PATH ; 
+    const char* title = RECORD_PATH ; 
     SGLFW sglfw(sglm.Width(), sglm.Height(), title );   
     sglfw.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
 
-    // The four strings below are names present in rec_flying_point/geom.glsl
+    // The strings below are names of uniforms present in rec_flying_point/geom.glsl
     // SGLFW could hold a map of uniform locations keyed on the names
     // which are grabbed from the shader source by pattern matching uniform lines  
 
     GLint ModelViewProjection_location = glGetUniformLocation(sglfw.program, "ModelViewProjection");   SGLFW::check(__FILE__, __LINE__);
     GLint Param_location               = glGetUniformLocation(sglfw.program, "Param");                 SGLFW::check(__FILE__, __LINE__);
-    GLint post_center_location         = glGetUniformLocation(sglfw.program, "post_center");           SGLFW::check(__FILE__, __LINE__);
-    GLint post_extent_location         = glGetUniformLocation(sglfw.program, "post_extent");           SGLFW::check(__FILE__, __LINE__);
+    //GLint post_center_location         = glGetUniformLocation(sglfw.program, "post_center");           SGLFW::check(__FILE__, __LINE__);
+    //GLint post_extent_location         = glGetUniformLocation(sglfw.program, "post_extent");           SGLFW::check(__FILE__, __LINE__);
 
     unsigned vao ;                  SGLFW::check(__FILE__, __LINE__); 
     glGenVertexArrays (1, &vao);    SGLFW::check(__FILE__, __LINE__);
@@ -115,12 +189,23 @@ int main(int argc, char** argv)
     glBufferData(GL_ARRAY_BUFFER, a->arr_bytes(), a->bytes(), GL_STATIC_DRAW);  SGLFW::check(__FILE__, __LINE__);
 
     std::string rpos_spec = a->get_meta<std::string>("rpos", "");  
-    std::cout << " rpos_spec [" << rpos_spec << "]" << std::endl ;  
+    std::cout 
+        << "UseGeometryShader.main "
+        << " rpos_spec [" << rpos_spec << "]" 
+        << std::endl 
+        ;  
+
     sglfw.enableArrayAttribute("rpos", rpos_spec.c_str() ); 
  
     int width, height;
-    glfwGetFramebufferSize(sglfw.window, &width, &height); // windows can be resized, so need to grab it 
-    std::cout << " width " << width << " height " << height << std::endl ; 
+    glfwGetFramebufferSize(sglfw.window, &width, &height); 
+    std::cout 
+        << "UseGeometryShader.main "
+        << " width " << width << " height " << height 
+        << std::endl 
+        ; 
+    // windows can be resized, so need to grab it 
+    // Q: what about resizes during render loop ? HMM: need callback for that ?
 
     const glm::mat4& world2clip = sglm.world2clip ; 
     const GLfloat* mvp = (const GLfloat*) glm::value_ptr(world2clip) ;  
@@ -135,14 +220,16 @@ int main(int argc, char** argv)
         glClear(GL_COLOR_BUFFER_BIT);
         glUseProgram(sglfw.program);
 
-        Param.w += Param.z ; if( Param.w > Param.y ) Param.w = Param.x ;  // cycling time : Param.w from .x to .y with .z steps
+        Param.w += Param.z ;  // input propagation time 
+        if( Param.w > Param.y ) Param.w = Param.x ;  // input time : Param.w from .x to .y with .z steps
 
         glUniformMatrix4fv(ModelViewProjection_location, 1, GL_FALSE, mvp );
         glUniform4fv(      Param_location,               1, glm::value_ptr(Param) );
-        glUniform4fv( post_center_location,              1, &post_center.x );
-        glUniform4fv( post_extent_location,              1, &post_extent.x );
+        //glUniform4fv( post_center_location,              1, &post_center.x );
+        //glUniform4fv( post_extent_location,              1, &post_extent.x );
 
-        glDrawArrays(GL_LINE_STRIP, a_first, a_count);
+        GLenum prim = geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
+        glDrawArrays(prim, a_first, a_count);
 
         glfwSwapBuffers(sglfw.window);
         glfwPollEvents();

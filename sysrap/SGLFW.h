@@ -1,4 +1,24 @@
 #pragma once
+/**
+SGLFW.h : Trying to encapsulate OpenGL graphics with a light touch
+====================================================================
+
+SGLFW_GLboolean
+   string parse
+
+SGLFW_bool
+   string parse
+
+SGLFW_GLenum
+   string parse
+
+SGLFW_Attribute
+   parse attribute metadata strings such as "4,GL_FLOAT,GL_FALSE,64,0,false"
+
+SGLFW
+   light touch encapsulation of OpenGL window and shader program 
+    
+**/
 
 #include <cassert>
 #include <cstring>
@@ -132,11 +152,12 @@ struct SGLFW_Attribute
 
     GLuint index ; 
     GLint size ;                   // field 0 : number of components must be one of : 1,2,3,4 
-    GLenum type ;                  // field 1
-    GLboolean normalized ;         // field 2
+    GLenum type ;                  // field 1 : normally GL_FLOAT 
+    GLboolean normalized ;         // field 2 : normalized means in range 0->1
     GLsizei stride ;               // field 3 : in bytes eg for 4,4 float photon/record struct stride is 4*4*4=64
-    size_t   byte_offset ;         // field 4
+    size_t   byte_offset ;         // field 4 : allows access to different parts of array of structs 
     bool     integer_attribute ;   // field 5       
+
     void*    byte_offset_pointer ; // derived from byte_offset 
 
 
@@ -145,7 +166,7 @@ struct SGLFW_Attribute
 };
 
 
-SGLFW_Attribute::SGLFW_Attribute(const char* name_, const char* spec_)
+inline SGLFW_Attribute::SGLFW_Attribute(const char* name_, const char* spec_)
     :
     name(strdup(name_)),
     spec(strdup(spec_)),
@@ -175,7 +196,7 @@ SGLFW_Attribute::SGLFW_Attribute(const char* name_, const char* spec_)
     byte_offset_pointer = (void*)byte_offset ; 
 }
 
-std::string SGLFW_Attribute::desc() const 
+inline std::string SGLFW_Attribute::desc() const 
 {
     std::stringstream ss ; 
     ss << "SGLFW_Attribute::desc" << std::endl 
@@ -197,10 +218,19 @@ std::string SGLFW_Attribute::desc() const
 }
 
 
+/**
+SGLFW
+------
 
+Light touch encapsulation of OpenGL window and shader program 
+(light touch means: trying to hide boilerplate, not making lots of decisions for user)
+
+**/
 
 struct SGLFW
 {
+    static constexpr const char* TITLE = "SGLFW" ; 
+
     GLFWwindow* window ; 
     int width ; 
     int height ; 
@@ -209,7 +239,7 @@ struct SGLFW
     GLuint program ; 
 
 
-    SGLFW(int width, int height, const char* title ); 
+    SGLFW(int width, int height, const char* title=nullptr ); 
     virtual ~SGLFW(); 
 
     void init(); 
@@ -223,23 +253,32 @@ struct SGLFW
 }; 
 
 
-SGLFW::SGLFW(int width_, int height_, const char* title_ )
+inline SGLFW::SGLFW(int width_, int height_, const char* title_ )
     :
     width(width_),
     height(height_),
-    title(strdup(title_)),
+    title(title_ ? strdup(title_) : TITLE),
     program(0)
 {
     init(); 
 }
 
-SGLFW::~SGLFW()
+inline SGLFW::~SGLFW()
 {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
 
-void SGLFW::init()
+/**
+SGLFW::init
+-------------
+
+1. OpenGL initialize
+2. create window
+
+**/
+
+inline void SGLFW::init()
 {
     glfwSetErrorCallback(SGLFW::error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
@@ -296,14 +335,22 @@ void SGLFW::init()
 
     int interval = 1 ; // The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.
     glfwSwapInterval(interval);
-
 }
+
+/**
+SGLFW::createProgram
+---------------------
+
+Compiles and links shader strings into a program referred from integer *program* 
+
+**/
 
 inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text )
 {
-    std::cout << " vertex_shader_text " << std::endl << vertex_shader_text << std::endl ;
-    std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ;
-    std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ;
+    std::cout << "[SGLFW::createProgram" << std::endl ; 
+    //std::cout << " vertex_shader_text " << std::endl << vertex_shader_text << std::endl ;
+    //std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ;
+    //std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ;
 
     int params = -1;
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW::check(__FILE__, __LINE__);
@@ -335,6 +382,7 @@ inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geo
     glLinkProgram(program);                    SGLFW::check(__FILE__, __LINE__);
 
     glUseProgram(program);
+    std::cout << "]SGLFW::createProgram" << std::endl ; 
 }
 
 /**
@@ -353,7 +401,7 @@ void SGLFW::enableArrayAttribute( const char* name, const char* spec )
 
     att.index = glGetAttribLocation( program, name );   SGLFW::check(__FILE__, __LINE__);
 
-    std::cout << att.desc() << std::endl ; 
+    std::cout << "SGLFW::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
 
     glEnableVertexAttribArray(att.index);      SGLFW::check(__FILE__, __LINE__);
 

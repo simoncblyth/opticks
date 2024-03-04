@@ -1,4 +1,15 @@
-// ./sphoton_test.sh 
+/**
+sphoton_test.cc
+=================
+
+::
+
+     ~/o/sysrap/tests/sphoton_test.sh 
+     OFFSET=100,100,100 ~/o/sysrap/tests/sphoton_test.sh 
+     OFFSET=1000,1000,1000 ~/o/sysrap/tests/sphoton_test.sh 
+
+
+**/
 
 #include <iostream>
 #include <array>
@@ -393,8 +404,35 @@ void sphoton_test::dot_pol_cross_mom_nrm()
 } 
 
 
+/**
+sphoton_test::make_record_array
+---------------------------------
+
+::
+
+    In [15]: np.min(t.record[:,:,0].reshape(-1,4),axis=0)
+    Out[15]: array([-9.,  0., -9.,  0.], dtype=float32)
+
+    In [16]: np.max(t.record[:,:,0].reshape(-1,4),axis=0)
+    Out[16]: array([9., 0., 9., 9.], dtype=float32)
+
+
+**/
+
+
+
 void sphoton_test::make_record_array()
 {
+    std::vector<float>* offset = ssys::getenvfloatvec("OFFSET","0,0,0"); 
+    assert( offset && offset->size() == 3 ); 
+
+    std::cout << "sphoton_test::make_record_array OFFSET [ " ; 
+    for(int i=0 ; i < 3 ; i++) std::cout 
+         << std::fixed << std::setw(10) << std::setprecision(4) << (*offset)[i] 
+         ;
+    std::cout << " ]" << std::endl ;  
+
+
     NP* a = NP::Make<float>( 360, 10, 4, 4 ); 
     int ni = a->shape[0] ; 
     int nj = a->shape[1] ; 
@@ -414,9 +452,9 @@ void sphoton_test::make_record_array()
             sphoton p = {} ; 
 
             // XZ ripples on pond heading outwards from origin
-            p.pos.x = ct*float(j) ;  
-            p.pos.y = 0.f ;  
-            p.pos.z = st*float(j) ; 
+            p.pos.x = (*offset)[0] + ct*float(j) ;  
+            p.pos.y = (*offset)[1] + 0.f ;  
+            p.pos.z = (*offset)[2] + st*float(j) ; 
             p.time = float(j) ; 
 
             p.mom.x = ct ;  
@@ -427,6 +465,27 @@ void sphoton_test::make_record_array()
         }
     }
     a->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" ); 
+    // Q:What reads this OpenGL attribute metadata ?
+    // A:sysrap/SGLFW.h SGLFW_Attribute
+
+
+    static const int N = 4 ;  
+    float mn[N] = {} ;  
+    float mx[N] = {} ;
+
+    int item_stride = 4 ; 
+    int item_offset = 0 ; 
+
+    a->minmax2D_reshaped<N,float>(mn, mx, item_stride, item_offset ); 
+    for(int j=0 ; j < N ; j++) std::cout 
+          << std::setw(2) << j 
+          << " mn " 
+          << std::setw(10) << std::fixed << std::setprecision(4) << mn[j]
+          << " mx " 
+          << std::setw(10) << std::fixed << std::setprecision(4) << mx[j]
+          << std::endl
+          ;
+
     a->save("$FOLD/record.npy"); 
 }
 
