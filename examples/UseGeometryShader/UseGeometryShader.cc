@@ -13,11 +13,9 @@ TODO:
 
 2. WASD navigation controls using SGLFW callback passing messages to SGLM::INSTANCE
 
-3. expand to working with compressed records when have implemented those
+3. bring back seqhis photon history selection 
 
-4. bring back seqhis photon history selection 
-
-5. rotation 
+4. rotation 
 
 
 Both compressed and full record visualization work but currently they 
@@ -49,39 +47,30 @@ is there a better way ?
 
 #include "NP.hh"
 
-static const char* SHADER_FOLD = getenv("SHADER_FOLD"); 
-static const char* vertex_shader_text = U::ReadString(SHADER_FOLD, "vert.glsl"); 
-static const char* geometry_shader_text = U::ReadString(SHADER_FOLD, "geom.glsl"); 
-static const char* fragment_shader_text = U::ReadString(SHADER_FOLD, "frag.glsl"); 
-static const char* ARRAY_FOLD = getenv("ARRAY_FOLD"); 
+static const char* vertex_shader_text = U::ReadString("$SHADER_FOLD/vert.glsl"); 
+static const char* geometry_shader_text = U::ReadString("$SHADER_FOLD/geom.glsl"); 
+static const char* fragment_shader_text = U::ReadString("$SHADER_FOLD/frag.glsl"); 
 
 int main(int argc, char** argv)
 {
-    const char* ARG = getenv("ARG"); 
-    char arg = ARG == nullptr ? 'r' : ARG[0] ; 
-    const char* ARRAY_NAME = nullptr ; 
-    switch(arg)
-    {
-        case 'c': ARRAY_NAME = "rec.npy" ; break ; 
-        case 'r': ARRAY_NAME = "record.npy" ; break ; 
-        default : ARRAY_NAME = "record.npy" ; break ; 
-    }
-    // record.npy : full step record with shape like (10000, 10, 4, 4) and type np.float32 
-    // rec.npy    : compressed step record with shape like (10000, 10, 2, 4) and type np.int16 
-
-    NP* a = NP::Load(ARRAY_FOLD, ARRAY_NAME) ;   // expecting shape like (10000, 10, 4, 4)
-    assert( a && "FAILED to load from ARRAY_FOLD " ); 
+    //const char* ARRAY_PATH = "$ARRAY_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
+    const char* ARRAY_PATH = "$ARRAY_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
+    NP* a = NP::Load(ARRAY_PATH) ;   
+    if(a==nullptr) std::cout << "FAILED to load [" << ARRAY_PATH << "]" << std::endl ; 
+    assert(a); 
 
     assert(a->shape.size() == 4);   
     bool is_compressed = a->ebyte == 2 ; 
-    GLsizei a_count = a->shape[0]*a->shape[1] ;  
+    assert( is_compressed == false ); 
+
     GLint   a_first = 0 ; 
+    GLsizei a_count = a->shape[0]*a->shape[1] ;   // all step points across all photon
 
     std::cout 
-        << " arg " << arg 
-        << " ARRAY_NAME " << ARRAY_NAME  
+        << " ARRAY_PATH " << ARRAY_PATH
         << " a.sstr " << a->sstr() 
         << " is_compressed " << is_compressed 
+        << " a_first " << a_first 
         << " a_count " << a_count 
         << std::endl 
         ; 
@@ -91,7 +80,6 @@ int main(int argc, char** argv)
 
     // Param.w is incremented from .x to .y by ,z  
     glm::vec4 Param(0.f, post_extent.w, post_extent.w/1000.f , 0.f);    // t0, t1, dt, tc 
-
 
     sframe fr ; 
     fr.ce.x = 0.f ; 
@@ -104,20 +92,22 @@ int main(int argc, char** argv)
     sglm.update(); 
     //sglm.dump();
 
-
-    const char* title = ARRAY_NAME ; 
+    const char* title = ARRAY_PATH ; 
     SGLFW sglfw(sglm.Width(), sglm.Height(), title );   
     sglfw.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
 
+    // The four strings below are names present in rec_flying_point/geom.glsl
+    // SGLFW could hold a map of uniform locations keyed on the names
+    // which are grabbed from the shader source by pattern matching uniform lines  
+
     GLint ModelViewProjection_location = glGetUniformLocation(sglfw.program, "ModelViewProjection");   SGLFW::check(__FILE__, __LINE__);
     GLint Param_location               = glGetUniformLocation(sglfw.program, "Param");                 SGLFW::check(__FILE__, __LINE__);
-
     GLint post_center_location         = glGetUniformLocation(sglfw.program, "post_center");           SGLFW::check(__FILE__, __LINE__);
     GLint post_extent_location         = glGetUniformLocation(sglfw.program, "post_extent");           SGLFW::check(__FILE__, __LINE__);
 
-    unsigned vao ;                                                                                     SGLFW::check(__FILE__, __LINE__); 
-    glGenVertexArrays (1, &vao);                                                                       SGLFW::check(__FILE__, __LINE__);
-    glBindVertexArray (vao);                                                                           SGLFW::check(__FILE__, __LINE__);
+    unsigned vao ;                  SGLFW::check(__FILE__, __LINE__); 
+    glGenVertexArrays (1, &vao);    SGLFW::check(__FILE__, __LINE__);
+    glBindVertexArray (vao);        SGLFW::check(__FILE__, __LINE__);
 
     GLuint a_buffer ; 
     glGenBuffers(1, &a_buffer);                                                 SGLFW::check(__FILE__, __LINE__);
@@ -125,6 +115,7 @@ int main(int argc, char** argv)
     glBufferData(GL_ARRAY_BUFFER, a->arr_bytes(), a->bytes(), GL_STATIC_DRAW);  SGLFW::check(__FILE__, __LINE__);
 
     std::string rpos_spec = a->get_meta<std::string>("rpos", "");  
+    std::cout << " rpos_spec [" << rpos_spec << "]" << std::endl ;  
     sglfw.enableArrayAttribute("rpos", rpos_spec.c_str() ); 
  
     int width, height;
@@ -155,6 +146,7 @@ int main(int argc, char** argv)
 
         glfwSwapBuffers(sglfw.window);
         glfwPollEvents();
+
         exitloop = renderlooplimit > 0 && count > renderlooplimit ; 
         count++ ; 
     }

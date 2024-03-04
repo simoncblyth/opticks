@@ -3,6 +3,16 @@ usage(){ cat << EOU
 build.sh
 ===========
 
+Preparation of externals::
+
+    glew-
+    glew--
+
+    glfw-
+    glfw--
+
+
+
 ::
 
   EYE=0,-4,0,1 ./build.sh run
@@ -10,6 +20,10 @@ build.sh
 Using /tmp/sphoton_test/record.npy is convenient for debugging 
 as the record array can be defined to have photons moving in 
 very simple ways.  
+
+Create that record array with::
+
+    TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh
 
 
 Suspect the Linux CMake build may be finding a GLEW 

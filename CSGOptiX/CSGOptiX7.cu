@@ -554,7 +554,7 @@ extern "C" __global__ void __intersection__is()
     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
         const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
-        const unsigned hitKind = 0u ;            // only 8bit : could use to customize how attributes interpreted
+        const unsigned hitKind = 0u ;     // only up to 0x7f : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
 
 #ifdef WITH_PRD

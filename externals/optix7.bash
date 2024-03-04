@@ -37,6 +37,143 @@ TODO
 revisit optix7c-cd and SDK 
 
 
+optix-toolkit
+--------------
+
+* https://github.com/NVIDIA/optix-toolkit
+* https://github.com/NVIDIA/otk-pyoptix
+
+
+Help
+-----
+
+* https://github.com/NVIDIA/OptiX_Apps/tree/master
+
+
+
+optixGetPrimitiveType
+----------------------
+
+7.5::
+
+    Note: It is generally more efficient to have one hit shader handle multiple
+    primitive types (by switching on the value of optixGetPrimitiveType), rather
+    than have several hit shaders that implement the same ray behavior but differ
+    only in the type of geometry they expect.
+
+
+::
+
+     400 /// Builtin primitive types
+     401 ///
+     402 typedef enum OptixPrimitiveType
+     403 {
+     404     /// Custom primitive.
+     405     OPTIX_PRIMITIVE_TYPE_CUSTOM                        = 0x2500,
+     406     /// B-spline curve of degree 2 with circular cross-section.
+     407     OPTIX_PRIMITIVE_TYPE_ROUND_QUADRATIC_BSPLINE       = 0x2501,
+     408     /// B-spline curve of degree 3 with circular cross-section.
+     409     OPTIX_PRIMITIVE_TYPE_ROUND_CUBIC_BSPLINE           = 0x2502,
+     410     /// Piecewise linear curve with circular cross-section.
+     411     OPTIX_PRIMITIVE_TYPE_ROUND_LINEAR                  = 0x2503,
+     412     /// CatmullRom curve with circular cross-section.
+     413     OPTIX_PRIMITIVE_TYPE_ROUND_CATMULLROM              = 0x2504,
+     414     OPTIX_PRIMITIVE_TYPE_SPHERE                        = 0x2506,
+     415     /// Triangle.
+     416     OPTIX_PRIMITIVE_TYPE_TRIANGLE                      = 0x2531,
+     417 } OptixPrimitiveType;
+     418 
+
+
+
+
+::
+
+    epsilon:SDK blyth$ optix7-f optixGetPrimitiveType
+    ./optixHair/optixHair.cu:    const float3 normal     = computeNormal( optixGetPrimitiveType(), primitiveIndex );
+    ./optixHair/optixHair.cu:    const float3 normal     = computeNormal( optixGetPrimitiveType(), primitiveIndex );
+    ./optixHair/optixHair.cu:    float3       normal      = computeNormal( optixGetPrimitiveType(), primitiveIndex );
+    epsilon:SDK blyth$ 
+
+
+LEGACY TYPE : optixGetHitKind
+------------------------------
+
+::
+
+     282 /// Legacy type: A subset of the hit kinds for built-in primitive intersections.
+     283 /// It is preferred to use optixGetPrimitiveType(), together with
+     284 /// optixIsFrontFaceHit() or optixIsBackFaceHit().
+     285 ///
+     286 /// \see #optixGetHitKind()
+     287 typedef enum OptixHitKind
+     288 {
+     289     /// Ray hit the triangle on the front face
+     290     OPTIX_HIT_KIND_TRIANGLE_FRONT_FACE = 0xFE,
+     291     /// Ray hit the triangle on the back face
+     292     OPTIX_HIT_KIND_TRIANGLE_BACK_FACE = 0xFF
+     293 } OptixHitKind;
+
+
+BUT seems from optixWhitted example can report custom hitKind up to 0x7f 
+in optixReportIntersection in intersection that can be branched
+on in closest hit. 
+
+hit_kind is not used in optixCutouts but is in optixWhitted::
+
+    epsilon:SDK blyth$ optix7-f optixGetHitKind
+    ./optixCutouts/optixCutouts.cu:    const unsigned int hit_kind = optixGetHitKind();
+    ./optixCutouts/optixCutouts.cu:    const unsigned int hit_kind        = optixGetHitKind();
+    ./optixWhitted/shading.cu:    SphereShellHitType hit_type = (SphereShellHitType) optixGetHitKind();
+    epsilon:SDK blyth$ 
+
+
+
+tmax optimization within instance ?
+-------------------------------------
+
+From OptiX_Programming_Guide_7.5.0.pdf p78 (Trace)::
+
+    The tmin and tmax arguments set the extent associated with the current ray. Any
+    reported hits with hitT outside of this range are ignored.
+
+* HMM: once a photon enters PMT(or more generally some instance GAS) 
+  maybe could reduce tmax as an optimization until the photon exits 
+  the GAS ? 
+
+
+OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT
+--------------------------------------
+
+* only for occlusion when any hit is enough ? 
+
+/Developer/OptiX_750/SDK/cuda/whitted_cuda.h::
+
+    127 static __forceinline__ __device__ float traceOcclusion(
+    128         OptixTraversableHandle handle,
+    129         float3                 ray_origin,
+    130         float3                 ray_direction,
+    131         float                  tmin,
+    132         float                  tmax
+    133         )
+    134 {
+    135     unsigned int u0 = __float_as_uint(1.f);
+    136     optixTrace(
+    137             handle,
+    138             ray_origin,
+    139             ray_direction,
+    140             tmin,
+    141             tmax,
+    142             0.0f,                    // rayTime
+    143             OptixVisibilityMask( 1 ),
+    144             OPTIX_RAY_FLAG_TERMINATE_ON_FIRST_HIT,
+    145             whitted::RAY_TYPE_OCCLUSION,      // SBT offset
+    146             whitted::RAY_TYPE_COUNT,          // SBT stride
+    147             whitted::RAY_TYPE_OCCLUSION,      // missSBTIndex
+    148             u0);
+    149     return __uint_as_float( u0 );    
+
+
 
 OptiX 7.5 SDK
 ---------------
@@ -466,8 +603,6 @@ Forum Links
 * https://forums.developer.nvidia.com/t/multiple-pipelines-and-shared-instancing/170735/2
 * https://forums.developer.nvidia.com/t/optix-7-breaking-changes/156801/2
 * https://forums.developer.nvidia.com/t/best-way-to-turn-entities-on-off-during-ray-tracing-in-optix/165436/5
-
-
 
 
 GPU Mental Model : Chapter 33. Implementing Efficient Parallel Data Structures on GPUs
@@ -906,14 +1041,6 @@ Notes
      * can have multiple launches in flight in parallel 
 
        * [hmm so each launch gets its own constant memory block] 
-
-
-
-
-
-    
-
-
 
 
 
