@@ -97,7 +97,8 @@ sdir=$(pwd)
 
 #shader=rec_flying_point
 shader=pos
-export SHADER_FOLD=$sdir/$shader
+SHADER=${SHADER:-$shader}
+export SHADER_FOLD=$sdir/$SHADER
 
 record_fold=/tmp/sphoton_test
 export RECORD_FOLD=${RECORD_FOLD:-$record_fold}

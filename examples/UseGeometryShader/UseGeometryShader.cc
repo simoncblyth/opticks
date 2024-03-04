@@ -24,23 +24,6 @@ TODO:
 
 4. rotation 
 
-
-Attempt to control everything via domain uniforms adds lots of complication, 
-is there a better way ? 
-
-
-WIP: remove record array position/time hardcoding
----------------------------------------------------
-
-::
-
-    In [15]: np.min(t.record[:,:,0].reshape(-1,4),axis=0)
-    Out[15]: array([-9.,  0., -9.,  0.], dtype=float32)
-
-    In [16]: np.max(t.record[:,:,0].reshape(-1,4),axis=0)
-    Out[16]: array([9., 0., 9., 9.], dtype=float32)
-
-
 **/
 
 #include <cassert>
@@ -70,12 +53,33 @@ int main(int argc, char** argv)
     std::cout << " geometry_shader_text " << ( geometry_shader_text ? "YES" : "NO" ) << std::endl ; 
     std::cout << " fragment_shader_text " << ( fragment_shader_text ? "YES" : "NO" ) << std::endl ; 
 
-
     //const char* RECORD_PATH = "$RECORD_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
     const char* RECORD_PATH = "$RECORD_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
     NP* a = NP::Load(RECORD_PATH) ;   
     if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ; 
     assert(a); 
+
+    float ADHOC = ssys::getenvfloat("ADHOC", 1.f) ; 
+    std::cout << "ADHOC : " << ADHOC << std::endl ;   
+    if(ADHOC!=1.f)
+    {
+        float* aa = a->values<float>(); 
+        assert( a->shape.size() == 4 ); 
+        int ni = a->shape[0] ; 
+        int nj = a->shape[1] ; 
+        int nk = a->shape[2] ; 
+        int nl = a->shape[3] ; 
+
+        for(int i=0 ; i < ni ; i++)
+        for(int j=0 ; j < nj ; j++)
+        for(int k=0 ; k < nk ; k++)
+        for(int l=0 ; l < nl ; l++)
+        {
+            int idx = i*nj*nk*nl + j*nk*nl + k*nl + l ;
+            if( k == 0 && l < 3 ) aa[idx] = ADHOC*aa[idx] ;  
+        }
+    }
+
 
     assert(a->shape.size() == 4);   
     bool is_compressed = a->ebyte == 2 ; 
@@ -145,39 +149,21 @@ int main(int argc, char** argv)
     sframe fr ; 
     fr.ce = ce ; 
 
-    /*
-    float4 post_center = make_float4( ce.x, ce.y, ce.z,  mn.w  );        // minimum time as "center" of time 
-    float4 post_extent = make_float4( ce.w, ce.w, ce.w,  mx.w - mn.w );  // time range as "extent" of time 
-
-    HMM: THESE CURRENTLY NOT USED IN geom.glsl 
-    SHOULD THEY BE ? NO, THE VALUES COME IN THE RECORD POINTS 
-    SO THEY DONT NEED TO BE USED THERE.
-    AHHA: I RECALL THE ORIGIN OF THESE WAS WHEN WAS USING DOMAIN COMPRESSED REC.
-    THE POST_CENTER AND POST_EXTENT WAS USED TO DO THE UNCOMPRESSION.
-    THE DETAILS ARE AN ARTIFACT OF HOW THE DOMAIN COMPRESSION WAS DONE.
-   
-    BUT: THE CENTER EXTENT IS NEEDED FOR sframe IN ORDER TO TARGET THE 
-    VIEW AT THE POINTS. 
-    */
-
-
     SGLM sglm ; 
     sglm.set_frame(fr); 
     sglm.update(); 
-    //sglm.dump();
+    sglm.dump();
 
     const char* title = RECORD_PATH ; 
     SGLFW sglfw(sglm.Width(), sglm.Height(), title );   
     sglfw.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
 
-    // The strings below are names of uniforms present in rec_flying_point/geom.glsl
+    // The strings below are names of uniforms present in rec_flying_point/geom.glsl and pos/vert.glsl 
     // SGLFW could hold a map of uniform locations keyed on the names
     // which are grabbed from the shader source by pattern matching uniform lines  
 
     GLint ModelViewProjection_location = glGetUniformLocation(sglfw.program, "ModelViewProjection");   SGLFW::check(__FILE__, __LINE__);
     GLint Param_location               = glGetUniformLocation(sglfw.program, "Param");                 SGLFW::check(__FILE__, __LINE__);
-    //GLint post_center_location         = glGetUniformLocation(sglfw.program, "post_center");           SGLFW::check(__FILE__, __LINE__);
-    //GLint post_extent_location         = glGetUniformLocation(sglfw.program, "post_extent");           SGLFW::check(__FILE__, __LINE__);
 
     unsigned vao ;                  SGLFW::check(__FILE__, __LINE__); 
     glGenVertexArrays (1, &vao);    SGLFW::check(__FILE__, __LINE__);
@@ -209,6 +195,8 @@ int main(int argc, char** argv)
 
     const glm::mat4& world2clip = sglm.world2clip ; 
     const GLfloat* mvp = (const GLfloat*) glm::value_ptr(world2clip) ;  
+    // THIS NEEDS TO BE INSIDE RENDERLOOP WITH KEY CALLBACKS
+    
 
     bool exitloop(false);
     int renderlooplimit(2000);
@@ -222,14 +210,13 @@ int main(int argc, char** argv)
 
         Param.w += Param.z ;  // input propagation time 
         if( Param.w > Param.y ) Param.w = Param.x ;  // input time : Param.w from .x to .y with .z steps
+       
 
         glUniformMatrix4fv(ModelViewProjection_location, 1, GL_FALSE, mvp );
         glUniform4fv(      Param_location,               1, glm::value_ptr(Param) );
-        //glUniform4fv( post_center_location,              1, &post_center.x );
-        //glUniform4fv( post_extent_location,              1, &post_extent.x );
 
-        GLenum prim = geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
-        glDrawArrays(prim, a_first, a_count);
+        GLenum mode = geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
+        glDrawArrays(mode, a_first, a_count);
 
         glfwSwapBuffers(sglfw.window);
         glfwPollEvents();

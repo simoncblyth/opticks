@@ -10,7 +10,7 @@ layout (points, max_vertices = 1) out;
 
 out vec4 fcolor ; 
 
-#define PERSIST 1
+// #define PERSIST 1
 // * With PERSIST defined the old rings remain visible after time has gone by 
 // * Without PERSIST get the traditional flying point visualization 
 
