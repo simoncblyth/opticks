@@ -1,55 +1,64 @@
 #!/bin/bash -l
-##
-## Copyright (c) 2019 Opticks Team. All Rights Reserved.
-##
-## This file is part of Opticks
-## (see https://bitbucket.org/simoncblyth/opticks).
-##
-## Licensed under the Apache License, Version 2.0 (the "License"); 
-## you may not use this file except in compliance with the License.  
-## You may obtain a copy of the License at
-##
-##   http://www.apache.org/licenses/LICENSE-2.0
-##
-## Unless required by applicable law or agreed to in writing, software 
-## distributed under the License is distributed on an "AS IS" BASIS, 
-## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-## See the License for the specific language governing permissions and 
-## limitations under the License.
-##
+usage(){ cat << EOU
+examples/UseInstance/go.sh
+============================
 
+Minimal example of OpenGL instancing, default test pops up a window with 8 instanced triangles::
+
+    ~/o/examples/UseInstance/go.sh
+    TEST=UseInstanceTest ~/o/examples/UseInstance/go.sh run
+
+    TEST=OneTriangleTest ~/o/examples/UseInstance/go.sh run
+
+Issue
+------
+
+Find RPATH not working for this on Darwin, BUT it works for other tests ?
+So have to manually define the DYLD_LIBRARY_PATH like on Linux with LD_LIBRARY_PATH
+
+EOU
+}
 
 opticks-
 
-sdir=$(pwd)
+path=$(realpath $BASH_SOURCE)
+sdir=$(dirname $path)
 name=$(basename $sdir)
 bdir=/tmp/$USER/opticks/$name/build 
 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+defarg="info_build_run"
+arg=${1:-$defarg}
 
+#test=OneTriangleTest 
+test=UseInstanceTest
+TEST=${TEST:-$test}
 
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
+vars="BASH_SOURCE TEST arg bdir"
+
+if [ "${arg/info}" != "$arg" ]; then
+     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi
+
+if [ "${arg/build}" != "$arg" ]; then
+
+      rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+
+      cmake $sdir 
+             \
+            -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+            -DOPTICKS_PREFIX=$(opticks-prefix) \
             -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
             -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
             -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
-make
-make install   
+      make
+      make install   
+fi
 
-echo executing ${name}Test
-
-om-
-#om-run UseInstanceTest
-om-run OneTriangleTest 
-
-
-notes(){ cat << EON
-
-Why RPATH not working here on Darwin, it works for tests from Opticks subs ?
-
-   DYLD_LIBRARY_PATH=/usr/local/opticks/lib OneTriangleTest
-
-EON
-}
+if [ "${arg/run}" != "$arg" ]; then
+    echo executing $TEST
+    om-
+    om-run $TEST
+fi
 
 

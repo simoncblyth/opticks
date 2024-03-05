@@ -7,6 +7,11 @@ Usage::
     ~/o/examples/UseGeometryShader/build.sh   ## non-CMake build
     ~/o/examples/UseGeometryShader/go.sh      ## CMake build
 
+See also::
+
+    ~/o/examples/UseGeometryShader/run.sh 
+    
+
 * started from https://www.glfw.org/docs/latest/quick.html#quick_example
 * reference on geometry shaders https://open.gl/geometry
 * see notes/issues/geometry-shader-flying-photon-visualization.rst
@@ -153,6 +158,9 @@ int main(int argc, char** argv)
     sglm.set_frame(fr); 
     //sglm.update();    // set_frame now calls update
     sglm.dump();
+
+    
+
 
     const char* title = RECORD_PATH ; 
     SGLFW sglfw(sglm.Width(), sglm.Height(), title );   

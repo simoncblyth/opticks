@@ -284,13 +284,13 @@ struct SYSRAP_API SGLM
     glm::mat4 projection ; 
     glm::mat4 world2clip ; 
 
-
-
     void updateProjection(); 
 
     void ce_corners_world( std::vector<glm::vec4>& v_world ) const ; 
+    void ce_midface_world( std::vector<glm::vec4>& v_world ) const ; 
     void apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const ; 
     std::string desc_world2clip_ce_corners() const ; 
+    std::string desc_world2clip_ce_midface() const ; 
 
 
     std::string descProjection() const ; 
@@ -438,6 +438,8 @@ std::string SGLM::desc() const
     ss << descProjection() << std::endl ; 
     ss << descBasis() << std::endl ; 
     ss << descLog() << std::endl ; 
+    ss << desc_world2clip_ce_corners() << std::endl ; 
+    ss << desc_world2clip_ce_midface() << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -1063,17 +1065,6 @@ std::string SGLM::descBasis() const
     return s ; 
 }
 
-
-/**
-SGLM::updateProjection
------------------------
-
-
-**/
-
- 
-
-
 void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const 
 {
     std::vector<float4> corners ;
@@ -1087,6 +1078,21 @@ void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const
         v_world.push_back(p_world); 
     }
 }
+
+void SGLM::ce_midface_world( std::vector<glm::vec4>& v_world ) const 
+{
+    std::vector<float4> midface ;
+    fr.ce_midface(midface); 
+    assert(midface.size() == 6+1 ); 
+
+    for(int i=0 ; i < 6+1 ; i++ )
+    {
+        const float4& p = midface[i]; 
+        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
+        v_world.push_back(p_world); 
+    }
+}
+
 
 void SGLM::apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const 
 {
@@ -1106,19 +1112,21 @@ SGLM::desc_world2clip_ce_corners
 
 std::string SGLM::desc_world2clip_ce_corners() const 
 {
+    static const int NUM = 8 ;
+  
     std::vector<glm::vec4> v_world ; 
     ce_corners_world(v_world); 
-    assert( v_world.size() == 8 ); 
+    assert( v_world.size() == NUM ); 
 
     std::vector<glm::vec4> v_clip ; 
     bool flip = true ; 
     apply_world2clip( v_clip, v_world, flip ); 
-    assert( v_clip.size() == 8 ); 
+    assert( v_clip.size() == NUM ); 
 
     std::stringstream ss ;
     ss << "SGLM::desc_world2clip_ce_corners" << std::endl ; 
     ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
-    for(int i=0 ; i < 8 ; i++ )
+    for(int i=0 ; i < NUM ; i++ )
     {
         const glm::vec4& _world = v_world[i] ; 
         const glm::vec4& _clip = v_clip[i] ; 
@@ -1136,6 +1144,49 @@ std::string SGLM::desc_world2clip_ce_corners() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+
+std::string SGLM::desc_world2clip_ce_midface() const 
+{
+    static const int NUM = 6+1 ;  
+
+    std::vector<glm::vec4> v_world ; 
+    ce_midface_world(v_world); 
+    assert( v_world.size() == NUM ); 
+
+    std::vector<glm::vec4> v_clip ; 
+    bool flip = true ; 
+    apply_world2clip( v_clip, v_world, flip ); 
+    assert( v_clip.size() == NUM ); 
+
+    std::stringstream ss ;
+    ss << "SGLM::desc_world2clip_ce_midface" << std::endl ; 
+    ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
+    for(int i=0 ; i < NUM ; i++ )
+    {
+        const glm::vec4& _world = v_world[i] ; 
+        const glm::vec4& _clip = v_clip[i] ; 
+        glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
+        // normalized device coordinates : from division by clip.w 
+        ss 
+            << "[" << i << "]" 
+            << " world " << Present(_world) 
+            << " clip  " << Present(_clip) 
+            << " ndc " << Present(_ndc) 
+            << std::endl
+            ;
+
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
 
 
 

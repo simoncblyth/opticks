@@ -3,9 +3,9 @@ usage(){ cat << EOU
 U4Mesh_test.sh
 ================
 
-::
+Instanciates G4Orb and persists as U4Mesh into /tmp/U4Mesh_test::
 
-    ~/opticks/u4/tests/U4Mesh_test.sh
+    ~/o/u4/tests/U4Mesh_test.sh
 
 EOU
 }
