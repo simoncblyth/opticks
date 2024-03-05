@@ -11,10 +11,19 @@ by factor 1000 (from mm to m) to make the propagation visible ?::
 
 With REC=0 ADHOC=0.5 the expected concentric circles are half the default size. 
 This means the frame targetting is not working, it is intended to adjust 
-view to fill frame::
+view matrix to fill frame as needed for the provided center_extent::
 
     REC=0 ADHOC=0.5 T0=0 T1=10 SHADER=rec_flying_point ~/o/examples/UseGeometryShader/run.sh
     REC=0                      SHADER=rec_flying_point ~/o/examples/UseGeometryShader/run.sh
+
+Attempt to investigate this in the below inconclusive so far::
+
+   ~/o/sysrap/tests/SGLM_frame_targetting_test.sh
+
+
+What is the output of SGLM actually used by OpenGL ?
+
+
 
 
 TODO: polz colored line output, like with old Opticks 

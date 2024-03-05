@@ -276,6 +276,11 @@ SGLFW::init
 1. OpenGL initialize
 2. create window
 
+
+Perhaps this needs to::
+
+   glEnable(GL_DEPTH_TEST)
+
 **/
 
 inline void SGLFW::init()

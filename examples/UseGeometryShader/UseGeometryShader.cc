@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 
     SGLM sglm ; 
     sglm.set_frame(fr); 
-    sglm.update(); 
+    //sglm.update();    // set_frame now calls update
     sglm.dump();
 
     const char* title = RECORD_PATH ; 

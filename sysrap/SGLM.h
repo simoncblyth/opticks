@@ -3,44 +3,104 @@
 SGLM : Header Only Viz Math giving ray tracing basis and rasterization projection transforms
 ===============================================================================================
 
-Critical use for ray trace rendering in CSGOptiX::prepareRenderParam
+Critical usage for ray trace rendering done in CSGOptiX::prepareRenderParam
 
 SGLM.h is a single header that is replacing a boatload of classes 
 used by old OpticksCore okc : Composition, View, Camera, ...
-Using this aims to enable CSGOptiX to drop dependency
+Using this aims enabled CSGOptiX to drop dependency
 on okc, npy, brap and instead depend only on QUDARap, SysRap, CSG. 
 
-* Note that animated interpolation between views available 
-  in the old machinery is not yet implemented in the new workflow
-  as that currently focusses on snap renders. 
+* TODO: bring animated interpolation between views available 
+  in the old machinery into the new workflow
 
-* because of this incomplete nature have to keep SGLM reliance (not usage) 
-  behind WITH_SGLM and retain the old Composition based version of CSGOptiX (and okc dependency) 
-
-* note that the with Composition version of CSGOptiX also uses SGLM 
-  to allow easy comparison of frames and matrices between the two approaches
-
-* ALSO this needs to be tested by comparing rasterized and ray-traced renders
+* TODO: test this by comparison of rasterized and ray-traced renders
   in order to achieve full consistency. Usage with interactive changing of camera and view etc.. 
   and interactive flipping between rasterized and ray traced is the way consistency 
-  of the projective and ray traced maths was achieved for okc/Composition. 
+  of the projective and ray traced maths was achieved for old Opticks with okc/Composition. 
+
+* TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
+* TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
 
 Normal inputs WH, CE, EYE, LOOK, UP are held in static variables with envvar defaults 
 These can be changed with static methods before instanciating SGLM. 
 NB it will usually be too late for setenv in code to influence SGLM 
 as the static initialization would have happened already 
- 
-* https://learnopengl.com/Getting-started/Camera
-
-TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
-
-TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
-      would be best to group that for clarity 
-
 
 * hmm probably using nested structs makes sense, or just use SGLM namespace with 
 * https://riptutorial.com/cplusplus/example/11914/nested-classes-structures
 * https://www.geeksforgeeks.org/nested-structure-in-c-with-examples/
+
+
+SGLM.h tests
+--------------
+
+SGLMTest.cc
+   check a few statics, standardly built 
+
+SGLM_test.{sh,cc}
+   standalone test for a few SGLM methods
+
+SGLM_set_frame_test.{sh,cc}
+   loads sframe sets into SGLM and dumps
+
+SGLM_frame_targetting_test.{sh,cc}
+   compares SGLM A,B from two different center_extent sframe a,b 
+        
+
+Review coordinate systems, following along the below description
+-----------------------------------------------------------------
+
+* https://unspecified.wordpress.com/2012/06/21/calculating-the-gluperspective-matrix-and-other-opengl-matrix-maths/
+* https://learnopengl.com/Getting-started/Camera
+* https://feepingcreature.github.io/math.html
+
+OpenGL coordinate systems 
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Right hand systems:
+
+* +X : right 
+* +Y : up     
+* +Z : towards camera
+* -Z : into scene
+
+    
+Object 
+   vertice relative to center of Model 
+World
+   relative to one world origin
+Eye
+   relative to camera
+
+   * vertices are transformed into Eye Coordinates by the model-view matrix
+
+Clip
+   funny coordinates : that get transformed by "divide-by-w" into NDC coordinates
+
+   * shader pipeline (vertext or geometry shader) outputs Clip coordinates, that
+     OpenGL does the “divide-by-w” step to givew NDC coordinates
+
+   * the ".w" of clip coordinates often set to "-z" as trick to do perspective Divide 
+
+
+NDC/Viewport
+   normalized device coordinates : on screen position coordinates 
+
+   * (x,y)
+   * (-1,-1) : lower left
+   * (+1,+1) : upper right
+   * z=-1 : nearest point in depth buffer
+   * z=+1 : farthest point in depth buffer
+
+   The z values are mapped on to the depth buffer space by the projection matrix.
+   Thats why zNear,ZFar settings are important. 
+
+Screen
+   (x,y) coordinate on screen in pixels
+
+   * (0,0) lower left pixel 
+   * (w,h) upper right pixel 
+
 
 **/
 
@@ -130,7 +190,7 @@ struct SYSRAP_API SGLM
 
     SGLM(); 
 
-    sframe fr ;  // CAUTION: SEvt also holds an SFrame for input photon targetting 
+    sframe fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
     void set_frame( const sframe& fr ); 
     const char* get_frame_name() const ; 
     float extent() const ; 
@@ -227,8 +287,13 @@ struct SYSRAP_API SGLM
 
 
     void updateProjection(); 
-    std::string descProjection() const ; 
 
+    void ce_corners_world( std::vector<glm::vec4>& v_world ) const ; 
+    void apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const ; 
+    std::string desc_world2clip_ce_corners() const ; 
+
+
+    std::string descProjection() const ; 
 
     void set_nearfar_mode(const char* mode); 
     void set_focal_mode(const char* mode); 
@@ -433,10 +498,45 @@ inline float SGLM::extent() const {   return fr.ce.w ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
 inline float SGLM::tmax_abs() const { return extent()*TMAX ; }  // HUH:extent might not be the basis ?
 
+/**
+SGLM::update
+--------------
+
+updateModelMatrix
+    model2world, world2model from frame or ce (not including extent scale)
+
+updateELU
+    eye,look,up,gaze in world frame from EYE,LOOK,UP in "ce" frame by doing extent scaling
+
+updateNearAndFar
+    scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
+    world frame Near and Far distances ... HUH: not so simple as near far are divided
+    by the nearfar_basis that defaults to gazelength but can be extent
+
+    HMM: thats non-intuitive, could explain mis-behaviour
+
+updateEyeSpace
+    form world2camera camera2world from eye position and
+    gaze and up directions in world frame together with 
+    OpenGL convention. 
+
+updateEyeBasis
+    Transforms eye/camera basis vectors using *camera2world* matrix 
+    obtained from SGLM::updateEyeSpace into world frame, with 
+    scaling depending on Aspect, ZOOM and focal_basis to 
+    yield (u,v,w,e) basis vec3 that are used by CSGOptiX::prepareRenderParam 
+    to setup the raytrace render params. 
+
+updateProjection
+
+
+**/
+
+
 inline void SGLM::update()  
 {
     addlog("SGLM::update", "["); 
-    updateModelMatrix(); 
+    updateModelMatrix();   
     updateELU(); 
     updateNearAndFar(); 
     updateEyeSpace(); 
@@ -466,7 +566,7 @@ SGLM::updateModelMatrix
 Called by SGLM::update. 
 
 updateModelMatrix_branch:1
-    used when the transforms are not identity, 
+    used when the sframe transforms are not identity, 
     just take model2world and world2model from sframe m2w w2m  
 
 updateModelMatrix_branch:2
@@ -475,7 +575,16 @@ updateModelMatrix_branch:2
     does it need to be here too ?
 
 updateModelMatrix_branch:3
-    cookup matrix from fr.ce alone, ignoring the frame transforms 
+    form model2world and world2model matrices 
+    from fr.ce alone, ignoring the frame transforms 
+
+    For consistency with the transforms from sframe.h 
+    the escale is not included into model2world/world2model,
+    that is done in SGLM::updateELU.
+
+    So currently this only handles translation from ce center, 
+    not extent scaling. 
+
 
 **/
 
@@ -509,9 +618,6 @@ inline void SGLM::updateModelMatrix()
         assert( f > 0.f ); 
         glm::vec3 sc(f, f, f) ; 
         glm::vec3 isc(1.f/f, 1.f/f, 1.f/f) ; 
-        // for consistency with the transforms from sframe.h 
-        // need to not include the escale here : its done below in 
-        // SGLM::updateELU
 
         addlog("updateModelMatrix.3.fabricate", f );
 
@@ -557,8 +663,33 @@ glm::mat4 SGLM::get_escale() const
     return esc ; 
 }
 
+/**
+SGLM::updateELU
+-----------------
 
-void SGLM::updateELU() // eye, look, up, gaze from model frame (extent units?) into world frame 
+Uses escale matrix (which typically comes from extent fr.ce.w)
+to convent input EYE, LOOK, UP in "ce" or "model" frame 
+that uses extent units into world frame (applying the extent)
+vec3 : eye,look,up,gaze 
+
+
+               look
+                +
+               / 
+              / / gaze
+             /           
+            +
+           eye
+
+In "CE/model" frame the LOOK,EYE defaults::
+
+    LOOK   (0,0,0,1) 
+    EYE    (-1,-1,0,1)
+    "GAZE" (1,1,0,0) 
+
+**/
+
+void SGLM::updateELU() 
 {
     glm::mat4 escale = get_escale(); 
     eye  = glm::vec3( model2world * escale * EYE ) ; 
@@ -599,6 +730,12 @@ std::string SGLM::descELU() const
 SGLM::updateNearAndFar
 --------------------------
 
+scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
+world frame Near and Far distances
+
+HUH: but then tmi,tmx get divided by nearfar basis, which could be extent 
+(default is gazelength). Thats confusing. 
+
 As the basis needs gazelength, this must be done after updateELU
 but isnt there still a problem of basis consistency between tmin_abs and set_near_abs ? 
 For example extent scaling vs gazelength scaling ? 
@@ -629,10 +766,14 @@ std::string SGLM::descNearAndFar() const
 SGLM::updateEyeSpace
 ---------------------
 
-Normalized eye space oriented via gaze and up directions.  
+Form world2camera camera2world from eye position and
+gaze and up directions in world frame together with 
+OpenGL convention. 
+
+Normalized eye space oriented via world frame gaze and up directions.  
 
         +Y    -Z
-     top_ax  forward_ax  
+     top_ax  forward_ax    (from normalized gaze vector)
          |  /
          | /
          |/    
@@ -653,7 +794,7 @@ world2camera
 
 void SGLM::updateEyeSpace()
 {
-    forward_ax = glm::normalize(gaze);
+    forward_ax = glm::normalize(gaze);  // gaze is from eye->look 
     right_ax   = glm::normalize(glm::cross(forward_ax,up)); 
     top_ax     = glm::normalize(glm::cross(right_ax,forward_ax));
 
@@ -694,25 +835,27 @@ std::string SGLM::descEyeSpace() const
 SGLM::updateEyeBasis
 ----------------------
 
-NB this uses the *camera2world* matrix obtained from SGLM::updateEyeSpace
-with the same OpenGL eye frame convention to yield a scaled set of basis
-vectors.  
-
-The u,v,w,e, vectors are used from CSGOptiX::prepareRenderParam 
-for setting up the raytrace render params. 
+Transforms eye/camera basis vectors using *camera2world* matrix 
+obtained from SGLM::updateEyeSpace into world frame, with 
+scaling depending on Aspect, ZOOM and focal_basis to 
+yield (u,v,w,e) basis vec3 that are used by CSGOptiX::prepareRenderParam 
+to setup the raytrace render params. 
 
 **/
 
 void SGLM::updateEyeBasis()
 {
+    // eye basis vectors using OpenGL convention 
     glm::vec4 rht( 1., 0., 0., 0.);  // +X
     glm::vec4 top( 0., 1., 0., 0.);  // +Y
     glm::vec4 gaz( 0., 0.,-1., 0.);  // -Z
-    glm::vec4 ori( 0., 0., 0., 1.); 
+
+    // eye position in eye frame  
+    glm::vec4 ori( 0., 0., 0., 1.);   
 
     float aspect = Aspect() ; 
-    float fsc = get_focal_basis() ; 
-    float fscz = fsc/ZOOM  ; 
+    float fsc = get_focal_basis() ;   // default is gazelength 
+    float fscz = fsc/ZOOM  ;          // increased ZOOM decreases field-of-view
     float gazlen = getGazeLength() ;  // HMM: maybe get_nearfar_basis for consistency
 
     u = glm::vec3( camera2world * rht ) * fscz * aspect ;  
@@ -720,6 +863,35 @@ void SGLM::updateEyeBasis()
     w = glm::vec3( camera2world * gaz ) * gazlen ;    
     e = glm::vec3( camera2world * ori );   
 }
+
+/**
+SGLM::updateProjection
+-----------------------
+
+Suspect that for consistency of rasterized and ray traced
+renders this will need to match SGLM::updateEyeBasis better in 
+the z-direction. 
+
+**/
+
+void SGLM::updateProjection()
+{
+    float fsc = get_focal_basis() ;
+    float fscz = fsc/ZOOM  ; 
+
+    float aspect = Aspect(); 
+    float left   = -aspect*fscz ;
+    float right  =  aspect*fscz ;
+    float bottom = -fscz ;
+    float top    =  fscz ;
+
+    float near_abs   = get_near_abs() ; 
+    float far_abs    = get_far_abs()  ; 
+
+    projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
+    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing   
+}
+
 
 std::string SGLM::descEyeBasis() const 
 {
@@ -891,25 +1063,79 @@ std::string SGLM::descBasis() const
     return s ; 
 }
 
+
+/**
+SGLM::updateProjection
+-----------------------
+
+
+**/
+
  
-void SGLM::updateProjection()
+
+
+void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const 
 {
-    float fsc = get_focal_basis() ;
-    float fscz = fsc/ZOOM  ; 
+    std::vector<float4> corners ;
+    fr.ce_corners(corners); 
+    assert(corners.size() == 8 ); 
 
-    float aspect = Aspect(); 
-    float left   = -aspect*fscz ;
-    float right  =  aspect*fscz ;
-    float bottom = -fscz ;
-    float top    =  fscz ;
-
-    float near_abs   = get_near_abs() ; 
-    float far_abs    = get_far_abs()  ; 
-
-    projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
-    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing   
+    for(int i=0 ; i < 8 ; i++ )
+    {
+        const float4& p = corners[i]; 
+        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
+        v_world.push_back(p_world); 
+    }
 }
 
+void SGLM::apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const 
+{
+    int num = v_world.size(); 
+    for(int i=0 ; i < num ; i++ )
+    {
+        const glm::vec4& p_world = v_world[i] ; 
+        glm::vec4 p_clip = flip ? world2clip * p_world : p_world*world2clip ; 
+        v_clip.push_back(p_clip); 
+    }
+}
+
+/**
+SGLM::desc_world2clip_ce_corners
+---------------------------------
+**/
+
+std::string SGLM::desc_world2clip_ce_corners() const 
+{
+    std::vector<glm::vec4> v_world ; 
+    ce_corners_world(v_world); 
+    assert( v_world.size() == 8 ); 
+
+    std::vector<glm::vec4> v_clip ; 
+    bool flip = true ; 
+    apply_world2clip( v_clip, v_world, flip ); 
+    assert( v_clip.size() == 8 ); 
+
+    std::stringstream ss ;
+    ss << "SGLM::desc_world2clip_ce_corners" << std::endl ; 
+    ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
+    for(int i=0 ; i < 8 ; i++ )
+    {
+        const glm::vec4& _world = v_world[i] ; 
+        const glm::vec4& _clip = v_clip[i] ; 
+        glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
+        // normalized device coordinates : from division by clip.w 
+        ss 
+            << "[" << i << "]" 
+            << " world " << Present(_world) 
+            << " clip  " << Present(_clip) 
+            << " ndc " << Present(_ndc) 
+            << std::endl
+            ;
+
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 
@@ -943,9 +1169,11 @@ std::string SGLM::descProjection() const
     ss << std::setw(wid) << "far"  << Present(far) << std::endl ;  
     ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
     ss << std::setw(wid) << "sglm.world2clip\n" << Present(world2clip) << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+
 
 
 

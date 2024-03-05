@@ -106,7 +106,7 @@ export RECORD_FOLD=${RECORD_FOLD:-$record_fold}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-eye=0,-3,0,1 
+eye=0,-3,0
 EYE=${EYE:-$eye}
 export EYE
 

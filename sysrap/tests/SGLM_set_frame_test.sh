@@ -15,13 +15,12 @@ done by CSGOptiX::RenderMain. In more detail, the SGLM_set_frame_test.cc does:
 
 ::
    
-    st
-    ./SGLM_set_frame_test.sh build_run_info_cat_diff  
-    ./SGLM_set_frame_test.sh build
-    ./SGLM_set_frame_test.sh run
-    ./SGLM_set_frame_test.sh info
-    ./SGLM_set_frame_test.sh cat
-    ./SGLM_set_frame_test.sh diff
+    ~/o/sysrap/tests/SGLM_set_frame_test.sh build_run_info_cat_diff  
+    ~/o/sysrap/tests/SGLM_set_frame_test.sh build
+    ~/o/sysrap/tests/SGLM_set_frame_test.sh run
+    ~/o/sysrap/tests/SGLM_set_frame_test.sh info
+    ~/o/sysrap/tests/SGLM_set_frame_test.sh cat
+    ~/o/sysrap/tests/SGLM_set_frame_test.sh diff
          # compare the SGLM::desc logged from CSGOptiX::render_snap and SGLM_set_frame_test.cc 
 
 EOU
@@ -36,9 +35,12 @@ msg="=== $BASH_SOURCE :"
 name=SGLM_set_frame_test 
 bin=/tmp/$name
 
-# directory to load sframe.npy from 
-base=/tmp/$USER/opticks/GEOM/V0J008/CSGOptiXRdrTest
-export BASE=${BASE:-$base}
+cd $(dirname $(realpath $BASH_SOURCE))
+
+#sframe_fold=/tmp/$USER/opticks/GEOM/V0J008/CSGOptiXRdrTest
+sframe_fold=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/A001
+SFRAME_FOLD=${SFRAME_FOLD:-$sframe_fold}   # directory to load sframe.npy from 
+export SFRAME_FOLD
 
 tmin=0.5
 #eye=1000,1000,1000
@@ -57,14 +59,17 @@ export ESCALE=${ESCALE:-$escale}
 
 DESC_REF=CSGOptiX__render_snap.log
 DESC_NAME=SGLM_set_frame_test.log
-DESC_PATH=$BASE/$DESC_NAME
-vars="name bin BASE arg DESC_NAME DESC_PATH TMIN"
+DESC_PATH=$SFRAME_FOLD/$DESC_NAME
+vars="name bin SFRAME_FOLD arg DESC_NAME DESC_PATH TMIN"
+
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc -g -Wall -std=c++11 -lstdc++ -I.. \
              -I$OPTICKS_PREFIX/externals/glm/glm \
-             -I/usr/local/cuda/include -o $bin
+             -I$CUDA_PREFIX/include -o $bin
     [ $? -ne 0 ] && echo $msg build error && exit 1 
     echo $BASH_SOURCE : build OK
 fi 
@@ -84,7 +89,7 @@ if [ "${arg/cat}" != "$arg" ]; then
 fi 
 
 if [ "${arg/diff}" != "$arg" ]; then 
-    cmd="( cd $BASE && diff $DESC_REF $DESC_NAME)"
+    cmd="( cd $SFRAME_FOLD && diff $DESC_REF $DESC_NAME)"
     echo $BASH_SOURCE diff 
     echo $cmd
     echo $br

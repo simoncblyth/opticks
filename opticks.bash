@@ -3171,6 +3171,7 @@ gdt(){ cd $(opticks-home)/gdxml/tests ; pwdt_ ; }
 qu(){ qudarap $* ; pwd_ ; }
 qt(){ qudarap tests ; pwdt_ ; }
 sy(){ sysrap $* ; pwd_ ; }
+y(){  sysrap $* ; pwd_ ; }
 st(){ sysrap tests ; pwdt_ ; }
 
 

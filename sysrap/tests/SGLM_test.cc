@@ -1,4 +1,4 @@
-// name=SGLM_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I$OPTICKS_PREFIX/externals/glm/glm -o /tmp/$name && /tmp/$name
+// ~/o/sysrap/tests/SGLM_test.sh 
 
 #include "SGLM.h"
 
@@ -37,7 +37,6 @@ void test_SGLM()
     // setenv("EYE", "-1,-1,0", true ); 
     // NB it is too late for setenv to influence SGLM as the static initialization would have happened already : 
     // must use static methods to change the inputs that OR export envvars in the invoking script to configure defaults
-   
     // SGLM::SetWH(1024,768); 
 
     SGLM sglm ; 
@@ -70,8 +69,6 @@ int main()
     test_SGLM_basis(); 
     */
     test_SGLM(); 
-
-
 
     return 0 ; 
 }
