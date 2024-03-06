@@ -14,6 +14,91 @@ oglrap/Renderer.cc
 
 
 
+look for OpenGL/glfw buffer handling hints in OptiX7 SDK
+----------------------------------------------------------
+
+::
+
+    epsilon:SDK blyth$ find . -type f -exec grep -l cuda_gl_interop {} \;
+    ./optixSimpleMotionBlur/optixSimpleMotionBlur.cpp
+    ./optixCutouts/optixCutouts.cpp
+    ./optixBoundValues/optixBoundValues.cpp
+    ./optixCallablePrograms/optixCallablePrograms.cpp
+    ./optixMotionGeometry/optixMotionGeometry.cpp
+    ./optixMultiGPU/optixMultiGPU.cpp
+    ./optixPathTracer/optixPathTracer.cpp
+    ./optixWhitted/optixWhitted.cpp
+    ./optixMeshViewer/optixMeshViewer.cpp
+    ./optixModuleCreateAbort/optixModuleCreateAbort.cpp
+    ./sutil/CUDAOutputBuffer.h
+    ./optixVolumeViewer/optixVolumeViewer.cpp
+    ./optixNVLink/optixNVLink.cpp
+    ./optixDynamicGeometry/optixDynamicGeometry.cpp
+    ./optixDynamicMaterials/optixDynamicMaterials.cpp
+    epsilon:SDK blyth$ 
+
+
+Association between VAO and multiple VBO ? 
+--------------------------------------------
+
+::
+
+    epsilon:oglrap blyth$ grep BindVertexArray *.*
+    InstLODCull.cc:    glBindVertexArray(m_forkVAO);
+    InstLODCull.cc:    glBindVertexArray(m_workaroundVAO);
+    InstLODCull.cc:    glBindVertexArray(vertexArray);
+    Rdr.cc:    glBindVertexArray (m_vao);     
+    Rdr.cc:        glBindVertexArray(VAO);
+    Rdr.cc:    glBindVertexArray(m_vao);
+    Rdr.cc:    glBindVertexArray(0);
+    Renderer.cc:    glBindVertexArray (vao);     
+    Renderer.cc:            glBindVertexArray ( m_use_lod ? m_vao[i] : m_vao_all );
+    Renderer.cc:            glBindVertexArray ( m_vao_all );
+    Renderer.cc:        glBindVertexArray ( m_vao[0] );
+    Renderer.cc:    glBindVertexArray(0);
+    epsilon:oglrap blyth$ 
+
+
+
+* https://stackoverflow.com/questions/21652546/what-is-the-role-of-glbindvertexarrays-vs-glbindbuffer-and-what-is-their-relatio
+
+It is also worth mentioning that the "current" binding for GL_ARRAY_BUFFER is not one of the states that VAOs track.
+
+* HUH ? 
+
+* https://community.khronos.org/t/vaos-and-gl-array-buffer-binding/66751/3
+
+It is not misleading; it is true. It’s a common misconception about
+GL_ARRAY_BUFFER and VAOs that trips a lot of people up. I put that note there
+so that people would know that binding to GL_ARRAY_BUFFER does not affect VAO
+state. VAO state is only affected by glEnable/DisableVertexAttribArray and
+glVertexAttribPointer calls.
+
+The fact that glVertexAttribPointer happens to get its buffer from what is
+bound to GL_ARRAY_BUFFER does not mean that GL_ARRAY_BUFFER is VAO state.
+
+The bind to GL_ARRAY_BUFFER itself will not affect VAO state; only calling
+glVertexAttribPointer will affect VAO state.
+
+
+
+
+Index buffer
+-------------
+
+* https://openglbook.com/chapter-3-index-buffer-objects-and-primitive-types.html
+
+
+
+
+
+
+CUDA OpenGL interop examples
+-------------------------------
+
+/usr/local/cuda-10.1/samples/2_Graphics/simpleGL/simpleGL.cu::
+
+    
 
 review Opticks glfw code
 --------------------------

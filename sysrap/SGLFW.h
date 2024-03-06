@@ -28,7 +28,6 @@ SGLFW
 #include <sstream>
 #include <vector>
 
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -36,6 +35,28 @@ SGLFW
 #define GLFW_TRUE true
 #endif
 
+
+
+
+inline void SGLFW__check(const char* path, int line) // static
+{
+    GLenum err = glGetError() ;   
+    bool ok = err == GL_NO_ERROR ;
+    const char* s = NULL ; 
+    switch(err)
+    {   
+        case GL_INVALID_ENUM:      s = "GL_INVALID_ENUM" ; break ; 
+        case GL_INVALID_VALUE:     s = "GL_INVALID_VALUE" ; break ; 
+        case GL_INVALID_OPERATION: s = "GL_INVALID_OPERATION" ; break ; 
+        case GL_STACK_OVERFLOW:    s = "GL_STACK_OVERFLOW" ; break ;   
+        case GL_STACK_UNDERFLOW:   s = "GL_STACK_UNDERFLOW" ; break ;   
+        case GL_OUT_OF_MEMORY:     s = "GL_OUT_OF_MEMORY" ; break ;   
+        case GL_CONTEXT_LOST:      s = "GL_CONTEXT_LOST" ; break ;
+        case GL_INVALID_FRAMEBUFFER_OPERATION: s = "GL_INVALID_FRAMEBUFFER_OPERATION" ; break ;
+    }   
+    if(!ok) std::cout << "SGLFW__check OpenGL ERROR " << path << " : " << line << " : " << std::hex << err << std::dec << " : " << s << std::endl ; 
+    assert( ok );  
+}
 
 
 struct SGLFW_GLboolean
@@ -220,11 +241,39 @@ inline std::string SGLFW_Attribute::desc() const
 
 
 /**
+SGLFW_Buffer
+-------------
+
+Old Opticks oglrap handled multi-buffers using RBuf held by Renderer
+See::
+
+   Renderer::createVertexArray
+
+**/
+
+
+struct SGLFW_Buffer
+{
+    GLuint id ; 
+    SGLFW_Buffer( int num_bytes, const void* data, GLenum target, GLenum usage  ); 
+};
+
+SGLFW_Buffer::SGLFW_Buffer( int num_bytes, const void* data , GLenum target, GLenum usage )
+{
+    glGenBuffers(1, &id );                         SGLFW__check(__FILE__, __LINE__);
+    glBindBuffer(target, id);                      SGLFW__check(__FILE__, __LINE__);     
+    glBufferData(target, num_bytes, data, usage ); SGLFW__check(__FILE__, __LINE__);
+}
+
+
+
+/**
 SGLFW
 ------
 
 Light touch encapsulation of OpenGL window and shader program 
-(light touch means: trying to hide boilerplate, not making lots of decisions for user)
+(light touch means: trying to hide boilerplate, not making lots of decisions for user
+and getting complicated like oglrap did)
 
 **/
 
@@ -239,12 +288,12 @@ struct SGLFW
 
     GLuint program ; 
 
-
     SGLFW(int width, int height, const char* title=nullptr ); 
     virtual ~SGLFW(); 
 
     void init(); 
     void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
+
     void enableArrayAttribute( const char* name, const char* spec ); 
     GLint getUniformLocation(const char* name) const ; 
     GLint getAttribLocation(const char* name) const ; 
@@ -382,37 +431,40 @@ inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geo
     //std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ;
 
     int params = -1;
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW::check(__FILE__, __LINE__);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                SGLFW::check(__FILE__, __LINE__);
-    glCompileShader(vertex_shader);                                             SGLFW::check(__FILE__, __LINE__);
+    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW__check(__FILE__, __LINE__);
+    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                SGLFW__check(__FILE__, __LINE__);
+    glCompileShader(vertex_shader);                                             SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) SGLFW::print_shader_info_log(vertex_shader) ;
 
     GLuint geometry_shader = 0 ;
     if( geometry_shader_text )
     {
-        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       SGLFW::check(__FILE__, __LINE__);
-        glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            SGLFW::check(__FILE__, __LINE__);
-        glCompileShader(geometry_shader);                                           SGLFW::check(__FILE__, __LINE__);
+        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       SGLFW__check(__FILE__, __LINE__);
+        glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
+        glCompileShader(geometry_shader);                                           SGLFW__check(__FILE__, __LINE__);
         glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
         if (GL_TRUE != params) SGLFW::print_shader_info_log(geometry_shader) ;
     }
 
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                SGLFW::check(__FILE__, __LINE__);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            SGLFW::check(__FILE__, __LINE__);
-    glCompileShader(fragment_shader);                                           SGLFW::check(__FILE__, __LINE__);
+    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                SGLFW__check(__FILE__, __LINE__);
+    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
+    glCompileShader(fragment_shader);                                           SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) SGLFW::print_shader_info_log(fragment_shader) ;
 
-    program = glCreateProgram();               SGLFW::check(__FILE__, __LINE__);
-    glAttachShader(program, vertex_shader);    SGLFW::check(__FILE__, __LINE__);
-    if( geometry_shader > 0 ) glAttachShader(program, geometry_shader);  SGLFW::check(__FILE__, __LINE__);
-    glAttachShader(program, fragment_shader);  SGLFW::check(__FILE__, __LINE__);
-    glLinkProgram(program);                    SGLFW::check(__FILE__, __LINE__);
+    program = glCreateProgram();               SGLFW__check(__FILE__, __LINE__);
+    glAttachShader(program, vertex_shader);    SGLFW__check(__FILE__, __LINE__);
+    if( geometry_shader > 0 ) glAttachShader(program, geometry_shader);  SGLFW__check(__FILE__, __LINE__);
+    glAttachShader(program, fragment_shader);  SGLFW__check(__FILE__, __LINE__);
+    glLinkProgram(program);                    SGLFW__check(__FILE__, __LINE__);
 
     glUseProgram(program);
     std::cout << "]SGLFW::createProgram" << std::endl ; 
 }
+
+
+
 
 /**
 SGLFW::enableArrayAttribute
@@ -422,57 +474,45 @@ Array attribute : connecting values from the array with attribute symbol in the 
 
 Example rpos spec "4,GL_FLOAT,GL_FALSE,64,0,false"
 
+
+NB when handling multiple buffers note that glVertexAttribPointer
+binds to the buffer object bound to GL_ARRAY_BUFFER when called. 
+So that means have to repeatedly call this again after switching
+buffers ? 
+
+* https://stackoverflow.com/questions/14249634/opengl-vaos-and-multiple-buffers 
+* https://antongerdelan.net/opengl/vertexbuffers.html
+
 **/
 
 void SGLFW::enableArrayAttribute( const char* name, const char* spec )
 {
     SGLFW_Attribute att(name, spec); 
 
-    att.index = getAttribLocation( name );     SGLFW::check(__FILE__, __LINE__);
+    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
 
     std::cout << "SGLFW::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
 
-    glEnableVertexAttribArray(att.index);      SGLFW::check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__);
 
     assert( att.integer_attribute == false ); 
 
-    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW::check(__FILE__, __LINE__);
+    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__);
 }
 
 
 GLint SGLFW::getUniformLocation(const char* name) const 
 {
-    GLint loc = glGetUniformLocation(program, name);   SGLFW::check(__FILE__, __LINE__);
+    GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
     return loc ; 
 }
 
 GLint SGLFW::getAttribLocation(const char* name) const 
 {
-    GLint loc = glGetAttribLocation(program, name);   SGLFW::check(__FILE__, __LINE__);
+    GLint loc = glGetAttribLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
     return loc ; 
 }
 
-
-
-inline void SGLFW::check(const char* path, int line) // static
-{
-    GLenum err = glGetError() ;   
-    bool ok = err == GL_NO_ERROR ;
-    const char* s = NULL ; 
-    switch(err)
-    {   
-        case GL_INVALID_ENUM:      s = "GL_INVALID_ENUM" ; break ; 
-        case GL_INVALID_VALUE:     s = "GL_INVALID_VALUE" ; break ; 
-        case GL_INVALID_OPERATION: s = "GL_INVALID_OPERATION" ; break ; 
-        case GL_STACK_OVERFLOW:    s = "GL_STACK_OVERFLOW" ; break ;   
-        case GL_STACK_UNDERFLOW:   s = "GL_STACK_UNDERFLOW" ; break ;   
-        case GL_OUT_OF_MEMORY:     s = "GL_OUT_OF_MEMORY" ; break ;   
-        case GL_CONTEXT_LOST:      s = "GL_CONTEXT_LOST" ; break ;
-        case GL_INVALID_FRAMEBUFFER_OPERATION: s = "GL_INVALID_FRAMEBUFFER_OPERATION" ; break ;
-    }   
-    if(!ok) std::cout << "SGLFW::check OpenGL ERROR " << path << " : " << line << " : " << std::hex << err << std::dec << " : " << s << std::endl ; 
-    assert( ok );  
-}
 
 
 inline void SGLFW::print_shader_info_log(unsigned id)  // static
@@ -482,7 +522,7 @@ inline void SGLFW::print_shader_info_log(unsigned id)  // static
     char log[2048];
 
     glGetShaderInfoLog(id, max_length, &actual_length, log);
-    SGLFW::check(__FILE__, __LINE__ );  
+    SGLFW__check(__FILE__, __LINE__ );  
 
     printf("SGLFW::print_shader_info_log GL index %u:\n%s\n", id, log);
     assert(0);

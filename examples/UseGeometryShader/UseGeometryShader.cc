@@ -159,9 +159,7 @@ int main(int argc, char** argv)
 
     SGLM gm ; 
     gm.set_frame(fr); 
-    //gm.update();    // set_frame now calls update
     gm.dump();
-
 
     const char* title = RECORD_PATH ; 
     SGLFW gl(gm.Width(), gm.Height(), title );   
@@ -171,14 +169,13 @@ int main(int argc, char** argv)
     GLint ModelViewProjection_location = gl.getUniformLocation("ModelViewProjection"); 
     GLint Param_location               = gl.getUniformLocation("Param"); 
 
-    unsigned vao ;                  SGLFW::check(__FILE__, __LINE__); 
-    glGenVertexArrays (1, &vao);    SGLFW::check(__FILE__, __LINE__);
-    glBindVertexArray (vao);        SGLFW::check(__FILE__, __LINE__);
+    unsigned vao ;                  SGLFW__check(__FILE__, __LINE__); 
+    glGenVertexArrays (1, &vao);    SGLFW__check(__FILE__, __LINE__);
+    glBindVertexArray (vao);        SGLFW__check(__FILE__, __LINE__);
 
-    GLuint a_buffer ; 
-    glGenBuffers(1, &a_buffer);                                                 SGLFW::check(__FILE__, __LINE__);
-    glBindBuffer(GL_ARRAY_BUFFER, a_buffer);                                    SGLFW::check(__FILE__, __LINE__);
-    glBufferData(GL_ARRAY_BUFFER, a->arr_bytes(), a->bytes(), GL_STATIC_DRAW);  SGLFW::check(__FILE__, __LINE__);
+    SGLFW_Buffer buf(  a->arr_bytes(), a->bytes(), GL_ARRAY_BUFFER ); 
+
+
 
     std::string rpos_spec = a->get_meta<std::string>("rpos", "");  
     std::cout 
