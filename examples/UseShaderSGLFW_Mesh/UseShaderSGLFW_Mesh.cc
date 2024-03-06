@@ -7,7 +7,6 @@ examples/UseShaderSGLFW/UseShaderSGLFW_Mesh.cc
     ~/o/examples/UseShaderSGLFW_Mesh/go.sh 
 
 
-
 Started from ~/o/examples/UseShaderSGLFW and 
 transitioned from single triangle to a mesh. 
 
@@ -16,6 +15,7 @@ transitioned from single triangle to a mesh.
 
 #include "NPFold.h"
 #include "SGLFW.h"
+#include "SGLM.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>  
@@ -75,11 +75,13 @@ int main(void)
     NPFold* fold = NPFold::Load("$FOLD"); 
     const NP* vtx = fold->get("vtx"); 
     const NP* tri = fold->get("tri"); 
+    NP* nrm = SGLM::SmoothNormals( vtx, tri );
 
     std::cout 
         << " fold " << ( fold ? fold->desc() : "-" )
         << " vtx "  << ( vtx ? vtx->sstr() : "-" )
         << " tri "  << ( tri ? tri->sstr() : "-" )
+        << " nrm "  << ( nrm ? nrm->sstr() : "-" )
         << std::endl
         ; 
 

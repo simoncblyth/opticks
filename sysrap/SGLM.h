@@ -343,10 +343,13 @@ struct SYSRAP_API SGLM
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
 
 
-    template<typename T> static void FlatNormals( 
+    template<typename T> static void SmoothNormals( 
                std::vector<glm::tvec3<T>>& nrm, 
          const std::vector<glm::tvec3<T>>& vtx, 
          const std::vector<glm::tvec3<int>>& tri );
+
+    static NP* SmoothNormals( const NP* a_vtx, const NP* a_tri ); 
+
 
 };
 
@@ -1450,20 +1453,119 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
 
 
 /**
-SGLM::FlatNormals
-------------------
+SGLM::SmoothNormals
+---------------------
 
-https://computergraphics.stackexchange.com/questions/4031/programmatically-generating-vertex-normals
+* https://computergraphics.stackexchange.com/questions/4031/programmatically-generating-vertex-normals
+
+The smoothing of normals is actually a 
+cunning technique described by Inigo Quilezles (of SDF fame)
+
+* https://iquilezles.org/articles/normals/
+
+Essentially are combining non-normalized cross products 
+from each face into the vertex normals... so the effect 
+is to do a weighted average of the normals from all faces 
+adjacent to the vertex with a weighting according to tri area.
 
 **/
 
 
 template<typename T>
-inline void SGLM::FlatNormals( std::vector<glm::tvec3<T>>& nrm, const std::vector<glm::tvec3<T>>& vtx, const std::vector<glm::tvec3<int>>& tri ) // static
+inline void SGLM::SmoothNormals( std::vector<glm::tvec3<T>>& nrm, const std::vector<glm::tvec3<T>>& vtx, const std::vector<glm::tvec3<int>>& tri ) // static
 {
+    int num_vtx = vtx.size(); 
+    int num_tri = tri.size(); 
+
+    typedef glm::tvec3<T>      R3 ; 
+    typedef glm::tvec3<int>    I3 ; 
+
+    nrm.resize(num_vtx); 
+    for(int i=0 ; i < num_vtx ; i++) nrm[i] = R3{}  ; 
+
+    for(int i=0 ; i < num_tri ; i++)
+    {
+        const I3& t = tri[i] ; 
+        assert( t.x > -1 && t.x < num_vtx ); 
+        assert( t.y > -1 && t.y < num_vtx ); 
+        assert( t.z > -1 && t.z < num_vtx ); 
+        
+        const R3& v0 = vtx[t.x] ; 
+        const R3& v1 = vtx[t.y] ; 
+        const R3& v2 = vtx[t.z] ; 
+
+        R3 n = glm::cross(v1-v0, v2-v0) ;
+
+        nrm[t.x] += n ; 
+        nrm[t.y] += n ; 
+        nrm[t.z] += n ; 
+    }
+    for(int i=0 ; i < num_vtx ; i++) nrm[i] = glm::normalize( nrm[i] ); 
 }
 
+/**
+SGLM::SmoothNormals
+---------------------
 
+See decription in the lower level method. 
+
+**/
+
+inline NP* SGLM::SmoothNormals( const NP* a_vtx, const NP* a_tri ) // static
+{
+    int num_vtx = a_vtx ? a_vtx->shape[0] : 0 ; 
+    int num_tri = a_tri ? a_tri->shape[0] : 0 ; 
+
+    typedef glm::tvec3<double> D3 ; 
+    typedef glm::tvec3<float>  F3 ; 
+    typedef glm::tvec3<int>    I3 ; 
+
+    assert( sizeof(D3) == sizeof(double)*3 ); 
+    assert( sizeof(F3) == sizeof(float)*3 ); 
+    assert( sizeof(I3) == sizeof(int)*3 ); 
+
+    std::vector<I3> tri(num_tri) ; 
+    assert( sizeof(I3)*tri.size() == a_tri->arr_bytes() ); 
+    memcpy( tri.data(), a_tri->bytes(), a_tri->arr_bytes() ); 
+
+    NP* a_nrm = nullptr ; 
+    if( a_vtx->ebyte == 8 )
+    {
+        std::vector<D3> vtx(num_vtx) ; 
+        std::vector<D3> nrm(num_vtx, {0,0,0}) ;
+        assert( sizeof(D3)*vtx.size() == a_vtx->arr_bytes() ); 
+        memcpy( vtx.data(), a_vtx->bytes(), a_vtx->arr_bytes() ); 
+
+        SGLM::SmoothNormals<double>( nrm, vtx, tri );  
+
+        a_nrm = NP::Make<double>( num_vtx, 3 ); 
+        memcpy( a_nrm->bytes(), nrm.data(), a_nrm->arr_bytes() );  
+    } 
+    else if( a_vtx->ebyte == 4 )
+    {
+        std::vector<F3> vtx(num_vtx) ; 
+        std::vector<F3> nrm(num_vtx, {0.f,0.f,0.f}) ;
+        assert( sizeof(F3)*vtx.size() == a_vtx->arr_bytes() ); 
+        memcpy( vtx.data(), a_vtx->bytes(), a_vtx->arr_bytes() ); 
+
+        SGLM::SmoothNormals<float>( nrm, vtx, tri );  
+
+        a_nrm = NP::Make<float>( num_vtx, 3 ); 
+        memcpy( a_nrm->bytes(), nrm.data(), a_nrm->arr_bytes() );  
+    }
+
+    std::cout 
+        << " SGLM::SmoothNormals "
+        << " a_vtx "  << ( a_vtx ? a_vtx->sstr() : "-" )
+        << " a_tri "  << ( a_tri ? a_tri->sstr() : "-" )
+        << " a_nrm "  << ( a_nrm ? a_nrm->sstr() : "-" )
+        << " num_vtx " << num_vtx
+        << " num_tri " << num_tri
+        << std::endl
+        ;   
+
+    return a_nrm ; 
+}
 
 
 

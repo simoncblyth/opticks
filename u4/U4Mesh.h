@@ -25,6 +25,7 @@ For use with OpenGL rendering its natural to use "vtx" and "tri".
 
 **/
 
+#include <map>
 #include "G4Polyhedron.hh"
 #include "NPX.h"
 #include "NPFold.h"
@@ -33,7 +34,9 @@ struct U4Mesh
 {
     const G4VSolid* solid ; 
     G4Polyhedron*   poly ; 
-    int             nv, nf ; 
+    std::map<int,int> v2fc ;  
+
+    int             nv_poly, nv, nf ; 
     NP*             vtx ; 
     double*         vtx_ ; 
     NP*             fpd ;  // funny pyvista irregular 3/4 vertex face format
@@ -50,6 +53,11 @@ struct U4Mesh
     static NPFold* Serialize(const G4VSolid* solid) ; 
     U4Mesh(const G4VSolid* solid);     
     void init(); 
+
+    void init_vtx_face_count(); 
+    int getVertexFaceCount(int iv) const ; 
+    std::string desc_vtx_face_count() const ; 
+
     void init_vtx(); 
     void init_fpd();
     NPFold* serialize() const ; 
@@ -92,10 +100,11 @@ inline NPFold* U4Mesh::Serialize(const G4VSolid* solid) // static
 inline U4Mesh::U4Mesh(const G4VSolid* solid_):
     solid(solid_),
     poly(solid->CreatePolyhedron()),
-    nv(poly->GetNoVertices()),
+    nv_poly(poly->GetNoVertices()),
+    nv(0),
     nf(poly->GetNoFacets()),
-    vtx(NP::Make<double>(nv, 3)),
-    vtx_(vtx->values<double>()),
+    vtx(nullptr),
+    vtx_(nullptr),
     fpd(nullptr)
    ,face(NP::Make<int>(nf,4)),
     face_(face->values<int>()),
@@ -109,6 +118,8 @@ inline U4Mesh::U4Mesh(const G4VSolid* solid_):
 
 inline void U4Mesh::init()
 {
+    init_vtx_face_count(); 
+
     init_vtx() ; 
     init_fpd() ; 
 
@@ -118,15 +129,126 @@ inline void U4Mesh::init()
 
 }
 
+/**
+U4Mesh::init_vtx_face_count
+----------------------------
+
+For each vtx count how many faces it is referenced from
+and keep that in a map. This is used to 
+exclude vertices that are not referenced 
+by any facet in the output vtx array. 
+
+This is needed as find that the polygonization of G4Orb 
+via G4PolyhedronSphere includes a vertex (0,0,0) 
+that is not referenced from any facet which causes 
+issues for generation of normals, yeilding (nan,nan,nan) 
+due to the attempt at smooth normalization.
+
+**/
+inline void U4Mesh::init_vtx_face_count()
+{
+    for(int i=0 ; i < nf ; i++)
+    {
+        G4int nedge;
+        G4int ivertex[4];
+        G4int iedgeflag[4];
+        G4int ifacet[4];
+        poly->GetFacet(i+1, nedge, ivertex, iedgeflag, ifacet);
+        assert( nedge == 3 || nedge == 4  ); 
+
+        for(int j=0 ; j < nedge ; j++)
+        {
+            G4int iv = ivertex[j] - 1 ; 
+            if(v2fc.count(iv) == 0)
+            {
+               v2fc[iv] = 1 ; 
+            }
+            else
+            {
+                v2fc[iv] += 1 ; 
+            }
+        }
+    }
+
+    nv = v2fc.size(); 
+    //std::cout << desc_vtx_face_count() ; 
+}
+
+
+/**
+U4Mesh::getVertexFaceCount
+---------------------------
+
+Returns the number of faces that use the provided 0-based vertex index.
+Note that the count is obtained from the original triangles and quads, 
+so will not exactly match the count derived after splitting quads into triangles. 
+
+**/
+
+inline int U4Mesh::getVertexFaceCount(int iv) const 
+{
+    return v2fc.count(iv) == 1 ? v2fc.at(iv) : 0  ; // map can only have 0 or 1 occurrences of iv key 
+}
+
+inline std::string U4Mesh::desc_vtx_face_count() const 
+{
+    std::stringstream ss ; 
+    ss << "U4Mesh::desc_vtx_face_count" << std::endl ; 
+    typedef std::map<int,int> MII ; 
+    for(MII::const_iterator it = v2fc.begin() ; it != v2fc.end() ; it++)
+    {
+        int iv = it->first ; 
+        int fc = it->second ; 
+        int vfc = getVertexFaceCount(iv) ; 
+        assert( fc == vfc ); 
+        ss << iv << ":" << fc << std::endl ; 
+    }
+
+    ss << "nv_poly:" << nv_poly << "nv:" << nv << std::endl ; 
+    ss << " getVertexFaceCount(0) " << getVertexFaceCount(0) << std::endl ; 
+    ss << " getVertexFaceCount(nv_poly-1) :" << getVertexFaceCount(nv_poly-1) << std::endl ; 
+    ss << " getVertexFaceCount(nv-1)      :"  << getVertexFaceCount(nv-1) << std::endl ; 
+
+    std::string str = ss.str() ;
+    return str ;  
+}
+
 inline void U4Mesh::init_vtx()
 {
-    for(int i=0 ; i < nv ; i++)
+    vtx = NP::Make<double>(nv, 3) ; 
+    vtx_ = vtx->values<double>() ; 
+
+    int nv_count = 0 ; 
+    for(int iv=0 ; iv < nv_poly ; iv++)
     {
-        G4Point3D point = poly->GetVertex(i+1) ;  
-        vtx_[3*i+0] = point.x() ; 
-        vtx_[3*i+1] = point.y() ; 
-        vtx_[3*i+2] = point.z() ; 
+        int vfc = getVertexFaceCount(iv) ; 
+        G4Point3D point = poly->GetVertex(iv+1) ;  
+        if( vfc == 0 )
+        {
+            std::cout 
+                << "U4Mesh::init_vtx"
+                << " DISQUALIFIED VTX NOT INCLUDED IN ANY FACET " 
+                << " iv " << iv 
+                << " vfc " << vfc 
+                << " point [ "
+                << point.x()
+                << ","
+                << point.y()
+                << ","
+                << point.z()
+                << "]" 
+                << std::endl 
+                ;
+        }  
+        else
+        {
+            vtx_[3*nv_count+0] = point.x() ; 
+            vtx_[3*nv_count+1] = point.y() ; 
+            vtx_[3*nv_count+2] = point.z() ; 
+            nv_count += 1 ;  
+        }
     }
+    assert( nv_count == nv ); 
 }
 
 /**
