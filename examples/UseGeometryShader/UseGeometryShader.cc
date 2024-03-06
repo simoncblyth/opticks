@@ -173,7 +173,7 @@ int main(int argc, char** argv)
     glGenVertexArrays (1, &vao);    SGLFW__check(__FILE__, __LINE__);
     glBindVertexArray (vao);        SGLFW__check(__FILE__, __LINE__);
 
-    SGLFW_Buffer buf(  a->arr_bytes(), a->bytes(), GL_ARRAY_BUFFER ); 
+    SGLFW_Buffer buf(  a->arr_bytes(), a->bytes(), GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
 
 
 

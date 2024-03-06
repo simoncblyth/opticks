@@ -341,6 +341,13 @@ struct SYSRAP_API SGLM
     static glm::vec4 EVec4(const char* key, const char* fallback, float missing=1.f ); 
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
+
+
+    template<typename T> static void FlatNormals( 
+               std::vector<glm::tvec3<T>>& nrm, 
+         const std::vector<glm::tvec3<T>>& vtx, 
+         const std::vector<glm::tvec3<int>>& tri );
+
 };
 
 SGLM* SGLM::INSTANCE = nullptr ; 
@@ -1439,6 +1446,24 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
       }} ;
     return glm::make_mat4x4<T>(demo.data()) ;
 }
+
+
+
+/**
+SGLM::FlatNormals
+------------------
+
+https://computergraphics.stackexchange.com/questions/4031/programmatically-generating-vertex-normals
+
+**/
+
+
+template<typename T>
+inline void SGLM::FlatNormals( std::vector<glm::tvec3<T>>& nrm, const std::vector<glm::tvec3<T>>& vtx, const std::vector<glm::tvec3<int>>& tri ) // static
+{
+}
+
+
 
 
 

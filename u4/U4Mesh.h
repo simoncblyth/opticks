@@ -5,11 +5,23 @@ U4Mesh.h : Polygonize and Serialize Solids into Triangles/Quads
 
 This selects and simplifies some parts of the former x4/X4Mesh.{hh,cc} 
 and it better integrated with the pyvista PolyData face format
-allowing 3D visualization with quads as well as tri.  
+allowing 3D visualization with quads as well as triangles. 
 
-Note that following development of the "fpd" array for 
-specifying quad or tri faces, 
-the other approaches could be dropped : face, tri, tpd. 
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| field      |  content                                                               |  thoughts                          |
++============+========================================================================+====================================+
+| (NP*)vtx   |  (num_vtx, 3) array of float coordinates                               | basis                              |       
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)fpd   |  flat vtx index array : funny pyvista irregular 3/4 vertex face format | pv useful, includes quads, DROP?   |
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)face  |  (num_face,4) tri/quad vtx index array using f.face[:,3] == -1 for tri | DROP ?                             |
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)tri   |  (num_tri,3) tri vtx index array                                       | standard                           |
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)tpd   |  flat vtx index array : funny pyvista using all triangles              | same as tri, pv useful             | 
++------------+------------------------------------------------------------------------+------------------------------------+ 
+
+For use with OpenGL rendering its natural to use "vtx" and "tri".
 
 **/
 
