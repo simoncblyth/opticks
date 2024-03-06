@@ -23,6 +23,7 @@ SGLFW
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -151,7 +152,7 @@ struct SGLFW_Attribute
     std::vector<std::string> field ; 
 
     GLuint index ; 
-    GLint size ;                   // field 0 : number of components must be one of : 1,2,3,4 
+    GLint size ;                   // field 0 : number of components of the attribute (aka item), must be one of : 1,2,3,4 
     GLenum type ;                  // field 1 : normally GL_FLOAT 
     GLboolean normalized ;         // field 2 : normalized means in range 0->1
     GLsizei stride ;               // field 3 : in bytes eg for 4,4 float photon/record struct stride is 4*4*4=64
@@ -245,6 +246,9 @@ struct SGLFW
     void init(); 
     void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
     void enableArrayAttribute( const char* name, const char* spec ); 
+    GLint getUniformLocation(const char* name) const ; 
+    GLint getAttribLocation(const char* name) const ; 
+
 
     static void check(const char* path, int line); 
     static void print_shader_info_log(unsigned id); 
@@ -276,10 +280,18 @@ SGLFW::init
 1. OpenGL initialize
 2. create window
 
-
 Perhaps this needs to::
 
    glEnable(GL_DEPTH_TEST)
+
+
+Example responses::
+
+     Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+     OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+     Renderer: TITAN RTX/PCIe/SSE2
+     OpenGL version supported 4.1.0 NVIDIA 418.56
 
 **/
 
@@ -300,7 +312,7 @@ inline void SGLFW::init()
  
 #elif __linux
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);  // also used 6 here 
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,   
@@ -347,6 +359,18 @@ SGLFW::createProgram
 ---------------------
 
 Compiles and links shader strings into a program referred from integer *program* 
+
+On macOS with the below get "runtime error, unsupported version"::
+
+    #version 460 core
+
+On macOS with the below::
+
+    #version 410 core
+
+note that a trailing semicolon after the main curly brackets gives a syntax error, 
+that did not see on Linux with "#version 460 core"
+
 
 **/
 
@@ -404,7 +428,7 @@ void SGLFW::enableArrayAttribute( const char* name, const char* spec )
 {
     SGLFW_Attribute att(name, spec); 
 
-    att.index = glGetAttribLocation( program, name );   SGLFW::check(__FILE__, __LINE__);
+    att.index = getAttribLocation( name );     SGLFW::check(__FILE__, __LINE__);
 
     std::cout << "SGLFW::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
 
@@ -416,7 +440,21 @@ void SGLFW::enableArrayAttribute( const char* name, const char* spec )
 }
 
 
-inline void SGLFW::check(const char* path, int line) 
+GLint SGLFW::getUniformLocation(const char* name) const 
+{
+    GLint loc = glGetUniformLocation(program, name);   SGLFW::check(__FILE__, __LINE__);
+    return loc ; 
+}
+
+GLint SGLFW::getAttribLocation(const char* name) const 
+{
+    GLint loc = glGetAttribLocation(program, name);   SGLFW::check(__FILE__, __LINE__);
+    return loc ; 
+}
+
+
+
+inline void SGLFW::check(const char* path, int line) // static
 {
     GLenum err = glGetError() ;   
     bool ok = err == GL_NO_ERROR ;
@@ -437,7 +475,7 @@ inline void SGLFW::check(const char* path, int line)
 }
 
 
-inline void SGLFW::print_shader_info_log(unsigned id) 
+inline void SGLFW::print_shader_info_log(unsigned id)  // static
 {
     int max_length = 2048;
     int actual_length = 0;
@@ -446,12 +484,12 @@ inline void SGLFW::print_shader_info_log(unsigned id)
     glGetShaderInfoLog(id, max_length, &actual_length, log);
     SGLFW::check(__FILE__, __LINE__ );  
 
-    printf ("shader info log for GL index %u:\n%s\n", id, log);
+    printf("SGLFW::print_shader_info_log GL index %u:\n%s\n", id, log);
     assert(0);
 }
-inline void SGLFW::error_callback(int error, const char* description)
+inline void SGLFW::error_callback(int error, const char* description) // static
 {
-    fprintf(stderr, "Error: %s\n", description);
+    fprintf(stderr, "SGLFW::error_callback: %s\n", description);
 }
 
 /**
@@ -465,7 +503,7 @@ https://learnopengl.com/Getting-started/Camera
 THIS NEED TO TALK TO SGLM::INSTANCE changing viewpoint 
 
 **/
-inline void SGLFW::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+inline void SGLFW::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) // static
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {   

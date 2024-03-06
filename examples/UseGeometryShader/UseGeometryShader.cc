@@ -4,7 +4,10 @@ UseGeometryShader : flying point visualization of uncompressed step-by-step phot
 
 Usage::
 
-    ~/o/examples/UseGeometryShader/build.sh   ## non-CMake build
+    ~/o/examples/UseGeometryShader/build.sh                          ## non-CMake build
+    SHADER=rec_flying_point ~/o/examples/UseGeometryShader/build.sh
+    SHADER=pos              ~/o/examples/UseGeometryShader/build.sh
+
     ~/o/examples/UseGeometryShader/go.sh      ## CMake build
 
 See also::
@@ -154,24 +157,19 @@ int main(int argc, char** argv)
     sframe fr ; 
     fr.ce = ce ; 
 
-    SGLM sglm ; 
-    sglm.set_frame(fr); 
-    //sglm.update();    // set_frame now calls update
-    sglm.dump();
-
-    
+    SGLM gm ; 
+    gm.set_frame(fr); 
+    //gm.update();    // set_frame now calls update
+    gm.dump();
 
 
     const char* title = RECORD_PATH ; 
-    SGLFW sglfw(sglm.Width(), sglm.Height(), title );   
-    sglfw.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
+    SGLFW gl(gm.Width(), gm.Height(), title );   
+    gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
 
     // The strings below are names of uniforms present in rec_flying_point/geom.glsl and pos/vert.glsl 
-    // SGLFW could hold a map of uniform locations keyed on the names
-    // which are grabbed from the shader source by pattern matching uniform lines  
-
-    GLint ModelViewProjection_location = glGetUniformLocation(sglfw.program, "ModelViewProjection");   SGLFW::check(__FILE__, __LINE__);
-    GLint Param_location               = glGetUniformLocation(sglfw.program, "Param");                 SGLFW::check(__FILE__, __LINE__);
+    GLint ModelViewProjection_location = gl.getUniformLocation("ModelViewProjection"); 
+    GLint Param_location               = gl.getUniformLocation("Param"); 
 
     unsigned vao ;                  SGLFW::check(__FILE__, __LINE__); 
     glGenVertexArrays (1, &vao);    SGLFW::check(__FILE__, __LINE__);
@@ -189,10 +187,10 @@ int main(int argc, char** argv)
         << std::endl 
         ;  
 
-    sglfw.enableArrayAttribute("rpos", rpos_spec.c_str() ); 
+    gl.enableArrayAttribute("rpos", rpos_spec.c_str() ); 
  
     int width, height;
-    glfwGetFramebufferSize(sglfw.window, &width, &height); 
+    glfwGetFramebufferSize(gl.window, &width, &height); 
     std::cout 
         << "UseGeometryShader.main "
         << " width " << width << " height " << height 
@@ -201,24 +199,22 @@ int main(int argc, char** argv)
     // windows can be resized, so need to grab it 
     // Q: what about resizes during render loop ? HMM: need callback for that ?
 
-    const glm::mat4& world2clip = sglm.world2clip ; 
+    const glm::mat4& world2clip = gm.world2clip ; 
     const GLfloat* mvp = (const GLfloat*) glm::value_ptr(world2clip) ;  
     // THIS NEEDS TO BE INSIDE RENDERLOOP WITH KEY CALLBACKS
-    
 
     bool exitloop(false);
     int renderlooplimit(2000);
     int count(0); 
 
-    while (!glfwWindowShouldClose(sglfw.window) && !exitloop)
+    while (!glfwWindowShouldClose(gl.window) && !exitloop)
     {
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
-        glUseProgram(sglfw.program);
+        glUseProgram(gl.program);
 
         Param.w += Param.z ;  // input propagation time 
         if( Param.w > Param.y ) Param.w = Param.x ;  // input time : Param.w from .x to .y with .z steps
-       
 
         glUniformMatrix4fv(ModelViewProjection_location, 1, GL_FALSE, mvp );
         glUniform4fv(      Param_location,               1, glm::value_ptr(Param) );
@@ -226,7 +222,7 @@ int main(int argc, char** argv)
         GLenum mode = geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
         glDrawArrays(mode, a_first, a_count);
 
-        glfwSwapBuffers(sglfw.window);
+        glfwSwapBuffers(gl.window);
         glfwPollEvents();
 
         exitloop = renderlooplimit > 0 && count > renderlooplimit ; 

@@ -1,0 +1,110 @@
+/**
+examples/UseShaderSGLFW/UseShaderSGLFW.cc
+===========================================
+
+::
+
+    ~/o/examples/UseShaderSGLFW/go.sh 
+
+
+* https://www.glfw.org/docs/latest/quick.html#quick_example
+
+Started from ~/o/examples/UseShader and transitioned to 
+using SGLFW.h to hide lots of boilerplate details.
+
+**/
+
+
+#include "SGLFW.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>  
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/transform.hpp>
+
+#include <cstdlib>
+#include <cstdio>
+#include <iostream>
+
+static const struct {
+    float x, y, r, g, b ;
+} 
+vertices[3] =
+{
+    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
+    {  0.6f, -0.4f, 0.f, 1.f, 0.f },
+    {   0.f,  0.6f, 0.f, 0.f, 1.f }
+};
+
+
+static const char* vertex_shader_text = R"glsl(
+#version 410 core
+uniform mat4 MVP;
+in vec3 vCol;
+in vec2 vPos;
+out vec3 color;
+void main()
+{
+    gl_Position = MVP * vec4(vPos, 0.0, 1.0);
+    color = vCol;
+}
+
+)glsl";
+
+static const char* geometry_shader_text = nullptr ; 
+static const char* fragment_shader_text = R"glsl(
+#version 410 core
+in vec3 color;
+out vec4 frag_color;
+
+void main()
+{
+    frag_color = vec4(color, 1.0);
+}
+
+)glsl";
+
+int main(void)
+{
+    SGLFW gl(640, 480, "Simple example"); 
+    gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text); 
+
+    unsigned vao ;                SGLFW::check(__FILE__, __LINE__);
+    glGenVertexArrays (1, &vao);  SGLFW::check(__FILE__, __LINE__);
+    glBindVertexArray (vao);      SGLFW::check(__FILE__, __LINE__);
+
+    GLuint vertex_buffer ;
+    glGenBuffers(1, &vertex_buffer);                                            SGLFW::check(__FILE__, __LINE__);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);                               SGLFW::check(__FILE__, __LINE__);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  SGLFW::check(__FILE__, __LINE__);
+
+    gl.enableArrayAttribute( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
+    gl.enableArrayAttribute( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
+
+    GLint mvp_location = gl.getUniformLocation("MVP");   
+
+    int count(0);
+    int renderlooplimit(200); 
+    bool exitloop(false); 
+
+    while (!glfwWindowShouldClose(gl.window) && !exitloop)
+    {
+        int width, height;
+        glfwGetFramebufferSize(gl.window, &width, &height);
+        glViewport(0, 0, width, height);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+        float* mvp_f = glm::value_ptr( mvp ); 
+        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp_f );
+
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+
+        glfwSwapBuffers(gl.window);
+        glfwPollEvents();
+        exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;   
+    }
+    exit(EXIT_SUCCESS);
+}

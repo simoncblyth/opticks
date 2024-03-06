@@ -47,7 +47,7 @@ review Opticks glfw code
     ./examples/UseOpticksGLFWSnap/UseOpticksGLFWSnap.cc
           Pops up an OpenGL window with a colorful rotating single triangle
           On pressing SPACE a ppm snapshot of the window is saved to file. 
-          [ this used ancient non-shader OpenGL] 
+          [ this uses ancient non-shader OpenGL] 
 
     ./examples/UseShader/UseShader.cc
           Pops up an OpenGL window with a colorful single triangle
@@ -77,7 +77,8 @@ review Opticks glfw code
     ./examples/UseInstance/Frame.cc
     ./examples/UseInstance/Renderer.cc
     ./examples/UseInstance/Prog.cc
-           Minimal example of OpenGL instancing, default test pops up a window with 8 instanced triangles
+           Minimal example of OpenGL instancing, 
+           default test pops up a window with 8 instanced triangles
 
 
     ./examples/UseOpticksGLFW/glfw_keyname.h
