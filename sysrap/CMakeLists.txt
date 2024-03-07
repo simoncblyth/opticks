@@ -394,6 +394,8 @@ set(HEADERS
 
     SGLM.h
     SGLFW.h
+    gleq.h
+
     SDir.h
     SRG.h
     SCAM.h

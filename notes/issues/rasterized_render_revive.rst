@@ -111,6 +111,50 @@ Old viz top level
 
 
 
+renderloop::
+
+    573 void OpticksViz::renderLoop()
+    574 {
+    575     if(m_interactivity == 0 )
+    576     {
+    577         LOG(LEVEL) << "early exit due to InteractivityLevel 0  " ;
+    578         return ;
+    579     }
+    580     LOG(LEVEL) << "enter runloop ";
+    581 
+    582     //m_frame->toggleFullscreen(true); causing blankscreen then segv
+    583     m_frame->hintVisible(true);
+    584     m_frame->show();
+    585     LOG(LEVEL) << "after frame.show() ";
+    586 
+    587     unsigned count(0) ;
+    588     bool exitloop(false);
+    589 
+    590     int renderlooplimit = m_ok->getRenderLoopLimit();
+    591 
+    592     while (!glfwWindowShouldClose(m_window) && !exitloop  )
+    593     {
+    594         m_frame->listen();
+    595 
+    596 #ifdef OPTICKS_NPYSERVER
+    597         if(m_server) m_server->poll_one();
+    598 #endif
+    599 #ifdef WITH_BOOST_ASIO
+    600         m_io_context.poll_one();
+    601 #endif
+    602 
+    603         count = m_composition->tick();
+    604 
+    605         if(m_launcher)
+    606         {
+    607             m_launcher->launch(count);
+    608         }
+    609 
+    610         if( m_composition->hasChanged() || m_interactor->hasChanged() || count == 1)
+    611         {
+
+
+
 How was key interation hooked up previously ?
 -----------------------------------------------
 

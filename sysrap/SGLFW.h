@@ -33,11 +33,14 @@ SGLFW
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#define GLEQ_IMPLEMENTATION
+#include "gleq.h"
+
 #ifndef GLFW_TRUE
 #define GLFW_TRUE true
 #endif
 
-
+#include "SCMD.h"
 
 
 inline void SGLFW__check(const char* path, int line) // static
@@ -304,10 +307,14 @@ struct SGLFW
     static constexpr const char* TITLE = "SGLFW" ; 
     static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;  
 
-    GLFWwindow* window ; 
+
     int width ; 
     int height ; 
     const char* title ; 
+    SCMD* ctrl ; 
+
+    GLFWwindow* window ; 
+
     const char* vertex_shader_text ;
     const char* geometry_shader_text ; 
     const char* fragment_shader_text ;
@@ -325,10 +332,15 @@ struct SGLFW
     int  _width ;  // on retina 2x width 
     int  _height ;
     void renderloop_head(); 
+    void listen(); 
+    void handle_event(GLEQevent& event); 
+    void key_pressed(unsigned key); 
+    void key_released(unsigned key); 
+
     void renderloop_tail(); 
 
 
-    SGLFW(int width, int height, const char* title=nullptr ); 
+    SGLFW(int width, int height, const char* title=nullptr, SCMD* ctrl=nullptr ); 
     virtual ~SGLFW(); 
 
     void init(); 
@@ -349,7 +361,6 @@ struct SGLFW
 
 
     GLint getAttribLocation(const char* name) const ; 
-
 
     static void check(const char* path, int line); 
     static void print_shader_info_log(unsigned id); 
@@ -375,10 +386,65 @@ inline void SGLFW::renderloop_head()
         << std::endl 
         ;
 
+    listen(); 
     // TODO: matrix updates
 
     updateMVP(); 
 }
+
+inline void SGLFW::listen()
+{
+    GLEQevent event;
+    while (gleqNextEvent(&event))
+    {
+        handle_event(event);
+        gleqFreeEvent(&event);
+    }
+}
+
+
+/**
+SGLFW::handle_event
+--------------------
+
+See oglrap/Frame::handle_event
+
+**/
+
+inline void SGLFW::handle_event(GLEQevent& event)
+{
+    switch(event.type)
+    {
+        case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key); break ; 
+        case GLEQ_KEY_RELEASED:  key_released(event.keyboard.key); break ;
+        default: 
+              std::cout << "SGLFW::handle_event " << event.type << std::endl; 
+
+    }
+}
+
+inline void SGLFW::key_pressed(unsigned key)
+{
+    std::cout << "SGLFW::key_pressed " << key << std::endl ;
+    switch(key)
+    {
+        case GLFW_KEY_Z:   ctrl->command("--zoom 5") ; break ; 
+        case GLFW_KEY_X:   ctrl->command("--zoom 6") ; break ; 
+        case GLFW_KEY_C:   ctrl->command("--zoom 7") ; break ; 
+        case GLFW_KEY_V:   ctrl->command("--zoom 8") ; break ; 
+        case GLFW_KEY_B:   ctrl->command("--zoom 9") ; break ; 
+        case GLFW_KEY_N:   ctrl->command("--zoom 10") ; break ; 
+        case GLFW_KEY_M:   ctrl->command("--zoom 11") ; break ; 
+    }
+}
+inline void SGLFW::key_released(unsigned key)
+{
+    std::cout << "SGLFW::key_released " << key << std::endl ;
+}
+
+
+
+
 inline void SGLFW::renderloop_tail()
 {
     glfwSwapBuffers(window);
@@ -386,11 +452,13 @@ inline void SGLFW::renderloop_tail()
     exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 }
 
-inline SGLFW::SGLFW(int width_, int height_, const char* title_ )
+inline SGLFW::SGLFW(int width_, int height_, const char* title_, SCMD* ctrl_  )
     :
     width(width_),
     height(height_),
     title(title_ ? strdup(title_) : TITLE),
+    ctrl(ctrl_),
+    window(nullptr),
     vertex_shader_text(nullptr),
     geometry_shader_text(nullptr),
     fragment_shader_text(nullptr),
@@ -440,6 +508,8 @@ inline void SGLFW::init()
     glfwSetErrorCallback(SGLFW::error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
 
+    gleqInit();
+
 #if defined __APPLE__
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);  // version specifies the minimum, not what will get on mac
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
@@ -470,6 +540,8 @@ inline void SGLFW::init()
     }   
     glfwSetKeyCallback(window, SGLFW::key_callback);
     glfwMakeContextCurrent(window);
+
+    gleqTrackWindow(window);  // replaces callbacks, see https://github.com/glfw/gleq
     
     glewExperimental = GL_TRUE;
     glewInit (); 

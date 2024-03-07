@@ -124,12 +124,94 @@ Screen
 #include "SCAM.h"
 #include "SBAS.h"
 #include "sframe.h"
+#include "sstr.h"
 #include "NP.hh"
 
 #include "SYSRAP_API_EXPORT.hh"
 
+#include "SCMD.h"
 
-struct SYSRAP_API SGLM
+
+
+/**
+SGLM_Parse
+-----------
+
+Old opticks used boost-program-options for liveline parsing, thats a no-no
+as dont need to be all that general, and dont need so much flexibility
+and dont have too many keys. Can simply use a big if to route config 
+to the right place::
+
+    --near 777 --far 7777 --tmin 0.1 --tmax 100 --eye 0,10,0.1 --look 0,0,0
+
+Also can require tokens to always be preceded by "--" "--token value" 
+or "--switch --another_switch"
+
+1. split the cmd into elements delimited by spaces
+2. iterate thru the elements in pairs collecting 
+   into key,val,opt vectors 
+
+**/
+
+struct SGLM_Parse
+{
+    std::vector<std::string> key ; 
+    std::vector<std::string> val ; 
+    std::vector<std::string> opt ; 
+
+    static bool IsKey(const char* str); 
+    SGLM_Parse(const char* cmd);
+    std::string desc() const ; 
+};
+
+inline bool SGLM_Parse::IsKey(const char* str) // static
+{
+    return str && strlen(str) > 2 && str[0] == '-' && str[1] == '-' ;  
+}
+
+inline SGLM_Parse::SGLM_Parse(const char* cmd)
+{    
+    std::cout << "SGLM_Parse::SGLM_Parse [" << ( cmd ? cmd : "-" ) << "]" << std::endl; 
+    std::vector<std::string> elem ; 
+    sstr::Split(cmd,' ',elem); 
+    int num_elem = elem.size(); 
+
+    for(int i=0 ; i < std::max(1, num_elem - 1) ; i++)
+    {
+        const char* e0 = i   < num_elem ? elem[i].c_str()   : nullptr ; 
+        const char* e1 = i+1 < num_elem ? elem[i+1].c_str() : nullptr ; 
+        bool k0 = IsKey(e0); 
+        bool k1 = IsKey(e1); 
+
+        if( ( k0 && k1 ) || (k0 && e1 == nullptr)  )   // "--red --blue" OR "--green" 
+        {
+            opt.push_back(e0+2); 
+        }
+        else if(k0 && !k1)  // eg: --eye 0,10,0.1 
+        {
+            key.push_back(e0+2); 
+            val.push_back(e1); 
+        } 
+    }
+}
+
+inline std::string SGLM_Parse::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "SGLM_Parse::desc"
+       << " key.size " << key.size()
+       << " val.size " << val.size()
+       << " opt.size " << opt.size()
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+struct SYSRAP_API SGLM : public SCMD 
 {
     static SGLM* INSTANCE ; 
     static constexpr const char* kWH = "WH" ; 
@@ -189,6 +271,8 @@ struct SYSRAP_API SGLM
     std::string descInput() const ; 
 
     SGLM(); 
+    static void Command(const SGLM_Parse& parse); 
+    int command(const char* cmd); 
 
     sframe fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
     void set_frame( const sframe& fr ); 
@@ -246,11 +330,6 @@ struct SYSRAP_API SGLM
     void updateEyeBasis(); 
     static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
     std::string descEyeBasis() const ; 
-
-
-
-
-
 
 
     // modes
@@ -320,6 +399,7 @@ struct SYSRAP_API SGLM
 
 
     template <typename T> static T ato_( const char* a );
+    template <typename T> static void Str2Vector( std::vector<T>& vec, const char* uval ); 
     template <typename T> static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
     template <typename T> static std::string Present(std::vector<T>& vec);
 
@@ -335,10 +415,13 @@ struct SYSRAP_API SGLM
     static void GetEVec(glm::vec3& v, const char* key, const char* fallback );
     static void GetEVec(glm::vec4& v, const char* key, const char* fallback );
 
+    template <typename T> static T SValue(const char* uval );
     template <typename T> static T EValue(const char* key, const char* fallback );
     static glm::ivec2 EVec2i(const char* key, const char* fallback); 
     static glm::vec3 EVec3(const char* key, const char* fallback); 
     static glm::vec4 EVec4(const char* key, const char* fallback, float missing=1.f ); 
+    static glm::vec4 SVec4(const char* str, float missing=1.f ); 
+    static glm::vec3 SVec3(const char* str, float missing=1.f ); 
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
 
@@ -373,9 +456,9 @@ inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y =
 inline void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z = z  ;  EYE.w = 1.f ; }
 inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
 inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
-inline void SGLM::SetZOOM( float v ){ ZOOM = v ; }
-inline void SGLM::SetTMIN( float v ){ TMIN = v ; }
-inline void SGLM::SetTMAX( float v ){ TMAX = v ; }
+inline void SGLM::SetZOOM( float v ){ ZOOM = v ; std::cout << "SGLM::SetZOOM " << v << std::endl ; }
+inline void SGLM::SetTMIN( float v ){ TMIN = v ; std::cout << "SGLM::SetTMIN " << v << std::endl ; }
+inline void SGLM::SetTMAX( float v ){ TMAX = v ; std::cout << "SGLM::SetTMAX " << v << std::endl ; }
 inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
 inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
@@ -423,6 +506,119 @@ inline SGLM::SGLM()
 {
     addlog("SGLM::SGLM", "ctor"); 
     INSTANCE = this ; 
+}
+
+
+
+/**
+SGLM::Command
+--------------
+
+HMM: currently all command settings are absolute
+
+Could handle relative changes with different prefix eg "+-" instead of "--" 
+.. actually simpler to give prefix to the value eg "@" to indicate
+a relative change 
+
+**/
+
+
+void SGLM::Command(const SGLM_Parse& parse)  // static
+{
+    assert( parse.key.size() == parse.val.size() ); 
+    int num_kv = parse.key.size(); 
+    int num_op = parse.opt.size(); 
+
+    for(int i=0 ; i < num_kv ; i++)
+    {
+        const char* k = parse.key[i].c_str();  
+        const char* v = parse.val[i].c_str();  
+
+        std::cout 
+           << "SGLM::Command"
+           << " k[" << ( k ? k : "-" ) << "]" 
+           << " v[" << ( v ? v : "-" ) << "]" 
+           << std::endl
+           ;
+
+        if(     strcmp(k,"ce")==0)   
+        {
+            glm::vec4 tmp = SVec4(v, 0.f) ; 
+            SetCE( tmp.x, tmp.y, tmp.z, tmp.w ); 
+        }
+        else if(     strcmp(k,"eye")==0)   
+        {
+            glm::vec3 tmp = SVec3(v, 0.f) ; 
+            SetEYE( tmp.x, tmp.y, tmp.z ); 
+        }
+        else if(strcmp(k,"look")==0)
+        {
+            glm::vec3 tmp = SVec3(v, 0.f) ; 
+            SetLOOK( tmp.x, tmp.y, tmp.z ); 
+        }
+        else if(strcmp(k,"up")==0)
+        {
+            glm::vec3 tmp = SVec3(v, 0.f) ; 
+            SetUP( tmp.x, tmp.y, tmp.z ); 
+        }
+        else if(strcmp(k,"zoom")==0)
+        {
+            float tmp = SValue<float>(v) ; 
+            SetZOOM(tmp); 
+        }
+        else if(strcmp(k,"tmin")==0)
+        {
+            float tmp = SValue<float>(v) ; 
+            SetTMIN(tmp); 
+        }
+        else if(strcmp(k,"tmax")==0)
+        {
+            float tmp = SValue<float>(v) ; 
+            SetTMAX(tmp); 
+        }
+        else
+        {
+            std::cout << "SGLM::Command unhandled kv [" << k << "," << v << "]" << std::endl ; 
+        }
+    }
+
+    for(int i=0 ; i < num_op ; i++)
+    {
+        const char* op = parse.opt[i].c_str(); 
+        std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl; 
+    }
+} 
+
+
+/**
+SGLM::command
+--------------
+
+The objective of this method is to provide a generic method
+to control view parameters without requiring tight coupling between 
+this struct which handles view maths and various rendering systems. 
+For example key callbacks into SGLFW yield control strings that 
+can be passed here to change the view, where SGLFW need only know
+the SCMD interface that this method fulfils.
+Similarly UDP commands from remote commandlines picked up 
+by async listeners can similarly change the view. 
+
+From old opticks see::
+
+    oglrap/OpticksViz::command 
+    okc/Composition::command
+    okc/Camera::commandNear
+
+**/
+
+int SGLM::command(const char* cmd)
+{
+    SGLM_Parse parse(cmd); 
+    std::cout << "SGLM::command" << std::endl << parse.desc() ; 
+
+    Command(parse); 
+    update(); 
+    return 0 ; 
 }
 
 
@@ -506,7 +702,7 @@ inline void SGLM::set_frame( const sframe& fr_ )
 
 inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
 
-inline float SGLM::extent() const {   return fr.ce.w ; }
+inline float SGLM::extent() const {   return fr.ce.w > 0 ? fr.ce.w : CE.w ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
 inline float SGLM::tmax_abs() const { return extent()*TMAX ; }  // HUH:extent might not be the basis ?
 
@@ -1280,20 +1476,32 @@ template unsigned SGLM::ato_<unsigned>( const char* a );
 template int      SGLM::ato_<int>( const char* a ); 
 
 
- 
+template <typename T>
+inline void SGLM::Str2Vector( std::vector<T>& vec, const char* uval ) // static
+{
+    std::stringstream ss(uval); 
+    std::string s ; 
+    while(getline(ss, s, ',')) vec.push_back(ato_<T>(s.c_str()));   
+}
+
+template void SGLM::Str2Vector(std::vector<float>& vec,    const char* uval ); 
+template void SGLM::Str2Vector(std::vector<int>& vec,      const char* uval ); 
+template void SGLM::Str2Vector(std::vector<unsigned>& vec, const char* uval ); 
+
 
 template <typename T>
 inline void SGLM::GetEVector(std::vector<T>& vec, const char* key, const char* fallback )  // static 
 {
     const char* sval = getenv(key); 
-    std::stringstream ss(sval ? sval : fallback); 
-    std::string s ; 
-    while(getline(ss, s, ',')) vec.push_back(ato_<T>(s.c_str()));   
+    const char* uval = sval ? sval : fallback ; 
+    Str2Vector(vec, uval); 
 }  
 
 template void SGLM::GetEVector(std::vector<float>& vec, const char* key, const char* fallback ) ; 
 template void SGLM::GetEVector(std::vector<int>& vec, const char* key, const char* fallback ) ; 
 template void SGLM::GetEVector(std::vector<unsigned>& vec, const char* key, const char* fallback ) ; 
+
+
 
 template <typename T>
 inline std::string SGLM::Present(std::vector<T>& vec) // static 
@@ -1332,15 +1540,43 @@ inline glm::vec4 SGLM::EVec4(const char* key, const char* fallback, float missin
     for(int i=0 ; i < 4 ; i++) v[i] = i < int(vec.size()) ? vec[i] : missing   ; 
     return v ; 
 }
+inline glm::vec4 SGLM::SVec4(const char* str, float missing) // static
+{
+    std::vector<float> vec ; 
+    SGLM::Str2Vector<float>(vec, str); 
+    glm::vec4 v ; 
+    for(int i=0 ; i < 4 ; i++) v[i] = i < int(vec.size()) ? vec[i] : missing   ; 
+    return v ; 
+}
+inline glm::vec3 SGLM::SVec3(const char* str, float missing) // static
+{
+    std::vector<float> vec ; 
+    SGLM::Str2Vector<float>(vec, str); 
+    glm::vec3 v ; 
+    for(int i=0 ; i < 3 ; i++) v[i] = i < int(vec.size()) ? vec[i] : missing   ; 
+    return v ; 
+}
 
+
+
+
+template <typename T>
+inline T SGLM::SValue( const char* uval )  // static 
+{
+    std::string s(uval); 
+    T value = ato_<T>(s.c_str());
+    return value ;    
+} 
 template <typename T>
 inline T SGLM::EValue( const char* key, const char* fallback )  // static 
 {
     const char* sval = getenv(key); 
-    std::string s(sval ? sval : fallback); 
-    T value = ato_<T>(s.c_str());
-    return value ;    
+    const char* uval = sval ? sval : fallback ; 
+    return SValue<T>(uval); 
 } 
+
+
+
 
 inline glm::ivec2 SGLM::EVec2i(const char* key, const char* fallback ) // static
 {

@@ -12,6 +12,24 @@ examples/UseShaderSGLFW/UseShaderSGLFW_Mesh.cc
 Started from ~/o/examples/UseShaderSGLFW and 
 transitioned from single triangle to a mesh. 
 
+HMM : how coupled do SGLFW and SGLM need to be ? 
+--------------------------------------------------
+
+HMM: can get away with just the float* pointer for finding the matrix
+but need to call SGLM::update after changing view param
+so does SGLFW needs to hold the SGLM ? Or can a std::function 
+argument be used to keep the two decoupled at arms length ? 
+
+At first glance it look like need to tightly couple, 
+as the key callbacks(gleq events) need to drive 
+the SGLM interface and cause the matrix and 
+potentially other uniforms to be updated. 
+
+But could avoid that by adding a text interface to SGLM, 
+that could be used over UDP in future. 
+This means the keys just result in sending text commands
+via the std::function<int(std::string)> 
+
 **/
 
 #include "NPFold.h"
@@ -20,10 +38,9 @@ transitioned from single triangle to a mesh.
 #include "stra.h"
 #include "ssys.h"
 
-int main(void)
+int main()
 {
-    // HMM: maybe SMesh ? 
-    NPFold* fold = NPFold::Load("$MESH_FOLD"); 
+    NPFold* fold = NPFold::Load("$MESH_FOLD");   // HMM: maybe SMesh to encapsulate this
     const NP* tri = fold->get("tri"); 
     const NP* _vtx = fold->get("vtx"); 
     NP* _nrm = SGLM::SmoothNormals( _vtx, tri ); // smooth in double precision 
@@ -31,15 +48,15 @@ int main(void)
     const NP* vtx = NP::MakeNarrowIfWide(_vtx); 
     const NP* nrm = NP::MakeNarrowIfWide(_nrm); 
 
-
     sframe fr ; 
-    fr.ce = make_float4( 0.f, 0.f, 0.f,  100.f ); 
+    fr.ce = make_float4( 0.f, 0.f, 0.f,  100.f );  // could extract CE from the bbox of vertices  
 
     SGLM gm ; 
     gm.set_frame(fr) ; 
+    std::cout << gm.desc() ; 
+
     //gm.writeDesc("$FOLD", "A" ); 
     const float* world2clip = (const float*)glm::value_ptr(gm.world2clip) ;
-    std::cout << gm.desc() ; 
 
     assert( tri->shape.size() == 2 ); 
     int indices_count = tri->shape[0]*tri->shape[1] ; 
@@ -53,9 +70,10 @@ int main(void)
     std::string str = ss.str();  
     const char* title = str.c_str(); 
 
-    SGLFW gl(gm.Width(), gm.Height(), title ); 
+    SGLFW gl(gm.Width(), gm.Height(), title, (SCMD*)&gm ); 
     gl.createProgram("$SHADER_FOLD"); 
     gl.locateMVP("MVP",  world2clip ); 
+
 
     SGLFW_Buffer vbuf( vtx->arr_bytes(), vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
     SGLFW_Buffer nbuf( nrm->arr_bytes(), nrm->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
@@ -68,7 +86,7 @@ int main(void)
 
     while(gl.renderloop_proceed())
     {
-        gl.renderloop_head(); 
+        gl.renderloop_head();  // calls gl.updateMVP
 
         glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, indices_offset );
 
