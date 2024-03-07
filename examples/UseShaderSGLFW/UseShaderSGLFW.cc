@@ -74,19 +74,15 @@ int main(void)
 {
     SGLFW gl(640, 480, "Simple example"); 
     gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text); 
-
-    unsigned vao ;                SGLFW__check(__FILE__, __LINE__);
-    glGenVertexArrays (1, &vao);  SGLFW__check(__FILE__, __LINE__);
-    glBindVertexArray (vao);      SGLFW__check(__FILE__, __LINE__);
+    GLint mvp_location = gl.getUniformLocation("MVP");   
 
     assert( sizeof(vertices) == sizeof(float)*5*3 ); 
     SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
+
+    SGLFW_VAO vao ; 
     SGLFW_Buffer ibuf( sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
-
-    gl.enableArrayAttribute( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
-    gl.enableArrayAttribute( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
-
-    GLint mvp_location = gl.getUniformLocation("MVP");   
+    gl.enableAttrib( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
+    gl.enableAttrib( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
 
     int count(0);
     int renderlooplimit(200); 
@@ -102,8 +98,6 @@ int main(void)
         glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
         float* mvp_f = glm::value_ptr( mvp ); 
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp_f );
-
-        //glDrawArrays(GL_TRIANGLES, 0, 3);
 
         int indices_count = 3 ; 
         GLvoid* indices_offset = (GLvoid*)(sizeof(GLubyte) * 0) ; 

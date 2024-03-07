@@ -82,6 +82,59 @@ glVertexAttribPointer will affect VAO state.
 
 
 
+Old shaders ~/o/oglrap/gl/index.rst
+-------------------------------------
+
+::
+
+    colour = vec4( normal*0.5 + 0.5, 1.0 - Param.z ) ; 
+
+
+
+Old viz top level
+------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-fl OpticksViz.hh 
+    ./opticksgl/OKGLTracer.cc
+    ./ok/OKMgr.cc
+    ./ok/tests/VizTest.cc
+    ./ok/OKPropagator.cc
+    ./okg4/tests/OKX4Test.cc
+    ./okg4/OKG4Mgr.cc
+    ./npy/NConfigurable.hpp
+    ./oglrap/CMakeLists.txt
+    ./oglrap/AxisApp.cc
+    ./oglrap/OpticksViz.cc
+    epsilon:opticks blyth$ 
+
+
+
+How was key interation hooked up previously ?
+-----------------------------------------------
+
+::
+
+    void Interactor::key_pressed(unsigned int key)
+    void Frame::handle_event(GLEQevent& event)
+
+
+    void Frame::listen()
+    {
+        glfwPollEvents();
+
+        GLEQevent event;
+        while (gleqNextEvent(&event))
+        {    
+            if(m_dumpevent) dump_event(event);
+            handle_event(event);
+            gleqFreeEvent(&event);
+        }    
+    }
+
+
+
 
 Index buffer
 -------------

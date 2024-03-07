@@ -12,11 +12,13 @@ SGLFW_bool
 SGLFW_GLenum
    string parse
 
-SGLFW_Attribute
+SGLFW_Attrib
    parse attribute metadata strings such as "4,GL_FLOAT,GL_FALSE,64,0,false"
 
 SGLFW
    light touch encapsulation of OpenGL window and shader program 
+   (heavy old Opticks analogue is oglrap/Frame.hh thats steered from oglrap/OpticksViz)
+
     
 **/
 
@@ -157,7 +159,7 @@ inline GLenum SGLFW_GLenum::Type(const char* name)
 
 
 /**
-SGLFW_Attribute
+SGLFW_Attrib
 -----------------
 
 Parse a string of the below form into 6 fields::
@@ -166,7 +168,7 @@ Parse a string of the below form into 6 fields::
 
 
 **/
-struct SGLFW_Attribute
+struct SGLFW_Attrib
 {
     const char* name ; 
     const char* spec ; 
@@ -183,12 +185,12 @@ struct SGLFW_Attribute
     void*    byte_offset_pointer ; // derived from byte_offset 
 
 
-    SGLFW_Attribute( const char* name, const char* spec ); 
+    SGLFW_Attrib( const char* name, const char* spec ); 
     std::string desc() const ;  
 };
 
 
-inline SGLFW_Attribute::SGLFW_Attribute(const char* name_, const char* spec_)
+inline SGLFW_Attrib::SGLFW_Attrib(const char* name_, const char* spec_)
     :
     name(strdup(name_)),
     spec(strdup(spec_)),
@@ -218,10 +220,10 @@ inline SGLFW_Attribute::SGLFW_Attribute(const char* name_, const char* spec_)
     byte_offset_pointer = (void*)byte_offset ; 
 }
 
-inline std::string SGLFW_Attribute::desc() const 
+inline std::string SGLFW_Attrib::desc() const 
 {
     std::stringstream ss ; 
-    ss << "SGLFW_Attribute::desc" << std::endl 
+    ss << "SGLFW_Attrib::desc" << std::endl 
        << std::setw(20) << "name"  << " : " << name << std::endl 
        << std::setw(20) << "spec"  << " : " << spec << std::endl 
        << std::setw(20) << "index" << " : " << index << std::endl 
@@ -266,6 +268,26 @@ SGLFW_Buffer::SGLFW_Buffer( int num_bytes, const void* data , GLenum target, GLe
 }
 
 
+struct SGLFW_VAO
+{
+    GLuint id ; 
+    SGLFW_VAO(); 
+};
+
+SGLFW_VAO::SGLFW_VAO()
+{
+    glGenVertexArrays (1, &id);  SGLFW__check(__FILE__, __LINE__);
+    glBindVertexArray(id);        SGLFW__check(__FILE__, __LINE__);
+}
+
+
+
+
+
+
+
+
+
 
 /**
 SGLFW
@@ -280,22 +302,52 @@ and getting complicated like oglrap did)
 struct SGLFW
 {
     static constexpr const char* TITLE = "SGLFW" ; 
+    static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;  
 
     GLFWwindow* window ; 
     int width ; 
     int height ; 
     const char* title ; 
-
+    const char* vertex_shader_text ;
+    const char* geometry_shader_text ; 
+    const char* fragment_shader_text ;
     GLuint program ; 
+    GLint  mvp_location ; 
+    const float* mvp ; 
+ 
+    int count ; 
+    int renderlooplimit ; 
+    bool exitloop ; 
+
+    bool renderloop_proceed(); 
+
+    bool dump ; 
+    int  _width ;  // on retina 2x width 
+    int  _height ;
+    void renderloop_head(); 
+    void renderloop_tail(); 
+
 
     SGLFW(int width, int height, const char* title=nullptr ); 
     virtual ~SGLFW(); 
 
     void init(); 
+    void createProgram(const char* _dir); 
     void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
 
-    void enableArrayAttribute( const char* name, const char* spec ); 
+    void enableAttrib( const char* name, const char* spec, bool dump=false ); 
     GLint getUniformLocation(const char* name) const ; 
+    GLint findUniformLocation(const char* keys, char delim ) const ; 
+    void locateMVP(const char* key, const float* mvp ); 
+    void updateMVP();  // called from renderloop_head
+
+    template<typename T>
+    static std::string Desc(const T* tt, int num); 
+
+    void UniformMatrix4fv( GLint loc, const float* vv ); 
+    void Uniform4fv(       GLint loc, const float* vv ); 
+
+
     GLint getAttribLocation(const char* name) const ; 
 
 
@@ -305,13 +357,52 @@ struct SGLFW
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods); 
 }; 
 
+inline bool SGLFW::renderloop_proceed()
+{
+    return !glfwWindowShouldClose(window) && !exitloop ; 
+}
+inline void SGLFW::renderloop_head()
+{
+    dump = count % 100 == 0 ; 
+    glfwGetFramebufferSize(window, &_width, &_height);
+    glViewport(0, 0, _width, _height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if(dump) std::cout 
+        << "SGLFW::renderloop_head"
+        << " gl.count " << count 
+        << " ( gl._width/2, gl._height/2) (" << _width/2 << "," << _height/2 << ")"  
+        << std::endl 
+        ;
+
+    // TODO: matrix updates
+
+    updateMVP(); 
+}
+inline void SGLFW::renderloop_tail()
+{
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
+}
 
 inline SGLFW::SGLFW(int width_, int height_, const char* title_ )
     :
     width(width_),
     height(height_),
     title(title_ ? strdup(title_) : TITLE),
-    program(0)
+    vertex_shader_text(nullptr),
+    geometry_shader_text(nullptr),
+    fragment_shader_text(nullptr),
+    program(0),
+    mvp_location(-1),
+    mvp(nullptr),
+    count(0),
+    renderlooplimit(2000), 
+    exitloop(false),
+    dump(false),
+    _width(0),
+    _height(0)
 {
     init(); 
 }
@@ -403,6 +494,28 @@ inline void SGLFW::init()
     glfwSwapInterval(interval);
 }
 
+inline void SGLFW::createProgram(const char* _dir)
+{
+    const char* dir = U::Resolve(_dir); 
+
+    vertex_shader_text = U::ReadString(dir, "vert.glsl"); 
+    geometry_shader_text = U::ReadString(dir, "geom.glsl"); 
+    fragment_shader_text = U::ReadString(dir, "frag.glsl"); 
+
+    std::cout 
+        << "SGLFW::createProgram" 
+        << " _dir " << ( _dir ? _dir : "-" )
+        << " dir "  << (  dir ?  dir : "-" )
+        << " vertex_shader_text " << ( vertex_shader_text ? "YES" : "NO" ) 
+        << " geometry_shader_text " << ( geometry_shader_text ? "YES" : "NO" ) 
+        << " fragment_shader_text " << ( fragment_shader_text ? "YES" : "NO" ) 
+        << std::endl 
+        ;
+
+    createProgram( vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
+}
+
+
 /**
 SGLFW::createProgram
 ---------------------
@@ -460,15 +573,17 @@ inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geo
     glLinkProgram(program);                    SGLFW__check(__FILE__, __LINE__);
 
     glUseProgram(program);
+
     std::cout << "]SGLFW::createProgram" << std::endl ; 
+
 }
 
 
 
 
 /**
-SGLFW::enableArrayAttribute
-------------------------------
+SGLFW::enableAttrib
+--------------------
 
 Array attribute : connecting values from the array with attribute symbol in the shader program 
 
@@ -485,13 +600,13 @@ buffers ?
 
 **/
 
-void SGLFW::enableArrayAttribute( const char* name, const char* spec )
+void SGLFW::enableAttrib( const char* name, const char* spec, bool dump )
 {
-    SGLFW_Attribute att(name, spec); 
+    SGLFW_Attrib att(name, spec); 
 
     att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
 
-    std::cout << "SGLFW::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
+    if(dump) std::cout << "SGLFW::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
 
     glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__);
 
@@ -506,6 +621,128 @@ GLint SGLFW::getUniformLocation(const char* name) const
     GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
     return loc ; 
 }
+/**
+SGLFW::findUniformLocation
+---------------------------
+
+Returns the location int for the first uniform key found in the 
+shader program 
+
+**/
+
+GLint SGLFW::findUniformLocation(const char* keys, char delim ) const
+{
+    std::vector<std::string> kk ; 
+
+    std::stringstream ss; 
+    ss.str(keys)  ;
+    std::string key;
+    while (std::getline(ss, key, delim)) kk.push_back(key) ; 
+ 
+    GLint loc = -1 ; 
+
+    int num_key = kk.size(); 
+    for(int i=0 ; i < num_key ; i++)
+    {
+        const char* k = kk[i].c_str(); 
+        loc = getUniformLocation(k); 
+        if(loc > -1) break ;  
+    }
+    return loc ; 
+}
+
+
+/**
+SGLFW::locateMVP
+------------------
+
+Does not update GPU side, invoke SGLFW::locateMVP 
+prior to the renderloop after shader program is 
+setup and the GLM maths has been instanciated 
+hence giving the pointer to the world2clip matrix
+address. 
+
+Within renderloop_head the 
+Within the renderloop call updateMVP
+
+**/
+
+void SGLFW::locateMVP(const char* key, const float* mvp_ )
+{ 
+    mvp_location = getUniformLocation(key); 
+    assert( mvp_location > -1 ); 
+    mvp = mvp_ ; 
+}
+
+/**
+SGLFW::updateMVP
+------------------
+
+When mvp_location is > -1 this is called from 
+the end of renderloop_head so any matrix updates
+need to be done before then. 
+
+**/
+
+void SGLFW::updateMVP()
+{
+    assert( mvp_location > -1 ); 
+    assert( mvp != nullptr ); 
+    UniformMatrix4fv(mvp_location, mvp); 
+}
+
+
+
+
+template<typename T>
+std::string SGLFW::Desc(const T* tt, int num) // static
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < num ; i++) 
+        ss  
+            << ( i % 4 == 0 && num > 4 ? ".\n" : "" ) 
+            << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[i] 
+            << ( i == num-1 && num > 4 ? ".\n" : "" ) 
+            ;   
+
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+void SGLFW::UniformMatrix4fv( GLint loc, const float* vv )
+{
+    if(dump) std::cout 
+        << "SGLFW::UniformMatrix4fv" 
+        << " loc " << loc 
+        << std::endl 
+        << Desc(vv, 16) 
+        << std::endl
+        ;
+
+    assert( loc > -1 ); 
+    glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)vv );
+}    
+
+void SGLFW::Uniform4fv( GLint loc, const float* vv )
+{
+    if(dump) std::cout 
+        << "SGLFW::Uniform4fv" 
+        << " loc " << loc 
+        << std::endl 
+        << Desc(vv, 4) 
+        << std::endl
+        ;
+
+    assert( loc > -1 ); 
+    glUniform4fv(loc, 1, (const GLfloat*)vv );
+}    
+
+
+
+
+
+
 
 GLint SGLFW::getAttribLocation(const char* name) const 
 {

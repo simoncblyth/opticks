@@ -6,123 +6,73 @@ examples/UseShaderSGLFW/UseShaderSGLFW_Mesh.cc
 
     ~/o/examples/UseShaderSGLFW_Mesh/go.sh 
 
+    SHADER=wireframe ~/o/examples/UseShaderSGLFW_Mesh/go.sh 
+    SHADER=normal ~/o/examples/UseShaderSGLFW_Mesh/go.sh 
 
 Started from ~/o/examples/UseShaderSGLFW and 
 transitioned from single triangle to a mesh. 
 
 **/
 
-
 #include "NPFold.h"
 #include "SGLFW.h"
 #include "SGLM.h"
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>  
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/transform.hpp>
-
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-
-static const struct 
-{
-    float x, y, r, g, b ;
-} 
-vertices[3] =
-{
-    { -0.6f, -0.4f, 1.f, 0.f, 0.f },
-    {  0.6f, -0.4f, 0.f, 1.f, 0.f },
-    {   0.f,  0.6f, 0.f, 0.f, 1.f }
-};
-
-
-GLubyte indices[] = {
-     0, 1, 2 
-};
-  
-
-static const char* vertex_shader_text = R"glsl(
-#version 410 core
-uniform mat4 MVP;
-in vec3 vCol;
-in vec2 vPos;
-out vec3 color;
-void main()
-{
-    gl_Position = MVP * vec4(vPos, 0.0, 1.0);
-    color = vCol;
-}
-
-)glsl";
-
-static const char* geometry_shader_text = nullptr ; 
-static const char* fragment_shader_text = R"glsl(
-#version 410 core
-in vec3 color;
-out vec4 frag_color;
-
-void main()
-{
-    frag_color = vec4(color, 1.0);
-}
-
-)glsl";
+#include "stra.h"
+#include "ssys.h"
 
 int main(void)
 {
-    NPFold* fold = NPFold::Load("$FOLD"); 
-    const NP* vtx = fold->get("vtx"); 
+    // HMM: maybe SMesh ? 
+    NPFold* fold = NPFold::Load("$MESH_FOLD"); 
     const NP* tri = fold->get("tri"); 
-    NP* nrm = SGLM::SmoothNormals( vtx, tri );
+    const NP* _vtx = fold->get("vtx"); 
+    NP* _nrm = SGLM::SmoothNormals( _vtx, tri ); // smooth in double precision 
+    // narrow to float 
+    const NP* vtx = NP::MakeNarrowIfWide(_vtx); 
+    const NP* nrm = NP::MakeNarrowIfWide(_nrm); 
 
-    std::cout 
-        << " fold " << ( fold ? fold->desc() : "-" )
-        << " vtx "  << ( vtx ? vtx->sstr() : "-" )
-        << " tri "  << ( tri ? tri->sstr() : "-" )
-        << " nrm "  << ( nrm ? nrm->sstr() : "-" )
-        << std::endl
-        ; 
 
-    SGLFW gl(640, 480, "Simple example"); 
-    gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text); 
+    sframe fr ; 
+    fr.ce = make_float4( 0.f, 0.f, 0.f,  100.f ); 
 
-    unsigned vao ;                SGLFW__check(__FILE__, __LINE__);
-    glGenVertexArrays (1, &vao);  SGLFW__check(__FILE__, __LINE__);
-    glBindVertexArray (vao);      SGLFW__check(__FILE__, __LINE__);
+    SGLM gm ; 
+    gm.set_frame(fr) ; 
+    //gm.writeDesc("$FOLD", "A" ); 
+    const float* world2clip = (const float*)glm::value_ptr(gm.world2clip) ;
+    std::cout << gm.desc() ; 
 
-    assert( sizeof(vertices) == sizeof(float)*5*3 ); 
-    SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
-    SGLFW_Buffer ibuf( sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
+    assert( tri->shape.size() == 2 ); 
+    int indices_count = tri->shape[0]*tri->shape[1] ; 
+    GLvoid* indices_offset = (GLvoid*)(sizeof(GLint) * 0) ; 
 
-    gl.enableArrayAttribute( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
-    gl.enableArrayAttribute( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
+    std::stringstream ss ; 
+    ss << "UseShaderSGLFW_Mesh " 
+       << " tri "  << ( tri ? tri->sstr() : "-" ) 
+       << " vtx "  << ( vtx ? vtx->sstr() : "-" )
+       ;
+    std::string str = ss.str();  
+    const char* title = str.c_str(); 
 
-    GLint mvp_location = gl.getUniformLocation("MVP");   
+    SGLFW gl(gm.Width(), gm.Height(), title ); 
+    gl.createProgram("$SHADER_FOLD"); 
+    gl.locateMVP("MVP",  world2clip ); 
 
-    int count(0);
-    int renderlooplimit(200); 
-    bool exitloop(false); 
+    SGLFW_Buffer vbuf( vtx->arr_bytes(), vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+    SGLFW_Buffer nbuf( nrm->arr_bytes(), nrm->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+    
+    SGLFW_VAO vao ;  // vao: establishes context for OpenGL attrib state and element array
+    SGLFW_Buffer ibuf( tri->arr_bytes(), tri->cvalues<int>()  ,  GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
 
-    while (!glfwWindowShouldClose(gl.window) && !exitloop)
+    gl.enableAttrib( "vPos", "3,GL_FLOAT,GL_FALSE,12,0,false" );  // 3:vec3, 12:byte_stride
+    gl.enableAttrib( "vNrm", "3,GL_FLOAT,GL_FALSE,12,0,false" ); 
+
+    while(gl.renderloop_proceed())
     {
-        int width, height;
-        glfwGetFramebufferSize(gl.window, &width, &height);
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
+        gl.renderloop_head(); 
 
-        glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-        float* mvp_f = glm::value_ptr( mvp ); 
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp_f );
+        glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_INT, indices_offset );
 
-        int indices_count = 3 ; 
-        GLvoid* indices_offset = (GLvoid*)(sizeof(GLubyte) * 0) ; 
-        glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_BYTE, indices_offset );
-
-        glfwSwapBuffers(gl.window);
-        glfwPollEvents();
-        exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;   
+        gl.renderloop_tail(); 
     }
     exit(EXIT_SUCCESS);
 }
