@@ -171,7 +171,7 @@ inline bool SGLM_Parse::IsKey(const char* str) // static
 
 inline SGLM_Parse::SGLM_Parse(const char* cmd)
 {    
-    std::cout << "SGLM_Parse::SGLM_Parse [" << ( cmd ? cmd : "-" ) << "]" << std::endl; 
+    //std::cout << "SGLM_Parse::SGLM_Parse [" << ( cmd ? cmd : "-" ) << "]" << std::endl; 
     std::vector<std::string> elem ; 
     sstr::Split(cmd,' ',elem); 
     int num_elem = elem.size(); 
@@ -248,9 +248,15 @@ struct SYSRAP_API SGLM : public SCMD
     static void SetEYE( float x, float y, float z ); 
     static void SetLOOK( float x, float y, float z ); 
     static void SetUP( float x, float y, float z ); 
+
     static void SetZOOM( float v ); 
     static void SetTMIN( float v ); 
     static void SetTMAX( float v ); 
+
+    static void IncZOOM( float v ); 
+    static void IncTMIN( float v ); 
+    static void IncTMAX( float v ); 
+
     static void SetCAM( const char* cam ); 
     static void SetNEARFAR( const char* nearfar ); 
     static void SetFOCAL( const char* focal ); 
@@ -271,7 +277,7 @@ struct SYSRAP_API SGLM : public SCMD
     std::string descInput() const ; 
 
     SGLM(); 
-    static void Command(const SGLM_Parse& parse); 
+    static void Command(const SGLM_Parse& parse, bool dump); 
     int command(const char* cmd); 
 
     sframe fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
@@ -453,12 +459,20 @@ int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "asis") ;
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
+
 inline void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z = z  ;  EYE.w = 1.f ; }
 inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
 inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
-inline void SGLM::SetZOOM( float v ){ ZOOM = v ; std::cout << "SGLM::SetZOOM " << v << std::endl ; }
-inline void SGLM::SetTMIN( float v ){ TMIN = v ; std::cout << "SGLM::SetTMIN " << v << std::endl ; }
-inline void SGLM::SetTMAX( float v ){ TMAX = v ; std::cout << "SGLM::SetTMAX " << v << std::endl ; }
+
+inline void SGLM::SetZOOM( float v ){ ZOOM = v ; std::cout << "SGLM::SetZOOM " << ZOOM << std::endl ; }
+inline void SGLM::SetTMIN( float v ){ TMIN = v ; std::cout << "SGLM::SetTMIN " << TMIN << std::endl ; }
+inline void SGLM::SetTMAX( float v ){ TMAX = v ; std::cout << "SGLM::SetTMAX " << TMAX << std::endl ; }
+
+inline void SGLM::IncZOOM( float v ){ ZOOM += v ; std::cout << "SGLM::IncZOOM " << ZOOM << std::endl ; }
+inline void SGLM::IncTMIN( float v ){ TMIN += v ; std::cout << "SGLM::IncTMIN " << TMIN << std::endl ; }
+inline void SGLM::IncTMAX( float v ){ TMAX += v ; std::cout << "SGLM::IncTMAX " << TMAX << std::endl ; }
+
+
 inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
 inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
@@ -523,7 +537,7 @@ a relative change
 **/
 
 
-void SGLM::Command(const SGLM_Parse& parse)  // static
+void SGLM::Command(const SGLM_Parse& parse, bool dump)  // static
 {
     assert( parse.key.size() == parse.val.size() ); 
     int num_kv = parse.key.size(); 
@@ -534,7 +548,7 @@ void SGLM::Command(const SGLM_Parse& parse)  // static
         const char* k = parse.key[i].c_str();  
         const char* v = parse.val[i].c_str();  
 
-        std::cout 
+        if(dump) std::cout 
            << "SGLM::Command"
            << " k[" << ( k ? k : "-" ) << "]" 
            << " v[" << ( v ? v : "-" ) << "]" 
@@ -561,21 +575,12 @@ void SGLM::Command(const SGLM_Parse& parse)  // static
             glm::vec3 tmp = SVec3(v, 0.f) ; 
             SetUP( tmp.x, tmp.y, tmp.z ); 
         }
-        else if(strcmp(k,"zoom")==0)
-        {
-            float tmp = SValue<float>(v) ; 
-            SetZOOM(tmp); 
-        }
-        else if(strcmp(k,"tmin")==0)
-        {
-            float tmp = SValue<float>(v) ; 
-            SetTMIN(tmp); 
-        }
-        else if(strcmp(k,"tmax")==0)
-        {
-            float tmp = SValue<float>(v) ; 
-            SetTMAX(tmp); 
-        }
+        else if(strcmp(k,"zoom")==0)     SetZOOM(SValue<float>(v)) ; 
+        else if(strcmp(k,"tmin")==0)     SetTMIN(SValue<float>(v)) ; 
+        else if(strcmp(k,"tmax")==0)     SetTMAX(SValue<float>(v)) ;
+        else if(strcmp(k,"inc-zoom")==0) IncZOOM(SValue<float>(v)) ; 
+        else if(strcmp(k,"inc-tmin")==0) IncTMIN(SValue<float>(v)) ; 
+        else if(strcmp(k,"inc-tmax")==0) IncTMAX(SValue<float>(v)) ;
         else
         {
             std::cout << "SGLM::Command unhandled kv [" << k << "," << v << "]" << std::endl ; 
@@ -614,9 +619,10 @@ From old opticks see::
 int SGLM::command(const char* cmd)
 {
     SGLM_Parse parse(cmd); 
-    std::cout << "SGLM::command" << std::endl << parse.desc() ; 
 
-    Command(parse); 
+    bool dump = false ; 
+    if(dump) std::cout << "SGLM::command" << std::endl << parse.desc() ; 
+    Command(parse, dump); 
     update(); 
     return 0 ; 
 }

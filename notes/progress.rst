@@ -31,6 +31,83 @@ Progress
      think about how they are related to each other 
 
 
+
+
+2024 Mar
+---------
+
+
+
+* o : 03/05 : SGLM.h tests review reveals some potential causes of mis-behaviour such as that seen with UseGeometryShader but needs rasterized comparison before can be actionable
+* o : 03/04 : working out how to combine triangulated with analytic optix geometry, review some OpenGL GeometryShader rendering : want view/position navigation functionality that is reusable in all combinations : OpenGL/OptiX/interop
+* o : 03/01 : add U4Mesh::MakeFold created meshes for all solids to stree created with U4Tree
+
+
+2024 Feb
+----------
+
+* o : 02/29 : update examples/UseOptiX7GeometryModular to work with OptiX 7.5 while thinking about reviving triangulated and interactive graphics
+* o : 02/29 : switch to SEvt::getLocalHit from the old SEvt::getLocalHit_LEAKY impl
+* o : 02/29 : note that intended new implementation of SEvt::getLocalHit avoids most of the off-by-one sensor identifier complications by using the CPU side double precision transforms that as never uploaded dont need to offset the identifier
+* o : 02/19 : avoiding leaking transforms for every hit in sframe.h and CSGTarget.h reduces leak from 2300 kb to 800 kb in U4HitTest with 1750 hits, on Darwin
+* o : 02/01 : add sysrap/tests/sleak.sh in the style of sreport.sh but simpler as just focussing on leak checking 
+
+
+2024 Jan
+-----------
+
+
+* o : 01/24 :  notes on fixing the 14kb/launch VRAM leak due to use of separate CUDA stream for each launch, plus change non-controllable per launch logging to be under SEvt__MINIMAL control
+* o : 01/22 : implement running from a sequence of input gensteps such that cxs_min_igs.sh can redo the pure Opticks GPU optical propagation for gensteps persisted from a prior Geant4+Opticks eg okjob/jok-tds job
+* o : 01/02 : add NPX.h ArrayFromDiscoMapUnordered handling of int,int unordered_map
+
+2023 Dec
+-----------
+
+* o : 12/29 : add mock lookup function to test the GPU texture 
+* o : 12/17 : quantify leak GB/s with linefit, reduce smonitor logging
+* o : 12/09 : examine preprocessor flattened CSGOptiX/CSGOptiX7.cu with preprocessor.sh to look for inadvertent use of printf and doubles as suggested by opticks-ptx for Release PTX showing a few of those left 
+* o : 12/01 : add run level profile recording
+
+2023 Nov
+----------
+
+
+* o : 11/06 : bump the CXX dialect to c++17 now that are shifting to OptiX 7.5 CUDA 11.7
+* o : 11/03 : revisit tests : all sysrap passing
+* o : 11/01 : improve chi2 interpretation reporting by QCF : confirm fix A/B g4cx/tests/G4CXTest_raindrop.sh difference by using Opticks defaults that correspond closer to Geant4 
+
+
+2023 Oct
+---------
+
+* o : 10/31 : remove U4VolumeMaker::PVF as PMTFASTSIM now fully replaced by PMTSIM, improve error handling in U4VolumeMaker::PV, add a starter script g4cx/tests/G4CXTest_hello.sh for using G4CXTest with users gdml 
+* o : 10/12 : revive examples/UseGeometryShader using more controlled sysrap/tests/sphoton_test.cc generation of the record.npy array
+
+
+2023 Sept
+-----------
+
+* o : 09/29 : document stamp_test.sh as a demo of local/remote workflow
+* o : 09/20->25 : covid 
+* o : 09/19 : add U4Mesh.h bringing over parts of the old X4Mesh.cc for polygonized viz of Geant4 solids with pyvista
+* o : 09/04 : leaping to new workflow, removing old packages from om-subs--all and hiding use of old package headers behind WITH_GGEO in G4CXOpticks
+* o : 09/04 : remove the CSG_stree_Convert approach as CSGImport now almost complete
+
+2023 August
+------------
+
+* o : 08/27 : review CSGFoundry old/new diffs remaining, shows two left : boundary index and subNum on compound root nodes
+* o : 08/27 : fix old workflow prim aabb bug, that incorrectly inflated some bbox due to inclusion of all zero bbox from operator nodes that was not skipped as an unset bbox : with similar new workflow fix the prim bbox are now matching between geometry workflows 
+* o : 08/17 : sn.h nodes now precisely match snd.hh as demonstrated for full geometry with U4TreeCreateTest.sh 
+* o : 08/15 : bring most snd.hh features over to the more flexible sn.
+* o : 08/12 : CSGFoundry::CreateFromSim as no point operating from stree alone as SSim info required for operational geometry
+* o : 08/08 : CSG/tests/csg_intersect_leaf_test.sh shows intersect_leaf normals onto sphere with transforms as used by PMT Ellipsoid are not normalized
+* o : 08/04 : start g4cx/tests/G4CXAppTest.sh for standalone bi-simulation
+* o : 08/01 : complete cleanup of G4CXOpticks::simulate moving event handling down to QSim and SEvt levels, add selective saving to SEvt::save
+
+
+
 2023 July : mat+sur+bnd+optical translation into new workflow, special surface enum, qpmt.h special surface impl, MOCK_TEXTURE
 ----------------------------------------------------------------------------------------------------------------------------------
 

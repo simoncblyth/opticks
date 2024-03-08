@@ -394,6 +394,7 @@ set(HEADERS
 
     SGLM.h
     SGLFW.h
+    SGLFW_Extras.h
     gleq.h
 
     SDir.h

@@ -178,6 +178,129 @@ How was key interation hooked up previously ?
     }
 
 
+trackball
+------------
+
+* https://github.com/zhangbo-tj/trackball  GPL so dont bother looking 
+
+* https://github.com/BrutPitt/virtualGizmo3D  BSD
+
+* https://git.science.uu.nl/s.carter/animationviewer/-/tree/bvh2/3rd_party/imGuIZMO.quat-3.0
+
+
+* https://github.com/ocornut/imgui
+
+
+* https://www.codeproject.com/Articles/22040/Arcball-OpenGL-in-C
+
+Arcball (also know as Rollerball) is probably the most intuitive method to view
+three dimensional objects. The principle of the Arcball is based on creating a
+sphere around the object and letting users to click a point on the sphere and
+drag it to a different location. 
+
+
+* http://rainwarrior.ca/dragon/arcball.html
+
+
+
+
+
+Arcball
+----------
+
+* https://oguz81.github.io/ArcballCamera/
+* https://github.com/oguz81/ArcballCamera
+
+
+* Properties of Quaternions
+
+
+Arcball with quaternions
+--------------------------
+
+* https://research.cs.wisc.edu/graphics/Courses/559-f2001/Examples/Gl3D/arcball-gems.pdf
+
+* ~/opticks_refs/ken_shoemake_arcball_rotation_control_gem.pdf
+
+* https://github.com/Twinklebear/arcball-cpp
+
+
+
+
+thoughts on impl of controls
+-----------------------------
+
+::
+
+    447 /**
+    448 Interactor::key_pressed
+    449 ------------------------
+    450 
+    451 Hmm it would be better if the interactor
+    452 talked to a single umbrella class (living at lower level, not up here)
+    453 for controlling all this.  
+    454 Composition does that a bit but far from completely.
+    455 
+    456 The reason is that having a single controller that can be talked to 
+    457 by various means avoids duplication. The means could include: 
+    458 
+    459 * via keyboard (here with GLFW)
+    460 * via command strings 
+    461 
+    462 The problem is that too much state is residing too far up the heirarchy, 
+    463 it should be living in generic fashion lower down.
+    464 In MVC speak : lots of "M" is living in "V" 
+    465 
+    466 **/
+    467 
+
+
+cursor drag controls
+----------------------
+
+::
+
+    253 void Interactor::cursor_drag(float x, float y, float dx, float dy, int ix, int iy )
+    254 {
+    255     m_changed = true ;
+    256     //printf("Interactor::cursor_drag x,y  %0.5f,%0.5f dx,dy  %0.5f,%0.5f \n", x,y,dx,dy );
+    257 
+    258     float rf = 1.0 ;
+    259     float df = m_dragfactor ;
+    260 
+    261     if( m_yfov_mode )
+    262     {
+    263         m_camera->zoom_to(df*x,df*y,df*dx,df*dy);
+    264     }
+    265     else if( m_near_mode )
+    266     {
+    267         m_camera->near_to(df*x,df*y,df*dx,df*dy);
+    268     }
+    269     else if( m_far_mode )
+    270     {
+    271         m_camera->far_to(df*x,df*y,df*dx,df*dy);
+    272     }
+    273     else if( m_scale_mode )
+    274     {
+    275         m_camera->scale_to(df*x,df*y,df*dx,df*dy);
+    276     }
+    277     else if( m_pan_mode )
+    278     {
+    279         m_trackball->pan_to(df*x,df*y,df*dx,df*dy);
+    280     }
+    281     else if( m_zoom_mode )  // bad name, actully z translate
+    282     {
+    283         m_trackball->zoom_to(df*x,df*y,df*dx,df*dy);
+    284     }
+    285     else if( m_rotate_mode )
+    286     {
+    287         m_trackball->drag_to(rf*x,rf*y,rf*dx,rf*dy);
+    288     }
+    289     else if( m_time_mode )
+    290     {
+
+
+
 
 
 Index buffer

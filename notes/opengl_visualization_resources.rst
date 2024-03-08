@@ -15,3 +15,11 @@ not just OpenGL.
 
 
 
+For arranging consistent ray trace and rasterized renders
+-----------------------------------------------------------
+
+* https://antongerdelan.net/opengl/raycasting.html
+
+
+
+
