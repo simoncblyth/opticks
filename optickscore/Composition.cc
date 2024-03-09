@@ -2042,12 +2042,23 @@ void Composition::update()
     m_eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,m_gazelength));  
     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));
 
-    m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);
-    m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);
+    m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);  // this is just rotation, no translation
+    m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);  // just translation  
 
     m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_lookrotation * m_eye2look * m_world2camera ;           // ModelView
 
     m_eye2world = m_camera2world * m_look2eye * m_ilookrotation * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
+
+    // m_world2eye m_eye2world are confusing names as camera~eye in other usage
+    // better m_ModelView m_InverseModelView reflecting the connection with OpenGL usage 
+  
+
+    // NB the changing of frame as each matrix is multiplied 
+    // lookrotation coming after eye2look means that will rotate around the look point (not the eye point)
+    // also trackballrot operates around the look 
+    // then return back out to eye frame after look2eye where the trackballtra gets applied 
+    //
+    // NB the opposite order for the eye2world inverse
 
     m_projection = m_camera->getProjection();
 

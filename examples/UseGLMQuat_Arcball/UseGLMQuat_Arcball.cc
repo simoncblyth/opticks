@@ -42,6 +42,26 @@ Comparison of rotation interface techniques
 
 
 
+
+Think that the way the quat are formed is flawed
+--------------------------------------------------
+
+What I did in okc/Trackball::
+
+    458 void Trackball::setOrientation()
+    459 {
+    460     float pi = boost::math::constants::pi<float>() ;
+    461     float theta = m_theta_deg*pi/180.f ;
+    462     float phi   = m_phi_deg*pi/180.f ;
+    463 
+    464     glm::quat xrot(cos(0.5f*theta),sin(0.5f*theta),0.f,0.f);
+    465     glm::quat zrot(cos(0.5f*phi),  0.f,0.f,sin(0.5f*phi));
+    466     glm::quat q = xrot * zrot ;
+    467     setOrientation(q);
+    468 }
+
+
+
 **/
 
 
@@ -74,46 +94,92 @@ struct Arcball
         return s ; 
     }
 
-    static glm::quat screen_to_arcball(const glm::vec2& p)
-    {
-        const float dist = glm::dot(p, p);
-        // If we're on/in the sphere return the point on it
-        if (dist <= 1.f) {
-            return glm::quat(0.0, p.x, p.y, std::sqrt(1.f - dist));
-        } else {
-            // otherwise we project the point onto the sphere
-            const glm::vec2 proj = glm::normalize(p);
-            return glm::quat(0.0, proj.x, proj.y, 0.f);
-        }
-    }
-
     glm::mat4 center_translation ;
     glm::mat4 translation ;
     glm::quat rotation ;
-    glm::mat4 camera ;
-    glm::mat4 inv_camera;
+
 
     Arcball( const glm::vec3& eye, 
              const glm::vec3& center,
              const glm::vec3& up )
     {
-        const glm::vec3 dir = center - eye;
+        const glm::vec3 dir = center - eye;  // 
         glm::vec3 z_axis = glm::normalize(dir);
         glm::vec3 x_axis = glm::normalize(glm::cross(z_axis, glm::normalize(up)));
         glm::vec3 y_axis = glm::normalize(glm::cross(x_axis, z_axis));
         x_axis = glm::normalize(glm::cross(z_axis, y_axis));  
+        // this is same as SGLM::updateEyeSpace : using OpenGL convention 
 
         center_translation = glm::inverse(glm::translate(glm::mat4(1.f), center));
         translation = glm::translate(glm::mat4(1.f), glm::vec3(0.f, 0.f, -glm::length(dir)));   
         rotation = glm::normalize(glm::quat_cast(glm::transpose(glm::mat3(x_axis, y_axis, -z_axis))));
 
+        // initing quat from eye space ok, but better to keep separate
+        // ... 
+        // THIS APPROACH COMBINES EyeSpace ROTATION WITH ARCBALL ROTATION
+        // DONT LIKE THAT : PREFER TO KEEP ARCBALL ROTATION SEPARATE 
+        // FOR SANITY AND DEFINITENESS OF VIEW CONTROL AS OPPOSED TO 
+        // INTERACTIVE TWIDDLING OF THE VIEW USING ARCBALL 
+
         update_camera();
     }
 
+    glm::mat4 camera ;
+    glm::mat4 inv_camera;
+
     void update_camera()
     {
+       // this using result of arcball 
         camera = translation * glm::mat4_cast(rotation) * center_translation;
         inv_camera = glm::inverse(camera);
+    }
+
+
+    /**
+
+    The arcball clearly lives in the center of the eyespace
+
+    Input *p* assumed screen NDC [-1:1, -1:1]
+
+           (-1,1)         (0,1)            (1,1)
+            +---------------~--------------+
+            |                  ~          +|
+            |       ~              ~    +  |
+            |    ~                    +    |
+            |                          ~   |
+            |  ~                           |
+            |                              |
+            ~              +            ~  |
+            |            (0,0)             |
+            |  ~                      ~    |
+            |     ~                        |
+            |                      ~       |
+            |         ~         ~          |
+            +---------------~--------------+
+           (-1,-1)        (0,-1)          (1,-1)
+
+
+        // If we're on/in the sphere return the point on it
+
+
+
+    Ken Showmake paper uses quat with (0.,v0) (0.,v1) called them unit quat  
+
+
+    **/
+    static glm::quat screen_to_arcball(const glm::vec2& p)
+    {
+        const float dist = glm::dot(p, p);  // ACTUALLY THATS dist_squared 
+        if (dist <= 1.f) 
+        {
+            float z = std::sqrt(1.f - dist) ; 
+            return glm::quat(0.0, p.x, p.y, z );
+
+        } else {
+            // otherwise we project the point onto the sphere
+            const glm::vec2 proj = glm::normalize(p);
+            return glm::quat(0.0, proj.x, proj.y, 0.f);
+        }
     }
 
     void rotate(glm::vec2 prev_mouse, glm::vec2 cur_mouse)
