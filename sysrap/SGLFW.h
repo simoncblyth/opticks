@@ -41,8 +41,9 @@ SGLFW
 #define GLFW_TRUE true
 #endif
 
-#include "SCMD.h"
+#include "SGLM.h"
 #include "SGLFW_Extras.h"
+#include "NPU.hh"
 
 
 struct SGLFW_Toggle
@@ -83,10 +84,10 @@ struct SGLFW : public SCMD
     static constexpr const char* TITLE = "SGLFW" ; 
     static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;  
 
+    SGLM& gm ; 
     int width ; 
     int height ; 
     const char* title ; 
-    SCMD* ctrl ; 
 
     GLFWwindow* window ; 
 
@@ -133,7 +134,7 @@ struct SGLFW : public SCMD
     std::string descCursorPos() const;  
 
 
-    SGLFW(int width, int height, const char* title=nullptr, SCMD* ctrl=nullptr ); 
+    SGLFW(SGLM& gm, int width, int height, const char* title=nullptr ); 
     virtual ~SGLFW(); 
 
     void init(); 
@@ -236,7 +237,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom  ; break ; 
         case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
-        case GLFW_KEY_A:      ctrl->command("--zoom 10") ; break ; 
+        case GLFW_KEY_A:      gm.command("--zoom 10") ; break ; 
     }
 
     std::cout << toggle.desc() << std::endl ; 
@@ -355,17 +356,17 @@ inline void SGLFW::drag_action()
     if(toggle.zoom)
     {
         std::string cmd = FormCommand("--inc-zoom", dy*100 ); 
-        ctrl->command(cmd.c_str()) ;
+        gm.command(cmd.c_str()) ;
     } 
     else if(toggle.tmin)
     {
         std::string cmd = FormCommand("--inc-tmin", dy ); 
-        ctrl->command(cmd.c_str()) ;
+        gm.command(cmd.c_str()) ;
     }
     else if(toggle.tmax)
     {
         std::string cmd = FormCommand("--inc-tmax", dy ); 
-        ctrl->command(cmd.c_str()) ;
+        gm.command(cmd.c_str()) ;
     }
 }
 
@@ -407,12 +408,12 @@ inline std::string SGLFW::descCursorPos() const
     return str ;
 }
 
-inline SGLFW::SGLFW(int width_, int height_, const char* title_, SCMD* ctrl_  )
+inline SGLFW::SGLFW(SGLM& _gm, int width_, int height_, const char* title_ )
     :
+    gm(_gm),
     width(width_),
     height(height_),
     title(title_ ? strdup(title_) : TITLE),
-    ctrl(ctrl_),
     window(nullptr),
     vertex_shader_text(nullptr),
     geometry_shader_text(nullptr),
@@ -784,25 +785,33 @@ inline void SGLFW::error_callback(int error, const char* description) // static
     fprintf(stderr, "SGLFW::error_callback: %s\n", description);
 }
 
+
+
+
 /**
+HMM : how coupled do SGLFW and SGLM need to be ? 
+--------------------------------------------------
 
-some ideas on key handling :  UseOpticksGLFW/UseOpticksGLFW.cc 
+HMM: can get away with just the float* pointer for finding the matrix
+but need to call SGLM::update after changing view param
+so does SGLFW needs to hold the SGLM ? Or can a std::function 
+argument be used to keep the two decoupled at arms length ? 
 
-https://stackoverflow.com/questions/55573238/how-do-i-do-a-proper-input-class-in-glfw-for-a-game-engine
+At first glance it look like need to tightly couple, 
+as the key callbacks(gleq events) need to drive 
+the SGLM interface and cause the matrix and 
+potentially other uniforms to be updated. 
 
-https://learnopengl.com/Getting-started/Camera
+But could avoid that by adding a text interface to SGLM, 
+that could be used over UDP in future. 
+This means the keys just result in sending text commands
+via the std::function<int(std::string)> 
 
 
-inline void SGLFW::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) // static
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {   
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }   
-}
-
+HMM: for arcball/trackballing ... its too tedious to 
+go thru text interface, so get tighter coupled but keep 
+the text interface for future UDP 
 
 **/
-
 
 

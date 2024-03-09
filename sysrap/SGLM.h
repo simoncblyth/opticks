@@ -313,8 +313,8 @@ struct SYSRAP_API SGLM : public SCMD
     float getGazeLength() const ; 
     std::string descELU() const ; 
 
-    void updateNearAndFar(); 
-    std::string descNearAndFar() const ; 
+    void updateNearFar(); 
+    std::string descNearFar() const ; 
 
     // results from updateEyeSpace
 
@@ -368,12 +368,15 @@ struct SYSRAP_API SGLM : public SCMD
 
     glm::mat4 projection ; 
     glm::mat4 world2clip ; 
+    float*    world2clip_ptr ; 
 
     void updateProjection(); 
 
     void ce_corners_world( std::vector<glm::vec4>& v_world ) const ; 
     void ce_midface_world( std::vector<glm::vec4>& v_world ) const ; 
     void apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const ; 
+
+    std::string desc_world2clip() const ; 
     std::string desc_world2clip_ce_corners() const ; 
     std::string desc_world2clip_ce_midface() const ; 
 
@@ -408,6 +411,7 @@ struct SYSRAP_API SGLM : public SCMD
     template <typename T> static void Str2Vector( std::vector<T>& vec, const char* uval ); 
     template <typename T> static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
     template <typename T> static std::string Present(std::vector<T>& vec);
+    template <typename T> static std::string Present(const T* tt, int num); 
 
     static std::string Present(const glm::ivec2& v, int wid=6 );
     static std::string Present(const float v, int wid=10, int prec=3);
@@ -430,14 +434,6 @@ struct SYSRAP_API SGLM : public SCMD
     static glm::vec3 SVec3(const char* str, float missing=1.f ); 
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale); 
-
-
-    template<typename T> static void SmoothNormals( 
-               std::vector<glm::tvec3<T>>& nrm, 
-         const std::vector<glm::tvec3<T>>& vtx, 
-         const std::vector<glm::tvec3<int>>& tri );
-
-    static NP* SmoothNormals( const NP* a_vtx, const NP* a_tri ); 
 
 
 };
@@ -516,7 +512,8 @@ inline SGLM::SGLM()
     far(5.f),     // units of get_nearfar_basis
 
     projection(1.f),
-    world2clip(1.f)
+    world2clip(1.f),
+    world2clip_ptr(glm::value_ptr(world2clip))
 {
     addlog("SGLM::SGLM", "ctor"); 
     INSTANCE = this ; 
@@ -528,14 +525,7 @@ inline SGLM::SGLM()
 SGLM::Command
 --------------
 
-HMM: currently all command settings are absolute
-
-Could handle relative changes with different prefix eg "+-" instead of "--" 
-.. actually simpler to give prefix to the value eg "@" to indicate
-a relative change 
-
 **/
-
 
 void SGLM::Command(const SGLM_Parse& parse, bool dump)  // static
 {
@@ -644,12 +634,13 @@ std::string SGLM::desc() const
     ss << descInput() << std::endl ; 
     ss << descModelMatrix() << std::endl ; 
     ss << descELU() << std::endl ; 
-    ss << descNearAndFar() << std::endl ; 
+    ss << descNearFar() << std::endl ; 
     ss << descEyeSpace() << std::endl ; 
     ss << descEyeBasis() << std::endl ; 
     ss << descProjection() << std::endl ; 
     ss << descBasis() << std::endl ; 
     ss << descLog() << std::endl ; 
+    ss << desc_world2clip() << std::endl ; 
     ss << desc_world2clip_ce_corners() << std::endl ; 
     ss << desc_world2clip_ce_midface() << std::endl ; 
     std::string s = ss.str(); 
@@ -695,7 +686,7 @@ std::string SGLM::descInput() const
 SGLM::set_frame
 -----------------
 
-Avoided former kludge double call of update by repositioning updateNearAndFar 
+Avoided former kludge double call of update by repositioning updateNearFar 
 according to its dependency on gazelength. 
 
 **/
@@ -722,13 +713,6 @@ updateModelMatrix
 updateELU
     eye,look,up,gaze in world frame from EYE,LOOK,UP in "ce" frame by doing extent scaling
 
-updateNearAndFar
-    scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
-    world frame Near and Far distances ... HUH: not so simple as near far are divided
-    by the nearfar_basis that defaults to gazelength but can be extent
-
-    HMM: thats non-intuitive, could explain mis-behaviour
-
 updateEyeSpace
     form world2camera camera2world from eye position and
     gaze and up directions in world frame together with 
@@ -741,6 +725,18 @@ updateEyeBasis
     yield (u,v,w,e) basis vec3 that are used by CSGOptiX::prepareRenderParam 
     to setup the raytrace render params. 
 
+
+
+updateNearFar
+    scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
+    world frame Near and Far distances ... HUH: not so simple as near far are divided
+    by the nearfar_basis that defaults to gazelength but can be extent
+
+    HMM: thats non-intuitive, could explain mis-behaviour
+
+    [recently moved this from after updateELU to before updateProjection
+     as ELU+EyeSpace+EyeBasis belong together as do NearFar+Projection ]
+
 updateProjection
 
 
@@ -750,12 +746,16 @@ updateProjection
 inline void SGLM::update()  
 {
     addlog("SGLM::update", "["); 
+
     updateModelMatrix();   
-    updateELU(); 
-    updateNearAndFar(); 
+
+    updateELU();          
     updateEyeSpace(); 
     updateEyeBasis(); 
+
+    updateNearFar(); 
     updateProjection(); 
+
     addlog("SGLM::update", "]"); 
 }
 
@@ -796,9 +796,8 @@ updateModelMatrix_branch:3
     the escale is not included into model2world/world2model,
     that is done in SGLM::updateELU.
 
-    So currently this only handles translation from ce center, 
+    So currently updateModelMatrix only handles translation from CE center, 
     not extent scaling. 
-
 
 **/
 
@@ -840,12 +839,6 @@ inline void SGLM::updateModelMatrix()
     }
     addlog("updateModelMatrix", updateModelMatrix_branch );
 }
-
-
-
-
-
-
 std::string SGLM::descModelMatrix() const 
 {
     std::stringstream ss ; 
@@ -873,7 +866,7 @@ glm::mat4 SGLM::get_escale() const
 {
     float f = get_escale_(); 
     glm::vec3 sc(f,f,f) ; 
-    glm::mat4 esc = glm::scale(glm::mat4(1.0), sc);
+    glm::mat4 esc = glm::scale(glm::mat4(1.f), sc);
     return esc ; 
 }
 
@@ -882,9 +875,9 @@ SGLM::updateELU
 -----------------
 
 Uses escale matrix (which typically comes from extent fr.ce.w)
-to convent input EYE, LOOK, UP in "ce" or "model" frame 
-that uses extent units into world frame (applying the extent)
-vec3 : eye,look,up,gaze 
+to convert the inputs (EYE, LOOK, UP) in units of extent 
+into world frame by applying the extent with the escale matrix
+to give vec3 : eye,look,up,gaze 
 
 
                look
@@ -895,11 +888,21 @@ vec3 : eye,look,up,gaze
             +
            eye
 
-In "CE/model" frame the LOOK,EYE defaults::
+Default inputs UP,LOOK,EYE::
 
+    UP     (0,0,1,0)   
     LOOK   (0,0,0,1) 
     EYE    (-1,-1,0,1)
     "GAZE" (1,1,0,0) 
+
+The advantage of using units of extent for the view inputs
+is that the view will then often provide something visible 
+with geometry of any size. 
+
+
+Q: Why not include extent scaling in the model2world matrix ? 
+A: This is for consistency with sframe.h transforms which are used when
+   non-identity transforms are provided with the frame. 
 
 **/
 
@@ -940,45 +943,13 @@ std::string SGLM::descELU() const
 }
 
 
-/**
-SGLM::updateNearAndFar
---------------------------
-
-scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
-world frame Near and Far distances
-
-HUH: but then tmi,tmx get divided by nearfar basis, which could be extent 
-(default is gazelength). Thats confusing. 
-
-As the basis needs gazelength, this must be done after updateELU
-but isnt there still a problem of basis consistency between tmin_abs and set_near_abs ? 
-For example extent scaling vs gazelength scaling ? 
-
-**/
-void SGLM::updateNearAndFar() 
-{
-    float tmi = tmin_abs() ; 
-    addlog("updateNearAndFar.tmi", tmi);
-    set_near_abs(tmi) ;  
-
-    float tmx = tmax_abs() ; 
-    addlog("updateNearAndFar.tmx", tmx);
-    set_far_abs(tmx) ;  
-
-}
-std::string SGLM::descNearAndFar() const
-{
-    std::stringstream ss ; 
-    ss << "SGLM::descNearAndFar" << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
-}
-
 
 
 /**
 SGLM::updateEyeSpace
 ---------------------
+
+NB "Eye" and "Camera" are used interchangeably, meaning the same thing 
 
 Form world2camera camera2world from eye position and
 gaze and up directions in world frame together with 
@@ -1008,7 +979,7 @@ world2camera
 
 void SGLM::updateEyeSpace()
 {
-    forward_ax = glm::normalize(gaze);  // gaze is from eye->look 
+    forward_ax = glm::normalize(gaze);  // gaze is from eye->look "look - eye" 
     right_ax   = glm::normalize(glm::cross(forward_ax,up)); 
     top_ax     = glm::normalize(glm::cross(right_ax,forward_ax));
 
@@ -1078,6 +1049,46 @@ void SGLM::updateEyeBasis()
     e = glm::vec3( camera2world * ori );   
 }
 
+
+
+
+
+
+/**
+SGLM::updateNearFar
+--------------------------
+
+scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
+world frame Near and Far distances
+
+HUH: but then tmi,tmx get divided by nearfar basis, which could be extent 
+(default is gazelength). Thats confusing. 
+
+As the basis needs gazelength, this must be done after updateELU
+but isnt there still a problem of basis consistency between tmin_abs and set_near_abs ? 
+For example extent scaling vs gazelength scaling ? 
+
+**/
+void SGLM::updateNearFar() 
+{
+    float tmi = tmin_abs() ; 
+    addlog("updateNearFar.tmi", tmi);
+    set_near_abs(tmi) ;  
+
+    float tmx = tmax_abs() ; 
+    addlog("updateNearFar.tmx", tmx);
+    set_far_abs(tmx) ;  
+
+}
+std::string SGLM::descNearFar() const
+{
+    std::stringstream ss ; 
+    ss << "SGLM::descNearFar" << std::endl ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
 /**
 SGLM::updateProjection
 -----------------------
@@ -1085,6 +1096,8 @@ SGLM::updateProjection
 Suspect that for consistency of rasterized and ray traced
 renders this will need to match SGLM::updateEyeBasis better in 
 the z-direction. 
+
+TODO: orthographic projection
 
 **/
 
@@ -1103,7 +1116,7 @@ void SGLM::updateProjection()
     float far_abs    = get_far_abs()  ; 
 
     projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
-    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing   
+    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing YET 
 }
 
 
@@ -1317,6 +1330,16 @@ void SGLM::apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<g
     }
 }
 
+std::string SGLM::desc_world2clip() const 
+{
+    std::stringstream ss ;
+    ss << "SGLM::desc_world2clip" << std::endl ; 
+    ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
+    ss << " world2clip_ptr " << std::endl  << Present<float>(world2clip_ptr,16) << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 /**
 SGLM::desc_world2clip_ce_corners
 ---------------------------------
@@ -1337,7 +1360,6 @@ std::string SGLM::desc_world2clip_ce_corners() const
 
     std::stringstream ss ;
     ss << "SGLM::desc_world2clip_ce_corners" << std::endl ; 
-    ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
     for(int i=0 ; i < NUM ; i++ )
     {
         const glm::vec4& _world = v_world[i] ; 
@@ -1517,6 +1539,23 @@ inline std::string SGLM::Present(std::vector<T>& vec) // static
     return ss.str();
 }
 
+template<typename T>
+inline std::string SGLM::Present(const T* tt, int num)
+{
+    std::stringstream ss ;
+    for(int i=0 ; i < num ; i++)
+        ss
+            << ( i % 4 == 0 && num > 4 ? ".\n" : "" )
+            << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[i]
+            << ( i == num-1 && num > 4 ? ".\n" : "" )
+            ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
 
 
 
@@ -1693,121 +1732,6 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
 }
 
 
-
-/**
-SGLM::SmoothNormals
----------------------
-
-* https://computergraphics.stackexchange.com/questions/4031/programmatically-generating-vertex-normals
-
-The smoothing of normals is actually a 
-cunning technique described by Inigo Quilezles (of SDF fame)
-
-* https://iquilezles.org/articles/normals/
-
-Essentially are combining non-normalized cross products 
-from each face into the vertex normals... so the effect 
-is to do a weighted average of the normals from all faces 
-adjacent to the vertex with a weighting according to tri area.
-
-**/
-
-
-template<typename T>
-inline void SGLM::SmoothNormals( std::vector<glm::tvec3<T>>& nrm, const std::vector<glm::tvec3<T>>& vtx, const std::vector<glm::tvec3<int>>& tri ) // static
-{
-    int num_vtx = vtx.size(); 
-    int num_tri = tri.size(); 
-
-    typedef glm::tvec3<T>      R3 ; 
-    typedef glm::tvec3<int>    I3 ; 
-
-    nrm.resize(num_vtx); 
-    for(int i=0 ; i < num_vtx ; i++) nrm[i] = R3{}  ; 
-
-    for(int i=0 ; i < num_tri ; i++)
-    {
-        const I3& t = tri[i] ; 
-        assert( t.x > -1 && t.x < num_vtx ); 
-        assert( t.y > -1 && t.y < num_vtx ); 
-        assert( t.z > -1 && t.z < num_vtx ); 
-        
-        const R3& v0 = vtx[t.x] ; 
-        const R3& v1 = vtx[t.y] ; 
-        const R3& v2 = vtx[t.z] ; 
-
-        R3 n = glm::cross(v1-v0, v2-v0) ;
-
-        nrm[t.x] += n ; 
-        nrm[t.y] += n ; 
-        nrm[t.z] += n ; 
-    }
-    for(int i=0 ; i < num_vtx ; i++) nrm[i] = glm::normalize( nrm[i] ); 
-}
-
-/**
-SGLM::SmoothNormals
----------------------
-
-See decription in the lower level method. 
-
-**/
-
-inline NP* SGLM::SmoothNormals( const NP* a_vtx, const NP* a_tri ) // static
-{
-    int num_vtx = a_vtx ? a_vtx->shape[0] : 0 ; 
-    int num_tri = a_tri ? a_tri->shape[0] : 0 ; 
-
-    typedef glm::tvec3<double> D3 ; 
-    typedef glm::tvec3<float>  F3 ; 
-    typedef glm::tvec3<int>    I3 ; 
-
-    assert( sizeof(D3) == sizeof(double)*3 ); 
-    assert( sizeof(F3) == sizeof(float)*3 ); 
-    assert( sizeof(I3) == sizeof(int)*3 ); 
-
-    std::vector<I3> tri(num_tri) ; 
-    assert( sizeof(I3)*tri.size() == a_tri->arr_bytes() ); 
-    memcpy( tri.data(), a_tri->bytes(), a_tri->arr_bytes() ); 
-
-    NP* a_nrm = nullptr ; 
-    if( a_vtx->ebyte == 8 )
-    {
-        std::vector<D3> vtx(num_vtx) ; 
-        std::vector<D3> nrm(num_vtx, {0,0,0}) ;
-        assert( sizeof(D3)*vtx.size() == a_vtx->arr_bytes() ); 
-        memcpy( vtx.data(), a_vtx->bytes(), a_vtx->arr_bytes() ); 
-
-        SGLM::SmoothNormals<double>( nrm, vtx, tri );  
-
-        a_nrm = NP::Make<double>( num_vtx, 3 ); 
-        memcpy( a_nrm->bytes(), nrm.data(), a_nrm->arr_bytes() );  
-    } 
-    else if( a_vtx->ebyte == 4 )
-    {
-        std::vector<F3> vtx(num_vtx) ; 
-        std::vector<F3> nrm(num_vtx, {0.f,0.f,0.f}) ;
-        assert( sizeof(F3)*vtx.size() == a_vtx->arr_bytes() ); 
-        memcpy( vtx.data(), a_vtx->bytes(), a_vtx->arr_bytes() ); 
-
-        SGLM::SmoothNormals<float>( nrm, vtx, tri );  
-
-        a_nrm = NP::Make<float>( num_vtx, 3 ); 
-        memcpy( a_nrm->bytes(), nrm.data(), a_nrm->arr_bytes() );  
-    }
-
-    std::cout 
-        << " SGLM::SmoothNormals "
-        << " a_vtx "  << ( a_vtx ? a_vtx->sstr() : "-" )
-        << " a_tri "  << ( a_tri ? a_tri->sstr() : "-" )
-        << " a_nrm "  << ( a_nrm ? a_nrm->sstr() : "-" )
-        << " num_vtx " << num_vtx
-        << " num_tri " << num_tri
-        << std::endl
-        ;   
-
-    return a_nrm ; 
-}
 
 
 

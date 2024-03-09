@@ -4,11 +4,6 @@
 sframe.h
 ===========
 
-
-
-
-
-
 TODO: once bring in U4Tree.h/stree.h translation up this to double precision 
 
 

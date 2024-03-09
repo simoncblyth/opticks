@@ -15,6 +15,7 @@ using SGLFW.h to hide lots of boilerplate details.
 **/
 
 
+#include "SGLM.h"
 #include "SGLFW.h"
 
 #include <glm/glm.hpp>
@@ -72,7 +73,8 @@ void main()
 
 int main(void)
 {
-    SGLFW gl(640, 480, "Simple example"); 
+    SGLM gm ; 
+    SGLFW gl(gm, 640, 480, "Simple example"); 
     gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text); 
     GLint mvp_location = gl.getUniformLocation("MVP");   
 

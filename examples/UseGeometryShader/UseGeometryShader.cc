@@ -155,7 +155,7 @@ int main(int argc, char** argv)
     gm.dump();
 
     const char* title = RECORD_PATH ; 
-    SGLFW gl(gm.Width(), gm.Height(), title );   
+    SGLFW gl(gm, gm.Width(), gm.Height(), title );   
     gl.createProgram("$SHADER_FOLD" ); 
 
     // The strings below are names of uniforms present in rec_flying_point/geom.glsl and pos/vert.glsl 
@@ -184,8 +184,8 @@ int main(int argc, char** argv)
         Param.w += Param.z ;  // input propagation time 
         if( Param.w > Param.y ) Param.w = Param.x ;  // input time : Param.w from .x to .y with .z steps
 
-        //gl.UniformMatrix4fv( gl.mvp_location, mvp ); 
-        gl.Uniform4fv(      Param_location, glm::value_ptr(Param) );
+        //gl.UniformMatrix4fv( gl.mvp_location, mvp );  
+        if(Param_location > -1 ) gl.Uniform4fv(      Param_location, glm::value_ptr(Param) );
 
         GLenum mode = gl.geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
         glDrawArrays(mode, a_first, a_count);

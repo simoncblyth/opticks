@@ -202,6 +202,113 @@ drag it to a different location.
 * http://rainwarrior.ca/dragon/arcball.html
 
 
+How old Trackball used
+------------------------
+
+okc/Interactor.cc::
+
+    277     else if( m_pan_mode )
+    278     {
+    279         m_trackball->pan_to(df*x,df*y,df*dx,df*dy);
+    280     }
+    281     else if( m_zoom_mode )  // bad name, actully z translate
+    282     {
+    283         m_trackball->zoom_to(df*x,df*y,df*dx,df*dy);
+    284     }
+    285     else if( m_rotate_mode )
+    286     {
+    287         m_trackball->drag_to(rf*x,rf*y,rf*dx,rf*dy);
+    288     }
+
+
+    468 void Interactor::key_pressed(unsigned int key)
+    469 {
+
+    540         case GLFW_KEY_R:
+    541             m_rotate_mode = !m_rotate_mode ;
+    542             break;
+    543         case GLFW_KEY_S:
+    544             m_scale_mode = !m_scale_mode ;
+    545             break;
+
+    558         case _pan_mode_key:
+    559             pan_mode_key_pressed(modifiers);
+    560             break;
+    561         case GLFW_KEY_Y:
+    562             y_key_pressed(modifiers);
+    563             break;
+    564         case GLFW_KEY_Z:
+    565             z_key_pressed(modifiers);
+    566             break;
+
+    429 void Interactor::z_key_pressed(unsigned int modifiers)
+    430 {
+    431     if(modifiers & OpticksConst::e_option)
+    432     {
+    433         m_composition->setEyeGUI("Z-");
+    434     }
+    435     else
+    436     {
+    437         m_zoom_mode = !m_zoom_mode ;
+    438     }
+    439 }
+
+
+::
+
+    1818 glm::mat4& Composition::getWorld2Camera()  // just view, no trackballing
+    1819 {
+    1820      return m_world2camera ;
+    1821 }
+    1822 glm::mat4& Composition::getCamera2World()  // just view, no trackballing
+    1823 {
+    1824      return m_camera2world ;
+    1825 }
+
+    1990 void Composition::update()
+    1991 {
+
+
+    2032     m_view->getTransforms(m_model2world, m_world2camera, m_camera2world, m_gaze );   // model2world is input, the others are updated
+    2033     //
+    2034     // the eye2look look2eye pair allows trackball rot to be applied around the look 
+    2035     // recall the eye frame, has eye at the origin and the object are looking 
+    2036     // at (0,0,-m_gazelength) along -Z (m_gazelength is +ve) eye2look in the 
+    2037     // translation to jump between frames, from eye/camera frame to a frame centered on the object of the look 
+    2038     //
+    2039     // camera and eye frames are the same
+    2040     // 
+    2041     m_gazelength = glm::length(m_gaze);
+    2042     m_eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,m_gazelength));
+    2043     m_look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-m_gazelength));
+    2044 
+    2045     m_trackball->getOrientationMatrices(m_trackballrot, m_itrackballrot);  // this is just rotation, no translation
+    2046     m_trackball->getTranslationMatrices(m_trackballtra, m_itrackballtra);  // just translation  
+    2047 
+    2048     m_world2eye = m_trackballtra * m_look2eye * m_trackballrot * m_lookrotation * m_eye2look * m_world2camera ;           // ModelView
+    2049 
+    2050     m_eye2world = m_camera2world * m_look2eye * m_ilookrotation * m_itrackballrot * m_eye2look * m_itrackballtra ;          // InverseModelView
+
+    ////  m_world2eye m_eye2world are confusing names as camera~eye in other usage
+    ////  better m_ModelView m_InverseModelView reflecting the connection with OpenGL usage 
+
+    2052     // NB the changing of frame as each matrix is multiplied 
+    2053     // lookrotation coming after eye2look means that will rotate around the look point (not the eye point)
+    2054     // also trackballrot operates around the look 
+    2055     // then return back out to eye frame after look2eye where the trackballtra gets applied 
+    2056     //
+    2057     // NB the opposite order for the eye2world inverse
+    2058     
+    2059     m_projection = m_camera->getProjection();
+    2060     
+    2061     m_world2clip = m_projection * m_world2eye ;    //  ModelViewProjection
+    2062     
+
+
+SGLM equiv of above Composition::update
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 
 
 
@@ -215,6 +322,8 @@ Arcball
 * Properties of Quaternions
 
 
+
+
 Arcball with quaternions
 --------------------------
 
@@ -225,6 +334,49 @@ Arcball with quaternions
 * https://github.com/Twinklebear/arcball-cpp
 
 
+
+
+glm/glm/gtx/quaternion.inl::
+
+    122     GLM_FUNC_QUALIFIER qua<T, Q> rotation(vec<3, T, Q> const& orig, vec<3, T, Q> const& dest)
+    123     {
+    124         T cosTheta = dot(orig, dest);
+    125         vec<3, T, Q> rotationAxis;
+    126 
+    127         if(cosTheta >= static_cast<T>(1) - epsilon<T>()) {
+    128             // orig and dest point in the same direction
+    129             return quat_identity<T,Q>();
+    130         }
+    131 
+    132         if(cosTheta < static_cast<T>(-1) + epsilon<T>())
+    133         {
+    134             // special case when vectors in opposite directions :
+    135             // there is no "ideal" rotation axis
+    136             // So guess one; any will do as long as it's perpendicular to start
+    137             // This implementation favors a rotation around the Up axis (Y),
+    138             // since it's often what you want to do.
+    139             rotationAxis = cross(vec<3, T, Q>(0, 0, 1), orig);
+    140             if(length2(rotationAxis) < epsilon<T>()) // bad luck, they were parallel, try again!
+    141                 rotationAxis = cross(vec<3, T, Q>(1, 0, 0), orig);
+    142 
+    143             rotationAxis = normalize(rotationAxis);
+    144             return angleAxis(pi<T>(), rotationAxis);
+    145         }
+    146 
+    147         // Implementation from Stan Melax's Game Programming Gems 1 article
+    148         rotationAxis = cross(orig, dest);
+    149 
+    150         T s = sqrt((T(1) + cosTheta) * static_cast<T>(2));
+    151         T invs = static_cast<T>(1) / s;
+    152 
+    153         return qua<T, Q>(
+    154             s * static_cast<T>(0.5f),
+    155             rotationAxis.x * invs,
+    156             rotationAxis.y * invs,
+    157             rotationAxis.z * invs);
+    158     }
+
+   
 
 
 thoughts on impl of controls
