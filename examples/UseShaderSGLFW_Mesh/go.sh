@@ -3,7 +3,7 @@ usage(){ cat << EOU
 examples/UseShaderSGLFW_Mesh/go.sh
 =====================================
 
-Pops up an OpenGL window with a colorful single triangle::
+Pops up an OpenGL window with a colorful visualization of a mesh of triangles::
 
     ~/o/examples/UseShaderSGLFW_Mesh/go.sh 
     ~/o/examples/UseShaderSGLFW_Mesh/go.sh info
@@ -20,7 +20,6 @@ Issues of view matrices
 
 EOU
 }
-
 
 opticks-
 oe-

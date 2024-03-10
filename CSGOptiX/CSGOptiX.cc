@@ -823,7 +823,7 @@ and rendering ?
 
 void CSGOptiX::setFrame(const sframe& fr_ )
 {
-    sglm->set_frame(fr_); 
+    sglm->set_frame(fr_);   // TODO: aim to remove sframe from sglm ? instead operate at ce (or sometimes m2w w2m level)
 
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ; 
 

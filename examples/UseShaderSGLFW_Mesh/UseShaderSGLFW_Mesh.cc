@@ -20,11 +20,12 @@ int main()
     SMesh* mesh = SMesh::Load("$MESH_FOLD"); 
     sframe fr ; fr.ce = make_float4(mesh->ce.x, mesh->ce.y, mesh->ce.z, mesh->ce.w ); 
     SGLM gm ; 
+    //gm.setLookRotation( 45.f , {1.f, 1.f, 1.f } );  // angleAxis quaternion 
     gm.set_frame(fr) ; std::cout << gm.desc() ;  // HMM: set_ce ? avoid frame when not needed ?
 
     SGLFW gl(gm, gm.Width(), gm.Height(), mesh->name ); 
     gl.createProgram("$SHADER_FOLD"); 
-    gl.locateMVP("MVP",  gm.world2clip_ptr ); 
+    gl.locateMVP("MVP",  gm.MVP_ptr ); 
 
     SGLFW_VAO vao ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
     SGLFW_Buffer ibuf( mesh->tri->arr_bytes(), mesh->tri->cvalues<int>()  , GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 

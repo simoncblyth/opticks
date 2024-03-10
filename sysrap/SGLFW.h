@@ -51,6 +51,7 @@ struct SGLFW_Toggle
     bool zoom ; 
     bool tmin ;
     bool tmax ;
+    bool lrot ;
 
     std::string desc() const ; 
 };
@@ -62,6 +63,7 @@ inline std::string SGLFW_Toggle::desc() const
        << " zoom:" << ( zoom ? "Y" : "N" )
        << " tmin:" << ( tmin ? "Y" : "N" )
        << " tmax:" << ( tmax ? "Y" : "N" )
+       << " lrot:" << ( lrot ? "Y" : "N" )
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -105,10 +107,15 @@ struct SGLFW : public SCMD
     bool dump ; 
     int  _width ;  // on retina 2x width 
     int  _height ;
-    double _cursor_x ; 
-    double _cursor_y ; 
-    glm::vec4 cursor_ndc ; 
+
+    // getStartPos
+    double _start_x ; 
+    double _start_y ; 
+
+    glm::vec2 start_ndc ;  // from key_pressed
+    glm::vec2 move_ndc ;   // from cursor_moved
     glm::vec4 drag ; 
+
     SGLFW_Toggle toggle = {} ; 
 
     bool renderloop_proceed(); 
@@ -120,8 +127,9 @@ struct SGLFW : public SCMD
     void handle_event(GLEQevent& event); 
     void key_pressed(unsigned key); 
     void key_released(unsigned key); 
+
     void cursor_moved(int ix, int iy); 
-    void drag_action(); 
+    void cursor_moved_action(); 
 
     int command(const char* cmd); 
     static std::string FormCommand(const char* token, float value); 
@@ -129,9 +137,9 @@ struct SGLFW : public SCMD
     void getWindowSize();
     std::string descWindowSize() const;
 
-    void getCursorPos(); 
+    void getStartPos(); 
     std::string descDrag() const;
-    std::string descCursorPos() const;  
+    std::string descStartPos() const;  
 
 
     SGLFW(SGLM& gm, int width, int height, const char* title=nullptr ); 
@@ -224,9 +232,9 @@ inline void SGLFW::handle_event(GLEQevent& event)
 inline void SGLFW::key_pressed(unsigned key)
 {
     //std::cout << "SGLFW::key_pressed " << key << std::endl ;
-    getCursorPos(); 
+    getStartPos(); 
     std::cout 
-        << descCursorPos() 
+        << descStartPos() 
         << descWindowSize() 
         << std::endl
         ; 
@@ -237,6 +245,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom  ; break ; 
         case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
+        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
         case GLFW_KEY_A:      gm.command("--zoom 10") ; break ; 
     }
 
@@ -298,7 +307,7 @@ inline std::string SGLFW::descWindowSize() const
 }
 
 /**
-SGLFW::getCursorPos
+SGLFW::getStartPos
 ----------------------
 
 
@@ -316,14 +325,12 @@ SGLFW::getCursorPos
 
 **/
 
-inline void SGLFW::getCursorPos()
+inline void SGLFW::getStartPos()
 {
-    glfwGetCursorPos(window, &_cursor_x, &_cursor_y );
+    glfwGetCursorPos(window, &_start_x, &_start_y );
 
-    cursor_ndc.x = 2.f*_cursor_x/width - 1.f ; 
-    cursor_ndc.y = 1.f - 2.f*_cursor_y/height ; 
-    cursor_ndc.z = 0.f ; 
-    cursor_ndc.w = 1.f ; 
+    start_ndc.x = 2.f*_start_x/width - 1.f ; 
+    start_ndc.y = 1.f - 2.f*_start_y/height ; 
 }
 
 /**
@@ -334,23 +341,32 @@ Follow old approach from Frame::cursor_moved_just_move
 
 1. convert pixel positions into ndc (x,y) [-1:1, -1:1]
 
+
+As cursor_moved gets called repeatedly during mouse
+movements the drag.z drag.w tend to be small.
+
+To combat this for local rotation control via quaternion
+use the abolute start position (from key_pressed) 
+and current position from cursor_moved. 
+
 **/
 inline void SGLFW::cursor_moved(int ix, int iy)
 {
-    float x  = 2.f*float(ix)/width - 1.f ;   
-    float y  = 1.f - 2.f*float(iy)/height ; 
-    float dx = x - drag.x ; 
-    float dy = y - drag.y ;   // delta with the prior call to cursor_moved
+    move_ndc.x  = 2.f*float(ix)/width - 1.f ;   
+    move_ndc.y  = 1.f - 2.f*float(iy)/height ; 
 
-    drag.x = x ; 
-    drag.y = y ; 
+    float dx = move_ndc.x - drag.x ; 
+    float dy = move_ndc.y - drag.y ;   // delta with the prior call to cursor_moved
+
+    drag.x = move_ndc.x ; 
+    drag.y = move_ndc.y ; 
     drag.z = dx ; 
     drag.w = dy ; 
 
-    drag_action(); 
+    cursor_moved_action(); 
 }
 
-inline void SGLFW::drag_action()
+inline void SGLFW::cursor_moved_action()
 {
     float dy = drag.w ; 
     if(toggle.zoom)
@@ -367,6 +383,11 @@ inline void SGLFW::drag_action()
     {
         std::string cmd = FormCommand("--inc-tmax", dy ); 
         gm.command(cmd.c_str()) ;
+    }
+    else if(toggle.lrot)
+    {
+        gm.setLookRotation(start_ndc, move_ndc); 
+        gm.update(); 
     }
 }
 
@@ -389,19 +410,19 @@ inline std::string SGLFW::descDrag() const
 }
 
 
-inline std::string SGLFW::descCursorPos() const
+inline std::string SGLFW::descStartPos() const
 {
     std::stringstream ss ; 
     ss << "SGLFW::descCursorPos"
        << "["
-       << std::setw(7) << std::fixed << std::setprecision(2) << _cursor_x 
+       << std::setw(7) << std::fixed << std::setprecision(2) << _start_x 
        << ","
-       << std::setw(7) << std::fixed << std::setprecision(2) << _cursor_y
+       << std::setw(7) << std::fixed << std::setprecision(2) << _start_y
        << "]"
        << " ndc["
-       << std::setw(7) << std::fixed << std::setprecision(2) << cursor_ndc.x
+       << std::setw(7) << std::fixed << std::setprecision(2) << start_ndc.x
        << ","
-       << std::setw(7) << std::fixed << std::setprecision(2) << cursor_ndc.y
+       << std::setw(7) << std::fixed << std::setprecision(2) << start_ndc.y
        << "]"
        ;
     std::string str = ss.str();
@@ -427,9 +448,10 @@ inline SGLFW::SGLFW(SGLM& _gm, int width_, int height_, const char* title_ )
     dump(false),
     _width(0),
     _height(0),
-    _cursor_x(0.),
-    _cursor_y(0.),
-    cursor_ndc(0.f,0.f,0.f,0.f),
+    _start_x(0.),
+    _start_y(0.),
+    start_ndc(0.f,0.f),
+    move_ndc(0.f,0.f),
     drag(0.f,0.f,0.f,0.f)
 {
     init(); 

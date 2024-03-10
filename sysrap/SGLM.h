@@ -124,6 +124,8 @@ Screen
 #include "SCAM.h"
 #include "SBAS.h"
 
+#include "SGLM_Arcball.h"
+
 #include "sframe.h"  // sframe FEELS TOO HEAVYWEIGHT TO BE HERE
 #include "SCE.h"     // moving from sframe to SCE 
 
@@ -280,6 +282,9 @@ struct SYSRAP_API SGLM : public SCMD
     std::string descInput() const ; 
 
     SGLM(); 
+    void setLookRotation(float angle_deg, glm::vec3 axis ); 
+    void setLookRotation( const glm::vec2& a, const glm::vec2& b ); 
+
     static void Command(const SGLM_Parse& parse, bool dump); 
     int command(const char* cmd); 
 
@@ -299,22 +304,32 @@ struct SYSRAP_API SGLM : public SCMD
     // matrices taken from fr or derived from ce when fr only holds identity
     glm::mat4 model2world ; 
     glm::mat4 world2model ; 
-    int updateModelMatrix_branch ; 
+    int initModelMatrix_branch ; 
 
-    void updateModelMatrix();  // depends on ce, unless non-identity m2w and w2m matrices provided in frame
+    void initModelMatrix();  // depends on ce, unless non-identity m2w and w2m matrices provided in frame
     std::string descModelMatrix() const ; 
 
     // world frame View converted from static model frame
+    // initELU
+
+    void  initELU();   // depends on CE and EYE, LOOK, UP 
+    void updateGaze(); 
+    std::string descELU() const ; 
+
     glm::vec3 eye ;  
     glm::vec3 look ; 
     glm::vec3 up ; 
+
+    // updateGaze
     glm::vec3 gaze ; 
+    glm::mat4 eye2look ; 
+    glm::mat4 look2eye ; 
+
+    glm::quat q_lookrot ; 
 
     float     get_escale_() const ; 
     glm::mat4 get_escale() const ; 
-    void updateELU();   // depends on CE and EYE, LOOK, UP 
     float getGazeLength() const ; 
-    std::string descELU() const ; 
 
     void updateNearFar(); 
     std::string descNearFar() const ; 
@@ -367,24 +382,30 @@ struct SYSRAP_API SGLM : public SCMD
 
     std::string descFrame() const ; 
     std::string descBasis() const ; 
+    std::string descProjection() const ; 
+    std::string descComposite() const ; 
 
 
     glm::mat4 projection ; 
-    glm::mat4 world2clip ; 
-    float*    world2clip_ptr ; 
+
+    glm::mat4 MV ; 
+    float*    MV_ptr ; 
+    glm::mat4 MVP ;    // aka world2clip
+    float*    MVP_ptr ; 
 
     void updateProjection(); 
+    void updateComposite(); 
+
 
     void ce_corners_world( std::vector<glm::vec4>& v_world ) const ; 
     void ce_midface_world( std::vector<glm::vec4>& v_world ) const ; 
-    void apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const ; 
+    void apply_MVP( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const ; 
 
-    std::string desc_world2clip() const ; 
-    std::string desc_world2clip_ce_corners() const ; 
-    std::string desc_world2clip_ce_midface() const ; 
+    std::string desc_MVP() const ; 
+    std::string desc_MVP_ce_corners() const ; 
+    std::string desc_MVP_ce_midface() const ; 
 
 
-    std::string descProjection() const ; 
 
     void set_nearfar_mode(const char* mode); 
     void set_focal_mode(const char* mode); 
@@ -490,11 +511,14 @@ inline SGLM::SGLM()
     extent_scale(false),
     model2world(1.f), 
     world2model(1.f),
-    updateModelMatrix_branch(-1), 
+    initModelMatrix_branch(-1), 
     eye(   0.f,0.f,0.f),
     look(  0.f,0.f,0.f),
     up(    0.f,0.f,0.f),
     gaze(  0.f,0.f,0.f),
+    eye2look(1.f),
+    look2eye(1.f),
+    q_lookrot(1.f,0.f,0.f,0.f),   // identity quaternion
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
     top_ax(0.f,0.f,0.f),
@@ -515,14 +539,36 @@ inline SGLM::SGLM()
     far(5.f),     // units of get_nearfar_basis
 
     projection(1.f),
-    world2clip(1.f),
-    world2clip_ptr(glm::value_ptr(world2clip))
+    MV(1.f),
+    MV_ptr(glm::value_ptr(MV)),
+    MVP(1.f),
+    MVP_ptr(glm::value_ptr(MVP))
 {
     addlog("SGLM::SGLM", "ctor"); 
     INSTANCE = this ; 
 }
 
 
+
+void SGLM::setLookRotation(float angle_deg, glm::vec3 axis )
+{
+    q_lookrot = glm::angleAxis( glm::radians(angle_deg), glm::normalize(axis) ); 
+}
+
+/**
+SGLM::setLookRotation
+--------------------------
+
+In "Rotate" mode, after pressing "R", as drag the mouse 
+around get different orientations of the look position.
+
+**/
+
+void SGLM::setLookRotation( const glm::vec2& a, const glm::vec2& b )
+{
+    //std::cout << "SGLM::setLookRotation " << glm::to_string(a) << " " << glm::to_string(b) << std::endl ; 
+    q_lookrot = SGLM_Arcball::A2B_Screen( a, b );
+}
 
 /**
 SGLM::Command
@@ -643,9 +689,9 @@ std::string SGLM::desc() const
     ss << descProjection() << std::endl ; 
     ss << descBasis() << std::endl ; 
     ss << descLog() << std::endl ; 
-    ss << desc_world2clip() << std::endl ; 
-    ss << desc_world2clip_ce_corners() << std::endl ; 
-    ss << desc_world2clip_ce_midface() << std::endl ; 
+    ss << desc_MVP() << std::endl ; 
+    ss << desc_MVP_ce_corners() << std::endl ; 
+    ss << desc_MVP_ce_midface() << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
 }
@@ -710,16 +756,21 @@ inline float SGLM::tmax_abs() const { return extent()*TMAX ; }  // HUH:extent mi
 SGLM::update
 --------------
 
-updateModelMatrix
-    model2world, world2model from frame or ce (not including extent scale)
+initModelMatrix
+    model2world, world2model from frame or ce (translation only, not including extent scale)
+    [note the only? use of these is from initELU]
 
-updateELU
-    eye,look,up,gaze in world frame from EYE,LOOK,UP in "ce" frame by doing extent scaling
+initELU
+    eye,look,up in world frame from EYE,LOOK,UP in "ce" frame by using model2world 
+    and doing extent scaling
+
+
+updateGaze
+    eye,look -> gaze (world frame) 
+    eye2look,look2eye (eye frame) 
 
 updateEyeSpace
-    form world2camera camera2world from eye position and
-    gaze and up directions in world frame together with 
-    OpenGL convention. 
+    gaze,up,eye -> world2camera
 
 updateEyeBasis
     Transforms eye/camera basis vectors using *camera2world* matrix 
@@ -728,8 +779,6 @@ updateEyeBasis
     yield (u,v,w,e) basis vec3 that are used by CSGOptiX::prepareRenderParam 
     to setup the raytrace render params. 
 
-
-
 updateNearFar
     scales extent relative inputs TMIN(eg 0.1) and TMAX(eg 100) by extent to get
     world frame Near and Far distances ... HUH: not so simple as near far are divided
@@ -737,10 +786,13 @@ updateNearFar
 
     HMM: thats non-intuitive, could explain mis-behaviour
 
-    [recently moved this from after updateELU to before updateProjection
+    [recently moved this from after initELU to before updateProjection
      as ELU+EyeSpace+EyeBasis belong together as do NearFar+Projection ]
 
 updateProjection
+
+updateComposite
+    putting together the composite transforms that OpenGL uses
 
 
 **/
@@ -750,14 +802,17 @@ inline void SGLM::update()
 {
     addlog("SGLM::update", "["); 
 
-    updateModelMatrix();   
+    initModelMatrix();  //  fr.ce(center)->model2world translation   
+    initELU();          //  EYE,LOOK,UP,model2world,extent->eye,look,up
 
-    updateELU();          
-    updateEyeSpace(); 
-    updateEyeBasis(); 
+    updateGaze();       //  eye,look,up->gaze,eye2look,look2eye
+    updateEyeSpace();   //  gaze,up,eye->world2camera,camera2world
+    updateEyeBasis();   //  camera2world,apect,ZOOM,focal_basis,...->u,v,w,e  [used for ray trace rendering] 
 
-    updateNearFar(); 
-    updateProjection(); 
+    updateNearFar();     // TMIN,TMAX-> near,far 
+    updateProjection();  // focal_basis,ZOOM,aspect,near,far -> projection 
+
+    updateComposite();   // projection,word2camera -> MVP 
 
     addlog("SGLM::update", "]"); 
 }
@@ -777,49 +832,57 @@ inline void SGLM::set_extent_scale(bool extent_scale_ )
 
 
 /**
-SGLM::updateModelMatrix
-------------------------
+SGLM::initModelMatrix   (formerly updateModelMatrix)
+------------------------------------------------------
+
+Because this depends on the input geometry ce it
+seems more appropriate to prefix with "init" rather than "update"
 
 Called by SGLM::update. 
 
-updateModelMatrix_branch:1
+
+initModelMatrix_branch:1
     used when the sframe transforms are not identity, 
     just take model2world and world2model from sframe m2w w2m  
 
-updateModelMatrix_branch:2
+initModelMatrix_branch:2
     used for rtp_tangential:true (not default) 
     TODO: this calc now done in CSGTarget::getFrameComponents 
     does it need to be here too ?
 
-updateModelMatrix_branch:3
+initModelMatrix_branch:3
     form model2world and world2model matrices 
     from fr.ce alone, ignoring the frame transforms 
 
     For consistency with the transforms from sframe.h 
     the escale is not included into model2world/world2model,
-    that is done in SGLM::updateELU.
+    that is done in SGLM::initELU.
 
-    So currently updateModelMatrix only handles translation from CE center, 
+    So currently initModelMatrix only handles translation from CE center, 
     not extent scaling. 
 
 **/
 
-inline void SGLM::updateModelMatrix()
+inline void SGLM::initModelMatrix()
 {
-    updateModelMatrix_branch = 0 ; 
+    initModelMatrix_branch = 0 ; 
+
+    // NOTE THAT THESE SPECIAL CASES ARE THE ONLY NON-CE USES OF sframe.h 
+    // SUGGESTS REMOVE sframe.h from SGLM passing instead normally the ce 
+    // and the transforms in the special case where needed 
 
     bool m2w_not_identity = fr.m2w.is_identity(sframe::EPSILON) == false ;
     bool w2m_not_identity = fr.w2m.is_identity(sframe::EPSILON) == false ;
 
     if( m2w_not_identity && w2m_not_identity )
     {
-        updateModelMatrix_branch = 1 ; 
+        initModelMatrix_branch = 1 ; 
         model2world = glm::make_mat4x4<float>(fr.m2w.cdata());
         world2model = glm::make_mat4x4<float>(fr.w2m.cdata());
     }
     else if( rtp_tangential )
     {
-        updateModelMatrix_branch = 2 ; 
+        initModelMatrix_branch = 2 ; 
         SCenterExtentFrame<double> cef( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w, rtp_tangential, extent_scale );
         model2world = cef.model2world ;
         world2model = cef.world2model ;
@@ -827,7 +890,7 @@ inline void SGLM::updateModelMatrix()
     }
     else
     {
-        updateModelMatrix_branch = 3 ; 
+        initModelMatrix_branch = 3 ; 
         glm::vec3 tr(fr.ce.x, fr.ce.y, fr.ce.z) ;  
 
         float f = 1.f ; // get_escale_() ; 
@@ -835,12 +898,12 @@ inline void SGLM::updateModelMatrix()
         glm::vec3 sc(f, f, f) ; 
         glm::vec3 isc(1.f/f, 1.f/f, 1.f/f) ; 
 
-        addlog("updateModelMatrix.3.fabricate", f );
+        addlog("initModelMatrix.3.fabricate", f );
 
         model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc);
         world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
     }
-    addlog("updateModelMatrix", updateModelMatrix_branch );
+    addlog("initModelMatrix", initModelMatrix_branch );
 }
 std::string SGLM::descModelMatrix() const 
 {
@@ -848,7 +911,7 @@ std::string SGLM::descModelMatrix() const
     ss << "SGLM::descModelMatrix" << std::endl ; 
     ss << " sglm.model2world \n" << Present( model2world ) << std::endl ; 
     ss << " sglm.world2model \n" << Present( world2model ) << std::endl ; 
-    ss << " sglm.updateModelMatrix_branch " << updateModelMatrix_branch << std::endl ; 
+    ss << " sglm.initModelMatrix_branch " << initModelMatrix_branch << std::endl ; 
     ss << std::endl ; 
     std::string s = ss.str(); 
     return s ; 
@@ -874,22 +937,14 @@ glm::mat4 SGLM::get_escale() const
 }
 
 /**
-SGLM::updateELU
+SGLM::initELU
 -----------------
 
 Uses escale matrix (which typically comes from extent fr.ce.w)
 to convert the inputs (EYE, LOOK, UP) in units of extent 
 into world frame by applying the extent with the escale matrix
-to give vec3 : eye,look,up,gaze 
+to give vec3 : eye,look,up
 
-
-               look
-                +
-               / 
-              / / gaze
-             /           
-            +
-           eye
 
 Default inputs UP,LOOK,EYE::
 
@@ -909,16 +964,57 @@ A: This is for consistency with sframe.h transforms which are used when
 
 **/
 
-void SGLM::updateELU() 
+void SGLM::initELU() 
 {
     glm::mat4 escale = get_escale(); 
+
     eye  = glm::vec3( model2world * escale * EYE ) ; 
     look = glm::vec3( model2world * escale * LOOK ) ; 
     up   = glm::vec3( model2world * escale * UP ) ; 
-    gaze = glm::vec3( model2world * escale * (LOOK - EYE) ) ;    
 }
 
-float SGLM::getGazeLength() const { return glm::length(gaze) ; }   // must be after updateELU 
+/**
+SGLM::updateGaze
+------------------
+
+gaze
+    vector from eye->look  look-eye::
+
+
+               look
+                +
+               / 
+              / / gaze
+             /           
+            +
+           eye
+
+eye2look
+    transform that translates from eye to look 
+    (as in camera/eye frame this is along z-direction only)
+
+look2eye
+    transform that translates from look to eye
+    (as in camera/eye frame this is along z-direction only)
+
+
+* NB using gazelen invariance between world and eye frames 
+  (no scaling for those makes that valid)
+
+* HMM: is the sign convention here correct ? (OpenGL -Z is forward)
+
+
+**/
+
+void SGLM::updateGaze()
+{ 
+    gaze = glm::vec3( look - eye ) ;    
+    float gazlen = getGazeLength(); 
+    eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,gazlen));  
+    look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-gazlen));
+}
+
+float SGLM::getGazeLength() const { return glm::length(gaze) ; }   // must be after updateGaze 
 
 
 std::string SGLM::descELU() const 
@@ -952,7 +1048,7 @@ std::string SGLM::descELU() const
 SGLM::updateEyeSpace
 ---------------------
 
-NB "Eye" and "Camera" are used interchangeably, meaning the same thing 
+NB "eye" and "camera" are used interchangeably, meaning the same thing 
 
 Form world2camera camera2world from eye position and
 gaze and up directions in world frame together with 
@@ -974,13 +1070,14 @@ Normalized eye space oriented via world frame gaze and up directions.
 
 
 world2camera
-    first translates a world frame point to the eye point, 
-    making eye point the origin then rotates to get into camera frame
-    using the OpenGL eye space convention : -Z is forward, +X to right, +Y up
+    transforms a world frame coordinate into a camera(aka eye) frame coordinate
+    the transform is formed from first a translation to the origin
+    of the "eye" world frame coordinate followed by a rotation following 
+    the OpenGL eye space convention : -Z is forward, +X to right, +Y up
 
 **/
 
-void SGLM::updateEyeSpace()
+void SGLM::updateEyeSpace() // gaze,up,eye -> world2camera
 {
     forward_ax = glm::normalize(gaze);  // gaze is from eye->look "look - eye" 
     right_ax   = glm::normalize(glm::cross(forward_ax,up)); 
@@ -997,6 +1094,8 @@ void SGLM::updateEyeSpace()
 
     world2camera = glm::transpose(rot_ax) * t  ;
     camera2world = ti * rot_ax ;
+
+
 }
 
 std::string SGLM::descEyeSpace() const 
@@ -1051,9 +1150,6 @@ void SGLM::updateEyeBasis()
     w = glm::vec3( camera2world * gaz ) * gazlen ;    
     e = glm::vec3( camera2world * ori );   
 }
-
-
-
 
 
 
@@ -1119,8 +1215,28 @@ void SGLM::updateProjection()
     float far_abs    = get_far_abs()  ; 
 
     projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
-    world2clip = projection * world2camera ;  //  ModelViewProjection :  no look rotation or trackballing YET 
 }
+
+
+/**
+SGLM::updateComposite
+----------------------
+
+Putting together the composite transforms that OpenGL needs
+
+* contrast with old Opticks ~/o/optickscore/Composition.cc Composition::update
+
+**/
+
+void SGLM::updateComposite()
+{
+    //std::cout << "SGLM::updateComposite" << std::endl ; 
+
+    MV = look2eye * glm::mat4_cast(q_lookrot) * eye2look * world2camera ; 
+
+    MVP = projection * MV ;    // MVP aka world2clip (needed by OpenGL shader pipeline)
+}
+
 
 
 std::string SGLM::descEyeBasis() const 
@@ -1293,140 +1409,6 @@ std::string SGLM::descBasis() const
     return s ; 
 }
 
-void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const 
-{
-    std::vector<float4> corners ;
-    SCE::Corners( corners, fr.ce ); 
-    assert(corners.size() == 8 ); 
-
-    for(int i=0 ; i < 8 ; i++ )
-    {
-        const float4& p = corners[i]; 
-        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
-        v_world.push_back(p_world); 
-    }
-}
-
-void SGLM::ce_midface_world( std::vector<glm::vec4>& v_world ) const 
-{
-    std::vector<float4> midface ;
-    SCE::Midface( midface, fr.ce ); 
-    assert(midface.size() == 6+1 ); 
-
-    for(int i=0 ; i < 6+1 ; i++ )
-    {
-        const float4& p = midface[i]; 
-        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
-        v_world.push_back(p_world); 
-    }
-}
-
-
-void SGLM::apply_world2clip( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const 
-{
-    int num = v_world.size(); 
-    for(int i=0 ; i < num ; i++ )
-    {
-        const glm::vec4& p_world = v_world[i] ; 
-        glm::vec4 p_clip = flip ? world2clip * p_world : p_world*world2clip ; 
-        v_clip.push_back(p_clip); 
-    }
-}
-
-std::string SGLM::desc_world2clip() const 
-{
-    std::stringstream ss ;
-    ss << "SGLM::desc_world2clip" << std::endl ; 
-    ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
-    ss << " world2clip_ptr " << std::endl  << Present<float>(world2clip_ptr,16) << std::endl ; 
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-/**
-SGLM::desc_world2clip_ce_corners
----------------------------------
-**/
-
-std::string SGLM::desc_world2clip_ce_corners() const 
-{
-    static const int NUM = 8 ;
-  
-    std::vector<glm::vec4> v_world ; 
-    ce_corners_world(v_world); 
-    assert( v_world.size() == NUM ); 
-
-    std::vector<glm::vec4> v_clip ; 
-    bool flip = true ; 
-    apply_world2clip( v_clip, v_world, flip ); 
-    assert( v_clip.size() == NUM ); 
-
-    std::stringstream ss ;
-    ss << "SGLM::desc_world2clip_ce_corners" << std::endl ; 
-    for(int i=0 ; i < NUM ; i++ )
-    {
-        const glm::vec4& _world = v_world[i] ; 
-        const glm::vec4& _clip = v_clip[i] ; 
-        glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
-        // normalized device coordinates : from division by clip.w 
-        ss 
-            << "[" << i << "]" 
-            << " world " << Present(_world) 
-            << " clip  " << Present(_clip) 
-            << " ndc " << Present(_ndc) 
-            << std::endl
-            ;
-
-    }
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
-std::string SGLM::desc_world2clip_ce_midface() const 
-{
-    static const int NUM = 6+1 ;  
-
-    std::vector<glm::vec4> v_world ; 
-    ce_midface_world(v_world); 
-    assert( v_world.size() == NUM ); 
-
-    std::vector<glm::vec4> v_clip ; 
-    bool flip = true ; 
-    apply_world2clip( v_clip, v_world, flip ); 
-    assert( v_clip.size() == NUM ); 
-
-    std::stringstream ss ;
-    ss << "SGLM::desc_world2clip_ce_midface" << std::endl ; 
-    ss << " world2clip " << std::endl  << Present(world2clip) << std::endl ; 
-    for(int i=0 ; i < NUM ; i++ )
-    {
-        const glm::vec4& _world = v_world[i] ; 
-        const glm::vec4& _clip = v_clip[i] ; 
-        glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
-        // normalized device coordinates : from division by clip.w 
-        ss 
-            << "[" << i << "]" 
-            << " world " << Present(_world) 
-            << " clip  " << Present(_clip) 
-            << " ndc " << Present(_ndc) 
-            << std::endl
-            ;
-
-    }
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
-
-
-
-
-
-
 std::string SGLM::descProjection() const 
 {
     float fsc = get_focal_basis() ;
@@ -1456,10 +1438,158 @@ std::string SGLM::descProjection() const
     ss << std::setw(wid) << "near" << Present(near) << std::endl ;  
     ss << std::setw(wid) << "far"  << Present(far) << std::endl ;  
     ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
-    ss << std::setw(wid) << "sglm.world2clip\n" << Present(world2clip) << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+std::string SGLM::descComposite() const 
+{
+    int wid = 25 ; 
+    std::stringstream ss ;
+    ss << "SGLM::descComposite" << std::endl ; 
+    ss << std::setw(wid) << "sglm.MVP\n" << Present(MVP) << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
+
+void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const 
+{
+    std::vector<float4> corners ;
+    SCE::Corners( corners, fr.ce ); 
+    assert(corners.size() == 8 ); 
+
+    for(int i=0 ; i < 8 ; i++ )
+    {
+        const float4& p = corners[i]; 
+        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
+        v_world.push_back(p_world); 
+    }
+}
+
+void SGLM::ce_midface_world( std::vector<glm::vec4>& v_world ) const 
+{
+    std::vector<float4> midface ;
+    SCE::Midface( midface, fr.ce ); 
+    assert(midface.size() == 6+1 ); 
+
+    for(int i=0 ; i < 6+1 ; i++ )
+    {
+        const float4& p = midface[i]; 
+        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
+        v_world.push_back(p_world); 
+    }
+}
+
+
+void SGLM::apply_MVP( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const 
+{
+    int num = v_world.size(); 
+    for(int i=0 ; i < num ; i++ )
+    {
+        const glm::vec4& p_world = v_world[i] ; 
+        glm::vec4 p_clip = flip ? MVP * p_world : p_world*MVP ; 
+        v_clip.push_back(p_clip); 
+    }
+}
+
+std::string SGLM::desc_MVP() const 
+{
+    std::stringstream ss ;
+    ss << "SGLM::desc_MVP" << std::endl ; 
+    ss << " MVP " << std::endl  << Present(MVP) << std::endl ; 
+    ss << " MVP_ptr " << std::endl  << Present<float>(MVP_ptr,16) << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+SGLM::desc_MVP_ce_corners
+---------------------------------
+**/
+
+std::string SGLM::desc_MVP_ce_corners() const 
+{
+    static const int NUM = 8 ;
+  
+    std::vector<glm::vec4> v_world ; 
+    ce_corners_world(v_world); 
+    assert( v_world.size() == NUM ); 
+
+    std::vector<glm::vec4> v_clip ; 
+    bool flip = true ; 
+    apply_MVP( v_clip, v_world, flip ); 
+    assert( v_clip.size() == NUM ); 
+
+    std::stringstream ss ;
+    ss << "SGLM::desc_MVP_ce_corners" << std::endl ; 
+    for(int i=0 ; i < NUM ; i++ )
+    {
+        const glm::vec4& _world = v_world[i] ; 
+        const glm::vec4& _clip = v_clip[i] ; 
+        glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
+        // normalized device coordinates : from division by clip.w 
+        ss 
+            << "[" << i << "]" 
+            << " world " << Present(_world) 
+            << " clip  " << Present(_clip) 
+            << " ndc " << Present(_ndc) 
+            << std::endl
+            ;
+
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+std::string SGLM::desc_MVP_ce_midface() const 
+{
+    static const int NUM = 6+1 ;  
+
+    std::vector<glm::vec4> v_world ; 
+    ce_midface_world(v_world); 
+    assert( v_world.size() == NUM ); 
+
+    std::vector<glm::vec4> v_clip ; 
+    bool flip = true ; 
+    apply_MVP( v_clip, v_world, flip ); 
+    assert( v_clip.size() == NUM ); 
+
+    std::stringstream ss ;
+    ss << "SGLM::desc_MVP_ce_midface" << std::endl ; 
+    ss << " MVP " << std::endl  << Present(MVP) << std::endl ; 
+    for(int i=0 ; i < NUM ; i++ )
+    {
+        const glm::vec4& _world = v_world[i] ; 
+        const glm::vec4& _clip = v_clip[i] ; 
+        glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
+        // normalized device coordinates : from division by clip.w 
+        ss 
+            << "[" << i << "]" 
+            << " world " << Present(_world) 
+            << " clip  " << Present(_clip) 
+            << " ndc " << Present(_ndc) 
+            << std::endl
+            ;
+
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
 
 
 
@@ -1733,8 +1863,5 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
       }} ;
     return glm::make_mat4x4<T>(demo.data()) ;
 }
-
-
-
 
 
