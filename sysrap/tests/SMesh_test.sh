@@ -1,4 +1,14 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+SMesh_test.sh
+==============
+
+::
+
+    ~/o/sysrap/tests/SMesh_test.sh
+
+EOU
+}
 
 name=SMesh_test
 defarg="info_build_run"
@@ -7,7 +17,11 @@ arg=${1:-$defarg}
 mkdir -p /tmp/$name
 bin=/tmp/$name/$name
 
-mesh_fold=/tmp/U4Mesh_test
+#solid=Torus
+#solid=Orb
+solid=Box
+
+mesh_fold=/tmp/U4Mesh_test/$solid
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 
 cd $(dirname $(realpath $BASH_SOURCE))

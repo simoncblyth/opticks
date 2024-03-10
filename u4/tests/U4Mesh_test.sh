@@ -19,8 +19,13 @@ bin=$FOLD/$name
 clhep-
 g4-
 
+#solid=Torus
+#solid=Orb
+solid=Box
+#solid=Tet
+export SOLID=${SOLID:-$solid}
 
-vars="BASH_SOURCE name FOLD bin"
+vars="BASH_SOURCE name FOLD bin SOLID"
 
 defarg="info_build_run_ana"
 arg=${1:-$defarg}

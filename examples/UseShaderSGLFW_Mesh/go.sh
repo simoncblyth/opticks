@@ -9,6 +9,11 @@ Pops up an OpenGL window with a colorful visualization of a mesh of triangles::
     ~/o/examples/UseShaderSGLFW_Mesh/go.sh info
     ~/o/examples/UseShaderSGLFW_Mesh/go.sh run
 
+Impl::
+
+    ~/o/examples/UseShaderSGLFW_Mesh/UseShaderSGLFW_Mesh.cc
+
+
 Issues of view matrices
 -------------------------
 
@@ -35,10 +40,16 @@ export CUDA_PREFIX
 
 bdir=/tmp/$USER/opticks/$name/build 
 
-mesh_fold=/tmp/U4Mesh_test
+#solid=Orb
+#solid=Torus   # HUH: appears like Orb
+#solid=Box
+solid=Tet
+
+mesh_fold=/tmp/U4Mesh_test/$solid
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 
 shader=wireframe
+#shader=normal
 SHADER=${SHADER:-$shader}
 export SHADER_FOLD=$sdir/gl/$SHADER
 

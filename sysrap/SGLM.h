@@ -392,6 +392,8 @@ struct SYSRAP_API SGLM : public SCMD
     float*    MV_ptr ; 
     glm::mat4 MVP ;    // aka world2clip
     float*    MVP_ptr ; 
+    glm::mat4 IDENTITY ; 
+    float* IDENTITY_ptr ; 
 
     void updateProjection(); 
     void updateComposite(); 
@@ -542,7 +544,9 @@ inline SGLM::SGLM()
     MV(1.f),
     MV_ptr(glm::value_ptr(MV)),
     MVP(1.f),
-    MVP_ptr(glm::value_ptr(MVP))
+    MVP_ptr(glm::value_ptr(MVP)),
+    IDENTITY(1.f),
+    IDENTITY_ptr(glm::value_ptr(IDENTITY))
 {
     addlog("SGLM::SGLM", "ctor"); 
     INSTANCE = this ; 
@@ -1215,6 +1219,8 @@ void SGLM::updateProjection()
     float far_abs    = get_far_abs()  ; 
 
     projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
+    //projection = glm::ortho( left, right, bottom, top, near_abs, far_abs );
+
 }
 
 

@@ -10,6 +10,7 @@ struct SMesh
     const NP* _nrm ; 
     const NP* vtx ; 
     const NP* nrm ;
+    const NP* face ; 
 
     int indices_num ; 
     int indices_offset ; 
@@ -27,6 +28,18 @@ struct SMesh
     static float Extent( const glm::vec3& low, const glm::vec3& high ); 
     static glm::vec4 CenterExtent( const glm::vec3& low, const glm::vec3& high ); 
     void find_center_extent(); 
+
+    template<typename T>
+    static std::string Desc2D(const NP* a, const char* label=nullptr) ;
+
+    std::string descFace() const ; 
+    std::string descTri() const ; 
+    std::string descVtx() const ; 
+    std::string descTriVtx() const ; 
+    std::string descFaceVtx() const ; 
+
+    static std::string Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  const char* label); 
+  
 
     std::string desc() const ; 
 
@@ -54,6 +67,7 @@ inline SMesh::SMesh()
     _nrm(nullptr),
     vtx(nullptr),
     nrm(nullptr),
+    face(nullptr),
     indices_num(0),
     indices_offset(0),
     name(nullptr),
@@ -68,6 +82,7 @@ inline void SMesh::import(const NPFold* fold)
     _nrm = SmoothNormals( _vtx, tri ); // smooth in double precision 
     vtx = NP::MakeNarrowIfWide(_vtx);
     nrm = NP::MakeNarrowIfWide(_nrm);
+    face = fold->get("face"); 
 
     assert( tri->shape.size() == 2 );
     indices_num = tri->shape[0]*tri->shape[1] ;
@@ -78,6 +93,98 @@ inline void SMesh::import(const NPFold* fold)
     std::string n = desc();
     name = strdup(n.c_str());
 }
+
+template<typename T>
+inline std::string SMesh::Desc2D(const NP* a, const char* label) 
+{
+    const T* vv = a->cvalues<T>(); 
+    int ni = a->shape[0] ; 
+    int nj = a->shape[1] ; 
+    std::stringstream ss ; 
+    if(label) ss << label << std::endl ; 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        ss << std::setw(3) << i << " : " ; 
+        for(int j=0 ; j < nj ; j++)
+        {
+            int idx = i*nj + j ; 
+            if( a->uifc == 'i' || a->uifc == 'u' )
+            {
+                ss << std::setw(3) << vv[idx] << " " ; 
+            }
+            else
+            {
+                ss << std::setw(7) << std::fixed << std::setprecision(2) << vv[idx] << " " ; 
+            }
+        }
+        ss << std::endl ; 
+    }
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+inline std::string SMesh::descFace() const
+{
+    return Desc2D<int>(face,"SMesh::descFace") ; 
+}
+inline std::string SMesh::descTri() const
+{
+    return Desc2D<int>(tri,"SMesh::descTri") ; 
+}
+inline std::string SMesh::descVtx() const
+{
+    return Desc2D<float>(vtx,"SMesh::descVtx") ; 
+}
+
+inline std::string SMesh::descTriVtx() const
+{
+    return Desc2D_Ref_2D_int_float(tri,vtx,"SMesh::descTriVtx") ; 
+}
+inline std::string SMesh::descFaceVtx() const
+{
+    return Desc2D_Ref_2D_int_float(face,vtx,"SMesh::descFaceVtx") ; 
+}
+
+
+
+inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  const char* label)  // static
+{
+    const int* a_vv = a->cvalues<int>(); 
+    int a_ni = a->shape[0] ; 
+    int a_nj = a->shape[1] ;
+
+    const float* b_vv = b->cvalues<float>(); 
+    int b_ni = b->shape[0] ; 
+    int b_nj = b->shape[1] ;
+ 
+    std::stringstream ss ; 
+    if(label) ss << label << std::endl ; 
+    for(int i=0 ; i < a_ni ; i++)
+    {
+        for(int j=0 ; j < a_nj ; j++)
+        {
+            int a_idx = i*a_nj + j ; 
+            int v = a_vv[a_idx] ; 
+            assert( v < b_ni );   
+
+            ss << std::setw(3) << v << " : " ; 
+            for(int bj=0 ; bj < b_nj ; bj++)
+            {
+                int b_idx =  v*b_nj + bj ; 
+                ss << std::setw(7) << std::fixed << std::setprecision(2) << b_vv[b_idx] << " " ; 
+            }
+            ss << std::endl ; 
+            
+        }
+        ss << std::endl ; 
+    }
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
+
 
 inline std::string SMesh::desc() const
 {

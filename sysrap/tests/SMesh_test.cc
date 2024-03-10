@@ -12,7 +12,15 @@
 int main()
 {
     SMesh* mesh = SMesh::Load("$MESH_FOLD"); 
-    std::cout << "mesh.name " << mesh->name << std::endl; 
+    std::cout 
+        << "mesh.name " << mesh->name
+        << std::endl 
+        << mesh->descFace() 
+        << mesh->descTri() 
+        << mesh->descVtx() 
+        << mesh->descTriVtx() 
+        << mesh->descFaceVtx() 
+        ; 
 
     return 0 ; 
 }
