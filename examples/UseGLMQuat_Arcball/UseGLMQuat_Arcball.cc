@@ -163,7 +163,7 @@ struct Arcball
 
 
 
-    Ken Showmake paper uses quat with (0.,v0) (0.,v1) called them unit quat  
+    Ken Showmake paper uses quat with (0.,v0) (0.,v1) called them pure quat  
 
 
     **/

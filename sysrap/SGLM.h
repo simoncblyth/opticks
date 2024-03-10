@@ -123,7 +123,10 @@ Screen
 #include "SCenterExtentFrame.h"
 #include "SCAM.h"
 #include "SBAS.h"
-#include "sframe.h"
+
+#include "sframe.h"  // sframe FEELS TOO HEAVYWEIGHT TO BE HERE
+#include "SCE.h"     // moving from sframe to SCE 
+
 #include "sstr.h"
 #include "NP.hh"
 
@@ -1293,7 +1296,7 @@ std::string SGLM::descBasis() const
 void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const 
 {
     std::vector<float4> corners ;
-    fr.ce_corners(corners); 
+    SCE::Corners( corners, fr.ce ); 
     assert(corners.size() == 8 ); 
 
     for(int i=0 ; i < 8 ; i++ )
@@ -1307,7 +1310,7 @@ void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const
 void SGLM::ce_midface_world( std::vector<glm::vec4>& v_world ) const 
 {
     std::vector<float4> midface ;
-    fr.ce_midface(midface); 
+    SCE::Midface( midface, fr.ce ); 
     assert(midface.size() == 6+1 ); 
 
     for(int i=0 ; i < 6+1 ; i++ )

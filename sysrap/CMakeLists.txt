@@ -342,6 +342,7 @@ set(HEADERS
     sseq_index.h
 
     sframe.h
+    SCE.h 
     SCSGOptiX.h 
 
     SPMT.h 
@@ -392,6 +393,7 @@ set(HEADERS
 
     SOpticksResource.hh
 
+    SCMD.h
     SGLM.h
     SGLFW.h
     SGLFW_Extras.h

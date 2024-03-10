@@ -97,12 +97,6 @@ struct sframe
     static sframe Load( const char* dir, const char* name=NAME); 
     static sframe Load_(const char* path ); 
     static sframe Fabricate(float tx=0.f, float ty=0.f, float tz=0.f); 
-    static void   CE_Corners(std::vector<float4>& corners, const float4& center_extent );  
-    void          ce_corners(std::vector<float4>& corners ) const ;  
-
-    static void   CE_Midface(std::vector<float4>& midface, const float4& center_extent );  
-    void          ce_midface(std::vector<float4>& midface ) const ;  
-
 
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
@@ -296,87 +290,6 @@ inline sframe sframe::Fabricate(float tx, float ty, float tz) // static
     return fr ; 
 }
 
-/**
-sframe::CE_Corners
---------------------
-
-::
-
-     ZYX 
-   0:000    
-   1:001    +X
-   2:010    +Y
-   3:011
-   4:100    +Z
-   5:101
-   6:110
-   7:111
-
-
-               110----------111         
-                |            |
-                |            |
-  +Z   100----------101      | 
-        |       |    |       | 
-        |       |    |       |
-        |      010---|------011       +Y
-        |            | 
-        |            | 
-  -Z   000----------001        -Y        
-                
-       -X           +X
-
-
-
-**/
-
-inline void sframe::CE_Corners(std::vector<float4>& corners, const float4& _ce )
-{
-    for(int c=0 ; c < 8 ; c++)  // loop around the corners 
-    {   
-        float4 a = make_float4( 
-                                _ce.x + ( c & 1 ? _ce.w : -_ce.w ),
-                                _ce.y + ( c & 2 ? _ce.w : -_ce.w ),
-                                _ce.z + ( c & 4 ? _ce.w : -_ce.w ),
-                                1.f
-                              ) ;
-        corners.push_back(a) ;
-    }
-}
-
-inline void sframe::ce_corners( std::vector<float4>& corners ) const 
-{
-    CE_Corners(corners, ce ); 
-}
-
-/**
-
-**/
-
-inline void sframe::CE_Midface(std::vector<float4>& midface, const float4& _ce )
-{
-    for(int i=0 ; i < 3 ; i++)
-    for(int j=0 ; j < 2 ; j++)
-    {
-        float sign = ( j == 0 ? -1.f : 1.f ) ; 
-        float4 a = make_float4( 
-                                 _ce.x + ( i == 0 ? sign*_ce.w : 0.f ), 
-                                 _ce.y + ( i == 1 ? sign*_ce.w : 0.f ),   
-                                 _ce.z + ( i == 2 ? sign*_ce.w : 0.f ),
-                                 1.f
-                              );
-        
-        midface.push_back(a); 
-    }
-    
-    float4 center = make_float4( _ce.x, _ce.y, _ce.z, 1.f ); 
-    midface.push_back(center);   
-}
-
-inline void sframe::ce_midface( std::vector<float4>& midface ) const 
-{
-    CE_Midface(midface, ce ); 
-}
 
 
 
