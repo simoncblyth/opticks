@@ -49,7 +49,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -I$HOME/opticks/sysrap \
          -I$(clhep-prefix)/include \
          -I$(g4-prefix)/include/Geant4  \
-         -L$(g4-prefix)/lib \
+         -L$(g4-libdir) \
          -L$(clhep-prefix)/lib \
          -lG4global \
          -lG4geometry \
