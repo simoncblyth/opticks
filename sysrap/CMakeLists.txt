@@ -429,6 +429,8 @@ set(HEADERS
     OpticksGenstep.h
     OpticksPhoton.h
     OpticksPhoton.hh
+
+    CUDA_CHECK.h
     SU.hh
     SComponent_OLD.hh 
     SComp.h 

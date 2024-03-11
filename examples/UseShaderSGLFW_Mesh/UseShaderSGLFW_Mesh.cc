@@ -19,49 +19,6 @@ See also::
     ~/o/sysrap/tests/SMesh_test.sh 
     SOLID=Tet ~/o/sysrap/tests/SMesh_test.sh run
 
-
-* https://www.khronos.org/opengl/wiki/Face_Culling
-
-* https://learnopengl.com/Advanced-OpenGL/Face-culling
-
-When we define a set of triangle vertices we're defining them in a certain
-winding order that is either clockwise or counter-clockwise. Each triangle
-consists of 3 vertices and we specify those 3 vertices in a winding order as
-seen from the center of the triangle. 
-
-::
-
-             
-            + 0           
-
-
-      2 +   + 1
-     
-
-      0->1->2 CW
-      0->2->1 CCW
-
-Each set of 3 vertices that form a triangle primitive thus contain a winding
-order. OpenGL uses this information when rendering your primitives to determine
-if a triangle is a front-facing or a back-facing triangle. By default,
-triangles defined with counter-clockwise vertices are processed as front-facing
-triangles.
-
-When defining your vertex order you visualize the corresponding triangle as if
-it was facing you, so each triangle that you're specifying should be
-counter-clockwise as if you're directly facing that triangle. The cool thing
-about specifying all your vertices like this is that the actual winding order
-is calculated at the rasterization stage, so when the vertex shader has already
-run. The vertices are then seen as from the viewer's point of view. 
-
-
-
-
-
-
-
-
-
 **/
 
 #include "SGLFW.h"
@@ -77,7 +34,7 @@ int main()
     //gm.setLookRotation( 45.f , {1.f, 1.f, 1.f } );  // angleAxis quaternion 
     gm.set_frame(fr) ; std::cout << gm.desc() ;  // HMM: set_ce ? avoid frame when not needed ?
 
-    SGLFW gl(gm, gm.Width(), gm.Height(), mesh->name ); 
+    SGLFW gl(gm, mesh->name ); 
     gl.createProgram("$SHADER_FOLD"); 
 
     float* MVP_ptr = gm.MVP_ptr ;
@@ -88,6 +45,7 @@ int main()
 
     //glEnable(GL_CULL_FACE); 
     //glCullFace(GL_FRONT);  
+
 
     SGLFW_VAO vao ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
     SGLFW_Buffer ibuf( mesh->tri->arr_bytes(), mesh->tri->cvalues<int>()  , GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 

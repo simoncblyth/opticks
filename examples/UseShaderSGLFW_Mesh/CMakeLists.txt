@@ -19,11 +19,17 @@ echo_target_std(Opticks::OpticksGLFW)
 
 add_executable(${name} ${name}.cc)
 
+
+
 target_link_libraries(${name} 
   PUBLIC 
     Opticks::GLM 
     Opticks::OpticksGLEW 
     Opticks::OpticksGLFW 
 )
+
+target_compile_definitions( ${name} PUBLIC WITH_CUDA_GL_INTEROP )
+
+
 install(TARGETS ${name}  DESTINATION lib)
 

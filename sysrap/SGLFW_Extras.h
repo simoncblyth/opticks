@@ -1,4 +1,26 @@
 #pragma once
+/**
+SGLFW_Extras.h
+=================
+
+SGLFW__check
+
+SGLFW_Toggle
+   viz switches
+
+SGLFW_GLboolean
+   string parse
+
+SGLFW_bool
+   string parse
+
+SGLFW_GLenum
+   string parse
+
+SGLFW_Attrib
+   parse attribute metadata strings such as "4,GL_FLOAT,GL_FALSE,64,0,false"
+
+**/
 
 inline void SGLFW__check(const char* path, int line) // static
 {
@@ -19,6 +41,34 @@ inline void SGLFW__check(const char* path, int line) // static
     if(!ok) std::cout << "SGLFW__check OpenGL ERROR " << path << " : " << line << " : " << std::hex << err << std::dec << " : " << s << std::endl ; 
     assert( ok );  
 }
+
+
+
+struct SGLFW_Toggle
+{
+    bool zoom ; 
+    bool tmin ;
+    bool tmax ;
+    bool lrot ;
+
+    std::string desc() const ; 
+};
+
+inline std::string SGLFW_Toggle::desc() const
+{  
+    std::stringstream ss ;  
+    ss << "SGLFW_Toggle::desc"
+       << " zoom:" << ( zoom ? "Y" : "N" )
+       << " tmin:" << ( tmin ? "Y" : "N" )
+       << " tmax:" << ( tmax ? "Y" : "N" )
+       << " lrot:" << ( lrot ? "Y" : "N" )
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
 
 
 struct SGLFW_GLboolean

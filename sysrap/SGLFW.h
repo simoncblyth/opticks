@@ -3,22 +3,10 @@
 SGLFW.h : Trying to encapsulate OpenGL graphics with a light touch
 ====================================================================
 
-SGLFW_GLboolean
-   string parse
-
-SGLFW_bool
-   string parse
-
-SGLFW_GLenum
-   string parse
-
-SGLFW_Attrib
-   parse attribute metadata strings such as "4,GL_FLOAT,GL_FALSE,64,0,false"
-
-SGLFW
-   light touch encapsulation of OpenGL window and shader program 
-   (heavy old Opticks analogue is oglrap/Frame.hh thats steered from oglrap/OpticksViz)
-
+Light touch encapsulation of OpenGL window and shader program, 
+that means trying to hide boilerplate, but not making lots of 
+decisions for user and getting complicated and inflexible like 
+the old oglrap/Frame.hh oglrap/OpticksViz did. 
     
 **/
 
@@ -32,54 +20,25 @@ SGLFW
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-
-#define GLEQ_IMPLEMENTATION
-#include "gleq.h"
-
 #ifndef GLFW_TRUE
 #define GLFW_TRUE true
 #endif
 
+#include "GL_CHECK.h"
+
+#ifdef WITH_CUDA_GL_INTEROP
+#include "SCUDAOutputBuffer.h"
+#include "SGLDisplay.h"
+#endif
+
+#define GLEQ_IMPLEMENTATION
+#include "gleq.h"
+
+#include <glm/glm.hpp>
 #include "SGLM.h"
-#include "SGLFW_Extras.h"
 #include "NPU.hh"
 
-
-struct SGLFW_Toggle
-{
-    bool zoom ; 
-    bool tmin ;
-    bool tmax ;
-    bool lrot ;
-
-    std::string desc() const ; 
-};
-
-inline std::string SGLFW_Toggle::desc() const
-{  
-    std::stringstream ss ;  
-    ss << "SGLFW_Toggle::desc"
-       << " zoom:" << ( zoom ? "Y" : "N" )
-       << " tmin:" << ( tmin ? "Y" : "N" )
-       << " tmax:" << ( tmax ? "Y" : "N" )
-       << " lrot:" << ( lrot ? "Y" : "N" )
-       ;
-    std::string str = ss.str(); 
-    return str ; 
-}
-
-
-
-/**
-SGLFW
-------
-
-Light touch encapsulation of OpenGL window and shader program 
-(light touch means: trying to hide boilerplate, not making lots of decisions for user
-and getting complicated like oglrap did)
-
-**/
+#include "SGLFW_Extras.h"
 
 struct SGLFW : public SCMD 
 {
@@ -142,7 +101,7 @@ struct SGLFW : public SCMD
     std::string descStartPos() const;  
 
 
-    SGLFW(SGLM& gm, int width, int height, const char* title=nullptr ); 
+    SGLFW(SGLM& gm, const char* title=nullptr ); 
     virtual ~SGLFW(); 
 
     void init(); 
@@ -430,11 +389,11 @@ inline std::string SGLFW::descStartPos() const
     return str ;
 }
 
-inline SGLFW::SGLFW(SGLM& _gm, int width_, int height_, const char* title_ )
+inline SGLFW::SGLFW(SGLM& _gm, const char* title_ )
     :
     gm(_gm),
-    width(width_),
-    height(height_),
+    width(gm.Width()),
+    height(gm.Height()),
     title(title_ ? strdup(title_) : TITLE),
     window(nullptr),
     vertex_shader_text(nullptr),
@@ -812,34 +771,5 @@ inline void SGLFW::error_callback(int error, const char* description) // static
 {
     fprintf(stderr, "SGLFW::error_callback: %s\n", description);
 }
-
-
-
-
-/**
-HMM : how coupled do SGLFW and SGLM need to be ? 
---------------------------------------------------
-
-HMM: can get away with just the float* pointer for finding the matrix
-but need to call SGLM::update after changing view param
-so does SGLFW needs to hold the SGLM ? Or can a std::function 
-argument be used to keep the two decoupled at arms length ? 
-
-At first glance it look like need to tightly couple, 
-as the key callbacks(gleq events) need to drive 
-the SGLM interface and cause the matrix and 
-potentially other uniforms to be updated. 
-
-But could avoid that by adding a text interface to SGLM, 
-that could be used over UDP in future. 
-This means the keys just result in sending text commands
-via the std::function<int(std::string)> 
-
-
-HMM: for arcball/trackballing ... its too tedious to 
-go thru text interface, so get tighter coupled but keep 
-the text interface for future UDP 
-
-**/
 
 

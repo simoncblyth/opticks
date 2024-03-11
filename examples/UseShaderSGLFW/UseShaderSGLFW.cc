@@ -74,15 +74,16 @@ void main()
 int main(void)
 {
     SGLM gm ; 
-    SGLFW gl(gm, 640, 480, "Simple example"); 
+    SGLFW gl(gm, "Simple example"); 
     gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text); 
     GLint mvp_location = gl.getUniformLocation("MVP");   
 
     assert( sizeof(vertices) == sizeof(float)*5*3 ); 
-    SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
 
     SGLFW_VAO vao ; 
     SGLFW_Buffer ibuf( sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
+
+    SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
     gl.enableAttrib( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
     gl.enableAttrib( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
 

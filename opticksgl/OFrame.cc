@@ -191,6 +191,9 @@ void OFrame::push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int te
 
     glBindTexture(GL_TEXTURE_2D, texture_id );
 
+    // glBindTexture lets you create or use a named texture
+
+
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, buffer_id);
 
     RTsize elementSize = buffer->getElementSize();
@@ -198,6 +201,11 @@ void OFrame::push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int te
     else if ((elementSize % 4) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
     else if ((elementSize % 2) == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
     else                             glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+   /*
+    glPixelStorei sets pixel storage modes that affect the operation of subsequent glReadPixels 
+    as well as the unpacking of texture patterns (see glTexImage2D and glTexSubImage2D). 
+   */ 
 
 
     GLenum target = GL_TEXTURE_2D ;

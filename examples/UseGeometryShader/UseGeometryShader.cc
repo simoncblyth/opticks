@@ -60,6 +60,7 @@ int main(int argc, char** argv)
     if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ; 
     assert(a); 
 
+
     float ADHOC = ssys::getenvfloat("ADHOC", 1.f) ; 
     std::cout << "ADHOC : " << ADHOC << std::endl ;   
     if(ADHOC!=1.f)
@@ -154,8 +155,7 @@ int main(int argc, char** argv)
     gm.set_frame(fr); 
     gm.dump();
 
-    const char* title = RECORD_PATH ; 
-    SGLFW gl(gm, gm.Width(), gm.Height(), title );   
+    SGLFW gl(gm, RECORD_PATH );   
     gl.createProgram("$SHADER_FOLD" ); 
 
     // The strings below are names of uniforms present in rec_flying_point/geom.glsl and pos/vert.glsl 
@@ -173,8 +173,7 @@ int main(int argc, char** argv)
 
     gl.enableAttrib("rpos", rpos_spec.c_str() ); 
 
-    const glm::mat4& world2clip = gm.world2clip ; 
-    gl.locateMVP("ModelViewProjection", glm::value_ptr(world2clip) ); 
+    gl.locateMVP("ModelViewProjection", gm.MVP_ptr ); 
 
 
     while (gl.renderloop_proceed())

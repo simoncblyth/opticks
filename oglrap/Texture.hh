@@ -17,6 +17,28 @@
  * limitations under the License.
  */
 
+/**
+
+
+epsilon:opticks blyth$ opticks-f Texture.hh 
+./opticksgl/ORenderer.cc:#include "Texture.hh"
+./opticksgl/OFrame.cc:#include "Texture.hh"
+./examples/UseOptiXTextureLayeredOKImgGeo/UseOptiXTextureLayeredOKImgGeo.cc:#include "OTexture.hh"
+./optixrap/CMakeLists.txt:    OTexture.hh
+./optixrap/OTexture.cc:#include "OTexture.hh"
+./oglrap/CMakeLists.txt:    Texture.hh
+./oglrap/oglrap.bash:        frame #6: 0x0000000100010cc5 FrameTest`Texture::~Texture(this=0x00007fff5fbfe850) + 21 at Texture.hh:26
+./oglrap/oglrap.bash:        frame #7: 0x0000000100007425 FrameTest`Texture::~Texture(this=0x00007fff5fbfe850) + 21 at Texture.hh:26
+./oglrap/tests/TexCheck.cc:#include "Texture.hh"
+./oglrap/Texture.cc:#include "Texture.hh"
+./oglrap/Renderer.cc:#include "Texture.hh"
+epsilon:opticks blyth$ 
+
+
+
+**/
+
+
 #pragma once
 
 #include <cstddef>
