@@ -26,7 +26,8 @@ sdir=$(pwd)
 name=$(basename $sdir)
 
 
-prefix=/tmp/$USER/opticks/$name
+#prefix=/tmp/$USER/opticks/$name
+prefix=/tmp/$USER/opticks/examples
 
 export PREFIX=$prefix
 export PATH=$PREFIX/bin:$PATH

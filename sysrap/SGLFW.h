@@ -529,14 +529,16 @@ inline void SGLFW::init()
     glewExperimental = GL_TRUE;
     glewInit (); 
 
+    
+
     GLenum err0 = glGetError() ; 
     GLenum err1 = glGetError() ; 
     bool err0_expected = err0 == GL_INVALID_ENUM ; // long-standing glew bug apparently 
     bool err1_expected = err1 == GL_NO_ERROR ; 
     if(!err0_expected) printf("//SGLFW::init UNEXPECTED err0 %d \n", err0 ); 
     if(!err1_expected) printf("//SGLFW::init UNEXPECTED err1 %d \n", err1 ); 
-    assert( err0_expected );  
-    assert( err1_expected );  
+    //assert( err0_expected );  
+    //assert( err1_expected );  
 
     const GLubyte* renderer = glGetString (GL_RENDERER);
     const GLubyte* version = glGetString (GL_VERSION);
@@ -622,7 +624,10 @@ inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geo
 
     program = glCreateProgram();               SGLFW__check(__FILE__, __LINE__);
     glAttachShader(program, vertex_shader);    SGLFW__check(__FILE__, __LINE__);
-    if( geometry_shader > 0 ) glAttachShader(program, geometry_shader);  SGLFW__check(__FILE__, __LINE__);
+    if( geometry_shader > 0 )
+    { 
+        glAttachShader(program, geometry_shader); SGLFW__check(__FILE__, __LINE__);
+    }
     glAttachShader(program, fragment_shader);  SGLFW__check(__FILE__, __LINE__);
     glLinkProgram(program);                    SGLFW__check(__FILE__, __LINE__);
 

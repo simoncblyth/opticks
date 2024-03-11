@@ -411,8 +411,7 @@ struct SYSRAP_API SGLM : public SCMD
     std::string desc_MVP() const ; 
     std::string desc_MVP_ce_corners() const ; 
     std::string desc_MVP_ce_midface() const ; 
-
-
+    static bool IsClipped(const glm::vec4& _ndc ); 
 
     void set_nearfar_mode(const char* mode); 
     void set_focal_mode(const char* mode); 
@@ -1593,21 +1592,25 @@ std::string SGLM::desc_MVP_ce_corners() const
     assert( v_clip.size() == NUM ); 
 
     std::stringstream ss ;
-    ss << "SGLM::desc_MVP_ce_corners" << std::endl ; 
+    ss << "SGLM::desc_MVP_ce_corners (clipped in {})" << std::endl ; 
     for(int i=0 ; i < NUM ; i++ )
     {
         const glm::vec4& _world = v_world[i] ; 
         const glm::vec4& _clip = v_clip[i] ; 
         glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
         // normalized device coordinates : from division by clip.w 
+
+        bool clipped = IsClipped(_ndc) ; 
+        char bef = clipped ? '{' : ' ' ; 
+        char aft = clipped ? '}' : ' ' ; 
+
         ss 
             << "[" << i << "]" 
             << " world " << Present(_world) 
             << " clip  " << Present(_clip) 
-            << " ndc " << Present(_ndc) 
+            << " ndc " << bef << Present(_ndc) << aft  
             << std::endl
             ;
-
     }
     std::string str = ss.str(); 
     return str ; 
@@ -1629,7 +1632,7 @@ std::string SGLM::desc_MVP_ce_midface() const
     assert( v_clip.size() == NUM ); 
 
     std::stringstream ss ;
-    ss << "SGLM::desc_MVP_ce_midface" << std::endl ; 
+    ss << "SGLM::desc_MVP_ce_midface (clipped in {})" << std::endl ; 
     ss << " MVP " << std::endl  << Present(MVP) << std::endl ; 
     for(int i=0 ; i < NUM ; i++ )
     {
@@ -1637,11 +1640,16 @@ std::string SGLM::desc_MVP_ce_midface() const
         const glm::vec4& _clip = v_clip[i] ; 
         glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
         // normalized device coordinates : from division by clip.w 
+
+        bool clipped = IsClipped(_ndc) ; 
+        char bef = clipped ? '[' : ' ' ; 
+        char aft = clipped ? ']' : ' ' ; 
+
         ss 
             << "[" << i << "]" 
             << " world " << Present(_world) 
             << " clip  " << Present(_clip) 
-            << " ndc " << Present(_ndc) 
+            << " ndc " << bef << Present(_ndc) << aft 
             << std::endl
             ;
 
@@ -1651,6 +1659,11 @@ std::string SGLM::desc_MVP_ce_midface() const
 }
 
 
+bool SGLM::IsClipped(const glm::vec4& _ndc ) // static
+{
+    return _ndc.x < -1.f || _ndc.y < -1.f || _ndc.z < -1.f 
+        || _ndc.x >  1.f || _ndc.y >  1.f || _ndc.z >  1.f ; 
+}
 
 
 
