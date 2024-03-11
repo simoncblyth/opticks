@@ -240,6 +240,7 @@ struct SYSRAP_API SGLM : public SCMD
     static glm::vec4 LOOK ; 
     static glm::vec4 UP ; 
 
+
     static float ZOOM ; 
     static float TMIN ; 
     static float TMAX ; 
@@ -282,10 +283,11 @@ struct SYSRAP_API SGLM : public SCMD
     std::string descInput() const ; 
 
     SGLM(); 
+    void init(); 
     void setLookRotation(float angle_deg, glm::vec3 axis ); 
     void setLookRotation( const glm::vec2& a, const glm::vec2& b ); 
 
-    static void Command(const SGLM_Parse& parse, bool dump); 
+    static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
 
     sframe fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
@@ -316,6 +318,7 @@ struct SYSRAP_API SGLM : public SCMD
     void updateGaze(); 
     std::string descELU() const ; 
 
+    std::vector<glm::vec3> axes ; 
     glm::vec3 eye ;  
     glm::vec3 look ; 
     glm::vec3 up ; 
@@ -330,6 +333,8 @@ struct SYSRAP_API SGLM : public SCMD
     float     get_escale_() const ; 
     glm::mat4 get_escale() const ; 
     float getGazeLength() const ; 
+    float getGazeCrossUp() const ;
+    void avoidDegenerateBasisByChangingUp(); 
 
     void updateNearFar(); 
     std::string descNearFar() const ; 
@@ -477,7 +482,8 @@ float      SGLM::TMAX = EValue<float>(kTMAX, "100.0");
 int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ; 
 int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ; 
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ; 
-int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "asis") ; 
+//int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "asis") ; 
+int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ; 
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -548,8 +554,17 @@ inline SGLM::SGLM()
     IDENTITY(1.f),
     IDENTITY_ptr(glm::value_ptr(IDENTITY))
 {
-    addlog("SGLM::SGLM", "ctor"); 
+
+    init(); 
+}
+
+inline void SGLM::init()
+{
+    addlog("SGLM::init", "ctor"); 
     INSTANCE = this ; 
+    axes.push_back( {1.f,0.f,0.f} ); 
+    axes.push_back( {0.f,1.f,0.f} ); 
+    axes.push_back( {0.f,0.f,1.f} ); 
 }
 
 
@@ -580,7 +595,7 @@ SGLM::Command
 
 **/
 
-void SGLM::Command(const SGLM_Parse& parse, bool dump)  // static
+void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
 {
     assert( parse.key.size() == parse.val.size() ); 
     int num_kv = parse.key.size(); 
@@ -633,7 +648,14 @@ void SGLM::Command(const SGLM_Parse& parse, bool dump)  // static
     for(int i=0 ; i < num_op ; i++)
     {
         const char* op = parse.opt[i].c_str(); 
-        std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl; 
+        if(strcmp(op,"desc")==0)
+        {
+            std::cout << gm->desc() << std::endl ;  
+        }
+        else
+        {
+            std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl; 
+        }
     }
 } 
 
@@ -665,7 +687,7 @@ int SGLM::command(const char* cmd)
 
     bool dump = false ; 
     if(dump) std::cout << "SGLM::command" << std::endl << parse.desc() ; 
-    Command(parse, dump); 
+    Command(parse, this, dump); 
     update(); 
     return 0 ; 
 }
@@ -1013,16 +1035,49 @@ look2eye
 void SGLM::updateGaze()
 { 
     gaze = glm::vec3( look - eye ) ;    
+    avoidDegenerateBasisByChangingUp(); 
+
     float gazlen = getGazeLength(); 
     eye2look = glm::translate( glm::mat4(1.), glm::vec3(0,0,gazlen));  
     look2eye = glm::translate( glm::mat4(1.), glm::vec3(0,0,-gazlen));
 }
 
-float SGLM::getGazeLength() const { return glm::length(gaze) ; }   // must be after updateGaze 
+float SGLM::getGazeLength()  const { return glm::length(gaze) ; }   // must be after updateGaze 
+float SGLM::getGazeCrossUp() const { return glm::length(glm::cross(glm::normalize(gaze), up))  ; }
+
+
+void SGLM::avoidDegenerateBasisByChangingUp()
+{
+    float eps = 1e-4f ; 
+    float gcu = getGazeCrossUp() ;
+    if(gcu > eps) return ; 
+
+    for(int i=0 ; i < 3 ; i++)
+    {
+        up = axes[i] ; 
+        gcu = getGazeCrossUp() ;
+        if(gcu > eps) 
+        {
+            std::cout 
+                << "SGLM::avoidDegenerateBasisByChangingUp" 
+                << " gaze " << glm::to_string(gaze)
+                << " up " << glm::to_string(up)
+                << " GazeCrossUp " << gcu
+                << " ( avoid this message by starting with more sensible EYE,LOOK,UP basis ) "
+                << std::endl
+                ; 
+            return ; 
+        }
+    }
+    assert( gcu > eps ); 
+}
+
+
 
 
 std::string SGLM::descELU() const 
 {
+    float escale_ = get_escale_(); 
     glm::mat4 escale = get_escale(); 
     std::stringstream ss ; 
     ss << "SGLM::descELU" << std::endl ; 
@@ -1031,9 +1086,10 @@ std::string SGLM::descELU() const
     ss << std::setw(15) << " sglm.UP "   << Present( UP )   << std::endl ; 
     ss << std::setw(15) << " sglm.GAZE " << Present( LOOK-EYE ) << std::endl ; 
     ss << std::endl ; 
-    ss << std::setw(15) << " sglm.EYE*escale "  << Present( EYE*escale )  << std::endl ; 
+    ss << std::setw(15) << " escale_ "           << Present( escale_ ) << std::endl ; 
+    ss << std::setw(15) << " sglm.EYE*escale  "  << Present( EYE*escale )  << std::endl ; 
     ss << std::setw(15) << " sglm.LOOK*escale " << Present( LOOK*escale ) << std::endl ; 
-    ss << std::setw(15) << " sglm.UP*escale "   << Present( UP*escale )   << std::endl ; 
+    ss << std::setw(15) << " sglm.UP*escale   "   << Present( UP*escale )   << std::endl ; 
     ss << std::setw(15) << " sglm.GAZE*escale " << Present( (LOOK-EYE)*escale ) << std::endl ; 
     ss << std::endl ; 
     ss << std::setw(15) << " sglm.eye "  << Present( eye )  << std::endl ; 
@@ -1218,9 +1274,12 @@ void SGLM::updateProjection()
     float near_abs   = get_near_abs() ; 
     float far_abs    = get_far_abs()  ; 
 
-    projection = glm::frustum( left, right, bottom, top, near_abs, far_abs );
-    //projection = glm::ortho( left, right, bottom, top, near_abs, far_abs );
-
+    assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
+    switch(cam)
+    {
+       case CAM_PERSPECTIVE:  projection = glm::frustum( left, right, bottom, top, near_abs, far_abs ); break ; 
+       case CAM_ORTHOGRAPHIC: projection = glm::ortho( left, right, bottom, top, near_abs, far_abs )  ; break ;
+    }
 }
 
 
@@ -1679,7 +1738,7 @@ inline std::string SGLM::Present(std::vector<T>& vec) // static
 }
 
 template<typename T>
-inline std::string SGLM::Present(const T* tt, int num)
+inline std::string SGLM::Present(const T* tt, int num) // static
 {
     std::stringstream ss ;
     for(int i=0 ; i < num ; i++)

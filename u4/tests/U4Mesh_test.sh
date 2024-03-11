@@ -6,6 +6,7 @@ U4Mesh_test.sh
 Instanciates G4Orb and persists as U4Mesh into /tmp/U4Mesh_test::
 
     ~/o/u4/tests/U4Mesh_test.sh
+    SOLID=Tubs ~/o/u4/tests/U4Mesh_test.sh ana
 
 EOU
 }
@@ -21,9 +22,16 @@ g4-
 
 #solid=Torus
 #solid=Orb
-solid=Box
+#solid=Box
 #solid=Tet
+solid=Tubs
+#solid=Cons
+
+
+allsolid="Orb Box Tet Tubs Cons Torus"
+
 export SOLID=${SOLID:-$solid}
+
 
 vars="BASH_SOURCE name FOLD bin SOLID"
 
@@ -54,6 +62,11 @@ fi
 if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
+fi 
+
+if [ "${arg/all}" != "$arg" ]; then
+    for solid in $allsolid ; do echo $BASH_SOURCE : $solid && SOLID=$solid $bin ; done  
+    [ $? -ne 0 ] && echo $BASH_SOURCE all error && exit 2
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then

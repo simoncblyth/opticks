@@ -42,10 +42,11 @@ bdir=/tmp/$USER/opticks/$name/build
 
 #solid=Orb
 #solid=Torus   # HUH: appears like Orb
-#solid=Box
-solid=Tet
+solid=Box
+#solid=Tet
+SOLID=${SOLID:-$solid}
 
-mesh_fold=/tmp/U4Mesh_test/$solid
+mesh_fold=/tmp/U4Mesh_test/$SOLID
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 
 shader=wireframe
@@ -55,13 +56,31 @@ export SHADER_FOLD=$sdir/gl/$SHADER
 
 
 wh=1024,768
-eye=0.1,0,-10
-tmin=0.1      
 
+#eye=0.1,0,-10
+#eye=-1,-1,0
+#eye=-10,-10,0
+#eye=-10,0,0
+#eye=0,-10,0
+eye=0,0,-10
+up=1,0,0
+look=0,0,0
+
+#cam=perspective
+cam=orthographic
+
+tmin=0.1      
+#escale=asis
+escale=extent
 
 export WH=${WH:-$wh}
 export EYE=${EYE:-$eye}
+export LOOK=${LOOK:-$look}
+export UP=${UP:-$up}
 export TMIN=${TMIN:-$tmin}
+export ESCALE=${ESCALE:-$escale}
+export CAM=${CAM:-$cam}
+
 
 vars="BASH_SOURCE bdir SHADER_FOLD MESH_FOLD WH EYE"
 

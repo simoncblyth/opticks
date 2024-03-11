@@ -20,6 +20,7 @@ int main()
         << mesh->descVtx() 
         << mesh->descTriVtx() 
         << mesh->descFaceVtx() 
+        << mesh->descVtxNrm() 
         ; 
 
     return 0 ; 

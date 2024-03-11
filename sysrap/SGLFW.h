@@ -181,7 +181,7 @@ inline void SGLFW::renderloop_exit()
 }
 inline void SGLFW::renderloop_head()
 {
-    dump = count % 1000 == 0 ; 
+    dump = count % 100000 == 0 ; 
 
     getWindowSize();
     glViewport(0, 0, _width, _height);
@@ -246,7 +246,8 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
         case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
-        case GLFW_KEY_A:      gm.command("--zoom 10") ; break ; 
+        case GLFW_KEY_A:      gm.command("--zoom 10")     ; break ; 
+        case GLFW_KEY_D:      gm.command("--desc")        ; break ; 
     }
 
     std::cout << toggle.desc() << std::endl ; 

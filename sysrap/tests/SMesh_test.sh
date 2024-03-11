@@ -7,6 +7,8 @@ SMesh_test.sh
 
     ~/o/sysrap/tests/SMesh_test.sh
 
+    SOLID=Tet ~/o/sysrap/tests/SMesh_test.sh run
+
 EOU
 }
 
@@ -20,8 +22,9 @@ bin=/tmp/$name/$name
 #solid=Torus
 #solid=Orb
 solid=Box
+SOLID=${SOLID:-$solid}
 
-mesh_fold=/tmp/U4Mesh_test/$solid
+mesh_fold=/tmp/U4Mesh_test/$SOLID
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 
 cd $(dirname $(realpath $BASH_SOURCE))

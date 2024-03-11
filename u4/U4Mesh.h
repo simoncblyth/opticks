@@ -410,6 +410,11 @@ as have to change format to that needed by pv.PolyData::
         pd = pv.PolyData(f.vtx, tri)
         return pd 
 
+
+HMM: JUST RANDOMLY DOING THIS LIABLE TO 
+GIVE MIXED WINDING ORDER CW/CCW ? 
+
+
 **/
 
 inline void U4Mesh::init_tri()
@@ -436,14 +441,21 @@ inline void U4Mesh::init_tri()
         } 
         else if( nedge == 4 )
         {
+            // adhoc splitting without regard for how the 
+            // vertices are positioned in space ?
+            // will that messup the CW/CCW winding order 
+
             assert( jt < nt ); 
-            for(int j=0 ; j < 3 ; j++) tri_[jt*3+j] = ivertex[j]-1 ;  // x,y,z
+            tri_[jt*3+0] = ivertex[0]-1 ; // x
+            tri_[jt*3+1] = ivertex[1]-1 ; // y 
+            tri_[jt*3+2] = ivertex[2]-1 ; // z
             jt += 1 ; 
 
             assert( jt < nt ); 
             tri_[jt*3+0] = ivertex[0]-1 ; // x 
             tri_[jt*3+1] = ivertex[2]-1 ; // z 
             tri_[jt*3+2] = ivertex[3]-1 ; // w 
+
             jt += 1 ; 
         }
     }
@@ -470,7 +482,9 @@ inline void U4Mesh::init_tpd()
         else if( nedge == 4 )
         {
             _tpd.push_back(3) ; 
-            for(int j=0 ; j < 3 ; j++) _tpd.push_back(ivertex[j]-1) ; // x,y,z
+            _tpd.push_back(ivertex[0]-1) ;  // x
+            _tpd.push_back(ivertex[1]-1) ;  // y
+            _tpd.push_back(ivertex[2]-1) ;  // z
 
             _tpd.push_back(3) ; 
             _tpd.push_back(ivertex[0]-1);  // x

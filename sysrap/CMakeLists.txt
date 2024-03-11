@@ -394,7 +394,10 @@ set(HEADERS
     SOpticksResource.hh
 
     SCMD.h
+
     SGLM.h
+    SGLM_Arcball.h
+
     SGLFW.h
     SGLFW_Extras.h
     gleq.h
