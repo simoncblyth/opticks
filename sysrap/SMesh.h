@@ -110,8 +110,8 @@ inline void SMesh::import(const NPFold* fold)
     tri = fold->get("tri");
     _vtx = fold->get("vtx");
 
-    //bool smooth = true ; 
-    bool smooth = false ; 
+    bool smooth = true ; 
+    //bool smooth = false ; 
     _nrm = MakeNormals( _vtx, tri, smooth );  // uses doubles
 
     vtx = NP::MakeNarrowIfWide(_vtx);
