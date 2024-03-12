@@ -109,6 +109,15 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
+if [ "${arg/dbg}" != "$arg" ]; then 
+    echo executing dbg__ $name
+    dbg__ $name
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 4
+fi
+
+
+
+
 exit 0 
 
 

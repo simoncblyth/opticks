@@ -1,5 +1,12 @@
 #pragma once
+/**
+SGLDisplay.h
+=============
 
+
+**/
+
+#include <cstdio>
 #include <cstdint>
 #include <string>
 #include <iostream>
@@ -16,25 +23,32 @@ struct SGLDisplay
     static GLuint CreateGLShader( const char* source, GLuint shader_type );
     static GLuint CreateGLProgram( const char* vert_source, const char* frag_source ); 
     static size_t PixelFormatSize( BufferImageFormat format ); 
+    static int PixelUnpackAlignment( size_t elmt_size ); 
 
     SGLDisplay(BufferImageFormat format = UNSIGNED_BYTE4);
+    std::string desc() const ; 
 
     void display(
             const int32_t  screen_res_x,
             const int32_t  screen_res_y,
             const int32_t  framebuf_res_x,
             const int32_t  framebuf_res_y,
-            const uint32_t pbo) const;
+            const uint32_t pbo);
+
+    BufferImageFormat m_image_format;
+    size_t  m_elmt_size ; 
+    int     m_unpack_alignment ; 
+    size_t  m_count ; 
 
     GLuint   m_render_tex = 0u;
     GLuint   m_program = 0u;
     GLint    m_render_tex_uniform_loc = -1;
     GLuint   m_quad_vertex_buffer = 0;
 
-    BufferImageFormat m_image_format;
-
     static constexpr const char* s_vert_source = R"(
 #version 330 core
+
+// transforms ndc (-1:1,-1:1) "vertexPosition_modelspace"  to tex coords (0:1,0:1 ) "UV"
 
 layout(location = 0) in vec3 vertexPosition_modelspace;
 out vec2 UV;
@@ -49,6 +63,8 @@ void main()
     static constexpr const char* s_frag_source = R"(
 #version 330 core
 
+// samples texture at UV coordinate
+
 in vec2 UV;
 out vec3 color;
 
@@ -62,7 +78,7 @@ void main()
 
 };
 
-inline GLuint SGLDisplay::CreateGLShader( const char* source, GLuint shader_type )
+inline GLuint SGLDisplay::CreateGLShader( const char* source, GLuint shader_type ) // static
 {
     GLuint shader = glCreateShader( shader_type );
     {
@@ -91,14 +107,13 @@ inline GLuint SGLDisplay::CreateGLShader( const char* source, GLuint shader_type
 }
 
 
-inline GLuint SGLDisplay::CreateGLProgram( const char* vert_source, const char* frag_source )
+inline GLuint SGLDisplay::CreateGLProgram( const char* vert_source, const char* frag_source ) // static
 {
     GLuint vert_shader = CreateGLShader( vert_source, GL_VERTEX_SHADER );
-    if( vert_shader == 0 )
-        return 0;
+    if(vert_shader == 0) return 0;
 
     GLuint frag_shader = CreateGLShader( frag_source, GL_FRAGMENT_SHADER );
-    if( frag_shader == 0 )
+    if(frag_shader == 0)
     {
         glDeleteShader( vert_shader );
         return 0;
@@ -149,9 +164,37 @@ inline size_t SGLDisplay::PixelFormatSize( BufferImageFormat format ) // static
     }    
 }
 
+inline int SGLDisplay::PixelUnpackAlignment( size_t elmt_size ) // static
+{
+    int unpack_alignment = 1 ; 
+    if      ( elmt_size % 8 == 0) unpack_alignment = 8 ; 
+    else if ( elmt_size % 4 == 0) unpack_alignment = 4 ; 
+    else if ( elmt_size % 2 == 0) unpack_alignment = 2 ; 
+    else                          unpack_alignment = 1 ; 
+    return unpack_alignment ; 
+}
+
+
+
+
+/**
+SGLDisplay::SGLDisplay
+-----------------------
+
+1. binds Vertex Array m_vertex_array 
+2. creates shader pipeline m_program  
+3. binds and configures m_render_tex GL_TEXTURE_2D
+4. binds m_quad_vertex_buffer GL_ARRAY_BUFFER 
+   and uploads vertices of two triangles forming a [-1:1,-1:1] quad
+
+**/
+
 inline SGLDisplay::SGLDisplay( BufferImageFormat image_format )
     : 
-    m_image_format( image_format )
+    m_image_format(image_format),
+    m_elmt_size(PixelFormatSize( m_image_format )),
+    m_unpack_alignment(PixelUnpackAlignment( m_elmt_size )),
+    m_count(0)
 {
     GLuint m_vertex_array;
     GL_CHECK( glGenVertexArrays(1, &m_vertex_array ) );
@@ -182,15 +225,81 @@ inline SGLDisplay::SGLDisplay( BufferImageFormat image_format )
     GL_CHECK( glGenBuffers( 1, &m_quad_vertex_buffer ) );
     GL_CHECK( glBindBuffer( GL_ARRAY_BUFFER, m_quad_vertex_buffer ) );
     GL_CHECK( glBufferData( GL_ARRAY_BUFFER,
-            sizeof( g_quad_vertex_buffer_data),
-            g_quad_vertex_buffer_data,
-            GL_STATIC_DRAW
-            )
-        );
+                sizeof( g_quad_vertex_buffer_data),
+                g_quad_vertex_buffer_data,
+                GL_STATIC_DRAW
+                )
+            );
 
     GL_CHECK_ERRORS();
 }
 
+inline std::string SGLDisplay::desc() const
+{
+    std::stringstream ss ; 
+    ss << "SGLDisplay::desc"
+       << std::endl 
+       << " int(m_image_format) " << int(m_image_format)
+       << std::endl 
+       << " m_elmt_size " << m_elmt_size 
+       << std::endl 
+       << " m_unpack_alignment " << m_unpack_alignment
+       << std::endl 
+       << " m_count " << m_count
+       << std::endl 
+       << " m_render_tex " << m_render_tex
+       << std::endl 
+       << " m_program "
+       << std::endl 
+       << " m_render_tex_uniform_loc " << m_render_tex_uniform_loc
+       << std::endl 
+       << " m_quad_vertex_buffer " << m_quad_vertex_buffer
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+SGLDisplay::display
+--------------------
+
+Arranges for the PBO buffer contents to be viewed as a texture
+and accessed via samplers in shaders.
+
+1. bind GL_FRAMEBUFFER 
+2. set viewport to (framebuf_res_x, framebuf_res_y) 
+3. bind GL_TEXTURE_2D m_render_tex
+4. configure GL_PIXEL_UNPACK_BUFFER unpacking 
+5. invoke glTexImage2D using (screen_res_x, screen_res_y) 
+   which enables shaders to access the texture
+
+   * note that nullptr data, because GL_PIXEL_UNPACK_BUFFER
+     is bound the pbo acts as the source of the texture data 
+     and the data arg is just an offset 
+
+6. configure vertex array access from shader
+7. draw the two triangles of the quad displaying PBO data
+   via viewing it as a texture 
+
+ 
+glTexImage2D 
+   specifies mutable texture storage characteristics and provides the data
+  
+   *internalFormat* 
+        format with which OpenGL should store the texels in the texture
+
+   *data*
+        location of the initial texel data in host memory, 
+        **if a buffer is bound to the GL_PIXEL_UNPACK_BUFFER binding point, 
+        texel data is read from that buffer object, and *data* is interpreted 
+        as an offset into that buffer object from which to read the data**
+
+    *format* and *type*
+         initial source texel data layout which OpenGL will convert 
+         to the internalFormat
+
+**/
 
 inline void SGLDisplay::display(
         const int32_t  screen_res_x,
@@ -198,27 +307,20 @@ inline void SGLDisplay::display(
         const int32_t  framebuf_res_x,
         const int32_t  framebuf_res_y,
         const uint32_t pbo
-        ) const
+        ) 
 {
+    printf("[ SGLDisplay::display %zu \n", m_count ); 
+
     GL_CHECK( glBindFramebuffer( GL_FRAMEBUFFER, 0 ) );
     GL_CHECK( glViewport( 0, 0, framebuf_res_x, framebuf_res_y ) );
-
     GL_CHECK( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
-
     GL_CHECK( glUseProgram( m_program ) );
 
     // Bind our texture in Texture Unit 0
     GL_CHECK( glActiveTexture( GL_TEXTURE0 ) );
     GL_CHECK( glBindTexture( GL_TEXTURE_2D, m_render_tex ) );
     GL_CHECK( glBindBuffer( GL_PIXEL_UNPACK_BUFFER, pbo ) );
-
-    GL_CHECK( glPixelStorei(GL_UNPACK_ALIGNMENT, 4) ); // TODO!!!!!!
-
-    size_t elmt_size = PixelFormatSize( m_image_format );
-    if      ( elmt_size % 8 == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
-    else if ( elmt_size % 4 == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-    else if ( elmt_size % 2 == 0) glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
-    else                          glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    GL_CHECK( glPixelStorei(GL_UNPACK_ALIGNMENT, m_unpack_alignment ) ); 
 
     bool convertToSrgb = true;
 
@@ -229,13 +331,17 @@ inline void SGLDisplay::display(
         convertToSrgb = false;
     }
     else if( m_image_format == BufferImageFormat::FLOAT3 )
+    {
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB32F,  screen_res_x, screen_res_y, 0, GL_RGB,  GL_FLOAT,         nullptr );
-
+    }
     else if( m_image_format == BufferImageFormat::FLOAT4 )
+    {
         glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, screen_res_x, screen_res_y, 0, GL_RGBA, GL_FLOAT,         nullptr );
-
+    }
     else
+    {
         throw std::runtime_error( "Unknown buffer format" );
+    }
 
     GL_CHECK( glBindBuffer( GL_PIXEL_UNPACK_BUFFER, 0 ) );
     GL_CHECK( glUniform1i( m_render_tex_uniform_loc , 0 ) );
@@ -265,6 +371,8 @@ inline void SGLDisplay::display(
 
     GL_CHECK( glDisable( GL_FRAMEBUFFER_SRGB ) );
 
+    printf("] SGLDisplay::display %zu \n", m_count ); 
+    m_count++ ; 
     GL_CHECK_ERRORS();
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 /**
-SCUDAOutputBuffer.h
-=====================
+SCUDAOutputBuffer.h : Allows an OpenGL PBO buffer to accessed from CUDA 
+=========================================================================
 
 Adapted from SDK/CUDAOutputBuffer.h
 Include this after OpenGL headers.
@@ -25,7 +25,7 @@ enum class SCUDAOutputBufferType
     CUDA_P2P    = 3  // fully connected only, preferred for fully nvlink connected
 };
 
-typedef int CUstream ;  // kludge for compile with ancient CUDA
+typedef cudaStream_t CUstream ; // why I need to do this ? missing some header ? mixing APIs ?
 
 template <typename PIXEL_FORMAT>
 class SCUDAOutputBuffer
@@ -42,9 +42,11 @@ public:
     // Allocate or update device pointer as necessary for CUDA access
     PIXEL_FORMAT* map();
     void unmap();
+    std::string desc() const ; 
 
     int32_t        width() const  { return m_width;  }
     int32_t        height() const { return m_height; }
+
 
     // Get output buffer
     GLuint         getPBO();
@@ -54,8 +56,7 @@ public:
 private:
     void makeCurrent() { CUDA_CHECK( cudaSetDevice( m_device_idx ) ); }
 
-    SCUDAOutputBufferType       m_type;
-
+    SCUDAOutputBufferType      m_type;
     int32_t                    m_width             = 0u;
     int32_t                    m_height            = 0u;
 
@@ -72,13 +73,11 @@ private:
 
 template <typename PIXEL_FORMAT>
 inline SCUDAOutputBuffer<PIXEL_FORMAT>::SCUDAOutputBuffer( SCUDAOutputBufferType type, int32_t width, int32_t height )
-    : m_type( type )
+    : 
+    m_type( type )
 {
-    if( width < 1 ) width = 1 ; 
-    if( height < 1 ) height = 1 ; 
-
     // If using GL Interop, expect that the active device is also the display device.
-    if( type == SCUDAOutputBufferType::GL_INTEROP )
+    if( m_type == SCUDAOutputBufferType::GL_INTEROP )
     {
         int current_device, is_display_device;
         CUDA_CHECK( cudaGetDevice( &current_device ) );
@@ -120,6 +119,17 @@ SCUDAOutputBuffer<PIXEL_FORMAT>::~SCUDAOutputBuffer()
         std::cerr << "SCUDAOutputBuffer destructor caught exception: " << e.what() << std::endl;
     }
 }
+
+/**
+SCUDAOutputBuffer::resize
+--------------------------
+
+In interop mode sets:
+
+1. m_pbo : reference to "PBO" GL_ARRAY_BUFFER 
+2. m_cuda_gfx_resource : reference resulting from registering as CUDA graphics resource 
+
+**/
 
 
 template <typename PIXEL_FORMAT>
@@ -187,6 +197,14 @@ void SCUDAOutputBuffer<PIXEL_FORMAT>::resize( int32_t width, int32_t height )
         m_host_pixels.resize( m_width*m_height );
 }
 
+/**
+SCUDAOutputBuffer::map
+-----------------------
+
+In interop mode sets and returns m_device_pixels pointer 
+allowing CUDA to write to the underlying graphics "PBO" buffer.
+
+**/
 
 template <typename PIXEL_FORMAT>
 PIXEL_FORMAT* SCUDAOutputBuffer<PIXEL_FORMAT>::map()
@@ -215,6 +233,14 @@ PIXEL_FORMAT* SCUDAOutputBuffer<PIXEL_FORMAT>::map()
     return m_device_pixels;
 }
 
+/**
+SCUDAOutputBuffer::unmap
+--------------------------
+
+Relinquishes CUDA access to the PBO graphics buffer, allowing 
+subequent rendering with OpenGL. 
+
+**/
 
 template <typename PIXEL_FORMAT>
 void SCUDAOutputBuffer<PIXEL_FORMAT>::unmap()
@@ -235,6 +261,45 @@ void SCUDAOutputBuffer<PIXEL_FORMAT>::unmap()
     }
 }
 
+
+template <typename PIXEL_FORMAT>
+std::string SCUDAOutputBuffer<PIXEL_FORMAT>::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "SCUDAOutputBuffer::desc"
+       << std::endl 
+       << " int(m_type) " << int(m_type) 
+       << std::endl 
+       << " m_width " << m_width 
+       << std::endl 
+       << " m_height " << m_height  
+       << std::endl 
+       << " m_cuda_gfx_resource " << ( m_cuda_gfx_resource ? "YES" : "NO " )
+       << std::endl 
+       << " m_pbo " << m_pbo
+       << std::endl 
+       << " m_device_pixels " << ( m_device_pixels ? "YES" : "NO " )
+       << std::endl 
+       << " m_host_zcopy_pixels " << ( m_host_zcopy_pixels ? "YES" : "NO " )
+       << std::endl 
+       << " m_host_pixels.size " << m_host_pixels.size()
+       << std::endl 
+       << " m_stream " << m_stream
+       << std::endl 
+       << " m_device_idx " << m_device_idx 
+       << std::endl 
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+SCUDAOutputBuffer::getPBO
+---------------------------
+
+In interop mode just returns m_pbo
+
+**/
 
 template <typename PIXEL_FORMAT>
 GLuint SCUDAOutputBuffer<PIXEL_FORMAT>::getPBO()
@@ -304,6 +369,16 @@ void SCUDAOutputBuffer<PIXEL_FORMAT>::deletePBO()
     GL_CHECK( glDeleteBuffers( 1, &m_pbo ) );
     m_pbo = 0;
 }
+
+/**
+SCUDAOutputBuffer::getHostPointer
+----------------------------------
+
+In all modes other than ZERO_COPY resizes the m_host_pixels vector
+can downloads the mapped graphics device buffer contents to the host vector. 
+In ZERO_COPY just returns m_host_zcopy_pixels.
+
+**/
 
 template <typename PIXEL_FORMAT>
 PIXEL_FORMAT* SCUDAOutputBuffer<PIXEL_FORMAT>::getHostPointer()

@@ -62,11 +62,22 @@ int main()
     int num = ssys::getenvint("NUM",mesh->indices_num) ; 
     int off = ssys::getenvint("OFF",mesh->indices_offset) ; 
 
+
     while(gl.renderloop_proceed())
     {
-        gl.renderloop_head();  // calls gl.updateMVP
-        glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * off ));
-        gl.renderloop_tail(); 
+        if( gl.toggle.cuda )
+        {
+             gl.fillOutputBuffer(); 
+             gl.displayOutputBuffer(); 
+        }
+        else
+        {
+             gl.renderloop_head();  // clears 
+             glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * off ));
+        }
+
+        gl.renderloop_update_state(); // listens for inputs calls gl.updateMVP
+        gl.renderloop_tail();        // swap buffers, poll events
     }
     exit(EXIT_SUCCESS);
 }

@@ -27,6 +27,7 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 #include "GL_CHECK.h"
 
 #ifdef WITH_CUDA_GL_INTEROP
+#include "SCU.h"
 #include "SCUDAOutputBuffer.h"
 #include "SGLDisplay.h"
 #endif
@@ -48,7 +49,12 @@ struct SGLFW : public SCMD
     SGLM& gm ; 
     int width ; 
     int height ; 
+#ifdef WITH_CUDA_GL_INTEROP
+    SCUDAOutputBuffer<uchar4>* output_buffer ; 
+    SGLDisplay* gl_display ; 
+#endif
     const char* title ; 
+
 
     GLFWwindow* window ; 
 
@@ -80,6 +86,7 @@ struct SGLFW : public SCMD
     bool renderloop_proceed(); 
     void renderloop_exit(); 
     void renderloop_head(); 
+    void renderloop_update_state(); 
     void renderloop_tail(); 
 
     void listen(); 
@@ -100,11 +107,15 @@ struct SGLFW : public SCMD
     std::string descDrag() const;
     std::string descStartPos() const;  
 
-
     SGLFW(SGLM& gm, const char* title=nullptr ); 
     virtual ~SGLFW(); 
-
     void init(); 
+
+#ifdef WITH_CUDA_GL_INTEROP
+    void fillOutputBuffer(); 
+    void displayOutputBuffer();
+#endif
+
     void createProgram(const char* _dir); 
     void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
 
@@ -147,15 +158,12 @@ inline void SGLFW::renderloop_head()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
+}
 
+inline void SGLFW::renderloop_update_state()
+{
     listen(); 
     updateMVP(); 
-}
-inline void SGLFW::renderloop_tail()
-{
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 }
 
 inline void SGLFW::listen()
@@ -167,6 +175,15 @@ inline void SGLFW::listen()
         gleqFreeEvent(&event);
     }
 }
+
+inline void SGLFW::renderloop_tail()
+{
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
+}
+
+
 
 /**
 SGLFW::handle_event
@@ -205,6 +222,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
         case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
+        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda  ; break ; 
         case GLFW_KEY_A:      gm.command("--zoom 10")     ; break ; 
         case GLFW_KEY_D:      gm.command("--desc")        ; break ; 
     }
@@ -394,6 +412,10 @@ inline SGLFW::SGLFW(SGLM& _gm, const char* title_ )
     gm(_gm),
     width(gm.Width()),
     height(gm.Height()),
+#ifdef WITH_CUDA_GL_INTEROP
+    output_buffer( nullptr ), 
+    gl_display( nullptr ), 
+#endif
     title(title_ ? strdup(title_) : TITLE),
     window(nullptr),
     vertex_shader_text(nullptr),
@@ -508,7 +530,49 @@ inline void SGLFW::init()
 
     int interval = 1 ; // The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.
     glfwSwapInterval(interval);
+
+
+#ifdef WITH_CUDA_GL_INTEROP
+    output_buffer = new SCUDAOutputBuffer<uchar4>( SCUDAOutputBufferType::GL_INTEROP, width, height ) ; 
+    std::cout << output_buffer->desc() ; 
+    gl_display = new SGLDisplay ; 
+    std::cout << gl_display->desc() ; 
+#endif
 }
+
+#ifdef WITH_CUDA_GL_INTEROP
+
+extern void SGLFW__fillOutputBuffer( dim3 numBlocks, dim3 threadsPerBlock, uchar4* output_buffer, int width, int height ); 
+inline void SGLFW::fillOutputBuffer()
+{
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    SCU::ConfigureLaunch2D(numBlocks, threadsPerBlock, output_buffer->width(), output_buffer->height() );   
+    SGLFW__fillOutputBuffer(numBlocks, threadsPerBlock, 
+         output_buffer->map(), 
+         output_buffer->width(), 
+         output_buffer->height() );           
+
+    output_buffer->unmap();
+    CUDA_SYNC_CHECK();
+}
+
+inline void SGLFW::displayOutputBuffer()
+{
+    // Display
+    int framebuf_res_x = 0;   // The display's resolution (could be HDPI res)
+    int framebuf_res_y = 0;   //  
+    glfwGetFramebufferSize( window, &framebuf_res_x, &framebuf_res_y );
+
+    gl_display->display(
+            output_buffer->width(),
+            output_buffer->height(),
+            framebuf_res_x,
+            framebuf_res_y,
+            output_buffer->getPBO()
+            );  
+}
+#endif
 
 inline void SGLFW::createProgram(const char* _dir)
 {
@@ -676,9 +740,6 @@ prior to the renderloop after shader program is
 setup and the GLM maths has been instanciated 
 hence giving the pointer to the world2clip matrix
 address. 
-
-Within renderloop_head the 
-Within the renderloop call updateMVP
 
 **/
 
