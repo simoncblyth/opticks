@@ -64,15 +64,15 @@ struct sframe
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
     static constexpr const float EPSILON = 1e-5 ; 
 
-    float4 ce = {} ;   // 0
-    quad   q1 = {} ; 
-    quad   q2 = {} ; 
-    quad   q3 = {} ; 
+    float4 ce = {} ;   // f4:center-extent           4x4:0
+    quad   q1 = {} ;   // i4:cegs
+    quad   q2 = {} ;   // i4:cegs.., f4:gridscale
+    quad   q3 = {} ;   // i4:midx,mord,gord,inst 
    
-    qat4   m2w = {} ;  // 1
-    qat4   w2m = {} ;  // 2
+    qat4   m2w = {} ;  // f4:inst transform          4x4:1
+    qat4   w2m = {} ;  // f4:iinst transform         4x4:2
 
-    quad4  aux = {} ;  // 3
+    quad4  aux = {} ;  // i4:ins,gas,sen_id,sen_idx  4x4:3
 
 
     // CAUTION : ABOVE HEAD PERSISTED BY MEMCPY INTO ARRAY,  BELOW TAIL ADDED AS METADATA
@@ -268,9 +268,8 @@ inline void sframe::zero()
     tr_w2m = nullptr ;
     ek = nullptr ; 
     ev = nullptr ; 
+    ekvid = nullptr ; 
 }
-
-
 
 
 inline bool sframe::is_zero() const 
@@ -441,10 +440,9 @@ inline void sframe::set_midx_mord_gord(int midx, int mord, int gord)
 inline int sframe::midx() const { return q3.i.x ; }
 inline int sframe::mord() const { return q3.i.y ; }
 inline int sframe::gord() const { return q3.i.z ; }
-
+inline int sframe::inst() const { return q3.i.w ; }
 
 inline void sframe::set_inst(int inst){ q3.i.w = inst ; }
-inline int sframe::inst() const { return q3.i.w ; }
 
 inline void sframe::set_identity(int ins, int gas, int sensor_identifier, int sensor_index ) // formerly set_ins_gas_ias
 {

@@ -1,6 +1,26 @@
 sframe_dtor_double_free_from_CSGOptiX__initFrame
 =================================================
 
+
+HMM, tis tedious to debug this... as need to rebuild sysrap+CSG
+-----------------------------------------------------------------
+
+Plan for fix:
+
+1. just leak transforms for now
+2. add an stree based equivalent frame creation 
+ 
+   * wanted to do this anyhow, as no need to get that info from CSG level  
+
+3. ensure they give equivalent results
+4. port to the stree based frame access
+5. reenable transform cleaning : if still double free
+   can debug with much faster cycle profiting from the move to stree. 
+
+
+Issue
+------
+
 (March 13, 2024)
     Hans points out a double free error in sframe dtor, a reversion in Opticks HEAD not in recent tags like v0.2.7::
 
@@ -80,6 +100,8 @@ While hit transformation needs rework to avoid use of sframe.h
 it will take a while before doing that.  So need a fix 
 for sframe that doesnt leak. 
 
+* ACTUALLY stree CAN DIRECTLY PROVIDE THE TRANSFORMS ALREADY 
+
 Looking at how sframe.h is being used in the failing cases, 
 I see that often copies are done with::
 
@@ -148,21 +170,129 @@ CSGNodeTest::
 
 
 
-HMM, tis tedious to debug this... as need to rebuild sysrap+CSG
------------------------------------------------------------------
 
-Plan for fix:
+stree access to inst transforms
+-----------------------------------
 
-1. just leak transforms for now
-2. add an stree based equivalent frame creation 
- 
-   * wanted to do this anyhow, as no need to get that info from CSG level  
+Full precision with identity extras added here::
 
-3. ensure they give equivalent results
-4. port to the stree based frame access
-5. reenable transform cleaning : if still double free
-   can debug with much faster cycle 
+    3034 inline void stree::add_inst(
+    3035     glm::tmat4x4<double>& tr_m2w,
+    3036     glm::tmat4x4<double>& tr_w2m,
+    3037     int gas_idx,
+    3038     int nidx )
+    3039 {
+    3040     assert( nidx > -1 && nidx < int(nds.size()) );
+    3041     const snode& nd = nds[nidx];    // structural volume node
+    3042 
+    3043     int ins_idx = int(inst.size()); // follow sqat4.h::setIdentity
+    3044 
+    3045     glm::tvec4<int64_t> col3 ;   // formerly uint64_t 
+    3046 
+    3047     col3.x = ins_idx ;            // formerly  +1 
+    3048     col3.y = gas_idx ;            // formerly  +1 
+    3049     col3.z = nd.sensor_id ;       // formerly ias_idx + 1 (which was always 1)
+    3050     col3.w = nd.sensor_index ;
+    3051 
+    3052     strid::Encode(tr_m2w, col3 );
+    3053     strid::Encode(tr_w2m, col3 );
+    3054 
+    3055     inst.push_back(tr_m2w);
+    3056     iinst.push_back(tr_w2m);
+    3057 
+    3058     inst_nidx.push_back(nidx);
+    3059 }
 
-of sframe profiting from the move to stree. 
+
+    3165 inline const glm::tmat4x4<double>* stree::get_inst(int idx) const
+    3166 {
+    3167     return idx > -1 && idx < int(inst.size()) ? &inst[idx] : nullptr ;
+    3168 }
+    3169 inline const glm::tmat4x4<double>* stree::get_iinst(int idx) const
+    3170 {
+    3171     return idx > -1 && idx < int(iinst.size()) ? &iinst[idx] : nullptr ;
+    3172 }
+    3173 
+    3174 inline const glm::tmat4x4<float>* stree::get_inst_f4(int idx) const
+    3175 {
+    3176     return idx > -1 && idx < int(inst_f4.size()) ? &inst_f4[idx] : nullptr ;
+    3177 }
+    3178 inline const glm::tmat4x4<float>* stree::get_iinst_f4(int idx) const
+    3179 {
+    3180     return idx > -1 && idx < int(iinst_f4.size()) ? &iinst_f4[idx] : nullptr ;
+    3181 }
+
+
+
+
+sframe not so prolific : it can be replaced fairly easily
+------------------------------------------------------------
+
+::
+
+    epsilon:opticks blyth$ opticks-fl sframe.h 
+    ./ana/framegensteps.py
+
+    ./CSG/CSGFoundry.cc
+    ./CSG/CSGTarget.cc
+    ./CSG/CSGSimtrace.hh
+
+    ./CSG/tests/CSGTargetTest.cc
+    ./CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.cc
+    ./CSG/tests/CSGFoundry_getFrame_Test.cc
+    ./CSG/tests/CSGFoundry_getFrameE_Test.cc
+
+    ./CSGOptiX/CSGOptiX.h
+    ./CSGOptiX/CSGOptiX.cc
+    ./CSGOptiX/cxr_min.sh
+    ./CSGOptiX/tests/CSGOptiXSimtraceTest.cc
+
+    ./sysrap/CMakeLists.txt
+    ./sysrap/SFrameGenstep.hh
+    ./sysrap/SFrameGenstep.cc
+    ./sysrap/CheckGeo.cc
+    ./sysrap/tests/CheckGeoTest.cc
+    ./sysrap/tests/sframe_test.cc
+    ./sysrap/tests/SFrameGenstep_MakeCenterExtentGensteps_Test.cc
+    ./sysrap/SGLM.h
+    ./sysrap/tests/SGLM_set_frame_test.sh
+    ./sysrap/sframe.h
+    ./sysrap/tests/sframeTest.cc
+    ./sysrap/SEvt.hh
+    ./sysrap/SEvt.cc
+    ./sysrap/SEvent.hh
+    ./sysrap/SEvent.cc
+    ./sysrap/SSimtrace.h
+
+    ./u4/U4App.h
+    ./cxr_min.sh
+    ./g4cx/tests/G4CXApp.h
+
+    ./examples/UseGeometryShader/UseGeometryShader.cc
+
+    ./ggeo/GGeo.cc
+    ./extg4/X4Simtrace.hh
+
+    epsilon:opticks blyth$ 
+
+
+
+
+TODO : frame from tree matching with frame from foundry 
+--------------------------------------------------------
+
+1. manual iteration to get close
+2. script/executable to load persisted frames and compare fully
+
+
+::
+
+    IIDX=20000 ~/o/sysrap/tests/stree_load_test.sh
+    OIPF=20000 ~/o/CSG/tests/CSGFoundry_getFrameE_Test.sh
+
+
+
+
+
 
 

@@ -1,3 +1,14 @@
+/**
+stree_load_test.cc
+===================
+
+::
+
+    ~/o/sysrap/tests/stree_load_test.sh  
+
+
+**/
+
 #include "ssys.h"
 #include "stree.h"
 #include "stra.h"
@@ -17,8 +28,9 @@ struct stree_load_test
 
     void get_combined_transform(int LVID, int NDID  );  
     void get_inst(int idx) const ; 
-    void get_instance_frame(int idx) const ; 
+    void get_frame_f4(int idx) const ; 
 
+    int main(); 
 };
 
 inline stree_load_test::stree_load_test(const stree* st_) 
@@ -138,22 +150,47 @@ inline void stree_load_test::get_inst(int idx) const
     if(iinst) std::cout << "iinst" << std::endl << strid::Desc<double,int64_t>(*iinst) << std::endl ; 
     if(inst_f4)  std::cout << "inst_f4"  << std::endl << strid::Desc<float,int32_t>(*inst_f4) << std::endl ; 
     if(iinst_f4) std::cout << "iinst_f4" << std::endl << strid::Desc<float,int32_t>(*iinst_f4) << std::endl ; 
-
-
-
-    
-
 }
 
-
-/**
-HMM: sframe is qat4 (float) based, need templated ? 
-**/
-inline void stree_load_test::get_instance_frame(int idx) const 
+inline void stree_load_test::get_frame_f4(int idx) const
 {
+    sframe fr = {} ; 
+    st->get_frame_f4( fr, idx );  
+
+    std::cout 
+       << "stree_load_test::get_frame_f4" 
+       << " idx " << idx 
+       << std::endl 
+       << fr.desc()
+       << std::endl 
+       ;
+    
 }
 
 
+
+inline int stree_load_test::main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "get_frame_f4"); 
+
+    int LVID = ssys::getenvint("LVID",  0); 
+    int NDID = ssys::getenvint("NDID",  0); 
+    int IIDX = ssys::getenvint("IIDX",  0); 
+
+    if(strcmp(TEST, "get_combined_transform")==0)
+    {
+        get_combined_transform(LVID, NDID );  
+    }
+    else if(strcmp(TEST, "get_inst") == 0)
+    {
+        get_inst(IIDX) ; 
+    }
+    else if(strcmp(TEST, "get_frame_f4") == 0)
+    {
+        get_frame_f4(IIDX); 
+    }
+    return 0 ; 
+}
 
 
 int main(int argc, char** argv)
@@ -163,13 +200,6 @@ int main(int argc, char** argv)
     if( rc != 0 ) return rc ; 
     std::cout << st.desc() ; 
 
-    int LVID = ssys::getenvint("LVID",  0); 
-    int NDID = ssys::getenvint("NDID",  0); 
-    int IIDX = ssys::getenvint("IIDX",  0); 
-
     stree_load_test test(&st); 
-    //test.get_combined_transform(LVID, NDID );  
-    test.get_inst(IIDX) ; 
-
-    return 0 ; 
+    return test.main();  
 }

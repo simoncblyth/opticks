@@ -229,6 +229,9 @@ When SSim not in use can also use::
 #include "snam.h"
 #include "SBnd.h"
 
+// transitional ? 
+#include "sframe.h"
+
 
 
 struct stree_standin
@@ -567,6 +570,9 @@ struct stree
     const glm::tmat4x4<double>* get_iinst(int idx) const ; 
     const glm::tmat4x4<float>*  get_inst_f4(int idx) const ; 
     const glm::tmat4x4<float>*  get_iinst_f4(int idx) const ; 
+
+    // transitional method for matching with CSGFoundry::getFrame
+    void get_frame_f4( sframe& fr, int idx ) const ; 
 
 
     void get_mtindex_range(int& mn, int& mx ) const ; 
@@ -3181,13 +3187,28 @@ inline const glm::tmat4x4<float>* stree::get_iinst_f4(int idx) const
 }
 
 
+/**
+stree::get_frame_f4
+--------------------
 
+transitional method to match with CSGFoundry::getFrame 
 
+See ~/o/notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
 
+**/
 
+inline void stree::get_frame_f4( sframe& fr, int idx ) const
+{
+    typedef glm::tmat4x4<float> M44 ; 
 
+    const M44* _m2w = get_inst_f4(idx); 
+    const M44* _w2m = get_iinst_f4(idx); 
 
+    assert( sizeof(M44) == sizeof(fr.m2w ) ); 
+    memcpy( fr.m2w.data(), _m2w , sizeof(M44) ); 
+    memcpy( fr.w2m.data(), _w2m , sizeof(M44) ); 
 
+}
 
 
 /**

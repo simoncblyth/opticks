@@ -1,4 +1,6 @@
 
+#include <cstdint>
+#include <sstream>
 #include <iostream>
 
 #include <vector>
@@ -87,11 +89,62 @@ void test_vector_of_mat4()
 }
 
 
+template<typename U, typename I, typename F>
+union TV4 
+{ 
+    glm::tvec4<U> u; 
+    glm::tvec4<I>  i; 
+    glm::tvec4<F>    f; 
+
+    std::string desc() const ; 
+}; 
+
+
+template<typename U, typename I, typename F>
+inline std::string TV4<U,I,F>::desc() const
+{
+    std::stringstream ss ; 
+    ss << "tv4::desc"
+        << std::endl 
+        << " u " << glm::to_string( u )
+        << std::endl 
+        << " i " << glm::to_string( i )
+        << std::endl 
+        << " f " << glm::to_string( f )
+        << std::endl 
+        ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+void test_tv4_union()
+{
+    typedef TV4<uint32_t,int32_t,float> tv4_32 ; 
+    tv4_32 q0 ; 
+    q0.u = {1, 2, 3, 4} ; 
+    std::cout << q0.desc(); 
+
+    q0.f.w = 42.f ; 
+    std::cout << q0.desc(); 
+
+    typedef TV4<uint64_t,int64_t,double> tv4_64 ; 
+    tv4_64 q1 ; 
+    q1.u = {1, 2, 3, 4} ; 
+    std::cout << q1.desc(); 
+
+    q1.f.w = 42. ; 
+    std::cout << q1.desc(); 
+}
+
+
 int main(int argc, char** argv)
 {
-    //test_planting_uint_in_mat4(); 
-
+    /*
+    test_planting_uint_in_mat4(); 
     test_vector_of_mat4(); 
+    */
+    test_tv4_union(); 
 
     return 0 ; 
 }

@@ -23,6 +23,11 @@ C++
 -----
 
 
+::
+
+    ~/o/sysrap/tests/stree_load_test.sh 
+
+
     epsilon:~ blyth$ st
     /Users/blyth/opticks/sysrap/tests
     epsilon:tests blyth$ 
