@@ -3417,7 +3417,6 @@ sframe CSGFoundry::getFrameE() const
     sframe fr = {} ; 
 
 
-
     if(ssys::getenvbool("INST"))
     {
         int INST = ssys::getenvint("INST", 0); 

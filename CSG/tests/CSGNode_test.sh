@@ -1,11 +1,25 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+CSGNode_test.sh
+=================
+
+::
+
+   ~/o/CSG/tests/CSGNode_test.sh
+
+EOU
+}
 
 name=CSGNode_test
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 defarg="build_run"
 arg=${1:-$defarg}
@@ -15,7 +29,7 @@ if [ "${arg/build}" != "$arg" ]; then
     gcc $name.cc \
          -g \
          -I.. \
-         -I/usr/local/cuda/include \
+         -I$CUDA_PREFIX/include \
          -I$OPTICKS_PREFIX/externals/plog/include \
          -I$OPTICKS_PREFIX/externals/glm/glm \
          -I$OPTICKS_PREFIX/include/SysRap \

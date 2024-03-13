@@ -88,7 +88,10 @@ struct sframe
     const char* ekvid = nullptr ; 
 
     sframe(); 
+    sframe(const sframe& other); 
     ~sframe(); 
+    void cleanup(); 
+
     void zero() ; 
     bool is_zero() const ; 
 
@@ -179,14 +182,74 @@ struct sframe
 
 // ctor
 inline sframe::sframe()
+    :
+    tr_m2w(nullptr),
+    tr_w2m(nullptr)
 {
+#ifdef SFRAME_DEBUG
+    printf("//sframe::sframe ctor NULL: tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
+#endif
 }
 
-// dtor
+/**
+sframe copy ctor
+--------------------
+
+notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
+
+Note that a simple copy of non-nullptr transform pointers without the "prepare" 
+would cause double ownership of tr_m2w tr_w2m and subsequent dtor double free errors.
+
+**/
+
+// copy ctor
+inline sframe::sframe(const sframe& other)
+{
+    ce = other.ce ; 
+    q1 = other.q1 ; 
+    q2 = other.q2 ; 
+    q3 = other.q3 ; 
+    m2w = other.m2w ; 
+    w2m = other.w2m ; 
+    aux = other.aux ; 
+
+    frs = other.frs ? strdup(other.frs) : nullptr ; 
+
+    tr_m2w = nullptr ; 
+    tr_w2m = nullptr ; 
+    prepare();   // set the above from the m2w, w2m
+
+    ek = other.ek ? strdup(other.ek) : nullptr ; 
+    ev = other.ev ? strdup(other.ev) : nullptr ; 
+    ekvid = other.ekvid ? strdup(other.ekvid) : nullptr ; 
+
+#ifdef SFRAME_DEBUG
+    printf("//sframe.copy.ctor NEW: tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
+#endif
+}
+
+
+/**
+sframe::~sframe dtor
+----------------------
+
+**/
 inline sframe::~sframe()
 {
+#ifdef SFRAME_DEBUG
+    printf("//sframe::~sframe tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
+#endif
+    //cleanup();  // JUST LEAKING FOR NOW : SEE PLAN IN notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
+}
+
+inline void sframe::cleanup()
+{
+    free((void*)frs); 
     delete tr_m2w ; 
     delete tr_w2m ; 
+    free((void*)ek);
+    free((void*)ev);
+    free((void*)ekvid); 
 }
 
 
