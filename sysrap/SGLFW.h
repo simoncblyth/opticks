@@ -118,6 +118,7 @@ struct SGLFW : public SCMD
 
     void createProgram(const char* _dir); 
     void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
+    void useProgram(); 
 
     void enableAttrib( const char* name, const char* spec, bool dump=false ); 
     GLint getUniformLocation(const char* name) const ; 
@@ -654,9 +655,13 @@ inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geo
     glAttachShader(program, fragment_shader);  SGLFW__check(__FILE__, __LINE__);
     glLinkProgram(program);                    SGLFW__check(__FILE__, __LINE__);
 
-    glUseProgram(program);
 
     std::cout << "]SGLFW::createProgram" << std::endl ; 
+}
+
+inline void SGLFW::useProgram()
+{
+    glUseProgram(program);
 }
 
 
@@ -762,7 +767,7 @@ need to be done before then.
 
 inline void SGLFW::updateMVP()
 {
-    assert( mvp_location > -1 ); 
+    if( mvp_location <= -1 ) return ; 
     assert( mvp != nullptr ); 
     UniformMatrix4fv(mvp_location, mvp); 
 }

@@ -267,27 +267,76 @@ See::
 
 struct SGLFW_Buffer
 {
+    int num_bytes ; 
+    const void* data ;
+    GLenum target ;
+    GLenum usage ;
     GLuint id ; 
+
     SGLFW_Buffer( int num_bytes, const void* data, GLenum target, GLenum usage  ); 
+
+    void bind(); 
+    void upload(); 
+    void unbind(); 
 };
 
-inline SGLFW_Buffer::SGLFW_Buffer( int num_bytes, const void* data , GLenum target, GLenum usage )
+inline SGLFW_Buffer::SGLFW_Buffer( int num_bytes_, const void* data_ , GLenum target_, GLenum usage_ )
+    :
+    num_bytes(num_bytes_),
+    data(data_),
+    target(target_),
+    usage(usage_),
+    id(0)
 {
     glGenBuffers(1, &id );                         SGLFW__check(__FILE__, __LINE__);
+}
+
+inline void SGLFW_Buffer::bind()
+{
     glBindBuffer(target, id);                      SGLFW__check(__FILE__, __LINE__);     
+}
+
+inline void SGLFW_Buffer::upload()
+{
     glBufferData(target, num_bytes, data, usage ); SGLFW__check(__FILE__, __LINE__);
 }
+
+inline void SGLFW_Buffer::unbind()
+{
+    glBindBuffer(target, 0);                      SGLFW__check(__FILE__, __LINE__);     
+}
+
+
+
+
+
 
 struct SGLFW_VAO
 {
     GLuint id ; 
+
     SGLFW_VAO(); 
+    void bind(); 
+    void unbind(); 
 };
 
 inline SGLFW_VAO::SGLFW_VAO()
 {
     glGenVertexArrays (1, &id);  SGLFW__check(__FILE__, __LINE__);
+}
+inline void SGLFW_VAO::bind()
+{
     glBindVertexArray(id);        SGLFW__check(__FILE__, __LINE__);
 }
+inline void SGLFW_VAO::unbind()
+{
+    glBindVertexArray(0);        SGLFW__check(__FILE__, __LINE__);
+}
+
+
+
+
+
+
 
 

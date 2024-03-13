@@ -267,7 +267,7 @@ SGLDisplay::display
 Arranges for the PBO buffer contents to be viewed as a texture
 and accessed via samplers in shaders.
 
-1. bind GL_FRAMEBUFFER 
+1. bind GL_FRAMEBUFFER to 0 (break any bind, return to screen rendering)
 2. set viewport to (framebuf_res_x, framebuf_res_y) 
 3. bind GL_TEXTURE_2D m_render_tex
 4. configure GL_PIXEL_UNPACK_BUFFER unpacking 
@@ -309,9 +309,13 @@ inline void SGLDisplay::display(
         const uint32_t pbo
         ) 
 {
-    printf("[ SGLDisplay::display %zu \n", m_count ); 
+    printf("[ SGLDisplay::display count %zu framebuf_res_x %d framebuf_res_y %d  \n", m_count,framebuf_res_x, framebuf_res_y  ); 
 
-    GL_CHECK( glBindFramebuffer( GL_FRAMEBUFFER, 0 ) );
+    GL_CHECK( glBindFramebuffer( GL_FRAMEBUFFER, 0 ) ); 
+    // "FBO" name:0 means break the bind : so that typically 
+    // means switch to default rendering to the screen 
+    // https://learnopengl.com/Advanced-OpenGL/Framebuffers
+
     GL_CHECK( glViewport( 0, 0, framebuf_res_x, framebuf_res_y ) );
     GL_CHECK( glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ) );
     GL_CHECK( glUseProgram( m_program ) );

@@ -9,7 +9,10 @@ __global__ void _SGLFW__fillOutputBuffer( uchar4* output_buffer, int32_t width, 
     
     int32_t index = iy * width + ix ;  
 
-    output_buffer[index] = make_uchar4( 0x00, 0xff, 0x00, 0xff ); 
+    //output_buffer[index] = make_uchar4( 0x00, 0xff, 0x00, 0xff );   // green 
+    //output_buffer[index] = make_uchar4( 0xff, 0x00, 0x00, 0xff );   // red
+    output_buffer[index] = make_uchar4( 0x00, 0x00, 0xff, 0xff );   // blue
+
 }
 
 extern void SGLFW__fillOutputBuffer( dim3 numBlocks, dim3 threadsPerBlock, uchar4* d_output_buffer, int32_t width, int32_t height )

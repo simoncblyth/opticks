@@ -29,40 +29,46 @@ See also::
 int main()
 {
     SMesh* mesh = SMesh::Load("$MESH_FOLD"); 
+    int num = ssys::getenvint("NUM",mesh->indices_num) ; 
+    int off = ssys::getenvint("OFF",mesh->indices_offset) ; 
+
     sframe fr ; fr.ce = make_float4(mesh->ce.x, mesh->ce.y, mesh->ce.z, mesh->ce.w ); 
     SGLM gm ; 
     //gm.setLookRotation( 45.f , {1.f, 1.f, 1.f } );  // angleAxis quaternion 
     gm.set_frame(fr) ; std::cout << gm.desc() ;  // HMM: set_ce ? avoid frame when not needed ?
 
     SGLFW gl(gm, mesh->name ); 
+
+
+    // HMM: need separate object for the program and the gl 
+    // to easily not use the program 
+
     gl.createProgram("$SHADER_FOLD"); 
-
-    float* MVP_ptr = gm.MVP_ptr ;
-    //float* MVP_ptr = gm.IDENTITY_ptr ;
-    //float* MVP_ptr = gm.MV_ptr ;
-
-    gl.locateMVP("MVP",  MVP_ptr ); 
-
-    //glEnable(GL_CULL_FACE); 
-    //glCullFace(GL_FRONT);  
+    gl.useProgram(); 
+    gl.locateMVP("MVP",  gm.MVP_ptr );  // <-- 
 
 
     SGLFW_VAO vao ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
+    vao.bind(); 
+
     SGLFW_Buffer ibuf( mesh->tri->arr_bytes(), mesh->tri->cvalues<int>()  , GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
+    ibuf.bind();
+    ibuf.upload(); 
 
     SGLFW_Buffer vbuf( mesh->vtx->arr_bytes(), mesh->vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+    vbuf.bind();
+    vbuf.upload(); 
     gl.enableAttrib( "vPos", "3,GL_FLOAT,GL_FALSE,12,0,false" );  // 3:vec3, 12:byte_stride 0:byte_offet
 
     SGLFW_Buffer nbuf( mesh->nrm->arr_bytes(), mesh->nrm->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+    nbuf.bind();
+    nbuf.upload(); 
     gl.enableAttrib( "vNrm", "3,GL_FLOAT,GL_FALSE,12,0,false" ); 
 
     // NB: careful with the ordering of the above or the OpenGL state machine will bite you : 
     // the vPos and vNrm attribs needs to ne enabled after the appropriate buffer is made THE active GL_ARRAY_BUFFER
 
-    int num = ssys::getenvint("NUM",mesh->indices_num) ; 
-    int off = ssys::getenvint("OFF",mesh->indices_offset) ; 
-
-
+ 
     while(gl.renderloop_proceed())
     {
         if( gl.toggle.cuda )
@@ -73,6 +79,9 @@ int main()
         else
         {
              gl.renderloop_head();  // clears 
+             gl.useProgram(); 
+             vao.bind(); 
+
              glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * off ));
         }
 
@@ -81,4 +90,11 @@ int main()
     }
     exit(EXIT_SUCCESS);
 }
+
+
+/**
+
+ HMM : CAN DO ONE OR THE OTHER : CANNOT FLIP BETWEEN 
+
+**/
 
