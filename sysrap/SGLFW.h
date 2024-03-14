@@ -26,12 +26,6 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 
 #include "GL_CHECK.h"
 
-#ifdef WITH_CUDA_GL_INTEROP
-#include "SCU.h"
-#include "SCUDAOutputBuffer.h"
-#include "SGLDisplay.h"
-#endif
-
 #define GLEQ_IMPLEMENTATION
 #include "gleq.h"
 
@@ -40,31 +34,23 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 #include "NPU.hh"
 
 #include "SGLFW_Extras.h"
+#include "SGLFW_Program.h"
+#ifdef WITH_CUDA_GL_INTEROP
+#include "SGLFW_CUDA.h"
+#endif
+
 
 struct SGLFW : public SCMD 
 {
     static constexpr const char* TITLE = "SGLFW" ; 
-    static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;  
 
     SGLM& gm ; 
     int width ; 
     int height ; 
-#ifdef WITH_CUDA_GL_INTEROP
-    SCUDAOutputBuffer<uchar4>* output_buffer ; 
-    SGLDisplay* gl_display ; 
-#endif
+
     const char* title ; 
-
-
     GLFWwindow* window ; 
 
-    const char* vertex_shader_text ;
-    const char* geometry_shader_text ; 
-    const char* fragment_shader_text ;
-    GLuint program ; 
-    GLint  mvp_location ; 
-    const float* mvp ; 
- 
     int count ; 
     int renderlooplimit ; 
     bool exitloop ; 
@@ -86,17 +72,14 @@ struct SGLFW : public SCMD
     bool renderloop_proceed(); 
     void renderloop_exit(); 
     void renderloop_head(); 
-    void renderloop_update_state(); 
+    void renderloop_listen(); 
     void renderloop_tail(); 
 
-    void listen(); 
     void handle_event(GLEQevent& event); 
     void key_pressed(unsigned key); 
     void key_released(unsigned key); 
-
     void cursor_moved(int ix, int iy); 
     void cursor_moved_action(); 
-
     int command(const char* cmd); 
     static std::string FormCommand(const char* token, float value); 
 
@@ -109,36 +92,9 @@ struct SGLFW : public SCMD
 
     SGLFW(SGLM& gm, const char* title=nullptr ); 
     virtual ~SGLFW(); 
+    static void Error_callback(int error, const char* description); 
     void init(); 
 
-#ifdef WITH_CUDA_GL_INTEROP
-    void fillOutputBuffer(); 
-    void displayOutputBuffer();
-#endif
-
-    void createProgram(const char* _dir); 
-    void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
-    void useProgram(); 
-
-    void enableAttrib( const char* name, const char* spec, bool dump=false ); 
-    GLint getUniformLocation(const char* name) const ; 
-    GLint findUniformLocation(const char* keys, char delim ) const ; 
-    void locateMVP(const char* key, const float* mvp ); 
-    void updateMVP();  // called from renderloop_head
-
-    template<typename T>
-    static std::string Desc(const T* tt, int num); 
-
-    void UniformMatrix4fv( GLint loc, const float* vv ); 
-    void Uniform4fv(       GLint loc, const float* vv ); 
-
-
-    GLint getAttribLocation(const char* name) const ; 
-
-    static void check(const char* path, int line); 
-    static void print_shader_info_log(unsigned id); 
-    static void error_callback(int error, const char* description); 
-    //static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods); 
 }; 
 
 inline bool SGLFW::renderloop_proceed()
@@ -161,13 +117,7 @@ inline void SGLFW::renderloop_head()
     if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
 }
 
-inline void SGLFW::renderloop_update_state()
-{
-    listen(); 
-    updateMVP(); 
-}
-
-inline void SGLFW::listen()
+inline void SGLFW::renderloop_listen()
 {
     GLEQevent event;
     while (gleqNextEvent(&event))
@@ -413,18 +363,8 @@ inline SGLFW::SGLFW(SGLM& _gm, const char* title_ )
     gm(_gm),
     width(gm.Width()),
     height(gm.Height()),
-#ifdef WITH_CUDA_GL_INTEROP
-    output_buffer( nullptr ), 
-    gl_display( nullptr ), 
-#endif
     title(title_ ? strdup(title_) : TITLE),
     window(nullptr),
-    vertex_shader_text(nullptr),
-    geometry_shader_text(nullptr),
-    fragment_shader_text(nullptr),
-    program(0),
-    mvp_location(-1),
-    mvp(nullptr),
     count(0),
     renderlooplimit(20000), 
     exitloop(false),
@@ -444,6 +384,11 @@ inline SGLFW::~SGLFW()
 {
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+inline void SGLFW::Error_callback(int error, const char* description) // static
+{
+    fprintf(stderr, "SGLFW::Error_callback: %s\n", description);
 }
 
 /**
@@ -470,7 +415,7 @@ Example responses::
 
 inline void SGLFW::init()
 {
-    glfwSetErrorCallback(SGLFW::error_callback);
+    glfwSetErrorCallback(SGLFW::Error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
 
     gleqInit();
@@ -532,310 +477,5 @@ inline void SGLFW::init()
     int interval = 1 ; // The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.
     glfwSwapInterval(interval);
 
-
-#ifdef WITH_CUDA_GL_INTEROP
-    output_buffer = new SCUDAOutputBuffer<uchar4>( SCUDAOutputBufferType::GL_INTEROP, width, height ) ; 
-    std::cout << output_buffer->desc() ; 
-    gl_display = new SGLDisplay ; 
-    std::cout << gl_display->desc() ; 
-#endif
 }
-
-#ifdef WITH_CUDA_GL_INTEROP
-
-extern void SGLFW__fillOutputBuffer( dim3 numBlocks, dim3 threadsPerBlock, uchar4* output_buffer, int width, int height ); 
-inline void SGLFW::fillOutputBuffer()
-{
-    dim3 numBlocks ; 
-    dim3 threadsPerBlock ; 
-    SCU::ConfigureLaunch2D(numBlocks, threadsPerBlock, output_buffer->width(), output_buffer->height() );   
-    SGLFW__fillOutputBuffer(numBlocks, threadsPerBlock, 
-         output_buffer->map(), 
-         output_buffer->width(), 
-         output_buffer->height() );           
-
-    output_buffer->unmap();
-    CUDA_SYNC_CHECK();
-}
-
-inline void SGLFW::displayOutputBuffer()
-{
-    // Display
-    int framebuf_res_x = 0;   // The display's resolution (could be HDPI res)
-    int framebuf_res_y = 0;   //  
-    glfwGetFramebufferSize( window, &framebuf_res_x, &framebuf_res_y );
-
-    gl_display->display(
-            output_buffer->width(),
-            output_buffer->height(),
-            framebuf_res_x,
-            framebuf_res_y,
-            output_buffer->getPBO()
-            );  
-}
-#endif
-
-inline void SGLFW::createProgram(const char* _dir)
-{
-    const char* dir = U::Resolve(_dir); 
-
-    vertex_shader_text = U::ReadString(dir, "vert.glsl"); 
-    geometry_shader_text = U::ReadString(dir, "geom.glsl"); 
-    fragment_shader_text = U::ReadString(dir, "frag.glsl"); 
-
-    std::cout 
-        << "SGLFW::createProgram" 
-        << " _dir " << ( _dir ? _dir : "-" )
-        << " dir "  << (  dir ?  dir : "-" )
-        << " vertex_shader_text " << ( vertex_shader_text ? "YES" : "NO" ) 
-        << " geometry_shader_text " << ( geometry_shader_text ? "YES" : "NO" ) 
-        << " fragment_shader_text " << ( fragment_shader_text ? "YES" : "NO" ) 
-        << std::endl 
-        ;
-
-    createProgram( vertex_shader_text, geometry_shader_text, fragment_shader_text ); 
-}
-
-
-/**
-SGLFW::createProgram
----------------------
-
-Compiles and links shader strings into a program referred from integer *program* 
-
-On macOS with the below get "runtime error, unsupported version"::
-
-    #version 460 core
-
-On macOS with the below::
-
-    #version 410 core
-
-note that a trailing semicolon after the main curly brackets gives a syntax error, 
-that did not see on Linux with "#version 460 core"
-
-**/
-
-inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text )
-{
-    std::cout << "[SGLFW::createProgram" << std::endl ; 
-    //std::cout << " vertex_shader_text " << std::endl << vertex_shader_text << std::endl ;
-    //std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ;
-    //std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ;
-
-    int params = -1;
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW__check(__FILE__, __LINE__);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                SGLFW__check(__FILE__, __LINE__);
-    glCompileShader(vertex_shader);                                             SGLFW__check(__FILE__, __LINE__);
-    glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) SGLFW::print_shader_info_log(vertex_shader) ;
-
-    GLuint geometry_shader = 0 ;
-    if( geometry_shader_text )
-    {
-        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       SGLFW__check(__FILE__, __LINE__);
-        glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
-        glCompileShader(geometry_shader);                                           SGLFW__check(__FILE__, __LINE__);
-        glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
-        if (GL_TRUE != params) SGLFW::print_shader_info_log(geometry_shader) ;
-    }
-
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                SGLFW__check(__FILE__, __LINE__);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
-    glCompileShader(fragment_shader);                                           SGLFW__check(__FILE__, __LINE__);
-    glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) SGLFW::print_shader_info_log(fragment_shader) ;
-
-    program = glCreateProgram();               SGLFW__check(__FILE__, __LINE__);
-    glAttachShader(program, vertex_shader);    SGLFW__check(__FILE__, __LINE__);
-    if( geometry_shader > 0 )
-    { 
-        glAttachShader(program, geometry_shader); SGLFW__check(__FILE__, __LINE__);
-    }
-    glAttachShader(program, fragment_shader);  SGLFW__check(__FILE__, __LINE__);
-    glLinkProgram(program);                    SGLFW__check(__FILE__, __LINE__);
-
-
-    std::cout << "]SGLFW::createProgram" << std::endl ; 
-}
-
-inline void SGLFW::useProgram()
-{
-    glUseProgram(program);
-}
-
-
-/**
-SGLFW::enableAttrib
---------------------
-
-Array attribute : connecting values from the array with attribute symbol in the shader program 
-
-Example rpos spec "4,GL_FLOAT,GL_FALSE,64,0,false"
-
-
-NB when handling multiple buffers note that glVertexAttribPointer
-binds to the buffer object bound to GL_ARRAY_BUFFER when called. 
-So that means have to repeatedly call this again after switching
-buffers ? 
-
-* https://stackoverflow.com/questions/14249634/opengl-vaos-and-multiple-buffers 
-* https://antongerdelan.net/opengl/vertexbuffers.html
-
-**/
-
-inline void SGLFW::enableAttrib( const char* name, const char* spec, bool dump )
-{
-    SGLFW_Attrib att(name, spec); 
-
-    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
-
-    if(dump) std::cout << "SGLFW::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
-
-    glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__);
-
-    assert( att.integer_attribute == false ); 
-
-    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__);
-}
-
-
-inline GLint SGLFW::getUniformLocation(const char* name) const 
-{
-    GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
-    return loc ; 
-}
-/**
-SGLFW::findUniformLocation
----------------------------
-
-Returns the location int for the first uniform key found in the 
-shader program 
-
-**/
-
-inline GLint SGLFW::findUniformLocation(const char* keys, char delim ) const
-{
-    std::vector<std::string> kk ; 
-
-    std::stringstream ss; 
-    ss.str(keys)  ;
-    std::string key;
-    while (std::getline(ss, key, delim)) kk.push_back(key) ; 
- 
-    GLint loc = -1 ; 
-
-    int num_key = kk.size(); 
-    for(int i=0 ; i < num_key ; i++)
-    {
-        const char* k = kk[i].c_str(); 
-        loc = getUniformLocation(k); 
-        if(loc > -1) break ;  
-    }
-    return loc ; 
-}
-
-
-/**
-SGLFW::locateMVP
-------------------
-
-Does not update GPU side, invoke SGLFW::locateMVP 
-prior to the renderloop after shader program is 
-setup and the GLM maths has been instanciated 
-hence giving the pointer to the world2clip matrix
-address. 
-
-**/
-
-inline void SGLFW::locateMVP(const char* key, const float* mvp_ )
-{ 
-    mvp_location = getUniformLocation(key); 
-    assert( mvp_location > -1 ); 
-    mvp = mvp_ ; 
-}
-
-/**
-SGLFW::updateMVP
-------------------
-
-When mvp_location is > -1 this is called from 
-the end of renderloop_head so any matrix updates
-need to be done before then. 
-
-**/
-
-inline void SGLFW::updateMVP()
-{
-    if( mvp_location <= -1 ) return ; 
-    assert( mvp != nullptr ); 
-    UniformMatrix4fv(mvp_location, mvp); 
-}
-
-template<typename T>
-inline std::string SGLFW::Desc(const T* tt, int num) // static
-{
-    std::stringstream ss ; 
-    for(int i=0 ; i < num ; i++) 
-        ss  
-            << ( i % 4 == 0 && num > 4 ? ".\n" : "" ) 
-            << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[i] 
-            << ( i == num-1 && num > 4 ? ".\n" : "" ) 
-            ;   
-
-    std::string s = ss.str(); 
-    return s ; 
-}
-
-inline void SGLFW::UniformMatrix4fv( GLint loc, const float* vv )
-{
-    if(dump) std::cout 
-        << "SGLFW::UniformMatrix4fv" 
-        << " loc " << loc 
-        << std::endl 
-        << Desc(vv, 16) 
-        << std::endl
-        ;
-
-    assert( loc > -1 ); 
-    glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)vv );
-}    
-
-inline void SGLFW::Uniform4fv( GLint loc, const float* vv )
-{
-    if(dump) std::cout 
-        << "SGLFW::Uniform4fv" 
-        << " loc " << loc 
-        << std::endl 
-        << Desc(vv, 4) 
-        << std::endl
-        ;
-
-    assert( loc > -1 ); 
-    glUniform4fv(loc, 1, (const GLfloat*)vv );
-}    
-
-inline GLint SGLFW::getAttribLocation(const char* name) const 
-{
-    GLint loc = glGetAttribLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
-    return loc ; 
-}
-
-inline void SGLFW::print_shader_info_log(unsigned id)  // static
-{
-    int max_length = 2048;
-    int actual_length = 0;
-    char log[2048];
-
-    glGetShaderInfoLog(id, max_length, &actual_length, log);
-    SGLFW__check(__FILE__, __LINE__ );  
-
-    printf("SGLFW::print_shader_info_log GL index %u:\n%s\n", id, log);
-    assert(0);
-}
-inline void SGLFW::error_callback(int error, const char* description) // static
-{
-    fprintf(stderr, "SGLFW::error_callback: %s\n", description);
-}
-
 

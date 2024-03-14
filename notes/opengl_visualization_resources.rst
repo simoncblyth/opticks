@@ -27,3 +27,23 @@ Debugging
 * https://learnopengl.com/In-Practice/Debugging
 
 
+Rendering Multiple Meshes
+---------------------------
+
+* https://www.reddit.com/r/opengl/comments/n9eagu/how_to_render_multiple_meshes_in_opengl/
+
+Depending on the size of your models, you may be able to package all of them
+into a single VBO and a single IBO. Then you can format a draw buffer and use
+glMultiDrawElementsIndirect to render every single object with a single draw
+call. That would probably be the most efficient way to do this.
+
+But simply instancing all objects of the same model together, thus using 3-8
+draw calls will probably be close to the same real world performance and
+requires less work to set up :
+
+
+
+* https://www.spacesimulator.net/tutorials/OpenGL_matrices_tutorial_3_3.html
+
+
+

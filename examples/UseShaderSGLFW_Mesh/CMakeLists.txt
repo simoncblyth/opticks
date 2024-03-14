@@ -23,7 +23,7 @@ echo_target_std(Opticks::OpticksGLFW)
 
 set(SOURCES
    ${name}.cc
-   SGLFW__fillOutputBuffer.cu
+   SGLFW_CUDA__fillOutputBuffer.cu
 )
 
 #[=[

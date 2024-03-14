@@ -29,8 +29,6 @@ See also::
 int main()
 {
     SMesh* mesh = SMesh::Load("$MESH_FOLD"); 
-    int num = ssys::getenvint("NUM",mesh->indices_num) ; 
-    int off = ssys::getenvint("OFF",mesh->indices_offset) ; 
 
     sframe fr ; fr.ce = make_float4(mesh->ce.x, mesh->ce.y, mesh->ce.z, mesh->ce.w ); 
     SGLM gm ; 
@@ -39,13 +37,13 @@ int main()
 
     SGLFW gl(gm, mesh->name ); 
 
+#ifdef WITH_CUDA_GL_INTEROP 
+    SGLFW_CUDA cuda(gm) ; 
+#endif
 
-    // HMM: need separate object for the program and the gl 
-    // to easily not use the program 
-
-    gl.createProgram("$SHADER_FOLD"); 
-    gl.useProgram(); 
-    gl.locateMVP("MVP",  gm.MVP_ptr );  // <-- 
+    SGLFW_Program prog("$SHADER_FOLD");
+    prog.use(); 
+    prog.locateMVP("MVP",  gm.MVP_ptr );  
 
 
     SGLFW_VAO vao ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
@@ -58,43 +56,47 @@ int main()
     SGLFW_Buffer vbuf( mesh->vtx->arr_bytes(), mesh->vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
     vbuf.bind();
     vbuf.upload(); 
-    gl.enableAttrib( "vPos", "3,GL_FLOAT,GL_FALSE,12,0,false" );  // 3:vec3, 12:byte_stride 0:byte_offet
 
     SGLFW_Buffer nbuf( mesh->nrm->arr_bytes(), mesh->nrm->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
     nbuf.bind();
     nbuf.upload(); 
-    gl.enableAttrib( "vNrm", "3,GL_FLOAT,GL_FALSE,12,0,false" ); 
 
-    // NB: careful with the ordering of the above or the OpenGL state machine will bite you : 
-    // the vPos and vNrm attribs needs to ne enabled after the appropriate buffer is made THE active GL_ARRAY_BUFFER
 
- 
     while(gl.renderloop_proceed())
     {
         if( gl.toggle.cuda )
         {
-             gl.fillOutputBuffer(); 
-             gl.displayOutputBuffer(); 
+#ifdef WITH_CUDA_GL_INTEROP 
+             cuda.fillOutputBuffer(); 
+             cuda.displayOutputBuffer(gl.window);
+#endif
         }
         else
         {
              gl.renderloop_head();  // clears 
-             gl.useProgram(); 
+             prog.use(); 
              vao.bind(); 
 
-             glDrawElements(GL_TRIANGLES, num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * off ));
-        }
+             vbuf.bind();
+             prog.enableAttrib( "vPos", "3,GL_FLOAT,GL_FALSE,12,0,false" );  // 3:vec3, 12:byte_stride 0:byte_offet
 
-        gl.renderloop_update_state(); // listens for inputs calls gl.updateMVP
-        gl.renderloop_tail();        // swap buffers, poll events
+             nbuf.bind();
+             prog.enableAttrib( "vNrm", "3,GL_FLOAT,GL_FALSE,12,0,false" ); 
+
+             // NB: careful with the ordering of the above or the OpenGL state machine will bite you : 
+             // the vPos and vNrm attribs needs to ne enabled after the appropriate buffer is made THE active GL_ARRAY_BUFFER
+
+             ibuf.bind();
+
+             prog.updateMVP();
+
+             glDrawElements(GL_TRIANGLES, mesh->indices_num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * mesh->indices_offset ));
+             // HMM: prog.draw ?
+        }
+        gl.renderloop_listen(); 
+        gl.renderloop_tail();          // swap buffers, poll events
     }
     exit(EXIT_SUCCESS);
 }
 
-
-/**
-
- HMM : CAN DO ONE OR THE OTHER : CANNOT FLIP BETWEEN 
-
-**/
 
