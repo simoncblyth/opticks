@@ -4,6 +4,9 @@ struct SGLFW_Program
 {
     static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;  
 
+    const char* vtx_attname ; 
+    const char* nrm_attname ; 
+
     const char* vertex_shader_text ;
     const char* geometry_shader_text ; 
     const char* fragment_shader_text ;
@@ -12,7 +15,7 @@ struct SGLFW_Program
     const float* mvp ; 
     bool dump ; 
 
-    SGLFW_Program( const char* _dir ); 
+    SGLFW_Program( const char* _dir, const char* _vtx_attname, const char* _nrm_attname ); 
 
     void createFromDir(const char* _dir); 
     void createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
@@ -28,7 +31,7 @@ struct SGLFW_Program
     void UniformMatrix4fv( GLint loc, const float* vv ); 
     void Uniform4fv(       GLint loc, const float* vv ); 
 
-    void enableAttrib( const char* name, const char* spec, bool dump=false ); 
+    void enableVertexAttribArray( const char* name, const char* spec, bool dump=false ); 
 
     static void Print_shader_info_log(unsigned id); 
 
@@ -37,15 +40,17 @@ struct SGLFW_Program
 
 };
 
-inline SGLFW_Program::SGLFW_Program( const char* _dir )
+inline SGLFW_Program::SGLFW_Program( const char* _dir, const char* _vtx_attname, const char* _nrm_attname )
     :
+    vtx_attname( strdup(_vtx_attname) ),
+    nrm_attname( strdup(_nrm_attname) ),
     vertex_shader_text(nullptr),
     geometry_shader_text(nullptr),
     fragment_shader_text(nullptr),
     program(0),
     mvp_location(-1),
     mvp(nullptr),
-    dump(true)
+    dump(false)
 {
     createFromDir(_dir) ; 
 }
@@ -274,8 +279,8 @@ inline void SGLFW_Program::Uniform4fv( GLint loc, const float* vv )
 
 
 /**
-SGLFW_Program::enableAttrib
------------------------------
+SGLFW_Program::enableVertexAttribArray
+-------------------------------------------
 
 Array attribute : connecting values from the array with attribute symbol in the shader program 
 
@@ -290,15 +295,19 @@ buffers ?
 * https://stackoverflow.com/questions/14249634/opengl-vaos-and-multiple-buffers 
 * https://antongerdelan.net/opengl/vertexbuffers.html
 
+
+* NOTICE THAT index 0 IS NOT "NULL" HERE
+
 **/
 
-inline void SGLFW_Program::enableAttrib( const char* name, const char* spec, bool dump )
+inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char* spec, bool dump )
 {
     SGLFW_Attrib att(name, spec); 
 
     att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
 
-    if(dump) std::cout << "SGLFW_Program::enableArrayAttribute att.desc [" << att.desc() << "]" <<  std::endl ; 
+    //if(dump) 
+    std::cout << "SGLFW_Program::enableVertexAttribArray att.desc [" << att.desc() << "]" <<  std::endl ; 
 
     glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__);
 
@@ -320,5 +329,11 @@ inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static
     printf("SGLFW_Program::Print_shader_info_log GL index %u:\n%s\n", id, log);
     assert(0);
 }
+
+
+
+
+
+
 
 

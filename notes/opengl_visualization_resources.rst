@@ -26,6 +26,16 @@ Debugging
 
 * https://learnopengl.com/In-Practice/Debugging
 
+OpenGL expert on Stackoverflow
+---------------------------------
+
+* https://nicolbolas.github.io/oldtut/index.html
+
+* https://nicolbolas.github.io/oldtut/Basics/Intro%20What%20is%20OpenGL.html
+
+* https://nicolbolas.github.io/oldtut/Basics/Tut01%20Dissecting%20Display.html
+
+
 
 Rendering Multiple Meshes
 ---------------------------

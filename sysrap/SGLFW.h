@@ -35,10 +35,11 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 
 #include "SGLFW_Extras.h"
 #include "SGLFW_Program.h"
+#include "SGLFW_Render.h"
+
 #ifdef WITH_CUDA_GL_INTEROP
 #include "SGLFW_CUDA.h"
 #endif
-
 
 struct SGLFW : public SCMD 
 {

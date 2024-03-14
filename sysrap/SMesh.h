@@ -16,6 +16,9 @@ SMesh.h
 struct SMesh 
 {
     static constexpr const char* NAME = "SMesh" ;  
+    static constexpr const char* VTX_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  
+    static constexpr const char* NRM_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  
+    // 3:vec3, 12:byte_stride 0:byte_offet
 
     const char* loaddir ; 
     const NP* tri ; 
@@ -28,6 +31,8 @@ struct SMesh
     int indices_num ; 
     int indices_offset ; 
     const char* name ; 
+    const char* vtx_spec ; 
+    const char* nrm_spec ; 
 
     // sframe feels too heavy 
     glm::vec3 mn = {} ; 
@@ -98,6 +103,8 @@ inline SMesh::SMesh()
     indices_num(0),
     indices_offset(0),
     name(nullptr),
+    vtx_spec(VTX_SPEC),
+    nrm_spec(NRM_SPEC),
     ce(0.f,0.f,0.f,0.f)
 {
 }
