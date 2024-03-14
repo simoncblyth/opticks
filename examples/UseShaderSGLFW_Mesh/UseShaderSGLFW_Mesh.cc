@@ -21,10 +21,10 @@ See also::
 
 **/
 
-#include "SGLFW.h"
-#include "SGLM.h"
-#include "SMesh.h"
 #include "ssys.h"
+#include "SMesh.h"
+#include "SGLM.h"
+#include "SGLFW.h"
 
 int main()
 {
@@ -41,7 +41,7 @@ int main()
     SGLFW_CUDA cuda(gm) ; 
 #endif
 
-    SGLFW_Program prog("$SHADER_FOLD");
+    SGLFW_Program prog("$SHADER_FOLD", "vPos", "vNrm" );
     prog.use(); 
     prog.locateMVP("MVP",  gm.MVP_ptr );  
 
@@ -78,10 +78,10 @@ int main()
              vao.bind(); 
 
              vbuf.bind();
-             prog.enableAttrib( "vPos", "3,GL_FLOAT,GL_FALSE,12,0,false" );  // 3:vec3, 12:byte_stride 0:byte_offet
+             prog.enableVertexAttribArray( prog.vtx_attname, mesh->vtx_spec ); 
 
              nbuf.bind();
-             prog.enableAttrib( "vNrm", "3,GL_FLOAT,GL_FALSE,12,0,false" ); 
+             prog.enableVertexAttribArray( prog.nrm_attname, mesh->nrm_spec ); 
 
              // NB: careful with the ordering of the above or the OpenGL state machine will bite you : 
              // the vPos and vNrm attribs needs to ne enabled after the appropriate buffer is made THE active GL_ARRAY_BUFFER

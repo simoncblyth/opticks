@@ -57,7 +57,8 @@ int main(int argc, char** argv)
     //const char* RECORD_PATH = "$RECORD_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
     const char* RECORD_PATH = "$RECORD_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
     NP* a = NP::Load(RECORD_PATH) ;   
-    if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ; 
+    if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ;
+    if(a==nullptr) std::cout << " CREATE IT WITH [TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh] " << std::endl ; 
     assert(a); 
 
 
@@ -156,13 +157,20 @@ int main(int argc, char** argv)
     gm.dump();
 
     SGLFW gl(gm, RECORD_PATH );   
-    gl.createProgram("$SHADER_FOLD" ); 
+
+    SGLFW_Program prog("$SHADER_FOLD", nullptr, nullptr ); 
+    prog.use(); 
+
 
     // The strings below are names of uniforms present in rec_flying_point/geom.glsl and pos/vert.glsl 
-    GLint Param_location = gl.getUniformLocation("Param"); 
+    GLint Param_location = prog.getUniformLocation("Param"); 
 
     SGLFW_VAO vao ; 
+    vao.bind(); 
+ 
     SGLFW_Buffer buf(  a->arr_bytes(), a->bytes(), GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
+    buf.bind();
+    buf.upload();
 
     std::string rpos_spec = a->get_meta<std::string>("rpos", "");  
     std::cout 
@@ -171,9 +179,9 @@ int main(int argc, char** argv)
         << std::endl 
         ;  
 
-    gl.enableAttrib("rpos", rpos_spec.c_str() ); 
+    prog.enableVertexAttribArray("rpos", rpos_spec.c_str() ); 
 
-    gl.locateMVP("ModelViewProjection", gm.MVP_ptr ); 
+    prog.locateMVP("ModelViewProjection", gm.MVP_ptr ); 
 
 
     while (gl.renderloop_proceed())
@@ -184,11 +192,14 @@ int main(int argc, char** argv)
         if( Param.w > Param.y ) Param.w = Param.x ;  // input time : Param.w from .x to .y with .z steps
 
         //gl.UniformMatrix4fv( gl.mvp_location, mvp );  
-        if(Param_location > -1 ) gl.Uniform4fv(      Param_location, glm::value_ptr(Param) );
+        if(Param_location > -1 ) prog.Uniform4fv(      Param_location, glm::value_ptr(Param) );
+        prog.updateMVP();
 
-        GLenum mode = gl.geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
+        GLenum mode = prog.geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
         glDrawArrays(mode, a_first, a_count);
 
+
+        gl.renderloop_listen();
         gl.renderloop_tail();  
     }
     return 0 ; 

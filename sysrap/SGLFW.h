@@ -30,9 +30,10 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 #include "gleq.h"
 
 #include <glm/glm.hpp>
-#include "SGLM.h"
 #include "NPU.hh"
 
+#include "SMesh.h"
+#include "SGLM.h"
 #include "SGLFW_Extras.h"
 #include "SGLFW_Program.h"
 #include "SGLFW_Render.h"
@@ -128,6 +129,8 @@ inline void SGLFW::renderloop_listen()
     }
 }
 
+
+// HMM: mybe include listen in tail
 inline void SGLFW::renderloop_tail()
 {
     glfwSwapBuffers(window);

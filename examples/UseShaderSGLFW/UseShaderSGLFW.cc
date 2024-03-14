@@ -15,7 +15,6 @@ using SGLFW.h to hide lots of boilerplate details.
 **/
 
 
-#include "SGLM.h"
 #include "SGLFW.h"
 
 #include <glm/glm.hpp>
@@ -74,18 +73,29 @@ void main()
 int main(void)
 {
     SGLM gm ; 
-    SGLFW gl(gm, "Simple example"); 
-    gl.createProgram(vertex_shader_text, geometry_shader_text, fragment_shader_text); 
-    GLint mvp_location = gl.getUniformLocation("MVP");   
+    SGLFW gl(gm, "Single Triangle example"); 
 
+    SGLFW_Program prog(nullptr, "vPos", nullptr ); 
+    prog.createFromText( vertex_shader_text, geometry_shader_text, fragment_shader_text); 
+    prog.use(); 
+
+    GLint mvp_location = prog.getUniformLocation("MVP");   
     assert( sizeof(vertices) == sizeof(float)*5*3 ); 
 
     SGLFW_VAO vao ; 
+    vao.bind(); 
+
     SGLFW_Buffer ibuf( sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
+    ibuf.bind();
+    ibuf.upload();
 
     SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
-    gl.enableAttrib( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
-    gl.enableAttrib( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
+    vbuf.bind();
+    vbuf.upload();
+
+    prog.enableVertexAttribArray( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
+    prog.enableVertexAttribArray( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
+    // getting two attrib from the same array via different size and offset 
 
     int count(0);
     int renderlooplimit(200); 

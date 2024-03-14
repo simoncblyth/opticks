@@ -42,8 +42,8 @@ struct SGLFW_Program
 
 inline SGLFW_Program::SGLFW_Program( const char* _dir, const char* _vtx_attname, const char* _nrm_attname )
     :
-    vtx_attname( strdup(_vtx_attname) ),
-    nrm_attname( strdup(_nrm_attname) ),
+    vtx_attname( _vtx_attname ? strdup(_vtx_attname) : nullptr ),
+    nrm_attname( _nrm_attname ? strdup(_nrm_attname) : nullptr ),
     vertex_shader_text(nullptr),
     geometry_shader_text(nullptr),
     fragment_shader_text(nullptr),
@@ -52,7 +52,7 @@ inline SGLFW_Program::SGLFW_Program( const char* _dir, const char* _vtx_attname,
     mvp(nullptr),
     dump(false)
 {
-    createFromDir(_dir) ; 
+    if(_dir) createFromDir(_dir) ; 
 }
 
 inline void SGLFW_Program::createFromDir(const char* _dir)
@@ -286,7 +286,6 @@ Array attribute : connecting values from the array with attribute symbol in the 
 
 Example rpos spec "4,GL_FLOAT,GL_FALSE,64,0,false"
 
-
 NB when handling multiple buffers note that glVertexAttribPointer
 binds to the buffer object bound to GL_ARRAY_BUFFER when called. 
 So that means have to repeatedly call this again after switching
@@ -295,13 +294,14 @@ buffers ?
 * https://stackoverflow.com/questions/14249634/opengl-vaos-and-multiple-buffers 
 * https://antongerdelan.net/opengl/vertexbuffers.html
 
-
-* NOTICE THAT index 0 IS NOT "NULL" HERE
+* NOTICE THAT index 0 IS NOT "NULL" for VertexAttribArray
 
 **/
 
 inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char* spec, bool dump )
 {
+    std::cout << "SGLFW_Program::enableVertexAttribArray name [" << name << "]" <<  std::endl ; 
+
     SGLFW_Attrib att(name, spec); 
 
     att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);

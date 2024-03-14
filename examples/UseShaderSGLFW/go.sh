@@ -28,17 +28,29 @@ bdir=/tmp/$USER/opticks/$name/build
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
 
-om-cmake $sdir 
-make
-[ $? -ne 0 ] && echo $BASH_SOURCE : make error && exit 1 
+defarg=info_build_run
+arg=${1:-$defarg}
 
-make install   
-[ $? -ne 0 ] && echo $BASH_SOURCE : install error && exit 2 
+if [ "${arg/build}" != "$arg" ]; then
+    om-cmake $sdir 
+    make
+    [ $? -ne 0 ] && echo $BASH_SOURCE : make error && exit 1 
 
-echo executing $name
-$name
-[ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
+    make install   
+    [ $? -ne 0 ] && echo $BASH_SOURCE : install error && exit 2 
+fi
+
+if [ "${arg/run}" != "$arg" ]; then
+    echo executing $name
+    $name
+    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
+fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then
+    echo executing $name
+    dbg__ $name
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 4
+fi 
 
 exit 0 
-
 
