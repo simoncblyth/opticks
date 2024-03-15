@@ -6,6 +6,7 @@ struct SGLFW_Program
 
     const char* vtx_attname ; 
     const char* nrm_attname ; 
+    const char* ins_attname ; 
 
     const char* vertex_shader_text ;
     const char* geometry_shader_text ; 
@@ -15,23 +16,28 @@ struct SGLFW_Program
     const float* mvp ; 
     bool dump ; 
 
-    SGLFW_Program( const char* _dir, const char* _vtx_attname, const char* _nrm_attname ); 
+    SGLFW_Program( const char* _dir, 
+                   const char* _vtx_attname, 
+                   const char* _nrm_attname, 
+                   const char* _ins_attname=nullptr 
+                 ); 
 
     void createFromDir(const char* _dir); 
     void createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
-    void use(); 
+    void use() const ; 
 
     GLint getUniformLocation(const char* name) const ; 
     GLint getAttribLocation(const char* name) const ; 
 
     GLint findUniformLocation(const char* keys, char delim ) const ; 
     void locateMVP(const char* key, const float* mvp ); 
-    void updateMVP();  // called from renderloop_head
+    void updateMVP() const ;  // called from renderloop_head
 
-    void UniformMatrix4fv( GLint loc, const float* vv ); 
-    void Uniform4fv(       GLint loc, const float* vv ); 
+    static void UniformMatrix4fv( GLint loc, const float* vv, bool dump ); 
+    static void Uniform4fv(       GLint loc, const float* vv, bool dump ); 
 
-    void enableVertexAttribArray( const char* name, const char* spec, bool dump=false ); 
+    void enableVertexAttribArray( const char* name, const char* spec, bool dump=false ) const ; 
+    void enableVertexAttribArray_OfTransforms( const char* name ) const ; 
 
     static void Print_shader_info_log(unsigned id); 
 
@@ -40,10 +46,16 @@ struct SGLFW_Program
 
 };
 
-inline SGLFW_Program::SGLFW_Program( const char* _dir, const char* _vtx_attname, const char* _nrm_attname )
+inline SGLFW_Program::SGLFW_Program( 
+    const char* _dir, 
+    const char* _vtx_attname, 
+    const char* _nrm_attname, 
+    const char* _ins_attname
+    )
     :
     vtx_attname( _vtx_attname ? strdup(_vtx_attname) : nullptr ),
     nrm_attname( _nrm_attname ? strdup(_nrm_attname) : nullptr ),
+    ins_attname( _ins_attname ? strdup(_ins_attname) : nullptr ),
     vertex_shader_text(nullptr),
     geometry_shader_text(nullptr),
     fragment_shader_text(nullptr),
@@ -138,7 +150,7 @@ inline void SGLFW_Program::createFromText(const char* vertex_shader_text, const 
     std::cout << "]SGLFW_Program::createFromText" << std::endl ; 
 }
 
-inline void SGLFW_Program::use()
+inline void SGLFW_Program::use() const
 {
     glUseProgram(program);
 }
@@ -221,15 +233,12 @@ need to be done before then.
 
 **/
 
-inline void SGLFW_Program::updateMVP()
+inline void SGLFW_Program::updateMVP() const 
 {
     if( mvp_location <= -1 ) return ; 
     assert( mvp != nullptr ); 
-    UniformMatrix4fv(mvp_location, mvp); 
+    UniformMatrix4fv(mvp_location, mvp, dump ); 
 }
-
-
-
 
 template<typename T>
 inline std::string SGLFW_Program::Desc(const T* tt, int num) // static
@@ -246,7 +255,7 @@ inline std::string SGLFW_Program::Desc(const T* tt, int num) // static
     return s ; 
 }
 
-inline void SGLFW_Program::UniformMatrix4fv( GLint loc, const float* vv )
+inline void SGLFW_Program::UniformMatrix4fv( GLint loc, const float* vv, bool dump ) // static
 {
     if(dump) std::cout 
         << "SGLFW_Program::UniformMatrix4fv" 
@@ -260,7 +269,7 @@ inline void SGLFW_Program::UniformMatrix4fv( GLint loc, const float* vv )
     glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)vv );
 }    
 
-inline void SGLFW_Program::Uniform4fv( GLint loc, const float* vv )
+inline void SGLFW_Program::Uniform4fv( GLint loc, const float* vv, bool dump ) // static
 {
     if(dump) std::cout 
         << "SGLFW_Program::Uniform4fv" 
@@ -298,7 +307,7 @@ buffers ?
 
 **/
 
-inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char* spec, bool dump )
+inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char* spec, bool dump ) const 
 {
     std::cout << "SGLFW_Program::enableVertexAttribArray name [" << name << "]" <<  std::endl ; 
 
@@ -315,6 +324,39 @@ inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char
 
     glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__);
 }
+
+
+inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* name ) const 
+{
+    const char* spec = "4,GL_FLOAT,GL_FALSE,64,0,false" ; 
+    SGLFW_Attrib att(name, spec); 
+    size_t qsize = att.stride/4 ;   
+    GLuint divisor = 1 ;   
+    // number of instances between updates of attribute , >1 will land that many instances on top of each other
+
+    const void* offset0 = (void*)(qsize*0) ; 
+    const void* offset1 = (void*)(qsize*1) ; 
+    const void* offset2 = (void*)(qsize*2) ; 
+    const void* offset3 = (void*)(qsize*3) ; 
+
+
+    glVertexAttribPointer(att.index+0, att.size, att.type, att.normalized, att.stride, offset0 ); SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribPointer(att.index+1, att.size, att.type, att.normalized, att.stride, offset1 ); SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribPointer(att.index+2, att.size, att.type, att.normalized, att.stride, offset2 ); SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribPointer(att.index+3, att.size, att.type, att.normalized, att.stride, offset3 ); SGLFW__check(__FILE__, __LINE__);
+
+    glEnableVertexAttribArray(att.index+0);
+    glEnableVertexAttribArray(att.index+1);
+    glEnableVertexAttribArray(att.index+2);
+    glEnableVertexAttribArray(att.index+3);
+
+    glVertexAttribDivisor(att.index+0, divisor);
+    glVertexAttribDivisor(att.index+1, divisor);
+    glVertexAttribDivisor(att.index+2, divisor);
+    glVertexAttribDivisor(att.index+3, divisor);
+}
+
+
 
 
 inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static

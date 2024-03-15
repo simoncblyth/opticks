@@ -16,12 +16,12 @@ source ~/.opticks_config
 
 export SHADER_FOLD=$sdir/rec_flying_point
 
-#export ARRAY_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
-#export ARRAY_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest/SCVD0/70000
-#export ARRAY_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
-#export ARRAY_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
-#export ARRAY_FOLD=/tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001
-export ARRAY_FOLD=/tmp/sphoton_test
+#export RECORD_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
+#export RECORD_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest/SCVD0/70000
+#export RECORD_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
+#export RECORD_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
+#export RECORD_FOLD=/tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001
+export RECORD_FOLD=/tmp/sphoton_test
 
 
 if [ "${arg/build}" != "$arg" ] ; then 

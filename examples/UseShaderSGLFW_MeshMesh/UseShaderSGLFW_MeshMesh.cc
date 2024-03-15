@@ -66,7 +66,6 @@ int main()
             rbox.render();
             rtorus.render();
         }
-        gl.renderloop_listen(); 
         gl.renderloop_tail();      // swap buffers, poll events
     }
     exit(EXIT_SUCCESS);

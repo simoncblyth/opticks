@@ -74,7 +74,6 @@ struct SGLFW : public SCMD
     bool renderloop_proceed(); 
     void renderloop_exit(); 
     void renderloop_head(); 
-    void renderloop_listen(); 
     void renderloop_tail(); 
 
     void handle_event(GLEQevent& event); 
@@ -119,22 +118,19 @@ inline void SGLFW::renderloop_head()
     if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
 }
 
-inline void SGLFW::renderloop_listen()
+
+inline void SGLFW::renderloop_tail()
 {
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+
     GLEQevent event;
     while (gleqNextEvent(&event))
     {
         handle_event(event);
         gleqFreeEvent(&event);
     }
-}
 
-
-// HMM: mybe include listen in tail
-inline void SGLFW::renderloop_tail()
-{
-    glfwSwapBuffers(window);
-    glfwPollEvents();
     exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 }
 

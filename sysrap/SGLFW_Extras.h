@@ -178,7 +178,6 @@ Parse a string of the below form into 6 fields::
 
     rpos:4,GL_FLOAT,GL_FALSE,64,0,false
 
-
 **/
 struct SGLFW_Attrib
 {
@@ -186,7 +185,8 @@ struct SGLFW_Attrib
     const char* spec ; 
     std::vector<std::string> field ; 
 
-    GLuint index ; 
+    GLuint index ;                 // set externally to result of SGLFW_Program::getAttribLocation(name)
+
     GLint size ;                   // field 0 : number of components of the attribute (aka item), must be one of : 1,2,3,4 
     GLenum type ;                  // field 1 : normally GL_FLOAT 
     GLboolean normalized ;         // field 2 : normalized means in range 0->1

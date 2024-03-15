@@ -192,14 +192,13 @@ int main(int argc, char** argv)
         if( Param.w > Param.y ) Param.w = Param.x ;  // input time : Param.w from .x to .y with .z steps
 
         //gl.UniformMatrix4fv( gl.mvp_location, mvp );  
-        if(Param_location > -1 ) prog.Uniform4fv(      Param_location, glm::value_ptr(Param) );
+        if(Param_location > -1 ) prog.Uniform4fv(      Param_location, glm::value_ptr(Param), false );
         prog.updateMVP();
 
         GLenum mode = prog.geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
         glDrawArrays(mode, a_first, a_count);
 
 
-        gl.renderloop_listen();
         gl.renderloop_tail();  
     }
     return 0 ; 

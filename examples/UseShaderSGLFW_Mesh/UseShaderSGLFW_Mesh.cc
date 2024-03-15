@@ -93,7 +93,6 @@ int main()
              glDrawElements(GL_TRIANGLES, mesh->indices_num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * mesh->indices_offset ));
              // HMM: prog.draw ?
         }
-        gl.renderloop_listen(); 
         gl.renderloop_tail();          // swap buffers, poll events
     }
     exit(EXIT_SUCCESS);

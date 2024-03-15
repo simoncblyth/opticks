@@ -197,8 +197,8 @@ UseOpticksGLEW
 
 
 
-Reboot of OpenGL + OpenGL CUDA Interop examples
---------------------------------------------------
+(2024 March) Reboot of OpenGL + CUDA Interop examples
+----------------------------------------------------------------
 
 UseGeometryShader
     record array rec_flying_point viz using early stage of SGLFW.h encapulation 
@@ -212,7 +212,8 @@ UseShaderSGLFW_Mesh
 UseShaderSGLFW_MeshMesh
     multiple mesh 
      
-
+UseShaderSGLFW_MeshMesh_Instanced
+    with instancing 
 
 
 .. comment OPTIX_START

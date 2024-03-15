@@ -1,5 +1,6 @@
 #pragma once
 
+struct NP ; 
 struct SMesh ; 
 
 /**
@@ -11,26 +12,31 @@ Try same prog for multiple mesh
 **/
 struct SGLFW_Render
 {
-    const SMesh*   mesh ;  
-    SGLFW_Program* prog ;  
+    const SMesh*         mesh ;  
+    const SGLFW_Program* prog ;  
+    const NP*            inst ; 
 
     SGLFW_Buffer*  vtx ; 
     SGLFW_Buffer*  nrm ;
+    SGLFW_Buffer*  ins ;
 
     SGLFW_VAO*     vao ;  
     SGLFW_Buffer*  idx ; 
 
-    SGLFW_Render(const SMesh* mesh, SGLFW_Program* prog ) ; 
+    SGLFW_Render(const SMesh* mesh, const SGLFW_Program* prog, const NP* inst=nullptr ) ; 
     void render(); 
+    void render_drawElements() const ; 
 
 };
 
-inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, SGLFW_Program* _prog )
+inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog, const NP* _inst )
     :
     mesh(_mesh),
     prog(_prog),
+    inst(_inst ? NP::MakeNarrowIfWide(_inst) : nullptr),
     vtx(nullptr),
     nrm(nullptr),
+    ins(nullptr),
     vao(nullptr),
     idx(nullptr)
 {
@@ -42,6 +48,13 @@ inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, SGLFW_Program* _prog )
     nrm->bind();
     nrm->upload(); 
 
+    if(inst)
+    {
+        ins = new SGLFW_Buffer( inst->arr_bytes(), inst->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+        ins->bind();
+        ins->upload(); 
+    }
+
     vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
     vao->bind(); 
 
@@ -49,6 +62,16 @@ inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, SGLFW_Program* _prog )
     idx->bind();
     idx->upload(); 
 }
+
+/**
+SGLFW_Render::render
+---------------------
+
+NB: careful that the intended buffer is bound (making it the active GL_ARRAY_BUFFER)
+when the vertex attrib is enabled.  Getting this wrong can for example easily cause
+normals to appear in position slots causing perplexing renders. 
+
+**/
 
 inline void SGLFW_Render::render()
 {
@@ -61,14 +84,34 @@ inline void SGLFW_Render::render()
    nrm->bind();
    prog->enableVertexAttribArray( prog->nrm_attname, mesh->nrm_spec ); 
 
-   // NB: careful with the ordering of the above or the OpenGL state machine will bite you : 
-   // the vPos and vNrm attribs needs to be enabled after the appropriate buffer is made THE active GL_ARRAY_BUFFER
+   if(ins)
+   {
+       ins->bind(); 
+       prog->enableVertexAttribArray_OfTransforms( prog->ins_attname ) ; 
+   }
 
    idx->bind();
-
    prog->updateMVP();
 
-   glDrawElements(GL_TRIANGLES, mesh->indices_num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * mesh->indices_offset ));
+   render_drawElements(); 
+}
+
+inline void SGLFW_Render::render_drawElements() const 
+{
+    GLenum mode = GL_TRIANGLES ; 
+  	GLsizei count = mesh->indices_num ;  // number of elements to render (eg 3 for 1 triangle)
+  	GLenum type = GL_UNSIGNED_INT ; 
+  	const void * indices = (GLvoid*)(sizeof(GLuint) * mesh->indices_offset ) ;
+  	GLsizei instancecount = inst ? inst->num_items() : 0 ; 
+
+    if(instancecount > 0)
+    {
+        glDrawElementsInstanced(mode, count, type, indices, instancecount );
+    }
+    else
+    {
+        glDrawElements(mode, count, type, indices );
+    }
 }
 
 
