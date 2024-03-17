@@ -1,4 +1,12 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+
+~/o/sysrap/tests/stra_test.sh
+
+EOU
+}
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 name=stra_test 
 export FOLD=/tmp/$name

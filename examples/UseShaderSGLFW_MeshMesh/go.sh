@@ -43,7 +43,12 @@ export CUDA_PREFIX
 bdir=/tmp/$USER/opticks/$name/build 
 
 
+
 mesh_fold=/tmp/U4Mesh_test
+stree_mesh_fold=$TMP/U4TreeCreateTest/stree/mesh
+stree_mesh_solid=HamamatsuR12860sMask0xa0b9cb0
+
+
 shader=wireframe
 #shader=normal
 SHADER=${SHADER:-$shader}
@@ -69,6 +74,9 @@ escale=extent
 
 
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
+export STREE_MESH_FOLD=${STREE_MESH_FOLD:-$stree_mesh_fold}
+export STREE_MESH_SOLID=${STREE_MESH_SOLID:-$stree_mesh_solid}
+
 export SHADER_FOLD=$sdir/gl/$SHADER
 export WH=${WH:-$wh}
 export EYE=${EYE:-$eye}

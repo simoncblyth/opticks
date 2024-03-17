@@ -307,6 +307,8 @@ tests/CSGOptiXRender.cc
 
 CSGOptiX.h
     top level struct using either OptiX pre-7 OR 7 
+    holds PIP and SBT instances which handle the 
+    OptiX geometry  
 
 Params.h
     workhorse for communicating between CPU and GPU 
@@ -324,10 +326,12 @@ IAS.h
     vector of transforms and d_instances 
 
 GAS_Builder.h
-    building OptiX geometry acceleration structure 
+    building OptiX geometry acceleration structure, 
+    canonical usage from SBT::createGAS
 
 IAS_Builder.h
-    building OptiX instance acceleration structure 
+    building OptiX instance acceleration structure, 
+    canonical usage from SBT::createIAS
 
 Binding.h
     GPU/CPU types, including SbtRecord : RaygenData, MissData, HitGroupData (effectively Prim)
@@ -345,6 +349,8 @@ CSGOptiX7.cu
 
 SBT.h
     brings together OptiX 7 geometry and render pipeline programs, nexus of control  
+
+    * SBT::setFoundry SBT::createGeom converts the CSGFoundy geometry into an OptiX geometry
 
 Ctx.h
     holder of OptixDeviceContext and Params and Properties instances

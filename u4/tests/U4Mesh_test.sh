@@ -8,6 +8,10 @@ Instanciates G4Orb and persists as U4Mesh into /tmp/U4Mesh_test::
     ~/o/u4/tests/U4Mesh_test.sh
     SOLID=Tubs ~/o/u4/tests/U4Mesh_test.sh ana
 
+
+    ~/o/u4/tests/U4Mesh_test.sh view
+
+
 EOU
 }
 
@@ -73,6 +77,20 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $name.py 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
+
+if [ "${arg/view}" != "$arg" ]; then
+
+    export FOLD=/data/blyth/opticks/U4TreeCreateTest/stree/mesh
+    export SOLID=HamamatsuR12860sMask_virtual0xa0b8450
+
+    ${IPYTHON:-ipython} --pdb -i $name.py 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
+fi 
+
+
+
+
+
 
 exit 0 
 

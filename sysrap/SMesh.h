@@ -10,7 +10,11 @@ SMesh.h
 
 **/
 
+#include <ostream>
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
+
+#include "stra.h"
 #include "NPFold.h"
 
 struct SMesh 
@@ -18,15 +22,19 @@ struct SMesh
     static constexpr const char* NAME = "SMesh" ;  
     static constexpr const char* VTX_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  
     static constexpr const char* NRM_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  
+    static constexpr const bool  NRM_SMOOTH = true ; 
+
     // 3:vec3, 12:byte_stride 0:byte_offet
 
     const char* loaddir ; 
     const NP* tri ; 
-    const NP* _vtx ; 
-    const NP* _nrm ; 
+    const NP* wvtx ; 
+    const NP* wnrm ; 
     const NP* vtx ; 
     const NP* nrm ;
     const NP* face ; 
+
+    glm::tmat4x4<double> tr0 ; 
 
     int indices_num ; 
     int indices_offset ; 
@@ -39,9 +47,14 @@ struct SMesh
     glm::vec3 mx = {} ; 
     glm::vec4 ce = {} ; 
 
-    static SMesh* Load(const char* dir); 
+    static SMesh* Load(const char* dir,      const glm::tmat4x4<double>* tr=nullptr ); 
+    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr );
+    void import(         const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr ); 
+
     SMesh(); 
-    void import(const NPFold* fold); 
+
+    void set_tri_face( const NP* _tri, const NP* _face, std::ostream* out  ); 
+    void set_vtx(      const NP* wvtx, const glm::tmat4x4<double>* tr, std::ostream* out  ); 
 
     static float Extent( const glm::vec3& low, const glm::vec3& high ); 
     static glm::vec4 CenterExtent( const glm::vec3& low, const glm::vec3& high ); 
@@ -53,7 +66,9 @@ struct SMesh
     template<typename T, typename S>
     static std::string Desc2D(const NP* a, const NP* b, const char* label=nullptr);  
 
+    std::string descTransform() const ; 
 
+    std::string brief() const ; 
     std::string descFace() const ; 
     std::string descTri() const ; 
     std::string descVtx() const ; 
@@ -71,35 +86,67 @@ struct SMesh
     template<typename T> static void SmoothNormals( 
                std::vector<glm::tvec3<T>>& nrm, 
          const std::vector<glm::tvec3<T>>& vtx, 
-         const std::vector<glm::tvec3<int>>& tri );
+         const std::vector<glm::tvec3<int>>& tri,
+         std::ostream* out );
 
     template<typename T> static void FlatNormals( 
                std::vector<glm::tvec3<T>>& nrm, 
          const std::vector<glm::tvec3<T>>& vtx, 
-         const std::vector<glm::tvec3<int>>& tri );
+         const std::vector<glm::tvec3<int>>& tri, 
+         std::ostream* out );
 
 
-    static NP* MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth ); 
+    static NP* MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth, std::ostream* out ); 
 
 };
 
-inline SMesh* SMesh::Load(const char* dir)
+
+inline SMesh* SMesh::Load(const char* dir, const glm::tmat4x4<double>* tr)
 {
     NPFold* fold = NPFold::Load(dir) ; 
+    return Import(fold, tr); 
+}
+inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr)
+{
     SMesh* mesh = new SMesh ; 
-    mesh->import(fold); 
+    mesh->import(fold, tr); 
     return mesh ; 
 }
+
+inline void SMesh::import(const NPFold* fold, const glm::tmat4x4<double>* tr )
+{
+    loaddir = fold->loaddir ? strdup(fold->loaddir) : nullptr ; 
+    name = loaddir ? loaddir : NAME ; 
+
+    const NP* triangles = fold->get("tri");
+    const NP* vertices = fold->get("vtx")->copy() ;
+    const NP* faces = fold->get("face"); 
+
+    bool dump = false ; 
+    std::stringstream ss ; 
+    std::ostream* out = dump ? &ss : nullptr ; 
+
+    if(out) *out << "[SMesh::import" << std::endl ; 
+
+    set_tri_face( triangles, faces, out ); 
+    set_vtx( vertices, tr, out ); 
+
+    if(out) *out << "]SMesh::import" << std::endl ; 
+    if(dump) std::cout << ss.str() ; 
+}
+
+
 
 inline SMesh::SMesh()
     :   
     loaddir(nullptr),
     tri(nullptr),
-    _vtx(nullptr),
-    _nrm(nullptr),
+    wvtx(nullptr),
+    wnrm(nullptr),
     vtx(nullptr),
     nrm(nullptr),
     face(nullptr),
+    tr0(1.),
     indices_num(0),
     indices_offset(0),
     name(nullptr),
@@ -109,29 +156,39 @@ inline SMesh::SMesh()
 {
 }
 
-inline void SMesh::import(const NPFold* fold)
+/**
+SMesh::set_tri_face
+---------------------
+
+face is passenger only from U4Mesh for debugging 
+
+**/
+
+inline void SMesh::set_tri_face( const NP* _tri, const NP* _face, std::ostream* out  )
 {
-    loaddir = fold->loaddir ? strdup(fold->loaddir) : nullptr ; 
-
-
-    tri = fold->get("tri");
-    _vtx = fold->get("vtx");
-
-    bool smooth = true ; 
-    //bool smooth = false ; 
-    _nrm = MakeNormals( _vtx, tri, smooth );  // uses doubles
-
-    vtx = NP::MakeNarrowIfWide(_vtx);
-    nrm = NP::MakeNarrowIfWide(_nrm);
-    face = fold->get("face"); 
-
+    tri = _tri ; 
+    face = _face ; 
     assert( tri->shape.size() == 2 );
     indices_num = tri->shape[0]*tri->shape[1] ;
     indices_offset = 0 ;
+}
+
+inline void SMesh::set_vtx( const NP* _wvtx, const glm::tmat4x4<double>* tr,  std::ostream* out  )
+{
+    assert( tri ); 
+    assert( _wvtx->shape.size() == 2 );
+    assert( _wvtx->shape[0] > 2  );   // need at least 3 vtx to make a face
+    assert( _wvtx->shape[1] == 3 );
+
+    if(tr) memcpy( glm::value_ptr(tr0), glm::value_ptr(*tr), sizeof(tr0) ); 
+
+    wvtx = stra<double>::MakeTransformedArray( _wvtx, tr );     
+    wnrm = MakeNormals( wvtx, tri, NRM_SMOOTH, out );  // uses doubles
+
+    vtx = NP::MakeNarrowIfWide(wvtx);
+    nrm = NP::MakeNarrowIfWide(wnrm);
 
     find_center_extent(); 
-
-    name = loaddir ? loaddir : NAME ; 
 }
 
 template<typename T>
@@ -219,13 +276,23 @@ inline std::string SMesh::Desc2D(const NP* a, const NP* b, const char* label)
     return str ; 
 }
 
+inline std::string SMesh::descTransform() const 
+{
+    return stra<double>::Desc(tr0); 
+}
 
+inline std::string SMesh::brief() const
+{
+    std::stringstream ss ; 
+    ss << "SMesh::brief " ; 
+    //ss << ( loaddir ? loaddir : "-" ) ; 
+    ss << " tri " << tri->sstr() ;  
+    ss << " vtx " << vtx->sstr() ;  
+    ss << " nrm " << nrm->sstr() ;  
 
-
-
-
-
-
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
 
 inline std::string SMesh::descFace() const
@@ -405,7 +472,11 @@ http://www.fromatogra.com/math/6-triangles
 
 
 template<typename T>
-inline void SMesh::SmoothNormals( std::vector<glm::tvec3<T>>& nrm, const std::vector<glm::tvec3<T>>& vtx, const std::vector<glm::tvec3<int>>& tri ) // static
+inline void SMesh::SmoothNormals( 
+    std::vector<glm::tvec3<T>>& nrm, 
+    const std::vector<glm::tvec3<T>>& vtx, 
+    const std::vector<glm::tvec3<int>>& tri, 
+    std::ostream* out  ) // static
 {
     int num_vtx = vtx.size(); 
     int num_tri = tri.size(); 
@@ -419,9 +490,27 @@ inline void SMesh::SmoothNormals( std::vector<glm::tvec3<T>>& nrm, const std::ve
     for(int i=0 ; i < num_tri ; i++)
     {
         const I3& t = tri[i] ; 
-        assert( t.x > -1 && t.x < num_vtx ); 
-        assert( t.y > -1 && t.y < num_vtx ); 
-        assert( t.z > -1 && t.z < num_vtx ); 
+        if(out) *out << " tri[" << i << "] " << glm::to_string(t) << std::endl ;  
+
+        bool x_expected =  t.x > -1 && t.x < num_vtx ;
+        bool y_expected =  t.y > -1 && t.y < num_vtx ;
+        bool z_expected =  t.z > -1 && t.z < num_vtx ;
+
+        bool expected = x_expected && y_expected && z_expected ; 
+
+        if(!expected ) std::cout 
+            << "SMesh::SmoothNormals"
+            << " FATAL NOT expected " 
+            << " i [" << i << "] "
+            << " t [" << glm::to_string(t) << "]"
+            << " num_vtx " << num_vtx 
+            << " num_tri " << num_tri 
+            << std::endl 
+            ; 
+
+        assert( x_expected ); 
+        assert( y_expected ); 
+        assert( z_expected ); 
         
         const R3& v0 = vtx[t.x] ; 
         const R3& v1 = vtx[t.y] ; 
@@ -446,7 +535,11 @@ Note the overwriting of the normal, last face wins
 **/
 
 template<typename T>
-inline void SMesh::FlatNormals( std::vector<glm::tvec3<T>>& nrm, const std::vector<glm::tvec3<T>>& vtx, const std::vector<glm::tvec3<int>>& tri ) // static
+inline void SMesh::FlatNormals( 
+    std::vector<glm::tvec3<T>>& nrm, 
+    const std::vector<glm::tvec3<T>>& vtx, 
+    const std::vector<glm::tvec3<int>>& tri,
+    std::ostream* out ) // static
 {
     int num_vtx = vtx.size(); 
     int num_tri = tri.size(); 
@@ -483,10 +576,17 @@ SMesh::MakeNormals
 
 **/
 
-inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth ) // static
+inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth, std::ostream* out ) // static
 {
     int num_vtx = a_vtx ? a_vtx->shape[0] : 0 ; 
     int num_tri = a_tri ? a_tri->shape[0] : 0 ; 
+
+    if(out) *out 
+        << "[ SMesh::MakeNormals "
+        << " num_vtx " << num_vtx 
+        << " num_tri " << num_tri
+        << std::endl 
+        ; 
 
     typedef glm::tvec3<double> D3 ; 
     typedef glm::tvec3<float>  F3 ; 
@@ -510,11 +610,11 @@ inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth ) /
 
         if(smooth)
         {
-            SmoothNormals<double>( nrm, vtx, tri );  
+            SmoothNormals<double>( nrm, vtx, tri, out );  
         }
         else
         {
-            FlatNormals<double>( nrm, vtx, tri );  
+            FlatNormals<double>( nrm, vtx, tri, out );  
         }
 
         a_nrm = NP::Make<double>( num_vtx, 3 ); 
@@ -529,19 +629,19 @@ inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth ) /
 
         if(smooth)
         {
-            SmoothNormals<float>( nrm, vtx, tri );  
+            SmoothNormals<float>( nrm, vtx, tri, out );  
         }
         else
         {
-            FlatNormals<float>( nrm, vtx, tri );  
+            FlatNormals<float>( nrm, vtx, tri, out );  
         }
 
         a_nrm = NP::Make<float>( num_vtx, 3 ); 
         memcpy( a_nrm->bytes(), nrm.data(), a_nrm->arr_bytes() );  
     }
 
-    std::cout 
-        << " SMesh::MakeNormals "
+    if(out) *out 
+        << "] SMesh::MakeNormals "
         << " a_vtx "  << ( a_vtx ? a_vtx->sstr() : "-" )
         << " a_tri "  << ( a_tri ? a_tri->sstr() : "-" )
         << " a_nrm "  << ( a_nrm ? a_nrm->sstr() : "-" )
@@ -552,7 +652,5 @@ inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth ) /
 
     return a_nrm ; 
 }
-
-
 
 

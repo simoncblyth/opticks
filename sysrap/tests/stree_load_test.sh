@@ -22,10 +22,19 @@ Comparing with CSG/tests::
 C++
 -----
 
-
 ::
 
     ~/o/sysrap/tests/stree_load_test.sh 
+
+
+To update the input tree::
+
+    ~/o/u4/tests/U4TreeCreateTest.sh
+
+
+
+
+
 
 
     epsilon:~ blyth$ st
@@ -70,8 +79,10 @@ bin=/tmp/$name/$name
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
+#base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
 #base=/tmp/$USER/opticks/U4TreeCreateTest 
+base=/data/blyth/opticks/U4TreeCreateTest
+
 export BASE=${BASE:-$base}
 
 cuda_prefix=/usr/local/cuda

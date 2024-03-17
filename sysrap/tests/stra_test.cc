@@ -1,4 +1,4 @@
-// ./stra_test.sh
+// ~/o/sysrap/tests/stra_test.sh
 
 #include <sstream>
 #include <iostream>
@@ -305,6 +305,56 @@ void test_Transform_Strided()
 
 }
 
+
+
+
+
+template<typename T>
+void test_MakeTransformedArray()
+{
+    std::cout << "test_MakeTransformedArray" << std::endl ; 
+
+    std::array<double,12> _aa = {{
+          0., 0., 0., 
+          1., 0., 0., 
+          0., 1., 0., 
+          0., 0., 1.  
+    }}; 
+
+    int itemsize = sizeof(double)*3 ;
+    NP* a = NP::Make<double>(4, 3 ); 
+    a->read2( _aa.data() ); 
+    const double* aa = a->cvalues<double>(); 
+
+    std::cout << "a" << std::endl ; 
+    for(int i=0 ; i < a->shape[0] ; i++)
+    {
+        glm::tvec3<double> v(0.) ; 
+        memcpy( glm::value_ptr(v) , aa + i*3, itemsize ); 
+        std::cout << glm::to_string(v) << std::endl ;   
+    }
+
+
+    glm::tmat4x4<double> t = {
+         { 1., 0., 0., 0. },
+         { 0., 1., 0., 0. },
+         { 0., 0., 1., 0. },
+         { 0., 0.,10., 1. } } ; 
+
+    NP* b = stra<double>::MakeTransformedArray(a, &t ); 
+    const double* bb = b->cvalues<double>(); 
+
+    std::cout << "b" << std::endl ; 
+    for(int i=0 ; i < b->shape[0] ; i++)
+    {
+        glm::tvec3<double> v(0.) ; 
+        memcpy( glm::value_ptr(v) , bb + i*3, itemsize ); 
+        std::cout << glm::to_string(v) << std::endl ;   
+    }
+
+}
+
+
 int main()
 {
     /*
@@ -315,8 +365,11 @@ int main()
     test_Desc_strided<double>();
     test_Transform_Vec<double>();
     test_Transform_Data<double>();
-    */
     test_Transform_Strided<double>();
+    */
+
+    test_MakeTransformedArray<double>();
+
 
     return 0 ; 
 }

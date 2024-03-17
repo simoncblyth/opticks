@@ -321,10 +321,10 @@ struct stree
     std::vector<sn*>         solids ; 
 #endif
 
-    std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
-    std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  
-    std::vector<glm::tmat4x4<double>> gtd ; // GGeo Transform Debug, added from X4PhysicalVolume::convertStructure_r
-
+    std::vector<glm::tmat4x4<double>> m2w ; // local (relative to parent) "model2world" transforms for all nodes
+    std::vector<glm::tmat4x4<double>> w2m ; // local (relative to parent( "world2model" transforms for all nodes  
+    std::vector<glm::tmat4x4<double>> gtd ; // global (relative to root) "GGeo Transform Debug" transforms for all nodes
+    // "gtd" formerly from X4PhysicalVolume::convertStructure_r
 
     std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
     std::vector<snode> rem ;               // selection of remainder nodes
@@ -534,7 +534,7 @@ struct stree
     const sfactor& get_factor(unsigned idx) const ; 
 
     int      get_factor_subtree(unsigned idx) const ; 
-    int      get_factor_olvid(unsigned idx) const ; 
+    int      get_factor_olvid(unsigned idx) const ;   // outer-lv-id
 
     int      get_remainder_subtree() const ; 
     int      get_remainder_olvid() const  ; 
@@ -1587,13 +1587,8 @@ local:true
     Gets ancestors of *nidx* that have the same repeat_index as the *nidx* node.
     For *nidx* within the remainder nodes this is expected to start from root, nidx 0.
     For *nidx* within instanced nodes this will only include ancestor 
-    nodes within that same instance. 
-
-    HMM: looks like does not include the outer node ?
-
-
-Q: Judgement after collection, so does that correctly skip the outer ?  
-A: No because its recording the parent looking ahead, hence try popping the last 
+    nodes within that same instance. Note also that the outer node of
+    the instance is BY DESIGN : NOT INCLUDED. 
 
 **/
 
@@ -1662,9 +1657,13 @@ inline std::string stree::desc_ancestors(int nidx, bool local) const
 }
 
 
+/**
+stree::get_node_transform
+---------------------------
 
+Returns local (relative to parent) transforms for the nidx snode 
 
-
+**/
 
 inline void stree::get_node_transform( glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx ) const 
 {
@@ -1690,6 +1689,10 @@ local:true
    be the same for all instances.  Indeed that skipped transform 
    will become part of the instance transforms. 
 
+
+Q: What transforms are provided when called from the nidx of outer instanced nodes ?
+A: In that case num_nodes=0 so identity transforms are returned.  
+
 **/
 
 inline void stree::get_node_product( 
@@ -1704,7 +1707,8 @@ inline void stree::get_node_product(
     get_ancestors(nodes, nidx, local, out);  // root-first-order (from collecting parent links then reversing the vector)
 
     bool is_local_outer = local && is_outer_node(nidx) ;
-    if(is_local_outer == false ) nodes.push_back(nidx);  // dont include the local_outer node, here either
+    if(is_local_outer == false ) nodes.push_back(nidx);  
+    // dont include the local_outer node, here either
 
 
     int num_nodes = nodes.size();
@@ -2805,7 +2809,7 @@ Used by U4Tree::identifySensitiveInstances
 
 As the factor digests are from the outer volume nodes 
 this provides node indices of the outer volumes of 
-that the factor. 
+the idx factor. 
 
 **/
 
@@ -2814,15 +2818,14 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
     assert( idx < factor.size() ); 
     const sfactor& fac = factor[idx]; 
     std::string sub = fac.get_sub(); 
-    int freq = fac.freq ; 
 
     get_nodes(nodes, sub.c_str() );  
 
-    bool consistent = int(nodes.size()) == freq ; 
+    bool consistent = int(nodes.size()) == fac.freq ; 
     if(!consistent) std::cerr 
         << "stree::get_factor_nodes INCONSISTENCY"
         << " nodes.size " << nodes.size()
-        << " freq " << freq 
+        << " fac.freq " << fac.freq 
         << std::endl 
         ;
     assert(consistent );   
@@ -2963,6 +2966,13 @@ inline void stree::get_remainder_nidx(std::vector<int>& nodes ) const
     get_repeat_nidx(nodes, q_repeat_index, q_repeat_ordinal); 
 }
 
+
+/**
+stree::get_repeat_node
+-----------------------
+
+Collect all snode (structual/volumes) selected by (q_repeat_index, q_repeat_ordinal)
+**/
 
 inline void stree::get_repeat_node(std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const 
 {

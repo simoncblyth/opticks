@@ -33,8 +33,12 @@ For use with OpenGL rendering its natural to use "vtx" and "tri".
 struct U4Mesh
 {
     const G4VSolid* solid ; 
+    const char* solidname ; 
+
     G4Polyhedron*   poly ; 
     std::map<int,int> v2fc ;  
+    int             errvtx ;  
+    bool            do_init_vtx_disqualify ; 
 
     int             nv_poly, nv, nf ; 
     NP*             vtx ; 
@@ -51,6 +55,8 @@ struct U4Mesh
     static void Save(const G4VSolid* solid, const char* base="$FOLD"); 
     static NPFold* MakeFold(const std::vector<const G4VSolid*>& solids ) ; 
     static NPFold* Serialize(const G4VSolid* solid) ; 
+    static const char* SolidName(const G4VSolid* solid); 
+
     U4Mesh(const G4VSolid* solid);     
     void init(); 
 
@@ -62,6 +68,8 @@ struct U4Mesh
     void init_fpd();
     NPFold* serialize() const ; 
     void save(const char* base) const ; 
+
+    std::string id() const  ; 
     std::string desc() const  ; 
 
     void init_face(); 
@@ -97,9 +105,19 @@ inline NPFold* U4Mesh::Serialize(const G4VSolid* solid) // static
     return mesh.serialize() ; 
 }
 
+inline const char* U4Mesh::SolidName(const G4VSolid* solid) // static
+{
+    G4String name = solid->GetName();  // forced to duplicate as this returns by value
+    return strdup(name.c_str()); 
+
+}
+
 inline U4Mesh::U4Mesh(const G4VSolid* solid_):
     solid(solid_),
+    solidname(SolidName(solid)),
     poly(solid->CreatePolyhedron()),
+    errvtx(0),
+    do_init_vtx_disqualify(false),
     nv_poly(poly->GetNoVertices()),
     nv(0),
     nf(poly->GetNoFacets()),
@@ -144,6 +162,9 @@ that is not referenced from any facet which causes
 issues for generation of normals, yeilding (nan,nan,nan) 
 due to the attempt at smooth normalization.
 
+But the disqualify skips necessary verts for polycone ?  
+
+
 **/
 inline void U4Mesh::init_vtx_face_count()
 {
@@ -170,7 +191,7 @@ inline void U4Mesh::init_vtx_face_count()
         }
     }
 
-    nv = v2fc.size(); 
+    nv = do_init_vtx_disqualify ? v2fc.size() : nv_poly ; 
     //std::cout << desc_vtx_face_count() ; 
 }
 
@@ -223,11 +244,14 @@ inline void U4Mesh::init_vtx()
     {
         int vfc = getVertexFaceCount(iv) ; 
         G4Point3D point = poly->GetVertex(iv+1) ;  
-        if( vfc == 0 )
+        bool collect = do_init_vtx_disqualify ? vfc > 0 : true ; 
+        if( !collect )
         {
+           
             std::cout 
-                << "U4Mesh::init_vtx"
-                << " DISQUALIFIED VTX NOT INCLUDED IN ANY FACET " 
+                << "U4Mesh::init_vtx "
+                << id()
+                << " : DISQUALIFIED VTX NOT INCLUDED IN ANY FACET " 
                 << " iv " << iv 
                 << " vfc " << vfc 
                 << " point [ "
@@ -248,7 +272,10 @@ inline void U4Mesh::init_vtx()
             nv_count += 1 ;  
         }
     }
-    assert( nv_count == nv ); 
+    if( do_init_vtx_disqualify )
+    {
+        assert( nv_count == nv ); 
+    }
 }
 
 /**
@@ -282,20 +309,19 @@ inline void U4Mesh::init_fpd()
         poly->GetFacet(i+1, nedge, ivertex, iedgeflag, ifacet);
         assert( nedge == 3 || nedge == 4  ); 
 
-        if( nedge == 3 )
+        _fpd.push_back(nedge);  
+        for(int j=0 ; j < nedge ; j++)
         {
-            _fpd.push_back(3);  
-            _fpd.push_back(ivertex[0]-1);
-            _fpd.push_back(ivertex[1]-1);
-            _fpd.push_back(ivertex[2]-1);
-        } 
-        else if( nedge == 4 )
-        {
-            _fpd.push_back(4);  
-            _fpd.push_back(ivertex[0]-1);
-            _fpd.push_back(ivertex[1]-1);
-            _fpd.push_back(ivertex[2]-1);
-            _fpd.push_back(ivertex[3]-1);
+            int jvtx = ivertex[j]-1 ; 
+            if( jvtx >= nv ) std::cout 
+                << "U4Mesh::init_fpd "
+                << id()
+                << " ERR jvtx >= nv  (j, jvtx, nv, nv_poly ) "
+                << "(" << j << "," << jvtx << "," << nv << "," << nv_poly << ")" 
+                << std::endl 
+                ;  
+            if( jvtx >= nv ) errvtx += 1 ; 
+            _fpd.push_back(jvtx);
         }
     }
     fpd = NPX::Make<int>(_fpd); 
@@ -320,13 +346,21 @@ inline void U4Mesh::save(const char* base) const
     fold->save(base); 
 }
 
-
+inline std::string U4Mesh::id() const 
+{
+    std::stringstream ss ; 
+    ss << solidname ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 inline std::string U4Mesh::desc() const 
 {
     std::stringstream ss ; 
     ss << "U4Mesh::desc" 
+       << " solidname " << solidname
        << " nv " << nv 
+       << " nv_poly " << nv_poly
        << " nf " << nf 
        << std::endl 
        ; 

@@ -16,6 +16,7 @@ See also::
 
     ~/o/sysrap/tests/SMesh_test.sh 
     SOLID=Tet ~/o/sysrap/tests/SMesh_test.sh run
+    SOLID=Orb ~/o/sysrap/tests/SMesh_test.sh build_run
 
 **/
 
@@ -28,6 +29,7 @@ int main()
 {
     const SMesh* box = SMesh::Load("$MESH_FOLD/Box"); 
     const SMesh* torus = SMesh::Load("$MESH_FOLD/Torus"); 
+    const SMesh* other = SMesh::Load("$STREE_MESH_FOLD/$STREE_MESH_SOLID"); 
 
     sframe fr ; 
     fr.ce = make_float4(0.f, 0.f, 0.f, 100.f); 
@@ -47,8 +49,9 @@ int main()
     prog.use(); 
     prog.locateMVP("MVP",  gm.MVP_ptr );  
 
-    SGLFW_Render rbox( box, &prog ); 
-    SGLFW_Render rtorus( torus, &prog ); 
+    SGLFW_Render r_box( box, &prog ); 
+    SGLFW_Render r_torus( torus, &prog ); 
+    SGLFW_Render r_other( other, &prog ); 
     // common prog for multiple mesh renders
  
     while(gl.renderloop_proceed())
@@ -63,8 +66,9 @@ int main()
         }
         else
         {
-            rbox.render();
-            rtorus.render();
+            r_box.render();
+            r_torus.render();
+            r_other.render();
         }
         gl.renderloop_tail();      // swap buffers, poll events
     }
