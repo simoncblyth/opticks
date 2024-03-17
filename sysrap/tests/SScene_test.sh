@@ -13,7 +13,9 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 
 name=SScene_test
-bin=/tmp/$name
+export FOLD=/tmp/$name
+mkdir -p $FOLD 
+bin=$FOLD/$name
 
 stree_fold=$TMP/U4TreeCreateTest
 export STREE_FOLD=${STREE_FOLD:-$stree_fold}
@@ -23,7 +25,7 @@ if [ ! -d "$STREE_FOLD/stree" ]; then
    exit 1
 fi 
 
-vars="BASH_SOURCE PWD stree_fold STREE_FOLD bin"
+vars="BASH_SOURCE PWD stree_fold STREE_FOLD FOLD bin"
 
 defarg=info_build_run
 arg=${1:-$defarg}

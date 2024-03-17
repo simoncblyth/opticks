@@ -30,6 +30,8 @@ Inputs from stree.h
       transforms will in general need to be applied
    
       * BUT : IN MOST CASES (PMTs) ALL THE RELATIVE TRANSFORMS WILL BE IDENTITY
+   
+        * NOT SO FOR PMT INNARDS : THEY ALL HAVE TRANSFORMS
 
   * HMM: CSGFoundry must do similar ? IT GOES FUTHER DELVING INTO CSG CONSTIUENTS
     WITH stree::get_combined_transfor
@@ -46,15 +48,22 @@ Inputs from stree.h
 struct SScene
 {
     const stree* st ;
+    std::vector<const SMesh*> mesh ; 
 
     SScene( const stree* _st ); 
+
     void init(); 
     void initRemainder();
     void initFactor();
     void initFactor_(int ridx);
-    void initNode(int ridx, const snode& node); 
+
+    void initNode(std::vector<const SMesh*>& subs, int ridx, const snode& node); 
 
     std::string desc() const ; 
+
+    NPFold* serialize() const ; 
+    void save(const char* dir) const ; 
+
 };
 
 inline SScene::SScene( const stree* _st )
@@ -66,7 +75,7 @@ inline SScene::SScene( const stree* _st )
 
 inline void SScene::init()
 {
-    //initRemainder(); 
+    initRemainder(); 
     initFactor(); 
 }
 
@@ -78,12 +87,15 @@ inline void SScene::initRemainder()
         << " num_node " << num_node 
         << std::endl
         ;
-  
+ 
+    std::vector<const SMesh*> subs ; 
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = st->rem[i]; 
-        initNode(0, node); 
+        initNode(subs, 0, node); 
     }
+    const SMesh* _mesh = SMesh::Concatenate( subs, 0 ); 
+    mesh.push_back(_mesh); 
 
     std::cout
         << "] SScene::initRemainder"
@@ -114,11 +126,14 @@ inline void SScene::initFactor_(int ridx)
        << std::endl 
        ;
 
+    std::vector<const SMesh*> subs ; 
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = nodes[i]; 
-        initNode(ridx, node); 
+        initNode(subs, ridx, node); 
     }
+    const SMesh* _mesh = SMesh::Concatenate( subs, ridx ); 
+    mesh.push_back(_mesh); 
 }
 
 /**
@@ -128,9 +143,25 @@ SScene::initNode
 Need meshgroup, to keep separate lists of relative placed meshes ?
 Or could keep flat and identify groups by ridx ? 
 
+SMeshGroup with vectors of SMesh ? 
+
+* suspect the sutil::Scene meshgroup corresponds more to different factors ?
+* Add SMesh::upload SMeshGroup::upload with device pointers in SMesh 
+* OpenGL favors effective mesh merging ... 
+ 
+  * hmm maybe OptiX does too ?  
+  * could implement SMesh concatenation 
+
+    * vtx, nrm are trivial
+    * tri needs index offsetting  (see old GMesh/GMergedMesh)
+
+  * OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
+  * can start with duplicated arrays : in anycase always need without OpenGL route 
+
+
 **/
 
-inline void SScene::initNode(int ridx, const snode& node)
+inline void SScene::initNode(std::vector<const SMesh*>& submesh, int ridx, const snode& node)
 {
     glm::tmat4x4<double> m2w(1.);  
     glm::tmat4x4<double> w2m(1.);  
@@ -142,6 +173,7 @@ inline void SScene::initNode(int ridx, const snode& node)
     const char* so = st->soname[node.lvid].c_str();  // raw (not 0x stripped) name
     const NPFold* fold = st->mesh->get_subfold(so)  ;
     const SMesh* _mesh = SMesh::Import( fold, &m2w ); 
+    submesh.push_back(_mesh); 
 
     std::cout 
        << " node.lvid " << node.lvid 
@@ -163,5 +195,25 @@ inline std::string SScene::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline NPFold* SScene::serialize() const 
+{
+    NPFold* fold = new NPFold ; 
+    int num_mesh = mesh.size(); 
+    for(int i=0 ; i < num_mesh ; i++)
+    {
+        const SMesh* m = mesh[i] ; 
+        fold->add_subfold( m->name, m->serialize() ); 
+    } 
+    return fold ; 
+}
+
+inline void SScene::save(const char* dir) const 
+{
+    NPFold* fold = serialize(); 
+    fold->save(dir); 
+}
+
+
 
 

@@ -37,7 +37,7 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     glm-
-    gcc $name.cc -std=c++11 -lstdc++ -I.. -I$(glm-prefix) -o $bin
+    gcc $name.cc -g -std=c++11 -lstdc++ -I.. -I$(glm-prefix) -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
 fi 
 
@@ -45,6 +45,13 @@ if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then 
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
+fi 
+
+
 
 exit 0 
 

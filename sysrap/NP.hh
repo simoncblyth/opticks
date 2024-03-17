@@ -85,6 +85,7 @@ struct NP
 
     template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); // from -1. to 1. 
                          static NP* SqrtOneMinusSquare( const NP* a ); 
+                         static NP* Incremented( const NP* a, int offset  ); 
      
     template<typename T> static NP* MakeDiv( const NP* src, unsigned mul  ); 
 
@@ -419,7 +420,9 @@ struct NP
     static int Memcmp( const NP* a, const NP* b ); 
 
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
-    static NP* Concatenate(const std::vector<NP*>& aa); 
+
+    template<typename T>
+    static NP* Concatenate(const std::vector<T*>& aa ); 
 
     static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true, const NP* parasite=nullptr ); 
     template<typename... Args> static NP* Combine_(Args ... aa);  // Combine_ellipsis
@@ -845,6 +848,28 @@ inline NP* NP::SqrtOneMinusSquare( const NP* a ) // static
     return b ; 
 }
 
+inline NP* NP::Incremented( const NP* a, int offset ) // static
+{
+    assert( a->uifc == 'i' );   
+    assert( a->ebyte == 4 || a->ebyte == 8  );   
+    int num = a->num_values() ;  // all dimensions
+
+    NP* b = NP::MakeLike(a); 
+
+    if( a->ebyte == 8 )
+    {
+        const long* aa = a->cvalues<long>(); 
+        long* bb = b->values<long>(); 
+        for(int i=0 ; i < num ; i++ ) bb[i] = aa[i] + long(offset) ;  
+    }
+    else if( a->ebyte == 4 )
+    {
+        const int* aa = a->cvalues<int>(); 
+        int* bb = b->values<int>(); 
+        for(int i=0 ; i < num ; i++ ) bb[i] = aa[i] + offset ; 
+    }
+    return b ; 
+}
 
 
 /**
@@ -5540,18 +5565,20 @@ inline NP* NP::Concatenate(const char* dir, const std::vector<std::string>& name
     return concat ; 
 }
 
-inline NP* NP::Concatenate(const std::vector<NP*>& aa)  // static 
-{
-    assert( aa.size() > 0 ); 
 
-    NP* a0 = aa[0] ; 
+template<typename T>
+inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static 
+{
+    int num_a = aa.size(); 
+    assert( num_a > 0 ); 
+    auto a0 = aa[0] ; 
     
     unsigned nv0 = a0->num_itemvalues() ; 
     const char* dtype0 = a0->dtype ; 
 
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
-        NP* a = aa[i] ;
+        auto a = aa[i] ;
 
         unsigned nv = a->num_itemvalues() ; 
         bool compatible = nv == nv0 && strcmp(dtype0, a->dtype) == 0 ; 
@@ -5584,11 +5611,11 @@ inline NP* NP::Concatenate(const std::vector<NP*>& aa)  // static
     unsigned offset_bytes = 0 ; 
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
-        NP* a = aa[i]; 
+        auto a = aa[i]; 
         unsigned a_bytes = a->arr_bytes() ; 
         memcpy( c->data.data() + offset_bytes ,  a->data.data(),  a_bytes ); 
         offset_bytes += a_bytes ;  
-        a->clear(); // HUH: THATS A BIT IMPOLITE ASSUMING CALLER DOESNT WANT TO USE INPUTS
+        //a->clear(); // HUH: THAT WAS IMPOLITE : ASSUMING CALLER DOESNT WANT TO USE INPUTS
     }
     return c ; 
 }

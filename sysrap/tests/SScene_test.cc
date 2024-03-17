@@ -18,6 +18,7 @@ int main()
 
     SScene sc(st) ; 
     std::cout << "sc.desc" << sc.desc() ; 
+    sc.save("$FOLD") ;  
 
     return 0 ; 
 }
