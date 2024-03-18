@@ -78,10 +78,10 @@ int main()
              vao.bind(); 
 
              vbuf.bind();
-             prog.enableVertexAttribArray( prog.vtx_attname, mesh->vtx_spec ); 
+             prog.enableVertexAttribArray( prog.vtx_attname, SMesh::VTX_SPEC ); 
 
              nbuf.bind();
-             prog.enableVertexAttribArray( prog.nrm_attname, mesh->nrm_spec ); 
+             prog.enableVertexAttribArray( prog.nrm_attname, SMesh::NRM_SPEC ); 
 
              // NB: careful with the ordering of the above or the OpenGL state machine will bite you : 
              // the vPos and vNrm attribs needs to ne enabled after the appropriate buffer is made THE active GL_ARRAY_BUFFER
@@ -90,7 +90,7 @@ int main()
 
              prog.updateMVP();
 
-             glDrawElements(GL_TRIANGLES, mesh->indices_num, GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * mesh->indices_offset ));
+             glDrawElements(GL_TRIANGLES, mesh->indices_num(), GL_UNSIGNED_INT, (GLvoid*)(sizeof(GLuint) * mesh->indices_offset() ));
              // HMM: prog.draw ?
         }
         gl.renderloop_tail();          // swap buffers, poll events

@@ -73,7 +73,6 @@ tmin=0.1
 #escale=asis
 escale=extent
 
-
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 export SHADER_FOLD=$sdir/gl/$SHADER
 export WH=${WH:-$wh}

@@ -22,11 +22,11 @@ struct SGLFW_Render
 
     SGLFW_VAO*     vao ;  
     SGLFW_Buffer*  idx ; 
+    int   render_count ; 
 
     SGLFW_Render(const SMesh* mesh, const SGLFW_Program* prog, const NP* inst=nullptr ) ; 
     void render(); 
     void render_drawElements() const ; 
-
 };
 
 inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog, const NP* _inst )
@@ -38,7 +38,8 @@ inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog
     nrm(nullptr),
     ins(nullptr),
     vao(nullptr),
-    idx(nullptr)
+    idx(nullptr),
+    render_count(0)
 {
     vtx = new SGLFW_Buffer( mesh->vtx->arr_bytes(), mesh->vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
     vtx->bind();
@@ -94,6 +95,7 @@ inline void SGLFW_Render::render()
    prog->updateMVP();
 
    render_drawElements(); 
+   render_count += 1 ; 
 }
 
 inline void SGLFW_Render::render_drawElements() const 
@@ -106,15 +108,22 @@ inline void SGLFW_Render::render_drawElements() const
 
     if(instancecount > 0)
     {
-#ifdef __APPLE__
+//#ifdef __APPLE__
         // OpenGL macros are defined but not implemented see examples/UseOpticksGLEW
         // so kludge it with os check 
         glDrawElementsInstanced(mode, count, type, indices, instancecount );
-#else
-        GLint basevertex = 0 ; 
-        GLuint baseinstance = 0 ; 
-        glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
-#endif
+        if(render_count < 10 ) std::cout 
+            << "SGLFW_Render::render_drawElements.glDrawElementsInstanced" 
+            << " render_count " << render_count
+            << " instancecount " << instancecount
+            << std::endl
+            ;  
+//#else
+//        GLint basevertex = 0 ; 
+//        GLuint baseinstance = 0 ; 
+//        glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
+//        std::cout << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" << std::endl ;
+//#endif
 
     }
     else

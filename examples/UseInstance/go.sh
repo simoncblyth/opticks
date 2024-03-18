@@ -20,6 +20,9 @@ EOU
 }
 
 opticks-
+oe-
+om-
+
 
 path=$(realpath $BASH_SOURCE)
 sdir=$(dirname $path)
@@ -41,6 +44,17 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then
 
+    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+    
+    om-cmake $sdir 
+    make
+    [ $? -ne 0 ] && echo $BASH_SOURCE : make error && exit 1 
+    make install   
+    [ $? -ne 0 ] && echo $BASH_SOURCE : install error && exit 2 
+fi
+
+if [ "${arg/manual}" != "$arg" ]; then
+
       rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
       cmake $sdir 
@@ -57,8 +71,20 @@ fi
 
 if [ "${arg/run}" != "$arg" ]; then
     echo executing $TEST
-    om-
-    om-run $TEST
+    #om-
+    #om-run $TEST
+    $TEST
 fi
+
+if [ "${arg/lib}" != "$arg" ]; then
+    case $(uname) in 
+       Darwin) otool -L $(which $TEST) ;;
+       Linux) ldd  $(which $TEST) ;;
+   esac
+fi
+
+
+
+
 
 

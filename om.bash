@@ -1314,10 +1314,11 @@ EOT
 
 
 om-libpath(){
-   local libprefix=$LOCAL_BASE/opticks_$(opticks-buildtype)
+   #local libprefix=$LOCAL_BASE/opticks_$(opticks-buildtype)
+   local libprefix=$OPTICKS_PREFIX
    case $(uname) in
       Darwin) echo $libprefix/lib:$libprefix/externals/lib ;;
-      Linux) echo $libprefix/lib64 ;; 
+      Linux) echo $libprefix/lib64:$libprefix/externals/lib:/lib64 ;; 
    esac
 }
 

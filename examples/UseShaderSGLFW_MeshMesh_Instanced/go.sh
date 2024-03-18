@@ -44,9 +44,6 @@ bdir=/tmp/$USER/opticks/$name/build
 
 mesh_fold=/tmp/U4Mesh_test
 
-
-
-
 wh=1024,768
 
 #eye=0.1,0,-10

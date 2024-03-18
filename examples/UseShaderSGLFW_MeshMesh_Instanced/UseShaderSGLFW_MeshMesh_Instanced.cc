@@ -52,6 +52,12 @@ int main()
     const SMesh* torus = SMesh::Load("$MESH_FOLD/Torus"); 
     NP* inst = make_instance_transforms(); 
 
+    std::cout 
+        << " box " << ( box ? "Y" : "N" ) 
+        << " torus " << ( torus ? "Y" : "N" ) 
+        << std::endl 
+        ;
+
     sframe fr ; 
     fr.ce = make_float4(0.f, 0.f, 0.f, 200.f); 
 
@@ -67,7 +73,7 @@ int main()
 #endif
 
 
-    SGLFW_Program a_prog("$SHADER_FOLD/iwireframe", "vPos", "vNrm", "vInstanceTransform" );
+    SGLFW_Program a_prog("$SHADER_FOLD/inormal", "vPos", "vNrm", "vInstanceTransform" );
     a_prog.use(); 
     a_prog.locateMVP("MVP",  gm.MVP_ptr );  
 
