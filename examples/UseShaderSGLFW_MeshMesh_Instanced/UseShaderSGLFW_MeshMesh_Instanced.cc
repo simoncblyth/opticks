@@ -24,7 +24,10 @@ Issue : Linux instanced not showing up, Darwin OK
 The render just does not appear for those solids
 
 * could be down to the dirtry JUNO env (eg GLEW from ROOT)
-* TODO: non-CMake build for more precise control 
+
+  * NOPE : trying with cleaner .opticks_config env 
+    with glfw and glew installed libs makes no difference
+
 
 
 **/

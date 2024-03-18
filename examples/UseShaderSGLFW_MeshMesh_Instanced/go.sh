@@ -95,6 +95,9 @@ fi
 
 if [ "${arg/run}" != "$arg" ]; then 
     echo executing $name
+    [ -z "$DISPLAY" ] && export DISPLAY=:0 && echo $BASH_SOURCE : WARNING ADHOC SETTING OF DISPLAY $DISPLAY 
+    # the adhoc setting allows popping up a window on workstation from an ssh session on laptop
+
     $name
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi

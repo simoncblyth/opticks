@@ -6,7 +6,6 @@ SScene_test.cc
 
    ~/o/sysrap/tests/SScene_test.sh 
 
-
 **/
 
 #include "SScene.h"

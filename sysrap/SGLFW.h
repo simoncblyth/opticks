@@ -433,7 +433,7 @@ inline void SGLFW::init()
 #elif __linux
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);  // also used 6 here 
-    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
+    //glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   
     // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,   

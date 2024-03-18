@@ -327,7 +327,10 @@ inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char
 
 inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* name ) const 
 {
-    SGLFW_Attrib att(name, SMesh::MATROW_SPEC ); 
+    SGLFW_Attrib att(name, SMesh::MATROW_SPEC );
+
+    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
+ 
     size_t qsize = att.stride/4 ;   
     GLuint divisor = 1 ;   
     // number of instances between updates of attribute , >1 will land that many instances on top of each other
@@ -337,20 +340,21 @@ inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* nam
     const void* offset2 = (void*)(qsize*2) ; 
     const void* offset3 = (void*)(qsize*3) ; 
 
+    glEnableVertexAttribArray(att.index+0);                                                       SGLFW__check(__FILE__, __LINE__);
     glVertexAttribPointer(att.index+0, att.size, att.type, att.normalized, att.stride, offset0 ); SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribDivisor(att.index+0, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+
+    glEnableVertexAttribArray(att.index+1);                                                       SGLFW__check(__FILE__, __LINE__);
     glVertexAttribPointer(att.index+1, att.size, att.type, att.normalized, att.stride, offset1 ); SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribDivisor(att.index+1, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+
+    glEnableVertexAttribArray(att.index+2);                                                       SGLFW__check(__FILE__, __LINE__);
     glVertexAttribPointer(att.index+2, att.size, att.type, att.normalized, att.stride, offset2 ); SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribDivisor(att.index+2, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+
+    glEnableVertexAttribArray(att.index+3);                                                       SGLFW__check(__FILE__, __LINE__);
     glVertexAttribPointer(att.index+3, att.size, att.type, att.normalized, att.stride, offset3 ); SGLFW__check(__FILE__, __LINE__);
-
-    glEnableVertexAttribArray(att.index+0);
-    glEnableVertexAttribArray(att.index+1);
-    glEnableVertexAttribArray(att.index+2);
-    glEnableVertexAttribArray(att.index+3);
-
-    glVertexAttribDivisor(att.index+0, divisor);
-    glVertexAttribDivisor(att.index+1, divisor);
-    glVertexAttribDivisor(att.index+2, divisor);
-    glVertexAttribDivisor(att.index+3, divisor);
+    glVertexAttribDivisor(att.index+3, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
 }
 
 

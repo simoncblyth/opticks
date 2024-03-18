@@ -73,14 +73,13 @@ if [ "${arg/run}" != "$arg" ]; then
     echo executing $TEST
     #om-
     #om-run $TEST
+    [ -z "$DISPLAY" ] && export DISPLAY=:0 && echo $BASH_SOURCE : WARNING ADHOC SETTING OF DISPLAY $DISPLAY 
+    # the adhoc setting allows popping up a window on workstation from an ssh session on laptop
     $TEST
 fi
 
 if [ "${arg/lib}" != "$arg" ]; then
-    case $(uname) in 
-       Darwin) otool -L $(which $TEST) ;;
-       Linux) ldd  $(which $TEST) ;;
-   esac
+    lib__ $TEST
 fi
 
 

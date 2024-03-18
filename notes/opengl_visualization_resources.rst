@@ -110,7 +110,7 @@ Instancing
 
 
 * ~/env/graphics/opengl/instance/instance.cc
-* ~/opticks/opticks/examples/UseInstance
+* ~/opticks/examples/UseInstance
 
 * ~/opticks/oglrap/gl/inrm/vert.glsl 
 
