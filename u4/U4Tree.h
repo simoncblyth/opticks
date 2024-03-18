@@ -63,6 +63,7 @@ controlled via envvar::
 #include "suniquename.h"
 #include "snd.hh"
 #include "sdomain.h"
+#include "sstr.h"
 #include "ssys.h"
 
 #include "SSimtrace.h"
@@ -144,6 +145,7 @@ private:
     void initSurfaces(); 
 
     void initSolids(); 
+    void initSolids_Keys(); 
     void initSolids_Mesh(); 
 
     void initSolids_r(const G4VPhysicalVolume* const pv); 
@@ -521,8 +523,26 @@ cf X4PhysicalVolume::convertSolids
 inline void U4Tree::initSolids()
 {
     initSolids_r(top);
+    initSolids_Keys(); 
     initSolids_Mesh(); 
 }
+
+/**
+U4Tree::initSolids_Keys
+------------------------
+
+The st->soname_raw which may have 0x suffixes are
+tail stripped and if needed uniqued wiyj _0 _1 suffix
+to form st->soname
+
+**/
+
+inline void U4Tree::initSolids_Keys()
+{
+    sstr::StripTail_Unique( st->soname, st->soname_raw, "0x" );  
+    assert( st->soname.size() == st->soname_raw.size() );  
+}
+
 
 /**
 U4Tree::initSolids_Mesh
@@ -530,15 +550,11 @@ U4Tree::initSolids_Mesh
 
 Uses U4Mesh/G4Polyhedron to triangulate all G4VSolid
 with the results serialized into st->mesh NPFold
-keyed on the 0x stripped solid name with _0 _1 uniqing 
-to avoid name clashes.  
-
 **/
 
 inline void U4Tree::initSolids_Mesh()
 {
-    bool key_strip_unique = true ;  
-    st->mesh = U4Mesh::MakeFold(solids, key_strip_unique ) ; 
+    st->mesh = U4Mesh::MakeFold(solids, st->soname ) ; 
 }
 
 inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
@@ -596,7 +612,7 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 #endif
 
     solids.push_back(so);
-    st->soname.push_back(name); 
+    st->soname_raw.push_back(name); 
     st->solids.push_back(root); 
 
     

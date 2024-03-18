@@ -313,7 +313,8 @@ struct stree
     std::vector<std::string> bdname ; 
     std::vector<std::string> implicit ;  // names of implicit surfaces
 
-    std::vector<std::string> soname ;       // unique solid names
+    std::vector<std::string> soname_raw ;   // solid names, my have 0x pointer suffix 
+    std::vector<std::string> soname ;       // unique solid names, created with sstr::StripTail_unique with _1 _2 ... uniqing 
 
 #ifdef WITH_SND
     std::vector<int>         solids ;       // snd idx 
