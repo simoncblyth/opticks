@@ -47,43 +47,41 @@ Inputs from stree.h
 
 struct SScene
 {
-    const stree* st ;
     std::vector<const SMesh*> mesh ; 
 
-    SScene( const stree* _st ); 
-
-    void init(); 
-    void initRemainder();
-    void initFactor();
-    void initFactor_(int ridx);
-
-    void initNode(std::vector<const SMesh*>& subs, int ridx, const snode& node); 
+    SScene(); 
+ 
+    void initFromTree(const stree* st); 
+    void initFromTree_Remainder(const stree* st);
+    void initFromTree_Factor(const stree* st);
+    void initFromTree_Factor_(int ridx, const stree* st);
+    void initFromTree_Node(std::vector<const SMesh*>& subs, int ridx, const snode& node, const stree* st); 
 
     std::string desc() const ; 
 
-    NPFold* serialize() const ; 
+    NPFold* serialize() const ;
     void save(const char* dir) const ; 
+
+    void import(const NPFold* fold);  
+    void load(const char* dir); 
 
 };
 
-inline SScene::SScene( const stree* _st )
-    :
-    st(_st)
+inline SScene::SScene()
 {
-    init(); 
 }
 
-inline void SScene::init()
+inline void SScene::initFromTree(const stree* st)
 {
-    initRemainder(); 
-    initFactor(); 
+    initFromTree_Remainder(st); 
+    initFromTree_Factor(st); 
 }
 
-inline void SScene::initRemainder()
+inline void SScene::initFromTree_Remainder(const stree* st)
 {
     int num_node = st->rem.size() ; 
     std::cout
-        << "[ SScene::initRemainder"
+        << "[ SScene::initFromTree_Remainder"
         << " num_node " << num_node 
         << std::endl
         ;
@@ -92,25 +90,25 @@ inline void SScene::initRemainder()
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = st->rem[i]; 
-        initNode(subs, 0, node); 
+        initFromTree_Node(subs, 0, node, st); 
     }
     const SMesh* _mesh = SMesh::Concatenate( subs, 0 ); 
     mesh.push_back(_mesh); 
 
     std::cout
-        << "] SScene::initRemainder"
+        << "] SScene::initFromTree_Remainder"
         << " num_node " << num_node 
         << std::endl
         ;
 }
 
-inline void SScene::initFactor()
+inline void SScene::initFromTree_Factor(const stree* st)
 {
     int num_fac = st->get_num_factor(); 
-    for(int i=0 ; i < num_fac ; i++) initFactor_(1+i); 
+    for(int i=0 ; i < num_fac ; i++) initFromTree_Factor_(1+i, st); 
 }
 
-inline void SScene::initFactor_(int ridx)
+inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
 {
     assert( ridx > 0 ); 
     int q_repeat_index = ridx ; 
@@ -120,7 +118,7 @@ inline void SScene::initFactor_(int ridx)
     int num_node = nodes.size(); 
 
     std::cout 
-       << "SScene::initFactor"
+       << "SScene::initFromTree_Factor"
        << " ridx " << ridx
        << " num_node " << num_node
        << std::endl 
@@ -130,38 +128,22 @@ inline void SScene::initFactor_(int ridx)
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = nodes[i]; 
-        initNode(subs, ridx, node); 
+        initFromTree_Node(subs, ridx, node, st); 
     }
     const SMesh* _mesh = SMesh::Concatenate( subs, ridx ); 
     mesh.push_back(_mesh); 
 }
 
 /**
-SScene::initNode
-------------------
+SScene::initFromTree_Node
+---------------------------
 
-Need meshgroup, to keep separate lists of relative placed meshes ?
-Or could keep flat and identify groups by ridx ? 
-
-SMeshGroup with vectors of SMesh ? 
-
-* suspect the sutil::Scene meshgroup corresponds more to different factors ?
-* Add SMesh::upload SMeshGroup::upload with device pointers in SMesh 
-* OpenGL favors effective mesh merging ... 
- 
-  * hmm maybe OptiX does too ?  
-  * could implement SMesh concatenation 
-
-    * vtx, nrm are trivial
-    * tri needs index offsetting  (see old GMesh/GMergedMesh)
-
-  * OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
-  * can start with duplicated arrays : in anycase always need without OpenGL route 
-
+* OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
+* can start with duplicated arrays : in anycase always need without OpenGL route 
 
 **/
 
-inline void SScene::initNode(std::vector<const SMesh*>& submesh, int ridx, const snode& node)
+inline void SScene::initFromTree_Node(std::vector<const SMesh*>& submesh, int ridx, const snode& node, const stree* st)
 {
     glm::tmat4x4<double> m2w(1.);  
     glm::tmat4x4<double> w2m(1.);  
@@ -172,10 +154,13 @@ inline void SScene::initNode(std::vector<const SMesh*>& submesh, int ridx, const
 
     const char* so = st->soname[node.lvid].c_str();  // raw (not 0x stripped) name
     const NPFold* fold = st->mesh->get_subfold(so)  ;
+    assert(fold); 
+
     const SMesh* _mesh = SMesh::Import( fold, &m2w ); 
     submesh.push_back(_mesh); 
 
     std::cout 
+       << "SScene::initFromTree_Node"
        << " node.lvid " << node.lvid 
        << " st.soname[node.lvid] " << st->soname[node.lvid] 
        << " _mesh " <<  _mesh->brief()  
@@ -191,6 +176,8 @@ inline std::string SScene::desc() const
 {
     std::stringstream ss ; 
     ss << "SScene::desc"
+       << " num_mesh " << mesh.size()
+       << std::endl 
        ;
     std::string str = ss.str(); 
     return str ; 
@@ -207,13 +194,20 @@ inline NPFold* SScene::serialize() const
     } 
     return fold ; 
 }
+inline void SScene::import(const NPFold* fold)
+{
+    int num_sub = fold->get_num_subfold();
+    std::cout << "SScene::import num_sub " << num_sub << std::endl ;     
+}
 
 inline void SScene::save(const char* dir) const 
 {
     NPFold* fold = serialize(); 
     fold->save(dir); 
 }
-
-
-
+inline void SScene::load(const char* dir) 
+{
+    NPFold* fold = NPFold::Load(dir); 
+    import(fold); 
+}
 

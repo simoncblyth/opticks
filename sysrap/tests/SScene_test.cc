@@ -15,9 +15,11 @@ int main()
     stree* st = stree::Load("$STREE_FOLD"); 
     std::cout << st->desc() ; 
 
-    SScene sc(st) ; 
-    std::cout << "sc.desc" << sc.desc() ; 
-    sc.save("$FOLD") ;  
+    SScene scene ; 
+    scene.initFromTree(st); 
+
+    std::cout << scene.desc() ; 
+    scene.save("$SSCENE_FOLD/scene/mesh") ;  
 
     return 0 ; 
 }
