@@ -53,7 +53,7 @@ struct U4Mesh
     NP*             tpd ;  // funny pyvista face format, but with all 3 vertex
 
     static void Save(const G4VSolid* solid, const char* base="$FOLD"); 
-    static NPFold* MakeFold(const std::vector<const G4VSolid*>& solids ) ; 
+    static NPFold* MakeFold(const std::vector<const G4VSolid*>& solids, bool key_strip_unique ) ; 
     static NPFold* Serialize(const G4VSolid* solid) ; 
     static const char* SolidName(const G4VSolid* solid); 
 
@@ -83,17 +83,42 @@ inline void U4Mesh::Save(const G4VSolid* solid, const char* base) // static
     NPFold* fold = U4Mesh::Serialize(solid) ; 
     fold->save(base); 
 }
-inline NPFold* U4Mesh::MakeFold(const std::vector<const G4VSolid*>& solids ) // static
+
+/**
+U4Mesh::MakeFold
+----------------
+
+key_strip_unique:false
+    uses raw solid names that may include 0xdeadbeef suffixes
+
+key_strip_unique:true
+    uses 0x stripped names with _0 _1 suffix if needed to maintain uniqueness
+
+**/
+
+inline NPFold* U4Mesh::MakeFold(const std::vector<const G4VSolid*>& solids, bool key_strip_unique ) // static
 {
     NPFold* mesh = new NPFold ; 
     int num_solid = solids.size(); 
+
+    std::vector<std::string> name ;  // as obtained from solid (with 0x suffix for GDML running)
     for(int i=0 ; i < num_solid ; i++)
     {
         const G4VSolid* so = solids[i];
-        G4String name = so->GetName() ;  // CAUTION: BY VALUE 
-        const char* key = name.c_str() ; 
+        G4String _name = so->GetName() ;   // CAUTION: BY VALUE 
+        name.push_back(_name); 
+    }
+    std::vector<std::string> key ; 
+    sstr::StripTail_Unique( key, name, "0x" ); 
+    assert( key.size() == name.size() );  
+
+    for(int i=0 ; i < num_solid ; i++)
+    {
+        const G4VSolid* so = solids[i];
+        const char* _key = key_strip_unique ? key[i].c_str() :  name[i].c_str() ;
+
         NPFold* sub = Serialize(so) ;    
-        mesh->add_subfold( key, sub ); 
+        mesh->add_subfold( _key, sub ); 
     }
     return mesh ; 
 }

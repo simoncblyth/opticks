@@ -16,6 +16,14 @@ Impl::
     ~/o/examples/UseShaderSGLFW_MeshMesh/UseShaderSGLFW_MeshMesh.cc
 
 
+Creating some of the input geometry
+-------------------------------------
+
+::
+
+    ~/o/u4/tests/U4TreeCreateTest.sh 
+
+
 Issues of view matrices
 -------------------------
 
@@ -46,7 +54,8 @@ bdir=/tmp/$USER/opticks/$name/build
 
 mesh_fold=/tmp/U4Mesh_test
 stree_mesh_fold=$TMP/U4TreeCreateTest/stree/mesh
-stree_mesh_solid=HamamatsuR12860sMask0xa0b9cb0
+#stree_mesh_solid=HamamatsuR12860sMask0xa0b9cb0
+stree_mesh_solid=HamamatsuR12860sMask
 
 
 shader=wireframe

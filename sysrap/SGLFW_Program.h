@@ -309,14 +309,13 @@ buffers ?
 
 inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char* spec, bool dump ) const 
 {
-    std::cout << "SGLFW_Program::enableVertexAttribArray name [" << name << "]" <<  std::endl ; 
+    if(dump) std::cout << "SGLFW_Program::enableVertexAttribArray name [" << name << "]" <<  std::endl ; 
 
     SGLFW_Attrib att(name, spec); 
 
     att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
 
-    //if(dump) 
-    std::cout << "SGLFW_Program::enableVertexAttribArray att.desc [" << att.desc() << "]" <<  std::endl ; 
+    if(dump) std::cout << "SGLFW_Program::enableVertexAttribArray att.desc [" << att.desc() << "]" <<  std::endl ; 
 
     glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__);
 
@@ -328,8 +327,7 @@ inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char
 
 inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* name ) const 
 {
-    const char* spec = "4,GL_FLOAT,GL_FALSE,64,0,false" ; 
-    SGLFW_Attrib att(name, spec); 
+    SGLFW_Attrib att(name, SMesh::MATROW_SPEC ); 
     size_t qsize = att.stride/4 ;   
     GLuint divisor = 1 ;   
     // number of instances between updates of attribute , >1 will land that many instances on top of each other
@@ -338,7 +336,6 @@ inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* nam
     const void* offset1 = (void*)(qsize*1) ; 
     const void* offset2 = (void*)(qsize*2) ; 
     const void* offset3 = (void*)(qsize*3) ; 
-
 
     glVertexAttribPointer(att.index+0, att.size, att.type, att.normalized, att.stride, offset0 ); SGLFW__check(__FILE__, __LINE__);
     glVertexAttribPointer(att.index+1, att.size, att.type, att.normalized, att.stride, offset1 ); SGLFW__check(__FILE__, __LINE__);

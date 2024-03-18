@@ -144,6 +144,8 @@ private:
     void initSurfaces(); 
 
     void initSolids(); 
+    void initSolids_Mesh(); 
+
     void initSolids_r(const G4VPhysicalVolume* const pv); 
     void initSolid(const G4LogicalVolume* const lv); 
 
@@ -518,9 +520,27 @@ cf X4PhysicalVolume::convertSolids
 
 inline void U4Tree::initSolids()
 {
-    initSolids_r(top); 
-    st->mesh = U4Mesh::MakeFold(solids) ; 
+    initSolids_r(top);
+    initSolids_Mesh(); 
 }
+
+/**
+U4Tree::initSolids_Mesh
+-------------------------
+
+Uses U4Mesh/G4Polyhedron to triangulate all G4VSolid
+with the results serialized into st->mesh NPFold
+keyed on the 0x stripped solid name with _0 _1 uniqing 
+to avoid name clashes.  
+
+**/
+
+inline void U4Tree::initSolids_Mesh()
+{
+    bool key_strip_unique = true ;  
+    st->mesh = U4Mesh::MakeFold(solids, key_strip_unique ) ; 
+}
+
 inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
@@ -537,11 +557,6 @@ inline void U4Tree::initSolid(const G4LogicalVolume* const lv)
     const G4VSolid* const so = lv->GetSolid(); 
     initSolid(so, lvid); 
 }
-
-
-
-
-
 
 /**
 U4Tree::initSolid

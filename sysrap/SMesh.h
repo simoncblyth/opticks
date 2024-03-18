@@ -24,11 +24,13 @@ struct SMesh
     static constexpr const char* NAME = "SMesh" ;  
     static constexpr const char* VTX_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  // 12=3*sizeof(float)
     static constexpr const char* NRM_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  
+    static constexpr const char* MATROW_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false" ; // 64=4*4*sizeof(float)
+
     static constexpr const bool  NRM_SMOOTH = true ; 
     // 3:vec3, 12:byte_stride 0:byte_offet
 
     const char* name    ;            // metadata : loaddir or manually set name
-    glm::tmat4x4<double> tr0 = {} ;  // informational only, as gets applied by init  
+    glm::tmat4x4<double> tr0 = {} ;  // informational for debug only, as gets applied by init  
 
     const NP* tri ; 
     const NP* vtx ; 
@@ -187,11 +189,13 @@ void SMesh::save(const char* dir) const
 inline SMesh::SMesh()
     :   
     name(nullptr),
+    tr0(1.),
     tri(nullptr),
     vtx(nullptr),
     nrm(nullptr),
-    tr0(1.),
-    ce(0.)
+    mn(0.f),
+    mx(0.f),
+    ce(0.f)
 {
 }
 

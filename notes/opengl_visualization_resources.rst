@@ -66,6 +66,36 @@ requires less work to set up :
 * https://www.spacesimulator.net/tutorials/OpenGL_matrices_tutorial_3_3.html
 
 
+glMultiDrawElementsIndirect (from OpenGL 4.3?)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glMultiDrawElementsIndirect.xhtml
+
+
+Table has tick for 4.3 but also note stating 4.2 works partially::
+
+    The baseInstance member of the DrawElementsIndirectCommand structure is defined
+    only if the GL version is 4.2 or greater. For versions of the GL less than 4.2,
+    this parameter is present but is reserved and should be set to zero. On earlier
+    versions of the GL, behavior is undefined if it is non-zero. 
+
+
+* old laptop GPU only handles 4.1 
+* BUT: OpenGL impls are slippery, so just try 
+
+Equiv to drawcount loop calling glDrawElementsInstancedBaseVertexBaseInstance
+
+* could detect the OpenGL version and spell out the loop for old laptop 
+
+
+glDrawElementsInstancedBaseVertexBaseInstance
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDrawElementsInstancedBaseVertexBaseInstance.xhtml
+
+
+
+
 Instancing
 ------------
 

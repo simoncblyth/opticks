@@ -79,10 +79,10 @@ inline void SGLFW_Render::render()
    vao->bind(); 
 
    vtx->bind();
-   prog->enableVertexAttribArray( prog->vtx_attname, mesh->vtx_spec ); 
+   prog->enableVertexAttribArray( prog->vtx_attname, SMesh::VTX_SPEC ); 
 
    nrm->bind();
-   prog->enableVertexAttribArray( prog->nrm_attname, mesh->nrm_spec ); 
+   prog->enableVertexAttribArray( prog->nrm_attname, SMesh::NRM_SPEC ); 
 
    if(ins)
    {
@@ -99,14 +99,23 @@ inline void SGLFW_Render::render()
 inline void SGLFW_Render::render_drawElements() const 
 {
     GLenum mode = GL_TRIANGLES ; 
-  	GLsizei count = mesh->indices_num ;  // number of elements to render (eg 3 for 1 triangle)
+  	GLsizei count = mesh->indices_num() ;  // number of elements to render (eg 3 for 1 triangle)
   	GLenum type = GL_UNSIGNED_INT ; 
-  	const void * indices = (GLvoid*)(sizeof(GLuint) * mesh->indices_offset ) ;
+  	const void * indices = (GLvoid*)(sizeof(GLuint) * mesh->indices_offset() ) ;
   	GLsizei instancecount = inst ? inst->num_items() : 0 ; 
 
     if(instancecount > 0)
     {
+#ifdef __APPLE__
+        // OpenGL macros are defined but not implemented see examples/UseOpticksGLEW
+        // so kludge it with os check 
         glDrawElementsInstanced(mode, count, type, indices, instancecount );
+#else
+        GLint basevertex = 0 ; 
+        GLuint baseinstance = 0 ; 
+        glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
+#endif
+
     }
     else
     {
