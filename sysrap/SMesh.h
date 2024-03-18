@@ -40,10 +40,13 @@ struct SMesh
     glm::tvec3<float> mx = {} ; 
     glm::tvec4<float> ce = {} ; 
 
-    static SMesh* Load(const char* dir, const char* rel,  const glm::tmat4x4<double>* tr=nullptr ); 
-    static SMesh* Load(const char* dir,      const glm::tmat4x4<double>* tr=nullptr ); 
-    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr );
-    void import(         const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr ); 
+    static SMesh* Load(const char* dir, const char* rel ); 
+    static SMesh* Load(const char* dir ); 
+    static SMesh* LoadTransformed(const char* dir, const char* rel,  const glm::tmat4x4<double>* tr ); 
+    static SMesh* LoadTransformed(const char* dir,                   const glm::tmat4x4<double>* tr ); 
+
+    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr );
+    void import(         const NPFold* fold, const glm::tmat4x4<double>* tr ); 
 
     NPFold* serialize() const ; 
     void save(const char* dir) const ; 
@@ -140,16 +143,29 @@ inline SMesh* SMesh::Concatenate(std::vector<const SMesh*>& submesh, int ridx )
     return com ; 
 }
 
-inline SMesh* SMesh::Load(const char* dir, const char* rel, const glm::tmat4x4<double>* tr)
+inline SMesh* SMesh::Load(const char* dir, const char* rel )
+{
+    NPFold* fold = NPFold::Load(dir, rel) ; 
+    return Import(fold, nullptr); 
+}
+inline SMesh* SMesh::Load(const char* dir)
+{
+    NPFold* fold = NPFold::Load(dir)  ; 
+    return Import(fold, nullptr); 
+}
+
+inline SMesh* SMesh::LoadTransformed(const char* dir, const char* rel, const glm::tmat4x4<double>* tr)
 {
     NPFold* fold = NPFold::Load(dir, rel) ; 
     return Import(fold, tr); 
 }
-inline SMesh* SMesh::Load(const char* dir, const glm::tmat4x4<double>* tr)
+inline SMesh* SMesh::LoadTransformed(const char* dir, const glm::tmat4x4<double>* tr)
 {
     NPFold* fold = NPFold::Load(dir) ; 
     return Import(fold, tr); 
 }
+
+
 inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr)
 {
     SMesh* mesh = new SMesh ; 
