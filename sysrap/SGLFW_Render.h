@@ -108,9 +108,6 @@ inline void SGLFW_Render::render_drawElements() const
 
     if(instancecount > 0)
     {
-//#ifdef __APPLE__
-        // OpenGL macros are defined but not implemented see examples/UseOpticksGLEW
-        // so kludge it with os check 
         glDrawElementsInstanced(mode, count, type, indices, instancecount );
         if(render_count < 10 ) std::cout 
             << "SGLFW_Render::render_drawElements.glDrawElementsInstanced" 
@@ -118,12 +115,11 @@ inline void SGLFW_Render::render_drawElements() const
             << " instancecount " << instancecount
             << std::endl
             ;  
-//#else
-//        GLint basevertex = 0 ; 
-//        GLuint baseinstance = 0 ; 
-//        glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
-//        std::cout << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" << std::endl ;
-//#endif
+
+//      GLint basevertex = 0 ; 
+//      GLuint baseinstance = 0 ; 
+//      glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
+//      std::cout << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" << std::endl ;
 
     }
     else

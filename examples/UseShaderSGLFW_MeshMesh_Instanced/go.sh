@@ -62,6 +62,8 @@ tmin=0.1
 #escale=asis
 escale=extent
 
+inst=1 
+
 
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 export SHADER_FOLD=$sdir/gl
@@ -72,10 +74,9 @@ export UP=${UP:-$up}
 export TMIN=${TMIN:-$tmin}
 export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
+export INST=${INST:-$inst}
 
-
-
-vars="BASH_SOURCE bdir SHADER_FOLD MESH_FOLD WH EYE"
+vars="BASH_SOURCE bdir SHADER_FOLD MESH_FOLD WH EYE INST"
 
 defarg="info_build_run"
 arg=${1:-$defarg}
@@ -103,7 +104,6 @@ if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $name
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 4
 fi
-
 
 exit 0 
 
