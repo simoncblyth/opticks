@@ -64,7 +64,6 @@ NP* make_instance_transforms()
     return inst ; 
 }
 
-
 int main()
 {
     std::vector<std::string> solid = {{"Box", "Torus", "Cons", "Tet", "Orb", "Tubs" }} ; 
@@ -74,7 +73,7 @@ int main()
     for(int i=0 ; i < num_solid ; i++)
     {
         glm::tmat4x4<double> tr = stra<double>::Translate( (i - num_solid/2)*100. , 0., 0. , 1. );  
-        const SMesh* _mesh = SMesh::Load("$MESH_FOLD", solid[i].c_str(), &tr) ; 
+        const SMesh* _mesh = SMesh::LoadTransformed("$MESH_FOLD", solid[i].c_str(), &tr) ; 
         mesh.push_back(_mesh); 
     } 
 

@@ -94,6 +94,11 @@ glDrawElementsInstancedBaseVertexBaseInstance
 * https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDrawElementsInstancedBaseVertexBaseInstance.xhtml
 
 
+glDrawElementsIndirect
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDrawElementsIndirect.xhtml
+
 
 
 Instancing
@@ -198,6 +203,21 @@ Compositing
 
 * :google:`OpenGL Compositing ray trace and rasterized`
 
+
+
+ancient laptop OpenGL 4.1 issue
+-----------------------------------
+
+
+::
+
+    122         GLint basevertex = 0 ;
+    123         GLuint baseinstance = 0 ;
+    124         glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance );
+    125         // SEGV on laptop, OK on worktation 
+    126         // https://github.com/moderngl/moderngl/issues/346
+    127         std::cout << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" << std::endl ;
+    128     
 
 
 

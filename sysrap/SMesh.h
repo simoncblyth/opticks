@@ -3,10 +3,19 @@
 SMesh.h
 ========
 
+NB SMesh.h is used in two situtions
+
+1. original SMesh converted from G4VSolid via U4Mesh created NPFold, with 
+   formation of normals using smooth or flat techniques
+
+2. concatenated SMesh with possibly thousands of SMesh joined together, 
+   normals are joined together from the inputs
+
+
 ::
 
     ~/o/sysrap/tests/SMesh_test.sh
-
+    ~/o/sysrap/tests/SScene_test.sh
     ~/o/u4/tests/U4TreeCreateTest.sh 
 
 **/

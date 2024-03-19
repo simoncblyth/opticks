@@ -108,18 +108,30 @@ inline void SGLFW_Render::render_drawElements() const
 
     if(instancecount > 0)
     {
+
+#ifdef __APPLE__
         glDrawElementsInstanced(mode, count, type, indices, instancecount );
         if(render_count < 10 ) std::cout 
             << "SGLFW_Render::render_drawElements.glDrawElementsInstanced" 
             << " render_count " << render_count
             << " instancecount " << instancecount
             << std::endl
-            ;  
+            ;
 
-//      GLint basevertex = 0 ; 
-//      GLuint baseinstance = 0 ; 
-//      glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
-//      std::cout << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" << std::endl ;
+#else
+        GLint basevertex = 0 ; 
+        GLuint baseinstance = 0 ; 
+        glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
+        // SEGV on laptop, OK on worktation 
+        // https://github.com/moderngl/moderngl/issues/346
+        if(render_count < 10 ) std::cout 
+            << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" 
+            << " render_count " << render_count
+            << " instancecount " << instancecount
+            << std::endl
+            ;
+#endif 
+
 
     }
     else

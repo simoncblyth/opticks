@@ -14,6 +14,11 @@ WIP : stree fold getting messy
 * DONE : split off mat/sur/bnd into sstandard 
 * TODO : split off structural transforms, nodes etc.. into subfold 
 
+Exmple
+--------
+
+~/o/u4/tests/U4TreeCreateTest.sh 
+
 
 Lifecycle
 ------------
@@ -297,6 +302,7 @@ struct stree
     static constexpr const char* SENSOR_NAME = "sensor_name.npy" ; 
     static constexpr const char* MTINDEX_TO_MTLINE = "mtindex_to_mtline.npy" ; 
 
+    static constexpr const char* INST_INFO = "inst_info.npy" ; 
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     int level ;                            // verbosity 
@@ -358,6 +364,7 @@ struct stree
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
 
+    std::vector<int4>                 inst_info ; 
     std::vector<int>                  inst_nidx ; 
 
     stree();
@@ -2196,6 +2203,7 @@ inline NPFold* stree::serialize() const
     NP* _inst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_f4, 4, 4) ; 
     NP* _iinst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( iinst_f4, 4, 4) ; 
 
+    NP* _inst_info = NPX::ArrayFromVec<int,int4>( inst_info, 4 ) ; 
     NP* _inst_nidx = NPX::ArrayFromVec<int,int>( inst_nidx ) ; 
     NP* _sensor_id = NPX::ArrayFromVec<int,int>( sensor_id ) ; 
     NP* _sensor_name = NPX::Holder(sensor_name); 
@@ -2206,6 +2214,7 @@ inline NPFold* stree::serialize() const
     fold->add( IINST,   _iinst ); 
     fold->add( INST_F4,   _inst_f4 ); 
     fold->add( IINST_F4,   _iinst_f4 ); 
+    fold->add( INST_INFO,   _inst_info ); 
     fold->add( INST_NIDX,   _inst_nidx ); 
     fold->add( SENSOR_ID,   _sensor_id ); 
     fold->add( SENSOR_NAME, _sensor_name ); 
@@ -2372,7 +2381,7 @@ inline void stree::import(const NPFold* fold)
     sensor_count = sensor_id.size(); 
     ImportNames( sensor_name, fold->get(SENSOR_NAME) ); 
 
- 
+    ImportArray<int4,int>( inst_info, fold->get(INST_INFO) );
     ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX) );
 }
 
@@ -3079,7 +3088,6 @@ inline void stree::add_inst(
 stree::add_inst
 ------------------
 
-
 ::
 
     In [7]: f.inst_f4[:,:,3].view(np.int32)
@@ -3110,9 +3118,31 @@ stree::add_inst
     Out[11]: (48477,)
 
 
+Note that the inst gas are gauranteed to be 
+in contiguous tranches, so can just have instcount 
+and offsets to reference to relevant transforms.
+
+::
+
+    g = i[:,1,3].view(np.int64) 
+
+    In [27]: np.where( g == 0 )[0]
+    Out[27]: array([0])
+
+    In [28]: np.where( g == 1 )[0]
+    Out[28]: array([    1,     2,     3, ..., 25598, 25599, 25600])
+
+    In [29]: np.where( g == 2 )[0]
+    Out[29]: array([25601, 25602, 25603, ..., 38213, 38214, 38215])
+
+    In [30]: np.where( g == 3 )[0]
+    Out[30]: array([38216, 38217, 38218, ..., 43210, 43211, 43212])
+
+    In [31]: np.where( g == 4 )[0]
+    Out[31]: array([43213, 43214, 43215, ..., 45610, 45611, 45612])
+
 
 **/
-
 
 inline void stree::add_inst() 
 {
@@ -3120,22 +3150,34 @@ inline void stree::add_inst()
     glm::tmat4x4<double> tr_w2m(1.) ; 
     add_inst(tr_m2w, tr_w2m, 0, 0 );   // global instance with identity transforms 
 
+    int ridx = 0 ; 
+    int num_inst = 1 ;
+    int tot_inst = 0 ; 
+ 
+    inst_info.push_back( {ridx,num_inst,tot_inst,0} ); 
+    tot_inst += num_inst  ;
+ 
     unsigned num_factor = get_num_factor(); 
-    for(unsigned i=0 ; i < num_factor ; i++)
+    for(int i=0 ; i < int(num_factor) ; i++)
     {
         std::vector<int> nodes ; 
         get_factor_nodes(nodes, i);  
 
-        unsigned gas_idx = i + 1 ; // 0 is the global instance, so need this + 1  
+        num_inst = nodes.size(); 
+        ridx = i + 1 ;       // 0 is the global instance, so need this + 1  
+
         std::cout 
             << "stree::add_inst"
             << " i " << std::setw(3) << i 
-            << " gas_idx " << std::setw(3) << gas_idx
-            << " nodes.size " << std::setw(7) << nodes.size()
+            << " ridx(gas_idx) " << std::setw(3) << ridx
+            << " num_inst " << std::setw(7) << num_inst
             << std::endl 
             ;
 
-        for(unsigned j=0 ; j < nodes.size() ; j++)
+        inst_info.push_back( {ridx,num_inst,tot_inst,0} );
+        tot_inst += num_inst ;  
+
+        for(unsigned j=0 ; j < num_inst ; j++)
         {
             int nidx = nodes[j]; 
 
@@ -3143,7 +3185,7 @@ inline void stree::add_inst()
             bool reverse = false ; 
             get_node_product( tr_m2w, tr_w2m, nidx, local, reverse, nullptr  ); 
 
-            add_inst(tr_m2w, tr_w2m, gas_idx, nidx ); 
+            add_inst(tr_m2w, tr_w2m, ridx, nidx ); 
         }
     }
     narrow_inst(); 

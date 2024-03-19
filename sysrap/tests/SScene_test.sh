@@ -19,19 +19,19 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 
 name=SScene_test
-export SSCENE_FOLD=/tmp/$name
-mkdir -p $SSCENE_FOLD 
-bin=$SSCENE_FOLD/$name
+export SCENE_FOLD=/tmp/$name
+mkdir -p $SCENE_FOLD 
+bin=$SCENE_FOLD/$name
 
-stree_fold=$TMP/U4TreeCreateTest
-export STREE_FOLD=${STREE_FOLD:-$stree_fold}
+tree_fold=$TMP/U4TreeCreateTest
+export TREE_FOLD=${TREE_FOLD:-$tree_fold}
 
-if [ ! -d "$STREE_FOLD/stree" ]; then
-   echo $BASH_SOURCE : ERROR STREE_FOLD $STREE_FOLD DOES NOT CONTAIN stree 
+if [ ! -d "$TREE_FOLD/stree" ]; then
+   echo $BASH_SOURCE : ERROR TREE_FOLD $TREE_FOLD DOES NOT CONTAIN stree 
    exit 1
 fi 
 
-vars="BASH_SOURCE PWD stree_fold STREE_FOLD SSCENE_FOLD bin"
+vars="BASH_SOURCE PWD stree_fold TREE_FOLD SCENE_FOLD bin"
 
 defarg=info_build_run
 arg=${1:-$defarg}
@@ -43,9 +43,9 @@ opticks-
 glm-
 
 
-export NPFold__load_DUMP=1
-export NPFold__load_index_DUMP=1
-export NPFold__load_dir_DUMP=1
+#export NPFold__load_DUMP=1
+#export NPFold__load_index_DUMP=1
+#export NPFold__load_dir_DUMP=1
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
