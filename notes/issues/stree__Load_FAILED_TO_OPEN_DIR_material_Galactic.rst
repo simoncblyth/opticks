@@ -6,7 +6,7 @@ Hmm Galactic again. I recall this previously happening
 due to a material with no properties resulting in not creating 
 a fold. 
 
-Kludge fix::
+Kludge fix used previously::
 
     N[blyth@localhost ~]$ mkdir /data/blyth/opticks/U4TreeCreateTest/stree/material/Galactic
     N[blyth@localhost ~]$ cd /data/blyth/opticks/U4TreeCreateTest/stree/material/Galactic
@@ -22,6 +22,8 @@ Added NPFold debug and existance check, see::
    export NPFold__load_index_DUMP=1
    export NPFold__load_dir_DUMP=1
 
+
+Changed NPFold::load to just skip empty folders.
 
 
 ::

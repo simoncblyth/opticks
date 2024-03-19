@@ -1916,6 +1916,7 @@ inline int NPFold::load(const char* _base)
 
     bool exists = NP::Exists(base); 
     if(!exists) std::cout << "NPFold::load non-existing base[" << ( base ? base : "-" ) << "]" << std::endl ;  
+    if(!exists) return 1 ; 
 
     loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 
