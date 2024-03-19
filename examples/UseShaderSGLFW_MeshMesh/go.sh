@@ -86,6 +86,10 @@ export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 export STREE_MESH_FOLD=${STREE_MESH_FOLD:-$stree_mesh_fold}
 export STREE_MESH_SOLID=${STREE_MESH_SOLID:-$stree_mesh_solid}
 
+scene_fold=/tmp/SScene_test
+export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
+
+
 export SHADER_FOLD=$sdir/gl/$SHADER
 export WH=${WH:-$wh}
 export EYE=${EYE:-$eye}
@@ -97,7 +101,7 @@ export CAM=${CAM:-$cam}
 
 
 
-vars="BASH_SOURCE bdir SHADER_FOLD MESH_FOLD WH EYE"
+vars="BASH_SOURCE bdir SHADER_FOLD MESH_FOLD SCENE_FOLD WH EYE"
 
 defarg="info_build_run"
 arg=${1:-$defarg}

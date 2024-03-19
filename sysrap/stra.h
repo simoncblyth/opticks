@@ -704,11 +704,11 @@ inline void stra<T>::Transform_Data( T* _pos, const T* _pos0,  const glm::tmat4x
     pos0.z = *(_pos0 + 2) ; 
     pos0.w = w ; 
 
-    std::cout << "stra::Transform_Data  pos0 " << glm::to_string(pos0) << std::endl ; 
+    //std::cout << "stra::Transform_Data  pos0 " << glm::to_string(pos0) << std::endl ; 
 
     glm::tvec4<T> pos = (t_ptr == nullptr ) ? pos0 : (*t_ptr) * pos0 ;
  
-    std::cout << "stra::Transform_Data  pos  " << glm::to_string(pos) << std::endl ; 
+    //std::cout << "stra::Transform_Data  pos  " << glm::to_string(pos) << std::endl ; 
 
     *(_pos+0) = pos.x ; 
     *(_pos+1) = pos.y ; 
@@ -725,8 +725,9 @@ inline void stra<T>::Transform_Array( NP* d , const NP* s, const glm::tmat4x4<T>
     int num_item = s->shape[0] ; 
     if(stride == 0) stride = s->num_itemvalues() ; 
 
-    std::cout 
-         << "[ stra::Transform_Array "
+    bool dump = false ; 
+    if(dump) std::cout 
+         << "stra::Transform_Array "
          << " num_item " << num_item 
          << " stride " << stride 
          <<  std::endl
@@ -746,12 +747,13 @@ inline void stra<T>::Transform_Array( NP* d , const NP* s, const glm::tmat4x4<T>
 template<typename T>
 inline NP* stra<T>::MakeTransformedArray(const NP* a, const glm::tmat4x4<T>* t, T w , int stride, int offset )
 {
-    std::cout << "[ stra::MakeTransformedArray" << std::endl ; 
+    bool dump = false ; 
+    if(dump) std::cout << "[ stra::MakeTransformedArray" << std::endl ; 
 
     NP* b = NP::MakeLike(a); 
     Transform_Array( b, a, t, w, stride, offset ); 
 
-    std::cout << "] stra::MakeTransformedArray" << std::endl ; 
+    if(dump) std::cout << "] stra::MakeTransformedArray" << std::endl ; 
     return b ; 
 }
  

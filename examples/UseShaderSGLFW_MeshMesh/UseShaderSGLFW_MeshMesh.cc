@@ -29,8 +29,8 @@ int main()
 {
     const SMesh* box = SMesh::Load("$MESH_FOLD/Box"); 
     const SMesh* torus = SMesh::Load("$MESH_FOLD/Torus"); 
-    const SMesh* other = SMesh::Load("$STREE_MESH_FOLD/$STREE_MESH_SOLID"); 
-    //const SMesh* other = SMesh::Load("/tmp/SScene_test/scene/mesh/2"); 
+    //const SMesh* other = SMesh::Load("$STREE_MESH_FOLD/$STREE_MESH_SOLID"); 
+    const SMesh* other = SMesh::Load("$SCENE_FOLD/scene/mesh/2"); 
 
 
     sframe fr ; 

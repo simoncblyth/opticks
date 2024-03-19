@@ -7,7 +7,8 @@ SMesh_test.sh
 
     ~/o/sysrap/tests/SMesh_test.sh
 
-    SOLID=Tet ~/o/sysrap/tests/SMesh_test.sh run
+    ~/o/sysrap/tests/SScene_test.sh
+
 
 EOU
 }

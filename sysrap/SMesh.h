@@ -7,6 +7,7 @@ SMesh.h
 
     ~/o/sysrap/tests/SMesh_test.sh
 
+    ~/o/u4/tests/U4TreeCreateTest.sh 
 
 **/
 
@@ -19,7 +20,6 @@ SMesh.h
 
 struct SMesh 
 {
-    
     static SMesh* Concatenate(std::vector<const SMesh*>& submesh, int ridx ); 
 
     static constexpr const int LIMIT = 50 ; 
@@ -33,6 +33,8 @@ struct SMesh
 
     const char* name    ;            // metadata : loaddir or manually set name
     glm::tmat4x4<double> tr0 = {} ;  // informational for debug only, as gets applied by init  
+    std::vector<std::string> names ; // used to hold subnames in concat SMesh
+
 
     const NP* tri ; 
     const NP* vtx ; 
@@ -116,6 +118,17 @@ struct SMesh
     static NP* MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth, std::ostream* out ); 
 };
 
+/**
+SMesh::Concatenate
+--------------------
+
+Canonically invoked from::
+
+   SScene::initFromTree_Remainder
+   SScene::initFromTree_Factor_
+
+**/
+
 inline SMesh* SMesh::Concatenate(std::vector<const SMesh*>& submesh, int ridx )
 {
     SMesh* com = new SMesh ; 
@@ -128,9 +141,12 @@ inline SMesh* SMesh::Concatenate(std::vector<const SMesh*>& submesh, int ridx )
     int tot_vtx = 0 ; 
     for(int i=0 ; i < int(submesh.size()) ; i++)
     {
-        const NP* _tri = submesh[i]->tri ;  
-        const NP* _vtx = submesh[i]->vtx ;  
-        const NP* _nrm = submesh[i]->nrm ;  
+        const SMesh* sub = submesh[i] ;
+        com->names.push_back(sub->name ? sub->name : "-" );
+ 
+        const NP* _tri = sub->tri ;  
+        const NP* _vtx = sub->vtx ;  
+        const NP* _nrm = sub->nrm ;  
          
         int num_vtx = _vtx->num_items() ; 
         int num_nrm = _nrm->num_items() ; 
@@ -252,6 +268,7 @@ NPFold* SMesh::serialize() const
     fold->add("tri", tri); 
     fold->add("vtx", vtx); 
     fold->add("nrm", nrm); 
+    fold->names = names ; 
     return fold ; 
 }
 void SMesh::save(const char* dir) const 

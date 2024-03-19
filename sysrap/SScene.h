@@ -47,6 +47,7 @@ Inputs from stree.h
 
 struct SScene
 {
+    bool dump ; 
     std::vector<const SMesh*> mesh ; 
 
     SScene(); 
@@ -68,6 +69,8 @@ struct SScene
 };
 
 inline SScene::SScene()
+    :
+    dump(false)
 {
 }
 
@@ -80,7 +83,7 @@ inline void SScene::initFromTree(const stree* st)
 inline void SScene::initFromTree_Remainder(const stree* st)
 {
     int num_node = st->rem.size() ; 
-    std::cout
+    if(dump) std::cout
         << "[ SScene::initFromTree_Remainder"
         << " num_node " << num_node 
         << std::endl
@@ -95,7 +98,7 @@ inline void SScene::initFromTree_Remainder(const stree* st)
     const SMesh* _mesh = SMesh::Concatenate( subs, 0 ); 
     mesh.push_back(_mesh); 
 
-    std::cout
+    if(dump) std::cout
         << "] SScene::initFromTree_Remainder"
         << " num_node " << num_node 
         << std::endl
@@ -117,7 +120,7 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
     st->get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal) ; 
     int num_node = nodes.size(); 
 
-    std::cout 
+    if(dump) std::cout 
        << "SScene::initFromTree_Factor"
        << " ridx " << ridx
        << " num_node " << num_node
@@ -159,7 +162,7 @@ inline void SScene::initFromTree_Node(std::vector<const SMesh*>& submesh, int ri
     const SMesh* _mesh = SMesh::Import( fold, &m2w ); 
     submesh.push_back(_mesh); 
 
-    std::cout 
+    if(dump) std::cout 
        << "SScene::initFromTree_Node"
        << " node.lvid " << node.lvid 
        << " st.soname[node.lvid] " << st->soname[node.lvid] 
@@ -168,7 +171,7 @@ inline void SScene::initFromTree_Node(std::vector<const SMesh*>& submesh, int ri
        << std::endl 
        ;
 
-    if(!is_identity_m2w) std::cout << _mesh->descTransform() << std::endl ;  
+    if(dump && !is_identity_m2w) std::cout << _mesh->descTransform() << std::endl ;  
 }
 
 
