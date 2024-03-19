@@ -174,6 +174,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
         case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
         case GLFW_KEY_C:      toggle.cuda = !toggle.cuda  ; break ; 
+        case GLFW_KEY_W:      toggle.norm = !toggle.norm  ; break ; 
         case GLFW_KEY_A:      gm.command("--zoom 10")     ; break ; 
         case GLFW_KEY_D:      gm.command("--desc")        ; break ; 
     }

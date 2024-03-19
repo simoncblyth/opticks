@@ -216,7 +216,10 @@ UseShaderSGLFW_MeshMesh_Instanced
     with instancing 
 
 UseShaderSGLFW_SScene
-    hop to getting SMesh and instance transforms from SScene
+    get SMesh and instance transforms from SScene
+
+UseShaderSGLFW_SScene_encapsulated
+    try 
 
 
 .. comment OPTIX_START

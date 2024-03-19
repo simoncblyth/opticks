@@ -51,6 +51,7 @@ struct SGLFW_Toggle
     bool tmax ;
     bool lrot ;
     bool cuda ;
+    bool norm ;
 
     std::string desc() const ; 
 };
@@ -64,6 +65,7 @@ inline std::string SGLFW_Toggle::desc() const
        << " tmax:" << ( tmax ? "Y" : "N" )
        << " lrot:" << ( lrot ? "Y" : "N" )
        << " cuda:" << ( cuda ? "Y" : "N" )
+       << " norm:" << ( norm ? "Y" : "N" )
        ;
     std::string str = ss.str(); 
     return str ; 
