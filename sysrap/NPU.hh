@@ -516,7 +516,8 @@ struct U
     static int PathType( const char* path );  // directory:1 file:2 
     static int PathType( const char* base, const char* name );  // directory:1 file:2 
 
-    static void DirList(std::vector<std::string>& names, const char* path, const char* ext=nullptr, bool exclude=false ); 
+    static void DirList(std::vector<std::string>& names, const char* path, 
+                const char* ext=nullptr, bool exclude=false, bool allow_nonexisting=false ); 
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static void Split(const char* str, char delim,   std::vector<std::string>& elem); 
     static int FindIndex(const std::vector<std::string>& names, const char* name);
@@ -1395,11 +1396,24 @@ inline int U::PathType( const char* path )
 U::DirList
 -----------
 
+ext:nullptr 
+    (default) matches all extensions 
+
+
+
+
 **/
 
-inline void U::DirList(std::vector<std::string>& names, const char* path, const char* ext, bool exclude )
+inline void U::DirList(
+    std::vector<std::string>& names, 
+    const char* path, 
+    const char* ext, 
+    bool exclude, 
+    bool allow_nonexisting
+   )
 {
     DIR* dir = opendir(path) ;
+    if(!dir && allow_nonexisting) return ; 
     if(!dir) std::cout << "U::DirList FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
     if(!dir && RAISE) std::raise(SIGINT) ; 
     if(!dir) return ; 

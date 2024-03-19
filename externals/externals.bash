@@ -29,8 +29,8 @@ gleq-(){             . $(externals-dir)/gleq.bash              && gleq-env $* ; 
 glfw-(){             . $(externals-dir)/glfw.bash              && glfw-env $* ; }
 glew-(){             . $(externals-dir)/glew.bash              && glew-env $* ; }
 imgui-(){            . $(externals-dir)/imgui.bash             && imgui-env $* ; }
-assimp-(){           . $(externals-dir)/assimp.bash            && assimp-env $* ; }
-openmesh-(){         . $(externals-dir)/openmesh.bash          && openmesh-env $* ; }
+#assimp-(){           . $(externals-dir)/assimp.bash            && assimp-env $* ; }
+#openmesh-(){         . $(externals-dir)/openmesh.bash          && openmesh-env $* ; }
 cuda-(){             . $(externals-dir)/cuda.bash              && cuda-env $* ; }
 cudamac-(){          . $(externals-dir)/cudamac.bash           && cudamac-env $* ; }
 cudalin-(){          . $(externals-dir)/cudalin.bash           && cudalin-env $* ; }
@@ -44,17 +44,17 @@ optixnote-(){        . $(externals-dir)/optixnote.bash         && optixnote-env 
 xercesc-(){          . $(externals-dir)/xercesc.bash           && xercesc-env $* ; }
 g4-(){               . $(externals-dir)/g4.bash                && g4-env $* ; }
 clhep-(){            . $(externals-dir)/clhep.bash             && clhep-env $* ; }
-zmq-(){              . $(externals-dir)/zmq.bash               && zmq-env $* ; }
+#zmq-(){              . $(externals-dir)/zmq.bash               && zmq-env $* ; }
 #asiozmq-(){          . $(externals-dir)/asiozmq.bash           && asiozmq-env $* ; }
-opticksdata-(){      . $(externals-dir)/opticksdata.bash       && opticksdata-env $* ; }
-opticksaux-(){       . $(externals-dir)/opticksaux.bash        && opticksaux-env $* ; }
-g4oktest-(){         . $(externals-dir)/g4oktest.bash          && g4oktest-env $* ; }
+#opticksdata-(){      . $(externals-dir)/opticksdata.bash       && opticksdata-env $* ; }
+#opticksaux-(){       . $(externals-dir)/opticksaux.bash        && opticksaux-env $* ; }
+#g4oktest-(){         . $(externals-dir)/g4oktest.bash          && g4oktest-env $* ; }
 
-oimplicitmesher-(){  . $(externals-dir)/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
-odcs-(){             . $(externals-dir)/odcs.bash              && odcs-env $* ; }
-oyoctogl-(){         . $(externals-dir)/oyoctogl.bash          && oyoctogl-env $* ; }
-ocsgbsp-(){          . $(externals-dir)/ocsgbsp.bash           && ocsgbsp-env $* ; }
-oof-(){              . $(externals-dir)/oof.bash               && oof-env $* ; }
+#oimplicitmesher-(){  . $(externals-dir)/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
+#odcs-(){             . $(externals-dir)/odcs.bash              && odcs-env $* ; }
+#oyoctogl-(){         . $(externals-dir)/oyoctogl.bash          && oyoctogl-env $* ; }
+#ocsgbsp-(){          . $(externals-dir)/ocsgbsp.bash           && ocsgbsp-env $* ; }
+#oof-(){              . $(externals-dir)/oof.bash               && oof-env $* ; }
 bcm-(){              . $(externals-dir)/bcm.bash               && bcm-env $* ; }
 
 thrust-(){           . $(externals-dir)/thrust.bash            && thrust-env $* ; }
@@ -62,8 +62,8 @@ cub-(){              . $(externals-dir)/cub.bash               && cub-env $* ; }
 mgpu-(){             . $(externals-dir)/mgpu.bash              && mgpu-env $* ; }
 
 g4dev-(){            . $(externals-dir)/g4dev.bash             && g4dev-env $* ; }
-g4dae-(){            . $(externals-dir)/g4dae.bash             && g4dae-env $* ; }
-owl-(){              . $(externals-dir)/owl.bash               && owl-env $* ; }
+#g4dae-(){            . $(externals-dir)/g4dae.bash             && g4dae-env $* ; }
+#owl-(){              . $(externals-dir)/owl.bash               && owl-env $* ; }
 nljson-(){           . $(externals-dir)/nljson.bash            && nljson-env $* ; }
 root-(){             . $(externals-dir)/root.bash              && root-env $* ; }
 

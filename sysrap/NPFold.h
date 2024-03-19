@@ -1829,9 +1829,18 @@ the associated array eg run.npy
 
 inline int NPFold::load_dir(const char* _base) 
 {
-    const char* base = nodata ? _base + 1 : _base ;  
-    std::vector<std::string> names ; 
-    U::DirList(names, base) ; 
+    const char* base = nodata ? _base + 1 : _base ;
+
+    static const char* DUMP = "NPFold__load_dir_DUMP" ; 
+    bool dump = getenv(DUMP) != nullptr  ; 
+    if(dump) std::cout << DUMP << " : [" << ( base ? base : "-" )  << "]" << std::endl ;  
+  
+    std::vector<std::string> names ;
+    const char* ext = nullptr ; 
+    bool exclude = false ; 
+    bool allow_nonexisting = false ; 
+ 
+    U::DirList(names, base, ext, exclude, allow_nonexisting) ; 
     if(names.size() == 0) return 1 ; 
 
     for(unsigned i=0 ; i < names.size() ; i++)
@@ -1863,6 +1872,12 @@ inline int NPFold::load_dir(const char* _base)
 inline int NPFold::load_index(const char* _base) 
 {
     const char* base = nodata ? _base + 1 : _base ;  
+
+    static const char* DUMP = "NPFold__load_index_DUMP" ; 
+    bool dump = getenv(DUMP) != nullptr  ; 
+    if(dump) std::cout << DUMP << " : [" << ( base ? base : "-" )  << "]" << std::endl ;  
+
+
     std::vector<std::string> keys ; 
     NP::ReadNames(base, INDEX, keys );  
     for(unsigned i=0 ; i < keys.size() ; i++) 
@@ -1884,19 +1899,8 @@ inline int NPFold::load_index(const char* _base)
 NPFold::load
 ---------------
 
-HMM : note the structural difference when loading with index and 
-with just loading from file system with fts
-
-* with index get NPFold instances for each directory with keys without slash   
-* with fts get single NPFold with path keys with slash  
-
-So only get the same if call on leaf directories 
-
-How to avoid this structural difference and allow booting from property text files ? 
-
-* currently array/subfold decision is based .npy
-* need another way to detect 
- 
+Typical persisted NPFold have index files
+so the load_dir is not ordinarily used. 
 
 **/
 
@@ -1904,6 +1908,14 @@ inline int NPFold::load(const char* _base)
 {
     nodata = NP::IsNoData(_base) ;  // _path starting with NP::NODATA_PREFIX eg '@' 
     const char* base = nodata ? _base + 1 : _base ;  
+
+    static const char* DUMP = "NPFold__load_DUMP" ; 
+    bool dump = getenv(DUMP) != nullptr  ; 
+    if(dump) std::cout << DUMP << " : [" << ( base ? base : "-" )  << "]" << std::endl ;  
+
+
+    bool exists = NP::Exists(base); 
+    if(!exists) std::cout << "NPFold::load non-existing base[" << ( base ? base : "-" ) << "]" << std::endl ;  
 
     loaddir = strdup(base); 
     bool has_meta = NP::Exists(base, META) ; 

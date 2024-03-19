@@ -391,7 +391,8 @@ use start from
 EOU
 }
 
-opticks-env(){      
+opticks-env(){     
+    : opticks.bash
    # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
    . $(opticks-ldir)/externals/externals.bash       ## just precursors
    . $(opticks-ldir)/integration/integration.bash   ## just precursors

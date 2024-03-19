@@ -39,7 +39,13 @@ arg=${1:-$defarg}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
+opticks-  
 glm-
+
+
+export NPFold__load_DUMP=1
+export NPFold__load_index_DUMP=1
+export NPFold__load_dir_DUMP=1
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
@@ -47,6 +53,7 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
 
+    echo $BASH_SOURCE [ building 
     gcc  $name.cc \
          ../sn.cc \
          ../s_pa.cc \
@@ -54,13 +61,14 @@ if [ "${arg/build}" != "$arg" ]; then
          ../s_bb.cc \
          ../s_csg.cc \
          -DWITH_CHILD \
-         -std=c++11 -lstdc++ \
+         -std=c++11 -lstdc++ -lm \
          -I.. -g \
          -I$(glm-prefix) \
          -I${CUDA_PREFIX}/include \
          -o $bin
 
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
+    echo $BASH_SOURCE ] building 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
