@@ -17,6 +17,16 @@ Impl::
 
     ~/o/examples/UseShaderSGLFW_SScene/UseShaderSGLFW_SScene.cc
 
+Prequisites are:
+
+1. persisted stree
+2. persisted SScene
+
+Create those with:: 
+
+   ~/o/u4/tests/U4TreeCreateTest.sh                       ## reads GDML, writes stree
+   TEST=CreateFromTree ~/o/sysrap/tests/SScene_test.sh    ## reads stree, writes SScene
+
 
 Issues of view matrices : TODO: Debug once can flip between raytrace and raster renders
 -----------------------------------------------------------------------------------------

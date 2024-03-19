@@ -2,6 +2,8 @@
 
 struct NP ; 
 struct SMesh ; 
+struct SGLFW_Program ; 
+
 
 /**
 SGLFW_Render
@@ -12,36 +14,41 @@ Try same prog for multiple mesh
 **/
 struct SGLFW_Render
 {
-    const SMesh*         mesh ;  
-    const SGLFW_Program* prog ;  
+    const SMesh*   mesh ;  
 
     SGLFW_Buffer*  vtx ; 
     SGLFW_Buffer*  nrm ;
     SGLFW_Buffer*  ins ;
-    int num_inst ; 
 
     SGLFW_VAO*     vao ;  
     SGLFW_Buffer*  idx ; 
-    int   render_count ; 
 
-    SGLFW_Render(const SMesh* mesh, const SGLFW_Program* prog ) ; 
+    int           inst_num ; 
+    const float*  inst_values ; 
+    int           render_count ; 
+
+    SGLFW_Render(const SMesh* mesh ) ; 
     void set_inst(const NP* _inst );
-    void set_inst(int _num_inst, const float* values );
+    void set_inst(int _inst_num, const float* _inst_values );
+    bool has_inst() const ;
 
-    void render(); 
+    std::string descInst() const ; 
+    std::string desc() const ; 
+
+    void render(const SGLFW_Program* prog); 
     void render_drawElements() const ; 
 };
 
-inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog )
+inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh )
     :
     mesh(_mesh),
-    prog(_prog),
     vtx(nullptr),
     nrm(nullptr),
     ins(nullptr),
-    num_inst(0),    
     vao(nullptr),
     idx(nullptr),
+    inst_num(0),    
+    inst_values(nullptr),    
     render_count(0)
 {
     vtx = new SGLFW_Buffer( mesh->vtx->arr_bytes(), mesh->vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
@@ -69,15 +76,40 @@ inline void SGLFW_Render::set_inst(const NP* _inst )
     set_inst( _inst->num_items(), _inst->cvalues<float>() ); 
 }
 
-inline void SGLFW_Render::set_inst(int _num_inst, const float* values )
+inline void SGLFW_Render::set_inst(int _inst_num, const float* _inst_values )
 {
-    num_inst = _num_inst ; 
-    int num_bytes = num_inst*4*4*sizeof(float); 
-    ins = new SGLFW_Buffer( num_bytes, values, GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+    inst_num = _inst_num ; 
+    inst_values = _inst_values ; 
+
+    int itemsize = 4*4*sizeof(float) ; 
+    int num_bytes = inst_num*itemsize ;
+    ins = new SGLFW_Buffer( num_bytes, inst_values, GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
     ins->bind();
     ins->upload(); 
 }
 
+inline bool SGLFW_Render::has_inst() const
+{
+    return inst_num > 0 && inst_values != nullptr ; 
+}
+
+
+inline std::string SGLFW_Render::desc() const
+{
+    std::stringstream ss ; 
+    ss << descInst() ; 
+    std::string str = ss.str() ; 
+    return str ; 
+}
+inline std::string SGLFW_Render::descInst() const
+{
+    int edge_items = 10 ; 
+    std::stringstream ss ; 
+    ss << "[SGLFW_Render::descInst inst_num " << inst_num << std::endl ; 
+    ss << stra<float>::DescItems( inst_values, 16, inst_num, edge_items ); 
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
 /**
 SGLFW_Render::render
@@ -89,7 +121,7 @@ normals to appear in position slots causing perplexing renders.
 
 **/
 
-inline void SGLFW_Render::render()
+inline void SGLFW_Render::render(const SGLFW_Program* prog)
 {
    prog->use(); 
    vao->bind(); 
@@ -119,7 +151,7 @@ inline void SGLFW_Render::render_drawElements() const
   	GLsizei count = mesh->indices_num() ;  // number of elements to render (eg 3 for 1 triangle)
   	GLenum type = GL_UNSIGNED_INT ; 
   	const void * indices = (GLvoid*)(sizeof(GLuint) * mesh->indices_offset() ) ;
-  	GLsizei instancecount = ins ? num_inst : 0 ; 
+  	GLsizei instancecount = ins ? inst_num : 0 ; 
 
     if(instancecount > 0)
     {
@@ -146,7 +178,6 @@ inline void SGLFW_Render::render_drawElements() const
             << std::endl
             ;
 #endif 
-
 
     }
     else

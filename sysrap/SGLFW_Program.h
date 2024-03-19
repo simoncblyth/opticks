@@ -7,20 +7,25 @@ struct SGLFW_Program
     const char* vtx_attname ; 
     const char* nrm_attname ; 
     const char* ins_attname ; 
+    const char* mvp_uniname ; 
 
     const char* vertex_shader_text ;
     const char* geometry_shader_text ; 
     const char* fragment_shader_text ;
+
     GLuint program ; 
     GLint  mvp_location ; 
     const float* mvp ; 
     bool dump ; 
 
-    SGLFW_Program( const char* _dir, 
-                   const char* _vtx_attname, 
-                   const char* _nrm_attname, 
-                   const char* _ins_attname=nullptr 
-                 ); 
+    SGLFW_Program( 
+        const char* _dir, 
+        const char* _vtx_attname, 
+        const char* _nrm_attname, 
+        const char* _ins_attname,
+        const char* _mvp_uniname,
+        const float* _mvp 
+        ); 
 
     void createFromDir(const char* _dir); 
     void createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
@@ -30,7 +35,7 @@ struct SGLFW_Program
     GLint getAttribLocation(const char* name) const ; 
 
     GLint findUniformLocation(const char* keys, char delim ) const ; 
-    void locateMVP(const char* key, const float* mvp ); 
+    //void locateMVP(const char* key, const float* mvp ); 
     void updateMVP() const ;  // called from renderloop_head
 
     static void UniformMatrix4fv( GLint loc, const float* vv, bool dump ); 
@@ -50,22 +55,75 @@ inline SGLFW_Program::SGLFW_Program(
     const char* _dir, 
     const char* _vtx_attname, 
     const char* _nrm_attname, 
-    const char* _ins_attname
+    const char* _ins_attname,
+    const char* _mvp_uniname,
+    const float* _mvp 
     )
     :
     vtx_attname( _vtx_attname ? strdup(_vtx_attname) : nullptr ),
     nrm_attname( _nrm_attname ? strdup(_nrm_attname) : nullptr ),
     ins_attname( _ins_attname ? strdup(_ins_attname) : nullptr ),
+    mvp_uniname( _mvp_uniname ? strdup(_mvp_uniname) : nullptr ),
     vertex_shader_text(nullptr),
     geometry_shader_text(nullptr),
     fragment_shader_text(nullptr),
     program(0),
     mvp_location(-1),
-    mvp(nullptr),
+    mvp(_mvp),
     dump(false)
 {
     if(_dir) createFromDir(_dir) ; 
+    if(mvp_uniname)
+    { 
+        mvp_location = getUniformLocation(mvp_uniname); 
+        assert( mvp_location > -1 ); 
+    }    
 }
+
+
+/**
+SGLFW_Program::locateMVP
+-------------------------
+
+Does not update GPU side, invoke SGLFW_Program::locateMVP 
+prior to the renderloop after shader program is 
+setup and the GLM maths has been instanciated 
+hence giving the pointer to the world2clip matrix
+address. 
+
+
+inline void SGLFW_Program::locateMVP(const char* key, const float* mvp_ )
+{ 
+    mvp_location = getUniformLocation(key); 
+    assert( mvp_location > -1 ); 
+    mvp = mvp_ ; 
+}
+**/
+
+
+/**
+SGLFW_Program::updateMVP
+-------------------------
+
+When mvp_location is > -1 this is called from 
+the end of renderloop_head so any matrix updates
+need to be done before then. 
+
+HMM: could just pass in the pointer ?
+
+**/
+
+inline void SGLFW_Program::updateMVP() const 
+{
+    if( mvp_location <= -1 ) return ; 
+    assert( mvp != nullptr ); 
+    UniformMatrix4fv(mvp_location, mvp, dump ); 
+}
+
+
+
+
+
 
 inline void SGLFW_Program::createFromDir(const char* _dir)
 {
@@ -204,41 +262,6 @@ inline GLint SGLFW_Program::findUniformLocation(const char* keys, char delim ) c
 }
 
 
-/**
-SGLFW_Program::locateMVP
--------------------------
-
-Does not update GPU side, invoke SGLFW_Program::locateMVP 
-prior to the renderloop after shader program is 
-setup and the GLM maths has been instanciated 
-hence giving the pointer to the world2clip matrix
-address. 
-
-**/
-
-inline void SGLFW_Program::locateMVP(const char* key, const float* mvp_ )
-{ 
-    mvp_location = getUniformLocation(key); 
-    assert( mvp_location > -1 ); 
-    mvp = mvp_ ; 
-}
-
-/**
-SGLFW_Program::updateMVP
--------------------------
-
-When mvp_location is > -1 this is called from 
-the end of renderloop_head so any matrix updates
-need to be done before then. 
-
-**/
-
-inline void SGLFW_Program::updateMVP() const 
-{
-    if( mvp_location <= -1 ) return ; 
-    assert( mvp != nullptr ); 
-    UniformMatrix4fv(mvp_location, mvp, dump ); 
-}
 
 template<typename T>
 inline std::string SGLFW_Program::Desc(const T* tt, int num) // static
@@ -327,6 +350,8 @@ inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char
 
 inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* name ) const 
 {
+    assert( name ); 
+
     SGLFW_Attrib att(name, SMesh::MATROW_SPEC );
 
     att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
@@ -357,9 +382,6 @@ inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* nam
     glVertexAttribDivisor(att.index+3, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
 }
 
-
-
-
 inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static
 {
     int max_length = 2048;
@@ -372,11 +394,5 @@ inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static
     printf("SGLFW_Program::Print_shader_info_log GL index %u:\n%s\n", id, log);
     assert(0);
 }
-
-
-
-
-
-
 
 

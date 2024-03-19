@@ -45,6 +45,8 @@ struct stra
     static std::string Desc(const glm::tvec4<T>& t); 
     static std::string Desc(const glm::tvec3<T>& t); 
     static std::string Desc(const T* tt, int num); 
+    static std::string DescItems(const T* tt, int num_elem, int num_item, int edge_items=10 );
+
     static std::string Desc(const T* tt, int ni, int nj, int item_stride=0) ; 
 
 
@@ -172,9 +174,35 @@ std::string stra<T>::Desc(const T* tt, int num)
             << ( i == num-1 && num > 4 ? ".\n" : "" ) 
             ;
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+
+
+template<typename T>
+std::string stra<T>::DescItems(const T* tt, int num_elem, int num_item, int edge_items )
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_item ; i++ )
+    {
+        if( i < edge_items || i > (num_item - edge_items) ) ss 
+            << " i " << i 
+            << std::endl 
+            << Desc( tt + i*num_elem, num_elem ) 
+            << std::endl 
+            ; 
+    } 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
+
 
 template<typename T>
 std::string stra<T>::Desc(const T* tt, int ni, int nj, int item_stride)
@@ -196,10 +224,6 @@ std::string stra<T>::Desc(const T* tt, int ni, int nj, int item_stride)
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-
-
 
 
 
