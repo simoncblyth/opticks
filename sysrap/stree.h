@@ -3177,7 +3177,7 @@ inline void stree::add_inst()
         inst_info.push_back( {ridx,num_inst,tot_inst,0} );
         tot_inst += num_inst ;  
 
-        for(unsigned j=0 ; j < num_inst ; j++)
+        for(int j=0 ; j < num_inst ; j++)
         {
             int nidx = nodes[j]; 
 

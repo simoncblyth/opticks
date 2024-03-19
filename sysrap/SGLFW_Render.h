@@ -14,29 +14,32 @@ struct SGLFW_Render
 {
     const SMesh*         mesh ;  
     const SGLFW_Program* prog ;  
-    const NP*            inst ; 
 
     SGLFW_Buffer*  vtx ; 
     SGLFW_Buffer*  nrm ;
     SGLFW_Buffer*  ins ;
+    int num_inst ; 
 
     SGLFW_VAO*     vao ;  
     SGLFW_Buffer*  idx ; 
     int   render_count ; 
 
-    SGLFW_Render(const SMesh* mesh, const SGLFW_Program* prog, const NP* inst=nullptr ) ; 
+    SGLFW_Render(const SMesh* mesh, const SGLFW_Program* prog ) ; 
+    void set_inst(const NP* _inst );
+    void set_inst(int _num_inst, const float* values );
+
     void render(); 
     void render_drawElements() const ; 
 };
 
-inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog, const NP* _inst )
+inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog )
     :
     mesh(_mesh),
     prog(_prog),
-    inst(_inst ? NP::MakeNarrowIfWide(_inst) : nullptr),
     vtx(nullptr),
     nrm(nullptr),
     ins(nullptr),
+    num_inst(0),    
     vao(nullptr),
     idx(nullptr),
     render_count(0)
@@ -49,13 +52,6 @@ inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog
     nrm->bind();
     nrm->upload(); 
 
-    if(inst)
-    {
-        ins = new SGLFW_Buffer( inst->arr_bytes(), inst->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
-        ins->bind();
-        ins->upload(); 
-    }
-
     vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
     vao->bind(); 
 
@@ -63,6 +59,25 @@ inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh, const SGLFW_Program* _prog
     idx->bind();
     idx->upload(); 
 }
+
+inline void SGLFW_Render::set_inst(const NP* _inst )
+{
+    if(_inst == nullptr) return ; 
+    assert( _inst->uifc == 'f' ); 
+    assert( _inst->ebyte == 4 ); 
+    assert( _inst->has_shape(-1,4,4)); 
+    set_inst( _inst->num_items(), _inst->cvalues<float>() ); 
+}
+
+inline void SGLFW_Render::set_inst(int _num_inst, const float* values )
+{
+    num_inst = _num_inst ; 
+    int num_bytes = num_inst*4*4*sizeof(float); 
+    ins = new SGLFW_Buffer( num_bytes, values, GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
+    ins->bind();
+    ins->upload(); 
+}
+
 
 /**
 SGLFW_Render::render
@@ -104,7 +119,7 @@ inline void SGLFW_Render::render_drawElements() const
   	GLsizei count = mesh->indices_num() ;  // number of elements to render (eg 3 for 1 triangle)
   	GLenum type = GL_UNSIGNED_INT ; 
   	const void * indices = (GLvoid*)(sizeof(GLuint) * mesh->indices_offset() ) ;
-  	GLsizei instancecount = inst ? inst->num_items() : 0 ; 
+  	GLsizei instancecount = ins ? num_inst : 0 ; 
 
     if(instancecount > 0)
     {

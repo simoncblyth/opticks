@@ -18,8 +18,8 @@ See also::
     SOLID=Tet ~/o/sysrap/tests/SMesh_test.sh run
 
 
-Issue : Linux instanced not showing up, Darwin OK
--------------------------------------------------- 
+FIXED : Issue : Linux instanced not showing up, Darwin OK
+----------------------------------------------------------- 
 
 The render just does not appear for those solids
 
@@ -28,6 +28,8 @@ The render just does not appear for those solids
   * NOPE : trying with cleaner .opticks_config env 
     with glfw and glew installed libs makes no difference
 
+* was from missing attrib loc getting, somehow still 
+  worked on macOS without that 
 
 
 **/

@@ -262,7 +262,7 @@ inline NPFold* SScene::serialize_mesh_grup() const
 
 inline void SScene::import_mesh_grup(const NPFold* _mesh_grup ) 
 {
-    int num_mesh_grup = _mesh_grup->get_num_subfold();
+    int num_mesh_grup = _mesh_grup ? _mesh_grup->get_num_subfold() : 0 ;
     std::cout << "SScene::import_mesh_grup num_mesh_grup " << num_mesh_grup << std::endl ;     
     for(int i=0 ; i < num_mesh_grup ; i++)
     {
