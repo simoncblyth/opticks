@@ -106,7 +106,7 @@ int main()
     SGLFW_Program prog("$SHADER_FOLD/wireframe", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr ); 
     SGLFW_Program iprog("$SHADER_FOLD/iwireframe", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr ); 
 
-    std::vector<SGLFW_Render*> render ; 
+    std::vector<SGLFW_Mesh*> render ; 
     int num_mesh = mesh.size(); 
     for(int i=0 ; i < num_mesh ; i++)
     {
@@ -114,7 +114,7 @@ int main()
 
         bool do_instanced = i % 2 == 0  ; 
 
-        SGLFW_Render* _render = new SGLFW_Render(_mesh );  
+        SGLFW_Mesh* _render = new SGLFW_Mesh(_mesh );  
         if(do_instanced) _render->set_inst( inst ); 
 
         render.push_back(_render); 
@@ -136,7 +136,7 @@ int main()
         {
             for(int i=0 ; i < num_render ; i++)
             {
-                SGLFW_Render* _render = render[i] ; 
+                SGLFW_Mesh* _render = render[i] ; 
                 SGLFW_Program* _prog = _render->has_inst() ? &iprog : &prog ;  
                 _render->render(_prog); 
             }

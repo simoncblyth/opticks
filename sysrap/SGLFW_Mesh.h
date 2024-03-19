@@ -6,13 +6,12 @@ struct SGLFW_Program ;
 
 
 /**
-SGLFW_Render
--------------
+SGLFW_Mesh (in a former incarnation this was SGLFW_Render)
+============================================================
 
-Try same prog for multiple mesh 
 
 **/
-struct SGLFW_Render
+struct SGLFW_Mesh
 {
     const SMesh*   mesh ;  
 
@@ -27,7 +26,7 @@ struct SGLFW_Render
     const float*  inst_values ; 
     int           render_count ; 
 
-    SGLFW_Render(const SMesh* mesh ) ; 
+    SGLFW_Mesh(const SMesh* mesh ) ; 
     void set_inst(const NP* _inst );
     void set_inst(int _inst_num, const float* _inst_values );
     bool has_inst() const ;
@@ -39,7 +38,7 @@ struct SGLFW_Render
     void render_drawElements() const ; 
 };
 
-inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh )
+inline SGLFW_Mesh::SGLFW_Mesh(const SMesh* _mesh )
     :
     mesh(_mesh),
     vtx(nullptr),
@@ -67,7 +66,7 @@ inline SGLFW_Render::SGLFW_Render(const SMesh* _mesh )
     idx->upload(); 
 }
 
-inline void SGLFW_Render::set_inst(const NP* _inst )
+inline void SGLFW_Mesh::set_inst(const NP* _inst )
 {
     if(_inst == nullptr) return ; 
     assert( _inst->uifc == 'f' ); 
@@ -76,7 +75,7 @@ inline void SGLFW_Render::set_inst(const NP* _inst )
     set_inst( _inst->num_items(), _inst->cvalues<float>() ); 
 }
 
-inline void SGLFW_Render::set_inst(int _inst_num, const float* _inst_values )
+inline void SGLFW_Mesh::set_inst(int _inst_num, const float* _inst_values )
 {
     inst_num = _inst_num ; 
     inst_values = _inst_values ; 
@@ -88,31 +87,31 @@ inline void SGLFW_Render::set_inst(int _inst_num, const float* _inst_values )
     ins->upload(); 
 }
 
-inline bool SGLFW_Render::has_inst() const
+inline bool SGLFW_Mesh::has_inst() const
 {
     return inst_num > 0 && inst_values != nullptr ; 
 }
 
 
-inline std::string SGLFW_Render::desc() const
+inline std::string SGLFW_Mesh::desc() const
 {
     std::stringstream ss ; 
     ss << descInst() ; 
     std::string str = ss.str() ; 
     return str ; 
 }
-inline std::string SGLFW_Render::descInst() const
+inline std::string SGLFW_Mesh::descInst() const
 {
     int edge_items = 10 ; 
     std::stringstream ss ; 
-    ss << "[SGLFW_Render::descInst inst_num " << inst_num << std::endl ; 
+    ss << "[SGLFW_Mesh::descInst inst_num " << inst_num << std::endl ; 
     ss << stra<float>::DescItems( inst_values, 16, inst_num, edge_items ); 
     std::string str = ss.str() ; 
     return str ; 
 }
 
 /**
-SGLFW_Render::render
+SGLFW_Mesh::render
 ---------------------
 
 NB: careful that the intended buffer is bound (making it the active GL_ARRAY_BUFFER)
@@ -121,7 +120,7 @@ normals to appear in position slots causing perplexing renders.
 
 **/
 
-inline void SGLFW_Render::render(const SGLFW_Program* prog)
+inline void SGLFW_Mesh::render(const SGLFW_Program* prog)
 {
    prog->use(); 
    vao->bind(); 
@@ -145,7 +144,7 @@ inline void SGLFW_Render::render(const SGLFW_Program* prog)
    render_count += 1 ; 
 }
 
-inline void SGLFW_Render::render_drawElements() const 
+inline void SGLFW_Mesh::render_drawElements() const 
 {
     GLenum mode = GL_TRIANGLES ; 
   	GLsizei count = mesh->indices_num() ;  // number of elements to render (eg 3 for 1 triangle)
@@ -159,7 +158,7 @@ inline void SGLFW_Render::render_drawElements() const
 #ifdef __APPLE__
         glDrawElementsInstanced(mode, count, type, indices, instancecount );
         if(render_count < 10 ) std::cout 
-            << "SGLFW_Render::render_drawElements.glDrawElementsInstanced" 
+            << "SGLFW_Mesh::render_drawElements.glDrawElementsInstanced" 
             << " render_count " << render_count
             << " instancecount " << instancecount
             << std::endl
@@ -172,7 +171,7 @@ inline void SGLFW_Render::render_drawElements() const
         // SEGV on laptop, OK on worktation 
         // https://github.com/moderngl/moderngl/issues/346
         if(render_count < 10 ) std::cout 
-            << "SGLFW_Render::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" 
+            << "SGLFW_Mesh::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" 
             << " render_count " << render_count
             << " instancecount " << instancecount
             << std::endl

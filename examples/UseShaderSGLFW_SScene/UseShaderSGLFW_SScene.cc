@@ -47,11 +47,12 @@ int main()
     SGLFW_CUDA cuda(gm) ; 
 #endif
 
-
+    // HMM: could discover these from file system 
     SGLFW_Program prog("$SHADER_FOLD/wireframe", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr ); 
     SGLFW_Program iprog("$SHADER_FOLD/iwireframe", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr ); 
 
-    std::vector<SGLFW_Render*> render ; 
+
+    std::vector<SGLFW_Mesh*> mesh ; 
     int num_mesh_grup = scene->mesh_grup.size(); 
 
     const std::vector<glm::tmat4x4<float>>& inst_tran = scene->inst_tran ; 
@@ -67,22 +68,18 @@ int main()
         int offset   = _inst_info.z ; 
         bool is_instanced = _inst_info.y > 1 ; 
 
-        const SMesh* _mesh = scene->mesh_grup[i] ; 
-        //SGLFW_Program* _prog = is_instanced ? &iprog : &prog ;  
+        const SMesh* _mg = scene->mesh_grup[i] ; 
 
-        SGLFW_Render* _render = new SGLFW_Render(_mesh);
+        SGLFW_Mesh* _mesh = new SGLFW_Mesh(_mg);
         if( is_instanced )
         {
-            _render->set_inst( num_inst, values + offset*item_values );  
-            std::cout << _render->desc() << std::endl ; 
+            _mesh->set_inst( num_inst, values + offset*item_values );  
+            std::cout << _mesh->desc() << std::endl ; 
         }
-        render.push_back(_render); 
+        mesh.push_back(_mesh); 
     }
-    int num_render = render.size(); 
+    int num_mesh = mesh.size(); 
 
-/**
-HMM: how to implement shader switching without redoing all the above ?
-**/
 
 
     while(gl.renderloop_proceed())
@@ -97,12 +94,14 @@ HMM: how to implement shader switching without redoing all the above ?
         }
         else
         {
-            for(int i=0 ; i < num_render ; i++)
+
+            for(int i=0 ; i < num_mesh ; i++)
             {
-                SGLFW_Render* _render = render[i] ; 
-                SGLFW_Program* _prog = _render->has_inst() ? &iprog : &prog ;  
-                _render->render(_prog);   
+                SGLFW_Mesh* _mesh = mesh[i] ; 
+                SGLFW_Program* _prog = _mesh->has_inst() ? &iprog : &prog ;  
+                _mesh->render(_prog);   
             }
+
         }
         gl.renderloop_tail();      // swap buffers, poll events
     }

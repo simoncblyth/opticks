@@ -30,7 +30,7 @@ int main()
     const SMesh* box = SMesh::Load("$MESH_FOLD/Box"); 
     const SMesh* torus = SMesh::Load("$MESH_FOLD/Torus"); 
     //const SMesh* other = SMesh::Load("$STREE_MESH_FOLD/$STREE_MESH_SOLID"); 
-    const SMesh* other = SMesh::Load("$SCENE_FOLD/scene/mesh_grup/2"); 
+    const SMesh* other = SMesh::Load("$SCENE_FOLD/scene/mesh_grup/1"); 
 
 
     sframe fr ; 
@@ -48,9 +48,9 @@ int main()
 #endif
 
     SGLFW_Program prog("$SHADER_FOLD", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr );
-    SGLFW_Render r_box(    box  ); 
-    SGLFW_Render r_torus( torus ); 
-    SGLFW_Render r_other( other ); 
+    SGLFW_Mesh _box(    box  ); 
+    SGLFW_Mesh _torus( torus ); 
+    SGLFW_Mesh _other( other ); 
  
     while(gl.renderloop_proceed())
     {
@@ -64,9 +64,9 @@ int main()
         }
         else
         {
-            r_box.render(&prog);
-            r_torus.render(&prog);
-            r_other.render(&prog);
+            _box.render(&prog);
+            _torus.render(&prog);
+            _other.render(&prog);
         }
         gl.renderloop_tail();      // swap buffers, poll events
     }

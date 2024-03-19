@@ -36,7 +36,7 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 #include "SGLM.h"
 #include "SGLFW_Extras.h"
 #include "SGLFW_Program.h"
-#include "SGLFW_Render.h"
+#include "SGLFW_Mesh.h"
 
 #ifdef WITH_CUDA_GL_INTEROP
 #include "SGLFW_CUDA.h"

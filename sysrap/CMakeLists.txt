@@ -400,6 +400,9 @@ set(HEADERS
 
     SGLFW.h
     SGLFW_Extras.h
+    SGLFW_Program.h
+    SGLFW_Mesh.h
+    SGLFW_CUDA.h
     gleq.h
 
     SDir.h
