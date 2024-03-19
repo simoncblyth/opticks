@@ -19,8 +19,10 @@ SMesh.h
 
 struct SMesh 
 {
+    
     static SMesh* Concatenate(std::vector<const SMesh*>& submesh, int ridx ); 
 
+    static constexpr const int LIMIT = 50 ; 
     static constexpr const char* NAME = "SMesh" ;  
     static constexpr const char* VTX_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  // 12=3*sizeof(float)
     static constexpr const char* NRM_SPEC = "3,GL_FLOAT,GL_FALSE,12,0,false" ;  
@@ -45,8 +47,13 @@ struct SMesh
     static SMesh* LoadTransformed(const char* dir, const char* rel,  const glm::tmat4x4<double>* tr ); 
     static SMesh* LoadTransformed(const char* dir,                   const glm::tmat4x4<double>* tr ); 
 
-    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr );
-    void import(         const NPFold* fold, const glm::tmat4x4<double>* tr ); 
+    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr );
+
+
+    static bool IsConcat( const NPFold* fold ); 
+    void import(          const NPFold* fold, const glm::tmat4x4<double>* tr ); 
+    void import_concat(   const NPFold* fold, const glm::tmat4x4<double>* tr ); 
+    void import_original( const NPFold* fold, const glm::tmat4x4<double>* tr ); 
 
     NPFold* serialize() const ; 
     void save(const char* dir) const ; 
@@ -72,10 +79,10 @@ struct SMesh
     static void FindCenterExtent(const NP* vtx, glm::tvec3<T>& mn, glm::tvec3<T>& mx, glm::tvec4<T>& ce );
 
     template<typename T>
-    static std::string Desc2D(const NP* a, const char* label=nullptr) ;
+    static std::string Desc2D(const NP* a, int limit=200, const char* label=nullptr) ;
 
     template<typename T, typename S>
-    static std::string Desc2D(const NP* a, const NP* b, const char* label=nullptr);  
+    static std::string Desc2D(const NP* a, const NP* b, int limit=200, const char* label=nullptr);  
 
     std::string descTransform() const ; 
 
@@ -89,7 +96,7 @@ struct SMesh
     std::string descRange() const ; 
 
 
-    static std::string Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  const char* label); 
+    static std::string Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  int limit, const char* label); 
   
 
 
@@ -173,25 +180,71 @@ inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr)
     return mesh ; 
 }
 
+inline bool SMesh::IsConcat( const NPFold* fold ) // static
+{
+    const NP* vertices = fold->get("vtx") ;
+    const NP* normals = fold->get("nrm") ;
+    return vertices && vertices->ebyte == 4 && normals ; 
+}
+
 inline void SMesh::import(const NPFold* fold, const glm::tmat4x4<double>* tr )
+{
+    bool is_concat = IsConcat( fold ); 
+
+    if( is_concat )
+    {
+        import_concat( fold, tr  ) ; 
+    } 
+    else
+    {
+        import_original( fold, tr );  
+    }
+}
+
+inline void SMesh::import_concat(const NPFold* fold, const glm::tmat4x4<double>* tr )
+{
+    assert( tr == nullptr ); 
+
+    const NP* triangles = fold->get("tri");
+    const NP* vertices = fold->get("vtx") ;
+    const NP* normals = fold->get("nrm") ;
+
+    tri = triangles ;
+    vtx = vertices ;
+    nrm = normals ;
+
+    assert( tri );  
+    assert( vtx );  
+    assert( nrm );  
+
+    set_vtx_range(); 
+}
+
+inline void SMesh::import_original(const NPFold* fold, const glm::tmat4x4<double>* tr )
 {
     name = fold->loaddir ? strdup(fold->loaddir) : nullptr ; 
 
     const NP* triangles = fold->get("tri");
-    const NP* vertices = fold->get("vtx")->copy() ;
+    const NP* vertices = fold->get("vtx") ; // copy ?
+    const NP* normals = fold->get("nrm") ;
+
+    assert( normals == nullptr ); // not expecting nrm in originals currently 
 
     bool dump = false ; 
     std::stringstream ss ; 
     std::ostream* out = dump ? &ss : nullptr ; 
 
-    if(out) *out << "[SMesh::import" << std::endl ; 
+    if(out) *out << "[SMesh::import_original" << std::endl ; 
 
     set_tri( triangles ); 
     set_vtx( vertices, tr, out ); 
+    set_vtx_range(); 
 
-    if(out) *out << "]SMesh::import" << std::endl ; 
+    if(out) *out << "]SMesh::import_original" << std::endl ; 
     if(dump) std::cout << ss.str() ; 
 }
+
+
 
 NPFold* SMesh::serialize() const 
 {
@@ -231,7 +284,9 @@ Removed face which was passenger only from U4Mesh for debugging
 
 inline void SMesh::set_tri( const NP* _tri )
 {
-    tri = _tri ; 
+    tri = _tri ;
+    assert( tri->uifc == 'i' );  
+    assert( tri->ebyte == 4 );  
 }
 
 inline int SMesh::indices_num() const 
@@ -257,20 +312,25 @@ inline void SMesh::set_name( int ridx )
     name = FormName(ridx);    
 }
 
-inline void SMesh::set_vtx( const NP* _wvtx, const glm::tmat4x4<double>* tr,  std::ostream* out  )
+
+
+inline void SMesh::set_vtx( const NP* _vtx, const glm::tmat4x4<double>* tr,  std::ostream* out  )
 {
     assert( tri ); 
-    assert( _wvtx->shape.size() == 2 );
-    assert( _wvtx->shape[0] > 2  );   // need at least 3 vtx to make a face
-    assert( _wvtx->shape[1] == 3 );
+
+    assert( _vtx->uifc == 'f' );  
+    assert( _vtx->ebyte == 8  );
+
+    assert( _vtx->shape.size() == 2 );
+    assert( _vtx->shape[0] > 2  );   // need at least 3 vtx to make a face
+    assert( _vtx->shape[1] == 3 );
 
     if(tr) memcpy( glm::value_ptr(tr0), glm::value_ptr(*tr), sizeof(tr0) );  // informational only 
-    NP* wvtx = stra<double>::MakeTransformedArray( _wvtx, tr );     
+    NP* wvtx = stra<double>::MakeTransformedArray( _vtx, tr );     
     NP* wnrm = MakeNormals( wvtx, tri, NRM_SMOOTH, out );  // uses doubles
 
     vtx = NP::MakeNarrowIfWide(wvtx);
     nrm = NP::MakeNarrowIfWide(wnrm);
-    set_vtx_range(); 
 }
 
 inline void SMesh::set_vtx_range()
@@ -279,10 +339,10 @@ inline void SMesh::set_vtx_range()
 }
 
 template<typename T>
-inline std::string SMesh::Desc2D(const NP* a, const char* label) 
+inline std::string SMesh::Desc2D(const NP* a, int limit, const char* label) 
 {
     std::stringstream ss ; 
-    if(label) ss << label << std::endl ; 
+    if(label) ss << "[ " << label << std::endl ; 
     if(a == nullptr)
     {
         ss << " (null) " << std::endl ; 
@@ -295,6 +355,9 @@ inline std::string SMesh::Desc2D(const NP* a, const char* label)
 
         for(int i=0 ; i < ni ; i++)
         {
+            bool emit = i < limit || i > ni - limit ; 
+            if(!emit) continue ; 
+
             ss << std::setw(3) << i << " : " ; 
             for(int j=0 ; j < nj ; j++)
             {
@@ -311,6 +374,7 @@ inline std::string SMesh::Desc2D(const NP* a, const char* label)
             ss << std::endl ; 
         }
     }
+    if(label) ss << "] " << label << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
 }
@@ -318,11 +382,11 @@ inline std::string SMesh::Desc2D(const NP* a, const char* label)
 
 
 template<typename T, typename S>
-inline std::string SMesh::Desc2D(const NP* a, const NP* b, const char* label) 
+inline std::string SMesh::Desc2D(const NP* a, const NP* b, int limit, const char* label) 
 {
 
     std::stringstream ss ; 
-    if(label) ss << label << std::endl ; 
+    if(label) ss << "[" << label << std::endl ; 
 
     if( a == nullptr || b == nullptr )
     {
@@ -344,6 +408,9 @@ inline std::string SMesh::Desc2D(const NP* a, const NP* b, const char* label)
 
         for(int i=0 ; i < ni ; i++)
         {
+            bool emit = i < limit || i > (ni - limit) ; 
+            if(!emit) continue ;  
+
             ss << std::setw(3) << i << " : " ; 
 
             for(int j=0 ; j < a_nj ; j++)
@@ -375,6 +442,7 @@ inline std::string SMesh::Desc2D(const NP* a, const NP* b, const char* label)
 
         }
     }
+    if(label) ss << "]" << label << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
 }
@@ -400,28 +468,28 @@ inline std::string SMesh::brief() const
 
 inline std::string SMesh::descTri() const
 {
-    return Desc2D<int>(tri,"SMesh::descTri") ; 
+    return Desc2D<int>(tri,LIMIT, "SMesh::descTri") ; 
 }
 inline std::string SMesh::descVtx() const
 {
-    return Desc2D<float>(vtx,"SMesh::descVtx") ; 
+    return Desc2D<float>(vtx,LIMIT,"SMesh::descVtx") ; 
 }
 
 inline std::string SMesh::descTriVtx() const
 {
-    return Desc2D_Ref_2D_int_float(tri,vtx,"SMesh::descTriVtx") ; 
+    return Desc2D_Ref_2D_int_float(tri,vtx,LIMIT/3,"SMesh::descTriVtx") ; 
 }
 inline std::string SMesh::descVtxNrm() const
 {
-    return Desc2D<float,float>(vtx,nrm,"SMesh::descVtxNrm") ; 
+    return Desc2D<float,float>(vtx,nrm,LIMIT,"SMesh::descVtxNrm") ; 
 }
 
 
 
-inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  const char* label)  // static
+inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  int limit, const char* label)  // static
 {
     std::stringstream ss ; 
-    if(label) ss << label << std::endl ; 
+    if(label) ss << "[ " << label << std::endl ; 
     if( a == nullptr || b == nullptr )
     {
         ss << " a or b missing " << std::endl ;  
@@ -438,6 +506,9 @@ inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  con
      
         for(int i=0 ; i < a_ni ; i++)
         {
+            bool emit = i < limit || i > (a_ni - limit) ; 
+            if(!emit) continue ; 
+
             for(int j=0 ; j < a_nj ; j++)
             {
                 int a_idx = i*a_nj + j ; 
@@ -456,6 +527,7 @@ inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  con
             ss << std::endl ; 
         }
     }
+    if(label) ss << "] " << label << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
 }
@@ -463,7 +535,8 @@ inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  con
 inline std::string SMesh::desc() const
 {
     std::stringstream ss ;
-    ss << "SMesh::desc" 
+    ss 
+       << "[SMesh::desc" 
        << std::endl 
        << descShape()
        << std::endl 
@@ -476,6 +549,8 @@ inline std::string SMesh::desc() const
        << descTriVtx() 
        << std::endl 
        << descVtxNrm() 
+       << std::endl 
+       << "]SMesh::desc" 
        << std::endl 
        ;
 

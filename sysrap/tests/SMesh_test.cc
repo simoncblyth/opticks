@@ -13,27 +13,34 @@ SMesh_test.cc
 
 struct SMesh_test
 {
+    static int Load0(); 
     static int Load(); 
     static int LoadTransformed();
     static int Concatenate(); 
     static int main(); 
 };
 
+inline int SMesh_test::Load0()
+{
+    const char* m = "0" ; 
+    SMesh* mesh = SMesh::Load("$SCENE_FOLD/scene/mesh", m  ); 
+    std::cout << mesh->desc(); 
+    return 0 ;
+}
+
 inline int SMesh_test::Load()
 {
-    //const char* m = "0" ;   // SEGV
-    //const char* m = "1" ;   // malloc incorrect checksum for freed object
-    //const char* m = "2" ;   // SMesh::SmoothNormals FATAL NOT expected
-    const char* m = "3" ;   // works ?
-    //const char* m = "4" ;   // malloc incorrect checksum for freed object
-    //const char* m = "5" ;   // malloc incorrect checksum for freed object
-    //const char* m = "6" ;   // malloc incorrect checksum for freed object 
-    //const char* m = "7" ;   // malloc incorrect checksum for freed object 
-    //const char* m = "8" ;   // malloc incorrect checksum for freed object 
+    NPFold* scene_mesh = NPFold::Load("$SCENE_FOLD/scene/mesh"); 
+    std::cout << scene_mesh->desc(); 
 
-    SMesh* mesh = SMesh::Load("/tmp/SScene_test/scene/mesh", m  ); 
+    int num_sub = scene_mesh->get_num_subfold(); 
 
-    std::cout << mesh->desc(); 
+    for(int i=0 ; i < num_sub ; i++)
+    {
+        NPFold* sub = scene_mesh->get_subfold(i);
+        SMesh* mesh = SMesh::Import( sub );  
+        std::cout << mesh->desc(); 
+    }
     return 0 ; 
 }
 

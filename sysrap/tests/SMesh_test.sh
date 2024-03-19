@@ -27,9 +27,13 @@ SOLID=${SOLID:-$solid}
 mesh_fold=/tmp/U4Mesh_test/$SOLID
 export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
 
+scene_fold=/tmp/SScene_test
+export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
+
+vars="BASH_SOURCE PWD MESH_FOLD SCENE_FOLD"
+
 cd $(dirname $(realpath $BASH_SOURCE))
 
-vars="BASH_SOURCE PWD MESH_FOLD"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s %s \n" "$var" "${!var}" ; done 
