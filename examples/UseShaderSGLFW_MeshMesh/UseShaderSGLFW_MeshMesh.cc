@@ -30,7 +30,7 @@ int main()
     const SMesh* box = SMesh::Load("$MESH_FOLD/Box"); 
     const SMesh* torus = SMesh::Load("$MESH_FOLD/Torus"); 
     //const SMesh* other = SMesh::Load("$STREE_MESH_FOLD/$STREE_MESH_SOLID"); 
-    const SMesh* other = SMesh::Load("$SCENE_FOLD/scene/mesh/2"); 
+    const SMesh* other = SMesh::Load("$SCENE_FOLD/scene/mesh_grup/2"); 
 
 
     sframe fr ; 
@@ -47,14 +47,10 @@ int main()
     SGLFW_CUDA cuda(gm) ; 
 #endif
 
-    SGLFW_Program prog("$SHADER_FOLD", "vPos", "vNrm" );
-    prog.use(); 
-    prog.locateMVP("MVP",  gm.MVP_ptr );  
-
-    SGLFW_Render r_box( box, &prog ); 
-    SGLFW_Render r_torus( torus, &prog ); 
-    SGLFW_Render r_other( other, &prog ); 
-    // common prog for multiple mesh renders
+    SGLFW_Program prog("$SHADER_FOLD", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr );
+    SGLFW_Render r_box(    box  ); 
+    SGLFW_Render r_torus( torus ); 
+    SGLFW_Render r_other( other ); 
  
     while(gl.renderloop_proceed())
     {
@@ -68,9 +64,9 @@ int main()
         }
         else
         {
-            r_box.render();
-            r_torus.render();
-            r_other.render();
+            r_box.render(&prog);
+            r_torus.render(&prog);
+            r_other.render(&prog);
         }
         gl.renderloop_tail();      // swap buffers, poll events
     }

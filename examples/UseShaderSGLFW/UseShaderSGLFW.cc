@@ -75,7 +75,7 @@ int main(void)
     SGLM gm ; 
     SGLFW gl(gm, "Single Triangle example"); 
 
-    SGLFW_Program prog(nullptr, "vPos", nullptr ); 
+    SGLFW_Program prog(nullptr, "vPos", nullptr, nullptr, nullptr, nullptr ); 
     prog.createFromText( vertex_shader_text, geometry_shader_text, fragment_shader_text); 
     prog.use(); 
 

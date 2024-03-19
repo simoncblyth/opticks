@@ -35,7 +35,7 @@ struct SGLFW_Program
     GLint getAttribLocation(const char* name) const ; 
 
     GLint findUniformLocation(const char* keys, char delim ) const ; 
-    //void locateMVP(const char* key, const float* mvp ); 
+    void locateMVP(const char* key, const float* mvp ); 
     void updateMVP() const ;  // called from renderloop_head
 
     static void UniformMatrix4fv( GLint loc, const float* vv, bool dump ); 
@@ -73,6 +73,7 @@ inline SGLFW_Program::SGLFW_Program(
     dump(false)
 {
     if(_dir) createFromDir(_dir) ; 
+    use(); 
     if(mvp_uniname)
     { 
         mvp_location = getUniformLocation(mvp_uniname); 
@@ -91,14 +92,15 @@ setup and the GLM maths has been instanciated
 hence giving the pointer to the world2clip matrix
 address. 
 
+**/
 
 inline void SGLFW_Program::locateMVP(const char* key, const float* mvp_ )
 { 
+    std::cout << "SGLFW_Program::locateMVP backwards compat" << std::endl ; 
     mvp_location = getUniformLocation(key); 
     assert( mvp_location > -1 ); 
     mvp = mvp_ ; 
 }
-**/
 
 
 /**

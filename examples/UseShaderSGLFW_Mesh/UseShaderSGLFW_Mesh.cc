@@ -41,10 +41,7 @@ int main()
     SGLFW_CUDA cuda(gm) ; 
 #endif
 
-    SGLFW_Program prog("$SHADER_FOLD", "vPos", "vNrm" );
-    prog.use(); 
-    prog.locateMVP("MVP",  gm.MVP_ptr );  
-
+    SGLFW_Program prog("$SHADER_FOLD", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr  );
 
     SGLFW_VAO vao ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
     vao.bind(); 

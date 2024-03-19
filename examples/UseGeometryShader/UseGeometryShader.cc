@@ -158,7 +158,7 @@ int main(int argc, char** argv)
 
     SGLFW gl(gm, RECORD_PATH );   
 
-    SGLFW_Program prog("$SHADER_FOLD", nullptr, nullptr ); 
+    SGLFW_Program prog("$SHADER_FOLD", nullptr, nullptr, nullptr, nullptr, nullptr ); 
     prog.use(); 
 
 
