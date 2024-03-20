@@ -137,7 +137,9 @@ int main(int argc, char** argv)
 
     const char* ppm_path = PPMPath( prefix, name ); 
     std::cout << "write ppm_path " << ppm_path << std::endl ; 
+
     engine.writePPM(ppm_path);  
+
 
     return 0 ; 
 }

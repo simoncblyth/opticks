@@ -182,6 +182,9 @@ struct SYSRAP_API sn
     template<typename N> static std::string Desc(const std::vector<N*>& nds, bool reverse=false); 
     template<typename N> static std::string DescPrim(const std::vector<N*>& nds, bool reverse=false); 
 
+    template<typename N> static std::string Brief(const std::vector<N*>& nds, bool reverse=false); 
+
+
 
     int  idx() const ;  // to match snd.hh
     int  index() const ; 
@@ -575,6 +578,17 @@ inline std::string sn::DescPrim(const std::vector<N*>& nds, bool reverse) // sta
     return str ; 
 }
 
+
+template<typename N>
+inline std::string sn::Brief(const std::vector<N*>& nds, bool reverse) // static
+{
+    int num_nd = nds.size() ;
+    std::stringstream ss ; 
+    ss << "sn::Brief num_nd " << num_nd << ( reverse ? " DESC ORDER REVERSED " : "-" ) << std::endl ; 
+    for(int i=0 ; i < num_nd ; i++) ss << Desc(nds[reverse ? num_nd - 1 - i : i]) << std::endl ; 
+    std::string str = ss.str();
+    return str ; 
+}
 
 
 

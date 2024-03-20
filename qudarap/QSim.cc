@@ -404,8 +404,10 @@ the *QSim::reset* method must be called to avoid a memory leak.
 **/
 void QSim::reset(int eventID)
 {
+    SProf::Add("QSim__reset_HEAD"); 
     sev->endOfEvent(eventID);
     LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
+    SProf::Add("QSim__reset_TAIL"); 
 }
 
 

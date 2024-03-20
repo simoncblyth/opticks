@@ -410,6 +410,14 @@ Tran<T>* Tran<T>::ConvertToTran(const qat4* q_, T epsilon )
     return tr ; 
 }
 
+/**
+Tran<T>::ConvertFromQat
+-------------------------
+
+Caller is owner of the Tran 
+
+**/
+
 template<typename T>
 Tran<T>* Tran<T>::ConvertFromQat(const qat4* q_, T epsilon )
 {

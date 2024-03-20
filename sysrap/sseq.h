@@ -231,8 +231,9 @@ SSEQ_METHOD bool sseq::operator==(const sseq& other) const
 
 
 
-
-// hash specialization allowing sseq to be used as a map key 
+/**
+sseq hash specialization allowing sseq to be used as a map key 
+**/
 template<>
 struct std::hash<sseq> 
 {

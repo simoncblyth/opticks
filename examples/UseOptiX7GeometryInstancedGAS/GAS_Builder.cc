@@ -91,14 +91,14 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
                 cudaMemcpyHostToDevice
                 ) );
 
-    OptixBuildInput build_input = {};
-    build_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    OptixBuildInput buildInput = {};
+    buildInput.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
 
-    OptixBuildInputCustomPrimitiveArray& aabbArray = build_input.aabbArray ;  
+    OptixBuildInputCustomPrimitiveArray& customPrimitiveArray = buildInput.customPrimitiveArray ;  
 
-    aabbArray.aabbBuffers   = &d_aabb_buffer;
-    aabbArray.numPrimitives = num_bb ;
-    aabbArray.numSbtRecords = num_bb ;   // ? 
+    customPrimitiveArray.aabbBuffers   = &d_aabb_buffer;
+    customPrimitiveArray.numPrimitives = num_bb ;
+    customPrimitiveArray.numSbtRecords = num_bb ;   // ? 
 
 
     //unsigned flag = OPTIX_GEOMETRY_FLAG_NONE ;
@@ -108,12 +108,12 @@ GAS GAS_Builder::Build(const std::vector<float>& bb )  // static
     unsigned* flags = new unsigned[num_bb];
     for(unsigned i=0 ; i < num_bb ; i++) flags[i] = flag ;
 
-    aabbArray.flags         = flags;
+    customPrimitiveArray.flags         = flags;
      
     // optixWhitted sets up sbtOffsets 
     // see p18 for setting up offsets 
 
-    GAS gas = Build(build_input); 
+    GAS gas = Build(buildInput); 
 
     delete[] flags ; 
     CUDA_CHECK( cudaFree( (void*)d_aabb_buffer ) );

@@ -1,13 +1,31 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+SGLM_test.sh
+============
+
+::
+
+    ~/o/sysrap/tests/SGLM_test.sh 
+
+EOU
+}
 
 msg="=== $BASH_SOURCE :"
 name=SGLM_test 
+bin=/tmp/$name
 
-gcc $name.cc -g -Wall -std=c++11 -lstdc++ -I.. -I$OPTICKS_PREFIX/externals/glm/glm -I/usr/local/cuda/include -o /tmp/$name 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
+cd $(dirname $(realpath $BASH_SOURCE))
+
+vars="BASH_SOURCE name bin CUDA_PREFIX"
+for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done  
+
+gcc $name.cc -g -Wall -std=c++11 -lstdc++ -I.. -I$OPTICKS_PREFIX/externals/glm/glm -I$CUDA_PREFIX/include -o $bin
 [ $? -ne 0 ] && echo $msg compile error && exit 1 
 
-
-/tmp/$name
+$bin
 [ $? -ne 0 ] && echo $msg run error && exit 2 
 
 exit 0 

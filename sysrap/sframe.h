@@ -4,11 +4,6 @@
 sframe.h
 ===========
 
-
-
-
-
-
 TODO: once bring in U4Tree.h/stree.h translation up this to double precision 
 
 
@@ -69,15 +64,15 @@ struct sframe
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
     static constexpr const float EPSILON = 1e-5 ; 
 
-    float4 ce = {} ;   // 0
-    quad   q1 = {} ; 
-    quad   q2 = {} ; 
-    quad   q3 = {} ; 
+    float4 ce = {} ;   // f4:center-extent           4x4:0
+    quad   q1 = {} ;   // i4:cegs
+    quad   q2 = {} ;   // i4:cegs.., f4:gridscale
+    quad   q3 = {} ;   // i4:midx,mord,gord,inst 
    
-    qat4   m2w = {} ;  // 1
-    qat4   w2m = {} ;  // 2
+    qat4   m2w = {} ;  // f4:inst transform          4x4:1
+    qat4   w2m = {} ;  // f4:iinst transform         4x4:2
 
-    quad4  aux = {} ;  // 3
+    quad4  aux = {} ;  // i4:ins,gas,sen_id,sen_idx  4x4:3
 
 
     // CAUTION : ABOVE HEAD PERSISTED BY MEMCPY INTO ARRAY,  BELOW TAIL ADDED AS METADATA
@@ -92,6 +87,11 @@ struct sframe
     const char* ev = nullptr ; 
     const char* ekvid = nullptr ; 
 
+    sframe(); 
+    sframe(const sframe& other); 
+    ~sframe(); 
+    void cleanup(); 
+
     void zero() ; 
     bool is_zero() const ; 
 
@@ -100,6 +100,7 @@ struct sframe
     static sframe Load( const char* dir, const char* name=NAME); 
     static sframe Load_(const char* path ); 
     static sframe Fabricate(float tx=0.f, float ty=0.f, float tz=0.f); 
+
 
     void set_grid(const std::vector<int>& cegs, float gridscale); 
     int ix0() const ; 
@@ -179,6 +180,79 @@ struct sframe
 }; 
 
 
+// ctor
+inline sframe::sframe()
+    :
+    tr_m2w(nullptr),
+    tr_w2m(nullptr)
+{
+#ifdef SFRAME_DEBUG
+    printf("//sframe::sframe ctor NULL: tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
+#endif
+}
+
+/**
+sframe copy ctor
+--------------------
+
+notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
+
+Note that a simple copy of non-nullptr transform pointers without the "prepare" 
+would cause double ownership of tr_m2w tr_w2m and subsequent dtor double free errors.
+
+**/
+
+// copy ctor
+inline sframe::sframe(const sframe& other)
+{
+    ce = other.ce ; 
+    q1 = other.q1 ; 
+    q2 = other.q2 ; 
+    q3 = other.q3 ; 
+    m2w = other.m2w ; 
+    w2m = other.w2m ; 
+    aux = other.aux ; 
+
+    frs = other.frs ? strdup(other.frs) : nullptr ; 
+
+    tr_m2w = nullptr ; 
+    tr_w2m = nullptr ; 
+    prepare();   // set the above from the m2w, w2m
+
+    ek = other.ek ? strdup(other.ek) : nullptr ; 
+    ev = other.ev ? strdup(other.ev) : nullptr ; 
+    ekvid = other.ekvid ? strdup(other.ekvid) : nullptr ; 
+
+#ifdef SFRAME_DEBUG
+    printf("//sframe.copy.ctor NEW: tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
+#endif
+}
+
+
+/**
+sframe::~sframe dtor
+----------------------
+
+**/
+inline sframe::~sframe()
+{
+#ifdef SFRAME_DEBUG
+    printf("//sframe::~sframe tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
+#endif
+    //cleanup();  // JUST LEAKING FOR NOW : SEE PLAN IN notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
+}
+
+inline void sframe::cleanup()
+{
+    free((void*)frs); 
+    delete tr_m2w ; 
+    delete tr_w2m ; 
+    free((void*)ek);
+    free((void*)ev);
+    free((void*)ekvid); 
+}
+
+
 inline void sframe::zero()
 {
     ce = {} ;   // 0
@@ -194,7 +268,9 @@ inline void sframe::zero()
     tr_w2m = nullptr ;
     ek = nullptr ; 
     ev = nullptr ; 
+    ekvid = nullptr ; 
 }
+
 
 inline bool sframe::is_zero() const 
 {
@@ -275,6 +351,11 @@ inline sframe sframe::Fabricate(float tx, float ty, float tz) // static
     fr.prepare(); 
     return fr ; 
 }
+
+
+
+
+
 
 
 inline void sframe::set_grid(const std::vector<int>& cegs, float gridscale)
@@ -359,10 +440,9 @@ inline void sframe::set_midx_mord_gord(int midx, int mord, int gord)
 inline int sframe::midx() const { return q3.i.x ; }
 inline int sframe::mord() const { return q3.i.y ; }
 inline int sframe::gord() const { return q3.i.z ; }
-
+inline int sframe::inst() const { return q3.i.w ; }
 
 inline void sframe::set_inst(int inst){ q3.i.w = inst ; }
-inline int sframe::inst() const { return q3.i.w ; }
 
 inline void sframe::set_identity(int ins, int gas, int sensor_identifier, int sensor_index ) // formerly set_ins_gas_ias
 {
@@ -459,25 +539,14 @@ inline void sframe::load(const char* dir, const char* name_ )
 }
 inline void sframe::load_(const char* path_)   // eg $A_FOLD/sframe.npy
 {
-    const char* path = spath::Resolve(path_);
-    bool exists = spath::Exists(path) ;
-    if(!exists) 
-        std::cerr 
-            << "sframe::load_ ERROR : non-existing" 
-            << " path_ " << path_ 
-            << " path " << path 
-            << std::endl   
-            ;
-
-    assert(exists); 
-
-    if( exists )
-    {
-        const NP* a = NP::Load(path);
-        // HMM: NP::Load now does smth similar to Resolve
-
-        load(a); 
-    }
+    const NP* a = NP::Load(path_);
+    if(!a) std::cerr 
+       << "sframe::load_ ERROR : non-existing" 
+       << " path_ " << path_ 
+       << std::endl   
+       ;
+    assert(a); 
+    load(a); 
 }
 inline void sframe::load(const NP* a) 
 {

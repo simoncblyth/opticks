@@ -3,14 +3,50 @@ usage(){ cat << EOU
 build.sh
 ===========
 
+Usage
+------
+
 ::
 
-  EYE=0,-4,0,1 ./build.sh run
+  ~/o/examples/UseGeometryShader/build.sh 
+  EYE=0,-4,0,1 ~/o/examples/UseGeometryShader/build.sh run
 
-Using /tmp/sphoton_test/record.npy is convenient for debugging 
-as the record array can be defined to have photons moving in 
-very simple ways.  
+  RECORD_FOLD=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p003 ~/o/examples/UseGeometryShader/build.sh 
+  RECORD_FOLD=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p003 ~/o/examples/UseGeometryShader/build.sh  ana
 
+HMM: for debug need a mode that draws all points 
+
+
+OpenGL graphics externals : GLEW, GLFW
+----------------------------------------
+
+As the graphics externals are not currently included in standard build, 
+need to manually get and install them with::
+
+    glew-
+    glew--
+
+    glfw-
+    glfw--
+
+Prepare record array
+----------------------
+
+Rather than using a real record array it is 
+convenient for debugging to use a fabricated one 
+with photons with step points propagating 
+in a known simple shape : expanding concentric circles.
+Create that record array with::
+
+    TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh
+
+The extent of step point positions and times are (10 "mm", 10 "ns")
+
+
+
+
+Linux issue ?
+--------------
 
 Suspect the Linux CMake build may be finding a GLEW 
 lib other than the one installed by opticks-full.
@@ -22,27 +58,59 @@ For example there is one as an external of ROOT::
    #-Wl,-rpath,$GLEW_PREFIX/lib:$OPTICKS_PREFIX/externals/lib64 \
 
 
+Commands : info, build, run, dbg, examine
+--------------------------------------------
+
+examine 
+    uses otool/ldd to dump the libraries linked from the executable
+
+
+About the render
+----------------
+
+With default "EYE=0,-3,0,1" in perspective rendering on both macOS and Linux 
+the ninth ring just gets to top and bottom of render. 
+BUT: the circle appears slightly elliptical : longer vertically that horizontally 
+when would expect equal. 
+
+Is the aspect ratio calc in the view math using correct screen size, accounting for "chrome" ?
+
+TODO: orthographic mode switch  
+
+
 EOU
 }
 
 defarg="info_build_run_examine"
 arg=${1:-$defarg}
 
-cd $(dirname $BASH_SOURCE)
+cd $(dirname $(realpath $BASH_SOURCE))
+
 name=UseGeometryShader
 bdir=/tmp/$name
 bin=$bdir/$name
+script=$name.py 
+
 mkdir -p $bdir
 
 sdir=$(pwd)
-export SHADER_FOLD=$sdir/rec_flying_point
-export ARRAY_FOLD=/tmp/sphoton_test
+
+#shader=rec_flying_point
+shader=pos
+SHADER=${SHADER:-$shader}
+export SHADER_FOLD=$sdir/$SHADER
+
+record_fold=/tmp/sphoton_test
+export RECORD_FOLD=${RECORD_FOLD:-$record_fold}
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
+eye=0,-3,0
+EYE=${EYE:-$eye}
+export EYE
 
-vars="name bdir sdir SHADER_FOLD ARRAY_FOLD bin"
+vars="BASH_SOURCE PWD name bdir sdir SHADER_FOLD RECORD_FOLD bin EYE"
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -108,28 +176,30 @@ if [ "${arg/build}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-   EYE=0,-3,0,1 $bin
-   # both macOS and Linux the ninth ring just gets to top and bottom of render 
+   $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
-   case $(uname) in
-      Darwin) lldb__ $bin ;;
-      Linux)  gdb__ $bin ;;
-   esac
+   dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 4
 fi 
 
 if [ "${arg/examine}" != "$arg" ]; then 
+   echo $BASH_SOURCE : examine libs of the binary $bin
    case $(uname) in
       Darwin) otool -L $bin ;;
       Linux)  ldd $bin ;;
    esac
    [ $? -ne 0 ] && echo $BASH_SOURCE : examine error && exit 5
- 
-
 fi 
+
+if [ "${arg/ana}" != "$arg" ]; then
+   ${IPYTHON:-ipython} --pdb -i  $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 6
+fi 
+
+
 
 
 exit 0 

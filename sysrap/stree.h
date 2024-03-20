@@ -14,6 +14,11 @@ WIP : stree fold getting messy
 * DONE : split off mat/sur/bnd into sstandard 
 * TODO : split off structural transforms, nodes etc.. into subfold 
 
+Exmple
+--------
+
+~/o/u4/tests/U4TreeCreateTest.sh 
+
 
 Lifecycle
 ------------
@@ -79,7 +84,6 @@ Find users of stree.h
     ./sysrap/CMakeLists.txt
     ./sysrap/SBnd.h
     ./sysrap/sphit.h
-    ./sysrap/sframe.h
     ./sysrap/SSim.cc
     ./ggeo/GGeo.cc
     ./ggeo/tests/GGeoLoadFromDirTest.cc
@@ -230,6 +234,10 @@ When SSim not in use can also use::
 #include "snam.h"
 #include "SBnd.h"
 
+// transitional ? 
+#include "sframe.h"
+
+
 
 struct stree_standin
 {
@@ -281,6 +289,7 @@ struct stree
     static constexpr const char* FACTOR = "factor.npy" ;
     static constexpr const char* MATERIAL = "material" ;
     static constexpr const char* SURFACE = "surface" ;
+    static constexpr const char* MESH = "mesh" ;
     static constexpr const char* STANDARD = "standard" ;
 
 
@@ -293,6 +302,7 @@ struct stree
     static constexpr const char* SENSOR_NAME = "sensor_name.npy" ; 
     static constexpr const char* MTINDEX_TO_MTLINE = "mtindex_to_mtline.npy" ; 
 
+    static constexpr const char* INST_INFO = "inst_info.npy" ; 
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     int level ;                            // verbosity 
@@ -309,7 +319,8 @@ struct stree
     std::vector<std::string> bdname ; 
     std::vector<std::string> implicit ;  // names of implicit surfaces
 
-    std::vector<std::string> soname ;       // unique solid names
+    std::vector<std::string> soname_raw ;   // solid names, my have 0x pointer suffix 
+    std::vector<std::string> soname ;       // unique solid names, created with sstr::StripTail_unique with _1 _2 ... uniqing 
 
 #ifdef WITH_SND
     std::vector<int>         solids ;       // snd idx 
@@ -317,10 +328,10 @@ struct stree
     std::vector<sn*>         solids ; 
 #endif
 
-    std::vector<glm::tmat4x4<double>> m2w ; // model2world transforms for all nodes
-    std::vector<glm::tmat4x4<double>> w2m ; // world2model transforms for all nodes  
-    std::vector<glm::tmat4x4<double>> gtd ; // GGeo Transform Debug, added from X4PhysicalVolume::convertStructure_r
-
+    std::vector<glm::tmat4x4<double>> m2w ; // local (relative to parent) "model2world" transforms for all nodes
+    std::vector<glm::tmat4x4<double>> w2m ; // local (relative to parent( "world2model" transforms for all nodes  
+    std::vector<glm::tmat4x4<double>> gtd ; // global (relative to root) "GGeo Transform Debug" transforms for all nodes
+    // "gtd" formerly from X4PhysicalVolume::convertStructure_r
 
     std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
     std::vector<snode> rem ;               // selection of remainder nodes
@@ -346,13 +357,14 @@ struct stree
 
     NPFold* material ;   // material properties from G4 MPTs
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata         
-
+    NPFold* mesh ; // triangulation of all solids 
 
     std::vector<glm::tmat4x4<double>> inst ; 
     std::vector<glm::tmat4x4<float>>  inst_f4 ; 
     std::vector<glm::tmat4x4<double>> iinst ; 
     std::vector<glm::tmat4x4<float>>  iinst_f4 ; 
 
+    std::vector<int4>                 inst_info ; 
     std::vector<int>                  inst_nidx ; 
 
     stree();
@@ -530,7 +542,7 @@ struct stree
     const sfactor& get_factor(unsigned idx) const ; 
 
     int      get_factor_subtree(unsigned idx) const ; 
-    int      get_factor_olvid(unsigned idx) const ; 
+    int      get_factor_olvid(unsigned idx) const ;   // outer-lv-id
 
     int      get_remainder_subtree() const ; 
     int      get_remainder_olvid() const  ; 
@@ -562,6 +574,14 @@ struct stree
     void narrow_inst(); 
     void clear_inst(); 
     std::string desc_inst() const ;
+    const glm::tmat4x4<double>* get_inst(int idx) const ; 
+    const glm::tmat4x4<double>* get_iinst(int idx) const ; 
+    const glm::tmat4x4<float>*  get_inst_f4(int idx) const ; 
+    const glm::tmat4x4<float>*  get_iinst_f4(int idx) const ; 
+
+    // transitional method for matching with CSGFoundry::getFrame
+    void get_frame_f4( sframe& fr, int idx ) const ; 
+
 
     void get_mtindex_range(int& mn, int& mx ) const ; 
     std::string desc_mt() const ; 
@@ -629,7 +649,8 @@ inline stree::stree()
 #endif
     standard(new sstandard),
     material(new NPFold),
-    surface(new NPFold)
+    surface(new NPFold),
+    mesh(new NPFold)
 {
     init(); 
 }
@@ -715,6 +736,10 @@ inline std::string stree::desc() const
        << " stree::desc.surface "  
        << std::endl
        << ( surface ? surface->desc() : "-" )
+       << std::endl
+       << " stree::desc.mesh "  
+       << std::endl
+       << ( mesh ? mesh->desc() : "-" )
        << std::endl
        << " stree::desc.csg "  
        << std::endl
@@ -1570,13 +1595,8 @@ local:true
     Gets ancestors of *nidx* that have the same repeat_index as the *nidx* node.
     For *nidx* within the remainder nodes this is expected to start from root, nidx 0.
     For *nidx* within instanced nodes this will only include ancestor 
-    nodes within that same instance. 
-
-    HMM: looks like does not include the outer node ?
-
-
-Q: Judgement after collection, so does that correctly skip the outer ?  
-A: No because its recording the parent looking ahead, hence try popping the last 
+    nodes within that same instance. Note also that the outer node of
+    the instance is BY DESIGN : NOT INCLUDED. 
 
 **/
 
@@ -1645,9 +1665,13 @@ inline std::string stree::desc_ancestors(int nidx, bool local) const
 }
 
 
+/**
+stree::get_node_transform
+---------------------------
 
+Returns local (relative to parent) transforms for the nidx snode 
 
-
+**/
 
 inline void stree::get_node_transform( glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx ) const 
 {
@@ -1673,6 +1697,10 @@ local:true
    be the same for all instances.  Indeed that skipped transform 
    will become part of the instance transforms. 
 
+
+Q: What transforms are provided when called from the nidx of outer instanced nodes ?
+A: In that case num_nodes=0 so identity transforms are returned.  
+
 **/
 
 inline void stree::get_node_product( 
@@ -1687,7 +1715,8 @@ inline void stree::get_node_product(
     get_ancestors(nodes, nidx, local, out);  // root-first-order (from collecting parent links then reversing the vector)
 
     bool is_local_outer = local && is_outer_node(nidx) ;
-    if(is_local_outer == false ) nodes.push_back(nidx);  // dont include the local_outer node, here either
+    if(is_local_outer == false ) nodes.push_back(nidx);  
+    // dont include the local_outer node, here either
 
 
     int num_nodes = nodes.size();
@@ -2141,6 +2170,7 @@ inline NPFold* stree::serialize() const
 
     if(material) fold->add_subfold( MATERIAL, material );  
     if(surface)  fold->add_subfold( SURFACE,  surface );  
+    if(mesh)     fold->add_subfold( MESH,     mesh );  
 
 
     fold->add( SUNAME,   NPX::Holder(suname) ); 
@@ -2173,6 +2203,7 @@ inline NPFold* stree::serialize() const
     NP* _inst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_f4, 4, 4) ; 
     NP* _iinst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( iinst_f4, 4, 4) ; 
 
+    NP* _inst_info = NPX::ArrayFromVec<int,int4>( inst_info, 4 ) ; 
     NP* _inst_nidx = NPX::ArrayFromVec<int,int>( inst_nidx ) ; 
     NP* _sensor_id = NPX::ArrayFromVec<int,int>( sensor_id ) ; 
     NP* _sensor_name = NPX::Holder(sensor_name); 
@@ -2183,6 +2214,7 @@ inline NPFold* stree::serialize() const
     fold->add( IINST,   _iinst ); 
     fold->add( INST_F4,   _inst_f4 ); 
     fold->add( IINST_F4,   _iinst_f4 ); 
+    fold->add( INST_INFO,   _inst_info ); 
     fold->add( INST_NIDX,   _inst_nidx ); 
     fold->add( SENSOR_ID,   _sensor_id ); 
     fold->add( SENSOR_NAME, _sensor_name ); 
@@ -2338,6 +2370,7 @@ inline void stree::import(const NPFold* fold)
 
     material = fold->get_subfold( MATERIAL) ;
     surface  = fold->get_subfold( SURFACE ) ;
+    mesh     = fold->get_subfold( MESH ) ;
 
     ImportArray<glm::tmat4x4<double>, double>(inst,   fold->get(INST)); 
     ImportArray<glm::tmat4x4<double>, double>(iinst,  fold->get(IINST)); 
@@ -2348,7 +2381,7 @@ inline void stree::import(const NPFold* fold)
     sensor_count = sensor_id.size(); 
     ImportNames( sensor_name, fold->get(SENSOR_NAME) ); 
 
- 
+    ImportArray<int4,int>( inst_info, fold->get(INST_INFO) );
     ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX) );
 }
 
@@ -2786,7 +2819,7 @@ Used by U4Tree::identifySensitiveInstances
 
 As the factor digests are from the outer volume nodes 
 this provides node indices of the outer volumes of 
-that the factor. 
+the idx factor. 
 
 **/
 
@@ -2795,15 +2828,14 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
     assert( idx < factor.size() ); 
     const sfactor& fac = factor[idx]; 
     std::string sub = fac.get_sub(); 
-    int freq = fac.freq ; 
 
     get_nodes(nodes, sub.c_str() );  
 
-    bool consistent = int(nodes.size()) == freq ; 
+    bool consistent = int(nodes.size()) == fac.freq ; 
     if(!consistent) std::cerr 
         << "stree::get_factor_nodes INCONSISTENCY"
         << " nodes.size " << nodes.size()
-        << " freq " << freq 
+        << " fac.freq " << fac.freq 
         << std::endl 
         ;
     assert(consistent );   
@@ -2945,6 +2977,13 @@ inline void stree::get_remainder_nidx(std::vector<int>& nodes ) const
 }
 
 
+/**
+stree::get_repeat_node
+-----------------------
+
+Collect all snode (structual/volumes) selected by (q_repeat_index, q_repeat_ordinal)
+**/
+
 inline void stree::get_repeat_node(std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const 
 {
     for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
@@ -3049,7 +3088,6 @@ inline void stree::add_inst(
 stree::add_inst
 ------------------
 
-
 ::
 
     In [7]: f.inst_f4[:,:,3].view(np.int32)
@@ -3080,9 +3118,31 @@ stree::add_inst
     Out[11]: (48477,)
 
 
+Note that the inst gas are gauranteed to be 
+in contiguous tranches, so can just have instcount 
+and offsets to reference to relevant transforms.
+
+::
+
+    g = i[:,1,3].view(np.int64) 
+
+    In [27]: np.where( g == 0 )[0]
+    Out[27]: array([0])
+
+    In [28]: np.where( g == 1 )[0]
+    Out[28]: array([    1,     2,     3, ..., 25598, 25599, 25600])
+
+    In [29]: np.where( g == 2 )[0]
+    Out[29]: array([25601, 25602, 25603, ..., 38213, 38214, 38215])
+
+    In [30]: np.where( g == 3 )[0]
+    Out[30]: array([38216, 38217, 38218, ..., 43210, 43211, 43212])
+
+    In [31]: np.where( g == 4 )[0]
+    Out[31]: array([43213, 43214, 43215, ..., 45610, 45611, 45612])
+
 
 **/
-
 
 inline void stree::add_inst() 
 {
@@ -3090,32 +3150,42 @@ inline void stree::add_inst()
     glm::tmat4x4<double> tr_w2m(1.) ; 
     add_inst(tr_m2w, tr_w2m, 0, 0 );   // global instance with identity transforms 
 
+    int ridx = 0 ; 
+    int num_inst = 1 ;
+    int tot_inst = 0 ; 
+ 
+    inst_info.push_back( {ridx,num_inst,tot_inst,0} ); 
+    tot_inst += num_inst  ;
+ 
     unsigned num_factor = get_num_factor(); 
-    for(unsigned i=0 ; i < num_factor ; i++)
+    for(int i=0 ; i < int(num_factor) ; i++)
     {
         std::vector<int> nodes ; 
         get_factor_nodes(nodes, i);  
 
-        unsigned gas_idx = i + 1 ; // 0 is the global instance, so need this + 1  
+        num_inst = nodes.size(); 
+        ridx = i + 1 ;       // 0 is the global instance, so need this + 1  
+
         std::cout 
             << "stree::add_inst"
             << " i " << std::setw(3) << i 
-            << " gas_idx " << std::setw(3) << gas_idx
-            << " nodes.size " << std::setw(7) << nodes.size()
+            << " ridx(gas_idx) " << std::setw(3) << ridx
+            << " num_inst " << std::setw(7) << num_inst
             << std::endl 
             ;
 
-        for(unsigned j=0 ; j < nodes.size() ; j++)
+        inst_info.push_back( {ridx,num_inst,tot_inst,0} );
+        tot_inst += num_inst ;  
+
+        for(int j=0 ; j < num_inst ; j++)
         {
             int nidx = nodes[j]; 
-            //get_m2w_product(tr_m2w, nidx, false); 
-            //get_w2m_product(tr_w2m, nidx, true ); 
 
             bool local = false ; 
             bool reverse = false ; 
             get_node_product( tr_m2w, tr_w2m, nidx, local, reverse, nullptr  ); 
 
-            add_inst(tr_m2w, tr_w2m, gas_idx, nidx ); 
+            add_inst(tr_m2w, tr_w2m, ridx, nidx ); 
         }
     }
     narrow_inst(); 
@@ -3147,6 +3217,52 @@ inline std::string stree::desc_inst() const
     std::string s = ss.str(); 
     return s ; 
 }
+
+
+
+
+inline const glm::tmat4x4<double>* stree::get_inst(int idx) const 
+{
+    return idx > -1 && idx < int(inst.size()) ? &inst[idx] : nullptr ; 
+}
+inline const glm::tmat4x4<double>* stree::get_iinst(int idx) const 
+{
+    return idx > -1 && idx < int(iinst.size()) ? &iinst[idx] : nullptr ; 
+}
+
+inline const glm::tmat4x4<float>* stree::get_inst_f4(int idx) const 
+{
+    return idx > -1 && idx < int(inst_f4.size()) ? &inst_f4[idx] : nullptr ; 
+}
+inline const glm::tmat4x4<float>* stree::get_iinst_f4(int idx) const 
+{
+    return idx > -1 && idx < int(iinst_f4.size()) ? &iinst_f4[idx] : nullptr ; 
+}
+
+
+/**
+stree::get_frame_f4
+--------------------
+
+transitional method to match with CSGFoundry::getFrame 
+
+See ~/o/notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
+
+**/
+
+inline void stree::get_frame_f4( sframe& fr, int idx ) const
+{
+    typedef glm::tmat4x4<float> M44 ; 
+
+    const M44* _m2w = get_inst_f4(idx); 
+    const M44* _w2m = get_iinst_f4(idx); 
+
+    assert( sizeof(M44) == sizeof(fr.m2w ) ); 
+    memcpy( fr.m2w.data(), _m2w , sizeof(M44) ); 
+    memcpy( fr.w2m.data(), _w2m , sizeof(M44) ); 
+
+}
+
 
 /**
 stree::get_mtindex_range

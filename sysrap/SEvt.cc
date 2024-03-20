@@ -19,6 +19,8 @@
 #include "sctx.h"
 #include "sdebug.h"
 #include "stran.h"
+#include "stree.h"
+#include "strid.h"
 #include "stimer.h"
 #include "spath.h"
 #include "sdirectory.h"
@@ -39,6 +41,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksPhoton.hh"
 #include "SComp.h"
+#include "SProf.hh"
 
 
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
@@ -858,6 +861,7 @@ TODO: replace this with stree.h based approach
 void SEvt::setGeo(const SGeo* cf_)
 {
     cf = cf_ ; 
+    tree = cf->getTree(); 
 }
 
 /**
@@ -1033,14 +1037,14 @@ Q: Does all SEvt creation use this ?
 SEvt* SEvt::Create_EGPU(){ return Create(EGPU) ; }
 SEvt* SEvt::Create_ECPU(){ return Create(ECPU) ; }
  
-SEvt* SEvt::Create(int idx)  // static
+SEvt* SEvt::Create(int ins)  // static
 { 
-    assert( idx == 0 || idx == 1); 
+    assert( ins == 0 || ins == 1); 
     SEvt* ev = new SEvt ; 
-    ev->setInstance(idx) ; 
-    INSTANCES[idx] = ev  ; 
-    assert( Get(idx) == ev ); 
-    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
+    ev->setInstance(ins) ; 
+    INSTANCES[ins] = ev  ; 
+    assert( Get(ins) == ev ); 
+    LOG(LEVEL) << " ins " << ins  << " " << DescINSTANCE()  ; 
     return ev  ; 
 }
 
@@ -1307,13 +1311,15 @@ A: Guess so, Loading should regain the state before the save
 
 **/
 
-SEvt* SEvt::LoadRelative(const char* rel)  // static 
+SEvt* SEvt::LoadRelative(const char* rel, int ins, int idx  )  // static 
 {
     LOG(LEVEL) << "[" ; 
 
     if(rel != nullptr) SetReldir(rel); 
 
-    SEvt* ev = new SEvt ; 
+    SEvt* ev = SEvt::Create(ins) ; 
+    if(idx > -1) ev->setIndex(idx); 
+
     int rc = ev->load() ; 
     if(rc != 0) ev->is_loadfail = true ; 
 
@@ -1400,6 +1406,9 @@ void SEvt::EndOfRun()
 { 
     SetRunProf("SEvt__EndOfRun"); 
     SaveRunMeta(); 
+
+    // HMM: could append onto run_meta.txt but that would complicate analysis
+    SProf::Write("SEvt__EndOfRun_SProf.txt", false ) ; // append:false
 } 
 
 
@@ -4215,16 +4224,15 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
 }
 
 /**
-SEvt::getLocalHit
-------------------
+SEvt::getLocalHit_LEAKY
+------------------------
 
-Canonical usage from U4HitGet::FromEvt
+This impl was formerly SEvt::getLocalHit
 
 1. copy *idx* hit from NP array into sphoton& lp struct 
 2. uses lp.iindex (instance index) to lookup the frame from the SGeo* cf geometry  
 
    * TODO: check sensor_identifier, it should now be done GPU side already ? 
-
 
 Dec 19,2023 : Added sensor_identifier subtract one 
 to correspond to the addition of one in::
@@ -4232,21 +4240,32 @@ to correspond to the addition of one in::
    CSGFoundry::addInstance firstcall:true
    CSGFoundry::addInstanceVector
 
-Complication arises from optixInstance identifier 
+The need for the offset by one arises from the optixInstance identifier 
 range limitation meaning that need zero to mean not-a-sensor
 and not -1 0xffffffff
 
+BUT: the limitation is on the GPU side geometry optixInstance identifier, 
+the limitation does not apply to::
 
+1. photon/hit struct in GPU or CPU
+2. stree inst/iinst that only exist CPU side
+
+Actually the reason for not needing -1 in the new impl 
+is simpler than that. 
+
+It is only the sqat4.h identity that is incremented, the source identity
+from the stree.h/iinst is never incremented (as never uploaded).  
 
 **/
 
-void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const 
+void SEvt::getLocalHit_LEAKY(sphit& ht, sphoton& lp, unsigned idx) const 
 {
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
 
-    sframe fr ; 
-    getPhotonFrame(fr, lp); 
-    fr.transform_w2m(lp); 
+    sframe fr = {} ;
+
+    getPhotonFrame(fr, lp);
+    fr.transform_w2m(lp);
 
     ht.iindex = fr.inst() ; 
     ht.sensor_identifier = fr.sensor_identifier() - 1 ; 
@@ -4254,13 +4273,84 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 }
 
 /**
-SEvt::getPhotonFrame
----------------------
+SEvt::getLocalHit
+-------------------
+
+Canonical usage from U4HitGet::FromEvt
+
+This implementation gets the w2m instance transform 
+directly using stree::get_iinst avoiding the use of the sframe.h 
+
+The advantages are:
+
+1. avoids transform inversion gymnastics for every hit 
+   by using the inverse transform from the stree.iinst(double) 
+   instead of using the CSGFoundry qat4(float) transforms 
+
+2. double precision transform handling means the local positions
+   suffer from less precision loss
+
+3. avoids unidentified memory leak in the sframe.h/qat4.h 
+   transform handling 
+
+4. avoids complications from the sensor_identifier offsetting 
+
+
+Note that GPU side geometry has -1 fiddle : but that doesnt effect stree geometry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GPU side geometry must offset the sensor_identifier by one due to 
+optixInstance identifier range limitation. The offset being 
+done in the below geometry preparation methods::
+
+   CSGFoundry::addInstance firstcall:true
+   CSGFoundry::addInstanceVector
+
+
+**/
+
+void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
+{
+    getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
+    int iindex = lp.iindex ; 
+
+    const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;  
+
+    LOG_IF(fatal, tr == nullptr) 
+         << " FAILED TO GET INSTANCE TRANSFORM : WHEN TESTING NEEDS SSim::Load NOT SSim::Create" 
+         << " iindex " << iindex 
+         << " tree " << ( tree ? "YES" : "NO " )
+         << " tree.desc_inst " << ( tree ? tree->desc_inst() : "-" ) 
+         ; 
+    assert( tr ); 
+ 
+    bool normalize = true ;  
+    lp.transform( *tr, normalize );    
+
+    glm::tvec4<int64_t> col3 = {} ;
+    strid::Decode( *tr, col3 ); 
+
+    ht.iindex = col3[0] ;  
+    ht.sensor_identifier = col3[2] ;  // NB : NO "-1" HERE : SEE ABOVE COMMENT 
+    ht.sensor_index = col3[3] ; 
+}
+
+
+
+
+/**
+SEvt::getPhotonFrame  (TODO: replace with "getInstanceFrame" with iindex integer argument)
+----------------------------------------------------------------------------------------------
 
 Note that this relies on the photon iindex which 
 may not be set for photons ending in some places. 
 It should always be set for photons ending on PMTs
 assuming properly instanced geometry. 
+
+The use of geometry information from this low level 
+struct is accomplished using the SGeo(cf) instance 
+that is fullfilled from higher level CSGFoundry 
+instance
 
 **/
 
@@ -4290,11 +4380,14 @@ std::string SEvt::descNum() const
 std::string SEvt::descPhoton(unsigned max_print) const 
 {
     unsigned num_photon = getNumPhoton(); 
-    unsigned num_print = std::min(max_print, num_photon); 
+    bool num_photon_unset =  (int)num_photon == -1 ; 
+
+    unsigned num_print = num_photon_unset ? 0 : std::min(max_print, num_photon); 
 
     std::stringstream ss ; 
     ss << "SEvt::descPhoton" 
        << " num_photon " <<  num_photon 
+       << " num_photon_unset " <<  ( num_photon_unset ? "YES" : "NO " )   
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
        << std::endl 
@@ -4326,11 +4419,13 @@ Hence caution wrt which frame is applicable for local photon.
 std::string SEvt::descLocalPhoton(unsigned max_print) const 
 {
     unsigned num_photon = getNumPhoton(); 
-    unsigned num_print = std::min(max_print, num_photon) ; 
+    bool num_photon_unset =  (int)num_photon == -1 ; 
+    unsigned num_print = num_photon_unset ? 0 : std::min(max_print, num_photon); 
 
     std::stringstream ss ; 
     ss << "SEvt::descLocalPhoton"
        << " num_photon " <<  num_photon 
+       << " num_photon_unset " <<  ( num_photon_unset ? "YES" : "NO " )   
        << " max_print " <<  max_print 
        << " num_print " <<  num_print 
        << std::endl 

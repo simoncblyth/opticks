@@ -3,7 +3,9 @@
 PIP : OptiX 7 Ray Trace Program Pipeline 
 ==========================================
 
-Aiming to keep this geometry independent 
+Aiming to keep this geometry independent, so it is just 
+responsible to convert the ptx code into an optix 
+ray trace pipeline.  
 
 The pip(PIP) instance is instanciated in CSGOptiX::initPIP
 and passed as ctor argument to SBT

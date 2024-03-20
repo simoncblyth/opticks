@@ -22,6 +22,7 @@ in new code.
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/component_wise.hpp>
 
+#include "NP.hh"
 
 
 template<typename T>
@@ -44,6 +45,8 @@ struct stra
     static std::string Desc(const glm::tvec4<T>& t); 
     static std::string Desc(const glm::tvec3<T>& t); 
     static std::string Desc(const T* tt, int num); 
+    static std::string DescItems(const T* tt, int num_elem, int num_item, int edge_items=10 );
+
     static std::string Desc(const T* tt, int ni, int nj, int item_stride=0) ; 
 
 
@@ -83,9 +86,13 @@ struct stra
     static void Transform_AABB_Inplace(         T* aabb,  const glm::tmat4x4<T>& t ); 
 
     static void Transform_Vec( glm::tvec4<T>& pos, const glm::tvec4<T>&  pos0, const glm::tmat4x4<T>& t ); 
-    static void Transform_Data(    T* _pos, const T* _pos0,  const glm::tmat4x4<T>& t, T w = 1.  ); 
     static void Transform_Strided( T* _pos, const T* _pos0,  int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w = 1.  ); 
     static void Transform_Strided_Inplace(        T* _pos,   int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w = 1.  ); 
+    static void Transform_Data(    T* _pos, const T* _pos0,  const glm::tmat4x4<T>* t, T w = 1.  ); 
+    static void Transform_Array( NP* d , const NP* s, const glm::tmat4x4<T>* t, T w=1.  , int stride=0, int offset=0 ); 
+
+    static NP* MakeTransformedArray(const NP* a, const glm::tmat4x4<T>* t, T w=1.  , int stride=0, int offset=0 );
+
 }; 
 
 
@@ -167,9 +174,35 @@ std::string stra<T>::Desc(const T* tt, int num)
             << ( i == num-1 && num > 4 ? ".\n" : "" ) 
             ;
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+
+
+template<typename T>
+std::string stra<T>::DescItems(const T* tt, int num_elem, int num_item, int edge_items )
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_item ; i++ )
+    {
+        if( i < edge_items || i > (num_item - edge_items) ) ss 
+            << " i " << i 
+            << std::endl 
+            << Desc( tt + i*num_elem, num_elem ) 
+            << std::endl 
+            ; 
+    } 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
+
 
 template<typename T>
 std::string stra<T>::Desc(const T* tt, int ni, int nj, int item_stride)
@@ -191,10 +224,6 @@ std::string stra<T>::Desc(const T* tt, int ni, int nj, int item_stride)
     std::string s = ss.str(); 
     return s ; 
 }
-
-
-
-
 
 
 
@@ -626,21 +655,8 @@ inline void stra<T>::Transform_Vec( glm::tvec4<T>& pos, const glm::tvec4<T>&  po
     pos = t * pos0 ; 
 }
 
-template<typename T>
-inline void stra<T>::Transform_Data( T* _pos, const T* _pos0,  const glm::tmat4x4<T>& t, T w  )
-{
-    glm::tvec4<T> pos0 ; 
-    pos0.x = *(_pos0 + 0) ; 
-    pos0.y = *(_pos0 + 1) ; 
-    pos0.z = *(_pos0 + 2) ; 
-    pos0.w = w ; 
 
-    glm::tvec4<T> pos = t * pos0 ; 
 
-    *(_pos+0) = pos.x ; 
-    *(_pos+1) = pos.y ; 
-    *(_pos+2) = pos.z ; 
-}
 
 template<typename T>
 inline void stra<T>::Transform_Strided( T* _pos, const T* _pos0, int ni, int nj, int item_stride, const glm::tmat4x4<T>& t, T w  )
@@ -691,6 +707,80 @@ inline void stra<T>::Transform_Strided_Inplace( T* _pos, int ni, int nj, int ite
 }
 
 
+
+
+/**
+stra::Transform_Data
+----------------------
+
+1. form pos0:tvec4 from _pos0:T pointer using w param (so pos0 can be three elements)
+2. pre-multiply transform t and pos0 to give pos:tvec4 
+3. copy pos elements into _pos
+
+**/
+
+template<typename T>
+inline void stra<T>::Transform_Data( T* _pos, const T* _pos0,  const glm::tmat4x4<T>* t_ptr, T w  )
+{
+    glm::tvec4<T> pos0 ; 
+    pos0.x = *(_pos0 + 0) ; 
+    pos0.y = *(_pos0 + 1) ; 
+    pos0.z = *(_pos0 + 2) ; 
+    pos0.w = w ; 
+
+    //std::cout << "stra::Transform_Data  pos0 " << glm::to_string(pos0) << std::endl ; 
+
+    glm::tvec4<T> pos = (t_ptr == nullptr ) ? pos0 : (*t_ptr) * pos0 ;
+ 
+    //std::cout << "stra::Transform_Data  pos  " << glm::to_string(pos) << std::endl ; 
+
+    *(_pos+0) = pos.x ; 
+    *(_pos+1) = pos.y ; 
+    *(_pos+2) = pos.z ; 
+}
+
+template<typename T>
+inline void stra<T>::Transform_Array( NP* d , const NP* s, const glm::tmat4x4<T>* t, T w , int stride, int offset ) // static
+{
+    assert( s->shape.size() == 2 && s->shape[1] >= 3 ); 
+    assert( s->shape == d->shape ); 
+    assert( s->uifc == d->uifc ); 
+
+    int num_item = s->shape[0] ; 
+    if(stride == 0) stride = s->num_itemvalues() ; 
+
+    bool dump = false ; 
+    if(dump) std::cout 
+         << "stra::Transform_Array "
+         << " num_item " << num_item 
+         << " stride " << stride 
+         <<  std::endl
+         ;
+
+    const T* ss = s->cvalues<T>(); 
+    T* dd = d->values<T>(); 
+
+    for(int i=0 ; i < num_item ; i++)
+    {
+        const T* v0 = ss + i*stride + offset ; 
+        T*       v  = dd + i*stride + offset ; 
+        Transform_Data( v, v0, t, w );    
+    }
+}
+
+template<typename T>
+inline NP* stra<T>::MakeTransformedArray(const NP* a, const glm::tmat4x4<T>* t, T w , int stride, int offset )
+{
+    bool dump = false ; 
+    if(dump) std::cout << "[ stra::MakeTransformedArray" << std::endl ; 
+
+    NP* b = NP::MakeLike(a); 
+    Transform_Array( b, a, t, w, stride, offset ); 
+
+    if(dump) std::cout << "] stra::MakeTransformedArray" << std::endl ; 
+    return b ; 
+}
+ 
 
 
 

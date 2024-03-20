@@ -3,6 +3,7 @@
 #include "SYSRAP_API_EXPORT.hh"
 
 struct sframe ; 
+struct stree ; 
 
 struct SYSRAP_API CheckGeo : public SGeo 
 {
@@ -14,6 +15,9 @@ struct SYSRAP_API CheckGeo : public SGeo
 
     int                lookup_mtline(int mtindex) const ; 
     std::string        desc_mt() const ; 
+
+    stree*             getTree() const ; 
+
 };
 
 

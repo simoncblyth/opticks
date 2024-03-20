@@ -1,22 +1,12 @@
 #!/bin/bash -l
-##
-## Copyright (c) 2019 Opticks Team. All Rights Reserved.
-##
-## This file is part of Opticks
-## (see https://bitbucket.org/simoncblyth/opticks).
-##
-## Licensed under the Apache License, Version 2.0 (the "License"); 
-## you may not use this file except in compliance with the License.  
-## You may obtain a copy of the License at
-##
-##   http://www.apache.org/licenses/LICENSE-2.0
-##
-## Unless required by applicable law or agreed to in writing, software 
-## distributed under the License is distributed on an "AS IS" BASIS, 
-## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-## See the License for the specific language governing permissions and 
-## limitations under the License.
-##
+usage(){ cat << EOU
+go.sh
+=====
+
+See also build.sh which doesnt use cmake 
+
+EOU
+}
 
 arg=${1:-build_run}
 sdir=$(pwd)
@@ -26,12 +16,12 @@ source ~/.opticks_config
 
 export SHADER_FOLD=$sdir/rec_flying_point
 
-#export ARRAY_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
-#export ARRAY_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest/SCVD0/70000
-#export ARRAY_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
-#export ARRAY_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
-#export ARRAY_FOLD=/tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001
-export ARRAY_FOLD=/tmp/sphoton_test
+#export RECORD_FOLD=/tmp/$USER/opticks/GeoChain/BoxedSphere/CXRaindropTest
+#export RECORD_FOLD=/tmp/blyth/opticks/GeoChain/BoxedSphere/CXRaindropTest/SCVD0/70000
+#export RECORD_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
+#export RECORD_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
+#export RECORD_FOLD=/tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001
+export RECORD_FOLD=/tmp/sphoton_test
 
 
 if [ "${arg/build}" != "$arg" ] ; then 
@@ -56,10 +46,7 @@ fi
 
 if [ "${arg/dbg}" != "$arg" ] ; then 
     echo $BASH_SOURCE : dbg $name
-    case $(uname) in
-       Darwin) lldb__ $name ;;
-       Linux)  gdb__ $name ;;
-    esac
+    dbg__ $name 
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
 fi
 

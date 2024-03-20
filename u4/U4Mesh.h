@@ -5,14 +5,27 @@ U4Mesh.h : Polygonize and Serialize Solids into Triangles/Quads
 
 This selects and simplifies some parts of the former x4/X4Mesh.{hh,cc} 
 and it better integrated with the pyvista PolyData face format
-allowing 3D visualization with quads as well as tri.  
+allowing 3D visualization with quads as well as triangles. 
 
-Note that following development of the "fpd" array for 
-specifying quad or tri faces, 
-the other approaches could be dropped : face, tri, tpd. 
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| field      |  content                                                               |  thoughts                          |
++============+========================================================================+====================================+
+| (NP*)vtx   |  (num_vtx, 3) array of float coordinates                               | basis                              |       
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)fpd   |  flat vtx index array : funny pyvista irregular 3/4 vertex face format | pv useful, includes quads, DROP?   |
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)face  |  (num_face,4) tri/quad vtx index array using f.face[:,3] == -1 for tri | DROP ?                             |
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)tri   |  (num_tri,3) tri vtx index array                                       | standard                           |
++------------+------------------------------------------------------------------------+------------------------------------+ 
+| (NP*)tpd   |  flat vtx index array : funny pyvista using all triangles              | same as tri, pv useful             | 
++------------+------------------------------------------------------------------------+------------------------------------+ 
+
+For use with OpenGL rendering its natural to use "vtx" and "tri".
 
 **/
 
+#include <map>
 #include "G4Polyhedron.hh"
 #include "NPX.h"
 #include "NPFold.h"
@@ -20,36 +33,51 @@ the other approaches could be dropped : face, tri, tpd.
 struct U4Mesh
 {
     const G4VSolid* solid ; 
+    const char* solidname ; 
+
     G4Polyhedron*   poly ; 
-    int             nv, nf ; 
+    std::map<int,int> v2fc ;  
+    int             errvtx ;  
+    bool            do_init_vtx_disqualify ; 
+
+    int             nv_poly, nv, nf ; 
     NP*             vtx ; 
     double*         vtx_ ; 
-    NP*             fpd ; 
+    NP*             fpd ;  // funny pyvista irregular 3/4 vertex face format
 
-#ifdef U4MESH_EXTRA
     NP*             face ;  // can include tri and quad
     int*            face_ ; 
     int             nt ; 
-    NP*             tri ;   // only tri 
-    int*            tri_ ; 
-    NP*             tpd ; 
-#endif
+    NP*             tri ;  // only triangle indices (more standard gltf suitable layout than other face formats) 
+    int*            tri_ ;  
+    NP*             tpd ;  // funny pyvista face format, but with all 3 vertex
 
     static void Save(const G4VSolid* solid, const char* base="$FOLD"); 
+    static NPFold* MakeFold(
+       const std::vector<const G4VSolid*>& solids,
+       const std::vector<std::string>& keys
+      ); 
     static NPFold* Serialize(const G4VSolid* solid) ; 
+    static const char* SolidName(const G4VSolid* solid); 
+
     U4Mesh(const G4VSolid* solid);     
     void init(); 
+
+    void init_vtx_face_count(); 
+    int getVertexFaceCount(int iv) const ; 
+    std::string desc_vtx_face_count() const ; 
+
     void init_vtx(); 
     void init_fpd();
     NPFold* serialize() const ; 
     void save(const char* base) const ; 
+
+    std::string id() const  ; 
     std::string desc() const  ; 
 
-#ifdef U4MESH_EXTRA
     void init_face(); 
     void init_tri();
     void init_tpd();
-#endif
  
 };
 
@@ -59,6 +87,33 @@ inline void U4Mesh::Save(const G4VSolid* solid, const char* base) // static
     fold->save(base); 
 }
 
+/**
+U4Mesh::MakeFold
+----------------
+
+**/
+
+inline NPFold* U4Mesh::MakeFold(
+    const std::vector<const G4VSolid*>& solids, 
+    const std::vector<std::string>& keys 
+   ) // static
+{
+    NPFold* mesh = new NPFold ; 
+    int num_solid = solids.size(); 
+    int num_key = keys.size(); 
+    assert( num_solid == num_key ); 
+
+    for(int i=0 ; i < num_solid ; i++)
+    {
+        const G4VSolid* so = solids[i];
+        const char* _key = keys[i].c_str();
+
+        NPFold* sub = Serialize(so) ;    
+        mesh->add_subfold( _key, sub ); 
+    }
+    return mesh ; 
+}
+
 inline NPFold* U4Mesh::Serialize(const G4VSolid* solid) // static
 {
     //G4Polyhedron::SetNumberOfRotationSteps(24); 
@@ -66,45 +121,176 @@ inline NPFold* U4Mesh::Serialize(const G4VSolid* solid) // static
     return mesh.serialize() ; 
 }
 
+inline const char* U4Mesh::SolidName(const G4VSolid* solid) // static
+{
+    G4String name = solid->GetName();  // forced to duplicate as this returns by value
+    return strdup(name.c_str()); 
+
+}
+
 inline U4Mesh::U4Mesh(const G4VSolid* solid_):
     solid(solid_),
+    solidname(SolidName(solid)),
     poly(solid->CreatePolyhedron()),
-    nv(poly->GetNoVertices()),
+    errvtx(0),
+    do_init_vtx_disqualify(false),
+    nv_poly(poly->GetNoVertices()),
+    nv(0),
     nf(poly->GetNoFacets()),
-    vtx(NP::Make<double>(nv, 3)),
-    vtx_(vtx->values<double>()),
+    vtx(nullptr),
+    vtx_(nullptr),
     fpd(nullptr)
-#ifdef U4MESH_EXTRA
    ,face(NP::Make<int>(nf,4)),
     face_(face->values<int>()),
     nt(0),
     tri(nullptr),
     tri_(nullptr),
     tpd(nullptr)
-#endif
 {
     init(); 
 }
 
 inline void U4Mesh::init()
 {
+    init_vtx_face_count(); 
+
     init_vtx() ; 
     init_fpd() ; 
-#ifdef U4MESH_EXTRA
+
     init_face() ; 
     init_tri() ; 
     init_tpd() ; 
-#endif
+
+}
+
+/**
+U4Mesh::init_vtx_face_count
+----------------------------
+
+For each vtx count how many faces it is referenced from
+and keep that in a map. This is used to 
+exclude vertices that are not referenced 
+by any facet in the output vtx array. 
+
+This is needed as find that the polygonization of G4Orb 
+via G4PolyhedronSphere includes a vertex (0,0,0) 
+that is not referenced from any facet which causes 
+issues for generation of normals, yeilding (nan,nan,nan) 
+due to the attempt at smooth normalization.
+
+But the disqualify skips necessary verts for polycone ?  
+
+
+**/
+inline void U4Mesh::init_vtx_face_count()
+{
+    for(int i=0 ; i < nf ; i++)
+    {
+        G4int nedge;
+        G4int ivertex[4];
+        G4int iedgeflag[4];
+        G4int ifacet[4];
+        poly->GetFacet(i+1, nedge, ivertex, iedgeflag, ifacet);
+        assert( nedge == 3 || nedge == 4  ); 
+
+        for(int j=0 ; j < nedge ; j++)
+        {
+            G4int iv = ivertex[j] - 1 ; 
+            if(v2fc.count(iv) == 0)
+            {
+               v2fc[iv] = 1 ; 
+            }
+            else
+            {
+                v2fc[iv] += 1 ; 
+            }
+        }
+    }
+
+    nv = do_init_vtx_disqualify ? v2fc.size() : nv_poly ; 
+    //std::cout << desc_vtx_face_count() ; 
+}
+
+
+/**
+U4Mesh::getVertexFaceCount
+---------------------------
+
+Returns the number of faces that use the provided 0-based vertex index.
+Note that the count is obtained from the original triangles and quads, 
+so will not exactly match the count derived after splitting quads into triangles. 
+
+**/
+
+inline int U4Mesh::getVertexFaceCount(int iv) const 
+{
+    return v2fc.count(iv) == 1 ? v2fc.at(iv) : 0  ; // map can only have 0 or 1 occurrences of iv key 
+}
+
+inline std::string U4Mesh::desc_vtx_face_count() const 
+{
+    std::stringstream ss ; 
+    ss << "U4Mesh::desc_vtx_face_count" << std::endl ; 
+    typedef std::map<int,int> MII ; 
+    for(MII::const_iterator it = v2fc.begin() ; it != v2fc.end() ; it++)
+    {
+        int iv = it->first ; 
+        int fc = it->second ; 
+        int vfc = getVertexFaceCount(iv) ; 
+        assert( fc == vfc ); 
+        ss << iv << ":" << fc << std::endl ; 
+    }
+
+    ss << "nv_poly:" << nv_poly << "nv:" << nv << std::endl ; 
+    ss << " getVertexFaceCount(0) " << getVertexFaceCount(0) << std::endl ; 
+    ss << " getVertexFaceCount(nv_poly-1) :" << getVertexFaceCount(nv_poly-1) << std::endl ; 
+    ss << " getVertexFaceCount(nv-1)      :"  << getVertexFaceCount(nv-1) << std::endl ; 
+
+    std::string str = ss.str() ;
+    return str ;  
 }
 
 inline void U4Mesh::init_vtx()
 {
-    for(int i=0 ; i < nv ; i++)
+    vtx = NP::Make<double>(nv, 3) ; 
+    vtx_ = vtx->values<double>() ; 
+
+    int nv_count = 0 ; 
+    for(int iv=0 ; iv < nv_poly ; iv++)
     {
-        G4Point3D point = poly->GetVertex(i+1) ;  
-        vtx_[3*i+0] = point.x() ; 
-        vtx_[3*i+1] = point.y() ; 
-        vtx_[3*i+2] = point.z() ; 
+        int vfc = getVertexFaceCount(iv) ; 
+        G4Point3D point = poly->GetVertex(iv+1) ;  
+        bool collect = do_init_vtx_disqualify ? vfc > 0 : true ; 
+        if( !collect )
+        {
+           
+            std::cout 
+                << "U4Mesh::init_vtx "
+                << id()
+                << " : DISQUALIFIED VTX NOT INCLUDED IN ANY FACET " 
+                << " iv " << iv 
+                << " vfc " << vfc 
+                << " point [ "
+                << point.x()
+                << ","
+                << point.y()
+                << ","
+                << point.z()
+                << "]" 
+                << std::endl 
+                ;
+        }  
+        else
+        {
+            vtx_[3*nv_count+0] = point.x() ; 
+            vtx_[3*nv_count+1] = point.y() ; 
+            vtx_[3*nv_count+2] = point.z() ; 
+            nv_count += 1 ;  
+        }
+    }
+    if( do_init_vtx_disqualify )
+    {
+        assert( nv_count == nv ); 
     }
 }
 
@@ -139,20 +325,19 @@ inline void U4Mesh::init_fpd()
         poly->GetFacet(i+1, nedge, ivertex, iedgeflag, ifacet);
         assert( nedge == 3 || nedge == 4  ); 
 
-        if( nedge == 3 )
+        _fpd.push_back(nedge);  
+        for(int j=0 ; j < nedge ; j++)
         {
-            _fpd.push_back(3);  
-            _fpd.push_back(ivertex[0]-1);
-            _fpd.push_back(ivertex[1]-1);
-            _fpd.push_back(ivertex[2]-1);
-        } 
-        else if( nedge == 4 )
-        {
-            _fpd.push_back(4);  
-            _fpd.push_back(ivertex[0]-1);
-            _fpd.push_back(ivertex[1]-1);
-            _fpd.push_back(ivertex[2]-1);
-            _fpd.push_back(ivertex[3]-1);
+            int jvtx = ivertex[j]-1 ; 
+            if( jvtx >= nv ) std::cout 
+                << "U4Mesh::init_fpd "
+                << id()
+                << " ERR jvtx >= nv  (j, jvtx, nv, nv_poly ) "
+                << "(" << j << "," << jvtx << "," << nv << "," << nv_poly << ")" 
+                << std::endl 
+                ;  
+            if( jvtx >= nv ) errvtx += 1 ; 
+            _fpd.push_back(jvtx);
         }
     }
     fpd = NPX::Make<int>(_fpd); 
@@ -163,11 +348,11 @@ inline NPFold* U4Mesh::serialize() const
     NPFold* fold = new NPFold ; 
     fold->add("vtx",  vtx ); 
     fold->add("fpd",  fpd ); 
-#ifdef U4MESH_EXTRA
+
     fold->add("face", face ); 
     fold->add("tri",  tri ); 
     fold->add("tpd",  tpd ); 
-#endif
+
     return fold ; 
 }
 
@@ -177,13 +362,21 @@ inline void U4Mesh::save(const char* base) const
     fold->save(base); 
 }
 
-
+inline std::string U4Mesh::id() const 
+{
+    std::stringstream ss ; 
+    ss << solidname ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 inline std::string U4Mesh::desc() const 
 {
     std::stringstream ss ; 
     ss << "U4Mesh::desc" 
+       << " solidname " << solidname
        << " nv " << nv 
+       << " nv_poly " << nv_poly
        << " nf " << nf 
        << std::endl 
        ; 
@@ -192,7 +385,6 @@ inline std::string U4Mesh::desc() const
 }
 
 
-#ifdef U4MESH_EXTRA
 /**
 U4Mesh::init_face
 -------------------
@@ -242,13 +434,13 @@ Quads are split into two tri::
 
            +-------z
            |     / |
-           |   /   |
-           | /     |
+           |   /   |   1:(x->y->z)   0,1,2 
+           | /  (1)|
            x-------y
 
            w-------z
-           |     / |
-           |   /   |
+           | (2) / |
+           |   /   |   2:(x->z->w)  0,2,3
            | /     |
            x-------+
 
@@ -267,6 +459,11 @@ as have to change format to that needed by pv.PolyData::
         tri[:,1:] = f.tri    
         pd = pv.PolyData(f.vtx, tri)
         return pd 
+
+
+HMM: JUST RANDOMLY DOING THIS LIABLE TO 
+GIVE MIXED WINDING ORDER CW/CCW ? 
+
 
 **/
 
@@ -294,14 +491,21 @@ inline void U4Mesh::init_tri()
         } 
         else if( nedge == 4 )
         {
+            // adhoc splitting without regard for how the 
+            // vertices are positioned in space ?
+            // will that messup the CW/CCW winding order 
+
             assert( jt < nt ); 
-            for(int j=0 ; j < 3 ; j++) tri_[jt*3+j] = ivertex[j]-1 ;  // x,y,z
+            tri_[jt*3+0] = ivertex[0]-1 ; // x
+            tri_[jt*3+1] = ivertex[1]-1 ; // y 
+            tri_[jt*3+2] = ivertex[2]-1 ; // z
             jt += 1 ; 
 
             assert( jt < nt ); 
             tri_[jt*3+0] = ivertex[0]-1 ; // x 
             tri_[jt*3+1] = ivertex[2]-1 ; // z 
             tri_[jt*3+2] = ivertex[3]-1 ; // w 
+
             jt += 1 ; 
         }
     }
@@ -328,7 +532,9 @@ inline void U4Mesh::init_tpd()
         else if( nedge == 4 )
         {
             _tpd.push_back(3) ; 
-            for(int j=0 ; j < 3 ; j++) _tpd.push_back(ivertex[j]-1) ; // x,y,z
+            _tpd.push_back(ivertex[0]-1) ;  // x
+            _tpd.push_back(ivertex[1]-1) ;  // y
+            _tpd.push_back(ivertex[2]-1) ;  // z
 
             _tpd.push_back(3) ; 
             _tpd.push_back(ivertex[0]-1);  // x
@@ -338,6 +544,5 @@ inline void U4Mesh::init_tpd()
     }
     tpd = NPX::Make<int>(_tpd); 
 }
-#endif
 
 

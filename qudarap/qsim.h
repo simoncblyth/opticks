@@ -1734,6 +1734,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     const sphoton& p = ctx.p ; 
     const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal 
     int lpmtid = ctx.prd->identity() - 1 ;  // identity comes from optixInstance.instanceId where 0 means not-a-sensor  
+    //int lpmtid = p.identity ; 
+
     float minus_cos_theta = dot(p.mom, *normal); 
     float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ; 
 
@@ -2126,7 +2128,7 @@ Prior to supporting special surfaces, within the command == BOUNDARY used::
 inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng, sctx& ctx ) 
 {
     const unsigned boundary = ctx.prd->boundary() ; 
-    const unsigned identity = ctx.prd->identity() ; 
+    const unsigned identity = ctx.prd->identity() ; // sensor_identifier+1, 0:not-a-sensor 
     const unsigned iindex = ctx.prd->iindex() ; 
     const float lposcost = ctx.prd->lposcost() ;  // local frame intersect position cosine theta 
 
@@ -2150,6 +2152,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
     }
 #endif
 
+    // copy geometry info into the sphoton struct 
     ctx.p.set_prd(boundary, identity, cosTheta, iindex );  // HMM: lposcost not passed along 
 
     bnd->fill_state(ctx.s, boundary, ctx.p.wavelength, cosTheta, ctx.idx ); 

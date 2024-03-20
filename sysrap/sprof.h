@@ -3,6 +3,19 @@
 sprof.h
 =========
 
+Assuming sprof are persisted into an array rp of shape (n,3) with a two name layout::
+
+    In [10]: fold.runprof_names[:4]
+    Out[10]: array(['SEvt__setIndex_A000', 'SEvt__endIndex_A000', 'SEvt__setIndex_A001', 'SEvt__endIndex_A001'], dtype='<U19')
+
+Then obtain times and VM, RS with::
+
+    tp = (rp[:,0] - rp[0,0])/1e6         # seconds from first profile stamp
+    vm = rp[:,1]/1e6                     # GB
+    rs = rp[:,2]/1e6                     # GB
+    drm = (rp[1::2,2] - rp[0::2,2])/1e3  # MB between each pair  
+
+See for example ~/opticks/sysrap/tests/sleak.py 
 
 **/
 
@@ -21,7 +34,11 @@ struct sprof
     static std::string Desc_(const sprof& prof);  // dont call Desc for now as need to change all Desc to Serialize
     static int         Import(sprof& prof, const char* str); 
 
-    static inline sprof Diff(const sprof& p0, const sprof& p1); 
+    static sprof Diff(const sprof& p0, const sprof& p1); 
+    static int64_t Delta_ST(const sprof* p0, const sprof* p1) ; 
+    static int32_t Delta_VM(const sprof* p0, const sprof* p1) ; 
+    static int32_t Delta_RS(const sprof* p0, const sprof* p1) ; 
+
     static std::string Desc(const sprof& p0, const sprof& p1); 
     static std::string Now(); 
     static bool LooksLikeProfileTriplet(const char* str); 
@@ -78,6 +95,20 @@ inline sprof sprof::Diff(const sprof& p0, const sprof& p1)
     df.rs = p1.rs - p0.rs ; 
     return df ; 
 }
+
+inline int64_t sprof::Delta_ST(const sprof* p0, const sprof* p1) 
+{
+    return p0 && p1 ? p1->st - p0->st : -1 ; 
+}
+inline int32_t sprof::Delta_VM(const sprof* p0, const sprof* p1) 
+{
+    return p0 && p1 ? p1->vm - p0->vm : -1 ; 
+}
+inline int32_t sprof::Delta_RS(const sprof* p0, const sprof* p1) 
+{
+    return p0 && p1 ? p1->rs - p0->rs : -1 ; 
+}
+
 
 inline std::string sprof::Desc(const sprof& p0, const sprof& p1)
 {

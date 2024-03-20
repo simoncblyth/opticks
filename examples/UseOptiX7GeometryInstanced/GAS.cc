@@ -27,19 +27,19 @@ void GAS::init()
                 cudaMemcpyHostToDevice
                 ) );
 
-    OptixBuildInput aabb_input = {};
+    OptixBuildInput buildInput = {};
 
-    aabb_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-    aabb_input.aabbArray.aabbBuffers   = &d_aabb_buffer;
-    aabb_input.aabbArray.numPrimitives = 1;
+    buildInput.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    buildInput.customPrimitiveArray.aabbBuffers   = &d_aabb_buffer;
+    buildInput.customPrimitiveArray.numPrimitives = 1;
     // only one as no motion 
 
-    uint32_t aabb_input_flags[1]       = {OPTIX_GEOMETRY_FLAG_NONE};
-    aabb_input.aabbArray.flags         = aabb_input_flags;
-    aabb_input.aabbArray.numSbtRecords = 1;
+    uint32_t buildInput_flags[1]       = {OPTIX_GEOMETRY_FLAG_NONE};
+    buildInput.customPrimitiveArray.flags         = buildInput_flags;
+    buildInput.customPrimitiveArray.numSbtRecords = 1;
 
 
-    gas_handle = build(aabb_input); 
+    gas_handle = build(buildInput); 
 
     CUDA_CHECK( cudaFree( (void*)d_aabb_buffer ) );
 

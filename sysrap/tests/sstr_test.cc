@@ -341,8 +341,54 @@ void test_TAG()
         if( i % 10 == 0 ) Prof::UnsetTag(); 
         std::cout << "[" << Prof::TAG << "]" << std::endl ; 
     }
-    
+}
 
+void test_StripTail_Unique_0()
+{
+    std::vector<std::string> src = {{
+        "red",
+        "green",
+        "blue",
+        "cyan",
+        "yellow",
+        "magenta",
+        "cyan",
+        "cyan",
+        "cyan",
+    }}; 
+
+    std::vector<std::string> key ; 
+    sstr::StripTail_Unique( key, src ); 
+    std::cout << sstr::DescKeySrc(key, src) ; 
+}
+
+void test_StripTail_Unique_1()
+{
+    std::vector<std::string> src = {{
+        "red0xbeef",
+        "green0xbeef",
+        "blue0xbeef",
+        "red0xbeef",
+        "red0xbeef",
+        "cyan",
+        "yellow",
+        "red0xbeef",
+        "green0xbeef",
+        "green0xbeef",
+        "green0xbeef",
+        "magenta",
+        "green0xbeef",
+        "red0xbeef",
+        "red0xbeef",
+        "red0xbeef",
+        "red0xbeef",
+        "red0xbeef",
+        "red0xbeef",
+    }} ; 
+
+    std::vector<std::string> key ; 
+    sstr::StripTail_Unique( key, src ); 
+    std::cout << sstr::DescKeySrc(key, src) ; 
 }
 
 
@@ -361,8 +407,9 @@ int main(int argc, char** argv)
     test_ParseIntSpecList<int>() ; 
     test_ParseIntSpecList_demo<int>() ; 
     test_snprintf(); 
-    */
     test_TAG(); 
+    */
+    test_StripTail_Unique_0(); 
    
 
     return 0 ; 

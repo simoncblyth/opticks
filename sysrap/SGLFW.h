@@ -1,248 +1,426 @@
 #pragma once
+/**
+SGLFW.h : Trying to encapsulate OpenGL graphics with a light touch
+====================================================================
+
+Light touch encapsulation of OpenGL window and shader program, 
+that means trying to hide boilerplate, but not making lots of 
+decisions for user and getting complicated and inflexible like 
+the old oglrap/Frame.hh oglrap/OpticksViz did. 
+    
+**/
 
 #include <cassert>
 #include <cstring>
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <vector>
 
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 #ifndef GLFW_TRUE
 #define GLFW_TRUE true
 #endif
 
+#include "GL_CHECK.h"
+
+#define GLEQ_IMPLEMENTATION
+#include "gleq.h"
+
+#include <glm/glm.hpp>
+#include "NPU.hh"
+
+#include "SMesh.h"
+#include "SGLM.h"
+#include "SGLFW_Extras.h"
+#include "SGLFW_Program.h"
+#include "SGLFW_Mesh.h"
+
+#ifdef WITH_CUDA_GL_INTEROP
+#include "SGLFW_CUDA.h"
+#endif
 
 
-struct SGLFW_GLboolean
+struct SGLFW : public SCMD 
 {
-    static constexpr const char* GL_FALSE_  = "GL_FALSE" ; 
-    static constexpr const char* GL_TRUE_   = "GL_TRUE" ;
-    static GLboolean Value(const char* name); 
-    static const char* Name(GLboolean value); 
+    static constexpr const char* TITLE = "SGLFW" ; 
+
+    SGLM& gm ; 
+    int width ; 
+    int height ; 
+
+    const char* title ; 
+    GLFWwindow* window ; 
+
+    int count ; 
+    int renderlooplimit ; 
+    bool exitloop ; 
+
+    bool dump ; 
+    int  _width ;  // on retina 2x width 
+    int  _height ;
+
+    // getStartPos
+    double _start_x ; 
+    double _start_y ; 
+
+    glm::vec2 start_ndc ;  // from key_pressed
+    glm::vec2 move_ndc ;   // from cursor_moved
+    glm::vec4 drag ; 
+
+    SGLFW_Toggle toggle = {} ; 
+
+    bool renderloop_proceed(); 
+    void renderloop_exit(); 
+    void renderloop_head(); 
+    void renderloop_tail(); 
+
+    void handle_event(GLEQevent& event); 
+    void key_pressed(unsigned key); 
+    void key_released(unsigned key); 
+    void cursor_moved(int ix, int iy); 
+    void cursor_moved_action(); 
+    int command(const char* cmd); 
+    static std::string FormCommand(const char* token, float value); 
+
+    void getWindowSize();
+    std::string descWindowSize() const;
+
+    void getStartPos(); 
+    std::string descDrag() const;
+    std::string descStartPos() const;  
+
+    SGLFW(SGLM& gm, const char* title=nullptr ); 
+    virtual ~SGLFW(); 
+    static void Error_callback(int error, const char* description); 
+    void init(); 
+
 }; 
-inline GLboolean SGLFW_GLboolean::Value(const char* name)
+
+inline bool SGLFW::renderloop_proceed()
 {
-    GLboolean value = GL_FALSE ; 
-    if( strcmp( name, GL_FALSE_) == 0 ) value = GL_FALSE ; 
-    if( strcmp( name, GL_TRUE_)  == 0 ) value = GL_TRUE ; 
-    return value ; 
+    return !glfwWindowShouldClose(window) && !exitloop ; 
 }
-inline const char* SGLFW_GLboolean::Name(GLboolean value)
+inline void SGLFW::renderloop_exit()
 {
-    const char* s = nullptr ; 
-    switch(value)
+    std::cout << "SGLFW::renderloop_exit" << std::endl; 
+    glfwSetWindowShouldClose(window, true);
+}
+inline void SGLFW::renderloop_head()
+{
+    dump = count % 100000 == 0 ; 
+
+    getWindowSize();
+    glViewport(0, 0, _width, _height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
+}
+
+
+inline void SGLFW::renderloop_tail()
+{
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+
+    GLEQevent event;
+    while (gleqNextEvent(&event))
     {
-       case GL_FALSE: s = GL_FALSE_ ; break ; 
-       case GL_TRUE:  s = GL_TRUE_ ; break ; 
+        handle_event(event);
+        gleqFreeEvent(&event);
     }
-    return s ; 
+
+    exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 }
 
-
-struct SGLFW_bool
-{
-    static constexpr const char* false_ = "false" ; 
-    static constexpr const char* true_  = "true" ;
-    static bool Value(const char* name); 
-    static const char* Name(bool value); 
-}; 
-inline bool SGLFW_bool::Value(const char* name)
-{
-    bool value = false ; 
-    if( strcmp( name, false_) == 0 ) value = false ; 
-    if( strcmp( name, true_)  == 0 ) value = true ; 
-    return value ; 
-}
-inline const char* SGLFW_bool::Name(bool value)
-{
-    return value ? true_ : false_ ; 
-}
-
-
-struct SGLFW_GLenum
-{
-    static constexpr const char* GL_BYTE_           = "GL_BYTE" ; 
-    static constexpr const char* GL_UNSIGNED_BYTE_  = "GL_UNSIGNED_BYTE" ; 
-    static constexpr const char* GL_SHORT_          = "GL_SHORT" ; 
-    static constexpr const char* GL_UNSIGNED_SHORT_ = "GL_UNSIGNED_SHORT" ; 
-    static constexpr const char* GL_INT_            = "GL_INT" ; 
-    static constexpr const char* GL_UNSIGNED_INT_   = "GL_UNSIGNED_INT" ; 
-    static constexpr const char* GL_HALF_FLOAT_     = "GL_HALF_FLOAT" ; 
-    static constexpr const char* GL_FLOAT_          = "GL_FLOAT" ; 
-    static constexpr const char* GL_DOUBLE_         = "GL_DOUBLE" ; 
-
-    static const char* Name(GLenum type); 
-    static GLenum      Type(const char* name); 
-};
-
-inline const char* SGLFW_GLenum::Name(GLenum type)
-{
-    const char* s = nullptr ; 
-    switch(type)
-    {
-        case GL_BYTE:           s = GL_BYTE_           ; break ; 
-        case GL_UNSIGNED_BYTE:  s = GL_UNSIGNED_BYTE_  ; break ; 
-        case GL_SHORT:          s = GL_SHORT_          ; break ; 
-        case GL_UNSIGNED_SHORT: s = GL_UNSIGNED_SHORT_ ; break ; 
-        case GL_INT:            s = GL_INT_            ; break ; 
-        case GL_UNSIGNED_INT:   s = GL_UNSIGNED_INT_   ; break ; 
-        case GL_HALF_FLOAT:     s = GL_HALF_FLOAT_     ; break ;
-        case GL_FLOAT:          s = GL_FLOAT_          ; break ;
-        case GL_DOUBLE:         s = GL_DOUBLE_         ; break ;
-        default:                s = nullptr            ; break ;
-    }
-    return s ; 
-}
-
-inline GLenum SGLFW_GLenum::Type(const char* name)
-{
-    GLenum type = 0 ; 
-    if( strcmp( name, GL_BYTE_) == 0 )           type = GL_BYTE ; 
-    if( strcmp( name, GL_UNSIGNED_BYTE_) == 0 )  type = GL_UNSIGNED_BYTE ; 
-    if( strcmp( name, GL_SHORT_) == 0 )          type = GL_SHORT ; 
-    if( strcmp( name, GL_UNSIGNED_SHORT_) == 0 ) type = GL_UNSIGNED_SHORT ; 
-    if( strcmp( name, GL_INT_) == 0 )            type = GL_INT ; 
-    if( strcmp( name, GL_UNSIGNED_INT_) == 0 )   type = GL_UNSIGNED_INT ; 
-    if( strcmp( name, GL_HALF_FLOAT_) == 0 )     type = GL_HALF_FLOAT ; 
-    if( strcmp( name, GL_FLOAT_) == 0 )          type = GL_FLOAT ; 
-    if( strcmp( name, GL_DOUBLE_) == 0 )         type = GL_DOUBLE ; 
-    return type ; 
-}
 
 
 /**
-SGLFW_Attribute
------------------
+SGLFW::handle_event
+--------------------
 
-Parse a string of the below form into 6 fields::
+See oglrap/Frame::handle_event
 
-    rpos:4,GL_FLOAT,GL_FALSE,64,0,false
+**/
+
+inline void SGLFW::handle_event(GLEQevent& event)
+{
+    //std::cout << "SGLFW::handle_event " << event.type << std::endl; 
+    switch(event.type)
+    {
+        case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ; 
+        case GLEQ_KEY_RELEASED:  key_released(event.keyboard.key)       ; break ;
+        case GLEQ_CURSOR_MOVED:  cursor_moved(event.pos.x, event.pos.y) ; break ;
+        default:                                                        ; break ; 
+    }
+}
+
+inline void SGLFW::key_pressed(unsigned key)
+{
+    //std::cout << "SGLFW::key_pressed " << key << std::endl ;
+    getStartPos(); 
+    std::cout 
+        << descStartPos() 
+        << descWindowSize() 
+        << std::endl
+        ; 
+
+    switch(key)
+    {
+        case GLFW_KEY_ESCAPE: command("--exit")      ; break ;  
+        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom  ; break ; 
+        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
+        case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
+        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
+        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda  ; break ; 
+        case GLFW_KEY_W:      toggle.norm = !toggle.norm  ; break ; 
+        case GLFW_KEY_A:      gm.command("--zoom 10")     ; break ; 
+        case GLFW_KEY_D:      gm.command("--desc")        ; break ; 
+    }
+
+    std::cout << toggle.desc() << std::endl ; 
+
+}
+inline void SGLFW::key_released(unsigned key)
+{
+    //std::cout << "SGLFW::key_released " << key << std::endl ;
+}
+
+
+inline int SGLFW::command(const char* cmd)
+{
+    if(strcmp(cmd, "--exit") == 0) renderloop_exit(); 
+    return 0 ;  
+}
+
+inline std::string SGLFW::FormCommand(const char* token, float value)  // static
+{
+    std::stringstream ss ; 
+    ss << token << " " << value ; 
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
+/**
+SGLFW::getWindowSize
+---------------------
+
+eg on macOS with retina screen : SGLFW::descWindowSize wh[1024, 768] _wh[2048,1536]
+
+**/
+inline void SGLFW::getWindowSize()
+{
+    glfwGetWindowSize(window, &width, &height);
+    glfwGetFramebufferSize(window, &_width, &_height);
+}
+inline std::string SGLFW::descWindowSize() const
+{
+    std::stringstream ss ; 
+    ss << "SGLFW::descWindowSize"
+       << " wh["
+       << std::setw(4) << width
+       << ","
+       << std::setw(4) << height
+       << "]"
+       << " _wh["
+       << std::setw(4) << _width 
+       << ","
+       << std::setw(4) << _height
+       << "]"
+       ;
+    std::string str = ss.str();
+    return str ;
+}
+
+/**
+SGLFW::getStartPos
+----------------------
+
+
+::
+
+    TL:cursor(0.,0.) ndc(-1.,1.)
+    +-----------------+
+    |                 |
+    |                 |
+    |        + CENTER: cursor(width/2,height/2) ndc(0.,0.)
+    |                 |
+    |                 |
+    +-----------------+ BR:cursor(width, height) ndc(1.,-1.)
 
 
 **/
-struct SGLFW_Attribute
+
+inline void SGLFW::getStartPos()
 {
-    const char* name ; 
-    const char* spec ; 
-    std::vector<std::string> field ; 
+    glfwGetCursorPos(window, &_start_x, &_start_y );
 
-    GLuint index ; 
-    GLint size ;                   // field 0 : number of components must be one of : 1,2,3,4 
-    GLenum type ;                  // field 1
-    GLboolean normalized ;         // field 2
-    GLsizei stride ;               // field 3 : in bytes eg for 4,4 float photon/record struct stride is 4*4*4=64
-    size_t   byte_offset ;         // field 4
-    bool     integer_attribute ;   // field 5       
-    void*    byte_offset_pointer ; // derived from byte_offset 
-
-
-    SGLFW_Attribute( const char* name, const char* spec ); 
-    std::string desc() const ;  
-};
-
-
-SGLFW_Attribute::SGLFW_Attribute(const char* name_, const char* spec_)
-    :
-    name(strdup(name_)),
-    spec(strdup(spec_)),
-    index(0),
-    size(0),
-    type(0),
-    normalized(false),
-    stride(0),
-    byte_offset(0),
-    integer_attribute(false),
-    byte_offset_pointer(nullptr)
-{
-    char delim = ',' ; 
-    std::stringstream ss; 
-    ss.str(spec)  ;
-    std::string s;
-    while (std::getline(ss, s, delim)) field.push_back(s) ; 
-    assert( field.size() == 6 ); 
-
-    size =  std::atoi(field[0].c_str()) ;           assert( size == 1 || size == 2 || size == 3 || size == 4 ) ; 
-    type =  SGLFW_GLenum::Type(field[1].c_str()) ;  assert( type > 0 );    
-    normalized = SGLFW_GLboolean::Value(field[2].c_str()) ; 
-    stride = std::atoi( field[3].c_str() );          assert( stride > 0 ); 
-    byte_offset = std::atoi( field[4].c_str() );     assert( byte_offset >= 0 ); 
-    integer_attribute = SGLFW_bool::Value(field[5].c_str()) ; 
-
-    byte_offset_pointer = (void*)byte_offset ; 
+    start_ndc.x = 2.f*_start_x/width - 1.f ; 
+    start_ndc.y = 1.f - 2.f*_start_y/height ; 
 }
 
-std::string SGLFW_Attribute::desc() const 
+/**
+SGLFW::cursor_moved
+-----------------------
+
+Follow old approach from Frame::cursor_moved_just_move
+
+1. convert pixel positions into ndc (x,y) [-1:1, -1:1]
+
+
+As cursor_moved gets called repeatedly during mouse
+movements the drag.z drag.w tend to be small.
+
+To combat this for local rotation control via quaternion
+use the abolute start position (from key_pressed) 
+and current position from cursor_moved. 
+
+**/
+inline void SGLFW::cursor_moved(int ix, int iy)
+{
+    move_ndc.x  = 2.f*float(ix)/width - 1.f ;   
+    move_ndc.y  = 1.f - 2.f*float(iy)/height ; 
+
+    float dx = move_ndc.x - drag.x ; 
+    float dy = move_ndc.y - drag.y ;   // delta with the prior call to cursor_moved
+
+    drag.x = move_ndc.x ; 
+    drag.y = move_ndc.y ; 
+    drag.z = dx ; 
+    drag.w = dy ; 
+
+    cursor_moved_action(); 
+}
+
+inline void SGLFW::cursor_moved_action()
+{
+    float dy = drag.w ; 
+    if(toggle.zoom)
+    {
+        std::string cmd = FormCommand("--inc-zoom", dy*100 ); 
+        gm.command(cmd.c_str()) ;
+    } 
+    else if(toggle.tmin)
+    {
+        std::string cmd = FormCommand("--inc-tmin", dy ); 
+        gm.command(cmd.c_str()) ;
+    }
+    else if(toggle.tmax)
+    {
+        std::string cmd = FormCommand("--inc-tmax", dy ); 
+        gm.command(cmd.c_str()) ;
+    }
+    else if(toggle.lrot)
+    {
+        gm.setLookRotation(start_ndc, move_ndc); 
+        gm.update(); 
+    }
+}
+
+inline std::string SGLFW::descDrag() const
 {
     std::stringstream ss ; 
-    ss << "SGLFW_Attribute::desc" << std::endl 
-       << std::setw(20) << "name"  << " : " << name << std::endl 
-       << std::setw(20) << "spec"  << " : " << spec << std::endl 
-       << std::setw(20) << "index" << " : " << index << std::endl 
-       << std::setw(20) << "size"  << " : " << size << std::endl 
-       << std::setw(20) << "type"  << " : " << SGLFW_GLenum::Name(type) << std::endl
-       << std::setw(20) << "normalized" << " : " << SGLFW_GLboolean::Name(normalized) << std::endl
-       << std::setw(20) << "stride" << " : " << stride << std::endl
-       << std::setw(20) << "byte_offset" << " : " << byte_offset << std::endl
-       << std::setw(20) << "integer_attribute" << " : " << SGLFW_bool::Name(integer_attribute) << std::endl
-       << std::setw(20) << "byte_offset_pointer" << " : " << byte_offset_pointer << std::endl
-       ;
-
-    for(unsigned i=0 ; i < field.size() ; i++ ) ss << std::setw(20) << i << " : " << field[i] << std::endl ; 
-    std::string s = ss.str(); 
-    return s ; 
+    ss
+        << " (" 
+        << std::setw(10) << std::fixed << std::setprecision(3) << drag.x 
+        << ","
+        << std::setw(10) << std::fixed << std::setprecision(3) << drag.y
+        << ","
+        << std::setw(10) << std::fixed << std::setprecision(3) << drag.z
+        << ","
+        << std::setw(10) << std::fixed << std::setprecision(3) << drag.w
+        << ")" 
+        ;
+    std::string str = ss.str();
+    return str ;
 }
 
 
-
-
-struct SGLFW
+inline std::string SGLFW::descStartPos() const
 {
-    GLFWwindow* window ; 
-    int width ; 
-    int height ; 
-    const char* title ; 
+    std::stringstream ss ; 
+    ss << "SGLFW::descCursorPos"
+       << "["
+       << std::setw(7) << std::fixed << std::setprecision(2) << _start_x 
+       << ","
+       << std::setw(7) << std::fixed << std::setprecision(2) << _start_y
+       << "]"
+       << " ndc["
+       << std::setw(7) << std::fixed << std::setprecision(2) << start_ndc.x
+       << ","
+       << std::setw(7) << std::fixed << std::setprecision(2) << start_ndc.y
+       << "]"
+       ;
+    std::string str = ss.str();
+    return str ;
+}
 
-    GLuint program ; 
-
-
-    SGLFW(int width, int height, const char* title ); 
-    virtual ~SGLFW(); 
-
-    void init(); 
-    void createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
-    void enableArrayAttribute( const char* name, const char* spec ); 
-
-    static void check(const char* path, int line); 
-    static void print_shader_info_log(unsigned id); 
-    static void error_callback(int error, const char* description); 
-    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods); 
-}; 
-
-
-SGLFW::SGLFW(int width_, int height_, const char* title_ )
+inline SGLFW::SGLFW(SGLM& _gm, const char* title_ )
     :
-    width(width_),
-    height(height_),
-    title(strdup(title_)),
-    program(0)
+    gm(_gm),
+    width(gm.Width()),
+    height(gm.Height()),
+    title(title_ ? strdup(title_) : TITLE),
+    window(nullptr),
+    count(0),
+    renderlooplimit(20000), 
+    exitloop(false),
+    dump(false),
+    _width(0),
+    _height(0),
+    _start_x(0.),
+    _start_y(0.),
+    start_ndc(0.f,0.f),
+    move_ndc(0.f,0.f),
+    drag(0.f,0.f,0.f,0.f)
 {
     init(); 
 }
 
-SGLFW::~SGLFW()
+inline SGLFW::~SGLFW()
 {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
 
-void SGLFW::init()
+inline void SGLFW::Error_callback(int error, const char* description) // static
 {
-    glfwSetErrorCallback(SGLFW::error_callback);
+    fprintf(stderr, "SGLFW::Error_callback: %s\n", description);
+}
+
+/**
+SGLFW::init
+-------------
+
+1. OpenGL initialize
+2. create window
+
+Perhaps this needs to::
+
+   glEnable(GL_DEPTH_TEST)
+
+
+Example responses::
+
+     Renderer: NVIDIA GeForce GT 750M OpenGL Engine
+     OpenGL version supported 4.1 NVIDIA-10.33.0 387.10.10.10.40.105
+
+     Renderer: TITAN RTX/PCIe/SSE2
+     OpenGL version supported 4.1.0 NVIDIA 418.56
+
+**/
+
+inline void SGLFW::init()
+{
+    glfwSetErrorCallback(SGLFW::Error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
+
+    gleqInit();
 
 #if defined __APPLE__
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);  // version specifies the minimum, not what will get on mac
@@ -256,10 +434,11 @@ void SGLFW::init()
  
 #elif __linux
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
-    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);  // also used 6 here 
+    //glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,   
+    glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   
+    // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,   
 #endif
 
 
@@ -272,11 +451,15 @@ void SGLFW::init()
         glfwTerminate();
         exit(EXIT_FAILURE);
     }   
-    glfwSetKeyCallback(window, SGLFW::key_callback);
+    //glfwSetKeyCallback(window, SGLFW::key_callback);  // using gleq event for key callbacks not this manual approach 
     glfwMakeContextCurrent(window);
+
+    gleqTrackWindow(window);  // replaces callbacks, see https://github.com/glfw/gleq
     
     glewExperimental = GL_TRUE;
     glewInit (); 
+
+    
 
     GLenum err0 = glGetError() ; 
     GLenum err1 = glGetError() ; 
@@ -284,8 +467,8 @@ void SGLFW::init()
     bool err1_expected = err1 == GL_NO_ERROR ; 
     if(!err0_expected) printf("//SGLFW::init UNEXPECTED err0 %d \n", err0 ); 
     if(!err1_expected) printf("//SGLFW::init UNEXPECTED err1 %d \n", err1 ); 
-    assert( err0_expected );  
-    assert( err1_expected );  
+    //assert( err0_expected );  
+    //assert( err1_expected );  
 
     const GLubyte* renderer = glGetString (GL_RENDERER);
     const GLubyte* version = glGetString (GL_VERSION);
@@ -298,127 +481,4 @@ void SGLFW::init()
     glfwSwapInterval(interval);
 
 }
-
-inline void SGLFW::createProgram(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text )
-{
-    std::cout << " vertex_shader_text " << std::endl << vertex_shader_text << std::endl ;
-    std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ;
-    std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ;
-
-    int params = -1;
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW::check(__FILE__, __LINE__);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                SGLFW::check(__FILE__, __LINE__);
-    glCompileShader(vertex_shader);                                             SGLFW::check(__FILE__, __LINE__);
-    glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) SGLFW::print_shader_info_log(vertex_shader) ;
-
-    GLuint geometry_shader = 0 ;
-    if( geometry_shader_text )
-    {
-        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       SGLFW::check(__FILE__, __LINE__);
-        glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            SGLFW::check(__FILE__, __LINE__);
-        glCompileShader(geometry_shader);                                           SGLFW::check(__FILE__, __LINE__);
-        glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
-        if (GL_TRUE != params) SGLFW::print_shader_info_log(geometry_shader) ;
-    }
-
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                SGLFW::check(__FILE__, __LINE__);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            SGLFW::check(__FILE__, __LINE__);
-    glCompileShader(fragment_shader);                                           SGLFW::check(__FILE__, __LINE__);
-    glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) SGLFW::print_shader_info_log(fragment_shader) ;
-
-    program = glCreateProgram();               SGLFW::check(__FILE__, __LINE__);
-    glAttachShader(program, vertex_shader);    SGLFW::check(__FILE__, __LINE__);
-    if( geometry_shader > 0 ) glAttachShader(program, geometry_shader);  SGLFW::check(__FILE__, __LINE__);
-    glAttachShader(program, fragment_shader);  SGLFW::check(__FILE__, __LINE__);
-    glLinkProgram(program);                    SGLFW::check(__FILE__, __LINE__);
-
-    glUseProgram(program);
-}
-
-/**
-SGLFW::enableArrayAttribute
-------------------------------
-
-Array attribute : connecting values from the array with attribute symbol in the shader program 
-
-Example rpos spec "4,GL_FLOAT,GL_FALSE,64,0,false"
-
-**/
-
-void SGLFW::enableArrayAttribute( const char* name, const char* spec )
-{
-    SGLFW_Attribute att(name, spec); 
-
-    att.index = glGetAttribLocation( program, name );   SGLFW::check(__FILE__, __LINE__);
-
-    std::cout << att.desc() << std::endl ; 
-
-    glEnableVertexAttribArray(att.index);      SGLFW::check(__FILE__, __LINE__);
-
-    assert( att.integer_attribute == false ); 
-
-    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW::check(__FILE__, __LINE__);
-}
-
-
-inline void SGLFW::check(const char* path, int line) 
-{
-    GLenum err = glGetError() ;   
-    bool ok = err == GL_NO_ERROR ;
-    const char* s = NULL ; 
-    switch(err)
-    {   
-        case GL_INVALID_ENUM:      s = "GL_INVALID_ENUM" ; break ; 
-        case GL_INVALID_VALUE:     s = "GL_INVALID_VALUE" ; break ; 
-        case GL_INVALID_OPERATION: s = "GL_INVALID_OPERATION" ; break ; 
-        case GL_STACK_OVERFLOW:    s = "GL_STACK_OVERFLOW" ; break ;   
-        case GL_STACK_UNDERFLOW:   s = "GL_STACK_UNDERFLOW" ; break ;   
-        case GL_OUT_OF_MEMORY:     s = "GL_OUT_OF_MEMORY" ; break ;   
-        case GL_CONTEXT_LOST:      s = "GL_CONTEXT_LOST" ; break ;
-        case GL_INVALID_FRAMEBUFFER_OPERATION: s = "GL_INVALID_FRAMEBUFFER_OPERATION" ; break ;
-    }   
-    if(!ok) std::cout << "SGLFW::check OpenGL ERROR " << path << " : " << line << " : " << std::hex << err << std::dec << " : " << s << std::endl ; 
-    assert( ok );  
-}
-
-
-inline void SGLFW::print_shader_info_log(unsigned id) 
-{
-    int max_length = 2048;
-    int actual_length = 0;
-    char log[2048];
-
-    glGetShaderInfoLog(id, max_length, &actual_length, log);
-    SGLFW::check(__FILE__, __LINE__ );  
-
-    printf ("shader info log for GL index %u:\n%s\n", id, log);
-    assert(0);
-}
-inline void SGLFW::error_callback(int error, const char* description)
-{
-    fprintf(stderr, "Error: %s\n", description);
-}
-
-/**
-
-some ideas on key handling :  UseOpticksGLFW/UseOpticksGLFW.cc 
-
-https://stackoverflow.com/questions/55573238/how-do-i-do-a-proper-input-class-in-glfw-for-a-game-engine
-
-https://learnopengl.com/Getting-started/Camera
-
-THIS NEED TO TALK TO SGLM::INSTANCE changing viewpoint 
-
-**/
-inline void SGLFW::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    {   
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
-    }   
-}
-
-
 

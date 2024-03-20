@@ -30,7 +30,8 @@ int main(int argc, char** argv)
         sim = SSim::Create() ; 
         U4Tree::Create(sim->tree, world) ; 
 
-        LOG(info) << " save SSim to $FOLD " ; 
+        std::cerr << " save SSim to $TMP/U4TreeCreateSSimTest " << std::endl ; 
+
         sim->save("$TMP/U4TreeCreateSSimTest"); 
     }
     LOG(info) << " sim.tree.desc " << std::endl << sim->tree->desc() ;

@@ -2,6 +2,9 @@
 CSGOptiX.cc
 ============
 
+* NOTE : < 7 BRANCH NO LONGER VIABLE BUT ITS EXPEDIENT TO KEEP 
+  IT FOR LAPTOP COMPILATION
+
 This code contains two branches for old (OptiX < 7) and new (OptiX 7+) API
 
 Branched aspects:
@@ -63,17 +66,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "squad.h"
 #include "sframe.h"
 #include "salloc.h"
-
-
-
-/**
-HMM: Composition is a bit of a monster - bringing in a boatload of classes 
-LONGTERM: see if can pull out the essentials into a smaller class
-
-* SGLM.h is already on the way to doing this kinda thing in a single header 
-* Composition::getEyeUVW is the crux method needed 
-* Composition or its replacement only relevant for rendering, not for simulation 
-**/
 
 // csg 
 #include "CSGPrim.h"
@@ -247,6 +239,12 @@ const char* CSGOptiX::desc() const
 CSGOptiX::InitEvt
 -------------------
 
+Q: Why the SEvt geometry connection ?
+A: Needed for global to local transform conversion 
+
+Q: What uses SEVt::setGeo (SGeo) ? 
+A: Essential set_matline of Cerenkov Genstep 
+
 **/
 
 void CSGOptiX::InitEvt( CSGFoundry* fd  )
@@ -255,7 +253,7 @@ void CSGOptiX::InitEvt( CSGFoundry* fd  )
 
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ; 
 
-    sev->setGeo((SGeo*)fd);    // Q: IS THIS USED BY ANYTHING ?  A: YES, Essential set_matline of Cerenkov Genstep 
+    sev->setGeo((SGeo*)fd);    
 
     std::string* rms = SEvt::RunMetaString() ; 
     assert(rms); 
@@ -411,7 +409,7 @@ CSGOptiX::~CSGOptiX()
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
-    sglm(new SGLM),   // instanciate always to allow view matrix comparisons
+    sglm(new SGLM), 
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     prefix(ssys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
@@ -650,7 +648,7 @@ TODO: see CSGFoundry::AfterLoadOrCreate for maybe auto frame hookup
 
 void CSGOptiX::initFrame()
 {
-    sframe _fr = foundry->getFrameE() ; 
+    sframe _fr = foundry->getFrameE() ;   // TODO: migrate to lighweight sfr from stree level 
     LOG(LEVEL) << _fr ; 
     SEvt::SetFrame(_fr) ; 
     setFrame(_fr);  
@@ -823,7 +821,7 @@ and rendering ?
 
 void CSGOptiX::setFrame(const sframe& fr_ )
 {
-    sglm->set_frame(fr_); 
+    sglm->set_frame(fr_);   // TODO: aim to remove sframe from sglm ? instead operate at ce (or sometimes m2w w2m level)
 
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ; 
 

@@ -370,6 +370,10 @@ std::string CSGFoundry::desc_mt() const
     return sim->desc_mt() ;  
 }
 
+stree* CSGFoundry::getTree() const
+{
+    return sim ? sim->tree : nullptr ; 
+}
 
 
 
@@ -3411,7 +3415,6 @@ that picked the frame.
 sframe CSGFoundry::getFrameE() const 
 {
     sframe fr = {} ; 
-
 
 
     if(ssys::getenvbool("INST"))

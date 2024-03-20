@@ -6,15 +6,27 @@ sseq_index.h
 This reimplements some python/NumPy that is slow with large seq.npy
 
 
-sseq_unique
+sseq_index_count
+   struct holding index and count  
 
+sseq_index_count_ab
+   struct holding a and b sseq_index_count to facilitate comparisons
+
+sseq_unique
+   struct holding q:sseq and ic:sseq_index_count
+   
+sseq_qab   
+   struct holding q:sseq a:sseq_index_count b:sseq_index_count
 
 sseq_index
    reimplementation of ~/opticks/ana/qcf.py:QU
 
-sseq_index_chi2
-   reimplementation of ~/opticks/ana/qcf.py:QCF
+   * q:vector of sseq (populated from typically large input array within ctor)
+   * m:map of unique sseq with counts and first indices (relies on sseq.h hash specialization)
+   * u:descending count ordered vector of sseq_unique 
 
+
+Q: reimplementation of ~/opticks/ana/qcf.py:QCF ?
 
 **/
 
@@ -23,14 +35,12 @@ sseq_index_chi2
 #include "NPX.h"
 
 
-
 struct sseq_index_count
 {
     int index ; 
     int count ; 
     std::string desc() const ; 
 };
-
 inline std::string sseq_index_count::desc() const
 {
     std::stringstream ss ;  
@@ -38,7 +48,6 @@ inline std::string sseq_index_count::desc() const
     std::string str = ss.str(); 
     return str ; 
 }
-
 
 struct sseq_index_count_ab
 {
@@ -144,8 +153,8 @@ inline void sseq_index::load_seq(const NP* seq)
 }
 
 /**
-sseq_index::count_unique
---------------------------------
+sseq_index::count_unique fill the sseq keyed map of occurence counts
+----------------------------------------------------------------------
 
 Iterate over the source vector populating the 
 map with the index of first occurrence and
@@ -173,8 +182,8 @@ inline void sseq_index::count_unique()
 }
 
 /**
-sseq_index::order_seq
------------------------
+sseq_index::order_seq : sorting unique sseq in descending count order
+----------------------------------------------------------------------
 
 1. copy from map m into vector u 
 2. sort the u vector into descending count order
@@ -211,7 +220,7 @@ struct sseq_index_ab_chi2
 {
     static constexpr const char* NAME = "sseq_index_ab_chi2.npy" ; 
     static const int DEFAULT_ABSUM_MIN = 30 ; 
-    static constexpr const char* EKEY = "sseq_index_ab_chi2_ABSUM_MIN" ; 
+    static constexpr const char* EKEY = "sseq_index_ab_chi2_ABSUM_MIN" ;  // equiv to python C2CUT
 
     double sum ; 
     double ndf ; 
@@ -266,6 +275,13 @@ std::string sseq_index_ab_chi2::desc() const
     std::string str = ss.str() ; 
     return str ; 
 }
+
+
+/**
+sseq_index_ab
+
+
+**/
 
 struct sseq_index_ab
 {
@@ -357,7 +373,7 @@ inline void sseq_index_ab::calc_chi2()
     }
 }
 
-/**
+/**x
 sseq_index_ab::desc
 ---------------------
 
@@ -434,7 +450,7 @@ inline std::string sseq_index_ab::desc(const char* opt) const
            << ( a_zero ? "AZERO " : "" )
            << ( b_zero ? "BZERO " : "" )
            << ( deviant ? "DEVIANT " : "" )
-           << ( c2_inc ? "C2INC " : "C2EXC " )
+           << ( c2_inc ? " " : "C2EXC " )   // SUPPRESS C2INC AS ITS NORMAL
            << tail 
            << std::endl 
            ;

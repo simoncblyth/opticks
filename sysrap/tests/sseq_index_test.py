@@ -3,7 +3,8 @@
 sseq_index_test.py
 ====================
 
-Need this as getting chi2 cdf in C++ is too involved 
+Need this python despite most of comparison done in C++ 
+as getting chi2 cdf in C++ is too involved 
 
 """
 

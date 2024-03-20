@@ -81,14 +81,13 @@ struct strid
     static std::string Desc_(  const char* a_label, const char* b_label, const char* c_label, 
                                const glm::tmat4x4<T>& a, const glm::tmat4x4<T>& b, const glm::tmat4x4<T>& c );
 
-    static void Narrow( glm::tmat4x4<float>& dst,  const glm::tmat4x4<double>& src ); 
-    static void Narrow( std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
+    static void NarrowClear(             glm::tmat4x4<float>& dst,                const glm::tmat4x4<double>& src ); 
+    static void Narrow(                  glm::tmat4x4<float>& dst,                const glm::tmat4x4<double>& src ); 
+    static void NarrowClear( std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
+    static void Narrow(      std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
 
     template<typename T>
     static T DiffFromIdentity( const glm::tmat4x4<T>& tr ); 
-
-
-
 
 
     template<typename T>
@@ -375,7 +374,7 @@ inline std::string strid::Desc( const glm::tmat4x4<T>& tr )
         }
         else
         {
-            ss << spc << std::setw(16) << std::hex << col3[r] << std::dec ; break ; 
+            ss << spc << std::setw(16) << std::dec << col3[r] << std::dec ; break ; 
         }
         if( i == 15 ) ss << std::endl ; 
     }
@@ -388,22 +387,26 @@ template std::string strid::Desc<float,  uint32_t>(const glm::tmat4x4<float>& tr
 
 
 
-
+inline void strid::NarrowClear( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<double>& src_ )
+{
+    float* dst = glm::value_ptr(dst_); 
+    const double* src = glm::value_ptr(src_); 
+    for(int i=0 ; i < 16 ; i++) dst[i] = float(src[i]); 
+    Clear<float>(dst_);  
+}
 
 inline void strid::Narrow( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<double>& src_ )
 {
     glm::tvec4<uint64_t> src_col3 ; 
     Decode(src_, src_col3); 
 
-
-
     float* dst = glm::value_ptr(dst_); 
     const double* src = glm::value_ptr(src_); 
 
-    for(unsigned r=0 ; r < 4 ; r++) 
-    for(unsigned c=0 ; c < 4 ; c++)
+    for(int r=0 ; r < 4 ; r++) 
+    for(int c=0 ; c < 4 ; c++)
     {
-        unsigned i=r*4 + c ; 
+        int i=r*4 + c ; 
 
         /*
         std::cout 
@@ -423,6 +426,17 @@ inline void strid::Narrow( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<double
 
     Encode(dst_, dst_col3); 
 
+}
+
+inline void strid::NarrowClear( std::vector<glm::tmat4x4<float>>& dst_,  const std::vector<glm::tmat4x4<double>>& src_ )
+{
+    dst_.resize(src_.size()); 
+    for(unsigned i=0 ; i < src_.size() ; i++)
+    {  
+        const glm::tmat4x4<double>& src = src_[i] ; 
+        glm::tmat4x4<float>& dst = dst_[i] ; 
+        NarrowClear(dst, src); 
+    }
 }
 
 inline void strid::Narrow( std::vector<glm::tmat4x4<float>>& dst_,  const std::vector<glm::tmat4x4<double>>& src_ )

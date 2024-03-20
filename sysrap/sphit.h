@@ -30,7 +30,23 @@ struct sphit
     void zero(); 
     std::string desc() const ; 
 
+    static bool Equal(const sphit& a, const sphit& b); 
+    bool operator==(const sphit& other) const ; 
 }; 
+
+
+inline bool sphit::Equal(const sphit& a, const sphit& b ) // static
+{
+    return a.iindex == b.iindex && 
+           a.sensor_identifier == b.sensor_identifier &&
+           a.sensor_index      == b.sensor_index 
+           ;
+}
+
+inline bool sphit::operator==(const sphit& other) const 
+{
+    return Equal(*this, other);  
+}
 
 inline void sphit::zero()
 {

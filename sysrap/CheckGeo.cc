@@ -39,3 +39,8 @@ std::string CheckGeo::desc_mt() const
 }
 
 
+stree* CheckGeo::getTree() const 
+{
+    return nullptr ; 
+}
+

@@ -448,7 +448,7 @@ struct U
     static std::string Summarize_( const char* label, int wid ); 
 
 
-    static void LineVector( std::vector<std::string>& lines, const char* LINES ); 
+    static void LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX=nullptr ); 
 
     static void LiteralTrim( std::string& line ); 
     static void Literal(    std::vector<std::string>& lines, const char* LINES ); 
@@ -505,6 +505,7 @@ struct U
     static std::vector<T>* GetEnvVec(const char* ekey, const char* fallback, char delim=','); 
     static int         GetEnvInt( const char* envkey, int fallback );  
     static const char* GetEnv(    const char* envkey, const char* fallback); 
+    static bool        HasEnv( const char* envkey ); 
 
     template<typename T>
     static T           GetE(const char* ekey, T fallback);  
@@ -515,7 +516,8 @@ struct U
     static int PathType( const char* path );  // directory:1 file:2 
     static int PathType( const char* base, const char* name );  // directory:1 file:2 
 
-    static void DirList(std::vector<std::string>& names, const char* path, const char* ext=nullptr, bool exclude=false ); 
+    static void DirList(std::vector<std::string>& names, const char* path, 
+                const char* ext=nullptr, bool exclude=false, bool allow_nonexisting=false ); 
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static void Split(const char* str, char delim,   std::vector<std::string>& elem); 
     static int FindIndex(const std::vector<std::string>& names, const char* name);
@@ -746,6 +748,12 @@ inline const char* U::GetEnv(const char* envkey, const char* fallback)
     const char* evalue = getenv(envkey);
     return evalue ? evalue : fallback ; 
 } 
+
+inline bool U::HasEnv(const char* envkey)
+{
+    const char* evalue = getenv(envkey);
+    return evalue ? true : false ; 
+}
 
 
 template<typename T>
@@ -1159,19 +1167,25 @@ U::LineVector
 --------------
 
 
-
 **/
 
-inline void U::LineVector( std::vector<std::string>& lines, const char* LINES )
+inline void U::LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX )
 {
     std::stringstream fss(LINES);
-    std::string line ; 
-    while(getline(fss, line))
+    std::string _line ; 
+    while(getline(fss, _line))
     {
-        if(strlen(line.c_str())==0) continue ; 
+        const char* line = _line.c_str();  
+        size_t len = strlen(line) ; 
+        if(len==0) continue ; 
+        bool match = PREFIX == nullptr ? true : len >= strlen(PREFIX) && strncmp(line, PREFIX, strlen(PREFIX)) == 0 ;  
+        if(!match) continue ; 
         lines.push_back(line); 
     }
 }
+
+
+
 
 
 inline void U::LiteralTrim( std::string& line )
@@ -1382,11 +1396,24 @@ inline int U::PathType( const char* path )
 U::DirList
 -----------
 
+ext:nullptr 
+    (default) matches all extensions 
+
+
+
+
 **/
 
-inline void U::DirList(std::vector<std::string>& names, const char* path, const char* ext, bool exclude )
+inline void U::DirList(
+    std::vector<std::string>& names, 
+    const char* path, 
+    const char* ext, 
+    bool exclude, 
+    bool allow_nonexisting
+   )
 {
     DIR* dir = opendir(path) ;
+    if(!dir && allow_nonexisting) return ; 
     if(!dir) std::cout << "U::DirList FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
     if(!dir && RAISE) std::raise(SIGINT) ; 
     if(!dir) return ; 

@@ -71,7 +71,7 @@ class sobject(object):
 
 class sn(sobject):
     """
-    sn.h CSG constituent node 
+    sn.h CSG constituent node, assuming the default WITH_CHILD  
     """
     DTYPE = [
              ('typecode', '<i4'), 
@@ -88,6 +88,7 @@ class sn(sobject):
              ('index', '<i4'),
              ('depth', '<i4'),
              ('note',  '<i4'),
+             ('coincide',  '<i4'),
              ('label0', '<i4'),
              ('label1', '<i4'),
              ('label2', '<i4'),
@@ -184,12 +185,14 @@ class stree(object):
     def __init__(self, f, symbol="st"):
 
         #sff = Fold.Load(f.base,"subs_freq",  symbol="sf") 
-        sff = f.subs_freq
+        sff = f.subs_freq if getattr( f, "subs_freq", None ) != None else None
 
         sf = None if sff is None else sfreq(sff)
         nds = None if f.nds is None else snode.RecordsFromArrays(f.nds)
         rem = None if f.rem is None else snode.RecordsFromArrays(f.rem)
-        csg = None if f.csg is None else snd.RecordsFromArrays(f.csg.node[:,:12])
+        csg = None if f._csg is None else sn.RecordsFromArrays(f._csg.sn)
+        # FAIL ABOVE MAY BE INCONSISTENT WITH_CHILD ASSUMPTION
+
         factor = None if f.factor is None else sfactor.RecordsFromArrays(f.factor[:,:4])
         #soname_ = None if len(f.soname.lines) == 0  else self.MakeTxtArray(f.soname.lines)
         soname_ = f.soname_names

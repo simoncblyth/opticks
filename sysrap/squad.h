@@ -114,7 +114,8 @@ u:identity
     see cx:CSGOptiX7.cu:__closesthit__ch 
 
     FROM July 2023
-        instance_id which is *sensor_identifier* (as need lpmtid for QPMT).  
+        instance_id which is *sensor_identifier+1* (as need lpmtid for QPMT),
+        zero means not-a-sensor GPU side 
 
     FORMERLY
         (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff )

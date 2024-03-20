@@ -85,6 +85,7 @@ struct NP
 
     template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); // from -1. to 1. 
                          static NP* SqrtOneMinusSquare( const NP* a ); 
+                         static NP* Incremented( const NP* a, int offset  ); 
      
     template<typename T> static NP* MakeDiv( const NP* src, unsigned mul  ); 
 
@@ -309,7 +310,11 @@ struct NP
     template<typename T> void pscale(T scale, unsigned column);
     template<typename T> void pscale_add(T scale, T add, unsigned column);
     template<typename T> void pdump(const char* msg="NP::pdump", T d_scale=1., T v_scale=1.) const ; 
+
     template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
+    template<int N, typename T> void minmax2D_reshaped(T* mn, T* mx, int item_stride=1, int item_offset=0) ; // not-const as temporarily changes shape
+    template<typename T>        void minmax2D(T* mn, T* mx, int item_stride=1, int item_offset=0 ) const ; 
+
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
     template<typename T> NP*  trapz() const ;                      // composite trapezoidal integration, requires pshaped
 
@@ -415,7 +420,9 @@ struct NP
     static int Memcmp( const NP* a, const NP* b ); 
 
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
-    static NP* Concatenate(const std::vector<NP*>& aa); 
+
+    template<typename T>
+    static NP* Concatenate(const std::vector<T*>& aa ); 
 
     static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true, const NP* parasite=nullptr ); 
     template<typename... Args> static NP* Combine_(Args ... aa);  // Combine_ellipsis
@@ -841,6 +848,28 @@ inline NP* NP::SqrtOneMinusSquare( const NP* a ) // static
     return b ; 
 }
 
+inline NP* NP::Incremented( const NP* a, int offset ) // static
+{
+    assert( a->uifc == 'i' );   
+    assert( a->ebyte == 4 || a->ebyte == 8  );   
+    int num = a->num_values() ;  // all dimensions
+
+    NP* b = NP::MakeLike(a); 
+
+    if( a->ebyte == 8 )
+    {
+        const long* aa = a->cvalues<long>(); 
+        long* bb = b->values<long>(); 
+        for(int i=0 ; i < num ; i++ ) bb[i] = aa[i] + long(offset) ;  
+    }
+    else if( a->ebyte == 4 )
+    {
+        const int* aa = a->cvalues<int>(); 
+        int* bb = b->values<int>(); 
+        for(int i=0 ; i < num ; i++ ) bb[i] = aa[i] + offset ; 
+    }
+    return b ; 
+}
 
 
 /**
@@ -3394,6 +3423,69 @@ template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j, int item ) 
 
 
 
+/**
+NP::minmax2D_reshaped<N,T>
+--------------------------
+
+1. Temporarily change shape to (-1,N) : ie array of items with N element of type T 
+2. invoked minmax2D determining value range of the items
+3. return the shape back to the original 
+
+Consider array of shape (1000,32,4,4) with (position,time) in [:,:,0]
+After reshaping that becomes (1000*32*4, 4 ) 
+BUT only every fourth 4-plet is (position, time)
+
+So (item_stride, item_offset) needs to be (4,0) where the 
+item is the 4-plet chosen with the N template parameter.
+
+**/
+template<int N, typename T> inline void NP::minmax2D_reshaped(T* mn, T* mx, int item_stride, int item_offset ) 
+{
+    std::vector<int> sh = shape ; 
+    change_shape(-1,N); 
+
+    assert( shape.size() == 2 ); 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+    assert( nj == N && ni > 0 ); 
+
+    minmax2D<T>(mn, mx, item_stride, item_offset ); 
+
+    reshape(sh); 
+}
+
+/**
+NP::minmax2D
+-------------
+
+Assuming shape (-1, N) where N is typically small (eg 4)
+and the mn, mx arguments point to structures 
+with at least N elements. 
+
+**/
+
+template<typename T> inline void NP::minmax2D(T* mn, T* mx, int item_stride, int item_offset ) const 
+{
+    assert( shape.size() == 2 ); 
+    int ni = shape[0] ; 
+    int nj = shape[1] ; 
+
+    for(int j=0 ; j < nj ; j++) mn[j] = std::numeric_limits<T>::max() ; 
+    for(int j=0 ; j < nj ; j++) mx[j] = std::numeric_limits<T>::min() ; 
+
+    const T* vv = cvalues<T>() ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        if( i % item_stride != item_offset ) continue ; 
+        for(int j=0 ; j < nj ; j++)
+        {
+            int idx = i*nj + j ; 
+            if( vv[idx] < mn[j] ) mn[j] = vv[idx] ;   
+            if( vv[idx] > mx[j] ) mx[j] = vv[idx] ;   
+        }
+    }
+}
+
 
 /**
 NP::linear_crossings
@@ -5473,18 +5565,20 @@ inline NP* NP::Concatenate(const char* dir, const std::vector<std::string>& name
     return concat ; 
 }
 
-inline NP* NP::Concatenate(const std::vector<NP*>& aa)  // static 
-{
-    assert( aa.size() > 0 ); 
 
-    NP* a0 = aa[0] ; 
+template<typename T>
+inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static 
+{
+    int num_a = aa.size(); 
+    assert( num_a > 0 ); 
+    auto a0 = aa[0] ; 
     
     unsigned nv0 = a0->num_itemvalues() ; 
     const char* dtype0 = a0->dtype ; 
 
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
-        NP* a = aa[i] ;
+        auto a = aa[i] ;
 
         unsigned nv = a->num_itemvalues() ; 
         bool compatible = nv == nv0 && strcmp(dtype0, a->dtype) == 0 ; 
@@ -5517,11 +5611,11 @@ inline NP* NP::Concatenate(const std::vector<NP*>& aa)  // static
     unsigned offset_bytes = 0 ; 
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
-        NP* a = aa[i]; 
+        auto a = aa[i]; 
         unsigned a_bytes = a->arr_bytes() ; 
         memcpy( c->data.data() + offset_bytes ,  a->data.data(),  a_bytes ); 
         offset_bytes += a_bytes ;  
-        a->clear(); // HUH: THATS A BIT IMPOLITE ASSUMING CALLER DOESNT WANT TO USE INPUTS
+        //a->clear(); // HUH: THAT WAS IMPOLITE : ASSUMING CALLER DOESNT WANT TO USE INPUTS
     }
     return c ; 
 }

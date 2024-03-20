@@ -29,6 +29,7 @@ CSGFoundry instance down to it cast down to this SGeo protocol base.
 #include "SYSRAP_API_EXPORT.hh"
 
 struct sframe ; 
+struct stree ; 
 
 struct SYSRAP_API SGeo 
 {
@@ -49,7 +50,7 @@ struct SYSRAP_API SGeo
         virtual std::string        descBase() const = 0 ; 
         virtual int                lookup_mtline(int mtindex) const = 0 ; 
         virtual std::string        desc_mt() const = 0 ; 
-        
+        virtual stree*             getTree() const = 0 ; 
 
         virtual ~SGeo(){};
 

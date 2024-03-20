@@ -108,7 +108,7 @@ For details see http://simoncblyth.bitbucket.io/opticks/
    the prefix for the opticks install (eg /usr/local/opticks)
 
 6. install the "automated" externals and opticks itself with **opticks-full**
-7. create the geocache with **geocache-create**, see :doc:`testing`
+7. translate a geometry using for example **g4cx/tests/G4CXOpticks_setGeometry_Test.sh**, see :doc:`docs/testing`
 8. test the opticks build with **opticks-t** 
 
 

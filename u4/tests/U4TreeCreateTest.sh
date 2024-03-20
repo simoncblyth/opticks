@@ -3,6 +3,10 @@ usage(){ cat << EOU
 U4TreeCreateTest.sh  : loads GDML, runs U4Tree::Create populating stree.h, saves to FOLD  
 ============================================================================================
 
+::
+
+    ~/o/u4/tests/U4TreeCreateTest.sh
+
 Running this twice WITH_SND and NOT:WITH_SND enables 
 comparison of snd.hh and sn.h based CSG node impls
 as the CSG nodes are persisted into "stree/csg" WITH_SND 
@@ -76,8 +80,8 @@ if [ "${arg/load}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-   dbg__ $bin 
-   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
+    dbg__ $bin 
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 

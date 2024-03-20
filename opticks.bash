@@ -391,7 +391,8 @@ use start from
 EOU
 }
 
-opticks-env(){      
+opticks-env(){     
+    : opticks.bash
    # dont pollute : otherwise will get infinite loops : as opticks is used in many other -env
    . $(opticks-ldir)/externals/externals.bash       ## just precursors
    . $(opticks-ldir)/integration/integration.bash   ## just precursors
@@ -2969,9 +2970,9 @@ opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commi
 
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
 
-#opticks-docs-page(){     echo ${P:-index.html} ; }
+opticks-docs-page(){     echo ${P:-index.html} ; }
 #opticks-docs-page(){     echo ${P:-docs/orientation.html} ; }
-opticks-docs-page(){     echo ${P:-docs/debug.html} ; }
+#opticks-docs-page(){     echo ${P:-docs/debug.html} ; }
 
 opticks-docs-vi(){       local page=$(opticks-docs-page) ; vi $(opticks-home)/${page/.html/.rst} ; }
 opticks-docs-remote(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/$(opticks-docs-page) ; } 
@@ -3171,6 +3172,7 @@ gdt(){ cd $(opticks-home)/gdxml/tests ; pwdt_ ; }
 qu(){ qudarap $* ; pwd_ ; }
 qt(){ qudarap tests ; pwdt_ ; }
 sy(){ sysrap $* ; pwd_ ; }
+y(){  sysrap $* ; pwd_ ; }
 st(){ sysrap tests ; pwdt_ ; }
 
 

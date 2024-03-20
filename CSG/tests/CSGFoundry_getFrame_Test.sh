@@ -3,6 +3,9 @@ usage(){ cat << EOU
 CSGFoundry_getFrame_Test.sh
 =============================
 
+
+
+
 Loads a CSGFoundry geometry specified by GEOM envvar and 
 accesses the frame specified by OPTICKS_INPUT_PHOTON_FRAME envvar.
 The frame is used to transform some input photons and comparisons

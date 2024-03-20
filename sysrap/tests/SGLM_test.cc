@@ -1,5 +1,6 @@
-// name=SGLM_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -I$OPTICKS_PREFIX/externals/glm/glm -o /tmp/$name && /tmp/$name
+// ~/o/sysrap/tests/SGLM_test.sh 
 
+#include <functional>
 #include "SGLM.h"
 
 struct test_Assignment
@@ -37,7 +38,6 @@ void test_SGLM()
     // setenv("EYE", "-1,-1,0", true ); 
     // NB it is too late for setenv to influence SGLM as the static initialization would have happened already : 
     // must use static methods to change the inputs that OR export envvars in the invoking script to configure defaults
-   
     // SGLM::SetWH(1024,768); 
 
     SGLM sglm ; 
@@ -46,18 +46,37 @@ void test_SGLM()
 
 void test_SGLM_basis()
 {
-    SGLM sglm ; 
-    std::cout << sglm.descBasis();
+    SGLM gm ; 
+    std::cout << gm.descBasis();
 
     float near_abs = 7.f ; 
     float far_abs = 700.f ; 
-    sglm.set_near_abs(near_abs); 
-    sglm.set_far_abs(far_abs); 
+    gm.set_near_abs(near_abs); 
+    gm.set_far_abs(far_abs); 
 
-    std::cout << sglm.descBasis();
+    std::cout << gm.descBasis();
 
-    assert( sglm.get_near_abs() == near_abs ); 
-    assert( sglm.get_far_abs() == far_abs ); 
+    assert( gm.get_near_abs() == near_abs ); 
+    assert( gm.get_far_abs() == far_abs ); 
+
+}
+
+void test_SGLM_command()
+{
+    SGLM gm ; 
+    SCMD* cm = (SCMD*)&gm ; 
+
+    const char* cmd = "--ce 0,0,0,10 --eye 0,10,1 --look 0,1,1 --up 1,0,0 --zoom 5 --tmin 0.01 --tmax 1000" ;
+    //const char* cmd = "--ce 0,0,0,10 --tmin 0.5 --tmax 5" ;  
+
+    int rc = cm->command(cmd); 
+    std::cout 
+        << " rc " << rc 
+        << std::endl 
+        ;
+
+    std::cout << gm.desc() ; 
+
 
 }
 
@@ -68,10 +87,9 @@ int main()
     test_Assignment::Widening(); 
     test_Assignment::Narrowing(); 
     test_SGLM_basis(); 
-    */
     test_SGLM(); 
-
-
+    */
+    test_SGLM_command(); 
 
     return 0 ; 
 }

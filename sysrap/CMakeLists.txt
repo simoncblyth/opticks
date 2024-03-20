@@ -342,6 +342,7 @@ set(HEADERS
     sseq_index.h
 
     sframe.h
+    SCE.h 
     SCSGOptiX.h 
 
     SPMT.h 
@@ -392,8 +393,22 @@ set(HEADERS
 
     SOpticksResource.hh
 
+    SCMD.h
+
     SGLM.h
+    SGLM_Arcball.h
+
     SGLFW.h
+    SGLFW_Extras.h
+    SGLFW_Program.h
+    SGLFW_Mesh.h
+    SGLFW_CUDA.h
+    SGLFW_Scene.h
+
+    SCUDA_Mesh.h 
+
+    gleq.h
+
     SDir.h
     SRG.h
     SCAM.h
@@ -421,6 +436,8 @@ set(HEADERS
     OpticksGenstep.h
     OpticksPhoton.h
     OpticksPhoton.hh
+
+    CUDA_CHECK.h
     SU.hh
     SComponent_OLD.hh 
     SComp.h 

@@ -24,13 +24,13 @@ const int LVID = ssys::getenvint("LVID", 4);
 struct Dummy
 {
     static std::string Dig(int nidx); 
-    static int Boolean(int lvid, int it); 
+    static sn* Boolean(int lvid, int it); 
     static int LV(int nidx); 
     static int NumChild(int nidx); 
     static const Tran<double>* Transform(int it); 
     static const Tran<double>* Product( const std::vector<int>& its); 
     static const Tran<double>* Expected(int ie); 
-    static int Solid(int lvid); 
+    static sn* Solid(int lvid); 
     static const char* SolidName(int lvid); 
     static constexpr const int NUM_LVID = 5 ; 
 };
@@ -42,16 +42,16 @@ inline std::string Dummy::Dig(int nidx)
     std::string str = ss.str(); 
     return str ; 
 }
-inline int Dummy::Boolean(int lvid, int it)
+inline sn* Dummy::Boolean(int lvid, int it)
 {
-    int root = -1 ; 
+    sn* root = nullptr ; 
     if( lvid == 4 )
     {
-        int l = snd::Sphere(100.) ; 
-        int r = snd::Box3(100.) ;         
+        sn* l = sn::Sphere(100.) ; 
+        sn* r = sn::Box3(100.) ;         
         const Tran<double>* tv = Transform(it) ;  
-        snd::SetNodeXForm(r, tv->t, tv->v );  
-        root = snd::Boolean(CSG_UNION, l, r);   
+        r->setXF(tv->t, tv->v );  
+        root = sn::Boolean(CSG_UNION, l, r);   
     }
     return root ; 
 }
@@ -118,15 +118,15 @@ inline const Tran<double>* Dummy::Expected(int ie)
     if( ie == 1 ) its.push_back(100) ; 
     return Product(its) ; 
 }
-inline int Dummy::Solid(int lvid)
+inline sn* Dummy::Solid(int lvid)
 {
-    int root = -1 ; 
+    sn* root = nullptr ; 
     switch(lvid)
     {
-        case  0:  root = snd::Sphere(100.)                ; break ; 
-        case  1:  root = snd::Box3(100.)                  ; break ; 
-        case  2:  root = snd::Cylinder(100., -10., 10. )  ; break ; 
-        case  3:  root = snd::Box3(100.);                 ; break ; 
+        case  0:  root = sn::Sphere(100.)                ; break ; 
+        case  1:  root = sn::Box3(100.)                  ; break ; 
+        case  2:  root = sn::Cylinder(100., -10., 10. )  ; break ; 
+        case  3:  root = sn::Box3(100.);                 ; break ; 
         case  4:  root = Dummy::Boolean(lvid, 100)        ; break ;   
     }
     return root ; 
@@ -176,9 +176,9 @@ inline void stree_create::initSolid(int lvid )
 {
     assert( int(st->solids.size()) == lvid );
 
-    int root = Dummy::Solid(lvid);
-    assert( root > -1 );
-    snd::SetLVID(root, lvid );
+    sn* root = Dummy::Solid(lvid);
+    assert( root != nullptr );
+    root->set_lvid(lvid) ;  
 
     const char* name = Dummy::SolidName(lvid) ; 
 
@@ -247,12 +247,11 @@ inline int stree_create::initNodes_r( int depth, int sibdex, int parent  )
 
 void test_get_combined_transform( const stree& st, int lvid )
 {
-
     std::vector<snode> nodes ; 
     st.find_lvid_nodes_(nodes, lvid); 
 
-    std::vector<snd> nds ; 
-    snd::GetLVID(nds, lvid);  
+    std::vector<sn*> nds ; 
+    sn::GetLVNodes(nds, lvid);  
 
     int num_nodes = nodes.size() ; 
     int num_nds = nds.size(); 
@@ -267,7 +266,7 @@ void test_get_combined_transform( const stree& st, int lvid )
         ;  
 
     std::cout << "nodes(vols)" << std::endl << snode::Brief_(nodes) ; 
-    std::cout << "nds(csg)" << std::endl << snd::Brief_(nds) ; 
+    std::cout << "nds(csg)" << std::endl << sn::Brief(nds) ; 
 
     assert( num_nodes == 1 ); 
     assert( num_nds == 3 ); 
@@ -278,7 +277,7 @@ void test_get_combined_transform( const stree& st, int lvid )
     std::stringstream ss ; 
     for(int i=0 ; i < num_nds ; i++)
     {
-        const snd& nd = nds[i]; 
+        const sn* nd = nds[i]; 
         Tran<double>* tv = Tran<double>::make_identity_(); 
 
         const Tran<double>* ex = Dummy::Expected(i); 
@@ -288,7 +287,7 @@ void test_get_combined_transform( const stree& st, int lvid )
            ; 
 
         std::ostream* out = VERBOSE ? &ss : nullptr ; 
-        st.get_combined_transform(tv->t, tv->v, node, &nd, out );
+        st.get_combined_transform(tv->t, tv->v, node, nd, out );
 
         ss  << " tv " 
             << std::endl

@@ -49,7 +49,8 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
-    a = t.test_dot_pol_cross_mom_nrm     
+   
+    a = getattr(t,"dot_pol_cross_mom_nrm", None)     
     if not a is None:
        test_dot_pol_cross_mom_nrm(a)
     pass 

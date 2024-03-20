@@ -7,19 +7,17 @@ CU.h : UploadArray/DownloadArray/UploadVec/DownloadVec
 
 ::
 
-    epsilon:CSG blyth$ opticks-f CU.h 
-    ./CSGOptiX/SBT.cc:#include "CU.h"
-    ./CSG/CMakeLists.txt:    CU.h
-    ./CSG/CSGPrimSpec.cc:#include "CU.h"
-    ./CSG/tests/CSGPrimImpTest.cc:#include "CU.h"
-    ./CSG/tests/CUTest.cc:#include "CU.h"
-    ./CSG/CU.cc:#include "CU.h"
-    ./CSG/CSGFoundry.cc:#include "CU.h"
-
-
+    epsilon:CSG blyth$ opticks-fl CU.h
+    ./CSGOptiX/SBT.cc
+    ./CSG/CMakeLists.txt
+    ./CSG/CU.h
+    ./CSG/CSGPrimSpec.cc
+    ./CSG/tests/CSGPrimImpTest.cc
+    ./CSG/tests/CUTest.cc
+    ./CSG/CU.cc
+    ./CSG/CSGFoundry.cc
 
 **/
-
 
 #ifdef WITH_SLOG
 #include "plog/Severity.h"

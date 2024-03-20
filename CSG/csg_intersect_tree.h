@@ -639,11 +639,6 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
     printf("//intersect_prim typecode %d name %s \n", typecode, CSG::Name(typecode) ); 
 #endif
 
-#ifdef DEBUG_SIX
-#if OPTIX_VERSION < 70000 
-    rtPrintf("// DEBUG_SIX intersect_prim  typecode %d  \n", typecode );  
-#endif
-#endif
     bool valid_intersect = false ; 
     if( typecode >= CSG_LEAF )
     {

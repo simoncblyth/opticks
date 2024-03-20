@@ -6,6 +6,7 @@
 
 #include <thrust/device_ptr.h>
 #include <thrust/copy.h>
+#include <thrust/count.h>
 
 
 template<typename T>

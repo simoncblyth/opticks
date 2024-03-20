@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cassert>
+#include <algorithm>
 
 struct sstr
 {
@@ -34,8 +35,14 @@ struct sstr
 
     static std::string StripTail(const std::string& name, const char* end="0x"); 
     static std::string StripTail(const char* name, const char* end="0x"); 
+    static void        StripTail(       std::vector<std::string>& dst, const std::vector<std::string>& src, const char* end="0x");  
+    static void        StripTail_Unique(std::vector<std::string>& dst, const std::vector<std::string>& src, const char* end="0x");  
+    static std::string DescKeySrc(const std::vector<std::string>& key, const std::vector<std::string>& src ); 
+
     static std::string RemoveSpaces(const char* s);  
     static std::string Replace(const char* s, char q, char r); 
+
+
 
     static const char* ReplaceChars(const char* str, const char* repl, char to ); 
     static std::string ReplaceEnd_( const char* s, const char* q, const char* r  ); 
@@ -225,6 +232,86 @@ inline std::string sstr::StripTail(const char* name_, const char* end)  // stati
     std::string name(name_); 
     return StripTail(name, end) ; 
 }
+
+inline void sstr::StripTail(std::vector<std::string>& dst, const std::vector<std::string>& src, const char* end)  // static 
+{
+    int num_src = src.size(); 
+    for(int i=0 ; i < num_src ; i++ )
+    {
+        const std::string&  _src = src[i] ;
+        std::string _dst = StripTail(_src, end); 
+        dst.push_back(_dst) ;   
+    }
+}
+
+/**
+sstr::StripTail_Unique
+-----------------------
+
+When the stripped name is unique amoungst all 
+the stripped names use it as the key otherwise 
+try different numbered suffix _0 _1 _2 _3 until 
+a unique key amoungst the keys is found.
+
+**/
+
+inline void sstr::StripTail_Unique( std::vector<std::string>& keys, const std::vector<std::string>& src, const char* end )
+{
+    std::vector<std::string> stripped ; 
+    StripTail( stripped, src, end ); 
+
+    int num_src = src.size(); 
+    int num_stripped = stripped.size(); 
+    assert( num_src == num_stripped ); 
+
+    for(int i=0 ; i < num_src ; i++)
+    {
+        const char* cand0 = stripped[i].c_str(); 
+        int count0 = std::count( stripped.begin(), stripped.end(), cand0 ); 
+        assert( count0 >= 1 ); 
+        if( count0 == 1 )
+        {
+            keys.push_back(cand0);  
+        }
+        else
+        {
+            for(int j=0 ; j < 1000000 ; j++ )
+            {
+                std::string cand = Format_("%s_%d", cand0, j ); 
+                int count_key = std::count( keys.begin(), keys.end(), cand.c_str() ); 
+                assert( count_key == 0 || count_key == 1 ); 
+                if( count_key == 0 ) 
+                {
+                    keys.push_back(cand); 
+                    break ; 
+                }
+            }
+        }
+    }
+}
+
+inline std::string sstr::DescKeySrc(const std::vector<std::string>& key, const std::vector<std::string>& src )
+{
+    std::stringstream ss ;  
+    ss << "sstr::DescKeySrc" << std::endl ; 
+    int num_src = src.size(); 
+    int num_key = key.size(); 
+    assert( num_src == num_key );  
+
+    for(int i=0 ; i < num_src ; i++)
+    {
+        ss << std::setw(4) << i 
+           << " : "
+           << std::setw(50) << src[i]
+           << " : "
+           << std::setw(50) << key[i]
+           << std::endl 
+           ;
+    }
+    std::string str = ss.str(); 
+    return str ;
+}
+
 
 inline std::string sstr::RemoveSpaces(const char* s) // static
 {

@@ -36,6 +36,10 @@ GLEW has been tested on a variety of operating systems, including Windows,
 Linux, Mac OS X, FreeBSD, Irix, and Solaris.
 
 
+The ROOT distrib includes libGLEW.so that can cause issues
+-------------------------------------------------------------
+
+
 With glew 1.13.0 glew-cmake fails, so are using the Makefile 
 ----------------------------------------------------------------
 

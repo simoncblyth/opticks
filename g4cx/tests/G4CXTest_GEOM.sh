@@ -45,6 +45,13 @@ storch::generate is used for both GPU and CPU generation
   SGenerate::GeneratePhotons
   storch::generate    
 
+
+For faster sseq index comparison see the C++ impl
+-----------------------------------------------------
+
+*  ~/opticks/sysrap/tests/sseq_index_test.sh
+
+
 EOU
 }
 

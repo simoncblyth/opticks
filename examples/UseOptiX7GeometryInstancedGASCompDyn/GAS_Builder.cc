@@ -84,7 +84,7 @@ BI GAS_Builder::MakeCustomPrimitivesBI(const Shape* sh, unsigned i )
                             aabb, 6*sizeof(float),
                             cudaMemcpyHostToDevice ));
 
-    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.aabbArray ;  
+    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.customPrimitiveArray ;  
     buildInputCPA.aabbBuffers = &bi.d_aabb ;  
     buildInputCPA.numPrimitives = 1 ;   
     buildInputCPA.numSbtRecords = bi.num_sbt_records ;  

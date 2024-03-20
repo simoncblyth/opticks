@@ -5,7 +5,7 @@ stree_create_test.sh
 
 ::
 
-   ./stree_create_test.sh  
+   ~/o/sysrap/tests/stree_create_test.sh  
 
 build
     standalone compile 
@@ -18,6 +18,8 @@ ana
 EOU
 }
 
+cd $(dirname $(realpath $BASH_SOURCE))
+
 defarg="build_run_ana"
 arg=${1:-$defarg}
 
@@ -26,13 +28,22 @@ name=stree_create_test
 export FOLD=/tmp/$name
 bin=$FOLD/$name
 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
 
 if [ "${arg/build}" != "$arg" ]; then 
     mkdir -p $FOLD
-    gcc $name.cc ../snd.cc ../scsg.cc \
+    gcc $name.cc \
+          ../sn.cc \
+          ../s_bb.cc \
+          ../s_pa.cc \
+          ../s_tv.cc \
+          ../s_csg.cc \
           -std=c++11 -lstdc++ \
           -I.. \
-          -I/usr/local/cuda/include \
+          -DWITH_CHILD \
+          -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -o $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 

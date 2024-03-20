@@ -34,6 +34,9 @@ struct SYSRAP_API SProf
 
     static void Add(const char* name); 
     static void Add( const char* name, const sprof& prof); 
+    static int32_t Delta_RS();  // RS difference of last two stamps, or -1 when do not have more that one stamp 
+    static int32_t Range_RS();  // RS range between first and last stamps  
+
     static void Clear(); 
 
     static std::string Serialize() ; 
@@ -82,6 +85,28 @@ inline void SProf::Add( const char* _name, const sprof& prof)
     NAME.push_back(name); 
     PROF.push_back(prof); 
 }
+
+
+inline int32_t SProf::Delta_RS()
+{
+    int num_prof = PROF.size(); 
+    const sprof* p1 = num_prof > 0 ? &PROF.back() : nullptr ; 
+    const sprof* p0 = num_prof > 1 ? p1 - 1 : nullptr ; 
+    return p0 && p1 ? sprof::Delta_RS(p0, p1) : -1  ; 
+}
+
+inline int32_t SProf::Range_RS()
+{
+    int num_prof = PROF.size(); 
+    const sprof* p0 = num_prof > 0 ? PROF.data() : nullptr ; 
+    const sprof* p1 = num_prof > 0 ? PROF.data() + num_prof - 1 : nullptr ; 
+    return p0 && p1 ? sprof::Delta_RS(p0, p1) : -1  ; 
+}
+
+
+
+
+
 
 inline void SProf::Clear()
 {

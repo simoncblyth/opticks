@@ -31,20 +31,20 @@ void GAS::init()
                 cudaMemcpyHostToDevice
                 ) );
 
-    OptixBuildInput aabb_input = {};
+    OptixBuildInput buildInput = {};
 
-    aabb_input.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-    aabb_input.aabbArray.aabbBuffers   = &d_aabb_buffer;
-    aabb_input.aabbArray.numPrimitives = 1;
+    buildInput.type                    = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
+    buildInput.customPrimitiveArray.aabbBuffers   = &d_aabb_buffer;
+    buildInput.customPrimitiveArray.numPrimitives = 1;
     // only one as no motion 
 
     uint32_t aabb_input_flags[1]       = {OPTIX_GEOMETRY_FLAG_NONE};
-    aabb_input.aabbArray.flags         = aabb_input_flags;
-    aabb_input.aabbArray.numSbtRecords = 1;
+    buildInput.customPrimitiveArray.flags         = aabb_input_flags;
+    buildInput.customPrimitiveArray.numSbtRecords = 1;
 
 
     OptixAccelBufferSizes gas_buffer_sizes;
-    OPTIX_CHECK( optixAccelComputeMemoryUsage( Engine::context, &accel_options, &aabb_input, 1, &gas_buffer_sizes ) );
+    OPTIX_CHECK( optixAccelComputeMemoryUsage( Engine::context, &accel_options, &buildInput, 1, &gas_buffer_sizes ) );
     CUdeviceptr d_temp_buffer_gas;
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_temp_buffer_gas ), gas_buffer_sizes.tempSizeInBytes ) );
 
@@ -63,7 +63,7 @@ void GAS::init()
     OPTIX_CHECK( optixAccelBuild( Engine::context,
                                   0,                  // CUDA stream
                                   &accel_options,
-                                  &aabb_input,
+                                  &buildInput,
                                   1,                  // num build inputs
                                   d_temp_buffer_gas,
                                   gas_buffer_sizes.tempSizeInBytes,

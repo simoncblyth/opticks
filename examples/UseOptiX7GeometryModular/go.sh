@@ -19,8 +19,8 @@
 ##
 
 
-opticks-
-optix-prefix(){ echo $(opticks-prefix)/externals/OptiX_700 ; }
+
+optix-prefix(){ echo ${OPTICKS_OPTIX_PREFIX} ; }
 [ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
 
 
@@ -28,7 +28,8 @@ sdir=$(pwd)
 name=$(basename $sdir)
 
 
-prefix=/tmp/$USER/opticks/$name
+#prefix=/tmp/$USER/opticks/$name
+prefix=/tmp/$USER/opticks/examples # try to avoid getting glm for every example
 
 export PREFIX=$prefix
 export PATH=$PREFIX/bin:$PATH

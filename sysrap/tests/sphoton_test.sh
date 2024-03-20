@@ -1,12 +1,18 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
 sphoton_test.sh 
-==================
+===============
+
+::
+
+   ~/o/sysrap/tests/sphoton_test.sh
+   TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh
 
 EOU
 }
 
-REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd )
+cd $(dirname $(realpath $BASH_SOURCE))
+
 name=sphoton_test 
 
 defarg="info_build_run_ana"
@@ -15,8 +21,16 @@ arg=${1:-$defarg}
 export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name 
+script=$name.py 
 
-vars="BASH_SOURCE REALDIR FOLD name bin"
+vars="BASH_SOURCE PWD FOLD CUDA_PREFIX name bin script TEST"
+
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
+test=make_record_array
+TEST=${TEST:-$test}
+export TEST
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
@@ -25,7 +39,7 @@ fi
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $name.cc -std=c++11 -lstdc++ -lm -lcrypto -lssl \
            -I.. \
-           -I/usr/local/cuda/include \
+           -I$CUDA_PREFIX/include \
            -I$OPTICKS_PREFIX/externals/glm/glm \
            -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
@@ -37,11 +51,9 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/$name.py 
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
 
-
 exit 0 
-
 

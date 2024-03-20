@@ -399,11 +399,12 @@ NP* QMultiFilm::mock_lookup( NP * input_arr )
 }
 
 
-void* QMultiFilm::mock_lookup( quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height ){
+void QMultiFilm::mock_lookup( quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height ){
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 
     configureLaunch( numBlocks, threadsPerBlock, width, height ); 
 
     QMultiFilm_mock_lookup(numBlocks, threadsPerBlock, d_multifilm, d_input, d_out, num_lookup, width, height);  
+
 }

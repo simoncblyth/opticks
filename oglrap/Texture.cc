@@ -34,8 +34,19 @@
 
 
 /*
+
+       (vtx)  [tex]
    "1" (-1,1) [0,1]          "0" (1,1) [1,1]
+        +-------------------+
+        |                   |
+        | 0-1-2:CCW  .      |
+        |       .           |
+        |                   |
+        |  .   2-3-0:CCW    |
+        |                   |
+        +-------------------+
    "2" (-1,-1) [0,0]         "3" (1,-1) [1,0]
+
 */
 
 const float Texture::pvertex[] = {  
@@ -188,6 +199,9 @@ void Texture::create()
 
 
     glTexImage2D(target, level, internalFormat, m_width, m_height, border, format, type, data );
+
+    // upload image data into the texture 
+
 }
 
 
