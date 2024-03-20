@@ -26,13 +26,16 @@ bin=$name          ## installed binary built by om
 script=$SDIR/sseq_index_test.py 
 
 
-executable=G4CXTest 
+executable=jok-tds 
 #executable=CSGOptiXSMTest
 export EXECUTABLE=${EXECUTABLE:-$executable}
-version=99
+version=0
 export VERSION=${VERSION:-$version}
-export BASE=$TMP/GEOM/$GEOM
-export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
+#export BASE=$TMP/GEOM/$GEOM
+export BASE=/data/ihep/
+#export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
+export LOGDIR=$BASE/ALL$VERSION
+
 export AFOLD=$LOGDIR/A000 
 export BFOLD=$LOGDIR/B000 
 

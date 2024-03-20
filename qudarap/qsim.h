@@ -118,7 +118,7 @@ struct qsim
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) 
-    QSIM_METHOD int     propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
+    QSIM_METHOD int     propagate_at_surface_MultiFilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx );
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
@@ -1505,7 +1505,7 @@ transmit
 
 
 /*
-qsim::propagate_at_multifilm
+qsim::propagate_at_surface_MultiFilm
 -------------------------------
 
 based on https://juno.ihep.ac.cn/trac/browser/offline/trunk/Simulation/DetSimV2/PMTSim/src/junoPMTOpticalModel.cc 
@@ -1524,7 +1524,7 @@ TODO:
 */
 
 #if defined(__CUDACC__) || defined(__CUDABE__) 
-inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
+inline QSIM_METHOD int qsim::propagate_at_surface_MultiFilm(unsigned& flag, curandStateXORWOW& rng, sctx& ctx )
 { 
    
 	const float one = 1.0f; 
@@ -1587,7 +1587,7 @@ inline QSIM_METHOD int qsim::propagate_at_multifilm(unsigned& flag, curandStateX
         propagate_at_boundary( flag, rng, ctx, theTransmittance  );  
     } 
     
-    //printf("//qsim.propagate_at_multifilm idx %d lpmtid %d ART ( %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n", 
+    //printf("//qsim.propagate_at_surface_MultiFilm idx %d lpmtid %d ART ( %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n", 
     //ctx.idx, lpmtid, ART.x, ART.y, ART.z, u_theAbsorption, action);   
 
     return action ; 
@@ -2211,8 +2211,7 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, curandStateXORWOW& rng,
         else if( ems == smatsur_Surface_zplus_sensor_CustomART )
         {
 #if defined(WITH_CUSTOM4)
-            command = base->custom_lut == 0u ? propagate_at_surface_CustomART( flag, rng, ctx ) : propagate_at_multifilm(flag, rng, ctx );
-            //command = propagate_at_multifilm(flag, rng, ctx );
+            command = base->custom_lut == 0u ? propagate_at_surface_CustomART( flag, rng, ctx ) : propagate_at_surface_MultiFilm(flag, rng, ctx );
 
 #endif
         }

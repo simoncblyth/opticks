@@ -18,11 +18,11 @@ import matplotlib.pyplot as plt
 import matplotlib.cm  as cm
 import matplotlib as mpl
 class QMultiFilmTest(object):
-    BASE = os.path.expandvars("/tmp/$USER/opticks/QMultiFilmTest") 
+    BASE = os.path.expandvars("${TMP}/QMultiFilmTest") 
     def __init__(self):
         mpl.rcParams['font.size'] = 15
-        path = os.path.join(self.BASE,"src.npy")
-        self.src = np.load(path)
+        #path = os.path.join(self.BASE,"src.npy")
+        #self.src = np.load(path)
         pass
     def test_all_lookup(self):
         src = self.src
@@ -95,7 +95,15 @@ class QMultiFilmTest(object):
         ax.spines['top'].set_linewidth(1.5)
         ax.spines['left'].set_linewidth(1.5)
         ax.spines['right'].set_linewidth(1.5)
-        
+        plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+    
+        fig_dir = "fig"
+        if not os.path.exists(fig_dir):
+            os.makedirs(fig_dir)
+        pdf_name = "{}/wv_128_aoi_256_interp.pdf".format(fig_dir)
+        plt.savefig("{}".format(pdf_name))
+        print("save as {}".format(pdf_name))
+
         plt.show()
 
 
@@ -122,6 +130,12 @@ class QMultiFilmTest(object):
         ax.spines['left'].set_linewidth(1.5)
         ax.spines['right'].set_linewidth(1.5)
         
+        fig_dir = "fig"
+        if not os.path.exists(fig_dir):
+            os.makedirs(fig_dir)
+        pdf_name = "{}/wv_128_aoi_256_difference_distribution.pdf".format(fig_dir)
+        plt.savefig("{}".format(pdf_name))
+        print("save as {}".format(pdf_name))
         plt.show()
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)

@@ -17,7 +17,7 @@ void test_check(QMultiFilm& sc)
 void test_mock_lookup(QMultiFilm& sc){
 
 
-    const char* input_path = "/tmp/debug_multi_film_table/test_texture.npy";
+    const char* input_path = "/data/ihep/tmp/debug_multi_film_table/GPUTestArray/test_texture.npy";
     NP* input_arr = NP::LoadIfExists(input_path); 
     assert(input_arr->has_shape(128,256,2,4));
 
@@ -42,7 +42,9 @@ void test_mock_lookup(QMultiFilm& sc){
         }
     }
     std::cout<<'\n';
+    //std::cout<<"before sc.mock_lookup" << '\n';
     NP* res = sc.mock_lookup(input_arr);
+    //std::cout<<"after sc.mock_lookup" << '\n';
 
     float4* res4 = (float4*)res->values<float>();
     for(int i = 0 ; i<num_item ; i++){
