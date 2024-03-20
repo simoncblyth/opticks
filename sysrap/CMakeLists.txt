@@ -438,6 +438,8 @@ set(HEADERS
     OpticksPhoton.hh
 
     CUDA_CHECK.h
+    OPTIX_CHECK.h
+
     SU.hh
     SComponent_OLD.hh 
     SComp.h 

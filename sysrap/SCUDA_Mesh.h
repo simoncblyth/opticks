@@ -7,15 +7,20 @@ Try following the pattern of SGLFW_Mesh.h
 
 **/
 
-struct NP ; 
-struct SMesh ; 
+#include "SMesh.h"
+#include "SCU.h"
 
 struct SCUDA_Mesh
 {
-    const SMesh*   mesh ;  
+    static constexpr const int INST_ELEM = 4*4 ; 
 
+    const SMesh*   mesh ;  
     int           inst_num ; 
     const float*  inst_values ; 
+
+    SCU_Buf<float> vtx = {} ;
+    SCU_Buf<int>   idx = {} ;  
+    SCU_Buf<float> ins = {} ; 
 
     SCUDA_Mesh(const SMesh* mesh ) ; 
     void init(); 
@@ -24,26 +29,25 @@ struct SCUDA_Mesh
     void set_inst(int _inst_num, const float* _inst_values );
     bool has_inst() const ;
 
-    std::string descInst() const ; 
     std::string desc() const ; 
+    std::string descMembers() const ; 
+    std::string descInst() const ; 
 }; 
 
 inline SCUDA_Mesh::SCUDA_Mesh(const SMesh* _mesh )
     :
     mesh(_mesh),
     inst_num(0),    
-    inst_values(nullptr)   
+    inst_values(nullptr)  
 {
     init(); 
 }
 
 inline void SCUDA_Mesh::init()
 {
-    // upload vtx tri 
-
+    vtx = SCU::UploadBuf<float>( mesh->vtx->cvalues<float>(),   mesh->vtx->num_values(), "vtx" );  
+    idx = SCU::UploadBuf<int>(   mesh->tri->cvalues<int>(),     mesh->tri->num_values(), "idx" );
 }
-
-
 
 inline void SCUDA_Mesh::set_inst(const NP* _inst )
 {
@@ -58,15 +62,7 @@ inline void SCUDA_Mesh::set_inst(int _inst_num, const float* _inst_values )
 {
     inst_num = _inst_num ; 
     inst_values = _inst_values ; 
-
-    int itemsize = 4*4*sizeof(float) ; 
-    int num_bytes = inst_num*itemsize ;
-
-    ins = new SCUDA_Buffer( num_bytes, inst_values ); 
-    ins->bind();
-    ins->upload(); 
-
-
+    ins = SCU::UploadBuf<float>( inst_values, inst_num*INST_ELEM, "ins" ); 
 }
 
 inline bool SCUDA_Mesh::has_inst() const
@@ -78,7 +74,22 @@ inline bool SCUDA_Mesh::has_inst() const
 inline std::string SCUDA_Mesh::desc() const
 {
     std::stringstream ss ; 
+    ss << descMembers() ; 
     ss << descInst() ; 
+    std::string str = ss.str() ; 
+    return str ; 
+}
+inline std::string SCUDA_Mesh::descMembers() const
+{
+    std::stringstream ss ; 
+    ss << "[ SCUDA_Mesh::descMembers " << std::endl ; 
+    ss 
+        << vtx.desc() 
+        << idx.desc() 
+        << ins.desc()
+        << std::endl
+        ;
+    ss << "] SCUDA_Mesh::descMembers " << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
 }
