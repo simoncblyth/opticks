@@ -8,12 +8,13 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=UseShaderSGLFW_SScene
+name=UseShaderSGLFW_SScene_encapsulated
 bin=$(which $name)
 
-mesh_fold=/tmp/U4Mesh_test
+scene_fold=/tmp/SScene_test
 
-wh=1024,768
+#wh=1024,768
+wh=2048,1536
 
 #eye=0.1,0,-10
 #eye=-1,-1,0
@@ -32,7 +33,7 @@ tmin=0.1
 escale=extent
 
 
-export MESH_FOLD=${MESH_FOLD:-$mesh_fold}
+export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 export SHADER_FOLD=gl
 export WH=${WH:-$wh}
 export EYE=${EYE:-$eye}

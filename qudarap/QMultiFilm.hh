@@ -63,7 +63,7 @@ struct QUDARAP_API QMultiFilm
     QTex<float4> ** choose_tex(int pmtcatIdx);
 
     NP* mock_lookup(NP* input_arr);
-    void * mock_lookup(quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height);
+    void mock_lookup(quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height);
 };
 
 
