@@ -18,7 +18,12 @@ bin=/tmp/$name
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-gcc $name.cc -std=c++11 -lstdc++ -I$CUDA_PREFIX/include -I.. -o $bin
+gcc $name.cc \
+     -std=c++11 -lstdc++ -g \
+     -I$CUDA_PREFIX/include \
+     -I.. \
+     -L$CUDA_PREFIX/lib -lcudart \
+     -o $bin
 [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
 
 $bin 

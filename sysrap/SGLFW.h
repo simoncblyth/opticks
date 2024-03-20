@@ -42,6 +42,7 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 #include "SGLFW_CUDA.h"
 #endif
 
+
 struct SGLFW : public SCMD 
 {
     static constexpr const char* TITLE = "SGLFW" ; 

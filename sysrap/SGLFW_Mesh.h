@@ -4,11 +4,11 @@ struct NP ;
 struct SMesh ; 
 struct SGLFW_Program ; 
 
-
 /**
 SGLFW_Mesh (in a former incarnation this was SGLFW_Render)
 ============================================================
 
+Canonical use is from SGLFW_Scene::initMesh
 
 **/
 struct SGLFW_Mesh
@@ -27,6 +27,8 @@ struct SGLFW_Mesh
     int           render_count ; 
 
     SGLFW_Mesh(const SMesh* mesh ) ; 
+    void init(); 
+
     void set_inst(const NP* _inst );
     void set_inst(int _inst_num, const float* _inst_values );
     bool has_inst() const ;
@@ -50,6 +52,11 @@ inline SGLFW_Mesh::SGLFW_Mesh(const SMesh* _mesh )
     inst_values(nullptr),    
     render_count(0)
 {
+    init(); 
+}
+
+inline void SGLFW_Mesh::init()
+{
     vtx = new SGLFW_Buffer( mesh->vtx->arr_bytes(), mesh->vtx->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW ); 
     vtx->bind();
     vtx->upload(); 
@@ -58,7 +65,7 @@ inline SGLFW_Mesh::SGLFW_Mesh(const SMesh* _mesh )
     nrm->bind();
     nrm->upload(); 
 
-    vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not vbuf,nbuf)
+    vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not GL_ARRAY_BUFFER)
     vao->bind(); 
 
     idx = new SGLFW_Buffer( mesh->tri->arr_bytes(), mesh->tri->cvalues<int>()  , GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
@@ -106,6 +113,7 @@ inline std::string SGLFW_Mesh::descInst() const
     std::stringstream ss ; 
     ss << "[SGLFW_Mesh::descInst inst_num " << inst_num << std::endl ; 
     ss << stra<float>::DescItems( inst_values, 16, inst_num, edge_items ); 
+    ss << "]SGLFW_Mesh::descInst inst_num " << inst_num << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
 }

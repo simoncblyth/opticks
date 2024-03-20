@@ -403,6 +403,10 @@ set(HEADERS
     SGLFW_Program.h
     SGLFW_Mesh.h
     SGLFW_CUDA.h
+    SGLFW_Scene.h
+
+    SCUDA_Mesh.h 
+
     gleq.h
 
     SDir.h
