@@ -202,8 +202,10 @@ inline void SScene::initFromTree_Instance(const stree* st)
 inline std::string SScene::desc() const 
 {
     std::stringstream ss ; 
+    ss << "[ SScene::desc \n" ; 
     ss << descSize() ; 
     ss << descInstInfo() ; 
+    ss << "] SScene::desc \n" ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -225,7 +227,8 @@ inline std::string SScene::descInstInfo() const
 {
     std::stringstream ss ;
     ss << "[SScene::descInstInfo {ridx, inst_count, inst_offset, 0} " << std::endl ; 
-    int num_inst_info = inst_info.size(); 
+    int num_inst_info = inst_info.size();
+    int tot_inst = 0 ;  
     for(int i=0 ; i < num_inst_info ; i++)
     {
         const int4& info = inst_info[i] ; 
@@ -241,8 +244,9 @@ inline std::string SScene::descInstInfo() const
            << "}"
            << std::endl  
            ;
+        tot_inst += info.y ;
     }
-    ss << "]SScene::descInstInfo" << std::endl ; 
+    ss << "]SScene::descInstInfo tot_inst " << tot_inst << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -263,7 +267,6 @@ inline NPFold* SScene::serialize_mesh_grup() const
 inline void SScene::import_mesh_grup(const NPFold* _mesh_grup ) 
 {
     int num_mesh_grup = _mesh_grup ? _mesh_grup->get_num_subfold() : 0 ;
-    std::cout << "SScene::import_mesh_grup num_mesh_grup " << num_mesh_grup << std::endl ;     
     for(int i=0 ; i < num_mesh_grup ; i++)
     {
         const NPFold* sub = _mesh_grup->get_subfold(i); 

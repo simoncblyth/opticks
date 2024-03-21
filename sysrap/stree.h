@@ -574,6 +574,9 @@ struct stree
     void narrow_inst(); 
     void clear_inst(); 
     std::string desc_inst() const ;
+    std::string desc_inst_info() const ;
+    std::string desc_inst_info_check() const;
+
     const glm::tmat4x4<double>* get_inst(int idx) const ; 
     const glm::tmat4x4<double>* get_iinst(int idx) const ; 
     const glm::tmat4x4<float>*  get_inst_f4(int idx) const ; 
@@ -3191,6 +3194,10 @@ inline void stree::add_inst()
     narrow_inst(); 
 }
 
+
+
+
+
 inline void stree::narrow_inst()
 {
     strid::Narrow( inst_f4,   inst ); 
@@ -3216,6 +3223,71 @@ inline std::string stree::desc_inst() const
        ;
     std::string s = ss.str(); 
     return s ; 
+}
+
+
+inline std::string stree::desc_inst_info() const
+{
+    std::stringstream ss ;
+    ss << "[stree::desc_inst_info {ridx, inst_count, inst_offset, 0} " << std::endl ; 
+    int num_inst_info = inst_info.size(); 
+
+    int tot_inst = 0 ; 
+    for(int i=0 ; i < num_inst_info ; i++)
+    {
+        const int4& info = inst_info[i] ; 
+        ss 
+           << "{" 
+           << std::setw(3) << info.x
+           << "," 
+           << std::setw(7) << info.y
+           << "," 
+           << std::setw(7) << info.z 
+           << "," 
+           << std::setw(3) << info.w 
+           << "}"
+           << std::endl  
+           ;
+        tot_inst += info.y ; 
+    }
+    ss << "]stree::desc_inst_info tot_inst " <<  tot_inst << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline std::string stree::desc_inst_info_check() const
+{
+    int num_gas  = inst_info.size(); 
+    int num_inst = inst.size(); 
+    int tot = 0 ; 
+    int tot_count = 0 ; 
+    for(int i=0 ; i < num_gas ; i++)
+    {   
+        const int4&  _inst_info = inst_info[i] ;
+        int ridx = _inst_info.x ; 
+        int count = _inst_info.y ; 
+        int offset = _inst_info.z ; 
+
+        tot_count += count ; 
+
+        assert( ridx == i );  
+        for(int j=0 ; j < count ; j++)
+        {   
+            int idx = offset + j ; 
+            assert( idx < num_inst );  
+            assert( idx == tot );  
+            tot += 1 ; 
+        }   
+    }   
+
+    std::stringstream ss ; 
+    ss << "stree::desc_inst_info_check"
+       << " tot_count " <<  tot_count 
+       << std::endl 
+       << " tot " << tot
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 

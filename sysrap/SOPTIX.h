@@ -11,7 +11,7 @@
 #include "CUDA_CHECK.h"
 #include "OPTIX_CHECK.h"
 
-
+#include "SOPTIX_Properties.h"
 
 struct SOPTIX
 {  
@@ -21,6 +21,7 @@ struct SOPTIX
 
     const char* VERSION ; 
     OptixDeviceContext context ; 
+    SOPTIX_Properties* props ; 
 
     std::string desc() const ;
 
@@ -39,7 +40,10 @@ inline void SOPTIX::LogCB( unsigned int level, const char* tag, const char* mess
 inline std::string SOPTIX::desc() const
 {
     std::stringstream ss ; 
-    ss << "SOPTIX::desc OPTIX_VERSION " << OPTIX_VERSION ;  
+    ss << "[ SOPTIX::desc \n" ; 
+    ss << " OPTIX_VERSION " << OPTIX_VERSION << "\n" ;
+    ss << props->desc() ; 
+    ss << "] SOPTIX::desc \n" ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -47,6 +51,7 @@ inline std::string SOPTIX::desc() const
 inline SOPTIX::SOPTIX()
     :
     context(nullptr),
+    props(nullptr),
     VERSION(_xstr(OPTIX_VERSION))
 {
     init();
@@ -72,6 +77,8 @@ inline void SOPTIX::init()
     //options.validationMode = OPTIX_DEVICE_CONTEXT_VALIDATION_MODE_ALL ; 
 
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
+
+    props = new SOPTIX_Properties(context); 
 }
 
 

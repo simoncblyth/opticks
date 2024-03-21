@@ -93,6 +93,12 @@ struct stra
 
     static NP* MakeTransformedArray(const NP* a, const glm::tmat4x4<T>* t, T w=1.  , int stride=0, int offset=0 );
 
+
+    static void Copy_Columns_3x4( T* dst, const T* src ); 
+    static void Copy_Columns_3x4( T* dst, const glm::tmat4x4<T>& tr ); 
+    static void Copy_Columns_3x4( glm::tmat4x4<T>& dst, const glm::tmat4x4<T>& src );
+
+
 }; 
 
 
@@ -365,6 +371,8 @@ Another very long discussion of rotation matrices by Rebecca Brannon:
 
 * https://my.mech.utah.edu/~brannon/public/rotation.pdf
 * ~/opticks_refs/utah_brannon_opus_rotation.pdf
+
+TODO: compare with Quaternions 
 
 **/
 
@@ -781,6 +789,62 @@ inline NP* stra<T>::MakeTransformedArray(const NP* a, const glm::tmat4x4<T>* t, 
     return b ; 
 }
  
+
+/**
+stra::Copy_Columns_3x4
+-----------------------
+
+* After sqat4.h qat4::copy_columns_3x4
+
+* Suitable for filling optixInstance transforms 
+
+* Assumes standard OpenGL memory layout of the 16 elements of source
+  with translation in slots 12,13,14:: 
+
+     . 0  1  2  3
+       4  5  6  7 
+       8  9 10 11
+     [12 13 14]15     tx ty tz     
+
+dst::
+
+     . 0  4  8  -
+       1  5  9  -
+       2  6 10  -
+       3  7 11  -
+
+**/
+
+template<typename T>
+inline void stra<T>::Copy_Columns_3x4( T* dst, const T* src ) // static
+{
+    dst[0] = src[0] ; 
+    dst[1] = src[4] ; 
+    dst[2] = src[8] ; 
+    dst[3] = src[12] ; 
+
+    dst[4] = src[1] ; 
+    dst[5] = src[5] ; 
+    dst[6] = src[9] ; 
+    dst[7] = src[13] ; 
+
+    dst[8]  = src[2] ;
+    dst[9]  = src[6] ;
+    dst[10] = src[10] ;
+    dst[11] = src[14] ;
+}
+
+template<typename T>
+inline void stra<T>::Copy_Columns_3x4( T* dst, const glm::tmat4x4<T>& src )
+{
+    Copy_Columns_3x4( dst, glm::value_ptr(src) ); 
+} 
+
+template<typename T>
+inline void stra<T>::Copy_Columns_3x4( glm::tmat4x4<T>& dst, const glm::tmat4x4<T>& src )
+{
+    Copy_Columns_3x4( glm::value_ptr(dst), glm::value_ptr(src) ); 
+} 
 
 
 
