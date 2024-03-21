@@ -15,14 +15,13 @@ struct SCUDA_Mesh
     static constexpr const int INST_ELEM = 4*4 ; 
 
     const SMesh*   mesh ;  
-    int           inst_num ; 
-    const float*  inst_values ; 
 
     SCU_Buf<float> vtx = {} ;
     SCU_Buf<int>   idx = {} ;  
     SCU_Buf<float> ins = {} ; 
 
-    SCUDA_Mesh(const SMesh* mesh ) ; 
+
+    SCUDA_Mesh(const SMesh* _mesh ) ; 
     void init(); 
  
     void set_inst(const NP* _inst );
@@ -31,14 +30,11 @@ struct SCUDA_Mesh
 
     std::string desc() const ; 
     std::string descMembers() const ; 
-    std::string descInst() const ; 
 }; 
 
 inline SCUDA_Mesh::SCUDA_Mesh(const SMesh* _mesh )
     :
-    mesh(_mesh),
-    inst_num(0),    
-    inst_values(nullptr)  
+    mesh(_mesh)
 {
     init(); 
 }
@@ -60,14 +56,12 @@ inline void SCUDA_Mesh::set_inst(const NP* _inst )
 
 inline void SCUDA_Mesh::set_inst(int _inst_num, const float* _inst_values )
 {
-    inst_num = _inst_num ; 
-    inst_values = _inst_values ; 
-    ins = SCU::UploadBuf<float>( inst_values, inst_num*INST_ELEM, "ins" ); 
+    ins = SCU::UploadBuf<float>( _inst_values, _inst_num*INST_ELEM, "ins" ); 
 }
 
 inline bool SCUDA_Mesh::has_inst() const
 {
-    return inst_num > 0 && inst_values != nullptr ; 
+    return ins.ptr != nullptr ; 
 }
 
 
@@ -75,7 +69,6 @@ inline std::string SCUDA_Mesh::desc() const
 {
     std::stringstream ss ; 
     ss << descMembers() ; 
-    ss << descInst() ; 
     std::string str = ss.str() ; 
     return str ; 
 }
@@ -85,7 +78,9 @@ inline std::string SCUDA_Mesh::descMembers() const
     ss << "[ SCUDA_Mesh::descMembers " << std::endl ; 
     ss 
         << vtx.desc() 
+        << std::endl
         << idx.desc() 
+        << std::endl
         << ins.desc()
         << std::endl
         ;
@@ -93,14 +88,5 @@ inline std::string SCUDA_Mesh::descMembers() const
     std::string str = ss.str() ; 
     return str ; 
 }
-inline std::string SCUDA_Mesh::descInst() const
-{
-    int edge_items = 10 ; 
-    std::stringstream ss ; 
-    ss << "[ SCUDA_Mesh::descInst inst_num " << inst_num << std::endl ; 
-    ss << stra<float>::DescItems( inst_values, 16, inst_num, edge_items ); 
-    ss << "] SCUDA_Mesh::descInst inst_num " << inst_num << std::endl ; 
-    std::string str = ss.str() ; 
-    return str ; 
-}
+
 
