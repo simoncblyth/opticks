@@ -24,8 +24,10 @@ int main()
     SOPTIX ox ; 
     std::cout << ox.desc() ; 
 
+    SOPTIX_Options opt ;  
+
     const char* _ptxpath = "$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" ; 
-    SOPTIX_Module md(ox.context, _ptxpath );  
+    SOPTIX_Module md(ox.context, opt,  _ptxpath );  
     std::cout << md.desc() ; 
 
     return 0 ; 

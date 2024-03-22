@@ -18,27 +18,39 @@ struct SOPTIX_Options
     static constexpr const char* SOPTIX_Options_optLevel = "SOPTIX_Options_optLevel" ; 
     static constexpr const char* SOPTIX_Options_debugLevel = "SOPTIX_Options_debugLevel" ; 
     static constexpr const char* SOPTIX_Options_exceptionFlags = "SOPTIX_Options_exceptionFlags" ; 
+    static constexpr const char* SOPTIX_Options_link_debugLevel = "SOPTIX_Options_link_debugLevel" ; 
 
     const char* _optLevel ; 
     const char* _debugLevel ; 
     const char* _exceptionFlags ; 
+    const char* _link_debugLevel ; 
+
 
     unsigned _numPayloadValues ;   
-    unsigned _numAttributeValues ;   
+    unsigned _numAttributeValues ; 
+  
+    static constexpr const char* SOPTIX_Options_maxTraceDepth = "SOPTIX_Options_maxTraceDepth" ; 
+    unsigned _maxTraceDepth ; 
 
     OptixModuleCompileOptions moduleCompileOptions = {};
     OptixPipelineCompileOptions pipelineCompileOptions = {};
+    OptixProgramGroupOptions programGroupOptions = {};
+    OptixPipelineLinkOptions pipelineLinkOptions = {};
 
     std::string desc() const ;
  
     SOPTIX_Options() ; 
     void init();
 
-    void init_ModuleCompile();
-    static std::string Desc_ModuleCompileOptions(const OptixModuleCompileOptions& module_compile_options );
+    void init_moduleCompileOptions();
+    static std::string Desc_moduleCompileOptions(const OptixModuleCompileOptions& module_compile_options );
 
-    void init_PipelineCompile();
-    static std::string Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options );
+    void init_pipelineCompileOptions();
+    static std::string Desc_pipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options );
+
+    void init_pipelineLinkOptions();
+    static std::string Desc_pipelineLinkOptions(const OptixPipelineLinkOptions& pipeline_link_options );
+
 }; 
 
 inline std::string SOPTIX_Options::desc() const
@@ -48,8 +60,10 @@ inline std::string SOPTIX_Options::desc() const
     ss << " _optLevel " << _optLevel << std::endl ;
     ss << " _debugLevel " << _debugLevel << std::endl ;
     ss << " _exceptionFlags " << _exceptionFlags << std::endl ;
-    ss << Desc_ModuleCompileOptions(moduleCompileOptions) ;  
-    ss << Desc_PipelineCompileOptions(pipelineCompileOptions) ;  
+    ss << " _link_debugLevel " << _link_debugLevel << std::endl ;
+    ss << Desc_moduleCompileOptions(moduleCompileOptions) ;  
+    ss << Desc_pipelineCompileOptions(pipelineCompileOptions) ;  
+    ss << Desc_pipelineLinkOptions(pipelineLinkOptions) ;  
     ss << "]SOPTIX_Options::desc" << std::endl ;
     std::string str = ss.str() ; 
     return str ; 
@@ -60,16 +74,19 @@ inline SOPTIX_Options::SOPTIX_Options()
     _optLevel(   ssys::getenvvar(SOPTIX_Options_optLevel, "DEFAULT" ) ), 
     _debugLevel( ssys::getenvvar(SOPTIX_Options_debugLevel, "DEFAULT" ) ),
     _exceptionFlags( ssys::getenvvar(SOPTIX_Options_exceptionFlags, "STACK_OVERFLOW" ) ),
+    _link_debugLevel( ssys::getenvvar(SOPTIX_Options_link_debugLevel, "DEFAULT" )),
     _numPayloadValues(2),  
-    _numAttributeValues(2)  
+    _numAttributeValues(2),  
+    _maxTraceDepth(ssys::getenvunsigned(SOPTIX_Options_maxTraceDepth, 2))
 {
     init();
 }
 
 inline void SOPTIX_Options::init()
 {
-    init_ModuleCompile();
-    init_PipelineCompile();
+    init_moduleCompileOptions();
+    init_pipelineCompileOptions();
+    init_pipelineLinkOptions();
 }
 
 /**
@@ -81,7 +98,7 @@ moduleCompileOptions.numPayloadTypes
 
 **/
 
-inline void SOPTIX_Options::init_ModuleCompile()
+inline void SOPTIX_Options::init_moduleCompileOptions()
 {
     OptixCompileOptimizationLevel optLevel = SOPTIX_OPT::OptimizationLevel(_optLevel) ;
     OptixCompileDebugLevel debugLevel = SOPTIX_OPT::DebugLevel(_debugLevel) ; 
@@ -100,11 +117,11 @@ inline void SOPTIX_Options::init_ModuleCompile()
     moduleCompileOptions.payloadTypes = payloadTypes ; 
 }
 
-inline std::string SOPTIX_Options::Desc_ModuleCompileOptions(const OptixModuleCompileOptions& module_compile_options )
+inline std::string SOPTIX_Options::Desc_moduleCompileOptions(const OptixModuleCompileOptions& module_compile_options )
 {
     std::stringstream ss ; 
     ss  
-       << "[SOPTIX_Options::Desc_ModuleCompileOptions" << std::endl 
+       << "[SOPTIX_Options::Desc_moduleCompileOptions" << std::endl 
        << " module_compile_options.maxRegisterCount " << module_compile_options.maxRegisterCount  
        << " OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT " << OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT
        << std::endl 
@@ -114,14 +131,14 @@ inline std::string SOPTIX_Options::Desc_ModuleCompileOptions(const OptixModuleCo
        << " module_compile_options.debugLevel       " << module_compile_options.debugLevel  
        << " " << SOPTIX_OPT::DebugLevel_( module_compile_options.debugLevel )
        << std::endl 
-       << "]SOPTIX_Options::Desc_ModuleCompileOptions" 
+       << "]SOPTIX_Options::Desc_moduleCompileOptions" 
        << std::endl 
        ;   
     std::string str = ss.str() ; 
     return str ; 
 }
 
-inline void SOPTIX_Options::init_PipelineCompile()
+inline void SOPTIX_Options::init_pipelineCompileOptions()
 {
     int usesMotionBlur = 0 ; 
     OptixTraversableGraphFlags traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;
@@ -129,7 +146,8 @@ inline void SOPTIX_Options::init_PipelineCompile()
     unsigned numAttributeValues = _numAttributeValues ; 
     unsigned exceptionFlags = SOPTIX_OPT::ExceptionFlags( _exceptionFlags ) ;
     const char* pipelineLaunchParamsVariableName = "params";
-    unsigned usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM | OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE ; 
+    //unsigned usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM | OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE ; 
+    unsigned usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE ; 
 
     pipelineCompileOptions.usesMotionBlur        = usesMotionBlur ;
     pipelineCompileOptions.traversableGraphFlags = traversableGraphFlags ; 
@@ -140,19 +158,47 @@ inline void SOPTIX_Options::init_PipelineCompile()
     pipelineCompileOptions.usesPrimitiveTypeFlags = usesPrimitiveTypeFlags ;
 }
 
-inline std::string SOPTIX_Options::Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options )
+inline std::string SOPTIX_Options::Desc_pipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options )
 {
     std::stringstream ss ;
     ss
-       << "[SOPTIX_Options::Desc_PipelineCompileOptions" << std::endl
+       << "[SOPTIX_Options::Desc_pipelineCompileOptions" << std::endl
        << " pipeline_compile_options.numPayloadValues   " << pipeline_compile_options.numPayloadValues  << std::endl
        << " pipeline_compile_options.numAttributeValues " << pipeline_compile_options.numAttributeValues << std::endl
        << " pipeline_compile_options.exceptionFlags     " << pipeline_compile_options.exceptionFlags
        << SOPTIX_OPT::Desc_ExceptionFlags( pipeline_compile_options.exceptionFlags )
        << std::endl
-       << "]SOPTIX_Options::Desc_PipelineCompileOptions" << std::endl
+       << "]SOPTIX_Options::Desc_pipelineCompileOptions" << std::endl
        ;
     std::string str = ss.str() ;
     return str ;
 }
+
+
+
+inline void SOPTIX_Options::init_pipelineLinkOptions()
+{
+    OptixPayloadType* payloadType = nullptr ; 
+    programGroupOptions.payloadType = nullptr ; 
+
+    OptixCompileDebugLevel debugLevel = SOPTIX_OPT::DebugLevel(_link_debugLevel)  ;
+    pipelineLinkOptions.debugLevel = debugLevel ;
+    pipelineLinkOptions.maxTraceDepth = _maxTraceDepth ; 
+}
+
+inline std::string SOPTIX_Options::Desc_pipelineLinkOptions(const OptixPipelineLinkOptions& pipeline_link_options )
+{
+    std::stringstream ss ;
+    ss
+       << "[SOPTIX_Options::Desc_pipelineLinkOptions" << std::endl
+       << " pipeline_link_options.maxTraceDepth   " << pipeline_link_options.maxTraceDepth  << std::endl
+       << std::endl
+       << " pipeline_link_options.debugLevel      " << pipeline_link_options.debugLevel  
+       << " " << SOPTIX_OPT::DebugLevel_( pipeline_link_options.debugLevel )
+       << "]SOPTIX_Options::Desc_pipelineLinkOptions" << std::endl
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
 

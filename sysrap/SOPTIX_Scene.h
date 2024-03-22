@@ -208,19 +208,15 @@ inline void SOPTIX_Scene::init_IAS()
 
 inline void SOPTIX_Scene::init_PTXModule()
 {
-
 }
 inline void SOPTIX_Scene::init_ProgramGroups();
 {
-
 }
 inline void SOPTIX_Scene::init_Pipeline();
 {
-
 }
 inline void SOPTIX_Scene::init_SBT();
 {
-
 }
 
 
