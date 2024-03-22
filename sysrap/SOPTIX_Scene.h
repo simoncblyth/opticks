@@ -1,6 +1,11 @@
 #pragma once
+/**
+SOPTIX_Scene.h
+===============
 
 
+
+**/
 struct SOPTIX_Scene
 { 
     SOPTIX* ox ; 
@@ -20,10 +25,15 @@ struct SOPTIX_Scene
     SOPTIX_Scene( SOPTIX* ox, SScene* scene );  
 
     void init(); 
-    void initMeshUpload(); 
-    void initGAS(); 
-    void initInstances(); 
-    void initIAS(); 
+    void init_MeshUpload(); 
+    void init_GAS(); 
+    void init_Instances(); 
+    void init_IAS();
+
+    void init_PTXModule();
+    void init_ProgramGroups();
+    void init_Pipeline();
+    void init_SBT();
 };
 
 
@@ -71,14 +81,23 @@ inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX* _ox, SScene* _scene )
 
 inline void SOPTIX_Scene::init()
 {
-    initMeshUpload(); 
-    initGAS();
+    init_MeshUpload(); 
+    init_GAS();
  
-    initInstances();
-    initIAS(); 
+    init_Instances();
+    init_IAS();
+
+    init_PTXModule();
+    init_ProgramGroups();
+    init_Pipeline();
+    init_SBT();
 }
 
-inline void SOPTIX_Scene::initMeshUpload()
+
+
+
+
+inline void SOPTIX_Scene::init_MeshUpload()
 {
     int num_mesh = scene->mesh_grup.size() ; 
     for(int i=0 ; i < num_mesh ; i++)
@@ -89,7 +108,7 @@ inline void SOPTIX_Scene::initMeshUpload()
     }
 }
 
-inline void SOPTIX_Scene::initGAS()
+inline void SOPTIX_Scene::init_GAS()
 {
     for(int i=0 ; i < int(cuda_mesh.size()) ; i++)
     {
@@ -111,7 +130,7 @@ https://forums.developer.nvidia.com/t/sbt-problem-when-using-multiple-gas-object
 **/
 
 
-inline void SOPTIX_Scene::initInstances()
+inline void SOPTIX_Scene::init_Instances()
 {
     const std::vector<glm::tmat4x4<float>>& inst_tran = scene->inst_tran ;
     int num_gas  = scene->inst_info.size(); 
@@ -161,7 +180,7 @@ inline void SOPTIX_Scene::initInstances()
     }
 }
 
-inline void SOPTIX_Scene::initIAS()
+inline void SOPTIX_Scene::init_IAS()
 {
     unsigned num_bytes = sizeof( OptixInstance )*instances.size() ; 
 
@@ -186,5 +205,22 @@ inline void SOPTIX_Scene::initIAS()
     ias = new SOPTIX_Accel( ox->context, buildInputs ); 
 }
 
+
+inline void SOPTIX_Scene::init_PTXModule()
+{
+
+}
+inline void SOPTIX_Scene::init_ProgramGroups();
+{
+
+}
+inline void SOPTIX_Scene::init_Pipeline();
+{
+
+}
+inline void SOPTIX_Scene::init_SBT();
+{
+
+}
 
 

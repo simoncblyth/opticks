@@ -14,6 +14,7 @@ Related::
 
 **/
 
+#include "spath.h"
 #include "scuda.h"
 #include "SScene.h"
 
@@ -22,6 +23,7 @@ Related::
 #include "SOPTIX.h"
 #include "SOPTIX_Mesh.h"
 #include "SOPTIX_Scene.h"
+#include "SOPTIX_Module.h"
 
 int main()
 {
@@ -33,6 +35,11 @@ int main()
 
     SOPTIX_Scene sc(&ox, _sc );  
     std::cout << sc.desc() ; 
+
+    const char* _ptxpath = "$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" ; 
+    SOPTIX_Module md(ox.context, _ptxpath ); 
+    std::cout << md.desc() ; 
+
 
     return 0 ; 
 }
