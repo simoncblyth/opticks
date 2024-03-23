@@ -82,6 +82,28 @@ inline void SOPTIX_Mesh::init()
     initGAS();
 }
 
+/**
+SOPTIX_Mesh::initBuildInput
+-----------------------------
+
+HMM: currently are concatenating the SMesh CPU 
+side and presenting the merged here...  but that 
+is not the final solution because need to distinguish 
+between landing on different sub-SMesh "CSGPrim" 
+
+From optix7sdk.bash notes::
+
+    CSGOptiX uses one GAS for each CSGSolid ("compound" of numPrim CSGPrim)
+    and that one GAS always has only one buildInput which references
+    numPrim SBT records which have "sbt-geometry-acceleration-structure-index" 
+    of (0,1,2,...,numPrim-1)  
+
+
+For sanity need to do something with triangles that 
+follows the same pattern as that. 
+
+**/
+
 inline void SOPTIX_Mesh::initBuildInput()
 { 
     assert( mesh->vtx.num_item % 3 == 0 ); 
@@ -104,10 +126,12 @@ inline void SOPTIX_Mesh::initBuildInput()
 
     OptixBuildInputTriangleArray& triangleArray = buildInput.triangleArray ;
 
+    // TODO:
     unsigned numSbtRecords = 1 ; 
     CUdeviceptr sbtIndexOffsetBuffer = 0 ; 
     unsigned sbtIndexOffsetSizeInBytes = 0 ; 
     unsigned sbtIndexOffsetStrideInBytes = 0 ; 
+
     unsigned primitiveIndexOffset = 0 ; 
 
     // NB made these members to keep the addresses valid
@@ -124,11 +148,13 @@ inline void SOPTIX_Mesh::initBuildInput()
     triangleArray.indexFormat = indexFormat ;     
     triangleArray.indexStrideInBytes = indexStrideInBytes ; 
     triangleArray.preTransform = preTransform ; 
-    triangleArray.flags = flags ; 
+    triangleArray.flags = flags ;
+ 
     triangleArray.numSbtRecords = numSbtRecords ;    
     triangleArray.sbtIndexOffsetBuffer = sbtIndexOffsetBuffer ; 
     triangleArray.sbtIndexOffsetSizeInBytes = sbtIndexOffsetSizeInBytes ; 
     triangleArray.sbtIndexOffsetStrideInBytes = sbtIndexOffsetStrideInBytes ;
+
     triangleArray.primitiveIndexOffset = primitiveIndexOffset ; 
     triangleArray.transformFormat = transformFormat ;     
 } 

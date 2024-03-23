@@ -3,6 +3,10 @@
 SOPTIX_SBT.h
 ==================
 
+Good explanatiom of SBT Shader Binding Table
+
+* https://www.willusher.io/graphics/2019/11/20/the-sbt-three-ways
+
 **/
 
 #include "SOPTIX_Binding.h"
@@ -90,11 +94,48 @@ inline void SOPTIX_SBT::initMiss()
 SOPTIX_SBT::initHitgroup
 -------------------------
 
-HMM: this needs to handle instanced ?
-
 **/
 
 inline void SOPTIX_SBT::initHitgroup()
+{
+    std::vector<SOPTIX_HitgroupRecord> hitgroup_records;
+
+    SOPTIX_HitgroupRecord hg_sbt;
+    OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
+
+    hitgroup_records.push_back(hg_sbt);
+
+
+
+
+
+
+    CUdeviceptr hitgroup_record_base ;
+    const size_t hitgroup_record_size = sizeof( SOPTIX_HitgroupRecord );
+    CUDA_CHECK( cudaMalloc( 
+                reinterpret_cast<void**>( &hitgroup_record_base ), 
+                hitgroup_record_size*hitgroup_records.size() ) );
+
+    CUDA_CHECK( cudaMemcpy(
+                reinterpret_cast<void*>( hitgroup_record_base ),
+                hitgroup_records.data(),
+                hitgroup_record_size*hitgroup_records.size(),
+                cudaMemcpyHostToDevice
+                ) );
+
+    sbt.hitgroupRecordBase = hitgroup_record_base ; 
+    sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>( hitgroup_record_size );
+    sbt.hitgroupRecordCount         = static_cast<uint32_t>( hitgroup_records.size() );
+}
+
+
+/**
+SOPTIX_SBT::initHitgroup_no_instance
+--------------------------------------
+
+**/
+
+inline void SOPTIX_SBT::initHitgroup_no_instance()
 {
     CUdeviceptr hitgroup_record;
     const size_t hitgroup_record_size = sizeof( SOPTIX_HitgroupRecord );
