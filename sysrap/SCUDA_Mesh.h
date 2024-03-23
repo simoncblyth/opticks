@@ -14,7 +14,7 @@ struct SCUDA_Mesh
 {
     static constexpr const int INST_ELEM = 4*4 ; 
 
-    const SMesh*   mesh ;  
+    const SMesh*   mesh ;   // non-owned  
 
     SCU_Buf<float> vtx = {} ;
     SCU_Buf<int>   idx = {} ;  
@@ -23,6 +23,7 @@ struct SCUDA_Mesh
 
     SCUDA_Mesh(const SMesh* _mesh ) ; 
     void init(); 
+    void free();   // on device buffers 
  
     void set_inst(const NP* _inst );
     void set_inst(int _inst_num, const float* _inst_values );
@@ -43,6 +44,13 @@ inline void SCUDA_Mesh::init()
 {
     vtx = SCU::UploadBuf<float>( mesh->vtx->cvalues<float>(),   mesh->vtx->num_values(), "vtx" );  
     idx = SCU::UploadBuf<int>(   mesh->tri->cvalues<int>(),     mesh->tri->num_values(), "idx" );
+}
+
+inline void SCUDA_Mesh::free()
+{
+    vtx.free(); 
+    idx.free();
+    ins.free(); 
 }
 
 inline void SCUDA_Mesh::set_inst(const NP* _inst )

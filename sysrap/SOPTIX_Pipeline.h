@@ -23,6 +23,21 @@ struct SOPTIX_Pipeline
 
     OptixPipeline pipeline = nullptr;
 
+    OptixStackSizes stackSizes = {}; 
+
+    uint32_t max_trace_depth = 1;   // only RG invokes trace, no recursion   
+    uint32_t max_cc_depth = 0;  
+    uint32_t max_dc_depth = 0;  
+
+    uint32_t directCallableStackSizeFromTraversal;
+    uint32_t directCallableStackSizeFromState;
+    uint32_t continuationStackSize;
+
+    // see optix7-;optix7-host : it states that IAS->GAS needs to be two  
+    unsigned maxTraversableGraphDepth = 2 ; 
+
+
+
     std::string desc() const ;
 
     SOPTIX_Pipeline( 
@@ -36,6 +51,9 @@ struct SOPTIX_Pipeline
     void initMiss(); 
     void initHitgroup();
     void initPipeline();
+
+    std::string descStack() const ;
+    static std::string DescStackSizes(const OptixStackSizes& stackSizes ); 
  
 };
 
@@ -46,6 +64,7 @@ inline std::string SOPTIX_Pipeline::desc() const
     ss << "[SOPTIX_Pipeline::desc"  ;
     ss << " options\n" << options.desc() << "\n" ; 
     ss << " pipeline " << ( pipeline ? "YES" : "NO " ) << "\n" ; 
+    ss << descStack() << "\n" ;
     ss << "]SOPTIX_Pipeline::desc"  ;
     std::string str = ss.str() ; 
     return str ; 
@@ -180,8 +199,6 @@ inline void SOPTIX_Pipeline::initHitgroup()
     
 }
 
-
-
 inline void SOPTIX_Pipeline::initPipeline()
 {
     OptixProgramGroup program_groups[] = { raygen_pg, miss_pg, hitgroup_pg };
@@ -203,6 +220,79 @@ inline void SOPTIX_Pipeline::initPipeline()
 
     if(sizeof_log > 0) std::cout << log << std::endl ;
     assert( sizeof_log == 0);
+
+
+    for(int i=0 ; i < num_program_groups ; i++)
+    {
+        OptixProgramGroup& pg = program_groups[i] ; 
+        OPTIX_CHECK( optixUtilAccumulateStackSizes( pg, &stackSizes ) );
+    }
+
+    OPTIX_CHECK( optixUtilComputeStackSizes(
+                &stackSizes,
+                max_trace_depth,
+                max_cc_depth,
+                max_dc_depth,
+                &directCallableStackSizeFromTraversal,
+                &directCallableStackSizeFromState,
+                &continuationStackSize
+                ) );
+
+
+    OPTIX_CHECK( optixPipelineSetStackSize( pipeline,
+                                       directCallableStackSizeFromTraversal,
+                                       directCallableStackSizeFromState,
+                                       continuationStackSize,
+                                       maxTraversableGraphDepth ) ) ;
 }
 
+
+
+std::string SOPTIX_Pipeline::descStack() const
+{
+    std::stringstream ss ; 
+    ss << "SOPTIX_Pipeline::descStack"
+       << std::endl 
+       << "(inputs to optixUtilComputeStackSizes)" 
+       << std::endl 
+       << " max_trace_depth " << max_trace_depth
+       << " max_cc_depth " << max_cc_depth
+       << " max_dc_depth " << max_dc_depth
+       << std::endl 
+       << " program_group stackSizes "
+       << DescStackSizes(stackSizes)
+       << "(outputs from optixUtilComputeStackSizes) "
+       << std::endl
+       << " directCallableStackSizeFromTraversal " << directCallableStackSizeFromTraversal
+       << std::endl
+       << " directCallableStackSizeFromState " << directCallableStackSizeFromState
+       << std::endl
+       << " continuationStackSize " << continuationStackSize
+       << std::endl
+       << "(further inputs to optixPipelineSetStackSize)"
+       << std::endl 
+       << " maxTraversableGraphDepth " << maxTraversableGraphDepth
+       << std::endl 
+       ;  
+   
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
+std::string SOPTIX_Pipeline::DescStackSizes(const OptixStackSizes& stackSizes ) // static
+{
+    std::stringstream ss ; 
+    ss 
+        << " stackSizes.cssRG " << stackSizes.cssRG << "\n"
+        << " stackSizes.cssMS " << stackSizes.cssMS << "\n"
+        << " stackSizes.cssCH " << stackSizes.cssCH << "\n"
+        << " stackSizes.cssAH " << stackSizes.cssAH << "\n"
+        << " stackSizes.cssIS " << stackSizes.cssIS << "\n"
+        << " stackSizes.cssCC " << stackSizes.cssCC << "\n"
+        << " stackSizes.dssDC " << stackSizes.dssDC << "\n"
+        ;
+    std::string str = ss.str() ; 
+    return str ; 
+}
 

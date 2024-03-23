@@ -16,8 +16,18 @@ struct SOPTIX_Record
     T data;
 };
 
-struct SOPTIX_EmptyData {}; 
 
-typedef SOPTIX_Record<SOPTIX_EmptyData> SOPTIX_EmptyRecord;
+struct SOPTIX_RaygenData {} ;
 
+struct SOPTIX_MissData
+{
+    float3 bg_color;
+};
+
+struct SOPTIX_HitgroupData {};
+
+
+typedef SOPTIX_Record<SOPTIX_RaygenData>   SOPTIX_RaygenRecord;
+typedef SOPTIX_Record<SOPTIX_MissData>     SOPTIX_MissRecord;
+typedef SOPTIX_Record<SOPTIX_HitgroupData> SOPTIX_HitgroupRecord;
 

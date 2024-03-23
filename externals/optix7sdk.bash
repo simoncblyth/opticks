@@ -41,6 +41,43 @@ sutil/Scene.cpp::
 * buffer_view.data is the CUdeviceptr 
 
 
+Examples
+----------
+
+optixTriangle
+   single tri only, no instancing
+   optixTriangle.h : empty HitGroup data
+
+optixBoundValues
+optixCallablePrograms
+optixCompileWithTasks
+optixCurves
+optixCustomPrimitive
+optixCutouts
+optixDemandLoadSimple
+optixDemandTexture
+optixDenoiser
+optixDynamicGeometry
+optixDynamicMaterials
+optixHair
+optixHello
+optixMeshViewer
+optixModuleCreateAbort
+optixMotionGeometry
+optixMultiGPU
+optixNVLink
+optixOpticalFlow
+optixPathTracer
+optixRaycasting
+optixSimpleMotionBlur
+optixSphere
+optixVolumeViewer
+optixWhitted
+
+
+
+
+
 EOU
 }
 

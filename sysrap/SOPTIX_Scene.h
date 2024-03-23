@@ -29,6 +29,7 @@ struct SOPTIX_Scene
     void init_GAS(); 
     void init_Instances(); 
     void init_IAS();
+    void init_MeshUpload_free(); 
 
     void init_PTXModule();
     void init_ProgramGroups();
@@ -83,9 +84,10 @@ inline void SOPTIX_Scene::init()
 {
     init_MeshUpload(); 
     init_GAS();
- 
     init_Instances();
     init_IAS();
+
+    init_MeshUpload_free(); // earlier ? vtx,idx split from ins 
 
     init_PTXModule();
     init_ProgramGroups();
@@ -107,6 +109,17 @@ inline void SOPTIX_Scene::init_MeshUpload()
         cuda_mesh.push_back(_mesh); 
     }
 }
+
+inline void SOPTIX_Scene::init_MeshUpload_free()
+{
+    int num_mesh = cuda_mesh.size() ; 
+    for(int i=0 ; i < num_mesh ; i++)
+    {
+        SCUDA_Mesh* _mesh = cuda_mesh[i] ; 
+        _mesh->free();   
+    }
+}
+
 
 inline void SOPTIX_Scene::init_GAS()
 {

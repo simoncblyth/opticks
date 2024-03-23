@@ -44,46 +44,76 @@ inline void SOPTIX_SBT::init()
 
 inline void SOPTIX_SBT::initRaygen()
 {
-    const size_t raygen_record_size = sizeof( SOPTIX_EmptyRecord );
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &sbt.raygenRecord ), raygen_record_size ) );
+    CUdeviceptr  raygen_record ; 
+   
+    const size_t raygen_record_size = sizeof( SOPTIX_RaygenRecord );
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygenRecord ), raygen_record_size ) );
     
-    SOPTIX_EmptyRecord rg_sbt;
+    SOPTIX_RaygenRecord rg_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.raygen_pg, &rg_sbt ) );
 
     CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( sbt.raygenRecord ),
+                reinterpret_cast<void*>(raygen_record),
                 &rg_sbt,
                 raygen_record_size,
                 cudaMemcpyHostToDevice
                 ) );
 
+    sbt.raygenRecord = raygen_record ; 
+
 }
 
 inline void SOPTIX_SBT::initMiss()
 {
-    const size_t miss_record_size = sizeof( SOPTIX_EmptyRecord );
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &sbt.missRecordBase ), miss_record_size ) );
+    CUdeviceptr miss_record ;
+
+    const size_t miss_record_size = sizeof( SOPTIX_MissRecord );
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &miss_record ), miss_record_size ) );
     
-    SOPTIX_EmptyRecord ms_sbt;
+    SOPTIX_MissRecord ms_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.miss_pg, &ms_sbt ) );
 
     CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( sbt.missRecordBase ),
+                reinterpret_cast<void*>( miss_record ),
                 &ms_sbt,
                 miss_record_size,
                 cudaMemcpyHostToDevice
                 ) );
 
+    sbt.missRecordBase = miss_record;
     sbt.missRecordStrideInBytes = static_cast<uint32_t>( miss_record_size );
     sbt.missRecordCount = 1 ; 
 }
 
 
+/**
+SOPTIX_SBT::initHitgroup
+-------------------------
+
+HMM: this needs to handle instanced ?
+
+**/
+
 inline void SOPTIX_SBT::initHitgroup()
 {
-    // HMM : NEED TO DECIDE WHATS NEEDED GPU SIDE BEFORE CAN DO THIS
-}
+    CUdeviceptr hitgroup_record;
+    const size_t hitgroup_record_size = sizeof( SOPTIX_HitgroupRecord );
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), hitgroup_record_size ) );
 
+    SOPTIX_HitgroupRecord hg_sbt;
+    OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
+
+    CUDA_CHECK( cudaMemcpy(
+                reinterpret_cast<void*>( hitgroup_record ),
+                &hg_sbt,
+                hitgroup_record_size,
+                cudaMemcpyHostToDevice
+                ) );
+
+    sbt.hitgroupRecordBase = hitgroup_record;
+    sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>( hitgroup_record_size ); 
+    sbt.hitgroupRecordCount = 1; 
+}
 
 
 

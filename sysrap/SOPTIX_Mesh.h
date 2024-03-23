@@ -1,4 +1,12 @@
 #pragma once
+/**
+SOPTIX_Mesh.h
+===============
+
+Used from SOPTIX_Scene.h 
+
+**/
+
 
 #include "SCUDA_Mesh.h"
 #include "SOPTIX_Accel.h"

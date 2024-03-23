@@ -1,5 +1,12 @@
 #pragma once
 
+/**
+SOPTIX_Accel.h
+===============
+
+Used by: SOPTIX_Mesh.h 
+
+**/
 
 struct SOPTIX_Accel
 {

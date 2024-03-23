@@ -17,11 +17,18 @@ SCU_test.cc
 
 struct SCU_test
 {
-    static int ConfigureLaunch2D();  
-    static int Compare( const float* arr0, const float* arr1, size_t num_item );
-    static int UploadArray_DownloadArray();
+    static int ConfigureLaunch2D(); 
+
+    template<typename T>
+    static void FillVec( std::vector<T>& vec, int N );
+ 
+    template<typename T>
+    static int Compare( const T* arr0, const T* arr1, size_t num_item );
+ 
+   static int UploadArray_DownloadArray();
     static int UploadBuf_DownloadBuf();
     static int Buf();
+    static int FreeBuf();
 }; 
 
 
@@ -46,7 +53,17 @@ inline int SCU_test::ConfigureLaunch2D()
     return 0 ; 
 }
 
-inline int SCU_test::Compare( const float* arr0, const float* arr1, size_t num_item )
+
+template<typename T>
+inline void SCU_test::FillVec( std::vector<T>& vec, int N  )
+{
+    vec.resize(N); 
+    for(int i=0 ; i < N ; i++ ) vec[i] = T(i) ; 
+}
+
+
+template<typename T>
+inline int SCU_test::Compare( const T* arr0, const T* arr1, size_t num_item )
 {
     int deviant = 0 ; 
     for(size_t i=0 ; i < num_item ; i++)
@@ -69,9 +86,9 @@ inline int SCU_test::Compare( const float* arr0, const float* arr1, size_t num_i
 inline int SCU_test::UploadArray_DownloadArray()
 {
     std::cout << "[ SCU_test::UploadArray_DownloadArray " << std::endl ;
-    static const int N = 1000 ; 
-    std::vector<float> vec(N) ;  
-    for(int i=0 ; i < N ; i++ ) vec[i] = float(i) ; 
+
+    std::vector<float> vec ;
+    FillVec<float>(vec, 1000); 
 
     const float* arr0 = vec.data() ;  
     size_t num_item = vec.size() ; 
@@ -89,9 +106,9 @@ inline int SCU_test::UploadArray_DownloadArray()
 inline int SCU_test::UploadBuf_DownloadBuf()
 {
     std::cout << "[ SCU_test::UploadBuf_DownloadBuf " << std::endl ;
-    static const int N = 1000 ; 
-    std::vector<float> vec(N) ;  
-    for(int i=0 ; i < N ; i++ ) vec[i] = float(i) ; 
+
+    std::vector<float> vec ;
+    FillVec<float>(vec, 1000); 
 
     const float* arr0 = vec.data() ;  
     size_t num_item = vec.size() ; 
@@ -113,13 +130,32 @@ inline int SCU_test::Buf()
     return 0 ; 
 }
 
+inline int SCU_test::FreeBuf()
+{
+    std::vector<float> vec ;
+    FillVec(vec, 1000); 
+
+    SCU_Buf<float> buf = SCU::UploadBuf<float>( vec.data(), vec.size(), "arr0" ); 
+    std::cout << "SCU_test::FreeBuf.0  buf.desc " << buf.desc() << std::endl ;
+
+    //SCU::FreeBuf(buf) ; 
+    buf.free(); 
+
+    std::cout << "SCU_test::FreeBuf.1  buf.desc " << buf.desc() << std::endl ;
+
+    return 0 ; 
+}
+
 
 int main()
 {
     int rc = 0 ; 
+    rc += SCU_test::FreeBuf(); 
+    /*
     rc += SCU_test::Buf(); 
-    //rc += SCU_test::UploadBuf_DownloadBuf(); 
-    //rc += SCU_test::UploadArray_DownloadArray(); 
-    //rc += SCU_test::ConfigureLaunch2D(); 
+    rc += SCU_test::UploadBuf_DownloadBuf(); 
+    rc += SCU_test::UploadArray_DownloadArray(); 
+    rc += SCU_test::ConfigureLaunch2D(); 
+    */
     return rc ; 
 }
