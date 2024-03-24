@@ -24,10 +24,21 @@ struct SOPTIX_MissData
     float3 bg_color;
 };
 
-struct SOPTIX_HitgroupData {};
+struct SOPTIX_TriMesh
+{
+    uint3*  indice ; 
+    float3* vertex ; 
+    float3* normal ; 
+};
+
+struct SOPTIX_HitgroupData 
+{
+    SOPTIX_TriMesh mesh ; 
+};
 
 
 typedef SOPTIX_Record<SOPTIX_RaygenData>   SOPTIX_RaygenRecord;
 typedef SOPTIX_Record<SOPTIX_MissData>     SOPTIX_MissRecord;
 typedef SOPTIX_Record<SOPTIX_HitgroupData> SOPTIX_HitgroupRecord;
+
 

@@ -7,38 +7,26 @@ SScene.h
 
     ~/o/sysrap/tests/SScene_test.sh 
 
-
-* Start triangle only 
-* Needs to do equivalent of the non-OptiX parts of sutil::Scene
-  (dont want to duplicate stree.h, so can just hold device pointers
-   of uploaded arrays) 
-
-* HOW MUCH AT SMesh.h LEVEL VS SScene.h LEVEL ? 
-
 * OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
-
-
-How to organize the instance transforms ?
--------------------------------------------
-
-* tree inst are in contiguous blocks for each gas/mesh referenced 
-* so can have single OpenGL SScene:inst upload referenced by (offset,count) for each merged mesh 
-
 
 **/
 
 #include "stree.h"
 #include "SMesh.h"
+#include "SMeshGroup.h"
 
 struct SScene
 {
-    static constexpr const char* MESH_GRUP = "mesh_grup" ;
+    static constexpr const char* MESHGROUP = "meshgroup" ;
+    static constexpr const char* MESHMERGE = "meshmerge" ;
     static constexpr const char* INST_TRAN = "inst_tran.npy" ;
     static constexpr const char* INST_INFO = "inst_info.npy" ;
 
     bool dump ;
 
-    std::vector<const SMesh*>         mesh_grup ;
+    std::vector<const SMeshGroup*>    meshgroup ;
+    std::vector<const SMesh*>         meshmerge ; // formerly mesh_grup
+
     std::vector<int4>                 inst_info ; 
     std::vector<glm::tmat4x4<float>>  inst_tran ;
 
@@ -49,15 +37,19 @@ struct SScene
     void initFromTree_Remainder(const stree* st);
     void initFromTree_Factor(const stree* st);
     void initFromTree_Factor_(int ridx, const stree* st);
-    void initFromTree_Node(std::vector<const SMesh*>& subs, int ridx, const snode& node, const stree* st);
+    void initFromTree_Node(SMeshGroup* mg, int ridx, const snode& node, const stree* st);
     void initFromTree_Instance (const stree* st);
 
     std::string descSize() const ;
     std::string descInstInfo() const ;
     std::string desc() const ;
 
-    NPFold* serialize_mesh_grup() const ;
-    void import_mesh_grup(const NPFold* _mesh_grup ) ; 
+    NPFold* serialize_meshmerge() const ;
+    void import_meshmerge(const NPFold* _meshmerge ) ; 
+
+    NPFold* serialize_meshgroup() const ;
+    void import_meshgroup(const NPFold* _meshgroup ) ; 
+
     NPFold* serialize() const ;
     void import(const NPFold* fold);
 
@@ -97,14 +89,16 @@ inline void SScene::initFromTree_Remainder(const stree* st)
         << std::endl
         ;
 
-    std::vector<const SMesh*> subs ;
+    SMeshGroup* mg = new SMeshGroup ; 
+    int ridx = 0 ; 
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = st->rem[i];
-        initFromTree_Node(subs, 0, node, st);
+        initFromTree_Node(mg, ridx, node, st);
     }
-    const SMesh* _mesh = SMesh::Concatenate( subs, 0 );
-    mesh_grup.push_back(_mesh);
+    const SMesh* _mesh = SMesh::Concatenate( mg->subs, 0 );
+    meshmerge.push_back(_mesh);
+    meshgroup.push_back(mg);
 
     if(dump) std::cout
         << "] SScene::initFromTree_Remainder"
@@ -135,14 +129,15 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
        << std::endl 
        ;
 
-    std::vector<const SMesh*> subs ; 
+    SMeshGroup* mg = new SMeshGroup ; 
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = nodes[i]; 
-        initFromTree_Node(subs, ridx, node, st); 
+        initFromTree_Node(mg, ridx, node, st); 
     }
-    const SMesh* _mesh = SMesh::Concatenate( subs, ridx ); 
-    mesh_grup.push_back(_mesh); 
+    const SMesh* _mesh = SMesh::Concatenate( mg->subs, ridx ); 
+    meshmerge.push_back(_mesh); 
+    meshgroup.push_back(mg); 
 }
 
 /**
@@ -164,7 +159,7 @@ CSG constituents.
 
 **/
 
-inline void SScene::initFromTree_Node(std::vector<const SMesh*>& submesh, int ridx, const snode& node, const stree* st)
+inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& node, const stree* st)
 {
     glm::tmat4x4<double> m2w(1.);  
     glm::tmat4x4<double> w2m(1.);  
@@ -173,12 +168,16 @@ inline void SScene::initFromTree_Node(std::vector<const SMesh*>& submesh, int ri
     st->get_node_product(m2w, w2m, node.index, local, reverse, nullptr ); 
     bool is_identity_m2w = stra<double>::IsIdentity(m2w) ; 
 
-    const char* so = st->soname[node.lvid].c_str();  // raw (not 0x stripped) name
+    const char* so = st->soname[node.lvid].c_str();  
+    // raw (not 0x stripped) name : NO LONGER TRUE : UNIQUE STRIPPING DONE BY STREE
+
     const NPFold* fold = st->mesh->get_subfold(so)  ;
     assert(fold); 
-
     const SMesh* _mesh = SMesh::Import( fold, &m2w ); 
-    submesh.push_back(_mesh); 
+
+    mg->subs.push_back(_mesh); 
+    mg->names.push_back(so);  
+
 
     if(dump) std::cout 
        << "SScene::initFromTree_Node"
@@ -214,7 +213,8 @@ inline std::string SScene::descSize() const
 {
     std::stringstream ss ; 
     ss << "SScene::descSize"
-       << " mesh_grup " << mesh_grup.size()
+       << " meshmerge " << meshmerge.size()
+       << " meshgroup " << meshgroup.size()
        << " inst_info " << inst_info.size()
        << " inst_tran " << inst_tran.size()
        << std::endl 
@@ -252,37 +252,66 @@ inline std::string SScene::descInstInfo() const
 }
 
 
-inline NPFold* SScene::serialize_mesh_grup() const 
+inline NPFold* SScene::serialize_meshmerge() const 
 {
-    NPFold* _mesh_grup = new NPFold ; 
-    int num_mesh_grup = mesh_grup.size(); 
-    for(int i=0 ; i < num_mesh_grup ; i++)
+    NPFold* _meshmerge = new NPFold ; 
+    int num_meshmerge = meshmerge.size(); 
+    for(int i=0 ; i < num_meshmerge ; i++)
     {
-        const SMesh* m = mesh_grup[i] ; 
-        _mesh_grup->add_subfold( m->name, m->serialize() ); 
+        const SMesh* m = meshmerge[i] ; 
+        _meshmerge->add_subfold( m->name, m->serialize() ); 
     } 
-    return _mesh_grup ; 
+    return _meshmerge ; 
 }
 
-inline void SScene::import_mesh_grup(const NPFold* _mesh_grup ) 
+inline NPFold* SScene::serialize_meshgroup() const 
 {
-    int num_mesh_grup = _mesh_grup ? _mesh_grup->get_num_subfold() : 0 ;
-    for(int i=0 ; i < num_mesh_grup ; i++)
+    NPFold* _meshgroup = new NPFold ; 
+    int num_meshgroup = meshgroup.size(); 
+    for(int i=0 ; i < num_meshgroup ; i++)
     {
-        const NPFold* sub = _mesh_grup->get_subfold(i); 
+        const SMeshGroup* mg = meshgroup[i] ; 
+        const char* name = SMesh::FormName(i); 
+        _meshgroup->add_subfold( name, mg->serialize() ); 
+    } 
+    return _meshgroup ; 
+}
+
+
+
+inline void SScene::import_meshmerge(const NPFold* _meshmerge ) 
+{
+    int num_meshmerge = _meshmerge ? _meshmerge->get_num_subfold() : 0 ;
+    for(int i=0 ; i < num_meshmerge ; i++)
+    {
+        const NPFold* sub = _meshmerge->get_subfold(i); 
         const SMesh* m = SMesh::Import(sub) ;  
-        mesh_grup.push_back(m); 
+        meshmerge.push_back(m); 
     }
 }
 
+inline void SScene::import_meshgroup(const NPFold* _meshgroup ) 
+{
+    int num_meshgroup = _meshgroup ? _meshgroup->get_num_subfold() : 0 ;
+    for(int i=0 ; i < num_meshgroup ; i++)
+    {
+        const NPFold* sub = _meshgroup->get_subfold(i); 
+        const SMeshGroup* mg = SMeshGroup::Import(sub) ;  
+        meshgroup.push_back(mg); 
+    }
+}
+
+
 inline NPFold* SScene::serialize() const 
 {
-    NPFold* _mesh_grup = serialize_mesh_grup() ;
+    NPFold* _meshmerge = serialize_meshmerge() ;
+    NPFold* _meshgroup = serialize_meshgroup() ;
     NP* _inst_tran = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_tran, 4, 4) ;
     NP* _inst_info = NPX::ArrayFromVec<int,int4>( inst_info, 4 ) ; 
 
     NPFold* fold = new NPFold ; 
-    fold->add_subfold( MESH_GRUP, _mesh_grup ); 
+    fold->add_subfold( MESHMERGE, _meshmerge ); 
+    fold->add_subfold( MESHGROUP, _meshgroup ); 
     fold->add( INST_INFO, _inst_info );
     fold->add( INST_TRAN, _inst_tran );
 
@@ -290,8 +319,10 @@ inline NPFold* SScene::serialize() const
 }
 inline void SScene::import(const NPFold* fold)
 {
-    const NPFold* _mesh_grup = fold->get_subfold(MESH_GRUP ); 
-    import_mesh_grup( _mesh_grup ); 
+    const NPFold* _meshmerge = fold->get_subfold(MESHMERGE ); 
+    const NPFold* _meshgroup = fold->get_subfold(MESHGROUP ); 
+    import_meshmerge( _meshmerge ); 
+    import_meshgroup( _meshgroup ); 
 
     const NP* _inst_info = fold->get(INST_INFO); 
     const NP* _inst_tran = fold->get(INST_TRAN); 

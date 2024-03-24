@@ -14,7 +14,7 @@
 template <typename T>
 struct SCU_Buf
 {
-   T* ptr ; 
+   T*          ptr ; 
    size_t      num_item ;
    std::string name ; 
 
@@ -22,8 +22,8 @@ struct SCU_Buf
    void free() ; 
 
    std::string desc() const ; 
- 
 };
+
 
 template <typename T>
 inline CUdeviceptr SCU_Buf<T>::pointer() const
@@ -57,6 +57,8 @@ inline std::string SCU_Buf<T>::desc() const
 
 
 
+
+
 struct SCU
 {
     template <typename T>
@@ -78,7 +80,6 @@ struct SCU
 
     template <typename T>
     static void FreeBuf(SCU_Buf<T>& buf ); 
-
 
 
 
@@ -146,6 +147,12 @@ inline void SCU::FreeBuf(SCU_Buf<T>& buf ) // static
 { 
     buf.free() ;  
 }
+
+
+
+template <typename T>
+inline SCU_MergeBuf<T> SCU::UploadMerge(  const std::vector<const NP*>& arrs ) 
+
 
 
 

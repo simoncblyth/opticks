@@ -13,7 +13,7 @@ optix7.5 p28
 #include "scuda.h"
 #include "SCUDA_Mesh.h"
 #include "SOPTIX.h"
-#include "SOPTIX_Mesh.h"
+#include "SOPTIX_MeshGroup.h"
 
 int main()
 {
@@ -26,9 +26,8 @@ int main()
     SCUDA_Mesh* _mesh = new SCUDA_Mesh(m) ; 
     std::cout << _mesh->desc() ; 
 
-    SOPTIX_Mesh* mesh = new SOPTIX_Mesh(&ox, _mesh) ;  
-    std::cout << mesh->desc() ; 
-
+    SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ox.context, _mesh) ;  
+    std::cout << mg->desc() ; 
 
     return 0 ; 
 }

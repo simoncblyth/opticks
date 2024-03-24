@@ -77,7 +77,8 @@ __intersection__is
 #include "Params.h"
 
 #ifdef WITH_PRD
-#include "Pointer.h"
+#include "scuda_pointer.h"
+#include "SOPTIX_getPRD.h"
 #endif
 
 extern "C" { __constant__ Params params ;  }

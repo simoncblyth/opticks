@@ -11,7 +11,6 @@ NB SMesh.h is used in two situtions
 2. concatenated SMesh with possibly thousands of SMesh joined together, 
    normals are joined together from the inputs
 
-
 ::
 
     ~/o/sysrap/tests/SMesh_test.sh
@@ -205,6 +204,15 @@ inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr)
     return mesh ; 
 }
 
+/**
+SMesh::IsConcat
+----------------
+
+Concat distinguished by having float vertices (not double like originals)
+and having normals (unlike originals). 
+
+**/
+
 inline bool SMesh::IsConcat( const NPFold* fold ) // static
 {
     const NP* vertices = fold->get("vtx") ;
@@ -268,7 +276,6 @@ inline void SMesh::import_original(const NPFold* fold, const glm::tmat4x4<double
     if(out) *out << "]SMesh::import_original" << std::endl ; 
     if(dump) std::cout << ss.str() ; 
 }
-
 
 
 NPFold* SMesh::serialize() const 

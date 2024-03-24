@@ -246,6 +246,51 @@ IAS_Builder::CollectInstances
      23     int nodeOffset ;
      24 };
 
+     * its easier somehow to think of the "instance.sbtOffset" as a pointer into the sbt record array, 
+       that gets offset by the buildInput.sbtIndexOffsetBuffer offsets 
+
+
+What to search for to assess SBT use of an app
+-----------------------------------------------
+
+IAS/OptiXInstance::
+
+    sbtOffset       
+
+    (does not need to depend on the instance, 
+     can just point to start of the appropriate 
+     GAS/buildInput SBT records, in CSGOptiX this 
+     points to the rec for the out CSGPrim of the CSGSolid) 
+
+GAS/buildInput::
+
+    numSbtRecords   (>= 1, often 1) 
+
+    [  (below are not needed when numSbtRecords=1) 
+    sbtIndexOffsetBuffer 
+    sbtIndexOffsetSizeInBytes
+    sbtIndexOffsetStrideInBytes
+    ]
+
+
+quotes from the manual (shortened for readability):
+
+1. Each GAS/buildInput references at least one SBT record. 
+   The first SBT GAS index for each GAS buildInput is 
+   the prefix sum of the number of SBT records.
+   Therefore, the computed SBT GAS index is dependent on the 
+   order of buildInputs.
+
+   * SCB: using prefix sum implies index offsets must be 0-based 
+     and local to their buildInput 
+
+2. Because build input 1 references a single SBT record, a sbtIndexOffsetBuffer
+   does not need to be specified for the geometry acceleration structure build.
+
+   * SCB: no need for a buffer to just supply a zero offset 
+   
+
+
 
 
 
@@ -283,6 +328,37 @@ droettger::
     (implies OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING) that would
     be another unique per instance index which could be used to access custom data
     in device memory.
+
+
+Intersection Distance
+-----------------------
+
+* with triangles need to get this from builtin optix in CH, 
+  unlike with custom geom where calculate it in IS and pass it to CH 
+
+
+* https://forums.developer.nvidia.com/t/about-distance-acquisition-of-optix7-0/112677/2
+
+For the intersection distance you query optixGetRayTmin() [typo,Tmax?] 
+inside the closest hit program.  You’ll find its link to the API reference documentation via the
+above OptiX 7 device-side functions link to OptIX 7 Programming Guide.  In
+OptiX 6 and earlier that was the float variable with semantic
+rtIntersectionDistance
+
+::
+
+     273 /// Returns the tmin passed into optixTrace.
+     274 ///
+     275 /// Only available in IS, AH, CH, MS
+     276 static __forceinline__ __device__ float optixGetRayTmin();
+     277 
+     278 /// In IS and CH returns the current smallest reported hitT or the tmax passed into optixTrace if no hit has been reported
+     279 /// In AH returns the hitT value as passed in to optixReportIntersection
+     280 /// In MS returns the tmax passed into optixTrace
+     281 /// Only available in IS, AH, CH, MS
+     282 static __forceinline__ __device__ float optixGetRayTmax();
+
+
 
 
 

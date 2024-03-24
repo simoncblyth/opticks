@@ -12,7 +12,7 @@ struct SOPTIX_Scene
     SScene* scene ; 
 
     std::vector<SCUDA_Mesh*> cuda_mesh ;
-    std::vector<SOPTIX_Mesh*> optix_mesh ;
+    std::vector<SOPTIX_MeshGroup*> meshgroup ;
     std::vector<OptixInstance> instances ; 
 
     CUdeviceptr instances_buffer ; 
@@ -31,10 +31,10 @@ struct SOPTIX_Scene
     void init_IAS();
     void init_MeshUpload_free(); 
 
-    void init_PTXModule();
-    void init_ProgramGroups();
-    void init_Pipeline();
-    void init_SBT();
+    //void init_PTXModule();
+    //void init_ProgramGroups();
+    //void init_Pipeline();
+    //void init_SBT();
 };
 
 
@@ -89,22 +89,29 @@ inline void SOPTIX_Scene::init()
 
     init_MeshUpload_free(); // earlier ? vtx,idx split from ins 
 
-    init_PTXModule();
-    init_ProgramGroups();
-    init_Pipeline();
-    init_SBT();
+    //init_PTXModule();
+    //init_ProgramGroups();
+    //init_Pipeline();
+    //init_SBT();
 }
 
 
 
+/**
+SOPTIX_Scene::init_MeshUpload
+-------------------------------
+
+HMM: separate uploads for numbers of submesh ?
+
+**/
 
 
 inline void SOPTIX_Scene::init_MeshUpload()
 {
-    int num_mesh = scene->mesh_grup.size() ; 
-    for(int i=0 ; i < num_mesh ; i++)
+    int num_mg = scene->meshgroup.size() ; 
+    for(int i=0 ; i < num_mg ; i++)
     {
-        const SMesh* m = scene->mesh_grup[i]; 
+        const SMeshGroup* mg = scene->meshgroup[i]; 
         SCUDA_Mesh* _mesh = new SCUDA_Mesh(m) ; 
         cuda_mesh.push_back(_mesh); 
     }
@@ -126,7 +133,7 @@ inline void SOPTIX_Scene::init_GAS()
     for(int i=0 ; i < int(cuda_mesh.size()) ; i++)
     {
         SCUDA_Mesh* _mesh = cuda_mesh[i] ;  
-        SOPTIX_Mesh* mesh = new SOPTIX_Mesh(ox, _mesh) ;  
+        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ox->context, _mesh) ;  
         optix_mesh.push_back(mesh);
     }
 }
@@ -218,18 +225,8 @@ inline void SOPTIX_Scene::init_IAS()
     ias = new SOPTIX_Accel( ox->context, buildInputs ); 
 }
 
-
-inline void SOPTIX_Scene::init_PTXModule()
-{
-}
-inline void SOPTIX_Scene::init_ProgramGroups();
-{
-}
-inline void SOPTIX_Scene::init_Pipeline();
-{
-}
-inline void SOPTIX_Scene::init_SBT();
-{
-}
-
+//inline void SOPTIX_Scene::init_PTXModule(){};
+//inline void SOPTIX_Scene::init_ProgramGroups(){};
+//inline void SOPTIX_Scene::init_Pipeline();
+//inline void SOPTIX_Scene::init_SBT(){};
 

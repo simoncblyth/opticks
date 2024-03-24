@@ -14,6 +14,7 @@ Good explanatiom of SBT Shader Binding Table
 struct SOPTIX_SBT
 { 
     SOPTIX_Pipeline& pip ;     
+    SOPTIX_Scene& scn ;     
 
     CUdeviceptr   d_raygen ;
     CUdeviceptr   d_miss ;
@@ -21,7 +22,7 @@ struct SOPTIX_SBT
 
     OptixShaderBindingTable sbt = {};  
 
-    SOPTIX_SBT( SOPTIX_Pipeline& pip ); 
+    SOPTIX_SBT( SOPTIX_Pipeline& pip, SOPTIX_Scene& scn ); 
 
     void init(); 
     void initRaygen(); 
@@ -31,10 +32,12 @@ struct SOPTIX_SBT
 
 
 inline SOPTIX_SBT::SOPTIX_SBT(
-       SOPTIX_Pipeline& _pip
+       SOPTIX_Pipeline& _pip, 
+       SOPTIX_Scene& _scn 
     )
     :
-    pip(_pip)
+    pip(_pip),
+    scn(_scn)
 {
     init(); 
 }
@@ -55,6 +58,7 @@ inline void SOPTIX_SBT::initRaygen()
     
     SOPTIX_RaygenRecord rg_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.raygen_pg, &rg_sbt ) );
+    //SOPTIX_RaygenData& data = rg_sbt.data
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>(raygen_record),
@@ -76,6 +80,8 @@ inline void SOPTIX_SBT::initMiss()
     
     SOPTIX_MissRecord ms_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.miss_pg, &ms_sbt ) );
+    SOPTIX_MissData& data = ms_sbt.data
+    data.bg_color = make_float3( 0.3f, 0.1f, 0.f ) ; 
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( miss_record ),
@@ -94,21 +100,42 @@ inline void SOPTIX_SBT::initMiss()
 SOPTIX_SBT::initHitgroup
 -------------------------
 
+HMM: with analytic geometry have "boundary" that 
+comes from the CSGNode. To do that with triangles 
+need to plant the boundary indices into HitgroupData.  
+That means need hitgroup records for each sub-SMesh 
+(thats equivalent to each CSGPrim)
+
+Need nested loop like CSGOptiX/SBT.cc SBT::createHitgroup::
+ 
+     GAS 
+        BuildInput       (actually 1:1 with GAS) 
+           sub-SMesh 
+
+So need access to scene data to form the SBT 
+
 **/
 
 inline void SOPTIX_SBT::initHitgroup()
 {
     std::vector<SOPTIX_HitgroupRecord> hitgroup_records;
 
-    SOPTIX_HitgroupRecord hg_sbt;
-    OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
+    int num_mesh = int(scn.optix_mesh.size());  
+    for(int i=0 ; i < num_mesh ; i++)
+    { 
+        SOPTIX_Mesh* mesh = scn.optix_mesh[i] ; 
 
-    hitgroup_records.push_back(hg_sbt);
+        SOPTIX_HitgroupRecord hg_sbt;
+        OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
+        SOPTIX_HitgroupData& data = hg_sbt.data
+        SOPTIX_TriMesh& trimesh = data.mesh ; 
 
+        trimesh.indice =  
+        trimesh.vertex = 
+        trimesh.normal=  
 
-
-
-
+        hitgroup_records.push_back(hg_sbt);
+    }
 
     CUdeviceptr hitgroup_record_base ;
     const size_t hitgroup_record_size = sizeof( SOPTIX_HitgroupRecord );
@@ -127,34 +154,5 @@ inline void SOPTIX_SBT::initHitgroup()
     sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>( hitgroup_record_size );
     sbt.hitgroupRecordCount         = static_cast<uint32_t>( hitgroup_records.size() );
 }
-
-
-/**
-SOPTIX_SBT::initHitgroup_no_instance
---------------------------------------
-
-**/
-
-inline void SOPTIX_SBT::initHitgroup_no_instance()
-{
-    CUdeviceptr hitgroup_record;
-    const size_t hitgroup_record_size = sizeof( SOPTIX_HitgroupRecord );
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &hitgroup_record ), hitgroup_record_size ) );
-
-    SOPTIX_HitgroupRecord hg_sbt;
-    OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
-
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( hitgroup_record ),
-                &hg_sbt,
-                hitgroup_record_size,
-                cudaMemcpyHostToDevice
-                ) );
-
-    sbt.hitgroupRecordBase = hitgroup_record;
-    sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>( hitgroup_record_size ); 
-    sbt.hitgroupRecordCount = 1; 
-}
-
 
 
