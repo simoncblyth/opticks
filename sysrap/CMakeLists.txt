@@ -415,7 +415,7 @@ set(HEADERS
     SOPTIX_getPRD.h
     SOPTIX_Accel.h
     SOPTIX_Binding.h
-    SOPTIX_Mesh.h
+    SOPTIX_MeshGroup.h
     SOPTIX_Module.h
     SOPTIX_OPT.h
     SOPTIX_Pipeline.h
