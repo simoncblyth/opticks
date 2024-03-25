@@ -26,6 +26,8 @@ export FOLD=/tmp/$name
 bin=$FOLD/$name
 mkdir -p $FOLD
 
+export PPM_PATH=$FOLD/$name.ppm
+
 cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
 export SOPTIX_PTX=$ptx 
@@ -49,7 +51,42 @@ scene_fold=/tmp/SScene_test
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
 
-defarg="info_ptx_build_run"
+
+wh=1024,768
+#wh=2048,1536
+
+#eye=0.1,0,-10
+#eye=-1,-1,0
+#eye=-10,-10,0
+#eye=-10,0,0
+#eye=0,-10,0
+eye=-1,-1,0
+up=0,0,1
+look=0,0,0
+
+#cam=perspective
+cam=orthographic
+
+tmin=0.1    
+#escale=asis
+escale=extent
+
+
+export WH=${WH:-$wh}
+export EYE=${EYE:-$eye}
+export LOOK=${LOOK:-$look}
+export UP=${UP:-$up}
+export TMIN=${TMIN:-$tmin}
+export ESCALE=${ESCALE:-$escale}
+export CAM=${CAM:-$cam}
+
+
+
+
+
+
+
+defarg="info_ptx_build_run_open"
 arg=${1:-$defarg}
 
 PATH=$PATH:$CUDA_PREFIX/bin
@@ -92,9 +129,14 @@ fi
 
 if [ "${arg/run}" != "$arg" ]; then
     $bin 
-    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
+    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
+if [ "${arg/open}" != "$arg" ]; then
+    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0 
+    open $PPM_PATH
+    [ $? -ne 0 ] && echo $BASH_SOURCE : open error && exit 4
+fi
 
 
 exit 0 

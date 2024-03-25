@@ -16,6 +16,7 @@ Related::
 
 #include "spath.h"
 #include "scuda.h"
+#include "sppm.h"
 
 #include "SGLM.h"
 #include "SScene.h"
@@ -40,7 +41,7 @@ int main()
     if(dump) std::cout << _scn->desc() ; 
   
     sframe fr ; 
-    fr.ce = make_float4(0.f, 0.f, 0.f, 1000.f); 
+    fr.ce = make_float4(0.f, 0.f, 0.f, 10000.f); 
     // TODO: determine CE from scene and view options 
 
     SGLM gm ; 
@@ -72,23 +73,47 @@ int main()
     // need img handling like qudarap/tests/QTexRotateTest.cc with SIMG 
     //  examples/UseOptiX7GeometryInstanced/Engine.cc
 
+    
+    uchar4* d_pixels = nullptr ;
+    size_t num_pixel = gm.Width()*gm.Height(); 
+    size_t pixel_bytes = num_pixel*sizeof(uchar4) ; 
+    CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_pixels ), pixel_bytes )); 
+    uchar4* pixels = new uchar4[num_pixel] ; 
 
     SOPTIX_Params par ; ; 
-    par.device_alloc(); 
+
     par.width = gm.Width() ; 
     par.height = gm.Height() ; 
-    par.pixels = nullptr ; 
-    par.tmin = 0.f ; 
-    par.tmax = 1e99f ; 
-    par.cameratype = 0 ; 
+    par.pixels = d_pixels ; 
+    par.tmin = 0.1f ; 
+    par.tmax = 1e9f ; 
+    par.cameratype = gm.cam ; 
     SGLM::Copy(&par.eye.x, gm.e ); 
     SGLM::Copy(&par.U.x  , gm.u );  
     SGLM::Copy(&par.V.x  , gm.v );  
     SGLM::Copy(&par.W.x  , gm.w );  
     par.handle = scn.ias->handle ;  
-    par.upload(); 
+
+    SOPTIX_Params* d_param = par.device_alloc(); 
+    par.upload(d_param); 
 
 
+    OPTIX_CHECK( optixLaunch(
+                 pip.pipeline,
+                 0,             // stream
+                 (CUdeviceptr)d_param,
+                 sizeof( SOPTIX_Params ),
+                 &(sbt.sbt),
+                 gm.Width(),  // launch width
+                 gm.Height(), // launch height
+                 1            // launch depth
+                 ) );
+    
+    CUDA_SYNC_CHECK();
+    CUDA_CHECK( cudaMemcpy( pixels, reinterpret_cast<void*>(d_pixels), pixel_bytes, cudaMemcpyDeviceToHost ));
+     
+    const char* ppm_path = getenv("PPM_PATH") ;   
+    sppm::Write(ppm_path, gm.Width(), gm.Height(), 4, (unsigned char*)pixels, true );  
 
     return 0 ; 
 }

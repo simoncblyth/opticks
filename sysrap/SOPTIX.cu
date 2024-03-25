@@ -119,6 +119,11 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     const bool yflip = true ;
     if(yflip) d.y = -d.y ;
 
+    //printf("//render params.eye (%7.3f %7.3f %7.3f)\n", params.eye.x, params.eye.y, params.eye.z); 
+    //printf("//render params.U (%7.3f %7.3f %7.3f)\n", params.U.x, params.U.y, params.U.z); 
+    //printf("//render params.V (%7.3f %7.3f %7.3f)\n", params.V.x, params.V.y, params.V.z); 
+    //printf("//render params.W (%7.3f %7.3f %7.3f)\n", params.W.x, params.W.y, params.W.z); 
+
     const unsigned cameratype = params.cameratype ;  
     const float3 dxyUV = d.x * params.U + d.y * params.V ; 
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
@@ -148,10 +153,12 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
+    //printf("//__raygen__rg\n"); 
+
     quad2 prd ; 
     prd.zero(); 
  
-    render(   idx, dim, &prd );
+    render( idx, dim, &prd );
 } 
 
 /**
@@ -171,10 +178,12 @@ extern "C" __global__ void __miss__ms()
     const unsigned identity = 0xffffffffu ; 
     const unsigned boundary = 0xffffu ;
     const float lposcost = 0.f ; 
+
+    // printf("//__miss__ms ms.bg_color (%7.3f %7.3f %7.3f) \n", ms->bg_color.x, ms->bg_color.x, ms->bg_color.z ); 
   
     quad2* prd = getPRD<quad2>(); 
 
-    prd->q0.f.x = ms->bg_color.x ;   
+    prd->q0.f.x = ms->bg_color.x ;  // HMM: thats setting the normal, so it will be diddled  
     prd->q0.f.y = ms->bg_color.y ; 
     prd->q0.f.z = ms->bg_color.z ; 
     prd->q0.f.w = 0.f ; 
@@ -218,6 +227,9 @@ extern "C" __global__ void __closesthit__ch()
 
     const SOPTIX_HitgroupData* hit_group_data = reinterpret_cast<SOPTIX_HitgroupData*>( optixGetSbtDataPointer() );
     const SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
+
+    printf("//__closesthit__ch\n"); 
+
 
     const unsigned prim_idx = optixGetPrimitiveIndex();
     const float2   barys    = optixGetTriangleBarycentrics();

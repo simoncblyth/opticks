@@ -80,7 +80,8 @@ inline void SOPTIX_SBT::initMiss()
     SOPTIX_MissRecord ms_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.miss_pg, &ms_sbt ) );
     SOPTIX_MissData& data = ms_sbt.data ; 
-    data.bg_color = make_float3( 0.3f, 0.1f, 0.f ) ; 
+    //data.bg_color = make_float3( 0.3f, 0.1f, 0.f ) ; 
+    data.bg_color = make_float3( 1.0f, 0.0f, 0.f ) ; 
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( miss_record ),

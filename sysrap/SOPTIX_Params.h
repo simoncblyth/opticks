@@ -21,9 +21,8 @@ struct SOPTIX_Params
     OptixTraversableHandle handle ;
 
 #ifndef __CUDACC__
-    static SOPTIX_Params* d_param ;
-    void device_alloc();
-    void upload();  
+    SOPTIX_Params* device_alloc();
+    void upload(SOPTIX_Params* d_param);  
 #endif
 
 };
@@ -31,16 +30,20 @@ struct SOPTIX_Params
 
 #ifndef __CUDACC__
 
-void SOPTIX_Params::device_alloc()
+inline SOPTIX_Params* SOPTIX_Params::device_alloc()
 {
+    SOPTIX_Params* d_param = nullptr ;
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( SOPTIX_Params ) ) );   
-    assert( d_param );  
+    return d_param ; 
 }
-void SOPTIX_Params::upload()
+inline void SOPTIX_Params::upload(SOPTIX_Params* d_param)
 {
-    assert( d_param );  
     CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( d_param ), this, sizeof( SOPTIX_Params ), cudaMemcpyHostToDevice) );  
+    // hmm some optix7.5 SDK examples (optixMeshViewer) using cudaMemcpyAsync for parameter upload
 }
 
 #endif
+
+
+
 
