@@ -19,6 +19,28 @@ struct SOPTIX_Params
     float3 W;  
 
     OptixTraversableHandle handle ;
+
+#ifndef __CUDACC__
+    static SOPTIX_Params* d_param ;
+    void device_alloc();
+    void upload();  
+#endif
+
 };
 
+
+#ifndef __CUDACC__
+
+void SOPTIX_Params::device_alloc()
+{
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( SOPTIX_Params ) ) );   
+    assert( d_param );  
+}
+void SOPTIX_Params::upload()
+{
+    assert( d_param );  
+    CUDA_CHECK( cudaMemcpy( reinterpret_cast<void*>( d_param ), this, sizeof( SOPTIX_Params ), cudaMemcpyHostToDevice) );  
+}
+
+#endif
 

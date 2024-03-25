@@ -29,6 +29,8 @@ mkdir -p $FOLD
 cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
 export SOPTIX_PTX=$ptx 
+# when using CMake generated ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx 
+# following pattern $OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" 
 
 opticks-
 glm-

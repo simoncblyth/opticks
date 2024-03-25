@@ -70,12 +70,14 @@ inline void SOPTIX::init()
 {
     CUDA_CHECK(cudaFree( 0 ) );
 
-    CUcontext cuCtx = 0;  // zero means take the current context
     OPTIX_CHECK( optixInit() );
+
     OptixDeviceContextOptions options = {};
     options.logCallbackFunction       = &SOPTIX::LogCB ;
     options.logCallbackLevel          = 4;
-    //options.validationMode = OPTIX_DEVICE_CONTEXT_VALIDATION_MODE_ALL ; 
+    options.validationMode = OPTIX_DEVICE_CONTEXT_VALIDATION_MODE_ALL ; 
+
+    CUcontext cuCtx = 0;  // zero means take the current context
 
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 
