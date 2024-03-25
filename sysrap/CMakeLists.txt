@@ -291,6 +291,8 @@ set(HEADERS
     s_time.h
 
     SPPM.hh
+    sppm.h 
+
     SColor.hh
     SId.hh
     SGDML.hh
