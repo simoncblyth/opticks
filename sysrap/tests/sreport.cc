@@ -319,7 +319,7 @@ inline void sreport_Creator::init()
     std::cout << "-sreport_Creator::init.4" << std::endl ; 
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
 
-#ifdef WITH_SUBMETE
+#ifdef WITH_SUBMETA
     std::cout << "-sreport_Creator::init.5" << std::endl ; 
     report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ; 
     std::cout << "-sreport_Creator::init.6" << std::endl ; 

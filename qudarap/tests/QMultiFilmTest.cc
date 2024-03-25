@@ -17,8 +17,9 @@ void test_check(QMultiFilm& sc)
 void test_mock_lookup(QMultiFilm& sc){
 
 
-    const char* input_path = "/data/ihep/tmp/debug_multi_film_table/GPUTestArray/test_texture.npy";
-    NP* input_arr = NP::LoadIfExists(input_path); 
+    //const char* input_path = "/data/ihep/tmp/debug_multi_film_table/GPUTestArray/test_texture.npy";
+    NP* input_arr = NP::LoadIfExists("$QMultiFilmTest_FOLD/test_texture.npy");
+    //NP* input_arr = NP::LoadIfExists(input_path); 
     assert(input_arr->has_shape(128,256,2,4));
 
     int height = input_arr->shape[0];
@@ -89,7 +90,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* artpath = SSys::getenvvar("ARTPATH", "/tmp/debug_multi_film_table/multifilm.npy") ; 
+    const char* artpath = SSys::getenvvar("ARTPATH", "/data/ihep/tmp/debug_multi_film_table/multifilm.npy") ; 
     NP* art = NP::LoadIfExists(artpath) ; 
 
     LOG(info)

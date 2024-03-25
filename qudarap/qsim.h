@@ -1564,7 +1564,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_MultiFilm(unsigned& flag, cura
     ART_normal.x = one -(ART_normal.y + ART_normal.z) ;        // 1.f - (R+T) 
 
     const float& An = ART_normal.x ;  
-    const float energy_eV = pmt->hc_eVnm/wv_nm ;
+    const float energy_eV = qpmt<float>::hc_eVnm/wv_nm ;
     const float qe_scale = pmt->get_qescale(lpmtid); 
     const float qe_shape = pmt->get_lpmtcat_qe(pmtcat, energy_eV);
     
