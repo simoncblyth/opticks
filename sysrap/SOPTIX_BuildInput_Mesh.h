@@ -9,30 +9,34 @@ vertexBuffers field that is a host pointer
 to device arrays. Have to keep that address valid.  
 
 **/
-#include "SCUDA_Mesh.h"
+#include "SCUDA_MeshGroup.h"
 
 struct SOPTIX_BuildInput_Mesh
 {
     unsigned    flag ;  
     CUdeviceptr vertexBuffer ;  
     CUdeviceptr indexBuffer ; 
+    size_t vtx_elem ; 
+    size_t idx_elem ; 
+ 
     OptixBuildInput buildInput = {} ;
  
-    SOPTIX_BuildInput_Mesh( const SCUDA_Mesh* _mesh ); 
+    SOPTIX_BuildInput_Mesh( const SCUDA_MeshGroup* _mg, size_t part ); 
     std::string desc() const ; 
 }; 
 
-inline SOPTIX_BuildInput_Mesh::SOPTIX_BuildInput_Mesh( const SCUDA_Mesh* mesh )
+inline SOPTIX_BuildInput_Mesh::SOPTIX_BuildInput_Mesh( const SCUDA_MeshGroup* mg, size_t part )
     :
     flag( OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT | OPTIX_GEOMETRY_FLAG_DISABLE_TRIANGLE_FACE_CULLING ),
-    vertexBuffer( mesh->vtx_pointer(0) ),
-    indexBuffer( mesh->idx_pointer(0) )
+    vertexBuffer( mg->vtx.pointer(part) ),
+    indexBuffer( mg->idx.pointer(part) ),
+    vtx_elem( mg->vtx.item_num(part) ),
+    idx_elem( mg->idx.item_num(part) )
 {
-    assert( mesh->vtx_num(0) % 3 == 0 ); 
-    assert( mesh->idx_num(0) % 3 == 0 ); 
-
-    unsigned numVertices = mesh->vtx_num(0)/3 ; 
-    unsigned numIndexTriplets = mesh->idx_num(0)/3 ; 
+    assert( vtx_elem % 3 == 0 ); 
+    assert( idx_elem % 3 == 0 ); 
+    unsigned numVertices = vtx_elem/3 ; 
+    unsigned numIndexTriplets = idx_elem/3 ; 
 
     unsigned vertexStrideInBytes = 0 ; 
 

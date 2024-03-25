@@ -20,7 +20,7 @@ template <typename T>
 struct SCU_BufferView
 {
     T* data = nullptr ; 
-    std::vector<size_t> item ; 
+    std::vector<size_t> item ;   // HMM "value" more appropriate 
 
     void upload(   const std::vector<const NP*>& aa ); 
     void hostcopy( const std::vector<const NP*>& aa ); 
@@ -31,6 +31,7 @@ struct SCU_BufferView
     std::string devdump(size_t part) const ; 
     std::string devdump() const ; 
 
+    size_t num_part() const ;
     size_t item_total() const ; 
     size_t item_offset(size_t part) const ; 
     size_t item_num(   size_t part) const ; 
@@ -79,15 +80,23 @@ inline void SCU_BufferView<T>::upload( const std::vector<const NP*>& aa )
     assert( item.size() == 0 );    
 
     int num_a = aa.size() ; 
-    for(int i=0 ; i < num_a ; i++) item.push_back( aa[i]->num_items() );  
+    for(int i=0 ; i < num_a ; i++) item.push_back( aa[i]->num_values() );  
     size_t tot_bytes = item_total()*sizeof(T) ; 
 
     CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &data ), tot_bytes )); 
+
+    size_t tot_arr_bytes = 0 ; 
+
     for(int i=0 ; i < num_a ; i++) 
     {
         const NP* a = aa[i] ;
         CUdeviceptr d = pointer(i); 
-        CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), a->cvalues<T>(), a->arr_bytes(), cudaMemcpyHostToDevice )); 
+
+        size_t arr_bytes = a->arr_bytes() ; 
+        tot_arr_bytes += arr_bytes ;
+        assert( tot_arr_bytes <= tot_bytes ); 
+ 
+        CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), a->cvalues<T>(), arr_bytes, cudaMemcpyHostToDevice )); 
     }
 }
 
@@ -178,6 +187,11 @@ inline std::string SCU_BufferView<T>::devdump() const
     return str ; 
 }
 
+template <typename T>
+inline size_t SCU_BufferView<T>::num_part() const 
+{
+    return item.size(); 
+}
 
 template <typename T>
 inline size_t SCU_BufferView<T>::item_total() const

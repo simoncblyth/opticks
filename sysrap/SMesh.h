@@ -43,7 +43,6 @@ struct SMesh
     glm::tmat4x4<double> tr0 = {} ;  // informational for debug only, as gets applied by init  
     std::vector<std::string> names ; // used to hold subnames in concat SMesh
 
-
     const NP* tri ; 
     const NP* vtx ; 
     const NP* nrm ;

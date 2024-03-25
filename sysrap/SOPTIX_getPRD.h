@@ -9,7 +9,6 @@ The payload can be read and written by each program
 
 **/
 
-#include "scuda_pointer.h"
 
 template<typename T> static __forceinline__ __device__ T *getPRD()
 {

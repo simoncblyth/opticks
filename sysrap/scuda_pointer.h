@@ -9,6 +9,7 @@ See env-;optix7c-
 
 **/
 
+
 static __forceinline__ __device__ void* unpackPointer( uint32_t i0, uint32_t i1 )
 {
     const uint64_t uptr = static_cast<uint64_t>( i0 ) << 32 | i1; 

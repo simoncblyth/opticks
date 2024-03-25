@@ -5,20 +5,6 @@ SOPTIX_MeshGroup.h
 
 Used from SOPTIX_Scene.h 
 
-
-Here one buildInput yields one GAS.
-But that is using the concatenated SMesh uploaded. 
-Need to handle the sub-SMesh separately. 
-
-Presumably using multiple buildInputs
-into one GAS, because each buildInput gets its own sbtIndexOffsetBuffer.  
-
-
-HMM: currently are concatenating the SMesh CPU 
-side and just seeing the merged here...  but that 
-is not the final solution because need to distinguish 
-between landing on different sub-SMesh "CSGPrim" 
-
 From optix7sdk.bash notes::
 
     CSGOptiX uses one GAS for each CSGSolid ("compound" of numPrim CSGPrim)
@@ -26,17 +12,14 @@ From optix7sdk.bash notes::
     numPrim SBT records which have "sbt-geometry-acceleration-structure-index" 
     of (0,1,2,...,numPrim-1)  
 
-
 For sanity need to do something with triangles that 
 follows the same pattern as that. 
-
 
 Q: Can see the point of having multiple triangle BuildInputs 
    with an SBT record for each. But am mystified what use is numSbtRecords > 1 
    for a bunch of triangles ? Because no way to address them ?  
 
 **/
-
 
 #include "SCUDA_Mesh.h"
 #include "SOPTIX_BuildInput_Mesh.h"
@@ -47,10 +30,9 @@ struct SOPTIX_MeshGroup
     std::vector<const SOPTIX_BuildInput_Mesh*> bis ; 
     std::vector<OptixBuildInput> buildInputs ;
     SOPTIX_Accel* gas ;
+    size_t num_buildInputs() const ; 
  
-    SOPTIX_MeshGroup( OptixDeviceContext& context, const SCUDA_Mesh* mesh ); 
-    SOPTIX_MeshGroup( OptixDeviceContext& context, std::vector<const SCUDA_Mesh*>& meshes ); 
-    void init(  OptixDeviceContext& context, const SCUDA_Mesh** meshes, int num_mesh ); 
+    SOPTIX_MeshGroup( OptixDeviceContext& context, const SCUDA_MeshGroup* mg ); 
 
     std::string desc() const ; 
 }; 
@@ -72,22 +54,18 @@ inline std::string SOPTIX_MeshGroup::desc() const
     return str ; 
 }
 
-
-inline SOPTIX_MeshGroup::SOPTIX_MeshGroup(OptixDeviceContext& context, const SCUDA_Mesh* meshes )
+inline size_t SOPTIX_MeshGroup::num_buildInputs() const
 {
-    init( context, meshes, 1 ); 
-}
-inline SOPTIX_MeshGroup::SOPTIX_MeshGroup(OptixDeviceContext& context, std::vector<const SCUDA_Mesh*>& meshes )
-{
-    init( context, meshes.data(), meshes.size() ); 
+    assert( buildInputs.size() == bis.size() ) ; 
+    return buildInputs.size() ; 
 }
 
-inline SOPTIX_MeshGroup::init( OptixDeviceContext& context, const SCUDA_Mesh** meshes, int num_mesh )
+inline SOPTIX_MeshGroup::SOPTIX_MeshGroup(OptixDeviceContext& context, const SCUDA_MeshGroup* mg )
 {
-    for(int i=0 ; i < num_mesh ; i++)
+    size_t num_part = mg->num_part() ;  
+    for(size_t i=0 ; i < num_part ; i++)
     {
-        const SCUDA_Mesh* mesh = meshes[i]; 
-        const SOPTIX_BuildInput_Mesh* bi = new SOPTIX_BuildInput_Mesh(mesh); 
+        const SOPTIX_BuildInput_Mesh* bi = new SOPTIX_BuildInput_Mesh(mg, i); 
         bis.push_back(bi); 
         buildInputs.push_back(bi->buildInput); 
     }

@@ -11,7 +11,7 @@ struct SOPTIX_Scene
     SOPTIX* ox ; 
     SScene* scene ; 
 
-    std::vector<SCUDA_Mesh*> cuda_mesh ;
+    std::vector<SCUDA_MeshGroup*> cuda_meshgroup ;
     std::vector<SOPTIX_MeshGroup*> meshgroup ;
     std::vector<OptixInstance> instances ; 
 
@@ -40,21 +40,26 @@ struct SOPTIX_Scene
 
 inline std::string SOPTIX_Scene::desc() const 
 {
-    int num_mesh = scene->mesh_grup.size() ; 
+    int num_mm = scene->meshmerge.size() ; 
+    int num_mg = scene->meshgroup.size() ; 
     std::stringstream ss ;
-    ss << "[ SOPTIX_Scene::desc num_mesh " << num_mesh << std::endl ; 
+    ss << "[ SOPTIX_Scene::desc"
+        << " num_mm " << num_mm 
+        << " num_mg " << num_mg 
+        << std::endl 
+        ; 
     ss << descGAS() ; 
     ss << descIAS() ; 
-    ss << "] SOPTIX_Scene::desc num_mesh " << num_mesh << std::endl ; 
+    ss << "] SOPTIX_Scene::desc " << std::endl ; 
     std::string str = ss.str(); 
     return str ;
 }
 inline std::string SOPTIX_Scene::descGAS() const 
 {
-    int num_gas = int(optix_mesh.size()); 
+    int num_gas = int(meshgroup.size()); 
     std::stringstream ss ;
     ss << "[ SOPTIX_Scene::descGAS num_gas " << num_gas << std::endl ;
-    for(int i=0 ; i < num_gas ; i++ ) ss << optix_mesh[i]->desc() ; 
+    for(int i=0 ; i < num_gas ; i++ ) ss << meshgroup[i]->desc() ; 
     ss << "] SOPTIX_Scene::descGAS num_gas " << num_gas << std::endl ;
     std::string str = ss.str(); 
     return str ;
@@ -87,7 +92,9 @@ inline void SOPTIX_Scene::init()
     init_Instances();
     init_IAS();
 
-    init_MeshUpload_free(); // earlier ? vtx,idx split from ins 
+    //init_MeshUpload_free(); 
+    // earlier ? vtx,idx split from ins 
+    // needs to be after SBT is setup ? 
 
     //init_PTXModule();
     //init_ProgramGroups();
@@ -101,51 +108,47 @@ inline void SOPTIX_Scene::init()
 SOPTIX_Scene::init_MeshUpload
 -------------------------------
 
-HMM: separate uploads for numbers of submesh ?
-
 **/
-
 
 inline void SOPTIX_Scene::init_MeshUpload()
 {
     int num_mg = scene->meshgroup.size() ; 
+    std::cout << "SOPTIX_Scene::init_MeshUpload num_mg " << num_mg << std::endl ; 
+
     for(int i=0 ; i < num_mg ; i++)
     {
         const SMeshGroup* mg = scene->meshgroup[i]; 
-        SCUDA_Mesh* _mesh = new SCUDA_Mesh(m) ; 
-        cuda_mesh.push_back(_mesh); 
+        SCUDA_MeshGroup* _mg = new SCUDA_MeshGroup(mg) ; 
+        cuda_meshgroup.push_back(_mg); 
     }
 }
 
 inline void SOPTIX_Scene::init_MeshUpload_free()
 {
-    int num_mesh = cuda_mesh.size() ; 
-    for(int i=0 ; i < num_mesh ; i++)
+    int num_mg = cuda_meshgroup.size() ; 
+    for(int i=0 ; i < num_mg ; i++)
     {
-        SCUDA_Mesh* _mesh = cuda_mesh[i] ; 
-        _mesh->free();   
+        SCUDA_MeshGroup* _mg = cuda_meshgroup[i] ; 
+        _mg->free();   
     }
 }
 
 
 inline void SOPTIX_Scene::init_GAS()
 {
-    for(int i=0 ; i < int(cuda_mesh.size()) ; i++)
+    int num_cmg = cuda_meshgroup.size() ; 
+    std::cout << "SOPTIX_Scene::init_GAS num_cmg " << num_cmg << std::endl ; 
+    for(int i=0 ; i < num_cmg ; i++)
     {
-        SCUDA_Mesh* _mesh = cuda_mesh[i] ;  
-        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ox->context, _mesh) ;  
-        optix_mesh.push_back(mesh);
+        SCUDA_MeshGroup* _mg = cuda_meshgroup[i] ; 
+        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ox->context, _mg) ;  
+        meshgroup.push_back(mg);
     }
 }
 
 /**
 SOPTIX_Scene::initInstances
 -----------------------------
-
-sbtOffset
-~~~~~~~~~~~~
-
-https://forums.developer.nvidia.com/t/sbt-problem-when-using-multiple-gas-objects/108824/2
 
 **/
 
@@ -156,8 +159,9 @@ inline void SOPTIX_Scene::init_Instances()
     int num_gas  = scene->inst_info.size(); 
     int num_inst = scene->inst_tran.size(); 
 
+    std::cout << "SOPTIX_Scene::init_Instances num_gas " << num_gas << std::endl ; 
+
     int tot = 0 ; 
-    unsigned sbtOffset = 0 ; 
 
     unsigned visibilityMask = ox->props->visibilityMask(); 
     assert( visibilityMask == 0xffu ); 
@@ -166,7 +170,7 @@ inline void SOPTIX_Scene::init_Instances()
     flags |= OPTIX_INSTANCE_FLAG_DISABLE_TRIANGLE_FACE_CULLING ;  
     flags |= OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
 
-
+    size_t sbtOffset = 0 ; 
     for(int i=0 ; i < num_gas ; i++)
     {
         const int4& _inst_info = scene->inst_info[i] ;
@@ -174,7 +178,8 @@ inline void SOPTIX_Scene::init_Instances()
         int count = _inst_info.y ; 
         int offset = _inst_info.z ; 
 
-        SOPTIX_Mesh* mesh = optix_mesh[i] ; 
+        SOPTIX_MeshGroup* mg = meshgroup[i] ; 
+        OptixTraversableHandle handle = mg->gas->handle ; 
 
         assert( ridx == i ); 
         for(int j=0 ; j < count ; j++)
@@ -192,11 +197,13 @@ inline void SOPTIX_Scene::init_Instances()
             instance.sbtOffset = sbtOffset ; 
             instance.visibilityMask = visibilityMask ;
             instance.flags = flags ;
-            instance.traversableHandle = mesh->gas->handle ; 
+            instance.traversableHandle = handle ; 
 
             instances.push_back(instance);
-            sbtOffset += 1 ;  // ??? one sbt record per GAS build input per RAY_TYPE
         }
+
+        size_t num_bi = mg->num_buildInputs(); 
+        sbtOffset += num_bi ; 
     }
 }
 

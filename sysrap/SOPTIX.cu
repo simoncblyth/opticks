@@ -30,6 +30,7 @@ __closesthit__ch
 **/
 
 #include <optix.h>
+#include <stdint.h>
 
 #include "scuda.h"
 #include "squad.h"
@@ -37,9 +38,8 @@ __closesthit__ch
 #include "SOPTIX_Binding.h"
 #include "SOPTIX_Params.h"
 
-#ifdef WITH_PRD
+#include "scuda_pointer.h"
 #include "SOPTIX_getPRD.h"
-#endif
 
 extern "C" { __constant__ SOPTIX_Params params ;  }
 
@@ -174,9 +174,9 @@ extern "C" __global__ void __miss__ms()
   
     quad2* prd = getPRD<quad2>(); 
 
-    prd->q0.f.x = ms->r ;   
-    prd->q0.f.y = ms->g ; 
-    prd->q0.f.z = ms->b ; 
+    prd->q0.f.x = ms->bg_color.x ;   
+    prd->q0.f.y = ms->bg_color.y ; 
+    prd->q0.f.z = ms->bg_color.z ; 
     prd->q0.f.w = 0.f ; 
 
     prd->q1.u.x = 0u ; 
@@ -217,7 +217,7 @@ extern "C" __global__ void __closesthit__ch()
     // here just assume triangles
 
     const SOPTIX_HitgroupData* hit_group_data = reinterpret_cast<SOPTIX_HitgroupData*>( optixGetSbtDataPointer() );
-    SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
+    const SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
 
     const unsigned prim_idx = optixGetPrimitiveIndex();
     const float2   barys    = optixGetTriangleBarycentrics();
@@ -238,12 +238,15 @@ extern "C" __global__ void __closesthit__ch()
     // HMM: need to plant boundary in HitGroupData ? 
     // cf CSGOptiX/Analytic: node->boundary();// all nodes of tree have same boundary 
 
-    float t = optixGetRayTmax() ; 
-    const float3 ray_origin = optixGetObjectRayOrigin();
-    const float3 ray_direction = optixGetObjectRayDirection();
-    const float3 lpos = ray_origin + t*ray_direction 
-     // HMM: could use P to give the local position ?  
-    float lposcost = normalize_z(lpos); // scuda.h 
+    float t = optixGetRayTmax() ;
+
+    // cannot get ray_origin/direction in CH (only IS,AH)
+    //const float3 ray_origin = optixGetObjectRayOrigin();
+    //const float3 ray_direction = optixGetObjectRayDirection();
+    //const float3 lpos = ray_origin + t*ray_direction  ; 
+    // HMM: could use P to give the local position ?  
+
+    float lposcost = normalize_z(P); // scuda.h 
 
     quad2* prd = getPRD<quad2>(); 
 

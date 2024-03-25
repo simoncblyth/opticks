@@ -1,5 +1,5 @@
 /**
-SOPTIX_Scene_test.sh 
+SOPTIX_Scene_test.cc 
 =======================
 
 ::
@@ -18,38 +18,43 @@ Related::
 #include "scuda.h"
 #include "SScene.h"
 
-#include "SCUDA_Mesh.h"
 
 #include "SOPTIX.h"
+
+#include "SCUDA_MeshGroup.h"
 #include "SOPTIX_MeshGroup.h"
 #include "SOPTIX_Scene.h"
 #include "SOPTIX_Module.h"
+#include "SOPTIX_Pipeline.h"
+#include "SOPTIX_SBT.h"
 
 int main()
 {
+    bool dump = false ; 
+
     SScene* _scn = SScene::Load("$SCENE_FOLD/scene") ; 
-    std::cout << _scn->desc() ; 
+    if(dump) std::cout << _scn->desc() ; 
   
     SOPTIX opx ; 
-    std::cout << opx.desc() ; 
+    if(dump) std::cout << opx.desc() ; 
 
     SOPTIX_Options opt ;  
 
     SOPTIX_Scene scn(&opx, _scn );  
-    std::cout << scn.desc() ; 
+    if(dump) std::cout << scn.desc() ; 
 
-    const char* _ptxpath = "$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" ; 
-    // SHOULD BE: const char* _ptxpath = "$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx" ; 
+    // when using CMake ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx 
+    //const char* _ptxpath = "$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" ; 
+    const char* _ptxpath = "$SOPTIX_PTX" ; 
 
     SOPTIX_Module mod(opx.context, opt,  _ptxpath ); 
-    std::cout << mod.desc() ; 
+    if(dump) std::cout << mod.desc() ; 
 
     SOPTIX_Pipeline pip(opx.context, mod.module, opt ); 
-    std::cout << pip.desc() ; 
+    if(dump) std::cout << pip.desc() ; 
 
-    SOPTIX_SBT sbt( SOPTIX_Pipeline& pip, SOPTIX_Scene& scn );
-    std::cout << sbt.desc() ; 
-
+    SOPTIX_SBT sbt(pip, scn );
+    if(dump) std::cout << sbt.desc() ; 
 
     return 0 ; 
 }

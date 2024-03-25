@@ -150,11 +150,6 @@ inline void SCU::FreeBuf(SCU_Buf<T>& buf ) // static
 
 
 
-template <typename T>
-inline SCU_MergeBuf<T> SCU::UploadMerge(  const std::vector<const NP*>& arrs ) 
-
-
-
 
 
 

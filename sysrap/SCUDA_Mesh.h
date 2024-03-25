@@ -36,7 +36,7 @@ struct SCUDA_Mesh
 
 inline SCUDA_Mesh::SCUDA_Mesh(const SMesh* mesh )
     :
-    vtx(SCU::UploadBuf<float>( mesh->vtx->cvalues<float>(),   mesh->vtx->num_values(), "vtx" )).  
+    vtx(SCU::UploadBuf<float>( mesh->vtx->cvalues<float>(),   mesh->vtx->num_values(), "vtx" )),
     idx(SCU::UploadBuf<int>(   mesh->tri->cvalues<int>(),     mesh->tri->num_values(), "idx" ))
 {
 }
@@ -50,7 +50,7 @@ CUdeviceptr SCUDA_Mesh::vtx_pointer(int item) const
 size_t SCUDA_Mesh::vtx_num(int item) const 
 {   
     assert( item == 0 ); 
-    return vtx.num_item(); 
+    return vtx.num_item ; 
 } 
 
 CUdeviceptr SCUDA_Mesh::idx_pointer(int item) const 
@@ -61,7 +61,7 @@ CUdeviceptr SCUDA_Mesh::idx_pointer(int item) const
 size_t SCUDA_Mesh::idx_num(int item) const 
 {   
     assert( item == 0 ); 
-    return idx.num_item(); 
+    return idx.num_item ; 
 } 
 
 

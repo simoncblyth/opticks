@@ -16,10 +16,7 @@ struct SOPTIX_SBT
     SOPTIX_Pipeline& pip ;     
     SOPTIX_Scene& scn ;     
 
-    CUdeviceptr   d_raygen ;
-    CUdeviceptr   d_miss ;
-    CUdeviceptr   d_hitgroup ;
-
+    std::vector<SOPTIX_HitgroupRecord> hitgroup_records;
     OptixShaderBindingTable sbt = {};  
 
     SOPTIX_SBT( SOPTIX_Pipeline& pip, SOPTIX_Scene& scn ); 
@@ -28,13 +25,16 @@ struct SOPTIX_SBT
     void initRaygen(); 
     void initMiss(); 
     void initHitgroup(); 
+
+    std::string desc() const ; 
+    std::string descPartBI() const ; 
+
+    static std::string Desc(const OptixShaderBindingTable& sbt) ; 
+
 };
 
 
-inline SOPTIX_SBT::SOPTIX_SBT(
-       SOPTIX_Pipeline& _pip, 
-       SOPTIX_Scene& _scn 
-    )
+inline SOPTIX_SBT::SOPTIX_SBT( SOPTIX_Pipeline& _pip, SOPTIX_Scene& _scn )
     :
     pip(_pip),
     scn(_scn)
@@ -54,7 +54,7 @@ inline void SOPTIX_SBT::initRaygen()
     CUdeviceptr  raygen_record ; 
    
     const size_t raygen_record_size = sizeof( SOPTIX_RaygenRecord );
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygenRecord ), raygen_record_size ) );
+    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &raygen_record ), raygen_record_size ) );
     
     SOPTIX_RaygenRecord rg_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.raygen_pg, &rg_sbt ) );
@@ -68,7 +68,6 @@ inline void SOPTIX_SBT::initRaygen()
                 ) );
 
     sbt.raygenRecord = raygen_record ; 
-
 }
 
 inline void SOPTIX_SBT::initMiss()
@@ -80,7 +79,7 @@ inline void SOPTIX_SBT::initMiss()
     
     SOPTIX_MissRecord ms_sbt;
     OPTIX_CHECK( optixSbtRecordPackHeader( pip.miss_pg, &ms_sbt ) );
-    SOPTIX_MissData& data = ms_sbt.data
+    SOPTIX_MissData& data = ms_sbt.data ; 
     data.bg_color = make_float3( 0.3f, 0.1f, 0.f ) ; 
 
     CUDA_CHECK( cudaMemcpy(
@@ -118,23 +117,32 @@ So need access to scene data to form the SBT
 
 inline void SOPTIX_SBT::initHitgroup()
 {
-    std::vector<SOPTIX_HitgroupRecord> hitgroup_records;
+    std::cout << "SOPTIX_SBT::initHitgroup " << descPartBI() << std::endl ; 
 
-    int num_mesh = int(scn.optix_mesh.size());  
-    for(int i=0 ; i < num_mesh ; i++)
+    size_t num_mg = scn.meshgroup.size();  
+    for(size_t i=0 ; i < num_mg ; i++)
     { 
-        SOPTIX_Mesh* mesh = scn.optix_mesh[i] ; 
+        SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
+        size_t num_part = cmg->num_part()  ; 
 
-        SOPTIX_HitgroupRecord hg_sbt;
-        OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
-        SOPTIX_HitgroupData& data = hg_sbt.data
-        SOPTIX_TriMesh& trimesh = data.mesh ; 
+        SOPTIX_MeshGroup* mg = scn.meshgroup[i] ; 
+        size_t num_bi = mg->num_buildInputs()  ; 
 
-        trimesh.indice =  
-        trimesh.vertex = 
-        trimesh.normal=  
+        assert( num_part == num_bi ); 
 
-        hitgroup_records.push_back(hg_sbt);
+        for(size_t j=0 ; j < num_bi ; j++)
+        {   
+            SOPTIX_HitgroupRecord hg_sbt;
+            OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
+            SOPTIX_HitgroupData& data = hg_sbt.data ; 
+            SOPTIX_TriMesh& trimesh = data.mesh ; 
+
+            trimesh.vertex = reinterpret_cast<float3*>( cmg->vtx.pointer(j) ); 
+            trimesh.indice = reinterpret_cast<uint3*>(  cmg->idx.pointer(j) ); 
+            trimesh.normal = nullptr ;   
+
+            hitgroup_records.push_back(hg_sbt);
+        } 
     }
 
     CUdeviceptr hitgroup_record_base ;
@@ -153,6 +161,66 @@ inline void SOPTIX_SBT::initHitgroup()
     sbt.hitgroupRecordBase = hitgroup_record_base ; 
     sbt.hitgroupRecordStrideInBytes = static_cast<uint32_t>( hitgroup_record_size );
     sbt.hitgroupRecordCount         = static_cast<uint32_t>( hitgroup_records.size() );
+}
+
+
+inline std::string SOPTIX_SBT::desc() const 
+{
+    std::stringstream ss ;
+    ss << "[SOPTIX_SBT::desc\n" ; 
+    ss << " hitgroup_records.size " << hitgroup_records.size() << "\n" ; 
+    ss << Desc(sbt) ; 
+    ss << "]SOPTIX_SBT::desc\n" ; 
+    std::string str = ss.str(); 
+    return str ; 
+} 
+
+inline std::string SOPTIX_SBT::descPartBI() const 
+{
+    std::stringstream ss ;
+    ss << "[SOPTIX_SBT::descPartBI\n" ; 
+    size_t num_mg = scn.meshgroup.size();  
+    for(size_t i=0 ; i < num_mg ; i++)
+    { 
+        SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
+        size_t num_part = cmg->num_part()  ; 
+
+        SOPTIX_MeshGroup* mg = scn.meshgroup[i] ; 
+        size_t num_bi = mg->num_buildInputs()  ; 
+
+        ss 
+            << std::setw(4) << i 
+            << " SCUDA_MeshGroup::num_part " << std::setw(6) << num_part 
+            << " SOPTIX_MeshGroup::num_bi  " << std::setw(6) << num_bi
+            << "\n"
+            ; 
+    }
+    ss << "]SOPTIX_SBT::descPartBI\n" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
+
+
+
+
+inline std::string SOPTIX_SBT::Desc(const OptixShaderBindingTable& sbt)  // static 
+{
+    std::stringstream ss ;
+    ss 
+        << " sbt.raygenRecord                " << sbt.raygenRecord << "\n" 
+        << " sbt.missRecordBase              " << sbt.missRecordBase  << "\n"
+        << " sbt.missRecordStrideInBytes     " << sbt.missRecordStrideInBytes << "\n"
+        << " sbt.missRecordCount             " << sbt.missRecordCount << "\n"
+        << " sbt.hitgroupRecordBase          " << sbt.hitgroupRecordBase << "\n" 
+        << " sbt.hitgroupRecordStrideInBytes " << sbt.hitgroupRecordStrideInBytes << "\n"
+        << " sbt.hitgroupRecordCount         " << sbt.hitgroupRecordCount << "\n"  
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
