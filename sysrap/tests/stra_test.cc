@@ -351,6 +351,42 @@ void test_MakeTransformedArray()
         memcpy( glm::value_ptr(v) , bb + i*3, itemsize ); 
         std::cout << glm::to_string(v) << std::endl ;   
     }
+}
+
+
+template<typename T>
+void test_Copy_Columns_3x4()
+{
+    std::cout << "test_Copy_Columns_3x4" << std::endl ; 
+    std::array<T,16> aa = {{
+          0., 1., 2., 3., 
+          4., 5., 6., 7.,
+          8., 9.,10.,11., 
+         12.,13.,14.,15.  
+    }}; 
+
+    glm::tmat4x4<T> src(0.) ; 
+    glm::tmat4x4<T> dst(0.) ;
+ 
+    memcpy( glm::value_ptr(src) , aa.data(), 16*sizeof(T) ); 
+    stra<T>::Copy_Columns_3x4(dst, src); 
+
+
+    std::cout
+        << " src \n"  
+        << glm::to_string(src) 
+        << std::endl 
+        << stra<T>::Desc(src)
+        << std::endl 
+        ; 
+
+    std::cout
+        << " dst \n"  
+        << glm::to_string(dst) 
+        << std::endl 
+        << stra<T>::Desc(dst)
+        << std::endl 
+        ; 
 
 }
 
@@ -366,9 +402,10 @@ int main()
     test_Transform_Vec<double>();
     test_Transform_Data<double>();
     test_Transform_Strided<double>();
+    test_MakeTransformedArray<double>();
     */
 
-    test_MakeTransformedArray<double>();
+    test_Copy_Columns_3x4<double>();
 
 
     return 0 ; 

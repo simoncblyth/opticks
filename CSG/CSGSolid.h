@@ -18,6 +18,14 @@ Currently this is not uploaded to GPU, but still coding like
 it might be in future, ie keep it simple, no refs, 
 128 bit (16 byte) alignment
 
+Extract from notes in externals/optix7sdk.bash::
+
+    CSGOptiX uses one GAS for each CSGSolid ("compound" of numPrim CSGPrim)
+    and that one GAS always has only one buildInput which references
+    numPrim SBT records which have "sbt-geometry-acceleration-structure-index" 
+    of (0,1,2,...,numPrim-1)  
+
+
 **/
 
 struct CSG_API CSGSolid   // Composite shape 

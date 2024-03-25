@@ -114,13 +114,13 @@ which do the OpenGL uploads
 
 inline void SGLFW_Scene::initMesh()
 {
-    int num_mesh_grup = sc->mesh_grup.size(); 
+    int num_meshmerge = sc->meshmerge.size(); 
 
     const std::vector<glm::tmat4x4<float>>& inst_tran = sc->inst_tran ; 
     const float* values = (const float*)inst_tran.data() ; 
     int item_values = 4*4 ; 
 
-    for(int i=0 ; i < num_mesh_grup ; i++)
+    for(int i=0 ; i < num_meshmerge ; i++)
     {
         //if( i != 4) continue ; 
         const int4&  _inst_info = sc->inst_info[i] ; 
@@ -129,9 +129,9 @@ inline void SGLFW_Scene::initMesh()
         int offset   = _inst_info.z ; 
         bool is_instanced = _inst_info.y > 1 ; 
 
-        const SMesh* _mg = sc->mesh_grup[i] ; 
+        const SMesh* _mm = sc->meshmerge[i] ; 
 
-        SGLFW_Mesh* _mesh = new SGLFW_Mesh(_mg);
+        SGLFW_Mesh* _mesh = new SGLFW_Mesh(_mm);
         if( is_instanced )
         {
             _mesh->set_inst( num_inst, values + offset*item_values );  

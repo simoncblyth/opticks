@@ -24,6 +24,11 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
+G4 technical forum
+-------------------
+
+* https://indico.cern.ch/event/1366947/contributions/5805312/attachments/2801750/4888084/RnD2024_technical_forum.pdf
+
 
 
 1100_beta Updates in optical physics, Daren Sawkey, Geant4 Collaboration Meeting Sept 22, 2021

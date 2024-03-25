@@ -23,14 +23,14 @@ struct SMesh_test
 inline int SMesh_test::Load0()
 {
     const char* m = "0" ; 
-    SMesh* mesh = SMesh::Load("$SCENE_FOLD/scene/mesh", m  ); 
+    SMesh* mesh = SMesh::Load("$SCENE_FOLD/scene/mesh_grup", m  ); 
     std::cout << mesh->desc(); 
     return 0 ;
 }
 
 inline int SMesh_test::Load()
 {
-    NPFold* scene_mesh = NPFold::Load("$SCENE_FOLD/scene/mesh"); 
+    NPFold* scene_mesh = NPFold::Load("$SCENE_FOLD/scene/mesh_grup"); 
     std::cout << scene_mesh->desc(); 
 
     int num_sub = scene_mesh->get_num_subfold(); 

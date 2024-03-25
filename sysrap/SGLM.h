@@ -278,6 +278,7 @@ struct SYSRAP_API SGLM : public SCMD
     static const char* FOCAL_Label() ; 
     static const char* ESCALE_Label() ; 
 
+    static void Copy(float* dst, const glm::vec3& src ); 
 
     // member methods
     std::string descInput() const ; 
@@ -356,6 +357,8 @@ struct SYSRAP_API SGLM : public SCMD
     glm::vec3 v ; 
     glm::vec3 w ; 
     glm::vec3 e ; 
+
+
     void updateEyeBasis(); 
     static std::string DescEyeBasis( const glm::vec3& E, const glm::vec3& U, const glm::vec3& V, const glm::vec3& W ); 
     std::string descEyeBasis() const ; 
@@ -511,6 +514,16 @@ inline const char* SGLM::CAM_Label(){ return SCAM::Name(CAM) ; }
 inline const char* SGLM::NEARFAR_Label(){ return SBAS::Name(NEARFAR) ; }
 inline const char* SGLM::FOCAL_Label(){   return SBAS::Name(FOCAL) ; }
 inline const char* SGLM::ESCALE_Label(){   return SBAS::Name(ESCALE) ; }
+
+inline void SGLM::Copy(float* dst, const glm::vec3& src )
+{
+    dst[0] = src.x ; 
+    dst[1] = src.y ; 
+    dst[2] = src.z ; 
+}
+
+
+
 
 inline SGLM::SGLM() 
     :

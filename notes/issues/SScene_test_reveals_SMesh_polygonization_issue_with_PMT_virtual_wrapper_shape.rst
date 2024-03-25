@@ -1,6 +1,7 @@
 SScene_test_reveals_SMesh_polygonization_issue_with_PMT_virtual_wrapper_shape
 ================================================================================
 
+FIXED : bug in grabbing the polygonization ? was skipping too much. 
 
 ::
 

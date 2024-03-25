@@ -291,6 +291,8 @@ set(HEADERS
     s_time.h
 
     SPPM.hh
+    sppm.h 
+
     SColor.hh
     SId.hh
     SGDML.hh
@@ -313,7 +315,6 @@ set(HEADERS
 
     SName.h 
 
-    scuda.h
     smath.h 
     sblackbody.h
     tcomplex.h
@@ -407,6 +408,22 @@ set(HEADERS
 
     SCUDA_Mesh.h 
 
+    scuda.h
+    scuda_pointer.h
+
+    SOPTIX.h
+    SOPTIX_Properties.h
+    SOPTIX_Options.h
+    SOPTIX_getPRD.h
+    SOPTIX_Accel.h
+    SOPTIX_Binding.h
+    SOPTIX_MeshGroup.h
+    SOPTIX_Module.h
+    SOPTIX_OPT.h
+    SOPTIX_Pipeline.h
+    SOPTIX_SBT.h
+    SOPTIX_Scene.h
+        
     gleq.h
 
     SDir.h
@@ -438,6 +455,8 @@ set(HEADERS
     OpticksPhoton.hh
 
     CUDA_CHECK.h
+    OPTIX_CHECK.h
+
     SU.hh
     SComponent_OLD.hh 
     SComp.h 

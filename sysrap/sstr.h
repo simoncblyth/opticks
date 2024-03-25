@@ -775,3 +775,6 @@ inline void sstr::truncated_copy( char* dst, const char* src, int dst_size )
     int num_char = std::min(dst_size, srclen); 
     memcpy(dst, src, num_char) ; 
 }
+
+
+
