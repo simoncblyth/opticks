@@ -44,7 +44,7 @@ int main()
     SGLFW gl(gm); 
 
 #ifdef WITH_CUDA_GL_INTEROP 
-    SGLFW_CUDA cuda(gm) ; 
+    SGLFW_CUDA interop(gm) ; 
 #endif
 
     // HMM: could discover these from file system 
@@ -88,8 +88,8 @@ int main()
         if( gl.toggle.cuda )
         {
 #ifdef WITH_CUDA_GL_INTEROP 
-            cuda.fillOutputBuffer(); 
-            cuda.displayOutputBuffer(gl.window);
+            interop.fillOutputBuffer(); 
+            interop.displayOutputBuffer(gl.window);
 #endif
         }
         else

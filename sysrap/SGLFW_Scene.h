@@ -11,7 +11,7 @@ SGLFW_Scene.h
 
 struct SGLFW_Scene
 {
-    static int RenderLoop(const SScene* scene ); 
+    static int RenderLoop(const SScene* scene, SGLM* gm ); 
     
     const SScene* sc ; 
     sframe*       fr ; 
@@ -19,7 +19,7 @@ struct SGLFW_Scene
 
     SGLFW*        gl ; 
 #ifdef WITH_CUDA_GL_INTEROP 
-    SGLFW_CUDA*   cu ; 
+    SGLFW_CUDA*   interop ; 
 #endif
     // map of these ? or pairs ?
     SGLFW_Program* wire ; 
@@ -29,9 +29,8 @@ struct SGLFW_Scene
 
     std::vector<SGLFW_Mesh*> mesh ; 
 
-    SGLFW_Scene(const SScene* scene ); 
+    SGLFW_Scene(const SScene* scene, SGLM* gm ); 
     void init(); 
-    void initGLM(); 
     void initProg(); 
     void initMesh(); 
 
@@ -42,10 +41,10 @@ struct SGLFW_Scene
     void renderloop(); 
 }; 
 
-inline int SGLFW_Scene::RenderLoop(const SScene* scene ) // static
+inline int SGLFW_Scene::RenderLoop(const SScene* scene, SGLM* gm ) // static
 {
     std::cout << "[ SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
-    SGLFW_Scene sc(scene) ;
+    SGLFW_Scene sc(scene, gm) ;
     sc.renderloop();  
     std::cout << "] SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
     return 0 ; 
@@ -61,14 +60,13 @@ inline SGLFW_Program* SGLFW_Scene::getProg() const
 }
 
 
-inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc )
+inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc, SGLM* _gm)
     :
     sc(_sc)
-   ,fr(new sframe)
-   ,gm(new SGLM)
+   ,gm(_gm)
    ,gl(new SGLFW(*gm))
 #ifdef WITH_CUDA_GL_INTEROP 
-   ,cu(new SGLFW_CUDA(*gm))  
+   ,interop(new SGLFW_CUDA(*gm))  
 #endif
    ,wire(nullptr)
    ,iwire(nullptr)
@@ -80,17 +78,10 @@ inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc )
 
 inline void SGLFW_Scene::init()
 {
-    initGLM();
     initProg();
     initMesh();
 }
 
-inline void SGLFW_Scene::initGLM()
-{
-    fr->ce = make_float4(0.f, 0.f, 0.f, 1000.f); 
-    gm->set_frame(*fr) ; 
-    // TODO: SGLM::set_ce/set_fr ? avoid heavyweight sframe when not needed ?
-}
 
 inline void SGLFW_Scene::initProg()
 {
@@ -159,8 +150,8 @@ inline void SGLFW_Scene::render()
     if( gl->toggle.cuda )
     {
 #ifdef WITH_CUDA_GL_INTEROP 
-        cu->fillOutputBuffer(); 
-        cu->displayOutputBuffer(gl->window);
+        interop->fillOutputBuffer(); 
+        interop->displayOutputBuffer(gl->window);
 #endif
     }
     else

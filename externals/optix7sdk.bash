@@ -330,6 +330,71 @@ droettger::
     in device memory.
 
 
+
+
+optixGetTriangleVertexData
+-----------------------------
+
+::
+
+    .304 /// Return the object space triangle vertex positions of a given triangle in a Geometry
+     305 /// Acceleration Structure (GAS) at a given motion time.
+     306 /// To access vertex data, the GAS must be built using the flag OPTIX_BUILD_FLAG_ALLOW_RANDOM_VERTEX_ACCESS.
+     307 ///
+     308 /// If motion is disabled via OptixPipelineCompileOptions::usesMotionBlur, or the GAS does not contain motion, the
+     309 /// time parameter is ignored.
+     310 static __forceinline__ __device__ void optixGetTriangleVertexData( OptixTraversableHandle gas, unsigned int primIdx, unsigned int sbtGASIndex, float time, float3 data[3]);
+
+     598 /// Returns the Sbt GAS index of the primitive associated with the current intersection.
+     599 ///
+     600 /// In IS and AH this corresponds to the currently intersected primitive.
+     601 /// In CH this corresponds to the Sbt GAS index of the closest intersected primitive.
+     602 /// In EX with exception code OPTIX_EXCEPTION_CODE_TRAVERSAL_INVALID_HIT_SBT corresponds to the sbt index within the hit GAS. Returns zero for all other exceptions.
+     603 static __forceinline__ __device__ unsigned int optixGetSbtGASIndex();
+
+
+
+    epsilon:SDK blyth$ find . -type f -exec grep -H optixGetTriangleVertexData {} \;
+    ./optixMotionGeometry/optixMotionGeometry.cu:    optixGetTriangleVertexData( optixGetGASTraversableHandle(), optixGetPrimitiveIndex(), optixGetSbtGASIndex(),
+    ./optixVolumeViewer/volume.cu:    optixGetTriangleVertexData(
+    ./optixDynamicGeometry/optixDynamicGeometry.cu:    optixGetTriangleVertexData( optixGetGASTraversableHandle(), optixGetPrimitiveIndex(), optixGetSbtGASIndex(),
+    epsilon:SDK blyth$ 
+
+
+::
+
+    150     const OptixTraversableHandle gas       = optixGetGASTraversableHandle();
+    151     const unsigned int           gasSbtIdx = optixGetSbtGASIndex();
+    152     const unsigned int           primIdx   = optixGetPrimitiveIndex();
+    153     float3 vertices[3] = {};
+    154     optixGetTriangleVertexData(
+    155         gas,
+    156         primIdx,
+    157         gasSbtIdx,
+    158         0,
+    159         vertices );
+    160 
+
+
+optixGetInstanceTraversableFromIAS
+-----------------------------------
+
+::
+
+     300 /// Return the traversable handle of a given instance in an Instance 
+     301 /// Acceleration Structure (IAS)
+     302 static __forceinline__ __device__ OptixTraversableHandle optixGetInstanceTraversableFromIAS( OptixTraversableHandle ias, unsigned int instIdx );
+
+
+no examples::
+
+    epsilon:SDK blyth$ find . -type f -exec grep -H optixGetInstanceTraversableFromIAS {} \;
+    epsilon:SDK blyth$ 
+
+
+
+
+
 Intersection Distance
 -----------------------
 

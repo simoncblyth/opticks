@@ -15,12 +15,14 @@ Related::
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh 
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
+
+TODO: raytrace and rasterized with key to flip between them 
+
 **/
 
 #include "ssys.h"
 #include "spath.h"
 #include "scuda.h"
-#include "sppm.h"
 
 #include "SGLM.h"
 #include "SScene.h"
