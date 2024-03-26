@@ -228,8 +228,7 @@ extern "C" __global__ void __closesthit__ch()
     const SOPTIX_HitgroupData* hit_group_data = reinterpret_cast<SOPTIX_HitgroupData*>( optixGetSbtDataPointer() );
     const SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
 
-    printf("//__closesthit__ch\n"); 
-
+    //printf("//__closesthit__ch\n"); 
 
     const unsigned prim_idx = optixGetPrimitiveIndex();
     const float2   barys    = optixGetTriangleBarycentrics();

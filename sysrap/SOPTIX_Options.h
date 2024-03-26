@@ -141,7 +141,12 @@ inline std::string SOPTIX_Options::Desc_moduleCompileOptions(const OptixModuleCo
 inline void SOPTIX_Options::init_pipelineCompileOptions()
 {
     int usesMotionBlur = 0 ; 
-    OptixTraversableGraphFlags traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;
+
+    OptixTraversableGraphFlags traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_ANY ; 
+    //OptixTraversableGraphFlags traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS ; 
+    //OptixTraversableGraphFlags traversableGraphFlags = OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;
+
+
     unsigned numPayloadValues = _numPayloadValues ; // in optixTrace call 
     unsigned numAttributeValues = _numAttributeValues ; 
     unsigned exceptionFlags = SOPTIX_OPT::ExceptionFlags( _exceptionFlags ) ;

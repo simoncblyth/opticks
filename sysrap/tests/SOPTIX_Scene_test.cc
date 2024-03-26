@@ -14,6 +14,7 @@ Related::
 
 **/
 
+#include "ssys.h"
 #include "spath.h"
 #include "scuda.h"
 #include "sppm.h"
@@ -39,9 +40,26 @@ int main()
 
     SScene* _scn = SScene::Load("$SCENE_FOLD/scene") ; 
     if(dump) std::cout << _scn->desc() ; 
-  
+ 
+    int ihandle = ssys::getenvint("HANDLE", 0)  ; 
+    float extent = 10000.f ;
+    switch(ihandle)
+    {   
+        case -1: extent = 12000.f ; break ; 
+        case  0: extent = 12000.f ; break ; 
+        case  1: extent = 100.f ; break ; 
+        case  2: extent = 500.f ; break ; 
+        case  3: extent = 500.f ; break ; 
+        case  4: extent = 500.f ; break ; 
+        case  5: extent = 100.f ; break ; 
+        case  6: extent = 200.f ; break ; 
+        case  7: extent = 500.f ; break ; 
+        case  8: extent = 500.f ; break ; 
+    } 
+
+ 
     sframe fr ; 
-    fr.ce = make_float4(0.f, 0.f, 0.f, 10000.f); 
+    fr.ce = make_float4(0.f, 0.f, 0.f, extent ); 
     // TODO: determine CE from scene and view options 
 
     SGLM gm ; 
@@ -92,7 +110,8 @@ int main()
     SGLM::Copy(&par.U.x  , gm.u );  
     SGLM::Copy(&par.V.x  , gm.v );  
     SGLM::Copy(&par.W.x  , gm.w );  
-    par.handle = scn.ias->handle ;  
+
+    par.handle = ihandle == -1 ? scn.ias->handle : scn.meshgroup[ihandle]->gas->handle ;  
 
     SOPTIX_Params* d_param = par.device_alloc(); 
     par.upload(d_param); 

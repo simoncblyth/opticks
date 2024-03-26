@@ -81,7 +81,8 @@ export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
 
 
-
+handle=0 
+export HANDLE=${HANDLE:-$handle}
 
 
 
