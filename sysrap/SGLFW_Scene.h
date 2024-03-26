@@ -14,13 +14,9 @@ struct SGLFW_Scene
     static int RenderLoop(const SScene* scene, SGLM* gm ); 
     
     const SScene* sc ; 
-    sframe*       fr ; 
     SGLM*         gm ; 
-
     SGLFW*        gl ; 
-#ifdef WITH_CUDA_GL_INTEROP 
-    SGLFW_CUDA*   interop ; 
-#endif
+
     // map of these ? or pairs ?
     SGLFW_Program* wire ; 
     SGLFW_Program* iwire ;
@@ -65,9 +61,6 @@ inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc, SGLM* _gm)
     sc(_sc)
    ,gm(_gm)
    ,gl(new SGLFW(*gm))
-#ifdef WITH_CUDA_GL_INTEROP 
-   ,interop(new SGLFW_CUDA(*gm))  
-#endif
    ,wire(nullptr)
    ,iwire(nullptr)
    ,norm(nullptr)
@@ -101,6 +94,8 @@ Traverses the mesh_group from the SScene
 passing them to SGLFW_Mesh instances 
 which do the OpenGL uploads
 
+HMM: how to match ray trace IAS/GAS handle selection ?
+
 **/
 
 inline void SGLFW_Scene::initMesh()
@@ -126,7 +121,7 @@ inline void SGLFW_Scene::initMesh()
         if( is_instanced )
         {
             _mesh->set_inst( num_inst, values + offset*item_values );  
-            std::cout << _mesh->desc() << std::endl ; 
+            //std::cout << _mesh->desc() << std::endl ; 
         }
         mesh.push_back(_mesh); 
     }
@@ -147,22 +142,12 @@ for different mesh (eg to highlight things).
 
 inline void SGLFW_Scene::render()
 {
-    if( gl->toggle.cuda )
+    int num_mesh = mesh.size(); 
+    for(int i=0 ; i < num_mesh ; i++)
     {
-#ifdef WITH_CUDA_GL_INTEROP 
-        interop->fillOutputBuffer(); 
-        interop->displayOutputBuffer(gl->window);
-#endif
-    }
-    else
-    {
-        int num_mesh = mesh.size(); 
-        for(int i=0 ; i < num_mesh ; i++)
-        {
-            SGLFW_Mesh* _mesh = mesh[i] ; 
-            SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
-            _mesh->render(_prog);   
-        }
+        SGLFW_Mesh* _mesh = mesh[i] ; 
+        SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
+        _mesh->render(_prog);   
     }
 }
 

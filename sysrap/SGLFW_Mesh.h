@@ -13,6 +13,7 @@ Canonical use is from SGLFW_Scene::initMesh
 **/
 struct SGLFW_Mesh
 {
+    bool  dump ; 
     const SMesh*   mesh ;  
 
     SGLFW_Buffer*  vtx ; 
@@ -42,6 +43,7 @@ struct SGLFW_Mesh
 
 inline SGLFW_Mesh::SGLFW_Mesh(const SMesh* _mesh )
     :
+    dump(false),
     mesh(_mesh),
     vtx(nullptr),
     nrm(nullptr),
@@ -165,7 +167,7 @@ inline void SGLFW_Mesh::render_drawElements() const
 
 #ifdef __APPLE__
         glDrawElementsInstanced(mode, count, type, indices, instancecount );
-        if(render_count < 10 ) std::cout 
+        if(dump && render_count < 10 ) std::cout 
             << "SGLFW_Mesh::render_drawElements.glDrawElementsInstanced" 
             << " render_count " << render_count
             << " instancecount " << instancecount
@@ -178,7 +180,7 @@ inline void SGLFW_Mesh::render_drawElements() const
         glDrawElementsInstancedBaseVertexBaseInstance(mode, count, type, indices, instancecount, basevertex, baseinstance ); 
         // SEGV on laptop, OK on worktation 
         // https://github.com/moderngl/moderngl/issues/346
-        if(render_count < 10 ) std::cout 
+        if(dump && render_count < 10 ) std::cout 
             << "SGLFW_Mesh::render_drawElements.glDrawElementsInstancedBaseVertexBaseInstance" 
             << " render_count " << render_count
             << " instancecount " << instancecount

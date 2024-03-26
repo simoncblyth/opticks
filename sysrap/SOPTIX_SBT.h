@@ -139,8 +139,8 @@ inline void SOPTIX_SBT::initHitgroup()
             SOPTIX_TriMesh& trimesh = data.mesh ; 
 
             trimesh.vertex = reinterpret_cast<float3*>( cmg->vtx.pointer(j) ); 
+            trimesh.normal = reinterpret_cast<float3*>( cmg->nrm.pointer(j) ); 
             trimesh.indice = reinterpret_cast<uint3*>(  cmg->idx.pointer(j) ); 
-            trimesh.normal = nullptr ;   
 
             hitgroup_records.push_back(hg_sbt);
         } 

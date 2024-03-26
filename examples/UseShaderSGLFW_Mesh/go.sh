@@ -55,7 +55,8 @@ shader=wireframe
 SHADER=${SHADER:-$shader}
 
 
-wh=1024,768
+#wh=1024,768
+wh=2560,1440
 
 #eye=0.1,0,-10
 #eye=-1,-1,0

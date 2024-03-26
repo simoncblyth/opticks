@@ -4,10 +4,13 @@ SOPTIX_Scene.h
 ===============
 
 
-
 **/
+
+#include <bitset>
+
 struct SOPTIX_Scene
 { 
+    bool    dump ; 
     SOPTIX* ox ; 
     SScene* scene ; 
 
@@ -77,6 +80,7 @@ inline std::string SOPTIX_Scene::descIAS() const
 
 inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX* _ox, SScene* _scene )
     :
+    dump(false),
     ox(_ox),
     scene(_scene),
     instances_buffer(0),
@@ -113,7 +117,7 @@ SOPTIX_Scene::init_MeshUpload
 inline void SOPTIX_Scene::init_MeshUpload()
 {
     int num_mg = scene->meshgroup.size() ; 
-    std::cout << "SOPTIX_Scene::init_MeshUpload num_mg " << num_mg << std::endl ; 
+    if(dump) std::cout << "SOPTIX_Scene::init_MeshUpload num_mg " << num_mg << std::endl ; 
 
     for(int i=0 ; i < num_mg ; i++)
     {
@@ -137,7 +141,7 @@ inline void SOPTIX_Scene::init_MeshUpload_free()
 inline void SOPTIX_Scene::init_GAS()
 {
     int num_cmg = cuda_meshgroup.size() ; 
-    std::cout << "SOPTIX_Scene::init_GAS num_cmg " << num_cmg << std::endl ; 
+    if(dump) std::cout << "SOPTIX_Scene::init_GAS num_cmg " << num_cmg << std::endl ; 
     for(int i=0 ; i < num_cmg ; i++)
     {
         SCUDA_MeshGroup* _mg = cuda_meshgroup[i] ; 
@@ -155,36 +159,40 @@ SOPTIX_Scene::initInstances
 
 inline void SOPTIX_Scene::init_Instances()
 {
+    unsigned visibilityMask_FULL = ox->props->visibilityMask(); 
+    unsigned visibilityMask_BITS = std::bitset<32>(visibilityMask_FULL).count(); 
+    assert( visibilityMask_FULL == 0xffu ); 
+    assert( visibilityMask_BITS == 8 ); 
+
     const std::vector<glm::tmat4x4<float>>& inst_tran = scene->inst_tran ;
-    int num_gas  = scene->inst_info.size(); 
-    int num_inst = scene->inst_tran.size(); 
+    size_t num_gas  = scene->inst_info.size(); 
+    size_t num_inst = scene->inst_tran.size(); 
 
-    std::cout << "SOPTIX_Scene::init_Instances num_gas " << num_gas << std::endl ; 
+    if(dump) std::cout << "SOPTIX_Scene::init_Instances num_gas " << num_gas << std::endl ; 
 
-    int tot = 0 ; 
-
-    unsigned visibilityMask = ox->props->visibilityMask(); 
-    assert( visibilityMask == 0xffu ); 
-    
+    unsigned tot = 0 ; 
     unsigned flags = OPTIX_INSTANCE_FLAG_NONE ; 
     flags |= OPTIX_INSTANCE_FLAG_DISABLE_TRIANGLE_FACE_CULLING ;  
     flags |= OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
 
     size_t sbtOffset = 0 ; 
-    for(int i=0 ; i < num_gas ; i++)
+    for(unsigned i=0 ; i < num_gas ; i++)
     {
         const int4& _inst_info = scene->inst_info[i] ;
-        int ridx = _inst_info.x ; 
-        int count = _inst_info.y ; 
-        int offset = _inst_info.z ; 
+        unsigned ridx = _inst_info.x ; 
+        unsigned count = _inst_info.y ; 
+        unsigned offset = _inst_info.z ; 
 
         SOPTIX_MeshGroup* mg = meshgroup[i] ; 
         OptixTraversableHandle handle = mg->gas->handle ; 
 
+        unsigned marker_bit = std::min( i, visibilityMask_BITS - 1 );  
+        unsigned visibilityMask = 0x1 << marker_bit ;  
+
         assert( ridx == i ); 
-        for(int j=0 ; j < count ; j++)
+        for(unsigned j=0 ; j < count ; j++)
         {
-            int idx = offset + j ; 
+            unsigned idx = offset + j ; 
             assert( idx < num_inst ); 
             assert( idx == tot ); 
             tot += 1 ;

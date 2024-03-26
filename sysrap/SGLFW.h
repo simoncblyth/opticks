@@ -48,6 +48,7 @@ struct SGLFW : public SCMD
     static constexpr const char* TITLE = "SGLFW" ; 
 
     SGLM& gm ; 
+
     int width ; 
     int height ; 
 
@@ -92,7 +93,7 @@ struct SGLFW : public SCMD
     std::string descDrag() const;
     std::string descStartPos() const;  
 
-    SGLFW(SGLM& gm, const char* title=nullptr ); 
+    SGLFW(SGLM& gm ); 
     virtual ~SGLFW(); 
     static void Error_callback(int error, const char* description); 
     void init(); 
@@ -317,7 +318,7 @@ inline void SGLFW::cursor_moved_action()
     }
     else if(toggle.lrot)
     {
-        std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ; 
+        //std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ; 
         gm.setLookRotation(start_ndc, move_ndc); 
         gm.update(); 
     }
@@ -361,12 +362,12 @@ inline std::string SGLFW::descStartPos() const
     return str ;
 }
 
-inline SGLFW::SGLFW(SGLM& _gm, const char* title_ )
+inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
     width(gm.Width()),
     height(gm.Height()),
-    title(title_ ? strdup(title_) : TITLE),
+    title(TITLE),
     window(nullptr),
     count(0),
     renderlooplimit(20000), 
@@ -443,7 +444,8 @@ inline void SGLFW::init()
 #endif
 
 
-    GLFWmonitor* monitor = nullptr ;  // monitor to use for full screen mode, or NULL for windowed mode. 
+    // HMM: using fullscreen mode with resolution less than display changes display resolution 
+    GLFWmonitor* monitor = gm.fullscreen ? glfwGetPrimaryMonitor() : nullptr ;   // nullptr for windowed mode
     GLFWwindow* share = nullptr ;     // window whose context to share resources with, or NULL to not share resources
 
     window = glfwCreateWindow(width, height, title, monitor, share);

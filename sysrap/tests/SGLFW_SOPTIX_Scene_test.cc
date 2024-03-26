@@ -16,7 +16,9 @@ Related::
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
 
-TODO: raytrace and rasterized with key to flip between them 
+TODO: get view maths for raytrace and rasterized to match each other 
+
+* HMM target control would help with that 
 
 **/
 
@@ -39,6 +41,7 @@ TODO: raytrace and rasterized with key to flip between them
 #include "SOPTIX_Params.h"
 
 #include "SGLFW.h"
+#include "SGLFW_Scene.h"
 
 
 int main()
@@ -73,7 +76,6 @@ int main()
     gm.set_frame(fr) ; 
     //std::cout << gm.desc() ;  
 
-
     SOPTIX opx ; 
     if(dump) std::cout << opx.desc() ; 
 
@@ -91,52 +93,63 @@ int main()
 
     SOPTIX_SBT sbt(pip, scn );
     if(dump) std::cout << sbt.desc() ; 
+  
+ 
+    SGLFW_Scene glsc(_scn, &gm );
+    SGLFW* gl = glsc.gl ; 
 
-    SGLFW gl(gm); 
     SGLFW_CUDA interop(gm); 
-    
+ 
     SOPTIX_Params par ; ; 
     SOPTIX_Params* d_param = par.device_alloc(); 
 
     CUstream stream = 0 ; 
     unsigned depth = 1 ; 
 
-    while(gl.renderloop_proceed())
+    while(gl->renderloop_proceed())
     {   
-        gl.renderloop_head();
+        gl->renderloop_head();
 
-        uchar4* d_pixels = interop.output_buffer->map() ; 
-   
-        par.width = gm.Width() ; 
-        par.height = gm.Height() ; 
-        par.pixels = d_pixels ; 
-        par.tmin = gm.get_near_abs() ; 
-        par.tmax = gm.get_far_abs() ; 
-        par.cameratype = gm.cam ; 
-        SGLM::Copy(&par.eye.x, gm.e ); 
-        SGLM::Copy(&par.U.x  , gm.u );  
-        SGLM::Copy(&par.V.x  , gm.v );  
-        SGLM::Copy(&par.W.x  , gm.w );  
-        par.handle = ihandle == -1 ? scn.ias->handle : scn.meshgroup[ihandle]->gas->handle ;  
-        par.upload(d_param); 
+        if( gl->toggle.cuda )
+        {
+            uchar4* d_pixels = interop.output_buffer->map() ; 
+       
+            par.width = gm.Width() ; 
+            par.height = gm.Height() ; 
+            par.pixels = d_pixels ; 
+            par.tmin = gm.get_near_abs() ; 
+            par.tmax = gm.get_far_abs() ; 
+            par.cameratype = gm.cam ; 
+            par.visibilityMask = 0xff ; 
 
-        OPTIX_CHECK( optixLaunch(
-                     pip.pipeline,
-                     stream,
-                     (CUdeviceptr)d_param,
-                     sizeof( SOPTIX_Params ),
-                     &(sbt.sbt),
-                     gm.Width(),  
-                     gm.Height(), 
-                     depth
-                     ) );
+            SGLM::Copy(&par.eye.x, gm.e ); 
+            SGLM::Copy(&par.U.x  , gm.u );  
+            SGLM::Copy(&par.V.x  , gm.v );  
+            SGLM::Copy(&par.W.x  , gm.w );  
+            par.handle = ihandle == -1 ? scn.ias->handle : scn.meshgroup[ihandle]->gas->handle ;  
+            par.upload(d_param); 
 
-        CUDA_SYNC_CHECK();
-        interop.output_buffer->unmap() ; 
+            OPTIX_CHECK( optixLaunch(
+                         pip.pipeline,
+                         stream,
+                         (CUdeviceptr)d_param,
+                         sizeof( SOPTIX_Params ),
+                         &(sbt.sbt),
+                         gm.Width(),  
+                         gm.Height(), 
+                         depth
+                         ) );
 
-        interop.displayOutputBuffer(gl.window);
+            CUDA_SYNC_CHECK();
+            interop.output_buffer->unmap() ; 
 
-        gl.renderloop_tail();
+            interop.displayOutputBuffer(gl->window);
+        }
+        else
+        { 
+            glsc.render(); 
+        }
+        gl->renderloop_tail();
     }   
     return 0 ; 
 }

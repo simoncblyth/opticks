@@ -61,11 +61,11 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        quad2*                 prd
+        quad2*                 prd,
+        unsigned               visibilityMask
         )   
 {
     const float rayTime = 0.0f ; 
-    OptixVisibilityMask visibilityMask = 1u  ; 
     OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE 
     const unsigned SBToffset = 0u ; 
     const unsigned SBTstride = 1u ; 
@@ -116,8 +116,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
             static_cast<float>(idx.y)/static_cast<float>(dim.y)
             ) - 1.0f;
 
-    const bool yflip = true ;
-    if(yflip) d.y = -d.y ;
+    //const bool yflip = true ;
+    //if(yflip) d.y = -d.y ;
 
     //printf("//render params.eye (%7.3f %7.3f %7.3f)\n", params.eye.x, params.eye.y, params.eye.z); 
     //printf("//render params.U (%7.3f %7.3f %7.3f)\n", params.U.x, params.U.y, params.U.z); 
@@ -136,7 +136,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         direction,
         params.tmin,
         params.tmax,
-        prd
+        prd,
+        params.visibilityMask
     );
 
     const float3* normal = prd->normal();  
@@ -216,15 +217,17 @@ optixGetRayTmax
     In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
     if no hit has been reported
 
+In general will need to branch between::
+ 
+    OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES
+    OPTIX_BUILD_INPUT_TYPE_TRIANGLES
+
+currently just handles triangles.
+
 **/
 
 extern "C" __global__ void __closesthit__ch()
 {
-    // in general will need to branch between 
-    //      OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES
-    //      OPTIX_BUILD_INPUT_TYPE_TRIANGLES
-    // here just assume triangles
-
     const SOPTIX_HitgroupData* hit_group_data = reinterpret_cast<SOPTIX_HitgroupData*>( optixGetSbtDataPointer() );
     const SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
 
@@ -238,8 +241,14 @@ extern "C" __global__ void __closesthit__ch()
     const float3 P1 = mesh.vertex[ tri.y ];
     const float3 P2 = mesh.vertex[ tri.z ];
 
+    const float3 N0 = mesh.normal[ tri.x ];
+    const float3 N1 = mesh.normal[ tri.y ];
+    const float3 N2 = mesh.normal[ tri.z ];
+
     const float3 P = ( 1.0f-barys.x-barys.y)*P0 + barys.x*P1 + barys.y*P2;
-    const float3 Ng = cross( P1-P0, P2-P0 );
+    const float3 Ng = ( 1.0f-barys.x-barys.y)*N0 + barys.x*N1 + barys.y*N2; // guesss
+    //const float3 Ng = cross( P1-P0, P2-P0 );
+
     const float3 N = normalize( optixTransformNormalFromObjectToWorldSpace( Ng ) );
     // HMM: could get normal by bary-weighting vertex normals ?
 
@@ -251,7 +260,7 @@ extern "C" __global__ void __closesthit__ch()
 
     float t = optixGetRayTmax() ;
 
-    // cannot get ray_origin/direction in CH (only IS,AH)
+    // cannot get Object frame ray_origin/direction in CH (only IS,AH)
     //const float3 ray_origin = optixGetObjectRayOrigin();
     //const float3 ray_direction = optixGetObjectRayDirection();
     //const float3 lpos = ray_origin + t*ray_direction  ; 

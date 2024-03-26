@@ -35,7 +35,7 @@ int main()
     //gm.setLookRotation( 45.f , {1.f, 1.f, 1.f } );  // angleAxis quaternion 
     gm.set_frame(fr) ; std::cout << gm.desc() ;  // HMM: set_ce ? avoid frame when not needed ?
 
-    SGLFW gl(gm, mesh->name ); 
+    SGLFW gl(gm); 
 
 #ifdef WITH_CUDA_GL_INTEROP 
     SGLFW_CUDA cuda(gm) ; 

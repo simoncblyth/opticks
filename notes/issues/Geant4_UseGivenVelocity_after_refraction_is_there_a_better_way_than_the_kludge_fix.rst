@@ -231,4 +231,15 @@ TODO : Check the velocity of secondary track optical photon just after construct
 
 
 
+Plot thickens
+----------------
+
+* :google:`geant4 forum UseGivenVelocity`
+
+* https://geant4-forum.web.cern.ch/t/optical-photons-wrong-velocity-after-a-reflection/6303
+* https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2438
+
+* https://geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc#L189
+
+
 

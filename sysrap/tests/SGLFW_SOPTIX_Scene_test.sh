@@ -54,6 +54,8 @@ SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 scene_fold=/tmp/SScene_test
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
+shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
+export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
 
 
 #wh=1024,768

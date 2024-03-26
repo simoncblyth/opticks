@@ -10,6 +10,9 @@ used by old OpticksCore okc : Composition, View, Camera, ...
 Using this enabled CSGOptiX to drop dependency on okc, npy, brap 
 and instead depend only on QUDARap, SysRap, CSG. 
 
+
+* TODO: add fullscreen option here 
+
 * TODO: bring animated interpolation between views available 
   in the old machinery into the new workflow
 
@@ -230,6 +233,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kCAM = "CAM" ; 
     static constexpr const char* kNEARFAR = "NEARFAR" ; 
     static constexpr const char* kFOCAL = "FOCAL" ; 
+    static constexpr const char* kFULLSCREEN = "FULLSCREEN" ; 
     static constexpr const char* kESCALE = "ESCALE" ; 
 
     // static defaults, some can be overridden in the instance 
@@ -247,6 +251,7 @@ struct SYSRAP_API SGLM : public SCMD
     static int   CAM ; 
     static int   NEARFAR ; 
     static int   FOCAL ; 
+    static int   FULLSCREEN ; 
     static int   ESCALE ; 
 
     static void SetWH( int width, int height ); 
@@ -266,6 +271,7 @@ struct SYSRAP_API SGLM : public SCMD
     static void SetCAM( const char* cam ); 
     static void SetNEARFAR( const char* nearfar ); 
     static void SetFOCAL( const char* focal ); 
+    static void SetFULLSCREEN( const char* fullscreen ); 
     static void SetESCALE( const char* escale ); 
 
     // querying of static defaults 
@@ -276,6 +282,7 @@ struct SYSRAP_API SGLM : public SCMD
     static const char* CAM_Label() ; 
     static const char* NEARFAR_Label() ; 
     static const char* FOCAL_Label() ; 
+    static const char* FULLSCREEN_Label() ; 
     static const char* ESCALE_Label() ; 
 
     static void Copy(float* dst, const glm::vec3& src ); 
@@ -320,6 +327,7 @@ struct SYSRAP_API SGLM : public SCMD
     std::string descELU() const ; 
 
     std::vector<glm::vec3> axes ; 
+    
     glm::vec3 eye ;  
     glm::vec3 look ; 
     glm::vec3 up ; 
@@ -368,6 +376,7 @@ struct SYSRAP_API SGLM : public SCMD
     int  cam ; 
     int  nearfar ;
     int  focal ;  
+    int  fullscreen ; 
 
     float nearfar_manual ; 
     float focal_manual ; 
@@ -486,8 +495,8 @@ float      SGLM::TMAX = EValue<float>(kTMAX, "100.0");
 int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ; 
 int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ; 
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ; 
-//int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "asis") ; 
-int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ; 
+int        SGLM::FULLSCREEN  = EValue<int>(kFULLSCREEN,   "0") ; 
+int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis" 
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -554,6 +563,7 @@ inline SGLM::SGLM()
     cam(CAM),
     nearfar(NEARFAR),   // gazelength default
     focal(FOCAL),
+    fullscreen(FULLSCREEN),
     nearfar_manual(0.f),
     focal_manual(0.f),
 

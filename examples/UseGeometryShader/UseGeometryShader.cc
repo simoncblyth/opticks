@@ -156,7 +156,7 @@ int main(int argc, char** argv)
     gm.set_frame(fr); 
     gm.dump();
 
-    SGLFW gl(gm, RECORD_PATH );   
+    SGLFW gl(gm);   
 
     SGLFW_Program prog("$SHADER_FOLD", nullptr, nullptr, nullptr, nullptr, nullptr ); 
     prog.use(); 
