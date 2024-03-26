@@ -108,8 +108,8 @@ int main()
         par.width = gm.Width() ; 
         par.height = gm.Height() ; 
         par.pixels = d_pixels ; 
-        par.tmin = 0.1f ; 
-        par.tmax = 1e9f ; 
+        par.tmin = gm.get_near_abs() ; 
+        par.tmax = gm.get_far_abs() ; 
         par.cameratype = gm.cam ; 
         SGLM::Copy(&par.eye.x, gm.e ); 
         SGLM::Copy(&par.U.x  , gm.u );  

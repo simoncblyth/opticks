@@ -7,8 +7,8 @@ Critical usage for ray trace rendering done in CSGOptiX::prepareRenderParam
 
 SGLM.h is a single header that is replacing a boatload of classes 
 used by old OpticksCore okc : Composition, View, Camera, ...
-Using this aims enabled CSGOptiX to drop dependency
-on okc, npy, brap and instead depend only on QUDARap, SysRap, CSG. 
+Using this enabled CSGOptiX to drop dependency on okc, npy, brap 
+and instead depend only on QUDARap, SysRap, CSG. 
 
 * TODO: bring animated interpolation between views available 
   in the old machinery into the new workflow
@@ -66,7 +66,7 @@ Right hand systems:
 
     
 Object 
-   vertice relative to center of Model 
+   vertices relative to center of Model 
 World
    relative to one world origin
 Eye
@@ -397,6 +397,8 @@ struct SYSRAP_API SGLM : public SCMD
     glm::mat4 projection ; 
 
     glm::mat4 MV ; 
+    glm::mat4 IMV ;
+ 
     float*    MV_ptr ; 
     glm::mat4 MVP ;    // aka world2clip
     float*    MVP_ptr ; 
@@ -560,6 +562,7 @@ inline SGLM::SGLM()
 
     projection(1.f),
     MV(1.f),
+    IMV(1.f),
     MV_ptr(glm::value_ptr(MV)),
     MVP(1.f),
     MVP_ptr(glm::value_ptr(MVP)),
@@ -845,12 +848,12 @@ inline void SGLM::update()
 
     updateGaze();       //  eye,look,up->gaze,eye2look,look2eye
     updateEyeSpace();   //  gaze,up,eye->world2camera,camera2world
-    updateEyeBasis();   //  camera2world,apect,ZOOM,focal_basis,...->u,v,w,e  [used for ray trace rendering] 
 
     updateNearFar();     // TMIN,TMAX-> near,far 
     updateProjection();  // focal_basis,ZOOM,aspect,near,far -> projection 
 
     updateComposite();   // projection,word2camera -> MVP 
+    updateEyeBasis();   //  IMV, camera2world,apect,ZOOM,focal_basis,...->u,v,w,e  [used for ray trace rendering] 
 
     addlog("SGLM::update", "]"); 
 }
@@ -875,9 +878,9 @@ SGLM::initModelMatrix   (formerly updateModelMatrix)
 
 Because this depends on the input geometry ce it
 seems more appropriate to prefix with "init" rather than "update"
+Thats because changing CE is currently an initialization only thing.
 
 Called by SGLM::update. 
-
 
 initModelMatrix_branch:1
     used when the sframe transforms are not identity, 
@@ -1200,6 +1203,17 @@ scaling depending on Aspect, ZOOM and focal_basis to
 yield (u,v,w,e) basis vec3 that are used by CSGOptiX::prepareRenderParam 
 to setup the raytrace render params. 
 
+Note how are using inverted transforms for the ray tracing 
+basis compared to the rasterization ones. Also no projection 
+matrix for ray tracing as thats inherent in the technique. 
+
+Getting this to feel the look rotation quaternion 
+was done by changing from using the camera2world 
+matrix to use the IVM InverseModelView 
+thats calculated in updateComposite.  As a result 
+the order of the update calculation was changed 
+moving this to after updateComposite.
+
 **/
 
 void SGLM::updateEyeBasis()
@@ -1217,10 +1231,10 @@ void SGLM::updateEyeBasis()
     float fscz = fsc/ZOOM  ;          // increased ZOOM decreases field-of-view
     float gazlen = getGazeLength() ;  // HMM: maybe get_nearfar_basis for consistency
 
-    u = glm::vec3( camera2world * rht ) * fscz * aspect ;  
-    v = glm::vec3( camera2world * top ) * fscz  ;  
-    w = glm::vec3( camera2world * gaz ) * gazlen ;    
-    e = glm::vec3( camera2world * ori );   
+    u = glm::vec3( IMV * rht ) * fscz * aspect ;  
+    v = glm::vec3( IMV * top ) * fscz  ;  
+    w = glm::vec3( IMV * gaz ) * gazlen ;    
+    e = glm::vec3( IMV * ori );   
 }
 
 
@@ -1303,6 +1317,8 @@ Putting together the composite transforms that OpenGL needs
 
 * contrast with old Opticks ~/o/optickscore/Composition.cc Composition::update
 
+* note the conjugte of a quaternion rotation represents the inverse rotation 
+
 **/
 
 void SGLM::updateComposite()
@@ -1310,6 +1326,9 @@ void SGLM::updateComposite()
     //std::cout << "SGLM::updateComposite" << std::endl ; 
 
     MV = look2eye * glm::mat4_cast(q_lookrot) * eye2look * world2camera ; 
+
+    IMV = camera2world * eye2look * glm::mat4_cast( glm::conjugate(q_lookrot) ) * look2eye ; 
+ 
 
     MVP = projection * MV ;    // MVP aka world2clip (needed by OpenGL shader pipeline)
 }
@@ -1445,8 +1464,10 @@ SGLM::get_near_abs
 
 Used from CSGOptiX::prepareRenderParam for tmin 
 
+OptixLaunch with negative tmin throws exception  OPTIX_EXCEPTION_CODE_INVALID_RAY 
+
 **/
-float SGLM::get_near_abs() const { return near*get_nearfar_basis() ; }
+float SGLM::get_near_abs() const { return std::max(0.f, near*get_nearfar_basis()) ; }
 
 /**
 SGLM::get_far_abs
