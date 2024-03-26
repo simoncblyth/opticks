@@ -184,7 +184,7 @@ inline std::string SOPTIX_Options::Desc_pipelineCompileOptions(const OptixPipeli
 inline void SOPTIX_Options::init_pipelineLinkOptions()
 {
     OptixPayloadType* payloadType = nullptr ; 
-    programGroupOptions.payloadType = nullptr ; 
+    programGroupOptions.payloadType = payloadType ; 
 
     OptixCompileDebugLevel debugLevel = SOPTIX_OPT::DebugLevel(_link_debugLevel)  ;
     pipelineLinkOptions.debugLevel = debugLevel ;

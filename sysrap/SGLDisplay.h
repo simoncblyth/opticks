@@ -33,7 +33,9 @@ struct SGLDisplay
             const int32_t  screen_res_y,
             const int32_t  framebuf_res_x,
             const int32_t  framebuf_res_y,
-            const uint32_t pbo);
+            const uint32_t pbo,
+            bool dump = false 
+           );
 
     BufferImageFormat m_image_format;
     size_t  m_elmt_size ; 
@@ -306,10 +308,11 @@ inline void SGLDisplay::display(
         const int32_t  screen_res_y,
         const int32_t  framebuf_res_x,
         const int32_t  framebuf_res_y,
-        const uint32_t pbo
+        const uint32_t pbo,
+        bool dump
         ) 
 {
-    printf("[ SGLDisplay::display count %zu framebuf_res_x %d framebuf_res_y %d  \n", m_count,framebuf_res_x, framebuf_res_y  ); 
+    if(dump) printf("[ SGLDisplay::display count %zu framebuf_res_x %d framebuf_res_y %d  \n", m_count,framebuf_res_x, framebuf_res_y  ); 
 
     GL_CHECK( glBindFramebuffer( GL_FRAMEBUFFER, 0 ) ); 
     // "FBO" name:0 means break the bind : so that typically 
@@ -375,7 +378,7 @@ inline void SGLDisplay::display(
 
     GL_CHECK( glDisable( GL_FRAMEBUFFER_SRGB ) );
 
-    printf("] SGLDisplay::display %zu \n", m_count ); 
+    if(dump) printf("] SGLDisplay::display %zu \n", m_count ); 
     m_count++ ; 
     GL_CHECK_ERRORS();
 }

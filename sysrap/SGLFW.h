@@ -317,6 +317,7 @@ inline void SGLFW::cursor_moved_action()
     }
     else if(toggle.lrot)
     {
+        std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ; 
         gm.setLookRotation(start_ndc, move_ndc); 
         gm.update(); 
     }

@@ -51,9 +51,9 @@ inline std::string SOPTIX::desc() const
 
 inline SOPTIX::SOPTIX()
     :
+    VERSION(_xstr(OPTIX_VERSION)),
     context(nullptr),
-    props(nullptr),
-    VERSION(_xstr(OPTIX_VERSION))
+    props(nullptr)
 {
     init();
 }

@@ -1,9 +1,14 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-SOPTIX_Scene_test.sh
-=====================
+SGLFW_SOPTIX_Scene_test.sh
+=============================
 
-::
+Usage and impl::
+
+    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+    
+Related simpler priors::
 
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
@@ -20,13 +25,12 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-name=SOPTIX_Scene_test
+name=SGLFW_SOPTIX_Scene_test
 
 export FOLD=/tmp/$name
 bin=$FOLD/$name
 mkdir -p $FOLD
 
-export PPM_PATH=$FOLD/$name.ppm
 
 cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
@@ -87,7 +91,7 @@ export HANDLE=${HANDLE:-$handle}
 
 
 
-defarg="info_ptx_build_run_open"
+defarg="info_ptx_build_run"
 arg=${1:-$defarg}
 
 PATH=$PATH:$CUDA_PREFIX/bin
@@ -112,14 +116,34 @@ if [ "${arg/ptx}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
+
+    [ "$(uname)" == "Darwin" ] && echo $BASH_SOURCE : ERROR : THIS NEEDS OPTIX7+ SO LINUX ONLY && exit 1
+
     gcc $name.cc \
-        -std=c++11 -lstdc++ -lm -ldl  -g \
-        -I${SYSRAP_DIR} \
+        -fvisibility=hidden \
+        -fvisibility-inlines-hidden \
+        -fdiagnostics-show-option \
+        -Wall \
+        -Wno-unused-function \
+        -Wno-shadow \
+        -Wsign-compare \
+        -DWITH_CUDA_GL_INTEROP \
+        -g -O0 -std=c++11 \
+        -I$SYSRAP_DIR \
+        -I$OPTICKS_PREFIX/externals/glm/glm \
+        -I$OPTICKS_PREFIX/externals/include \
         -I$CUDA_PREFIX/include \
         -I$OPTIX_PREFIX/include \
-        -I$(glm-prefix) \
         -L$CUDA_PREFIX/$cuda_l -lcudart \
+        -lstdc++ \
+        -lm -ldl \
+        -L$OPTICKS_PREFIX/externals/lib -lGLEW \
+        -L$OPTICKS_PREFIX/externals/lib64 -lglfw \
+        -lGL  \
         -o $bin
+        
+    # -Wno-unused-private-field \  ## clang-ism ? 
+
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
 fi 
 
@@ -129,14 +153,13 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
+
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64
+    echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config 
+
+    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0 
     $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
-fi
-
-if [ "${arg/open}" != "$arg" ]; then
-    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0 
-    open $PPM_PATH
-    [ $? -ne 0 ] && echo $BASH_SOURCE : open error && exit 4
 fi
 
 

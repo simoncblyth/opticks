@@ -222,7 +222,7 @@ inline void SOPTIX_Pipeline::initPipeline()
     assert( sizeof_log == 0);
 
 
-    for(int i=0 ; i < num_program_groups ; i++)
+    for(unsigned i=0 ; i < num_program_groups ; i++)
     {
         OptixProgramGroup& pg = program_groups[i] ; 
         OPTIX_CHECK( optixUtilAccumulateStackSizes( pg, &stackSizes ) );

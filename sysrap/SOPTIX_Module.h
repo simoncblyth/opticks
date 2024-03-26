@@ -16,8 +16,8 @@ objects, modules may be destroyed with optixModuleDestroy.
 struct SOPTIX_Module
 { 
     OptixDeviceContext& context ; 
-    const char* ptxpath ; 
     const SOPTIX_Options& options ; 
+    const char* ptxpath ; 
 
     std::string ptx ; 
     OptixModule module ; 

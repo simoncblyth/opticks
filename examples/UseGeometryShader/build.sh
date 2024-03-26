@@ -42,9 +42,6 @@ Create that record array with::
 
 The extent of step point positions and times are (10 "mm", 10 "ns")
 
-
-
-
 Linux issue ?
 --------------
 
@@ -110,7 +107,7 @@ eye=0,-3,0
 EYE=${EYE:-$eye}
 export EYE
 
-vars="BASH_SOURCE PWD name bdir sdir SHADER_FOLD RECORD_FOLD bin EYE"
+vars="BASH_SOURCE PWD name bdir sdir CUDA_PREFIX OPTICKS_PREFIX SHADER_FOLD RECORD_FOLD bin EYE"
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -148,7 +145,7 @@ if [ "${arg/build}" != "$arg" ]; then
 
     elif [ "$(uname)" == "Linux" ]; then
 
-        echo $BASH_SOURCE : Linux building $bin
+        echo $BASH_SOURCE : Linux build $bin BEGIN
 
         gcc \
         $name.cc \
@@ -171,13 +168,28 @@ if [ "${arg/build}" != "$arg" ]; then
         -L$OPTICKS_PREFIX/externals/lib64 -lglfw \
         -lGL  \
         -o $bin
+        [ $? -ne 0 ] && echo $BASH_SOURCE : Linux build error && exit 2
+        echo $BASH_SOURCE : Linux build $bin DONE
     fi
-    [ $? -ne 0 ] && echo $BASH_SOURCE : link error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-   $bin
-   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
+
+   if [ "$(uname)" == "Darwin" ]; then
+
+      echo $BASH_SOURCE : Darwin running $bin : benefits from RPATH ? 
+      $bin
+      [ $? -ne 0 ] && echo $BASH_SOURCE : Darwin run error && exit 3
+
+    elif [ "$(uname)" == "Linux" ]; then
+
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64
+      echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config 
+      $bin
+      [ $? -ne 0 ] && echo $BASH_SOURCE : Linux run error && exit 3
+
+    fi
+
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then

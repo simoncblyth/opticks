@@ -203,7 +203,7 @@ UseOpticksGLEW
 UseGeometryShader
     record array rec_flying_point viz using early stage of SGLFW.h encapulation 
 
-    * NB build.sh script is unusual, it builds against OpenGL without using CMake   
+    * NB build.sh script is unusual, it builds against OpenGL without using CMake (working on Darwin and Linux) 
 
 UseShaderSGLFW
     single triangle

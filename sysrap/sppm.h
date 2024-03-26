@@ -14,7 +14,7 @@ struct sppm
 {
     static unsigned char* CreateThreeComponentImage( int width, int height, int ncomp, const unsigned char* image, bool yflip ); 
     static void Write(const char* path, int width, int height, int ncomp, const unsigned char* image, bool yflip); 
-    static unsigned char* CreateImageData( int width, int height, int ncomp, bool yflip ); 
+    static unsigned char* CreateImageData( int width, int height, int ncomp ); 
 };
 
 
@@ -63,16 +63,15 @@ inline void sppm::Write(const char* path, int width, int height, int ncomp, cons
     delete[] data;
 }
 
-inline unsigned char* sppm::CreateImageData( int width, int height, int ncomp, bool yflip )
+inline unsigned char* sppm::CreateImageData( int width, int height, int ncomp )
 {
     size_t size =  height*width*ncomp ; 
     unsigned char* data = new unsigned char[size] ;
     for( int h=0; h < height ; h++ ) 
     {   
-        int y = yflip ? height - 1 - h : h ;   // flip vertically
-        for( int x=0; x < width ; ++x ) 
+        for( int w=0; w < width ; ++w ) 
         {   
-            for( int k=0 ; k < ncomp ; k++ ) data[ (h*width+x)*ncomp + k] = k < 3 ? 0xaa : 0xff ;        
+            for( int k=0 ; k < ncomp ; k++ ) data[ (h*width+w)*ncomp + k] = k < 3 ? 0xaa : 0xff ;        
         }
     } 
     return data ; 
