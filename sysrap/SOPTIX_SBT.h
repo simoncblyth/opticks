@@ -148,14 +148,16 @@ inline void SOPTIX_SBT::initHitgroup()
 
     CUdeviceptr hitgroup_record_base ;
     const size_t hitgroup_record_size = sizeof( SOPTIX_HitgroupRecord );
+    const size_t hitgroup_record_bytes = hitgroup_record_size*hitgroup_records.size() ; 
+
     CUDA_CHECK( cudaMalloc( 
                 reinterpret_cast<void**>( &hitgroup_record_base ), 
-                hitgroup_record_size*hitgroup_records.size() ) );
+                hitgroup_record_bytes ) );
 
     CUDA_CHECK( cudaMemcpy(
                 reinterpret_cast<void*>( hitgroup_record_base ),
                 hitgroup_records.data(),
-                hitgroup_record_size*hitgroup_records.size(),
+                hitgroup_record_bytes,
                 cudaMemcpyHostToDevice
                 ) );
 

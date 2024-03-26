@@ -1,8 +1,7 @@
 #pragma once
-
 /**
-SOPTIX_Accel.h
-===============
+SOPTIX_Accel.h : builds acceleration structure GAS or IAS from the buildInputs
+===============================================================================
 
 Used by: SOPTIX_Mesh.h 
 
@@ -36,10 +35,7 @@ inline std::string SOPTIX_Accel::desc() const
 }
 
 
-inline SOPTIX_Accel::SOPTIX_Accel( 
-    OptixDeviceContext& context,
-    const std::vector<OptixBuildInput>& buildInputs
-    )     
+inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<OptixBuildInput>& buildInputs )     
     :
     buffer(0), 
     handle(0), 

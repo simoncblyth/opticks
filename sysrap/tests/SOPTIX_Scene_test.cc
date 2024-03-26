@@ -132,7 +132,9 @@ int main()
     CUDA_CHECK( cudaMemcpy( pixels, reinterpret_cast<void*>(d_pixels), pixel_bytes, cudaMemcpyDeviceToHost ));
      
     const char* ppm_path = getenv("PPM_PATH") ;   
-    sppm::Write(ppm_path, gm.Width(), gm.Height(), 4, (unsigned char*)pixels, true );  
+    bool yflip = false ; 
+    sppm::Write(ppm_path, gm.Width(), gm.Height(), 4, (unsigned char*)pixels, yflip );  
+
 
     return 0 ; 
 }

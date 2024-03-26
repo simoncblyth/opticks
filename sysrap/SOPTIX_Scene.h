@@ -222,7 +222,7 @@ inline void SOPTIX_Scene::init_IAS()
  
     OptixBuildInput buildInput = {}; 
     buildInput.type = OPTIX_BUILD_INPUT_TYPE_INSTANCES;
-    OptixBuildInputInstanceArray instanceArray = buildInput.instanceArray ; 
+    OptixBuildInputInstanceArray& instanceArray = buildInput.instanceArray ; 
     instanceArray.instances = instances_buffer ;  
     instanceArray.numInstances = instances.size() ; 
 

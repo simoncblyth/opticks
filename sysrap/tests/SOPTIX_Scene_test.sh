@@ -52,8 +52,8 @@ export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
 
 
-wh=1024,768
-#wh=2048,1536
+#wh=1024,768
+wh=2048,1536
 
 #eye=0.1,0,-10
 #eye=-1,-1,0
