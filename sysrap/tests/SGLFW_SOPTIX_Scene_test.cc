@@ -67,9 +67,11 @@ int main()
         case  8: extent = 500.f ; break ; 
     } 
 
- 
-    sfr fr ; 
-    fr.set_extent(extent) ;  // TODO: determine CE from scene and view options 
+
+    int num_frame = _scn->frame.size(); 
+    sfr fr = num_frame > 0 ? _scn->frame[0] : sfr::Make(extent) ; 
+    // TODO: interactive frame jumping ?
+
 
     SGLM gm ; 
     gm.set_frame(fr) ; 

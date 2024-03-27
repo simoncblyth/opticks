@@ -17,6 +17,7 @@ struct sfr
     static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ; 
     static constexpr const double   EPSILON = 1e-5 ; 
     static constexpr const char* DEFAULT_NAME = "ALL" ;  
+    static sfr Make(double extent); 
 
     glm::tvec4<double>  ce  ;
     glm::tvec4<int64_t> aux0 ; 
@@ -26,7 +27,7 @@ struct sfr
     glm::tmat4x4<double>  m2w ; 
     glm::tmat4x4<double>  w2m ; 
 
-    const char* name ; 
+    const char* name ; // hmm: pointers cause double ownership on default copy issues, use string? 
 
     sfr(); 
 
@@ -57,6 +58,14 @@ struct sfr
     void write( double* dst, unsigned num_values ) const ;
     void read( const double* src, unsigned num_values ) ; 
 }; 
+
+
+inline sfr sfr::Make(double extent)
+{
+    sfr fr ;
+    fr.set_extent(extent); 
+    return fr ;  
+}
 
 inline sfr::sfr()
     :
