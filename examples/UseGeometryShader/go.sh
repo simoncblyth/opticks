@@ -8,6 +8,8 @@ See also build.sh which doesnt use cmake
 EOU
 }
 
+cd $(dirname $(realpath $BASH_SOURCE))
+
 arg=${1:-build_run}
 sdir=$(pwd)
 name=$(basename $sdir)

@@ -30,7 +30,9 @@ int main()
 {
     SMesh* mesh = SMesh::Load("$MESH_FOLD"); 
 
-    sframe fr ; fr.ce = make_float4(mesh->ce.x, mesh->ce.y, mesh->ce.z, mesh->ce.w ); 
+    sfr fr ; 
+    fr.set_ce(&mesh->ce.x);
+
     SGLM gm ; 
     //gm.setLookRotation( 45.f , {1.f, 1.f, 1.f } );  // angleAxis quaternion 
     gm.set_frame(fr) ; std::cout << gm.desc() ;  // HMM: set_ce ? avoid frame when not needed ?

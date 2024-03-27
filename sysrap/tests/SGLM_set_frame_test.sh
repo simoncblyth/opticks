@@ -3,6 +3,8 @@ usage(){ cat << EOU
 SGLM_set_frame_test.sh
 ========================
 
+TODO: NEEDS REWORKING FOR sfr.h REPLACING sframe.h 
+
 This standalone test aims to duplicate the sframe.h/SGLM.h view calculations 
 done by CSGOptiX::RenderMain. In more detail, the SGLM_set_frame_test.cc does:
 

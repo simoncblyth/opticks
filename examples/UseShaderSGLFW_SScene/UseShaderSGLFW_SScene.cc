@@ -32,12 +32,11 @@ int main()
         << std::endl 
         ;
 
-    sframe fr ; 
-    fr.ce = make_float4(0.f, 0.f, 0.f, 1000.f); 
+    sfr fr ; 
+    fr.set_extent(1000.f); 
 
     SGLM gm ; 
     gm.set_frame(fr) ; 
-    // TODO: SGLM::set_ce/set_fr ? avoid heavyweight sframe when not needed ?
     //std::cout << gm.desc() ;  
 
 

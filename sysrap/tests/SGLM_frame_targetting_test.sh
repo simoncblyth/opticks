@@ -54,7 +54,7 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -g -Wall -std=c++11 -lstdc++ -I.. \
+    gcc $name.cc -g -Wall -std=c++11 -lstdc++ -lm  -I.. \
              -I$OPTICKS_PREFIX/externals/glm/glm \
              -I$CUDA_PREFIX/include -o $bin
     [ $? -ne 0 ] && echo $msg build error && exit 1 

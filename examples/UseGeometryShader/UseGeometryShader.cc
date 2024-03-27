@@ -149,8 +149,8 @@ int main(int argc, char** argv)
 
     glm::vec4 Param(t0, t1, (t1-t0)/ts, t0);    // t0, t1, dt, tc 
 
-    sframe fr ; 
-    fr.ce = ce ; 
+    sfr fr ; 
+    fr.set_ce(&ce.x);  
 
     SGLM gm ; 
     gm.set_frame(fr); 

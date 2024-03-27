@@ -30,6 +30,9 @@ struct sfr
 
     sfr(); 
 
+    template<typename T> void set_ce( const T* _ce ); 
+    template<typename T> void set_extent( T _w ); 
+
     void set_name( const char* _name ); 
     const char* get_name() const ; 
 
@@ -63,6 +66,22 @@ inline sfr::sfr()
     name(DEFAULT_NAME)
 {
 }
+
+template<typename T>
+inline void sfr::set_ce( const T* _ce )
+{
+    ce.x = _ce[0]; 
+    ce.y = _ce[1]; 
+    ce.z = _ce[2]; 
+    ce.w = _ce[3]; 
+}
+
+template<typename T>
+inline void sfr::set_extent( T _w )
+{
+    ce.w = _w ; 
+}
+
 
 inline const char* sfr::get_name() const 
 {

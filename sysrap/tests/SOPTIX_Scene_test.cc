@@ -58,8 +58,8 @@ int main()
     } 
 
  
-    sframe fr ; 
-    fr.ce = make_float4(0.f, 0.f, 0.f, extent ); 
+    sfr fr ; 
+    fr.set_extent( extent ); 
     // TODO: determine CE from scene and view options 
 
     SGLM gm ; 

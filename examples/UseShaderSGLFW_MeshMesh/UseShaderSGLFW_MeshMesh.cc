@@ -33,8 +33,8 @@ int main()
     const SMesh* other = SMesh::Load("$SCENE_FOLD/scene/mesh_grup/1"); 
 
 
-    sframe fr ; 
-    fr.ce = make_float4(0.f, 0.f, 0.f, 100.f); 
+    sfr fr ; 
+    fr.set_extent(100.);  
 
     SGLM gm ; 
     gm.set_frame(fr) ; 
