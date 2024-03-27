@@ -102,8 +102,8 @@ name=sreport
 src=$SDIR/$name.cc
 script=$SDIR/$name.py
 
-DEV=1
-if [ -z "$DEV" ]; then
+DEV=0
+if [ "$DEV" = "1" ]; then
     bin=$name                                   ## standard binary 
     defarg="run_info_ana"
 else
@@ -125,8 +125,8 @@ fi
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 #job=N5
-job=S5
-
+#job=S5
+job=Y1
 #job=N7   
 #job=S7  
 
@@ -144,6 +144,7 @@ case $JOB in
   N6) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
   N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "blyth" account Debug build 
   S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "simon" account Release build 
+  Y1) DIR=/tmp/ihep/opticks/GEOM/$GEOM/jok-tds/ALLLUT_1_ENE_-1_OIM_1_GUN_5 ;; ## 'yuxiang': Release TODO
 esac
 
 export STEM=${JOB}_${PLOT}_${PICK}

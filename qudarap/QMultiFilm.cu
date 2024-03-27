@@ -40,6 +40,7 @@ __global__ void _QMultiFilm_lookup(cudaTextureObject_t tex, quad4* meta, float4*
 
 __global__ void _QMultiFilm_mock_lookup(qmultifilm* d_multifilm, quad2* d_input, float4* d_out, unsigned num_lookup, unsigned width, unsigned height)
 {
+
     unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
     unsigned iy = blockIdx.y*blockDim.y + threadIdx.y;
     if (ix >= width || iy >= height) return;
@@ -56,6 +57,7 @@ __global__ void _QMultiFilm_mock_lookup(qmultifilm* d_multifilm, quad2* d_input,
 
     float4 value = d_multifilm->lookup(pmtcat, wv_nm, aoi);
     d_out[ index ] = value ;  
+
 
     int item = 10;
     if(index < item || index > (num_lookup - item)){

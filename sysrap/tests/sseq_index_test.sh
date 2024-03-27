@@ -38,10 +38,13 @@ export sseq_index_ab_chi2_ABSUM_MIN=$C2CUT
 executable=G4CXTest 
 #executable=CSGOptiXSMTest
 export EXECUTABLE=${EXECUTABLE:-$executable}
-version=99
+version=0
 export VERSION=${VERSION:-$version}
-export BASE=$TMP/GEOM/$GEOM
-export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
+#export BASE=$TMP/GEOM/$GEOM
+export BASE=/data/ihep/
+#export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
+export LOGDIR=$BASE/ALL$VERSION
+
 export AFOLD=$LOGDIR/A000 
 export BFOLD=$LOGDIR/B000 
 

@@ -25,6 +25,7 @@ qbase* QBase::MakeInstance() // static
 {
     qbase* base = new qbase ; 
     base->pidx = ssys::getenvunsigned_fallback_max("PIDX") ; 
+    base->custom_lut = ssys::getenvunsigned("QBase__CUSTOM_LUT", 0u);
     return base ; 
 }
 

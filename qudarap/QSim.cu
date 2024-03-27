@@ -394,7 +394,7 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
 
     unsigned flag = 0u ; 
     //sim->propagate_at_multifilm(flag, p, prd, s, rng, idx, tagr );  
-    sim->propagate_at_multifilm(flag, rng, ctx );  
+    sim->propagate_at_surface_MultiFilm(flag, rng, ctx );  
     //printf("//_QSim_propagate_at_multifilm_mutate : Thread index: idx = %d  flag = %d", idx, flag );    
 
     q.q3.u.w = flag ;  // non-standard
