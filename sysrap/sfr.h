@@ -8,6 +8,7 @@ Unionized glm::tvec4 see examples/UseGLMSimple (too complex, keep it simple).
 **/
 
 #include "NP.hh"
+#include "sstr.h"
 #include "stra.h"
 
 struct sfr
