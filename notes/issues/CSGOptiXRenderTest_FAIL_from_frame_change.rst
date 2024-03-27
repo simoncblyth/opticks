@@ -2,9 +2,7 @@ CSGOptiXRenderTest_FAIL_from_frame_change
 =============================================
 
 
-
-
-::
+FIXED with extra sframe::prepare::
 
 
     [blyth@localhost tests]$ source $HOME/.opticks/GEOM/GEOM.sh

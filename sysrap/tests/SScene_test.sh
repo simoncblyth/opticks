@@ -23,6 +23,9 @@ export SCENE_FOLD=/tmp/$name
 mkdir -p $SCENE_FOLD 
 bin=$SCENE_FOLD/$name
 
+framespec=/tmp/framespec.txt
+export SScene__initFromTree_addFrames=${SScene__initFromTree_addFrames:-$framespec}
+
 tree_fold=$TMP/U4TreeCreateTest
 export TREE_FOLD=${TREE_FOLD:-$tree_fold}
 

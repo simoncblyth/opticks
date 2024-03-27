@@ -3,6 +3,9 @@
 SScene.h
 =========
 
+To some extent this acts as a minimal selection of the 
+full stree.h info needed to render
+
 ::
 
     ~/o/sysrap/tests/SScene_test.sh 
@@ -19,6 +22,7 @@ struct SScene
 {
     static constexpr const char* MESHGROUP = "meshgroup" ;
     static constexpr const char* MESHMERGE = "meshmerge" ;
+    static constexpr const char* FRAME = "frame" ;
     static constexpr const char* INST_TRAN = "inst_tran.npy" ;
     static constexpr const char* INST_INFO = "inst_info.npy" ;
 
@@ -26,6 +30,7 @@ struct SScene
 
     std::vector<const SMeshGroup*>    meshgroup ;
     std::vector<const SMesh*>         meshmerge ; // formerly mesh_grup
+    std::vector<sfr>                  frame ; 
 
     std::vector<int4>                 inst_info ; 
     std::vector<glm::tmat4x4<float>>  inst_tran ;
@@ -42,6 +47,7 @@ struct SScene
 
     std::string descSize() const ;
     std::string descInstInfo() const ;
+    std::string descFrame() const ;
     std::string desc() const ;
 
     NPFold* serialize_meshmerge() const ;
@@ -50,11 +56,16 @@ struct SScene
     NPFold* serialize_meshgroup() const ;
     void import_meshgroup(const NPFold* _meshgroup ) ; 
 
+    NPFold* serialize_frame() const ;
+    void import_frame(const NPFold* _frame ) ; 
+
     NPFold* serialize() const ;
     void import(const NPFold* fold);
 
     void save(const char* dir) const ;
     void load(const char* dir);
+
+    void addFrames(const char* path, const stree* st); 
 
 };
 
@@ -78,6 +89,8 @@ inline void SScene::initFromTree(const stree* st)
     initFromTree_Remainder(st);
     initFromTree_Factor(st);
     initFromTree_Instance(st); 
+
+    addFrames("$SScene__initFromTree_addFrames", st ); 
 }
 
 inline void SScene::initFromTree_Remainder(const stree* st)
@@ -169,7 +182,7 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
     bool is_identity_m2w = stra<double>::IsIdentity(m2w) ; 
 
     const char* so = st->soname[node.lvid].c_str();  
-    // raw (not 0x stripped) name : NO LONGER TRUE : UNIQUE STRIPPING DONE BY STREE
+    // st->soname is now stripped at collection by stree.h with sstr::StripTail_Unique 
 
     const NPFold* fold = st->mesh->get_subfold(so)  ;
     assert(fold); 
@@ -204,6 +217,7 @@ inline std::string SScene::desc() const
     ss << "[ SScene::desc \n" ; 
     ss << descSize() ; 
     ss << descInstInfo() ; 
+    ss << descFrame() ; 
     ss << "] SScene::desc \n" ; 
     std::string str = ss.str(); 
     return str ; 
@@ -251,6 +265,21 @@ inline std::string SScene::descInstInfo() const
     return str ; 
 }
 
+inline std::string SScene::descFrame() const
+{
+    int num_frame = frame.size(); 
+    std::stringstream ss ;
+    ss << "[SScene::descFrame num_frame " << num_frame << std::endl ; 
+    for(int i=0 ; i < num_frame ; i++) 
+    {
+        const sfr& f = frame[i]; 
+        ss << f.desc() ; 
+    }
+    ss << "]SScene::descFrame num_frame " << num_frame << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 inline NPFold* SScene::serialize_meshmerge() const 
 {
@@ -279,6 +308,9 @@ inline NPFold* SScene::serialize_meshgroup() const
 
 
 
+
+
+
 inline void SScene::import_meshmerge(const NPFold* _meshmerge ) 
 {
     int num_meshmerge = _meshmerge ? _meshmerge->get_num_subfold() : 0 ;
@@ -302,16 +334,44 @@ inline void SScene::import_meshgroup(const NPFold* _meshgroup )
 }
 
 
+inline NPFold* SScene::serialize_frame() const 
+{
+    NPFold* _frame = new NPFold ; 
+    int num_frame = frame.size(); 
+    for(int i=0 ; i < num_frame ; i++)
+    {
+        const sfr& f  = frame[i] ; 
+        std::string key = f.get_key() ; 
+        _frame->add( key.c_str(), f.serialize() ); 
+    } 
+    return _frame ; 
+}
+
+inline void SScene::import_frame(const NPFold* _frame ) 
+{
+    int num_frame = _frame ? _frame->num_items() : 0 ;
+    for(int i=0 ; i < num_frame ; i++)
+    {
+        const NP* a = _frame->get_array(i); 
+        sfr f = sfr::Import(a) ;  
+        frame.push_back(f); 
+    }
+}
+
+
+
 inline NPFold* SScene::serialize() const 
 {
     NPFold* _meshmerge = serialize_meshmerge() ;
     NPFold* _meshgroup = serialize_meshgroup() ;
+    NPFold* _frame     = serialize_frame() ;
     NP* _inst_tran = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_tran, 4, 4) ;
     NP* _inst_info = NPX::ArrayFromVec<int,int4>( inst_info, 4 ) ; 
 
     NPFold* fold = new NPFold ; 
     fold->add_subfold( MESHMERGE, _meshmerge ); 
     fold->add_subfold( MESHGROUP, _meshgroup ); 
+    fold->add_subfold( FRAME,     _frame ); 
     fold->add( INST_INFO, _inst_info );
     fold->add( INST_TRAN, _inst_tran );
 
@@ -321,8 +381,10 @@ inline void SScene::import(const NPFold* fold)
 {
     const NPFold* _meshmerge = fold->get_subfold(MESHMERGE ); 
     const NPFold* _meshgroup = fold->get_subfold(MESHGROUP ); 
+    const NPFold* _frame     = fold->get_subfold(FRAME ); 
     import_meshmerge( _meshmerge ); 
     import_meshgroup( _meshgroup ); 
+    import_frame(     _frame ); 
 
     const NP* _inst_info = fold->get(INST_INFO); 
     const NP* _inst_tran = fold->get(INST_TRAN); 
@@ -341,4 +403,24 @@ inline void SScene::load(const char* dir)
     NPFold* fold = NPFold::Load(dir); 
     import(fold); 
 }
+
+inline void SScene::addFrames(const char* path, const stree* st)
+{
+    std::string framespec ; 
+    bool read = spath::Read( framespec, path ); 
+    if(!read) return ; 
+
+    std::vector<std::string> lines ; 
+    sstr::SplitTrimSuppress(framespec.c_str(), '\n', lines) ; 
+
+    int num_line = lines.size(); 
+    for(int i=0 ; i < num_line ; i++)
+    {
+        const std::string& line = lines[i]; 
+        sfr f = st->get_frame(line.c_str());  
+        frame.push_back(f); 
+    }
+}
+
+
 

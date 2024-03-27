@@ -2,20 +2,34 @@ stree_access_to_targetting_transforms_like_CSGTarget
 ======================================================
 
 
+CE from stree ?
+----------------
+
+* center of instanced from the transform : but not for global ? and not extent 
+* HMM: need to add some bbox to stree perhaps ? 
+
+
+Where do CSGPrim bbox come from ?
+----------------------------------
+
+* CSGImport::importPrim  combines bb of snd.h  
+* CSGImport::importNode 
+
+
 ::
 
-    420 int CSGTarget::getTransform(qat4& q, int midx, int mord, int gord) const
-    421 {
-    422     const qat4* qi = getInstanceTransform(midx, mord, gord);
-    423     if( qi == nullptr )
-    424     {
-    425         return 1 ;
-    426     }
-    427     qat4::copy(q, *qi);
-    428     return 0 ;
-    429 }
+   std::array<double,6> bb ;
+    double* aabb = leaf ? bb.data() : nullptr ;
+    // NB : TRANSFORM VERY DEPENDENT ON node.repeat_index == 0 OR not 
+    const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ;
+    unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
 
+
+CSG way of getting the instance tr
+---------------------------------------
+
+* added stree::get_frame stree::pick_lvid_ordinal_repeat_ordinal_inst to do equiv from stree
 
 ::
 

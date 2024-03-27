@@ -5,6 +5,7 @@ SScene_test.cc
 ::
 
    ~/o/sysrap/tests/SScene_test.sh 
+   ~/o/sysrap/tests/SScene_test.cc
 
 **/
 
@@ -27,7 +28,7 @@ inline int SScene_test::CreateFromTree()
 
     SScene scene ; 
     scene.initFromTree(st); 
-
+    
     std::cout << scene.desc() ; 
     scene.save(SCENE_DIR) ;  
 

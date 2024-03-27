@@ -30,11 +30,13 @@ struct sfr
 
     sfr(); 
 
+    double* ce_data() ; 
     template<typename T> void set_ce( const T* _ce ); 
     template<typename T> void set_extent( T _w ); 
 
     void set_name( const char* _name ); 
     const char* get_name() const ; 
+    std::string get_key() const ; 
 
     std::string desc() const ; 
     bool is_identity() const ; 
@@ -42,6 +44,7 @@ struct sfr
     NP* serialize() const ; 
     void save(const char* dir, const char* name=NAME) const ; 
 
+    static sfr Import( const NP* a); 
     static sfr Load( const char* dir, const char* name=NAME); 
     static sfr Load_(const char* path ); 
 
@@ -67,6 +70,11 @@ inline sfr::sfr()
 {
 }
 
+inline double* sfr::ce_data() 
+{
+    return glm::value_ptr(ce); 
+}
+
 template<typename T>
 inline void sfr::set_ce( const T* _ce )
 {
@@ -87,11 +95,15 @@ inline const char* sfr::get_name() const
 {
     return name ; 
 }
+inline std::string sfr::get_key() const
+{
+    return name ? sstr::Replace( name, ':', '_' ) : "" ;  
+}
+
 inline void sfr::set_name(const char* _n)
 {
     name = _n ? strdup(_n) : nullptr ; 
 }
-
 
 
 
@@ -151,6 +163,14 @@ inline void sfr::save(const char* dir, const char* name_ ) const
     std::string name = U::form_name( name_ , ".npy" ) ; 
     NP* a = serialize() ; 
     a->save(dir, name.c_str()); 
+}
+
+
+inline sfr sfr::Import( const NP* a) // static
+{
+    sfr fr ; 
+    fr.load(a); 
+    return fr ; 
 }
 
 inline sfr sfr::Load(const char* dir, const char* name) // static
@@ -216,5 +236,11 @@ inline void sfr::read( const double* src, unsigned num_values )
     unsigned num_bytes = sizeof(double)*num_values ; 
     memcpy( dst_bytes, src_bytes, num_bytes );
 } 
+
+inline std::ostream& operator<<(std::ostream& os, const sfr& fr)
+{
+    os << fr.desc() ; 
+    return os; 
+}
 
  

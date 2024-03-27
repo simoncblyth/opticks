@@ -334,7 +334,7 @@ struct stree
     // "gtd" formerly from X4PhysicalVolume::convertStructure_r
 
     std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
-    std::vector<snode> rem ;               // selection of remainder nodes
+    std::vector<snode> rem ;               // subset of nds with the remainder nodes
     std::vector<std::string> digs ;        // per-node digest for all nodes  
     std::vector<std::string> subs ;        // subtree digest for all nodes
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
@@ -425,9 +425,13 @@ struct stree
     int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
 
+
     const snode* pick_lvid_ordinal_node( int lvid, int ordinal ) const ; 
-    int    pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
-    int    pick_lvid_ordinal_repeat_ordinal_inst(  const char* q_spec ) const ; 
+    int pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int parse_spec(int& lvid, int& lvid_ordinal, int& repeat_ordinal, const char* q_spec ) const ; 
+    int pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const ; 
+    sfr get_frame(const char* q_spec ) const ; 
+
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
     const char* get_sub_soname(const char* sub) const ; 
@@ -464,31 +468,36 @@ struct stree
 
 
 
-    template<typename N>
     void get_combined_transform(
              glm::tmat4x4<double>& t,
              glm::tmat4x4<double>& v,
              const snode& node,
-             const N* nd,
+             const sn* nd,
              std::ostream* out
              ) const ;
 
-    template<typename N>
     std::string desc_combined_transform(
              glm::tmat4x4<double>& t,
              glm::tmat4x4<double>& v,
              const snode& node,
-             const N* nd
+             const sn* nd
              ) const ;
 
-    template<typename N>
     const Tran<double>* get_combined_tran_and_aabb(
              double* aabb, 
              const snode& node,
-             const N* nd,
+             const sn* nd,
              std::ostream* out
              ) const ;
 
+    void get_transformed_aabb(
+             double* aabb, 
+             const snode& node,
+             const sn* nd,
+             std::ostream* out
+             ) const ;
+
+    void get_prim_aabb( double* aabb, const snode& node, std::ostream* out ) const ; 
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -1523,7 +1532,12 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ord
     return inst_idx ; 
 }
 
-inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const
+
+inline int stree::parse_spec(
+    int& lvid, 
+    int& lvid_ordinal,
+    int& repeat_ordinal,
+    const char* q_spec ) const
 {
     std::vector<std::string> elem ; 
     sstr::Split(q_spec, ':', elem );  
@@ -1533,19 +1547,99 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) co
     const char* q_repeat_ordinal = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
 
     bool starting = true ; 
-    int lvid = find_lvid(q_soname, starting);  
+    lvid = find_lvid(q_soname, starting);  
     if( lvid == -1 ) return -1 ;  
 
-    int lvid_ordinal = q_lvid_ordinal  ? std::atoi(q_lvid_ordinal) : 0 ; 
-    int repeat_ordinal = q_repeat_ordinal ? std::atoi(q_repeat_ordinal)  : 0 ; 
+    lvid_ordinal = q_lvid_ordinal  ? std::atoi(q_lvid_ordinal) : 0 ; 
+    repeat_ordinal = q_repeat_ordinal ? std::atoi(q_repeat_ordinal)  : 0 ; 
 
+    return 0 ; 
+}
+
+inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const
+{
+    int lvid ; 
+    int lvid_ordinal ;
+    int repeat_ordinal ;
+    int rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
+    assert( rc == 0 ); 
     int inst_idx = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
     return inst_idx ;
 }
 
 
+/**
+stree::get_frame
+------------------
 
+Q: An instance encompasses multiple lv and multiple 
+   snode so which nidx is collected together with the inst
+   transforms into inst_nidx ? The outer one would be most useful. 
 
+A: By observation the outer instance node is collected into inst_nidx
+
+**/
+
+inline sfr stree::get_frame(const char* q_spec ) const 
+{
+    int lvid ; 
+    int lvid_ordinal ;
+    int repeat_ordinal ;
+    int rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
+    assert( rc == 0 ); 
+    int ii = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
+
+    const glm::tmat4x4<double>* m2w = get_inst(ii); 
+    const glm::tmat4x4<double>* w2m = get_iinst(ii); 
+    assert( m2w ); 
+    assert( w2m ); 
+
+    int nidx = inst_nidx[ii] ; 
+    const snode& nd = nds[nidx] ; 
+
+    std::array<double,6> bb ; 
+    get_prim_aabb( bb.data(), nd, nullptr ); 
+
+    bool dump = false ; 
+    if(dump) std::cout 
+        << "stree::get_frame"
+        << " q_spec " << q_spec
+        << "\n"
+        << " lvid " << lvid
+        << " soname[lvid] " << soname[lvid]
+        << " soname[nd.lvid] " << soname[nd.lvid]
+        << "\n"
+        << " lvid_ordinal " << lvid_ordinal
+        << " repeat_ordinal " << repeat_ordinal
+        << " rc " << rc
+        << " ii " << ii 
+        << " nidx " << nidx 
+        << "\n"
+        << " nd.desc " << nd.desc() 
+        << "\n"
+        << " bb \n" 
+        << s_bb::Desc( bb.data() )
+        << "\n"
+        ;
+
+    //assert( nd.lvid == lvid );  
+    // lvid will not in general match
+    // because there are multiple lv within the instance 
+    // and the access technique goes via the gas_idx ? 
+
+    assert( nd.repeat_ordinal == repeat_ordinal ); 
+
+    sfr f ;
+    // TODO: aux0/1/2 arrange layout of integers
+
+    f.set_name(q_spec); 
+    s_bb::CenterExtent( f.ce_data(), bb.data() ); 
+
+    f.m2w = *m2w ; 
+    f.w2m = *w2m ; 
+
+    return f ; 
+}
 
 
 /**
@@ -1575,7 +1669,13 @@ inline const char* stree::get_sub_soname(const char* sub) const
 }
 
 
+/**
+stree::Name
+------------
 
+HMM: tail stripping now done at collection with sstr::StripTail_Unique
+
+**/
 inline std::string stree::Name( const std::string& name, bool strip ) // static
 {
     return strip ? sstr::StripTail(name, "0x") : name ; 
@@ -1910,7 +2010,14 @@ inline std::string stree::desc_node_product( glm::tmat4x4<double>& m2w_, glm::tm
 stree::get_combined_transform : combining structural and CSG transforms
 ------------------------------------------------------------------------
 
-NB : WHAT THE TRANSFORMS DEPEND STRONGLY ON : "local = node.repeat_index > 0"
+NB::
+
+     local = node.repeat_index > 0
+
+**The local argument to get_node_product drastically changes the 
+character of the returned transforms for the global ridx:0 and
+the "local" ridx>0 instances by changing which transforms
+are included in the product** 
 
 * combines structural (volume level) and CSG (solid level) transforms
 * canonical usage from CSGImport::importNode
@@ -1962,12 +2069,11 @@ local:true for instances node.repeat_index > 0
 
 **/
 
-template<typename N>
 inline void stree::get_combined_transform(
     glm::tmat4x4<double>& t,
     glm::tmat4x4<double>& v,
     const snode& node,
-    const N* nd,
+    const sn* nd,
     std::ostream* out ) const
 {
     bool local = node.repeat_index > 0 ;   // for instanced nodes restrict to same repeat_index excluding outer 
@@ -1981,7 +2087,7 @@ inline void stree::get_combined_transform(
     if(nd)
     {
         assert( node.lvid == nd->lvid );
-        N::NodeTransformProduct(nd->idx(), tc, vc, false, out );  // reverse:false
+        sn::NodeTransformProduct(nd->idx(), tc, vc, false, out );  // reverse:false
     }
 
     // combine structural (volume level) and CSG (solid level) transforms
@@ -1991,12 +2097,11 @@ inline void stree::get_combined_transform(
     if(out) *out << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << std::endl << std::endl ;
 }
 
-template<typename N>
 inline std::string stree::desc_combined_transform(
     glm::tmat4x4<double>& t,
     glm::tmat4x4<double>& v,
     const snode& node,
-    const N* nd ) const
+    const sn* nd ) const
 {
     std::stringstream ss ;
     ss << "stree::desc_combined_transform" << std::endl;
@@ -2019,11 +2124,10 @@ CAUTION : sn::uncoincide needs CSG tree frame AABB but this needs leaf frame AAB
 
 **/
 
-template<typename N>
 inline const Tran<double>* stree::get_combined_tran_and_aabb(
     double* aabb, 
     const snode& node,
-    const N* nd,
+    const sn* nd,
     std::ostream* out
     ) const 
 {
@@ -2033,6 +2137,10 @@ inline const Tran<double>* stree::get_combined_tran_and_aabb(
     glm::tmat4x4<double> t(1.) ;
     glm::tmat4x4<double> v(1.) ;
     get_combined_transform(t, v, node, nd, out );
+
+    // NB ridx:0 full stack of transforms from root down to CSG constituent nodes
+    //    ridx>0 only within the instance and within constituent CSG tree 
+      
     const Tran<double>* tv = new Tran<double>(t, v); 
 
     nd->copyBB_data( aabb ); 
@@ -2040,6 +2148,81 @@ inline const Tran<double>* stree::get_combined_tran_and_aabb(
 
     return tv ; 
 }
+
+
+/**
+stree::get_transformed_aabb
+----------------------------
+
+snode.repeat_index:0 
+    full stack of transforms from root down into CSG constituent sn nodes
+snode.repeat_index>0 
+    only within the instance and down into constituent sn nodes
+
+**/
+
+inline void stree::get_transformed_aabb(
+    double* aabb, 
+    const snode& node,
+    const sn* nd,
+    std::ostream* out
+    ) const 
+{
+    assert( nd ); 
+    if(!CSG::IsLeaf(nd->typecode)) return ; 
+
+    glm::tmat4x4<double> t(1.) ;
+    glm::tmat4x4<double> v(1.) ;
+    get_combined_transform(t, v, node, nd, out );
+
+    nd->copyBB_data( aabb ); 
+    stra<double>::Transform_AABB_Inplace(aabb, t);   
+}
+
+
+/**
+stree::get_prim_aabb
+---------------------
+
+Follow pattern of::
+
+    CSGImport::importPrim_
+    CSGImport::importNode 
+
+**/
+inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream* out ) const
+{
+    std::vector<const sn*> nds ;
+    sn::GetLVNodesComplete(nds, node.lvid); // many nullptr in unbalanced deep complete binary trees
+    int numParts = nds.size();
+
+    std::array<double,6> pbb = {} ;
+
+    for(int i=0 ; i < numParts ; i++)
+    {
+        int partIdx = i ;
+        const sn* nd = nds[partIdx];         
+
+        int  typecode = nd ? nd->typecode : CSG_ZERO ;
+        bool leaf = CSG::IsLeaf(typecode) ; 
+        if(!leaf) continue ; 
+
+        bool is_complemented_primitive = nd->complement && CSG::IsPrimitive(typecode) ;  
+        if(is_complemented_primitive) continue ; 
+
+        bool external_bbox_is_expected = CSG::ExpectExternalBBox(typecode);
+        bool expect = external_bbox_is_expected == false ; 
+        if(!expect) std::cerr << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED : DEFERRED UNTIL HAVE EXAMPLES\n" ;
+        assert(expect); 
+        if(!expect) std::raise(SIGINT);
+
+        std::array<double,6> nbb ; 
+        get_transformed_aabb( nbb.data(), node, nd, out );
+        s_bb::IncludeAABB( pbb.data(), nbb.data(), out );
+    }
+    for(int i=0 ; i < 6 ; i++) aabb[i] = pbb[i] ; 
+} 
+
 
 
 

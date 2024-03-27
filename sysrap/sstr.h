@@ -51,6 +51,7 @@ struct sstr
     static void PrefixSuffixParse(std::vector<std::string>& elem, const char* prefix, const char* suffix, const char* lines); 
     static void Split(     const char* str, char delim,   std::vector<std::string>& elem ); 
     static void SplitTrim( const char* str, char delim,   std::vector<std::string>& elem ); 
+    static void SplitTrimSuppress( const char* str, char delim,   std::vector<std::string>& elem ); 
 
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str ); 
     static void chop( char** head, char** tail, const char* delim, const char* str ); 
@@ -404,13 +405,26 @@ inline void sstr::Split( const char* str, char delim,   std::vector<std::string>
     while (std::getline(ss, s, delim)) elem.push_back(s) ; 
 }
 
-inline void sstr::SplitTrim( const char* str, char delim,   std::vector<std::string>& elem )
+inline void sstr::SplitTrim( const char* str, char delim,   std::vector<std::string>& elem  )
 {
     std::stringstream ss; 
     ss.str(str)  ;
     std::string s;
     while (std::getline(ss, s, delim)) elem.push_back(Trim(s.c_str())) ; 
 }
+
+inline void sstr::SplitTrimSuppress( const char* str, char delim,   std::vector<std::string>& elem  )
+{
+    std::stringstream ss; 
+    ss.str(str)  ;
+    std::string s;
+    while (std::getline(ss, s, delim)) 
+    {
+        const char* t = Trim(s.c_str());
+        if(t && strlen(t) > 0) elem.push_back(t) ; 
+    }
+}
+
 
 
 

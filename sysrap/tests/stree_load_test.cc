@@ -11,6 +11,8 @@ stree_load_test.cc
 
     TEST=pick_lvid_ordinal_repeat_ordinal_inst_ ~/o/sysrap/tests/stree_load_test.sh 
     TEST=pick_lvid_ordinal_repeat_ordinal_inst  ~/o/sysrap/tests/stree_load_test.sh 
+    TEST=get_frame ~/o/sysrap/tests/stree_load_test.sh 
+    TEST=get_prim_aabb ~/o/sysrap/tests/stree_load_test.sh 
 
 **/
 
@@ -38,6 +40,8 @@ struct stree_load_test
     void find_inst_gas() const ; 
     void pick_lvid_ordinal_repeat_ordinal_inst_() const ; 
     void pick_lvid_ordinal_repeat_ordinal_inst() const ; 
+    void get_frame() const ; 
+    void get_prim_aabb() const ; 
 
     int main(); 
 };
@@ -301,6 +305,83 @@ inline void stree_load_test::pick_lvid_ordinal_repeat_ordinal_inst() const
     }
 }
 
+inline void stree_load_test::get_frame() const 
+{
+    std::vector<std::string> v_spec = 
+       {{ 
+          "HamamatsuR12860sMask:0:0",
+          "Hama:0:0", 
+          "Hama:0:1000", 
+          "NNVT", 
+          "NNVT:0", 
+          "NNVT:0:0", 
+          "NNVT:0:1000" 
+       }} ; 
+    int num = v_spec.size(); 
+    for(int i=0 ; i < num ; i++)
+    {    
+        const std::string& spec = v_spec[i] ; 
+        sfr fr = st->get_frame(spec.c_str()); 
+        std::cout << fr ;  
+    }
+}
+
+inline void stree_load_test::get_prim_aabb() const 
+{
+    std::cout << "stree_load_test::get_prim_aabb \n" ; 
+    std::array<double,6> pbb ; 
+
+    for(int i=0 ; i < 3 ; i++)
+    {
+        int num_nd = 0 ; 
+        const char* label = nullptr ; 
+        switch(i)
+        {
+            case 0: num_nd = st->nds.size()       ; label = "st->nds"       ; break ; 
+            case 1: num_nd = st->rem.size()       ; label = "st->rem"       ; break ; 
+            case 2: num_nd = st->inst_nidx.size() ; label = "st->inst_nidx" ; break ; 
+        }
+
+        std::cout << label << " " << num_nd << std::endl ;   
+
+        for(int j=0 ; j < 3 ; j++)
+        {
+            int k0 = 0 ;   
+            int k1 = 0 ;   
+            if( j == 0 )
+            {
+                k0 = 0 ; 
+                k1 = k0 + 20 ; 
+            }
+            else if( j == 1 )
+            {
+                k0 = num_nd/2  ; 
+                k1 = k0 + 20 ; 
+            }
+            else if( j == 2 )
+            {
+                k0 = num_nd - 20   ; 
+                k1 = num_nd ; 
+            }
+
+            for(int k=k0 ; k < k1 ; k++)
+            {
+                const snode* node = nullptr ; 
+                if(      i == 0 ) node = &st->nds[k] ; 
+                else if( i == 1 ) node = &st->rem[k] ; 
+                else if( i == 2 ) node = &st->nds[st->inst_nidx[k]] ; 
+                st->get_prim_aabb( pbb.data(), *node, nullptr ); 
+                std::cout 
+                    << " [" << std::setw(5) << k << "]" 
+                    << " : " 
+                    << s_bb::Desc<double>( pbb.data() ) 
+                    << std::endl 
+                    ;   
+            } 
+        }
+    }
+}
+
 
 
 inline int stree_load_test::main()
@@ -339,7 +420,15 @@ inline int stree_load_test::main()
     {
         pick_lvid_ordinal_repeat_ordinal_inst();
     }
-  
+    else if(strcmp(TEST, "get_frame") == 0)
+    {
+        get_frame();
+    }
+    else if(strcmp(TEST, "get_prim_aabb") == 0)
+    {
+        get_prim_aabb();
+    }
+    
 
     return 0 ; 
 }
