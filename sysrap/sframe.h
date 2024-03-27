@@ -50,6 +50,8 @@ TODO: should be using Tran<double> for transforming , might as well
 #include "spath.h"
 #include "sphoton.h"
 
+#include "sfr.h"
+
 #include "NP.hh"
 
 
@@ -91,6 +93,8 @@ struct sframe
     sframe(const sframe& other); 
     ~sframe(); 
     void cleanup(); 
+
+    sfr spawn_lite() const ; 
 
     void zero() ; 
     bool is_zero() const ; 
@@ -227,6 +231,30 @@ inline sframe::sframe(const sframe& other)
     printf("//sframe.copy.ctor NEW: tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m ); 
 #endif
 }
+
+/**
+sframe::spawn_lite
+-------------------
+
+transitional 
+
+**/
+
+inline sfr sframe::spawn_lite() const 
+{
+    sfr l ; 
+    l.ce.x = ce.x ; 
+    l.ce.y = ce.y ; 
+    l.ce.z = ce.z ; 
+    l.ce.w = ce.w ;
+
+    l.m2w = tr_m2w->t ;  
+    l.w2m = tr_w2m->t ;  
+ 
+    return l ; 
+} 
+
+
 
 
 /**

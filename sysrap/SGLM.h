@@ -129,7 +129,7 @@ Screen
 
 #include "SGLM_Arcball.h"
 
-#include "sframe.h"  // sframe FEELS TOO HEAVYWEIGHT TO BE HERE
+#include "sfr.h"     // formerly sframe.h
 #include "SCE.h"     // moving from sframe to SCE 
 
 #include "sstr.h"
@@ -298,9 +298,9 @@ struct SYSRAP_API SGLM : public SCMD
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
 
-    sframe fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
-    void set_frame( const sframe& fr ); 
-    const char* get_frame_name() const ; 
+    sfr fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
+    void set_frame( const sfr& fr ); 
+    //const char* get_frame_name() const ; 
     float extent() const ; 
     float tmin_abs() const ; 
     float tmax_abs() const ; 
@@ -418,9 +418,9 @@ struct SYSRAP_API SGLM : public SCMD
     void updateComposite(); 
 
 
-    void ce_corners_world( std::vector<glm::vec4>& v_world ) const ; 
-    void ce_midface_world( std::vector<glm::vec4>& v_world ) const ; 
-    void apply_MVP( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const ; 
+    void ce_corners_world( std::vector<glm::tvec4<double>>& v_world ) const ; 
+    void ce_midface_world( std::vector<glm::tvec4<double>>& v_world ) const ; 
+    void apply_MVP( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<double>>& v_world, bool flip ) const ; 
 
     std::string desc_MVP() const ; 
     std::string desc_MVP_ce_corners() const ; 
@@ -775,7 +775,7 @@ std::string SGLM::descInput() const
 {
     std::stringstream ss ; 
     ss << "SGLM::descInput" << std::endl ; 
-    ss << std::setw(25) << " sglm.fr.ce "  << Present( fr.ce )   << std::endl ; 
+    ss << std::setw(25) << " sglm.fr.desc "  << fr.desc()  << std::endl ; 
     ss << std::setw(25) << " sglm.cam " << cam << std::endl ; 
     ss << std::setw(25) << " SCAM::Name(sglm.cam) " << SCAM::Name(cam) << std::endl ; 
     std::string s = ss.str(); 
@@ -786,18 +786,17 @@ std::string SGLM::descInput() const
 SGLM::set_frame
 -----------------
 
-Avoided former kludge double call of update by repositioning updateNearFar 
-according to its dependency on gazelength. 
+WIP: move to light weight sfr : most of sframe not needed by SGLM 
 
 **/
 
-inline void SGLM::set_frame( const sframe& fr_ )
+inline void SGLM::set_frame( const sfr& fr_ )
 {
     fr = fr_ ; 
     update(); 
 }
 
-inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
+//inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
 
 inline float SGLM::extent() const {   return fr.ce.w > 0 ? fr.ce.w : CE.w ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
@@ -922,14 +921,16 @@ inline void SGLM::initModelMatrix()
     // SUGGESTS REMOVE sframe.h from SGLM passing instead normally the ce 
     // and the transforms in the special case where needed 
 
-    bool m2w_not_identity = fr.m2w.is_identity(sframe::EPSILON) == false ;
-    bool w2m_not_identity = fr.w2m.is_identity(sframe::EPSILON) == false ;
-
-    if( m2w_not_identity && w2m_not_identity )
+    //bool m2w_not_identity = fr.m2w.is_identity(sframe::EPSILON) == false ;
+    //bool w2m_not_identity = fr.w2m.is_identity(sframe::EPSILON) == false ;
+    if( !fr.is_identity() )
     {
         initModelMatrix_branch = 1 ; 
-        model2world = glm::make_mat4x4<float>(fr.m2w.cdata());
-        world2model = glm::make_mat4x4<float>(fr.w2m.cdata());
+        //model2world = glm::make_mat4x4<float>(fr.m2w.cdata());
+        //world2model = glm::make_mat4x4<float>(fr.w2m.cdata());
+
+        model2world = fr.m2w ;
+        world2model = fr.w2m ;
     }
     else if( rtp_tangential )
     {
@@ -1442,7 +1443,7 @@ float SGLM::get_nearfar_basis() const
     switch(nearfar)
     {
         case BAS_MANUAL:     basis = nearfar_manual      ; break ; 
-        case BAS_EXTENT:     basis = extent()            ; break ;  // only after setFrame 
+        case BAS_EXTENT:     basis = extent()            ; break ;  // only after set_frame
         case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU (default)
         case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis 
     }
@@ -1567,42 +1568,39 @@ std::string SGLM::descComposite() const
 
 
 
-void SGLM::ce_corners_world( std::vector<glm::vec4>& v_world ) const 
+void SGLM::ce_corners_world( std::vector<glm::tvec4<double>>& v_world ) const 
 {
-    std::vector<float4> corners ;
+    std::vector<glm::tvec4<double>> corners ;
     SCE::Corners( corners, fr.ce ); 
     assert(corners.size() == 8 ); 
 
     for(int i=0 ; i < 8 ; i++ )
     {
-        const float4& p = corners[i]; 
-        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
-        v_world.push_back(p_world); 
+        const glm::tvec4<double>& corner = corners[i]; 
+        v_world.push_back(corner); 
     }
 }
 
-void SGLM::ce_midface_world( std::vector<glm::vec4>& v_world ) const 
+void SGLM::ce_midface_world( std::vector<glm::tvec4<double>>& v_world ) const 
 {
-    std::vector<float4> midface ;
+    std::vector<glm::tvec4<double>> midface ;
     SCE::Midface( midface, fr.ce ); 
     assert(midface.size() == 6+1 ); 
 
     for(int i=0 ; i < 6+1 ; i++ )
     {
-        const float4& p = midface[i]; 
-        glm::vec4 p_world(p.x, p.y, p.z, p.w); 
-        v_world.push_back(p_world); 
+        v_world.push_back(midface[i]); 
     }
 }
 
 
-void SGLM::apply_MVP( std::vector<glm::vec4>& v_clip, const std::vector<glm::vec4>& v_world, bool flip ) const 
+void SGLM::apply_MVP( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<double>>& v_world, bool flip ) const 
 {
     int num = v_world.size(); 
     for(int i=0 ; i < num ; i++ )
     {
-        const glm::vec4& p_world = v_world[i] ; 
-        glm::vec4 p_clip = flip ? MVP * p_world : p_world*MVP ; 
+        const glm::tvec4<float> p_world = v_world[i] ; 
+        glm::tvec4<float> p_clip = flip ? MVP * p_world : p_world*MVP ; 
         v_clip.push_back(p_clip); 
     }
 }
@@ -1626,11 +1624,11 @@ std::string SGLM::desc_MVP_ce_corners() const
 {
     static const int NUM = 8 ;
   
-    std::vector<glm::vec4> v_world ; 
+    std::vector<glm::tvec4<double>> v_world ; 
     ce_corners_world(v_world); 
     assert( v_world.size() == NUM ); 
 
-    std::vector<glm::vec4> v_clip ; 
+    std::vector<glm::tvec4<float>> v_clip ; 
     bool flip = true ; 
     apply_MVP( v_clip, v_world, flip ); 
     assert( v_clip.size() == NUM ); 
@@ -1639,8 +1637,8 @@ std::string SGLM::desc_MVP_ce_corners() const
     ss << "SGLM::desc_MVP_ce_corners (clipped in {})" << std::endl ; 
     for(int i=0 ; i < NUM ; i++ )
     {
-        const glm::vec4& _world = v_world[i] ; 
-        const glm::vec4& _clip = v_clip[i] ; 
+        const glm::tvec4<double>& _world = v_world[i] ; 
+        const glm::tvec4<float>& _clip = v_clip[i] ; 
         glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
         // normalized device coordinates : from division by clip.w 
 
@@ -1650,9 +1648,9 @@ std::string SGLM::desc_MVP_ce_corners() const
 
         ss 
             << "[" << i << "]" 
-            << " world " << Present(_world) 
-            << " clip  " << Present(_clip) 
-            << " ndc " << bef << Present(_ndc) << aft  
+            << " world " << stra<double>::Desc(_world) 
+            << " clip  " << stra<float>::Desc(_clip) 
+            << " ndc " << bef << stra<float>::Desc(_ndc) << aft  
             << std::endl
             ;
     }
@@ -1666,11 +1664,11 @@ std::string SGLM::desc_MVP_ce_midface() const
 {
     static const int NUM = 6+1 ;  
 
-    std::vector<glm::vec4> v_world ; 
+    std::vector<glm::tvec4<double>> v_world ; 
     ce_midface_world(v_world); 
     assert( v_world.size() == NUM ); 
 
-    std::vector<glm::vec4> v_clip ; 
+    std::vector<glm::tvec4<float>> v_clip ; 
     bool flip = true ; 
     apply_MVP( v_clip, v_world, flip ); 
     assert( v_clip.size() == NUM ); 
@@ -1680,8 +1678,8 @@ std::string SGLM::desc_MVP_ce_midface() const
     ss << " MVP " << std::endl  << Present(MVP) << std::endl ; 
     for(int i=0 ; i < NUM ; i++ )
     {
-        const glm::vec4& _world = v_world[i] ; 
-        const glm::vec4& _clip = v_clip[i] ; 
+        const glm::tvec4<double>& _world = v_world[i] ; 
+        const glm::tvec4<float>& _clip = v_clip[i] ; 
         glm::vec4 _ndc(_clip.x/_clip.w, _clip.y/_clip.w, _clip.z/_clip.w, 1.f );   
         // normalized device coordinates : from division by clip.w 
 
@@ -1691,8 +1689,8 @@ std::string SGLM::desc_MVP_ce_midface() const
 
         ss 
             << "[" << i << "]" 
-            << " world " << Present(_world) 
-            << " clip  " << Present(_clip) 
+            << " world " << stra<double>::Desc(_world) 
+            << " clip  " << stra<float>::Desc(_clip) 
             << " ndc " << bef << Present(_ndc) << aft 
             << std::endl
             ;

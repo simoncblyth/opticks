@@ -421,9 +421,13 @@ struct stree
     int  find_lvid(const char* soname_, bool starting=true  ) const ; 
     void find_lvid_nodes_( std::vector<snode>& nodes, int lvid ) const ; 
     void find_lvid_nodes(  std::vector<int>& nodes, int lvid ) const ; 
-    void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting=true ) const ; 
+    void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting ) const ; 
     int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
+
+    const snode* pick_lvid_ordinal_node( int lvid, int ordinal ) const ; 
+    int    pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int    pick_lvid_ordinal_repeat_ordinal_inst(  const char* q_spec ) const ; 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
     const char* get_sub_soname(const char* sub) const ; 
@@ -576,6 +580,11 @@ struct stree
     std::string desc_inst() const ;
     std::string desc_inst_info() const ;
     std::string desc_inst_info_check() const;
+
+    int find_inst_gas(        int q_gas_idx, int q_gas_ordinal ) const ; 
+    int find_inst_gas_slowly( int q_gas_idx, int q_gas_ordinal ) const ; 
+    void find_inst_gas_slowly_( std::vector<int>& v_inst_idx , int q_gas_idx ) const ; 
+
 
     const glm::tmat4x4<double>* get_inst(int idx) const ; 
     const glm::tmat4x4<double>* get_iinst(int idx) const ; 
@@ -1403,16 +1412,35 @@ inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid ) const
     }
 }
 
+/**
+stree::find_lvid_nodes
+-------------------------
+
+1. lookup int:lvid from q_soname, for starting:true only a string start match is used
+2. collect snode::index of all structural snode with int:lvid
+
+**/
+
 inline void stree::find_lvid_nodes( std::vector<int>& nodes, const char* q_soname, bool starting ) const 
 {
     int lvid = find_lvid(q_soname, starting); 
     find_lvid_nodes(nodes, lvid ); 
 }
 
+
+/**
+stree::find_lvid_node
+---------------------
+
+1. find all lvid node index
+2. return the ordinal-th node index 
+
+**/
 inline int stree::find_lvid_node( const char* q_soname, int ordinal ) const 
 {
     std::vector<int> nodes ; 
-    find_lvid_nodes(nodes, q_soname ); 
+    bool starting = true ; 
+    find_lvid_nodes(nodes, q_soname, starting ); 
     if(ordinal < 0) ordinal += nodes.size() ; // -ve ordinal counts from back 
 
     return ordinal > -1 && ordinal < int(nodes.size()) ? nodes[ordinal] : -1 ; 
@@ -1422,6 +1450,12 @@ inline int stree::find_lvid_node( const char* q_soname, int ordinal ) const
 stree::find_lvid_node
 ----------------------
 
+1. split q_spec on ':' into vector of elements (str:q_soname, int:middle, int:q_ordinal)
+
+   * default ints are zero 
+   * HMM: MIDDLE REQUIRED TO BE ZERO CURRENTLY 
+
+2. lookup nidx using (str:q_soname,int:ordinal) 
 
 
 **/
@@ -1445,7 +1479,82 @@ inline int stree::find_lvid_node( const char* q_spec ) const
     return nidx ; 
 }
 
+/**
+stree::pick_lvid_ordinal_node
+-------------------------------
+
+1. collect indices of all snode with lvid   
+2. select the ordinal-th snode (-ve ordinal counts from back)
+3. return pointer into the nds vector or nullptr 
+
+**/
+inline const snode* stree::pick_lvid_ordinal_node( int lvid, int lvid_ordinal ) const 
+{
+    std::vector<int> nn ; 
+    find_lvid_nodes( nn, lvid ); 
+    int num = nn.size() ;
+    if( lvid_ordinal < 0 ) lvid_ordinal += num ; 
+    bool valid =  lvid_ordinal > -1 && lvid_ordinal < num ; 
+    int nidx = valid ? nn[lvid_ordinal] : -1 ; 
+    const snode* nds_data = nds.data() ; 
+    return nidx > -1 && nidx < int(nds.size()) ? nds_data + nidx : nullptr ; 
+}
+
+/**
+stree::pick_lvid_ordinal_repeat_ordinal_inst_
+----------------------------------------------
+
+1. pick_lvid_ordinal_node provides the snode, giving the repeat_index (aka gas_idx)
+2. find_inst_gas uses that repeat_index and the repeat_ordinal to access the instance index
+
+This is trying to repeat the MOI logic from CSGTarget::getInstanceTransform
+
+**/
+
+inline int stree::pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const 
+{
+    const snode* n = pick_lvid_ordinal_node(lvid, lvid_ordinal );   
+    if( n == nullptr ) return -1 ;   
+
+    int q_gas_idx = n->repeat_index ;  // aka gas_idx
+    int q_gas_ordinal = repeat_ordinal ;  
+    int inst_idx = find_inst_gas( q_gas_idx, q_gas_ordinal ); 
+
+    return inst_idx ; 
+}
+
+inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const
+{
+    std::vector<std::string> elem ; 
+    sstr::Split(q_spec, ':', elem );  
+
+    const char* q_soname  = elem.size() > 0 ? elem[0].c_str() : nullptr ; 
+    const char* q_lvid_ordinal  = elem.size() > 1 ? elem[1].c_str() : nullptr ; 
+    const char* q_repeat_ordinal = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
+
+    bool starting = true ; 
+    int lvid = find_lvid(q_soname, starting);  
+    if( lvid == -1 ) return -1 ;  
+
+    int lvid_ordinal = q_lvid_ordinal  ? std::atoi(q_lvid_ordinal) : 0 ; 
+    int repeat_ordinal = q_repeat_ordinal ? std::atoi(q_repeat_ordinal)  : 0 ; 
+
+    int inst_idx = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
+    return inst_idx ;
+}
+
+
+
+
+
+
+/**
+stree::get_sub_sonames
+-----------------------
+
 // TODO: should this be using sfactor ?
+
+**/
 inline void stree::get_sub_sonames( std::vector<std::string>& sonames ) const 
 {
     std::vector<std::string> subs ; 
@@ -2912,6 +3021,27 @@ inline bool stree::SelectNode( const snode& nd, int q_repeat_index, int q_repeat
     return select ;  
 }
 
+
+/**
+stree::get_repeat_field
+-------------------------
+
+Iterates over all structural *snode* (aka physical volumes "PV"
+collecting field values for selected *snode* where the 
+selection uses (q_repeat_index, q_repeat_ordinal).)
+
+Supported fields: 
+
+  +---------+--------------+-------------------+
+  | q_field |  result      |                   |
+  +=========+==============+===================+
+  |  'I'    |  nd.index    |  get_repeat_nidx  |
+  +---------+--------------+-------------------+ 
+  |  'L'    |  nd.lvid     |  get_repeat_lvid  |
+  +---------+--------------+-------------------+
+
+**/
+
 inline void stree::get_repeat_field(std::vector<int>& result, char q_field , int q_repeat_index, int q_repeat_ordinal ) const 
 {
     int num_nd = nds.size() ; 
@@ -2985,6 +3115,7 @@ stree::get_repeat_node
 -----------------------
 
 Collect all snode (structual/volumes) selected by (q_repeat_index, q_repeat_ordinal)
+
 **/
 
 inline void stree::get_repeat_node(std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const 
@@ -3086,6 +3217,8 @@ inline void stree::add_inst(
 
     inst_nidx.push_back(nidx); 
 }
+
+
 
 /**
 stree::add_inst
@@ -3290,6 +3423,71 @@ inline std::string stree::desc_inst_info_check() const
     return str ; 
 }
 
+
+/**
+stree::find_inst_gas
+----------------------
+
+Uses inst_info to provide the instance index of the ordinal-th 
+instance for the gas_idx
+
+**/
+
+inline int stree::find_inst_gas( int q_gas_idx, int q_gas_ordinal ) const 
+{
+    int num_gas  = inst_info.size(); 
+    bool valid = q_gas_idx < num_gas ; 
+    if(!valid) return -2 ; 
+
+    const int4& _inst_info = inst_info[q_gas_idx] ;
+
+    int ridx = _inst_info.x ; 
+    int count = _inst_info.y ; 
+    int offset = _inst_info.z ; 
+
+    assert( ridx == q_gas_idx ); 
+    
+    if( q_gas_ordinal < 0 ) q_gas_ordinal += count ; 
+    int inst_idx = q_gas_ordinal < count ? offset + q_gas_ordinal : -1 ;
+    int num_inst = inst.size();
+    return inst_idx < num_inst ? inst_idx : -3  ; 
+}
+
+inline int stree::find_inst_gas_slowly( int q_gas_idx, int q_gas_ordinal ) const
+{
+    std::vector<int> v_inst_idx ; 
+    find_inst_gas_slowly_( v_inst_idx, q_gas_idx ); 
+    int num = v_inst_idx.size() ;
+    if( q_gas_ordinal < 0 ) q_gas_ordinal += num ; 
+    int inst_idx = q_gas_ordinal > -1 && q_gas_ordinal < num ? v_inst_idx[q_gas_ordinal] : -1 ; 
+
+    bool dump = false ; 
+    if(dump && q_gas_idx == 0 ) std::cout 
+        << "stree::find_inst_gas_slowly"
+        << " q_gas_idx " << q_gas_idx
+        << " q_gas_ordinal " << q_gas_ordinal
+        << " v_inst_idx.size " << v_inst_idx.size()
+        << " inst_idx " << inst_idx
+        << std::endl
+        ;
+  
+    return inst_idx ;  
+}
+
+inline void stree::find_inst_gas_slowly_( std::vector<int>& v_inst_idx , int q_gas_idx ) const
+{
+    int num_inst = inst.size();
+    glm::tvec4<int64_t> col3 ; 
+    for(int i=0 ; i < num_inst ; i++)
+    {
+        const glm::tmat4x4<double>& tr_m2w = inst[i] ; 
+        strid::Decode(tr_m2w, col3 );
+        int inst_idx = col3.x ;  
+        int gas_idx = col3.y ;
+        assert( inst_idx == i ); 
+        if( gas_idx == q_gas_idx ) v_inst_idx.push_back(inst_idx) ;  
+    }
+}
 
 
 

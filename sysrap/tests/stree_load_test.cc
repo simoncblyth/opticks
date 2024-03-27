@@ -6,6 +6,11 @@ stree_load_test.cc
 
     ~/o/sysrap/tests/stree_load_test.sh  
 
+    TEST=pick_lvid_ordinal_node ~/o/sysrap/tests/stree_load_test.sh  
+    TEST=find_inst_gas ~/o/sysrap/tests/stree_load_test.sh  
+
+    TEST=pick_lvid_ordinal_repeat_ordinal_inst_ ~/o/sysrap/tests/stree_load_test.sh 
+    TEST=pick_lvid_ordinal_repeat_ordinal_inst  ~/o/sysrap/tests/stree_load_test.sh 
 
 **/
 
@@ -29,6 +34,10 @@ struct stree_load_test
     void get_combined_transform(int LVID, int NDID  );  
     void get_inst(int idx) const ; 
     void get_frame_f4(int idx) const ; 
+    void pick_lvid_ordinal_node() const ; 
+    void find_inst_gas() const ; 
+    void pick_lvid_ordinal_repeat_ordinal_inst_() const ; 
+    void pick_lvid_ordinal_repeat_ordinal_inst() const ; 
 
     int main(); 
 };
@@ -167,6 +176,131 @@ inline void stree_load_test::get_frame_f4(int idx) const
     
 }
 
+inline void stree_load_test::pick_lvid_ordinal_node() const 
+{
+    std::cout
+        << "stree_load_test::pick_lvid_ordinal_node"
+        << "\n"
+        << " (lvid, lvid_ordinal, n.desc ) "
+        << "\n"
+        ;
+
+    for(int i=0 ; i < 150 ; i++)
+    {
+        for( int j=0 ; j < 2 ; j++)
+        {
+            int lvid = i ; 
+            int lvid_ordinal = j ; 
+            const snode* n = st->pick_lvid_ordinal_node( lvid, lvid_ordinal ); 
+            std::cout 
+               << "(" 
+               << std::setw(4) << lvid 
+               << " "
+               << std::setw(4) << lvid_ordinal
+               << ") "
+               << ( n ? n->desc() : "-" )
+               << "\n"
+               ;
+        }
+    }
+} 
+
+inline void stree_load_test::find_inst_gas() const
+{
+    std::cout
+        << "stree_load_test::find_inst_gas"
+        << "\n"
+        << " (gas_idx, gas_ordinal, inst_idx, inst_idx_slow ) "
+        << "\n"
+        ;
+
+    for(int i=0 ; i < 10 ; i++)
+    {
+        int q_gas_idx = i ; 
+
+        for(int j=0 ; j < 3 ;  j++)
+        {
+            int q_gas_ordinal = j ; 
+            int inst_idx = st->find_inst_gas(q_gas_idx, q_gas_ordinal ); 
+            int inst_idx_slow = st->find_inst_gas_slowly(q_gas_idx, q_gas_ordinal ); 
+
+            std::cout 
+                << "(" 
+                << std::setw(4) << q_gas_idx
+                << " "
+                << std::setw(4) << q_gas_ordinal
+                << " "
+                << std::setw(7) << inst_idx
+                << " "
+                << std::setw(7) << inst_idx_slow
+                << ") "
+                << "\n"
+                ;
+        }
+    }
+}
+
+
+inline void stree_load_test::pick_lvid_ordinal_repeat_ordinal_inst_() const 
+{
+    std::cout 
+        << "stree_load_test::pick_lvid_ordinal_repeat_ordinal_inst_"
+        << " ( lvid, lvid_ordinal, repeat_ordinal, inst_idx ) "
+        << "\n"
+        ;
+
+    for(int i=0 ; i < 150 ; i++)
+    for(int j=0 ; j < 2 ; j++)
+    for(int k=0 ; k < 2 ; k++)
+    {
+        int lvid = i ; 
+        int lvid_ordinal = j ; 
+        int repeat_ordinal = k ; 
+        int inst_idx = st->pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
+
+        std::cout 
+            << "(" 
+            << std::setw(4) << lvid
+            << " "
+            << std::setw(4) << lvid_ordinal
+            << " "
+            << std::setw(6) << repeat_ordinal
+            << " "
+            << std::setw(7) << inst_idx
+            << ") "
+            << "\n"
+            ;
+    }    
+}
+
+inline void stree_load_test::pick_lvid_ordinal_repeat_ordinal_inst() const 
+{
+    std::cout 
+        << "stree_load_test::pick_lvid_ordinal_repeat_ordinal_inst"
+        << " ( i, spec, inst_idx ) "
+        << "\n"
+        ;
+
+    std::vector<std::string> v_spec = {{ "Hama:0:0", "Hama:0:1000", "NNVT", "NNVT:0", "NNVT:0:0", "NNVT:0:1000" }} ; 
+    int num = v_spec.size(); 
+    for(int i=0 ; i < num ; i++)
+    {    
+        const std::string& spec = v_spec[i] ; 
+        int inst_idx = st->pick_lvid_ordinal_repeat_ordinal_inst( spec.c_str() );  
+
+        std::cout 
+            << "(" 
+            << std::setw(4) << i
+            << " "
+            << std::setw(50) << spec
+            << " "
+            << std::setw(7) << inst_idx
+            << ") "
+            << "\n"
+            ;
+    }
+}
+
 
 
 inline int stree_load_test::main()
@@ -189,6 +323,24 @@ inline int stree_load_test::main()
     {
         get_frame_f4(IIDX); 
     }
+    else if(strcmp(TEST, "pick_lvid_ordinal_node") == 0)
+    {
+        pick_lvid_ordinal_node();
+    }
+    else if(strcmp(TEST, "find_inst_gas") == 0)
+    {
+        find_inst_gas();
+    }
+    else if(strcmp(TEST, "pick_lvid_ordinal_repeat_ordinal_inst_") == 0)
+    {
+        pick_lvid_ordinal_repeat_ordinal_inst_();
+    }
+    else if(strcmp(TEST, "pick_lvid_ordinal_repeat_ordinal_inst") == 0)
+    {
+        pick_lvid_ordinal_repeat_ordinal_inst();
+    }
+  
+
     return 0 ; 
 }
 

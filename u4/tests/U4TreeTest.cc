@@ -228,7 +228,8 @@ void test_get_pv_1(const U4Tree* tree, const char* q_soname)
     unsigned edge = ssys::getenvunsigned("EDGE", 10); 
 
     std::vector<int> nodes ; 
-    tree->st->find_lvid_nodes(nodes, q_soname );  
+    bool starting = false ;  // require exact match  
+    tree->st->find_lvid_nodes(nodes, q_soname, starting );  
     std::cout << " q_soname " << q_soname << " nodes.size " << nodes.size() << std::endl ; 
 
     int copyno = -1 ; 

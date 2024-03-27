@@ -343,6 +343,7 @@ set(HEADERS
     sseq_index.h
 
     sframe.h
+    sfr.h
     SCE.h 
     SCSGOptiX.h 
 

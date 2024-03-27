@@ -651,7 +651,9 @@ void CSGOptiX::initFrame()
     sframe _fr = foundry->getFrameE() ;   // TODO: migrate to lighweight sfr from stree level 
     LOG(LEVEL) << _fr ; 
     SEvt::SetFrame(_fr) ; 
-    setFrame(_fr);  
+
+    sfr _lfr = _fr.spawn_lite(); 
+    setFrame(_lfr);  
 }
 
 
@@ -799,13 +801,21 @@ void CSGOptiX::setFrame(const char* frs)
     LOG(LEVEL) << " frs " << frs ; 
     sframe fr ; 
     foundry->getFrame(fr, frs) ; 
-    setFrame(fr); 
+
+    sfr lfr = fr.spawn_lite(); 
+    setFrame(lfr); 
+
 }
 void CSGOptiX::setFrame(const float4& ce )
 {
-    sframe fr_ ;   // m2w w2m default to identity 
-    fr_.ce = ce ;      
-    setFrame(fr_); 
+    sfr lfr ;   // m2w w2m default to identity 
+
+    lfr.ce.x = ce.x ;      
+    lfr.ce.y = ce.y ;      
+    lfr.ce.z = ce.z ;      
+    lfr.ce.w = ce.w ;
+      
+    setFrame(lfr); 
 }
 
 /**
@@ -819,27 +829,18 @@ and rendering ?
 
 **/
 
-void CSGOptiX::setFrame(const sframe& fr_ )
+void CSGOptiX::setFrame(const sfr& lfr )
 {
-    sglm->set_frame(fr_);   // TODO: aim to remove sframe from sglm ? instead operate at ce (or sometimes m2w w2m level)
+    sglm->set_frame(lfr);   // TODO: aim to remove sframe from sglm ? instead operate at ce (or sometimes m2w w2m level)
 
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ; 
 
-    const float4& ce = sglm->fr.ce ; 
-    const qat4& m2w = sglm->fr.m2w ; 
-    const qat4& w2m = sglm->fr.w2m ; 
-
+    LOG(LEVEL) << lfr.desc() ; 
 
     LOG(LEVEL) 
-        << " ce [ " << ce.x << " " << ce.y << " " << ce.z << " " << ce.w << "]" 
         << " sglm.TMIN " << sglm->TMIN
         << " sglm.tmin_abs " << sglm->tmin_abs() 
-        << " sglm.m2w.is_zero " << m2w.is_zero()
-        << " sglm.w2m.is_zero " << w2m.is_zero()
         ; 
-
-    LOG(LEVEL) << "m2w " << m2w ; 
-    LOG(LEVEL) << "w2m " << w2m ; 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -958,7 +959,7 @@ A: not from device code it seems : only by using the hostside params to
 
 void CSGOptiX::prepareParam()
 {
-    const float4& ce = sglm->fr.ce ;   
+    const glm::tvec4<double>& ce = sglm->fr.ce ;   
 
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
@@ -1144,10 +1145,12 @@ do similar with NAMEPREFIX envvar.
 **/
 const char* CSGOptiX::getRenderStemDefault() const 
 {
+    const char* fr_name = sglm->fr.get_name() ; 
+
     std::stringstream ss ; 
     ss << ssys::getenvvar("NAMEPREFIX","nonamepfx") ; 
     ss << "_" ; 
-    ss << sglm->get_frame_name() ; 
+    ss << ( fr_name ? fr_name : "no_frame_name" ) ; 
     
     std::string str = ss.str(); 
     return strdup(str.c_str()); 

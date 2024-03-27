@@ -69,7 +69,8 @@ int main(int argc, char** argv)
  
     CSGOptiX* cx = CSGOptiX::Create(fd); 
 
-    cx->setFrame(fr);    
+    sfr lfr = fr.spawn_lite(); 
+    cx->setFrame(lfr);    
 
     // This seems funny as cx has fd which is the source of the fr : so could be automatic ?  
     // Not so easy as which frame to use depends on running mode and user input 

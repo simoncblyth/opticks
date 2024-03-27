@@ -440,6 +440,16 @@ NB gord was previously named iidx (but that clashes with other uses of that)
 
 This method avoids duplication between CSGTarget::getTransform and  CSGTarget::getGlobalCenterExtent 
 
+Note that the (midx,mord) CSGPrim is accessed purely to  
+find out which gas_idx it has and then use that together with 
+the gord gas-ordinal to get the corresponding instance transform.
+
+Using (midx,mord) as input rather than gas_idx directly is because
+they are more fundamental whereas the gas_idx may change when adjust 
+instancing criteria for example.  
+
+The mord is often zero, but its needed for handling possible repeats of a midx/solid. 
+
 **/
 
 const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int gord) const 
@@ -467,4 +477,7 @@ const qat4* CSGTarget::getInstanceTransform(int midx, int mord, int gord) const
     const qat4* qi = foundry->getInstance_with_GAS_ordinal(gas_idx, gord ); 
     return qi ; 
 }
+
+
+
 
