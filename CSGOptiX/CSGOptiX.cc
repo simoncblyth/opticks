@@ -799,9 +799,7 @@ void CSGOptiX::setFrame()
 void CSGOptiX::setFrame(const char* frs)
 {
     LOG(LEVEL) << " frs " << frs ; 
-    sframe fr ; 
-    foundry->getFrame(fr, frs) ; 
-
+    sframe fr = foundry->getFrame(frs) ; 
     sfr lfr = fr.spawn_lite(); 
     setFrame(lfr); 
 

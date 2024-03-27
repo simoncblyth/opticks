@@ -3345,6 +3345,7 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
 
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
     fr.frs = strdup(frs); 
+    fr.prepare();  // needed for spawn_lite to work 
     // LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
 
     LOG_IF(error, rc != 0) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;   
