@@ -18,6 +18,26 @@ U4 Kludge fix is
 
 ::
 
+    inline bool U4Track::IsOptical(const G4Track* track)
+    {
+        G4ParticleDefinition* particle = track->GetDefinition(); 
+        return particle == G4OpticalPhoton::OpticalPhotonDefinition() ; 
+    }
+
+
+
+
+    bool is_optical = track->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() ; 
+    if(is_optical) const_cast<G4Track*>(track)->UseGivenVelocity(true) ;    
+
+
+
+   
+
+
+
+::
+
      330 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 
      375 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)

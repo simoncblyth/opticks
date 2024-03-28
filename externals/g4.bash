@@ -24,6 +24,144 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
+
+LXR
+-----
+
+* https://geant4.kek.jp/lxr/find?string=G4OpBoundaryProcess.cc
+* https://geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc
+* https://geant4.kek.jp/lxr/diff/processes/optical/src/G4OpBoundaryProcess.cc?diffval=11.1.3;diffvar=v
+* https://geant4.kek.jp/lxr/diff/processes/optical/src/G4OpBoundaryProcess.cc?v=11.1.3;diffval=11.1.2;diffvar=v
+* https://geant4.kek.jp/lxr/diff/processes/optical/src/G4OpBoundaryProcess.cc?v=11.1.3;diffvar=v;diffval=11.0
+
+
+Check 11.2.0
+--------------
+
+::
+
+    epsilon:geant4 blyth$ find . -type f -exec grep -H idx_groupvel {} \;
+    ./source/processes/optical/include/G4OpBoundaryProcess.hh:  size_t idx_groupvel       = 0;
+    ./source/processes/optical/src/G4OpBoundaryProcess.cc:        groupvel->Value(fPhotonMomentum, idx_groupvel));
+    ./source/processes/optical/src/G4OpBoundaryProcess.cc:        groupvel->Value(fPhotonMomentum, idx_groupvel));
+    epsilon:geant4 blyth$ 
+
+
+Release Notes (Optical)
+-------------------------
+
+
+11.2.0 ( December 8th, 2023)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v11.2.0.html
+
+*  G4OpBoundaryProcess: verbosity of 0 silences run-time warnings.
+
+
+11.1.0 (December 9th, 2022)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v11.1.0.html
+
+
+* G4OpBoundaryProcess: calculating reflection/refraction from thin film coating.
+  Issuing warning when step size is slightly larger than geometry tolerance, in which case boundary scattering may be incorrect. Addressing problem report #2510.
+
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2510
+  * boundary reallocation step doesn't happen
+
+
+* Code cleanup with clang-tidy: use default constructors; auto keyword; remove void function argument; 
+  don't check for nullptr before delete; use operator==() for string comparisons. 
+  Prefer pointer to const G4Material where possible.
+
+
+
+11.0.0 (December 10th, 2021)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v11.0.0.html
+
+Examples
+
+    CaTS - New application implementing a flexible and extendable framework for the simulation of calorimeter and tracking detectors. It also demonstrates how to use Opticks for the creation and propagation of optical photons.
+
+
+* G4OpBoundaryProcess: fixed initialisation of some local variables. Addressing problem report #2364.
+
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2364
+  * Surface roughness check uses improperly initialised variable in G4OpBoundaryProcess
+
+* G4OpBoundaryProcess: renamed internal variables; make comparison to nullptr explicit; removed unneeded intermediate variable; refactored Davis LUT calculation. On StepTooSmall, propose velocity corresponding to material of post-step point. Addresses problem report #2438.
+
+  *  https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2438
+  * Wrong velocity in the first step after an optical reflection
+
+  
+* In all process classes, update G4OpticalParameters when process parameters updated directly. Addresses problem report #2425.
+
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2425 
+  * Possible issue with tracking order and tracking status ‘suspend’
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2422
+  * PreUserTrackingAction called more than once for the same particle (primary or not) when the option "TrackSecondariesFirst" is set for the optical processes
+
+* G4OpRayleigh, G4OpWLS, G4OpWLS2: use G4PhysicsFreeVector instead of deprecated G4PhysicsOrderedFreeVector.
+
+
+10.7.0 (December 4th, 2020)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v10.7.0.html
+
+* Added second wavelength shifting process, G4OpWLS2, within the same material.
+* Use new ConstPropertyExists(int) method rather than passing strings.
+* G4OpRayleigh, G4OpAbsorption, G4OpMieHG, G4OpWLS, G4OpWLS2: moved to new G4OpticalParameters class to control simulation parameters.
+* G4OpRayleigh: avoid double deletion of property vectors.
+* G4OpBoundaryProcess: increase geometry tolerance to kCarTolerance.
+* Fixed reading of Davis LUT data out of bounds. Addressing problem report #2287.
+  
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2287
+  * LUT Davis error accessing reflectivity 
+
+* Code cleanup/formatting and improved readability.
+
+
+10.6.0 (December 6th, 2019)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v10.6.0.html
+
+
+* G4OpWLS: call SetNumberOfSecondaries() from G4VParticleChange only once. Addressing problem report #2200.
+
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2200
+  * G4VParticleChange::SetNumberOfSecondaries() Warning theListOfSecondaries is not empty
+
+* Improved diagnostics printout.
+* Code cleanup and formatting, added C++11 keywords.
+
+
+10.5.0 (December 7th, 2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v10.5.0.html
+
+* G4OpMieHG: changed GetProperty() to use enum indeces instead of strings.
+
+
+10.4.0 (December 8th, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v10.4.0.html
+    
+* Added DAVIS model for optical physics. Use the new model with reflection and added capability of transmitting photons based on LUTs. Requires new data set G4RealSurface-2.1  
+* Change material property keys by the enum type defined in G4MaterialPropertiesIndex.
+
+
+
+
+
 G4 technical forum
 -------------------
 
