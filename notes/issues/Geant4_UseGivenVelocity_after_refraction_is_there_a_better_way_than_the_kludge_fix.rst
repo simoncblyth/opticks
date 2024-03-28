@@ -263,3 +263,115 @@ Plot thickens
 
 
 
+
+Check velocity in rainbow test
+--------------------------------
+
+::
+
+    ~/o/g4cx/tests/G4CXTest_raindrop_CPU.sh
+
+
+    w = b.q_startswith("TO BT BT SA")   
+
+First step is on x axis::
+
+    r = e.f.record[sel_p,sel_r]   
+
+    In [29]: r.shape
+    Out[29]: (100000, 4, 4, 4)
+
+    In [21]: r[:,1,0,:3] - r[:,0,0,:3]
+    Out[21]: 
+    array([[46.382,  0.   ,  0.   ],
+           [30.038,  0.   ,  0.   ],
+           [61.019,  0.   ,  0.   ],
+           [35.257,  0.   ,  0.   ],
+           [42.761,  0.   ,  0.   ],
+           ...,
+           [34.53 ,  0.   ,  0.   ],
+           [70.81 ,  0.   ,  0.   ],
+           [41.801,  0.   ,  0.   ],
+           [33.255,  0.   ,  0.   ],
+           [38.751,  0.   ,  0.   ]], dtype=float32)
+
+
+Get the distance in 3D way::
+
+    In [27]: np.sqrt(np.sum( (r[:,1,0,:3] - r[:,0,0,:3])*(r[:,1,0,:3] - r[:,0,0,:3]), axis=1 ))
+    Out[27]: array([46.382, 30.038, 61.019, 35.257, 42.761, ..., 34.53 , 70.81 , 41.801, 33.255, 38.751], dtype=float32)
+
+    In [28]: np.sqrt(np.sum( (r[:,1,0,:3] - r[:,0,0,:3])*(r[:,1,0,:3] - r[:,0,0,:3]), axis=1 )) / (r[:,1,0,3] - r[:,0,0,3])
+    Out[28]: array([299.792, 299.792, 299.792, 299.792, 299.792, ..., 299.792, 299.792, 299.792, 299.792, 299.792], dtype=float32)
+
+
+    In [30]: speed_ = lambda r,i:np.sqrt(np.sum( (r[:,i+1,0,:3]-r[:,i,0,:3])*(r[:,i+1,0,:3]-r[:,i,0,:3]), axis=1))/(r[:,i+1,0,3]-r[:,i,0,3])
+    In [31]: speed_(r,0)
+    Out[31]: array([299.792, 299.792, 299.792, 299.792, 299.792, ..., 299.792, 299.792, 299.792, 299.792, 299.792], dtype=float32)
+
+    In [32]: speed_(r,1)
+    Out[32]: array([224.901, 224.901, 224.901, 224.901, 224.901, ..., 224.901, 224.901, 224.901, 224.901, 224.901], dtype=float32)
+
+    In [33]: speed_(r,2)
+    Out[33]: array([299.792, 299.792, 299.792, 299.792, 299.792, ..., 299.793, 299.792, 299.792, 299.792, 299.793], dtype=float32)
+
+
+::
+
+    PICK=A MODE=3 SELECT="TO BT BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BT : 299.792 299.792 
+    speed min/max for : 1 -> 2 : BT -> BR : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BR -> BT : 224.900 224.901 
+    speed min/max for : 3 -> 4 : BT -> SA : 299.792 299.793 
+    _pos.shape (45166, 3) 
+
+    PICK=B MODE=3 SELECT="TO BT BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BT : 299.792 299.792 
+    speed min/max for : 1 -> 2 : BT -> BR : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BR -> BT : 224.901 224.901 
+    speed min/max for : 3 -> 4 : BT -> SA : 299.792 299.793 
+    _pos.shape (45, 3) 
+
+    PICK=B MODE=3 SELECT="TO BT BR BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BT : 299.792 299.792 
+    speed min/max for : 1 -> 2 : BT -> BR : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BR -> BR : 224.901 224.901 
+    speed min/max for : 3 -> 4 : BR -> BT : 224.901 224.901 
+    speed min/max for : 4 -> 5 : BT -> SA : 299.792 299.793 
+    _pos.shape (3, 3) 
+
+
+    PICK=A MODE=3 SELECT="TO BT BR BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BT : 299.792 299.792 
+    speed min/max for : 1 -> 2 : BT -> BR : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BR -> BR : 224.900 224.901 
+    speed min/max for : 3 -> 4 : BR -> BT : 224.900 224.901 
+    speed min/max for : 4 -> 5 : BT -> SA : 299.792 299.793 
+    _pos.shape (5476, 3) 
+
+    PICK=A MODE=3 SELECT="TO BT BR BR BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BT : 299.792 299.792 
+    speed min/max for : 1 -> 2 : BT -> BR : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BR -> BR : 224.900 224.901 
+    speed min/max for : 3 -> 4 : BR -> BR : 224.900 224.901 
+    speed min/max for : 4 -> 5 : BR -> BT : 224.900 224.901 
+    speed min/max for : 5 -> 6 : BT -> SA : 299.792 299.793 
+    _pos.shape (1360, 3) 
+
+    PICK=A MODE=3 SELECT="TO BT BR BR BR BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BT : 299.792 299.792 
+    speed min/max for : 1 -> 2 : BT -> BR : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BR -> BR : 224.900 224.901 
+    speed min/max for : 3 -> 4 : BR -> BR : 224.900 224.901 
+    speed min/max for : 4 -> 5 : BR -> BR : 224.900 224.901 
+    speed min/max for : 5 -> 6 : BR -> BT : 224.900 224.901 
+    speed min/max for : 6 -> 7 : BT -> SA : 299.792 299.793 
+    _pos.shape (536, 3) 
+
+
+
+* https://www.quora.com/Why-does-total-internal-reflection-happen-inside-a-raindrop-Why-not-refraction
+
+* Seem raindrop reflections can never TIR due to the geometry... need to generate light from inside the drop
+
+

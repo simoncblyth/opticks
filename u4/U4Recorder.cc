@@ -69,6 +69,7 @@ const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ;
 const bool U4Recorder::SEvt_NPFold_VERBOSE  = ssys::getenvbool("U4Recorder__SEvt_NPFold_VERBOSE") ; 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
 const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool("U4Recorder__EndOfRunAction_Simtrace") ; 
+const bool U4Recorder::DISABLE_UseGivenVelocity = ssys::getenvbool("U4Recorder__PreUserTrackingAction_Optical_DISABLE_UseGivenVelocity") ; 
 const char* U4Recorder::REPLICA_NAME_SELECT = ssys::getenvvar("U4Recorder__REPLICA_NAME_SELECT", "PMT") ;  
 
 
@@ -376,8 +377,16 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     LOG(LEVEL) << "[" ; 
 
-    G4Track* _track = const_cast<G4Track*>(track) ; 
-    _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+    if(DISABLE_UseGivenVelocity)
+    {
+        LOG(LEVEL) << " DISABLE_UseGivenVelocity " ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " APPLY UseGivenVelocity " ; 
+        G4Track* _track = const_cast<G4Track*>(track) ; 
+        _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
+    }
 
     spho ulabel = {} ; 
     PreUserTrackingAction_Optical_GetLabel(ulabel, track); 
@@ -914,7 +923,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 #endif
         sev->pointPhoton(ulabel);        // sctx::point copying current into buffers 
     }
-    unsigned flag = U4StepPoint::Flag<T>(post) ; 
+   
+    bool warn = true ; 
+    bool is_tir = false ; 
+    unsigned flag = U4StepPoint::Flag<T>(post, warn, is_tir ) ; 
 
     bool is_fastsim_flag = flag == DEFER_FSTRACKINFO ; 
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT 
@@ -943,6 +955,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     LOG(LEVEL)
         << " flag " << flag
         << " " << OpticksPhoton::Flag(flag)
+        << " is_tir " << is_tir  
         << " is_fastsim_flag " << is_fastsim_flag  
         << " is_boundary_flag " << is_boundary_flag  
         << " is_surface_flag " << is_surface_flag  

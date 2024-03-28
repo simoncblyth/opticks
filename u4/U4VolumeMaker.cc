@@ -792,6 +792,13 @@ const G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside, cons
 {
     return Box(halfside, U4Material::SCINTILLATOR, "BoxOfScintillator", mother_lv);
 }
+
+
+
+
+
+
+
 const G4VPhysicalVolume* U4VolumeMaker::Box(double halfside, const char* mat, const char* prefix, G4LogicalVolume* mother_lv )
 {
     if(prefix == nullptr) prefix = mat ; 
@@ -827,7 +834,9 @@ cf CSG/CSGMaker.cc CSGMaker::makeBoxedSphere
    |    +-----|-----+       |
    |                        |
    +----------|--rock_halfs-+ 
-                   
+  -X                        +X   
+
+               
 
 Defaults::
 
@@ -837,6 +846,12 @@ Defaults::
     drop_radius        :  halfside/2.         : 50. 
     medium_halfside    :  halfside*factor     : 100.
     container_halfside :  1.1*halfside*factor : 110. 
+
+    top of drop   (0,0, 50)
+    bot of drop   (0,0,-50)
+    left of drop  (-50,0,0)
+    right of drop ( 50,0,0)
+
 
 An easy way to get some scattering and absorption to happen 
 is to increase U4VolumeMaker_RaindropRockAirWater_FACTOR to 10. 
@@ -850,17 +865,21 @@ void U4VolumeMaker::RaindropRockAirWater_Configure(
     double& universe_halfside,    // VACUUM
     double& container_halfside,   // Rock
     double& medium_halfside,      // Air
-    double& drop_radius )         // Water
+    double& drop_radius,          // Water
+    std::string& dropshape        // Orb 
+    )        
 {
     ssys::fill_evec(mats,   U4VolumeMaker_RaindropRockAirWater_MATS, "VACUUM,G4_Pb,G4_AIR,G4_WATER", ',' ) ; 
     ssys::fill_evec(rindex, U4VolumeMaker_RaindropRockAirWater_RINDEX, "0,0,1,1.333", ',' ) ; 
 
     double halfside = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_HALFSIDE, 100.); 
     double factor   = ssys::getenv_<double>(U4VolumeMaker_RaindropRockAirWater_FACTOR,   1.); 
+    dropshape = ssys::getenvvar(U4VolumeMaker_RaindropRockAirWater_DROPSHAPE, "Orb"); 
 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_MATS << " " << ssys::desc_vec(&mats) ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_HALFSIDE << " " << halfside ; 
     LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_FACTOR   << " " << factor ; 
+    LOG(LEVEL) << U4VolumeMaker_RaindropRockAirWater_DROPSHAPE << " " << dropshape ; 
  
     universe_halfside = 1.2*halfside*factor ;    // VACUUM 
     container_halfside = 1.1*halfside*factor ;   // rock  : G4_Pb
@@ -901,9 +920,10 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
     double universe_halfside ;
     double container_halfside ;
     double medium_halfside ;
-    double drop_radius ; 
+    double drop_radius ;
+    std::string dropshape ;  
 
-    RaindropRockAirWater_Configure( mats, rindex, universe_halfside, container_halfside, medium_halfside, drop_radius); 
+    RaindropRockAirWater_Configure( mats, rindex, universe_halfside, container_halfside, medium_halfside, drop_radius, dropshape ); 
 
     static const int N = 4 ; 
     bool mats_expect = mats.size() == N  ; 
@@ -949,7 +969,12 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
     G4LogicalVolume* universe_lv  = Box_(universe_halfside, universe_material ); 
     G4LogicalVolume* container_lv  = Box_(container_halfside, container_material ); 
     G4LogicalVolume* medium_lv   = Box_(medium_halfside, medium_material ); 
-    G4LogicalVolume* drop_lv = Orb_(drop_radius, drop_material ); 
+
+    G4LogicalVolume* drop_lv = nullptr ; 
+    if(     strcmp(dropshape.c_str(), "Orb") == 0 ) drop_lv = Orb_(drop_radius, drop_material ); 
+    else if(strcmp(dropshape.c_str(), "Box") == 0 ) drop_lv = Box_(drop_radius, drop_material ); 
+    LOG_IF(fatal, drop_lv == nullptr ) << " drop_lv NULL : dropshape must be one of Orb,Box not [" << dropshape  << "]" ; 
+    assert( drop_lv ); 
 
     const G4VPhysicalVolume* drop_pv = new G4PVPlacement(0,G4ThreeVector(), drop_lv ,"drop_pv", medium_lv,false,0);
     const G4VPhysicalVolume* medium_pv = new G4PVPlacement(0,G4ThreeVector(),   medium_lv ,  "medium_pv",  container_lv,false,0);

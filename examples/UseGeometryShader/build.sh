@@ -92,8 +92,8 @@ mkdir -p $bdir
 
 sdir=$(pwd)
 
-#shader=rec_flying_point
-shader=pos
+shader=rec_flying_point
+#shader=pos
 SHADER=${SHADER:-$shader}
 export SHADER_FOLD=$sdir/$SHADER
 

@@ -147,11 +147,12 @@ A: As that always starts as BULK_ABSORB and then gets changed into BULK_REEMIT
 **/
 
 template <typename T>
-unsigned U4StepPoint::Flag(const G4StepPoint* point, bool warn)
+unsigned U4StepPoint::Flag(const G4StepPoint* point, bool warn, bool& tir )
 {
     G4StepStatus status = point->GetStepStatus()  ;
     unsigned proc = ProcessDefinedStepType(point); 
     unsigned flag = 0 ; 
+    tir = false ; 
 
     if( status == fPostStepDoItProc && proc == U4StepPoint_OpAbsorption )
     {
@@ -175,6 +176,8 @@ unsigned U4StepPoint::Flag(const G4StepPoint* point, bool warn)
             << std::endl 
             << U4Physics::Switches()
             ;
+
+        tir = bstat == TotalInternalReflection ; 
 
         flag = BoundaryFlag(bstat) ;   // BT BR NA SA SD SR DR 
 
@@ -297,7 +300,8 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
     const char* bstatName = U4OpBoundaryProcessStatus::Name(bstat); 
 
     bool warn = false ; 
-    unsigned flag = Flag<T>(point, warn); 
+    bool is_tir = false ; 
+    unsigned flag = Flag<T>(point, warn, is_tir); 
     const char* flagName = OpticksPhoton::Flag(flag); 
 
     std::stringstream ss ; 
@@ -312,6 +316,7 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
        << std::endl 
        << " bstat " << bstat
        << " bstatName " << bstatName
+       << " is_tir " << is_tir 
        << std::endl 
        << " flag " << flag 
        << " flagName " << flagName
@@ -321,13 +326,13 @@ std::string U4StepPoint::Desc(const G4StepPoint* point)
 }
 
 #if defined(WITH_CUSTOM4) 
-template unsigned U4StepPoint::Flag<C4OpBoundaryProcess>(const G4StepPoint*, bool ); 
+template unsigned U4StepPoint::Flag<C4OpBoundaryProcess>(const G4StepPoint*, bool, bool& ); 
 template std::string U4StepPoint::Desc<C4OpBoundaryProcess>(const G4StepPoint* point); 
 #elif defined(WITH_PMTSIM) 
-template unsigned U4StepPoint::Flag<CustomG4OpBoundaryProcess>(const G4StepPoint*, bool ); 
+template unsigned U4StepPoint::Flag<CustomG4OpBoundaryProcess>(const G4StepPoint*, bool, bool& ); 
 template std::string U4StepPoint::Desc<CustomG4OpBoundaryProcess>(const G4StepPoint* point); 
 #else
-template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint*, bool ); 
+template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint*, bool, bool& ); 
 template std::string U4StepPoint::Desc<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* point); 
 #endif
 

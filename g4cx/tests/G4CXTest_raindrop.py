@@ -46,7 +46,12 @@ if __name__ == '__main__':
     ee = {'A':a, 'B':b} 
 
     print("[--- ab = SAB(a,b) ----")
-    ab = SAB(a,b)
+
+    if not a is None and not b is None:
+        ab = SAB(a,b)
+    else:
+        ab = None
+    pass 
     print("]--- ab = SAB(a,b) ----")
 
     print("[----- repr(ab) ")
@@ -61,15 +66,56 @@ if __name__ == '__main__':
     EXPR = list(filter(None,textwrap.dedent(EXPR_).split("\n")))
     for expr in EXPR:eprint(expr, locals(), globals() )
 
-    context = "PICK=%s MODE=%d  ~/opticks/g4cx/tests/G4CXTest_raindrop.sh " % (PICK, MODE )
+
+    select = "WL"            ## select on wavelength to avoid unfilled zeros
+    select = "TO BT BT SA"   ## select on photon history
+    SELECT = os.environ.get("SELECT", select )  
+
+    context = "PICK=%s MODE=%d SELECT=\"%s\" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh " % (PICK, MODE, SELECT )
     print(context)
+
+    sli = slice(0,100000)   # restrict to 1M to stay interactive
+
+    speed_ = lambda r,i:np.sqrt(np.sum( (r[:,i+1,0,:3]-r[:,i,0,:3])*(r[:,i+1,0,:3]-r[:,i,0,:3]), axis=1))/(r[:,i+1,0,3]-r[:,i,0,3])
 
     for Q in PICK:
         e = ee.get(Q,None)
         if e is None:continue
-        pos = e.f.photon[:,0,:3]
-        sel = np.where(e.f.record[:,:,2,3] > 0) # select on wavelength to avoid unfilled zeros
-        poi = e.f.record[:,:,0,:3][sel]
+
+        if SELECT == "WL": 
+            sel = np.where(e.f.record[:,:,2,3] > 0) 
+            sel_p, sel_r = sel  # 2-tuple selecting photon and record points   
+            sel_p = sel_p[sli]
+            sel_r = sel_r[sli]
+        else:
+            sel_p = e.q_startswith(SELECT)  
+            sel_p = sel_p[sli]
+            
+            SELECT_ELEM = SELECT.split()
+            SELECT_POINT = len(SELECT_ELEM)
+            
+            sel_r = slice(0,SELECT_POINT)
+            r = e.f.record[sel_p,sel_r]  
+
+            for i in range(SELECT_POINT-1):
+                speed = speed_(r,i)
+                fmt = "speed min/max for : %d -> %d : %s -> %s : %7.3f %7.3f "
+                print(fmt % (i,i+1,SELECT_ELEM[i],SELECT_ELEM[i+1],speed.min(), speed.max()))
+            pass 
+        pass
+
+
+        _pos = e.f.photon[sel_p,0,:3]
+        _beg = e.f.record[sel_p,0,0,:3]      ## begin positions 
+        _poi = e.f.record[sel_p,sel_r,0,:3]  ## all positions 
+
+        print("_pos.shape %s " % str(_pos.shape))
+        print("_beg.shape %s " % str(_beg.shape))
+        print("_poi.shape %s " % str(_poi.shape))
+
+        pos = _pos.reshape(-1,3)
+        beg = _beg.reshape(-1,3)
+        poi = _poi.reshape(-1,3)
 
         elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
         label = context + " ## " + elabel
@@ -79,6 +125,7 @@ if __name__ == '__main__':
             pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
             pl.add_points( poi, color="green", point_size=3.0 )
             pl.add_points( pos, color="red", point_size=3.0 )
+            pl.add_points( beg, color="blue", point_size=3.0 )
             pl.show_grid()
             cp = pl.show()
         pass

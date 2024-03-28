@@ -41,14 +41,15 @@ bin=$bdir/$name
 
 script=$name.py 
 
-vers=sphere
+#vers=sphere
 #vers=sphere_marsaglia
 #vers=sphere__restricted
+vers=sphere__hemi
 #vers=sphere_marsaglia__restricted
-
 
 #vers=circle_outwards
 #vers=circle_inwards
+#vers=circle_inwards_hemi
 #vers=M1up99
 
 # HMM: generating into InputPhotons somewhat dirty 
@@ -90,12 +91,22 @@ elif [ "$vers" == "circle_outwards" ]; then
     export storch_FillGenstep_type=circle
     export storch_FillGenstep_radius=1
     export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_azimuth=0,1
 
 elif [ "$vers" == "circle_inwards" ]; then 
 
     export storch_FillGenstep_type=circle
     export storch_FillGenstep_radius=-100
     export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_azimuth=0,1
+
+elif [ "$vers" == "circle_inwards_hemi" ]; then 
+
+    export storch_FillGenstep_type=circle
+    export storch_FillGenstep_radius=-100
+    export storch_FillGenstep_pos=0,0,50    # try to target this point with a half circle of photons
+    #export storch_FillGenstep_azimuth=0,0.5
+    export storch_FillGenstep_azimuth=0.5,1
 
 elif [ "$vers" == "sphere" -o "$vers" == "sphere_marsaglia" ]; then 
 
@@ -104,14 +115,21 @@ elif [ "$vers" == "sphere" -o "$vers" == "sphere_marsaglia" ]; then
     export storch_FillGenstep_pos=0,0,0
     export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
 
-elif [    "$vers" == "sphere__restricted" 
-       -o "$vers" == "sphere_marsaglia__restricted"
-     ]; then 
+elif [    "$vers" == "sphere__restricted" -o "$vers" == "sphere_marsaglia__restricted" ]; then 
 
     export storch_FillGenstep_type=${vers/__*} # string before __
     export storch_FillGenstep_radius=100   # -ve radius for inwards
     export storch_FillGenstep_pos=0,0,0
     export storch_FillGenstep_zenith=0.25,0.75
+    export storch_FillGenstep_azimuth=0.25,0.75
+    export storch_FillGenstep_distance=0.25 # frac_twopi control of polarization direction
+
+elif [    "$vers" == "sphere__hemi" ]; then 
+
+    export storch_FillGenstep_type=sphere
+    export storch_FillGenstep_radius=-50  # -ve radius for inwards
+    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_zenith=0,1
     export storch_FillGenstep_azimuth=0.25,0.75
     export storch_FillGenstep_distance=0.25 # frac_twopi control of polarization direction
 
@@ -146,6 +164,8 @@ if [ "${arg/build}" != "$arg" ]; then
         Darwin) libline="-L$OPTICKS_PREFIX/lib" ;;
         Linux) libline="-L$OPTICKS_PREFIX/lib64 -lm -lssl -lcrypto" ;; 
     esac
+
+    ## WHY DOES THIS NEED THE LIB, NOT JUST HEADERS ?
 
     gcc $name.cc \
         -o $bin \

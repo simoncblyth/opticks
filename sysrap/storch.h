@@ -473,7 +473,8 @@ STORCH_METHOD void storch::generate( sphoton& p, srng&              rng, const q
         **/
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
-        float frac = float(photon_id)/float(gs.numphoton) ;  // 0->~1 
+        float f = float(photon_id)/float(gs.numphoton) ;      // 0->~1 
+        float frac = gs.azimuth.x*(1.f-f) + gs.azimuth.y*(f) ; // gs.azimuth.x -> gs.azimuth.y which defaults to 0->1 
 
         float phi = 2.f*M_PIf*frac ; 
         float sinPhi = sinf(phi); 

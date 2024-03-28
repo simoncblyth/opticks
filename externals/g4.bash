@@ -95,9 +95,9 @@ Examples
 
 * G4OpBoundaryProcess: renamed internal variables; make comparison to nullptr explicit; removed unneeded intermediate variable; refactored Davis LUT calculation. On StepTooSmall, propose velocity corresponding to material of post-step point. Addresses problem report #2438.
 
-  *  https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2438
+  * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2438
   * Wrong velocity in the first step after an optical reflection
-
+  * https://geant4-forum.web.cern.ch/t/optical-photons-wrong-velocity-after-a-reflection/6303
   
 * In all process classes, update G4OpticalParameters when process parameters updated directly. Addresses problem report #2425.
 

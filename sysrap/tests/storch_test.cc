@@ -104,7 +104,7 @@ NP* storch_test::make_torch_photon( const NP* gs, const NP* se )
 NPFold* storch_test::generate()
 {
     std::cout << "[storch_test::generate" << std::endl ;
-    NP* gs = SEvent::MakeTorchGensteps(); 
+    NP* gs = SEvent::MakeTorchGenstep(); 
     NP* se = SEvent::MakeSeed(gs) ; 
     NP* ph = make_torch_photon(gs, se); 
 

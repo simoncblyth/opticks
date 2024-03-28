@@ -1585,6 +1585,12 @@ void SEvt::beginOfEvent(int eventID)
     setMeta<int>("NumGenstepCollected", numgenstep_collected ); 
     setMeta<int>("MaxBounce", evt->max_bounce ); 
 
+    LOG_IF(info, LIFECYCLE) 
+        << " NumPhotonCollected " << numphoton_collected 
+        << " NumGenstepCollected " << numgenstep_collected 
+        << " MaxBounce " << evt->max_bounce
+        ; 
+
     sprof::Stamp(p_SEvt__beginOfEvent_1);  
 }
 
@@ -2098,7 +2104,7 @@ sgs SEvt::addGenstep(const quad6& q_)
 
     bool num_photon_changed = tot_photon != evt->num_photon ; 
 
-    LOG(debug) 
+    LOG(LEVEL) 
         << " tot_photon " << tot_photon
         << " evt.num_photon " << evt->num_photon
         << " num_photon_changed " << num_photon_changed

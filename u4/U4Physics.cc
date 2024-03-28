@@ -1,7 +1,9 @@
+#include "ssys.h"
 #include "U4Physics.hh"
 #include "U4OpBoundaryProcess.h"
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
+
 
 #if defined(WITH_CUSTOM4) && defined(WITH_PMTSIM)
 #include "G4OpBoundaryProcess.hh"
@@ -10,7 +12,6 @@
 #elif defined(WITH_CUSTOM4) && !defined(WITH_PMTSIM)
 #include "G4OpBoundaryProcess.hh"
 #include "C4OpBoundaryProcess.hh"
-//#include "U4PMTAccessor.h"
 #include "SPMTAccessor.h"
 #else
 #include "InstrumentedG4OpBoundaryProcess.hh"
@@ -315,12 +316,17 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     //const U4PMTAccessor* pmt = new U4PMTAccessor ; // DUMMY PLACEHOLDER
     const char* jpmt = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" ; 
     const SPMTAccessor* pmt = SPMTAccessor::Load(jpmt) ; 
-    LOG_IF(fatal, pmt == nullptr ) << " FAILED TO SPMTAccessor::Load from [" << jpmt << "]" ; 
-    assert(pmt); 
+    const char* geom = ssys::getenvvar("GEOM", "no-GEOM") ; 
+    LOG_IF(fatal, pmt == nullptr ) 
+         << " FAILED TO SPMTAccessor::Load from [" << jpmt << "]" 
+         << " GEOM " << ( geom ? geom : "-" )      
+         ; 
 
+    // assert(pmt) ;  // trying to get C4 to work without the PMT info, just assert when really need PMT info 
     const C4IPMTAccessor* ipmt = pmt ;  
     proc = new C4OpBoundaryProcess(ipmt);
     LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 NOT:WITH_PMTSIM " ; 
+
 #else
     proc = new InstrumentedG4OpBoundaryProcess();
     LOG(LEVEL) << "create InstrumentedG4OpBoundaryProcess : NOT (WITH_PMTSIM and WITH_CUSTOM4) " ; 
