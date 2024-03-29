@@ -1,10 +1,49 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+~/o/examples/Geant4/ScintGenStandalone/DsG4ScintillationTest.sh
+================================================================
+
+::
+
+    BP=G4Track::CalculateVelocityForOpticalPhoton  ~/o/examples/Geant4/ScintGenStandalone/DsG4ScintillationTest.sh
+    BP=G4Track::CalculateVelocity  ~/o/examples/Geant4/ScintGenStandalone/DsG4ScintillationTest.sh
+
+    ~/o/examples/Geant4/ScintGenStandalone/DsG4ScintillationTest.sh ana
+
+    In [9]: f.p.shape
+    Out[9]: (964, 4, 4)
+
+    In [2]: f.gs.shape
+    Out[2]: (4, 6, 4)
+
+    In [8]: f.gs[:,5,0]                ## four gs differ in bottom left float  
+    Out[8]: array([  4.6,  15.1,  76.1, 397. ], dtype=float32)
+
+    In [4]: f.gs.view(np.int32)[:,0]    ## and top right int (photon count)
+    Out[4]:
+    array([[  5,   0,   0, 656],
+           [  5,   0,   0, 206],
+           [  5,   0,   0,  73],
+           [  5,   0,   0,  29]], dtype=int32)
+
+    In [5]: f.gs.view(np.int32)[:,0,3]
+    Out[5]: array([656, 206,  73,  29], dtype=int32)
+
+    In [6]: f.gs.view(np.int32)[:,0,3].sum()
+    Out[6]: 964
+
+
+
+EOU
+}
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 msg="=== $BASH_SOURCE :"
 
 srcs=(
-    DsG4ScintillationTest.cc 
-    DsG4Scintillation.cc 
+    DsG4ScintillationTest.cc
+    DsG4Scintillation.cc
      ../CerenkovStandalone/OpticksUtil.cc
      ../CerenkovStandalone/OpticksRandom.cc
    )
@@ -14,16 +53,34 @@ name=${name/.cc}
 
 for src in $srcs ; do echo $msg $src ; done
 
+source $HOME/.opticks/GEOM/GEOM.sh
+export FOLD=/tmp/$USER/opticks/DsG4ScintillationTest
+mkdir -p $FOLD
+LOGDIR=/tmp/$name
+bin=$LOGDIR/$name
+script=$name.py
+
+vars="BASH_SOURCE FOLD LOGDIR bin script"
+
+for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
+
+
+
+export DsG4Scintillation_verboseLevel=0   # 0/1/2
+export SEvt=INFO
+export U4Material=INFO
+
+
 
 g4-
 clhep-
-boost-
-cuda-   # just for vector_functions.h 
+#boost-
+cuda-   # just for vector_functions.h
 
-standalone-compile(){ 
+standalone-compile(){
     local name=$1
     name=${name/.cc}
-    mkdir -p /tmp/$name
+    mkdir -p $LOGDIR
 
     local opt="-DSTANDALONE "
 
@@ -40,18 +97,14 @@ standalone-compile(){
        $opt \
        -g \
        -I$(cuda-prefix)/include  \
-       -I$(boost-prefix)/include \
        -I$(opticks-prefix)/externals/plog/include \
        -I$(opticks-prefix)/externals/glm/glm \
        -I$(g4-prefix)/include/Geant4 \
        -I$(clhep-prefix)/include \
        -L$(g4-prefix)/lib \
        -L$(clhep-prefix)/lib \
-       -L$(boost-prefix)/lib \
        -L$(opticks-prefix)/lib \
        -lstdc++ \
-       -lboost_system \
-       -lboost_filesystem \
        -lSysRap \
        -lU4 \
        -lG4global \
@@ -63,11 +116,13 @@ standalone-compile(){
        -lG4geometry \
        -lG4intercoms \
        -lCLHEP \
-       -o /tmp/$name/$name 
+       -o $bin
 EOC
 }
 
 arg=${1:-build_run_ana}
+
+[ -n "$BP" ] && echo $BASH_SOURCE : as BP defined override arg to dbg && arg=dbg
 
 
 if [ "${arg/build}" != "$arg" ]; then
@@ -77,32 +132,26 @@ if [ "${arg/build}" != "$arg" ]; then
 fi
 
 
-export DsG4Scintillation_verboseLevel=0   # 0/1/2
-export SEvt=INFO
-
 
 iwd=$PWD
-logdir=/tmp/$name
-cd $logdir 
+
+
+cd $LOGDIR
 
 if [ "${arg/dbg}" != "$arg" ]; then
-    BP=DsG4Scintillation::PostStepDoIt lldb__ /tmp/$name/$name
+    bp=DsG4Scintillation::PostStepDoIt
+    BP=${BP:-$bp} dbg__ $bin
     [ $? -ne 0 ] && echo $msg dbg error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-    /tmp/$name/$name
+    $bin
     [ $? -ne 0 ] && echo $msg run error && exit 2
 fi
-
 
 cd $iwd
 
 if [ "${arg/ana}" != "$arg" ]; then
-
-
-    export FOLD=/tmp/$USER/opticks/DsG4ScintillationTest
-    script=$name.py 
     echo $msg ana script $script FOLD $FOLD
 
     if [ -f "$script" ]; then
@@ -114,7 +163,7 @@ if [ "${arg/ana}" != "$arg" ]; then
     fi
 fi
 
-exit 0 
+exit 0
 
 
 

@@ -686,7 +686,7 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             photonPolarization = photonPolarization.unit();
 
             // Generate a new photon:    
-        
+       
             G4DynamicParticle* aScintillationPhoton =
                 new G4DynamicParticle(G4OpticalPhoton::OpticalPhoton(), 
                                       photonMomentum);
@@ -741,8 +741,24 @@ DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
             G4Track* aSecondaryTrack = 
                 new G4Track(aScintillationPhoton,aSecondaryTime,aSecondaryPosition);
 
+            // when new born get vacuum speed 299.792 
+
             aSecondaryTrack->SetWeight( weight );
             aSecondaryTrack->SetTouchableHandle(aStep.GetPreStepPoint()->GetTouchableHandle());
+
+
+            // after SetTouchable still get vacuum speed 299.792 
+            // because touchable and step in G4Track both NULL 
+            // so track doesnt know its material 
+            /*
+            std::cout 
+                << " AFT TOUCHABLE aSecondaryTrack "
+                << " aSecondaryTrack.GetVelocity " << aSecondaryTrack->GetVelocity()
+                << "\n"
+                ;            
+            */
+
+
             aSecondaryTrack->SetParentID(aTrack.GetTrackID());
             // add the secondary to the ParticleChange object
             aParticleChange.SetSecondaryWeightByProcess( true ); // recommended
