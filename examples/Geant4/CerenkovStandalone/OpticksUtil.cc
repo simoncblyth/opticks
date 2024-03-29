@@ -1,6 +1,6 @@
 
-#include <boost/filesystem.hpp>
-namespace fs = boost::filesystem;
+//#include <boost/filesystem.hpp>
+//namespace fs = boost::filesystem;
 
 #include "OpticksUtil.hh"
 
@@ -25,6 +25,9 @@ void OpticksUtil::qvals( std::vector<float>& vals, const char* key, const char* 
 }
 
 
+/*
+CAN NOW JUST USE NP::Load DIRECTLY 
+
 NP* OpticksUtil::LoadArray(const char* kdpath) // static
 {
     const char* keydir = getenv("OPTICKS_KEYDIR") ; 
@@ -37,6 +40,8 @@ NP* OpticksUtil::LoadArray(const char* kdpath) // static
     NP* a = NP::Load(path); 
     return a ; 
 }
+*/
+
 
 G4MaterialPropertyVector* OpticksUtil::MakeProperty(const NP* a)  // static
 {
@@ -89,7 +94,7 @@ int OpticksUtil::getenvint(const char* envkey, int fallback)
 }
 
 
-
+/*
 bool OpticksUtil::ExistsPath(const char* base_, const char* reldir_, const char* name_ )
 {
     fs::path fpath(base_);
@@ -118,14 +123,10 @@ std::string OpticksUtil::prepare_path(const char* dir_, const char* reldir_, con
     return fpath.string();
 }
 
-/**
-OpticksUtil::ListDir
------------------------
 
-From BDir::dirlist, collect names of files within directory *path* with names ending with *ext*.
-The names are sorted using default std::sort lexical ordering. 
+//From BDir::dirlist, collect names of files within directory *path* with names ending with *ext*.
+//The names are sorted using default std::sort lexical ordering. 
 
-**/
 
 void OpticksUtil::ListDir(std::vector<std::string>& names,  const char* path, const char* ext) // static
 {
@@ -150,16 +151,8 @@ void OpticksUtil::ListDir(std::vector<std::string>& names,  const char* path, co
     std::sort( names.begin(), names.end() ); 
 }
 
-
-/**
-Functionality of former OpticksUtil::LoadConcat now provided by NP::Load
-----------------------------------------------------------------------------
-
-If *concat_path* ends with ".npy" simply loads it into seq array
-otherwise *concat_path* is assumed to be a directory containing multiple ".npy"
-to be concatenated.  The names of the paths in the directory are obtained using 
-OpticksUtil::ListDir 
-
 **/
+
+
 
 

@@ -57,7 +57,7 @@ that contains ".npy" arrays to be concatenated.
 template <typename T>
 G4Cerenkov_modifiedTest<T>::G4Cerenkov_modifiedTest( const char* rindex_path, long seed_ )
     :
-    a(OpticksUtil::LoadArray(rindex_path)),
+    a(NP::Load(rindex_path)),
     rindex( a ? OpticksUtil::MakeProperty(a) : nullptr),
     material( rindex ? OpticksUtil::MakeMaterial(rindex) : nullptr), 
     proc(new G4Cerenkov_modified()),
@@ -378,8 +378,9 @@ void G4Cerenkov_modifiedTest<T>::save(const G4VParticleChange* pc, const char* r
    if( num_items > 0 ) 
    {
        // creates reldir if needed
-       std::string path = OpticksUtil::prepare_path( FOLD, reldir, "photons.npy" ); 
-       std::cout << " saving to " << path << std::endl ; 
+       //std::string path = OpticksUtil::prepare_path( FOLD, reldir, "photons.npy" ); 
+       //std::cout << " saving to " << path << std::endl ; 
+       // should be done by NP::Write NOW ? 
 
        NP::Write( FOLD, reldir, "photons.npy", v.data(), num_items, 4, 4 ); 
        par->write(FOLD, reldir,  2, 4); 
@@ -426,7 +427,8 @@ int main(int argc, char** argv)
 
     long seed = OpticksUtil::getenvint("SEED", 0 ); 
 
-    const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ; 
+    //const char* rindex_path = "GScintillatorLib/LS_ori/RINDEX.npy" ;  // aim to remove boost fs dep 
+    const char* rindex_path = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/material/LS/RINDEX.npy" ; 
 
     double hc_eVnm = h_Planck*c_light/(eV*nm) ; 
     std::cout 

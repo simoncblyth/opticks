@@ -1,7 +1,19 @@
 #!/bin/bash -l 
+usage(){ cat << EOU
+~/o/examples/Geant4/CerenkovStandalone/G4Cerenkov_modifiedTest.sh
+===================================================================
+
+
+EOU
+}
+
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 msg="=== $BASH_SOURCE :"
 
+
+source $HOME/.opticks/GEOM/GEOM.sh
 source cks.bash
 cks-env
 
@@ -30,7 +42,7 @@ if [ $docompile -eq 1 ]; then
 fi 
 
 
-export OPTICKS_RANDOM_SEQPATH=/tmp/$USER/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000
+export OPTICKS_RANDOM_SEQPATH=$HOME/.opticks/precooked/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000
 
 cks-run $name 
 eval $(cks-run $name) $*

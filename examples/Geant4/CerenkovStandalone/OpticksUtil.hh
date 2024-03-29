@@ -21,8 +21,7 @@ struct OpticksUtil
 {
     static void qvals( std::vector<float>& vals, const char* key, const char* fallback, int num_expect ); 
 
-    static NP* LoadArray(const char* kdpath);
-    // static NP* LoadConcat(const char* concat_path);  // formerly LoadRandom , FUNCTIONALITY MOVED TO NP::Load
+   // static NP* LoadArray(const char* kdpath);  // just use NP::Load
 
     static G4MaterialPropertyVector* MakeProperty(const NP* a);
     static G4MaterialPropertiesTable*  MakeMaterialPropertiesTable( 
@@ -34,8 +33,10 @@ struct OpticksUtil
     static G4Material* MakeMaterial(const G4MaterialPropertyVector* rindex, const char* name="Water") ; 
 
     static int getenvint(const char* envkey, int fallback);
-    static bool ExistsPath(const char* base_, const char* reldir_=nullptr, const char* name_=nullptr );
-    static std::string prepare_path(const char* dir_, const char* reldir_, const char* name );
-    static void ListDir(std::vector<std::string>& names,  const char* path, const char* ext); 
+
+    // below functionality now in NP.hh 
+    //static bool ExistsPath(const char* base_, const char* reldir_=nullptr, const char* name_=nullptr );
+    //static std::string prepare_path(const char* dir_, const char* reldir_, const char* name );
+    //static void ListDir(std::vector<std::string>& names,  const char* path, const char* ext); 
 
 }; 

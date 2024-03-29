@@ -12,7 +12,14 @@ the NP.hh header from https://github.com/simoncblyth/np/
 
 ::
 
-        -DFLOAT_TEST \
+       -DFLOAT_TEST \
+
+
+       -I$(boost-prefix)/include \
+       -L$(boost-prefix)/lib \
+       -lboost_system \
+       -lboost_filesystem \
+
 
 EOU
 }
@@ -31,16 +38,12 @@ cks-compile(){
        -I. \
        -g \
        -I$HOME/np \
-       -I$(boost-prefix)/include \
        -I$(g4-prefix)/include/Geant4 \
        -I$(clhep-prefix)/include \
        -L$(g4-prefix)/lib \
        -L$(g4-prefix)/lib64 \
        -L$(clhep-prefix)/lib \
-       -L$(boost-prefix)/lib \
        -lstdc++ \
-       -lboost_system \
-       -lboost_filesystem \
        -lG4global \
        -lG4materials \
        -lG4particles \
@@ -73,8 +76,11 @@ cks-run(){
     mkdir -p /tmp/$name
 
     cat << EOC
-$var=$(boost-prefix)/lib:$(g4-prefix)/lib:$(g4-prefix)/lib64:$(clhep-prefix)/lib $DEBUG /tmp/$name/$name 
+$var=$(g4-prefix)/lib:$(g4-prefix)/lib64:$(clhep-prefix)/lib $DEBUG /tmp/$name/$name 
 EOC
+
+#$var=$(boost-prefix)/lib:$(g4-prefix)/lib:$(g4-prefix)/lib64:$(clhep-prefix)/lib $DEBUG /tmp/$name/$name 
+
 
 }
 
