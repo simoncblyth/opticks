@@ -1,6 +1,13 @@
 #!/bin/bash -l 
 
-source ./IDPath_override.sh 
+usage(){ cat << EOU
+~/o/u4/tests/U4MaterialTest.sh 
+===============================
+
+EOU
+}
+
+source $HOME/.opticks/GEOM/GEOM.sh 
 
 U4MaterialTest 
 

@@ -464,10 +464,10 @@ std::string U4Material::DescPropertyNames( const G4Material* mat )
 U4Material::MakeMaterialPropertiesTable
 -----------------------------------------
 
-The matdir may use the standard tokens eg::
+The matdir may use envvar tokens, eg::
 
-   $IDPath/GScintillatorLib/LS_ori
-   $IDPath/GMaterialLib/Water_ori
+   $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/material/LS 
+   $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/material/Water
 
 **/
 
@@ -478,7 +478,6 @@ G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* m
 
 
     const char* matdir = spath::Resolve(matdir_); 
-    //const char* matdir = SPath::Resolve(matdir_, NOOP); 
 
     std::vector<std::string> names ; 
     SDir::List(names, matdir, ".npy", sigint ); 
@@ -849,19 +848,17 @@ G4Material* U4Material::MakeMaterial(const char* name, const char* matdir)
 
 
 /**
-U4Material::MakeScintillator
----------------------------------
+U4Material::MakeScintillator : Only used for function tests/debugging
+-------------------------------------------------------------------------
 
 Creates material with Water G4Element and density and then loads the properties of LS into its MPT 
-
-TODO: Use of IDPath is not acceptable in new workflow 
-
 
 **/
 
 G4Material* U4Material::MakeScintillator()
 {
-    G4Material* mat = MakeMaterial("LS", "$IDPath/GScintillatorLib/LS_ori");  
+    const char* matdir = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/material/LS" ; 
+    G4Material* mat = MakeMaterial("LS", matdir );  
     return mat ; 
 }
 

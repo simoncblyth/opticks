@@ -1,10 +1,12 @@
 
+#include "ssys.h"
 #include "spath.h"
 #include "sdigest.h"
 #include "SSim.hh"
 #include "NP.hh"
 
 #include "U4Material.hh"
+#include "U4MaterialPropertiesTable.h"
 #include "U4PhysicsVector.h"
 #include "G4Material.hh"
 #include "Randomize.hh"
@@ -23,6 +25,12 @@ void test_MakeScintillator()
 {
     G4Material* mat = U4Material::MakeScintillator(); 
     G4cout << "mat " << *mat << std::endl ; 
+
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable(); 
+
+    assert(mpt); 
+    std::cout << U4MaterialPropertiesTable::Detail(mpt); 
+
 }
 
 void test_GetProperty()
@@ -93,9 +101,6 @@ void test_NumVec()
         ; 
 
 }
-
-
-
 
 
 
@@ -191,24 +196,28 @@ void test_MakeStandardArray_override_count()
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-    
-    /*
-    test_MakeMaterialPropertiesTable(); 
-    test_GetProperty(); 
-    test_NumVec(); 
-    test_MakeScintillator(); 
-    test_LoadOri_name(); 
-    test_ListOri(); 
-    test_LoadOri(); 
-    test_LoadOri_remove_material_property(); 
-    test_LoadBnd(); 
-    test_BndNames(); 
-    */
+   
+    const char* TEST = ssys::getenvvar("TEST", "MakeScintillator") ; 
 
-    //test_MakeStandardArray_prop_override(); 
-    test_MakeStandardArray_override_count(); 
-
-
+    if( strcmp(TEST, "MakeScintillator") == 0 )
+    {
+        test_MakeScintillator(); 
+    }
+    else if( strcmp(TEST, "ALL") == 0 )
+    {
+        test_MakeMaterialPropertiesTable(); 
+        test_GetProperty(); 
+        test_NumVec(); 
+        test_LoadOri_name(); 
+        test_ListOri(); 
+        test_LoadOri(); 
+        test_LoadOri_remove_material_property(); 
+        test_LoadBnd(); 
+        test_BndNames(); 
+        test_MakeStandardArray_prop_override(); 
+        test_MakeStandardArray_override_count(); 
+        test_MakeScintillator(); 
+    }
      
     return 0 ; 
 }
