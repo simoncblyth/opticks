@@ -44,10 +44,32 @@ Geometry : complete missing features
 * deep CSG tree solids for support stick solids (2024 Apr)
 * investigate Chimney geometry issue (2024 Apr) 
 
-Event 
--------
+New development for optimization option comparison 
+----------------------------------------------------
+
+* triangulation for more than just Guide Tube torus ? 
+* alt GAS (1 multi-Prim solid -> 1 GAS) 
+* sibling-instancing for sticks : inst joining or rationalize source geom 
+
+New development for deployment
+--------------------------------
 
 * event splitting/joining implementation
+* multi-GPU support : how much effort ? how much benefit ? 
+
+  * unlike OptiX < 7, does not come for free  
+
+New CSG development for robustness, performance
+-----------------------------------------------
+
+* more volume-centric CSG, SDF based ?  
+* CSG intersect alg, perhaps changing alg can avoid:
+
+  * poor performance with deep trees 
+  * not compatible with tree balancing
+
+* eg: instead of bit twiddle navigating complete binary tree => try postorder next node offsets
+* alt to ray tracing : SDF based "sphere-tracing" 
 
 Optimization (workstation level)
 -------------------------------------
@@ -58,8 +80,10 @@ Optimization (workstation level)
   * standard event samples of different energies and positions etc.. 
   * relate them to ray trace benchmarks
 
-* vary geometry ray trace implemention (tuning param and geometry modelling techniques)
-  while running benchmarks   
+* vary geometry ray trace implemention while running benchmarks   
+
+  * perf impl of many choices esp: geometry modelling,  eg instancing criteria
+
 
 Production Optimization/Planning (cluster level) 
 --------------------------------------------------

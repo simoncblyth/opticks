@@ -12,6 +12,8 @@ full stree.h info needed to render
 
 * OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
 
+* TODO: solid selection eg skipping virtuals so can see PMT shapes 
+
 **/
 
 #include "stree.h"
