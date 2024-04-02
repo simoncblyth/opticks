@@ -60,6 +60,20 @@ if(OpticksXercesC_VERBOSE)
         message(STATUS "TARGET G4persistency : NOT-FOUND ")
     endif()
 
+
+    if(TARGET Geant4::G4gdml)
+        message(STATUS "TARGET Geant4::G4gdml : FOUND ")
+    else()
+        message(STATUS "TARGET Geant4::G4gdml : NOT-FOUND ")
+    endif()
+
+    if(TARGET G4gdml)
+        message(STATUS "TARGET G4gdml : FOUND ")
+    else()
+        message(STATUS "TARGET G4gdml : NOT-FOUND ")
+    endif()
+
+
     if(TARGET XercesC)
         message(STATUS "TARGET XercesC : FOUND ")
     else()
@@ -82,6 +96,22 @@ if(TARGET Geant4::G4persistency AND TARGET XercesC::XercesC)
 
    if(OpticksXercesC_VERBOSE)
    message(STATUS "FindOpticksXercesC.cmake. Found Geant4::G4persistency AND XercesC::XercesC target _lll ${_lll} " )
+   endif() 
+
+   get_target_property(xercesc_lib         XercesC::XercesC IMPORTED_LOCATION )
+   get_target_property(xercesc_include_dir XercesC::XercesC INTERFACE_INCLUDE_DIRECTORIES )
+
+   if(OpticksXercesC_VERBOSE)
+       message(STATUS "FindOpticksXercesC.cmake. XercesC::XercesC target xercesc_lib         : ${xercesc_lib} " )
+       message(STATUS "FindOpticksXercesC.cmake. XercesC::XercesC target xercesc_include_dir : ${xercesc_include_dir} " )
+   endif()
+
+elseif(TARGET Geant4::G4gdml AND TARGET XercesC::XercesC )
+   # trying to make this work with Geant4 1120
+   get_target_property(_lll Geant4::G4gdml INTERFACE_LINK_LIBRARIES)
+
+   if(OpticksXercesC_VERBOSE)
+   message(STATUS "FindOpticksXercesC.cmake. Found Geant4::G4gdml AND XercesC::XercesC target _lll ${_lll} " )
    endif() 
 
    get_target_property(xercesc_lib         XercesC::XercesC IMPORTED_LOCATION )

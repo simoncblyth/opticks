@@ -28,8 +28,19 @@ From cmake/Modules/FindOpticksXercesC.cmake note that Geant4 has changed Xerces 
 
 Looks like 1120 does it again
 
+::
+
+    gd
+    om-clean
+    om-conf
 
 
+    -- Found X11: /usr/lib64/libX11.so
+    -- Found OpenGL: /usr/lib64/libOpenGL.so   
+    -- Found Geant4: /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/Pre-Release/J24.1.x-g411/ExternalLibs/Geant4/11.2.0/lib64/cmake/Geant4/Geant4Config.cmake (found version "11.2.0") 
+    -- FindOpticksXercesC.cmake. WARNING : Did not find G4persistency target : so look for system XercesC or one provided by cmake arguments 
+    -- looking for XercescC using XERCESC_INCLUDE_DIR or system paths 
+    -- find_path looking for SAXParser.hpp yields OpticksXercesC_INCLUDE_DIR /usr/include
 
 
 

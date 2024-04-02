@@ -38,6 +38,10 @@ Relevant part of Geant4 CMake config::
 #]=]
 
 set(G4_MODULE "${CMAKE_CURRENT_LIST_FILE}")
+if(G4_VERBOSE)
+    message(STATUS " G4_MODULE : ${G4_MODULE} " )
+endif()
+
 
 find_package(Geant4 CONFIG)   
 
@@ -54,6 +58,10 @@ if(Geant4_FOUND)
 
     set(G4_DIR ${Geant4_DIR})
     get_filename_component(G4_DIRDIR ${Geant4_DIR} DIRECTORY)
+
+    if(G4_VERBOSE)
+        message(STATUS " G4_VERSION_INTEGER : ${G4_VERSION_INTEGER} " )
+    endif()
 
 else()
     message(STATUS "\$ENV{CMAKE_PREFIX_PATH}:$ENV{CMAKE_PREFIX_PATH} ")
