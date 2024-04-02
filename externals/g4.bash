@@ -35,6 +35,11 @@ LXR
 * https://geant4.kek.jp/lxr/diff/processes/optical/src/G4OpBoundaryProcess.cc?v=11.1.3;diffvar=v;diffval=11.0
 
 
+* https://geant4.kek.jp/lxr/find?string=G4ParticleChange.cc
+* https://geant4.kek.jp/lxr/diff/track/src/G4ParticleChange.cc?diffvar=v;diffval=10.4.p2
+
+
+
 Check 11.2.0
 --------------
 

@@ -45,9 +45,20 @@ STORY OF OPTICKS
 
 0. 1704 : Newton published "Opticks" 
 
+
+env repo::
+
+    * 2013-07-24 a9ae0e192 - opw- bash funcs for trying out optical photon weighting (11 years ago) <Simon C Blyth>
+    * 2013-07-24 c6988de88 - looking into muon_simulation/optical_photon_weighting opw- (11 years ago) <Simon C Blyth>
+    * 2013-12  purchased rMBP in HK, with NVIDIA Geforce 750M 2048 MB VRAM (after DYB shifts)
+    * 2014-03-21 46de320c3 - take a look at pyopengl and glumpy (10 years ago) <Simon C Blyth>
+
+
 1. Beginning : get Chroma GPU optical photon simulation to work with Dyb 
 
+
   * 200x http://localhost/env/presentation/gpu_optical_photon_simulation.html
+  * 1st presention April 2014
   * my dyb infratructure experience made me comfortble with finding nd installing 
     many different open source projects, so getting Chroma installed was familiar 
 
@@ -63,9 +74,7 @@ STORY OF OPTICKS
       a saturday afternoon in NTU library : I was shocked by the performance 
     * personal experience of viz speed very powerful 
 
-      * motivated me to by mac laptop with NVIDIA GPU (it turned out to be the last mac laptop with an NVIDIA GPU)          
-
-    * presented to Geant4 collab meeting in Okinawa in 2014 
+    * presented to Geant4 collab meeting in Okinawa in Sep 2014 
     * http://localhost/env/presentation/g4dae_geometry_exporter.html
 
 2. jump from Chroma -> NVIDA OptiX (50x) and coined the name "Opticks" : flesh out impl

@@ -1,29 +1,80 @@
-##
-## Copyright (c) 2019 Opticks Team. All Rights Reserved.
-##
-## This file is part of Opticks
-## (see https://bitbucket.org/simoncblyth/opticks).
-##
-## Licensed under the Apache License, Version 2.0 (the "License"); 
-## you may not use this file except in compliance with the License.  
-## You may obtain a copy of the License at
-##
-##   http://www.apache.org/licenses/LICENSE-2.0
-##
-## Unless required by applicable law or agreed to in writing, software 
-## distributed under the License is distributed on an "AS IS" BASIS, 
-## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-## See the License for the specific language governing permissions and 
-## limitations under the License.
-##
+## ## Copyright (c) 2019 Opticks Team. All Rights Reserved.  ## ## This file is
+part of Opticks ## (see https://bitbucket.org/simoncblyth/opticks).  ## ##
+Licensed under the Apache License, Version 2.0 (the "License"); ## you may not
+use this file except in compliance with the License.  ## You may obtain a copy
+of the License at ## ##   http://www.apache.org/licenses/LICENSE-2.0 ## ##
+Unless required by applicable law or agreed to in writing, software ##
+distributed under the License is distributed on an "AS IS" BASIS, ## WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  ## See the
+License for the specific language governing permissions and ## limitations
+under the License.  ##
 
-optix-source(){   echo ${BASH_SOURCE} ; }
-optix-vi(){       vi $(optix-source) ; }
-optix-env(){      olocal- ; }
-optix-usage(){ cat << \EOU
+optix-source(){   echo ${BASH_SOURCE} ; } optix-vi(){       vi $(optix-source)
+; } optix-env(){      olocal- ; } optix-usage(){ cat << \EOU
 
-NVIDIA OptiX Ray Trace Toolkit
-================================== 
+NVIDIA OptiX Ray Trace Toolkit ================================== 
+
+
+
+Old 2022 Thread between Ami and David Hart
+--------------------------------------------
+
+*
+https://forums.developer.nvidia.com/t/optix-low-computational-usage-on-gpu/218442/7
+
+dhart::
+
+    How are you measuring GPU utilization? Be aware that due to the proprietary
+    ray tracing cores, some Nvidia tools do not currently show you a complete
+    picture of utilization; the ray tracing workload may not appear as either
+    compute or memory usage. Often high compute and memory is actually a sign of
+    low efficiency, or simply of complex shaders, so low compute & memory usage is
+    not necessarily bad.
+
+    It may be worth focusing on the overall performance, and comparing that to the
+    expected performance. Have you measured your rendering throughput in rays per
+    second? How fast are you expecting it to render, and how fast does it currently
+    render?
+
+
+
+nvidia-smi::
+
+    -lgc  --lock-gpu-clocks=    Specifies <minGpuClock,maxGpuClock> clocks as a
+                                    pair (e.g. 1500,1500) that defines the range 
+                                    of desired locked GPU clock speed in MHz.
+                                    Setting this will supercede application clocks
+                                    and take effect regardless if an app is running.
+                                    Input can also be a singular desired clock value
+                                    (e.g. <GpuClockValue>).
+    -rgc  --reset-gpu-clocks
+                                Resets the Gpu clocks to the default values.
+
+
+
+    I also recommend locking your GPU clocks while you measure performance.
+    Otherwise, you might get thermal throttling, which means the clock speed will
+    slow down and make timings difficult to reproduce. I usually do this in a
+    script that calls nvidia-smi. See the -lgc and -rgc options.
+
+    It is best to leverage the RTX hardware, so yes that does mean using the
+    built-in triangle primitive, rather than using any custom software
+    intersectors. With a Titan RTX GPU, if you are getting less than 100 million
+    rays per second with simple geometry & simple shaders, then something is
+    probably very wrong. If you are getting more than that but less than 1 billion
+    rays per second, that might indicate plenty of room for optimization. If you
+    are getting more than 3-5 billion rays per second then you might be achieving
+    very high utilization already.
+
+
+    PS Note that I’m talking about very simple scenes and shading above. With
+    complex scenes and complex shading, numbers below 100 million rays per second
+    are fairly common and would not indicate a problem. There are many things that
+    can reduce performance, such as using any-hit shaders indiscriminately, casting
+    shadows & reflection rays, accessing a lot of memory in your closest hit
+    shader, etc…
+
+
 
 
 About These Functions

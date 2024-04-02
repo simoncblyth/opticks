@@ -2,6 +2,45 @@ sframe_dtor_double_free_from_CSGOptiX__initFrame
 =================================================
 
 
+sframe leaking no problem ? as much fewer instances in use after change from SEvt::getLocalHit_LEAKY to SEvt::getLocalHit
+--------------------------------------------------------------------------------------------------------------------------
+
+* now at level of 1 or 2 sframe instances per SEvt 
+* aim to reduce more, switching from sframe.h to sfr.h in SEvt and
+
+
+
+::
+
+    4318 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
+    4319 {
+    4320     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct 
+    4321     int iindex = lp.iindex ;
+    4322 
+    4323     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
+    4324 
+    4325     LOG_IF(fatal, tr == nullptr)
+    4326          << " FAILED TO GET INSTANCE TRANSFORM : WHEN TESTING NEEDS SSim::Load NOT SSim::Create"
+    4327          << " iindex " << iindex
+    4328          << " tree " << ( tree ? "YES" : "NO " )
+    4329          << " tree.desc_inst " << ( tree ? tree->desc_inst() : "-" )
+    4330          ;
+    4331     assert( tr );
+    4332 
+    4333     bool normalize = true ;
+    4334     lp.transform( *tr, normalize );
+    4335 
+    4336     glm::tvec4<int64_t> col3 = {} ;
+    4337     strid::Decode( *tr, col3 );
+    4338 
+    4339     ht.iindex = col3[0] ;
+    4340     ht.sensor_identifier = col3[2] ;  // NB : NO "-1" HERE : SEE ABOVE COMMENT 
+    4341     ht.sensor_index = col3[3] ;
+    4342 }
+
+
+
+
 HMM, tis tedious to debug this... as need to rebuild sysrap+CSG
 -----------------------------------------------------------------
 

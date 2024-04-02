@@ -46,6 +46,36 @@ endif()
 set(xercesc_lib)
 set(xercesc_include_dir)
 
+if(OpticksXercesC_VERBOSE)
+
+    if(TARGET Geant4::G4persistency)
+        message(STATUS "TARGET Geant4::G4persistency : FOUND ")
+    else()
+        message(STATUS "TARGET Geant4::G4persistency : NOT-FOUND ")
+    endif()
+
+    if(TARGET G4persistency)
+        message(STATUS "TARGET G4persistency : FOUND ")
+    else()
+        message(STATUS "TARGET G4persistency : NOT-FOUND ")
+    endif()
+
+    if(TARGET XercesC)
+        message(STATUS "TARGET XercesC : FOUND ")
+    else()
+        message(STATUS "TARGET XercesC : NOT-FOUND ")
+    endif()
+
+    if(TARGET XercesC::XercesC)
+        message(STATUS "TARGET XercesC::XercesC : FOUND ")
+    else()
+        message(STATUS "TARGET XercesC::XercesC : NOT-FOUND ")
+    endif()
+
+
+endif()
+
+
 if(TARGET Geant4::G4persistency AND TARGET XercesC::XercesC)
    # this works with Geant4 1062
    get_target_property(_lll Geant4::G4persistency INTERFACE_LINK_LIBRARIES)
