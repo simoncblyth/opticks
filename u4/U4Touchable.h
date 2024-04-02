@@ -9,6 +9,11 @@ A version of this is also available within the monolith at
 
     $JUNOTOP/junosw/Simulation/DetSimV2/SimUtil/SimUtil/S4Touchable.h 
 
+1042
+    G4VTouchable is an ordinary class
+1120
+    G4VTouchable is using "alias" for G4TouchableHistory
+
 **/
 
 #include <string>
@@ -30,19 +35,32 @@ struct U4Touchable
     static bool MatchStart( const char* s, const char* q) ; 
     static bool MatchEnd(   const char* s, const char* q) ; 
 
-    static const G4VPhysicalVolume* FindPV( const G4VTouchable* touch, const char* qname, int mode=MATCH_ALL ); 
+    template<typename T>
+    static const G4VPhysicalVolume* FindPV( const T* touch, const char* qname, int mode=MATCH_ALL ); 
 
-    static int ImmediateReplicaNumber(const G4VTouchable* touch ); 
-    static int AncestorReplicaNumber(const G4VTouchable* touch, int d=1 ); 
+    template<typename T>
+    static int ImmediateReplicaNumber(const T* touch ); 
+
+    template<typename T>
+    static int AncestorReplicaNumber(const T* touch, int d=1 ); 
 
 
-    static int ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select ) ; 
-    static int ReplicaDepth(const G4VTouchable* touch, const char* replica_name_select ) ; 
-    static int TouchDepth(const G4VTouchable* touch ); 
+    template<typename T>
+    static int ReplicaNumber(const T* touch, const char* replica_name_select ) ; 
+
+    template<typename T>
+    static int ReplicaDepth(const T* touch, const char* replica_name_select ) ; 
+
+    template<typename T>
+    static int TouchDepth(const T* touch ); 
+
     static bool HasMoreThanOneDaughterWithName( const G4LogicalVolume* lv, const char* name); 
 
-    static std::string Brief(const G4VTouchable* touch ); 
-    static std::string Desc(const G4VTouchable* touch, int so_wid=20, int pv_wid=20);
+    template<typename T>
+    static std::string Brief(const T* touch ); 
+
+    template<typename T>
+    static std::string Desc(const T* touch, int so_wid=20, int pv_wid=20);
 };
 
 
@@ -80,7 +98,8 @@ Find a PV by name in the touch stack, this is much quicker than the recursive U4
 
 **/
 
-inline const G4VPhysicalVolume* U4Touchable::FindPV( const G4VTouchable* touch, const char* qname, int mode )
+template<typename T>
+inline const G4VPhysicalVolume* U4Touchable::FindPV( const T* touch, const char* qname, int mode )
 {
     int nd = touch->GetHistoryDepth();
     int count = 0 ; 
@@ -123,7 +142,8 @@ common ways to organize PMT geometry hierarchy.
 
 **/
 
-inline int U4Touchable::ImmediateReplicaNumber(const G4VTouchable* touch )
+template<typename T>
+inline int U4Touchable::ImmediateReplicaNumber(const T* touch )
 {
     int copyNo = touch->GetReplicaNumber(1);
     if(copyNo <= 0) copyNo = touch->GetReplicaNumber(2); 
@@ -142,7 +162,8 @@ looking for ReplicaNumber > 0 in the history to return.
 
 **/
 
-inline int U4Touchable::AncestorReplicaNumber(const G4VTouchable* touch, int d )
+template<typename T>
+inline int U4Touchable::AncestorReplicaNumber(const T* touch, int d )
 {
     int depth = touch->GetHistoryDepth();
     int copyNo = -1 ; 
@@ -155,7 +176,8 @@ inline int U4Touchable::AncestorReplicaNumber(const G4VTouchable* touch, int d )
 }
 
 
-inline int U4Touchable::ReplicaNumber(const G4VTouchable* touch, const char* replica_name_select )  // static 
+template<typename T>
+inline int U4Touchable::ReplicaNumber(const T* touch, const char* replica_name_select )  // static 
 {
     int d = ReplicaDepth(touch, replica_name_select);
     bool found = d > -1 ; 
@@ -195,7 +217,8 @@ depends on suitable naming of replica logical volumes.
 
 **/
 
-inline int U4Touchable::ReplicaDepth(const G4VTouchable* touch, const char* replica_name_select )   // static
+template<typename T>
+inline int U4Touchable::ReplicaDepth(const T* touch, const char* replica_name_select )   // static
 {
     int nd = touch->GetHistoryDepth();
     int t = TouchDepth(touch); 
@@ -276,7 +299,8 @@ Depth of touch volume, -1 if not found.
 
 **/
 
-inline int U4Touchable::TouchDepth(const G4VTouchable* touch ) // static
+template<typename T>
+inline int U4Touchable::TouchDepth(const T* touch ) // static
 {
     const G4VPhysicalVolume* tpv = touch->GetVolume() ;
     int t = -1 ; 
@@ -346,7 +370,8 @@ inline bool U4Touchable::HasMoreThanOneDaughterWithName( const G4LogicalVolume* 
 
 
 
-inline std::string U4Touchable::Brief(const G4VTouchable* touch )
+template<typename T>
+inline std::string U4Touchable::Brief(const T* touch )
 {
     std::stringstream ss ; 
     ss << "U4Touchable::Brief"
@@ -357,7 +382,8 @@ inline std::string U4Touchable::Brief(const G4VTouchable* touch )
        ; 
     return ss.str(); 
 }
-inline std::string U4Touchable::Desc(const G4VTouchable* touch, int so_wid, int pv_wid )
+template<typename T>
+inline std::string U4Touchable::Desc(const T* touch, int so_wid, int pv_wid )
 {
     int history_depth = touch->GetHistoryDepth();
     int touch_depth = TouchDepth(touch); 

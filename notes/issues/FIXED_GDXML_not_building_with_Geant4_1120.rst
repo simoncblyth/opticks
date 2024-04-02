@@ -1,5 +1,11 @@
-GDXML_not_building_with_Geant4_1120
-======================================
+FIXED GDXML_not_building_with_Geant4_1120
+===========================================
+
+
+FIXED : by changing from libG4Persistency to libG4gdml at CMake level.
+
+
+
 
 ::
 
