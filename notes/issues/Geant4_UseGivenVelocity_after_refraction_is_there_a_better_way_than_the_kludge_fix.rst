@@ -12,6 +12,12 @@ Related
 * https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/geant4_opticks_integration/GROUPVEL.rst
 
 
+Seems fixed in 1120
+---------------------
+
+
+
+
 U4 Kludge fix is
 ------------------
 

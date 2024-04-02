@@ -1,5 +1,7 @@
-U4Touchable_not_compiling_with_Geant4_1120
-=============================================
+FIXED U4Touchable_not_compiling_with_Geant4_1120
+==================================================
+
+Switching to use template seems to fix it. 
 
 
 ::

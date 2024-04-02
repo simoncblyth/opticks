@@ -151,7 +151,7 @@ set(HEADERS
     U4SurfaceArray.h 
 
     U4Mesh.h
-
+    U4Version.h 
 )
 
 

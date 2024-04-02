@@ -98,25 +98,33 @@ Now rebuild opticks with G4 11.2
 2. adjust .opticks_externals_config to use new Geant4, CLHEP and no Custom4 
 3. ./fresh_build.sh 
 
-* find ~/o/notes/issues/GDXML_not_building_with_Geant4_1120.rst
+After fixing a few issues to get to work with 1120:
+
+* ~/o/notes/issues/GDXML_not_building_with_Geant4_1120.rst
+* ~/o/notes/issues/U4Touchable_not_compiling_with_Geant4_1120.rst
+
+::
+
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BR : 224.901 224.901 
+    speed min/max for : 1 -> 2 : BR -> BT : 224.901 224.901 
+    speed min/max for : 2 -> 3 : BT -> SA : 299.792 299.793 
+    _pos.shape (46578, 3) 
+
+Removing the fix, and the velocities still broken in the same way:: 
+
+    export U4Recorder__PreUserTrackingAction_Optical_DISABLE_UseGivenVelocity=1
+
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BR : 224.901 224.901 
+    speed min/max for : 1 -> 2 : BR -> BT : 299.792 299.793 
+    speed min/max for : 2 -> 3 : BT -> SA : 224.901 224.901 
+    _pos.shape (46578, 3) 
 
 
 
-xerces issue
--------------
-
-Change externals to full set in response to::
-
-    canning dependencies of target GDXMLTest
-    [ 85%] Building CXX object tests/CMakeFiles/GDXMLTest.dir/GDXMLTest.cc.o
-    [100%] Linking CXX executable GDXMLTest
-    /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/contrib/binutils/2.36/bin/ld: CMakeFiles/GDXMLTest.dir/GDXMLTest.cc.o: in function `xercesc_3_2::DTDEntityDecl::~DTDEntityDecl()':
-    /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/Pre-Release/J22.2.x/ExternalLibs/Xercesc/3.2.3/include/xercesc/validators/DTD/DTDEntityDecl.hpp:162: undefined reference to `xercesc_3_2::XMLEntityDecl::~XMLEntityDecl()'
-    /cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/contrib/binutils/2.36/bin/ld: CMakeFiles/GDXMLTest.dir/GDXMLTest.cc.o: in function `xercesc_3_2::DTDEntityDecl::~DTDEntityDecl()':
-
-
-Permissions issue
----------------------
+Permissions issue : from using symbolic linked .opticks/GEOM
+--------------------------------------------------------------
 
 Hmm, permissions issue::
 
@@ -150,7 +158,7 @@ Hmm, permissions issue::
     [simon@localhost .opticks]$ 
 
 
-Make .opticks separate::
+Make .opticks/GEOM reaL::
 
     [simon@localhost .opticks]$ rm GEOM
     [simon@localhost .opticks]$ mkdir GEOM

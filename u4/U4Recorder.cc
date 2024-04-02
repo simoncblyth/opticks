@@ -37,6 +37,7 @@
 #include "U4Process.h"
 #include "U4Touchable.h"
 #include "U4Simtrace.h"
+#include "U4Version.h"
 
 #include "SCF.h"
 #include "U4Step.h"
@@ -90,6 +91,7 @@ std::string U4Recorder::Desc() // static
        << " PIDX                                : " << PIDX << std::endl 
        << " EIDX                                : " << EIDX << std::endl 
        << " GIDX                                : " << GIDX << std::endl 
+       << " U4Version::Desc                     : " << U4Version::Desc() << "\n" 
        ;
 
     bool uoc = UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft ; 
