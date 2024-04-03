@@ -381,3 +381,64 @@ Get the distance in 3D way::
 * Seem raindrop reflections can never TIR due to the geometry... need to generate light from inside the drop
 
 
+
+
+
+
+OpticalApp with Box "drop" and semi-circle of photons from inside directed to center positioned on interface
+-----------------------------------------------------------------------------------------------------------------
+
+Simple example is not exhibiting the issue::
+
+    epsilon:opticks blyth$ examples/Geant4/OpticalApp/OpticalAppTest.sh ana
+    [from opticks.ana.p import * 
+    CSGFoundry.CFBase returning None, note:via NO envvars 
+    ERROR CSGFoundry.CFBase returned None OR non-existing CSGFoundry dir so cannot CSGFoundry.Load
+    ]from opticks.ana.p import * 
+    sevt.init W2M
+     None
+    np.c_[np.unique(b.q, return_counts=True)] 
+    [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'3']
+     [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'11']
+     [b'TO BR BR BR BR BR BT SA                                                                         ' b'38']
+     [b'TO BR BR BR BR BT SA                                                                            ' b'105']
+     [b'TO BR BR BR BT SA                                                                               ' b'868']
+     [b'TO BR BR BT SA                                                                                  ' b'2419']
+     [b'TO BR BT SA                                                                                     ' b'46620']
+     [b'TO BT SA                                                                                        ' b'49936']]
+    SELECT="TO BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    speed len/min/max for : 0 -> 1 : TO -> BR :   46620/224.901/224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :   46620/224.901/224.901 
+    speed len/min/max for : 2 -> 3 : BT -> SA :   46620/299.792/299.792 
+
+
+
+::
+
+    epsilon:opticks blyth$ SELECT="TO BR BR BR BR BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh ana
+    [from opticks.ana.p import * 
+    CSGFoundry.CFBase returning None, note:via NO envvars 
+    ERROR CSGFoundry.CFBase returned None OR non-existing CSGFoundry dir so cannot CSGFoundry.Load
+    ]from opticks.ana.p import * 
+    sevt.init W2M
+     None
+    np.c_[np.unique(b.q, return_counts=True)] 
+    [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'3']
+     [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'11']
+     [b'TO BR BR BR BR BR BT SA                                                                         ' b'38']
+     [b'TO BR BR BR BR BT SA                                                                            ' b'105']
+     [b'TO BR BR BR BT SA                                                                               ' b'868']
+     [b'TO BR BR BT SA                                                                                  ' b'2419']
+     [b'TO BR BT SA                                                                                     ' b'46620']
+     [b'TO BT SA                                                                                        ' b'49936']]
+    SELECT="TO BR BR BR BR BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    speed len/min/max for : 0 -> 1 : TO -> BR :      38/224.901/224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BR :      38/224.901/224.901 
+    speed len/min/max for : 2 -> 3 : BR -> BR :      38/224.901/224.901 
+    speed len/min/max for : 3 -> 4 : BR -> BR :      38/224.901/224.901 
+    speed len/min/max for : 4 -> 5 : BR -> BR :      38/224.901/224.901 
+    speed len/min/max for : 5 -> 6 : BR -> BT :      38/224.901/224.901 
+    speed len/min/max for : 6 -> 7 : BT -> SA :      38/299.792/299.792 
+
+
+

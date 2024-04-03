@@ -240,7 +240,7 @@ inline G4PrimaryVertex* OpticalApp::MakePrimaryVertexPhoton(int idx, int num)
     direction = direction.unit(); 
 
     G4ThreeVector position_mm(r*cosPhi,0.,r*sinPhi + r ) ;
-    G4ThreeVector polarization(0.,1.,0.) ;    
+    G4ThreeVector polarization(0.,-1.,0.) ;   // pick same as storch.h   
 
     polarization.rotateUz(direction);   // orient polarization 
     // HMM: unchnged

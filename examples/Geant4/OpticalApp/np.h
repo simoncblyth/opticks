@@ -30,6 +30,13 @@ struct np
 
     template<typename T>
     static void Write(const char* path, const std::vector<int>& shape, const T* data, const char* descr="<f8" ); 
+
+    template<typename T>
+    static void Write(const char* dir, const char* name, const std::vector<int>& shape, const T* data, const char* descr="<f8" ); 
+
+
+
+
 }; 
 
 // NPU::_make_header
@@ -134,5 +141,18 @@ inline void np::Write(const char* path, const std::vector<int>& shape, const T* 
     fpa << hdr ; 
     fpa.write( (char*)data, arr_bytes );
 }
+
+template<typename T>
+inline void np::Write(const char* dir, const char* name, const std::vector<int>& shape, const T* data, const char* descr ) 
+{
+    std::stringstream ss ; 
+    if(dir) ss << dir << "/" ; 
+    ss << name ;    
+    std::string path = ss.str(); 
+
+    Write<T>( path.c_str(), shape, data, descr );
+}
+
+
 
 

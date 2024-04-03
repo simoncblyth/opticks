@@ -183,6 +183,7 @@ class SEvt(object):
     def init_fold_meta_timestamp(self, f):
         """
         """
+        if getattr(f, "NPFold_meta", None) == None: return  
         msrc = f.NPFold_meta
         if msrc is None: return 
 
@@ -227,6 +228,7 @@ class SEvt(object):
     def init_fold_meta(self, f):
         """
         """
+        if getattr(f, "NPFold_meta", None) == None: return  
         msrc = f.NPFold_meta
         if msrc is None: return 
 
@@ -274,8 +276,16 @@ class SEvt(object):
         :param f: fold instance
         """
         if hasattr(f,'record') and not f.record is None:
-            iir = f.record[:,:,1,3].view(np.int32) 
-            idr = f.record[:,:,1,3].view(np.int32) 
+
+            if f.record.dtype.name == 'float32':
+                iir = f.record[:,:,1,3].view(np.int32) 
+                idr = f.record[:,:,1,3].view(np.int32)
+            elif f.record.dtype.name == 'float64':
+                iir = f.record[:,:,1,3].view(np.int64) 
+                idr = f.record[:,:,1,3].view(np.int64)
+            else:
+                assert False 
+            pass
         else:
             iir = None
             idr = None

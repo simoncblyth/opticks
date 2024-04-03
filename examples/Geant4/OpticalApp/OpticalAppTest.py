@@ -3,7 +3,9 @@
 import os, numpy as np
 
 if __name__ == '__main__':
-    path = os.environ["OUT"]
-    a = np.load(path)
-    print(repr(a))
+    FOLD = os.environ["FOLD"]
+    r = np.load(os.path.join(FOLD, "record.npy"))
+    print(repr(r))
+    q = np.load(os.path.join(FOLD, "seq.npy"))
+    print(repr(q))
 pass

@@ -24,10 +24,10 @@ export FOLD=/tmp/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
-script=$name.py 
-export OUT=$FOLD/record.npy 
+#script=$name.py 
+script=${name}_ok.py 
 
-vars="BASH_SOURCE name bin OUT"
+vars="BASH_SOURCE name bin FOLD"
 
 # -Wno-deprecated-copy \
 
