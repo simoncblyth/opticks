@@ -4,8 +4,15 @@ OpticalApp.h : Geant4 Optical Application within a single header
 
 Start from ~/o/g4cx/tests/G4CXApp.h and remove opticks dependencies for easy sharing 
 
+Usage::
+
+    ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+
+BUT: its no so far showing the issue ? 
+
 **/
 
+#include <cmath>
 #include <csignal>
 #include <cassert>
 
@@ -38,11 +45,7 @@ struct OpticalApp
     public G4VUserPrimaryGeneratorAction,
     public G4VUserDetectorConstruction
 {
-    static std::string Desc(); 
-
     OpticalRecorder*      fRecorder ; 
-    G4RunManager*         fRunMgr ;  
-    G4VPhysicalVolume*    fPV ; 
 
     static G4Material* Vacuum(); 
     static G4MaterialPropertyVector* Make_V(double value); 
@@ -52,7 +55,7 @@ struct OpticalApp
     G4VPhysicalVolume* Construct(); 
 
     void GeneratePrimaries(G4Event* evt); 
-    static G4PrimaryVertex* MakePrimaryVertexPhoton(); 
+    static G4PrimaryVertex* MakePrimaryVertexPhoton(int idx, int num); 
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);
@@ -65,42 +68,50 @@ struct OpticalApp
 
     void UserSteppingAction(const G4Step*);
 
-    OpticalApp(G4RunManager* runMgr); 
-    static void OpenGeometry() ; 
-    virtual ~OpticalApp(); 
-
     static G4RunManager* InitRunManager(); 
-    static int           Main(); 
+    static int Main(); 
+    OpticalApp(G4RunManager* runMgr); 
+    virtual ~OpticalApp(); 
 };
 
 
-std::string OpticalApp::Desc() // static
+G4RunManager* OpticalApp::InitRunManager()  // static
 {
-    std::stringstream ss ; 
-    ss << "OpticalApp::Desc" ; 
-    std::string str = ss.str(); 
-    return str ; 
+    G4VUserPhysicsList* phy = (G4VUserPhysicsList*)new OpticalPhysics ; 
+    G4RunManager* runMgr = new G4RunManager ; 
+    runMgr->SetUserInitialization(phy) ; 
+    return runMgr ; 
 }
 
+int OpticalApp::Main()  // static 
+{
+    G4RunManager* runMgr = InitRunManager(); 
+    OpticalApp app(runMgr); 
+    runMgr->BeamOn(1); 
+    return 0 ; 
+}
 
 OpticalApp::OpticalApp(G4RunManager* runMgr)
     :
-    fRecorder(new OpticalRecorder),
-    fRunMgr(runMgr),
-    fPV(nullptr)
+    fRecorder(new OpticalRecorder)
 {
-    fRunMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
-    fRunMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
-    fRunMgr->SetUserAction((G4UserRunAction*)this);
-    fRunMgr->SetUserAction((G4UserEventAction*)this);
-    fRunMgr->SetUserAction((G4UserTrackingAction*)this);
-    fRunMgr->SetUserAction((G4UserSteppingAction*)this);
-    fRunMgr->Initialize(); 
+    runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
+    runMgr->SetUserAction((G4VUserPrimaryGeneratorAction*)this);
+    runMgr->SetUserAction((G4UserRunAction*)this);
+    runMgr->SetUserAction((G4UserEventAction*)this);
+    runMgr->SetUserAction((G4UserTrackingAction*)this);
+    runMgr->SetUserAction((G4UserSteppingAction*)this);
+    runMgr->Initialize(); 
+}
+
+OpticalApp::~OpticalApp()
+{ 
+    G4GeometryManager::GetInstance()->OpenGeometry();
 }
 
 
 
-G4Material* OpticalApp::Vacuum() // 
+G4Material* OpticalApp::Vacuum() // static 
 {
     G4double z = 1. ; 
     G4double a = 1.01*CLHEP::g/CLHEP::mole ; 
@@ -203,18 +214,40 @@ Simplified U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
 
 void OpticalApp::GeneratePrimaries(G4Event* event)
 {  
-    //G4int eventID = event->GetEventID(); 
-    G4PrimaryVertex* vertex = MakePrimaryVertexPhoton() ; 
-    event->AddPrimaryVertex(vertex);
+    int ni = OpticalRecorder::MAX_PHOTON ; 
+    for(int i=0 ; i < ni ; i++)
+    {
+        G4PrimaryVertex* vertex = MakePrimaryVertexPhoton(i, ni) ; 
+        event->AddPrimaryVertex(vertex);
+    }
 }
 
-inline G4PrimaryVertex* OpticalApp::MakePrimaryVertexPhoton()
+inline G4PrimaryVertex* OpticalApp::MakePrimaryVertexPhoton(int idx, int num)
 {
-    G4ThreeVector position_mm(0.,0.,0.) ; 
-    G4double time_ns(0.)  ;   
-    G4ThreeVector direction(0.,0.,1.) ;   
-    G4double wavelength_nm(420.); 
+    // storch.h T_CIRCLE
+
+    double f = double(idx)/double(num) ; // 0->~1
+    double r = 50. ; 
+    double azimuth_x = 0.5 ;  // restrict phi range to make semi-circle 
+    double azimuth_y = 1.0 ; 
+    double frac = azimuth_x*(1.-f) + azimuth_y*(f) ;  
+
+    double phi = 2.*M_PI*frac ;
+    double sinPhi = sinf(phi);
+    double cosPhi = cosf(phi);
+
+    G4ThreeVector direction(-cosPhi,0.,-sinPhi) ;   
+    direction = direction.unit(); 
+
+    G4ThreeVector position_mm(r*cosPhi,0.,r*sinPhi + r ) ;
     G4ThreeVector polarization(0.,1.,0.) ;    
+
+    polarization.rotateUz(direction);   // orient polarization 
+    // HMM: unchnged
+
+    //G4double time_ns(f)  ;
+    G4double time_ns(0.)  ;   // for easier to follow animation in UseGeometryShader
+    G4double wavelength_nm(420.); 
 
     G4PrimaryVertex* vertex = new G4PrimaryVertex(position_mm, time_ns);
     G4double kineticEnergy = CLHEP::h_Planck*CLHEP::c_light/(wavelength_nm*nm) ; 
@@ -235,24 +268,4 @@ void OpticalApp::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserT
 void OpticalApp::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk) ; }
 void OpticalApp::UserSteppingAction(const G4Step* stp){      fRecorder->UserSteppingAction(stp) ; }        
 
-void OpticalApp::OpenGeometry(){  G4GeometryManager::GetInstance()->OpenGeometry(); } // static
-OpticalApp::~OpticalApp(){ OpenGeometry(); }
-// G4GeometryManager::OpenGeometry is needed to avoid cleanup warning
-
-G4RunManager* OpticalApp::InitRunManager()  // static
-{
-    G4VUserPhysicsList* phy = (G4VUserPhysicsList*)new OpticalPhysics ; 
-    G4RunManager* run = new G4RunManager ; 
-    run->SetUserInitialization(phy) ; 
-    return run ; 
-}
-
-int OpticalApp::Main()  // static 
-{
-    G4RunManager* run = InitRunManager(); 
-    OpticalApp* app = new OpticalApp(run); 
-    run->BeamOn(1); 
-    delete app ;  // avoids "Attempt to delete the (physical volume/logical volume/solid/region) store while geometry closed" warnings 
-    return 0 ; 
-}
 

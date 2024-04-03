@@ -8,10 +8,7 @@ struct OpticalPhysics : public G4VUserPhysicsList
     void ConstructParticle(); 
     void ConstructProcess() ; 
     void ConstructOp();
-
-    OpticalPhysics(); 
 };
-
 
 inline void OpticalPhysics::ConstructParticle()
 {
@@ -41,10 +38,4 @@ inline void OpticalPhysics::ConstructOp()
         }
     }
 }
-
-inline OpticalPhysics::OpticalPhysics()
-{
-}
-
-
 

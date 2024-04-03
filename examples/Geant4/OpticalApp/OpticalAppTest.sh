@@ -3,20 +3,38 @@ usage(){ cat << EOU
 
 ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh 
 
+~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh ana
+
+
+BP=G4ParticleChange::DumpInfo ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+
+BP=G4OpBoundaryProcess::PostStepDoIt ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+
+REC=3 ~/o/examples/UseGeometryShader/run.sh 
+
+
 
 EOU
 }
 
-cd $(dirname $(realpath $BASH_SOURCE)0)
+cd $(dirname $(realpath $BASH_SOURCE))
 
 name=OpticalAppTest
-bin=/tmp/$name
+export FOLD=/tmp/$name
+mkdir -p $FOLD
 
-vars="BASH_SOURCE name bin"
+bin=$FOLD/$name
+script=$name.py 
+export OUT=$FOLD/record.npy 
+
+vars="BASH_SOURCE name bin OUT"
 
 # -Wno-deprecated-copy \
 
-defarg=info_build_run
+defarg=info_build_run_ana
+
+[ -n "$BP" ] && defarg=dbg 
+
 arg=${1:-$defarg}
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -43,6 +61,14 @@ if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
 fi
+
+if [ "${arg/ana}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
+fi
+
+
+
 
 
 exit 0 

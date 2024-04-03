@@ -2,6 +2,36 @@
 
 #include "G4OpticalPhoton.hh"
 #include "G4OpBoundaryProcess.hh"
+#include "np.h"
+
+// OpticksPhoton.h 
+enum
+{
+    CERENKOV          = 0x1 <<  0,    
+    SCINTILLATION     = 0x1 <<  1,    
+    MISS              = 0x1 <<  2,  
+    BULK_ABSORB       = 0x1 <<  3,  
+    BULK_REEMIT       = 0x1 <<  4,  
+    BULK_SCATTER      = 0x1 <<  5,  
+    SURFACE_DETECT    = 0x1 <<  6,  
+    SURFACE_ABSORB    = 0x1 <<  7,  
+    SURFACE_DREFLECT  = 0x1 <<  8,  
+    SURFACE_SREFLECT  = 0x1 <<  9,  
+    BOUNDARY_REFLECT  = 0x1 << 10, 
+    BOUNDARY_TRANSMIT = 0x1 << 11, 
+    TORCH             = 0x1 << 12, 
+    NAN_ABORT         = 0x1 << 13, 
+    EFFICIENCY_CULL    = 0x1 << 14, 
+    EFFICIENCY_COLLECT = 0x1 << 15, 
+    __NATURAL         = 0x1 << 16, 
+    __MACHINERY       = 0x1 << 17, 
+    __EMITSOURCE      = 0x1 << 18, 
+    PRIMARYSOURCE     = 0x1 << 19, 
+    GENSTEPSOURCE     = 0x1 << 20, 
+    DEFER_FSTRACKINFO = 0x1 << 21
+}; 
+
+
 
 struct OpticalRecorder
 {
@@ -28,10 +58,32 @@ struct OpticalRecorder
     static constexpr const char* Other_ = "Other" ;   
     static const char* OpBoundaryProcessStatus(unsigned status); 
 
+
+    static constexpr const char* _ZERO              = "  " ;
+    static constexpr const char* _CERENKOV          = "CK" ;
+    static constexpr const char* _SCINTILLATION     = "SI" ; 
+    static constexpr const char* _TORCH             = "TO" ; 
+    static constexpr const char* _MISS              = "MI" ;
+    static constexpr const char* _BULK_ABSORB       = "AB" ;
+    static constexpr const char* _BULK_REEMIT       = "RE" ;
+    static constexpr const char* _BULK_SCATTER      = "SC" ;
+    static constexpr const char* _SURFACE_DETECT    = "SD" ;
+    static constexpr const char* _SURFACE_ABSORB    = "SA" ;
+    static constexpr const char* _SURFACE_DREFLECT  = "DR" ;
+    static constexpr const char* _SURFACE_SREFLECT  = "SR" ;
+    static constexpr const char* _BOUNDARY_REFLECT  = "BR" ;
+    static constexpr const char* _BOUNDARY_TRANSMIT = "BT" ;
+    static constexpr const char* _NAN_ABORT         = "NA" ;
+    static constexpr const char* _EFFICIENCY_COLLECT = "EC" ;
+    static constexpr const char* _EFFICIENCY_CULL    = "EX" ;
+    static constexpr const char* _BAD_FLAG           = "XX" ;
+    static const char* Flag(unsigned flag); 
+
+
     template <typename T>
     static T* GetOpBoundaryProcess();
 
-    static void GetPoint( double* p , const G4StepPoint* point); 
+    static void WritePoint( double* p , const G4StepPoint* point, unsigned flag ); 
     static std::string Desc( const double* p, int num ); 
  
     void BeginOfRunAction(const G4Run* run);
@@ -42,25 +94,46 @@ struct OpticalRecorder
 
     void PreUserTrackingAction(const G4Track* trk);
     void PostUserTrackingAction(const G4Track* trk);
+    static int TrackIdx( const G4Track* trk ); 
+
+    static unsigned PointFlag( const G4StepPoint* point ); 
+    static unsigned BoundaryFlag(unsigned status);  // BT BR NA SA SD SR DR
 
     void UserSteppingAction(const G4Step* step);
 
+
+    static bool Valid(int trk_idx, int point_idx);
+    double* getRecord(int trk_idx, int point_idx) const ;
+    void recordPoint( const G4StepPoint* point, int trk_idx ); 
+
+    static double DeltaTime( const double* a, const double* b );
+    static double DeltaPos( const double* a, const double* b );
+    std::string descPoint(int _trk_idx, int _point_idx) const ; 
+
+    static constexpr const int MAX_PHOTON = 100000 ; 
+    static constexpr const int MAX_POINT  = 10 ; 
+    static constexpr const int MAX_VALUE  = MAX_PHOTON*MAX_POINT*16  ; 
+  
     OpticalRecorder(); 
+    void clear(); 
+    void alloc(); 
 
-    static constexpr const int MAX_POINT = 100 ; 
-    double* pp ; 
-    int num_point ; 
-
+    double* pp = nullptr ; 
+    int point_idx = 0  ; 
 }; 
 
+inline OpticalRecorder::OpticalRecorder(){}
 
-inline OpticalRecorder::OpticalRecorder()
-    :
-    pp(new double[MAX_POINT*16]),
-    num_point(0)
+inline void OpticalRecorder::clear()
 {
+    delete [] pp ; 
+    pp = nullptr ; 
 }
-
+inline void OpticalRecorder::alloc()
+{
+    pp = new double[MAX_VALUE] ; 
+    for(int i=0 ; i < MAX_VALUE ; i++) pp[i] = 0. ; 
+}
 
 
 // U4StepStatus::Name
@@ -102,6 +175,37 @@ inline const char* OpticalRecorder::OpBoundaryProcessStatus(unsigned status)
     return str ;
 }
 
+// OpticksPhoton::Flag
+const char* OpticalRecorder::Flag(const unsigned int flag)
+{
+    const char* str = 0 ;
+    switch(flag)
+    {
+        case 0:                str=_ZERO;break;
+        case CERENKOV:         str=_CERENKOV ;break;
+        case SCINTILLATION:    str=_SCINTILLATION ;break;
+        case MISS:             str=_MISS ;break;
+        case BULK_ABSORB:      str=_BULK_ABSORB ;break;
+        case BULK_REEMIT:      str=_BULK_REEMIT ;break;
+        case BULK_SCATTER:     str=_BULK_SCATTER ;break;
+        case SURFACE_DETECT:   str=_SURFACE_DETECT ;break;
+        case SURFACE_ABSORB:   str=_SURFACE_ABSORB ;break;
+        case SURFACE_DREFLECT: str=_SURFACE_DREFLECT ;break;
+        case SURFACE_SREFLECT: str=_SURFACE_SREFLECT ;break;
+        case BOUNDARY_REFLECT: str=_BOUNDARY_REFLECT ;break;
+        case BOUNDARY_TRANSMIT:str=_BOUNDARY_TRANSMIT ;break;
+        case TORCH:            str=_TORCH ;break;
+        case NAN_ABORT:        str=_NAN_ABORT ;break;
+        case EFFICIENCY_CULL:    str=_EFFICIENCY_CULL ;break;
+        case EFFICIENCY_COLLECT: str=_EFFICIENCY_COLLECT ;break;
+        default:                 str=_BAD_FLAG  ;
+    }
+    return str;
+}
+
+
+
+
 // U4OpBoundaryProcess::Get
 template <typename T>
 inline T* OpticalRecorder::GetOpBoundaryProcess()
@@ -127,7 +231,7 @@ inline T* OpticalRecorder::GetOpBoundaryProcess()
 }
 
 // U4StepPoint::Update
-void OpticalRecorder::GetPoint( double* p , const G4StepPoint* point)  // static
+void OpticalRecorder::WritePoint( double* p , const G4StepPoint* point, unsigned flag )  // static
 {
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& mom = point->GetMomentumDirection();
@@ -152,11 +256,26 @@ void OpticalRecorder::GetPoint( double* p , const G4StepPoint* point)  // static
     p[10] = pol.z();
     p[11] = wavelength/nm ;
 
+
+    union uif64_t {
+        uint64_t  u ; 
+        int64_t   i ; 
+        double    f ; 
+    };  
+
+    uif64_t uif ; 
+    uif.u = flag ;  
+
     p[12] = 0. ; 
     p[13] = 0. ; 
     p[14] = 0. ; 
-    p[15] = 0. ; 
+    p[15] = uif.f ; 
 }
+
+
+
+
+
 
 std::string OpticalRecorder::Desc( const double* p, int num )
 {
@@ -177,66 +296,212 @@ std::string OpticalRecorder::Desc( const double* p, int num )
 
 void OpticalRecorder::BeginOfRunAction(const G4Run* ){         std::cout << "OpticalRecorder::BeginOfRunAction\n" ;    }
 void OpticalRecorder::EndOfRunAction(const G4Run* ){           std::cout << "OpticalRecorder::EndOfRunAction\n" ;  }
-void OpticalRecorder::BeginOfEventAction(const G4Event* ){     std::cout << "OpticalRecorder::BeginOfEventAction\n"; } 
-void OpticalRecorder::EndOfEventAction(const G4Event* ){       std::cout << "OpticalRecorder::EndOfEventAction\n" ; }
-void OpticalRecorder::PreUserTrackingAction(const G4Track* ){  std::cout << "OpticalRecorder::PreUserTrackingAction\n" ;   }
-void OpticalRecorder::PostUserTrackingAction(const G4Track* ){ std::cout << "OpticalRecorder::PostUserTrackingAction\n" ;  }
+
+
+void OpticalRecorder::BeginOfEventAction(const G4Event* evt)
+{  
+    std::cout << "OpticalRecorder::BeginOfEventAction evt " << evt->GetEventID() << "\n" ;
+    alloc();  
+} 
+
+void OpticalRecorder::EndOfEventAction(const G4Event* evt)
+{    
+    int eid = evt->GetEventID() ; 
+    std::cout << "OpticalRecorder::EndOfEventAction eid " << eid << "\n" ; 
+
+    const char* out = getenv("OUT") ; 
+    std::vector<int> shape = { MAX_PHOTON, MAX_POINT, 4, 4 } ; 
+    np::Write( out,  shape, pp, "<f8" ); 
+
+    clear(); 
+}
+void OpticalRecorder::PreUserTrackingAction(const G4Track* trk )
+{  
+    point_idx = 0 ; 
+    if(0) std::cout 
+        << "OpticalRecorder::PreUserTrackingAction"
+        << " trk_idx :" << TrackIdx(trk)  
+        << " point_idx:" << point_idx 
+        << "\n" 
+        ;  
+}
+void OpticalRecorder::PostUserTrackingAction(const G4Track* trk)
+{ 
+    if(0) std::cout 
+        << "OpticalRecorder::PostUserTrackingAction"
+        << " trk_idx :" << TrackIdx(trk)  
+        << " point_idx:" << point_idx 
+        << "\n" 
+        ; 
+    
+}
+
+int OpticalRecorder::TrackIdx( const G4Track* track )
+{
+   return track->GetTrackID() - 1 ;  // 0-based unlike 1-based TrackID  
+}
+
+// U4StepPoint::Flag
+unsigned OpticalRecorder::PointFlag( const G4StepPoint* point )
+{
+    G4StepStatus status = point->GetStepStatus()  ;
+
+    // U4StepPoint::ProcessDefinedStepType
+    const G4VProcess* proc = point->GetProcessDefinedStep() ;
+    const char* procName = proc ? proc->GetProcessName().c_str() : nullptr  ; 
+
+    unsigned flag = 0 ; 
+
+    if( status == fPostStepDoItProc && strcmp(procName, "OpAbsorption") == 0 )
+    {
+        flag = BULK_ABSORB ;
+    }
+    else if( status == fPostStepDoItProc && strcmp(procName, "OpRayleigh") == 0 )
+    {
+        flag = BULK_SCATTER ;
+    }    
+    else if( status == fGeomBoundary && strcmp(procName, "Transportation") == 0  )
+    {
+        G4OpBoundaryProcess* bp = GetOpBoundaryProcess<G4OpBoundaryProcess>(); 
+        G4OpBoundaryProcessStatus bp_status = bp ? bp->GetStatus() : Undefined ;
+        flag = BoundaryFlag( bp_status ); 
+    }
+    else if( status == fWorldBoundary && strcmp(procName, "Transportation") == 0  )
+    {
+        flag = MISS ;  
+    }
+    return flag  ; 
+}
+
+// U4StepPoint::BoundaryFlag
+unsigned OpticalRecorder::BoundaryFlag(unsigned status) // BT BR NA SA SD SR DR 
+{
+    unsigned flag = 0 ; 
+    switch(status)
+    {   
+        case FresnelRefraction:
+        case SameMaterial:
+        case Transmission:
+                               flag=BOUNDARY_TRANSMIT;
+                               break;
+        case TotalInternalReflection:
+        case       FresnelReflection:
+                               flag=BOUNDARY_REFLECT;
+                               break;
+        case StepTooSmall:
+                               flag=NAN_ABORT;
+                               break;
+        case Absorption:
+                               flag=SURFACE_ABSORB ; 
+                               break;
+        case Detection:
+                               flag=SURFACE_DETECT ; 
+                               break;
+        case SpikeReflection:
+                               flag=SURFACE_SREFLECT ; 
+                               break;
+        case LobeReflection:
+        case LambertianReflection:
+                               flag=SURFACE_DREFLECT ; 
+                               break;
+        case NoRINDEX:
+                               flag=SURFACE_ABSORB ;
+                               //flag=NAN_ABORT;
+                               break;
+        default:
+                               flag = 0 ; 
+                               break;
+    }
+    return flag ; 
+}
+
+
 void OpticalRecorder::UserSteppingAction(const G4Step* step )
 {    
     const G4Track* track = step->GetTrack();
-    G4VPhysicalVolume* pv = track->GetVolume() ;
+    int trk_idx = TrackIdx(track); 
 
     const G4StepPoint* pre = step->GetPreStepPoint() ;
     const G4StepPoint* post = step->GetPostStepPoint() ;
 
-    // U4StepPoint::ProcessDefinedStepType
-    const G4VProcess* post_proc = post->GetProcessDefinedStep() ;
-    const char* post_procName = post_proc ? post_proc->GetProcessName().c_str() : nullptr  ; 
+    if(point_idx == 0) recordPoint(pre, trk_idx) ; 
+    recordPoint(post, trk_idx); 
 
-    G4OpBoundaryProcessStatus bp_status = Undefined ; 
-    if( post->GetStepStatus() == fGeomBoundary && strcmp(post_procName, "Transportation") == 0 )
-    {
-        G4OpBoundaryProcess* bp = GetOpBoundaryProcess<G4OpBoundaryProcess>(); 
-        bp_status = bp ? bp->GetStatus() : Undefined ;
-    }
-
+    /*
+    G4VPhysicalVolume* pv = track->GetVolume() ;
     std::cout 
         << "OpticalRecorder::UserSteppingAction"
         << " pre_status " << StepStatus( pre->GetStepStatus())
         << " post_status " << StepStatus( post->GetStepStatus() )
-        << " post_procName " << ( post_procName ? post_procName : "-" ) 
-        << " bp_status " << OpBoundaryProcessStatus(bp_status)
         << " pv " << pv->GetName() 
         << "\n" 
         ; 
+    */
 
+}
 
-    double* p = num_point < MAX_POINT ? pp + 16*num_point : nullptr ; 
+bool OpticalRecorder::Valid(int _trk_idx, int _point_idx)
+{
+    return 
+          _trk_idx > -1 && _trk_idx < MAX_PHOTON 
+          && 
+          _point_idx > -1 && _point_idx < MAX_POINT 
+          ;  
+}
 
-    if(p)
-    {
-        GetPoint( p, post ); 
-        std::cout << Desc(p, 16 ) << "\n" ; 
+double* OpticalRecorder::getRecord(int _trk_idx, int _point_idx) const
+{
+    double* rec = Valid(_trk_idx, _point_idx) ? pp + 16*MAX_POINT*_trk_idx + 16*_point_idx  : nullptr ; 
+    return rec ;     
+}
 
-        double* prior_p = num_point > 0 ? pp + 16*(num_point - 1 ) : nullptr ; 
+void OpticalRecorder::recordPoint( const G4StepPoint* point, int _trk_idx )
+{
+    double* rec = getRecord( _trk_idx, point_idx ); 
+    if(!rec) return ; 
 
-        if(prior_p) 
-        {
-            double dt = p[3] - prior_p[3] ; 
-            G4ThreeVector dp( p[0] - prior_p[0], p[1] - prior_p[1], p[2] - prior_p[2] ); 
-            double dpm = dp.mag() ; 
-            double dpm_dt = dt > 0 && dpm > 0 ? dpm/dt : 0 ; 
+    unsigned flag = point_idx == 0 ? TORCH : PointFlag(point) ;  
 
-            std::cout << " dt " << dt << " dpm " << dpm << " dpm/dt " << dpm_dt << "\n" ; 
-              
-        }
+    if( flag == NAN_ABORT ) return ; 
+ 
+    WritePoint(rec, point, flag ); 
 
-   
+    if( _trk_idx < 5 ) std::cout 
+        << "OpticalRecorder::recordPoint" 
+        << " _trk_idx " << _trk_idx 
+        << " point_idx " << point_idx 
+        << " flag [" << Flag(flag) << "]"  
+        << "\n"
+        << descPoint( _trk_idx, point_idx )
+        << "\n"
+        ;  
 
-    }
+    point_idx += 1 ; 
+}
 
-    num_point += 1 ; 
+double OpticalRecorder::DeltaTime( const double* a, const double* b )
+{
+    return a && b ? b[3] - a[3] : -1 ; 
+}
+double OpticalRecorder::DeltaPos( const double* a, const double* b )
+{
+    if( a == nullptr || b == nullptr ) return -1 ; 
+    G4ThreeVector dpos( b[0] - a[0], b[1] - a[1], b[2] - a[2] ); 
+    return dpos.mag() ; 
+}
 
+std::string OpticalRecorder::descPoint(int _trk_idx, int _point_idx) const
+{
+    double* curr = getRecord( _trk_idx, _point_idx ); 
+    double* prev = getRecord( _trk_idx, _point_idx - 1 ); 
 
+    double dt  = DeltaTime( prev, curr ); 
+    double dp  = DeltaPos(  prev, curr ); 
+    double speed = dt > 0. && dp > 0. ? dp/dt : -1. ; 
+
+    std::stringstream ss ; 
+    ss << Desc( curr, 16 ) << "\n" << " dt " << dt << " dp " << dp << " dp/dt " << speed << "\n" ;  
+    std::string str = ss.str(); 
+    return str ; 
 }
 

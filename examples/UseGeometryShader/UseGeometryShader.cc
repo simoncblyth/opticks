@@ -56,7 +56,10 @@ int main(int argc, char** argv)
 {
     //const char* RECORD_PATH = "$RECORD_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
     const char* RECORD_PATH = "$RECORD_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
-    NP* a = NP::Load(RECORD_PATH) ;   
+    NP* _a = NP::Load(RECORD_PATH) ;   
+    NP* a = NP::MakeNarrowIfWide(_a) ; 
+
+
     if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ;
     if(a==nullptr) std::cout << " CREATE IT WITH [TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh] " << std::endl ; 
     assert(a); 
@@ -172,7 +175,8 @@ int main(int argc, char** argv)
     buf.bind();
     buf.upload();
 
-    std::string rpos_spec = a->get_meta<std::string>("rpos", "");  
+
+    std::string rpos_spec = a->get_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false");  
     std::cout 
         << "UseGeometryShader.main "
         << " rpos_spec [" << rpos_spec << "]" 
