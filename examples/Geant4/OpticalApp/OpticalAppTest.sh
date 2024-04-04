@@ -29,6 +29,11 @@ script=${name}_ok.py
 
 vars="BASH_SOURCE name bin FOLD"
 
+
+#export OpticalApp__GeneratePrimaries_DEBUG_GENIDX=50000
+#export OpticalApp__PreUserTrackingAction_UseGivenVelocity_KLUDGE=1 
+
+
 # -Wno-deprecated-copy \
 
 defarg=info_build_run_ana

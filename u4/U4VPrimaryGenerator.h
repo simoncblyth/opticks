@@ -27,6 +27,7 @@ struct U4_API U4VPrimaryGenerator
     template<typename P> 
     static G4PrimaryVertex* MakePrimaryVertexPhoton( const P& p); 
 
+    static constexpr const char* _DEBUG_GENIDX = "U4VPrimaryGenerator__GeneratePrimaries_From_Photons_DEBUG_GENIDX" ; 
     static void GeneratePrimaries_From_Photons(G4Event* event, const NP* ph ); 
 
 };
@@ -41,6 +42,7 @@ struct U4_API U4VPrimaryGenerator
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
@@ -126,9 +128,18 @@ should associate as such in the SEvt to retain access to these
 **/
 
 
+
 inline void U4VPrimaryGenerator::GeneratePrimaries_From_Photons(G4Event* event, const NP* ph )
 {
-    std::cout << "U4VPrimaryGenerator::GeneratePrimaries_From_Photons ph " << ( ph ? ph->sstr() : "-" ) << std::endl ; 
+    int DEBUG_GENIDX = ssys::getenvint(_DEBUG_GENIDX, -1 ) ; 
+
+    std::cout 
+         << "U4VPrimaryGenerator::GeneratePrimaries_From_Photons" 
+         << " ph " << ( ph ? ph->sstr() : "-" ) 
+         << std::endl 
+         << " " << _DEBUG_GENIDX << " : " << DEBUG_GENIDX << " (when +ve, only generate tht photon idx)" 
+         << std::endl 
+         ; 
 
     if(ph == nullptr) std::cerr 
          << "U4VPrimaryGenerator::GeneratePrimaries : FATAL : NO PHOTONS " << std::endl 
@@ -143,8 +154,8 @@ inline void U4VPrimaryGenerator::GeneratePrimaries_From_Photons(G4Event* event, 
         sphoton* pp = (sphoton*)ph->bytes() ; 
         for(int i=0 ; i < ph->shape[0] ; i++)
         {
+            if( DEBUG_GENIDX > -1 && i != DEBUG_GENIDX ) continue ; 
             const sphoton& p = pp[i]; 
-            //if(i < 10) std::cout << "U4VPrimaryGenerator::GeneratePrimaries p.desc " << p.desc() << std::endl ; 
             G4PrimaryVertex* vertex = MakePrimaryVertexPhoton<sphoton>( p ); 
             event->AddPrimaryVertex(vertex);
         } 
@@ -154,6 +165,7 @@ inline void U4VPrimaryGenerator::GeneratePrimaries_From_Photons(G4Event* event, 
         sphotond* pp = (sphotond*)ph->bytes() ; 
         for(int i=0 ; i < ph->shape[0] ; i++)
         {
+            if( DEBUG_GENIDX > -1 && i != DEBUG_GENIDX ) continue ; 
             const sphotond& p = pp[i]; 
             G4PrimaryVertex* vertex = MakePrimaryVertexPhoton<sphotond>( p ); 
             event->AddPrimaryVertex(vertex);

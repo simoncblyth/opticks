@@ -132,7 +132,7 @@ def mpplt_focus(xlim, ylim):
 
 
 
-def pvplt_viewpoint(pl, reset=False):
+def pvplt_viewpoint(pl, reset=False, verbose=False):
     """
     https://github.com/pyvista/pyvista-support/issues/40
     
@@ -143,13 +143,13 @@ def pvplt_viewpoint(pl, reset=False):
     zoom = efloat_("ZOOM", "1")
 
     PARA = "PARA" in os.environ 
-    print("pvplt_viewpoint reset:%d PARA:%d " % (reset, PARA))
-    print(" eye  : %s " % str(eye) )
-    print(" look : %s " % str(look) )
-    print(" up   : %s " % str(up) )
-    print(" zoom : %s " % str(zoom) )
-
-    
+    if verbose:
+        print("pvplt_viewpoint reset:%d PARA:%d " % (reset, PARA))
+        print(" eye  : %s " % str(eye) )
+        print(" look : %s " % str(look) )
+        print(" up   : %s " % str(up) )
+        print(" zoom : %s " % str(zoom) )
+    pass
     if PARA:
         pl.camera.ParallelProjectionOn()
     pass
@@ -193,10 +193,12 @@ def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
     pl.add_lines( lpol, color=polcol ) 
 
 
-def pvplt_plotter(label="pvplt_plotter"):
-    print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
+def pvplt_plotter(label="pvplt_plotter", verbose=False):
+    if verbose:
+        print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
+    pass
     pl = pv.Plotter(window_size=SIZE*2 )  
-    pvplt_viewpoint(pl, reset=False)
+    pvplt_viewpoint(pl, reset=False, verbose=verbose)
 
     if not "NOGRID" in os.environ:
         pl.show_grid()

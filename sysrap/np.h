@@ -30,6 +30,14 @@ struct np
 
     template<typename T>
     static void Write(const char* path, const std::vector<int>& shape, const T* data, const char* descr="<f8" ); 
+
+    template<typename T>
+    static void Write(const char* dir, const char* name, const std::vector<int>& shape, const T* data, const char* descr="<f8" ); 
+
+    static std::string FormPath( const char* dir, const char* name ); 
+    static void WriteString( const char* dir, const char* name, const char* txt );
+
+
 }; 
 
 // NPU::_make_header
@@ -121,6 +129,8 @@ inline std::string np::_make_dict(const std::vector<int>& shape, const char* des
     return ss.str(); 
 } 
 
+
+
 // adapt from NP::save
 template<typename T>
 inline void np::Write(const char* path, const std::vector<int>& shape, const T* data, const char* descr ) 
@@ -133,6 +143,31 @@ inline void np::Write(const char* path, const std::vector<int>& shape, const T* 
     std::ofstream fpa(path, std::ios::out|std::ios::binary);
     fpa << hdr ; 
     fpa.write( (char*)data, arr_bytes );
+}
+
+template<typename T>
+inline void np::Write(const char* dir, const char* name, const std::vector<int>& shape, const T* data, const char* descr ) 
+{
+    std::string path = FormPath(dir, name); 
+    Write<T>( path.c_str(), shape, data, descr );
+}
+
+inline std::string np::FormPath( const char* dir, const char* name )
+{
+    std::stringstream ss ; 
+    if(dir) ss << dir << "/" ; 
+    if(name) ss << name ;    
+    std::string path = ss.str(); 
+    return path ; 
+}
+
+inline void np::WriteString( const char* dir, const char* name, const char* txt )
+{
+    std::string path = FormPath(dir, name); 
+    if(txt == nullptr) return ; 
+    std::ofstream fp(path.c_str(), std::ios::out);
+    fp << txt ; 
+    fp.close(); 
 }
 
 

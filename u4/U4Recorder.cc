@@ -70,7 +70,7 @@ const int U4Recorder::RERUN  = ssys::getenvint("U4Recorder_RERUN",-1) ;
 const bool U4Recorder::SEvt_NPFold_VERBOSE  = ssys::getenvbool("U4Recorder__SEvt_NPFold_VERBOSE") ; 
 const bool U4Recorder::PIDX_ENABLED = ssys::getenvbool("U4Recorder__PIDX_ENABLED") ; 
 const bool U4Recorder::EndOfRunAction_Simtrace = ssys::getenvbool("U4Recorder__EndOfRunAction_Simtrace") ; 
-const bool U4Recorder::DISABLE_UseGivenVelocity = ssys::getenvbool("U4Recorder__PreUserTrackingAction_Optical_DISABLE_UseGivenVelocity") ; 
+const int  U4Recorder::UseGivenVelocity_KLUDGE = ssys::getenvint(_UseGivenVelocity_KLUDGE, 0) ; 
 const char* U4Recorder::REPLICA_NAME_SELECT = ssys::getenvvar("U4Recorder__REPLICA_NAME_SELECT", "PMT") ;  
 
 
@@ -79,6 +79,17 @@ const int U4Recorder::EIDX = ssys::getenvint("EIDX",-1) ;
 const int U4Recorder::GIDX = ssys::getenvint("GIDX",-1) ; 
 
 std::string U4Recorder::Desc() // static
+{
+    std::stringstream ss ; 
+    ss << _UseGivenVelocity_KLUDGE << ":" << UseGivenVelocity_KLUDGE << "\n" 
+       << U4Version::Desc()
+       << Switches() 
+       << "\n" 
+       ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+std::string U4Recorder::DescFull() // static
 {
     std::stringstream ss ; 
     ss << "U4Recorder::Desc" << std::endl 
@@ -237,6 +248,9 @@ void U4Recorder::init_SEvt()
     NP::SetMeta<std::string>(sev->meta, "C4Version", "NOT-WITH_CUSTOM4" ); 
 #endif
 
+    NP::SetMeta<int>(sev->meta, _UseGivenVelocity_KLUDGE,  UseGivenVelocity_KLUDGE );  
+    NP::SetMeta<int>(sev->meta, "G4VERSION_NUMBER", G4VERSION_NUMBER );  
+
     LOG(LEVEL) << " sev " << std::hex << sev << std::dec ; 
     LOG(LEVEL) << "sev->meta[" << sev->meta << "]" ;
 
@@ -379,16 +393,17 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
     LOG(LEVEL) << "[" ; 
 
-    if(DISABLE_UseGivenVelocity)
+    if(UseGivenVelocity_KLUDGE == 1)
     {
-        LOG(LEVEL) << " DISABLE_UseGivenVelocity " ; 
-    }
-    else
-    {
-        LOG(LEVEL) << " APPLY UseGivenVelocity " ; 
+        LOG(LEVEL) << " YES:UseGivenVelocity_KLUDGE " ; 
         G4Track* _track = const_cast<G4Track*>(track) ; 
         _track->UseGivenVelocity(true); // notes/issues/Geant4_using_GROUPVEL_from_wrong_initial_material_after_refraction.rst
     }
+    else
+    {
+        LOG(LEVEL) << " ASIS: without UseGivenVelocity_KLUDGE " ; 
+    }
+
 
     spho ulabel = {} ; 
     PreUserTrackingAction_Optical_GetLabel(ulabel, track); 

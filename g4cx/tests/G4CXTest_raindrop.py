@@ -11,7 +11,7 @@ from opticks.sysrap.sevt import SEvt, SAB
 from opticks.ana.nbase import chi2_pvalue
 
 MODE = int(os.environ.get("MODE","3"))
-PICK = os.environ.get("PICK","A")
+PICK = os.environ.get("PICK","B")
 
 if MODE in [2,3]:
     try:
@@ -67,12 +67,10 @@ if __name__ == '__main__':
     for expr in EXPR:eprint(expr, locals(), globals() )
 
 
-    select = "WL"            ## select on wavelength to avoid unfilled zeros
-    select = "TO BT BT SA"   ## select on photon history
-    SELECT = os.environ.get("SELECT", select )  
-
-    context = "PICK=%s MODE=%d SELECT=\"%s\" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh " % (PICK, MODE, SELECT )
-    print(context)
+    #select = "WL"            ## select on wavelength to avoid unfilled zeros
+    #select = "TO BT BT SA"   ## select on photon history
+    select = "TO BT SA,TO BR BT SA" 
+    MSELECT = os.environ.get("SELECT", select )  
 
     sli = slice(0,100000)   # restrict to 1M to stay interactive
 
@@ -82,52 +80,75 @@ if __name__ == '__main__':
         e = ee.get(Q,None)
         if e is None:continue
 
-        if SELECT == "WL": 
-            sel = np.where(e.f.record[:,:,2,3] > 0) 
-            sel_p, sel_r = sel  # 2-tuple selecting photon and record points   
-            sel_p = sel_p[sli]
-            sel_r = sel_r[sli]
-        else:
-            sel_p = e.q_startswith(SELECT)  
-            sel_p = sel_p[sli]
+        for SELECT in MSELECT.split(","):
+            context = "PICK=%s MODE=%d SELECT=\"%s\" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh " % (Q, MODE, SELECT )
+            print(context)
+
+            if SELECT == "WL": 
+                sel = np.where(e.f.record[:,:,2,3] > 0) 
+                sel_p, sel_r = sel  # 2-tuple selecting photon and record points   
+                sel_p = sel_p[sli]
+                sel_r = sel_r[sli]
+            else:
+                sel_p = e.q_startswith(SELECT)  
+                sel_p = sel_p[sli]
             
-            SELECT_ELEM = SELECT.split()
-            SELECT_POINT = len(SELECT_ELEM)
+                SELECT_ELEM = SELECT.split()
+                SELECT_POINT = len(SELECT_ELEM)
             
-            sel_r = slice(0,SELECT_POINT)
-            r = e.f.record[sel_p,sel_r]  
+                sel_r = slice(0,SELECT_POINT)
+                r = e.f.record[sel_p,sel_r]  
 
-            for i in range(SELECT_POINT-1):
-                speed = speed_(r,i)
-                fmt = "speed min/max for : %d -> %d : %s -> %s : %7.3f %7.3f "
-                print(fmt % (i,i+1,SELECT_ELEM[i],SELECT_ELEM[i+1],speed.min(), speed.max()))
-            pass 
-        pass
+                if "SAVE_SEL" in os.environ:
+                    sel_dir = os.path.join(e.f.base, SELECT.replace(" ", "_") )
+                    if not os.path.isdir(sel_dir):
+                        os.makedirs(sel_dir)
+                    pass
+                    sel_path = os.path.join( sel_dir, "record.npy" )
+                    print("REC=%s ~/o/examples/UseGeometryShader/run.sh" % sel_dir) 
+                    np.save( sel_path, e.f.record[sel_p] )
+                pass
 
+                for i in range(SELECT_POINT-1):
+                    speed = speed_(r,i)
+                    speed_min = speed.min() if len(speed) > 0 else -1 
+                    speed_max = speed.max() if len(speed) > 0 else -1 
+                    fmt = "speed len/min/max for : %d -> %d : %s -> %s : %8d %7.3f %7.3f "
+                    print(fmt % (i,i+1,SELECT_ELEM[i],SELECT_ELEM[i+1],len(speed),speed_min, speed_max ))
+                pass
+                print("e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:%s " % e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE ) 
+                print("e.f.NPFold_meta.G4VERSION_NUMBER:%s " % e.f.NPFold_meta.G4VERSION_NUMBER )
+            pass
 
-        _pos = e.f.photon[sel_p,0,:3]
-        _beg = e.f.record[sel_p,0,0,:3]      ## begin positions 
-        _poi = e.f.record[sel_p,sel_r,0,:3]  ## all positions 
+            _pos = e.f.photon[sel_p,0,:3]        ## end position 
+ 
+            _beg = e.f.record[sel_p,0,0,:3]      ## begin positions 
+            _poi = e.f.record[sel_p,sel_r,0,:3]  ## all positions 
 
-        print("_pos.shape %s " % str(_pos.shape))
-        print("_beg.shape %s " % str(_beg.shape))
-        print("_poi.shape %s " % str(_poi.shape))
+            print("_pos.shape %s " % str(_pos.shape))
+            print("_beg.shape %s " % str(_beg.shape))
+            print("_poi.shape %s " % str(_poi.shape))
 
-        pos = _pos.reshape(-1,3)
-        beg = _beg.reshape(-1,3)
-        poi = _poi.reshape(-1,3)
+            pos = _pos.reshape(-1,3)
+            beg = _beg.reshape(-1,3)
+            poi = _poi.reshape(-1,3)
 
-        elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
-        label = context + " ## " + elabel
+            elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
+            label = context + " ## " + elabel
 
-        if MODE == 3 and not pv is None:
-            pl = pvplt_plotter(label)
-            pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
-            pl.add_points( poi, color="green", point_size=3.0 )
-            pl.add_points( pos, color="red", point_size=3.0 )
-            pl.add_points( beg, color="blue", point_size=3.0 )
-            pl.show_grid()
-            cp = pl.show()
+            if MODE == 3 and not pv is None:
+                if len(poi) == 0:
+                    print("FAILED TO SELECT ANY POI : SKIP PLOTTING" )
+                else:
+                    pl = pvplt_plotter(label)
+                    pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
+                    pl.add_points( poi, color="green", point_size=3.0 )
+                    pl.add_points( pos, color="red", point_size=3.0 )
+                    pl.add_points( beg, color="blue", point_size=3.0 )
+                    if not "NOGRID" in os.environ: pl.show_grid()
+                    cp = pl.show()
+                pass
+            pass
         pass
     pass
         

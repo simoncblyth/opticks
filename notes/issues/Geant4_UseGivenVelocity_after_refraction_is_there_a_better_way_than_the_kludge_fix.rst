@@ -413,15 +413,170 @@ Simple example is not exhibiting the issue::
 
 
 
+Compare with G4CXTest_raindrop_CPU.sh
+-----------------------------------------
+
+
+When disable fix with::
+
+    export U4Recorder__PreUserTrackingAction_Optical_DISABLE_UseGivenVelocity=1
+
+The wrong velocities are apparent::
+
+    ~/opticks/g4cx/tests/G4CXTest_raindrop_CPU.sh
+    ...
+
+    np.c_[np.unique(b.q, return_counts=True)] 
+    [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'2']
+     [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'12']
+     [b'TO BR BR BR BR BR BT SA                                                                         ' b'45']
+     [b'TO BR BR BR BR BT SA                                                                            ' b'109']
+     [b'TO BR BR BR BT SA                                                                               ' b'880']
+     [b'TO BR BR BT SA                                                                                  ' b'2465']
+     [b'TO BR BT SA                                                                                     ' b'46578']
+     [b'TO BT SA                                                                                        ' b'49909']]
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed min/max for : 0 -> 1 : TO -> BR : 224.901 224.901 
+    speed min/max for : 1 -> 2 : BR -> BT : 299.792 299.793 
+    speed min/max for : 2 -> 3 : BT -> SA : 224.901 224.901 
+    _pos.shape (46578, 3) 
+    _beg.shape (46578, 3) 
+
+
 ::
 
-    epsilon:opticks blyth$ SELECT="TO BR BR BR BR BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh ana
-    [from opticks.ana.p import * 
-    CSGFoundry.CFBase returning None, note:via NO envvars 
-    ERROR CSGFoundry.CFBase returned None OR non-existing CSGFoundry dir so cannot CSGFoundry.Load
-    ]from opticks.ana.p import * 
-    sevt.init W2M
-     None
+    epsilon:tests blyth$ BP="C4OpBoundaryProcess::DielectricDielectric" ~/o/g4cx/tests/G4CXTest_raindrop_CPU.sh 
+
+HMM, need a Custom4 and Geant4 debug versions for debugging to help
+
+
+Where G4ParticleChange::ProposeVelocity is called from 
+----------------------------------------------------------
+
+::
+
+    BP=G4ParticleChange::ProposeVelocity  ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    BP=G4ParticleChange::ProposeVelocity ~/o/g4cx/tests/G4CXTest_raindrop_CPU.sh 
+
+
+Checking where ProposeVelocity is called in pure optical test,
+only see head and tail of G4OpBoundaryProcess::PostStepDoIt.
+
+::
+
+    lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x000000010214fad1 libG4processes.dylib`G4ParticleChange::ProposeVelocity(this=0x000000010714dae8, finalVelocity=299.79245800000001) at G4ParticleChange.icc:57
+        frame #1: 0x0000000103541e2b libG4processes.dylib`G4OpBoundaryProcess::PostStepDoIt(this=0x000000010714dad0, aTrack=0x0000000114262c80, aStep=0x000000010712b1c0) at G4OpBoundaryProcess.cc:546
+         ....
+
+        frame #10: 0x0000000101b7ecd1 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010712ad80, n_event=1, macroFile=0x0000000000000000, n_select=-1) at G4RunManager.cc:273
+        frame #11: 0x0000000100005c63 OpticalAppTest`OpticalApp::Main() at OpticalApp.h:90
+        frame #12: 0x0000000100007e04 OpticalAppTest`main at OpticalAppTest.cc:4
+        frame #13: 0x00007fff50548015 libdyld.dylib`start + 1
+    (lldb) p theStatus
+    error: use of undeclared identifier 'theStatus'
+    (lldb) f 1
+    frame #1: 0x0000000103541e2b libG4processes.dylib`G4OpBoundaryProcess::PostStepDoIt(this=0x000000010714dad0, aTrack=0x0000000114262c80, aStep=0x000000010712b1c0) at G4OpBoundaryProcess.cc:546
+       543 	           G4MaterialPropertyVector* groupvel =
+       544 	           Material2->GetMaterialPropertiesTable()->GetProperty(kGROUPVEL);
+       545 	           G4double finalVelocity = groupvel->Value(thePhotonMomentum);
+    -> 546 	           aParticleChange.ProposeVelocity(finalVelocity);
+       547 	        }
+       548 	
+       549 	        if ( theStatus == Detection && fInvokeSD ) InvokeSD(pStep);
+    (lldb) p theStatus
+    (G4OpBoundaryProcessStatus) $0 = FresnelRefraction
+    (lldb) 
+
+
+
+HUH: 1042 G4CXTest_raindrop.sh needs kludge to get expected by OpticalApp does not, what gives ? 
+-----------------------------------------------------------------------------------------------------
+
+Without kludge, goes wrong::
+
+    [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'2']
+     [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'12']
+     [b'TO BR BR BR BR BR BT SA                                                                         ' b'45']
+     [b'TO BR BR BR BR BT SA                                                                            ' b'109']
+     [b'TO BR BR BR BT SA                                                                               ' b'880']
+     [b'TO BR BR BT SA                                                                                  ' b'2465']
+     [b'TO BR BT SA                                                                                     ' b'46578']
+     [b'TO BT SA                                                                                        ' b'49909']]
+    PICK=B MODE=3 SELECT="TO BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed len/min/max for : 0 -> 1 : TO -> BT :    49909 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BT -> SA :    49909 224.901 224.901 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1042 
+    _pos.shape (49909, 3) 
+
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed len/min/max for : 0 -> 1 : TO -> BR :    46578 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :    46578 299.792 299.793 
+    speed len/min/max for : 2 -> 3 : BT -> SA :    46578 224.901 224.901 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1042 
+    _pos.shape (46578, 3) 
+
+
+With kludge, get expected::
+
+    np.c_[np.unique(b.q, return_counts=True)] 
+    [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'2']
+     [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'12']
+     [b'TO BR BR BR BR BR BT SA                                                                         ' b'45']
+     [b'TO BR BR BR BR BT SA                                                                            ' b'109']
+     [b'TO BR BR BR BT SA                                                                               ' b'880']
+     [b'TO BR BR BT SA                                                                                  ' b'2465']
+     [b'TO BR BT SA                                                                                     ' b'46578']
+     [b'TO BT SA                                                                                        ' b'49909']]
+    PICK=B MODE=3 SELECT="TO BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed len/min/max for : 0 -> 1 : TO -> BT :    49909 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BT -> SA :    49909 299.792 299.793 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:1 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1042 
+    _pos.shape (49909, 3) 
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    speed len/min/max for : 0 -> 1 : TO -> BR :    46578 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :    46578 224.901 224.901 
+    speed len/min/max for : 2 -> 3 : BT -> SA :    46578 299.792 299.793 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:1 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1042 
+    _pos.shape (46578, 3) 
+
+
+
+
+
+
+
+
+Without::
+
+    [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'3']
+     [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'11']
+     [b'TO BR BR BR BR BR BT SA                                                                         ' b'38']
+     [b'TO BR BR BR BR BT SA                                                                            ' b'105']
+     [b'TO BR BR BR BT SA                                                                               ' b'868']
+     [b'TO BR BR BT SA                                                                                  ' b'2419']
+     [b'TO BR BT SA                                                                                     ' b'46620']
+     [b'TO BT SA                                                                                        ' b'49936']]
+    SELECT="TO BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    speed len/min/max for : 0 -> 1 : TO -> BT :   49936/224.901/224.901 
+    speed len/min/max for : 1 -> 2 : BT -> SA :   49936/299.792/299.792 
+    source:OpticalApp::desc
+    OpticalApp__PreUserTrackingAction_UseGivenVelocity_KLUDGE:0
+    SELECT="TO BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    speed len/min/max for : 0 -> 1 : TO -> BR :   46620/224.901/224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :   46620/224.901/224.901 
+    speed len/min/max for : 2 -> 3 : BT -> SA :   46620/299.792/299.792 
+    source:OpticalApp::desc
+    OpticalApp__PreUserTrackingAction_UseGivenVelocity_KLUDGE:0
+
+
+With kludge, makes no difference for OpticalApp::
+
     np.c_[np.unique(b.q, return_counts=True)] 
     [[b'TO BR BR BR BR BR BR BR BT SA                                                                   ' b'3']
      [b'TO BR BR BR BR BR BR BT SA                                                                      ' b'11']
@@ -431,14 +586,16 @@ Simple example is not exhibiting the issue::
      [b'TO BR BR BT SA                                                                                  ' b'2419']
      [b'TO BR BT SA                                                                                     ' b'46620']
      [b'TO BT SA                                                                                        ' b'49936']]
-    SELECT="TO BR BR BR BR BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
-    speed len/min/max for : 0 -> 1 : TO -> BR :      38/224.901/224.901 
-    speed len/min/max for : 1 -> 2 : BR -> BR :      38/224.901/224.901 
-    speed len/min/max for : 2 -> 3 : BR -> BR :      38/224.901/224.901 
-    speed len/min/max for : 3 -> 4 : BR -> BR :      38/224.901/224.901 
-    speed len/min/max for : 4 -> 5 : BR -> BR :      38/224.901/224.901 
-    speed len/min/max for : 5 -> 6 : BR -> BT :      38/224.901/224.901 
-    speed len/min/max for : 6 -> 7 : BT -> SA :      38/299.792/299.792 
-
+    SELECT="TO BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    speed len/min/max for : 0 -> 1 : TO -> BT :   49936/224.901/224.901 
+    speed len/min/max for : 1 -> 2 : BT -> SA :   49936/299.792/299.792 
+    source:OpticalApp::desc
+    OpticalApp__PreUserTrackingAction_UseGivenVelocity_KLUDGE:1
+    SELECT="TO BR BT SA" ~/o/examples/Geant4/OpticalApp/OpticalAppTest.sh
+    speed len/min/max for : 0 -> 1 : TO -> BR :   46620/224.901/224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :   46620/224.901/224.901 
+    speed len/min/max for : 2 -> 3 : BT -> SA :   46620/299.792/299.792 
+    source:OpticalApp::desc
+    OpticalApp__PreUserTrackingAction_UseGivenVelocity_KLUDGE:1
 
 

@@ -45,6 +45,7 @@ struct OpticalApp
     public G4VUserPrimaryGeneratorAction,
     public G4VUserDetectorConstruction
 {
+    int                   UseGivenVelocity_KLUDGE ; 
     OpticalRecorder*      fRecorder ; 
 
     static G4Material* Vacuum(); 
@@ -54,6 +55,8 @@ struct OpticalApp
 
     G4VPhysicalVolume* Construct(); 
 
+    static int getenvint(const char* ekey, int fallback); 
+    static constexpr const char* _DEBUG_GENIDX = "OpticalApp__GeneratePrimaries_DEBUG_GENIDX" ;
     void GeneratePrimaries(G4Event* evt); 
     static G4PrimaryVertex* MakePrimaryVertexPhoton(int idx, int num); 
 
@@ -63,15 +66,20 @@ struct OpticalApp
     void BeginOfEventAction(const G4Event*);
     void EndOfEventAction(const G4Event*);
 
-    void PreUserTrackingAction(const G4Track*);
     void PostUserTrackingAction(const G4Track*);
-
     void UserSteppingAction(const G4Step*);
+
+    static constexpr const char* _UseGivenVelocity_KLUDGE = "OpticalApp__PreUserTrackingAction_UseGivenVelocity_KLUDGE" ;
+    void PreUserTrackingAction(const G4Track*);
+    static bool IsOptical(const G4Track* trk);  
 
     static G4RunManager* InitRunManager(); 
     static int Main(); 
+
+
     OpticalApp(G4RunManager* runMgr); 
     virtual ~OpticalApp(); 
+    std::string desc() const ; 
 };
 
 
@@ -91,8 +99,19 @@ int OpticalApp::Main()  // static
     return 0 ; 
 }
 
+
+
+int OpticalApp::getenvint(const char* ekey, int fallback)
+{
+    char* val = getenv(ekey);
+    return val ? std::atoi(val) : fallback ; 
+}
+
+
+
 OpticalApp::OpticalApp(G4RunManager* runMgr)
     :
+    UseGivenVelocity_KLUDGE(getenvint(_UseGivenVelocity_KLUDGE, 0 )),
     fRecorder(new OpticalRecorder)
 {
     runMgr->SetUserInitialization((G4VUserDetectorConstruction*)this);
@@ -102,12 +121,27 @@ OpticalApp::OpticalApp(G4RunManager* runMgr)
     runMgr->SetUserAction((G4UserTrackingAction*)this);
     runMgr->SetUserAction((G4UserSteppingAction*)this);
     runMgr->Initialize(); 
+
+    fRecorder->desc = desc(); 
 }
 
 OpticalApp::~OpticalApp()
 { 
     G4GeometryManager::GetInstance()->OpenGeometry();
 }
+
+std::string OpticalApp::desc() const
+{
+    std::stringstream ss ; 
+    ss 
+       << "source:OpticalApp::desc\n"  
+       << _UseGivenVelocity_KLUDGE << ":" << UseGivenVelocity_KLUDGE
+       << "\n"
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 
@@ -204,6 +238,7 @@ G4VPhysicalVolume* OpticalApp::Construct()
 }  
 
 
+
 /**
 OpticalApp::GeneratePrimaries
 ------------------------------------
@@ -214,9 +249,20 @@ Simplified U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
 
 void OpticalApp::GeneratePrimaries(G4Event* event)
 {  
+    int DEBUG_GENIDX = getenvint(_DEBUG_GENIDX, -1 ) ;
     int ni = OpticalRecorder::MAX_PHOTON ; 
+
+    std::cout 
+        << "OpticalApp::GeneratePrimaries"
+        << " ni " << ni
+        << " " << _DEBUG_GENIDX << " : " << DEBUG_GENIDX
+        << " (when > -1 gen only that idx) "
+        << "\n"
+        ;
+
     for(int i=0 ; i < ni ; i++)
     {
+        if( DEBUG_GENIDX > -1 && i != DEBUG_GENIDX ) continue ;
         G4PrimaryVertex* vertex = MakePrimaryVertexPhoton(i, ni) ; 
         event->AddPrimaryVertex(vertex);
     }
@@ -264,8 +310,18 @@ void OpticalApp::BeginOfRunAction(const G4Run* run){         fRecorder->BeginOfR
 void OpticalApp::EndOfRunAction(const G4Run* run){           fRecorder->EndOfRunAction(run) ; }          
 void OpticalApp::BeginOfEventAction(const G4Event* evt){     fRecorder->BeginOfEventAction(evt) ; } 
 void OpticalApp::EndOfEventAction(const G4Event* evt){       fRecorder->EndOfEventAction(evt) ; }      
-void OpticalApp::PreUserTrackingAction(const G4Track* trk){  fRecorder->PreUserTrackingAction(trk) ; }
 void OpticalApp::PostUserTrackingAction(const G4Track* trk){ fRecorder->PostUserTrackingAction(trk) ; }
 void OpticalApp::UserSteppingAction(const G4Step* stp){      fRecorder->UserSteppingAction(stp) ; }        
 
+bool OpticalApp::IsOptical(const G4Track* trk) // static 
+{
+    return trk->GetDefinition() == G4OpticalPhoton::OpticalPhotonDefinition() ;
+}
+void OpticalApp::PreUserTrackingAction(const G4Track* trk)
+{  
+    assert( IsOptical(trk) ); 
+    std::cout << _UseGivenVelocity_KLUDGE << " : " << UseGivenVelocity_KLUDGE << "\n" ; 
+    if(UseGivenVelocity_KLUDGE == 1 ) const_cast<G4Track*>(trk)->UseGivenVelocity(true);  
+    fRecorder->PreUserTrackingAction(trk) ; 
+}
 

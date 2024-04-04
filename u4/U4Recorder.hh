@@ -50,8 +50,8 @@ struct U4_API U4Recorder
     static const bool SEvt_NPFold_VERBOSE ; 
     static const bool PIDX_ENABLED ; 
     static const bool EndOfRunAction_Simtrace ; 
-    static const bool DISABLE_UseGivenVelocity ;
-
+    static const int  UseGivenVelocity_KLUDGE ;
+    static constexpr const char* _UseGivenVelocity_KLUDGE = "U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE" ;
 
     static const char* REPLICA_NAME_SELECT ; 
     static const int PIDX ;   // used to control debug printout for idx 
@@ -59,6 +59,7 @@ struct U4_API U4Recorder
     static const int GIDX ; 
 
     static std::string Desc(); 
+    static std::string DescFull(); 
     static std::string Switches(); 
     static std::string EnabledLabel(); 
     static bool Enabled(const spho& label); 

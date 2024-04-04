@@ -129,6 +129,7 @@ struct OpticalRecorder
 
     double* pp = nullptr ; 
     uint64_t* qq = nullptr ; 
+    std::string desc ; 
 
 }; 
 
@@ -359,10 +360,12 @@ void OpticalRecorder::EndOfEventAction(const G4Event* evt)
     std::vector<int> qq_shape = { MAX_PHOTON, 2, 2 } ; 
     np::Write( FOLD, "seq.npy",  qq_shape, qq, "<u8" ); 
 
+    if(!desc.empty()) np::WriteString( FOLD, "NPFold_meta.txt", desc.c_str() ); 
+
     clear(); 
 }
 void OpticalRecorder::PreUserTrackingAction(const G4Track* trk )
-{  
+{ 
     trk_idx = TrackIdx(trk) ;
     point_idx = 0 ;
  

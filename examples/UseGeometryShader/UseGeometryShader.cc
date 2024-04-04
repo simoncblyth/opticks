@@ -30,7 +30,7 @@ TODO:
 
 3. bring back seqhis photon history selection 
 
-4. rotation 
+4. DONE: rotation 
 
 **/
 
@@ -54,7 +54,6 @@ TODO:
 
 int main(int argc, char** argv)
 {
-    //const char* RECORD_PATH = "$RECORD_FOLD/rec.npy" ; // expect shape like (10000, 10, 2, 4) of type np.int16 [NO LONGER USED]
     const char* RECORD_PATH = "$RECORD_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
     NP* _a = NP::Load(RECORD_PATH) ;   
     NP* a = NP::MakeNarrowIfWide(_a) ; 

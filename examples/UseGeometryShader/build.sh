@@ -92,10 +92,12 @@ mkdir -p $bdir
 
 sdir=$(pwd)
 
-shader=rec_flying_point
+#shader=rec_flying_point
+shader=rec_flying_point_persist
 #shader=pos
 SHADER=${SHADER:-$shader}
 export SHADER_FOLD=$sdir/$SHADER
+#export SHADER_FOLD=$SHADER
 
 record_fold=/tmp/sphoton_test
 export RECORD_FOLD=${RECORD_FOLD:-$record_fold}

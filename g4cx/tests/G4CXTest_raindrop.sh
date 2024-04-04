@@ -40,8 +40,7 @@ export U4VolumeMaker_RaindropRockAirWater_MATS=VACUUM,G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Box  # default:Orb  (Box also impl) 
 
-## looking for TIR velocity issue 
-#export U4Recorder__PreUserTrackingAction_Optical_DISABLE_UseGivenVelocity=1 
+#export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1 
 
 
 export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
@@ -57,7 +56,12 @@ num=H1
 NUM=${NUM:-$num}
 
 export OPTICKS_NUM_PHOTON=$NUM   ## supports comma delimited values
+
 export OPTICKS_RUNNING_MODE="SRM_TORCH"
+
+#export U4VPrimaryGenerator__GeneratePrimaries_From_Photons_DEBUG_GENIDX=50000
+# for DEBUG_GENIDX > -1 will only generate one photon : for debugging purposes 
+
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then  
     #export SEvent_MakeGenstep_num_ph=$NUM   ## NO LONGER USED ? 
@@ -168,6 +172,8 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
+    export SAVE_SEL=1
+ 
     ${IPYTHON:-ipython} --pdb -i $script 
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error with script $script && exit 4
 fi 

@@ -16,14 +16,16 @@ view matrix to fill frame as needed for the provided center_extent::
     REC=0 ADHOC=0.5 T0=0 T1=10 SHADER=rec_flying_point ~/o/examples/UseGeometryShader/run.sh
     REC=0                      SHADER=rec_flying_point ~/o/examples/UseGeometryShader/run.sh
 
+
+    REC=/data/blyth/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000/TO_BT_SA ~/o/examples/UseGeometryShader/run.sh
+
+
 Attempt to investigate this in the below inconclusive so far::
 
    ~/o/sysrap/tests/SGLM_frame_targetting_test.sh
 
 
 What is the output of SGLM actually used by OpenGL ?
-
-
 
 
 TODO: polz colored line output, like with old Opticks 
@@ -41,10 +43,9 @@ case $REC in
  1) fold=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p001 ;;
  2) fold=/data/blyth/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000 ;;
  3) fold=/tmp/OpticalAppTest ;;
+ *) fold=$REC ;;
 esac
-
 echo $BASH_SOURCE REC $REC fold $fold
-
 export RECORD_FOLD=$fold
 $DIR/build.sh run
 
