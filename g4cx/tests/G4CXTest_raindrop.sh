@@ -41,8 +41,18 @@ export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Box  # default:Orb  (Box also impl) 
 
 #export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1 
+export U4Physics__ConstructOp_OpBoundaryProcess_LASTPOST=1
 
 
+if [ "$U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE" == "1" ]; then
+    version=1 
+else
+    version=0 
+fi 
+
+export VERSION=$version  # used in the SEvt output directory 
+
+#export Local_DsG4Scintillation_DISABLE=1
 export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
 
 if [ -n "$CVD" ]; then 
@@ -58,10 +68,6 @@ NUM=${NUM:-$num}
 export OPTICKS_NUM_PHOTON=$NUM   ## supports comma delimited values
 
 export OPTICKS_RUNNING_MODE="SRM_TORCH"
-
-#export U4VPrimaryGenerator__GeneratePrimaries_From_Photons_DEBUG_GENIDX=50000
-# for DEBUG_GENIDX > -1 will only generate one photon : for debugging purposes 
-
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then  
     #export SEvent_MakeGenstep_num_ph=$NUM   ## NO LONGER USED ? 
@@ -108,7 +114,9 @@ export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$mode} # configure what to gathe
 tmpbase=${TMP:-/tmp/$USER/opticks} 
 evtfold=$tmpbase/GEOM/$GEOM
 
-export VERSION=0  # used in the SEvt output directory 
+
+
+
 
 # THESE ARE THE OLD FOLDR PATHS
 #export AFOLD=$evtfold/$bin/ALL$VERSION/p001 
@@ -146,6 +154,15 @@ defarg="info_run_ana"
 arg=${1:-$defarg}
 
 [ -n "$BP" ] && echo $BASH_SOURCE : override arg to info_dbg as BP $BP is defined && arg=info_dbg 
+
+if [ -n "$BP" ]; then 
+   DEBUG_GENIDX=50000 
+   export U4VPrimaryGenerator__GeneratePrimaries_From_Photons_DEBUG_GENIDX=$DEBUG_GENIDX
+   # for DEBUG_GENIDX > -1 will only generate one photon : for debugging purposes 
+   echo $BASH_SOURCE :  DEBUG_GENIDX $DEBUG_GENIDX OPTICKS_NUM_PHOTON $OPTICKS_NUM_PHOTON
+fi 
+
+
 
 vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD evtfold CVD CUDA_VISIBLE_DEVICES BP arg" 
 

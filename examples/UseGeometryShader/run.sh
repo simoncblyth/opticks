@@ -34,18 +34,7 @@ TODO: polz colored line output, like with old Opticks
 EOU
 }
 
-DIR=$(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath $BASH_SOURCE))
 
-rec=2
-REC=${REC:-$rec}
-case $REC in
- 0) fold=/tmp/sphoton_test ;;
- 1) fold=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p001 ;;
- 2) fold=/data/blyth/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000 ;;
- 3) fold=/tmp/OpticalAppTest ;;
- *) fold=$REC ;;
-esac
-echo $BASH_SOURCE REC $REC fold $fold
-export RECORD_FOLD=$fold
-$DIR/build.sh run
+./build.sh run
 

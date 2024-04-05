@@ -982,7 +982,9 @@ float SGLM::get_escale_() const
 
 glm::mat4 SGLM::get_escale() const 
 {
-    float f = get_escale_(); 
+    float f = get_escale_();
+    //std::cout << "SGLM::get_escale f " << f << "\n" ; 
+ 
     glm::vec3 sc(f,f,f) ; 
     glm::mat4 esc = glm::scale(glm::mat4(1.f), sc);
     return esc ; 
@@ -992,18 +994,26 @@ glm::mat4 SGLM::get_escale() const
 SGLM::initELU
 -----------------
 
-Uses escale matrix (which typically comes from extent fr.ce.w)
-to convert the inputs (EYE, LOOK, UP) in units of extent 
-into world frame by applying the extent with the escale matrix
-to give vec3 : eye,look,up
+Uses escale matrix (which typically comes from extent fr.ce.w), eg with extent of 9.0::
 
+    9.0   0.0    0.0    0.0
+    0.0   9.0    0.0    0.0
+    0.0   0.0    9.0    0.0
+    0.0   0.0    0.0    1.0
 
-Default inputs UP,LOOK,EYE::
+to convert the inputs (EYE, LOOK, UP) in units of extent, eg defaults::
 
     UP     (0,0,1,0)   
     LOOK   (0,0,0,1) 
     EYE    (-1,-1,0,1)
     "GAZE" (1,1,0,0) 
+
+into world frame by applying the extent with the escale matrix
+to give vec3 : up,look,eye  eg::
+
+    up     (0,0,9)
+    look   (0,0,0)
+    eye    (0,0,9)
 
 The advantage of using units of extent for the view inputs
 is that the view will then often provide something visible 
@@ -1019,10 +1029,13 @@ A: This is for consistency with sframe.h transforms which are used when
 void SGLM::initELU() 
 {
     glm::mat4 escale = get_escale(); 
+    // std::cout << "SGLM::initELU escale " << glm::to_string(escale) << "\n" ; 
 
     eye  = glm::vec3( model2world * escale * EYE ) ; 
     look = glm::vec3( model2world * escale * LOOK ) ; 
     up   = glm::vec3( model2world * escale * UP ) ; 
+
+
 }
 
 /**

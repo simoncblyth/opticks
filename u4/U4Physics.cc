@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "ssys.h"
 #include "U4Physics.hh"
 #include "U4OpBoundaryProcess.h"
@@ -30,7 +31,17 @@ U4Physics::U4Physics()
     fBoundary(nullptr),
     fFastSim(nullptr)
 {
+    Cerenkov_DISABLE = EInt(_Cerenkov_DISABLE, "0") ; 
+    Scintillation_DISABLE = EInt(_Scintillation_DISABLE, "0" );
+    OpAbsorption_DISABLE = EInt(_OpAbsorption_DISABLE, "0") ; 
+    OpRayleigh_DISABLE = EInt(_OpRayleigh_DISABLE, "0") ; 
+    OpBoundaryProcess_DISABLE = EInt(_OpBoundaryProcess_DISABLE, "0") ; 
+    OpBoundaryProcess_LASTPOST = EInt(_OpBoundaryProcess_LASTPOST, "0") ; 
+    FastSim_ENABLE = EInt(_FastSim_ENABLE, "0") ; 
 }
+
+
+
 
 #include "G4BosonConstructor.hh"
 #include "G4LeptonConstructor.hh"
@@ -141,6 +152,24 @@ void U4Physics::ConstructEM()
 #include "ShimG4OpRayleigh.hh"
 
 
+std::string U4Physics::desc() const
+{
+    std::stringstream ss ; 
+    ss
+        << "U4Physics::desc" << "\n"      
+        << std::setw(60) << _Cerenkov_DISABLE           << " : " << Cerenkov_DISABLE << "\n"
+        << std::setw(60) << _Scintillation_DISABLE      << " : " << Scintillation_DISABLE << "\n"
+        << std::setw(60) << _OpAbsorption_DISABLE       << " : " << OpAbsorption_DISABLE << "\n" 
+        << std::setw(60) << _OpRayleigh_DISABLE         << " : " << OpRayleigh_DISABLE << "\n"
+        << std::setw(60) << _OpBoundaryProcess_DISABLE  << " : " << OpBoundaryProcess_DISABLE << "\n"
+        << std::setw(60) << _OpBoundaryProcess_LASTPOST << " : " << OpBoundaryProcess_LASTPOST << "\n"
+        << std::setw(60) << _FastSim_ENABLE             << " : " << FastSim_ENABLE << "\n"
+        ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 std::string U4Physics::Desc()  // static 
 {
     std::stringstream ss ; 
@@ -152,6 +181,9 @@ std::string U4Physics::Desc()  // static
     std::string str = ss.str();
     return str ;
 }
+
+
+
 
 std::string U4Physics::Switches()  // static 
 {
@@ -197,9 +229,28 @@ int U4Physics::EInt(const char* key, const char* fallback)  // static
     return val ; 
 }
 
+
+/**
+U4Physics::ConstructOp
+-----------------------
+
+Scintillation needs to come after absorption for reemission
+to sometimes happen for fStopAndKill 
+
+But suspect coming after boundary may be causing 
+the need for UseGivenVelocity_KLUDGE to get velocity and times correct see::
+
+    ~/o/notes/issues/Geant4_UseGivenVelocity_after_refraction_is_there_a_better_way_than_the_kludge_fix.rst 
+
+
+**/
+
+
 void U4Physics::ConstructOp()
 {
-    if(EInt("Local_G4Cerenkov_modified_DISABLE", "0") == 0 )
+    LOG(info) << desc() ;  
+
+    if(Cerenkov_DISABLE == 0)
     {
         fCerenkov = new Local_G4Cerenkov_modified ;
         fCerenkov->SetMaxNumPhotonsPerStep(10000);
@@ -208,27 +259,18 @@ void U4Physics::ConstructOp()
         fCerenkov->SetVerboseLevel(EInt("Local_G4Cerenkov_modified_verboseLevel", "0"));
     }
 
-    if(EInt("Local_DsG4Scintillation_DISABLE", "0") == 0 )
+    if(Scintillation_DISABLE == 0)
     {
         fScintillation = new Local_DsG4Scintillation(EInt("Local_DsG4Scintillation_opticksMode","0")) ; 
         fScintillation->SetTrackSecondariesFirst(true);
     }
 
-    if(EInt("G4FastSimulationManagerProcess_ENABLE", "0") == 1 )
+    if(FastSim_ENABLE == 1 )
     {
         fFastSim  = new G4FastSimulationManagerProcess("fast_sim_man");
     }
 
-
-    int G4OpAbsorption_DISABLE = EInt("G4OpAbsorption_DISABLE", "0") ; 
-    int G4OpRayleigh_DISABLE = EInt("G4OpRayleigh_DISABLE", "0") ; 
-    int G4OpBoundaryProcess_DISABLE = EInt("G4OpBoundaryProcess_DISABLE", "0") ; 
-
-    LOG(LEVEL) << "G4OpAbsorption_DISABLE      : " << G4OpAbsorption_DISABLE ;  
-    LOG(LEVEL) << "G4OpRayleigh_DISABLE        : " << G4OpRayleigh_DISABLE ;  
-    LOG(LEVEL) << "G4OpBoundaryProcess_DISABLE : " << G4OpBoundaryProcess_DISABLE ;  
-
-    if(G4OpAbsorption_DISABLE == 0)
+    if(OpAbsorption_DISABLE == 0)
     {
 #ifdef DEBUG_TAG
         fAbsorption = new ShimG4OpAbsorption();
@@ -237,7 +279,7 @@ void U4Physics::ConstructOp()
 #endif
     }
 
-    if(G4OpRayleigh_DISABLE == 0)
+    if(OpRayleigh_DISABLE == 0)
     {
 #ifdef DEBUG_TAG
         fRayleigh = new ShimG4OpRayleigh();
@@ -246,7 +288,7 @@ void U4Physics::ConstructOp()
 #endif
     }
 
-    if(G4OpBoundaryProcess_DISABLE == 0)
+    if(OpBoundaryProcess_DISABLE == 0)
     {
         fBoundary = CreateBoundaryProcess(); 
         LOG(info) << " fBoundary " << fBoundary ; 
@@ -258,9 +300,11 @@ void U4Physics::ConstructOp()
   particleIterator->reset();
   while( (*particleIterator)() )
   {
-      G4ParticleDefinition* particle = particleIterator->value();
+        G4ParticleDefinition* particle = particleIterator->value();
         G4ProcessManager* pmanager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
+
+        std::cout << "U4Physics::ConstructOp " << particleName << "\n" ; 
 
         if ( fCerenkov && fCerenkov->IsApplicable(*particle)) 
         {
@@ -268,7 +312,7 @@ void U4Physics::ConstructOp()
             pmanager->SetProcessOrdering(fCerenkov,idxPostStep);
         }
 
-        if ( fScintillation && fScintillation->IsApplicable(*particle)) 
+        if ( fScintillation && fScintillation->IsApplicable(*particle) && particleName != "opticalphoton") 
         {
             pmanager->AddProcess(fScintillation);
             pmanager->SetProcessOrderingToLast(fScintillation, idxAtRest);
@@ -277,11 +321,17 @@ void U4Physics::ConstructOp()
 
         if (particleName == "opticalphoton") 
         {
-            if(fAbsorption) pmanager->AddDiscreteProcess(fAbsorption);
-            if(fRayleigh)   pmanager->AddDiscreteProcess(fRayleigh);
-            if(fBoundary)   pmanager->AddDiscreteProcess(fBoundary);
-            if(fFastSim)    pmanager->AddDiscreteProcess(fFastSim); 
+            if(fAbsorption)    pmanager->AddDiscreteProcess(fAbsorption);
+            if(fRayleigh)      pmanager->AddDiscreteProcess(fRayleigh);
+
+            if(fScintillation) pmanager->AddProcess(fScintillation); // reemission needs to be after fAbsorption 
+            // notes/issues/Geant4_UseGivenVelocity_KLUDGE_may_be_avoided_by_doing_PostStepDoIt_for_boundary_after_scintillation
+
+            if(fBoundary)      pmanager->AddDiscreteProcess(fBoundary);
+            if(fFastSim)       pmanager->AddDiscreteProcess(fFastSim); 
         }
+
+
     }
 }
 

@@ -52,43 +52,45 @@ TODO:
 #include "NP.hh"
 
 
+void ADHOC_position_scale( NP* a )
+{
+    float ADHOC = ssys::getenvfloat("ADHOC", 1.f) ; 
+    std::cout << "ADHOC_position_scale : " << ADHOC << std::endl ;   
+    if(ADHOC == 1.f) return ; 
+
+    float* aa = a->values<float>(); 
+    assert( a->shape.size() == 4 ); 
+    int ni = a->shape[0] ; 
+    int nj = a->shape[1] ; 
+    int nk = a->shape[2] ; 
+    int nl = a->shape[3] ; 
+
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    for(int k=0 ; k < nk ; k++)
+    for(int l=0 ; l < nl ; l++)
+    {
+        int idx = i*nj*nk*nl + j*nk*nl + k*nl + l ;
+        if( k == 0 && l < 3 ) aa[idx] = ADHOC*aa[idx] ;  
+    }
+}
+
+
 int main(int argc, char** argv)
 {
     const char* RECORD_PATH = "$RECORD_FOLD/record.npy" ; // expect shape like (10000, 10, 4, 4) of type np.float32
     NP* _a = NP::Load(RECORD_PATH) ;   
     NP* a = NP::MakeNarrowIfWide(_a) ; 
 
-
     if(a==nullptr) std::cout << "FAILED to load RECORD_PATH [" << RECORD_PATH << "]" << std::endl ;
     if(a==nullptr) std::cout << " CREATE IT WITH [TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh] " << std::endl ; 
     assert(a); 
 
-
-    float ADHOC = ssys::getenvfloat("ADHOC", 1.f) ; 
-    std::cout << "ADHOC : " << ADHOC << std::endl ;   
-    if(ADHOC!=1.f)
-    {
-        float* aa = a->values<float>(); 
-        assert( a->shape.size() == 4 ); 
-        int ni = a->shape[0] ; 
-        int nj = a->shape[1] ; 
-        int nk = a->shape[2] ; 
-        int nl = a->shape[3] ; 
-
-        for(int i=0 ; i < ni ; i++)
-        for(int j=0 ; j < nj ; j++)
-        for(int k=0 ; k < nk ; k++)
-        for(int l=0 ; l < nl ; l++)
-        {
-            int idx = i*nj*nk*nl + j*nk*nl + k*nl + l ;
-            if( k == 0 && l < 3 ) aa[idx] = ADHOC*aa[idx] ;  
-        }
-    }
-
-
     assert(a->shape.size() == 4);   
     bool is_compressed = a->ebyte == 2 ; 
     assert( is_compressed == false ); 
+
+    //ADHOC_position_scale(a); 
 
     GLint   a_first = 0 ; 
     GLsizei a_count = a->shape[0]*a->shape[1] ;   // all step points across all photon
@@ -148,7 +150,6 @@ int main(int argc, char** argv)
         << std::endl 
         ;
   
-
     glm::vec4 Param(t0, t1, (t1-t0)/ts, t0);    // t0, t1, dt, tc 
 
     sfr fr ; 

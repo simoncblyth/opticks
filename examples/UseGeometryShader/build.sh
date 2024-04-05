@@ -99,17 +99,31 @@ SHADER=${SHADER:-$shader}
 export SHADER_FOLD=$sdir/$SHADER
 #export SHADER_FOLD=$SHADER
 
-record_fold=/tmp/sphoton_test
+
+rec=0
+REC=${REC:-$rec}
+case $REC in
+ 0) record_fold=/tmp/sphoton_test ;;
+ 1) record_fold=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p001 ;;
+ 2) record_fold=/data/blyth/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000 ;;
+ 3) record_fold=/tmp/OpticalAppTest ;;
+ *) record_fold=$REC ;;
+esac
+echo $BASH_SOURCE REC $REC record_fold $record_fold
 export RECORD_FOLD=${RECORD_FOLD:-$record_fold}
+
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-eye=0,-3,0
+eye=0,-1,0
 EYE=${EYE:-$eye}
 export EYE
 
-vars="BASH_SOURCE PWD name bdir sdir CUDA_PREFIX OPTICKS_PREFIX SHADER_FOLD RECORD_FOLD bin EYE"
+zoom=7   ## WHY ? SGLM.h issue : default of 1 should just work 
+export ZOOM=${ZOOM:-$zoom}
+
+vars="BASH_SOURCE PWD name bdir sdir CUDA_PREFIX OPTICKS_PREFIX SHADER_FOLD RECORD_FOLD bin EYE ZOOM"
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -191,7 +205,6 @@ if [ "${arg/run}" != "$arg" ]; then
       [ $? -ne 0 ] && echo $BASH_SOURCE : Linux run error && exit 3
 
     fi
-
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
@@ -212,9 +225,6 @@ if [ "${arg/ana}" != "$arg" ]; then
    ${IPYTHON:-ipython} --pdb -i  $script
    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 6
 fi 
-
-
-
 
 exit 0 
 

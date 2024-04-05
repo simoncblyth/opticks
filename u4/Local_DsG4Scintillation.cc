@@ -261,7 +261,8 @@ Local_DsG4Scintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep
 // evenly along the track segment and uniformly into 4pi.
 
 {
-    aParticleChange.Initialize(aTrack);
+    aParticleChange.Initialize(aTrack);  
+    // SCB CHECK SEE notes/issues/Geant4_UseGivenVelocity_after_refraction_is_there_a_better_way_than_the_kludge_fix.rst
 
     if (m_noop) {               // do nothing, bail
         aParticleChange.SetNumberOfSecondaries(0);
