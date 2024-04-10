@@ -70,8 +70,11 @@ eye=-1,-1,0
 up=0,0,1
 look=0,0,0
 
-#cam=perspective
-cam=orthographic
+cam=perspective
+#cam=orthographic
+
+#fullscreen=0
+fullscreen=1
 
 tmin=0.1    
 #escale=asis
@@ -85,12 +88,18 @@ export UP=${UP:-$up}
 export TMIN=${TMIN:-$tmin}
 export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
+export FULLSCREEN=${FULLSCREEN:-$fullscreen}
 
 
 handle=-1 # -1:IAS 0...8 GAS indices 
 export HANDLE=${HANDLE:-$handle}
 
+frame=-1
+export FRAME=${FRAME:-$frame}
 
+vizmask=t   # 0xff no masking
+#vizmask=t0  # 0xfe mask global
+export VIZMASK=${VIZMASK:-$vizmask}
 
 
 defarg="info_ptx_build_run"

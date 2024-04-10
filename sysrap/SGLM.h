@@ -126,6 +126,7 @@ Screen
 #include "SCenterExtentFrame.h"
 #include "SCAM.h"
 #include "SBAS.h"
+#include "SBitSet.h"
 
 #include "SGLM_Arcball.h"
 
@@ -235,6 +236,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kFOCAL = "FOCAL" ; 
     static constexpr const char* kFULLSCREEN = "FULLSCREEN" ; 
     static constexpr const char* kESCALE = "ESCALE" ; 
+    static constexpr const char* kVIZMASK = "VIZMASK" ; 
 
     // static defaults, some can be overridden in the instance 
     static glm::ivec2 WH ; 
@@ -253,6 +255,8 @@ struct SYSRAP_API SGLM : public SCMD
     static int   FOCAL ; 
     static int   FULLSCREEN ; 
     static int   ESCALE ; 
+    static uint32_t VIZMASK ; 
+
 
     static void SetWH( int width, int height ); 
     static void SetCE( float x, float y, float z, float extent ); 
@@ -273,6 +277,8 @@ struct SYSRAP_API SGLM : public SCMD
     static void SetFOCAL( const char* focal ); 
     static void SetFULLSCREEN( const char* fullscreen ); 
     static void SetESCALE( const char* escale ); 
+    static void SetVIZMASK( const char* vizmask ); 
+
 
     // querying of static defaults 
     static std::string DescInput() ; 
@@ -284,6 +290,7 @@ struct SYSRAP_API SGLM : public SCMD
     static const char* FOCAL_Label() ; 
     static const char* FULLSCREEN_Label() ; 
     static const char* ESCALE_Label() ; 
+    static std::string VIZMASK_Label() ; 
 
     static void Copy(float* dst, const glm::vec3& src ); 
 
@@ -377,6 +384,8 @@ struct SYSRAP_API SGLM : public SCMD
     int  nearfar ;
     int  focal ;  
     int  fullscreen ; 
+    uint32_t vizmask ; 
+
 
     float nearfar_manual ; 
     float focal_manual ; 
@@ -497,6 +506,7 @@ int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ;
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ; 
 int        SGLM::FULLSCREEN  = EValue<int>(kFULLSCREEN,   "0") ; 
 int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis" 
+uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );  
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -517,6 +527,8 @@ inline void SGLM::IncTMAX( float v ){ TMAX += v ; std::cout << "SGLM::IncTMAX " 
 inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
 inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
+inline void SGLM::SetVIZMASK( const char* vizmask ){ VIZMASK = SBitSet::Value<uint32_t>(32, vizmask) ; }
+
 
 inline int SGLM::Width(){  return WH.x ; }
 inline int SGLM::Height(){ return WH.y ; }
@@ -525,6 +537,7 @@ inline const char* SGLM::CAM_Label(){ return SCAM::Name(CAM) ; }
 inline const char* SGLM::NEARFAR_Label(){ return SBAS::Name(NEARFAR) ; }
 inline const char* SGLM::FOCAL_Label(){   return SBAS::Name(FOCAL) ; }
 inline const char* SGLM::ESCALE_Label(){   return SBAS::Name(ESCALE) ; }
+inline std::string SGLM::VIZMASK_Label(){   return SBitSet::DescValue(VIZMASK) ; }
 
 inline void SGLM::Copy(float* dst, const glm::vec3& src )
 {
@@ -564,6 +577,7 @@ inline SGLM::SGLM()
     nearfar(NEARFAR),   // gazelength default
     focal(FOCAL),
     fullscreen(FULLSCREEN),
+    vizmask(VIZMASK),
     nearfar_manual(0.f),
     focal_manual(0.f),
 

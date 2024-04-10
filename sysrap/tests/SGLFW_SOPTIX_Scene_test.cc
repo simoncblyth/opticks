@@ -3,7 +3,7 @@ SGLFW_SOPTIX_Scene_test.cc
 ============================
 
 Started from SOPTIX_Scene_test.cc, a pure CUDA ppm render of optix triangles, 
-aiming to add OpenGL interop viz for interactive view and parameter changing. 
+added OpenGL interop viz for interactive view and parameter changing. 
 
 Usage and impl::
 
@@ -48,7 +48,7 @@ int main()
 {
     bool dump = false ; 
 
-    SScene* _scn = SScene::Load("$SCENE_FOLD/scene") ; 
+    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
     if(dump) std::cout << _scn->desc() ; 
  
     int ihandle = ssys::getenvint("HANDLE", 0)  ; 
@@ -67,9 +67,14 @@ int main()
         case  8: extent = 500.f ; break ; 
     } 
 
-
+    int FRAME = ssys::getenvint("FRAME", 0)  ; 
     int num_frame = _scn->frame.size(); 
-    sfr fr = num_frame > 0 ? _scn->frame[0] : sfr::Make(extent) ; 
+    std::cout 
+         << "num_frame " << num_frame 
+         << "FRAME " << FRAME
+         << "\n" ; 
+  
+    sfr fr = ( FRAME > -1 && FRAME < num_frame ) ? _scn->frame[FRAME] : sfr::Make(extent) ; 
     // TODO: interactive frame jumping ?
 
 
@@ -121,7 +126,7 @@ int main()
             par.tmin = gm.get_near_abs() ; 
             par.tmax = gm.get_far_abs() ; 
             par.cameratype = gm.cam ; 
-            par.visibilityMask = 0xff ; 
+            par.visibilityMask = gm.vizmask ; 
 
             SGLM::Copy(&par.eye.x, gm.e ); 
             SGLM::Copy(&par.U.x  , gm.u );  

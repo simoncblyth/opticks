@@ -38,7 +38,7 @@ int main()
 {
     bool dump = false ; 
 
-    SScene* _scn = SScene::Load("$SCENE_FOLD/scene") ; 
+    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
     if(dump) std::cout << _scn->desc() ; 
  
     int ihandle = ssys::getenvint("HANDLE", 0)  ; 
