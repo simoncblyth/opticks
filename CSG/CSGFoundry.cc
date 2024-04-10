@@ -22,8 +22,8 @@
 #include "SStr.hh"
 #include "SPath.hh"
 #include "s_time.h"
+#include "SBitSet.h"
 
-#include "SBitSet.hh"
 #include "SEventConfig.hh"
 #include "SGeoConfig.hh"
 #include "SOpticksResource.hh"

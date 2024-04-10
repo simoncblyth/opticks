@@ -11,7 +11,7 @@
 #include "CSGNode.h"
 #include "Sys.h"
 
-#include "SBitSet.hh"
+#include "SBitSet.h"
 #include "CSGFoundry.h"
 #include "CSGCopy.h"
 

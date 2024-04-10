@@ -373,6 +373,7 @@ struct stree
     void set_level(int level_); 
 
     std::string desc() const ;
+    std::string desc_soname() const ;
     std::string desc_size(char div='\n') const ;
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
@@ -777,6 +778,18 @@ inline std::string stree::desc() const
     std::string str = ss.str();
     return str ;
 }
+
+
+inline std::string stree::desc_soname() const
+{
+    std::stringstream ss ;
+    ss << "[stree::desc_soname\n" ;     
+    for(int i=0 ; i < int(soname.size()) ; i++) ss << "[" << soname[i] << "]\n" ;
+    ss << "]stree::desc_soname\n" ;
+    std::string str = ss.str();
+    return str ;
+}
+
 
 
 /**
@@ -1548,6 +1561,12 @@ inline int stree::parse_spec(
 
     bool starting = true ; 
     lvid = find_lvid(q_soname, starting);  
+
+    if(lvid == -1 )
+    { 
+        std::cerr << "stree::parse_spec FAILED to find lvid for q_soname [" << ( q_soname ? q_soname : "-" ) << "]\n" ;
+        std::cerr << desc_soname() ;    
+    }
     if( lvid == -1 ) return -1 ;  
 
     lvid_ordinal = q_lvid_ordinal  ? std::atoi(q_lvid_ordinal) : 0 ; 
@@ -1586,6 +1605,14 @@ inline sfr stree::get_frame(const char* q_spec ) const
     int lvid_ordinal ;
     int repeat_ordinal ;
     int rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
+
+    if(rc != 0) std::cerr 
+        << "stree::get_frame"
+        << " FATAL parse_spec failed "
+        << " q_spec [" << ( q_spec ? q_spec : "-" ) << "]"
+        << "\n"
+        ;   
+
     assert( rc == 0 ); 
     int ii = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
 

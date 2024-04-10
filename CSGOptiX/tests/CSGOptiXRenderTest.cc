@@ -39,7 +39,7 @@ CFBASE
 #include "SSim.hh"
 #include "SOpticks.hh"
 #include "SEventConfig.hh"
-#include "SBitSet.hh"
+#include "SBitSet.h"
 #include "SGeoConfig.hh"
 
 #include "OPTICKS_LOG.hh"

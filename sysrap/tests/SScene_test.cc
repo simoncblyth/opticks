@@ -14,7 +14,6 @@ SScene_test.cc
 
 struct SScene_test
 {
-    static constexpr const char* SCENE_DIR = "$SCENE_FOLD/scene" ; 
     static int CreateFromTree(); 
     static int Load(); 
     static int Main();
@@ -30,7 +29,7 @@ inline int SScene_test::CreateFromTree()
     scene.initFromTree(st); 
     
     std::cout << scene.desc() ; 
-    scene.save(SCENE_DIR) ;  
+    scene.save("$SCENE_FOLD") ;  // "scene" reldir is implicit 
 
     std::cout << "]SScene_test::CreateFromTree" << std::endl ; 
     return 0 ; 
@@ -39,7 +38,7 @@ inline int SScene_test::CreateFromTree()
 inline int SScene_test::Load()
 {
     std::cout << "[SScene_test::Load" << std::endl ; 
-    SScene* scene = SScene::Load(SCENE_DIR) ; 
+    SScene* scene = SScene::Load("$SCENE_FOLD") ; 
     std::cout << scene->desc() ; 
     std::cout << "]SScene_test::Load" << std::endl ; 
     return 0 ; 

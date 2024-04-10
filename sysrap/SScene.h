@@ -22,6 +22,7 @@ full stree.h info needed to render
 
 struct SScene
 {
+    static constexpr const char* RELNAME = "scene" ;
     static constexpr const char* MESHGROUP = "meshgroup" ;
     static constexpr const char* MESHMERGE = "meshmerge" ;
     static constexpr const char* FRAME = "frame" ;
@@ -398,13 +399,34 @@ inline void SScene::import(const NPFold* fold)
 inline void SScene::save(const char* dir) const 
 {
     NPFold* fold = serialize(); 
-    fold->save(dir); 
+    fold->save(dir, RELNAME); 
 }
 inline void SScene::load(const char* dir) 
 {
-    NPFold* fold = NPFold::Load(dir); 
+    NPFold* fold = NPFold::Load(dir, RELNAME); 
     import(fold); 
 }
+
+
+/**
+SScene::addFrames
+------------------
+
+Canonically called from SScene::initFromTree with path 
+argument from envvar::
+
+    SScene__initFromTree_addFrames
+
+Which is set for example from::
+
+    ~/o/sysrap/tests/SScene_test.sh
+
+
+1. read framespec string from path file
+2. parse the string splitting into trimmed lines
+3. for each line get sfr with stree::get_frame add to frame vector
+
+**/
 
 inline void SScene::addFrames(const char* path, const stree* st)
 {

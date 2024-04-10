@@ -12,7 +12,7 @@
 
 #include "SLOG.hh"
 
-#include "SBitSet.hh"
+#include "SBitSet.h"
 #include "OpticksCSG.h"
 
 #include "CSGFoundry.h"

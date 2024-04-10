@@ -1,7 +1,8 @@
 #include "OPTICKS_LOG.hh"
 #include "ssys.h"
+#include "SBitSet.h"
+
 #include "SSim.hh"
-#include "SBitSet.hh"
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
 #include "CSGCopy.h"

@@ -13,6 +13,13 @@ To create and persist the stree starting from GEOM gdml::
    ~/o/u4/tests/U4TreeCreateTest.sh
 
 
+The framespec.txt file used is the first of the below paths that exists::
+
+    ~/.opticks/GEOM/${GEOM}_framespec.txt
+    $TREE_FOLD/framespec.txt               ## ie sibling to the stree folder  
+
+TODO: relocate "scene" output default to be sibling to the stree from which it was derived ? 
+
 EOU
 }
 
@@ -23,18 +30,29 @@ export SCENE_FOLD=/tmp/$name
 mkdir -p $SCENE_FOLD 
 bin=$SCENE_FOLD/$name
 
-framespec=/tmp/framespec.txt
-export SScene__initFromTree_addFrames=${SScene__initFromTree_addFrames:-$framespec}
 
 tree_fold=$TMP/U4TreeCreateTest
 export TREE_FOLD=${TREE_FOLD:-$tree_fold}
+
 
 if [ ! -d "$TREE_FOLD/stree" ]; then
    echo $BASH_SOURCE : ERROR TREE_FOLD $TREE_FOLD DOES NOT CONTAIN stree 
    exit 1
 fi 
 
-vars="BASH_SOURCE PWD stree_fold TREE_FOLD SCENE_FOLD bin"
+specs="$HOME/.opticks/GEOM/${GEOM}_framespec.txt $TREE_FOLD/framespec.txt"
+framespec=none
+for spec in $specs ; do 
+   if [ -f "$spec" ]; then
+       framespec=$spec
+       break             
+   fi
+done
+export SScene__initFromTree_addFrames=${SScene__initFromTree_addFrames:-$framespec}
+
+
+
+vars="BASH_SOURCE PWD stree_fold TREE_FOLD SCENE_FOLD bin framespec"
 
 defarg=info_build_run
 arg=${1:-$defarg}

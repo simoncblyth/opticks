@@ -1,20 +1,117 @@
+#pragma once
+/**
+SBitSet.h
+=============
+
+Used for example from CSGFoundry::Load to implement dynamic prim selection. 
+
+For example with ELV the num_bits_ would be the number of unique solid shapes in the geometry, 
+with is around 140 for JUNO.  So the bitset provides a way to represent a selection 
+over those shapes. 
+
+Note that at this level, there are no geometry specifics like names etc... its 
+just a collection of booleans. 
+
+**/
+
+#include <vector>
+#include <string>
 #include <cstring>
+#include <cstdint>
 #include <sstream>
 #include <iomanip>
 
 #include "sstr.h"
 #include "ssys.h"
-
-#include "SBitSet.hh"
 #include "SName.h"
 
-std::string SBitSet::Brief( const SBitSet* elv, const SName* id )
+
+struct SBitSet 
+{
+    static std::string Brief( const SBitSet* elv, const SName* id ); 
+
+
+    template<typename T> 
+    static T          Value( unsigned num_bits, const char* ekey, const char* fallback ); 
+
+    template<typename T> 
+    static T          Value( unsigned num_bits, const char* spec ); 
+
+
+    static SBitSet*   Create( unsigned num_bits, const char* ekey, const char* fallback ); 
+    static SBitSet*   Create( unsigned num_bits, const char* spec); 
+    static void        Parse( unsigned num_bits, bool* bits      , const char* spec ); 
+    static std::string Desc(  unsigned num_bits, const bool* bits, bool reverse ); 
+ 
+    template<typename T> 
+    static std::string DescValue( T val    ); 
+
+
+    unsigned    num_bits ; 
+    bool*       bits ; 
+
+    // metadata
+    const char* label ; 
+    const char* spec ; 
+
+
+    SBitSet( unsigned num_bits ); 
+    virtual ~SBitSet(); 
+
+    void        set_label(const char* label); 
+    void        set_spec( const char* spec); 
+
+    void        set(bool all); 
+    void        parse(const char* spec); 
+    bool        is_set(unsigned pos) const ;
+
+    unsigned    count() const ; 
+    bool        is_all_set() const ; 
+    bool        all() const ; 
+    bool        any() const ; 
+    bool        none() const ; 
+
+
+    void get_pos( std::vector<unsigned>& pos, bool value ) const ; 
+
+    std::string desc() const ; 
+
+    template<typename T> 
+    T  value() const ;  // HMM: little or big endian option ?
+};
+
+
+inline std::string SBitSet::Brief( const SBitSet* elv, const SName* id )
 {
     std::stringstream ss ; 
     ss << "SBitSet::Brief" ; 
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+
+template<typename T>
+T SBitSet::Value( unsigned num_bits, const char* ekey, const char* fallback )
+{
+    SBitSet* bs = Create(num_bits, ekey, fallback); 
+    T val = bs->value<T>() ;
+    delete bs ;
+    return val ; 
+}
+
+template<typename T>
+T SBitSet::Value( unsigned num_bits, const char* spec )
+{
+    SBitSet* bs = Create(num_bits, spec); 
+    T val = bs->value<T>() ;
+    delete bs ;
+    return val ; 
+}
+
+
+
+
 
 
 /**
@@ -27,7 +124,7 @@ SBitSet::Create
 **/
 
 
-SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallback )
+inline SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallback )
 {
     const char* spec = ssys::getenvvar(ekey, fallback) ;
     SBitSet* bs = Create(num_bits, spec); 
@@ -35,7 +132,7 @@ SBitSet* SBitSet::Create(unsigned num_bits, const char* ekey, const char* fallba
     return bs ; 
 }
 
-SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
+inline SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
 {
     SBitSet* bs = nullptr ; 
     if(spec)
@@ -45,6 +142,8 @@ SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
     }
     return bs ; 
 }
+
+
 
 
 /**
@@ -88,7 +187,7 @@ a similar but different approach that will cause confusion)
 
 **/
 
-void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
+inline void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
 {
     bool with_complement = strlen(spec) > 0 && ( spec[0] == '~' || spec[0] == 't' ) ; // str_ starts with ~ or t 
     for(unsigned i=0 ; i < num_bits ; i++) bits[i] = with_complement ? true : false ; 
@@ -116,32 +215,43 @@ void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
     }
 }     
 
-std::string SBitSet::Desc( unsigned num_bits, const bool* bits, bool reverse )
+inline std::string SBitSet::Desc( unsigned num_bits, const bool* bits, bool reverse )
 {
     std::stringstream ss ; 
     ss << std::setw(4) << num_bits << " : " ;  
     for(unsigned i=0 ; i < num_bits ; i++)  ss << ( bits[reverse ? num_bits - 1 - i : i ] ? "1" : "0" ) ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
-bool SBitSet::is_set(unsigned pos) const 
+template<typename T>
+inline std::string SBitSet::DescValue( T val  )
+{
+    std::stringstream ss ; 
+    ss << "bs.0x" << std::hex << val << std::dec ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+inline bool SBitSet::is_set(unsigned pos) const 
 {
     assert( pos < num_bits ); 
     return bits[pos] ; 
 }
 
-unsigned SBitSet::count() const 
+inline unsigned SBitSet::count() const 
 {
     unsigned num = 0 ; 
     for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i]) num += 1 ;  
     return num ; 
 }
 
-bool SBitSet::is_all_set() const { return all() ; }
-bool SBitSet::all() const { return count() == num_bits ; }
-bool SBitSet::any() const { return count() > 0  ; }
-bool SBitSet::none() const { return count() == 0  ; }
+inline bool SBitSet::is_all_set() const { return all() ; }
+inline bool SBitSet::all() const { return count() == num_bits ; }
+inline bool SBitSet::any() const { return count() > 0  ; }
+inline bool SBitSet::none() const { return count() == 0  ; }
 
 /**
 SBitSet::get_pos
@@ -151,12 +261,12 @@ Append to *pos* vector bit indices that are set OR notset
 depending on *value* bool.  
 
 **/
-void SBitSet::get_pos( std::vector<unsigned>& pos, bool value) const 
+inline void SBitSet::get_pos( std::vector<unsigned>& pos, bool value) const 
 {
     for(unsigned i=0 ; i < num_bits ; i++ ) if(bits[i] == value) pos.push_back(i) ; 
 }
 
-SBitSet::SBitSet( unsigned num_bits_ )
+inline SBitSet::SBitSet( unsigned num_bits_ )
     :
     num_bits(num_bits_),
     bits(new bool[num_bits]),
@@ -166,34 +276,34 @@ SBitSet::SBitSet( unsigned num_bits_ )
     set(false); 
 }
 
-void SBitSet::set_label(const char* label_) // eg ELV or EMM 
+inline void SBitSet::set_label(const char* label_) // eg ELV or EMM 
 {
     label = strdup(label_); 
 }
-void SBitSet::set_spec( const char* spec_)  // eg t or t0 t1 t0,1,2
+inline void SBitSet::set_spec( const char* spec_)  // eg t or t0 t1 t0,1,2
 {
     spec = strdup(spec_); 
 }
 
 
-void SBitSet::set(bool all)
+inline void SBitSet::set(bool all)
 {
     for(unsigned i=0 ; i < num_bits ; i++ )  bits[i] = all ; 
 }
 
-void SBitSet::parse(const char* spec)
+inline void SBitSet::parse(const char* spec)
 {
     Parse(num_bits, bits, spec); 
     set_spec(spec); 
 }
 
 
-SBitSet::~SBitSet()
+inline SBitSet::~SBitSet()
 { 
     delete [] bits ; 
 }
 
-std::string SBitSet::desc() const 
+inline std::string SBitSet::desc() const 
 {
     std::stringstream ss ; 
     ss 
@@ -204,6 +314,19 @@ std::string SBitSet::desc() const
 
     std::string s = ss.str();  
     return s ; 
-  
 }
+
+
+template<typename T> 
+inline T SBitSet::value() const   // HMM: little or big endian option ?
+{
+    T val = 0 ; 
+    for(unsigned i=0 ; i < num_bits ; i++ ) 
+    {
+       if(bits[i]) val |= ( 0x1 << i )  ; 
+    }
+    return val ;  
+}
+
+
 

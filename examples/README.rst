@@ -221,7 +221,7 @@ UseShaderSGLFW_SScene
     get SMesh and instance transforms from SScene
 
 UseShaderSGLFW_SScene_encapsulated
-    try 
+    moving impl into SGLFW_Scene.h
 
 
 .. comment OPTIX_START
