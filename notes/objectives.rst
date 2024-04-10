@@ -51,6 +51,35 @@ New development for optimization option comparison
 * alt GAS (1 multi-Prim solid -> 1 GAS) 
 * sibling-instancing for sticks : inst joining or rationalize source geom 
 
+
+New development : find/develop CUDA torus intersect alg
+---------------------------------------------------------
+
+Adapt algs from any sources or develop your own algs, 
+numerical or analytic. Get them to work with CUDA. 
+
+* compare accuracy/performance/resource-use with triangulated approach 
+* tweak triangulated approach (changing number and disposition of the triangles)
+
+Possible sources:
+
+* Geant4 U-solids, vecgeom, elsewhere, ... 
+* open source ray trace frameworks
+* quartic polynomial solvers analytic OR numerical (eg from computer science OR numerical math papers)
+* search github/bitbucket repos, web searches  
+
++-------------------------------------------------------------------------------------+
+| Double heavy analytic torus intersect alg always problematic                        |
++=================+===================================================================+
+| OptiX 5.0, 5.5  | worked but was performance problem, also imprecise in CSG         |
++-----------------+-------------------------------------------------------------------+
+| OptiX 6.0.0     | caused crash : so excluded torus                                  |
++-----------------+-------------------------------------------------------------------+
+| OptiX 7, 8:     | TODO: check again, revisit alg (may depend on GPU resources)      |  
++-----------------+-------------------------------------------------------------------+
+
+
+
 New development for deployment
 --------------------------------
 

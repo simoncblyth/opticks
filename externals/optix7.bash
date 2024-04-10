@@ -37,6 +37,12 @@ TODO
 revisit optix7c-cd and SDK 
 
 
+GTC
+----
+
+* https://www.nvidia.com/en-us/on-demand/search/?facet.mimetype[]=event%20session&layout=list&page=1&q=optix&sort=relevance&sortDir=desc
+
+
 optix-toolkit
 --------------
 

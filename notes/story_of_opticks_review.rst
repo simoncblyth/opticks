@@ -13,7 +13,7 @@ EXPERIENCE
 * starting fresh, although painful, often quicker and easier 
   than working with old code 
 
-  * reality : have to do both, develop new and work with old 
+  * pragmatic reality : have to do both, develop new and work with old 
 
 * when learning new API need to not be constrained by existing code
 * learn in unconstrained standalone tests but develop API usable from existing code 
@@ -54,7 +54,22 @@ env repo::
     * 2014-03-21 46de320c3 - take a look at pyopengl and glumpy (10 years ago) <Simon C Blyth>
 
 
-1. Beginning : get Chroma GPU optical photon simulation to work with Dyb 
+Summary
+~~~~~~~~~
+
+1. (April 2014) Beginning : get Chroma GPU optical photon simulation to work with Dyb 
+2. (July 2015) jump from Chroma -> NVIDA OptiX (50x) and coined the name "Opticks" : flesh out impl
+3. (July 2017) implement fully analytic CSG : needed for near perfect G4 match  
+4. (August 2019) BOMBSHELL : NVIDIA 6.5->7.0 (like Geant3->4 ) 
+5. (Jan 2021) Start transition from NVIDIA 6.5 to 7.0, "new" Opticks impl 
+6. (June 2021 onwards) Hard slog, fixing many many issues with co-evolving CPU+GPU simulations
+
+
+Brief History
+~~~~~~~~~~~~~~~
+
+
+1. (2014) Beginning : get Chroma GPU optical photon simulation to work with Dyb 
 
 
   * 200x http://localhost/env/presentation/gpu_optical_photon_simulation.html
@@ -169,11 +184,19 @@ env repo::
 
    * (jan 2019, sjtu)
    * http://localhost/env/presentation/opticks_gpu_optical_photon_simulation_jan2019_sjtu.html
+   * 5/40 JUNO solids with issues
+   * profligate PMT modelling  
+   * sAirTT CSG coincident face 
+
 
    * (jul 2019, ihep) 
    * http://localhost/env/presentation/opticks_gpu_optical_photon_simulation_jul2019_ihep.html
    * direct geometry workflow, not export/import 
    * p12 Optix 6.0 torus intersect issue
+   * p12: Guide Tube Torus : removed (for now), AVOIDED : OptiX 6.0.0 NOT working with torus intersect
+   * p12: PMT_20inch_body : simplified neck, FIXED : "cylinder - torus" -> polycone
+   * p12: PMT_20inch_inner : simplified CSG modelling, FIXED : depth 4 tree (31 nodes) -> 1 primitive
+   * p12: sAirTT : CSG modelling coincidence avoided, FIXED : "box - cylinder" : growing the subtracted 
    * p19 JUNO360 multiple-GPU benchmarking 
    * p36 simple test geom 1000x:
 
@@ -209,6 +232,9 @@ env repo::
    * http://localhost/env/presentation/opticks_jul2020_juno.html
    * opticks junoenv integration
    * PMT shape simplification
+   * --pmt20inch-polycone-neck 
+
+
 
    * (aug 2020)
    * http://localhost/env/presentation/opticks_aug2020_sjtu_neutrino_telescope_workshop.html
@@ -265,24 +291,27 @@ env repo::
 
    * http://localhost/env/presentation/juno_opticks_20210712.html
    * hard work of simulation matching 
-
+   * G4Cerenkov_modified stale/undefined sin2Theta bug
 
    * http://localhost/env/presentation/lz_opticks_optix7_20210727.html
    * first mention of QUDARAP
    * Scint/Cerenkov matching
    * float/double Ck issue
 
-
    * http://localhost/env/presentation/juno_opticks_cerenkov_20210902.html
    * "For sanity : need to make the leap to OptiX 7 .."
    * s2 CK integration 
    * geometry detailed debug start
+   * G4Cerenkov_modified GetAverageNumberOfPhotons_s2 ~2 photons diff from _asis for some BetaInverse due to poor split integral approx
+
 
    * http://localhost/env/presentation/opticks_autumn_20211019.html
    * CK inverse sampling  
    * p26 : Opticks updates for G4 1100
    * p29 : 2D sliced render technique
-   * p36 : pointless CSG hole subtraction, colocated sub-sub bug 
+   * p36 : AdditionAcrylic pointless CSG hole subtraction, colocated sub-sub bug 
+    
+
 
    * http://localhost/env/presentation/opticks_20211117.html
    * profligate Z-cut PMT : developed ZSolid solution : actually cut the tree  
@@ -291,6 +320,7 @@ env repo::
 
    * http://localhost/env/presentation/opticks_20211223_pre_xmas.html
    * > 100x faster than times from July
+   * mask tail cutting across PMT bulb ?
    * p19,20 demo fix for sub-sub bug with --additionacrylic-simplify-csg
    * p30-38 : MOI renders
 
