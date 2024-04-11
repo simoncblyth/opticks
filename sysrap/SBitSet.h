@@ -92,7 +92,7 @@ inline std::string SBitSet::Brief( const SBitSet* elv, const SName* id )
 
 
 template<typename T>
-T SBitSet::Value( unsigned num_bits, const char* ekey, const char* fallback )
+inline T SBitSet::Value( unsigned num_bits, const char* ekey, const char* fallback )
 {
     SBitSet* bs = Create(num_bits, ekey, fallback); 
     T val = bs->value<T>() ;
@@ -101,7 +101,7 @@ T SBitSet::Value( unsigned num_bits, const char* ekey, const char* fallback )
 }
 
 template<typename T>
-T SBitSet::Value( unsigned num_bits, const char* spec )
+inline T SBitSet::Value( unsigned num_bits, const char* spec )
 {
     SBitSet* bs = Create(num_bits, spec); 
     T val = bs->value<T>() ;

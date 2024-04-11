@@ -29,6 +29,7 @@ struct NPFold ;
 struct SBnd ; 
 struct SPrd ; 
 struct stree ; 
+struct SScene ; 
 struct scontext ; 
 struct SPMT ; 
 
@@ -45,6 +46,7 @@ struct SYSRAP_API SSim
     NPFold*   top ; 
     NPFold*   extra ;  
     stree*    tree ;    // instanciated with SSim::SSim
+    SScene*   scene ; 
 
 
     static const plog::Severity LEVEL ; 
@@ -75,6 +77,8 @@ private:
     void init(); 
 public:
     stree* get_tree() const ; 
+    void initSceneFromTree(); 
+
     int lookup_mtline( int mtindex ) const ; 
     std::string desc_mt() const ; 
 public:

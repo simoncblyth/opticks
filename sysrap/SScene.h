@@ -14,15 +14,21 @@ full stree.h info needed to render
 
 * TODO: solid selection eg skipping virtuals so can see PMT shapes 
 
+* TODO: incorporate into standard workflow
+
+  * treat SScene.h as sibling to stree.h within SSim.hh ?
+  * invoke the SScene.h creation from stree immediately after stree creation by U4Tree ?  
+
 **/
 
+#include "ssys.h"
 #include "stree.h"
 #include "SMesh.h"
 #include "SMeshGroup.h"
 
 struct SScene
 {
-    static constexpr const char* RELNAME = "scene" ;
+    static constexpr const char* RELDIR = "scene" ;
     static constexpr const char* MESHGROUP = "meshgroup" ;
     static constexpr const char* MESHMERGE = "meshmerge" ;
     static constexpr const char* FRAME = "frame" ;
@@ -83,7 +89,7 @@ inline SScene* SScene::Load(const char* dir)
 
 inline SScene::SScene()
     :
-    dump(false)
+    dump(ssys::getenvbool("SScene_dump"))
 {
 }
 
@@ -399,11 +405,11 @@ inline void SScene::import(const NPFold* fold)
 inline void SScene::save(const char* dir) const 
 {
     NPFold* fold = serialize(); 
-    fold->save(dir, RELNAME); 
+    fold->save(dir, RELDIR); 
 }
 inline void SScene::load(const char* dir) 
 {
-    NPFold* fold = NPFold::Load(dir, RELNAME); 
+    NPFold* fold = NPFold::Load(dir, RELDIR); 
     import(fold); 
 }
 

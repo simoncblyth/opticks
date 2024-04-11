@@ -11,6 +11,7 @@
 #include "SStr.hh"
 #include "ssys.h"
 #include "spath.h"
+#include "SScene.h"
 
 #include "SSim.hh"
 #include "SBnd.h"
@@ -136,7 +137,8 @@ SSim::SSim()
     relp(ssys::getenvvar("SSim__RELP", RELP_DEFAULT )), // alt: "extra/GGeo"
     top(nullptr),
     extra(nullptr),
-    tree(new stree)
+    tree(new stree),
+    scene(new SScene)
 {
     init(); 
 }
@@ -155,6 +157,21 @@ void SSim::init()
 
 
 stree* SSim::get_tree() const { return tree ; }
+
+
+/**
+SSim::initSceneFromTree
+------------------------
+
+This needs to be invoked after the tree has been populated by U4Tree
+
+**/
+
+void SSim::initSceneFromTree()
+{
+    scene->initFromTree(tree);
+}
+
 
 
 /**
@@ -380,6 +397,10 @@ void SSim::load_(const char* dir)
     NPFold* f_tree = top->get_subfold( stree::RELDIR ) ; 
     tree->import( f_tree ); 
 
+    NPFold* f_scene = top->get_subfold( SScene::RELDIR ) ; 
+    scene->import( f_scene ); 
+
+
     LOG(LEVEL) << "]" ; 
 }
 
@@ -416,6 +437,9 @@ void SSim::serialize()
     top = new NPFold ;  
     NPFold* f_tree = tree->serialize() ;
     top->add_subfold( stree::RELDIR, f_tree ); 
+
+    NPFold* f_scene = scene->serialize() ;
+    top->add_subfold( SScene::RELDIR, f_scene ); 
 
     if( extra ) 
     {

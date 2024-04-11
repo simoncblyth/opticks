@@ -236,6 +236,9 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
     LOG(LEVEL) << "Completed U4Tree::Create " ; 
 
+    sim->initSceneFromTree(); // not so easy to do at lower level  
+
+
     CSGFoundry* fd_ = CSGFoundry::CreateFromSim() ; // adopts SSim::INSTANCE  
     setGeometry(fd_); 
 

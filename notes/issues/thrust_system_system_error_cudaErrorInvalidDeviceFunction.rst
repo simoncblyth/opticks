@@ -2,6 +2,77 @@ thrust_system_system_error_cudaErrorInvalidDeviceFunction
 =============================================================
 
 
+April 2024 : Hans reports this again (on one machine but not another, with same config )
+-----------------------------------------------------------------------------------------
+
+
+::
+
+    t took me a while but I managed to configure opticks exactly the same way as my home machine. Meaning:
+
+
+    NVIDIA-SMI 515.43.04    Driver Version: 515.43.04    CUDA Version: 11.7
+
+
+    But I am still seeing the thrust error on opticks.fnal.gov  using the head version of opticks (git clone https://bitbucket.org/simoncblyth/opticks)
+
+
+    terminate called after throwing an instance of 'thrust::system::system_error'
+      what():  after reduction step 1: cudaErrorInvalidDeviceFunction: invalid device function
+    Aborted (core dumped)
+
+    ARRGH
+
+    So  that rules out any driver/cuda incompatibility issues one might have suspected. Since it is exactly the same configuration I have on my home machine which runs
+    opticks just fine.
+
+
+
+
+
+
+The likely place where this is happening is in the below code. 
+What that is doing is summing up the photon counts for each genstep
+to give a total num_seed.  The seed buffer is how each photon thread knows
+which genstep it corresponds to.
+
+I would start by confirming that with some logging 
+and then try to isolate the error into a test. 
+Also you should check the input genstep photon counts are
+correct, invalid values there might cause such issues.
+
+As for how to create the test,  QEventTest is the one to start from.
+It exercises the machinery with fabricated gensteps.
+You probably need a lower level version of one of those tests.
+
+You might find that the tests work fine with small fabricated gensteps
+and photon counts.  If so, try increasing
+the size of the gensteps and photon counts to be comparable 
+to those that are failing.
+
+qudarap/QEvent.{cc,cu}
+
+ 509 extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt );
+ 510 void QEvent::count_genstep_photons_and_fill_seed_buffer()
+ 511 {
+ 512     LOG_IF(info, LIFECYCLE) ;
+ 513     QEvent_count_genstep_photons_and_fill_seed_buffer( evt );
+ 514 }
+181 extern "C" void QEvent_count_genstep_photons_and_fill_seed_buffer(sevent* evt )
+182 {
+183     typedef typename thrust::device_vector<int>::iterator Iterator;
+184 
+185     thrust::device_ptr<int> t_gs = thrust::device_pointer_cast( (int*)evt->genstep ) ;
+186 
+187 #ifdef DEBUG_QEVENT
+188     printf("//QEvent_count_genstep_photons sevent::genstep_numphoton_offset %d  sevent::genstep_itemsize  %d  \n",
+189             sevent::genstep_numphoton_offset, sevent::genstep_itemsize );
+190 #endif
+191 
+
+
+
+
 Issue from Alexsey (CUDA 12 + Driver ) 
 ------------------------------------------------------------
 

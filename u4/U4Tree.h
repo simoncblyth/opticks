@@ -115,7 +115,7 @@ struct U4Tree
     bool                                        enable_isur ; 
 
     static U4Tree* Create( 
-        stree* st, 
+        stree* st,
         const G4VPhysicalVolume* const top, 
         U4SensorIdentifier* sid=nullptr 
         ); 

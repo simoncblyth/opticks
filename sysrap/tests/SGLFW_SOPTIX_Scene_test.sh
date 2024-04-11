@@ -51,7 +51,8 @@ OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
-scene_fold=/tmp/SScene_test
+#scene_fold=/tmp/SScene_test
+scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
 shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
