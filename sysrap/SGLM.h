@@ -10,28 +10,29 @@ used by old OpticksCore okc : Composition, View, Camera, ...
 Using this enabled CSGOptiX to drop dependency on okc, npy, brap 
 and instead depend only on QUDARap, SysRap, CSG. 
 
-
-* TODO: add fullscreen option here 
-
-* TODO: bring animated interpolation between views available 
-  in the old machinery into the new workflow
-
-* TODO: test this by comparison of rasterized and ray-traced renders
-  in order to achieve full consistency. Usage with interactive changing of camera and view etc.. 
-  and interactive flipping between rasterized and ray traced is the way consistency 
-  of the projective and ray traced maths was achieved for old Opticks with okc/Composition. 
-
-* TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
-* TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
-
 Normal inputs WH, CE, EYE, LOOK, UP are held in static variables with envvar defaults 
 These can be changed with static methods before instanciating SGLM. 
 NB it will usually be too late for setenv in code to influence SGLM 
 as the static initialization would have happened already 
 
-* hmm probably using nested structs makes sense, or just use SGLM namespace with 
-* https://riptutorial.com/cplusplus/example/11914/nested-classes-structures
-* https://www.geeksforgeeks.org/nested-structure-in-c-with-examples/
+* TODO: reincarnate animated interpolation between view bookmarks 
+* TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
+* TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
+
+
+WIP : rasterized and raytrace render consistency
+-------------------------------------------------
+
+Usage with interactive changing of camera and view etc.. 
+and interactive flipping between rasterized and raytraced 
+is the way consistency of the projective and raytrace 
+maths was achieved for old Opticks with okc/Composition. 
+
+Observation:
+
+1. rasterized view zooms in when increasing near, raytrace just cuts away tmin
+
+   * recall similar issue previously, fixed in Composition  
 
 
 SGLM.h tests
@@ -133,6 +134,7 @@ Screen
 #include "sfr.h"     // formerly sframe.h
 #include "SCE.h"     // moving from sframe to SCE 
 
+#include "ssys.h"
 #include "sstr.h"
 #include "NP.hh"
 
@@ -306,8 +308,10 @@ struct SYSRAP_API SGLM : public SCMD
     int command(const char* cmd); 
 
     sfr fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
+
+    static constexpr const char* _DUMP = "SGLM__set_frame_DUMP" ; 
     void set_frame( const sfr& fr ); 
-    //const char* get_frame_name() const ; 
+
     float extent() const ; 
     float tmin_abs() const ; 
     float tmax_abs() const ; 
@@ -519,7 +523,7 @@ inline void SGLM::SetZOOM( float v ){ ZOOM = v ; std::cout << "SGLM::SetZOOM " <
 inline void SGLM::SetTMIN( float v ){ TMIN = v ; std::cout << "SGLM::SetTMIN " << TMIN << std::endl ; }
 inline void SGLM::SetTMAX( float v ){ TMAX = v ; std::cout << "SGLM::SetTMAX " << TMAX << std::endl ; }
 
-inline void SGLM::IncZOOM( float v ){ ZOOM += v ; std::cout << "SGLM::IncZOOM " << ZOOM << std::endl ; }
+inline void SGLM::IncZOOM( float v ){ ZOOM += v ; /*std::cout << "SGLM::IncZOOM " << ZOOM << std::endl ;*/ }
 inline void SGLM::IncTMIN( float v ){ TMIN += v ; std::cout << "SGLM::IncTMIN " << TMIN << std::endl ; }
 inline void SGLM::IncTMAX( float v ){ TMAX += v ; std::cout << "SGLM::IncTMAX " << TMAX << std::endl ; }
 
@@ -804,10 +808,14 @@ WIP: move to light weight sfr : most of sframe not needed by SGLM
 
 **/
 
+
 inline void SGLM::set_frame( const sfr& fr_ )
 {
     fr = fr_ ; 
     update(); 
+
+    int DUMP = ssys::getenvint(_DUMP, 0); 
+    if(DUMP > 0) std::cout << _DUMP << ":" << DUMP << "\n" << desc() ; 
 }
 
 //inline const char* SGLM::get_frame_name() const { return fr.get_name(); }

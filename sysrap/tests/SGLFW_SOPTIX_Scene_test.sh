@@ -51,15 +51,26 @@ OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
-#scene_fold=/tmp/SScene_test
-scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
+
+scene=0
+case ${SCENE:-$scene} in 
+0) scene_fold=/tmp/SScene_test ;;
+1) scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim ;;
+esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
+
 
 shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
 export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
 
+dump=1
+DUMP=${DUMP:-$dump}
+export SGLM__set_frame_DUMP=$DUMP
 
-#wh=1024,768
+export SGLFW_SOPTIX_Scene_test_DUMP=1  
+
+
+wh=1024,768
 wh=2560,1440
 
 #eye=0.1,0,-10
@@ -105,6 +116,14 @@ export VIZMASK=${VIZMASK:-$vizmask}
 
 defarg="info_ptx_build_run"
 arg=${1:-$defarg}
+
+
+if [ ! -d "$SCENE_FOLD/scene" ]; then
+  echo $BASH_SOURCE : FATAL SCENE_FOLD $SCENE_FOLD does not contain scene 
+  arg=info  
+fi 
+
+
 
 PATH=$PATH:$CUDA_PREFIX/bin
 

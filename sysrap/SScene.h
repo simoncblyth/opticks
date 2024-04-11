@@ -14,10 +14,10 @@ full stree.h info needed to render
 
 * TODO: solid selection eg skipping virtuals so can see PMT shapes 
 
-* TODO: incorporate into standard workflow
+* WIP: incorporate into standard workflow
 
-  * treat SScene.h as sibling to stree.h within SSim.hh ?
-  * invoke the SScene.h creation from stree immediately after stree creation by U4Tree ?  
+  * treat SScene.h as sibling to stree.h within SSim.hh 
+  * invoke the SScene.h creation from stree immediately after stree creation by U4Tree 
 
 **/
 
@@ -38,7 +38,7 @@ struct SScene
     bool dump ;
 
     std::vector<const SMeshGroup*>    meshgroup ;
-    std::vector<const SMesh*>         meshmerge ; // formerly mesh_grup
+    std::vector<const SMesh*>         meshmerge ;
     std::vector<sfr>                  frame ; 
 
     std::vector<int4>                 inst_info ; 
@@ -46,6 +46,7 @@ struct SScene
 
     static SScene* Load(const char* dir);
     SScene();
+    void check() const ; 
 
     void initFromTree(const stree* st);
     void initFromTree_Remainder(const stree* st);
@@ -54,9 +55,15 @@ struct SScene
     void initFromTree_Node(SMeshGroup* mg, int ridx, const snode& node, const stree* st);
     void initFromTree_Instance (const stree* st);
 
+    const SMesh* get_mm(int mmidx) const ;
+    const float* get_mn(int mmidx) const ; 
+    const float* get_mx(int mmidx) const ; 
+    const float* get_ce(int mmidx) const ; 
+
     std::string descSize() const ;
     std::string descInstInfo() const ;
     std::string descFrame() const ;
+    std::string descRange() const ;
     std::string desc() const ;
 
     NPFold* serialize_meshmerge() const ;
@@ -80,6 +87,7 @@ struct SScene
 
 
 
+
 inline SScene* SScene::Load(const char* dir)
 {
     SScene* s = new SScene ;
@@ -91,6 +99,11 @@ inline SScene::SScene()
     :
     dump(ssys::getenvbool("SScene_dump"))
 {
+}
+
+inline void SScene::check() const 
+{
+    assert( meshmerge.size() == meshgroup.size() ); 
 }
 
 inline void SScene::initFromTree(const stree* st)
@@ -162,6 +175,8 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
     meshgroup.push_back(mg); 
 }
 
+
+
 /**
 SScene::initFromTree_Node
 ---------------------------
@@ -220,6 +235,30 @@ inline void SScene::initFromTree_Instance(const stree* st)
 }
 
 
+inline const SMesh* SScene::get_mm(int mmidx) const 
+{
+    const SMesh* mm = mmidx < int(meshmerge.size()) ? meshmerge[mmidx] : nullptr ; 
+    return mm ; 
+}
+inline const float* SScene::get_mn(int mmidx) const 
+{
+    const SMesh* mm = get_mm(mmidx); 
+    return mm ? mm->get_mn() : nullptr ;  
+} 
+inline const float* SScene::get_mx(int mmidx) const 
+{
+    const SMesh* mm = get_mm(mmidx); 
+    return mm ? mm->get_mx() : nullptr ;  
+} 
+inline const float* SScene::get_ce(int mmidx) const 
+{
+    const SMesh* mm = get_mm(mmidx); 
+    return mm ? mm->get_ce() : nullptr ;  
+} 
+
+
+
+
 inline std::string SScene::desc() const 
 {
     std::stringstream ss ; 
@@ -227,6 +266,7 @@ inline std::string SScene::desc() const
     ss << descSize() ; 
     ss << descInstInfo() ; 
     ss << descFrame() ; 
+    ss << descRange() ; 
     ss << "] SScene::desc \n" ; 
     std::string str = ss.str(); 
     return str ; 
@@ -288,6 +328,28 @@ inline std::string SScene::descFrame() const
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline std::string SScene::descRange() const
+{
+    int num_mm = meshmerge.size(); 
+    int num_mg = meshgroup.size(); 
+    assert( num_mm == num_mg ); 
+    int num = num_mm ; 
+
+    std::stringstream ss ;
+    ss << "[SScene::descRange num " << num << std::endl ; 
+    for(int i=0 ; i < num ; i++) 
+    {
+        const SMeshGroup* mg = meshgroup[i] ; 
+        const SMesh* mm = meshmerge[i] ;
+        ss << "mg[" << i << "]\n" << mg->descRange() << "\n" ; 
+        ss << "mm[" << i << "]\n" << mm->descRange() << "\n" ; 
+    }
+    ss << "]SScene::descRange num " << num << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 inline NPFold* SScene::serialize_meshmerge() const 

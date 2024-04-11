@@ -1,5 +1,12 @@
 #pragma once
+/**
+SMeshGroup.h : collection of subs SMesh and names
+===================================================
 
+Persists as folder with int keys. 
+
+
+**/
 struct SMesh ; 
 
 struct SMeshGroup
@@ -13,6 +20,8 @@ struct SMeshGroup
     void save(const char* dir) const ; 
     static SMeshGroup* Import(const NPFold* fold ); 
     void import(const NPFold* fold ); 
+
+    std::string descRange() const ; 
 };
 
 inline SMeshGroup::SMeshGroup(){} 
@@ -54,4 +63,16 @@ inline void SMeshGroup::import(const NPFold* fold )
         subs.push_back(m); 
     }
 }
+
+inline std::string SMeshGroup::descRange() const 
+{
+    int num_subs = subs.size(); 
+    std::stringstream ss ; 
+    ss << "[SMeshGroup::descRange num_subs" << num_subs << "\n" ; 
+    for(int i=0 ; i < num_subs ; i++) ss << subs[i]->descRange() << "\n" ; 
+    ss << "]SMeshGroup::descRange\n" ; 
+    std::string str = ss.str() ;
+    return str ;  
+}
+
  

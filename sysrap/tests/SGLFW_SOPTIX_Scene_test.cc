@@ -44,14 +44,8 @@ TODO: get view maths for raytrace and rasterized to match each other
 #include "SGLFW_Scene.h"
 
 
-int main()
+float kludge_extent(int ihandle)
 {
-    bool dump = false ; 
-
-    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
-    if(dump) std::cout << _scn->desc() ; 
- 
-    int ihandle = ssys::getenvint("HANDLE", 0)  ; 
     float extent = 10000.f ;
     switch(ihandle)
     {   
@@ -66,21 +60,38 @@ int main()
         case  7: extent = 500.f ; break ; 
         case  8: extent = 500.f ; break ; 
     } 
+    return extent ; 
+}
 
+
+
+
+int main()
+{
+    bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP"); 
+    bool dump = false ; 
+
+    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
+    if(DUMP) std::cout << _scn->desc() ; 
+ 
+    int ihandle = ssys::getenvint("HANDLE", 0)  ; 
     int FRAME = ssys::getenvint("FRAME", 0)  ; 
     int num_frame = _scn->frame.size(); 
+    const float* _ce = _scn->get_ce(0) ; 
+
     std::cout 
          << "num_frame " << num_frame 
          << "FRAME " << FRAME
+         << " _ce[3] " << ( _ce ? _ce[3] : -1.f )    
          << "\n" ; 
   
-    sfr fr = ( FRAME > -1 && FRAME < num_frame ) ? _scn->frame[FRAME] : sfr::Make(extent) ; 
+
+    sfr fr = ( FRAME > -1 && FRAME < num_frame ) ? _scn->frame[FRAME] : sfr::MakeFromCE(_ce) ; 
     // TODO: interactive frame jumping ?
 
 
     SGLM gm ; 
     gm.set_frame(fr) ; 
-    //std::cout << gm.desc() ;  
 
     SOPTIX opx ; 
     if(dump) std::cout << opx.desc() ; 

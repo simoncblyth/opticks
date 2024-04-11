@@ -69,6 +69,10 @@ struct SMesh
 
     SMesh(); 
 
+    const float* get_mn() const ; 
+    const float* get_mx() const ; 
+    const float* get_ce() const ; 
+
     void set_tri( const NP* _tri ); 
     int indices_num() const ; 
     int indices_offset() const ; 
@@ -305,6 +309,11 @@ inline SMesh::SMesh()
     ce(0.f)
 {
 }
+
+inline const float* SMesh::get_mn() const { return glm::value_ptr(mn); }
+inline const float* SMesh::get_mx() const { return glm::value_ptr(mx); }
+inline const float* SMesh::get_ce() const { return glm::value_ptr(ce); }
+
 
 /**
 SMesh::set_tri
