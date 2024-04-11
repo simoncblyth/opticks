@@ -20,6 +20,13 @@ not just OpenGL.
 * https://paroj.github.io/gltut/Basics/Tut01%20Following%20the%20Data.html
 
 
+
+Perspective math
+------------------
+
+* http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+
 For arranging consistent ray trace and rasterized renders
 -----------------------------------------------------------
 

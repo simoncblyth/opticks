@@ -83,6 +83,9 @@ might bring things closer.
 
 * http://www.songho.ca/opengl/gl_projectionmatrix.html
 
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glClipControl.xhtml
+* https://registry.khronos.org/OpenGL/extensions/ARB/ARB_clip_control.txt
+
 
 ::
 
@@ -151,38 +154,41 @@ might bring things closer.
     ///
 
 
-In [28]: simplify(BAP)
-Out[28]: 
-[ 2*n              l + r         ]
-[------    0       -----      0  ]
-[-l + r            l - r         ]
-[                                ]
-[         2*n      b + t         ]
-[  0     ------    -----      0  ]
-[        -b + t    b - t         ]
-[                                ]
-[                -(f + n)   2*f*n]
-[  0       0     ---------  -----]
-[                  f - n    f - n]
-[                                ]
-[  0       0         1        0  ]
 
-i
-In [34]: simplify(BAN)
-Out[34]: 
-[ 2*n          l + r          ]
-[-----    0    ------     0   ]
-[l - r         -l + r         ]
-[                             ]
-[        2*n   b + t          ]
-[  0    -----  ------     0   ]
-[       b - t  -b + t         ]
-[                             ]
-[              f + n   -2*f*n ]
-[  0      0    -----   -------]
-[              f - n    f - n ]
-[                             ]
-[  0      0      -1       0   ]
+From ~/env/graphics/pipeline/pipeline.py::
+
+    In [28]: simplify(BAP)
+    Out[28]: 
+    [ 2*n              l + r         ]
+    [------    0       -----      0  ]
+    [-l + r            l - r         ]
+    [                                ]
+    [         2*n      b + t         ]
+    [  0     ------    -----      0  ]
+    [        -b + t    b - t         ]
+    [                                ]
+    [                -(f + n)   2*f*n]
+    [  0       0     ---------  -----]
+    [                  f - n    f - n]
+    [                                ]
+    [  0       0         1        0  ]
+
+    i
+    In [34]: simplify(BAN)
+    Out[34]: 
+    [ 2*n          l + r          ]
+    [-----    0    ------     0   ]
+    [l - r         -l + r         ]
+    [                             ]
+    [        2*n   b + t          ]
+    [  0    -----  ------     0   ]
+    [       b - t  -b + t         ]
+    [                             ]
+    [              f + n   -2*f*n ]
+    [  0      0    -----   -------]
+    [              f - n    f - n ]
+    [                             ]
+    [  0      0      -1       0   ]
 
 
 

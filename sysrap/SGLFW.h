@@ -478,6 +478,10 @@ inline void SGLFW::init()
     printf("//SGLFW::init renderer %s \n", renderer );
     printf("//SGLFW::init version %s \n", version );
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);  
+
+
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // otherwise gl_PointSize setting ignored, setting in geom not vert shader used when present 
 
     int interval = 1 ; // The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.

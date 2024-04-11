@@ -20,19 +20,16 @@ as the static initialization would have happened already
 * TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
 
 
-WIP : rasterized and raytrace render consistency
+DONE : rasterized and raytrace render consistency
 -------------------------------------------------
 
-Usage with interactive changing of camera and view etc.. 
-and interactive flipping between rasterized and raytraced 
-is the way consistency of the projective and raytrace 
-maths was achieved for old Opticks with okc/Composition. 
+Using get_transverse_scale proportional to get_near_abs
+and longitudinally using get_near_abs from updateEyeBasis/updateProjection 
+for raytrace/rasterized succeeds to get the two perspective 
+renders to match closely. This follows the technique used in okc/Camera.cc.  
 
-Observation:
-
-1. rasterized view zooms in when increasing near, raytrace just cuts away tmin
-
-   * recall similar issue previously, fixed in Composition  
+* TODO: regain orthographic, above changes for prespective matching have messed that up
+* TODO: flipping between raytrace and raster with C:CUDA key looses quaternion rotation causing jump back 
 
 
 SGLM.h tests
@@ -395,6 +392,7 @@ struct SYSRAP_API SGLM : public SCMD
     float focal_manual ; 
     float near ; 
     float far ; 
+    float orthographic_scale ; 
 
 
     std::vector<std::string> log ; 
@@ -428,6 +426,8 @@ struct SYSRAP_API SGLM : public SCMD
     float* IDENTITY_ptr ; 
 
     void updateProjection(); 
+    float get_transverse_scale() const ; 
+
     void updateComposite(); 
 
 
@@ -524,7 +524,7 @@ inline void SGLM::SetTMIN( float v ){ TMIN = v ; std::cout << "SGLM::SetTMIN " <
 inline void SGLM::SetTMAX( float v ){ TMAX = v ; std::cout << "SGLM::SetTMAX " << TMAX << std::endl ; }
 
 inline void SGLM::IncZOOM( float v ){ ZOOM += v ; /*std::cout << "SGLM::IncZOOM " << ZOOM << std::endl ;*/ }
-inline void SGLM::IncTMIN( float v ){ TMIN += v ; std::cout << "SGLM::IncTMIN " << TMIN << std::endl ; }
+inline void SGLM::IncTMIN( float v ){ TMIN += v ; /*std::cout << "SGLM::IncTMIN " << TMIN << std::endl ;*/ }
 inline void SGLM::IncTMAX( float v ){ TMAX += v ; std::cout << "SGLM::IncTMAX " << TMAX << std::endl ; }
 
 
@@ -587,6 +587,7 @@ inline SGLM::SGLM()
 
     near(0.1f),   // units of get_nearfar_basis
     far(5.f),     // units of get_nearfar_basis
+    orthographic_scale(1.f), 
 
     projection(1.f),
     MV(1.f),
@@ -1215,8 +1216,6 @@ void SGLM::updateEyeSpace() // gaze,up,eye -> world2camera
 
     world2camera = glm::transpose(rot_ax) * t  ;
     camera2world = ti * rot_ax ;
-
-
 }
 
 std::string SGLM::descEyeSpace() const 
@@ -1260,6 +1259,17 @@ thats calculated in updateComposite.  As a result
 the order of the update calculation was changed 
 moving this to after updateComposite.
 
+::
+
+    Y:top   
+       |  .-Z:gaz
+       | .
+       |. 
+       +----- X:rht
+      /
+    +Z 
+      
+
 **/
 
 void SGLM::updateEyeBasis()
@@ -1273,17 +1283,18 @@ void SGLM::updateEyeBasis()
     glm::vec4 ori( 0., 0., 0., 1.);   
 
     float aspect = Aspect() ; 
-    float fsc = get_focal_basis() ;   // default is gazelength 
+    //float fsc = get_focal_basis() ;   // default is gazelength 
+    float fsc = get_transverse_scale() ; 
+
     float fscz = fsc/ZOOM  ;          // increased ZOOM decreases field-of-view
-    float gazlen = getGazeLength() ;  // HMM: maybe get_nearfar_basis for consistency
+    //float lsc = getGazeLength() ;     
+    float lsc = get_near_abs() ;     
 
     u = glm::vec3( IMV * rht ) * fscz * aspect ;  
     v = glm::vec3( IMV * top ) * fscz  ;  
-    w = glm::vec3( IMV * gaz ) * gazlen ;    
+    w = glm::vec3( IMV * gaz ) * lsc ;    
     e = glm::vec3( IMV * ori );   
 }
-
-
 
 /**
 SGLM::updateNearFar
@@ -1320,6 +1331,8 @@ std::string SGLM::descNearFar() const
 }
 
 
+
+
 /**
 SGLM::updateProjection
 -----------------------
@@ -1328,13 +1341,12 @@ Suspect that for consistency of rasterized and ray traced
 renders this will need to match SGLM::updateEyeBasis better in 
 the z-direction. 
 
-TODO: orthographic projection
-
 **/
 
 void SGLM::updateProjection()
 {
-    float fsc = get_focal_basis() ;
+    //float fsc = get_focal_basis() ;
+    float fsc = get_transverse_scale() ;
     float fscz = fsc/ZOOM  ; 
 
     float aspect = Aspect(); 
@@ -1352,6 +1364,13 @@ void SGLM::updateProjection()
        case CAM_PERSPECTIVE:  projection = glm::frustum( left, right, bottom, top, near_abs, far_abs ); break ; 
        case CAM_ORTHOGRAPHIC: projection = glm::ortho( left, right, bottom, top, near_abs, far_abs )  ; break ;
     }
+}
+
+
+float SGLM::get_transverse_scale() const
+{
+    assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
+    return cam == CAM_ORTHOGRAPHIC ? orthographic_scale : get_near_abs() ; 
 }
 
 
@@ -1373,8 +1392,9 @@ void SGLM::updateComposite()
 
     MV = look2eye * glm::mat4_cast(q_lookrot) * eye2look * world2camera ; 
 
-    IMV = camera2world * eye2look * glm::mat4_cast( glm::conjugate(q_lookrot) ) * look2eye ; 
+    IMV = camera2world * look2eye * glm::mat4_cast( glm::conjugate(q_lookrot) ) * eye2look ; 
  
+    //IMV = glm::inverse( MV );  
 
     MVP = projection * MV ;    // MVP aka world2clip (needed by OpenGL shader pipeline)
 }
@@ -1470,6 +1490,8 @@ SGLM::get_nearfar_basis
 
 Default is gazelength
 
+
+
 **/
 
 float SGLM::get_nearfar_basis() const 
@@ -1480,7 +1502,7 @@ float SGLM::get_nearfar_basis() const
         case BAS_MANUAL:     basis = nearfar_manual      ; break ; 
         case BAS_EXTENT:     basis = extent()            ; break ;  // only after set_frame
         case BAS_GAZELENGTH: basis = getGazeLength()     ; break ;  // only available after updateELU (default)
-        case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis 
+        case BAS_NEARABS:    assert(0)                   ; break ;  // this mode only valud for get_focal_basis (as near far in units of this) 
     }
     return basis ;  
 }
