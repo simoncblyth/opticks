@@ -209,6 +209,7 @@ Z:toggle.zoom
     static constexpr const char* TITLE = "SGLFW" ; 
 
     SGLM& gm ; 
+    int frame_idx ; 
 
     int width ; 
     int height ; 
@@ -244,22 +245,31 @@ Z:toggle.zoom
     void handle_event(GLEQevent& event); 
 
     void key_pressed(unsigned key); 
+    void numkey_pressed(unsigned num); 
+    void set_frame_idx(int _idx); 
+    int  get_frame_idx() const ;
+
     void key_repeated(unsigned key); 
     void key_released(unsigned key); 
 
     void button_pressed(unsigned button, unsigned mods); 
     void button_released(unsigned button, unsigned mods); 
 
+
     void cursor_moved(int ix, int iy); 
     void cursor_moved_action(); 
 
     int command(const char* cmd); 
     static void Help(); 
+    void home(); 
+    void _desc(); 
+    void tcam(); 
     static std::string FormCommand(const char* token, float value); 
 
     void getWindowSize();
     std::string descWindowSize() const;
 
+    void setCursorPos(float ndc_x, float ndc_y);
     void getStartPos(); 
     std::string descDrag() const;
     std::string descStartPos() const;  
@@ -357,16 +367,27 @@ inline void SGLFW::key_pressed(unsigned key)
 
     switch(key)
     {
-        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom  ; break ; 
-        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
+        case GLFW_KEY_0:
+        case GLFW_KEY_1:
+        case GLFW_KEY_2:
+        case GLFW_KEY_3:
+        case GLFW_KEY_4:
+        case GLFW_KEY_5:
+        case GLFW_KEY_6:
+        case GLFW_KEY_7:
+        case GLFW_KEY_8:
+        case GLFW_KEY_9:
+                              numkey_pressed(key - GLFW_KEY_0) ; break ; 
+        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom       ; break ; 
+        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin       ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
         case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
         case GLFW_KEY_C:      toggle.cuda = !toggle.cuda  ; break ; 
         case GLFW_KEY_U:      toggle.norm = !toggle.norm  ; break ; 
         case GLFW_KEY_T:      toggle.tran = !toggle.tran  ; break ; 
-        case GLFW_KEY_B:      gm.command("--desc")        ; break ; 
-        case GLFW_KEY_H:      gm.command("--home")        ; break ; 
-        case GLFW_KEY_O:      command("--help")           ; break ;  
+        case GLFW_KEY_B:      command("--desc")           ; break ; 
+        case GLFW_KEY_H:      command("--home")           ; break ; 
+        case GLFW_KEY_O:      command("--tcam")           ; break ;  
         case GLFW_KEY_ESCAPE: command("--exit")           ; break ;  
     }
    
@@ -375,7 +396,13 @@ inline void SGLFW::key_pressed(unsigned key)
     std::cout << toggle.desc() << std::endl ; 
 }
 
-
+inline void SGLFW::numkey_pressed(unsigned num)
+{
+    std::cout << "SGLFW::numkey_pressed " << num << "\n" ; 
+    set_frame_idx(num); 
+}
+inline void SGLFW::set_frame_idx(int _idx){ frame_idx = _idx ; }
+inline int  SGLFW::get_frame_idx() const { return frame_idx ; }
 
 inline void SGLFW::key_repeated(unsigned key)
 {
@@ -409,6 +436,9 @@ inline int SGLFW::command(const char* cmd)
 {
     if(strcmp(cmd, "--exit") == 0) renderloop_exit(); 
     if(strcmp(cmd, "--help") == 0) Help(); 
+    if(strcmp(cmd, "--home") == 0) home(); 
+    if(strcmp(cmd, "--desc") == 0) _desc(); 
+    if(strcmp(cmd, "--tcam") == 0) tcam(); 
     return 0 ;  
 }
 
@@ -416,6 +446,22 @@ inline void SGLFW::Help()
 {
     std::cout << HELP ; 
 }
+inline void SGLFW::home()
+{
+    setCursorPos(0.f,0.f); 
+    gm.command("--home"); 
+} 
+inline void SGLFW::_desc()
+{
+    gm.command("--desc"); 
+}
+inline void SGLFW::tcam()
+{
+    gm.command("--tcam"); 
+}
+
+
+
 
 
 inline std::string SGLFW::FormCommand(const char* token, float value)  // static
@@ -459,6 +505,15 @@ inline std::string SGLFW::descWindowSize() const
     std::string str = ss.str();
     return str ;
 }
+
+
+inline void SGLFW::setCursorPos(float ndc_x, float ndc_y )
+{
+    float x = (1.f + ndc_x)*width/2.f ; 
+    float y = (1.f - ndc_y)*height/2.f ; 
+    glfwSetCursorPos(window, x, y );
+}
+
 
 /**
 SGLFW::getStartPos
@@ -600,6 +655,7 @@ inline std::string SGLFW::descStartPos() const
 inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
+    frame_idx(-1),
     width(gm.Width()),
     height(gm.Height()),
     title(TITLE),

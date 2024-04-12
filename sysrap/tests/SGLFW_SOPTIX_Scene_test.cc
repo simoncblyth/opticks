@@ -44,27 +44,6 @@ TODO: get view maths for raytrace and rasterized to match each other
 #include "SGLFW_Scene.h"
 
 
-float kludge_extent(int ihandle)
-{
-    float extent = 10000.f ;
-    switch(ihandle)
-    {   
-        case -1: extent = 12000.f ; break ; 
-        case  0: extent = 12000.f ; break ; 
-        case  1: extent = 100.f ; break ; 
-        case  2: extent = 500.f ; break ; 
-        case  3: extent = 500.f ; break ; 
-        case  4: extent = 500.f ; break ; 
-        case  5: extent = 100.f ; break ; 
-        case  6: extent = 200.f ; break ; 
-        case  7: extent = 500.f ; break ; 
-        case  8: extent = 500.f ; break ; 
-    } 
-    return extent ; 
-}
-
-
-
 
 int main()
 {
@@ -74,24 +53,8 @@ int main()
     SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
     if(DUMP) std::cout << _scn->desc() ; 
  
-    int ihandle = ssys::getenvint("HANDLE", 0)  ; 
-    int FRAME = ssys::getenvint("FRAME", 0)  ; 
-    int num_frame = _scn->frame.size(); 
-    const float* _ce = _scn->get_ce(0) ; 
+    int ihandle = ssys::getenvint("HANDLE", -1)  ; 
 
-    std::cout 
-         << "num_frame " << num_frame 
-         << "FRAME " << FRAME
-         << " _ce[3] " << ( _ce ? _ce[3] : -1.f )    
-         << "\n" ; 
-  
-
-    sfr fr = ( FRAME > -1 && FRAME < num_frame ) ? _scn->frame[FRAME] : sfr::MakeFromCE(_ce) ; 
-    // TODO: interactive frame jumping ?
-
-
-    SGLM gm ; 
-    gm.set_frame(fr) ; 
 
     SOPTIX opx ; 
     if(dump) std::cout << opx.desc() ; 
@@ -112,8 +75,15 @@ int main()
     if(dump) std::cout << sbt.desc() ; 
   
  
+    SGLM gm ;
     SGLFW_Scene glsc(_scn, &gm );
+
+    int FRAME = ssys::getenvint("FRAME", -1) ; 
+    glsc.setFrameIdx(FRAME); 
+
+
     SGLFW* gl = glsc.gl ; 
+    gl->setCursorPos(0.f,0.f); 
 
     SGLFW_CUDA interop(gm); 
  
@@ -126,6 +96,12 @@ int main()
     while(gl->renderloop_proceed())
     {   
         gl->renderloop_head();
+
+        if(gm.get_frame_idx() != gl->get_frame_idx())
+        {
+            glsc.setFrameIdx(gl->get_frame_idx()); 
+        } 
+
 
         if( gl->toggle.cuda )
         {

@@ -386,6 +386,7 @@ struct SYSRAP_API SGLM : public SCMD
     void key_pressed_action( unsigned modifiers ); 
 
     void home(); 
+    void tcam(); 
 
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
@@ -394,6 +395,7 @@ struct SYSRAP_API SGLM : public SCMD
 
     static constexpr const char* _DUMP = "SGLM__set_frame_DUMP" ; 
     void set_frame( const sfr& fr ); 
+    int get_frame_idx() const ; 
 
     float extent() const ; 
     float tmin_abs() const ; 
@@ -737,9 +739,6 @@ void SGLM::setEyeRotation( const glm::vec2& a, const glm::vec2& b )
 
 
 
-
-
-
 void SGLM::cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned modifiers )
 {
     if(SGLM_Modifiers::IsR(modifiers))
@@ -759,8 +758,8 @@ void SGLM::cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned
 
 void SGLM::key_pressed_action( unsigned modifiers )
 {
-    float speed = SGLM_Modifiers::IsShift(modifiers) ? 20.f : 10.f ;   
-    // use some basis ? gazelen ? 
+    float factor = SGLM_Modifiers::IsShift(modifiers) ? 5.f : 1.f ;   
+    float speed = factor*extent()/100. ; 
 
     if(SGLM_Modifiers::IsW(modifiers)) eyeshift.z += speed ; 
     if(SGLM_Modifiers::IsS(modifiers)) eyeshift.z -= speed ; 
@@ -780,6 +779,11 @@ void SGLM::home()
     eyeshift.z = 0.f ; 
     q_lookrot = SGLM_Arcball::Identity();
     q_eyerot = SGLM_Arcball::Identity();
+    SetZOOM(1.f); 
+}
+void SGLM::tcam()
+{
+    cam = SCAM::Next(cam); 
 }
 
 
@@ -844,14 +848,9 @@ void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
     for(int i=0 ; i < num_op ; i++)
     {
         const char* op = parse.opt[i].c_str(); 
-        if(strcmp(op,"desc")==0)
-        {
-            std::cout << gm->desc() << std::endl ;  
-        }
-        else if(strcmp(op,"home")==0)
-        {
-            gm->home();  
-        }
+        if(     strcmp(op,"desc")==0) std::cout << gm->desc() << std::endl ;  
+        else if(strcmp(op,"home")==0) gm->home();  
+        else if(strcmp(op,"tcam")==0) gm->tcam();  
         else
         {
             std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl; 
@@ -975,6 +974,7 @@ inline void SGLM::set_frame( const sfr& fr_ )
     if(DUMP > 0) std::cout << _DUMP << ":" << DUMP << "\n" << desc() ; 
 }
 
+inline int SGLM::get_frame_idx() const { return fr.get_idx(); }
 //inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
 
 inline float SGLM::extent() const {   return fr.ce.w > 0 ? fr.ce.w : CE.w ; }

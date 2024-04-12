@@ -41,6 +41,9 @@ struct sfr
     template<typename T> void set_ce( const T* _ce ); 
     template<typename T> void set_extent( T _w ); 
 
+    void set_idx(int idx) ; 
+    int  get_idx() const ; 
+
     void set_name( const char* _name ); 
     const char* get_name() const ; 
     std::string get_key() const ; 
@@ -114,6 +117,9 @@ inline void sfr::set_extent( T _w )
 {
     ce.w = _w ; 
 }
+
+inline void sfr::set_idx(int idx) { aux2.w = idx ; }
+inline int  sfr::get_idx() const  { return aux2.w ; }
 
 
 inline const char* sfr::get_name() const 

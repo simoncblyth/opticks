@@ -17,6 +17,7 @@ struct SCAM
 {
     static const char* Name(int cam);
     static int        Type(const char* name);
+    static int        Next(int curr); 
     static constexpr const char* PERSPECTIVE_ = "perspective" ;
     static constexpr const char* ORTHOGRAPHIC_ = "orthographic" ;
     static constexpr const char* EQUIRECTANGULAR_ = "equirectangular" ;
@@ -54,7 +55,20 @@ inline int SCAM::Type(const char* name)
     if(strcmp(name,PERSPECTIVE_) == 0 )     type = CAM_PERSPECTIVE ;
     if(strcmp(name,ORTHOGRAPHIC_) == 0 )    type = CAM_ORTHOGRAPHIC ;
     if(strcmp(name,EQUIRECTANGULAR_) == 0 ) type = CAM_EQUIRECTANGULAR ;
-    return type ;
+    return type ; 
 }
+
+inline int SCAM::Next(int curr)
+{
+     assert( curr == CAM_PERSPECTIVE || curr == CAM_ORTHOGRAPHIC );
+     return curr == CAM_PERSPECTIVE ? CAM_ORTHOGRAPHIC : CAM_PERSPECTIVE ; 
+}
+
+
+
+
+
+
+
 #endif
 

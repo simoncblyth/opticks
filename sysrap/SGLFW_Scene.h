@@ -30,6 +30,8 @@ struct SGLFW_Scene
     void initProg(); 
     void initMesh(); 
 
+    void setFrameIdx(int idx);
+
     SGLFW_Program* getIProg() const ; 
     SGLFW_Program* getProg() const ; 
 
@@ -74,6 +76,7 @@ inline void SGLFW_Scene::init()
     initProg();
     initMesh();
 }
+
 
 
 inline void SGLFW_Scene::initProg()
@@ -126,6 +129,31 @@ inline void SGLFW_Scene::initMesh()
         mesh.push_back(_mesh); 
     }
 }
+
+
+
+inline void SGLFW_Scene::setFrameIdx(int _idx)
+{
+    int num_frame = sc->frame.size(); 
+    int idx = ( _idx > -1 && _idx < num_frame ) ? _idx : -1 ; 
+
+    const float* _ce = sc->get_ce(0) ; 
+    std::cout 
+         << "SGLFW_Scene::setFrameIdx"
+         << " num_frame " << num_frame 
+         << " _idx " << _idx
+         << " idx " << idx
+         << " _ce[3] " << ( _ce ? _ce[3] : -1.f )    
+         << "\n" 
+         ; 
+  
+    sfr fr = idx == -1 ? sfr::MakeFromCE(_ce) : sc->frame[idx] ; 
+    fr.set_idx(idx); 
+    gm->set_frame(fr);
+
+    assert( gm->get_frame_idx() == idx ); 
+}
+
 
 
 /**

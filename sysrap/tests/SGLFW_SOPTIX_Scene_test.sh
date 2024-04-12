@@ -105,7 +105,7 @@ export FULLSCREEN=${FULLSCREEN:-$fullscreen}
 
 handle=-1 # -1:IAS 0...8 GAS indices 
 export HANDLE=${HANDLE:-$handle}
-
+:
 frame=-1
 export FRAME=${FRAME:-$frame}
 
@@ -130,11 +130,12 @@ PATH=$PATH:$CUDA_PREFIX/bin
 vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX"
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
+    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
 fi 
 
 if [ "${arg/ptx}" != "$arg" ]; then
-   nvcc $cu \
+    echo $BASH_SOURCE ptx
+    nvcc $cu \
         -ptx -std=c++11 \
         -c \
         -lineinfo \
@@ -143,11 +144,13 @@ if [ "${arg/ptx}" != "$arg" ]; then
         -I$CUDA_PREFIX/include  \
         -I$OPTIX_PREFIX/include  \
         -o $ptx
-   [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1 
+    echo $BASH_SOURCE ptx DONE
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
 
+    echo $BASH_SOURCE build
     [ "$(uname)" == "Darwin" ] && echo $BASH_SOURCE : ERROR : THIS NEEDS OPTIX7+ SO LINUX ONLY && exit 1
 
     gcc $name.cc \
@@ -176,6 +179,7 @@ if [ "${arg/build}" != "$arg" ]; then
     # -Wno-unused-private-field \  ## clang-ism ? 
 
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
+    echo $BASH_SOURCE build DONE
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
