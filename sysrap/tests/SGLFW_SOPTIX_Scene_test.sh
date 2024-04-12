@@ -67,7 +67,7 @@ dump=1
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
 
-export SGLFW_SOPTIX_Scene_test_DUMP=1  
+#export SGLFW_SOPTIX_Scene_test_DUMP=1  
 
 
 wh=1024,768

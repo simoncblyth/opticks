@@ -7,6 +7,47 @@ Light touch encapsulation of OpenGL window and shader program,
 that means trying to hide boilerplate, but not making lots of 
 decisions for user and getting complicated and inflexible like 
 the old oglrap/Frame.hh oglrap/OpticksViz did. 
+
+WASD : Navigation in 3D space 
+-------------------------------
+
+* FPS : first-person shooters
+* https://learnopengl.com/Getting-started/Camera
+
+
+* :google:`mouse interface to move around 3D environment`
+* https://www.researchgate.net/publication/220863069_Comparison_of_3D_Navigation_Interfaces
+
+For "first-person shooters", navigation typically uses a combination of mouse
+and keyboard. The keyboard keys "WASD" are used for movement forward, a side
+step (“strafe”) left, backward, and a side step right, respectively. The users
+view direction is controlled by the mouse so that moving the mouse rotates the
+view direction of the users head.
+
+To change the view direction the user presses and
+holds either of the side mouse buttons. When pressing and
+holding either side button the cursor disappears as a secondary
+indication that the view direction is tethered to the mouse
+movement. Likewise, when the buttons are not pressed the
+cursor is displayed so the user can then use it to select (and
+manipulate) objects. This user interface implementation
+enables a seamless transition between navigation and
+manipulation without the need for designating a button or keys
+solely for mode switching.
+
+An important attribute to note about this interface is that
+some movements can only be achieved by using the keyboard
+and mouse buttons in conjunction. To turn while moving
+forward or backward it is necessary to hold down the ‘W’ or
+‘S’ key simultaneously with a mouse side button, and then
+moving the mouse left or right to “steer”. Orbiting an object
+can also be achieved by holding ‘A’ or ‘D’ simultaneously
+with a side mouse button and moving the mouse to change the
+view direction simultaneously while the user side steps. This
+makes this user interface more powerful than ‘Click-to-Move’.
+If done properly, one can keep a point of the virtual
+environment fixed in the center of the view while moving
+around it.
     
 **/
 
@@ -43,8 +84,128 @@ the old oglrap/Frame.hh oglrap/OpticksViz did.
 #endif
 
 
+struct SGLFW_Keys
+{
+    enum { NUM_KEYS = 512 } ;
+    bool down[NUM_KEYS] ; 
+
+    SGLFW_Keys();  
+    void key_pressed(unsigned key);
+    void key_released(unsigned key);
+    unsigned modifiers() const ; 
+};
+
+inline SGLFW_Keys::SGLFW_Keys()
+{
+   for(int i=0 ; i < NUM_KEYS ; i++) down[i] = false ; 
+}
+inline void SGLFW_Keys::key_pressed(unsigned key)
+{
+    if(key < NUM_KEYS) down[key] = true ; 
+}
+inline void SGLFW_Keys::key_released(unsigned key)
+{ 
+    if(key < NUM_KEYS) down[key] = false ; 
+}
+/**
+SGLFW_Keys::modifiers
+----------------------
+
+Bitfield representing a restricted selection of "controller" keys 
+that are currently held down.
+ 
+NB these keys should be kept distinct from toggle keys.  
+
+**/
+inline unsigned SGLFW_Keys::modifiers() const 
+{
+    unsigned modifiers = 0 ;
+    if( down[GLFW_KEY_LEFT_SHIFT]   || down[GLFW_KEY_RIGHT_SHIFT] )    modifiers += SGLM_Modifiers::MOD_SHIFT ; 
+    if( down[GLFW_KEY_LEFT_CONTROL] || down[GLFW_KEY_RIGHT_CONTROL] )  modifiers += SGLM_Modifiers::MOD_CONTROL ; 
+    if( down[GLFW_KEY_LEFT_ALT]     || down[GLFW_KEY_RIGHT_ALT] )      modifiers += SGLM_Modifiers::MOD_ALT ; 
+    if( down[GLFW_KEY_LEFT_SUPER]   || down[GLFW_KEY_RIGHT_SUPER] )    modifiers += SGLM_Modifiers::MOD_SUPER ; 
+
+    if( down[GLFW_KEY_W] ) modifiers += SGLM_Modifiers::MOD_W ; 
+    if( down[GLFW_KEY_A] ) modifiers += SGLM_Modifiers::MOD_A ; 
+    if( down[GLFW_KEY_S] ) modifiers += SGLM_Modifiers::MOD_S ; 
+    if( down[GLFW_KEY_D] ) modifiers += SGLM_Modifiers::MOD_D ; 
+    //if( down[GLFW_KEY_Z] ) modifiers += SGLM_Modifiers::MOD_Z ; 
+    //if( down[GLFW_KEY_X] ) modifiers += SGLM_Modifiers::MOD_X ; 
+    if( down[GLFW_KEY_Q] ) modifiers += SGLM_Modifiers::MOD_Q ; 
+    if( down[GLFW_KEY_E] ) modifiers += SGLM_Modifiers::MOD_E ; 
+    if( down[GLFW_KEY_R] ) modifiers += SGLM_Modifiers::MOD_R ; 
+    if( down[GLFW_KEY_Y] ) modifiers += SGLM_Modifiers::MOD_Y ; 
+
+    return modifiers ; 
+}
+
+
+
+
+
+
 struct SGLFW : public SCMD 
 {
+    static constexpr const char* HELP =  R"LITERAL(
+SGLFW.h
+=======
+
+A
+   (WASDQE) hold to change eyeshift, translate left 
+B
+   invokes SGLM::desc describing view parameters
+C
+   toggle.cuda between rasterized and raytrace render 
+D
+   (WASDQE) hold to change eyeshift, translate right 
+E
+   (WASDQE) hold to change eyeshift, translate down 
+F
+   toggle.tmax change far by moving cursor vertically 
+G
+   -
+H
+   invokes SGLM::home returning to initial position with no lookrotation or eyeshift
+I
+   -
+J
+   -
+K
+   -
+L
+   -
+M
+   -
+N
+   toggle.tmin change near by moving cursor vertically 
+O
+   dump this help string
+P
+   -
+Q
+   (WASDQE) hold to change eyeshift, translate up 
+
+R:formerly used toggle.lrot now require holding R key down whilst arcball dragging mouse
+   change look rotation 
+S
+   (WASDQE) hold to change eyeshift, translate backwards 
+T:toggle.tran
+   no longer used : now use holding down WASDQE keys to change the eyeshift
+U:toggle.norm
+   for rasterized render toggle between wireframe and normal shading 
+V
+   -
+W
+   (WASDQE) hold to change eyeshift, translate forwards 
+X
+   -
+Y
+   experimental mouse control of eyerotation
+Z:toggle.zoom
+   change zoom scaling by moving cursor vertically 
+
+
+)LITERAL" ; 
     static constexpr const char* TITLE = "SGLFW" ; 
 
     SGLM& gm ; 
@@ -72,6 +233,8 @@ struct SGLFW : public SCMD
     glm::vec4 drag ; 
 
     SGLFW_Toggle toggle = {} ; 
+    SGLFW_Keys keys = {} ; 
+
 
     bool renderloop_proceed(); 
     void renderloop_exit(); 
@@ -79,11 +242,19 @@ struct SGLFW : public SCMD
     void renderloop_tail(); 
 
     void handle_event(GLEQevent& event); 
+
     void key_pressed(unsigned key); 
+    void key_repeated(unsigned key); 
     void key_released(unsigned key); 
+
+    void button_pressed(unsigned button, unsigned mods); 
+    void button_released(unsigned button, unsigned mods); 
+
     void cursor_moved(int ix, int iy); 
     void cursor_moved_action(); 
+
     int command(const char* cmd); 
+    static void Help(); 
     static std::string FormCommand(const char* token, float value); 
 
     void getWindowSize();
@@ -152,15 +323,31 @@ inline void SGLFW::handle_event(GLEQevent& event)
     switch(event.type)
     {
         case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ; 
+        case GLEQ_KEY_REPEATED:  key_repeated(event.keyboard.key)       ; break ;
         case GLEQ_KEY_RELEASED:  key_released(event.keyboard.key)       ; break ;
+        case GLEQ_BUTTON_PRESSED:  button_pressed(  event.mouse.button, event.mouse.mods)  ; break ; 
+        case GLEQ_BUTTON_RELEASED: button_released( event.mouse.button, event.mouse.mods)  ; break ; 
         case GLEQ_CURSOR_MOVED:  cursor_moved(event.pos.x, event.pos.y) ; break ;
         default:                                                        ; break ; 
     }
 }
 
+
+/**
+SGLFW::key_pressed
+--------------------
+
+HMM:dont like the arbitrary split between here and SGLM.h for interaction control 
+Maybe remove the toggle or do that in SGLM ?
+
+**/
+
+
 inline void SGLFW::key_pressed(unsigned key)
 {
-    //std::cout << "SGLFW::key_pressed " << key << std::endl ;
+    keys.key_pressed(key); 
+    //unsigned modifiers = keys.modifiers() ;
+
     getStartPos(); 
     std::cout 
         << descStartPos() 
@@ -170,31 +357,66 @@ inline void SGLFW::key_pressed(unsigned key)
 
     switch(key)
     {
-        case GLFW_KEY_ESCAPE: command("--exit")      ; break ;  
         case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom  ; break ; 
         case GLFW_KEY_N:      toggle.tmin = !toggle.tmin  ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
         case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
         case GLFW_KEY_C:      toggle.cuda = !toggle.cuda  ; break ; 
-        case GLFW_KEY_W:      toggle.norm = !toggle.norm  ; break ; 
-        case GLFW_KEY_A:      gm.command("--zoom 10")     ; break ; 
-        case GLFW_KEY_D:      gm.command("--desc")        ; break ; 
+        case GLFW_KEY_U:      toggle.norm = !toggle.norm  ; break ; 
+        case GLFW_KEY_T:      toggle.tran = !toggle.tran  ; break ; 
+        case GLFW_KEY_B:      gm.command("--desc")        ; break ; 
+        case GLFW_KEY_H:      gm.command("--home")        ; break ; 
+        case GLFW_KEY_O:      command("--help")           ; break ;  
+        case GLFW_KEY_ESCAPE: command("--exit")           ; break ;  
     }
+   
+    //if(modifiers > 0) gm.key_pressed_action(modifiers) ; // not triggered repeatedly enough for navigation
 
     std::cout << toggle.desc() << std::endl ; 
-
 }
+
+
+
+inline void SGLFW::key_repeated(unsigned key)
+{
+    //std::cout << "SGLFW::key_repeated " << key << "\n" ; 
+    keys.key_pressed(key); 
+    unsigned modifiers = keys.modifiers() ;
+    if(modifiers == 0) return ;  
+    gm.key_pressed_action(modifiers) ; 
+    gm.update(); 
+}
+
 inline void SGLFW::key_released(unsigned key)
 {
-    //std::cout << "SGLFW::key_released " << key << std::endl ;
+    keys.key_released(key); 
 }
+
+inline void SGLFW::button_pressed(unsigned button, unsigned mods)
+{
+    std::cout << "SGLFW::button_pressed " << button << " " << mods << "\n" ; 
+}
+inline void SGLFW::button_released(unsigned button, unsigned mods)
+{
+    std::cout << "SGLFW::button_released " << button << " " << mods << "\n" ; 
+}
+
+
+
 
 
 inline int SGLFW::command(const char* cmd)
 {
     if(strcmp(cmd, "--exit") == 0) renderloop_exit(); 
+    if(strcmp(cmd, "--help") == 0) Help(); 
     return 0 ;  
 }
+
+inline void SGLFW::Help() 
+{
+    std::cout << HELP ; 
+}
+
 
 inline std::string SGLFW::FormCommand(const char* token, float value)  // static
 {
@@ -300,6 +522,7 @@ inline void SGLFW::cursor_moved(int ix, int iy)
 
 inline void SGLFW::cursor_moved_action()
 {
+    unsigned modifiers = keys.modifiers() ;
     float dy = drag.w ; 
     if(toggle.zoom)
     {
@@ -316,10 +539,22 @@ inline void SGLFW::cursor_moved_action()
         std::string cmd = FormCommand("--inc-tmax", dy ); 
         gm.command(cmd.c_str()) ;
     }
+    /*
     else if(toggle.lrot)
     {
         //std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ; 
         gm.setLookRotation(start_ndc, move_ndc); 
+        gm.update(); 
+    }
+    else if(toggle.tran)
+    {
+        gm.setEyeShift(start_ndc, move_ndc, modifiers );
+        gm.update(); 
+    }
+    */
+    else
+    {
+        gm.cursor_moved_action(start_ndc, move_ndc, modifiers );
         gm.update(); 
     }
 }
@@ -402,10 +637,6 @@ SGLFW::init
 1. OpenGL initialize
 2. create window
 
-Perhaps this needs to::
-
-   glEnable(GL_DEPTH_TEST)
-
 
 Example responses::
 
@@ -478,6 +709,8 @@ inline void SGLFW::init()
     printf("//SGLFW::init renderer %s \n", renderer );
     printf("//SGLFW::init version %s \n", version );
 
+
+    //  https://learnopengl.com/Advanced-OpenGL/Depth-testing
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);  
 

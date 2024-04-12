@@ -14,10 +14,12 @@ SGLM_Arcball.h
 **/
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 
 struct SGLM_Arcball
 {
+    static glm::quat Identity() ; 
     static glm::quat A2B_Arcball( const glm::vec3& a, const glm::vec3& b ) ; 
     static glm::quat A2B_Screen( const glm::vec2& a, const glm::vec2& b ) ; 
     static float ZProject(const glm::vec2& p ); 
@@ -32,6 +34,11 @@ SGLM_Arcball::A2B_Arcball
   on the equator of the hypersphere)
 
 **/
+
+inline glm::quat SGLM_Arcball::Identity()
+{
+    return glm::identity<glm::quat>(); 
+}
 
 inline glm::quat SGLM_Arcball::A2B_Arcball( const glm::vec3& a, const glm::vec3& b )
 {

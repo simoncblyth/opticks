@@ -44,6 +44,11 @@ inline void SGLFW__check(const char* path, int line) // static
 
 
 
+/**
+HMM: move to SGLM_Toggle as no use of GLFW 
+
+**/
+
 struct SGLFW_Toggle
 {
     bool zoom ; 
@@ -52,6 +57,7 @@ struct SGLFW_Toggle
     bool lrot ;
     bool cuda ;
     bool norm ;
+    bool tran ;
 
     std::string desc() const ; 
 };
@@ -66,6 +72,7 @@ inline std::string SGLFW_Toggle::desc() const
        << " lrot:" << ( lrot ? "Y" : "N" )
        << " cuda:" << ( cuda ? "Y" : "N" )
        << " norm:" << ( norm ? "Y" : "N" )
+       << " tran:" << ( tran ? "Y" : "N" )
        ;
     std::string str = ss.str(); 
     return str ; 

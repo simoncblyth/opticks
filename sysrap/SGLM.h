@@ -217,6 +217,83 @@ inline std::string SGLM_Parse::desc() const
 }
 
 
+struct SGLM_Modifiers
+{
+    enum { 
+           MOD_SHIFT   = 0x1 << 0,
+           MOD_CONTROL = 0x1 << 1,
+           MOD_ALT     = 0x1 << 2,
+           MOD_SUPER   = 0x1 << 3,
+           MOD_W       = 0x1 << 4,
+           MOD_A       = 0x1 << 5,
+           MOD_S       = 0x1 << 6,
+           MOD_D       = 0x1 << 7,
+           MOD_Z       = 0x1 << 8,
+           MOD_X       = 0x1 << 9,
+           MOD_Q       = 0x1 << 10,
+           MOD_E       = 0x1 << 11,
+           MOD_R       = 0x1 << 12,
+           MOD_Y       = 0x1 << 13
+          };
+
+    static bool IsShift(unsigned modifiers);
+    static bool IsControl(unsigned modifiers);
+    static bool IsAlt(unsigned modifiers);
+    static bool IsSuper(unsigned modifiers);
+    static bool IsW(unsigned modifiers);
+    static bool IsA(unsigned modifiers);
+    static bool IsS(unsigned modifiers);
+    static bool IsD(unsigned modifiers);
+    static bool IsZ(unsigned modifiers);
+    static bool IsX(unsigned modifiers);
+    static bool IsQ(unsigned modifiers);
+    static bool IsE(unsigned modifiers);
+    static bool IsR(unsigned modifiers);
+    static bool IsY(unsigned modifiers);
+
+    static std::string Desc(unsigned modifiers);
+};
+
+inline bool SGLM_Modifiers::IsShift(  unsigned modifiers) { return 0 != (modifiers & MOD_SHIFT) ; }
+inline bool SGLM_Modifiers::IsControl(unsigned modifiers) { return 0 != (modifiers & MOD_CONTROL) ; }
+inline bool SGLM_Modifiers::IsAlt(    unsigned modifiers) { return 0 != (modifiers & MOD_ALT) ; }
+inline bool SGLM_Modifiers::IsSuper(  unsigned modifiers) { return 0 != (modifiers & MOD_SUPER) ; }
+inline bool SGLM_Modifiers::IsW(      unsigned modifiers) { return 0 != (modifiers & MOD_W) ; }
+inline bool SGLM_Modifiers::IsA(      unsigned modifiers) { return 0 != (modifiers & MOD_A) ; }
+inline bool SGLM_Modifiers::IsS(      unsigned modifiers) { return 0 != (modifiers & MOD_S) ; }
+inline bool SGLM_Modifiers::IsD(      unsigned modifiers) { return 0 != (modifiers & MOD_D) ; }
+inline bool SGLM_Modifiers::IsZ(      unsigned modifiers) { return 0 != (modifiers & MOD_Z) ; }
+inline bool SGLM_Modifiers::IsX(      unsigned modifiers) { return 0 != (modifiers & MOD_X) ; }
+inline bool SGLM_Modifiers::IsQ(      unsigned modifiers) { return 0 != (modifiers & MOD_Q) ; }
+inline bool SGLM_Modifiers::IsE(      unsigned modifiers) { return 0 != (modifiers & MOD_E) ; }
+inline bool SGLM_Modifiers::IsR(      unsigned modifiers) { return 0 != (modifiers & MOD_R) ; }
+inline bool SGLM_Modifiers::IsY(      unsigned modifiers) { return 0 != (modifiers & MOD_Y) ; }
+
+inline std::string SGLM_Modifiers::Desc(unsigned modifiers)
+{
+    std::stringstream ss ; 
+    ss << "SGLM_Modifiers::Desc[" 
+       << ( IsShift(  modifiers) ? " SHIFT"   : "" )     
+       << ( IsControl(modifiers) ? " CONTROL" : "" )   
+       << ( IsAlt(    modifiers) ? " ALT"     : "" ) 
+       << ( IsSuper(  modifiers) ? " SUPER"   : "" )
+       << ( IsW(      modifiers) ? " W"   : "" )
+       << ( IsA(      modifiers) ? " A"   : "" )
+       << ( IsS(      modifiers) ? " S"   : "" )
+       << ( IsD(      modifiers) ? " D"   : "" )
+       << ( IsZ(      modifiers) ? " Z"   : "" )
+       << ( IsX(      modifiers) ? " X"   : "" )
+       << ( IsQ(      modifiers) ? " Q"   : "" )
+       << ( IsE(      modifiers) ? " E"   : "" )
+       << ( IsR(      modifiers) ? " R"   : "" )
+       << ( IsY(      modifiers) ? " Y"   : "" )
+       <<  "]"
+       ;
+    std::string str = ss.str();
+    return str ; 
+}
+
+
 
 
 struct SYSRAP_API SGLM : public SCMD 
@@ -298,8 +375,17 @@ struct SYSRAP_API SGLM : public SCMD
 
     SGLM(); 
     void init(); 
+
     void setLookRotation(float angle_deg, glm::vec3 axis ); 
     void setLookRotation( const glm::vec2& a, const glm::vec2& b ); 
+
+    void setEyeRotation(float angle_deg, glm::vec3 axis ); 
+    void setEyeRotation( const glm::vec2& a, const glm::vec2& b ); 
+
+    void cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned modifiers ); 
+    void key_pressed_action( unsigned modifiers ); 
+
+    void home(); 
 
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
@@ -346,6 +432,8 @@ struct SYSRAP_API SGLM : public SCMD
     glm::mat4 look2eye ; 
 
     glm::quat q_lookrot ; 
+    glm::quat q_eyerot ; 
+    glm::vec3 eyeshift  ; 
 
     float     get_escale_() const ; 
     glm::mat4 get_escale() const ; 
@@ -567,6 +655,8 @@ inline SGLM::SGLM()
     eye2look(1.f),
     look2eye(1.f),
     q_lookrot(1.f,0.f,0.f,0.f),   // identity quaternion
+    q_eyerot(1.f,0.f,0.f,0.f),   // identity quaternion
+    eyeshift(0.f,0.f,0.f),
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
     top_ax(0.f,0.f,0.f),
@@ -617,6 +707,14 @@ void SGLM::setLookRotation(float angle_deg, glm::vec3 axis )
 {
     q_lookrot = glm::angleAxis( glm::radians(angle_deg), glm::normalize(axis) ); 
 }
+void SGLM::setEyeRotation(float angle_deg, glm::vec3 axis )
+{
+    q_eyerot = glm::angleAxis( glm::radians(angle_deg), glm::normalize(axis) ); 
+}
+
+
+
+
 
 /**
 SGLM::setLookRotation
@@ -632,6 +730,60 @@ void SGLM::setLookRotation( const glm::vec2& a, const glm::vec2& b )
     //std::cout << "SGLM::setLookRotation " << glm::to_string(a) << " " << glm::to_string(b) << std::endl ; 
     q_lookrot = SGLM_Arcball::A2B_Screen( a, b );
 }
+void SGLM::setEyeRotation( const glm::vec2& a, const glm::vec2& b )
+{
+    q_eyerot = SGLM_Arcball::A2B_Screen( a, b );
+}
+
+
+
+
+
+
+void SGLM::cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned modifiers )
+{
+    if(SGLM_Modifiers::IsR(modifiers))
+    {
+        setLookRotation(a,b); 
+    }
+    else if(SGLM_Modifiers::IsY(modifiers))
+    {
+        setEyeRotation(a,b); 
+    }
+    else
+    {
+        setEyeRotation(a,b); 
+        //key_pressed_action(modifiers);   
+    }
+}
+
+void SGLM::key_pressed_action( unsigned modifiers )
+{
+    float speed = SGLM_Modifiers::IsShift(modifiers) ? 20.f : 10.f ;   
+    // use some basis ? gazelen ? 
+
+    if(SGLM_Modifiers::IsW(modifiers)) eyeshift.z += speed ; 
+    if(SGLM_Modifiers::IsS(modifiers)) eyeshift.z -= speed ; 
+
+    if(SGLM_Modifiers::IsA(modifiers)) eyeshift.x += speed ; // sign surprised me here 
+    if(SGLM_Modifiers::IsD(modifiers)) eyeshift.x -= speed ; 
+
+    if(SGLM_Modifiers::IsQ(modifiers)) eyeshift.y += speed ; 
+    if(SGLM_Modifiers::IsE(modifiers)) eyeshift.y -= speed ; 
+}
+
+
+void SGLM::home()
+{
+    eyeshift.x = 0.f ; 
+    eyeshift.y = 0.f ; 
+    eyeshift.z = 0.f ; 
+    q_lookrot = SGLM_Arcball::Identity();
+    q_eyerot = SGLM_Arcball::Identity();
+}
+
+
+
 
 /**
 SGLM::Command
@@ -695,6 +847,10 @@ void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
         if(strcmp(op,"desc")==0)
         {
             std::cout << gm->desc() << std::endl ;  
+        }
+        else if(strcmp(op,"home")==0)
+        {
+            gm->home();  
         }
         else
         {
@@ -1003,6 +1159,19 @@ float SGLM::get_escale_() const
     return escale ; 
 }
 
+/**
+SGLM::get_escale
+==================
+
+Returns escale matrix (which typically comes from extent fr.ce.w), eg with extent of 9.0::
+
+    9.0   0.0    0.0    0.0
+    0.0   9.0    0.0    0.0
+    0.0   0.0    9.0    0.0
+    0.0   0.0    0.0    1.0
+
+**/
+
 glm::mat4 SGLM::get_escale() const 
 {
     float f = get_escale_();
@@ -1017,13 +1186,7 @@ glm::mat4 SGLM::get_escale() const
 SGLM::initELU
 -----------------
 
-Uses escale matrix (which typically comes from extent fr.ce.w), eg with extent of 9.0::
-
-    9.0   0.0    0.0    0.0
-    0.0   9.0    0.0    0.0
-    0.0   0.0    9.0    0.0
-    0.0   0.0    0.0    1.0
-
+Uses escale matrix (which typically comes from extent fr.ce.w), eg with extent of 9.0
 to convert the inputs (EYE, LOOK, UP) in units of extent, eg defaults::
 
     UP     (0,0,1,0)   
@@ -1057,8 +1220,6 @@ void SGLM::initELU()
     eye  = glm::vec3( model2world * escale * EYE ) ; 
     look = glm::vec3( model2world * escale * LOOK ) ; 
     up   = glm::vec3( model2world * escale * UP ) ; 
-
-
 }
 
 /**
@@ -1370,7 +1531,8 @@ void SGLM::updateProjection()
 float SGLM::get_transverse_scale() const
 {
     assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
-    return cam == CAM_ORTHOGRAPHIC ? orthographic_scale : get_near_abs() ; 
+    //return cam == CAM_ORTHOGRAPHIC ? orthographic_scale : get_near_abs() ; 
+    return get_near_abs() ; 
 }
 
 
@@ -1388,12 +1550,21 @@ Putting together the composite transforms that OpenGL needs
 
 void SGLM::updateComposite()
 {
-    //std::cout << "SGLM::updateComposite" << std::endl ; 
+    //std::cout << "SGLM::updateComposite" << std::endl ;  
 
-    MV = look2eye * glm::mat4_cast(q_lookrot) * eye2look * world2camera ; 
+    glm::mat4 _eyeshift = glm::translate(glm::mat4(1.0), eyeshift ) ;
+    glm::mat4 _ieyeshift = glm::translate(glm::mat4(1.0), -eyeshift ) ;
 
-    IMV = camera2world * look2eye * glm::mat4_cast( glm::conjugate(q_lookrot) ) * eye2look ; 
- 
+    glm::mat4 _lookrot = glm::mat4_cast(q_lookrot) ;
+    glm::mat4 _ilookrot = glm::mat4_cast( glm::conjugate(q_lookrot) ) ;
+
+    glm::mat4 _eyerot = glm::mat4_cast(q_eyerot) ;
+    glm::mat4 _ieyerot = glm::mat4_cast( glm::conjugate( q_eyerot )) ;
+
+
+    MV = _eyeshift * _eyerot * look2eye * _lookrot * eye2look * world2camera ; 
+
+    IMV = camera2world * look2eye * _ilookrot * eye2look * _ieyerot  * _ieyeshift  ; 
     //IMV = glm::inverse( MV );  
 
     MVP = projection * MV ;    // MVP aka world2clip (needed by OpenGL shader pipeline)
