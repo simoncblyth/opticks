@@ -71,7 +71,6 @@ Brief History
 
 1. (2014) Beginning : get Chroma GPU optical photon simulation to work with Dyb 
 
-
   * 200x http://localhost/env/presentation/gpu_optical_photon_simulation.html
   * 1st presention April 2014
   * my dyb infratructure experience made me comfortble with finding nd installing 

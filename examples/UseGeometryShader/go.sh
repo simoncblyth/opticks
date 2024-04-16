@@ -25,7 +25,7 @@ export SHADER_FOLD=$sdir/rec_flying_point
 #export RECORD_FOLD=/tmp/$USER/opticks/QSimTest/mock_propagate
 #export RECORD_FOLD=/tmp/blyth/opticks/U4RecorderTest/ShimG4OpAbsorption_FLOAT_ShimG4OpRayleigh_FLOAT/hama_body_log
 #export RECORD_FOLD=/tmp/blyth/opticks/GEOM/V1J011/ntds3/ALL1/p001
-export RECORD_FOLD=/data/blyth/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000
+export RECORD_FOLD=$TMP/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000
 #export RECORD_FOLD=/tmp/sphoton_test
 
 if [ "${arg/build}" != "$arg" ] ; then 

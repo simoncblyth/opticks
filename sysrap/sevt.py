@@ -380,13 +380,13 @@ class SEvt(object):
             qtab = eval(qtab_)
             qtab_ = qtab_.replace("q","%s.q" % symbol)
 
-            nosc = np.ones(len(qq), np.bool )       # start all true
+            nosc = np.ones(len(qq), dtype=np.bool )       # start all true
             nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
 
-            nore = np.ones(len(qq), np.bool )       # start all true
+            nore = np.ones(len(qq), dtype=np.bool )       # start all true
             nore[np.where(qq == pcf.RE)[0]] = 0     # knock out photons with reemission in their histories
 
-            noscab = np.ones(len(qq), np.bool )     # start all true  
+            noscab = np.ones(len(qq), dtype=np.bool )     # start all true  
             noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
             noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
         else:

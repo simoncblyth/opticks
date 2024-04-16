@@ -546,7 +546,7 @@ class CSGFoundry(object):
         #a_txt = np.loadtxt(path, dtype="|S100")
 
         txt = open(path).read().splitlines()
-        a_txt = np.array(txt, dtype=np.object ) 
+        a_txt = np.array(txt, dtype=np.str_ )   # formerly np.object 
         return a_txt 
   
 

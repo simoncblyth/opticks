@@ -104,8 +104,8 @@ rec=0
 REC=${REC:-$rec}
 case $REC in
  0) record_fold=/tmp/sphoton_test ;;
- 1) record_fold=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p001 ;;
- 2) record_fold=/data/blyth/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000 ;;
+ 1) record_fold=$TMP/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p001 ;;
+ 2) record_fold=$TMP/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000 ;;
  3) record_fold=/tmp/OpticalAppTest ;;
  *) record_fold=$REC ;;
 esac
