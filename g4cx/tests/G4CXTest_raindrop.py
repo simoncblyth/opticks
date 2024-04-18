@@ -116,8 +116,12 @@ if __name__ == '__main__':
                     fmt = "speed len/min/max for : %d -> %d : %s -> %s : %8d %7.3f %7.3f "
                     print(fmt % (i,i+1,SELECT_ELEM[i],SELECT_ELEM[i+1],len(speed),speed_min, speed_max ))
                 pass
-                print("e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:%s " % e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE ) 
-                print("e.f.NPFold_meta.G4VERSION_NUMBER:%s " % e.f.NPFold_meta.G4VERSION_NUMBER )
+
+                if Q == "B": 
+                    kludge = e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE
+                    print("e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:%s " % kludge )
+                    print("e.f.NPFold_meta.G4VERSION_NUMBER:%s " % e.f.NPFold_meta.G4VERSION_NUMBER )
+                pass
             pass
 
             _pos = e.f.photon[sel_p,0,:3]        ## end position 

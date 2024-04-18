@@ -304,8 +304,6 @@ void U4Physics::ConstructOp()
         G4ProcessManager* pmanager = particle->GetProcessManager();
         G4String particleName = particle->GetParticleName();
 
-        std::cout << "U4Physics::ConstructOp " << particleName << "\n" ; 
-
         if ( fCerenkov && fCerenkov->IsApplicable(*particle)) 
         {
             pmanager->AddProcess(fCerenkov);
