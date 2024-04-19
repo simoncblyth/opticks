@@ -299,6 +299,8 @@ inline void SGLFW::renderloop_head()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
+
+    if(count == 0 ) home(); 
 }
 
 
@@ -446,6 +448,19 @@ inline void SGLFW::Help()
 {
     std::cout << HELP ; 
 }
+
+/**
+SGLFW::home
+-------------
+
+1. center cursor position 
+2. zero the eyeshift and rotations, set zoom to 1  
+
+WIP: invoking doing this from ctor at tail of SGLFW::init flaky 
+     so try from renderloop_head for count==0  
+
+**/
+
 inline void SGLFW::home()
 {
     setCursorPos(0.f,0.f); 
@@ -776,5 +791,6 @@ inline void SGLFW::init()
     int interval = 1 ; // The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.
     glfwSwapInterval(interval);
 
+    //home(); // maybe too soon to do this, as flaky where the cursor starts  
 }
 

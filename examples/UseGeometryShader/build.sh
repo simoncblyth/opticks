@@ -116,11 +116,11 @@ export RECORD_FOLD=${RECORD_FOLD:-$record_fold}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-eye=0,-1,0
+eye=0,-2,0
 EYE=${EYE:-$eye}
 export EYE
 
-zoom=7   ## WHY ? SGLM.h issue : default of 1 should just work 
+zoom=1   
 export ZOOM=${ZOOM:-$zoom}
 
 vars="BASH_SOURCE PWD name bdir sdir CUDA_PREFIX OPTICKS_PREFIX SHADER_FOLD RECORD_FOLD bin EYE ZOOM"
