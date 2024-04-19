@@ -39,6 +39,15 @@ LXR
 * https://geant4.kek.jp/lxr/diff/track/src/G4ParticleChange.cc?diffvar=v;diffval=10.4.p2
 
 
+Check github G4
+-----------------
+
+::
+
+    cd /tmp
+    git clone https://github.com/Geant4/geant4.git
+
+
 
 Check 11.2.0
 --------------
@@ -75,6 +84,32 @@ Release Notes (Optical)
 
   * https://bugzilla-geant4.kek.jp/show_bug.cgi?id=2510
   * boundary reallocation step doesn't happen
+
+::
+
+    Daren Sawkey 2022-09-15 00:36:38 CEST
+
+    G4OpBoundaryProcess tests for very short step lengths. 
+    If the step length is shorter than the geometrical tolerance, 
+    it is the volume reallocation step after one of the reflection-type boundary interactions 
+    (i.e. the particle is going back into the same volume it came from). 
+    The status is set to StepTooSmall, and the code returns (after setting velocity).
+    https://geant4.kek.jp/lxr/source/processes/optical/src/G4OpBoundaryProcess.cc#L186
+
+    However, occasionally the step length is greater than the geometric tolerance (1e-9 mm). 
+    In this case the status is not set to StepTooSmall. The example LXe has code to check for this. 
+    https://geant4.kek.jp/lxr/source/examples/extended/optical/LXe/src/LXeSteppingAction.cc#L168
+
+    This results in a JustWarning exception 
+    (see it with LXe.mac, maybe increasing the number of particles). 
+
+    Daren Sawkey 2022-10-20 11:51:43 CEST
+
+    A warning in G4OpBoundaryProcess is now printed when the optical photon step length is
+    between 1e-9 mm and 1-e8 mm, stating that the boundary scattering may be incorrect.
+
+    Coincidentally, I'm no longer seeing step lengths greater than 1e-9 
+    in the Geant4 development version.
 
 
 * Code cleanup with clang-tidy: use default constructors; auto keyword; remove void function argument; 
@@ -712,8 +747,8 @@ g4-prefix-frompath(){ echo $(opticks-setup-find-geant4-prefix) ; }
 g4-prefix-default(){  echo $(opticks-prefix)_externals/g4_$(g4-ver)  ; }
 g4-prefix(){          echo ${OPTICKS_GEANT4_PREFIX:-$(g4-prefix-default)}  ; }
 
-g4-dir(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
-
+g4-dir-(){   echo $(g4-prefix).build/$(g4-name) ; }  # exploded distribution dir
+g4-dir(){  echo ${G4_DIR:-$(g4-dir-)} ; }
 
 g4-nom-url-title-notes(){ cat << EON
 
@@ -1238,6 +1273,7 @@ g4-sfind(){ find $(g4-dir)/source -name ${1:-G4VUserActionInitialization.hh} ; }
 g4-hh(){ find $(g4-dir)/source -name '*.hh' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
 g4-icc(){ find $(g4-dir)/source -name '*.icc' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
 g4-cc(){ find $(g4-dir)/source -name '*.cc' -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
+g4-g(){ find $(g4-dir)/source \( -name '*.hh' -or -name '*.icc' -or -name '*.cc' \) -exec grep -H "${1:-G4GammaConversion}" {} \; ; }
 
 g4-cls-copy(){
    local msg="=== $FUNCNAME :"
@@ -1268,6 +1304,7 @@ g4-cls-copy(){
 
 g4n-cd(){   OPTICKS_GEANT4_VER=1062 g4-cd $* ; }
 g4n-cls(){  OPTICKS_GEANT4_VER=1062 g4-cls $* ; }
+g4t-cls(){  G4_DIR=/tmp/geant4 g4-cls $* ; }
 
 g4-cls(){  
    local iwd=$PWD
@@ -1280,7 +1317,7 @@ g4-cls(){
 
 g4-cls-(){
    local base=${1:-source}
-   local name=${2:-G4Scintillation}
+   local name=${2:-G4OpBoundaryProcess}
 
    local h=$(find $base -name "$name.h")
    local hh=$(find $base -name "$name.hh")
