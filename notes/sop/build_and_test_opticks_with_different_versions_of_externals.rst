@@ -1,10 +1,23 @@
 build_and_test_opticks_with_different_versions_of_externals
 =============================================================
 
-Convenient to do this using a separate user with a simple environment. 
 
-R
---
+Overview
+----------
+
+It is convenient to test non-standard configs using separate user accounts 
+with a simple environment setup. 
+
+Currenty need to edit .bashrc to switch from build to usage 
+
+
+
+R : "R" stood for Release originally, it now just means some other version config under test
+----------------------------------------------------------------------------------------------
+
+NB the "simon" account uses symbolically linked "opticks" from "blyth" account::
+
+   opticks -> /home/blyth/opticks
 
 
 ::
@@ -43,6 +56,27 @@ Run the fresh build::
 
    ./fresh_build.sh
 
+
+That deletes the opticks prefix dir and does opticks-full::
+
+     20 echo $OPTICKS_BUILDTYPE
+     21 
+     22 if [ "$OPTICKS_BUILDTYPE" == "Release" ]; then
+     23     rm -rf local/opticks_Release
+     24 elif [ "$OPTICKS_BUILDTYPE" == "Debug" ]; then
+     25     rm -rf local/opticks_Debug
+     26 else
+     27     echo $BASH_SOURCE : UNEXPECTED OPTICKS_BUILDTYPE $OPTICKS_BUILDTYPE
+     28 fi
+     29 
+     30 opticks-full
+     31 
+     32 #opticks-t
+     33 
+     34 opticks-tar
+
+
+It only takes around 5 min, as it uses the download cache. 
 
 
 Check the usage env : normally want same Release/Build that you just built, but not always

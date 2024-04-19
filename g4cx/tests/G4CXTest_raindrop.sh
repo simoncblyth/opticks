@@ -40,9 +40,9 @@ export U4VolumeMaker_RaindropRockAirWater_MATS=VACUUM,G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Box  # default:Orb  (Box also impl) 
 
-#export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1 
-export U4Physics__ConstructOp_OpBoundaryProcess_LASTPOST=1
-
+if [ -n "$KLUDGE" ]; then
+    export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1 
+fi
 
 if [ "$U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE" == "1" ]; then
     version=1 
@@ -75,8 +75,6 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
     #src="rectangle"
     #src="disc"
     src="circle_inwards_hemi"
-
-    ## TODO: shoot all angles from just inside drop to check after TIR speed
 
     if [ "$src" == "rectangle" ]; then
         export storch_FillGenstep_pos=0,0,0
@@ -114,13 +112,6 @@ export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$mode} # configure what to gathe
 tmpbase=${TMP:-/tmp/$USER/opticks} 
 evtfold=$tmpbase/GEOM/$GEOM
 
-
-
-
-
-# THESE ARE THE OLD FOLDR PATHS
-#export AFOLD=$evtfold/$bin/ALL$VERSION/p001 
-#export BFOLD=$evtfold/$bin/ALL$VERSION/n001
 
 export AFOLD=$evtfold/$bin/ALL$VERSION/A000
 export BFOLD=$evtfold/$bin/ALL$VERSION/B000
