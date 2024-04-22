@@ -147,7 +147,7 @@ arg=${1:-$defarg}
 [ -n "$BP" ] && echo $BASH_SOURCE : override arg to info_dbg as BP $BP is defined && arg=info_dbg 
 
 if [ -n "$BP" ]; then 
-   DEBUG_GENIDX=50000 
+   DEBUG_GENIDX=10000 
    export U4VPrimaryGenerator__GeneratePrimaries_From_Photons_DEBUG_GENIDX=$DEBUG_GENIDX
    # for DEBUG_GENIDX > -1 will only generate one photon : for debugging purposes 
    echo $BASH_SOURCE :  DEBUG_GENIDX $DEBUG_GENIDX OPTICKS_NUM_PHOTON $OPTICKS_NUM_PHOTON
@@ -156,6 +156,8 @@ fi
 
 
 vars="BASH_SOURCE GEOM VERSION TMP AFOLD BFOLD evtfold CVD CUDA_VISIBLE_DEVICES BP arg" 
+
+
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -168,7 +170,7 @@ fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
     case $(uname) in
-       Linux) gdb -ex r --args $bin  ;;
+       Linux) gdb__ $bin  ;;
        Darwin) lldb__ $bin ;;
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2 

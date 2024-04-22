@@ -416,6 +416,7 @@ public:
 
     static void BeginOfRun(); 
     static void EndOfRun(); 
+    static const int EndOfRun_SProf ;
 
 
     template<typename T>

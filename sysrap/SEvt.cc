@@ -1402,14 +1402,25 @@ void SEvt::BeginOfRun()
 { 
     SetRunProf("SEvt__BeginOfRun"); 
 } 
+
+
+
+
 void SEvt::EndOfRun()  
 { 
     SetRunProf("SEvt__EndOfRun"); 
     SaveRunMeta(); 
 
-    // HMM: could append onto run_meta.txt but that would complicate analysis
-    SProf::Write("SEvt__EndOfRun_SProf.txt", false ) ; // append:false
+    if(EndOfRun_SProf == 1 )
+    {
+        bool append = false ;  
+        SProf::Write("SEvt__EndOfRun_SProf.txt", append ) ;
+    }
 } 
+
+
+const int SEvt::EndOfRun_SProf = ssys::getenvint("SEvt__EndOfRun_SProf",-1) ;
+
 
 
 template<typename T>
