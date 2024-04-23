@@ -49,8 +49,9 @@ clhep-prefix-default(){  echo $(opticks-prefix)_externals/clhep_$(clhep-version)
 clhep-prefix(){  echo ${OPTICKS_CLHEP_PREFIX:-$(clhep-prefix-default)}  ; }
 ##clhep-ver(){     echo 2.4.1.0 ; }
 ##clhep-ver(){     echo 2.4.4.0 ; }
-clhep-ver(){     echo 2.4.5.1 ; }    # longstanding former ver
 #clhep-ver(){     echo 2.4.6.2 ; }   # for CaTS 
+clhep-ver-default(){ echo 2.4.5.1 ; } 
+clhep-ver(){     echo ${OPTICKS_CLHEP_VER:-$(clhep-ver-default)} ; } 
 
 clhep-version(){  local v=$(clhep-ver) ; echo ${v//./} ; }
 
@@ -64,6 +65,9 @@ clhep-bdir(){    echo $(clhep-dir).build ; }
 
 clhep-info(){ cat << EOI
 
+   OPTICKS_CLHEP_VER : $OPTICKS_CLHEP_VER
+
+   clhep-ver-default : $(clhep-ver-default)
 
    clhep-ver     : $(clhep-ver)
    clhep-url     : $(clhep-url)

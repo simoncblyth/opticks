@@ -64,6 +64,13 @@ Check 11.2.0
 Release Notes (Optical)
 -------------------------
 
+11.2.1 ( 16 February 2024 ) 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://geant4.web.cern.ch/download/release-notes/notes-v11.2.1.txt
+
+* In G4Scintillation::sample_time(), refactored the scintillation time sampling.
+
 
 11.2.0 ( December 8th, 2023)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -597,13 +604,14 @@ g4-libdir(){
 }
 
 g4-info(){ cat << EOI
-
+g4-info
+========
 
   OPTICKS_GEANT4_VER    : $OPTICKS_GEANT4_VER
+  OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
 
   g4-prefix             : $(g4-prefix)
       installation directory 
-  OPTICKS_GEANT4_PREFIX : $OPTICKS_GEANT4_PREFIX
 
   g4-libsuffix          : $(g4-libsuffix)
 
@@ -776,6 +784,7 @@ g4-nom(){
    100072) echo geant4.master100721 ;; 
      1100) echo geant4.11.00.b01 ;;
      1112) echo geant4-v11.1.2 ;;
+     1121) echo geant4-v11.2.1 ;;
   esac
 }
 
@@ -795,8 +804,8 @@ g4-url(){
         geant4.10.07.r08) echo https://cached/geant4.10.7.r08.tar ;;         # unreleased dummy 
         geant4.master100721) echo https://cached/geant4.master100721.tar ;;  # unreleased dummy 
         geant4-v11.1.2)   echo https://geant4-data.web.cern.ch/releases/geant4-v11.1.2.tar.gz  ;;
+        geant4-v11.2.1)   echo https://gitlab.cern.ch/geant4/geant4/-/archive/v11.2.1/geant4-v11.2.1.tar.gz ;;
    esac
-
 }
 
 g4-title()
@@ -808,6 +817,7 @@ g4-title()
      91072) echo 1st Soon tarball pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;; 
     100721) echo 2nd Soon tarball pre-release for 1100 beta version grabbed from OPTICKS_DOWNLOAD_CACHE ;;
       1112) echo suggested by Hans for CaTS Nov 2023 ;; 
+      1121) echo klop ;; 
    esac
 }
 

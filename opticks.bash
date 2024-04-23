@@ -272,6 +272,8 @@ GEOM(){
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
+on(){ cd $(opticks-home)/notes/issues ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/$(ls -t | head -1) ;  }
+onn(){ cd $(opticks-home)/notes/issues ; ls -lt | head -100 ;  }
 
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 
 
@@ -1965,6 +1967,8 @@ opticks-cuda-capable()
 
 
 opticks-full-notes(){ cat << EON
+opticks-full-notes
+====================
 
 opticks-full has traditionally been used for full source builds, 
 getting externals and building them generating and 

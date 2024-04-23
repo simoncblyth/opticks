@@ -7,6 +7,27 @@ Overview
 Need Debug builds of the Geant4 versions to make progress with this.
 
 
+Standalone Opticks against Debug Geant4
+-----------------------------------------
+
+1. change .local hookup, switch /cvmfs versions with OPTICKS_GEANT4_PREFIX OPTICKS_CLHEP_PREFIX
+
+
+::
+
+     38 #export OPTICKS_GEANT4_PREFIX=/cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/Pre-Release/J22.2.x/ExternalLibs/Geant4/10.04.p02.juno
+     39 #export OPTICKS_CLHEP_PREFIX=/cvmfs/juno.ihep.ac.cn/centos7_amd64_gcc1120/Pre-Release/J22.2.x/ExternalLibs/CLHEP/2.4.1.0
+     40 
+     41 export OPTICKS_GEANT4_VER=1042
+     42 export OPTICKS_CLHEP_VER=2410
+     43 #export OPTICKS_GEANT4_VER=1121
+     44 #export OPTICKS_CLHEP_VER=2471
+     45 
+     46 export OPTICKS_GEANT4_PREFIX=/data/blyth/opticks_externals/geant4_${OPTICKS_GEANT4_VER}
+     47 export OPTICKS_CLHEP_PREFIX=/data/blyth/opticks_externals/clhep_${OPTICKS_CLHEP_VER}
+
+
+
 blyth WITH_CUSTOM4 1042 works
 -------------------------------
 
