@@ -175,6 +175,11 @@ if [ "${arg/build}" != "$arg" ]; then
         -L$OPTICKS_PREFIX/externals/lib64 -lglfw \
         -lGL  \
         -o $bin
+
+    # TODO: pin down the GL/glew.h being used
+    # changing env from JUNO-opticks to ONLY-opticks 
+    # has changed the OpenGL version in use causing missing symbol GL_CONTEXT_LOST
+  
         
     # -Wno-unused-private-field \  ## clang-ism ? 
 

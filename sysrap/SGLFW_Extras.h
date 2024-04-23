@@ -35,7 +35,9 @@ inline void SGLFW__check(const char* path, int line) // static
         case GL_STACK_OVERFLOW:    s = "GL_STACK_OVERFLOW" ; break ;   
         case GL_STACK_UNDERFLOW:   s = "GL_STACK_UNDERFLOW" ; break ;   
         case GL_OUT_OF_MEMORY:     s = "GL_OUT_OF_MEMORY" ; break ;   
+#ifdef GL_VERSION_4_5
         case GL_CONTEXT_LOST:      s = "GL_CONTEXT_LOST" ; break ;
+#endif
         case GL_INVALID_FRAMEBUFFER_OPERATION: s = "GL_INVALID_FRAMEBUFFER_OPERATION" ; break ;
     }   
     if(!ok) std::cout << "SGLFW__check OpenGL ERROR " << path << " : " << line << " : " << std::hex << err << std::dec << " : " << s << std::endl ; 
