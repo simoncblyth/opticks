@@ -777,8 +777,8 @@ inline void SGLFW::init()
 
     const GLubyte* renderer = glGetString (GL_RENDERER);
     const GLubyte* version = glGetString (GL_VERSION);
-    printf("//SGLFW::init renderer %s \n", renderer );
-    printf("//SGLFW::init version %s \n", version );
+    printf("//SGLFW::init GL_RENDERER [%s] \n", renderer );
+    printf("//SGLFW::init GL_VERSION [%s] \n", version );
 
 
     //  https://learnopengl.com/Advanced-OpenGL/Depth-testing

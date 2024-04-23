@@ -255,3 +255,36 @@ glew-setup(){ cat << EOS
 EOS
 }
 
+
+glew-manifest(){ cat << EOP
+include/GL/wglew.h
+include/GL/glew.h
+include/GL/glxew.h
+lib/libGLEW.a
+lib/libGLEW.so
+lib/libGLEW.so.1.13
+lib/libGLEW.so.1.13.0
+lib/pkgconfig/glew.pc
+EOP
+}
+
+glew-manifest-wipe(){
+  local pfx=$(glew-prefix)
+  cd $pfx 
+  [ $? -ne 0 ] && return 1
+
+  local rel 
+  echo "# $FUNCNAME "
+  echo "cd $PWD" 
+  for rel in $(glew-manifest) 
+  do  
+      if [ -d "$rel" ]; then 
+          echo rm -rf \"$rel\"
+      elif [ -f "$rel" ]; then 
+          echo rm -f \"$rel\"
+      fi    
+  done
+}
+
+
+

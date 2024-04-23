@@ -21,6 +21,58 @@ Preqs::
     ~/o/sysrap/tests/SScene_test.sh 
         ## create and persist stree.h (eg from loaded gdml via GEOM config)
 
+
+Which GL/glew.h is picked up ?
+---------------------------------
+
+On changing env from JUNO-opticks to ONLY-opticks build directly with 
+opticks-full note that have changed the OpenGL version in use 
+causing missing symbol GL_CONTEXT_LOST
+
+Fixed that with GL_VERSION_4_5 check, but why the older version ?
+
+* probably just a change in glew header not a change in actual GL version used
+
+Adding "-M" to gcc commandline lists all the 
+included headers in Makefile dependency format.
+This shows are picking up system headers::
+
+    /usr/include/GL/glew.h
+    /usr/include/GL/glu.h
+    /usr/include/GL/gl.h
+    /usr/include/GLFW/glfw3.h
+
+Which corresponds to::
+
+    //SGLFW::init GL_RENDERER [NVIDIA TITAN RTX/PCIe/SSE2] 
+    //SGLFW::init GL_VERSION [4.1.0 NVIDIA 515.43.04] 
+
+HMM: this maybe because I removed glew and glfw from the 
+standard externals ?
+
+HMM: but after installing those get::
+
+   undefined symbol: glfwSetWindowMaximizeCallback
+
+when using::
+
+    /data/blyth/opticks_Debug/externals/include/GL/glew.h
+    /usr/include/GL/glu.h
+    /usr/include/GL/gl.h
+    /data/blyth/opticks_Debug/externals/include/GLFW/glfw3.h
+
+Return to system with::
+
+   glfw-
+   glfw-manifest-wipe
+   glfw-manifest-wipe | sh 
+
+   glew-
+   glew-manifest-wipe
+   glew-manifest-wipe | sh 
+
+
+
 EOU
 }
 
@@ -127,7 +179,7 @@ fi
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX"
+vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -153,6 +205,8 @@ if [ "${arg/build}" != "$arg" ]; then
     echo $BASH_SOURCE build
     [ "$(uname)" == "Darwin" ] && echo $BASH_SOURCE : ERROR : THIS NEEDS OPTIX7+ SO LINUX ONLY && exit 1
 
+    # -M lists paths of all included headers in Makefile dependency format 
+    # -M \
     gcc $name.cc \
         -fvisibility=hidden \
         -fvisibility-inlines-hidden \
@@ -176,10 +230,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -lGL  \
         -o $bin
 
-    # TODO: pin down the GL/glew.h being used
-    # changing env from JUNO-opticks to ONLY-opticks 
-    # has changed the OpenGL version in use causing missing symbol GL_CONTEXT_LOST
-  
+ 
         
     # -Wno-unused-private-field \  ## clang-ism ? 
 

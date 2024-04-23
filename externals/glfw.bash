@@ -422,6 +422,39 @@ glfw-wipe(){
   rm -rf $bdir
 }
 
+glfw-manifest(){ cat << EOP
+lib64/libglfw.so 
+lib64/libglfw.so.3 
+lib64/libglfw.so.3.3
+lib64/pkgconfig/glfw3.pc
+lib64/cmake/glfw3
+include/GLFW
+EOP
+}
+
+glfw-manifest-wipe(){
+  local pfx=$(glfw-prefix)
+  cd $pfx 
+  [ $? -ne 0 ] && return 1
+
+  local rel
+  echo "# $FUNCNAME "
+  echo "cd $PWD" 
+  for rel in $(glfw-manifest) 
+  do
+      if [ -d "$rel" ]; then 
+          echo rm -rf \"$rel\"
+      elif [ -f "$rel" ]; then 
+          echo rm -f \"$rel\"
+      fi      
+  done
+ 
+
+   
+
+}
+
+
 glfw-cmake(){
   local iwd=$PWD
    
