@@ -274,6 +274,10 @@ oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 on(){ cd $(opticks-home)/notes/issues ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/$(ls -t | head -1) ;  }
 onn(){ cd $(opticks-home)/notes/issues ; ls -lt | head -100 ;  }
+on1(){   : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt | head -30 ; vi $(ls -1t | head -1) ;  }
+on2(){   : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt | head -30 ; vi $(ls -1t | head -2 | tail -1) ;  }
+on100(){ : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt | head -100  ;  }
+
 
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 
 
