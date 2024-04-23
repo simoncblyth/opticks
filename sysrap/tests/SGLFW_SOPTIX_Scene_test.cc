@@ -16,7 +16,7 @@ Related::
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
 
-TODO: get view maths for raytrace and rasterized to match each other 
+DONE: get view maths for raytrace and rasterized to match each other 
 
 * HMM target control would help with that 
 
@@ -62,14 +62,16 @@ int main()
     SOPTIX_Options opt ;  
     if(dump) std::cout << opt.desc() ; 
 
-    SOPTIX_Scene scn(&opx, _scn );  
-    if(dump) std::cout << scn.desc() ; 
-
     SOPTIX_Module mod(opx.context, opt, "$SOPTIX_PTX" ); 
     if(dump) std::cout << mod.desc() ; 
 
     SOPTIX_Pipeline pip(opx.context, mod.module, opt ); 
     if(dump) std::cout << pip.desc() ; 
+
+
+
+    SOPTIX_Scene scn(&opx, _scn );  
+    if(dump) std::cout << scn.desc() ; 
 
     SOPTIX_SBT sbt(pip, scn );
     if(dump) std::cout << sbt.desc() ; 

@@ -1,7 +1,7 @@
 #pragma once
 /**
-SMesh.h
-========
+SMesh.h : holds tri,vtx,nrm NP either from original G4VSolid conversion or concatenation
+==========================================================================================
 
 NB SMesh.h is used in two situtions
 

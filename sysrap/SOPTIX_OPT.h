@@ -1,4 +1,9 @@
 #pragma once
+/**
+SOPTIX_OPT.h : enum strings
+============================
+
+**/
 
 #include "sstr.h"
 

@@ -1,8 +1,7 @@
 #pragma once
 /**
-SOPTIX_Scene.h
-===============
-
+SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
+=================================================================================================
 
 **/
 

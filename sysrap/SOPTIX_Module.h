@@ -1,7 +1,7 @@
 #pragma once
 /**
-SOPTIX_Module.h
-===============
+SOPTIX_Module.h : Create OptixModule from PTX loaded from file
+================================================================
 
 7.5 p48
 

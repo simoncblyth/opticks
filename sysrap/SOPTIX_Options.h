@@ -1,7 +1,7 @@
 #pragma once
 /**
-SOPTIX_Options.h
-=================
+SOPTIX_Options.h : module and pipeline compile/link options
+==============================================================
 
 moduleCompileOptions.maxRegisterCount
     OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT:0 for no limit 

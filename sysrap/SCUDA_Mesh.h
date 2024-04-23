@@ -1,7 +1,7 @@
 #pragma once
 /**
-SCUDA_Mesh.h
-=============
+SCUDA_Mesh.h : uploads SMesh tri and holds SCU_Buf 
+=====================================================
 
 Try following the pattern of SGLFW_Mesh.h 
 

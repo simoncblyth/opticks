@@ -1,7 +1,7 @@
 #pragma once
 /**
-SOPTIX_Binding.h
-==================
+SOPTIX_Binding.h : CPU/GPU SBT records
+=======================================
 
 **/
 

@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-SCUDA_MeshGroup.h
-=============
+SCUDA_MeshGroup.h : collect vectors of NP from each SMeshGroup sub, upload together with SCU_BufferView 
+=========================================================================================================
 
 Try following the pattern of SGLFW_Mesh.h 
 

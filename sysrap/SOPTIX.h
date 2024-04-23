@@ -1,5 +1,9 @@
 #pragma once
+/**
+SOPTIX.h : OptixDeviceContext + SOPTIX_Properties
+==================================================
 
+**/
 
 #include <optix.h>
 #include <optix_function_table_definition.h>

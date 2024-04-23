@@ -1,4 +1,8 @@
 #pragma once
+/**
+SOPTIX_Params.h : render control 
+==================================
+**/
 
 #include <optix.h>
 

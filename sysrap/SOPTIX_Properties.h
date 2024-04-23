@@ -1,4 +1,8 @@
 #pragma once
+/**
+SOPTIX_Properties.h : optixDeviceContextGetProperty results
+=============================================================
+**/
 
 struct SOPTIX_Properties
 {

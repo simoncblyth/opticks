@@ -1,7 +1,8 @@
 #pragma once
 /**
-SOPTIX_BuildInput_Mesh.h
-==========================
+SOPTIX_BuildInput_Mesh.h : create OptixBuildInput via "part" indexing into SCUDA_MeshGroup (Used from SOPTIX_MeshGroup)
+=======================================================================================================================
+
 
 Intances of this need to be kept alive whilst 
 using the OptixBuildInput because of the 

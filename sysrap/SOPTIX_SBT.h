@@ -1,9 +1,16 @@
 #pragma once
 /**
-SOPTIX_SBT.h
-==================
+SOPTIX_SBT.h : create sbt from pipeline and scene by uploding the prog and hitgroup records
+============================================================================================
 
-Good explanatiom of SBT Shader Binding Table
+OptixShaderBindingTable binds together geometry, "shader" programs, records with program data 
+
+Used for example from::
+
+   sysrap/tests/SOPTIX_Scene_test.cc
+   sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+
+Good general explanatiom of SBT Shader Binding Table
 
 * https://www.willusher.io/graphics/2019/11/20/the-sbt-three-ways
 
@@ -106,6 +113,8 @@ need to plant the boundary indices into HitgroupData.
 That means need hitgroup records for each sub-SMesh 
 (thats equivalent to each CSGPrim)
 
+TODO: check this labelling 
+
 Need nested loop like CSGOptiX/SBT.cc SBT::createHitgroup::
  
      GAS 
@@ -113,6 +122,8 @@ Need nested loop like CSGOptiX/SBT.cc SBT::createHitgroup::
            sub-SMesh 
 
 So need access to scene data to form the SBT 
+
+NB this uses CPU/GPU types defined in SOPTIX_Binding.h
 
 **/
 
@@ -202,12 +213,6 @@ inline std::string SOPTIX_SBT::descPartBI() const
     std::string str = ss.str(); 
     return str ; 
 }
-
-
-
-
-
-
 
 
 inline std::string SOPTIX_SBT::Desc(const OptixShaderBindingTable& sbt)  // static 

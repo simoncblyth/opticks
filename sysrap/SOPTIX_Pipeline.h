@@ -1,7 +1,7 @@
 #pragma once
 /**
-SOPTIX_Pipeline.h
-==================
+SOPTIX_Pipeline.h : Create OptixPipeline from OptixModule
+==========================================================
 
 **/
 

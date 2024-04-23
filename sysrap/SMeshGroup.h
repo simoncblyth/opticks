@@ -1,6 +1,6 @@
 #pragma once
 /**
-SMeshGroup.h : collection of subs SMesh and names
+SMeshGroup.h : collection of SMesh subs and names
 ===================================================
 
 Persists as folder with int keys. 

@@ -1,7 +1,7 @@
 #pragma once
 /**
-SCUDAOutputBuffer.h : Allows an OpenGL PBO buffer to accessed from CUDA 
-=========================================================================
+SCUDAOutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA 
+============================================================================
 
 Adapted from SDK/CUDAOutputBuffer.h
 Include this after OpenGL headers.
