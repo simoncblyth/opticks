@@ -1,3 +1,17 @@
+/**
+U4StepPoint.cc
+===============
+
+Boundary class changes need to match in all the below::
+
+    U4OpBoundaryProcess.h    
+    U4Physics.cc 
+    U4Recorder.cc
+    U4StepPoint.cc
+
+**/
+
+
 #include <sstream>
 
 #include "G4StepPoint.hh"
@@ -331,9 +345,12 @@ template std::string U4StepPoint::Desc<C4OpBoundaryProcess>(const G4StepPoint* p
 #elif defined(WITH_PMTSIM) 
 template unsigned U4StepPoint::Flag<CustomG4OpBoundaryProcess>(const G4StepPoint*, bool, bool& ); 
 template std::string U4StepPoint::Desc<CustomG4OpBoundaryProcess>(const G4StepPoint* point); 
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
 template unsigned U4StepPoint::Flag<InstrumentedG4OpBoundaryProcess>(const G4StepPoint*, bool, bool& ); 
 template std::string U4StepPoint::Desc<InstrumentedG4OpBoundaryProcess>(const G4StepPoint* point); 
+#else
+template unsigned U4StepPoint::Flag<G4OpBoundaryProcess>(const G4StepPoint*, bool, bool& ); 
+template std::string U4StepPoint::Desc<G4OpBoundaryProcess>(const G4StepPoint* point); 
 #endif
 
 

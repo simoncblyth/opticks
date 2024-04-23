@@ -1,10 +1,27 @@
-G4CXTest_raindrop_shows_Geant4_Process_Reorder_doesnt_fix_velocity_after_reflection_in_Geant4_1120
-==================================================================================================
+IDENTIFIED CAUSE : G4CXTest_raindrop_shows_Geant4_Process_Reorder_doesnt_fix_velocity_after_reflection_in_Geant4_1120
+======================================================================================================================
+
+Overview
+----------
 
 After process reorder putting boundary after scintillation(reemission)
 
 * 1042 with or without the kludge gives expected velocities
-* 1120 without kludge, expected velocity after transmit but not after reflect ?
+* 1120 without kludge, expected velocity after transmit but not after reflect 
+* 1121 without kludge
+
+  * NOT:WITH_CUSTOM4 using InstrumentedG4OpBoundaryProcess : expected velocity after transmit but not after reflect 
+  * NOT:WITH_CUSTOM4 NOT:WITH_INSTRUMENTED_DEBUG corresponds to standard G4OpBoundaryProcess 
+
+The observations below indicate than when switching to Geant4 11.1? 11.2.0 11.2.1 have to use 
+newly customized C4OpBoundaryProcess.cc (and InstrumentedG4OpBoundaryProcess) suitable 
+
+The cause of the issue is divergence between the velocity mechanics in the boundary process 
+and the rest of Geant4
+
+
+Observations
+-------------
 
 
 1120::
@@ -144,5 +161,109 @@ After process reorder putting boundary after scintillation(reemission)
     _beg.shape (46617, 3) 
     _poi.shape (46617, 4, 3) 
 
+
+1121 debug build of CLHEP,Geant4,Opticks NOT:WITH_CUSTOM4 no kludge : wrong velocity after BR::
+
+    [blyth@localhost u4]$ ~/o/g4cx/tests/G4CXTest_raindrop.sh
+    ...
+    2024-04-23 19:17:56.943 INFO  [358025] [G4CXApp::G4CXApp@160] 
+    U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0
+    $Name: geant4-11-02-patch-01 [MT]$ (16-February-2024)U4Recorder::Switches
+    NOT:WITH_CUSTOM4
+    NOT:WITH_PMTSIM
+    NOT:PMTSIM_STANDALONE
+    NOT:PRODUCTION
+    ...
+    PICK=B MODE=3 SELECT="TO BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    REC=/home/blyth/tmp/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000/TO_BT_SA ~/o/examples/UseGeometryShader/run.sh
+    speed len/min/max for : 0 -> 1 : TO -> BT :    49905 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BT -> SA :    49905 299.792 299.793 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1121 
+    _pos.shape (49905, 3) 
+    _beg.shape (49905, 3) 
+    _poi.shape (49905, 3, 3) 
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    REC=/home/blyth/tmp/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000/TO_BR_BT_SA ~/o/examples/UseGeometryShader/run.sh
+    speed len/min/max for : 0 -> 1 : TO -> BR :    46617 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :    46617 299.792 299.793 
+    speed len/min/max for : 2 -> 3 : BT -> SA :    46617 299.792 299.793 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1121 
+
+    BP=InstrumentedG4OpBoundaryProcess::PostStepDoIt ~/o/g4cx/tests/G4CXTest_raindrop.sh
+    BP=G4ParticleChange::ProposeVelocity ~/o/g4cx/tests/G4CXTest_raindrop.sh
+
+HMM: this could be incompatibility between the InstrumentedG4OpBoundaryProcess which is
+based on the 1042 version and the rest of 1121::
+
+    (gdb) bt
+    #0  G4ParticleChange::ProposeVelocity (this=0x2a8d7a8, finalVelocity=224.90056864216055) at /data/blyth/opticks_externals/geant4_1121/include/Geant4/G4ParticleChange.icc:50
+    #1  0x00007ffff7d40b86 in InstrumentedG4OpBoundaryProcess::PostStepDoIt_ (this=0x2a8d790, aTrack=..., aStep=...) at /home/blyth/opticks/u4/InstrumentedG4OpBoundaryProcess.cc:438
+    #2  0x00007ffff7d40a9f in InstrumentedG4OpBoundaryProcess::PostStepDoIt (this=0x2a8d790, aTrack=..., aStep=...) at /home/blyth/opticks/u4/InstrumentedG4OpBoundaryProcess.cc:323
+    #3  0x00007ffff6d864a6 in G4SteppingManager::InvokePSDIP (this=this@entry=0x7231b0, np=np@entry=3)
+        at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/tracking/src/G4SteppingManager.cc:818
+    #4  0x00007ffff6d865d5 in G4SteppingManager::InvokePostStepDoItProcs (this=this@entry=0x7231b0)
+        at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/tracking/src/G4SteppingManager.cc:790
+    #5  0x00007ffff6d86a65 in G4SteppingManager::Stepping (this=0x7231b0) at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/tracking/src/G4SteppingManager.cc:225
+    #6  0x00007ffff6d9a029 in G4TrackingManager::ProcessOneTrack (this=0x720670, apValueG4Track=apValueG4Track@entry=0x110e630)
+        at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/tracking/src/G4TrackingManager.cc:133
+    #7  0x00007ffff6dda51d in G4EventManager::DoProcessing (this=0x721ad0, anEvent=<optimized out>) at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/event/src/G4EventManager.cc:211
+    #8  0x00007ffff6ddab3a in G4EventManager::ProcessOneEvent (this=<optimized out>, anEvent=<optimized out>)
+        at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/event/src/G4EventManager.cc:447
+    #9  0x00007ffff6e971a9 in G4RunManager::ProcessOneEvent (this=0x721880, i_event=0) at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/run/src/G4RunManager.cc:404
+    #10 0x00007ffff6e95dfc in G4RunManager::DoEventLoop (this=0x721880, n_event=1, macroFile=<optimized out>, n_select=<optimized out>)
+        at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/run/src/G4RunManager.cc:370
+    #11 0x00007ffff6e95db6 in G4RunManager::BeamOn (this=0x721880, n_event=1, macroFile=0x0, n_select=-1) at /data/blyth/opticks_externals/geant4_1121.build/geant4-v11.2.1/source/run/src/G4RunManager.cc:261
+    #12 0x000000000040a9ad in G4CXApp::BeamOn (this=0x788810) at /home/blyth/opticks/g4cx/tests/G4CXApp.h:344
+    #13 0x000000000040aab9 in G4CXApp::Main () at /home/blyth/opticks/g4cx/tests/G4CXApp.h:351
+    #14 0x000000000040ac47 in main (argc=1, argv=0x7fffffffc0d8) at /home/blyth/opticks/g4cx/tests/G4CXTest.cc:13
+    (gdb) 
+
+
+
+::
+ 
+     117 #include "U4UniformRand.h"
+     118 NP* U4UniformRand::UU = nullptr ;
+     119 // UU gets set by U4Recorder::saveOrLoadStates when doing single photon reruns
+
+
+
+YEP: Changing to standard G4OpBoundaryProcess avoids issue
+--------------------------------------------------------------
+
+::
+
+    2024-04-23 20:30:22.427 INFO  [33315] [G4CXApp::G4CXApp@160] 
+    U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0
+    $Name: geant4-11-02-patch-01 [MT]$ (16-February-2024)U4Recorder::Switches
+    NOT:WITH_CUSTOM4
+    NOT:WITH_PMTSIM
+    NOT:PMTSIM_STANDALONE
+    NOT:PRODUCTION
+    NOT:WITH_INSTRUMENTED_DEBUG
+
+    ...
+
+    PICK=B MODE=3 SELECT="TO BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    REC=/home/blyth/tmp/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000/TO_BT_SA ~/o/examples/UseGeometryShader/run.sh
+    speed len/min/max for : 0 -> 1 : TO -> BT :    49905 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BT -> SA :    49905 299.792 299.793 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1121 
+    _pos.shape (49905, 3) 
+    _beg.shape (49905, 3) 
+    _poi.shape (49905, 3, 3) 
+    PICK=B MODE=3 SELECT="TO BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh 
+    REC=/home/blyth/tmp/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000/TO_BR_BT_SA ~/o/examples/UseGeometryShader/run.sh
+    speed len/min/max for : 0 -> 1 : TO -> BR :    46617 224.901 224.901 
+    speed len/min/max for : 1 -> 2 : BR -> BT :    46617 224.901 224.901 
+    speed len/min/max for : 2 -> 3 : BT -> SA :    46617 299.792 299.793 
+    e.f.NPFold_meta.U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE:0 
+    e.f.NPFold_meta.G4VERSION_NUMBER:1121 
+    _pos.shape (46617, 3) 
+    _beg.shape (46617, 3) 
+    _poi.shape (46617, 4, 3) 
 
 

@@ -1,3 +1,17 @@
+/**
+U4Physics.cc
+==============
+
+Boundary class changes need to match in all the below::
+
+    U4OpBoundaryProcess.h    
+    U4Physics.cc 
+    U4Recorder.cc
+    U4StepPoint.cc
+
+**/
+
+
 #include <iomanip>
 #include "ssys.h"
 #include "U4Physics.hh"
@@ -14,8 +28,10 @@
 #include "G4OpBoundaryProcess.hh"
 #include "C4OpBoundaryProcess.hh"
 #include "SPMTAccessor.h"
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
 #include "InstrumentedG4OpBoundaryProcess.hh"
+#else
+#include "G4OpBoundaryProcess.hh"
 #endif
 
 
@@ -342,6 +358,10 @@ Looks like this needs updating now that it
 is normal to use WITH_CUSTOM4 within junosw+opticks
 without using WITH_PMTSIM
 
+* NB : BOUNDARY CLASS CHANGES HERE MUST PARALLEL THOSE IN U4OpBoundaryProcess.h
+
+  * OTHERWISE GET "UNEXPECTED BoundaryFlag ZERO "
+
 **/
 
 G4VProcess* U4Physics::CreateBoundaryProcess()  // static 
@@ -375,9 +395,12 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     proc = new C4OpBoundaryProcess(ipmt);
     LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 NOT:WITH_PMTSIM " ; 
 
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
     proc = new InstrumentedG4OpBoundaryProcess();
     LOG(LEVEL) << "create InstrumentedG4OpBoundaryProcess : NOT (WITH_PMTSIM and WITH_CUSTOM4) " ; 
+#else
+    proc = new G4OpBoundaryProcess();
+    //LOG(LEVEL) << "create G4OpBoundaryProcess : NOT (WITH_PMTSIM and WITH_CUSTOM4) " ; 
 #endif
     return proc ; 
 }

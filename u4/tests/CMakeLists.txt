@@ -32,7 +32,6 @@ target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND )
 target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)
 
-
 set(TEST_SOURCES
    U4Custom4Test.cc
    U4NistManagerTest.cc

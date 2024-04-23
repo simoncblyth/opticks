@@ -1,3 +1,17 @@
+/**
+U4Recorder.cc
+=============
+
+Boundary class changes need to match in all the below::
+
+    U4OpBoundaryProcess.h    
+    U4Physics.cc 
+    U4Recorder.cc
+    U4StepPoint.cc
+
+**/
+
+
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
@@ -29,7 +43,11 @@
 #include "U4OpBoundaryProcessStatus.h"
 #include "U4TrackStatus.h"
 #include "U4Random.hh"
+
 #include "U4UniformRand.h"
+NP* U4UniformRand::UU = nullptr ; // HMM: misplaced n InstrumentedG4OpBoundaryProcess
+// UU gets set by U4Recorder::saveOrLoadStates when doing single photon reruns 
+
 #include "U4Fake.h"
 #include "U4VolumeMaker.hh"
 
@@ -143,6 +161,12 @@ std::string U4Recorder::Switches()  // static
     ss << "PRODUCTION" << std::endl ; 
 #else
     ss << "NOT:PRODUCTION" << std::endl ; 
+#endif
+
+#ifdef WITH_INSTRUMENTED_DEBUG
+    ss << "WITH_INSTRUMENTED_DEBUG" << std::endl ; 
+#else
+    ss << "NOT:WITH_INSTRUMENTED_DEBUG" << std::endl ; 
 #endif
 
     std::string str = ss.str(); 
@@ -359,8 +383,10 @@ void U4Recorder::UserSteppingAction(const G4Step* step)
      UserSteppingAction_Optical<C4OpBoundaryProcess>(step); 
 #elif defined(WITH_PMTSIM)
      UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(step); 
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
      UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(step);
+#else
+     UserSteppingAction_Optical<G4OpBoundaryProcess>(step);
 #endif
 }
 
@@ -1466,10 +1492,12 @@ template void U4Recorder::UserSteppingAction_Optical<C4OpBoundaryProcess>(const 
 #elif defined(WITH_PMTSIM)
 #include "CustomG4OpBoundaryProcess.hh"
 template void U4Recorder::UserSteppingAction_Optical<CustomG4OpBoundaryProcess>(const G4Step*) ; 
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
 #include "InstrumentedG4OpBoundaryProcess.hh"
 template void U4Recorder::UserSteppingAction_Optical<InstrumentedG4OpBoundaryProcess>(const G4Step*) ; 
+#else
+#include "G4OpBoundaryProcess.hh"
+template void U4Recorder::UserSteppingAction_Optical<G4OpBoundaryProcess>(const G4Step*) ; 
 #endif
-
 
 

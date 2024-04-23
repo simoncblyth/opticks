@@ -67,7 +67,6 @@ set(SOURCES
     U4Cerenkov_Debug.cc
     U4Hit_Debug.cc
 
-    InstrumentedG4OpBoundaryProcess.cc
     ShimG4OpAbsorption.cc
     ShimG4OpRayleigh.cc
     Local_G4Cerenkov_modified.cc
@@ -75,6 +74,11 @@ set(SOURCES
 
     U4Physics.cc
 ) 
+
+set(OTHER_SOURCES
+    InstrumentedG4OpBoundaryProcess.cc
+)
+
 
 set(HEADERS
     U4_LOG.hh
@@ -131,7 +135,6 @@ set(HEADERS
     U4Cerenkov_Debug.hh
     U4Hit_Debug.hh
 
-    InstrumentedG4OpBoundaryProcess.hh
     ShimG4OpAbsorption.hh
     ShimG4OpRayleigh.hh
 
@@ -153,6 +156,12 @@ set(HEADERS
 
     U4Mesh.h
     U4Version.h 
+)
+
+set(OTHER_HEADERS
+
+    InstrumentedG4OpBoundaryProcess.hh
+
 )
 
 

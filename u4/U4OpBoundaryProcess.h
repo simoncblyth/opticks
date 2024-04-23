@@ -10,6 +10,14 @@ U4OpBoundaryProcess.h
 
    G4OpBoundaryProcessStatus GetStatus() const;
 
+Boundary class changes need to match in all the below::
+
+    U4OpBoundaryProcess.h    
+    U4Physics.cc 
+    U4Recorder.cc
+    U4StepPoint.cc
+
+
 **/
 
 #include "U4_API_EXPORT.hh"
@@ -30,8 +38,10 @@ struct U4_API U4OpBoundaryProcess
 #include "C4OpBoundaryProcess.hh"
 #elif defined(WITH_PMTSIM) 
 #include "CustomG4OpBoundaryProcess.hh"
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
 #include "InstrumentedG4OpBoundaryProcess.hh"
+#else
+#include "G4OpBoundaryProcess.hh"
 #endif
 
 
@@ -67,12 +77,13 @@ inline unsigned U4OpBoundaryProcess::GetStatus()
 }
 
 
-
 #if defined(WITH_CUSTOM4)
 template unsigned U4OpBoundaryProcess::GetStatus<C4OpBoundaryProcess>() ; 
 #elif defined(WITH_PMTSIM)
 template unsigned U4OpBoundaryProcess::GetStatus<CustomG4OpBoundaryProcess>() ; 
-#else
+#elif defined(WITH_INSTRUMENTED_DEBUG)
 template unsigned U4OpBoundaryProcess::GetStatus<InstrumentedG4OpBoundaryProcess>() ; 
+#else
+template unsigned U4OpBoundaryProcess::GetStatus<G4OpBoundaryProcess>() ; 
 #endif
 
