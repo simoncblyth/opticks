@@ -465,6 +465,9 @@ inline NPFold* SScene::serialize() const
 }
 inline void SScene::import(const NPFold* fold)
 {
+    if(fold == nullptr) std::cerr << "SScene::import called with NULL fold argument\n" ; 
+    if(fold == nullptr) return ; 
+
     const NPFold* _meshmerge = fold->get_subfold(MESHMERGE ); 
     const NPFold* _meshgroup = fold->get_subfold(MESHGROUP ); 
     const NPFold* _frame     = fold->get_subfold(FRAME ); 

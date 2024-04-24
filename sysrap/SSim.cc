@@ -400,7 +400,6 @@ void SSim::load_(const char* dir)
     NPFold* f_scene = top->get_subfold( SScene::RELDIR ) ; 
     scene->import( f_scene ); 
 
-
     LOG(LEVEL) << "]" ; 
 }
 

@@ -53,7 +53,10 @@ esac
 
 arg=${1:-$defarg}
 
-export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
+
+opticks_hash=$(git -C $OPTICKS_HOME rev-parse --short HEAD 2>/dev/null)
+[ -z "$opticks_hash" ] && opticks_hash="FAILED_GIT_REV_PARSE" 
+export OPTICKS_HASH=$opticks_hash
 
 bin=CSGOptiXRMTest
 
@@ -137,6 +140,15 @@ if [ "${arg/run}" != "$arg" ]; then
    fi 
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then
+   if [ -f "$LOG" ]; then 
+       echo $BASH_SOURCE : dbg : delete prior LOG $LOG 
+       rm "$LOG" 
+   fi 
+   gdb__ $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
 fi 
 
 if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
