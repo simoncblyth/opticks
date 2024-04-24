@@ -1,4 +1,11 @@
 #pragma once
+/**
+SGLFW_CUDA.h : Coordinate SCUDAOutputBuffer and SGLDisplay for display of interop buffers
+==========================================================================================
+
+
+**/
+
 
 #include "SCU.h"
 #include "SCUDAOutputBuffer.h"

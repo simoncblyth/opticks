@@ -1,9 +1,17 @@
 #pragma once
+/**
+SGLFW_Program.h : compile and link OpenGL pipeline using shader sources loaded from directory
+===============================================================================================
+
+
+**/
+
 
 struct SGLFW_Program
 {
     static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;  
 
+    const char* dir ; 
     const char* vtx_attname ; 
     const char* nrm_attname ; 
     const char* ins_attname ; 
@@ -26,6 +34,7 @@ struct SGLFW_Program
         const char* _mvp_uniname,
         const float* _mvp 
         ); 
+    void init(); 
 
     void createFromDir(const char* _dir); 
     void createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text ); 
@@ -60,6 +69,7 @@ inline SGLFW_Program::SGLFW_Program(
     const float* _mvp 
     )
     :
+    dir( _dir ? strdup(_dir) : nullptr ),
     vtx_attname( _vtx_attname ? strdup(_vtx_attname) : nullptr ),
     nrm_attname( _nrm_attname ? strdup(_nrm_attname) : nullptr ),
     ins_attname( _ins_attname ? strdup(_ins_attname) : nullptr ),
@@ -72,7 +82,13 @@ inline SGLFW_Program::SGLFW_Program(
     mvp(_mvp),
     dump(false)
 {
-    if(_dir) createFromDir(_dir) ; 
+    init(); 
+}
+
+
+inline void SGLFW_Program::init()
+{
+    if(dir) createFromDir(dir) ; 
     use(); 
     if(mvp_uniname)
     { 
@@ -124,8 +140,14 @@ inline void SGLFW_Program::updateMVP() const
 
 
 
+/**
+SGLFW_Program::createFromDir 
+-------------------------------
 
+Loads {vert/geom/frag}.glsl shader source files from provided directory
+and invokes createFromText
 
+**/
 
 inline void SGLFW_Program::createFromDir(const char* _dir)
 {

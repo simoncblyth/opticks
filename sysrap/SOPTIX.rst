@@ -1,5 +1,17 @@
-sysrap/SOPTIX,SCUDA,SMesh : triangulated machinery 
-====================================================
+sysrap/SOPTIX,SCUDA,SMesh,SGLFW : triangulated machinery 
+===========================================================
+
+
+Overview
+----------
+
+The SOPTIX,SCUDA,SMesh,SGLFW structs were developed to learn how to 
+implement a triangulated geometry workflow with the NVIDIA OptiX 7+ API
+and also to allow OpenGL rendering of the triangulated geometry.  
+
+
+Structs
+---------
 
 * SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
 * SOPTIX_SBT.h : create sbt from pipeline and scene by uploding the prog and hitgroup records
@@ -21,12 +33,26 @@ sysrap/SOPTIX,SCUDA,SMesh : triangulated machinery
 * SOPTIX_BuildInput_Mesh.h : create OptixBuildInput via "part" indexing into SCUDA_MeshGroup (Used from SOPTIX_MeshGroup)
 * SOPTIX_MeshGroup.h : create SOPTIX_BuildInput_Mesh for each part of SCUDA_MeshGroup, use those to form SOPTIX_Accel gas  
 
-* SCUDAOutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA 
 * SCUDA_Mesh.h : uploads SMesh tri and holds SCU_Buf 
 * SCUDA_MeshGroup.h : collect vectors of NP from each SMeshGroup sub, upload together with SCU_BufferView 
 
 * SMeshGroup.h : collection of SMesh subs and names
 * SMesh.h : holds tri,vtx,nrm NP either from original G4VSolid conversion or concatenation
+
+
+* SGLFW.h : Light touch OpenGL render loop and key handling
+* SGLFW_Keys.h : record of keyboard keys currently held down with modifiers bitfield summarization
+* SGLFW_Extras.h : Toggle, GLboolean, bool, GLenum, Attrib, Buffer, VAO 
+
+
+* SGLFW_CUDA.h : Coordinate SCUDAOutputBuffer and SGLDisplay for display of interop buffers
+* SCUDAOutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA 
+* SGLDisplay.h : OpenGL shader pipeline that presents PBO to screen
+
+* SGLFW_Program.h : compile and link OpenGL pipeline using shader sources loaded from directory
+* SGLFW_Mesh.h : create OpenGL buffers with SMesh and instance data and render
+* SGLFW_Scene.h : manage scene data and OpenGL render pipelines 
+
 
 
 tests

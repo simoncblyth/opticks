@@ -1,7 +1,30 @@
 #pragma once
 /**
-SGLFW_Scene.h
-==============
+SGLFW_Scene.h : manage scene data and OpenGL render pipelines 
+===============================================================
+
+Primary members
+-----------------
+
+(SScene)sc
+    source of SMesh data  
+(SGLM)gm
+     view/projection maths using glm 
+(SGLFW)gl
+     OpenGL render top level 
+
+
+SGLFW_Program render pipelines
+--------------------------------
+
+wire
+    wireframe
+iwire
+    instanced wireframe
+norm
+    normal shader
+inorm
+    instanced normal shader
 
 
 **/
@@ -77,7 +100,13 @@ inline void SGLFW_Scene::init()
     initMesh();
 }
 
+/**
+SGLFW_Scene::initProg
+----------------------
 
+Create the shaders 
+
+**/
 
 inline void SGLFW_Scene::initProg()
 {
@@ -93,7 +122,7 @@ inline void SGLFW_Scene::initProg()
 SGLFW_Scene::initMesh
 -----------------------
 
-Traverses the mesh_group from the SScene
+Traverses the meshmerge vector from SScene
 passing them to SGLFW_Mesh instances 
 which do the OpenGL uploads
 
@@ -111,12 +140,11 @@ inline void SGLFW_Scene::initMesh()
 
     for(int i=0 ; i < num_meshmerge ; i++)
     {
-        //if( i != 4) continue ; 
         const int4&  _inst_info = sc->inst_info[i] ; 
 
         int num_inst = _inst_info.y ; 
         int offset   = _inst_info.z ; 
-        bool is_instanced = _inst_info.y > 1 ; 
+        bool is_instanced = num_inst > 1 ; 
 
         const SMesh* _mm = sc->meshmerge[i] ; 
 
@@ -131,6 +159,15 @@ inline void SGLFW_Scene::initMesh()
 }
 
 
+
+/**
+SGLFW_Scene::setFrameIdx
+-------------------------
+
+Adjusts viewpoint by jumping to indexed frame
+
+
+**/
 
 inline void SGLFW_Scene::setFrameIdx(int _idx)
 {
@@ -178,6 +215,17 @@ inline void SGLFW_Scene::render()
         _mesh->render(_prog);   
     }
 }
+
+
+/**
+SGLFW_Scene::renderloop
+------------------------
+
+For ease of integration with alternative renders (eg raytrace)
+it is often preferable to directly implement the renderloop
+in the main or elsewhere and not use this simple renderloop.
+
+**/
 
 inline void SGLFW_Scene::renderloop()
 {

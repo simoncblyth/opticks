@@ -1,7 +1,7 @@
 #pragma once
 /**
-SGLFW_Extras.h
-=================
+SGLFW_Extras.h : Toggle, GLboolean, bool, GLenum, Attrib, Buffer, VAO 
+======================================================================
 
 SGLFW__check
 
@@ -19,6 +19,13 @@ SGLFW_GLenum
 
 SGLFW_Attrib
    parse attribute metadata strings such as "4,GL_FLOAT,GL_FALSE,64,0,false"
+
+SGLFW_Buffer  
+   minimal OpenGL buffer wrapper
+
+SGLFW_VAO
+   minimal Vertex Array wrapper
+
 
 **/
 
@@ -266,8 +273,8 @@ inline std::string SGLFW_Attrib::desc() const
 
 
 /**
-SGLFW_Buffer
--------------
+SGLFW_Buffer : minimal OpenGL buffer wrapper
+---------------------------------------------
 
 Old Opticks oglrap handled multi-buffers using RBuf held by Renderer
 See::
@@ -319,8 +326,10 @@ inline void SGLFW_Buffer::unbind()
 
 
 
-
-
+/**
+SGLFW_VAO : Minimal Vertex Array wrapper
+--------------------------------------------
+**/
 
 struct SGLFW_VAO
 {
@@ -343,11 +352,6 @@ inline void SGLFW_VAO::unbind()
 {
     glBindVertexArray(0);        SGLFW__check(__FILE__, __LINE__);
 }
-
-
-
-
-
 
 
 

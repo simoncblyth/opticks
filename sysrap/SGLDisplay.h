@@ -1,7 +1,7 @@
 #pragma once
 /**
-SGLDisplay.h
-=============
+SGLDisplay.h : OpenGL shader pipeline that presents PBO to screen
+==================================================================
 
 
 **/
@@ -26,6 +26,7 @@ struct SGLDisplay
     static int PixelUnpackAlignment( size_t elmt_size ); 
 
     SGLDisplay(BufferImageFormat format = UNSIGNED_BYTE4);
+    void init(); 
     std::string desc() const ; 
 
     void display(
@@ -80,6 +81,14 @@ void main()
 
 };
 
+/**
+SGLDisplay::CreateGLShader
+---------------------------
+
+Compile shader from provided source string
+
+**/
+
 inline GLuint SGLDisplay::CreateGLShader( const char* source, GLuint shader_type ) // static
 {
     GLuint shader = glCreateShader( shader_type );
@@ -107,6 +116,14 @@ inline GLuint SGLDisplay::CreateGLShader( const char* source, GLuint shader_type
     } 
     return shader;
 }
+
+/**
+SGLDisplay::CreateGLProgram
+-----------------------------
+
+Create pipeline from vertex and fragment shader sources
+
+**/
 
 
 inline GLuint SGLDisplay::CreateGLProgram( const char* vert_source, const char* frag_source ) // static
@@ -183,12 +200,6 @@ inline int SGLDisplay::PixelUnpackAlignment( size_t elmt_size ) // static
 SGLDisplay::SGLDisplay
 -----------------------
 
-1. binds Vertex Array m_vertex_array 
-2. creates shader pipeline m_program  
-3. binds and configures m_render_tex GL_TEXTURE_2D
-4. binds m_quad_vertex_buffer GL_ARRAY_BUFFER 
-   and uploads vertices of two triangles forming a [-1:1,-1:1] quad
-
 **/
 
 inline SGLDisplay::SGLDisplay( BufferImageFormat image_format )
@@ -197,6 +208,24 @@ inline SGLDisplay::SGLDisplay( BufferImageFormat image_format )
     m_elmt_size(PixelFormatSize( m_image_format )),
     m_unpack_alignment(PixelUnpackAlignment( m_elmt_size )),
     m_count(0)
+{
+    init(); 
+}
+
+
+/**
+SGLDisplay::init
+-----------------
+
+1. binds Vertex Array m_vertex_array 
+2. creates shader pipeline m_program  
+3. binds and configures m_render_tex GL_TEXTURE_2D
+4. binds m_quad_vertex_buffer GL_ARRAY_BUFFER 
+   and uploads vertices of two triangles forming a [-1:1,-1:1] quad
+
+**/
+
+inline void SGLDisplay::init()
 {
     GLuint m_vertex_array;
     GL_CHECK( glGenVertexArrays(1, &m_vertex_array ) );

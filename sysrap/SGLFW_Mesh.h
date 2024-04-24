@@ -1,16 +1,20 @@
 #pragma once
+/**
+SGLFW_Mesh.h : create OpenGL buffers with SMesh and instance data and render
+==============================================================================
+
+Canonical use is from SGLFW_Scene::initMesh
+
+* (in a former incarnation this was called SGLFW_Render)
+
+**/
+
 
 struct NP ; 
 struct SMesh ; 
 struct SGLFW_Program ; 
 
-/**
-SGLFW_Mesh (in a former incarnation this was SGLFW_Render)
-============================================================
 
-Canonical use is from SGLFW_Scene::initMesh
-
-**/
 struct SGLFW_Mesh
 {
     bool  dump ; 
@@ -56,6 +60,16 @@ inline SGLFW_Mesh::SGLFW_Mesh(const SMesh* _mesh )
 {
     init(); 
 }
+
+/**
+SGLFW_Mesh::init
+----------------
+
+Creates vtx, nrm, idx OpenGL buffers using SGLFW_Buffers
+
+
+**/
+
 
 inline void SGLFW_Mesh::init()
 {
@@ -123,6 +137,8 @@ inline std::string SGLFW_Mesh::descInst() const
 /**
 SGLFW_Mesh::render
 ---------------------
+
+Use argument prog to render the mesh 
 
 NB: careful that the intended buffer is bound (making it the active GL_ARRAY_BUFFER)
 when the vertex attrib is enabled.  Getting this wrong can for example easily cause

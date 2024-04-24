@@ -397,9 +397,12 @@ set(HEADERS
     SCMD.h
 
     SGLM.h
+    SGLM_Parse.h
+    SGLM_Modifiers.h
     SGLM_Arcball.h
 
     SGLFW.h
+    SGLFW_Keys.h
     SGLFW_Extras.h
     SGLFW_Program.h
     SGLFW_Mesh.h
