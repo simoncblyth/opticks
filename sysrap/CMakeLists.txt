@@ -415,6 +415,7 @@ set(HEADERS
     scuda_pointer.h
 
     SOPTIX.h
+    SOPTIX_Context.h
     SOPTIX_Properties.h
     SOPTIX_Options.h
     SOPTIX_getPRD.h

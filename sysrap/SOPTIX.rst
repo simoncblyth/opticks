@@ -7,7 +7,7 @@ Overview
 
 The SOPTIX,SCUDA,SMesh,SGLFW structs were developed to learn how to 
 implement a triangulated geometry workflow with the NVIDIA OptiX 7+ API
-and also to allow OpenGL rendering of the triangulated geometry.  
+and also to implement interactive OpenGL rendering of the triangulated geometry.  
 
 
 Structs
@@ -16,7 +16,7 @@ Structs
 * SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
 * SOPTIX_SBT.h : create sbt from pipeline and scene by uploding the prog and hitgroup records
 
-* SOPTIX.h : OptixDeviceContext + SOPTIX_Properties  
+* SOPTIX_Context.h : OptixDeviceContext + SOPTIX_Properties  
 * SOPTIX_Properties.h : optixDeviceContextGetProperty results
 
 * SOPTIX_Module.h : Create OptixModule from PTX loaded from file
@@ -52,7 +52,6 @@ Structs
 * SGLFW_Program.h : compile and link OpenGL pipeline using shader sources loaded from directory
 * SGLFW_Mesh.h : create OpenGL buffers with SMesh and instance data and render
 * SGLFW_Scene.h : manage scene data and OpenGL render pipelines 
-
 
 
 tests

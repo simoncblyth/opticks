@@ -22,6 +22,7 @@ Related::
 #include "SGLM.h"
 #include "SScene.h"
 
+#include "SOPTIX_Context.h"
 #include "SOPTIX.h"
 
 #include "SCUDA_MeshGroup.h"
@@ -34,62 +35,48 @@ Related::
 #include "SOPTIX_Params.h"
 
 
+
 int main()
 {
     bool dump = false ; 
 
-    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
-    if(dump) std::cout << _scn->desc() ; 
- 
-    int ihandle = ssys::getenvint("HANDLE", 0)  ; 
-    float extent = 10000.f ;
-    switch(ihandle)
-    {   
-        case -1: extent = 12000.f ; break ; 
-        case  0: extent = 12000.f ; break ; 
-        case  1: extent = 100.f ; break ; 
-        case  2: extent = 500.f ; break ; 
-        case  3: extent = 500.f ; break ; 
-        case  4: extent = 500.f ; break ; 
-        case  5: extent = 100.f ; break ; 
-        case  6: extent = 200.f ; break ; 
-        case  7: extent = 500.f ; break ; 
-        case  8: extent = 500.f ; break ; 
-    } 
 
- 
-    sfr fr ; 
-    fr.set_extent( extent ); 
-    // TODO: determine CE from scene and view options 
-
-    SGLM gm ; 
-    gm.set_frame(fr) ; 
-    //std::cout << gm.desc() ;  
-
-
-    SOPTIX opx ; 
-    if(dump) std::cout << opx.desc() ; 
+    SOPTIX_Context ctx ; 
+    if(dump) std::cout << ctx.desc() ; 
 
     SOPTIX_Options opt ;  
     if(dump) std::cout << opt.desc() ; 
 
-    SOPTIX_Scene scn(&opx, _scn );  
-    if(dump) std::cout << scn.desc() ; 
-
-    SOPTIX_Module mod(opx.context, opt, "$SOPTIX_PTX" ); 
+    SOPTIX_Module mod(ctx.context, opt, "$SOPTIX_PTX" ); 
     if(dump) std::cout << mod.desc() ; 
 
-    SOPTIX_Pipeline pip(opx.context, mod.module, opt ); 
+    SOPTIX_Pipeline pip(ctx.context, mod.module, opt ); 
     if(dump) std::cout << pip.desc() ; 
+
+
+
+    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
+    if(dump) std::cout << _scn->desc() ; 
+ 
+    int FRAME = ssys::getenvint("FRAME", -1)  ; 
+    std::cout << "FRAME=" << FRAME << " ~/o/sysrap/tests/SOPTIX_Scene_test.sh run \n" ; 
+
+    sfr fr = _scn->getFrame(FRAME) ; 
+
+    SGLM gm ; 
+    gm.set_frame(fr);   
+    std::cout << gm.desc() ; 
+
+
+    SOPTIX_Scene scn(&ctx, _scn );  
+    if(dump) std::cout << scn.desc() ; 
+
+    int HANDLE = ssys::getenvint("HANDLE", -1)  ; 
+    OptixTraversableHandle handle = scn.getHandle(HANDLE) ;
+
 
     SOPTIX_SBT sbt(pip, scn );
     if(dump) std::cout << sbt.desc() ; 
-
-
-    // before complicating things with OpenGL interop, test pure CUDA
-    //SCUDAOutputBuffer<uchar4>( SCUDAOutputBufferType::GL_INTEROP, gm.Width(), gm.Height() );  
-    // need img handling like qudarap/tests/QTexRotateTest.cc with SIMG 
-    //  examples/UseOptiX7GeometryInstanced/Engine.cc
 
     
     uchar4* d_pixels = nullptr ;
@@ -98,42 +85,50 @@ int main()
     CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_pixels ), pixel_bytes )); 
     uchar4* pixels = new uchar4[num_pixel] ; 
 
+
+    SOPTIX_Params* d_param = SOPTIX_Params::DeviceAlloc(); 
     SOPTIX_Params par ; ; 
 
+    //---
     par.width = gm.Width() ; 
     par.height = gm.Height() ; 
     par.pixels = d_pixels ; 
-    par.tmin = 0.1f ; 
-    par.tmax = 1e9f ; 
+    par.tmin = gm.get_near_abs() ; 
+    par.tmax = gm.get_far_abs() ; 
     par.cameratype = gm.cam ; 
+    par.visibilityMask = gm.vizmask ; 
+
     SGLM::Copy(&par.eye.x, gm.e ); 
     SGLM::Copy(&par.U.x  , gm.u );  
     SGLM::Copy(&par.V.x  , gm.v );  
     SGLM::Copy(&par.W.x  , gm.w );  
 
-    par.handle = ihandle == -1 ? scn.ias->handle : scn.meshgroup[ihandle]->gas->handle ;  
+    par.handle = handle ;  
+    // --- 
 
-    SOPTIX_Params* d_param = par.device_alloc(); 
     par.upload(d_param); 
 
+    CUstream stream = 0 ; 
+    unsigned depth = 1 ; 
 
     OPTIX_CHECK( optixLaunch(
                  pip.pipeline,
-                 0,             // stream
+                 stream,
                  (CUdeviceptr)d_param,
                  sizeof( SOPTIX_Params ),
                  &(sbt.sbt),
                  gm.Width(),  // launch width
                  gm.Height(), // launch height
-                 1            // launch depth
+                 depth        // launch depth
                  ) );
     
     CUDA_SYNC_CHECK();
     CUDA_CHECK( cudaMemcpy( pixels, reinterpret_cast<void*>(d_pixels), pixel_bytes, cudaMemcpyDeviceToHost ));
      
     const char* ppm_path = getenv("PPM_PATH") ;   
-    bool yflip = false ; 
-    sppm::Write(ppm_path, gm.Width(), gm.Height(), 4, (unsigned char*)pixels, yflip );  
+    bool yflip = true ; 
+    int ncomp = 4 ; 
+    sppm::Write(ppm_path, gm.Width(), gm.Height(), ncomp, (unsigned char*)pixels, yflip );  
 
 
     return 0 ; 

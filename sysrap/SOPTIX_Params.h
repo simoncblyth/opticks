@@ -27,7 +27,7 @@ struct SOPTIX_Params
     OptixTraversableHandle handle ;
 
 #ifndef __CUDACC__
-    SOPTIX_Params* device_alloc();
+    static SOPTIX_Params* DeviceAlloc();
     void upload(SOPTIX_Params* d_param);  
 #endif
 
@@ -36,7 +36,7 @@ struct SOPTIX_Params
 
 #ifndef __CUDACC__
 
-inline SOPTIX_Params* SOPTIX_Params::device_alloc()
+inline SOPTIX_Params* SOPTIX_Params::DeviceAlloc()  // static 
 {
     SOPTIX_Params* d_param = nullptr ;
     CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &d_param ), sizeof( SOPTIX_Params ) ) );   

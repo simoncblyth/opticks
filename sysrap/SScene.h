@@ -82,6 +82,7 @@ struct SScene
     void load(const char* dir);
 
     void addFrames(const char* path, const stree* st); 
+    sfr getFrame(int _idx=-1) const ; 
 
 };
 
@@ -148,6 +149,21 @@ inline void SScene::initFromTree_Factor(const stree* st)
     for(int i=0 ; i < num_fac ; i++) initFromTree_Factor_(1+i, st); 
 }
 
+/**
+SScene::initFromTree_Factor_
+-----------------------------
+
+Note that the meshmerge and meshgroup contain the same triangulated
+geometry info organized differently 
+
+meshgroup
+    SMeshGroup instances that maintain separate SMesh for each "Prim"
+
+meshmesh
+    concatenated SMesh used by OpenGL 
+
+**/
+
 inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
 {
     assert( ridx > 0 ); 
@@ -181,18 +197,17 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
 SScene::initFromTree_Node
 ---------------------------
 
-Note that some snode within sfactor sub trees have 
+Note that some snode within sfactor subtrees have 
 different transforms relative to the outer snode
 such as PMT innards. Hence the SMesh vtx 
 are flattened into the instance frame.
 
 Recall that instance outer nodes will need no transform, 
 but for volumes within the subtree some relative 
-transforms will in general need to be applied such as PMT innards
+transforms will in general need to be applied.
  
-Constrast with CSGFoundry 
-which goes further delving into the transforms of the 
-CSG constituents.
+Contrast with CSGFoundry which goes further delving into 
+the transforms of the CSG constituents.
 
 **/
 
@@ -515,4 +530,23 @@ inline void SScene::addFrames(const char* path, const stree* st)
 }
 
 
+inline sfr SScene::getFrame(int _idx) const
+{
+    int num_frame = frame.size(); 
+    int idx = ( _idx > -1 && _idx < num_frame ) ? _idx : -1 ; 
+
+    const float* _ce = get_ce(0) ; 
+    std::cout 
+         << "SScene::getFrame"
+         << " num_frame " << num_frame 
+         << " _idx " << _idx
+         << " idx " << idx
+         << " _ce[3] " << ( _ce ? _ce[3] : -1.f )    
+         << "\n" 
+         ; 
+  
+    sfr fr = idx == -1 ? sfr::MakeFromCE(_ce) : frame[idx] ; 
+    fr.set_idx(idx); 
+    return fr ; 
+}
 

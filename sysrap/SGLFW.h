@@ -73,6 +73,7 @@ around it.
 #include <glm/glm.hpp>
 #include "NPU.hh"
 
+#include "ssys.h"
 #include "SMesh.h"
 #include "SGLM.h"
 #include "SGLFW_Extras.h"
@@ -166,7 +167,7 @@ Z:toggle.zoom
     static constexpr const char* TITLE = "SGLFW" ; 
 
     SGLM& gm ; 
-    int frame_idx ; 
+    int wanted_frame_idx ; 
 
     int width ; 
     int height ; 
@@ -203,8 +204,8 @@ Z:toggle.zoom
 
     void key_pressed(unsigned key); 
     void numkey_pressed(unsigned num); 
-    void set_frame_idx(int _idx); 
-    int  get_frame_idx() const ;
+    void set_wanted_frame_idx(int _idx); 
+    int  get_wanted_frame_idx() const ;
 
     void key_repeated(unsigned key); 
     void key_released(unsigned key); 
@@ -358,10 +359,10 @@ inline void SGLFW::key_pressed(unsigned key)
 inline void SGLFW::numkey_pressed(unsigned num)
 {
     std::cout << "SGLFW::numkey_pressed " << num << "\n" ; 
-    set_frame_idx(num); 
+    set_wanted_frame_idx(num); 
 }
-inline void SGLFW::set_frame_idx(int _idx){ frame_idx = _idx ; }
-inline int  SGLFW::get_frame_idx() const { return frame_idx ; }
+inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }
+inline int  SGLFW::get_wanted_frame_idx() const { return wanted_frame_idx ; }
 
 inline void SGLFW::key_repeated(unsigned key)
 {
@@ -624,10 +625,18 @@ inline std::string SGLFW::descStartPos() const
     return str ;
 }
 
+/**
+SGLFW::SGLFW
+-------------
+
+ -1:corresponds to frame formed from entire CE center-extent  
+
+**/
+
 inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
-    frame_idx(-1),
+    wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -1)),   
     width(gm.Width()),
     height(gm.Height()),
     title(TITLE),

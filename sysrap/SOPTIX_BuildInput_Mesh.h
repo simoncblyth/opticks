@@ -12,6 +12,7 @@ to device arrays. Have to keep that address valid.
 **/
 #include "SCUDA_MeshGroup.h"
 
+
 struct SOPTIX_BuildInput_Mesh
 {
     unsigned    flag ;  

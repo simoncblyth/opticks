@@ -9,9 +9,9 @@ SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup an
 
 struct SOPTIX_Scene
 { 
-    bool    dump ; 
-    SOPTIX* ox ; 
-    SScene* scene ; 
+    bool            dump ; 
+    SOPTIX_Context* ctx ; 
+    SScene*         scene ; 
 
     std::vector<SCUDA_MeshGroup*> cuda_meshgroup ;
     std::vector<SOPTIX_MeshGroup*> meshgroup ;
@@ -24,7 +24,7 @@ struct SOPTIX_Scene
     std::string descGAS() const; 
     std::string descIAS() const; 
 
-    SOPTIX_Scene( SOPTIX* ox, SScene* scene );  
+    SOPTIX_Scene( SOPTIX_Context* ctx, SScene* scene );  
 
     void init(); 
     void init_MeshUpload(); 
@@ -33,10 +33,7 @@ struct SOPTIX_Scene
     void init_IAS();
     void init_MeshUpload_free(); 
 
-    //void init_PTXModule();
-    //void init_ProgramGroups();
-    //void init_Pipeline();
-    //void init_SBT();
+    OptixTraversableHandle getHandle(int idx) const ;  
 };
 
 
@@ -77,10 +74,10 @@ inline std::string SOPTIX_Scene::descIAS() const
     return str ;
 }
 
-inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX* _ox, SScene* _scene )
+inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, SScene* _scene )
     :
     dump(false),
-    ox(_ox),
+    ctx(_ctx),
     scene(_scene),
     instances_buffer(0),
     ias(nullptr)
@@ -94,15 +91,6 @@ inline void SOPTIX_Scene::init()
     init_GAS();
     init_Instances();
     init_IAS();
-
-    //init_MeshUpload_free(); 
-    // earlier ? vtx,idx split from ins 
-    // needs to be after SBT is setup ? 
-
-    //init_PTXModule();
-    //init_ProgramGroups();
-    //init_Pipeline();
-    //init_SBT();
 }
 
 
@@ -144,7 +132,7 @@ inline void SOPTIX_Scene::init_GAS()
     for(int i=0 ; i < num_cmg ; i++)
     {
         SCUDA_MeshGroup* _mg = cuda_meshgroup[i] ; 
-        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ox->context, _mg) ;  
+        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ctx->context, _mg) ;  
         meshgroup.push_back(mg);
     }
 }
@@ -158,7 +146,7 @@ SOPTIX_Scene::initInstances
 
 inline void SOPTIX_Scene::init_Instances()
 {
-    unsigned visibilityMask_FULL = ox->props->visibilityMask(); 
+    unsigned visibilityMask_FULL = ctx->props->visibilityMask(); 
     unsigned visibilityMask_BITS = std::bitset<32>(visibilityMask_FULL).count(); 
     assert( visibilityMask_FULL == 0xffu ); 
     assert( visibilityMask_BITS == 8 ); 
@@ -236,11 +224,14 @@ inline void SOPTIX_Scene::init_IAS()
     std::vector<OptixBuildInput> buildInputs ;
     buildInputs.push_back(buildInput); 
 
-    ias = new SOPTIX_Accel( ox->context, buildInputs ); 
+    ias = new SOPTIX_Accel( ctx->context, buildInputs ); 
 }
 
-//inline void SOPTIX_Scene::init_PTXModule(){};
-//inline void SOPTIX_Scene::init_ProgramGroups(){};
-//inline void SOPTIX_Scene::init_Pipeline();
-//inline void SOPTIX_Scene::init_SBT(){};
+
+inline OptixTraversableHandle SOPTIX_Scene::getHandle(int idx) const 
+{  
+    assert( idx < int(meshgroup.size())) ; 
+    return idx == -1 ? ias->handle : meshgroup[idx]->gas->handle ;
+}
+
 

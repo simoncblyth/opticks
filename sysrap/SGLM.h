@@ -237,11 +237,13 @@ struct SYSRAP_API SGLM : public SCMD
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
 
-    sfr fr ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
+    sfr fr = {} ;  // CAUTION: SEvt also holds an sframe used for input photon targetting 
 
     static constexpr const char* _DUMP = "SGLM__set_frame_DUMP" ; 
     void set_frame( const sfr& fr ); 
     int get_frame_idx() const ; 
+    bool has_frame_idx(int idx) const ; 
+    const std::string& get_frame_name() const ; 
 
     float extent() const ; 
     float tmin_abs() const ; 
@@ -821,7 +823,8 @@ inline void SGLM::set_frame( const sfr& fr_ )
 }
 
 inline int SGLM::get_frame_idx() const { return fr.get_idx(); }
-//inline const char* SGLM::get_frame_name() const { return fr.get_name(); }
+inline bool SGLM::has_frame_idx(int idx) const { return idx == get_frame_idx() ; }
+inline const std::string& SGLM::get_frame_name() const { return fr.get_name(); }
 
 inline float SGLM::extent() const {   return fr.ce.w > 0 ? fr.ce.w : CE.w ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?

@@ -122,7 +122,7 @@ export SGLM__set_frame_DUMP=$DUMP
 #export SGLFW_SOPTIX_Scene_test_DUMP=1  
 
 
-wh=1024,768
+#wh=1024,768
 wh=2560,1440
 
 #eye=0.1,0,-10
@@ -159,7 +159,7 @@ handle=-1 # -1:IAS 0...8 GAS indices
 export HANDLE=${HANDLE:-$handle}
 :
 frame=-1
-export FRAME=${FRAME:-$frame}
+export SGLFW_FRAME=${SGLFW_FRAME:-$frame}
 
 vizmask=t   # 0xff no masking
 #vizmask=t0  # 0xfe mask global
@@ -179,7 +179,7 @@ fi
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin"
+vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin SGLFW_FRAME"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done

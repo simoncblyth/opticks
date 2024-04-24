@@ -1143,12 +1143,12 @@ do similar with NAMEPREFIX envvar.
 **/
 const char* CSGOptiX::getRenderStemDefault() const 
 {
-    const char* fr_name = sglm->fr.get_name() ; 
+    const std::string& fr_name = sglm->fr.get_name() ; 
 
     std::stringstream ss ; 
     ss << ssys::getenvvar("NAMEPREFIX","nonamepfx") ; 
     ss << "_" ; 
-    ss << ( fr_name ? fr_name : "no_frame_name" ) ; 
+    ss << ( fr_name.empty() ? "no_frame_name" : fr_name ) ; 
     
     std::string str = ss.str(); 
     return strdup(str.c_str()); 

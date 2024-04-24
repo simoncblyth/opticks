@@ -33,7 +33,7 @@ struct sfr
     glm::tmat4x4<double>  m2w ; 
     glm::tmat4x4<double>  w2m ; 
 
-    const char* name ; // hmm: pointers cause double ownership on default copy issues, use string? 
+    std::string name ; 
 
     sfr(); 
 
@@ -45,7 +45,7 @@ struct sfr
     int  get_idx() const ; 
 
     void set_name( const char* _name ); 
-    const char* get_name() const ; 
+    const std::string& get_name() const ; 
     std::string get_key() const ; 
 
     std::string desc() const ; 
@@ -122,18 +122,18 @@ inline void sfr::set_idx(int idx) { aux2.w = idx ; }
 inline int  sfr::get_idx() const  { return aux2.w ; }
 
 
-inline const char* sfr::get_name() const 
+inline const std::string& sfr::get_name() const 
 {
     return name ; 
 }
 inline std::string sfr::get_key() const
 {
-    return name ? sstr::Replace( name, ':', '_' ) : "" ;  
+    return name.empty() ? "" : sstr::Replace( name.c_str(), ':', '_' ) ;  
 }
 
 inline void sfr::set_name(const char* _n)
 {
-    name = _n ? strdup(_n) : nullptr ; 
+    if(_n) name = _n ; 
 }
 
 
@@ -142,7 +142,7 @@ inline std::string sfr::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << "[sfr::desc name [" << ( name ? name : "-" ) << "]\n"
+       << "[sfr::desc name [" << name << "]\n"
        << "ce\n" 
        << stra<double>::Desc(ce)
        << "\n"
@@ -185,15 +185,15 @@ inline NP* sfr::serialize() const
     NP* a = NP::Make<double>(NUM_4x4, 4, 4) ; 
     write( a->values<double>(), NUM_4x4*4*4 ) ; 
     a->set_meta<std::string>("creator", "sfr::serialize"); 
-    if(name) a->set_meta<std::string>("name",    name ); 
+    if(!name.empty()) a->set_meta<std::string>("name",    name ); 
     return a ; 
 }
 
 inline void sfr::save(const char* dir, const char* name_ ) const
 {
-    std::string name = U::form_name( name_ , ".npy" ) ; 
+    std::string aname = U::form_name( name_ , ".npy" ) ; 
     NP* a = serialize() ; 
-    a->save(dir, name.c_str()); 
+    a->save(dir, aname.c_str()); 
 }
 
 
@@ -220,8 +220,8 @@ inline sfr sfr::Load_(const char* path) // static
 
 inline void sfr::load(const char* dir, const char* name_ ) 
 {
-    std::string name = U::form_name( name_ , ".npy" ) ; 
-    const NP* a = NP::Load(dir, name.c_str() ); 
+    std::string aname = U::form_name( name_ , ".npy" ) ; 
+    const NP* a = NP::Load(dir, aname.c_str() ); 
     load(a); 
 }
 inline void sfr::load_(const char* path_) 
@@ -239,7 +239,7 @@ inline void sfr::load(const NP* a)
 {
     read( a->cvalues<double>() , NUM_VALUES );   
     std::string _name = a->get_meta<std::string>("name", ""); 
-    if(!_name.empty()) name = strdup(_name.c_str()); 
+    if(!_name.empty()) name = _name ; 
 }
 
 inline const double* sfr::cdata() const 
