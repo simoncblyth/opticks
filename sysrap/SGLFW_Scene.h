@@ -34,10 +34,10 @@ inorm
 
 struct SGLFW_Scene
 {
-    static int RenderLoop(const SScene* scene, SGLM* gm ); 
+    static int RenderLoop(const SScene* scene, SGLM& gm ); 
     
     const SScene* sc ; 
-    SGLM*         gm ; 
+    SGLM&         gm ; 
     SGLFW*        gl ; 
 
     // map of these ? or pairs ?
@@ -48,7 +48,7 @@ struct SGLFW_Scene
 
     std::vector<SGLFW_Mesh*> mesh ; 
 
-    SGLFW_Scene(const SScene* scene, SGLM* gm ); 
+    SGLFW_Scene(const SScene* scene, SGLM& gm ); 
     void init(); 
     void initProg(); 
     void initMesh(); 
@@ -60,7 +60,7 @@ struct SGLFW_Scene
     void renderloop(); 
 }; 
 
-inline int SGLFW_Scene::RenderLoop(const SScene* scene, SGLM* gm ) // static
+inline int SGLFW_Scene::RenderLoop(const SScene* scene, SGLM& gm ) // static
 {
     std::cout << "[ SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
     SGLFW_Scene sc(scene, gm) ;
@@ -79,11 +79,11 @@ inline SGLFW_Program* SGLFW_Scene::getProg() const
 }
 
 
-inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc, SGLM* _gm)
+inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc, SGLM& _gm)
     :
     sc(_sc)
    ,gm(_gm)
-   ,gl(new SGLFW(*gm))
+   ,gl(new SGLFW(gm))
    ,wire(nullptr)
    ,iwire(nullptr)
    ,norm(nullptr)
@@ -109,11 +109,11 @@ Create the shaders
 inline void SGLFW_Scene::initProg()
 {
     // HMM: could discover these from file system 
-    wire = new SGLFW_Program("$SHADER_FOLD/wireframe", "vPos", "vNrm", nullptr, "MVP", gm->MVP_ptr ); 
-    iwire = new SGLFW_Program("$SHADER_FOLD/iwireframe", "vPos", "vNrm", "vInstanceTransform", "MVP", gm->MVP_ptr ); 
+    wire = new SGLFW_Program("$SHADER_FOLD/wireframe", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr ); 
+    iwire = new SGLFW_Program("$SHADER_FOLD/iwireframe", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr ); 
 
-    norm = new SGLFW_Program("$SHADER_FOLD/normal", "vPos", "vNrm", nullptr, "MVP", gm->MVP_ptr ); 
-    inorm = new SGLFW_Program("$SHADER_FOLD/inormal", "vPos", "vNrm", "vInstanceTransform", "MVP", gm->MVP_ptr ); 
+    norm = new SGLFW_Program("$SHADER_FOLD/normal", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr ); 
+    inorm = new SGLFW_Program("$SHADER_FOLD/inormal", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr ); 
 }
 
 /**

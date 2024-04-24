@@ -7,10 +7,16 @@ SOPTIX_Scene_test.cc
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh 
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
-Related::
+For an encapsulated version of this with OpenGL interactive control see::
 
+    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh  
+    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc  
+
+
+Other related tests::
+
+    ~/o/sysrap/tests/SCUDA_Mesh_test.sh
     ~/o/sysrap/tests/SCUDA_Mesh_test.cc
-    ~/o/sysrap/SOPTIX_Mesh.h
 
 **/
 
@@ -23,22 +29,32 @@ Related::
 #include "SScene.h"
 
 #include "SOPTIX_Context.h"
-#include "SOPTIX.h"
-
-#include "SCUDA_MeshGroup.h"
+#include "SOPTIX_Desc.h"
 #include "SOPTIX_MeshGroup.h"
 #include "SOPTIX_Scene.h"
 #include "SOPTIX_Module.h"
 #include "SOPTIX_Pipeline.h"
 #include "SOPTIX_SBT.h"
-
 #include "SOPTIX_Params.h"
-
-
 
 int main()
 {
     bool dump = false ; 
+
+
+    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
+    if(dump) std::cout << _scn->desc() ; 
+ 
+    int FRAME = ssys::getenvint("FRAME", -1)  ; 
+    std::cout << "FRAME=" << FRAME << " ~/o/sysrap/tests/SOPTIX_Scene_test.sh run \n" ; 
+    sfr fr = _scn->getFrame(FRAME) ; 
+
+    SGLM gm ; 
+    gm.set_frame(fr);   
+    std::cout << gm.desc() ; 
+
+
+
 
 
     SOPTIX_Context ctx ; 
@@ -53,30 +69,16 @@ int main()
     SOPTIX_Pipeline pip(ctx.context, mod.module, opt ); 
     if(dump) std::cout << pip.desc() ; 
 
-
-
-    SScene* _scn = SScene::Load("$SCENE_FOLD") ; 
-    if(dump) std::cout << _scn->desc() ; 
- 
-    int FRAME = ssys::getenvint("FRAME", -1)  ; 
-    std::cout << "FRAME=" << FRAME << " ~/o/sysrap/tests/SOPTIX_Scene_test.sh run \n" ; 
-
-    sfr fr = _scn->getFrame(FRAME) ; 
-
-    SGLM gm ; 
-    gm.set_frame(fr);   
-    std::cout << gm.desc() ; 
-
-
     SOPTIX_Scene scn(&ctx, _scn );  
     if(dump) std::cout << scn.desc() ; 
+
+    SOPTIX_SBT sbt(pip, scn );
+    if(dump) std::cout << sbt.desc() ; 
+
 
     int HANDLE = ssys::getenvint("HANDLE", -1)  ; 
     OptixTraversableHandle handle = scn.getHandle(HANDLE) ;
 
-
-    SOPTIX_SBT sbt(pip, scn );
-    if(dump) std::cout << sbt.desc() ; 
 
     
     uchar4* d_pixels = nullptr ;
@@ -89,7 +91,6 @@ int main()
     SOPTIX_Params* d_param = SOPTIX_Params::DeviceAlloc(); 
     SOPTIX_Params par ; ; 
 
-    //---
     par.width = gm.Width() ; 
     par.height = gm.Height() ; 
     par.pixels = d_pixels ; 
@@ -104,7 +105,6 @@ int main()
     SGLM::Copy(&par.W.x  , gm.w );  
 
     par.handle = handle ;  
-    // --- 
 
     par.upload(d_param); 
 

@@ -137,6 +137,7 @@ inline const char* SGLFW_bool::Name(bool value)
 }
 
 
+
 struct SGLFW_GLenum
 {
     static constexpr const char* GL_BYTE_           = "GL_BYTE" ; 

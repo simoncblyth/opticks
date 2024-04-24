@@ -28,7 +28,7 @@ inline std::string SOPTIX_Accel::desc() const
     ss << "[SOPTIX_Accel::desc " << std::endl ; 
     ss << " compacted " << ( compacted ? "YES" : "NO " ) << std::endl ;
     ss << " compacted_size " << compacted_size << std::endl ;
-    ss << SOPTIX::DescAccelBufferSizes(accelBufferSizes) ;  
+    ss << SOPTIX_Desc::AccelBufferSizes(accelBufferSizes) ;  
     ss << "]SOPTIX_Accel::desc " << std::endl ; 
     std::string str = ss.str(); 
     return str ; 

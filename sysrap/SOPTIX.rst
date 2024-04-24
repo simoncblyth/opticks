@@ -1,6 +1,5 @@
-sysrap/SOPTIX,SCUDA,SMesh,SGLFW : triangulated machinery 
-===========================================================
-
+SOPTIX.rst : triangulated machinery 
+======================================
 
 Overview
 ----------
@@ -13,7 +12,8 @@ and also to implement interactive OpenGL rendering of the triangulated geometry.
 Structs
 ---------
 
-* SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
+* SOPTIX.h : top level coordinator of triangulated raytrace render
+* SOPTIX_Scene.h : holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
 * SOPTIX_SBT.h : create sbt from pipeline and scene by uploding the prog and hitgroup records
 
 * SOPTIX_Context.h : OptixDeviceContext + SOPTIX_Properties  

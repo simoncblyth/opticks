@@ -79,6 +79,7 @@ around it.
 #include "SGLFW_Extras.h"
 #include "SGLFW_Program.h"
 #include "SGLFW_Mesh.h"
+#include "SGLFW_GLEQ.h"
 
 #ifdef WITH_CUDA_GL_INTEROP
 #include "SGLFW_CUDA.h"
@@ -202,6 +203,7 @@ Z:toggle.zoom
 
     void handle_event(GLEQevent& event); 
 
+    void window_refresh();
     void key_pressed(unsigned key); 
     void numkey_pressed(unsigned num); 
     void set_wanted_frame_idx(int _idx); 
@@ -289,7 +291,7 @@ See oglrap/Frame::handle_event
 
 inline void SGLFW::handle_event(GLEQevent& event)
 {
-    //std::cout << "SGLFW::handle_event " << event.type << std::endl; 
+    std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl; 
     switch(event.type)
     {
         case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ; 
@@ -297,9 +299,25 @@ inline void SGLFW::handle_event(GLEQevent& event)
         case GLEQ_KEY_RELEASED:  key_released(event.keyboard.key)       ; break ;
         case GLEQ_BUTTON_PRESSED:  button_pressed(  event.mouse.button, event.mouse.mods)  ; break ; 
         case GLEQ_BUTTON_RELEASED: button_released( event.mouse.button, event.mouse.mods)  ; break ; 
-        case GLEQ_CURSOR_MOVED:  cursor_moved(event.pos.x, event.pos.y) ; break ;
-        default:                                                        ; break ; 
+        case GLEQ_CURSOR_MOVED:    cursor_moved(event.pos.x, event.pos.y) ; break ;
+        case GLEQ_WINDOW_REFRESH:  window_refresh()                       ; break ; 
+        default:                                                          ; break ; 
     }
+}
+
+
+
+/**
+SGLFW::window_refresh
+----------------------
+
+By observation this event fires only in initialization
+
+**/
+
+inline void SGLFW::window_refresh()
+{
+    home(); 
 }
 
 

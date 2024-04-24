@@ -408,6 +408,7 @@ set(HEADERS
     SGLFW_Mesh.h
     SGLFW_CUDA.h
     SGLFW_Scene.h
+    SGLFW_GLEQ.h
 
     SCUDA_Mesh.h 
 

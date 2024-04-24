@@ -3,6 +3,8 @@
 SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
 =================================================================================================
 
+HMM: maybe SOPTIX_Geom.h so can rename SOPTIX.h to SOPTIX_Scene.h for parallel with SGLFW_Scene.h ?
+
 **/
 
 #include <bitset>
@@ -11,7 +13,7 @@ struct SOPTIX_Scene
 { 
     bool            dump ; 
     SOPTIX_Context* ctx ; 
-    SScene*         scene ; 
+    const SScene*   scene ; 
 
     std::vector<SCUDA_MeshGroup*> cuda_meshgroup ;
     std::vector<SOPTIX_MeshGroup*> meshgroup ;
@@ -24,7 +26,7 @@ struct SOPTIX_Scene
     std::string descGAS() const; 
     std::string descIAS() const; 
 
-    SOPTIX_Scene( SOPTIX_Context* ctx, SScene* scene );  
+    SOPTIX_Scene( SOPTIX_Context* ctx, const SScene* scene );  
 
     void init(); 
     void init_MeshUpload(); 
@@ -74,7 +76,7 @@ inline std::string SOPTIX_Scene::descIAS() const
     return str ;
 }
 
-inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, SScene* _scene )
+inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, const SScene* _scene )
     :
     dump(false),
     ctx(_ctx),

@@ -91,7 +91,7 @@ inline std::string SOPTIX_BuildInput_Mesh::desc() const
 {
     std::stringstream ss ; 
     ss << "[SOPTIX_BuildInput_Mesh::desc" << std::endl ; 
-    ss <<  SOPTIX::DescBuildInputTriangleArray(buildInput) ; 
+    ss <<  SOPTIX_Desc::BuildInputTriangleArray(buildInput) ; 
     ss << "]SOPTIX_BuildInput_Mesh::desc" << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
