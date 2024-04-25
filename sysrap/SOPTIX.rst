@@ -45,8 +45,8 @@ Structs
 * SGLFW_Extras.h : Toggle, GLboolean, bool, GLenum, Attrib, Buffer, VAO 
 
 
-* SGLFW_CUDA.h : Coordinate SCUDAOutputBuffer and SGLDisplay for display of interop buffers
-* SCUDAOutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA 
+* SGLFW_CUDA.h : Coordinate SCUDA_OutputBuffer and SGLDisplay for display of interop buffers
+* SCUDA_OutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA 
 * SGLDisplay.h : OpenGL shader pipeline that presents PBO to screen
 
 * SGLFW_Program.h : compile and link OpenGL pipeline using shader sources loaded from directory

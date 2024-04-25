@@ -401,14 +401,20 @@ set(HEADERS
     SGLM_Modifiers.h
     SGLM_Arcball.h
 
+    GL_CHECK.h
+    SMesh.h
+
     SGLFW.h
     SGLFW_Keys.h
     SGLFW_Extras.h
     SGLFW_Program.h
     SGLFW_Mesh.h
-    SGLFW_CUDA.h
     SGLFW_Scene.h
     SGLFW_GLEQ.h
+
+    SGLDisplay.h
+    SCUDA_OutputBuffer.h 
+    SGLFW_CUDA.h
 
     SCUDA_Mesh.h 
 
@@ -460,7 +466,9 @@ set(HEADERS
     OpticksPhoton.hh
 
     CUDA_CHECK.h
+    SCU.h 
     OPTIX_CHECK.h
+ 
 
     SU.hh
     SComponent_OLD.hh 

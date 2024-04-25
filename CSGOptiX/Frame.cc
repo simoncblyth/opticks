@@ -72,6 +72,25 @@ Frame::Frame(int width_, int height_, int depth_, uchar4* d_pixel_, float4* d_is
     assert( depth == 1 && num_pixels > 0 ); 
 }
 
+
+/**
+Frame::setExternalDevicePixels
+-------------------------------
+
+Does nothing when there is no change in the pointer 
+
+**/
+
+void Frame::setExternalDevicePixels(uchar4* _d_pixel )
+{
+    if( _d_pixel == d_pixel ) return ; 
+
+    if( d_pixel ) QU::device_free(d_pixel ); 
+    d_pixel = _d_pixel ; 
+}
+
+
+
 /**
 Frame::download from GPU buffers into vectors
 -----------------------------------------------

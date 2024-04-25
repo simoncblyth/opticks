@@ -146,13 +146,13 @@ escale=extent
 
 
 export WH=${WH:-$wh}
+export FULLSCREEN=${FULLSCREEN:-$fullscreen}
 export EYE=${EYE:-$eye}
 export LOOK=${LOOK:-$look}
 export UP=${UP:-$up}
 export TMIN=${TMIN:-$tmin}
 export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
-export FULLSCREEN=${FULLSCREEN:-$fullscreen}
 
 
 handle=-1 # -1:IAS 0...8 GAS indices 

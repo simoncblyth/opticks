@@ -58,7 +58,8 @@ opticks_hash=$(git -C $OPTICKS_HOME rev-parse --short HEAD 2>/dev/null)
 [ -z "$opticks_hash" ] && opticks_hash="FAILED_GIT_REV_PARSE" 
 export OPTICKS_HASH=$opticks_hash
 
-bin=CSGOptiXRMTest
+#bin=CSGOptiXRMTest
+bin=CSGOptiXRenderInteractiveTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
 source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit  
@@ -68,6 +69,10 @@ source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to set
 eye=-1,-1,0
 #eye=-1,-1,3
 #eye=-1,-1,3
+
+
+wh=2560,1440
+fullscreen=1
 
 zoom=1
 tmin=0.5
@@ -86,6 +91,10 @@ case $MOI in
    NEW_sChimneyAcrylic)    eye=-30,0,5   ; tmin=25  ; icam=1 ;; 
 esac
 
+
+
+export WH=${WH:-$wh}
+export FULLSCREEN=${FULLSCREEN:-$fullscreen}
 
 export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}

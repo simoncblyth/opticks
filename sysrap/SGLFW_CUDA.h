@@ -1,20 +1,20 @@
 #pragma once
 /**
-SGLFW_CUDA.h : Coordinate SCUDAOutputBuffer and SGLDisplay for display of interop buffers
-==========================================================================================
+SGLFW_CUDA.h : Coordinate SCUDA_OutputBuffer and SGLDisplay for display of interop buffers
+===========================================================================================
 
 
 **/
 
 
 #include "SCU.h"
-#include "SCUDAOutputBuffer.h"
+#include "SCUDA_OutputBuffer.h"
 #include "SGLDisplay.h"
 
 struct SGLFW_CUDA
 {
     SGLM& gm ; 
-    SCUDAOutputBuffer<uchar4>* output_buffer ; 
+    SCUDA_OutputBuffer<uchar4>* output_buffer ; 
     SGLDisplay* gl_display ; 
 
     SGLFW_CUDA(SGLM& gm); 
@@ -35,7 +35,7 @@ inline SGLFW_CUDA::SGLFW_CUDA(SGLM& _gm)
 
 inline void SGLFW_CUDA::init()
 {
-    output_buffer = new SCUDAOutputBuffer<uchar4>( SCUDAOutputBufferType::GL_INTEROP, gm.Width(), gm.Height() ) ; 
+    output_buffer = new SCUDA_OutputBuffer<uchar4>( SCUDA_OutputBufferType::GL_INTEROP, gm.Width(), gm.Height() ) ; 
     std::cout << output_buffer->desc() ; 
     gl_display = new SGLDisplay ; 
     std::cout << gl_display->desc() ; 

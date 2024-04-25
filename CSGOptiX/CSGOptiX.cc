@@ -427,12 +427,12 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
 
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
-    frame(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
+    framebuf(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
 #else
     ctx(nullptr),
     pip(nullptr), 
     sbt(nullptr),
-    frame(nullptr), 
+    framebuf(nullptr), 
 #endif
     meta(new SMeta),
     dt(0.),
@@ -464,14 +464,13 @@ void CSGOptiX::init()
     initCtx();
     initPIP();
     initSBT();
-    initFrameBuffer(); 
     initCheckSim(); 
     initStack(); 
     initParams(); 
     initGeometry();
-    initRender(); 
-    initSimulate(); 
+    initSimulate();
     initFrame(); 
+    initRender(); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -508,12 +507,7 @@ void CSGOptiX::initSBT()
     LOG(LEVEL) << "]" ; 
 }
 
-void CSGOptiX::initFrameBuffer()
-{
-    LOG(LEVEL) << "[" ; 
-    frame = new Frame(params->width, params->height, params->depth) ; 
-    LOG(LEVEL) << "]" ; 
-}
+
 
 
 void CSGOptiX::initCheckSim()
@@ -578,26 +572,6 @@ void CSGOptiX::initGeometry()
     LOG(LEVEL) << "]" ; 
 }
 
-/**
-CSGOptiX::initRender
----------------------
-**/
-
-void CSGOptiX::initRender()
-{
-    if(SEventConfig::IsRGModeRender()) 
-    {
-        setFrame(); // MOI 
-    }
-
-    params->pixels = frame->d_pixel ;
-    params->isect  = frame->d_isect ; 
-#ifdef WITH_FRAME_PHOTON
-    params->fphoton = frame->d_photon ; 
-#else
-    params->fphoton = nullptr ; 
-#endif
-}
 
 /**
 CSGOptiX::initSimulate
@@ -624,6 +598,12 @@ void CSGOptiX::initSimulate()
     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
     params->tmax = 1000000.f ; 
 }
+
+
+
+
+
+
 
 
 
@@ -654,6 +634,48 @@ void CSGOptiX::initFrame()
 
     sfr _lfr = _fr.spawn_lite(); 
     setFrame(_lfr);  
+}
+
+
+
+
+/**
+CSGOptiX::initRender
+--------------------------
+
+To use externally managed device pixels call this 
+prior to render/render_launch with the device pixel pointer,
+otherwise this is called with nullptr d_pixel that arranges
+internally allocated device pixels. 
+
+**/
+
+void CSGOptiX::initRender()
+{
+    LOG(LEVEL) << "[" ; 
+    framebuf = new Frame(params->width, params->height, params->depth, nullptr ) ; 
+    LOG(LEVEL) << "]" ; 
+
+    if(SEventConfig::IsRGModeRender()) 
+    {
+        setFrame(); // MOI 
+        // HMM: done twice ? 
+    }
+
+    params->pixels = framebuf->d_pixel ;
+    params->isect  = framebuf->d_isect ; 
+#ifdef WITH_FRAME_PHOTON
+    params->fphoton = framebuf->d_photon ; 
+#else
+    params->fphoton = nullptr ; 
+#endif
+}
+
+
+void CSGOptiX::setExternalDevicePixels(uchar4* _d_pixel )
+{
+    framebuf->setExternalDevicePixels(_d_pixel) ; 
+    params->pixels = framebuf->d_pixel ; 
 }
 
 
@@ -976,9 +998,6 @@ void CSGOptiX::prepareParam()
 }
 
 
-
-
-
 /**
 CSGOptiX::launch
 -------------------
@@ -986,7 +1005,19 @@ CSGOptiX::launch
 For what happens next, see CSGOptiX7.cu::__raygen__rg OR CSGOptiX6.cu::raygen
 Depending on params.raygenmode the "render" or "simulate" method is called. 
 
-Using the default stream seems to avoid a memory leak of ~14kb for each launch
+Formerly followed an OptiX 7 SDK example, creating a stream for the launch::
+
+    CUstream stream ;
+    CUDA_CHECK( cudaStreamCreate( &stream ) );
+    OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+
+But that leaks 14kb for every launch, see: 
+
+* ~/opticks/notes/issues/okjob_GPU_memory_leak.rst
+* ~/opticks/CSGOptiX/cxs_min_igs.sh 
+
+Instead using default "stream=0" avoids the leak.
+Presumably that means every launch uses the same single default stream. 
  
 **/
 
@@ -1030,20 +1061,7 @@ double CSGOptiX::launch()
         CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
         assert( d_param && "must alloc and upload params before launch"); 
 
-        /*
-        // this way leaking 14kb for every launch  : see 
-        //
-        //       ~/opticks/notes/issues/okjob_GPU_memory_leak.rst
-        //       ~/opticks/CSGOptiX/cxs_min_igs.sh 
-        // 
-        CUstream stream ;
-        CUDA_CHECK( cudaStreamCreate( &stream ) );
-        OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
-        */
-
-        // Using the default stream seems to avoid 14k VRAM leak at every launch. 
-        // Does that mean every launch gets to use the same single default stream ?  
-        CUstream stream = 0 ;
+        CUstream stream = 0 ;  // default stream 
         OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
 
         CUDA_SYNC_CHECK();    
@@ -1065,6 +1083,7 @@ double CSGOptiX::launch()
           ; 
     return dt ; 
 }
+
 
 
 /**
@@ -1162,6 +1181,7 @@ CSGOptiX::render  (formerly render_snap)
 
 double CSGOptiX::render( const char* stem_ )
 {
+
     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
     sglm->addlog("CSGOptiX::render_snap", stem ); 
 
@@ -1224,15 +1244,15 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     LOG(LEVEL) << " topline " << topline  ; 
 
     LOG(LEVEL) << "[ frame.download " ; 
-    frame->download(); 
+    framebuf->download(); 
     LOG(LEVEL) << "] frame.download " ; 
 
     LOG(LEVEL) << "[ frame.annotate " ; 
-    frame->annotate( bottom_line, topline, line_height ); 
+    framebuf->annotate( bottom_line, topline, line_height ); 
     LOG(LEVEL) << "] frame.annotate " ; 
 
     LOG(LEVEL) << "[ frame.snap " ; 
-    frame->snap( path  );  
+    framebuf->snap( path  );  
     LOG(LEVEL) << "] frame.snap " ; 
 
     if(!flight || SStr::Contains(path,"00000"))
@@ -1247,7 +1267,7 @@ void CSGOptiX::writeFramePhoton(const char* dir, const char* name)
 #if OPTIX_VERSION < 70000
     assert(0 && "not implemented pre-7"); 
 #else
-    frame->writePhoton(dir, name); 
+    framebuf->writePhoton(dir, name); 
 #endif
 }
 #endif

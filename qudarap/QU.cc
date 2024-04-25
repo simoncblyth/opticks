@@ -377,6 +377,7 @@ template void   QU::device_free<unsigned>(unsigned*) ;
 template void   QU::device_free<quad2>(quad2*) ;
 template void   QU::device_free<quad4>(quad4*) ;
 template void   QU::device_free<sphoton>(sphoton*) ;
+template void   QU::device_free<uchar4>(uchar4*) ;
 
 
 template<typename T>

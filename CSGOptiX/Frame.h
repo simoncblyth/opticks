@@ -46,6 +46,7 @@ struct CSGOPTIX_API Frame
 #endif
 
     Frame(int width_, int height_, int depth_, uchar4* d_pixel_=nullptr, float4* d_isect_=nullptr, quad4* d_fphoton_=nullptr ); 
+    void setExternalDevicePixels(uchar4* _d_pixel );
  
     void download(); 
 

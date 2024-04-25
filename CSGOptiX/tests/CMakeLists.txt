@@ -26,7 +26,13 @@ set(SINGLE_SOURCES
     CSGOptiXRMTest.cc
     CSGOptiXTMTest.cc
     CSGOptiXSMTest.cc
+
 )
+
+set(VIZ_SOURCES
+    CSGOptiXRenderInteractiveTest.cc
+)
+
 
 set(TEST_SOURCES
     CSGOptiXVersion.cc
@@ -42,8 +48,23 @@ foreach(SRC ${SINGLE_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
-#find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
-#message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
+
+find_package(OpticksGLEW MODULE)
+find_package(OpticksGLFW MODULE) 
+
+
+foreach(SRC ${VIZ_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} 
+          CSGOptiX
+          Opticks::OpticksGLEW
+          Opticks::OpticksGLFW 
+         )
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)

@@ -24,6 +24,7 @@ struct quad4 ;
 struct quad6 ; 
 struct qat4 ; 
 struct float4 ; 
+struct uchar4 ; 
 
 struct scontext ; 
 struct SGLM ; 
@@ -105,7 +106,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     SBT* sbt ; 
 #endif
 
-    Frame* frame ; 
+    Frame* framebuf ; 
     SMeta* meta ; 
     double dt ; 
 
@@ -137,15 +138,15 @@ private:
     void initCtx(); 
     void initPIP(); 
     void initSBT(); 
-    void initFrameBuffer();
     void initCheckSim(); 
     void initStack(); 
     void initParams();
     void initGeometry();
-    void initRender();
     void initSimulate();
     void initFrame(); 
+    void initRender();
  public: 
+    void setExternalDevicePixels(uchar4* _d_pixel ); 
     void destroy(); 
  private: 
     void setTop(const char* tspec); 
@@ -171,12 +172,16 @@ private:
     double simtrace(int eventID); 
     double simulate(int eventID); 
     double proceed(); 
- private: 
+
+
     // these launch  methods fulfil SCSGOptix protocal base
     // the latter two get invoked from QSim::simtrace QSim::simulate following genstep uploading   
+ public:
     double render_launch();   
+ private: 
     double simtrace_launch(); 
     double simulate_launch();    
+
  public: 
     const CSGFoundry* getFoundry() const ; 
     static std::string AnnotationTime( double dt, const char* extra=nullptr ); 
