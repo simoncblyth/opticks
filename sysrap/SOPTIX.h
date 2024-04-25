@@ -14,6 +14,7 @@ SOPTIX.h : top level coordinator of triangulated raytrace render
 #include "SOPTIX_Pipeline.h"
 #include "SOPTIX_SBT.h"
 #include "SOPTIX_Params.h"
+#include "SOPTIX_Pixels.h"
 
 
 struct SOPTIX
@@ -28,15 +29,19 @@ struct SOPTIX
     SOPTIX_SBT      sbt ;
     SOPTIX_Params   par = {} ;
     SOPTIX_Params*  d_param ; 
+
     CUstream stream = 0 ; 
     unsigned depth = 1 ; 
  
     int HANDLE ; 
     OptixTraversableHandle handle ;
 
+    SOPTIX_Pixels*  pix ;   // optional internally managed pixels
+
     SOPTIX(const SScene* _scn, SGLM& _gm );  
     void set_param(uchar4* d_pixels);
     void render(uchar4* d_pixels);
+    void render_ppm(const char* _path);
 
 };
 
@@ -50,7 +55,8 @@ inline SOPTIX::SOPTIX(const SScene* _scn, SGLM& _gm)
     sbt(pip, scn ),
     d_param(SOPTIX_Params::DeviceAlloc()),
     HANDLE(ssys::getenvint("HANDLE", -1)),
-    handle(scn.getHandle(HANDLE))
+    handle(scn.getHandle(HANDLE)),
+    pix(nullptr)
 {
 }
 
@@ -87,9 +93,24 @@ inline void SOPTIX::render(uchar4* d_pixels)
                  gm.Height(), 
                  depth
                  ) );
-
+ 
     CUDA_SYNC_CHECK();
 }
 
 
+inline void SOPTIX::render_ppm(const char* _path)
+{
+    const char* path = spath::Resolve(_path); 
 
+    std::cout << "SOPTIX::render_ppm [" << ( path ? path : "-" ) << "]\n" ; 
+
+    if(!pix) pix = new SOPTIX_Pixels(gm) ;
+    render(pix->d_pixels); 
+
+    pix->download(); 
+
+    pix->save_ppm(path); 
+
+
+
+}

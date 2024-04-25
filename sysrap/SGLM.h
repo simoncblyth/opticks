@@ -206,6 +206,8 @@ struct SYSRAP_API SGLM : public SCMD
     static std::string DescInput() ; 
     static int Width() ; 
     static int Height() ; 
+    static int Width_Height() ; 
+
     static float Aspect(); 
     static const char* CAM_Label() ; 
     static const char* NEARFAR_Label() ; 
@@ -474,6 +476,8 @@ inline void SGLM::SetVIZMASK( const char* vizmask ){ VIZMASK = SBitSet::Value<ui
 
 inline int SGLM::Width(){  return WH.x ; }
 inline int SGLM::Height(){ return WH.y ; }
+inline int SGLM::Width_Height(){ return Width()*Height() ; }
+
 inline float SGLM::Aspect() { return float(WH.x)/float(WH.y) ; } 
 inline const char* SGLM::CAM_Label(){ return SCAM::Name(CAM) ; }
 inline const char* SGLM::NEARFAR_Label(){ return SBAS::Name(NEARFAR) ; }

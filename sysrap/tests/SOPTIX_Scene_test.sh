@@ -20,7 +20,9 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-name=SOPTIX_Scene_test
+
+#name=SOPTIX_Scene_test
+name=SOPTIX_Scene_Encapsulated_test
 
 export FOLD=/tmp/$name
 bin=$FOLD/$name
