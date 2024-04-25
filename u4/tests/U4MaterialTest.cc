@@ -5,6 +5,7 @@
 #include "SSim.hh"
 #include "NP.hh"
 
+#include "U4Version.h"
 #include "U4Material.hh"
 #include "U4MaterialPropertiesTable.h"
 #include "U4PhysicsVector.h"
@@ -197,7 +198,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
    
+
     const char* TEST = ssys::getenvvar("TEST", "MakeScintillator") ; 
+    std::cout << U4Version::Desc() << "\n" << "TEST[" << TEST << "]\n"  ; 
+
 
     if( strcmp(TEST, "MakeScintillator") == 0 )
     {

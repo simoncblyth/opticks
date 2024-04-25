@@ -503,12 +503,13 @@ G4MaterialPropertiesTable* U4Material::MakeMaterialPropertiesTable(const char* m
         char type = Classify(a); 
         double* values = a->values<double>() ; 
         ss << Desc(key, a) << std::endl ;   
-        
+       
+        G4bool createNewKey = true ; // Geant4 11.2.1 throws exception for new keys without this 
         switch(type)
         {
-            case 'C': mpt->AddConstProperty(key, values[1])    ; break ; 
-            case 'P': mpt->AddProperty(key, MakeProperty(a))   ; break ; 
-            case 'F': mpt->AddProperty(key, MakeProperty(a))   ; break ; 
+            case 'C': mpt->AddConstProperty(key, values[1], createNewKey)    ; break ; 
+            case 'P': mpt->AddProperty(key, MakeProperty(a), createNewKey)   ; break ; 
+            case 'F': mpt->AddProperty(key, MakeProperty(a), createNewKey)   ; break ; 
         }
     }
 
