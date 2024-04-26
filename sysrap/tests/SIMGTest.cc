@@ -1,18 +1,26 @@
-// ~/o/sysrap/tests/SIMGTest.sh 
+/**
+SIMGTest.cc : Loads PNG/JPG image from provided path and saves it in PNG and JPG with variety of quality settings 
+=====================================================================================================================
+
+The standardly build executable can be run with::
+
+    SIMGTest /tmp/flower.jpg
+
+For non-CMake build and run use::
+
+    IMGPATH=/tmp/flower.jpg ~/o/sysrap/tests/SIMGTest.sh 
+
+**/
 
 #include <sstream>
 #include <iostream>
 #define SIMG_IMPLEMENTATION 1 
-#include "SIMG.hh"
+#include "SIMG.h"
 
 #include "s_time.h"
-#include "OPTICKS_LOG.hh"
-
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
-
     const char* path = argc > 1 ? argv[1] : nullptr ; 
     if(path == nullptr) 
     {

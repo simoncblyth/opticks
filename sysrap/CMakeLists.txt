@@ -610,6 +610,7 @@ endif()
 set(WITH_SIMG YES)
 if(WITH_SIMG)
     list(APPEND HEADERS   SIMG.hh  )
+    list(APPEND HEADERS   SIMG.h  )   # try simpler headeronly approach with STTF.h 
     list(APPEND HEADERS   stb_image.h  stb_image_write.h)   
     # seems cannot avoid passing around the stb headers ?
 endif()
@@ -619,7 +620,7 @@ set(WITH_STTF YES)
 if(WITH_STTF)
     list(APPEND HEADERS stb_truetype.h)
     list(APPEND HEADERS STTF.hh)
-    list(APPEND HEADERS STTF.h)    # simpler header only alt using sconfig.h 
+    list(APPEND HEADERS STTF.h)    # try simpler headeronly alt using sconfig.h 
 endif()
 
 

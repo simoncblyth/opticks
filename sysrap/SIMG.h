@@ -1,22 +1,25 @@
 #pragma once
 /**
-SIMG.hh : DEPRECATED : MOVING TO USE SAME FUNCTIONALITY BUT LESS DEPENDENCY SIMG.h 
-====================================================================================
+SIMG.h : trying to make SIMG.hh simpler to use by cutting dependencies
+========================================================================
+
 
 **/
-
 #include <string>
 #include <cstring>
 #include <sstream>
 #include <iostream>
 #include <cassert>
 
-#include "SLOG.hh"
 #include "sdirectory.h"
+
+struct STTF ; 
 
 
 struct SIMG 
 {
+   STTF* ttf ;  
+
    int width ; 
    int height ; 
    int channels ; 
@@ -86,7 +89,7 @@ struct SIMG
 
 
 #define STTF_IMPLEMENTATION 1 
-#include "STTF.hh"
+#include "STTF.h"
 
 
 inline bool SIMG::EndsWith( const char* s, const char* q) // static 
@@ -111,6 +114,7 @@ inline const char* SIMG::ChangeExt( const char* s, const char* x1, const char* x
 
 inline SIMG::SIMG(const char* path, int desired_channels) 
     :
+    ttf(nullptr),
     width(0),
     height(0),
     channels(0),
@@ -123,6 +127,7 @@ inline SIMG::SIMG(const char* path, int desired_channels)
 
 inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_) 
     :
+    ttf(nullptr),
     width(width_),
     height(height_),
     channels(channels_),
@@ -245,22 +250,24 @@ inline const char* SIMG::Ext(const char* path)
 
 
 
+/**
+SIMG::annotate
+---------------
+
+Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
+Possibly related to this being implemented in the header ?
+
+**/
 
 
 inline void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
 {
-    // Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
-    // Possibly related to this being implemented in the header ?
-
-    STTF* ttf = SLOG::instance ? SLOG::instance->ttf : nullptr ; 
-    // TODO : locate this primary ttf elsewhere
-
-    if( ttf == nullptr )
+    if(ttf == nullptr) 
     {
-        std::cerr << "SIMG::annotate : ttf NULL : cannot annotate  \n" ; 
-        return ; 
- 
-    }
+        ttf = new STTF ; 
+    } 
+
+    assert(ttf); 
     if(!ttf->valid || line_height > int(height)) 
     {
         std::cerr << "SIMG::annotate : ttf invalid OR line_height too large \n" ; 

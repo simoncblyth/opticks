@@ -6,7 +6,7 @@ SIMGTest.sh
 
 ::
 
-   ~/o/sysrap/tests/SIMGTest.sh 
+   IMGPATH=/tmp/flower.jpg ~/o/sysrap/tests/SIMGTest.sh 
 
 
 EOU
@@ -34,16 +34,16 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then
     gcc $name.cc \
-        -lstdc++ -std=c++11 \
-        -I.. \
-        -I../../okconf \
-        -I$OPTICKS_PREFIX/include/OKConf \   
+        -lstdc++ -lm -std=c++11 \
+        -I$OPTICKS_PREFIX/include/SysRap \
         -o $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then
-    $bin
+
+    [ -z "$IMGPATH" ] && echo $BASH_SOURCE : MISSING IMGPATH OF PNG OR JPG && exit 3
+    $bin $IMGPATH
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi 
 

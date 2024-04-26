@@ -192,6 +192,12 @@ foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} SysRap)
+
+    target_include_directories( ${TGT} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
+    )    
+
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
 endforeach()

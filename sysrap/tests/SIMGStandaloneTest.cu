@@ -1,4 +1,4 @@
-// ./SIMGStandaloneTest.sh
+// ~/o/sysrap/tests/SIMGStandaloneTest.sh
 
 #include <vector_types.h>
 #include <vector_functions.h>
@@ -6,7 +6,7 @@
 
 #include <iostream>
 #define SIMG_IMPLEMENTATION 1 
-#include "SIMG.hh"
+#include "SIMG.h"
 
 // https://stackoverflow.com/questions/14901491/cudamemcpytoarray/14929827#14929827
 
