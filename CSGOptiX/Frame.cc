@@ -85,7 +85,7 @@ void Frame::setExternalDevicePixels(uchar4* _d_pixel )
 {
     if( _d_pixel == d_pixel ) return ; 
 
-    if( d_pixel ) QU::device_free(d_pixel ); 
+    if( d_pixel ) QU::device_free<uchar4>(d_pixel ); 
     d_pixel = _d_pixel ; 
 }
 

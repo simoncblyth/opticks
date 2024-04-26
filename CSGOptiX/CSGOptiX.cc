@@ -652,9 +652,12 @@ internally allocated device pixels.
 
 void CSGOptiX::initRender()
 {
+#if OPTIX_VERSION < 70000
+#else
     LOG(LEVEL) << "[" ; 
     framebuf = new Frame(params->width, params->height, params->depth, nullptr ) ; 
     LOG(LEVEL) << "]" ; 
+#endif
 
     if(SEventConfig::IsRGModeRender()) 
     {
@@ -674,8 +677,11 @@ void CSGOptiX::initRender()
 
 void CSGOptiX::setExternalDevicePixels(uchar4* _d_pixel )
 {
+#if OPTIX_VERSION < 70000
+#else
     framebuf->setExternalDevicePixels(_d_pixel) ; 
     params->pixels = framebuf->d_pixel ; 
+#endif
 }
 
 

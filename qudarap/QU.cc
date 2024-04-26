@@ -134,6 +134,8 @@ T* QU::UploadArray(const T* array, unsigned num_items, const char* label ) // st
     return d_array ; 
 }
 
+
+// IF NEED THESE FROM REMOVE PKG WILL NEED TO QUDARAP_API 
 template float*         QU::UploadArray<float>(const float* array, unsigned num_items, const char* label ) ;
 template double*        QU::UploadArray<double>(const double* array, unsigned num_items, const char* label) ;
 template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items, const char* label) ;
@@ -348,10 +350,10 @@ void QU::device_memset( T* d, int value, unsigned num_items )
     QUDA_CHECK( cudaMemset(d, value, size )); 
 }
 
-template void     QU::device_memset<int>(int*, int, unsigned ) ;
-template void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
-template void     QU::device_memset<quad6>(quad6*, int, unsigned ) ;
-template void     QU::device_memset<sphoton>(sphoton*, int, unsigned ) ;
+template QUDARAP_API void     QU::device_memset<int>(int*, int, unsigned ) ;
+template QUDARAP_API void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
+template QUDARAP_API void     QU::device_memset<quad6>(quad6*, int, unsigned ) ;
+template QUDARAP_API void     QU::device_memset<sphoton>(sphoton*, int, unsigned ) ;
 
 
 
@@ -371,13 +373,13 @@ void QU::device_free( T* d)
     QUDA_CHECK( cudaFree(d) ); 
 }
 
-template void   QU::device_free<float>(float*) ;
-template void   QU::device_free<double>(double*) ;
-template void   QU::device_free<unsigned>(unsigned*) ;
-template void   QU::device_free<quad2>(quad2*) ;
-template void   QU::device_free<quad4>(quad4*) ;
-template void   QU::device_free<sphoton>(sphoton*) ;
-template void   QU::device_free<uchar4>(uchar4*) ;
+template QUDARAP_API void   QU::device_free<float>(float*) ;
+template QUDARAP_API void   QU::device_free<double>(double*) ;
+template QUDARAP_API void   QU::device_free<unsigned>(unsigned*) ;
+template QUDARAP_API void   QU::device_free<quad2>(quad2*) ;
+template QUDARAP_API void   QU::device_free<quad4>(quad4*) ;
+template QUDARAP_API void   QU::device_free<sphoton>(sphoton*) ;
+template QUDARAP_API void   QU::device_free<uchar4>(uchar4*) ;
 
 
 template<typename T>

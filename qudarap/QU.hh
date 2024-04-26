@@ -77,8 +77,5 @@ struct QUDARAP_API QU
 
     static std::string Desc(const dim3& d, int w); 
     static std::string DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock ); 
-
-
-
 };
 
