@@ -1,4 +1,4 @@
-// name=SIMGTest ; stb- ; gcc $name.cc -lstdc++ -std=c++11 -I$(stb-dir) -I. -o /tmp/$name && /tmp/$name
+// ~/o/sysrap/tests/SIMGTest.sh 
 
 #include <sstream>
 #include <iostream>

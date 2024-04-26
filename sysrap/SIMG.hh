@@ -6,21 +6,12 @@
 #include <iostream>
 #include <cassert>
 
-#ifdef WITH_SLOG
-#include <plog/Severity.h>
 #include "SLOG.hh"
-#else
-#define LOG(severity) if(false) std::cout    // just kill the logging when no SLOG
-#endif
 #include "sdirectory.h"
 
 
 struct SIMG 
 {
-#ifdef WITH_SLOG
-   static const plog::Severity LEVEL ; 
-#endif
-
    int width ; 
    int height ; 
    int channels ; 
@@ -91,11 +82,6 @@ struct SIMG
 
 #define STTF_IMPLEMENTATION 1 
 #include "STTF.hh"
-
-
-#ifdef WITH_SLOG
-const plog::Severity SIMG::LEVEL = SLOG::EnvLevel("SIMG", "DEBUG"); 
-#endif
 
 
 inline bool SIMG::EndsWith( const char* s, const char* q) // static 
@@ -182,7 +168,7 @@ inline void SIMG::writePNG() const
     const char* pngpath = ChangeExt(loadpath, loadext, ".png" ); 
     if(strcmp(pngpath, loadpath)==0)
     {
-        LOG(error) << "ERROR cannot overwrite loadpath " << loadpath ; 
+        std::cerr << "SIMG::writePNG ERROR cannot overwrite loadpath " << loadpath << "\n"  ; 
     } 
     else
     {
@@ -202,7 +188,7 @@ inline void SIMG::writeJPG(int quality) const
 
     if(strcmp(jpgpath, loadpath)==0)
     {
-        LOG(error) << "ERROR cannot overwrite loadpath " << loadpath ; 
+        std::cerr << "SIMG::writeJPG ERROR cannot overwrite loadpath " << loadpath << "\n" ; 
     } 
     else
     {
@@ -229,7 +215,6 @@ inline void SIMG::writeJPG(const char* dir, const char* name, int quality) const
 
 inline void SIMG::writePNG(const char* path) const 
 {
-    //LOG(LEVEL) << "stbi_write_png " << path ; 
     sdirectory::MakeDirsForFile(path, 0); 
     stbi_write_png(path, width, height, channels, data, width * channels);
 }
@@ -262,21 +247,18 @@ inline void SIMG::annotate( const char* bottom_line, const char* top_line, int l
     // Accessing ttf in the ctor rather than doing it here at point of use turns out to be flakey somehow ?
     // Possibly related to this being implemented in the header ?
 
-#ifdef WITH_SLOG
     STTF* ttf = SLOG::instance ? SLOG::instance->ttf : nullptr ; 
-#else
-    STTF* ttf = nullptr ; 
-#endif
+    // TODO : locate this primary ttf elsewhere
 
     if( ttf == nullptr )
     {
-        LOG(error) << "ttf NULL : cannot annotate  " ; 
+        std::cerr << "SIMG::annotate : ttf NULL : cannot annotate  \n" ; 
         return ; 
  
     }
     if(!ttf->valid || line_height > int(height)) 
     {
-        LOG(error) << "ttf invalid OR line_height too large " ; 
+        std::cerr << "SIMG::annotate : ttf invalid OR line_height too large \n" ; 
         return ; 
     } 
 
@@ -286,9 +268,6 @@ inline void SIMG::annotate( const char* bottom_line, const char* top_line, int l
     if( bottom_line )
         ttf->annotate( data, int(channels), int(width), int(height), line_height, bottom_line, true );  
 }
-
-
-
 
 
 

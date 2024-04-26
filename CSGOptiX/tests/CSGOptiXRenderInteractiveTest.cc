@@ -30,7 +30,7 @@ TODO:
 
 * imgui reincarnation 
 
-* move common stuff down to sysrap such as jpg/png writing and image annotation 
+* move common CSGOptiX stuff down to sysrap header-only such as jpg/png writing and image annotation 
 
 **/
 

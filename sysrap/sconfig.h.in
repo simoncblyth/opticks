@@ -1,0 +1,61 @@
+#pragma once
+/**
+sconfig.h
+===========
+
+This header is generated from sysrap/sconfig.h.in 
+with some cmakedefine filled in and installed to::
+
+   $OPTICKS_PREFIX/include/SysRap/sconfig.h
+
+Test with::
+
+    ~/o/sysrap/tests/sconfig_test.sh
+
+**/
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <sstream>
+
+
+struct sconfig
+{
+    static const char* OpticksInstallPrefix();
+    static const char* DefaultSTTFPath(); 
+    static std::string Desc(); 
+};
+
+
+
+#cmakedefine SYSRAP_OPTICKS_INSTALL_PREFIX "@SYSRAP_OPTICKS_INSTALL_PREFIX@"
+
+inline const char* sconfig::OpticksInstallPrefix()
+{
+#ifdef SYSRAP_OPTICKS_INSTALL_PREFIX
+   const char* evalue = getenv("OPTICKS_INSTALL_PREFIX") ;   
+   return evalue ? evalue : SYSRAP_OPTICKS_INSTALL_PREFIX ;
+#else 
+   return "MISSING" ; 
+#endif    
+}
+
+inline const char* sconfig::DefaultSTTFPath()  // static
+{
+    std::stringstream ss ; 
+    ss << OpticksInstallPrefix()
+       << "/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf"
+       ;
+    std::string ttf = ss.str();
+    return strdup(ttf.c_str()); 
+}
+
+inline std::string sconfig::Desc()
+{
+    std::stringstream ss ; 
+    ss << "[sconfig::Desc\n" ; 
+    ss << "sconfig::OpticksInstallPrefix()  " << OpticksInstallPrefix() << "\n" ; 
+    ss << "sconfig::DefaultSTTFPath()       " << DefaultSTTFPath() << "\n" ; 
+    ss << "]sconfig::Desc\n" ; 
+    return ss.str(); 
+}

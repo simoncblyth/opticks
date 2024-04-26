@@ -2,8 +2,6 @@ how_to_integrate_triangulated_geom_with_analytic
 ==================================================
 
 
-
-
 What level of ana/tri split ? CSGSolid
 ----------------------------------------
 
@@ -20,9 +18,8 @@ Initially can just assert that selected CSGPrim must be isolated,
 as that will be the case for the guide tube. 
 
 
-
-The new triangulated is dev in sysrap/SOPTIX,SScene
------------------------------------------------------
+Recent addition triangulated geom is dev in sysrap/SOPTIX,SScene
+--------------------------------------------------------------------
 
 * :doc:`sysrap/SOPTIX`
 
@@ -108,6 +105,11 @@ SOPTIX_Accel
 
        GAS_Builder::BoilerPlate 
        IAS_Builder::Build
+
+
+
+Need to check perf as make such changes
+------------------------------------------
 
 
 

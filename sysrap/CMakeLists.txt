@@ -60,6 +60,14 @@ include_directories(
 set(WITH_SLOG YES)
 
 
+
+set(SYSRAP_GENERATED_HEADER  "sconfig.h")
+set(SYSRAP_OPTICKS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+configure_file( ${SYSRAP_GENERATED_HEADER}.in inc/${SYSRAP_GENERATED_HEADER} )
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/inc/${SYSRAP_GENERATED_HEADER}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+
+
 set(SOURCES
     SYSRAP_LOG.cc 
     SLOG.cc 
@@ -609,7 +617,9 @@ endif()
 
 set(WITH_STTF YES)
 if(WITH_STTF)
-    list(APPEND HEADERS STTF.hh stb_truetype.h)
+    list(APPEND HEADERS stb_truetype.h)
+    list(APPEND HEADERS STTF.hh)
+    list(APPEND HEADERS STTF.h)    # simpler header only alt using sconfig.h 
 endif()
 
 
