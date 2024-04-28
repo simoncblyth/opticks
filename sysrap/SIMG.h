@@ -1,7 +1,11 @@
 #pragma once
 /**
-SIMG.h : trying to make SIMG.hh simpler to use by cutting dependencies
-========================================================================
+SIMG.h : High Level Image load/save methods implemented with stb_image.h 
+===========================================================================
+
+Note that STTF managed truetype fonts are now handled with an 
+internal instance rather than a global one from SLOG as this
+simplifies dependencies enabling headeronly access to this functionality. 
 
 
 **/
@@ -262,10 +266,7 @@ Possibly related to this being implemented in the header ?
 
 inline void SIMG::annotate( const char* bottom_line, const char* top_line, int line_height )
 {
-    if(ttf == nullptr) 
-    {
-        ttf = new STTF ; 
-    } 
+    if(ttf == nullptr) ttf = STTF::Create() ; 
 
     assert(ttf); 
     if(!ttf->valid || line_height > int(height)) 

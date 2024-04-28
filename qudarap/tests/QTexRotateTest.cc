@@ -9,7 +9,7 @@
 
 #include <iostream>
 #define SIMG_IMPLEMENTATION 1 
-#include "SIMG.hh"
+#include "SIMG.h"
 
 struct NP ; 
 

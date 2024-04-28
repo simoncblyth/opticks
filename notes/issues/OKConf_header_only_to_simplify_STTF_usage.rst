@@ -3,11 +3,16 @@ OKConf_header_only_to_simplify_STTF_usage
 
 
 
-STTF usage needs simplification, it is smeared around too much:: 
+STTF.hh usage needs simplification, it is smeared around too much:: 
 
     OKConf
     SLOG 
     SIMG
+
+In turn that complicates SIMG.hh and Frame also. 
+
+
+::
 
 
     [blyth@localhost opticks]$ opticks-f STTF | grep -v STTF.hh | grep -v STTFTest 
@@ -58,6 +63,83 @@ See failing "simple" build::
        33 | #include <plog/Log.h>
           |          ^~~~~~~~~~~~
     compilation terminated.
+
+
+Fixed by moving to SIMG.h STTF.h::
+
+    [blyth@localhost tests]$ IMGPATH=/tmp/flower.jpg ~/o/sysrap/tests/SIMGTest.sh
+                    name : SIMGTest 
+                    FOLD : /tmp/SIMGTest 
+                     bin : /tmp/SIMGTest/SIMGTest 
+    SIMG width 640 height 427 channels 3 loadpath /tmp/flower.jpg loadext .jpg
+    [blyth@localhost tests]$ 
+
+
+
+
+WIP : Replace all use of STTF.hh with STTF.h and remove ttf from SLOG
+-----------------------------------------------------------------------
+
+::
+
+    [blyth@localhost opticks]$ opticks-f STTF.hh
+    ./optixrap/OContext.cc:#include "STTF.hh"
+    DEAD CODE : AND LOOKS WAS UNUSED ANYHOW
+
+    ./sysrap/CMakeLists.txt:    list(APPEND HEADERS STTF.hh)
+    // REMOVED
+
+    ./sysrap/SIMG.hh:#include "STTF.hh"
+    // REMOVED
+
+    ./sysrap/SLOG.cc:#include "STTF.hh"
+    // REMOVED
+
+    ./sysrap/STTF.hh:STTF.hh
+    ./sysrap/STTF.hh:as STTF.hh and SIMG.hh are otherwise purely header-only.  
+
+    ./sysrap/tests/STTFTest.cc:#include "STTF.hh"
+    DONE : NOW BUILDS FROM INSTALLED SYSRAP HEADERS : NOT THE LIB 
+
+    ./sysrap/STTF.h:STTF.h : try for simpler usage than STTF.hh
+    ./opticks.bash:## see sysrap/STTF.hh still needed for binary release
+    [blyth@localhost opticks]$ 
+
+
+
+
+WIP : Replace all use of SIMG.hh with SIMG.h and profit from that to simplify CSGOptiX.cc Frame usage
+------------------------------------------------------------------------------------------------------
+
+::
+
+    [blyth@localhost opticks]$ opticks-f SIMG.hh
+    ./CSGOptiX/Frame.cc:#include "SIMG.hh"
+    DONE
+
+    ./examples/UseOptiX7GeometryInstancedGASCompDyn/Frame.cc:#include "SIMG.hh"
+    SKIP : decided not to update as this is using copied in SIMG.hh not the sysrap one 
+
+    ./examples/UseSysRapSIMG/UseSysRapSIMG.cc:#include "SIMG.hh"
+    DONE
+
+    ./optixrap/OContext.cc:#include "SIMG.hh"
+    DEAD CODE 
+
+    ./qudarap/tests/QTexRotateTest.cc:#include "SIMG.hh"
+    DONE
+
+    ./sysrap/CMakeLists.txt:    list(APPEND HEADERS   SIMG.hh  )
+    ./sysrap/SIMG.hh:SIMG.hh : DEPRECATED : MOVING TO USE SAME FUNCTIONALITY BUT LESS DEPENDENCY SIMG.h 
+
+    ./sysrap/STTF.hh:as STTF.hh and SIMG.hh are otherwise purely header-only.  
+
+    ./sysrap/tests/STTFTest.cc:#include "SIMG.hh"
+     DONE
+
+    ./sysrap/SIMG.h:SIMG.h : trying to make SIMG.hh simpler to use by cutting dependencies
+
+    [blyth@localhost opticks]$ 
 
 
 

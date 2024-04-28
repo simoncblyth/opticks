@@ -1,5 +1,24 @@
 #!/bin/bash -l
 
+usage(){ cat << EOU
+~/o/examples/UseOptiX7GeometryInstancedGASCompDyn/go.sh
+=========================================================
+
+
+The common prefix change to avoid repeated download of glm has issue of breaking ptx path consistency::
+
+    /tmp/blyth/opticks/examples/                            ptx/UseOptiX7GeometryInstancedGASCompDyn_generated_UseOptiX7GeometryInstancedGASCompDyn.cu.ptx
+    /tmp/blyth/opticks/UseOptiX7GeometryInstancedGASCompDyn/ptx/UseOptiX7GeometryInstancedGASCompDyn_generated_UseOptiX7GeometryInstancedGASCompDyn.cu.ptx
+
+Fixed that by not using the common "examples" prefix. 
+
+TODO: instead use opticks externals glm 
+
+
+EOU
+}
+
+
 optix-prefix(){ echo ${OPTICKS_OPTIX_PREFIX} ; }
 [ ! -d "$(optix-prefix)" ] && echo no optix-prefix dir $(optix-prefix) && exit 0 
 
@@ -8,8 +27,8 @@ sdir=$(pwd)
 name=$(basename $sdir)
 
 
-#prefix=/tmp/$USER/opticks/$name
-prefix=/tmp/$USER/opticks/examples
+prefix=/tmp/$USER/opticks/$name
+#prefix=/tmp/$USER/opticks/examples
 
 export PREFIX=$prefix
 export PATH=$PREFIX/bin:$PATH

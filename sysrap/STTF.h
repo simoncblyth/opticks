@@ -1,7 +1,7 @@
 #pragma once
 /**
-STTF.h : try for simpler usage than STTF.hh
-===============================================
+STTF.h : Truetype Font wrapper providing text annotation within image rasters
+===============================================================================
 
 Based on:
 
@@ -20,6 +20,8 @@ Based on:
 struct STTF
 {
     static constexpr const char* KEY = "OPTICKS_STTF_PATH" ; 
+
+    static STTF* Create(); 
     static const char* GetFontPath(); 
     static unsigned char* Load(const char* path); 
 
@@ -74,6 +76,16 @@ struct STTF
 
 
 
+inline STTF* STTF::Create() // static
+{
+    STTF* ttf = new STTF ; 
+    if(!ttf->valid) 
+    {   
+        printf("STTF::Create : failed to initialize font \n"); 
+        return nullptr ; 
+    }   
+    return ttf ; 
+}
 
 
 
@@ -277,4 +289,6 @@ inline int STTF::annotate( unsigned char* bitmap, int channels, int width, int h
     rc = render_text(       bitmap+offset_txt, channels, width, line_height, text  ) ;  
     return rc ; 
 }
+
+
 

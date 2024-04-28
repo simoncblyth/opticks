@@ -32,9 +32,6 @@
 
 #include "SASCII.hh"
 
-#define STTF_IMPLEMENTATION 1 
-#include "STTF.hh"
-
 SLOG* SLOG::instance = NULL ; 
 
 const int SLOG::MAXARGC = 100 ;  
@@ -455,7 +452,6 @@ bool SLOG::has_arg(const char* arg) const
 SLOG::SLOG(const char* name, const char* fallback, const char* prefix)
     :
     args(name, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
-    ttf(new STTF),
     level(info),
     filename(_logpath()),
     maxFileSize(ssys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),
@@ -467,7 +463,6 @@ SLOG::SLOG(const char* name, const char* fallback, const char* prefix)
 SLOG::SLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
     args(argc_, argv_, "OPTICKS_LOG_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
-    ttf(new STTF),
     level(info),
     filename(_logpath()),
     maxFileSize(ssys::getenvint("OPTICKS_LOG_MAXFILESIZE", 5000000)),

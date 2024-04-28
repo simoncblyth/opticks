@@ -52,14 +52,11 @@ struct SLOG ;
 #include <string>
 #include "SAr.hh"
 
-struct STTF ; 
-
 struct SYSRAP_API SLOG 
 {
     static const int MAXARGC ; 
 
     SAr         args ; 
-    STTF*       ttf ;    // truetypefont
 
     int         level ; 
     const char* filename ; 

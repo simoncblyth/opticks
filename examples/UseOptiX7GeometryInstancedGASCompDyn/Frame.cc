@@ -14,7 +14,7 @@
 #include "SPPM.h"
 
 #define SIMG_IMPLEMENTATION 1 
-#include "SIMG.hh"
+#include "SIMG.hh"   // as this is copied in, not from sysrap : no point updating to SIMG.h 
 
 
 Frame::Frame(Params* params_)

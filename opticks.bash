@@ -1705,7 +1705,8 @@ opticks-setup-misc-(){ cat << EOM
 
 export TMP=\${TMP:-/tmp/\$USER/opticks}
 ## mkdir -p \${TMP}
-## see sysrap/STTF.hh still needed for binary release
+## see sysrap/STTF.h sysrap/sconfig.h should now default to this, so not needed for source build
+## HMM it might still be needed for binary release, and does no harm 
 export OPTICKS_STTF_PATH=\$OPTICKS_PREFIX/externals/imgui/imgui/extra_fonts/Cousine-Regular.ttf
 
 EOM

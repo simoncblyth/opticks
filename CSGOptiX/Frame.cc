@@ -14,7 +14,7 @@
 #include "Frame.h"
 
 #define SIMG_IMPLEMENTATION 1 
-#include "SIMG.hh"
+#include "SIMG.h"
 
 
 const plog::Severity Frame::LEVEL = SLOG::EnvLevel("Frame", "DEBUG" ); 
