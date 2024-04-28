@@ -48,6 +48,7 @@ else
    exit 1 
 fi 
 
+opticks-
 clhep-
 g4-
 
@@ -72,6 +73,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -I$(clhep-prefix)/include \
          -I$(g4-prefix)/include/Geant4  \
          -L$(g4-prefix)/lib \
+         -L$(g4-prefix)/lib64 \
          -L$(clhep-prefix)/lib \
          -lG4global \
          -lG4geometry \
@@ -79,6 +81,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -lCLHEP \
          -I$HOME/j/PMTSim \
          -L$OPTICKS_PREFIX/lib \
+         -L$OPTICKS_PREFIX/lib64 \
          -lPMTSim \
          -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
