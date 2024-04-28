@@ -35,10 +35,10 @@ CSGImport::CSGImport( CSGFoundry* fd_ )
 
 
 /**
-CSGImport::import
-------------------
+CSGImport::import : populate CSGFoundry using geometry info from stree.h
+--------------------------------------------------------------------------
 
-Best guide for how to implement is cg CSG_GGeo_Convert
+Former equivalent from hybrid old+new morass wass CSG_GGeo_Convert
 
 **/
 

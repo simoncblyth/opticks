@@ -7,11 +7,10 @@ SOPTIX_Scene_Encapsulated_test.cc
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh 
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
-For an encapsulated version of this with OpenGL interactive control see::
+For an enchancement of this with OpenGL interactive control see::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh  
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc  
-
 
 Other related tests::
 

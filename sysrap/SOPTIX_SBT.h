@@ -134,12 +134,14 @@ inline void SOPTIX_SBT::initHitgroup()
     size_t num_mg = scn.meshgroup.size();  
     for(size_t i=0 ; i < num_mg ; i++)
     { 
-        SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
+        SOPTIX_MeshGroup* xmg = scn.meshgroup[i] ; 
+        size_t num_bi = xmg->num_buildInputs()  ; 
+#ifdef OLD_SPLIT_APPROACH
+        const SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
+#else
+        const SCUDA_MeshGroup* cmg = xmg->cmg ; 
+#endif
         size_t num_part = cmg->num_part()  ; 
-
-        SOPTIX_MeshGroup* mg = scn.meshgroup[i] ; 
-        size_t num_bi = mg->num_buildInputs()  ; 
-
         assert( num_part == num_bi ); 
 
         for(size_t j=0 ; j < num_bi ; j++)
@@ -196,11 +198,15 @@ inline std::string SOPTIX_SBT::descPartBI() const
     size_t num_mg = scn.meshgroup.size();  
     for(size_t i=0 ; i < num_mg ; i++)
     { 
-        SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
+        SOPTIX_MeshGroup* xmg = scn.meshgroup[i] ; 
+        size_t num_bi = xmg->num_buildInputs()  ; 
+#ifdef OLD_SPLIT_APPROACH
+        const SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
+#else
+        const SCUDA_MeshGroup* cmg = xmg->cmg ; 
+#endif
         size_t num_part = cmg->num_part()  ; 
-
-        SOPTIX_MeshGroup* mg = scn.meshgroup[i] ; 
-        size_t num_bi = mg->num_buildInputs()  ; 
+        assert( num_part == num_bi ); 
 
         ss 
             << std::setw(4) << i 

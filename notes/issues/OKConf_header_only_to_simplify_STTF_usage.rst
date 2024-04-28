@@ -1,5 +1,11 @@
-OKConf_header_only_to_simplify_STTF_usage
-==========================================
+DONE : OKConf_header_only_to_simplify_STTF_usage
+==================================================
+
+Changes::
+
+   SIMG.hh -> SIMG.h
+   STTF.hh -> STTF.h 
+   removed SLOG::ttf 
 
 
 

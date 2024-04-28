@@ -3,7 +3,10 @@
 SOPTIX_Accel.h : builds acceleration structure GAS or IAS from the buildInputs
 ===============================================================================
 
-Used by: SOPTIX_Mesh.h 
+Used by::
+
+    SOPTIX_Mesh.h 
+    SOPTIX_MeshGroup.h 
 
 **/
 

@@ -13,6 +13,8 @@ Try following the pattern of SGLFW_Mesh.h
 
 struct SCUDA_MeshGroup
 {
+    static SCUDA_MeshGroup* Upload( const SMeshGroup* mg ); 
+
     static constexpr const int INST_ELEM = 4*4 ; 
 
     std::vector<const NP*> _vtx ; 
@@ -22,8 +24,6 @@ struct SCUDA_MeshGroup
     SCU_BufferView<float> vtx = {} ;
     SCU_BufferView<float> nrm = {} ;
     SCU_BufferView<int>   idx = {} ; 
- 
-    //SCU_BufferView<float> ins = {} ; // not used as instance transforms passed in CPU side in SOPTIX_Scene.h  
 
     size_t num_part() const ; 
     void free(); 
@@ -31,6 +31,11 @@ struct SCUDA_MeshGroup
 
     SCUDA_MeshGroup(const SMeshGroup* mg ) ; 
 }; 
+
+inline SCUDA_MeshGroup* SCUDA_MeshGroup::Upload( const SMeshGroup* mg ) // static
+{
+    return new SCUDA_MeshGroup(mg); 
+}
 
 inline size_t SCUDA_MeshGroup::num_part() const 
 {
@@ -42,7 +47,6 @@ inline void SCUDA_MeshGroup::free()
     vtx.free(); 
     nrm.free(); 
     idx.free();
-    //  ins.free(); 
 }
 
 inline std::string SCUDA_MeshGroup::desc() const
@@ -52,7 +56,6 @@ inline std::string SCUDA_MeshGroup::desc() const
     ss << vtx.desc() ;  
     ss << nrm.desc() ;  
     ss << idx.desc() ;  
-    //ss << ins.desc() ;  
     ss << "]SCUDA_MeshGroup::desc\n" ;
     std::string str = ss.str(); 
     return str ; 
@@ -67,7 +70,7 @@ inline SCUDA_MeshGroup::SCUDA_MeshGroup(const SMeshGroup* mg )
         const SMesh* m = mg->subs[i] ;  
         _vtx.push_back(m->vtx);          
         _nrm.push_back(m->nrm);          
-        _idx.push_back(m->tri);   // TODO: change tri to idx in SMesh           
+        _idx.push_back(m->tri); 
     }
 
     vtx.upload(_vtx); 

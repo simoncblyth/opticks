@@ -107,6 +107,19 @@ inline void SScene::check() const
     assert( meshmerge.size() == meshgroup.size() ); 
 }
 
+
+/**
+SScene::initFromTree
+---------------------
+
+Creating::
+
+    (SMeshGroup)meshgroup
+    (SMesh)meshmerge 
+
+**/
+
+
 inline void SScene::initFromTree(const stree* st)
 {
     initFromTree_Remainder(st);

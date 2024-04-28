@@ -370,9 +370,24 @@ std::string CSGFoundry::desc_mt() const
     return sim->desc_mt() ;  
 }
 
+
+/**
+CSGFoundry::getTree : Full analytic CSG geometry info
+-------------------------------------------------------
+**/
 stree* CSGFoundry::getTree() const
 {
     return sim ? sim->tree : nullptr ; 
+}
+
+
+/**
+CSGFoundry::getScene : Full triangulated geometry info
+--------------------------------------------------------
+**/
+SScene* CSGFoundry::getScene() const
+{
+    return sim ? sim->scene : nullptr ; 
 }
 
 
@@ -2957,7 +2972,7 @@ HMM: this is expecting to load preexisting SSim + CSGFoundry
 from filesystem. Its also possible to create CSGFoundry from SSim
 using CSGImport functionality using CSGFoundry::CreateFromSim and CSGFoundry::importSim
 
-HMM: this means dont really need to persit CSGFoundry : however
+HMM: this means do not really need to persist CSGFoundry : however
 its very useful for debugging and access to geometry info, so 
 will continue to do so for now. 
 

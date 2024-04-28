@@ -27,14 +27,19 @@ Q: Can see the point of having multiple triangle BuildInputs
 
 struct SOPTIX_MeshGroup
 {
+    OptixDeviceContext& context ; 
+    const SCUDA_MeshGroup* cmg ; 
+
     std::vector<const SOPTIX_BuildInput_Mesh*> bis ; 
     std::vector<OptixBuildInput> buildInputs ;
     SOPTIX_Accel* gas ;
-    size_t num_buildInputs() const ; 
- 
-    SOPTIX_MeshGroup( OptixDeviceContext& context, const SCUDA_MeshGroup* mg ); 
 
     std::string desc() const ; 
+    size_t num_buildInputs() const ; 
+
+    SOPTIX_MeshGroup( OptixDeviceContext& context, const SCUDA_MeshGroup* cmg ); 
+    void init(); 
+    static SOPTIX_MeshGroup* Create( OptixDeviceContext& ctx, const SMeshGroup* mg ); 
 }; 
 
 inline std::string SOPTIX_MeshGroup::desc() const 
@@ -60,15 +65,48 @@ inline size_t SOPTIX_MeshGroup::num_buildInputs() const
     return buildInputs.size() ; 
 }
 
-inline SOPTIX_MeshGroup::SOPTIX_MeshGroup(OptixDeviceContext& context, const SCUDA_MeshGroup* mg )
+/**
+SOPTIX_MeshGroup::SOPTIX_MeshGroup
+-----------------------------------
+
+
+**/
+
+inline SOPTIX_MeshGroup::SOPTIX_MeshGroup(OptixDeviceContext& _context, const SCUDA_MeshGroup* _cmg )
+    :
+    context(_context),
+    cmg(_cmg)
 {
-    size_t num_part = mg->num_part() ;  
+    init();
+}
+
+inline void SOPTIX_MeshGroup::init()
+{
+    size_t num_part = cmg->num_part() ;  
     for(size_t i=0 ; i < num_part ; i++)
     {
-        const SOPTIX_BuildInput_Mesh* bi = new SOPTIX_BuildInput_Mesh(mg, i); 
+        const SOPTIX_BuildInput_Mesh* bi = new SOPTIX_BuildInput_Mesh(cmg, i); 
         bis.push_back(bi); 
         buildInputs.push_back(bi->buildInput); 
     }
     gas = new SOPTIX_Accel( context, buildInputs );     
 }
+
+
+/**
+SOPTIX_MeshGroup::Create
+-------------------------
+
+This one-step API from CPU side SMeshGroup (from SScene) to GPU side SOPTIX_MeshGroup
+is to facilitate tri/ana integration. 
+
+**/
+
+inline SOPTIX_MeshGroup* SOPTIX_MeshGroup::Create( OptixDeviceContext& ctx, const SMeshGroup* mg )
+{
+    SCUDA_MeshGroup* cmg = SCUDA_MeshGroup::Upload(mg) ; 
+    SOPTIX_MeshGroup* xmg = new SOPTIX_MeshGroup( ctx, cmg ); 
+    return xmg ;  
+}
+
 

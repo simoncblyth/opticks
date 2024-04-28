@@ -15,7 +15,9 @@ struct SOPTIX_Scene
     SOPTIX_Context* ctx ; 
     const SScene*   scene ; 
 
+#ifdef OLD_SPLIT_APPROACH
     std::vector<SCUDA_MeshGroup*> cuda_meshgroup ;
+#endif
     std::vector<SOPTIX_MeshGroup*> meshgroup ;
     std::vector<OptixInstance> instances ; 
 
@@ -29,11 +31,16 @@ struct SOPTIX_Scene
     SOPTIX_Scene( SOPTIX_Context* ctx, const SScene* scene );  
 
     void init(); 
+
+#ifdef OLD_SPLIT_APPROACH
     void init_MeshUpload(); 
     void init_GAS(); 
+    void init_MeshUpload_free(); 
+#else
+    void init_MeshUpload_GAS(); 
+#endif
     void init_Instances(); 
     void init_IAS();
-    void init_MeshUpload_free(); 
 
     OptixTraversableHandle getHandle(int idx) const ;  
 };
@@ -89,20 +96,19 @@ inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, const SScene* _scene )
 
 inline void SOPTIX_Scene::init()
 {
+#ifdef OLD_SPLIT_APPROACH
     init_MeshUpload(); 
     init_GAS();
+#else
+    init_MeshUpload_GAS();  // TODO: if works OK rename to init_GAS
+#endif
     init_Instances();
     init_IAS();
 }
 
 
 
-/**
-SOPTIX_Scene::init_MeshUpload
--------------------------------
-
-**/
-
+#ifdef OLD_SPLIT_APPROACH
 inline void SOPTIX_Scene::init_MeshUpload()
 {
     int num_mg = scene->meshgroup.size() ; 
@@ -111,33 +117,47 @@ inline void SOPTIX_Scene::init_MeshUpload()
     for(int i=0 ; i < num_mg ; i++)
     {
         const SMeshGroup* mg = scene->meshgroup[i]; 
-        SCUDA_MeshGroup* _mg = new SCUDA_MeshGroup(mg) ; 
+        SCUDA_MeshGroup* _mg = SCUDA_MeshGroup::Upload(mg) ;
         cuda_meshgroup.push_back(_mg); 
     }
 }
-
-inline void SOPTIX_Scene::init_MeshUpload_free()
-{
-    int num_mg = cuda_meshgroup.size() ; 
-    for(int i=0 ; i < num_mg ; i++)
-    {
-        SCUDA_MeshGroup* _mg = cuda_meshgroup[i] ; 
-        _mg->free();   
-    }
-}
-
-
 inline void SOPTIX_Scene::init_GAS()
 {
     int num_cmg = cuda_meshgroup.size() ; 
     if(dump) std::cout << "SOPTIX_Scene::init_GAS num_cmg " << num_cmg << std::endl ; 
     for(int i=0 ; i < num_cmg ; i++)
     {
-        SCUDA_MeshGroup* _mg = cuda_meshgroup[i] ; 
-        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ctx->context, _mg) ;  
+        SCUDA_MeshGroup* cmg = cuda_meshgroup[i] ; 
+        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ctx->context, cmg) ;  
         meshgroup.push_back(mg);
     }
 }
+inline void SOPTIX_Scene::init_MeshUpload_free()
+{
+    int num_cmg = cuda_meshgroup.size() ; 
+    for(int i=0 ; i < num_cmg ; i++)
+    {
+        SCUDA_MeshGroup* cmg = cuda_meshgroup[i] ; 
+        cmg->free();   
+    }
+}
+#endif
+
+
+inline void SOPTIX_Scene::init_MeshUpload_GAS()
+{
+    int num_mg = scene->meshgroup.size() ; 
+    if(dump) std::cout << "SOPTIX_Scene::init_MeshUpload_GAS num_mg " << num_mg << std::endl ; 
+
+    for(int i=0 ; i < num_mg ; i++)
+    {
+        const SMeshGroup*  mg = scene->meshgroup[i]; 
+        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create(ctx->context, mg) ;  
+        meshgroup.push_back(xmg);
+    }
+}
+
+
 
 /**
 SOPTIX_Scene::initInstances
@@ -172,8 +192,9 @@ inline void SOPTIX_Scene::init_Instances()
         unsigned count = _inst_info.y ; 
         unsigned offset = _inst_info.z ; 
 
-        SOPTIX_MeshGroup* mg = meshgroup[i] ; 
-        OptixTraversableHandle handle = mg->gas->handle ; 
+        SOPTIX_MeshGroup* xmg = meshgroup[i] ; 
+        size_t num_bi = xmg->num_buildInputs(); 
+        OptixTraversableHandle handle = xmg->gas->handle ; 
 
         unsigned marker_bit = std::min( i, visibilityMask_BITS - 1 );  
         unsigned visibilityMask = 0x1 << marker_bit ;  
@@ -198,8 +219,6 @@ inline void SOPTIX_Scene::init_Instances()
 
             instances.push_back(instance);
         }
-
-        size_t num_bi = mg->num_buildInputs(); 
         sbtOffset += num_bi ; 
     }
 }

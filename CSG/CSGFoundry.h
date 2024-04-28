@@ -9,6 +9,7 @@ struct SBitSet ;
 struct NP ; 
 struct SSim ; 
 struct stree ; 
+struct SScene ; 
 
 #include "scuda.h"
 #include "squad.h"
@@ -387,8 +388,9 @@ struct CSG_API CSGFoundry : public SGeo
     int getMeshIndexWithName(const char* name, bool startswith) const ; 
     int lookup_mtline(int mtindex) const ; 
     std::string desc_mt() const ; 
-    stree* getTree() const ; 
 
+    stree* getTree() const ; 
+    SScene* getScene() const ; 
 
 
     int findMeshIndex(const char* qname) const ; 
