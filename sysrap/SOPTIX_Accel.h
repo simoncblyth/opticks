@@ -10,9 +10,12 @@ Used by::
 
 **/
 
+#include "SOPTIX_Desc.h"
+
 struct SOPTIX_Accel
 {
-    CUdeviceptr buffer ; 
+    const std::vector<OptixBuildInput>& buildInputs ; 
+    CUdeviceptr buffer ;
     OptixTraversableHandle handle ; 
 
     OptixBuildFlags buildFlags = {} ; 
@@ -28,18 +31,21 @@ struct SOPTIX_Accel
 inline std::string SOPTIX_Accel::desc() const
 {
     std::stringstream ss ; 
-    ss << "[SOPTIX_Accel::desc " << std::endl ; 
-    ss << " compacted " << ( compacted ? "YES" : "NO " ) << std::endl ;
-    ss << " compacted_size " << compacted_size << std::endl ;
-    ss << SOPTIX_Desc::AccelBufferSizes(accelBufferSizes) ;  
-    ss << "]SOPTIX_Accel::desc " << std::endl ; 
+    ss << "[SOPTIX_Accel::desc\n" 
+       << " buildInputs " << buildInputs.size() << "\n"
+       << " compacted " << ( compacted ? "YES" : "NO " ) << "\n" 
+       << " compacted_size " << compacted_size << "\n" 
+       << SOPTIX_Desc::AccelBufferSizes(accelBufferSizes) << "\n"  
+       << "]SOPTIX_Accel::desc\n"
+       ; 
     std::string str = ss.str(); 
     return str ; 
 }
 
 
-inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<OptixBuildInput>& buildInputs )     
+inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<OptixBuildInput>& _buildInputs )     
     :
+    buildInputs(_buildInputs),
     buffer(0), 
     handle(0), 
     compacted_size(0),

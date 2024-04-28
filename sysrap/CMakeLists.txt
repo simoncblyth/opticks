@@ -434,6 +434,7 @@ set(HEADERS
     SOPTIX_Properties.h
     SOPTIX_Options.h
     SOPTIX_getPRD.h
+    SOPTIX_Desc.h
     SOPTIX_Accel.h
     SOPTIX_Binding.h
     SOPTIX_MeshGroup.h

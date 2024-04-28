@@ -69,11 +69,9 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static int         Main();          // NOT USED
 
 
-
-
     static const char* Desc(); 
 
-    static const char* TOP ; 
+
     static const char* PTXNAME ; 
     static const char* GEO_PTXNAME ; 
 
@@ -148,10 +146,7 @@ private:
  public: 
     void setExternalDevicePixels(uchar4* _d_pixel ); 
     void destroy(); 
- private: 
-    void setTop(const char* tspec); 
  public: 
-    static const char* Top() ; 
 
     void setFrame(); 
     void setFrame(const char* moi);

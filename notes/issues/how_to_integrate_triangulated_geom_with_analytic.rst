@@ -109,7 +109,21 @@ CSGFoundry::CreateFromSim/CSGFoundry::importSim
  
 
 
+DONE : made a more vertical API for tri/ana integration
+--------------------------------------------------------
 
+::
+
+   SOPTIX_MeshGroup* Create( OptixDeviceContext& ctx, const SMeshGroup* mg );
+
+   SMeshGroup* mg = scene->meshgroup[i] ;  
+   SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( ctx, mg ) ; 
+   xmg->gas->handle  
+
+
+
+NEXT: name based ana/tri control 
+-------------------------------------
 
 
 
@@ -143,15 +157,12 @@ Analytic in stree/CSG/CSGOptiX
      573 }
 
 
-
 ::
 
    CSGOptiX::initGeometry
    SBT::setFoundry
    SBT::createGeom
    SBT::createGAS_Standard
-
-
 
 
 
@@ -191,6 +202,9 @@ EMM is integer based.  Need name based gas_idx control for greater longevity.
 
 Commonality between ana and tri is the handle
 ---------------------------------------------------
+
+* HMM: SOPTIX side "gas" is SOPTIX_Accel instance
+* WIP: maybe standardize by using the handle in the  vgas map ?
 
 ::
 

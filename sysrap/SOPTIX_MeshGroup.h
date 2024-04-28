@@ -39,7 +39,7 @@ struct SOPTIX_MeshGroup
 
     SOPTIX_MeshGroup( OptixDeviceContext& context, const SCUDA_MeshGroup* cmg ); 
     void init(); 
-    static SOPTIX_MeshGroup* Create( OptixDeviceContext& ctx, const SMeshGroup* mg ); 
+    static SOPTIX_MeshGroup* Create( OptixDeviceContext& ctx, const SMeshGroup* mg );  // more vertical API
 }; 
 
 inline std::string SOPTIX_MeshGroup::desc() const 

@@ -235,31 +235,6 @@ prim extent is used.
 
 void SBT::createGAS()  
 {
-    if(isStandardGAS())
-    {
-        createGAS_Standard();  
-    }
-    else
-    {
-        createGAS_Selection();  
-    }
-}
-
-bool SBT::isStandardGAS() const 
-{
-    return solid_selection.size() == 0 ; 
-}
-
-/**
-SBT::createGAS_Standard
--------------------------
-
-Only --enabledmergedmesh solids (default is all)
-are converted into GAS and collected into the vgas GAS map. 
-
-**/
-void SBT::createGAS_Standard()
-{ 
     unsigned num_solid = foundry->getNumSolid();   // STANDARD_SOLID
     for(unsigned i=0 ; i < num_solid ; i++)
     {
@@ -284,14 +259,6 @@ void SBT::createGAS_Standard()
     LOG(LEVEL) << descGAS() ; 
 }
 
-void SBT::createGAS_Selection()
-{ 
-    for(unsigned i=0 ; i < solid_selection.size() ; i++)
-    {
-        unsigned gas_idx = solid_selection[i] ; 
-        createGAS(gas_idx); 
-    }
-}
 
 /**
 SBT::createGAS 
@@ -304,11 +271,29 @@ SBT::createGAS
 **/
 void SBT::createGAS(unsigned gas_idx)
 {
-    CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
     GAS gas = {} ;  
-    GAS_Builder::Build(gas, ps);
+
+    bool ana = true ;
+
+    if(ana)
+    {
+        CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+        GAS_Builder::Build(gas, ps);
+    }
+    else
+    {
+        /* 
+        SMeshGroup* mg = scene->meshgroup[gas_idx] ;
+        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( ctx, mg ) ;
+        gas.handle = xmg->gas->handle ;
+        */  
+    }
+
     vgas[gas_idx] = gas ;  
 }
+
+
+
 
 /**
 SBT::getGAS
@@ -328,24 +313,7 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
 
 
 
-bool SBT::isStandardIAS() const 
-{
-    return solid_selection.size() == 0  ; 
-}
-
 void SBT::createIAS()
-{
-    if(isStandardIAS())
-    {
-        createIAS_Standard(); 
-    }
-    else
-    {
-        createIAS_Selection();
-    }
-}
-
-void SBT::createIAS_Standard()
 {
     unsigned num_ias = foundry->getNumUniqueIAS() ; 
     bool num_ias_expect = num_ias == 1 ; 
@@ -546,41 +514,6 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
 }
 
 
-void SBT::createIAS_Selection()
-{
-    unsigned ias_idx = 0 ; 
-    createSolidSelectionIAS( ias_idx, solid_selection ); 
-}
-
-void SBT::createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection)
-{
-    std::raise(SIGINT);  // not expecting this to get called
-
-    unsigned num_select = solid_selection.size() ; 
-    assert( num_select > 0 ); 
-    float mxe = foundry->getMaxExtent(solid_selection); 
-
-    std::vector<qat4> inst ; 
-    unsigned ins_idx = 0 ; 
-    unsigned middle = num_select/2 ; 
-
-    for(unsigned i=0 ; i < num_select ; i++)
-    {
-        int ii = int(i) - int(middle) ; 
-
-        int gas_idx = solid_selection[i] ; 
-        int sensor_identifier = -1 ;  // AS UNSIGNED THIS EXCEEDS OptixInstance instanceId linit 
-        int sensor_index = -1 ; 
- 
-        qat4 q ; 
-        q.setIdentity(ins_idx, gas_idx, sensor_identifier, sensor_index );
-        q.q3.f.x = 2.0*mxe*float(ii) ;   
-
-        inst.push_back(q); 
-        ins_idx += 1 ; 
-    }
-    createIAS(inst); 
-}
 
 /**
 SBT::createIAS
@@ -615,61 +548,19 @@ const NP* SBT::getIAS_Instances(unsigned ias_idx) const
 }
 
 
-AS* SBT::getTop() const 
+
+OptixTraversableHandle SBT::get_top_handle() const 
 {
-    return top ; 
+    const IAS& i0 = getIAS(0); 
+    return i0.handle ; 
 }
 
-bool SBT::ValidSpec(const char* spec) // static
-{
-    return spec && strlen(spec) > 1 ; 
-}
 
-void SBT::setTop(const char* spec)
-{
-    bool valid_spec = ValidSpec(spec); 
-    LOG_IF(fatal, !valid_spec) << " valid spec is required [" << spec << "]"  ; 
-    assert( valid_spec );  
-    AS* a = getAS(spec); 
-    setTop(a); 
-}
-void SBT::setTop(AS* top_)
-{   
-    top = top_ ;
-}
 
-/**
-SBT::getAS
-------------
 
-Returns pointer to GAS or IAS. 
-Currently only expecting spec "i0" corresponding to first IAS
-(formerly "g0", "g1" have worked too)
 
-**/
 
-AS* SBT::getAS(const char* spec) const 
-{
-   assert( strlen(spec) > 1 );  
-   char c = spec[0]; 
-   assert( c == 'i' || c == 'g' );  
-   int idx = atoi( spec + 1 );  
 
-   LOG(LEVEL) << " spec " << spec << " c " << c << " idx " << idx  ; 
-
-   AS* a = nullptr ; 
-   if( c == 'i' )
-   {   
-       const IAS& ias = vias[idx]; 
-       a = (AS*)&ias ; 
-   }   
-   else if( c == 'g' )
-   {   
-       const GAS& gas = getGAS(idx) ; 
-       a = (AS*)&gas ; 
-   }   
-   return a ; 
-}
 
 /**
 SBT::getOffset

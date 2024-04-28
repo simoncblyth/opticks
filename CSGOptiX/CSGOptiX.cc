@@ -565,10 +565,9 @@ void CSGOptiX::initGeometry()
 #else
     LOG(LEVEL) << "[ sbt.setFoundry " ; 
     sbt->setFoundry(foundry); 
+    params->handle = sbt->get_top_handle() ; 
     LOG(LEVEL) << "] sbt.setFoundry " ; 
 #endif
-    const char* top = Top(); 
-    setTop(top); 
     LOG(LEVEL) << "]" ; 
 }
 
@@ -751,39 +750,6 @@ double CSGOptiX::proceed()
     return dt ; 
 }
 
-
-
-
-
-
-
-const char* CSGOptiX::TOP = "i0" ; 
-const char* CSGOptiX::Top()
-{
-    const char* top = ssys::getenvvar("TOP", TOP ); 
-    bool top_valid = top != nullptr && strlen(top) > 1 && top[0] == 'i' ;  
-    if(!top_valid)
-    { 
-        LOG(error) << "TOP envvar not invalid  [" << top << "] override with default [" << TOP << "]"  ; 
-        top = TOP ; 
-    }
-    return top ; 
-}
-
-void CSGOptiX::setTop(const char* tspec)
-{
-    LOG(LEVEL) << "[" << " tspec " << tspec ; 
-
-#if OPTIX_VERSION < 70000
-    six->setTop(tspec); 
-#else
-    sbt->setTop(tspec);
-    AS* top = sbt->getTop(); 
-    params->handle = top->handle ; 
-#endif
-
-    LOG(LEVEL) << "]" << " tspec " << tspec ; 
-}
 
 
 

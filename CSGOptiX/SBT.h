@@ -18,6 +18,7 @@ Aim to minimize geometry specifics in here ...
 #include "GAS.h"
 #include "IAS.h"
 #include "sqat4.h"
+#include "SOPTIX_Accel.h"
 
 struct PIP ; 
 struct CSGFoundry ; 
@@ -47,16 +48,20 @@ struct SBT
 
     OptixShaderBindingTable sbt = {};
 
+#ifdef WITH_SOPTIX_ACCEL
+    std::map<unsigned, SOPTIX_Accel*> vgas ; 
+    std::vector<SOPTIX_Accel*> vias ; 
+#else
     std::map<unsigned, GAS> vgas ; 
     std::vector<IAS> vias ; 
+#endif
 
     SBT(const PIP* pip_ ); 
     ~SBT(); 
 
-    AS* getAS(const char* spec) const ;
-    void setTop(const char* spec) ;
-    void setTop(AS* top_) ;
-    AS* getTop() const ;
+
+    OptixTraversableHandle get_top_handle() const ; 
+
 
     void init();  
     void destroy(); 
@@ -77,24 +82,19 @@ struct SBT
     void checkHitgroup();
 
     void createIAS();
-    bool isStandardIAS() const ; 
-    void createIAS_Standard();
     void createIAS(unsigned ias_idx);
-    void createIAS_Selection();
-    void createSolidSelectionIAS(unsigned ias_idx, const std::vector<unsigned>& solid_selection);
     void createIAS(const std::vector<qat4>& inst );
     std::string descIAS(const std::vector<qat4>& inst ) const ;
 
     const IAS& getIAS(unsigned ias_idx) const ;
     const NP*  getIAS_Instances(unsigned ias_idx) const; 
 
-
     void createGAS();
-    bool isStandardGAS() const ; 
-    void createGAS_Standard();
-    void createGAS_Selection();
     void createGAS(unsigned gas_idx);
+
     const GAS& getGAS(unsigned gas_idx) const ;
+    
+
     std::string descGAS() const ; 
 
     void setPrimData( HitGroupData& data, const CSGPrim* prim);
