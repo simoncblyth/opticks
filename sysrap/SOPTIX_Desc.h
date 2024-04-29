@@ -5,6 +5,7 @@ struct SOPTIX_Desc
     static std::string AccelBufferSizes( const OptixAccelBufferSizes& accelBufferSizes ); 
     static std::string BuildInputTriangleArray( const OptixBuildInput& buildInput ); 
     static std::string BuildInputCustomPrimitiveArray( const OptixBuildInput& buildInput ); 
+    static std::string BuildInputInstanceArray( const OptixBuildInput& buildInput ); 
 };
 
 
@@ -53,5 +54,13 @@ inline std::string SOPTIX_Desc::BuildInputCustomPrimitiveArray( const OptixBuild
     return str ; 
 }
 
+inline std::string SOPTIX_Desc::BuildInputInstanceArray( const OptixBuildInput& buildInput ) 
+{
+    std::stringstream ss ; 
+    ss << "[SOPTIX_Desc::BuildInputInstanceArray" << std::endl ; 
+    ss << "]SOPTIX_Desc::BuildInputInstanceArray" << std::endl ; 
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
 

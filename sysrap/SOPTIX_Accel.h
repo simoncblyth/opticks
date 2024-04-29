@@ -19,7 +19,6 @@ A: SOPTIX_Scene.h (used for triangulated rendering) holds buildInputs vector for
 
 struct SOPTIX_Accel
 {
-    unsigned num_buildInputs ; 
     CUdeviceptr buffer ;
     OptixTraversableHandle handle ; 
 

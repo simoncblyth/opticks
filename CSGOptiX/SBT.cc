@@ -633,20 +633,35 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 {
     unsigned offset_sbt = 0 ; 
 
+#ifdef WITH_SOPTIX_ACCEL
+    typedef std::map<unsigned, SOPTIX_Accel*>::const_iterator IT ; 
+#else
     typedef std::map<unsigned, GAS>::const_iterator IT ; 
+#endif
+
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
-        const GAS& gas = it->second ; 
+#ifdef WITH_SOPTIX_ACCEL
+        SOPTIX_Accel* gas = it->second ; 
+#else
+        const GAS* gas = &(it->second) ;   
+#endif
 
-        unsigned num_bi = gas.bis.size(); 
-        assert(num_bi == 1); 
+        unsigned num_bi = gas->bis.size(); 
+        assert(num_bi == 1); // not 1 with tri ?  
 
         for(unsigned j=0 ; j < num_bi ; j++)
-        { 
-            const BI& bi = gas.bis[j] ; 
+        {
+
+#ifdef WITH_SOPTIX_ACCEL
+            const SOPTIX_BuildInput* bi = gas->bis[j] ; 
+            unsigned num_sbt = bi->numSbtRecords() ; 
+#else
+            const BI& bi = gas->bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_sbt = buildInputCPA.numSbtRecords ;  // <-- corresponding to bbox of the GAS
+#endif
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
@@ -676,9 +691,13 @@ Corresponds to the total number of enabled Prim in all enabled solids.
 unsigned SBT::getTotalRec() const 
 {
     unsigned tot_bi = 0 ; 
-    unsigned tot_rec = 0 ; 
+    unsigned tot_sbt = 0 ; 
 
+#ifdef WITH_SOPTIX_ACCEL
+    typedef std::map<unsigned, SOPTIX_Accel*>::const_iterator IT ; 
+#else
     typedef std::map<unsigned, GAS>::const_iterator IT ; 
+#endif
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
@@ -687,20 +706,28 @@ unsigned SBT::getTotalRec() const
         LOG_IF(error, !enabled) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
 
-        const GAS& gas = it->second ; 
- 
-        unsigned num_bi = gas.bis.size(); 
+#ifdef WITH_SOPTIX_ACCEL
+        SOPTIX_Accel* gas = it->second ; 
+#else
+        const GAS* gas = &(it->second) ;   
+#endif
+        unsigned num_bi = gas->bis.size(); 
         tot_bi += num_bi ; 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
-            const BI& bi = gas.bis[j] ; 
+#ifdef WITH_SOPTIX_ACCEL
+            const SOPTIX_BuildInput* bi = gas->bis[j] ; 
+            unsigned num_sbt = bi->numSbtRecords() ; 
+#else
+            const BI& bi = gas->bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
-            unsigned num_rec = buildInputCPA.numSbtRecords ; 
-            tot_rec += num_rec ; 
+            unsigned num_sbt = buildInputCPA.numSbtRecords ; 
+#endif
+            tot_sbt += num_sbt ; 
         }         
     }
-    assert( tot_bi > 0 && tot_rec > 0 );  
-    return tot_rec ;  
+    assert( tot_bi > 0 && tot_sbt > 0 );  
+    return tot_sbt ;  
 }
 
 
@@ -716,7 +743,7 @@ This is meaningful after createGAS.
 
 std::string SBT::descGAS() const 
 {
-    unsigned tot_rec = 0 ; 
+    unsigned tot_sbt = 0 ; 
     unsigned tot_bi = 0 ; 
     std::stringstream ss ; 
     ss 
@@ -725,34 +752,49 @@ std::string SBT::descGAS() const
         << " bi.numRec ( " 
         ;
 
+#ifdef WITH_SOPTIX_ACCEL
+    typedef std::map<unsigned, SOPTIX_Accel*>::const_iterator IT ; 
+#else
     typedef std::map<unsigned, GAS>::const_iterator IT ; 
+#endif
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
-        const GAS& gas = it->second ; 
+
+#ifdef WITH_SOPTIX_ACCEL
+        SOPTIX_Accel* gas = it->second ; 
+#else
+        const GAS* gas = &(it->second) ;   
+#endif
 
         bool enabled = SGeoConfig::IsEnabledMergedMesh(gas_idx)  ; 
         LOG_IF(error, !enabled) << "gas_idx " << gas_idx << " enabled " << enabled ; 
 
-        unsigned num_bi = gas.bis.size(); 
+        unsigned num_bi = gas->bis.size(); 
         tot_bi += num_bi ; 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
-            const BI& bi = gas.bis[j] ; 
+
+#ifdef WITH_SOPTIX_ACCEL
+            const SOPTIX_BuildInput* bi = gas->bis[j] ; 
+            unsigned num_sbt = bi->numSbtRecords() ; 
+#else
+            const BI& bi = gas->bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
-            unsigned num_rec = buildInputCPA.numSbtRecords ; 
-            ss << num_rec << " " ;  
-            tot_rec += num_rec ; 
+            unsigned num_sbt = buildInputCPA.numSbtRecords ; 
+#endif
+            ss << num_sbt << " " ;  
+            tot_sbt += num_sbt ; 
         }         
     }
 
     ss << " ) "
-       << " tot_rec " << tot_rec 
+       << " tot_sbt " << tot_sbt 
        << " tot_bi " << tot_bi 
        ;
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
@@ -775,6 +817,10 @@ Prim Selection
 ~~~~~~~~~~~~~~~~
 
 Thoughts on how to implement Prim selection with CSGPrim::MakeSpec
+
+
+Q: is there a bi for each node ?
+A: NO, roughly speaking the bi hold the bbox references for all CSGPrim of the solid(=GAS) 
 
 **/
 
@@ -800,14 +846,21 @@ void SBT::createHitgroup()
     
     unsigned sbt_offset = 0 ; 
 
-
+#ifdef WITH_SOPTIX_ACCEL
+    typedef std::map<unsigned, SOPTIX_Accel*>::const_iterator IT ; 
+#else
     typedef std::map<unsigned, GAS>::const_iterator IT ; 
+#endif
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
-        const GAS& gas = it->second ; 
 
-        unsigned num_bi = gas.bis.size(); 
+#ifdef WITH_SOPTIX_ACCEL
+        SOPTIX_Accel* gas = it->second ; 
+#else
+        const GAS* gas = &(it->second) ;   
+#endif
+        unsigned num_bi = gas->bis.size(); 
         assert( num_bi == 1 ); 
          
         const CSGSolid* so = foundry->getSolid(gas_idx) ;
@@ -818,15 +871,17 @@ void SBT::createHitgroup()
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
-            const BI& bi = gas.bis[j] ; 
-            // Q: is there a bi for each node ?
-            // A: NO, roughly speaking the bi hold the bbox references for all CSGPrim of the solid(=GAS) 
-
+#ifdef WITH_SOPTIX_ACCEL
+            const SOPTIX_BuildInput* bi = gas->bis[j] ; 
+            unsigned num_sbt = bi->numSbtRecords() ; 
+#else
+            const BI& bi = gas->bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
-            unsigned num_rec = buildInputCPA.numSbtRecords ; 
-            assert( num_rec == unsigned(numPrim) ) ; 
+            unsigned num_sbt = buildInputCPA.numSbtRecords ; 
+#endif
+            assert( num_sbt == unsigned(numPrim) ) ; // HMM: should be so even with some using tri 
 
-            for( unsigned k=0 ; k < num_rec ; k++)
+            for( unsigned k=0 ; k < num_sbt ; k++)
             { 
                 unsigned localPrimIdx = k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
@@ -909,6 +964,5 @@ void SBT::checkHitgroup()
         << " num_solid " << num_solid
         << " num_prim " << num_prim
         ; 
-
 }
 
