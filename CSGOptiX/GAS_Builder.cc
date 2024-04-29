@@ -119,9 +119,6 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N( const SCSGPrimSpec& ps)
     bi.flags = new unsigned[ps.num_prim];
     for(unsigned i=0 ; i < ps.num_prim ; i++) bi.flags[i] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; 
 
-    
-    //bi.d_aabb = (CUdeviceptr) (uintptr_t) ps.aabb ; 
-    //bi.d_sbt_index = (CUdeviceptr) (uintptr_t) ps.sbtIndexOffset ; 
 
     bi.d_aabb = DevicePointerCast<float>( ps.aabb ); 
     bi.d_sbt_index = DevicePointerCast<unsigned>( ps.sbtIndexOffset ); 

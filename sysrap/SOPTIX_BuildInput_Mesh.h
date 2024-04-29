@@ -11,17 +11,16 @@ to device arrays. Have to keep that address valid.
 
 **/
 #include "SCUDA_MeshGroup.h"
+#include "SOPTIX_BuildInput.h"
 
-
-struct SOPTIX_BuildInput_Mesh
+struct SOPTIX_BuildInput_Mesh : public SOPTIX_BuildInput 
 {
+    static constexpr const char* NAME = "BuildInputTriangleArray" ; 
     unsigned    flag ;  
     CUdeviceptr vertexBuffer ;  
     CUdeviceptr indexBuffer ; 
     size_t vtx_elem ; 
     size_t idx_elem ; 
- 
-    OptixBuildInput buildInput = {} ;
  
     SOPTIX_BuildInput_Mesh( const SCUDA_MeshGroup* _mg, size_t part ); 
     std::string desc() const ; 
@@ -29,6 +28,7 @@ struct SOPTIX_BuildInput_Mesh
 
 inline SOPTIX_BuildInput_Mesh::SOPTIX_BuildInput_Mesh( const SCUDA_MeshGroup* mg, size_t part )
     :
+    SOPTIX_BuildInput(NAME),
     flag( OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT | OPTIX_GEOMETRY_FLAG_DISABLE_TRIANGLE_FACE_CULLING ),
     vertexBuffer( mg->vtx.pointer(part) ),
     indexBuffer( mg->idx.pointer(part) ),

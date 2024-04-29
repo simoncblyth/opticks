@@ -286,9 +286,15 @@ Triangluated will need smth like::
 **/
 void SBT::createGAS(unsigned gas_idx)
 {
-
 #ifdef WITH_SOPTIX_ACCEL
 
+    SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+
+    SOPTIX_BuildInput* cpa = new SOPTIX_BuildInput_CPA(ps) ; 
+    SOPTIX_Accel* gas = SOPTIX_Accel::Create(Context::ctx, &(cpa->buildInput), 1 );  
+    gas->bi = cpa ;  
+
+    vgas[gas_idx] = gas ;  
 
 #else
     GAS gas = {} ;  
@@ -299,24 +305,6 @@ void SBT::createGAS(unsigned gas_idx)
 
 }
 
-
-
-
-/**
-SBT::getGAS
-------------
-
-Access the GAS from the vgas map using *gas_idx* key 
-
-
-const GAS& SBT::getGAS(unsigned gas_idx) const 
-{
-    unsigned count = vgas.count(gas_idx); 
-    LOG_IF(fatal, count == 0) << " no such gas_idx " << gas_idx ; 
-    assert( count < 2 ); 
-    return vgas.at(gas_idx); 
-}
-**/
 
 
 OptixTraversableHandle SBT::getGASHandle(unsigned gas_idx) const
@@ -551,39 +539,40 @@ This is taking 0.43s for 48477 inst from JUNO full geometry.
 void SBT::createIAS(const std::vector<qat4>& inst )
 {
     LOG(LEVEL) << "[ inst.size " << inst.size() ; 
+
+#ifdef WITH_SOPRIX_ACCEL
+
+#else
     IAS ias = {} ;  
     IAS_Builder::Build(ias, inst, this );
     vias.push_back(ias);  
+#endif
+
     LOG(LEVEL) << "] inst.size " << inst.size() ; 
 }
 
 
-const IAS& SBT::getIAS(unsigned ias_idx) const 
+
+
+OptixTraversableHandle SBT::getIASHandle(unsigned ias_idx) const
 {
-    bool in_range =  ias_idx < vias.size() ; 
-    LOG_IF(fatal, !in_range) << "OUT OF RANGE ias_idx " << ias_idx << " vias.size " << vias.size() ; 
-    assert(in_range); 
-    return vias[ias_idx]; 
-}
+    assert( ias_idx < vias.size() ); 
 
-const NP* SBT::getIAS_Instances(unsigned ias_idx) const
+#ifdef WITH_SOPTIX_ACCEL
+    SOPTIX_Accel* _ias = vias[ias_idx] ;
+    OptixTraversableHandle handle = _ias->handle ; 
+#else
+    const IAS& ias = vias[ias_idx]; 
+    OptixTraversableHandle handle = ias.handle ; 
+#endif
+    return handle ; 
+} 
+
+
+OptixTraversableHandle SBT::getTOPHandle() const 
 {
-    const IAS& ias = getIAS(ias_idx); 
-    return ias.instances ;  
+    return getIASHandle(0);  
 }
-
-
-
-OptixTraversableHandle SBT::get_top_handle() const 
-{
-    const IAS& i0 = getIAS(0); 
-    return i0.handle ; 
-}
-
-
-
-
-
 
 
 

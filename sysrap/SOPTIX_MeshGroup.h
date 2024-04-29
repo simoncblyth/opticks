@@ -28,8 +28,7 @@ struct SOPTIX_MeshGroup
 {
     const SCUDA_MeshGroup* cmg ; 
 
-    std::vector<const SOPTIX_BuildInput_Mesh*> bis ; 
-    std::vector<OptixBuildInput> buildInputs ;
+    std::vector<const SOPTIX_BuildInput*> bis ; 
 
     std::string desc() const ; 
     size_t num_buildInputs() const ; 
@@ -46,7 +45,7 @@ inline std::string SOPTIX_MeshGroup::desc() const
     ss << "[SOPTIX_MeshGroup::desc num_bi "  << num_bi << std::endl ; 
     for(int i=0 ; i < num_bi ; i++)
     {
-        const SOPTIX_BuildInput_Mesh* bi = bis[i] ; 
+        const SOPTIX_BuildInput* bi = bis[i] ; 
         ss << "bi[" << i << "]" << std::endl ; 
         ss << bi->desc() << std::endl ; 
     }
@@ -57,20 +56,12 @@ inline std::string SOPTIX_MeshGroup::desc() const
 
 inline size_t SOPTIX_MeshGroup::num_buildInputs() const
 {
-    assert( buildInputs.size() == bis.size() ) ; 
-    return buildInputs.size() ; 
+    return bis.size() ; 
 }
 
 /**
 SOPTIX_MeshGroup::SOPTIX_MeshGroup
 -----------------------------------
-
-Note how the context is only passed along for SOPTIX_Accel 
-creation of acceleration structures. 
-
-Could stop at buildInputs preparation and defer 
-gas creation to the user ? 
-
 
 **/
 
@@ -86,9 +77,8 @@ inline void SOPTIX_MeshGroup::init()
     size_t num_part = cmg->num_part() ;  
     for(size_t i=0 ; i < num_part ; i++)
     {
-        const SOPTIX_BuildInput_Mesh* bi = new SOPTIX_BuildInput_Mesh(cmg, i); 
+        const SOPTIX_BuildInput* bi = new SOPTIX_BuildInput_Mesh(cmg, i); 
         bis.push_back(bi); 
-        buildInputs.push_back(bi->buildInput); 
     }
 }
 

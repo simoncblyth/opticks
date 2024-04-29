@@ -61,12 +61,15 @@ inline std::string SCU_Buf<T>::desc() const
 
 struct SCU
 {
+    template<typename T>
+    static CUdeviceptr DevicePointerCast( const T* d_ptr ); 
+
+
     template <typename T>
     static T* UploadArray(const T* array, size_t num_item ); 
 
     template <typename T>
     static SCU_Buf<T> UploadBuf(const T* array, size_t num_item, const char* name ); 
-
 
 
 
@@ -92,6 +95,12 @@ struct SCU
     static void ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, int32_t width, int32_t height ); 
 };
 
+
+template<typename T>
+CUdeviceptr SCU::DevicePointerCast( const T* d_ptr ) // static
+{
+    return (CUdeviceptr) (uintptr_t) d_ptr ; 
+}
 
 
 /**

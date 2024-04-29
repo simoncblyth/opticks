@@ -15,10 +15,11 @@ A: SOPTIX_Scene.h (used for triangulated rendering) holds buildInputs vector for
 **/
 
 #include "SOPTIX_Desc.h"
+#include "SOPTIX_BuildInput.h"
 
 struct SOPTIX_Accel
 {
-    const std::vector<OptixBuildInput>& buildInputs ; 
+    unsigned num_buildInputs ; 
     CUdeviceptr buffer ;
     OptixTraversableHandle handle ; 
 
@@ -27,8 +28,14 @@ struct SOPTIX_Accel
     size_t compacted_size ;
     bool   compacted ; 
 
-    SOPTIX_Accel( OptixDeviceContext& context, const std::vector<OptixBuildInput>& buildInputs );  
+    std::vector<const SOPTIX_BuildInput*> bis ; 
+    std::vector<OptixBuildInput> buildInputs ; 
+
     std::string desc() const ;
+    static SOPTIX_Accel* Create(OptixDeviceContext& context, const SOPTIX_BuildInput* _bi );  
+    static SOPTIX_Accel* Create(OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis );  
+private:
+    SOPTIX_Accel( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis );  
 };
 
 
@@ -36,7 +43,7 @@ inline std::string SOPTIX_Accel::desc() const
 {
     std::stringstream ss ; 
     ss << "[SOPTIX_Accel::desc\n" 
-       << " buildInputs " << buildInputs.size() << "\n"
+       << " buildInputs.size " << buildInputs.size() << "\n"
        << " compacted " << ( compacted ? "YES" : "NO " ) << "\n" 
        << " compacted_size " << compacted_size << "\n" 
        << SOPTIX_Desc::AccelBufferSizes(accelBufferSizes) << "\n"  
@@ -47,14 +54,44 @@ inline std::string SOPTIX_Accel::desc() const
 }
 
 
-inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<OptixBuildInput>& _buildInputs )     
+inline SOPTIX_Accel* SOPTIX_Accel::Create( OptixDeviceContext& context, const SOPTIX_BuildInput* bi )
+{
+    std::vector<const SOPTIX_BuildInput*> bis ; 
+    bis.push_back(bi); 
+    return new SOPTIX_Accel( context, bis  ); 
+}
+
+inline SOPTIX_Accel* SOPTIX_Accel::Create( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis )
+{
+    return new SOPTIX_Accel( context, _bis  ); 
+}
+
+
+inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis )     
     :
-    buildInputs(_buildInputs),
     buffer(0), 
     handle(0), 
     compacted_size(0),
     compacted(false)
 { 
+    const char* name0 = nullptr ;  
+
+    for(unsigned i=0 ; i < _bis.size() ; i++) 
+    {
+        const SOPTIX_BuildInput* bi = _bis[i] ; 
+        bis.push_back(bi);   
+        buildInputs.push_back(bi->buildInput) ; 
+      
+        if(i == 0) 
+        { 
+            name0 = bi->name ; 
+        }  
+        else
+        {
+            assert( strcmp(bi->name, name0) == 0 );
+        }  
+    }
+
     OptixAccelBuildOptions accel_options = {};
 
     unsigned _buildFlags = 0 ; 

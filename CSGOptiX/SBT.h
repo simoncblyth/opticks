@@ -26,6 +26,7 @@ struct CSGPrim ;
 struct Properties ; 
 struct SScene ; 
 
+//#define WITH_SOPTIX_ACCEL 1 
 
 struct SBT 
 {
@@ -62,7 +63,6 @@ struct SBT
     ~SBT(); 
 
 
-    OptixTraversableHandle get_top_handle() const ; 
 
 
     void init();  
@@ -87,16 +87,12 @@ struct SBT
     void createIAS(unsigned ias_idx);
     void createIAS(const std::vector<qat4>& inst );
     std::string descIAS(const std::vector<qat4>& inst ) const ;
-
-    const IAS& getIAS(unsigned ias_idx) const ;
-    const NP*  getIAS_Instances(unsigned ias_idx) const; 
+    OptixTraversableHandle getIASHandle(unsigned ias_idx) const ;
+    OptixTraversableHandle getTOPHandle() const ; 
 
     void createGAS();
     void createGAS(unsigned gas_idx);
-
-    //const GAS& getGAS(unsigned gas_idx) const ;
     OptixTraversableHandle getGASHandle(unsigned gas_idx) const ;
-    
 
     std::string descGAS() const ; 
 

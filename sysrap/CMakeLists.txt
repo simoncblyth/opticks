@@ -447,7 +447,12 @@ set(HEADERS
     SOPTIX_Pipeline.h
     SOPTIX_SBT.h
     SOPTIX_Scene.h
-        
+    
+    SOPTIX_BuildInput.h
+    SOPTIX_BuildInput_Mesh.h
+    SOPTIX_BuildInput_CPA.h
+    SOPTIX_BuildInput_IA.h
+    
     gleq.h
 
     SDir.h

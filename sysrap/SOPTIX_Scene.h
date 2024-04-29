@@ -8,6 +8,7 @@ HMM: maybe SOPTIX_Geom.h so can rename SOPTIX.h to SOPTIX_Scene.h for parallel w
 **/
 
 #include <bitset>
+#include "SOPTIX_BuildInput_IA.h"
 
 struct SOPTIX_Scene
 { 
@@ -19,8 +20,6 @@ struct SOPTIX_Scene
     std::vector<SOPTIX_Accel*> meshgas ; 
     std::vector<OptixInstance> instances ; 
 
-    CUdeviceptr instances_buffer ; 
-    std::vector<OptixBuildInput> buildInputs ; // for IAS
     SOPTIX_Accel* ias ; 
 
     std::string desc() const; 
@@ -81,7 +80,6 @@ inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, const SScene* _scene )
     dump(false),
     ctx(_ctx),
     scene(_scene),
-    instances_buffer(0),
     ias(nullptr)
 {
     init(); 
@@ -105,7 +103,7 @@ inline void SOPTIX_Scene::init_GAS()
         SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create(mg) ;  
         meshgroup.push_back(xmg);
 
-        SOPTIX_Accel* gas = new SOPTIX_Accel( ctx->context, xmg->buildInputs );     
+        SOPTIX_Accel* gas = SOPTIX_Accel::Create( ctx->context, xmg->bis );     
         meshgas.push_back(gas);   
     }
 }
@@ -179,26 +177,8 @@ inline void SOPTIX_Scene::init_Instances()
 
 inline void SOPTIX_Scene::init_IAS()
 {
-    unsigned num_bytes = sizeof( OptixInstance )*instances.size() ; 
-
-    CUDA_CHECK( cudaMalloc( reinterpret_cast<void**>( &instances_buffer ), num_bytes ) );
-    CUDA_CHECK( cudaMemcpy(
-                reinterpret_cast<void*>( instances_buffer ),
-                instances.data(),
-                num_bytes,
-                cudaMemcpyHostToDevice
-                ) );
-
- 
-    OptixBuildInput buildInput = {}; 
-    buildInput.type = OPTIX_BUILD_INPUT_TYPE_INSTANCES;
-    OptixBuildInputInstanceArray& instanceArray = buildInput.instanceArray ; 
-    instanceArray.instances = instances_buffer ;  
-    instanceArray.numInstances = instances.size() ; 
-
-    buildInputs.push_back(buildInput); 
-
-    ias = new SOPTIX_Accel( ctx->context, buildInputs ); 
+    SOPTIX_BuildInput* bi = new SOPTIX_BuildInput_IA(instances);  
+    ias = SOPTIX_Accel::Create( ctx->context, bi ); 
 }
 
 

@@ -565,7 +565,7 @@ void CSGOptiX::initGeometry()
 #else
     LOG(LEVEL) << "[ sbt.setFoundry " ; 
     sbt->setFoundry(foundry); 
-    params->handle = sbt->get_top_handle() ; 
+    params->handle = sbt->getTOPHandle() ; 
     LOG(LEVEL) << "] sbt.setFoundry " ; 
 #endif
     LOG(LEVEL) << "]" ; 
@@ -1284,35 +1284,6 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
 }
 
 
-const NP* CSGOptiX::getIAS_Instances(unsigned ias_idx) const
-{
-    const NP* instances = nullptr ; 
-#if OPTIX_VERSION < 70000
-#else
-    instances = sbt ? sbt->getIAS_Instances(ias_idx) : nullptr ; 
-#endif
-    return instances ; 
-}
-
-/**
-CSGOptiX::save
-----------------
-
-For debug only  : saves serialized OptixInstances 
-seems these were never used for anything. 
-See IAS_Builder::Serialize
-
-**/
-
-void CSGOptiX::save(const char* dir) const
-{
-    assert(0); 
-
-    LOG(LEVEL) << "[ dir " << ( dir ? dir : "-" ) ; 
-    const NP* instances = getIAS_Instances(0) ; 
-    if(instances) instances->save(dir, RELDIR, "instances.npy") ;  
-    LOG(LEVEL) << "] dir " << ( dir ? dir : "-" ) ; 
-}
 
 void CSGOptiX::write_Ctx_log(const char* dir) const
 {

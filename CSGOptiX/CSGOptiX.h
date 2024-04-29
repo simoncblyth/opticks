@@ -191,8 +191,6 @@ private:
     int  render_flightpath(); 
 
     void saveMeta(const char* jpg_path) const ;
-    const NP* getIAS_Instances(unsigned ias_idx=0) const ; // for debug only 
-    void save(const char* dir) const ;  
 
     static constexpr const char* CTX_LOGNAME = "CSGOptiX__Ctx.log"  ; 
     void write_Ctx_log(const char* dir=nullptr) const ;  
