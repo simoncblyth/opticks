@@ -65,18 +65,24 @@ struct SCU
     static T* UploadArray(const T* array, size_t num_item ); 
 
     template <typename T>
+    static SCU_Buf<T> UploadBuf(const T* array, size_t num_item, const char* name ); 
+
+
+
+
+    template <typename T>
     static T* DownloadArray(const T* d_array, size_t num_item ); 
 
     template <typename T>
-    static void FreeArray(T* d_array ); 
-
-
-
-    template <typename T>
-    static SCU_Buf<T> UploadBuf(const T* array, size_t num_item, const char* name ); 
-
-    template <typename T>
     static T* DownloadBuf(const SCU_Buf<T>& buf ); 
+
+    template <typename T>
+    static void DownloadVec(std::vector<T>& vec, const T* d_array, unsigned num_items); 
+
+
+
+    template <typename T>
+    static void FreeArray(T* d_array ); 
 
     template <typename T>
     static void FreeBuf(SCU_Buf<T>& buf ); 
@@ -135,6 +141,30 @@ inline T* SCU::DownloadBuf(const SCU_Buf<T>& buf )
 }
 
 
+/**
+SCU::DownloadVec
+-----------------
+
+After CU::DownloadVec
+
+**/
+
+template <typename T>
+inline void SCU::DownloadVec(std::vector<T>& vec, const T* d_array, unsigned num_items)  // static
+{
+    unsigned num_bytes = num_items*sizeof(T) ; 
+    vec.clear(); 
+    vec.resize(num_items); 
+    CUDA_CHECK( cudaMemcpy( vec.data(), d_array, num_bytes, cudaMemcpyDeviceToHost )); 
+} 
+
+template void SCU::DownloadVec<float>(   std::vector<float>&    vec,  const float* d_array,    unsigned num_items) ;
+template void SCU::DownloadVec<unsigned>(std::vector<unsigned>& vec,  const unsigned* d_array, unsigned num_items) ;
+
+
+
+
+
 
 template <typename T>
 inline void SCU::FreeArray(T* d_array ) // static
@@ -147,6 +177,11 @@ inline void SCU::FreeBuf(SCU_Buf<T>& buf ) // static
 { 
     buf.free() ;  
 }
+
+
+
+
+
 
 
 

@@ -156,8 +156,8 @@ struct CSG_API CSGPrim
         b.q3.f.x = a.q3.f.x ; b.q3.f.y = a.q3.f.y ; b.q3.f.z = a.q3.f.z ; b.q3.f.w = a.q3.f.w ; 
     }
 
-    static int value_offsetof_sbtIndexOffset(){ return offsetof(CSGPrim, q1.u.x)/4 ; }
-    static int value_offsetof_AABB(){           return offsetof(CSGPrim, q2.f.x)/4 ; }
+    static int value_offsetof_sbtIndexOffset(){ return offsetof(CSGPrim, q1.u.x)/4 ; }   // 4
+    static int value_offsetof_AABB(){           return offsetof(CSGPrim, q2.f.x)/4 ; }   // 8 
 
     static PRIM_METHOD void select_prim_mesh(const std::vector<CSGPrim>& prims, std::vector<CSGPrim>& select_prims, unsigned mesh_idx_ )
     {

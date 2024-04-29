@@ -11,23 +11,24 @@ optix7.5 p28
 
 
 #include "scuda.h"
+
+
+
 #include "SCUDA_Mesh.h"
-#include "SOPTIX.h"
-#include "SOPTIX_MeshGroup.h"
+#include "SOPTIX_Context.h"
+#include "SOPTIX_Desc.h"
 
 int main()
 {
     SMesh* m = SMesh::Load("$SCENE_FOLD/scene/mesh_grup/3" ); 
     std::cout << m->desc() ; 
 
-    SOPTIX ox ; 
-    std::cout << ox.desc() << std::endl ; 
+    //SOPTIX_Context ox ; 
+    //std::cout << ox.desc() << std::endl ; 
 
     SCUDA_Mesh* _mesh = new SCUDA_Mesh(m) ; 
     std::cout << _mesh->desc() ; 
 
-    SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ox.context, _mesh) ;  
-    std::cout << mg->desc() ; 
 
     return 0 ; 
 }

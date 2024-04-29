@@ -22,6 +22,19 @@
 
 const plog::Severity GAS_Builder::LEVEL = SLOG::EnvLevel("GAS_Builder", "DEBUG"); 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
 GAS_Builder::Build : CSGPrimSpec --> GAS : Compound Solid (set of Prim level)
 -------------------------------------------------------------------------------
@@ -70,6 +83,25 @@ void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& ps )
 }
 
 
+
+
+/**
+GAS_Builder::DevicePointerCast
+---------------------------------
+
+http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/ 
+CUdeviceptr is typedef to unsigned long long 
+uintptr_t is an unsigned integer type that is capable of storing a data pointer.
+
+**/
+
+template<typename T>
+CUdeviceptr GAS_Builder::DevicePointerCast( const T* d_ptr ) // static
+{
+    return (CUdeviceptr) (uintptr_t) d_ptr ; 
+}
+
+
 /**
 GAS_Builder::MakeCustomPrimitivesBI_11N
 -----------------------------------------
@@ -84,7 +116,7 @@ regarding what piece of geometry is intersected/closesthit.
 
 **/
 
-BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
+BI GAS_Builder::MakeCustomPrimitivesBI_11N( const CSGPrimSpec& ps)
 {
     assert( ps.device == true ); 
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
@@ -94,17 +126,16 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
     bi.flags = new unsigned[ps.num_prim];
     for(unsigned i=0 ; i < ps.num_prim ; i++) bi.flags[i] = OPTIX_GEOMETRY_FLAG_DISABLE_ANYHIT ; 
 
-    // http://www.cudahandbook.com/2013/08/why-does-cuda-cudeviceptr-use-unsigned-int-instead-of-void/ 
-    // CUdeviceptr is typedef to unsigned long long 
-    // uintptr_t is an unsigned integer type that is capable of storing a data pointer.
+    
+    //bi.d_aabb = (CUdeviceptr) (uintptr_t) ps.aabb ; 
+    //bi.d_sbt_index = (CUdeviceptr) (uintptr_t) ps.sbtIndexOffset ; 
 
-    bi.d_aabb = (CUdeviceptr) (uintptr_t) ps.aabb ; 
-    bi.d_sbt_index = (CUdeviceptr) (uintptr_t) ps.sbtIndexOffset ; 
+    bi.d_aabb = DevicePointerCast<float>( ps.aabb ); 
+    bi.d_sbt_index = DevicePointerCast<unsigned>( ps.sbtIndexOffset ); 
 
     bi.buildInput = {};
     bi.buildInput.type = OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES;
-    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ; 
-
+    OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.buildInput.customPrimitiveArray ;  
 
     buildInputCPA.aabbBuffers = &bi.d_aabb ;  
     buildInputCPA.numPrimitives = ps.num_prim  ;   
@@ -115,6 +146,7 @@ BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
     buildInputCPA.sbtIndexOffsetSizeInBytes  = sizeof(unsigned);     // Size of type of the sbt index offset. Needs to be 0,     1, 2 or 4    
     buildInputCPA.sbtIndexOffsetStrideInBytes = ps.stride_in_bytes ; // Stride between the index offsets. If set to zero, the offsets are assumed to be tightly packed.
     buildInputCPA.primitiveIndexOffset = ps.primitiveIndexOffset ;   // Primitive index bias, applied in optixGetPrimitiveIndex() see OptiX7Test.cu:__closesthit__ch
+
 
     LOG(LEVEL)
         << std::endl
@@ -156,6 +188,7 @@ void GAS_Builder::DumpAABB( const float* aabb, unsigned num_aabb, unsigned strid
         std::cout << std::endl ; 
     }
 }
+
 
 /**
 GAS_Builder::BoilerPlate

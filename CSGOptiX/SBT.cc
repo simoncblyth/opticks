@@ -106,7 +106,9 @@ SBT::setFoundry
 
 void SBT::setFoundry(const CSGFoundry* foundry_)
 {
-    foundry = foundry_ ; 
+    foundry = foundry_ ;          // analytic
+    scene = foundry->getScene();  // triangulated
+
     createGeom(); 
 }
 
@@ -269,28 +271,32 @@ SBT::createGAS
 2. converts the CSGPrimSpec into a GAS, passing in bbox device array pointers
 3. inserts gas into vgas map using *gas_idx* key 
 
+
+Wheeling in triangulated in one go is too great a leap.
+Instead stay purely analytic and try adopting SOPTIX_Accel
+instead of GAS and IAS. 
+
+Triangluated will need smth like::
+
+    SMeshGroup* mg = scene->meshgroup[gas_idx] ;
+    SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( mg ) ;
+    SOPTIX_Accel* _gas = new SOPTIX_Accel( ctx->context, xmg->buildInputs );  
+
+
 **/
 void SBT::createGAS(unsigned gas_idx)
 {
+
+#ifdef WITH_SOPTIX_ACCEL
+
+
+#else
     GAS gas = {} ;  
-
-    bool ana = true ;
-
-    if(ana)
-    {
-        CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
-        GAS_Builder::Build(gas, ps);
-    }
-    else
-    {
-        /* 
-        SMeshGroup* mg = scene->meshgroup[gas_idx] ;
-        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( mg ) ;
-        gas.handle = xmg->gas->handle ;
-        */  
-    }
-
+    CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+    GAS_Builder::Build(gas, ps);
     vgas[gas_idx] = gas ;  
+#endif
+
 }
 
 
@@ -302,7 +308,6 @@ SBT::getGAS
 
 Access the GAS from the vgas map using *gas_idx* key 
 
-**/
 
 const GAS& SBT::getGAS(unsigned gas_idx) const 
 {
@@ -310,6 +315,25 @@ const GAS& SBT::getGAS(unsigned gas_idx) const
     LOG_IF(fatal, count == 0) << " no such gas_idx " << gas_idx ; 
     assert( count < 2 ); 
     return vgas.at(gas_idx); 
+}
+**/
+
+
+OptixTraversableHandle SBT::getGASHandle(unsigned gas_idx) const
+{
+    unsigned count = vgas.count(gas_idx); 
+    LOG_IF(fatal, count == 0) << " no such gas_idx " << gas_idx ; 
+    assert( count == 1 ); 
+
+#ifdef WITH_SOPTIX_ACCEL
+    SOPTIX_Accel* _gas = vgas.at(gas_idx) ;
+    OptixTraversableHandle handle = _gas->handle ; 
+#else
+    const GAS& gas = vgas.at(gas_idx); 
+    OptixTraversableHandle handle = gas.handle ; 
+#endif
+ 
+    return handle ; 
 }
 
 

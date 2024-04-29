@@ -264,7 +264,20 @@ inline void SMesh::import_original(const NPFold* fold, const glm::tmat4x4<double
     const NP* vertices = fold->get("vtx") ; // copy ?
     const NP* normals = fold->get("nrm") ;
 
-    assert( normals == nullptr ); // not expecting nrm in originals currently 
+    bool valid_import_original = triangles != nullptr && vertices != nullptr && normals == nullptr ; 
+    if(!valid_import_original) std::cerr 
+        << "SMesh::import_original\n"
+        << " FATAL : FAILED TO IMPORT TRI OR VTX \n" 
+        << " valid_import_original " << ( valid_import_original ? "YES" : "NO ") << "\n"
+        << " triangles " << ( triangles ? "YES" : "NO " ) << "\n"
+        << " vertices " << ( vertices ? "YES" : "NO " ) << "\n"
+        << " normals " << ( normals ? "YES" : "NO " ) << " (not execting normals in originals)\n" 
+        << " name " << ( name ? name : "-" ) << "\n"
+        << "\n"
+        ; 
+
+    assert(valid_import_original); 
+    assert( normals == nullptr ); // not expecting normals in originals currently 
 
     bool dump = false ; 
     std::stringstream ss ; 

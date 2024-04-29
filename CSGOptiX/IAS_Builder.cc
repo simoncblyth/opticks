@@ -69,8 +69,9 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
             ; 
         assert( instanceId_is_allowed  ) ; 
 
-        const GAS& gas = sbt->getGAS(gasIdx);  // susceptible to out-of-range errors for stale gas_idx 
-        
+        //const GAS& gas = sbt->getGAS(gasIdx);  // susceptible to out-of-range errors for stale gas_idx 
+        OptixTraversableHandle handle = sbt->getGASHandle(gasIdx); 
+
         bool found = gasIdx_sbtOffset.count(gasIdx) == 1 ; 
         unsigned sbtOffset = found ? gasIdx_sbtOffset.at(gasIdx) : sbt->getOffset(gasIdx, prim_idx ) ;
         if(!found) 
@@ -90,7 +91,7 @@ void IAS_Builder::CollectInstances(std::vector<OptixInstance>& instances, const 
         instance.sbtOffset = sbtOffset ;            
         instance.visibilityMask = 255;
         instance.flags = flags ;
-        instance.traversableHandle = gas.handle ; 
+        instance.traversableHandle = handle ; 
     
         instances.push_back(instance); 
     }

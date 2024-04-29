@@ -94,7 +94,8 @@ struct SBT
     void createGAS();
     void createGAS(unsigned gas_idx);
 
-    const GAS& getGAS(unsigned gas_idx) const ;
+    //const GAS& getGAS(unsigned gas_idx) const ;
+    OptixTraversableHandle getGASHandle(unsigned gas_idx) const ;
     
 
     std::string descGAS() const ; 
