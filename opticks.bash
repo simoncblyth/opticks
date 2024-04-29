@@ -801,9 +801,9 @@ opticks-externals(){
   cat << EOL  | grep -v ^#
 bcm
 glm
-#glfw
-#glew
-#gleq
+glfw
+glew
+gleq
 imgui
 plog
 nljson
