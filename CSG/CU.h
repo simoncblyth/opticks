@@ -11,7 +11,6 @@ CU.h : UploadArray/DownloadArray/UploadVec/DownloadVec
     ./CSGOptiX/SBT.cc
     ./CSG/CMakeLists.txt
     ./CSG/CU.h
-    ./CSG/CSGPrimSpec.cc
     ./CSG/tests/CSGPrimImpTest.cc
     ./CSG/tests/CUTest.cc
     ./CSG/CU.cc

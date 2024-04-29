@@ -22,7 +22,7 @@ Highly inefficienct noddy appoach as not worth getting into
 thrust (or cudaMemcpy2D) complications for strided downloads just for this debug check 
 **/
 
-void DownloadDump( const CSGPrimSpec& d_ps )
+void DownloadDump( const SCSGPrimSpec& d_ps )
 {
      for(unsigned i=0 ; i < d_ps.num_prim ; i++)
      { 
@@ -81,12 +81,12 @@ void test_offsets()
 void test_spec( const std::vector<CSGPrim>& prim )
 {
      std::cout << "test_spec " << std::endl ; 
-     CSGPrimSpec psa = CSGPrim::MakeSpec(prim.data(), 0, prim.size() ); 
+     SCSGPrimSpec psa = CSGPrim::MakeSpec(prim.data(), 0, prim.size() ); 
      psa.dump(); 
 
      std::vector<float> out ; 
      psa.gather(out);  
-     CSGPrimSpec::Dump(out); 
+     SCSGPrimSpec::Dump(out); 
 }
 
 void test_partial( const std::vector<CSGPrim>& prim )
@@ -94,10 +94,10 @@ void test_partial( const std::vector<CSGPrim>& prim )
      std::cout << "test_partial " << std::endl ; 
      unsigned h = prim.size()/2 ; 
 
-     CSGPrimSpec ps0 = CSGPrim::MakeSpec(prim.data(), 0, h ); 
+     SCSGPrimSpec ps0 = CSGPrim::MakeSpec(prim.data(), 0, h ); 
      ps0.dump(); 
 
-     CSGPrimSpec ps1 = CSGPrim::MakeSpec(prim.data(), h, h ); 
+     SCSGPrimSpec ps1 = CSGPrim::MakeSpec(prim.data(), h, h ); 
      ps1.dump(); 
 }
 
@@ -120,10 +120,10 @@ void test_download( const CSGPrim* d_prim, unsigned num )
      }
 }
 
-CSGPrimSpec test_dspec( CSGPrim* d_prim , unsigned num)
+SCSGPrimSpec test_dspec( CSGPrim* d_prim , unsigned num)
 {
      std::cout << "test_dspec" << std::endl ; 
-     CSGPrimSpec d_ps = CSGPrim::MakeSpec( d_prim, 0, num ); 
+     SCSGPrimSpec d_ps = CSGPrim::MakeSpec( d_prim, 0, num ); 
      DownloadDump(d_ps);  
 
      return d_ps ; 
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
      CSGPrim* d_prim = test_upload(prim.data(), prim.size());  
      test_download( d_prim, prim.size() ); 
 
-     CSGPrimSpec d_ps = test_dspec(d_prim, prim.size() ) ; 
+     SCSGPrimSpec d_ps = test_dspec(d_prim, prim.size() ) ; 
 
      test_pointer( d_prim, "d_prim" ); 
      test_pointer( d_ps.aabb ,           "d_ps.aabb" ); 

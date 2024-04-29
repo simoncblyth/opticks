@@ -10,7 +10,7 @@
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-#include "CSGPrimSpec.h"
+#include "SCSGPrimSpec.h"
 #endif
 
 #include "CSG_API_EXPORT.hh"
@@ -207,7 +207,7 @@ struct CSG_API CSGPrim
 
     std::string desc() const ; 
     static bool IsDiff( const CSGPrim& a , const CSGPrim& b );
-    static CSGPrimSpec MakeSpec( const CSGPrim* prim0, unsigned primIdx, unsigned numPrim ) ; 
+    static SCSGPrimSpec MakeSpec( const CSGPrim* prim0, unsigned primIdx, unsigned numPrim ) ; 
 #endif
 
 };

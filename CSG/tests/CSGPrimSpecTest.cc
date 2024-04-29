@@ -22,7 +22,7 @@ int main(int argc, char** argv)
         ;
 
     unsigned solidIdx = 0u ; 
-    CSGPrimSpec psh = fd->getPrimSpec(solidIdx);   
+    SCSGPrimSpec psh = fd->getPrimSpec(solidIdx);   
 
     int modulo = 0 ; 
     psh.dump("", modulo);  

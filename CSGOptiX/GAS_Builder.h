@@ -21,16 +21,14 @@ Only used from SBT.cc
 struct GAS_Builder
 {
     static const plog::Severity LEVEL ; 
-    static void Build(     GAS& gas, const CSGPrimSpec& psd );
+    static void Build(     GAS& gas, const SCSGPrimSpec& psd );
 
     template<typename T>
     static CUdeviceptr DevicePointerCast( const T* d_ptr ); 
 
-    static void Build_11N( GAS& gas, const CSGPrimSpec& psd );
-    static void GatherInputs( std::vector<OptixBuildInput>& buildInputs, const CSGPrimSpec& ps  );
+    static void Build_11N( GAS& gas, const SCSGPrimSpec& psd );
+    static BI MakeCustomPrimitivesBI_11N(const SCSGPrimSpec& psd);
 
-
-    static BI MakeCustomPrimitivesBI_11N(const CSGPrimSpec& psd);
     static void DumpAABB(                const float* aabb, unsigned num_aabb, unsigned stride_in_bytes ) ; 
     static void BoilerPlate(GAS& gas);  
 };

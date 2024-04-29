@@ -51,7 +51,7 @@ void test_PrimSpec()
     {
         unsigned solidIdx = i ; 
         std::cout << "solidIdx " << solidIdx << std::endl ; 
-        CSGPrimSpec ps = fd.getPrimSpec(solidIdx);
+        SCSGPrimSpec ps = fd.getPrimSpec(solidIdx);
         ps.dump(""); 
     }
 

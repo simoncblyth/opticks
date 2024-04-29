@@ -167,7 +167,7 @@ of (0,1,2,...,numPrim-1)
 
 CSGOptiX/GAS_Builder.cc::
 
-    087 BI GAS_Builder::MakeCustomPrimitivesBI_11N(const CSGPrimSpec& ps)
+    087 BI GAS_Builder::MakeCustomPrimitivesBI_11N(const SCSGPrimSpec& ps)
      88 {
      89     assert( ps.device == true );
      90     assert( ps.stride_in_bytes % sizeof(float) == 0 );
@@ -189,11 +189,11 @@ CSG/CSGFoundry.cc::
     2059     pr.setMeshIdx(-1) ;                // metadata, that may be set by caller 
     2060 
 
-    096 CSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
+    096 SCSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
     097 {
     098     const CSGPrim* prim = prim0 + primIdx ;
      99 
-    100     CSGPrimSpec ps ;
+    100     SCSGPrimSpec ps ;
     101     ps.aabb = prim->AABB() ;
     102     ps.sbtIndexOffset = prim->sbtIndexOffsetPtr() ;
     103     ps.num_prim = numPrim ;

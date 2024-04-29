@@ -12,7 +12,6 @@ srcs="$name.cc
       ../CSGFoundry.cc 
       ../CSGSolid.cc 
       ../CSGPrim.cc  
-      ../CSGPrimSpec.cc 
       ../CSGNode.cc 
       ../CSGName.cc 
       ../CSGTarget.cc 

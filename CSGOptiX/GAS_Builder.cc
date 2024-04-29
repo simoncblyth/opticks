@@ -28,28 +28,21 @@ const plog::Severity GAS_Builder::LEVEL = SLOG::EnvLevel("GAS_Builder", "DEBUG")
 
 
 
-
-
-
-
-
-
-
 /**
-GAS_Builder::Build : CSGPrimSpec --> GAS : Compound Solid (set of Prim level)
+GAS_Builder::Build : SCSGPrimSpec --> GAS : Compound Solid (set of Prim level)
 -------------------------------------------------------------------------------
 
-Canonically invoked from SBT::createGeom/SBT::createGAS using CSGPrimSpec from CSGFoundry 
+Canonically invoked from SBT::createGeom/SBT::createGAS using SCSGPrimSpec from CSGFoundry 
 
 GAS& gas
    output struct holding vector of BI (currently always one entry)
 
-CSGPrimSpec& ps
+SCSGPrimSpec& ps
    arrays of bbox  
 
 **/
 
-void GAS_Builder::Build( GAS& gas, const CSGPrimSpec& ps )  // static
+void GAS_Builder::Build( GAS& gas, const SCSGPrimSpec& ps )  // static
 {
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = ps.stride_in_bytes / sizeof(float) ;
@@ -74,7 +67,7 @@ only one BI in the bis vector.
 
 **/
 
-void GAS_Builder::Build_11N( GAS& gas, const CSGPrimSpec& ps )
+void GAS_Builder::Build_11N( GAS& gas, const SCSGPrimSpec& ps )
 {
     BI bi = MakeCustomPrimitivesBI_11N(ps);
     gas.bis.push_back(bi); 
@@ -106,17 +99,17 @@ CUdeviceptr GAS_Builder::DevicePointerCast( const T* d_ptr ) // static
 GAS_Builder::MakeCustomPrimitivesBI_11N
 -----------------------------------------
 
-References to bbox array from CSGPrimSpec copyied into the BI
+References to bbox array from SCSGPrimSpec copyied into the BI
 
 Creates buildInput using device refs of pre-uploaded aabb for all prim (aka layers) of the Solid
 and arranges for separate SBT records for each prim.
 
-Added primitiveIndexOffset to CSGPrimSpec in attempt to get identity info 
+Added primitiveIndexOffset to SCSGPrimSpec in attempt to get identity info 
 regarding what piece of geometry is intersected/closesthit. 
 
 **/
 
-BI GAS_Builder::MakeCustomPrimitivesBI_11N( const CSGPrimSpec& ps)
+BI GAS_Builder::MakeCustomPrimitivesBI_11N( const SCSGPrimSpec& ps)
 {
     assert( ps.device == true ); 
     assert( ps.stride_in_bytes % sizeof(float) == 0 ); 

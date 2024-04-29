@@ -5,7 +5,7 @@
 
 #include "scuda.h"
 #include "CSGPrim.h"
-#include "CSGPrimSpec.h"
+#include "SCSGPrimSpec.h"
 
 int main(int argc, char** argv)
 {
@@ -22,7 +22,7 @@ int main(int argc, char** argv)
     }
 
     CSGPrim* d_prim = CU::UploadVec(pp); 
-    CSGPrimSpec psd = CSGPrim::MakeSpec( d_prim,  primOffset, numPrim ); ;
+    SCSGPrimSpec psd = CSGPrim::MakeSpec( d_prim,  primOffset, numPrim ); ;
     psd.device = true ; 
     psd.downloadDump("CUTest.downloadDump"); 
 

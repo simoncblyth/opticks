@@ -1233,7 +1233,7 @@ std::string CSGFoundry::descPrimSpec() const
 std::string CSGFoundry::descPrimSpec(unsigned solidIdx) const 
 {
     unsigned gas_idx = solidIdx ; 
-    CSGPrimSpec ps = getPrimSpec(gas_idx);
+    SCSGPrimSpec ps = getPrimSpec(gas_idx);
     return ps.desc() ; 
 }
 
@@ -1408,31 +1408,31 @@ Better for SBT creation not to be mixed up with geometry selection.
 
 **/
 
-CSGPrimSpec CSGFoundry::getPrimSpec(unsigned solidIdx) const 
+SCSGPrimSpec CSGFoundry::getPrimSpec(unsigned solidIdx) const 
 {
-    CSGPrimSpec ps = d_prim ? getPrimSpecDevice(solidIdx) : getPrimSpecHost(solidIdx) ; 
+    SCSGPrimSpec ps = d_prim ? getPrimSpecDevice(solidIdx) : getPrimSpecHost(solidIdx) ; 
     LOG_IF(info, ps.device == false) << "WARNING using host PrimSpec, upload first " ; 
     return ps ; 
 }
-CSGPrimSpec CSGFoundry::getPrimSpecHost(unsigned solidIdx) const 
+SCSGPrimSpec CSGFoundry::getPrimSpecHost(unsigned solidIdx) const 
 {
     const CSGSolid* so = solid.data() + solidIdx ; 
-    CSGPrimSpec ps = CSGPrim::MakeSpec( prim.data(),  so->primOffset, so->numPrim ); ; 
+    SCSGPrimSpec ps = CSGPrim::MakeSpec( prim.data(),  so->primOffset, so->numPrim ); ; 
     ps.device = false ; 
     return ps ; 
 }
-CSGPrimSpec CSGFoundry::getPrimSpecDevice(unsigned solidIdx) const 
+SCSGPrimSpec CSGFoundry::getPrimSpecDevice(unsigned solidIdx) const 
 {
     assert( d_prim ); 
     const CSGSolid* so = solid.data() + solidIdx ;  // get the primOffset from CPU side solid
-    CSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ; 
+    SCSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ; 
     ps.device = true ; 
     return ps ; 
 }
 
 void CSGFoundry::checkPrimSpec(unsigned solidIdx) const 
 {
-    CSGPrimSpec ps = getPrimSpec(solidIdx);  
+    SCSGPrimSpec ps = getPrimSpec(solidIdx);  
     LOG(info) << "[ solidIdx  " << solidIdx ; 
     ps.downloadDump(); 
     LOG(info) << "] solidIdx " << solidIdx ; 

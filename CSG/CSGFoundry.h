@@ -201,9 +201,9 @@ struct CSG_API CSGFoundry : public SGeo
     std::string descSolids(const std::vector<unsigned>& solid_selection) const ;
 
 
-    CSGPrimSpec getPrimSpec(       unsigned solidIdx) const ;
-    CSGPrimSpec getPrimSpecHost(   unsigned solidIdx) const ;
-    CSGPrimSpec getPrimSpecDevice( unsigned solidIdx) const ;
+    SCSGPrimSpec getPrimSpec(       unsigned solidIdx) const ;
+    SCSGPrimSpec getPrimSpecHost(   unsigned solidIdx) const ;
+    SCSGPrimSpec getPrimSpecDevice( unsigned solidIdx) const ;
     void        checkPrimSpec(     unsigned solidIdx) const ;
     void        checkPrimSpec() const ;
 

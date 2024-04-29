@@ -117,7 +117,7 @@ SBT::createGeom
 -----------------
 
 createGAS 
-    CSGPrimSpec for each compound solid are converted to GAS and collected into map 
+    SCSGPrimSpec for each compound solid are converted to GAS and collected into map 
 createIAS
     instance transforms with compound solid references are converted into the IAS
 createHitgroup    
@@ -267,8 +267,8 @@ void SBT::createGAS()
 SBT::createGAS 
 ---------------
 
-1. gets CSGPrimSpec for a the *gas_idx* compound solid from foundry 
-2. converts the CSGPrimSpec into a GAS, passing in bbox device array pointers
+1. gets SCSGPrimSpec for a the *gas_idx* compound solid from foundry 
+2. converts the SCSGPrimSpec into a GAS, passing in bbox device array pointers
 3. inserts gas into vgas map using *gas_idx* key 
 
 
@@ -292,7 +292,7 @@ void SBT::createGAS(unsigned gas_idx)
 
 #else
     GAS gas = {} ;  
-    CSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+    SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
     GAS_Builder::Build(gas, ps);
     vgas[gas_idx] = gas ;  
 #endif

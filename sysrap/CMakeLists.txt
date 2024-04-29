@@ -428,6 +428,7 @@ set(HEADERS
     SGLFW_CUDA.h
 
     SCUDA_Mesh.h 
+    SCSGPrimSpec.h
 
     scuda.h
     scuda_pointer.h

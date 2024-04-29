@@ -3,7 +3,7 @@
 CUDA_PREFIX=/usr/local/cuda   # just use some CUDA headers, not using GPU 
 
 name=CSGPrimTest
-srcs="$name.cc ../CSGPrim.cc ../CSGPrimSpec.cc ../CU.cc"
+srcs="$name.cc ../CSGPrim.cc ../CU.cc"
 
 gcc -g \
     $srcs \

@@ -54,12 +54,12 @@ canonically invoked by CSGFoundry::getPrimSpecHost and CSGFoundry::getPrimSpecDe
 which provide the CSGPrim bbox pointers for all CSGPrim within a CSGSolid.::
 
     1075     const CSGSolid* so = solid.data() + solidIdx ;  // get the primOffset from CPU side solid
-    1076     CSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ;
+    1076     SCSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ;
     
 This can be done very simply for both host and device due to the contiguous storage 
 of the CSGPrim in the foundry and fixed strides. 
 
-CSGPrimSpec::primitiveIndexOffset
+SCSGPrimSpec::primitiveIndexOffset
     Primitive index bias, applied in optixGetPrimitiveIndex() so the primIdx 
     obtained in closesthit__ch__ is absolute to the entire geometry 
     instead of the default of being local to the compound solid. 
@@ -77,7 +77,7 @@ Prim still requires to iterate over them all.
 Better to apply selection in one place only. 
 So where to apply prim selection ?
 
-CSGPrimSpec is too late as the prim array handled
+SCSGPrimSpec is too late as the prim array handled
 there needs to be memory contiguous.   
 This suggests addition of selected_prim to CSGFoundry::
 
@@ -93,11 +93,11 @@ will be invalid.
 
 **/
 
-CSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
+SCSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
 {
     const CSGPrim* prim = prim0 + primIdx ; 
 
-    CSGPrimSpec ps ; 
+    SCSGPrimSpec ps ; 
     ps.aabb = prim->AABB() ; 
     ps.sbtIndexOffset = prim->sbtIndexOffsetPtr() ;  
     ps.num_prim = numPrim ; 

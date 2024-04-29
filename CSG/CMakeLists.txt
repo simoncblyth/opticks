@@ -52,7 +52,6 @@ list(APPEND CSG_HEADERS
     CSGNode.h 
 
     CU.h
-    CSGPrimSpec.h
     CSGPrim.h
     CSGSolid.h
 

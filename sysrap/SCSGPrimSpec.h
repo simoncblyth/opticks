@@ -7,13 +7,15 @@
 #endif
 
 /**
-CSGPrimSpec (HMM: maybe CSGSolidSpec would be a more appropriate name)
+SCSGPrimSpec :
 =========================================================================
 
-* *CSGPrimSpec* provides the specification to access the AABB and sbtIndexOffset of all CSGPrim of a CSGSolid.  
+This was migrated down from CSG/CSGPrimSpec.h 
+
+* *SCSGPrimSpec* provides the specification to access the AABB and sbtIndexOffset of all CSGPrim of a CSGSolid.  
 * The specification includes pointers, counts and stride.
 * Instances are created for a solidIdx by CSGFoundry::getPrimSpec using CSGPrim::MakeSpec
-* Crucially *CSGPrimSpec* is used to pass the AABB for a solid to CSGOptix/GAS_Builder.
+* Crucially *SCSGPrimSpec* is used to pass the AABB for a solid to CSGOptix/GAS_Builder.
 
 Previously assumed that the *sbtIndexOffset* indices were global 
 to the entire geometry, but the 2nd-GAS-last-prim-only bug indicates 
@@ -22,7 +24,7 @@ from 0 to numPrim-1 for that GAS.
 
 **/
 
-struct CSGPrimSpec
+struct SCSGPrimSpec
 {
     static constexpr const unsigned CSGPrim__value_offsetof_sbtIndexOffset = 4 ;
     static constexpr const unsigned CSGPrim__value_offsetof_AABB = 8 ; 
@@ -36,10 +38,10 @@ struct CSGPrimSpec
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    void downloadDump(const char* msg="CSGPrimSpec::downloadDump") const ; 
+    void downloadDump(const char* msg="SCSGPrimSpec::downloadDump") const ; 
     void gather(std::vector<float>& out) const ;
     static void Dump(std::vector<float>& out);
-    void dump(const char* msg="CSGPrimSpec::dump", int modulo=100) const ; 
+    void dump(const char* msg="SCSGPrimSpec::dump", int modulo=100) const ; 
     std::string desc() const ; 
 #endif
 };
@@ -60,14 +62,14 @@ struct CSGPrimSpec
 
 
 /**
-CSGPrimSpec::gather
+SCSGPrimSpec::gather
 ---------------------
 
 Writes num_prim*6 bbox floats into out. 
 
 **/
 
-inline void CSGPrimSpec::gather(std::vector<float>& out) const 
+inline void SCSGPrimSpec::gather(std::vector<float>& out) const 
 {
     //assert( device == false ); 
     unsigned size_in_floats = 6 ; 
@@ -82,7 +84,7 @@ inline void CSGPrimSpec::gather(std::vector<float>& out) const
     }   
 }
 
-inline void CSGPrimSpec::Dump(std::vector<float>& out)  // static 
+inline void SCSGPrimSpec::Dump(std::vector<float>& out)  // static 
 {
      std::cout << " gather " << out.size() << std::endl ; 
      for(unsigned i=0 ; i < out.size() ; i++) 
@@ -94,7 +96,7 @@ inline void CSGPrimSpec::Dump(std::vector<float>& out)  // static
 }
 
 
-inline void CSGPrimSpec::dump(const char* msg, int modulo) const 
+inline void SCSGPrimSpec::dump(const char* msg, int modulo) const 
 {
     assert( stride_in_bytes % sizeof(float) == 0 ); 
     unsigned stride_in_floats = stride_in_bytes/sizeof(float) ; 
@@ -123,11 +125,11 @@ inline void CSGPrimSpec::dump(const char* msg, int modulo) const
 }
 
 
-inline std::string CSGPrimSpec::desc() const 
+inline std::string SCSGPrimSpec::desc() const 
 {
     std::stringstream ss ; 
 
-    ss << "CSGPrimSpec"
+    ss << "SCSGPrimSpec"
        << " primitiveIndexOffset " << std::setw(4) << primitiveIndexOffset
        << " num_prim " << std::setw(4) << num_prim 
        << " stride_in_bytes " << std::setw(5) << stride_in_bytes 
@@ -140,7 +142,7 @@ inline std::string CSGPrimSpec::desc() const
 
 
 /**
-CSGPrimSpec::downloadDump
+SCSGPrimSpec::downloadDump
 ---------------------------
 
 As are starting the read from within the structure, 
@@ -148,7 +150,7 @@ need to trim offsets to avoid reading beyond the array.
 
 **/
 
-inline void CSGPrimSpec::downloadDump(const char* msg) const 
+inline void SCSGPrimSpec::downloadDump(const char* msg) const 
 {
     assert( device == true ); 
     unsigned stride_in_values = stride_in_bytes/sizeof(float) ; 
