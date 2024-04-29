@@ -23,7 +23,6 @@ list(APPEND SOURCES
     CSGNode.cc
     CU.cc
     CSGPrim.cc
-    CSGPrimSpec.cc
     CSGSolid.cc
     CSGFoundry.cc
     CSGCopy.cc
