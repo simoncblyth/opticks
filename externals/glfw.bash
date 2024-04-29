@@ -36,6 +36,18 @@ applications and does not lay claim to the main loop.
 
 Version 3.1.1 released on March 19, 2015
 
+
+
+Alma Linux Notes from Albert Zhou 
+----------------------------------
+
+::
+
+    Here are the AlmaLinux (RHEL 9.0) libraries I needed to install for GLFW:
+    libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel
+
+
+
 Headless
 -----------
 
