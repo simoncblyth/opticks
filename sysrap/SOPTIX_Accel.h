@@ -5,8 +5,12 @@ SOPTIX_Accel.h : builds acceleration structure GAS or IAS from the buildInputs
 
 Used by::
 
-    SOPTIX_Mesh.h 
-    SOPTIX_MeshGroup.h 
+    SOPTIX_MeshGroup.h for GAS 
+    SOPTIX_Scene.h for IAS 
+
+Q: Is the buildInputs reference going to stay valid ? 
+A: Each SOPTIX_MeshGroup holds the buildInputs vector for GAS
+A: SOPTIX_Scene.h (used for triangulated rendering) holds buildInputs vector for IAS, with single entry  
 
 **/
 

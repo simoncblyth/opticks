@@ -14,6 +14,7 @@
 #include "SSys.hh"
 #include "SVec.hh"
 #include "scuda.h"  
+#include "SScene.h"
 
 #include "OPTIX_CHECK.h"
 #include "CUDA_CHECK.h"
@@ -62,7 +63,7 @@ SBT::SBT(const PIP* pip_)
     hitgroup(nullptr),
     check(nullptr),
     foundry(nullptr),
-    top(nullptr)
+    scene(nullptr)
 {
     init(); 
 }
@@ -284,7 +285,7 @@ void SBT::createGAS(unsigned gas_idx)
     {
         /* 
         SMeshGroup* mg = scene->meshgroup[gas_idx] ;
-        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( ctx, mg ) ;
+        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( mg ) ;
         gas.handle = xmg->gas->handle ;
         */  
     }

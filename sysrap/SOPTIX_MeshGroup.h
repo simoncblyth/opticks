@@ -23,23 +23,20 @@ Q: Can see the point of having multiple triangle BuildInputs
 
 #include "SCUDA_Mesh.h"
 #include "SOPTIX_BuildInput_Mesh.h"
-#include "SOPTIX_Accel.h"
 
 struct SOPTIX_MeshGroup
 {
-    OptixDeviceContext& context ; 
     const SCUDA_MeshGroup* cmg ; 
 
     std::vector<const SOPTIX_BuildInput_Mesh*> bis ; 
     std::vector<OptixBuildInput> buildInputs ;
-    SOPTIX_Accel* gas ;
 
     std::string desc() const ; 
     size_t num_buildInputs() const ; 
 
-    SOPTIX_MeshGroup( OptixDeviceContext& context, const SCUDA_MeshGroup* cmg ); 
+    SOPTIX_MeshGroup( const SCUDA_MeshGroup* cmg ); 
     void init(); 
-    static SOPTIX_MeshGroup* Create( OptixDeviceContext& ctx, const SMeshGroup* mg );  // more vertical API
+    static SOPTIX_MeshGroup* Create( const SMeshGroup* mg );  // more vertical API
 }; 
 
 inline std::string SOPTIX_MeshGroup::desc() const 
@@ -53,7 +50,6 @@ inline std::string SOPTIX_MeshGroup::desc() const
         ss << "bi[" << i << "]" << std::endl ; 
         ss << bi->desc() << std::endl ; 
     }
-    ss << gas->desc() << std::endl ;   
     ss << "]SOPTIX_MeshGroup::desc num_bi "  << num_bi << std::endl ; 
     std::string str = ss.str() ; 
     return str ; 
@@ -69,12 +65,17 @@ inline size_t SOPTIX_MeshGroup::num_buildInputs() const
 SOPTIX_MeshGroup::SOPTIX_MeshGroup
 -----------------------------------
 
+Note how the context is only passed along for SOPTIX_Accel 
+creation of acceleration structures. 
+
+Could stop at buildInputs preparation and defer 
+gas creation to the user ? 
+
 
 **/
 
-inline SOPTIX_MeshGroup::SOPTIX_MeshGroup(OptixDeviceContext& _context, const SCUDA_MeshGroup* _cmg )
+inline SOPTIX_MeshGroup::SOPTIX_MeshGroup( const SCUDA_MeshGroup* _cmg )
     :
-    context(_context),
     cmg(_cmg)
 {
     init();
@@ -89,7 +90,6 @@ inline void SOPTIX_MeshGroup::init()
         bis.push_back(bi); 
         buildInputs.push_back(bi->buildInput); 
     }
-    gas = new SOPTIX_Accel( context, buildInputs );     
 }
 
 
@@ -102,10 +102,10 @@ is to facilitate tri/ana integration.
 
 **/
 
-inline SOPTIX_MeshGroup* SOPTIX_MeshGroup::Create( OptixDeviceContext& ctx, const SMeshGroup* mg )
+inline SOPTIX_MeshGroup* SOPTIX_MeshGroup::Create( const SMeshGroup* mg )
 {
     SCUDA_MeshGroup* cmg = SCUDA_MeshGroup::Upload(mg) ; 
-    SOPTIX_MeshGroup* xmg = new SOPTIX_MeshGroup( ctx, cmg ); 
+    SOPTIX_MeshGroup* xmg = new SOPTIX_MeshGroup( cmg ); 
     return xmg ;  
 }
 

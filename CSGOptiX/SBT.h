@@ -24,6 +24,8 @@ struct PIP ;
 struct CSGFoundry ; 
 struct CSGPrim ; 
 struct Properties ; 
+struct SScene ; 
+
 
 struct SBT 
 {
@@ -40,7 +42,7 @@ struct SBT
     HitGroup*     check ;
 
     const CSGFoundry*  foundry ; 
-    AS*                top ; 
+    const SScene*      scene ; 
  
     CUdeviceptr   d_raygen ;
     CUdeviceptr   d_miss ;

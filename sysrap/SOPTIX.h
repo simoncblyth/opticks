@@ -9,6 +9,7 @@ SOPTIX.h : top level coordinator of triangulated raytrace render
 #include "SOPTIX_Context.h"
 #include "SOPTIX_Desc.h"
 #include "SOPTIX_MeshGroup.h"
+#include "SOPTIX_Accel.h"
 #include "SOPTIX_Scene.h"
 #include "SOPTIX_Module.h"
 #include "SOPTIX_Pipeline.h"

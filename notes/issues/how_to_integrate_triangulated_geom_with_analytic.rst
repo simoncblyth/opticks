@@ -206,6 +206,10 @@ Commonality between ana and tri is the handle
 * HMM: SOPTIX side "gas" is SOPTIX_Accel instance
 * WIP: maybe standardize by using the handle in the  vgas map ?
 
+  * NOPE: NEED NUMBER OF buildInputs FOR SBT MECHANICS
+  * added reference to the vector in SOPTIX_Accel MAYBE NEEDS TO BE pointer to vector on heap ?
+
+
 ::
 
    00305 void SBT::createGAS(unsigned gas_idx)

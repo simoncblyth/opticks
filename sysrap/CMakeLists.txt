@@ -410,7 +410,10 @@ set(HEADERS
     SGLM_Arcball.h
 
     GL_CHECK.h
+
+    SScene.h 
     SMesh.h
+    SMeshGroup.h
 
     SGLFW.h
     SGLFW_Keys.h

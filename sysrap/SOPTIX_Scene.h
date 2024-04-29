@@ -15,13 +15,12 @@ struct SOPTIX_Scene
     SOPTIX_Context* ctx ; 
     const SScene*   scene ; 
 
-#ifdef OLD_SPLIT_APPROACH
-    std::vector<SCUDA_MeshGroup*> cuda_meshgroup ;
-#endif
     std::vector<SOPTIX_MeshGroup*> meshgroup ;
+    std::vector<SOPTIX_Accel*> meshgas ; 
     std::vector<OptixInstance> instances ; 
 
     CUdeviceptr instances_buffer ; 
+    std::vector<OptixBuildInput> buildInputs ; // for IAS
     SOPTIX_Accel* ias ; 
 
     std::string desc() const; 
@@ -32,13 +31,7 @@ struct SOPTIX_Scene
 
     void init(); 
 
-#ifdef OLD_SPLIT_APPROACH
-    void init_MeshUpload(); 
     void init_GAS(); 
-    void init_MeshUpload_free(); 
-#else
-    void init_MeshUpload_GAS(); 
-#endif
     void init_Instances(); 
     void init_IAS();
 
@@ -96,64 +89,24 @@ inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, const SScene* _scene )
 
 inline void SOPTIX_Scene::init()
 {
-#ifdef OLD_SPLIT_APPROACH
-    init_MeshUpload(); 
     init_GAS();
-#else
-    init_MeshUpload_GAS();  // TODO: if works OK rename to init_GAS
-#endif
     init_Instances();
     init_IAS();
 }
 
-
-
-#ifdef OLD_SPLIT_APPROACH
-inline void SOPTIX_Scene::init_MeshUpload()
-{
-    int num_mg = scene->meshgroup.size() ; 
-    if(dump) std::cout << "SOPTIX_Scene::init_MeshUpload num_mg " << num_mg << std::endl ; 
-
-    for(int i=0 ; i < num_mg ; i++)
-    {
-        const SMeshGroup* mg = scene->meshgroup[i]; 
-        SCUDA_MeshGroup* _mg = SCUDA_MeshGroup::Upload(mg) ;
-        cuda_meshgroup.push_back(_mg); 
-    }
-}
 inline void SOPTIX_Scene::init_GAS()
 {
-    int num_cmg = cuda_meshgroup.size() ; 
-    if(dump) std::cout << "SOPTIX_Scene::init_GAS num_cmg " << num_cmg << std::endl ; 
-    for(int i=0 ; i < num_cmg ; i++)
-    {
-        SCUDA_MeshGroup* cmg = cuda_meshgroup[i] ; 
-        SOPTIX_MeshGroup* mg = new SOPTIX_MeshGroup(ctx->context, cmg) ;  
-        meshgroup.push_back(mg);
-    }
-}
-inline void SOPTIX_Scene::init_MeshUpload_free()
-{
-    int num_cmg = cuda_meshgroup.size() ; 
-    for(int i=0 ; i < num_cmg ; i++)
-    {
-        SCUDA_MeshGroup* cmg = cuda_meshgroup[i] ; 
-        cmg->free();   
-    }
-}
-#endif
-
-
-inline void SOPTIX_Scene::init_MeshUpload_GAS()
-{
     int num_mg = scene->meshgroup.size() ; 
-    if(dump) std::cout << "SOPTIX_Scene::init_MeshUpload_GAS num_mg " << num_mg << std::endl ; 
+    if(dump) std::cout << "SOPTIX_Scene::init_GAS num_mg " << num_mg << std::endl ; 
 
     for(int i=0 ; i < num_mg ; i++)
     {
         const SMeshGroup*  mg = scene->meshgroup[i]; 
-        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create(ctx->context, mg) ;  
+        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create(mg) ;  
         meshgroup.push_back(xmg);
+
+        SOPTIX_Accel* gas = new SOPTIX_Accel( ctx->context, xmg->buildInputs );     
+        meshgas.push_back(gas);   
     }
 }
 
@@ -194,7 +147,8 @@ inline void SOPTIX_Scene::init_Instances()
 
         SOPTIX_MeshGroup* xmg = meshgroup[i] ; 
         size_t num_bi = xmg->num_buildInputs(); 
-        OptixTraversableHandle handle = xmg->gas->handle ; 
+        SOPTIX_Accel* gas = meshgas[i] ;
+        OptixTraversableHandle handle = gas->handle ; 
 
         unsigned marker_bit = std::min( i, visibilityMask_BITS - 1 );  
         unsigned visibilityMask = 0x1 << marker_bit ;  
@@ -242,7 +196,6 @@ inline void SOPTIX_Scene::init_IAS()
     instanceArray.instances = instances_buffer ;  
     instanceArray.numInstances = instances.size() ; 
 
-    std::vector<OptixBuildInput> buildInputs ;
     buildInputs.push_back(buildInput); 
 
     ias = new SOPTIX_Accel( ctx->context, buildInputs ); 
@@ -251,8 +204,8 @@ inline void SOPTIX_Scene::init_IAS()
 
 inline OptixTraversableHandle SOPTIX_Scene::getHandle(int idx) const 
 {  
-    assert( idx < int(meshgroup.size())) ; 
-    return idx == -1 ? ias->handle : meshgroup[idx]->gas->handle ;
+    assert( idx < int(meshgas.size())) ; 
+    return idx == -1 ? ias->handle : meshgas[idx]->handle ;
 }
 
 
