@@ -2,9 +2,30 @@
 SScene_test.cc
 ================
 
+CreateFromTree
+---------------
+
+1. Load stree.h from TREE_FOLD
+2. SScene::initFromTree 
+3. saves scene to SCENE_FOLD
+
+
+Load
+-----
+
+1. SScene::Load from SCENE_FOLD
+2. SScene::desc to stdout 
+
+
+Usage
+-------
+
 ::
 
+    TEST=CreateFromTree ~/o/sysrap/tests/SScene_test.sh 
+    TEST=Load ~/o/sysrap/tests/SScene_test.sh 
    ~/o/sysrap/tests/SScene_test.sh 
+
    ~/o/sysrap/tests/SScene_test.cc
 
 **/

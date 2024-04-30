@@ -41,12 +41,24 @@ TODO:
 #include "SGLFW.h"
 #include "SGLFW_CUDA.h"
 
+#include "SScene.h"
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     SEventConfig::SetRGModeRender(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
+
+    if(fd->getScene()->is_empty())
+    {
+        LOG(fatal) << "CSGFoundry::Load GIVES EMPTY SCENE : TRANSITIONAL KLUDGE : TRY TO LOAD FROM SCENE_FOLD " ; 
+        SScene* _scene = SScene::Load("$SCENE_FOLD");   
+        fd->setOverrideScene(_scene); 
+    }
+
+
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
 
     SGLM& gm = *(cx->sglm) ; 

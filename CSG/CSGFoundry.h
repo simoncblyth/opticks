@@ -391,6 +391,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     stree* getTree() const ; 
     SScene* getScene() const ; 
+    void setOverrideScene(SScene* _scene); 
 
 
     int findMeshIndex(const char* qname) const ; 

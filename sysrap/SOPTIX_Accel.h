@@ -55,9 +55,9 @@ inline std::string SOPTIX_Accel::desc() const
 
 inline SOPTIX_Accel* SOPTIX_Accel::Create( OptixDeviceContext& context, const SOPTIX_BuildInput* bi )
 {
-    std::vector<const SOPTIX_BuildInput*> bis ; 
-    bis.push_back(bi); 
-    return new SOPTIX_Accel( context, bis  ); 
+    std::vector<const SOPTIX_BuildInput*> _bis ; 
+    _bis.push_back(bi); 
+    return new SOPTIX_Accel( context, _bis  ); 
 }
 
 inline SOPTIX_Accel* SOPTIX_Accel::Create( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis )

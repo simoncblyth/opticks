@@ -6,6 +6,7 @@ SScene_test.sh
 Inits SScene from loaded stree.h::
 
    ~/o/sysrap/tests/SScene_test.sh 
+   ~/o/sysrap/tests/SScene_test.sh info
 
 
 To create and persist the stree starting from GEOM gdml::

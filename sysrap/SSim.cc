@@ -157,6 +157,11 @@ void SSim::init()
 
 
 stree* SSim::get_tree() const { return tree ; }
+SScene* SSim::get_scene() const { return scene ; }
+
+// TRANSITIONAL WHILST HAVING DIFFICULTIES WITH FULL GEOM CONVERSION
+void SSim::set_override_scene(SScene* _scene){ scene = _scene ; }
+
 
 
 /**
@@ -171,6 +176,8 @@ void SSim::initSceneFromTree()
 {
     scene->initFromTree(tree);
 }
+
+
 
 
 

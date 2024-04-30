@@ -15,6 +15,7 @@
 #include "SVec.hh"
 #include "scuda.h"  
 #include "SScene.h"
+#include "NPX.h"
 
 #include "OPTIX_CHECK.h"
 #include "CUDA_CHECK.h"
@@ -25,6 +26,7 @@
 
 #include "Binding.h"
 #include "Params.h"
+#include "Ctx.h"
 
 #include "GAS.h"
 #include "GAS_Builder.h"
@@ -38,6 +40,16 @@
 
 #include "CU.h"
 #include "SLOG.hh"
+
+#ifdef WITH_SOPTIX_ACCEL
+#include "SOPTIX_Accel.h"
+#include "SOPTIX_BuildInput_CPA.h"
+#include "SOPTIX_BuildInput_IA.h"
+#include "SOPTIX_BuildInput_Mesh.h"
+#include "SOPTIX_MeshGroup.h"
+#endif
+
+
 
 /**
 SBT
@@ -276,34 +288,53 @@ Wheeling in triangulated in one go is too great a leap.
 Instead stay purely analytic and try adopting SOPTIX_Accel
 instead of GAS and IAS. 
 
-Triangluated will need smth like::
 
-    SMeshGroup* mg = scene->meshgroup[gas_idx] ;
-    SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( mg ) ;
-    SOPTIX_Accel* _gas = new SOPTIX_Accel( ctx->context, xmg->buildInputs );  
+TODO: need to optionally tri/ana branch here 
+but first try all triangulated 
+
 
 
 **/
+
+#ifdef WITH_SOPTIX_ACCEL
 void SBT::createGAS(unsigned gas_idx)
 {
-#ifdef WITH_SOPTIX_ACCEL
+    SOPTIX_BuildInput* bi = nullptr ; 
+    SOPTIX_Accel* gas = nullptr ; 
 
-    SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+    bool ana = false ; 
+    if(ana)
+    {
+        SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+        bi = new SOPTIX_BuildInput_CPA(ps) ; 
+        gas = SOPTIX_Accel::Create(Ctx::context, bi );  
+    }
+    else
+    {
+        const SMeshGroup* mg = scene->getMeshGroup(gas_idx) ;
+        LOG_IF(fatal, mg == nullptr) 
+            << " FAILED to SScene::getMeshGroup"
+            << " gas_idx " << gas_idx 
+            << "\n" 
+            << scene->desc()
+            ;
+        assert(mg);   
 
-    SOPTIX_BuildInput* cpa = new SOPTIX_BuildInput_CPA(ps) ; 
-    SOPTIX_Accel* gas = SOPTIX_Accel::Create(Context::ctx, &(cpa->buildInput), 1 );  
-    gas->bi = cpa ;  
-
+        SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( mg ) ;
+        gas = SOPTIX_Accel::Create(Ctx::context, xmg->bis );  
+    }
     vgas[gas_idx] = gas ;  
+}
 
 #else
-    GAS gas = {} ;  
+void SBT::createGAS(unsigned gas_idx)
+{
     SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+    GAS gas = {} ;  
     GAS_Builder::Build(gas, ps);
     vgas[gas_idx] = gas ;  
-#endif
-
 }
+#endif
 
 
 
@@ -343,8 +374,18 @@ SBT::createIAS
 
 Hmm: usually only one IAS. 
 
-Seems like should be caching the inst used to construct the GPU geometry in use.  
-For ease of lookup using the flat instance_id obtained from intersect identity.  
+2024-04-30 11:08:33.056 INFO  [65240] [SBT::collectInstances@468] ] instances.size 47887
+2024-04-30 11:08:33.056 INFO  [65240] [SBT::createIAS@372] SBT::descIAS inst.size 47887 SBT_DUMP_IAS 0
+ gas_idx          0 num_ins_idx          1 ins_idx_mn          0 ins_idx_mx          0 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)          1
+ gas_idx          1 num_ins_idx      25600 ins_idx_mn          1 ins_idx_mx      25600 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)      25600
+ gas_idx          2 num_ins_idx      12615 ins_idx_mn      25601 ins_idx_mx      38215 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)      12615
+ gas_idx          3 num_ins_idx       4997 ins_idx_mn      38216 ins_idx_mx      43212 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)       4997
+ gas_idx          4 num_ins_idx       2400 ins_idx_mn      43213 ins_idx_mx      45612 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)       2400
+ gas_idx          5 num_ins_idx        590 ins_idx_mn      45613 ins_idx_mx      46202 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        590
+ gas_idx          6 num_ins_idx        590 ins_idx_mn      46203 ins_idx_mx      46792 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        590
+ gas_idx          7 num_ins_idx        590 ins_idx_mn      46793 ins_idx_mx      47382 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        590
+ gas_idx          8 num_ins_idx        504 ins_idx_mn      47383 ins_idx_mx      47886 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        504
+
 
 **/
 
@@ -362,107 +403,123 @@ void SBT::createIAS(unsigned ias_idx)
     foundry->getInstanceTransformsIAS(inst, ias_idx, emm );
     assert( num_ias_inst == inst.size() ); 
 
-    createIAS(inst); 
+
+    collectInstances(inst); 
+    
     LOG(LEVEL) << descIAS(inst); 
+
+#ifdef WITH_SOPTIX_ACCEL
+    SOPTIX_BuildInput* ia = new SOPTIX_BuildInput_IA(instances) ; 
+    SOPTIX_Accel* ias = SOPTIX_Accel::Create(Ctx::context, ia );  
+    vias.push_back(ias);  
+#else
+    IAS ias = {} ;  
+    IAS_Builder::Build(ias, instances );
+    vias.push_back(ias);  
+#endif
+
 }
 
-/** 
-SBT::dumpIAS
----------------
 
-ins_idx flatly proceeds across the entire instanced geometry (actually the IAS but there is only one of those)
 
-* the flat ins_idx can be used to lookup the tranform and its instrumented geometry info (gas_idx, ias_idx) 
-  from the instances vector
-* so bit packing the gas_idx into GPU side instanceId would be just a convenience to avoid having to do that lookup, 
-  better to keep things as simple as possible GPU side and just provide CSGFoundry API to do that lookup 
-  from the unadorned flat:: 
 
-      unsigned instance_id = optixGetInstanceId() ;        // see IAS_Builder::Build and InstanceId.h 
 
-  * will probably need to lookup the transform anyhow  
+/**
+SBT::collectInstances
+----------------------
 
-* BUT the ins_idx does not help to identify within the globals, all of them being in the first line with ins_idx 0 gas_idx 0 
+Converts *inst* a vector of geometry identity instrumented transforms into
+a vector of OptixInstance. The instance.sbtOffset are set using SBT::getOffset
+for the gas_idx and with prim_idx:0 indicating the outer prim(aka layer) 
+of the GAS.
 
-:: 
+Canonically invoked during CSGOptiX instanciation, from stack::
 
-    2021-08-22 22:51:53.931 INFO  [52005] [SBT::dumpIAS@289]  inst.size 46117 SBT_DUMP_IAS 1
-     i          0 ins_idx          0 gas_idx          0 ias_idx          0
-     i          1 ins_idx          1 gas_idx          1 ias_idx          0
-     i          2 ins_idx          2 gas_idx          1 ias_idx          0
-     i          3 ins_idx          3 gas_idx          1 ias_idx          0
-     i          4 ins_idx          4 gas_idx          1 ias_idx          0
-     i          5 ins_idx          5 gas_idx          1 ias_idx          0
-     i          6 ins_idx          6 gas_idx          1 ias_idx          0
-     ...
-     i      25591 ins_idx      25591 gas_idx          1 ias_idx          0
-     i      25592 ins_idx      25592 gas_idx          1 ias_idx          0
-     i      25593 ins_idx      25593 gas_idx          1 ias_idx          0
-     i      25594 ins_idx      25594 gas_idx          1 ias_idx          0
-     i      25595 ins_idx      25595 gas_idx          1 ias_idx          0
-     i      25596 ins_idx      25596 gas_idx          1 ias_idx          0
-     i      25597 ins_idx      25597 gas_idx          1 ias_idx          0
-     i      25598 ins_idx      25598 gas_idx          1 ias_idx          0
-     i      25599 ins_idx      25599 gas_idx          1 ias_idx          0
-     i      25600 ins_idx      25600 gas_idx          1 ias_idx          0
-     i      25601 ins_idx      25601 gas_idx          2 ias_idx          0
-     i      25602 ins_idx      25602 gas_idx          2 ias_idx          0
-     i      25603 ins_idx      25603 gas_idx          2 ias_idx          0
-     i      25604 ins_idx      25604 gas_idx          2 ias_idx          0
-     ...
-     i      38208 ins_idx      38208 gas_idx          2 ias_idx          0
-     i      38209 ins_idx      38209 gas_idx          2 ias_idx          0
-     i      38210 ins_idx      38210 gas_idx          2 ias_idx          0
-     i      38211 ins_idx      38211 gas_idx          2 ias_idx          0
-     i      38212 ins_idx      38212 gas_idx          2 ias_idx          0
-     i      38213 ins_idx      38213 gas_idx          3 ias_idx          0
-     i      38214 ins_idx      38214 gas_idx          3 ias_idx          0
-     i      38215 ins_idx      38215 gas_idx          3 ias_idx          0
-     i      38216 ins_idx      38216 gas_idx          3 ias_idx          0
-     i      38217 ins_idx      38217 gas_idx          3 ias_idx          0
-     i      38218 ins_idx      38218 gas_idx          3 ias_idx          0
-     ...
-     i      43206 ins_idx      43206 gas_idx          3 ias_idx          0
-     i      43207 ins_idx      43207 gas_idx          3 ias_idx          0
-     i      43208 ins_idx      43208 gas_idx          3 ias_idx          0
-     i      43209 ins_idx      43209 gas_idx          3 ias_idx          0
-     i      43210 ins_idx      43210 gas_idx          3 ias_idx          0
-     i      43211 ins_idx      43211 gas_idx          3 ias_idx          0
-     i      43212 ins_idx      43212 gas_idx          3 ias_idx          0
-     i      43213 ins_idx      43213 gas_idx          4 ias_idx          0
-     i      43214 ins_idx      43214 gas_idx          4 ias_idx          0
-     i      43215 ins_idx      43215 gas_idx          4 ias_idx          0
-     i      43216 ins_idx      43216 gas_idx          4 ias_idx          0
-    ...
-     i      45605 ins_idx      45605 gas_idx          4 ias_idx          0
-     i      45606 ins_idx      45606 gas_idx          4 ias_idx          0
-     i      45607 ins_idx      45607 gas_idx          4 ias_idx          0
-     i      45608 ins_idx      45608 gas_idx          4 ias_idx          0
-     i      45609 ins_idx      45609 gas_idx          4 ias_idx          0
-     i      45610 ins_idx      45610 gas_idx          4 ias_idx          0
-     i      45611 ins_idx      45611 gas_idx          4 ias_idx          0
-     i      45612 ins_idx      45612 gas_idx          4 ias_idx          0
-     i      45613 ins_idx      45613 gas_idx          5 ias_idx          0
-     i      45614 ins_idx      45614 gas_idx          5 ias_idx          0
-     i      45615 ins_idx      45615 gas_idx          5 ias_idx          0
-     i      45616 ins_idx      45616 gas_idx          5 ias_idx          0
-     ..
-     i      46112 ins_idx      46112 gas_idx          5 ias_idx          0
-     i      46113 ins_idx      46113 gas_idx          5 ias_idx          0
-     i      46114 ins_idx      46114 gas_idx          5 ias_idx          0
-     i      46115 ins_idx      46115 gas_idx          5 ias_idx          0
-     i      46116 ins_idx      46116 gas_idx          5 ias_idx          0
+    CSGOptiX::CSGOptiX/CSGOptiX::init/CSGOptiX::initGeometry/SBT::setFoundry/SBT::createGeom/SBT::createIAS
 
-      2021-08-22 22:49:12.346 INFO  [47848] [SBT::dumpIAS@289]  inst.size 46117 SBT_DUMP_IAS 0
-     gas_idx          0 num_ins_idx          1 ins_idx_mn          0 ins_idx_mx          0 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)          1
-     gas_idx          1 num_ins_idx      25600 ins_idx_mn          1 ins_idx_mx      25600 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)      25600
-     gas_idx          2 num_ins_idx      12612 ins_idx_mn      25601 ins_idx_mx      38212 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)      12612
-     gas_idx          3 num_ins_idx       5000 ins_idx_mn      38213 ins_idx_mx      43212 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)       5000
-     gas_idx          4 num_ins_idx       2400 ins_idx_mn      43213 ins_idx_mx      45612 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)       2400
-     gas_idx          5 num_ins_idx        504 ins_idx_mn      45613 ins_idx_mx      46116 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        504
-    2021-08-22 22:49:12.352 INFO  [47848] [SBT::createHitgroup@645]  num_solid 6 num_gas 6 tot_rec 2473
+
+Collecting OptixInstance was taking 0.42s for 48477 inst, 
+as SBT::getOffset was being called for every instance. Instead 
+of doing this caching the result in the gasIdx_sbtOffset brings
+the time down to zero. 
+
+HMM: Could make better use of instanceId, eg with bitpack gas_idx, ias_idx ?
+See note in InstanceId.h its not so easy due to bit limits.  
+
+But it doesnt matter much as can just do lookups CPU side based 
+on simple indices from GPU side. 
 
 **/
+
+
+void SBT::collectInstances( const std::vector<qat4>& ias_inst ) 
+{
+    LOG(LEVEL) << "[ ias_inst.size " << ias_inst.size() ; 
+
+    unsigned num_ias_inst = ias_inst.size() ; 
+    unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
+    unsigned prim_idx = 0u ;  // need sbt offset for the outer prim(aka layer) of the GAS 
+
+    std::map<unsigned, unsigned> gasIdx_sbtOffset ;  
+
+    for(unsigned i=0 ; i < num_ias_inst ; i++)
+    {
+        const qat4& q = ias_inst[i] ;   
+        int ins_idx,  gasIdx, sensor_identifier, sensor_index ; 
+        q.getIdentity(ins_idx, gasIdx, sensor_identifier, sensor_index );
+        unsigned instanceId = q.get_IAS_OptixInstance_instanceId() ; 
+
+        bool instanceId_is_allowed = instanceId < properties->limitMaxInstanceId ; 
+        LOG_IF(fatal, !instanceId_is_allowed)
+            << " instanceId " << instanceId 
+            << " sbt->properties->limitMaxInstanceId " << properties->limitMaxInstanceId
+            << " instanceId_is_allowed " << ( instanceId_is_allowed ? "YES" : "NO " )
+            ; 
+        assert( instanceId_is_allowed  ) ; 
+
+        OptixTraversableHandle handle = getGASHandle(gasIdx); 
+
+        bool found = gasIdx_sbtOffset.count(gasIdx) == 1 ; 
+        unsigned sbtOffset = found ? gasIdx_sbtOffset.at(gasIdx) : getOffset(gasIdx, prim_idx ) ;
+        if(!found) 
+        {
+            gasIdx_sbtOffset[gasIdx] = sbtOffset ; 
+            LOG(LEVEL)
+                << " i " << std::setw(7) << i 
+                << " gasIdx " << std::setw(3) << gasIdx 
+                << " sbtOffset " << std::setw(6) << sbtOffset 
+                << " gasIdx_sbtOffset.size " << std::setw(3) << gasIdx_sbtOffset.size()
+                << " instanceId " << instanceId
+                ;
+        }
+        OptixInstance instance = {} ; 
+        q.copy_columns_3x4( instance.transform ); 
+        instance.instanceId = instanceId ;  
+        instance.sbtOffset = sbtOffset ;            
+        instance.visibilityMask = 255;
+        instance.flags = flags ;
+        instance.traversableHandle = handle ; 
+    
+        instances.push_back(instance); 
+    }
+    LOG(LEVEL) << "] instances.size " << instances.size() ; 
+}
+
+NP* SBT::serializeInstances() const 
+{
+    return NPX::ArrayFromVec<unsigned, OptixInstance>(instances) ; 
+}
+
+
+/**
+SBT::descIAS (actually descINST would be more appropriate)
+------------------------------------------------------------
+
+1. traverse over *inst* collecting *ins_idx* for each gas into a map keyed on gas_idx *ins_idx_per_gas*
+2. emit description of that map 
+
+**/
+
 
 std::string SBT::descIAS(const std::vector<qat4>& inst ) const 
 {
@@ -484,7 +541,6 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
         int ins_idx,  gas_idx, sensor_identifier, sensor_index ;
         q.getIdentity(ins_idx,  gas_idx, sensor_identifier, sensor_index );
 
-        // collect ins_idx for each gas_idx 
         ins_idx_per_gas[gas_idx].push_back(ins_idx); 
 
         if(sbt_dump_ias) ss 
@@ -528,29 +584,6 @@ std::string SBT::descIAS(const std::vector<qat4>& inst ) const
 
 
 
-/**
-SBT::createIAS
-----------------
-
-This is taking 0.43s for 48477 inst from JUNO full geometry. 
-
-**/
-
-void SBT::createIAS(const std::vector<qat4>& inst )
-{
-    LOG(LEVEL) << "[ inst.size " << inst.size() ; 
-
-#ifdef WITH_SOPRIX_ACCEL
-
-#else
-    IAS ias = {} ;  
-    IAS_Builder::Build(ias, inst, this );
-    vias.push_back(ias);  
-#endif
-
-    LOG(LEVEL) << "] inst.size " << inst.size() ; 
-}
-
 
 
 
@@ -587,19 +620,17 @@ NB layer_idx is local to the solid.
 
 **/
 
-unsigned SBT::getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
+int SBT::getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
 {
-    unsigned offset_sbt = _getOffset(solid_idx_, layer_idx_ ); 
+    int offset_sbt = _getOffset(solid_idx_, layer_idx_ ); 
  
-    bool dump = false ; 
-    if(dump) std::cout 
-        << "SBT::getOffset"
-        << " solid_idx_ " << solid_idx_
-        << " layer_idx_ " << layer_idx_
+    LOG(LEVEL) 
+        << " solid_idx_ " << solid_idx_ 
+        << " layer_idx_ " << layer_idx_ 
         << " offset_sbt " << offset_sbt 
-        << std::endl
         ;
 
+    assert( offset_sbt > -1 ); 
     return offset_sbt ; 
 }
 
@@ -629,15 +660,16 @@ for subsequent lookup.
 So that 0.42s can be made to go to zero by doing this once. 
 
 **/
-unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
+int SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const 
 {
-    unsigned offset_sbt = 0 ; 
+    int offset_sbt = 0 ; 
 
 #ifdef WITH_SOPTIX_ACCEL
     typedef std::map<unsigned, SOPTIX_Accel*>::const_iterator IT ; 
 #else
     typedef std::map<unsigned, GAS>::const_iterator IT ; 
 #endif
+
 
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
@@ -649,7 +681,8 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 #endif
 
         unsigned num_bi = gas->bis.size(); 
-        assert(num_bi == 1); // not 1 with tri ?  
+        LOG(LEVEL) << " gas_idx " << gas_idx << " num_bi " << num_bi ; 
+        //assert(num_bi == 1); // not always 1 with tri SOPTIX_MeshGroup ? 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         {
@@ -657,11 +690,18 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
 #ifdef WITH_SOPTIX_ACCEL
             const SOPTIX_BuildInput* bi = gas->bis[j] ; 
             unsigned num_sbt = bi->numSbtRecords() ; 
+
 #else
             const BI& bi = gas->bis[j] ; 
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_sbt = buildInputCPA.numSbtRecords ;  // <-- corresponding to bbox of the GAS
 #endif
+            LOG(LEVEL) 
+                 << " gas_idx " << gas_idx 
+                 << " num_bi " << num_bi
+                 << " j " << j 
+                 << " num_sbt " << num_sbt    
+                 ; 
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
@@ -672,9 +712,15 @@ unsigned SBT::_getOffset(unsigned solid_idx_ , unsigned layer_idx_ ) const
             }
         }         
     }
-    LOG(error) << "did not find targetted shape " ; 
-    assert(0); 
-    return offset_sbt ;  
+    LOG(error) 
+        << "did not find targetted shape " 
+        << " vgas.size " << vgas.size() 
+        << " solid_idx_ " << solid_idx_ 
+        << " layer_idx_ " << layer_idx_ 
+        << " offset_sbt " << offset_sbt
+        ; 
+      
+    return -1 ;  
 }
 
 /**
@@ -803,24 +849,29 @@ std::string SBT::descGAS() const
 SBT::createHitgroup
 ---------------------
 
+Analytic case
+~~~~~~~~~~~~~~
+
 The hitgroup array has records for all active Prims of all active Solid.
 The records hold (numNode, nodeOffset) of all those active Prim.  
 
-
-Note:
-
-1. all HitGroup SBT records have the same hitgroup_pg, different shapes 
-   are distinguished by program data not program code 
-
+For analytic geom all HitGroup SBT records have the same hitgroup_pg, 
+different shapes are distinguished by program data not program code 
 
 Prim Selection
 ~~~~~~~~~~~~~~~~
 
 Thoughts on how to implement Prim selection with CSGPrim::MakeSpec
 
-
 Q: is there a bi for each node ?
 A: NO, roughly speaking the bi hold the bbox references for all CSGPrim of the solid(=GAS) 
+
+How to do this when each solid can be tri/ana ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Q: Still one hitgroup_pg (PIP.cc) ?
+
+
 
 **/
 
@@ -861,7 +912,7 @@ void SBT::createHitgroup()
         const GAS* gas = &(it->second) ;   
 #endif
         unsigned num_bi = gas->bis.size(); 
-        assert( num_bi == 1 ); 
+        //assert( num_bi == 1 );  not so with triangulated SMeshGroup 
          
         const CSGSolid* so = foundry->getSolid(gas_idx) ;
         int numPrim = so->numPrim ; 
@@ -879,7 +930,7 @@ void SBT::createHitgroup()
             const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
             unsigned num_sbt = buildInputCPA.numSbtRecords ; 
 #endif
-            assert( num_sbt == unsigned(numPrim) ) ; // HMM: should be so even with some using tri 
+            assert( num_sbt == unsigned(numPrim) ) ; // NOPE, not so with some tri 
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
@@ -965,4 +1016,8 @@ void SBT::checkHitgroup()
         << " num_prim " << num_prim
         ; 
 }
+
+
+
+
 

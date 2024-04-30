@@ -281,3 +281,15 @@ extern "C" __global__ void __closesthit__ch()
     prd->set_lposcost(lposcost); 
 }
 
+/**
+__intersection__is
+====================
+
+With triangles there is no role for IS 
+
+**/
+extern "C" __global__ void __intersection__is()
+{
+}
+
+

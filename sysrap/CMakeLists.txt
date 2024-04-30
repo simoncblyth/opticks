@@ -428,6 +428,8 @@ set(HEADERS
     SGLFW_CUDA.h
 
     SCUDA_Mesh.h 
+    SCU_BufferView.h 
+    SCUDA_MeshGroup.h 
     SCSGPrimSpec.h
 
     scuda.h

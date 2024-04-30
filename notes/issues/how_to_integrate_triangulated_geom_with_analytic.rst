@@ -1,6 +1,51 @@
 how_to_integrate_triangulated_geom_with_analytic
 ==================================================
 
+Progress Overview
+-------------------
+
+1. DONE: unified SOPTIX_BuildInput.h base
+2. DONE: use that in CSGOptix/SBT WITH_SOPTIX_ACCEL
+3. DONE: found empty SScene in current geom, so kludged with SScene::Load 
+
+4. trying all triangulated with CSGOptiX/SBT at stage of needing to 
+   arrange SBT/hitgroup to make the ana/tri branch  
+
+   * need type enum in hitgroup data that branches in the ptx
+   * checking SDK examples, SDK/cuda/LocalGeometry.h:getLocalGeometry is closest  
+
+   * need to incorporate some of sysrap/SOPTIX.cu into CSGOptiX/CSGOptiX7.cu and
+     effect the switch 
+
+
+
+Cutting Edge
+---------------
+
+::
+
+    [blyth@localhost CSGOptiX]$ ./cxr_min.sh 
+                    GEOM : J23_1_0_rc3_ok0 
+                    TMIN : 0.1 
+                  LOGDIR : /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/CSGOptiXRenderInteractiveTest 
+                    BASE : /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/CSGOptiXRenderInteractiveTest 
+                    PBAS : /home/blyth/tmp/ 
+              NAMEPREFIX : cxr_min__eye_-10,0,0__zoom_0.5__tmin_0.1_ 
+            OPTICKS_HASH : FAILED_GIT_REV_PARSE 
+                 TOPLINE : ESCALE=extent EYE=-10,0,0 TMIN=0.1 MOI=sChimneyAcrylic:0:-2 ZOOM=0.5 CAM=perspective ~/opticks/CSGOptiX/cxr_min.sh  
+                 BOTLINE : Tue Apr 30 16:39:52 CST 2024 
+                     CVD :  
+    CUDA_VISIBLE_DEVICES : 1 
+    ./cxr_min.sh : run : delete prior LOG CSGOptiXRenderInteractiveTest.log
+    SScene::import called with NULL fold argument
+    2024-04-30 16:39:52.997 FATAL [157317] [main@56] CSGFoundry::Load GIVES EMPTY SCENE : TRANSITIONAL KLUDGE : TRY TO LOAD FROM SCENE_FOLD 
+    CSGOptiXRenderInteractiveTest: /home/blyth/opticks/CSGOptiX/SBT.cc:928: void SBT::createHitgroup(): Assertion `num_sbt == unsigned(numPrim)' failed.
+    ./cxr_min.sh: line 161: 157317 Aborted                 (core dumped) $bin
+    ./cxr_min.sh run error
+    [blyth@localhost CSGOptiX]$ 
+
+
+
 
 What level of ana/tri split ? CSGSolid
 ----------------------------------------

@@ -36,7 +36,6 @@ struct IAS : public AS
 {
     std::vector<glm::mat4>  trs ; 
     CUdeviceptr             d_instances ;   
-    const NP*               instances ;   // optional for debug 
 };
 
 

@@ -51,6 +51,8 @@ case $(uname) in
    Darwin) defarg=grab_open ;;
 esac
 
+[ -n "$BP" ] && defarg=dbg_info
+
 arg=${1:-$defarg}
 
 
@@ -63,6 +65,13 @@ bin=CSGOptiXRenderInteractiveTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
 source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit  
+
+
+# TRANSITIONAL KLUDGE
+
+export SCENE_FOLD=/tmp/SScene_test
+
+
 
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878

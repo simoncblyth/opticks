@@ -55,16 +55,21 @@ struct SScene
     void initFromTree_Node(SMeshGroup* mg, int ridx, const snode& node, const stree* st);
     void initFromTree_Instance (const stree* st);
 
+    const SMeshGroup* getMeshGroup(int idx) const ; 
+    const SMesh*      getMeshMerge(int idx) const ; 
+
+
     const SMesh* get_mm(int mmidx) const ;
     const float* get_mn(int mmidx) const ; 
     const float* get_mx(int mmidx) const ; 
     const float* get_ce(int mmidx) const ; 
 
+    bool is_empty() const ; 
+    std::string desc() const ;
     std::string descSize() const ;
     std::string descInstInfo() const ;
     std::string descFrame() const ;
     std::string descRange() const ;
-    std::string desc() const ;
 
     NPFold* serialize_meshmerge() const ;
     void import_meshmerge(const NPFold* _meshmerge ) ; 
@@ -83,6 +88,10 @@ struct SScene
 
     void addFrames(const char* path, const stree* st); 
     sfr getFrame(int _idx=-1) const ; 
+
+
+
+
 
 };
 
@@ -263,6 +272,18 @@ inline void SScene::initFromTree_Instance(const stree* st)
 }
 
 
+
+inline const SMeshGroup* SScene::getMeshGroup(int idx) const 
+{
+    return idx < int(meshgroup.size()) ? meshgroup[idx] : nullptr ; 
+}
+inline const SMesh*      SScene::getMeshMerge(int idx) const 
+{
+    return idx < int(meshmerge.size()) ? meshmerge[idx] : nullptr ; 
+}
+
+
+
 inline const SMesh* SScene::get_mm(int mmidx) const 
 {
     const SMesh* mm = mmidx < int(meshmerge.size()) ? meshmerge[mmidx] : nullptr ; 
@@ -285,12 +306,17 @@ inline const float* SScene::get_ce(int mmidx) const
 } 
 
 
+inline bool SScene::is_empty() const 
+{
+    return meshmerge.size() == 0 && meshgroup.size() == 0 && inst_info.size() == 0 && inst_tran.size() == 0 ; 
+} 
 
 
 inline std::string SScene::desc() const 
 {
     std::stringstream ss ; 
-    ss << "[ SScene::desc \n" ; 
+    ss << "[ SScene::desc \n" ;
+    ss << " is_empty " << ( is_empty() ? "YES" : "NO " ) << "\n" ; 
     ss << descSize() ; 
     ss << descInstInfo() ; 
     ss << descFrame() ; 

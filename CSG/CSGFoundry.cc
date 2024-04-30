@@ -387,7 +387,13 @@ CSGFoundry::getScene : Full triangulated geometry info
 **/
 SScene* CSGFoundry::getScene() const
 {
-    return sim ? sim->scene : nullptr ; 
+    return sim ? sim->get_scene() : nullptr ; 
+}
+
+void CSGFoundry::setOverrideScene(SScene* _scene)
+{
+    assert( sim); 
+    const_cast<SSim*>(sim)->set_override_scene(_scene); 
 }
 
 

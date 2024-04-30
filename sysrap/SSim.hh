@@ -77,8 +77,11 @@ private:
     void init(); 
 public:
     stree* get_tree() const ; 
+    SScene* get_scene() const ; 
+    void set_override_scene(SScene* _scene); 
     void initSceneFromTree(); 
 
+public:
     int lookup_mtline( int mtindex ) const ; 
     std::string desc_mt() const ; 
 public:

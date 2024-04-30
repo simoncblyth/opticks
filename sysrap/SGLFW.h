@@ -291,7 +291,7 @@ See oglrap/Frame::handle_event
 
 inline void SGLFW::handle_event(GLEQevent& event)
 {
-    std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl; 
+    //std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl; 
     switch(event.type)
     {
         case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ; 

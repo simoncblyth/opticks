@@ -18,7 +18,6 @@ Aim to minimize geometry specifics in here ...
 #include "GAS.h"
 #include "IAS.h"
 #include "sqat4.h"
-#include "SOPTIX_Accel.h"
 
 struct PIP ; 
 struct CSGFoundry ; 
@@ -27,6 +26,11 @@ struct Properties ;
 struct SScene ; 
 
 //#define WITH_SOPTIX_ACCEL 1 
+
+#ifdef WITH_SOPTIX_ACCEL
+struct SOPTIX_Accel ; 
+#endif
+
 
 struct SBT 
 {
@@ -49,6 +53,8 @@ struct SBT
     CUdeviceptr   d_miss ;
     CUdeviceptr   d_hitgroup ;
 
+    std::vector<OptixInstance> instances ; 
+
     OptixShaderBindingTable sbt = {};
 
 #ifdef WITH_SOPTIX_ACCEL
@@ -61,8 +67,6 @@ struct SBT
 
     SBT(const PIP* pip_ ); 
     ~SBT(); 
-
-
 
 
     void init();  
@@ -85,6 +89,10 @@ struct SBT
 
     void createIAS();
     void createIAS(unsigned ias_idx);
+
+    NP* serializeInstances() const ; 
+    void collectInstances( const std::vector<qat4>& ias_inst ) ;
+
     void createIAS(const std::vector<qat4>& inst );
     std::string descIAS(const std::vector<qat4>& inst ) const ;
     OptixTraversableHandle getIASHandle(unsigned ias_idx) const ;
@@ -100,8 +108,8 @@ struct SBT
     void dumpPrimData( const HitGroupData& data ) const ;
     void checkPrimData( HitGroupData& data, const CSGPrim* prim);
 
-    unsigned getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ; 
-    unsigned _getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ;
+    int getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ; 
+    int _getOffset(unsigned shape_idx_ , unsigned layer_idx_ ) const ;
     unsigned getTotalRec() const ;
 
 };
