@@ -217,6 +217,11 @@ optixGetRayTmax
     In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
     if no hit has been reported
 
+
+optixGetPrimitiveType
+    returns OPTIX_PRIMITIVE_TYPE_TRIANGLE or OPTIX_PRIMITIVE_TYPE_CUSTOM
+
+
 In general will need to branch between::
  
     OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES
@@ -228,6 +233,9 @@ currently just handles triangles.
 
 extern "C" __global__ void __closesthit__ch()
 {
+    //OptixPrimitiveType type = optixGetPrimitiveType(); 
+    //printf("//CH type %u \n", type );  hex(9521) = '0x2531'   OPTIX_PRIMITIVE_TYPE_TRIANGLE   
+
     const SOPTIX_HitgroupData* hit_group_data = reinterpret_cast<SOPTIX_HitgroupData*>( optixGetSbtDataPointer() );
     const SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
 

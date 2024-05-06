@@ -3,8 +3,7 @@
 SOPTIX_BuildInput_Mesh.h : create OptixBuildInput via "part" indexing into SCUDA_MeshGroup (Used from SOPTIX_MeshGroup)
 =======================================================================================================================
 
-
-Intances of this need to be kept alive whilst 
+Instances of this need to be kept alive whilst 
 using the OptixBuildInput because of the 
 vertexBuffers field that is a host pointer 
 to device arrays. Have to keep that address valid.  

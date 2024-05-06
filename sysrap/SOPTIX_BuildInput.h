@@ -66,6 +66,7 @@ inline unsigned SOPTIX_BuildInput::numSbtRecords() const
     {
         case OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES: num = buildInput.customPrimitiveArray.numSbtRecords ; break ;
         case OPTIX_BUILD_INPUT_TYPE_TRIANGLES:         num = buildInput.triangleArray.numSbtRecords        ; break ; 
+        default:                                                                                           ; break ; 
     }
     return num ; 
 }

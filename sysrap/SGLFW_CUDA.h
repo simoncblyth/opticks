@@ -36,9 +36,9 @@ inline SGLFW_CUDA::SGLFW_CUDA(SGLM& _gm)
 inline void SGLFW_CUDA::init()
 {
     output_buffer = new SCUDA_OutputBuffer<uchar4>( SCUDA_OutputBufferType::GL_INTEROP, gm.Width(), gm.Height() ) ; 
-    std::cout << output_buffer->desc() ; 
+    //std::cout << "SGLFW_CUDA::init output_buffer.desc " << output_buffer->desc() ; 
     gl_display = new SGLDisplay ; 
-    std::cout << gl_display->desc() ; 
+    //std::cout << "SGLFW_CUDA::init gl_display.desc " << gl_display->desc() ; 
 }
 
 extern void SGLFW_CUDA__fillOutputBuffer( dim3 numBlocks, dim3 threadsPerBlock, uchar4* output_buffer, int width, int height ); 
