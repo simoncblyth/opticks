@@ -13,6 +13,7 @@
 #include "SBit.hh"   // TODO: sbit.h 
 #include "SGeoConfig.hh"
 #include "SName.h"
+#include "SLabel.h"
 
 #include "SLOG.hh"
 
@@ -23,6 +24,7 @@ const char* SGeoConfig::_GEOM = ssys::getenvvar(kGEOM, nullptr );
 unsigned long long SGeoConfig::_EMM = SBit::FromEString(kEMM, "~0");  
 const char* SGeoConfig::_ELVSelection   = ssys::getenvvar(kELVSelection, nullptr ); 
 const char* SGeoConfig::_SolidSelection = ssys::getenvvar(kSolidSelection, nullptr ); 
+const char* SGeoConfig::_SolidTrimesh   = ssys::getenvvar(kSolidTrimesh, nullptr ); 
 const char* SGeoConfig::_FlightConfig   = ssys::getenvvar(kFlightConfig  , nullptr ); 
 const char* SGeoConfig::_ArglistPath    = ssys::getenvvar(kArglistPath  , nullptr ); 
 const char* SGeoConfig::_CXSkipLV       = ssys::getenvvar(kCXSkipLV  , nullptr ); 
@@ -30,12 +32,14 @@ const char* SGeoConfig::_CXSkipLV_IDXList = ssys::getenvvar(kCXSkipLV_IDXList, n
 
 void SGeoConfig::SetELVSelection(  const char* es){  _ELVSelection   = es ? strdup(es) : nullptr ; }
 void SGeoConfig::SetSolidSelection(const char* ss){  _SolidSelection = ss ? strdup(ss) : nullptr ; }
+void SGeoConfig::SetSolidTrimesh(  const char* st){  _SolidTrimesh   = st ? strdup(st) : nullptr ; }
 void SGeoConfig::SetFlightConfig(  const char* fc){  _FlightConfig   = fc ? strdup(fc) : nullptr ; }
 void SGeoConfig::SetArglistPath(   const char* ap){  _ArglistPath    = ap ? strdup(ap) : nullptr ; }
 void SGeoConfig::SetCXSkipLV(      const char* cx){  _CXSkipLV       = cx ? strdup(cx) : nullptr ; }
 
 unsigned long long SGeoConfig::EnabledMergedMesh(){  return _EMM ; } 
 const char* SGeoConfig::SolidSelection(){ return _SolidSelection ; }
+const char* SGeoConfig::SolidTrimesh(){   return _SolidTrimesh ; }
 const char* SGeoConfig::FlightConfig(){   return _FlightConfig ; }
 const char* SGeoConfig::ArglistPath(){    return _ArglistPath ; }
 const char* SGeoConfig::CXSkipLV(){       return _CXSkipLV ? _CXSkipLV : "" ; }
@@ -132,6 +136,7 @@ std::string SGeoConfig::Desc()
     ss << std::setw(25) << kEMM              << " : " << SBit::HexString(_EMM) << " 0x" << std::hex << _EMM << std::dec << std::endl ;
     ss << std::setw(25) << kELVSelection     << " : " << ( _ELVSelection   ? _ELVSelection   : "-" ) << std::endl ;    
     ss << std::setw(25) << kSolidSelection   << " : " << ( _SolidSelection ? _SolidSelection : "-" ) << std::endl ;    
+    ss << std::setw(25) << kSolidTrimesh     << " : " << ( _SolidTrimesh   ? _SolidTrimesh   : "-" ) << std::endl ;    
     ss << std::setw(25) << kFlightConfig     << " : " << ( _FlightConfig   ? _FlightConfig   : "-" ) << std::endl ;    
     ss << std::setw(25) << kArglistPath      << " : " << ( _ArglistPath    ? _ArglistPath    : "-" ) << std::endl ;    
     ss << std::setw(25) << kCXSkipLV         << " : " << CXSkipLV() << std::endl ;    
@@ -232,8 +237,8 @@ TODO: compare GPU performance with and without these virtual skips
 
 This is invoked from:
 
-1. CSG_GGeo_Convert::init prior to GGeo to CSGFoundry translation
-2. argumentless CSGFoundry::Load 
+1. [DEAD CODE LOCATION] CSG_GGeo_Convert::init prior to GGeo to CSGFoundry translation
+2. [NOT MAINLINE CODE, ONLY TESTING/VIZ] argumentless CSGFoundry::Load 
 
 The SName* id argument passes the meshnames (aka solid names)
 allowing detection of where a geometry appears to be JUNO by 

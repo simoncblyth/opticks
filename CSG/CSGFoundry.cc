@@ -36,6 +36,7 @@
 #include "scuda.h"
 #include "sqat4.h"
 #include "sframe.h"
+#include "SLabel.h"
 
 
 #include "OpticksCSG.h"
@@ -232,6 +233,34 @@ unsigned CSGFoundry::getNumSolidLabel() const
 {
     return mmlabel.size() ; 
 }
+
+
+int CSGFoundry::findSolidWithLabel(const char* q_mml) const
+{
+    return SLabel::FindIdxWithLabel(mmlabel, q_mml) ; 
+}
+
+
+/**
+CSGFoundry::isSolidTrimesh
+----------------------------
+
+Normally returns false indicating to use analytic solid setup, 
+can arrange to return true for some CSGSolid using envvar 
+with comma delimited mmlabel indicating to use approximate
+triangulated geometry for those solids::
+
+   export OPTICKS_SOLID_TRIMESH=1:sStrutBallhead,1:base_steel
+
+**/
+bool CSGFoundry::isSolidTrimesh(int gas_idx) const 
+{
+    const char* ls = SGeoConfig::SolidTrimesh() ; 
+    if(ls == nullptr) return false ;   
+    return SLabel::IsIdxLabelListed( mmlabel, gas_idx, ls, ',' ); 
+}
+
+
 
 /**
 CSGFoundry::CopyNames

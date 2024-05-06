@@ -375,6 +375,8 @@ struct CSG_API CSGFoundry : public SGeo
 
     unsigned getNumMeshName() const ; 
     unsigned getNumSolidLabel() const ; 
+    int findSolidWithLabel(const char* q_mml) const ; 
+    bool isSolidTrimesh(int gas_idx) const ;  // see SGeoConfig::SolidTrimesh 
 
     static void CopyNames(    CSGFoundry* dst, const CSGFoundry* src ); 
     static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ); 

@@ -321,6 +321,7 @@ set(HEADERS
     SBuf.hh
 
     SName.h 
+    SLabel.h 
 
     smath.h 
     sblackbody.h
