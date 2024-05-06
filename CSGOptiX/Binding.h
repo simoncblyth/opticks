@@ -17,11 +17,31 @@ struct MissData
     float r, g, b;
 };
 
-struct HitGroupData   // effectively Prim 
+
+struct CustomPrim
 {
     int numNode ;   
     int nodeOffset ; 
 };
+
+struct TriMesh
+{
+    uint3*  indice ; 
+    float3* vertex ; 
+    float3* normal ; 
+};
+
+
+struct HitGroupData   
+{
+    union
+    {
+        CustomPrim prim ; 
+        TriMesh    mesh ;    
+    };
+};
+
+
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

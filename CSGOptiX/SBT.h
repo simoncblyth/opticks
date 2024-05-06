@@ -1,10 +1,19 @@
 #pragma once
-
 /**
 SBT : OptiX 7 RG,MS,HG program data preparation 
 =================================================
 
 Aim to minimize geometry specifics in here ...
+
+
+NOT:WITH_SOPTIX_ACCEL
+    ana geometry only using GAS.h IAS.h struct 
+
+WITH_SOPTIX_ACCEL
+    ana+tri geometry capability both using SOPTIX_Accel 
+    WIP: needs GPU side ana/tri branch and supporting SBT entries
+
+    **FOR NOW : DO NOT COMMIT WITH THIS ENABLED**
 
 **/
 
@@ -15,8 +24,6 @@ Aim to minimize geometry specifics in here ...
 #include "plog/Severity.h"
 
 #include "Binding.h"
-#include "GAS.h"
-#include "IAS.h"
 #include "sqat4.h"
 
 struct PIP ; 
@@ -25,10 +32,13 @@ struct CSGPrim ;
 struct Properties ; 
 struct SScene ; 
 
-//#define WITH_SOPTIX_ACCEL 1 
+#define WITH_SOPTIX_ACCEL 1 
 
 #ifdef WITH_SOPTIX_ACCEL
 struct SOPTIX_Accel ; 
+#else
+#include "GAS.h"
+#include "IAS.h"
 #endif
 
 
@@ -84,6 +94,8 @@ struct SBT
 
     void createGeom();  
     void createHitgroup();
+    static void UploadHitGroup(OptixShaderBindingTable& sbt, CUdeviceptr& d_hitgroup, HitGroup* hitgroup, size_t tot_rec );
+
     void destroyHitgroup();
     void checkHitgroup();
 

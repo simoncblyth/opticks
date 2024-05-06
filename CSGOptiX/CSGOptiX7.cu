@@ -496,6 +496,12 @@ extern "C" __global__ void __closesthit__ch()
     unsigned iindex = optixGetInstanceIndex() ; 
     unsigned identity = optixGetInstanceId() ;  
 
+    //OptixPrimitiveType type = optixGetPrimitiveType(); 
+    // printf("//CH type %u \n", type );  // hex(9472) = '0x2500'
+    // if(type == OPTIX_PRIMITIVE_TYPE_CUSTOM)
+    // else if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE)
+
+
 #ifdef WITH_PRD
     quad2* prd = getPRD<quad2>(); 
 
@@ -536,12 +542,15 @@ always be true.
 The attributes passed into optixReportIntersection are 
 available within the CH (and AH) programs. 
 
+HMM: notice that HitGroupData::numNode is not used here, must be looking that up ?
+COULD: reduce HitGroupData to just the nodeOffset
+
 **/
 
 extern "C" __global__ void __intersection__is()
 {
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
-    int nodeOffset = hg->nodeOffset ; 
+    int nodeOffset = hg->prim.nodeOffset ; 
 
     const CSGNode* node = params.node + nodeOffset ;  // root of tree
     const float4* plan = params.plan ;  
@@ -555,7 +564,7 @@ extern "C" __global__ void __intersection__is()
     if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
     {
         const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
-        const unsigned hitKind = 0u ;     // only up to 0x7f : could use to customize how attributes interpreted
+        const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
 
 #ifdef WITH_PRD

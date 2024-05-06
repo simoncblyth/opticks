@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <iomanip>
 #include <cstring>
@@ -28,12 +27,6 @@
 #include "Params.h"
 #include "Ctx.h"
 
-#include "GAS.h"
-#include "GAS_Builder.h"
-
-#include "IAS.h"
-#include "IAS_Builder.h"
-
 #include "PIP.h"
 #include "SBT.h"
 #include "Properties.h"
@@ -47,6 +40,13 @@
 #include "SOPTIX_BuildInput_IA.h"
 #include "SOPTIX_BuildInput_Mesh.h"
 #include "SOPTIX_MeshGroup.h"
+
+#else
+#include "GAS.h"
+#include "GAS_Builder.h"
+
+#include "IAS.h"
+#include "IAS_Builder.h"
 #endif
 
 
@@ -284,16 +284,6 @@ SBT::createGAS
 3. inserts gas into vgas map using *gas_idx* key 
 
 
-Wheeling in triangulated in one go is too great a leap.
-Instead stay purely analytic and try adopting SOPTIX_Accel
-instead of GAS and IAS. 
-
-
-TODO: need to optionally tri/ana branch here 
-but first try all triangulated 
-
-
-
 **/
 
 #ifdef WITH_SOPTIX_ACCEL
@@ -302,14 +292,17 @@ void SBT::createGAS(unsigned gas_idx)
     SOPTIX_BuildInput* bi = nullptr ; 
     SOPTIX_Accel* gas = nullptr ; 
 
-    bool ana = false ; 
-    if(ana)
-    {
-        SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
-        bi = new SOPTIX_BuildInput_CPA(ps) ; 
-        gas = SOPTIX_Accel::Create(Ctx::context, bi );  
-    }
-    else
+    bool trimesh = foundry->isSolidTrimesh(gas_idx); 
+    const std::string& label = foundry->getSolidLabel(gas_idx); 
+
+    LOG(info) 
+        << " WITH_SOPTIX_ACCEL "
+        << " gas_idx " << gas_idx
+        << " trimesh " << ( trimesh ? "YES" : "NO " )
+        << " label " << label 
+        ;
+
+    if(trimesh)
     {
         const SMeshGroup* mg = scene->getMeshGroup(gas_idx) ;
         LOG_IF(fatal, mg == nullptr) 
@@ -322,6 +315,13 @@ void SBT::createGAS(unsigned gas_idx)
 
         SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create( mg ) ;
         gas = SOPTIX_Accel::Create(Ctx::context, xmg->bis );  
+    } 
+    else
+    {
+        // analytic geometry 
+        SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
+        bi = new SOPTIX_BuildInput_CPA(ps) ; 
+        gas = SOPTIX_Accel::Create(Ctx::context, bi );  
     }
     vgas[gas_idx] = gas ;  
 }
@@ -329,6 +329,10 @@ void SBT::createGAS(unsigned gas_idx)
 #else
 void SBT::createGAS(unsigned gas_idx)
 {
+    bool trimesh = foundry->isSolidTrimesh(gas_idx); 
+    LOG(fatal, trimesh == true ) << " NOT:WITH_SOPTIX_ACCEL ONLY SUPPORTS ANALYTIC GEOMETRY : INVALID SGeoConfig::Trimesh setting " ; 
+    assert( trimesh == false ); 
+
     SCSGPrimSpec ps = foundry->getPrimSpec(gas_idx); 
     GAS gas = {} ;  
     GAS_Builder::Build(gas, ps);
@@ -875,12 +879,15 @@ Q: Still one hitgroup_pg (PIP.cc) ?
 
 **/
 
+
+#ifdef WITH_SOPTIX_ACCEL
 void SBT::createHitgroup()
 {
     unsigned num_solid = foundry->getNumSolid(); 
     unsigned num_gas = vgas.size(); 
-    //assert( num_gas == num_solid );   // not when emm active : then there are less gas than solid
     unsigned tot_rec = getTotalRec();   // corresponds to the total number of enabled Prim in all enabled solids
+
+    LOG(info) << " WITH_SOPTIX_ACCEL " ; 
 
     LOG(LEVEL)
         << " num_solid " << num_solid 
@@ -891,72 +898,54 @@ void SBT::createHitgroup()
     hitgroup = new HitGroup[tot_rec] ; 
     HitGroup* hg = hitgroup ; 
 
-
     for(unsigned i=0 ; i < tot_rec ; i++)   // pack headers CPU side
          OPTIX_CHECK( optixSbtRecordPackHeader( pip->hitgroup_pg, hitgroup + i ) ); 
-    
+ 
     unsigned sbt_offset = 0 ; 
-
-#ifdef WITH_SOPTIX_ACCEL
     typedef std::map<unsigned, SOPTIX_Accel*>::const_iterator IT ; 
-#else
-    typedef std::map<unsigned, GAS>::const_iterator IT ; 
-#endif
+
     for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
     {
         unsigned gas_idx = it->first ; 
-
-#ifdef WITH_SOPTIX_ACCEL
         SOPTIX_Accel* gas = it->second ; 
-#else
-        const GAS* gas = &(it->second) ;   
-#endif
         unsigned num_bi = gas->bis.size(); 
-        //assert( num_bi == 1 );  not so with triangulated SMeshGroup 
-         
+
+
+        bool trimesh = foundry->isSolidTrimesh(gas_idx); 
+
+        if(!trimesh) assert( num_bi == 1 );  // always 1 with analytic
+        if(trimesh) assert( num_bi >= 1 );   // can be more with triangulated SMeshGroup 
+
+
         const CSGSolid* so = foundry->getSolid(gas_idx) ;
         int numPrim = so->numPrim ; 
         int primOffset = so->primOffset ; 
 
-        LOG(LEVEL) << "gas_idx " << gas_idx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
+        LOG(LEVEL) 
+            << " WITH_SOPTIX_ACCEL "  
+            << " gas_idx " << gas_idx 
+            << " trimesh " << ( trimesh ? "YES" : "NO " )
+            << " num_bi " << num_bi  
+            << " so.numPrim " << numPrim 
+            << " so.primOffset " << primOffset  
+            ; 
 
         for(unsigned j=0 ; j < num_bi ; j++)
         { 
-#ifdef WITH_SOPTIX_ACCEL
             const SOPTIX_BuildInput* bi = gas->bis[j] ; 
+            if(!trimesh) assert( bi->is_BuildInputCustomPrimitiveArray() ); 
+            if(trimesh)  assert( bi->is_BuildInputTriangleArray() ); 
+
             unsigned num_sbt = bi->numSbtRecords() ; 
-#else
-            const BI& bi = gas->bis[j] ; 
-            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
-            unsigned num_sbt = buildInputCPA.numSbtRecords ; 
-#endif
-            assert( num_sbt == unsigned(numPrim) ) ; // NOPE, not so with some tri 
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
-                unsigned localPrimIdx = k ;   
-                unsigned globalPrimIdx = primOffset + localPrimIdx ;   
+                unsigned localSbtIdx = k ;   
+
+                unsigned globalPrimIdx = primOffset + localSbtIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
-
                 setPrimData( hg->data, prim );  // copy numNode, nodeOffset from CSGPrim into hg->data
-
-                unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx ); 
-
-                /*
-                std::cout 
-                    << "SBT::createHitgroup "
-                    << " gas(i) " << i 
-                    << " bi(j) " << j
-                    << " sbt(k) " << k 
-                    << " gas_idx " << gas_idx 
-                    << " localPrimIdx " << localPrimIdx 
-                    << " globalPrimIdx " << globalPrimIdx 
-                    << " check_sbt_offset " << check_sbt_offset
-                    << " sbt_offset " << sbt_offset
-                    << std::endl 
-                    ; 
-
-                */
+                unsigned check_sbt_offset = getOffset(gas_idx, localSbtIdx ); 
 
                 bool sbt_offset_expect = check_sbt_offset == sbt_offset ; 
                 assert( sbt_offset_expect  ); 
@@ -967,7 +956,88 @@ void SBT::createHitgroup()
             }
         }
     }
+    UploadHitGroup(sbt, d_hitgroup, hitgroup, tot_rec ); 
+}
+#else
 
+/**
+SBT::createHitgroup NOT:WITH_SOPTIX_ACCEL only CustomPrimitiveArray implemented 
+----------------------------------------------------------------------------------
+
+**/
+void SBT::createHitgroup()
+{
+    unsigned num_solid = foundry->getNumSolid(); 
+    unsigned num_gas = vgas.size(); 
+    unsigned tot_rec = getTotalRec();   // corresponds to the total number of enabled Prim in all enabled solids
+
+    LOG(info) << " NOT:WITH_SOPTIX_ACCEL " ; 
+    LOG(LEVEL)
+        << " num_solid " << num_solid 
+        << " num_gas " << num_gas 
+        << " tot_rec " << tot_rec 
+        ; 
+
+    hitgroup = new HitGroup[tot_rec] ; 
+    HitGroup* hg = hitgroup ; 
+
+    for(unsigned i=0 ; i < tot_rec ; i++)   // pack headers CPU side
+         OPTIX_CHECK( optixSbtRecordPackHeader( pip->hitgroup_pg, hitgroup + i ) ); 
+    
+    unsigned sbt_offset = 0 ; 
+
+    typedef std::map<unsigned, GAS>::const_iterator IT ; 
+
+    for(IT it=vgas.begin() ; it !=vgas.end() ; it++)
+    {
+        unsigned gas_idx = it->first ;  
+        const GAS* gas = &(it->second) ;   
+        unsigned num_bi = gas->bis.size(); 
+        assert( num_bi == 1 );  // always 1 with analytic, can be more with triangulated SMeshGroup 
+       
+        bool trimesh = foundry->isSolidTrimesh(gas_idx); 
+        LOG_IF( fatal, trimesh ) << " NOT:WITH_SOPTIX_ACCEL trimesh NOT ALLOWED gas_idx " << gas_idx ; 
+        assert( !trimesh );   
+ 
+        const CSGSolid* so = foundry->getSolid(gas_idx) ;
+        int numPrim = so->numPrim ; 
+        int primOffset = so->primOffset ; 
+
+        LOG(LEVEL) << "gas_idx " << gas_idx << " so.numPrim " << numPrim << " so.primOffset " << primOffset  ; 
+
+        for(unsigned j=0 ; j < num_bi ; j++)
+        { 
+            const BI& bi = gas->bis[j] ; 
+            const OptixBuildInputCustomPrimitiveArray& buildInputCPA = bi.getBuildInputCPA() ;
+            unsigned num_sbt = buildInputCPA.numSbtRecords ; 
+            assert( num_sbt == unsigned(numPrim) ) ;
+
+            for( unsigned k=0 ; k < num_sbt ; k++)
+            { 
+                unsigned localSbtIdx = k ;   
+
+                unsigned globalPrimIdx = primOffset + localSbtIdx ;   
+                const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
+                setPrimData( hg->data, prim );  // copy numNode, nodeOffset from CSGPrim into hg->data
+                unsigned check_sbt_offset = getOffset(gas_idx, localSbtIdx ); 
+
+                bool sbt_offset_expect = check_sbt_offset == sbt_offset ; 
+                assert( sbt_offset_expect  ); 
+                if(!sbt_offset_expect) std::raise(SIGINT); 
+
+                hg++ ; 
+                sbt_offset++ ; 
+            }
+        }
+    }
+    UploadHitGroup(sbt, d_hitgroup, hitgroup, tot_rec ); 
+}
+#endif
+
+
+
+void SBT::UploadHitGroup(OptixShaderBindingTable& sbt, CUdeviceptr& d_hitgroup, HitGroup* hitgroup, size_t tot_rec )
+{
     CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_hitgroup ), sizeof(HitGroup)*tot_rec ));
     CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_hitgroup ), hitgroup, sizeof(HitGroup)*tot_rec, cudaMemcpyHostToDevice ));
 
@@ -985,21 +1055,28 @@ void SBT::destroyHitgroup()
 
 void SBT::setPrimData( HitGroupData& data, const CSGPrim* prim)
 {
-    data.numNode = prim->numNode(); 
-    data.nodeOffset = prim->nodeOffset();  
+    //data.numNode = prim->numNode(); 
+    //data.nodeOffset = prim->nodeOffset();  
+
+    data.prim.numNode = prim->numNode(); 
+    data.prim.nodeOffset = prim->nodeOffset();  
 }
 
 void SBT::checkPrimData( HitGroupData& data, const CSGPrim* prim)
 {
-    assert( data.numNode == prim->numNode() ); 
-    assert( data.nodeOffset == prim->nodeOffset() );  
+    //assert( data.numNode == prim->numNode() ); 
+    //assert( data.nodeOffset == prim->nodeOffset() );  
+    assert( data.prim.numNode == prim->numNode() ); 
+    assert( data.prim.nodeOffset == prim->nodeOffset() ); 
+ 
+
 }
 void SBT::dumpPrimData( const HitGroupData& data ) const 
 {
     std::cout 
         << "SBT::dumpPrimData"
-        << " data.numNode " << data.numNode
-        << " data.nodeOffset " << data.nodeOffset
+        << " data.prim.numNode " << data.prim.numNode
+        << " data.prim.nodeOffset " << data.prim.nodeOffset
         << std::endl 
         ; 
 }
@@ -1016,8 +1093,5 @@ void SBT::checkHitgroup()
         << " num_prim " << num_prim
         ; 
 }
-
-
-
 
 

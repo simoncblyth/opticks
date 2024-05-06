@@ -494,10 +494,10 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
 } 
 
 
-const std::string& CSGFoundry::getSolidLabel(unsigned sidx) const 
+const std::string& CSGFoundry::getSolidLabel(unsigned gas_idx) const 
 {
-    assert( sidx < mmlabel.size() ); 
-    return mmlabel[sidx] ; 
+    assert( gas_idx < mmlabel.size() ); 
+    return mmlabel[gas_idx] ; 
 }
 
 void CSGFoundry::addMeshName(const char* name) 
