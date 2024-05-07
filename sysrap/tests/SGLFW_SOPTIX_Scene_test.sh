@@ -115,7 +115,7 @@ export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
 export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
 
-dump=1
+dump=0
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
 

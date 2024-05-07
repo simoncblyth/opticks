@@ -125,14 +125,22 @@ export TOPLINE=${TOPLINE:-$topline}
 export BOTLINE=${BOTLINE:-$botline}
 
 logging(){
-    export CSGFoundry=INFO 
-    export CSGOptiX=INFO
+    #export CSGFoundry=INFO 
+    #export CSGOptiX=INFO
+    export SBT=INFO
 }
 [ -n "$LOG" ] && logging 
 
 
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
+
+
+if [ -n "$TRIMESH" ]; then 
+   #trimesh=1:sStrutBallhead,1:base_steel
+   trimesh=1:sStrutBallhead
+   export OPTICKS_SOLID_TRIMESH=$trimesh
+fi
 
 
 TMP=${TMP:-/tmp/$USER/opticks}

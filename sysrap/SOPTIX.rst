@@ -14,7 +14,7 @@ Structs
 
 * SOPTIX.h : top level coordinator of triangulated raytrace render
 * SOPTIX_Scene.h : holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup and OptixInstance 
-* SOPTIX_SBT.h : create sbt from pipeline and scene by uploding the prog and hitgroup records
+* SOPTIX_SBT.h : create sbt from pipeline and scene by uploading the prog and hitgroup records
 
 * SOPTIX_Context.h : OptixDeviceContext + SOPTIX_Properties  
 * SOPTIX_Properties.h : optixDeviceContextGetProperty results

@@ -118,7 +118,7 @@ TODO: check this labelling
 Need nested loop like CSGOptiX/SBT.cc SBT::createHitgroup::
  
      GAS 
-        BuildInput       (actually 1:1 with GAS) 
+        BuildInput       (actually 1:1 with GAS for analytic) 
            sub-SMesh 
 
 So need access to scene data to form the SBT 
@@ -131,21 +131,32 @@ inline void SOPTIX_SBT::initHitgroup()
 {
     std::cout << "SOPTIX_SBT::initHitgroup " << descPartBI() << std::endl ; 
 
-    size_t num_mg = scn.meshgroup.size();  
+    size_t num_mg = scn.meshgroup.size();  // SOPTIX_Scene  
     for(size_t i=0 ; i < num_mg ; i++)
     { 
         SOPTIX_MeshGroup* xmg = scn.meshgroup[i] ; 
         size_t num_bi = xmg->num_buildInputs()  ; 
-#ifdef OLD_SPLIT_APPROACH
-        const SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
-#else
         const SCUDA_MeshGroup* cmg = xmg->cmg ; 
-#endif
         size_t num_part = cmg->num_part()  ; 
         assert( num_part == num_bi ); 
+        size_t edge = 20 ; 
 
         for(size_t j=0 ; j < num_bi ; j++)
         {   
+            const SOPTIX_BuildInput* bi = xmg->bis[j] ; 
+            assert( bi->is_BuildInputTriangleArray() ); 
+            unsigned numSbtRecords = bi->numSbtRecords();  
+            if( j < edge || j > (num_bi - edge) ) std::cout 
+                << "SOPTIX_SBT::initHitgroup"
+                << " i " << i 
+                << " num_mg " << num_mg 
+                << " j " << j
+                << " num_bi " << num_bi 
+                << " numSbtRecords " << numSbtRecords
+                << "\n" 
+                ; 
+            assert( numSbtRecords == 1 ); 
+
             SOPTIX_HitgroupRecord hg_sbt;
             OPTIX_CHECK( optixSbtRecordPackHeader( pip.hitgroup_pg, &hg_sbt ) );
             SOPTIX_HitgroupData& data = hg_sbt.data ; 
@@ -200,11 +211,7 @@ inline std::string SOPTIX_SBT::descPartBI() const
     { 
         SOPTIX_MeshGroup* xmg = scn.meshgroup[i] ; 
         size_t num_bi = xmg->num_buildInputs()  ; 
-#ifdef OLD_SPLIT_APPROACH
-        const SCUDA_MeshGroup* cmg = scn.cuda_meshgroup[i] ; 
-#else
         const SCUDA_MeshGroup* cmg = xmg->cmg ; 
-#endif
         size_t num_part = cmg->num_part()  ; 
         assert( num_part == num_bi ); 
 

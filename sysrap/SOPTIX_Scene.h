@@ -5,6 +5,10 @@ SOPTIX_Scene.h : top level, holds vectors of SCUDA_MeshGroup SOPTIX_MeshGroup an
 
 HMM: maybe SOPTIX_Geom.h so can rename SOPTIX.h to SOPTIX_Scene.h for parallel with SGLFW_Scene.h ?
 
+
+HMM: in tri/ana integrated running this is probably not needed as most the geometry will
+be analytic 
+
 **/
 
 #include <bitset>

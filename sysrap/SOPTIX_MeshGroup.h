@@ -84,8 +84,8 @@ inline void SOPTIX_MeshGroup::init()
 
 
 /**
-SOPTIX_MeshGroup::Create
--------------------------
+SOPTIX_MeshGroup::Create : More vertical API
+----------------------------------------------
 
 This one-step API from CPU side SMeshGroup (from SScene) to GPU side SOPTIX_MeshGroup
 is to facilitate tri/ana integration. 
