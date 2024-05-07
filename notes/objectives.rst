@@ -62,6 +62,24 @@ New development for deployment
   * unlike OptiX < 7, does not come for free  
 
 
+Visualization : revival of old opticks features into new opticks
+------------------------------------------------------------------------
+
+* compositing of raytrace geometry and OpenGL event representations 
+* animated OpenGL photon propagation visualization 
+* animated interpolation between bookmarked viewpoints 
+* ImGUI OpenGL interface, GPU side menu system eg to control view params, photon selection, viewpoint "bookmarks"
+* improved interactive navigation around geometry (eg WASDQE+mouse) 
+* networked control over UDP, for commandline control of OpenGL application
+
+Server/Client Opticks  
+-----------------------
+
+* requires use of boost asio (asynchronous IO) or similar + message queue (eg ZeroMQ) 
+* server picks up gensteps and responds with hits
+* needs consistent geometry check, eg with geometry digest in genstep metadata
+
+
 New CSG development : test alternative CSG intersect alg
 ----------------------------------------------------------
 
