@@ -30,12 +30,6 @@ optical photons to the GPU. However Opticks is cutting edge
 software that needs optimization and associated development
 in order to fulfil its promise. 
   
-Expected Goals
----------------
-
-
-
-
 
 Geometry : complete missing features 
 ---------------------------------------
@@ -44,12 +38,61 @@ Geometry : complete missing features
 * deep CSG tree solids for support stick solids (2024 Apr)
 * investigate Chimney geometry issue (2024 Apr) 
 
+Geometry Issues
+------------------
+
+* Updated WaterPool geometry uses complex CSG breaking Opticks geometry translation
+
+
 New development for optimization option comparison 
 ----------------------------------------------------
 
-* triangulation for more than just Guide Tube torus ? 
-* alt GAS (1 multi-Prim solid -> 1 GAS) 
-* sibling-instancing for sticks : inst joining or rationalize source geom 
+* triangulation for more than just JUNO Guide Tube torus ? 
+* sibling-instancing for JUNO stick geometry
+
+  * cleverer sibling-instancing or make Geant4 stick geometry more heirachical 
+
+
+New development for deployment
+--------------------------------
+
+* event splitting/joining implementation
+* multi-GPU support : how much effort ? how much benefit ? 
+
+  * unlike OptiX < 7, does not come for free  
+
+
+New CSG development : test alternative CSG intersect alg
+----------------------------------------------------------
+
+Perhaps changing CSG alg can avoid:
+
+* poor performance with deep trees (complex solids)
+* non-compatibility with tree balancing
+
+Perhaps changing CSG alg can enable:
+
+* n-ary trees, not just binary 
+
+Poor performance with deep trees is 
+due to the reliance on complete binary tree serialization
+which enables simple postorder tree navigation by 
+bit twiddling. 
+
+Test alternative ways to represent CSG trees, eg:
+
+1. index offsets, num_child  
+
+
+New CSG development : change alg for robustness
+---------------------------------------------------
+
+* more volume-centric CSG, SDF based ?  
+* alt to ray tracing : SDF based "sphere-tracing" 
+
+
+
+
 
 
 New development : find/develop CUDA torus intersect alg
@@ -80,25 +123,6 @@ Possible sources:
 
 
 
-New development for deployment
---------------------------------
-
-* event splitting/joining implementation
-* multi-GPU support : how much effort ? how much benefit ? 
-
-  * unlike OptiX < 7, does not come for free  
-
-New CSG development for robustness, performance
------------------------------------------------
-
-* more volume-centric CSG, SDF based ?  
-* CSG intersect alg, perhaps changing alg can avoid:
-
-  * poor performance with deep trees 
-  * not compatible with tree balancing
-
-* eg: instead of bit twiddle navigating complete binary tree => try postorder next node offsets
-* alt to ray tracing : SDF based "sphere-tracing" 
 
 Optimization (workstation level)
 -------------------------------------
