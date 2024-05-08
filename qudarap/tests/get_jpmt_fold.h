@@ -8,7 +8,7 @@ Dependency on "PMTSim/JPMT.h" which is actually ~/j/Layr/JPMT.h
 
 The ~/j/PMTSim/CMakeLists.txt "virtual" package installs 
 ~/j/Layr/JPMT.h into PMTSim install dirs that are used by 
-this test within a PMTSim_FOUND block in its CMakeLists.txt
+this test within a PMTSim_standalone_FOUND block in its CMakeLists.txt
 
 Moving from JPMT from text props to SSim/jpmt NPFold based SPMT.h 
 ----------------------------------------------------------------------

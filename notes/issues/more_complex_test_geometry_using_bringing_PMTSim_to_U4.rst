@@ -146,7 +146,7 @@ x4 : used PMTSim as source of geometry for G4 intersect tests
 
 x4/CMakeLists.txt::
 
-    222 if(PMTSim_FOUND)
+    222 if(PMTSim_standalone_FOUND)
     223     target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
     224     target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
     225 endif()
