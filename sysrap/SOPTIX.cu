@@ -71,7 +71,7 @@ static __forceinline__ __device__ void trace(
     const unsigned SBTstride = 1u ; 
     const unsigned missSBTIndex = 0u ; 
     uint32_t p0, p1 ; 
-    packPointer( prd, p0, p1 ); 
+    packPointer( prd, p0, p1 );  // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload  
     optixTrace(
             handle,
             ray_origin,
@@ -182,7 +182,7 @@ extern "C" __global__ void __miss__ms()
 
     // printf("//__miss__ms ms.bg_color (%7.3f %7.3f %7.3f) \n", ms->bg_color.x, ms->bg_color.x, ms->bg_color.z ); 
   
-    quad2* prd = getPRD<quad2>(); 
+    quad2* prd = SOPTIX_getPRD<quad2>(); 
 
     prd->q0.f.x = ms->bg_color.x ;  // HMM: thats setting the normal, so it will be diddled  
     prd->q0.f.y = ms->bg_color.y ; 
@@ -276,7 +276,7 @@ extern "C" __global__ void __closesthit__ch()
 
     float lposcost = normalize_z(P); // scuda.h 
 
-    quad2* prd = getPRD<quad2>(); 
+    quad2* prd = SOPTIX_getPRD<quad2>(); 
 
     prd->q0.f.x = N.x ;  
     prd->q0.f.y = N.y ;  
@@ -287,6 +287,7 @@ extern "C" __global__ void __closesthit__ch()
     prd->set_iindex(   iindex ) ;
     prd->set_boundary(boundary) ; 
     prd->set_lposcost(lposcost); 
+
 }
 
 /**

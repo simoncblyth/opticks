@@ -12,7 +12,7 @@ Using unpackPointer from "scuda_pointer.h" via SOPTIX.cu
 **/
 
 
-template<typename T> static __forceinline__ __device__ T *getPRD()
+template<typename T> static __forceinline__ __device__ T * SOPTIX_getPRD()
 {
     const uint32_t u0 = optixGetPayload_0();
     const uint32_t u1 = optixGetPayload_1();

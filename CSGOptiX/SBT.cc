@@ -686,6 +686,8 @@ int SBT::_getOffset(unsigned q_gas_idx , unsigned q_layer_idx ) const
         unsigned gas_idx = it->first ; 
         bool trimesh = foundry->isSolidTrimesh(gas_idx); 
         const std::string& label = foundry->getSolidLabel(gas_idx); 
+        const CSGSolid* so = foundry->getSolid(gas_idx) ;
+        int numPrim = so->numPrim ; 
 
 #ifdef WITH_SOPTIX_ACCEL
         SOPTIX_Accel* gas = it->second ; 
@@ -693,7 +695,7 @@ int SBT::_getOffset(unsigned q_gas_idx , unsigned q_layer_idx ) const
         const GAS* gas = &(it->second) ;   
 #endif
 
-        unsigned num_bi = gas->bis.size(); 
+        int num_bi = gas->bis.size(); 
         LOG(debug) 
             << " gas_idx " << gas_idx 
             << " num_bi " << num_bi 
@@ -702,15 +704,17 @@ int SBT::_getOffset(unsigned q_gas_idx , unsigned q_layer_idx ) const
             ;
 
         if(!trimesh) assert(num_bi == 1); 
-        if(trimesh)  assert(num_bi >= 1); 
+        if(trimesh)  assert(num_bi == numPrim ); 
 
 
-        for(unsigned j=0 ; j < num_bi ; j++)
+        for(int j=0 ; j < num_bi ; j++)
         {
 
 #ifdef WITH_SOPTIX_ACCEL
             const SOPTIX_BuildInput* bi = gas->bis[j] ; 
-            unsigned num_sbt = bi->numSbtRecords() ; 
+            int num_sbt = bi->numSbtRecords() ; 
+            if(!trimesh) assert( bi->is_BuildInputCustomPrimitiveArray() && num_sbt == numPrim ); 
+            if(trimesh)  assert( bi->is_BuildInputTriangleArray() && num_sbt == 1 ); 
 #else
             assert( trimesh == false ); 
             const BI& bi = gas->bis[j] ; 
@@ -724,11 +728,10 @@ int SBT::_getOffset(unsigned q_gas_idx , unsigned q_layer_idx ) const
                  << " num_sbt " << num_sbt    
                  ; 
 
-            for( unsigned k=0 ; k < num_sbt ; k++)
+            for( int k=0 ; k < num_sbt ; k++)
             { 
-                //unsigned layer_idx = is_1NN ? j : k ;  
-                unsigned layer_idx = k ;  
-                if( q_gas_idx == gas_idx && q_layer_idx == layer_idx ) return offset_sbt ;
+                unsigned localPrimIdx = trimesh ? j : k ;   
+                if( q_gas_idx == gas_idx && q_layer_idx == localPrimIdx ) return offset_sbt ;
                 offset_sbt += 1 ; 
             }
         }         
@@ -1085,12 +1088,12 @@ void SBT::createHitgroup()
 
             for( unsigned k=0 ; k < num_sbt ; k++)
             { 
-                unsigned localSbtIdx = k ;   
+                unsigned localPrimIdx = k ;   
 
-                unsigned globalPrimIdx = primOffset + localSbtIdx ;   
+                unsigned globalPrimIdx = primOffset + localPrimIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx ); 
                 setPrimData( hg->data.prim, prim );  // copy numNode, nodeOffset from CSGPrim into hg->data
-                unsigned check_sbt_offset = getOffset(gas_idx, localSbtIdx ); 
+                unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx ); 
 
                 bool sbt_offset_expect = check_sbt_offset == sbt_offset ; 
                 assert( sbt_offset_expect  ); 

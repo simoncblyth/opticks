@@ -68,9 +68,7 @@ source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to set
 
 
 # TRANSITIONAL KLUDGE
-
 export SCENE_FOLD=/tmp/SScene_test
-
 
 
 #eye=1000,1000,1000
@@ -137,8 +135,17 @@ export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 
 if [ -n "$TRIMESH" ]; then 
-   #trimesh=1:sStrutBallhead,1:base_steel
-   trimesh=1:sStrutBallhead
+
+   #trimesh=2923:sWorld
+   #trimesh=5:PMT_3inch_pmt_solid
+   #trimesh=9:NNVTMCPPMTsMask_virtual
+   #trimesh=12:HamamatsuR12860sMask_virtual
+   #trimesh=6:mask_PMT_20inch_vetosMask_virtual
+   #trimesh=1:sStrutBallhead
+   #trimesh=1:base_steel
+   trimesh=1:uni_acrylic1
+   #trimesh=130:sPanel
+
    export OPTICKS_SOLID_TRIMESH=$trimesh
 fi
 

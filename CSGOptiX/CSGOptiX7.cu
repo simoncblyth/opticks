@@ -112,7 +112,7 @@ static __forceinline__ __device__ void trace(
     const unsigned missSBTIndex = 0u ; 
 #ifdef WITH_PRD
     uint32_t p0, p1 ; 
-    packPointer( prd, p0, p1 ); 
+    packPointer( prd, p0, p1 ); // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload 
     optixTrace(
             handle,
             ray_origin,
@@ -445,7 +445,7 @@ extern "C" __global__ void __miss__ms()
     const float lposcost = 0.f ; 
   
 #ifdef WITH_PRD
-    quad2* prd = getPRD<quad2>(); 
+    quad2* prd = SOPTIX_getPRD<quad2>(); 
 
     prd->q0.f.x = ms->r ;   
     prd->q0.f.y = ms->g ; 
@@ -489,42 +489,105 @@ optixGetRayTmax
     In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
     if no hit has been reported
 
+
+
+ana:CH
+   intersect IS program populates most of the prd per-ray-data struct
+   including the trace distance and local normal at intersect 
+   this CH program just adds instance info and transforms the normal 
+   from object to world space 
+
+tri:CH
+   builtin triangles have no user defined intersect program, so this tri:CH 
+   program must populate everything that the ana:IS and ana:CH does  
+
 **/
 
 extern "C" __global__ void __closesthit__ch()
 {
     unsigned iindex = optixGetInstanceIndex() ; 
     unsigned identity = optixGetInstanceId() ;  
+    OptixPrimitiveType type = optixGetPrimitiveType(); 
 
-    //OptixPrimitiveType type = optixGetPrimitiveType(); 
-    // printf("//CH type %u \n", type );  // hex(9472) = '0x2500'
-    // if(type == OPTIX_PRIMITIVE_TYPE_CUSTOM)
-    // else if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE)
+    if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE)
+    {
+        const HitGroupData* hg = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
+        const TriMesh& mesh = hg->mesh ; 
 
+        const unsigned prim_idx = optixGetPrimitiveIndex();
+        const float2   barys    = optixGetTriangleBarycentrics();
+
+        uint3 tri = mesh.indice[ prim_idx ];
+        const float3 P0 = mesh.vertex[ tri.x ];
+        const float3 P1 = mesh.vertex[ tri.y ];
+        const float3 P2 = mesh.vertex[ tri.z ];
+
+        const float3 N0 = mesh.normal[ tri.x ];
+        const float3 N1 = mesh.normal[ tri.y ];
+        const float3 N2 = mesh.normal[ tri.z ];
+
+        const float3 P = ( 1.0f-barys.x-barys.y)*P0 + barys.x*P1 + barys.y*P2;
+        const float3 Ng = ( 1.0f-barys.x-barys.y)*N0 + barys.x*N1 + barys.y*N2; // guesss
+        //const float3 Ng = cross( P1-P0, P2-P0 );
+
+        const float3 N = normalize( optixTransformNormalFromObjectToWorldSpace( Ng ) );
+        // HMM: could get normal by bary-weighting vertex normals ?
+
+        unsigned boundary = 0 ; 
+        // HMM: need to plant boundary in HitGroupData ? 
+        // cf CSGOptiX/Analytic: node->boundary();// all nodes of tree have same boundary 
+
+        float t = optixGetRayTmax() ;
+
+        // cannot get Object frame ray_origin/direction in CH (only IS,AH)
+        //const float3 ray_origin = optixGetObjectRayOrigin();
+        //const float3 ray_direction = optixGetObjectRayDirection();
+        //const float3 lpos = ray_origin + t*ray_direction  ; 
+        // HMM: could use P to give the local position ?  
+
+        float lposcost = normalize_z(P); // scuda.h 
 
 #ifdef WITH_PRD
-    quad2* prd = getPRD<quad2>(); 
+        quad2* prd = SOPTIX_getPRD<quad2>(); 
 
-    prd->set_identity( identity ) ;
-    prd->set_iindex(   iindex ) ;
-    float3* normal = prd->normal(); 
-    *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
+        prd->q0.f.x = N.x ;  
+        prd->q0.f.y = N.y ;  
+        prd->q0.f.z = N.z ;  
+        prd->q0.f.w = t ;  
 
+        prd->set_identity( identity ) ;
+        prd->set_iindex(   iindex ) ;
+        prd->set_boundary(boundary) ; 
+        prd->set_lposcost(lposcost); 
 #else
-    const float3 local_normal =    // geometry object frame normal at intersection point 
-        make_float3(
-                uint_as_float( optixGetAttribute_0() ),
-                uint_as_float( optixGetAttribute_1() ),
-                uint_as_float( optixGetAttribute_2() )
-                );
-
-    const float distance = uint_as_float(  optixGetAttribute_3() ) ;  
-    unsigned boundary = optixGetAttribute_4() ; 
-    const float lposcost = uint_as_float( optixGetAttribute_5() ) ; 
-    float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
-
-    setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost, iindex );  // communicate from ch->rg
+        setPayload( N.x, N.y, N.z, t, identity, boundary, lposcost, iindex );  // communicate from ch->rg
 #endif
+    }
+    else if(type == OPTIX_PRIMITIVE_TYPE_CUSTOM)
+    {
+#ifdef WITH_PRD
+        quad2* prd = SOPTIX_getPRD<quad2>(); 
+
+        prd->set_identity( identity ) ;
+        prd->set_iindex(   iindex ) ;
+        float3* normal = prd->normal(); 
+        *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
+#else
+        const float3 local_normal =    // geometry object frame normal at intersection point 
+            make_float3(
+                    uint_as_float( optixGetAttribute_0() ),
+                    uint_as_float( optixGetAttribute_1() ),
+                    uint_as_float( optixGetAttribute_2() )
+                    );
+
+        const float distance = uint_as_float(  optixGetAttribute_3() ) ;  
+        unsigned boundary = optixGetAttribute_4() ; 
+        const float lposcost = uint_as_float( optixGetAttribute_5() ) ; 
+        float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
+
+        setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost, iindex );  // communicate from ch->rg
+#endif
+    }
 }
 
 /**
@@ -570,7 +633,7 @@ extern "C" __global__ void __intersection__is()
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
-            quad2* prd = getPRD<quad2>(); 
+            quad2* prd = SOPTIX_getPRD<quad2>(); // access prd addr from RG program  
             prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one 
             prd->set_boundary(boundary) ; 
             prd->set_lposcost(lposcost); 
