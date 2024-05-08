@@ -64,11 +64,16 @@ if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
+if (( $(g4-major-version-number) < 11 )); then
+	cc_std="c++11"
+else
+	cc_std="c++17"
+fi
 if [ "${arg/build}" != "$arg" ]; then
     gcc \
          $name.cc \
          -I.. \
-         -g -std=c++11 -lstdc++ \
+         -g -std=$cc_std -lstdc++ \
          -I$HOME/opticks/sysrap \
          -I$(clhep-prefix)/include \
          -I$(g4-prefix)/include/Geant4  \
@@ -82,7 +87,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -I$HOME/j/PMTSim \
          -L$OPTICKS_PREFIX/lib \
          -L$OPTICKS_PREFIX/lib64 \
-         -lPMTSim \
+         -lPMTSim_standalone \
          -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
