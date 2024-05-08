@@ -22,27 +22,19 @@ Progress Overview
 Cutting Edge
 ---------------
 
-::
+* tri+ana WITH_SOPTIX_ACCEL now runs, but with TRIMESH configured get black render where triangles should be::
 
-    [blyth@localhost CSGOptiX]$ ./cxr_min.sh 
-                    GEOM : J23_1_0_rc3_ok0 
-                    TMIN : 0.1 
-                  LOGDIR : /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/CSGOptiXRenderInteractiveTest 
-                    BASE : /home/blyth/tmp/GEOM/J23_1_0_rc3_ok0/CSGOptiXRenderInteractiveTest 
-                    PBAS : /home/blyth/tmp/ 
-              NAMEPREFIX : cxr_min__eye_-10,0,0__zoom_0.5__tmin_0.1_ 
-            OPTICKS_HASH : FAILED_GIT_REV_PARSE 
-                 TOPLINE : ESCALE=extent EYE=-10,0,0 TMIN=0.1 MOI=sChimneyAcrylic:0:-2 ZOOM=0.5 CAM=perspective ~/opticks/CSGOptiX/cxr_min.sh  
-                 BOTLINE : Tue Apr 30 16:39:52 CST 2024 
-                     CVD :  
-    CUDA_VISIBLE_DEVICES : 1 
-    ./cxr_min.sh : run : delete prior LOG CSGOptiXRenderInteractiveTest.log
-    SScene::import called with NULL fold argument
-    2024-04-30 16:39:52.997 FATAL [157317] [main@56] CSGFoundry::Load GIVES EMPTY SCENE : TRANSITIONAL KLUDGE : TRY TO LOAD FROM SCENE_FOLD 
-    CSGOptiXRenderInteractiveTest: /home/blyth/opticks/CSGOptiX/SBT.cc:928: void SBT::createHitgroup(): Assertion `num_sbt == unsigned(numPrim)' failed.
-    ./cxr_min.sh: line 161: 157317 Aborted                 (core dumped) $bin
-    ./cxr_min.sh run error
-    [blyth@localhost CSGOptiX]$ 
+    TRIMESH=1 ~/o/CSGOptiX/cxr_min.sh
+
+
+HOW TO DEBUG
+----------------
+
+Setup small (eg single G4Orb) CSGFoundry+SScene test geometry and do some PIDX ray trace debug dumping
+comparing::
+
+    TRIMESH=1 ~/o/CSGOptiX/cxr_min.sh
+    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh 
 
 
 
