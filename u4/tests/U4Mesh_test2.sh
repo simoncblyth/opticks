@@ -82,7 +82,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -I$HOME/j/PMTSim \
          -L$OPTICKS_PREFIX/lib \
          -L$OPTICKS_PREFIX/lib64 \
-         -lPMTSim \
+         -lPMTSim_standalone \
          -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 

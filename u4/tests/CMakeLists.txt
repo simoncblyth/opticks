@@ -167,7 +167,7 @@ foreach(SRC ${PMTSim_TESTS})
     if(PMTSim_FOUND)
        target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )   
        target_compile_definitions( ${TGT} PRIVATE PMTSIM_STANDALONE )   
-       target_link_libraries(${TGT} Opticks::PMTSim)
+       target_link_libraries(${TGT} Opticks::PMTSim_standalone)
     endif()
 
     install(TARGETS ${TGT} DESTINATION lib)
