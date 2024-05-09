@@ -7,6 +7,9 @@ Usage and impl::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+
+    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+
     
 Related simpler priors::
 

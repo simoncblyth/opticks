@@ -26,7 +26,8 @@ struct CustomPrim
 
 struct TriMesh
 {
-    uint3*  indice ; 
+    unsigned boundary ;  
+    uint3*  indice ;  // indices of triangle vertices and normal 
     float3* vertex ; 
     float3* normal ; 
 };

@@ -130,7 +130,7 @@ struct SBT
     void dumpPrimData( const CustomPrim& cp ) const ;
 
 #ifdef WITH_SOPTIX_ACCEL
-    void setMeshData( TriMesh& tm, const SCUDA_MeshGroup* cmg, int j );
+    void setMeshData( TriMesh& tm, const SCUDA_MeshGroup* cmg, int j, int boundary );
 #endif
 
 };
