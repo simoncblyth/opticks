@@ -140,7 +140,7 @@ class SYSRAP_API SStr {
       static std::string Present(std::vector<T>& vec);
 
 
-      static const char* PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext=".cu" );
+      //static const char* PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext=".cu" );
 
       static void GridMinMax( const std::array<int,9>& grid, int& mn, int& mx ) ;
       static void GridMinMax( const std::array<int,9>& grid, glm::ivec3& mn, glm::ivec3& mx) ;

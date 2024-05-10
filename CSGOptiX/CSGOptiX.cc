@@ -45,6 +45,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 // sysrap
 #include "sproc.h"
 #include "ssys.h"
+#include "spath.h"
 #include "smeta.h"
 #include "scontext.h"   // GPU metadata
 #include "SProf.hh"
@@ -101,13 +102,6 @@ CSGOptiX* CSGOptiX::Get()
     return INSTANCE ; 
 }
 
-#if OPTIX_VERSION < 70000 
-const char* CSGOptiX::PTXNAME = "CSGOptiX6" ; 
-const char* CSGOptiX::GEO_PTXNAME = "CSGOptiX6geo" ; 
-#else
-const char* CSGOptiX::PTXNAME = "CSGOptiX7" ; 
-const char* CSGOptiX::GEO_PTXNAME = nullptr ; 
-#endif
 
 int CSGOptiX::Version()
 {
@@ -207,8 +201,6 @@ const char* CSGOptiX::Desc()
     std::stringstream ss ; 
     ss << "CSGOptiX::Desc" 
        << " Version " << Version() 
-       << " PTXNAME " << PTXNAME 
-       << " GEO_PTXNAME " << ( GEO_PTXNAME ? GEO_PTXNAME : "-" ) 
 #ifdef WITH_CUSTOM4
        << " WITH_CUSTOM4 " 
 #else
@@ -407,18 +399,23 @@ CSGOptiX::~CSGOptiX()
     destroy(); 
 }
 
+/**
+
+
+**/
+
+
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
     :
     sglm(new SGLM), 
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
-    prefix(ssys::getenvvar("OPTICKS_PREFIX","/usr/local/opticks")),  // needed for finding ptx
     outdir(SEventConfig::OutFold()),    
-    cmaketarget("CSGOptiX"),  
-    ptxpath(SStr::PTXPath( prefix, cmaketarget, PTXNAME )),
 #if OPTIX_VERSION < 70000 
-    geoptxpath(SStr::PTXPath(prefix, cmaketarget, GEO_PTXNAME )),
+    ptxpath(spath::Resolve("$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX6.cu.ptx")),
+    geoptxpath(spath::Resolve("OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX6geo.cu.ptx")),
 #else
+    ptxpath(spath::Resolve("$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx")),
     geoptxpath(nullptr),
 #endif
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
@@ -455,7 +452,6 @@ void CSGOptiX::init()
         << " event " << event 
         ;  
 
-    assert( prefix && "expecting PREFIX envvar pointing to writable directory" );
     assert( outdir && "expecting OUTDIR envvar " );
 
     LOG(LEVEL) << " ptxpath " << ptxpath  ; 
@@ -485,13 +481,17 @@ void CSGOptiX::initCtx()
     LOG(LEVEL) << std::endl << ctx->desc() ; 
 #endif
     LOG(LEVEL) << "]" ; 
-}
+} 
 
 void CSGOptiX::initPIP()
 {
-    LOG(LEVEL) << "[" ; 
+    LOG(LEVEL) << "["  ; 
 #if OPTIX_VERSION < 70000
 #else
+    LOG(LEVEL) 
+        << " ptxpath " << ( ptxpath ? ptxpath : "-" ) 
+        ;   
+
     pip = new PIP(ptxpath, ctx->props ) ;  
 #endif
     LOG(LEVEL) << "]" ; 

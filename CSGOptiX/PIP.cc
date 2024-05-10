@@ -241,6 +241,16 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     std::string ptx ; 
     bool ptx_ok = spath::Read(ptx, ptx_path ); 
 
+    LOG_IF(fatal, !ptx_ok)
+        << std::endl 
+        << " ptx_path " << ptx_path 
+        << std::endl 
+        << " ptx.size " << ptx.size() 
+        << std::endl 
+        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " ) 
+        << std::endl 
+        ; 
+
     LOG(LEVEL)
         << std::endl 
         << " ptx_path " << ptx_path 

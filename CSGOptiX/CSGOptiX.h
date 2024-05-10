@@ -71,17 +71,11 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
     static const char* Desc(); 
 
-
-    static const char* PTXNAME ; 
-    static const char* GEO_PTXNAME ; 
-
     SGLM*             sglm ; 
 
     const char*       flight ; 
     const CSGFoundry* foundry ; 
-    const char*       prefix ; 
     const char*       outdir ; 
-    const char*       cmaketarget ; 
     const char*       ptxpath ; 
     const char*       geoptxpath ; 
     float             tmin_model ; 

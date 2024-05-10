@@ -124,7 +124,8 @@ export BOTLINE=${BOTLINE:-$botline}
 
 logging(){
     #export CSGFoundry=INFO 
-    #export CSGOptiX=INFO
+    export CSGOptiX=INFO
+    export PIP=INFO
     export SBT=INFO
 }
 [ -n "$LOG" ] && logging 

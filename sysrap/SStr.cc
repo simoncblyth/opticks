@@ -940,8 +940,6 @@ Instead can use::
 
    spath::Resolve("$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx")  
 
-**/
-
 
 const char* SStr::PTXPath( const char* install_prefix, const char* cmake_target, const char* cu_stem, const char* cu_ext ) // static
 {   
@@ -957,6 +955,9 @@ const char* SStr::PTXPath( const char* install_prefix, const char* cmake_target,
     std::string path = ss.str();
     return strdup(path.c_str());
 }
+**/
+
+
 
 
 template <typename T>
