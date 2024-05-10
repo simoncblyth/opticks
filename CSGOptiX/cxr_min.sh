@@ -136,14 +136,14 @@ export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 if [ -n "$TRIMESH" ]; then 
 
-   trimesh=2923:sWorld
+   #trimesh=2923:sWorld
    #trimesh=5:PMT_3inch_pmt_solid
    #trimesh=9:NNVTMCPPMTsMask_virtual
    #trimesh=12:HamamatsuR12860sMask_virtual
    #trimesh=6:mask_PMT_20inch_vetosMask_virtual
    #trimesh=1:sStrutBallhead
-   #trimesh=1:base_steel
-   #trimesh=1:uni_acrylic1
+   @trimesh=1:base_steel
+   trimesh=1:uni_acrylic1
    #trimesh=130:sPanel
 
    #trimesh=4:VACUUM_solid

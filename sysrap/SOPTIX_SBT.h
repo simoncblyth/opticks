@@ -16,6 +16,7 @@ Good general explanatiom of SBT Shader Binding Table
 
 **/
 
+#include "ssys.h"
 #include "SOPTIX_Binding.h"
 
 struct SOPTIX_SBT
@@ -32,6 +33,7 @@ struct SOPTIX_SBT
     void initRaygen(); 
     void initMiss(); 
     void initHitgroup(); 
+    static constexpr const char* __initHitgroup_DUMP = "SOPTIX_SBT__initHitgroup_DUMP" ; 
 
     std::string desc() const ; 
     std::string descPartBI() const ; 
@@ -129,7 +131,13 @@ NB this uses CPU/GPU types defined in SOPTIX_Binding.h
 
 inline void SOPTIX_SBT::initHitgroup()
 {
-    std::cout << "SOPTIX_SBT::initHitgroup " << descPartBI() << std::endl ; 
+    bool DUMP = ssys::getenvbool(__initHitgroup_DUMP) ; 
+    if(DUMP) std::cout 
+         << "SOPTIX_SBT::initHitgroup " 
+         << __initHitgroup_DUMP << " : " << ( DUMP ? "YES" : "NO " ) 
+         << descPartBI() 
+         << std::endl 
+         ; 
 
     size_t num_mg = scn.meshgroup.size();  // SOPTIX_Scene  
     for(size_t i=0 ; i < num_mg ; i++)
@@ -146,13 +154,16 @@ inline void SOPTIX_SBT::initHitgroup()
             const SOPTIX_BuildInput* bi = xmg->bis[j] ; 
             assert( bi->is_BuildInputTriangleArray() ); 
             unsigned numSbtRecords = bi->numSbtRecords();  
-            if( j < edge || j > (num_bi - edge) ) std::cout 
+
+            bool at_edge = ( j < edge || j > (num_bi - edge)) ;   
+            if(at_edge && DUMP ) std::cout 
                 << "SOPTIX_SBT::initHitgroup"
                 << " i " << i 
                 << " num_mg " << num_mg 
                 << " j " << j
                 << " num_bi " << num_bi 
                 << " numSbtRecords " << numSbtRecords
+                << " edge " << edge
                 << "\n" 
                 ; 
             assert( numSbtRecords == 1 ); 

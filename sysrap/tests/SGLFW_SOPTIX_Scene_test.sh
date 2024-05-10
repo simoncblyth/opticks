@@ -169,6 +169,10 @@ vizmask=t   # 0xff no masking
 export VIZMASK=${VIZMASK:-$vizmask}
 
 
+#export SOPTIX_SBT__initHitgroup_DUMP=1
+
+
+
 defarg="info_ptx_build_run"
 arg=${1:-$defarg}
 

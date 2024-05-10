@@ -212,14 +212,28 @@ void G4CXOpticks::setGeometry(const char* gdmlpath)
 G4CXOpticks::setGeometry
 -------------------------
 
-U4Tree/stree+SSim replacing the former GGeo+X4+.. packages 
+Geometry translation from Geant4 to NVIDIA OptiX acceleration structures with 
+associated shader binding table (SBT) data and CUDA programs 
+is done in several stages:: 
 
-HMM: need a way to distingish between a re-animated world coming via GDML save/load  
-and a live original world : as need to do things a bit differently in each case.
 
-* could determine this by noticing the lack of SensitiveDetectors in GDML re-animated world,
-  (but thats kinda heavy way to determine one bit) OR by passing a signal along with the 
-  world to show that it has been re-animated  
+          u4/U4Tree                  CSG/CSGImport                  CSGOptiX
+      G4 —--———————> sysrap/stree.h —————-----——> CSG/CSGFoundry ———-----——> OptiX AS
+         
+First stage is steered by U4Tree::Create which traverses the Geant4 tree of 
+volumes collecting geometry information into the sysrap/stree.h data structure.
+Note that the stree.h comes from the low level sysrap package which does not 
+depend on Geant4.  The stree is persisted into folders of .txt lists 
+and .npy arrays located at::
+
+    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree
+
+Where the "$GEOM" variable is a user selected geometry identifer such as::
+
+     J23_1_0_rc3_ok0  
+
+
+* U4Tree/stree+SSim replaces the former GGeo+X4+.. packages 
 
 **/
 
