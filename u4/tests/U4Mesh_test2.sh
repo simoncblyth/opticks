@@ -8,6 +8,9 @@ on j/PMTSim to provide access to complex solids::
 
     ~/opticks/u4/tests/U4Mesh_test2.sh
 
+
+    GEOM=wpcosolidDeadWater ~/opticks/u4/tests/U4Mesh_test2.sh 
+
     GEOM=xjfcSolid ~/opticks/u4/tests/U4Mesh_test2.sh
     GEOM=xjacSolid ~/opticks/u4/tests/U4Mesh_test2.sh
 
@@ -27,7 +30,7 @@ Compare two geometries::
 EOU
 }
 
-cd $(dirname $BASH_SOURCE)
+cd $(dirname $(realpath $BASH_SOURCE))
 name=U4Mesh_test2
 BASE=/tmp/$name
 bin=$BASE/$name
@@ -104,6 +107,13 @@ if [ "${arg/dbg}" != "$arg" ]; then
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
+
+if [ "${arg/grab}" != "$arg" ]; then
+   [ -z "$FOLD" ] && echo $BASH_SOURCE grab error no FOLD $FOLD && exit 2  
+   source ../../bin/rsync.sh $FOLD
+   [ $? -ne 0 ] && echo $BASH_SOURCE grab error && exit 2
+fi 
+
 
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script

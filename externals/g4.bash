@@ -648,11 +648,19 @@ EOI
 g4-ver-default(){ echo 1042 ; }
 g4-ver(){         echo ${OPTICKS_GEANT4_VER:-$(g4-ver-default)} ; }
 
-g4-major-version-number() {
+g4-major-version-number-not-portable-with-readarray() {
+
+  : readarray is not portable but bash is 
   local version_array=()
 	readarray -d '.' -t version_array <<< "$("$OPTICKS_GEANT4_PREFIX/bin/geant4-config" --version)"
   echo "${version_array[0]}"
 }
+
+g4-major-version-number() {
+  local version=$("$OPTICKS_GEANT4_PREFIX/bin/geant4-config" --version)
+  echo "${version%%.*}"
+}
+
 
 
 g4-prefix-notes(){ cat << EON
