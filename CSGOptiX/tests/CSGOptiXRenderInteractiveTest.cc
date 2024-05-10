@@ -3,12 +3,13 @@ CSGOptiXRenderInteractiveTest.cc : Interactive raytrace rendering of analytic ge
 ========================================================================================
 
 Analytic CSGOptiX rendering with SGLM/SGLFW interactive control/visualization. 
-
 Usage with::
 
    ~/o/CSGOptiX/cxr_min.sh 
 
-This follows the approach of::
+Note this provides only CSGOptiX ray trace rendering, there is no rasterized toggle 
+with "C" key to switch between CUDA and OpenGL rendering. 
+For that functionality (but with triangulated geometry only) use:
 
    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh 
    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc 
@@ -24,13 +25,12 @@ TODO:
 
 * interactive vizmask control to hide/show geometry 
 
-* enable mix and match ana/tri geometry
-
-  * will need to incorporate SScene and SOPTIX into CSGOptiX
+* WIP: enable mix and match ana/tri geometry, by incorporation
+  of SScene and SOPTIX 
 
 * imgui reincarnation 
 
-* move common CSGOptiX stuff down to sysrap header-only such as jpg/png writing and image annotation 
+* WIP: moved some common CSGOptiX stuff down to sysrap header-only such as jpg/png writing and image annotation 
 
 **/
 

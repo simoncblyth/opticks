@@ -1010,6 +1010,8 @@ void SBT::createHitgroup()
                 unsigned localPrimIdx = trimesh ? j : k ;   
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;   
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx );
+                int boundary = foundry->getPrimBoundary_(prim); 
+                assert( boundary > -1 );
 
                 if( trimesh == false )  // analytic 
                 {  
@@ -1017,7 +1019,7 @@ void SBT::createHitgroup()
                 }
                 else 
                 {
-                    setMeshData( hg->data.mesh, cmg, localPrimIdx );   
+                    setMeshData( hg->data.mesh, cmg, localPrimIdx, boundary );   
                 }
 
                 unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx ); 
@@ -1182,8 +1184,9 @@ Note similarity to SOPTIX_SBT::initHitgroup
 
 **/
 
-void SBT::setMeshData( TriMesh& tm, const SCUDA_MeshGroup* cmg, int j )
+void SBT::setMeshData( TriMesh& tm, const SCUDA_MeshGroup* cmg, int j, int boundary )
 {
+    tm.boundary = boundary ; 
     tm.vertex = reinterpret_cast<float3*>( cmg->vtx.pointer(j) );  
     tm.normal = reinterpret_cast<float3*>( cmg->nrm.pointer(j) );  
     tm.indice = reinterpret_cast<uint3*>(  cmg->idx.pointer(j) ); 

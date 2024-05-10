@@ -157,14 +157,12 @@ static __forceinline__ __device__ void trace(
 
 #if !defined(PRODUCTION) && defined(WITH_RENDER)
 
-__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity, unsigned boundary )  // pure 
+__forceinline__ __device__ uchar4 make_color( const float3& normal )  // pure 
 {
-    // identity and boundary not used 
-    float scale = 1.f ; 
     return make_uchar4(
-            static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f )*scale ,
-            static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f )*scale ,
-            static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f )*scale ,
+            static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f ),
             255u
             );
 }
@@ -175,10 +173,18 @@ __forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned ide
 render : non-pure, uses params for viewpoint inputs and pixels output 
 -----------------------------------------------------------------------
 
+Bugs with normal(0.f,0.f,0.f) via normalizing yields diddled_normal(nan,nan,nan) 
+which make_color manages to clamp to (0,0,0) black.  
+
 **/
 
 static __forceinline__ __device__ void render( const uint3& idx, const uint3& dim, quad2* prd )
 {
+
+#if defined(DEBUG_PIDX)
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render idx(%d,%d,%d) dim(%d,%d,%d) \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z ); 
+#endif
+
     float2 d = 2.0f * make_float2(
             static_cast<float>(idx.x)/static_cast<float>(dim.x),
             static_cast<float>(idx.y)/static_cast<float>(dim.y)
@@ -202,13 +208,29 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         prd
     );
 
+#if defined(DEBUG_PIDX)
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render prd.distance(%7.3f)  prd.lposcost(%7.3f)  \n", prd->distance(), prd->lposcost()  ); 
+#endif
+
+
     const float3* normal = prd->normal();  
+
+#if defined(DEBUG_PIDX)
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render normal(%7.3f,%7.3f,%7.3f)  \n", normal->x, normal->y, normal->z ); 
+#endif
+
     float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
+
+
     unsigned index = idx.y * params.width + idx.x ;
 
     if(params.pixels) 
     {
-        params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
+#if defined(DEBUG_PIDX)
+        //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render/params.pixels diddled_normal(%7.3f,%7.3f,%7.3f)  \n", diddled_normal.x, diddled_normal.y, diddled_normal.z ); 
+#endif
+
+        params.pixels[index] = make_color( diddled_normal ); 
     }
     if(params.isect)  
     {
@@ -383,6 +405,8 @@ extern "C" __global__ void __raygen__rg()
 
     quad2 prd ; 
     prd.zero(); 
+
+
   
 #ifndef PRODUCTION
     switch( params.raygenmode )
@@ -490,6 +514,10 @@ optixGetRayTmax
     if no hit has been reported
 
 
+optixGetPrimitiveType
+    OPTIX_PRIMITIVE_TYPE_CUSTOM   = 0x2500    ## 9472 : GET THIS 
+    OPTIX_PRIMITIVE_TYPE_TRIANGLE = 0x2531    ## 9521 : HUH:GETTING ZERO WHEN EXPECT THIS ?
+
 
 ana:CH
    intersect IS program populates most of the prd per-ray-data struct
@@ -501,15 +529,43 @@ tri:CH
    builtin triangles have no user defined intersect program, so this tri:CH 
    program must populate everything that the ana:IS and ana:CH does  
 
+tri:boundary   
+
+
+ana:normals
+   Calculation done by each shape implementation, no other choice ?
+
+tri:normals
+   Possibilities:
+
+   1. normal from cross product of vertex positions, 
+      GPU float precision calc
+
+   2. normal from barycentric weighted vertex normals 
+      (probably best for sphere/torus or similar with small triangles)
+
+   3. pick normal of one of the vertices, 
+      profits from double precision vertex normal calculated
+      ahead of time
+      (probably best for cube or similar with large triangles) 
+
+   Which is best depends on the shape and how the input 
+   vertex normals are calculated.  
+
 **/
 
 extern "C" __global__ void __closesthit__ch()
 {
     unsigned iindex = optixGetInstanceIndex() ; 
     unsigned identity = optixGetInstanceId() ;  
-    OptixPrimitiveType type = optixGetPrimitiveType(); 
+    OptixPrimitiveType type = optixGetPrimitiveType(); // HUH: getting type 0, when expect OPTIX_PRIMITIVE_TYPE_TRIANGLE 
 
-    if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE)
+#if defined(DEBUG_PIDX)
+    //const uint3 idx = optixGetLaunchIndex();
+    //if(idx.x == 10 && idx.y == 10) printf("//__closesthit__ch idx(%u,%u,%u) type %d \n", idx.x, idx.y, idx.z, type); 
+#endif
+
+    if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE || type == 0)  // WHY GETTING ZERO HERE ? 
     {
         const HitGroupData* hg = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
         const TriMesh& mesh = hg->mesh ; 
@@ -521,21 +577,18 @@ extern "C" __global__ void __closesthit__ch()
         const float3 P0 = mesh.vertex[ tri.x ];
         const float3 P1 = mesh.vertex[ tri.y ];
         const float3 P2 = mesh.vertex[ tri.z ];
-
-        const float3 N0 = mesh.normal[ tri.x ];
-        const float3 N1 = mesh.normal[ tri.y ];
-        const float3 N2 = mesh.normal[ tri.z ];
-
         const float3 P = ( 1.0f-barys.x-barys.y)*P0 + barys.x*P1 + barys.y*P2;
-        const float3 Ng = ( 1.0f-barys.x-barys.y)*N0 + barys.x*N1 + barys.y*N2; // guesss
-        //const float3 Ng = cross( P1-P0, P2-P0 );
+
+        //const float3 N0 = mesh.normal[ tri.x ];
+        //const float3 N1 = mesh.normal[ tri.y ];
+        //const float3 N2 = mesh.normal[ tri.z ];
+        //const float3 Ng = ( 1.0f-barys.x-barys.y)*N0 + barys.x*N1 + barys.y*N2; // guesss
+        // local normal from  bary-weighted vertex normals
+
+        const float3 Ng = cross( P1-P0, P2-P0 );
+        // local normal from cross product of vectors between vertices : HMM is winding order correct : TODO: check sense of normal
 
         const float3 N = normalize( optixTransformNormalFromObjectToWorldSpace( Ng ) );
-        // HMM: could get normal by bary-weighting vertex normals ?
-
-        unsigned boundary = 0 ; 
-        // HMM: need to plant boundary in HitGroupData ? 
-        // cf CSGOptiX/Analytic: node->boundary();// all nodes of tree have same boundary 
 
         float t = optixGetRayTmax() ;
 
@@ -557,10 +610,10 @@ extern "C" __global__ void __closesthit__ch()
 
         prd->set_identity( identity ) ;
         prd->set_iindex(   iindex ) ;
-        prd->set_boundary(boundary) ; 
+        prd->set_boundary (mesh.boundary) ; 
         prd->set_lposcost(lposcost); 
 #else
-        setPayload( N.x, N.y, N.z, t, identity, boundary, lposcost, iindex );  // communicate from ch->rg
+        setPayload( N.x, N.y, N.z, t, identity, mesh.boundary, lposcost, iindex );  // communicate from ch->rg
 #endif
     }
     else if(type == OPTIX_PRIMITIVE_TYPE_CUSTOM)
@@ -612,6 +665,11 @@ COULD: reduce HitGroupData to just the nodeOffset
 
 extern "C" __global__ void __intersection__is()
 {
+
+#if defined(DEBUG_PIDX)
+    //printf("//__intersection__is\n"); 
+#endif
+
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
     int nodeOffset = hg->prim.nodeOffset ; 
 
@@ -628,7 +686,7 @@ extern "C" __global__ void __intersection__is()
     {
         const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
         const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
-        const unsigned boundary = node->boundary() ;  // all nodes of tree have same boundary 
+        const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary 
 
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))

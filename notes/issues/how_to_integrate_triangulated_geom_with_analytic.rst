@@ -19,12 +19,52 @@ Progress Overview
 
 
 
-Cutting Edge
----------------
+KLUDGE FIXED : black tri render due to optixGetPrimitiveType giving 0 when expected OPTIX_PRIMITIVE_TYPE_TRIANGLE
+----------------------------------------------------------------------------------------------------------------------
 
 * tri+ana WITH_SOPTIX_ACCEL now runs, but with TRIMESH configured get black render where triangles should be::
 
     TRIMESH=1 ~/o/CSGOptiX/cxr_min.sh
+
+
+Kludge fix::
+
+   537 extern "C" __global__ void __closesthit__ch()
+    538 {
+    539     unsigned iindex = optixGetInstanceIndex() ;
+    540     unsigned identity = optixGetInstanceId() ;
+    541     OptixPrimitiveType type = optixGetPrimitiveType(); // HUH: getting type 0, when expect OPTIX_PRIMITIVE_TYPE_TRIANGLE 
+    542 
+    543 #if defined(DEBUG_PIDX)
+    544     //const uint3 idx = optixGetLaunchIndex();
+    545     //if(idx.x == 10 && idx.y == 10) printf("//__closesthit__ch idx(%u,%u,%u) type %d \n", idx.x, idx.y, idx.z, type); 
+    546 #endif
+    547 
+    548     if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE || type == 0)  // WHY GETTING ZERO HERE ? 
+    549     {
+
+
+TODO : systematic prd comparison between ana and tri, check boundary and normals especially across multiple CSGPrim
+------------------------------------------------------------------------------------------------------------------------
+
+
+FIXED : BOX GEOMETRY TRIMESH FACE COLORS HAVE VARIATION FROM BARY-WEIGHTED VERTEX NORMALS WHEN GET UNIFORM WITH ANALYTIC
+--------------------------------------------------------------------------------------------------------------------------
+
+* fix by using the calculated normal 
+* HMM: for a shape like a sphere/torus with "small" facets using bary-weighted normals could be considered better 
+  as it makes the facet approximation less obvious.
+  But for a cube or other shape with with large facets picking one of the vertex normals or cross-product calculating 
+  the normal is better.
+
+* could provide options and leave this choice to the user : or just leave as calculation as thats kinda ok in all cases
+
+
+::
+
+    TRIMESH=1 ./cxr_min.sh   ## color variation across flat face with tri 
+    ./cxr_min.sh             ## uniform color with analytic 
+  
 
 
 HOW TO DEBUG
@@ -35,6 +75,23 @@ comparing::
 
     TRIMESH=1 ~/o/CSGOptiX/cxr_min.sh
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh 
+
+Easier to use pre-existing geometry::
+
+     SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+     #SCENE_FOLD : /home/blyth/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim
+
+For cxr_min.sh use GEOM to change to RaindropRockAirWater, GEOM cf::
+
+    [blyth@localhost CSGFoundry]$ cat mmlabel.txt 
+    4:VACUUM_solid
+
+There is only one remainder CSGSolid for entire geometry add that to TRIMESH block for::
+
+    TRIMESH=1 ~/o/CSGOptiX/cxr_min.sh
+    ## the box appears black, and navigating inside entire screen is black : so thats what is needed for debug 
+
+    TRIMESH=1 EYE=-1,0,0 ~/o/CSGOptiX/cxr_min.sh   ## close enough to give black screen, all pixels the same
 
 
 

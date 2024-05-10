@@ -1162,16 +1162,23 @@ TODO: a faster version that just gets from the first node
 **/
 int CSGFoundry::getPrimBoundary(unsigned primIdx) const
 {
-    std::set<unsigned> bnd ; 
     const CSGPrim* pr = getPrim(primIdx); 
-    for(int nodeIdx=pr->nodeOffset() ; nodeIdx < pr->nodeOffset() + pr->numNode() ; nodeIdx++)
-    {
-        const CSGNode* nd = getNode(nodeIdx); 
-        bnd.insert(nd->boundary()); 
-    }
+    return getPrimBoundary_(pr) ;   
+}
+
+int CSGFoundry::getPrimBoundary_( const CSGPrim* pr ) const
+{
+    int nodeOffset = pr->nodeOffset() ; 
+    int numNode = pr->numNode() ;
+    std::set<unsigned> bnd ; 
+    for(int nodeIdx=nodeOffset ; nodeIdx < nodeOffset + numNode ; nodeIdx++) 
+    {    
+        const CSGNode* nd = getNode(nodeIdx);
+        bnd.insert(nd->boundary());
+    }    
     assert( bnd.size() == 1 ); 
-    int boundary = bnd.begin() == bnd.end() ? -1 : *bnd.begin() ; 
-    return boundary ; 
+    int boundary = bnd.begin() == bnd.end() ? -1 : *bnd.begin() ;
+    return boundary ;   
 }
 
 

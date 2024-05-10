@@ -142,9 +142,11 @@ if [ -n "$TRIMESH" ]; then
    #trimesh=12:HamamatsuR12860sMask_virtual
    #trimesh=6:mask_PMT_20inch_vetosMask_virtual
    #trimesh=1:sStrutBallhead
-   #trimesh=1:base_steel
+   @trimesh=1:base_steel
    trimesh=1:uni_acrylic1
    #trimesh=130:sPanel
+
+   #trimesh=4:VACUUM_solid
 
    export OPTICKS_SOLID_TRIMESH=$trimesh
 fi
@@ -160,7 +162,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM TMIN LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
+vars="GEOM TMIN EYE LOOK ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

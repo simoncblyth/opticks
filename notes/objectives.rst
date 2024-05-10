@@ -102,6 +102,18 @@ Test alternative ways to represent CSG trees, eg:
 1. index offsets, num_child  
 
 
+
+New CSG development : novel ray marching(sphere tracing) SDF based intersection
+--------------------------------------------------------------------------------
+
+* investigate ray-marching techniques such as sphere tracing, which are an iterative alternative to ray tracing
+  expected to provide high performnce for highly complex solids as shape complexity
+  can be distilled into generated CUDA code of mathematical signed distance functions (SDF)
+  rather than traversing a tree of constituent nodes while ray tracing.
+
+
+
+
 New CSG development : change alg for robustness
 ---------------------------------------------------
 
@@ -140,6 +152,12 @@ Possible sources:
 +-----------------+-------------------------------------------------------------------+
 
 
+
+Compare perf between PTX and OptiX-IR (different ways to compile OptiX kernels)
+--------------------------------------------------------------------------------
+
+* Look for low hanging fruit using NVIDIA kernel profiling tools 
+* experience with Nsight likely needed for multi-GPU impl 
 
 
 Optimization (workstation level)

@@ -7,6 +7,9 @@ Usage and impl::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+
+    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+
     
 Related simpler priors::
 
@@ -164,6 +167,10 @@ export SGLFW_FRAME=${SGLFW_FRAME:-$frame}
 vizmask=t   # 0xff no masking
 #vizmask=t0  # 0xfe mask global
 export VIZMASK=${VIZMASK:-$vizmask}
+
+
+#export SOPTIX_SBT__initHitgroup_DUMP=1
+
 
 
 defarg="info_ptx_build_run"

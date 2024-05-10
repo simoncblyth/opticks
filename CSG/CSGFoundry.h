@@ -175,6 +175,8 @@ struct CSG_API CSGFoundry : public SGeo
     std::string descPrim(unsigned solidIdx) const  ;
 
     int getPrimBoundary(unsigned primIdx) const ; 
+    int getPrimBoundary_( const CSGPrim* pr ) const ; 
+
     void setPrimBoundary(unsigned primIdx, unsigned boundary) ; 
 
     std::string detailPrim() const ; 
