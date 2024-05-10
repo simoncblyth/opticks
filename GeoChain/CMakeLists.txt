@@ -21,14 +21,14 @@ find_package(CUDA REQUIRED)  # CUDA headers for vector types like float4, not th
 find_package(CSG_GGeo REQUIRED)
 find_package(ExtG4  REQUIRED CONFIG) 
 
-find_package(PMTSim CONFIG)
+find_package(PMTSim_standalone CONFIG)
 find_package(PMTFastSim CONFIG)   
 find_package(jPMTSim CONFIG)
 
 
 message(STATUS "CSG_FOUND      : ${CSG_FOUND}      CSG_INCLUDE_DIRS      : ${CSG_INCLUDE_DIRS}")
 message(STATUS "GGeo_FOUND     : ${GGeo_FOUND}     GGeo_INCLUDE_DIRS     : ${GGeo_INCLUDE_DIRS}")
-message(STATUS "PMTSim_FOUND   : ${PMTSim_FOUND}  ") 
+message(STATUS "PMTSim_standalone_FOUND   : ${PMTSim_standalone_FOUND}  ")
 message(STATUS "PMTFastSim_FOUND   : ${PMTFastSim_FOUND}  ") 
 message(STATUS "jPMTSim_FOUND   : ${jPMTSim_FOUND}  ") 
 
@@ -65,8 +65,8 @@ target_link_libraries( ${name} PUBLIC
 if(PMTFastSim_FOUND)
    target_link_libraries( ${name} PUBLIC Opticks::PMTFastSim )
    target_compile_definitions( ${name} PUBLIC WITH_PMTFASTSIM )
-elseif(PMTSim_FOUND)
-   target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
+elseif(PMTSim_standalone_FOUND)
+   target_link_libraries( ${name} PUBLIC Opticks::PMTSim_standalone )
    target_compile_definitions( ${name} PUBLIC WITH_PMTSIM )
 endif()
 

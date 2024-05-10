@@ -3,8 +3,8 @@ set(name ExtG4Test)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(PMTSim CONFIG)
-message( STATUS " PMTSim_FOUND : ${PMTSim_FOUND} " )
+find_package(PMTSim_standalone CONFIG)
+message( STATUS " PMTSim_standalone_FOUND : ${PMTSim_standalone_FOUND} " )
 
 
 set(PMTSIM_TEST_SOURCES
@@ -102,8 +102,8 @@ foreach(TEST_CC_SRC ${PMTSIM_TEST_SOURCES})
 
     target_link_libraries(${TGT} PUBLIC ExtG4 )
 
-    if(PMTSim_FOUND)
-       target_link_libraries( ${TGT} PUBLIC Opticks::PMTSim )
+    if(PMTSim_standalone_FOUND)
+       target_link_libraries( ${TGT} PUBLIC Opticks::PMTSim_standalone )
        target_compile_definitions( ${TGT} PUBLIC WITH_PMTSIM )
     endif()
 

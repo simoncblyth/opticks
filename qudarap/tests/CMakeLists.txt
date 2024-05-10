@@ -92,9 +92,9 @@ endforeach()
 
 
 ## HMM: switch to Custom4 (not getting that indirectly via PMTSim) 
-find_package(PMTSim CONFIG)
+find_package(PMTSim_standalone CONFIG)
 
-if(PMTSim_FOUND)
+if(PMTSim_standalone_FOUND)
 
     set(PMTSIM_TEST_SOURCES
         QPMTTest.cc 
@@ -108,14 +108,14 @@ if(PMTSim_FOUND)
         add_test(${testname} ${TGT})
 
         target_link_libraries(${TGT} QUDARap )
-        target_link_libraries( ${TGT} Opticks::PMTSim )
+        target_link_libraries( ${TGT} Opticks::PMTSim_standalone )
         target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )
 
         install(TARGETS ${TGT} DESTINATION lib)
     endforeach()
 
 else()
-    message(STATUS "${name} PMTSim_FOUND:${PMTSim_FOUND}  " )
+    message(STATUS "${name} PMTSim_standalone_FOUND:${PMTSim_standalone_FOUND}  " )
 
 endif()
 

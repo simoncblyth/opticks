@@ -144,7 +144,7 @@ add_executable(${TGT} ${U4HitTest_SOURCES})
 target_link_libraries(${TGT} U4 Opticks::CSG)
 install(TARGETS ${TGT} DESTINATION lib)
 
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND     : ${PMTSim_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_standalone_FOUND     : ${PMTSim_standalone_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND    : ${Custom4_FOUND}")
 
 
@@ -164,7 +164,7 @@ foreach(SRC ${PMTSim_TESTS})
 
     target_link_libraries(${TGT} U4 Opticks::SysRap)
 
-    if(PMTSim_FOUND)
+    if(PMTSim_standalone_FOUND)
        target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )   
        target_compile_definitions( ${TGT} PRIVATE PMTSIM_STANDALONE )   
        target_link_libraries(${TGT} Opticks::PMTSim_standalone)

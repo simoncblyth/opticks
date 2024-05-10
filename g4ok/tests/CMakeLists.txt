@@ -25,7 +25,7 @@ endforeach()
 
 #[=[
 
-find_package(PMTSim CONFIG)
+find_package(PMTSim_standalone CONFIG)
 
 # TODO: enable this to be used without PMTSim also 
 set(PMTSIM_TEST_SOURCES
@@ -41,8 +41,8 @@ foreach(TEST_CC_SRC ${PMTSIM_TEST_SOURCES})
 
     target_link_libraries(${TGT} PUBLIC G4OK )
 
-    if(PMTSim_FOUND)
-       target_link_libraries( ${TGT} PUBLIC Opticks::PMTSim )
+    if(PMTSim_standalone_FOUND)
+       target_link_libraries( ${TGT} PUBLIC Opticks::PMTSim_standalone )
        target_compile_definitions( ${TGT} PUBLIC WITH_PMTSIM )
     endif()
 

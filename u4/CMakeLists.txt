@@ -30,11 +30,11 @@ find_package(OpticksXercesC REQUIRED MODULE)
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 2 =======  find Custom4 PMTSim  ")
 
 find_package(Custom4 CONFIG)  # have to be explicit as Custom4 needed without j/PMTSim
-find_package(PMTSim CONFIG)  
+find_package(PMTSim_standalone CONFIG)
 
 
 
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_FOUND       : ${PMTSim_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_standalone_FOUND       : ${PMTSim_standalone_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_VERSION     : ${PMTSim_VERSION}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND      : ${Custom4_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION    : ${Custom4_VERSION}")
@@ -192,8 +192,8 @@ if(Custom4_FOUND)
     target_compile_definitions( ${name} PRIVATE WITH_CUSTOM4 )  # MINTING A DEF ? MAYBE COMES WITH THE TARGET ANYHOW
 endif()
 
-if(PMTSim_FOUND)
-    target_link_libraries( ${name} PUBLIC Opticks::PMTSim )
+if(PMTSim_standalone_FOUND)
+    target_link_libraries( ${name} PUBLIC Opticks::PMTSim_standalone )
     target_compile_definitions( ${name} PRIVATE WITH_PMTSIM PMTSIM_STANDALONE WITH_NP )
     ## THE DEFS CANNOT BE PUBLIC : AS CAUSE ISSUES FOR JUNOSW BUILD WITH OPTICKS
 endif()
