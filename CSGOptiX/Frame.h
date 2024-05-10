@@ -3,6 +3,9 @@
 Frame.h : Frame as in window, not volume 
 ===========================================
 
+When ctor argument pointers are not provided the ctor allocates device buffers.
+This was done for compatibility with the pre-OptiX-7 API.
+
 
 **/
 
@@ -45,12 +48,14 @@ struct CSGOPTIX_API Frame
     quad4*  d_dummy ; 
 #endif
 
+public:
     Frame(int width_, int height_, int depth_, uchar4* d_pixel_=nullptr, float4* d_isect_=nullptr, quad4* d_fphoton_=nullptr ); 
     void setExternalDevicePixels(uchar4* _d_pixel );
- 
     void download(); 
-
     void annotate( const char* bottom_line=nullptr, const char* top_line=nullptr, int line_height=24  );
+    void snap(const char* path ); 
+
+private: 
 
     void write(const char* outdir, int quality=0) const ;
 
@@ -62,7 +67,6 @@ struct CSGOPTIX_API Frame
 
     void writeIsect(  const char* dir, const char* name) const ;
 
-    void snap(const char* path ); 
 
     unsigned getNumPixels() const ; 
     unsigned char* getPixelData() const ;
