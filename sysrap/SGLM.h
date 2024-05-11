@@ -827,7 +827,12 @@ inline void SGLM::set_frame( const sfr& fr_ )
 }
 
 inline int SGLM::get_frame_idx() const { return fr.get_idx(); }
-inline bool SGLM::has_frame_idx(int idx) const { return idx == get_frame_idx() ; }
+inline bool SGLM::has_frame_idx(int q_idx) const 
+{ 
+    int curr_idx = get_frame_idx() ; 
+    if(false) std::cout << "SGLM::has_frame_idx" << " q_idx " << q_idx << " curr_idx " << curr_idx << "\n" ;  
+    return q_idx == curr_idx ; 
+}
 inline const std::string& SGLM::get_frame_name() const { return fr.get_name(); }
 
 inline float SGLM::extent() const {   return fr.ce.w > 0 ? fr.ce.w : CE.w ; }

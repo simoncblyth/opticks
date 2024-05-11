@@ -82,7 +82,7 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 name=SGLFW_SOPTIX_Scene_test
 
-export FOLD=/tmp/$name
+export FOLD=/tmp/$USER/opticks/$name
 bin=$FOLD/$name
 mkdir -p $FOLD
 
@@ -178,7 +178,8 @@ arg=${1:-$defarg}
 
 
 if [ ! -d "$SCENE_FOLD/scene" ]; then
-  echo $BASH_SOURCE : FATAL SCENE_FOLD $SCENE_FOLD does not contain scene 
+  echo $BASH_SOURCE : FATAL SCENE_FOLD $SCENE_FOLD does not contain scene
+  echo $BASH_SOURCE : with newly created CSGFoundry/SSim there is no need for manual SCENE_FOLD as will be in CSGFoundry/SSim/scene  
   arg=info  
 fi 
 

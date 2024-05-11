@@ -21,6 +21,9 @@ The framespec.txt file used is the first of the below paths that exists::
 
 TODO: relocate "scene" output default to be sibling to the stree from which it was derived ? 
 
+TODO: position the scene under GEOM/$GEOM dir to avoid using wrong scene with an analytic geometry
+
+
 EOU
 }
 

@@ -87,11 +87,9 @@ struct SScene
     void load(const char* dir);
 
     void addFrames(const char* path, const stree* st); 
+    void addFrame( const sfr& _f); 
+
     sfr getFrame(int _idx=-1) const ; 
-
-
-
-
 
 };
 
@@ -550,6 +548,7 @@ Which is set for example from::
 1. read framespec string from path file
 2. parse the string splitting into trimmed lines
 3. for each line get sfr with stree::get_frame add to frame vector
+4. add last frame f0 fabricated from the ce of the first global mergedmesh 
 
 **/
 
@@ -562,33 +561,55 @@ inline void SScene::addFrames(const char* path, const stree* st)
     std::vector<std::string> lines ; 
     sstr::SplitTrimSuppress(framespec.c_str(), '\n', lines) ; 
 
-    int num_line = lines.size(); 
+    int num_line = lines.size();
     for(int i=0 ; i < num_line ; i++)
     {
         const std::string& line = lines[i]; 
-        sfr f = st->get_frame(line.c_str());  
-        frame.push_back(f); 
+        sfr f = st->get_frame(line.c_str()); 
+        addFrame(f);  
     }
+
+    // last frame that ensures always at least one  
+    const float* _ce = get_ce(0) ; 
+    sfr f0 = sfr::MakeFromCE(_ce) ;
+    f0.set_name("MakeFromCE0");  
+    addFrame(f0);  
 }
 
+
+inline void SScene::addFrame( const sfr& _f)
+{
+   sfr f = _f ; 
+   f.set_idx( frame.size() ); 
+   frame.push_back(f);  
+}
+
+
+/**
+SScene::getFrame
+----------------
+
+Returns the *_idx* frame
+
+**/
 
 inline sfr SScene::getFrame(int _idx) const
 {
     int num_frame = frame.size(); 
-    int idx = ( _idx > -1 && _idx < num_frame ) ? _idx : -1 ; 
+    assert( num_frame > 0 ); 
 
-    const float* _ce = get_ce(0) ; 
-    std::cout 
+    int idx = ( _idx > -1 && _idx < num_frame ) ? _idx : num_frame-1  ; 
+    const sfr& f = frame[idx] ; 
+
+    if(false) std::cout 
          << "SScene::getFrame"
          << " num_frame " << num_frame 
          << " _idx " << _idx
          << " idx " << idx
-         << " _ce[3] " << ( _ce ? _ce[3] : -1.f )    
          << "\n" 
          ; 
   
-    sfr fr = idx == -1 ? sfr::MakeFromCE(_ce) : frame[idx] ; 
-    fr.set_idx(idx); 
-    return fr ; 
+    assert( f.get_idx() == idx ); 
+    return f ; 
 }
 

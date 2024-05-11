@@ -34,6 +34,7 @@ TODO:
 
 **/
 
+#include "ssys.h"
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
 #include "CSGFoundry.h"
@@ -51,13 +52,18 @@ int main(int argc, char** argv)
     SEventConfig::SetRGModeRender(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
 
-    if(fd->getScene()->is_empty())
+    SScene* scene = fd->getScene(); 
+
+    if(scene->is_empty())
     {
         LOG(fatal) << "CSGFoundry::Load GIVES EMPTY SCENE : TRANSITIONAL KLUDGE : TRY TO LOAD FROM SCENE_FOLD " ; 
-        SScene* _scene = SScene::Load("$SCENE_FOLD");   
-        fd->setOverrideScene(_scene); 
+        scene = SScene::Load("$SCENE_FOLD");   
+        fd->setOverrideScene(scene); 
     }
 
+
+    static const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;  
+    bool FRAME_HOP = ssys::getenvbool(_FRAME_HOP); 
 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
 
@@ -68,6 +74,22 @@ int main(int argc, char** argv)
     while(gl.renderloop_proceed())
     {   
         gl.renderloop_head();
+
+        
+
+        if(FRAME_HOP)
+        {
+            // DEBUG NEEDED : FRAME BOOKMARKS NOT GETTING EXPECTED LOCATIONS 
+            // SHOULD BE EASIER WHEN CAN CONVERT GEOMETRY
+            int wanted_frame_idx = gl.get_wanted_frame_idx() ;
+            if(scene && !gm.has_frame_idx(wanted_frame_idx) )
+            {
+                std::cout << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
+                sfr wfr = scene->getFrame(wanted_frame_idx) ; 
+                gm.set_frame(wfr);   
+            }
+        }
+
 
         uchar4* d_pixels = interop.output_buffer->map() ; 
 

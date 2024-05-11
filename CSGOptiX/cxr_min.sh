@@ -134,6 +134,9 @@ logging(){
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
+[ -n "$HOP" ] && echo $BASH_SOURCE ENABLE FRAME_HOPPING WHICH NEEDS DEBUGGING  && export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
+
+
 
 if [ -n "$TRIMESH" ]; then 
 
@@ -143,7 +146,7 @@ if [ -n "$TRIMESH" ]; then
    #trimesh=12:HamamatsuR12860sMask_virtual
    #trimesh=6:mask_PMT_20inch_vetosMask_virtual
    #trimesh=1:sStrutBallhead
-   @trimesh=1:base_steel
+   #trimesh=1:base_steel
    trimesh=1:uni_acrylic1
    #trimesh=130:sPanel
 
