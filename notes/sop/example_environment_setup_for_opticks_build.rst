@@ -253,4 +253,50 @@ The idea is to show the approach, you will need to customize for your situation.
 
 
 
+SIMPLE SCRIPT TO BUILD OPTICKS GIVEN THE ENV SETUP ABOVE
+---------------------------------------------------------------
+
+* note the 
+
+
+::
+
+    #!/bin/bash -l 
+    usage(){ cat << EOU
+
+    fresh_build.sh
+    ===============
+
+    EOU
+    }
+
+    echo $OPTICKS_BUILDTYPE
+
+    if [ "$OPTICKS_BUILDTYPE" == "Release" ]; then
+        rm -rf local/opticks_Release
+    elif [ "$OPTICKS_BUILDTYPE" == "Debug" ]; then
+        rm -rf local/opticks_Debug
+    else
+        echo $BASH_SOURCE : UNEXPECTED OPTICKS_BUILDTYPE $OPTICKS_BUILDTYPE
+    fi
+
+    opticks-full
+
+    #opticks-t
+
+    opticks-tar
+
+
+Note the use of hardcoded path in the above script. This is 
+for safety and uses a "local" symbolic link to the directory where
+OPTICKS_PREFIX directories are kept::
+
+
+    [simon@localhost ~]$ l
+    total 8
+    -rwxrwxr-x. 1 simon simon  764 May 11 14:03 fresh_build.sh
+    lrwxrwxrwx. 1 simon simon   17 Nov  6  2023 local -> /data/simon/local
+    [simon@localhost ~]$ 
+     
+
 
