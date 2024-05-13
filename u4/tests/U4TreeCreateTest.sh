@@ -48,11 +48,13 @@ export U4Tree__IsFlaggedSolid_NAME=HamamatsuR12860sMask_virtual
 source $HOME/.opticks/GEOM/GEOM.sh
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
-if [ ! -f "$gdmlpath" ]; then
-   echo $BASH_SOURCE : ERROR GEOM $GEOM LACKS gdmlpath $gdmlpath 
-   exit 1 
+
+if [ -f "$gdmlpath" ]; then 
+   echo $BASH_SOURCE : GEOM $GEOM has gdmlpath $gdmlpath setting ${GEOM}_GDMLPath
+   export ${GEOM}_GDMLPath=$gdmlpath
+else
+   echo $BASH_SOURCE : NOTE GEOM $GEOM LACKS gdmlpath ASSUME USING non-gdml  U4VolumeMaker::PV resolution approach 
 fi 
-export ${GEOM}_GDMLPath=$gdmlpath
 
 TMP=${TMP:-/tmp/$USER/opticks}
 export FOLD=$TMP/$bin
