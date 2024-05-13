@@ -140,7 +140,7 @@ SSim::SSim()
     tree(new stree),
     scene(new SScene)
 {
-    init(); 
+    init(); // just sets tree level 
 }
 
 /**

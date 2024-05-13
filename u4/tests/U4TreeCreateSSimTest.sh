@@ -1,7 +1,12 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4TreeCreateSSimTest.sh  : loads GDML, runs U4Tree::Create populating SSim/stree.h, saves to FOLD  
-====================================================================================================
+U4TreeCreateSSimTest.sh  : loads GEOM configured geometry, runs U4Tree::Create populating SSim/stree.h, saves to FOLD  
+==============================================================================================================================
+
+::
+
+    GEOM # edit according to geometry source 
+   ~/o/u4/tests/U4TreeCreateSSimTest.sh 
 
 EOU
 }
@@ -23,9 +28,9 @@ loglevels
 #export U4TreeBorder__FLAGGED_ISOLID=HamamatsuR12860sMask_virtual0x61b0510
 #export U4Tree__IsFlaggedSolid_NAME=HamamatsuR12860sMask_virtual
 
-export SSim__stree_level=0 
+#export SSim__stree_level=0 
 #export sn__uncoincide_dump_lvid=107 
-export sn__uncoincide_dump_lvid=106
+#export sn__uncoincide_dump_lvid=106
 
 
 #export U4Tree__DISABLE_OSUR_IMPLICIT=1   ## TEMPORAILY TO SEE IF OSUR EXPLAINS ALL BOUNDARY DEVIATION
@@ -36,11 +41,11 @@ export sn__uncoincide_dump_lvid=106
 source $HOME/.opticks/GEOM/GEOM.sh
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
-if [ ! -f "$gdmlpath" ]; then
-   echo $BASH_SOURCE : ERROR GEOM $GEOM LACKS gdmlpath $gdmlpath 
-   exit 1 
+if [ -f "$gdmlpath" ]; then
+   export ${GEOM}_GDMLPath=$gdmlpath
+else
+   echo $BASH_SOURCE : GEOM $GEOM LACKS gdmlpath $gdmlpath : ASSUME USING ANOTHER GEOMETRY SOURCE APPROACH  
 fi 
-export ${GEOM}_GDMLPath=$gdmlpath
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
@@ -58,6 +63,13 @@ vars="BASH_SOURCE SDIR bin GEOM gdmlpath tmp TMP BASE FOLD script"
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
 fi 
+
+
+if [ "${arg/clean}" != "$arg" ]; then 
+    cd $TMP && rm -rf U4TreeCreateSSimTest  # hardcode directory name for safety 
+    [ $? -ne 0 ] && echo $BASH_SOURCE clean error && exit 1 
+fi 
+
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin

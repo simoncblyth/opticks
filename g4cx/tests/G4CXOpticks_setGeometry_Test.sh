@@ -88,7 +88,10 @@ arg=${1:-$defarg}
 bin=G4CXOpticks_setGeometry_Test
 script=$SDIR/$bin.py 
 
-export FOLD=/tmp/$USER/opticks/$bin
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+export FOLD=$TMP/$bin
 mkdir -p $FOLD
 
 source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
@@ -147,6 +150,12 @@ env | grep =INFO
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
 fi 
+
+if [ "${arg/clean}" != "$arg" ]; then 
+    cd $TMP && rm -rf G4CXOpticks_setGeometry_Test ## hardcode for safety
+    [ $? -ne 0 ] && echo $BASH_SOURCE : clean error && exit 1 
+fi 
+
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin

@@ -1,5 +1,5 @@
-missing_frame_from_gxt
---------------------------
+FIXED missing_frame_from_gxt
+--------------------------------
 
 FIXED: add the ce0 frame even when no framespec 
 

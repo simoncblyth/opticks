@@ -1,28 +1,52 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-SGLFW_SOPTIX_Scene_test.sh
-=============================
+SGLFW_SOPTIX_Scene_test.sh : triangulated raytrace and rasterized visualization
+=================================================================================
 
-Usage and impl::
+Assuming the scene folder exists already::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    SCENE=0 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    SCENE=2 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    SCENE=3 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    ## SCENE picks between different scene directories
+
+Impl::
+
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
 
-    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
 
+One step way to create the stree and scene from gdml or other geometry source
+---------------------------------------------------------------------------------
+
+::
+
+    ~/o/u4/tests/U4TreeCreateSSimTest.sh  
+
+
+Two step way to create the scene folder from gdml or other geometry source 
+-----------------------------------------------------------------------------
+
+1. load geometry and use U4Tree::Create to convert to stree.h and persist the tree::   
+
+    ~/o/u4/tests/U4TreeCreateTest.sh 
+        # create and persist stree.h (eg from gdml or j/PMTSim via GEOM config)
+
+2. load stree and create corresponding SScene::
+
+    ~/o/sysrap/tests/SScene_test.sh 
+        # create and persist SScene.h from loaded stree.h
+  
+
+Simpler Prior Developments
+---------------------------
     
 Related simpler priors::
 
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
-Preqs::
-
-    ~/o/sysrap/tests/SScene_test.sh 
-        ## create and persist SScene.h from loaded stree.h
-  
-    ~/o/sysrap/tests/SScene_test.sh 
-        ## create and persist stree.h (eg from loaded gdml via GEOM config)
 
 
 Which GL/glew.h is picked up ?
@@ -112,6 +136,7 @@ case ${SCENE:-$scene} in
 0) scene_fold=/tmp/SScene_test ;;
 1) scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim ;;
 2) scene_fold=/tmp/$USER/opticks/G4CXOpticks_setGeometry_Test/CSGFoundry/SSim ;;
+3) scene_fold=/home/$USER/tmp/U4TreeCreateSSimTest/SSim ;;
 esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 

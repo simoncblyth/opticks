@@ -1,11 +1,13 @@
 #!/bin/bash -l 
 usage(){ cat << EOU
-U4TreeCreateTest.sh  : loads GDML, runs U4Tree::Create populating stree.h, saves to FOLD  
-============================================================================================
+U4TreeCreateTest.sh  : loads geometry, runs U4Tree::Create populating stree.h, saves to FOLD  
+==============================================================================================
 
-::
+The geometry may be loaded by various means including from GDML or j/PMTSim via U4VolumeMaker::
 
     ~/o/u4/tests/U4TreeCreateTest.sh
+
+
 
 Running this twice WITH_SND and NOT:WITH_SND enables 
 comparison of snd.hh and sn.h based CSG node impls
@@ -46,18 +48,8 @@ loglevels
 export U4Solid__IsFlaggedLVID=0
 #export U4Solid__IsFlaggedName=sDeadWater
 
-
-
 source $HOME/.opticks/GEOM/GEOM.sh
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
-
-
-if [ -f "$gdmlpath" ]; then 
-   echo $BASH_SOURCE : GEOM $GEOM has gdmlpath $gdmlpath setting ${GEOM}_GDMLPath
-   export ${GEOM}_GDMLPath=$gdmlpath
-else
-   echo $BASH_SOURCE : NOTE GEOM $GEOM LACKS gdmlpath ASSUME USING non-gdml  U4VolumeMaker::PV resolution approach 
-fi 
 
 TMP=${TMP:-/tmp/$USER/opticks}
 export FOLD=$TMP/$bin
@@ -70,7 +62,21 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
 fi 
 
+if [ "${arg/clean}" != "$arg" ]; then 
+    cd $TMP && rm -rf U4TreeCreateTest  # hardcode directory name for safety 
+    [ $? -ne 0 ] && echo $BASH_SOURCE clean error && exit 1 
+fi 
+
 if [ "${arg/run}" != "$arg" ]; then 
+
+
+    if [ -f "$gdmlpath" ]; then 
+       echo $BASH_SOURCE : GEOM $GEOM has gdmlpath $gdmlpath setting ${GEOM}_GDMLPath
+       export ${GEOM}_GDMLPath=$gdmlpath
+    else
+       echo $BASH_SOURCE : NOTE GEOM $GEOM LACKS gdmlpath ASSUME USING non-gdml  U4VolumeMaker::PV resolution approach 
+    fi 
+
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
 fi 

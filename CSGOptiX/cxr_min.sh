@@ -123,10 +123,10 @@ export TOPLINE=${TOPLINE:-$topline}
 export BOTLINE=${BOTLINE:-$botline}
 
 logging(){
-    #export CSGFoundry=INFO 
-    export CSGOptiX=INFO
-    export PIP=INFO
-    export SBT=INFO
+    export CSGFoundry=INFO 
+    #export CSGOptiX=INFO
+    #export PIP=INFO
+    #export SBT=INFO
 }
 [ -n "$LOG" ] && logging 
 
@@ -147,10 +147,12 @@ if [ -n "$TRIMESH" ]; then
    #trimesh=6:mask_PMT_20inch_vetosMask_virtual
    #trimesh=1:sStrutBallhead
    #trimesh=1:base_steel
-   trimesh=1:uni_acrylic1
+   #trimesh=1:uni_acrylic1
    #trimesh=130:sPanel
 
    #trimesh=4:VACUUM_solid
+
+   trimesh=3:Rock_solid 
 
    export OPTICKS_SOLID_TRIMESH=$trimesh
 fi

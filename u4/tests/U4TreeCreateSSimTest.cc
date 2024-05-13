@@ -28,7 +28,10 @@ int main(int argc, char** argv)
         if(world == nullptr) return 0 ; 
 
         sim = SSim::Create() ; 
-        U4Tree::Create(sim->tree, world) ; 
+        U4Tree* tr = U4Tree::Create(sim->tree, world) ; 
+        assert( tr ); 
+
+        sim->initSceneFromTree();  
 
         std::cerr << " save SSim to $TMP/U4TreeCreateSSimTest " << std::endl ; 
 
