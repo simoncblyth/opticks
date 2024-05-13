@@ -166,6 +166,12 @@ void G4CXOpticks::setGeometry()
         LOG(LEVEL) << " CFBASE " ; 
         setGeometry(CSGFoundry::Load()); 
     }
+    else if(ssys::hasenv_("GEOM"))
+    {
+       // this may load GDML using U4VolumeMaker::PVG if "${GEOM}_GDMLPath" is defined   
+        LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ; 
+        setGeometry( U4VolumeMaker::PV() );  
+    }
     else if(SOpticksResource::CFBaseFromGEOM())
     {
         LOG(LEVEL) << "[ CFBASEFromGEOM " ; 
@@ -186,12 +192,6 @@ void G4CXOpticks::setGeometry()
         LOG(LEVEL) << "[ GDMLPathFromGEOM " ; 
         setGeometry(SOpticksResource::GDMLPathFromGEOM()) ; 
         LOG(LEVEL) << "] GDMLPathFromGEOM " ; 
-    }
-    else if(ssys::hasenv_("GEOM"))
-    {
-       // this may load GDML using U4VolumeMaker::PVG if "${GEOM}_GDMLPath" is defined   
-        LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ; 
-        setGeometry( U4VolumeMaker::PV() );  
     }
     else
     {

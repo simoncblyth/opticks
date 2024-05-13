@@ -133,17 +133,14 @@ export G4CXOpticks__saveGeometry_saveGGeo=1
 export X4PhysicalVolume__ENABLE_OSUR_IMPLICIT=1
 
 
-loglevels(){
+logging(){
    export Dummy=INFO
    export G4CXOpticks=INFO
-   export X4PhysicalVolume=INFO
-   #export SOpticksResource=INFO
    export CSGFoundry=INFO
-   export GSurfaceLib=INFO
    export U4VolumeMaker=INFO
-   #export NCSG=INFO
 }
-#loglevels
+
+[ -n "$LOG" ] && logging 
 env | grep =INFO
 
 
