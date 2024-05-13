@@ -100,6 +100,7 @@ inline SScene* SScene::Load(const char* dir)
 {
     SScene* s = new SScene ;
     s->load(dir);
+    s->check(); 
     return s ;
 }
 
@@ -111,6 +112,17 @@ inline SScene::SScene()
 
 inline void SScene::check() const 
 {
+    int num_frame = frame.size(); 
+    bool num_frame_expect =  num_frame > 0  ;
+
+    if(!num_frame_expect) std::cout 
+         << "SScene::check"
+         << " num_frame " << num_frame 
+         << " num_frame_expect " << ( num_frame_expect ? "YES" : "NO " ) 
+         << "\n" 
+         ; 
+
+    assert( num_frame_expect ); 
     assert( meshmerge.size() == meshgroup.size() ); 
 }
 
@@ -596,19 +608,23 @@ Returns the *_idx* frame
 inline sfr SScene::getFrame(int _idx) const
 {
     int num_frame = frame.size(); 
-    assert( num_frame > 0 ); 
-
+    bool num_frame_expect =  num_frame > 0  ;
     int idx = ( _idx > -1 && _idx < num_frame ) ? _idx : num_frame-1  ; 
-    const sfr& f = frame[idx] ; 
 
-    if(false) std::cout 
+    if(!num_frame_expect) std::cout 
          << "SScene::getFrame"
          << " num_frame " << num_frame 
+         << " num_frame_expect " << ( num_frame_expect ? "YES" : "NO " ) 
          << " _idx " << _idx
          << " idx " << idx
          << "\n" 
          ; 
-  
+
+    assert( num_frame_expect ); 
+
+    const sfr& f = frame[idx] ; 
+
+ 
     assert( f.get_idx() == idx ); 
     return f ; 
 }

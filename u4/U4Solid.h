@@ -380,29 +380,14 @@ inline void U4Solid::init()
     if(level > 0) std::cerr << "]U4Solid::init " << brief() << std::endl ; 
 }
 
-inline void U4Solid::init_Tree()
-{
-#ifdef WITH_SND
-    assert( root > -1 );
-    snd::SetLVID(root, lvid );   
-    std::cerr << "U4Solid::init_Tree.WITH_SND.FATAL snd.hh does not provide positivize" << std::endl ; 
-    assert(0); 
-#else
-    assert( root); 
-
-    // only invoke from the top solid, so entire CSG tree of solids
-    // has been traversed at this point 
-    if( depth == 0 )  
-    {
-        root->postconvert(lvid); 
-    }
-#endif
-}
 
 
 /**
 U4Solid::init_Constituents
 --------------------------
+
+Creates sn nodes that capture the G4VSolid type and parameters.
+This is recursive for compound nodes like booleans.
 
 **/
 
@@ -443,6 +428,50 @@ inline void U4Solid::init_Check()
         if(level > 0 ) std::cerr << "U4Solid::init_Check SUCCEEDED desc: " << desc() << std::endl ; 
     }
 }
+
+
+
+/**
+U4Solid::init_Tree
+------------------
+
+Only invoked from the top solid after init_Constituents so the 
+entire tree of G4VSolid has been recursively traversed 
+when the sn::postconvert is called
+
+**/
+
+inline void U4Solid::init_Tree()
+{
+#ifdef WITH_SND
+    assert( root > -1 );
+    snd::SetLVID(root, lvid );   
+    std::cerr << "U4Solid::init_Tree.WITH_SND.FATAL snd.hh does not provide positivize" << std::endl ; 
+    assert(0); 
+#else
+    assert( root); 
+
+    if( depth == 0 )  
+    {
+        root->postconvert(lvid); 
+    }
+#endif
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

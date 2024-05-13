@@ -43,7 +43,7 @@ loglevels
 
 
 #export U4TreeBorder__FLAGGED_ISOLID=HamamatsuR12860sMask_virtual0x61b0510
-#export U4Solid__IsFlaggedLVID=0
+export U4Solid__IsFlaggedLVID=0
 #export U4Solid__IsFlaggedName=sDeadWater
 
 

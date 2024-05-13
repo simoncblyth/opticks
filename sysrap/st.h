@@ -10,14 +10,17 @@ cf with CSG/csg_postorder.h that is used on GPU for these
 
 **/
 
+#include <cstdint>
+
 struct st
 {
-    static int complete_binary_tree_nodes(int height) ; 
+    static constexpr const uint64_t ONE = 1 ;  
+    static uint64_t complete_binary_tree_nodes(uint64_t height) ; 
 };
 
-inline int st::complete_binary_tree_nodes(int height)
+inline uint64_t st::complete_binary_tree_nodes(uint64_t height)
 {
-    return ( (0x1 << (1+(height))) - 1 ) ; 
+    return ( (ONE << (ONE+(height))) - ONE ) ; 
 }
 
 

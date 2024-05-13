@@ -106,11 +106,12 @@ OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
-
+ 
 scene=0
 case ${SCENE:-$scene} in 
 0) scene_fold=/tmp/SScene_test ;;
 1) scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim ;;
+2) scene_fold=/tmp/$USER/opticks/G4CXOpticks_setGeometry_Test/CSGFoundry/SSim ;;
 esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
@@ -122,7 +123,7 @@ dump=0
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
 
-#export SGLFW_SOPTIX_Scene_test_DUMP=1  
+export SGLFW_SOPTIX_Scene_test_DUMP=1  
 
 
 #wh=1024,768

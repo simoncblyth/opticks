@@ -45,6 +45,7 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 #include <iomanip>
 #include <cassert>
 #include <csignal>
+#include <cstdint>
 #include <functional>
 #include <algorithm>
 
@@ -463,9 +464,9 @@ struct SYSRAP_API sn
     int max_binary_depth() const ; 
     int max_binary_depth_r(int d) const ; 
 
-    int getLVBinNode() const ; 
-    int getLVSubNode() const ; 
-    int getLVNumNode() const ; 
+    uint64_t getLVBinNode() const ; 
+    uint64_t getLVSubNode() const ; 
+    uint64_t getLVNumNode() const ; 
 
     static void GetLVNodesComplete(std::vector<const sn*>& nds, int lvid); 
     void        getLVNodesComplete(std::vector<const sn*>& nds) const ; 
@@ -3431,10 +3432,17 @@ of this node.
 
 **/
 
-inline int sn::getLVBinNode() const 
+inline uint64_t sn::getLVBinNode() const 
 {
     int h = max_binary_depth(); 
-    return st::complete_binary_tree_nodes( h );  
+    uint64_t n = st::complete_binary_tree_nodes( h );  
+    if(false) std::cout 
+        << "sn::getLVBinNode"
+        << " h " << h 
+        << " n " << n 
+        << "\n" 
+        ; 
+    return n ; 
 }
 
 /**
@@ -3449,7 +3457,7 @@ the binary tree.
 
 **/
 
-inline int sn::getLVSubNode() const 
+inline uint64_t sn::getLVSubNode() const 
 {
     int constituents = 0 ; 
     std::vector<const sn*> subs ; 
@@ -3475,10 +3483,10 @@ serialization of this node.
 
 **/
 
-inline int sn::getLVNumNode() const 
+inline uint64_t sn::getLVNumNode() const 
 {
-    int bn = getLVBinNode() ; 
-    int sn = getLVSubNode() ; 
+    uint64_t bn = getLVBinNode() ; 
+    uint64_t sn = getLVSubNode() ; 
     return bn + sn ; 
 }
 
@@ -3525,12 +3533,19 @@ sn::getLVNodesComplete
 
 inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const 
 {
-    int bn = getLVBinNode();  
-    int sn = getLVSubNode();  
-    int numParts = bn + sn ; 
+    uint64_t bn = getLVBinNode();  
+    uint64_t ns = getLVSubNode();  
+    uint64_t numParts = bn + ns ; 
     nds.resize(numParts); 
 
-    assert( sn == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+    std::cout 
+        << "sn::getLVNodesComplete"
+        << " bn " << bn 
+        << " ns " << ns 
+        << "\n"
+        ;
+
+    assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
 
     GetLVNodesComplete_r( nds, this, 0 ); 
 }
