@@ -99,9 +99,12 @@ struct U4Solid
     static constexpr const char* G4SubtractionSolid_  = "Sub" ;
     static constexpr const char* G4DisplacedSolid_    = "Dis" ;
 
-
+    static constexpr const char* _U4Solid__IsFlaggedLVID = "U4Solid__IsFlaggedLVID" ; 
+    static const int   IsFlaggedLVID_ ; 
     static const char* IsFlaggedName_ ; 
     static const char* IsFlaggedType_ ; 
+
+    static bool IsFlaggedLVID(int q_lvid); 
     static bool IsFlaggedName(const char* name); 
     static bool IsFlaggedType(const char* type); 
 
@@ -189,6 +192,12 @@ private:
 #endif
 
 };
+
+inline const int U4Solid::IsFlaggedLVID_ = ssys::getenvint(_U4Solid__IsFlaggedLVID, -1) ; 
+inline bool U4Solid::IsFlaggedLVID(int q_lvid)
+{
+    return IsFlaggedLVID_ == q_lvid ;  
+}
 
 
 
@@ -317,6 +326,18 @@ inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int leve
 inline sn* U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
 #endif
 {
+    bool flagged_LVID = IsFlaggedLVID(lvid);  
+    if(flagged_LVID) std::cout 
+        << "U4Solid::Convert"
+        << " solid.GetName[" << solid->GetName() << "]"
+        << " lvid " << lvid 
+        << " " << _U4Solid__IsFlaggedLVID << " : " << ( flagged_LVID ? "YES" : "NO " ) 
+        << " depth " << depth
+        << " level " << level 
+        << "\n"
+        ; 
+
+
     U4Solid so(solid, lvid, depth, level ); 
     return so.root ; 
 }
