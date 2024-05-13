@@ -567,18 +567,20 @@ Which is set for example from::
 inline void SScene::addFrames(const char* path, const stree* st)
 {
     std::string framespec ; 
-    bool read = spath::Read( framespec, path ); 
-    if(!read) return ; 
+    bool framespec_exists = spath::Read( framespec, path ); 
 
-    std::vector<std::string> lines ; 
-    sstr::SplitTrimSuppress(framespec.c_str(), '\n', lines) ; 
-
-    int num_line = lines.size();
-    for(int i=0 ; i < num_line ; i++)
+    if(framespec_exists)
     {
-        const std::string& line = lines[i]; 
-        sfr f = st->get_frame(line.c_str()); 
-        addFrame(f);  
+        std::vector<std::string> lines ; 
+        sstr::SplitTrimSuppress(framespec.c_str(), '\n', lines) ; 
+
+        int num_line = lines.size();
+        for(int i=0 ; i < num_line ; i++)
+        {
+            const std::string& line = lines[i]; 
+            sfr f = st->get_frame(line.c_str()); 
+            addFrame(f);  
+        }
     }
 
     // last frame that ensures always at least one  
