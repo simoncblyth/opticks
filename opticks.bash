@@ -2458,13 +2458,24 @@ EON
 }
 
 
+opticks-prepare-InputPhotons()
+{
+    local msg="=== $FUNCNAME :"
+    mkdir -p $HOME/.opticks/InputPhotons
+    echo $msg used by some tests
+    $(opticks-home)/ana/input_photons.sh 
+}
+
+
 opticks-prepare-installation()
 {
     local msg="=== $FUNCNAME :"
-    echo $msg generating RNG seeds into installcache 
+    echo $msg 
 
     qudarap-
     qudarap-prepare-installation
+
+    opticks-prepare-InputPhotons
 }
 
 opticks-check-installation()
