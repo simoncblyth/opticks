@@ -172,16 +172,33 @@ vars="GEOM TMIN EYE LOOK ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE B
 
 
 
-G4CXOpticks_setGeometry_Test_BASE=$TMP/G4CXOpticks_setGeometry_Test
-signal_prim=$G4CXOpticks_setGeometry_Test_BASE/$GEOM/CSGFoundry/prim.npy
+Resolve_CFBaseFromGEOM()
+{
+   : LOOK FOR CFBase directory containing CSGFoundry geometry 
+   : HMM COULD PUT INTO GEOM.sh TO AVOID DUPLICATION ?
+   : G4CXOpticks_setGeometry_Test GEOM TAKES PRECEDENCE OVER .opticks/GEOM
 
-if [ -f "$signal_prim" ]; then
-    export ${GEOM}_CFBaseFromGEOM=$G4CXOpticks_setGeometry_Test_BASE/$GEOM
-    ## NB CFBase directory is expected to contain CSGFoundry
-    echo $BASH_SOURCE : FOUND signal_prim $signal_prim
-else
-    echo $BASH_SOURCE : NOT-FOUND signal_prim $signal_prim
-fi 
+   local A_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
+   local B_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+   local TestPath=CSGFoundry/prim.npy
+
+    if [ -d "$A_CFBaseFromGEOM" -a -f "$A_CFBaseFromGEOM/$TestPath" ]; then
+        export ${GEOM}_CFBaseFromGEOM=$A_CFBaseFromGEOM
+        echo $BASH_SOURCE : FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
+    elif [ -d "$B_CFBaseFromGEOM" -a -f "$B_CFBaseFromGEOM/$TestPath" ]; then
+        export ${GEOM}_CFBaseFromGEOM=$B_CFBaseFromGEOM
+        echo $BASH_SOURCE : FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath
+    else
+        echo $BASH_SOURCE : NOT-FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
+        echo $BASH_SOURCE : NOT-FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath
+    fi 
+}
+Resolve_CFBaseFromGEOM
+
+
+#export SOpticksResource=INFO
+#export CSGFoundry=INFO
+
 
 
 

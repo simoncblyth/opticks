@@ -351,7 +351,7 @@ const char* SOpticksResource::CFBaseFromGEOM()
         << " name " << name 
         << " path " << path 
         ;
-    return path ; 
+    return path  ; 
 }
 
 /**

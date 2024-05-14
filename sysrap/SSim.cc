@@ -123,6 +123,12 @@ Default reldir is "SSim" so the base directory is for example::
 
 SSim* SSim::Load(const char* base, const char* reldir)
 {
+    LOG_IF(fatal, base==nullptr) 
+        << " base NULL " 
+        << " base " << ( base ? base : "-" )
+        << " reldir " << ( reldir ? reldir : "-" )
+        ; 
+
     SSim* sim = new SSim ; 
     sim->load(base, reldir);  
     return sim ; 

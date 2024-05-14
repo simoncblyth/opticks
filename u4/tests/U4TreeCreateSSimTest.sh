@@ -39,6 +39,8 @@ loglevels
 
 
 source $HOME/.opticks/GEOM/GEOM.sh
+[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM must be defined && exit 1  
+
 gdmlpath=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 
 if [ -f "$gdmlpath" ]; then
@@ -49,16 +51,17 @@ fi
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
-fold=$TMP/$bin
+fold=$TMP/$bin/$GEOM
 mkdir -p $fold
 
-export BASE=$fold   # where SSim loaded from when executable has any argumnent
-export FOLD=$fold   # where SSim saved 
+export FOLD=$fold   # where SSim saved/loaded 
+
+U4TreeCreateSSimTest
 
 
 script=$SDIR/$bin.py 
 
-vars="BASH_SOURCE SDIR bin GEOM gdmlpath tmp TMP BASE FOLD script"
+vars="BASH_SOURCE SDIR bin GEOM gdmlpath tmp TMP FOLD script"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 

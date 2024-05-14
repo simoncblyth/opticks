@@ -2982,12 +2982,14 @@ Load precedence:
 0. when GEOM and "GEOM"_CFBaseFromGEOM are defined that directory is used
 1. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
 
+
 **/
 
 const char* CSGFoundry::ResolveCFBase_() // static 
 {
-    const char* cfbase = nullptr ; 
-    cfbase = SOpticksResource::CFBaseFromGEOM() ;
+    const char* cfbase = SOpticksResource::CFBaseFromGEOM() ;
+
+    LOG_IF(info, cfbase == nullptr ) << " SOpticksResource::CFBaseFromGEOM gave null debug with : export SOpticksResource=INFO " ; 
 
     LOG(LEVEL) << "cfbase from SOpticksResource::CFBaseFromGEOM : " << ( cfbase ? cfbase : "no-cfbase : try next SOpticksResource::CFBase  " ) ;   
     if(cfbase == nullptr) cfbase = SOpticksResource::CFBase() ;  // standard or override
@@ -3030,8 +3032,7 @@ CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = ResolveCFBase() ; 
 
-
-    LOG(LEVEL) << "[ SSim::Load " ;  
+    LOG(LEVEL) << "[ SSim::Load cfbase " << ( cfbase ? cfbase : "-" )  ;  
     SSim* sim = SSim::Load(cfbase, "CSGFoundry/SSim"); 
     LOG(LEVEL) << "] SSim::Load " ;  
 

@@ -106,6 +106,11 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 name=SGLFW_SOPTIX_Scene_test
 
+
+source $HOME/.opticks/GEOM/GEOM.sh
+[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1 
+
+
 export FOLD=/tmp/$USER/opticks/$name
 bin=$FOLD/$name
 mkdir -p $FOLD
@@ -134,9 +139,9 @@ SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 scene=0
 case ${SCENE:-$scene} in 
 0) scene_fold=/tmp/SScene_test ;;
-1) scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim ;;
-2) scene_fold=/tmp/$USER/opticks/G4CXOpticks_setGeometry_Test/CSGFoundry/SSim ;;
-3) scene_fold=/home/$USER/tmp/U4TreeCreateSSimTest/SSim ;;
+1) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
+2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
+3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
 esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
