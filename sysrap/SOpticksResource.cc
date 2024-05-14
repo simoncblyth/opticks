@@ -449,6 +449,8 @@ For example exercise this with::
 const char* SOpticksResource::GDMLPath(){ return GDMLPath( GEOM()); }
 const char* SOpticksResource::GDMLPath(const char* geom)
 {
+    LOG(fatal) << " TODO: ELIMINATE THIS : INSTEAD USE GDMLPathFromGEOM " ; 
+
     return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GDMLPath")) ; 
 }
 

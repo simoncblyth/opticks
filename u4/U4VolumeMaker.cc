@@ -228,7 +228,9 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
         const char* n = names[i].c_str(); 
         bool has_manager_prefix = PMTSim::HasManagerPrefix(n) ;
         LOG(LEVEL) << "[ WITH_PMTSIM n [" << n << "] has_manager_prefix " << has_manager_prefix ; 
-        assert( has_manager_prefix ); 
+        
+        if(!has_manager_prefix) return nullptr ; 
+        //assert( has_manager_prefix ); 
 
         G4LogicalVolume* lv = PMTSim::GetLV(n) ; 
         LOG_IF(fatal, lv == nullptr ) << "PMTSim::GetLV returned nullptr for n [" << n << "]" ; 

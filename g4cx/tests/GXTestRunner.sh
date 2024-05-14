@@ -5,6 +5,10 @@ GXTestRunner.sh
 
 See sysrap/tests/STestRunner.sh for notes
 
+Caution when using this under ctest it is the installed version 
+of the runner that is used, so much build+install gxt before 
+a change here will take effect.
+
 EOU
 }
 
@@ -15,6 +19,19 @@ ARGS="$@"
 
 geomscript=$HOME/.opticks/GEOM/GEOM.sh
 [ -s $geomscript ] && source $geomscript
+
+
+Resolve_GDMLPath()
+{   
+   local GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
+   if [ -f "$GDMLPath" ]; then 
+        export ${GEOM}_GDMLPath=$GDMLPath
+        echo $BASH_SOURCE : FOUND GDMLPath $GDMLPath
+   else 
+        echo $BASH_SOURCE : NOT-FOUND GDMLPath $GDMLPath
+   fi  
+}
+Resolve_GDMLPath
 
 
 

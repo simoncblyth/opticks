@@ -3538,7 +3538,7 @@ inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const
     uint64_t numParts = bn + ns ; 
     nds.resize(numParts); 
 
-    std::cout 
+    if(false) std::cout 
         << "sn::getLVNodesComplete"
         << " bn " << bn 
         << " ns " << ns 
