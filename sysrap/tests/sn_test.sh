@@ -3,41 +3,46 @@ usage(){ cat << EOU
 sn_test.sh
 ==========
 
+~/o/sysrap/tests/sn_test.sh 
+
 
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+
+cd $(dirname $(realpath $BASH_SOURCE))
 name=sn_test
 
 export FOLD=/tmp/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
-script=$SDIR/$name.py 
+script=$name.py 
  
-defarg="info_build_run_ana"
+#defarg="info_build_run_ana"
+defarg="info_build_run"
 arg=${1:-$defarg}
 
 opt=-DWITH_CHILD
 export s_pool_level=2
 
-vars="BASH_SOURCE SDIR bin script opt"
+vars="BASH_SOURCE bin script opt"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $SDIR/$name.cc \
-        $SDIR/../sn.cc \
-        $SDIR/../s_tv.cc \
-        $SDIR/../s_pa.cc \
-        $SDIR/../s_bb.cc \
-        $SDIR/../s_csg.cc \
-        -I$SDIR/.. \
+    gcc $name.cc \
+        ../sn.cc \
+        ../s_tv.cc \
+        ../s_pa.cc \
+        ../s_bb.cc \
+        ../s_csg.cc \
+        -I.. \
         -I$HOME/np \
         -I$OPTICKS_PREFIX/externals/glm/glm \
+        -lm \
         $opt -g -std=c++11 -lstdc++ -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 

@@ -77,6 +77,15 @@ const char* U4SolidMaker::Name( const char* prefix, unsigned idx ) // static
     return strdup(s.c_str()) ; 
 }
 
+
+/**
+U4SolidMaker::PrimitiveClone
+-----------------------------
+
+Create G4VSolid using copy ctor of appropriate EntityType
+
+**/
+
 G4VSolid* U4SolidMaker::PrimitiveClone( const G4VSolid* src, const char* prefix, unsigned idx) // static
 {
     const char* name = Name(prefix, idx ); 
@@ -116,42 +125,43 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     }
 
     const G4VSolid* solid = nullptr ; 
-    if(     StartsWith("JustOrbOrbUnion",qname))              solid = U4SolidMaker::JustOrbOrbUnion(qname); 
-    else if(StartsWith("JustOrbOrbIntersection",qname))       solid = U4SolidMaker::JustOrbOrbIntersection(qname); 
-    else if(StartsWith("JustOrbOrbDifference",qname))         solid = U4SolidMaker::JustOrbOrbDifference(qname); 
-    else if(StartsWith("JustOrb",qname))                      solid = U4SolidMaker::JustOrb(qname); 
-    else if(StartsWith("ThreeOrbUnion",qname))                solid = U4SolidMaker::ThreeOrbUnion(qname); 
-    else if(StartsWith("SphereWithPhiSegment",qname))         solid = U4SolidMaker::SphereWithPhiSegment(qname); 
-    else if(StartsWith("SphereWithPhiCutDEV",qname))          solid = U4SolidMaker::SphereWithPhiCutDEV(qname); 
-    else if(StartsWith("GeneralSphereDEV",qname))             solid = U4SolidMaker::GeneralSphereDEV(qname, meta); 
-    else if(StartsWith("SphereWithThetaSegment",qname))       solid = U4SolidMaker::SphereWithThetaSegment(qname); 
-    else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = U4SolidMaker::AdditionAcrylicConstruction(qname); 
-    else if(StartsWith("XJfixtureConstruction", qname))       solid = U4SolidMaker::XJfixtureConstruction(qname); 
-    else if(StartsWith("AltXJfixtureConstructionU", qname))   solid = U4SolidMaker::AltXJfixtureConstructionU(qname); 
-    else if(StartsWith("AltXJfixtureConstruction", qname))    solid = U4SolidMaker::AltXJfixtureConstruction(qname); 
-    else if(StartsWith("XJanchorConstruction", qname))        solid = U4SolidMaker::XJanchorConstruction(qname) ; 
-    else if(StartsWith("SJReceiverConstruction", qname))      solid = U4SolidMaker::SJReceiverConstruction(qname) ; 
-    else if(StartsWith("BoxMinusTubs0",qname))                solid = U4SolidMaker::BoxMinusTubs0(qname); 
-    else if(StartsWith("BoxMinusTubs1",qname))                solid = U4SolidMaker::BoxMinusTubs1(qname); 
-    else if(StartsWith("BoxMinusOrb",qname))                  solid = U4SolidMaker::BoxMinusOrb(qname); 
-    else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = U4SolidMaker::UnionOfHemiEllipsoids(qname); 
-    else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = U4SolidMaker::PolyconeWithMultipleRmin(qname) ; 
-    else if(StartsWith("AnnulusBoxUnion", qname))             solid = U4SolidMaker::AnnulusBoxUnion(qname) ; 
-    else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = U4SolidMaker::AnnulusTwoBoxUnion(qname) ; 
-    else if(StartsWith("AnnulusOtherTwoBoxUnion", qname))     solid = U4SolidMaker::AnnulusOtherTwoBoxUnion(qname) ; 
-    else if(StartsWith("AnnulusCrossTwoBoxUnion", qname))     solid = U4SolidMaker::AnnulusCrossTwoBoxUnion(qname) ; 
-    else if(StartsWith("AnnulusFourBoxUnion", qname))         solid = U4SolidMaker::AnnulusFourBoxUnion(qname) ; 
-    else if(StartsWith("CylinderFourBoxUnion", qname))        solid = U4SolidMaker::CylinderFourBoxUnion(qname) ; 
-    else if(StartsWith("BoxFourBoxUnion", qname))             solid = U4SolidMaker::BoxFourBoxUnion(qname) ; 
-    else if(StartsWith("BoxCrossTwoBoxUnion", qname))         solid = U4SolidMaker::BoxCrossTwoBoxUnion(qname) ; 
-    else if(StartsWith("BoxThreeBoxUnion", qname))            solid = U4SolidMaker::BoxThreeBoxUnion(qname) ; 
-    else if(StartsWith("OrbGridMultiUnion", qname))           solid = U4SolidMaker::OrbGridMultiUnion(qname) ; 
-    else if(StartsWith("BoxGridMultiUnion", qname))           solid = U4SolidMaker::BoxGridMultiUnion(qname) ; 
-    else if(StartsWith("BoxFourBoxContiguous", qname))        solid = U4SolidMaker::BoxFourBoxContiguous(qname) ; 
-    else if(StartsWith("LHCbRichSphMirr", qname))             solid = U4SolidMaker::LHCbRichSphMirr(qname) ; 
-    else if(StartsWith("LHCbRichFlatMirr", qname))            solid = U4SolidMaker::LHCbRichFlatMirr(qname) ; 
-    else if(StartsWith("SphereIntersectBox", qname))          solid = U4SolidMaker::SphereIntersectBox(qname) ; 
-    else if(StartsWith("LocalFastenerAcrylicConstruction", qname)) solid = U4SolidMaker::LocalFastenerAcrylicConstruction(qname) ; 
+    if(     StartsWith("JustOrbOrbUnion",qname))              solid = JustOrbOrbUnion(qname); 
+    else if(StartsWith("JustOrbOrbIntersection",qname))       solid = JustOrbOrbIntersection(qname); 
+    else if(StartsWith("JustOrbOrbDifference",qname))         solid = JustOrbOrbDifference(qname); 
+    else if(StartsWith("JustOrb",qname))                      solid = JustOrb(qname); 
+    else if(StartsWith("ThreeOrbUnion",qname))                solid = ThreeOrbUnion(qname); 
+    else if(StartsWith("SphereWithPhiSegment",qname))         solid = SphereWithPhiSegment(qname); 
+    else if(StartsWith("SphereWithPhiCutDEV",qname))          solid = SphereWithPhiCutDEV(qname); 
+    else if(StartsWith("GeneralSphereDEV",qname))             solid = GeneralSphereDEV(qname, meta); 
+    else if(StartsWith("SphereWithThetaSegment",qname))       solid = SphereWithThetaSegment(qname); 
+    else if(StartsWith("AdditionAcrylicConstruction",qname))  solid = AdditionAcrylicConstruction(qname); 
+    else if(StartsWith("XJfixtureConstruction", qname))       solid = XJfixtureConstruction(qname); 
+    else if(StartsWith("AltXJfixtureConstructionU", qname))   solid = AltXJfixtureConstructionU(qname); 
+    else if(StartsWith("AltXJfixtureConstruction", qname))    solid = AltXJfixtureConstruction(qname); 
+    else if(StartsWith("XJanchorConstruction", qname))        solid = XJanchorConstruction(qname) ; 
+    else if(StartsWith("SJReceiverConstruction", qname))      solid = SJReceiverConstruction(qname) ; 
+    else if(StartsWith("BoxMinusTubs0",qname))                solid = BoxMinusTubs0(qname); 
+    else if(StartsWith("BoxMinusTubs1",qname))                solid = BoxMinusTubs1(qname); 
+    else if(StartsWith("BoxMinusOrb",qname))                  solid = BoxMinusOrb(qname); 
+    else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = UnionOfHemiEllipsoids(qname); 
+    else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = PolyconeWithMultipleRmin(qname) ; 
+    else if(StartsWith("AnnulusBoxUnion", qname))             solid = AnnulusBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = AnnulusTwoBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusOtherTwoBoxUnion", qname))     solid = AnnulusOtherTwoBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusCrossTwoBoxUnion", qname))     solid = AnnulusCrossTwoBoxUnion(qname) ; 
+    else if(StartsWith("AnnulusFourBoxUnion", qname))         solid = AnnulusFourBoxUnion(qname) ; 
+    else if(StartsWith("CylinderFourBoxUnion", qname))        solid = CylinderFourBoxUnion(qname) ; 
+    else if(StartsWith("BoxFourBoxUnion", qname))             solid = BoxFourBoxUnion(qname) ; 
+    else if(StartsWith("BoxCrossTwoBoxUnion", qname))         solid = BoxCrossTwoBoxUnion(qname) ; 
+    else if(StartsWith("BoxThreeBoxUnion", qname))            solid = BoxThreeBoxUnion(qname) ; 
+    else if(StartsWith("OrbGridMultiUnion", qname))           solid = OrbGridMultiUnion(qname) ; 
+    else if(StartsWith("BoxGridMultiUnion", qname))           solid = BoxGridMultiUnion(qname) ; 
+    else if(StartsWith("BoxFourBoxContiguous", qname))        solid = BoxFourBoxContiguous(qname) ; 
+    else if(StartsWith("LHCbRichSphMirr", qname))             solid = LHCbRichSphMirr(qname) ; 
+    else if(StartsWith("LHCbRichFlatMirr", qname))            solid = LHCbRichFlatMirr(qname) ; 
+    else if(StartsWith("SphereIntersectBox", qname))          solid = SphereIntersectBox(qname) ; 
+    else if(StartsWith("LocalFastenerAcrylicConstruction", qname)) solid = LocalFastenerAcrylicConstruction(qname) ; 
+
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname ; 
     return solid ; 
@@ -839,6 +849,8 @@ const G4VSolid* U4SolidMaker::CylinderFourBoxUnion(const char* name){ return Ann
 
 
 /**
+U4SolidMaker::BoxFourBoxUnion_
+---------------------------------
  
 
                           +----------+
@@ -871,6 +883,10 @@ TODO: switch off balancing and check the impact of pairing order
   although they work on their own they may be implicated with inner boundary spurious 
 
         
+
+Notice that the tree grows upwards with a new union root 
+as each prim is union-ed into the combination.
+
                        U                 
                   U       E 
              U       D

@@ -2267,6 +2267,14 @@ void U4SolidTree::SetLeft(  G4VSolid* node, G4VSolid* left)  // static
 }
 
 
+/**
+U4SolidTree::PrimitiveClone
+-----------------------------
+
+Create G4VSolid using copy ctor of appropriate EntityType
+
+**/
+
 G4VSolid* U4SolidTree::PrimitiveClone( const  G4VSolid* solid )  // static 
 {
     LOG(LEVEL) << EntityTypeName(solid) ; 

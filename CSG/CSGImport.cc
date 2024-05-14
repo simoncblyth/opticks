@@ -226,6 +226,15 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     return pr ; 
 } 
 
+/**
+CSGImport::importPrim_
+------------------------
+
+TODO: add listnode handling 
+
+
+**/
+
 
 template<typename N>
 CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node ) 

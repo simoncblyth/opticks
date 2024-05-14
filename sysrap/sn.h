@@ -441,6 +441,7 @@ struct SYSRAP_API sn
     static sn* Collection( std::vector<sn*>& prims ); 
     static sn* UnionTree(  std::vector<sn*>& prims ); 
     static sn* Contiguous( std::vector<sn*>& prims ); 
+    static sn* Discontiguous( std::vector<sn*>& prims ); 
     static sn* Compound(   std::vector<sn*>& prims, int typecode_ ); 
 
     static sn* Buggy_CommonOperatorTree( std::vector<sn*>& leaves    , int op ); 
@@ -520,6 +521,8 @@ struct SYSRAP_API sn
 
     void setAABB_LeafFrame() ; 
     void setAABB_LeafFrame_All() ; 
+
+    //void setAABB(); // renamed to setAABB_TreeFrame_All
     void setAABB_TreeFrame_All() ; 
 
 
@@ -3080,8 +3083,20 @@ inline sn* sn::Contiguous(std::vector<sn*>& prims )
     sn* n = Compound( prims, CSG_CONTIGUOUS ); 
     return n ; 
 }
+inline sn* sn::Discontiguous(std::vector<sn*>& prims )
+{
+    sn* n = Compound( prims, CSG_DISCONTIGUOUS ); 
+    return n ; 
+}
 
+/**
+sn::Compound
+------------
 
+Note there is no subNum/subOffset here, those are needed when 
+serializing the n-ary sn tree of nodes into CSGNode presumably. 
+
+**/
 
 inline sn* sn::Compound(std::vector<sn*>& prims, int typecode_ )
 {
@@ -3866,6 +3881,9 @@ inline double sn::radius_sphere() const
 sn::setAABB_LeafFrame
 ----------------------
 
+Gets parameters and uses to setBB depending on typecode.
+No transforms are used. 
+
 Migrated down from CSGNode::setAABBLocal as nudging 
 needs this done earlier. 
 
@@ -3971,6 +3989,16 @@ inline void sn::setAABB_LeafFrame()
     }
 }
 
+
+/**
+sn::setAABB_LeafFrame_All
+---------------------------
+
+1. collects vector of all prim 
+2. for each prim call setAABB_LeadFrame
+
+**/
+
 inline void sn::setAABB_LeafFrame_All()  
 {
     std::vector<const sn*> prim ; 
@@ -3988,6 +4016,10 @@ inline void sn::setAABB_LeafFrame_All()
 /*
 sn::setAABB_TreeFrame_All formerly sn::setAABB
 -----------------------------------------------
+
+1. collect vector of all prim
+2. setAABB_LeafFrame for each prim using param and typecode
+3. gets transform for the node and inplace applies it to the BB
 
 **/
 
