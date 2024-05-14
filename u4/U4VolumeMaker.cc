@@ -254,6 +254,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
     if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);   
     if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater(false);   
     if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWater(true);   
+    if(sstr::StartsWith(name,"LocalFastenerAcrylicConstruction" )) pv = LocalFastenerAcrylicConstruction(name);   
     return pv ; 
 }
 const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
@@ -268,7 +269,8 @@ const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
 const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
 {
     METH = "PV1_" ; 
-    G4LogicalVolume* lv = LV(name) ; 
+    const char* matname_ = nullptr ;  // look for material in name or default to Vacuum
+    G4LogicalVolume* lv = LV(name, matname_) ; 
     LOG_IF(error, lv == nullptr) << " failed to access lv for name " << name ; 
     if(lv == nullptr) return nullptr ; 
 
@@ -302,18 +304,22 @@ HMM: maybe provide PMTSim LV this way too ? Based on some prefix ?
 
 **/
 
-G4LogicalVolume*  U4VolumeMaker::LV(const char* name)
+G4LogicalVolume*  U4VolumeMaker::LV(const char* name, const char* matname_)
 {
     const G4VSolid* solid_  = U4SolidMaker::Make(name); 
     LOG_IF(error, solid_==nullptr) << " failed to access solid for name " << name ; 
     if(solid_ == nullptr) return nullptr ; 
 
     G4VSolid* solid = const_cast<G4VSolid*>(solid_); 
-    const char* matname = U4Material::FindMaterialName(name) ; 
+    const char* matname = matname_ ? matname_ : U4Material::FindMaterialName(name) ; 
     G4Material* material = U4Material::Get( matname ? matname : U4Material::VACUUM ); 
     G4LogicalVolume* lv = new G4LogicalVolume( solid, material, name, 0,0,0,true ); 
     return lv ; 
 }
+
+
+
+
 
 /**
 U4VolumeMaker::LV vector interface : creates multiple LV using delimited names string 
@@ -331,7 +337,8 @@ void U4VolumeMaker::LV(std::vector<G4LogicalVolume*>& lvs , const char* names_, 
     for(unsigned i=0 ; i < num_names ; i++)
     {
         const char* name = names[i].c_str(); 
-        G4LogicalVolume* lv = LV(name) ; 
+        const char* matname_ = nullptr ; 
+        G4LogicalVolume* lv = LV(name, matname_ ) ; 
         assert(lv); 
         lvs.push_back(lv);   
     }
@@ -746,7 +753,8 @@ const G4VPhysicalVolume* U4VolumeMaker::AddPlacement( G4LogicalVolume* mother_lv
 } 
 const G4VPhysicalVolume* U4VolumeMaker::AddPlacement( G4LogicalVolume* mother, const char* name,  double tx, double ty, double tz )
 {
-    G4LogicalVolume* lv = LV(name); 
+    const char* matname_ = nullptr ; 
+    G4LogicalVolume* lv = LV(name, matname_); 
     return AddPlacement( mother, lv, tx, ty, tz ); 
 }
 
@@ -795,11 +803,6 @@ const G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside, cons
 
 
 
-
-
-
-
-
 const G4VPhysicalVolume* U4VolumeMaker::Box(double halfside, const char* mat, const char* prefix, G4LogicalVolume* mother_lv )
 {
     if(prefix == nullptr) prefix = mat ; 
@@ -816,6 +819,36 @@ const G4VPhysicalVolume* U4VolumeMaker::Place( G4LogicalVolume* lv, G4LogicalVol
     U4RotationMatrix* flip = flip_axes ? U4RotationMatrix::Flip(flip_axes) : nullptr ; 
     return new G4PVPlacement(flip,G4ThreeVector(), lv, pv_name, mother_lv, false, 0);
 }
+
+
+const G4VPhysicalVolume* U4VolumeMaker::LocalFastenerAcrylicConstruction(const char* name)
+{
+    const char* PREFIX = "LocalFastenerAcrylicConstruction" ; 
+    assert( sstr::StartsWith(name,PREFIX ));
+    int num = strlen(name) > strlen(PREFIX) ? std::atoi( name + strlen(PREFIX) ) : 8 ; 
+
+    LOG(info) 
+        << " name " <<  ( name ? name : "-" )
+        << " num " << num 
+        ;
+
+    G4double universe_halfside = 300.*mm ; 
+    const char* universe_material = "G4_AIR" ; 
+
+    G4LogicalVolume* universe_lv  = Box_(universe_halfside, universe_material ); 
+    G4LogicalVolume* object_lv = LV(name, "G4_Pb" ) ; 
+
+    const G4VPhysicalVolume* universe_pv = new G4PVPlacement(0,G4ThreeVector(),  universe_lv ,  "universe_pv", nullptr,false,0);
+    const G4VPhysicalVolume* object_pv = new G4PVPlacement(0,G4ThreeVector(), object_lv ,"object_pv", universe_lv,false,0);
+    assert( object_pv ); 
+
+    return universe_pv ; 
+}
+
+
+
+
+
 
 /**
 U4VolumeMaker::RaindropRockAirWater

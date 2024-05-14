@@ -170,6 +170,21 @@ LOG=$bin.log
 
 vars="GEOM TMIN EYE LOOK ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
 
+
+
+G4CXOpticks_setGeometry_Test_BASE=$TMP/G4CXOpticks_setGeometry_Test
+signal_prim=$G4CXOpticks_setGeometry_Test_BASE/$GEOM/CSGFoundry/prim.npy
+
+if [ -f "$signal_prim" ]; then
+    export ${GEOM}_CFBaseFromGEOM=$G4CXOpticks_setGeometry_Test_BASE/$GEOM
+    ## NB CFBase directory is expected to contain CSGFoundry
+    echo $BASH_SOURCE : FOUND signal_prim $signal_prim
+else
+    echo $BASH_SOURCE : NOT-FOUND signal_prim $signal_prim
+fi 
+
+
+
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 

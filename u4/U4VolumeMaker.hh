@@ -39,7 +39,7 @@ struct U4_API U4VolumeMaker
   
  
     // general LV maker using U4SolidMaker::Make, U4Material::FindMaterialName
-    static G4LogicalVolume*   LV(const char* name); 
+    static G4LogicalVolume*   LV(const char* name, const char* matname_ ); 
     static void               LV(std::vector<G4LogicalVolume*>& lvs , const char* names_, char delim=',' ) ; 
 
 
@@ -89,7 +89,9 @@ struct U4_API U4VolumeMaker
     static const G4VPhysicalVolume* Place( G4LogicalVolume* lv, G4LogicalVolume* mother_lv, const char* flip_axes=nullptr ); 
 
     // specialist pv creators
-    
+    static const G4VPhysicalVolume* LocalFastenerAcrylicConstruction(const char* name); 
+
+ 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_MATS = "U4VolumeMaker_RaindropRockAirWater_MATS" ; 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_RINDEX = "U4VolumeMaker_RaindropRockAirWater_RINDEX" ; 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_HALFSIDE = "U4VolumeMaker_RaindropRockAirWater_HALFSIDE" ; 

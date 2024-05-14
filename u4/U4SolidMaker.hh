@@ -36,8 +36,9 @@ struct U4_API U4SolidMaker
     static const G4VSolid* JustOrbOrb_(const char* name, char op); 
     static const G4VSolid* ThreeOrbUnion(const char* name ); 
 
-    static const G4VSolid* SphereIntersectBox(const char* name); 
     static const G4VSolid* SphereWithPhiCutDEV(const char* name); 
+
+
     static const G4VSolid* GeneralSphereDEV(const char* name, std::string& meta );
     static const G4VSolid* SphereWithPhiSegment(const char* name); 
     static const G4VSolid* SphereWithThetaSegment(const char* name); 
@@ -92,6 +93,10 @@ struct U4_API U4SolidMaker
 
     static void Extract( std::vector<long>& vals, const char* s ); 
     static bool StartsWith( const char* n, const char* q ); 
+
+    static const G4VSolid* SphereIntersectBox(const char* name); 
+    static const G4VSolid* LocalFastenerAcrylicConstruction(const char* name); 
+
 
 };
 

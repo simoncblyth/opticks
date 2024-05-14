@@ -1,6 +1,7 @@
 #include <cstring>
 #include <csignal>
 #include "SStr.hh"
+#include "sstr.h"
 #include "NP.hh"
 
 #include "G4SystemOfUnits.hh"
@@ -64,6 +65,7 @@ BoxGridMultiUnion
 BoxFourBoxContiguous
 LHCbRichSphMirr
 LHCbRichFlatMirr
+LocalFastenerAcrylicConstruction
 )LITERAL"; 
 
 
@@ -149,10 +151,16 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("LHCbRichSphMirr", qname))             solid = U4SolidMaker::LHCbRichSphMirr(qname) ; 
     else if(StartsWith("LHCbRichFlatMirr", qname))            solid = U4SolidMaker::LHCbRichFlatMirr(qname) ; 
     else if(StartsWith("SphereIntersectBox", qname))          solid = U4SolidMaker::SphereIntersectBox(qname) ; 
+    else if(StartsWith("LocalFastenerAcrylicConstruction", qname)) solid = U4SolidMaker::LocalFastenerAcrylicConstruction(qname) ; 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname ; 
     return solid ; 
 }
+
+
+
+
+
 
 const G4VSolid* U4SolidMaker::JustOrb(const char* name)  // static
 {
@@ -199,6 +207,7 @@ const G4VSolid* U4SolidMaker::SphereWithPhiCutDEV(const char* name)  // static
 
     return new G4Sphere(pName, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta ); 
 }
+
 
 
 
@@ -1958,3 +1967,32 @@ const G4VSolid* U4SolidMaker::SphereIntersectBox(const char* qname)  // static
     G4IntersectionSolid* sph_box = new G4IntersectionSolid("sph_box_CSG_EXBB", sph, box, 0, G4ThreeVector(0.*mm, 0.*mm, 100.*mm ) ); 
     return sph_box ;  
 }
+
+
+const G4VSolid* U4SolidMaker::LocalFastenerAcrylicConstruction(const char* name) // static
+{
+    const char* PREFIX = "LocalFastenerAcrylicConstruction" ; 
+    assert( sstr::StartsWith(name,PREFIX ));
+    int num_column = strlen(name) > strlen(PREFIX) ? std::atoi( name + strlen(PREFIX) ) : 8 ; 
+
+    LOG(info) 
+        << " name " <<  ( name ? name : "-" )
+        << " num_column " << num_column 
+        ;
+
+    G4VSolid* uni_Addition(nullptr); 
+    {
+        G4Tubs *IonRing = new G4Tubs("IonRing",123*mm,206.2*mm,7*mm,0.0*deg,360.0*deg);
+        G4Tubs* screw = new G4Tubs("screw",0,13*mm,50.*mm,0.0*deg,360.0*deg);
+        uni_Addition = IonRing;
+        for(int i=0;i<num_column;i++)
+        {   
+            G4UnionSolid* uni1 = new G4UnionSolid("uni1",uni_Addition, screw, 0, G4ThreeVector(164.*cos(i*pi/4)*mm, 164.*sin(i*pi/4)*mm,-65.0*mm));
+            uni_Addition = uni1;
+        }   
+    }
+    return uni_Addition ; 
+}
+
+
+

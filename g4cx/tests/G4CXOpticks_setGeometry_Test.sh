@@ -88,21 +88,21 @@ arg=${1:-$defarg}
 bin=G4CXOpticks_setGeometry_Test
 script=$SDIR/$bin.py 
 
+source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
+[ -z "$GEOM" ] && echo $BASH_SOURCE : FATAL GEOM $GEOM MUST BE SET && exit 1 
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
-export FOLD=$TMP/$bin
+export FOLD=$TMP/$bin/$GEOM
 mkdir -p $FOLD
-
-source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
 
 case $GEOM in 
    FewPMT) geomscript=$SDIR/../../u4/tests/FewPMT.sh ;;
 esac
 
+
 origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml    # path to GDML
 
-vars="BASH_SOURCE arg SDIR GEOM FOLD bin geomscript script origin"
 
 if [ -f "$origin" ]; then
     export ${GEOM}_GDMLPathFromGEOM=$origin      # export path to GDML 
@@ -114,6 +114,10 @@ if [ -n "$geomscript" -a -f "$geomscript" ]; then
 else
     echo $BASH_SOURCE : GEOM $GEOM : no geomscript    
 fi 
+
+
+vars="BASH_SOURCE arg SDIR GEOM FOLD bin geomscript script origin"
+
 
 export GProperty_SIGINT=1
 #export NTreeBalance__UnableToBalance_SIGINT=1
@@ -152,7 +156,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/clean}" != "$arg" ]; then 
-    cd $TMP && rm -rf G4CXOpticks_setGeometry_Test ## hardcode for safety
+    cd $TMP && rm -rf "G4CXOpticks_setGeometry_Test/$GEOM"  && ## hardcode for safety
     [ $? -ne 0 ] && echo $BASH_SOURCE : clean error && exit 1 
 fi 
 
