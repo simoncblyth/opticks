@@ -154,23 +154,25 @@ set(PMTSim_TESTS
    U4PMTFastSimTest.cc
    U4PMTAccessorTest.cc
 )
+if(PMTSim_standalone_FOUND)
 
-foreach(SRC ${PMTSim_TESTS})
-    get_filename_component(TGT ${SRC} NAME_WE)
-    add_executable(${TGT} ${SRC})
-    target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
-    target_compile_definitions( ${TGT} PRIVATE WITH_NP )    ## for _PMTSimParamData 
-    target_compile_definitions( ${TGT} PRIVATE POM_DEBUG )   
+    foreach(SRC ${PMTSim_TESTS})
+        get_filename_component(TGT ${SRC} NAME_WE)
+        add_executable(${TGT} ${SRC})
+        target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
+        target_compile_definitions( ${TGT} PRIVATE WITH_NP )    ## for _PMTSimParamData 
+        target_compile_definitions( ${TGT} PRIVATE POM_DEBUG )   
 
-    target_link_libraries(${TGT} U4 Opticks::SysRap)
+        target_link_libraries(${TGT} U4 Opticks::SysRap)
 
-    if(PMTSim_standalone_FOUND)
-       target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )   
-       target_compile_definitions( ${TGT} PRIVATE PMTSIM_STANDALONE )   
-       target_link_libraries(${TGT} Opticks::PMTSim_standalone)
-    endif()
+           target_compile_definitions( ${TGT} PRIVATE WITH_PMTSIM )   
+           target_compile_definitions( ${TGT} PRIVATE PMTSIM_STANDALONE )   
+           target_link_libraries(${TGT} Opticks::PMTSim_standalone)
 
-    install(TARGETS ${TGT} DESTINATION lib)
-endforeach()
+        install(TARGETS ${TGT} DESTINATION lib)
+    endforeach()
+
+endif()
+
 
 

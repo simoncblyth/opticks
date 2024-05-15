@@ -616,6 +616,15 @@ To rebuild a test and rerun it use::
  
     TEST=SBndTest om-t  # NB no environment setup : so only for very simple tests
 
+To run a test with the debugger within the test runner environment, 
+pick the appropriate runner for the package of the test and use a command 
+such as::
+
+    CSGTestRunner.sh "gdb CSGFoundry_CreateFromSimTest"
+
+NB this and ctest running uses the installed test runners, so 
+must install before changes to runners take effect.
+
 
 EOH
 }

@@ -2622,7 +2622,7 @@ EON
 }
 
 
-opticks-tl(){ om- ; om-testlog $* ; }
+opticks-tl(){ om- ; om-testlog $* ; om-test-help ;  }
 opticks-tld(){ opticks-tl --level debug ; }
 
 

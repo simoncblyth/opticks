@@ -255,7 +255,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     for(unsigned i=0 ; i < nds.size() ; i++)
     {
         const sn* nd = nds[i]; 
-        if(nd->is_listnode())
+        if(nd && nd->is_listnode())
         {
             ln += 1 ; 
             num_sub_total += nd->child.size() ;             
@@ -302,7 +302,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         const sn* nd = nds[partIdx]; 
 
         CSGNode* n = nullptr ; 
-        if(nd->is_listnode())
+        if(nd && nd->is_listnode())
         {
             n = importListnode(pr->nodeOffset(), partIdx, node, nd ) ; 
 
