@@ -190,22 +190,52 @@ void test_MakeStandardArray_override_count()
     {
         std::cout << it->first << " : " << it->second << std::endl ; 
     }
-
 }
+
+void test_Get()
+{
+    std::vector<std::string> mats = {{ 
+        "Vacuum", 
+        "VACUUM", 
+        "G4_AIR", 
+        "G4_Pb", 
+        "Water",
+        "Rock",
+        "G4_Water",  
+        "G4_WATER"  
+        }} ; 
+
+    for(unsigned i=0 ; i < mats.size() ; i++) 
+    {
+        const char* mat = mats[i].c_str(); 
+        G4Material* material = U4Material::Get(mat); 
+
+        std::cout 
+            << std::setw(20) << mat 
+            << " : "
+            << ( material ? "YES" : "NO " )
+            << "\n"
+            ;   
+    }
+}
+
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-   
 
-    const char* TEST = ssys::getenvvar("TEST", "MakeScintillator") ; 
+    const char* TEST = ssys::getenvvar("TEST", "Get") ; 
     std::cout << U4Version::Desc() << "\n" << "TEST[" << TEST << "]\n"  ; 
 
 
     if( strcmp(TEST, "MakeScintillator") == 0 )
     {
         test_MakeScintillator(); 
+    }
+    else if( strcmp(TEST, "Get") == 0 )
+    {
+        test_Get(); 
     }
     else if( strcmp(TEST, "ALL") == 0 )
     {

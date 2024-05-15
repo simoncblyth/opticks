@@ -1450,6 +1450,17 @@ const G4VSolid* U4SolidMaker::UnionOfHemiEllipsoids(const char* name )
 }
 
 
+/**
+U4SolidMaker::GridMultiUnion_
+---------------------------------
+
+(nx, ny, nz) of (3,3,3) yields a 7x7x7 grid from eg:: 
+
+    nx : -3, -2, -1, 0, +1, +2, +3 
+
+**/
+
+
 const G4VSolid* U4SolidMaker::GridMultiUnion_(const char* name, G4VSolid* item, double gridspace, int nx, int ny, int nz )
 {
     G4MultiUnion* grid = new G4MultiUnion(name);
@@ -1521,6 +1532,19 @@ const G4VSolid* U4SolidMaker::OrbGridMultiUnion(const char* name)
 
     return GridMultiUnion_(name, item, gridscale, nx, ny, nz ); 
 }
+
+
+/**
+U4SolidMaker::BoxGridMultiUnion
+--------------------------------
+
+eg BoxGridMultiUnion10:30_YX 
+
+halfside   10 mm
+gridscale  30 
+
+
+**/
 
 
 

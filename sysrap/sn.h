@@ -317,6 +317,10 @@ struct SYSRAP_API sn
 
     void positivize() ; 
     void positivize_r(bool negate, int d) ; 
+    void flip_complement();
+    void flip_complement_child();
+
+
 
     void zero_label(); 
     void set_label( const char* label_ ); 
@@ -380,6 +384,8 @@ struct SYSRAP_API sn
     static sn* ZSphere(double radius, double z1, double z2);
     static sn* Box3(double fullside);
     static sn* Box3(double fx, double fy, double fz );
+    static sn* Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg );
+
     static sn* Zero(double  x,  double y,  double z,  double w,  double z1, double z2);
     static sn* Zero();
     static sn* Prim(int typecode) ; 
@@ -472,6 +478,8 @@ struct SYSRAP_API sn
     static void GetLVNodesComplete(std::vector<const sn*>& nds, int lvid); 
     void        getLVNodesComplete(std::vector<const sn*>& nds) const ; 
     static void GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx); 
+
+    static void SelectListNode(std::vector<const sn*>& lns, const std::vector<const sn*>& nds); 
 
     void ancestors(std::vector<const sn*>& nds) const ; 
 
@@ -2042,7 +2050,13 @@ sn::positivize (base on NTreePositive::positivize_r)
 * product: intersect
 
 Tree positivization (which is not the same as normalization) 
-eliminates subtraction by propagating negations down the tree using deMorgan rules. 
+eliminates subtraction operators by propagating negations down the tree using deMorgan rules. 
+
+Q: What about compound (aka listnodes) ?
+A: From the point of view of the binary tree the listnode should be regarded as a primitive, 
+   so if a negation is signalled all the listed prims should be complemented. 
+   For example with hole subtraction the subtraction gets converted to intersect and the 
+   holes are complemented.  
 
 **/
 
@@ -2053,16 +2067,18 @@ inline void sn::positivize()
 }
 inline void sn::positivize_r(bool negate, int d)
 {
-    if(is_primitive()) 
+    if(is_primitive() || is_listnode()) 
     {   
         if(negate) 
         {
-            switch(complement)
+            if(is_primitive())
+            { 
+                flip_complement();
+            } 
+            else if(is_listnode())
             {
-                case 0: complement = 1 ; break ; 
-                case 1: complement = 0 ; break ; 
-                default: assert(0)     ; break ; 
-            }
+                flip_complement_child();  
+            }    
         }
     }   
     else
@@ -2109,6 +2125,26 @@ inline void sn::positivize_r(bool negate, int d)
         right->positivize_r(right_negate, d+1);
     }
 }
+
+
+inline void sn::flip_complement()
+{
+    switch(complement)
+    {
+        case 0: complement = 1 ; break ; 
+        case 1: complement = 0 ; break ; 
+        default: assert(0)     ; break ; 
+    }
+}
+inline void sn::flip_complement_child()
+{
+    for(int i=0 ; i < num_child() ; i++)
+    {
+        sn* ch = get_child(i) ;       
+        ch->flip_complement() ;
+    }
+}
+
 
 inline void sn::zero_label()
 {
@@ -2325,10 +2361,32 @@ inline sn* sn::Box3(double fx, double fy, double fz )  // static
     assert( fz > 0. );   
 
     sn* nd = Create(CSG_BOX3) ; 
-    nd->setPA( fx, fy, fz, 0.f, 0.f, 0.f );   
+    nd->setPA( fx, fy, fz, 0., 0., 0. );   
     nd->setBB( -fx*0.5 , -fy*0.5, -fz*0.5, fx*0.5 , fy*0.5, fz*0.5 );   
     return nd ;
 }
+
+
+/**
+sn::Torus
+----------
+
+BB is much too big as doesnt account for phi segmentation, 
+but as just want a placeholder and will use triangulated maybe
+no problem
+
+**/
+
+inline sn* sn::Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg )
+{
+    double rsum = rtor+rmax ; 
+
+    sn* nd = Create(CSG_TORUS) ; 
+    nd->setPA( rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, 0.  );   
+    nd->setBB( -rsum, -rsum, -rmax, rsum, rsum, +rmax );    
+    return nd ;
+}
+
 
 inline sn* sn::Zero(double  x,  double y,  double z,  double w,  double z1, double z2) // static 
 {
@@ -2355,6 +2413,7 @@ inline sn* sn::Boolean(int typecode_, sn* left_, sn* right_)  // static
     sn* nd = Create(typecode_, left_, right_); 
     return nd ; 
 }
+
 
 
 
@@ -3522,7 +3581,7 @@ with nullptr left for the zeros.  This is similar to the old NCSG::export_tree_r
 
 inline void sn::GetLVNodesComplete(std::vector<const sn*>& nds, int lvid) // static 
 {
-    const sn* root = GetLVRoot(lvid);  // first sn from pool with lvid that is_root
+    const sn* root = GetLVRoot(lvid);  // first sn from pool with requested lvid that is_root
     assert(root); 
     root->getLVNodesComplete(nds);    
 
@@ -3544,6 +3603,16 @@ inline void sn::GetLVNodesComplete(std::vector<const sn*>& nds, int lvid) // sta
 sn::getLVNodesComplete
 -------------------------
 
+For BoxGridMultiUnion10:30_YX  which is grid of 3x3x3=27 multiunions with 7x7x7=343 prim each 
+getting bn 1 ns 343 
+
+THIS METHOD IS ALL ABOUT THE BINARY TREE 
+
+ACCESSING THE LISTED CHILDREN OF THE LISTNODE NEEDS 
+TO BE SEPARATE : BUT THE LISTNODE "HEAD" ITSELF 
+IS PART OF THE BINARY TREE SO SHOULD BE INCLUDED 
+IN THE RETURNED VECTOR
+
 **/
 
 inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const 
@@ -3551,23 +3620,33 @@ inline void sn::getLVNodesComplete(std::vector<const sn*>& nds) const
     uint64_t bn = getLVBinNode();  
     uint64_t ns = getLVSubNode();  
     uint64_t numParts = bn + ns ; 
-    nds.resize(numParts); 
+
+    //nds.resize(numParts);  // MAYBE THIS SHOULD JUST BE bn ? 
+    nds.resize(bn);  
 
     if(false) std::cout 
         << "sn::getLVNodesComplete"
         << " bn " << bn 
         << " ns " << ns 
+        << " numParts " << numParts
         << "\n"
         ;
 
-    assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+    // assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+    // WIP: need to detect listnode at CSGImport::importPrim_ level 
 
     GetLVNodesComplete_r( nds, this, 0 ); 
 }
 
+
+
 /**
 sn::GetLVNodesComplete_r
 -------------------------
+
+Serializes tree nodes into complete binary tree vector using 
+0-based binary tree level order layout of nodes in the vector. 
+
 **/
 
 inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, int idx)  // static
@@ -3590,6 +3669,19 @@ inline void sn::GetLVNodesComplete_r(std::vector<const sn*>& nds, const sn* nd, 
         }
     }
 }
+
+
+
+inline void sn::SelectListNode(std::vector<const sn*>& lns, const std::vector<const sn*>& nds) // static
+{
+    for(unsigned i=0 ; i < nds.size() ; i++)
+    {
+       const sn* nd = nds[i] ;
+       if(nd->is_listnode()) lns.push_back(nd); 
+    }
+} 
+
+
 
 
 

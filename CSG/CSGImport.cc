@@ -213,53 +213,67 @@ subNum/subOffset referencing.
   it must be traversed as a binary tree by regarding the compound nodes as effectively leaf node "primitives" 
   in order to generate the indices into the complete binary tree serialization in level order 
 
+
+WIP: add listnode handling 
+
+* from binary tree point of view the listnode is just a leaf "prim" 
+* for a listnode only prim : its just one binary tree node with lots of child 
+
+::
+
+    (gdb) f 4
+    #4  0x00007ffff2700d2f in sn::getLVNodesComplete (this=0x69ec50, nds=std::vector of length 344, capacity 344 = {...}) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3620
+    3620        assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+    (gdb) p child.size()
+    $10 = 343
+    (gdb) 
+
+
+For listnode handling see CSGMaker::makeList
+
+
 **/
 
 
 CSGPrim* CSGImport::importPrim(int primIdx, const snode& node ) 
 {
-#ifdef WITH_SND
-    CSGPrim* pr = importPrim_<snd>(primIdx, node ) ;  
-#else
-    CSGPrim* pr = importPrim_<sn>(primIdx, node ) ;  
-#endif
-    return pr ; 
-} 
-
-/**
-CSGImport::importPrim_
-------------------------
-
-TODO: add listnode handling 
-
-
-**/
-
-
-template<typename N>
-CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node ) 
-{
     int lvid = node.lvid ; 
     const char* name = fd->getMeshName(lvid)  ; 
 
-    std::vector<const N*> nds ; 
+    std::vector<const sn*> nds ; 
 
-    N::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
-    int numParts = nds.size(); 
+    sn::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
+    int bn = nds.size();     // binary nodes
+    int ln = 0 ; 
+    int num_sub_total = 0 ; 
+
+    for(unsigned i=0 ; i < nds.size() ; i++)
+    {
+        const sn* nd = nds[i]; 
+        if(nd->is_listnode())
+        {
+            ln += 1 ; 
+            num_sub_total += nd->child.size() ;             
+        }    
+    }
+
+    assert( ln == 0 || ln == 1 ); // simplify initial impl 
 
 
-    bool dump_LVID = node.lvid == LVID ; 
+    bool dump_LVID = node.lvid == LVID || ln > 0  ; 
     if(dump_LVID) std::cout 
         << "CSGImport::importPrim"
         << " node.lvid " << node.lvid
         << " primIdx " << primIdx  
-        << " numParts " << numParts  
+        << " bn " << bn  
+        << " ln(subset of bn) " << ln 
+        << " num_sub_total " << num_sub_total 
         << " dump_LVID " << dump_LVID  
         << std::endl 
         ; 
 
 
-    CSGPrim* pr = fd->addPrim( numParts );
+    CSGPrim* pr = fd->addPrim( bn + num_sub_total );
 
     pr->setMeshIdx(lvid);
     pr->setPrimIdx(primIdx);  // primIdx within the CSGSolid
@@ -271,26 +285,65 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
 
     CSGNode* root = nullptr ; 
 
-    for(int i=0 ; i < numParts ; i++)
+    // for any listnode in the binary tree, collect referenced n-ary subs
+    std::vector<const sn*> subs ;  
+
+    int sub_offset = 0 ; 
+    sub_offset += bn ; 
+
+    for(int i=0 ; i < bn ; i++)
     {
         int partIdx = i ; 
-        const N* nd = nds[partIdx]; 
-        CSGNode* n = importNode<N>(pr->nodeOffset(), partIdx, node, nd ) ; 
+        const sn* nd = nds[partIdx]; 
+
+        CSGNode* n = nullptr ; 
+        if(nd->is_listnode())
+        {
+            n = importListnode(pr->nodeOffset(), partIdx, node, nd ) ; 
+
+            int num_sub = nd->child.size() ;
+            for(int j=0 ; j < num_sub ; j++)
+            {    
+                const sn* c = nd->child[j]; 
+                subs.push_back(c); 
+            }
+            n->setSubNum(num_sub);  
+            n->setSubOffset(sub_offset); 
+            sub_offset += num_sub ; 
+        }
+        else
+        {
+            n = importNode(pr->nodeOffset(), partIdx, node, nd ) ; 
+        }
         assert(n); 
         if(root == nullptr) root = n ;   // first node becomes root 
 
         if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB(), out ); 
     }
+
+    assert( sub_offset == bn + num_sub_total ); 
+    assert( int(subs.size()) == num_sub_total ); 
+
+    for( int i=0 ; i < num_sub_total ; i++ )
+    {
+        const sn* nd = subs[i]; 
+        CSGNode* n = importNode(pr->nodeOffset(), i, node, nd ); 
+        assert( n ); 
+    }
+
+
     pr->setAABB( bb.data() );
 
     assert( root ); 
 
-    if(CSG::IsCompound(root->typecode()))
+
+    // IsCompound : > CSG_ZERO, < CSG_LEAF 
+    // HMM: is this actually needed by anything 
+    if(CSG::IsCompound(root->typecode()) && !CSG::IsList(root->typecode()))
     {
-        assert( numParts > 1 ); 
-        root->setSubNum( numParts ); 
+        assert( bn > 0 ); 
+        root->setSubNum( bn ); 
         root->setSubOffset( 0 );   
-        // THESE NEED REVISIT WHEN ADDING list-nodes SUPPORT
     }
 
 
@@ -298,13 +351,19 @@ CSGPrim* CSGImport::importPrim_(int primIdx, const snode& node )
     LOG(LEVEL) 
         << " primIdx " << std::setw(4) << primIdx 
         << " lvid "    << std::setw(3) << lvid 
-        << " numParts "  << std::setw(3) << numParts
+        << " binaryNodes(bn) "  << std::setw(3) << bn
         << " : " 
         << name 
         ; 
 
     return pr ; 
 }
+
+
+
+
+
+
 
 
 
@@ -371,15 +430,16 @@ TODO : SUPPORT FOR CSGNode TYPES THAT NEED EXTERNAL BBOX::
         n->setAABB_Narrow( aabb ); 
     }
 
+
 **/
 
-template<typename N>
-CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const N* nd)
+CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const sn* nd)
 {
     if(nd) assert( node.lvid == nd->lvid );
 
     int  typecode = nd ? nd->typecode : CSG_ZERO ; 
     bool leaf = CSG::IsLeaf(typecode) ; 
+
     bool external_bbox_is_expected = CSG::ExpectExternalBBox(typecode); 
     bool expect = external_bbox_is_expected == false ; 
     LOG_IF(fatal, !expect) << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED : DEFERRED UNTIL HAVE EXAMPLES " ; 
@@ -391,7 +451,6 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     // NB : TRANSFORM VERY DEPENDENT ON node.repeat_index == 0 OR not 
     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ; 
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
-    
 
     CSGNode* n = fd->addNode();   
     //n->setIndex(nodeIdx);     // NOW AUTOMATED IN CSGFoundry::addNode
@@ -404,6 +463,22 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     return n ; 
 }
+
+CSGNode* CSGImport::importListnode(int nodeOffset, int partIdx, const snode& node, const sn* nd)
+{
+    if(nd) assert( node.lvid == nd->lvid );
+    assert( nd->is_listnode() ); 
+    int typecode = nd->typecode ; 
+
+    CSGNode* n = fd->addNode();   
+    n->setTypecode(typecode); 
+    n->setBoundary(node.boundary); 
+
+    return n ; 
+}
+
+
+
 
 /**
 CSGImport::importInst

@@ -7,6 +7,181 @@ Overview
 * looks like listnodes more developed in old x4 workflow, and only partly migratated into new u4/sn 
 
 
+Summary of below : What is needed for listnode support ?
+---------------------------------------------------------------
+
+0. propagating hints from G4VSolid names into the sn.h binary tree
+1. detecting binary trees with hints and modifying the tree at sn.h level into n-ary tree
+2. CSGImport handling n-ary tree conversion into CSGPrim/CSGNode setting subNum/subOffset 
+3. testing pure listnodes
+4. testing binary trees with 1 listnode
+5. testing binary trees with >1 listnode (probably not important, as would be rare)
+
+* step 1 is most difficult, step 0 and 2 are mostly similar to things done before
+* with G4Polycone/G4MultiUnion no detection is needed, can directly create the n-ary tree
+  so essentially only step 2 is needed for those.  
+
+* HMM: one shortcut would be to switch to G4MultiUnion in the source geometry, 
+  actually not so useful as G4MultiUnion supports binary nodes, unlike listnode
+
+* HMM: best to work on those first 
+
+
+DONE : ~/o/u4/tests/U4SolidTest.sh 
+-------------------------------------------
+
+* integrated U4SolidMaker into U4SolidTest for extending conversion to G4MultiUnion and looking at tree n-ary-ization 
+
+
+DONE : check ~/o/u4/tests/U4TreeCreateSSimTest.sh with G4MultiUnion using GEOM
+-------------------------------------------------------------------------------
+
+::
+
+   GEOM ## set to BoxGridMultiUnion10:30_YX  U4SolidMaker::Make 
+
+   ~/o/u4/tests/U4TreeCreateSSimTest.sh     ## create stree+scene 
+
+   SCENE=3 ~/o/sysrap/tests/ssst.sh run     ## triangulated viz
+
+* 3x3x3 grid of 7x7x7 boxes 
+
+* checking U4SolidMaker::GridMultiUnion_ the G4MultiUnion of 7x7x7 items is expected 
+* the 3x3x3 gridding on top of the multiunion was inadvertant due to "Grid" in the name  
+   being parsed by one of the U4VolumeMaker Wrap methods 
+
+
+WIP : full conversion + anaviz 
+------------------------------------------
+
+First impl of sn(listnode) -> CSG in::
+
+    238 CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
+
+
+::
+
+    GEOM ## check config is BoxGridMultiUnion10:30_YX
+    ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
+    ~/o/CSGOptiX/cxr_min.sh
+
+
+
+::
+
+    [blyth@localhost opticks]$ ~/o/CSGOptiX/cxr_min.sh
+    /home/blyth/o/CSGOptiX/cxr_min.sh: line 189: export: `BoxGridMultiUnion10:30_YX_CFBaseFromGEOM=/home/blyth/tmp/G4CXOpticks_setGeometry_Test/BoxGridMultiUnion10:30_YX': not a valid identifier
+
+
+
+
+
+FIXED : Cutting edge::
+
+    (gdb) bt
+    #3  0x00007ffff059b252 in __assert_fail () from /usr/lib64/libc.so.6
+    #4  0x00007ffff2700d2f in sn::getLVNodesComplete (this=0x69ec50, nds=std::vector of length 344, capacity 344 = {...}) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3620
+    #5  0x00007ffff2700b5a in sn::GetLVNodesComplete (nds=std::vector of length 344, capacity 344 = {...}, lvid=0) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3584
+    #6  0x00007ffff2706ddc in CSGImport::importPrim_<sn> (this=0xa1e980, primIdx=1, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:247
+    #7  0x00007ffff26f4c98 in CSGImport::importPrim (this=0xa1e980, primIdx=1, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:224
+    #8  0x00007ffff26f472c in CSGImport::importSolidRemainder (this=0xa1e980, ridx=0, rlabel=0x7fffffff8a20 "r0") at /home/blyth/opticks/CSG/CSGImport.cc:129
+    #9  0x00007ffff26f44a4 in CSGImport::importSolid (this=0xa1e980) at /home/blyth/opticks/CSG/CSGImport.cc:92
+    #10 0x00007ffff26f42bf in CSGImport::import (this=0xa1e980) at /home/blyth/opticks/CSG/CSGImport.cc:55
+    #11 0x00007ffff2676f79 in CSGFoundry::importSim (this=0xa1e7c0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1591
+    #12 0x00007ffff267c590 in CSGFoundry::CreateFromSim () at /home/blyth/opticks/CSG/CSGFoundry.cc:2887
+    #13 0x00007ffff7ea19c7 in G4CXOpticks::setGeometry (this=0x4949b0, world=0x4d7e40) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:256
+    #14 0x00007ffff7ea0cfe in G4CXOpticks::setGeometry (this=0x4949b0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:173
+    #15 0x00007ffff7ea0040 in G4CXOpticks::SetGeometry () at /home/blyth/opticks/g4cx/G4CXOpticks.cc:52
+    #16 0x00000000004037e5 in main (argc=1, argv=0x7fffffffb6d8) at /home/blyth/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.cc:16
+    (gdb) 
+
+
+    (gdb) list
+    124 
+    125     for(int i=0 ; i < num_rem ; i++)
+    126     {
+    127         int primIdx = i ;  // primIdx within the CSGSolid
+    128         const snode& node = st->rem[primIdx] ;
+    129         CSGPrim* pr = importPrim( primIdx, node ) ;  
+    130         assert( pr );  
+    131         s_bb::IncludeAABB( bb.data(), pr->AABB() );  
+    132     }
+    133     s_bb::CenterExtent( &(so->center_extent.x), bb.data() ); 
+    (gdb) p num_rem 
+    $3 = 28
+    (gdb) 
+
+
+* thats OK 3x3x3+1 for world box each 7x7x7 is a single prim from the multiunions
+
+
+    (gdb) f 4
+    #4  0x00007ffff2700d2f in sn::getLVNodesComplete (this=0x69ec50, nds=std::vector of length 344, capacity 344 = {...}) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3620
+    3620        assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+    (gdb) list
+    3615            << " bn " << bn 
+    3616            << " ns " << ns 
+    3617            << "\n"
+    3618            ;
+    3619    
+    3620        assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
+    3621    
+    3622        GetLVNodesComplete_r( nds, this, 0 ); 
+    3623    }
+    3624    
+    (gdb) p bn
+    $6 = 1
+    (gdb) p ns
+    $7 = 343
+    (gdb) p 7*7*7
+    $8 = 343
+    (gdb) 
+
+
+
+sn -> CSG with listnode
+-------------------------
+
+::
+
+     793 CSGSolid* CSGMaker::makeList( const char* label, unsigned type, std::vector<CSGNode>& leaves, const std::vector<const Tran<double>*>* tran )
+     794 {
+     795     unsigned numSub = leaves.size() ;
+     796     unsigned numTran = tran ? tran->size() : 0  ;
+     797     if( numTran > 0 ) assert( numSub == numTran );
+     798 
+     799     unsigned numPrim = 1 ;
+     800     CSGSolid* so = fd->addSolid(numPrim, label);
+     801 
+     802     unsigned numNode = 1 + numSub ;
+     803     int nodeOffset_ = -1 ;
+     804     CSGPrim* p = fd->addPrim(numNode, nodeOffset_ );
+     805 
+     806     unsigned subOffset = 1 ; // now using absolute offsets from "root" to the first sub  see notes/issues/ContiguousThreeSphere.rst
+     807     CSGNode hdr = CSGNode::ListHeader(type, numSub, subOffset );
+     808     CSGNode* n = fd->addNode(hdr);
+     809 
+     810     AABB bb = {} ;
+     811     fd->addNodes( bb, leaves, tran );
+     812     p->setAABB( bb.data() );
+     813     so->center_extent = bb.center_extent()  ;
+     814 
+     815     fd->addNodeTran(n);   // setting identity transform 
+     816 
+     817     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ;
+     818     return so ;
+     819 }
+
+
+
+
+
+
+
+
+
+
+
 See Also
 ----------
 
@@ -167,6 +342,8 @@ G4MultiUnion
     ./u4/U4Solid.h
     [blyth@localhost opticks]$ 
 
+
+* TODO: bring convertMultiUnionTest.cc into new workflow 
 
 
 

@@ -552,7 +552,7 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv )
     double halfside = ssys::getenv_<double>(U4VolumeMaker_WrapVacuum_HALFSIDE, 1000.); 
     LOG(LEVEL) << U4VolumeMaker_WrapVacuum_HALFSIDE << " " << halfside ; 
 
-    G4LogicalVolume*   vac_lv  = Box_(halfside, "Vacuum" );
+    G4LogicalVolume*   vac_lv  = Box_(halfside, U4Material::VACUUM );
  
     const G4VPhysicalVolume* item_pv = Place(item_lv, vac_lv);   
     assert( item_pv ); 
@@ -792,6 +792,7 @@ Used from U4VolumeMaker::WrapLVOffset U4VolumeMaker::WrapLVCube
 
 const G4VPhysicalVolume* U4VolumeMaker::WorldBox( double halfside, const char* mat )
 {
+    if(mat == nullptr) mat = U4Material::VACUUM ; 
     return Box(halfside, mat, "World", nullptr ); 
 }
 const G4VPhysicalVolume* U4VolumeMaker::BoxOfScintillator( double halfside )
@@ -1041,10 +1042,19 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
 }
 
 
+
+G4Material* U4VolumeMaker::GetMaterial(const char* mat)
+{
+    G4Material* material  = U4Material::Get(mat);   
+    LOG_IF(fatal, material==nullptr) << " U4Material::Get failed for mat[" << ( mat ? mat : "-" ) << "]" ; 
+    assert(material); 
+    return material ; 
+}
+
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, const char* mat, const char* prefix )
 {
     if( prefix == nullptr ) prefix = mat ; 
-    G4Material* material  = U4Material::Get(mat);   assert(material); 
+    G4Material* material = GetMaterial(mat) ; 
     return Orb_(radius, material, prefix ); 
 }
 G4LogicalVolume* U4VolumeMaker::Orb_( double radius, G4Material* material, const char* prefix )
@@ -1057,8 +1067,7 @@ G4LogicalVolume* U4VolumeMaker::Orb_( double radius, G4Material* material, const
 G4LogicalVolume* U4VolumeMaker::Box_( double halfside, const char* mat, const char* prefix, const double* scale )
 {
     if( prefix == nullptr ) prefix = mat ; 
-    G4Material* material  = U4Material::Get(mat);   
-    assert(material); 
+    G4Material* material = GetMaterial(mat) ; 
     return Box_( halfside, material, prefix, scale ); 
 }
 

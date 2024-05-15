@@ -79,7 +79,7 @@ struct U4_API U4VolumeMaker
 
     // world box pv
 
-    static const G4VPhysicalVolume* WorldBox( double halfside, const char* mat="Vacuum" ); 
+    static const G4VPhysicalVolume* WorldBox( double halfside, const char* mat=nullptr ); 
     static const G4VPhysicalVolume* BoxOfScintillator( double halfside ); 
 
     // box pv 
@@ -107,8 +107,8 @@ struct U4_API U4VolumeMaker
         std::string& dropshape  ); 
     static const G4VPhysicalVolume* RaindropRockAirWater(bool sd);  
 
+    static G4Material* GetMaterial(const char* mat); 
     // general lv creators 
- 
     static G4LogicalVolume* Orb_( double radius,   const char* mat, const char* prefix=nullptr ); 
     static G4LogicalVolume* Orb_( double radius,   G4Material* mat, const char* prefix=nullptr ); 
     static G4LogicalVolume* Box_( double halfside, const char* mat, const char* prefix=nullptr, const double* boxscale=nullptr ); 

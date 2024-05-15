@@ -253,6 +253,9 @@ inline const char* U4Solid::Name(const G4VSolid* solid)  // static
     return strdup(name) ; 
 }
 
+
+
+
 inline const char* U4Solid::EType(const G4VSolid* solid)  // static
 {
     G4GeometryType _etype = solid->GetEntityType();  // G4GeometryType typedef for G4String
@@ -685,13 +688,81 @@ inline void U4Solid::init_Hype()
 {
     assert(0); 
 } 
+
+#ifdef WITH_SND
 inline void U4Solid::init_MultiUnion()
 {
+    LOG(fatal) << " MultiUnion requires using sn nodes " ; 
     assert(0); 
-} 
+}
+#else 
+inline void U4Solid::init_MultiUnion()
+{
+    const G4MultiUnion* const muni = static_cast<const G4MultiUnion*>(solid);
+    assert(muni); 
+
+    int hint = CSG::HintCode(name); 
+    int type = ( hint == CSG_DISCONTIGUOUS || hint == CSG_CONTIGUOUS ) ? hint : CSG_CONTIGUOUS ; 
+
+    unsigned sub_num = muni->GetNumberOfSolids() ; 
+
+    std::vector<sn*> prims ; 
+    for( unsigned i=0 ; i < sub_num ; i++)
+    {    
+        const G4VSolid* sub = muni->GetSolid(i);
+ 
+        //const G4Transform3D& tr = muni->GetTransformation(isub) ;
+        // TODO: handle transform
+
+        sn* p = Convert( sub,  lvid, depth+1, level ); 
+
+        assert( p && p->is_primitive() );   
+
+        prims.push_back(p) ;  
+    }    
+    root = sn::Compound( prims, type );  
+}
+#endif
+
+
+/**
+U4Solid::init_Torus
+--------------------
+
+Not planning to get analytic GPU intersect working anytime soon, 
+just need analytic placeholder whilst use triangulated geom. 
+
+**/
+
 inline void U4Solid::init_Torus()
 {
+    const G4Torus* const torus = static_cast<const G4Torus*>(solid);
+    assert(torus); 
+
+    double rmin_mm = torus->GetRmin()/CLHEP::mm ; 
+    double rmax_mm = torus->GetRmax()/CLHEP::mm ;
+    double rtor_mm = torus->GetRtor()/CLHEP::mm ;
+    double startPhi_deg = torus->GetSPhi()/CLHEP::degree ; 
+    double deltaPhi_deg = torus->GetDPhi()/CLHEP::degree ; 
+
+    if(level > 0) std::cout 
+       << " U4Solid::init_Torus "
+       << " rmin_mm " << rmin_mm 
+       << " rmax_mm " << rmax_mm 
+       << " rtor_mm " << rtor_mm 
+       << " startPhi_deg " << startPhi_deg
+       << " deltaPhi_deg " << deltaPhi_deg
+       << "\n"
+       ;
+
+    assert( rmax_mm > rmin_mm );
+    assert( rtor_mm > rmax_mm );
+
+#ifdef WITH_SND
     assert(0); 
+#else
+    root = sn::Torus(rmin_mm, rmax_mm, rtor_mm, startPhi_deg, deltaPhi_deg ) ; 
+#endif
 }
 
 
