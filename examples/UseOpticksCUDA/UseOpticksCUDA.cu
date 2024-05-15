@@ -22,7 +22,7 @@
 
 #include "cuda.h"
 #include "driver_types.h"   // for cudaError_t
-#include "helper_cuda.h"    // for _cudaGetErrorEnum
+//#include "helper_cuda.h"    // for _cudaGetErrorEnum
 
 
 int main()
@@ -38,7 +38,7 @@ int main()
     for(unsigned i=0 ; i < errs.size() ; i++)
     {
         cudaError_t err = errs[i] ; 
-        const char* err_ = _cudaGetErrorEnum(err) ; 
+        const char* err_ = "?" ; // _cudaGetErrorEnum(err) ; 
 
         printf(" %4d %s \n", err, err_ ? err_ : "?" );
    }
