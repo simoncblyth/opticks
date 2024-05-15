@@ -2138,16 +2138,20 @@ inline std::string stree::desc_combined_transform(
 }
 
 /**
-stree::get_combined_tran
---------------------------
+stree::get_combined_tran_and_aabb
+--------------------------------------
+
+Critical usage of ths from CSGImport::importNode
 
 0. early exits returning nullptr for non leaf nodes
 1. gets combined structural(snode.h) and CSG tree(sn.h) transform 
 2. collects that combined transform and its inverse (t,v) into Tran instance
 3. copies bbox values (assumed leaf frame) from the nd into aabb argument
-4. transforms the bbox using the combined structural + tree transform
+4. transforms the bbox of the aabb argument using the combined structural + tree transform
+
 
 CAUTION : sn::uncoincide needs CSG tree frame AABB but this needs leaf frame AABB 
+see how that issue was fixed in sn::postconvert
 
 **/
 

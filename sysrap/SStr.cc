@@ -1042,6 +1042,15 @@ long SStr::ExtractLong( const char* s, long fallback )
     return vals.size() == 1 ? vals[0] : fallback ; 
 }
 
+
+/**
+SStr::Extract OBSOLETE : REPLACE WITH sstr::Extract
+-------------------------------------------------------
+
+Some str with other uses of + - would trip this up.
+
+
+**/
 void SStr::Extract( std::vector<long>& vals, const char* s )
 {
     char* s0 = strdup(s); 

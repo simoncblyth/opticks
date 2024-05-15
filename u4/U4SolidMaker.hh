@@ -62,6 +62,8 @@ struct U4_API U4SolidMaker
     static const G4VSolid* BoxCrossTwoBoxUnion(const char* name );
     static const G4VSolid* BoxThreeBoxUnion(const char* name); 
 
+    static const G4VSolid* OrbOrbMultiUnion(const char* name);
+
     static const G4VSolid* GridMultiUnion_(const char* name, G4VSolid* item, double gridspace, int nx, int ny, int nz ); 
     static const G4VSolid* OrbGridMultiUnion(const char* name);
     static const G4VSolid* BoxGridMultiUnion(const char* name);

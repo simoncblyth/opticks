@@ -1,6 +1,5 @@
 #include <cstring>
 #include <csignal>
-#include "SStr.hh"
 #include "sstr.h"
 #include "NP.hh"
 
@@ -60,6 +59,7 @@ CylinderFourBoxUnion
 BoxFourBoxUnion
 BoxCrossTwoBoxUnion
 BoxThreeBoxUnion
+OrbOrbMultiUnion
 OrbGridMultiUnion
 BoxGridMultiUnion
 BoxFourBoxContiguous
@@ -154,6 +154,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("BoxFourBoxUnion", qname))             solid = BoxFourBoxUnion(qname) ; 
     else if(StartsWith("BoxCrossTwoBoxUnion", qname))         solid = BoxCrossTwoBoxUnion(qname) ; 
     else if(StartsWith("BoxThreeBoxUnion", qname))            solid = BoxThreeBoxUnion(qname) ; 
+    else if(StartsWith("OrbOrbMultiUnion", qname))            solid = OrbOrbMultiUnion(qname) ; 
     else if(StartsWith("OrbGridMultiUnion", qname))           solid = OrbGridMultiUnion(qname) ; 
     else if(StartsWith("BoxGridMultiUnion", qname))           solid = BoxGridMultiUnion(qname) ; 
     else if(StartsWith("BoxFourBoxContiguous", qname))        solid = BoxFourBoxContiguous(qname) ; 
@@ -447,7 +448,7 @@ They are different because of the combination of the transforms for 1::
 
 const G4VSolid* U4SolidMaker::ThreeOrbUnion(const char* name)
 {
-    long mode = SStr::ExtractLong(name, 0); 
+    long mode = sstr::ExtractLong(name, 0); 
     LOG(LEVEL) << " mode " << mode ; 
 
     G4Orb* a = new G4Orb("a", 100. ); 
@@ -768,7 +769,7 @@ const G4VSolid* U4SolidMaker::AnnulusTwoBoxUnion(const char* name)
 
     bool toplist = strstr(name, "List") != nullptr ;  
 
-    const char* listname = SStr::Concat("tub_bpy_bny", suffix, "" );     
+    const char* listname = sstr::Concat("tub_bpy_bny", suffix );     
 
     double innerRadius = 0.*mm ; 
     double bpy_scale_z = 2. ; 
@@ -945,7 +946,6 @@ const G4VSolid* U4SolidMaker::BoxFourBoxUnion_(const char* name, const char* opt
 const G4VSolid* U4SolidMaker::BoxFourBoxUnion(const char* name ){      return BoxFourBoxUnion_(name, "+X,-X,+Y,-Y") ; }
 const G4VSolid* U4SolidMaker::BoxCrossTwoBoxUnion(const char* name ){  return BoxFourBoxUnion_(name, "+X,+Y") ; }
 const G4VSolid* U4SolidMaker::BoxThreeBoxUnion(const char* name ){     return BoxFourBoxUnion_(name, "+X,+Y,-Y") ; }
-
 
 
 
@@ -1412,7 +1412,7 @@ const G4VSolid* U4SolidMaker::UnionOfHemiEllipsoids(const char* name )
     assert( strstr( name, "UnionOfHemiEllipsoids" ) != nullptr ); 
 
     std::vector<long> vals ; 
-    Extract(vals, name); 
+    sstr::Extract(vals, name); 
     long iz = vals.size() > 0 ? vals[0] : 0 ; 
 
     std::cout 
@@ -1448,6 +1448,30 @@ const G4VSolid* U4SolidMaker::UnionOfHemiEllipsoids(const char* name )
     }
     return solid ; 
 }
+
+
+
+const G4VSolid* U4SolidMaker::OrbOrbMultiUnion(const char* name )
+{
+    G4MultiUnion* comb = new G4MultiUnion(name);
+
+    G4RotationMatrix rot(0, 0, 0);
+    G4ThreeVector px( 100.*mm, 0.*mm, 0.*mm);  // center
+    G4ThreeVector nx(-100.*mm, 0.*mm, 0.*mm);  // center
+    G4Transform3D tpx(rot, px); 
+    G4Transform3D tnx(rot, nx); 
+
+    G4Orb* spx = new G4Orb("OrbSPX", 50.) ; 
+    G4Orb* snx = new G4Orb("OrbSNX", 50.) ; 
+
+    comb->AddNode( *spx, tpx);
+    comb->AddNode( *snx, tnx);
+
+    return comb ; 
+}
+
+
+
 
 
 /**
@@ -1511,7 +1535,7 @@ U4SolidMaker::OrbGridMultiUnion
 const G4VSolid* U4SolidMaker::OrbGridMultiUnion(const char* name)
 {
     std::vector<long> vals ; 
-    Extract(vals, name); 
+    sstr::Extract(vals, name); 
 
     assert( vals.size() == 2 ); 
 
@@ -1543,15 +1567,13 @@ eg BoxGridMultiUnion10:30_YX
 halfside   10 mm
 gridscale  30 
 
-
 **/
-
 
 
 const G4VSolid* U4SolidMaker::BoxGridMultiUnion(const char* name)
 {
     std::vector<long> vals ; 
-    Extract(vals, name); 
+    sstr::Extract(vals, name); 
 
     assert( vals.size() == 2 ); 
 
@@ -1576,29 +1598,6 @@ const G4VSolid* U4SolidMaker::BoxGridMultiUnion(const char* name)
 
 
 
-
-
-/**
-U4SolidMaker::Extract
------------------------
-
-Extract integers from a string into a vector. 
-
-The 2nd strtol endptr arg increments p beyond each group of integer digits
-
-**/
-
-void U4SolidMaker::Extract( std::vector<long>& vals, const char* s )  // static
-{
-    char* s0 = strdup(s); 
-    char* p = s0 ; 
-    while (*p) 
-    {   
-        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ;  
-        else p++ ;
-    }   
-    free(s0); 
-}
 
 
 
@@ -1645,7 +1644,7 @@ U4SolidMaker::LHCbRichSphMirr
 
 const G4VSolid* U4SolidMaker::LHCbRichSphMirr(const char* qname)  // static 
 {
-    long mode = SStr::ExtractLong(qname, 0); 
+    long mode = sstr::ExtractLong(qname, 0); 
     LOG(LEVEL) << " qname " << qname << " mode " << mode ; 
 
    // /Users/blyth/liyu/Rich_Simplified/include/SphMirrorGeometryParameters.hh
@@ -1880,7 +1879,7 @@ U4SolidMaker::LHCbRichFlatMirr
 
 const G4VSolid* U4SolidMaker::LHCbRichFlatMirr(const char* qname)  // static 
 {
-    long mode = SStr::ExtractLong(qname, 0); 
+    long mode = sstr::ExtractLong(qname, 0); 
     LOG(LEVEL) << " qname " << qname << " mode " << mode ; 
 
 

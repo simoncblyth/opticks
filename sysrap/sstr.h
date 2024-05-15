@@ -72,6 +72,13 @@ struct sstr
     template<typename ... Args>
     static std::string Join( const char* delim, Args ... args ); 
 
+    template<typename ... Args>
+    static std::string Concat_( Args ... args ); 
+
+    template<typename ... Args>
+    static const char* Concat( Args ... args ); 
+
+
 
     static bool Blank(const char* s ); 
     static bool All(const char* s, char q ); 
@@ -112,7 +119,8 @@ struct sstr
 
 
     static void truncated_copy( char* dst, const char* src, int dst_size ); 
-
+    static void Extract( std::vector<long>& vals, const char* s ); 
+    static long ExtractLong( const char* s, long fallback ); 
 
 };
 
@@ -552,6 +560,48 @@ template std::string sstr::Join( const char*, const char*, const char*, const ch
 template std::string sstr::Join( const char*, const char*, const char*, const char*, const char* ); 
 
 
+
+
+
+template<typename ... Args>
+inline std::string sstr::Concat_( Args ... args_ )
+{
+    std::vector<const char*> args = {args_ ...};
+    int num_args = args.size() ;  
+    std::stringstream ss ; 
+    for(int i=0 ; i < num_args ; i++) ss << ( args[i] ? args[i] : "" ) ; 
+    std::string str = ss.str(); 
+    return str ;
+}
+
+template std::string sstr::Concat_( const char*, const char* ); 
+template std::string sstr::Concat_( const char*, const char*, const char* ); 
+template std::string sstr::Concat_( const char*, const char*, const char*, const char*  ); 
+template std::string sstr::Concat_( const char*, const char*, const char*, const char*, const char* ); 
+
+
+
+
+
+template<typename ... Args>
+inline const char* sstr::Concat( Args ... args )
+{
+    std::string str = Concat_(std::forward<Args>(args)... ); 
+    return strdup(str.c_str()); 
+}
+
+template const char* sstr::Concat( const char*, const char* ); 
+template const char* sstr::Concat( const char*, const char*, const char* ); 
+template const char* sstr::Concat( const char*, const char*, const char*, const char*  ); 
+template const char* sstr::Concat( const char*, const char*, const char*, const char*, const char* ); 
+
+
+
+
+
+
+
+
 inline bool sstr::Blank( const char* s )
 {
    unsigned n = strlen(s) ; 
@@ -789,6 +839,38 @@ inline void sstr::truncated_copy( char* dst, const char* src, int dst_size )
     int num_char = std::min(dst_size, srclen); 
     memcpy(dst, src, num_char) ; 
 }
+
+
+
+/**
+sstr::Extract
+-----------------------
+
+Extract integers from a string into a vector. 
+
+The 2nd strtol endptr arg increments p beyond each group of integer digits
+
+**/
+
+inline void sstr::Extract( std::vector<long>& vals, const char* s )  // static
+{
+    char* s0 = strdup(s); 
+    char* p = s0 ; 
+    while (*p) 
+    {    
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ;  
+        else p++ ;
+    }    
+    free(s0); 
+}
+
+inline long sstr::ExtractLong( const char* s, long fallback ) // static
+{
+    std::vector<long> vals;
+    Extract(vals, s); 
+    return vals.size() == 1 ? vals[0] : fallback ; 
+}
+
 
 
 

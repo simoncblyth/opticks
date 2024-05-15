@@ -391,6 +391,36 @@ void test_StripTail_Unique_1()
     std::cout << sstr::DescKeySrc(key, src) ; 
 }
 
+void test_Extract()
+{
+    std::vector<std::string> src = {{
+           "red0xbeef",
+           "BoxGridMultiUnion10:30_YX",
+           "BoxGridMultiUnion10_30_YX"
+    }} ; 
+
+    for(unsigned i=0 ; i < src.size() ; i++)
+    {
+        const char* st = src[i].c_str();   
+        std::vector<long> vals ; 
+        sstr::Extract(vals, st);  
+        std::cout 
+            << std::setw(20) << st 
+            << " : "
+            << vals.size()
+            << "\n"
+            ;
+    }
+
+}
+
+void test_Concat()
+{
+    const char* s0 = sstr::Concat("aa","bb","cc","dd" ); 
+    assert( strcmp(s0, "aabbccdd" ) == 0 ); 
+    const char* s1 = sstr::Concat("aa","bb",nullptr,"dd" ); 
+    assert( strcmp(s1, "aabbdd" ) == 0 ); 
+}
 
 
 
@@ -408,8 +438,10 @@ int main(int argc, char** argv)
     test_ParseIntSpecList_demo<int>() ; 
     test_snprintf(); 
     test_TAG(); 
-    */
     test_StripTail_Unique_0(); 
+    test_Extract(); 
+    */
+    test_Concat(); 
    
 
     return 0 ; 

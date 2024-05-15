@@ -67,6 +67,8 @@ struct U4_API U4VolumeMaker
     static constexpr const char* U4VolumeMaker_WrapVacuum_HALFSIDE = "U4VolumeMaker_WrapVacuum_HALFSIDE" ; 
     static const G4VPhysicalVolume* WrapVacuum(   G4LogicalVolume* lv ); 
 
+    static constexpr const char* U4VolumeMaker_WrapLVSimple_HALFSIDE = "U4VolumeMaker_WrapLVSimple_HALFSIDE" ; 
+    static const G4VPhysicalVolume* WrapLVSimple( G4LogicalVolume* lv ); 
 
     static const G4VPhysicalVolume* WrapLVGrid( G4LogicalVolume* lv, int nx, int ny, int nz  ); 
     static const G4VPhysicalVolume* WrapLVGrid( std::vector<G4LogicalVolume*>& lvs, int nx, int ny, int nz  ); 

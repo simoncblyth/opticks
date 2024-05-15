@@ -282,12 +282,14 @@ const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
     bool xoff = strstr(name, "Xoff") != nullptr ; 
     bool yoff = strstr(name, "Yoff") != nullptr ; 
     bool zoff = strstr(name, "Zoff") != nullptr ; 
+    bool simp = strstr(name, "Simple") != nullptr ; 
 
     if(grid)      pv =   WrapLVGrid(     lv, 1, 1, 1 ); 
     else if(cube) pv =   WrapLVCube(     lv, 100., 100., 100. ); 
     else if(xoff) pv =   WrapLVOffset(   lv, 200.,   0.,   0. ); 
     else if(yoff) pv =   WrapLVOffset(   lv,   0., 200.,   0. ); 
     else if(zoff) pv =   WrapLVOffset(   lv,   0.,   0., 200. ); 
+    else if(simp) pv =   WrapLVSimple(   lv ); 
     else          pv =   WrapLVCube(     lv,   0.,   0.,   0. ); 
     return pv ; 
 }
@@ -565,6 +567,25 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapVacuum( G4LogicalVolume* item_lv )
 
 
 
+const G4VPhysicalVolume* U4VolumeMaker::WrapLVSimple( G4LogicalVolume* item_lv )
+{
+    double halfside = ssys::getenv_<double>(U4VolumeMaker_WrapLVSimple_HALFSIDE, 1000.); 
+    LOG(LEVEL) << U4VolumeMaker_WrapLVSimple_HALFSIDE << " " << halfside ; 
+
+    G4LogicalVolume*   vac_lv  = Box_(halfside, U4Material::VACUUM );
+ 
+    const G4VPhysicalVolume* item_pv = Place(item_lv, vac_lv);   
+    assert( item_pv ); 
+    if(!item_pv) std::raise(SIGINT); 
+
+    const G4VPhysicalVolume* vac_pv  = Place(vac_lv, nullptr );
+
+    return vac_pv ;      
+}
+
+
+
+
 
 
 /**
@@ -733,6 +754,9 @@ const G4VPhysicalVolume* U4VolumeMaker::WrapLVCube( G4LogicalVolume* lv, double 
     }
     return world_pv ;  
 }
+
+
+
 
 
 

@@ -37,6 +37,7 @@ npy/NNodeUncoincide npy/NNodeNudger
 #endif
 
 #include "stran.h"
+#include "stra.h"
 #include "OpticksCSG.h"
 
 #include "G4VSolid.hh"
@@ -689,13 +690,6 @@ inline void U4Solid::init_Hype()
     assert(0); 
 } 
 
-#ifdef WITH_SND
-inline void U4Solid::init_MultiUnion()
-{
-    LOG(fatal) << " MultiUnion requires using sn nodes " ; 
-    assert(0); 
-}
-#else 
 inline void U4Solid::init_MultiUnion()
 {
     const G4MultiUnion* const muni = static_cast<const G4MultiUnion*>(solid);
@@ -710,11 +704,21 @@ inline void U4Solid::init_MultiUnion()
     for( unsigned i=0 ; i < sub_num ; i++)
     {    
         const G4VSolid* sub = muni->GetSolid(i);
- 
-        //const G4Transform3D& tr = muni->GetTransformation(isub) ;
-        // TODO: handle transform
+        G4String name = sub->GetName() ; 
+
+        glm::tmat4x4<double> xf(1.) ; 
+        U4Transform::GetMultiUnionItemTransform( xf, muni, i ); 
+
+        if(level > 1 ) std::cout 
+            << "U4Solid::init_MultiUnion" 
+            << name 
+            << "\n" 
+            << stra<double>::Desc(xf) 
+            << "\n" 
+            ; 
 
         sn* p = Convert( sub,  lvid, depth+1, level ); 
+        p->combineXF(xf); 
 
         assert( p && p->is_primitive() );   
 
@@ -722,7 +726,7 @@ inline void U4Solid::init_MultiUnion()
     }    
     root = sn::Compound( prims, type );  
 }
-#endif
+
 
 
 /**

@@ -3767,6 +3767,18 @@ inline void sn::CollectProgeny_r( const sn* n, std::vector<const sn*>& progeny, 
 }
 
 
+
+/**
+sn::collect_prim
+-----------------
+
+Current impl includes listnode subs in the prim vector 
+as is_primitive judged by num child is false for listnode
+even though in the binary tree sense the listnode is a leaf. 
+
+WIP:LISTNODE
+**/
+
 inline void sn::collect_prim( std::vector<const sn*>& prim ) const 
 {
     collect_prim_r(prim, 0); 
@@ -3973,6 +3985,8 @@ inline double sn::radius_sphere() const
 sn::setAABB_LeafFrame
 ----------------------
 
+See sn::postconvert for call context
+
 Gets parameters and uses to setBB depending on typecode.
 No transforms are used. 
 
@@ -4086,6 +4100,8 @@ inline void sn::setAABB_LeafFrame()
 sn::setAABB_LeafFrame_All
 ---------------------------
 
+See sn::postconvert for call context
+
 1. collects vector of all prim 
 2. for each prim call setAABB_LeadFrame
 
@@ -4108,6 +4124,8 @@ inline void sn::setAABB_LeafFrame_All()
 /*
 sn::setAABB_TreeFrame_All formerly sn::setAABB
 -----------------------------------------------
+
+See sn::postconvert for call context
 
 1. collect vector of all prim
 2. setAABB_LeafFrame for each prim using param and typecode
@@ -4152,6 +4170,11 @@ to look for coincidences and make some parameter nudges.
 But subsequent code such as stree::get_combined_tran_and_aabb 
 expects the bbox to be in leaf frame, hence the bbox are recomputed 
 from the possibly nudged parameters in leaf frame after the uncoincide.
+
+HOW TO HANDLE AABB FOR LISTNODE ? 
+
+* each sub has transform
+
 
 **/
 

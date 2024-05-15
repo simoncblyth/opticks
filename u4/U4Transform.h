@@ -7,6 +7,7 @@
 #include "G4Transform3D.hh"
 #include "G4RotationMatrix.hh"
 #include "G4BooleanSolid.hh"
+#include "G4MultiUnion.hh"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -24,6 +25,8 @@ struct U4Transform
     static void GetObjectTransform(glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; // MOST USED BY OPTICKS
     static void GetFrameTransform( glm::tmat4x4<double>& tr, const G4VPhysicalVolume* const pv) ; 
     static void GetDispTransform(  glm::tmat4x4<double>& tr, const G4DisplacedSolid* disp );  
+    static void GetMultiUnionItemTransform(  glm::tmat4x4<double>& tr, const G4MultiUnion* const muni, unsigned item ); 
+
     static void GetScaleTransform( glm::tmat4x4<double>& tr, double sx, double sy, double sz ); 
 
     template<typename T>
@@ -111,6 +114,25 @@ inline void U4Transform::GetDispTransform(glm::tmat4x4<double>& tr, const G4Disp
 
     Convert_RotateThenTranslate(tr, rot, tla, true );  
 }
+
+
+/**
+U4Transform::GetMultiUnionItemTransform
+-----------------------------------------
+
+Gives expected translations : WARNING : ROTATION UNTESTED 
+
+**/
+
+
+inline void U4Transform::GetMultiUnionItemTransform(  glm::tmat4x4<double>& xf, const G4MultiUnion* const muni, unsigned item )
+{
+    unsigned num_item = muni->GetNumberOfSolids() ; 
+    assert( item < num_item ); 
+    const G4Transform3D& tr = muni->GetTransformation(item) ;
+    Convert_TranslateThenRotate(xf,  tr ); 
+}
+
 
 
 inline void U4Transform::GetScaleTransform( glm::tmat4x4<double>& tr, double sx, double sy, double sz )

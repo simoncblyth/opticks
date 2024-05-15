@@ -24,6 +24,9 @@ sysrap/tests/SGLM_set_frame_test.sh
     MOI=PMT_20inch_veto:0:1000 ~/o/cxr_min.sh
 
 
+    TRIMESH=1 ~/o/cxr_min.sh 
+
+
 
 FIXED Issue : EYE inputs not being extent scaled
 -----------------------------------------------------
@@ -152,7 +155,11 @@ if [ -n "$TRIMESH" ]; then
 
    #trimesh=4:VACUUM_solid
 
-   trimesh=3:Rock_solid 
+   #trimesh=3:Rock_solid 
+
+   #trimesh=28:World_solid 
+
+   trimesh=2:VACUUM_solid 
 
    export OPTICKS_SOLID_TRIMESH=$trimesh
 fi

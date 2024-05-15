@@ -38,7 +38,8 @@ DONE : check ~/o/u4/tests/U4TreeCreateSSimTest.sh with G4MultiUnion using GEOM
 
 ::
 
-   GEOM ## set to BoxGridMultiUnion10:30_YX  U4SolidMaker::Make 
+   GEOM ## set to BoxGridMultiUnion10:30_YX  U4SolidMaker::Make   : causes problems later
+   GEOM ## set to BoxGridMultiUnion10_30_YX  U4SolidMaker::Make 
 
    ~/o/u4/tests/U4TreeCreateSSimTest.sh     ## create stree+scene 
 
@@ -51,6 +52,49 @@ DONE : check ~/o/u4/tests/U4TreeCreateSSimTest.sh with G4MultiUnion using GEOM
    being parsed by one of the U4VolumeMaker Wrap methods 
 
 
+Move to a simpler multiunion for debuugging : OrbOrbMultiUnionSimple
+-------------------------------------------------------------------------
+
+Issues:
+
+* FIXED : tran all identity 
+
+  * note that triangulated in disceptive as its getting the tri with transforms applied from g4
+
+* WIP : prim lack bbox for the listnode
+
+
+listnode CSGPrim bbox : HOW ? 
+-------------------------------
+
+binary tree node bbox comes from::
+
+  CSGImport::importNode 
+  stree::get_combined_tran_and_aabb 
+  stree::get_combined_transform
+  stree::get_node_product  
+
+Correctly handling listnode needs some of that to be used from::
+
+  CSGImport::importListNode 
+
+
+Test commands
+-----------------
+
+::
+
+   GEOM ## set to OrbOrbMultiUnionSimple
+   ~/o/u4/tests/U4TreeCreateSSimTest.sh            ## create stree+scene 
+   SCENE=3 ~/o/sysrap/tests/ssst.sh run            ## triangulated viz : expected 2 Orb 
+
+   ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh  ## full convert
+
+   ~/o/cxr_min.sh                                      ## EMPTY WORLD BOX
+   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback is there, expected 2 Orb 
+   TRIMESH=1 EYE=-0.1,0,0 TMIN=0.001 ~/o/cxr_min.sh    ## adjust viewpoint inside the Orb 
+
+
 WIP : full conversion + anaviz 
 ------------------------------------------
 
@@ -59,24 +103,94 @@ First impl of sn(listnode) -> CSG in::
     238 CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
 
-::
 
-    GEOM ## check config is BoxGridMultiUnion10:30_YX
+Full convert::
+
+    GEOM ## check config is BoxGridMultiUnion10_30_YX
     ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
+
+
+anaviz runs but gives empty box::
+
     ~/o/CSGOptiX/cxr_min.sh
+    ~/o/cxr_min.sh   ## via symbolic link 
+
+
+TOCHECK
+
+* bbox 
+
+
+triviz gives expected triangulated geom 3x3x3x7x7x7 mid box::
+
+     TRIMESH=1 ~/o/cxr_min.sh 
+     EYE=-0.5,-0.5,0 TRIMESH=1 ~/o/cxr_min.sh
+
+Find viewpoint inside one of the little boxes so every pixel is hitting the tri fallback multiunion:: 
+
+     EYE=0,-0.01,0 TMIN=0.001 TRIMESH=1 ~/o/cxr_min.sh
+
+     EYE=0,-0.01,0 TMIN=0.001 ~/o/cxr_min.sh
+
+
+
+Issues:
+
+* prim lack bbox
+* to calc the bbox of the listnode need to combine bbox of the subs accounting for their transforms
+
+
+
 
 
 
 ::
 
-    [blyth@localhost opticks]$ ~/o/CSGOptiX/cxr_min.sh
-    /home/blyth/o/CSGOptiX/cxr_min.sh: line 189: export: `BoxGridMultiUnion10:30_YX_CFBaseFromGEOM=/home/blyth/tmp/G4CXOpticks_setGeometry_Test/BoxGridMultiUnion10:30_YX': not a valid identifier
+    In [7]: np.c_[np.unique(f.node[:,3,2].view(np.int32), return_counts=True)]
+    Out[7]: 
+    array([[  11,   27],
+           [ 110, 9262]])
+
+
+
+
+::
+
+    [blyth@localhost CSGFoundry]$ pwd
+    /home/blyth/tmp/G4CXOpticks_setGeometry_Test/BoxGridMultiUnion10_30_YX/CSGFoundry
+
+    f
+
+    In [3]: f.prim.view(np.int32)
+    Out[3]: 
+    array([[[         1,          0,          0,          0],
+            [         0,          1,          0,          0],
+            [-994344960, -994344960, -994344960, 1153138688],
+            [1153138688, 1153138688,          0,          0]],
+
+           [[       344,          1,          1,          0],
+            [         1,          0,          0,          1],
+            [         0,          0,          0,          0],
+            [         0,          0,          0,          0]],
+
+           [[       344,        345,        344,          0],
+            [         2,          0,          0,          2],
+            [         0,          0,          0,          0],
+            [         0,          0,          0,          0]],
+
+           [[       344,        689,        687,          0],
+            [         3,          0,          0,          3],
+            [         0,          0,          0,          0],
+            [         0,          0,          0,          0]],
 
 
 
 
 
-FIXED : Cutting edge::
+
+
+
+FIXED::
 
     (gdb) bt
     #3  0x00007ffff059b252 in __assert_fail () from /usr/lib64/libc.so.6
@@ -171,7 +285,6 @@ sn -> CSG with listnode
      817     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ;
      818     return so ;
      819 }
-
 
 
 

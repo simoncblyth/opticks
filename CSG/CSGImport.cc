@@ -107,6 +107,13 @@ cf::
     CSG_GGeo_Convert::convertSolid
     CSG_GGeo_Convert::convertPrim
 
+
+AABB from each CSGPrim is combined using s_bb::IncludeAABB 
+
+Q: Is that assuming common frame for all CSGPrim in the CSGSolid ? 
+A: That assumption is true for prims of the remainder solid, but might not be for 
+   the prim of other solid. 
+
 **/
 CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
 {
@@ -128,7 +135,7 @@ CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
         const snode& node = st->rem[primIdx] ;
         CSGPrim* pr = importPrim( primIdx, node ) ;  
         assert( pr );  
-        s_bb::IncludeAABB( bb.data(), pr->AABB() );  
+        s_bb::IncludeAABB( bb.data(), pr->AABB() );    
     }
     s_bb::CenterExtent( &(so->center_extent.x), bb.data() ); 
     return so ; 
@@ -214,22 +221,16 @@ subNum/subOffset referencing.
   in order to generate the indices into the complete binary tree serialization in level order 
 
 
-WIP: add listnode handling 
+WIP:LISTNODE
 
 * from binary tree point of view the listnode is just a leaf "prim" 
 * for a listnode only prim : its just one binary tree node with lots of child 
+* need smth similar to CSGMaker::makeList
 
-::
+1. get the binary tree nodes into complete binary tree vector (excluding the subs of any listnode)
+2. count total subs of any listnodes TODO: move down into sn.h 
+3. addPrim to foundry with space for binary nodes and all subs
 
-    (gdb) f 4
-    #4  0x00007ffff2700d2f in sn::getLVNodesComplete (this=0x69ec50, nds=std::vector of length 344, capacity 344 = {...}) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3620
-    3620        assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
-    (gdb) p child.size()
-    $10 = 343
-    (gdb) 
-
-
-For listnode handling see CSGMaker::makeList
 
 
 **/
@@ -240,13 +241,17 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     int lvid = node.lvid ; 
     const char* name = fd->getMeshName(lvid)  ; 
 
-    std::vector<const sn*> nds ; 
+    // 1. get the binary tree nodes into complete binary tree vector (excluding the subs of any listnode)
 
+    std::vector<const sn*> nds ; 
     sn::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int bn = nds.size();     // binary nodes
+
+
+    // 2. count total subs of any listnodes TODO: move down into sn.h 
+
     int ln = 0 ; 
     int num_sub_total = 0 ; 
-
     for(unsigned i=0 ; i < nds.size() ; i++)
     {
         const sn* nd = nds[i]; 
@@ -256,7 +261,6 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
             num_sub_total += nd->child.size() ;             
         }    
     }
-
     assert( ln == 0 || ln == 1 ); // simplify initial impl 
 
 
@@ -272,6 +276,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         << std::endl 
         ; 
 
+    // 3. addPrim to foundry with space for binary nodes and all subs
 
     CSGPrim* pr = fd->addPrim( bn + num_sub_total );
 
@@ -323,6 +328,8 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     assert( sub_offset == bn + num_sub_total ); 
     assert( int(subs.size()) == num_sub_total ); 
+
+    
 
     for( int i=0 ; i < num_sub_total ; i++ )
     {
