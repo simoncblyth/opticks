@@ -65,9 +65,6 @@ mkdir -p $fold
 
 export FOLD=$fold   # where SSim saved/loaded 
 
-U4TreeCreateSSimTest
-
-
 script=$SDIR/$bin.py 
 
 vars="BASH_SOURCE TEST SDIR bin GEOM gdmlpath tmp TMP FOLD script"

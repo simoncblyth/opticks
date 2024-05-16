@@ -245,22 +245,15 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     std::vector<const sn*> nds ; 
     sn::GetLVNodesComplete(nds, lvid);   // many nullptr in unbalanced deep complete binary trees
-    int bn = nds.size();     // binary nodes
+    int bn = nds.size();                 // binary nodes
 
+    // 2. count total subs for any listnodes of this lvid 
 
-    // 2. count total subs of any listnodes TODO: move down into sn.h 
+    std::vector<const sn*> lns ; 
+    sn::GetLVListnodes( lns, lvid ); 
+    int num_sub_total = sn::GetChildTotal( lns ); 
 
-    int ln = 0 ; 
-    int num_sub_total = 0 ; 
-    for(unsigned i=0 ; i < nds.size() ; i++)
-    {
-        const sn* nd = nds[i]; 
-        if(nd && nd->is_listnode())
-        {
-            ln += 1 ; 
-            num_sub_total += nd->child.size() ;             
-        }    
-    }
+    int ln = lns.size(); 
     assert( ln == 0 || ln == 1 ); // simplify initial impl 
 
 
@@ -295,6 +288,13 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     int sub_offset = 0 ; 
     sub_offset += bn ; 
+
+
+    // HMM: would be simpler for listnode to contribute to the prim bb 
+    // if could add the listnode subs
+    // immediately into their offset place after the binary tree 
+    // rather than collecting and adding later 
+    // BUT out of order node adding is not currently possible with CSGFoundry::addNode
 
     for(int i=0 ; i < bn ; i++)
     {
@@ -336,6 +336,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         const sn* nd = subs[i]; 
         CSGNode* n = importNode(pr->nodeOffset(), i, node, nd ); 
         assert( n ); 
+        if(!n->is_complemented_primitive()) s_bb::IncludeAABB( bb.data(), n->AABB(), out ); 
     }
 
 

@@ -1,41 +1,24 @@
 listnode_review
 ===================
 
+Context
+--------
+
+* next :doc:`listnode_review_shrinking_trees`
+
+
 Overview
 -----------
 
 * looks like listnodes more developed in old x4 workflow, and only partly migratated into new u4/sn 
+* as G4MultiUnion with prim subs is easier did that first  
 
 
-Summary of below : What is needed for listnode support ?
----------------------------------------------------------------
+TODO
+-----
 
-0. propagating hints from G4VSolid names into the sn.h binary tree
-1. detecting binary trees with hints and modifying the tree at sn.h level into n-ary tree
-2. CSGImport handling n-ary tree conversion into CSGPrim/CSGNode setting subNum/subOffset 
-3. testing pure listnodes
-4. testing binary trees with 1 listnode
-5. testing binary trees with >1 listnode (probably not important, as would be rare)
-
-* step 1 is most difficult, step 0 and 2 are mostly similar to things done before
-* with G4Polycone/G4MultiUnion no detection is needed, can directly create the n-ary tree
-  so essentially only step 2 is needed for those.  
-
-* One shortcut would be to switch to G4MultiUnion in the source geometry, 
-  actually not a panacea as G4MultiUnion supports booleans within it, unlike listnode
-
-* Best to start with  G4MultiUnion of G4VSolid that translate to single CSGNode leaves  
-
-
-Q: Does listnode need externally defined bbox ?
---------------------------------------------------------
-
-Put another way should the solid frame bbox be taken from Geant4 and propagated thru to GPU ?
-Or should it be computed from the params of the prims and their known transforms ? 
-A wrinkle with this is the transformation of bbox according to whether the listnode 
-is within the instanced volumes or the global remainder.  
-
-A: Doing both ways is useful as cross check.  
+* speed measurements, maybe single frame renders with annotation and metadata
+* compare CSG_CONTIGUOUS and CSG_DISCONTIGUOUS
 
 
 DONE : ~/o/u4/tests/U4SolidTest.sh 
@@ -63,6 +46,33 @@ DONE : check ~/o/u4/tests/U4TreeCreateSSimTest.sh with G4MultiUnion using GEOM
   being parsed by one of the U4VolumeMaker Wrap methods 
 
 
+Try OrbGridMultiUnion10_30_YX because cannot see ana/tri difference with boxes
+-----------------------------------------------------------------------------------
+
+* creation is slow, G4 takes a while to form the meshes for 3*3*3*7*7*7 = 9261 Orbs 
+
+* remember that for trimesh fallback need to configure the name of the solid 
+  to triangulate from the mmlabel.txt 
+
+* listnode from G4MultiUnion working : making analytic render with 
+  a solid of 7x7x7 = 343 subs that would be impossible using 
+  complete binary tree : with render speed subjectively the same between tri and ana
+
+::
+
+   GEOM ## set to OrbGridMultiUnion10_30_YX  U4SolidMaker::Make 
+
+   ~/o/u4/tests/U4TreeCreateSSimTest.sh     ## create stree+scene 
+
+   SCENE=3 ~/o/sysrap/tests/ssst.sh run     ## triangulated viz
+
+   ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh  ## full convert
+
+   ~/o/cxr_min.sh                                      ## get 3x3x3 of 7x7x7 Orbs 
+   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback is there, get 5 tri orb in line 
+   TRIMESH=1 EYE=-0.1,0,0 TMIN=0.001 ~/o/cxr_min.sh    ## adjust viewpoint inside the Orb 
+
+
 Move to a simpler multiunion for debuugging : OrbOrbMultiUnionSimple
 -------------------------------------------------------------------------
 
@@ -72,11 +82,26 @@ Issues:
 
   * note that triangulated in disceptive as its getting the tri with transforms applied from g4
 
-* WIP : prim lack bbox for the listnode
+* FIXED : prim lack bbox for the listnode after changes to CSGImport::importPrim
+
+::
+
+    In [1]: cf.prim
+    Out[1]: 
+    array([[[    0.,     0.,     0.,     0.],
+            [    0.,     0.,     0.,     0.],
+            [-1000., -1000., -1000.,  1000.],
+            [ 1000.,  1000.,     0.,     0.]],
+
+           [[    0.,     0.,     0.,     0.],
+            [    0.,     0.,     0.,     0.],
+            [ -250.,   -50.,   -50.,   250.],
+            [   50.,    50.,     0.,     0.]]], dtype=float32)
 
 
-WIP : listnode CSGPrim bbox : HOW ? 
---------------------------------------
+
+DONE : listnode CSGPrim bbox  
+----------------------------------
 
 binary tree node bbox comes from::
 
@@ -91,31 +116,18 @@ Correctly handling listnode needs some of that to be used from::
 
 Central question : how the above stree methods handle listnodes
 
+First impl of sn(listnode) -> CSG in::
 
-WIP : use U4TreeCreateSSimTest.sh with OrbOrbMultiUnionSimple2 to get transforms and bbox working in listnode
+    CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
+
+
+DONE : use U4TreeCreateSSimTest.sh with OrbOrbMultiUnionSimple2 to get transforms and bbox working in listnode
 ------------------------------------------------------------------------------------------------------------------
 
-::
+Checking in U4TreeCreateSSimTest.cc suggests the modified CSGImport::importPrim might be OK now::
 
    ~/o/u4/tests/U4TreeCreateSSimTest.sh
    ~/o/u4/tests/U4TreeCreateSSimTest.cc
-
-
-::
-
-    In [4]: f._csg.sn
-    Out[4]: 
-    array([[101,   0,   0,   0,   0,   0,   5,   0,   0,  -1,   1,   0,   1,   0,   0,   0,   0,   0,   0],
-           [101,   0,   0,   1,   1,   1,   5,   1,   0,  -1,   2,   1,   1,   0,   0,   0,   0,   0,   0],
-           [101,   0,   0,   2,   2,   2,   5,   2,   0,  -1,   3,   2,   1,   0,   0,   0,   0,   0,   0],
-           [101,   0,   0,   3,   3,   3,   5,   3,   0,  -1,   4,   3,   1,   0,   0,   0,   0,   0,   0],
-           [101,   0,   0,   4,   4,   4,   5,   4,   0,  -1,  -1,   4,   1,   0,   0,   0,   0,   0,   0],
-           [ 11,   0,   0,  -1,  -1,  -1,  -1,   0,   5,   0,  -1,   5,   0,   0,   0,   0,   0,   0,   0],
-           [110,   0,   1,  -1,   5,   5,  -1,   0,   0,  -1,  -1,   6,   0,   0,   0,   0,   0,   0,   0]], dtype=int32)
-
-
-
-
 
 
 Test commands
@@ -123,41 +135,29 @@ Test commands
 
 ::
 
-   GEOM ## set to OrbOrbMultiUnionSimple
+   GEOM ## set to OrbOrbMultiUnionSimple2
    ~/o/u4/tests/U4TreeCreateSSimTest.sh            ## create stree+scene 
-   SCENE=3 ~/o/sysrap/tests/ssst.sh run            ## triangulated viz : expected 2 Orb 
+   SCENE=3 ~/o/sysrap/tests/ssst.sh run            ## triangulated viz : get expected 5 Orb in a line along X
 
    ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh  ## full convert
 
-   ~/o/cxr_min.sh                                      ## EMPTY WORLD BOX
-   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback is there, expected 2 Orb 
+   ~/o/cxr_min.sh                                      ## FIXED:EMPTY WORLD BOX  NOW GET 5 ANALYTIC ORB IN A LINE
+   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback is there, get 5 tri orb in line 
    TRIMESH=1 EYE=-0.1,0,0 TMIN=0.001 ~/o/cxr_min.sh    ## adjust viewpoint inside the Orb 
 
 
-WIP : full conversion + anaviz 
+DONE : full conversion + anaviz 
 ------------------------------------------
-
-First impl of sn(listnode) -> CSG in::
-
-    238 CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
-
-
 
 Full convert::
 
     GEOM ## check config is BoxGridMultiUnion10_30_YX
     ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
 
-
-anaviz runs but gives empty box::
+FIXED: anaviz runs but gives empty box::
 
     ~/o/CSGOptiX/cxr_min.sh
     ~/o/cxr_min.sh   ## via symbolic link 
-
-
-TOCHECK
-
-* bbox 
 
 
 triviz gives expected triangulated geom 3x3x3x7x7x7 mid box::
@@ -168,128 +168,13 @@ triviz gives expected triangulated geom 3x3x3x7x7x7 mid box::
 Find viewpoint inside one of the little boxes so every pixel is hitting the tri fallback multiunion:: 
 
      EYE=0,-0.01,0 TMIN=0.001 TRIMESH=1 ~/o/cxr_min.sh
-
      EYE=0,-0.01,0 TMIN=0.001 ~/o/cxr_min.sh
-
 
 
 Issues:
 
-* prim lack bbox
-* to calc the bbox of the listnode need to combine bbox of the subs accounting for their transforms
-
-
-
-
-
-
-::
-
-    In [7]: np.c_[np.unique(f.node[:,3,2].view(np.int32), return_counts=True)]
-    Out[7]: 
-    array([[  11,   27],
-           [ 110, 9262]])
-
-
-
-
-::
-
-    [blyth@localhost CSGFoundry]$ pwd
-    /home/blyth/tmp/G4CXOpticks_setGeometry_Test/BoxGridMultiUnion10_30_YX/CSGFoundry
-
-    f
-
-    In [3]: f.prim.view(np.int32)
-    Out[3]: 
-    array([[[         1,          0,          0,          0],
-            [         0,          1,          0,          0],
-            [-994344960, -994344960, -994344960, 1153138688],
-            [1153138688, 1153138688,          0,          0]],
-
-           [[       344,          1,          1,          0],
-            [         1,          0,          0,          1],
-            [         0,          0,          0,          0],
-            [         0,          0,          0,          0]],
-
-           [[       344,        345,        344,          0],
-            [         2,          0,          0,          2],
-            [         0,          0,          0,          0],
-            [         0,          0,          0,          0]],
-
-           [[       344,        689,        687,          0],
-            [         3,          0,          0,          3],
-            [         0,          0,          0,          0],
-            [         0,          0,          0,          0]],
-
-
-
-
-
-
-
-
-FIXED::
-
-    (gdb) bt
-    #3  0x00007ffff059b252 in __assert_fail () from /usr/lib64/libc.so.6
-    #4  0x00007ffff2700d2f in sn::getLVNodesComplete (this=0x69ec50, nds=std::vector of length 344, capacity 344 = {...}) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3620
-    #5  0x00007ffff2700b5a in sn::GetLVNodesComplete (nds=std::vector of length 344, capacity 344 = {...}, lvid=0) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3584
-    #6  0x00007ffff2706ddc in CSGImport::importPrim_<sn> (this=0xa1e980, primIdx=1, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:247
-    #7  0x00007ffff26f4c98 in CSGImport::importPrim (this=0xa1e980, primIdx=1, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:224
-    #8  0x00007ffff26f472c in CSGImport::importSolidRemainder (this=0xa1e980, ridx=0, rlabel=0x7fffffff8a20 "r0") at /home/blyth/opticks/CSG/CSGImport.cc:129
-    #9  0x00007ffff26f44a4 in CSGImport::importSolid (this=0xa1e980) at /home/blyth/opticks/CSG/CSGImport.cc:92
-    #10 0x00007ffff26f42bf in CSGImport::import (this=0xa1e980) at /home/blyth/opticks/CSG/CSGImport.cc:55
-    #11 0x00007ffff2676f79 in CSGFoundry::importSim (this=0xa1e7c0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1591
-    #12 0x00007ffff267c590 in CSGFoundry::CreateFromSim () at /home/blyth/opticks/CSG/CSGFoundry.cc:2887
-    #13 0x00007ffff7ea19c7 in G4CXOpticks::setGeometry (this=0x4949b0, world=0x4d7e40) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:256
-    #14 0x00007ffff7ea0cfe in G4CXOpticks::setGeometry (this=0x4949b0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:173
-    #15 0x00007ffff7ea0040 in G4CXOpticks::SetGeometry () at /home/blyth/opticks/g4cx/G4CXOpticks.cc:52
-    #16 0x00000000004037e5 in main (argc=1, argv=0x7fffffffb6d8) at /home/blyth/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.cc:16
-    (gdb) 
-
-
-    (gdb) list
-    124 
-    125     for(int i=0 ; i < num_rem ; i++)
-    126     {
-    127         int primIdx = i ;  // primIdx within the CSGSolid
-    128         const snode& node = st->rem[primIdx] ;
-    129         CSGPrim* pr = importPrim( primIdx, node ) ;  
-    130         assert( pr );  
-    131         s_bb::IncludeAABB( bb.data(), pr->AABB() );  
-    132     }
-    133     s_bb::CenterExtent( &(so->center_extent.x), bb.data() ); 
-    (gdb) p num_rem 
-    $3 = 28
-    (gdb) 
-
-
-* thats OK 3x3x3+1 for world box each 7x7x7 is a single prim from the multiunions
-
-
-    (gdb) f 4
-    #4  0x00007ffff2700d2f in sn::getLVNodesComplete (this=0x69ec50, nds=std::vector of length 344, capacity 344 = {...}) at /data/blyth/opticks_Debug/include/SysRap/sn.h:3620
-    3620        assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
-    (gdb) list
-    3615            << " bn " << bn 
-    3616            << " ns " << ns 
-    3617            << "\n"
-    3618            ;
-    3619    
-    3620        assert( ns == 0 ); // CHECKING : AS IMPL LOOKS LIKE ONLY HANDLES BINARY NODES
-    3621    
-    3622        GetLVNodesComplete_r( nds, this, 0 ); 
-    3623    }
-    3624    
-    (gdb) p bn
-    $6 = 1
-    (gdb) p ns
-    $7 = 343
-    (gdb) p 7*7*7
-    $8 = 343
-    (gdb) 
-
+* FIXED : prim lack bbox
+* DONE : to calc the bbox of the listnode need to combine bbox of the subs accounting for their transforms
 
 
 sn -> CSG with listnode
@@ -326,141 +211,10 @@ sn -> CSG with listnode
      819 }
 
 
-
-
-
-
-
-
-
-
 See Also
 ----------
 
 * :doc:`AltXJfixtureConstruction`
-
-
-
-G4MultiUnion/G4Polycone could be directly converted into listnode : but what about deep binary trees ?
----------------------------------------------------------------------------------------------------------
-
-When converting from G4MultiUnion/G4Polycone can know directly to create the listnode 
-but with big boolean trees its more involved. Have to go looking for hints
-in G4VSolid names and pluck nodes from tree and form the new tree. 
-
-How/where to convert big boolean trees into smaller boolean trees with listnodes ? 
--------------------------------------------------------------------------------------
-
-Looks like needs to within first stage (from G4VSolid to sn) 
-although it doesnt need to be first pass. 
-
-* for access to hinting in G4VSolid names 
-* need sn.h flexibilty : it was designed for this task
-
-  * n-ary tree  (vector of child nodes)
-  * delete-able nodes
-
-
-Some big trees can become a single listnode : if name hinting indicates it should
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-      L[A,B,C,D,E,F,G]    ## can drop all those U-nodes
-
-      .            U
-                  / \
-                 U   G
-                / \
-               U   F
-              / \
-             U   E
-            / \
-           U   D
-          / \
-         U   C
-        / \
-       A   B
-
-
-More typically big trees will become smaller with one listnode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Presence of non-union operator nodes will constrain part of 
-the tree to stay binary::
-
-
-
-      .            U
-                  / \
-                 U   G
-                / \
-               U   F
-              / \
-             U   E
-            / \
-           U   D
-          / \
-         I   C
-        / \
-       A  !B
-
-      .          
-            
-           U              <-- need to find the crux node (parent of first hinted prim in postorder traversal perhaps)
-          / \
-         I   L[C,D,E,F,G]
-        / \
-       A  !B
-
-
-For G4VSolid name hinting, use integer suffix to indicate any separate listnodes::
-
-   CSG_DISCONTIGUOUS_0
-   CSG_DISCONTIGUOUS_0
-   CSG_DISCONTIGUOUS_0
-
-   CSG_DISCONTIGUOUS_1
-
-
-Procedure:
-
-1. first normal binary conversion creating binary sn tree 
-
-   * (HMM: need to pass in the G4VSolid name hints somehow : have 16 char label)
-
-2. postorder traversal looking for hinting and collecting prim nodes to be plucked from tree
-   into list-nodes holding the prim within child vector 
-
-3. clone the part of the original tree that must remain binary 
-
-4. hookup list-node "heads" into the binary tree 
-
-
-::
-
-     599 inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
-     600 {
-     601     G4String _name = so->GetName() ; // bizarre: G4VSolid::GetName returns by value, not reference
-     602     const char* name = _name.c_str();
-     603 
-     604     assert( int(solids.size()) == lvid );
-     605     int d = 0 ;
-     606 #ifdef WITH_SND
-     607     int root = U4Solid::Convert(so, lvid, d );
-     608     assert( root > -1 );
-     609 #else
-     610     sn* root = U4Solid::Convert(so, lvid, d );
-     611     assert( root );
-     612 #endif
-     613 
-     614     solids.push_back(so);
-     615     st->soname_raw.push_back(name);
-     616     st->solids.push_back(root);
-     617 
-     618    
-     619 
-     620 }
 
 
 

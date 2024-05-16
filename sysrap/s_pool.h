@@ -75,7 +75,8 @@ struct s_pool
     T*  get_root(int idx) const ; 
     T*  get(int idx) const ; 
 
-    void find(std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const ; 
+    void find( std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const ; 
+    void find_(std::vector<const T*>& vec, std::function<bool(const T*)> predicate ) const ; 
 
     std::string brief() const ; 
     std::string desc() const ; 
@@ -174,6 +175,20 @@ inline void s_pool<T,P>::find(std::vector<T*>& vec, std::function<bool(const T*)
         if(predicate(n)) vec.push_back(n) ; 
     }
 }
+
+
+template<typename T, typename P>
+inline void s_pool<T,P>::find_(std::vector<const T*>& vec, std::function<bool(const T*)> predicate ) const 
+{
+    typedef typename POOL::const_iterator IT ; 
+    for(IT it=pool.begin() ; it != pool.end() ; it++) 
+    {
+        const T* n = it->second ;  
+        if(predicate(n)) vec.push_back(n) ; 
+    }
+}
+
+
 
 
 template<typename T, typename P>

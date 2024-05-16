@@ -54,6 +54,7 @@ struct U4TreeCreateSSimTest
     int pick_lvid_ordinal_node() const ; 
     int get_combined_transform() const; 
     int get_combined_tran_and_aabb() const; 
+    int GetLVListnodes() const ; 
 
     int run_TEST_method() const ; 
     static int Main(int argc, char** argv);
@@ -232,7 +233,34 @@ int U4TreeCreateSSimTest::get_combined_tran_and_aabb() const
    } 
 
 
-   return 0 ; 
+   return 0 ;  
+}
+
+int U4TreeCreateSSimTest::GetLVListnodes() const 
+{
+    std::vector<const sn*> lns ; 
+    sn::GetLVListnodes( lns, q_lvid ); 
+    int num_lns = lns.size(); 
+
+    int child_total = sn::GetChildTotal(lns) ; 
+
+
+    std::cout 
+        << desc("U4TreeCreateSSimTest::GetLVListnodes") 
+        << " num_lns  " << num_lns 
+        << " child_total " << child_total 
+        << "\n"
+        ; 
+
+    for(int i=0 ; i < num_lns ; i++)
+    {
+        const sn* n = lns[i]; 
+        std::cout 
+            << std::setw(3) << i << " : " << n->desc() << "\n" 
+            ;  
+    }
+
+    return 0 ; 
 }
 
 
@@ -244,6 +272,7 @@ int U4TreeCreateSSimTest::run_TEST_method() const
     else if(strcmp(TEST, "pick_lvid_ordinal_node") == 0 )     rc = pick_lvid_ordinal_node();  
     else if(strcmp(TEST, "get_combined_transform") == 0 )     rc = get_combined_transform();  
     else if(strcmp(TEST, "get_combined_tran_and_aabb") == 0 ) rc = get_combined_tran_and_aabb();  
+    else if(strcmp(TEST, "GetLVListnodes") == 0 )             rc = GetLVListnodes();  
     else std::cout << "U4TreeCreateSSimTest::run_TEST_method no-impl for TEST[" << ( TEST ? TEST : "-" ) << "]" ;  
     return rc ; 
 }

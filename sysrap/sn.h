@@ -467,7 +467,11 @@ struct SYSRAP_API sn
     static sn* Buggy_CommonOperatorTree( std::vector<sn*>& leaves    , int op ); 
     static sn* BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, int typecode ); 
 
-    static void GetLVNodes( std::vector<sn*>& nds, int lvid ); 
+    static void GetLVListnodes( std::vector<const sn*>& lns, int lvid ); 
+    static int  GetChildTotal(  const std::vector<const sn*>& nds ); 
+
+    static void GetLVNodes(  std::vector<sn*>& nds, int lvid ); 
+    static void GetLVNodes_( std::vector<const sn*>& nds, int lvid ); 
     void getLVNodes( std::vector<sn*>& nds ) const ;
     static bool Includes(const std::vector<sn*>& nds, sn* nd ); 
 
@@ -3385,6 +3389,41 @@ inline sn* sn::BuildCommonTypeTree_Unbalanced( const std::vector<sn*>& leaves, i
 
 
 /**
+sn::GetLVListnodes
+-------------------
+
+Q: What about repeated globals, will this yield duplicates ?
+A: No, as are searching the sn::POOL which should have only one of each CSG node
+
+**/
+
+inline void sn::GetLVListnodes( std::vector<const sn*>& lns, int lvid ) // static
+{
+    std::vector<const sn*> nds ; 
+    GetLVNodes_(nds, lvid ); 
+
+    int num_nd = nds.size(); 
+    for(int i=0 ; i < num_nd ; i++)
+    {
+        const sn* n = nds[i]; 
+        if(n->is_listnode()) lns.push_back(n) ; 
+    }
+}
+
+inline int sn::GetChildTotal(  const std::vector<const sn*>& nds ) // static 
+{
+    int child_total = 0 ; 
+    int num_nd = nds.size(); 
+    for(int i=0 ; i < num_nd ; i++)
+    {
+        const sn* n = nds[i]; 
+        child_total += ( n ? n->num_child() : 0 ) ; 
+    }
+    return child_total ; 
+}
+
+
+/**
 sn::GetLVNodes
 ---------------
 
@@ -3399,12 +3438,22 @@ struct sn_find_lvid
     bool operator()(const sn* n){ return lvid == n->lvid ; }  
 };
 
-
 inline void sn::GetLVNodes( std::vector<sn*>& nds, int lvid ) // static
 {
     sn_find_lvid flv(lvid); 
     pool->find(nds, flv );   
 }
+
+
+inline void sn::GetLVNodes_( std::vector<const sn*>& nds, int lvid ) // static
+{
+    sn_find_lvid flv(lvid); 
+    pool->find_(nds, flv );   
+}
+
+
+
+
 
 
 /**

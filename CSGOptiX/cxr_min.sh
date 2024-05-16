@@ -157,9 +157,9 @@ if [ -n "$TRIMESH" ]; then
 
    #trimesh=3:Rock_solid 
 
-   #trimesh=28:World_solid 
+   trimesh=28:World_solid 
 
-   trimesh=2:VACUUM_solid 
+   #trimesh=2:VACUUM_solid 
 
    export OPTICKS_SOLID_TRIMESH=$trimesh
 fi
