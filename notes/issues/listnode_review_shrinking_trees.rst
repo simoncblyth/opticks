@@ -27,6 +27,8 @@ Summary of what is needed for listnode support ?
 * Best to start with  G4MultiUnion of G4VSolid that translate to single CSGNode leaves  
 
 
+
+
 Q: Does listnode need externally defined bbox ?
 --------------------------------------------------------
 
@@ -55,6 +57,65 @@ although it doesnt need to be first pass.
 
   * n-ary tree  (vector of child nodes)
   * delete-able nodes
+
+
+
+
+U4SolidMaker::AltLocalFastenerAcrylicConstruction
+---------------------------------------------------
+
+Defining source geometry as union of G4Tubs and G4MultiUnion 
+avoids the need for hinting/detection/tree-rearrangement 
+as the G4MultiUnion just becomes the listnode. 
+
+::
+
+    2058 const G4VSolid* U4SolidMaker::AltLocalFastenerAcrylicConstruction(const char* name) // static
+    2059 {
+    2060     const char* PREFIX = "AltLocalFastenerAcrylicConstruction" ; 
+    2061     assert( sstr::StartsWith(name,PREFIX ));
+    2062     long num_column = sstr::ExtractLong(name, 1) ;
+    2063 
+    2064     LOG(info) 
+    2065         << " name " <<  ( name ? name : "-" )
+    2066         << " num_column " << num_column
+    2067         ;
+    2068 
+    2069     assert( num_column > 0 ); 
+    2070 
+    2071     G4Tubs* IonRing = new G4Tubs("IonRing",123*mm,206.2*mm,7*mm,0.0*deg,360.0*deg);
+    2072 
+    2073     G4MultiUnion* muni = new G4MultiUnion(name);
+    2074     G4Tubs* screw = new G4Tubs("screw",0,13*mm,50.*mm,0.0*deg,360.0*deg);
+    2075 
+    2076     G4RotationMatrix rot(0, 0, 0);
+    2077     for(long i=0;i<num_column;i++)
+    2078     {
+    2079        G4ThreeVector tlate(164.*cos(i*pi/4)*mm, 164.*sin(i*pi/4)*mm,-65.0*mm);
+    2080        G4Transform3D tr(rot, tlate) ;
+    2081        muni->AddNode( *screw, tr );
+    2082     }
+    2083 
+    2084     G4UnionSolid* uni1 = new G4UnionSolid(name, IonRing, muni, 0, G4ThreeVector(0.,0.,0.));
+    2085     return uni1 ;
+    2086 }
+
+
+DONE : Quick test of listnode within binary tree before impl the detection+tree shrinkage using AltLocalFastenerAcrylicConstructionSimple5
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+::
+
+   GEOM ## set to AltLocalFastenerAcrylicConstructionSimple5
+   ~/o/u4/tests/U4TreeCreateSSimTest.sh            ## create stree+scene 
+   SCENE=3 ~/o/sysrap/tests/ssst.sh run            ## triangulated viz : get expected 5 Orb in a line along X
+
+   ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh  ## full convert
+
+   ~/o/cxr_min.sh                                      ## FIXED:EMPTY WORLD BOX  NOW GET 5 ANALYTIC ORB IN A LINE
+   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback is there, get 5 tri orb in line 
+   TRIMESH=1 EYE=-0.1,0,0 TMIN=0.001 ~/o/cxr_min.sh    ## adjust viewpoint inside the Orb 
+
 
 
 Some big trees can become a single listnode : if name hinting indicates it should

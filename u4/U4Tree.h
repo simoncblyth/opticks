@@ -603,19 +603,12 @@ inline void U4Tree::initSolid(const G4VSolid* const so, int lvid )
 
     assert( int(solids.size()) == lvid ); 
     int d = 0 ; 
-#ifdef WITH_SND
-    int root = U4Solid::Convert(so, lvid, d );  
-    assert( root > -1 ); 
-#else
     sn* root = U4Solid::Convert(so, lvid, d );  
     assert( root ); 
-#endif
 
     solids.push_back(so);
     st->soname_raw.push_back(name); 
     st->solids.push_back(root); 
-
-    
 
 } 
 

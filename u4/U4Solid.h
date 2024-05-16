@@ -30,12 +30,7 @@ npy/NNodeUncoincide npy/NNodeNudger
 #include "ssys.h"
 #include "scuda.h"
 
-#ifdef WITH_SND
-#include "snd.hh"
-#else
 #include "sn.h"
-#endif
-
 #include "stran.h"
 #include "stra.h"
 #include "OpticksCSG.h"
@@ -636,51 +631,28 @@ inline void U4Solid::init_Ellipsoid()
 
     if( upper_cut == false && lower_cut == false )
     {
-#ifdef WITH_SND
-        root = snd::Sphere(sz) ;
-#else
         root = sn::Sphere(sz) ;
-#endif
     }
     else if( upper_cut == true && lower_cut == true )
     {
-#ifdef WITH_SND
-        root = snd::ZSphere(sz, zmin, zmax) ;
-#else
         root = sn::ZSphere(sz, zmin, zmax) ;
-#endif
-
     }
     else if ( upper_cut == false && lower_cut == true )   // PMT mask uses this 
     {
         double zmax_safe = zmax + 0.1 ;
-#ifdef WITH_SND
-        root = snd::ZSphere( sz, zmin, zmax_safe )  ;
-#else
         root = sn::ZSphere( sz, zmin, zmax_safe )  ;
-#endif
 
     }
     else if ( upper_cut == true && lower_cut == false )
     {
         double zmin_safe = zmin - 0.1 ; 
-#ifdef WITH_SND
-        root = snd::ZSphere( sz, zmin_safe, zmax )  ;
-#else
         root = sn::ZSphere( sz, zmin_safe, zmax )  ;
-#endif
-
     }
 
     // zmin_safe/zmax_safe use safety offset when there is no cut 
     // this avoids rare apex(nadir) hole bug  
     // see notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_expected_to_intersect_close_to_apex.rst
-
-#ifdef WITH_SND
-    snd::SetNodeXForm(root, scale );  
-#else
     root->setXF(scale); 
-#endif
 
 }
 

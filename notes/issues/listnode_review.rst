@@ -7,6 +7,12 @@ Context
 * next :doc:`listnode_review_shrinking_trees`
 
 
+See Also
+----------
+
+* :doc:`AltXJfixtureConstruction`
+
+
 Overview
 -----------
 
@@ -46,10 +52,10 @@ DONE : check ~/o/u4/tests/U4TreeCreateSSimTest.sh with G4MultiUnion using GEOM
   being parsed by one of the U4VolumeMaker Wrap methods 
 
 
-Try OrbGridMultiUnion10_30_YX because cannot see ana/tri difference with boxes
------------------------------------------------------------------------------------
+DONE : Try OrbGridMultiUnion10_30_YX because cannot see ana/tri difference with boxes
+---------------------------------------------------------------------------------------
 
-* creation is slow, G4 takes a while to form the meshes for 3*3*3*7*7*7 = 9261 Orbs 
+* setGeometry creation is slow, G4 takes a while to form the meshes for 3*3*3*7*7*7 = 9261 Orbs 
 
 * remember that for trimesh fallback need to configure the name of the solid 
   to triangulate from the mmlabel.txt 
@@ -63,18 +69,16 @@ Try OrbGridMultiUnion10_30_YX because cannot see ana/tri difference with boxes
    GEOM ## set to OrbGridMultiUnion10_30_YX  U4SolidMaker::Make 
 
    ~/o/u4/tests/U4TreeCreateSSimTest.sh     ## create stree+scene 
-
    SCENE=3 ~/o/sysrap/tests/ssst.sh run     ## triangulated viz
 
    ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh  ## full convert
-
    ~/o/cxr_min.sh                                      ## get 3x3x3 of 7x7x7 Orbs 
-   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback is there, get 5 tri orb in line 
-   TRIMESH=1 EYE=-0.1,0,0 TMIN=0.001 ~/o/cxr_min.sh    ## adjust viewpoint inside the Orb 
+   TRIMESH=1  ~/o/cxr_min.sh                           ## tri fallback ok 
+   TRIMESH=1 EYE=-0.1,0,0 TMIN=0.001 ~/o/cxr_min.sh    ## adjust viewpoint
 
 
-Move to a simpler multiunion for debuugging : OrbOrbMultiUnionSimple
--------------------------------------------------------------------------
+DONE : Move to a simpler multiunion for debuugging : OrbOrbMultiUnionSimple
+------------------------------------------------------------------------------
 
 Issues:
 
@@ -209,13 +213,6 @@ sn -> CSG with listnode
      817     LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ;
      818     return so ;
      819 }
-
-
-See Also
-----------
-
-* :doc:`AltXJfixtureConstruction`
-
 
 
 
@@ -909,13 +906,4 @@ where is the translation ? subNum
     [blyth@localhost opticks]$ 
 
 
-what about hinting in the Geant4 G4VSolid names to form the sn tree
------------------------------------------------------------------------
-
-* should the sn tree 
-
-
-
-what about listnodes within binary trees ? 
----------------------------------------------
 

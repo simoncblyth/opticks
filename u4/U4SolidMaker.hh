@@ -98,6 +98,7 @@ struct U4_API U4SolidMaker
 
     static const G4VSolid* SphereIntersectBox(const char* name); 
     static const G4VSolid* LocalFastenerAcrylicConstruction(const char* name); 
+    static const G4VSolid* AltLocalFastenerAcrylicConstruction(const char* name); 
 
 
 };

@@ -23,6 +23,7 @@ arg=${1:-$defarg}
 
 
 test=find_lvid
+#test=NONE
 export TEST=${TEST:-$test}
 
 

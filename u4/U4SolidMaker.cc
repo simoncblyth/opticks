@@ -66,6 +66,7 @@ BoxFourBoxContiguous
 LHCbRichSphMirr
 LHCbRichFlatMirr
 LocalFastenerAcrylicConstruction
+AltLocalFastenerAcrylicConstruction
 )LITERAL"; 
 
 
@@ -162,9 +163,10 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("LHCbRichFlatMirr", qname))            solid = LHCbRichFlatMirr(qname) ; 
     else if(StartsWith("SphereIntersectBox", qname))          solid = SphereIntersectBox(qname) ; 
     else if(StartsWith("LocalFastenerAcrylicConstruction", qname)) solid = LocalFastenerAcrylicConstruction(qname) ; 
+    else if(StartsWith("AltLocalFastenerAcrylicConstruction", qname)) solid = AltLocalFastenerAcrylicConstruction(qname) ; 
 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
-    LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname ; 
+    LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname << " CHECK U4SolidMaker::Make " ; 
     return solid ; 
 }
 
@@ -2045,6 +2047,44 @@ const G4VSolid* U4SolidMaker::LocalFastenerAcrylicConstruction(const char* name)
     }
     return uni_Addition ; 
 }
+
+
+/**
+U4SolidMaker::AltLocalFastenerAcrylicConstruction
+--------------------------------------------------
+
+**/
+
+const G4VSolid* U4SolidMaker::AltLocalFastenerAcrylicConstruction(const char* name) // static
+{
+    const char* PREFIX = "AltLocalFastenerAcrylicConstruction" ; 
+    assert( sstr::StartsWith(name,PREFIX ));
+    long num_column = sstr::ExtractLong(name, 1) ; 
+
+    LOG(info) 
+        << " name " <<  ( name ? name : "-" )
+        << " num_column " << num_column 
+        ;
+
+    assert( num_column > 0 ); 
+
+    G4Tubs* IonRing = new G4Tubs("IonRing",123*mm,206.2*mm,7*mm,0.0*deg,360.0*deg);
+
+    G4MultiUnion* muni = new G4MultiUnion(name);
+    G4Tubs* screw = new G4Tubs("screw",0,13*mm,50.*mm,0.0*deg,360.0*deg);
+
+    G4RotationMatrix rot(0, 0, 0);
+    for(long i=0;i<num_column;i++)
+    {
+       G4ThreeVector tlate(164.*cos(i*pi/4)*mm, 164.*sin(i*pi/4)*mm,-65.0*mm);
+       G4Transform3D tr(rot, tlate) ; 
+       muni->AddNode( *screw, tr );
+    }
+
+    G4UnionSolid* uni1 = new G4UnionSolid(name, IonRing, muni, 0, G4ThreeVector(0.,0.,0.));
+    return uni1 ; 
+}
+
 
 
 
