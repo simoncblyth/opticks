@@ -699,8 +699,6 @@ Expecting the below as the OutName defaults to nullptr::
 
    $TMP/GEOM/$GEOM/ExecutableName
 
-TODO: rejig, it makes more sense for SEventConfig to be used from SPath via SOpticksResource::Get tokens not vice versa 
-
 **/
 
 const char* SEventConfig::OutDir()  

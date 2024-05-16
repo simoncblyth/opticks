@@ -96,6 +96,7 @@ Frame::download from GPU buffers into vectors
 -----------------------------------------------
 
 This is invoked from CSGOptiX::snap
+The vectors are resized to num_pixels before the copy. 
 
 **/
 void Frame::download()
@@ -105,7 +106,14 @@ void Frame::download()
 #ifdef WITH_FRAME_PHOTON
     if(d_fphoton) QU::Download<quad4>(photon, d_fphoton, num_pixels ); 
 #endif
-    if(d_pixel) img->setData( getPixelData() ); 
+
+
+    if(d_pixel) 
+    {
+        img->setData( getPixelData() ); 
+        img->flipVertical();  // does this need to be optional ? 
+    }
+
 }
 
 

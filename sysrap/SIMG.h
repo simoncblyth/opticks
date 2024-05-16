@@ -34,7 +34,9 @@ struct SIMG
 
    SIMG(const char* path, int desired_channels=0);   // 0:asis channels 
    SIMG(int width_, int height_, int channels_, unsigned char* data_ ); 
-   void setData(unsigned char* data_) ; 
+   void setData(unsigned char* data_, bool flip_vertical=false) ; 
+   void flipVertical(); 
+  
    virtual ~SIMG();  
 
    std::string desc() const ; 
@@ -142,9 +144,31 @@ inline SIMG::SIMG(int width_, int height_, int channels_, unsigned char* data_)
 {
 }
 
-inline void SIMG::setData(unsigned char* data_)
+
+
+
+inline void SIMG::setData(unsigned char* data_, bool flip_vertical)
 {
     data = data_ ; 
+    if(flip_vertical) flipVertical(); 
+}
+
+
+/**
+SIMG::flipVertical
+-------------------
+
+Used via SIMG::setData from CSGOptiX/Frame.cc Frame::download
+
+**/
+
+
+inline void SIMG::flipVertical()  
+{
+    for(int y=0 ; y < height/2 ; y++)
+    for(int x=0 ; x < width    ; x++)
+    for(int c=0 ; c < channels ; c++)
+    std::swap( data[y*width*channels + x*channels + c], data[(height-1-y)*width*channels + x*channels + c]);
 }
 
 

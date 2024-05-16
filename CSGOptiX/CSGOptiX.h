@@ -79,7 +79,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     const char*       ptxpath ; 
     const char*       geoptxpath ; 
     float             tmin_model ; 
-    int               jpg_quality ; 
+    plog::Severity    level = plog::debug ;   // quell prolific logging using level instead of LEVEL
 
     std::vector<unsigned>  solid_selection ;
     std::vector<double>  launch_times ;
@@ -100,7 +100,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
     Frame* framebuf ; 
     SMeta* meta ; 
-    double dt ; 
+    double launch_dt ;   // of prior launch  
 
     scontext*    sctx ; 
     QSim*        sim ; 
@@ -157,7 +157,9 @@ private:
  private: 
     const char* getRenderStemDefault() const ; 
  public: 
-    double render(const char* name=nullptr);   // formerly render_snap
+    double render(const char* stem_=nullptr);   
+    void   render_save(const char* stem_=nullptr); 
+
     double simtrace(int eventID); 
     double simulate(int eventID); 
     double proceed(); 

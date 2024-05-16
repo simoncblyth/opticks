@@ -421,9 +421,10 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
     raygenmode(SEventConfig::RGMode()),
     params(InitParams(raygenmode,sglm)),
-
 #if OPTIX_VERSION < 70000
     six(new Six(ptxpath, geoptxpath, params)),
+    dummy0(nullptr),
+    dummy1(nullptr),
     framebuf(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)), 
 #else
     ctx(nullptr),
@@ -432,7 +433,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     framebuf(nullptr), 
 #endif
     meta(new SMeta),
-    dt(0.),
+    launch_dt(0.),
     sctx(nullptr),
     sim(QSim::Get()),  
     event(sim == nullptr  ? nullptr : sim->event)
@@ -868,7 +869,7 @@ void CSGOptiX::prepareRenderParam()
 
     if(!flight) 
     {
-        LOG(LEVEL)
+        LOG(level)
             << std::endl 
             << std::setw(20) << " extent "     << extent << std::endl 
             << std::setw(20) << " sglm.fr.ce.w "  << sglm->fr.ce.w << std::endl 
@@ -899,11 +900,11 @@ void CSGOptiX::prepareRenderParam()
             << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
             ;
 
-        LOG(LEVEL) << std::endl << "SGLM::DescEyeBasis (sglm->e,w,v,w) " << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
-        LOG(LEVEL) << std::endl <<  "sglm.descEyeBasis " << std::endl << sglm->descEyeBasis() << std::endl ; 
-        LOG(LEVEL) << std::endl << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
-        LOG(LEVEL) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
-        LOG(LEVEL) << std::endl << "sglm.descLog " << std::endl << sglm->descLog() << std::endl ; 
+        LOG(level) << std::endl << "SGLM::DescEyeBasis (sglm->e,w,v,w) " << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
+        LOG(level) << std::endl <<  "sglm.descEyeBasis " << std::endl << sglm->descEyeBasis() << std::endl ; 
+        LOG(level) << std::endl << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
+        LOG(level) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
+        LOG(level) << std::endl << "sglm.descLog " << std::endl << sglm->descLog() << std::endl ; 
 
     }
 
@@ -911,11 +912,11 @@ void CSGOptiX::prepareRenderParam()
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype ); 
 
-    LOG(LEVEL) << std::endl << params->desc() ; 
+    LOG(level) << std::endl << params->desc() ; 
 
     if(flight) return ; 
 
-    LOG(LEVEL)
+    LOG(level)
         << "sglm.desc " << std::endl 
         << sglm->desc() 
         ; 
@@ -965,7 +966,7 @@ void CSGOptiX::prepareParam()
     six->updateContext();  // Populates optix::context with values from hostside params
 #else
     params->upload();  
-    LOG_IF(LEVEL, !flight) << params->detail(); 
+    LOG_IF(level, !flight) << params->detail(); 
 #endif
 }
 
@@ -1045,15 +1046,15 @@ double CSGOptiX::launch()
     TP t1 = std::chrono::high_resolution_clock::now();
     DT _dt = t1 - t0;
 
-    dt = _dt.count() ; 
-    launch_times.push_back(dt);  
+    launch_dt = _dt.count() ; 
+    launch_times.push_back(launch_dt);  
 
     LOG(LEVEL) 
           << " (params.width, params.height, params.depth) ( " 
           << params->width << "," << params->height << "," << params->depth << ")"  
-          << std::fixed << std::setw(7) << std::setprecision(4) << dt  
+          << std::fixed << std::setw(7) << std::setprecision(4) << launch_dt  
           ; 
-    return dt ; 
+    return launch_dt ; 
 }
 
 
@@ -1061,6 +1062,8 @@ double CSGOptiX::launch()
 /**
 CSGOptiX::render_launch CSGOptiX::simtrace_launch CSGOptiX::simulate_launch
 --------------------------------------------------------------------------------
+
+All the launch set (double)dt 
 
 CAUTION : *simulate_launch* and *simtrace_launch*  
 MUST BE invoked from QSim::simulate and QSim::simtrace using the SCSGOptiX.h protocol. 
@@ -1153,11 +1156,15 @@ CSGOptiX::render  (formerly render_snap)
 
 double CSGOptiX::render( const char* stem_ )
 {
+    render_launch();   
+    render_save(stem_);   
+    return launch_dt ; 
+}
 
+void CSGOptiX::render_save(const char* stem_)
+{
     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
     sglm->addlog("CSGOptiX::render_snap", stem ); 
-
-    double dt = render_launch();  
 
     const char* topline = ssys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
     const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
@@ -1166,7 +1173,7 @@ double CSGOptiX::render( const char* stem_ )
     std::string _extra = GetGPUMeta();  // scontext::brief giving GPU name 
     const char* extra = strdup(_extra.c_str()) ;  
 
-    std::string bottom_line = CSGOptiX::Annotation(dt, botline_, extra ); 
+    std::string bottom_line = CSGOptiX::Annotation(launch_dt, botline_, extra ); 
     const char* botline = bottom_line.c_str() ; 
 
     LOG(LEVEL)
@@ -1177,22 +1184,18 @@ double CSGOptiX::render( const char* stem_ )
           << " stem " << stem 
           << " outpath " << outpath 
           << " outdir " << ( outdir ? outdir : "-" )
-          << " dt " << dt 
+          << " launch_dt " << launch_dt 
           << " topline [" <<  topline << "]"
           << " botline [" <<  botline << "]"
           ; 
 
-    LOG(info) << outpath  << " : " << AnnotationTime(dt, extra)  ; 
+    LOG(info) << outpath  << " : " << AnnotationTime(launch_dt, extra)  ; 
 
     snap(outpath, botline, topline  );   
 
     sglm->fr.save( outdir, stem ); 
     sglm->writeDesc( outdir, stem, ".log" ); 
-
-    return dt ; 
-}
-
-
+} 
 
 
 /**

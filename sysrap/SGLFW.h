@@ -130,7 +130,7 @@ I
 J
    -
 K
-   -
+   save screen shot
 L
    -
 M
@@ -144,8 +144,8 @@ P
 Q
    (WASDQE) hold to change eyeshift, translate up 
 
-R:formerly used toggle.lrot now require holding R key down whilst arcball dragging mouse
-   change look rotation 
+R
+   hold down while arcball dragging mouse to change look rotation 
 S
    (WASDQE) hold to change eyeshift, translate backwards 
 T:toggle.tran
@@ -169,6 +169,7 @@ Z:toggle.zoom
 
     SGLM& gm ; 
     int wanted_frame_idx ; 
+    bool wanted_snap ; 
 
     int width ; 
     int height ; 
@@ -206,8 +207,16 @@ Z:toggle.zoom
     void window_refresh();
     void key_pressed(unsigned key); 
     void numkey_pressed(unsigned num); 
+
     void set_wanted_frame_idx(int _idx); 
     int  get_wanted_frame_idx() const ;
+
+
+
+    void snap(); 
+    void set_wanted_snap(bool w); 
+    bool get_wanted_snap() const ;
+
 
     void key_repeated(unsigned key); 
     void key_released(unsigned key); 
@@ -366,6 +375,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_B:      command("--desc")           ; break ; 
         case GLFW_KEY_H:      command("--home")           ; break ; 
         case GLFW_KEY_O:      command("--tcam")           ; break ;  
+        case GLFW_KEY_K:      command("--snap")           ; break ;  
         case GLFW_KEY_ESCAPE: command("--exit")           ; break ;  
     }
    
@@ -381,6 +391,13 @@ inline void SGLFW::numkey_pressed(unsigned num)
 }
 inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }
 inline int  SGLFW::get_wanted_frame_idx() const { return wanted_frame_idx ; }
+
+
+inline void SGLFW::snap(){ set_wanted_snap(true); }
+
+inline void SGLFW::set_wanted_snap(bool w){ wanted_snap = w ; }
+inline bool SGLFW::get_wanted_snap() const { return wanted_snap ; }
+
 
 inline void SGLFW::key_repeated(unsigned key)
 {
@@ -417,6 +434,7 @@ inline int SGLFW::command(const char* cmd)
     if(strcmp(cmd, "--home") == 0) home(); 
     if(strcmp(cmd, "--desc") == 0) _desc(); 
     if(strcmp(cmd, "--tcam") == 0) tcam(); 
+    if(strcmp(cmd, "--snap") == 0) snap(); 
     return 0 ;  
 }
 
@@ -450,7 +468,6 @@ inline void SGLFW::tcam()
 {
     gm.command("--tcam"); 
 }
-
 
 
 
@@ -655,6 +672,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
     wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -1)),   
+    wanted_snap(false),
     width(gm.Width()),
     height(gm.Height()),
     title(TITLE),

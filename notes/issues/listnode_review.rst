@@ -20,11 +20,133 @@ Overview
 * as G4MultiUnion with prim subs is easier did that first  
 
 
-TODO
------
+TODO : compare CSG_CONTIGUOUS and CSG_DISCONTIGUOUS
+-------------------------------------------------------
 
-* speed measurements, maybe single frame renders with annotation and metadata
-* compare CSG_CONTIGUOUS and CSG_DISCONTIGUOUS
+
+WIP : cxr_min.sh CSGOptiXRenderInteractiveTest : screenshot with annotation + metadata incl time
+----------------------------------------------------------------------------------------------------
+
+
+CSGOptiXRenderInteractiveTest.cc::
+
+     94         uchar4* d_pixels = interop.output_buffer->map() ;
+     95 
+     96         cx->setExternalDevicePixels(d_pixels);
+     97         cx->render_launch();
+
+
+CSGOptiXRMTest.cc::
+
+     10 int main(int argc, char** argv)
+     11 {
+     12     OPTICKS_LOG(argc, argv); 
+     13     return CSGOptiX::RenderMain();
+     14 }   
+
+     144 int CSGOptiX::RenderMain() // static
+     145 {
+     146     SEventConfig::SetRGModeRender();
+     147     CSGFoundry* fd = CSGFoundry::Load();
+     148     CSGOptiX* cx = CSGOptiX::Create(fd) ;
+     149     cx->render();
+     150     delete cx ;
+     151     return 0 ;
+     152 }
+
+
+DONE : Split off CSGOptiX::render_save and hookup key K to invoke it from render loop of CSGOptiXRenderInteractiveTest.cc
+
+Issues:
+
+* repeated K write to same path overwriting previous
+* render inverted in Y 
+
+
+WIP : simplify snap path formation to use spath.h and avoid self overwriting
+-------------------------------------------------------------------------------
+
+::
+
+    1164 void CSGOptiX::render_save(const char* stem_)
+    1165 {
+    1166     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
+    1167     sglm->addlog("CSGOptiX::render_snap", stem );
+    1168 
+    1169     const char* topline = ssys::getenvvar("TOPLINE", sproc::ExecutableName() );
+    1170     const char* botline_ = ssys::getenvvar("BOTLINE", nullptr );
+    1171     const char* outdir = SEventConfig::OutDir();
+    1172     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
+    1173     std::string _extra = GetGPUMeta();  // scontext::brief giving GPU name 
+    1174     const char* extra = strdup(_extra.c_str()) ;
+    1175 
+    1176     std::string bottom_line = CSGOptiX::Annotation(launch_dt, botline_, extra );
+    1177     const char* botline = bottom_line.c_str() ;
+    1178 
+    1179     LOG(LEVEL)
+    1180           << SEventConfig::DescOutPath(stem, -1, ".jpg" );
+    1181           ;
+    1182 
+    1183     LOG(LEVEL)
+    1184           << " stem " << stem
+    1185           << " outpath " << outpath
+    1186           << " outdir " << ( outdir ? outdir : "-" )
+    1187           << " launch_dt " << launch_dt
+    1188           << " topline [" <<  topline << "]"
+    1189           << " botline [" <<  botline << "]"
+    1190           ;
+    1191 
+    1192     LOG(info) << outpath  << " : " << AnnotationTime(launch_dt, extra)  ;
+    1193 
+    1194     snap(outpath, botline, topline  );
+    1195 
+    1196     sglm->fr.save( outdir, stem );
+    1197     sglm->writeDesc( outdir, stem, ".log" );
+    1198 }
+
+
+    727 const char* SEventConfig::OutPath( const char* stem, int index, const char* ext )
+    728 {
+    729     const char* outfold = OutFold();
+    730     const char* outname = OutName();
+    731     
+    732     LOG(LEVEL)
+    733         << " outfold " << ( outfold ? outfold : "-" )
+    734         << " outname " << ( outname ? outname : "-" )
+    735         << " stem " << ( stem ? stem : "-" )
+    736         << " ext " << ( ext ? ext : "-" )
+    737         ;
+    738 
+    739     return SPath::Make( outfold, outname, stem, index, ext, FILEPATH);
+    740     // HMM: an InPath would use NOOP to not create the dir
+    741 }   
+
+
+    572 /**
+    573 SPath::Make
+    574 -------------
+    575 
+    576 Creates a path from the arguments::
+    577 
+    578     <base>/<reldir>/<stem><index><ext>
+    579 
+    580 * base and relname can be nullptr 
+    581 * the stem index and ext are formatted using SPath::MakeName
+    582 * directory is created 
+    583 
+    584 **/
+    585 
+    586 const char* SPath::Make( const char* base, const char* reldir, const char* stem, int index, const char* ext, int create_dirs )
+    587 {
+    588     assert( create_dirs == NOOP || create_dirs == FILEPATH );
+    589     std::string name = MakeName(stem, index, ext); 
+    590     const char* path = SPath::Resolve(base, reldir, name.c_str(), create_dirs ) ;
+    591     return path ; 
+    592 }   
+
+
+
+
 
 
 DONE : ~/o/u4/tests/U4SolidTest.sh 

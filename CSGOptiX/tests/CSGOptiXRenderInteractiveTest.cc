@@ -96,6 +96,13 @@ int main(int argc, char** argv)
         cx->setExternalDevicePixels(d_pixels); 
         cx->render_launch(); 
 
+        if(gl.get_wanted_snap())
+        {
+            std::cout << " gl.get_wanted_snap calling cx->render_snap \n" ; 
+            cx->render_save();   
+            gl.set_wanted_snap(false); 
+        }
+
         interop.output_buffer->unmap() ; 
         interop.displayOutputBuffer(gl.window);
 

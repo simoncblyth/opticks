@@ -63,8 +63,8 @@ opticks_hash=$(git -C $OPTICKS_HOME rev-parse --short HEAD 2>/dev/null)
 [ -z "$opticks_hash" ] && opticks_hash="FAILED_GIT_REV_PARSE" 
 export OPTICKS_HASH=$opticks_hash
 
-#bin=CSGOptiXRMTest
 bin=CSGOptiXRenderInteractiveTest
+[ -n "$SNAP" ] && bin=CSGOptiXRMTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
 source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit  
@@ -93,6 +93,7 @@ cam=perspective
 escale=extent
 
 case $MOI in 
+   TEST)                   eye=0,0.8,0   ; tmin=0.1 ; zoom=1.0 ;; 
    ALL)                    eye=0,2.0,0   ; tmin=1.75 ; zoom=2.0 ;; 
    PMT_20inch_veto:0:1000) eye=1,1,5     ; tmin=0.4  ;;
    NNVT:0:1000)            eye=1,0,5     ; zoom=2 ;;
@@ -126,8 +127,8 @@ export TOPLINE=${TOPLINE:-$topline}
 export BOTLINE=${BOTLINE:-$botline}
 
 logging(){
-    export CSGFoundry=INFO 
-    #export CSGOptiX=INFO
+    #export CSGFoundry=INFO 
+    export CSGOptiX=INFO
     #export PIP=INFO
     #export SBT=INFO
 }
