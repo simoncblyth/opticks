@@ -46,7 +46,17 @@ struct SYSRAP_API s_tv
     glm::tmat4x4<double> v ;
  
     bool is_root() const { return true ; } 
+    std::string desc_full() const ;    // full but poorly formatted 
     std::string desc() const ;  
+
+    static std::string DescTranslate(const glm::tmat4x4<double>& tr);
+    static std::string DescOffset4(const glm::tmat4x4<double>& tr, unsigned offset  );
+    static std::string Desc(const glm::tmat4x4<double>& tr);
+    static std::string Desc(const glm::tvec4<double>& t);
+    static std::string Desc(const double* tt, int num);
+
+
+
 }; 
 
 inline void s_tv::SetPOOL( POOL* pool_ ){ pool = pool_ ; } // static 
@@ -81,7 +91,7 @@ inline s_tv::~s_tv()
 }
 
 
-inline std::string s_tv::desc() const 
+inline std::string s_tv::desc_full() const 
 {
     std::stringstream ss ;
     ss 
@@ -90,9 +100,57 @@ inline std::string s_tv::desc() const
         << "v " << glm::to_string(v) 
         << std::endl 
         ;
-        
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline std::string s_tv::desc() const 
+{
+    std::stringstream ss ;
+    ss 
+        << " t " << DescTranslate(t)
+        << " v " << DescTranslate(v)
+        ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+inline std::string s_tv::DescTranslate(const glm::tmat4x4<double>& tr )
+{
+    return DescOffset4(tr, 12); 
+}
+inline std::string s_tv::DescOffset4(const glm::tmat4x4<double>& tr, unsigned offset  )
+{
+    const double* tt = glm::value_ptr(tr) ; 
+    return Desc(tt + offset, 4 ); 
+}
+inline std::string s_tv::Desc(const glm::tmat4x4<double>& tr)
+{
+    const double* tt = glm::value_ptr(tr); 
+    return Desc(tt, 16 ); 
+}
+inline std::string s_tv::Desc(const glm::tvec4<double>& t)
+{
+    const double* tt = glm::value_ptr(t); 
+    return Desc(tt, 4 ); 
+}
+inline std::string s_tv::Desc(const double* tt, int num)
+{
+    std::stringstream ss ; 
+    for(int i=0 ; i < num ; i++) 
+        ss 
+            << ( i % 4 == 0 && num > 4 ? ".\n" : "" ) 
+            << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[i] 
+            << ( i == num-1 && num > 4 ? ".\n" : "" ) 
+            ;
+
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
 
 

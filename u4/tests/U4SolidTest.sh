@@ -9,20 +9,31 @@ U4SolidTest.sh
 EOU
 }
 
+path=$(realpath $BASH_SOURCE)
 bin=U4SolidTest
 
 defarg="run"
 arg=${1:-$defarg}
 
-geom=BoxGridMultiUnion10:30_YX   ## see U4SolidMaker
-#geom=LocalFastenerAcrylicConstruction8
 
-export U4SolidTest__MAKE=$geom  
-export U4SolidTest__Convert_level=${LEVEL:-3}
+#source $HOME/.opticks/GEOM/GEOM.sh 
+
+#GEOM=BoxGridMultiUnion10_30_YX   ## see U4SolidMaker
+#GEOM=LocalFastenerAcrylicConstruction8
+#GEOM=OrbOrbMultiUnionSimple
+GEOM=OrbOrbMultiUnionSimple2
+
+export U4SolidTest__MAKE=$GEOM
+export U4SolidTest__Convert_level=${LEVEL:-4}
 
 test=MAKE
 export TEST=${TEST:-$test}
 
+vars="BASH_SOURCE path bin arg GEOM U4SolidTest__MAKE U4SolidTest__Convert_level TEST"
+
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
+fi 
 
 
 if [ "${arg/run}" != "$arg" ]; then

@@ -7,15 +7,24 @@ U4TreeCreateSSimTest.sh  : loads GEOM configured geometry, runs U4Tree::Create p
 
     GEOM # edit according to geometry source 
    ~/o/u4/tests/U4TreeCreateSSimTest.sh 
+   TEST=pick_lvid_ordinal_node ~/o/u4/tests/U4TreeCreateSSimTest.sh 
 
 EOU
 }
 
 SDIR=$(dirname $(realpath $BASH_SOURCE))
 
+
+
+
 bin=U4TreeCreateSSimTest 
 defarg="info_run_ana"
 arg=${1:-$defarg}
+
+
+test=find_lvid
+export TEST=${TEST:-$test}
+
 
 loglevels(){
    #export U4VolumeMaker=INFO
@@ -61,7 +70,7 @@ U4TreeCreateSSimTest
 
 script=$SDIR/$bin.py 
 
-vars="BASH_SOURCE SDIR bin GEOM gdmlpath tmp TMP FOLD script"
+vars="BASH_SOURCE TEST SDIR bin GEOM gdmlpath tmp TMP FOLD script"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 

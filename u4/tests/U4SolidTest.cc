@@ -8,14 +8,8 @@
 #include "U4SolidMaker.hh"
 
 #include "ssys.h"
-
-#ifdef WITH_SND
-#include "snd.hh"
-#include "scsg.hh"
-#else
 #include "sn.h"
 #include "s_csg.h"
-#endif
 
 
 struct U4SolidTest
@@ -38,13 +32,9 @@ struct U4SolidTest
 
 void U4SolidTest::Setup()
 {
-#ifdef WITH_SND
-    snd::SetPOOL(new scsg); 
-#else
     s_csg* csg = new s_csg ; 
     assert(csg); 
     if(!csg) std::raise(SIGINT); 
-#endif
 }
 
 int U4SolidTest::Convert(const G4VSolid* solid )
@@ -52,16 +42,28 @@ int U4SolidTest::Convert(const G4VSolid* solid )
     int lvid = 0 ; 
     int depth = 0 ; 
     int level = ssys::getenvint(_Convert_level,1) ; 
-#ifdef WITH_SND
-    int idx = U4Solid::Convert(solid, lvid, depth, level); 
-    std::cout << snd::Desc(idx); 
-#else
     sn* nd = U4Solid::Convert(solid, lvid, depth, level); 
     std::cout << nd->desc() << "\n"  ;  
 
-    if(level > 2 ) std::cout << nd->render() << "\n" ; 
+    if(level > 2 ) std::cout 
+        << "\nU4SolidTest::Convert nd->render() \n\n" 
+        << nd->render() 
+        << "\n" 
+        ; 
 
-#endif
+    if(level > 3 ) std::cout 
+        << "\nU4SolidTest::Convert nd->detail_r() \n\n" 
+        << nd->detail_r() 
+        << "\n" 
+        ; 
+
+    if(level > 3 ) std::cout 
+        << "\nU4SolidTest::Convert nd->desc_prim_all() \n\n" 
+        << nd->desc_prim_all(false) 
+        << "\n" 
+        ; 
+
+
     return 0 ; 
 }
 

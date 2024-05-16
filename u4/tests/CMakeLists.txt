@@ -74,14 +74,15 @@ set(TEST_SOURCES
    U4PhysicsTableTest.cc 
 )
 
-set(EXPECTED_TO_FAIL_TEST_SOURCES
+set(EXPECTED_TO_FAIL_SOURCES
    U4NavigatorTest.cc
 )
 
-set(SLOW_TEST_SOURCES
+set(SLOW_SOURCES
    U4TreeTest.cc
    U4TreeCreateTest.cc
    U4TreeCreateSSimTest.cc
+   U4TreeCreateSSimLoadTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})
@@ -96,14 +97,14 @@ foreach(SRC ${TEST_SOURCES})
     )
 endforeach()
 
-foreach(SRC ${EXPECTED_TO_FAIL_TEST_SOURCES})
+foreach(SRC ${EXPECTED_TO_FAIL_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} U4)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
-foreach(SRC ${SLOW_TEST_SOURCES})
+foreach(SRC ${SLOW_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} U4)

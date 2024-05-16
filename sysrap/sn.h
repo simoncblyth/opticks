@@ -274,14 +274,24 @@ struct SYSRAP_API sn
     void inorder_(std::vector<sn*>& order ) ; 
     void inorder_r_(std::vector<sn*>& order, int d ); 
 
+
+
+
     std::string desc_order(const std::vector<const sn*>& order ) const ; 
     std::string desc() const ; 
     std::string desc_prim() const ; 
     std::string desc_prim_all(bool reverse) const ; 
     std::string brief() const ; 
     std::string desc_child() const ; 
+    std::string desc_this() const ; 
+
     std::string desc_r() const ; 
     void desc_r(int d, std::stringstream& ss) const ; 
+
+    std::string detail_r() const ; 
+    void detail_r(int d, std::stringstream& ss) const ; 
+    std::string detail() const ; 
+
 
     std::string render() const ; 
     std::string render(int mode) const ; 
@@ -366,10 +376,14 @@ struct SYSRAP_API sn
 
 
 
+  
     void setXF(     const glm::tmat4x4<double>& t ); 
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
     void combineXF( const glm::tmat4x4<double>& t ); 
     void combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ; 
+    std::string descXF() const ; 
+
+
 
     
     /**
@@ -530,8 +544,8 @@ struct SYSRAP_API sn
     void setAABB_LeafFrame() ; 
     void setAABB_LeafFrame_All() ; 
 
-    //void setAABB(); // renamed to setAABB_TreeFrame_All
     void setAABB_TreeFrame_All() ; 
+    //void setAABB(); // CONSIDER CAREFULLY between setAABB_(Tree/Leaf)Frame_All 
 
 
     void postconvert(int lvid); 
@@ -1527,6 +1541,15 @@ inline std::string sn::desc_child() const
     return str ;
 }
 
+inline std::string sn::desc_this() const
+{
+    std::stringstream ss ; 
+    ss << " 0x" << std::hex << uint64_t(this) << " " << std::dec ; 
+    std::string str = ss.str();
+    return str ;
+}
+
+
 inline std::string sn::desc_r() const
 {
     std::stringstream ss ; 
@@ -1537,7 +1560,7 @@ inline std::string sn::desc_r() const
 }
 inline void sn::desc_r(int d, std::stringstream& ss) const
 {
-    ss << std::setw(3) << d << ": 0x" << std::hex << uint64_t(this) << " " << std::dec << desc()  << std::endl ; 
+    ss << std::setw(3) << d << ":" << desc_this() << desc()  << std::endl ; 
 #ifdef WITH_CHILD
     for(int i=0 ; i < int(child.size()) ; i++) child[i]->desc_r(d+1, ss ) ; 
 #else
@@ -1548,6 +1571,31 @@ inline void sn::desc_r(int d, std::stringstream& ss) const
     }
 #endif
 }
+
+
+inline std::string sn::detail_r() const
+{
+    std::stringstream ss ; 
+    ss << "sn::detail_r" << std::endl ; 
+    detail_r(0, ss); 
+    std::string str = ss.str();
+    return str ;
+}
+inline void sn::detail_r(int d, std::stringstream& ss) const
+{
+    ss << std::setw(3) << d << ":" << desc_this() << detail()  << std::endl ; 
+    for(int i=0 ; i < int(child.size()) ; i++) child[i]->detail_r(d+1, ss ) ; 
+}
+
+inline std::string sn::detail() const
+{
+    std::stringstream ss ; 
+    ss << descXF() ; 
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 
 
@@ -2246,6 +2294,25 @@ inline const double* sn::getBB_data() const
 {
     return aabb ? aabb->data() : nullptr ; 
 }
+
+/**
+sn::copyBB_data
+----------------
+
+Canonical usage is from stree::get_combined_tran_and_aabb
+which is canonically called after sn::postconvert has been 
+run for the CSG tree. The sn::postconvert does:: 
+
+    positivize
+    setAABB_TreeFrame_All
+    uncoincide 
+    setAABB_LeafFrame_All  
+
+So when this sn::copyBB_data is called the AABB are 
+in leaf frame form. 
+
+**/
+
 inline void sn::copyBB_data(double* dst) const 
 {
     const double* src = getBB_data() ; 
@@ -2313,6 +2380,13 @@ inline void sn::combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<dou
     }
 }
 
+inline std::string sn::descXF() const 
+{
+    std::stringstream ss ; 
+    ss << "sn::descXF (s_tv)xform " << ( xform ? xform->desc() : "-" ) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 
@@ -3773,10 +3847,13 @@ sn::collect_prim
 -----------------
 
 Current impl includes listnode subs in the prim vector 
-as is_primitive judged by num child is false for listnode
-even though in the binary tree sense the listnode is a leaf. 
+as is_primitive judged by num child is true for listnode subs
+and false for the listnode itself.
 
-WIP:LISTNODE
+In a binary tree sense the listnode itself is a leaf encompassing 
+its subs but in an n-ary tree sense the subs are the leaves and 
+the listnode is their compound container parent. 
+
 **/
 
 inline void sn::collect_prim( std::vector<const sn*>& prim ) const 

@@ -378,14 +378,14 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 CSGImport::importNode (cf CSG_GGeo_Convert::convertNode)
 ----------------------------------------------------------
 
-Impl must stay close to CSG_GGeo_Convert::convertNode
+Note similarity with the old CSG_GGeo_Convert::convertNode
 
-An assert constrains the *snd* CSG constituent to be from the shape *lvid* 
+An assert constrains the *sn* CSG constituent to be from the shape *lvid* 
 that is associated with the structural *snode*. 
 
 (snode)node
     structural node "parent", corresponding to Geant4 PV/LV 
-(snd)nd 
+(sn)nd 
     constituent CSG nd, corresponding to Geant4 G4VSolid 
 
 nodeIdx
@@ -394,18 +394,36 @@ nodeIdx
 (snode)node.index
     absolute structural node index with large values 
      
-(snd)nd.index
+(sn)nd.index
     csg level index
 
-
 Lack of complement in snd.hh and inflexibility motivated the move to sn.h 
+
+
+
+**TODO: handling nodes where external bbox expected**
+
+::
+
+    if( expect_external_bbox )
+    {   
+        assert(aabb);   
+        n->setAABB_Narrow( aabb ); 
+    }
+
+transform handling
+~~~~~~~~~~~~~~~~~~~~
+
+stree::get_combined_tran_and_aabb
+   computes combined structural(snode) and CSG tree node(sn) transform 
+   and inplace applies that transform to th 
+
 
 
 **CSG Leaf/Tree Frame AABB ?**
 
 The stree::get_combined_tran_and_aabb expects the sn.h AABB 
 to be leaf frame (not CSG tree frame needed by sn::uncoincide).
-
 
 **Leaf CSGNode transforms**
 
@@ -415,27 +433,6 @@ transforms are within the instance frame.
 For global remainder with node.repeat_index == 0, it will be the absolute transform 
 combining the CSG node transforms with the structural node transforms all the way down 
 from root. 
-
-
-
-TODO : SUPPORT FOR CSGNode TYPES THAT NEED EXTERNAL BBOX::
-
-    DEFERRED DOING UNTIL WANT TO TEST SOME EXAMPLES
-
-    bool expect_external_bbox = CSG::ExpectExternalBBox(typecode); 
-    // CSG_CONVEXPOLYHEDRON, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
-
-    LOG_IF(fatal, expect_external_bbox && !has_aabb )
-        << " For node of type " << CSG::Name(typecode)
-        << " nd.lvid " << nd->lvid 
-        << " : EXPECT EXTERNAL AABB : BUT THERE IS NONE "
-        ;
-
-    if( expect_external_bbox )
-    {   
-        assert(has_aabb);   
-        n->setAABB_Narrow( aabb ); 
-    }
 
 
 **/
@@ -448,19 +445,23 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
     bool leaf = CSG::IsLeaf(typecode) ; 
 
     bool external_bbox_is_expected = CSG::ExpectExternalBBox(typecode); 
+    // CSG_CONVEXPOLYHEDRON, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
+
     bool expect = external_bbox_is_expected == false ; 
-    LOG_IF(fatal, !expect) << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED : DEFERRED UNTIL HAVE EXAMPLES " ; 
+    LOG_IF(fatal, !expect) 
+        << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED " 
+        << " for node of type " << CSG::Name(typecode)
+        << " nd.lvid " << ( nd ? nd->lvid : -1 )  
+        ; 
     assert(expect); 
     if(!expect) std::raise(SIGINT); 
 
     std::array<double,6> bb ; 
     double* aabb = leaf ? bb.data() : nullptr ;
-    // NB : TRANSFORM VERY DEPENDENT ON node.repeat_index == 0 OR not 
     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ; 
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
     CSGNode* n = fd->addNode();   
-    //n->setIndex(nodeIdx);     // NOW AUTOMATED IN CSGFoundry::addNode
     n->setTypecode(typecode); 
     n->setBoundary(node.boundary); 
     n->setComplement( nd ? nd->complement : false ); 

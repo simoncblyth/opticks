@@ -21,10 +21,21 @@ Summary of below : What is needed for listnode support ?
 * with G4Polycone/G4MultiUnion no detection is needed, can directly create the n-ary tree
   so essentially only step 2 is needed for those.  
 
-* HMM: one shortcut would be to switch to G4MultiUnion in the source geometry, 
-  actually not so useful as G4MultiUnion supports binary nodes, unlike listnode
+* One shortcut would be to switch to G4MultiUnion in the source geometry, 
+  actually not a panacea as G4MultiUnion supports booleans within it, unlike listnode
 
-* HMM: best to work on those first 
+* Best to start with  G4MultiUnion of G4VSolid that translate to single CSGNode leaves  
+
+
+Q: Does listnode need externally defined bbox ?
+--------------------------------------------------------
+
+Put another way should the solid frame bbox be taken from Geant4 and propagated thru to GPU ?
+Or should it be computed from the params of the prims and their known transforms ? 
+A wrinkle with this is the transformation of bbox according to whether the listnode 
+is within the instanced volumes or the global remainder.  
+
+A: Doing both ways is useful as cross check.  
 
 
 DONE : ~/o/u4/tests/U4SolidTest.sh 
@@ -49,7 +60,7 @@ DONE : check ~/o/u4/tests/U4TreeCreateSSimTest.sh with G4MultiUnion using GEOM
 
 * checking U4SolidMaker::GridMultiUnion_ the G4MultiUnion of 7x7x7 items is expected 
 * the 3x3x3 gridding on top of the multiunion was inadvertant due to "Grid" in the name  
-   being parsed by one of the U4VolumeMaker Wrap methods 
+  being parsed by one of the U4VolumeMaker Wrap methods 
 
 
 Move to a simpler multiunion for debuugging : OrbOrbMultiUnionSimple
@@ -64,8 +75,8 @@ Issues:
 * WIP : prim lack bbox for the listnode
 
 
-listnode CSGPrim bbox : HOW ? 
--------------------------------
+WIP : listnode CSGPrim bbox : HOW ? 
+--------------------------------------
 
 binary tree node bbox comes from::
 
@@ -77,6 +88,34 @@ binary tree node bbox comes from::
 Correctly handling listnode needs some of that to be used from::
 
   CSGImport::importListNode 
+
+Central question : how the above stree methods handle listnodes
+
+
+WIP : use U4TreeCreateSSimTest.sh with OrbOrbMultiUnionSimple2 to get transforms and bbox working in listnode
+------------------------------------------------------------------------------------------------------------------
+
+::
+
+   ~/o/u4/tests/U4TreeCreateSSimTest.sh
+   ~/o/u4/tests/U4TreeCreateSSimTest.cc
+
+
+::
+
+    In [4]: f._csg.sn
+    Out[4]: 
+    array([[101,   0,   0,   0,   0,   0,   5,   0,   0,  -1,   1,   0,   1,   0,   0,   0,   0,   0,   0],
+           [101,   0,   0,   1,   1,   1,   5,   1,   0,  -1,   2,   1,   1,   0,   0,   0,   0,   0,   0],
+           [101,   0,   0,   2,   2,   2,   5,   2,   0,  -1,   3,   2,   1,   0,   0,   0,   0,   0,   0],
+           [101,   0,   0,   3,   3,   3,   5,   3,   0,  -1,   4,   3,   1,   0,   0,   0,   0,   0,   0],
+           [101,   0,   0,   4,   4,   4,   5,   4,   0,  -1,  -1,   4,   1,   0,   0,   0,   0,   0,   0],
+           [ 11,   0,   0,  -1,  -1,  -1,  -1,   0,   5,   0,  -1,   5,   0,   0,   0,   0,   0,   0,   0],
+           [110,   0,   1,  -1,   5,   5,  -1,   0,   0,  -1,  -1,   6,   0,   0,   0,   0,   0,   0,   0]], dtype=int32)
+
+
+
+
 
 
 Test commands

@@ -219,14 +219,8 @@ When SSim not in use can also use::
 #include "stran.h"
 #include "stra.h"
 
-#ifdef WITH_SND
-#include "snd.hh"
-#include "scsg.hh"
-#else
 #include "s_csg.h"
 #include "sn.h"
-#endif
-
 
 #include "stra.h"
 #include "sstandard.h"
@@ -321,12 +315,7 @@ struct stree
 
     std::vector<std::string> soname_raw ;   // solid names, my have 0x pointer suffix 
     std::vector<std::string> soname ;       // unique solid names, created with sstr::StripTail_unique with _1 _2 ... uniqing 
-
-#ifdef WITH_SND
-    std::vector<int>         solids ;       // snd idx 
-#else
     std::vector<sn*>         solids ; 
-#endif
 
     std::vector<glm::tmat4x4<double>> m2w ; // local (relative to parent) "model2world" transforms for all nodes
     std::vector<glm::tmat4x4<double>> w2m ; // local (relative to parent( "world2model" transforms for all nodes  
@@ -347,11 +336,7 @@ struct stree
     sfreq* subs_freq ;                     // occurence frequency of subtree digests in entire tree 
                                            // subs are collected in stree::classifySubtrees
 
-#ifdef WITH_SND
-    scsg*   csg ;                          // snd.hh based csg node trees of all solids from G4VSolid    
-#else
     s_csg* _csg ;                          // sn.h based csg node trees
-#endif
 
     sstandard* standard ;                  // mat/sur/bnd/bd/optical/wavelength/energy/rayleigh 
 
@@ -664,11 +649,7 @@ inline stree::stree()
     level(ssys::getenvint("stree_level", 0)),
     sensor_count(0),
     subs_freq(new sfreq),
-#ifdef WITH_SND
-    csg(new scsg),
-#else
     _csg(new s_csg),
-#endif
     standard(new sstandard),
     material(new NPFold),
     surface(new NPFold),
@@ -765,11 +746,7 @@ inline std::string stree::desc() const
        << std::endl
        << " stree::desc.csg "  
        << std::endl
-#ifdef WITH_SND
-       << ( csg ? csg->desc() : "-" )
-#else
        << ( _csg ? _csg->desc() : "-" )
-#endif
        << std::endl
        << "]stree::desc"
        << std::endl
@@ -1398,6 +1375,14 @@ inline sfreq* stree::make_freq(const std::vector<int>& nodes ) const
     }
     return sf ; 
 } 
+
+/**
+stree::find_lvid
+------------------
+
+Find lvid index of solid with name q_soname
+
+**/
 
 inline int stree::find_lvid(const char* q_soname, bool starting ) const 
 {
@@ -2146,12 +2131,14 @@ Critical usage of ths from CSGImport::importNode
 0. early exits returning nullptr for non leaf nodes
 1. gets combined structural(snode.h) and CSG tree(sn.h) transform 
 2. collects that combined transform and its inverse (t,v) into Tran instance
-3. copies bbox values (assumed leaf frame) from the nd into aabb argument
-4. transforms the bbox of the aabb argument using the combined structural + tree transform
+3. copies leaf frame bbox values from the CSG nd into callers aabb array
+4. transforms the bbox of the callers aabb array using the combined structural node 
+   + tree node transform
 
 
-CAUTION : sn::uncoincide needs CSG tree frame AABB but this needs leaf frame AABB 
-see how that issue was fixed in sn::postconvert
+Note that sn::uncoincide needs CSG tree frame AABB but whereas this needs leaf 
+frame AABB. These two demands are met by changing the AABB frame 
+within sn::postconvert
 
 **/
 
@@ -2174,7 +2161,7 @@ inline const Tran<double>* stree::get_combined_tran_and_aabb(
       
     const Tran<double>* tv = new Tran<double>(t, v); 
 
-    nd->copyBB_data( aabb ); 
+    nd->copyBB_data( aabb );  
     stra<double>::Transform_AABB_Inplace(aabb, t);   
 
     return tv ; 
@@ -2505,13 +2492,7 @@ inline NPFold* stree::serialize() const
 
     NPFold* f_standard = standard->serialize() ; 
     fold->add_subfold( STANDARD, f_standard ); 
-
-#ifdef WITH_SND
-    fold->add_subfold( CSG, csg->serialize() ); 
-#else
     fold->add_subfold( _CSG, _csg->serialize() ); 
-#endif
-
     fold->add( SONAME, NPX::Holder(soname) ); 
 
     fold->add( DIGS, NPX::Holder(digs) ); 
@@ -2655,21 +2636,6 @@ inline void stree::import(const NPFold* fold)
     }
 
 
-#ifdef WITH_SND
-    NPFold* csg_f = fold->get_subfold(CSG) ;
-    if(csg_f == nullptr) std::cerr
-        << "stree::import.WITH_SND "
-        << " FAILED : DUE TO LACK OF subfold CSG : " << CSG 
-        << std::endl 
-        << " PROBABLY THE PERSISTED TREE WAS CREATED NOT:WITH_SND "
-        << std::endl 
-        << " SWITCH OPTION TO NOT:WITH_SND OR RECREATE THE TREE WITH_SND "
-        << std::endl 
-        ;
-
-    assert(csg_f);  
-    csg->import(csg_f); 
-#else
     NPFold* csg_f = fold->get_subfold(_CSG) ;
 
     if(csg_f == nullptr) std::cerr
@@ -2683,7 +2649,6 @@ inline void stree::import(const NPFold* fold)
         ;
 
     _csg->import(csg_f); 
-#endif
 
 
     ImportNames( digs, fold->get(DIGS) ); 

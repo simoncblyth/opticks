@@ -1450,22 +1450,35 @@ const G4VSolid* U4SolidMaker::UnionOfHemiEllipsoids(const char* name )
 }
 
 
+/**
+U4SolidMaker::OrbOrbMultiUnion
+-------------------------------
+
+OrbOrbMultiUnion0
+    single Orb within MultiUnion
+OrbOrbMultiUnion1
+    three Orb at (-100,0,100) x positions within MultiUnion
+OrbOrbMultiUnion2
+    five Orb at (-200,-100,0,100,200) x positions within MultiUnion
+OrbOrbMultiUnion{N}
+    2N+1 Orb at {-N, -N+1, ..., 0, 1, .... N}*100 x positions within MultiUnion
+
+**/
 
 const G4VSolid* U4SolidMaker::OrbOrbMultiUnion(const char* name )
 {
+    long num = sstr::ExtractLong(name, 1) ; 
     G4MultiUnion* comb = new G4MultiUnion(name);
 
     G4RotationMatrix rot(0, 0, 0);
-    G4ThreeVector px( 100.*mm, 0.*mm, 0.*mm);  // center
-    G4ThreeVector nx(-100.*mm, 0.*mm, 0.*mm);  // center
-    G4Transform3D tpx(rot, px); 
-    G4Transform3D tnx(rot, nx); 
+    G4Orb* orb = new G4Orb("Orb", 50.) ; 
 
-    G4Orb* spx = new G4Orb("OrbSPX", 50.) ; 
-    G4Orb* snx = new G4Orb("OrbSNX", 50.) ; 
-
-    comb->AddNode( *spx, tpx);
-    comb->AddNode( *snx, tnx);
+    for(long i=-num ; i <= num ; i++)
+    {
+       G4ThreeVector tlate( double(i)*100.*mm, 0.*mm, 0.*mm);  
+       G4Transform3D tr(rot, tlate) ; 
+       comb->AddNode( *orb, tr );
+    }
 
     return comb ; 
 }
