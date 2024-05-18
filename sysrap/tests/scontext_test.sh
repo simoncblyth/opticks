@@ -107,6 +107,8 @@ name=scontext_test
 bin=${TMP:-/tmp/$USER/opticks}/$name
 mkdir -p $(dirname $bin)
 
+cd $(dirname $(realpath $BASH_SOURCE))
+
 defarg="build_run"
 arg=${1:-$defarg}
 

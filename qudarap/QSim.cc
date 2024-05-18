@@ -6,7 +6,6 @@
 #include "ssys.h"
 #include "sstamp.h"
 #include "spath.h"
-#include "scontext.h"
 #include "SProf.hh"
 
 #include "SEvt.hh"

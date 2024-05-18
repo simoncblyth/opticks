@@ -41,7 +41,7 @@ struct sdevice
     static constexpr const char* CVD = "CUDA_VISIBLE_DEVICES" ; 
     static constexpr const char* FILENAME = "sdevice.bin" ; 
     static constexpr bool VERBOSE = false ; 
-    static int VISIBLE_COUNT ; 
+    //static int VISIBLE_COUNT ; 
 
     int ordinal ; 
     int index ; 
@@ -77,7 +77,12 @@ struct sdevice
 };
 
 
-inline int sdevice::VISIBLE_COUNT = 0 ; 
+//inline int sdevice::VISIBLE_COUNT = 0 ; 
+
+/**
+warning: inline variables are only available with ‘-std=c++17’ or ‘-std=gnu++17’
+**/
+
 
 inline const char* sdevice::brief() const 
 {
@@ -278,7 +283,9 @@ inline void sdevice::Visible(std::vector<sdevice>& visible, const char* dirpath,
     bool ordinal_from_index = no_cvd  ; 
     Collect(visible, ordinal_from_index); 
 
-    VISIBLE_COUNT = visible.size() ; 
+    
+
+    int VISIBLE_COUNT = visible.size() ; 
 
     assert( sdevice::DeviceCount() == VISIBLE_COUNT ); 
 

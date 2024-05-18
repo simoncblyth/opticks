@@ -3,20 +3,18 @@
 scontext.h : holds sdevice.h structs for all and visible GPUs
 ==============================================================
 
-Canonical instance is SSim::sctx instanciated by SSim::SSim
-
-
-TODO: use this a source of metadata 
-      for inclusion into SEvt run_meta ? 
+Canonical instance is CSGOptiX::SCTX instanciated by CSGOptiX::Create
+(formerly SSim::sctx instanciated by SSim::SSim)
 
 ::
 
-    epsilon:opticks blyth$ opticks-fl scontext.h 
+    [blyth@localhost sysrap]$ opticks-fl scontext.h 
+    ./CSGOptiX/CSGOptiX.cc
     ./sysrap/CMakeLists.txt
+    ./sysrap/scontext.h
     ./sysrap/sdevice.h
     ./sysrap/tests/scontext_test.cc
-    ./sysrap/scontext.h
-    ./sysrap/SSim.cc
+    [blyth@localhost opticks]$ 
 
 Equivalent of this in the old workflow was 
 optixrap/OContext.cc OContext::initDevices
