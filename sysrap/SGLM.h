@@ -16,7 +16,6 @@ NB it will usually be too late for setenv in code to influence SGLM
 as the static initialization would have happened already 
 
 * TODO: reincarnate animated interpolation between view bookmarks 
-* TODO: WASD camera navigation, using a method intended to be called from the GLFW key callback 
 * TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state 
 
 
@@ -28,7 +27,7 @@ and longitudinally using get_near_abs from updateEyeBasis/updateProjection
 for raytrace/rasterized succeeds to get the two perspective 
 renders to match closely. This follows the technique used in okc/Camera.cc.  
 
-* TODO: regain orthographic, above changes for prespective matching have messed that up
+* TODO: regain orthographic, above changes for perspective matching have messed that up
 * TODO: flipping between raytrace and raster with C:CUDA key looses quaternion rotation causing jump back 
 
 
@@ -78,7 +77,7 @@ Eye
 Clip
    funny coordinates : that get transformed by "divide-by-w" into NDC coordinates
 
-   * shader pipeline (vertext or geometry shader) outputs Clip coordinates, that
+   * shader pipeline (vertex or geometry shader) outputs Clip coordinates, that
      OpenGL does the “divide-by-w” step to givew NDC coordinates
 
    * the ".w" of clip coordinates often set to "-z" as trick to do perspective Divide 
@@ -163,7 +162,7 @@ struct SYSRAP_API SGLM : public SCMD
     // static defaults, some can be overridden in the instance 
     static glm::ivec2 WH ; 
 
-    static glm::vec4 CE ; // WHY CE? CE IS GEOMETRY NOT VIEW RELATED : PROBABLY FOR WITHOUT GEOM TEST ?
+    static glm::vec4 CE ; // CE IS GEOMETRY NOT VIEW RELATED BUT ITS EXPEDIENT TO BE HERE
     static glm::vec4 EYE ; 
     static glm::vec4 LOOK ; 
     static glm::vec4 UP ; 

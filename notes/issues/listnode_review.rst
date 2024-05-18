@@ -60,11 +60,30 @@ DONE : Split off CSGOptiX::render_save and hookup key K to invoke it from render
 Issues:
 
 * repeated K write to same path overwriting previous
-* render inverted in Y 
+* jpg inverted in Y : FIXED with SIMG::setData/SIMG::flipVertical invoked from Frame::download
 
 
 WIP : simplify snap path formation to use spath.h and avoid self overwriting
 -------------------------------------------------------------------------------
+
+
+Currently uses fixed NAMEPREFIX passed in from bash, but 
+thats no longer appropriate with interactive viewpoint control 
+
+Want to be able to generate at any point during interactive running 
+a commandline that can reproduce the current view. 
+
+
+
+::
+
+    2024-05-18 16:51:03.796 INFO  [250343] [CSGOptiX::render_save@1209] 
+           /home/blyth/tmp/GEOM/OrbGridMultiUnion10_30_YX/CSGOptiXRenderInteractiveTest/
+                 cxr_min__eye_0,0.8,0__zoom_1.0__tmin_0.1__ALL.jpg 
+
+    NAMEPREFIX : cxr_min__eye_0,0.8,0__zoom_1.0__tmin_0.1_  
+
+
 
 ::
 
@@ -143,9 +162,6 @@ WIP : simplify snap path formation to use spath.h and avoid self overwriting
     590     const char* path = SPath::Resolve(base, reldir, name.c_str(), create_dirs ) ;
     591     return path ; 
     592 }   
-
-
-
 
 
 

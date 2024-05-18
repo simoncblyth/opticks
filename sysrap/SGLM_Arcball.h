@@ -25,6 +25,13 @@ struct SGLM_Arcball
     static float ZProject(const glm::vec2& p ); 
 }; 
 
+
+inline glm::quat SGLM_Arcball::Identity()
+{
+    return glm::identity<glm::quat>(); 
+}
+
+
 /**
 SGLM_Arcball::A2B_Arcball
 -------------------------
@@ -34,11 +41,6 @@ SGLM_Arcball::A2B_Arcball
   on the equator of the hypersphere)
 
 **/
-
-inline glm::quat SGLM_Arcball::Identity()
-{
-    return glm::identity<glm::quat>(); 
-}
 
 inline glm::quat SGLM_Arcball::A2B_Arcball( const glm::vec3& a, const glm::vec3& b )
 {

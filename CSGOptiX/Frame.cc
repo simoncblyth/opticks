@@ -107,11 +107,10 @@ void Frame::download()
     if(d_fphoton) QU::Download<quad4>(photon, d_fphoton, num_pixels ); 
 #endif
 
-
     if(d_pixel) 
     {
-        img->setData( getPixelData() ); 
-        img->flipVertical();  // does this need to be optional ? 
+        bool flip_vertical = true ; 
+        img->setData( getPixelData(), flip_vertical ); 
     }
 
 }

@@ -384,10 +384,23 @@ Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
 
 
 scontext* CSGOptiX::SCTX = nullptr ; 
+
+
+/**
+CSGOptiX::SetSCTX
+---------------------
+
+Instanciates CSGOptiX::SCTX(scontext) holding GPU metadata. 
+Canonically invoked from head of CSGOptiX::Create.
+
+NOTE: Have sometimes observed few second hangs checking for GPU 
+
+**/
+
 void CSGOptiX::SetSCTX()
 { 
     LOG(LEVEL) << "[ new scontext" ;  
-    SCTX = new scontext ; // sometimes hangs for few seconds checking for GPU 
+    SCTX = new scontext ; 
     LOG(LEVEL) << "] new scontext" ; 
     LOG(LEVEL) << SCTX->desc() ;    
 }
@@ -1131,8 +1144,28 @@ const char* CSGOptiX::getDefaultSnapPath() const
 CSGOptiX::getRenderStemDefault
 --------------------------------
 
-Old opticks has "--nameprefix" argument, this aims to 
-do similar with NAMEPREFIX envvar. 
+Example NAMEPREFIX from cxr_min.sh::
+
+   cxr_min__eye_0,0.8,0__zoom_1.0__tmin_0.1_
+
+Example resulting stem::
+
+   cxr_min__eye_0,0.8,0__zoom_1.0__tmin_0.1__ALL
+
+WIP: interactive view control makes this approach obsolete
+To provide dynamic naming have added::
+
+    ssys::setenvctx
+    ssys::setenvmap
+
+The idea being to generate a map<string,string> of 
+view params for feeding into the environment that 
+is used in the resolution of a name pattern that is 
+specied from bash, ie::
+
+    cxr_min_eye_${EYE}__zoom_${ZOOM}__tmin_${TMIN}
+
+HMM: SGLM seems more appropriate place to do this than here 
 
 **/
 const char* CSGOptiX::getRenderStemDefault() const 
@@ -1150,7 +1183,7 @@ const char* CSGOptiX::getRenderStemDefault() const
 
 
 /**
-CSGOptiX::render  (formerly render_snap)
+CSGOptiX::render (formerly render_snap)
 -------------------------------------------
 **/
 
@@ -1161,25 +1194,38 @@ double CSGOptiX::render( const char* stem_ )
     return launch_dt ; 
 }
 
+
+/**
+CSGOptiX::render_save
+----------------------
+
+TODO: update file naming impl, currently using old inflexible approach 
+
+**/
+
 void CSGOptiX::render_save(const char* stem_)
 {
-    const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
-    sglm->addlog("CSGOptiX::render_snap", stem ); 
-
-    const char* topline = ssys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
-    const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
     const char* outdir = SEventConfig::OutDir();
+    const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
     const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
-    std::string _extra = GetGPUMeta();  // scontext::brief giving GPU name 
-    const char* extra = strdup(_extra.c_str()) ;  
-
-    std::string bottom_line = CSGOptiX::Annotation(launch_dt, botline_, extra ); 
-    const char* botline = bottom_line.c_str() ; 
 
     LOG(LEVEL)
           << SEventConfig::DescOutPath(stem, -1, ".jpg" );
           ;  
  
+
+
+    sglm->addlog("CSGOptiX::render_snap", stem ); 
+
+    const char* topline = ssys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
+    std::string _extra = GetGPUMeta();  // scontext::brief giving GPU name 
+    const char* extra = strdup(_extra.c_str()) ;  
+
+    const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
+    std::string bottom_line = CSGOptiX::Annotation(launch_dt, botline_, extra ); 
+    const char* botline = bottom_line.c_str() ; 
+
+
     LOG(LEVEL)  
           << " stem " << stem 
           << " outpath " << outpath 

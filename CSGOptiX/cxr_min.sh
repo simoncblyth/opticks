@@ -120,6 +120,8 @@ nameprefix=${nameprefix}_tmin_${TMIN}_
 
 # moi appended within CSGOptiX::render_snap ?
 export NAMEPREFIX=$nameprefix
+## NAMEPREFIX used in CSGOptiX::getRenderStemDefault
+
 
 topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM CAM=$CAM ~/opticks/CSGOptiX/cxr_min.sh " 
 botline="$(date)"
