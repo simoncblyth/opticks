@@ -3,6 +3,11 @@ usage(){ cat << EOU
 scontext_test.sh
 =================
 
+::
+
+    ~/o/sysrap/tests/scontext_test.sh 
+
+
 * note that the nvidia-smi ordering does not necessarily match the CUDA ordering 
 * also I think that nvidia-smi ordering may change after reboots 
 * also the CUDA ordering can be changed with eg CUDA_VISIBLE_DEVICES=1,0 

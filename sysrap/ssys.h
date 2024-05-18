@@ -104,7 +104,12 @@ struct ssys
 
     static void Dump(const char* msg); 
     static int run(const char* cmd); 
+
     static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
+    static int setenvmap( const std::map<std::string, std::string>& env, bool overwrite=true , char special_empty_token='\0' ); 
+
+    template<typename ... Args>
+    static int setenvctx( Args ... args  );
 
     static std::string Desc();
     static std::string PWD();
@@ -680,8 +685,10 @@ ssys::setenvvar
 overwrite:false 
     preexisting envvar is not overridden. 
 
-As shell handling of empty strings is inconvenient the special_empty_token char 
-allows a single char to represent the empty string, eg '-' 
+"value[0] == special_empty_token" and special_empty_token not default '\0' (eg use '-')
+    indicates want value to be empty string, avoiding inconvenient shell
+    handling of empty strings
+
 
 **/
 
@@ -727,6 +734,64 @@ inline int ssys::setenvvar( const char* ekey, const char* value, bool overwrite,
     //std::raise(SIGINT);  
     return rc ;
 }
+
+
+inline int ssys::setenvmap( const std::map<std::string, std::string>& env, bool overwrite, char special_empty_token )
+{
+    typedef std::map<std::string, std::string>  MSS ; 
+    for(MSS::const_iterator it=env.begin() ; it != env.end() ; it++)
+    {
+        const std::string& key = it->first ; 
+        const std::string& val = it->second ;
+        setenvvar(key.c_str(), val.c_str(), overwrite, special_empty_token );
+    }
+    return 0 ; 
+}
+
+
+template<typename ... Args>
+inline int ssys::setenvctx( Args ... args_  )
+{
+    std::vector<std::string> args = {args_...};
+    std::vector<std::string> elem ; 
+
+    for(unsigned i=0 ; i < args.size() ; i++)
+    {
+        const std::string& arg = args[i] ; 
+        if(!arg.empty()) elem.push_back(arg);  
+    }
+
+    unsigned num_elem = elem.size() ;
+    assert( num_elem % 2 == 0 ); 
+
+    bool overwrite = true ; 
+    char special_empty_token = '\0' ; 
+ 
+    for(unsigned i=0 ; i < num_elem/2 ; i++)
+    {
+        const std::string& key = elem[2*i+0] ; 
+        const std::string& val = elem[2*i+1] ;
+        setenvvar(key.c_str(), val.c_str(), overwrite, special_empty_token );     
+    }
+    return 0 ; 
+}   
+
+
+template int ssys::setenvctx( 
+          const char*, const char* ); 
+template int ssys::setenvctx( 
+          const char*, const char*, 
+          const char*, const char* );
+template int ssys::setenvctx( 
+          const char*, const char*, 
+          const char*, const char*, 
+          const char*, const char* );
+template int ssys::setenvctx( 
+          const char*, const char*, 
+          const char*, const char*, 
+          const char*, const char*, 
+          const char*, const char* );
+
 
 
 /**

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 
+#include "ssys.h"
 #include "sstr.h"
 #include "spath.h"
 #include "sdirectory.h"
@@ -11,64 +12,62 @@
 
 struct spath_test 
 {
-   static void Resolve_inline(); 
-   static void Resolve_defaultOutputPath(); 
-   static void Resolve_with_undefined_token();
-   static void Resolve_with_undefined_TMP();
-   static void IsTokenWithFallback(); 
-   static void ResolveTokenWithFallback(); 
-   static void _ResolveToken(); 
-   static void ResolveToken(); 
-   static void ResolveToken_(const char* token); 
-   static void ResolveToken1(); 
+   static int Resolve_inline(); 
+   static int Resolve_defaultOutputPath(); 
+   static int Resolve_with_undefined_token();
+   static int Resolve_with_undefined_TMP();
+   static int IsTokenWithFallback(); 
+   static int ResolveTokenWithFallback(); 
+   static int _ResolveToken(); 
+   static int ResolveToken(); 
+   static int ResolveToken_(const char* token); 
+   static int ResolveToken1(); 
 
-   static void Resolve_(const char* spec); 
-   static void Resolve1(); 
-   static void Resolve(); 
+   static int Resolve_(const char* spec); 
+   static int Resolve1(); 
+   static int Resolve(); 
+   static int Resolve_setenvvar(); 
+   static int Resolve_setenvmap(); 
 
-   static void Exists(); 
-   static void Exists2(); 
-   static void Basename(); 
-   static void Name(); 
-   static void Remove(); 
+   static int Exists(); 
+   static int Exists2(); 
+   static int Basename(); 
+   static int Name(); 
+   static int Remove(); 
 
-   static void _Check(); 
-   static void Write(); 
+   static int _Check(); 
+   static int Write(); 
+   static int WriteIntoInvokingDirectory();
 
+   static int ALL();  
    static int Main();  
 };
 
 
 
-
-
-
-
-void spath_test::Resolve_inline()
+int spath_test::Resolve_inline()
 {
-   const char* path_ = "$TMP/$ExecutableName/ALL${VERSION:-0}" ; 
-   const char* path = spath::Resolve(path_); 
-   std::cout 
-       << " path_ [" << path_ << "]" << std::endl 
-       << " path  [" << path  << "]" << std::endl 
-       ;
+    const char* path_ = "$TMP/$ExecutableName/ALL${VERSION:-0}" ; 
+    const char* path = spath::Resolve(path_); 
+    std::cout 
+        << " path_ [" << path_ << "]" << std::endl 
+        << " path  [" << path  << "]" << std::endl 
+        ;
+    return 0 ; 
 }
 
-void spath_test::Resolve_defaultOutputPath()
+int spath_test::Resolve_defaultOutputPath()
 {
-   const char* path_ = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
-   const char* path = spath::Resolve(path_); 
-   std::cout 
-       << " path_ [" << path_ << "]" << std::endl 
-       << " path  [" << path  << "]" << std::endl 
-       ;
+    const char* path_ = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
+    const char* path = spath::Resolve(path_); 
+    std::cout 
+        << " path_ [" << path_ << "]" << std::endl 
+        << " path  [" << path  << "]" << std::endl 
+        ;
+    return 0 ; 
 }
 
-
-
-
-
-void spath_test::Resolve_with_undefined_token()
+int spath_test::Resolve_with_undefined_token()
 {
    const char* path_ = "$HOME/.opticks/GEOM/$TYPO/CSGFoundry" ; 
    const char* path = spath::Resolve(path_); 
@@ -76,9 +75,10 @@ void spath_test::Resolve_with_undefined_token()
        << " path_ [" << path_ << "]" << std::endl 
        << " path  [" << path  << "]" << std::endl 
        ;
+    return 0 ; 
 }
 
-void spath_test::Resolve_with_undefined_TMP()
+int spath_test::Resolve_with_undefined_TMP()
 {
    const char* path_ = "$TMP/GEOM/$TYPO/CSGFoundry" ; 
    const char* path = spath::Resolve(path_); 
@@ -86,17 +86,19 @@ void spath_test::Resolve_with_undefined_TMP()
        << " path_ [" << path_ << "]" << std::endl 
        << " path  [" << path  << "]" << std::endl 
        ;
+    return 0 ; 
 }
 
-void spath_test::IsTokenWithFallback()
+int spath_test::IsTokenWithFallback()
 {
     const char* token = "{U4Debug_SaveDir:-$TMP}" ; 
     bool is_twf = spath::IsTokenWithFallback(token) ; 
 
     std::cout << " token " << token << " spath::IsTokenWithFallback " << ( is_twf ? "YES" : "NO " ) << std::endl ; 
+    return 0 ; 
 }
 
-void spath_test::ResolveTokenWithFallback()
+int spath_test::ResolveTokenWithFallback()
 {
     std::cout << "\nspath_test::ResolveTokenWithFallback\n\n" ;  
 
@@ -117,9 +119,10 @@ void spath_test::ResolveTokenWithFallback()
             << std::endl 
             ;
     }
+    return 0 ; 
 }
 
-void spath_test::_ResolveToken()
+int spath_test::_ResolveToken()
 {
     std::cout << "\nspath_test::_ResolveToken\n\n" ;  
     std::vector<std::string> tokens = {
@@ -139,10 +142,11 @@ void spath_test::_ResolveToken()
             << std::endl 
             ;
     }
+    return 0 ; 
 }
 
 
-void spath_test::ResolveToken_(const char* token)
+int spath_test::ResolveToken_(const char* token)
 {
     const char* result = spath::ResolveToken(token); 
     std::cout 
@@ -151,20 +155,23 @@ void spath_test::ResolveToken_(const char* token)
         << " result " << ( result ? result : "-" ) << std::endl
         << std::endl 
         ;
+    return 0 ; 
 }
 
-void spath_test::ResolveToken1()
+int spath_test::ResolveToken1()
 {
     //ResolveToken_("$DefaultOutputDir"); 
     ResolveToken_("{RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
+    return 0 ; 
 }
-void spath_test::ResolveToken()
+int spath_test::ResolveToken()
 {
     std::cout << "\nspath_test::ResolveToken\n\n" ;  
     std::vector<std::string> tokens = {
         "$TMP",
-        "${TMP:-/some/other/path}",
+        "${TMP}",
         "TMP" ,
+        "${TMP:-/some/other/path}",
         "${VERSION:-0}"
         }; 
 
@@ -173,11 +180,12 @@ void spath_test::ResolveToken()
         const char* token = tokens[i].c_str(); 
         ResolveToken_(token) ; 
     }
+    return 0 ; 
 }
 
 
 
-void spath_test::Resolve_(const char* spec)
+int spath_test::Resolve_(const char* spec)
 {
     //const char* path = spath::Resolve(spec); 
     const char* path = spath::ResolvePathGeneralized(spec); 
@@ -186,16 +194,18 @@ void spath_test::Resolve_(const char* spec)
         << " path " << path << std::endl
         << std::endl 
         ;
+    return 0 ; 
 }
 
-void spath_test::Resolve1()
+int spath_test::Resolve1()
 {
     //Resolve_("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
     Resolve_("$DefaultOutputDir") ;
+    return 0 ; 
 }
 
 
-void spath_test::Resolve()
+int spath_test::Resolve()
 {
     std::cout << "\nspath_test::Resolve\n\n" ;  
     std::vector<std::string> specs = {
@@ -207,6 +217,12 @@ void spath_test::Resolve()
         "ALL${VERSION:-99}",
         "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}",
         "$TMP/GEOM/$GEOM/$ExecutableName/ALL${VERSION:-0}/tail",
+        "$TMP",
+        "${TMP}",
+        "${TMP:-/some/fallback}",
+        "${XMP:-/some/fallback}",
+        "TMP",
+        "{TMP}",
         "$DefaultOutputDir",
         "$DefaultOutputDir/some/further/relative/path",
         "${RNGDir:-$HOME/.opticks/rngcache/RNG}",
@@ -214,11 +230,70 @@ void spath_test::Resolve()
         } ; 
 
     for(unsigned i=0 ; i < specs.size() ; i++) Resolve_( specs[i].c_str() ); 
+    return 0 ; 
+}
+
+int spath_test::Resolve_setenvvar()
+{
+    std::cout << "\nspath_test::Resolve_setenvvar\n\n" ;  
+    std::vector<std::string> eye = {
+        "0,0,0", 
+        "1,1,1", 
+        "2,2,2" 
+        } ; 
+
+    std::vector<std::string> look = {
+        "0,0,0", 
+        "0,0,0", 
+        "10,10,10" 
+        } ; 
+
+    std::vector<std::string> up = {
+        "0,0,1", 
+        "0,0,2", 
+        "0,0,3" 
+        } ; 
+
+
+    assert( eye.size() == look.size() ); 
+    assert( eye.size() == up.size() ); 
+
+    const char* spec = "EYE=${EYE}_LOOK=${LOOK}_UP=${UP}" ; 
+    for(unsigned i=0 ; i < eye.size() ; i++)
+    {
+         ssys::setenvctx( 
+                 "EYE", eye[i].c_str(),
+                 "LOOK", look[i].c_str(),
+                 "UP", up[i].c_str() ); 
+
+         Resolve_( spec );
+    } 
+    return 0 ; 
 }
 
 
 
-void spath_test::Exists()
+int spath_test::Resolve_setenvmap()
+{
+    std::cout << "\nspath_test::Resolve_setenvmap\n\n" ;  
+
+    std::map<std::string, std::string> m = 
+       {
+          { "EYE", "1,1,0" },
+          { "LOOK", "0,0,0" },
+          { "UP", "0,0,1" },
+        };
+
+    const char* spec = "EYE=${EYE}_LOOK=${LOOK}_UP=${UP}" ; 
+    ssys::setenvmap( m ); 
+    Resolve_( spec );
+
+    return 0 ; 
+}
+
+
+
+int spath_test::Exists()
 {
     std::vector<std::string> specs = {"$HOME/hello.npy", "$HOME", "$OPTICKS_HOME/sysrap/tests/spath_test.cc" } ; 
     for(unsigned i=0 ; i < specs.size() ; i++)
@@ -231,9 +306,10 @@ void spath_test::Exists()
             << std::endl 
             ;
     }
+    return 0 ; 
 }
 
-void spath_test::Exists2()
+int spath_test::Exists2()
 {
     const char* base = "$OPTICKS_HOME/sysrap/tests" ; 
 
@@ -249,24 +325,27 @@ void spath_test::Exists2()
             << std::endl 
             ;
     }
+    return 0 ; 
 }
 
 
-void spath_test::Basename()
+int spath_test::Basename()
 {
     const char* path = "/tmp/some/long/path/with/an/intersesting/base" ; 
     const char* base = spath::Basename(path) ; 
     assert( strcmp( base, "base") == 0 ); 
+    return 0 ; 
 }
 
-void spath_test::Name()
+int spath_test::Name()
 {
     const char* name = spath::Name("red_","green_","blue") ; 
     assert( strcmp( name, "red_green_blue") == 0 ); 
+    return 0 ; 
 }
 
 
-void spath_test::Remove()
+int spath_test::Remove()
 {
     const char* path_ = "/tmp/$USER/opticks/spath_test/file_test_Remove.gdml" ; 
     const char* path = spath::Resolve(path_); 
@@ -294,18 +373,20 @@ void spath_test::Remove()
 
     assert( exists_0 == 1); 
     assert( exists_1 == 0); 
+    return 0 ; 
 }
 
-void spath_test::_Check()
+int spath_test::_Check()
 {
     std::string chk0 = spath::_Check('A', "red", "green", "blue"); 
     std::string chk1 = spath::_Check('B', "red", "green", "blue"); 
     std::cout << "spath_test::_Check [" << chk0 << "]" << std::endl ; 
     std::cout << "spath_test::_Check [" << chk1 << "]" << std::endl ; 
+    return 0 ; 
 }
 
 
-void spath_test::Write()
+int spath_test::Write()
 {
     const char* path = "$TMP/spath_test_Write/some/deep/path/spath_test.txt" ; 
     bool ok0 = spath::Write("hello\n", path ); 
@@ -313,6 +394,7 @@ void spath_test::Write()
 
     const char* base = "$TMP/spath_test_Write/some/deep/path" ;
     const char* name = "spath_test.txt" ; 
+
     bool ok1 = spath::Write("world\n", base, name ); 
     std::cout 
         << __FUNCTION__  << std::endl 
@@ -322,60 +404,102 @@ void spath_test::Write()
         << std::endl
         ; 
 
-   /*
-    // comment as writes into invoking directory 
+    return 0 ; 
+}
 
+int spath_test::WriteIntoInvokingDirectory()
+{
+    const char* name = "spath_test.txt" ; 
     bool ok2 = spath::Write("jelly\n", nullptr, name ); 
     std::cout 
         << __FUNCTION__  << std::endl 
-        << " base " << ( base ? base : "-" )  << std::endl 
         << " name " << ( name ? name : "-" ) << std::endl 
         << " ok2 " << ( ok2 ? "YES" : "NO " ) 
         << std::endl
         ; 
-   */
-
-
-}
-
-int spath_test::Main()
-{
-/*
-    Resolve_defaultOutputPath();
-    Resolve_with_undefined_token();
-    Resolve_with_undefined_TMP();
-    Resolve_inline();
-    ResolveToken(); 
-    Resolve(); 
-    Exists(); 
-    Exists2(); 
-    Basename(); 
-    Name(); 
-    Remove(); 
-    IsTokenWithFallback(); 
-    ResolveTokenWithFallback(); 
-
-    ResolveTokenWithFallback(); 
-    _ResolveToken(); 
-    Resolve(); 
-    ResolveToken1(); 
-    Resolve1(); 
-    _Check(); 
-    Write(); 
-*/
-    ResolveToken1(); 
-
     return 0 ; 
 }
 
- 
+
+int spath_test::ALL()
+{
+    int rc = 0 ; 
+
+    rc += Resolve_defaultOutputPath() ; 
+    rc += Resolve_with_undefined_token();
+    rc += Resolve_with_undefined_TMP();
+    rc += Resolve_inline();
+    rc += ResolveToken(); 
+    rc += Resolve(); 
+    rc += Exists(); 
+    rc += Exists2(); 
+    rc += Basename(); 
+    rc += Name(); 
+    rc += Remove(); 
+    rc += IsTokenWithFallback(); 
+    rc += ResolveTokenWithFallback(); 
+    rc += _ResolveToken(); 
+    rc += Resolve(); 
+    rc += Resolve_setenvvar(); 
+    rc += Resolve_setenvmap(); 
+    rc += ResolveToken1(); 
+    rc += Resolve1(); 
+    rc += _Check(); 
+    rc += Write(); 
+    //rc += WriteIntoInvokingDirectory();   // comment as leaves droppings
+
+    return rc ; 
+}
+
+
+int spath_test::Main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "Resolve_defaultOutputPath" ); 
+    int rc = 0 ; 
+    if(     strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc = Resolve_defaultOutputPath();
+    else if(strcmp(TEST, "Resolve_with_undefined_token")==0) rc = Resolve_with_undefined_token();
+    else if(strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc = Resolve_with_undefined_TMP();
+    else if(strcmp(TEST, "Resolve_inline")==0) rc = Resolve_inline();
+    else if(strcmp(TEST, "ResolveToken")==0) rc = ResolveToken();
+    else if(strcmp(TEST, "Resolve")==0) rc = Resolve();
+    else if(strcmp(TEST, "Exists")==0) rc = Exists();
+    else if(strcmp(TEST, "Exists2")==0) rc = Exists2();
+    else if(strcmp(TEST, "Basename")==0) Basename();
+    else if(strcmp(TEST, "Name")==0) rc = Name();
+    else if(strcmp(TEST, "Remove")==0) rc = Remove();
+    else if(strcmp(TEST, "IsTokenWithFallback")==0) rc = IsTokenWithFallback();
+    else if(strcmp(TEST, "ResolveTokenWithFallback")==0) rc = ResolveTokenWithFallback();
+    else if(strcmp(TEST, "_ResolveToken")==0) rc = _ResolveToken();
+    else if(strcmp(TEST, "Resolve")==0) rc = Resolve();
+    else if(strcmp(TEST, "Resolve_setenvvar")==0) rc = Resolve_setenvvar();
+    else if(strcmp(TEST, "Resolve_setenvmap")==0) rc = Resolve_setenvmap();
+    else if(strcmp(TEST, "ResolveToken1")==0) rc = ResolveToken1();
+    else if(strcmp(TEST, "Resolve1")==0) rc = Resolve1();
+    else if(strcmp(TEST, "_Check")==0) rc = _Check();
+    else if(strcmp(TEST, "Write")==0) rc = Write();
+    else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
+    else if(strcmp(TEST, "ALL")==0) rc = ALL();
+    return rc ; 
+}
 
 int main(int argc, char** argv)
 {
     return spath_test::Main(); 
 }
 
+/**
 
-// ~/opticks/sysrap/tests/spath_test.sh
+::
+
+     ~/opticks/sysrap/tests/spath_test.sh
+     TEST=ResolveToken ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve      ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve_setenvvar ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve_setenvmap ~/opticks/sysrap/tests/spath_test.sh
+       
+
+
+**/
+
 
 

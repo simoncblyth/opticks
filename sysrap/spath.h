@@ -280,13 +280,18 @@ inline char* spath::ResolveToken(const char* token)
 spath::_ResolveToken
 ----------------------
 
-The token "TMP" is special cased to resolve as /tmp/$USER/opticks
-when no TMP envvar is defined. 
-Examples of accepted tokens::
+Resolution of the below tokens are special cased when there 
+is no corresponding envvar.
 
-    TMP
-    $TMP
-    ${VERSION:-0}
++-------------------+-------------------------------------+---------------------------------------------------------------+
+|  token            |  resolves as                        | note                                                          |
++===================+=====================================+===============================================================+ 
+|  TMP              | /tmp/$USER/opticks                  | USER resolved in 2nd pass                                     | 
++-------------------+-------------------------------------+---------------------------------------------------------------+
+|  ExecutableName   | result of sproc::ExecutableName()   | "python.." can be replaced by value of OPTICKS_SCRIPT envvar  |
++-------------------+-------------------------------------+---------------------------------------------------------------+
+|  DefaultOutputDir | result of spath::DefaultOutputDir() | $TMP/GEOM/$GEOM/$ExecutableName                               |                                        
++-------------------+-------------------------------------+---------------------------------------------------------------+
 
 **/
 
@@ -313,8 +318,9 @@ inline char* spath::_ResolveToken(const char* token)
 spath::IsTokenWithFallback
 ---------------------------
 
-Bash style token with fallback::
+Bash style tokens with fallback::
 
+   ${VERSION:-0}
    ${U4Debug_SaveDir:-$TMP}   # original 
    {U4Debug_SaveDir:-$TMP}    # when arrives here from ResolveToken 
 
