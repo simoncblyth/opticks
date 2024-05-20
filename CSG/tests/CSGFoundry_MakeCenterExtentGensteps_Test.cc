@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 
     SEvt::Create_ECPU() ;
 
-    SSim::Create();   // this is creating (scontext)sctx : checking GPU 
+    SSim::Create();   
 
 
 

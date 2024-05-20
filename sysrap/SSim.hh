@@ -30,7 +30,6 @@ struct SBnd ;
 struct SPrd ; 
 struct stree ; 
 struct SScene ; 
-struct scontext ; 
 struct SPMT ; 
 
 #include <vector>

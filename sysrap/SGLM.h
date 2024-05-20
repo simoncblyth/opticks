@@ -607,6 +607,15 @@ void SGLM::cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned
     }
 }
 
+
+/**
+SGLM::key_pressed_action
+-------------------------
+
+Currently only from SGLFW::key_repeated
+
+**/
+
 void SGLM::key_pressed_action( unsigned modifiers )
 {
     float factor = SGLM_Modifiers::IsShift(modifiers) ? 5.f : 1.f ;   
