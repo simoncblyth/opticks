@@ -2090,7 +2090,7 @@ opticks-full-make()
 
     om-  
     cd $(om-home)
-    om-install
+    om-cleaninstall
     rc=$? 
     [ $rc -ne 0 ] && return $rc
 
@@ -2463,7 +2463,8 @@ opticks-prepare-InputPhotons()
     local msg="=== $FUNCNAME :"
     mkdir -p $HOME/.opticks/InputPhotons
     echo $msg used by some tests
-    $(opticks-home)/ana/input_photons.sh 
+
+    $(opticks-home)/ana/input_photons.sh
 }
 
 
