@@ -2458,13 +2458,28 @@ EON
 }
 
 
+
+opticks-prepare-InputPhotons-notes(){ cat << EON
+opticks-prepare-InputPhotons-notes
+------------------------------------
+
+opticks-prepare-InputPhotons is run during installation by opticks-full-prepare 
+so it is done just after the build and before opticks environment is setup.
+So it sets PYTHONPATH to opticks-fold which is the folder above opticks-home 
+in order to be able to import python modules from the source tree which 
+are needed to generate the input photons. 
+
+EON
+}
+
+
 opticks-prepare-InputPhotons()
 {
     local msg="=== $FUNCNAME :"
     mkdir -p $HOME/.opticks/InputPhotons
     echo $msg used by some tests
 
-    $(opticks-home)/ana/input_photons.sh
+    PYTHONPATH=$(opticks-fold) $(opticks-home)/ana/input_photons.sh
 }
 
 
