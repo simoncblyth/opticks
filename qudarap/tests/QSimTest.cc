@@ -711,6 +711,10 @@ int main(int argc, char** argv)
     LOG_IF(error, prd->rc != 0 )
         << " SPrd::rc NON-ZERO " << prd->rc 
         << " NOT ALL CONFIGURED BOUNDARIES ARE IN THE GEOMETRY "
+        << "\nprd.desc\n"
+        << prd->desc()
+        << "\nsim.desc\n"
+        << sim->desc()
         ;
     if(prd->rc != 0 ) return 1 ; 
 
