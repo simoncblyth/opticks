@@ -67,7 +67,7 @@ U4TreeCreateSSimTest::U4TreeCreateSSimTest(const G4VPhysicalVolume* world )
     sim(SSim::Create()),
     st(sim->tree),
     tr(world ? U4Tree::Create(st, world) : nullptr),
-    q_soname(ssys::getenvvar("GEOM", nullptr)),
+    q_soname(ssys::getenvvar("SONAME", nullptr)),
     q_lvid( q_soname ? st->find_lvid(q_soname, starting) : -1 ), 
     q_node( q_lvid > -1 ? st->pick_lvid_ordinal_node(q_lvid, q_lvid_ordinal ) : nullptr ),
     q_nd(q_lvid > -1 ? sn::GetLVRoot(q_lvid) : nullptr ),  
@@ -107,15 +107,25 @@ std::string U4TreeCreateSSimTest::desc(const char* label) const
     return str ; 
 }
 
+/**
+U4TreeCreateSSimTest::find_lvid
+--------------------------------
+
+HMM: with full GEOM the q_soname will not usually name an LV within the geom, 
+so this will fail. 
+
+**/
+
 
 int U4TreeCreateSSimTest::find_lvid() const 
 {
-    int rc = q_lvid > -1 ? 0 : 1 ; 
+    int rc = (q_soname == nullptr || q_lvid > -1  ) ? 0 : 1 ; 
     std::cout 
         << desc("U4TreeCreateSSimTest::find_lvid")
         << " rc " << rc 
         << "\n" 
         ; 
+
     return rc ; 
 }
 

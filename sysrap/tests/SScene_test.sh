@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash  
 usage(){ cat << EOU
 SScene_test.sh
 ===============
@@ -44,7 +44,11 @@ if [ ! -d "$TREE_FOLD/stree" ]; then
    exit 1
 fi 
 
-specs="$HOME/.opticks/GEOM/${GEOM}_framespec.txt $TREE_FOLD/framespec.txt"
+source $HOME/.opticks/GEOM/GEOM.sh 
+spec0=$HOME/.opticks/GEOM/${GEOM}_framespec.txt
+spec1=$TREE_FOLD/framespec.txt
+
+specs="$spec0 $spec1"
 framespec=none
 for spec in $specs ; do 
    if [ -f "$spec" ]; then
@@ -56,7 +60,8 @@ export SScene__initFromTree_addFrames=${SScene__initFromTree_addFrames:-$framesp
 
 
 
-vars="BASH_SOURCE PWD stree_fold TREE_FOLD SCENE_FOLD bin framespec"
+vars="BASH_SOURCE PWD stree_fold TREE_FOLD SCENE_FOLD bin GEOM framespec spec0 spec1"
+vars="$vars SScene__initFromTree_addFrames" 
 
 defarg=info_build_run
 arg=${1:-$defarg}
@@ -64,8 +69,8 @@ arg=${1:-$defarg}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-opticks-  
-glm-
+glm_prefix=$OPTICKS_PREFIX/externals/glm/glm
+GLM_PREFIX=${GLM_PREFIX:-$glm_prefix}
 
 
 #export NPFold__load_DUMP=1
@@ -88,7 +93,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -DWITH_CHILD \
          -std=c++11 -lstdc++ -lm \
          -I.. -g \
-         -I$(glm-prefix) \
+         -I$GLM_PREFIX \
          -I${CUDA_PREFIX}/include \
          -o $bin
 
@@ -105,6 +110,5 @@ if [ "${arg/dbg}" != "$arg" ]; then
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
-
 
 exit 0 

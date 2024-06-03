@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 SGLFW_SOPTIX_Scene_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
@@ -122,9 +122,6 @@ export SOPTIX_PTX=$ptx
 # when using CMake generated ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx 
 # following pattern $OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" 
 
-opticks-
-glm-
-
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done 
@@ -211,14 +208,14 @@ arg=${1:-$defarg}
 if [ ! -d "$SCENE_FOLD/scene" ]; then
   echo $BASH_SOURCE : FATAL SCENE_FOLD $SCENE_FOLD does not contain scene
   echo $BASH_SOURCE : with newly created CSGFoundry/SSim there is no need for manual SCENE_FOLD as will be in CSGFoundry/SSim/scene  
-  arg=info  
+  #arg=info  
 fi 
 
 
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin SGLFW_FRAME"
+vars="BASH_SOURCE defarg arg CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin SGLFW_FRAME"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done

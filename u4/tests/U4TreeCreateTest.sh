@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 U4TreeCreateTest.sh  : loads geometry, runs U4Tree::Create populating stree.h, saves to FOLD  
 ==============================================================================================

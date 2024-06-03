@@ -1,20 +1,18 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 U4TreeCreateSSimTest.sh  : loads GEOM configured geometry, runs U4Tree::Create populating SSim/stree.h, saves to FOLD  
 ==============================================================================================================================
 
 ::
 
-    GEOM # edit according to geometry source 
-   ~/o/u4/tests/U4TreeCreateSSimTest.sh 
-   TEST=pick_lvid_ordinal_node ~/o/u4/tests/U4TreeCreateSSimTest.sh 
+    GEOM # edit geometry identifier
+    ~/o/u4/tests/U4TreeCreateSSimTest.sh 
+    TEST=pick_lvid_ordinal_node ~/o/u4/tests/U4TreeCreateSSimTest.sh 
 
 EOU
 }
 
 SDIR=$(dirname $(realpath $BASH_SOURCE))
-
-
 
 
 bin=U4TreeCreateSSimTest 

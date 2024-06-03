@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 cxr_min.sh : minimal executable and script for shakedown
 ============================================================
@@ -102,13 +102,16 @@ case $MOI in
    NEW_sChimneyAcrylic)    eye=-30,0,5   ; tmin=25  ; icam=1 ;; 
 esac
 
-
+look=0,0,0
+up=0,0,-1
 
 export WH=${WH:-$wh}
 export FULLSCREEN=${FULLSCREEN:-$fullscreen}
 
 export ESCALE=${ESCALE:-$escale}
 export EYE=${EYE:-$eye}
+export LOOK=${LOOK:-$look}
+export UP=${UP:-$up}
 export ZOOM=${ZOOM:-$zoom}
 export TMIN=${TMIN:-$tmin}
 export CAM=${CAM:-$cam}
@@ -140,7 +143,8 @@ logging(){
 cvd=1   # default 1:TITAN RTX
 export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
-[ -n "$HOP" ] && echo $BASH_SOURCE ENABLE FRAME_HOPPING WHICH NEEDS DEBUGGING  && export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
+#[ -n "$HOP" ] && echo $BASH_SOURCE ENABLE FRAME_HOPPING WHICH NEEDS DEBUGGING  && 
+export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
 
 
 
@@ -237,7 +241,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
        echo $BASH_SOURCE : dbg : delete prior LOG $LOG 
        rm "$LOG" 
    fi 
-   gdb__ $bin
+   typeset -f gdb__ &&  gdb__ $bin || gdb $bin 
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
 fi 
 

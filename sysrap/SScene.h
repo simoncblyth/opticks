@@ -66,6 +66,7 @@ struct SScene
 
     bool is_empty() const ; 
     std::string desc() const ;
+    std::string descDetail() const ;
     std::string descSize() const ;
     std::string descInstInfo() const ;
     std::string descFrame() const ;
@@ -109,6 +110,18 @@ inline SScene::SScene()
     dump(ssys::getenvbool("SScene_dump"))
 {
 }
+
+/**
+SScene::check
+---------------
+
+Checks:
+
+1. more than 0 frames, these should be added by SScene::addFrames
+2. consistency between meshmerge and meshgroup 
+
+**/
+
 
 inline void SScene::check() const 
 {
@@ -330,11 +343,22 @@ inline std::string SScene::desc() const
     ss << descSize() ; 
     ss << descInstInfo() ; 
     ss << descFrame() ; 
-    ss << descRange() ; 
     ss << "] SScene::desc \n" ; 
     std::string str = ss.str(); 
     return str ; 
 }
+
+inline std::string SScene::descDetail() const 
+{
+    std::stringstream ss ; 
+    ss << "[ SScene::detail \n" ;
+    ss << descRange() ; 
+    ss << "] SScene::detail \n" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 inline std::string SScene::descSize() const 
 {
@@ -581,6 +605,10 @@ inline void SScene::addFrames(const char* path, const stree* st)
             sfr f = st->get_frame(line.c_str()); 
             addFrame(f);  
         }
+    }
+    else
+    {
+        std::cout << "SScene::addFrames framespec path [" << ( path ? path : "-" ) << "] does not exist \n" ; 
     }
 
     // last frame that ensures always at least one  
