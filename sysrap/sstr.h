@@ -33,6 +33,10 @@ struct sstr
     static const char* TrimTrailing(const char* s);
     static const char* Trim(const char* s); // both leading and trailing 
 
+    static bool        HasTail(const std::vector<std::string>& names, const char* end="0x");   
+    static size_t      CountTail(const std::vector<std::string>& names, const char* end="0x");
+    static bool        HasTail(const std::string& name, const char* end="0x");
+
     static std::string StripTail(const std::string& name, const char* end="0x"); 
     static std::string StripTail(const char* name, const char* end="0x"); 
     static void        StripTail(       std::vector<std::string>& dst, const std::vector<std::string>& src, const char* end="0x");  
@@ -229,6 +233,27 @@ inline const char* sstr::Trim(const char* s)  // trim leading and trailing white
 
 
 
+   
+inline bool sstr::HasTail(const std::vector<std::string>& names, const char* end)
+{
+    size_t num_names = names.size() ; 
+    size_t num_tail = CountTail(names, end ); 
+    return num_names == num_tail ;    
+}
+
+inline size_t sstr::CountTail(const std::vector<std::string>& names, const char* end)
+{
+    size_t num_names = names.size() ; 
+    size_t count = 0 ; 
+    for(unsigned i=0 ; i < num_names ; i++) if(HasTail(names[i], end)) count += 1 ; 
+    return count ; 
+}
+
+inline bool sstr::HasTail(const std::string& name, const char* end)
+{
+    bool found = name.find(end) != std::string::npos ; 
+    return found ;  
+}
 
 inline std::string sstr::StripTail(const std::string& name, const char* end)  // static 
 {

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include "sstr.h"
+#include "ssys.h"
 
 std::vector<std::string> STRS = {{ "Hello__World", "Hello" , "Hello__" , "__World" }} ; 
 const char* BLANK = "" ; 
@@ -43,6 +44,72 @@ void test_chop()
 }
 
 
+void test_HasTail_0()
+{
+
+    const char* lines = R"LIT(
+0x
+0xc0ffee
+World0xc0ffee
+World0xdeadbeef
+World0xdead0xbeef
+)LIT";
+    std::stringstream ss(lines); 
+    std::string l ;
+    std::vector<std::string> v ; 
+    while (std::getline(ss, l, '\n'))
+    {
+        if(l.empty()) continue ; 
+        assert( sstr::HasTail(l) == true );     
+        v.push_back(l);    
+    }
+
+    std::cout << "test_HasTail_0 v.size " << v.size() << "\n" ; 
+    assert( sstr::HasTail(v) == true ); 
+}
+
+
+
+void test_HasTail_1()
+{
+
+    const char* lines = R"LIT(
+red
+green
+blue
+)LIT";
+    std::stringstream ss(lines); 
+    std::string l ;
+    std::vector<std::string> v ; 
+    while (std::getline(ss, l, '\n'))
+    {
+        if(l.empty()) continue ; 
+        assert( sstr::HasTail(l) == false );     
+        v.push_back(l);    
+    }
+
+    std::cout << "test_HasTail_1 v.size " << v.size() << "\n" ; 
+    assert( sstr::HasTail(v) == false ); 
+}
+
+
+
+void test_HasTail()
+{
+    test_HasTail_0(); 
+    test_HasTail_1(); 
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 void test_StripTail()
@@ -70,6 +137,8 @@ World0xdead0xbeef
             ; 
     }
 }
+
+
 
 
 struct fspec
@@ -423,28 +492,37 @@ void test_Concat()
 }
 
 
+struct sstr_test 
+{
+    static int Main(); 
+};  
+
+
+int sstr_test::Main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "HasTail"); 
+
+    if(     strcmp(TEST, "HasTail")==0 )    test_HasTail(); 
+    else if(strcmp(TEST, "chop")==0 )       test_chop(); 
+    else if(strcmp(TEST, "StripTail")==0 )  test_StripTail(); 
+    else if(strcmp(TEST, "SideBySide")==0 ) test_SideBySide(); 
+    else if(strcmp(TEST, "nullchar")==0 )   test_nullchar(true); 
+    else if(strcmp(TEST, "Write")==0 )      test_Write(); 
+    else if(strcmp(TEST, "ParseIntSpecList64")==0 )   test_ParseIntSpecList<int64_t>();
+    else if(strcmp(TEST, "ParseIntSpecList32")==0 )   test_ParseIntSpecList<int>();
+    else if(strcmp(TEST, "ParseIntSpecListDemo")==0 ) test_ParseIntSpecList_demo<int>();
+    else if(strcmp(TEST, "snprintf")==0 )             test_snprintf(); 
+    else if(strcmp(TEST, "TAG")==0 )                  test_TAG(); 
+    else if(strcmp(TEST, "StripTailUnique")==0 )      test_StripTail_Unique_0(); 
+    else if(strcmp(TEST, "Extract") == 0 )            test_Extract(); 
+    else if(strcmp(TEST, "Concat") == 0 )             test_Concat(); 
+
+    return 0 ; 
+}
 
 int main(int argc, char** argv)
 {
-    /*
-    test_chop(); 
-    test_StripTail(); 
-    test_SideBySide(); 
-    test_nullchar(true); 
-    test_Write(); 
-    test_empty(); 
-    test_ParseIntSpecList<int64_t>() ; 
-    test_ParseIntSpecList<int>() ; 
-    test_ParseIntSpecList_demo<int>() ; 
-    test_snprintf(); 
-    test_TAG(); 
-    test_StripTail_Unique_0(); 
-    test_Extract(); 
-    */
-    test_Concat(); 
-   
-
-    return 0 ; 
+    return sstr_test::Main() ; 
 } 
 // ~/opticks/sysrap/tests/sstr_test.sh
 

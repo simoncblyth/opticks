@@ -532,7 +532,7 @@ U4Tree::initSolids_Keys
 ------------------------
 
 The st->soname_raw which may have 0x suffixes are
-tail stripped and if needed uniqued wiyj _0 _1 suffix
+tail stripped and if needed uniqued with _0 _1 suffix
 to form st->soname
 
 **/

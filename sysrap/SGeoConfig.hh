@@ -3,8 +3,6 @@
 SGeoConfig
 ==============
 
-Crucially this may be used from CSG_GGeo_Convert::init to control
-skips made in the GGeo to CSG translation. 
 
 **/
 

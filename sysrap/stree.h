@@ -51,10 +51,12 @@ CSG_GGeo/CSG_GGeo_Convert.cc
     the sensor_id and sensor_index are incorporated into the CSGFoundry instances 
     (so this usage is "precache")
 
-    NB : THIS IS UNHOLY MIX OF OLD AND NEW : TO BE REPLACED
+    NB : THIS IS UNHOLY MIX OF OLD AND NEW : NOW  REPLACED
 
 ggeo/tests/GGeoLoadFromDirTest.cc
     dev of the interim stree GGeo integration for sensor info
+
+    NOW REPLACED
 
 ggeo/GGeo.cc
     GGeo:m_tree with setTree/getTree : but treated as foreign member, only GGeo::save saves it 
@@ -62,9 +64,13 @@ ggeo/GGeo.cc
     transforms : that is suspected but not confirmed to have been caused by a 
     stree parent pointer bug 
 
+    NOW REPLACED
+
 extg4/X4PhysicalVolume.cc
     X4PhysicalVolume::convertStructure creates stree.h and setTree into GGeo 
     X4PhysicalVolume::convertStructure_r collects snode.h and transforms into the GGeo/stree 
+
+    NOW REPLACED
 
 sysrap/SBnd.h
     SBnd::FillMaterialLine uses the boundary specs to convert stree.h mtname into mtline 
@@ -218,6 +224,7 @@ When SSim not in use can also use::
 #include "sfactor.h"
 #include "stran.h"
 #include "stra.h"
+#include "slist.h"
 
 #include "s_csg.h"
 #include "sn.h"
@@ -243,6 +250,7 @@ struct stree_standin
 
 struct stree
 {
+    static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ; 
     static constexpr const int MAXDEPTH = 15 ; // presentational limit only   
     static constexpr const int FREQ_CUT = 500 ;   // HMM GInstancer using 400   
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
@@ -254,6 +262,7 @@ struct stree
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* NDS_NOTE = "snode.h structural volume nodes" ;
     static constexpr const char* REM = "rem.npy" ;
+    static constexpr const char* TRI = "tri.npy" ;
     static constexpr const char* M2W = "m2w.npy" ;
     static constexpr const char* W2M = "w2m.npy" ;
     static constexpr const char* GTD = "gtd.npy" ;  // GGeo transform debug, populated in X4PhysicalVolume::convertStructure_r 
@@ -300,6 +309,9 @@ struct stree
     static constexpr const char* INST_NIDX = "inst_nidx.npy" ; 
 
     int level ;                            // verbosity 
+    const char*      force_triangulate_solid ;  
+    std::vector<int> force_triangulate_lvid ; 
+
 
     std::vector<std::string> mtname ;       // unique material names
     std::vector<std::string> mtname_no_rindex ; 
@@ -324,6 +336,7 @@ struct stree
 
     std::vector<snode> nds ;               // snode info for all structural nodes, the volumes
     std::vector<snode> rem ;               // subset of nds with the remainder nodes
+    std::vector<snode> tri ;               // subset of nds which are configured to be force triangulated (expected to otherwise be remainder nodes)
     std::vector<std::string> digs ;        // per-node digest for all nodes  
     std::vector<std::string> subs ;        // subtree digest for all nodes
     std::vector<sfactor> factor ;          // small number of unique subtree factor, digest and freq  
@@ -525,6 +538,10 @@ struct stree
     static int Compare( const std::vector<int>& a, const std::vector<int>& b ) ; 
     static std::string Desc(const std::vector<int>& a, unsigned edgeitems=10 ) ; 
 
+    static void FindForceTriangulateLVID(std::vector<int>& lvid, const std::vector<std::string>& _sonames, const char* _force_triangulate_solid, char delim=','  );
+    std::string descForceTriangulateLVID() const ;  
+    bool        is_force_triangulate( int lvid ) const ; 
+
 
     void classifySubtrees();
     bool is_contained_repeat(const char* sub) const ; 
@@ -532,7 +549,8 @@ struct stree
     void sortSubtrees(); 
     void enumerateFactors(); 
     void labelFactorSubtrees(); 
-    void collectRemainderNodes();  // HMM: Nodes is misleading, in CSGFoundry lingo would be Prim
+    void findForceTriangulateLVID();  
+    void collectRemainderNodes();  
 
     void factorize(); 
 
@@ -647,6 +665,7 @@ Q: why empty NPFold material and surface instead of nullptr ?
 inline stree::stree()
     :
     level(ssys::getenvint("stree_level", 0)),
+    force_triangulate_solid(ssys::getenvvar(stree__force_triangulate_solid,nullptr)), 
     sensor_count(0),
     subs_freq(new sfreq),
     _csg(new s_csg),
@@ -698,6 +717,7 @@ inline std::string stree::desc_size(char div) const
        << " sensor_count " << sensor_count << div
        << " nds " << nds.size() << div
        << " rem " << rem.size() << div 
+       << " tri " << tri.size() << div 
        << " m2w " << m2w.size() << div
        << " w2m " << w2m.size() << div
        << " gtd " << gtd.size() << div
@@ -2699,6 +2719,55 @@ inline std::string stree::Desc(const std::vector<int>& a, unsigned edgeitems ) /
     return s ;
 }
 
+
+
+
+inline void stree::FindForceTriangulateLVID(std::vector<int>& lvid, const std::vector<std::string>& _soname, const char* _force_triangulate_solid, char delim  )  // static
+{
+    if(_force_triangulate_solid == nullptr) return ;
+
+    std::vector<std::string> force ;  
+    sstr::Split( _force_triangulate_solid, delim, force ); 
+    unsigned num_force = force.size(); 
+
+    for(unsigned i=0 ; i < num_force ; i++)
+    {
+        const char* f = force[i].c_str() ; 
+        int lv = slist::FindIndex(_soname, f );  
+        if(lv == -1) std::cerr << "stree::FindForceTriangulateLVID name not found [" << ( f ? f : "-" ) << "]\n" ; 
+        if(lv > -1) lvid.push_back(lv); 
+    }
+}
+
+
+
+inline std::string stree::descForceTriangulateLVID() const
+{
+    std::stringstream ss ; 
+    ss << "stree::descForceTriangulateLVID\n"
+       << " force_triangulate_solid [" << ( force_triangulate_solid ? force_triangulate_solid : "-" ) << "]\n"
+       << " force_triangulate_lvid.size  " << force_triangulate_lvid.size() << "\n"
+       << " soname.size  " << soname.size() << "\n"
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline bool stree::is_force_triangulate( int lvid ) const 
+{
+    return slist::Contains( force_triangulate_lvid, lvid );  
+}
+
+
+
+
+
+
+
+
+
+
+
 /**
 stree::classifySubtrees
 ------------------------
@@ -2983,14 +3052,46 @@ inline void stree::labelFactorSubtrees()
     if(level>0) std::cout << "] stree::labelFactorSubtrees " << std::endl ;
 }
 
+
+
+/**
+stree::findForceTriangulateLVID
+--------------------------------
+
+Uses the optional "stree__force_triangulate_solid" envvar list of unique solid names
+together with the list of all solid names *sonames* to form the 
+*force_triangulate_lvid* list of indices that is used by stree::is_force_triangulate 
+
+This is called from stree::factorize prior to stree::collectRemainderNodes
+
+**/
+
+
+inline void stree::findForceTriangulateLVID()
+{
+    FindForceTriangulateLVID(force_triangulate_lvid, soname, force_triangulate_solid, ',' ); 
+    std::cout << "stree::findForceTriangulateLVID\n" << descForceTriangulateLVID()  ;
+}
+
 inline void stree::collectRemainderNodes() 
 {
     assert( rem.size() == 0u ); 
+    assert( tri.size() == 0u ); 
+
     for(int nidx=0 ; nidx < int(nds.size()) ; nidx++)
     {
         const snode& nd = nds[nidx] ; 
         assert( nd.index == nidx ); 
-        if( nd.repeat_index == 0 ) rem.push_back(nd) ; 
+        bool do_force_triangulate = is_force_triangulate(nd.lvid) ; 
+        if( nd.repeat_index == 0 ) 
+        {
+            std::vector<snode>& dst = do_force_triangulate ? tri : rem  ; 
+            dst.push_back(nd) ; 
+        }
+        else
+        {
+            assert( do_force_triangulate == false && "force triangulate solid is currently only supported for remainder nodes" ); 
+        }  
     }
     if(level>0) std::cout << "stree::collectRemainderNodes rem.size " << rem.size() << std::endl ;
 }
@@ -3026,11 +3127,14 @@ collectRemainderNodes
 inline void stree::factorize()
 {
     if(level>0) std::cout << "[ stree::factorize " << std::endl ;
+
     classifySubtrees(); 
     disqualifyContainedRepeats();
     sortSubtrees(); 
     enumerateFactors(); 
     labelFactorSubtrees(); 
+
+    findForceTriangulateLVID();  
     collectRemainderNodes(); 
 
     if(level>0) std::cout << desc_factor() << std::endl ;
