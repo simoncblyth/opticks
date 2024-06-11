@@ -222,6 +222,7 @@ set(HEADERS
     SMap.hh
     SCount.hh
 
+    slist.h
     sfreq.h 
     snode.h
     stree.h 
