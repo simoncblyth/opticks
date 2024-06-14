@@ -92,8 +92,11 @@ cam=perspective
 #escale=asis
 escale=extent
 
+up=0,0,1   
+#up=0,0,-1    ## inverted is useful for PMT 
+
 case $MOI in 
-   TEST)                   eye=0,0.8,0   ; tmin=0.1 ; zoom=1.0 ;; 
+   TEST)                   eye=0,0.8,0   ; tmin=0.1 ; zoom=1.0   ; up=0,0,1 ;; 
    ALL)                    eye=0,2.0,0   ; tmin=1.75 ; zoom=2.0 ;; 
    PMT_20inch_veto:0:1000) eye=1,1,5     ; tmin=0.4  ;;
    NNVT:0:1000)            eye=1,0,5     ; zoom=2 ;;
@@ -103,7 +106,6 @@ case $MOI in
 esac
 
 look=0,0,0
-up=0,0,-1
 
 export WH=${WH:-$wh}
 export FULLSCREEN=${FULLSCREEN:-$fullscreen}
