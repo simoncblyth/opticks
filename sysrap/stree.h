@@ -251,6 +251,8 @@ struct stree_standin
 struct stree
 {
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ; 
+    static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ; 
+
     static constexpr const int MAXDEPTH = 15 ; // presentational limit only   
     static constexpr const int FREQ_CUT = 500 ;   // HMM GInstancer using 400   
     // subtree digests with less repeats than FREQ_CUT within the entire geometry 
@@ -311,6 +313,7 @@ struct stree
     int level ;                            // verbosity 
     const char*      force_triangulate_solid ;  
     std::vector<int> force_triangulate_lvid ; 
+    bool get_frame_dump ; 
 
 
     std::vector<std::string> mtname ;       // unique material names
@@ -417,19 +420,26 @@ struct stree
     sfreq* make_progeny_freq(int nidx) const ; 
     sfreq* make_freq(const std::vector<int>& nodes ) const ; 
 
+
+
     int  find_lvid(const char* soname_, bool starting=true  ) const ; 
-    void find_lvid_nodes_( std::vector<snode>& nodes, int lvid ) const ; 
-    void find_lvid_nodes(  std::vector<int>& nodes, int lvid ) const ; 
+
+    const std::vector<snode>* get_node_vector( char _src ) const ; // 'N':nds 'R':rem 'T':tri
+    void find_lvid_nodes_( std::vector<snode>& nodes, int lvid, char _src ) const ; 
+    void find_lvid_nodes(  std::vector<int>& nodes, int lvid, char _src ) const ; 
+
     void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting ) const ; 
     int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
 
 
-    const snode* pick_lvid_ordinal_node( int lvid, int ordinal ) const ; 
+    const snode* pick_lvid_ordinal_node( int lvid, int ordinal, char _src ) const ; 
     int pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
     int parse_spec(int& lvid, int& lvid_ordinal, int& repeat_ordinal, const char* q_spec ) const ; 
     int pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const ; 
     sfr get_frame(const char* q_spec ) const ; 
+    int get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
@@ -568,6 +578,9 @@ struct stree
     int      get_ridx_olvid(  unsigned ridx) const ; 
 
     int      get_num_ridx() const ;  
+    int      get_num_remainder() const ; 
+    int      get_num_triangulated() const ;
+    char     get_ridx_type(int ridx) const ;
 
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
     std::string desc_factor() const ; 
@@ -666,6 +679,7 @@ inline stree::stree()
     :
     level(ssys::getenvint("stree_level", 0)),
     force_triangulate_solid(ssys::getenvvar(stree__force_triangulate_solid,nullptr)), 
+    get_frame_dump(ssys::getenvbool(stree__get_frame_dump)), 
     sensor_count(0),
     subs_freq(new sfreq),
     _csg(new s_csg),
@@ -1419,22 +1433,64 @@ inline int stree::find_lvid(const char* q_soname, bool starting ) const
     return lvid ; 
 }
 
-inline void stree::find_lvid_nodes_( std::vector<snode>& nodes, int lvid ) const 
+
+
+
+inline const std::vector<snode>* stree::get_node_vector( char _src ) const
 {
-    for(unsigned i=0 ; i < nds.size() ; i++)
+    const std::vector<snode>* src = nullptr ; 
+    switch( _src )
     {
-        const snode& sn = nds[i] ; 
-        assert( int(i) == sn.index ); 
+        case 'N': src = &nds ; break ;   
+        case 'R': src = &rem ; break ;   
+        case 'T': src = &tri ; break ;   
+    }
+    return src ; 
+}
+
+
+/**
+stree::find_lvid_nodes_
+-------------------------
+
+Collect all snode from src vector nds/rem/tri which have the provided lvid shape into nodes vector. 
+
+**/
+
+inline void stree::find_lvid_nodes_( std::vector<snode>& nodes, int lvid, char _src ) const 
+{
+    const std::vector<snode>* src = get_node_vector(_src);  
+    for(unsigned i=0 ; i < src->size() ; i++)
+    {
+        const snode& sn = (*src)[i] ; 
+        if( _src == 'N' )
+        { 
+            assert( int(i) == sn.index ); 
+        }
         if(sn.lvid == lvid) nodes.push_back(sn) ; 
     }
 }
 
-inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid ) const 
+/**
+stree::find_lvid_nodes
+-----------------------
+
+Collect all snode::index from src vector nds/rem/tri which have the provided lvid shape into nodes vector. 
+NB this should correpond to the absolute nidx indices not the indices into the selected src (unless the 
+src is nds which corresponds to all nodes)
+
+**/
+
+inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid, char _src ) const 
 {
-    for(unsigned i=0 ; i < nds.size() ; i++)
+    const std::vector<snode>* src = get_node_vector(_src);  
+    for(unsigned i=0 ; i < src->size() ; i++)
     {
-        const snode& sn = nds[i] ; 
-        assert( int(i) == sn.index ); 
+        const snode& sn = (*src)[i] ; 
+        if( _src == 'N' )
+        { 
+            assert( int(i) == sn.index ); 
+        }
         if(sn.lvid == lvid) nodes.push_back(sn.index) ; 
     }
 }
@@ -1451,7 +1507,7 @@ stree::find_lvid_nodes
 inline void stree::find_lvid_nodes( std::vector<int>& nodes, const char* q_soname, bool starting ) const 
 {
     int lvid = find_lvid(q_soname, starting); 
-    find_lvid_nodes(nodes, lvid ); 
+    find_lvid_nodes(nodes, lvid, 'N' ); 
 }
 
 
@@ -1510,15 +1566,19 @@ inline int stree::find_lvid_node( const char* q_spec ) const
 stree::pick_lvid_ordinal_node
 -------------------------------
 
-1. collect indices of all snode with lvid   
-2. select the ordinal-th snode (-ve ordinal counts from back)
+1. collect indices of all snode (volumes) with lvid shape from the _src vector nds/rem/tri
+2. select the ordinal-th snode (-ve ordinal counts from back of the selected set)
 3. return pointer into the nds vector or nullptr 
 
+   * TODO check for  _src of rem/tri ? 
+
+
 **/
-inline const snode* stree::pick_lvid_ordinal_node( int lvid, int lvid_ordinal ) const 
+inline const snode* stree::pick_lvid_ordinal_node( int lvid, int lvid_ordinal, char _src  ) const 
 {
     std::vector<int> nn ; 
-    find_lvid_nodes( nn, lvid ); 
+    find_lvid_nodes( nn, lvid, _src ); 
+
     int num = nn.size() ;
     if( lvid_ordinal < 0 ) lvid_ordinal += num ; 
     bool valid =  lvid_ordinal > -1 && lvid_ordinal < num ; 
@@ -1540,7 +1600,7 @@ This is trying to repeat the MOI logic from CSGTarget::getInstanceTransform
 
 inline int stree::pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const 
 {
-    const snode* n = pick_lvid_ordinal_node(lvid, lvid_ordinal );   
+    const snode* n = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'N' );   
     if( n == nullptr ) return -1 ;   
 
     int q_gas_idx = n->repeat_index ;  // aka gas_idx
@@ -1549,6 +1609,29 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ord
 
     return inst_idx ; 
 }
+
+
+/**
+stree::parse_spec
+------------------
+
+Parse string of below form into lvid index by name lookup 
+from 1st field and integers lvid_ordinal repeat_ordinal from 2nd and 3rd::
+
+    Hama:0:0
+    NNVT:0:0
+    Hama:0:1000
+    NNVT:0:1000
+    sDeadWater:0:0
+    GZ1.A06_07_FlangeI_Web_FlangeII:0:0
+    GZ1.B06_07_FlangeI_Web_FlangeII:0:0
+    GZ1.A06_07_FlangeI_Web_FlangeII:15:0
+    GZ1.B06_07_FlangeI_Web_FlangeII:15:0
+        
+When no 2nd and 3rd field is provided eg with "sDeadWater" the
+ordinals default to 0. 
+
+**/
 
 
 inline int stree::parse_spec(
@@ -1596,8 +1679,12 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) co
 stree::get_frame
 ------------------
 
-Q: An instance encompasses multiple lv and multiple 
-   snode so which nidx is collected together with the inst
+1. parse_spec from q_spec get (lvid, lvid_ordinal, repeat_ordinal)
+
+
+
+Q: An instance may encompasses multiple lv (and multiple snode) 
+   so which nidx is collected together with the inst
    transforms into inst_nidx ? The outer one would be most useful. 
 
 A: By observation the outer instance node is collected into inst_nidx
@@ -1609,16 +1696,60 @@ inline sfr stree::get_frame(const char* q_spec ) const
     int lvid ; 
     int lvid_ordinal ;
     int repeat_ordinal ;
-    int rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
+    int parse_rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
 
-    if(rc != 0) std::cerr 
+    if(parse_rc != 0) std::cerr 
         << "stree::get_frame"
         << " FATAL parse_spec failed "
         << " q_spec [" << ( q_spec ? q_spec : "-" ) << "]"
+        << " parse_rc " << parse_rc
         << "\n"
         ;   
+    assert( parse_rc == 0 ); 
 
-    assert( rc == 0 ); 
+    sfr f ; 
+    f.set_name(q_spec); 
+
+
+    int get_rc = 0 ; 
+    if( repeat_ordinal == -1 )
+    {
+        get_rc = get_frame_remainder(f,  lvid, lvid_ordinal, repeat_ordinal );
+    }
+    else                                
+    {
+        get_rc = get_frame_instanced(f,  lvid, lvid_ordinal, repeat_ordinal );
+    }
+    assert( get_rc == 0 ); 
+    return f ; 
+}
+
+
+
+/**
+stree::get_frame_instanced
+----------------------------
+
+1. pick_lvid_ordinal_repeat_ordinal_inst_ gives ii from (lvid, lvid_ordinal, repeat_ordinal)
+
+   * for non-instanced *ii* "instance-index" will be zero 
+
+2. get_inst, get_iinst : lookup the instance transforms using *ii*
+
+   * for non-instanced will yield identity transforms
+
+3.  use inst_nidx and nds to get the snode for the ii
+
+   * for global that will be the outer world volume 
+
+4. get_prim_aabb : find bounding box of the snode by delving into 
+   the transformed CSG constituent nds for the node.lvid  
+
+
+**/
+
+inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const 
+{
     int ii = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
 
     const glm::tmat4x4<double>* m2w = get_inst(ii); 
@@ -1632,10 +1763,8 @@ inline sfr stree::get_frame(const char* q_spec ) const
     std::array<double,6> bb ; 
     get_prim_aabb( bb.data(), nd, nullptr ); 
 
-    bool dump = false ; 
-    if(dump) std::cout 
-        << "stree::get_frame"
-        << " q_spec " << q_spec
+    if(get_frame_dump) std::cout 
+        << "stree::get_frame_instanced"
         << "\n"
         << " lvid " << lvid
         << " soname[lvid] " << soname[lvid]
@@ -1643,7 +1772,6 @@ inline sfr stree::get_frame(const char* q_spec ) const
         << "\n"
         << " lvid_ordinal " << lvid_ordinal
         << " repeat_ordinal " << repeat_ordinal
-        << " rc " << rc
         << " ii " << ii 
         << " nidx " << nidx 
         << "\n"
@@ -1659,19 +1787,113 @@ inline sfr stree::get_frame(const char* q_spec ) const
     // because there are multiple lv within the instance 
     // and the access technique goes via the gas_idx ? 
 
-    assert( nd.repeat_ordinal == repeat_ordinal ); 
+    //assert( nd.repeat_ordinal == repeat_ordinal ); 
+    // not so for globals
 
-    sfr f ;
     // TODO: aux0/1/2 arrange layout of integers
 
-    f.set_name(q_spec); 
     s_bb::CenterExtent( f.ce_data(), bb.data() ); 
 
     f.m2w = *m2w ; 
     f.w2m = *w2m ; 
 
-    return f ; 
+    return 0 ;  
 }
+
+
+
+/**
+WIP stree::get_frame_remainder
+--------------------------------
+
+Currently global remainder nodes just yield the world frame, 
+which is not useful for targetting.  
+
+TODO: bring over the approach for globals from MOI targetting.
+At CSG level this was handled by::
+
+    CSGTarget::getFrameComponents
+    CSGTarget::getGlobalCenterExtent
+    CSGImport::importSolidRemainder
+
+The info is definitely here, just have different access
+here at stree level.  
+
+* look inside rem snode for the specified (lvid, lvid_ordinal) ?
+
+**/
+
+inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const 
+{
+    assert( repeat_ordinal == -1 ); // other -ve values could select special cases handling like RTP frame
+
+    const snode* _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'R' );   
+    if(_node == nullptr) return 1 ;     
+ 
+    const snode& node = *_node ; 
+
+    std::vector<const sn*> bds ; 
+    sn::GetLVNodesComplete(bds, lvid);   // many nullptr in unbalanced deep complete binary trees
+    int bn = bds.size();                 // binary nodes
+
+    std::vector<const sn*> lns ; 
+    sn::GetLVListnodes( lns, lvid );  
+    int num_sub_total = sn::GetChildTotal( lns );  
+
+    int ln = lns.size(); 
+    assert( ln == 0 ); // simplify initial impl  : see CSGImport::importPrim 
+
+
+    std::ostream* out = nullptr ;
+    std::array<double,6> bb = {} ;
+
+    for(int i=0 ; i < bn ; i++)
+    {
+        const sn* n = bds[i]; 
+        int  typecode = n ? n->typecode : CSG_ZERO ;
+        bool leaf = CSG::IsLeaf(typecode) ;
+        std::cout 
+            << " i " << std::setw(2) << i 
+            << " typecode " << typecode 
+            << " leaf " << ( leaf ? "Y" : "N" )
+            << "\n"
+            ;
+
+        std::array<double,6> n_bb ;
+        double* n_aabb = leaf ? n_bb.data() : nullptr ;
+        const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
+
+        if(leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
+    } 
+
+
+    if(get_frame_dump) std::cout 
+        << "stree::get_frame_remainder"
+        << "\n"
+        << " lvid " << lvid
+        << " soname[lvid] " << soname[lvid]
+        << " soname[node.lvid] " << ( soname[node.lvid] )
+        << "\n"
+        << " lvid_ordinal " << lvid_ordinal
+        << " repeat_ordinal " << repeat_ordinal
+        << "\n"
+        << " node.desc " << ( node.desc())  
+        << "\n"
+        << " bn " << bn
+        << "\n"
+        << " ln " << ln
+        << "\n"
+        << " bb \n" 
+        << s_bb::Desc( bb.data() )
+        << "\n"
+        ;
+
+    return 0 ;  
+}
+
+
+
+
 
 
 /**
@@ -2227,6 +2449,11 @@ Follow pattern of::
     CSGImport::importPrim_
     CSGImport::importNode 
 
+1. gets CSG constituent nds for the node.lvid with sn::GetLVNodesComplete
+2. combines the transformed constituent bounding box 
+
+HMM: THIS DOES NOT CONSIDER LISTNODE
+
 **/
 inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream* out ) const
 {
@@ -2480,12 +2707,14 @@ inline NPFold* stree::serialize() const
 
     NP* _nds = NPX::ArrayFromVec<int,snode>( nds, snode::NV ) ; 
     NP* _rem = NPX::ArrayFromVec<int,snode>( rem, snode::NV ) ; 
+    NP* _tri = NPX::ArrayFromVec<int,snode>( tri, snode::NV ) ; 
     NP* _m2w = NPX::ArrayFromVec<double,glm::tmat4x4<double>>( m2w, 4, 4 ) ; 
     NP* _w2m = NPX::ArrayFromVec<double,glm::tmat4x4<double>>( w2m, 4, 4 ) ; 
     NP* _gtd = NPX::ArrayFromVec<double,glm::tmat4x4<double>>( gtd, 4, 4 ) ; 
 
     fold->add( NDS, _nds ); 
     fold->add( REM, _rem );
+    fold->add( TRI, _tri );
     fold->add( M2W, _m2w );
     fold->add( W2M, _w2m );
     fold->add( GTD, _gtd );
@@ -2619,6 +2848,7 @@ inline void stree::import(const NPFold* fold)
 
     ImportArray<snode, int>( nds,                  fold->get(NDS) );
     ImportArray<snode, int>( rem,                  fold->get(REM) ); 
+    ImportArray<snode, int>( tri,                  fold->get(TRI) ); 
     ImportArray<glm::tmat4x4<double>, double>(m2w, fold->get(M2W) ); 
     ImportArray<glm::tmat4x4<double>, double>(w2m, fold->get(W2M) ); 
     ImportArray<glm::tmat4x4<double>, double>(gtd, fold->get(GTD) ); 
@@ -3196,8 +3426,65 @@ inline int stree::get_ridx_olvid(unsigned ridx) const
 
 inline int stree::get_num_ridx() const 
 {
-    return 1 + get_num_factor() ; 
+    return get_num_remainder() + get_num_factor() + get_num_triangulated() ; 
 }
+inline int stree::get_num_remainder() const 
+{
+    //return rem.size() > 0 ? 1 : 0 ;   // lots other places assume always have this 
+    return 1 ; 
+}
+inline int stree::get_num_triangulated() const 
+{
+    return tri.size() > 0 ? 1 : 0 ; 
+}
+
+/**
+stree::get_ridx_type
+---------------------
+
+Example with::
+
+    num_remainder   : 1
+    num_factor      : 3
+    num_triangulate : 1
+    num_ridx        : 5
+
+::
+
+    +-------+--------------------------------------------+--------------------------------------------------------+
+    |       |   lowest ridx                              |  highest ridx                                          |
+    +=======+============================================+========================================================+
+    | 4 + T | num_remainder + num_factor + 0             | num_remainder + num_factor + num_triangulate - 1       |
+    | 3 + F |                                            | num_remainder + num_factor - 1                         |
+    | 2 + F |                                            |                                                        |
+    | 1 + F | num_remainder + 0                          | num_remainder + num_factor -1                          |
+    | 0 + R |   0                                        | num_remainder - 1                                      |
+    +-------+--------------------------------------------+--------------------------------------------------------+
+
+**/
+
+
+inline char stree::get_ridx_type(int ridx) const
+{
+    int num_ridx = get_num_ridx();
+    int num_rem = get_num_remainder();
+    int num_fac = get_num_factor();
+    int num_tri = get_num_triangulated(); 
+
+    assert( num_ridx == num_rem + num_fac + num_tri );
+    assert( ridx < num_ridx );
+
+    int R[2] = { 0,                     num_rem - 1 } ;
+    int F[2] = { num_rem + 0,           num_rem + num_fac - 1 } ;
+    int T[2] = { num_rem + num_fac + 0, num_rem + num_fac + num_tri - 1 };
+
+    char type = '?' ;
+    if(      ridx >= R[0] && ridx <= R[1] ) type = 'R' ;
+    else if( ridx >= F[0] && ridx <= F[1] ) type = 'F' ;
+    else if( ridx >= T[0] && ridx <= T[1] ) type = 'T' ;
+    return type ; 
+}
+
 
 /**
 stree::get_factor_nodes : collect outer volume node indices of *idx* factor (0-based)
@@ -3205,29 +3492,29 @@ stree::get_factor_nodes : collect outer volume node indices of *idx* factor (0-b
 
 Q: Is factor idx 0 the global remainder OR is it the first instance factor ?
 A: First instance (judging by get_num_ridx, get_ridx_olvid) the remainder
-   is treated separately from the factors. 
+   is treated separately from the factors.
 
 Used by U4Tree::identifySensitiveInstances
 
 1. lookup the subtree digest for factor idx
 2. get nodes that match that substree digest
 
-As the factor digests are from the outer volume nodes 
-this provides node indices of the outer volumes of 
-the idx factor. 
+As the factor digests are from the outer volume nodes
+this provides node indices of the outer volumes of
+the idx factor.
 
 **/
 
-inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const 
+inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
 {
-    assert( idx < factor.size() ); 
-    const sfactor& fac = factor[idx]; 
-    std::string sub = fac.get_sub(); 
+    assert( idx < factor.size() );
+    const sfactor& fac = factor[idx];
+    std::string sub = fac.get_sub();
 
-    get_nodes(nodes, sub.c_str() );  
+    get_nodes(nodes, sub.c_str() );
 
-    bool consistent = int(nodes.size()) == fac.freq ; 
-    if(!consistent) std::cerr 
+    bool consistent = int(nodes.size()) == fac.freq ;
+    if(!consistent) std::cerr
         << "stree::get_factor_nodes INCONSISTENCY"
         << " nodes.size " << nodes.size()
         << " fac.freq " << fac.freq 

@@ -79,9 +79,9 @@ bin=/tmp/$name/$name
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-#base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
+base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
 #base=/tmp/$USER/opticks/U4TreeCreateTest 
-base=/data/blyth/opticks/U4TreeCreateTest
+#base=/data/blyth/opticks/U4TreeCreateTest
 
 export BASE=${BASE:-$base}
 
@@ -98,6 +98,7 @@ fi
 
 export stree_level=1 
 export FOLD=$BASE/stree
+export stree__get_frame_dump=1
 
 vars="BASH_SOURCE BASE FOLD opt"
 
@@ -122,7 +123,7 @@ if [ "${arg/build}" != "$arg" ]; then
           $SDIR/$name.cc \
           $SDIR/../snd.cc \
           $SDIR/../scsg.cc  \
-          -g -std=c++11 -lstdc++ \
+          -g -std=c++11 -lstdc++ -lm \
           -I$SDIR/.. \
           -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \
@@ -136,7 +137,7 @@ if [ "${arg/build}" != "$arg" ]; then
           $SDIR/../s_pa.cc \
           $SDIR/../sn.cc \
           $SDIR/../s_csg.cc  \
-          -g -std=c++11 -lstdc++ \
+          -g -std=c++11 -lstdc++ -lm \
           -I$SDIR/.. \
           -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \

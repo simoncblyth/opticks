@@ -68,7 +68,7 @@ inline void stree_load_test::get_combined_transform( int LVID, int NDID )
         ; 
 
     std::vector<snode> nodes ;  // structural volume nodes with the LVID, could be thousands
-    st->find_lvid_nodes_(nodes, LVID) ; 
+    st->find_lvid_nodes_(nodes, LVID, 'N') ; 
 
     int num_nodes = nodes.size(); 
     std::cout << " VOL " << st->desc_nodes_(nodes) ; 
@@ -195,7 +195,7 @@ inline void stree_load_test::pick_lvid_ordinal_node() const
         {
             int lvid = i ; 
             int lvid_ordinal = j ; 
-            const snode* n = st->pick_lvid_ordinal_node( lvid, lvid_ordinal ); 
+            const snode* n = st->pick_lvid_ordinal_node( lvid, lvid_ordinal, 'N' ); 
             std::cout 
                << "(" 
                << std::setw(4) << lvid 
@@ -315,7 +315,12 @@ inline void stree_load_test::get_frame() const
           "NNVT", 
           "NNVT:0", 
           "NNVT:0:0", 
-          "NNVT:0:1000" 
+          "NNVT:0:1000",
+          "sDeadWater:0:-1",
+          "GZ1.A06_07_FlangeI_Web_FlangeII:0:-1",
+          "GZ1.B06_07_FlangeI_Web_FlangeII:0:-1",
+          "GZ1.A06_07_FlangeI_Web_FlangeII:15:-1",
+          "GZ1.B06_07_FlangeI_Web_FlangeII:15:-1"
        }} ; 
     int num = v_spec.size(); 
     for(int i=0 ; i < num ; i++)
@@ -386,7 +391,7 @@ inline void stree_load_test::get_prim_aabb() const
 
 inline int stree_load_test::main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "get_frame_f4"); 
+    const char* TEST = ssys::getenvvar("TEST", "get_frame"); 
 
     int LVID = ssys::getenvint("LVID",  0); 
     int NDID = ssys::getenvint("NDID",  0); 
