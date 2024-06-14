@@ -142,6 +142,13 @@ CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
 }
 
 
+CSGSolid* CSGImport::importSolidTriangulated(int ridx, const char* rlabel)
+{
+    return nullptr ;      
+}
+
+
+
 
 /**
 CSGImport::importSolidFactor
