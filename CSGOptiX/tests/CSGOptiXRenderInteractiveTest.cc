@@ -60,6 +60,10 @@ int main(int argc, char** argv)
         scene = SScene::Load("$SCENE_FOLD");   
         fd->setOverrideScene(scene); 
     }
+    else
+    {
+        LOG(info) << "standard CSGFoundry::Load has scene : no need to kludge OverrideScene " ; 
+    }
 
 
     static const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;  
@@ -84,7 +88,7 @@ int main(int argc, char** argv)
             int wanted_frame_idx = gl.get_wanted_frame_idx() ;
             if(scene && !gm.has_frame_idx(wanted_frame_idx) )
             {
-                std::cout << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
+                //std::cout << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
                 sfr wfr = scene->getFrame(wanted_frame_idx) ; 
                 gm.set_frame(wfr);   
             }

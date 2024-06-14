@@ -586,6 +586,13 @@ Which is set for example from::
 3. for each line get sfr with stree::get_frame add to frame vector
 4. add last frame f0 fabricated from the ce of the first global mergedmesh 
 
+For integrated running a sensible place to configure this 
+is next to the setting of the output geometry directory::
+
+    export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
+    export SScene__initFromTree_addFrames=$HOME/.opticks/GEOM/${GEOM}_framespec.txt
+
+
 **/
 
 inline void SScene::addFrames(const char* path, const stree* st)
