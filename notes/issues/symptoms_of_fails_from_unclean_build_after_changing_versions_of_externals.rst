@@ -1,6 +1,22 @@
 symptoms_of_fails_from_unclean_build_after_changing_versions_of_externals
 =============================================================================
 
+Overview
+---------
+
+Update builds do not handle changes in the versions of externals 
+that could for example be triggered by env changes that cause the system xerces-c to 
+be built against as opposed to the controlled version. 
+
+::
+
+    opticks-full-make 
+
+
+
+
+Issue
+-------
 
 
 Build of GDXML fails with XercesC 3.2 version/linking issue::
