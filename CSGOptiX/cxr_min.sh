@@ -102,7 +102,17 @@ cam=perspective
 #escale=asis
 escale=extent
 
+traceyflip=0
 
+
+## HMM because the view config applies to all frames 
+## its a bit funny to set it depending on the MOI 
+
+if [ "$MOI" == "GZ1.A06_07_FlangeI_Web_FlangeII:0:-1" ]; then
+   tmin=0.1
+   traceyflip=1
+   eye=0,1,0
+fi 
 
 
 moi_elu()
@@ -131,6 +141,8 @@ export UP=${UP:-$up}
 export ZOOM=${ZOOM:-$zoom}
 export TMIN=${TMIN:-$tmin}
 export CAM=${CAM:-$cam}
+export TRACEYFLIP=${TRACEYFLIP:-$traceyflip}
+
 
 nameprefix=cxr_min_
 nameprefix=${nameprefix}_eye_${EYE}_

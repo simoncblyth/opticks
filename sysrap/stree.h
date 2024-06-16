@@ -1842,29 +1842,64 @@ inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int re
     //int num_sub_total = sn::GetChildTotal( lns );  
 
     int ln = lns.size(); 
-    assert( ln == 0 ); // simplify initial impl  : see CSGImport::importPrim 
+    assert( ln == 0 || ln == 1 ); // simplify initial impl  : see CSGImport::importPrim 
 
     std::ostream* out = nullptr ;
     std::array<double,6> bb = {} ;
+
+    std::vector<const sn*> subs ;
 
     for(int i=0 ; i < bn ; i++)
     {
         const sn* n = bds[i]; 
         int  typecode = n ? n->typecode : CSG_ZERO ;
-        bool leaf = CSG::IsLeaf(typecode) ;
-        std::cout 
-            << " i " << std::setw(2) << i 
-            << " typecode " << typecode 
-            << " leaf " << ( leaf ? "Y" : "N" )
-            << "\n"
-            ;
+
+        if(n && n->is_listnode())
+        {
+            // hmm subtracted holes will no contribute to bbox
+            int num_sub = n->child.size() ;
+            for(int j=0 ; j < num_sub ; j++)
+            {    
+                const sn* c = n->child[j]; 
+                subs.push_back(c); 
+            }
+        }
+        else
+        { 
+            bool leaf = CSG::IsLeaf(typecode) ;
+            std::cout 
+                << " i " << std::setw(2) << i 
+                << " typecode " << typecode 
+                << " leaf " << ( leaf ? "Y" : "N" )
+                << "\n"
+                ;
+
+            std::array<double,6> n_bb ;
+            double* n_aabb = leaf ? n_bb.data() : nullptr ;
+            const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
+
+            if(tv && leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
+        }
+    } 
+
+
+
+    // NOT FULLY TESTED : but it succeeds to do nothing with subtracted multiunion of holes (that becomes listnode)
+    int num_sub_total = subs.size(); 
+    for( int i=0 ; i < num_sub_total ; i++ )
+    {
+        const sn* n = subs[i];
+        bool leaf = CSG::IsLeaf(n->typecode) ;
+        assert(leaf); 
 
         std::array<double,6> n_bb ;
         double* n_aabb = leaf ? n_bb.data() : nullptr ;
         const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
 
         if(tv && leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
-    } 
+        // HMM does the complement message get thru to listnode subs ?  
+    }
+
 
 
     std::array<double,4> ce = {} ;
