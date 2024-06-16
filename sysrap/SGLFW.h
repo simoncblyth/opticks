@@ -153,7 +153,7 @@ T:toggle.tran
 U:toggle.norm
    for rasterized render toggle between wireframe and normal shading 
 V
-   -
+   [--traceyflip] invert vertical of the raytrace render, via Param.h signal to kernel 
 W
    (WASDQE) hold to change eyeshift, translate forwards 
 X
@@ -380,6 +380,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_O:      command("--tcam")           ; break ;  
         case GLFW_KEY_K:      command("--snap")           ; break ;  
         case GLFW_KEY_L:      command("--snap-inverted")  ; break ;  
+        case GLFW_KEY_V:      command("--traceyflip")     ; break ;  
         case GLFW_KEY_ESCAPE: command("--exit")           ; break ;  
     }
    
@@ -440,6 +441,7 @@ inline int SGLFW::command(const char* cmd)
     if(strcmp(cmd, "--tcam") == 0) tcam(); 
     if(strcmp(cmd, "--snap") == 0) snap(1); 
     if(strcmp(cmd, "--snap-inverted") == 0) snap(2); 
+    if(strcmp(cmd, "--traceyflip") == 0) traceyflip(); 
     return 0 ;  
 }
 

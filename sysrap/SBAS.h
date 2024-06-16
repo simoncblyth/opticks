@@ -24,6 +24,7 @@ struct SBAS
     static constexpr const char* ASIS_ = "asis" ;
     static int EGet(const char* ekey, const char* fallback);   
 
+    static int EGetInt(const char* ekey, const char* fallback);   
     static int AsInt(const char* str); 
     static const char* DescInt(int val); 
 };
@@ -65,6 +66,10 @@ inline int SBAS::Type(const char* name)
     if(strcmp(name,ASIS_) == 0 )       type = BAS_ASIS ;
     return type ;
 }
+
+
+
+
 
 
 

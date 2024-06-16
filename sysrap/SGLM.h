@@ -456,7 +456,7 @@ int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ;
 int        SGLM::FULLSCREEN  = EValue<int>(kFULLSCREEN,   "0") ; 
 int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis" 
 uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );  
-int        SGLM::TRACEYFLIP  = SBAS::EGet(kTRACEYFLIP,  "0") ; 
+int        SGLM::TRACEYFLIP  = ssys::getenvint(kTRACEYFLIP,  0 ) ; 
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }

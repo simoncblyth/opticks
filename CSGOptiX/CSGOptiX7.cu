@@ -190,11 +190,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
             static_cast<float>(idx.y)/static_cast<float>(dim.y)
             ) - 1.0f;
 
-    const bool yflip = false ;
-    if(yflip) d.y = -d.y ;
 
     const unsigned cameratype = params.cameratype ;  
-    const float3 dxyUV = d.x * params.U + d.y * params.V ; 
+    const float3 dxyUV = d.x * params.U + params.V * ( params.traceyflip ? -d.y : d.y ) ; 
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
     //                           cameratype 0u:perspective,                    1u:orthographic

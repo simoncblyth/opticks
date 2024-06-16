@@ -869,6 +869,8 @@ void CSGOptiX::prepareRenderParam()
     unsigned cameratype ; 
     float extent ; 
     float length ; 
+    int traceyflip ; 
+
 
     extent = sglm->fr.ce.w ; 
     eye = sglm->e ; 
@@ -878,6 +880,7 @@ void CSGOptiX::prepareRenderParam()
     tmin = sglm->get_near_abs() ; 
     tmax = sglm->get_far_abs() ; 
     cameratype = sglm->cam ; 
+    traceyflip = sglm->traceyflip ; 
     length = 0.f ; 
 
     if(!flight) 
@@ -910,6 +913,7 @@ void CSGOptiX::prepareRenderParam()
             << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
             << std::endl 
             << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
+            << std::setw(20) << " traceyflip " << traceyflip << std::endl 
             << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
             ;
 
@@ -923,7 +927,7 @@ void CSGOptiX::prepareRenderParam()
 
 
     params->setView(eye, U, V, W);
-    params->setCamera(tmin, tmax, cameratype ); 
+    params->setCamera(tmin, tmax, cameratype, traceyflip ); 
 
     LOG(level) << std::endl << params->desc() ; 
 

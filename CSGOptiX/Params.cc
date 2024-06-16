@@ -57,11 +57,12 @@ void Params::setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4
     W.z = W_.z ; 
 }
 
-void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_ )
+void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_ )
 {
     tmin = tmin_ ; 
     tmax = tmax_ ; 
     cameratype = cameratype_ ; 
+    traceyflip = traceyflip_ ; 
 }
 
 std::string Params::desc() const 
@@ -75,6 +76,7 @@ std::string Params::desc() const
        << std::setw(20) << " height " << std::setw(10) << height  << std::endl 
        << std::setw(20) << " depth " << std::setw(10) << depth  << std::endl 
        << std::setw(20) << " cameratype " << std::setw(10) << cameratype  << std::endl 
+       << std::setw(20) << " traceyflip " << std::setw(10) << traceyflip  << std::endl 
        << std::setw(20) << " origin_x " << std::setw(10) << origin_x  << std::endl 
        << std::setw(20) << " origin_y " << std::setw(10) << origin_y  << std::endl 
        << std::setw(20) << " tmin " << std::setw(10) << tmin  << std::endl 
@@ -128,6 +130,7 @@ Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
     height(0),
     depth(0),
     cameratype(0),
+    traceyflip(0),
     origin_x(0),
     origin_y(0),
     tmin(0.f),

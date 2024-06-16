@@ -55,6 +55,7 @@ struct Params
     uint32_t   depth;
     uint32_t   cameratype ; 
 
+    int32_t    traceyflip ; 
     int32_t    origin_x;
     int32_t    origin_y;
 
@@ -84,7 +85,7 @@ struct Params
 
     void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
     void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ );
-    void setCamera(float tmin_, float tmax_, unsigned cameratype_ ) ;
+    void setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_ ) ;
     void setRaygenMode(int raygenmode_ );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
 
