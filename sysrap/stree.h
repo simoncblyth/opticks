@@ -234,6 +234,7 @@ When SSim not in use can also use::
 #include "smatsur.h"
 #include "snam.h"
 #include "SBnd.h"
+#include "SCenterExtentFrame.h"
 
 // transitional ? 
 #include "sframe.h"
@@ -1838,11 +1839,10 @@ inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int re
 
     std::vector<const sn*> lns ; 
     sn::GetLVListnodes( lns, lvid );  
-    int num_sub_total = sn::GetChildTotal( lns );  
+    //int num_sub_total = sn::GetChildTotal( lns );  
 
     int ln = lns.size(); 
     assert( ln == 0 ); // simplify initial impl  : see CSGImport::importPrim 
-
 
     std::ostream* out = nullptr ;
     std::array<double,6> bb = {} ;
@@ -1863,9 +1863,20 @@ inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int re
         double* n_aabb = leaf ? n_bb.data() : nullptr ;
         const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
 
-        if(leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
+        if(tv && leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
     } 
 
+
+    std::array<double,4> ce = {} ;
+    s_bb::CenterExtent( ce.data(), bb.data() ); 
+    f.set_ce(ce.data() ); 
+
+    bool rtp_tangential = false ; 
+    bool extent_scale = false ; 
+    SCenterExtentFrame<double> cef(ce[0], ce[1], ce[2], ce[3], rtp_tangential, extent_scale ) ; 
+
+    f.m2w = cef.model2world ; 
+    f.w2m = cef.world2model ; 
 
     if(get_frame_dump) std::cout 
         << "stree::get_frame_remainder"

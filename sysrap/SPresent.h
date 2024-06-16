@@ -10,7 +10,7 @@
 
 
 template<typename T>
-std::string SPresent(const T* vv, unsigned n, const char* label, const char* mode )
+inline std::string SPresent(const T* vv, unsigned n, const char* label, const char* mode )
 {
     int lw = 15 ; 
     int w = 10 ; 
@@ -37,7 +37,7 @@ template<typename T> std::string SPresent(const glm::tvec4<T>&   v, const char* 
 template<typename T> std::string SPresent(const glm::tvec3<T>&   v, const char* label, const char* mode=nullptr ){ return SPresent(glm::value_ptr(v),  3, label, mode); }
 
 template<typename T>
-std::string SPresent(std::vector<glm::tvec4<T>>& vv )
+inline std::string SPresent(std::vector<glm::tvec4<T>>& vv )
 {
     int num_v = vv.size(); 
     std::stringstream ss ; 
@@ -46,7 +46,7 @@ std::string SPresent(std::vector<glm::tvec4<T>>& vv )
     return str ;  
 }
 
-std::string SPresent(std::vector<float4>& vv )
+inline std::string SPresent(std::vector<float4>& vv )
 {
     int num_v = vv.size(); 
     std::stringstream ss ; 

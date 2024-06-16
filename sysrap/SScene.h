@@ -623,6 +623,22 @@ inline void SScene::addFrames(const char* path, const stree* st)
     sfr f0 = sfr::MakeFromCE(_ce) ;
     f0.set_name("MakeFromCE0");  
     addFrame(f0);  
+
+
+
+    /**
+    // this is wrong place to do this, need to do from main 
+    // because want to easily change target
+
+    const char* MOI = ssys::getenvvar("MOI", nullptr); 
+    if(MOI)
+    {
+        sfr fm = st->get_frame(MOI); 
+        addFrame(fm); 
+    } 
+    **/
+
+
 }
 
 
@@ -639,6 +655,8 @@ SScene::getFrame
 ----------------
 
 Returns the *_idx* frame
+
+For argument _idx beyond available frames returns the last frame
 
 **/
 

@@ -159,6 +159,8 @@ private:
  public: 
     double render(const char* stem_=nullptr);   
     void   render_save(const char* stem_=nullptr); 
+    void   render_save_inverted(const char* stem_=nullptr); 
+    void   render_save_(const char* stem_=nullptr, bool inverted=false); 
 
     double simtrace(int eventID); 
     double simulate(int eventID); 
@@ -178,7 +180,8 @@ private:
     static std::string AnnotationTime( double dt, const char* extra=nullptr ); 
     static std::string Annotation( double dt, const char* bot_line, const char* extra=nullptr ); 
     const char* getDefaultSnapPath() const ; 
-    void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24);  // part of SRenderer protocol base
+    //void snap(const char* path=nullptr, const char* bottom_line=nullptr, const char* top_line=nullptr, unsigned line_height=24, bool inverted=false );  // part of SRenderer protocol base
+    void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height, bool inverted );  // part of SRenderer protocol base
 
 
 #ifdef WITH_FRAME_PHOTON

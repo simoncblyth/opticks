@@ -32,9 +32,11 @@ void SEventConfigTest::Desc()
 void SEventConfigTest::OutPath()
 {
     LOG(info); 
-    const char* path_0 = SEventConfig::OutPath("stem", 101, ".npy" ); 
-    const char* path_1 = SEventConfig::OutPath("local_reldir", "stem", 101, ".npy" ); 
-    const char* path_2 = SEventConfig::OutPath("snap", -1, ".jpg" );
+
+    bool unique = false ; 
+    const char* path_0 = SEventConfig::OutPath("stem", 101, ".npy", unique ); 
+    const char* path_1 = SEventConfig::OutPath("local_reldir", "stem", 101, ".npy", unique ); 
+    const char* path_2 = SEventConfig::OutPath("snap", -1, ".jpg", unique );
 
     LOG(info) << " SEventConfig::OutPath path_0 " << path_0 ; 
     LOG(info) << " SEventConfig::OutPath path_1 " << path_1 ; 

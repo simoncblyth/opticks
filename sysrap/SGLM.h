@@ -158,6 +158,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kFULLSCREEN = "FULLSCREEN" ; 
     static constexpr const char* kESCALE = "ESCALE" ; 
     static constexpr const char* kVIZMASK = "VIZMASK" ; 
+    static constexpr const char* kTRACEYFLIP = "TRACEYFLIP" ; 
 
     // static defaults, some can be overridden in the instance 
     static glm::ivec2 WH ; 
@@ -177,6 +178,7 @@ struct SYSRAP_API SGLM : public SCMD
     static int   FULLSCREEN ; 
     static int   ESCALE ; 
     static uint32_t VIZMASK ; 
+    static int   TRACEYFLIP ; 
 
 
     static void SetWH( int width, int height ); 
@@ -199,6 +201,7 @@ struct SYSRAP_API SGLM : public SCMD
     static void SetFULLSCREEN( const char* fullscreen ); 
     static void SetESCALE( const char* escale ); 
     static void SetVIZMASK( const char* vizmask ); 
+    static void SetTRACEYFLIP( const char* traceyflip ); 
 
 
     // querying of static defaults 
@@ -214,6 +217,7 @@ struct SYSRAP_API SGLM : public SCMD
     static const char* FULLSCREEN_Label() ; 
     static const char* ESCALE_Label() ; 
     static std::string VIZMASK_Label() ; 
+    static const char* TRACEYFLIP_Label() ; 
 
     static void Copy(float* dst, const glm::vec3& src ); 
 
@@ -234,6 +238,7 @@ struct SYSRAP_API SGLM : public SCMD
 
     void home(); 
     void tcam(); 
+    void toggle_traceyflip(); 
 
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
@@ -325,6 +330,7 @@ struct SYSRAP_API SGLM : public SCMD
     int  focal ;  
     int  fullscreen ; 
     uint32_t vizmask ; 
+    int   traceyflip ; 
 
 
     float nearfar_manual ; 
@@ -450,6 +456,7 @@ int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ;
 int        SGLM::FULLSCREEN  = EValue<int>(kFULLSCREEN,   "0") ; 
 int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis" 
 uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );  
+int        SGLM::TRACEYFLIP  = SBAS::EGet(kTRACEYFLIP,  "0") ; 
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -471,6 +478,7 @@ inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
 inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfar) ; }
 inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
 inline void SGLM::SetVIZMASK( const char* vizmask ){ VIZMASK = SBitSet::Value<uint32_t>(32, vizmask) ; }
+inline void SGLM::SetTRACEYFLIP( const char* traceyflip ){ TRACEYFLIP = SBAS::AsInt(traceyflip) ; }
 
 
 inline int SGLM::Width(){  return WH.x ; }
@@ -483,6 +491,7 @@ inline const char* SGLM::NEARFAR_Label(){ return SBAS::Name(NEARFAR) ; }
 inline const char* SGLM::FOCAL_Label(){   return SBAS::Name(FOCAL) ; }
 inline const char* SGLM::ESCALE_Label(){   return SBAS::Name(ESCALE) ; }
 inline std::string SGLM::VIZMASK_Label(){   return SBitSet::DescValue(VIZMASK) ; }
+inline const char* SGLM::TRACEYFLIP_Label(){  return SBAS::DescInt(TRACEYFLIP) ; }
 
 inline void SGLM::Copy(float* dst, const glm::vec3& src )
 {
@@ -525,6 +534,7 @@ inline SGLM::SGLM()
     focal(FOCAL),
     fullscreen(FULLSCREEN),
     vizmask(VIZMASK),
+    traceyflip(TRACEYFLIP),
     nearfar_manual(0.f),
     focal_manual(0.f),
 
@@ -646,7 +656,10 @@ void SGLM::tcam()
     cam = SCAM::Next(cam); 
 }
 
-
+void SGLM::toggle_traceyflip()
+{
+    traceyflip = !traceyflip ; 
+} 
 
 
 /**
@@ -711,6 +724,7 @@ void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
         if(     strcmp(op,"desc")==0) std::cout << gm->desc() << std::endl ;  
         else if(strcmp(op,"home")==0) gm->home();  
         else if(strcmp(op,"tcam")==0) gm->tcam();  
+        else if(strcmp(op,"traceyflip")==0) gm->toggle_traceyflip();  
         else
         {
             std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl; 

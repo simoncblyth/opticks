@@ -51,7 +51,9 @@ struct CSGOPTIX_API Frame
 public:
     Frame(int width_, int height_, int depth_, uchar4* d_pixel_=nullptr, float4* d_isect_=nullptr, quad4* d_fphoton_=nullptr ); 
     void setExternalDevicePixels(uchar4* _d_pixel );
-    void download(); 
+    void download_(bool flip_vertical); 
+    void download();           // with flip_vertical:true
+    void download_inverted();  // with flip_vertical:false
     void annotate( const char* bottom_line=nullptr, const char* top_line=nullptr, int line_height=24  );
     void snap(const char* path ); 
 

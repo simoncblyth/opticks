@@ -130,11 +130,11 @@ I
 J
    -
 K
-   save screen shot
+   save screen shot [--snap]
 L
-   -
+   save Y inverted screen shot [--snap-inverted]
 M
-   -
+   try to target the MOI envvar configured frame (-1?)
 N
    toggle.tmin change near by moving cursor vertically 
 O
@@ -169,7 +169,7 @@ Z:toggle.zoom
 
     SGLM& gm ; 
     int wanted_frame_idx ; 
-    bool wanted_snap ; 
+    int wanted_snap ; 
 
     int width ; 
     int height ; 
@@ -213,9 +213,9 @@ Z:toggle.zoom
 
 
 
-    void snap(); 
-    void set_wanted_snap(bool w); 
-    bool get_wanted_snap() const ;
+    void snap(int w); 
+    void set_wanted_snap(int w); 
+    int get_wanted_snap() const ;
 
 
     void key_repeated(unsigned key); 
@@ -233,6 +233,7 @@ Z:toggle.zoom
     void home(); 
     void _desc(); 
     void tcam(); 
+    void traceyflip(); 
     static std::string FormCommand(const char* token, float value); 
 
     void getWindowSize();
@@ -365,6 +366,8 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_8:
         case GLFW_KEY_9:
                               numkey_pressed(key - GLFW_KEY_0) ; break ; 
+        case GLFW_KEY_M:
+                              set_wanted_frame_idx(-2)         ; break ;   // MOI target 
         case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom       ; break ; 
         case GLFW_KEY_N:      toggle.tmin = !toggle.tmin       ; break ; 
         case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
@@ -376,6 +379,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_H:      command("--home")           ; break ; 
         case GLFW_KEY_O:      command("--tcam")           ; break ;  
         case GLFW_KEY_K:      command("--snap")           ; break ;  
+        case GLFW_KEY_L:      command("--snap-inverted")  ; break ;  
         case GLFW_KEY_ESCAPE: command("--exit")           ; break ;  
     }
    
@@ -393,10 +397,10 @@ inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }
 inline int  SGLFW::get_wanted_frame_idx() const { return wanted_frame_idx ; }
 
 
-inline void SGLFW::snap(){ set_wanted_snap(true); }
+inline void SGLFW::snap(int w){ set_wanted_snap(w); }
 
-inline void SGLFW::set_wanted_snap(bool w){ wanted_snap = w ; }
-inline bool SGLFW::get_wanted_snap() const { return wanted_snap ; }
+inline void SGLFW::set_wanted_snap(int w){ wanted_snap = w ; }
+inline int SGLFW::get_wanted_snap() const { return wanted_snap ; }
 
 
 inline void SGLFW::key_repeated(unsigned key)
@@ -434,7 +438,8 @@ inline int SGLFW::command(const char* cmd)
     if(strcmp(cmd, "--home") == 0) home(); 
     if(strcmp(cmd, "--desc") == 0) _desc(); 
     if(strcmp(cmd, "--tcam") == 0) tcam(); 
-    if(strcmp(cmd, "--snap") == 0) snap(); 
+    if(strcmp(cmd, "--snap") == 0) snap(1); 
+    if(strcmp(cmd, "--snap-inverted") == 0) snap(2); 
     return 0 ;  
 }
 
@@ -467,6 +472,10 @@ inline void SGLFW::_desc()
 inline void SGLFW::tcam()
 {
     gm.command("--tcam"); 
+}
+inline void SGLFW::traceyflip()
+{
+    gm.command("--traceyflip"); 
 }
 
 
@@ -671,7 +680,7 @@ SGLFW::SGLFW
 inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
-    wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -1)),   
+    wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -2)),   
     wanted_snap(false),
     width(gm.Width()),
     height(gm.Height()),

@@ -1202,18 +1202,27 @@ CSGOptiX::render_save
 TODO: update file naming impl, currently using old inflexible approach 
 
 **/
-
 void CSGOptiX::render_save(const char* stem_)
+{
+    render_save_(stem_, false); 
+}
+void CSGOptiX::render_save_inverted(const char* stem_)
+{
+    render_save_(stem_, true); 
+}
+
+
+void CSGOptiX::render_save_(const char* stem_, bool inverted)
 {
     const char* outdir = SEventConfig::OutDir();
     const char* stem = stem_ ? stem_ : getRenderStemDefault() ;  // without ext 
-    const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg" );
+
+    bool unique = true ; 
+    const char* outpath = SEventConfig::OutPath(stem, -1, ".jpg", unique );
 
     LOG(LEVEL)
-          << SEventConfig::DescOutPath(stem, -1, ".jpg" );
+          << SEventConfig::DescOutPath(stem, -1, ".jpg", unique );
           ;  
- 
-
 
     sglm->addlog("CSGOptiX::render_snap", stem ); 
 
@@ -1237,7 +1246,8 @@ void CSGOptiX::render_save(const char* stem_)
 
     LOG(info) << outpath  << " : " << AnnotationTime(launch_dt, extra)  ; 
 
-    snap(outpath, botline, topline  );   
+    unsigned line_height = 24 ; 
+    snap(outpath, botline, topline, line_height, inverted  );   
 
     sglm->fr.save( outdir, stem ); 
     sglm->writeDesc( outdir, stem, ".log" ); 
@@ -1249,7 +1259,7 @@ CSGOptiX::snap : Download frame pixels and write to file as jpg.
 ------------------------------------------------------------------
 **/
 
-void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_line, unsigned line_height)
+void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_line, unsigned line_height, bool inverted )
 {
     const char* path = path_ ? SPath::Resolve(path_, FILEPATH ) : getDefaultSnapPath() ; 
     LOG(LEVEL) << " path " << path ; 
@@ -1265,7 +1275,14 @@ void CSGOptiX::snap(const char* path_, const char* bottom_line, const char* top_
     LOG(LEVEL) << " topline " << topline  ; 
 
     LOG(LEVEL) << "[ frame.download " ; 
-    framebuf->download(); 
+    if( inverted == false )
+    {
+        framebuf->download(); 
+    } 
+    else
+    {
+        framebuf->download_inverted(); 
+    } 
     LOG(LEVEL) << "] frame.download " ; 
 
     LOG(LEVEL) << "[ frame.annotate " ; 

@@ -76,9 +76,19 @@ export SCENE_FOLD=/tmp/SScene_test
 
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878
-eye=-1,-1,0
+#eye=-1,-1,0
+#eye=-1,0,0
+eye=1,0,0
+#eye=0,-1,0
 #eye=-1,-1,3
 #eye=-1,-1,3
+
+look=0,0,0
+
+up=0,0,1   
+#up=0,0,-1    ## inverted is useful for PMT 
+
+
 
 
 wh=2560,1440
@@ -87,25 +97,29 @@ fullscreen=1
 zoom=1
 tmin=0.5
 cam=perspective
-#cam=orthographic
+#cam=orthographic   # needs work to set param to make view start closer to perspective 
 
 #escale=asis
 escale=extent
 
-up=0,0,1   
-#up=0,0,-1    ## inverted is useful for PMT 
 
-case $MOI in 
-   TEST)                   eye=0,0.8,0   ; tmin=0.1 ; zoom=1.0   ; up=0,0,1 ;; 
-   ALL)                    eye=0,2.0,0   ; tmin=1.75 ; zoom=2.0 ;; 
-   PMT_20inch_veto:0:1000) eye=1,1,5     ; tmin=0.4  ;;
-   NNVT:0:1000)            eye=1,0,5     ; zoom=2 ;;
-   UP_sChimneyAcrylic)     eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
-   sChimneyAcrylic*)       eye=-10,0,0   ; tmin=0.1 ; zoom=0.5 ;; 
-   NEW_sChimneyAcrylic)    eye=-30,0,5   ; tmin=25  ; icam=1 ;; 
-esac
 
-look=0,0,0
+
+moi_elu()
+{
+   : MOI controlled elu little sense now ? 
+    case $MOI in 
+       TEST)                   eye=0,0.8,0   ; tmin=0.1 ; zoom=1.0   ; up=0,0,1 ;; 
+       ALL)                    eye=0,2.0,0   ; tmin=1.75 ; zoom=2.0 ;; 
+       PMT_20inch_veto:0:1000) eye=1,1,5     ; tmin=0.4  ;;
+       NNVT:0:1000)            eye=1,0,5     ; zoom=2 ;;
+       UP_sChimneyAcrylic)     eye=-10,0,-30 ; tmin=0.1 ; zoom=0.5 ;; 
+       sChimneyAcrylic*)       eye=-10,0,0   ; tmin=0.1 ; zoom=0.5 ;; 
+       NEW_sChimneyAcrylic)    eye=-30,0,5   ; tmin=25  ; icam=1 ;; 
+    esac
+}
+
+
 
 export WH=${WH:-$wh}
 export FULLSCREEN=${FULLSCREEN:-$fullscreen}
@@ -147,7 +161,7 @@ export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 #[ -n "$HOP" ] && echo $BASH_SOURCE ENABLE FRAME_HOPPING WHICH NEEDS DEBUGGING  && 
 export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
-
+export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
 
 
 if [ -n "$TRIMESH" ]; then 
@@ -184,7 +198,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM TMIN EYE LOOK ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
+vars="GEOM MOI TMIN EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CVD CUDA_VISIBLE_DEVICES"
 
 
 

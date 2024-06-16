@@ -99,7 +99,7 @@ This is invoked from CSGOptiX::snap
 The vectors are resized to num_pixels before the copy. 
 
 **/
-void Frame::download()
+void Frame::download_(bool flip_vertical)
 {
     if(d_pixel)   QU::Download<uchar4>(pixel, d_pixel, num_pixels ); 
     if(d_isect)   QU::Download<float4>(isect, d_isect, num_pixels ); 
@@ -109,10 +109,17 @@ void Frame::download()
 
     if(d_pixel) 
     {
-        bool flip_vertical = true ; 
         img->setData( getPixelData(), flip_vertical ); 
     }
+}
 
+void Frame::download()
+{
+    download_(true); 
+}
+void Frame::download_inverted()
+{
+    download_(false); 
 }
 
 

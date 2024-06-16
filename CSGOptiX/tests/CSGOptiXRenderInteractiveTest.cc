@@ -35,6 +35,7 @@ TODO:
 **/
 
 #include "ssys.h"
+#include "stree.h"
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
 #include "CSGFoundry.h"
@@ -67,30 +68,52 @@ int main(int argc, char** argv)
 
 
     static const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;  
+    static const char* _SGLM_DESC = "CSGOptiXRenderInteractiveTest__SGLM_DESC" ;  
     bool FRAME_HOP = ssys::getenvbool(_FRAME_HOP); 
+    bool SGLM_DESC = ssys::getenvbool(_SGLM_DESC); 
+
 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
 
     SGLM& gm = *(cx->sglm) ; 
     SGLFW gl(gm); 
     SGLFW_CUDA interop(gm); 
+
+    stree* st = fd->getTree(); 
+    assert(st);
+ 
+    const char* MOI = ssys::getenvvar("MOI", nullptr);
+    assert(MOI); 
+
+    sfr mfr = st->get_frame(MOI); 
+    mfr.set_idx(-2); 
+
+    std::cout << "before loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ; 
  
     while(gl.renderloop_proceed())
     {   
         gl.renderloop_head();
 
-        
-
         if(FRAME_HOP)
         {
-            // DEBUG NEEDED : FRAME BOOKMARKS NOT GETTING EXPECTED LOCATIONS 
-            // SHOULD BE EASIER WHEN CAN CONVERT GEOMETRY
-            int wanted_frame_idx = gl.get_wanted_frame_idx() ;
-            if(scene && !gm.has_frame_idx(wanted_frame_idx) )
+            int wanted_frame_idx = gl.get_wanted_frame_idx() ; // -2 until press number key 0-9, back to -2 when press M  
+            if(!gm.has_frame_idx(wanted_frame_idx) )
             {
-                //std::cout << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
-                sfr wfr = scene->getFrame(wanted_frame_idx) ; 
-                gm.set_frame(wfr);   
+                std::cout << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
+                if( wanted_frame_idx == -2 )
+                { 
+                    gm.set_frame(mfr);  
+                    if(SGLM_DESC) std::cout 
+                         << _SGLM_DESC << "\n"  
+                         << gm.desc() 
+                         ; 
+                }
+                else if( wanted_frame_idx >= 0 )
+                { 
+                    assert(scene); 
+                    sfr wfr = scene->getFrame(wanted_frame_idx) ; 
+                    gm.set_frame(wfr);   
+                }
             }
         }
 
@@ -100,11 +123,16 @@ int main(int argc, char** argv)
         cx->setExternalDevicePixels(d_pixels); 
         cx->render_launch(); 
 
-        if(gl.get_wanted_snap())
+        int wanted_snap = gl.get_wanted_snap();
+        if( wanted_snap == 1 || wanted_snap == 2 )
         {
             std::cout << " gl.get_wanted_snap calling cx->render_snap \n" ; 
-            cx->render_save();   
-            gl.set_wanted_snap(false); 
+            switch(wanted_snap)
+            {
+                case 1: cx->render_save()          ; break ; 
+                case 2: cx->render_save_inverted() ; break ; 
+            }   
+            gl.set_wanted_snap(0); 
         }
 
         interop.output_buffer->unmap() ; 

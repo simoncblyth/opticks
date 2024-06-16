@@ -42,7 +42,7 @@ Duties of the *snap* method
 class SRenderer {
    public:
       virtual double render() = 0 ;
-      virtual void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height ) = 0 ;  
+      virtual void snap(const char* path, const char* bottom_line, const char* top_line, unsigned line_height, bool inverted ) = 0 ;  
 
 };
 

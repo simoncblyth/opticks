@@ -724,7 +724,17 @@ const char* SEventConfig::OutDir()
     sdirectory::MakeDirs(dir,0); 
     return dir ; 
 }
-const char* SEventConfig::OutPath( const char* stem, int index, const char* ext )
+
+/**
+SEventConfig::OutPath
+----------------------
+
+unique:true
+    when outpath file exists already increment the index until a non-existing outpath is found
+
+**/
+
+const char* SEventConfig::OutPath( const char* stem, int index, const char* ext, bool unique )
 {
     const char* outfold = OutFold(); 
     const char* outname = OutName(); 
@@ -734,20 +744,66 @@ const char* SEventConfig::OutPath( const char* stem, int index, const char* ext 
         << " outname " << ( outname ? outname : "-" ) 
         << " stem " << ( stem ? stem : "-" ) 
         << " ext " << ( ext ? ext : "-" ) 
+        << " index " << index 
+        << " unique " << ( unique ? "Y" : "N" )
         ;
 
-    return SPath::Make( outfold, outname, stem, index, ext, FILEPATH); 
-    // HMM: an InPath would use NOOP to not create the dir
+    const char* outpath = SPath::Make( outfold, outname, stem, index, ext, FILEPATH); 
+
+    if(unique)
+    {
+        // increment until find non-existing path  
+        int offset = 0 ; 
+        while( SPath::Exists(outpath) && offset < 100 )
+        {
+            offset += 1 ; 
+            outpath = SPath::Make( outfold, outname, stem, index+offset, ext, FILEPATH); 
+        }
+    }
+
+
+    return outpath ; 
+   // HMM: an InPath would use NOOP to not create the dir
 }
 
-std::string SEventConfig::DescOutPath(  const char* stem, int index, const char* ext ) 
+const char* SEventConfig::OutPath( const char* reldir, const char* stem, int index, const char* ext, bool unique )
 {
-    const char* path = OutPath(stem, index, ext ) ; 
+    const char* outfold = OutFold(); 
+    const char* outname = OutName(); 
+    LOG(LEVEL) 
+        << " outfold " << ( outfold ? outfold : "-" ) 
+        << " outname " << ( outname ? outname : "-" ) 
+        << " stem " << ( stem ? stem : "-" ) 
+        << " ext " << ( ext ? ext : "-" ) 
+        << " index " << index 
+        << " unique " << ( unique ? "Y" : "N" )
+        ;
+
+    const char* outpath = SPath::Make( outfold, outname, reldir, stem, index, ext, FILEPATH); 
+
+    if(unique)
+    {
+        // increment until find non-existing path  
+        int offset = 0 ; 
+        while( SPath::Exists(outpath) && offset < 100 )
+        {
+            offset += 1 ; 
+            outpath = SPath::Make( outfold, outname, reldir, stem, index+offset, ext, FILEPATH); 
+        }
+    }
+    return outpath ; 
+}
+
+
+std::string SEventConfig::DescOutPath(  const char* stem, int index, const char* ext, bool unique) 
+{
+    const char* path = OutPath(stem, index, ext, unique ) ; 
     std::stringstream ss ; 
     ss << "SEventConfig::DescOutPath" << std::endl 
        << " stem " << ( stem ? stem : "-" )
        << " index " << index
        << " ext " << ( ext ? ext : "-" )
+       << " unique " << ( unique ? "Y" : "N" )
        << std::endl 
        << " OutFold " << OutFold() 
        << " OutName " << OutName() 
@@ -760,15 +816,13 @@ std::string SEventConfig::DescOutPath(  const char* stem, int index, const char*
 }
 
 
+
+
 const char* SEventConfig::OutDir(const char* reldir)
 {
     const char* dir = spath::Resolve( OutFold(), OutName(), reldir ); 
     sdirectory::MakeDirs(dir, 0); 
     return dir ; 
-}
-const char* SEventConfig::OutPath( const char* reldir, const char* stem, int index, const char* ext )
-{
-     return SPath::Make( OutFold(), OutName(), reldir, stem, index, ext, FILEPATH ); 
 }
 
 /**
