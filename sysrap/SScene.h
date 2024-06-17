@@ -149,6 +149,15 @@ Creating::
     (SMeshGroup)meshgroup
     (SMesh)meshmerge 
 
+
+TODO: adding frames at SScene::initFromTree 
+seems not the right place for it : would be better to do this from the
+main when rendering for simpler changing of framespec. Avoiding the need
+to rerun the integration in order to change framespec. 
+
+HMM: could do both adding dynamic framespec from some other path 
+(like framespec.txt in invoking directory) that get to with SHIFT+NUMBER_KEY ? 
+
 **/
 
 
