@@ -76,6 +76,7 @@ around it.
 #include "ssys.h"
 #include "SMesh.h"
 #include "SGLM.h"
+
 #include "SGLFW_Extras.h"
 #include "SGLFW_Program.h"
 #include "SGLFW_Mesh.h"
@@ -134,7 +135,7 @@ K
 L
    save Y inverted screen shot [--snap-inverted]
 M
-   try to target the MOI envvar configured frame (-1?)
+   hop to the MOI envvar configured frame [not supported by all renderers]
 N
    toggle.tmin change near by moving cursor vertically 
 O
@@ -162,6 +163,14 @@ Y
    experimental mouse control of eyerotation
 Z:toggle.zoom
    change zoom scaling by moving cursor vertically 
+
+
+0,1,2,3,4,5,6,7,8,9
+   hop to frame "num" or default if no such frame
+   
+0,1,2,3,4,5,6,7,8,9 + SHIFT
+   hop to frame "num + 10" using offset for SHIFT modifier
+   (hop to default frame if there is no frame with the index) 
 
 
 )LITERAL" ; 
@@ -206,7 +215,7 @@ Z:toggle.zoom
 
     void window_refresh();
     void key_pressed(unsigned key); 
-    void numkey_pressed(unsigned num); 
+    void numkey_pressed(unsigned num, unsigned modifiers); 
 
     void set_wanted_frame_idx(int _idx); 
     int  get_wanted_frame_idx() const ;
@@ -344,7 +353,7 @@ Maybe remove the toggle or do that in SGLM ?
 inline void SGLFW::key_pressed(unsigned key)
 {
     keys.key_pressed(key); 
-    //unsigned modifiers = keys.modifiers() ;
+    unsigned modifiers = keys.modifiers() ;
 
     getStartPos(); 
     std::cout 
@@ -365,7 +374,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_7:
         case GLFW_KEY_8:
         case GLFW_KEY_9:
-                              numkey_pressed(key - GLFW_KEY_0) ; break ; 
+                              numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ; 
         case GLFW_KEY_M:
                               set_wanted_frame_idx(-2)         ; break ;   // MOI target 
         case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom       ; break ; 
@@ -389,9 +398,21 @@ inline void SGLFW::key_pressed(unsigned key)
     std::cout << toggle.desc() << std::endl ; 
 }
 
-inline void SGLFW::numkey_pressed(unsigned num)
+inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
 {
-    std::cout << "SGLFW::numkey_pressed " << num << "\n" ; 
+    unsigned offset = SGLM_Modifiers::IsShift(modifiers) ? 10 : 0 ; 
+    unsigned num = _num + offset ; 
+
+    std::cout 
+        << "SGLFW::numkey_pressed"
+        << " _num " << _num 
+        << " modifiers " << modifiers 
+        << " SGLM_Modifiers::Desc(modifiers) " << SGLM_Modifiers::Desc(modifiers)
+        << " offset " << offset 
+        << " num " << num 
+        << "\n" 
+        ; 
+
     set_wanted_frame_idx(num); 
 }
 inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }

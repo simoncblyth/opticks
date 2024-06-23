@@ -78,9 +78,11 @@ export SCENE_FOLD=/tmp/SScene_test
 #eye=3.7878,3.7878,3.7878
 #eye=-1,-1,0
 #eye=-1,0,0
-#eye=1,0,0
+eye=1,0,0
+#eye=3,0,-1.5
+#eye=0,3,-1.5
 #eye=0,-1,0
-eye=-1,-1,3
+#eye=-1,-1,3
 #eye=-1,-1,3
 
 look=0,0,0
