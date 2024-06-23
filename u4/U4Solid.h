@@ -257,6 +257,26 @@ inline const char* U4Solid::EType(const G4VSolid* solid)  // static
     G4GeometryType _etype = solid->GetEntityType();  // G4GeometryType typedef for G4String
     return strdup(_etype.c_str()) ; 
 }
+
+
+/**
+U4Solid::Level
+----------------
+
+IsFlaggedName 
+   returns true for solid name strings that are present within the U4Solid__IsFlaggedName envvar value
+
+IsFlaggedType 
+   returns true for solid entityType strings that are present within the U4Solid__IsFlaggedType envvar value
+   for example::
+
+        export U4Solid__IsFlaggedType=G4MultiUnion
+
+
+
+**/
+
+
 inline int U4Solid::Level(int level_, const char* name, const char* entityType )   // static 
 {
     if(level_ > 0 ) return level_ ; 
@@ -671,6 +691,16 @@ inline void U4Solid::init_MultiUnion()
     int type = ( hint == CSG_DISCONTIGUOUS || hint == CSG_CONTIGUOUS ) ? hint : CSG_CONTIGUOUS ; 
 
     unsigned sub_num = muni->GetNumberOfSolids() ; 
+    if(level > 0 ) std::cout 
+        << "U4Solid::init_MultiUnion" 
+        << " name " << name 
+        << " hint " << hint
+        << " CSG::Name(hint) " << CSG::Name(hint)
+        << " type " << type
+        << " CSG::Name(type) " << CSG::Name(type)
+        << " sub_num " << sub_num
+        << "\n"
+        ;    
 
     std::vector<sn*> prims ; 
     for( unsigned i=0 ; i < sub_num ; i++)
@@ -681,7 +711,7 @@ inline void U4Solid::init_MultiUnion()
         glm::tmat4x4<double> xf(1.) ; 
         U4Transform::GetMultiUnionItemTransform( xf, muni, i ); 
 
-        if(level > 1 ) std::cout 
+        if(level > 0 ) std::cout 
             << "U4Solid::init_MultiUnion" 
             << name 
             << "\n" 
