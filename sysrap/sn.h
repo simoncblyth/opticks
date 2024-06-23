@@ -4186,6 +4186,16 @@ inline void sn::setAABB_LeafFrame()
 
         setBB(  -rmx,  -rmx,  z1,  rmx, rmx, z2 );
     }
+    else if( typecode == CSG_TORUS )
+    {
+        std::cout 
+            << "sn::setAABB_LeafFrame  "
+            << " typecode " << typecode 
+            << " CSG::Name(typecode) " << CSG::Name(typecode)
+            << " DO NOTHING PLACEHOLDER "   
+            << "\n"
+            ;
+    }
     else if( typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE )
     {
         setBB( 0. );

@@ -617,8 +617,13 @@ inline void SScene::addFrames(const char* path, const stree* st)
         int num_line = lines.size();
         for(int i=0 ; i < num_line ; i++)
         {
-            const std::string& line = lines[i]; 
-            sfr f = st->get_frame(line.c_str()); 
+            const char* line = lines[i].c_str() ;
+            if(line && strlen(line)>0 && line[0] == '#')
+            { 
+                std::cout << "SScene::addFrames skip framespec commented line [" << ( line ? line : "-" ) << "]\n" ; 
+                continue ;
+            }   
+            sfr f = st->get_frame(line); 
             addFrame(f);  
         }
     }

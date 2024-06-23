@@ -79,6 +79,7 @@ export SCENE_FOLD=/tmp/SScene_test
 #eye=-1,-1,0
 #eye=-1,0,0
 eye=1,0,0
+#eye=3,0,0
 #eye=3,0,-1.5
 #eye=0,3,-1.5
 #eye=0,-1,0
@@ -181,6 +182,8 @@ export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
 if [ -n "$TRIMESH" ]; then 
 
    #trimesh=2923:sWorld
+   #trimesh=3062:sWorld
+   trimesh=3218:sWorld
    #trimesh=5:PMT_3inch_pmt_solid
    #trimesh=9:NNVTMCPPMTsMask_virtual
    #trimesh=12:HamamatsuR12860sMask_virtual
@@ -191,11 +194,8 @@ if [ -n "$TRIMESH" ]; then
    #trimesh=130:sPanel
 
    #trimesh=4:VACUUM_solid
-
    #trimesh=3:Rock_solid 
-
-   trimesh=28:World_solid 
-
+   #trimesh=28:World_solid 
    #trimesh=2:VACUUM_solid 
 
    export OPTICKS_SOLID_TRIMESH=$trimesh

@@ -631,7 +631,7 @@ inline void SGLFW::cursor_moved_action()
     }
     else if(toggle.tmax)
     {
-        std::string cmd = FormCommand("--inc-tmax", dy ); 
+        std::string cmd = FormCommand("--inc-tmax", dy*100 ); 
         gm.command(cmd.c_str()) ;
     }
     /*
