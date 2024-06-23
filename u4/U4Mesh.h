@@ -161,7 +161,8 @@ U4Mesh::NumberOfRotationSteps
 
 Example envvar keys::
 
-   export U4Mesh__NumberOfRotationSteps_G4Torus=48
+   export U4Mesh__NumberOfRotationSteps_entityType_G4Torus=48
+   export U4Mesh__NumberOfRotationSteps_solidName_myTorus=48
 
 **/
 
