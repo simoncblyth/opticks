@@ -1868,6 +1868,7 @@ inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int re
         { 
             bool leaf = CSG::IsLeaf(typecode) ;
             std::cout 
+                << "stree::get_frame_remainder"
                 << " i " << std::setw(2) << i 
                 << " typecode " << typecode 
                 << " leaf " << ( leaf ? "Y" : "N" )

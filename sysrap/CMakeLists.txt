@@ -254,6 +254,7 @@ set(HEADERS
 
     st.h 
     stra.h 
+    sgeomtools.h
  
     spa.h
     sxf.h

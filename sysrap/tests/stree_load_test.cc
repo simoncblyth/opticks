@@ -41,6 +41,7 @@ struct stree_load_test
     void pick_lvid_ordinal_repeat_ordinal_inst_() const ; 
     void pick_lvid_ordinal_repeat_ordinal_inst() const ; 
     void get_frame() const ; 
+    void get_frame_MOI() const ; 
     void get_prim_aabb() const ; 
 
     int main(); 
@@ -331,6 +332,17 @@ inline void stree_load_test::get_frame() const
     }
 }
 
+inline void stree_load_test::get_frame_MOI() const 
+{
+    const char* MOI = ssys::getenvvar("MOI", nullptr);
+    if(!MOI) return ; 
+
+    sfr mfr = st->get_frame(MOI);
+    std::cout << "stree_load_test::get_frame_MOI\n" <<  MOI << "\n" << mfr << "\n"  ;  
+}
+
+
+
 inline void stree_load_test::get_prim_aabb() const 
 {
     std::cout << "stree_load_test::get_prim_aabb \n" ; 
@@ -391,7 +403,7 @@ inline void stree_load_test::get_prim_aabb() const
 
 inline int stree_load_test::main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "get_frame"); 
+    const char* TEST = ssys::getenvvar("TEST", "get_frame_MOI"); 
 
     int LVID = ssys::getenvint("LVID",  0); 
     int NDID = ssys::getenvint("NDID",  0); 
@@ -428,6 +440,10 @@ inline int stree_load_test::main()
     else if(strcmp(TEST, "get_frame") == 0)
     {
         get_frame();
+    }
+    else if(strcmp(TEST, "get_frame_MOI") == 0)
+    {
+        get_frame_MOI();
     }
     else if(strcmp(TEST, "get_prim_aabb") == 0)
     {

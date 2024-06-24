@@ -60,6 +60,7 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 //#include "s_csg.h" // DONT DO THAT : CIRCULAR 
 #include "st.h"      // complete binary tree math 
 #include "stra.h"    // glm transform utilities 
+#include "sgeomtools.h"
 
 #include "NPFold.h"
 
@@ -2274,6 +2275,24 @@ inline void sn::copyPA_data(double* dst) const
 
 inline void sn::setBB( double x0, double y0, double z0, double x1, double y1, double z1 )
 {
+    bool bad_bbox =  x0 >= x1 || y0 >= y1 || z0 >= z1  ;
+    if(bad_bbox) std::cerr 
+          << "sn::setBB BAD BOUNDING BOX "
+          << "\n"
+          << " x0 " << x0
+          << " x1 " << x1
+          << "\n"
+          << " y0 " << y0
+          << " y1 " << y1
+          << "\n"
+          << " z0 " << z0
+          << " z1 " << z1
+          << "\n"
+          ;
+
+    assert(!bad_bbox); 
+
+
     if( aabb == nullptr ) aabb = new s_bb ; 
     aabb->x0 = x0 ; 
     aabb->y0 = y0 ; 
@@ -2449,19 +2468,25 @@ inline sn* sn::Box3(double fx, double fy, double fz )  // static
 sn::Torus
 ----------
 
-BB is much too big as doesnt account for phi segmentation, 
-but as just want a placeholder and will use triangulated maybe
-no problem
+BB now accounts for phi range using sgeomtools.h based on G4GeomTools 
 
 **/
 
 inline sn* sn::Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg )
 {
-    double rsum = rtor+rmax ; 
+    double rext = rtor+rmax ; 
+    double rint = rtor-rmax ; 
+
+    double startPhi = startPhi_deg/180.*M_PI ; 
+    double deltaPhi = deltaPhi_deg/180.*M_PI ; 
+    double2 pmin ; 
+    double2 pmax ; 
+    sgeomtools::DiskExtent(rint, rext, startPhi, deltaPhi, pmin, pmax );  
 
     sn* nd = Create(CSG_TORUS) ; 
     nd->setPA( rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, 0.  );   
-    nd->setBB( -rsum, -rsum, -rmax, rsum, rsum, +rmax );    
+    nd->setBB( pmin.x, pmin.y, -rmax, pmax.x, pmax.y, +rmax );    
+
     return nd ;
 }
 
