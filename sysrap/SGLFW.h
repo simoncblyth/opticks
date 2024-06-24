@@ -400,7 +400,12 @@ inline void SGLFW::key_pressed(unsigned key)
 
 inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
 {
-    unsigned offset = SGLM_Modifiers::IsShift(modifiers) ? 10 : 0 ; 
+    bool with_shift = SGLM_Modifiers::IsShift(modifiers) ;
+    bool with_control = SGLM_Modifiers::IsControl(modifiers) ;
+    bool with_alt = SGLM_Modifiers::IsAlt(modifiers) ;
+    bool with_super = SGLM_Modifiers::IsSuper(modifiers) ;
+
+    unsigned offset = with_shift ? 10 : 0 ; 
     unsigned num = _num + offset ; 
 
     std::cout 
@@ -410,6 +415,10 @@ inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
         << " SGLM_Modifiers::Desc(modifiers) " << SGLM_Modifiers::Desc(modifiers)
         << " offset " << offset 
         << " num " << num 
+        << " with_shift " << with_shift
+        << " with_control " << with_control
+        << " with_alt " << with_alt
+        << " with_super " << with_super
         << "\n" 
         ; 
 
