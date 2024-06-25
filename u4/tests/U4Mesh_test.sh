@@ -30,16 +30,33 @@ solid=Torus
 #solid=Cons
 
 
+export U4Mesh__NumberOfRotationSteps_entityType_G4Torus=48
+export TITLE="U4Mesh_test.sh U4Mesh__NumberOfRotationSteps_entityType_G4Torus $U4Mesh__NumberOfRotationSteps_entityType_G4Torus "
+
+
 # moving away from these 
 #clhep-
 #g4-
 
 get-cmake-prefix(){ echo $CMAKE_PREFIX_PATH | tr ":" "\n" | grep $1 ; }
-g4-prefix(){    get-cmake-prefix Geant4 ; }
-clhep-prefix(){ get-cmake-prefix CLHEP ; }
+
+if [ "$(uname)" == "Darwin" ]; then
+    g4-prefix(){    get-cmake-prefix g4 ; }
+    g4-libdir(){    echo $(g4-prefix)/lib ; }
+    clhep-prefix(){ get-cmake-prefix clhep ; }
+else
+    g4-prefix(){    get-cmake-prefix Geant4 ; }
+    g4-libdir(){    echo $(g4-prefix)/lib64 ; }
+    clhep-prefix(){ get-cmake-prefix CLHEP ; }
+fi 
 
 CLHEP_PREFIX=$(clhep-prefix)
 G4_PREFIX=$(g4-prefix)
+G4_LIBDIR=$(g4-libdir)
+
+if [ "$(uname)" == "Darwin" ]; then
+    export DYLD_LIBRARY_PATH=$CLHEP_PREFIX/lib:$G4_LIBDIR 
+fi 
 
 
 allsolid="Orb Box Tet Tubs Cons Torus"
@@ -63,7 +80,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -I$HOME/opticks/sysrap \
          -I$CLHEP_PREFIX/include \
          -I$G4_PREFIX/include/Geant4  \
-         -L$G4_PREFIX/lib64 \
+         -L$G4_LIBDIR \
          -L$CLHEP_PREFIX/lib \
          -lG4global \
          -lG4geometry \
