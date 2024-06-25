@@ -133,7 +133,7 @@ sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
  
-scene=0
+scene=1
 case ${SCENE:-$scene} in 
 0) scene_fold=/tmp/SScene_test ;;
 1) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
@@ -255,6 +255,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -DWITH_CHILD \
         -g -O0 -std=c++11 \
         -I$SYSRAP_DIR \
+        -I$OPTICKS_PREFIX/include/SysRap \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/include \
         -I$CUDA_PREFIX/include \

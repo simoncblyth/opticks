@@ -14,6 +14,8 @@ struct spath_test
 {
    static int Resolve_inline(); 
    static int Resolve_defaultOutputPath(); 
+   static int DefaultOutputPath();  
+
    static int Resolve_with_undefined_token();
    static int Resolve_with_undefined_TMP();
    static int IsTokenWithFallback(); 
@@ -38,6 +40,8 @@ struct spath_test
    static int _Check(); 
    static int Write(); 
    static int WriteIntoInvokingDirectory();
+
+
 
    static int ALL();  
    static int Main();  
@@ -66,6 +70,35 @@ int spath_test::Resolve_defaultOutputPath()
         ;
     return 0 ; 
 }
+
+
+
+int spath_test::DefaultOutputPath()
+{
+    const char* stem = "stem_" ; 
+    int index = 0 ; 
+    const char* ext = ".txt" ; 
+    bool unique = true ; 
+
+    const char* path = spath::DefaultOutputPath(stem, index, ext, unique); 
+
+    spath::MakeDirsForFile(path); 
+
+    const char* txt = "yo : hello from spath_test::DefaultOutputPath\n" ; 
+    sstr::Write(path, txt); 
+
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " path [" << ( path ? path : "-" ) 
+        << std::endl 
+        ; 
+
+    return 0 ; 
+}
+
+
+
+
 
 int spath_test::Resolve_with_undefined_token()
 {
@@ -421,11 +454,14 @@ int spath_test::WriteIntoInvokingDirectory()
 }
 
 
+
+
 int spath_test::ALL()
 {
     int rc = 0 ; 
 
     rc += Resolve_defaultOutputPath() ; 
+    //rc += DefaultOutputPath();      // comment as writes
     rc += Resolve_with_undefined_token();
     rc += Resolve_with_undefined_TMP();
     rc += Resolve_inline();
@@ -457,6 +493,7 @@ int spath_test::Main()
     const char* TEST = ssys::getenvvar("TEST", "Resolve_defaultOutputPath" ); 
     int rc = 0 ; 
     if(     strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc = Resolve_defaultOutputPath();
+    else if(strcmp(TEST, "DefaultOutputPath")==0) rc = DefaultOutputPath();
     else if(strcmp(TEST, "Resolve_with_undefined_token")==0) rc = Resolve_with_undefined_token();
     else if(strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc = Resolve_with_undefined_TMP();
     else if(strcmp(TEST, "Resolve_inline")==0) rc = Resolve_inline();
@@ -497,6 +534,7 @@ int main(int argc, char** argv)
      TEST=Resolve_setenvvar ~/opticks/sysrap/tests/spath_test.sh
      TEST=Resolve_setenvmap ~/opticks/sysrap/tests/spath_test.sh
        
+     TEST=DefaultOutputPath ~/opticks/sysrap/tests/spath_test.sh
 
 
 **/

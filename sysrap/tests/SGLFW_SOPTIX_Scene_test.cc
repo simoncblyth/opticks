@@ -59,6 +59,15 @@ int main()
         else
         { 
             glsc.render(); 
+
+            int wanted_snap = gl->get_wanted_snap();
+            if( wanted_snap == 1 || wanted_snap == 2 )
+            {
+                std::cout << "wanted_snap " << wanted_snap << "\n" ; 
+                bool yflip = wanted_snap == 1 ; 
+                gl->snap_local(yflip);  
+                gl->set_wanted_snap(0);
+            }  
         }
 
         gl->renderloop_tail();

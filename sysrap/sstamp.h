@@ -56,6 +56,8 @@ inline std::string sstamp::Format(int64_t t, const char* fmt)
     return str ; 
 }
 
+
+
 inline std::string sstamp::FormatInt(int64_t t, int wid ) // static
 {
     std::stringstream ss ; 

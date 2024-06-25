@@ -35,9 +35,15 @@ private:
     static char* ResolvePathGeneralized(const char* spec); 
 
     static char* DefaultTMP();
-    static char* DefaultOutputDir();
     static constexpr const char* _DefaultOutputDir = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
 
+public:
+    static char* DefaultOutputDir();
+    static std::string DefaultOutputName(const char* stem, int index, const char* ext); 
+    static const char* DefaultOutputPath(const char* stem, int index, const char* ext, bool unique); 
+
+
+private:
     static char* ResolveToken(const char* token); 
     static char* _ResolveToken(const char* token); 
     static bool  IsTokenWithFallback(const char* token); 
@@ -87,7 +93,8 @@ public:
     static bool Write(const char* txt, const char* path );
 private:
     static bool Write_( const char* str , const char* path ); 
-
+public:
+    static void MakeDirsForFile(const char* path); 
 
 };
 
@@ -247,6 +254,52 @@ inline char* spath::DefaultOutputDir()
 {
     return (char*)_DefaultOutputDir ; 
 }
+
+
+/**
+spath::DefaultOutputName
+---------------------------
+
+  +--------+-----------+
+  | arg    |  example  |
+  +========+===========+
+  |  stem  |   hello_  |
+  +--------+-----------+
+  | index  |     0     |
+  +--------+-----------+
+  |  ext   |  .jpg     |
+  +--------+-----------+
+
+Result : hello_00000.jpg 
+
+**/
+
+inline std::string spath::DefaultOutputName(const char* stem, int index, const char* ext)
+{
+    std::stringstream ss ; 
+    ss << stem << std::setfill('0') << std::setw(5) << index << ext ;  
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline const char* spath::DefaultOutputPath(const char* stem, int index, const char* ext, bool unique)
+{
+    const char* outfold = DefaultOutputDir();
+    std::string outname = DefaultOutputName(stem, index, ext); 
+    const char* outpath = Resolve(outfold, outname ); 
+    if(unique)
+    {
+        // increment until find non-existing path  
+        int offset = 0 ; 
+        while( Exists(outpath) && offset < 100 )
+        {
+            offset += 1 ; 
+            outname = DefaultOutputName(stem, index+offset, ext); 
+            outpath = Resolve( outfold, outname.c_str() ); 
+        }
+    }
+    return outpath ; 
+} 
 
 
 
@@ -680,6 +733,10 @@ inline bool spath::Write_( const char* str , const char* path )  // static
     return good ; 
 }
 
+inline void spath::MakeDirsForFile(const char* path)
+{
+    sdirectory::MakeDirsForFile(path) ; 
+}
 
 
 

@@ -626,6 +626,7 @@ set(WITH_SIMG YES)
 if(WITH_SIMG)
     list(APPEND HEADERS   stb_image.h  stb_image_write.h)   
     list(APPEND HEADERS   SIMG.h  )   
+    list(APPEND HEADERS   SIMG_Frame.h  )   
 endif()
 
 

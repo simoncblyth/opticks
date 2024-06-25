@@ -74,6 +74,8 @@ around it.
 #include "NPU.hh"
 
 #include "ssys.h"
+#include "spath.h"
+
 #include "SMesh.h"
 #include "SGLM.h"
 
@@ -89,7 +91,7 @@ around it.
 
 #include "SGLFW_Keys.h"
 
-
+#include "SIMG_Frame.h"
 
 
 struct SGLFW : public SCMD 
@@ -193,6 +195,7 @@ Z:toggle.zoom
     bool dump ; 
     int  _width ;  // on retina 2x width 
     int  _height ;
+    SIMG_Frame*  sif ; 
 
     // getStartPos
     double _start_x ; 
@@ -204,6 +207,7 @@ Z:toggle.zoom
 
     SGLFW_Toggle toggle = {} ; 
     SGLFW_Keys keys = {} ; 
+
 
 
     bool renderloop_proceed(); 
@@ -226,6 +230,10 @@ Z:toggle.zoom
     void set_wanted_snap(int w); 
     int get_wanted_snap() const ;
 
+    void download_pixels(); 
+    void init_sif(); 
+    void writeJPG(const char* path) const ; 
+    void snap_local(bool yflip); 
 
     void key_repeated(unsigned key); 
     void key_released(unsigned key); 
@@ -432,6 +440,58 @@ inline void SGLFW::snap(int w){ set_wanted_snap(w); }
 
 inline void SGLFW::set_wanted_snap(int w){ wanted_snap = w ; }
 inline int SGLFW::get_wanted_snap() const { return wanted_snap ; }
+
+
+/**
+SGLFW::download_pixels
+--------------------------
+
+After oglrap Pix
+
+https://www.khronos.org/opengl/wiki/GLAPI/glPixelStore
+
+**/
+
+inline void SGLFW::download_pixels()
+{
+    if(sif == nullptr) init_sif();  
+
+    assert( _width > 0 && _width == sif->width ) ; 
+    assert( _height > 0 && _height == sif->height ) ; 
+
+    glPixelStorei(GL_PACK_ALIGNMENT,1);   // byte aligned output
+    glReadPixels(0,0,_width,_height,GL_RGBA, GL_UNSIGNED_BYTE, sif->pixels );
+} 
+
+inline void SGLFW::init_sif()
+{
+    assert( _width > 0 ); 
+    assert( _height > 0 ); 
+    sif = new SIMG_Frame(_width, _height) ; 
+}
+inline void SGLFW::writeJPG(const char* path) const 
+{
+    std::cout << "SGLFW::writeJPG [" << ( path ? path : "-" ) << "]\n" ; 
+    assert(sif); 
+    sif->writeJPG(path); 
+}
+inline void SGLFW::snap_local(bool yflip)
+{
+    download_pixels(); 
+    if(yflip) sif->flipVertical();
+ 
+    const char* stem_default = "SGLFW__snap_local_" ; 
+    const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", stem_default ); 
+    // HMM: would be good to resolve datetime format string 
+
+    int index = 0 ; 
+    const char* ext = ".jpg" ;  
+    bool unique = true ;
+    const char* path = spath::DefaultOutputPath(stem, index, ext, unique); 
+    spath::MakeDirsForFile(path);
+
+    writeJPG(path);
+}
 
 
 inline void SGLFW::key_repeated(unsigned key)
@@ -724,6 +784,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     dump(false),
     _width(0),
     _height(0),
+    sif(nullptr),
     _start_x(0.),
     _start_y(0.),
     start_ndc(0.f,0.f),
