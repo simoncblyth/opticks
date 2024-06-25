@@ -475,15 +475,23 @@ inline void SGLFW::writeJPG(const char* path) const
     assert(sif); 
     sif->writeJPG(path); 
 }
+
+
+/**
+SGLFW::snap_local
+-----------------
+
+Default stem of nullptr leads to use of current datetime formatted 
+string of form sstamp::DEFAULT_TIME_FMT 
+
+**/
+
 inline void SGLFW::snap_local(bool yflip)
 {
     download_pixels(); 
     if(yflip) sif->flipVertical();
  
-    const char* stem_default = "SGLFW__snap_local_" ; 
-    const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", stem_default ); 
-    // HMM: would be good to resolve datetime format string 
-
+    const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", nullptr ); 
     int index = 0 ; 
     const char* ext = ".jpg" ;  
     bool unique = true ;

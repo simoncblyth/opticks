@@ -75,7 +75,10 @@ int spath_test::Resolve_defaultOutputPath()
 
 int spath_test::DefaultOutputPath()
 {
-    const char* stem = "stem_" ; 
+    //const char* stem = "stem_" ; 
+    //const char* stem = "%Y%m%d_" ; 
+    //const char* stem = "%Y%m%d_%H%M%S_" ; 
+    const char* stem = nullptr ; 
     int index = 0 ; 
     const char* ext = ".txt" ; 
     bool unique = true ; 

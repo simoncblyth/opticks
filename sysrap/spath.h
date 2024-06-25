@@ -20,6 +20,7 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 
 #include "sproc.h"
 #include "sdirectory.h"
+#include "sstamp.h"
 
 struct spath
 {
@@ -274,8 +275,11 @@ Result : hello_00000.jpg
 
 **/
 
-inline std::string spath::DefaultOutputName(const char* stem, int index, const char* ext)
+
+
+inline std::string spath::DefaultOutputName(const char* _stem, int index, const char* ext)
 {
+    std::string stem = sstamp::FormatTimeStem(_stem, 0, false) ; 
     std::stringstream ss ; 
     ss << stem << std::setfill('0') << std::setw(5) << index << ext ;  
     std::string str = ss.str(); 
