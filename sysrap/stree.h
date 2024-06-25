@@ -1632,6 +1632,10 @@ from 1st field and integers lvid_ordinal repeat_ordinal from 2nd and 3rd::
 When no 2nd and 3rd field is provided eg with "sDeadWater" the
 ordinals default to 0. 
 
+TODO: get this to ignore comments in the q_spec line like::
+
+    sDeadWater:0:-1   # some comment 
+    
 **/
 
 
