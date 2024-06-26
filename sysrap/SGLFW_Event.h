@@ -117,6 +117,7 @@ inline void SGLFW_Event::initProg()
 }
 
 /**
+
 SGLFW_Event::initMesh
 -----------------------
 

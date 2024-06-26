@@ -23,7 +23,7 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "SGLM.h"
 #include "SScene.h"
 #include "SGLFW.h"
-#include "SGLFW_Scene.h"
+#include "SGLFW_Event.h"
 
 int main()
 {
@@ -32,7 +32,7 @@ int main()
     if(DUMP) std::cout << scene->desc() ; 
  
     SGLM gm ;
-    SGLFW_Scene glsc(scene, gm );
+    SGLFW_Event glsc(scene, gm );
     SGLFW* gl = glsc.gl ; 
 
     while(gl->renderloop_proceed())
