@@ -139,6 +139,54 @@ World0xdead0xbeef
 }
 
 
+void test_StripComment()
+{
+    const char* lines = R"LIT(
+hello:27:-1
+hello:27:-1  ## some comment # 
+)LIT";
+    std::stringstream ss(lines); 
+    std::string l ;
+    while (std::getline(ss, l, '\n'))
+    {   
+        if(l.empty()) continue ; 
+        std::string s = sstr::StripComment(l) ; 
+        std::cout 
+            << " l:[" << l << "]\n"
+            << " s:[" << s << "] "
+            << " s.size: " << s.size()
+            << " s.empty: " << s.empty()
+            << std::endl
+            ; 
+    }
+}
+
+void test_TrimString()
+{
+    const char* lines = R"LIT(
+hello:27:-1
+(   hello:27:-1    )
+hello:27:-1  ## some comment # 
+)LIT";
+    std::stringstream ss(lines); 
+    std::string l ;
+    while (std::getline(ss, l, '\n'))
+    {   
+        if(l.empty()) continue ; 
+        std::string s = sstr::TrimString(l) ; 
+        std::cout 
+            << " l:[" << l << "]\n"
+            << " s:[" << s << "] "
+            << " s.size: " << s.size()
+            << " s.empty: " << s.empty()
+            << std::endl
+            ; 
+    }
+}
+
+
+
+
 
 
 struct fspec
@@ -500,11 +548,16 @@ struct sstr_test
 
 int sstr_test::Main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "HasTail"); 
+    //const char* test = "TrimString" ; 
+    const char* test = "StripComment" ; 
+
+    const char* TEST = ssys::getenvvar("TEST", test ); 
 
     if(     strcmp(TEST, "HasTail")==0 )    test_HasTail(); 
     else if(strcmp(TEST, "chop")==0 )       test_chop(); 
     else if(strcmp(TEST, "StripTail")==0 )  test_StripTail(); 
+    else if(strcmp(TEST, "StripComment")==0 )  test_StripComment(); 
+    else if(strcmp(TEST, "TrimString")==0 )  test_TrimString(); 
     else if(strcmp(TEST, "SideBySide")==0 ) test_SideBySide(); 
     else if(strcmp(TEST, "nullchar")==0 )   test_nullchar(true); 
     else if(strcmp(TEST, "Write")==0 )      test_Write(); 

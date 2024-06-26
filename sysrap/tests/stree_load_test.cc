@@ -41,6 +41,8 @@ struct stree_load_test
     void pick_lvid_ordinal_repeat_ordinal_inst_() const ; 
     void pick_lvid_ordinal_repeat_ordinal_inst() const ; 
     void get_frame() const ; 
+    void get_frame_scan_(const char* solid, int i0, int i1, int j0, int j1) const ; 
+    void get_frame_scan() const ; 
     void get_frame_MOI() const ; 
     void get_prim_aabb() const ; 
 
@@ -342,6 +344,40 @@ inline void stree_load_test::get_frame_MOI() const
 }
 
 
+inline void stree_load_test::get_frame_scan_(const char* solid, int i0, int i1, int j0, int j1) const 
+{
+    const char* fmt = "%s:%d:%d" ; 
+    std::cout 
+        << "stree_load_test::get_frame_scan_"
+        << " fmt [" << fmt << "] "
+        << " solid [" << ( solid ? solid : "-" ) << "] "
+        << " i0 " << i0 << " i1 " << i1 
+        << " j0 " << j0 << " j1 " << j1
+        << "\n"
+        ; 
+
+    for(int i=i0 ; i < i1 ; i++)
+    for(int j=j0 ; j <= j1 ; j++)
+    {
+        std::string _moi = sstr::Format_(fmt, solid, i, j); 
+        const char* moi = _moi.c_str(); 
+        bool has_frame = st->has_frame(moi); 
+        std::cout << "\n\n" << moi << " has_frame " <<  ( has_frame ? "YES" : "NO" ) << "\n" ; 
+
+        if(has_frame)
+        {
+            sfr mfr = st->get_frame(moi);
+            //std::cout <<  mfr << "\n" ; 
+            std::cout <<  mfr.desc_ce() << "\n" ; 
+        }
+    }
+}
+inline void stree_load_test::get_frame_scan() const 
+{
+    const char* solid = "solidXJfixture" ; 
+    get_frame_scan_(solid, 0, 60, -1, -1 ); 
+}
+
 
 inline void stree_load_test::get_prim_aabb() const 
 {
@@ -403,7 +439,10 @@ inline void stree_load_test::get_prim_aabb() const
 
 inline int stree_load_test::main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "get_frame_MOI"); 
+    //const char* test = "get_frame_MOI" ; 
+    const char* test = "get_frame_scan" ; 
+
+    const char* TEST = ssys::getenvvar("TEST", test); 
 
     int LVID = ssys::getenvint("LVID",  0); 
     int NDID = ssys::getenvint("NDID",  0); 
@@ -437,18 +476,10 @@ inline int stree_load_test::main()
     {
         pick_lvid_ordinal_repeat_ordinal_inst();
     }
-    else if(strcmp(TEST, "get_frame") == 0)
-    {
-        get_frame();
-    }
-    else if(strcmp(TEST, "get_frame_MOI") == 0)
-    {
-        get_frame_MOI();
-    }
-    else if(strcmp(TEST, "get_prim_aabb") == 0)
-    {
-        get_prim_aabb();
-    }
+    else if(strcmp(TEST, "get_frame") == 0)     get_frame();
+    else if(strcmp(TEST, "get_frame_MOI") == 0) get_frame_MOI();
+    else if(strcmp(TEST, "get_frame_scan") == 0) get_frame_scan();
+    else if(strcmp(TEST, "get_prim_aabb") == 0)  get_prim_aabb();
     
 
     return 0 ; 

@@ -100,7 +100,7 @@ fi
 
 export stree_level=1 
 export FOLD=$BASE/stree
-export stree__get_frame_dump=1
+#export stree__get_frame_dump=1
 
 vars="BASH_SOURCE BASE FOLD opt GEOM MOI"
 

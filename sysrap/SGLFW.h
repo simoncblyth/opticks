@@ -172,7 +172,17 @@ Z:toggle.zoom
    
 0,1,2,3,4,5,6,7,8,9 + SHIFT
    hop to frame "num + 10" using offset for SHIFT modifier
+
+0,1,2,3,4,5,6,7,8,9 + ALT
+   hop to frame "num + 20" using offset for ALT modifier
    (hop to default frame if there is no frame with the index) 
+
+0,1,2,3,4,5,6,7,8,9 + SHIFT + ALT
+   hop to frame "num + 30" using offset for SHIFT and ALT modifier
+   (hop to default frame if there is no frame with the index) 
+
+With all num_key frame selection is there is no frame with the index
+then hop to the default frame.  
 
 
 )LITERAL" ; 
@@ -413,7 +423,11 @@ inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
     bool with_alt = SGLM_Modifiers::IsAlt(modifiers) ;
     bool with_super = SGLM_Modifiers::IsSuper(modifiers) ;
 
-    unsigned offset = with_shift ? 10 : 0 ; 
+    unsigned offset = 0 ; 
+    if(         with_shift && !with_alt)  offset = 10 ; 
+    else if(   !with_shift &&  with_alt)  offset = 20 ;
+    else if(    with_shift &&  with_alt)  offset = 30 ;
+
     unsigned num = _num + offset ; 
 
     std::cout 

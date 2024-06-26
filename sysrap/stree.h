@@ -438,7 +438,10 @@ struct stree
     int pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
     int parse_spec(int& lvid, int& lvid_ordinal, int& repeat_ordinal, const char* q_spec ) const ; 
     int pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const ; 
-    sfr get_frame(const char* q_spec ) const ; 
+    sfr  get_frame(const char* q_spec) const ; 
+    bool has_frame(const char* q_spec) const ;
+
+
     int get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
     int get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
 
@@ -1730,6 +1733,39 @@ inline sfr stree::get_frame(const char* q_spec ) const
 }
 
 
+inline bool stree::has_frame(const char* q_spec) const 
+{
+    int lvid ; 
+    int lvid_ordinal ;
+    int repeat_ordinal ;
+    int parse_rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
+
+    if(parse_rc != 0) std::cerr 
+        << "stree::get_frame"
+        << " FATAL parse_spec failed "
+        << " q_spec [" << ( q_spec ? q_spec : "-" ) << "]"
+        << " parse_rc " << parse_rc
+        << "\n"
+        ;   
+    assert( parse_rc == 0 ); 
+
+    sfr f ; 
+    f.set_name(q_spec); 
+
+
+    int get_rc = 0 ; 
+    if( repeat_ordinal == -1 )
+    {
+        get_rc = get_frame_remainder(f,  lvid, lvid_ordinal, repeat_ordinal );
+    }
+    else                                
+    {
+        get_rc = get_frame_instanced(f,  lvid, lvid_ordinal, repeat_ordinal );
+    }
+    return get_rc == 0 ; 
+}
+
+
 
 /**
 stree::get_frame_instanced
@@ -1871,7 +1907,8 @@ inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int re
         else
         { 
             bool leaf = CSG::IsLeaf(typecode) ;
-            std::cout 
+           
+            if(0) std::cout 
                 << "stree::get_frame_remainder"
                 << " i " << std::setw(2) << i 
                 << " typecode " << typecode 

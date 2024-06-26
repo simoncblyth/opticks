@@ -22,6 +22,19 @@ struct SOPTIX_Properties
 }; 
 
 
+
+/**
+SOPTIX_Properties::visibilityMask
+-------------------------------------
+
+::
+
+    +---------------------+--------+----------+
+    | ( 0x1 << 8 ) - 1    |   255  |  0xff    |
+    +---------------------+--------+----------+
+
+**/
+
 inline unsigned SOPTIX_Properties::visibilityMask() const
 {
     return ( 0x1 << limitNumBitsInstanceVisibilityMask ) - 1 ;  
