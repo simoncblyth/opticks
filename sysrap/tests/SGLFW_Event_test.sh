@@ -1,20 +1,20 @@
 #!/bin/bash 
 usage(){ cat << EOU
-SGLFW_SOPTIX_Scene_test.sh : triangulated raytrace and rasterized visualization
+SGLFW_Event_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
 
 Assuming the scene folder exists already::
 
-    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=0 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=2 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=3 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    ~/o/sysrap/tests/SGLFW_Event_test.sh
+    SCENE=0 ~/o/sysrap/tests/SGLFW_Event_test.sh
+    SCENE=1 ~/o/sysrap/tests/SGLFW_Event_test.sh
+    SCENE=2 ~/o/sysrap/tests/SGLFW_Event_test.sh
+    SCENE=3 ~/o/sysrap/tests/SGLFW_Event_test.sh
     ## SCENE picks between different scene directories
 
 Impl::
 
-    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+    ~/o/sysrap/tests/SGLFW_Event_test.cc
 
 
 One step way to create the stree and scene from gdml or other geometry source
@@ -104,7 +104,7 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-name=SGLFW_SOPTIX_Scene_test
+name=SGLFW_Event_test
 
 
 #source $HOME/.opticks/GEOM/GEOM.sh
@@ -116,9 +116,6 @@ bin=$FOLD/$name
 mkdir -p $FOLD
 
 
-cu=../SOPTIX.cu
-ptx=$FOLD/SOPTIX.ptx
-export SOPTIX_PTX=$ptx 
 # when using CMake generated ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx 
 # following pattern $OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" 
 
@@ -126,8 +123,8 @@ cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done 
 
-optix_prefix=${OPTICKS_OPTIX_PREFIX}
-OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
+#optix_prefix=${OPTICKS_OPTIX_PREFIX}
+#OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
@@ -150,7 +147,7 @@ dump=0
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
 
-export SGLFW_SOPTIX_Scene_test_DUMP=1  
+export SGLFW_Event_test_DUMP=1  
 
 
 #wh=1024,768
@@ -201,7 +198,7 @@ export VIZMASK=${VIZMASK:-$vizmask}
 
 
 
-defarg="info_ptx_build_run"
+defarg="info_build_run"
 arg=${1:-$defarg}
 
 
@@ -215,26 +212,12 @@ fi
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE defarg arg CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin SGLFW_FRAME"
+vars="BASH_SOURCE defarg arg CUDA_PREFIX cuda_l SCENE_FOLD FOLD bin SGLFW_FRAME"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
 fi 
 
-if [ "${arg/ptx}" != "$arg" ]; then
-    echo $BASH_SOURCE ptx
-    nvcc $cu \
-        -ptx -std=c++11 \
-        -c \
-        -lineinfo \
-        -use_fast_math \
-        -I.. \
-        -I$CUDA_PREFIX/include  \
-        -I$OPTIX_PREFIX/include  \
-        -o $ptx
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1 
-    echo $BASH_SOURCE ptx DONE
-fi
 
 if [ "${arg/build}" != "$arg" ]; then
 
@@ -258,7 +241,6 @@ if [ "${arg/build}" != "$arg" ]; then
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/include \
         -I$CUDA_PREFIX/include \
-        -I$OPTIX_PREFIX/include \
         -L$CUDA_PREFIX/$cuda_l -lcudart \
         -lstdc++ \
         -lm -ldl \
