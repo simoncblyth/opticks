@@ -137,7 +137,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         params.tmin,
         params.tmax,
         prd,
-        params.visibilityMask
+        params.vizmask
     );
 
     const float3* normal = prd->normal();  

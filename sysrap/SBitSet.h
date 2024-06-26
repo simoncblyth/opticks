@@ -30,7 +30,6 @@ struct SBitSet
 {
     static std::string Brief( const SBitSet* elv, const SName* id ); 
 
-
     template<typename T> 
     static T          Value( unsigned num_bits, const char* ekey, const char* fallback ); 
 
@@ -40,7 +39,21 @@ struct SBitSet
 
     static SBitSet*   Create( unsigned num_bits, const char* ekey, const char* fallback ); 
     static SBitSet*   Create( unsigned num_bits, const char* spec); 
-    static void        Parse( unsigned num_bits, bool* bits      , const char* spec ); 
+
+
+    template<typename T>
+    static  SBitSet* Create(T value); 
+
+
+    static void        ParseSpec( unsigned num_bits, bool* bits      , const char* spec ); 
+
+    template<typename T>
+    static void        ParseValue( unsigned num_bits, bool* bits      , T value ); 
+
+    template<typename T> 
+    static bool IsSet( T value, int ibit ); 
+
+
     static std::string Desc(  unsigned num_bits, const bool* bits, bool reverse ); 
  
     template<typename T> 
@@ -62,7 +75,11 @@ struct SBitSet
     void        set_spec( const char* spec); 
 
     void        set(bool all); 
-    void        parse(const char* spec); 
+    void        parse_spec( const char* spec); 
+
+    template<typename T> 
+    void        parse_value( T value); 
+
     bool        is_set(unsigned pos) const ;
 
     unsigned    count() const ; 
@@ -138,25 +155,41 @@ inline SBitSet* SBitSet::Create(unsigned num_bits, const char* spec)
     if(spec)
     {
         bs = new SBitSet(num_bits); 
-        bs->parse(spec);  
+        bs->parse_spec(spec);  
     }
+    return bs ; 
+}
+
+
+template<typename T>
+inline SBitSet* SBitSet::Create(T value)
+{
+    unsigned _num_bits = 8*sizeof(T); 
+    SBitSet* bs = new SBitSet(_num_bits); 
+    bs->parse_value(value);  
     return bs ; 
 }
 
 
 
 
+
+
+
 /**
-SBitSet::Parse
-----------------
+SBitSet::ParseSpec
+--------------------
 
 Interpret spec string into a array of bool indicating positions where bits are set 
 
-When the first char of spec is '~' or 't' indicating complement all bits 
-are first set *true* and the comma delimited bit positions provided are set to *false*. 
+with_complement:true 
+    when the first char of spec is '~' or 't' indicating that 
+    all bits are first set *true* and the comma delimited bit positions 
+    provided are set to *false*. 
 
-Otherwise without the complement token all bit positions are first set *false*
-and the bit positions provided are set to *true*.
+with_complement:false
+    without complement token in first char all bit positions are first set *false*
+    and the bit positions provided are set to *true*.
 
 Examples with num_bits:8 for brevity:
 
@@ -187,7 +220,7 @@ a similar but different approach that will cause confusion)
 
 **/
 
-inline void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
+inline void SBitSet::ParseSpec( unsigned num_bits, bool* bits,  const char* spec )
 {
     bool with_complement = strlen(spec) > 0 && ( spec[0] == '~' || spec[0] == 't' ) ; // str_ starts with ~ or t 
     for(unsigned i=0 ; i < num_bits ; i++) bits[i] = with_complement ? true : false ; 
@@ -196,6 +229,9 @@ inline void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
 
     int post_complement =  with_complement ? 1 : 0 ;  // offset to skip the complement first character                     
     int post_colon =  with_colon ? 1 : 0 ;  
+
+    // HUH: with_colon not used 
+
 
     const char* spec_ = spec + post_complement + post_colon ; 
 
@@ -214,6 +250,29 @@ inline void SBitSet::Parse( unsigned num_bits, bool* bits,  const char* spec )
         bits[upos] = with_complement ? false : true ;    
     }
 }     
+
+
+
+
+
+template<typename T>
+inline void SBitSet::ParseValue( unsigned num_bits, bool* bits,  T value )
+{
+    assert( sizeof(T)*8 == num_bits ); 
+    for(unsigned i=0 ; i < num_bits ; i++ ) bits[i] = IsSet(value, i) ; 
+}
+
+template<typename T> 
+inline bool SBitSet::IsSet( T value, int _ibit )  // static
+{
+    unsigned num_bits = sizeof(T)*8 ; 
+    T ibit = _ibit < 0 ? _ibit + num_bits : _ibit ; 
+    T mask = 0x1 << ibit ;    
+    bool is_set = ( value & mask ) != 0 ; 
+    return is_set ; 
+} 
+
+
 
 inline std::string SBitSet::Desc( unsigned num_bits, const bool* bits, bool reverse )
 {
@@ -291,11 +350,20 @@ inline void SBitSet::set(bool all)
     for(unsigned i=0 ; i < num_bits ; i++ )  bits[i] = all ; 
 }
 
-inline void SBitSet::parse(const char* spec)
+
+inline void SBitSet::parse_spec(const char* spec)
 {
-    Parse(num_bits, bits, spec); 
+    ParseSpec(num_bits, bits, spec); 
     set_spec(spec); 
 }
+
+template<typename T>
+inline void SBitSet::parse_value(T value)
+{
+    ParseValue(num_bits, bits, value); 
+}
+
+
 
 
 inline SBitSet::~SBitSet()

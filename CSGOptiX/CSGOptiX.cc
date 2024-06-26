@@ -857,7 +857,7 @@ void CSGOptiX::setFrame(const sfr& lfr )
 
 
 
-void CSGOptiX::prepareRenderParam()
+void CSGOptiX::prepareParamRender()
 {
     glm::vec3 eye ;
     glm::vec3 U ; 
@@ -942,14 +942,14 @@ void CSGOptiX::prepareRenderParam()
 
 
 /**
-CSGOptiX::prepareSimulateParam
+CSGOptiX::prepareParamSimulate
 -------------------------------
 
 Per-event simulate setup invoked just prior to optix launch 
 
 **/
 
-void CSGOptiX::prepareSimulateParam()  
+void CSGOptiX::prepareParamSimulate()  
 {
     LOG(LEVEL); 
 }
@@ -974,9 +974,9 @@ void CSGOptiX::prepareParam()
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
     {
-        case SRG_RENDER   : prepareRenderParam()   ; break ; 
-        case SRG_SIMTRACE : prepareSimulateParam() ; break ; 
-        case SRG_SIMULATE : prepareSimulateParam() ; break ; 
+        case SRG_RENDER   : prepareParamRender()   ; break ; 
+        case SRG_SIMTRACE : prepareParamSimulate() ; break ; 
+        case SRG_SIMULATE : prepareParamSimulate() ; break ; 
     }
 
 #if OPTIX_VERSION < 70000

@@ -69,7 +69,7 @@ inline void SOPTIX::set_param(uchar4* d_pixels)
     par.tmin = gm.get_near_abs() ; 
     par.tmax = gm.get_far_abs() ; 
     par.cameratype = gm.cam ; 
-    par.visibilityMask = gm.vizmask ; 
+    par.vizmask = gm.vizmask ; 
 
     SGLM::Copy(&par.eye.x, gm.e ); 
     SGLM::Copy(&par.U.x  , gm.u );  

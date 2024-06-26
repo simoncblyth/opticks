@@ -787,7 +787,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     title(TITLE),
     window(nullptr),
     count(0),
-    renderlooplimit(20000), 
+    renderlooplimit(ssys::getenvint("SGLFW__renderlooplimit",1000000)), 
     exitloop(false),
     dump(false),
     _width(0),

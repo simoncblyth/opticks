@@ -51,23 +51,23 @@ int main()
 
         if( gl->toggle.cuda )
         {
-            uchar4* d_pixels = interop.output_buffer->map() ; 
+            uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : for CUDA access 
             opx.render(d_pixels); 
-            interop.output_buffer->unmap() ; 
+            interop.output_buffer->unmap() ;                  // unmap buffer : access back to OpenGL
             interop.displayOutputBuffer(gl->window);
         }
         else
         { 
             glsc.render(); 
+        } 
 
-            int wanted_snap = gl->get_wanted_snap();
-            if( wanted_snap == 1 || wanted_snap == 2 )
-            {
-                std::cout << "wanted_snap " << wanted_snap << "\n" ; 
-                bool yflip = wanted_snap == 1 ; 
-                gl->snap_local(yflip);  
-                gl->set_wanted_snap(0);
-            }  
+        int wanted_snap = gl->get_wanted_snap();
+        if( wanted_snap == 1 || wanted_snap == 2 )
+        {
+            std::cout << "wanted_snap " << wanted_snap << "\n" ; 
+            bool yflip = wanted_snap == 1 ; 
+            gl->snap_local(yflip);  
+            gl->set_wanted_snap(0);
         }
 
         gl->renderloop_tail();
