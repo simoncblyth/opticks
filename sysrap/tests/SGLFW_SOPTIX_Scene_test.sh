@@ -115,6 +115,9 @@ export FOLD=/tmp/$USER/opticks/$name
 bin=$FOLD/$name
 mkdir -p $FOLD
 
+export BASE=$TMP/GEOM/$GEOM/$name
+
+
 
 cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
@@ -215,7 +218,7 @@ fi
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE defarg arg CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin SGLFW_FRAME"
+vars="BASH_SOURCE defarg arg CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX bin SGLFW_FRAME GEOM BASE"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -290,6 +293,16 @@ if [ "${arg/run}" != "$arg" ]; then
     $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
+
+
+if [ "${arg/grab}" != "$arg" ]; then
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
+fi
+
+if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+fi 
+
 
 
 exit 0 
