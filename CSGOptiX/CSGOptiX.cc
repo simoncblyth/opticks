@@ -866,11 +866,12 @@ void CSGOptiX::prepareParamRender()
 
     float tmin ; 
     float tmax ; 
+    unsigned vizmask ; 
     unsigned cameratype ; 
     float extent ; 
     float length ; 
     int traceyflip ; 
-
+   
 
     extent = sglm->fr.ce.w ; 
     eye = sglm->e ; 
@@ -879,6 +880,7 @@ void CSGOptiX::prepareParamRender()
     W = sglm->w ; 
     tmin = sglm->get_near_abs() ; 
     tmax = sglm->get_far_abs() ; 
+    vizmask = sglm->vizmask ; 
     cameratype = sglm->cam ; 
     traceyflip = sglm->traceyflip ; 
     length = 0.f ; 
@@ -894,6 +896,7 @@ void CSGOptiX::prepareParamRender()
             << std::endl 
             << std::setw(20) << " tmin "       << tmin  << std::endl 
             << std::setw(20) << " tmax "       << tmax  << std::endl 
+            << std::setw(20) << " vizmask "    << vizmask  << std::endl 
             << std::endl 
             << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
             << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
@@ -928,6 +931,7 @@ void CSGOptiX::prepareParamRender()
 
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype, traceyflip ); 
+    params->setVizmask(vizmask); 
 
     LOG(level) << std::endl << params->desc() ; 
 
