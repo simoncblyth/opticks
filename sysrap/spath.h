@@ -58,6 +58,10 @@ public:
     template<typename ... Args>
     static const char* Resolve(Args ... args ); 
 
+    static bool EndsWith( const char* path, const char* q);
+
+
+
 private:
     template<typename ... Args>
     static std::string _Join( Args ... args_  ); 
@@ -88,6 +92,7 @@ public:
     static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
     static bool Read( std::string& str , const char* path ); 
+    static bool Read( std::vector<char>&, const char* path ); 
 
 
     static bool Write(const char* txt, const char* base, const char* name );
@@ -505,6 +510,15 @@ template const char* spath::Resolve( const char*, const char* );
 template const char* spath::Resolve( const char*, const char*, const char* ); 
 template const char* spath::Resolve( const char*, const char*, const char*, const char* ); 
 
+
+inline bool spath::EndsWith( const char* path, const char* q)
+{
+    const char* s = Resolve(path); 
+    int pos = strlen(s) - strlen(q) ;
+    return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
+}
+
+
 template<typename ... Args>
 inline std::string spath::_Join( Args ... args_  )  // static
 {
@@ -715,6 +729,30 @@ inline bool spath::Read( std::string& str , const char* path_ )  // static
         str = content.str();
     }   
     return good ;
+}
+
+inline bool spath::Read( std::vector<char>& data, const char* path_ ) // static
+{
+    const char* path = Resolve(path_); 
+    std::ifstream fp(path, std::ios::binary);
+    bool good = fp.good() ; 
+    if( good )
+    {
+        fp.seekg(0, fp.end); 
+        std::streamsize size = fp.tellg(); 
+        fp.seekg(0, fp.beg); 
+       
+        if(size <= 0 ) std::cerr << "spath::Read ERROR stream size " << size << " for path " << ( path ? path : "-" )  << "\n" ; 
+        if(size <= 0) return false ;         
+
+        data.resize(size); 
+        fp.read(data.data(), size );  
+        bool fail = fp.fail(); 
+
+        if(fail) std::cerr << "spath::Read ERROR failed to read size " << size << " bytes from path " << ( path ? path : "-" ) << "\n" ;   
+        if(fail) return false ; 
+    } 
+    return good ; 
 }
 
 

@@ -40,8 +40,8 @@ struct spath_test
    static int _Check(); 
    static int Write(); 
    static int WriteIntoInvokingDirectory();
-
-
+   static int Read(); 
+   static int EndsWith(); 
 
    static int ALL();  
    static int Main();  
@@ -456,6 +456,31 @@ int spath_test::WriteIntoInvokingDirectory()
     return 0 ; 
 }
 
+int spath_test::Read()
+{
+    std::vector<char> data ; 
+    bool ok = spath::Read(data, "$EXECUTABLE" ); 
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " ok " << ( ok ? "YES" : "NO " ) 
+        << " data.size " << data.size()
+        << std::endl
+        ; 
+    return 0 ; 
+}
+
+int spath_test::EndsWith()
+{
+    bool ok = spath::EndsWith("$EXECUTABLE", "spath_test" ); 
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " ok " << ( ok ? "YES" : "NO " ) 
+        << std::endl
+        ; 
+    return ok ? 0 : 1  ; 
+}
+
+
 
 
 
@@ -486,6 +511,7 @@ int spath_test::ALL()
     rc += _Check(); 
     rc += Write(); 
     //rc += WriteIntoInvokingDirectory();   // comment as leaves droppings
+    //rc += Read(); 
 
     return rc ; 
 }
@@ -493,7 +519,11 @@ int spath_test::ALL()
 
 int spath_test::Main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "Resolve_defaultOutputPath" ); 
+    //const char* test = "Resolve_defaultOutputPath" ;
+    //const char* test = "Read" ;
+    const char* test = "EndsWith" ;
+ 
+    const char* TEST = ssys::getenvvar("TEST", test ); 
     int rc = 0 ; 
     if(     strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc = Resolve_defaultOutputPath();
     else if(strcmp(TEST, "DefaultOutputPath")==0) rc = DefaultOutputPath();
@@ -518,6 +548,8 @@ int spath_test::Main()
     else if(strcmp(TEST, "_Check")==0) rc = _Check();
     else if(strcmp(TEST, "Write")==0) rc = Write();
     else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
+    else if(strcmp(TEST, "Read")==0) rc = Read();
+    else if(strcmp(TEST, "EndsWith")==0) rc = EndsWith();
     else if(strcmp(TEST, "ALL")==0) rc = ALL();
     return rc ; 
 }

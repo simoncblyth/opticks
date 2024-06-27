@@ -50,7 +50,7 @@ struct SOPTIX
 inline SOPTIX::SOPTIX(const SScene* _scn, SGLM& _gm)
     :
     gm(_gm),
-    mod(ctx.context, opt, "$SOPTIX_PTX" ),
+    mod(ctx.context, opt, "$SOPTIX_KERNEL" ),
     pip(ctx.context, mod.module, opt ),
     scn(&ctx, _scn ),
     sbt(pip, scn ),
