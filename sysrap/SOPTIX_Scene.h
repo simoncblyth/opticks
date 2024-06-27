@@ -11,7 +11,6 @@ be analytic
 
 **/
 
-#include <bitset>
 #include "SOPTIX_BuildInput_IA.h"
 
 struct SOPTIX_Scene
@@ -123,11 +122,6 @@ SOPTIX_Scene::initInstances
 
 inline void SOPTIX_Scene::init_Instances()
 {
-    unsigned visibilityMask_FULL = ctx->props->visibilityMask(); 
-    unsigned visibilityMask_BITS = std::bitset<32>(visibilityMask_FULL).count(); 
-    assert( visibilityMask_FULL == 0xffu ); 
-    assert( visibilityMask_BITS == 8 ); 
-
     const std::vector<glm::tmat4x4<float>>& inst_tran = scene->inst_tran ;
     size_t num_gas  = scene->inst_info.size(); 
     size_t num_inst = scene->inst_tran.size(); 
@@ -152,8 +146,7 @@ inline void SOPTIX_Scene::init_Instances()
         SOPTIX_Accel* gas = meshgas[i] ;
         OptixTraversableHandle handle = gas->handle ; 
 
-        unsigned marker_bit = std::min( i, visibilityMask_BITS - 1 );  
-        unsigned visibilityMask = 0x1 << marker_bit ;  
+        unsigned visibilityMask = ctx->props->visibilityMask(i) ; 
 
         assert( ridx == i ); 
         for(unsigned j=0 ; j < count ; j++)
