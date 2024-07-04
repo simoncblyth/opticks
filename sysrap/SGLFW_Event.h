@@ -30,15 +30,18 @@ inorm
 **/
 
 #include "SScene.h"
+#include "SRecorder.h"
+#include "SGLFW_Record.h"
 #include "SGLFW.h"
 
 struct SGLFW_Event
 {
-    static int RenderLoop(const SScene* scene, SGLM& gm ); 
+    //static int RenderLoop(const SScene* scene, SGLM& gm ); 
     
     const SScene* sc ; 
     SGLM&         gm ; 
     SGLFW*        gl ; 
+    SRecorder   * sr;
 
     // map of these ? or pairs ?
     SGLFW_Program* wire ; 
@@ -46,28 +49,26 @@ struct SGLFW_Event
     SGLFW_Program* norm ; 
     SGLFW_Program* inorm ;
 
+    SGLFW_Program*  rec_prog; 
+    SGLFW_Record*   record;
+
     std::vector<SGLFW_Mesh*> mesh ; 
 
-    SGLFW_Event(const SScene* scene, SGLM& gm ); 
+    SGLFW_Event(const SScene* scene, SGLM& gm, SRecorder* recorder ); 
     void init(); 
     void initProg(); 
     void initMesh(); 
+    void initRecord();
 
     SGLFW_Program* getIProg() const ; 
     SGLFW_Program* getProg() const ; 
+
+    SGLFW_Program* getRecProg() const ; 
 
     void render(); 
     void renderloop(); 
 }; 
 
-inline int SGLFW_Event::RenderLoop(const SScene* scene, SGLM& gm ) // static
-{
-    std::cout << "[ SGLFW_Event::RenderLoop" << std::endl << scene->desc() << std::endl ;
-    SGLFW_Event sc(scene, gm) ;
-    sc.renderloop();  
-    std::cout << "] SGLFW_Event::RenderLoop" << std::endl << scene->desc() << std::endl ;
-    return 0 ; 
-}
 
 inline SGLFW_Program* SGLFW_Event::getIProg() const 
 {
@@ -78,16 +79,22 @@ inline SGLFW_Program* SGLFW_Event::getProg() const
     return gl->toggle.norm ? norm : wire ;  
 }
 
+inline SGLFW_Program* SGLFW_Event::getRecProg() const 
+{
+    return rec_prog;
+}
 
-inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm)
+inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm, SRecorder* _sr)
     :
     sc(_sc)
    ,gm(_gm)
    ,gl(new SGLFW(gm))
+   ,sr(_sr)
    ,wire(nullptr)
    ,iwire(nullptr)
    ,norm(nullptr)
    ,inorm(nullptr)
+   ,rec_prog(nullptr)
 {
     init(); 
 }
@@ -96,7 +103,16 @@ inline void SGLFW_Event::init()
 {
     initProg();
     initMesh();
+    initRecord();
 }
+
+inline void SGLFW_Event::initRecord()
+{
+    sr->init_minmax2D();
+    sr->desc() ; 
+    record = new SGLFW_Record(sr);
+}
+
 
 /**
 SGLFW_Event::initProg
@@ -114,6 +130,8 @@ inline void SGLFW_Event::initProg()
 
     norm = new SGLFW_Program("$SHADER_FOLD/normal", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr ); 
     inorm = new SGLFW_Program("$SHADER_FOLD/inormal", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr ); 
+
+    rec_prog = new SGLFW_Program("$RECORDER_SHADER_FOLD", nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr ); 
 }
 
 /**
@@ -173,13 +191,16 @@ for different mesh (eg to highlight things).
 
 inline void SGLFW_Event::render()
 {
-    int num_mesh = mesh.size(); 
-    for(int i=0 ; i < num_mesh ; i++)
-    {
-        SGLFW_Mesh* _mesh = mesh[i] ; 
-        SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
-        _mesh->render(_prog);   
-    }
+    //int num_mesh = mesh.size(); 
+    //for(int i=0 ; i < num_mesh ; i++)
+    //{
+    //    SGLFW_Mesh* _mesh = mesh[i] ; 
+    //    SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
+    //    _mesh->render(_prog);   
+    //}
+
+    //record.npy render 
+    record->render(rec_prog);
 }
 
 

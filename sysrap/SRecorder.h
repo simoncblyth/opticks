@@ -21,29 +21,15 @@ full stree.h info needed to render
 
 **/
 
-#include <cassert>
-#include <cstdlib>
-#include <cstdio>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <sstream>
 
-#include "ssys.h"
-#include "scuda.h"
-#include "squad.h"
-#include "sframe.h"
 #include "SGLFW.h"
-#include "SGLM.h"
 #include "NP.hh"
 
-#include <GL/glew.h>
 
 struct SRecorder
 {
-    static constexpr const char* RELDIR = "record.npy" ;
-    static constexpr const char* RECORD_FOLD = "/tmp/$USER/opticks/" ;
 
+    static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";  
     bool dump ;
 
     NP* record;

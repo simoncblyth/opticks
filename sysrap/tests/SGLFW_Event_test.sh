@@ -132,7 +132,7 @@ SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
  
 scene=0
 case ${SCENE:-$scene} in 
-0) scene_fold=/tmp/SScene_test ;;
+0) scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim;;
 1) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
 2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
 3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
@@ -143,6 +143,7 @@ export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
 export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
 
+export RECORDER_SHADER_FOLD=../../examples/UseGeometryShader/rec_flying_point/
 dump=0
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
@@ -196,6 +197,7 @@ export VIZMASK=${VIZMASK:-$vizmask}
 
 #export SOPTIX_SBT__initHitgroup_DUMP=1
 
+export SRECORD_PATH=/tmp/sphoton_test/record.npy
 
 
 defarg="info_build_run"
