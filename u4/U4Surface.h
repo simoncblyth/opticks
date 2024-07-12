@@ -239,7 +239,7 @@ inline const std::vector<G4LogicalBorderSurface*>* U4Surface::PrepareBorderSurfa
 U4Surface::PrepareSkinSurfaceVector
 ------------------------------------
 
-TODO : update the G4VERSION_NUMBER branch guess ">= 1130" to the appropriate one at which the skin surface table 
+TODO : update the G4VERSION_NUMBER branch guess ">= 1122" to the appropriate one at which the skin surface table 
 was changed from a vector to a map
 
 **/
@@ -248,7 +248,7 @@ was changed from a vector to a map
 inline const std::vector<G4LogicalSkinSurface*>* U4Surface::PrepareSkinSurfaceVector(const G4LogicalSkinSurfaceTable* tab )  // static
 {
     typedef std::vector<G4LogicalSkinSurface*> VKS ; 
-#if G4VERSION_NUMBER >= 1130
+#if G4VERSION_NUMBER >= 1122
     typedef std::map<const G4LogicalVolume*,G4LogicalSkinSurface*>::const_iterator IT ; 
     const VKS* vec = new VKS ;   
 
