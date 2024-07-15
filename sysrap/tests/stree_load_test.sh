@@ -78,6 +78,8 @@ name=stree_load_test
 bin=/tmp/$name/$name 
 
 source $HOME/.opticks/GEOM/GEOM.sh 
+source $HOME/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit 
+
 
 base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
 #base=/tmp/$USER/opticks/U4TreeCreateTest 
@@ -98,9 +100,9 @@ fi
 
 export stree_level=1 
 export FOLD=$BASE/stree
-export stree__get_frame_dump=1
+#export stree__get_frame_dump=1
 
-vars="BASH_SOURCE BASE FOLD opt"
+vars="BASH_SOURCE BASE FOLD opt GEOM MOI"
 
 
 if [ ! -d "$BASE/stree" ]; then

@@ -16,7 +16,7 @@ struct SOPTIX_Params
     float  tmin ; 
     float  tmax ; 
 
-    unsigned visibilityMask ; 
+    unsigned vizmask ; 
     unsigned cameratype ; 
 
     float3 eye;

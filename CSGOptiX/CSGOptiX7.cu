@@ -101,11 +101,11 @@ static __forceinline__ __device__ void trace(
         float3                 ray_direction,
         float                  tmin,
         float                  tmax,
-        quad2*                 prd
+        quad2*                 prd,
+        unsigned               visibilityMask
         )   
 {
     const float rayTime = 0.0f ; 
-    OptixVisibilityMask visibilityMask = 1u  ; 
     OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE 
     const unsigned SBToffset = 0u ; 
     const unsigned SBTstride = 1u ; 
@@ -203,7 +203,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         direction,
         params.tmin,
         params.tmax,
-        prd
+        prd,
+        params.vizmask
     );
 
 #if defined(DEBUG_PIDX)
@@ -293,7 +294,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
     while( bounce < evt->max_bounce )
     {    
-        trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd);  // geo query filling prd      
+        trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd, params.vizmask );  // geo query filling prd      
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
         // propagate can do nothing meaningful without a boundary 
 
@@ -381,7 +382,8 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
         mom,
         params.tmin,
         params.tmax,
-        prd
+        prd, 
+        params.vizmask
     );
 
     evt->add_simtrace( idx, p, prd, params.tmin ); 

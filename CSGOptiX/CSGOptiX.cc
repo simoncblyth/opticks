@@ -857,7 +857,7 @@ void CSGOptiX::setFrame(const sfr& lfr )
 
 
 
-void CSGOptiX::prepareRenderParam()
+void CSGOptiX::prepareParamRender()
 {
     glm::vec3 eye ;
     glm::vec3 U ; 
@@ -866,11 +866,12 @@ void CSGOptiX::prepareRenderParam()
 
     float tmin ; 
     float tmax ; 
+    unsigned vizmask ; 
     unsigned cameratype ; 
     float extent ; 
     float length ; 
     int traceyflip ; 
-
+   
 
     extent = sglm->fr.ce.w ; 
     eye = sglm->e ; 
@@ -879,6 +880,7 @@ void CSGOptiX::prepareRenderParam()
     W = sglm->w ; 
     tmin = sglm->get_near_abs() ; 
     tmax = sglm->get_far_abs() ; 
+    vizmask = sglm->vizmask ; 
     cameratype = sglm->cam ; 
     traceyflip = sglm->traceyflip ; 
     length = 0.f ; 
@@ -894,6 +896,7 @@ void CSGOptiX::prepareRenderParam()
             << std::endl 
             << std::setw(20) << " tmin "       << tmin  << std::endl 
             << std::setw(20) << " tmax "       << tmax  << std::endl 
+            << std::setw(20) << " vizmask "    << vizmask  << std::endl 
             << std::endl 
             << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
             << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
@@ -928,6 +931,7 @@ void CSGOptiX::prepareRenderParam()
 
     params->setView(eye, U, V, W);
     params->setCamera(tmin, tmax, cameratype, traceyflip ); 
+    params->setVizmask(vizmask); 
 
     LOG(level) << std::endl << params->desc() ; 
 
@@ -942,14 +946,14 @@ void CSGOptiX::prepareRenderParam()
 
 
 /**
-CSGOptiX::prepareSimulateParam
+CSGOptiX::prepareParamSimulate
 -------------------------------
 
 Per-event simulate setup invoked just prior to optix launch 
 
 **/
 
-void CSGOptiX::prepareSimulateParam()  
+void CSGOptiX::prepareParamSimulate()  
 {
     LOG(LEVEL); 
 }
@@ -974,9 +978,9 @@ void CSGOptiX::prepareParam()
     params->setCenterExtent(ce.x, ce.y, ce.z, ce.w); 
     switch(raygenmode)
     {
-        case SRG_RENDER   : prepareRenderParam()   ; break ; 
-        case SRG_SIMTRACE : prepareSimulateParam() ; break ; 
-        case SRG_SIMULATE : prepareSimulateParam() ; break ; 
+        case SRG_RENDER   : prepareParamRender()   ; break ; 
+        case SRG_SIMTRACE : prepareParamSimulate() ; break ; 
+        case SRG_SIMULATE : prepareParamSimulate() ; break ; 
     }
 
 #if OPTIX_VERSION < 70000

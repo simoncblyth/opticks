@@ -20,6 +20,7 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 
 #include "sproc.h"
 #include "sdirectory.h"
+#include "sstamp.h"
 
 struct spath
 {
@@ -35,9 +36,15 @@ private:
     static char* ResolvePathGeneralized(const char* spec); 
 
     static char* DefaultTMP();
-    static char* DefaultOutputDir();
     static constexpr const char* _DefaultOutputDir = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
 
+public:
+    static char* DefaultOutputDir();
+    static std::string DefaultOutputName(const char* stem, int index, const char* ext); 
+    static const char* DefaultOutputPath(const char* stem, int index, const char* ext, bool unique); 
+
+
+private:
     static char* ResolveToken(const char* token); 
     static char* _ResolveToken(const char* token); 
     static bool  IsTokenWithFallback(const char* token); 
@@ -50,6 +57,10 @@ private:
 public:
     template<typename ... Args>
     static const char* Resolve(Args ... args ); 
+
+    static bool EndsWith( const char* path, const char* q);
+
+
 
 private:
     template<typename ... Args>
@@ -81,13 +92,15 @@ public:
     static const char* SearchDirUpTreeWithFile( const char* startdir, const char* relf ); 
 
     static bool Read( std::string& str , const char* path ); 
+    static bool Read( std::vector<char>&, const char* path ); 
 
 
     static bool Write(const char* txt, const char* base, const char* name );
     static bool Write(const char* txt, const char* path );
 private:
     static bool Write_( const char* str , const char* path ); 
-
+public:
+    static void MakeDirsForFile(const char* path); 
 
 };
 
@@ -247,6 +260,55 @@ inline char* spath::DefaultOutputDir()
 {
     return (char*)_DefaultOutputDir ; 
 }
+
+
+/**
+spath::DefaultOutputName
+---------------------------
+
+  +--------+-----------+
+  | arg    |  example  |
+  +========+===========+
+  |  stem  |   hello_  |
+  +--------+-----------+
+  | index  |     0     |
+  +--------+-----------+
+  |  ext   |  .jpg     |
+  +--------+-----------+
+
+Result : hello_00000.jpg 
+
+**/
+
+
+
+inline std::string spath::DefaultOutputName(const char* _stem, int index, const char* ext)
+{
+    std::string stem = sstamp::FormatTimeStem(_stem, 0, false) ; 
+    std::stringstream ss ; 
+    ss << stem << std::setfill('0') << std::setw(5) << index << ext ;  
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+inline const char* spath::DefaultOutputPath(const char* stem, int index, const char* ext, bool unique)
+{
+    const char* outfold = DefaultOutputDir();
+    std::string outname = DefaultOutputName(stem, index, ext); 
+    const char* outpath = Resolve(outfold, outname ); 
+    if(unique)
+    {
+        // increment until find non-existing path  
+        int offset = 0 ; 
+        while( Exists(outpath) && offset < 100 )
+        {
+            offset += 1 ; 
+            outname = DefaultOutputName(stem, index+offset, ext); 
+            outpath = Resolve( outfold, outname.c_str() ); 
+        }
+    }
+    return outpath ; 
+} 
 
 
 
@@ -447,6 +509,15 @@ template const char* spath::Resolve( const char* );
 template const char* spath::Resolve( const char*, const char* ); 
 template const char* spath::Resolve( const char*, const char*, const char* ); 
 template const char* spath::Resolve( const char*, const char*, const char*, const char* ); 
+
+
+inline bool spath::EndsWith( const char* path, const char* q)
+{
+    const char* s = Resolve(path); 
+    int pos = strlen(s) - strlen(q) ;
+    return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
+}
+
 
 template<typename ... Args>
 inline std::string spath::_Join( Args ... args_  )  // static
@@ -660,6 +731,30 @@ inline bool spath::Read( std::string& str , const char* path_ )  // static
     return good ;
 }
 
+inline bool spath::Read( std::vector<char>& data, const char* path_ ) // static
+{
+    const char* path = Resolve(path_); 
+    std::ifstream fp(path, std::ios::binary);
+    bool good = fp.good() ; 
+    if( good )
+    {
+        fp.seekg(0, fp.end); 
+        std::streamsize size = fp.tellg(); 
+        fp.seekg(0, fp.beg); 
+       
+        if(size <= 0 ) std::cerr << "spath::Read ERROR stream size " << size << " for path " << ( path ? path : "-" )  << "\n" ; 
+        if(size <= 0) return false ;         
+
+        data.resize(size); 
+        fp.read(data.data(), size );  
+        bool fail = fp.fail(); 
+
+        if(fail) std::cerr << "spath::Read ERROR failed to read size " << size << " bytes from path " << ( path ? path : "-" ) << "\n" ;   
+        if(fail) return false ; 
+    } 
+    return good ; 
+}
+
 
 inline bool spath::Write( const char* str , const char* base, const char* name )  // static
 {
@@ -680,6 +775,10 @@ inline bool spath::Write_( const char* str , const char* path )  // static
     return good ; 
 }
 
+inline void spath::MakeDirsForFile(const char* path)
+{
+    sdirectory::MakeDirsForFile(path) ; 
+}
 
 
 

@@ -41,6 +41,7 @@ struct ssys
     static std::vector<int>* getenv_ParseIntSpecList(const char* ekey, const char* fallback); 
 
     static int getenvint(const char* ekey, int fallback);  
+    static int getenvintpick(const char* ekey, const std::vector<std::string>& strs, int fallback ); 
 
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);  
     static unsigned getenvunsigned_fallback_max(const char* ekey );  
@@ -243,6 +244,35 @@ inline int ssys::getenvint(const char* ekey, int fallback)
     char* val = getenv(ekey);
     return val ? std::atoi(val) : fallback ; 
 }
+
+
+
+
+inline int ssys::getenvintpick(const char* ekey, const std::vector<std::string>& strs, int fallback )
+{
+    char* v = getenv(ekey);
+    if(v == nullptr) return fallback ; 
+
+    int pick = fallback ; 
+    int num_str = strs.size() ;
+    for(int i=0 ; i < num_str ; i++)
+    {   
+        const char* str = strs[i].c_str(); 
+        if( str && v && strcmp(str, v) == 0 ) 
+        {   
+            pick = i ; 
+            break ; 
+        }   
+    }   
+    return pick ; 
+}
+
+
+
+
+
+
+
 inline unsigned ssys::getenvunsigned(const char* ekey, unsigned fallback)
 {
     int ival = getenvint(ekey, int(fallback)); 

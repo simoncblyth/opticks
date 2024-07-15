@@ -14,6 +14,8 @@ struct spath_test
 {
    static int Resolve_inline(); 
    static int Resolve_defaultOutputPath(); 
+   static int DefaultOutputPath();  
+
    static int Resolve_with_undefined_token();
    static int Resolve_with_undefined_TMP();
    static int IsTokenWithFallback(); 
@@ -38,6 +40,8 @@ struct spath_test
    static int _Check(); 
    static int Write(); 
    static int WriteIntoInvokingDirectory();
+   static int Read(); 
+   static int EndsWith(); 
 
    static int ALL();  
    static int Main();  
@@ -66,6 +70,38 @@ int spath_test::Resolve_defaultOutputPath()
         ;
     return 0 ; 
 }
+
+
+
+int spath_test::DefaultOutputPath()
+{
+    //const char* stem = "stem_" ; 
+    //const char* stem = "%Y%m%d_" ; 
+    //const char* stem = "%Y%m%d_%H%M%S_" ; 
+    const char* stem = nullptr ; 
+    int index = 0 ; 
+    const char* ext = ".txt" ; 
+    bool unique = true ; 
+
+    const char* path = spath::DefaultOutputPath(stem, index, ext, unique); 
+
+    spath::MakeDirsForFile(path); 
+
+    const char* txt = "yo : hello from spath_test::DefaultOutputPath\n" ; 
+    sstr::Write(path, txt); 
+
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " path [" << ( path ? path : "-" ) 
+        << std::endl 
+        ; 
+
+    return 0 ; 
+}
+
+
+
+
 
 int spath_test::Resolve_with_undefined_token()
 {
@@ -420,12 +456,40 @@ int spath_test::WriteIntoInvokingDirectory()
     return 0 ; 
 }
 
+int spath_test::Read()
+{
+    std::vector<char> data ; 
+    bool ok = spath::Read(data, "$EXECUTABLE" ); 
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " ok " << ( ok ? "YES" : "NO " ) 
+        << " data.size " << data.size()
+        << std::endl
+        ; 
+    return 0 ; 
+}
+
+int spath_test::EndsWith()
+{
+    bool ok = spath::EndsWith("$EXECUTABLE", "spath_test" ); 
+    std::cout 
+        << __FUNCTION__  << std::endl 
+        << " ok " << ( ok ? "YES" : "NO " ) 
+        << std::endl
+        ; 
+    return ok ? 0 : 1  ; 
+}
+
+
+
+
 
 int spath_test::ALL()
 {
     int rc = 0 ; 
 
     rc += Resolve_defaultOutputPath() ; 
+    //rc += DefaultOutputPath();      // comment as writes
     rc += Resolve_with_undefined_token();
     rc += Resolve_with_undefined_TMP();
     rc += Resolve_inline();
@@ -447,6 +511,7 @@ int spath_test::ALL()
     rc += _Check(); 
     rc += Write(); 
     //rc += WriteIntoInvokingDirectory();   // comment as leaves droppings
+    //rc += Read(); 
 
     return rc ; 
 }
@@ -454,9 +519,14 @@ int spath_test::ALL()
 
 int spath_test::Main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "Resolve_defaultOutputPath" ); 
+    //const char* test = "Resolve_defaultOutputPath" ;
+    //const char* test = "Read" ;
+    const char* test = "EndsWith" ;
+ 
+    const char* TEST = ssys::getenvvar("TEST", test ); 
     int rc = 0 ; 
     if(     strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc = Resolve_defaultOutputPath();
+    else if(strcmp(TEST, "DefaultOutputPath")==0) rc = DefaultOutputPath();
     else if(strcmp(TEST, "Resolve_with_undefined_token")==0) rc = Resolve_with_undefined_token();
     else if(strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc = Resolve_with_undefined_TMP();
     else if(strcmp(TEST, "Resolve_inline")==0) rc = Resolve_inline();
@@ -478,6 +548,8 @@ int spath_test::Main()
     else if(strcmp(TEST, "_Check")==0) rc = _Check();
     else if(strcmp(TEST, "Write")==0) rc = Write();
     else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
+    else if(strcmp(TEST, "Read")==0) rc = Read();
+    else if(strcmp(TEST, "EndsWith")==0) rc = EndsWith();
     else if(strcmp(TEST, "ALL")==0) rc = ALL();
     return rc ; 
 }
@@ -497,6 +569,7 @@ int main(int argc, char** argv)
      TEST=Resolve_setenvvar ~/opticks/sysrap/tests/spath_test.sh
      TEST=Resolve_setenvmap ~/opticks/sysrap/tests/spath_test.sh
        
+     TEST=DefaultOutputPath ~/opticks/sysrap/tests/spath_test.sh
 
 
 **/

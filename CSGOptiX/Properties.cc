@@ -6,6 +6,8 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include <bitset>
+#include <cassert>
 
 Properties::Properties()
 {
@@ -19,6 +21,40 @@ Properties::Properties()
     OPTIX_CHECK( optixDeviceContextGetProperty(Ctx::context, OPTIX_DEVICE_PROPERTY_LIMIT_MAX_SBT_RECORDS_PER_GAS           , &limitMaxSbtRecordsPerGas           , sizeof(unsigned int)) );
     OPTIX_CHECK( optixDeviceContextGetProperty(Ctx::context, OPTIX_DEVICE_PROPERTY_LIMIT_MAX_SBT_OFFSET                    , &limitMaxSbtOffset                  , sizeof(unsigned int)) );
 }
+
+
+/**
+Properties::visibilityMask_FULL
+-------------------------------------
+
+::
+
+    +---------------------+--------+----------+
+    | ( 0x1 << 8 ) - 1    |   255  |  0xff    |
+    +---------------------+--------+----------+
+
+**/
+
+unsigned Properties::visibilityMask_FULL() const
+{
+    return ( 0x1 << limitNumBitsInstanceVisibilityMask ) - 1 ;   
+}
+
+
+
+unsigned Properties::visibilityMask(unsigned idx) const
+{
+    unsigned FULL = visibilityMask_FULL(); 
+    assert( FULL == 0xffu );  
+    unsigned BITS = std::bitset<32>(FULL).count(); 
+    assert( BITS == 8 );  
+    unsigned marker_bit = std::min( idx, BITS - 1 );  
+    unsigned visibilityMask = 0x1 << marker_bit ;   
+    assert( ( visibilityMask & 0xffffff00 ) == 0 ) ;   
+    return visibilityMask ;
+}
+
+
 
 std::string Properties::desc() const 
 {
@@ -55,6 +91,10 @@ std::string Properties::desc() const
         << std::setw(40) << "limitNumBitsInstanceVisibilityMask" 
         << " : "
         << std::setw(10) <<  std::dec << limitNumBitsInstanceVisibilityMask 
+        << std::endl 
+        << std::setw(40) << "visibilityMask_FULL" 
+        << " : "
+        << std::setw(10) <<  std::hex << visibilityMask_FULL() << std::dec 
         << std::endl 
         << std::setw(40) << "limitMaxSbtRecordsPerGas" 
         << " : "

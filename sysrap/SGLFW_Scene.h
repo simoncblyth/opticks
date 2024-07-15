@@ -168,6 +168,8 @@ Note the draw loop does have the advantage of
 being able to use different shader pipeline 
 for different mesh (eg to highlight things). 
 
+TODO: VIZMASK for flexible skipping 
+
 **/
 
 inline void SGLFW_Scene::render()
@@ -175,6 +177,9 @@ inline void SGLFW_Scene::render()
     int num_mesh = mesh.size(); 
     for(int i=0 ; i < num_mesh ; i++)
     {
+        bool viz = gm.is_vizmask_set(i); 
+        if(!viz) continue ; 
+
         SGLFW_Mesh* _mesh = mesh[i] ; 
         SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
         _mesh->render(_prog);   

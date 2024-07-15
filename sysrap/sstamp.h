@@ -10,7 +10,11 @@
 struct sstamp
 {
     static int64_t Now(); 
-    static std::string Format(int64_t t=0, const char* fmt="%FT%T."); 
+    static std::string Format(int64_t t=0, const char* fmt="%FT%T.", bool _subsec=true); 
+
+    static constexpr const char* DEFAULT_TIME_FMT = "%Y%m%d_%H%M%S_" ; 
+    static std::string FormatTimeStem(const char* _stem=nullptr, int64_t t=0, bool _subsec=false); 
+
     static std::string FormatInt(int64_t t, int wid ); 
     static bool LooksLikeStampInt(const char* str); 
     static void sleep(int seconds); 
@@ -33,28 +37,64 @@ t=0 is special cased to give the current time
 
 **/
 
-inline std::string sstamp::Format(int64_t t, const char* fmt)
+inline std::string sstamp::Format(int64_t t, const char* fmt, bool _subsec)
 {
     if(t == 0) t = Now() ; 
     using Clock = std::chrono::system_clock;
     using Unit  = std::chrono::microseconds  ; 
     std::chrono::time_point<Clock> tp{Unit{t}} ; 
-
     std::time_t tt = Clock::to_time_t(tp);
 
-    // extract the sub second part from the duration since epoch
-    auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
-
     std::stringstream ss ; 
-    ss 
-       << std::put_time(std::localtime(&tt), fmt ) 
-       << std::setfill('0') 
-       << std::setw(6) << subsec.count() 
-       ;
+    ss << std::put_time(std::localtime(&tt), fmt ) ; 
 
+    if(_subsec)
+    {
+        // extract the sub second part from the duration since epoch
+        auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
+        ss << std::setfill('0') << std::setw(6) << subsec.count() ;
+    }
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+/**
+sstamp::FormatTimeStem
+------------------------
+
+ +----------------------+---------------------------------------------+ 
+ |  _stem               |    return                                   |
+ +======================+=============================================+
+ | nullptr              |   time t formatted with DEFAULT_TIME_FMT    |
+ +----------------------+---------------------------------------------+ 
+ | string with "%"      |  time t formatted with _stem as the fmt     |
+ +----------------------+---------------------------------------------+ 
+ | any other string     |  return unchanged                           |
+ +----------------------+---------------------------------------------+ 
+
+**/
+
+
+inline std::string sstamp::FormatTimeStem(const char* _stem, int64_t t, bool _subsec)
+{
+    std::string stem ; 
+    if(_stem == nullptr)
+    {
+        stem = Format(t, DEFAULT_TIME_FMT, _subsec ); 
+    }
+    else if( strstr(_stem,"%") )
+    {
+        stem = Format(t, _stem, _subsec ); 
+    } 
+    else
+    {
+        stem = _stem ;   
+    }
+    return stem ;
+}
+
+
 
 inline std::string sstamp::FormatInt(int64_t t, int wid ) // static
 {

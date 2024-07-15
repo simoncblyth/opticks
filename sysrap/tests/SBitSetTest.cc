@@ -27,7 +27,7 @@ void test_0()
     while (std::getline(ss, line))  
     {   
         const char* spec = line.c_str(); 
-        SBitSet::Parse( num_bits, bits, spec ); 
+        SBitSet::ParseSpec( num_bits, bits, spec ); 
         std::cout 
             << std::setw(20) << spec 
             << " : "
@@ -47,7 +47,7 @@ void test_1()
     {   
         const char* spec = line.c_str(); 
 
-        bs->parse(spec); 
+        bs->parse_spec(spec); 
 
         std::cout 
             << std::setw(20) << spec 

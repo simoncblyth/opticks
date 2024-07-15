@@ -62,6 +62,7 @@ struct U4Surface
 
 
     static const std::vector<G4LogicalBorderSurface*>* PrepareBorderSurfaceVector(const G4LogicalBorderSurfaceTable* tab ); 
+    static const std::vector<G4LogicalSkinSurface*>*   PrepareSkinSurfaceVector(const G4LogicalSkinSurfaceTable* tab ); 
 
     static void    Collect( std::vector<const G4LogicalSurface*>& surfaces ); 
     static NPFold* MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ); 
@@ -195,6 +196,13 @@ to have well defined and consistent ordering.
 To guarantee this the std::vector obtained from the std::map is sorted based on 
 the 0x stripped name of the G4LogicalBorderSurface.
 
+
+Note that prior to 1070 the table was a vector, and this preparation
+does nothing so the order of the border surfaces is just the creation order. 
+For consistency of the order between Geant4 versions the surfaces could be 
+name sorted, but this is not yet done as there has been no need for consistent
+surface indices between Geant4 versions.  
+
 **/
 
 inline const std::vector<G4LogicalBorderSurface*>* U4Surface::PrepareBorderSurfaceVector(const G4LogicalBorderSurfaceTable* tab )  // static
@@ -218,18 +226,50 @@ inline const std::vector<G4LogicalBorderSurface*>* U4Surface::PrepareBorderSurfa
         bool reverse = false ; 
         const char* tail = "0x" ; 
         SNameOrder<G4LogicalBorderSurface>::Sort( *vec, reverse, tail ); 
-        std::cout << SNameOrder<G4LogicalBorderSurface>::Desc( *vec ) << std::endl ; 
+        std::cout << "U4Surface::PrepareBorderSurfaceVector\n" << SNameOrder<G4LogicalBorderSurface>::Desc( *vec ) << std::endl ; 
     }   
 
 #else
     const VBS* vec = tab ;   
-    // hmm maybe should name sort pre 1070 too for consistency 
-    // otherwise they will stay in creation order
-    // Do this once 107* becomes more relevant to Opticks.
 #endif
     return vec ; 
 }
 
+/**
+U4Surface::PrepareSkinSurfaceVector
+------------------------------------
+
+TODO : update the G4VERSION_NUMBER branch guess ">= 1122" to the appropriate one at which the skin surface table 
+was changed from a vector to a map
+
+**/
+
+
+inline const std::vector<G4LogicalSkinSurface*>* U4Surface::PrepareSkinSurfaceVector(const G4LogicalSkinSurfaceTable* tab )  // static
+{
+    typedef std::vector<G4LogicalSkinSurface*> VKS ; 
+#if G4VERSION_NUMBER >= 1122
+    typedef std::map<const G4LogicalVolume*,G4LogicalSkinSurface*>::const_iterator IT ; 
+    const VKS* vec = new VKS ;   
+
+    for(IT it=tab->begin() ; it != tab->end() ; it++ )
+    {   
+        G4LogicalSkinSurface* ks = it->second ;    
+        vec->push_back(ks);    
+    }   
+
+    {   
+        bool reverse = false ; 
+        const char* tail = "0x" ; 
+        SNameOrder<G4LogicalSkinSurface>::Sort( *vec, reverse, tail ); 
+        std::cout << "U4Surface::PrepareSkinSurfaceVector\n" << SNameOrder<G4LogicalSkinSurface>::Desc( *vec ) << std::endl ; 
+    }   
+
+#else
+    const VKS* vec = tab ;   
+#endif
+    return vec ; 
+}
 
 
 /**
@@ -253,7 +293,8 @@ inline void U4Surface::Collect( std::vector<const G4LogicalSurface*>& surfaces )
         surfaces.push_back(bs) ;  
     }   
 
-    const G4LogicalSkinSurfaceTable* skin = G4LogicalSkinSurface::GetSurfaceTable() ; 
+    const G4LogicalSkinSurfaceTable* skin_ = G4LogicalSkinSurface::GetSurfaceTable() ; 
+    const std::vector<G4LogicalSkinSurface*>* skin = PrepareSkinSurfaceVector(skin_); 
     for(unsigned i=0 ; i < skin->size() ; i++)
     {   
         G4LogicalSkinSurface* ks = (*skin)[i] ; 

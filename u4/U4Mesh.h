@@ -27,13 +27,16 @@ For use with OpenGL rendering its natural to use "vtx" and "tri".
 
 #include <map>
 #include "G4Polyhedron.hh"
+#include "ssys.h"
 #include "NPX.h"
 #include "NPFold.h"
 
 struct U4Mesh
 {
     const G4VSolid* solid ; 
-    const char* solidname ; 
+    const char* entityType ; 
+    const char* solidName ; 
+    int numberOfRotationSteps ; 
 
     G4Polyhedron*   poly ; 
     std::map<int,int> v2fc ;  
@@ -58,7 +61,13 @@ struct U4Mesh
        const std::vector<std::string>& keys
       ); 
     static NPFold* Serialize(const G4VSolid* solid) ; 
+    static const char* EType(const G4VSolid* solid);
     static const char* SolidName(const G4VSolid* solid); 
+    
+    static std::string FormEKey( const char* prefix, const char* key, const char* val  );
+    static int NumberOfRotationSteps(const char* entityType, const char* solidname );
+
+    static G4Polyhedron* CreatePolyhedron(const G4VSolid* solid, int num);
 
     U4Mesh(const G4VSolid* solid);     
     void init(); 
@@ -116,22 +125,88 @@ inline NPFold* U4Mesh::MakeFold(
 
 inline NPFold* U4Mesh::Serialize(const G4VSolid* solid) // static
 {
-    //G4Polyhedron::SetNumberOfRotationSteps(24); 
     U4Mesh mesh(solid); 
     return mesh.serialize() ; 
 }
+
+inline const char* U4Mesh::EType(const G4VSolid* solid)  // static
+{
+    G4GeometryType _etype = solid->GetEntityType();  // G4GeometryType typedef for G4String
+    return strdup(_etype.c_str()) ; 
+}
+
 
 inline const char* U4Mesh::SolidName(const G4VSolid* solid) // static
 {
     G4String name = solid->GetName();  // forced to duplicate as this returns by value
     return strdup(name.c_str()); 
-
 }
+
+inline std::string U4Mesh::FormEKey( const char* prefix, const char* key, const char* val  ) // static
+{
+    std::stringstream ss ; 
+    ss << prefix  
+       << "_" 
+       << ( key ? key : "-" ) 
+       << "_" 
+       << ( val ? val : "-" ) 
+       ;  
+    std::string str = ss.str(); 
+    return str ;
+} 
+
+/**
+U4Mesh::NumberOfRotationSteps
+----------------------------------
+
+Example envvar keys::
+
+   export U4Mesh__NumberOfRotationSteps_entityType_G4Torus=48
+   export U4Mesh__NumberOfRotationSteps_solidName_myTorus=48
+
+   export U4Mesh__NumberOfRotationSteps_solidName_sTarget=96
+
+
+
+**/
+
+inline int U4Mesh::NumberOfRotationSteps(const char* _entityType, const char* _solidName )
+{
+    const char* prefix = "U4Mesh__NumberOfRotationSteps" ;
+    std::string entityType_ekey = FormEKey(prefix, "entityType" , _entityType );  
+    std::string solidName_ekey = FormEKey(prefix, "solidName" , _solidName );  
+    int num_entityType = ssys::getenvint( entityType_ekey.c_str(), 0 ); 
+    int num_solidName  = ssys::getenvint( solidName_ekey.c_str(), 0 ); 
+    int num = num_solidName > 0 ? num_solidName : num_entityType  ;
+
+    if(num > 0) std::cout 
+         << "U4Mesh::NumberOfRotationSteps\n"
+         << " entityType_ekey[" << entityType_ekey << "]"
+         << " solidName_ekey[" << solidName_ekey << "]"
+         << " num_entityType " << num_entityType
+         << " num_solidName " << num_solidName
+         << " num " << num
+         << "\n"
+         ;
+
+    return num  ; 
+}
+
+inline G4Polyhedron* U4Mesh::CreatePolyhedron(const G4VSolid* solid, int numberOfRotationSteps )  // static
+{
+    if(numberOfRotationSteps > 0) G4Polyhedron::SetNumberOfRotationSteps(numberOfRotationSteps); 
+    G4Polyhedron* _poly = solid->CreatePolyhedron(); 
+    G4Polyhedron::SetNumberOfRotationSteps(24); 
+    return _poly ; 
+}   
+
 
 inline U4Mesh::U4Mesh(const G4VSolid* solid_):
     solid(solid_),
-    solidname(SolidName(solid)),
-    poly(solid->CreatePolyhedron()),
+    entityType(EType(solid)),
+    solidName(SolidName(solid)),
+    numberOfRotationSteps(NumberOfRotationSteps(entityType,solidName)),
+    poly(CreatePolyhedron(solid, numberOfRotationSteps )),
     errvtx(0),
     do_init_vtx_disqualify(false),
     nv_poly(poly->GetNoVertices()),
@@ -365,7 +440,7 @@ inline void U4Mesh::save(const char* base) const
 inline std::string U4Mesh::id() const 
 {
     std::stringstream ss ; 
-    ss << solidname ; 
+    ss << solidName ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -374,7 +449,7 @@ inline std::string U4Mesh::desc() const
 {
     std::stringstream ss ; 
     ss << "U4Mesh::desc" 
-       << " solidname " << solidname
+       << " solidName " << solidName
        << " nv " << nv 
        << " nv_poly " << nv_poly
        << " nf " << nf 

@@ -48,6 +48,7 @@ struct sfr
     const std::string& get_name() const ; 
     std::string get_key() const ; 
 
+    std::string desc_ce() const ; 
     std::string desc() const ; 
     bool is_identity() const ; 
 
@@ -137,6 +138,13 @@ inline void sfr::set_name(const char* _n)
 }
 
 
+inline std::string sfr::desc_ce() const
+{
+    std::stringstream ss ; 
+    ss << "sfr::desc_ce " << stra<double>::Desc(ce) ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 inline std::string sfr::desc() const
 {

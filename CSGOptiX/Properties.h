@@ -33,5 +33,9 @@ struct Properties
     unsigned limitMaxSbtOffset ;   
 
     Properties(); 
+
+    unsigned visibilityMask_FULL() const ;
+    unsigned visibilityMask(unsigned idx) const ;
+
     std::string desc() const ; 
 };

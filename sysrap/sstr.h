@@ -33,11 +33,15 @@ struct sstr
     static const char* TrimTrailing(const char* s);
     static const char* Trim(const char* s); // both leading and trailing 
 
+    static std::string TrimString(const std::string& str, const std::string& whitespace=" \t" );
+
     static bool        HasTail(const std::vector<std::string>& names, const char* end="0x");   
     static size_t      CountTail(const std::vector<std::string>& names, const char* end="0x");
     static bool        HasTail(const std::string& name, const char* end="0x");
 
     static std::string StripTail(const std::string& name, const char* end="0x"); 
+    static std::string StripComment(const std::string& name); 
+
     static std::string StripTail(const char* name, const char* end="0x"); 
     static void        StripTail(       std::vector<std::string>& dst, const std::vector<std::string>& src, const char* end="0x");  
     static void        StripTail_Unique(std::vector<std::string>& dst, const std::vector<std::string>& src, const char* end="0x");  
@@ -229,8 +233,14 @@ inline const char* sstr::Trim(const char* s)  // trim leading and trailing white
     return p ; 
 }
 
-
-
+inline std::string sstr::TrimString(const std::string& str, const std::string& whitespace )
+{
+    const auto beg = str.find_first_not_of(whitespace); 
+    if(beg == std::string::npos) return "" ; 
+    const auto end = str.find_last_not_of(whitespace); 
+    const auto rng = end - beg + 1 ; 
+    return str.substr(beg, rng);     
+}
 
 
    
@@ -260,6 +270,15 @@ inline std::string sstr::StripTail(const std::string& name, const char* end)  //
     std::string sname = name.substr(0, name.find(end)) ;
     return sname ;
 }
+
+inline std::string sstr::StripComment(const std::string& name)  // static 
+{
+    const char* end = "#" ; // 1st  
+    std::string sname = name.substr(0, name.find(end)) ;
+    return TrimString(sname) ; 
+}
+
+
 
 inline std::string sstr::StripTail(const char* name_, const char* end)  // static 
 {

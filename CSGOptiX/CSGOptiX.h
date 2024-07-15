@@ -148,8 +148,8 @@ private:
     void setFrame(const sfr& fr_); 
 
 
-    void prepareRenderParam(); 
-    void prepareSimulateParam(); 
+    void prepareParamRender(); 
+    void prepareParamSimulate(); 
     void prepareParam(); 
 
  private: 

@@ -50,7 +50,7 @@ struct SOPTIX
 inline SOPTIX::SOPTIX(const SScene* _scn, SGLM& _gm)
     :
     gm(_gm),
-    mod(ctx.context, opt, "$SOPTIX_PTX" ),
+    mod(ctx.context, opt, "$SOPTIX_KERNEL" ),
     pip(ctx.context, mod.module, opt ),
     scn(&ctx, _scn ),
     sbt(pip, scn ),
@@ -69,7 +69,7 @@ inline void SOPTIX::set_param(uchar4* d_pixels)
     par.tmin = gm.get_near_abs() ; 
     par.tmax = gm.get_far_abs() ; 
     par.cameratype = gm.cam ; 
-    par.visibilityMask = gm.vizmask ; 
+    par.vizmask = gm.vizmask ; 
 
     SGLM::Copy(&par.eye.x, gm.e ); 
     SGLM::Copy(&par.U.x  , gm.u );  

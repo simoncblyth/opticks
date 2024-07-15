@@ -435,6 +435,22 @@ void test_getenvintvec()
 
 
 
+void test_getenvintpick()
+{
+    std::vector<std::string> colors = {{"red", "green", "blue", "cyan", "yellow", "magenta" }} ; 
+    int idx = ssys::getenvintpick("COLOR", colors, -1 ); 
+
+    std::cout 
+       << "test_getenvintpick\n"
+       << " idx " << idx << "\n"
+       << " pick " << (( idx < int(colors.size()) && idx > -1 ) ? colors[idx] : "-" ) << "\n"
+       ;  
+
+
+}
+
+
+
 int main(int argc, char** argv)
 {
     /*
@@ -472,9 +488,10 @@ int main(int argc, char** argv)
     test_getenv_ParseInt(); 
     test_getenv_with_prefix(); 
     test_getenvintvec(); 
-    */
     test_getenvfloatvec_fallback(); 
+    */
 
+    test_getenvintpick(); 
  
     return 0 ; 
 }

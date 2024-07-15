@@ -65,6 +65,8 @@ struct Params
     float3     W ;
     float      tmin ; 
     float      tmax ; 
+    unsigned   vizmask ; 
+
     float4     center_extent ; 
     uint4      cegs ; 
 
@@ -88,6 +90,7 @@ struct Params
     void setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_ ) ;
     void setRaygenMode(int raygenmode_ );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
+    void setVizmask(unsigned vizmask_); 
 
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
 #endif

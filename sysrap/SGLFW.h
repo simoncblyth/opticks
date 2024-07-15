@@ -74,8 +74,11 @@ around it.
 #include "NPU.hh"
 
 #include "ssys.h"
+#include "spath.h"
+
 #include "SMesh.h"
 #include "SGLM.h"
+
 #include "SGLFW_Extras.h"
 #include "SGLFW_Program.h"
 #include "SGLFW_Mesh.h"
@@ -88,7 +91,7 @@ around it.
 
 #include "SGLFW_Keys.h"
 
-
+#include "SIMG_Frame.h"
 
 
 struct SGLFW : public SCMD 
@@ -134,7 +137,7 @@ K
 L
    save Y inverted screen shot [--snap-inverted]
 M
-   try to target the MOI envvar configured frame (-1?)
+   hop to the MOI envvar configured frame [not supported by all renderers]
 N
    toggle.tmin change near by moving cursor vertically 
 O
@@ -164,6 +167,24 @@ Z:toggle.zoom
    change zoom scaling by moving cursor vertically 
 
 
+0,1,2,3,4,5,6,7,8,9
+   hop to frame "num" or default if no such frame
+   
+0,1,2,3,4,5,6,7,8,9 + SHIFT
+   hop to frame "num + 10" using offset for SHIFT modifier
+
+0,1,2,3,4,5,6,7,8,9 + ALT
+   hop to frame "num + 20" using offset for ALT modifier
+   (hop to default frame if there is no frame with the index) 
+
+0,1,2,3,4,5,6,7,8,9 + SHIFT + ALT
+   hop to frame "num + 30" using offset for SHIFT and ALT modifier
+   (hop to default frame if there is no frame with the index) 
+
+With all num_key frame selection is there is no frame with the index
+then hop to the default frame.  
+
+
 )LITERAL" ; 
     static constexpr const char* TITLE = "SGLFW" ; 
 
@@ -184,6 +205,7 @@ Z:toggle.zoom
     bool dump ; 
     int  _width ;  // on retina 2x width 
     int  _height ;
+    SIMG_Frame*  sif ; 
 
     // getStartPos
     double _start_x ; 
@@ -197,6 +219,7 @@ Z:toggle.zoom
     SGLFW_Keys keys = {} ; 
 
 
+
     bool renderloop_proceed(); 
     void renderloop_exit(); 
     void renderloop_head(); 
@@ -206,7 +229,7 @@ Z:toggle.zoom
 
     void window_refresh();
     void key_pressed(unsigned key); 
-    void numkey_pressed(unsigned num); 
+    void numkey_pressed(unsigned num, unsigned modifiers); 
 
     void set_wanted_frame_idx(int _idx); 
     int  get_wanted_frame_idx() const ;
@@ -217,6 +240,10 @@ Z:toggle.zoom
     void set_wanted_snap(int w); 
     int get_wanted_snap() const ;
 
+    void download_pixels(); 
+    void init_sif(); 
+    void writeJPG(const char* path) const ; 
+    void snap_local(bool yflip); 
 
     void key_repeated(unsigned key); 
     void key_released(unsigned key); 
@@ -344,7 +371,7 @@ Maybe remove the toggle or do that in SGLM ?
 inline void SGLFW::key_pressed(unsigned key)
 {
     keys.key_pressed(key); 
-    //unsigned modifiers = keys.modifiers() ;
+    unsigned modifiers = keys.modifiers() ;
 
     getStartPos(); 
     std::cout 
@@ -365,7 +392,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_7:
         case GLFW_KEY_8:
         case GLFW_KEY_9:
-                              numkey_pressed(key - GLFW_KEY_0) ; break ; 
+                              numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ; 
         case GLFW_KEY_M:
                               set_wanted_frame_idx(-2)         ; break ;   // MOI target 
         case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom       ; break ; 
@@ -389,9 +416,34 @@ inline void SGLFW::key_pressed(unsigned key)
     std::cout << toggle.desc() << std::endl ; 
 }
 
-inline void SGLFW::numkey_pressed(unsigned num)
+inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
 {
-    std::cout << "SGLFW::numkey_pressed " << num << "\n" ; 
+    bool with_shift = SGLM_Modifiers::IsShift(modifiers) ;
+    bool with_control = SGLM_Modifiers::IsControl(modifiers) ;
+    bool with_alt = SGLM_Modifiers::IsAlt(modifiers) ;
+    bool with_super = SGLM_Modifiers::IsSuper(modifiers) ;
+
+    unsigned offset = 0 ; 
+    if(         with_shift && !with_alt)  offset = 10 ; 
+    else if(   !with_shift &&  with_alt)  offset = 20 ;
+    else if(    with_shift &&  with_alt)  offset = 30 ;
+
+    unsigned num = _num + offset ; 
+
+    std::cout 
+        << "SGLFW::numkey_pressed"
+        << " _num " << _num 
+        << " modifiers " << modifiers 
+        << " SGLM_Modifiers::Desc(modifiers) " << SGLM_Modifiers::Desc(modifiers)
+        << " offset " << offset 
+        << " num " << num 
+        << " with_shift " << with_shift
+        << " with_control " << with_control
+        << " with_alt " << with_alt
+        << " with_super " << with_super
+        << "\n" 
+        ; 
+
     set_wanted_frame_idx(num); 
 }
 inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }
@@ -402,6 +454,66 @@ inline void SGLFW::snap(int w){ set_wanted_snap(w); }
 
 inline void SGLFW::set_wanted_snap(int w){ wanted_snap = w ; }
 inline int SGLFW::get_wanted_snap() const { return wanted_snap ; }
+
+
+/**
+SGLFW::download_pixels
+--------------------------
+
+After oglrap Pix
+
+https://www.khronos.org/opengl/wiki/GLAPI/glPixelStore
+
+**/
+
+inline void SGLFW::download_pixels()
+{
+    if(sif == nullptr) init_sif();  
+
+    assert( _width > 0 && _width == sif->width ) ; 
+    assert( _height > 0 && _height == sif->height ) ; 
+
+    glPixelStorei(GL_PACK_ALIGNMENT,1);   // byte aligned output
+    glReadPixels(0,0,_width,_height,GL_RGBA, GL_UNSIGNED_BYTE, sif->pixels );
+} 
+
+inline void SGLFW::init_sif()
+{
+    assert( _width > 0 ); 
+    assert( _height > 0 ); 
+    sif = new SIMG_Frame(_width, _height) ; 
+}
+inline void SGLFW::writeJPG(const char* path) const 
+{
+    std::cout << "SGLFW::writeJPG [" << ( path ? path : "-" ) << "]\n" ; 
+    assert(sif); 
+    sif->writeJPG(path); 
+}
+
+
+/**
+SGLFW::snap_local
+-----------------
+
+Default stem of nullptr leads to use of current datetime formatted 
+string of form sstamp::DEFAULT_TIME_FMT 
+
+**/
+
+inline void SGLFW::snap_local(bool yflip)
+{
+    download_pixels(); 
+    if(yflip) sif->flipVertical();
+ 
+    const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", nullptr ); 
+    int index = 0 ; 
+    const char* ext = ".jpg" ;  
+    bool unique = true ;
+    const char* path = spath::DefaultOutputPath(stem, index, ext, unique); 
+    spath::MakeDirsForFile(path);
+
+    writeJPG(path);
+}
 
 
 inline void SGLFW::key_repeated(unsigned key)
@@ -610,7 +722,7 @@ inline void SGLFW::cursor_moved_action()
     }
     else if(toggle.tmax)
     {
-        std::string cmd = FormCommand("--inc-tmax", dy ); 
+        std::string cmd = FormCommand("--inc-tmax", dy*100 ); 
         gm.command(cmd.c_str()) ;
     }
     /*
@@ -689,11 +801,12 @@ inline SGLFW::SGLFW(SGLM& _gm )
     title(TITLE),
     window(nullptr),
     count(0),
-    renderlooplimit(20000), 
+    renderlooplimit(ssys::getenvint("SGLFW__renderlooplimit",1000000)), 
     exitloop(false),
     dump(false),
     _width(0),
     _height(0),
+    sif(nullptr),
     _start_x(0.),
     _start_y(0.),
     start_ndc(0.f,0.f),

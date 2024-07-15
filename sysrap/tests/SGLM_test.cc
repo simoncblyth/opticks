@@ -76,7 +76,21 @@ void test_SGLM_command()
         ;
 
     std::cout << gm.desc() ; 
+}
 
+
+void test_VIZMASK()
+{
+    SGLM gm ; 
+    std::cout 
+        << "gm.vizmask " 
+        << gm.vizmask 
+        << "\n" 
+        << SBitSet
+
+        ;  
+
+    
 
 }
 
@@ -88,8 +102,9 @@ int main()
     test_Assignment::Narrowing(); 
     test_SGLM_basis(); 
     test_SGLM(); 
-    */
     test_SGLM_command(); 
+    */
+    test_VIZMASK(); 
 
     return 0 ; 
 }

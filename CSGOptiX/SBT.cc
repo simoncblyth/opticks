@@ -483,7 +483,7 @@ on simple indices from GPU side.
 
 void SBT::collectInstances( const std::vector<qat4>& ias_inst ) 
 {
-    LOG(LEVEL) << "[ ias_inst.size " << ias_inst.size() ; 
+    LOG(LEVEL) << "[ ias_inst.size " << ias_inst.size() ;  // eg 48477  
 
     unsigned num_ias_inst = ias_inst.size() ; 
     unsigned flags = OPTIX_INSTANCE_FLAG_DISABLE_ANYHIT ;  
@@ -521,11 +521,16 @@ void SBT::collectInstances( const std::vector<qat4>& ias_inst )
                 << " instanceId " << instanceId
                 ;
         }
+
+        //unsigned visibilityMask = 255;  // cf SOPTIX_Scene::init_Instances 
+        unsigned visibilityMask = properties->visibilityMask(gasIdx); 
+
         OptixInstance instance = {} ; 
         q.copy_columns_3x4( instance.transform ); 
         instance.instanceId = instanceId ;  
         instance.sbtOffset = sbtOffset ;            
-        instance.visibilityMask = 255;
+        instance.visibilityMask = visibilityMask ; 
+
         instance.flags = flags ;
         instance.traversableHandle = handle ; 
     

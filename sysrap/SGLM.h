@@ -203,6 +203,8 @@ struct SYSRAP_API SGLM : public SCMD
     static void SetVIZMASK( const char* vizmask ); 
     static void SetTRACEYFLIP( const char* traceyflip ); 
 
+    bool is_vizmask_set(unsigned ibit) const ;
+
 
     // querying of static defaults 
     static std::string DescInput() ; 
@@ -343,6 +345,7 @@ struct SYSRAP_API SGLM : public SCMD
     std::vector<std::string> log ; 
 
 
+
     void set_near( float near_ ); 
     void set_far( float far_ ); 
     void set_near_abs( float near_abs_ ); 
@@ -479,6 +482,11 @@ inline void SGLM::SetNEARFAR( const char* nearfar ){ NEARFAR = SBAS::Type(nearfa
 inline void SGLM::SetFOCAL( const char* focal ){ FOCAL = SBAS::Type(focal) ; }
 inline void SGLM::SetVIZMASK( const char* vizmask ){ VIZMASK = SBitSet::Value<uint32_t>(32, vizmask) ; }
 inline void SGLM::SetTRACEYFLIP( const char* traceyflip ){ TRACEYFLIP = SBAS::AsInt(traceyflip) ; }
+
+bool SGLM::is_vizmask_set(unsigned ibit) const { return SBitSet::IsSet<uint32_t>(vizmask, ibit ); }
+
+
+
 
 
 inline int SGLM::Width(){  return WH.x ; }
@@ -1529,6 +1537,8 @@ float SGLM::get_focal_basis() const
     }
     return basis ;  
 }
+
+
 
 void SGLM::set_near( float near_ ){ near = near_ ; addlog("set_near", near); }
 void SGLM::set_far(  float far_ ){  far = far_   ; addlog("set_far", far);   }

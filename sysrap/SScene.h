@@ -149,6 +149,15 @@ Creating::
     (SMeshGroup)meshgroup
     (SMesh)meshmerge 
 
+
+TODO: adding frames at SScene::initFromTree 
+seems not the right place for it : would be better to do this from the
+main when rendering for simpler changing of framespec. Avoiding the need
+to rerun the integration in order to change framespec. 
+
+HMM: could do both adding dynamic framespec from some other path 
+(like framespec.txt in invoking directory) that get to with SHIFT+NUMBER_KEY ? 
+
 **/
 
 
@@ -609,7 +618,23 @@ inline void SScene::addFrames(const char* path, const stree* st)
         for(int i=0 ; i < num_line ; i++)
         {
             const std::string& line = lines[i]; 
-            sfr f = st->get_frame(line.c_str()); 
+            std::string _spec = sstr::StripComment(line);  
+            const char* spec = _spec.c_str(); 
+            if(spec == nullptr) continue ; 
+            if(strlen(spec) == 0) continue ;  
+
+            bool has_frame = st->has_frame(spec);
+            if(!has_frame)
+            {
+                std::cout 
+                    << "SScene::addFrames FAIL to find frame " 
+                    << " spec [" << ( spec ? spec : "-" ) << "]\n"
+                    << " line [" << line << "]\n"  
+                    ; 
+                continue ;
+            } 
+ 
+            sfr f = st->get_frame(spec); 
             addFrame(f);  
         }
     }

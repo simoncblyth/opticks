@@ -7,6 +7,9 @@ name=spath_test
 bin=${TMP:-/tmp/$USER/opticks}/$name
 mkdir -p $(dirname $bin)
 
+
+export EXECUTABLE=$bin
+
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 vars="BASH_SOURCE name bin GEOM TMP"

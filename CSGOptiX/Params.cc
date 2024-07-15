@@ -135,6 +135,7 @@ Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
     origin_y(0),
     tmin(0.f),
     tmax(0.f),
+    vizmask(0xff),
     sim(nullptr),
     evt(nullptr)
 {
@@ -156,6 +157,13 @@ void Params::setSize(unsigned width_, unsigned height_, unsigned depth_ )
     origin_x = width_ / 2;
     origin_y = height_ / 2;
 }
+
+void Params::setVizmask(unsigned vizmask_)
+{
+    vizmask = vizmask_ ; 
+} 
+
+
 
 
 Params* Params::d_param = nullptr ; 

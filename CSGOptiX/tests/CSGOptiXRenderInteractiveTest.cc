@@ -94,6 +94,8 @@ int main(int argc, char** argv)
     {   
         gl.renderloop_head();
 
+
+        // where to encapsulate this ? needs gl,gm,scene,mfr ?
         if(FRAME_HOP)
         {
             int wanted_frame_idx = gl.get_wanted_frame_idx() ; // -2 until press number key 0-9, back to -2 when press M  
