@@ -3,100 +3,6 @@ usage(){ cat << EOU
 SGLFW_Event_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
 
-Assuming the scene folder exists already::
-
-    ~/o/sysrap/tests/SGLFW_Event_test.sh
-    SCENE=0 ~/o/sysrap/tests/SGLFW_Event_test.sh
-    SCENE=1 ~/o/sysrap/tests/SGLFW_Event_test.sh
-    SCENE=2 ~/o/sysrap/tests/SGLFW_Event_test.sh
-    SCENE=3 ~/o/sysrap/tests/SGLFW_Event_test.sh
-    ## SCENE picks between different scene directories
-
-Impl::
-
-    ~/o/sysrap/tests/SGLFW_Event_test.cc
-
-
-One step way to create the stree and scene from gdml or other geometry source
----------------------------------------------------------------------------------
-
-::
-
-    ~/o/u4/tests/U4TreeCreateSSimTest.sh  
-
-
-Two step way to create the scene folder from gdml or other geometry source 
------------------------------------------------------------------------------
-
-1. load geometry and use U4Tree::Create to convert to stree.h and persist the tree::   
-
-    ~/o/u4/tests/U4TreeCreateTest.sh 
-        # create and persist stree.h (eg from gdml or j/PMTSim via GEOM config)
-
-2. load stree and create corresponding SScene::
-
-    ~/o/sysrap/tests/SScene_test.sh 
-        # create and persist SScene.h from loaded stree.h
-  
-
-Simpler Prior Developments
----------------------------
-    
-Related simpler priors::
-
-    ~/o/sysrap/tests/SOPTIX_Scene_test.sh
-    ~/o/sysrap/tests/SOPTIX_Scene_test.cc
-
-
-
-Which GL/glew.h is picked up ?
----------------------------------
-
-On changing env from JUNO-opticks to ONLY-opticks build directly with 
-opticks-full note that have changed the OpenGL version in use 
-causing missing symbol GL_CONTEXT_LOST
-
-Fixed that with GL_VERSION_4_5 check, but why the older version ?
-
-* probably just a change in glew header not a change in actual GL version used
-
-Adding "-M" to gcc commandline lists all the 
-included headers in Makefile dependency format.
-This shows are picking up system headers::
-
-    /usr/include/GL/glew.h
-    /usr/include/GL/glu.h
-    /usr/include/GL/gl.h
-    /usr/include/GLFW/glfw3.h
-
-Which corresponds to::
-
-    //SGLFW::init GL_RENDERER [NVIDIA TITAN RTX/PCIe/SSE2] 
-    //SGLFW::init GL_VERSION [4.1.0 NVIDIA 515.43.04] 
-
-HMM: this maybe because I removed glew and glfw from the 
-standard externals ?
-
-HMM: but after installing those get::
-
-   undefined symbol: glfwSetWindowMaximizeCallback
-
-when using::
-
-    /data/blyth/opticks_Debug/externals/include/GL/glew.h
-    /usr/include/GL/glu.h
-    /usr/include/GL/gl.h
-    /data/blyth/opticks_Debug/externals/include/GLFW/glfw3.h
-
-Return to system with::
-
-   glfw-
-   glfw-manifest-wipe
-   glfw-manifest-wipe | sh 
-
-   glew-
-   glew-manifest-wipe
-   glew-manifest-wipe | sh 
 
 
 
@@ -139,8 +45,6 @@ case ${SCENE:-$scene} in
 1) scene_fold=$HOME/.opticks/GEOM/J23_1_0_rc3_ok0/CSGFoundry/SSim 
     record_path=/tmp/ihep/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/A000/record.npy
     ;;
-2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
-3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
 esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 export SRECORD_PATH=${SRECORD_PATH:-$record_path}
@@ -248,6 +152,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -I$SYSRAP_DIR \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/include \
+        -I$OPTICKS_PREFIX/include/SysRap \
         -I$CUDA_PREFIX/include \
         -L$CUDA_PREFIX/$cuda_l -lcudart \
         -lstdc++ \

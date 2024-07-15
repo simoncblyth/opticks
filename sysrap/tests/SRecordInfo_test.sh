@@ -44,6 +44,7 @@ if [ "${arg/build}" != "$arg" ]; then
          -I.. -g \
          -I$OPTICKS_PREFIX/externals/glm/glm \
          -I$OPTICKS_PREFIX/externals/include \
+         -I$OPTICKS_PREFIX/include/SysRap \
          -I$CUDA_PREFIX/include \
          -lstdc++ \
          -lm \
