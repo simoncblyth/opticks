@@ -166,7 +166,7 @@ inline const float SRecorder::get_t1() const
 
 inline const float SRecorder::get_ts() const
 {
-    float ts = ssys::getenvfloat("TS", 1000. ); 
+    float ts = ssys::getenvfloat("TS", 5000. ); 
     return ts;
 }
 

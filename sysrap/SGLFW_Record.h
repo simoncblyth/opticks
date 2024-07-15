@@ -13,6 +13,7 @@ Canonical use is from SGLFW_Scene::initMesh
 struct NP ; 
 struct SGLFW_Program ; 
 struct SRecorder ; 
+struct sfr;
 
 struct SGLFW_Record
 {
@@ -21,7 +22,7 @@ struct SGLFW_Record
     const SRecorder*     sr ;
     SGLFW_Buffer*  rpos ; 
     SGLFW_VAO*     vao ;  
-
+    
     glm::vec4      param;
     GLint          param_location;
 
@@ -57,11 +58,16 @@ Creates vtx, nrm, idx OpenGL buffers using SGLFW_Buffers
 
 inline void SGLFW_Record::init()
 {
+    
+    //sfr fr;
+    //fr.set_ce(&((sr->ce).x));
+    //gm->set_frame(fr);
+    //gm->dump();
      
     float t0 = sr->get_t0(); 
     float t1 = sr->get_t1(); 
     float ts = sr->get_ts(); 
-    param = glm::vec4(t0, t1, (t0-t1)/ts, t0); 
+    param = glm::vec4(t0, t1, (t1-t0)/ts, t0); 
 
     vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not GL_ARRAY_BUFFER)
     vao->bind(); 
@@ -91,12 +97,14 @@ normals to appear in position slots causing perplexing renders.
 
 inline void SGLFW_Record::render(const SGLFW_Program* prog)
 {
+    
     param_location = prog->getUniformLocation("Param"); 
     prog->use(); 
     vao->bind(); 
  
     rpos->bind();
     prog->enableVertexAttribArray("rpos" ,SRecorder::RPOS_SPEC ); 
+    //prog->locateMVP("ModelViewProjection", gm->MVP_ptr ); 
  
  
     param.w += param.z ;  // input propagation time 
@@ -107,10 +115,10 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     prog->updateMVP();
     
     GLenum mode = prog->geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
-    std::cout<<" GL_LINE_STRIP " << GL_LINE_STRIP
-             <<" GL_POINTS " << GL_POINTS
-             <<" mode = " <<mode
-             << std::endl;
+//    std::cout<<" GL_LINE_STRIP " << GL_LINE_STRIP
+//             <<" GL_POINTS " << GL_POINTS
+//             <<" mode = " <<mode
+//             << std::endl;
     glDrawArrays(mode, sr->record_first,  sr->record_count);
     
     //render_drawElements(); 

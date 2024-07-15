@@ -111,6 +111,14 @@ inline void SGLFW_Event::initRecord()
     sr->init_minmax2D();
     sr->desc() ; 
     record = new SGLFW_Record(sr);
+
+   // sfr fr;
+   // fr.set_ce(&((sr->ce).x));
+   // gm.set_frame(fr);
+   // std::cout<<"This is SGLFW_Event::initRecord"<<std::endl;
+   // gm.dump();
+   // rec_prog->locateMVP("ModelViewProjection", gm.MVP_ptr ); 
+   // std::cout<<"This is SGLFW_Event::initRecord"<<std::endl;
 }
 
 
@@ -131,7 +139,9 @@ inline void SGLFW_Event::initProg()
     norm = new SGLFW_Program("$SHADER_FOLD/normal", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr ); 
     inorm = new SGLFW_Program("$SHADER_FOLD/inormal", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr ); 
 
+
     rec_prog = new SGLFW_Program("$RECORDER_SHADER_FOLD", nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr ); 
+    //rec_prog = new SGLFW_Program("$RECORDER_SHADER_FOLD", nullptr, nullptr, nullptr, nullptr, nullptr ); 
 }
 
 /**
@@ -191,13 +201,13 @@ for different mesh (eg to highlight things).
 
 inline void SGLFW_Event::render()
 {
-    //int num_mesh = mesh.size(); 
-    //for(int i=0 ; i < num_mesh ; i++)
-    //{
-    //    SGLFW_Mesh* _mesh = mesh[i] ; 
-    //    SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
-    //    _mesh->render(_prog);   
-    //}
+    int num_mesh = mesh.size(); 
+    for(int i=0 ; i < num_mesh ; i++)
+    {
+        SGLFW_Mesh* _mesh = mesh[i] ; 
+        SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
+        _mesh->render(_prog);   
+    }
 
     //record.npy render 
     record->render(rec_prog);

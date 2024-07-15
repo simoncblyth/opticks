@@ -130,20 +130,27 @@ sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
  
-scene=0
+scene=1
 case ${SCENE:-$scene} in 
-0) scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim;;
-1) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
+0) 
+    scene_fold=$HOME/.opticks/GEOM/RaindropRockAirWater/CSGFoundry/SSim
+    record_path=/tmp/ihep/opticks/GEOM/RaindropRockAirWater/G4CXTest/ALL0/A000/record.npy 
+    ;;
+1) scene_fold=$HOME/.opticks/GEOM/J23_1_0_rc3_ok0/CSGFoundry/SSim 
+    record_path=/tmp/ihep/opticks/GEOM/J23_1_0_rc3_ok0/jok-tds/ALL0/A000/record.npy
+    ;;
 2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
 3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
 esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
+export SRECORD_PATH=${SRECORD_PATH:-$record_path}
 
 
 shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
 export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
 
-export RECORDER_SHADER_FOLD=../../examples/UseGeometryShader/rec_flying_point/
+export RECORDER_SHADER_FOLD=../../examples/UseGeometryShader/rec_flying_point_persist
+
 dump=0
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
@@ -154,12 +161,9 @@ export SGLFW_Event_test_DUMP=1
 #wh=1024,768
 wh=2560,1440
 
-#eye=0.1,0,-10
+
 #eye=-1,-1,0
-#eye=-10,-10,0
-#eye=-10,0,0
-#eye=0,-10,0
-eye=-1,-1,0
+eye=0,-3,0
 up=0,0,1
 look=0,0,0
 
@@ -184,24 +188,26 @@ export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
 
 
-handle=-1 # -1:IAS 0...8 GAS indices 
-export HANDLE=${HANDLE:-$handle}
-:
-frame=-1
-export SGLFW_FRAME=${SGLFW_FRAME:-$frame}
+zoom=1   
+export ZOOM=${ZOOM:-$zoom}
+#handle=-1 # -1:IAS 0...8 GAS indices 
+#export HANDLE=${HANDLE:-$handle}
+#:
+#frame=-1
+#export SGLFW_FRAME=${SGLFW_FRAME:-$frame}
 
-vizmask=t   # 0xff no masking
+#vizmask=t   # 0xff no masking
 #vizmask=t0  # 0xfe mask global
-export VIZMASK=${VIZMASK:-$vizmask}
+#export VIZMASK=${VIZMASK:-$vizmask}
 
 
 #export SOPTIX_SBT__initHitgroup_DUMP=1
 
-export SRECORD_PATH=/tmp/sphoton_test/record.npy
 
 
 defarg="info_build_run"
 arg=${1:-$defarg}
+
 
 
 if [ ! -d "$SCENE_FOLD/scene" ]; then

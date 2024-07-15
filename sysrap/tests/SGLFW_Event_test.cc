@@ -36,6 +36,7 @@ int main()
 
     SGLM gm ;
     SGLFW_Event glsc(scene, gm , sr);
+    //SGLFW_Event glsc(nullptr, gm , sr);
     SGLFW* gl = glsc.gl ; 
 
     while(gl->renderloop_proceed())
