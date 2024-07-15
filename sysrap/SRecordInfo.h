@@ -1,23 +1,8 @@
 #pragma once
 /**
-SRecorder.h
+SRecordInfo.h
 =========
 
-To some extent this acts as a minimal selection of the 
-full stree.h info needed to render
-
-::
-
-    ~/o/sysrap/tests/SRecorder_test.sh 
-
-* OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
-
-* TODO: solid selection eg skipping virtuals so can see PMT shapes 
-
-* WIP: incorporate into standard workflow
-
-  * treat SRecorder.h as sibling to stree.h within SSim.hh 
-  * invoke the SRecorder.h creation from stree immediately after stree creation by U4Tree 
 
 **/
 
@@ -26,7 +11,7 @@ full stree.h info needed to render
 #include "NP.hh"
 
 
-struct SRecorder
+struct SRecordInfo
 {
 
     static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";  
@@ -43,8 +28,8 @@ struct SRecorder
       
     float4 ce = {} ; 
     
-    static SRecorder* Load(const char* record_path);
-    SRecorder();
+    static SRecordInfo* Load(const char* record_path);
+    SRecordInfo();
 
    
     void init_minmax2D() ; 
@@ -63,11 +48,11 @@ struct SRecorder
 
 };
 
-inline void SRecorder::desc() const
+inline void SRecordInfo::desc() const
 {
     std::cout
 
-        << "SRecorder.desc() "
+        << "SRecordInfo.desc() "
         << std::endl   
         << std::setw(20) << " mn " << mn 
         << std::endl   
@@ -86,14 +71,14 @@ inline void SRecorder::desc() const
 
 
 
-inline SRecorder* SRecorder::Load(const char* record_path)
+inline SRecordInfo* SRecordInfo::Load(const char* record_path)
 {
-    SRecorder* s = new SRecorder ;
+    SRecordInfo* s = new SRecordInfo ;
     s->load(record_path);
     return s ;
 }
 
-inline void SRecorder::load(const char* record_path)
+inline void SRecordInfo::load(const char* record_path)
 {
     
     // expect shape like (10000, 10, 4, 4) of type np.float32
@@ -114,13 +99,13 @@ inline void SRecorder::load(const char* record_path)
     record_count = record->shape[0]*record->shape[1] ;   // all step points across all photon
 }    
 
-inline SRecorder::SRecorder()
+inline SRecordInfo::SRecordInfo()
     :
-    dump(ssys::getenvbool("SRecorder_dump"))
+    dump(ssys::getenvbool("SRecordInfo_dump"))
 {
 }
 
-inline void SRecorder::init_minmax2D(){
+inline void SRecordInfo::init_minmax2D(){
      
     static const int N = 4 ;   
 
@@ -139,32 +124,32 @@ inline void SRecorder::init_minmax2D(){
 
 
 
-inline const float* SRecorder::get_mn() const 
+inline const float* SRecordInfo::get_mn() const 
 {
     return &mn.x ;  
 } 
-inline const float* SRecorder::get_mx() const 
+inline const float* SRecordInfo::get_mx() const 
 {
     return &mx.x ;  
 } 
-inline const float* SRecorder::get_ce() const 
+inline const float* SRecordInfo::get_ce() const 
 {
     return &ce.x ;  
 } 
 
-inline const float SRecorder::get_t0() const
+inline const float SRecordInfo::get_t0() const
 {
     float t0 = ssys::getenvfloat("T0", mn.w ); 
     return t0;
 }
 
-inline const float SRecorder::get_t1() const
+inline const float SRecordInfo::get_t1() const
 {
     float t1 = ssys::getenvfloat("T1", mx.w ); 
     return t1;
 }
 
-inline const float SRecorder::get_ts() const
+inline const float SRecordInfo::get_ts() const
 {
     float ts = ssys::getenvfloat("TS", 5000. ); 
     return ts;

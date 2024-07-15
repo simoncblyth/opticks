@@ -1,40 +1,36 @@
 #pragma once
 /**
-SGLFW_Record.h : create OpenGL buffers with SMesh and instance data and render
+SGLFW_Record.h : 
 ==============================================================================
 
-Canonical use is from SGLFW_Scene::initMesh
-
-* (in a former incarnation this was called SGLFW_Render)
 
 **/
 
 
 struct NP ; 
 struct SGLFW_Program ; 
-struct SRecorder ; 
+struct SRecordInfo ; 
 struct sfr;
 
 struct SGLFW_Record
 {
     bool  dump ; 
     
-    const SRecorder*     sr ;
+    const SRecordInfo*     sr ;
     SGLFW_Buffer*  rpos ; 
     SGLFW_VAO*     vao ;  
     
     glm::vec4      param;
     GLint          param_location;
 
-    SGLFW_Record(const SRecorder* recorder) ; 
+    SGLFW_Record(const SRecordInfo* recorder) ; 
     void init(); 
 
 
     void render(const SGLFW_Program* prog); 
-    //void render_drawElements() const ; 
 };
 
-inline SGLFW_Record::SGLFW_Record(const SRecorder* _sr )
+inline SGLFW_Record::SGLFW_Record(const SRecordInfo* _sr )
     :
     dump(false),
     sr(_sr),
@@ -50,7 +46,6 @@ inline SGLFW_Record::SGLFW_Record(const SRecorder* _sr )
 SGLFW_Record::init
 ----------------
 
-Creates vtx, nrm, idx OpenGL buffers using SGLFW_Buffers
 
 
 **/
@@ -59,10 +54,6 @@ Creates vtx, nrm, idx OpenGL buffers using SGLFW_Buffers
 inline void SGLFW_Record::init()
 {
     
-    //sfr fr;
-    //fr.set_ce(&((sr->ce).x));
-    //gm->set_frame(fr);
-    //gm->dump();
      
     float t0 = sr->get_t0(); 
     float t1 = sr->get_t1(); 
@@ -87,11 +78,6 @@ inline void SGLFW_Record::init()
 SGLFW_Record::render
 ---------------------
 
-Use argument prog to render the mesh 
-
-NB: careful that the intended buffer is bound (making it the active GL_ARRAY_BUFFER)
-when the vertex attrib is enabled.  Getting this wrong can for example easily cause
-normals to appear in position slots causing perplexing renders. 
 
 **/
 
@@ -103,7 +89,7 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     vao->bind(); 
  
     rpos->bind();
-    prog->enableVertexAttribArray("rpos" ,SRecorder::RPOS_SPEC ); 
+    prog->enableVertexAttribArray("rpos" ,SRecordInfo::RPOS_SPEC ); 
     //prog->locateMVP("ModelViewProjection", gm->MVP_ptr ); 
  
  
@@ -115,19 +101,10 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     prog->updateMVP();
     
     GLenum mode = prog->geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;  
-//    std::cout<<" GL_LINE_STRIP " << GL_LINE_STRIP
-//             <<" GL_POINTS " << GL_POINTS
-//             <<" mode = " <<mode
-//             << std::endl;
     glDrawArrays(mode, sr->record_first,  sr->record_count);
     
-    //render_drawElements(); 
 }
 
-//inline void SGLFW_Record::render_drawElements() 
-//{
-//
-//}
 
 
 

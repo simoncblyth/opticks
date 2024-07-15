@@ -1,27 +1,8 @@
 #!/bin/bash  
 usage(){ cat << EOU
-SRecorder_test.sh
+SRecordInfo_test.sh
 ===============
 
-Inits SRecorder from loaded stree.h::
-
-   ~/o/sysrap/tests/SRecorder_test.sh 
-   ~/o/sysrap/tests/SRecorder_test.sh info
-
-
-To create and persist the stree starting from GEOM gdml::
-
-   ~/o/u4/tests/U4TreeCreateTest.sh
-
-
-The framespec.txt file used is the first of the below paths that exists::
-
-    ~/.opticks/GEOM/${GEOM}_framespec.txt
-    $TREE_FOLD/framespec.txt               ## ie sibling to the stree folder  
-
-TODO: relocate "scene" output default to be sibling to the stree from which it was derived ? 
-
-TODO: position the scene under GEOM/$GEOM dir to avoid using wrong scene with an analytic geometry
 
 
 EOU
@@ -29,7 +10,7 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=SRecorder_test
+name=SRecordInfo_test
 export SRECORDER_FOLD=/tmp/$name
 mkdir -p $SRECORDER_FOLD 
 bin=$SRECORDER_FOLD/$name

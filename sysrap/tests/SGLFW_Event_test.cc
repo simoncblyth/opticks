@@ -22,7 +22,7 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "ssys.h"
 #include "SGLM.h"
 #include "SScene.h"
-#include "SRecorder.h"
+#include "SRecordInfo.h"
 #include "SGLFW.h"
 #include "SGLFW_Event.h"
 
@@ -32,7 +32,7 @@ int main()
     SScene* scene = SScene::Load("$SCENE_FOLD") ; 
     if(DUMP) std::cout << scene->desc() ; 
  
-    SRecorder* sr = SRecorder::Load("$SRECORD_PATH") ; 
+    SRecordInfo* sr = SRecordInfo::Load("$SRECORD_PATH") ; 
 
     SGLM gm ;
     SGLFW_Event glsc(scene, gm , sr);

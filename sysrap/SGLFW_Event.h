@@ -30,7 +30,7 @@ inorm
 **/
 
 #include "SScene.h"
-#include "SRecorder.h"
+#include "SRecordInfo.h"
 #include "SGLFW_Record.h"
 #include "SGLFW.h"
 
@@ -41,7 +41,7 @@ struct SGLFW_Event
     const SScene* sc ; 
     SGLM&         gm ; 
     SGLFW*        gl ; 
-    SRecorder   * sr;
+    SRecordInfo   * sr;
 
     // map of these ? or pairs ?
     SGLFW_Program* wire ; 
@@ -54,7 +54,7 @@ struct SGLFW_Event
 
     std::vector<SGLFW_Mesh*> mesh ; 
 
-    SGLFW_Event(const SScene* scene, SGLM& gm, SRecorder* recorder ); 
+    SGLFW_Event(const SScene* scene, SGLM& gm, SRecordInfo* recorder ); 
     void init(); 
     void initProg(); 
     void initMesh(); 
@@ -84,7 +84,7 @@ inline SGLFW_Program* SGLFW_Event::getRecProg() const
     return rec_prog;
 }
 
-inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm, SRecorder* _sr)
+inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm, SRecordInfo* _sr)
     :
     sc(_sc)
    ,gm(_gm)
@@ -112,13 +112,6 @@ inline void SGLFW_Event::initRecord()
     sr->desc() ; 
     record = new SGLFW_Record(sr);
 
-   // sfr fr;
-   // fr.set_ce(&((sr->ce).x));
-   // gm.set_frame(fr);
-   // std::cout<<"This is SGLFW_Event::initRecord"<<std::endl;
-   // gm.dump();
-   // rec_prog->locateMVP("ModelViewProjection", gm.MVP_ptr ); 
-   // std::cout<<"This is SGLFW_Event::initRecord"<<std::endl;
 }
 
 
