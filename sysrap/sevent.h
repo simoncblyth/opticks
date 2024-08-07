@@ -109,6 +109,7 @@ struct sevent
     float2 time_domain ; 
     float2 wavelength_domain ; 
 
+    // TODO: make all these below unsigned
     // sevent::init sets these max using values from SEventConfig 
     int      max_genstep ;  // eg:      100,000
     int      max_photon  ;  // eg:  100,000,000
@@ -141,6 +142,7 @@ struct sevent
     int      num_simtrace ; 
     int      num_aux ; 
     int      num_sup ; 
+    // TODO: make all these above unsigned
 
     // With QEvent device running the below are pointers to device buffers. 
     // Most are allocated ONCE ONLY by QEvent::device_alloc_genstep/photon/simtrace
