@@ -107,8 +107,8 @@ cd $(dirname $(realpath $BASH_SOURCE))
 name=SGLFW_SOPTIX_Scene_test
 
 
-source $HOME/.opticks/GEOM/GEOM.sh
-[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1 
+#source $HOME/.opticks/GEOM/GEOM.sh
+#[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1 
 
 
 export FOLD=/tmp/$USER/opticks/$name
