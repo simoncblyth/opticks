@@ -47,7 +47,10 @@ oe-env()
     opticks-;
 
     #oe-export
-    source $OPTICKS_PREFIX/bin/opticks-setup.sh 1>&2 
+
+    local setup=$OPTICKS_PREFIX/bin/opticks-setup.sh
+    [ ! -f "$setup" ] && echo $FUNCNAME  FATAL - NO setup at $setup - maybe you need to opticks-full 
+    source $setup 1>&2 
 }
 
 

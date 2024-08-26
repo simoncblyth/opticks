@@ -242,8 +242,8 @@ int CSGFoundry::findSolidWithLabel(const char* q_mml) const
 
 
 /**
-CSGFoundry::isSolidTrimesh_OLD
--------------------------------
+CSGFoundry::isSolidTrimesh_posthoc_kludge
+------------------------------------------
 
 NB this was used for post-hoc triangulation of a compound solid 
 prior to implementation of more flexible forced triangulation at stree.h 
@@ -270,12 +270,22 @@ triangulated geometry for those solids::
    export OPTICKS_SOLID_TRIMESH=1:sStrutBallhead,1:base_steel
 
 **/
-bool CSGFoundry::isSolidTrimesh_OLD(int gas_idx) const 
+bool CSGFoundry::isSolidTrimesh_posthoc_kludge(int gas_idx) const 
 {
     const char* ls = SGeoConfig::SolidTrimesh() ; 
     if(ls == nullptr) return false ;   
     return SLabel::IsIdxLabelListed( mmlabel, gas_idx, ls, ',' ); 
 }
+
+bool CSGFoundry::isSolidTrimesh(int gas_idx) const 
+{
+    char slpx = getSolidLabelPrefix(gas_idx); 
+    // HMM: above is OK for single solid label, but not for a compounded label ?
+    bool trimesh = slpx == 'T' ;  
+    assert( slpx == 'R' || slpx == 'F' || slpx == 'T' ); 
+    return trimesh ; 
+}
+
 
 
 

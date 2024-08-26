@@ -317,18 +317,13 @@ void SBT::createGAS(unsigned gas_idx)
     SOPTIX_BuildInput* bi = nullptr ; 
     SOPTIX_Accel* gas = nullptr ; 
 
-    char slpx = foundry->getSolidLabelPrefix(gas_idx); 
-    // HMM: above is OK for single solid label, but not for a compounded label ?
-
-    bool trimesh = slpx == 'T' ;  
-    //bool trimesh = foundry->isSolidTrimesh(gas_idx);  // post-hoc triangulation 
+    bool trimesh = foundry->isSolidTrimesh(gas_idx); // now based on forced triangulation config 
 
     const std::string& mmlabel = foundry->getSolidLabel(gas_idx); 
 
     LOG(LEVEL) 
         << " WITH_SOPTIX_ACCEL "
         << " gas_idx " << gas_idx
-        << " slpx " << slpx
         << " trimesh " << ( trimesh ? "YES" : "NO " )
         << " mmlabel " << mmlabel 
         ;
