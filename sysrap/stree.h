@@ -564,7 +564,9 @@ struct stree
     void enumerateFactors(); 
     void labelFactorSubtrees(); 
     void findForceTriangulateLVID();  
-    void collectRemainderNodes();  
+    void collectGlobalNodes();  
+    std::string descNodes() const;
+
 
     void factorize(); 
 
@@ -582,6 +584,7 @@ struct stree
     int      get_ridx_olvid(  unsigned ridx) const ; 
 
     int      get_num_ridx() const ;  
+    int      get_num_ridx_(char ridx_type) const ;  
     int      get_num_remainder() const ; 
     int      get_num_triangulated() const ;
     char     get_ridx_type(int ridx) const ;
@@ -1438,7 +1441,14 @@ inline int stree::find_lvid(const char* q_soname, bool starting ) const
 }
 
 
+/**
+stree::get_node_vector
+-----------------------
 
+The *nds* vector includes all the structural nodes (aka volumes) with the 
+*rem* and *tri* vectors being subsets of those. 
+
+**/
 
 inline const std::vector<snode>* stree::get_node_vector( char _src ) const
 {
@@ -3038,6 +3048,17 @@ inline std::string stree::Desc(const std::vector<int>& a, unsigned edgeitems ) /
 }
 
 
+/**
+stree::FindForceTriangulateLVID
+--------------------------------
+
+Canonical usage from stree::findForceTriangulateLVID
+
+1. if _force_triangulate_solid is nullptr return doing nothing 
+2. split _force_triangulate_solid delimited string into *force* vector of potential solid names 
+3. for each solid name found in the *_soname* vector collect corresponding indices into *lvid* vector
+
+**/
 
 
 inline void stree::FindForceTriangulateLVID(std::vector<int>& lvid, const std::vector<std::string>& _soname, const char* _force_triangulate_solid, char delim  )  // static
@@ -3376,11 +3397,12 @@ inline void stree::labelFactorSubtrees()
 stree::findForceTriangulateLVID
 --------------------------------
 
-Uses the optional "stree__force_triangulate_solid" envvar list of unique solid names
-together with the list of all solid names *sonames* to form the 
-*force_triangulate_lvid* list of indices that is used by stree::is_force_triangulate 
+Populates *force_triangulate_lvid* vector of indices, which is used by stree::is_force_triangulate. 
 
-This is called from stree::factorize prior to stree::collectRemainderNodes
+Uses the optional comma delimited stree__force_triangulate_solid envvar list of unique solid names
+together with the member variable vector of all solid names *soname* to form the indices.
+
+This is called from stree::factorize prior to stree::collectGlobalNodes
 
 **/
 
@@ -3391,7 +3413,26 @@ inline void stree::findForceTriangulateLVID()
     std::cout << "stree::findForceTriangulateLVID\n" << descForceTriangulateLVID()  ;
 }
 
-inline void stree::collectRemainderNodes() 
+/**
+stree::collectGlobalNodes
+---------------------------
+
+This is invoked from the tail of stree::factorize
+where subsets of the *nds* snode collected from Geant4 by *U4Tree::initNodes_r*
+are copied into the *rem* and *tri* vectors. 
+
+Done by iterating over the *nds* vector of all nodes copying global non-instanced 
+snode with repeat_index:0 into the *rem* and *tri* vectors
+depending on the "stree__force_triangulate_solid" envvar list of unique solid names. 
+
+The default is to collect globals into the *rem* vector. 
+
+NB simplifying assumption that all configured tri nodes are global (not instanced)
+
+**/
+
+
+inline void stree::collectGlobalNodes() 
 {
     assert( rem.size() == 0u ); 
     assert( tri.size() == 0u ); 
@@ -3411,8 +3452,30 @@ inline void stree::collectRemainderNodes()
             assert( do_force_triangulate == false && "force triangulate solid is currently only supported for remainder nodes" ); 
         }  
     }
-    if(level>0) std::cout << "stree::collectRemainderNodes rem.size " << rem.size() << std::endl ;
+    if(level>0) std::cout 
+       << "stree::collectGlobalNodes " 
+       << descNodes() 
+       << descForceTriangulateLVID() 
+       << std::endl 
+       ;
 }
+
+
+inline std::string stree::descNodes() const
+{
+    std::stringstream ss ; 
+    ss 
+       << "stree::descNodes "
+       << " nds.size " << nds.size()
+       << " rem.size " << rem.size()
+       << " tri.size " << tri.size()
+       << " (rem.size + tri.size) " << (rem.size() + tri.size() )
+       << " (nds.size - rem.size - tri.size; inst nodes) " << (nds.size() - rem.size() - tri.size() )
+       ;
+    std::string str = ss.str();  
+    return str ; 
+}
+
 
 
 /**
@@ -3437,8 +3500,10 @@ labelFactorSubtrees
    label all nodes of subtrees of all repeats with repeat_index, 
    leaving remainder nodes at default of zero repeat_index
 
-collectRemainderNodes
-   collect global non-instanced 
+collectGlobalNodes
+   collect global non-instanced nodes into *rem* vector and depending on envvars collect 
+   nodes to be force triangulated into *tri* vector
+   
  
 **/
 
@@ -3453,7 +3518,7 @@ inline void stree::factorize()
     labelFactorSubtrees(); 
 
     findForceTriangulateLVID();  
-    collectRemainderNodes(); 
+    collectGlobalNodes(); 
 
     if(level>0) std::cout << desc_factor() << std::endl ;
     if(level>0) std::cout << "] stree::factorize " << std::endl ;
@@ -3516,9 +3581,23 @@ inline int stree::get_num_ridx() const
 {
     return get_num_remainder() + get_num_factor() + get_num_triangulated() ; 
 }
+
+/**
+stree::get_num_remainder
+-------------------------
+
+Currently always returns 1, as while OptiX geometry might be made to 
+work with purely instanced compound solids such geometries 
+are impossible from Geant4 conversions as the world volume would
+never be instanced. 
+
+Also lots of other places assume always have this 
+
+**/
+
 inline int stree::get_num_remainder() const 
 {
-    //return rem.size() > 0 ? 1 : 0 ;   // lots other places assume always have this 
+    //return rem.size() > 0 ? 1 : 0 ;   
     return 1 ; 
 }
 inline int stree::get_num_triangulated() const 
@@ -3526,28 +3605,55 @@ inline int stree::get_num_triangulated() const
     return tri.size() > 0 ? 1 : 0 ; 
 }
 
+inline int stree::get_num_ridx_(char ridx_type) const
+{
+    int num = -1 ; 
+    switch(ridx_type)
+    {
+        case 'R': num = get_num_remainder()     ; break ; 
+        case 'F': num = get_num_factor()        ; break ; 
+        case 'T': num = get_num_triangulated()  ; break ; 
+    }
+    return num ; 
+}  
+
+
+
+
+
 /**
 stree::get_ridx_type
 ---------------------
 
-Example with::
+The compound solids are assumed to be ordered in the below manner with 
+the R solid(s) followed by the instanced F solids and then the T solid::
 
-    num_remainder   : 1
-    num_factor      : 3
-    num_triangulate : 1
-    num_ridx        : 5
+    RFFFFT
+  
 
-::
+Expectation for compound solids:
 
-    +-------+--------------------------------------------+--------------------------------------------------------+
-    |       |   lowest ridx                              |  highest ridx                                          |
-    +=======+============================================+========================================================+
-    | 4 + T | num_remainder + num_factor + 0             | num_remainder + num_factor + num_triangulate - 1       |
-    | 3 + F |                                            | num_remainder + num_factor - 1                         |
-    | 2 + F |                                            |                                                        |
-    | 1 + F | num_remainder + 0                          | num_remainder + num_factor -1                          |
-    | 0 + R |   0                                        | num_remainder - 1                                      |
-    +-------+--------------------------------------------+--------------------------------------------------------+
++-----+-------------------------------+--------------------------------------------------------+
+|     | solid type                    |  note                                                  |
++=====+===============================+========================================================+
+|  R  |  global non-instanced         |   1 solid formed from the many *rem* nodes             |              
++-----+-------------------------------+--------------------------------------------------------+
+|  F  |  factor/instanced             |  0...~10 solids with a few nodes each                  |
++-----+-------------------------------+--------------------------------------------------------+
+|  T  |  triangulated non-instanced   |  from any *tri* nodes depending on stree envvar config | 
++-----+-------------------------------+--------------------------------------------------------+
+
+Indices of ranges of the 3 types of compound solids:
+
++---+--------------------------------------------+--------------------------------------------------------+
+|   |   lowest ridx                              |  highest ridx                                          |
++===+============================================+========================================================+
+| R |   0                                        | num_remainder - 1                                      |
++---+--------------------------------------------+--------------------------------------------------------+
+| F | num_remainder + 0                          | num_remainder + num_factor -1                          |
++---+--------------------------------------------+--------------------------------------------------------+
+| T | num_remainder + num_factor + 0             | num_remainder + num_factor + num_triangulate - 1       |
++---+--------------------------------------------+--------------------------------------------------------+
 
 **/
 

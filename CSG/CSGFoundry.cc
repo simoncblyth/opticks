@@ -242,8 +242,25 @@ int CSGFoundry::findSolidWithLabel(const char* q_mml) const
 
 
 /**
-CSGFoundry::isSolidTrimesh
-----------------------------
+CSGFoundry::isSolidTrimesh_OLD
+-------------------------------
+
+NB this was used for post-hoc triangulation of a compound solid 
+prior to implementation of more flexible forced triangulation at stree.h 
+level, see :doc:`/notes/issues/flexible_forced_triangulation`
+
+This is used from CSGOptiX/SBT.cc::
+
+    SBT::createGAS
+    SBT::_getOffset
+    SBT::getTotalRec
+    SBT::descGAS  
+    SBT::createHitgroup
+    
+ 
+The effect is to configure the build of the OptiX geometry 
+to use triangulated geometry for some compound solids (1:1 with OptiX GAS). 
+
 
 Normally returns false indicating to use analytic solid setup, 
 can arrange to return true for some CSGSolid using envvar 
@@ -253,7 +270,7 @@ triangulated geometry for those solids::
    export OPTICKS_SOLID_TRIMESH=1:sStrutBallhead,1:base_steel
 
 **/
-bool CSGFoundry::isSolidTrimesh(int gas_idx) const 
+bool CSGFoundry::isSolidTrimesh_OLD(int gas_idx) const 
 {
     const char* ls = SGeoConfig::SolidTrimesh() ; 
     if(ls == nullptr) return false ;   
@@ -1490,16 +1507,26 @@ void CSGFoundry::checkPrimSpec() const
 
 
 
+char CSGFoundry::getSolidLabelPrefix(int ridx) const
+{
+    const CSGSolid* so = getSolid(ridx); 
+    assert(so); 
+    return so ? so->getLabelPrefix() : '\0' ; 
+}
+
+
 unsigned CSGFoundry::getNumSolid(int type_) const 
 { 
     unsigned count = 0 ; 
     for(unsigned i=0 ; i < solid.size() ; i++)
     {
-        const CSGSolid& so = solid[i] ; 
-        if(so.type == type_ ) count += 1 ;  
+        const CSGSolid* so = getSolid(i); 
+        if(so && so->type == type_ ) count += 1 ;  
     } 
     return count ; 
-} 
+}
+
+
 
 unsigned CSGFoundry::getNumSolid() const {  return getNumSolid(STANDARD_SOLID); } 
 unsigned CSGFoundry::getNumSolidTotal() const { return solid.size(); } 

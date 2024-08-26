@@ -666,6 +666,26 @@ enable_osur:true
     WITHOUT IT SOME Water///Steel boundaries for example
     FAIL TO ABSORB PHOTONS : SEE ~/j/issues/3inch_PMT_geometry_after_virtual_delta.rst
 
+
+NB no-selection collection of below vectors for consistent "nidx" node indices
+
+stree::nds 
+    snode for all structural nodes aka volumes 
+
+stree::digs
+    digests for all nodes 
+
+stree::m2w
+    model2world transforms for all nodes
+
+stree::w2m
+    world2model transforms for all nodes
+
+stree::gtd
+    flattened transforms for all nodes "GGeo Transform Debug"
+
+Q:if gtd really just for debug, can it be macroed away ? 
+
 **/
 
 

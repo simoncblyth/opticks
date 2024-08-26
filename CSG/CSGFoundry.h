@@ -214,7 +214,7 @@ struct CSG_API CSGFoundry : public SGeo
     const CSGSolid*   getSolid_(int solidIdx) const ;   // -ve counts from back 
     unsigned          getSolidIdx(const CSGSolid* so) const ; 
 
-
+    char getSolidLabelPrefix(int ridx) const ; 
     unsigned getNumSolid(int type_) const ;
     unsigned getNumSolid() const;        // STANDARD_SOLID count 
     unsigned getNumSolidTotal() const;   // all solid count 
@@ -378,7 +378,7 @@ struct CSG_API CSGFoundry : public SGeo
     unsigned getNumMeshName() const ; 
     unsigned getNumSolidLabel() const ; 
     int findSolidWithLabel(const char* q_mml) const ; 
-    bool isSolidTrimesh(int gas_idx) const ;  // see SGeoConfig::SolidTrimesh 
+    bool isSolidTrimesh_OLD(int gas_idx) const ;  // see SGeoConfig::SolidTrimesh 
 
     static void CopyNames(    CSGFoundry* dst, const CSGFoundry* src ); 
     static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ); 

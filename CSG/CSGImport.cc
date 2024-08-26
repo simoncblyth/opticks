@@ -84,23 +84,19 @@ void CSGImport::importSolid()
     int num_ridx = st->get_num_ridx() ; 
     for(int ridx=0 ; ridx < num_ridx ; ridx++) 
     {
-        std::string _rlabel = CSGSolid::MakeLabel('r',ridx) ;
-        const char* rlabel = _rlabel.c_str(); 
-
-        if( ridx == 0 )
+        char ridx_type = st->get_ridx_type(ridx) ; 
+        switch(ridx_type)
         {
-            importSolidRemainder(ridx, rlabel ); 
-        }
-        else
-        {
-            importSolidFactor(ridx, rlabel ); 
-        }
+            case 'R': importSolidGlobal( ridx, ridx_type ) ; break ; 
+            case 'T': importSolidGlobal( ridx, ridx_type ) ; break ; 
+            case 'F': importSolidFactor( ridx, ridx_type ) ; break ; 
+        } 
     }
 }
         
 /**
-CSGImport::importSolidRemainder : non-instanced global volumes 
---------------------------------------------------------------
+CSGImport::importSolidRemainder_OLD : non-instanced global volumes 
+-------------------------------------------------------------------
 
 cf::
 
@@ -115,7 +111,7 @@ A: That assumption is true for prims of the remainder solid, but might not be fo
    the prim of other solid. 
 
 **/
-CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
+CSGSolid* CSGImport::importSolidRemainder_OLD(int ridx, const char* rlabel)
 {
     assert( ridx == 0 ); 
     int num_rem = st->rem.size() ; 
@@ -142,11 +138,50 @@ CSGSolid* CSGImport::importSolidRemainder(int ridx, const char* rlabel)
 }
 
 
-CSGSolid* CSGImport::importSolidTriangulated(int ridx, const char* rlabel)
-{
-    return nullptr ;      
-}
+/**
+CSGImport::importSolidGlobal
+-----------------------------
 
+Generalizes the old CSGImport::importSolidRemainder to source the 
+stree level snode from either *rem* or *tri* depending on the
+ridx_type returned by stree::get_ridx_type
+
+**/
+
+CSGSolid* CSGImport::importSolidGlobal(int ridx, char ridx_type )
+{
+    assert( ridx_type == 'R' || ridx_type == 'T' ); 
+
+    std::string _rlabel = CSGSolid::MakeLabel(ridx_type,ridx) ;
+    const char* rlabel = _rlabel.c_str(); 
+
+
+    const std::vector<snode>* src = st->get_node_vector(ridx_type) ; 
+    assert( src ); 
+
+    int num_src = src->size() ; 
+
+    LOG(LEVEL) 
+        << " ridx " << ridx 
+        << " ridx_type " << ridx_type 
+        << " rlabel " << rlabel 
+        << " num_src " << num_src
+        ; 
+
+    std::array<float,6> bb = {} ; 
+    CSGSolid* so = fd->addSolid(num_src, rlabel); 
+
+    for(int i=0 ; i < num_src ; i++)
+    {
+        int primIdx = i ;  // primIdx within the CSGSolid
+        const snode& node = (*src)[primIdx] ;
+        CSGPrim* pr = importPrim( primIdx, node ) ;  
+        assert( pr );  
+        s_bb::IncludeAABB( bb.data(), pr->AABB() );    
+    }
+    s_bb::CenterExtent( &(so->center_extent.x), bb.data() ); 
+    return so ; 
+}
 
 
 
@@ -166,15 +201,23 @@ TODO: confirm consistent frame for the prim bbox
 
 **/
 
-CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
+CSGSolid* CSGImport::importSolidFactor(int ridx, char ridx_type )
 {
     assert( ridx > 0 ); 
+    assert( ridx_type == 'F' ); 
+
+    std::string _rlabel = CSGSolid::MakeLabel(ridx_type,ridx) ;
+    const char* rlabel = _rlabel.c_str(); 
+
+
+    int  num_rem = st->get_num_remainder() ; 
+    assert( num_rem == 1 ) ; 
 
     int num_factor = st->factor.size() ; 
-    assert( ridx - 1 < num_factor ); 
+    assert( ridx - num_rem < num_factor ); 
 
-    const sfactor& sf = st->factor[ridx-1] ; 
-    int subtree = sf.subtree ; 
+    const sfactor& sf = st->factor[ridx-num_rem] ; 
+    int subtree = sf.subtree ;  // number of prim within the compound solid 
 
     CSGSolid* so = fd->addSolid(subtree, rlabel); 
 
@@ -186,6 +229,8 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, const char* rlabel)
 
     LOG(LEVEL) 
         << " ridx " << ridx 
+        << " ridx_type " << ridx_type
+        << " num_rem " << num_rem 
         << " rlabel " << rlabel 
         << " num_factor " << num_factor
         << " nodes.size " << nodes.size() 

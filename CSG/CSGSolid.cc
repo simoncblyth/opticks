@@ -65,8 +65,10 @@ bool CSGSolid::labelMatch(const char* label_) const
     return strncmp(label, label_, sizeof(label)) == 0 ;
 }
 
-
-
+char CSGSolid::getLabelPrefix() const
+{
+    return label[0] ; 
+}
 
 
 

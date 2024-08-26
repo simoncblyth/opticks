@@ -45,6 +45,8 @@ struct CSG_API CSGSolid   // Composite shape
     static const plog::Severity LEVEL ;  
 
     bool labelMatch(const char* label) const ;  
+    char getLabelPrefix() const ; 
+
     static bool IsDiff( const CSGSolid& a , const CSGSolid& b ); 
     static CSGSolid Make( const char* label_, int numPrim_, int primOffset_=-1 ); 
     static std::string MakeLabel(const char* typ0, unsigned idx0, char delim='_' );  

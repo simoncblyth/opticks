@@ -1,4 +1,14 @@
 #pragma once
+/**
+SLabel.h
+=========
+
+After the fact lookups of mmlable indices from labels. 
+This was used to provide primitive "post-hoc" trimesh control 
+prior to implementation of proper tri control. 
+
+**/
+
 
 #include <algorithm>
 #include <vector>
