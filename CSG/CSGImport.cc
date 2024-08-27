@@ -545,6 +545,8 @@ CSGNode* CSGImport::importListnode(int nodeOffset, int partIdx, const snode& nod
 CSGImport::importInst
 ---------------------------
 
+Invoked from CSGImport::import 
+
 The CSGFoundry calls should parallel CSG_GGeo_Convert::addInstances
 the source is the stree instead of GGeo/GMergedMesh etc..
 

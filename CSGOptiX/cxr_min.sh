@@ -18,13 +18,13 @@ sysrap/tests/SGLM_set_frame_test.sh
     EYE=0.2,0.2,0.2 TMIN=0.1 ~/o/cxr_min.sh
     EYE=0.3,0.3,0.3 TMIN=0.1 ~/o/cxr_min.sh
 
-    ELV=t:Water_solid,Rock_solid  ./cxr_min.sh    # with colon not working 
+    ELV=t:Water_solid,Rock_solid  ~/o/cxr_min.sh    # with colon not working 
 
 
     MOI=PMT_20inch_veto:0:1000 ~/o/cxr_min.sh
 
 
-    TRIMESH=1 ~/o/cxr_min.sh 
+    ~/o/cxr_min.sh 
 
 
 
@@ -179,11 +179,11 @@ export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
 export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
 
 
-if [ -n "$TRIMESH" ]; then 
 
+#if [ -n "$TRIMESH" ]; then 
    #trimesh=2923:sWorld
    #trimesh=3062:sWorld
-   trimesh=3218:sWorld
+   #trimesh=3218:sWorld
    #trimesh=5:PMT_3inch_pmt_solid
    #trimesh=9:NNVTMCPPMTsMask_virtual
    #trimesh=12:HamamatsuR12860sMask_virtual
@@ -198,9 +198,9 @@ if [ -n "$TRIMESH" ]; then
    #trimesh=28:World_solid 
    #trimesh=2:VACUUM_solid 
 
-   export OPTICKS_SOLID_TRIMESH=$trimesh
-   echo posthoc TRIMESH setting no longer honoured - moving to flexible forced triangulation for finer control - that has to be precache 
-fi
+   #export OPTICKS_SOLID_TRIMESH=$trimesh
+   #echo posthoc TRIMESH setting no longer honoured - moving to flexible forced triangulation for finer control - that has to be precache 
+#fi
 
 
 TMP=${TMP:-/tmp/$USER/opticks}

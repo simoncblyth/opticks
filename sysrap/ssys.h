@@ -20,17 +20,22 @@ Note that strings like "1e-9" parse ok into float/double.
 #include <limits>
 
 #include "sstr.h"
+#include "spath.h"
 
 
 struct ssys
 {
     static constexpr const bool VERBOSE = false ; 
+    static constexpr const char* GETENVVAR_PATH_PREFIX = "filepath:" ; 
 
     static std::string popen(const char* cmd, bool chomp=true, int* rc=nullptr);      
     static std::string popen(const char* cmda, const char* cmdb, bool chomp=true, int* rc=nullptr); 
 
     static std::string uname(const char* args="-a"); 
     static std::string which(const char* script); 
+
+    static bool value_is_path_prefixed(const char* val );
+    static const char* get_replacement_path(const char* val );
 
     static const char* getenvvar(const char* ekey ); 
     static const char* getenvvar(const char* ekey, const char* fallback); 
@@ -179,6 +184,20 @@ inline std::string ssys::which(const char* script)
     return rc == 0 ? path : empty ; 
 }
 
+
+
+inline bool ssys::value_is_path_prefixed(const char* val )
+{
+    return val && strlen(val) > strlen(GETENVVAR_PATH_PREFIX) && strncmp(val, GETENVVAR_PATH_PREFIX, strlen(GETENVVAR_PATH_PREFIX)) == 0 ;  
+}
+
+inline const char* ssys::get_replacement_path(const char* val )
+{
+    assert(value_is_path_prefixed(val)) ; 
+    return val ? strdup(val + strlen(GETENVVAR_PATH_PREFIX)) : nullptr ;  
+}
+ 
+
 /**
 ssys::getenvvar
 ----------------
@@ -193,6 +212,11 @@ is returned.::
     OPTICKS_ELV_SELECTION_=greetings ELV=hello ./ssys_test.sh 
     test_getenvvar ekey OPTICKS_ELV_SELECTION,ELV val hello
 
+
+If the string value of the envvar starts with GETENVVAR_PATH_PREFIX "filepath:" 
+then the remainder of the string is intepreted as a file path which is loaded 
+to replace the value or nullptr when no file is found.  
+
 **/
 
 inline const char* ssys::getenvvar(const char* ekey)
@@ -205,6 +229,32 @@ inline const char* ssys::getenvvar(const char* ekey)
         const char* key = keys[i].c_str(); 
         val = getenv(key) ; 
         if( val != nullptr ) break ; 
+    }
+
+    bool is_path_prefixed = value_is_path_prefixed(val) ;
+ 
+    /*
+    std::cout << "ssys::getenvvar " 
+              << " ekey " << ( ekey ? ekey : "-" )  
+              << " val  " << ( val ? val : "-" ) 
+              << " is_path_prefixed " << is_path_prefixed
+              << std::endl 
+              ; 
+    */ 
+
+    if(is_path_prefixed)
+    {
+        const char* path = get_replacement_path(val) ;   
+
+        std::cout 
+            << "ssys::getenvvar.is_path_prefixed " 
+            << " path " << ( path ? path : "-" )
+            << std::endl 
+            ;                   
+
+        std::string txt ;    
+        bool path_exists = spath::Read( txt, path );
+        val = path_exists ? strdup(txt.c_str()) : nullptr ;  
     }
     return val ; 
 }

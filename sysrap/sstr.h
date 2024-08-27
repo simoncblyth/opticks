@@ -465,15 +465,31 @@ inline void sstr::SplitTrim( const char* str, char delim,   std::vector<std::str
     while (std::getline(ss, s, delim)) elem.push_back(Trim(s.c_str())) ; 
 }
 
+/**
+sstr::SplitTrimSuppress
+------------------------
+
+* when str contains '\n' the argument delim is overridden to become '\n'
+* elem that start with # are skipped 
+
+**/
+
 inline void sstr::SplitTrimSuppress( const char* str, char delim,   std::vector<std::string>& elem  )
 {
+    bool is_multiline = Contains(str,"\n");
+    char udelim = is_multiline ? '\n' : delim ; 
+
     std::stringstream ss; 
     ss.str(str)  ;
     std::string s;
-    while (std::getline(ss, s, delim)) 
+    while (std::getline(ss, s, udelim)) 
     {
         const char* t = Trim(s.c_str());
-        if(t && strlen(t) > 0) elem.push_back(t) ; 
+        if(t && strlen(t) > 0) 
+        {
+            if(t[0] == '#') continue ;  
+            elem.push_back(t) ;
+        } 
     }
 }
 

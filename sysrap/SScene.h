@@ -3,6 +3,11 @@
 SScene.h
 =========
 
+Canonical SScene instance is member of SSim 
+and is instanciated by the SSim ctor. 
+This SScene instance is sibling of the canonical 
+stree instance. 
+
 To some extent this acts as a minimal selection of the 
 full stree.h info needed to render
 
@@ -49,7 +54,11 @@ struct SScene
     void check() const ; 
 
     void initFromTree(const stree* st);
-    void initFromTree_Remainder(const stree* st);
+
+    void initFromTree_Remainder(  const stree* st);
+    void initFromTree_Triangulate(const stree* st);
+    void initFromTree_Global(const stree* st, char ridx_type );
+
     void initFromTree_Factor(const stree* st);
     void initFromTree_Factor_(int ridx, const stree* st);
     void initFromTree_Node(SMeshGroup* mg, int ridx, const snode& node, const stree* st);
@@ -144,6 +153,13 @@ inline void SScene::check() const
 SScene::initFromTree
 ---------------------
 
+Note the surprisingly high level call stack,
+immediately after stree population by U4Tree::Create::
+
+    G4CXOpticks::setGeometry
+    SSim::initSceneFromTree
+    SScene::initFromTree
+
 Creating::
 
     (SMeshGroup)meshgroup
@@ -165,6 +181,8 @@ inline void SScene::initFromTree(const stree* st)
 {
     initFromTree_Remainder(st);
     initFromTree_Factor(st);
+    initFromTree_Triangulate(st);
+
     initFromTree_Instance(st); 
 
     addFrames("$SScene__initFromTree_addFrames", st ); 
@@ -172,7 +190,28 @@ inline void SScene::initFromTree(const stree* st)
 
 inline void SScene::initFromTree_Remainder(const stree* st)
 {
-    int num_node = st->rem.size() ;
+    int num_rem = st->get_num_remainder(); 
+    assert( num_rem == 1 ); 
+    initFromTree_Global( st, 'R' ); 
+}
+inline void SScene::initFromTree_Triangulate(const stree* st)
+{
+    int num_tri = st->get_num_triangulated(); 
+    assert( num_tri == 1 || num_tri == 0  ); 
+    if(num_tri == 1 )
+    {
+        initFromTree_Global( st, 'T' ); 
+    }
+}
+
+
+inline void SScene::initFromTree_Global(const stree* st, char ridx_type )
+{
+    assert( ridx_type == 'R' || ridx_type == 'T' ); 
+    const std::vector<snode>* _nodes = st->get_node_vector(ridx_type)  ; 
+    assert( _nodes ); 
+
+    int num_node = _nodes->size() ;
     if(dump) std::cout
         << "[ SScene::initFromTree_Remainder"
         << " num_node " << num_node
@@ -183,24 +222,30 @@ inline void SScene::initFromTree_Remainder(const stree* st)
     int ridx = 0 ; 
     for(int i=0 ; i < num_node ; i++)
     {
-        const snode& node = st->rem[i];
+        const snode& node = (*_nodes)[i];
         initFromTree_Node(mg, ridx, node, st);
+        // HUH: CANNOT BE CORRECT : RIDX NOT ZERO FOR TRI
+        // BUT SEEMS NO USED ANYHOW   
     }
     const SMesh* _mesh = SMesh::Concatenate( mg->subs, 0 );
     meshmerge.push_back(_mesh);
     meshgroup.push_back(mg);
 
     if(dump) std::cout
-        << "] SScene::initFromTree_Remainder"
+        << "] SScene::initFromTree_Global"
         << " num_node " << num_node 
+        << " ridx_type " << ridx_type
         << std::endl
         ;
 }
 
 inline void SScene::initFromTree_Factor(const stree* st)
 {
+    int num_rem = st->get_num_remainder(); 
+    assert( num_rem == 1 ); 
+
     int num_fac = st->get_num_factor(); 
-    for(int i=0 ; i < num_fac ; i++) initFromTree_Factor_(1+i, st); 
+    for(int i=0 ; i < num_fac ; i++) initFromTree_Factor_(num_rem+i, st); 
 }
 
 /**
@@ -300,7 +345,7 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
 inline void SScene::initFromTree_Instance(const stree* st)
 {
     inst_info = st->inst_info ; 
-    strid::NarrowClear( inst_tran, st->inst ); 
+    strid::NarrowClear( inst_tran, st->inst ); // copy and narrow from st->inst into inst_tran 
 }
 
 

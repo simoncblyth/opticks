@@ -3,14 +3,23 @@ usage(){ cat << EOU
 SGLFW_SOPTIX_Scene_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
 
+NB because this loads a pre-existing SScene it is necessary to 
+regenerate the SScene from Geant4 using eg jok-tds when there
+are geometry issues.
+
+
 Assuming the scene folder exists already::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     SCENE=0 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh   ## default 
     SCENE=2 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     SCENE=3 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     ## SCENE picks between different scene directories
+
+As this uses GL interop it may be necessary to select the display GPU::
+
+    CUDA_VISIBLE_DEVICES=1 ~/o/sysrap/tests/ssst.sh 
 
 Impl::
 
@@ -117,6 +126,14 @@ mkdir -p $FOLD
 
 export BASE=$TMP/GEOM/$GEOM/$name
 
+
+if [ -n "$LOG" ]; then
+   export SOPTIX_Scene__DUMP=1
+   export SGLFW_Scene__DUMP=1
+   echo LOG defined - enable dumping 
+else
+   echo run with LOG defined for dumping 
+fi
 
 
 cu=../SOPTIX.cu
@@ -279,6 +296,31 @@ if [ "${arg/xir}" != "$arg" ]; then
 fi
 
 
+gdb__() 
+{ 
+    : opticks/opticks.bash prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+
+
 if [ "${arg/build}" != "$arg" ]; then
 
     echo $BASH_SOURCE build
@@ -319,8 +361,9 @@ if [ "${arg/build}" != "$arg" ]; then
     echo $BASH_SOURCE build DONE
 fi 
 
-if [ "${arg/dbg}" != "$arg" ]; then
-    dbg__ $bin 
+if [ "${arg/dbg}" != "$arg" -o -n "$GDB" ]; then
+    #dbg__ $bin 
+    gdb__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi
 

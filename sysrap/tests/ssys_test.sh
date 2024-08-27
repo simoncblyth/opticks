@@ -25,7 +25,6 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 
-
 export MULTILINE=$(cat << EOV
 
 red
@@ -54,6 +53,13 @@ export GEOM=FewPMT
 export ${GEOM}_GEOMList=hamaLogicalPMT
 export VERSION=214
 export COMMANDLINE="Some-COMMANDLINE-with-spaces after the spaces start"
+
+
+
+export GEOM=J_2024aug27
+export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
+
+
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin

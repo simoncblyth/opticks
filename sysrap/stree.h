@@ -442,8 +442,12 @@ struct stree
     bool has_frame(const char* q_spec) const ;
 
 
-    int get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
-    int get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int get_frame_instanced(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+
+    int get_frame_remainder(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ; 
+    int _get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, char ridx_type ) const ; 
 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ; 
@@ -578,7 +582,9 @@ struct stree
     int      get_factor_olvid(unsigned idx) const ;   // outer-lv-id
 
     int      get_remainder_subtree() const ; 
+    int      get_triangulate_subtree() const ; 
     int      get_remainder_olvid() const  ; 
+    int      get_triangulate_olvid() const  ; 
 
     int      get_ridx_subtree(unsigned ridx) const ; 
     int      get_ridx_olvid(  unsigned ridx) const ; 
@@ -607,7 +613,9 @@ struct stree
 
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx ); 
+    void add_inst_identity( int gas_idx, int nidx ); 
     void add_inst(); 
+
     void narrow_inst(); 
     void clear_inst(); 
     std::string desc_inst() const ;
@@ -1580,9 +1588,12 @@ inline int stree::find_lvid_node( const char* q_spec ) const
 stree::pick_lvid_ordinal_node
 -------------------------------
 
+Returns selected node (pointer into nds vector)
+
 1. collect indices of all snode (volumes) with lvid shape from the _src vector nds/rem/tri
 2. select the ordinal-th snode (-ve ordinal counts from back of the selected set)
-3. return pointer into the nds vector or nullptr 
+3. use selected nn node index from find_lvid_nodes, which is an absolute nidx 
+   to return pointer into the nds vector or nullptr 
 
    * TODO check for  _src of rem/tri ? 
 
@@ -1597,6 +1608,7 @@ inline const snode* stree::pick_lvid_ordinal_node( int lvid, int lvid_ordinal, c
     if( lvid_ordinal < 0 ) lvid_ordinal += num ; 
     bool valid =  lvid_ordinal > -1 && lvid_ordinal < num ; 
     int nidx = valid ? nn[lvid_ordinal] : -1 ; 
+
     const snode* nds_data = nds.data() ; 
     return nidx > -1 && nidx < int(nds.size()) ? nds_data + nidx : nullptr ; 
 }
@@ -1699,8 +1711,6 @@ stree::get_frame
 
 1. parse_spec from q_spec get (lvid, lvid_ordinal, repeat_ordinal)
 
-
-
 Q: An instance may encompasses multiple lv (and multiple snode) 
    so which nidx is collected together with the inst
    transforms into inst_nidx ? The outer one would be most useful. 
@@ -1732,7 +1742,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
     int get_rc = 0 ; 
     if( repeat_ordinal == -1 )
     {
-        get_rc = get_frame_remainder(f,  lvid, lvid_ordinal, repeat_ordinal );
+        get_rc = get_frame_global(  f,  lvid, lvid_ordinal, repeat_ordinal );
     }
     else                                
     {
@@ -1743,6 +1753,22 @@ inline sfr stree::get_frame(const char* q_spec ) const
 }
 
 
+/**
+stree::has_frame
+------------------
+
+The spec are of form::
+
+    Hama:0:1000
+    solidXJanchor:20:-1
+    sSurftube_38V1_0:0:-1
+
+Where the three fields provide the ints::
+
+    (lvid, lvid_ordinal, repeat_ordinal)
+
+**/
+
 inline bool stree::has_frame(const char* q_spec) const 
 {
     int lvid ; 
@@ -1751,7 +1777,7 @@ inline bool stree::has_frame(const char* q_spec) const
     int parse_rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
 
     if(parse_rc != 0) std::cerr 
-        << "stree::get_frame"
+        << "stree::has_frame"
         << " FATAL parse_spec failed "
         << " q_spec [" << ( q_spec ? q_spec : "-" ) << "]"
         << " parse_rc " << parse_rc
@@ -1762,16 +1788,16 @@ inline bool stree::has_frame(const char* q_spec) const
     sfr f ; 
     f.set_name(q_spec); 
 
-
     int get_rc = 0 ; 
     if( repeat_ordinal == -1 )
     {
-        get_rc = get_frame_remainder(f,  lvid, lvid_ordinal, repeat_ordinal );
+        get_rc = get_frame_global(  f,  lvid, lvid_ordinal, repeat_ordinal );
     }
     else                                
     {
         get_rc = get_frame_instanced(f,  lvid, lvid_ordinal, repeat_ordinal );
     }
+
     return get_rc == 0 ; 
 }
 
@@ -1854,14 +1880,11 @@ inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int re
 
 
 /**
-WIP stree::get_frame_remainder
+stree::get_frame_remainder
 --------------------------------
 
-Currently global remainder nodes just yield the world frame, 
-which is not useful for targetting.  
-
-TODO: bring over the approach for globals from MOI targetting.
-At CSG level this was handled by::
+Note the similartity to MOI targetting, 
+at CSG level which is handled by::
 
     CSGTarget::getFrameComponents
     CSGTarget::getGlobalCenterExtent
@@ -1873,12 +1896,50 @@ here at stree level.
 * look inside rem snode for the specified (lvid, lvid_ordinal) ?
 
 **/
-
 inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const 
 {
-    assert( repeat_ordinal == -1 ); // other -ve values could select special cases handling like RTP frame
+    return _get_frame_global( f, lvid, lvid_ordinal, repeat_ordinal, 'R' ); 
+}
+inline int stree::get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const 
+{
+    return _get_frame_global( f, lvid, lvid_ordinal, repeat_ordinal, 'T' ); 
+}
+inline int stree::get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const 
+{
+    return _get_frame_global( f, lvid, lvid_ordinal, repeat_ordinal, '?' ); 
+}
 
-    const snode* _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'R' );   
+
+/**
+stree::_get_frame_global
+--------------------------
+
+For ridx_type '?' look for the frame first using rem nodes and then tri nodes 
+
+**/
+
+
+inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, char ridx_type ) const 
+{
+    assert( repeat_ordinal == -1 ); // other -ve values could select special cases handling like RTP frame
+    assert( ridx_type == 'R' || ridx_type == 'T' || ridx_type == '?' ); 
+
+    const snode* _node = nullptr ; 
+
+    if( ridx_type == 'R' || ridx_type == 'T' )
+    {
+        _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, ridx_type );   
+    }
+    else if( ridx_type == '?' )
+    {
+        _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'R' );   
+        if(_node == nullptr)
+        {
+            _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'T' );   
+        } 
+    }
+
+
     if(_node == nullptr) return 1 ;     
  
     const snode& node = *_node ; 
@@ -2048,6 +2109,13 @@ inline void stree::get_mmlabel( std::vector<std::string>& names) const
 {
     assert( names.size() == 0 ); 
     int num_ridx = get_num_ridx(); 
+
+    if(1) std::cout 
+        << "stree::get_mmlabel"
+        << " num_ridx " << num_ridx 
+        << "\n"
+        ;
+
     for(int ridx=0 ; ridx < num_ridx ; ridx++)
     {
         int num_prim = get_ridx_subtree(ridx) ; 
@@ -2058,8 +2126,16 @@ inline void stree::get_mmlabel( std::vector<std::string>& names) const
 
         std::stringstream ss ;  
         ss << num_prim << ":" << name ; 
-        std::string str = ss.str(); 
-        names.push_back(str);  
+        std::string mmlabel = ss.str(); 
+
+        if(1) std::cout 
+            << "stree::get_mmlabel"
+            << " ridx " << ridx
+            << " mmlabel " << mmlabel  
+            << "\n"
+            ;
+
+        names.push_back(mmlabel);  
     }
 }
 
@@ -2853,7 +2929,7 @@ inline NPFold* stree::serialize() const
     NP* _inst = NPX::ArrayFromVec<double, glm::tmat4x4<double>>( inst, 4, 4) ; 
     NP* _iinst = NPX::ArrayFromVec<double, glm::tmat4x4<double>>( iinst, 4, 4) ; 
 
-    // _f4 just for debug comparisons : narrowing normally only done in memory for upload  
+    // inst_f4 crucially used from CSGImport::importInst
     NP* _inst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_f4, 4, 4) ; 
     NP* _iinst_f4 = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( iinst_f4, 4, 4) ; 
 
@@ -3056,6 +3132,10 @@ Canonical usage from stree::findForceTriangulateLVID
 
 1. if _force_triangulate_solid is nullptr return doing nothing 
 2. split _force_triangulate_solid delimited string into *force* vector of potential solid names 
+
+   * when have lots of solid names to force triangulate its easier to manage these in a file, see stree::findForceTriangulateLVID
+   * when the string contains '\n' sstr::SplitTrimSuppress overrides delim to '\n'
+
 3. for each solid name found in the *_soname* vector collect corresponding indices into *lvid* vector
 
 **/
@@ -3066,7 +3146,7 @@ inline void stree::FindForceTriangulateLVID(std::vector<int>& lvid, const std::v
     if(_force_triangulate_solid == nullptr) return ;
 
     std::vector<std::string> force ;  
-    sstr::Split( _force_triangulate_solid, delim, force ); 
+    sstr::SplitTrimSuppress( _force_triangulate_solid, delim, force ); 
     unsigned num_force = force.size(); 
 
     for(unsigned i=0 ; i < num_force ; i++)
@@ -3285,6 +3365,11 @@ stree::enumerateFactors
 For remaining subs that pass the "freq >= FREQ_CUT"
 create sfactor and collect into *factor* vector
 
+Q: What about ridx:0 is there a factor ?
+A: from the freq cut in stree::enumerateFactors and 
+   the offset by one in stree::labelFactorSubtrees it looks
+   like the factor are really just for the instanced
+
 **/
 
 inline void stree::enumerateFactors()
@@ -3404,6 +3489,28 @@ together with the member variable vector of all solid names *soname* to form the
 
 This is called from stree::factorize prior to stree::collectGlobalNodes
 
+When there are many solids that need to be triangulated it is more
+convenient to adopt a config approach like the below example using 
+a replacement path to load the solid names from a file::
+
+    cd ~/.opticks/GEOM    
+
+    cp J_2024aug27/CSGFoundry/meshname.txt J_2024aug27_meshname_stree__force_triangulate_solid.txt
+
+        ## copy meshname.txt with all the solid names to a suitable location 
+        ## "J_2024aug27" is an example GEOM identifier 
+
+    vi J_2024aug27_meshname_stree__force_triangulate_solid.txt
+
+        ## edit the file leaving only global solids to be force triangulated  
+        ## note that as sstr::SplitTrimSuppress is used lines starting with '#' are skipped 
+
+    export GEOM=J_2024aug27
+    export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
+
+        ## configure envvar within runner script to load the filepath instead of directly using a delimited string
+        ## NB the names and paths are just examples 
+
 **/
 
 
@@ -3428,6 +3535,22 @@ depending on the "stree__force_triangulate_solid" envvar list of unique solid na
 The default is to collect globals into the *rem* vector. 
 
 NB simplifying assumption that all configured tri nodes are global (not instanced)
+
+NB as this action is pre-cache it means that currently must configure triangulation envvar 
+when doing the from Geant4 to stree.h conversion with U4Tree.h, hence the triangulation 
+setting configured is baked into the cache geometry
+
+could triangulation action be done post-cache ?  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* probably yes, but not easily : would need to defer the tri rem formation 
+
+should triangulation action be done post-cache ?  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* probably no, flexibility would be convenient during testing 
+  but for actual use the definiteness of getting same geometry from cache has value 
+
 
 **/
 
@@ -3559,22 +3682,54 @@ inline int stree::get_remainder_subtree() const
 {
     return rem.size() ; 
 }
+inline int stree::get_triangulate_subtree() const 
+{
+    return tri.size() ; 
+}
+
 inline int stree::get_remainder_olvid() const 
 {
     if(rem.size() == 0 ) return -1 ; 
     const snode& out = rem[0] ; 
     return out.lvid ; 
 }
-
+inline int stree::get_triangulate_olvid() const 
+{
+    if(tri.size() == 0 ) return -1 ; 
+    const snode& out = tri[0] ; 
+    return out.lvid ; 
+}
 
 
 inline int stree::get_ridx_subtree(unsigned ridx) const 
 {
-    return ridx == 0 ? get_remainder_subtree() : get_factor_subtree(ridx - 1 ) ; 
+    char ridx_type = get_ridx_type(ridx) ; 
+    int num_rem = get_num_remainder(); 
+    assert( num_rem == 1 ); 
+
+    int _subtree = -1 ; 
+    switch(ridx_type)
+    {
+        case 'R': _subtree = get_remainder_subtree()             ; break ; 
+        case 'F': _subtree = get_factor_subtree(ridx - num_rem)  ; break ; 
+        case 'T': _subtree = get_triangulate_subtree()           ; break ; 
+    }
+    return _subtree ;
 }
 inline int stree::get_ridx_olvid(unsigned ridx) const 
 {
-    return ridx == 0 ? get_remainder_olvid() : get_factor_olvid(ridx - 1 ) ; 
+    char ridx_type = get_ridx_type(ridx) ; 
+    int num_rem = get_num_remainder(); 
+    assert( num_rem == 1 ); 
+
+    int _olvid = -1 ; 
+    switch(ridx_type)
+    {
+        case 'R': _olvid = get_remainder_olvid()             ; break ; 
+        case 'F': _olvid = get_factor_olvid(ridx - num_rem)  ; break ; 
+        case 'T': _olvid = get_triangulate_olvid()           ; break ; 
+    }
+    return _olvid ; 
 }
 
 inline int stree::get_num_ridx() const 
@@ -3982,6 +4137,13 @@ inline void stree::add_inst(
     inst_nidx.push_back(nidx); 
 }
 
+inline void stree::add_inst_identity( int gas_idx, int nidx )
+{
+    glm::tmat4x4<double> tr_m2w(1.) ; 
+    glm::tmat4x4<double> tr_w2m(1.) ;  
+
+    add_inst(tr_m2w, tr_w2m, gas_idx, nidx );  
+}
 
 
 /**
@@ -4046,16 +4208,19 @@ and offsets to reference to relevant transforms.
 
 inline void stree::add_inst() 
 {
-    glm::tmat4x4<double> tr_m2w(1.) ; 
-    glm::tmat4x4<double> tr_w2m(1.) ; 
-    add_inst(tr_m2w, tr_w2m, 0, 0 );   // global instance with identity transforms 
-
     int ridx = 0 ; 
+    int nidx = 0 ; 
     int num_inst = 1 ;
     int tot_inst = 0 ; 
  
+    add_inst_identity(ridx, nidx );   // global instance with identity transforms 
+
     inst_info.push_back( {ridx,num_inst,tot_inst,0} ); 
     tot_inst += num_inst  ;
+
+
+    glm::tmat4x4<double> tr_m2w(1.) ; 
+    glm::tmat4x4<double> tr_w2m(1.) ; 
  
     unsigned num_factor = get_num_factor(); 
     for(int i=0 ; i < int(num_factor) ; i++)
@@ -4067,7 +4232,7 @@ inline void stree::add_inst()
         ridx = i + 1 ;       // 0 is the global instance, so need this + 1  
 
         std::cout 
-            << "stree::add_inst"
+            << "stree::add_inst.num_factor "
             << " i " << std::setw(3) << i 
             << " ridx(gas_idx) " << std::setw(3) << ridx
             << " num_inst " << std::setw(7) << num_inst
@@ -4079,7 +4244,7 @@ inline void stree::add_inst()
 
         for(int j=0 ; j < num_inst ; j++)
         {
-            int nidx = nodes[j]; 
+            nidx = nodes[j]; 
 
             bool local = false ; 
             bool reverse = false ; 
@@ -4088,6 +4253,32 @@ inline void stree::add_inst()
             add_inst(tr_m2w, tr_w2m, ridx, nidx ); 
         }
     }
+
+
+
+    int num_tri = get_num_triangulated(); 
+    assert( num_tri == 0 || num_tri == 1 ); 
+
+    std::cout 
+        << "stree::add_inst.num_tri "
+        << " num_tri " << std::setw(7) << num_tri
+        << std::endl 
+        ;
+
+    if( num_tri == 1  )
+    {
+        const snode& tri0 = tri[0] ;  
+
+        ridx += 1 ; 
+        num_inst = 1 ; 
+        nidx = tri0.index  ; // ? node index of first of the triangulated volumes 
+        add_inst_identity( ridx, nidx ); 
+        // HMM: is identity transform guaranteed ?  
+
+        inst_info.push_back( {ridx,num_inst,tot_inst,0} ); 
+        tot_inst += num_inst ; 
+    }
+
     narrow_inst(); 
 }
 

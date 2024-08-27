@@ -175,6 +175,32 @@ void test_getenvvar()
         ;
 }
 
+void test_getenvvar_path_replacement()
+{
+    const char* ekey = "stree__force_triangulate_solid" ; 
+    const char* _force_triangulate_solid = ssys::getenvvar(ekey, nullptr) ; 
+    char delim = ',' ; 
+
+    std::vector<std::string> force ;  
+    sstr::SplitTrimSuppress( _force_triangulate_solid, delim, force ); 
+    unsigned num_force = force.size(); 
+
+
+    std::cout 
+        << "test_getenvvar_path_replacement "
+        << " ekey " << ( ekey ? ekey : "-" )
+        << " _force_triangulate_solid [" << ( _force_triangulate_solid ? _force_triangulate_solid : "-" ) << "]" 
+        << std::endl
+        ;
+
+    for(unsigned i=0 ; i < num_force ; i++)
+    {
+        const char* f = force[i].c_str() ; 
+        std::cout << std::setw(5) << i << ":[" << f << "]\n" ; 
+    }
+
+}
+
 
 void test_getenvfloatvec_fallback()
 {
@@ -489,9 +515,10 @@ int main(int argc, char** argv)
     test_getenv_with_prefix(); 
     test_getenvintvec(); 
     test_getenvfloatvec_fallback(); 
+    test_getenvintpick(); 
     */
 
-    test_getenvintpick(); 
+    test_getenvvar_path_replacement();
  
     return 0 ; 
 }

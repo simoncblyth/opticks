@@ -34,6 +34,8 @@ inorm
 
 struct SGLFW_Scene
 {
+    static constexpr const char* _DUMP = "SGLFW_Scene__DUMP" ; 
+    bool            DUMP ; 
     static int RenderLoop(const SScene* scene, SGLM& gm ); 
     
     const SScene* sc ; 
@@ -62,10 +64,10 @@ struct SGLFW_Scene
 
 inline int SGLFW_Scene::RenderLoop(const SScene* scene, SGLM& gm ) // static
 {
-    std::cout << "[ SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
     SGLFW_Scene sc(scene, gm) ;
+    if(sc.DUMP) std::cout << "[ SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
     sc.renderloop();  
-    std::cout << "] SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
+    if(sc.DUMP) std::cout << "] SGLFW_Scene::RenderLoop" << std::endl << scene->desc() << std::endl ;
     return 0 ; 
 }
 
@@ -81,6 +83,7 @@ inline SGLFW_Program* SGLFW_Scene::getProg() const
 
 inline SGLFW_Scene::SGLFW_Scene(const SScene* _sc, SGLM& _gm)
     :
+    DUMP(ssys::getenvbool(_DUMP)), 
     sc(_sc)
    ,gm(_gm)
    ,gl(new SGLFW(gm))
@@ -136,6 +139,12 @@ inline void SGLFW_Scene::initMesh()
     const float* values = (const float*)inst_tran.data() ; 
     int item_values = 4*4 ; 
 
+    if(DUMP) std::cout 
+         << "SGLFW_Scene::initMesh"
+         << " num_meshmerge " << num_meshmerge
+         << "\n"
+         ;
+
     for(int i=0 ; i < num_meshmerge ; i++)
     {
         const int4&  _inst_info = sc->inst_info[i] ; 
@@ -143,6 +152,15 @@ inline void SGLFW_Scene::initMesh()
         int num_inst = _inst_info.y ; 
         int offset   = _inst_info.z ; 
         bool is_instanced = num_inst > 1 ; 
+
+        if(DUMP) std::cout 
+             << "SGLFW_Scene::initMesh"
+             << " i " << i
+             << " num_inst (inst_info.y) " << num_inst
+             << " offset   (inst_info.z) " << offset 
+             << " is_instanced " << ( is_instanced ? "YES" : "NO " ) 
+             << "\n"
+             ;
 
         const SMesh* _mm = sc->meshmerge[i] ; 
 
@@ -175,13 +193,37 @@ TODO: VIZMASK for flexible skipping
 inline void SGLFW_Scene::render()
 {
     int num_mesh = mesh.size(); 
+
+    if(DUMP) std::cout 
+         << "SGLFW_Scene::render"
+         << " num_mesh " << num_mesh
+         << "\n"
+         ;
+
     for(int i=0 ; i < num_mesh ; i++)
     {
         bool viz = gm.is_vizmask_set(i); 
+
+        if(DUMP) std::cout 
+             << "SGLFW_Scene::render"
+             << " i " << i
+             << " viz " << ( viz ? "YES" : "NO " )
+             << "\n"
+             ;
+
         if(!viz) continue ; 
 
         SGLFW_Mesh* _mesh = mesh[i] ; 
-        SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;  
+        bool has_inst = _mesh->has_inst() ; 
+
+        if(DUMP) std::cout 
+             << "SGLFW_Scene::render"
+             << " i " << i
+             << " has_inst " << ( has_inst ? "YES" : "NO " )
+             << "\n"
+             ;
+
+        SGLFW_Program* _prog = has_inst ? getIProg() : getProg() ;  
         _mesh->render(_prog);   
     }
 }
