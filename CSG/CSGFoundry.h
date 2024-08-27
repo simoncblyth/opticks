@@ -214,7 +214,11 @@ struct CSG_API CSGFoundry : public SGeo
     const CSGSolid*   getSolid_(int solidIdx) const ;   // -ve counts from back 
     unsigned          getSolidIdx(const CSGSolid* so) const ; 
 
+    const char* getSolidLabel_(int ridx) const ; 
     char getSolidLabelPrefix(int ridx) const ; 
+    std::string descSolidLabelPrefix() const ; 
+
+
     unsigned getNumSolid(int type_) const ;
     unsigned getNumSolid() const;        // STANDARD_SOLID count 
     unsigned getNumSolidTotal() const;   // all solid count 
@@ -403,10 +407,9 @@ struct CSG_API CSGFoundry : public SGeo
 
     const std::string descELV(const SBitSet* elv) const ; 
 
-    const std::string& getSolidLabel(unsigned sidx) const ; 
-
+    const std::string& getSolidMMLabel(unsigned sidx) const ; 
+    void addSolidMMLabel(const char* label); 
     void addMeshName(const char* name); 
-    void addSolidLabel(const char* label); 
 
     // MEMBERS
 

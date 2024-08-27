@@ -1441,7 +1441,7 @@ CSGFoundry*  CSGMaker::MakeGeom(const char* geom) // static
 
     // avoid tripping some checks 
     fd->addMeshName(geom);   
-    fd->addSolidLabel(geom);  
+    fd->addSolidMMLabel(geom);  
     fd->setMeta<std::string>("source", "CSGFoundry::MakeGeom" ); 
 
     assert( so ); 

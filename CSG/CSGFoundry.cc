@@ -521,21 +521,24 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
 } 
 
 
-const std::string& CSGFoundry::getSolidLabel(unsigned gas_idx) const 
-{
-    assert( gas_idx < mmlabel.size() ); 
-    return mmlabel[gas_idx] ; 
-}
 
 void CSGFoundry::addMeshName(const char* name) 
 {
     meshname.push_back(name); 
 }
 
-void CSGFoundry::addSolidLabel(const char* label)
+void CSGFoundry::addSolidMMLabel(const char* label)
 {
     mmlabel.push_back(label);  
 }
+
+
+const std::string& CSGFoundry::getSolidMMLabel(unsigned gas_idx) const 
+{
+    assert( gas_idx < mmlabel.size() ); 
+    return mmlabel[gas_idx] ; 
+}
+
 
 /**
 CSGFoundry::Compare
@@ -1515,7 +1518,12 @@ void CSGFoundry::checkPrimSpec() const
     }
 }
 
-
+const char* CSGFoundry::getSolidLabel_(int ridx) const
+{
+    const CSGSolid* so = getSolid(ridx); 
+    assert(so); 
+    return so ? so->label : nullptr ; 
+}
 
 char CSGFoundry::getSolidLabelPrefix(int ridx) const
 {
@@ -1523,6 +1531,30 @@ char CSGFoundry::getSolidLabelPrefix(int ridx) const
     assert(so); 
     return so ? so->getLabelPrefix() : '\0' ; 
 }
+
+
+std::string CSGFoundry::descSolidLabelPrefix() const 
+{
+    unsigned num_solid = getNumSolid() ;  
+    std::stringstream ss ; 
+    ss << "CSGFoundry::descSolidLabelPrefix num_solid " << num_solid << "\n" ; 
+    for(unsigned i=0 ; i < num_solid ; i++)
+    {
+        char slpx = getSolidLabelPrefix(i);     
+        const char* sl = getSolidLabel_(i);  
+        const std::string& smml = getSolidMMLabel(i) ; 
+        ss 
+           << " i " << std::setw(4) << i 
+           << " getSolidLabelPrefix " << std::setw(2) << slpx
+           << " getSolidLabel_ " << std::setw(10) << ( sl ? sl : "-" ) 
+           << " getSolidMMLabel " <<  smml
+           << "\n"
+           ;  
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 
 
 unsigned CSGFoundry::getNumSolid(int type_) const 

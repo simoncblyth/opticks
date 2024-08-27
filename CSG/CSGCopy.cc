@@ -137,12 +137,12 @@ void CSGCopy::copy()
 
         const CSGSolid* sso = src->getSolid(sSolidIdx);
         unsigned numSelectedPrim = src->getNumSelectedPrimInSolid(sso, elv );  
-        const std::string& solidLabel = src->getSolidLabel(sSolidIdx); 
-        LOG_IF(LEVEL, dump_solid) << " sso " << sso->desc() << " numSelectedPrim " << numSelectedPrim << " solidLabel " << solidLabel ; 
+        const std::string& solidMMLabel = src->getSolidMMLabel(sSolidIdx); 
+        LOG_IF(LEVEL, dump_solid) << " sso " << sso->desc() << " numSelectedPrim " << numSelectedPrim << " solidMMLabel " << solidMMLabel ; 
 
         if( numSelectedPrim == 0 ) continue ;  
 
-        dst->addSolidLabel( solidLabel.c_str() );  
+        dst->addSolidMMLabel( solidMMLabel.c_str() );  
 
         unsigned dSolidIdx = dst->getNumSolid() ; // index before adding (0-based)
         if( elv == nullptr ) assert( dSolidIdx == sSolidIdx ); 

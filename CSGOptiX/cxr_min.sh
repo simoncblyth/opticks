@@ -199,6 +199,7 @@ if [ -n "$TRIMESH" ]; then
    #trimesh=2:VACUUM_solid 
 
    export OPTICKS_SOLID_TRIMESH=$trimesh
+   echo posthoc TRIMESH setting no longer honoured - moving to flexible forced triangulation for finer control - that has to be precache 
 fi
 
 
