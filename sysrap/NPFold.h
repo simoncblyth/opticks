@@ -685,6 +685,18 @@ inline void NPFold::check_integrity() const
 inline void NPFold::add_subfold(const char* f, NPFold* fo )
 {
     if(fo == nullptr) return ; 
+
+    bool unique_f = std::find( ff.begin(), ff.end(), f ) == ff.end() ; 
+
+    if(!unique_f) std::cerr 
+       << "NPFold::add_subfold" 
+       << " ERROR repeated f " << ( f ? f : "-" ) 
+       << " ff.size " << ff.size()
+       << "\n" 
+       ;   
+
+    assert( unique_f ) ; 
+
     ff.push_back(f); // subfold keys 
     subfold.push_back(fo); 
 }
