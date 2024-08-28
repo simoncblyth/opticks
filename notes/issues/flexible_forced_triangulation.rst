@@ -51,11 +51,103 @@ Render::
 
 
 
-Fifth issue : ssst1.sh runs but rem global solid not visible in OpenGL render 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Sixth issue : torus PLACEHOLDER logging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+    sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
+
+
+
+FIXED : Fifth issue : ssst1.sh runs but rem global solid not visible in OpenGL render 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Pressing C to jump to the OptiX render makes the global geom appear 
 * based on seeing guide tube the triangulated geom is present in both 
+
+Persisted scene lacks meshmesh entry 10::
+
+    [blyth@localhost scene]$ cd meshmerge/
+    [blyth@localhost meshmerge]$ l
+    total 4
+    0 -rw-rw-r--.  1 blyth blyth   0 Aug 27 21:35 NPFold_names.txt
+    4 -rw-rw-r--.  1 blyth blyth  22 Aug 27 21:35 NPFold_index.txt
+    0 drwxr-xr-x.  5 blyth blyth 143 Aug 27 10:18 ..
+    0 drwxr-xr-x. 12 blyth blyth 144 Aug 27 10:18 .
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 8
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 9
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 5
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 6
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 7
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 3
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 4
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 1
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 2
+    0 drwxr-xr-x.  2 blyth blyth  99 Aug 27 10:18 0
+    [blyth@localhost meshmerge]$ date
+    Wed Aug 28 09:53:14 CST 2024
+    [blyth@localhost meshmerge]$ cd ..
+    [blyth@localhost scene]$ l meshgroup/
+    total 132
+      0 -rw-rw-r--.    1 blyth blyth     0 Aug 27 21:35 NPFold_names.txt
+      4 -rw-rw-r--.    1 blyth blyth    23 Aug 27 21:35 NPFold_index.txt
+     12 drwxr-xr-x.  324 blyth blyth  8192 Aug 27 17:07 10
+      0 drwxr-xr-x.   13 blyth blyth   154 Aug 27 17:07 .
+      0 drwxr-xr-x.    5 blyth blyth   143 Aug 27 10:18 ..
+      4 drwxr-xr-x.  132 blyth blyth  4096 Aug 27 10:18 9
+      0 drwxr-xr-x.    3 blyth blyth    63 Aug 27 10:18 7
+      0 drwxr-xr-x.    3 blyth blyth    63 Aug 27 10:18 8
+      0 drwxr-xr-x.    3 blyth blyth    63 Aug 27 10:18 5
+      0 drwxr-xr-x.    3 blyth blyth    63 Aug 27 10:18 6
+      0 drwxr-xr-x.    6 blyth blyth    90 Aug 27 10:18 4
+      0 drwxr-xr-x.   14 blyth blyth   164 Aug 27 10:18 3
+      0 drwxr-xr-x.   11 blyth blyth   135 Aug 27 10:18 2
+      0 drwxr-xr-x.    7 blyth blyth    99 Aug 27 10:18 1
+    112 drwxr-xr-x. 3220 blyth blyth 53248 Aug 27 10:18 0
+    [blyth@localhost scene]$ 
+
+
+
+Actually there is a duplicated NPFold key for meshmerge::
+
+    [blyth@localhost meshmerge]$ cat NPFold_index.txt
+    0
+    1
+    2
+    3
+    4
+    5
+    6
+    7
+    8
+    9
+    0
+
+
+Due to duplicated m->name ?::
+
+    498 inline NPFold* SScene::serialize_meshmerge() const
+    499 {
+    500     NPFold* _meshmerge = new NPFold ;
+    501     int num_meshmerge = meshmerge.size();
+    502     for(int i=0 ; i < num_meshmerge ; i++)
+    503     {
+    504         const SMesh* m = meshmerge[i] ;
+    505         _meshmerge->add_subfold( m->name, m->serialize() );
+    506     }
+    507     return _meshmerge ;
+    508 }
+
+
+
+
 
 ::
 

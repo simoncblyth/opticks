@@ -159,11 +159,13 @@ OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
+
+source $HOME/.opticks/GEOM/GEOM.sh 
  
-scene=1
+scene=0
 case ${SCENE:-$scene} in 
-0) scene_fold=/tmp/SScene_test ;;
-1) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
+0) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
+1) scene_fold=/tmp/SScene_test ;;
 2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
 3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
 esac

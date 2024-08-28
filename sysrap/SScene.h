@@ -57,7 +57,7 @@ struct SScene
 
     void initFromTree_Remainder(  const stree* st);
     void initFromTree_Triangulate(const stree* st);
-    void initFromTree_Global(const stree* st, char ridx_type );
+    void initFromTree_Global(const stree* st, char ridx_type, int ridx );
 
     void initFromTree_Factor(const stree* st);
     void initFromTree_Factor_(int ridx, const stree* st);
@@ -192,20 +192,27 @@ inline void SScene::initFromTree_Remainder(const stree* st)
 {
     int num_rem = st->get_num_remainder(); 
     assert( num_rem == 1 ); 
-    initFromTree_Global( st, 'R' ); 
+    int ridx = 0 ; 
+    initFromTree_Global( st, 'R', ridx ); 
 }
 inline void SScene::initFromTree_Triangulate(const stree* st)
 {
+    int num_rem = st->get_num_remainder(); 
+    int num_fac = st->get_num_factor(); 
     int num_tri = st->get_num_triangulated(); 
+
+    assert( num_rem == 1 ); 
     assert( num_tri == 1 || num_tri == 0  ); 
+
     if(num_tri == 1 )
     {
-        initFromTree_Global( st, 'T' ); 
+        int ridx = num_rem + num_fac + 0 ; 
+        initFromTree_Global( st, 'T', ridx ); 
     }
 }
 
 
-inline void SScene::initFromTree_Global(const stree* st, char ridx_type )
+inline void SScene::initFromTree_Global(const stree* st, char ridx_type, int ridx )
 {
     assert( ridx_type == 'R' || ridx_type == 'T' ); 
     const std::vector<snode>* _nodes = st->get_node_vector(ridx_type)  ; 
@@ -213,21 +220,20 @@ inline void SScene::initFromTree_Global(const stree* st, char ridx_type )
 
     int num_node = _nodes->size() ;
     if(dump) std::cout
-        << "[ SScene::initFromTree_Remainder"
+        << "[ SScene::initFromTree_Global"
         << " num_node " << num_node
+        << " ridx_type " << ridx_type
+        << " ridx " << ridx 
         << std::endl
         ;
 
     SMeshGroup* mg = new SMeshGroup ; 
-    int ridx = 0 ; 
     for(int i=0 ; i < num_node ; i++)
     {
         const snode& node = (*_nodes)[i];
         initFromTree_Node(mg, ridx, node, st);
-        // HUH: CANNOT BE CORRECT : RIDX NOT ZERO FOR TRI
-        // BUT SEEMS NO USED ANYHOW   
     }
-    const SMesh* _mesh = SMesh::Concatenate( mg->subs, 0 );
+    const SMesh* _mesh = SMesh::Concatenate( mg->subs, ridx );
     meshmerge.push_back(_mesh);
     meshgroup.push_back(mg);
 
@@ -235,6 +241,7 @@ inline void SScene::initFromTree_Global(const stree* st, char ridx_type )
         << "] SScene::initFromTree_Global"
         << " num_node " << num_node 
         << " ridx_type " << ridx_type
+        << " ridx " << ridx 
         << std::endl
         ;
 }
@@ -257,6 +264,7 @@ geometry info organized differently
 
 meshgroup
     SMeshGroup instances that maintain separate SMesh for each "Prim"
+    (used by triangulated OptiX?)
 
 meshmesh
     concatenated SMesh used by OpenGL 

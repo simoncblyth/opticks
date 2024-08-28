@@ -33,10 +33,11 @@ int main()
     if(DUMP) std::cout << scene->desc() ; 
  
     SGLM gm ;
-    SGLFW_Scene glsc(scene, gm );
-    SOPTIX      opx( scene, gm) ; 
-    SGLFW_CUDA interop(gm); 
-    SGLFW* gl = glsc.gl ; 
+    SGLFW_Scene gls(scene, gm );
+    SOPTIX      opx(scene, gm) ; 
+    SGLFW_CUDA  interop(gm);    // interop buffer display coordination  
+
+    SGLFW* gl = gls.gl ; 
 
     while(gl->renderloop_proceed())
     {   
@@ -58,7 +59,7 @@ int main()
         }
         else
         { 
-            glsc.render(); 
+            gls.render(); 
         } 
 
         int wanted_snap = gl->get_wanted_snap();
