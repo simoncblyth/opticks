@@ -692,7 +692,8 @@ inline void U4Solid::init_MultiUnion()
 
     unsigned sub_num = muni->GetNumberOfSolids() ; 
     if(level > 0 ) std::cout 
-        << "U4Solid::init_MultiUnion" 
+        << "[U4Solid::init_MultiUnion" 
+        << " level " << level 
         << " name " << name 
         << " hint " << hint
         << " CSG::Name(hint) " << CSG::Name(hint)
@@ -727,6 +728,15 @@ inline void U4Solid::init_MultiUnion()
         prims.push_back(p) ;  
     }    
     root = sn::Compound( prims, type );  
+
+    if(level > 0 ) std::cout 
+        << "]U4Solid::init_MultiUnion" 
+        << " level " << level 
+        << "\n"
+        ;    
+
+ 
+
 }
 
 

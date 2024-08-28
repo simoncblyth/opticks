@@ -522,9 +522,13 @@ cf X4PhysicalVolume::convertSolids
 
 inline void U4Tree::initSolids()
 {
+    std::cout << "[U4Tree::initSolids" << std::endl ; 
+
     initSolids_r(top);
     initSolids_Keys(); 
-    initSolids_Mesh(); 
+    initSolids_Mesh();
+ 
+    std::cout << "]U4Tree::initSolids" << std::endl ; 
 }
 
 /**

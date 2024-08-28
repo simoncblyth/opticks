@@ -292,6 +292,9 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 {
     int lvid = node.lvid ; 
     const char* name = fd->getMeshName(lvid)  ; 
+    bool strip = true ; 
+    std::string soname = st->get_lvid_soname(lvid, strip);
+ 
 
     // 1. get the binary tree nodes into complete binary tree vector (excluding the subs of any listnode)
 
@@ -309,17 +312,26 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     assert( ln == 0 || ln == 1 ); // simplify initial impl 
 
 
+
     bool dump_LVID = node.lvid == LVID || ln > 0  ; 
     if(dump_LVID) std::cout 
-        << "CSGImport::importPrim"
+        << "[CSGImport::importPrim.dump_LVID:" << dump_LVID
         << " node.lvid " << node.lvid
+        << " LVID " << LVID
+        << " name " << ( name ? name : "-" )
+        << " soname " << soname
         << " primIdx " << primIdx  
         << " bn " << bn  
         << " ln(subset of bn) " << ln 
         << " num_sub_total " << num_sub_total 
-        << " dump_LVID " << dump_LVID  
         << std::endl 
         ; 
+
+    if(dump_LVID && ln > 0 ) std::cout
+        << ".CSGImport::importPrim dumping as ln > 0 : solid contains listnode"
+        << std::endl
+        ;
+
 
     // 3. addPrim to foundry with space for binary nodes and all subs
 
@@ -415,6 +427,16 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         << " : " 
         << name 
         ; 
+
+    if(dump_LVID) std::cout 
+        << "]CSGImport::importPrim.dump_LVID:" << dump_LVID
+        << " node.lvid " << node.lvid
+        << " LVID " << LVID
+        << " name " << ( name ? name : "-" )
+        << " soname " << soname
+         << std::endl 
+        ; 
+
 
     return pr ; 
 }

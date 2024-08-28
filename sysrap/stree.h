@@ -571,6 +571,7 @@ struct stree
     void collectGlobalNodes();  
     std::string descNodes() const;
 
+    static constexpr const char* _findForceTriangulateLVID_DUMP = "stree__findForceTriangulateLVID_DUMP" ; 
 
     void factorize(); 
 
@@ -641,6 +642,8 @@ struct stree
     std::string desc_bd() const ; 
 
     void initStandard() ; 
+
+    static constexpr const char* _init_material_mapping_DUMP = "stree__init_material_mapping_DUMP" ; 
     void init_material_mapping(); 
 
     int add_material( const char* name, unsigned g4index ); 
@@ -2110,8 +2113,9 @@ inline void stree::get_mmlabel( std::vector<std::string>& names) const
     assert( names.size() == 0 ); 
     int num_ridx = get_num_ridx(); 
 
-    if(1) std::cout 
+    if(level > 1) std::cout 
         << "stree::get_mmlabel"
+        << " level " << level 
         << " num_ridx " << num_ridx 
         << "\n"
         ;
@@ -2128,8 +2132,9 @@ inline void stree::get_mmlabel( std::vector<std::string>& names) const
         ss << num_prim << ":" << name ; 
         std::string mmlabel = ss.str(); 
 
-        if(1) std::cout 
+        if(level > 1) std::cout 
             << "stree::get_mmlabel"
+            << " level " << level 
             << " ridx " << ridx
             << " mmlabel " << mmlabel  
             << "\n"
@@ -3517,7 +3522,12 @@ a replacement path to load the solid names from a file::
 inline void stree::findForceTriangulateLVID()
 {
     FindForceTriangulateLVID(force_triangulate_lvid, soname, force_triangulate_solid, ',' ); 
-    std::cout << "stree::findForceTriangulateLVID\n" << descForceTriangulateLVID()  ;
+
+    if(ssys::getenvbool(_findForceTriangulateLVID_DUMP)) std::cout 
+        << "stree::findForceTriangulateLVID\n" 
+        << " [" << _findForceTriangulateLVID_DUMP << "] " 
+        << descForceTriangulateLVID() 
+        ;
 }
 
 /**
@@ -4231,7 +4241,7 @@ inline void stree::add_inst()
         num_inst = nodes.size(); 
         ridx = i + 1 ;       // 0 is the global instance, so need this + 1  
 
-        std::cout 
+        if(level > 1) std::cout 
             << "stree::add_inst.num_factor "
             << " i " << std::setw(3) << i 
             << " ridx(gas_idx) " << std::setw(3) << ridx
@@ -4259,7 +4269,7 @@ inline void stree::add_inst()
     int num_tri = get_num_triangulated(); 
     assert( num_tri == 0 || num_tri == 1 ); 
 
-    std::cout 
+    if(level > 1 ) std::cout 
         << "stree::add_inst.num_tri "
         << " num_tri " << std::setw(7) << num_tri
         << std::endl 
@@ -4832,11 +4842,10 @@ inline void stree::init_material_mapping()
 
     // fill (int,int) map from the mtline and mtindex vectors 
     init_mtindex_to_mtline() ; 
- 
-    //if( level > 1 ) 
-    std::cerr 
+
+    if(ssys::getenvbool(_init_material_mapping_DUMP)) std::cerr 
         << "stree::init_material_mapping" 
-        << " level > 1 [" << level << "]" 
+        << " [" << _init_material_mapping_DUMP <<  "] "
         << " desc_mt " 
         << std::endl 
         << desc_mt() 
