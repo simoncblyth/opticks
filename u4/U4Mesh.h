@@ -31,6 +31,7 @@ For use with OpenGL rendering its natural to use "vtx" and "tri".
 #include "NPX.h"
 #include "NPFold.h"
 
+
 struct U4Mesh
 {
     const G4VSolid* solid ; 
@@ -159,14 +160,16 @@ inline std::string U4Mesh::FormEKey( const char* prefix, const char* key, const 
 U4Mesh::NumberOfRotationSteps
 ----------------------------------
 
+Returns envvar configured value if entityType or solidName envvars
+are defined, otherwise returns zero.
+If both entityType and solidName envvars exist
+the solidName value is used as that is more specific.
+
 Example envvar keys::
 
    export U4Mesh__NumberOfRotationSteps_entityType_G4Torus=48
    export U4Mesh__NumberOfRotationSteps_solidName_myTorus=48
-
    export U4Mesh__NumberOfRotationSteps_solidName_sTarget=96
-
-
 
 **/
 

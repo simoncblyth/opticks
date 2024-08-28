@@ -2470,6 +2470,37 @@ sn::Torus
 
 BB now accounts for phi range using sgeomtools.h based on G4GeomTools 
 
+Square torus for ease of illustration::
+
+    +---------------------------------------+
+    |                                       |
+    |                                       |
+    |                                       |
+    |       +-----------------------+       |
+    |       |                       |       |
+    |       |                       |       |
+    |       |                       |       |
+    |       |                       |       |
+    |   +   |           +           |   +   |
+    |       |                       |       |
+    |       |                       |       |
+    |       |                       |       |
+    |       |                       |       |
+    |       +-----------------------+       |
+    |                                       |
+    |                                       |
+    |                                       |
+    +---------------------------------------+
+
+                        |     rtor      |
+                      
+                                    |   |   |
+                                    rmax rmax
+
+                        |     rtor + rmax   |
+
+                        | rtor-rmax | 
+
 **/
 
 inline sn* sn::Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg )
@@ -4213,13 +4244,19 @@ inline void sn::setAABB_LeafFrame()
     }
     else if( typecode == CSG_TORUS )
     {
-        std::cout 
-            << "sn::setAABB_LeafFrame  "
-            << " typecode " << typecode 
-            << " CSG::Name(typecode) " << CSG::Name(typecode)
-            << " DO NOTHING PLACEHOLDER "   
-            << "\n"
-            ;
+        double rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, zero ; 
+        getParam_(rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, zero) ; 
+
+        double rext = rtor+rmax ; 
+        double rint = rtor-rmax ; 
+        double startPhi = startPhi_deg/180.*M_PI ; 
+        double deltaPhi = deltaPhi_deg/180.*M_PI ; 
+        double2 pmin ; 
+        double2 pmax ; 
+        sgeomtools::DiskExtent(rint, rext, startPhi, deltaPhi, pmin, pmax );  
+
+        setBB( pmin.x, pmin.y, -rmax, pmax.x, pmax.y, +rmax );    
+
     }
     else if( typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE )
     {

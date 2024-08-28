@@ -65,6 +65,58 @@ Sixth issue : torus PLACEHOLDER logging
     sn::setAABB_LeafFrame   typecode 116 CSG::Name(typecode) torus DO NOTHING PLACEHOLDER 
 
 
+Hmm sgeomtools.h is used to find torus bbox somewhere ? why not here ? 
+
+::
+
+    4198     else if( typecode == CSG_HYPERBOLOID )
+    4199     {
+    4200         double r0, zf, z1, z2, a, b ;
+    4201         getParam_(r0, zf, z1, z2, a, b ) ;
+    4202         assert( a == 0. && b == 0. );
+    4203         assert( z1 < z2 );
+    4204         const double rr0 = r0*r0 ;
+    4205         const double z1s = z1/zf ;
+    4206         const double z2s = z2/zf ;
+    4207 
+    4208         const double rr1 = rr0 * ( z1s*z1s + 1. ) ;
+    4209         const double rr2 = rr0 * ( z2s*z2s + 1. ) ;
+    4210         const double rmx = sqrtf(fmaxf( rr1, rr2 )) ;
+    4211 
+    4212         setBB(  -rmx,  -rmx,  z1,  rmx, rmx, z2 );
+    4213     }
+    4214     else if( typecode == CSG_TORUS )
+    4215     {
+    4216         std::cout
+    4217             << "sn::setAABB_LeafFrame  "
+    4218             << " typecode " << typecode
+    4219             << " CSG::Name(typecode) " << CSG::Name(typecode)
+    4220             << " DO NOTHING PLACEHOLDER "
+    4221             << "\n"
+    4222             ;
+    4223     }
+
+
+Replace the placeholder::
+
+    4245     else if( typecode == CSG_TORUS )
+    4246     {
+    4247         double rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, zero ;
+    4248         getParam_(rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, zero) ;
+    4249 
+    4250         double rext = rtor+rmax ;
+    4251         double rint = rtor-rmax ;
+    4252         double startPhi = startPhi_deg/180.*M_PI ;
+    4253         double deltaPhi = deltaPhi_deg/180.*M_PI ;
+    4254         double2 pmin ;
+    4255         double2 pmax ;
+    4256         sgeomtools::DiskExtent(rint, rext, startPhi, deltaPhi, pmin, pmax );
+    4257 
+    4258         setBB( pmin.x, pmin.y, -rmax, pmax.x, pmax.y, +rmax );
+    4259     
+    4260     }
+
+
 
 FIXED : Fifth issue : ssst1.sh runs but rem global solid not visible in OpenGL render 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
