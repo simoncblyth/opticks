@@ -168,6 +168,7 @@ case ${SCENE:-$scene} in
 1) scene_fold=/tmp/SScene_test ;;
 2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
 3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
+4) scene_fold=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
 esac
 export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
