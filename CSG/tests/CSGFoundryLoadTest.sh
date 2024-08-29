@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 
 usage(){ cat << EOU
 CSGFoundryLoadTest.sh
@@ -15,9 +15,13 @@ bin=CSGFoundryLoadTest
 #source $OPTICKS_HOME/bin/GEOM_.sh 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-GDIR=$HOME/.opticks/GEOM/$GEOM
-if [ -d "$GDIR" ]; then
-   export ${GEOM}_CFBaseFromGEOM=$GDIR
+A_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+B_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
+
+if [ -d "${A_CFBase}" ]; then
+   export ${GEOM}_CFBaseFromGEOM=${A_CFBaseFromGEOM}
+elif [ -d "${B_CFBase}" ]; then
+   export ${GEOM}_CFBaseFromGEOM=${B_CFBaseFromGEOM}
 fi 
 
 
