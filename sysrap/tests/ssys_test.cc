@@ -182,9 +182,12 @@ void test_getenvvar_path_replacement()
     char delim = ',' ; 
 
     std::vector<std::string> force ;  
-    sstr::SplitTrimSuppress( _force_triangulate_solid, delim, force ); 
-    unsigned num_force = force.size(); 
+    if( _force_triangulate_solid )
+    {
+        sstr::SplitTrimSuppress( _force_triangulate_solid, delim, force ); 
+    }
 
+    unsigned num_force = force.size(); 
 
     std::cout 
         << "test_getenvvar_path_replacement "

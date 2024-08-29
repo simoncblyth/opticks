@@ -15,13 +15,13 @@ bin=CSGFoundryLoadTest
 #source $OPTICKS_HOME/bin/GEOM_.sh 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-A_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
-B_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
+A_DIR=$HOME/.opticks/GEOM/$GEOM
+B_DIR=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
 
-if [ -d "${A_CFBase}" ]; then
-   export ${GEOM}_CFBaseFromGEOM=${A_CFBaseFromGEOM}
-elif [ -d "${B_CFBase}" ]; then
-   export ${GEOM}_CFBaseFromGEOM=${B_CFBaseFromGEOM}
+if [ -d "${A_DIR}" ]; then
+   export ${GEOM}_CFBaseFromGEOM=${A_DIR}
+elif [ -d "${B_DIR}" ]; then
+   export ${GEOM}_CFBaseFromGEOM=${B_DIR}
 fi 
 
 
