@@ -51,8 +51,15 @@ Render::
 
 
 
-Sixth issue : torus PLACEHOLDER logging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+FIXED : Seventh issue : running from loaded stree does not retain the force triangulate 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+FIXED : Sixth issue : torus PLACEHOLDER logging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 

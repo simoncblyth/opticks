@@ -277,6 +277,9 @@ struct stree
     static constexpr const char* SUNAME = "suname.txt" ;
     static constexpr const char* IMPLICIT = "implicit.txt" ;
 
+    static constexpr const char* FORCE_TRIANGULATE_LVID = "force_triangulate_lvid.npy" ;
+
+
 #ifdef DEBUG_IMPLICIT
     static constexpr const char* IMPLICIT_ISUR = "implicit_isur.npy" ;
     static constexpr const char* IMPLICIT_OSUR = "implicit_osur.npy" ;
@@ -376,6 +379,7 @@ struct stree
 
     std::string desc() const ;
     std::string desc_soname() const ;
+    std::string desc_lvid() const ;
     std::string desc_size(char div='\n') const ;
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
@@ -428,10 +432,12 @@ struct stree
     const std::vector<snode>* get_node_vector( char _src ) const ; // 'N':nds 'R':rem 'T':tri
     void find_lvid_nodes_( std::vector<snode>& nodes, int lvid, char _src ) const ; 
     void find_lvid_nodes(  std::vector<int>& nodes, int lvid, char _src ) const ; 
+    int count_lvid_nodes( int lvid, char _src='N' ) const ; 
 
     void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting ) const ; 
     int  find_lvid_node( const char* q_soname, int ordinal ) const ; 
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
+
 
 
     const snode* pick_lvid_ordinal_node( int lvid, int ordinal, char _src ) const ; 
@@ -690,6 +696,9 @@ Q: why empty NPFold material and surface instead of nullptr ?
      bd(nullptr),
      bnd(nullptr),
      optical(nullptr)
+
+HMM the force_triangulate_solid envvar only relevant for stree creation, not with loaded stree ? 
+
 **/
 
 
@@ -745,6 +754,7 @@ inline std::string stree::desc_size(char div) const
        << " bdname " << bdname.size() << div 
        << " implicit " << implicit.size() << div 
        << " soname " << soname.size() << div 
+       << " force_triangulate_lvid " << force_triangulate_lvid.size() << div
        << " solids " << solids.size() << div 
        << " sensor_count " << sensor_count << div
        << " nds " << nds.size() << div
@@ -781,6 +791,8 @@ inline std::string stree::desc() const
        << std::endl
        << desc_repeat_nodes() 
        << std::endl
+       << desc_lvid() 
+       << std::endl
        ; 
 
     if(level > 2) ss 
@@ -815,6 +827,61 @@ inline std::string stree::desc_soname() const
     ss << "[stree::desc_soname\n" ;     
     for(int i=0 ; i < int(soname.size()) ; i++) ss << "[" << soname[i] << "]\n" ;
     ss << "]stree::desc_soname\n" ;
+    std::string str = ss.str();
+    return str ;
+}
+
+inline std::string stree::desc_lvid() const
+{
+    std::stringstream ss ;
+    ss << "[stree::desc_lvid\n" ;     
+    ss << "force_triangulate_lvid.size " << force_triangulate_lvid.size() << "\n" ; 
+
+    int sum[3] = {0,0,0} ; 
+
+    for(int i=0 ; i < int(soname.size()) ; i++) 
+    {
+        const char* lvn = soname[i].c_str(); 
+        bool starting = false ; // ie MatchAll not MatchStart 
+        int lvid = find_lvid(lvn, starting); 
+        bool ift = is_force_triangulate(lvid) ; 
+
+        int count_N = count_lvid_nodes(lvid, 'N' ); 
+        int count_R = count_lvid_nodes(lvid, 'R' ); 
+        int count_T = count_lvid_nodes(lvid, 'T' ); 
+
+        ss
+           << " i " << std::setw(4) << i
+           << " lvid " << std::setw(4) << lvid
+           << " is_force_triangulate " << ( ift ? "YES" : "NO " ) 
+           << " count_N/R/T " 
+           << std::setw(6) << count_N 
+           << std::setw(6) << count_R 
+           << std::setw(6) << count_T 
+           << " lvn " << lvn 
+           << "\n" 
+           ; 
+
+        sum[0] += count_N ; 
+        sum[1] += count_R ; 
+        sum[2] += count_T ; 
+
+    }
+
+    ss << "   " << "    "
+       << "      " << "    "
+       << "                      " << "   "
+       << "   sum_N/R/T " 
+       << std::setw(6) << sum[0] 
+       << std::setw(6) << sum[1] 
+       << std::setw(6) << sum[2] 
+       << "\n"
+       ; 
+
+    ss << " nds.size " << nds.size() << "\n" ;  
+    ss << " rem.size " << rem.size() << "\n" ;  
+    ss << " tri.size " << tri.size() << "\n" ;  
+    ss << "]stree::desc_lvid\n" ;
     std::string str = ss.str();
     return str ;
 }
@@ -1534,6 +1601,15 @@ inline void stree::find_lvid_nodes( std::vector<int>& nodes, const char* q_sonam
     int lvid = find_lvid(q_soname, starting); 
     find_lvid_nodes(nodes, lvid, 'N' ); 
 }
+
+
+inline int stree::count_lvid_nodes( int lvid, char _src ) const 
+{
+    std::vector<int> nodes ; 
+    find_lvid_nodes( nodes, lvid, _src ); 
+    return nodes.size(); 
+} 
+
 
 
 /**
@@ -2902,12 +2978,15 @@ inline NPFold* stree::serialize() const
     NP* _mtname_no_rindex = NPX::Holder(mtname_no_rindex) ; 
     NP* _mtindex = NPX::ArrayFromVec<int,int>( mtindex ); 
     NP* _mtline = NPX::ArrayFromVec<int,int>( mtline ); 
+    NP* _force_triangulate_lvid = NPX::ArrayFromVec<int,int>( force_triangulate_lvid ); 
 
 
     fold->add( MTNAME,  _mtname ); 
     fold->add( MTNAME_NO_RINDEX,  _mtname_no_rindex ); 
     fold->add( MTINDEX, _mtindex ); 
     fold->add( MTLINE , _mtline ); 
+
+    fold->add( FORCE_TRIANGULATE_LVID, _force_triangulate_lvid ) ; 
 
     if(material) fold->add_subfold( MATERIAL, material );  
     if(surface)  fold->add_subfold( SURFACE,  surface );  
@@ -3037,6 +3116,8 @@ inline void stree::import(const NPFold* fold)
     ImportNames( mtname_no_rindex,  fold->get(MTNAME_NO_RINDEX) );
     ImportNames( suname,            fold->get(SUNAME) );
     ImportNames( implicit,          fold->get(IMPLICIT) );
+
+    ImportArray<int, int>( force_triangulate_lvid, fold->get(FORCE_TRIANGULATE_LVID) );
 
     ImportArray<int, int>( mtindex, fold->get(MTINDEX) );
     ImportArray<int, int>( suindex, fold->get(SUINDEX) );
@@ -3487,12 +3568,15 @@ inline void stree::labelFactorSubtrees()
 stree::findForceTriangulateLVID
 --------------------------------
 
+Canonically invoked during stree creation by U4Tree::Create/.../stree::factorize. 
 Populates *force_triangulate_lvid* vector of indices, which is used by stree::is_force_triangulate. 
+
+HMM: the envvar is an input to creation... how to persist that info ? 
+To make is_force_triangulated work for a loaded stree ? 
+Just need to persist the vector ? 
 
 Uses the optional comma delimited stree__force_triangulate_solid envvar list of unique solid names
 together with the member variable vector of all solid names *soname* to form the indices.
-
-This is called from stree::factorize prior to stree::collectGlobalNodes
 
 When there are many solids that need to be triangulated it is more
 convenient to adopt a config approach like the below example using 

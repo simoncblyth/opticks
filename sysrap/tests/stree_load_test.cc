@@ -480,6 +480,10 @@ inline int stree_load_test::main()
     else if(strcmp(TEST, "get_frame_MOI") == 0) get_frame_MOI();
     else if(strcmp(TEST, "get_frame_scan") == 0) get_frame_scan();
     else if(strcmp(TEST, "get_prim_aabb") == 0)  get_prim_aabb();
+    else if(strcmp(TEST, "desc") == 0) 
+    {
+        std::cout << "desc\n" ;   
+    }
     
 
     return 0 ; 

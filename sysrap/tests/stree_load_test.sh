@@ -25,6 +25,7 @@ C++
 ::
 
     ~/o/sysrap/tests/stree_load_test.sh 
+    TEST=desc ~/o/sysrap/tests/stree_load_test.sh 
 
 
 To update the input tree::
@@ -81,6 +82,7 @@ source $HOME/.opticks/GEOM/GEOM.sh
 source $HOME/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit 
 
 
+
 base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
 #base=/tmp/$USER/opticks/U4TreeCreateTest 
 #base=/data/blyth/opticks/U4TreeCreateTest
@@ -102,7 +104,11 @@ export stree_level=1
 export FOLD=$BASE/stree
 #export stree__get_frame_dump=1
 
-vars="BASH_SOURCE BASE FOLD opt GEOM MOI"
+test=desc
+export TEST=${TEST:-$test}
+
+
+vars="BASH_SOURCE BASE FOLD opt GEOM MOI TEST"
 
 
 if [ ! -d "$BASE/stree" ]; then
