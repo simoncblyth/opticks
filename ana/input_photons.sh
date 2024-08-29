@@ -21,7 +21,7 @@ EOU
 DIR=$(dirname $BASH_SOURCE)
 script=$DIR/input_photons.py
 
-defarg="info_run_ls"
+defarg="info_numpy_run_ls"
 arg=${1:-$defarg}
 
 dtypes="np.float32 np.float64"
@@ -31,12 +31,20 @@ if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
 fi 
 
+
+if [ "${arg/numpy}" != "$arg" ]; then
+    python -c "import numpy as np" 2>/dev/null  
+    [ $? -ne 0 ] && echo $BASH_SOURCE numpy package is not within your python - cannot generate input photons && exit 2
+fi
+
 if [ "${arg/dbg}" != "$arg" ]; then
     for dtype in $dtypes ; do 
         DTYPE=$dtype ${IPYTHON:-ipython} --pdb $OPT $script -- $*
         [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
     done
 fi
+
+
 
 if [ "${arg/run}" != "$arg" ]; then
     for dtype in $dtypes ; do 
