@@ -1,8 +1,9 @@
 #include <sstream>
 #include <cstring>
 #include "SLOG.hh"
-#include "SPath.hh"
 #include "SCurandState.hh"
+#include "sdirectory.h"
+
 #include "QRng.hh"
 #include "qrng.h"
 #include "QU.hh"
@@ -120,6 +121,7 @@ curandState* QRng::Load(long& rngmax, const char* path)  // static
 
 void QRng::Save( curandState* states, unsigned num_states, const char* path ) // static
 {
+    sdirectory::MakeDirsForFile(path);
     FILE *fp = fopen(path,"wb");
     LOG_IF(fatal, fp == nullptr) << " error opening file " << path ; 
     assert(fp); 
