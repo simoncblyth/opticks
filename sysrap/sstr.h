@@ -140,7 +140,7 @@ inline void sstr::Write(const char* path, const char* txt )
 
 inline bool sstr::Match( const char* s, const char* q, bool starting )
 {
-    return starting ? MatchStart(s, q) : MatchAll(s, q) == 0 ;
+    return starting ? MatchStart(s, q) : MatchAll(s, q) ;
 }
 
 inline bool sstr::Match_( const char* s, const char* q, int mode )
