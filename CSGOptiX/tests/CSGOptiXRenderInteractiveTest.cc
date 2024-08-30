@@ -82,8 +82,7 @@ int main(int argc, char** argv)
     stree* st = fd->getTree(); 
     assert(st);
  
-    const char* MOI = ssys::getenvvar("MOI", nullptr);
-    assert(MOI); 
+    const char* MOI = ssys::getenvvar("MOI", "0:0:-1" );  // default lvid 0 in remainder 
 
     sfr mfr = st->get_frame(MOI); 
     mfr.set_idx(-2); 

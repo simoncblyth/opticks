@@ -101,7 +101,7 @@ struct sstr
     template<typename T>
     static void ParsePair( const char* txt, T& x, T& y, char delim=':' ); 
 
-
+    static bool IsInteger(const char* str); 
     static bool IsWhitespace(const std::string& s ); 
 
     static bool isdigit_(char c );
@@ -750,7 +750,14 @@ inline void sstr::ParsePair( const char* txt, T& x, T& y, char delim )
     y = To<T>( elem[1].c_str() ); 
 }
 
+inline bool sstr::IsInteger(const char* str)
+{
+    if(!str) return false ; 
+    if(strlen(str)==0) return false ; 
 
+    std::string s(str);
+    return s.find_first_not_of("0123456789") == std::string::npos ; 
+}
 
 inline bool sstr::IsWhitespace(const std::string& str )
 {

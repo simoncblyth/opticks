@@ -539,6 +539,34 @@ void test_Concat()
     assert( strcmp(s1, "aabbdd" ) == 0 ); 
 }
 
+void test_IsInteger()
+{
+    std::vector<std::string> src = {{
+        "0",
+        "1",
+        "9",
+        "10",
+        "100",
+        "1000",
+        "",
+        "-1",
+        " 1"
+    }} ; 
+
+    for(unsigned i=0 ; i < src.size() ; i++)
+    {
+        const char* st = src[i].c_str();   
+        bool ii = sstr::IsInteger(st) ; 
+        std::cout 
+            << ( ii ? "YES" : "NO " ) 
+            << " : "
+            << "[" << st << "]" 
+            << "\n"
+            ;
+    } 
+}
+
+
 
 struct sstr_test 
 {
@@ -549,7 +577,8 @@ struct sstr_test
 int sstr_test::Main()
 {
     //const char* test = "TrimString" ; 
-    const char* test = "StripComment" ; 
+    //const char* test = "StripComment" ; 
+    const char* test = "IsInteger" ; 
 
     const char* TEST = ssys::getenvvar("TEST", test ); 
 
@@ -569,6 +598,7 @@ int sstr_test::Main()
     else if(strcmp(TEST, "StripTailUnique")==0 )      test_StripTail_Unique_0(); 
     else if(strcmp(TEST, "Extract") == 0 )            test_Extract(); 
     else if(strcmp(TEST, "Concat") == 0 )             test_Concat(); 
+    else if(strcmp(TEST, "IsInteger") == 0 )          test_IsInteger(); 
 
     return 0 ; 
 }

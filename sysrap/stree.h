@@ -1732,9 +1732,14 @@ from 1st field and integers lvid_ordinal repeat_ordinal from 2nd and 3rd::
     GZ1.B06_07_FlangeI_Web_FlangeII:0:0
     GZ1.A06_07_FlangeI_Web_FlangeII:15:0
     GZ1.B06_07_FlangeI_Web_FlangeII:15:0
+
+    0:0:0 
         
 When no 2nd and 3rd field is provided eg with "sDeadWater" the
 ordinals default to 0. 
+
+A integer string in the first field is converted to lvid int.  
+
 
 TODO: get this to ignore comments in the q_spec line like::
 
@@ -1756,8 +1761,16 @@ inline int stree::parse_spec(
     const char* q_lvid_ordinal  = elem.size() > 1 ? elem[1].c_str() : nullptr ; 
     const char* q_repeat_ordinal = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
 
-    bool starting = true ; 
-    lvid = find_lvid(q_soname, starting);  
+    
+    if(sstr::IsInteger(q_soname))
+    {
+        lvid = sstr::To<int>(q_soname) ; 
+    }
+    else
+    {  
+        bool starting = true ; 
+        lvid = find_lvid(q_soname, starting);  
+    }
 
     if(lvid == -1 )
     { 
