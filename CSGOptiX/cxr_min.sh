@@ -170,9 +170,9 @@ logging(){
 }
 [ -n "$LOG" ] && logging 
 
-
-cvd=1   # default 1:TITAN RTX
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
+# better to leave CUDA_VISIBLE_DEVICES up to the user to set - not opticks scripts
+#cvd=1   # default 1:TITAN RTX
+#export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 #[ -n "$HOP" ] && echo $BASH_SOURCE ENABLE FRAME_HOPPING WHICH NEEDS DEBUGGING  && 
 export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
