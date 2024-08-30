@@ -2,33 +2,81 @@ rtx-5000-ada-generation-cuda-12p4-driver-550p76-some-analytic-geometry-skipped
 =================================================================================
 
 
-From ~/j/issues/opticks-from-scratch-in-blyth-account-on-rtx-5000-ada-generation-machine.rst
+Follow on from ~/j/issues/opticks-from-scratch-in-blyth-account-on-rtx-5000-ada-generation-machine.rst
 
 Comparing:
 
-* A :  CUDA 11.7 
-
-+-----------+---------+--------+
-|           |   A     |    B   |
-+===========+=========+========+   
-|   CUDA    |   11.7  |  12.4  |
-+-----------+---------+--------+
-|  Driver   |         | 550.76 | 
-+-----------+---------+--------+
-  
++-----------+-------------+----------------+
+|           |   A         |    B           |
++===========+=============+================+   
+|   CUDA    |   11.7      |  12.4          |
++-----------+-------------+----------------+
+|  Driver   |  515.43.04  | 550.76         | 
++-----------+-------------+----------------+
+|  Optix    |   7.5       |   7.5          |
++-----------+-------------+----------------+     
+|  c.c.     |   70        |   89           |
++-----------+-------------+----------------+     
+| GPU       | TITAN RTX   | RTX 5000 Ada   |
++-----------+-------------+----------------+     
 
 
 Boolean issue ? 
 ----------------
 
-* simple prim behave same 
+* simple prim behave as expected in A and B 
 * analytic booleans in B have problems 
 
 
+Create simple GEOM for boolean check
+---------------------------------------
+
+1. check U4VolumeMaker U4SolidMaker for valid GEOM strings
+2. GEOM func to set the GEOM
+3. gxt ; ./G4CX_U4TreeCreateCSGFoundryTest.sh
+4. ~/o/cxr_min.sh 
 
 
-sTarget
---------
+JustOrbOrbUnionSimple 
+-----------------------
+
+A and B look OK from inside and out but rendered sizes are different
+
+* TODO: arrange equal screen resolution to check this
+
+
+JustOrbOrbIntersectionSimple
+-----------------------------
+
+A looks as expected, 
+
+B the "lobes"  which should  not be visible, are visible 
+
+
+JustOrbOrbDifferenceSimple
+---------------------------
+
+A looks as expected
+
+B both surfaces that should not be visible, are visible : with a fuzzy edge on one
+
+* clearest signature of issue yet 
+
+
+
+TODO: find test that does 2D CPU side tracing, apply that to JustOrbOrbDifferenceSimple in A,B
+------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+J_2024aug27 : sTarget
+-----------------------
 
 A: expected sphere with small chimney 
 
@@ -39,8 +87,8 @@ B: just chimney
    MOI=sTarget ELV=sTarget ~/o/cxr_min.sh
 
 
-uni1
-----
+J_2024aug27 : uni1
+--------------------
 
 ::
 
@@ -58,8 +106,8 @@ B: Bizarre unphysical ray trace render. See IonRing but not cylindrical columns.
 
 
 
-base_steel
-------------
+J_2024aug27 : base_steel
+---------------------------
 
 ::
 
@@ -73,16 +121,16 @@ base_steel
 * B : shows "clipping" like uni1 
 
 
-sStrutBallhead : simple sphere looks same in A and B
---------------------------------------------------------
+J_2024aug27 : sStrutBallhead : simple sphere looks same in A and B
+----------------------------------------------------------------------
 
 ::
 
     ELV=sWorld,sStrutBallhead MOI=sWorld ~/o/cxr_min.sh
 
 
-sWaterTube : simple cylinder looks same in A and B 
------------------------------------------------------
+J_2024aug27 : sWaterTube : simple cylinder looks same in A and B 
+-----------------------------------------------------------------
 
 ::
 
@@ -91,8 +139,8 @@ sWaterTube : simple cylinder looks same in A and B
 
 
     
-HamamatsuR12860sMask
-----------------------
+J_2024aug27 : HamamatsuR12860sMask
+------------------------------------
 
 ::
 
@@ -105,8 +153,8 @@ B : looks OK when viewed from the open face side, but when viewed from the base 
     can see through 
 
 
-svacSurftube_0V1_0
-----------------------
+J_2024aug27 : svacSurftube_0V1_0  : SIDE ISSUE WITH ELV SELECTION AND TRIANGULATION
+-------------------------------------------------------------------------------------
 
 * ELV selection not force triangulation aware ? 
 
@@ -165,6 +213,8 @@ svacSurftube_0V1_0
     CSGOptiXRenderInteractiveTest: /home/blyth/opticks/CSGOptiX/SBT.cc:723: int SBT::_getOffset(unsigned int, unsigned int) const: Assertion `num_bi == numPrim' failed.
     /home/blyth/o/cxr_min.sh: line 275: 262795 Aborted                 (core dumped) $bin
     /home/blyth/o/cxr_min.sh run error
+
+
 
 
 
