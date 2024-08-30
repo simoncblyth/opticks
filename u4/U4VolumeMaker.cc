@@ -268,6 +268,14 @@ const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
     const G4VPhysicalVolume* pv = WrapLVGrid(lvs, 1, 1, 1 ); 
     return pv ; 
 }
+
+/**
+U4VolumeMaker::PV1_
+-------------------
+
+name specifies single LV for wrapping to form the PV 
+
+**/
 const G4VPhysicalVolume* U4VolumeMaker::PV1_(const char* name)
 {
     METH = "PV1_" ; 

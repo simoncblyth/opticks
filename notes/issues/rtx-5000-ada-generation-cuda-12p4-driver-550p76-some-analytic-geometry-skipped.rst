@@ -81,6 +81,14 @@ sStrutBallhead : simple sphere looks same in A and B
     ELV=sWorld,sStrutBallhead MOI=sWorld ~/o/cxr_min.sh
 
 
+sWaterTube : simple cylinder looks same in A and B 
+-----------------------------------------------------
+
+::
+
+    ELV=sWaterTube MOI=sWaterTube:0:-1 ~/o/cxr_min.sh
+    ELV=sWorld,sWaterTube MOI=sWaterTube:0:-1 ~/o/cxr_min.sh
+
 
     
 HamamatsuR12860sMask

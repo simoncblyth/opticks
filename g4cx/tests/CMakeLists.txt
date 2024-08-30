@@ -26,6 +26,8 @@ set(SINGLE_SOURCES
    G4CXSimulateTest.cc
    G4CXTest.cc 
 
+   G4CX_U4TreeCreateCSGFoundryTest.cc 
+
    G4CXOpticks_SetGeometry_GetInputPhoton_Test.cc
 )
 
