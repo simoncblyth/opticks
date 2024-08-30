@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 G4CXTest_raindrop.sh : Standalone bi-simulation with G4CXApp::Main
 ===================================================================
@@ -54,10 +54,6 @@ export VERSION=$version  # used in the SEvt output directory
 
 #export Local_DsG4Scintillation_DISABLE=1
 export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
-
-if [ -n "$CVD" ]; then 
-    export CUDA_VISIBLE_DEVICES=$CVD
-fi
 
 
 #num=1000
@@ -183,8 +179,14 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then
     export SAVE_SEL=1
- 
-    ${IPYTHON:-ipython} --pdb -i $script 
+
+    if command -v ${IPYTHON:-ipython} &> /dev/null 
+    then
+        ${IPYTHON:-ipython} --pdb -i $script 
+    else
+        echo $BASH_SOURCE - IPYTHON NOT AVAILABLE - TRY PYTHON 
+        ${PYTHON:-python} -i $script 
+    fi 
     [ $? -ne 0 ] && echo $BASH_SOURCE : ana error with script $script && exit 4
 fi 
 

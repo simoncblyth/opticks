@@ -42,6 +42,10 @@ a hidden uuid is used in the matching so should work.
 
 Examples::
 
+    [blyth@localhost ~]$ ~/opticks/sysrap/tests/sdevice_test.sh 
+    [0:NVIDIA_RTX_5000_Ada_Generation]
+    idx/ord/mpc/cc:0/0/100/89  31.592 GB  NVIDIA RTX 5000 Ada Generation
+
     N[blyth@localhost ~]$ ~/opticks/sysrap/tests/sdevice_test.sh build_run
     [0:TITAN_V 1:TITAN_RTX]
     idx/ord/mpc/cc:0/0/80/70  11.784 GB  TITAN V
