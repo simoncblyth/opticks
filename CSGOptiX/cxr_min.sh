@@ -70,6 +70,10 @@ source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to s
 source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit  
 
 
+export CSGFoundry__Load_DUMP=1   # report the directory loaded 
+
+
+
 # TRANSITIONAL KLUDGE
 export SCENE_FOLD=/tmp/SScene_test
 

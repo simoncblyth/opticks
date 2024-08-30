@@ -2682,7 +2682,6 @@ Relevant envvars : CFBASE and GEOM
 )" ; 
 const char* CSGFoundry::LoadFailNotes(){ return load_FAIL_base_null_NOTES ; } // static
 
-
 void CSGFoundry::load(const char* base_, const char* rel) 
 {
     LOG_IF(error, base_ == nullptr) << load_FAIL_base_null_NOTES ; 
@@ -2985,6 +2984,8 @@ CSGFoundry* CSGFoundry::Load() // static
 {
     SProf::Add("CSGFoundry__Load_HEAD"); 
 
+
+
     LOG(LEVEL) << "[ argumentless " ; 
     CSGFoundry* src = CSGFoundry::Load_() ; 
     if(src == nullptr) return nullptr ; 
@@ -3100,6 +3101,7 @@ will continue to do so for now.
 CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = ResolveCFBase() ; 
+    if(ssys::getenvbool(_Load_DUMP)) std::cout << "CSGFoundry::Load_[" << cfbase << "]\n" ;  
 
     LOG(LEVEL) << "[ SSim::Load cfbase " << ( cfbase ? cfbase : "-" )  ;  
     SSim* sim = SSim::Load(cfbase, "CSGFoundry/SSim"); 

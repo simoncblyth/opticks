@@ -208,6 +208,20 @@ struct CSG_API CSGNode
     NODE_METHOD void setSubOffset(unsigned num){ q0.u.y = num ; }
 
 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    NODE_METHOD void getParam_( double& x , double& y , double& z , double& w , double& z1, double& z2 ) const 
+    {
+        x = q0.f.x ; 
+        y = q0.f.y ; 
+        z = q0.f.z ; 
+        w = q0.f.w ; 
+        z1 = q1.f.x ;
+        z2 = q1.f.y ;  
+    }
+#endif
+
     NODE_METHOD void getParam( float& x , float& y , float& z , float& w , float& z1, float& z2 ) const 
     {
         x = q0.f.x ; 

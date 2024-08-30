@@ -7,6 +7,7 @@
 #include <vector_types.h>
 
 #include "scuda.h"
+#include "sgeomtools.h"
 #include "SThetaCut.hh"
 #include "SPhiCut.hh"
 #include "OpticksCSG.h"
@@ -445,6 +446,23 @@ void CSGNode::setAABBLocal()
         const float rmx = sqrtf(fmaxf( rr1, rr2 )) ; 
 
         setAABB(  -rmx,  -rmx,  z1,  rmx, rmx, z2 ); 
+    }
+    else if( tc == CSG_TORUS )
+    {
+        // ELV selection of torus node needs this despite force triangulation ? 
+        double rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, zero ; 
+        getParam_(rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, zero) ; 
+
+        double rext = rtor+rmax ; 
+        double rint = rtor-rmax ; 
+        double startPhi = startPhi_deg/180.*M_PI ; 
+        double deltaPhi = deltaPhi_deg/180.*M_PI ; 
+        double2 pmin ; 
+        double2 pmax ; 
+        sgeomtools::DiskExtent(rint, rext, startPhi, deltaPhi, pmin, pmax );   
+
+        setAABB( pmin.x, pmin.y, -rmax, pmax.x, pmax.y, +rmax );    
+
     }
     else if( tc == CSG_UNION || tc == CSG_INTERSECTION || tc == CSG_DIFFERENCE )
     {
