@@ -710,8 +710,18 @@ int SBT::_getOffset(unsigned q_gas_idx , unsigned q_layer_idx ) const
             ;
 
         if(!trimesh) assert(num_bi == 1); 
-        if(trimesh)  assert(num_bi == numPrim ); 
-
+        if(trimesh)
+        {
+            LOG(fatal)
+                << " UNEXPECTED trimesh with  "  
+                << " UNEQUAL: "
+                << " num_bi " << num_bi 
+                << " numPrim " << numPrim
+                << " gas_idx " << gas_idx
+                << " mmlabel " << mmlabel 
+                ; 
+            assert(num_bi == numPrim ); 
+        }
 
         for(int j=0 ; j < num_bi ; j++)
         {
