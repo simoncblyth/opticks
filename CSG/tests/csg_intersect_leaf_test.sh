@@ -1,11 +1,14 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 csg_intersect_leaf_test.sh
 =============================
 
+Purely CPU side testing of headers used with CUDA GPU side. 
+
 ::
 
-    MODE=2 ~/opticks/CSG/tests/csg_intersect_leaf_test.sh ana
+    ~/o/CSG/tests/csg_intersect_leaf_test.sh
+    MODE=2 ~/o/CSG/tests/csg_intersect_leaf_test.sh ana
     MODE=2 ~/o/CSG/tests/csg_intersect_leaf_test.sh ana
 
 EOU
@@ -34,13 +37,15 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $SDIR/$name.cc $SDIR/../CSGNode.cc \
-       -std=c++11 -lstdc++ \
+       -std=c++11 -lstdc++ -lm \
        -I$SDIR/..  \
        -I${OPTICKS_PREFIX}/externals/plog/include \
        -I${OPTICKS_PREFIX}/include/OKConf \
        -I${OPTICKS_PREFIX}/include/SysRap \
-       -L${OPTICKS_PREFIX}/lib \
+       -L${OPTICKS_PREFIX}/lib64 \
        -lOKConf -lSysRap \
+       -L${CUDA_PREFIX}/lib64 \
+       -lcudart \
        -I${CUDA_PREFIX}/include \
        -o $bin
 

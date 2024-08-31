@@ -31,6 +31,8 @@ struct CSG_API CSGScan
 
     std::string brief() const ;
     void dump( const quad4& rec ); 
+
+    std::string getScanPath(const char* sub) const ; 
     void save(const char* sub);
 
 

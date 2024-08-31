@@ -44,6 +44,7 @@ struct CSG_API CSGSolid   // Composite shape
 #else
     static const plog::Severity LEVEL ;  
 
+    const char* getLabel() const ; 
     bool labelMatch(const char* label) const ;  
     char getLabelPrefix() const ; 
 

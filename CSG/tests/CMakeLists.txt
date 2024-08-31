@@ -26,6 +26,7 @@ set(TEST_SOURCES
     CSGFoundry_findSolidIdx_Test.cc
 
     CSGFoundry_CreateFromSimTest.cc
+    CSGFoundry_IntersectPrimTest.cc
 
     CSGNameTest.cc
     CSGTargetTest.cc

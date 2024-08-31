@@ -1,63 +1,87 @@
 #!/bin/bash 
-#source ../env.sh 
-CUDA_PREFIX=/usr/local/cuda   # just use some CUDA headers, not using GPU 
+usage(){ cat << EOU
+CSGScanTest.sh
+===============
 
-opts="-DDEBUG=1"
-#opts=""
+::
+
+    ~/o/CSG/tests/CSGScanTest.sh
+
+EOU
+}
+
+
+cd $(dirname $(realpath $BASH_SOURCE))
+
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}   # just use some CUDA headers, not using GPU 
+
+
+defarg="info_build_run_ana"
+arg=${1:-$defarg}
+
 
 name=CSGScanTest 
-srcs="$name.cc 
-      ../CSGFoundry.cc 
-      ../CSGSolid.cc 
-      ../CSGPrim.cc 
-      ../CSGNode.cc 
-      ../CSGScan.cc 
-      ../CSGName.cc 
-      ../CSGTarget.cc 
-      ../CSGMaker.cc 
-      ../CU.cc 
-      "
+bin=/tmp/$name
+script=CSGScanTest.py 
 
-gcc \
-    $srcs \
-    -I.. \
-    -std=c++11 \
-    $opts \
-    -I${CUDA_PREFIX}/include \
-    -I${OPTICKS_PREFIX}/externals/glm/glm \
-    -I${OPTICKS_PREFIX}/include/SysRap \
-    -I${OPTICKS_PREFIX}/externals/plog/include \
-    -L${CUDA_PREFIX}/lib -lcudart -lstdc++ \
-    -L${OPTICKS_PREFIX}/lib \
-    -lSysRap \
-    -o /tmp/$name 
-
-[ $? -ne 0 ] && echo compile error && exit 1
 
 base=/tmp/$USER/opticks/$name
-#base=/tmp/CSGScanTest_scans
+
+
+geom=JustOrb
 
 export CSGSCANTEST_BASE=$base
-#export CSGSCANTEST_SOLID=icyl
-export CSGSCANTEST_SOLID=iphi
-
+export CSGSCANTEST_SOLID=$geom
 
 scans="axis rectangle circle"
-for scan in $scans ; do 
-    tmpdir=$base/${scan}_scan
-    mkdir -p $tmpdir 
-done 
 
-case $(uname) in
-  Darwin) var=DYLD_LIBRARY_PATH ;;
-  Linux)  var=LD_LIBRARY_PATH ;;
-esac
-cmd="$var=${CUDA_PREFIX}/lib:${OPTICKS_PREFIX}/lib /tmp/$name $*"
-echo $cmd
-eval $cmd
-[ $? -ne 0 ] && echo run error && exit 2
+vars="CSGSCANTEST_BASE CSGSCANTEST_SOLID"
 
-scan-all()
+
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+fi 
+
+if [ "${arg/build}" != "$arg" ]; then
+
+    opts=""
+    #opts="-DDEBUG=1"    ## very verbose 
+
+    srcs="$name.cc 
+          ../CSGFoundry.cc 
+          ../CSGImport.cc 
+          ../CSGSolid.cc 
+          ../CSGCopy.cc 
+          ../CSGPrim.cc 
+          ../CSGNode.cc 
+          ../CSGScan.cc 
+          ../CSGTarget.cc 
+          ../CSGMaker.cc 
+          ../CU.cc 
+          "
+
+    gcc \
+        $srcs \
+        -I.. \
+        -std=c++11 -lm \
+        $opts \
+        -I${CUDA_PREFIX}/include \
+        -I${OPTICKS_PREFIX}/externals/glm/glm \
+        -I${OPTICKS_PREFIX}/include/SysRap \
+        -I${OPTICKS_PREFIX}/externals/plog/include \
+        -L${CUDA_PREFIX}/lib64 -lcudart -lstdc++ \
+        -L${OPTICKS_PREFIX}/lib64 \
+        -lSysRap \
+        -DWITH_CHILD \
+        -DWITH_VERBOSE \
+        -o $bin
+
+    [ $? -ne 0 ] && echo build error && exit 1
+fi 
+
+
+list-all()
 {
     echo $FUNCNAME $*
     local scan
@@ -67,16 +91,28 @@ scan-all()
        ls -l $tmpdir
     done 
 }
-scan-recent(){
+list-recent(){
    echo $FUNCNAME 
    find $base -newer CSGScanTest.cc -exec ls -l {} \; 
 }
 
-#scan-all $scans
-scan-recent 
+if [ "${arg/run}" != "$arg" ]; then 
+    for scan in $scans ; do 
+        tmpdir=$base/${scan}_scan
+        mkdir -p $tmpdir 
+    done 
+    $bin
+    [ $? -ne 0 ] && echo run error && exit 2
+    list-recent  
+fi 
 
+if [ "${arg/list}" != "$arg" ]; then 
+    list-all
+fi 
 
-${IPYTHON:-ipython} -i --pdb CSGScanTest.py 
-
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${IPYTHON:-ipython} -i --pdb $script
+    [ $? -ne 0 ] && echo ana error && exit 3
+fi 
 
 exit 0 

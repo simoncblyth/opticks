@@ -1,4 +1,4 @@
-// ./CSGScanTest.sh
+// ~/o/CSG/tests/CSGScanTest.sh
 
 #include "OPTICKS_LOG.hh"
 
@@ -8,8 +8,8 @@
 
 #include "scuda.h"
 #include "SSim.hh"
-#include "SSys.hh"
-#include "SPath.hh"
+#include "ssys.h"
+#include "spath.h"
 
 #include "CSGFoundry.h"
 #include "CSGMaker.h"
@@ -21,12 +21,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
 
-    int create_dirs = 2 ; // 2: dirpath
-    const char* dir_default = SSys::getenvvar("CSGSCANTEST_BASE", "$TMP/CSGScanTest_scans" ); 
-    const char* dir = SPath::Resolve(dir_default, create_dirs) ; 
+    const char* dir_default = ssys::getenvvar("CSGSCANTEST_BASE", "$TMP/CSGScanTest_scans" ); 
+    const char* dir = spath::Resolve(dir_default) ; 
     LOG(info) << " CSGSCANTEST_BASE dir " << dir ; 
 
-    const char* solid = SSys::getenvvar("CSGSCANTEST_SOLID", "Ellipsoid" ); 
+    const char* solid = ssys::getenvvar("CSGSCANTEST_SOLID", "Ellipsoid" ); 
     LOG(info) << " CSGSCANTEST_SOLID " << solid ; 
 
     SSim::Create(); 

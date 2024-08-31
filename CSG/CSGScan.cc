@@ -1,3 +1,11 @@
+/**
+CSGScan.cc
+==========
+
+
+**/
+
+
 #include "scuda.h"
 #include "sqat4.h"
 #include "NP.hh"
@@ -213,21 +221,33 @@ void CSGScan::axis_scan()
     save("axis_scan"); 
 }
 
+
+std::string CSGScan::getScanPath(const char* sub) const 
+{
+    const char* lab = solid->getLabel() ;
+    std::cout << "CSGScan::getScanPath lab[" << lab << "]\n" ; 
+
+    std::stringstream ss ; 
+    ss << dir << "/" << sub << "/" << lab << ".npy" ; 
+    std::string path = ss.str(); 
+    return path ;
+}
+
 void CSGScan::save(const char* sub)
 {
     //std::cout << " recs.size " << recs.size() << std::endl ; 
     if(recs.size() == 0 ) return ; 
 
-    std::string name(solid->label,4) ;  // not NULL terminated, so give label size
-    name += ".npy" ; 
+    std::string path = getScanPath(sub); 
+    std::cout << "CSGScan::save" << "[" << path << "]\n" ; 
 
-    std::stringstream ss ; 
-    ss << dir << "/" << sub ; 
-    std::string fold = ss.str(); 
+    int ni = recs.size(); 
+    int nj = 4 ; 
+    int nk = 4 ; 
+    
+    //NP* a = NPX::ArrayFromVec<quad4,float>( recs.data(), 4, 4 ) ;  
 
-    NP::Write( fold.c_str(), name.c_str(), (float*)recs.data(), recs.size(), 4, 4 ) ; 
+    NP::Write( path.c_str(), (float*)recs.data(), ni, nj, nk ) ; 
     recs.clear(); 
 }
-
-
 

@@ -31,7 +31,6 @@
 
 
 
-
 int OKConf::Check()
 {
    int rc = 0 ;  

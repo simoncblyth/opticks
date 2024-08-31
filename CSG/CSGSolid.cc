@@ -59,6 +59,11 @@ std::string CSGSolid::desc() const
     return s ; 
 }
 
+const char* CSGSolid::getLabel() const 
+{
+    std::string lab(label, 16);   // array size 16 
+    return strdup(lab.c_str()) ;   // avoid newline? 
+}
 
 bool CSGSolid::labelMatch(const char* label_) const 
 {

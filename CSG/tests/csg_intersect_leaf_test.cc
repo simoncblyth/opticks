@@ -1,4 +1,19 @@
-// ./csg_intersect_leaf_test.sh
+/**
+csg_intersect_leaf_test.cc
+===========================
+
+::
+
+    ~/o/CSG/tests/csg_intersect_leaf_test.sh
+
+
+1. creates single CSGNode sphere
+2. setup environment for intersect_leaf call 
+3. does simtrace circle_scan with and without normalization
+4. intersects saved into NPFold for python analysis
+
+
+**/
 
 #include <cstdio>
 
