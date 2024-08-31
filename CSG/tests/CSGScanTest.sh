@@ -16,7 +16,6 @@ cd $(dirname $(realpath $BASH_SOURCE))
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}   # just use some CUDA headers, not using GPU 
 
-
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
@@ -26,18 +25,13 @@ bin=/tmp/$name
 script=CSGScanTest.py 
 
 
-base=/tmp/$USER/opticks/$name
-
+fold=/tmp/$USER/opticks/$name
+export FOLD=$fold
 
 geom=JustOrb
+export GEOM=$geom
 
-export CSGSCANTEST_BASE=$base
-export CSGSCANTEST_SOLID=$geom
-
-scans="axis rectangle circle"
-
-vars="CSGSCANTEST_BASE CSGSCANTEST_SOLID"
-
+vars="FOLD GEOM"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -81,34 +75,17 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 
-list-all()
-{
-    echo $FUNCNAME $*
-    local scan
-    for scan in $* ; do 
-       tmpdir=$base/${scan}_scan
-       echo $tmpdir
-       ls -l $tmpdir
-    done 
-}
 list-recent(){
    echo $FUNCNAME 
-   find $base -newer CSGScanTest.cc -exec ls -l {} \; 
+   find $FOLD -newer CSGScanTest.cc -exec ls -l {} \; 
 }
 
 if [ "${arg/run}" != "$arg" ]; then 
-    for scan in $scans ; do 
-        tmpdir=$base/${scan}_scan
-        mkdir -p $tmpdir 
-    done 
     $bin
     [ $? -ne 0 ] && echo run error && exit 2
     list-recent  
 fi 
 
-if [ "${arg/list}" != "$arg" ]; then 
-    list-all
-fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} -i --pdb $script

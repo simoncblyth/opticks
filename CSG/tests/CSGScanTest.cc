@@ -2,9 +2,6 @@
 
 #include "OPTICKS_LOG.hh"
 
-#include <vector>
-#include <cassert>
-#include <iostream>
 
 #include "scuda.h"
 #include "SSim.hh"
@@ -21,33 +18,21 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
 
-    const char* dir_default = ssys::getenvvar("CSGSCANTEST_BASE", "$TMP/CSGScanTest_scans" ); 
-    const char* dir = spath::Resolve(dir_default) ; 
-    LOG(info) << " CSGSCANTEST_BASE dir " << dir ; 
-
-    const char* solid = ssys::getenvvar("CSGSCANTEST_SOLID", "Ellipsoid" ); 
-    LOG(info) << " CSGSCANTEST_SOLID " << solid ; 
+    const char* geom = ssys::getenvvar("GEOM", "JustOrb" );
+    LOG(info) << " GEOM " << geom ; 
 
     SSim::Create(); 
 
     CSGFoundry fd ;  
-    fd.maker->make( solid ); 
+    fd.maker->make( geom ); 
 
-    unsigned numSolid = fd.getNumSolid() ; 
-    LOG(info) << "[ numSolid " << numSolid  ; 
+    const CSGSolid* solid = fd.getSolid(0); 
+    // TODO: pick solid/prim from full geometry : not just trivial ones
 
-    for(unsigned i=0 ; i < numSolid ; i++)
-    {
-        const CSGSolid* solid = fd.getSolid(i); 
+    CSGScan sc( &fd, solid, "axis,rectangle,circle" ); 
+    sc.intersect_prim_scan(); 
+    sc.save("$FOLD", geom); 
 
-        CSGScan sc(dir, &fd, solid); 
-        sc.axis_scan(); 
-        sc.rectangle_scan(); 
-        sc.circle_scan(); 
-    }
-
-
-    LOG(info) << "] numSolid " << numSolid  ; 
 
     return 0 ;  
 }

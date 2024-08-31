@@ -2,13 +2,20 @@
 CSGScan.cc
 ==========
 
+Restructured this in preparaction for the CUDA/MOCK_CUDA impl
+by preparing all the rays ahead of time and
+then doing all the intersects together. 
+
+TODO: split off the CUDA/MOCK_CUDA part that can be parallelized 
+
 
 **/
 
 
+#include "sstr.h"
 #include "scuda.h"
 #include "sqat4.h"
-#include "NP.hh"
+#include "NPX.h"
 
 #include "csg_intersect_leaf.h"
 #include "csg_intersect_node.h"
@@ -18,60 +25,116 @@ CSGScan.cc
 #include "CSGSolid.h"
 #include "CSGScan.h"
 
-CSGScan::CSGScan( const char* dir_, const CSGFoundry* foundry_, const CSGSolid* solid_ ) 
+CSGScan::CSGScan( const CSGFoundry* fd_, const CSGSolid* so_, const char* opts_  ) 
     :
-    dir(strdup(dir_)),
-    foundry(foundry_),
-    prim0(foundry->getPrim(0)),
-    node0(foundry->getNode(0)),
-    plan0(foundry->getPlan(0)),
-    itra0(foundry->getItra(0)),
-    solid(solid_),
-    primIdx0(solid->primOffset),
-    primIdx1(solid->primOffset+solid->numPrim)
+    fd(fd_),
+    prim0(fd->getPrim(0)),
+    node0(fd->getNode(0)),
+    plan0(fd->getPlan(0)),
+    itra0(fd->getItra(0)),
+    so(so_),
+    primIdx0(so->primOffset),
+    primIdx1(so->primOffset+so->numPrim),
+    primIdx(primIdx0),   // 
+    prim(prim0 + primIdx),
+    nodeOffset(prim->nodeOffset()),
+    node(node0 + nodeOffset)
 {
-}
+    std::vector<std::string> opts ;
+    sstr::Split(opts_, ',', opts ); 
 
-void CSGScan::record(bool valid_isect, const float4& isect,  const float3& ray_origin, const float3& ray_direction )
-{
-    quad4 rec ;  
-
-    rec.q0.f = make_float4(ray_origin);     rec.q0.i.w = int(valid_isect) ; 
-    rec.q1.f = make_float4(ray_direction); // .w spare
-    rec.q2.f = valid_isect ?  make_float4( ray_origin + isect.w*ray_direction, isect.w )  : make_float4(0.f) ; 
-    rec.q3.f = isect ; 
-
-    recs.push_back(rec);  
-    //dump(rec); 
-}
-
-
-void CSGScan::trace(const float t_min, const float3& ray_origin, const float3& ray_direction )
-{
-    for(unsigned primIdx=primIdx0 ; primIdx < primIdx1 ; primIdx++)
+    for(unsigned i=0 ; i < opts.size() ; i++)
     {
-        const CSGPrim* prim = prim0 + primIdx ;  
-        //int numNode = prim->numNode(); 
-        int nodeOffset = prim->nodeOffset(); 
-        const CSGNode* node = node0 + nodeOffset ; 
-        
-        float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ; 
-        bool valid_isect = intersect_prim(isect, node, plan0, itra0, t_min, ray_origin, ray_direction );
-        record(valid_isect, isect, ray_origin, ray_direction );  
-    } 
+        const char* opt = opts[i].c_str(); 
+        add_scan(opt); 
+    }
+}
+
+void CSGScan::add_scan(const char* opt)
+{
+    if(strcmp(opt,"axis")==0)   add_axis_scan(); 
+    if(strcmp(opt,"circle")==0) add_circle_scan(); 
+    if(strcmp(opt,"rectangle")==0) add_rectangle_scan(); 
+}
+
+void CSGScan::add_q(float t_min, const float3& ray_origin, const float3& ray_direction )
+{
+    quad4 q = {} ;  
+
+    q.q0.f = make_float4(ray_origin);  
+    q.q1.f = make_float4(ray_direction);  
+    q.q1.f.w = t_min ; 
+
+    qq.push_back(q);  
+}
+
+void CSGScan::add_q(const float t_min, const float3& ray_origin, const std::vector<float3>& dirs )
+{
+    for(unsigned i=0 ; i < dirs.size() ; i++)
+    {
+        const float3& ray_direction = dirs[i] ; 
+        add_q( t_min, ray_origin, ray_direction ); 
+    }
 }
 
 
-void CSGScan::dump( const quad4& rec )  // stat
+void CSGScan::add_isect( const float4& isect, bool valid_isect, const quad4& q ) 
 {
-    bool valid_isect = rec.q0.i.w == 1 ; 
+    const float3* ori = q.v0() ;   
+    const float3* dir = q.v1() ;   
 
-    const float4& isect = rec.q3.f ; 
-    const float4& ray_origin  = rec.q0.f ; 
-    const float4& ray_direction = rec.q1.f ; 
+    quad4 t ;  
+    t = q ; 
+
+    t.q0.i.w = int(valid_isect) ;
+
+    if( valid_isect )
+    {
+        t.q2.f.x  = ori->x + isect.w* dir->x ;   
+        t.q2.f.y  = ori->y + isect.w* dir->y ;   
+        t.q2.f.z  = ori->z + isect.w* dir->z ;   
+
+        t.q3.f    = isect ;  
+    }
+
+    tt.push_back(t);
+}
+
+
+
+
+
+void CSGScan::intersect_prim_scan()
+{
+    for(unsigned j=0 ; j < qq.size() ; j++)
+    {
+        const quad4& q = qq[j] ; 
+        const float3* ori = q.v0() ;   
+        const float3* dir = q.v1() ;   
+        float t_min = q.q1.f.w ; 
+        float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ; 
+        bool valid_isect = intersect_prim(isect, node, plan0, itra0, t_min, *ori, *dir );
+        add_isect( isect, valid_isect, q );   
+    }
+}
+
+
+
+
+
+
+
+
+void CSGScan::dump( const quad4& t )  // stat
+{
+    bool valid_isect = t.q0.i.w == 1 ; 
+
+    const float4& isect = t.q3.f ; 
+    const float4& ray_origin  = t.q0.f ; 
+    const float4& ray_direction = t.q1.f ; 
 
     std::cout 
-        << std::setw(30) << solid->label
+        << std::setw(30) << so->label
         << " valid_isect " << valid_isect 
         << " isect ( "
         << std::setw(10) << std::fixed << std::setprecision(3) << isect.x 
@@ -91,7 +154,6 @@ void CSGScan::dump( const quad4& rec )  // stat
         << " ) "
         << std::endl 
         ; 
-
 }
 
 std::string CSGScan::brief() const
@@ -99,10 +161,15 @@ std::string CSGScan::brief() const
     unsigned nhit = 0 ; 
     unsigned nmiss = 0 ; 
 
-    for(unsigned i=0 ; i < recs.size() ; i++)
+    int num = qq.size() == tt.size() ? qq.size() : 0 ; 
+
+
+    for(int i=0 ; i < num ; i++)
     {
-        const quad4& rec = recs[i] ; 
-        bool hit = rec.q0.i.w == 1 ; 
+        const quad4& q = qq[i] ; 
+        const quad4& t = tt[i] ;
+ 
+        bool hit = q.q0.i.w == 1 ; 
         if(hit)  nhit += 1 ; 
         if(!hit) nmiss += 1 ; 
     }
@@ -117,25 +184,17 @@ std::string CSGScan::brief() const
 }
 
 
-void CSGScan::trace(const float t_min, const float3& ray_origin, const std::vector<float3>& dirs )
-{
-    for(unsigned i=0 ; i < dirs.size() ; i++)
-    {
-        const float3& ray_direction = dirs[i] ; 
-        trace( t_min, ray_origin, ray_direction ); 
-    }
-}
 
-void CSGScan::circle_scan()
+void CSGScan::add_circle_scan()
 {
     float t_min = 0.f ;
-    float4 ce = solid->center_extent ; 
+    float4 ce = so->center_extent ; 
     float3 center = make_float3( ce ); 
     float extent = ce.w ; 
     float radius = 2.0f*extent ; 
 
     std::cout 
-        << "CSGScan::circle_scan"
+        << "CSGScan::add_circle_scan"
         << " extent " << extent 
         << " radius " << radius
         << std::endl 
@@ -146,13 +205,12 @@ void CSGScan::circle_scan()
     {
         float3 origin = center + make_float3( radius*sin(phi), 0.f, radius*cos(phi) ); 
         float3 direction = make_float3( -sin(phi),  0.f, -cos(phi) ); 
-        trace(t_min, origin, direction );     
+        add_q(t_min, origin, direction);     
     }
-    save("circle_scan");  
 }
 
 
-void CSGScan::_rectangle_scan(float t_min, unsigned n, float halfside, float y )
+void CSGScan::_add_rectangle_scan(float t_min, unsigned n, float halfside, float y )
 {
     // shooting up/down 
 
@@ -175,19 +233,19 @@ void CSGScan::_rectangle_scan(float t_min, unsigned n, float halfside, float y )
         z_top.x = v ; 
         z_bot.x = v ; 
 
-        trace(t_min, z_top, z_down );     
-        trace(t_min, z_bot, z_up   );     
+        add_q(t_min, z_top, z_down );     
+        add_q(t_min, z_bot, z_up   );     
 
         x_lhs.z = v ; 
         x_rhs.z = v ; 
-        trace(t_min, x_lhs, x_right );     
-        trace(t_min, x_rhs, x_left  );     
+        add_q(t_min, x_lhs, x_right );     
+        add_q(t_min, x_rhs, x_left  );     
     }
 }
 
-void CSGScan::rectangle_scan()
+void CSGScan::add_rectangle_scan()
 {
-    float4 ce = solid->center_extent ; 
+    float4 ce = so->center_extent ; 
     float extent = ce.w ; 
     float halfside = 2.0f*extent ; 
     unsigned nxz = 100 ; 
@@ -196,15 +254,14 @@ void CSGScan::rectangle_scan()
 
     for(float y=-halfside ; y <= halfside ; y += halfside/float(ny) )
     {
-        _rectangle_scan( t_min, nxz, halfside,   y );  
+        _add_rectangle_scan( t_min, nxz, halfside,   y );  
     }
-    save("rectangle_scan"); 
 }
 
-void CSGScan::axis_scan()
+void CSGScan::add_axis_scan()
 {
     float t_min = 0.f ;
-    float4 ce = solid->center_extent ; 
+    float4 ce = so->center_extent ; 
     float3 origin = make_float3(ce); 
 
     std::vector<float3> dirs ; 
@@ -216,38 +273,24 @@ void CSGScan::axis_scan()
     dirs.push_back( make_float3( 0.f,-1.f, 0.f));
     dirs.push_back( make_float3( 0.f, 0.f,-1.f));
 
-    trace(t_min, origin, dirs );     
+    add_q(t_min, origin, dirs );     
 
-    save("axis_scan"); 
 }
 
-
-std::string CSGScan::getScanPath(const char* sub) const 
+NPFold* CSGScan::serialize() const
 {
-    const char* lab = solid->getLabel() ;
-    std::cout << "CSGScan::getScanPath lab[" << lab << "]\n" ; 
-
-    std::stringstream ss ; 
-    ss << dir << "/" << sub << "/" << lab << ".npy" ; 
-    std::string path = ss.str(); 
-    return path ;
+    NPFold* fold = new NPFold ; 
+    NP* _qq = NPX::ArrayFromVec<float,quad4>( qq, 4, 4 ) ;  
+    NP* _tt = NPX::ArrayFromVec<float,quad4>( tt, 4, 4 ) ;  
+    fold->add("qq", _qq ); 
+    fold->add("tt", _tt ); 
+    return fold ;  
 }
 
-void CSGScan::save(const char* sub)
+void CSGScan::save(const char* base, const char* sub) const 
 {
-    //std::cout << " recs.size " << recs.size() << std::endl ; 
-    if(recs.size() == 0 ) return ; 
-
-    std::string path = getScanPath(sub); 
-    std::cout << "CSGScan::save" << "[" << path << "]\n" ; 
-
-    int ni = recs.size(); 
-    int nj = 4 ; 
-    int nk = 4 ; 
-    
-    //NP* a = NPX::ArrayFromVec<quad4,float>( recs.data(), 4, 4 ) ;  
-
-    NP::Write( path.c_str(), (float*)recs.data(), ni, nj, nk ) ; 
-    recs.clear(); 
+   NPFold* fold = serialize();  
+   fold->save(base, sub) ; 
 }
+
 
