@@ -21,11 +21,14 @@ arg=${1:-$defarg}
 
 
 name=CSGScanTest 
-bin=/tmp/$name
+fold=/tmp/$USER/opticks/$name
+bdir=/tmp/$USER/opticks/${name}.build
+mkdir -p $bdir
+
+bin=$bdir/$name
 script=CSGScanTest.py 
 
 
-fold=/tmp/$USER/opticks/$name
 export FOLD=$fold
 
 geom=JustOrb
@@ -38,10 +41,21 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
+
+
 if [ "${arg/build}" != "$arg" ]; then
 
     opts=""
     #opts="-DDEBUG=1"    ## very verbose 
+
+    cui=../CSGScan.cu
+    cuo=$bdir/CSGScan_cu.o
+    nvcc -c $cui \
+             -std=c++11 -lstdc++ \
+             -I.. \
+             -I$OPTICKS_PREFIX/include/SysRap \
+             -o $cuo 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : nvcc compile error cui $cui cuo $cuo  && exit 1
 
     srcs="$name.cc 
           ../CSGFoundry.cc 
@@ -54,6 +68,7 @@ if [ "${arg/build}" != "$arg" ]; then
           ../CSGTarget.cc 
           ../CSGMaker.cc 
           ../CU.cc 
+          $cuo
           "
 
     gcc \
@@ -73,7 +88,13 @@ if [ "${arg/build}" != "$arg" ]; then
         -o $bin
 
     [ $? -ne 0 ] && echo build error && exit 1
+
 fi 
+
+
+
+
+
 
 
 list-recent(){

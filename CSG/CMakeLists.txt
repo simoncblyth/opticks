@@ -55,6 +55,7 @@ list(APPEND CSG_HEADERS
     CSGPrim.h
     CSGSolid.h
 
+    CSGParams.h 
 
     CSGFoundry.h
 

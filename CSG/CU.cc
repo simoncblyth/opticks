@@ -14,6 +14,7 @@
 #include "CSGSolid.h"
 #include "CSGPrim.h"
 #include "CSGNode.h"
+#include "CSGParams.h"
 
 
 #include "CU.h"
@@ -21,6 +22,22 @@
 #ifdef WITH_SLOG
 const plog::Severity CU::LEVEL = SLOG::EnvLevel("CU","DEBUG"); 
 #endif
+
+
+
+
+template <typename T>
+T* CU::AllocArray(unsigned num_items ) // static
+{
+#ifdef WITH_SLOG
+    LOG(LEVEL) << " num_items " << num_items  ; 
+#endif
+    T* d_array = nullptr ; 
+    CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_items*sizeof(T) ));
+    return d_array ; 
+}
+
+
 
 /**
 CU::UploadArray
@@ -40,6 +57,7 @@ T* CU::UploadArray(const T* array, unsigned num_items ) // static
     CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, sizeof(T)*num_items, cudaMemcpyHostToDevice ));
     return d_array ; 
 }
+
 
 /**
 CU::UploadArray  
@@ -70,9 +88,11 @@ template CSG_API unsigned* CU::DownloadArray<unsigned>(const unsigned* d_array, 
 template CSG_API float4* CU::UploadArray<float4>(const float4* array, unsigned num_items) ;
 template CSG_API float4* CU::DownloadArray<float4>(const float4* d_array, unsigned num_items) ;
 
+template CSG_API CSGParams* CU::UploadArray<CSGParams>(const CSGParams* d_array, unsigned num_items) ;
 template CSG_API CSGNode* CU::UploadArray<CSGNode>(const CSGNode* d_array, unsigned num_items) ;
 template CSG_API CSGNode* CU::DownloadArray<CSGNode>(const CSGNode* d_array, unsigned num_items) ;
 
+template CSG_API quad4* CU::AllocArray<quad4>(unsigned num_items) ;
 template CSG_API quad4* CU::UploadArray<quad4>(const quad4* d_array, unsigned num_items) ;
 template CSG_API quad4* CU::DownloadArray<quad4>(const quad4* d_array, unsigned num_items) ;
 
@@ -123,6 +143,20 @@ void CU::DownloadVec(std::vector<T>& vec, const T* d_array, unsigned num_items) 
 template CSG_API void CU::DownloadVec<CSGPrim>(std::vector<CSGPrim>& vec,  const CSGPrim* d_array, unsigned num_items) ;
 template CSG_API void CU::DownloadVec<float>(std::vector<float>& vec,  const float* d_array, unsigned num_items) ;
 template CSG_API void CU::DownloadVec<unsigned>(std::vector<unsigned>& vec,  const unsigned* d_array, unsigned num_items) ;
+
+
+
+
+void CU::ConfigureLaunch1D( dim3& numBlocks, dim3& threadsPerBlock, unsigned num, unsigned threads_per_block ) // static
+{
+    threadsPerBlock.x = threads_per_block ;
+    threadsPerBlock.y = 1 ;
+    threadsPerBlock.z = 1 ;
+
+    numBlocks.x = (num + threadsPerBlock.x - 1) / threadsPerBlock.x ;
+    numBlocks.y = 1 ;
+    numBlocks.z = 1 ;
+}
 
 
 

@@ -1,8 +1,10 @@
 #pragma once
 
 /**
-CSGParams.h
-==============
+CSGParams.h : HMM: needs better name : purpose is for scan testing
+======================================================================
+
+See CSGScan.cc for usage
 
 Aiming to do CUDA only CSG intersect tests that follow 
 the pattern of OptiX ray trace tests. 
@@ -14,6 +16,15 @@ CSGOptiX7.cu revolves around the Params constant::
 Try to do something similar here for CUDA CSG scanning.
 
 **/
+
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+   #define PARAMS_METHOD __device__
+#else
+   #define PARAMS_METHOD 
+#endif 
+
 
 
 #include "scuda.h"
@@ -30,14 +41,21 @@ struct CSGParams
     const CSGNode* node ; 
     const float4*  plan ;
     const qat4*    itra ; 
-    const quad4*     qq ;   // "query" rays
+    quad4*           qq ;   // "query" rays
     quad4*           tt ;   // intersects 
     int             num ; 
+    bool           devp ;   // device pointers
 
-    void intersect( int idx ); 
+    PARAMS_METHOD void intersect( int idx ); 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    PARAMS_METHOD int num_valid_isect();
+#endif
+
 }; 
 
-inline void CSGParams::intersect( int idx )
+inline PARAMS_METHOD void CSGParams::intersect( int idx )
 {
     const quad4* q = qq + idx ; 
     const float t_min = q->q1.f.w ; 
@@ -62,4 +80,21 @@ inline void CSGParams::intersect( int idx )
         t->q3.f    = isect ;  
     }
 } 
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+inline PARAMS_METHOD int CSGParams::num_valid_isect()
+{
+    int n_hit = 0 ; 
+    for(int i=0 ; i < num ; i++)
+    {
+        const quad4& t = tt[i] ;
+        bool hit = t.q0.i.w == 1 ; 
+        if(hit)  n_hit += 1 ; 
+    }
+    return n_hit ; 
+} 
+#endif
+
 

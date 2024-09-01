@@ -25,12 +25,17 @@ int main(int argc, char** argv)
 
     CSGFoundry fd ;  
     fd.maker->make( geom ); 
+    fd.upload(); 
 
     const CSGSolid* solid = fd.getSolid(0); 
     // TODO: pick solid/prim from full geometry : not just trivial ones
 
     CSGScan sc( &fd, solid, "axis,rectangle,circle" ); 
-    sc.intersect_scan(); 
+    sc.intersect_h(); 
+    sc.intersect_d();
+
+    std::cout << sc.brief() ; 
+ 
     sc.save("$FOLD", geom); 
 
 

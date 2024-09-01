@@ -20,8 +20,14 @@ struct CSGParams ;
 struct CSG_API CSGScan
 {
     CSGScan( const CSGFoundry* fd_, const CSGSolid* solid_, const char* opt );   
-    void initGeom(); 
-    void initRays(const char* opts_); 
+
+    void initGeom_h(); 
+    void initRays_h(const char* opts_); 
+
+    void initGeom_d(); 
+    void initRays_d(); 
+    void initParams_d(); 
+
 
     void add_scan(std::vector<quad4>& qq, const char* opt);
     void add_axis_scan(std::vector<quad4>& qq); 
@@ -32,13 +38,15 @@ struct CSG_API CSGScan
     void add_q(std::vector<quad4>& qq, const float t_min, const float3& ray_origin, const float3& ray_direction );
     void add_q(std::vector<quad4>& qq, const float t_min, const float3& ray_origin, const std::vector<float3>& dirs );
 
-
-    void intersect_scan();
-
+    void intersect_h();
+    void intersect_d();
+    void download(); 
 
     std::string brief() const ;
+    std::string brief(CSGParams* s) const ;
     void dump( const quad4& rec ); 
 
+    NPFold* serialize_(CSGParams* s) const ; 
     NPFold* serialize() const ; 
     void save(const char* base, const char* sub) const ;
 
@@ -54,7 +62,10 @@ struct CSG_API CSGScan
     int nodeOffset ; 
     const CSGNode* node ; 
 
-    CSGParams*  ctx ; 
+    CSGParams* h ;
+    CSGParams* d ;
+    CSGParams* d_d ;
+    CSGParams* c ;
 
  
 };

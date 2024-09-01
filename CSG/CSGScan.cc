@@ -6,8 +6,10 @@ Restructured this in preparaction for the CUDA/MOCK_CUDA impl
 by preparing all the rays ahead of time and
 then doing all the intersects together. 
 
-TODO: split off the CUDA/MOCK_CUDA part that can be parallelized 
+DONE : split off the CUDA/MOCK_CUDA part that can be parallelized 
 
+TODO : add launch, pullback 
+TODO : try copying to symbol rather than the ordinary 
 
 **/
 
@@ -19,6 +21,23 @@ TODO: split off the CUDA/MOCK_CUDA part that can be parallelized
 #include "CSGScan.h"
 
 #include "CSGParams.h"
+#include "CU.h"
+
+/**
+CSGScan::CSGScan
+-----------------
+
+
+h
+   host pointer to CSGParams populated on host
+d
+   host pointer to CSGParams populated on device 
+d_d
+   device pointer of the copied to device d instance
+c 
+   host pointer to the copied back CSGParams instance
+
+**/
 
 
 CSGScan::CSGScan( const CSGFoundry* fd_, const CSGSolid* so_, const char* opts_  ) 
@@ -33,20 +52,29 @@ CSGScan::CSGScan( const CSGFoundry* fd_, const CSGSolid* so_, const char* opts_ 
     prim(prim0 + primIdx),
     nodeOffset(prim->nodeOffset()),
     node(node0 + nodeOffset),
-    ctx(new CSGParams {})
+    h(new CSGParams {}),
+    d(new CSGParams {}),   
+    d_d(nullptr),
+    c(new CSGParams {})
 {
-    initGeom(); 
-    initRays(opts_); 
+    initGeom_h(); 
+    initRays_h(opts_); 
+
+    initGeom_d(); 
+    initRays_d(); 
+    initParams_d(); 
 }
 
-void CSGScan::initGeom()
+void CSGScan::initGeom_h()
 {
-    ctx->node = node ; 
-    ctx->plan = fd->getPlan(0) ; 
-    ctx->itra = fd->getItra(0) ;
+    h->devp = false ; 
+    h->node = node ; 
+    h->plan = fd->getPlan(0) ; 
+    h->itra = fd->getItra(0) ;
 }
 
-void CSGScan::initRays(const char* opts_)
+
+void CSGScan::initRays_h(const char* opts_)
 {
     std::vector<std::string> opts ;
     sstr::Split(opts_, ',', opts ); 
@@ -58,10 +86,35 @@ void CSGScan::initRays(const char* opts_)
         add_scan(qq, opt); 
     }
 
-    ctx->num = qq.size() ; 
-    ctx->qq = new quad4[ctx->num];  
-    ctx->tt = new quad4[ctx->num];
+    h->num = qq.size() ; 
+    h->qq = new quad4[h->num];  
+    memcpy( (void*)h->qq, qq.data(), sizeof(quad4)*h->num ) ; 
+
+    h->tt = new quad4[h->num];
 }
+
+
+
+void CSGScan::initGeom_d()
+{
+    assert( fd->isUploaded() ); 
+
+    d->devp = true ; 
+    d->node = fd->d_node ; 
+    d->plan = fd->d_plan ; 
+    d->itra = fd->d_itra ;
+}
+void CSGScan::initRays_d()
+{
+    d->num = h->num ; 
+    d->qq = CU::UploadArray<quad4>( h->qq, h->num ) ; 
+    d->tt = CU::AllocArray<quad4>( d->num ) ; 
+}
+void CSGScan::initParams_d()
+{
+    d_d = CU::UploadArray<CSGParams>( d, 1 ) ; 
+}
+
 
 void CSGScan::add_scan(std::vector<quad4>& qq, const char* opt)
 {
@@ -180,12 +233,34 @@ void CSGScan::add_q(std::vector<quad4>& qq, float t_min, const float3& ray_origi
     qq.push_back(q);  
 }
 
-void CSGScan::intersect_scan()
+void CSGScan::intersect_h()
 {
-    for(int i=0 ; i < ctx->num ; i++)
+    for(int i=0 ; i < h->num ; i++)
     {
-        ctx->intersect(i); 
+        h->intersect(i); 
     }
+}
+
+extern void CSGScan_intersect( dim3 numBlocks, dim3 threadsPerBlock, CSGParams* d ); 
+
+void CSGScan::intersect_d()
+{
+    dim3 numBlocks ; 
+    dim3 threadsPerBlock ; 
+    CU::ConfigureLaunch1D( numBlocks, threadsPerBlock, d->num, 512u );
+
+    CSGScan_intersect( numBlocks, threadsPerBlock, d_d ) ; 
+
+    download();
+}
+
+void CSGScan::download()
+{
+    c->num = d->num ;
+    c->qq = CU::DownloadArray<quad4>( d->qq, d->num ) ; 
+    c->tt = CU::DownloadArray<quad4>( d->tt, d->num ) ; 
+    assert( d->devp == true ) ; 
+    c->devp = false ;
 }
 
 
@@ -222,37 +297,41 @@ void CSGScan::dump( const quad4& t )  // stat
 
 std::string CSGScan::brief() const
 {
-    unsigned nhit = 0 ; 
-    unsigned nmiss = 0 ; 
-
-    for(int i=0 ; i < ctx->num ; i++)
-    {
-        const quad4& q = ctx->qq[i] ; 
-        const quad4& t = ctx->tt[i] ;
- 
-        bool hit = q.q0.i.w == 1 ; 
-        if(hit)  nhit += 1 ; 
-        if(!hit) nmiss += 1 ; 
-    }
     std::stringstream ss ; 
-    ss
-        << " nhit " << nhit 
-        << " nmiss " << nmiss 
-        ;
-
-    std::string s = ss.str() ; 
-    return s ; 
+    ss << " h " << brief(h) << "\n" ; 
+    ss << " d " << brief(c) << "(actually c, copied to host from d)\n" ; 
+    std::string str = ss.str() ; 
+    return str ; 
 }
 
+std::string CSGScan::brief(CSGParams* s) const
+{
+    int n_hit = s->num_valid_isect();  
+    std::stringstream ss ; 
+    ss
+        << " num " << s->num 
+        << " n_hit " << n_hit 
+        << " (num-n_hit) " << (s->num-n_hit) 
+        ;
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
+NPFold* CSGScan::serialize_(CSGParams* s) const
+{
+    NPFold* fold = new NPFold ; 
+    NP* _qq = NPX::ArrayFromData<float>( (float*)s->qq, s->num, 4, 4 ) ;  
+    NP* _tt = NPX::ArrayFromData<float>( (float*)s->tt, s->num, 4, 4 ) ;
+    fold->add("qq", _qq ); 
+    fold->add("tt", _tt ); 
+    return fold ;  
+}
 
 NPFold* CSGScan::serialize() const
 {
     NPFold* fold = new NPFold ; 
-    NP* _qq = NPX::ArrayFromData<float>( (float*)ctx->qq, ctx->num, 4, 4 ) ;  
-    NP* _tt = NPX::ArrayFromData<float>( (float*)ctx->tt, ctx->num, 4, 4 ) ;  
-    fold->add("qq", _qq ); 
-    fold->add("tt", _tt ); 
+    fold->add_subfold("h", serialize_(h)); 
+    fold->add_subfold("d", serialize_(c));   // c is d copied back to host  
     return fold ;  
 }
 
@@ -261,5 +340,4 @@ void CSGScan::save(const char* base, const char* sub) const
    NPFold* fold = serialize();  
    fold->save(base, sub) ; 
 }
-
 

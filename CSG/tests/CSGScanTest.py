@@ -13,6 +13,8 @@ CSGScanTest.py
 import os
 import numpy as np
 from glob import glob
+from opticks.ana.fold import Fold
+
 
 try:
     import matplotlib.pyplot as plt 
@@ -56,7 +58,7 @@ def plot3d_arrows(pos, nrm, mag=1, grid=False):
 
 
 class CSGScanTest(object):
-    def __init__(self, a):
+    def __init__(self, a, symbol="a" ):
 
         ori = a[:,0] ; valid_isect = a[:,0,3].view(np.int32)  
         dir = a[:,1]
@@ -67,6 +69,7 @@ class CSGScanTest(object):
         hit = np.count_nonzero( valid_isect == 1 )  
         miss = np.count_nonzero( valid_isect == 0 )  
 
+        self.symbol = symbol  
         self.a = a
 
         self.ori = ori    ; self.valid_isect = valid_isect
@@ -79,7 +82,7 @@ class CSGScanTest(object):
         self.miss = miss
 
     def __repr__(self):
-        return "tot %d hit %d miss %d " % (self.tot, self.hit, self.miss)
+        return "%s : tot %d hit %d miss %d " % (self.symbol, self.tot, self.hit, self.miss)
  
 
 def plot2d(st):
@@ -96,22 +99,22 @@ def plot2d(st):
     fig.show()
 
 if __name__ == '__main__':
-    geom = os.environ["GEOM"]
-    print("GEOM : %s " % (geom ) )
+    f = Fold.Load("$FOLD/$GEOM", symbol="f")
+    print(repr(f))
 
-    q_path = os.path.expandvars("$BASE/qq.npy") 
-    t_path = os.path.expandvars("$BASE/tt.npy") 
+    a = f.h.tt
+    b = f.d.tt
 
-    q = np.load(q_path)
-    print(" q.shape : %s : %s " % (str(q.shape), q_path) )
-    t = np.load(t_path)
-    print(" t.shape : %s : %s " % (str(t.shape), t_path) )
+    a_ = CSGScanTest(a, symbol="f.h.tt")
+    print(a_)
 
-    st = CSGScanTest(t)
-    print(st)
+    b_ = CSGScanTest(b, symbol="f.d.tt")
+    print(b_)
 
-    #plot2d( st );
-    plot3d( st.post[:,:3] )   # intersect position 
-    #plot3d_arrows( st.post[:,:3], st.isect[:,:3], mag=10 )  # intersect position and normal direction arrows
+    plot3d( a_.post[:,:3] )   # intersect position 
+    plot3d( b_.post[:,:3] )   # intersect position 
+
+    ##plot2d( st );
+    ##plot3d_arrows( st.post[:,:3], st.isect[:,:3], mag=10 )  # intersect position and normal direction arrows
 
 

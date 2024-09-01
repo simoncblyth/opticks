@@ -64,6 +64,12 @@ struct SCU
     template<typename T>
     static CUdeviceptr DevicePointerCast( const T* d_ptr ); 
 
+    void _cudaMalloc( void** p2p, size_t size, const char* label ); 
+
+    template<typename T>
+    T* device_alloc( unsigned num_items, const char* label ); 
+
+
 
     template <typename T>
     static T* UploadArray(const T* array, size_t num_item ); 
@@ -101,6 +107,37 @@ CUdeviceptr SCU::DevicePointerCast( const T* d_ptr ) // static
 {
     return (CUdeviceptr) (uintptr_t) d_ptr ; 
 }
+
+
+inline void SCU::_cudaMalloc( void** p2p, size_t size, const char* label )
+{
+    cudaError_t err = cudaMalloc(p2p, size ) ;   
+    if( err != cudaSuccess ) 
+    {    
+        std::stringstream ss; 
+        ss << "CUDA call (" << label << " ) failed with error: '"    
+           << cudaGetErrorString( err )    
+           << "' (" __FILE__ << ":" << __LINE__ << ")\n"
+           ;  
+
+        const char* msg = ss.str().c_str() ;
+        throw CUDA_Exception(msg);    
+    }    
+}
+
+
+template<typename T>
+inline T* SCU::device_alloc( unsigned num_items, const char* label )
+{
+    size_t size = num_items*sizeof(T) ; 
+
+    T* d ;   
+    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label );  
+
+    return d ; 
+}
+
+
 
 
 /**
