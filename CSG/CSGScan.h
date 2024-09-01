@@ -15,24 +15,25 @@ CSGScan.h : CPU testing of GPU csg_intersect impl
 
 struct CSGFoundry ; 
 struct CSGSolid ; 
+struct CSGParams ; 
 
 struct CSG_API CSGScan
 {
     CSGScan( const CSGFoundry* fd_, const CSGSolid* solid_, const char* opt );   
+    void initGeom(); 
+    void initRays(const char* opts_); 
 
-    void add_scan(const char* opt);
-    void add_circle_scan(); 
-    void add_rectangle_scan(); 
-    void _add_rectangle_scan(float t_min, unsigned n, float halfside, float y ) ;
-    void add_axis_scan(); 
+    void add_scan(std::vector<quad4>& qq, const char* opt);
+    void add_axis_scan(std::vector<quad4>& qq); 
+    void add_circle_scan(std::vector<quad4>& qq); 
+    void add_rectangle_scan(std::vector<quad4>& qq); 
+    void _add_rectangle_scan(std::vector<quad4>& qq, float t_min, unsigned n, float halfside, float y ) ;
+
+    void add_q(std::vector<quad4>& qq, const float t_min, const float3& ray_origin, const float3& ray_direction );
+    void add_q(std::vector<quad4>& qq, const float t_min, const float3& ray_origin, const std::vector<float3>& dirs );
 
 
-    void add_q(const float t_min, const float3& ray_origin, const float3& ray_direction );
-    void add_q(const float t_min, const float3& ray_origin, const std::vector<float3>& dirs );
-
-    void add_isect( const float4& i, bool valid_isect, const quad4& q ); 
-
-    void intersect_prim_scan();
+    void intersect_scan();
 
 
     std::string brief() const ;
@@ -41,12 +42,9 @@ struct CSG_API CSGScan
     NPFold* serialize() const ; 
     void save(const char* base, const char* sub) const ;
 
-
     const CSGFoundry* fd ; 
     const CSGPrim*    prim0 ; 
     const CSGNode*    node0 ; 
-    const float4*     plan0 ; 
-    const qat4*       itra0 ; 
     const CSGSolid*   so ;
  
     int primIdx0 ; 
@@ -56,9 +54,8 @@ struct CSG_API CSGScan
     int nodeOffset ; 
     const CSGNode* node ; 
 
+    CSGParams*  ctx ; 
 
-    std::vector<quad4> qq ; 
-    std::vector<quad4> tt ;
  
 };
 

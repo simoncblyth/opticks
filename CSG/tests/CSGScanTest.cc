@@ -30,7 +30,7 @@ int main(int argc, char** argv)
     // TODO: pick solid/prim from full geometry : not just trivial ones
 
     CSGScan sc( &fd, solid, "axis,rectangle,circle" ); 
-    sc.intersect_prim_scan(); 
+    sc.intersect_scan(); 
     sc.save("$FOLD", geom); 
 
 

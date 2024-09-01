@@ -103,25 +103,8 @@ def plot2d(st):
 if __name__ == '__main__':
 
 
-    solid = os.environ.get("CSGSCANTEST_SOLID", "elli")
-
-    #solid = "sphe"
-    #solid = "zsph"
-    #solid = "cone"
-    #solid = "vcub" 
-    #solid = "vtet" 
-    #solid = "hype"
-    #solid = "box3"
-    #solid = "plan"
-    #solid = "slab"
-    #solid = "cyli"
-    #solid = "disc"
-    #solid = "elli"
-    #solid = "ubsp"
-    #solid = "ibsp"
-    #solid = "dbsp"
-
-    print("CSGSCANTESTSOLID : %s " % solid )
+    geom = os.environ.get("GEOM", "elli")
+    print("GEOM : %s " % geom )
 
     #scan = "circle"
     scan = "rectangle"

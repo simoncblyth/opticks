@@ -30,8 +30,9 @@ export FOLD=$fold
 
 geom=JustOrb
 export GEOM=$geom
+export BASE=$FOLD/$GEOM
 
-vars="FOLD GEOM"
+vars="FOLD GEOM BASE"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -86,10 +87,15 @@ if [ "${arg/run}" != "$arg" ]; then
     list-recent  
 fi 
 
+if [ "${arg/grab}" != "$arg" ]; then 
+    source ../../bin/BASE_grab.sh $arg
+    [ $? -ne 0 ] && echo grab error && exit 4
+fi 
+
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} -i --pdb $script
-    [ $? -ne 0 ] && echo ana error && exit 3
+    [ $? -ne 0 ] && echo ana error && exit 4
 fi 
 
 exit 0 
