@@ -249,8 +249,8 @@ std::string CSGScan::brief() const
 NPFold* CSGScan::serialize() const
 {
     NPFold* fold = new NPFold ; 
-    NP* _qq = NPX::ArrayFromData<float>( (float*)ctx->qq, 4, 4 ) ;  
-    NP* _tt = NPX::ArrayFromData<float>( (float*)ctx->tt, 4, 4 ) ;  
+    NP* _qq = NPX::ArrayFromData<float>( (float*)ctx->qq, ctx->num, 4, 4 ) ;  
+    NP* _tt = NPX::ArrayFromData<float>( (float*)ctx->tt, ctx->num, 4, 4 ) ;  
     fold->add("qq", _qq ); 
     fold->add("tt", _tt ); 
     return fold ;  

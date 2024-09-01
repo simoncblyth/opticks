@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 """
+CSGScanTest.py
+==============
 
 ::
 
-   GEOMETRY=zsph ipython -i CSGScanTest.py 
-
+    ~/o/CSG/tests/CSGScanTest.sh grab
+    ~/o/CSG/tests/CSGScanTest.sh ana
 
 
 """
@@ -54,10 +56,9 @@ def plot3d_arrows(pos, nrm, mag=1, grid=False):
 
 
 class CSGScanTest(object):
-    def __init__(self, path):
-        a = np.load(path) 
+    def __init__(self, a):
 
-        ori = a[:,0]  ; valid_isect = a[:,0,3].view(np.int32)  
+        ori = a[:,0] ; valid_isect = a[:,0,3].view(np.int32)  
         dir = a[:,1]
         post = a[:,2]
         isect = a[:,3]
@@ -66,8 +67,6 @@ class CSGScanTest(object):
         hit = np.count_nonzero( valid_isect == 1 )  
         miss = np.count_nonzero( valid_isect == 0 )  
 
-
-        self.path = path 
         self.a = a
 
         self.ori = ori    ; self.valid_isect = valid_isect
@@ -80,10 +79,8 @@ class CSGScanTest(object):
         self.miss = miss
 
     def __repr__(self):
-        return "%s : tot %d hit %d miss %d " % (self.path, self.tot, self.hit, self.miss)
+        return "tot %d hit %d miss %d " % (self.tot, self.hit, self.miss)
  
-
-
 
 def plot2d(st):
     plt.ion()
@@ -98,21 +95,19 @@ def plot2d(st):
     ax.scatter( st.ori[:,0] + st.dir[:,0]*scale, st.ori[:,2]+st.dir[:,2]*scale )
     fig.show()
 
-
-
 if __name__ == '__main__':
+    geom = os.environ["GEOM"]
+    print("GEOM : %s " % (geom ) )
 
+    q_path = os.path.expandvars("$BASE/qq.npy") 
+    t_path = os.path.expandvars("$BASE/tt.npy") 
 
-    geom = os.environ.get("GEOM", "elli")
-    print("GEOM : %s " % geom )
+    q = np.load(q_path)
+    print(" q.shape : %s : %s " % (str(q.shape), q_path) )
+    t = np.load(t_path)
+    print(" t.shape : %s : %s " % (str(t.shape), t_path) )
 
-    #scan = "circle"
-    scan = "rectangle"
-
-    base = os.environ.get("CSGSCANTEST_BASE", os.path.expandvars("/tmp/$USER/opticks/CSGScanTest"))
-    path = "%(base)s/%(scan)s_scan/%(solid)s.npy" % locals()
-
-    st = CSGScanTest(path)
+    st = CSGScanTest(t)
     print(st)
 
     #plot2d( st );
