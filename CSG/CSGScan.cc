@@ -7,9 +7,13 @@ by preparing all the rays ahead of time and
 then doing all the intersects together. 
 
 DONE : split off the CUDA/MOCK_CUDA part that can be parallelized 
+DONE : add launch, pullback 
 
-TODO : add launch, pullback 
-TODO : try copying to symbol rather than the ordinary 
+TODO : try using CUDA __constant__ and cudaMemcpyToSymbol for the CSGParams
+
+* HMM: it makes more sense to do that for the geometry pointers, not so much
+  for the less constant rays and intersects 
+
 
 **/
 
@@ -26,7 +30,6 @@ TODO : try copying to symbol rather than the ordinary
 /**
 CSGScan::CSGScan
 -----------------
-
 
 h
    host pointer to CSGParams populated on host
@@ -241,6 +244,11 @@ void CSGScan::intersect_h()
     }
 }
 
+
+
+// tempory until fixed CMake machinery 
+#ifdef WITH_CSG_CU
+
 extern void CSGScan_intersect( dim3 numBlocks, dim3 threadsPerBlock, CSGParams* d ); 
 
 void CSGScan::intersect_d()
@@ -253,6 +261,13 @@ void CSGScan::intersect_d()
 
     download();
 }
+#else
+void CSGScan::intersect_d()
+{
+    std::cerr << "CSGScan::intersect_d PLACEHOLDER \n" ; 
+}
+#endif
+
 
 void CSGScan::download()
 {

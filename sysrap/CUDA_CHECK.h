@@ -15,7 +15,7 @@
             ss << "CUDA call (" << #call << " ) failed with error: '"          \
                << cudaGetErrorString( error )                                  \
                << "' (" __FILE__ << ":" << __LINE__ << ")\n";                  \
-            throw sutil::CUDA_Exception( ss.str().c_str() );                        \
+            throw CUDA_Exception( ss.str().c_str() );                        \
         }                                                                      \
     } while( 0 )
 
@@ -31,14 +31,11 @@
             ss << "CUDA error on synchronize with error '"                     \
                << cudaGetErrorString( error )                                  \
                << "' (" __FILE__ << ":" << __LINE__ << ")\n";                  \
-            throw sutil::CUDA_Exception( ss.str().c_str() );                        \
+            throw CUDA_Exception( ss.str().c_str() );                        \
         }                                                                      \
     } while( 0 )
 
 
-
-namespace sutil
-{
 
 class CUDA_Exception : public std::runtime_error
 {
@@ -50,5 +47,3 @@ class CUDA_Exception : public std::runtime_error
 };
 
 
-
-} // end namespace sutil

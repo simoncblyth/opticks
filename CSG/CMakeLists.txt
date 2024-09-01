@@ -29,7 +29,11 @@ list(APPEND SOURCES
     CSGMaker.cc
     CSGImport.cc
     CSGTarget.cc
+
+
     CSGScan.cc
+    CSGScan.cu
+
     CSGView.cc
     CSGGrid.cc
     CSGQuery.cc
@@ -134,6 +138,9 @@ message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+
+#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )

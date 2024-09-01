@@ -74,73 +74,39 @@ DONE : find simple tests that does 2D CPU side tracing
     CSG/tests/intersect_prim_test.sh
 
 
-TODO : construct boolean at CSGNode level within intersect_prim_test.sh
----------------------------------------------------------------------------
 
 
+cuda + cudamock test like intersect_prim_test.sh 
+------------------------------------------------------
+
+* start with just CUDA (not OptiX) test of intersection with simple shapes
+* adding CUDA capability to CSGScan is close to what want
+* can follow extern mechanics from qudarap/QPMT 
+
+* WIP: CSG/CSGScan.{cc,cu} CSG/tests/CSGScanTest.sh 
 
 
+CUDA + mocked CUDA test of intersect_prim, testing the below call in CSGOptiX7.cu::
 
-TODO: small cuda test like intersect_prim_test.sh brought to GPU 
--------------------------------------------------------------------
-
-Just CUDA (not OptiX) test of the below headers::
 
     #include "csg_intersect_leaf.h"
     #include "csg_intersect_node.h"
     #include "csg_intersect_tree.h"
-
-
-CUDA + mocked CUDA test of intersect_prim::
+    ...
 
     extern "C" __global__ void __intersection__is()
     {
-
-    #if defined(DEBUG_PIDX)
-        //printf("//__intersection__is\n"); 
-    #endif
-
-        HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();
-        int nodeOffset = hg->prim.nodeOffset ;
-
+        ...
         const CSGNode* node = params.node + nodeOffset ;  // root of tree
         const float4* plan = params.plan ;
-        const qat4*   itra = params.itra ;
-
-        const float  t_min = optixGetRayTmin() ;
-        const float3 ray_origin = optixGetObjectRayOrigin();
-        const float3 ray_direction = optixGetObjectRayDirection();
-
+        const qat4*   itra = params.itra ;        
         float4 isect ; // .xyz normal .w distance 
+
         if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))
         {
             const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
             const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
             const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary 
-
-
-
-
-
-
-
-
-Selection of small cuda scripts::
-
-    ./qudarap/tests/QPMT_Test.sh:        nvcc -c $cui \
-
-
-    ./sysrap/tests/SGLFW_SOPTIX_Scene_test.sh:    nvcc $cu \
-    ./sysrap/tests/SOPTIX_Scene_test.sh:   nvcc $cu \
-            optix tests, with ptx/xir loading 
-
-    ./sysrap/tests/SIMGStandaloneTest.sh:nvcc $name.cu \
-    ./sysrap/tests/SUTest.sh:nvcc -c ../SU.cu -I.. -o $dir/SU.o
-    ./sysrap/tests/erfcinvf_Test.sh:    nvcc $name.cu -std=c++11 $opt -I$HOME/np -I..  -I$CUDA_PREFIX/include -o $bin
-    ./sysrap/tests/logTest.sh:    nvcc $name.cu -std=c++11 $opt -I.. -I/usr/local/cuda/include -o /tmp/$name 
-    ./thrustrap/tests/strided_rangeTest.sh:nvcc $name.cu -I.. -I../../sysrap -o $bin
-          these there are too small, .cu only 
-
 
 
 

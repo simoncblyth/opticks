@@ -41,10 +41,13 @@ struct CSGParams
     const CSGNode* node ; 
     const float4*  plan ;
     const qat4*    itra ; 
+
+
     quad4*           qq ;   // "query" rays
     quad4*           tt ;   // intersects 
     int             num ; 
     bool           devp ;   // device pointers
+
 
     PARAMS_METHOD void intersect( int idx ); 
 
@@ -54,6 +57,18 @@ struct CSGParams
 #endif
 
 }; 
+
+/**
+CSGParams::intersect
+---------------------
+
+Keeping the geometry pointers together with rays and
+intersects all together makes this very simple...
+
+Though perhaps better to split off the geometry ? 
+
+**/
+
 
 inline PARAMS_METHOD void CSGParams::intersect( int idx )
 {
