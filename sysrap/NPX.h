@@ -34,7 +34,8 @@ struct NPX
 
     template<typename T> static NP*  Make( const std::vector<T>& src ); 
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
-    template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // TODO rename ArrayFromData
+    template<typename T, typename... Args> static NP*  Make(const T* src, Args ... shape );  // WIP: switch to name ArrayFromData
+    template<typename T, typename... Args> static NP*  ArrayFromData(const T* src, Args ... shape ); 
 
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;  
 
@@ -255,7 +256,14 @@ When the first int shape dimension is zero a nullptr is returned.
 **/
 
 template<typename T, typename... Args> 
-inline NP* NPX::Make(const T* src, Args ... args )   // TODO rename ArrayFromData
+inline NP* NPX::Make(const T* src, Args ... args )   // WIP switch to name ArrayFromData
+{
+    std::cerr << "TODO: change NPX::Make to NPX::ArrayFromData \n" ; 
+    return ArrayFromData(src, std::forward<Args>(args)...) ; 
+}
+
+template<typename T, typename... Args> 
+inline NP* NPX::ArrayFromData(const T* src, Args ... args )   
 {
     std::string dtype = descr_<T>::dtype() ; 
     std::vector<int> shape = {args...};
@@ -264,6 +272,7 @@ inline NP* NPX::Make(const T* src, Args ... args )   // TODO rename ArrayFromDat
     a->read2(src);  
     return a ; 
 }
+
 
 
 template <typename T> 
