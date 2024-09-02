@@ -667,8 +667,14 @@ extern "C" __global__ void __intersection__is()
 {
 
 #if defined(DEBUG_PIDX)
-    //printf("//__intersection__is\n"); 
+    const uint3 idx = optixGetLaunchIndex();
+    const uint3 dim = optixGetLaunchDimensions();
+    bool dump = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ; 
+    if(dump) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dump:%d \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dump); 
+#else
+    bool dump = false ; 
 #endif
+
 
     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
     int nodeOffset = hg->prim.nodeOffset ; 
@@ -682,7 +688,8 @@ extern "C" __global__ void __intersection__is()
     const float3 ray_direction = optixGetObjectRayDirection();
 
     float4 isect ; // .xyz normal .w distance 
-    if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))  
+    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dump ); 
+    if(valid_isect)
     {
         const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
         const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
@@ -709,5 +716,11 @@ extern "C" __global__ void __intersection__is()
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
         // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
     }
+
+#if defined(DEBUG_PIDX)
+    if(dump) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dump:%d valid_isect:%d\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dump, valid_isect); 
+#endif
+
+
 }
 // story begins with intersection

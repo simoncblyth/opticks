@@ -246,7 +246,8 @@ bool CSGQuery::intersect( quad4& isect,  float t_min, const float3& ray_origin, 
     std::cout << "CSGQuery::intersect  ray_origin " << ray_origin << " ray_direction " << ray_direction << std::endl ; 
 #endif
 
-    bool valid_intersect = intersect_prim( isect.q0.f, select_root_node, plan0, itra0, t_min, ray_origin, ray_direction ) ; 
+    bool dump = false ; 
+    bool valid_intersect = intersect_prim( isect.q0.f, select_root_node, plan0, itra0, t_min, ray_origin, ray_direction, dump ) ; 
     if( valid_intersect ) 
     {
         float t = isect.q0.f.w ; 
@@ -398,7 +399,8 @@ bool CSGQuery::simtrace( quad4& p ) const
     float t_min = p.q1.f.w ;   
 
     // the 1st float4 argumnent gives surface normal at intersect and distance 
-    bool valid_intersect = intersect_prim( p.q0.f, select_root_node, plan0, itra0, t_min, *ray_origin, *ray_direction ) ; 
+    bool dump = false ; 
+    bool valid_intersect = intersect_prim( p.q0.f, select_root_node, plan0, itra0, t_min, *ray_origin, *ray_direction, dump ) ; 
     if( valid_intersect ) 
     {
         float t = p.q0.f.w ; 

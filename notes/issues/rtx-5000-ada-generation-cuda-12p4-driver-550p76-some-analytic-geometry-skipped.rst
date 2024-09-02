@@ -95,6 +95,15 @@ Adding CSGFoundry saving tp CSGScanTest.sh can look at them with::
     MOI=EXTENT:200 ~/o/cxr_min.sh 
 
 
+Debug dev cycle:
+
+1. change CSG, build CSG+CSGOptix 
+2. rerun::
+
+    MOI=EXTENT:200 ~/o/cxr_min.sh 
+
+
+
 
 TODO : further enhance CSGScanTest.sh to work with full geometries and a picked root CSGNode
 -----------------------------------------------------------------------------------------------

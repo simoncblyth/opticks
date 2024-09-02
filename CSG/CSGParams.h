@@ -78,7 +78,8 @@ inline PARAMS_METHOD void CSGParams::intersect( int idx )
     const float3* dir = q->v1(); 
 
     float4 isect = make_float4( 0.f, 0.f, 0.f, 0.f ) ; 
-    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min, *ori, *dir );
+    bool dump = false ; 
+    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min, *ori, *dir, dump );
 
     quad4* t = tt + idx ; 
 

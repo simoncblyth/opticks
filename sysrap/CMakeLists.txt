@@ -744,6 +744,7 @@ target_compile_definitions( ${name}
       PLOG_LOCAL
       $<$<CONFIG:Debug>:DEBUG_TAG>
       $<$<CONFIG:Debug>:DEBUG_PIDX>
+      $<$<CONFIG:Debug>:DEBUG_PIDX_ISECT>
       $<$<CONFIG:Release>:PRODUCTION>
 )
 

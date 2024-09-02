@@ -36,6 +36,7 @@ TODO:
 
 #include "ssys.h"
 #include "stree.h"
+#include "schrono.h"
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
 #include "CSGFoundry.h"
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
     const char* PFX = "EXTENT:" ;
     float extent = sstr::StartsWith(MOI, PFX) ? sstr::To<float>( MOI + strlen(PFX) ) : 0.f ;  
     // this extent handling is primarily for use with simple single solid test geometries
+    bool sleep_break = ssys::getenvbool("SLEEP_BREAK"); 
 
 
     sfr mfr = extent > 0.f ? sfr::MakeFromExtent<float>(extent) :  st->get_frame(MOI);    // HMM: what about when start from CSGMaker geometry ? 
@@ -94,6 +96,7 @@ int main(int argc, char** argv)
  
 
     std::cout << "before loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ; 
+
  
     while(gl.renderloop_proceed())
     {   
@@ -146,6 +149,11 @@ int main(int argc, char** argv)
         interop.displayOutputBuffer(gl.window);
 
         gl.renderloop_tail();
+        if(sleep_break) 
+        { 
+            schrono::sleep(1);  // 1 second then exit
+            break ; 
+        } 
     }   
     return 0 ; 
 }

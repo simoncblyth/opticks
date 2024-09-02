@@ -7,6 +7,7 @@
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
+#include <stdio.h>
 #else
 #include <cmath>  // signbit
 using std::signbit ; 
@@ -264,7 +265,7 @@ to work yet, as it seems like it should be possible in principle.
 **/
 
 TREE_FUNC
-bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction )
+bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dump )
 {
     const int numNode=node->subNum() ;   // SO THIS SHOULD NO LONGER EVER BE 1 
     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
@@ -281,6 +282,13 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
     printf("//intersect_tree  numNode(subNum) %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
     assert( numNode > 0 ); 
 #endif
+
+#ifdef DEBUG_PIDX
+    if(dump) printf("//intersect_tree  numNode(subNum) %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
+#endif
+
+
+
 
     tranche_push( tr, fullTree, t_min );
 
@@ -318,15 +326,20 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 #ifdef DEBUG
             printf("//intersect_tree  nodeIdx %d CSG::Name %10s depth %d elevation %d \n", nodeIdx, CSG::Name(typecode), depth, elevation ); 
 #endif
+#ifdef DEBUG_PIDX
+            if(dump) printf("//intersect_tree nodeIdx %d typecode %d depth %d elevation %d \n", nodeIdx, typecode, depth, elevation );
+#endif
+
             if( typecode == CSG_ZERO )
             {
                 nodeIdx = POSTORDER_NEXT( nodeIdx, elevation ) ;
                 continue ; 
             }
             bool node_or_leaf = typecode >= CSG_NODE ; 
-#ifdef DEBUG
-            printf("//intersect_tree  nodeIdx %d node_or_leaf %d \n", nodeIdx, node_or_leaf ); 
+#ifdef DEBUG_PIDX
+            if(dump) printf("//intersect_tree  nodeIdx %d node_or_leaf %d \n", nodeIdx, node_or_leaf ); 
 #endif
+
             if(node_or_leaf)
             {
                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
@@ -335,8 +348,8 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 
                 nd_isect.w = copysignf( nd_isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
-#ifdef DEBUG
-                printf("//intersect_tree  nodeIdx %d node_or_leaf %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, node_or_leaf, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
+#ifdef DEBUG_PIDX
+                if(dump) printf("//intersect_tree  nodeIdx %d node_or_leaf %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, node_or_leaf, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
 #endif
                 ierr = csg_push(csg, nd_isect, nodeIdx ); 
 
@@ -632,12 +645,16 @@ with object frame ray_origin and ray_direction
 **/
 
 TREE_FUNC
-bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction )
+bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dump )
 {
     const unsigned typecode = node->typecode() ;  
-#ifdef DEBUG 
-    printf("//intersect_prim typecode %d name %s \n", typecode, CSG::Name(typecode) ); 
+#ifdef DEBUG
+    printf("//intersect_prim typecode %u1 name %s \n", typecode, CSG::Name(typecode) ); 
 #endif
+#ifdef DEBUG_PIDX
+    if(dump) printf("//intersect_prim typecode %u \n", typecode  ); 
+#endif
+
 
     bool valid_intersect = false ; 
     if( typecode >= CSG_LEAF )
@@ -646,7 +663,7 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
     }
     else if( typecode < CSG_NODE )
     {
-        valid_intersect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
     }
 #ifdef WITH_CONTIGUOUS
     else if( typecode == CSG_CONTIGUOUS )  
