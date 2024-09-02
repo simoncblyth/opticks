@@ -366,9 +366,9 @@ NPFold* CSGScan::serialize() const
     return fold ;  
 }
 
-void CSGScan::save(const char* base, const char* sub) const 
+void CSGScan::save(const char* base) const 
 {
    NPFold* fold = serialize();  
-   fold->save(base, sub) ; 
+   fold->save(base) ; 
 }
 

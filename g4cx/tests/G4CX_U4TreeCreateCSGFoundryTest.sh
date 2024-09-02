@@ -4,7 +4,9 @@ G4CX_U4TreeCreateCSGFoundryTest.sh
 ===================================
 
 Creates Geant4 PV configured with GEOM envvar, 
-converts to Opticks stree/CSGFoundry and persists. 
+converts to Opticks stree/CSGFoundry and persists
+the CSGFoundry into ~/.opticks/GEOM.
+ 
 Visualize the result with ~/o/cxr_min.sh 
 
 EOU

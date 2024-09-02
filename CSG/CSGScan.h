@@ -48,7 +48,7 @@ struct CSG_API CSGScan
 
     NPFold* serialize_(CSGParams* s) const ; 
     NPFold* serialize() const ; 
-    void save(const char* base, const char* sub) const ;
+    void save(const char* base) const ;
 
     const CSGFoundry* fd ; 
     const CSGPrim*    prim0 ; 

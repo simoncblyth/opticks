@@ -58,8 +58,8 @@ int main(int argc, char** argv)
     if(scene->is_empty())
     {
         LOG(fatal) << "CSGFoundry::Load GIVES EMPTY SCENE : TRANSITIONAL KLUDGE : TRY TO LOAD FROM SCENE_FOLD " ; 
-        scene = SScene::Load("$SCENE_FOLD");   
-        fd->setOverrideScene(scene); 
+        //scene = SScene::Load("$SCENE_FOLD");   
+        //fd->setOverrideScene(scene); 
     }
     else
     {
@@ -83,9 +83,15 @@ int main(int argc, char** argv)
     assert(st);
  
     const char* MOI = ssys::getenvvar("MOI", "0:0:-1" );  // default lvid 0 in remainder 
+    const char* PFX = "EXTENT:" ;
+    float extent = sstr::StartsWith(MOI, PFX) ? sstr::To<float>( MOI + strlen(PFX) ) : 0.f ;  
+    // this extent handling is primarily for use with simple single solid test geometries
 
-    sfr mfr = st->get_frame(MOI); 
-    mfr.set_idx(-2); 
+
+    sfr mfr = extent > 0.f ? sfr::MakeFromExtent<float>(extent) :  st->get_frame(MOI);    // HMM: what about when start from CSGMaker geometry ? 
+    mfr.set_idx(-2);                 // maybe should start from stree/snode/sn geometry with an streemaker.h ?  
+
+ 
 
     std::cout << "before loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ; 
  

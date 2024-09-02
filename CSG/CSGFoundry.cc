@@ -279,10 +279,9 @@ bool CSGFoundry::isSolidTrimesh_posthoc_kludge(int gas_idx) const
 
 bool CSGFoundry::isSolidTrimesh(int gas_idx) const 
 {
-    char slpx = getSolidLabelPrefix(gas_idx); 
-    // HMM: above is OK for single solid label, but not for a compounded label ?
-    bool trimesh = slpx == 'T' ;  
-    assert( slpx == 'R' || slpx == 'F' || slpx == 'T' ); 
+    char intent = getSolidIntent(gas_idx); 
+    bool trimesh = intent == 'T' ;  
+    assert( intent == 'R' || intent == 'F' || intent == 'T' || intent == '\0'  ); 
     return trimesh ; 
 }
 
@@ -1525,27 +1524,27 @@ const char* CSGFoundry::getSolidLabel_(int ridx) const
     return so ? so->label : nullptr ; 
 }
 
-char CSGFoundry::getSolidLabelPrefix(int ridx) const
+char CSGFoundry::getSolidIntent(int ridx) const
 {
     const CSGSolid* so = getSolid(ridx); 
     assert(so); 
-    return so ? so->getLabelPrefix() : '\0' ; 
+    return so ? so->getIntent() : '\0' ; 
 }
 
 
-std::string CSGFoundry::descSolidLabelPrefix() const 
+std::string CSGFoundry::descSolidIntent() const 
 {
     unsigned num_solid = getNumSolid() ;  
     std::stringstream ss ; 
-    ss << "CSGFoundry::descSolidLabelPrefix num_solid " << num_solid << "\n" ; 
+    ss << "CSGFoundry::descSolidIntent num_solid " << num_solid << "\n" ; 
     for(unsigned i=0 ; i < num_solid ; i++)
     {
-        char slpx = getSolidLabelPrefix(i);     
+        char slpx = getSolidIntent(i);     
         const char* sl = getSolidLabel_(i);  
         const std::string& smml = getSolidMMLabel(i) ; 
         ss 
            << " i " << std::setw(4) << i 
-           << " getSolidLabelPrefix " << std::setw(2) << slpx
+           << " getSolidIntent " << std::setw(2) << slpx
            << " getSolidLabel_ " << std::setw(10) << ( sl ? sl : "-" ) 
            << " getSolidMMLabel " <<  smml
            << "\n"
@@ -2093,7 +2092,7 @@ void CSGFoundry::addInstanceVector( const std::vector<glm::tmat4x4<float>>& v_in
 void CSGFoundry::addInstancePlaceholder()
 {
     const float* tr16 = nullptr ; 
-    int gas_idx = -1 ; 
+    int gas_idx = 0 ;    // from -1 : for single solid tests 
     int sensor_identifier = -1 ; 
     int sensor_index = -1 ;  
     bool firstcall = true ;  

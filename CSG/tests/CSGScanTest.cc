@@ -44,8 +44,11 @@ inline void CSGScanTest::init()
 
     if(CSGMaker::CanMake(geom))
     {
-        fd = new CSGFoundry ; 
-        fd->maker->make( geom ); 
+        fd = CSGMaker::MakeGeom(geom);   
+        if(ssys::getenvbool("CSGScanTest__init_SAVEFOLD"))
+        {  
+            fd->save("$CSGScanTest__init_SAVEFOLD");
+        }
     }
     else
     {
@@ -63,7 +66,7 @@ inline int CSGScanTest::intersect()
     sc->intersect_h(); 
     sc->intersect_d();
     std::cout << sc->brief() ; 
-    sc->save("$FOLD", geom); 
+    sc->save("$FOLD"); 
 
     // TODO: compare intersects to define rc 
     return 0 ; 

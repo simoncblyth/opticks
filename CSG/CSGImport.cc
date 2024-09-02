@@ -170,6 +170,7 @@ CSGSolid* CSGImport::importSolidGlobal(int ridx, char ridx_type )
 
     std::array<float,6> bb = {} ; 
     CSGSolid* so = fd->addSolid(num_src, rlabel); 
+    so->setIntent(ridx_type); 
 
     for(int i=0 ; i < num_src ; i++)
     {
@@ -220,6 +221,7 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, char ridx_type )
     int subtree = sf.subtree ;  // number of prim within the compound solid 
 
     CSGSolid* so = fd->addSolid(subtree, rlabel); 
+    so->setIntent(ridx_type); 
 
     int q_repeat_index = ridx ; 
     int q_repeat_ordinal = 0 ;   // just first repeat 

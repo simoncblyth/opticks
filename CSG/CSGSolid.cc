@@ -70,10 +70,24 @@ bool CSGSolid::labelMatch(const char* label_) const
     return strncmp(label, label_, sizeof(label)) == 0 ;
 }
 
-char CSGSolid::getLabelPrefix() const
+
+/**
+CSGSolid::getIntent
+--------------------
+
+Replace former getLabelPrefix which returned label[0] with a dedicated 
+field as when used with general names, some will have unintended effects. 
+
+**/
+char CSGSolid::getIntent() const
 {
-    return label[0] ; 
+    return intent ; 
 }
+void CSGSolid::setIntent(char _intent)
+{
+    assert(_intent == 'R' || _intent == 'F' || _intent == 'T' ); 
+    intent = _intent ; 
+} 
 
 
 

@@ -217,8 +217,8 @@ struct CSG_API CSGFoundry : public SGeo
     unsigned          getSolidIdx(const CSGSolid* so) const ; 
 
     const char* getSolidLabel_(int ridx) const ; 
-    char getSolidLabelPrefix(int ridx) const ; 
-    std::string descSolidLabelPrefix() const ; 
+    char getSolidIntent(int ridx) const ; 
+    std::string descSolidIntent() const ; 
 
 
     unsigned getNumSolid(int type_) const ;

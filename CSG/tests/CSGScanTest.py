@@ -99,7 +99,7 @@ def plot2d(st):
     fig.show()
 
 if __name__ == '__main__':
-    f = Fold.Load("$FOLD/$GEOM", symbol="f")
+    f = Fold.Load("$FOLD", symbol="f")
     print(repr(f))
 
     a = f.h.tt

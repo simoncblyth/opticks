@@ -1,7 +1,6 @@
 rtx-5000-ada-generation-cuda-12p4-driver-550p76-some-analytic-geometry-skipped
 =================================================================================
 
-
 Follow on from ~/j/issues/opticks-from-scratch-in-blyth-account-on-rtx-5000-ada-generation-machine.rst
 
 Comparing:
@@ -74,41 +73,31 @@ DONE : find simple tests that does 2D CPU side tracing
     CSG/tests/intersect_prim_test.sh
 
 
+DONE : enhanced CSGScanTest.sh to do both CPU and GPU intersects for CSGMaker geometries
+-----------------------------------------------------------------------------------------
+
+::
+
+    CSG/CSGScan.{cc,cu} 
+    CSG/tests/CSGScanTest.sh 
 
 
-cuda + cudamock test like intersect_prim_test.sh 
-------------------------------------------------------
 
-* start with just CUDA (not OptiX) test of intersection with simple shapes
-* adding CUDA capability to CSGScan is close to what want
-* can follow extern mechanics from qudarap/QPMT 
+Just CUDA (not OptiX) test of intersection with simple shapes.
 
-* WIP: CSG/CSGScan.{cc,cu} CSG/tests/CSGScanTest.sh 
+BUT: see no difference between A and B hit counts running scan over many CSGMaker shapes::
+
+   ~/o/CSG/tests/CSGScanTest_scan.sh
 
 
-CUDA + mocked CUDA test of intersect_prim, testing the below call in CSGOptiX7.cu::
+Adding CSGFoundry saving tp CSGScanTest.sh can look at them with::
+
+    MOI=EXTENT:200 ~/o/cxr_min.sh 
 
 
-    #include "csg_intersect_leaf.h"
-    #include "csg_intersect_node.h"
-    #include "csg_intersect_tree.h"
-    ...
 
-    extern "C" __global__ void __intersection__is()
-    {
-        ...
-        const CSGNode* node = params.node + nodeOffset ;  // root of tree
-        const float4* plan = params.plan ;
-        const qat4*   itra = params.itra ;        
-        float4 isect ; // .xyz normal .w distance 
-
-        if(intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction ))
-        {
-            const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
-            const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
-            const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary 
-
-
+TODO : further enhance CSGScanTest.sh to work with full geometries and a picked root CSGNode
+-----------------------------------------------------------------------------------------------
 
 
 

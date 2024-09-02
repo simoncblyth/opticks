@@ -26,6 +26,12 @@ Extract from notes in externals/optix7sdk.bash::
     of (0,1,2,...,numPrim-1)  
 
 
+Saving/loading the vector of CSGSolid in CSGFoundry
+is done by CSGFoundry::save,load,loadArray.
+Due to this no pointers are used in the below
+and the layout/alignment is kept simple for trivial 
+debug access from python.  
+
 **/
 
 struct CSG_API CSGSolid   // Composite shape 
@@ -36,7 +42,12 @@ struct CSG_API CSGSolid   // Composite shape
     int         numPrim ; 
     int         primOffset ;
     int         type = STANDARD_SOLID ;       
-    int         padding ;  
+
+    char        intent = '\0' ;     
+    char        pad0 ; 
+    char        pad1 ; 
+    char        pad2 ; 
+
 
     float4      center_extent ; 
 
@@ -47,7 +58,11 @@ struct CSG_API CSGSolid   // Composite shape
 
     const char* getLabel() const ; 
     bool labelMatch(const char* label) const ;  
-    char getLabelPrefix() const ; 
+
+    //char getLabelPrefix() const ; 
+    char getIntent() const ;  // 'R' 'F' 'T'   used for forced triangulation
+    void setIntent(char _intent); 
+
 
     static bool IsDiff( const CSGSolid& a , const CSGSolid& b ); 
     static CSGSolid Make( const char* label_, int numPrim_, int primOffset_=-1 ); 
