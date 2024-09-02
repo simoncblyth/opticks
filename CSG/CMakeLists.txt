@@ -137,9 +137,9 @@ message(STATUS "CMAKE_INSTALL_LIBDIR     : ${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 
 
-add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+#add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
-#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
@@ -176,7 +176,8 @@ target_include_directories(${name}
            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_link_libraries(${name} PUBLIC ${CUDA_LIBRARIES} Opticks::SysRap)
+#target_link_libraries(${name} PUBLIC ${CUDA_LIBRARIES} Opticks::SysRap)
+target_link_libraries(${name} ${CUDA_LIBRARIES} Opticks::SysRap)
 
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

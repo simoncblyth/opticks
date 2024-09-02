@@ -501,6 +501,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
 
 CSGSolid* CSGMaker::makeBooleanBoxSphere( const char* label, unsigned op_, float radius, float fullside, int meshIdx )
 {
+    LOG(LEVEL) << " fullside " << fullside << " radius " << radius ; 
     CSGNode bx = CSGNode::Box3(fullside) ; 
     CSGNode sp = CSGNode::Sphere(radius); 
     return makeBooleanTriplet(label, op_, bx, sp ); 
@@ -536,6 +537,12 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, unsigned op_, const C
 
     CSGNode op = CSGNode::BooleanOperator(op_, -1);  // CHANGED 3 to -1 as this is standard boolean ?
     CSGNode* n = fd->addNode(op); 
+
+    CSGNode* root = n ;  
+    // cf CSGImport::importPrim 
+    root->setSubNum(numNode); // avoids notes/issues/CSGScanTest_with_CSGMaker_solids_not_intersecting_booleans.rst
+    root->setSubOffset(0); 
+
 
     fd->addNode(left); 
     fd->addNode(right); 

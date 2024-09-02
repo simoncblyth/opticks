@@ -39,7 +39,7 @@ struct CSG_API CSGScan
     void add_q(std::vector<quad4>& qq, const float t_min, const float3& ray_origin, const std::vector<float3>& dirs );
 
     void intersect_h();
-    void intersect_d();  // placeholder unless WITH_CSG_CU
+    void intersect_d();
     void download(); 
 
     std::string brief() const ;

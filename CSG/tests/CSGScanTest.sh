@@ -7,6 +7,15 @@ CSGScanTest.sh
 
     ~/o/CSG/tests/CSGScanTest.sh
 
+
+rbin
+    runs locally built bin /tmp/$USER/opticks/${name}.build/$name
+
+run
+    runs standardly built name $name
+
+
+
 EOU
 }
 
@@ -17,7 +26,35 @@ cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}   # just use some CUDA headers, not using GPU 
 
 defarg="info_build_run_ana"
+[ -n "$BP" ] && defarg="info_dbg" 
+
 arg=${1:-$defarg}
+
+
+
+gdb__ () 
+{ 
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+
 
 
 name=CSGScanTest 
@@ -30,11 +67,13 @@ script=CSGScanTest.py
 
 export FOLD=$fold
 
-geom=JustOrb
+#geom=JustOrb
+#geom=DifferenceBoxSphere
+geom=UnionBoxSphere
 export GEOM=${GEOM:-$geom}
 export BASE=$FOLD/$GEOM
 
-vars="FOLD GEOM BASE"
+vars="FOLD GEOM BASE defarg arg"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -81,7 +120,6 @@ if [ "${arg/build}" != "$arg" ]; then
         -L${CUDA_PREFIX}/lib64 -lcudart -lstdc++ \
         -L${OPTICKS_PREFIX}/lib64 \
         -lSysRap \
-        -DWITH_CSG_CU \
         -DWITH_CHILD \
         -o $bin
         #-DWITH_VERBOSE \
@@ -91,9 +129,22 @@ if [ "${arg/build}" != "$arg" ]; then
 fi 
 
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/rbin}" != "$arg" ]; then 
+    echo $BASH_SOURCE - GEOM $GEOM $arg
     $bin
+    [ $? -ne 0 ] && echo rbin error && exit 2
+fi 
+
+if [ "${arg/run}" != "$arg" ]; then 
+    echo $BASH_SOURCE - GEOM $GEOM $arg
+    $name
     [ $? -ne 0 ] && echo run error && exit 2
+fi 
+
+if [ "${arg/dbg}" != "$arg" ]; then 
+    echo $BASH_SOURCE - GEOM $GEOM 
+    gdb__ $name
+    [ $? -ne 0 ] && echo dbg error && exit 2
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 

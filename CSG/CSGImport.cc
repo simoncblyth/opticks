@@ -408,9 +408,12 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     assert( root ); 
 
-
     // IsCompound : > CSG_ZERO, < CSG_LEAF 
-    // HMM: is this actually needed by anything 
+    //
+    // Q: Is this actually needed by anything ?
+    // A: YES, for example its how intersect_tree gets numNode, 
+    //    without the subNum would get no intersects onto booleans 
+    //
     if(CSG::IsCompound(root->typecode()) && !CSG::IsList(root->typecode()))
     {
         assert( bn > 0 ); 

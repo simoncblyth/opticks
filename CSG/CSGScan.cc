@@ -126,6 +126,14 @@ void CSGScan::add_scan(std::vector<quad4>& qq, const char* opt)
     if(strcmp(opt,"rectangle")==0) add_rectangle_scan(qq); 
 }
 
+/**
+CSGScan::add_axis_scan
+----------------------
+
+Six rays from so->center_extent center along X,Y,Z,-X,-Y,-Z axes 
+
+**/
+
 void CSGScan::add_axis_scan(std::vector<quad4>& qq)
 {
     float t_min = 0.f ;
@@ -143,6 +151,14 @@ void CSGScan::add_axis_scan(std::vector<quad4>& qq)
 
     add_q(qq, t_min, origin, dirs );     
 }
+
+/**
+CSGScan::add_circle_scan
+-------------------------
+
+
+
+**/
 
 void CSGScan::add_circle_scan(std::vector<quad4>& qq)
 {
@@ -176,6 +192,14 @@ void CSGScan::add_rectangle_scan(std::vector<quad4>& qq)
     unsigned nxz = 100 ; 
     unsigned ny = 10 ; 
     float t_min = 0.f ;
+
+    if(0) std::cout 
+        << "CSGScan::add_rectangle_scan"
+        << " extent " << extent 
+        << " halfside " << halfside
+        << std::endl 
+        ;       
+
 
     for(float y=-halfside ; y <= halfside ; y += halfside/float(ny) )
     {
@@ -246,8 +270,6 @@ void CSGScan::intersect_h()
 
 
 
-// tempory until fixed CMake machinery 
-#ifdef WITH_CSG_CU
 
 extern void CSGScan_intersect( dim3 numBlocks, dim3 threadsPerBlock, CSGParams* d ); 
 
@@ -261,12 +283,6 @@ void CSGScan::intersect_d()
 
     download();
 }
-#else
-void CSGScan::intersect_d()
-{
-    std::cerr << "CSGScan::intersect_d PLACEHOLDER \n" ; 
-}
-#endif
 
 
 void CSGScan::download()
