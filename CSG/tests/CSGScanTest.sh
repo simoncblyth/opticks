@@ -28,11 +28,10 @@ mkdir -p $bdir
 bin=$bdir/$name
 script=CSGScanTest.py 
 
-
 export FOLD=$fold
 
 geom=JustOrb
-export GEOM=$geom
+export GEOM=${GEOM:-$geom}
 export BASE=$FOLD/$GEOM
 
 vars="FOLD GEOM BASE"
@@ -40,7 +39,6 @@ vars="FOLD GEOM BASE"
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
-
 
 
 if [ "${arg/build}" != "$arg" ]; then
@@ -85,35 +83,23 @@ if [ "${arg/build}" != "$arg" ]; then
         -lSysRap \
         -DWITH_CSG_CU \
         -DWITH_CHILD \
-        -DWITH_VERBOSE \
         -o $bin
+        #-DWITH_VERBOSE \
 
     [ $? -ne 0 ] && echo build error && exit 1
 
 fi 
 
 
-
-
-
-
-
-list-recent(){
-   echo $FUNCNAME 
-   find $FOLD -newer CSGScanTest.cc -exec ls -l {} \; 
-}
-
 if [ "${arg/run}" != "$arg" ]; then 
     $bin
     [ $? -ne 0 ] && echo run error && exit 2
-    list-recent  
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
     source ../../bin/BASE_grab.sh $arg
     [ $? -ne 0 ] && echo grab error && exit 4
 fi 
-
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${IPYTHON:-ipython} -i --pdb $script

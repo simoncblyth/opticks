@@ -14,30 +14,66 @@
 #include "CSGScan.h"
 
 
+struct CSGScanTest
+{
+    const char* geom ; 
+    const char* scan ; 
+    CSGFoundry* fd ; 
+    const CSGSolid* so ; 
+    CSGScan*  sc ; 
+
+    CSGScanTest(); 
+    void init(); 
+    int intersect(); 
+}; 
+
+inline CSGScanTest::CSGScanTest()
+    :
+    geom(ssys::getenvvar("GEOM")),
+    scan(ssys::getenvvar("SCAN","axis,rectangle,circle")), 
+    fd(nullptr),
+    so(nullptr),
+    sc(nullptr)
+{
+    init(); 
+}; 
+
+inline void CSGScanTest::init()
+{
+    SSim::Create(); 
+
+    if(CSGMaker::CanMake(geom))
+    {
+        fd = new CSGFoundry ; 
+        fd->maker->make( geom ); 
+    }
+    else
+    {
+        fd = CSGFoundry::Load(); 
+    }
+    fd->upload(); 
+    so = fd->getSolid(0);
+    // TODO: makes more sense to pick a CSGPrim (or root CSGNode) not a solid
+
+    sc = new CSGScan( fd, so, scan ); 
+}
+
+inline int CSGScanTest::intersect()
+{
+    sc->intersect_h(); 
+    sc->intersect_d();
+    std::cout << sc->brief() ; 
+    sc->save("$FOLD", geom); 
+
+    // TODO: compare intersects to define rc 
+    return 0 ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);    
-
-    const char* geom = ssys::getenvvar("GEOM", "JustOrb" );
-    LOG(info) << " GEOM " << geom ; 
-
-    SSim::Create(); 
-
-    CSGFoundry fd ;  
-    fd.maker->make( geom ); 
-    fd.upload(); 
-
-    const CSGSolid* solid = fd.getSolid(0); 
-    // TODO: pick solid/prim from full geometry : not just trivial ones
-
-    CSGScan sc( &fd, solid, "axis,rectangle,circle" ); 
-    sc.intersect_h(); 
-    sc.intersect_d();
-
-    std::cout << sc.brief() ; 
- 
-    sc.save("$FOLD", geom); 
-
-
-    return 0 ;  
+    CSGScanTest t ; 
+    return t.intersect(); 
 }
+

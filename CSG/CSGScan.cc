@@ -152,7 +152,7 @@ void CSGScan::add_circle_scan(std::vector<quad4>& qq)
     float extent = ce.w ; 
     float radius = 2.0f*extent ; 
 
-    std::cout 
+    if(0) std::cout 
         << "CSGScan::add_circle_scan"
         << " extent " << extent 
         << " radius " << radius
@@ -314,7 +314,7 @@ std::string CSGScan::brief() const
 {
     std::stringstream ss ; 
     ss << " h " << brief(h) << "\n" ; 
-    ss << " d " << brief(c) << "(actually c, copied to host from d)\n" ; 
+    ss << " d " << brief(c) << "\n" ; // actually c copied to host from d 
     std::string str = ss.str() ; 
     return str ; 
 }

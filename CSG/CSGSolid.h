@@ -31,6 +31,7 @@ Extract from notes in externals/optix7sdk.bash::
 struct CSG_API CSGSolid   // Composite shape 
 {
     char        label[16] ;   // sizeof 4 int 
+    // raw use of so->label risks funny chars at slot 16, and truncation :  use getLabel() to avoid 
 
     int         numPrim ; 
     int         primOffset ;

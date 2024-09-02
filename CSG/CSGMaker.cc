@@ -50,7 +50,7 @@ bool CSGMaker::CanMake(const char* qname) // static
     std::stringstream ss(NAMES) ;    
     std::string name ; 
     while (!found && std::getline(ss, name)) if(!name.empty() && StartsWith(name.c_str(), qname)) found = true ;
-    LOG(LEVEL) << " qname " << qname << " found " << found ; 
+    //LOG(LEVEL) << " qname " << qname << " found " << found ; 
     return found ; 
 }
 
@@ -285,8 +285,8 @@ CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
 {
     float halfside = ssys::getenvfloat("CSGMaker_makeBoxedSphere_HALFSIDE", 100.f); 
     float factor   = ssys::getenvfloat("CSGMaker_makeBoxedSphere_FACTOR", 1.f); 
-    LOG(info) << "CSGMaker_makeBoxedSphere_HALFSIDE " << halfside  ; 
-    LOG(info) << "CSGMaker_makeBoxedSphere_FACTOR   " << factor ; 
+    //LOG(LEVEL) << "CSGMaker_makeBoxedSphere_HALFSIDE " << halfside  ; 
+    //LOG(LEVEL) << "CSGMaker_makeBoxedSphere_FACTOR   " << factor ; 
 
     float radius   = halfside/2.f ; 
     float box_halfside = halfside*factor ; 
@@ -310,7 +310,7 @@ CSGSolid* CSGMaker::makeBoxedSphere(const char* label)
     }
 
     so->center_extent = bb.center_extent() ;  
-    LOG(info) << " so->center_extent " << so->center_extent ; 
+    //LOG(info) << " so->center_extent " << so->center_extent ; 
 
     return so ; 
 }
@@ -495,7 +495,7 @@ CSGSolid* CSGMaker::makeSolid11(const char* label, CSGNode nd, const std::vector
 
     AABB bb = AABB::Make( p->AABB() ); 
     so->center_extent = bb.center_extent()  ; 
-    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    //LOG(info) << "so.getLabel " << so->getLabel() << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
 
@@ -554,7 +554,7 @@ CSGSolid* CSGMaker::makeBooleanTriplet( const char* label, unsigned op_, const C
     n->setTransform(transform_idx); 
 
 
-    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    //LOG(LEVEL) << "so.label " << so->getLabel() << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
 
@@ -814,7 +814,8 @@ CSGSolid* CSGMaker::makeList( const char* label, unsigned type, std::vector<CSGN
 
     fd->addNodeTran(n);   // setting identity transform 
     
-    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    //LOG(LEVEL) << "so.label " << so->getLabel() << " so.center_extent " << so->center_extent ; 
+
     return so ; 
 }
 
@@ -893,7 +894,7 @@ CSGSolid* CSGMaker::makeUnionListBoxSphere( const char* label, float radius, flo
 
     fd->addNodeTran(root);  // adding identity, as geometry must have at least one transform
 
-    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    //LOG(LEVEL) << "so.label " << so->getLabel() << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
 
@@ -1138,7 +1139,7 @@ CSGSolid* CSGMaker::makeBooleanSeptuplet(
     unsigned transform_idx = 1 + fd->addTran();   // 1-based idx, 0 meaning None
     tptr->setTransform(transform_idx); 
 
-    LOG(info) << "so.label " << so->label << " so.center_extent " << so->center_extent ; 
+    //LOG(LEVEL) << "so.label " << so->getLabel() << " so.center_extent " << so->center_extent ; 
     return so ; 
 }
 

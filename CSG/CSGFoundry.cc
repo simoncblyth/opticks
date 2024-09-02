@@ -3205,16 +3205,16 @@ are not needed because the inverse transforms are all that is needed.
 This currently taking 20s for full JUNO, where total runtime for one event is 24s.
 TODO: recall this was optimized down to under 1s, check this. 
 
+As this often needs to be called early from the main, and logging from main is 
+problematically uncontollable have pragmatically removed most of the logging.  
+
 **/
 
 void CSGFoundry::upload()
 { 
-    
-    LOG(LEVEL) << "[ inst_find_unique " ; 
     inst_find_unique(); 
-    LOG(LEVEL) << "] inst_find_unique " ; 
 
-    LOG(LEVEL) << desc() ; 
+    //LOG(LEVEL) << desc() ; 
 
     assert( tran.size() == itra.size() ); 
 
@@ -3223,20 +3223,14 @@ void CSGFoundry::upload()
     assert(is_uploaded_0 == false); 
 
     // allocates and copies
-    LOG(LEVEL) << "[ CU::UploadArray "  ; 
     d_prim = prim.size() > 0 ? CU::UploadArray<CSGPrim>(prim.data(), prim.size() ) : nullptr ; 
     d_node = node.size() > 0 ? CU::UploadArray<CSGNode>(node.data(), node.size() ) : nullptr ; 
     d_plan = plan.size() > 0 ? CU::UploadArray<float4>(plan.data(), plan.size() ) : nullptr ; 
     d_itra = itra.size() > 0 ? CU::UploadArray<qat4>(itra.data(), itra.size() ) : nullptr ; 
-    LOG(LEVEL) << "] CU::UploadArray "  ; 
 
     bool is_uploaded_1 = isUploaded(); 
     LOG_IF(fatal, !is_uploaded_1) << "FAILED TO UPLOAD" ; 
     assert(is_uploaded_1 == true); 
-
-    //const char* cfb = getCFBase(); 
-    //SGeo::SetLastUploadCFBase(cfb) ; 
-    LOG(LEVEL) << "]" ; 
 }
 
 bool CSGFoundry::isUploaded() const
