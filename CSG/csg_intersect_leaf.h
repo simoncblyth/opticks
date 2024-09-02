@@ -81,6 +81,11 @@ Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 #include "CSGDebug_Cylinder.hh"
 #endif
 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+#include <stdio.h>
+#endif 
+
+
 #include "csg_intersect_leaf_sphere.h"
 #include "csg_intersect_leaf_zsphere.h"
 #include "csg_intersect_leaf_cylinder.h"
@@ -160,7 +165,7 @@ local frame of the node.
 **/
 
 LEAF_FUNC
-bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction )
+bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dump )
 {
     const unsigned typecode = node->typecode() ;  
     const unsigned gtransformIdx = node->gtransformIdx() ; 
@@ -241,6 +246,10 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
 
 #if !defined(PRODUCTION) && defined(DEBUG_RECORD)
     printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 
+#endif
+
+#if defined(DEBUG_PIDX)
+    if(dump) printf("//]intersect_leaf typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
 #endif
 
     return valid_isect ; 

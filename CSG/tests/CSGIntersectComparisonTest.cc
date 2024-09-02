@@ -306,8 +306,10 @@ unsigned CSGIntersectComparisonTest::smaller_sd() const
 void CSGIntersectComparisonTest::intersect()
 {
     zero(); 
-    a_valid_isect = intersect_leaf( a_isect, a , nullptr, nullptr, t_min, ray_origin, ray_direction ); 
-    b_valid_isect = intersect_leaf( b_isect, b , nullptr, nullptr, t_min, ray_origin, ray_direction ); 
+
+    bool dump = false ; 
+    a_valid_isect = intersect_leaf( a_isect, a , nullptr, nullptr, t_min, ray_origin, ray_direction, dump ); 
+    b_valid_isect = intersect_leaf( b_isect, b , nullptr, nullptr, t_min, ray_origin, ray_direction, dump ); 
 
     status = ( int(a_valid_isect) << 1 ) | int(b_valid_isect) ; 
 

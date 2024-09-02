@@ -669,8 +669,10 @@ extern "C" __global__ void __intersection__is()
 #if defined(DEBUG_PIDX)
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
-    bool dump = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ; 
+    //bool dump = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ; 
+    bool dump = false ; 
     if(dump) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dump:%d \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dump); 
+    // TODO: DEBUG_PIDXYZ with PIDX PIDY PIDZ in Params
 #else
     bool dump = false ; 
 #endif

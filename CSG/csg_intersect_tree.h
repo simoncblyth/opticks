@@ -344,7 +344,7 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
             {
                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
 
-                intersect_node( nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction );
+                intersect_node( nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction, dump );
 
                 nd_isect.w = copysignf( nd_isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
@@ -375,6 +375,11 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 bool firstLeft = signbit(csg.data[csg.curr].w) ;
                 bool secondLeft = signbit(csg.data[csg.curr-1].w) ;
 
+#ifdef DEBUG_PIDX
+                if(dump) printf("//intersect_tree  nodeIdx %d firstLeft %d secondLeft %d \n", nodeIdx, firstLeft, secondLeft ); 
+#endif
+ 
+
                 if(!(firstLeft ^ secondLeft))
                 {
 #ifdef DEBUG
@@ -394,6 +399,11 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 float t_right = fabsf( csg.data[right].w );
 
                 bool leftIsCloser = t_left <= t_right ;
+
+#ifdef DEBUG_PIDX
+                //  state :   0:Enter 1:Exit 2:Miss
+                if(dump) printf("//intersect_tree  nodeIdx %d left %d right %d l_state %d r_state %d t_left %10.3f t_right %10.3f leftIsCloser %d \n", nodeIdx, left, right, l_state, r_state, t_left, t_right, leftIsCloser ); 
+#endif
 
 #ifdef DEBUG_COS
                 {
@@ -432,6 +442,10 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 bool l_promote_miss = l_state == State_Miss && ( l_complement || l_unbounded ) ;
                 bool r_promote_miss = r_state == State_Miss && ( r_complement || r_unbounded ) ;
 
+#ifdef DEBUG_PIDX
+                //  state :   0:Enter 1:Exit 2:Miss
+                if(dump) printf("//intersect_tree  nodeIdx %d l/r_complement %d/%d l/r_unbounded %d/%d l/r_promote_miss %d/%d \n", nodeIdx, l_complement, r_complement, l_unbounded, r_unbounded, l_promote_miss, r_promote_miss ); 
+#endif
 
                 if(r_promote_miss)
                 {
@@ -659,7 +673,7 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
     bool valid_intersect = false ; 
     if( typecode >= CSG_LEAF )
     {
-        valid_intersect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
     }
     else if( typecode < CSG_NODE )
     {
@@ -668,16 +682,16 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
 #ifdef WITH_CONTIGUOUS
     else if( typecode == CSG_CONTIGUOUS )  
     {
-        valid_intersect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
     }
 #endif
     else if( typecode == CSG_DISCONTIGUOUS )  
     {
-        valid_intersect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
     }
     else if( typecode == CSG_OVERLAP )
     {
-        valid_intersect = intersect_node_overlap(       isect, node, node, plan, itra, t_min, ray_origin, ray_direction ) ; 
+        valid_intersect = intersect_node_overlap(       isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
     }  
     return valid_intersect ; 
 }
