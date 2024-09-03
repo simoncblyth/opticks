@@ -692,8 +692,7 @@ void CSGOptiX::initPIDXYZ()
 {
     qvals(params->pidxyz, "PIDXYZ", "-1:-1:-1", -1 ) ;
     const char* PIDXYZ = ssys::getenvvar("PIDXYZ") ; 
-
-    if(strcmp(PIDXYZ,"MIDDLE") == 0 )
+    if(PIDXYZ && strcmp(PIDXYZ,"MIDDLE") == 0 )
     {
         LOG(info) << " special casing PIDXYZ MIDDLE " ; 
         params->pidxyz.x = params->width/2 ; 
