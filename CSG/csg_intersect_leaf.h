@@ -81,7 +81,7 @@ Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 #include "CSGDebug_Cylinder.hh"
 #endif
 
-#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+#if !defined(PRODUCTION) && defined(DEBUG_PIDXYZ)
 #include <stdio.h>
 #endif 
 
@@ -162,10 +162,15 @@ Notice that only the inverse CSG transforms are needed on the GPU as these are u
 transform the ray_origin and ray_direction into the local origin and direction in the 
 local frame of the node.   
 
+This is called from both::
+
+    csg_intersect_node.h
+    csg_intersect_tree.h
+
 **/
 
 LEAF_FUNC
-bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dump )
+bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dumpxyz )
 {
     const unsigned typecode = node->typecode() ;  
     const unsigned gtransformIdx = node->gtransformIdx() ; 
@@ -248,8 +253,16 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 
 #endif
 
-#if defined(DEBUG_PIDX)
-    if(dump) printf("//]intersect_leaf typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
+#if defined(DEBUG_PIDXYZ)
+    // BIZARRELY WITH OptiX 7.5.0 CUDA 12.4 "RTX 5000 Ada Generation" : commenting the below line breaks boolean intersects 
+    // PRELIM FIND THAT WITH OptiX 8.0.0 CUDA 12.4 DONT GET THE ISSUE 
+
+    //if(dumpxyz) printf("%d\n", valid_isect );  // HUH : NEED THIS LINE WITH OPTIX 7.5 CUDA 12.4 RTX 5000 ADA
+
+    //if(dumpxyz) printf("//]intersect_leaf typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
+    //if(dumpxyz) printf("//]intersect_leaf typecode %d \n", typecode );
+    //if(dumpxyz) printf("//]intersect_leaf isect (%10.4f %10.4f %10.4f %10.4f) \n", isect.x, isect.y, isect.z, isect.w ); 
+    //if(dumpxyz) printf("//]intersect_leaf complement %d \n", complement );
 #endif
 
     return valid_isect ; 

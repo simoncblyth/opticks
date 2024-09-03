@@ -117,6 +117,55 @@ HUH : adding PIDXYZ which means dynamic runtime potential to dump when WITH_PIDX
 
 It is as if even the potential for detailed dumping keeps OptiX 7.5 CUDA 12.4 honest.
 
+* Changing from DEBUG_PIDX to DEBUG_PIDXYZ and doing a binary search 
+  to find which of the ~8  "if(dumpxyz) printf..." lines matters 
+  determined that the printf of valid_intersect at the tail of intersect_leaf is the critical one 
+
+
+
+::
+
+    252 #if !defined(PRODUCTION) && defined(DEBUG_RECORD)
+    253     printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w);
+    254 #endif
+    255     
+    256 #if defined(DEBUG_PIDXYZ)
+    257     // BIZARRELY WITH OptiX 7.5 CUDA 12.4 "RTX 5000 Ada Generation" : commenting the below line breaks boolean intersects 
+    258     
+    259     //if(dumpxyz) printf("//]intersect_leaf valid_isect %d \n", valid_isect );  // HUH : NEED THIS LINE WITH OPTIX 7.5 CUDA 12.4 RTX 5000 ADA
+    260 
+    261     //if(dumpxyz) printf("//]intersect_leaf typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
+    262     //if(dumpxyz) printf("//]intersect_leaf typecode %d \n", typecode );
+    263     //if(dumpxyz) printf("//]intersect_leaf isect (%10.4f %10.4f %10.4f %10.4f) \n", isect.x, isect.y, isect.z, isect.w ); 
+    264     //if(dumpxyz) printf("//]intersect_leaf complement %d \n", complement );
+    265 #endif
+    266     
+    267     return valid_isect ;
+    268 }
+
+
+
+CUDA/OptiX Heisenbug
+---------------------
+
+* https://forums.developer.nvidia.com/t/printf-in-kernel-changes-results/25095
+
+
+How to capture ? 
+-----------------
+
+* drawing on CSG/CSGScanTest.sh for geometry+ray source and sysrap/SOPTIX headers for OptiX setup 
+  might allow to capture the bug in not so much code
+
+
+Try with OptiX_800 CUDA 12.4 "RTX 5000 Ada Generation"
+----------------------------------------------------------
+
+* primininarily seems do not need the below at the tail of intersect_leaf for boolean intersection to behave::
+
+   if(dumpxyz) printf("%d\n", valid_isect)  
+
+
  
 FIXED : Ada force triangulated not appearing
 ---------------------------------------------
@@ -278,8 +327,5 @@ J_2024aug27 : svacSurftube_0V1_0  : SIDE ISSUE WITH ELV SELECTION AND TRIANGULAT
     CSGOptiXRenderInteractiveTest: /home/blyth/opticks/CSGOptiX/SBT.cc:723: int SBT::_getOffset(unsigned int, unsigned int) const: Assertion `num_bi == numPrim' failed.
     /home/blyth/o/cxr_min.sh: line 275: 262795 Aborted                 (core dumped) $bin
     /home/blyth/o/cxr_min.sh run error
-
-
-
 
 

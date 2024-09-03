@@ -265,7 +265,7 @@ to work yet, as it seems like it should be possible in principle.
 **/
 
 TREE_FUNC
-bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dump )
+bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
 {
     const int numNode=node->subNum() ;   // SO THIS SHOULD NO LONGER EVER BE 1 
     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
@@ -283,8 +283,8 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
     assert( numNode > 0 ); 
 #endif
 
-#ifdef DEBUG_PIDX
-    if(dump) printf("//intersect_tree  numNode(subNum) %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
+#ifdef DEBUG_PIDXYZ
+    //if(dumpxyz) printf("//intersect_tree  numNode(subNum) %d height %d fullTree(hex) %x \n", numNode, height, fullTree );
 #endif
 
 
@@ -326,8 +326,8 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 #ifdef DEBUG
             printf("//intersect_tree  nodeIdx %d CSG::Name %10s depth %d elevation %d \n", nodeIdx, CSG::Name(typecode), depth, elevation ); 
 #endif
-#ifdef DEBUG_PIDX
-            if(dump) printf("//intersect_tree nodeIdx %d typecode %d depth %d elevation %d \n", nodeIdx, typecode, depth, elevation );
+#ifdef DEBUG_PIDXYZ
+            //if(dumpxyz) printf("//intersect_tree nodeIdx %d typecode %d depth %d elevation %d \n", nodeIdx, typecode, depth, elevation );
 #endif
 
             if( typecode == CSG_ZERO )
@@ -336,20 +336,22 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 continue ; 
             }
             bool node_or_leaf = typecode >= CSG_NODE ; 
-#ifdef DEBUG_PIDX
-            if(dump) printf("//intersect_tree  nodeIdx %d node_or_leaf %d \n", nodeIdx, node_or_leaf ); 
+#ifdef DEBUG_PIDXYZ
+            //if(dumpxyz) printf("//intersect_tree  nodeIdx %d node_or_leaf %d \n", nodeIdx, node_or_leaf ); 
 #endif
 
             if(node_or_leaf)
             {
                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
 
-                intersect_node( nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction, dump );
+                bool nd_isect_valid = intersect_node( nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction, dumpxyz );
+
+                if( nd_isect_valid ) ierr = 0 ;   // TRY LOOKING AT nd_isect_valid TO AVOID HEISENBUG : NOPE MAKES NO DIFFERENCE
 
                 nd_isect.w = copysignf( nd_isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
-#ifdef DEBUG_PIDX
-                if(dump) printf("//intersect_tree  nodeIdx %d node_or_leaf %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, node_or_leaf, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
+#ifdef DEBUG_PIDXYZ
+                //if(dumpxyz) printf("//intersect_tree  nodeIdx %d node_or_leaf %d nd_isect (%10.4f %10.4f %10.4f %10.4f) \n", nodeIdx, node_or_leaf, nd_isect.x, nd_isect.y, nd_isect.z, nd_isect.w ); 
 #endif
                 ierr = csg_push(csg, nd_isect, nodeIdx ); 
 
@@ -375,8 +377,8 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 bool firstLeft = signbit(csg.data[csg.curr].w) ;
                 bool secondLeft = signbit(csg.data[csg.curr-1].w) ;
 
-#ifdef DEBUG_PIDX
-                if(dump) printf("//intersect_tree  nodeIdx %d firstLeft %d secondLeft %d \n", nodeIdx, firstLeft, secondLeft ); 
+#ifdef DEBUG_PIDXYZ
+               //if(dumpxyz) printf("//intersect_tree  nodeIdx %d firstLeft %d secondLeft %d \n", nodeIdx, firstLeft, secondLeft ); 
 #endif
  
 
@@ -400,9 +402,9 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
 
                 bool leftIsCloser = t_left <= t_right ;
 
-#ifdef DEBUG_PIDX
+#ifdef DEBUG_PIDXYZ
                 //  state :   0:Enter 1:Exit 2:Miss
-                if(dump) printf("//intersect_tree  nodeIdx %d left %d right %d l_state %d r_state %d t_left %10.3f t_right %10.3f leftIsCloser %d \n", nodeIdx, left, right, l_state, r_state, t_left, t_right, leftIsCloser ); 
+                //if(dumpxyz) printf("//intersect_tree  nodeIdx %d left %d right %d l_state %d r_state %d t_left %10.3f t_right %10.3f leftIsCloser %d \n", nodeIdx, left, right, l_state, r_state, t_left, t_right, leftIsCloser ); 
 #endif
 
 #ifdef DEBUG_COS
@@ -442,9 +444,9 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
                 bool l_promote_miss = l_state == State_Miss && ( l_complement || l_unbounded ) ;
                 bool r_promote_miss = r_state == State_Miss && ( r_complement || r_unbounded ) ;
 
-#ifdef DEBUG_PIDX
+#ifdef DEBUG_PIDXYZ
                 //  state :   0:Enter 1:Exit 2:Miss
-                if(dump) printf("//intersect_tree  nodeIdx %d l/r_complement %d/%d l/r_unbounded %d/%d l/r_promote_miss %d/%d \n", nodeIdx, l_complement, r_complement, l_unbounded, r_unbounded, l_promote_miss, r_promote_miss ); 
+                //if(dumpxyz) printf("//intersect_tree  nodeIdx %d l/r_complement %d/%d l/r_unbounded %d/%d l/r_promote_miss %d/%d \n", nodeIdx, l_complement, r_complement, l_unbounded, r_unbounded, l_promote_miss, r_promote_miss ); 
 #endif
 
                 if(r_promote_miss)
@@ -659,39 +661,39 @@ with object frame ray_origin and ray_direction
 **/
 
 TREE_FUNC
-bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dump )
+bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
 {
     const unsigned typecode = node->typecode() ;  
 #ifdef DEBUG
     printf("//intersect_prim typecode %u1 name %s \n", typecode, CSG::Name(typecode) ); 
 #endif
-#ifdef DEBUG_PIDX
-    if(dump) printf("//intersect_prim typecode %u \n", typecode  ); 
+#ifdef DEBUG_PIDXYZ
+    //if(dumpxyz) printf("//intersect_prim typecode %u \n", typecode  ); 
 #endif
 
 
     bool valid_intersect = false ; 
     if( typecode >= CSG_LEAF )
     {
-        valid_intersect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
+        valid_intersect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
     else if( typecode < CSG_NODE )
     {
-        valid_intersect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
+        valid_intersect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
 #ifdef WITH_CONTIGUOUS
     else if( typecode == CSG_CONTIGUOUS )  
     {
-        valid_intersect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
+        valid_intersect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
 #endif
     else if( typecode == CSG_DISCONTIGUOUS )  
     {
-        valid_intersect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
+        valid_intersect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
     else if( typecode == CSG_OVERLAP )
     {
-        valid_intersect = intersect_node_overlap(       isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dump ) ; 
+        valid_intersect = intersect_node_overlap(       isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }  
     return valid_intersect ; 
 }

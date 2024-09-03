@@ -900,7 +900,7 @@ Three level layout tree-node-leaf is needed to avoid intersect_node recursion wh
 
 INTERSECT_FUNC
 bool intersect_node( float4& isect, const CSGNode* node, const CSGNode* root, 
-       const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dump )
+       const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dumpxyz )
 {
     const unsigned typecode = node->typecode() ;  
 
@@ -908,18 +908,22 @@ bool intersect_node( float4& isect, const CSGNode* node, const CSGNode* root,
     printf("//intersect_node typecode %d name %s \n", typecode, CSG::Name(typecode) ); 
 #endif
 
-    bool valid_intersect ; 
+    bool valid_isect ; 
     switch(typecode)
     {
 #ifdef WITH_CONTIGUOUS
-       case CSG_CONTIGUOUS:     valid_intersect = intersect_node_contiguous(   isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dump )  ; break ; 
+       case CSG_CONTIGUOUS:     valid_isect = intersect_node_contiguous(   isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
 #endif
-       case CSG_OVERLAP:        valid_intersect = intersect_node_overlap(      isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dump )  ; break ; 
-       case CSG_DISCONTIGUOUS:  valid_intersect = intersect_node_discontiguous(isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dump )  ; break ; 
-                   default:     valid_intersect = intersect_leaf(              isect, node,       plan, itra, t_min, ray_origin, ray_direction, dump )  ; break ; 
+       case CSG_OVERLAP:        valid_isect = intersect_node_overlap(      isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
+       case CSG_DISCONTIGUOUS:  valid_isect = intersect_node_discontiguous(isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
+                   default:     valid_isect = intersect_leaf(              isect, node,       plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
     }
 
-    return valid_intersect ; 
+#ifdef DEBUG_PIDXYZ
+    if(dumpxyz) printf("//intersect_node valid_isect:%d \n", valid_isect ); 
+#endif
+
+    return valid_isect ; 
 }
 
 /**
