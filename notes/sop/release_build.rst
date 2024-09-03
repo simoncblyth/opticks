@@ -31,7 +31,7 @@ I expect more work on this will get more.
 How to configure a Release build
 -----------------------------------
 
-To do a Release build::
+To do a Release build, adjust some envvars::
 
        #export  OPTICKS_BUILDTYPE=Debug
        export  OPTICKS_BUILDTYPE=Release
@@ -58,6 +58,10 @@ Also it makes it fast to change between the build types.::
         return $rc
     }
 
+
+
+Whats the difference between Debug and Release builds
+------------------------------------------------------
 
 The mechanics of how the CMAKE_BUILD_TYPE Release flips 
 the PRODUCTION switch happens in  sysrap/CMakeLists.txt line 744 below. 

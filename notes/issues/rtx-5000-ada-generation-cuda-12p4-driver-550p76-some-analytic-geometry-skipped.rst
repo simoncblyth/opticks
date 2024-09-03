@@ -118,10 +118,11 @@ HUH : adding PIDXYZ which means dynamic runtime potential to dump when WITH_PIDX
 It is as if even the potential for detailed dumping keeps OptiX 7.5 CUDA 12.4 honest.
 
  
-BUT : Ada force triangulated not appearing
+FIXED : Ada force triangulated not appearing
 ---------------------------------------------
 
-* THIS IS ALMOST CERTAINLY BECAUSE THE /cvmfs GEOMETRY NEEDS UPDATE FOR THE CSGSolid.h change regards intent 
+* fixed by updating the /cvmfs geometry : to pick up the CSGSolid.h change regards intent
+
 
 
 TODO : try a Release build for which WITH_PIDX is not defined so there is no dynamic runtime potential for detailed dumping

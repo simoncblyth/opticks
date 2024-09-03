@@ -1632,7 +1632,7 @@ opticks-setup-()
     else
         st="nodir" 
     fi 
-    printf "=== %s %10s %10s %20s %s\n" $FUNCNAME $st $mode $var $dir  
+    [ -n "$OPTICKS_SETUP_VERBOSE" ] && printf "=== %s %10s %10s %20s %s\n" $FUNCNAME $st $mode $var $dir  
 }
 
 opticks-setup-info-()
@@ -1931,7 +1931,7 @@ export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
 
 if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
     if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then 
-        echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
+        [ -n "\$OPTICKS_SETUP_VERBOSE" ] && echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
         source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
     else
         echo ERROR no \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : \$OPTICKS_GEANT4_PREFIX
