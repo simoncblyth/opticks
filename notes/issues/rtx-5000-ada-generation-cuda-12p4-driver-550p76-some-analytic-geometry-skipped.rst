@@ -112,6 +112,25 @@ Debug dev cycle:
     
     
 
+HUH : adding PIDXYZ which means dynamic runtime potential to dump when WITH_PIDX is defined, which it is in Debug build makes the Ada boolean issue go away 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+It is as if even the potential for detailed dumping keeps OptiX 7.5 CUDA 12.4 honest.
+
+ 
+BUT : Ada force triangulated not appearing
+---------------------------------------------
+
+* THIS IS ALMOST CERTAINLY BECAUSE THE /cvmfs GEOMETRY NEEDS UPDATE FOR THE CSGSolid.h change regards intent 
+
+
+TODO : try a Release build for which WITH_PIDX is not defined so there is no dynamic runtime potential for detailed dumping
+-----------------------------------------------------------------------------------------------------------------------------
+
+Suspect the issue will return in Release mode, as no potential for detailed dumping without WITH_PIDX
+
+* IF THIS IS SO : THEN MAYBE CAN "EXPLAIN" AS OptiX OVER-AGRESSIVE OPTIMIZATION 
+* BUT : HOW TO FIX THAT IN A WAY THAT KEEPS PERFORMANCE ?
 
 
 TODO : further enhance CSGScanTest.sh to work with full geometries and a picked root CSGNode
