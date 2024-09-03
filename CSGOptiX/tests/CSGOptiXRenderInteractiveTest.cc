@@ -87,7 +87,7 @@ int main(int argc, char** argv)
     const char* PFX = "EXTENT:" ;
     float extent = sstr::StartsWith(MOI, PFX) ? sstr::To<float>( MOI + strlen(PFX) ) : 0.f ;  
     // this extent handling is primarily for use with simple single solid test geometries
-    bool sleep_break = ssys::getenvbool("SLEEP_BREAK"); 
+    int sleep_break = ssys::getenvint("SLEEP_BREAK",0); 
 
 
     sfr mfr = extent > 0.f ? sfr::MakeFromExtent<float>(extent) :  st->get_frame(MOI);    // HMM: what about when start from CSGMaker geometry ? 
@@ -149,7 +149,7 @@ int main(int argc, char** argv)
         interop.displayOutputBuffer(gl.window);
 
         gl.renderloop_tail();
-        if(sleep_break) 
+        if(sleep_break == 1) 
         { 
             schrono::sleep(1);  // 1 second then exit
             break ; 
