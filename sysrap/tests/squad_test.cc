@@ -46,7 +46,7 @@ void test_qvals_uint3()
 {
 
     uint3 pidxyz ; 
-    qvals(pidxyz, "PIDXYZ", "-1:-1:-1" ) ; 
+    qvals(pidxyz, "PIDXYZ", "-1:-1:-1", -1 ) ; 
 
     std::cout << " pidxyz" << pidxyz << "\n" ; 
 

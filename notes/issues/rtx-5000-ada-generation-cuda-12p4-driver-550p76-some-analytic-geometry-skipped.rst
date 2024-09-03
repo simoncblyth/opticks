@@ -102,6 +102,15 @@ Debug dev cycle:
 
     MOI=EXTENT:200 ~/o/cxr_min.sh 
 
+    MOI=EXTENT:200 PIDXYZ=1280:720:0 ~/o/cxr_min.sh 
+
+    MOI=EXTENT:200 PIDXYZ=1280:720:0 SLEEP_BREAK=1 ~/o/cxr_min.sh     ## debug for mid-pixel of 2560,1440,1
+
+    MOI=EXTENT:200 PIDXYZ=960:540:0 SLEEP_BREAK=1 ~/o/cxr_min.sh      ## debug for mid-pixel of 1920,1080,1 
+
+    MOI=EXTENT:200 PIDXYZ=MIDDLE SLEEP_BREAK=1 ~/o/cxr_min.sh      ## add special casing for MIDDLE 
+    
+    
 
 
 

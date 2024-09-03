@@ -690,7 +690,17 @@ void CSGOptiX::initRender()
 
 void CSGOptiX::initPIDXYZ()
 {
-    qvals(params->pidxyz, "PIDXYZ", "-1:-1:-1" ) ;
+    qvals(params->pidxyz, "PIDXYZ", "-1:-1:-1", -1 ) ;
+    const char* PIDXYZ = ssys::getenvvar("PIDXYZ") ; 
+
+    if(strcmp(PIDXYZ,"MIDDLE") == 0 )
+    {
+        LOG(info) << " special casing PIDXYZ MIDDLE " ; 
+        params->pidxyz.x = params->width/2 ; 
+        params->pidxyz.y = params->height/2 ; 
+        params->pidxyz.z = params->depth/2 ; 
+    }
+
     LOG(info) << " params->pidxyz " << params->pidxyz ; 
 }
 
