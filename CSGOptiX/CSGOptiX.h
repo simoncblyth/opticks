@@ -137,6 +137,7 @@ private:
     void initSimulate();
     void initFrame(); 
     void initRender();
+    void initPIDXYZ();
  public: 
     void setExternalDevicePixels(uchar4* _d_pixel ); 
     void destroy(); 

@@ -58,7 +58,7 @@ struct Params
     int32_t    traceyflip ; 
     int32_t    origin_x;
     int32_t    origin_y;
-
+  
     float3     eye;
     float3     U ;
     float3     V ; 
@@ -73,6 +73,9 @@ struct Params
     // simulation 
     qsim*        sim ; 
     sevent*      evt ;         // HMM: inside sim too ?
+
+    // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1  
+    uint3     pidxyz ; 
 
 
 #ifndef __CUDACC__
@@ -93,6 +96,8 @@ struct Params
     void setVizmask(unsigned vizmask_); 
 
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
+    void setPIDXYZ(unsigned x, unsigned y, unsigned z); 
+
 #endif
 
 };

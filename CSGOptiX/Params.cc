@@ -19,6 +19,14 @@ void Params::setCenterExtent(float x, float y, float z, float w)  // used for "s
     center_extent.w = w ; 
 }
 
+void Params::setPIDXYZ(unsigned x, unsigned y, unsigned z)
+{
+    pidxyz.x = x ;
+    pidxyz.y = y ;
+    pidxyz.z = z ;
+}
+
+
 void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
 {
     eye.x = eye_.x ;
@@ -141,6 +149,7 @@ Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
 {
     setRaygenMode(raygenmode_); 
     setSize(width, height, depth); 
+    setPIDXYZ(-1,-1,-1);     // disabled dumping (which WITH_PIDX enabled via setting to high unsigned:-1 values)
 }
 
 void Params::setRaygenMode(int raygenmode_)

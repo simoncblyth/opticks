@@ -1,4 +1,4 @@
-// ./squad_test.sh 
+// ~/o/sysrap/tests/squad_test.sh 
 
 #include "scuda.h"
 #include "squad.h"
@@ -25,6 +25,7 @@ void test_load_data()
     std::cout << p << std::endl ; 
 }
 
+/*
 void test_dquad4()
 {
     dquad4 dq4 ; 
@@ -38,7 +39,20 @@ void test_dquad4()
 
     std::cout << "dq4.q0   " << dq4.q0 << std::endl ; 
 }
+*/
 
+
+void test_qvals_uint3()
+{
+
+    uint3 pidxyz ; 
+    qvals(pidxyz, "PIDXYZ", "-1:-1:-1" ) ; 
+
+    std::cout << " pidxyz" << pidxyz << "\n" ; 
+
+
+
+}
 
 
 int main()
@@ -46,8 +60,9 @@ int main()
     /*
     test_load_array(); 
     test_load_data(); 
-    */
     test_dquad4(); 
+    */
+    test_qvals_uint3(); 
 
     return 0 ; 
 }

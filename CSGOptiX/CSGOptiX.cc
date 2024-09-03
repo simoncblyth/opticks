@@ -481,6 +481,7 @@ void CSGOptiX::init()
     initSimulate();
     initFrame(); 
     initRender(); 
+    initPIDXYZ(); 
 
     LOG(LEVEL) << "]" ; 
 }
@@ -685,6 +686,12 @@ void CSGOptiX::initRender()
 #else
     params->fphoton = nullptr ; 
 #endif
+}
+
+void CSGOptiX::initPIDXYZ()
+{
+    qvals(params->pidxyz, "PIDXYZ", "-1:-1:-1" ) ;
+    LOG(info) << " params->pidxyz " << params->pidxyz ; 
 }
 
 
