@@ -689,6 +689,11 @@ extern "C" __global__ void __intersection__is()
     const float3 ray_direction = optixGetObjectRayDirection();
 
     float4 isect ; // .xyz normal .w distance 
+    isect.x = 0.f ; 
+    isect.y = 0.f ; 
+    isect.z = 0.f ; 
+    isect.w = 0.f ; 
+
     bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dump ); 
     if(valid_isect)
     {

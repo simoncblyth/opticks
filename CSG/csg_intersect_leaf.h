@@ -172,6 +172,11 @@ This is called from both::
 LEAF_FUNC
 bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dumpxyz )
 {
+    isect.x = 0.f ; 
+    isect.y = 0.f ; 
+    isect.z = 0.f ; 
+    isect.w = 0.f ; 
+
     const unsigned typecode = node->typecode() ;  
     const unsigned gtransformIdx = node->gtransformIdx() ; 
     const bool complement = node->is_complement();
@@ -225,6 +230,19 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     }
     // NB: changing typecode->imp mapping is a handy way to use old imp with current geometry 
 
+
+
+#if defined(DEBUG_PIDXYZ)
+    // HMM MAGIC ACTIVE HERE TOO
+    //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
+    //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d  isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, isect.x, isect.y, isect.z, isect.w, complement ); 
+    //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d \n",  typecode ); 
+    if(dumpxyz) printf("//[intersect_leaf.MAGIC \n"); 
+
+    /**
+    when applying the MAGIC here just a string will do 
+    **/
+#endif
 
     if(valid_isect)
     {

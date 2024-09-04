@@ -1,0 +1,40 @@
+//__intersection__is  idx(1280,720,0) dim(2560,1440,1) dump:1 
+//intersect_prim typecode 3 
+//intersect_tree  numNode(subNum) 3 height 1 fullTree(hex) 20000 
+//intersect_tree nodeIdx 2 typecode 110 depth 1 elevation 0 
+//intersect_tree  nodeIdx 2 node_or_leaf 1 
+//]intersect_leaf typecode 110 valid_isect 1 isect (    1.0000     0.0000     0.0000   125.0000) complement 0 
+//intersect_tree nd_valid_isect:1 
+//intersect_tree  nodeIdx 2 node_or_leaf 1 nd_isect (    1.0000     0.0000     0.0000  -125.0000) nd_valid_isect 1 
+//intersect_tree nodeIdx 3 typecode 101 depth 1 elevation 0 
+//intersect_tree  nodeIdx 3 node_or_leaf 1 
+//]intersect_leaf typecode 101 valid_isect 1 isect (   -1.0000     0.0000     0.0000   300.0000) complement 0 
+//intersect_tree nd_valid_isect:1 
+//intersect_tree  nodeIdx 3 node_or_leaf 1 nd_isect (   -1.0000     0.0000     0.0000   300.0000) nd_valid_isect 1 
+//intersect_tree nodeIdx 1 typecode 3 depth 0 elevation 1 
+//intersect_tree  nodeIdx 1 node_or_leaf 0 
+//intersect_tree  nodeIdx 1 firstLeft 0 secondLeft 1 
+//intersect_tree  nodeIdx 1 left 0 right 1 l_state 0 r_state 1 t_left    125.000 t_right    300.000 leftIsCloser 1 
+//intersect_tree  nodeIdx 1 l/r_complement 0/1 l/r_unbounded 0/0 l/r_promote_miss 0/0 
+//intersect_tree nodeIdx 2 typecode 110 depth 1 elevation 0 
+//intersect_tree  nodeIdx 2 node_or_leaf 1 
+//]intersect_leaf typecode 110 valid_isect 1 isect (   -1.0000     0.0000     0.0000   275.0000) complement 0 
+//intersect_tree nd_valid_isect:1 
+//intersect_tree  nodeIdx 2 node_or_leaf 1 nd_isect (   -1.0000     0.0000     0.0000  -275.0000) nd_valid_isect 1 
+//intersect_tree nodeIdx 1 typecode 3 depth 0 elevation 1 
+//intersect_tree  nodeIdx 1 node_or_leaf 0 
+//intersect_tree  nodeIdx 1 firstLeft 1 secondLeft 0 
+//intersect_tree  nodeIdx 1 left 1 right 0 l_state 1 r_state 1 t_left    275.000 t_right    300.000 leftIsCloser 1 
+//intersect_tree  nodeIdx 1 l/r_complement 1/1 l/r_unbounded 0/0 l/r_promote_miss 0/0 
+//intersect_tree nodeIdx 2 typecode 110 depth 1 elevation 0 
+//intersect_tree  nodeIdx 2 node_or_leaf 1 
+//]intersect_leaf typecode 110 valid_isect 0 isect (    0.0000     0.0000     0.0000     0.0000) complement 0 
+//intersect_tree nd_valid_isect:0 
+//intersect_tree  nodeIdx 2 node_or_leaf 1 nd_isect (    0.0000     0.0000     0.0000    -0.0000) nd_valid_isect 0 
+//intersect_tree nodeIdx 1 typecode 3 depth 0 elevation 1 
+//intersect_tree  nodeIdx 1 node_or_leaf 0 
+//intersect_tree  nodeIdx 1 firstLeft 1 secondLeft 0 
+//intersect_tree  nodeIdx 1 left 1 right 0 l_state 2 r_state 1 t_left      0.000 t_right    300.000 leftIsCloser 1 
+//intersect_tree  nodeIdx 1 l/r_complement 0/1 l/r_unbounded 0/0 l/r_promote_miss 0/0 
+//__intersection__is  idx(1280,720,0) dim(2560,1440,1) dump:1 valid_isect:0
+
