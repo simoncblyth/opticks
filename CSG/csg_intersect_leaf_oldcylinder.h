@@ -17,7 +17,7 @@ For ascii art explanation of the maths see optixrap/cu/intersect_ztubs.h
 #define CSG_OLDCYLINDER_PRECISION_ISSUE 1 
 
 LEAF_FUNC
-bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_oldcylinder( bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float   radius = q0.f.w ; 
     const float       z1 = q1.f.x  ; 
@@ -65,8 +65,11 @@ bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, 
 #ifdef DEBUG_RECORD
     printf("//intersect_leaf_cylinder : axial ray endcap handling, a %10.4g c(dd*k - md*md) %10.4g dd %10.4g k %10.4g md %10.4g  \n", a, c,dd,k,md ); 
 #endif
-        if(c > 0.f) return false ;  // ray starts and ends outside cylinder
-
+        if(c > 0.f)
+        {
+            valid_isect = false ; 
+            return ;  // ray starts and ends outside cylinder
+        }
 
 #ifdef CSG_OLDCYLINDER_PRECISION_ISSUE
         float t_PCAP_AX = -mn/nn  ;      
@@ -149,8 +152,8 @@ bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, 
             CSGDebug_Cylinder::record.push_back(dbg); 
 #endif
         }
-
-        return has_axial_intersect ;
+        valid_isect = has_axial_intersect ; 
+        return ; 
     }   // end-of-axial-ray endcap handling 
     
 
@@ -246,7 +249,8 @@ bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, 
                 isect.y = sign*dnorm.y ; 
                 isect.z = sign*dnorm.z ; 
             }
-            return true ; 
+            valid_isect = true ; 
+            return ; 
         }
        
   
@@ -291,12 +295,13 @@ bool intersect_leaf_oldcylinder( float4& isect, const quad& q0, const quad& q1, 
                 isect.y = sign*dnorm.y ; 
                 isect.z = sign*dnorm.z ; 
             } 
-            return true ; 
+            valid_isect = true ; 
+            return ; 
         }
 
     }  // disc > 0.f
 
-    return false ; 
+    valid_isect = false ; 
 }
 
 

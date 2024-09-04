@@ -22,7 +22,7 @@ dot the non-axial x and y thanks to the fixed orientation.
 **/
 
 LEAF_FUNC
-bool intersect_leaf_infcylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_infcylinder( bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float r = q0.f.w ; 
 
@@ -43,7 +43,7 @@ bool intersect_leaf_infcylinder( float4& isect, const quad& q0, const quad& q1, 
 
         float t_cand = sdisc > 0.f ? ( t_NEAR > t_min ? t_NEAR : t_FAR ) : t_min ;
 
-        bool valid_isect = t_cand > t_min ; 
+        valid_isect = t_cand > t_min ; 
 
         if( valid_isect  )
         {
@@ -51,9 +51,7 @@ bool intersect_leaf_infcylinder( float4& isect, const quad& q0, const quad& q1, 
             isect.y = (O.y + t_cand*D.y)/r ;
             isect.z = 0.f ;
             isect.w = t_cand ; 
-            return true ; 
         }
     }
-    return false ; 
 }
 

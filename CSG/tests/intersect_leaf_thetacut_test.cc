@@ -27,8 +27,8 @@ bool intersect( float4& is, float4& p, const quad& q0, const quad& q1, char imp,
     bool valid_isect = false ; 
     switch(imp)
     {
-        case ' ': valid_isect = intersect_leaf_thetacut(       is, q0, q1, t_min, o, d )  ;   break ; 
-        case 'L': valid_isect = intersect_leaf_thetacut_lucas( is, q0,     t_min, o, d )  ;   break ; 
+        case ' ': intersect_leaf_thetacut(      valid_isect,  is, q0, q1, t_min, o, d )  ;   break ; 
+        case 'L': intersect_leaf_thetacut_lucas( valid_isect, is, q0,     t_min, o, d )  ;   break ; 
     }
 
     if(valid_isect)

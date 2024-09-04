@@ -47,7 +47,7 @@ float z_apex_cone( const quad& q0 )
 
 
 LEAF_FUNC
-bool intersect_leaf_newcone( float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_newcone( bool& valid_isect, float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     const float& r1 = q0.f.x ; 
     const float& z1 = q0.f.y ; 
@@ -100,7 +100,7 @@ bool intersect_leaf_newcone( float4& isect, const quad& q0, const float t_min , 
     const float4 roots = make_float4( t_near, t_far, t_cap1, t_cap2 );
     const float t_cand = fminf(roots) ; 
     
-    bool valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;
+    valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;
     if(valid_isect)
     {
         if( t_cand == t_cap1 || t_cand == t_cap2 )
@@ -118,7 +118,6 @@ bool intersect_leaf_newcone( float4& isect, const quad& q0, const float t_min , 
         }
         isect.w = t_cand ; 
     }
-    return valid_isect ; 
 }
 
 

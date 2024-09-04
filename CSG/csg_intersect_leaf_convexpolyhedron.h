@@ -19,7 +19,7 @@ float distance_leaf_convexpolyhedron( const float3& pos, const CSGNode* node, co
 
 
 LEAF_FUNC
-bool intersect_leaf_convexpolyhedron( float4& isect, const CSGNode* node, const float4* plan, const float t_min , const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_convexpolyhedron( bool& valid_isect, float4& isect, const CSGNode* node, const float4* plan, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     float t0 = -CUDART_INF_F ; 
     float t1 =  CUDART_INF_F ; 
@@ -53,7 +53,11 @@ bool intersect_leaf_convexpolyhedron( float4& isect, const CSGNode* node, const 
         bool parallel_outside = nd == 0.f && dist > 0.f ;  // ray parallel to plane and outside halfspac
 
         if(parallel_inside) continue ;       // continue to next plane 
-        if(parallel_outside) return false ;  // <-- without early exit, this still works due to infinity handling 
+        if(parallel_outside)
+        {
+            valid_isect = false ;   
+            return ;  // <-- without early exit, this still works due to infinity handling 
+        }
 
         //    NB ray parallel to plane and outside halfspace 
         //         ->  t_cand = -inf 
@@ -78,8 +82,8 @@ bool intersect_leaf_convexpolyhedron( float4& isect, const CSGNode* node, const 
         }
     }
 
-    bool valid_intersect = t0 < t1 ;
-    if(valid_intersect)
+    valid_isect = t0 < t1 ;
+    if(valid_isect)
     {
         if( t0 > t_min )
         {
@@ -96,7 +100,6 @@ bool intersect_leaf_convexpolyhedron( float4& isect, const CSGNode* node, const 
             isect.w = t1 ;
         }
     }
-    return valid_intersect ;
 }
 
 

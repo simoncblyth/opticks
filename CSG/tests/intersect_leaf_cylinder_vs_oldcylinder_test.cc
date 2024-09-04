@@ -41,8 +41,10 @@ void lowlevel_test()
     float4 isect0 = make_float4(0.f, 0.f, 0.f, 0.f ); 
     float4 isect1 = make_float4(0.f, 0.f, 0.f, 0.f ); 
 
-    bool valid_isect0 = intersect_leaf_cylinder(    isect0, q0, q1, t_min, ray_origin, ray_direction ); 
-    bool valid_isect1 = intersect_leaf_oldcylinder( isect1, q0, q1, t_min, ray_origin, ray_direction ); 
+    bool valid_isect0(false) ;  
+    intersect_leaf_cylinder( valid_isect0, isect0, q0, q1, t_min, ray_origin, ray_direction ); 
+    bool valid_isect1(false) ;  
+    intersect_leaf_oldcylinder( valid_isect1, isect1, q0, q1, t_min, ray_origin, ray_direction ); 
 
 
 

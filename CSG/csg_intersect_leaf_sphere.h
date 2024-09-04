@@ -12,7 +12,7 @@ float distance_leaf_sphere(const float3& pos, const quad& q0 )
 
 
 LEAF_FUNC
-bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_sphere( bool& valid_isect, float4& isect, const quad& q0, const float& t_min, const float3& ray_origin, const float3& ray_direction )
 {
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
@@ -36,7 +36,7 @@ bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, co
 
     float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ;
 
-    bool valid_isect = t_cand > t_min ;
+    valid_isect = t_cand > t_min ;
     if(valid_isect)
     {
         isect.x = (O.x + t_cand*D.x)/radius ;   // normalized by construction
@@ -52,7 +52,6 @@ bool intersect_leaf_sphere(float4& isect, const quad& q0, const float& t_min, co
 #endif
 
 
-    return valid_isect ;
 }
 
 

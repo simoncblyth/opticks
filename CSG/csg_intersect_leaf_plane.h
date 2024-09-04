@@ -63,7 +63,7 @@ Special case example :
 **/
 
 LEAF_FUNC
-bool intersect_leaf_plane( float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_plane( bool& valid_isect, float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;   // plane normal direction  
    const float d = q0.f.w ;                                 // distance to origin 
@@ -73,15 +73,14 @@ bool intersect_leaf_plane( float4& isect, const quad& q0, const float t_min, con
 
    float t_cand = (d - on)*idn ;
 
-   bool valid_intersect = t_cand > t_min ;
-   if( valid_intersect ) 
+   bool valid_isect = t_cand > t_min ;
+   if( valid_isect ) 
    {
        isect.x = n.x ;
        isect.y = n.y ;
        isect.z = n.z ;
        isect.w = t_cand ; 
    }
-   return valid_intersect ; 
 }
 
 

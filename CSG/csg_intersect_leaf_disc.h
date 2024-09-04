@@ -91,7 +91,7 @@ of the rigid outward normal direction.::
 **/
 
 LEAF_FUNC
-bool intersect_leaf_disc(float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_disc(bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float   inner  = q0.f.z ; 
     const float   radius = q0.f.w ; 
@@ -132,7 +132,7 @@ bool intersect_leaf_disc(float4& isect, const quad& q0, const quad& q1, const fl
 
     float side = md + t_cand*nd ;    
 
-    bool valid_isect = t_cand > t_min ;
+    valid_isect = t_cand > t_min ;
     if(valid_isect)
     {        
         isect.x = 0.f ; 
@@ -140,7 +140,6 @@ bool intersect_leaf_disc(float4& isect, const quad& q0, const quad& q1, const fl
         isect.z = side > 0.f ? 1.f : -1.f ; 
         isect.w = t_cand  ; 
     }
-    return valid_isect ; 
 }
 
 

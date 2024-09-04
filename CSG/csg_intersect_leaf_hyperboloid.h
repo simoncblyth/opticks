@@ -22,7 +22,7 @@ intersect_leaf_hyperboloid
 **/
 
 LEAF_FUNC
-bool intersect_leaf_hyperboloid(float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_hyperboloid(bool& valid_isect, float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float zero(0.f); 
     const float one(1.f); 
@@ -82,7 +82,7 @@ bool intersect_leaf_hyperboloid(float4& isect, const quad& q0, const float t_min
 
     float t_cand = fminf( t_cand_ );  
 
-    bool valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;
+    valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;
     if(valid_isect)
     {        
         isect.w = t_cand ; 
@@ -101,7 +101,6 @@ bool intersect_leaf_hyperboloid(float4& isect, const quad& q0, const float t_min
             isect.z = t_cand == t1cap ? -one : one ;  
         }
     }
-    return valid_isect ; 
 }
 
 

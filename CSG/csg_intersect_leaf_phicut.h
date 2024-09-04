@@ -233,7 +233,7 @@ phi1 - phi0 < 1.0 :
 
 
 LEAF_FUNC
-bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
+void intersect_leaf_phicut( bool& valid_isect, float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
 {
     const float& cosPhi0 = q0.f.x ; 
     const float& sinPhi0 = q0.f.y ; 
@@ -290,7 +290,9 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     const float t0c = ( s0x >= 0.f && t0 > t_min) ? t0 : RT_DEFAULT_MAX ; 
     const float t1c = ( s1x >= 0.f && t1 > t_min) ? t1 : RT_DEFAULT_MAX ; 
     const float t_cand = safezone ? fminf( t0c, t1c ) : ( s0x >= 0.f ? t0c : t1c ) ;
-    const bool valid_intersect = t_cand > t_min && t_cand <  RT_DEFAULT_MAX ; 
+
+    valid_isect = t_cand > t_min && t_cand <  RT_DEFAULT_MAX ; 
+
 
     /*
        0. s0x s1x are -phi0 and -phi1 rotated xprime coordinates of intersect positions
@@ -326,10 +328,10 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
 
 #ifdef DEBUG
-    printf("//intersect_leaf_phicut t0c %10.4f t1c %10.4f safezone %d t_cand %10.4f valid_intersect %d  unbounded_exit %d \n", t0c, t1c, safezone, t_cand, valid_intersect, unbounded_exit );  
+    printf("//intersect_leaf_phicut t0c %10.4f t1c %10.4f safezone %d t_cand %10.4f valid_isect %d  unbounded_exit %d \n", t0c, t1c, safezone, t_cand, valid_isect, unbounded_exit );  
 #endif
 
-    if( valid_intersect ) 
+    if( valid_isect ) 
     {
         isect.x = t_cand == t1 ? -sinPhi1 :  sinPhi0 ; 
         isect.y = t_cand == t1 ?  cosPhi1 : -cosPhi0 ;  
@@ -340,7 +342,6 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
     {
         isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
     }
-    return valid_intersect ; 
 }
 
 
@@ -352,7 +353,7 @@ bool intersect_leaf_phicut( float4& isect, const quad& q0, const float t_min, co
 
 
 LEAF_FUNC
-bool intersect_leaf_phicut_dev( float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
+void intersect_leaf_phicut_dev( bool& valid_isect, float4& isect, const quad& q0, const float t_min, const float3& o, const float3& d )
 {
     const float& cosPhi0 = q0.f.x ; 
     const float& sinPhi0 = q0.f.y ; 
@@ -518,17 +519,18 @@ Disqualify wrong side or too close
 
     const float t1 = -( o.x*(-sinPhi1) + o.y*cosPhi1 )/( d.x*(-sinPhi1) + d.y*cosPhi1 ) ; 
     if((o.x + t1*d.x)*cosPhi1 > 0.f && t1 > t_min ) t_cand = fminf( t1, t_cand );  
-    bool valid_intersect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;  
+
+    valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;  
 
 #ifdef DEBUG
     //printf("//intersect_leaf_phicut t1_num  ( o.x*(-sinPhi1) + o.y*cosPhi1 )  : %10.4f \n", ( o.x*(-sinPhi1) + o.y*cosPhi1 ) ); 
     //printf("//intersect_leaf_phicut t1_den  ( d.x*(-sinPhi1) + d.y*cosPhi1 )  : %10.4f \n", ( d.x*(-sinPhi1) + d.y*cosPhi1 ) );  
     //printf("//intersect_leaf_phicut t1      %10.4f \n", t1 ); 
     //printf("//intersect_leaf_phicut  signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min  : %d \n", signbit(o.x + t1*d.x) == signbit(cosPhi1) && t1 > t_min ); 
-    printf("//intersect_leaf_phicut t_cand.2 %10.4f valid_intersect %d \n", t_cand, valid_intersect  ); 
+    printf("//intersect_leaf_phicut t_cand.2 %10.4f valid_isect %d \n", t_cand, valid_isect  ); 
 #endif
 
-    if( valid_intersect ) 
+    if( valid_isect ) 
     {
         isect.x = t_cand == t1 ? -sinPhi1 :  sinPhi0 ; 
         isect.y = t_cand == t1 ?  cosPhi1 : -cosPhi0 ;  
@@ -539,7 +541,6 @@ Disqualify wrong side or too close
     {
         isect.y = -isect.y ;  // -0.f signflip signalling that can promote MISS to EXIT at infinity 
     }
-    return valid_intersect ; 
 }
 
 
@@ -599,7 +600,7 @@ Simon's comments on intersect_leaf_phicut_lucas
 **/
 
 LEAF_FUNC
-bool intersect_leaf_phicut_lucas(float4& isect, const quad& angles, const float& t_min, const float3& ray_origin, const float3& ray_direction)
+void intersect_leaf_phicut_lucas(bool& valid_isect, float4& isect, const quad& angles, const float& t_min, const float3& ray_origin, const float3& ray_direction)
 {   //for future reference: angles.f has: .x = cos0, .y = sin0, .z = cos1, .w = sin1
 
     float t_cand = -(angles.f.y * ray_origin.x - angles.f.x * ray_origin.y) / (angles.f.y * ray_direction.x - angles.f.x * ray_direction.y);
@@ -616,16 +617,14 @@ bool intersect_leaf_phicut_lucas(float4& isect, const quad& angles, const float&
      //   cosPhi1 * (intersection_x) > 0  
 
 
-    const bool valid = t_cand < RT_DEFAULT_MAX;
-    if (valid)
+    valid_isect = t_cand < RT_DEFAULT_MAX;
+    if (valid_isect)
     {
         isect.x = t_cand == t1 ? -angles.f.w: angles.f.y;
         isect.y = t_cand == t1 ? angles.f.z : -angles.f.x;
         isect.z = 0.f;
         isect.w = t_cand;
     }
-
-    return valid;
 }
 
 

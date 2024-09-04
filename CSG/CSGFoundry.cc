@@ -3382,6 +3382,14 @@ When CSGFoundry::getFrame fails due to the MOI/FRS string used to target
 a volume of the geometry failing to find the targetted volume 
 it is usually due to the spec not being appropriate for the geometry. 
 
+First thing to check is the configured GEOM envvar using GEOM bash function. 
+
+With simple test geometries the lack of frames can be worked around 
+using special cased MOI in some cases, for example::
+
+    MOI=EXTENT:200 ~/o/cxr_min.sh
+
+
 When using U4VolumeMaker it is sometimes possible to 
 debug the bad specification string by rerunning with the below 
 envvars set in order to dump PV/LV/SO names from the full and sub trees.::

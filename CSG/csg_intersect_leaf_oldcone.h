@@ -52,7 +52,7 @@ into definining eqn of cone, giving a quadratic in t::
 **/
 
 LEAF_FUNC
-bool intersect_leaf_oldcone( float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_oldcone( bool& valid_isect, float4& isect, const quad& q0, const float t_min , const float3& ray_origin, const float3& ray_direction )
 {
     float r1 = q0.f.x ; 
     float z1 = q0.f.y ; 
@@ -93,7 +93,7 @@ bool intersect_leaf_oldcone( float4& isect, const quad& q0, const float t_min , 
     // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
     // * cone intersects will have out of r-range plane intersects, other than rays within xy plane
 
-    bool valid_isect = false ;
+    valid_isect = false ;
  
     if(disc > 0.f)  // has intersects with infinite cone
     {
@@ -177,7 +177,6 @@ bool intersect_leaf_oldcone( float4& isect, const quad& q0, const float t_min , 
             isect.w = t_cand ; 
         }
     }
-    return valid_isect ; 
 }
 
 

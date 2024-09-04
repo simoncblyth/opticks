@@ -42,7 +42,7 @@ See : notes/issues/unexpected_zsphere_miss_from_inside_for_rays_that_would_be_ex
 
 
 LEAF_FUNC
-bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_zsphere(bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float& t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float3 center = make_float3(q0.f);
     float3 O = ray_origin - center;  
@@ -56,9 +56,13 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
     printf("//[intersect_leaf_zsphere radius %10.4f b %10.4f c %10.4f \n", radius, b, c); 
 #endif
 
-    if( c > 0.f && b > 0.f ) return false ;    
+    if( c > 0.f && b > 0.f )
+    { 
+        valid_isect = false ; 
+        return ; 
+    }   
     // Cannot intersect when ray origin outside sphere and direction away from sphere.
-    // Whether early exit speeds things up is another question ... 
+    // Whether early exit speeds things up (or slows things down) is another question ... 
 
     const float2 zdelta = make_float2(q1.f);
     const float zmax = center.z + zdelta.y ;   // + 0.1f artificial increase zmax to test apex bug 
@@ -119,7 +123,7 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
         else if( t2sph > t_min && z2sph > zmin && z2sph <= zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
     }
 
-    bool valid_isect = t_cand > t_min ;
+    valid_isect = t_cand > t_min ;
 #ifdef DEBUG_RECORD
     printf("//intersect_leaf_zsphere valid_isect %d t_min %7.3f t1sph %7.3f t1cap %7.3f t2cap %7.3f t2sph %7.3f t_cand %7.3f \n", valid_isect, t_min, t1sph, t1cap, t2cap, t2sph, t_cand ); 
 #endif
@@ -144,7 +148,6 @@ bool intersect_leaf_zsphere(float4& isect, const quad& q0, const quad& q1, const
 #ifdef DEBUG_RECORD
     printf("//]intersect_leaf_zsphere valid_isect %d \n", valid_isect ); 
 #endif
-    return valid_isect ;
 }
 
 

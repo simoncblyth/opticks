@@ -265,7 +265,7 @@ to work yet, as it seems like it should be possible in principle.
 **/
 
 TREE_FUNC
-bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
+void intersect_tree( bool& valid_isect, float4& isect, const CSGNode* node, const float4* plan0, const qat4* itra0, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
 {
     const int numNode=node->subNum() ;   // SO THIS SHOULD NO LONGER EVER BE 1 
     unsigned height = TREE_HEIGHT(numNode) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
@@ -344,7 +344,9 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
             {
                 float4 nd_isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
 
-                bool nd_valid_isect = intersect_node( nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction, dumpxyz );
+                bool nd_valid_isect(false);   
+                intersect_node( nd_valid_isect, nd_isect, nd, node, plan0, itra0, tmin, ray_origin, ray_direction, dumpxyz );
+                // funny that hit or miss does not seem to be used here : presumably relying on the t value 
 
 #ifdef DEBUG_PIDXYZ
                 if(dumpxyz) printf("//intersect_tree nd_valid_isect:%d \n", nd_valid_isect ) ; 
@@ -651,7 +653,9 @@ bool intersect_tree( float4& isect, const CSGNode* node, const float4* plan0, co
         isect.z = ret.z ; 
         isect.w = ret.w ; 
     }
-    return isect.w > 0.f ;  // ? 
+
+    valid_isect = isect.w > 0.f ;  // ? 
+    return ; 
 }
 
 /**
@@ -678,25 +682,25 @@ bool intersect_prim( float4& isect, const CSGNode* node, const float4* plan, con
     bool valid_isect = false ; 
     if( typecode >= CSG_LEAF )
     {
-        valid_isect = intersect_leaf(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
+        intersect_leaf( valid_isect,  isect, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
     else if( typecode < CSG_NODE )
     {
-        valid_isect = intersect_tree(             isect, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
+        intersect_tree( valid_isect,  isect, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
 #ifdef WITH_CONTIGUOUS
     else if( typecode == CSG_CONTIGUOUS )  
     {
-        valid_isect = intersect_node_contiguous(   isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
+        intersect_node_contiguous( valid_isect, isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
 #endif
     else if( typecode == CSG_DISCONTIGUOUS )  
     {
-        valid_isect = intersect_node_discontiguous( isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
+        intersect_node_discontiguous( valid_isect, isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }
     else if( typecode == CSG_OVERLAP )
     {
-        valid_isect = intersect_node_overlap(       isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
+        intersect_node_overlap(       valid_isect, isect, node, node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ) ; 
     }  
     return valid_isect ; 
 }

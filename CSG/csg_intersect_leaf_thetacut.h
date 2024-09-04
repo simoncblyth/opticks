@@ -136,7 +136,7 @@ cross0 > 0.f && cross1 < 0.f
 **/
 
 LEAF_FUNC
-bool intersect_leaf_thetacut(float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& o, const float3& d)
+void intersect_leaf_thetacut(bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& o, const float3& d)
 {   
     const float& cosTheta0   = q0.f.x ; 
     const float& sinTheta0   = q0.f.y ;
@@ -240,9 +240,9 @@ hmm: thats a bit funny the imprecise intersect from the degenerate cone may be c
 here with the one from the more precise plane 
 **/
 
-    const bool valid = t_cand < RT_DEFAULT_MAX || plane;
+    valid_isect = t_cand < RT_DEFAULT_MAX || plane;
 
-    if (valid) {
+    if (valid_isect) {
         const bool side = t_cand == t0 || t_cand == t1; 
         // when t_cand is equal to the current t0 or t1 it means that the itersect is with the theta1 cone and not the theta0 cone
 
@@ -262,9 +262,8 @@ here with the one from the more precise plane
     }
 
 #ifdef DEBUG
-    printf("//intersect_leaf_thetacut isect (%10.4f %10.4f %10.4f %10.4f) valid %d  \n" , isect.x, isect.y, isect.z, isect.w, valid ) ; 
+    printf("//intersect_leaf_thetacut isect (%10.4f %10.4f %10.4f %10.4f) valid_isect %d  \n" , isect.x, isect.y, isect.z, isect.w, valid_isect ) ; 
 #endif
-    return valid ; 
 }
 
 
@@ -295,7 +294,7 @@ WORKS FOR 0 <= THETA <= 180 BUT BEWARE: USER NEEDS TO BE CAREFUL WHEN DEFINING Q
     
 **/
 LEAF_FUNC
-bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const float t_min, const float3& rayOrigin, const float3& rayDirection)
+void intersect_leaf_thetacut_lucas(bool& valid_isect, float4& isect, const quad& thetaDat, const float t_min, const float3& rayOrigin, const float3& rayDirection)
 {   //thetaData contains x = cos(theta0)/abs(cos(theta0)), y = tan^2 (theta0), z = cos(theta1)/abs(cos(theta1)), w = tan^2 (theta1)
 
     float dirMag = rayDirection.x * rayDirection.x + rayDirection.y * rayDirection.y - rayDirection.z * rayDirection.z * thetaDat.f.y;
@@ -332,9 +331,9 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
     const float t_plane = -rayOrigin.z / rayDirection.z;
     const bool plane = thetaDat.f.x * thetaDat.f.z == 0.0 && t_plane > t_min && t_cand > t_plane;
     // SCB                                 ^^^^^^^^^^^^^^^^^  
-    const bool valid = t_cand < RT_DEFAULT_MAX || plane;
+    valid_isect = t_cand < RT_DEFAULT_MAX || plane;
 
-    if (valid) {
+    if (valid_isect) {
         const bool side = t_cand == t0 || t_cand == t1; //corrects normals for both cones/planes around 90 degrees
 
         isect.x = plane ? 0.0 : (side ? thetaDat.f.z * (rayOrigin.x + t_cand * rayDirection.x)
@@ -359,12 +358,10 @@ bool intersect_leaf_thetacut_lucas(float4& isect, const quad& thetaDat, const fl
 
 #ifdef DEBUG
     const quad& q0 = thetaDat ; 
-    printf("//intersect_leaf_thetacut_lucas q0.f (%10.4f %10.4f %10.4f %10.4f) valid %d  isect  (%10.4f %10.4f %10.4f %10.4f) \n" , 
-           q0.f.x, q0.f.y, q0.f.z, q0.f.z, valid, isect.x, isect.y, isect.z, isect.w ) ; 
+    printf("//intersect_leaf_thetacut_lucas q0.f (%10.4f %10.4f %10.4f %10.4f) valid_isect %d  isect  (%10.4f %10.4f %10.4f %10.4f) \n" , 
+           q0.f.x, q0.f.y, q0.f.z, q0.f.z, valid_isect, isect.x, isect.y, isect.z, isect.w ) ; 
 #endif
 
-
-    return valid;
 }
 
 

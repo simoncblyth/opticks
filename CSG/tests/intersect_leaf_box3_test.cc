@@ -38,7 +38,8 @@ int main(int argc, char** argv)
     float3 ray_origin    = make_float3(  0.f, 0.f, 0.f ); 
     float3 ray_direction = make_float3(  0.f, 0.f, 1.f ); 
  
-    bool valid_isect = intersect_leaf_box3( isect, q0, t_min, ray_origin, ray_direction ); 
+    bool valid_isect(false) ; 
+    intersect_leaf_box3( valid_isect, isect, q0, t_min, ray_origin, ray_direction ); 
 
     float3 pos = make_float3( 0.f, 0.f, 0.f ); 
     if(valid_isect)

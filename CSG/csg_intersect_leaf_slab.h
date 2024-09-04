@@ -25,7 +25,7 @@ One normal, two distances
 
 
 LEAF_FUNC
-bool intersect_leaf_slab( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_slab( bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
 
@@ -43,17 +43,16 @@ bool intersect_leaf_slab( float4& isect, const quad& q0, const quad& q1, const f
 
    float t_cand = t_near > t_min  ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
 
-   bool valid_intersect = t_cand > t_min ;
+   valid_isect = t_cand > t_min ;
    bool b_hit = t_cand == tb ;
 
-   if( valid_intersect ) 
+   if( valid_isect ) 
    {
        isect.x = b_hit ? n.x : -n.x ;
        isect.y = b_hit ? n.y : -n.y ;
        isect.z = b_hit ? n.z : -n.z ;
        isect.w = t_cand ; 
    }
-   return valid_intersect ; 
 }
 
 

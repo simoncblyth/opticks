@@ -161,10 +161,11 @@ void Scan::init()
             const CSGNode* node = &nd ; 
             bool dump = false ; 
 
-            bool valid_intersect = intersect_node(*isect, node, node, plan, itra, t_min, *ray_origin, *ray_direction, dump ); 
+            bool valid_isect(false) ; 
+            intersect_node(valid_isect, *isect, node, node, plan, itra, t_min, *ray_origin, *ray_direction, dump ); 
             // TODO: this should be using higher level intersect_prim ???
 
-            if(valid_intersect)
+            if(valid_isect)
             {
                 float t = (*isect).w ;  
                 *position = *ray_origin + t*(*ray_direction) ; 

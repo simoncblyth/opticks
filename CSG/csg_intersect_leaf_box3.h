@@ -61,7 +61,7 @@ mean its a usable intersect, there are 3 possibilities::
 **/
 
 LEAF_FUNC
-bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_box3(bool& valid_isect, float4& isect, const quad& q0, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 bmin = make_float3(-q0.f.x/2.f, -q0.f.y/2.f, -q0.f.z/2.f );   // fullside 
    const float3 bmax = make_float3( q0.f.x/2.f,  q0.f.y/2.f,  q0.f.z/2.f ); 
@@ -94,7 +94,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
    bool in_z = ray_origin.z > bmin.z && ray_origin.z < bmax.z  ;
 
 
-   bool has_intersect ;
+   bool has_intersect = false ;
    if(     along_x) has_intersect = in_y && in_z ;
    else if(along_y) has_intersect = in_x && in_z ; 
    else if(along_z) has_intersect = in_x && in_y ; 
@@ -107,7 +107,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
 #endif
 
 
-   bool has_valid_intersect = false ; 
+   valid_isect = false ; 
    if( has_intersect ) 
    {
        float t_cand = t_min < t_near ?  t_near : ( t_min < t_far ? t_far : t_min ) ; 
@@ -140,7 +140,7 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
 
        if(t_cand > t_min)
        {
-           has_valid_intersect = true ; 
+           valid_isect = true ; 
 
            isect.x = n.x ;
            isect.y = n.y ;
@@ -150,9 +150,8 @@ bool intersect_leaf_box3(float4& isect, const quad& q0, const float t_min, const
    }
 
 #ifdef DEBUG_BOX3
-   printf("//intersect_leaf_box3 has_valid_intersect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", has_valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
+   printf("//intersect_leaf_box3 valid_isect %d  isect ( %10.4f %10.4f %10.4f %10.4f)  \n", valid_isect, isect.x, isect.y, isect.z, isect.w ); 
 #endif
-   return has_valid_intersect ; 
 }
 
 

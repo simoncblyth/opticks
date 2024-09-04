@@ -31,7 +31,7 @@ into a float4 and then pick from that ?
 **/
 
 LEAF_FUNC
-bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
+void intersect_leaf_cylinder( bool& valid_isect, float4& isect, const quad& q0, const quad& q1, const float t_min, const float3& ray_origin, const float3& ray_direction )
 {
     const float& r  = q0.f.w ; 
     const float& z1 = q1.f.x  ; 
@@ -70,8 +70,8 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
     if( t_z1cap > t_min && r2_z1cap <= r2               && t_z1cap < t_cand ) t_cand = t_z1cap ; 
     if( t_z2cap > t_min && r2_z2cap <= r2               && t_z2cap < t_cand ) t_cand = t_z2cap ; 
 
-    bool valid_intersect = t_cand > t_min && t_cand < CUDART_INF_F ; 
-    if(valid_intersect)
+    valid_isect = t_cand > t_min && t_cand < CUDART_INF_F ; 
+    if(valid_isect)
     {
         bool sheet = ( t_cand == t_near || t_cand == t_far ) ; 
         isect.x = sheet ? (ox + t_cand*vx)/r : 0.f ; 
@@ -79,7 +79,6 @@ bool intersect_leaf_cylinder( float4& isect, const quad& q0, const quad& q1, con
         isect.z = sheet ? 0.f : ( t_cand == t_z1cap ? -1.f : 1.f) ; 
         isect.w = t_cand ;      
     }
-    return valid_intersect ; 
 }
 
 

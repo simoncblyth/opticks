@@ -170,8 +170,9 @@ This is called from both::
 **/
 
 LEAF_FUNC
-bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dumpxyz )
+void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dumpxyz )
 {
+    valid_isect = false ; 
     isect.x = 0.f ; 
     isect.y = 0.f ; 
     isect.z = 0.f ; 
@@ -207,25 +208,24 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     */
 #endif
 
-    bool valid_isect = false ; 
     switch(typecode)
     {
-        case CSG_SPHERE:           valid_isect = intersect_leaf_sphere(           isect, node->q0,               t_min, origin, direction ) ; break ; 
-        case CSG_ZSPHERE:          valid_isect = intersect_leaf_zsphere(          isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
-        case CSG_CYLINDER:         valid_isect = intersect_leaf_cylinder(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_BOX3:             valid_isect = intersect_leaf_box3(             isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_CONE:             valid_isect = intersect_leaf_newcone(          isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_CONVEXPOLYHEDRON: valid_isect = intersect_leaf_convexpolyhedron( isect, node, plan,             t_min, origin, direction ) ; break ;
-        case CSG_HYPERBOLOID:      valid_isect = intersect_leaf_hyperboloid(      isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_SPHERE:           intersect_leaf_sphere(           valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ; 
+        case CSG_ZSPHERE:          intersect_leaf_zsphere(          valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ; 
+        case CSG_CYLINDER:         intersect_leaf_cylinder(         valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_BOX3:             intersect_leaf_box3(             valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_CONE:             intersect_leaf_newcone(          valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_CONVEXPOLYHEDRON: intersect_leaf_convexpolyhedron( valid_isect, isect, node, plan,             t_min, origin, direction ) ; break ;
+        case CSG_HYPERBOLOID:      intersect_leaf_hyperboloid(      valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
-        case CSG_PLANE:            valid_isect = intersect_leaf_plane(            isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_SLAB:             valid_isect = intersect_leaf_slab(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_OLDCYLINDER:      valid_isect = intersect_leaf_oldcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_PHICUT:           valid_isect = intersect_leaf_phicut(           isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_THETACUT:         valid_isect = intersect_leaf_thetacut(         isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_OLDCONE:          valid_isect = intersect_leaf_oldcone(          isect, node->q0,               t_min, origin, direction ) ; break ;
-        case CSG_INFCYLINDER:      valid_isect = intersect_leaf_infcylinder(      isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_DISC:             valid_isect = intersect_leaf_disc(             isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_PLANE:            intersect_leaf_plane(            valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_SLAB:             intersect_leaf_slab(             valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_OLDCYLINDER:      intersect_leaf_oldcylinder(      valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_PHICUT:           intersect_leaf_phicut(           valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_THETACUT:         intersect_leaf_thetacut(         valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_OLDCONE:          intersect_leaf_oldcone(          valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_INFCYLINDER:      intersect_leaf_infcylinder(      valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
+        case CSG_DISC:             intersect_leaf_disc(             valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
 #endif
     }
     // NB: changing typecode->imp mapping is a handy way to use old imp with current geometry 
@@ -290,6 +290,5 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
     **/
 
 #endif
-    return valid_isect ; 
 }
 

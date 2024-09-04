@@ -390,7 +390,7 @@ Need to sort a small number of distances
 #ifdef WITH_CONTIGUOUS
 
 INTERSECT_FUNC
-bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNode* root, 
+void intersect_node_contiguous( bool& valid_isect, float4& isect, const CSGNode* node, const CSGNode* root, 
        const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
 {
     const int num_sub = node->subNum() ; 
@@ -420,7 +420,10 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     for(int i=0 ; i < num_sub ; i++)
     {
         const CSGNode* sub_node = root+offset_sub+i ; 
-        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ))
+
+        bool sub_isect_valid = false ; 
+        intersect_leaf( sub_isect_valid, sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz );
+        if(sub_isect_valid)
         {
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
 #ifdef DEBUG
@@ -449,12 +452,12 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     //
     if(exit_count == 0) 
     {
-        bool valid_intersect = nearest_enter.w > t_min && nearest_enter.w < RT_DEFAULT_MAX ; 
-        if(valid_intersect) isect = nearest_enter ;
+        valid_isect = nearest_enter.w > t_min && nearest_enter.w < RT_DEFAULT_MAX ; 
+        if(valid_isect) isect = nearest_enter ;
 #ifdef DEBUG
         printf("//intersect_node_contiguous : outside early exit   %10.4f %10.4f %10.4f %10.4f \n", isect.x, isect.y, isect.z, isect.w );  
 #endif
-        return valid_intersect ;   
+        return ;   
     }
 
 
@@ -479,7 +482,10 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
     for(int isub=0 ; isub < num_sub ; isub++)
     {
         const CSGNode* sub_node = root+offset_sub+isub ; 
-        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz))
+
+        bool sub_isect_valid = false ; 
+        intersect_leaf( sub_isect_valid, sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz); 
+        if(sub_isect_valid)
         {
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
             if( sub_state == State_Enter)
@@ -592,7 +598,9 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
 
         if(tminAdvanced < farthest_exit.w)  // enter[idx[i]]+propagate_epsilon < "farthest_contiguous_exit" so far    
         {  
-            if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction, dumpxyz))
+            bool sub_isect_valid = false ; 
+            intersect_leaf( sub_isect_valid, sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction, dumpxyz);
+            if(sub_isect_valid)
             {
                 sub_state = CSG_CLASSIFY( sub_isect, ray_direction, tminAdvanced ); 
                 if( sub_state == State_Exit ) 
@@ -608,12 +616,11 @@ bool intersect_node_contiguous( float4& isect, const CSGNode* node, const CSGNod
         }
     }
 
-    bool valid_intersect = exit_count > 0 && farthest_exit.w > t_min ; 
-    if(valid_intersect) isect = farthest_exit ;  
+    valid_isect = exit_count > 0 && farthest_exit.w > t_min ; 
+    if(valid_isect) isect = farthest_exit ;  
 #ifdef DEBUG
-     printf("//intersect_node_contiguous valid_intersect %d  (%10.4f %10.4f %10.4f %10.4f) \n", valid_intersect, isect.x, isect.y, isect.z, isect.w ); 
+     printf("//intersect_node_contiguous valid_isect %d  (%10.4f %10.4f %10.4f %10.4f) \n", valid_isect, isect.x, isect.y, isect.z, isect.w ); 
 #endif
-    return valid_intersect ; 
 }
 
 #endif
@@ -645,7 +652,7 @@ makes the implementation straightforward and hence fast:
 
 
 INTERSECT_FUNC
-bool intersect_node_discontiguous( float4& isect, const CSGNode* node, const CSGNode* root, 
+void intersect_node_discontiguous(bool& valid_isect,  float4& isect, const CSGNode* node, const CSGNode* root, 
      const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz )
 {
     const unsigned num_sub = node->subNum() ; 
@@ -657,13 +664,15 @@ bool intersect_node_discontiguous( float4& isect, const CSGNode* node, const CSG
     for(unsigned isub=0 ; isub < num_sub ; isub++)
     {
         const CSGNode* sub_node = root+offset_sub+isub ; 
-        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz))
+        bool sub_isect_valid(false); 
+        intersect_leaf( sub_isect_valid, sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz);
+        if(sub_isect_valid)
         {
             if( sub_isect.w < closest.w ) closest = sub_isect ;  
         }
     }
 
-    bool valid_isect = closest.w < RT_DEFAULT_MAX ; 
+    valid_isect = closest.w < RT_DEFAULT_MAX ; 
     if(valid_isect) 
     {
         isect = closest ;  
@@ -674,7 +683,6 @@ bool intersect_node_discontiguous( float4& isect, const CSGNode* node, const CSG
        num_sub, closest.w ); 
 #endif
 
-    return valid_isect ; 
 }
  
 
@@ -809,7 +817,7 @@ No overlap as::
 
 
 INTERSECT_FUNC
-bool intersect_node_overlap( float4& isect, const CSGNode* node, const CSGNode* root, 
+void intersect_node_overlap( bool& valid_isect, float4& isect, const CSGNode* node, const CSGNode* root, 
         const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin, const float3& ray_direction, bool dumpxyz)
 {
     const unsigned num_sub = node->subNum() ; 
@@ -827,7 +835,10 @@ bool intersect_node_overlap( float4& isect, const CSGNode* node, const CSGNode* 
     for(unsigned isub=0 ; isub < num_sub ; isub++)
     {
         const CSGNode* sub_node = root+offset_sub+isub ; 
-        if(intersect_leaf( sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz ))
+
+        bool sub_isect_valid(false);   
+        intersect_leaf( sub_isect_valid, sub_isect, sub_node, plan, itra, t_min, ray_origin, ray_direction, dumpxyz );
+        if(sub_isect_valid)
         {
             sub_state = CSG_CLASSIFY( sub_isect, ray_direction, t_min ); 
             if(sub_state == State_Enter)
@@ -836,7 +847,9 @@ bool intersect_node_overlap( float4& isect, const CSGNode* node, const CSGNode* 
                 if( sub_isect.w > farthest_enter.w ) farthest_enter = sub_isect ;  
 
                 float tminAdvanced = sub_isect.w + propagate_epsilon ; 
-                if(intersect_leaf( sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction, dumpxyz))
+
+                intersect_leaf( sub_isect_valid, sub_isect, sub_node, plan, itra, tminAdvanced , ray_origin, ray_direction, dumpxyz);
+                if(sub_isect_valid)
                 {
                     sub_state = CSG_CLASSIFY( sub_isect, ray_direction, tminAdvanced ); 
                     if( sub_state == State_Exit ) 
@@ -858,7 +871,7 @@ bool intersect_node_overlap( float4& isect, const CSGNode* node, const CSGNode* 
     // if no Enter encountered farthest_enter.w stays t_min
     // if no Exit encountered nearest_exit.w  stays RT_DEFAULT_MAX 
 
-    bool valid_isect = false ;  
+    valid_isect = false ;  
     bool overlap_all = farthest_enter.w < nearest_exit.w && max(enter_count, exit_count) == num_sub ; 
     if(overlap_all)  
     {
@@ -879,7 +892,6 @@ bool intersect_node_overlap( float4& isect, const CSGNode* node, const CSGNode* 
        num_sub, enter_count, exit_count, overlap_all, valid_isect, farthest_enter.w, nearest_exit.w ); 
 #endif
 
-    return valid_isect ; 
 }
  
 
@@ -899,7 +911,7 @@ Three level layout tree-node-leaf is needed to avoid intersect_node recursion wh
 
 
 INTERSECT_FUNC
-bool intersect_node( float4& isect, const CSGNode* node, const CSGNode* root, 
+void intersect_node( bool& valid_isect, float4& isect, const CSGNode* node, const CSGNode* root, 
        const float4* plan, const qat4* itra, const float t_min , const float3& ray_origin , const float3& ray_direction, bool dumpxyz )
 {
     const unsigned typecode = node->typecode() ;  
@@ -908,22 +920,21 @@ bool intersect_node( float4& isect, const CSGNode* node, const CSGNode* root,
     printf("//intersect_node typecode %d name %s \n", typecode, CSG::Name(typecode) ); 
 #endif
 
-    bool valid_isect = false ; 
+    valid_isect = false ; 
     switch(typecode)
     {
 #ifdef WITH_CONTIGUOUS
-       case CSG_CONTIGUOUS:     valid_isect = intersect_node_contiguous(   isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
+       case CSG_CONTIGUOUS:     intersect_node_contiguous(    valid_isect, isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
 #endif
-       case CSG_OVERLAP:        valid_isect = intersect_node_overlap(      isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
-       case CSG_DISCONTIGUOUS:  valid_isect = intersect_node_discontiguous(isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
-                   default:     valid_isect = intersect_leaf(              isect, node,       plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
+       case CSG_OVERLAP:        intersect_node_overlap(       valid_isect, isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
+       case CSG_DISCONTIGUOUS:  intersect_node_discontiguous( valid_isect, isect, node, root, plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
+                   default:     intersect_leaf(               valid_isect, isect, node,       plan, itra, t_min, ray_origin, ray_direction, dumpxyz )  ; break ; 
     }
 
 #ifdef DEBUG_PIDXYZ
     //if(dumpxyz) printf("//intersect_node valid_isect:%d \n", valid_isect ); 
 #endif
 
-    return valid_isect ; 
 }
 
 /**
