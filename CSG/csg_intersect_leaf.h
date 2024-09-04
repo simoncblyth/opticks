@@ -235,25 +235,50 @@ void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const
 #if defined(DEBUG_PIDXYZ)
     // HMM MAGIC ACTIVE HERE TOO
     //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
-    //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d  isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, isect.x, isect.y, isect.z, isect.w, complement ); 
+    //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d                isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode,              isect.x, isect.y, isect.z, isect.w, complement ); 
     //if(dumpxyz) printf("//[intersect_leaf.MAGIC typecode %d \n",  typecode ); 
-    if(dumpxyz) printf("//[intersect_leaf.MAGIC \n"); 
+    //if(dumpxyz) printf("//[intersect_leaf.MAGIC \n"); 
 
     /**
     when applying the MAGIC here just a string will do 
     **/
 #endif
 
-    if(valid_isect)
-    {
-        if(q) q->left_multiply_inplace( isect, 0.f ) ;  
-        // normals transform differently : with inverse-transform-transposed 
-        // so left_multiply the normal by the inverse-transform rather than the right_multiply 
-        // done above to get the inverse transformed origin and direction
-        //const unsigned boundary = node->boundary();  ???
+  
+//#define WITH_HEISENBUG 1
+#if !defined(WITH_HEISENBUG)
 
-        if(complement)  // flip normal for complement 
-        {
+   if(valid_isect && q ) q->left_multiply_inplace( isect, 0.f ) ;  
+    // normals transform differently : with inverse-transform-transposed 
+    // so left_multiply the normal by the inverse-transform rather than the right_multiply 
+    // done above to get the inverse transformed origin and direction
+
+
+    /// BIZARRO : RE-EXPRESSING THE MISS-COMPLEMENT-SIGNALLING IMPL FROM THE ABOVE TO A 
+    /// TERSE FORM BELOW (WHICH SHOULD DO EFFECTIVELY THE SAME THING)
+    /// AVOIDS THE HEISENBUG : NO NEED FOR MAGIC PRINTF IN intersect_leaf
+
+    if(complement)
+    {
+        if(dumpxyz) printf("// intersect_leaf complement %d valid_isect %d \n", complement, valid_isect );
+
+        // flip normal for hit, signal complement for miss 
+        isect.x = valid_isect ? -isect.x : -0.f ;    // miss needs to signal complement with -0.f signbit 
+        isect.y = valid_isect ? -isect.y : isect.y ; // miss unbounded exit signalled in isect.y for intersect_tree
+        isect.z = valid_isect ? -isect.z : isect.z ; 
+    }
+
+#else
+    /// CAUTION : SOMETHING ABOUT THE BELOW MISS-COMPLEMENT-SIGNALLING 
+    /// CODE CAUSES OPTIX 7.5 AND 8.0 HEISENBUG WITH CUDA 12.4 AS REVEALED 
+    /// WITH RTX 5000 Ada GENERATION GPU
+
+     if(valid_isect)
+     {
+         if(q) q->left_multiply_inplace( isect, 0.f ); 
+
+         if(complement)  // flip normal for complement 
+         {
             isect.x = -isect.x ;
             isect.y = -isect.y ;
             isect.z = -isect.z ;
@@ -261,13 +286,14 @@ void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const
     }   
     else
     {
-         // even for miss need to signal the complement with a -0.f in isect.x
-         if(complement) isect.x = -isect.x ;  
-         // note that isect.y is also flipped for unbounded exit : for consumption by intersect_tree
+        // even for miss need to signal the complement with a -0.f in isect.x
+        if(complement) isect.x = -0.f ;
+        // note that isect.y is also flipped for unbounded exit : for consumption by intersect_tree
     }
+#endif
+
 
     // NOTICE THAT "VALID_ISECT" IS A BIT MIS-NAMED : AS FALSE JUST MEANS A GEOMETRY MISS 
-
 
 #if !defined(PRODUCTION) && defined(DEBUG_RECORD)
     printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 

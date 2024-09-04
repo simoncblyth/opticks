@@ -3,6 +3,12 @@ rtx-5000-ada-generation-cuda-12p4-driver-550p76-some-analytic-geometry-skipped
 
 Follow on from ~/j/issues/opticks-from-scratch-in-blyth-account-on-rtx-5000-ada-generation-machine.rst
 
+Next:
+
+* :doc:`rtx-5000-ada-generation-cuda-12p4-driver-550p76-heisenbug-boolean-csg`
+
+
+
 Comparing:
 
 +-----------+-------------+----------------+
@@ -149,6 +155,9 @@ CUDA/OptiX Heisenbug
 ---------------------
 
 * https://forums.developer.nvidia.com/t/printf-in-kernel-changes-results/25095
+
+* :doc:`rtx-5000-ada-generation-cuda-12p4-driver-550p76-heisenbug-boolean-csg`
+
 
 
 How to capture ? 

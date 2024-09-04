@@ -666,14 +666,13 @@ COULD: reduce HitGroupData to just the nodeOffset
 extern "C" __global__ void __intersection__is()
 {
 
-#if defined(DEBUG_PIDX)
+#if defined(DEBUG_PIDXYZ)
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
-    //bool dump = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ; 
-    bool dump = idx.x == params.pidxyz.x && idx.y == params.pidxyz.y && idx.z == params.pidxyz.z ; 
-    if(dump) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dump:%d \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dump); 
+    bool dumpxyz = idx.x == params.pidxyz.x && idx.y == params.pidxyz.y && idx.z == params.pidxyz.z ; 
+    //if(dumpxyz) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dumpxyz:%d \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dumpxyz); 
 #else
-    bool dump = false ; 
+    bool dumpxyz = false ; 
 #endif
 
 
@@ -694,7 +693,7 @@ extern "C" __global__ void __intersection__is()
     isect.z = 0.f ; 
     isect.w = 0.f ; 
 
-    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dump ); 
+    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dumpxyz ); 
     if(valid_isect)
     {
         const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
@@ -723,8 +722,8 @@ extern "C" __global__ void __intersection__is()
         // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
     }
 
-#if defined(DEBUG_PIDX)
-    if(dump) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dump:%d valid_isect:%d\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dump, valid_isect); 
+#if defined(DEBUG_PIDXYZ)
+    //if(dumpxyz) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dumpxyz:%d valid_isect:%d\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dumpxyz, valid_isect); 
 #endif
 
 
