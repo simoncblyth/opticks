@@ -248,6 +248,8 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
          // note that isect.y is also flipped for unbounded exit : for consumption by intersect_tree
     }
 
+    // NOTICE THAT "VALID_ISECT" IS A BIT MIS-NAMED : AS FALSE JUST MEANS A GEOMETRY MISS 
+
 
 #if !defined(PRODUCTION) && defined(DEBUG_RECORD)
     printf("//]intersect_leaf typecode %d name %s valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f)   \n", typecode, CSG::Name(typecode), valid_isect, isect.x, isect.y, isect.z, isect.w); 
@@ -255,16 +257,21 @@ bool intersect_leaf( float4& isect, const CSGNode* node, const float4* plan, con
 
 #if defined(DEBUG_PIDXYZ)
     // BIZARRELY WITH OptiX 7.5.0 CUDA 12.4 "RTX 5000 Ada Generation" : commenting the below line breaks boolean intersects 
-    // PRELIM FIND THAT WITH OptiX 8.0.0 CUDA 12.4 DONT GET THE ISSUE 
+    // NOPE SAME WITH OptiX 8.0.0 CUDA 12.4 "RTX 5000 Ada Generation" 
 
     //if(dumpxyz) printf("%d\n", valid_isect );  // HUH : NEED THIS LINE WITH OPTIX 7.5 CUDA 12.4 RTX 5000 ADA
-
     //if(dumpxyz) printf("//]intersect_leaf typecode %d valid_isect %d isect (%10.4f %10.4f %10.4f %10.4f) complement %d \n",  typecode, valid_isect, isect.x, isect.y, isect.z, isect.w, complement ); 
+
+    //if(dumpxyz) printf("//hello\n"); 
     //if(dumpxyz) printf("//]intersect_leaf typecode %d \n", typecode );
     //if(dumpxyz) printf("//]intersect_leaf isect (%10.4f %10.4f %10.4f %10.4f) \n", isect.x, isect.y, isect.z, isect.w ); 
     //if(dumpxyz) printf("//]intersect_leaf complement %d \n", complement );
-#endif
 
+    /**
+    Seems have to potentially dump valid_isect here for the restorative sorcery to work 
+    **/
+
+#endif
     return valid_isect ; 
 }
 

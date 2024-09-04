@@ -178,7 +178,7 @@ logging(){
 
 #[ -n "$HOP" ] && echo $BASH_SOURCE ENABLE FRAME_HOPPING WHICH NEEDS DEBUGGING  && 
 export CSGOptiXRenderInteractiveTest__FRAME_HOP=1
-export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
+#export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
 
 
 
