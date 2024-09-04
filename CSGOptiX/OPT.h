@@ -2,6 +2,17 @@
 
 #include "sstr.h"
 
+/**
+OPT.h
+======
+
+
+From 800 the OPTIX_EXCEPTION_FLAG_DEBUG is removed::
+
+    vimdiff OptiX_770/include/optix_types.h OptiX_800/include/optix_types.h
+
+**/
+
 struct OPT
 {
     static constexpr const bool VERBOSE = false ; 
@@ -42,7 +53,11 @@ struct OPT
     static constexpr const char* OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ = "OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW" ; 
     static constexpr const char* OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_    = "OPTIX_EXCEPTION_FLAG_TRACE_DEPTH" ; 
     static constexpr const char* OPTIX_EXCEPTION_FLAG_USER_           = "OPTIX_EXCEPTION_FLAG_USER_" ; 
+#if OPTIX_VERSION <= 70700
     static constexpr const char* OPTIX_EXCEPTION_FLAG_DEBUG_          = "OPTIX_EXCEPTION_FLAG_DEBUG" ; 
+#endif
+
+
 
 };
 
@@ -193,7 +208,9 @@ inline OptixExceptionFlags OPT::ExceptionFlags_(const char* opt)
     else if( strcmp(opt, "STACK_OVERFLOW") == 0) flag = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW ; 
     else if( strcmp(opt, "TRACE_DEPTH") == 0)    flag = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH  ; 
     else if( strcmp(opt, "USER") == 0)           flag = OPTIX_EXCEPTION_FLAG_USER  ; 
+#if OPTIX_VERSION <= 70700
     else if( strcmp(opt, "DEBUG") == 0)          flag = OPTIX_EXCEPTION_FLAG_DEBUG  ; 
+#endif
     else 
     {
         std::cerr 
@@ -218,7 +235,9 @@ inline const char* OPT::ExceptionFlags__(OptixExceptionFlags excFlag)
         case OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW: s = OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_  ; break ;
         case OPTIX_EXCEPTION_FLAG_TRACE_DEPTH:    s = OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_     ; break ; 
         case OPTIX_EXCEPTION_FLAG_USER:           s = OPTIX_EXCEPTION_FLAG_USER_            ; break ; 
+#if OPTIX_VERSION <= 70700
         case OPTIX_EXCEPTION_FLAG_DEBUG:          s = OPTIX_EXCEPTION_FLAG_DEBUG_           ; break ;      
+#endif
     }
     return s ; 
 }
@@ -250,7 +269,9 @@ inline std::string OPT::Desc_ExceptionFlags( unsigned flags )
     if( flags & OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW ) ss << OPTIX_EXCEPTION_FLAG_STACK_OVERFLOW_ << " " ; 
     if( flags & OPTIX_EXCEPTION_FLAG_TRACE_DEPTH )    ss << OPTIX_EXCEPTION_FLAG_TRACE_DEPTH_ << " " ; 
     if( flags & OPTIX_EXCEPTION_FLAG_USER )           ss << OPTIX_EXCEPTION_FLAG_USER_ << " " ; 
+#if OPTIX_VERSION <= 70700
     if( flags & OPTIX_EXCEPTION_FLAG_DEBUG )          ss << OPTIX_EXCEPTION_FLAG_DEBUG_ << " " ; 
+#endif
     std::string str = ss.str() ; 
     return str ; 
 }
