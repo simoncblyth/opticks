@@ -5569,7 +5569,7 @@ inline NP* NP::Concatenate(const char* dir, const std::vector<std::string>& name
 template<typename T>
 inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static 
 {
-    int num_a = aa.size(); 
+    [[maybe_unused]] int num_a = aa.size(); 
     assert( num_a > 0 ); 
     auto a0 = aa[0] ; 
     
