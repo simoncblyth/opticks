@@ -155,7 +155,8 @@ static __forceinline__ __device__ void trace(
 #endif
 }
 
-#if !defined(PRODUCTION) && defined(WITH_RENDER)
+//#if !defined(PRODUCTION) && defined(WITH_RENDER)
+#if defined(WITH_RENDER)
 
 __forceinline__ __device__ uchar4 make_color( const float3& normal )  // pure 
 {
@@ -236,6 +237,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         float3 position = origin + direction*prd->distance() ;
         params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ; 
     }
+
+
 }
 #endif
  
@@ -326,7 +329,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
 
 
-#if !defined(PRODUCTION) && defined(WITH_SIMTRACE)
+//#if !defined(PRODUCTION) && defined(WITH_SIMTRACE)
+#if defined(WITH_SIMTRACE)
 
 /**
 simtrace
@@ -403,12 +407,13 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
+    //bool midpix = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ; 
+    //if(midpix) printf("//__raygen_rg.midpix params.raygenmode %d  \n", params.raygenmode); 
+
     quad2 prd ; 
     prd.zero(); 
 
-
   
-#ifndef PRODUCTION
     switch( params.raygenmode )
     {
 
@@ -422,9 +427,7 @@ extern "C" __global__ void __raygen__rg()
         case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
 #endif
     }
-#else
-    simulate( idx, dim, &prd ) ;
-#endif
+
 } 
 
 

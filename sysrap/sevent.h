@@ -189,8 +189,8 @@ struct sevent
 
 #ifndef PRODUCTION
     SEVENT_METHOD void add_rec( srec& r, unsigned idx, unsigned bounce, const sphoton& p); 
-    SEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
 #endif
+    SEVENT_METHOD void add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin ); 
 
 }; 
 
@@ -510,6 +510,7 @@ SEVENT_METHOD void  sevent::add_rec( srec& r, unsigned idx, unsigned bounce, con
 
     rec[max_rec*idx+bounce] = r ;      
 }
+#endif
 
 /**
 sevent::add_simtrace : fills simtrace[idx] with values from p, prd  
@@ -552,5 +553,4 @@ SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const qua
 
     simtrace[idx] = a ;
 }
-#endif
 

@@ -42,31 +42,13 @@ P::
 
 
 
-NOT RELIABLY : ssh P->A, display P, GPU from A, console on P "DISPLAY=:1"
+WORKS SLOWLY : ssh P->A, display P, GPU from A, console on A 
 -----------------------------------------------------------------------------
-
-* "BY MISTAKE" THIS MANAGED TO WORK ONCE : BUT WAS SLOW
-* UNCLEAR WHY WOULD WANT TO DO THIS : AT LEAST IN CURRENT CONTEXT  
-
 
 P::
 
-    [blyth@localhost ~]$ ssh A
-    ...
-    [blyth@localhost ~]$ DISPLAY=:0 ~/o/cx.sh 
-
-    2024-09-05 11:02:08.761 INFO  [292201] [CSGOptiX::initPIDXYZ@703]  params->pidxyz (4294967295,4294967295,4294967295) 
-    SGLFW::Error_callback: X11: Failed to open display :0
-
-
-Try again with changed ~/.ssh/config on P::
-
-    [blyth@localhost ~]$ grep -A4 host\ A ~/.ssh/config
-    host A
-        user blyth
-        hostname 192.168.185.246
-        ForwardX11 yes
-        ForwardX11Trusted yes
+    P[blyth@localhost issues]$ ssh A
+    A[blyth@localhost ~]$ ~/o/cx.sh     ## NOTE NO DISPLAY 
 
 
 
