@@ -314,7 +314,7 @@ inline void sstr::StripTail_Unique( std::vector<std::string>& keys, const std::v
     StripTail( stripped, src, end ); 
 
     int num_src = src.size(); 
-    int num_stripped = stripped.size(); 
+    [[maybe_unused]] int num_stripped = stripped.size(); 
     assert( num_src == num_stripped ); 
 
     for(int i=0 ; i < num_src ; i++)
@@ -348,7 +348,7 @@ inline std::string sstr::DescKeySrc(const std::vector<std::string>& key, const s
     std::stringstream ss ;  
     ss << "sstr::DescKeySrc" << std::endl ; 
     int num_src = src.size(); 
-    int num_key = key.size(); 
+    [[maybe_unused]] int num_key = key.size(); 
     assert( num_src == num_key );  
 
     for(int i=0 ; i < num_src ; i++)
