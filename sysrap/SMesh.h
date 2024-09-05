@@ -160,7 +160,7 @@ inline SMesh* SMesh::Concatenate(std::vector<const SMesh*>& submesh, int ridx )
         const NP* _nrm = sub->nrm ;  
          
         int num_vtx = _vtx->num_items() ; 
-        int num_nrm = _nrm->num_items() ; 
+        [[maybe_unused]] int num_nrm = _nrm->num_items() ; 
         assert( num_vtx == num_nrm ); 
 
         subtri.push_back(NP::Incremented(_tri, tot_vtx)) ; 
@@ -454,7 +454,7 @@ inline std::string SMesh::Desc2D(const NP* a, const NP* b, int limit, const char
         int a_nj = a->shape[1] ; 
 
         const S* b_vv = b->cvalues<T>(); 
-        int b_ni = b->shape[0] ; 
+        [[maybe_unused]] int b_ni = b->shape[0] ; 
         int b_nj = b->shape[1] ; 
 
         assert( a_ni == b_ni ); 
@@ -555,7 +555,7 @@ inline std::string SMesh::Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  int
         int a_nj = a->shape[1] ;
 
         const float* b_vv = b->cvalues<float>(); 
-        int b_ni = b->shape[0] ; 
+        [[maybe_unused]] int b_ni = b->shape[0] ; 
         int b_nj = b->shape[1] ;
      
         for(int i=0 ; i < a_ni ; i++)

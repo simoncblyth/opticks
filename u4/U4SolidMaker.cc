@@ -2057,7 +2057,7 @@ U4SolidMaker::AltLocalFastenerAcrylicConstruction
 
 const G4VSolid* U4SolidMaker::AltLocalFastenerAcrylicConstruction(const char* name) // static
 {
-    const char* PREFIX = "AltLocalFastenerAcrylicConstruction" ; 
+    [[maybe_unused]] const char* PREFIX = "AltLocalFastenerAcrylicConstruction" ; 
     assert( sstr::StartsWith(name,PREFIX ));
     long num_column = sstr::ExtractLong(name, 1) ; 
 

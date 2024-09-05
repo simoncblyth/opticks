@@ -3445,8 +3445,8 @@ template<int N, typename T> inline void NP::minmax2D_reshaped(T* mn, T* mx, int 
     change_shape(-1,N); 
 
     assert( shape.size() == 2 ); 
-    int ni = shape[0] ; 
-    int nj = shape[1] ; 
+    [[maybe_unused]] int ni = shape[0] ; 
+    [[maybe_unused]] int nj = shape[1] ; 
     assert( nj == N && ni > 0 ); 
 
     minmax2D<T>(mn, mx, item_stride, item_offset ); 

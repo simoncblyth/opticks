@@ -1790,7 +1790,7 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) co
     int lvid ; 
     int lvid_ordinal ;
     int repeat_ordinal ;
-    int rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
+    [[maybe_unused]] int rc = parse_spec( lvid, lvid_ordinal, repeat_ordinal, q_spec ); 
     assert( rc == 0 ); 
     int inst_idx = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal ); 
     return inst_idx ;
@@ -1831,7 +1831,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
     f.set_name(q_spec); 
 
 
-    int get_rc = 0 ; 
+    [[maybe_unused]] int get_rc = 0 ; 
     if( repeat_ordinal == -1 )
     {
         get_rc = get_frame_global(  f,  lvid, lvid_ordinal, repeat_ordinal );
@@ -3922,7 +3922,7 @@ Indices of ranges of the 3 types of compound solids:
 
 inline char stree::get_ridx_type(int ridx) const
 {
-    int num_ridx = get_num_ridx();
+    [[maybe_unused]] int num_ridx = get_num_ridx();
     int num_rem = get_num_remainder();
     int num_fac = get_num_factor();
     int num_tri = get_num_triangulated(); 
@@ -4453,13 +4453,13 @@ inline std::string stree::desc_inst_info() const
 inline std::string stree::desc_inst_info_check() const
 {
     int num_gas  = inst_info.size(); 
-    int num_inst = inst.size(); 
+    [[maybe_unused]] int num_inst = inst.size(); 
     int tot = 0 ; 
     int tot_count = 0 ; 
     for(int i=0 ; i < num_gas ; i++)
     {   
         const int4&  _inst_info = inst_info[i] ;
-        int ridx = _inst_info.x ; 
+        [[maybe_unused]] int ridx = _inst_info.x ; 
         int count = _inst_info.y ; 
         int offset = _inst_info.z ; 
 
@@ -4468,7 +4468,7 @@ inline std::string stree::desc_inst_info_check() const
         assert( ridx == i );  
         for(int j=0 ; j < count ; j++)
         {   
-            int idx = offset + j ; 
+            [[maybe_unused]] int idx = offset + j ; 
             assert( idx < num_inst );  
             assert( idx == tot );  
             tot += 1 ; 
@@ -4503,7 +4503,7 @@ inline int stree::find_inst_gas( int q_gas_idx, int q_gas_ordinal ) const
 
     const int4& _inst_info = inst_info[q_gas_idx] ;
 
-    int ridx = _inst_info.x ; 
+    [[maybe_unused]] int ridx = _inst_info.x ; 
     int count = _inst_info.y ; 
     int offset = _inst_info.z ; 
 

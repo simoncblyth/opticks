@@ -127,7 +127,7 @@ Gives expected translations : WARNING : ROTATION UNTESTED
 
 inline void U4Transform::GetMultiUnionItemTransform(  glm::tmat4x4<double>& xf, const G4MultiUnion* const muni, unsigned item )
 {
-    unsigned num_item = muni->GetNumberOfSolids() ; 
+    [[maybe_unused]] unsigned num_item = muni->GetNumberOfSolids() ; 
     assert( item < num_item ); 
     const G4Transform3D& tr = muni->GetTransformation(item) ;
     Convert_TranslateThenRotate(xf,  tr ); 

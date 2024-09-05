@@ -281,6 +281,7 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
     size_t sizeof_log = 0 ; 
     char log[2048]; // For error reporting from OptiX creation functions
 
+#if OPTIX_VERSION <= 70600
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
                 Ctx::context,
                 &module_compile_options,
@@ -291,6 +292,19 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
                 &sizeof_log,
                 &module
                 ) );
+#else
+    OPTIX_CHECK_LOG( optixModuleCreate(
+                Ctx::context,
+                &module_compile_options,
+                &pipeline_compile_options,
+                ptx.c_str(),
+                ptx.size(),
+                log,
+                &sizeof_log,
+                &module
+                ) );
+
+#endif
 
     return module ; 
 }
@@ -452,10 +466,12 @@ std::string PIP::Desc_PipelineLinkOptions(const OptixPipelineLinkOptions& pipeli
     ss 
        << "[PIP::Desc_PipelineLinkOptions" << std::endl 
        << " pipeline_link_options.maxTraceDepth " << pipeline_link_options.maxTraceDepth << std::endl 
+#if OPTIX_VERSION <= 70600
        << " pipeline_link_options.debugLevel    " << pipeline_link_options.debugLevel 
        << " " << OPT::DebugLevel_(pipeline_link_options.debugLevel ) 
        << std::endl
-       << " PIP__linkPipeline_debugLevel " << linkPipeline_debugLevel 
+       << " PIP__linkPipeline_debugLevel " << linkPipeline_debugLevel
+#endif
        << std::endl
        << "]PIP::Desc_PipelineLinkOptions" << std::endl 
        ;
@@ -473,11 +489,12 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 
 #if OPTIX_VERSION == 70000
     pipeline_link_options.overrideUsesMotionBlur = false;
-#elif OPTIX_VERSION == 70500
 #endif
 
+#if OPTIX_VERSION <= 70600
     OptixCompileDebugLevel debugLevel = OPT::DebugLevel(linkPipeline_debugLevel)  ; 
     pipeline_link_options.debugLevel = debugLevel;
+#endif
 
     size_t sizeof_log = 0 ; 
     char log[2048]; 
@@ -531,9 +548,18 @@ void PIP::configureStack()
     // following OptiX_700/SDK/optixPathTracer/optixPathTracer.cpp
 
     OptixStackSizes stackSizes = {};
+
+#if OPTIX_VERSION <= 70600
     OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes ) ); 
     OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes ) ); 
     OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes ) ); 
+#else
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes, pipeline ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes, pipeline ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes, pipeline ) ); 
+#endif
+
+
 
     uint32_t max_trace_depth = 1;   // only RG invokes trace, no recursion   
     uint32_t max_cc_depth = 0; 

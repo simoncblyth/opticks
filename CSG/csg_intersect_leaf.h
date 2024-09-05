@@ -260,7 +260,9 @@ void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const
 
     if(complement)
     {
-        if(dumpxyz) printf("// intersect_leaf complement %d valid_isect %d \n", complement, valid_isect );
+#if defined(DEBUG_PIDXYZ)
+        //if(dumpxyz) printf("// intersect_leaf complement %d valid_isect %d \n", complement, valid_isect );
+#endif
 
         // flip normal for hit, signal complement for miss 
         isect.x = valid_isect ? -isect.x : -0.f ;    // miss needs to signal complement with -0.f signbit 

@@ -874,7 +874,7 @@ const G4VPhysicalVolume* U4VolumeMaker::LocalFastenerAcrylicConstruction(const c
     G4LogicalVolume* object_lv = LV(name, "G4_Pb" ) ; 
 
     const G4VPhysicalVolume* universe_pv = new G4PVPlacement(0,G4ThreeVector(),  universe_lv ,  "universe_pv", nullptr,false,0);
-    const G4VPhysicalVolume* object_pv = new G4PVPlacement(0,G4ThreeVector(), object_lv ,"object_pv", universe_lv,false,0);
+    [[maybe_unused]] const G4VPhysicalVolume* object_pv = new G4PVPlacement(0,G4ThreeVector(), object_lv ,"object_pv", universe_lv,false,0);
     assert( object_pv ); 
 
     return universe_pv ; 

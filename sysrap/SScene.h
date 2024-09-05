@@ -190,7 +190,7 @@ inline void SScene::initFromTree(const stree* st)
 
 inline void SScene::initFromTree_Remainder(const stree* st)
 {
-    int num_rem = st->get_num_remainder(); 
+    [[maybe_unused]] int num_rem = st->get_num_remainder(); 
     assert( num_rem == 1 ); 
     int ridx = 0 ; 
     initFromTree_Global( st, 'R', ridx ); 
@@ -482,7 +482,7 @@ inline std::string SScene::descFrame() const
 inline std::string SScene::descRange() const
 {
     int num_mm = meshmerge.size(); 
-    int num_mg = meshgroup.size(); 
+    [[maybe_unused]] int num_mg = meshgroup.size(); 
     assert( num_mm == num_mg ); 
     int num = num_mm ; 
 
