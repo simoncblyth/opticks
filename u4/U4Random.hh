@@ -73,6 +73,7 @@ Steps to fix:
     static int       GetSequenceIndex(); 
 
     const char*              m_seqpath ; 
+    bool                     m_seqpath_exists ; 
     const NP*                m_seq;  
     const float*             m_seq_values ; 
     int                      m_seq_ni ; 

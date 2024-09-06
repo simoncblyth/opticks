@@ -41,6 +41,7 @@ gdb__ ()
 name=U4RandomTest 
 export U4Random=INFO
 
+defarg=dbg
 arg=${1:-$defarg}
 
 

@@ -11,10 +11,10 @@
 #include "U4StackAuto.h"
 
 #include "NP.hh"
-#include "SPath.hh"
-#include "SEvt.hh"
-#include "SSys.hh"
+#include "spath.h"
+#include "ssys.h"
 
+#include "SEvt.hh"
 #include "SBacktrace.h"
 #include "SDBG.h"
 
@@ -51,7 +51,7 @@ int U4Random::GetSequenceIndex()
 
 
 
-const char* U4Random::SeqPath(){ return SSys::getenvvar(OPTICKS_RANDOM_SEQPATH, DEFAULT_SEQPATH ) ; } // static  
+const char* U4Random::SeqPath(){ return ssys::getenvvar(OPTICKS_RANDOM_SEQPATH, DEFAULT_SEQPATH ) ; } // static  
 
 
 
@@ -82,26 +82,27 @@ to be envvar OR SEventConfig based and eliminate the U4Random arguments
 
 U4Random::U4Random(const char* seq, const char* seqmask)
     :
-    m_seqpath(SPath::Resolve( seq ? seq : SeqPath(), NOOP)), 
-    m_seq(m_seqpath ? NP::Load(m_seqpath) : nullptr),
+    m_seqpath(spath::Resolve( seq ? seq : SeqPath())), 
+    m_seqpath_exists( NP::Exists( m_seqpath ) || NP::ExistsArrayFolder(m_seqpath) ),
+    m_seq(m_seqpath_exists ? NP::Load(m_seqpath) : nullptr),
     m_seq_values(m_seq ? m_seq->cvalues<float>() : nullptr ),
     m_seq_ni(m_seq ? m_seq->shape[0] : 0 ),                        // num items
     m_seq_nv(m_seq ? m_seq->shape[1]*m_seq->shape[2] : 0 ),        // num values in each item 
     m_seq_index(-1),
 
-    m_cur(NP::Make<int>(m_seq_ni)),
-    m_cur_values(m_cur->values<int>()),
+    m_cur(m_seq_ni > 0 ? NP::Make<int>(m_seq_ni) : nullptr),
+    m_cur_values(m_cur ? m_cur->values<int>() : nullptr),
     m_recycle(true),
     m_default(CLHEP::HepRandom::getTheEngine()),
 
     m_seqmask(seqmask ? NP::Load(seqmask) : nullptr),
     m_seqmask_ni( m_seqmask ? m_seqmask->shape[0] : 0 ),
     m_seqmask_values(m_seqmask ? m_seqmask->cvalues<size_t>() : nullptr),
-    //m_flat_debug(SSys::getenvbool("U4Random_flat_debug")),
+    //m_flat_debug(ssys::getenvbool("U4Random_flat_debug")),
     m_flat_prior(0.),
     m_ready(false),
-    m_select(SSys::getenvintvec("U4Random_select")),
-    m_select_action(SDBG::Action(SSys::getenvvar("U4Random_select_action", "backtrace")))   // "backtrace" "caller" "interrupt" "summary"
+    m_select(ssys::getenvintvec("U4Random_select")),
+    m_select_action(SDBG::Action(ssys::getenvvar("U4Random_select_action", "backtrace")))   // "backtrace" "caller" "interrupt" "summary"
 {
     init(); 
 }
@@ -145,7 +146,7 @@ bool U4Random::isSelect(int photon_idx, int flat_cursor) const
 std::string U4Random::descSelect(int photon_idx, int flat_cursor ) const
 {
     std::stringstream ss ; 
-    ss << "U4Random_select " << SSys::getenvvar("U4Random_select", "-") 
+    ss << "U4Random_select " << ssys::getenvvar("U4Random_select", "-") 
        << " m_select->size " << ( m_select ? m_select->size() : 0 )   
        ;
 

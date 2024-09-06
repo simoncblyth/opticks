@@ -270,6 +270,8 @@ struct NP
     // load array asis 
     static NP* LoadIfExists(const char* path); 
     static NP* Load(const char* path); 
+    static bool ExistsArrayFolder(const char* path ); 
+
     static NP* Load_(const char* path); 
     static NP* Load(const char* dir, const char* name); 
     static NP* Load(const char* dir, const char* reldir, const char* name); 
@@ -2839,6 +2841,7 @@ inline NP* NP::LoadIfExists(const char* path_)
     return NP::Exists(path_) ? NP::Load(path_) : nullptr ; 
 }
 
+
 inline NP* NP::Load(const char* path_)
 {
     const char* path = U::Resolve(path_); 
@@ -2875,6 +2878,28 @@ inline NP* NP::Load(const char* path_)
     if(VERBOSE) std::cerr << "] NP::Load " << path << std::endl ; 
     return a ;
 }
+
+/**
+NP::ExistsArrayFolder
+----------------------
+
+Returns true if the path does not end in .npy 
+and is a directory folder containing one or more .npy files. 
+
+**/
+
+inline bool NP::ExistsArrayFolder(const char* path )
+{
+    bool npy_ext = U::EndsWith(path, EXT) ; 
+    if(npy_ext) return false ; 
+    std::vector<std::string> nms ;
+    U::DirList(nms, path, EXT);
+    return nms.size() > 0 ; 
+}
+
+
+
+
 
 inline NP* NP::Load_(const char* path)
 {
