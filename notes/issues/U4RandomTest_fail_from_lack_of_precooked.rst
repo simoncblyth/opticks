@@ -79,3 +79,23 @@ Needs cleaner handling...
     107 }
 
 
+
+Precooked dir not being resolved by spath::Resolve
+------------------------------------------------------
+
+::
+
+    P[blyth@localhost sysrap]$ grep PrecookedDir *.*
+    SOpticksResource.cc:const char* SOpticksResource::PrecookedDir(){   return SPath::Resolve(ResolvePrecookedPrefix(), "precooked", NOOP); }
+    SOpticksResource.cc:    const char* precooked_dir = PrecookedDir() ; 
+    SOpticksResource.cc:        << "SOpticksResource::PrecookedDir()           " << ( precooked_dir ? precooked_dir : "-" )  << std::endl 
+    SOpticksResource.cc:const char* SOpticksResource::KEYS = "IDPath CFBase CFBaseAlt GeocacheDir RuncacheDir RNGDir PrecookedDir DefaultOutputDir SomeGDMLPath GDMLPath GEOMSub GEOMWrap CFBaseFromGEOM UserGEOMDir GEOMList" ; 
+    SOpticksResource.cc:|   PrecookedDir          |                                                     |
+    SOpticksResource.cc:    else if( strcmp(key, "PrecookedDir")==0)     tok = SOpticksResource::PrecookedDir(); 
+    SOpticksResource.hh:    static const char* PrecookedDir();
+    P[blyth@localhost sysrap]$ 
+
+
+
+
+

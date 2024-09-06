@@ -54,6 +54,15 @@ int U4Random::GetSequenceIndex()
 const char* U4Random::SeqPath(){ return ssys::getenvvar(OPTICKS_RANDOM_SEQPATH, DEFAULT_SEQPATH ) ; } // static  
 
 
+U4Random* U4Random::Create(const char* seq, const char* seqmask)
+{
+    U4Random* rdm = new U4Random(seq, seqmask); 
+    bool ready = rdm->isReady(); 
+    LOG_IF(fatal, !ready) << " NOT READY : \n" << rdm->detail() ;  
+    return ready ? rdm : nullptr  ; 
+}
+
+
 
 /**
 U4Random::U4Random
@@ -77,12 +86,10 @@ to be envvar OR SEventConfig based and eliminate the U4Random arguments
 
 **/
 
-
-
-
 U4Random::U4Random(const char* seq, const char* seqmask)
     :
-    m_seqpath(spath::Resolve( seq ? seq : SeqPath())), 
+    m_seqpath_( seq ? seq : SeqPath() ), 
+    m_seqpath(spath::Resolve(m_seqpath_)), 
     m_seqpath_exists( NP::Exists( m_seqpath ) || NP::ExistsArrayFolder(m_seqpath) ),
     m_seq(m_seqpath_exists ? NP::Load(m_seqpath) : nullptr),
     m_seq_values(m_seq ? m_seq->cvalues<float>() : nullptr ),
@@ -106,6 +113,7 @@ U4Random::U4Random(const char* seq, const char* seqmask)
 {
     init(); 
 }
+
 
 /**
 U4Random::isSelect
@@ -198,11 +206,16 @@ std::string U4Random::desc() const
 std::string U4Random::detail() const 
 {
     std::stringstream ss ; 
-    ss << "U4Random::detail"
-       << " m_seq " << ( m_seq ? m_seq->desc() : "-" ) << std::endl 
-       << " m_seqmask " << ( m_seqmask ? m_seqmask->desc() : "-" ) << std::endl
-       << " desc " << desc() << std::endl 
-       << " m_cur " << ( m_cur ? m_cur->desc() : "-" ) << std::endl 
+    ss << "U4Random::detail\n"
+
+       << std::setw(20) << "m_seqpath_"        << " : " << ( m_seqpath_ ? m_seqpath_ : "-" ) << "\n"
+       << std::setw(20) << "m_seqpath"         << " : " << ( m_seqpath  ? m_seqpath : "-" ) << "\n"
+       << std::setw(20) << "m_seqpath_exists"  << " : " << ( m_seqpath_exists  ? "YES" : "NO " ) << "\n"
+       << std::setw(20) << "m_seq"             << " : " << ( m_seq ? m_seq->desc() : "-" ) << "\n"
+       << std::setw(20) << "m_seq_index"       << " : " << m_seq_index  << "\n"
+       << std::setw(20) << "m_cur"             << " : " << ( m_cur ? m_cur->desc() : "-" ) << "\n"
+       << std::setw(20) << "m_seqmask "        << " : " << ( m_seqmask ? m_seqmask->desc() : "-" ) << "\n"
+       << std::setw(20) << "desc \n" << desc() << "\n" 
        ;
     std::string s = ss.str(); 
     return s ; 

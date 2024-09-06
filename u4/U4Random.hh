@@ -32,8 +32,8 @@ struct U4_API U4Random : public CLHEP::HepRandomEngine, public SRandom
     static const plog::Severity LEVEL ; 
     static std::string Desc(); 
 
-    //static constexpr const char* DEFAULT_SEQPATH = "$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ;  
-    static constexpr const char* DEFAULT_SEQPATH = "$PrecookedDir/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy" ; 
+    //static constexpr const char* DEFAULT_SEQPATH = "${PrecookedDir:-$HOME/.opticks/precooked}/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000" ;  
+    static constexpr const char* DEFAULT_SEQPATH = "${PrecookedDir:-$HOME/.opticks/precooked}/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy" ; 
 
     static constexpr const char* OPTICKS_RANDOM_SEQPATH = "OPTICKS_RANDOM_SEQPATH" ; 
     static const char* SeqPath(); 
@@ -72,6 +72,7 @@ Steps to fix:
     static void      SetSequenceIndex(int index); 
     static int       GetSequenceIndex(); 
 
+    const char*              m_seqpath_ ; 
     const char*              m_seqpath ; 
     bool                     m_seqpath_exists ; 
     const NP*                m_seq;  
@@ -106,12 +107,17 @@ Steps to fix:
 
     static void SetSeed(long seed) ;  // non-zero seed required 
 
+    static U4Random* Create(const char* seq_path=nullptr, const char* seqmask_path=nullptr); 
 
+private:
     U4Random(const char* seq_path=nullptr, const char* seqmask_path=nullptr); 
-    void init() ; 
+    void init() ;
+
+public: 
     bool isReady() const ; 
     std::string desc() const ; 
     std::string detail() const ; 
+
 
     virtual ~U4Random(); 
 

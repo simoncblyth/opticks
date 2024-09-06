@@ -20,8 +20,8 @@ int main(int argc, char** argv)
     // NB: dependency on $A_CFBASE/CSGFoundry/SSim means that when changing GEOM is is necessary 
     // to run the A-side first before this B-side in order to write the $A_CFBASE/CSGFoundry/SSim
  
-    U4Random rnd ;             // load precooked randoms for aligned running 
-    LOG(info) << rnd.desc() ; 
+    U4Random* rnd = U4Random::Create() ;             // load precooked randoms for aligned running 
+    LOG(info) << rnd->desc() ; 
 
     std::string desc = U4App::Desc(); 
     LOG(info) << " desc " << desc ; 
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     LOG(info) << "outdir [" << outdir << "]" ; 
     LOG(info) << " desc [" << desc << "]" ; 
  
-    evt->random = &rnd  ;  // so can use getFlatPrior within SEvt::addTag
+    evt->random = rnd  ;  // so can use getFlatPrior within SEvt::addTag
 
     sframe fr = sframe::Load_("$A_FOLD/sframe.npy");  
     evt->setFrame(fr);   // setFrame tees up Gensteps 
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     runMgr->BeamOn(1); 
 
 
-    rnd.saveProblemIdx(outdir); 
+    rnd->saveProblemIdx(outdir); 
 
     evt->save(); 
     LOG(info) << "outdir [" << outdir << "]" ; 

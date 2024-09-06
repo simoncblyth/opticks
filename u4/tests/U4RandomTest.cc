@@ -33,7 +33,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    U4Random* rnd = new U4Random ; 
+    U4Random* rnd = U4Random::Create() ; 
+    if(rnd == nullptr) return 0 ;   // failed to load precooked
 
     test_basics(rnd); 
 
