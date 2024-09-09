@@ -8,7 +8,15 @@ and is instanciated by the SSim ctor.
 This SScene instance is sibling of the canonical 
 stree instance. 
 
-To some extent this acts as a minimal selection of the 
+The SScene is populated via a surprisingly high level
+call stack::
+
+    G4CXOpticks::setGeometry 
+    SSim::initSceneFromTree
+    SScene::initFromTree  
+
+
+To some extent this acts as a minimal sub-selection of the 
 full stree.h info needed to render
 
 ::
@@ -30,6 +38,7 @@ full stree.h info needed to render
 #include "stree.h"
 #include "SMesh.h"
 #include "SMeshGroup.h"
+#include "SBitSet.h"
 
 struct SScene
 {
@@ -38,6 +47,7 @@ struct SScene
     static constexpr const char* MESHMERGE = "meshmerge" ;
     static constexpr const char* FRAME = "frame" ;
     static constexpr const char* INST_TRAN = "inst_tran.npy" ;
+    static constexpr const char* INST_COL3 = "inst_col3.npy" ;
     static constexpr const char* INST_INFO = "inst_info.npy" ;
 
     bool dump ;
@@ -46,8 +56,10 @@ struct SScene
     std::vector<const SMesh*>         meshmerge ;
     std::vector<sfr>                  frame ; 
 
-    std::vector<int4>                 inst_info ; 
-    std::vector<glm::tmat4x4<float>>  inst_tran ;
+    std::vector<int4>                 inst_info ;  // compound solid level 
+
+    std::vector<glm::tmat4x4<float>>  inst_tran ;  // instance level 
+    std::vector<glm::tvec4<int32_t>>  inst_col3 ;
 
     static SScene* Load(const char* dir);
     SScene();
@@ -101,6 +113,7 @@ struct SScene
 
     sfr getFrame(int _idx=-1) const ; 
 
+    static SScene* CopySelect( const SScene* src, const SBitSet* elv ); 
 };
 
 
@@ -212,6 +225,13 @@ inline void SScene::initFromTree_Triangulate(const stree* st)
 }
 
 
+/**
+SScene::initFromTree_Global
+---------------------------
+
+
+**/
+
 inline void SScene::initFromTree_Global(const stree* st, char ridx_type, int ridx )
 {
     assert( ridx_type == 'R' || ridx_type == 'T' ); 
@@ -266,8 +286,10 @@ meshgroup
     SMeshGroup instances that maintain separate SMesh for each "Prim"
     (used by triangulated OptiX?)
 
-meshmesh
+meshmerge
     concatenated SMesh used by OpenGL 
+    HMM: the concatenation could be deferred or redone following 
+    lvid based sub-selection applied to mg->subs
 
 **/
 
@@ -294,7 +316,7 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
         initFromTree_Node(mg, ridx, node, st); 
     }
     const SMesh* _mesh = SMesh::Concatenate( mg->subs, ridx ); 
-    meshmerge.push_back(_mesh); 
+    meshmerge.push_back(_mesh);   
     meshgroup.push_back(mg); 
 }
 
@@ -315,6 +337,11 @@ transforms will in general need to be applied.
  
 Contrast with CSGFoundry which goes further delving into 
 the transforms of the CSG constituents.
+
+1. get transform for snode::index from stree
+2. import SMesh for snode::lvid from stree, possibly applying the transform
+3. collect SMesh into SMeshGroup
+
 
 **/
 
@@ -353,7 +380,10 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
 inline void SScene::initFromTree_Instance(const stree* st)
 {
     inst_info = st->inst_info ; 
-    strid::NarrowClear( inst_tran, st->inst ); // copy and narrow from st->inst into inst_tran 
+    //strid::NarrowClear( inst_tran, st->inst ); // copy and narrow from st->inst into inst_tran 
+
+    strid::NarrowDecodeClear(inst_tran, inst_col3, st->inst ); 
+
 }
 
 
@@ -429,6 +459,7 @@ inline std::string SScene::descSize() const
        << " meshmerge " << meshmerge.size()
        << " meshgroup " << meshgroup.size()
        << " inst_info " << inst_info.size()
+       << " inst_col3 " << inst_col3.size()
        << " inst_tran " << inst_tran.size()
        << std::endl 
        ;
@@ -588,6 +619,8 @@ inline NPFold* SScene::serialize() const
     NPFold* _frame     = serialize_frame() ;
     NP* _inst_tran = NPX::ArrayFromVec<float, glm::tmat4x4<float>>( inst_tran, 4, 4) ;
     NP* _inst_info = NPX::ArrayFromVec<int,int4>( inst_info, 4 ) ; 
+    NP* _inst_col3 = NPX::ArrayFromVec<int,glm::tvec4<int32_t>>( inst_col3, 4 ) ; 
+
 
     NPFold* fold = new NPFold ; 
     fold->add_subfold( MESHMERGE, _meshmerge ); 
@@ -595,6 +628,7 @@ inline NPFold* SScene::serialize() const
     fold->add_subfold( FRAME,     _frame ); 
     fold->add( INST_INFO, _inst_info );
     fold->add( INST_TRAN, _inst_tran );
+    fold->add( INST_COL3, _inst_col3 );
 
     return fold ; 
 }
@@ -612,9 +646,11 @@ inline void SScene::import(const NPFold* fold)
 
     const NP* _inst_info = fold->get(INST_INFO); 
     const NP* _inst_tran = fold->get(INST_TRAN); 
+    const NP* _inst_col3 = fold->get(INST_COL3); 
 
     stree::ImportArray<glm::tmat4x4<float>, float>( inst_tran, _inst_tran ); 
     stree::ImportArray<int4, int>( inst_info, _inst_info ); 
+    stree::ImportArray<glm::tvec4<int32_t>, int>( inst_col3, _inst_col3 ); 
 }
 
 inline void SScene::save(const char* dir) const 
@@ -761,4 +797,36 @@ inline sfr SScene::getFrame(int _idx) const
     assert( f.get_idx() == idx ); 
     return f ; 
 }
+
+
+inline SScene* SScene::CopySelect( const SScene* src, const SBitSet* elv ) // static
+{
+    SScene* dst = new SScene ; 
+    size_t s_num_mg = src->meshgroup.size() ;  
+    for(size_t i=0 ; i < s_num_mg ; i++)
+    {
+        const SMeshGroup* s_mg = src->meshgroup[i] ; 
+        SMeshGroup* d_mg = s_mg->copy(elv) ;  
+        if( d_mg == nullptr ) continue ;   // null when no subs are ELV selected
+
+        dst->meshgroup.push_back(d_mg); 
+
+        int ridx = i ;  // first gen assumption 
+        const SMesh* d_mesh = SMesh::Concatenate( d_mg->subs, ridx );
+        dst->meshmerge.push_back(d_mesh);
+    }
+
+    dst->frame = src->frame ;  
+
+    /*
+    size_t s_num_inst_info = src->inst_info.size() ; 
+    size_t s_num_inst_tran = src->inst_tran.size() ; 
+    */
+    // TODO: use newly added inst_col3 info to apply selection to the inst_tran 
+    //       hmm tri nodes are not instanced ? 
+
+    return dst ; 
+}
+
+
 

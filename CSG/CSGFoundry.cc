@@ -2269,6 +2269,20 @@ unsigned CSGFoundry::getNumMeshPrim(unsigned mesh_idx ) const
     return CSGPrim::count_prim_mesh(prim, mesh_idx); 
 }
 
+
+/**
+CSGFoundry::getNumSelectedPrimInSolid
+--------------------------------------
+
+Used by CSGCopy::copy 
+
+Iterates over the CSGPrim within the CSGSolid counting the 
+number selected based on whether the CSGPrim::meshIdx 
+is within the elv SBitSet.  
+
+
+**/
+
 unsigned CSGFoundry::getNumSelectedPrimInSolid(const CSGSolid* solid, const SBitSet* elv ) const 
 {
     unsigned num_selected_prim = 0 ;      

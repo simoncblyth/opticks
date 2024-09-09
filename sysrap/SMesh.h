@@ -42,6 +42,7 @@ struct SMesh
     const char* name    ;            // metadata : loaddir or manually set name
     glm::tmat4x4<double> tr0 = {} ;  // informational for debug only, as gets applied by init  
     std::vector<std::string> names ; // used to hold subnames in concat SMesh
+    int   lvid = -1 ;      // set by Import from NPFold metadata for originals
 
     const NP* tri ; 
     const NP* vtx ; 
@@ -51,13 +52,15 @@ struct SMesh
     glm::tvec3<float> mx = {} ; 
     glm::tvec4<float> ce = {} ; 
 
+
     static SMesh* Load(const char* dir, const char* rel ); 
     static SMesh* Load(const char* dir ); 
     static SMesh* LoadTransformed(const char* dir, const char* rel,  const glm::tmat4x4<double>* tr ); 
     static SMesh* LoadTransformed(const char* dir,                   const glm::tmat4x4<double>* tr ); 
 
     static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr );
-
+    static SMesh* MakeCopy( const SMesh* src ); 
+    SMesh* copy() const ; 
 
     static bool IsConcat( const NPFold* fold ); 
     void import(          const NPFold* fold, const glm::tmat4x4<double>* tr ); 
@@ -207,6 +210,34 @@ inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr)
     return mesh ; 
 }
 
+inline SMesh* SMesh::MakeCopy( const SMesh* src ) // static
+{
+    SMesh* dst = new SMesh ; 
+
+    dst->name = src->name ? strdup(src->name) : nullptr ; 
+    dst->tr0  = src->tr0 ; 
+    dst->names = src->names ;    
+    dst->lvid = src->lvid ; 
+
+    dst->tri = src->tri->copy() ; 
+    dst->vtx = src->vtx->copy() ; 
+    dst->nrm = src->nrm->copy() ; 
+ 
+    dst->mn = src->mn ; 
+    dst->mx = src->mx ; 
+    dst->ce = src->ce ; 
+
+    return dst ; 
+}
+
+inline SMesh* SMesh::copy() const 
+{
+    return MakeCopy(this); 
+}
+
+
+
+
 /**
 SMesh::IsConcat
 ----------------
@@ -259,6 +290,7 @@ inline void SMesh::import_concat(const NPFold* fold, const glm::tmat4x4<double>*
 inline void SMesh::import_original(const NPFold* fold, const glm::tmat4x4<double>* tr )
 {
     name = fold->loaddir ? strdup(fold->loaddir) : nullptr ; 
+    lvid = fold->get_meta<int>("lvid", -1); 
 
     const NP* triangles = fold->get("tri");
     const NP* vertices = fold->get("vtx") ; // copy ?
@@ -273,6 +305,7 @@ inline void SMesh::import_original(const NPFold* fold, const glm::tmat4x4<double
         << " vertices " << ( vertices ? "YES" : "NO " ) << "\n"
         << " normals " << ( normals ? "YES" : "NO " ) << " (not execting normals in originals)\n" 
         << " name " << ( name ? name : "-" ) << "\n"
+        << " lvid " << lvid  
         << "\n"
         ; 
 

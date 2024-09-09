@@ -81,9 +81,13 @@ struct strid
     static std::string Desc_(  const char* a_label, const char* b_label, const char* c_label, 
                                const glm::tmat4x4<T>& a, const glm::tmat4x4<T>& b, const glm::tmat4x4<T>& c );
 
-    static void NarrowClear(             glm::tmat4x4<float>& dst,                const glm::tmat4x4<double>& src ); 
+    static void NarrowClear(             glm::tmat4x4<float>& dst,                                 const glm::tmat4x4<double>& src ); 
+    static void NarrowDecodeClear(       glm::tmat4x4<float>& dst ,   glm::tvec4<int32_t>& col3,   const glm::tmat4x4<double>& src );
     static void Narrow(                  glm::tmat4x4<float>& dst,                const glm::tmat4x4<double>& src ); 
-    static void NarrowClear( std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
+
+    static void NarrowClear(       std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
+    static void NarrowDecodeClear( std::vector<glm::tmat4x4<float>>& dst,  std::vector<glm::tvec4<int32_t>>& col3, const std::vector<glm::tmat4x4<double>>& src ); 
+
     static void Narrow(      std::vector<glm::tmat4x4<float>>& dst,  const std::vector<glm::tmat4x4<double>>& src ); 
 
     template<typename T>
@@ -395,6 +399,29 @@ inline void strid::NarrowClear( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<d
     Clear<float>(dst_);  
 }
 
+
+inline void strid::NarrowDecodeClear( glm::tmat4x4<float>& dst_,   glm::tvec4<int32_t>& col3_,  const glm::tmat4x4<double>& src_ )
+{
+    float* dst = glm::value_ptr(dst_); 
+    const double* src = glm::value_ptr(src_); 
+    for(int i=0 ; i < 16 ; i++) dst[i] = float(src[i]); 
+
+    glm::tvec4<int64_t> dcol3 ; 
+    Decode( src_, dcol3 ); 
+
+    col3_.x = dcol3.x ; 
+    col3_.y = dcol3.y ; 
+    col3_.z = dcol3.z ; 
+    col3_.w = dcol3.w ; 
+
+    Clear<float>(dst_);  
+}
+
+
+
+
+
+
 inline void strid::Narrow( glm::tmat4x4<float>& dst_,  const glm::tmat4x4<double>& src_ )
 {
     glm::tvec4<uint64_t> src_col3 ; 
@@ -438,6 +465,30 @@ inline void strid::NarrowClear( std::vector<glm::tmat4x4<float>>& dst_,  const s
         NarrowClear(dst, src); 
     }
 }
+
+
+
+
+
+inline void strid::NarrowDecodeClear( std::vector<glm::tmat4x4<float>>& dst_,  std::vector<glm::tvec4<int32_t>>& col3_, const std::vector<glm::tmat4x4<double>>& src_ )
+{
+    dst_.resize(src_.size()); 
+    col3_.resize(src_.size()); 
+
+    for(unsigned i=0 ; i < src_.size() ; i++)
+    {  
+        const glm::tmat4x4<double>& src = src_[i] ; 
+        glm::tmat4x4<float>& dst = dst_[i] ; 
+        glm::tvec4<int32_t>& col3 = col3_[i] ; 
+
+        NarrowDecodeClear(dst, col3,  src); 
+    }
+} 
+
+
+
+
+
 
 inline void strid::Narrow( std::vector<glm::tmat4x4<float>>& dst_,  const std::vector<glm::tmat4x4<double>>& src_ )
 {

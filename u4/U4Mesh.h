@@ -117,10 +117,13 @@ inline NPFold* U4Mesh::MakeFold(
 
     for(int i=0 ; i < num_solid ; i++)
     {
+        int lvid = i ; 
         const G4VSolid* so = solids[i];
         const char* _key = keys[i].c_str();
 
-        NPFold* sub = Serialize(so) ;    
+        NPFold* sub = Serialize(so) ;
+        sub->set_meta<int>("lvid", lvid ); 
+
         mesh->add_subfold( _key, sub ); 
     }
     return mesh ; 

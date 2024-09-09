@@ -8,6 +8,8 @@ Persists as folder with int keys.
 
 **/
 struct SMesh ; 
+#include "SBitSet.h"
+
 
 struct SMeshGroup
 {
@@ -15,6 +17,10 @@ struct SMeshGroup
     std::vector<std::string> names ;
 
     SMeshGroup(); 
+
+    static SMeshGroup* MakeCopy(const SMeshGroup* src, const SBitSet* elv ); 
+    SMeshGroup* copy(const SBitSet* elv=nullptr) const ; 
+
 
     NPFold* serialize() const ; 
     void save(const char* dir) const ; 
@@ -25,6 +31,57 @@ struct SMeshGroup
 };
 
 inline SMeshGroup::SMeshGroup(){} 
+
+
+
+/**
+SMeshGroup::MakeCopy
+---------------------
+
+NB if none of the subs from the src SMeshGroup are selected by elv a nullptr is returned
+
+**/
+
+
+inline SMeshGroup* SMeshGroup::MakeCopy(const SMeshGroup* src, const SBitSet* elv ) // static
+{
+    size_t s_num_subs = src->subs.size(); 
+    size_t s_num_names = src->names.size(); 
+    assert( s_num_subs == s_num_names ); 
+
+    SMeshGroup* dst = nullptr ; 
+    for(size_t i=0 ; i < s_num_subs ; i++ )
+    {   
+        const SMesh* s_sub = src->subs[i] ; 
+        const std::string& s_name = src->names[i] ; 
+        int s_lvid = s_sub->lvid ; 
+
+        bool selected = elv == nullptr ? true : elv->is_set(s_lvid) ;  
+        if(!selected) continue ; 
+
+        const SMesh* d_sub = s_sub->copy(); 
+        std::string d_name = s_name ;   
+
+        if(!dst) dst = new SMeshGroup ; 
+        dst->subs.push_back(d_sub) ;  
+        dst->names.push_back(d_name) ; 
+    }
+    return dst ; 
+} 
+
+inline SMeshGroup* SMeshGroup::copy(const SBitSet* elv) const
+{
+    return MakeCopy(this, elv); 
+} 
+
+
+
+
+
+
+
+
+
 
 inline NPFold* SMeshGroup::serialize() const 
 {

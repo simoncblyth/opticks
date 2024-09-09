@@ -65,6 +65,17 @@ inline SOPTIX_Accel* SOPTIX_Accel::Create( OptixDeviceContext& context, const st
     return new SOPTIX_Accel( context, _bis  ); 
 }
 
+/**
+SOPTIX_Accel::SOPTIX_Accel
+---------------------------
+
+1. collect SOPTIX_BuildInput:bi into bis and bi->buildInput into buildInputs 
+   (names of all are required to match)
+
+2. create the acceleration structure from the buildInputs 
+
+**/
+
 
 inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis )     
     :

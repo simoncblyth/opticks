@@ -19,7 +19,7 @@ struct SOPTIX_BuildInput
 
 inline SOPTIX_BuildInput::SOPTIX_BuildInput(const char* _name)
     :
-    name(_name)
+    name(_name)   // HMM: that needs the input name to stay valid
 {
 }
 
