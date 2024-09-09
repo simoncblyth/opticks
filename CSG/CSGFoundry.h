@@ -128,6 +128,8 @@ struct CSG_API CSGFoundry : public SGeo
     template<typename T>
     static int CompareVec( const char* name, const std::vector<T>& a, const std::vector<T>& b );
 
+    static size_t CompareData( const char* a, const char* b, size_t size ); 
+
     template<typename T>
     static int CompareStruct( const char* name, const std::vector<T>& a, const std::vector<T>& b );
 

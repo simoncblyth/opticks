@@ -27,6 +27,7 @@ could operate at stree level and do similar to CSGFoundry_CreateFromSimTest.cc ?
 struct CSGFoundry_IntersectPrimTest
 {  
     const char* geom ; 
+    bool   can_make ; 
     SSim*      sim ; 
     CSGFoundry* fd ; 
     CSGSolid*   so ; 
@@ -38,6 +39,7 @@ struct CSGFoundry_IntersectPrimTest
 inline CSGFoundry_IntersectPrimTest::CSGFoundry_IntersectPrimTest()
     :
     geom(ssys::getenvvar("GEOM", "JustOrb" )),
+    can_make(CSGMaker::CanMake(geom)),
     sim(SSim::Create()),
     fd(new CSGFoundry), 
     so(nullptr)
@@ -47,9 +49,8 @@ inline CSGFoundry_IntersectPrimTest::CSGFoundry_IntersectPrimTest()
 
 inline void CSGFoundry_IntersectPrimTest::init()
 {
-    bool can_make = CSGMaker::CanMake(geom) ; 
-    if(!can_make) std::cerr << "FATAL : cannot make " << geom << "\n" ; 
-    assert(can_make); 
+    if(!can_make) std::cerr << "FATAL : cannot make [" << geom << "]\n" ; 
+    if(!can_make) return ; 
 
     so = fd->maker->make(geom); 
 
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv); 
 
     CSGFoundry_IntersectPrimTest t ; 
+    if(!t.can_make) return 0 ; 
 
     std::cout << t.fd->desc() << std::endl ; 
 

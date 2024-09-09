@@ -44,9 +44,9 @@ struct CSG_API CSGSolid   // Composite shape
     int         type = STANDARD_SOLID ;       
 
     char        intent = '\0' ;     
-    char        pad0 ; 
-    char        pad1 ; 
-    char        pad2 ; 
+    char        pad0 = '\0' ; 
+    char        pad1 = '\0' ; 
+    char        pad2 = '\0' ; 
 
 
     float4      center_extent ; 
@@ -63,6 +63,7 @@ struct CSG_API CSGSolid   // Composite shape
     char getIntent() const ;  // 'R' 'F' 'T'   used for forced triangulation
     void setIntent(char _intent); 
 
+    static void CopyIntent( CSGSolid* d,  const CSGSolid* s ); 
 
     static bool IsDiff( const CSGSolid& a , const CSGSolid& b ); 
     static CSGSolid Make( const char* label_, int numPrim_, int primOffset_=-1 ); 

@@ -1,6 +1,18 @@
-#!/bin/bash -l 
+#!/bin/bash 
+usage(){ cat << EOU
+CSGCopyTest.sh
+================
 
-cd $(dirname $BASH_SOURCE)
+::
+
+   ~/o/CSG/tests/CSGCopyTest.sh
+
+
+EOU
+}
+
+
+cd $(dirname $(realpath $BASH_SOURCE))
 bin=CSGCopyTest
 source $HOME/.opticks/GEOM/GEOM.sh 
 
@@ -23,7 +35,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
-    $bin
+    ./CSGTestRunner.sh $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1
 fi 
 

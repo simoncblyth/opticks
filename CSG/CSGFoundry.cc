@@ -649,7 +649,9 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
     if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
 
     int data_match = memcmp( a.data(), b.data(), a.size()*sizeof(T) ) ; 
-    LOG_IF(info, data_match != 0) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL " ; 
+    size_t data_diff = CompareData( (const char*)a.data(), (const char*)b.data(), a.size()*sizeof(T)  ); 
+    LOG_IF(info, data_match != 0) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL " << " data_diff " << data_diff ; 
+
     if(data_match != 0) mismatch += 1 ; 
 
     int byte_match = CompareBytes( a.data(), b.data(), a.size()*sizeof(T) ) ;
@@ -665,6 +667,16 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
          ;  
     return mismatch ; 
 }
+
+
+size_t CSGFoundry::CompareData( const char* a, const char* b, size_t size )
+{
+    size_t diff = 0 ; 
+    for(size_t i=0 ; i < size ; i++ ) if(a[i] != b[i]) diff++ ; 
+    return diff ;  
+}
+
+
 
 /**
 CSGFoundry::CompareStruct

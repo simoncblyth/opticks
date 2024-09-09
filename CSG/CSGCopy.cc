@@ -151,6 +151,10 @@ void CSGCopy::copy()
         int dPrimOffset = dso->primOffset ;       
         assert( dPrimOffset == int(dst->prim.size()) );  
 
+        CSGSolid::CopyIntent( dso, sso ); 
+
+
+
         solidMap[sSolidIdx] = dSolidIdx ; 
 
 #ifdef WITH_S_BB

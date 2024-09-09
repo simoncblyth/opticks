@@ -89,6 +89,13 @@ void CSGSolid::setIntent(char _intent)
     intent = _intent ; 
 } 
 
+void CSGSolid::CopyIntent( CSGSolid* d,  const CSGSolid* s )
+{
+    d->intent = s->intent ; 
+    d->pad0 = s->pad0 ; 
+    d->pad1 = s->pad1 ; 
+    d->pad2 = s->pad2 ; 
+}
 
 
 
