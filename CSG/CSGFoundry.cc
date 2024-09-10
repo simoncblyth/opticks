@@ -37,6 +37,7 @@
 #include "sqat4.h"
 #include "sframe.h"
 #include "SLabel.h"
+#include "SScene.h"
 
 
 #include "OpticksCSG.h"
@@ -636,6 +637,8 @@ CSGFoundry::CompareVec
 
 Simple comparison looking for equality.
 
+TODO: adopt svec.h 
+
 **/
 
 template<typename T>
@@ -649,9 +652,7 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
     if(!size_match) return mismatch ;  // below will likely crash if sizes are different 
 
     int data_match = memcmp( a.data(), b.data(), a.size()*sizeof(T) ) ; 
-    size_t data_diff = CompareData( (const char*)a.data(), (const char*)b.data(), a.size()*sizeof(T)  ); 
-    LOG_IF(info, data_match != 0) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL " << " data_diff " << data_diff ; 
-
+    LOG_IF(info, data_match != 0) << name << " sizeof(T) " << sizeof(T) << " data_match FAIL "  ; 
     if(data_match != 0) mismatch += 1 ; 
 
     int byte_match = CompareBytes( a.data(), b.data(), a.size()*sizeof(T) ) ;
@@ -666,14 +667,6 @@ int CSGFoundry::CompareVec( const char* name, const std::vector<T>& a, const std
          << std::endl
          ;  
     return mismatch ; 
-}
-
-
-size_t CSGFoundry::CompareData( const char* a, const char* b, size_t size )
-{
-    size_t diff = 0 ; 
-    for(size_t i=0 ; i < size ; i++ ) if(a[i] != b[i]) diff++ ; 
-    return diff ;  
 }
 
 
@@ -2830,12 +2823,7 @@ void CSGFoundry::load( const char* dir_ )
     loadArray( plan  , dir, "plan.npy" , true );  
     // plan.npy loading optional, as only geometries with convexpolyhedrons such as trapezoids, tetrahedrons etc.. have them 
 
-    // REMOVE THIS SECOND SSim LOAD
-    // LOG(LEVEL) << "[ SSim::Load " ;  
-    // sim = NP::Exists(dir, "SSim") ? SSim::Load(dir, SSim::RELDIR ) : nullptr ; 
-    // LOG(LEVEL) << "] SSim::Load " ; 
-    // if( sim == nullptr ) sim = SSim::Get() ;  // NEED SAME ENV AS ctor
- 
+
     mtime = MTime(dir, "solid.npy"); 
 
     LOG(LEVEL) << "] loaddir " << loaddir ; 
@@ -3001,6 +2989,10 @@ python analysis machinery.
 
 This is taking 0.48s for full JUNO, thats 27% of single event gxt.sh runtime  
 
+
+Q: Where is the SSim handover ? How to apply selection to the SScene ? 
+
+
 **/
 
 bool CSGFoundry::Load_saveAlt = ssys::getenvbool("CSGFoundry_Load_saveAlt") ; 
@@ -3020,11 +3012,22 @@ CSGFoundry* CSGFoundry::Load() // static
     const SBitSet* elv = ELV(src->id); 
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ; 
 
+
+    if(elv)
+    {
+        LOG(LEVEL) << " apply ELV selection to triangulated SScene " ; 
+        SScene* src_sc = dst->sim->scene ;  
+        SScene* dst_sc = src_sc->copy(elv); 
+        const_cast<SSim*>(dst->sim)->set_override_scene(dst_sc); 
+    }
+
+
     if( elv != nullptr && Load_saveAlt)
     {
         LOG(error) << " non-standard dynamic selection CSGFoundry_Load_saveAlt " ; 
         dst->saveAlt() ; 
     }
+
 
     AfterLoadOrCreate(); 
 

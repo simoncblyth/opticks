@@ -12,19 +12,17 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=SScene_test
+name=SSceneLoad_test
 export FOLD=/tmp/$name
 mkdir -p $FOLD 
 bin=$FOLD/$name
-
-
-name=SSceneLoad_test
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 export SCENE_FOLD=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
 
 vars="BASH_SOURCE PWD SCENE_FOLD GEOM CUDA_PREFIX GLM_PREFIX OPTICKS_PREFIX"
+
 
 defarg=info_build_run
 arg=${1:-$defarg}
@@ -59,5 +57,36 @@ if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 fi 
+
+gdb__ () 
+{ 
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+if [ "${arg/dbg}" != "$arg" ]; then 
+    gdb__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
+fi 
+
+
+
+
 
 exit 0

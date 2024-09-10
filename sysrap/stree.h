@@ -1840,6 +1840,13 @@ inline sfr stree::get_frame(const char* q_spec ) const
     {
         get_rc = get_frame_instanced(f,  lvid, lvid_ordinal, repeat_ordinal );
     }
+
+    if(get_rc != 0 ) std::cerr 
+        << "stree::get_frame FAIL q_spec[" << ( q_spec ? q_spec : "-" ) << "]\n" 
+        << " THIS CAN BE CAUSED BY NOT USING REPEAT_ORDINAL -1 (LAST OF TRIPLET) FOR GLOBAL GEOMETRY " 
+        << "\n"
+        ;
+
     assert( get_rc == 0 ); 
     return f ; 
 }
@@ -1890,6 +1897,12 @@ inline bool stree::has_frame(const char* q_spec) const
         get_rc = get_frame_instanced(f,  lvid, lvid_ordinal, repeat_ordinal );
     }
 
+    if(get_rc != 0 ) std::cerr 
+        << "stree::has_frame FAIL q_spec[" << ( q_spec ? q_spec : "-" ) << "]\n" 
+        << " THIS CAN BE CAUSED BY NOT USING REPEAT_ORDINAL -1 (LAST OF TRIPLET) FOR GLOBAL GEOMETRY " 
+        << "\n"
+        ;
+
     return get_rc == 0 ; 
 }
 
@@ -1923,6 +1936,21 @@ inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int re
 
     const glm::tmat4x4<double>* m2w = get_inst(ii); 
     const glm::tmat4x4<double>* w2m = get_iinst(ii); 
+   
+    bool missing_transform = !m2w || !w2m ; 
+ 
+    if(missing_transform) std::cerr 
+        << "stree::get_frame_instanced FAIL missing_transform "
+        << " lvid " << lvid
+        << " lvid_ordinal " << lvid_ordinal
+        << " repeat_ordinal " << repeat_ordinal
+        << " w2m " << ( w2m ? "YES" : "NO " )
+        << " m2w " << ( m2w ? "YES" : "NO " )
+        << " ii " << ii 
+        << "\n"
+        ;
+
+    if(missing_transform) return 1 ; 
     assert( m2w ); 
     assert( w2m ); 
 

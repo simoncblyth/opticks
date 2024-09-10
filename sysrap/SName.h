@@ -372,7 +372,7 @@ inline bool SName::hasNames( const char* qq_, char delim, const char* prefix ) c
         ;
 
     std::vector<std::string> qq; 
-    sstr::Split(uqq, delim, qq); 
+    sstr::SplitTrimSuppress( uqq, delim, qq );   // handles filepath: ELV
     return hasNames(qq); 
 }
 inline bool SName::hasNames( const std::vector<std::string>& qq ) const 
@@ -453,7 +453,7 @@ inline const char* SName::getIDXListFromNames( const char* names_, char delim, c
 {
     const char* unames = prefix == nullptr ?  names_ : names_ + strlen(prefix ) ;  
     std::vector<std::string> names ; 
-    sstr::Split(unames, delim, names); 
+    sstr::SplitTrimSuppress(unames, delim, names);  // handles names_ with newlines 
     return getIDXListFromNames( names, prefix ); 
 }
 inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix ) const 

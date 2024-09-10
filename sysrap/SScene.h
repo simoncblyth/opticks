@@ -16,8 +16,9 @@ call stack::
     SScene::initFromTree  
 
 
-To some extent this acts as a minimal sub-selection of the 
-full stree.h info needed to render
+To some extent the SScene acts as a minimal sub-selection of the 
+full stree.h info needed to do triangulated rendering both
+with OptiX ray trace and OpenGL rasterized. 
 
 ::
 
@@ -36,12 +37,15 @@ full stree.h info needed to render
 
 #include "ssys.h"
 #include "stree.h"
+#include "svec.h"
+
 #include "SMesh.h"
 #include "SMeshGroup.h"
 #include "SBitSet.h"
 
 struct SScene
 {
+    static constexpr const bool DUMP = false ; 
     static constexpr const char* RELDIR = "scene" ;
     static constexpr const char* MESHGROUP = "meshgroup" ;
     static constexpr const char* MESHMERGE = "meshmerge" ;
@@ -49,8 +53,6 @@ struct SScene
     static constexpr const char* INST_TRAN = "inst_tran.npy" ;
     static constexpr const char* INST_COL3 = "inst_col3.npy" ;
     static constexpr const char* INST_INFO = "inst_info.npy" ;
-
-    bool dump ;
 
     std::vector<const SMeshGroup*>    meshgroup ;
     std::vector<const SMesh*>         meshmerge ;
@@ -60,6 +62,8 @@ struct SScene
 
     std::vector<glm::tmat4x4<float>>  inst_tran ;  // instance level 
     std::vector<glm::tvec4<int32_t>>  inst_col3 ;
+
+
 
     static SScene* Load(const char* dir);
     SScene();
@@ -90,8 +94,10 @@ struct SScene
     std::string descDetail() const ;
     std::string descSize() const ;
     std::string descInstInfo() const ;
+    std::string descCol3() const ;
     std::string descFrame() const ;
     std::string descRange() const ;
+    static std::string DescCompare(const SScene* a, const SScene* b); 
 
     NPFold* serialize_meshmerge() const ;
     void import_meshmerge(const NPFold* _meshmerge ) ; 
@@ -114,6 +120,9 @@ struct SScene
     sfr getFrame(int _idx=-1) const ; 
 
     static SScene* CopySelect( const SScene* src, const SBitSet* elv ); 
+    SScene* copy(const SBitSet* elv=nullptr) const ; 
+
+    static int Compare(const SScene* a, const SScene* b); 
 };
 
 
@@ -121,6 +130,7 @@ struct SScene
 
 inline SScene* SScene::Load(const char* dir)
 {
+    if(DUMP) std::cout << "SScene::Load dir " << ( dir ? dir : "-" ) << "\n" ;  
     SScene* s = new SScene ;
     s->load(dir);
     s->check(); 
@@ -128,8 +138,6 @@ inline SScene* SScene::Load(const char* dir)
 }
 
 inline SScene::SScene()
-    :
-    dump(ssys::getenvbool("SScene_dump"))
 {
 }
 
@@ -239,7 +247,7 @@ inline void SScene::initFromTree_Global(const stree* st, char ridx_type, int rid
     assert( _nodes ); 
 
     int num_node = _nodes->size() ;
-    if(dump) std::cout
+    if(DUMP) std::cout
         << "[ SScene::initFromTree_Global"
         << " num_node " << num_node
         << " ridx_type " << ridx_type
@@ -257,7 +265,7 @@ inline void SScene::initFromTree_Global(const stree* st, char ridx_type, int rid
     meshmerge.push_back(_mesh);
     meshgroup.push_back(mg);
 
-    if(dump) std::cout
+    if(DUMP) std::cout
         << "] SScene::initFromTree_Global"
         << " num_node " << num_node 
         << " ridx_type " << ridx_type
@@ -302,7 +310,7 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
     st->get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal) ; 
     int num_node = nodes.size(); 
 
-    if(dump) std::cout 
+    if(DUMP) std::cout 
        << "SScene::initFromTree_Factor"
        << " ridx " << ridx
        << " num_node " << num_node
@@ -365,7 +373,7 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
     mg->names.push_back(so);  
 
 
-    if(dump) std::cout 
+    if(DUMP) std::cout 
        << "SScene::initFromTree_Node"
        << " node.lvid " << node.lvid 
        << " st.soname[node.lvid] " << st->soname[node.lvid] 
@@ -374,7 +382,7 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
        << std::endl 
        ;
 
-    if(dump && !is_identity_m2w) std::cout << _mesh->descTransform() << std::endl ;  
+    if(DUMP && !is_identity_m2w) std::cout << _mesh->descTransform() << std::endl ;  
 }
 
 inline void SScene::initFromTree_Instance(const stree* st)
@@ -434,7 +442,8 @@ inline std::string SScene::desc() const
     ss << " is_empty " << ( is_empty() ? "YES" : "NO " ) << "\n" ; 
     ss << descSize() ; 
     ss << descInstInfo() ; 
-    ss << descFrame() ; 
+    ss << descCol3() ; 
+    //ss << descFrame() ; 
     ss << "] SScene::desc \n" ; 
     std::string str = ss.str(); 
     return str ; 
@@ -495,6 +504,43 @@ inline std::string SScene::descInstInfo() const
     return str ; 
 }
 
+
+
+inline std::string SScene::descCol3() const
+{
+    std::stringstream ss ;
+    ss << "[SScene::descCol3 {ins_idx, gas_idx, sen_id, sen_idx} " << std::endl ; 
+    int num_inst_col3 = inst_col3.size();
+    int edge = 100 ; 
+
+    for(int i=0 ; i < num_inst_col3 ; i++)
+    {
+        if( i < edge || i > (num_inst_col3 - edge))
+        { 
+            const glm::tvec4<int32_t>& col3 = inst_col3[i] ; 
+            ss 
+               << "{" 
+               << std::setw(3) << col3.x
+               << "," 
+               << std::setw(7) << col3.y
+               << "," 
+               << std::setw(7) << col3.z 
+               << "," 
+               << std::setw(3) << col3.w 
+               << "}"
+               << std::endl  
+               ;
+        }
+
+    }
+    ss << "]SScene::descCol3 " << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+
+
 inline std::string SScene::descFrame() const
 {
     int num_frame = frame.size(); 
@@ -527,6 +573,20 @@ inline std::string SScene::descRange() const
         ss << "mm[" << i << "]\n" << mm->descRange() << "\n" ; 
     }
     ss << "]SScene::descRange num " << num << std::endl ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
+inline std::string SScene::DescCompare(const SScene* a, const SScene* b) // static
+{
+    std::stringstream ss ;
+    ss << "A.descSize " << a->descSize() << "\n" ; 
+    ss << "B.descSize " << b->descSize() << "\n" ; 
+
+    ss << "A.descInstInfo " << a->descInstInfo() << "\n" ; 
+    ss << "B.descInstInfo " << b->descInstInfo() << "\n" ; 
+
     std::string str = ss.str(); 
     return str ; 
 }
@@ -566,23 +626,27 @@ inline NPFold* SScene::serialize_meshgroup() const
 inline void SScene::import_meshmerge(const NPFold* _meshmerge ) 
 {
     int num_meshmerge = _meshmerge ? _meshmerge->get_num_subfold() : 0 ;
+    if(DUMP) std::cout << "[SScene::import_meshmerge  num_meshmerge " << num_meshmerge << "\n" ;  
     for(int i=0 ; i < num_meshmerge ; i++)
     {
         const NPFold* sub = _meshmerge->get_subfold(i); 
         const SMesh* m = SMesh::Import(sub) ;  
         meshmerge.push_back(m); 
     }
+    if(DUMP) std::cout << "]SScene::import_meshmerge  num_meshmerge " << num_meshmerge << "\n" ;  
 }
 
 inline void SScene::import_meshgroup(const NPFold* _meshgroup ) 
 {
     int num_meshgroup = _meshgroup ? _meshgroup->get_num_subfold() : 0 ;
+    if(DUMP) std::cout << "[SScene::import_meshgroup  num_meshgroup " << num_meshgroup << "\n" ;  
     for(int i=0 ; i < num_meshgroup ; i++)
     {
         const NPFold* sub = _meshgroup->get_subfold(i); 
         const SMeshGroup* mg = SMeshGroup::Import(sub) ;  
         meshgroup.push_back(mg); 
     }
+    if(DUMP) std::cout << "]SScene::import_meshgroup  num_meshgroup " << num_meshgroup << "\n" ;  
 }
 
 
@@ -634,6 +698,7 @@ inline NPFold* SScene::serialize() const
 }
 inline void SScene::import(const NPFold* fold)
 {
+    if(DUMP) std::cout << "[SScene::import \n" ;  
     if(fold == nullptr) std::cerr << "SScene::import called with NULL fold argument\n" ; 
     if(fold == nullptr) return ; 
 
@@ -651,6 +716,7 @@ inline void SScene::import(const NPFold* fold)
     stree::ImportArray<glm::tmat4x4<float>, float>( inst_tran, _inst_tran ); 
     stree::ImportArray<int4, int>( inst_info, _inst_info ); 
     stree::ImportArray<glm::tvec4<int32_t>, int>( inst_col3, _inst_col3 ); 
+    if(DUMP) std::cout << "]SScene::import \n" ;  
 }
 
 inline void SScene::save(const char* dir) const 
@@ -660,6 +726,7 @@ inline void SScene::save(const char* dir) const
 }
 inline void SScene::load(const char* dir) 
 {
+    if(DUMP) std::cout << "SScene::load dir " << ( dir ? dir : "-" ) << "\n" ;  
     NPFold* fold = NPFold::Load(dir, RELDIR); 
     import(fold); 
 }
@@ -799,34 +866,165 @@ inline sfr SScene::getFrame(int _idx) const
 }
 
 
+/**
+SScene::CopySelect
+-------------------
+
+Q: How/where are SScene::inst_info SScene::inst_tran used ? Need to know, to devise how to apply selection.
+
+A: SOPTIX_Scene.h SOPTIX_Scene::init_Instances is a pure triangulated rendering example
+
+   * inst_tran 
+     inst_info {ridx, inst_count, inst_offset, 0}
+     inst_col3 {ins_idx, gas_idx, sen_id, sen_idx} 
+
+     are intimately tied together, as inst_count and inst_offset 
+     from inst_info provide index references into inst_tran
+   
+   * recall that each instance refers to a compound solid of multiple lvid via gas_idx
+
+
+WIP : use inst_col3 info to apply lvid selection to the inst_tran and inst_col3 
+HMM : lvid is available for the d_mg->subs SMesh.h instances, the SMeshGroup::copy
+applies ELV selection with the outcome that some of the SMeshGroup will be nullified
+and some will be greatly reduced in size : this means that the old gas_idx will
+no longer be valid... need mapping between them like CSGCopy does
+and need something like CSGCopy::copySolidInstances to populate d_inst_tran 
+
+**/
+
+
 inline SScene* SScene::CopySelect( const SScene* src, const SBitSet* elv ) // static
 {
     SScene* dst = new SScene ; 
-    size_t s_num_mg = src->meshgroup.size() ;  
-    for(size_t i=0 ; i < s_num_mg ; i++)
+    int s_num_mg = src->meshgroup.size() ;  
+
+    int* solidMap = new int[s_num_mg];
+
+
+    for(int i=0 ; i < s_num_mg ; i++)
     {
+        int s_SolidIdx = i ;   
+        solidMap[i] = -1 ; 
+
         const SMeshGroup* s_mg = src->meshgroup[i] ; 
         SMeshGroup* d_mg = s_mg->copy(elv) ;  
         if( d_mg == nullptr ) continue ;   // null when no subs are ELV selected
 
+        int d_SolidIdx = dst->meshgroup.size() ; // index before adding (0-based)
+        solidMap[s_SolidIdx] = d_SolidIdx ; 
+    
         dst->meshgroup.push_back(d_mg); 
+        
+        //int ridx = s_SolidIdx ;  // first gen assumption 
+        int ridx = d_SolidIdx ;  // first gen assumption 
 
-        int ridx = i ;  // first gen assumption 
         const SMesh* d_mesh = SMesh::Concatenate( d_mg->subs, ridx );
         dst->meshmerge.push_back(d_mesh);
     }
 
+
+    int d_num_mg = dst->meshgroup.size() ; 
+
+    if(DUMP) std::cout << "SScene::CopySelect d_num_mg " << d_num_mg << "\n" ; 
+
+    // pre-alloc makes it simpler to increment instance by instance
+    dst->inst_info.resize(d_num_mg); 
+    for(int i=0 ; i < d_num_mg ; i++)
+    {
+        int d_ridx = i ; 
+        dst->inst_info[d_ridx].x = d_ridx ; 
+        dst->inst_info[d_ridx].y = 0 ; 
+        dst->inst_info[d_ridx].z = 0 ; 
+        dst->inst_info[d_ridx].w = 0 ; 
+    }
+
+
     dst->frame = src->frame ;  
 
-    /*
-    size_t s_num_inst_info = src->inst_info.size() ; 
-    size_t s_num_inst_tran = src->inst_tran.size() ; 
-    */
-    // TODO: use newly added inst_col3 info to apply selection to the inst_tran 
-    //       hmm tri nodes are not instanced ? 
+    [[maybe_unused]] int s_inst_info_num = src->inst_info.size() ; 
+    [[maybe_unused]] int s_inst_tran_num = src->inst_tran.size() ; 
+    [[maybe_unused]] int s_inst_col3_num = src->inst_col3.size() ; 
+    assert( s_inst_info_num == s_num_mg ); 
+    assert( s_inst_tran_num == s_inst_col3_num ); 
 
+    std::vector<int4>&  d_inst_info = dst->inst_info ; 
+    std::vector<glm::tvec4<int32_t>>&  d_inst_col3 = dst->inst_col3 ; 
+    std::vector<glm::tmat4x4<float>>&  d_inst_tran = dst->inst_tran ; 
+
+
+    // equivalent to CSGCopy::copySolidInstances
+    for(int i=0 ; i < s_inst_col3_num ; i++)
+    {
+        const glm::tmat4x4<float>& _s_inst_tran = src->inst_tran[i] ;       // instance level 
+        const glm::tvec4<int32_t>& _s_inst_col3 = src->inst_col3[i] ;  
+
+        [[maybe_unused]] int32_t s_inst_idx = _s_inst_col3.x ; 
+        int32_t s_gas_idx = _s_inst_col3.y ; 
+
+        assert( s_inst_idx == i ); 
+        assert( s_gas_idx < s_num_mg ); 
+       
+        int d_gas_idx = solidMap[s_gas_idx]; 
+        assert( d_gas_idx <  d_num_mg ); 
+
+        bool live_instance = d_gas_idx > -1 ;  
+
+        if(live_instance)
+        {
+            glm::tmat4x4<float> _d_inst_tran = _s_inst_tran ; 
+
+            int d_inst_offset = d_inst_tran.size();  // offset before push_back for 0-based
+            d_inst_tran.push_back(_d_inst_tran); 
+            d_inst_col3.push_back( { d_inst_offset, d_gas_idx, _s_inst_col3.z, _s_inst_col3.w } );  
+        }
+    }
+
+    int d_inst_col3_num = d_inst_col3.size(); 
+    for(int i=0 ; i < d_inst_col3_num ; i++)
+    {
+        int& d_gas_idx = d_inst_col3[i].y ; 
+        int d_ridx = d_gas_idx ; 
+        d_inst_info[d_ridx].y += 1 ; 
+    }
+
+
+    // offsets needs to be cumulative sums of prior inst counts, so do separately for sanity
+    int offset = 0 ; 
+    for(int i=0 ; i < d_num_mg ; i++)
+    {
+        int d_ridx = i ; 
+        d_inst_info[d_ridx].z = offset ; 
+        offset += d_inst_info[d_ridx].y ; 
+    }
+ 
     return dst ; 
 }
+
+
+inline SScene* SScene::copy(const SBitSet* elv) const 
+{
+    return CopySelect(this, elv); 
+}
+
+inline int SScene::Compare(const SScene* a, const SScene* b) // static
+{
+    bool dump = false ; 
+    std::stringstream ss ;
+    std::ostream* out = dump ? &ss : nullptr ; 
+
+    int mismatch = 0 ; 
+    mismatch += svec<int4>::Compare( "inst_info", a->inst_info, b->inst_info, out ); 
+    mismatch += svec<glm::tmat4x4<float>>::Compare( "inst_tran", a->inst_tran, b->inst_tran, out ); 
+    mismatch += svec<glm::tvec4<int32_t>>::Compare( "inst_col3", a->inst_col3, b->inst_col3, out ); 
+    //mismatch += svec<sfr>::Compare( "frame", a->frame, b->frame, out );   // std::string name 4 bytes is bytewise discrepant 
+
+    if(dump) std::cout << "SScene::Compare mismatch "  << mismatch << "\n" ; 
+    if(out) std::cout << ss.str() << "\n" ;  
+
+    return mismatch ; 
+}
+
 
 
 

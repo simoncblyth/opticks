@@ -119,19 +119,38 @@ inline void SOPTIX_Scene::init_GAS()
 SOPTIX_Scene::initInstances
 -----------------------------
 
+
+SScene::inst_tran
+    instance level, typically many thousands
+
+SScene::inst_col3
+    instance level, same size as inst_tran
+
+SScene::inst_info 
+    compound solid level {ridx, inst_count, inst_offset, 0}, typicallly order ~10
+
+    * size of this vector dictates the number of GAS
+    * the inst_count and 
+
+
+
 **/
 
 
 inline void SOPTIX_Scene::init_Instances()
 {
-    const std::vector<glm::tmat4x4<float>>& inst_tran = scene->inst_tran ;
     size_t num_gas  = scene->inst_info.size(); 
     size_t num_inst = scene->inst_tran.size(); 
+    [[maybe_unused]] size_t num_col3 = scene->inst_col3.size(); 
+    assert( num_inst == num_col3 ); 
+
+    const std::vector<glm::tmat4x4<float>>& inst_tran = scene->inst_tran ;
 
     if(DUMP) std::cout 
         << "SOPTIX_Scene::init_Instances"
         << " num_gas " << num_gas 
         << " num_inst " << num_inst
+        << " num_col3 " << num_col3
         << std::endl 
         ; 
 

@@ -217,7 +217,10 @@ set(HEADERS
 
     SSeq.hh
     STranche.hh
+
     SVec.hh
+    svec.h
+
     SNameVec.hh
     SMap.hh
     SCount.hh

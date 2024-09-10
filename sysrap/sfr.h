@@ -25,15 +25,18 @@ struct sfr
     template<typename T>
     static sfr MakeFromExtent(T extent); 
 
-    glm::tvec4<double>  ce  ;
-    glm::tvec4<int64_t> aux0 ; 
-    glm::tvec4<int64_t> aux1 ; 
-    glm::tvec4<int64_t> aux2 ; 
+    glm::tvec4<double>  ce  ;    //  4*8 = 32       0
+    glm::tvec4<int64_t> aux0 ;   //  4*8 = 32      32  
+    glm::tvec4<int64_t> aux1 ;   //  4*8 = 32      64
+    glm::tvec4<int64_t> aux2 ;   //  4*8 = 32      96
 
-    glm::tmat4x4<double>  m2w ; 
-    glm::tmat4x4<double>  w2m ; 
+    glm::tmat4x4<double>  m2w ;  // 4*4*8 = 128   128
+    glm::tmat4x4<double>  w2m ;  // 4*4*8 = 128   256
+                                 
+    std::string name ;           //               384 
 
-    std::string name ; 
+    // bytewise comparison of sfr instances fails 
+    // for 4 bytes at offset 384 corresponding to the std::string name reference
 
     sfr(); 
 

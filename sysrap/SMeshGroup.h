@@ -13,6 +13,7 @@ struct SMesh ;
 
 struct SMeshGroup
 {
+    static constexpr const bool DUMP = false ; 
     std::vector<const SMesh*> subs ;
     std::vector<std::string> names ;
 
@@ -54,9 +55,20 @@ inline SMeshGroup* SMeshGroup::MakeCopy(const SMeshGroup* src, const SBitSet* el
     {   
         const SMesh* s_sub = src->subs[i] ; 
         const std::string& s_name = src->names[i] ; 
-        int s_lvid = s_sub->lvid ; 
+        int s_sub_lvid = s_sub->lvid ; 
+        bool selected = ( elv == nullptr || s_sub_lvid == -1 ) ? true : elv->is_set(s_sub_lvid) ;  
 
-        bool selected = elv == nullptr ? true : elv->is_set(s_lvid) ;  
+        if(DUMP) std::cout 
+            << "SMeshGroup::MakeCopy"
+            << " i " << i 
+            << " s_name " << s_name
+            << " s_sub_lvid " << s_sub_lvid
+            << " s_num_subs " << s_num_subs
+            << " s_num_names " << s_num_names  
+            << "\n"
+            ;
+
+        //assert( s_sub_lvid > -1 ); 
         if(!selected) continue ; 
 
         const SMesh* d_sub = s_sub->copy(); 
@@ -105,20 +117,28 @@ inline void SMeshGroup::save(const char* dir) const
 
 inline SMeshGroup* SMeshGroup::Import(const NPFold* fold )
 {
+    if(DUMP) std::cout << "[SMeshGroup::Import \n" ; 
     SMeshGroup* mg = new SMeshGroup ; 
     mg->import(fold); 
+    if(DUMP) std::cout << "]SMeshGroup::Import \n" ; 
     return mg ; 
 }
 
 inline void SMeshGroup::import(const NPFold* fold )
 {
     int num_sub = fold->get_num_subfold() ;
+    if(DUMP) std::cout << "[SMeshGroup::import num_sub " << num_sub << "\n" ; 
     for(int i=0 ; i < num_sub ; i++)
     {
-        const NPFold* sub = fold->get_subfold(i); 
+        const NPFold* sub = fold->get_subfold(i);
+        if(DUMP) std::cout << ".SMeshGroup::import sub.desc " << sub->desc() << "\n" ; 
+ 
         const SMesh* m = SMesh::Import(sub) ;  
+        if(DUMP) std::cout << ".SMeshGroup::import SMesh::Import(sub).lvid" << m->lvid << "\n" ; 
         subs.push_back(m); 
     }
+    names = fold->names ; 
+    if(DUMP) std::cout << "]SMeshGroup::import num_sub " << num_sub << "\n" ; 
 }
 
 inline std::string SMeshGroup::descRange() const 

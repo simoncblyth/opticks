@@ -45,13 +45,49 @@ const char* SGeoConfig::ArglistPath(){    return _ArglistPath ; }
 const char* SGeoConfig::CXSkipLV(){       return _CXSkipLV ? _CXSkipLV : "" ; }
 const char* SGeoConfig::CXSkipLV_IDXList(){  return _CXSkipLV_IDXList ? _CXSkipLV_IDXList : "" ; }
 
-/**
-SGeoConfig::ELVSelection
---------------------------
-**/
 
 const char* SGeoConfig::GEOM(){           return _GEOM ; }
 const char* SGeoConfig::ELVSelection(){   return _ELVSelection ; }
+
+
+/**
+SGeoConfig::ELVSelection
+--------------------------
+
+Examples using "filepath:" prefix to select volumes via solid names(aka meshnames) listed in files::
+
+    GEOM cf
+    cp meshname.txt /tmp/elv.txt
+    vi /tmp/elv.txt
+    ELV=filepath:/tmp/elv.txt MOI=sTarget:0:-1 ~/o/cx.sh 
+
+    grep Surftube meshname.txt > /tmp/elv.txt
+    echo sTarget >> /tmp/elv.txt
+    ELV=filepath:/tmp/elv.txt MOI=sTarget:0:-1 ~/o/cx.sh 
+
+Note that the file is read via sstr::SplitTrimSuppress which will ignore lines in the file 
+starting with "#", so another way::
+
+    GEOM cf
+    cp meshname.txt /tmp/elv.txt
+    vi /tmp/elv.txt ## comment names to skip with "#"
+    ELV=filepath:/tmp/elv.txt MOI=sTarget:0:-1 ~/o/cx.sh 
+ 
+    grep \# /tmp/elv.txt 
+    #HamamatsuR12860sMask_virtual
+    #NNVTMCPPMTsMask_virtual
+    #mask_PMT_20inch_vetosMask_virtual
+ 
+
+Examples using "t:" prefix to exclude volumes::
+
+   ELV=t:HamamatsuR12860sMask_virtual,NNVTMCPPMTsMask_virtual MOI=NNVTMCPPMTsMask:0:-2  ~/o/cx.sh
+
+
+
+
+**/
+
 const char* SGeoConfig::ELVSelection(const SName* id )
 {
     const char* elv_selection_ = ELVSelection() ; 
