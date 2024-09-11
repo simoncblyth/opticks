@@ -32,10 +32,8 @@ CFBASE
 #include <cstdlib>
 #include <csignal>
 
+#include "ssys.h"
 
-#include "SPath.hh"
-#include "SStr.hh"
-#include "SSys.hh"
 #include "SSim.hh"
 #include "SOpticks.hh"
 #include "SEventConfig.hh"
@@ -73,7 +71,7 @@ struct CSGOptiXRenderTest
     void initSolidSelection(); 
     void initArgs(); 
 
-    void setFrame_sla(); 
+    void setFrame_solid_selection(); 
 
 };
 
@@ -85,12 +83,20 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     cx(CSGOptiX::Create(fd)),   // uploads fd and then instanciates 
     flight(SGeoConfig::FlightConfig()),
     ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
-    default_arg(SSys::getenvvar("MOI", "sWorld:0:0"))  
+    default_arg(ssys::getenvvar("MOI", "sWorld:0:0"))  
 {
     initSolidSelection(); 
     initArgs(); 
 }
 
+
+/**
+CSGOptiXRenderTest::initSolidSelection
+---------------------------------------
+
+MAYBE : remove this solid selection approach, as EMM does similar but more cleanly ? 
+
+**/
 
 void CSGOptiXRenderTest::initSolidSelection()
 {
@@ -130,7 +136,7 @@ void CSGOptiXRenderTest::initArgs()
     }
 }
 
-void CSGOptiXRenderTest::setFrame_sla()
+void CSGOptiXRenderTest::setFrame_solid_selection()
 {
     assert( solid_selection ); 
     fd->gasCE(ce, cx->solid_selection );    
@@ -162,24 +168,15 @@ int main(int argc, char** argv)
 #endif
 
 
-
-    /*
-    const char* outdir = SEventConfig::OutDir(); 
-    SOpticks::WriteOutputDirScript(outdir) ; 
-
-    writes CSGOptiXRenderTest_OUTPUT_DIR.sh in PWD 
-    skip as writing into PWD potentially problematic
-    */
-
     SSim::Create(); 
 
     CSGOptiXRenderTest t; 
 
     if( t.solid_selection )
     {
-        const char* arg = SSys::getenvvar("NAMESTEM", "") ; 
+        const char* arg = ssys::getenvvar("NAMESTEM", "") ; 
         LOG(LEVEL) << " t.solid_selection " << t.solid_selection << " arg " << arg ; 
-        t.setFrame_sla(); 
+        t.setFrame_solid_selection(); 
         t.cx->render(); 
     }
     else if( t.flight )

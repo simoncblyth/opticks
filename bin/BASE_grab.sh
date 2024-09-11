@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 BASE_grab.sh 
 ==============
@@ -11,6 +11,8 @@ Usage::
 
 EOU
 }
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 vars="BASE"
 for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -38,7 +40,7 @@ if [ "${arg/jstab}" != "$arg" ]; then
     globptn="$BASE/cxr_overview*elv*.jpg"
     refjpgpfx="/env/presentation/cxr/cxr_overview"
 
-    ${IPYTHON:-ipython} --pdb  $OPTICKS_HOME/ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+    PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb  ../ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
 fi 
 
 

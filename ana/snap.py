@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 """
+snap.py : analysis of scan metadata
+======================================
+
 ::
 
-    ggeo.py --mmtrim    # create list of mm names used for labels at $TMP/mm.txt
 
-    snap.py       # list the snaps in speed order with labels 
+    snap.py                    # list the snaps in speed order with labels 
 
-    open $(snap.py --jpg)         # open the jpg ordered by render speed
+    open $(snap.py --jpg)      # open the jpg ordered by render speed
 
 
 """
@@ -23,6 +25,7 @@ class MM(object):
     Note that the input file was formerly created using::
 
        ggeo.py --mmtrim > $TMP/mm.txt
+       # created list of mm names used for labels at $TMP/mm.txt
 
     """
     PTN = re.compile("\d+") 
@@ -66,7 +69,14 @@ class DummyCandleSnap(object):
 
 
 class Snap(object):
-    PTN = re.compile("cxr_overview_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)")
+    """
+
+    cxr_overview_emm_t0,_elv_t_moi__ALL00000.jpg
+    cxr_overview_emm_t0,_elv_t_moi__ALL.jpg 
+
+    """
+    PTN0 = re.compile("cxr_overview_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)(?P<jdx>\d{5})")
+    PTN1 = re.compile("cxr_overview_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)")
 
     @classmethod
     def is_valid(cls, jpg_path):
@@ -78,10 +88,22 @@ class Snap(object):
 
     @classmethod
     def ParseStem(cls, jpg_stem):   
-        m = cls.PTN.match(jpg_stem)
-        return m.groupdict() if not m is None else {}
+        m0 = cls.PTN0.match(jpg_stem)
+        m1 = cls.PTN1.match(jpg_stem)
+        m = m0
+        if m0 is None:
+            m = m1 
+        pass 
+        d = m.groupdict() if not m is None else {}
+        return d
 
     def __init__(self, jpg_path, selectmode="elv" ):
+        """
+        1. determine path to json sidecar by replacing extension .jpg with .json
+        2. load json 
+        3. access some json values such as av
+        4. parse the stem to give elv, emm, moi
+        """ 
         json_path = jpg_path.replace(".jpg", ".json")
         jpg_stem = os.path.splitext(os.path.basename(jpg_path))[0]
         log.debug("jpg_path %s json_path %s " % (jpg_path, json_path))          
@@ -98,11 +120,14 @@ class Snap(object):
         elv = dstem.get("elv", None)
         emm = dstem.get("emm", None)
         moi = dstem.get("moi", None)
+        jdx = dstem.get("jdx", None)
 
         self.dstem = dstem  
         self.elv = elv
         self.emm = emm 
         self.moi = moi
+        self.jdx = jdx
+
         self.selectmode = selectmode
         self.enabled = elv if selectmode == "elv" else emm 
 
@@ -112,6 +137,8 @@ class Snap(object):
 
     def jpg_(self):
         """
+        :return jpg_path: avoiding strings that cause RST issues
+
         tilde ~ and __t0__ causing RST problems : so replace tham 
         """
         fold = os.path.dirname(self.jpg)
@@ -138,11 +165,17 @@ class Snap(object):
         return tname 
 
     def mvjpg(self):
+        """
+        :return cmdstring: to change the name of the jpg to jpg_tname avoiding RST issues   
+        """
         name = os.path.basename(self.jpg)
         tname = self.jpg_tname()
         return None if name == tname else "mv %s %s" % (name, tname)
 
     def cpjpg(self, pfx, s5base):
+        """
+        :return cmdstring: that copies the absolute jpg path into presentation tree
+        """
         s5base = os.path.expandvars(s5base)
         name = os.path.basename(self.jpg)
         ppath = "%s%s/%s"%(s5base,pfx,name)
@@ -154,7 +187,7 @@ class Snap(object):
 
     def refjpg(self, pfx, afx="1280px_720px", indent="    "): 
         """
-        For inclusion into s5_background_image.txt 
+        :return cmdstring: for inclusion into s5_background_image.txt 
         """
         name = os.path.basename(self.jpg_())
         return "\n".join([indent+self.title(), indent+pfx+"/"+name+" "+afx, ""])
@@ -210,8 +243,11 @@ class SnapScan(object):
     @classmethod
     def MakeSnaps(cls, globptn, reverse=False, selectmode="elv"):
         """
-        * resolve the globptn into a sorted list of paths, typically of jpg renders
-        * order is based on Snap.av obtained from the sidecar json file
+        1. resolve globptn into a sorted list of paths, typically of jpg render files
+        2. select paths considered valid, currently all paths found
+        3. create Snap instances for every path 
+        4. order the Snap instances based in Snap.av obtained from the sidecar json file
+        5. return the snaps
         """ 
         log.info("globptn %s " % globptn )
         raw_paths = glob.glob(globptn) 
@@ -267,6 +303,10 @@ class SnapScan(object):
 
     @classmethod
     def GEOMInfo(cls):
+        """
+        Returns MM and LV instances
+
+        """ 
         cfptn = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry"
         cfdir = os.path.expandvars(cfptn)  
         log.info("cfptn %s cfdir %s " % (cfptn, cfdir) ) 
@@ -298,6 +338,11 @@ class SnapScan(object):
     def __init__(self, globptn, candle="1,2,3,4", reverse=False, selectmode="elv", selectspec=""):
         """
         :param globptn: eg 
+
+        1. find all_snaps Snap instances using the globptn 
+        2. set s_candle to the Snap instance for which s.enabled matches candle, eg "1,2,3,4"
+
+
         """
         mm,lv = self.GEOMInfo()
         self.mm = mm
@@ -341,6 +386,7 @@ class SnapScan(object):
         self.candle = s_candle 
 
     def label(self, enabled):
+        log.info(" enabled : %s " % str(enabled))  
         return self.lv.label(enabled) if self.selectmode == "elv" else self.mm.label(enabled)
 
     def table(self):
@@ -391,25 +437,30 @@ def edef(key, fallback):
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
+
+    # config 
     parser.add_argument(  "--level", default="info", help="logging level" ) 
     parser.add_argument(  "--globptn", default="$TMP/snap/*.jpg", help="base" ) 
-    parser.add_argument(  "--jpg", action="store_true", help="List jpg paths in speed order" ) 
     parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 
     parser.add_argument(  "--s5base", default="$HOME/simoncblyth.bitbucket.io", help="Presentation repo base" )
-    parser.add_argument(  "--refjpg", action="store_true", help="List jpg paths s5 background image presentation format" ) 
-    parser.add_argument(  "--pagejpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
-    parser.add_argument(  "--mvjpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
-    parser.add_argument(  "--cpjpg", action="store_true", help="List cp commands to place into presentation repo" ) 
-    parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
-    parser.add_argument(  "--rst", action="store_true", help="Dump table in RST format" ) 
-    parser.add_argument(  "--txt", action="store_true", help="Dump table in TXT format" ) 
-    parser.add_argument(  "--snaps", action="store_true", help="Debug: just create SnapScan " ) 
     parser.add_argument(  "--outpath", default="/tmp/ana_snap.txt", help="Path where to write output" )
-    parser.add_argument(  "--out" , action="store_true", default=False, help="Enable saving output to *outpath*" )
-    parser.add_argument(  "--reverse", action="store_true", default=False, help="Reverse time order with slowest first")
     parser.add_argument(  "--selectmode",  default=edef("SELECTMODE","elv"), help="SnapScan selection mode" )
     parser.add_argument(  "--selectspec",  default=edef("SELECTSPEC","not_elv_t"), help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
     parser.add_argument(  "--candle",  default=edef("CANDLE","t"), help="Enabled setting to use as the reference candle for relative column in the table" )
+    parser.add_argument(  "--out" ,    action="store_true", help="Enable saving output to *outpath*", default=False )
+    parser.add_argument(  "--reverse", action="store_true", help="Reverse time order with slowest first", default=False)
+ 
+    # controls
+    parser.add_argument(  "--jpg",     action="store_true", help="List jpg paths in speed order" ) 
+    parser.add_argument(  "--refjpg",  action="store_true", help="List jpg paths s5 background image presentation format" ) 
+    parser.add_argument(  "--pagejpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
+    parser.add_argument(  "--mvjpg",   action="store_true", help="List jpg for inclusion into s5 presentation" ) 
+    parser.add_argument(  "--cpjpg",   action="store_true", help="List cp commands to place into presentation repo" ) 
+    parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
+    parser.add_argument(  "--snaps",   action="store_true", help="Debug: just create SnapScan " ) 
+    parser.add_argument(  "--rst",     action="store_true", help="Dump table in RST format" ) 
+    parser.add_argument(  "--txt",     action="store_true", help="Dump table in TXT format" ) 
+
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)

@@ -400,7 +400,7 @@ struct SYSRAP_API SGLM : public SCMD
     float get_nearfar_basis() const ; 
     float get_focal_basis() const ; 
 
-
+    void save(const char* dir, const char* stem) const ; 
     void writeDesc(const char* dir, const char* name="SGLM__writeDesc", const char* ext=".log" ) const ; 
     std::string desc() const ; 
 
@@ -773,6 +773,12 @@ int SGLM::command(const char* cmd)
     return 0 ; 
 }
 
+
+void SGLM::save(const char* dir, const char* stem) const 
+{
+    fr.save( dir, stem ); // .npy
+    writeDesc( dir, stem, ".log" );
+}
 
 void SGLM::writeDesc(const char* dir, const char* name_ , const char* ext_ ) const 
 {

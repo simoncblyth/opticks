@@ -17,6 +17,7 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <filesystem>
 
 #include "sproc.h"
 #include "sdirectory.h"
@@ -31,6 +32,7 @@ struct spath
 private:
     static std::string _ResolvePath(const char* spec); 
     static std::string _ResolvePathGeneralized(const char* spec_); 
+
 
     static char* ResolvePath(const char* spec); 
     static char* ResolvePathGeneralized(const char* spec); 
@@ -59,8 +61,7 @@ public:
     static const char* Resolve(Args ... args ); 
 
     static bool EndsWith( const char* path, const char* q);
-
-
+    static int SplitExt(std::string& dir, std::string& stem, std::string& ext, const char* path ); 
 
 private:
     template<typename ... Args>
@@ -517,6 +518,21 @@ inline bool spath::EndsWith( const char* path, const char* q)
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
+
+inline int spath::SplitExt(std::string& dir, std::string& stem, std::string& ext, const char* _path )
+{
+    std::filesystem::path path(_path);  
+    dir = path.parent_path().string() ;
+    stem = path.stem().string() ;  
+    ext = path.extension().string() ;     
+    bool ok = strlen(dir.c_str())>0 && strlen(stem.c_str()) > 0 && strlen(ext.c_str()) > 0 ; 
+    return ok ? 0 : 1 ; 
+}
+
+
+
+
+
 
 
 template<typename ... Args>

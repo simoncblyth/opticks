@@ -56,13 +56,13 @@ struct sfr
     bool is_identity() const ; 
 
     NP* serialize() const ; 
-    void save(const char* dir, const char* name=NAME) const ; 
+    void save(const char* dir, const char* stem=NAME) const ; 
 
     static sfr Import( const NP* a); 
-    static sfr Load( const char* dir, const char* name=NAME); 
+    static sfr Load( const char* dir, const char* stem=NAME); 
     static sfr Load_(const char* path ); 
 
-    void load(const char* dir, const char* name=NAME) ; 
+    void load(const char* dir, const char* stem=NAME) ; 
     void load_(const char* path ) ; 
     void load(const NP* a) ; 
 
@@ -200,12 +200,17 @@ inline NP* sfr::serialize() const
     return a ; 
 }
 
-inline void sfr::save(const char* dir, const char* name_ ) const
+inline void sfr::save(const char* dir, const char* stem_ ) const
 {
-    std::string aname = U::form_name( name_ , ".npy" ) ; 
+    std::string aname = U::form_name( stem_ , ".npy" ) ; 
     NP* a = serialize() ; 
     a->save(dir, aname.c_str()); 
 }
+
+
+
+
+
 
 
 inline sfr sfr::Import( const NP* a) // static

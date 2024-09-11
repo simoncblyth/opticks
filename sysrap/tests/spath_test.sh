@@ -15,7 +15,7 @@ source $HOME/.opticks/GEOM/GEOM.sh
 vars="BASH_SOURCE name bin GEOM TMP"
 for var in $vars ; do printf "%25s : %s\n" "$var" "${!var}" ; done 
 
-gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin
+gcc $name.cc -g -std=c++17 -lstdc++ -I.. -o $bin
 [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
 
 #unset TMP

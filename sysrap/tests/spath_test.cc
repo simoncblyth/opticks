@@ -42,6 +42,7 @@ struct spath_test
    static int WriteIntoInvokingDirectory();
    static int Read(); 
    static int EndsWith(); 
+   static int SplitExt(); 
 
    static int ALL();  
    static int Main();  
@@ -481,7 +482,27 @@ int spath_test::EndsWith()
     return ok ? 0 : 1  ; 
 }
 
+int spath_test::SplitExt()
+{
+    const char* path = "/tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm/cxr_overview_emm_t10,_elv_t_moi__ALL00000.jpg" ; 
 
+    std::string dir ; 
+    std::string stem ; 
+    std::string ext ; 
+
+    int rc = spath::SplitExt(dir, stem, ext, path ); 
+
+    std::cout 
+        << __FUNCTION__  << "\n"
+        << " path [" << path << "]\n" 
+        << " dir  [" << dir  << "]\n"
+        << " stem [" << stem << "]\n"
+        << " ext  [" << ext  << "]\n" 
+        << " rc   [" << rc << "]\n"
+        << std::endl
+        ; 
+    return rc  ; 
+}
 
 
 
@@ -522,7 +543,8 @@ int spath_test::Main()
 {
     //const char* test = "Resolve_defaultOutputPath" ;
     //const char* test = "Read" ;
-    const char* test = "EndsWith" ;
+    //const char* test = "EndsWith" ;
+    const char* test = "SplitExt" ;
  
     const char* TEST = ssys::getenvvar("TEST", test ); 
     int rc = 0 ; 
@@ -551,6 +573,7 @@ int spath_test::Main()
     else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
     else if(strcmp(TEST, "Read")==0) rc = Read();
     else if(strcmp(TEST, "EndsWith")==0) rc = EndsWith();
+    else if(strcmp(TEST, "SplitExt")==0) rc = SplitExt();
     else if(strcmp(TEST, "ALL")==0) rc = ALL();
     return rc ; 
 }

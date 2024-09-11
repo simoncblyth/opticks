@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash  
 usage(){ cat << EOU
 cxr.sh : basis for higher level render scripts using CSGOptiXRenderTest
 =========================================================================
@@ -31,6 +31,9 @@ TODO: former support for "--arglist" "--solid_label" "--sizescale" "--size" need
 
 EOU
 }
+
+cd $(dirname $(realpath $BASH_SOURCE))
+SDIR=$PWD
 
 msg="=== $BASH_SOURCE :"
 
@@ -121,7 +124,7 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 
 
-export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$bin/$CVDLabel/$optix_version
+export OPTICKS_OUT_FOLD=${CFBASE:-$TMPDIR}/$bin/$CVDLabel/${optix_version}
 export OPTICKS_OUT_NAME=$MOI
 if [ -n "$SCAN" ]; then
     OPTICKS_OUT_NAME=$OPTICKS_OUT_NAME/$SCAN
@@ -129,6 +132,9 @@ fi
 export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
 
 
+# Example BASE directory path for scan outputs 
+#      /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm
+#
 # SEventConfig::OutDir 
 #    $OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME  (should be same as BASE)
 # 
@@ -192,22 +198,19 @@ if [ "$arg" == "run" ]; then
 
 elif [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "grab_open" ]; then 
 
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+    source $SDIR/../bin/BASE_grab.sh $arg 
 
 elif [ "$arg" == "jstab" ]; then 
 
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+    source $SDIR/../bin/BASE_grab.sh $arg 
 
 elif [ "$arg" == "pub" -o "$arg" == "list" ]; then 
 
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+    source $SDIR/../bin/BASE_grab.sh $arg 
 
 elif [ "$arg" == "info" ]; then 
 
-    vars="TMPDIR LOGDIR NAMEPREFIX"
+    vars="BASH_SOURCE BASE TMPDIR LOGDIR NAMEPREFIX SDIR optix_version"
     for var in $vars ; do printf " %20s : %s \n" "$var" "${!var}" ; done
 fi 
-
-
-
 
