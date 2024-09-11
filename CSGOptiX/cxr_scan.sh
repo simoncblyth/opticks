@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 cxr_scan.sh
 ==============
@@ -60,7 +60,7 @@ nmm=$(wc -l < $cfd/mmlabel.txt)
 nlv=$(wc -l < $cfd/meshname.txt)
 nmm=$(( $nmm - 1 ))
 nlv=$(( $nlv - 1 ))
-# NMM and NLV are maximum index, not counts, so they need to be num-1    
+# seq from zero needs NMM and NLV as maximum inclusive index, not counts, so they need to be num-1    
 
 NMM=${NMM:-$nmm}   # geometry specific 
 NLV=${NLV:-$nlv}
@@ -116,8 +116,8 @@ scan-elv()
     done 
 }
 
-scan=scan-elv
-#scan=scan-emm
+#scan=scan-elv
+scan=scan-emm
 unset SCAN
 export SCAN=${SCAN:-$scan}
 

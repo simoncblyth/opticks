@@ -700,7 +700,7 @@ void CSGOptiX::initPIDXYZ()
         params->pidxyz.z = params->depth/2 ; 
     }
 
-    LOG(info) << " params->pidxyz " << params->pidxyz ; 
+    LOG(LEVEL) << " params->pidxyz " << params->pidxyz ; 
 }
 
 
