@@ -18,31 +18,34 @@ sysrap/tests/SGLM_set_frame_test.sh
     EYE=0.2,0.2,0.2 TMIN=0.1 ~/o/cxr_min.sh
     EYE=0.3,0.3,0.3 TMIN=0.1 ~/o/cxr_min.sh
 
-    ELV=t:Water_solid,Rock_solid  ~/o/cxr_min.sh    # with colon not working 
-
+    ELV=t:Water_solid,Rock_solid  ~/o/cxr_min.sh 
 
     MOI=PMT_20inch_veto:0:1000 ~/o/cxr_min.sh
 
 
     ~/o/cxr_min.sh 
+   
+
+EMM EnabledMergedMesh examples selecting compound solids::
+
+    EMM=0, ~/o/cx.sh   ## only 0, "rem" 
+
+    EMM=t0, ~/o/cx.sh    ## exclude 0 "rem"
+    EMM=t:0, ~/o/cx.sh   ## exclude 0 "rem"
 
 
+    EMM=10, ~/o/cx.sh   ## only 10 "tri"
 
-FIXED Issue : EYE inputs not being extent scaled
------------------------------------------------------
+    EMM=10  ~/o/cx.sh   ## NB: WITHOUT COMMA IS VERY DIFFERENT TO ABOVE : BIT PATTERN FROM DECIMAL 10 
 
-The transition to using the transforms from sframe.h 
-revealed a difference in the matrix expections, 
-where the difference was extent scaling. This made
-it tedious to find good viewpoints.::
+    EMM=1,2,3,4 ~/o/cx.sh
 
-    EYE=10,10,10 TMIN=0.5 MOI=Hama:0:0 ./cxr_min.sh        ## invisible 
-    EYE=100,100,100 TMIN=0.1 MOI=Hama:0:1000 ./cxr_min.sh  ## mostly inviz
-    EYE=1000,1000,1000 TMIN=0.5 MOI=NNVT:0:0 ./cxr_min.sh  ## makes sense
+    EMM=1,2,3,4,5,6,7,8,9 ~/o/cx.sh 
 
-DONE: added saving of SGLM::desc for debugging view issues
 
-    
+NB presence of comma in EMM switches to bit position input, not binary value
+
+
 
 EOU
 }
@@ -215,7 +218,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="GEOM MOI TMIN EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CUDA_VISIBLE_DEVICES"
+vars="GEOM MOI EMM ELV TMIN EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CUDA_VISIBLE_DEVICES"
 
 
 

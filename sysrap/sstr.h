@@ -130,6 +130,11 @@ struct sstr
     static void Extract( std::vector<long>& vals, const char* s ); 
     static long ExtractLong( const char* s, long fallback ); 
 
+
+    static bool LooksLikePath(const char* arg);
+    static void LoadList(const char* arg, std::vector<std::string>& lines, char delim  );
+    static std::vector<std::string>* LoadList( const char* arg, char delim );
+
 };
 
 inline void sstr::Write(const char* path, const char* txt )
@@ -939,5 +944,54 @@ inline long sstr::ExtractLong( const char* s, long fallback ) // static
 }
 
 
+
+
+
+inline bool sstr::LooksLikePath(const char* arg)
+{
+    if(!arg) return false ;
+    if(strlen(arg) < 2) return false ; 
+    return arg[0] == '/' || arg[0] == '$' ; 
+}
+
+
+
+/**
+sstr::LoadList
+----------------
+
+Interprets the arg as either a filepath with lines to be loaded
+or a comma delimited string to be split into lines.   
+
+**/
+
+inline void sstr::LoadList(const char* arg, std::vector<std::string>& lines, char delim  )
+{
+    if(arg == nullptr) return ; 
+
+    if(LooksLikePath(arg) && delim == '\n' )  // eg starts with slash
+    {   
+        std::ifstream ifs(arg);
+        std::string line;
+        while(std::getline(ifs, line)) lines.push_back(line) ; 
+    }   
+    else if( delim == ',' )
+    {   
+        sstr::Split( arg,  delim, lines );    
+    }   
+    else
+    {   
+        lines.push_back(arg);
+    }   
+}
+
+inline std::vector<std::string>* sstr::LoadList( const char* arg, char delim )
+{
+    if(arg == nullptr) return nullptr ; 
+    typedef std::vector<std::string> VS ; 
+    VS* lines = new VS ; 
+    LoadList(arg, *lines, delim ); 
+    return lines ; 
+}
 
 

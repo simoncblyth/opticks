@@ -1,18 +1,31 @@
-#!/bin/bash -l 
+#!/bin/bash
+usage(){ cat << EOU
+SGeoConfigTest.sh
+===================
 
-elv=Water_solid,Rock_solid
-geom=FewPMT
+::
+   
+   ~/o/sysrap/tests/SGeoConfigTest.sh
 
-GEOM=${GEOM:-$geom}
-ELV=${ELV:-$elv}
+   EMM=0,1,2,3,4,5,6,7 ~/o/sysrap/tests/SGeoConfigTest.sh
+   EMM=t0,1,2,3,4,5,6,7 ~/o/sysrap/tests/SGeoConfigTest.sh
 
-GEOM=$GEOM ELV=$ELV  SGeoConfigTest 
 
-GEOM=$GEOM ELV=t$ELV  SGeoConfigTest 
+Example ELV::
 
-GEOM=$GEOM ELV=~$ELV  SGeoConfigTest 
+    sWorld,sTarget
+    tsWorld,sTarget
+    t:sWorld,sTarget
+    ~sWorld,sTarget
+    \~sWorld,sTarget  
 
-GEOM=$GEOM ELV=t:$ELV  SGeoConfigTest 
 
-GEOM=$GEOM ELV=\~:$ELV  SGeoConfigTest 
+EOU
+}
+
+
+source $HOME/.opticks/GEOM/GEOM.sh 
+
+SGeoConfigTest 
+
 

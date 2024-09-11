@@ -18,6 +18,8 @@ struct SYSRAP_API SGeoConfig
     static const plog::Severity LEVEL ; 
     static constexpr const bool VERBOSE = false ; 
     static std::string Desc(); 
+    std::string desc() const ; 
+
     static std::string DescEMM(); 
 
     static constexpr const char* kGEOM           = "OPTICKS_GEOM,GEOM" ; 

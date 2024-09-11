@@ -6,8 +6,6 @@
 #include <cstring>
 
 #include "ssys.h"
-
-#include "SStr.hh"   // TODO: eliminate in favor of sstr.h
 #include "sstr.h"
 
 #include "SBit.hh"   // TODO: sbit.h 
@@ -178,9 +176,19 @@ std::string SGeoConfig::Desc()
     ss << std::setw(25) << kArglistPath      << " : " << ( _ArglistPath    ? _ArglistPath    : "-" ) << std::endl ;    
     ss << std::setw(25) << kCXSkipLV         << " : " << CXSkipLV() << std::endl ;    
     ss << std::setw(25) << kCXSkipLV_IDXList << " : " << CXSkipLV_IDXList() << std::endl ;    
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+std::string SGeoConfig::desc() const
+{
+    std::stringstream ss ; 
+    ss << "SGeoConfig::desc\n" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 
 bool SGeoConfig::IsEnabledMergedMesh(unsigned mm) // static
 {
@@ -198,6 +206,9 @@ bool SGeoConfig::IsEnabledMergedMesh(unsigned mm) // static
 std::string SGeoConfig::DescEMM()
 {
     std::stringstream ss ; 
+    ss << "SGeoConfig::DescEMM " ; 
+    ss << std::setw(25) << kEMM              << " : " << SBit::HexString(_EMM) << " 0x" << std::hex << _EMM << std::dec << std::endl ;
+
     for(unsigned i=0 ; i < 64 ; i++) 
     {
         bool emm = SGeoConfig::IsEnabledMergedMesh(i) ; 
@@ -210,7 +221,7 @@ std::string SGeoConfig::DescEMM()
 
 std::vector<std::string>*  SGeoConfig::Arglist() 
 {
-    return SStr::LoadList( _ArglistPath, '\n' );   // TODO: sstr
+    return sstr::LoadList( _ArglistPath, '\n' );  
 }
 
 
@@ -261,7 +272,8 @@ bool SGeoConfig::IsCXSkipLV(int lv) // static
 {
     if( _CXSkipLV_IDXList == nullptr ) return false ; 
     std::vector<int> cxskip ;
-    SStr::ISplit(_CXSkipLV_IDXList, cxskip, ',');   // TODO: sstr
+    sstr::split<int>(cxskip, _CXSkipLV_IDXList, ',' ); 
+
     return std::count( cxskip.begin(), cxskip.end(), lv ) == 1 ;   
 }
 

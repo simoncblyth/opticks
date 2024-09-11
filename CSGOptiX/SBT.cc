@@ -276,6 +276,8 @@ prim extent is used.
 
 void SBT::createGAS()  
 {
+    LOG(LEVEL) << SGeoConfig::DescEMM() ; 
+
     unsigned num_solid = foundry->getNumSolid();   // STANDARD_SOLID
     for(unsigned i=0 ; i < num_solid ; i++)
     {

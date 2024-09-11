@@ -1,7 +1,12 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 cxr_overview.sh
 ================
+
+::
+
+   ~/o/CSGOptiX/cxr_overview.sh  
+
 
 For some views its good to remove large container volumes::
 
@@ -70,7 +75,8 @@ JUNO (trunk:Mar 2, 2022)
 EOU
 }
 
-DIR=$(dirname $BASH_SOURCE)
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 case $(uname) in 
   Linux) defarg="run" ;;
@@ -124,5 +130,5 @@ if [ -z "$SCAN" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var "${!var}" ; done
 fi
 
-source $DIR/cxr.sh $arg
+source cxr.sh $arg
 

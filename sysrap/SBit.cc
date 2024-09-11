@@ -28,6 +28,9 @@
 #include <vector>
 #include <algorithm>
 
+#include "ssys.h"
+
+
 #if defined(_MSC_VER)
 
 #include <intrin.h>
@@ -362,7 +365,15 @@ unsigned long long SBit::FromPosString(const char* str_, char delim)
 
 unsigned long long SBit::FromEString(const char* ekey, const char* fallback)
 {
-    const char* str = getenv(ekey) ; 
+    const char* str = ssys::getenvvar(ekey) ; 
+
+    if(0) std::cout 
+        << "SBit::FromEString"
+        << " ekey[" << ( ekey ? ekey : "-" ) << "]\n"  
+        << " str[" << ( str ? str : "-" ) << "]\n"
+        << "\n"
+        ;
+
     return SBit::FromString(str ? str : fallback);
 }
 

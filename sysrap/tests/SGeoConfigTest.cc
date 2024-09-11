@@ -50,26 +50,33 @@ void test_ELVSelection(const SName* id )
 }
 
 
+void test_EMM(const SName* id)
+{
+    LOG(info) << SGeoConfig::DescEMM() ; 
+}
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
     const char* idp = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt" ; 
-
     SName* id = SName::Load(idp); 
-    std::cout << id->detail() << std::endl ; 
+    //std::cout << id->detail() << std::endl ; 
 
-    LOG(info) << SGeoConfig::Desc() ; 
+    //SGeoConfig config ; 
+    //LOG(info) << config.desc() ; 
+
+    //LOG(info) << SGeoConfig::Desc() ; 
 
     /*
     SGeoConfig::GeometrySpecificSetup(id); 
-    LOG(info) << SGeoConfig::Desc() ; 
-    LOG(info) << SGeoConfig::DescEMM() ; 
     test_Arglist(); 
     test_CXSkipLV(id); 
     test_ELVSelection(id); 
     */
 
+    test_EMM(id); 
 
     return 0 ; 
 }

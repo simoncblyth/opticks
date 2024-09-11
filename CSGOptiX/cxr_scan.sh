@@ -9,7 +9,7 @@ or enabledlv(fine)
 
 On GPU workstation::
 
-    ./cxr_scan.sh 
+    ~/o/CSGOptiX/cxr_scan.sh 
 
 On laptop::
 
@@ -45,7 +45,7 @@ On laptop::
 EOU
 }
 
-DIR=$(dirname $BASH_SOURCE)
+cd $(dirname $(realpath $BASH_SOURCE))
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 cfd=$HOME/.opticks/GEOM/$GEOM/CSGFoundry
@@ -104,7 +104,7 @@ scan-emm()
 {
     local e 
     for e in $(scan-emm-) ; do 
-        EMM=$e $DIR/$SCRIPT.sh $*
+        EMM=$e ./$SCRIPT.sh $*
     done 
 }
 
@@ -112,7 +112,7 @@ scan-elv()
 {
     local e 
     for e in $(scan-elv-) ; do 
-        ELV=$e $DIR/$SCRIPT.sh $*
+        ELV=$e ./$SCRIPT.sh $*
     done 
 }
 
