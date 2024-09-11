@@ -54,3 +54,19 @@ ELV_dynamic_geometry_scanning
     P[blyth@localhost opticks]$ 
 
 
+TODO : fix naming inconsistency in output, or rejig with extra directory
+------------------------------------------------------------------------
+
+::
+
+    P[blyth@localhost scan-emm]$ l
+    total 8924
+      4 -rw-rw-r--. 1 blyth blyth   1241 Sep 11 17:18 cxr_overview_emm_t10,_elv_t_moi__ALL00000.json
+     12 -rw-rw-r--. 1 blyth blyth   9955 Sep 11 17:18 cxr_overview_emm_t10,_elv_t_moi__ALL.log
+      4 -rw-rw-r--. 1 blyth blyth     32 Sep 11 17:18 cxr_overview_emm_t10,_elv_t_moi__ALL_meta.txt
+      4 -rw-rw-r--. 1 blyth blyth    512 Sep 11 17:18 cxr_overview_emm_t10,_elv_t_moi__ALL.npy
+    356 -rw-rw-r--. 1 blyth blyth 361617 Sep 11 17:18 cxr_overview_emm_t10,_elv_t_moi__ALL00000.jpg
+     12 drwxr-xr-x. 2 blyth blyth   8192 Sep 11 17:18 .
+
+
+

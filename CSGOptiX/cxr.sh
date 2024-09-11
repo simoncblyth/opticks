@@ -54,7 +54,6 @@ pkg=CSGOptiX
 bin=CSGOptiXRenderTest
 
 # defaults 
-cvd=1            # default GPU to use  0:TITAN V 1:TITAN RTX
 emm=t0           # what to include in the GPU geometry : default to t0 ie ~0 which means everything 
 moi=sWaterTube   # should be same as lLowerChimney_phys
 eye=-1,-1,-1,1   # where to look from, see okc/View::home 
@@ -68,7 +67,6 @@ sizescale=1.5
 
 # [ "$(uname)" == "Darwin" ] && cvd=0    # only one GPU on laptop : BUT are usually just grabbing from remote
 
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 export CVDLabel="CVD${CUDA_VISIBLE_DEVICES}" 
 
 export EMM=${EMM:-$emm}    # -e 
@@ -142,7 +140,7 @@ export BASE=$OPTICKS_OUT_FOLD/$OPTICKS_OUT_NAME
 
 if [ -z "$SCAN" ]; then 
 
-   vars="CVD CUDA_VISIBLE_DEVICES EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
+   vars="CUDA_VISIBLE_DEVICES EMM MOI EYE TOP SLA CAM TMIN ZOOM CAMERATYPE OPTICKS_GEOM OPTICKS_RELDIR SIZE SIZESCALE CFBASE OPTICKS_OUT_FOLD OPTICKS_OUT_NAME"
    for var in $vars ; do printf "%10s : %s \n" $var ${!var} ; done 
 
 fi 
