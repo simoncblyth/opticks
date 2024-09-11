@@ -1,7 +1,16 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 G4CXOpticks_setGeometry_Test.sh
 ===================================
+
+::
+
+    ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
+    LOG=1 ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
+
+
+
+
 
 Test of geometry conversions in isolation::
                   
@@ -80,13 +89,13 @@ GEOM envvar that is exported from $HOME/.opticks/GEOM/GEOM.sh
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)  
+cd $(dirname $(realpath $BASH_SOURCE))
 
 defarg=info_run_ana
 arg=${1:-$defarg}
 
 bin=G4CXOpticks_setGeometry_Test
-script=$SDIR/$bin.py 
+script=$bin.py 
 
 source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
 [ -z "$GEOM" ] && echo $BASH_SOURCE : FATAL GEOM $GEOM MUST BE SET && exit 1 
@@ -97,7 +106,7 @@ export FOLD=$TMP/$bin/$GEOM
 mkdir -p $FOLD
 
 case $GEOM in 
-   FewPMT) geomscript=$SDIR/../../u4/tests/FewPMT.sh ;;
+   FewPMT) geomscript=../../u4/tests/FewPMT.sh ;;
 esac
 
 
@@ -140,12 +149,19 @@ export G4CXOpticks__saveGeometry_saveGGeo=1
 export X4PhysicalVolume__ENABLE_OSUR_IMPLICIT=1
 
 
-logging(){
+
+logging(){ 
+   type $FUNCNAME
    export Dummy=INFO
    export G4CXOpticks=INFO
-   export CSGFoundry=INFO
-   export U4VolumeMaker=INFO
+   export U4Tree=INFO
+   #export CSGFoundry=INFO
+   #export U4VolumeMaker=INFO
 }
+[ -n "$LOG" ] && logging 
+
+
+
 
 [ -n "$LOG" ] && logging 
 env | grep =INFO
@@ -162,7 +178,7 @@ fi
 
 
 if [ "${arg/run}" != "$arg" ]; then 
-    $bin
+    ./GXTestRunner.sh $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 

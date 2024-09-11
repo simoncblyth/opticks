@@ -13,7 +13,9 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+    LOG(info) << "[SetGeometry" ; 
     G4CXOpticks::SetGeometry();  
+    LOG(info) << "]SetGeometry" ; 
 
     return 0 ; 
 }

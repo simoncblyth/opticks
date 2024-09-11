@@ -89,8 +89,12 @@ controlled via envvar::
 #include "U4TreeBorder.h"
 
 
+#include <plog/Log.h>
+
+
 struct U4Tree
 {
+    static constexpr const plog::Severity LEVEL = plog::info ; 
     friend struct U4SimtraceTest ; // for U4Tree ctor  
 
     stree*                                      st ; 
@@ -207,17 +211,29 @@ inline U4Tree* U4Tree::Create(
 {
     if(st->level > 0) std::cout << "[ U4Tree::Create " << std::endl ; 
 
+    LOG(LEVEL) << "[new U4Tree" ; 
     U4Tree* tree = new U4Tree(st, top, sid ) ;
+    LOG(LEVEL) << "]new U4Tree" ; 
 
+    LOG(LEVEL) << "[stree::factorize" ; 
     st->factorize(); 
+    LOG(LEVEL) << "]stree::factorize" ; 
 
+    LOG(LEVEL) << "[U4Tree::identifySensitive" ; 
     tree->identifySensitive(); 
+    LOG(LEVEL) << "]U4Tree::identifySensitive" ; 
 
+
+    LOG(LEVEL) << "[stree::add_inst" ; 
     st->add_inst(); 
+    LOG(LEVEL) << "]stree::add_inst" ; 
 
     if(st->level > 0) std::cout << "] U4Tree::Create " << std::endl ; 
 
+    
+    LOG(LEVEL) << "[stree::postcreate" ; 
     st->postcreate() ;  
+    LOG(LEVEL) << "]stree::postcreate" ; 
 
     return tree ; 
 }
@@ -251,17 +267,27 @@ inline void U4Tree::init()
 {
     if(top == nullptr) return ; 
 
+    LOG(LEVEL) << "-initRayleigh" ; 
     initRayleigh(); 
+    LOG(LEVEL) << "-initMaterials" ; 
     initMaterials();
+    LOG(LEVEL) << "-initMaterials_NoRINDEX" ; 
     initMaterials_NoRINDEX(); 
 
+    LOG(LEVEL) << "-initScint" ; 
     initScint();
 
+    LOG(LEVEL) << "-initSurfaces" ; 
     initSurfaces();
+
+    LOG(LEVEL) << "-initSolids" ; 
     initSolids();
+    LOG(LEVEL) << "-initNodes" ; 
     initNodes(); 
+    LOG(LEVEL) << "-initSurfaces_Serialize" ; 
     initSurfaces_Serialize();
 
+    LOG(LEVEL) << "-initStandard" ; 
     initStandard(); 
 
     std::cout << "U4Tree::init " <<  desc() << std::endl; 

@@ -247,14 +247,24 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     assert(sim && "sim instance should have been grabbed/created in ctor" ); 
     stree* st = sim->get_tree(); 
 
+    LOG(LEVEL) << "[U4Tree::Create " ; 
     tr = U4Tree::Create(st, world, SensorIdentifier ) ;
-    LOG(LEVEL) << "Completed U4Tree::Create " ; 
+    LOG(LEVEL) << "]U4Tree::Create " ; 
 
+
+    LOG(LEVEL) << "[SSim::initSceneFromTree" ; 
     sim->initSceneFromTree(); // not so easy to do at lower level as do not want to change to SSim arg to U4Tree::Create for headeronly testing   
+    LOG(LEVEL) << "]SSim::initSceneFromTree" ; 
 
 
+    LOG(LEVEL) << "[CSGFoundry::CreateFromSim" ; 
     CSGFoundry* fd_ = CSGFoundry::CreateFromSim() ; // adopts SSim::INSTANCE  
+    LOG(LEVEL) << "]CSGFoundry::CreateFromSim" ; 
+
+
+    LOG(LEVEL) << "[setGeometry(fd_)" ; 
     setGeometry(fd_); 
+    LOG(LEVEL) << "]setGeometry(fd_)" ; 
 
     LOG(info) << Desc() ; 
 

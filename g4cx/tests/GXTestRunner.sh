@@ -6,7 +6,7 @@ GXTestRunner.sh
 See sysrap/tests/STestRunner.sh for notes
 
 Caution when using this under ctest it is the installed version 
-of the runner that is used, so much build+install gxt before 
+of the runner that is used, so must build+install gxt before 
 a change here will take effect.
 
 EOU

@@ -2,6 +2,20 @@ update_cvmfs_geometry_folders
 ==============================
 
 
+History
+--------
+
+Sep 11, 2024
+    inplace update /cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/J_2024aug27 
+    following fix to SMesh::serialize to include the lvid metadata needed
+    for SScene->SScene sub-selection
+
+
+
+Instructions
+--------------
+
+
 1. check currently configured GEOM with GEOM bash function
 2. create tarball of the currently configured GEOM::
 
@@ -95,6 +109,8 @@ update_cvmfs_geometry_folders
     Signing new manifest
     Remounting newly created repository revision
     [optickspub@cvmfs-stratum-zero-b cvmfs]$ 
+
+
 
 
 
