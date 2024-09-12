@@ -40,7 +40,15 @@ if [ "${arg/jstab}" != "$arg" ]; then
     globptn="$BASE/cxr_overview*elv*.jpg"
     refjpgpfx="/env/presentation/cxr/cxr_overview"
 
-    PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb  ../ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+    script=../ana/snap.py
+
+    if command -v ${IPYTHON:-ipython} &> /dev/null 
+    then
+        PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb -i $script --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+    else
+        echo $BASH_SOURCE - IPYTHON NOT AVAILABLE - TRY PYTHON 
+        PYTHONPATH=../.. ${PYTHON:-python} -i $script --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+    fi  
 fi 
 
 
