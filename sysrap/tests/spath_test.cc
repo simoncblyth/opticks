@@ -42,7 +42,7 @@ struct spath_test
    static int WriteIntoInvokingDirectory();
    static int Read(); 
    static int EndsWith(); 
-   static int SplitExt(); 
+   static int SplitExt(int impl); 
 
    static int ALL();  
    static int Main();  
@@ -482,7 +482,7 @@ int spath_test::EndsWith()
     return ok ? 0 : 1  ; 
 }
 
-int spath_test::SplitExt()
+int spath_test::SplitExt(int impl)
 {
     const char* path = "/tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm/cxr_overview_emm_t10,_elv_t_moi__ALL00000.jpg" ; 
 
@@ -490,10 +490,10 @@ int spath_test::SplitExt()
     std::string stem ; 
     std::string ext ; 
 
-    int rc = spath::SplitExt(dir, stem, ext, path ); 
+    int rc = impl == 0 ? spath::SplitExt0(dir, stem, ext, path ) : spath::SplitExt(dir, stem, ext, path ) ; 
 
     std::cout 
-        << __FUNCTION__  << "\n"
+        << __FUNCTION__  << " impl " << impl << "\n"
         << " path [" << path << "]\n" 
         << " dir  [" << dir  << "]\n"
         << " stem [" << stem << "]\n"
@@ -573,7 +573,8 @@ int spath_test::Main()
     else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
     else if(strcmp(TEST, "Read")==0) rc = Read();
     else if(strcmp(TEST, "EndsWith")==0) rc = EndsWith();
-    else if(strcmp(TEST, "SplitExt")==0) rc = SplitExt();
+    else if(strcmp(TEST, "SplitExt0")==0) rc = SplitExt(0);
+    else if(strcmp(TEST, "SplitExt")==0) rc = SplitExt(1);
     else if(strcmp(TEST, "ALL")==0) rc = ALL();
     return rc ; 
 }
