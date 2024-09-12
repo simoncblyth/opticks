@@ -11,6 +11,12 @@ On GPU workstation::
 
     ~/o/CSGOptiX/cxr_scan.sh 
 
+Make table on workstation::
+
+    CANDLE=1,2,3,4 ~/o/CSGOptiX/elv.sh txt
+    CANDLE=t0      ~/o/CSGOptiX/elv.sh txt
+    
+
 On laptop::
 
     ./cf_grab.sh    # grab remote CSGFoundry dir for metadata
@@ -74,12 +80,12 @@ export SCRIPT=${SCRIPT:-$script}
 
 scan-emm-()
 {
-    #echo "t0"        # ALL 
-    #for e in $(seq 0 $NMM) ; do echo  "$e," ; done    # enabling each solid one-by-one
+    echo "t0"        # ALL 
+    echo "1,2,3,4"   # ONLY PMTs
+
+    for e in $(seq 0 $NMM) ; do echo  "$e," ; done    # enabling each solid one-by-one
     for e in $(seq 0 $NMM) ; do echo "t$e," ; done    # disabling each solid one-by-one
     #for e in $(seq 0 $NMM) ; do echo "t8,$e" ; done   # disabling 8 and each solid one by-by-one
-    #echo "1,2,3,4"   # ONLY PMTs
-
     #for e in $(seq 0 $NMM) ; do echo "t0,$e" ; done   # disabling 0 and each solid one by-by-one
 }
 

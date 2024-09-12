@@ -241,3 +241,85 @@ ana shakedown : Fixed issue 1 : descriptions are all "ALL"
 
 
 
+Issue 2 : PILOT ERROR : EMM mode relative column not working
+------------------------------------------------------------------
+
+Not an issue. Need envvar to specify the CANDLE and need to have previously 
+run the candle render to have the metadata to act as the candle. 
+
+::
+
+    ~/o/CSGOptiX/elv.sh txt
+
+    CANDLE=t0 ~/o/CSGOptiX/elv.sh txt
+    CANDLE=1,2,3,4 ~/o/CSGOptiX/elv.sh txt
+
+
+::
+
+    P[blyth@localhost opticks]$ CANDLE=t0 ~/o/CSGOptiX/elv.sh txt
+
+                    BASE : /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm 
+    /data/blyth/junotop/opticks/CSGOptiX/../bin/BASE_grab.sh jstab
+    [2024-09-12 17:10:04,284] p46080 {/data/blyth/junotop/opticks/ana/snap.py:492} INFO - globptn /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm/cxr_overview*elv*.jpg 
+    [2024-09-12 17:10:04,284] p46080 {/data/blyth/junotop/opticks/ana/snap.py:325} INFO - cfptn $HOME/.opticks/GEOM/$GEOM/CSGFoundry cfdir /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry 
+    [2024-09-12 17:10:04,284] p46080 {/data/blyth/junotop/opticks/ana/snap.py:328} INFO - mmlabel_path /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry/mmlabel.txt 
+    [2024-09-12 17:10:04,284] p46080 {/data/blyth/junotop/opticks/ana/snap.py:332} INFO - meshname_path /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry/meshname.txt 
+    [2024-09-12 17:10:04,284] p46080 {/data/blyth/junotop/opticks/ana/snap.py:265} INFO - globptn /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm/cxr_overview*elv*.jpg 
+    [2024-09-12 17:10:04,285] p46080 {/data/blyth/junotop/opticks/ana/snap.py:267} INFO - globptn raw_paths 46 : 1st /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-emm/cxr_overview_emm_t0,_elv_t_moi__ALL.jpg 
+    [2024-09-12 17:10:04,285] p46080 {/data/blyth/junotop/opticks/ana/snap.py:269} INFO - after is_valid filter len(paths): 46 
+    [2024-09-12 17:10:04,288] p46080 {/data/blyth/junotop/opticks/ana/snap.py:378} INFO - all_snaps:46 candle:t0 n_candle:1 selectmode:emm 
+    [2024-09-12 17:10:04,288] p46080 {/data/blyth/junotop/opticks/ana/snap.py:392} INFO - after selectmode:emm selectspec:all snaps:46 
+    [2024-09-12 17:10:04,288] p46080 {/data/blyth/junotop/opticks/ana/snap.py:520} INFO - --out writing to /tmp/emm_txt.txt 
+    /tmp/emm_txt.txt
+    idx         -e        time(s)           relative         enabled geometry description                                              
+      0         5,         0.0015             0.1298         ONLY: 1:sStrutBallhead                                                    
+      1         9,         0.0016             0.1389         ONLY: 130:sPanel                                                          
+      2         7,         0.0017             0.1441         ONLY: 1:base_steel                                                        
+      3         6,         0.0017             0.1445         ONLY: 1:uni1                                                              
+      4        10,         0.0017             0.1491         ONLY: 322:solidSJCLSanchor                                                
+      5         8,         0.0018             0.1544         ONLY: 1:uni_acrylic1                                                      
+      6         4,         0.0025             0.2145         ONLY: 4:mask_PMT_20inch_vetosMask_virtual                                 
+      7         3,         0.0055             0.4736         ONLY: 12:HamamatsuR12860sMask_virtual                                     
+      8         2,         0.0061             0.5242         ONLY: 9:NNVTMCPPMTsMask_virtual                                           
+      9         1,         0.0064             0.5459         ONLY: 5:PMT_3inch_pmt_solid                                               
+     10         0,         0.0086             0.7420         ONLY: 2896:sWorld                                                         
+     11    1,2,3,4         0.0091             0.7840         ONLY PMT                                                                  
+     12        t0,         0.0092             0.7864         EXCL: 2896:sWorld                                                         
+     13        t0,         0.0092             0.7895         EXCL: 2896:sWorld                                                         
+     14        t0,         0.0093             0.8021         EXCL: 2896:sWorld                                                         
+     15        t4,         0.0108             0.9291         EXCL: 4:mask_PMT_20inch_vetosMask_virtual                                 
+     16        t4,         0.0108             0.9295         EXCL: 4:mask_PMT_20inch_vetosMask_virtual                                 
+     17        t4,         0.0110             0.9456         EXCL: 4:mask_PMT_20inch_vetosMask_virtual                                 
+     18        t3,         0.0111             0.9571         EXCL: 12:HamamatsuR12860sMask_virtual                                     
+     19        t3,         0.0112             0.9595         EXCL: 12:HamamatsuR12860sMask_virtual                                     
+     20        t3,         0.0113             0.9698         EXCL: 12:HamamatsuR12860sMask_virtual                                     
+     21       t10,         0.0113             0.9749         EXCL: 322:solidSJCLSanchor                                                
+     22        t6,         0.0114             0.9797         EXCL: 1:uni1                                                              
+     23       t10,         0.0114             0.9815         EXCL: 322:solidSJCLSanchor                                                
+     24        t6,         0.0115             0.9863         EXCL: 1:uni1                                                              
+     25        t2,         0.0115             0.9871         EXCL: 9:NNVTMCPPMTsMask_virtual                                           
+     26       t10,         0.0115             0.9886         EXCL: 322:solidSJCLSanchor                                                
+     27        t6,         0.0115             0.9886         EXCL: 1:uni1                                                              
+     28        t5,         0.0115             0.9895         EXCL: 1:sStrutBallhead                                                    
+     29        t7,         0.0116             0.9933         EXCL: 1:base_steel                                                        
+     30        t7,         0.0116             0.9971         EXCL: 1:base_steel                                                        
+     31        t5,         0.0116             0.9991         EXCL: 1:sStrutBallhead                                                    
+     32         t0         0.0116             1.0000         ALL                                                                       
+     33        t9,         0.0117             1.0027         EXCL: 130:sPanel                                                          
+     34        t7,         0.0117             1.0042         EXCL: 1:base_steel                                                        
+     35        t2,         0.0122             1.0462         EXCL: 9:NNVTMCPPMTsMask_virtual                                           
+     36        t9,         0.0125             1.0720         EXCL: 130:sPanel                                                          
+     37        t2,         0.0128             1.1020         EXCL: 9:NNVTMCPPMTsMask_virtual                                           
+     38        t1,         0.0133             1.1461         EXCL: 5:PMT_3inch_pmt_solid                                               
+     39        t1,         0.0134             1.1468         EXCL: 5:PMT_3inch_pmt_solid                                               
+     40        t5,         0.0139             1.1901         EXCL: 1:sStrutBallhead                                                    
+     41        t8,         0.0139             1.1930         EXCL: 1:uni_acrylic1                                                      
+     42        t8,         0.0140             1.2007         EXCL: 1:uni_acrylic1                                                      
+     43        t1,         0.0148             1.2754         EXCL: 5:PMT_3inch_pmt_solid                                               
+     44        t9,         0.0184             1.5776         EXCL: 130:sPanel                                                          
+     45        t8,         0.0191             1.6423         EXCL: 1:uni_acrylic1                                                      
+    idx         -e        time(s)           relative         enabled geometry description                                              P[blyth@localhost opticks]$ 
+    P[blyth@localhost opticks]$ 
+
+

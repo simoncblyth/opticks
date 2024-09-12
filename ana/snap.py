@@ -11,6 +11,19 @@ snap.py : analysis of scan metadata
     open $(snap.py --jpg)      # open the jpg ordered by render speed
 
 
+
+Typical call stack using snap.py::
+
+    ~/o/CSGOptiX/elv.sh
+    ~/o/CSGOptiX/cxr.sh : jstab
+    ~/o/bin/BASE_grab.sh : jstab
+    snap.py 
+
+Which inputs are present depends on recent scan runs::
+
+    ~/o/CSGOptiX/cxr_scan.sh 
+
+
 """
 import os, sys, logging, glob, json, re, argparse 
 log = logging.getLogger(__name__)
@@ -266,10 +279,10 @@ class SnapScan(object):
         snaps = []
         for s in all_snaps:  
             #print(s.imm)
-            if len(s.imm) == 1 or s.imm == [8, 0] or s.imm == [1,2,3,4]:
+            if len(s.imm) in [1,] or s.imm == [8, 0] or s.imm == [1,2,3,4]:
                 snaps.append(s)
             else:
-                log.debug("skip %s " % str(s.imm))
+                log.info("skip %s " % str(s.imm))
             pass   
         pass
         return snaps
@@ -352,13 +365,17 @@ class SnapScan(object):
 
         all_snaps = self.MakeSnaps(globptn, reverse=reverse, selectmode=selectmode)
         s_candle = None
+
+        n_candle = 0 
+
         for s in all_snaps:
             s.sc = self
             if s.enabled == candle:
                 s_candle = s
+                n_candle += 1 
             pass  
         pass
-        log.info("all_snaps:%d " % len(all_snaps))
+        log.info("all_snaps:%d candle:%s n_candle:%d selectmode:%s " % (len(all_snaps), candle, n_candle, selectmode ) )
 
         # filter out the double emm
 
