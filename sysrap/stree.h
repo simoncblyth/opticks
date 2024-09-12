@@ -334,7 +334,7 @@ struct stree
 
     std::vector<std::string> soname_raw ;   // solid names, my have 0x pointer suffix 
     std::vector<std::string> soname ;       // unique solid names, created with sstr::StripTail_unique with _1 _2 ... uniqing 
-    std::vector<sn*>         solids ; 
+    std::vector<sn*>         solids ;       // used from U4Tree::initSolid but not available postcache, instead use sn::Get methods 
 
     std::vector<glm::tmat4x4<double>> m2w ; // local (relative to parent) "model2world" transforms for all nodes
     std::vector<glm::tmat4x4<double>> w2m ; // local (relative to parent( "world2model" transforms for all nodes  
@@ -461,6 +461,8 @@ struct stree
 
     static std::string Name( const std::string& name, bool strip ); 
     std::string get_lvid_soname(int lvid, bool strip ) const ; 
+    const std::string& get_lvid_soname_(int lvid) const ;
+
     void        get_meshname( std::vector<std::string>& names) const ;  // match CSGFoundry 
     void        get_mmlabel(  std::vector<std::string>& names) const ;  // match CSGFoundry 
 
@@ -535,7 +537,10 @@ struct stree
 
     std::string desc_nodes( const std::vector<int>&   nn, int edgeitems=10) const ;
     std::string desc_nodes_(const std::vector<snode>& nn, int edgeitems=10) const ;
+    std::string desc_node_solids() const ; 
     std::string desc_solids() const ; 
+    std::string desc_solid(int lvid) const ; 
+
 
     NP* make_trs() const ; 
     void save_trs(const char* fold) const ; 
@@ -603,6 +608,7 @@ struct stree
     char     get_ridx_type(int ridx) const ;
 
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ; 
+    std::string desc_factor_nodes(unsigned idx) const ; 
     std::string desc_factor() const ; 
 
     static bool SelectNode( const snode& nd, int q_repeat_index, int q_repeat_ordinal ); 
@@ -615,6 +621,7 @@ struct stree
     void get_remainder_nidx(std::vector<int>& nidxs ) const ; 
  
     void get_repeat_node( std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const ; 
+    std::string desc_repeat_node(int q_repeat_index, int q_repeat_ordinal) const ; 
 
     std::string desc_repeat_nodes() const ;  
 
@@ -2219,6 +2226,14 @@ inline std::string stree::get_lvid_soname(int lvid, bool strip) const
     return Name(soname[lvid], strip) ; 
 }
 
+inline const std::string& stree::get_lvid_soname_(int lvid) const 
+{
+    assert( lvid >= 0 && lvid < int(soname.size()) ) ; 
+    return soname[lvid] ; 
+}
+
+
+
 inline void stree::get_meshname( std::vector<std::string>& names) const 
 {
     assert( names.size() == 0 ); 
@@ -2917,14 +2932,21 @@ inline std::string stree::desc_nodes_(const std::vector<snode>& nn, int edgeitem
 
 
 
+/**
+stree::desc_node_solids
+-------------------------
+
+HUH: this is horribly repetitive and long presentation of soname for every node 
+
+**/
 
 
-
-inline std::string stree::desc_solids() const 
+inline std::string stree::desc_node_solids() const 
 {
+    int num_nodes = get_num_nodes();
     std::stringstream ss ; 
-    ss << "stree::desc_solids" << std::endl ; 
-    for(int nidx=0 ; nidx < get_num_nodes() ; nidx++) 
+    ss << "stree::desc_node_solids num_nodes " << num_nodes  << std::endl ; 
+    for(int nidx=0 ; nidx < num_nodes ; nidx++) 
     {
         ss
             << " nidx " << std::setw(6) << nidx 
@@ -2932,9 +2954,56 @@ inline std::string stree::desc_solids() const
             << std::endl 
             ;   
     }
-    std::string s = ss.str();
-    return s ; 
+    std::string str = ss.str();
+    return str ; 
 }
+
+
+
+/**
+stree::desc_solids
+-------------------
+
+OBSERVE THAT THE stree::solids ARE NOT PERSISTED, INSTEAD USE sn::Get methods
+to access the s_csg.h persisted sn.h 
+
+**/
+
+inline std::string stree::desc_solids() const 
+{
+    int num_solids = solids.size() ;
+    std::stringstream ss ; 
+    ss << "stree::desc_solids num_solids " << num_solids  << std::endl ; 
+    for(int i=0 ; i < num_solids ; i++) 
+    {
+        const sn* root = solids[i] ; 
+        ss
+            << " (sn)root.lvid " << std::setw(3) << root->lvid
+            << std::endl 
+            ;   
+    }
+    std::string str = ss.str();
+    return str ; 
+}
+
+
+inline std::string stree::desc_solid(int lvid) const
+{
+    const sn* root = sn::GetLVRoot(lvid) ;
+    const std::string& lvn = get_lvid_soname_(lvid) ; 
+    assert( root ) ; 
+
+    std::stringstream ss ; 
+    ss << "stree::desc_solid"
+       << " lvid " << lvid 
+       << " lvn " << lvn 
+       << " root " << ( root ? "Y" : "N" ) 
+       << " " << ( root ? root->rbrief() : "" ) 
+       ; 
+    std::string str = ss.str();
+    return str ; 
+}
+
 
 
 /**
@@ -2942,8 +3011,7 @@ stree::make_trs
 -----------------
 
 This is used from U4Tree::simtrace_scan as the basis for u4/tests/U4SimtraceTest.sh 
-
-1. HMM: this is based on GTD: "GGeo Transform Debug" so it is not future safe 
+ HMM: this is based on GTD: "GGeo Transform Debug" so it is not future safe 
 
    * TODO: adopt the modern equivalent of GTD, or create one if non-existing 
 
@@ -4007,13 +4075,26 @@ inline void stree::get_factor_nodes(std::vector<int>& nodes, unsigned idx) const
     assert(consistent );   
 }
 
+inline std::string stree::desc_factor_nodes(unsigned idx) const 
+{
+    std::vector<int> nodes ; 
+    get_factor_nodes(nodes, idx); 
+   
+    int num_nodes = nodes.size(); 
+    std::stringstream ss ; 
+    ss << "stree::desc_factor_nodes idx " << idx << " num_nodes " << num_nodes << std::endl  ; 
+    std::string str = ss.str();
+    return str ; 
+}
+
+
 
 inline std::string stree::desc_factor() const 
 {
     std::stringstream ss ; 
     ss << "stree::desc_factor" << std::endl << sfactor::Desc(factor) ; 
-    std::string s = ss.str();
-    return s ; 
+    std::string str = ss.str();
+    return str ; 
 }
 
 
@@ -4170,6 +4251,17 @@ stree::get_repeat_node
 
 Collect all snode (structual/volumes) selected by (q_repeat_index, q_repeat_ordinal)
 
+Observed this to give zero nodes for the first and last ridx, ie it does 
+not handle the rem and tri nodes. 
+
+::
+
+   TEST=get_repeat_node ~/o/sysrap/tests/stree_load_test.sh 
+
+   TEST=get_repeat_node RIDX=1 RORD=10 ~/o/sysrap/tests/stree_load_test.sh run
+
+   TEST=get_repeat_node RIDX=9 RORD=0 ~/o/sysrap/tests/stree_load_test.sh run
+
 **/
 
 inline void stree::get_repeat_node(std::vector<snode>& nodes, int q_repeat_index, int q_repeat_ordinal ) const 
@@ -4180,6 +4272,58 @@ inline void stree::get_repeat_node(std::vector<snode>& nodes, int q_repeat_index
         assert( nd.index == nidx ); 
         if(SelectNode(nd, q_repeat_index, q_repeat_ordinal)) nodes.push_back(nd); 
     }
+}
+
+/**
+stree::desc_repeat_node
+------------------------
+
+Dump structural volumes (snode) of the ordinal-th occurrence of q_repeat_index (aka ridx), 
+collecting unique lvid from all nodes. Then for each unique lvid dump the csg nodes (sn).
+This enables for example the CSG shapes within a particular compound solid to be checked.::
+
+    TEST=get_repeat_node RIDX=9 ~/o/sysrap/tests/stree_load_test.sh
+
+**/
+
+inline std::string stree::desc_repeat_node(int q_repeat_index, int q_repeat_ordinal) const 
+{
+    std::vector<snode> nodes ; 
+    get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal); 
+    int num_node = nodes.size() ; 
+
+    std::stringstream ss ; 
+    ss << "stree::desc_repeat_nodes"
+       << " q_repeat_index " << q_repeat_index
+       << " q_repeat_ordinal " << q_repeat_ordinal
+       << " num_node " << num_node
+       << std::endl 
+       ;  
+
+
+    std::set<int> ulvid ; 
+
+    for(int i=0 ; i < num_node ; i++ )
+    {
+        const snode& n = nodes[i] ; 
+        const std::string& lvn = get_lvid_soname_( n.lvid ) ; 
+        ss << n.desc() << " " << lvn << "\n" ; 
+        ulvid.insert(n.lvid) ; 
+    }
+
+    typedef std::set<int>::const_iterator IT ; 
+    ss << "ulvid {" ; 
+    for(IT it=ulvid.begin() ; it != ulvid.end() ; it++) ss << *it << "," ;
+    ss << "}\n" ; 
+
+    for(IT it=ulvid.begin() ; it != ulvid.end() ; it++) 
+    {
+        int lvid = *it ; 
+        ss << desc_solid(lvid) << "\n" ; 
+    }
+
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
@@ -4225,8 +4369,8 @@ inline std::string stree::desc_repeat_nodes() const
         << std::endl 
         ; 
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 

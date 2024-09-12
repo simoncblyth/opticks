@@ -45,6 +45,11 @@ struct stree_load_test
     void get_frame_scan() const ; 
     void get_frame_MOI() const ; 
     void get_prim_aabb() const ; 
+    void get_factor_nodes(int fidx) const ; 
+    void get_repeat_node(int ridx, int rord) const ; 
+    void desc_node_solids() const ; 
+    void desc_solids() const ; 
+    void desc_solid(int lvid) const ; 
 
     int main(); 
 };
@@ -436,17 +441,49 @@ inline void stree_load_test::get_prim_aabb() const
 }
 
 
+inline void stree_load_test::get_factor_nodes(int fidx) const
+{
+    std::cout << st->desc_factor_nodes(fidx) << "\n" ; 
+} 
+
+
+inline void stree_load_test::get_repeat_node(int ridx, int rord) const
+{
+    std::cout << st->desc_repeat_node(ridx, rord) << "\n" ; 
+} 
+
+inline void stree_load_test::desc_node_solids() const 
+{
+    std::cout << st->desc_node_solids() ; 
+} 
+inline void stree_load_test::desc_solids() const 
+{
+    std::cout << st->desc_solids() ; 
+} 
+inline void stree_load_test::desc_solid(int lvid) const 
+{
+    std::cout << st->desc_solid(lvid) ; 
+} 
+
+
+
 
 inline int stree_load_test::main()
 {
     //const char* test = "get_frame_MOI" ; 
-    const char* test = "get_frame_scan" ; 
+    //const char* test = "get_frame_scan" ; 
+    //const char* test = "desc" ; 
+    const char* test = "get_factor_nodes" ; 
+    // THIS DEFAULT TRUMPED BY SETTING IN SCRIPT
 
     const char* TEST = ssys::getenvvar("TEST", test); 
 
     int LVID = ssys::getenvint("LVID",  0); 
     int NDID = ssys::getenvint("NDID",  0); 
     int IIDX = ssys::getenvint("IIDX",  0); 
+    int FIDX = ssys::getenvint("FIDX",  0); 
+    int RIDX = ssys::getenvint("RIDX",  0); 
+    int RORD = ssys::getenvint("RORD",  0); 
 
     if(strcmp(TEST, "get_combined_transform")==0)
     {
@@ -480,6 +517,11 @@ inline int stree_load_test::main()
     else if(strcmp(TEST, "get_frame_MOI") == 0) get_frame_MOI();
     else if(strcmp(TEST, "get_frame_scan") == 0) get_frame_scan();
     else if(strcmp(TEST, "get_prim_aabb") == 0)  get_prim_aabb();
+    else if(strcmp(TEST, "get_factor_nodes") == 0)  get_factor_nodes(FIDX);
+    else if(strcmp(TEST, "get_repeat_node") == 0)  get_repeat_node(RIDX, RORD);
+    else if(strcmp(TEST, "desc_node_solids") == 0) desc_node_solids() ; 
+    else if(strcmp(TEST, "desc_solids") == 0) desc_solids() ; 
+    else if(strcmp(TEST, "desc_solid") == 0) desc_solid(LVID) ; 
     else if(strcmp(TEST, "desc") == 0) 
     {
         std::cout << "desc\n" ;   
@@ -495,7 +537,7 @@ int main(int argc, char** argv)
     stree st ; 
     int rc = st.load("$BASE"); 
     if( rc != 0 ) return rc ; 
-    std::cout << st.desc() ; 
+    //std::cout << st.desc() ; 
 
     stree_load_test test(&st); 
     return test.main();  

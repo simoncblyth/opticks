@@ -3,7 +3,7 @@
 sfactor.h
 ===========
 
-Note that the remainder volumes are not included in the sfactors 
+Note that the remainder and force triangulated volumes are not included in the sfactors 
 
 ::
 

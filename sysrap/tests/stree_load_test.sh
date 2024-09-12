@@ -104,7 +104,12 @@ export stree_level=1
 export FOLD=$BASE/stree
 #export stree__get_frame_dump=1
 
-test=desc
+#test=get_factor_nodes
+test=get_repeat_node
+#test=desc_node_solids
+#test=desc_solids
+#test=desc_solid
+
 export TEST=${TEST:-$test}
 
 
@@ -131,7 +136,7 @@ if [ "${arg/build}" != "$arg" ]; then
           $SDIR/$name.cc \
           $SDIR/../snd.cc \
           $SDIR/../scsg.cc  \
-          -g -std=c++11 -lstdc++ -lm \
+          -g -std=c++17 -lstdc++ -lm \
           -I$SDIR/.. \
           -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \
@@ -145,7 +150,7 @@ if [ "${arg/build}" != "$arg" ]; then
           $SDIR/../s_pa.cc \
           $SDIR/../sn.cc \
           $SDIR/../s_csg.cc  \
-          -g -std=c++11 -lstdc++ -lm \
+          -g -std=c++17 -lstdc++ -lm \
           -I$SDIR/.. \
           -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \

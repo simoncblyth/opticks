@@ -3542,7 +3542,7 @@ inline sn* sn::Get(int idx) // static
 sn::GetLVRoot
 ---------------
 
-First sn with the lvid and sn::is_root():true in (s_csg)pool 
+First sn with the lvid and sn::is_root():true in (s_csg.h)pool 
 
 **/
 

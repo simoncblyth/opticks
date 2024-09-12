@@ -9,6 +9,14 @@ NB: Restrict this to handling persisting only.
 Doing other things here such as node finding 
 leads to circular dependencies. 
 
+Note that this just does persisting managed from _csg member of stree, 
+other than very low level accessors access to sn nodes is done 
+via sn.h methods such as::
+
+   sn::GetLVNodes
+
+
+
 **/
 
 #include "ssys.h"
