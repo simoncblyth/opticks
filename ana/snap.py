@@ -427,7 +427,7 @@ class SnapScan(object):
     slow = property(lambda self:self.snaps[-1])
 
     def __repr__(self):
-        return "\n".join( [Snap.Hdr()] + list(map(repr,self.snaps)) + [Snap.Hdr()] )
+        return "\n".join( [Snap.Hdr()] + list(map(repr,self.snaps)) + [Snap.Hdr()] + [""] ) 
 
     def jpg(self):
         return "\n".join(list(map(lambda s:s.jpg,self.snaps)))
@@ -512,7 +512,7 @@ if __name__ == '__main__':
     elif args.rst:
         out = str(ss.rst_table())
     elif args.txt:
-        out = str(ss) 
+        out = str(ss)
     else:
         out = str(ss) 
     pass

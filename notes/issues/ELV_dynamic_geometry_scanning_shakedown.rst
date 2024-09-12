@@ -375,3 +375,337 @@ run the candle render to have the metadata to act as the candle.
 
 
 
+ELV scanning
+~~~~~~~~~~~~~~
+
+
+Thge viewpoint of the ELV ONLY is very variable for the torii, maybe because its
+global and the axis aligned bbox changes size a lot due to different orientations
+of the torii section. 
+
+
+::
+
+    P[blyth@localhost opticks]$ CANDLE=t ~/o/CSGOptiX/elv.sh txt
+                    BASE : /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-elv 
+    /data/blyth/junotop/opticks/CSGOptiX/../bin/BASE_grab.sh jstab
+    [2024-09-12 20:57:34,978] p82566 {/data/blyth/junotop/opticks/ana/snap.py:492} INFO - globptn /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-elv/cxr_overview*elv*.jpg 
+    [2024-09-12 20:57:34,978] p82566 {/data/blyth/junotop/opticks/ana/snap.py:325} INFO - cfptn $HOME/.opticks/GEOM/$GEOM/CSGFoundry cfdir /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry 
+    [2024-09-12 20:57:34,978] p82566 {/data/blyth/junotop/opticks/ana/snap.py:328} INFO - mmlabel_path /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry/mmlabel.txt 
+    [2024-09-12 20:57:34,978] p82566 {/data/blyth/junotop/opticks/ana/snap.py:332} INFO - meshname_path /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry/meshname.txt 
+    [2024-09-12 20:57:34,978] p82566 {/data/blyth/junotop/opticks/ana/snap.py:265} INFO - globptn /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-elv/cxr_overview*elv*.jpg 
+    [2024-09-12 20:57:34,982] p82566 {/data/blyth/junotop/opticks/ana/snap.py:267} INFO - globptn raw_paths 303 : 1st /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD1/70500/ALL/scan-elv/cxr_overview_emm_t0_elv_0_moi__ALL.jpg 
+    [2024-09-12 20:57:34,982] p82566 {/data/blyth/junotop/opticks/ana/snap.py:269} INFO - after is_valid filter len(paths): 303 
+    [2024-09-12 20:57:34,998] p82566 {/data/blyth/junotop/opticks/ana/snap.py:378} INFO - all_snaps:303 candle:t n_candle:1 selectmode:elv 
+    [2024-09-12 20:57:34,999] p82566 {/data/blyth/junotop/opticks/ana/snap.py:313} INFO - all_snaps 303 selectspec all snaps 303 SNAP_LIMIT 512 lim_snaps 303 
+    [2024-09-12 20:57:34,999] p82566 {/data/blyth/junotop/opticks/ana/snap.py:392} INFO - after selectmode:elv selectspec:all snaps:303 
+    [2024-09-12 20:57:35,001] p82566 {/data/blyth/junotop/opticks/ana/snap.py:520} INFO - --out writing to /tmp/elv_txt.txt 
+    /tmp/elv_txt.txt
+    idx         -e        time(s)           relative         enabled geometry description                                              
+      0        113         0.0016             0.1366         ONLY: HamamatsuR12860_PMT_20inch_grid_solid                               
+      1         51         0.0016             0.1373         ONLY: GLb2.equ_FlangeI_Web_FlangeII                                       
+      2        297         0.0016             0.1417         ONLY: mask_PMT_20inch_vetosMask_virtual                                   
+      3        100         0.0017             0.1426         ONLY: sStrutBallhead                                                      
+      4         26         0.0017             0.1432         ONLY: GLw1.up02_up03_FlangeI_Web_FlangeII                                 
+      5        130         0.0017             0.1459         ONLY: PMT_3inch_cntr_solid                                                
+      6         25         0.0017             0.1480         ONLY: GLw1.up03_up04_FlangeI_Web_FlangeII                                 
+      7        111         0.0017             0.1501         ONLY: HamamatsuR12860_PMT_20inch_inner_ring_solid                         
+      8         75         0.0017             0.1504         ONLY: ZC2.A02_B02_FlangeI_Web_FlangeII                                    
+      9        123         0.0017             0.1507         ONLY: NNVTMCPPMT_PMT_20inch_mcp_solid                                     
+     10         33         0.0018             0.1510         ONLY: GLw2.bt04_bt05_FlangeI_Web_FlangeII                                 
+     11        110         0.0018             0.1514         ONLY: HamamatsuR12860_PMT_20inch_inner_edge_solid                         
+     12        127         0.0018             0.1544         ONLY: PMT_3inch_inner1_solid_ell_helper                                   
+     13        295         0.0018             0.1545         ONLY: PMT_20inch_veto_inner_solid_1_2                                     
+     14        108         0.0018             0.1551         ONLY: HamamatsuR12860_PMT_20inch_plate_solid                              
+     15        109         0.0018             0.1563         ONLY: HamamatsuR12860_PMT_20inch_outer_edge_solid                         
+     16         71         0.0018             0.1589         ONLY: GZ1.B03_04_FlangeI_Web_FlangeII                                     
+     17        112         0.0019             0.1597         ONLY: HamamatsuR12860_PMT_20inch_dynode_tube_solid                        
+     18        114         0.0019             0.1604         ONLY: HamamatsuR12860_PMT_20inch_shield_solid                             
+     19         64         0.0019             0.1612         ONLY: GZ1.A02_03_FlangeI_Web_FlangeII                                     
+     20         79         0.0019             0.1616         ONLY: ZC2.A06_B06_FlangeI_Web_FlangeII                                    
+     21          3         0.0019             0.1617         ONLY: PoolCoversub                                                        
+     22         43         0.0019             0.1618         ONLY: GLb2.up08_FlangeI_Web_FlangeII                                      
+     23         84         0.0019             0.1623         ONLY: ZC2.B01_B01_FlangeI_Web_FlangeII                                    
+     24         78         0.0019             0.1628         ONLY: ZC2.A05_B05_FlangeI_Web_FlangeII                                    
+     25         90         0.0019             0.1637         ONLY: sTyvek_shell                                                        
+     26         52         0.0019             0.1641         ONLY: GLb2.bt01_FlangeI_Web_FlangeII                                      
+     27         91         0.0019             0.1650         ONLY: sDeadWater_shell                                                    
+     28         31         0.0019             0.1653         ONLY: GLw3.bt02_bt03_FlangeI_Web_FlangeII                                 
+     29        252         0.0019             0.1661         ONLY: svacSurftube_19V1_1                                                 
+     30         72         0.0019             0.1671         ONLY: GZ1.B04_05_FlangeI_Web_FlangeII                                     
+     31         55         0.0019             0.1673         ONLY: GLb2.bt04_FlangeI_Web_FlangeII                                      
+     32        122         0.0019             0.1678         ONLY: NNVTMCPPMT_PMT_20inch_tube_solid                                    
+     33         94         0.0019             0.1679         ONLY: solidSJReceiver                                                     
+     34         45         0.0019             0.1679         ONLY: GLb2.up06_FlangeI_Web_FlangeII                                      
+     35        121         0.0020             0.1683         ONLY: NNVTMCPPMT_PMT_20inch_plate_solid                                   
+     36         28         0.0020             0.1687         ONLY: GLw2.equ_up01_FlangeI_Web_FlangeII                                  
+     37         95         0.0020             0.1703         ONLY: solidSJReceiverFastern                                              
+     38        174         0.0020             0.1706         ONLY: svacSurftube_19V1_0                                                 
+     39         73         0.0020             0.1709         ONLY: GZ1.B05_06_FlangeI_Web_FlangeII                                     
+     40         54         0.0020             0.1715         ONLY: GLb2.bt03_FlangeI_Web_FlangeII                                      
+     41         85         0.0020             0.1717         ONLY: ZC2.B03_B03_FlangeI_Web_FlangeII                                    
+     42        175         0.0020             0.1721         ONLY: sSurftube_19V1_0                                                    
+     43         92         0.0020             0.1723         ONLY: solidSJCLSanchor                                                    
+     44         53         0.0020             0.1725         ONLY: GLb1.bt02_FlangeI_Web_FlangeII                                      
+     45         58         0.0020             0.1731         ONLY: GLb1.bt07_FlangeI_Web_FlangeII                                      
+     46         65         0.0020             0.1732         ONLY: GZ1.A03_04_FlangeI_Web_FlangeII                                     
+     47        124         0.0020             0.1733         ONLY: NNVTMCPPMT_PMT_20inch_inner_solid_head                              
+     48          4         0.0020             0.1733         ONLY: Upper_LS_tube                                                       
+     49         74         0.0020             0.1735         ONLY: GZ1.B06_07_FlangeI_Web_FlangeII                                     
+     50        104         0.0020             0.1735         ONLY: solidXJanchor                                                       
+     51         70         0.0020             0.1738         ONLY: GZ1.B02_03_FlangeI_Web_FlangeII                                     
+     52         99         0.0020             0.1743         ONLY: sStrut_1                                                            
+     53        125         0.0020             0.1744         ONLY: NNVTMCPPMT_PMT_20inch_pmt_solid_head                                
+     54         47         0.0020             0.1744         ONLY: GLb1.up04_FlangeI_Web_FlangeII                                      
+     55         23         0.0020             0.1745         ONLY: GLw1.up05_up06_FlangeI_Web_FlangeII                                 
+     56        102         0.0020             0.1747         ONLY: base_steel                                                          
+     57         34         0.0020             0.1747         ONLY: GLw1.bt05_bt06_FlangeI_Web_FlangeII                                 
+     58         67         0.0020             0.1748         ONLY: GZ1.A05_06_FlangeI_Web_FlangeII                                     
+     59         48         0.0020             0.1751         ONLY: GLb1.up03_FlangeI_Web_FlangeII                                      
+     60         49         0.0020             0.1758         ONLY: GLb1.up02_FlangeI_Web_FlangeII                                      
+     61         80         0.0020             0.1758         ONLY: ZC2.A02_B03_FlangeI_Web_FlangeII                                    
+     62         66         0.0020             0.1763         ONLY: GZ1.A04_05_FlangeI_Web_FlangeII                                     
+     63         59         0.0020             0.1764         ONLY: GLb1.bt08_FlangeI_Web_FlangeII                                      
+     64         46         0.0020             0.1764         ONLY: GLb1.up05_FlangeI_Web_FlangeII                                      
+     65         39         0.0021             0.1770         ONLY: GLw1.bt10_bt11_FlangeI_Web_FlangeII                                 
+     66         35         0.0021             0.1770         ONLY: GLw1.bt06_bt07_FlangeI_Web_FlangeII                                 
+     67        120         0.0021             0.1787         ONLY: NNVTMCPPMT_PMT_20inch_edge_solid                                    
+     68         41         0.0021             0.1792         ONLY: GLb4.up10_FlangeI_Web_FlangeII                                      
+     69         61         0.0021             0.1806         ONLY: GLb3.bt10_FlangeI_Web_FlangeII                                      
+     70         81         0.0021             0.1813         ONLY: ZC2.A03_B04_FlangeI_Web_FlangeII                                    
+     71        301         0.0021             0.1818         ONLY: sWorld                                                              
+     72          2         0.0021             0.1828         ONLY: sDomeRockBox                                                        
+     73         82         0.0021             0.1832         ONLY: ZC2.A04_B05_FlangeI_Web_FlangeII                                    
+     74         27         0.0021             0.1842         ONLY: GLw1.up01_up02_FlangeI_Web_FlangeII                                 
+     75         98         0.0021             0.1844         ONLY: sStrut_0                                                            
+     76        135         0.0022             0.1857         ONLY: sWaterTube                                                          
+     77         22         0.0022             0.1863         ONLY: GLw1.up06_up07_FlangeI_Web_FlangeII                                 
+     78         37         0.0022             0.1871         ONLY: GLw1.bt08_bt09_FlangeI_Web_FlangeII                                 
+     79        131         0.0022             0.1879         ONLY: PMT_3inch_pmt_solid                                                 
+     80          5         0.0022             0.1879         ONLY: Upper_Steel_tube                                                    
+     81        128         0.0022             0.1883         ONLY: PMT_3inch_inner2_solid_ell_helper                                   
+     82         38         0.0022             0.1889         ONLY: GLw1.bt09_bt10_FlangeI_Web_FlangeII                                 
+     83          6         0.0022             0.1896         ONLY: Upper_Tyvek_tube                                                    
+     84        129         0.0022             0.1903         ONLY: PMT_3inch_body_solid_ell_ell_helper                                 
+     85         21         0.0022             0.1903         ONLY: GLw1.up07_up08_FlangeI_Web_FlangeII                                 
+     86         18         0.0022             0.1929         ONLY: GLw1.up10_up11_FlangeI_Web_FlangeII                                 
+     87        300         0.0022             0.1932         ONLY: sBottomRock                                                         
+     88         17         0.0023             0.1941         ONLY: sTopRock                                                            
+     89        117         0.0023             0.1942         ONLY: HamamatsuR12860sMask_virtual                                        
+     90         20         0.0023             0.1964         ONLY: GLw1.up08_up09_FlangeI_Web_FlangeII                                 
+     91        101         0.0023             0.1975         ONLY: uni1                                                                
+     92        296         0.0023             0.1976         ONLY: PMT_20inch_veto_pmt_solid_1_2                                       
+     93         12         0.0023             0.1982         ONLY: sPlane                                                              
+     94        298         0.0023             0.1987         ONLY: sAirGap                                                             
+     95         87         0.0023             0.1999         ONLY: ZC2.A03_A03_FlangeI_Web_FlangeII                                    
+     96         36         0.0023             0.2022         ONLY: GLw1.bt07_bt08_FlangeI_Web_FlangeII                                 
+     97        137         0.0023             0.2024         ONLY: sSurftube_0V1_0                                                     
+     98         50         0.0024             0.2027         ONLY: GLb1.up01_FlangeI_Web_FlangeII                                      
+     99         89         0.0024             0.2028         ONLY: sOuterWaterPool                                                     
+    100         44         0.0024             0.2036         ONLY: GLb2.up07_FlangeI_Web_FlangeII                                      
+    101        103         0.0024             0.2051         ONLY: uni_acrylic1                                                        
+    102         56         0.0024             0.2054         ONLY: GLb1.bt05_FlangeI_Web_FlangeII                                      
+    103         32         0.0024             0.2062         ONLY: GLw2.bt03_bt04_FlangeI_Web_FlangeII                                 
+    104         14         0.0024             0.2068         ONLY: sAirTT                                                              
+    105        106         0.0024             0.2071         ONLY: HamamatsuR12860sMask                                                
+    106         11         0.0024             0.2078         ONLY: sPanel                                                              
+    107        177         0.0024             0.2103         ONLY: sSurftube_20V1_0                                                    
+    108        116         0.0024             0.2113         ONLY: HamamatsuR12860_PMT_20inch_pmt_solid_1_4                            
+    109         15         0.0025             0.2115         ONLY: sExpHall                                                            
+    110          8         0.0025             0.2116         ONLY: sBar_0                                                              
+    111         76         0.0025             0.2128         ONLY: ZC2.A03_B03_FlangeI_Web_FlangeII                                    
+    112         10         0.0025             0.2139         ONLY: sPanelTape                                                          
+    113         57         0.0025             0.2142         ONLY: GLb1.bt06_FlangeI_Web_FlangeII                                      
+    114          9         0.0025             0.2152         ONLY: sBar_1                                                              
+    115         63         0.0025             0.2181         ONLY: GZ1.A01_02_FlangeI_Web_FlangeII                                     
+    116        176         0.0026             0.2204         ONLY: svacSurftube_20V1_0                                                 
+    117        254         0.0026             0.2209         ONLY: svacSurftube_20V1_1                                                 
+    118         86         0.0026             0.2220         ONLY: ZC2.B05_B05_FlangeI_Web_FlangeII                                    
+    119         68         0.0026             0.2233         ONLY: GZ1.A06_07_FlangeI_Web_FlangeII                                     
+    120         83         0.0026             0.2240         ONLY: ZC2.A05_B06_FlangeI_Web_FlangeII                                    
+    121        253         0.0026             0.2269         ONLY: sSurftube_19V1_1                                                    
+    122         60         0.0027             0.2311         ONLY: GLb3.bt09_FlangeI_Web_FlangeII                                      
+    123        136         0.0027             0.2316         ONLY: svacSurftube_0V1_0                                                  
+    124        173         0.0027             0.2327         ONLY: sSurftube_18V1_0                                                    
+    125        258         0.0027             0.2337         ONLY: svacSurftube_22V1_1                                                 
+    126        105         0.0027             0.2351         ONLY: solidXJfixture                                                      
+    127         13         0.0027             0.2365         ONLY: sWall                                                               
+    128        214         0.0028             0.2389         ONLY: svacSurftube_0V1_1                                                  
+    129         42         0.0028             0.2396         ONLY: GLb3.up09_FlangeI_Web_FlangeII                                      
+    130        255         0.0029             0.2469         ONLY: sSurftube_20V1_1                                                    
+    131        293         0.0029             0.2472         ONLY: sReflectorInCD                                                      
+    132        132         0.0029             0.2475         ONLY: sChimneyAcrylic                                                     
+    133        251         0.0029             0.2476         ONLY: sSurftube_18V1_1                                                    
+    134        250         0.0029             0.2517         ONLY: svacSurftube_18V1_1                                                 
+    135        126         0.0029             0.2531         ONLY: NNVTMCPPMTsMask_virtual                                             
+    136         30         0.0031             0.2640         ONLY: GLw3.bt01_bt02_FlangeI_Web_FlangeII                                 
+    137        292         0.0031             0.2650         ONLY: sInnerWater                                                         
+    138        247         0.0031             0.2665         ONLY: sSurftube_16V1_1                                                    
+    139        259         0.0031             0.2677         ONLY: sSurftube_22V1_1                                                    
+    140          1         0.0031             0.2695         ONLY: sTopRock_dome                                                       
+    141          0         0.0031             0.2709         ONLY: sTopRock_domeAir                                                    
+    142        289         0.0032             0.2722         ONLY: sSurftube_37V1_1                                                    
+    143        299         0.0032             0.2774         ONLY: sPoolLining                                                         
+    144        169         0.0032             0.2792         ONLY: sSurftube_16V1_0                                                    
+    145        181         0.0033             0.2804         ONLY: sSurftube_22V1_0                                                    
+    146        118         0.0033             0.2827         ONLY: NNVTMCPPMTsMask                                                     
+    147        262         0.0033             0.2829         ONLY: svacSurftube_24V1_1                                                 
+    148        246         0.0033             0.2829         ONLY: svacSurftube_16V1_1                                                 
+    149        291         0.0033             0.2878         ONLY: sSurftube_38V1_1                                                    
+    150        134         0.0034             0.2898         ONLY: sChimneySteel                                                       
+    151        217         0.0034             0.2912         ONLY: sSurftube_1V1_1                                                     
+    152        180         0.0034             0.2925         ONLY: svacSurftube_22V1_0                                                 
+    153         69         0.0034             0.2951         ONLY: GZ1.B01_02_FlangeI_Web_FlangeII                                     
+    154        168         0.0035             0.2992         ONLY: svacSurftube_16V1_0                                                 
+    155        216         0.0035             0.3005         ONLY: svacSurftube_1V1_1                                                  
+    156         93         0.0035             0.3029         ONLY: solidSJFixture                                                      
+    157        288         0.0035             0.3043         ONLY: svacSurftube_37V1_1                                                 
+    158        243         0.0037             0.3232         ONLY: sSurftube_14V1_1                                                    
+    159        263         0.0038             0.3246         ONLY: sSurftube_24V1_1                                                    
+    160        107         0.0038             0.3313         ONLY: HamamatsuR12860Tail                                                 
+    161        242         0.0039             0.3345         ONLY: svacSurftube_14V1_1                                                 
+    162        171         0.0039             0.3352         ONLY: sSurftube_17V1_0                                                    
+    163        178         0.0039             0.3365         ONLY: svacSurftube_21V1_0                                                 
+    164        290         0.0039             0.3380         ONLY: svacSurftube_38V1_1                                                 
+    165        165         0.0039             0.3398         ONLY: sSurftube_14V1_0                                                    
+    166        256         0.0039             0.3401         ONLY: svacSurftube_21V1_1                                                 
+    167        248         0.0040             0.3434         ONLY: svacSurftube_17V1_1                                                 
+    168        185         0.0040             0.3488         ONLY: sSurftube_24V1_0                                                    
+    169        164         0.0041             0.3495         ONLY: svacSurftube_14V1_0                                                 
+    170        212         0.0041             0.3505         ONLY: svacSurftube_38V1_0                                                 
+    171        184         0.0041             0.3512         ONLY: svacSurftube_24V1_0                                                 
+    172        170         0.0041             0.3517         ONLY: svacSurftube_17V1_0                                                 
+    173        249         0.0041             0.3552         ONLY: sSurftube_17V1_1                                                    
+    174        115         0.0042             0.3610         ONLY: HamamatsuR12860_PMT_20inch_inner_solid_1_4                          
+    175        284         0.0042             0.3627         ONLY: svacSurftube_35V1_1                                                 
+    176        213         0.0043             0.3692         ONLY: sSurftube_38V1_0                                                    
+    177        239         0.0044             0.3838         ONLY: sSurftube_12V1_1                                                    
+    178        267         0.0045             0.3865         ONLY: sSurftube_26V1_1                                                    
+    179        220         0.0045             0.3890         ONLY: svacSurftube_3V1_1                                                  
+    180        285         0.0045             0.3899         ONLY: sSurftube_35V1_1                                                    
+    181         16         0.0046             0.3937         ONLY: sExpRockBox                                                         
+    182        266         0.0048             0.4119         ONLY: svacSurftube_26V1_1                                                 
+    183        257         0.0049             0.4201         ONLY: sSurftube_21V1_1                                                    
+    184        188         0.0049             0.4267         ONLY: svacSurftube_26V1_0                                                 
+    185        160         0.0050             0.4274         ONLY: svacSurftube_12V1_0                                                 
+    186        161         0.0050             0.4334         ONLY: sSurftube_12V1_0                                                    
+    187        215         0.0050             0.4349         ONLY: sSurftube_0V1_1                                                     
+    188        271         0.0051             0.4408         ONLY: sSurftube_28V1_1                                                    
+    189        238         0.0051             0.4411         ONLY: svacSurftube_12V1_1                                                 
+    190        221         0.0051             0.4432         ONLY: sSurftube_3V1_1                                                     
+    191        183         0.0052             0.4446         ONLY: sSurftube_23V1_0                                                    
+    192        166         0.0052             0.4475         ONLY: svacSurftube_15V1_0                                                 
+    193        235         0.0053             0.4530         ONLY: sSurftube_10V1_1                                                    
+    194        167         0.0053             0.4536         ONLY: sSurftube_15V1_0                                                    
+    195        270         0.0053             0.4542         ONLY: svacSurftube_28V1_1                                                 
+    196         88         0.0053             0.4564         ONLY: ZC2.A05_A05_FlangeI_Web_FlangeII                                    
+    197        182         0.0053             0.4571         ONLY: svacSurftube_23V1_0                                                 
+    198        211         0.0053             0.4613         ONLY: sSurftube_37V1_0                                                    
+    199        234         0.0054             0.4645         ONLY: svacSurftube_10V1_1                                                 
+    200        139         0.0054             0.4686         ONLY: sSurftube_1V1_0                                                     
+    201        138         0.0054             0.4689         ONLY: svacSurftube_1V1_0                                                  
+    202         19         0.0054             0.4689         ONLY: GLw1.up09_up10_FlangeI_Web_FlangeII                                 
+    203        231         0.0055             0.4735         ONLY: sSurftube_8V1_1                                                     
+    204        274         0.0055             0.4747         ONLY: svacSurftube_30V1_1                                                 
+    205          7         0.0055             0.4778         ONLY: Upper_Chimney                                                       
+    206        294         0.0055             0.4784         ONLY: mask_PMT_20inch_vetosMask                                           
+    207        218         0.0056             0.4809         ONLY: svacSurftube_2V1_1                                                  
+    208         62         0.0056             0.4810         ONLY: GLb3.bt11_FlangeI_Web_FlangeII                                      
+    209         40         0.0056             0.4830         ONLY: GLb3.up11_FlangeI_Web_FlangeII                                      
+    210         96         0.0056             0.4866         ONLY: sTarget                                                             
+    211        260         0.0057             0.4904         ONLY: svacSurftube_23V1_1                                                 
+    212         24         0.0057             0.4927         ONLY: GLw1.up04_up05_FlangeI_Web_FlangeII                                 
+    213        261         0.0057             0.4952         ONLY: sSurftube_23V1_1                                                    
+    214        230         0.0058             0.4967         ONLY: svacSurftube_8V1_1                                                  
+    215        133         0.0058             0.4978         ONLY: sChimneyLS                                                          
+    216        192         0.0058             0.5038         ONLY: svacSurftube_28V1_0                                                 
+    217        210         0.0059             0.5056         ONLY: svacSurftube_37V1_0                                                 
+    218        157         0.0059             0.5085         ONLY: sSurftube_10V1_0                                                    
+    219        245         0.0059             0.5099         ONLY: sSurftube_15V1_1                                                    
+    220        241         0.0059             0.5127         ONLY: sSurftube_13V1_1                                                    
+    221        219         0.0060             0.5147         ONLY: sSurftube_2V1_1                                                     
+    222        119         0.0060             0.5150         ONLY: NNVTMCPPMTTail                                                      
+    223        265         0.0060             0.5151         ONLY: sSurftube_25V1_1                                                    
+    224        142         0.0060             0.5168         ONLY: svacSurftube_3V1_0                                                  
+    225        264         0.0061             0.5221         ONLY: svacSurftube_25V1_1                                                 
+    226        244         0.0061             0.5237         ONLY: svacSurftube_15V1_1                                                 
+    227        156         0.0061             0.5261         ONLY: svacSurftube_10V1_0                                                 
+    228         77         0.0061             0.5282         ONLY: ZC2.A04_B04_FlangeI_Web_FlangeII                                    
+    229        287         0.0061             0.5294         ONLY: sSurftube_36V1_1                                                    
+    230         29         0.0062             0.5346         ONLY: GLw2.equ_bt01_FlangeI_Web_FlangeII                                  
+    231        283         0.0063             0.5407         ONLY: sSurftube_34V1_1                                                    
+    232        275         0.0063             0.5407         ONLY: sSurftube_30V1_1                                                    
+    233        143         0.0064             0.5503         ONLY: sSurftube_3V1_0                                                     
+    234        172         0.0064             0.5529         ONLY: svacSurftube_18V1_0                                                 
+    235        206         0.0064             0.5534         ONLY: svacSurftube_35V1_0                                                 
+    236        162         0.0064             0.5548         ONLY: svacSurftube_13V1_0                                                 
+    237        223         0.0065             0.5584         ONLY: sSurftube_4V1_1                                                     
+    238        222         0.0065             0.5584         ONLY: svacSurftube_4V1_1                                                  
+    239        186         0.0066             0.5727         ONLY: svacSurftube_25V1_0                                                 
+    240        282         0.0067             0.5749         ONLY: svacSurftube_34V1_1                                                 
+    241        152         0.0068             0.5835         ONLY: svacSurftube_8V1_0                                                  
+    242         97         0.0069             0.5911         ONLY: sAcrylic                                                            
+    243        196         0.0069             0.5977         ONLY: svacSurftube_30V1_0                                                 
+    244        197         0.0071             0.6093         ONLY: sSurftube_30V1_0                                                    
+    245        163         0.0073             0.6264         ONLY: sSurftube_13V1_0                                                    
+    246        179         0.0073             0.6321         ONLY: sSurftube_21V1_0                                                    
+    247        207         0.0074             0.6355         ONLY: sSurftube_35V1_0                                                    
+    248        280         0.0079             0.6777         ONLY: svacSurftube_33V1_1                                                 
+    249        189         0.0079             0.6850         ONLY: sSurftube_26V1_0                                                    
+    250        281         0.0083             0.7121         ONLY: sSurftube_33V1_1                                                    
+    251        224         0.0085             0.7306         ONLY: svacSurftube_5V1_1                                                  
+    252        190         0.0089             0.7636         ONLY: svacSurftube_27V1_0                                                 
+    253        159         0.0089             0.7660         ONLY: sSurftube_11V1_0                                                    
+    254        279         0.0089             0.7672         ONLY: sSurftube_32V1_1                                                    
+    255        227         0.0091             0.7830         ONLY: sSurftube_6V1_1                                                     
+    256        225         0.0091             0.7837         ONLY: sSurftube_5V1_1                                                     
+    257        193         0.0091             0.7856         ONLY: sSurftube_28V1_0                                                    
+    258        277         0.0093             0.8051         ONLY: sSurftube_31V1_1                                                    
+    259        158         0.0094             0.8072         ONLY: svacSurftube_11V1_0                                                 
+    260        226         0.0094             0.8081         ONLY: svacSurftube_6V1_1                                                  
+    261        278         0.0094             0.8127         ONLY: svacSurftube_32V1_1                                                 
+    262        240         0.0098             0.8431         ONLY: svacSurftube_13V1_1                                                 
+    263        204         0.0098             0.8471         ONLY: svacSurftube_34V1_0                                                 
+    264        229         0.0100             0.8583         ONLY: sSurftube_7V1_1                                                     
+    265        286         0.0101             0.8698         ONLY: svacSurftube_36V1_1                                                 
+    266        187         0.0102             0.8769         ONLY: sSurftube_25V1_0                                                    
+    267        269         0.0102             0.8829         ONLY: sSurftube_27V1_1                                                    
+    268        140         0.0102             0.8834         ONLY: svacSurftube_2V1_0                                                  
+    269        208         0.0103             0.8915         ONLY: svacSurftube_36V1_0                                                 
+    270        141         0.0104             0.8976         ONLY: sSurftube_2V1_0                                                     
+    271        233         0.0104             0.8982         ONLY: sSurftube_9V1_1                                                     
+    272        228         0.0106             0.9114         ONLY: svacSurftube_7V1_1                                                  
+    273        273         0.0108             0.9357         ONLY: sSurftube_29V1_1                                                    
+    274        147         0.0110             0.9460         ONLY: sSurftube_5V1_0                                                     
+    275        200         0.0110             0.9497         ONLY: svacSurftube_32V1_0                                                 
+    276        202         0.0111             0.9543         ONLY: svacSurftube_33V1_0                                                 
+    277        148         0.0111             0.9548         ONLY: svacSurftube_6V1_0                                                  
+    278        203         0.0111             0.9557         ONLY: sSurftube_33V1_0                                                    
+    279        151         0.0112             0.9619         ONLY: sSurftube_7V1_0                                                     
+    280        149         0.0112             0.9649         ONLY: sSurftube_6V1_0                                                     
+    281        232         0.0112             0.9661         ONLY: svacSurftube_9V1_1                                                  
+    282        150         0.0112             0.9665         ONLY: svacSurftube_7V1_0                                                  
+    283        194         0.0112             0.9690         ONLY: svacSurftube_29V1_0                                                 
+    284        154         0.0113             0.9737         ONLY: svacSurftube_9V1_0                                                  
+    285        155         0.0113             0.9738         ONLY: sSurftube_9V1_0                                                     
+    286        146         0.0114             0.9819         ONLY: svacSurftube_5V1_0                                                  
+    287          t         0.0116             1.0000         ALL                                                                       
+    288        153         0.0117             1.0118         ONLY: sSurftube_8V1_0                                                     
+    289        199         0.0120             1.0343         ONLY: sSurftube_31V1_0                                                    
+    290        236         0.0120             1.0359         ONLY: svacSurftube_11V1_1                                                 
+    291        195         0.0121             1.0469         ONLY: sSurftube_29V1_0                                                    
+    292        191         0.0122             1.0535         ONLY: sSurftube_27V1_0                                                    
+    293        272         0.0124             1.0713         ONLY: svacSurftube_29V1_1                                                 
+    294        268         0.0127             1.0953         ONLY: svacSurftube_27V1_1                                                 
+    295        209         0.0134             1.1580         ONLY: sSurftube_36V1_0                                                    
+    296        276         0.0135             1.1663         ONLY: svacSurftube_31V1_1                                                 
+    297        237         0.0136             1.1698         ONLY: sSurftube_11V1_1                                                    
+    298        205         0.0137             1.1798         ONLY: sSurftube_34V1_0                                                    
+    299        144         0.0138             1.1883         ONLY: svacSurftube_4V1_0                                                  
+    300        198         0.0138             1.1920         ONLY: svacSurftube_31V1_0                                                 
+    301        145         0.0144             1.2394         ONLY: sSurftube_4V1_0                                                     
+    302        201         0.0149             1.2888         ONLY: sSurftube_32V1_0                                                    
+    idx         -e        time(s)           relative         enabled geometry description  
+
+
+

@@ -1,29 +1,33 @@
 #!/bin/bash 
 usage(){ cat << EOU
-elv.sh : analysis of ELV scan metadata
-=========================================
+elv.sh / emm.sh :  analysis of ELV/EMM scan metadata
+======================================================
 
-::
+NB emm.sh is a symbolic link to elv.sh so this single script
+handles both with mode switched based on the scriptstem being "emm" or "elv"
 
-   ~/o/CSGOptiX/elv.sh 
-         ## default ALL does : jpg txt rst
+Usage::
 
+   ~/o/CSGOptiX/emm.sh jpg
    ~/o/CSGOptiX/elv.sh jpg
          ## write list of jpg paths in ascending render time order
 
+   ~/o/CSGOptiX/emm.sh txt
    ~/o/CSGOptiX/elv.sh txt
          ## write TXT table with ordered render times 
 
+   ~/o/CSGOptiX/emm.sh rst
    ~/o/CSGOptiX/elv.sh rst
          ## write RST table with ordered render times 
 
 
 Call stack::
 
-    elv.sh
+    elv.sh OR emm.sh 
     ./cxr_overview.sh jstab
     source $SDIR/../bin/BASE_grab.sh $arg
     PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb  ../ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+
 
 Check out the Panel geometry::
 
@@ -33,7 +37,8 @@ Check out the Panel geometry::
 EOU
 }
 
-defarg="ALL"
+
+defarg="txt"
 arg=${1:-$defarg}
 
 if [ "$arg" == "ALL" ]; then
@@ -44,13 +49,18 @@ fi
 
 
 cd $(dirname $(realpath $BASH_SOURCE))
+scriptname=$(basename $BASH_SOURCE)   ## NB not with realpath as want to see name of symbolic link not the real path 
+scriptstem=${scriptname/.sh}
 
-
-#MODE=elv
-MODE=emm
+MODE=$scriptstem
 
 SCAN=scan-$MODE
 LIM=512
+
+
+vars="0 BASH_SOURCE scriptname scriptstem MODE SCAN LIM arg defarg types vars"
+for var in $vars ; do printf "%20s :  %s \n" "$var" "${!var}" ; done 
+
 
 for typ in $types 
 do 
@@ -60,8 +70,5 @@ do
    echo $outpath
    cat $outpath 
 done
-
-
-
 
 
