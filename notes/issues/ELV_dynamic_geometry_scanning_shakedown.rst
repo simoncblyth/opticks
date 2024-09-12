@@ -323,3 +323,55 @@ run the candle render to have the metadata to act as the candle.
     P[blyth@localhost opticks]$ 
 
 
+
+
+    A[blyth@localhost bin]$ CANDLE=t0 ~/o/CSGOptiX/elv.sh txt
+                    BASE : /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD0/80000/ALL/scan-emm 
+    /home/blyth/opticks/CSGOptiX/../bin/BASE_grab.sh jstab
+    /home/blyth/opticks/CSGOptiX/../bin/BASE_grab.sh - IPYTHON NOT AVAILABLE - TRY PYTHON
+    [2024-09-12 20:11:00,975] p18646 {/home/blyth/opticks/bin/../ana/snap.py:492} INFO - globptn /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD0/80000/ALL/scan-emm/cxr_overview*elv*.jpg 
+    [2024-09-12 20:11:00,975] p18646 {/home/blyth/opticks/bin/../ana/snap.py:325} INFO - cfptn $HOME/.opticks/GEOM/$GEOM/CSGFoundry cfdir /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry 
+    [2024-09-12 20:11:00,975] p18646 {/home/blyth/opticks/bin/../ana/snap.py:328} INFO - mmlabel_path /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry/mmlabel.txt 
+    [2024-09-12 20:11:00,976] p18646 {/home/blyth/opticks/bin/../ana/snap.py:332} INFO - meshname_path /home/blyth/.opticks/GEOM/J_2024aug27/CSGFoundry/meshname.txt 
+    [2024-09-12 20:11:00,976] p18646 {/home/blyth/opticks/bin/../ana/snap.py:265} INFO - globptn /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD0/80000/ALL/scan-emm/cxr_overview*elv*.jpg 
+    [2024-09-12 20:11:00,977] p18646 {/home/blyth/opticks/bin/../ana/snap.py:267} INFO - globptn raw_paths 35 : 1st /tmp/blyth/opticks/GEOM/J_2024aug27/CSGOptiXRenderTest/CVD0/80000/ALL/scan-emm/cxr_overview_emm_t0,_elv_t_moi__ALL.jpg 
+    [2024-09-12 20:11:00,977] p18646 {/home/blyth/opticks/bin/../ana/snap.py:269} INFO - after is_valid filter len(paths): 35 
+    [2024-09-12 20:11:00,977] p18646 {/home/blyth/opticks/bin/../ana/snap.py:378} INFO - all_snaps:35 candle:t0 n_candle:1 selectmode:emm 
+    [2024-09-12 20:11:00,977] p18646 {/home/blyth/opticks/bin/../ana/snap.py:392} INFO - after selectmode:emm selectspec:all snaps:35 
+    [2024-09-12 20:11:00,978] p18646 {/home/blyth/opticks/bin/../ana/snap.py:520} INFO - --out writing to /tmp/emm_txt.txt 
+    >>> 
+    /tmp/emm_txt.txt
+    idx         -e        time(s)           relative         enabled geometry description                                              
+      0         5,         0.0001             0.0476         ONLY: 1:sStrutBallhead                                                    
+      1         9,         0.0002             0.0559         ONLY: 130:sPanel                                                          
+      2         7,         0.0002             0.0597         ONLY: 1:base_steel                                                        
+      3        10,         0.0002             0.0645         ONLY: 322:solidSJCLSanchor                                                
+      4         6,         0.0002             0.0685         ONLY: 1:uni1                                                              
+      5         8,         0.0002             0.0690         ONLY: 1:uni_acrylic1                                                      
+      6         1,         0.0003             0.1011         ONLY: 5:PMT_3inch_pmt_solid                                               
+      7         4,         0.0004             0.1323         ONLY: 4:mask_PMT_20inch_vetosMask_virtual                                 
+      8         3,         0.0012             0.3880         ONLY: 12:HamamatsuR12860sMask_virtual                                     
+      9         2,         0.0015             0.4699         ONLY: 9:NNVTMCPPMTsMask_virtual                                           
+     10        t0,         0.0020             0.6427         EXCL: 2896:sWorld                                                         
+     11        t0,         0.0020             0.6527         EXCL: 2896:sWorld                                                         
+     12    1,2,3,4         0.0021             0.6638         ONLY PMT                                                                  
+     13         0,         0.0021             0.6740         ONLY: 2896:sWorld                                                         
+     14        t4,         0.0029             0.9425         EXCL: 4:mask_PMT_20inch_vetosMask_virtual                                 
+     15        t3,         0.0030             0.9490         EXCL: 12:HamamatsuR12860sMask_virtual                                     
+     16        t4,         0.0030             0.9506         EXCL: 4:mask_PMT_20inch_vetosMask_virtual                                 
+     17        t2,         0.0030             0.9569         EXCL: 9:NNVTMCPPMTsMask_virtual                                           
+     18        t3,         0.0030             0.9676         EXCL: 12:HamamatsuR12860sMask_virtual                                     
+     19       t10,         0.0030             0.9710         EXCL: 322:solidSJCLSanchor                                                
+     20        t1,         0.0030             0.9712         EXCL: 5:PMT_3inch_pmt_solid                                               
+     21       t10,         0.0030             0.9765         EXCL: 322:solidSJCLSanchor                                                
+     22        t5,         0.0030             0.9775         EXCL: 1:sStrutBallhead                                                    
+     23        t6,         0.0031             0.9817         EXCL: 1:uni1                                                              
+     24        t2,         0.0031             0.9859         EXCL: 9:NNVTMCPPMTsMask_virtual                                           
+     25        t1,         0.0031             0.9871         EXCL: 5:PMT_3inch_pmt_solid                                               
+     26        t5,         0.0031             0.9911         EXCL: 1:sStrutBallhead                                                    
+     27        t6,         0.0031             0.9953         EXCL: 1:uni1                                                              
+     28         t0         0.0031             1.0000         ALL                                                                       
+
+
+
+
