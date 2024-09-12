@@ -375,13 +375,16 @@ run the candle render to have the metadata to act as the candle.
 
 
 
-ELV scanning
-~~~~~~~~~~~~~~
+ELV scanning with cxr_overview
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-Thge viewpoint of the ELV ONLY is very variable for the torii, maybe because its
+The cxr_overview viewpoint of the ELV ONLY is very variable for the torii, maybe because its
 global and the axis aligned bbox changes size a lot due to different orientations
 of the torii section. 
+
+For the exclude one renders, they mostly all look the same with the distant cxr_overview. 
+
+Presumably using the fixed chimmey viewpoint of cxr_view makes more sense for ELV scanning.
 
 
 ::

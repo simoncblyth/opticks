@@ -47,7 +47,7 @@ if [ "${arg/jstab}" != "$arg" ]; then
         PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb -i $script --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
     else
         echo $BASH_SOURCE - IPYTHON NOT AVAILABLE - TRY PYTHON 
-        PYTHONPATH=../.. ${PYTHON:-python} -i $script --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+        PYTHONPATH=../.. ${PYTHON:-python}  $script --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
     fi  
 fi 
 
