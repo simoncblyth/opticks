@@ -386,7 +386,7 @@ class SnapScan(object):
         self.candle = s_candle 
 
     def label(self, enabled):
-        log.info(" enabled : %s " % str(enabled))  
+        #log.info(" enabled : %s " % str(enabled))  
         return self.lv.label(enabled) if self.selectmode == "elv" else self.mm.label(enabled)
 
     def table(self):

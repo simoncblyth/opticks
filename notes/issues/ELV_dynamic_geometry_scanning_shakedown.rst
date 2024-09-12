@@ -205,8 +205,8 @@ FIXED : on A no CUDA capable device ? fix by removing the CVD at script level
 
 
 
-ana shakedown : descriptions are all "ALL" 
---------------------------------------------
+ana shakedown : Fixed issue 1 : descriptions are all "ALL" 
+--------------------------------------------------------------
 
 ::
 

@@ -25,6 +25,11 @@ Call stack::
     source $SDIR/../bin/BASE_grab.sh $arg
     PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb  ../ana/snap.py --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
 
+Check out the Panel geometry::
+
+    EMM=9, ~/o/cx.sh 
+
+
 EOU
 }
 
@@ -40,14 +45,17 @@ fi
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-SCAN=scan-emm
-#SCAN=scan-elv
+
+#MODE=elv
+MODE=emm
+
+SCAN=scan-$MODE
 LIM=512
 
 for typ in $types 
 do 
-   outpath=/tmp/elv_${typ}.txt
-   snap_args="--$typ --out --outpath=$outpath --selectmode emm"
+   outpath=/tmp/${MODE}_${typ}.txt
+   snap_args="--$typ --out --outpath=$outpath --selectmode $MODE"
    SELECTSPEC=all SCAN=$SCAN SNAP_LIMIT=$LIM SNAP_ARGS="$snap_args" ./cxr_overview.sh jstab
    echo $outpath
    cat $outpath 
