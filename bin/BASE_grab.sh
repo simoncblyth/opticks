@@ -34,20 +34,15 @@ fi
 if [ "${arg/jstab}" != "$arg" ]; then 
 
     echo $BASH_SOURCE jstab     
-    #jsons=($(ls -1t $(find $BASE -name '*.json')))
-    #for json in ${jsons[*]} ; do echo $json ; done  
-
-    globptn="$BASE/cxr_overview*elv*.jpg"
-    refjpgpfx="/env/presentation/cxr/cxr_overview"
 
     script=../ana/snap.py
 
     if command -v ${IPYTHON:-ipython} &> /dev/null 
     then
-        PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb -i $script --  --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+        PYTHONPATH=../.. ${IPYTHON:-ipython} --pdb -i $script 
     else
         echo $BASH_SOURCE - IPYTHON NOT AVAILABLE - TRY PYTHON 
-        PYTHONPATH=../.. ${PYTHON:-python}  $script --globptn "$globptn" --refjpgpfx "$refjpgpfx" $SNAP_ARGS
+        PYTHONPATH=../.. ${PYTHON:-python}  $script 
     fi  
 fi 
 

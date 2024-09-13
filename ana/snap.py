@@ -19,6 +19,9 @@ Typical call stack using snap.py::
     ~/o/bin/BASE_grab.sh : jstab
     snap.py 
 
+The reason for this stack is to do the definition of the BASE directory 
+in one place and not repeat that. 
+
 Which inputs are present depends on recent scan runs::
 
     ~/o/CSGOptiX/cxr_scan.sh 
@@ -88,8 +91,10 @@ class Snap(object):
     cxr_overview_emm_t0,_elv_t_moi__ALL.jpg 
 
     """
-    PTN0 = re.compile("cxr_overview_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)(?P<jdx>\d{5})")
-    PTN1 = re.compile("cxr_overview_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)")
+    PTN0 = re.compile("(?P<pfx>cxr_\S*)_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)(?P<jdx>\d{5})")
+    PTN1 = re.compile("(?P<pfx>cxr_\S*)_emm_(?P<emm>\S*)_elv_(?P<elv>\S*)_moi_(?P<moi>\S*)")
+
+    PTN_EMM_ELV = re.compile("emm_(?P<emm>\S+?)_elv_(?P<elv>\S+?)_")
 
     @classmethod
     def is_valid(cls, jpg_path):
@@ -100,13 +105,19 @@ class Snap(object):
         return valid 
 
     @classmethod
-    def ParseStem(cls, jpg_stem):   
+    def ParseStem_OLD(cls, jpg_stem):   
         m0 = cls.PTN0.match(jpg_stem)
         m1 = cls.PTN1.match(jpg_stem)
         m = m0
         if m0 is None:
             m = m1 
         pass 
+        d = m.groupdict() if not m is None else {}
+        return d
+
+    @classmethod
+    def ParseStem(cls, jpg_stem):   
+        m = cls.PTN_EMM_ELV.search(jpg_stem)
         d = m.groupdict() if not m is None else {}
         return d
 
@@ -119,7 +130,8 @@ class Snap(object):
         """ 
         json_path = jpg_path.replace(".jpg", ".json")
         jpg_stem = os.path.splitext(os.path.basename(jpg_path))[0]
-        log.debug("jpg_path %s json_path %s " % (jpg_path, json_path))          
+        #log.info("jpg_path %s " % (jpg_path))          
+        #log.info("json_path %s " % (json_path))          
         js = json.load(open(json_path,"r"))
 
         self.js = js 
@@ -134,6 +146,9 @@ class Snap(object):
         emm = dstem.get("emm", None)
         moi = dstem.get("moi", None)
         jdx = dstem.get("jdx", None)
+
+        #log.info("jpg_stem: %s" % jpg_stem )
+        #log.info(" dstem: %s " % str(dstem))
 
         self.dstem = dstem  
         self.elv = elv
@@ -254,7 +269,7 @@ class Snap(object):
 
 class SnapScan(object):
     @classmethod
-    def MakeSnaps(cls, globptn, reverse=False, selectmode="elv"):
+    def MakeSnaps(cls, globptn_, reverse=False, selectmode="elv"):
         """
         1. resolve globptn into a sorted list of paths, typically of jpg render files
         2. select paths considered valid, currently all paths found
@@ -262,7 +277,8 @@ class SnapScan(object):
         4. order the Snap instances based in Snap.av obtained from the sidecar json file
         5. return the snaps
         """ 
-        log.info("globptn %s " % globptn )
+        globptn = os.path.expandvars(globptn_)
+        log.info("globptn_ %s globptn %s " % (globptn_, globptn) )
         raw_paths = glob.glob(globptn) 
         log.info("globptn raw_paths %d : 1st %s " % (len(raw_paths), raw_paths[0]))
         paths = list(filter(lambda p:Snap.is_valid(p), raw_paths))  # seems all paths are for now valid
@@ -427,7 +443,7 @@ class SnapScan(object):
     slow = property(lambda self:self.snaps[-1])
 
     def __repr__(self):
-        return "\n".join( [Snap.Hdr()] + list(map(repr,self.snaps)) + [Snap.Hdr()] + [""] ) 
+        return "\n".join( [Snap.Hdr()] + list(map(repr,self.snaps)) + [Snap.Hdr()] ) 
 
     def jpg(self):
         return "\n".join(list(map(lambda s:s.jpg,self.snaps)))
@@ -448,36 +464,53 @@ class SnapScan(object):
         return "\n".join(list(map(lambda s:s.pagejpg(),self.snaps)))
 
 
-def edef(key, fallback):
-    return os.environ.get(key,fallback)
+def edef(key, fallback, prefix="SNAP_"):
+    return os.environ.get(prefix+key,fallback)
         
 def parse_args(doc, **kwa):
     np.set_printoptions(suppress=True, precision=3, linewidth=200)
     parser = argparse.ArgumentParser(doc)
 
-    # config 
-    parser.add_argument(  "--level", default="info", help="logging level" ) 
-    parser.add_argument(  "--globptn", default="$TMP/snap/*.jpg", help="base" ) 
-    parser.add_argument(  "--refjpgpfx", default="/env/presentation/snap/lLowerChimney_phys", help="List jpg paths s5 background image presentation format" ) 
-    parser.add_argument(  "--s5base", default="$HOME/simoncblyth.bitbucket.io", help="Presentation repo base" )
-    parser.add_argument(  "--outpath", default="/tmp/ana_snap.txt", help="Path where to write output" )
-    parser.add_argument(  "--selectmode",  default=edef("SELECTMODE","elv"), help="SnapScan selection mode" )
-    parser.add_argument(  "--selectspec",  default=edef("SELECTSPEC","not_elv_t"), help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
-    parser.add_argument(  "--candle",  default=edef("CANDLE","t"), help="Enabled setting to use as the reference candle for relative column in the table" )
-    parser.add_argument(  "--out" ,    action="store_true", help="Enable saving output to *outpath*", default=False )
-    parser.add_argument(  "--reverse", action="store_true", help="Reverse time order with slowest first", default=False)
- 
-    # controls
-    parser.add_argument(  "--jpg",     action="store_true", help="List jpg paths in speed order" ) 
-    parser.add_argument(  "--refjpg",  action="store_true", help="List jpg paths s5 background image presentation format" ) 
-    parser.add_argument(  "--pagejpg", action="store_true", help="List jpg for inclusion into s5 presentation" ) 
-    parser.add_argument(  "--mvjpg",   action="store_true", help="List jpg for inclusion into s5 presentation" ) 
-    parser.add_argument(  "--cpjpg",   action="store_true", help="List cp commands to place into presentation repo" ) 
-    parser.add_argument(  "--argline", action="store_true", help="List argline in speed order" ) 
-    parser.add_argument(  "--snaps",   action="store_true", help="Debug: just create SnapScan " ) 
-    parser.add_argument(  "--rst",     action="store_true", help="Dump table in RST format" ) 
-    parser.add_argument(  "--txt",     action="store_true", help="Dump table in TXT format" ) 
+    SNAP_level      = edef("level", "info")
+    SNAP_globptn    = edef("globptn", "$TMP/snap/*.jpg")
+    SNAP_refjpgpfx  = edef("refjpgpfx", "/env/presentation/snap/lLowerChimney_phys" ) 
+    SNAP_s5base     = edef("s5base", "$HOME/simoncblyth.bitbucket.io")
+    SNAP_outpath    = edef("outpath", "/tmp/ana_snap.txt" )
+    SNAP_selectmode = edef("selectmode", "elv" )
+    SNAP_selectspec = edef("selectspec", "not_elv_t")
+    SNAP_candle     = edef("candle","t")   
+    SNAP_dump       = edef("dump","txt")
+    SNAP_out        = edef("out",True) 
+    SNAP_reverse    = edef("reverse",False) 
 
+    # config 
+    parser.add_argument(  "--level",       default=SNAP_level,      help="logging level" ) 
+    parser.add_argument(  "--globptn",     default=SNAP_globptn,    help="base" ) 
+    parser.add_argument(  "--refjpgpfx",   default=SNAP_refjpgpfx,  help="List jpg paths s5 background image presentation format" ) 
+    parser.add_argument(  "--s5base",      default=SNAP_s5base,     help="Presentation repo base" )
+    parser.add_argument(  "--outpath",     default=SNAP_outpath,    help="Path where to write output" )
+    parser.add_argument(  "--selectmode",  default=SNAP_selectmode, help="SnapScan selection mode" )
+    parser.add_argument(  "--selectspec",  default=SNAP_selectspec, help="all/only_elv_t/not_elv_t : May be used to configure snap selection" )
+    parser.add_argument(  "--candle",      default=SNAP_candle,     help="Enabled setting to use as the reference candle for relative column in the table" )
+    parser.add_argument(  "--out" ,        default=SNAP_out,        help="Enable saving output to *outpath*", action="store_true" )
+    parser.add_argument(  "--reverse",     default=SNAP_reverse,    help="Reverse time order with slowest first", action="store_true"  )
+
+    # what to output
+    doc = {}
+    doc["jpg"] = "Dump list of jpg paths in speed order"
+    doc["rst"] = "Dump table in RST format"
+    doc["txt"] = "Dump table in TXT format"
+    doc["refjpg"] = "List jpg paths s5 background image presentation format"
+    doc["pagejpg"] = "List jpg for inclusion into s5 presentation" 
+    doc["mvjpg"] = "List commands to mv the jpg"
+    doc["cpjpg"] = "List cp commands to place into presentation repo"
+    doc["argline"] = "List argline in speed order"
+    doc["snaps"]  = "Debug: just create SnapScan "
+
+    parser.add_argument(  "--dump",    choices=list(doc.keys()), default=SNAP_dump, help="Specify what to dump" ) 
+
+
+ 
     args = parser.parse_args()
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
@@ -488,34 +521,35 @@ if __name__ == '__main__':
     args = parse_args(__doc__)
     log.debug(" args %s " % str(args))
 
-    globptn = args.globptn
-    log.info("globptn %s " % (globptn) ) 
-
+    log.info(" args.globptn : %s " % (args.globptn) ) 
+    log.info(" args.dump    : %s " % (args.dump) )
     
     ss = SnapScan.Create(args.globptn, args.reverse, args.selectmode, args.selectspec, args.candle) 
 
     out = None
-    if args.jpg:    # list jpg paths in time order 
+    if args.dump == "jpg":    # list jpg paths in time order 
         out = str(ss.jpg())
-    elif args.refjpg:
+    elif args.dump == "refjpg":
         out = str(ss.refjpg(args.refjpgpfx))
-    elif args.pagejpg:
+    elif args.dump == "pagejpg":
         out = str(ss.pagejpg())
-    elif args.mvjpg:
+    elif args.dump == "mvjpg":
         out = str(ss.mvjpg())
-    elif args.cpjpg:
+    elif args.dump == "cpjpg":
         out = str(ss.cpjpg(args.refjpgpfx, args.s5base))
-    elif args.argline:
+    elif args.dump == "argline":
         out = str(ss.argline())
-    elif args.snaps:
+    elif args.dump == "snaps":
         out = str(ss.snaps)
-    elif args.rst:
+    elif args.dump == "rst":
         out = str(ss.rst_table())
-    elif args.txt:
+    elif args.dump == "txt":
         out = str(ss)
     else:
         out = str(ss) 
     pass
+    out += "\n"
+
     if args.out:
         log.info("--out writing to %s " % args.outpath)
         open(args.outpath, "w").write(out)

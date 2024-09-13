@@ -58,6 +58,12 @@ SCAN=scan-$MODE
 LIM=512
 
 
+case $MODE in 
+  elv) estem=cxr_view ;;
+  emm) estem=cxr_overview ;;
+esac
+
+
 vars="0 BASH_SOURCE scriptname scriptstem MODE SCAN LIM arg defarg types vars"
 for var in $vars ; do printf "%20s :  %s \n" "$var" "${!var}" ; done 
 
@@ -65,10 +71,28 @@ for var in $vars ; do printf "%20s :  %s \n" "$var" "${!var}" ; done
 for typ in $types 
 do 
    outpath=/tmp/${MODE}_${typ}.txt
-   snap_args="--$typ --out --outpath=$outpath --selectmode $MODE"
-   SELECTSPEC=all SCAN=$SCAN SNAP_LIMIT=$LIM SNAP_ARGS="$snap_args" ./cxr_overview.sh jstab
-   echo $outpath
+
+   export SNAP_estem=$estem
+
+   export SNAP_outpath=$outpath
+   export SNAP_selectmode=$MODE
+   export SNAP_selectspec=all 
+   export SNAP_dump=$typ
+   export SNAP_LIMIT=$LIM  
+
+   if [ "$MODE" == "elv" ]; then
+       export SNAP_globptn='$BASE/cxr_view*elv*.jpg' 
+       export SNAP_refjpgpfx="/env/presentation/cxr/cxr_view"
+   elif [ "$MODE" == "emm" ]; then
+       export SNAP_globptn='$BASE/cxr_overview*emm*.jpg' 
+       export SNAP_refjpgpfx="/env/presentation/cxr/cxr_overview"
+   fi
+
+   SCAN=$SCAN  ./$estem.sh jstab    ## this runs snap.py 
+
+   wc -l $outpath
    cat $outpath 
+   wc -l $outpath
 done
 
 

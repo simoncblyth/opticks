@@ -87,11 +87,9 @@ export SCRIPT=${SCRIPT:-$script}
 case $thisstem in 
    cxr_scan_elv) scan=scan-elv ;;
    cxr_scan_emm) scan=scan-emm ;;
-              *) scan=scal-emm ;; 
 esac
 
-unset SCAN
-export SCAN=${SCAN:-$scan}
+export SCAN=$scan
 
 vars="0 BASH_SOURCE GEOM cfd nmm nlv NMM NLV script SCRIPT thisname thisstem scan SCAN vars"
 for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
@@ -113,7 +111,7 @@ scan-elv-()
     echo "t"    # ALL : for the candle 
 
     #for e in $(seq 0 $NLV) ; do echo "t103,$e" ; done  # disabling slowest midx:103 solidXJfixture and then each midx one-by-one
-    for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    #for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
     #for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 
@@ -134,8 +132,10 @@ scan-elv()
 }
 
 if [ "$SCAN" == "scan-emm" ]; then
-   scan-emm
+    scan-emm
 elif [ "$SCAN" == "scan-elv" ]; then
-   scan-elv
+    scan-elv
+else
+    echo DONT RUN cxr_scan.sh instead run one of the symbolic links cxr_scan_elv.sh cxr_scan_emm.sh 
 fi 
 
