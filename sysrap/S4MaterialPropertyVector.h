@@ -29,6 +29,11 @@ struct S4MaterialPropertyVector
     static G4MaterialPropertyVector* Make_V(double value); 
     static std::string Desc_V(const G4MaterialPropertyVector* v); 
 
+
+    static void    Import_VV(         std::vector<G4MaterialPropertyVector*>& vv, const NPFold* f ) ;
+    static NPFold* Serialize_VV(const std::vector<G4MaterialPropertyVector*>& vv ) ;
+    static std::string  Desc_VV(const std::vector<G4MaterialPropertyVector*>& vv ) ;
+
     static void    Import_MSV(          std::map<std::string,G4MaterialPropertyVector*>& msv, const NPFold* sub);
     static NPFold* Serialize_MSV( const std::map<std::string,G4MaterialPropertyVector*>& msv );
     static std::string Desc_MSV(  const std::map<std::string,G4MaterialPropertyVector*>& msv ) ;
@@ -36,6 +41,7 @@ struct S4MaterialPropertyVector
     static void Import_MIMSV(            std::map<int,std::map<std::string,G4MaterialPropertyVector*>>& mimsv, const NPFold* f );
     static NPFold* Serialize_MIMSV(const std::map<int,std::map<std::string,G4MaterialPropertyVector*>>& mimsv ) ;
     static std::string Desc_MIMSV( const std::map<int,std::map<std::string,G4MaterialPropertyVector*>>& mimsv ) ;
+
 };
 
 
@@ -107,6 +113,54 @@ inline std::string S4MaterialPropertyVector::Desc_V(const G4MaterialPropertyVect
        ; 
     std::string s = ss.str(); 
     return s ; 
+}
+
+
+
+
+
+
+inline void  S4MaterialPropertyVector::Import_VV(         std::vector<G4MaterialPropertyVector*>& vv, const NPFold* f ) // static
+{
+    [[maybe_unused]] int num_sub = f->get_num_subfold();
+    int num_items = f->num_items();
+    assert( num_sub == 0 );
+
+    vv.resize(num_items); 
+
+    for(int i=0 ; i < num_items ; i++)
+    {
+        const char* key_ = f->get_key(i);
+        const char* key = NPFold::BareKey(key_);
+        int idx = std::atoi(key); 
+        assert( idx == i );  
+        const NP* a = f->get_array(idx);
+        G4MaterialPropertyVector* mpv = FromArray(a) ;
+        vv[i] = mpv ;
+    }
+}
+
+inline NPFold* S4MaterialPropertyVector::Serialize_VV(const std::vector<G4MaterialPropertyVector*>& vv ) 
+{
+    NPFold* f = new NPFold ; 
+    int num_v = vv.size(); 
+    for(int i=0 ; i < num_v ; i++)
+    { 
+        std::string k = std::to_string(i);  
+        const G4MaterialPropertyVector* v = vv[i] ; 
+        NP* a = ConvertToArray( v ); 
+        f->add( k.c_str(), a );     
+    }
+    return f ; 
+}
+
+inline std::string S4MaterialPropertyVector::Desc_VV(     const std::vector<G4MaterialPropertyVector*>& vv )
+{
+    int num_v = vv.size(); 
+    std::stringstream ss ; 
+    ss << "S4MaterialPropertyVector::Desc_VV num_v:" << num_v << std::endl ; 
+    std::string str = ss.str() ;
+    return str ;  
 }
 
 
