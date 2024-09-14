@@ -29,11 +29,14 @@ CLHEP_PREFIX=$(get-cmake-prefix CLHEP)
 defarg="info_build_run"
 arg=${1:-$defarg}
 
-FOLD=/tmp/$name
+export FOLD=/tmp/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
-vars="BASH_SOURCE name PWD defarg arg FOLD bin GEANT4_PREFIX CLHEP_PREFIX"
+
+export TEST=VV_CombinedArray
+
+vars="BASH_SOURCE name PWD defarg arg FOLD bin GEANT4_PREFIX CLHEP_PREFIX TEST"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 

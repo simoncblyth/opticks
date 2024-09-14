@@ -25,6 +25,8 @@ struct S4MaterialPropertyVector
 {
     static NP* ConvertToArray(const G4MaterialPropertyVector* vec);
     static G4MaterialPropertyVector* Load(const char* path);
+
+    static G4MaterialPropertyVector* FromArrayData(const double* aa, int ni, int nj  ); 
     static G4MaterialPropertyVector* FromArray(const NP* prop);
     static G4MaterialPropertyVector* Make_V(double value); 
     static std::string Desc_V(const G4MaterialPropertyVector* v); 
@@ -33,6 +35,11 @@ struct S4MaterialPropertyVector
     static void    Import_VV(         std::vector<G4MaterialPropertyVector*>& vv, const NPFold* f ) ;
     static NPFold* Serialize_VV(const std::vector<G4MaterialPropertyVector*>& vv ) ;
     static std::string  Desc_VV(const std::vector<G4MaterialPropertyVector*>& vv ) ;
+
+    static void  Import_VV_CombinedArray(          std::vector<G4MaterialPropertyVector*>& vv, const NP* vvcom ); 
+    static NP* Serialize_VV_CombinedArray(   const std::vector<G4MaterialPropertyVector*>& vv ) ; 
+    static std::string Desc_VV_CombinedArray(const std::vector<G4MaterialPropertyVector*>& vv ); 
+
 
     static void    Import_MSV(          std::map<std::string,G4MaterialPropertyVector*>& msv, const NPFold* sub);
     static NPFold* Serialize_MSV( const std::map<std::string,G4MaterialPropertyVector*>& msv );
@@ -66,6 +73,28 @@ inline G4MaterialPropertyVector* S4MaterialPropertyVector::Load(const char* path
     return a ? FromArray(a) : nullptr ; 
 }
 
+
+inline G4MaterialPropertyVector* S4MaterialPropertyVector::FromArrayData(const double* aa, int ni, int nj  ) // static 
+{   
+    assert( ni >= 2 );
+    assert( nj == 2 );
+    
+    G4double* energy = new G4double[ni] ;
+    G4double* value = new G4double[ni] ;
+    
+    for(int i=0 ; i < int(ni) ; i++)
+    {   
+        energy[i] = aa[i*nj+0] ; 
+        value[i] = aa[i*nj+1] ;
+    }
+    G4MaterialPropertyVector* vec = new G4MaterialPropertyVector(energy, value, ni);
+    return vec ;
+}
+
+
+
+
+#ifdef OLD
 inline G4MaterialPropertyVector* S4MaterialPropertyVector::FromArray(const NP* a ) // static 
 {   
     assert( a->uifc == 'f' && a->ebyte == 8 );
@@ -85,6 +114,22 @@ inline G4MaterialPropertyVector* S4MaterialPropertyVector::FromArray(const NP* a
     G4MaterialPropertyVector* vec = new G4MaterialPropertyVector(energy, value, ni);
     return vec ;
 }
+#else
+inline G4MaterialPropertyVector* S4MaterialPropertyVector::FromArray(const NP* a ) // static 
+{   
+    size_t ni = a->shape[0] ;
+    size_t nj = a->shape[1] ;
+    assert( nj == 2 );
+    assert( a->uifc == 'f' && a->ebyte == 8 );
+    const double* aa = a->cvalues<double>(); 
+    G4MaterialPropertyVector* vec = FromArrayData(aa, ni, nj );  
+    return vec ;
+}
+#endif
+
+
+
+
 
 
 inline G4MaterialPropertyVector* S4MaterialPropertyVector::Make_V(double value) // static
@@ -164,6 +209,85 @@ inline std::string S4MaterialPropertyVector::Desc_VV(     const std::vector<G4Ma
 }
 
 
+
+inline void  S4MaterialPropertyVector::Import_VV_CombinedArray(         std::vector<G4MaterialPropertyVector*>& vv, const NP* vvcom ) // static
+{
+    assert( vvcom && vvcom->shape.size() == 3 );
+    int ni = vvcom->shape[0] ; 
+    [[maybe_unused]] int nj = vvcom->shape[1] ; 
+    [[maybe_unused]] int nk = vvcom->shape[2] ;
+    assert( nj > 1 ); 
+    assert( nk == 2 );  
+
+    vv.resize(ni); 
+
+    const double* aa0 = vvcom->cvalues<double>() ; 
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const double* aa = aa0 + nj*nk*i ;  
+        G4MaterialPropertyVector* mpv = FromArrayData(aa, nj, nk) ;
+        vv[i] = mpv ;
+    }
+}
+
+
+
+/**
+S4MaterialPropertyVector::Serialize_VV_CombinedArray
+---------------------------------------------------------
+
+This alternative to Serialize_VV provides a more efficient serialization
+for vectors with large numbers of entries. 
+
+**/
+
+inline NP* S4MaterialPropertyVector::Serialize_VV_CombinedArray(const std::vector<G4MaterialPropertyVector*>& vv ) 
+{
+    int num_v = vv.size();
+    std::vector<const NP*> aa ;
+    aa.resize(num_v);
+    std::set<int> u_ni ;
+
+    for(int i=0 ; i < num_v ; i++)
+    {
+        const G4MaterialPropertyVector* v = vv[i] ;
+        const NP* a = ConvertToArray( v );
+
+        assert( a->shape.size() == 2 );
+        int ni = a->shape[0] ;
+        [[maybe_unused]] int nj = a->shape[1] ;
+        assert( nj == 2 ) ;
+        u_ni.insert(ni) ;
+        aa[i] = a ;
+    }
+    bool all_same_shape = u_ni.size() == 1 ;
+    bool annotate = !all_same_shape ;
+    const NP* parasite = nullptr ;
+
+    NP* vvcom = NP::Combine(aa, annotate, parasite);
+    return vvcom ;
+}
+
+inline std::string S4MaterialPropertyVector::Desc_VV_CombinedArray(const std::vector<G4MaterialPropertyVector*>& vv )
+{
+    int num_v = vv.size();
+    std::set<size_t> ulen ;
+    for(int i=0 ; i < num_v ; i++)
+    {
+        const G4MaterialPropertyVector* v = vv[i] ;
+        size_t len = v->GetVectorLength() ;
+        ulen.insert(len);
+    }
+
+    size_t len = ulen.size() == 1 ? *ulen.begin() : 0 ;
+    std::stringstream ss ;
+    ss << "S4MaterialPropertyVector::Desc_VV_CombinedArray num_v " << num_v << " len " << len << std::endl;
+    std::string str = ss.str();
+    return str ;
+} 
+
+
 inline void S4MaterialPropertyVector::Import_MSV( std::map<std::string, G4MaterialPropertyVector*>& msv, const NPFold* sub)  // static
 {
     int num_sub = sub->get_num_subfold();
@@ -182,41 +306,41 @@ inline void S4MaterialPropertyVector::Import_MSV( std::map<std::string, G4Materi
 
 inline NPFold* S4MaterialPropertyVector::Serialize_MSV( const std::map<std::string, G4MaterialPropertyVector*>& msv ) // static
 {
-    NPFold* f = new NPFold ; 
-    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ; 
-    MSV::const_iterator it = msv.begin(); 
+    NPFold* f = new NPFold ;
+    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ;
+    MSV::const_iterator it = msv.begin();
 
     for(unsigned i=0 ; i < msv.size() ; i++)
     { 
-        const std::string& k = it->first ; 
-        const G4MaterialPropertyVector* v = it->second ; 
-        NP* a = ConvertToArray( v ); 
-        f->add( k.c_str(), a );     
-        std::advance(it, 1);  
+        const std::string& k = it->first ;
+        const G4MaterialPropertyVector* v = it->second ;
+        NP* a = ConvertToArray( v );
+        f->add( k.c_str(), a );
+        std::advance(it, 1);
     }
-    return f ; 
+    return f ;
 } 
 
-inline std::string S4MaterialPropertyVector::Desc_MSV(const std::map<std::string, G4MaterialPropertyVector*>& msv ) 
+inline std::string S4MaterialPropertyVector::Desc_MSV(const std::map<std::string, G4MaterialPropertyVector*>& msv )
 {
-    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ; 
-    MSV::const_iterator it = msv.begin(); 
-    std::stringstream ss ; 
-    ss << "S4MaterialPropertyVector::Desc_MSV" << std::endl ; 
+    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ;
+    MSV::const_iterator it = msv.begin();
+    std::stringstream ss ;
+    ss << "S4MaterialPropertyVector::Desc_MSV" << std::endl ;
 
     for(unsigned i=0 ; i < msv.size() ; i++)
-    { 
-        const std::string& key = it->first ; 
-        const G4MaterialPropertyVector* v = it->second ; 
+    {
+        const std::string& key = it->first ;
+        const G4MaterialPropertyVector* v = it->second ;
         ss
-           << " key " << key 
-           << Desc_V(v) 
+           << " key " << key
+           << Desc_V(v)
            << std::endl
-           ;  
-        std::advance(it, 1);  
+           ;
+        std::advance(it, 1);
     }
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -224,72 +348,72 @@ inline std::string S4MaterialPropertyVector::Desc_MSV(const std::map<std::string
 
 inline void S4MaterialPropertyVector::Import_MIMSV( std::map<int, std::map<std::string, G4MaterialPropertyVector*>>& mimsv, const NPFold* f )
 {
-    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ; 
-    int num_sub = f->get_num_subfold();    
+    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ;
+    int num_sub = f->get_num_subfold();
 
     for(int idx=0 ; idx < num_sub ; idx++)
     {
-        const char* cat = f->get_subfold_key(idx); 
-        int icat = U::To<int>(cat); 
+        const char* cat = f->get_subfold_key(idx);
+        int icat = U::To<int>(cat);
 
-        NPFold* sub = f->get_subfold(idx); 
+        NPFold* sub = f->get_subfold(idx);
 
-        MSV& msv = mimsv[icat] ; 
+        MSV& msv = mimsv[icat] ;
 
-        Import_MSV( msv, sub );         
+        Import_MSV( msv, sub );
     }
 }
 
 
-inline NPFold* S4MaterialPropertyVector::Serialize_MIMSV( const std::map<int, std::map<std::string, G4MaterialPropertyVector*>>& mimsv)  
+inline NPFold* S4MaterialPropertyVector::Serialize_MIMSV( const std::map<int, std::map<std::string, G4MaterialPropertyVector*>>& mimsv)
 {
-    NPFold* f = new NPFold ; 
+    NPFold* f = new NPFold ;
 
-    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ; 
-    typedef std::map<int, MSV> MIMSV ; 
+    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ;
+    typedef std::map<int, MSV> MIMSV ;
 
-    MIMSV::const_iterator it = mimsv.begin(); 
+    MIMSV::const_iterator it = mimsv.begin();
 
     for(unsigned i=0 ; i < mimsv.size() ; i++)
     {
-        int icat = it->first ; 
-        const char* cat = U::FormName(icat) ; 
+        int icat = it->first ;
+        const char* cat = U::FormName(icat) ;
 
-        const MSV& msv = it->second ; 
-        NPFold* sub = Serialize_MSV( msv ); 
+        const MSV& msv = it->second ;
+        NPFold* sub = Serialize_MSV( msv );
 
-        f->add_subfold(cat, sub);         
+        f->add_subfold(cat, sub);
 
-        std::advance(it, 1); 
+        std::advance(it, 1);
     }
-    return f; 
+    return f;
 }
 
-inline std::string S4MaterialPropertyVector::Desc_MIMSV(const std::map<int,std::map<std::string, G4MaterialPropertyVector*>>& mimsv ) 
+inline std::string S4MaterialPropertyVector::Desc_MIMSV(const std::map<int,std::map<std::string, G4MaterialPropertyVector*>>& mimsv )
 {
-    std::stringstream ss ; 
-    ss << "S4MaterialPropertyVector::Desc_MIMSV" << std::endl ; 
+    std::stringstream ss ;
+    ss << "S4MaterialPropertyVector::Desc_MIMSV" << std::endl ;
 
-    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ; 
-    typedef std::map<int, MSV> MIMSV ; 
-    MIMSV::const_iterator it = mimsv.begin(); 
+    typedef std::map<std::string, G4MaterialPropertyVector*> MSV ;
+    typedef std::map<int, MSV> MIMSV ;
+    MIMSV::const_iterator it = mimsv.begin();
 
     for(unsigned i=0 ; i < mimsv.size() ; i++)
     {
-        int cat = it->first ; 
-        const MSV& msv = it->second ; 
+        int cat = it->first ;
+        const MSV& msv = it->second ;
         ss
-            << " cat " << cat 
+            << " cat " << cat
             << " msv.size " << msv.size()
-            << std::endl 
+            << std::endl
             << Desc_MSV(msv)
-            << std::endl 
+            << std::endl
             ;
-          
-        std::advance(it, 1); 
+
+        std::advance(it, 1);
     }
-    std::string s = ss.str(); 
-    return s ; 
+    std::string s = ss.str();
+    return s ;
 }
 
 
