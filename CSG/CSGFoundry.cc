@@ -3570,6 +3570,11 @@ see CSGFoundry::getFrameE. Possible envvars include:
 The sframe::set_ekv records into frame metadata the envvar key and value 
 that picked the frame. 
 
+
+Q: WHY NOT DO THIS AT LOWER LEVEL ? 
+A: Probably because it needs getFrame and it predates the stree.h reorganization 
+   that made frame access at sysrap level possible. 
+
 **/
 
 sframe CSGFoundry::getFrameE() const 

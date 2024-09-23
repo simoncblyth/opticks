@@ -359,7 +359,7 @@ void QEvent::device_alloc_genstep_and_seed()
 QEvent::setInputPhoton
 ------------------------
 
-This is a private method invoked only from QEvent::setGenstep
+This is a private method invoked only from QEvent::setGenstepUpload
 
 1. SEvt::gatherInputPhoton narrows or copies the input 
    photons (which may be frame transformed) providing 

@@ -4,14 +4,25 @@ geometry_scanning_to_check_for_bottlenecks
 How scanning works
 -------------------
 
-The dynamic geometry capabilities of CSGFoundry::Load are used to 
+The pseudo-dynamic geometry capabilities of CSGFoundry::Load are used to 
 load the persisted geometry from cache and then selectively copy 
 the geometry to a separate CSGFoundry with selection configured by 
 envvars ELV and EMM that is then uploaded when creating the CSGOptiX 
 geometry. 
 
-* ELV controls at the level of LV (logical volume) shapes.
-* EMM controls at the coarser level of compound solids 
+* ELV envvar controls  at the level of LV (logical volume) shapes.
+* EMM envvar controls at the coarser level of compound solids 
+
+When scanning each invokation of the rendering executable typically 
+takes around 2 seconds, as the full geometry is loaded from file 
+and then selectively copied and uploaded for each render. 
+
+A faster approach would be to implement real dynamic geometry changing, 
+as opposed to the pseudo-dynamic current approach that relies on 
+repeatedly reloading the geometry from file. Real dynamic geometry 
+would be able to read from file once only and then clear the GPU geometry 
+and remake it from within the same process. Although faster 
+scanning would be useful it is not currentlt a priority.  
 
 
 Scanning Scripts
@@ -39,7 +50,6 @@ cxr_view.sh
 
 cxr_overview.sh 
     distant view of the full geometry 
-
 
 In some cases some irregularity in render times has been observed
 due to variations in view distances resulting from the changing sizes of the 
@@ -70,4 +80,20 @@ or cxr_overview.sh script which sets further environment and then runs the snap.
 which finds and loads the render metadata json and presents it as configured. 
 
   
+How to spot problems
+----------------------
+
+Render times depend on how well the acceleration structure built by OptiX (eg using a BVH structure) 
+can be traversed to find intersects. When a geometry has problem then typically certain shapes will 
+have a large impact on overall intersect performance. Identify the causes of such problems by varying 
+what is included or excluded within the geometry and analysing rendering times.   
+
+* problem shapes will often stick out with very long render times when included or speedups when excluded
+  (very large effects have been observed with slowdowns of factors of hundreds)
+
+When the variation across the range of different geometries is small, then it is 
+possible to conclude that no large geometry issues remain. 
+
+
+
 
