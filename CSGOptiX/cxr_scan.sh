@@ -10,8 +10,8 @@ or enabledlv(fine)
 On GPU workstation::
 
     ~/o/CSGOptiX/cxr_scan.sh 
-    ~/o/CSGOptiX/cxr_scan_emm.sh    ## symbolic link to this script  
-    ~/o/CSGOptiX/cxr_scan_elv.sh    ## symbolic link to this script 
+    ~/o/CSGOptiX/cxr_scan_emm.sh    ## symbolic link to this cxr_scan.sh script  
+    ~/o/CSGOptiX/cxr_scan_elv.sh    ## symbolic link to this cxr_scan.sh script 
 
 Make table on workstation::
 
@@ -77,18 +77,20 @@ NMM=${NMM:-$nmm}   # geometry specific
 NLV=${NLV:-$nlv}
 
 
-script=cxr_view
-#script=cxr_overview
+case $thisstem in 
+   cxr_scan_elv) script=cxr_view ;;
+   cxr_scan_emm) script=cxr_overview ;;
+esac
 
 unset SCRIPT
 export SCRIPT=${SCRIPT:-$script}
-
 
 case $thisstem in 
    cxr_scan_elv) scan=scan-elv ;;
    cxr_scan_emm) scan=scan-emm ;;
 esac
 
+unset SCAN
 export SCAN=$scan
 
 vars="0 BASH_SOURCE GEOM cfd nmm nlv NMM NLV script SCRIPT thisname thisstem scan SCAN vars"
@@ -110,8 +112,7 @@ scan-elv-()
 {
     echo "t"    # ALL : for the candle 
 
-    #for e in $(seq 0 $NLV) ; do echo "t103,$e" ; done  # disabling slowest midx:103 solidXJfixture and then each midx one-by-one
-    #for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
+    for e in $(seq 0 $NLV) ; do echo "t$e" ; done    # disabling each midx one-by-one
     #for e in $(seq 0 $NLV) ; do echo "$e" ; done     # enabling each midx one-by-one
 }
 
