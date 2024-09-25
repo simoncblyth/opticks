@@ -72,7 +72,7 @@ __global__ void _QRng_generate_2(qrng* qr, unsigned event_idx, T* uu, unsigned n
     if (id >= ni) return;
 
     curandState rng ; 
-    qr->random_setup(rng, event_idx, id ); 
+    qr->get_rngstate_with_skipahead(rng, event_idx, id ); 
 
     unsigned ibase = id*nv ; 
 

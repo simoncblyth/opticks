@@ -28,6 +28,20 @@ __global__ void skip_rng(int threads_per_launch, int thread_offset, curandState*
     skipahead( skip, &rng_states[id]) ;
 }
 
+
+/**
+generate_rng : using curand skipahead
+---------------------------------------
+
+https://docs.nvidia.com/cuda/curand/device-api-overview.html
+
+   skipahead( unsigned long long n, curandState_t *state) 
+        skip ahead the generator state, equivalent to
+        calling curand to generate a random n times, but 
+        much faster than doing that 
+
+**/
+
 __global__ void generate_rng(int threads_per_launch, int thread_offset, curandState* rng_states, unsigned long long skip, float* d_arr, unsigned nj, unsigned j0, unsigned j1 )
 {
     int id = blockIdx.x*blockDim.x + threadIdx.x;

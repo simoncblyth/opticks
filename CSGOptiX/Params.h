@@ -73,6 +73,8 @@ struct Params
     // simulation 
     qsim*        sim ; 
     sevent*      evt ;         // HMM: inside sim too ?
+    int  event_index ; 
+
 
     // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1  
     uint3     pidxyz ; 

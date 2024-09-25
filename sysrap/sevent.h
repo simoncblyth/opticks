@@ -125,6 +125,8 @@ struct sevent
     int      max_aux     ; // eg 0, 16, 32 : when greater than zero typically follows max_record
     int      max_sup     ; 
 
+    int      index ;   
+
     //[ counts and pointers, zeroed by sevent::zero  
     //  only first 4 are always in use, the last 7 are only relevant whilst debugging 
     //
@@ -455,6 +457,8 @@ configured maxima and then reused for each launch
 **/
 SEVENT_METHOD void sevent::zero()
 {
+    index = 0 ; 
+
     num_genstep = 0 ; 
     num_seed  = 0 ; 
     num_hit = 0 ; 

@@ -7,6 +7,8 @@ Questions
 
 1. can follow the Opticks side of input photons getting to GPU, but what about Geant4 ? 
 
+   * its done in various ways depending on access to G4Event 
+
 
 Scripts
 ----------
@@ -303,6 +305,8 @@ CSG/CSGFoundry.cc
 
 
 
+
+
 Geant4 handling of input photons ? 
 ----------------------------------------
 
@@ -445,6 +449,90 @@ go via the mutate interface and HepMC::GenEvent::
 
 
     517 NP* SEvt::getInputPhoton() const {  return input_photon_transformed ? input_photon_transformed : input_photon  ; }
+
+
+
+
+Issue 1 : after switching on input photon in jok-tds get fail
+------------------------------------------------------------------
+
+Switch on input photons with::
+
+    119 jok-tds-input-photon()
+    120 {
+    121     type $FUNCNAME
+    122     export OPTICKS_RUNNING_MODE=SRM_INPUT_PHOTON
+    123     export OPTICKS_INPUT_PHOTON=RainXZ_Z230_10k_f8.npy
+    124     export OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000
+    125 }
+
+    248    #local gun=1    ## long time defalt is the base "gun"
+    249    local gun=0     ## tryout input photons
+    250 
+    251    local GUN=${GUN:-$gun}
+    252    case $GUN in
+    253      0) trgs="$trgs opticks" ;;
+    254      1) trgs="$trgs $gun1" ;;
+    255      2) trgs="$trgs $gun2"  ;;
+    256      3) trgs="$trgs $gun3"  ;;
+    257    esac
+    258 
+    259    if [ "$GUN" == "0" ]; then
+    260        jok-tds-input-photon
+    261    fi
+
+
+::
+
+    jok-tds-gdb
+    ...
+
+    junotoptask:DetSim0Svc.dumpOpticks  INFO: DetSim0Svc::initializeOpticks m_opticksMode 1 WITH_G4CXOPTICKS 
+    junotoptask:DetSim0Svc.initialize  INFO: Register AnaMgr FixLightVelAnaMgr
+    junotoptask:SniperProfiling.initialize  INFO: 
+    GtOpticksTool::configure WITH_G4CXOPTICKS : ERROR : something is missing 
+    SEvt::DescHasInputPhoton()   SEventConfig::IntegrationMode 1 SEvt::HasInputPhoton(EGPU) 0 SEvt::HasInputPhoton(ECPU) 0
+    SEvt::Brief
+    SEvt::Brief  SEvt::Exists(0) N SEvt::Exists(1) N
+     SEvt::Get(0)->brief() -
+     SEvt::Get(1)->brief() -
+
+    SEvt::DescInputPhoton(EGPU)-SEvt::DescInputPhoton(ECPU)-
+
+
+    GtOpticksTool::configure_FAIL_NOTES
+    =====================================
+
+    GtOpticksTool integrates junosw with Opticks input photon 
+    machinery including the frame targetting functionality using 
+    the Opticks translated Geant4 geometry.  
+
+    Getting this to work requires:
+
+    1. compilation WITH_G4CXOPTICKS
+    2. SEvt::Exists true, this typically requires 
+       an opticksNode greater than zero, configure with 
+       the tut_detsim.py option "--opticks-mode 1/2/3"  
+    3. OPTICKS_INPUT_PHOTONS envvar identifying an 
+       existing .npy file containing the photons
+
+    To disable use of GtOpticksTool input photons simply replace 
+    the "opticks" argument on the tut_detsim.py commandline 
+    with for example "gun". 
+
+
+    junotoptask:GenTools.initialize  INFO: configure tool "ok" failed
+    junotoptaskalgorithms.initialize ERROR: junotoptask:GenTools initialize failed
+    [2024-09-24 21:54:31,821] p77377 {/data/blyth/junotop/junosw/InstallArea/python/Tutorial/JUNOApplication.py:201} INFO - ]JU
+
+
+
+
+Looks like SEvt not instanciated. Investigate by backing off : add SEvt debug and switch off input photon running 
+to see where the SEvt gets instanciated.::
+
+    jok-; SEvt=INFO BP=SEvt::SEvt GUN=1 jok-tds-gdb
+
 
 
 

@@ -145,7 +145,8 @@ Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
     tmax(0.f),
     vizmask(0xff),
     sim(nullptr),
-    evt(nullptr)
+    evt(nullptr),
+    event_index(0)
 {
     setRaygenMode(raygenmode_); 
     setSize(width, height, depth); 

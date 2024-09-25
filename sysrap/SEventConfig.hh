@@ -83,11 +83,15 @@ struct SYSRAP_API SEventConfig
     static constexpr const int K = 1000 ; 
 
     static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ; 
-    static constexpr const char* kEventMode    = "OPTICKS_EVENT_MODE" ; 
+    static constexpr const char* kEventMode       = "OPTICKS_EVENT_MODE" ; 
+
     static constexpr const char* kRunningMode  = "OPTICKS_RUNNING_MODE" ; 
+
     static constexpr const char* kStartIndex   = "OPTICKS_START_INDEX" ; 
     static constexpr const char* kNumEvent     = "OPTICKS_NUM_EVENT" ; 
     static constexpr const char* kNumPhoton    = "OPTICKS_NUM_PHOTON" ; 
+    static constexpr const char* kEventSkipahead  = "OPTICKS_EVENT_SKIPAHEAD" ; 
+
     static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ; 
     static constexpr const char* kG4StateRerun = "OPTICKS_G4STATE_RERUN" ; 
 
@@ -128,7 +132,6 @@ struct SYSRAP_API SEventConfig
     static bool        CPU_Simulation() ; // 2 or 3 
 
     static const char* EventMode(); 
-
     static int         RunningMode(); 
     static const char* RunningModeLabel(); 
 
@@ -141,7 +144,7 @@ struct SYSRAP_API SEventConfig
     static bool IsRunningModeInputGenstep();  
     static bool IsRunningModeGun();  
 
-
+    static int         EventSkipahead(); 
     static const char* G4StateSpec(); 
     static int         G4StateRerun(); 
 
@@ -236,6 +239,8 @@ struct SYSRAP_API SEventConfig
     static void SetStartIndex(int index0); 
     static void SetNumEvent(int nevt);            // NumEvent is used by some tests 
     static void SetNumPhoton(const char* spec);   // NumPhoton is used by some tests 
+
+    static void SetEventSkipahead(int offset);   
     static void SetG4StateSpec(const char* spec); 
     static void SetG4StateRerun(int id); 
 
@@ -286,6 +291,8 @@ struct SYSRAP_API SEventConfig
     static int         _StartIndexDefault ; 
     static int         _NumEventDefault ; 
     static const char* _NumPhotonDefault ; 
+
+    static int         _EventSkipaheadDefault ; 
     static const char* _G4StateSpecDefault ; 
     static const char* _G4StateSpecNotes ; 
     static int         _G4StateRerunDefault ; 
@@ -337,6 +344,7 @@ struct SYSRAP_API SEventConfig
     static bool              IsFirstEvent(int idx);   // 0-based idx (such as Geant4 eventID)
     static bool              IsLastEvent(int idx);    // 0-based idx (such as Geant4 eventID)
 
+    static int         _EventSkipahead ; 
     static const char* _G4StateSpec ; 
     static int         _G4StateRerun ; 
 

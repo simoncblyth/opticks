@@ -2169,6 +2169,7 @@ void SEvt::setNumPhoton(unsigned num_photon)
     LOG_IF(fatal, !num_photon_allowed) << " num_photon/M " << num_photon/M << " evt.max_photon/M " << evt->max_photon/M ;
     assert( num_photon_allowed );
 
+    evt->index = index ; 
     evt->num_photon = num_photon ; 
     evt->num_seq    = evt->max_seq  == 1 ? evt->num_photon : 0 ;
     evt->num_tag    = evt->max_tag  == 1 ? evt->num_photon : 0 ;

@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 QSimTest.sh
 =============
@@ -44,6 +44,7 @@ msg="=== $BASH_SOURCE :"
 
 
 #test=rng_sequence
+test=rng_sequence_with_skipahead
 #test=boundary_lookup_all
 #test=boundary_lookup_water
 #test=boundary_lookup_ls
@@ -99,7 +100,7 @@ nrm=0,0,1
 #nrm=0,0,-1
 
 case $TEST in
-    rng_sequence) num=$M1 ;; 
+    rng_sequence|rng_sequence_with_skipahead) num=$M1 ;; 
     random_direction_marsaglia) num=$M1 ;; 
     lambertian_direction) num=$M1 ;; 
     randgaussq_shoot) num=$M1 ;; 
@@ -119,6 +120,7 @@ esac
 
 case $TEST in
            rng_sequence)   script=rng_sequence.py   ;;
+           rng_sequence_with_skipahead)   script=rng_sequence_with_skipahead.py   ;;
 random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
    boundary_lookup_all)    script=boundary_lookup_all.py ;;
    boundary_lookup_water)  script=boundary_lookup_line.py ;;

@@ -2,6 +2,13 @@
 QSimTest.cc
 =============
 
+NB QSimTest.cc uses many QSim.cc methods that are purely for testing 
+Many of those testing methods used extern linked methods 
+implemented in QSim.cu which do CUDA launches. 
+
+Arguably this layout mixes too closely the purely testing methods 
+with the actual code being tested. 
+
 **/
 
 #include <sstream>
@@ -57,6 +64,8 @@ struct QSimTest
 
     static const bool rng_sequence_PRECOOKED ; 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
+    void rng_sequence_with_skipahead(unsigned ni, int ni_tranche_size); 
+
 
     void boundary_lookup_all();
     void boundary_lookup_line(const char* material, float x0, float x1, unsigned nx ); 
@@ -131,6 +140,7 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nj = 16 ; 
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
+    bool skipahead = false ;
 
     const char* udir = rng_sequence_PRECOOKED ? "$HOME/.opticks/precooked/QSimTest/rng_sequence" : "$FOLD" ; 
     LOG_IF(error, rng_sequence_PRECOOKED) 
@@ -139,8 +149,23 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
         << " override [" << udir << "]"  
         ; 
 
-    qs->rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size ); 
+  
+
+    qs->rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size, skipahead ); 
 }
+
+
+void QSimTest::rng_sequence_with_skipahead(unsigned ni, int ni_tranche_size_)
+{
+    unsigned nj = 16 ; 
+    unsigned nk = 16 ; 
+    unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
+    bool skipahead = true  ;
+
+    qs->rng_sequence<float>("$FOLD", ni, nj, nk, ni_tranche_size, skipahead ); 
+}
+
+
 
 
 /**
@@ -626,7 +651,8 @@ void QSimTest::main()
 
     switch(type)
     {
-        case RNG_SEQUENCE:                  rng_sequence(num, ni_tranche_size)         ; break ; 
+        case RNG_SEQUENCE:                  rng_sequence(num, ni_tranche_size)                ; break ; 
+        case RNG_SEQUENCE_WITH_SKIPAHEAD:   rng_sequence_with_skipahead(num, ni_tranche_size) ; break ; 
 
         case WAVELENGTH_SCINTILLATION:      
         case WAVELENGTH_CERENKOV:           
@@ -721,7 +747,12 @@ int main(int argc, char** argv)
 
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
 
-    SEvt::Create(SEvt::EGPU) ; 
+
+    const char* idx_key = "QSimTest__SEvt_index";
+    int index = ssys::getenvint(idx_key,1) ; 
+    SEvt* ev = SEvt::Create_EGPU() ; 
+    std::cout << " idx_key " << idx_key << " index " << index << "\n" ; 
+    ev->setIndex(index) ; 
 
     QSimTest qst(type, num, prd)  ; 
     qst.main(); 

@@ -15,6 +15,14 @@ const QRng* QRng::INSTANCE = nullptr ;
 const QRng* QRng::Get(){ return INSTANCE ;  }
 
 
+/**
+QRng::QRng
+------------
+
+QRng instanciation is invoked from QSim::UploadComponents
+
+**/
+
 QRng::QRng(unsigned skipahead_event_offset)
     :
     path(SCurandState::Path()),        // null path will assert in Load
@@ -45,7 +53,7 @@ QRng::Load_FAIL_NOTES
 =======================
 
 QRng::Load failed to load the curandState files. 
-These files should to created during *opticks-full* installation 
+These files should have been created during the *opticks-full* installation 
 by the bash function *opticks-prepare-installation* 
 which runs *qudarap-prepare-installation*. 
 
@@ -142,6 +150,23 @@ void QRng::Save( curandState* states, unsigned num_states, const char* path ) //
 
 
 
+/**
+QRng::upload
+--------------
+
+1. upload rng_states array that was loaded from file in the ctor, 
+   the *rngmax* number of elements in the array determines the maximum 
+   number of photon slots within a single launch
+
+2. record device pointer qr->rng_startes
+
+3. free the CPU side rng_states array
+
+4. upload qrng.h *qr* instance within single element array, 
+   setting d_qr
+
+**/
+
 void QRng::upload()
 {
     const char* label_0 = "QRng::upload/rng_states" ; 
@@ -162,6 +187,7 @@ std::string QRng::desc() const
        << " path " << path 
        << " rngmax " << rngmax 
        << " qr " << qr
+       << " qr.skipahead_event_offset " << qr->skipahead_event_offset
        << " d_qr " << d_qr
        ;
 

@@ -6,6 +6,7 @@
 enum { 
    UNKNOWN,
    RNG_SEQUENCE,
+   RNG_SEQUENCE_WITH_SKIPAHEAD,
    BOUNDARY_LOOKUP_ALL,
    BOUNDARY_LOOKUP_WATER,
    BOUNDARY_LOOKUP_LS,
@@ -65,6 +66,7 @@ struct QSimLaunch
     static const char* Name(unsigned type ); 
 
     static constexpr const char* RNG_SEQUENCE_ = "rng_sequence" ; 
+    static constexpr const char* RNG_SEQUENCE_WITH_SKIPAHEAD_ = "rng_sequence_with_skipahead" ; 
     static constexpr const char* BOUNDARY_LOOKUP_ALL_ = "boundary_lookup_all" ; 
     static constexpr const char* BOUNDARY_LOOKUP_WATER_ = "boundary_lookup_water" ; 
     static constexpr const char* BOUNDARY_LOOKUP_LS_ = "boundary_lookup_ls" ; 
@@ -137,7 +139,8 @@ inline unsigned QSimLaunch::Type( const char* name )
    if(strcmp(name,"L") == 0 ) test = BOUNDARY_LOOKUP_LINE_LS_L ;
    if(strcmp(name,"Y") == 0 ) test = PROP_LOOKUP_Y ;
 
-   if(strcmp(name,RNG_SEQUENCE_) == 0 )          test = RNG_SEQUENCE ; 
+   if(strcmp(name,RNG_SEQUENCE_) == 0 )                test = RNG_SEQUENCE ; 
+   if(strcmp(name,RNG_SEQUENCE_WITH_SKIPAHEAD_) == 0 ) test = RNG_SEQUENCE_WITH_SKIPAHEAD ; 
    if(strcmp(name,BOUNDARY_LOOKUP_ALL_) == 0 )   test = BOUNDARY_LOOKUP_ALL ; 
    if(strcmp(name,BOUNDARY_LOOKUP_WATER_) == 0 ) test = BOUNDARY_LOOKUP_WATER ;
    if(strcmp(name,BOUNDARY_LOOKUP_LS_) == 0 )    test = BOUNDARY_LOOKUP_LS ;
@@ -189,10 +192,11 @@ inline const char* QSimLaunch::Name( unsigned type )
     const char* s = nullptr ; 
     switch(type)
     {
-        case RNG_SEQUENCE:           s = RNG_SEQUENCE_           ; break ; 
-        case BOUNDARY_LOOKUP_ALL:    s = BOUNDARY_LOOKUP_ALL_    ; break ; 
-        case BOUNDARY_LOOKUP_WATER:  s = BOUNDARY_LOOKUP_WATER_  ; break ; 
-        case BOUNDARY_LOOKUP_LS:     s = BOUNDARY_LOOKUP_LS_     ; break ; 
+        case RNG_SEQUENCE:                 s = RNG_SEQUENCE_                  ; break ; 
+        case RNG_SEQUENCE_WITH_SKIPAHEAD:  s = RNG_SEQUENCE_WITH_SKIPAHEAD_   ; break ; 
+        case BOUNDARY_LOOKUP_ALL:          s = BOUNDARY_LOOKUP_ALL_           ; break ; 
+        case BOUNDARY_LOOKUP_WATER:        s = BOUNDARY_LOOKUP_WATER_         ; break ; 
+        case BOUNDARY_LOOKUP_LS:           s = BOUNDARY_LOOKUP_LS_            ; break ; 
 
         case WAVELENGTH_SCINTILLATION: s = WAVELENGTH_SCINTILLATION_   ; break ; 
         case WAVELENGTH_CERENKOV:      s = WAVELENGTH_CERENKOV_        ; break ; 

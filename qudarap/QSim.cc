@@ -108,8 +108,9 @@ void QSim::UploadComponents( const SSim* ssim  )
     LOG(LEVEL) << base->desc(); 
 
 
-    LOG(LEVEL) << "[ new QRng " ;
-    QRng* rng = new QRng ;  // loads and uploads curandState 
+    unsigned skipahead_event_offset = SEventConfig::EventSkipahead()  ; 
+    LOG(LEVEL) << "[ new QRng skipahead_event_offset : " << skipahead_event_offset << " " << SEventConfig::kEventSkipahead ;
+    QRng* rng = new QRng(skipahead_event_offset)  ;  // loads and uploads curandState 
     LOG(LEVEL) << "] new QRng " << rng->desc()  ;
 
     LOG(LEVEL) << rng->desc(); 
@@ -278,6 +279,8 @@ void QSim::init()
     sim->base = base ? base->d_base : nullptr ; 
     sim->evt = event ? event->getDevicePtr() : nullptr ; 
     sim->rngstate = rng ? rng->qr->rng_states : nullptr ; 
+    sim->rng = rng ? rng->d_qr : nullptr ; 
+
     sim->bnd = bnd ? bnd->d_qb : nullptr ; 
     sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ; 
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ; 
@@ -575,7 +578,7 @@ Upping to 1M would be 100x 20M = 2000M  2GB
 
 
 template <typename T>
-extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset ); 
+extern void QSim_rng_sequence(  dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset, bool skipahead ); 
 
 
 /**
@@ -591,10 +594,13 @@ nv : number randoms to generate for each item
 
 id_offset : acts on the rngstates array 
 
+skipahead : used curand skipahead offsets depending on sim->evt->index and OPTICKS_EVENT_SKIPAHEAD
+
+
 **/
 
 template <typename T>
-void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset )
+void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset, bool skipahead )
 {
     configureLaunch(ni_tranche, 1 ); 
 
@@ -604,10 +610,11 @@ void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_o
 
     T* d_seq = QU::device_alloc<T>(num_rng, label ); 
 
-    QSim_rng_sequence<T>(numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset );  
+    QSim_rng_sequence<T>( numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset, skipahead );  
 
     QU::copy_device_to_host_and_free<T>( seq, d_seq, num_rng, label ); 
 }
+
 
 
 const char* QSim::PREFIX = "rng_sequence" ; 
@@ -630,7 +637,7 @@ Default *dir* is $TMP/QSimTest/rng_sequence leading to npy paths like::
 **/
 
 template <typename T>
-void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  )
+void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead  )
 {
     assert( ni >= ni_tranche_size && ni % ni_tranche_size == 0 );   // total size *ni* must be integral multiple of *ni_tranche_size*
     unsigned num_tranche = ni/ni_tranche_size ; 
@@ -643,6 +650,7 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
         << "QSim::rng_sequence" 
         << " ni " << ni
         << " ni_tranche_size " << ni_tranche_size
+        << " skipahead " << ( skipahead ? "YES" : "NO ")
         << " num_tranche " << num_tranche 
         << " reldir " << reldir.c_str()
         << " nj " << nj
@@ -671,7 +679,7 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
             << std::endl 
             ; 
 
-        rng_sequence( values, ni_tranche_size, nv, id_offset );  
+        rng_sequence( values, ni_tranche_size, nv, id_offset, skipahead );  
          
         const char* path = spath::Resolve(dir, reldir.c_str(), name.c_str() ); 
         seq->save(path); 
@@ -680,8 +688,28 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
 
 
 
-template void QSim::rng_sequence<float>(  const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 
-template void QSim::rng_sequence<double>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size  ); 
+template void QSim::rng_sequence<float>(  const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead  ); 
+template void QSim::rng_sequence<double>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead  ); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

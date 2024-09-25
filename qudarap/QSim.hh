@@ -121,13 +121,13 @@ public:
 
 
     template<typename T>
-    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
+    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset, bool skipahead );
 
     template<typename T>
-    void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
+    void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset, bool skipahead ); 
 
     template<typename T>
-    void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
+    void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead );
 
 
     NP* scint_wavelength( unsigned num_wavelength, unsigned& hd_factor ); 

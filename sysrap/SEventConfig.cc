@@ -30,6 +30,7 @@ const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 int         SEventConfig::_StartIndexDefault = 0 ;
 int         SEventConfig::_NumEventDefault = 1 ;
 const char* SEventConfig::_NumPhotonDefault = nullptr ;
+int         SEventConfig::_EventSkipaheadDefault = 10000 ;  // APPROPRIATE SKIPAHEAD DEPENDS ON HOW MANY RANDOMS CONSUMED BY PHOTON SIMULATION
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ; 
 int         SEventConfig::_G4StateRerunDefault = -1 ;
@@ -144,6 +145,7 @@ bool SEventConfig::IsFirstEvent(int idx){ return idx == 0 ; }  // 0-based idx (s
 bool SEventConfig::IsLastEvent(int idx){ return idx == NumEvent()-1 ; }  // 0-based idx (such as Geant4 eventID)
 
 
+int         SEventConfig::_EventSkipahead = ssys::getenvint(kEventSkipahead, _EventSkipaheadDefault) ; 
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
@@ -185,6 +187,20 @@ bool        SEventConfig::CPU_Simulation(){  return _IntegrationMode == 2 || _In
 const char* SEventConfig::EventMode(){ return _EventMode ; }
 
 
+/**
+SEventConfig::RunningMode controlled via envvar OPTICKS_RUNNING_MODE
+----------------------------------------------------------------------
+
+* SRM_DEFAULT
+* SRM_TORCH
+* SRM_INPUT_PHOTON
+* SRM_INPUT_GENSTEP
+* SRM_GUN
+
+
+**/
+
+
 int         SEventConfig::RunningMode(){ return _RunningMode ; }
 const char* SEventConfig::RunningModeLabel(){ return SRM::Name(_RunningMode) ; }
 
@@ -196,6 +212,9 @@ bool SEventConfig::IsRunningModeTorch(){         return RunningMode() == SRM_TOR
 bool SEventConfig::IsRunningModeInputPhoton(){   return RunningMode() == SRM_INPUT_PHOTON ; } 
 bool SEventConfig::IsRunningModeInputGenstep(){  return RunningMode() == SRM_INPUT_GENSTEP ; } 
 bool SEventConfig::IsRunningModeGun(){           return RunningMode() == SRM_GUN ; } 
+
+
+int SEventConfig::EventSkipahead(){ return _EventSkipahead ; }
 const char* SEventConfig::G4StateSpec(){  return _G4StateSpec ; }
 
 /**
@@ -206,7 +225,6 @@ When rerun mode is not enabled returns -1 even when rerun id is set.
 
 For a single photon rerun example see u4/tests/U4SimulateTest.cc 
 which uses U4Recorder::saveOrLoadStates from U4Recorder::PreUserTrackingAction_Optical
-
 
 **/
 int SEventConfig::G4StateRerun()
@@ -260,7 +278,47 @@ bool SEventConfig::InputGenstepPathExists(int idx)
 }
 
 
+
+/** 
+SEventConfig::InputPhoton control via OPTICKS_INPUT_PHOTON envvar
+------------------------------------------------------------------
+
+Pick the array of input_photons to use, 
+default none, eg "RainXZ_Z230_10k_f8.npy"
+
+* when configured SEvt::initInputPhoton loads the input photons array
+* within Opticks the photons are uploaded to the GPU with QEvent::setInputPhoton
+
+Techniques to get the same input photons into Geant4 simulations, eg for A-B comparisons
+between Opticks and Geant4 depend on the level of access to G4Event that is 
+afforded by the simulation framework. 
+
+* JUNOSW/GtOpticksTool "GenTool" uses a mutate interface to inject the photons via HepMC 
+
+* G4CXApp.h used from the raindrop example uses are more direct approach with 
+  U4VPrimaryGenerator::GeneratePrimaries_From_Photons using direct access to G4Event 
+
+
+When input photons are configured and found the accessor SEvt::hasInputPhoton
+returns true which is consulted by SEvt::addInputGenstep resulting in creation 
+of the input photon genstep via SEvent::MakeInputPhotonGenstep.
+
+Adding this fabricated input photon genstep kicks off the configured allocations. 
+
+**/
+
 const char* SEventConfig::InputPhoton(){   return _InputPhoton ; }
+
+
+/**
+SEventConfig::InputPhotonFrame control via OPTICKS_INPUT_PHOTON_FRAME envvar
+------------------------------------------------------------------------------
+
+Pick the frame in which to inject the input photons, 
+using MOI style specification eg "NNVT:0:1000"
+
+
+**/
 const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
 
 

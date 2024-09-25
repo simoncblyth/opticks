@@ -64,10 +64,13 @@ std::string SCurandState::Path_(unsigned long long num, unsigned long long seed,
 }
 
 /**
-SCurandState::GetRngMax
+SCurandState::RngMax
 --------------------------
 
-Find that file_size is not a mutiple of item content. 
+Determine *RngMax* based on file size of the 
+configure curandstate array file divided by item_size of 44 bytes. 
+
+Find that file_size is not a mutiple of item content (ie not sizeof(curandState))
 Presumably the 44 bytes of content get padded to 48 bytes
 in the curandState which is typedef to curandStateXORWOW.
 

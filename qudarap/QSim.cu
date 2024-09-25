@@ -55,17 +55,49 @@ __global__ void _QSim_rng_sequence(qsim* sim, T* seq, unsigned ni, unsigned nv, 
     } 
 }
 
+template <typename T>
+__global__ void _QSim_rng_sequence_with_skipahead(qsim* sim, T* seq, unsigned ni, unsigned nv, unsigned id_offset )
+{
+    unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
+    if (id >= ni) return;
+    curandState rng ;
+    sim->rng->get_rngstate_with_skipahead(rng, sim->evt->index, id+id_offset) ; 
+
+    if( id == 0 ) printf("//_QSim_rng_sequence_with_skipahead id %d sim->evt->index %d \n", id, sim->evt->index ); 
+
+
+    unsigned ibase = id*nv ; 
+
+    for(unsigned v=0 ; v < nv ; v++)
+    {
+        T u = scurand<T>::uniform(&rng) ;
+        seq[ibase+v] = u ;
+    } 
+} 
+
+
+
+
+
 
 template <typename T>
-extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, T*  seq, unsigned ni, unsigned nv, unsigned id_offset )
+extern void QSim_rng_sequence(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, T*  seq, unsigned ni, unsigned nv, unsigned id_offset, bool skipahead )
 {
-    printf("//QSim_rng_sequence_f ni %d nv %d id_offset %d  \n", ni, nv, id_offset ); 
-    _QSim_rng_sequence<T><<<numBlocks,threadsPerBlock>>>( sim, seq, ni, nv, id_offset );
+    printf("//QSim_rng_sequence ni %d nv %d id_offset %d skipahead %d  \n", ni, nv, id_offset, skipahead ); 
 
+    if(skipahead)
+    {
+        _QSim_rng_sequence_with_skipahead<T><<<numBlocks,threadsPerBlock>>>( sim, seq, ni, nv, id_offset );
+    }
+    else
+    {
+        _QSim_rng_sequence<T><<<numBlocks,threadsPerBlock>>>( sim, seq, ni, nv, id_offset );
+    }
+ 
 }
 
-template void QSim_rng_sequence(dim3, dim3, qsim*, float* , unsigned, unsigned, unsigned); 
-template void QSim_rng_sequence(dim3, dim3, qsim*, double*, unsigned, unsigned, unsigned); 
+template void QSim_rng_sequence(dim3, dim3, qsim*, float* , unsigned, unsigned, unsigned, bool ); 
+template void QSim_rng_sequence(dim3, dim3, qsim*, double*, unsigned, unsigned, unsigned, bool ); 
 
 
 

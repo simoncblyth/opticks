@@ -60,6 +60,7 @@ TODO:
 #include "qbase.h"
 #include "qprop.h"
 #include "qmultifilm.h"
+#include "qrng.h"
 #include "qbnd.h"
 #include "qscint.h"
 #include "qcerenkov.h"
@@ -80,6 +81,7 @@ struct qsim
     qbase*              base ; 
     sevent*             evt ; 
     curandStateXORWOW*  rngstate ; 
+    qrng*               rng ; 
     qbnd*               bnd ; 
     qmultifilm*         multifilm;
     qcerenkov*          cerenkov ; 
@@ -150,6 +152,7 @@ inline qsim::qsim()    // instanciated on CPU (see QSim::init_sim) and copied to
         base(nullptr),
         evt(nullptr),
         rngstate(nullptr),
+        rng(nullptr),
         bnd(nullptr),
         multifilm(nullptr),
         cerenkov(nullptr),
