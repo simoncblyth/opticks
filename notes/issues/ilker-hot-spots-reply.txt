@@ -122,9 +122,12 @@ I call that aligned running : it means that scatters, reflections, transmissions
 all happen at same places between the simulations. 
 So the resulting arrays can be compared directly, unclouded by statistics.  
 
-> Here is the presentation to the plots and some comparisons I have done.  If you
-> have any suggestions , i really appreciate.
- 
+
+> Here is the presentation to the plots and some comparisons I have done.  
+> If you have any suggestions , i really appreciate.
+
+https://docs.google.com/presentation/d/1d-d0UzUmJtOr5QkehVI_V5LbrztAPJJCSDxZTfy9XFo/edit?pli=1#slide=id.g301f102cdc4_0_60
+
 Thank you for the detailed comparisons. 
 
 I am very interested to see those same plots after updating to the 
@@ -140,6 +143,25 @@ as you vary the below envvar.
           ## what value is actually needed depends on the complexity of the simulation
           ## Its essentially a guess that most photons slots can 
           ## be simulated while consuming less than that number of randoms
+
+
+In the presentation you say
+
+> Could this be related to random number generator?
+
+  * certainly : I hope it is mostly down to repeated randoms prior to skipahead
+    being enabled
+
+> Have done some tests with different seeds and offsets on Opticks the results do not change
+
+  * even prior to updating to get the skipahead fix you should see change when 
+    changing seeds and offsets, for example the clumping in different places for example
+
+  * how did you change seeds and offsets ? Note there is separate random 
+    generation and control for Geant4 and Opticks 
+
+
+
 
 
 Regarding performance, I recently compared ray trace performance between 
