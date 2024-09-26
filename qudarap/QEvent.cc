@@ -191,8 +191,6 @@ int QEvent::setGenstep()  // onto device
 
 
     NP* gs_ = sev->getGenstepArray();  
-    LOG_IF(warning, gs_ == nullptr ) << "No gensteps in SEvt::EGPU early exit QEvent::setGenstep " ; 
-    if(gs_ == nullptr) return 1 ;  
     int rc = setGenstepUpload_NP(gs_) ; 
 
     LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
@@ -244,10 +242,11 @@ int QEvent::setGenstepUpload_NP(const NP* gs_)
         << SGenstep::Desc(gs, 10)
         ;
 
-    int num_genstep = gs_->shape[0] ;
-    const char* data = gs_->bytes() ;
+    int num_genstep = gs_ ? gs_->shape[0] : 0 ;
+    const char* data = gs_ ? gs_->bytes() : nullptr ;
     const quad6* qq = (const quad6*)data ; 
-    return setGenstepUpload(qq, num_genstep); 
+    int rc = setGenstepUpload(qq, num_genstep); 
+    return rc ; 
 }
 
 /**
@@ -269,6 +268,8 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     sev->t_setGenstep_3 = sstamp::Now(); 
 #endif
 
+    bool zero_genstep = num_genstep == 0 ; 
+
     evt->num_genstep = num_genstep ; 
     bool not_allocated = evt->genstep == nullptr && evt->seed == nullptr ; 
 
@@ -277,6 +278,7 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     LOG(LEVEL) 
         << " evt.num_genstep " << evt->num_genstep 
         << " not_allocated " << ( not_allocated ? "YES" : "NO" ) 
+        << " zero_genstep " << ( zero_genstep ? "YES" : "NO " )
         ; 
 
     if(not_allocated) 
@@ -293,6 +295,7 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     sev->t_setGenstep_4 = sstamp::Now(); 
 #endif
 
+    if( qq != nullptr )
     QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)qq, evt->num_genstep ); 
 
 #ifndef PRODUCTION 
@@ -305,15 +308,22 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     sev->t_setGenstep_6 = sstamp::Now(); 
 #endif
 
-    //count_genstep_photons();   // sets evt->num_seed
-    //fill_seed_buffer() ;       // populates seed buffer
-    count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
+    if(num_genstep > 0)
+    {
+        //count_genstep_photons();   // sets evt->num_seed
+        //fill_seed_buffer() ;       // populates seed buffer
+        count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
+    }
+    else
+    {
+        LOG(error) << " num_genstep ZERO : proceed anyhow eg for low level QSimTest tests" ;    
+    }
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_7 = sstamp::Now(); 
 #endif
 
-    int gencode0 = SGenstep::GetGencode(qq, 0); // gencode of first genstep   
+    int gencode0 = SGenstep::GetGencode(qq, 0) ; // gencode of first genstep or OpticksGenstep_INVALID for qq nullptr  
 
     if(OpticksGenstep_::IsFrame(gencode0))   // OpticksGenstep_FRAME  (HMM: Obtuse, maybe change to SIMTRACE ?)
     {
@@ -333,7 +343,12 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     sev->t_setGenstep_8 = sstamp::Now(); 
 #endif
     LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
-    return 0 ; 
+
+
+    int rc = zero_genstep ? 1 : 0 ; 
+    LOG_IF(error, rc != 0 ) << "No gensteps in SEvt::EGPU : ONLY OK WITH VERY LOW LEVEL TESTING eg QSimTest  " ; 
+
+    return rc ; 
 }
 
 /**
@@ -829,6 +844,14 @@ const char* QEvent::getTypeName() const
 {
     return TYPENAME ; 
 }
+
+/**
+QEvent::gatherComponent
+------------------------
+
+Invoked for example by SEvt::gather_components via the SCompProvider protocol
+
+**/
 
 NP* QEvent::gatherComponent(unsigned cmp) const 
 {

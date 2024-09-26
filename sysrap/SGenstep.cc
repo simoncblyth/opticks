@@ -134,6 +134,7 @@ const quad6& SGenstep::GetGenstep(const NP* gs, unsigned gs_idx )
 
 int SGenstep::GetGencode( const quad6* qq, unsigned gs_idx  ) // static
 {
+    if( qq == nullptr ) return OpticksGenstep_INVALID ;
     const quad6& q = qq[gs_idx] ; 
     return GetGencode(q) ; 
 }
@@ -171,6 +172,7 @@ NP* SGenstep::MakeArray(const std::vector<quad6>& gs ) // static
 
 void SGenstep::Check(const NP* gs)  // static
 {
+    if( gs == nullptr ) return ; 
     assert( gs->uifc == 'f' && gs->ebyte == 4 );  
     assert( gs->has_shape(-1, 6, 4) );  
 }
@@ -180,9 +182,9 @@ std::string SGenstep::Desc(const NP* gs, int edgeitems) // static
 {
     int num_genstep = gs ? gs->shape[0] : 0 ; 
 
-    quad6* gs_v = (quad6*)gs->cvalues<float>() ; 
+    quad6* gs_v = gs ? (quad6*)gs->cvalues<float>() : nullptr ; 
     std::stringstream ss ; 
-    ss << "SGenstep::DescGensteps gs.shape[0] " << num_genstep << " (" ; 
+    ss << "SGenstep::DescGensteps num_genstep " << num_genstep << " (" ; 
 
     int total = 0 ; 
     for(int i=0 ; i < num_genstep ; i++)

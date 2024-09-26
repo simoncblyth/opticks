@@ -44,6 +44,23 @@ and singular with long lived buffers of defined maximum capacity that get reused
 * how to decide the maximums ? depends on available VRAM and also should be user configurable
   within some range 
 
+
+QEvent::setGenstep is the primary method for lifecycle understanding
+----------------------------------------------------------------------- 
+
+When Opticks is integrated with a Geant4 based detector simulation framework 
+this primary QEvent::setGenstep method is invoked with a stack like the below, 
+where the upper part depends on details of how Opticks is integrated with the simulation framework::
+ 
+    "G4VSensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)" (stub overridded by the below) 
+    junoSD_PMT_v2::EndOfEvent(G4HCofThisEvent* HCE)
+    junoSD_PMT_v2_Opticks::EndOfEvent(G4HCofThisEvent*, int eventID )
+    junoSD_PMT_v2_Opticks::EndOfEvent_Simulate(int eventID )
+    G4CXOpticks::simulate(int eventID, bool reset_ )
+    QSim::simulate(int eventID, bool reset_)
+    QEvent::setGenstep
+
+
 **/
 
 struct QUDARAP_API QEvent : public SCompProvider

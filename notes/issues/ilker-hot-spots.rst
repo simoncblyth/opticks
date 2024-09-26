@@ -316,3 +316,263 @@ With index 0::
 
 
 
+    P[blyth@localhost tests]$ QSimTest__rng_sequence_with_skipahead__eventID=0 ./QSimTest.sh 
+
+    In [1]: seq
+    Out[1]: 
+    array([[[0.74021935, 0.43845114, 0.51701266, ..., 0.54746926,
+             0.6531603 , 0.23023781],
+            [0.3388562 , 0.76138884, 0.5456815 , ..., 0.85521436,
+             0.48867753, 0.18854636],
+            [0.5065246 , 0.02055138, 0.9582228 , ..., 0.74793386,
+             0.48760796, 0.31805685],
+            ...,
+            [0.15299392, 0.327105  , 0.8935202 , ..., 0.93996674,
+             0.9458555 , 0.19730906],
+            [0.85649884, 0.6574796 , 0.06287431, ..., 0.6235617 ,
+             0.96832794, 0.5317995 ],
+            [0.90195084, 0.42885613, 0.6744496 , ..., 0.59804755,
+             0.8195923 , 0.14472319]],
+
+
+
+
+
+
+    P[blyth@localhost tests]$ QSimTest__rng_sequence_with_skipahead__eventID=1 ./QSimTest.sh 
+
+    In [1]: seq
+    Out[1]: 
+    array([[[0.62425894, 0.72555834, 0.4597076 , ..., 0.42475298,
+             0.9087321 , 0.24526083],
+            [0.61745024, 0.6575631 , 0.40118492, ..., 0.5730591 ,
+             0.8195803 , 0.64033407],
+            [0.6623076 , 0.9948266 , 0.7494343 , ..., 0.66807216,
+             0.93622154, 0.8137269 ],
+            ...,
+            [0.21921866, 0.4446953 , 0.7209938 , ..., 0.23494406,
+             0.34502968, 0.29158133],
+            [0.11280641, 0.69127923, 0.49338955, ..., 0.41528183,
+             0.84367394, 0.04531961],
+            [0.9738698 , 0.05600067, 0.95384246, ..., 0.21428709,
+             0.71177804, 0.38997704]],
+
+           [[0.48497516, 0.68430644, 0.59561753, ..., 0.9785536 ,
+             0.67713684, 0.43304485],
+            [0.0484974 , 0.550004  , 0.30943045, ..., 0.87187475,
+             0.36493173, 0.9270784 ],
+            [0.789175  , 0.9536335 , 0.81837696, ..., 0.3339379 ,
+             0.9447384 , 0.12426154],
+            ...,
+
+
+Because skipahead zero are back to zeroth::
+
+    P[blyth@localhost tests]$ QSimTest__rng_sequence_with_skipahead__eventID=1 OPTICKS_EVENT_SKIPAHEAD=0 ./QSimTest.sh
+
+    In [1]: seq
+    Out[1]: 
+    array([[[0.74021935, 0.43845114, 0.51701266, ..., 0.54746926,
+             0.6531603 , 0.23023781],
+            [0.3388562 , 0.76138884, 0.5456815 , ..., 0.85521436,
+             0.48867753, 0.18854636],
+            [0.5065246 , 0.02055138, 0.9582228 , ..., 0.74793386,
+             0.48760796, 0.31805685],
+            ...,
+            [0.15299392, 0.327105  , 0.8935202 , ..., 0.93996674,
+             0.9458555 , 0.19730906],
+            [0.85649884, 0.6574796 , 0.06287431, ..., 0.6235617 ,
+             0.96832794, 0.5317995 ],
+            [0.90195084, 0.42885613, 0.6744496 , ..., 0.59804755,
+             0.8195923 , 0.14472319]],
+
+           [[0.9209938 , 0.46036443, 0.33346406, ..., 0.82454693,
+             0.5270629 , 0.9301316 ],
+            [0.16302098, 0.7851588 , 0.9419476 , ..., 0.49194995,
+             0.5426917 , 0.9343928 ],
+            [0.47857913, 0.4494259 , 0.12570204, ..., 0.04226144,
+             0.37903434, 0.71457326],
+            ...,
+
+
+Using skipahead of one can see that have shifted the randoms by one consumption:: 
+
+    QSimTest__rng_sequence_with_skipahead__eventID=1 OPTICKS_EVENT_SKIPAHEAD=1 ./QSimTest.sh
+
+
+    In [1]: seq
+    Out[1]: 
+    array([[[0.43845114, 0.51701266, 0.15698862, ..., 0.6531603 ,
+             0.23023781, 0.3388562 ],
+            [0.76138884, 0.5456815 , 0.9702965 , ..., 0.48867753,
+             0.18854636, 0.5065246 ],
+            [0.02055138, 0.9582228 , 0.7742287 , ..., 0.48760796,
+             0.31805685, 0.71192294],
+            ...,
+            [0.327105  , 0.8935202 , 0.97141856, ..., 0.9458555 ,
+             0.19730906, 0.85649884],
+            [0.6574796 , 0.06287431, 0.12924866, ..., 0.96832794,
+             0.5317995 , 0.90195084],
+            [0.42885613, 0.6744496 , 0.8609608 , ..., 0.8195923 ,
+             0.14472319, 0.4973046 ]],
+
+           [[0.46036443, 0.33346406, 0.37252042, ..., 0.5270629 ,
+             0.9301316 , 0.16302098],
+            [0.7851588 , 0.9419476 , 0.4709592 , ..., 0.5426917 ,
+             0.9343928 , 0.47857913],
+            [0.4494259 , 0.12570204, 0.5727265 , ..., 0.37903434,
+             0.71457326, 0.8066413 ],
+            ...,
+
+
+
+
+
+
+
+
+    In [1]: seq
+    Out[1]: 
+    array([[[0.74021935, 0.43845114, 0.51701266, ..., 0.54746926,
+             0.6531603 , 0.23023781],
+            [0.3388562 , 0.76138884, 0.5456815 , ..., 0.85521436,
+             0.48867753, 0.18854636],
+            [0.5065246 , 0.02055138, 0.9582228 , ..., 0.74793386,
+             0.48760796, 0.31805685],
+            ...,
+            [0.15299392, 0.327105  , 0.8935202 , ..., 0.93996674,
+             0.9458555 , 0.19730906],
+            [0.85649884, 0.6574796 , 0.06287431, ..., 0.6235617 ,
+             0.96832794, 0.5317995 ],
+            [0.90195084, 0.42885613, 0.6744496 , ..., 0.59804755,
+             0.8195923 , 0.14472319]],
+
+           [[0.9209938 , 0.46036443, 0.33346406, ..., 0.82454693,
+             0.5270629 , 0.9301316 ],
+            [0.16302098, 0.7851588 , 0.9419476 , ..., 0.49194995,
+             0.5426917 , 0.9343928 ],
+            [0.47857913, 0.4494259 , 0.12570204, ..., 0.04226144,
+             0.37903434, 0.71457326],
+            ...,
+
+
+
+
+
+    In [1]: seq
+    Out[1]: 
+    array([[[0.7483502 , 0.34293526, 0.88547647, ..., 0.5847951 ,
+             0.79113036, 0.23981711],
+            [0.15539935, 0.7188528 , 0.29173562, ..., 0.5006371 ,
+             0.08436476, 0.48330128],
+            [0.9787219 , 0.5392139 , 0.6478626 , ..., 0.5202629 ,
+             0.51267236, 0.67340326],
+            ...,
+            [0.27033243, 0.626754  , 0.27585232, ..., 0.07830946,
+             0.5084241 , 0.09211873],
+            [0.22030236, 0.98426515, 0.6886023 , ..., 0.51349336,
+             0.05313287, 0.26358473],
+            [0.09876443, 0.50572276, 0.89481217, ..., 0.5351595 ,
+             0.57847494, 0.24994943]],
+
+           [[0.90506107, 0.7685051 , 0.0281021 , ..., 0.25146407,
+             0.97211236, 0.37875935],
+            [0.8918538 , 0.25027007, 0.74765795, ..., 0.11923468,
+             0.27575243, 0.47355527],
+            [0.38497022, 0.5588296 , 0.39403036, ..., 0.25999963,
+             0.57363504, 0.0125184 ],
+            ...,
+
+
+
+
+QSimTest needs QEvent for updating of the event index
+--------------------------------------------------------
+
+
+HMM, need to add mock genstep probably::
+
+    2024-09-26 10:41:44.861 INFO  [414965] [QSimTest::main@651]  num 1000000 type 2 subfold rng_sequence_with_skipahead ni_tranche_size 100000 print_id -1
+    2024-09-26 10:41:44.861 INFO  [414965] [QSimTest::rng_sequence_with_skipahead@168]  eventID_key QSimTest__rng_sequence_with_skipahead__eventID eventID 100
+    TODO: change NPX::Make to NPX::ArrayFromData 
+    2024-09-26 10:41:44.862 WARN  [414965] [QEvent::setGenstep@194] No gensteps in SEvt::EGPU early exit QEvent::setGenstep 
+    2024-09-26 10:41:44.862 ERROR [414965] [QSim::simulate@360]  QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate 
+    QU::copy_device_to_host ERROR : device pointer is null 
+    2024-09-26 10:41:44.862 FATAL [414965] [QEvent::gatherPhoton@548]  QU::copy_device_to_host photon FAILED  evt->photon N evt->num_photon 0
+
+    Thread 1 "QSimTest" received signal SIGINT, Interrupt.
+    0x00007ffff70f04fb in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007ffff70f04fb in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff76ce6e0 in QEvent::gatherPhoton (this=0x113218f0, p=0x11322c60) at /home/blyth/opticks/qudarap/QEvent.cc:554
+    #2  0x00007ffff76ce869 in QEvent::gatherPhoton (this=0x113218f0) at /home/blyth/opticks/qudarap/QEvent.cc:563
+    #3  0x00007ffff76d1251 in QEvent::gatherComponent_ (this=0x113218f0, cmp=4) at /home/blyth/opticks/qudarap/QEvent.cc:859
+    #4  0x00007ffff76d0f81 in QEvent::gatherComponent (this=0x113218f0, cmp=4) at /home/blyth/opticks/qudarap/QEvent.cc:838
+    #5  0x00007ffff74038e8 in SEvt::gather_components (this=0x11321ae0) at /home/blyth/opticks/sysrap/SEvt.cc:3531
+    #6  0x00007ffff74044bc in SEvt::gather (this=0x11321ae0) at /home/blyth/opticks/sysrap/SEvt.cc:3617
+    #7  0x00007ffff769518b in QSim::simulate (this=0x113216a0, eventID=100, reset_=false) at /home/blyth/opticks/qudarap/QSim.cc:372
+    #8  0x000000000040ae91 in QSimTest::rng_sequence_with_skipahead (this=0x7fffffff4440, ni=1000000, ni_tranche_size_=100000) at /home/blyth/opticks/qudarap/tests/QSimTest.cc:170
+    #9  0x000000000040d731 in QSimTest::main (this=0x7fffffff4440) at /home/blyth/opticks/qudarap/tests/QSimTest.cc:662
+    #10 0x000000000040ddf9 in main (argc=1, argv=0x7fffffff49f8) at /home/blyth/opticks/qudarap/tests/QSimTest.cc:763
+    (gdb) 
+
+
+
+
+Need a special config for testing ?::
+
+    (gdb) f 10
+    #10 0x000000000040ddf9 in main (argc=1, argv=0x7fffffff49f8) at /home/blyth/opticks/qudarap/tests/QSimTest.cc:763
+    763     qst.main(); 
+    (gdb) f 9
+    #9  0x000000000040d731 in QSimTest::main (this=0x7fffffff4440) at /home/blyth/opticks/qudarap/tests/QSimTest.cc:662
+    662         case RNG_SEQUENCE_WITH_SKIPAHEAD:   rng_sequence_with_skipahead(num, ni_tranche_size) ; break ; 
+    (gdb) f 8
+    #8  0x000000000040ae91 in QSimTest::rng_sequence_with_skipahead (this=0x7fffffff4440, ni=1000000, ni_tranche_size_=100000) at /home/blyth/opticks/qudarap/tests/QSimTest.cc:170
+    170     qs->simulate(eventID, reset); 
+    (gdb) f 7
+    #7  0x00007ffff769518b in QSim::simulate (this=0x113216a0, eventID=100, reset_=false) at /home/blyth/opticks/qudarap/QSim.cc:372
+    372     sev->gather(); 
+    (gdb) f 6
+    #6  0x00007ffff74044bc in SEvt::gather (this=0x11321ae0) at /home/blyth/opticks/sysrap/SEvt.cc:3617
+    3617        gather_components(); 
+    (gdb) f 5
+    #5  0x00007ffff74038e8 in SEvt::gather_components (this=0x11321ae0) at /home/blyth/opticks/sysrap/SEvt.cc:3531
+    3531            NP* a = provider->gatherComponent(cmp); 
+    (gdb) p provider
+    $1 = (const SCompProvider *) 0x113218f0
+    (gdb) f 4
+    #4  0x00007ffff76d0f81 in QEvent::gatherComponent (this=0x113218f0, cmp=4) at /home/blyth/opticks/qudarap/QEvent.cc:838
+    838     NP* a = proceed ? gatherComponent_(cmp) : nullptr ;
+    (gdb) p proceed
+    $2 = true
+    (gdb) f 3
+    #3  0x00007ffff76d1251 in QEvent::gatherComponent_ (this=0x113218f0, cmp=4) at /home/blyth/opticks/qudarap/QEvent.cc:859
+    859         case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;   
+    (gdb) f 2
+    #2  0x00007ffff76ce869 in QEvent::gatherPhoton (this=0x113218f0) at /home/blyth/opticks/qudarap/QEvent.cc:563
+    563     gatherPhoton(p); 
+    (gdb) p p 
+    $3 = (NP *) 0x11322c60
+    (gdb) f 1
+    #1  0x00007ffff76ce6e0 in QEvent::gatherPhoton (this=0x113218f0, p=0x11322c60) at /home/blyth/opticks/qudarap/QEvent.cc:554
+    554     if(rc != 0) std::raise(SIGINT) ; 
+    (gdb) f 0
+    #0  0x00007ffff70f04fb in raise () from /lib64/libpthread.so.0
+    (gdb) 
+
+
+::
+
+     833 NP* QEvent::gatherComponent(unsigned cmp) const
+     834 {
+     835     LOG(LEVEL) << "[ cmp " << cmp ;
+     836     unsigned gather_mask = SEventConfig::GatherComp();
+     837     bool proceed = (gather_mask & cmp) != 0 ;
+     838     NP* a = proceed ? gatherComponent_(cmp) : nullptr ;
+     839     LOG(LEVEL) << "[ cmp " << cmp << " proceed " << proceed << " a " <<  a ;
+     840     return a ;
+     841 }
+
+
+

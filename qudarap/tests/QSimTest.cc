@@ -162,6 +162,13 @@ void QSimTest::rng_sequence_with_skipahead(unsigned ni, int ni_tranche_size_)
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
     bool skipahead = true  ;
 
+    const char* eventID_key = "QSimTest__rng_sequence_with_skipahead__eventID";
+    int eventID = ssys::getenvint(eventID_key,1) ; 
+    bool reset = false ; 
+    LOG(info) << " eventID_key " << eventID_key << " eventID " << eventID ; 
+
+    qs->simulate(eventID, reset); 
+
     qs->rng_sequence<float>("$FOLD", ni, nj, nk, ni_tranche_size, skipahead ); 
 }
 
@@ -748,11 +755,9 @@ int main(int argc, char** argv)
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
 
 
-    const char* idx_key = "QSimTest__SEvt_index";
-    int index = ssys::getenvint(idx_key,1) ; 
-    SEvt* ev = SEvt::Create_EGPU() ; 
-    std::cout << " idx_key " << idx_key << " index " << index << "\n" ; 
-    ev->setIndex(index) ; 
+    [[maybe_unused]] SEvt* ev = SEvt::Create_EGPU() ; 
+    assert(ev);
+
 
     QSimTest qst(type, num, prd)  ; 
     qst.main(); 

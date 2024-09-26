@@ -396,12 +396,13 @@ QSim::reset
 ------------
 
 When *QSim::simulate* is called with argument *reset:true* the
-*QSim::reset* method is called automatically to clean 
-up the SEvt after saving any configured arrays.
+*QSim::reset* method is called which invokes SEvt::endOfEvent in order
+to clean up the SEvt after saving any Opticks configured arrays.
 
 When *QSim::simulate* is called with argument *reset:false*
-(in order to copy gathered arrays into non-Opticks collections)  
-the *QSim::reset* method must be called to avoid a memory leak. 
+the *QSim::reset* method must be called separately in order to avoid a memory leak. 
+Using *reset:false* is typically done in order to keep arrays alive longer 
+to enable copying the info from the gathered arrays into non-Opticks collections.  
 
 **/
 void QSim::reset(int eventID)
