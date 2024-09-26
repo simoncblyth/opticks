@@ -11,7 +11,9 @@ Report from Ilker : presentation on google docs shows low energy looking clumpy 
 
     Hello Simon, 
 
-    I hope you are doing well. I have been doing some comparisons with Opticks and
+    I hope you are doing well. 
+
+    I have been doing some comparisons with Opticks and
     G4. I have noticed that there are some artifacts and hot spots show up  on hits
     whenever photon yields are low, if I increase the yields , hits more look like
     G4. I wonder if you ever seen this behavior before? 
@@ -33,6 +35,173 @@ Report from Ilker : presentation on google docs shows low energy looking clumpy 
 
 
     https://docs.google.com/presentation/d/1d-d0UzUmJtOr5QkehVI_V5LbrztAPJJCSDxZTfy9XFo/edit?pli=1#slide=id.g2f87c7b96b1_0_87
+
+
+Response
+----------
+
+Hi Ilker, 
+
+
+> I have been doing some comparisons with Opticks and G4. 
+> I have noticed that there are some artifacts and hot spots show up  on hits
+> whenever photon yields are low, if I increase the yields , hits more look like
+> G4. I wonder if you ever seen this behavior before? 
+ 
+Thank you for you detailed checking and pointing out this clumpyness 
+issue and also for your detailed presentation illustrating the problem.
+ 
+I long ago fixed a similar issue in an earlier iteration of Opticks
+using curand skipahead. Apparently that feature from old Opticks
+did not survive into the full Opticks reimplementation and 
+repetition of curand generated randoms from event to event
+was happening. 
+
+My commits from today and yesterday should bring that back.
+
+To understand the issue and the fix I need to explain some 
+peculiarities with how randoms are generated in Opticks using 
+the curand device API.  
+
+* https://docs.nvidia.com/cuda/curand/device-api-overview.html
+ 
+One problem with using curand is that the curand_init initialization 
+of the curandState_t needed by all curand random generation on GPU
+requires lots of resources. 
+
+The stack size needed to do curand_init is hugely more that the 
+stack size needed for ray tracing and simulation. 
+Because of this Opticks does that curand_init for the configured maximum number 
+of photons permissable in a single launch only at installation time 
+(see bash functions opticks-full-prepare opticks-prepare-installation).
+The curandState are persisted into ~/.opticks/rngcache/RNG eg::
+
+    P[blyth@localhost RNG]$ l
+    total 2750020
+    2148440 -rw-rw-r--. 1 blyth blyth 2200000000 Jan 11  2024 QCurandState_50000000_0_0.bin
+          4 drwxrwxr-x. 2 blyth blyth       4096 Jan 11  2024 .
+          0 lrwxrwxrwx. 1 blyth blyth         55 Nov 30  2023 QCurandState_200000000_0_0.bin -> ../../rngcache_extra/RNG/QCurandState_200000000_0_0.bin
+          0 lrwxrwxrwx. 1 blyth blyth         53 Nov 30  2023 QCurandState_2000000_0_0.bin -> ../../rngcache_extra/RNG/QCurandState_2000000_0_0.bin
+          0 lrwxrwxrwx. 1 blyth blyth         55 Nov 30  2023 QCurandState_100000000_0_0.bin -> ../../rngcache_extra/RNG/QCurandState_100000000_0_0.bin
+     429688 -rw-rw-r--. 1 blyth blyth  440000000 Oct  7  2022 QCurandState_10000000_0_0.bin
+     128908 -rw-rw-r--. 1 blyth blyth  132000000 Oct  7  2022 QCurandState_3000000_0_0.bin
+      42972 -rw-rw-r--. 1 blyth blyth   44000000 Oct  7  2022 QCurandState_1000000_0_0.bin
+          0 drwxrwxr-x. 3 blyth blyth         17 Sep 14  2019 ..
+    P[blyth@localhost RNG]$ 
+
+
+When Opticks runs those initialized curandState are loaded from file 
+and uploaded to GPU (see quadarap/QRng.hh qrng.h).  
+
+That means those states can be used without having to do the expensive 
+initialization everytime. The result is that Opticks can generate randoms 
+with a much smaller stack size meaning that hugely more GPU threads 
+can be active at the same time enabling fast ray tracing and hence simulation. 
+
+BUT that means that without some intervention every event starts 
+from the exact same curandState and hence the simulation will consume 
+the exact same randoms. 
+
+The way to intervene to avoid repeated randoms is to use the 
+curand skipahead API to jump ahead in the random sequence for each photon slot in each event. 
+That is done in qudarap/qrng.h:: 
+
+     53 inline QRNG_METHOD void qrng::get_rngstate_with_skipahead(curandStateXORWOW& rng, unsigned event_idx, unsigned photon_idx )
+     54 {
+     55     unsigned long long skipahead_ = skipahead_event_offset*event_idx ;
+     56     rng = *(rng_states + photon_idx) ;
+     57     skipahead( skipahead_, &rng );
+     58 }
+
+
+The skipahead_event_offset can be configured via envvar OPTICKS_EVENT_SKIPAHEAD
+(from sysrap/SEventConfig) the default is current 100,000 and the 
+event_idx comes from the Geant4 eventID.  This aims to prevent repetition of 
+randoms consumed in the same photon slot in consequtive events. 
+
+
+> I also noticed that the hit counts agree much better when i turn off the
+> reflections on the steel. I introduce 20%  surface reflections on steel by
+> using REFLECTIVITY property.
+ 
+
+What the simulation does depends on both randoms from Geant4 that inflence
+the generated gensteps and randoms from Opticks. 
+Prior to my fix the Opticks randoms were repeating without manual skipahead. 
+
+To the extent that less randoms are used eg specular reflection doesnt consume
+randoms you might expect things to be less messed up.  But its better 
+to fix one issue at a time and check after each fix as things are 
+too complicated to reason with this way with any reliability. Thats why we 
+use simulation, because its too complicated to do things analytically.  
+
+Conversely if it is necessary to check the simulation in 
+great detail then you need to use exceedingly simple geometry
+and patterns of photons such that you can know exactly 
+what should be happen. 
+
+
+> Also i am curious if there is a way of checking boundary overlaps in Opticks
+> and how could i do a good geometry comparison? I have been doing indirectly by
+> looking at final position of photons and compare it both G4 and Opticks 
+> yet maybe there is an alternative way you may know.
+ 
+Comparing A:Opticks and B:Geant4 simulations when using input photons 
+(ie the exact same CPU generated photons in both A and B) is a powerful 
+way to find geometry and other issues.  
+
+The so called "record" array records every step point of the photon history. 
+This detailed step history can also be recorded from the Geant4 side
+using the U4Recorder, allowing recording of the photon histories 
+from Geant4 within Opticks SEvt format NumPy arrays. 
+
+Statistical comparisons between the A and B NumPy arrays is the 
+first thing to do for validation. 
+
+Going further it is possible to arrange for Geant4 to provide 
+the same set of precooked randoms that curand generates 
+(by replacing the Geant4 "engine" see u4/U4Random.hh) 
+I call that aligned running : it means that scatters, reflections, transmissions
+all happen at same places between the simulations. 
+So the resulting arrays can be compared directly, unclouded by statistics.  
+
+> Here is the presentation to the plots and some comparisons I have done.  If you
+> have any suggestions , i really appreciate.
+ 
+Thank you for the detailed comparisons. 
+
+I am very interested to see those same plots after updating to the 
+latest bitbucket Opticks. You might also check the effect 
+as you vary the below envvar.
+
+    export OPTICKS_EVENT_SKIPAHEAD=0    
+          ## at zero, I expect you should get exactly the same as you presented
+          ## already with the clumping from duplicated randoms
+
+    export OPTICKS_EVENT_SKIPAHEAD=100000
+          ## at 100k I expect you should match Geant4
+          ## what value is actually needed depends on the complexity of the simulation
+          ## Its essentially a guess that most photons slots can 
+          ## be simulated while consuming less than that number of randoms
+
+
+Regarding performance, I recently compared ray trace performance between 
+the generations:
+
+* 1st gen RTX : NVIDIA TITAN RTX  (Released: Dec 2018)
+* 3rd gen RTX : NVIDIA RTX 5000 Ada Generation  (Released: August 2023)
+
+3rd gen is consistently giving a factor of at least 4 faster than 1st gen, 
+which appears to confirm the NVIDIA claim of 2x raw ray trace performance
+improvement between generations. 
+
+Simon
+
+
+
+
+
+
 
 
 
