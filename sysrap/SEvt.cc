@@ -3057,8 +3057,8 @@ void SEvt::checkPhotonLineage(const spho& label) const
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 
-NP* SEvt::gatherPho() const {  return NPX::Make<int>( (int*)pho.data(), int(pho.size()), 4 ); }
-NP* SEvt::gatherGS() const {   return NPX::Make<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
+NP* SEvt::gatherPho() const {  return NPX::ArrayFromData<int>( (int*)pho.data(), int(pho.size()), 4 ); }
+NP* SEvt::gatherGS() const {   return NPX::ArrayFromData<int>( (int*)gs.data(),  int(gs.size()), 4 );  }
 
 
 /**
@@ -3083,7 +3083,7 @@ int SEvt::getGenstepVecSize() const
 
 NP* SEvt::getGenstepArray() const 
 {
-    return NPX::Make<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; 
+    return NPX::ArrayFromData<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; 
 }
 
 

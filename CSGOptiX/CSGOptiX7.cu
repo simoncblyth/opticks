@@ -282,13 +282,12 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
      
     qsim* sim = params.sim ;
 
-#define OLD_WITHOUT_SKIPAHEAD 1
+//#define OLD_WITHOUT_SKIPAHEAD 1
 #ifdef OLD_WITHOUT_SKIPAHEAD
     curandState rng = sim->rngstate[idx] ;   
 #else
     curandState rng ; 
-    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, idx );       // WIP: getting sim->evt->index updated in QSimTest via QEvent ? 
-    //sim->rng->get_rngstate_with_skipahead( rng, params.event_index, idx );  // AWKWARD FOR QSimTest
+    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, idx );
 #endif
 
 

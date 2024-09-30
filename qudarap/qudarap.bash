@@ -27,12 +27,36 @@ qudarap-prepare-sizes-Linux-(){  echo ${OPTICKS_QUDARAP_RNGMAX:-1,3,10} ; }
 qudarap-prepare-sizes-Darwin-(){ echo ${OPTICKS_QUDARAP_RNGMAX:-1,3} ; }
 qudarap-prepare-sizes(){ $FUNCNAME-$(uname)- | tr "," "\n"  ; }
 
+qudarap-prepare-installation-notes(){ cat << EON
+qudarap-prepare-installation-notes
+-----------------------------------
+
+See::
+
+    qudarap/QCurandState
+    sysrap/SCurandState
+
+NB changing the below envvars can adjust the QCurandState_SPEC::
+
+   QUDARAP_RNG_SEED 
+   QUDARAP_RNG_OFFSET 
+
+But doing this is for expert usage only because it will then 
+be necessary to set QCurandState_SPEC correspondingly
+when running Opticks executables for them to find
+the customized curandState files. 
+
+EON
+}
+
 qudarap-prepare-installation()
 {
    local sizes=$(qudarap-prepare-sizes)
    local size 
+   local seed=${QUDARAP_RNG_SEED:-0}
+   local offset=${QUDARAP_RNG_OFFSET:-0}
    for size in $sizes ; do 
-       QCurandState_SPEC=$size:0:0  ${OPTICKS_PREFIX}/lib/QCurandStateTest
+       QCurandState_SPEC=$size:$seed:$offset  ${OPTICKS_PREFIX}/lib/QCurandStateTest
        rc=$? ; [ $rc -ne 0 ] && return $rc
    done
    return 0 
