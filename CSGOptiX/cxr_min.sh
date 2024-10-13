@@ -24,7 +24,12 @@ sysrap/tests/SGLM_set_frame_test.sh
 
 
     ~/o/cxr_min.sh 
-   
+
+
+Use ELV to exclude virtual PMT wrapper volumes::
+
+    ELV=t:HamamatsuR12860sMask_virtual,NNVTMCPPMTsMask_virtual,mask_PMT_20inch_vetosMask_virtual ~/o/cx.sh
+
 
 EMM EnabledMergedMesh examples selecting compound solids::
 
@@ -32,7 +37,6 @@ EMM EnabledMergedMesh examples selecting compound solids::
 
     EMM=t0, ~/o/cx.sh    ## exclude 0 "rem"
     EMM=t:0, ~/o/cx.sh   ## exclude 0 "rem"
-
 
     EMM=10, ~/o/cx.sh   ## only 10 "tri"
 
