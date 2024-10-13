@@ -115,19 +115,21 @@ SGLFW.h
 A
    (WASDQE) hold to change eyeshift, translate left 
 B
-   invokes SGLM::desc describing view parameters
+   invokes SGLM::desc describing view parameters [--desc]
 C
    toggle.cuda between rasterized and raytrace render 
+   [currently only implemented for sysrap triangulated renderer]
 D
    (WASDQE) hold to change eyeshift, translate right 
 E
    (WASDQE) hold to change eyeshift, translate down 
 F
-   toggle.tmax change far by moving cursor vertically 
+   toggle.tmax : then change far by moving cursor vertically 
 G
    -
 H
-   invokes SGLM::home returning to initial position with no lookrotation or eyeshift
+   invokes SGLM::home returning to initial position with no lookrotation or eyeshift [--home]
+   and dumps this help string [--help]
 I
    -
 J
@@ -139,9 +141,9 @@ L
 M
    hop to the MOI envvar configured frame [not supported by all renderers]
 N
-   toggle.tmin change near by moving cursor vertically 
+   toggle.tmin : then change near by moving cursor vertically 
 O
-   dump this help string
+   switch camera between perspective and orthographic projections [--tcam]
 P
    -
 Q
@@ -403,7 +405,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_U:      toggle.norm = !toggle.norm  ; break ; 
         case GLFW_KEY_T:      toggle.tran = !toggle.tran  ; break ; 
         case GLFW_KEY_B:      command("--desc")           ; break ; 
-        case GLFW_KEY_H:      command("--home")           ; break ; 
+        case GLFW_KEY_H:      command("--home") ; command("--help") ; break ; 
         case GLFW_KEY_O:      command("--tcam")           ; break ;  
         case GLFW_KEY_K:      command("--snap")           ; break ;  
         case GLFW_KEY_L:      command("--snap-inverted")  ; break ;  

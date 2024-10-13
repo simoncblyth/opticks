@@ -92,9 +92,12 @@ const char* SGeoConfig::ELVSelection(const SName* id )
     const char* elv_selection_ = ELVSelection() ; 
     const char* elv = nullptr ; 
     char delim = ',' ; 
+    bool VERBOSE = ssys::getenvbool(ELVSelection_VERBOSE); 
+    bool starting = false ;  // NOW REQUIRE EXACT NAMES FOR ELV SELECTION
 
     if(VERBOSE) std::cerr 
         << "SGeoConfig::ELVSelection"
+        << " [" << ELVSelection_VERBOSE << "] "
         << " elv_selection_ " << ( elv_selection_ ? elv_selection_ : "-" )
         << std::endl 
         ;
@@ -110,7 +113,7 @@ const char* SGeoConfig::ELVSelection(const SName* id )
             << std::endl
             ;
 
-        bool has_names = id->hasNames(elv_selection_, delim, prefix );  
+        bool has_names = id->hasNames(elv_selection_, delim, prefix, starting );  
 
         if(VERBOSE) std::cerr
             << "SGeoConfig::ELVSelection" 
@@ -120,7 +123,7 @@ const char* SGeoConfig::ELVSelection(const SName* id )
 
         if(has_names)
         {    
-            elv = id->getIDXListFromNames(elv_selection_, delim, prefix ); 
+            elv = id->getIDXListFromNames(elv_selection_, delim, prefix, starting ); 
         }    
         else 
         {    

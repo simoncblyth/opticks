@@ -408,6 +408,7 @@ struct CSG_API CSGFoundry : public SGeo
 
     int findMeshIndex(const char* qname) const ; 
 
+    const std::string descELV2(const SBitSet* elv) const ; 
     const std::string descELV(const SBitSet* elv) const ; 
 
     const std::string& getSolidMMLabel(unsigned sidx) const ; 

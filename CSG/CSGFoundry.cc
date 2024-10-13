@@ -453,6 +453,38 @@ void CSGFoundry::setOverrideScene(SScene* _scene)
 }
 
 
+const std::string CSGFoundry::descELV2(const SBitSet* elv) const 
+{
+    unsigned num_bits = elv->num_bits ; 
+    unsigned num_name = id->getNumName() ; 
+    assert( num_bits == num_name );   
+ 
+    std::stringstream ss ;  
+    ss << "CSGFoundry::descELV2" 
+       << " elv.num_bits " << num_bits 
+       << " id.getNumName " << num_name 
+       << std::endl 
+       ; 
+
+    for(int p=0 ; p < 2 ; p++)
+    {
+        for(unsigned i=0 ; i < num_bits ; i++)
+        {
+            bool is_set = elv->is_set(i);            
+            const char* n = id->getName(i); 
+            if( is_set == bool(p) )
+            {
+                ss << std::setw(3) << i << " " 
+                   << ( is_set ? "Y" : "N" )
+                   << " [" << ( n ? n : "-" ) << "] " 
+                   << std::endl
+                   ;
+            }        
+        }
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 
@@ -516,8 +548,8 @@ const std::string CSGFoundry::descELV(const SBitSet* elv) const
            ;  
     }
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 } 
 
 
@@ -3057,7 +3089,10 @@ CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 {
     LOG(LEVEL) << "[" ; 
     assert(elv);
-    LOG(LEVEL) << elv->desc() << std::endl << src->descELV(elv) ; 
+    LOG(LEVEL) << elv->desc() << std::endl ; 
+    LOG(LEVEL) << src->descELV(elv) ; 
+    LOG(LEVEL) << src->descELV2(elv) ;
+ 
     CSGFoundry* dst = CSGCopy::Select(src, elv ); 
     dst->setOrigin(src); 
     dst->setElv(elv); 
