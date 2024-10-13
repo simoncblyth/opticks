@@ -58,7 +58,7 @@ Summary
 ~~~~~~~~~
 
 1. (April 2014) Beginning : get Chroma GPU optical photon simulation to work with Dyb 
-2. (July 2015) jump from Chroma -> NVIDA OptiX (50x) and coined the name "Opticks" : flesh out impl
+2. (July 2015) jump from Chroma -> NVIDIA OptiX (50x) and coined the name "Opticks" : flesh out impl
 3. (July 2017) implement fully analytic CSG : needed for near perfect G4 match  
 4. (August 2019) BOMBSHELL : NVIDIA 6.5->7.0 (like Geant3->4 ) 
 5. (Jan 2021) Start transition from NVIDIA 6.5 to 7.0, "new" Opticks impl 
@@ -79,7 +79,7 @@ Brief History
   * Chroma claimed 200x Geant4 : with a triangulated geometry 
   * implemented trianglated geometry export from Geant4 with material/surface props using DAE/COLLADA (standard 3D file format)
 
-    * liberated geometry from Geant4 : cn use with many pkgs
+    * liberated geometry from Geant4 : can use with many pkgs
 
   * pyopengl using single VBO for entire geometry 
 

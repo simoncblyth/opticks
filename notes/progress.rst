@@ -6,7 +6,7 @@ Progress
     :depth: 3
 
 
-**Tips for making monthly summaries**
+**Tips for making monthly summaries + next presentation**
 
 * https://bitbucket.org/simoncblyth/opticks/src/master/notes/progress.rst
 
@@ -14,15 +14,24 @@ Progress
    mostly cover Opticks it is still necessary to review all the main repositories 
    to get the full picture::
 
-     o  ; ./month.sh -12  # Dec last year  
-     j  ; ./month.sh -12
-     jo ; ./month.sh -12
-     n  ; ./month.sh -12
-     e  ; ./month.sh -12
+     ~/o/month.sh -12  # Dec last year  
+     ~/j/month.sh -12
+     ~/n/month.sh -12
+     ~/e/month.sh -12
+    
+     SDIR=$JUNOTOP/junosw ~/o/month.sh 5   ## jo  
 
-   * select informative/representative commit messages for inclusion in these notes
+   * **select small-ish fraction of informative/representative commit messages** 
+   * include the selected commit messages below : intention is to give broad strokes overview (not details)
+   * include the hash only where it is particularly informative (eg `git l  a81983c4a^-1` )
+   * compose month titles if possible
+   
 
 2. review presentations month by month, find them with presentation-index
+
+   * include links to presentations in below timeline, with highlight slide titles
+   * cherry pick sets of slides for next presentation
+
 3. while doing the above reviews. compile a list of topics and check 
    that the vast majority of commit messages and presentation pages 
    can fit under the topics : if not add more topics or re-scope the topics
@@ -31,13 +40,126 @@ Progress
      think about how they are related to each other 
 
 
+2024 Oct
+----------
+
+* o : 10/13 : update the progress notes 
 
 
-2024 Mar
+2024 Sep : CUDA 12.4 OptiX 8 compat : RTX 3rd gen test
+--------------------------------------------------------
+
+* o : 09/30 : enable skipahead as standard, configured with OPTICKS_EVENT_SKIPAHEAD. Switch to NPX::ArrayFromData from NPX::Make
+* o : 09/14 : add more efficient CombinedArray serialize/import to S4MaterialPropertyVector.h and std::vector of std::array serialize/import to NPX.h 
+* o : 09/12 : avoid need to keep changing mode in elv.sh using emm.sh that is symbolic linked to elv.sh were the mode is set according to the script stem
+* o : 09/10 : succeed to get ELV selected dynamic geometry to work with force triangulated solids using postcache SScene to SScene sub-selection
+* o : 09/09 : preparations to allow force triangulated geometry to follow ELV postcache selection to allow dynamic geometry speed testing
+* o : 09/05 : enable rendering to run in Release build to avoid test fails
+* o : 09/04 : confirmed capture of WITH_HEISENBUG in CSG/csg_intersect_leaf.h with an acceptable fix not requiring any magic printf 
+* o : 09/04 : heisenbug resisting arrest : within intersect_leaf an earlier magic printf also works
+* o : 09/02 : dump debugging CSG issue with optix 7.5 and cuda 12.4 : adding lots of dump debug to csg_intersect headers scares away the bug, but switching off the debug and it comes back : bizarre
+* o : 09/02 : CUDA level debug of the intersects shows no difference between 11.7 and 12.4 with OptiX 7.5 on TITAN_RTX and RTX_5000_Ada so resort to PIDX debug within OptiX raytrace
+
+2024 Aug 
 ---------
 
+* o : 08/30 : notes on CUDA 12.4 Ada CSG boolean issue
+* o : 08/27 : shakedown forced triangulation, see notes/issues/flexible_forced_triangulation.rst
+* o : 08/26 : 9cf40f6c0 - first untested nearly full cut at flexible forced triangulation across all levels : stree.h CSGFoundry and SBT
+
+2024 Jul 
+---------
+
+* http://localhost/env/presentation/opticks_20240702_kaiping_status_and_plan.html
+
+  * n-ary CSG Compound "List-Nodes" => Much Smaller CSG trees
+  * 3x3x3 grid of MultiUnion/list-node each with 7x7x7=343 Orb
+  * FastenerAcrylicConstruction  
 
 
+* o : 07/12 : change skin surface vector to map G4VERSION_NUMBER branch to 1122 
+
+2024 Jun : using forced triangles to handle torii
+---------------------------------------------------
+
+* http://localhost/env/presentation/opticks_20240606_ihep_panel_30min.html
+ 
+  * simulation unlimited by optical photons => greater understanding => more fruit
+
+
+* o : 06/27 : initial try at compiling to optixir binary instead of ptx text
+* o : 06/25 : add OpenGL snapshots using glReadPixels to SGLFW.h
+* o : 06/24 : add sgeomtools.h based on G4GeomTools to provide torus bbox accounting for the phi range
+* o : 06/23 : arrange for number key frame hopping to interpret SHIFT modifier as offset of 10, so can now have 20 bookmark frames
+* o : 06/16 : handle listnode in stree::get_frame_remainder
+* o : 06/16 : provide way to download render pixels and flip the vertical prior to annotation and saving, plus start on interactive GPU side flip with traceyflip, add MOI targeted frame hop from M key
+* o : 06/11 : c4855b1e3 - start adding forced triangulation solids at stree::factorize stage 
+
+2024 May : listnode from simple G4MultiUnion operational
+---------------------------------------------------------
+
+* o : 05/16 : anaviz for listnode converted from G4MultiUnion now working, performantly rendering solid of 7x7x7=343 constituent Orbs that would be impossible without listnode
+* o : 05/15 : filling out G4MultiUnion sn.h CSGPrim/CSGNode listnode full conversion
+* o : 05/15 : first impl of sn(listnode) conversion to CSGPrim/CSGNode mostly in CSGImport::importPrim
+* o : 05/15 : get examples/UseOpticksCUDA/go.sh to work with CUDA 11.7
+* o : 05/14 : review state of listnode impl, looks like primary lack is translation
+* o : 05/14 : as different pkgs need to resolve GEOM in different ways put the resolution into the corresponding ctest runners rather than overloading GEOM.sh
+* o : 05/09 : tri/ana flexible geometry now working to zeroth order
+* o : 05/06 : start tri/ana generalization SBT setup using union of CustomPrim and Trimesh in the HitGroupData 
+
+
+2024 Apr : tri/ana integration at OptiX level
+----------------------------------------------
+
+* http://localhost/env/presentation/opticks_20240418_ihep_epd_seminar_story_of_opticks.html
+
+
+* o : 04/30 : 2adf7fc2c - rejig CSGOptix IAS creation to make it work WITH_SOPTIX_ACCEL, tri/ana integration reached to needing hitgroup branching 
+* o : 04/29 : use the unified SOPTIX_BuildInput to handle Triangles and CPA within CSGOptiX/SBT.h for now hidden behind WITH_SOPTIX_ACCEL
+* o : 04/29 : unify SOPTIX_BuildInput_IA.h SOPTIX_BuildInput_CPA.h SOPTIX_BuildInput_Mesh.h as specializations of SOPTIX_BuildInput.h for common handling
+* o : 04/29 : remove context arg from SOPTIX_MeshGroup by deferring SOPTIX_Accel gas creation in order to conform closer to CSGOptiX/SBT API
+* o : 04/28 : adopt more vertical API SOPTIX_MeshGroup::Create going from CPU side SMeshGroup to GPU side SOPTIX_MeshGroup in one step, to facilitate tri/ana integration
+* o : 04/28 : move to SIMG.h STTF.h from former SIMG.hh STTF.hh removing ttf instance from SLOG.cc enabling header-only usage of SIMG.h STTF.h functionality
+* o : 04/25 : 1e09ea291 - add external device pixel functionality to CSGOptiX.cc, enabling addition of CSGOptiXRenderInteractiveTest providing interactive CSGOptiX analytic rendering with WASDQE+mouse navigation
+* o : 04/24 : move context handling to SOPTIX_Context.h freeing SOPTIX.h for top level coordination
+* o : 04/24 : a81983c4a - tidy and review OpenGL SGLFW machinery
+* o : 04/23 : review triangulated geometry machinery in syrap/SOPTIX.rst
+* o : 04/18 : add notes/issues/G4CXTest_raindrop_shows_Geant4_Process_Reorder_doesnt_fix_velocity_after_reflection_in_Geant4_1120.rst
+* o : 04/12 : add frame jumping by number key and camera type toggle
+* o : 04/12 : add WASDQE 3D navigation with mouse arcball control of q_eyerot quaternion
+* o : 04/11 : fix three issues : perspective raytrace/raster inconsistency, raytrace quaternion slewing due to not using proper inverse, raster mixup due to omitting GL_DEPTH_TEST setup
+* o : 04/10 : use SBitSet.h for SGLM.h VIZMASK control used from sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+* o : 04/04 : comparing UseGivenVelocity_KLUDGE in examples/Geant4/OpticalApp/OpticalAppTest.sh and g4cx/tests/G4CXTest_raindrop.sh
+* o : 04/03 : add recording and point flags to examples/Geant4/OpticalApp using copy of minimal numpy writer np.h 
+* o : 04/01 : notes from review of opticks presentations  (`git l 43e2cbbef^-1`)
+
+
+::
+
+    notes/objectives.rst
+    notes/story_of_opticks_review.rst
+
+
+
+2024 Mar : header-only SGLFW.h revival of triangulated OpenGL geometry viz, revive OptiX builtin triangle ray trace render
+----------------------------------------------------------------------------------------------------------------------------
+
+* o : 03/28 : investigate velocity after reflection (TIR or otherwise), find that UseGivenVelocity keeps that working as well as refraction
+* o : 03/27 : Merged PR from Yuxiang for enhancements to lookup based ART calc
+* o : 03/26 : add InverseModelView IMV matrix calc in updateComposite and use that in updateEyeBasis to make the ray trace sensitive to the look rotation quaternion
+* o : 03/26 : interactive CUDA-OpenGL interop optix ray trace of builtin triangle geometry working to some extent in sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+* o : 03/26 : fixed bug in SOPTIX_Scene::init_IAS that was preventing IAS hits 
+* o : 03/25 : complete triangulated header-only OptiX render sysrap/tests/SOPTIX_Scene_test.sh now runs, but getting all misses
+* o : 03/25 : add minimal header only sppm.h for pre-OpenGL test of SOPTIX triangulated render
+* o : 03/21 : encapsulate triangleArray buildInput and GAS creation into SOPTIX_Mesh.h 
+* o : 03/20 : separate off SGLFW_Scene.h, start SCUDA_Mesh.h following pattern of SGLFW_Mesh.h, header only SCU.h  
+* o : 03/19 : rename SGLFW_Render.h to SGLFW_Mesh.h following decoupling from SGLFW_Program.h
+* o : 03/18 : fixed Linux instancing no-show, twas missing getAttribLocation from SGLFW_Program::enableVertexAttribArray_OfTransforms
+* o : 03/17 : add SMesh::Concatenate for vtx/tri/nrm concat, used from SScene
+* o : 03/14 : splitting SGLFW_Program.h and SGLFW_CUDA.h from SGLFW.h and better state control gets flipping between pipelines to work 
+* o : 03/11 : fixed OpenGL viz bug, it was issue of vPos vNrm attribute enabling getting swapped, as they act on the active GL_ARRAY_BUFFER when invoked
+* o : 03/10 : add lookRotation control using quaternion based SGLM_Arcball.h following Ken Shoemake original Arcball publication 
+* o : 03/08 : expt with glm quaternions for Arcball impl
 * o : 03/05 : SGLM.h tests review reveals some potential causes of mis-behaviour such as that seen with UseGeometryShader but needs rasterized comparison before can be actionable
 * o : 03/04 : working out how to combine triangulated with analytic optix geometry, review some OpenGL GeometryShader rendering : want view/position navigation functionality that is reusable in all combinations : OpenGL/OptiX/interop
 * o : 03/01 : add U4Mesh::MakeFold created meshes for all solids to stree created with U4Tree
@@ -46,6 +168,21 @@ Progress
 2024 Feb
 ----------
 
+* http://localhost/env/presentation/opticks_20240227_zhejiang_seminar.html
+
+  * Optical photons limit many simulations => lots of interest in Opticks 
+
+
+* http://localhost/env/presentation/opticks_20240224_offline_software_review.html
+
+  * Status of known issues : most leaks now fixed
+  * [2] A:B Chi2 comparison of optical propagation history frequencies
+  * [3] Pure Optical TorchGenstep 20 evt scan : 0.1M to 100M photons
+  * Optimizing separate "Release" build in addition to "Debug" build
+  * Absolute Comparison with ancient Opticks Measurements ?
+  * Yuxiang Hu : Gamma Event at CD center : Comparison of JUNOSW with JUNOSW+Opticks
+
+
 * o : 02/29 : update examples/UseOptiX7GeometryModular to work with OptiX 7.5 while thinking about reviving triangulated and interactive graphics
 * o : 02/29 : switch to SEvt::getLocalHit from the old SEvt::getLocalHit_LEAKY impl
 * o : 02/29 : note that intended new implementation of SEvt::getLocalHit avoids most of the off-by-one sensor identifier complications by using the CPU side double precision transforms that as never uploaded dont need to offset the identifier
@@ -53,8 +190,8 @@ Progress
 * o : 02/01 : add sysrap/tests/sleak.sh in the style of sreport.sh but simpler as just focussing on leak checking 
 
 
-2024 Jan
------------
+2024 Jan : VRAM leak finding 
+-------------------------------
 
 
 * o : 01/24 :  notes on fixing the 14kb/launch VRAM leak due to use of separate CUDA stream for each launch, plus change non-controllable per launch logging to be under SEvt__MINIMAL control
@@ -63,6 +200,24 @@ Progress
 
 2023 Dec
 -----------
+
+* http://localhost/env/presentation/opticks_20231219_using_junosw_plus_opticks_release.html
+
+  * ~/o/cxs_min.sh  ## 2.2M hits from 10M photon TorchGenstep, 3.1 seconds 
+  * First Pre-Release has lots of rough edges
+
+
+* http://localhost/env/presentation/opticks_20231211_profile.html
+
+  * Introduce Three Opticks test scripts 
+  * Optimizing separate "Release" build in addition to "Debug" build
+  * sreport.{sh,cc,py} : Opticks Event metadata reports and plots
+  * Debug   : 0.341 seconds per million photons,    34s for 100M photons 
+  * Release : 0.314 seconds per million photons,    31s for 100M photons  
+  * ~2x ancient with old PMT model
+  * Amdahls "Law" : Expected Speedup Limited by Serial Processing 
+  * How much parellelized speedup actually useful to overall speedup?
+
 
 * o : 12/29 : add mock lookup function to test the GPU texture 
 * o : 12/17 : quantify leak GB/s with linefit, reduce smonitor logging
@@ -88,6 +243,14 @@ Progress
 2023 Sept
 -----------
 
+* http://localhost/env/presentation/opticks_20230907_release.html
+
+  * problem solids
+  * 3inch fix
+  * Geometry Translation now using minimal intermediate model
+  * degenerate PMT apex virtual wrapper issue 
+
+
 * o : 09/29 : document stamp_test.sh as a demo of local/remote workflow
 * o : 09/20->25 : covid 
 * o : 09/19 : add U4Mesh.h bringing over parts of the old X4Mesh.cc for polygonized viz of Geant4 solids with pyvista
@@ -110,6 +273,12 @@ Progress
 
 2023 July : mat+sur+bnd+optical translation into new workflow, special surface enum, qpmt.h special surface impl, MOCK_TEXTURE
 ----------------------------------------------------------------------------------------------------------------------------------
+
+* http://localhost/env/presentation/opticks_20230726_kaiping_software_review.html
+
+  * Opticks used to find JUNOSW bugs, many of them... 
+  * using Opticks improves CPU simulation too !!
+
 
 * o : 07/19 : expand mocking further, such that QSim_MockTest::propagate can now run qsim::propagate without CUDA 
 * o : 07/18 : expand MOCK_TEXTURE/MOCK_CUDA coverage into QBnd QTex

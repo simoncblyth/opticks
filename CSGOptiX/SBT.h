@@ -9,11 +9,17 @@ Aim to minimize geometry specifics in here ...
 NOT:WITH_SOPTIX_ACCEL
     ana geometry only using GAS.h IAS.h struct 
 
+    * TODO: remove this old code branch, after performance check  
+
+
 WITH_SOPTIX_ACCEL
     ana+tri geometry capability both using SOPTIX_Accel 
-    WIP: needs GPU side ana/tri branch and supporting SBT entries
+    note the GPU side ana/tri branch in __closesthit__ch 
+    and supporting SBT entries
 
-    **FOR NOW : DO NOT COMMIT WITH THIS ENABLED**
+    **THIS IS NOW DEFAULT**
+
+
 
 **/
 

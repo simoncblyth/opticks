@@ -5,20 +5,25 @@ mo.sh : git commit messages by month or year for this year and last
 
 ::
 
-   o
-   ./mo.sh -h   # this help message    
+   ~/o/month.sh -h   # this help message    
 
-   ./mo.sh 0    # all this year 
-   ./mo.sh -0   # all last year 
+   ~/o/month.sh 0    # all this year 
+   ~/o/month.sh -0   # all last year 
 
-   ./mo.sh  1    # this year january 
-   ./mo.sh -1    # last year january  
-   ./mo.sh -2    # last year february 
-   ./mo.sh -12   # last year december
+   ~/o/month.sh  1    # this year january 
+   ~/o/month.sh -1    # last year january  
+   ~/o/month.sh -2    # last year february 
+   ~/o/month.sh -12   # last year december
+
+   ~/o/month.sh 5 
+
 
 EOU
 }
 
+sdir=$(dirname $(realpath $BASH_SOURCE))
+SDIR=${SDIR:-$sdir}
+cd $SDIR
 
 mo=${1:-1}
 rev=${REV:-0}
