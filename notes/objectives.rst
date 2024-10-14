@@ -164,6 +164,12 @@ Optimization (workstation level)
 -------------------------------------
 
 * tests with variety of GPUs of different VRAM and with/without RT cores
+
+* evaluate SER : Shader Execution Reordering (available with Ada and OptiX 8.0)
+
+  * ~/opticks_refs/nvidia-ser-whitepaper.pdf 
+  * https://d29g4g2dyqv443.cloudfront.net/sites/default/files/akamai/gameworks%2Fser-whitepaper.pdf
+
 * develop simulation benchmarks 
 
   * standard event samples of different energies and positions etc.. 

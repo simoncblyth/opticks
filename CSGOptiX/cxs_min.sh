@@ -113,8 +113,9 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 LOGFILE=$bin.log
 
-cvd=1   # default 1:TITAN RTX
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
+# leave this setting to the uesr
+#cvd=1   # default 1:TITAN RTX
+#export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
 
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
