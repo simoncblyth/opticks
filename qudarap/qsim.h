@@ -1759,7 +1759,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     }
 #endif
 
-    if(lpmtid < 0 )
+    if(lpmtid < 0 || lpmtid >= 17612 )
     {
         flag = NAN_ABORT ; 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
@@ -1769,6 +1769,11 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
         return BREAK ; 
     }
 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f pre-ARTE \n", 
+           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );  
+#endif
 
     float ARTE[4] ; 
     if(lpmtid > -1) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   

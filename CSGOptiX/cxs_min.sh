@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 cxs_min.sh : minimal executable and script for shakedown
 ============================================================
@@ -64,6 +64,50 @@ export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export SCRIPT=$(basename $BASH_SOURCE)
 
+
+Resolve_CFBaseFromGEOM()
+{
+   : LOOK FOR CFBase directory containing CSGFoundry geometry 
+   : HMM COULD PUT INTO GEOM.sh TO AVOID DUPLICATION ? BUT TOO MUCH HIDDEN ? 
+   : G4CXOpticks_setGeometry_Test GEOM TAKES PRECEDENCE OVER .opticks/GEOM
+   : HMM : FOR SOME TESTS WANT TO LOAD GDML BUT FOR OTHERS CSGFoundry 
+   : to handle that added gdml resolution to eg g4cx/tests/GXTestRunner.sh 
+
+   local C_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
+   local B_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+   local A_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
+
+   local TestPath=CSGFoundry/prim.npy
+   local GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
+
+    if [ -d "$A_CFBaseFromGEOM" -a -f "$A_CFBaseFromGEOM/$TestPath" ]; then
+        export ${GEOM}_CFBaseFromGEOM=$A_CFBaseFromGEOM
+        echo $BASH_SOURCE : FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
+    elif [ -d "$B_CFBaseFromGEOM" -a -f "$B_CFBaseFromGEOM/$TestPath" ]; then
+        export ${GEOM}_CFBaseFromGEOM=$B_CFBaseFromGEOM
+        echo $BASH_SOURCE : FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath
+    elif [ -d "$C_CFBaseFromGEOM" -a -f "$C_CFBaseFromGEOM/$TestPath" ]; then
+        export ${GEOM}_CFBaseFromGEOM=$C_CFBaseFromGEOM
+        echo $BASH_SOURCE : FOUND C_CFBaseFromGEOM $C_CFBaseFromGEOM containing $TestPath
+    elif [ -f "$GDMLPathFromGEOM" ]; then 
+        export ${GEOM}_GDMLPathFromGEOM=$GDMLPathFromGEOM
+        echo $BASH_SOURCE : FOUND GDMLPathFromFromGEOM $GDMLPathFromFromGEOM 
+    else
+        echo $BASH_SOURCE : NOT-FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
+        echo $BASH_SOURCE : NOT-FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath
+        echo $BASH_SOURCE : NOT-FOUND C_CFBaseFromGEOM $C_CFBaseFromGEOM containing $TestPath
+        echo $BASH_SOURCE : NOT-FOUND GDMLPathFromGEOM $GDMLPathFromGEOM
+    fi  
+}
+Resolve_CFBaseFromGEOM
+
+
+
+
+
+
+
+
 knobs()
 {
    type $FUNCNAME 
@@ -128,14 +172,39 @@ case $VERSION in
 99) opticks_event_mode=DebugHeavy ;;  # formerly StandardFullDebug
 esac 
 
-test=reference
+#test=debug
+#test=ref1
+#test=ref5
+test=ref8
+#test=ref10
 #test=input_genstep
 TEST=${TEST:-$test}
 
-if [ "$TEST" == "reference" ]; then 
+if [ "$TEST" == "debug" ]; then 
+
+   opticks_num_photon=100
+   opticks_max_photon=M1
+   opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+
+elif [ "$TEST" == "ref1" ]; then 
 
    opticks_num_photon=M1
    opticks_max_photon=M1
+   opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+
+elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" == "ref8" -o "$TEST" == "ref9" -o "$TEST" == "ref10" ]; then 
+
+   opticks_num_photon=M${TEST:3}
+   opticks_max_photon=M10
+   opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+
+elif [ "$TEST" == "refX" ]; then 
+
+   opticks_num_photon=${X:-7500000}
+   opticks_max_photon=M10
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
 
@@ -270,7 +339,7 @@ logging(){
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
 
 
-vars="GEOM LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT"
+vars="GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
