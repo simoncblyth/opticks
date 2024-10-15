@@ -141,8 +141,9 @@ knobs()
 knobs
 
 
-#version=1
-version=98
+version=1
+#version=98   ## set to 98 for low stats debugging
+
 VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
@@ -173,9 +174,9 @@ esac
 #test=ref1
 #test=ref5
 #test=ref8
-#test=ref10
+test=ref10
 #test=input_genstep
-test=input_photon
+#test=input_photon
 
 TEST=${TEST:-$test}
 
