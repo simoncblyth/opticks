@@ -428,7 +428,7 @@ if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR
 fi 
 
-if [ "$arg" == "grab_sreport" ]; then
+if [ "${arg/grep}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh ${LOGDIR}_sreport
 fi 
 
