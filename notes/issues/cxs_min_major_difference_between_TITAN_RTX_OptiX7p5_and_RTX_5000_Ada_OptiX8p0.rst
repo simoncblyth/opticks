@@ -14,10 +14,111 @@ Comparing:
 Current hypothesis of whats gone wrong
 ----------------------------------------
 
-HMM. Likely the issue in incompatibility between curandState between curand versions. 
+Perhaps the issue in incompatibility between curandState between curand versions. 
 
-* thats still a possibility : but find the issue is fixed 
-  by recreation of the QCurandState files
+* fortunately not, the below md5sum show that states from different versions are exactly the same 
+* find the issue is fixed by removing dud states and recreation of the QCurandState files
+
+
+Compare md5sum of the QCurandState
+------------------------------------
+
+::
+
+    A[blyth@localhost CSGOptiX]$ cd ~/.opticks/rngcache/RNG
+    A[blyth@localhost RNG]$ l
+    total 601568
+    429688 -rw-r--r--. 1 blyth blyth 440000000 Oct 15 20:52 QCurandState_10000000_0_0.bin
+         0 drwxr-xr-x. 2 blyth blyth       115 Oct 15 20:52 .
+    128908 -rw-r--r--. 1 blyth blyth 132000000 Oct 15 20:52 QCurandState_3000000_0_0.bin
+     42972 -rw-r--r--. 1 blyth blyth  44000000 Oct 15 20:52 QCurandState_1000000_0_0.bin
+         0 drwxr-xr-x. 4 blyth blyth        60 Oct 15 20:52 ..
+    A[blyth@localhost RNG]$ md5sum QCurandState_*
+    cd6b269c6f64b8e03329e1fc349c21f9  QCurandState_1000000_0_0.bin     ## 1M
+    c5a80f522e9393efe0302b916affda06  QCurandState_3000000_0_0.bin     ## 3M
+    ffe00cfef9d97aeef4c1cf085fd46a6a  QCurandState_10000000_0_0.bin    ## 10M
+    A[blyth@localhost RNG]$ 
+
+    A[blyth@localhost opticks]$ cd /cvmfs/opticks.ihep.ac.cn/.opticks/rngcache/RNG/
+    A[blyth@localhost RNG]$ md5sum QCurandState_*
+    cd6b269c6f64b8e03329e1fc349c21f9  QCurandState_1000000_0_0.bin     ## 1M
+    c5a80f522e9393efe0302b916affda06  QCurandState_3000000_0_0.bin     ## 3M
+    ffe00cfef9d97aeef4c1cf085fd46a6a  QCurandState_10000000_0_0.bin    ## 10M
+    9b1e9ca5af2deda2ff5d8fda394d6019  QCurandState_50000000_0_0.bin    ## 50M
+    A[blyth@localhost RNG]$ 
+
+
+    P[blyth@localhost CSGOptiX]$ cd ~/.opticks/rngcache/RNG
+    P[blyth@localhost RNG]$ md5sum QCurandState_*
+    cd6b269c6f64b8e03329e1fc349c21f9  QCurandState_1000000_0_0.bin      ## 1M
+    fa1990998dc510bc3016d0f4a108208c  QCurandState_2000000_0_0.bin      ## 2M
+    c5a80f522e9393efe0302b916affda06  QCurandState_3000000_0_0.bin      ## 3M
+    ffe00cfef9d97aeef4c1cf085fd46a6a  QCurandState_10000000_0_0.bin     ## 10M
+    9b1e9ca5af2deda2ff5d8fda394d6019  QCurandState_50000000_0_0.bin     ## 50M
+    499fd4401da334627b6be5ea24d90f19  QCurandState_100000000_0_0.bin    ## 100M
+    6a2d46957f64e6e1bc459c538a503a58  QCurandState_200000000_0_0.bin    ## 200M
+    P[blyth@localhost RNG]$ 
+
+    P[blyth@localhost RNG]$ du -h ../../rngcache_extra/RNG/QCurandState_100000000_0_0.bin
+    4.1G    ../../rngcache_extra/RNG/QCurandState_100000000_0_0.bin
+
+
+Copy 100M over::
+     
+     cd ; scp .opticks/rngcache/RNG/QCurandState_100000000_0_0.bin A:.opticks/rngcache/RNG/QCurandState_100000000_0_0.bin
+
+
+md5sum looks consistent::
+
+    A[blyth@localhost RNG]$ l
+    total 4898444
+    4296876 -rw-r--r--. 1 blyth blyth 4400000000 Oct 15 21:53 QCurandState_100000000_0_0.bin
+          0 drwxr-xr-x. 2 blyth blyth        153 Oct 15 21:47 .
+     429688 -rw-r--r--. 1 blyth blyth  440000000 Oct 15 20:52 QCurandState_10000000_0_0.bin
+     128908 -rw-r--r--. 1 blyth blyth  132000000 Oct 15 20:52 QCurandState_3000000_0_0.bin
+      42972 -rw-r--r--. 1 blyth blyth   44000000 Oct 15 20:52 QCurandState_1000000_0_0.bin
+          0 drwxr-xr-x. 4 blyth blyth         60 Oct 15 20:52 ..
+    A[blyth@localhost RNG]$ md5sum QCurandState_100000000_0_0.bin\
+    > ^C
+    A[blyth@localhost RNG]$ md5sum QCurandState_100000000_0_0.bin
+    499fd4401da334627b6be5ea24d90f19  QCurandState_100000000_0_0.bin
+    A[blyth@localhost RNG]$ 
+
+
+
+
+Dud states that caused the issue of getting low randoms::
+
+    A[blyth@localhost RNG.old]$ pwd
+    /home/blyth/.opticks/rngcache/RNG.old
+    A[blyth@localhost RNG.old]$ 
+    A[blyth@localhost RNG.old]$ md5sum QCurandState_*
+    e76afb71667c50b5745b51fc19cacc08  QCurandState_10000000_0_0.bin
+    acf3b0c9805684445549f3fa694ec4ff  QCurandState_1000000_0_0.bin
+    379064779388f6a9bfa15c22656b2272  QCurandState_3000000_0_0.bin
+
+* HMM : maybe all zero, or uninitialized gibberish ? 
+
+xxd and cmp suggests they are all zeros::
+
+    A[blyth@localhost RNG.old]$ l
+    total 601568
+         0 drwxr-xr-x. 4 blyth blyth        60 Oct 15 20:52 ..
+    429688 -rw-r--r--. 1 blyth blyth 440000000 Aug 29 17:17 QCurandState_10000000_0_0.bin
+         0 drwxr-xr-x. 2 blyth blyth       115 Aug 29 17:17 .
+    128908 -rw-r--r--. 1 blyth blyth 132000000 Aug 29 17:17 QCurandState_3000000_0_0.bin
+     42972 -rw-r--r--. 1 blyth blyth  44000000 Aug 29 17:17 QCurandState_1000000_0_0.bin
+    A[blyth@localhost RNG.old]$ man cmp
+    A[blyth@localhost RNG.old]$ cmp -s QCurandState_1000000_0_0.bin /dev/zero
+    A[blyth@localhost RNG.old]$ cmp QCurandState_1000000_0_0.bin /dev/zero
+    cmp: EOF on QCurandState_1000000_0_0.bin after byte 44000000, in line 1
+    A[blyth@localhost RNG.old]$ cmp QCurandState_3000000_0_0.bin /dev/zero
+    cmp: EOF on QCurandState_3000000_0_0.bin after byte 132000000, in line 1
+    A[blyth@localhost RNG.old]$ cmp QCurandState_10000000_0_0.bin /dev/zero
+    cmp: EOF on QCurandState_10000000_0_0.bin after byte 440000000, in line 1
+    A[blyth@localhost RNG.old]$ 
+
+
 
 
 SRM_TORCH

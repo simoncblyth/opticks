@@ -372,9 +372,11 @@ logging(){
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
 
 
-export SEvt__transformInputPhoton_VERBOSE=1
-export CSGFoundry__getFrameE_VERBOSE=1
-export CSGFoundry__getFrame_VERBOSE=1
+#export SEvt__transformInputPhoton_VERBOSE=1
+#export CSGFoundry__getFrameE_VERBOSE=1
+#export CSGFoundry__getFrame_VERBOSE=1
+export QRng__init_VERBOSE=1
+
 
 
 vars="GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON"
