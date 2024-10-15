@@ -40,10 +40,16 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo run  error && exit 2
 fi 
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/dbg}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $name.py 
-    [ $? -ne 0 ] && echo ana error && exit 3
+    [ $? -ne 0 ] && echo dbg error && exit 3
 fi 
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    python $name.py 
+    [ $? -ne 0 ] && echo ana error && exit 4
+fi 
+
 
 if [ "${arg/grab}" != "$arg" ]; then 
     rsync -av P:$FOLD/ $FOLD
