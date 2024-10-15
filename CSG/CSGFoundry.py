@@ -319,8 +319,14 @@ class CSGFoundry(object):
             cfbase= os.environ["CFBASE"]
             note = "via CFBASE"
         elif "GEOM" in os.environ:
-            cfbase = os.path.expandvars("$HOME/.opticks/GEOM/$GEOM") 
-            note = "via GEOM"
+            KEY = os.path.expandvars("${GEOM}_CFBaseFromGEOM")
+            if KEY in os.environ:
+                cfbase = os.environ[KEY]
+                note = "via GEOM,%s" % KEY
+            else:
+                cfbase = os.path.expandvars("$HOME/.opticks/GEOM/$GEOM") 
+                note = "via GEOM"
+            pass 
         else:
             cfbase = None
             note = "via NO envvars"

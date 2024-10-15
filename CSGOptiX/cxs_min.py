@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
 import os, logging, numpy as np
-from opticks.sysrap.sevt import SEvt, SAB
 log = logging.getLogger(__name__)
+
+print("[from opticks.sysrap.sevt import SEvt, SAB")
+from opticks.sysrap.sevt import SEvt, SAB
+print("]from opticks.sysrap.sevt import SEvt, SAB")
+
+
 
 
 PLOT = os.environ.get("PLOT","scatter")

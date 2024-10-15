@@ -187,10 +187,14 @@ rvspeed_ = lambda r:rvdist_(r)/rvtime_(r)
 
 
 ## TO PICK THE GEOMETRY APPROPRIATE TO THE RESULT ARRAYS SET CFBASE envvar TO DIRECTORY CONTAINING CSGFoundry dir 
+print("[ana/p.py:from opticks.CSG.CSGFoundry import CSGFoundry ")
 from opticks.CSG.CSGFoundry import CSGFoundry 
+print("]ana/p.py:from opticks.CSG.CSGFoundry import CSGFoundry ")
 
 
+print("[ana/p.py:cf = CSGFoundry.Load()")
 cf = CSGFoundry.Load()    
+print("]ana/p.py:cf = CSGFoundry.Load()")
 
 ## HMM: NASTY LOADING cf HERE IN THE MODULE 
 ## DONE TO AVOID cf ARG FOR THE BELOW : MAYBE CURRYING CAN AVOID ?
