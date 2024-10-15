@@ -157,10 +157,6 @@ mkdir -p $LOGDIR
 cd $LOGDIR 
 LOGFILE=$bin.log
 
-# leave this setting to the uesr
-#cvd=1   # default 1:TITAN RTX
-#export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
-
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
  1) opticks_event_mode=Hit ;; 
@@ -175,9 +171,11 @@ esac
 #test=debug
 #test=ref1
 #test=ref5
-test=ref8
+#test=ref8
 #test=ref10
 #test=input_genstep
+test=input_photon
+
 TEST=${TEST:-$test}
 
 if [ "$TEST" == "debug" ]; then 
@@ -236,6 +234,14 @@ elif [ "$TEST" == "input_genstep" ]; then
    opticks_num_event=1000 
    opticks_running_mode=SRM_INPUT_GENSTEP
    opticks_event_mode=Nothing
+
+elif [ "$TEST" == "input_photon" ]; then
+
+   opticks_num_photon=     # ignored ?
+   opticks_max_photon=M1 
+   opticks_num_event=1
+   opticks_running_mode=SRM_INPUT_PHOTON
+   #opticks_event_mode=Nothing
 
 fi 
 
