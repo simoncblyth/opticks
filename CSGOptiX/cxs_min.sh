@@ -141,7 +141,8 @@ knobs()
 knobs
 
 
-version=1
+#version=1
+version=98
 VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 export VERSION
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
