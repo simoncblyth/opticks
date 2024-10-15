@@ -23,6 +23,8 @@ struct qrng ;
 
 struct QUDARAP_API QRng 
 {
+    static constexpr const char* init_VERBOSE = "QRng__init_VERBOSE" ; 
+
     static const plog::Severity LEVEL ; 
     static const QRng* INSTANCE ; 
     static const char* DEFAULT_PATH ; 
@@ -42,6 +44,7 @@ struct QUDARAP_API QRng
 
     virtual ~QRng(); 
 
+    void init(); 
     void upload(); 
     void cleanup(); 
     std::string desc() const ; 

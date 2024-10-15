@@ -3,6 +3,7 @@
 #include "SLOG.hh"
 #include "SCurandState.hh"
 #include "sdirectory.h"
+#include "ssys.h"
 
 #include "QRng.hh"
 #include "qrng.h"
@@ -31,11 +32,24 @@ QRng::QRng(unsigned skipahead_event_offset)
     qr(new qrng(skipahead_event_offset)),
     d_qr(nullptr)
 {
+    init(); 
+}
+
+
+void QRng::init()
+{
     INSTANCE = this ; 
     upload(); 
     bool uploaded = d_qr != nullptr ; 
     LOG_IF(fatal, !uploaded) << " FAILED to upload curand states " ;  
     assert(uploaded); 
+
+    bool VERBOSE = ssys::getenvbool(init_VERBOSE); 
+    LOG_IF(info, VERBOSE)
+         << "[" << init_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
+         << "\n"
+         << desc()
+         ;  
 }
 
 

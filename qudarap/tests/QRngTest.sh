@@ -18,6 +18,9 @@ mkdir -p $FOLD/float
 mkdir -p $FOLD/double
 
 
+export QRng__init_VERBOSE=1
+
+
 defarg="info_run_ana"
 arg=${1:-$defarg}
 
