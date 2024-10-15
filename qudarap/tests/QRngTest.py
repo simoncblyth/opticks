@@ -8,17 +8,18 @@
 import logging 
 log = logging.getLogger(__name__)
 import os, numpy as np
-if os.environ.get("DISPLAY", None): 
+
+try:
     import matplotlib.pyplot as plt 
-else:
+except ImportError:
     plt = None
 pass
 
-np.set_printoptions(suppress=True, edgeitems=4, precision=3, linewidth=200 )
+np.set_printoptions(suppress=True, edgeitems=4, precision=5, linewidth=200 )
 
 
 class QRngTest(object):
-    FOLD = "/tmp/QRngTest"
+    FOLD = os.path.expandvars("$FOLD")
     def __init__(self, reldir):
         base = os.path.join(self.FOLD, reldir)
         uu = np.load(os.path.join(base, "uu.npy"))
@@ -85,6 +86,10 @@ if __name__ == '__main__':
     t.plot()
     uu = t.uu
     h = t.h
+
+    print("uu.shape\n",uu.shape)
+    print("uu[:10]\n",uu[:10])
+    print("uu[-10:]\n",uu[-10:])
 
     t.check_skipahead_shifts(1)
 

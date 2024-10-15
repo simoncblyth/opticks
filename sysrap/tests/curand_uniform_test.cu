@@ -25,6 +25,8 @@ __global__ void _test_curand_uniform(float* ff, int ni, int nj)
     curandStateXORWOW rng ; 
     curand_init( seed, subsequence, offset, &rng ); 
 
+    if(ix == 0) printf("//_test_curand_uniform sizeof(curandStateXORWOW) %lu \n", sizeof(curandStateXORWOW)); 
+
     for(int j=0 ; j < nj ; j++) ff[ix*nj+j] = curand_uniform(&rng) ; 
 }
 
