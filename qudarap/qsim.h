@@ -1804,9 +1804,23 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, cura
     {
         float u_theEfficiency = curand_uniform(&rng) ; 
         flag = u_theEfficiency < theEfficiency ? SURFACE_DETECT : SURFACE_ABSORB ;  
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA idx %d lpmtid %d ARTE ( %7.3f %7.3f %7.3f %7.3f ) u_theEfficiency  %7.3f theEfficiency %7.3f flag %d \n", 
+        ctx.idx, lpmtid, ARTE[0], ARTE[1], ARTE[2], ARTE[3], u_theEfficiency, theEfficiency, flag  );   
+#endif
+
     }
     else
     {
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    if( ctx.idx == base->pidx ) 
+    printf("//qsim.propagate_at_surface_CustomART.CONTINUE idx %d lpmtid %d ARTE ( %7.3f %7.3f %7.3f %7.3f ) theTransmittance %7.3f  \n", 
+        ctx.idx, lpmtid, ARTE[0], ARTE[1], ARTE[2], ARTE[3], theTransmittance  );   
+#endif
+
         propagate_at_boundary( flag, rng, ctx, theTransmittance  );  
     } 
     return action ; 
