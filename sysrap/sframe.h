@@ -348,8 +348,8 @@ inline std::string sframe::desc() const
        << " is_hostside_simtrace " << ( is_hostside_simtrace() ? "YES" : "NO" ) 
        << std::endl 
        ;
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 

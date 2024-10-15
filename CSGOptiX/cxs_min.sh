@@ -333,16 +333,46 @@ fi
 
 
 
+gdb__() 
+{ 
+    : prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+
 logging(){ 
     export CSGFoundry=INFO
     export CSGOptiX=INFO
     export QEvent=INFO 
     export QSim=INFO
     export SEvt__LIFECYCLE=1
+
 }
 [ -n "$LOG" ] && logging
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
+
+
+export SEvt__transformInputPhoton_VERBOSE=1
+export CSGFoundry__getFrameE_VERBOSE=1
+export CSGFoundry__getFrame_VERBOSE=1
 
 
 vars="GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON"
@@ -372,7 +402,7 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
        [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
        date +"%Y-%m-%d %H:%M:%S.%3N  %N : ]$BASH_SOURCE "
    elif [ "${arg/dbg}" != "$arg" ]; then
-       dbg__ $bin 
+       gdb__ $bin 
        [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
    fi 
 fi 

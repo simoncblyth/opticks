@@ -541,7 +541,9 @@ inline int SName::parseArg(const char* arg, unsigned& count) const
         idx = ParseIntString(arg, fallback ) ; 
         if(idx == fallback)  
         {   
-            idx = findIndex(arg, count);   // index of 1st listed name starting with arg 
+            int max_count = -1 ; 
+            bool starting = true ; 
+            idx = findIndex(arg, count, max_count, starting );   // index of 1st listed name starting with arg 
         }   
         else
         {   

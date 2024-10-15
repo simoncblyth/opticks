@@ -8,7 +8,7 @@ directory geometry matching the current geometry.
 
 Use from the B side is more acceptable as B side running is a debugging 
 exercise subservient to A side running so in that situation can rely on 
-CFBASE directory and it it then up to the user to ensure in the A-B matching 
+CFBASE directory and it is then up to the user to ensure in the A-B matching 
 that are using an appropriate CFBASE directory that matches. 
 
 Could also argue that might as well use the CSG/CSGFoundry geometry rather than 

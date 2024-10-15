@@ -330,6 +330,7 @@ public:
     void setFrame(const sframe& fr ); 
     void setFramePlaceholder(); 
 
+    static const bool transformInputPhoton_VERBOSE ; 
     static const bool transformInputPhoton_WIDE ; 
     void transformInputPhoton(); 
 

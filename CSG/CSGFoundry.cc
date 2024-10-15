@@ -3522,19 +3522,50 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 int CSGFoundry::getFrame(sframe& fr, const char* frs ) const 
 {
+
+    bool VERBOSE = ssys::getenvbool(getFrame_VERBOSE) ; 
+    LOG(LEVEL) << "[" << getFrame_VERBOSE << "] " << VERBOSE ;   
+
+
     int rc = 0 ; 
     bool looks_like_moi = sstr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ; 
+
+    LOG_IF(info, VERBOSE) 
+        << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
+        << " frs " << ( frs ? frs : "-" )
+        << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " ) 
+        ; 
+
     if(looks_like_moi)
     {
         int midx, mord, gord ;  // mesh-index, mesh-ordinal, gas-ordinal 
         parseMOI(midx, mord, gord,  frs );  
+
         rc = getFrame(fr, midx, mord, gord); 
         // NB gas ordinal is not the same as gas index 
+
+        LOG_IF(info, VERBOSE) 
+            << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
+            << " frs " << ( frs ? frs : "-" )
+            << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " ) 
+            << " midx " << midx 
+            << " mord " << mord 
+            << " gord " << gord 
+            << " rc " << rc 
+            ; 
     }
     else
     {
-         int inst_idx = SName::ParseIntString(frs, 0) ; 
-         rc = getFrame(fr, inst_idx); 
+        int inst_idx = SName::ParseIntString(frs, 0) ; 
+        rc = getFrame(fr, inst_idx); 
+
+        LOG_IF(info, VERBOSE) 
+            << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
+            << " frs " << ( frs ? frs : "-" )
+            << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " ) 
+            << " inst_idx " << inst_idx 
+            << " rc " << rc 
+            ; 
     }
 
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() ); 
@@ -3612,15 +3643,19 @@ A: Probably because it needs getFrame and it predates the stree.h reorganization
 
 **/
 
+
+
 sframe CSGFoundry::getFrameE() const 
 {
-    sframe fr = {} ; 
+    bool VERBOSE = ssys::getenvbool(getFrameE_VERBOSE) ; 
+    LOG(LEVEL) << "[" << getFrameE_VERBOSE << "] " << VERBOSE ;   
 
+    sframe fr = {} ; 
 
     if(ssys::getenvbool("INST"))
     {
         int INST = ssys::getenvint("INST", 0); 
-        LOG(LEVEL) << " INST " << INST ;  
+        LOG_IF(info, VERBOSE) << " INST " << INST ;  
         getFrame(fr, INST ) ;  
 
         fr.set_ekv("INST"); 
@@ -3628,7 +3663,7 @@ sframe CSGFoundry::getFrameE() const
     else if(ssys::getenvbool("MOI"))  
     {
         const char* MOI = ssys::getenvvar("MOI", nullptr) ; 
-        LOG(LEVEL) << " MOI " << MOI ;  
+        LOG_IF(info, VERBOSE) << " MOI " << MOI ;  
         fr = getFrame() ; 
         fr.set_ekv("MOI"); 
     }
@@ -3636,11 +3671,13 @@ sframe CSGFoundry::getFrameE() const
     {
         const char* ipf_ = SEventConfig::InputPhotonFrame();  // OPTICKS_INPUT_PHOTON_FRAME
         const char* ipf = ipf_ ? ipf_ : "0" ; 
-        LOG(LEVEL) << " ipf " << ipf ;  
+        LOG_IF(info, VERBOSE) << " ipf " << ipf ;  
         fr = getFrame(ipf); 
 
         fr.set_ekv(SEventConfig::kInputPhotonFrame, ipf ); 
     }
+
+
     return fr ; 
 }
 

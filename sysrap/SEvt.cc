@@ -667,6 +667,7 @@ void SEvt::setFramePlaceholder()
 
 
 
+const bool SEvt::transformInputPhoton_VERBOSE = ssys::getenvbool("SEvt__transformInputPhoton_VERBOSE") ; 
 const bool SEvt::transformInputPhoton_WIDE = ssys::getenvbool("SEvt__transformInputPhoton_WIDE") ; 
 
 /**
@@ -678,7 +679,19 @@ SEvt::transformInputPhoton
 void SEvt::transformInputPhoton()
 {
     bool proceed = SEventConfig::IsRGModeSimulate() && hasInputPhoton() ; 
+
     LOG(LEVEL) << " proceed " << ( proceed ? "YES" : "NO " ) ; 
+
+    LOG_IF(info, transformInputPhoton_VERBOSE ) 
+        << " SEvt__transformInputPhoton_VERBOSE "
+        << " SEventConfig::IsRGModeSimulate " << SEventConfig::IsRGModeSimulate()
+        << " hasInputPhoton " <<  hasInputPhoton()
+        << " proceed " << ( proceed ? "YES" : "NO " ) 
+        << "\n" 
+        << frame.desc()
+        << "\n" 
+        ;
+
     if(!proceed) return ;    
 
     bool normalize = true ;  // normalize mom and pol after doing the transform 
