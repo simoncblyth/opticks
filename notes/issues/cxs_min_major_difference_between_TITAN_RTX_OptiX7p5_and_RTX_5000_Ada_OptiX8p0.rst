@@ -1,5 +1,5 @@
-cxs_min_major_difference_between_TITAN_RTX_OptiX7p5_and_RTX_5000_Ada_OptiX8p0
-==================================================================================
+FIXED cxs_min_major_difference_between_TITAN_RTX_OptiX7p5_and_RTX_5000_Ada_OptiX8p0
+======================================================================================
 
 
 Issue : major simulation differences between P and A (different CUDA and OptiX and GPU)
@@ -15,6 +15,9 @@ Current hypothesis of whats gone wrong
 ----------------------------------------
 
 HMM. Likely the issue in incompatibility between curandState between curand versions. 
+
+* thats still a possibility : but find the issue is fixed 
+  by recreation of the QCurandState files
 
 
 SRM_TORCH
@@ -323,8 +326,8 @@ Add simple test of curand_uniform that does its own curand_init::
 
 
 
-QRngTest.sh
--------------
+QRngTest.sh  : YEP thats messed up on A
+------------------------------------------
 
 ::
 
@@ -362,5 +365,131 @@ QRngTest.sh
       [0.03902 0.25021 0.18448 0.96242 ... 0.21389 0.52502 0.02501 0.47301]
       [0.96896 0.49474 0.67338 0.56277 ... 0.44728 0.60353 0.25211 0.45708]
       ...
+
+
+
+    A[blyth@localhost opticks]$ qudarap/tests/QRngTest.sh 
+                    FOLD : /data1/blyth/tmp/QRngTest
+                     bin : QRngTest
+                  script : QRngTest.py
+    2024-10-15 20:42:08.895 INFO  [124163] [main@102] QRng path /home/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin rngmax 3000000 qr 0x7ea6a0 qr.skipahead_event_offset 1 d_qr 0x7fa242a00000
+    //QRng_generate_2 event_idx 0 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 1 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 2 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 3 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 4 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 5 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 6 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 7 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 8 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 9 ni 100 nv 256 
+    2024-10-15 20:42:08.898 INFO  [124163] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    2024-10-15 20:42:08.899 INFO  [124163] [test_generate_2@88] save to /data1/blyth/tmp/QRngTest/float
+    uu.shape
+     (10, 100, 256)
+    uu[:10]
+     [[[0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      ...
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]
+      [0.00008 0.00017 0.00025 0.00034 ... 0.02135 0.02143 0.02152 0.0216 ]]
+
+     [[0.00017 0.00025 0.00034 0.00042 ... 0.02143 0.02152 0.0216  0.02169]
+      [0.00017 0.00025 0.00034 0.00042 ... 0.02143 0.02152 0.0216  0.02169]
+      [0.00017 0.00025 0.00034 0.00042 ... 0.02143 0.02152 0.0216  0.02169]
+      [0.00017 0.00025 0.00034 0.00042 ... 0.02143 0.02152 0.0216  0.02169]
+      ...
+
+
+
+HMM: Mystified : on A moving the curandState aside and recreating fixes the issue
+-----------------------------------------------------------------------------------
+
+::
+
+    A[blyth@localhost tests]$ l ~/.opticks/rngcache/RNG/
+    total 601568
+    429688 -rw-r--r--. 1 blyth blyth 440000000 Aug 29 17:17 QCurandState_10000000_0_0.bin
+         0 drwxr-xr-x. 2 blyth blyth       115 Aug 29 17:17 .
+    128908 -rw-r--r--. 1 blyth blyth 132000000 Aug 29 17:17 QCurandState_3000000_0_0.bin
+     42972 -rw-r--r--. 1 blyth blyth  44000000 Aug 29 17:17 QCurandState_1000000_0_0.bin
+         0 drwxr-xr-x. 3 blyth blyth        17 Aug 29 17:17 ..
+    A[blyth@localhost tests]$ cd ~/.opticks/rngcache/
+    A[blyth@localhost rngcache]$ mv RNG RNG.old
+    A[blyth@localhost rngcache]$ 
+    A[blyth@localhost rngcache]$ 
+    A[blyth@localhost rngcache]$ qudarap-
+    A[blyth@localhost rngcache]$ t qudarap-prepare-installation
+    qudarap-prepare-installation () 
+    { 
+        local sizes=$(qudarap-prepare-sizes);
+        local size;
+        local seed=${QUDARAP_RNG_SEED:-0};
+        local offset=${QUDARAP_RNG_OFFSET:-0};
+        for size in $sizes;
+        do
+            QCurandState_SPEC=$size:$seed:$offset ${OPTICKS_PREFIX}/lib/QCurandStateTest;
+            rc=$?;
+            [ $rc -ne 0 ] && return $rc;
+        done;
+        return 0
+    }
+    A[blyth@localhost rngcache]$ qudarap-prepare-installation
+
+
+    A[blyth@localhost tests]$ ./QRngTest.sh 
+                    FOLD : /data1/blyth/tmp/QRngTest
+                     bin : QRngTest
+                  script : QRngTest.py
+    2024-10-15 20:53:12.164 INFO  [124799] [QRng::init@48] [QRng__init_VERBOSE] YES
+    QRng path /home/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin rngmax 3000000 qr 0x1d766a0 qr.skipahead_event_offset 1 d_qr 0x7fae0aa00000
+    2024-10-15 20:53:12.164 INFO  [124799] [main@102] QRng path /home/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin rngmax 3000000 qr 0x1d766a0 qr.skipahead_event_offset 1 d_qr 0x7fae0aa00000
+    //QRng_generate_2 event_idx 0 ni 100 nv 256 
+    2024-10-15 20:53:12.166 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 1 ni 100 nv 256 
+    2024-10-15 20:53:12.166 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 2 ni 100 nv 256 
+    2024-10-15 20:53:12.166 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 3 ni 100 nv 256 
+    2024-10-15 20:53:12.166 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 4 ni 100 nv 256 
+    2024-10-15 20:53:12.167 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 5 ni 100 nv 256 
+    2024-10-15 20:53:12.167 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 6 ni 100 nv 256 
+    2024-10-15 20:53:12.167 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 7 ni 100 nv 256 
+    2024-10-15 20:53:12.167 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 8 ni 100 nv 256 
+    2024-10-15 20:53:12.167 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    //QRng_generate_2 event_idx 9 ni 100 nv 256 
+    2024-10-15 20:53:12.167 INFO  [124799] [QU::copy_device_to_host_and_free@462] copy 25600 sizeof(T) 4 label QRng::generate_2:ni*nv
+    2024-10-15 20:53:12.168 INFO  [124799] [test_generate_2@88] save to /data1/blyth/tmp/QRngTest/float
+    uu.shape
+     (10, 100, 256)
+    uu[:10]
+     [[[0.74022 0.43845 0.51701 0.15699 ... 0.07978 0.59805 0.81959 0.14472]
+      [0.92099 0.46036 0.33346 0.37252 ... 0.24695 0.90173 0.45439 0.58697]
+      [0.03902 0.25021 0.18448 0.96242 ... 0.21389 0.52502 0.02501 0.47301]
+      [0.96896 0.49474 0.67338 0.56277 ... 0.44728 0.60353 0.25211 0.45708]
+      ...
+      [0.30224 0.78633 0.26038 0.86015 ... 0.3562  0.67672 0.35955 0.02354]
+      [0.80768 0.26517 0.98403 0.40043 ... 0.54698 0.55139 0.98299 0.85286]
+      [0.40713 0.28182 0.36872 0.77379 ... 0.01637 0.36403 0.48313 0.05647]
+      [0.75132 0.35347 0.88852 0.08289 ... 0.18814 0.75153 0.48603 0.35428]]
+
 
 
