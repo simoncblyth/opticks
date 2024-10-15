@@ -428,6 +428,10 @@ if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR
 fi 
 
+if [ "${arg/grab_sreport}" != "$arg" ]; then
+    source $OPTICKS_HOME/bin/rsync.sh ${LOGDIR}_sreport
+fi 
+
 if [ "${arg/gevt}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR/$EVT
 fi 
