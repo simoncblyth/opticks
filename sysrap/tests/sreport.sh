@@ -1,7 +1,7 @@
 #!/bin/bash 
 usage(){ cat << EOU
 sreport.sh : summarize SEvt metadata into eg ALL0_sreport SREPORT_FOLD 
-================================================================
+========================================================================
 
 The output NPFold and summary NPFold from several scripts are managed 
 by this sreport.sh script. 
