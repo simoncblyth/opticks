@@ -233,6 +233,13 @@ elif [ "$TEST" == "medium_scan" ]; then
    opticks_num_event=12
    opticks_running_mode=SRM_TORCH
 
+elif [ "$TEST" == "larger_scan" ]; then 
+
+   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200  # duplication of M1 is to workaround lack of metadata
+   opticks_max_photon=M200   
+   opticks_num_event=22
+   opticks_running_mode=SRM_TORCH
+
 elif [ "$TEST" == "large_evt" ]; then 
 
    opticks_num_photon=M200   ## OOM with TITAN RTX 24G 

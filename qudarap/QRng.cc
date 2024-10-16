@@ -141,6 +141,7 @@ curandState* QRng::Load(long& rngmax, const char* path)  // static
     return rng_states ; 
 }
 
+
 void QRng::Save( curandState* states, unsigned num_states, const char* path ) // static
 {
     sdirectory::MakeDirsForFile(path);
@@ -162,6 +163,15 @@ void QRng::Save( curandState* states, unsigned num_states, const char* path ) //
     return ; 
 }
 
+
+/**
+TODO : implement this and use for sanity check after loading
+
+bool QRng::IsAllZero( curandState* states, unsigned num_states ) //  static
+{
+    return false ; 
+}
+**/
 
 
 /**

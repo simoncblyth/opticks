@@ -23,10 +23,21 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
         af = a.substamp.a
         at = Substamp.ETime(af)
         an = a.submeta_NumPhotonCollected.a  
+        ah = Substamp.Subcount(af, "hit")
+
+        self.at = at 
+        self.an = an 
+        self.ah = ah 
+
 
         bf = b.substamp.a
         bt = Substamp.ETime(bf)
         bn = b.submeta_NumPhotonCollected.a  
+        bh = Substamp.Subcount(bf, "hit")
+
+        self.bt = bt 
+        self.bn = bn 
+        self.bh = bh 
 
         assert np.all( an == bn )
         photon = an[:,0]/1e6
@@ -38,14 +49,15 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
         assert YSCALE in YSCALE_
   
         YMIN = float(os.environ.get("YMIN", "1e-2"))
-        YMAX = float(os.environ.get("YMAX", "40"))
+        YMAX = float(os.environ.get("YMAX", "45"))
 
         if MODE == 2:
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
             ax = axs[0]
 
 
-            sli = slice(15,20)
+            sli = slice(3,12)
+            #sli = slice(None)
 
             deg = 1  # 1:lin 2:par 
             a_fit = np.poly1d(np.polyfit(photon[sli], at[sli], deg))
@@ -107,7 +119,7 @@ if __name__ == '__main__':
 
 
     if PLOT.startswith("AB_Substamp_ALL_Etime_vs_Photon"): 
-        plt = AB_Substamp_ALL_Etime_vs_Photon(a,b)
+        ab = AB_Substamp_ALL_Etime_vs_Photon(a,b)
     pass
 
 

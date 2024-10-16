@@ -56,9 +56,9 @@ if [ "${arg/ana}" != "$arg" ]; then
 fi
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
-    export CAP_BASE=$SREPORT_FOLD/figs
-    export CAP_REL=cxs_min
-    export CAP_STEM=$STEM
+    export CAP_BASE=$A_SREPORT_FOLD/figs
+    export CAP_REL=sreport_ab
+    export CAP_STEM=$PLOT
     case $arg in  
        mpcap) source mpcap.sh cap  ;;  
        mppub) source mpcap.sh env  ;;  
