@@ -47,6 +47,7 @@ run folders with many large arrays left on the server.
 
 #include "NPFold.h"
 
+#define WITH_SUBMETA 1 
 
 struct sreport
 {
@@ -65,6 +66,7 @@ struct sreport
     NP*       run ; 
     NP*       runprof ;
     NP*       ranges ;
+
     NPFold*   substamp ;   
     NPFold*   subprofile ;   
     NPFold*   submeta ;   
@@ -157,10 +159,11 @@ inline std::string sreport::desc() const
 inline std::string sreport::desc_run() const
 {
     std::stringstream ss ; 
-    ss << "[sreport.desc_run" << std::endl 
+    ss << "[sreport.desc_run (run is dummy small array used as somewhere to hang metadata) " << std::endl 
        << ( run ? run->sstr() : "-" ) << std::endl 
-       << ".sreport.desc_run.descMetaKVS " << std::endl 
+       << "[sreport.desc_run.descMetaKVS " << std::endl 
        << ( run ? run->descMetaKVS(JUNCTURE, RANGES) : "-" ) << std::endl
+       << "]sreport.desc_run.descMetaKVS " << std::endl 
        << "]sreport.desc_run" << std::endl 
        ; 
     std::string str = ss.str() ;
@@ -308,26 +311,45 @@ inline sreport_Creator::sreport_Creator( const char* dirp_ )
 
 inline void sreport_Creator::init() 
 {
-    std::cout << "-sreport_Creator::init.0" << std::endl ; 
+    std::cout << "[sreport_Creator::init" << std::endl ; 
+
     report->runprof = run ? run->makeMetaKVProfileArray("Index") : nullptr ; 
-    std::cout << "-sreport_Creator::init.1" << std::endl ; 
+    std::cout << "-sreport_Creator::init.1:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << std::endl ; 
+
     report->run     = run ? run->copy() : nullptr ; 
-    std::cout << "-sreport_Creator::init.2" << std::endl ; 
+    std::cout << "-sreport_Creator::init.2.run       :" << ( report->run ? report->run->sstr() : "-" ) << std::endl ; 
+
     report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
-    std::cout << "-sreport_Creator::init.3" << std::endl ; 
+    std::cout << "-sreport_Creator::init.3.ranges    :" << ( report->ranges ?  report->ranges->sstr() : "-" ) <<  std::endl ; 
+
+
+    std::cout << "-sreport_Creator::init.4 fold_valid " << ( fold_valid ? "Y" : "N" ) << std::endl ; 
+
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ; 
-    std::cout << "-sreport_Creator::init.4" << std::endl ; 
+    std::cout << "-sreport_Creator::init.4.substamp   :[" << ( report->substamp ? report->substamp->stats() : "-" ) << "]\n" ; 
+
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ; 
+    std::cout << "-sreport_Creator::init.5.subprofile :[" << ( report->subprofile ? report->subprofile->stats() : "-" )  << "]\n" ; 
+
 
 #ifdef WITH_SUBMETA
-    std::cout << "-sreport_Creator::init.5" << std::endl ; 
+    std::cout << "-sreport_Creator::init.6.WITH_SUBMETA" << std::endl ; 
+
     report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ; 
-    std::cout << "-sreport_Creator::init.6" << std::endl ; 
+    std::cout << "-sreport_Creator::init.7.submeta :[" << ( report->submeta ? report->submeta->stats() : "-" )  << "]\n"  ; 
+
     report->submeta_NumPhotonCollected = fold_valid ? fold->subfold_summary("submeta:NumPhotonCollected", ASEL, BSEL) : nullptr ; 
+    std::cout << "-sreport_Creator::init.8.submeta_NumPhotonCollected :[" << ( report->submeta_NumPhotonCollected ? report->submeta_NumPhotonCollected->stats() : "-" )  << "]\n" ; 
+
+#else
+    std::cout << "-sreport_Creator::init.6.NOT:WITH_SUBMETA" << std::endl ; 
+
 #endif
-    std::cout << "-sreport_Creator::init.7" << std::endl ; 
+
     report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ; 
-    std::cout << "-sreport_Creator::init.8" << std::endl ; 
+    std::cout << "-sreport_Creator::init.9.subcount :[" << ( report->subcount ? report->subcount->stats() : "-" ) << "]\n" ; 
+
+    std::cout << "]sreport_Creator::init" << std::endl ; 
 }
 
 inline std::string sreport_Creator::desc() const
@@ -403,12 +425,19 @@ int main(int argc, char** argv)
     {
         U::SetEnvDefaultExecutableSiblingPath("SREPORT_FOLD", argv0, dirp );
         std::cout << "[sreport.main : CREATING REPORT " << std::endl ; 
+
+        std::cout << "[sreport.main : creator " << std::endl ; 
         sreport_Creator creator(dirp); 
+        std::cout << "]sreport.main : creator " << std::endl ; 
+        std::cout << "[sreport.main : creator.desc " << std::endl ; 
         std::cout << creator.desc() ; 
+        std::cout << "]sreport.main : creator.desc " << std::endl ; 
         if(!creator.fold_valid) return 1 ; 
 
         sreport* report = creator.report ; 
+        std::cout << "[sreport.main : report.desc " << std::endl ; 
         std::cout << report->desc() ; 
+        std::cout << "]sreport.main : report.desc " << std::endl ; 
         report->save("$SREPORT_FOLD"); 
         std::cout << "]sreport.main : CREATED REPORT " << std::endl ; 
 

@@ -4775,9 +4775,18 @@ inline void NP::GetMetaKV(
 }
 
 
+/**
+NP::GetMetaKVS_
+----------------
 
+1. parse the metadata string, for each line split key from val using ":" delimiter 
+2. where the value looks like a contemporary microsecond uint64_t timestamp (16 digits) extract that
+3. where the value looks like profile triplet eg 1111111111111111,2222,3333 with first field a 16 digit timestamp extract that
 
+Note that for only_with_stamp:false placeholder timestamp values of zero are provided
+for lines without stamps or profile triplets.  
 
+**/
 
 inline void NP::GetMetaKVS_(
     const char* metadata, 
@@ -5080,6 +5089,16 @@ inline int NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::stri
 } 
 
 
+/**
+NP::DescMetaKVS_juncture
+--------------------------
+
+* split juncture string on comma delimiters
+* loop over juncture j_key looking up the corresponding KeyIndex
+
+**/
+
+
 inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ) 
 {
     assert(juncture_ && strlen(juncture_) > 0); 
@@ -5087,9 +5106,23 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
     Split(juncture, juncture_ , ',' ); 
     int num_juncture = juncture.size() ; 
 
-    std::stringstream ss ; 
+    std::stringstream ss ;
+    ss << "[NP::DescMetaKVS_juncture\n" ; 
+    ss << "num_juncture " << num_juncture << "\n" ; 
+    ss << "juncture [" << juncture_ << "] time ranges between junctures" << std::endl ; 
     ss.imbue(std::locale("")) ;  // commas for thousands
-    ss << "juncture:" << num_juncture << " [" << juncture_ << "] time ranges between junctures" << std::endl ; 
+
+
+    ss << std::setw(30) << "k" 
+       << " : "
+       << std::setw(12) << "dtp"
+       << std::setw(23) << ""
+       << " : "
+       << std::setw(12) << "dt0"
+       << " : "
+       << "timestamp"
+       << std::endl 
+       ;
   
     int64_t tp = 0 ; 
     for(int j=0 ; j < num_juncture ; j++)
@@ -5099,14 +5132,17 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
         if( i == -1 ) continue ; 
 
         const char* k = keys[i].c_str(); 
-        int64_t t = tt[i] ;  
+        int64_t t = tt[i] ; 
+
+        int64_t dtp = ( t > 0 && tp > 0 ) ? t - tp : -1  ; 
+        int64_t dt0 = ( t > 0 && t0 > 0 ) ? t - t0 : -1 ; 
 
         ss << std::setw(30) << k 
            << " : "
-           << std::setw(12) << ( t > 0 && tp > 0 ? t - tp : -1 )
+           << std::setw(12) << dtp
            << std::setw(23) << ""
            << " : "
-           << std::setw(12) << ( t > 0 && t0 > 0 ? t - t0 : -1 )
+           << std::setw(12) << dt0
            << " : "
            << U::Format(t) 
            << " JUNCTURE" 
@@ -5115,6 +5151,7 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
 
          if( t > 0 ) tp = t ; 
     }
+    ss << "]NP::DescMetaKVS_juncture\n" ; 
     std::string str = ss.str(); 
     return str ; 
 }
@@ -5137,8 +5174,15 @@ to avoid redoing things
 inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) 
 {
     std::stringstream ss ; 
+    ss << "[NP::DescMetaKVS_ranges\n" 
+       << "[ranges\n"  
+       << ( ranges_ ? ranges_ : "-" )
+       << "]ranges\n"
+       ;
+
     NP* a = MakeMetaKVS_ranges(keys, tt, ranges_ , &ss ); 
     ss << " a " << a->sstr(); 
+    ss << "]NP::DescMetaKVS_ranges\n" ; 
     std::string str = ss.str(); 
     return str ;
 }
@@ -5165,6 +5209,9 @@ NP::MakeMetaKVS_ranges
 TODO: totals within annotation groups 
 
 
+1. split the comma delimited range pair from the ## delimited annotation
+
+
 **/
 
 
@@ -5181,6 +5228,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     if(ss) ss->imbue(std::locale("")) ; // commas for thousands
 
     if(ss) (*ss) 
+       << "[NP::MakeMetaKVS_ranges\n" 
        << "ranges:" << num_ranges 
        << " time ranges between pairs of stamps " 
        << std::endl 
@@ -5206,15 +5254,18 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* b = _b.c_str();  
 
         // idx0 idx1 specifies the range for wildcard replacements
+        int idx0 = 0 ; 
         int idx1 = 30 ; 
-        for(int idx0=0 ; idx0 < idx1 ; idx0++)
+        for(int idx=idx0 ; idx < idx1 ; idx++)
         {
             std::string akey ; 
             std::string bkey ; 
-            int ia = FormattedKeyIndex(akey, keys, a, idx0, idx0+1 ) ; 
-            int ib = FormattedKeyIndex(bkey, keys, b, idx0, idx0+1 ) ; 
+            int ia = FormattedKeyIndex(akey, keys, a, idx, idx+1 ) ; 
+            int ib = FormattedKeyIndex(bkey, keys, b, idx, idx+1 ) ; 
 
-            if(!akey.empty() && !bkey.empty() && ia > -1 && ib > -1)
+            bool found_range_pair = !akey.empty() && !bkey.empty() && ia > -1 && ib > -1 ; 
+
+            if(found_range_pair)
             {
                 std::stringstream mm ; 
                 mm << akey << ":" << bkey << ":" << anno[i] ; 
@@ -5228,6 +5279,12 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     // Collect start times of the simple stamp ranges
 
     int num_specs = specs.size(); 
+
+    if(ss) (*ss) 
+       << ".NP::MakeMetaKVS_ranges num_specs:" << num_specs << "\n" 
+       ;  
+
+
     std::vector<int64_t> stt(num_specs); 
 
     for(int i=0 ; i < num_specs ; i++)
@@ -5324,6 +5381,18 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
 }
 
 
+/**
+NP::DescMetaKVS
+----------------
+
+1. GetMetaKVS extracting key, val pairs and microsecond timestamps,  
+   lines without 16 digit timestamps have placeholder timestamps of zero 
+   
+
+
+**/
+
+
 inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture_ , const char* ranges_ )  // static
 {
     std::vector<std::string> keys ;  
@@ -5337,6 +5406,7 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
     int num_keys = keys.size() ;
 
     // sort indices into increasing time order
+    // non-timestamped lines with placeholder timestamp zero will come first 
     std::vector<int> ii(num_keys); 
     std::iota(ii.begin(), ii.end(), 0); 
     auto order = [&tt](const size_t& a, const size_t &b) { return tt[a] < tt[b];}  ; 
@@ -5346,8 +5416,23 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
     int64_t t_second = 0 ; 
     int64_t t_prev  = 0 ; 
 
+    int t_count = 0 ; 
+
     std::stringstream ss ; 
     ss.imbue(std::locale("")) ;  // commas for thousands
+
+    ss 
+        << "[NP::DescMetaKVS "
+        << " keys.size " << keys.size() 
+        << " vals.size " << vals.size() 
+        << " tt.size "   << tt.size() 
+        << " num_keys " << num_keys
+        << " only_with_stamp " << ( only_with_stamp ? "YES" : "NO " )     
+        << "\n"
+        ;
+
+
+
 
     for(int j=0 ; j < num_keys ; j++)
     {
@@ -5363,7 +5448,21 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
         int64_t dt1 = t > 0 && t_second > 0 ? t - t_second : -1 ; // microseconds since second
         int64_t dt  = t > 0 && t_prev   > 0 ? t - t_prev   : -1 ; // microseconds since previous stamp 
         if(t > 0) t_prev = t ; 
- 
+        if(t > 0) t_count += 1 ; 
+        if(t_count == 1 ) ss
+            << "\n" 
+            << std::setw(30) << "k" 
+            << " : "
+            << std::setw(35) << "v"
+            << "   "
+            << std::setw(27) << (  "t:microsecond"  )
+            << " " << std::setw(11) << "dt0:(t-t0)" 
+            << " " << std::setw(11) << "dt1:(t-t1)" 
+            << " " << std::setw(11) << "dt:(t-tpr)" 
+            << std::endl 
+            ;
+        
+
         ss << std::setw(30) << k 
            << " : "
            << std::setw(35) << v
@@ -5377,16 +5476,30 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
     }
     if(juncture_ && strlen(juncture_) > 0 ) ss << DescMetaKVS_juncture(keys, tt, t_first, juncture_ ); 
     if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges(keys, tt, ranges_ ); 
+
+    ss << "]NP::DescMetaKVS\n" ; 
+
     std::string str = ss.str(); 
     return str ; 
 }
 
 inline std::string NP::descMetaKVS(const char* juncture_, const char* ranges_) const 
 {
+
+    bool dump_meta = false ;     
+
     std::stringstream ss ; 
-    ss << "NP::descMetaKVS" 
-       << std::endl 
+    ss << "[NP::descMetaKVS\n" ; 
+        
+    if(dump_meta) ss 
+       << "[meta\n"  
+       << meta 
+       << "]meta\n"
+       ; 
+
+    ss 
        << DescMetaKVS(meta, juncture_, ranges_) 
+       << "]NP::descMetaKVS\n" 
        ;
     std::string str = ss.str(); 
     return str ; 

@@ -2328,16 +2328,20 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     std::vector<std::string> subpaths ; 
     find_subfold_with_prefix(subs, &subpaths,  prefix );  
     assert( subs.size() == subpaths.size() ); 
-    int num_sub = int(subs.size()) ; 
-    int num_stamp0 = num_sub > 0 ? subs[0]->getMetaNumStamp() : 0 ;  
-    bool skip = num_sub == 0 || num_stamp0 == 0 ; 
+    int num_sub = int(subs.size()) ;
 
     bool dump = getenv("NPFold__substamp_DUMP") != nullptr ; 
+
+    const NPFold* sub0 = num_sub > 0 ? subs[0] : nullptr ; 
+
+    int num_stamp0 = sub0 ? sub0->getMetaNumStamp() : 0 ;  
+    bool skip = num_sub == 0 || num_stamp0 == 0 ; 
 
     if(dump) std::cout 
         << "[NPFold::substamp" 
         << " find_subfold_with_prefix " << prefix
         << " num_sub " << num_sub
+        << " sub0 " << ( sub0 ? sub0->stats() : "-" )
         << " num_stamp0 " << num_stamp0
         << " skip " << ( skip ? "YES" : "NO ") 
         << std::endl
@@ -2347,7 +2351,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     if(!skip)
     {
         int ni = num_sub ; 
-        int nj = num_stamp0 ; 
+        int nj = num_stamp0 ; // num stamps in the first sub  
 
         NP* t = NP::Make<int64_t>( ni, nj ) ; 
         int64_t* tt = t->values<int64_t>() ; 
@@ -2751,6 +2755,12 @@ inline void NPFold::SubCommonKV(std::vector<std::string>& okey, std::vector<std:
     int num_sub = subs.size(); 
     int num_ukey = ukey.size(); 
 
+    /**
+    std::cout << "[NPFold::SubCommonKV num_ukey:" << num_ukey ; 
+    for(int i=0 ; i < num_ukey ; i++ ) std::cout << ukey[i] << "\n" ;  
+    std::cout << "]NPFold::SubCommonKV num_ukey:" << num_ukey ; 
+    **/
+
     ckey.clear(); 
     cval.clear(); 
 
@@ -2770,8 +2780,8 @@ inline void NPFold::SubCommonKV(std::vector<std::string>& okey, std::vector<std:
                  << "NPFold::SubCommonKV MISSING KEY " 
                  << " num_sub " << num_sub
                  << " num_ukey " << num_ukey
-                 << ( k ? k : "-" ) 
-                 << ( v.empty() ? "-" : v ) 
+                 << " k " << ( k ? k : "-" ) 
+                 << " v " << ( v.empty() ? "-" : v ) 
                  << std::endl
                  ;   
             if(!has_key) std::raise(SIGINT) ; 

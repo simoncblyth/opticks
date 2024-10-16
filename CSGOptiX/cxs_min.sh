@@ -137,6 +137,10 @@ knobs()
    #export Ctx=INFO
    #export PIP=INFO
    #export CSGOptiX=INFO
+
+
+   export NPFold__substamp_DUMP=1
+
 }
 knobs
 

@@ -1707,7 +1707,11 @@ inline bool U::LooksLikeTimestamp( T value )
 U::LooksLikeProfileTriplet
 -----------------------------
 
-Follows sprof::LooksLikeProf, repeated hear for convenience
+Follows sprof::LooksLikeProf, repeated hear for convenience.
+Returns true for comma delimited list of three integers where
+the first has 16 digits, eg::
+
+    1111111111111111,2222,3333
 
 **/
 
