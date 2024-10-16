@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 sreport.sh : summarize SEvt metadata into eg ALL0_sreport SREPORT_FOLD 
 ================================================================
@@ -21,8 +21,13 @@ by this sreport.sh script.
    ~/opticks/sysrap/tests/sreport.sh
 
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh           ## summarize SEvt folders
-   JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab      ## from remove to local 
+   JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab      ## from remote to local 
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana       ## local plotting 
+
+
+   JOB=N7 ~/o/sreport.sh desc_info
+   JOB=A7 ~/o/sreport.sh desc_info
+
 
 
    PLOT=Substamp_ONE_Delta PICK=A ~/o/sreport.sh
@@ -63,7 +68,7 @@ by this sreport.sh script.
    writes a summary NPFold into SREPORT_FOLD directory 
    
    NB DEV=1 uses the standalone binary built by this script, and 
-   not defining DEV uses that standardly intalled sreport binary 
+   not defining DEV uses the CMake standardly built and installed sreport binary 
 
 **grab**
    grab command just rsyncs the summary SREPORT_FOLD back to laptop for 
@@ -97,13 +102,83 @@ EOU
 }
 
 SDIR=$(dirname $(realpath $BASH_SOURCE))
+# sreport does different things depending on the invoking directory : so caution with cd
+
+dbg__ () 
+{ 
+    case $(uname) in 
+        Darwin)
+            lldb__ $*
+        ;;
+        Linux)
+            gdb__ $*
+        ;;
+    esac
+}
+
+lldb__ () 
+{ 
+    : macOS only - this function requires LLDB envvar to provide the path;
+    : to the lldb application within the appropriate Xcode.app resources eg;
+    local BINARY=$1;
+    shift;
+    local ARGS=$*;
+    local H="$HEAD";
+    local B;
+    local bp;
+    echo HEAD $HEAD;
+    echo TAIL $TAIL;
+    if [ -z "$BP" ]; then
+        B="";
+    else
+        B="";
+        for bp in $BP;
+        do
+            B="$B -o \"b $bp\" ";
+        done;
+        B="$B -o b";
+        [ -n "$BX" ] && B="$B -o \"$BX\" ";
+    fi;
+    local T="$TAIL";
+    local def_lldb=/Applications/Xcode/Xcode.app/Contents/Developer/usr/bin/lldb;
+    local runline="${LLDB:-$def_lldb} -f ${BINARY} $H $B $T -- ${ARGS}";
+    echo $runline;
+    eval $runline
+}
+
+
+gdb__ () 
+{ 
+    : opticks/opticks.bash prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+
+
 
 name=sreport
 src=$SDIR/$name.cc
 script=$SDIR/$name.py
 
-DEV=0
-if [ "$DEV" = "1" ]; then
+DEV=0  ## set to 1 to standalone build the sreport binary before use
+if [ "$DEV" = "0" ]; then
     bin=$name                                   ## standard binary 
     defarg="run_info_ana"
 else
@@ -117,7 +192,7 @@ arg=${1:-$defarg}
 
 
 if [ "$bin" == "$name" ]; then
-    echo $BASH_SOURCE : using standard binary 
+    echo $BASH_SOURCE : using standard CMake built and installed binary 
 else
     mkdir -p $(dirname $bin)
 fi
@@ -126,24 +201,29 @@ source $HOME/.opticks/GEOM/GEOM.sh
 
 #job=N5
 #job=S5
-job=Y1
-#job=N7   
+#job=Y1
+job=N7   
+#job=A7   
 #job=S7  
 
 JOB=${JOB:-$job}
+LAB="Undefined"
 
 DIR=unknown 
 case $JOB in 
   L1) DIR=/hpcfs/juno/junogpu/blyth/tmp/GEOM/$GEOM/jok-tds/ALL0 ;;
   N1) DIR=/data/blyth/opticks/GEOM/$GEOM/jok-tds/ALL0 ;;
   N2) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL0 ;;
-  N3) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
   N4) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL2 ;;
   N5) DIR=/data/blyth/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;   ## blyth:Debug 
   S5) DIR=/data/simon/opticks/GEOM/$GEOM/G4CXTest/ALL3 ;;   ## simon:Release TODO 
+
+  N3) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
   N6) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
-  N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "blyth" account Debug build 
-  S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;;   ## "simon" account Release build 
+  N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ; LAB="TITAN RTX : Debug" ;; 
+  A7) DIR=/data1/blyth/tmp/GEOM/$GEOM/CSGOptiXSMTest/ALL1    ; LAB="Ada RTX 5000 : Debug" ;;
+  S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ; LAB="TITAN RTX : Release" ;; 
+
   Y1) DIR=/tmp/ihep/opticks/GEOM/$GEOM/jok-tds/ALLLUT_1_ENE_-1_OIM_1_GUN_5 ;; ## 'yuxiang': Release TODO
 esac
 
@@ -151,7 +231,7 @@ export STEM=${JOB}_${PLOT}_${PICK}
 export SREPORT_FOLD=${DIR}_${name}   ## SREPORT_FOLD is output directory used by binary, export it for python 
 export MODE=2                        ## 2:matplotlib plotting 
 
-vars="0 BASH_SOURCE SDIR JOB DIR SREPORT_FOLD MODE name bin script STEM"
+vars="0 BASH_SOURCE arg defarg DEV bin script SDIR JOB LAB DIR SREPORT_FOLD MODE name STEM PLOT PICK"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
@@ -175,14 +255,14 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
 fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then   ## create report from SEvt metadata
     cd $DIR
     [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR && exit 0 
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
-if [ "${arg/desc}" != "$arg" ]; then 
+if [ "${arg/desc}" != "$arg" ]; then   ## load existing report and present it 
     cd $SREPORT_FOLD
     [ $? -ne 0 ] && echo $BASH_SOURCE : NO SUCH DIRECTORY : JOB  $JOB DIR $DIR SREPORT_FOLD $SREPORT_FOLD  && exit 0 
     $bin

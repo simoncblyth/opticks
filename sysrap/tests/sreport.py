@@ -626,9 +626,15 @@ class RUN_META(object):
 
 
 if __name__ == '__main__':
-    fold = Fold.Load("$SREPORT_FOLD", symbol="fold")
 
+    print("[sreport.py:PLOT[%s]" % PLOT ) 
+    print("[sreport.py:fold = Fold.Load" ) 
+    fold = Fold.Load("$SREPORT_FOLD", symbol="fold")
+    print("]sreport.py:fold = Fold.Load" ) 
+
+    print("[sreport.py:repr(fold)" ) 
     print(repr(fold))
+    print("]sreport.py:repr(fold)" ) 
     SWITCHES = RUN_META.QSim__Switches(fold)
     print("MODE:%d PICK:%s SWITCHES:%s " % (MODE, PICK, SWITCHES) ) 
     print("COMMANDLINE:%s" % COMMANDLINE)
@@ -651,10 +657,14 @@ if __name__ == '__main__':
     if PLOT.startswith("Ranges_SPAN") and hasattr(fold, "ranges") and hasattr(fold,"submeta_NumPhotonCollected") :
         Ranges_SPAN(fold, symbol="fold")  ## colorfull process activity plot 
     pass
-    if PLOT.startswith("Substamp_ALL") and hasattr(fold, "substamp"):
-        if PLOT.startswith("Substamp_ALL_Etime_vs_Photon"): Substamp_ALL_Etime_vs_Photon(  fold, symbol="fold.substamp" )
-        if PLOT.startswith("Substamp_ALL_Hit_vs_Photon"): Substamp_ALL_Hit_vs_Photon(      fold, symbol="fold.substamp" )
-        if PLOT.startswith("Substamp_ALL_RATIO_vs_Photon"): Substamp_ALL_RATIO_vs_Photon(  fold, symbol="fold.substamp" )
+    if PLOT.startswith("Substamp_ALL"): 
+        if hasattr(fold, "substamp"):
+            if PLOT.startswith("Substamp_ALL_Etime_vs_Photon"): Substamp_ALL_Etime_vs_Photon(  fold, symbol="fold.substamp" )
+            if PLOT.startswith("Substamp_ALL_Hit_vs_Photon"): Substamp_ALL_Hit_vs_Photon(      fold, symbol="fold.substamp" )
+            if PLOT.startswith("Substamp_ALL_RATIO_vs_Photon"): Substamp_ALL_RATIO_vs_Photon(  fold, symbol="fold.substamp" )
+        else:
+            print(".sreport.py: fold does not have substamp : CANNOT PLOT [%s]" % PLOT)
+        pass
     pass
     if PLOT.startswith("Subprofile_ONE") and hasattr(fold, "subprofile"):
         for e in PICK:
@@ -670,6 +680,7 @@ if __name__ == '__main__':
     if PLOT.startswith("Runprof_ALL") and hasattr(fold, "runprof"):
         Runprof_ALL(fold, symbol="fold.runprof" )  ## RSS vs time : profile plot 
     pass
+    print("]sreport.py:PLOT[%s]" % PLOT ) 
 pass
 
 
