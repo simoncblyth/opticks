@@ -1052,6 +1052,9 @@ SEvt* SEvt::Create_ECPU(){ return Create(ECPU) ; }
  
 SEvt* SEvt::Create(int ins)  // static
 { 
+    const char* alldir = spath::Resolve("ALL${VERSION:-0}") ; 
+    SEvt::SetReldir(alldir); 
+
     assert( ins == 0 || ins == 1); 
     SEvt* ev = new SEvt ; 
     ev->setInstance(ins) ; 
@@ -1115,13 +1118,11 @@ SEvt* SEvt::CreateOrReuse(int idx)
     LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
     return sev ; 
 }
-SEvt* SEvt::HighLevelCreateOrReuse(int idx)
-{
-    SEvt* sev = Exists(idx) ? Get(idx) : HighLevelCreate(idx) ; 
-    LOG(LEVEL) << " idx " << idx  << " " << DescINSTANCE()  ; 
-    return sev ; 
-}
 
+
+
+SEvt* SEvt::CreateOrReuse_EGPU(){  return CreateOrReuse(EGPU) ; }
+SEvt* SEvt::CreateOrReuse_ECPU(){  return CreateOrReuse(ECPU) ; }
 
 /**
 SEvt::CreateOrReuse
@@ -1185,66 +1186,6 @@ void SEvt::SetFrame(const sframe& fr )
     if(Exists(1)) Get(1)->setFrame(fr); 
 }
 
-
-/**
-SEvt::HighLevelCreate
-----------------------
-
-Create with bells and whistles needed by some tests such as u4/tests/U4SimulateTest
-which is now invoked from U4Recorder instanciation.
-
-1. photon rerun config by persisting G4 random states
-2. setting of reldir 
-
-HMM: perhaps reldir should be static, above the individual SEvt instance level ? 
-
-Q: How is the reldir changed to ALL0 ALL1 namely ALL$VERSION
-A: Thats done only when using SEvt::HighLevelCreate via envvar expansion. 
-
-
-HMM : versioning the reldir is too useful to be done here 
-
-**/
-
-SEvt* SEvt::HighLevelCreate(int idx) // static
-{
-    SEvt* ev = nullptr ; 
-
-    int g4state_rerun_id = SEventConfig::G4StateRerun(); 
-    bool rerun = g4state_rerun_id > -1 ;
-
-    const char* alldir = spath::Resolve("ALL${VERSION:-0}") ; 
-    const char* alldir0 = "ALL0" ; 
-    const char* seldir = spath::Resolve("SEL${VERSION:-0}") ; 
-
-    LOG(info) 
-        << " g4state_rerun_id " << g4state_rerun_id 
-        << " alldir " << alldir 
-        << " alldir0 " << alldir0 
-        << " seldir " << seldir 
-        << " rerun " << rerun
-        ;   
-
-    // this runs early, at U4Recorder instanciation, which is before logging is setup it seems 
-    std::cout
-        << "SEvt::HighLevelCreate"
-        << " g4state_rerun_id " << g4state_rerun_id 
-        << " alldir " << alldir 
-        << " alldir0 " << alldir0 
-        << " seldir " << seldir 
-        << " rerun " << rerun
-        << std::endl 
-        ;   
-
-
-    assert( rerun == false ); 
-
-    SEvt::SetReldir(alldir); 
-    ev = SEvt::Create(idx);    
-
-
-    return ev ; 
-}
 
 void SEvt::Check(int idx)
 {

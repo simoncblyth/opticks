@@ -59,6 +59,66 @@ G4CXOpticks* G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
     return g4cx ; 
 }
 
+
+
+/**
+G4CXOpticks::SetGeometry_JUNO
+------------------------------
+
+Invoked from JUNOSW LSExpDetectorConstruction_Opticks::Setup
+
+* Moved high level JUNO setup from there to here for faster update cycle.
+
+**/
+
+
+G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const G4VSensitiveDetector* sd, NPFold* jpmt, const NP* jlut )
+{
+    LOG(LEVEL) << "[" ; 
+
+    int opticksMode = SEventConfig::IntegrationMode();
+    if(opticksMode == 2) SetNoGPU() ;
+
+    // boot SSim adding extra juno PMT info 
+    SSim::CreateOrReuse();   // done previously by G4CXOpticks::G4CXOpticks in opticksMode > 0 or here in opticksMode:0 
+    SSim::AddExtraSubfold("jpmt", jpmt );
+    SSim::AddMultiFilm(snam::MULTIFILM, jlut);
+
+    SEvt::CreateOrReuse() ;  // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE (which via above assert matches opticksMode)
+
+    LOG(info) << "[ WITH_G4CXOPTICKS opticksMode " << opticksMode << " sd " << sd  ;   
+
+
+    G4CXOpticks* gx = nullptr ;  
+
+    if( opticksMode == 1 || opticksMode == 3 || opticksMode == 2 ) 
+    {
+        gx = SetGeometry(world) ; 
+        SaveGeometry(); 
+    }   
+
+    LOG(LEVEL) << "]" ; 
+    return gx ; 
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void G4CXOpticks::Finalize() // static 
 {
     LOG(LEVEL); 

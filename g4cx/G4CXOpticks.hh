@@ -15,7 +15,10 @@ and that needs the upload of QSim components first ?
 **/
 
 struct U4Tree ; 
+struct NPFold ; 
+struct NP ; 
 struct U4SensorIdentifier ; 
+class G4VSensitiveDetector ; 
 class G4VPhysicalVolume ;  
 struct CSGFoundry ; 
 struct CSGOptiX ; 
@@ -36,6 +39,8 @@ struct G4CX_API G4CXOpticks
     static G4CXOpticks* Get(); 
     static G4CXOpticks* SetGeometry() ; 
     static G4CXOpticks* SetGeometry(const G4VPhysicalVolume* world) ; 
+    static G4CXOpticks* SetGeometry_JUNO(const G4VPhysicalVolume* world, const G4VSensitiveDetector* sd, NPFold* jpmt, const NP* jlut ) ; 
+
 
     static constexpr const char* SaveGeometry_KEY = "G4CXOpticks__SaveGeometry_DIR" ; 
     static void SaveGeometry(); 

@@ -370,9 +370,9 @@ public:
     static SEvt* Create_ECPU() ; 
     static SEvt* Create(int idx) ; 
     static SEvt* CreateOrReuse(int idx) ; 
-    static SEvt* HighLevelCreateOrReuse(int idx) ; 
-    static SEvt* HighLevelCreate(int idx); // Create with bells-and-whistles needed by eg u4/tests/U4SimulateTest.cc
 
+    static SEvt* CreateOrReuse_EGPU(); 
+    static SEvt* CreateOrReuse_ECPU(); 
     static void CreateOrReuse(); 
     static void SetFrame(const sframe& fr ); 
 
