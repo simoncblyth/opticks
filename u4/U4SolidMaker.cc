@@ -67,6 +67,7 @@ LHCbRichSphMirr
 LHCbRichFlatMirr
 LocalFastenerAcrylicConstruction
 AltLocalFastenerAcrylicConstruction
+AnotherLocalFastenerAcrylicConstruction
 )LITERAL"; 
 
 
@@ -164,6 +165,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("SphereIntersectBox", qname))          solid = SphereIntersectBox(qname) ; 
     else if(StartsWith("LocalFastenerAcrylicConstruction", qname)) solid = LocalFastenerAcrylicConstruction(qname) ; 
     else if(StartsWith("AltLocalFastenerAcrylicConstruction", qname)) solid = AltLocalFastenerAcrylicConstruction(qname) ; 
+    else if(StartsWith("BltLocalFastenerAcrylicConstruction", qname)) solid = BltLocalFastenerAcrylicConstruction(qname) ; 
 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ; 
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname << " CHECK U4SolidMaker::Make " ; 
@@ -2022,6 +2024,28 @@ const G4VSolid* U4SolidMaker::SphereIntersectBox(const char* qname)  // static
     return sph_box ;  
 }
 
+/**
+U4SolidMaker::LocalFastenerAcrylicConstruction
+------------------------------------------------
+
+The tree is grown upwards::
+
+
+                                uni1
+                              /     \
+                          uni1       screw
+                        /      \
+                    uni1        screw
+                  /     \
+               uni1      screw
+              /    \
+       IonRing     screw
+
+
+
+**/
+
+
 
 const G4VSolid* U4SolidMaker::LocalFastenerAcrylicConstruction(const char* name) // static
 {
@@ -2034,14 +2058,18 @@ const G4VSolid* U4SolidMaker::LocalFastenerAcrylicConstruction(const char* name)
         << " num_column " << num_column 
         ;
 
+
+    const char* screw_name = "screw_HINT_LISTNODE_PRIM" ; 
+
     G4VSolid* uni_Addition(nullptr); 
     {
         G4Tubs *IonRing = new G4Tubs("IonRing",123*mm,206.2*mm,7*mm,0.0*deg,360.0*deg);
-        G4Tubs* screw = new G4Tubs("screw",0,13*mm,50.*mm,0.0*deg,360.0*deg);
+        G4Tubs* screw = new G4Tubs(screw_name,0,13*mm,50.*mm,0.0*deg,360.0*deg);
         uni_Addition = IonRing;
         for(int i=0;i<num_column;i++)
-        {   
-            G4UnionSolid* uni1 = new G4UnionSolid("uni1",uni_Addition, screw, 0, G4ThreeVector(164.*cos(i*pi/4)*mm, 164.*sin(i*pi/4)*mm,-65.0*mm));
+        {  
+            G4ThreeVector tlate(164.*cos(i*pi/4)*mm, 164.*sin(i*pi/4)*mm,-65.0*mm);
+            G4UnionSolid* uni1 = new G4UnionSolid("uni1",uni_Addition, screw, 0, tlate);
             uni_Addition = uni1;
         }   
     }
@@ -2052,6 +2080,11 @@ const G4VSolid* U4SolidMaker::LocalFastenerAcrylicConstruction(const char* name)
 /**
 U4SolidMaker::AltLocalFastenerAcrylicConstruction
 --------------------------------------------------
+
+         uni1
+        /     \
+     IonRing    muni 
+
 
 **/
 
@@ -2086,5 +2119,45 @@ const G4VSolid* U4SolidMaker::AltLocalFastenerAcrylicConstruction(const char* na
 }
 
 
+/**
+U4SolidMaker::BltLocalFastenerAcrylicConstruction
+--------------------------------------------------
+
+Was trying to form a boolean tree  with the nodes destined 
+to become constituents of the listnode within a separate G4UnionSolid tree.
+But it is not so easy to split off the screws like that, as they all need translation 
+including the 0th.  
+
+The reason for trying to do that is because the inner radius on the IonRing tubs 
+means have to keep that separate. 
+
+**/
+
+const G4VSolid* U4SolidMaker::BltLocalFastenerAcrylicConstruction(const char* name) // static
+{
+    [[maybe_unused]] const char* PREFIX = "BltLocalFastenerAcrylicConstruction" ; 
+    assert( sstr::StartsWith(name,PREFIX ));
+    long num_column = sstr::ExtractLong(name, 1) ; 
+
+    LOG(info) 
+        << " name " <<  ( name ? name : "-" )
+        << " num_column " << num_column 
+        ;
+
+    assert( num_column > 0 ); 
+
+    G4Tubs* IonRing = new G4Tubs("IonRing",123*mm,206.2*mm,7*mm,0.0*deg,360.0*deg);
+
+    G4Tubs* screw = new G4Tubs("screw",0,13*mm,50.*mm,0.0*deg,360.0*deg);
+
+    G4ThreeVector tlate[num_column] = {} ; 
+    for(long i=0;i<num_column;i++) tlate[i] = G4ThreeVector(164.*cos(i*pi/4)*mm, 164.*sin(i*pi/4)*mm,-65.0*mm);
+
+    G4VSolid* muni = screw ; 
+    for(long i=1 ; i < num_column ; i++) muni = new G4UnionSolid( name, muni, screw, 0, tlate[i] ) ; 
+
+    G4UnionSolid* uni1 = new G4UnionSolid(name, IonRing, muni, 0, tlate[0] );
+    return uni1 ; 
+}
 
 

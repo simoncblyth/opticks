@@ -108,6 +108,7 @@ struct U4Solid
     std::string         brief() const ; 
     std::string         desc() const ; 
     static const char*  Name( const G4VSolid* solid) ; 
+    static unsigned     Hint( const char* name ); 
     static const char*  EType(const G4VSolid* solid) ; 
     static int          Level(int level_, const char* name, const char* entityType ); 
 
@@ -123,7 +124,6 @@ private:
 
     void init(); 
     void init_Constituents(); 
-    void init_Check(); 
     void init_Tree(); 
 
     void init_Orb(); 
@@ -165,6 +165,7 @@ private:
     // members
     const G4VSolid* solid ; 
     const char*     name ; 
+    unsigned        hint ;   
     const char*     entityType ; 
     int             level ; 
     int             type ;
@@ -231,7 +232,10 @@ inline const char* U4Solid::Name(const G4VSolid* solid)  // static
     return strdup(name) ; 
 }
 
-
+inline unsigned U4Solid::Hint(const char* name)  // static
+{
+    return sn::NameHint(name); 
+}
 
 
 inline const char* U4Solid::EType(const G4VSolid* solid)  // static
@@ -346,6 +350,7 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level
     :
     solid(solid_),
     name(Name(solid_)),
+    hint(Hint(name)),
     entityType(EType(solid)),
     level(Level(level_,name,entityType)),
     type(Type(entityType)),
@@ -367,12 +372,10 @@ inline void U4Solid::init()
         ; 
 
     init_Constituents(); 
-    init_Check(); 
     init_Tree() ; 
 
     if(level > 0) std::cerr << "]U4Solid::init " << brief() << std::endl ; 
 }
-
 
 
 /**
@@ -405,19 +408,6 @@ inline void U4Solid::init_Constituents()
     } 
 }
 
-inline void U4Solid::init_Check()
-{
-    if(root == nullptr)
-    {
-        std::cerr << "U4Solid::init_Check FAILED desc: " << desc() << std::endl ; 
-        assert(0); 
-    }
-    else
-    {
-        if(level > 0 ) std::cerr << "U4Solid::init_Check SUCCEEDED desc: " << desc() << std::endl ; 
-    }
-}
-
 
 
 /**
@@ -433,6 +423,7 @@ when the sn::postconvert is called
 inline void U4Solid::init_Tree()
 {
     assert( root); 
+    root->set_hint_note(hint); 
 
     if( depth == 0 )  
     {

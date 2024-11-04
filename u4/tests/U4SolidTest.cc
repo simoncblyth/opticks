@@ -63,6 +63,16 @@ int U4SolidTest::Convert(const G4VSolid* solid )
         << "\n" 
         ; 
 
+    std::cout << "sn::Desc.0\n"  << sn::Desc() << "\n" ; 
+
+    std::vector<sn*> prim ; 
+    sn* j = nd->find_joint_to_candidate_listnode(prim); 
+
+    std::cout << "joint\n"  << sn::Desc(j) << "\n" ; 
+    std::cout << "sn::DescPrim\n" << sn::DescPrim(prim) << "\n" ; 
+
+    delete nd ; 
+    std::cout << "sn::Desc.1\n"  << sn::Desc() << "\n" ; 
 
     return 0 ; 
 }

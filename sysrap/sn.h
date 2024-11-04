@@ -297,7 +297,7 @@ struct SYSRAP_API sn
     std::string render() const ; 
     std::string render(int mode) const ; 
 
-    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID } ; 
+    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID, NOTE,  NUM_MODE=7 } ; 
 
     static constexpr const char* MODE_MINIMAL = "MINIMAL" ; 
     static constexpr const char* MODE_TYPECODE = "TYPECODE" ; 
@@ -305,6 +305,7 @@ struct SYSRAP_API sn
     static constexpr const char* MODE_SUBDEPTH = "SUBDEPTH" ; 
     static constexpr const char* MODE_TYPETAG = "TYPETAG" ; 
     static constexpr const char* MODE_PID = "PID" ; 
+    static constexpr const char* MODE_NOTE = "NOTE" ; 
     static const char* rendermode(int mode); 
 
     void render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const ; 
@@ -417,8 +418,14 @@ struct SYSRAP_API sn
 
     enum {
             NOTE_INCREASE_ZMAX = 0x1 << 0, 
-            NOTE_DECREASE_ZMIN = 0x1 << 1
+            NOTE_DECREASE_ZMIN = 0x1 << 1,
+            HINT_LISTNODE_PRIM = 0x1 << 2 
          };
+
+    static unsigned NameHint(const char* name); 
+    static constexpr const char* _HINT_LISTNODE_PRIM = "HINT_LISTNODE_PRIM" ; 
+    void set_hint_note(unsigned hint); 
+    bool is_hint_listnode_prim() const ; 
 
     void increase_zmax( double dz ); // expand upwards in +Z direction 
     void decrease_zmin( double dz ); // expand downwards in -Z direction
@@ -510,6 +517,14 @@ struct SYSRAP_API sn
 
     void collect_prim( std::vector<const sn*>& prim ) const ; 
     void collect_prim_r( std::vector<const sn*>& prim, int d ) const ; 
+
+    bool has_note(int q_note) const ; 
+    void collect_prim_note(  std::vector<sn*>& prim, int q_note ); 
+    void collect_prim_note_r( std::vector<sn*>& prim, int q_note, int d ); 
+
+    sn* find_joint_to_candidate_listnode( std::vector<sn*>& prim) ; 
+    sn* find_joint_to_candidate_listnode_r( int d,  std::vector<sn*>& prim ); 
+
 
 
     void collect_monogroup( std::vector<const sn*>& monogroup ) const ; 
@@ -1020,8 +1035,8 @@ inline sn* sn::deepcopy_r(int d) const
 sn::set_child
 ---------------
 
-When the new child is from within the tree when pruning 
-it is necessary to deepcopy it first. 
+When the new child to be set *ch* is from within the tree when pruning 
+it is necessary to deepcopy it first using copy:true 
 
 **/
 
@@ -1485,12 +1500,15 @@ inline std::string sn::desc() const
 
 inline std::string sn::desc_prim() const 
 {
+    bool hint_lnpr = is_hint_listnode_prim(); 
+
     std::stringstream ss ;
     ss 
        << " idx " << std::setw(4) << index()
        << " lvid " << std::setw(3) << lvid 
        << " " << tag()
        << ( aabb ? aabb->desc() : "-" )
+       << " " << ( hint_lnpr ? "HINT_LNPR" : "" )  
        ; 
 
     std::string str = ss.str();
@@ -1607,7 +1625,7 @@ inline std::string sn::detail() const
 inline std::string sn::render() const
 {
     std::stringstream ss ;
-    for(int mode=0 ; mode < 6 ; mode++) ss << render(mode) << std::endl ; 
+    for(int mode=0 ; mode < NUM_MODE ; mode++) ss << render(mode) << std::endl ; 
     std::string str = ss.str();
     return str ;
 }
@@ -1675,6 +1693,7 @@ inline const char* sn::rendermode(int mode) // static
         case SUBDEPTH: md = MODE_SUBDEPTH ; break ; 
         case TYPETAG:  md = MODE_TYPETAG  ; break ; 
         case PID:      md = MODE_PID      ; break ; 
+        case NOTE:     md = MODE_NOTE     ; break ; 
     }
     return md ; 
 }
@@ -1690,12 +1709,13 @@ inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mod
 
     switch(mode)
     {
-        case 0: canvas->drawch( ix, iy, 0,0, 'o' )         ; break ; 
-        case 1: canvas->draw(   ix, iy, 0,0,  typecode  )      ; break ; 
-        case 2: canvas->draw(   ix, iy, 0,0,  depth )      ; break ;   
-        case 3: canvas->draw(   ix, iy, 0,0,  subdepth )   ; break ; 
-        case 4: canvas->draw(   ix, iy, 0,0,  tag.c_str()) ; break ;    
-        case 5: canvas->draw(   ix, iy, 0,0,  pid )        ; break ;    
+        case MINIMAL  : canvas->drawch( ix, iy, 0,0, 'o' )         ; break ; 
+        case TYPECODE : canvas->draw(   ix, iy, 0,0,  typecode  )      ; break ; 
+        case DEPTH    : canvas->draw(   ix, iy, 0,0,  depth )      ; break ;   
+        case SUBDEPTH : canvas->draw(   ix, iy, 0,0,  subdepth )   ; break ; 
+        case TYPETAG  : canvas->draw(   ix, iy, 0,0,  tag.c_str()) ; break ;    
+        case PID      : canvas->draw(   ix, iy, 0,0,  pid )        ; break ;    
+        case NOTE     : canvas->draw(   ix, iy, 0,0,  note )       ; break ;    
     } 
 
 #ifdef WITH_CHILD
@@ -2794,6 +2814,40 @@ inline bool sn::CanZNudgeAll(std::vector<sn*>& prims)  // static
     for(int i=0 ; i < num_prim ; i++) if(prims[i]->can_znudge()) count += 1 ; 
     return count == num_prim ; 
 }
+
+
+inline unsigned sn::NameHint(const char* name) // static
+{
+    unsigned hint = 0 ; 
+    if(strstr(name, _HINT_LISTNODE_PRIM) != nullptr) hint = HINT_LISTNODE_PRIM ; 
+    return hint ;
+}
+
+
+/**
+sn::set_hint_note
+------------------
+
+Canonically invoked from U4Solid::init_Tree based on the solid name
+
+**/
+
+inline void sn::set_hint_note(unsigned hint)
+{
+    if(hint == 0u) return ; 
+    if( (hint & HINT_LISTNODE_PRIM) != 0 ) 
+    {   
+        note |= HINT_LISTNODE_PRIM ;   
+    }   
+}
+
+inline bool sn::is_hint_listnode_prim() const 
+{
+    return ( note & HINT_LISTNODE_PRIM ) != 0 ; 
+}
+
+
+
 
 
 inline void sn::increase_zmax( double dz )
@@ -3972,6 +4026,166 @@ inline void sn::collect_prim_r( std::vector<const sn*>& prim, int d ) const
 }
 
 
+inline bool sn::has_note( int q_note ) const
+{
+    return ( note & q_note ) != 0 ;  
+}
+
+/**
+sn::collect_prim_note
+----------------------
+
+Collect prim with sn::note that bitwise includes the q_note bit 
+Due to tail recursion this descends all the way before unwinding 
+and collecting any prim, so the order is from the bottom first. 
+
+**/
+
+inline void sn::collect_prim_note( std::vector<sn*>& prim, int q_note ) 
+{
+    collect_prim_note_r(prim, q_note, 0); 
+}
+inline void sn::collect_prim_note_r( std::vector<sn*>& prim, int q_note, int d ) 
+{
+    if(is_primitive() && has_note(q_note)) prim.push_back(this); 
+    for(int i=0 ; i < num_child() ; i++) get_child(i)->collect_prim_note_r(prim, q_note, d+1) ; 
+}
+
+
+
+/**
+sn::find_joint_to_candidate_listnode
+--------------------------------------
+
+::
+
+    sn::desc pid   18 idx   18 typecode   1 num_node  19 num_leaf  10 maxdepth  9 is_positive_form Y lvid   0 tag un
+    sn::render mode 4 TYPETAG
+                                                       un       
+                                                                
+                                                 un       cy    
+                                                                
+                                           un       cy          
+                                                                
+                                     un       cy                
+                                                                
+                               un       cy                      
+                                                                
+                         un       cy                            
+                                                                
+                   un       cy                                  
+                                                                
+            [un]      cy                                        
+                                                                
+       in       cy                                              
+                                                                
+    cy    !cy                          
+
+
+
+
+* off the top, where d=0, find all the listnode hinted prim (tail recursion, so the order is from bottom) 
+* recursive traverse, not descending to leaves
+
+  * look for left and right listnode hinted sub-trees  
+  * where left has no listnode hinted and right has fun : return that joint node
+
+
+**/
+
+
+inline sn* sn::find_joint_to_candidate_listnode(std::vector<sn*>& prim ) 
+{
+    sn* j = find_joint_to_candidate_listnode_r(0, prim); 
+    return j ; 
+}
+
+inline sn* sn::find_joint_to_candidate_listnode_r( int d, std::vector<sn*>& prim ) 
+{
+    int q_note = HINT_LISTNODE_PRIM ; 
+
+    if( d == 0 )
+    {
+        prim.clear(); 
+        collect_prim_note(prim, q_note); 
+    }
+    if(prim.size()==0) return nullptr ;  // none of the prim are hinted as listnode constituents
+
+    sn* joint = nullptr ; 
+    if(num_child() != 2) return nullptr ;  // dont traverse leaves or compounds 
+
+    // look left and right 
+    std::vector<sn*> l_prim ; 
+    std::vector<sn*> r_prim ; 
+    get_child(0)->collect_prim_note(l_prim, q_note); 
+    get_child(1)->collect_prim_note(r_prim, q_note); 
+
+    if(r_prim.size() == 1 && l_prim.size() == 0 )
+    {
+        joint = this ; 
+    } 
+    else
+    {
+        for(int i=0 ; i < num_child() ; i++)
+        { 
+            joint = get_child(i)->find_joint_to_candidate_listnode_r(d+1, prim) ; 
+            if(joint) break ; 
+        }
+    }
+    return joint ; 
+}
+
+
+
+/**
+sn::promote_candidate_listnode
+------------------------------
+
+HMM: cannot do at this level as need to change root 
+so move into static and/or U4Solid::init_Tree
+
+* study pruning to see how to do the manipulation
+
+
+WIP:
+
+3. grab the hinted prim and transforms and form the listnode from them 
+4. replace RHS of the "joint" node with the list node
+5. delete the extraneous "un" nodes (without deleting their RHS prim)
+
+* it might be easier to grab and reconstruct from scratch ? 
+
+
+inline sn* sn::promote_candidate_listnode()
+{
+    std::vector<sn*> prim ; 
+    sn* j = find_joint_to_candidate_listnode(prim); 
+    if(j = nullptr) return nullptr ; 
+
+    std::vector<sn*> cprim ; 
+
+    unsigned sub_num = prim.size(); 
+   
+ 
+    for(unsigned i=0 ; i < sub_num ; i++)
+    {
+        sn* p = prim[i] ; 
+        sn* pc = p->deepcopy();  
+        sn* pp = p->parent ; 
+
+        cprim.push_back(pc);  
+    }
+ 
+    int type = CSG_DISCONTIGUOUS ; // TODO: get this from hint ? 
+    sn* ln = sn::Compound( cprim, type );
+
+    j->set_right( ln, false );  
+
+    return j ; 
+}
+
+**/
+
 
 
 
@@ -4358,10 +4572,10 @@ inline void sn::setAABB_TreeFrame_All()
 
 
 /**
-sn::postconvert (HMM: think of better name)
----------------------------------------------
+sn::postconvert 
+-----------------
 
-This is called from U4Solid::init_Tree only from the depth zero solid
+This is called from U4Solid::init_Tree only from the depth zero solid (ie root node of trees)
 
 Note that uncoincide needs the leaf bbox in tree frame so they can be compared
 to look for coincidences and make some parameter nudges.  

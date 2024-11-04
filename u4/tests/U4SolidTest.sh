@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash 
 
 usage(){ cat << EOU
 U4SolidTest.sh
@@ -21,7 +21,11 @@ arg=${1:-$defarg}
 #GEOM=BoxGridMultiUnion10_30_YX   ## see U4SolidMaker
 #GEOM=LocalFastenerAcrylicConstruction8
 #GEOM=OrbOrbMultiUnionSimple
-GEOM=OrbOrbMultiUnionSimple2
+#GEOM=OrbOrbMultiUnionSimple2
+
+GEOM=LocalFastenerAcrylicConstruction8
+#GEOM=AltLocalFastenerAcrylicConstruction8
+#GEOM=BltLocalFastenerAcrylicConstruction8
 
 export U4SolidTest__MAKE=$GEOM
 export U4SolidTest__Convert_level=${LEVEL:-4}
