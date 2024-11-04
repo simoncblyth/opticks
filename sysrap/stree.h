@@ -3258,12 +3258,8 @@ inline void stree::import(const NPFold* fold)
     NPFold* csg_f = fold->get_subfold(_CSG) ;
 
     if(csg_f == nullptr) std::cerr
-        << "stree::import.NOT:WITH_SND"
+        << "stree::import"
         << " FAILED : DUE TO LACK OF subfold _CSG : " << _CSG 
-        << std::endl 
-        << " PROBABLY THE PERSISTED TREE WAS CREATED WITH_SND "
-        << std::endl 
-        << " SWITCH OPTION TO WITH_SND OR RECREATE THE TREE NOT:WITH_SND "
         << std::endl 
         ;
 

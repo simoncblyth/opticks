@@ -20,12 +20,7 @@ stree_load_test.cc
 #include "stree.h"
 #include "stra.h"
 #include "strid.h"
-
-#ifdef WITH_SND
-#include "snd.hh"
-#else
 #include "sn.h"
-#endif
 
 
 struct stree_load_test
@@ -65,11 +60,6 @@ inline void stree_load_test::get_combined_transform( int LVID, int NDID )
 {
     std::cout 
         << "stree_load_test::get_combined_transform" 
-#ifdef WITH_SND
-        << " WITH_SND " 
-#else
-        << " NOT:WITH_SND "
-#endif
         << " LVID " << LVID
         << " NDID " << NDID 
         << std::endl 
@@ -82,17 +72,10 @@ inline void stree_load_test::get_combined_transform( int LVID, int NDID )
     std::cout << " VOL " << st->desc_nodes_(nodes) ; 
 
 
-#ifdef WITH_SND
-    std::vector<snd> nds ;    // CSG constituent nodes of the LV 
-    snd::GetLVID(nds, LVID ); 
-    int num_nds = nds.size(); 
-    std::cout << " snd::Brief_(nds) " << std::endl << snd::Brief_(nds) ; 
-#else
     std::vector<sn*> nds ;    // CSG constituent nodes of the LV 
     sn::GetLVNodes(nds, LVID ); 
     int num_nds = nds.size(); 
     std::cout << " sn::Desc(nds) " << std::endl << sn::Desc(nds) ; 
-#endif
 
     assert( num_nodes > 0 && num_nds > 1 ); 
 
@@ -104,11 +87,7 @@ inline void stree_load_test::get_combined_transform( int LVID, int NDID )
         bool dump_NDID = i == NDID ;  
 
         const snode& node = nodes[i] ; 
-#ifdef WITH_SND
-        const snd* nd = &nds[0] ; 
-#else
         const sn*  nd = nds[0] ; 
-#endif
 
         glm::tmat4x4<double> t(1.) ; 
         glm::tmat4x4<double> v(1.) ; 

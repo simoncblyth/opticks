@@ -18,8 +18,8 @@ in order to flexibly create complete binary trees with any number of leaf nodes.
 
 Hence the *sn* nodes are developed. Initially sn.h was used as transient 
 template for binary trees that are subsequently solidified into *snd* trees. 
-But have now moved most snd functionality over to sn. So can directly use 
-only sn and eliminate the old WITH_SND. 
+But have now moved all snd functionality over to sn. So can directly use 
+only sn and the old "WITH-SND" is removed. 
 
 sn ctor/dtor register/de-register from s_pool<sn,_sn> 
 -------------------------------------------------------

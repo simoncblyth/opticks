@@ -94,11 +94,7 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 
 opt="-DWITH_PLACEHOLDER"
-if [ -n "$SND" ]; then
-    opt="$opt -DWITH_SND"
-else
-    opt="$opt -DWITH_CHILD"
-fi
+opt="$opt -DWITH_CHILD"
 
 export stree_level=1 
 export FOLD=$BASE/stree
@@ -129,33 +125,20 @@ fi
 if [ "${arg/build}" != "$arg" ]; then 
     mkdir -p $(dirname $bin)
 
-    # WITH_SND is the old way thats no longer used ?  
-    if [ "${opt/WITH_SND}" != "$opt" ]; then
-         gcc \
-          $opt \
-          $SDIR/$name.cc \
-          $SDIR/../snd.cc \
-          $SDIR/../scsg.cc  \
-          -g -std=c++17 -lstdc++ -lm \
-          -I$SDIR/.. \
-          -I$CUDA_PREFIX/include \
-          -I$OPTICKS_PREFIX/externals/glm/glm \
-          -o $bin
-    else
-         gcc \
-          $opt \
-          $SDIR/$name.cc \
-          $SDIR/../s_tv.cc \
-          $SDIR/../s_bb.cc \
-          $SDIR/../s_pa.cc \
-          $SDIR/../sn.cc \
-          $SDIR/../s_csg.cc  \
-          -g -std=c++17 -lstdc++ -lm \
-          -I$SDIR/.. \
-          -I$CUDA_PREFIX/include \
-          -I$OPTICKS_PREFIX/externals/glm/glm \
-          -o $bin
-    fi 
+    gcc \
+      $opt \
+      $SDIR/$name.cc \
+      $SDIR/../s_tv.cc \
+      $SDIR/../s_bb.cc \
+      $SDIR/../s_pa.cc \
+      $SDIR/../sn.cc \
+      $SDIR/../s_csg.cc  \
+      -g -std=c++17 -lstdc++ -lm \
+      -I$SDIR/.. \
+      -I$CUDA_PREFIX/include \
+      -I$OPTICKS_PREFIX/externals/glm/glm \
+      -o $bin
+
     [ $? -ne 0 ] && echo $BASH_SOURCE build error with opt $opt && exit 1 
 fi 
 

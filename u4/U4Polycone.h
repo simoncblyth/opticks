@@ -60,12 +60,7 @@ After reversal::
 
 #include "G4Polycone.hh"
 
-#ifdef WITH_SND
-#include "snd.hh"
-#else
 #include "sn.h"
-#endif
-
 #include "ssys.h"
 
 struct RZ
@@ -92,11 +87,7 @@ inline std::string RZ::desc() const
 
 struct U4Polycone
 {
-#ifdef WITH_SND
-    static int  Convert( const G4Polycone* polycone, int lvid, int depth, int level ); 
-#else
     static sn*  Convert( const G4Polycone* polycone, int lvid, int depth, int level ); 
-#endif
 private:
 
     std::string desc() const ; 
@@ -110,11 +101,7 @@ private:
     void init_outer(); 
     void init_inner(); 
 
-#ifdef WITH_SND
-    void collectPrims(std::vector<int>& prims, bool outside ); 
-#else
     void collectPrims(std::vector<sn*>& prims, bool outside ); 
-#endif
 
 
     // MEMBERS
@@ -148,41 +135,25 @@ private:
 
     bool   has_inner ; 
 
-#ifdef WITH_SND
-    std::vector<int> outer_prims ;
-    std::vector<int> inner_prims ;
-    int    inner ; 
-    int    outer ; 
-    int    root ; 
-#else
     std::vector<sn*> outer_prims ;
     std::vector<sn*> inner_prims ;
     sn*    inner ; 
     sn*    outer ; 
     sn*    root ; 
-#endif
 
-   const char* label ; 
+    const char* label ; 
 
 };
 
 
-#ifdef WITH_SND
-inline int U4Polycone::Convert( const G4Polycone* polycone, int lvid, int depth, int level )
-#else
 inline sn* U4Polycone::Convert( const G4Polycone* polycone, int lvid, int depth, int level )
-#endif
 {
     U4Polycone upoly(polycone, lvid, depth, level ) ; 
 
     if(level > 0) 
     {
        std::cerr << "U4Polycone::Convert" << std::endl ; 
-#ifdef WITH_SND
-       std::cerr << snd::Render(upoly.root) ; 
-#else
        std::cerr << upoly.root->render(5) ; 
-#endif
     } 
     return upoly.root ; 
 }
@@ -214,11 +185,7 @@ inline std::string U4Polycone::desc() const
        << " Z_max       " << std::setw(10) << Z_max
        << std::endl  
        << " has_inner " << ( has_inner ? "YES" : "NO" ) 
-#ifdef WITH_SND
-       << " root " << std::setw(3) << root
-#else
        << " root " << std::setw(3) << ( root ? root->index() : -1 )
-#endif
        << " label " << ( label ? label : "-" )
        << std::endl 
        ;
@@ -261,17 +228,10 @@ inline U4Polycone::U4Polycone(const G4Polycone* polycone_, int lvid_, int depth_
     Z_min(0),
     Z_max(0),
     has_inner(false),
-#ifdef WITH_SND
-    inner(-1), 
-    outer(-1),
-    root(-1),
-    label("WITH_SND")
-#else
     inner(nullptr),
     outer(nullptr),
     root(nullptr),
-    label("NOT-WITH_SND")
-#endif
+    label("NOT-WITH-SND")
 {
     init(); 
     if(level > 0 ) std::cerr 
@@ -308,13 +268,8 @@ inline void U4Polycone::init()
     else
     {
         init_inner(); 
-#ifdef WITH_SND
-        assert( inner > -1 ); 
-        root = snd::Boolean(CSG_DIFFERENCE, outer, inner );  
-#else
         assert( inner ); 
         root = sn::Boolean(CSG_DIFFERENCE, outer, inner );  
-#endif
     }
 }
 
@@ -410,13 +365,8 @@ inline void U4Polycone::init_outer()
         << std::endl
         ; 
 
-#ifdef WITH_SND
-    if(num_outer_prim > 1) snd::ZNudgeOverlapJoints(lvid, outer_prims, enable_nudge); 
-    outer = snd::Collection(outer_prims); 
-#else
     if(num_outer_prim > 1) sn::ZNudgeOverlapJoints(lvid, outer_prims, enable_nudge); 
     outer = sn::Collection(outer_prims) ; 
-#endif
 
 }
 
@@ -444,12 +394,7 @@ inline void U4Polycone::init_inner()
     if( num_R_inner == 1 )  // cylinder inner
     {
         assert( R_inner_min == R_inner_max );
-
-#ifdef WITH_SND
-        inner = snd::Cylinder(R_inner_min, Z_min, Z_max);
-#else
         inner = sn::Cylinder(R_inner_min, Z_min, Z_max);
-#endif
     }
     else
     {
@@ -463,15 +408,9 @@ inline void U4Polycone::init_inner()
             << std::endl
             ; 
 
-#ifdef WITH_SND
-        snd::ZNudgeExpandEnds(lvid, inner_prims, enable_nudge);    // only for inner
-        if(num_inner_prim > 1) snd::ZNudgeOverlapJoints(lvid, inner_prims, enable_nudge); 
-        inner = snd::Collection( inner_prims ); 
-#else
         sn::ZNudgeExpandEnds(lvid, inner_prims, enable_nudge);    // only for inner 
         if(num_inner_prim > 1) sn::ZNudgeOverlapJoints(lvid, inner_prims, enable_nudge); 
         inner = sn::Collection( inner_prims ); 
-#endif
     }
 }
      
@@ -487,11 +426,7 @@ otherwise use Rmin values for the inner.
 
 **/
 
-#ifdef WITH_SND
-void U4Polycone::collectPrims(std::vector<int>& prims,  bool outside  )
-#else
 void U4Polycone::collectPrims(std::vector<sn*>& prims,  bool outside  )
-#endif
 {   
     // loop over pairs of planes
     for( unsigned i=1 ; i < rz.size() ; i++ )
@@ -517,15 +452,11 @@ void U4Polycone::collectPrims(std::vector<sn*>& prims,  bool outside  )
         bool is_cylinder = r1 == r2 ;  
         int idx = -1 ; 
 
-#ifdef WITH_SND
-        idx = is_cylinder ? snd::Cylinder(r2, z1, z2 ) : snd::Cone( r1, z1, r2, z2 ) ; 
-        prims.push_back(idx);
-#else
         sn* pr = is_cylinder ? sn::Cylinder(r2, z1, z2 ) : sn::Cone( r1, z1, r2, z2 ) ; 
         pr->lvid = lvid ;  // so this before setting root for debug purposes
         prims.push_back(pr);
         idx = pr->index() ; 
-#endif
+
         if( level > 0 ) std::cerr 
              << "U4Polycone::collectPrims"
              << " outside " << ( outside ? "YES" : "NO " )

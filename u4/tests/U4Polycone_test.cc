@@ -2,12 +2,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include "NPFold.h"
-
-#ifdef WITH_SND
-#include "scsg.hh"
-#else
 #include "s_csg.h"
-#endif
 
 /**
 
@@ -38,18 +33,7 @@ int main()
     int level = 1 ; 
 
     NPFold* fold = nullptr ; 
-#ifdef WITH_SND
-    scsg* csg = new scsg ; 
-    assert(csg); 
 
-    int root = U4Polycone::Convert( pc, level );  
-    std::cout <<  snd::Render(root) ; 
-    std::cout << csg->brief() << std::endl ;  
-    std::cout << csg->desc() << std::endl ;  
-
-    fold = csg->serialize(); 
-    fold->save("$FOLD/csg");
-#else
     s_csg* csg = new s_csg ; 
     assert(csg); 
 
@@ -60,6 +44,6 @@ int main()
     std::cout << csg->brief() << std::endl ;  
     fold = csg->serialize(); 
     fold->save("$FOLD/_csg");
-#endif
+
     return 0 ; 
 }

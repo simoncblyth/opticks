@@ -8,8 +8,8 @@ in order to facilitate quick changes of compilation options.
 
 Compilation options:
 
--DWITH_SND
-     reverts to the old inflexible snd.hh CSG node impl
+former -DWITH..SND
+     reverted to the old inflexible snd.hh CSG node impl
      instead of the default more flexible sn.h impl 
 
 -DWITH_CHILD
@@ -19,8 +19,7 @@ Compilation options:
 EOU
 }
 
-opt="-DWITH_SND"
-#opt="-DWITH_CHILD"
+opt="-DWITH_CHILD"
 
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)

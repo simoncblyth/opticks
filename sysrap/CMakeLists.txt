@@ -691,17 +691,17 @@ target_include_directories( ${name} PUBLIC
 SysRap Compile Definitions
 ----------------------------
 
-WITH_SND
-   switches the below to use the old inflexible snd.hh CSG node impl, 
+former  WITH..SND
+   switched the below to use the old inflexible snd.hh CSG node impl, 
    instead of the default more flexible sn.h impl:
 
    sysrap/stree.h
-       WITH_SND saves CSG nodes in CSGFoundry/SSim/stree/csg 
-       NOT:WITH_SND saves CSG nodes in CSGFoundry/SSim/stree/_csg 
+       WITH..SND saves CSG nodes in CSGFoundry/SSim/stree/csg 
+       NOT:WITH..SND saves CSG nodes in CSGFoundry/SSim/stree/_csg 
 
    u4/U4Tree.h u4/U4Solid.h u4/U4Polycone.h 
-       WITH_SND uses snd.hh idx int as CSG root
-       NOT:WITH_SND uses sn.h sn* pointer as CSG root 
+       WITH..SND uses snd.hh idx int as CSG root
+       NOT:WITH..SND uses sn.h sn* pointer as CSG root 
     
 WITH_CHILD
    sysrap/sn.h uses child vector of sn pointers supporting n-ary trees

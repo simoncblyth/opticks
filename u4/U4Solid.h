@@ -1,7 +1,7 @@
 #pragma once
 /**
-U4Solid.h : Convert G4VSolid CSG trees into snd.hh trees
-=================================================================
+U4Solid.h : Convert G4VSolid CSG trees into sn.h trees
+==========================================================
 
 Canonical usage from U4Tree::initSolid
 
@@ -116,11 +116,7 @@ struct U4Solid
     const char* tag() const ; 
 
 
-#ifdef WITH_SND
-    static int Convert(const G4VSolid* solid, int lvid, int depth, int level=-1 ) ; 
-#else
     static sn* Convert(const G4VSolid* solid, int lvid, int depth, int level=-1 ) ; 
-#endif
 
 private:
     U4Solid( const G4VSolid* solid, int lvid, int depth, int level  ); 
@@ -144,13 +140,8 @@ private:
     void init_IntersectionSolid(); 
     void init_SubtractionSolid(); 
 
-#ifdef WITH_SND
-    int init_Sphere_(char layer); 
-    int init_Cons_(char layer); 
-#else
     sn* init_Sphere_(char layer); 
     sn* init_Cons_(char layer); 
-#endif
 
 
     static OpticksCSG_t BooleanOperator(const G4BooleanSolid* solid ); 
@@ -181,11 +172,7 @@ private:
     int             lvid ; 
     int             depth ;   // recursion depth across different G4VSolid
 
-#ifdef WITH_SND  // old impl that will be replacing 
-    int             root ;    // snd.hh node index   
-#else
     sn*             root ;  
-#endif
 
 };
 
@@ -217,12 +204,7 @@ inline std::string U4Solid::brief() const
     ss << std::setw(3) << lvid
        << "/" << depth 
        << "/" << tag()
-       
-#ifdef WITH_SND
-       << "/"  << std::setw(3) << root
-#else
        << "/"  << std::setw(3) << ( root ? root->index() : -1 )
-#endif
        << "/" << std::setw(1) << level 
        ;
     std::string str = ss.str(); 
@@ -339,11 +321,7 @@ Canonically invoked from U4Tree::initSolid
 **/
 
 
-#ifdef WITH_SND
-inline int U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
-#else
 inline sn* U4Solid::Convert(const G4VSolid* solid, int lvid, int depth, int level ) // static
-#endif
 {
     bool flagged_LVID = IsFlaggedLVID(lvid);  
     if(flagged_LVID) std::cout 
@@ -373,11 +351,7 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level
     type(Type(entityType)),
     lvid(lvid_),
     depth(depth_),
-#ifdef WITH_SND
-    root(-1)
-#else
     root(nullptr)
-#endif
 {
     init() ; 
 }
@@ -433,11 +407,7 @@ inline void U4Solid::init_Constituents()
 
 inline void U4Solid::init_Check()
 {
-#ifdef WITH_SND
-    if(root == -1)
-#else
     if(root == nullptr)
-#endif
     {
         std::cerr << "U4Solid::init_Check FAILED desc: " << desc() << std::endl ; 
         assert(0); 
@@ -462,19 +432,12 @@ when the sn::postconvert is called
 
 inline void U4Solid::init_Tree()
 {
-#ifdef WITH_SND
-    assert( root > -1 );
-    snd::SetLVID(root, lvid );   
-    std::cerr << "U4Solid::init_Tree.WITH_SND.FATAL snd.hh does not provide positivize" << std::endl ; 
-    assert(0); 
-#else
     assert( root); 
 
     if( depth == 0 )  
     {
         root->postconvert(lvid); 
     }
-#endif
 }
 
 
@@ -499,24 +462,14 @@ inline void U4Solid::init_Orb()
     const G4Orb* orb = dynamic_cast<const G4Orb*>(solid);
     assert(orb);
     double radius = orb->GetRadius()/CLHEP::mm ;
-#ifdef WITH_SND
-    root = snd::Sphere(radius) ; 
-#else
     root = sn::Sphere(radius) ; 
-#endif
 }
 
 inline void U4Solid::init_Sphere()
 {
-#ifdef WITH_SND
-    int outer = init_Sphere_('O');  assert( outer > -1 ); 
-    int inner = init_Sphere_('I');
-    root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
-#else
     sn* outer = init_Sphere_('O') ; assert( outer ) ; 
     sn* inner = init_Sphere_('I');
     root = inner == nullptr ? outer : sn::Boolean( CSG_DIFFERENCE, outer, inner ) ; 
-#endif
 }
 
 /**
@@ -540,11 +493,7 @@ TODO: bring over phicut handling from X4Solid
 
 **/
 
-#ifdef WITH_SND
-inline int U4Solid::init_Sphere_(char layer)
-#else
 inline sn* U4Solid::init_Sphere_(char layer)
-#endif
 {
     assert( layer == 'I' || layer == 'O' ); 
     const G4Sphere* sphere = dynamic_cast<const G4Sphere*>(solid);
@@ -553,11 +502,7 @@ inline sn* U4Solid::init_Sphere_(char layer)
     double rmax = sphere->GetOuterRadius()/CLHEP::mm ; 
     double rmin = sphere->GetInnerRadius()/CLHEP::mm ; 
     double radius = layer == 'I' ? rmin : rmax ;
-#ifdef WITH_SND
-    if(radius == 0.) return -1 ; 
-#else
     if(radius == 0.) return nullptr ; 
-#endif
 
     double startThetaAngle = sphere->GetStartThetaAngle()/CLHEP::radian ; 
     double deltaThetaAngle = sphere->GetDeltaThetaAngle()/CLHEP::radian ; 
@@ -581,11 +526,7 @@ inline sn* U4Solid::init_Sphere_(char layer)
     assert( has_deltaPhi_expect ); 
     if(!has_deltaPhi_expect) std::raise(SIGINT); 
 
-#ifdef WITH_SND
-    return z_slice ? snd::ZSphere( radius, zmin, zmax ) : snd::Sphere(radius ) ; 
-#else
     return z_slice ? sn::ZSphere( radius, zmin, zmax ) : sn::Sphere(radius ) ; 
-#endif
 }
 
 
@@ -682,6 +623,7 @@ inline void U4Solid::init_Hype()
     assert(0); 
 } 
 
+
 inline void U4Solid::init_MultiUnion()
 {
     const G4MultiUnion* const muni = static_cast<const G4MultiUnion*>(solid);
@@ -774,11 +716,7 @@ inline void U4Solid::init_Torus()
     assert( rmax_mm > rmin_mm );
     assert( rtor_mm > rmax_mm );
 
-#ifdef WITH_SND
-    assert(0); 
-#else
     root = sn::Torus(rmin_mm, rmax_mm, rtor_mm, startPhi_deg, deltaPhi_deg ) ; 
-#endif
 }
 
 
@@ -793,11 +731,7 @@ inline void U4Solid::init_Box()
     double fy = 2.0*box->GetYHalfLength()/CLHEP::mm ;
     double fz = 2.0*box->GetZHalfLength()/CLHEP::mm ;
 
-#ifdef WITH_SND
-    root = snd::Box3(fx, fy, fz) ; 
-#else
     root = sn::Box3(fx, fy, fz) ; 
-#endif
 }
 
 
@@ -811,11 +745,7 @@ inline void U4Solid::init_Tubs()
     double rmin = tubs->GetInnerRadius()/CLHEP::mm ; 
     bool has_inner = rmin > 0. ; 
 
-#ifdef WITH_SND
-    int outer = snd::Cylinder(rmax, -hz, hz );
-#else
     sn* outer = sn::Cylinder(rmax, -hz, hz );
-#endif
 
 
     if(has_inner == false)
@@ -828,14 +758,8 @@ inline void U4Solid::init_Tubs()
         double nudge_inner = 0.01 ;
         double dz = do_nudge_inner ? hz*nudge_inner : 0. ; 
 
-#ifdef WITH_SND
-        int inner = snd::Cylinder(rmin, -(hz+dz), hz+dz );  
-        root = snd::Boolean( CSG_DIFFERENCE, outer, inner ); 
-#else
         sn* inner = sn::Cylinder(rmin, -(hz+dz), hz+dz );  
         root = sn::Boolean( CSG_DIFFERENCE, outer, inner ); 
-#endif
-
     }
 
 } 
@@ -858,11 +782,7 @@ inline void U4Solid::init_Polycone()
 
 
 
-#ifdef WITH_SND
-inline int U4Solid::init_Cons_(char layer)
-#else
 inline sn* U4Solid::init_Cons_(char layer)
-#endif
 {
     assert( layer == 'I' || layer == 'O' ); 
     const G4Cons* cone = dynamic_cast<const G4Cons*>(solid);
@@ -886,24 +806,14 @@ inline sn* U4Solid::init_Cons_(char layer)
 
     bool invalid =  r1 == 0. && r2 == 0. ; 
 
-#ifdef WITH_SND
-    return invalid ? -1 : snd::Cone( r1, z1, r2, z2 ) ;  
-#else
     return invalid ? nullptr : sn::Cone( r1, z1, r2, z2 ) ;  
-#endif
 } 
 
 inline void U4Solid::init_Cons()
 {
-#ifdef WITH_SND
-    int outer = init_Cons_('O');  assert( outer > -1 ); 
-    int inner = init_Cons_('I');
-    root = inner == -1 ? outer : snd::Boolean( CSG_DIFFERENCE, outer, inner ) ;
-#else
     sn* outer = init_Cons_('O');  assert( outer ); 
     sn* inner = init_Cons_('I'); 
     root = inner == nullptr ? outer : sn::Boolean( CSG_DIFFERENCE, outer, inner ) ;
-#endif
 
     if(level > 0 ) std::cerr 
         << "U4Solid::init_Cons"
@@ -1027,28 +937,6 @@ inline void U4Solid::init_BooleanSolid()
     assert( is_left_displaced_expect && "not expecting left displacement " );
     if(!is_left_displaced_expect) std::raise(SIGINT); 
 
-#ifdef WITH_SND
-    int l = Convert( left, lvid, depth+1 , level ); 
-    int r = Convert( right, lvid, depth+1, level ); 
-
-    int l_xf = snd::GetNodeXForm(l);
-    int r_xf = snd::GetNodeXForm(r);
-
-    if( l_xf > -1 && level > 0) std::cout 
-        << "U4Solid::init_BooleanSolid "
-        << " observe transform on left node " 
-        << " l_xf " << l_xf
-        << std::endl 
-        ; 
-
-    // assert( l_xf == -1  && "NOT expecting transform on left node " ); 
-    // G4Ellipsoid is translated into a ZSphere with scale transform which may 
-    // appear on the left side of a boolean : so cannot assert no left transforms. 
-
-    if(is_right_displaced) assert( r_xf > -1  && "expecting transform on right displaced node " ); 
-
-    root = snd::Boolean( op, l, r ); 
-#else
     sn* l = Convert( left,  lvid, depth+1, level ); 
     sn* r = Convert( right, lvid, depth+1, level ); 
 
@@ -1062,9 +950,6 @@ inline void U4Solid::init_BooleanSolid()
     if(is_right_displaced) assert( r->xform && "expecting transform on right displaced node " ); 
  
     root = sn::Boolean( op, l, r ); 
-#endif
-
-
 }
 
 
@@ -1105,15 +990,8 @@ inline void U4Solid::init_DisplacedSolid()
     assert(single_disp && "only single disp is expected" );
     if(!single_disp) std::raise(SIGINT); 
 
-#ifdef WITH_SND
-    root = Convert( moved, lvid, depth+1, level ); 
-    assert(root > -1); 
-    snd::SetNodeXForm(root, xf);  // internally calls snd::combineXF
-#else
     root = Convert( moved, lvid, depth+1, level ); 
     root->combineXF(xf); 
-#endif
-
 } 
 
 
