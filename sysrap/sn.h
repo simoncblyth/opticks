@@ -141,6 +141,8 @@ inline bool _sn::is_root() const
 #include "SYSRAP_API_EXPORT.hh"
 struct SYSRAP_API sn
 {
+    static int Check_LEAK(const char* msg, int i=-1);
+
     // persisted
     int   typecode ; 
     int   complement ; 
@@ -196,6 +198,8 @@ struct SYSRAP_API sn
     sn*  first_child() const ; 
     sn*  last_child() const ; 
     sn*  get_child(int ch) const ;
+    sn*  get_left() const ; 
+    sn*  get_right() const ; 
 
     int  total_siblings() const ;
     int  child_index( const sn* ch ) ; 
@@ -221,6 +225,9 @@ struct SYSRAP_API sn
     void disown_child(sn* ch) ; 
     sn* deepcopy() const ; 
     sn* deepcopy_r(int d) const ; 
+    sn* copy() const ; 
+
+    static void DeepCopy(std::vector<sn*>& p1, const std::vector<sn*>& p0) ; 
 
     void set_child( int ix, sn* ch, bool copy ); 
     void set_left( sn* left, bool copy ); 
@@ -295,6 +302,8 @@ struct SYSRAP_API sn
 
 
     std::string render() const ; 
+    std::string render_typetag() const ; 
+    std::string rdr() const ; 
     std::string render(int mode) const ; 
 
     enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID, NOTE,  NUM_MODE=7 } ; 
@@ -419,13 +428,18 @@ struct SYSRAP_API sn
     enum {
             NOTE_INCREASE_ZMAX = 0x1 << 0, 
             NOTE_DECREASE_ZMIN = 0x1 << 1,
-            HINT_LISTNODE_PRIM = 0x1 << 2 
+            HINT_LISTNODE_PRIM_DISCONTIGUOUS = 0x1 << 2, 
+            HINT_LISTNODE_PRIM_CONTIGUOUS    = 0x1 << 3 
          };
 
     static unsigned NameHint(const char* name); 
-    static constexpr const char* _HINT_LISTNODE_PRIM = "HINT_LISTNODE_PRIM" ; 
+    static constexpr const char* _HINT_LISTNODE_PRIM_DISCONTIGUOUS = "HINT_LISTNODE_PRIM_DISCONTIGUOUS" ; 
+    static constexpr const char* _HINT_LISTNODE_PRIM_CONTIGUOUS    = "HINT_LISTNODE_PRIM_CONTIGUOUS" ; 
     void set_hint_note(unsigned hint); 
-    bool is_hint_listnode_prim() const ; 
+    void set_hint_listnode_prim_discontiguous(); 
+    void set_hint_listnode_prim_contiguous(); 
+    bool  is_hint_listnode_prim_discontiguous() const ; 
+    bool  is_hint_listnode_prim_contiguous() const ; 
 
     void increase_zmax( double dz ); // expand upwards in +Z direction 
     void decrease_zmin( double dz ); // expand downwards in -Z direction
@@ -522,9 +536,15 @@ struct SYSRAP_API sn
     void collect_prim_note(  std::vector<sn*>& prim, int q_note ); 
     void collect_prim_note_r( std::vector<sn*>& prim, int q_note, int d ); 
 
-    sn* find_joint_to_candidate_listnode( std::vector<sn*>& prim) ; 
-    sn* find_joint_to_candidate_listnode_r( int d,  std::vector<sn*>& prim ); 
+    sn* find_joint_to_candidate_listnode( std::vector<sn*>& prim, int q_note ) ; 
+    sn* find_joint_to_candidate_listnode_r( int d,  std::vector<sn*>& prim, int q_note ); 
+    bool has_candidate_listnode(int q_note); 
+    bool has_candidate_listnode_discontiguous() ; 
+    bool has_candidate_listnode_contiguous() ; 
 
+    static sn* CreateSmallerTreeWithListNode(sn* root0, int q_note); 
+    static sn* CreateSmallerTreeWithListNode_discontiguous(sn* root0); 
+    static sn* CreateSmallerTreeWithListNode_contiguous(   sn* root0); 
 
 
     void collect_monogroup( std::vector<const sn*>& monogroup ) const ; 
@@ -584,6 +604,48 @@ struct SYSRAP_API sn
 
     
 };  // END
+
+
+
+inline int sn::Check_LEAK(const char* msg, int i)  // static
+{
+    //const char* spacer = "\n\n" ; 
+    const char* spacer = "" ; 
+
+    std::stringstream ss ; 
+    ss << "sn::Check_LEAK[" << std::setw(3) << i << "] " << std::setw(30) << ( msg ? msg : "-" ) << "  " << sn::pool->brief() << spacer << std::endl ; 
+    std::string str = ss.str(); 
+    std::cout << str ; 
+
+    if(!sn::LEAK)
+    {
+        assert( sn::pool->size() == 0 ); 
+    }
+
+    if(!s_tv::LEAK)
+    {
+        assert( s_tv::pool->size() == 0 ); 
+    }
+
+    if(!s_pa::LEAK)
+    {
+        assert( s_pa::pool->size() == 0 ); 
+    }
+
+    if(!s_bb::LEAK)
+    {
+        assert( s_bb::pool->size() == 0 ); 
+    }
+
+    return 0 ; 
+}
+
+
+
+
+
+
+
 
 inline void        sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int         sn::level() {  return ssys::getenvint("sn__level",-1) ; } // static 
@@ -680,6 +742,35 @@ inline sn* sn::get_child(int ch) const
     return nullptr ; 
 #endif
 }
+
+
+inline sn* sn::get_left() const
+{
+    sn* l = nullptr ; 
+#ifdef WITH_CHILD
+    assert( child.size() == 2 ); 
+    l = child[0] ; 
+#else
+    l = left ;
+#endif
+    return l ; 
+}
+
+inline sn* sn::get_right() const
+{
+    sn* r = nullptr ; 
+#ifdef WITH_CHILD
+    assert( child.size() == 2 ); 
+    r = child[1] ; 
+#else
+    r = right ;
+#endif
+    return r ; 
+}
+
+
+
+
 
 
 inline int sn::total_siblings() const
@@ -947,6 +1038,9 @@ inline sn::~sn()
     if(level() > 1) std::cout << "[ sn::~sn pid " << pid << std::endl ; 
 
     delete xform ; 
+    delete param ; 
+    delete aabb  ; 
+    // parent is not deleted : as it is regarded as weakly linked (ie not owned by this node)
 
 
 #ifdef WITH_CHILD
@@ -989,6 +1083,16 @@ inline void sn::disown_child(sn* ch)
 }
 #endif
 
+
+/**
+sn::deepcopy
+-------------
+
+HMM: despite the name the xform, param and aabb pointers are 
+being shallow copied by the default copy ctor
+
+**/
+
 inline sn* sn::deepcopy() const 
 {
     return deepcopy_r(0); 
@@ -1008,35 +1112,92 @@ to the copy child vector
 
 inline sn* sn::deepcopy_r(int d) const 
 {
-    sn* copy = new sn(*this) ;    
+    sn* n = copy(); 
+
 #ifdef WITH_CHILD
     for(int i=0 ; i < int(child.size()) ; i++)
     {
         sn* ch = child[i] ; 
-        copy->disown_child( ch ) ;          // remove shallow copied child from the vector
+        n->disown_child( ch ) ;          // remove shallow copied child from the vector
         sn* deep_ch = ch->deepcopy_r(d+1) ; 
-        copy->child.push_back( deep_ch ); 
+        n->child.push_back( deep_ch ); 
     }
 #else
     // whether nullptr or not the shallow default copy 
     // should have copied left and right 
-    assert( copy->left == left ); 
-    assert( copy->right == right ); 
+    assert( n->left == left ); 
+    assert( n->right == right ); 
     // but thats just a shallow copy so replace here with deep copies
-    copy->left  = left  ? left->deepcopy_r(d+1) : nullptr ; 
-    copy->right = right ? right->deepcopy_r(d+1) : nullptr ;   
+    n->left  = left  ? left->deepcopy_r(d+1) : nullptr ; 
+    n->right = right ? right->deepcopy_r(d+1) : nullptr ;   
 #endif
-    copy->parent = nullptr ; 
 
-    return copy ;   
+    return n ;   
 }
+
+
+/**
+sn::copy
+---------
+
+default copy ctor just shallow copies the pointers and the pid, 
+so fix those up here to make the copy truly independant of the 
+original node 
+
+**/
+
+inline sn* sn::copy() const
+{
+    sn* n = new sn(*this) ;    
+
+    n->pid = pool ? pool->add(n) : -1 ;
+    n->parent = nullptr ; 
+    n->xform = xform ? xform->copy() : nullptr ; 
+    n->param = param ? param->copy() : nullptr ; 
+    n->aabb  = aabb ? aabb->copy() : nullptr ; 
+
+    return n ; 
+}
+
+
+/**
+sn::DeepCopy
+-------------
+
+It makes most sense to use this for copying prim nodes
+
+**/
+
+inline void sn::DeepCopy(std::vector<sn*>& p1, const std::vector<sn*>& p0) // static 
+{
+    for(unsigned i=0 ; i < p0.size() ; i++) p1.push_back(p0[i]->deepcopy());  
+}
+
+
 
 /**
 sn::set_child
 ---------------
 
-When the new child to be set *ch* is from within the tree when pruning 
-it is necessary to deepcopy it first using copy:true 
+When *ch* (the new child to be set) is from within the tree and 
+not a newly created disconnected node, eg when pruning and moving 
+around nodes it is necessary to deepcopy that preexisting node 
+using copy:true 
+
+
+copy:false
+
+   * parent of *ch* is set to this 
+   * reference to child[ix] slot is obtained
+   * old occupier of the child[ix] slot is deleted (for LEAK:false the standard)
+   * child[ix] slot pointer set to *ch* 
+
+copy:true 
+
+   * as above but deepcopy the *ch* first 
+
+
+* NB former slot residents are deleted
 
 **/
 
@@ -1500,7 +1661,8 @@ inline std::string sn::desc() const
 
 inline std::string sn::desc_prim() const 
 {
-    bool hint_lnpr = is_hint_listnode_prim(); 
+    bool hint_lnprd = is_hint_listnode_prim_discontiguous(); 
+    bool hint_lnprc = is_hint_listnode_prim_contiguous(); 
 
     std::stringstream ss ;
     ss 
@@ -1508,7 +1670,8 @@ inline std::string sn::desc_prim() const
        << " lvid " << std::setw(3) << lvid 
        << " " << tag()
        << ( aabb ? aabb->desc() : "-" )
-       << " " << ( hint_lnpr ? "HINT_LNPR" : "" )  
+       << " " << ( hint_lnprd ? "HINT_LNPRD" : "" )  
+       << " " << ( hint_lnprc ? "HINT_LNPRC" : "" )  
        ; 
 
     std::string str = ss.str();
@@ -1630,7 +1793,8 @@ inline std::string sn::render() const
     return str ;
 }
 
-
+inline std::string sn::render_typetag() const { return render(TYPETAG);  }
+inline std::string sn::rdr() const {            return render(TYPETAG);  }
 
 inline std::string sn::render(int mode) const
 {
@@ -1664,7 +1828,7 @@ inline std::string sn::render(int mode) const
     ss << "sn::render mode " << mode << " " << rendermode(mode) << std::endl ;
     ss << canvas.c << std::endl ;
 
-    if(mode == 0 || mode == 5)
+    if(mode == MINIMAL || mode == PID)
     {
         ss << "preorder  " << desc_order(pre)  << std::endl ; 
         ss << "inorder   " << desc_order(in)   << std::endl ; 
@@ -2028,27 +2192,61 @@ inline void sn::prune()
 
     if(has_dangle())
     {
-        if(level() > -1) std::cout << "sn::prune ERROR left with dangle " << std::endl ; 
+        if(level() > -1) std::cout << "sn::prune ERROR root still has dangle " << std::endl ; 
     }
 
 }
 
 /**
-Based on npy/NTreeBuilder
+sn::prune_r
+-------------
+
+* based on npy/NTreeBuilder
+* returning to tree integrity relies on actions of set_left/set_right   
+
+
+
+
+l->is_lrzero::
+
+
+      before                   after prune_r
+
+            this                    this 
+            /   \                  /    \
+           /     \                /      \
+          l       r              0        r
+         / \
+        /   \
+       0     0
+
+
+l->is_rzero::
+
+
+     before                    after prune_r  
+
+           this                    this
+          /    \                  /     \
+         /      \                /       \
+        l        r             l=>"ll"    r 
+       / \
+      /   \
+     ll    0 
+
 **/
 
 inline void sn::prune_r(int d) 
 {   
     if(!is_operator()) return ; 
 
-#ifdef WITH_CHILD
-    assert( child.size() == 2 ); 
-
-    sn* l = child[0] ; 
-    sn* r = child[1] ; 
+    sn* l = get_left(); 
+    sn* r = get_right(); 
 
     l->prune_r(d+1); 
     r->prune_r(d+1); 
+
+    // postorder visit : so both children always visited before their parents 
 
     if( l->is_lrzero() )     // left node is an operator which has both its left and right zero
     {
@@ -2056,8 +2254,8 @@ inline void sn::prune_r(int d)
     }  
     else if( l->is_rzero() )  // left node is an operator with left non-zero and right zero 
     {
-        sn* ll = l->child[0] ; 
-        set_left( ll, true ); 
+        sn* ll = l->get_left(); 
+        set_left( ll, true );   // moving the lonely primitive up to higher elevation 
     }
 
     if(r->is_lrzero())        // right node is operator with both its left and right zero 
@@ -2066,37 +2264,24 @@ inline void sn::prune_r(int d)
     }
     else if( r->is_rzero() )  // right node is operator with its left non-zero and right zero
     {  
-        sn* rl = r->child[0] ; 
+        sn* rl = r->get_left() ; 
         set_right(rl, true) ;         // moving the lonely primitive up to higher elevation   
     }
-#else
-
-    left->prune_r(d+1);
-    right->prune_r(d+1);
-    
-    // postorder visit : so both children always visited before their parents 
-    
-    if(left->is_lrzero())         // left node is an operator which has both its left and right zero 
-    {   
-        set_left(sn::Zero(), false) ;       // prune : ie replace operator with CSG_ZERO placeholder  
-    }
-    else if( left->is_rzero() )   // left node is an operator with left non-zero and right zero   
-    {  
-        set_left(left->left, true) ;          // moving the lonely primitive up to higher elevation   
-    }
-    
-    if(right->is_lrzero())        // right node is operator with both its left and right zero 
-    {   
-        set_right(sn::Zero(), false) ;      // prune
-    }
-    else if( right->is_rzero() )  // right node is operator with its left non-zero and right zero
-    {   
-        set_right(right->left, true) ;         // moving the lonely primitive up to higher elevation   
-    }
-#endif
-
-
 }
+
+
+
+/**
+sn::has_dangle   (non recursive)
+---------------------------------
+
+A dangle node is an operator with a one or two placeholder children (aka zeros), eg::
+
+      op           op           op
+     /  \         /  \         /  \
+    0    V       V    0       0    0
+
+**/
 
 inline bool sn::has_dangle() const  // see NTreeBuilder::rootprune
 {
@@ -2228,6 +2413,14 @@ inline void sn::set_label( const char* label_ )
 {
     strncpy( &label[0], label_, sizeof(label) );
 }
+
+/**
+sn::set_lvid
+-------------
+
+Recursively sets both lvid and depth for the tree
+
+**/
 
 inline void sn::set_lvid(int lvid_)
 {
@@ -2571,6 +2764,9 @@ inline sn* sn::Boolean(int typecode_, sn* left_, sn* right_)  // static
 
 
 
+
+
+
 /**
 sn::ZNudgeExpandEnds
 ---------------------
@@ -2819,7 +3015,8 @@ inline bool sn::CanZNudgeAll(std::vector<sn*>& prims)  // static
 inline unsigned sn::NameHint(const char* name) // static
 {
     unsigned hint = 0 ; 
-    if(strstr(name, _HINT_LISTNODE_PRIM) != nullptr) hint = HINT_LISTNODE_PRIM ; 
+    if(     strstr(name, _HINT_LISTNODE_PRIM_DISCONTIGUOUS) != nullptr) hint = HINT_LISTNODE_PRIM_DISCONTIGUOUS ; 
+    else if(strstr(name, _HINT_LISTNODE_PRIM_CONTIGUOUS)    != nullptr) hint = HINT_LISTNODE_PRIM_CONTIGUOUS ; 
     return hint ;
 }
 
@@ -2835,16 +3032,15 @@ Canonically invoked from U4Solid::init_Tree based on the solid name
 inline void sn::set_hint_note(unsigned hint)
 {
     if(hint == 0u) return ; 
-    if( (hint & HINT_LISTNODE_PRIM) != 0 ) 
-    {   
-        note |= HINT_LISTNODE_PRIM ;   
-    }   
+    if(      (hint & HINT_LISTNODE_PRIM_DISCONTIGUOUS) != 0 )  note |= HINT_LISTNODE_PRIM_DISCONTIGUOUS ;   
+    else if( (hint & HINT_LISTNODE_PRIM_CONTIGUOUS)    != 0 )  note |= HINT_LISTNODE_PRIM_CONTIGUOUS    ;   
 }
 
-inline bool sn::is_hint_listnode_prim() const 
-{
-    return ( note & HINT_LISTNODE_PRIM ) != 0 ; 
-}
+inline void sn::set_hint_listnode_prim_discontiguous(){ set_hint_note( HINT_LISTNODE_PRIM_DISCONTIGUOUS ); } 
+inline void sn::set_hint_listnode_prim_contiguous(){    set_hint_note( HINT_LISTNODE_PRIM_CONTIGUOUS    ); } 
+
+inline bool sn::is_hint_listnode_prim_discontiguous() const { return ( note & HINT_LISTNODE_PRIM_DISCONTIGUOUS ) != 0 ; }
+inline bool sn::is_hint_listnode_prim_contiguous() const {    return ( note & HINT_LISTNODE_PRIM_CONTIGUOUS )    != 0 ; }
 
 
 
@@ -4091,19 +4287,20 @@ sn::find_joint_to_candidate_listnode
   * where left has no listnode hinted and right has fun : return that joint node
 
 
+Q: HMM does this require having run postconvert ? 
+
+
 **/
 
 
-inline sn* sn::find_joint_to_candidate_listnode(std::vector<sn*>& prim ) 
+inline sn* sn::find_joint_to_candidate_listnode(std::vector<sn*>& prim, int q_note ) 
 {
-    sn* j = find_joint_to_candidate_listnode_r(0, prim); 
+    sn* j = find_joint_to_candidate_listnode_r(0, prim, q_note ); 
     return j ; 
 }
 
-inline sn* sn::find_joint_to_candidate_listnode_r( int d, std::vector<sn*>& prim ) 
+inline sn* sn::find_joint_to_candidate_listnode_r( int d, std::vector<sn*>& prim, int q_note ) 
 {
-    int q_note = HINT_LISTNODE_PRIM ; 
-
     if( d == 0 )
     {
         prim.clear(); 
@@ -4128,63 +4325,127 @@ inline sn* sn::find_joint_to_candidate_listnode_r( int d, std::vector<sn*>& prim
     {
         for(int i=0 ; i < num_child() ; i++)
         { 
-            joint = get_child(i)->find_joint_to_candidate_listnode_r(d+1, prim) ; 
+            joint = get_child(i)->find_joint_to_candidate_listnode_r(d+1, prim, q_note ) ; 
             if(joint) break ; 
         }
     }
     return joint ; 
 }
 
+inline bool sn::has_candidate_listnode(int q_note) 
+{
+    std::vector<sn*> prim ; 
+    sn* j = find_joint_to_candidate_listnode(prim, q_note); 
+    return j != nullptr && prim.size() > 0 ; 
+}
+
+inline bool sn::has_candidate_listnode_discontiguous(){ return has_candidate_listnode( HINT_LISTNODE_PRIM_DISCONTIGUOUS ) ; }
+inline bool sn::has_candidate_listnode_contiguous(){    return has_candidate_listnode( HINT_LISTNODE_PRIM_CONTIGUOUS    ) ; }
+
+
 
 
 /**
-sn::promote_candidate_listnode
-------------------------------
+sn::CreateSmallerTreeWithListNode
+-----------------------------------
 
-HMM: cannot do at this level as need to change root 
-so move into static and/or U4Solid::init_Tree
-
-* study pruning to see how to do the manipulation
+Example tree, where the eight nodes with + are hinted as listnode prim::
 
 
-WIP:
+                                                      (un)      
+                                                                
+                                                (un)      cy+    
+                                                                
+                                          (un)      cy+          
+                                                                
+                                    (un)      cy+                
+                                                                
+                              (un)      cy+                      
+                                                                
+                       (un)       cy+                            
+                                                                
+                  (un)      cy+                                  
+                                                                
+            {un}      cy+                                        
+                                                                
+       in       cy+                                              
+                                                                
+    cy    !cy                          
 
-3. grab the hinted prim and transforms and form the listnode from them 
-4. replace RHS of the "joint" node with the list node
-5. delete the extraneous "un" nodes (without deleting their RHS prim)
 
-* it might be easier to grab and reconstruct from scratch ? 
+After shrinkage::
 
 
-inline sn* sn::promote_candidate_listnode()
-{
-    std::vector<sn*> prim ; 
-    sn* j = find_joint_to_candidate_listnode(prim); 
-    if(j = nullptr) return nullptr ; 
+            {un}                                             
+                                                                
+       in       ln[cy+,cy+,cy+,cy+,cy+,cy+,cy+,cy+]                                            
+                                                                
+    cy    !cy                          
 
-    std::vector<sn*> cprim ; 
 
-    unsigned sub_num = prim.size(); 
-   
- 
-    for(unsigned i=0 ; i < sub_num ; i++)
-    {
-        sn* p = prim[i] ; 
-        sn* pc = p->deepcopy();  
-        sn* pp = p->parent ; 
 
-        cprim.push_back(pc);  
-    }
- 
-    int type = CSG_DISCONTIGUOUS ; // TODO: get this from hint ? 
-    sn* ln = sn::Compound( cprim, type );
+Manipulations needed::
 
-    j->set_right( ln, false );  
+1. find the joint node {un} between the extraneous (un) union nodes and 
+   the hinted prim cy+ to be incorporated into listnode
 
-    return j ; 
-}
+2. collect the cy+ hinted prim doing a deepcopy that includes xform, param, aabb
+
+3. form the "ln" listnode from the deepcopied cy+ hinted prim 
+
+4. set the right node of the deepcopied joint node {un} to the listnode "ln"
+  
+
+Note that the created tree including param, xform, aabb is independent 
+of the original tree due to the use of deepcopy for everything. 
+This enables the entire old tree root to be deleted. 
+
+Note that deepcopy excludes the parent pointer, but includes xform, param, aabb
+
+NB : this depends a lot on deepcopy 
 
 **/
+
+inline sn* sn::CreateSmallerTreeWithListNode(sn* root0, int q_note ) // static
+{
+    std::cerr << "[sn::CreateSmallerTreeWithListNode\n" ; 
+
+    std::vector<sn*> prim0 ; 
+
+    sn* j0 = root0->find_joint_to_candidate_listnode(prim0, q_note); 
+    if(j0 == nullptr) return nullptr ; 
+
+    sn* j1 = j0->deepcopy(); 
+
+    std::vector<sn*> prim1 ; 
+    sn::DeepCopy(prim1, prim0); 
+ 
+    int type = CSG_ZERO ; 
+    switch(q_note)
+    {
+       case HINT_LISTNODE_PRIM_DISCONTIGUOUS: type = CSG_DISCONTIGUOUS ; break ; 
+       case HINT_LISTNODE_PRIM_CONTIGUOUS:    type = CSG_CONTIGUOUS    ; break ; 
+    }
+    assert( type != CSG_ZERO ) ; 
+
+    sn* ln = sn::Compound( prim1, type );
+
+    j1->set_right( ln, false );  // NB this deletes the extraneous RHS just copied by j0->deepcopy  
+
+    std::cerr << "]sn::CreateSmallerTreeWithListNode\n" ; 
+    return j1 ; 
+}
+
+inline sn* sn::CreateSmallerTreeWithListNode_discontiguous(sn* root0) 
+{
+    return CreateSmallerTreeWithListNode( root0, HINT_LISTNODE_PRIM_DISCONTIGUOUS ) ; 
+}
+inline sn* sn::CreateSmallerTreeWithListNode_contiguous(sn* root0) 
+{
+    return CreateSmallerTreeWithListNode( root0, HINT_LISTNODE_PRIM_CONTIGUOUS ) ; 
+}
+
+
 
 
 
@@ -4823,4 +5084,6 @@ inline void sn::uncoincide_zminmax( int i, sn* lower, sn* upper, bool enable, st
    assert( upper_lower_pos_z_equal && "EXPECTED upper_lower_pos_z_equal FOR COINCIDENT " ); 
 
 }
+
+
 

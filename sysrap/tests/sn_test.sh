@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 sn_test.sh
 ==========
@@ -24,9 +24,52 @@ defarg="info_build_run"
 arg=${1:-$defarg}
 
 opt=-DWITH_CHILD
-export s_pool_level=2
 
-vars="BASH_SOURCE bin script opt"
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
+#test=ALL
+#test=create_0
+#test=deepcopy_0
+#test=list_tree_0
+#test=difference_and_list_tree_0
+test=CreateSmallerTreeWithListNode_0
+export TEST=${TEST:-$test}
+
+logging()
+{
+    type $FUNCNAME
+    export sn__level=2 
+    export s_pool_level=2
+}
+[ -n "$LOG" ] && logging 
+
+
+gdb__() 
+{ 
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+
+
+vars="BASH_SOURCE bin script opt TEST sn__level"
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -42,6 +85,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -I.. \
         -I$HOME/np \
         -I$OPTICKS_PREFIX/externals/glm/glm \
+        -I$CUDA_PREFIX/include \
         -lm \
         $opt -g -std=c++11 -lstdc++ -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
@@ -53,10 +97,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    case $(uname) in 
-    Linux)   gdb__ $bin ;;
-    Darwin) lldb__ $bin ;;
-    esac
+    gdb__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 

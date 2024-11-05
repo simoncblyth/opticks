@@ -125,4 +125,33 @@ Need to:
                                                                 
     cy    !cy                                                   
                                                                 
-                           
+                          
+
+
+
+Implemented sn::CreateSmallerTreeWithListNode following cleanup of sn/s_bb/s_pa/s_tv::
+
+    Changes not staged for commit:
+      (use "git add <file>..." to update what will be committed)
+      (use "git restore <file>..." to discard changes in working directory)
+        modified:   notes/issues/G4MultiUnion_within_G4BooleanSolid_has_voxelizer_SEGV.rst
+        modified:   sysrap/s_bb.h
+        modified:   sysrap/s_pa.h
+        modified:   sysrap/s_pool.h
+        modified:   sysrap/s_tv.h
+        modified:   sysrap/sn.h
+        modified:   sysrap/tests/sn_test.cc
+        modified:   sysrap/tests/sn_test.sh
+        modified:   u4/U4Solid.h
+        modified:   u4/U4SolidMaker.cc
+        modified:   u4/tests/U4SolidTest.cc
+
+
+
+This allows getting the translation to create listnodes from a structurally unchanged source solid,
+only the names of some prim are changed to provide hints as to which solids should be incorporated
+into the listnode within the translated Opticks geometry. 
+
+This allows the voxelization problem with G4MultiUnion within a boolean solid to be avoided. 
+
+ 

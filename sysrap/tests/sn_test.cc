@@ -80,6 +80,73 @@ sn* manual_tree_4()
 }
 
 
+/**
+list_tree
+----------
+
+0:: 
+
+      sp
+
+
+1::
+
+        u
+
+     sp    sp  
+
+2::
+
+            u
+
+        u      sp
+
+     sp    sp  
+
+3::
+
+
+                u
+
+            u       sp
+
+        u      sp
+
+     sp    sp  
+
+
+
+**/
+
+
+sn* list_tree(int num)
+{
+    sn* n = sn::Sphere(100.) ; 
+    for(int i=0 ; i < num ; i++) n = sn::Create(CSG_UNION, n, sn::Sphere(100.) ); 
+    return n ; 
+}
+
+sn* difference_and_list_tree(int num)
+{
+    sn* l = sn::Sphere(100.); 
+    sn* r = sn::Box3(100.); 
+    sn* b = sn::Create(CSG_DIFFERENCE, l, r ); 
+
+    sn* n = b ; 
+    for(int i=0 ; i < num ; i++)
+    {
+        sn* s = sn::Sphere(100.);   
+        s->set_hint_listnode_prim_discontiguous(); 
+        n = sn::Create(CSG_UNION, n, s ); 
+    }
+
+    int lvid = 0 ; 
+    n->postconvert(lvid);
+
+    return n ; 
+}
+
+
 sn* manual_tree(int it)
 {
     sn* t = nullptr ; 
@@ -99,8 +166,6 @@ sn* manual_tree(int it)
 
 struct sn_test
 {
-    static int check_LEAK(const char* msg, int i=-1);
-
     static int BinaryTreeHeight();
     static int ZeroTree();
     static int CommonOperatorTypeTree(int num_leaves);
@@ -117,6 +182,10 @@ struct sn_test
     static int dtor_0();
     static int dtor_1();
     static int set_child();
+    static int create_0();
+    static int list_tree_0();
+    static int difference_and_list_tree_0(); 
+    static int CreateSmallerTreeWithListNode_0(); 
     static int deepcopy_0();
     static int deepcopy_1_leaking();
     static int next_sibling();
@@ -128,29 +197,6 @@ struct sn_test
     static int main();
 };
 
-
-int sn_test::check_LEAK(const char* msg, int i)
-{
-    //const char* spacer = "\n\n" ; 
-    const char* spacer = "" ; 
-
-    std::stringstream ss ; 
-    ss << "check_LEAK[" << std::setw(3) << i << "] " << std::setw(30) << ( msg ? msg : "-" ) << "  " << sn::pool->brief() << spacer << std::endl ; 
-    std::string str = ss.str(); 
-    std::cout << str ; 
-
-    if(!sn::LEAK)
-    {
-        assert( sn::pool->size() == 0 ); 
-    }
-
-    if(!s_tv::LEAK)
-    {
-        assert( s_tv::pool->size() == 0 ); 
-    }
-
-    return 0 ; 
-}
 
 
 int sn_test::BinaryTreeHeight()
@@ -171,7 +217,7 @@ int sn_test::BinaryTreeHeight()
     } 
     if(sn::level() > 0) std::cout << "] sn_test::BinaryTreeHeight "  << std::endl ; 
 
-    check_LEAK("BinaryTreeHeight"); 
+    sn::Check_LEAK("BinaryTreeHeight"); 
     return 0 ; 
 }
 
@@ -191,7 +237,7 @@ int sn_test::ZeroTree()
     if(sn::level() > 1) std::cout << sn::Desc(); 
 
     if(sn::level() > 0) std::cout << "] sn_test::ZeroTree num_leaves " << num_leaves << std::endl ; 
-    check_LEAK("ZeroTree"); 
+    sn::Check_LEAK("ZeroTree"); 
     return 0 ; 
 }
 
@@ -213,7 +259,7 @@ int sn_test::CommonOperatorTypeTree(int num_leaves)
 
     if(sn::level() > 0) std::cout << sn::Desc(); 
     if(sn::level() > 1) std::cout << "]sn_test::CommonOperatorTypeTree num_leaves " << num_leaves << std::endl ; 
-    check_LEAK("CommonOperatorTypeTree", num_leaves); 
+    sn::Check_LEAK("CommonOperatorTypeTree", num_leaves); 
     return 0 ; 
 }
 
@@ -223,7 +269,7 @@ int sn_test::CommonOperatorTypeTree()
     int N = 32 ; 
     for(int nl=1 ; nl < N ; nl++) sn_test::CommonOperatorTypeTree(nl); 
     if(sn::level() > 0) std::cout << "] sn_test::CommonOperatorTypeTree " << std::endl ; 
-    check_LEAK("CommonOperatorTypeTree"); 
+    sn::Check_LEAK("CommonOperatorTypeTree"); 
     return 0 ; 
 }
 
@@ -241,7 +287,7 @@ int sn_test::label()
 
     if(!sn::LEAK) delete t ; 
     if(sn::level() > 0) std::cout << "] sn_test::label it " << it  << std::endl ; 
-    check_LEAK("label"); 
+    sn::Check_LEAK("label"); 
     return 0 ; 
 }
 
@@ -262,7 +308,7 @@ int sn_test::positivize()
 
     if(!sn::LEAK) delete t ; 
     if(sn::level() > 0) std::cout << "] sn_test::positivize it " << it  << std::endl ; 
-    check_LEAK("positivize"); 
+    sn::Check_LEAK("positivize"); 
     return 0 ; 
 }
 
@@ -295,7 +341,7 @@ int sn_test::pool()
     assert( sn::pool->size() == 0  );  
 
     if(sn::level() > 0) std::cout << "] sn_test::pool " << std::endl ; 
-    check_LEAK("pool"); 
+    sn::Check_LEAK("pool"); 
     return 0 ; 
 }
 
@@ -313,7 +359,7 @@ int sn_test::Simple()
 
     if(!sn::LEAK) delete t ; 
     if(sn::level() > 0) std::cout << "] sn_test::Simple it " << it << std::endl ; 
-    check_LEAK("Simple"); 
+    sn::Check_LEAK("Simple"); 
     return 0 ; 
 }
 
@@ -335,7 +381,7 @@ int sn_test::set_left()
     if(sn::level() > 1) std::cout << sn::Desc() ; 
 
     if(sn::level() > 0) std::cout << "] sn_test::set_left" << std::endl ; 
-    check_LEAK("set_left"); 
+    sn::Check_LEAK("set_left"); 
     return 0 ; 
 }
 
@@ -368,7 +414,7 @@ int sn_test::serialize_0()
     if(sn::level() > lev) std::cout << "] sn_test::serialize buf.size() " << buf.size()  << std::endl ; 
     if(sn::level() > lev) std::cout << sn::pool->Desc(buf) << std::endl ; 
 
-    check_LEAK("serialize_0"); 
+    sn::Check_LEAK("serialize_0"); 
     return 0 ; 
 }
 
@@ -393,7 +439,7 @@ int sn_test::serialize_1()
 
     a->save(FOLD, sn::NAME); 
 
-    check_LEAK("serialize_1"); 
+    sn::Check_LEAK("serialize_1"); 
     return 0 ; 
 }
 
@@ -423,7 +469,7 @@ int sn_test::import_0()
     delete root ; 
 
     if(sn::level() > lev) std::cout << "] sn_test::import_0 " << std::endl ; 
-    check_LEAK("import_0"); 
+    sn::Check_LEAK("import_0"); 
     return 0 ; 
 }
 
@@ -446,7 +492,7 @@ int sn_test::import_1()
     delete root ; 
 
     if(sn::level() > lev) std::cout << "] sn_test::import_1 " << std::endl ; 
-    check_LEAK("import_1"); 
+    sn::Check_LEAK("import_1"); 
     return 0 ; 
 }
 
@@ -460,7 +506,7 @@ int sn_test::dtor_0()
 {
     sn* n = sn::Zero(); 
     delete n ; 
-    check_LEAK("dtor_0"); 
+    sn::Check_LEAK("dtor_0"); 
     return 0 ; 
 }
 int sn_test::dtor_1()
@@ -469,7 +515,7 @@ int sn_test::dtor_1()
     sn* b = sn::Prim(101);
     sn* c = sn::Create(1, a, b ); 
     delete c ; 
-    check_LEAK("dtor_1"); 
+    sn::Check_LEAK("dtor_1"); 
     return 0 ; 
 }
 
@@ -533,33 +579,108 @@ int sn_test::set_child()
 
     delete c ; 
 
-    check_LEAK("set_child"); 
+    sn::Check_LEAK("set_child"); 
     return 0 ; 
 }
 
-int sn_test::deepcopy_0()
+int sn_test::create_0()
 {
     sn* a = sn::Prim(100); 
     sn* b = sn::Prim(101); 
     sn* c = sn::Create(1, a, b ); 
-
-    if(sn::level() > 0) std::cout << c->render(1) ; 
-    if(sn::level() > 0) std::cout << c->desc_r() ; 
-
-    sn* ccp = c->deepcopy(); 
-
-#ifdef WITH_CHILD
-    assert( ccp->child.size() == c->child.size() ); 
-#endif
-
     delete c ; 
 
-    if(sn::level() > 0) std::cout << ccp->render(1) ; 
-    if(sn::level() > 0) std::cout << ccp->desc_r() ; 
+    sn::Check_LEAK("create_0"); 
+    return 0 ; 
+}
 
-    delete ccp ; 
+int sn_test::list_tree_0()
+{
+    sn* a = list_tree(8) ;
 
-    check_LEAK("deepcopy_0"); 
+    std::cout 
+        << "[ sn_test::list_tree_0 : a.render \n" 
+        << a->render() 
+        << "] sn_test::list_tree_0 : a.render \n" 
+        ;
+
+
+    delete a ; 
+
+    sn::Check_LEAK("list_tree_0"); 
+    return 0 ; 
+}
+
+
+int sn_test::difference_and_list_tree_0()
+{
+    sn* a = difference_and_list_tree(8) ;
+
+    std::cout 
+        << "[ sn_test::difference_and_list_tree_0 : a.render \n" 
+        << a->render() 
+        << "] sn_test::difference_and_list_tree_0 : a.render \n" 
+        ;
+
+
+    delete a ; 
+
+    sn::Check_LEAK("difference_and_list_tree_0"); 
+    return 0 ; 
+}
+
+
+int sn_test::CreateSmallerTreeWithListNode_0()
+{
+    sn* r0 = difference_and_list_tree(8) ;
+
+    int q_note = sn::HINT_LISTNODE_PRIM_DISCONTIGUOUS ; 
+    sn* r1 = sn::CreateSmallerTreeWithListNode(r0, q_note) ; 
+
+    std::cout << "sn_test::CreateSmallerTreeWithListNode_0 : r0.rdr \n" << r0->rdr() << "\n" ;   
+    std::cout << "sn_test::CreateSmallerTreeWithListNode_0 : r1.rdr \n" << r1->rdr() << "\n" ;   
+
+    delete r0 ; 
+    delete r1 ; 
+
+    sn::Check_LEAK("sn_test::CreateSmallerTreeWithListNode_0"); 
+    return 0 ; 
+}
+
+
+
+
+
+int sn_test::deepcopy_0()
+{
+
+    std::cout << "sn_test::deepcopy_0 : sn* a = sn::Prim(101) \n" ; 
+    sn* a = sn::Prim(101); 
+    std::cout << "sn_test::deepcopy_0 : sn* b = sn::Prim(102) \n" ; 
+    sn* b = sn::Prim(102); 
+    std::cout << "sn_test::deepcopy_0 : sn* c0 = sn::Create(1,a,b) \n" ; 
+    sn* c0 = sn::Create(1, a, b ); 
+
+    if(sn::level() > 0) std::cout << c0->render(1) ; 
+    if(sn::level() > 0) std::cout << c0->desc_r() ; 
+
+    std::cout << "sn_test::deepcopy_0 : sn* c1 = c0->deepcopy() \n" ; 
+    sn* c1 = c0->deepcopy(); 
+
+#ifdef WITH_CHILD
+    assert( c1->child.size() == c0->child.size() ); 
+#endif
+
+    std::cout << "sn_test::deepcopy_0 : delete c0 \n" ; 
+    delete c0 ; 
+
+    if(sn::level() > 0) std::cout << c1->render(1) ; 
+    if(sn::level() > 0) std::cout << c1->desc_r() ; 
+
+    std::cout << "sn_test::deepcopy_0 : delete c1 \n" ; 
+    delete c1 ; 
+
+    sn::Check_LEAK("deepcopy_0"); 
     return 0 ; 
 }
 
@@ -586,7 +707,7 @@ int sn_test::deepcopy_1_leaking()
     sn* cp = new sn(*c) ; 
     std::cout << "cp\n" << cp->desc_child() << std::endl ; 
 
-    //check_LEAK("deepcopy_1_leaking"); 
+    //sn::Check_LEAK("deepcopy_1_leaking"); 
     return 0 ; 
 }
 
@@ -618,7 +739,7 @@ int sn_test::next_sibling()
 
     delete c ; 
 
-    check_LEAK("next_sibling"); 
+    sn::Check_LEAK("next_sibling"); 
     return 0 ; 
 }
 
@@ -641,7 +762,7 @@ int sn_test::Serialize()
     
     if(sn::level() > lev) std::cout << "] sn_test::Serialize it " << it  << std::endl ; 
 
-    check_LEAK("Serialize"); 
+    sn::Check_LEAK("Serialize"); 
 
     return 0 ; 
 }
@@ -668,7 +789,7 @@ int sn_test::Import()
 
     delete t ; 
 
-    check_LEAK("Import"); 
+    sn::Check_LEAK("Import"); 
 
     return 0 ; 
 }
@@ -804,6 +925,10 @@ int sn_test::main()
     else if( strcmp(TEST, "dtor_0")==0)     rc = dtor_0(); 
     else if( strcmp(TEST, "dtor_1")==0)     rc = dtor_1(); 
     else if( strcmp(TEST, "set_child")==0)     rc = set_child(); 
+    else if( strcmp(TEST, "create_0")==0)     rc = create_0(); 
+    else if( strcmp(TEST, "list_tree_0")==0)     rc = list_tree_0(); 
+    else if( strcmp(TEST, "difference_and_list_tree_0")==0)     rc = difference_and_list_tree_0(); 
+    else if( strcmp(TEST, "CreateSmallerTreeWithListNode_0")==0)     rc = CreateSmallerTreeWithListNode_0(); 
     else if( strcmp(TEST, "deepcopy_0")==0)     rc = deepcopy_0(); 
     else if( strcmp(TEST, "deepcopy_1_leaking")==0)  rc = deepcopy_1_leaking(); 
     else if( strcmp(TEST, "next_sibling")==0)        rc = next_sibling(); 

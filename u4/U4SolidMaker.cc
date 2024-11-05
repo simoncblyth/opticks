@@ -2059,7 +2059,8 @@ const G4VSolid* U4SolidMaker::LocalFastenerAcrylicConstruction(const char* name)
         ;
 
 
-    const char* screw_name = "screw_HINT_LISTNODE_PRIM" ; 
+    const char* screw_name = "screw_HINT_LISTNODE_PRIM_CONTIGUOUS" ; 
+    //const char* screw_name = "screw_HINT_LISTNODE_PRIM_DISCONTIGUOUS" ; 
 
     G4VSolid* uni_Addition(nullptr); 
     {

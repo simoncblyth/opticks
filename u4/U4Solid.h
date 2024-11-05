@@ -125,6 +125,7 @@ private:
     void init(); 
     void init_Constituents(); 
     void init_Tree(); 
+    void init_Tree_Shrink(); 
 
     void init_Orb(); 
     void init_Sphere(); 
@@ -406,6 +407,8 @@ inline void U4Solid::init_Constituents()
         case _G4SubtractionSolid  : init_SubtractionSolid()      ; break ; 
         case _G4DisplacedSolid    : init_DisplacedSolid()        ; break ; 
     } 
+    assert( root); 
+    root->set_hint_note(hint); 
 }
 
 
@@ -422,15 +425,42 @@ when the sn::postconvert is called
 
 inline void U4Solid::init_Tree()
 {
-    assert( root); 
-    root->set_hint_note(hint); 
+    if( depth != 0 )  return ; 
 
-    if( depth == 0 )  
-    {
-        root->postconvert(lvid); 
-    }
+    init_Tree_Shrink();  
+
+    root->postconvert(lvid); 
 }
 
+/**
+U4Solid::init_Tree_Shrink
+--------------------------
+
+try to shrink tree if prim are listnode hinted 
+
+**/
+
+inline void U4Solid::init_Tree_Shrink()
+{
+    if( depth != 0 )  return ; 
+
+    sn* root0 = root ;    
+
+    if(root0->has_candidate_listnode_discontiguous())
+    {
+        root = sn::CreateSmallerTreeWithListNode_discontiguous(root0);
+    }
+    else if(root0->has_candidate_listnode_contiguous())
+    {
+        root = sn::CreateSmallerTreeWithListNode_contiguous(root0);
+    }
+
+    if(root != root0) 
+    {
+        std::cerr << "U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous\n" ; 
+        delete root0 ; 
+    }
+}
 
 
 

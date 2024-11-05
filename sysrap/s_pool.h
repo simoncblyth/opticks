@@ -289,11 +289,13 @@ inline int s_pool<T,P>::remove(T* o)
     if( it == pool.end() )
     {
         if(level > 0) std::cerr 
-           << "s_pool::remove " 
+           << "s_pool::remove FATAL  " 
            << ( label ? label : "-"  ) 
-           << " failed to find the object : already removed, double dtors ?  " 
+           << " failed to find the object : already removed, double dtors ? or copy bug ? " 
+           << " o.pid " << ( o ? o->pid : -2 )  
            << std::endl 
            ; 
+        assert(0); 
     }
     else
     {

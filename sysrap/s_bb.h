@@ -3,6 +3,9 @@
 s_bb.h
 ========
 
+* ctor adds to the pool
+* dtor removes from the pool 
+
 */
 
 #include <string>
@@ -40,6 +43,7 @@ struct SYSRAP_API s_bb
     
     s_bb(); 
     ~s_bb(); 
+    s_bb* copy() const ; 
 
     int pid ; 
 
@@ -135,6 +139,28 @@ inline s_bb::~s_bb()
 {
     if(level() > 1) std::cerr << "s_bb::~s_bb pid " << pid << std::endl ; 
     if(pool) pool->remove(this); 
+}
+
+/**
+s_bb::copy
+-----------
+
+Note that *pid* is not copied, as pid is set by s_pool::add within the ctor.
+This is because pid is only relevant to the persisting architecture 
+rather than being part of the payload.  
+
+**/
+
+inline s_bb* s_bb::copy() const
+{
+    s_bb* n = new s_bb ; 
+    n->x0 = x0 ;  
+    n->y0 = y0 ;  
+    n->z0 = z0 ;
+    n->x1 = x1 ;  
+    n->y1 = y1 ;  
+    n->z1 = z1 ;
+    return n ; 
 }
 
 inline std::string s_bb::desc() const { return Desc(cdata()) ; }

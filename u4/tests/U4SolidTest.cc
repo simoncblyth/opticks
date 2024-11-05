@@ -43,7 +43,11 @@ int U4SolidTest::Convert(const G4VSolid* solid )
     int depth = 0 ; 
     int level = ssys::getenvint(_Convert_level,1) ; 
     sn* nd = U4Solid::Convert(solid, lvid, depth, level); 
-    std::cout << nd->desc() << "\n"  ;  
+    std::cout 
+        << "[U4SolidTest::Convert nd.desc\n"
+        <<   nd->desc() 
+        << "]U4SolidTest::Convert nd.desc\n"
+        ;
 
     if(level > 2 ) std::cout 
         << "\nU4SolidTest::Convert nd->render() \n\n" 
@@ -63,16 +67,11 @@ int U4SolidTest::Convert(const G4VSolid* solid )
         << "\n" 
         ; 
 
-    std::cout << "sn::Desc.0\n"  << sn::Desc() << "\n" ; 
-
-    std::vector<sn*> prim ; 
-    sn* j = nd->find_joint_to_candidate_listnode(prim); 
-
-    std::cout << "joint\n"  << sn::Desc(j) << "\n" ; 
-    std::cout << "sn::DescPrim\n" << sn::DescPrim(prim) << "\n" ; 
+    std::cout << "sn::Desc.0.before-delete-expect-some-nodes\n"  << sn::Desc() << "\n" ; 
 
     delete nd ; 
-    std::cout << "sn::Desc.1\n"  << sn::Desc() << "\n" ; 
+    std::cout << "sn::Desc.1.after-delete-expect-no-nodes\n"  << sn::Desc() << "\n" ; 
+
 
     return 0 ; 
 }

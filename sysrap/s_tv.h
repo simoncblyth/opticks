@@ -3,6 +3,9 @@
 s_tv.h : simple wrapper to give uniform behaviour to spa/sxf/sbb
 ===================================================================
 
+* ctor adds to the pool
+* dtor removes from the pool 
+
 **/
 
 #include <string>
@@ -40,6 +43,7 @@ struct SYSRAP_API s_tv
     
     s_tv(); 
     ~s_tv(); 
+    s_tv* copy() const ; 
 
     int pid ; 
     glm::tmat4x4<double> t ; 
@@ -88,6 +92,23 @@ inline s_tv::~s_tv()
 {
     if(level() > 1) std::cerr << "s_tv::~s_tv pid " << pid << std::endl ; 
     if(pool) pool->remove(this); 
+}
+
+/**
+s_tv::copy
+-----------
+
+Note that *pid* is not copied, it gets set by s_pool::add  as its
+part of the plumbing not the payload. 
+
+**/
+
+inline s_tv* s_tv::copy() const
+{
+    s_tv* n = new s_tv ; 
+    n->t = t ; 
+    n->v = v ; 
+    return n ; 
 }
 
 

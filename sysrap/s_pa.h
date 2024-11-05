@@ -3,6 +3,9 @@
 s_pa.h
 ========
 
+* ctor adds to the pool
+* dtor removes from the pool 
+
 Note that the meaning of the six param 
 depends on typecode, so must do anything 
 typecode specific (such as zmin() set_zmin ... )
@@ -40,6 +43,7 @@ struct SYSRAP_API s_pa
     
     s_pa(); 
     ~s_pa(); 
+    s_pa* copy() const ; 
 
     int pid ; 
 
@@ -98,6 +102,32 @@ inline s_pa::~s_pa()
     if(level() > 1) std::cerr << "s_pa::~s_pa pid " << pid << std::endl ; 
     if(pool) pool->remove(this); 
 }
+
+
+/**
+s_pa::copy
+-----------
+
+Note that *pid* is not copied, it gets set by s_pool::add from ctor, 
+as it is part of the persistency plumbing, not the payload.
+
+**/
+
+inline s_pa* s_pa::copy() const
+{
+    s_pa* n = new s_pa ; 
+    n->x0 = x0 ; 
+    n->y0 = y0 ; 
+    n->z0 = z0 ; 
+    n->w0 = w0 ; 
+    n->x1 = x1 ; 
+    n->y1 = y1 ; 
+    return n ; 
+}
+
+
+
+
 
 inline std::string s_pa::desc() const 
 {
