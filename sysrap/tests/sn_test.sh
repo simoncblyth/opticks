@@ -39,8 +39,9 @@ export TEST=${TEST:-$test}
 logging()
 {
     type $FUNCNAME
-    export sn__level=2 
-    export s_pool_level=2
+    #export sn__level=2 
+    #export s_pool_level=2
+    export sn__GetLVRoot_DUMP=1
 }
 [ -n "$LOG" ] && logging 
 

@@ -633,9 +633,20 @@ int sn_test::difference_and_list_tree_0()
 int sn_test::CreateSmallerTreeWithListNode_0()
 {
     sn* r0 = difference_and_list_tree(8) ;
+    r0->set_lvid(100); 
+
 
     int q_note = sn::HINT_LISTNODE_PRIM_DISCONTIGUOUS ; 
     sn* r1 = sn::CreateSmallerTreeWithListNode(r0, q_note) ; 
+    r1->set_lvid(200); 
+
+
+    sn* r0_check = sn::GetLVRoot(100) ;
+    assert( r0_check == r0 ); 
+
+    sn* r1_check = sn::GetLVRoot(200) ;
+    assert( r1_check == r1 ); 
+
 
     std::cout << "sn_test::CreateSmallerTreeWithListNode_0 : r0.rdr \n" << r0->rdr() << "\n" ;   
     std::cout << "sn_test::CreateSmallerTreeWithListNode_0 : r1.rdr \n" << r1->rdr() << "\n" ;   
@@ -666,6 +677,18 @@ int sn_test::deepcopy_0()
 
     std::cout << "sn_test::deepcopy_0 : sn* c1 = c0->deepcopy() \n" ; 
     sn* c1 = c0->deepcopy(); 
+
+    c1->set_lvid(88); 
+
+    std::cout << "c0.render_parent\n" << c0->render_parent() << "\n" ; 
+    std::cout << "c1.render_parent\n" << c1->render_parent() << "\n" ; 
+
+
+    sn* c1_check = sn::GetLVRoot(88) ;
+    assert( c1 == c1_check ); 
+
+
+
 
 #ifdef WITH_CHILD
     assert( c1->child.size() == c0->child.size() ); 
@@ -710,6 +733,12 @@ int sn_test::deepcopy_1_leaking()
     //sn::Check_LEAK("deepcopy_1_leaking"); 
     return 0 ; 
 }
+
+
+
+
+
+
 
 int sn_test::next_sibling()
 {

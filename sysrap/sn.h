@@ -189,9 +189,12 @@ struct SYSRAP_API sn
     template<typename N> static std::string Brief(const std::vector<N*>& nds, bool reverse=false); 
 
 
+    static int Index(const sn* n); 
 
     int  idx() const ;  // to match snd.hh
     int  index() const ; 
+    int  parent_index() const ; 
+
     bool is_root() const ; 
 
     int  num_child() const ; 
@@ -303,10 +306,11 @@ struct SYSRAP_API sn
 
     std::string render() const ; 
     std::string render_typetag() const ; 
+    std::string render_parent() const ; 
     std::string rdr() const ; 
     std::string render(int mode) const ; 
 
-    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID, NOTE,  NUM_MODE=7 } ; 
+    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID, NOTE, PARENT,  NUM_MODE=7 } ; 
 
     static constexpr const char* MODE_MINIMAL = "MINIMAL" ; 
     static constexpr const char* MODE_TYPECODE = "TYPECODE" ; 
@@ -315,6 +319,7 @@ struct SYSRAP_API sn
     static constexpr const char* MODE_TYPETAG = "TYPETAG" ; 
     static constexpr const char* MODE_PID = "PID" ; 
     static constexpr const char* MODE_NOTE = "NOTE" ; 
+    static constexpr const char* MODE_PARENT = "PARENT" ; 
     static const char* rendermode(int mode); 
 
     void render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const ; 
@@ -498,6 +503,7 @@ struct SYSRAP_API sn
     static bool Includes(const std::vector<sn*>& nds, sn* nd ); 
 
     static sn* Get(int idx); 
+    static void FindLVRootNodes( std::vector<sn*>& nds, int lvid ); 
     static sn* GetLVRoot( int lvid ); 
 
     std::string rbrief() const ; 
@@ -700,9 +706,13 @@ inline std::string sn::Brief(const std::vector<N*>& nds, bool reverse) // static
 
 
 
-inline int  sn::idx() const { return index() ; } // to match snd.hh 
-inline int  sn::index() const { return pool ? pool->index(this) : -1 ; }
+inline int sn::Index(const sn* n){ return pool ? pool->index(n) : -1 ; } // static
+inline int  sn::idx() const { return Index(this); } // to match snd.hh 
+inline int  sn::index() const { return Index(this); }
+inline int  sn::parent_index() const { return parent ? Index(parent) : -2 ; }
 inline bool sn::is_root() const { return parent == nullptr ; }
+
+
 
 inline int sn::num_child() const
 {
@@ -1088,8 +1098,11 @@ inline void sn::disown_child(sn* ch)
 sn::deepcopy
 -------------
 
-HMM: despite the name the xform, param and aabb pointers are 
-being shallow copied by the default copy ctor
+Note that the xform, param and aabb pointers are 
+now copied by sn::copy which is invoked from sn::deepcopy.
+This means that the copied tree is now fully independent 
+from the source tree. This allows the source tree to be 
+fully deleted without effecting the copied tree. 
 
 **/
 
@@ -1794,7 +1807,9 @@ inline std::string sn::render() const
 }
 
 inline std::string sn::render_typetag() const { return render(TYPETAG);  }
-inline std::string sn::rdr() const {            return render(TYPETAG);  }
+inline std::string sn::render_parent() const {  return render(PARENT);  }
+
+inline std::string sn::rdr() const {            return render_typetag();  }
 
 inline std::string sn::render(int mode) const
 {
@@ -1858,6 +1873,7 @@ inline const char* sn::rendermode(int mode) // static
         case TYPETAG:  md = MODE_TYPETAG  ; break ; 
         case PID:      md = MODE_PID      ; break ; 
         case NOTE:     md = MODE_NOTE     ; break ; 
+        case PARENT:   md = MODE_PARENT   ; break ; 
     }
     return md ; 
 }
@@ -1873,13 +1889,14 @@ inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mod
 
     switch(mode)
     {
-        case MINIMAL  : canvas->drawch( ix, iy, 0,0, 'o' )         ; break ; 
-        case TYPECODE : canvas->draw(   ix, iy, 0,0,  typecode  )      ; break ; 
-        case DEPTH    : canvas->draw(   ix, iy, 0,0,  depth )      ; break ;   
-        case SUBDEPTH : canvas->draw(   ix, iy, 0,0,  subdepth )   ; break ; 
-        case TYPETAG  : canvas->draw(   ix, iy, 0,0,  tag.c_str()) ; break ;    
-        case PID      : canvas->draw(   ix, iy, 0,0,  pid )        ; break ;    
-        case NOTE     : canvas->draw(   ix, iy, 0,0,  note )       ; break ;    
+        case MINIMAL  : canvas->drawch( ix, iy, 0,0, 'o' )            ; break ; 
+        case TYPECODE : canvas->draw(   ix, iy, 0,0,  typecode  )     ; break ; 
+        case DEPTH    : canvas->draw(   ix, iy, 0,0,  depth )         ; break ;   
+        case SUBDEPTH : canvas->draw(   ix, iy, 0,0,  subdepth )      ; break ; 
+        case TYPETAG  : canvas->draw(   ix, iy, 0,0,  tag.c_str())    ; break ;    
+        case PID      : canvas->draw(   ix, iy, 0,0,  pid )           ; break ;    
+        case NOTE     : canvas->draw(   ix, iy, 0,0,  note )          ; break ;    
+        case PARENT   : canvas->draw(   ix, iy, 0,0,  parent_index()) ; break ;    
     } 
 
 #ifdef WITH_CHILD
@@ -2418,13 +2435,18 @@ inline void sn::set_label( const char* label_ )
 sn::set_lvid
 -------------
 
-Recursively sets both lvid and depth for the tree
+Recursively set:  
+
+* lvid 
+* depth
+* parent pointers : ordinarily this is not necessary as it is done in the ctor, 
+  but after deepcopy the parent pointers are scrubbed, so set that here too
+  
 
 **/
 
 inline void sn::set_lvid(int lvid_)
 {
-
     set_lvid_r(lvid_, 0);  
 
     int chk = checktree();
@@ -2447,7 +2469,16 @@ inline void sn::set_lvid_r(int lvid_, int d)
     for(int i=0 ; i < num_child() ; i++)
     {
         sn* ch = get_child(i) ;       
-        ch->set_lvid_r(lvid_, d+1 ); 
+        ch->set_lvid_r(lvid_, d+1 );
+ 
+        if(ch->parent == nullptr)
+        {  
+            ch->parent = this ; // ordinarily not needed, but deepcopy scrubs parent pointers 
+        }
+        else
+        {
+            assert( ch->parent == this ) ;    
+        }  
     }
 }
 
@@ -3803,13 +3834,35 @@ struct sn_find_lvid_root
     bool operator()(const sn* n){ return lvid == n->lvid && n->is_root() ; }  
 };
 
+
+inline void sn::FindLVRootNodes( std::vector<sn*>& nds, int lvid ) // static
+{
+    sn_find_lvid_root flvr(lvid); 
+    pool->find(nds, flvr );   
+}
+
+
 inline sn* sn::GetLVRoot( int lvid ) // static
 {
     std::vector<sn*> nds ; 
-    sn_find_lvid_root flvr(lvid); 
-    pool->find(nds, flvr );   
+    FindLVRootNodes( nds, lvid ); 
+
     int count = nds.size() ; 
-    assert( count == 0 || count == 1 ); 
+    bool expect = count == 0 || count == 1 ; 
+
+    const char* _DUMP = "sn__GetLVRoot_DUMP" ; 
+    bool DUMP = ssys::getenvbool(_DUMP) ; 
+    if(DUMP || !expect) std::cout 
+        << _DUMP << ":" << ( DUMP ? "YES" : "NO " ) << "\n" 
+        << "Desc(nds)\n"
+        << Desc(nds)
+        << "\n" 
+        << " nds.size " << count 
+        << " expect " << ( expect ? "YES" : "NO " )
+        << "\n" 
+        ;    
+
+    assert(expect); 
     return count == 1 ? nds[0] : nullptr ; 
 }
 
