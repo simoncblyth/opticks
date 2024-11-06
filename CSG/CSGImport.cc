@@ -87,9 +87,9 @@ void CSGImport::importSolid()
         char ridx_type = st->get_ridx_type(ridx) ; 
         switch(ridx_type)
         {
-            case 'R': importSolidGlobal( ridx, ridx_type ) ; break ; 
-            case 'T': importSolidGlobal( ridx, ridx_type ) ; break ; 
-            case 'F': importSolidFactor( ridx, ridx_type ) ; break ; 
+            case 'R': importSolidGlobal( ridx, ridx_type ) ; break ;   // remainder
+            case 'T': importSolidGlobal( ridx, ridx_type ) ; break ;   // triangulate
+            case 'F': importSolidFactor( ridx, ridx_type ) ; break ;   // factor 
         } 
     }
 }
@@ -150,7 +150,7 @@ ridx_type returned by stree::get_ridx_type
 
 CSGSolid* CSGImport::importSolidGlobal(int ridx, char ridx_type )
 {
-    assert( ridx_type == 'R' || ridx_type == 'T' ); 
+    assert( ridx_type == 'R' || ridx_type == 'T' );  // remainder or triangulate
 
     std::string _rlabel = CSGSolid::MakeLabel(ridx_type,ridx) ;
     const char* rlabel = _rlabel.c_str(); 
@@ -296,6 +296,11 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     const char* name = fd->getMeshName(lvid)  ; 
     bool strip = true ; 
     std::string soname = st->get_lvid_soname(lvid, strip);
+
+
+    const sn* rt = sn::GetLVRoot(lvid); 
+    assert(rt); 
+    int idx_rc = rt->check_idx("CSGImport::importPrim.check_idx"); 
  
 
     // 1. get the binary tree nodes into complete binary tree vector (excluding the subs of any listnode)
@@ -315,18 +320,22 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
 
 
-    bool dump_LVID = node.lvid == LVID || ln > 0  ; 
+    bool dump_LVID = node.lvid == LVID || ln > 0 || idx_rc > 0 ; 
     if(dump_LVID) std::cout 
         << "[CSGImport::importPrim.dump_LVID:" << dump_LVID
         << " node.lvid " << node.lvid
+        << " idx_rc " << idx_rc
         << " LVID " << LVID
         << " name " << ( name ? name : "-" )
         << " soname " << soname
         << " primIdx " << primIdx  
-        << " bn " << bn  
+        << " bn " << bn << "(binary nodes)" 
         << " ln(subset of bn) " << ln 
         << " num_sub_total " << num_sub_total 
-        << std::endl 
+        << "\n"
+        << "[rt.render\n"
+        << rt->render()
+        << "]rt.render\n"
         ; 
 
     if(dump_LVID && ln > 0 ) std::cout

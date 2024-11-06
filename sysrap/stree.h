@@ -2679,7 +2679,7 @@ inline std::string stree::desc_combined_transform(
 stree::get_combined_tran_and_aabb
 --------------------------------------
 
-Critical usage of ths from CSGImport::importNode
+Critical usage of this from CSGImport::importNode
 
 0. early exits returning nullptr for non leaf nodes
 1. gets combined structural(snode.h) and CSG tree(sn.h) transform 

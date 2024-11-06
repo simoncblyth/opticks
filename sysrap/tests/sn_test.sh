@@ -29,19 +29,25 @@ cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 #test=ALL
+test=idx_0
 #test=create_0
 #test=deepcopy_0
+#test=deepcopy_2
+#test=disown_child_0
+#test=set_right_0
 #test=list_tree_0
 #test=difference_and_list_tree_0
-test=CreateSmallerTreeWithListNode_0
+#test=CreateSmallerTreeWithListNode_0
+#test=CreateSmallerTreeWithListNode_2
+
 export TEST=${TEST:-$test}
 
 logging()
 {
     type $FUNCNAME
-    #export sn__level=2 
+    export sn__level=2 
     #export s_pool_level=2
-    export sn__GetLVRoot_DUMP=1
+    #export sn__GetLVRoot_DUMP=1
 }
 [ -n "$LOG" ] && logging 
 

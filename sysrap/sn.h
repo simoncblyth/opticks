@@ -228,11 +228,19 @@ struct SYSRAP_API sn
     void disown_child(sn* ch) ; 
     sn* deepcopy() const ; 
     sn* deepcopy_r(int d) const ; 
+
+    sn* deepcopy_excluding_leaf(const sn* l) const ; 
+    sn* deepcopy_excluding_leaf_r(int d, const sn* l) const ; 
+
+
     sn* copy() const ; 
 
     static void DeepCopy(std::vector<sn*>& p1, const std::vector<sn*>& p0) ; 
 
     void set_child( int ix, sn* ch, bool copy ); 
+    void set_child_leaking_prior( int ix, sn* ch, bool copy ); 
+
+
     void set_left( sn* left, bool copy ); 
     void set_right( sn* right, bool copy  );
 
@@ -292,6 +300,8 @@ struct SYSRAP_API sn
     std::string desc() const ; 
     std::string desc_prim() const ; 
     std::string desc_prim_all(bool reverse) const ; 
+
+    std::string id() const ; 
     std::string brief() const ; 
     std::string desc_child() const ; 
     std::string desc_this() const ; 
@@ -310,7 +320,7 @@ struct SYSRAP_API sn
     std::string rdr() const ; 
     std::string render(int mode) const ; 
 
-    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID, NOTE, PARENT,  NUM_MODE=7 } ; 
+    enum { MINIMAL, TYPECODE, DEPTH, SUBDEPTH, TYPETAG, PID, NOTE, PARENT, IDX,  NUM_MODE=9 } ; 
 
     static constexpr const char* MODE_MINIMAL = "MINIMAL" ; 
     static constexpr const char* MODE_TYPECODE = "TYPECODE" ; 
@@ -320,6 +330,8 @@ struct SYSRAP_API sn
     static constexpr const char* MODE_PID = "PID" ; 
     static constexpr const char* MODE_NOTE = "NOTE" ; 
     static constexpr const char* MODE_PARENT = "PARENT" ; 
+    static constexpr const char* MODE_IDX = "IDX" ; 
+
     static const char* rendermode(int mode); 
 
     void render_r(scanvas* canvas, std::vector<const sn*>& order, int mode, int d) const ; 
@@ -352,7 +364,8 @@ struct SYSRAP_API sn
     void set_label( const char* label_ ); 
     void set_lvid(int lvid_); 
     void set_lvid_r(int lvid_, int d); 
-
+    int  check_idx(const char* msg) const ;
+    int  check_idx_r(int d, const char* msg) const ;
 
 
     void setPA( double x, double y, double z, double w, double z1, double z2 );
@@ -551,7 +564,7 @@ struct SYSRAP_API sn
     static sn* CreateSmallerTreeWithListNode(sn* root0, int q_note); 
     static sn* CreateSmallerTreeWithListNode_discontiguous(sn* root0); 
     static sn* CreateSmallerTreeWithListNode_contiguous(   sn* root0); 
-
+    static int TypeFromNote(int q_note); 
 
     void collect_monogroup( std::vector<const sn*>& monogroup ) const ; 
 
@@ -1011,7 +1024,10 @@ inline sn::sn(int typecode_, sn* left_, sn* right_)
     pid(pool ? pool->add(this) : -1),
     subdepth(0)
 {
-    if(level() > 1) std::cout << "sn::sn pid " << pid << std::endl ; 
+    // note that the pid cannot be relied upon for indexing into the pool
+    // as other ctor/dtor can change the pool while this holds on to the old stale pid
+ 
+    if(level() > 1) std::cout << "[ sn::sn " << id() << "\n" ; 
     zero_label(); 
 
 #ifdef WITH_CHILD
@@ -1027,6 +1043,8 @@ inline sn::sn(int typecode_, sn* left_, sn* right_)
         right->parent = this ; 
     }
 #endif
+
+    if(level() > 1) std::cout << "] sn::sn " << id() << "\n" ; 
 }
 
 #ifdef WITH_CHILD
@@ -1045,7 +1063,7 @@ inline void sn::add_child( sn* ch )
 // dtor 
 inline sn::~sn()   
 {
-    if(level() > 1) std::cout << "[ sn::~sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cout << "[ sn::~sn " << id() << "\n" ; 
 
     delete xform ; 
     delete param ; 
@@ -1066,7 +1084,7 @@ inline sn::~sn()
 
     if(pool) pool->remove(this); 
 
-    if(level() > 1) std::cout << "] sn::~sn pid " << pid << std::endl ; 
+    if(level() > 1) std::cout << "] sn::~sn " << id() << "\n" ; 
 }
 
 
@@ -1080,9 +1098,18 @@ inline sn::~sn()
 sn::disown_child
 ------------------
 
-Note that the erase calls the dtor which 
-will also delete child nodes (recursively)
-and removes pool entries. 
+* find ch pointer within child vector
+* appy std::vector::erase with the iterator
+
+HUH: contrary to prior note the std::vector::erase 
+simply removes from the vector, it DOES NOT 
+call the dtor of the erased pointer
+
+Prior note was wrong::
+
+    Note that the erase calls the dtor which 
+    will also delete child nodes (recursively)
+    and removes pool entries. 
 
 **/
 inline void sn::disown_child(sn* ch)
@@ -1117,9 +1144,9 @@ sn::deepcopy_r
 
 The default copy ctor copies the child vector, but that is a shallow copy  
 just duplicating pointers into the new child vector. 
-Hence within the child loop 
-so in the below the shallow copies are disowned and deep copies made and added 
-to the copy child vector
+Hence within the child loop below those shallow copies are disowned 
+(removed from the child vector) and deep copies are made and added 
+to the child vector of the copy
 
 **/
 
@@ -1147,6 +1174,47 @@ inline sn* sn::deepcopy_r(int d) const
 
     return n ;   
 }
+
+
+
+inline sn* sn::deepcopy_excluding_leaf(const sn* l) const 
+{
+    return deepcopy_excluding_leaf_r(0, l ); 
+}
+
+inline sn* sn::deepcopy_excluding_leaf_r(int d, const sn* l) const 
+{
+    if(this == l) return nullptr ; 
+
+    sn* n = copy(); 
+
+#ifdef WITH_CHILD
+    for(int i=0 ; i < int(child.size()) ; i++)
+    {
+        sn* ch = child[i] ; 
+        n->disown_child( ch ) ;          // remove shallow copied child from the vector
+        sn* deep_ch = ch->deepcopy_excluding_leaf_r(d+1, l ) ; 
+        n->child.push_back( deep_ch ); 
+    }
+#else
+    // whether nullptr or not the shallow default copy 
+    // should have copied left and right 
+    assert( n->left == left ); 
+    assert( n->right == right ); 
+    // but thats just a shallow copy so replace here with deep copies
+    n->left  = left  ? left->deepcopy_excluding_leaf_r(d+1) : nullptr ; 
+    n->right = right ? right->deepcopy_excluding_leaf_r(d+1) : nullptr ;   
+#endif
+    return n ; 
+}
+
+
+
+
+
+
+
+
 
 
 /**
@@ -1232,6 +1300,25 @@ inline void sn::set_child( int ix, sn* ch, bool copy )
 
 }
 
+inline void sn::set_child_leaking_prior( int ix, sn* ch, bool copy )
+{
+    sn* new_ch = copy ? ch->deepcopy() : ch ; 
+    new_ch->parent = this ; 
+
+#ifdef WITH_CHILD
+    assert( ix < int(child.size()) );   
+    sn*& target = child[ix] ;
+    target = new_ch ; 
+#else
+    sn** target = ix == 0 ? &left : &right ;  
+    *target = new_ch ;  
+#endif
+
+}
+
+
+
+
 inline void sn::set_left( sn* ch, bool copy )
 {
     set_child(0, ch, copy ); 
@@ -1240,6 +1327,9 @@ inline void sn::set_right( sn* ch, bool copy )
 {
     set_child(1, ch, copy ); 
 }
+
+
+
 
 
 
@@ -1702,6 +1792,17 @@ inline std::string sn::desc_prim_all(bool reverse) const
 }
 
 
+inline std::string sn::id() const
+{
+    std::stringstream ss ;
+    ss << "sn::id" 
+       << " pid " << pid
+       << " idx " << idx() 
+       ; 
+    std::string str = ss.str();
+    return str ;
+}
+
 inline std::string sn::brief() const
 {
     std::stringstream ss ;
@@ -1874,6 +1975,7 @@ inline const char* sn::rendermode(int mode) // static
         case PID:      md = MODE_PID      ; break ; 
         case NOTE:     md = MODE_NOTE     ; break ; 
         case PARENT:   md = MODE_PARENT   ; break ; 
+        case IDX:      md = MODE_IDX      ; break ; 
     }
     return md ; 
 }
@@ -1897,6 +1999,7 @@ inline void sn::render_r(scanvas* canvas, std::vector<const sn*>& order, int mod
         case PID      : canvas->draw(   ix, iy, 0,0,  pid )           ; break ;    
         case NOTE     : canvas->draw(   ix, iy, 0,0,  note )          ; break ;    
         case PARENT   : canvas->draw(   ix, iy, 0,0,  parent_index()) ; break ;    
+        case IDX      : canvas->draw(   ix, iy, 0,0,  idx())          ; break ;    
     } 
 
 #ifdef WITH_CHILD
@@ -2483,8 +2586,41 @@ inline void sn::set_lvid_r(int lvid_, int d)
 }
 
 
+/**
+sn::check_idx
+--------------
 
+Recursive check that all nodes of the tree are 
+accessible from the pool
 
+**/
+
+inline int sn::check_idx(const char* msg) const 
+{
+    return check_idx_r(0, msg); 
+}
+inline int sn::check_idx_r(int d, const char* msg) const
+{
+    int idx_ = idx(); // lookup contiguous index of this object within the pool of active nodes
+    const sn* chk = Get(idx_);  
+
+    bool expect = chk == this ; 
+    if(!expect) std::cerr 
+        << "sn::check_idx_r"
+        << " ERROR Get(idx()) != this  ? " 
+        << " idx_ " << idx_
+        << " msg " << ( msg ? msg : "-" )
+        << "\n"
+        << " this.desc " << desc() << "\n"
+        << " chk.desc  " << ( chk ? chk->desc() : "-" ) << "\n"
+        ;  
+
+    int rc = expect ? 0 : 1 ; 
+    //assert(expect); 
+
+    for(int i=0 ; i < num_child() ; i++) rc += get_child(i)->check_idx_r(d+1, msg);
+    return rc ; 
+}
 
 
 
@@ -4463,27 +4599,22 @@ inline sn* sn::CreateSmallerTreeWithListNode(sn* root0, int q_note ) // static
 {
     std::cerr << "[sn::CreateSmallerTreeWithListNode\n" ; 
 
-    std::vector<sn*> prim0 ; 
-
+    std::vector<sn*> prim0 ;  // populated with the hinted listnode prim 
     sn* j0 = root0->find_joint_to_candidate_listnode(prim0, q_note); 
     if(j0 == nullptr) return nullptr ; 
-
-    sn* j1 = j0->deepcopy(); 
 
     std::vector<sn*> prim1 ; 
     sn::DeepCopy(prim1, prim0); 
  
-    int type = CSG_ZERO ; 
-    switch(q_note)
-    {
-       case HINT_LISTNODE_PRIM_DISCONTIGUOUS: type = CSG_DISCONTIGUOUS ; break ; 
-       case HINT_LISTNODE_PRIM_CONTIGUOUS:    type = CSG_CONTIGUOUS    ; break ; 
-    }
-    assert( type != CSG_ZERO ) ; 
+    sn* ln = sn::Compound( prim1, TypeFromNote(q_note) );
 
-    sn* ln = sn::Compound( prim1, type );
+    sn* j1 = j0->deepcopy(); 
 
-    j1->set_right( ln, false );  // NB this deletes the extraneous RHS just copied by j0->deepcopy  
+    //j1->set_right( ln, false );  // NB this deletes the extraneous RHS just copied by j0->deepcopy  
+    j1->set_child_leaking_prior(1, ln, false);
+
+
+    // ordering may be critical here as nodes get created and deleted by the above 
 
     std::cerr << "]sn::CreateSmallerTreeWithListNode\n" ; 
     return j1 ; 
@@ -4498,7 +4629,17 @@ inline sn* sn::CreateSmallerTreeWithListNode_contiguous(sn* root0)
     return CreateSmallerTreeWithListNode( root0, HINT_LISTNODE_PRIM_CONTIGUOUS ) ; 
 }
 
-
+inline int sn::TypeFromNote(int q_note) // static
+{
+    int type = CSG_ZERO ; 
+    switch(q_note)
+    {
+       case HINT_LISTNODE_PRIM_DISCONTIGUOUS: type = CSG_DISCONTIGUOUS ; break ; 
+       case HINT_LISTNODE_PRIM_CONTIGUOUS:    type = CSG_CONTIGUOUS    ; break ; 
+    }
+    assert( type != CSG_ZERO ) ; 
+    return type ; 
+}
 
 
 

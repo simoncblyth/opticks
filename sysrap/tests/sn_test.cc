@@ -166,6 +166,7 @@ sn* manual_tree(int it)
 
 struct sn_test
 {
+    static int idx_0(); 
     static int BinaryTreeHeight();
     static int ZeroTree();
     static int CommonOperatorTypeTree(int num_leaves);
@@ -182,12 +183,15 @@ struct sn_test
     static int dtor_0();
     static int dtor_1();
     static int set_child();
+    static int disown_child_0();
+    static int set_right_0();
     static int create_0();
     static int list_tree_0();
     static int difference_and_list_tree_0(); 
     static int CreateSmallerTreeWithListNode_0(); 
     static int deepcopy_0();
     static int deepcopy_1_leaking();
+    static int CreateSmallerTreeWithListNode_2();
     static int next_sibling();
     static int Serialize();
     static int Import();
@@ -197,6 +201,34 @@ struct sn_test
     static int main();
 };
 
+
+int sn_test::idx_0()
+{
+    sn* a0 = sn::Sphere(100.); 
+    sn* b0 = sn::Box3(100.);
+
+    sn* a0_1 = sn::Get(0) ;  
+    sn* b0_1 = sn::Get(1) ;  
+
+
+    assert( a0->idx() == 0 ); 
+    assert( a0_1 == a0 ); 
+
+    assert( b0->idx() == 1 ); 
+    assert( b0_1 == b0 ); 
+
+    delete a0 ; 
+    delete b0 ; 
+
+
+    sn* a1 = sn::Sphere(100.);
+    assert( a1->idx() == 0 ); 
+
+    delete a1 ; 
+
+    sn::Check_LEAK("sn_test::idx_0"); 
+    return 0 ; 
+}
 
 
 int sn_test::BinaryTreeHeight()
@@ -583,6 +615,46 @@ int sn_test::set_child()
     return 0 ; 
 }
 
+int sn_test::disown_child_0()
+{
+    sn* a = sn::Sphere(100.); 
+    sn* b = sn::Box3(100.); 
+    sn* c = sn::Create(1, a, b ); 
+
+    c->disown_child(b); 
+
+    return 0 ; 
+}
+
+
+int sn_test::set_right_0()
+{
+    sn* a = sn::Sphere(100.); 
+    sn* b = sn::Box3(100.); 
+    sn* c = sn::Create(1, a, b ); 
+
+    sn* b2 = sn::Sphere(100.); 
+
+    c->set_right(b2, false );    // this will delete b 
+    c->set_lvid(100); 
+
+    std::cout 
+        << "sn_test::set_right_0\n"   
+        << " c.render\n "
+        << c->render()
+        ; 
+
+    delete c ; 
+
+    sn::Check_LEAK("sn_test::set_right_0"); 
+
+    return 0 ; 
+}
+
+
+
+
+
 int sn_test::create_0()
 {
     sn* a = sn::Prim(100); 
@@ -650,6 +722,11 @@ int sn_test::CreateSmallerTreeWithListNode_0()
 
     std::cout << "sn_test::CreateSmallerTreeWithListNode_0 : r0.rdr \n" << r0->rdr() << "\n" ;   
     std::cout << "sn_test::CreateSmallerTreeWithListNode_0 : r1.rdr \n" << r1->rdr() << "\n" ;   
+
+
+    r0->check_idx("sn_test::CreateSmallerTreeWithListNode_0.r0"); 
+    r1->check_idx("sn_test::CreateSmallerTreeWithListNode_0.r1"); 
+
 
     delete r0 ; 
     delete r1 ; 
@@ -731,6 +808,45 @@ int sn_test::deepcopy_1_leaking()
     std::cout << "cp\n" << cp->desc_child() << std::endl ; 
 
     //sn::Check_LEAK("deepcopy_1_leaking"); 
+    return 0 ; 
+}
+
+
+int sn_test::CreateSmallerTreeWithListNode_2()
+{
+    sn* r0 = difference_and_list_tree(8) ;
+    r0->check_idx("sn_test::CreateSmallerTreeWithListNode_2.r0.bef"); 
+    r0->set_lvid(100); 
+    r0->check_idx("sn_test::CreateSmallerTreeWithListNode_2.r0.aft"); 
+
+    std::cout 
+        << "sn_test::CreateSmallerTreeWithListNode_2\n"
+        << "r0.render\n"
+        << r0->render()
+        << "\n"
+        ;
+ 
+
+    sn* r1 = sn::CreateSmallerTreeWithListNode_discontiguous(r0) ; 
+
+
+
+    r1->check_idx("sn_test::CreateSmallerTreeWithListNode_2.r1.bef"); 
+    r1->set_lvid(200); 
+    r1->check_idx("sn_test::CreateSmallerTreeWithListNode_2.r1.aft"); 
+
+
+    std::cout 
+        << "sn_test::CreateSmallerTreeWithListNode_2\n"
+        << "r1.render\n"
+        << r1->render()
+        ;
+
+    delete r0 ; 
+    delete r1 ; 
+
+    sn::Check_LEAK("sn_test::CreateSmallerTreeWithListNode_2"); 
+
     return 0 ; 
 }
 
@@ -935,7 +1051,8 @@ int sn_test::main()
     const char* TEST = ssys::getenvvar("TEST","ALL") ; 
 
     int rc = 0 ; 
-    if(      strcmp(TEST, "BinaryTreeHeight") == 0 ) rc = BinaryTreeHeight() ;
+    if(      strcmp(TEST, "idx_0") == 0 ) rc = idx_0() ;
+    else if( strcmp(TEST, "BinaryTreeHeight") == 0 ) rc = BinaryTreeHeight() ;
     else if( strcmp(TEST, "ZeroTree")==0) rc = ZeroTree();
     else if( strcmp(TEST, "CommonOperatorTypeTree")==0) rc = CommonOperatorTypeTree();
     else if( strcmp(TEST, "CommonOperatorTypeTree1")==0) rc = CommonOperatorTypeTree(1);
@@ -954,12 +1071,15 @@ int sn_test::main()
     else if( strcmp(TEST, "dtor_0")==0)     rc = dtor_0(); 
     else if( strcmp(TEST, "dtor_1")==0)     rc = dtor_1(); 
     else if( strcmp(TEST, "set_child")==0)     rc = set_child(); 
+    else if( strcmp(TEST, "disown_child_0")==0)     rc = disown_child_0(); 
+    else if( strcmp(TEST, "set_right_0")==0)     rc = set_right_0(); 
     else if( strcmp(TEST, "create_0")==0)     rc = create_0(); 
     else if( strcmp(TEST, "list_tree_0")==0)     rc = list_tree_0(); 
     else if( strcmp(TEST, "difference_and_list_tree_0")==0)     rc = difference_and_list_tree_0(); 
     else if( strcmp(TEST, "CreateSmallerTreeWithListNode_0")==0)     rc = CreateSmallerTreeWithListNode_0(); 
     else if( strcmp(TEST, "deepcopy_0")==0)     rc = deepcopy_0(); 
     else if( strcmp(TEST, "deepcopy_1_leaking")==0)  rc = deepcopy_1_leaking(); 
+    else if( strcmp(TEST, "CreateSmallerTreeWithListNode_2")==0)     rc = CreateSmallerTreeWithListNode_2(); 
     else if( strcmp(TEST, "next_sibling")==0)        rc = next_sibling(); 
     else if( strcmp(TEST, "Serialize")==0)        rc = Serialize(); 
     else if( strcmp(TEST, "Import")==0)        rc = Import(); 

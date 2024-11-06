@@ -449,16 +449,20 @@ inline void U4Solid::init_Tree_Shrink()
     if(root0->has_candidate_listnode_discontiguous())
     {
         root = sn::CreateSmallerTreeWithListNode_discontiguous(root0);
+        root->check_idx("U4Solid::init_Tree_Shrink.discontiguous"); 
     }
     else if(root0->has_candidate_listnode_contiguous())
     {
         root = sn::CreateSmallerTreeWithListNode_contiguous(root0);
+        root->check_idx("U4Solid::init_Tree_Shrink.contiguous"); 
     }
 
     if(root != root0) 
     {
+    
         std::cerr << "U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous\n" ; 
-        delete root0 ; 
+        std::cerr << "U4Solid::init_Tree_Shrink NOT DELETING \n" ;  
+        //delete root0 ; 
     }
 }
 

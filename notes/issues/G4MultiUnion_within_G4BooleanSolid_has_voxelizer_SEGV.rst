@@ -179,10 +179,10 @@ This allows the voxelization problem with G4MultiUnion within a boolean solid to
 
 
 
-left field issue : looks to be caused by deepcopy effectively scrubbing the parent pointers of the nodes
----------------------------------------------------------------------------------------------------------
+First left field issue : looks to be caused by deepcopy effectively scrubbing the parent pointers of the nodes
+------------------------------------------------------------------------------------------------------------------
 
-Try FIX where set_lvid sets the parent links 
+Try FIX where set_lvid sets the parent links : that seems to work.  
 
 
 ::
@@ -231,5 +231,421 @@ Try FIX where set_lvid sets the parent links
     (gdb) p count
     $1 = 4
     (gdb) 
+
+
+
+Second shakedown issue : failed to Get some nd 
+---------------------------------------------------
+
+::
+
+    jok-;jok-tds-gdb 
+
+
+::
+
+    ]]stree::postcreate
+    2024-11-06 15:33:06.279 INFO  [158185] [U4Tree::Create@236] ]stree::postcreate
+    [Detaching after fork from child process 159585]
+    [CSGImport::importPrim.dump_LVID:1 node.lvid 101 LVID -1 name uni1 soname uni1 primIdx 0 bn 7 ln(subset of bn) 1 num_sub_total 8
+    .CSGImport::importPrim dumping as ln > 0 : solid contains listnode
+    python: /data/blyth/opticks_Debug/include/SysRap/sn.h:4593: static void sn::NodeTransformProduct(int, glm::tmat4x4<double>&, glm::tmat4x4<double>&, bool, std::ostream*): Assertion `nd' failed.
+
+    Thread 1 "python" received signal SIGABRT, Aborted.
+    0x00007ffff6b34387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007ffff6b34387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6b35a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6b2d1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6b2d252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffc59b1973 in sn::NodeTransformProduct (idx=425, t=..., v=..., reverse=false, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/sn.h:4593
+    #5  0x00007fffc59b3de1 in stree::get_combined_transform (this=0xaf359c0, t=..., v=..., node=..., nd=0xb4cb4a0, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/stree.h:2655
+    #6  0x00007fffc59b4264 in stree::get_combined_tran_and_aabb (this=0xaf359c0, aabb=0x7ffffffef2b0, node=..., nd=0xb4cb4a0, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/stree.h:2710
+    #7  0x00007fffc59adc30 in CSGImport::importNode (this=0x1ab3e3c0, nodeOffset=15603, partIdx=3, node=..., nd=0xb4cb4a0) at /home/blyth/opticks/CSG/CSGImport.cc:541
+    #8  0x00007fffc59ad230 in CSGImport::importPrim (this=0x1ab3e3c0, primIdx=0, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:387
+    #9  0x00007fffc59acb90 in CSGImport::importSolidFactor (this=0x1ab3e3c0, ridx=6, ridx_type=70 'F') at /home/blyth/opticks/CSG/CSGImport.cc:251
+    #10 0x00007fffc59ac009 in CSGImport::importSolid (this=0x1ab3e3c0) at /home/blyth/opticks/CSG/CSGImport.cc:92
+    #11 0x00007fffc59abdf1 in CSGImport::import (this=0x1ab3e3c0) at /home/blyth/opticks/CSG/CSGImport.cc:55
+    #12 0x00007fffc5908dfb in CSGFoundry::importSim (this=0x1ab3e0c0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1696
+    #13 0x00007fffc590e412 in CSGFoundry::CreateFromSim () at /home/blyth/opticks/CSG/CSGFoundry.cc:3000
+    #14 0x00007fffcd2c2489 in G4CXOpticks::setGeometry (this=0xaf3a9d0, world=0x97b5100) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:321
+    #15 0x00007fffcd2c04c5 in G4CXOpticks::SetGeometry (world=0x97b5100) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:58
+    #16 0x00007fffcd2c0760 in G4CXOpticks::SetGeometry_JUNO (world=0x97b5100, sd=0x99a2dc0, jpmt=0xaef2420, jlut=0xaf34f10) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:96
+    #17 0x00007fffbe3462f9 in LSExpDetectorConstruction_Opticks::Setup (opticksMode=1, world=0x97b5100, sd=0x99a2dc0, ppd=0x55e560, psd=0x66381f0, pmtscan=0x0)
+        at /data/blyth/junotop/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc:46
+    #18 0x00007fffbe31b07c in LSExpDetectorConstruction::setupOpticks (this=0x95ca850, world=0x97b5100) at /data/blyth/junotop/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:454
+    #19 0x00007fffbe31a91c in LSExpDetectorConstruction::Construct (this=0x95ca850) at /data/blyth/junotop/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:375
+    #20 0x00007fffcc18795e in G4RunManager::InitializeGeometry() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+
+
+::
+
+    (gdb) f 4
+    #4  0x00007fffc59b1973 in sn::NodeTransformProduct (idx=425, t=..., v=..., reverse=false, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/sn.h:4593
+    4593        assert(nd); 
+    (gdb) list
+    4588        glm::tmat4x4<double>& v, 
+    4589        bool reverse, 
+    4590        std::ostream* out)  // static
+    4591    {
+    4592        sn* nd = Get(idx); 
+    4593        assert(nd); 
+    4594        nd->getNodeTransformProduct(t,v,reverse,out) ; 
+    4595    }
+    4596    
+    4597    inline std::string sn::DescNodeTransformProduct(
+    (gdb) p idx
+    $1 = 425
+    (gdb) 
+
+Potentially are trying to use stale idx post the deepcopy ?::
+
+    (gdb) f 7 
+    #7  0x00007fffc59adc30 in CSGImport::importNode (this=0x1ab3e3c0, nodeOffset=15603, partIdx=3, node=..., nd=0xb4cb4a0) at /home/blyth/opticks/CSG/CSGImport.cc:541
+    541     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ; 
+    (gdb) p leaf 
+    $2 = true
+    (gdb) 
+
+
+
+
+
+    520 CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, const sn* nd)
+    521 {
+    522     if(nd) assert( node.lvid == nd->lvid );
+    523 
+    524     int  typecode = nd ? nd->typecode : CSG_ZERO ;
+    525     bool leaf = CSG::IsLeaf(typecode) ;
+    526 
+    527     bool external_bbox_is_expected = CSG::ExpectExternalBBox(typecode);
+    528     // CSG_CONVEXPOLYHEDRON, CSG_CONTIGUOUS, CSG_DISCONTIGUOUS, CSG_OVERLAP
+    529 
+    530     bool expect = external_bbox_is_expected == false ;
+    531     LOG_IF(fatal, !expect)
+    532         << " NOT EXPECTING LEAF WITH EXTERNAL BBOX EXPECTED "
+    533         << " for node of type " << CSG::Name(typecode)
+    534         << " nd.lvid " << ( nd ? nd->lvid : -1 )
+    535         ;
+    536     assert(expect);
+    537     if(!expect) std::raise(SIGINT);
+    538 
+    539     std::array<double,6> bb ;
+    540     double* aabb = leaf ? bb.data() : nullptr ;
+    541     const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ;
+    542     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
+    543 
+    544     CSGNode* n = fd->addNode();
+    545     n->setTypecode(typecode);
+    546     n->setBoundary(node.boundary);
+    547     n->setComplement( nd ? nd->complement : false );
+    548     n->setTransform(tranIdx);
+    549     n->setParam_Narrow( nd ? nd->getPA_data() : nullptr );
+    550     n->setAABB_Narrow(aabb ? aabb : nullptr  );
+    551 
+    552     return n ;
+    553 }
+
+
+::
+
+
+    (gdb) p nd
+    $3 = (const sn *) 0xb4cb4a0
+    (gdb) p nd->desc()
+    $4 = "sn::desc pid  444 idx  425 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 101 tag cy"
+    (gdb) p nd->render(sn::PID)
+    $5 = "\nsn::desc pid  444 idx  425 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 101 tag cy\nsn::render mode 5 PID\n444   \n      \n      \n      \n\npreorder  sn::desc_order [444 ]\nino"...
+    (gdb) p *nd
+    $6 = {typecode = 105, complement = 0, lvid = 101, xform = 0x0, param = 0xb4cb560, aabb = 0xb4cb5e0, parent = 0xb4cb3e0, child = std::vector of length 0, capacity 0, depth = 2, note = 0, coincide = 0, label = '\000' <repeats 15 times>, 
+      pid = 444, subdepth = 0, static pool = 0xaf33be0, static VERSION = 0, static zero = 0, static Z_EPSILON = 0.001, static UNBOUNDED_DEFAULT_EXTENT = 0, static LEAK = false}
+    (gdb) p nd->parent
+    $7 = (sn *) 0xb4cb3e0
+    (gdb) p *nd->parent
+    $8 = {typecode = 2, complement = 0, lvid = 101, xform = 0x0, param = 0x0, aabb = 0x0, parent = 0xb4cb320, child = std::vector of length 2, capacity 2 = {0xb4cb4a0, 0xb4cb660}, depth = 1, note = 0, coincide = 0, 
+      label = '\000' <repeats 15 times>, pid = 443, subdepth = 0, static pool = 0xaf33be0, static VERSION = 0, static zero = 0, static Z_EPSILON = 0.001, static UNBOUNDED_DEFAULT_EXTENT = 0, static LEAK = false}
+    (gdb) p *nd->parent->parent
+    $9 = {typecode = 1, complement = 0, lvid = 101, xform = 0x0, param = 0x0, aabb = 0x0, parent = 0x0, child = std::vector of length 2, capacity 2 = {0xb4cb3e0, 0xb4cd3b0}, depth = 0, note = 0, coincide = 0, label = '\000' <repeats 15 times>, 
+      pid = 442, subdepth = 0, static pool = 0xaf33be0, static VERSION = 0, static zero = 0, static Z_EPSILON = 0.001, static UNBOUNDED_DEFAULT_EXTENT = 0, static LEAK = false}
+    (gdb) 
+
+
+::
+
+
+    sn::render mode 4 TYPETAG
+                                                       un       
+                                                                
+                                                 un       cy    
+                                                                
+                                           un       cy          
+                                                                
+                                     un       cy                
+                                                                
+                               un       cy                      
+                                                                
+                         un       cy                            
+                                                                
+                   un       cy                                  
+                                                                
+            [un]      cy                                        
+                                                                
+       in       cy                                              
+                                                                
+    cy    !cy                                                   
+    ^^
+    ??
+
+Some transform problem with leftmost node. Could be with all but thats the first. 
+
+ 
+
+
+
+::
+
+    2678 /**
+    2679 stree::get_combined_tran_and_aabb
+    2680 --------------------------------------
+    2681 
+    2682 Critical usage of ths from CSGImport::importNode
+    2683 
+    2684 0. early exits returning nullptr for non leaf nodes
+    2685 1. gets combined structural(snode.h) and CSG tree(sn.h) transform 
+    2686 2. collects that combined transform and its inverse (t,v) into Tran instance
+    2687 3. copies leaf frame bbox values from the CSG nd into callers aabb array
+    2688 4. transforms the bbox of the callers aabb array using the combined structural node 
+    2689    + tree node transform
+    2690 
+    2691 
+    2692 Note that sn::uncoincide needs CSG tree frame AABB but whereas this needs leaf 
+    2693 frame AABB. These two demands are met by changing the AABB frame 
+    2694 within sn::postconvert
+    2695 
+    2696 **/
+    2697 
+    2698 inline const Tran<double>* stree::get_combined_tran_and_aabb(
+    2699     double* aabb,
+    2700     const snode& node,
+    2701     const sn* nd,
+    2702     std::ostream* out
+    2703     ) const
+    2704 {
+    2705     assert( nd );
+    2706     if(!CSG::IsLeaf(nd->typecode)) return nullptr ;
+    2707 
+    2708     glm::tmat4x4<double> t(1.) ;
+    2709     glm::tmat4x4<double> v(1.) ;
+    2710     get_combined_transform(t, v, node, nd, out );
+    2711 
+    2712     // NB ridx:0 full stack of transforms from root down to CSG constituent nodes
+    2713     //    ridx>0 only within the instance and within constituent CSG tree 
+    2714      
+    2715     const Tran<double>* tv = new Tran<double>(t, v);
+    2716 
+    2717     nd->copyBB_data( aabb );
+    2718     stra<double>::Transform_AABB_Inplace(aabb, t);
+    2719 
+    2720     return tv ;
+    2721 }
+
+
+
+
+
+When do not delete the source can see that this is one ahead of the check::
+
+    _pool::remove nd pid 23
+    ] sn::~sn pid 23
+    ]sn::CreateSmallerTreeWithListNode
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 31 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   32 idx   31 typecode  12 num_node   9 num_leaf   8 maxdepth  1 is_positive_form Y lvid  -1 tag di
+     chk.desc  sn::desc pid   31 idx   30 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 23 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   24 idx   23 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  -
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 24 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   25 idx   24 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  sn::desc pid   24 idx   23 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 25 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   26 idx   25 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  sn::desc pid   25 idx   24 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 26 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   27 idx   26 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  sn::desc pid   26 idx   25 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 27 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   28 idx   27 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  sn::desc pid   27 idx   26 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 28 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   29 idx   28 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  sn::desc pid   28 idx   27 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 29 msg sn_test::deepcopy_2.r1.bef
+     this.desc sn::desc pid   30 idx   29 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+     chk.desc  sn::desc pid   29 idx   28 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 100 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 30 msg sn_test::deepcopy_2.r1.bef
+
+
+Suspect the sn::set_right deletion of the former RHS could be implicated due to the resulting 
+ordering of node deletion and node creation. 
+
+
+
+Issue still there 
+---------------------------------------
+
+::
+
+    ]]stree::postcreate
+    2024-11-06 20:23:21.654 INFO  [215762] [U4Tree::Create@236] ]stree::postcreate
+    [Detaching after fork from child process 217126]
+    [CSGImport::importPrim.dump_LVID:1 node.lvid 101 LVID -1 name uni1 soname uni1 primIdx 0 bn 7 ln(subset of bn) 1 num_sub_total 8
+    .CSGImport::importPrim dumping as ln > 0 : solid contains listnode
+    python: /data/blyth/opticks_Debug/include/SysRap/sn.h:4689: static void sn::NodeTransformProduct(int, glm::tmat4x4<double>&, glm::tmat4x4<double>&, bool, std::ostream*): Assertion `nd' failed.
+
+    Thread 1 "python" received signal SIGABRT, Aborted.
+    0x00007ffff6b34387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007ffff6b34387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6b35a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6b2d1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6b2d252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffc59b19b1 in sn::NodeTransformProduct (idx=434, t=..., v=..., reverse=false, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/sn.h:4689
+    #5  0x00007fffc59b3e1f in stree::get_combined_transform (this=0xaf32b90, t=..., v=..., node=..., nd=0xb4ca190, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/stree.h:2655
+    #6  0x00007fffc59b42a2 in stree::get_combined_tran_and_aabb (this=0xaf32b90, aabb=0x7ffffffefb60, node=..., nd=0xb4ca190, out=0x0) at /data/blyth/opticks_Debug/include/SysRap/stree.h:2710
+    #7  0x00007fffc59adc30 in CSGImport::importNode (this=0x1ab3b9b0, nodeOffset=15603, partIdx=3, node=..., nd=0xb4ca190) at /home/blyth/opticks/CSG/CSGImport.cc:542
+    #8  0x00007fffc59ad230 in CSGImport::importPrim (this=0x1ab3b9b0, primIdx=0, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:388
+    #9  0x00007fffc59acb90 in CSGImport::importSolidFactor (this=0x1ab3b9b0, ridx=6, ridx_type=70 'F') at /home/blyth/opticks/CSG/CSGImport.cc:251
+    #10 0x00007fffc59ac009 in CSGImport::importSolid (this=0x1ab3b9b0) at /home/blyth/opticks/CSG/CSGImport.cc:92
+    #11 0x00007fffc59abdf1 in CSGImport::import (this=0x1ab3b9b0) at /home/blyth/opticks/CSG/CSGImport.cc:55
+    #12 0x00007fffc5908dfb in CSGFoundry::importSim (this=0x1ab3b6b0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1696
+    #13 0x00007fffc590e412 in CSGFoundry::CreateFromSim () at /home/blyth/opticks/CSG/CSGFoundry.cc:3000
+    #14 0x00007fffcd2c2499 in G4CXOpticks::setGeometry (this=0xaf37ba0, world=0x97b2490) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:321
+    #15 0x00007fffcd2c04d5 in G4CXOpticks::SetGeometry (world=0x97b2490) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:58
+    #16 0x00007fffcd2c0770 in G4CXOpticks::SetGeometry_JUNO (world=0x97b2490, sd=0x99a0150, jpmt=0xaeef5f0, jlut=0xaf320e0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:96
+    #17 0x00007fffbe3462f9 in LSExpDetectorConstruction_Opticks::Setup (opticksMode=1, world=0x97b2490, sd=0x99a0150, ppd=0x5a9510, psd=0x6635900, pmt
+
+
+
+Off the rails by 20 sn::
+
+    ]]stree::postcreate
+    2024-11-06 20:43:36.510 INFO  [255098] [U4Tree::Create@236] ]stree::postcreate
+    [Detaching after fork from child process 256447]
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 753 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  773 idx  753 typecode 110 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 301 tag bo
+     chk.desc  sn::desc pid  753 idx  733 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 293 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 752 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  772 idx  752 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 300 tag cy
+     chk.desc  sn::desc pid  752 idx  732 typecode   1 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 292 tag un
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 751 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  771 idx  751 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 299 tag cy
+     chk.desc  sn::desc pid  751 idx  731 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 292 tag cy
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 750 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  770 idx  750 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 298 tag cy
+     chk.desc  sn::desc pid  750 idx  730 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 292 tag sp
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 735 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  755 idx  735 typecode   1 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 293 tag un
+     chk.desc  sn::desc pid  735 idx  715 typecode 116 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 277 tag to
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 733 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  753 idx  733 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 293 tag sp
+     chk.desc  sn::desc pid  733 idx  713 typecode 116 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 275 tag to
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 734 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  754 idx  734 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 293 tag cy
+     chk.desc  sn::desc pid  734 idx  714 typecode 116 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 276 tag to
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 732 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  752 idx  732 typecode   1 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 292 tag un
+     chk.desc  sn::desc pid  732 idx  712 typecode 116 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 274 tag to
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 730 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  750 idx  730 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 292 tag sp
+     chk.desc  sn::desc pid  730 idx  710 typecode 116 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 272 tag to
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 731 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  751 idx  731 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 292 tag cy
+     chk.desc  sn::desc pid  731 idx  711 typecode 116 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 273 tag to
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 573 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  593 idx  573 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 135 tag cy
+     chk.desc  sn::desc pid  573 idx  553 typecode 103 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 125 tag zs
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 568 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  588 idx  568 typecode   2 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 132 tag in
+     chk.desc  sn::desc pid  568 idx  548 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 122 tag cy
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 566 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  586 idx  566 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 132 tag cy
+     chk.desc  sn::desc pid  566 idx  546 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 121 tag cy
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 567 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  587 idx  567 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 132 tag cy
+     chk.desc  sn::desc pid  567 idx  547 typecode   2 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 121 tag in
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 569 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  589 idx  569 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 133 tag cy
+     chk.desc  sn::desc pid  569 idx  549 typecode 105 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 122 tag cy
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 572 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  592 idx  572 typecode   2 num_node   3 num_leaf   2 maxdepth  1 is_positive_form Y lvid 134 tag in
+     chk.desc  sn::desc pid  572 idx  552 typecode 103 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 124 tag zs
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 570 msg CSGImport::importPrim.check_idx
+
+
+
+Try to fail sooner::
+
+    ]]stree::postcreate
+    2024-11-06 21:11:41.893 INFO  [349586] [U4Tree::Create@236] ]stree::postcreate
+    [Detaching after fork from child process 350988]
+    sn::check_idx_r idx_ OBJECT DOES NOT MATCH THIS OBJECT : POOL MIXUP ?  idx_ 753 msg CSGImport::importPrim.check_idx
+     this.desc sn::desc pid  773 idx  753 typecode 110 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 301 tag bo
+     chk.desc  sn::desc pid  753 idx  733 typecode 101 num_node   1 num_leaf   1 maxdepth  0 is_positive_form Y lvid 293 tag sp
+    python: /data/blyth/opticks_Debug/include/SysRap/sn.h:2581: void sn::check_idx_r(int, const char*) const: Assertion `expect' failed.
+
+    Thread 1 "python" received signal SIGABRT, Aborted.
+    0x00007ffff6b34387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007ffff6b34387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff6b35a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff6b2d1a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff6b2d252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007fffcd2f0169 in sn::check_idx_r (this=0xbf38630, d=0, msg=0x7fffc5a552f0 "CSGImport::importPrim.check_idx") at /data/blyth/opticks_Debug/include/SysRap/sn.h:2581
+    #5  0x00007fffcd2eff41 in sn::check_idx (this=0xbf38630, msg=0x7fffc5a552f0 "CSGImport::importPrim.check_idx") at /data/blyth/opticks_Debug/include/SysRap/sn.h:2560
+    #6  0x00007fffc59acdc2 in CSGImport::importPrim (this=0x1ab3b9b0, primIdx=0, node=...) at /home/blyth/opticks/CSG/CSGImport.cc:303
+    #7  0x00007fffc59ac62a in CSGImport::importSolidGlobal (this=0x1ab3b9b0, ridx=0, ridx_type=82 'R') at /home/blyth/opticks/CSG/CSGImport.cc:179
+    #8  0x00007fffc59ac00b in CSGImport::importSolid (this=0x1ab3b9b0) at /home/blyth/opticks/CSG/CSGImport.cc:90
+    #9  0x00007fffc59abe21 in CSGImport::import (this=0x1ab3b9b0) at /home/blyth/opticks/CSG/CSGImport.cc:55
+    #10 0x00007fffc5908e2b in CSGFoundry::importSim (this=0x1ab3b6b0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1696
+    #11 0x00007fffc590e442 in CSGFoundry::CreateFromSim () at /home/blyth/opticks/CSG/CSGFoundry.cc:3000
+    #12 0x00007fffcd2c24e9 in G4CXOpticks::setGeometry (this=0xaf37ba0, world=0x97b2490) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:321
+    #13 0x00007fffcd2c0525 in G4CXOpticks::SetGeometry (world=0x97b2490) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:58
+    #14 0x00007fffcd2c07c0 in G4CXOpticks::SetGeometry_JUNO (world=0x97b2490, sd=0x99a0150, jpmt=0xaeef5f0, jlut=0xaf320e0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:96
+    #15 0x00007fffbe3462f9 in LSExpDetectorConstruction_Opticks::Setup (opticksMode=1, world=0x97b2490, sd=0x99a0150, ppd=0x5a9510, psd=0x6635900, pmtscan=0x0)
+        at /data/blyth/junotop/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc:46
+    #16 0x00007fffbe31b07c in LSExpDetectorConstruction::setupOpticks (this=0x95c7be0, world=0x97b2490) at /data/blyth/junotop/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:454
+    #17 0x00007fffbe31a91c in LSExpDetectorConstruction::Construct (this=0x95c7be0) at /data/blyth/junotop/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:375
+    #18 0x00007fffcc18795e in G4RunManager::InitializeGeometry() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+    #19 0x00007fffcc187b2c in G4RunManager::Initialize() () from /home/blyth/junotop/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+
+
+Skipping all sn deletions avoids the pool mixup, and gets the input photon simulation to complete::
+
+    P[blyth@localhost CSGOptiX]$ o
+    On branch master
+    Your branch is ahead of 'origin/master' by 1 commit.
+      (use "git push" to publish your local commits)
+
+    Changes not staged for commit:
+      (use "git add <file>..." to update what will be committed)
+      (use "git restore <file>..." to discard changes in working directory)
+        modified:   CSG/CSGImport.cc
+        modified:   notes/issues/G4MultiUnion_within_G4BooleanSolid_has_voxelizer_SEGV.rst
+        modified:   sysrap/sn.h
+        modified:   sysrap/stree.h
+        modified:   sysrap/tests/sn_test.cc
+        modified:   sysrap/tests/sn_test.sh
+        modified:   u4/U4Solid.h
+
+    no changes added to commit (use "git add" and/or "git commit -a")
+    P[blyth@localhost opticks]$ 
+
+::
+
+   P[blyth@localhost opticks]$ git commit -m "inconclusive debugging s_pool sn.h node inconsistency after node deletion, disabling all deletions gets things to complete with the G4MultiUnion avoided and listnode on GPU" 
+
+
+Perhaps can implement something like garbage collection, such that I control when the 
+deletions happen rather than interleaving them with creations that causes a complicated situation. 
 
 
