@@ -57,6 +57,15 @@ struct s_find
     bool operator()(const std::pair<int, T*>& p){ return q == p.second ; }  
 };
 
+/**
+s_pool
+-------
+
+T: operational type eg Obj from Obj.h : with pointer members allowed
+P: persisting type eg _Obj from Obj.h : with integer indices for each Obj pointer 
+
+**/
+
 template<typename T, typename P>    
 struct s_pool
 {
@@ -73,7 +82,15 @@ struct s_pool
     bool all_root() const ; 
 
     T*  get_root(int idx) const ; 
-    T*  get(int idx) const ; 
+
+    // The former s_pool::get method was erroneously doing *s_pool::lookup* 
+    // when actually *s_pool::getbyidx* is needed when allowing deletions 
+    // of the pooled objects. 
+    // When not doing deletions both approached are identical. 
+
+    T*  lookup(int pid) const ;  // lookup object with creation key "pid" 
+    T*  getbyidx(int idx) const ; // get by active index 
+
 
     void find( std::vector<T*>& vec, std::function<bool(const T*)> predicate ) const ; 
     void find_(std::vector<const T*>& vec, std::function<bool(const T*)> predicate ) const ; 
@@ -158,11 +175,44 @@ inline T* s_pool<T,P>::get_root(int idx) const
     return root ; 
 }
 
+
+/**
+s_pool::lookup
+---------------
+
+The original *get* method was actually doing this lookup 
+by the map key (which is the creation pid). 
+When allowing deletions, that is not tthe correct approach.  
+
+**/
+
 template<typename T, typename P>
-inline T* s_pool<T,P>::get(int idx) const 
+inline T* s_pool<T,P>::lookup(int pid) const 
 {
-    return pool.count(idx) == 1 ? pool.at(idx) : nullptr ; 
+    return pool.count(pid) == 1 ? pool.at(pid) : nullptr ; 
 }
+
+/**
+s_pool::getbyidx
+------------------
+
+Get by the contiguous active index in creation order   
+
+**/
+
+template<typename T, typename P>
+inline T* s_pool<T,P>::getbyidx(int idx) const 
+{
+    int sz = int(pool.size()) ; 
+    if( idx < 0 ) idx += sz ; 
+    if(idx < 0 || idx >= sz) return nullptr ; 
+
+    typedef typename POOL::const_iterator IT ; 
+    IT it = pool.begin(); 
+    std::advance(it, idx); 
+    return it->second ;  
+}
+
 
 
 template<typename T, typename P>
@@ -264,6 +314,15 @@ inline int s_pool<T, P>::index(const T* q) const
     return idx ; 
 }
 
+/**
+s_pool::add
+------------
+
+The pid used for the key of the map is from the
+creation count with no accounting for any deletions. 
+
+**/
+
 template<typename T, typename P>
 inline int s_pool<T, P>::add(T* o)
 {
@@ -278,6 +337,16 @@ inline int s_pool<T, P>::add(T* o)
     count += 1 ; 
     return pid ; 
 }
+
+/**
+s_pool::remove
+---------------
+
+1. s_find functor yields *it* iterator matching the *o* argument pointer within the pool map 
+2. for non-end *it* erase the key-val pair from the pool map
+
+**/
+
 
 template<typename T, typename P>
 inline int s_pool<T,P>::remove(T* o)

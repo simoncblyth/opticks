@@ -218,9 +218,9 @@ inline void s_csg::import(const NPFold* fold)
 }
 
 
-inline s_pa* s_csg::get_pa(int idx) const { return pa->get(idx) ; }
-inline s_bb* s_csg::get_bb(int idx) const { return bb->get(idx) ; }
-inline s_tv* s_csg::get_tv(int idx) const { return tv->get(idx) ; }
-inline sn*   s_csg::get_nd(int idx) const { return nd->get(idx) ; }
+inline s_pa* s_csg::get_pa(int idx) const { return pa->getbyidx(idx) ; }
+inline s_bb* s_csg::get_bb(int idx) const { return bb->getbyidx(idx) ; }
+inline s_tv* s_csg::get_tv(int idx) const { return tv->getbyidx(idx) ; }
+inline sn*   s_csg::get_nd(int idx) const { return nd->getbyidx(idx) ; }
 
 

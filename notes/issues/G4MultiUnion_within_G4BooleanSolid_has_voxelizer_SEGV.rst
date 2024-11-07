@@ -1,12 +1,20 @@
 G4MultiUnion_within_G4BooleanSolid_has_voxelizer_SEGV
 ========================================================
 
-TODO 
+
+NEXT
 -----
 
-* check full geometry conversion
-* visualize
-* check again input photon running 
+* pyvista input photon check intersect 
+* statistical A-B input photon comparison 
+
+
+DONE
+-----
+
+* DONE : check full geometry conversion
+* DONE : visualize
+* DONE : check again input photon running 
 
 
 
@@ -645,7 +653,104 @@ Skipping all sn deletions avoids the pool mixup, and gets the input photon simul
    P[blyth@localhost opticks]$ git commit -m "inconclusive debugging s_pool sn.h node inconsistency after node deletion, disabling all deletions gets things to complete with the G4MultiUnion avoided and listnode on GPU" 
 
 
+Avoiding all deletions  (no longer needed after s_pool::getbyidx adoption)
+-----------------------------------------------------------------------------
+
+
+::
+
+     443 inline void U4Solid::init_Tree_Shrink()
+     444 {
+     445     if( depth != 0 )  return ;
+     446 
+     447     sn* root0 = root ;
+     448 
+     449     if(root0->has_candidate_listnode_discontiguous())
+     450     {
+     451         root = sn::CreateSmallerTreeWithListNode_discontiguous(root0);
+     452         root->check_idx("U4Solid::init_Tree_Shrink.discontiguous");
+     453     }
+     454     else if(root0->has_candidate_listnode_contiguous())
+     455     {
+     456         root = sn::CreateSmallerTreeWithListNode_contiguous(root0);
+     457         root->check_idx("U4Solid::init_Tree_Shrink.contiguous");
+     458     }
+     459 
+     460     if(root != root0)
+     461     {
+     462 
+     463         std::cerr << "U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous\n" ;
+     464         std::cerr << "U4Solid::init_Tree_Shrink NOT DELETING \n" ;
+     465         //delete root0 ; 
+     466     }
+     467 }
+
+
+::
+ 
+    4598 inline sn* sn::CreateSmallerTreeWithListNode(sn* root0, int q_note ) // static
+    4599 {
+    4600     std::cerr << "[sn::CreateSmallerTreeWithListNode\n" ;
+    4601 
+    4602     std::vector<sn*> prim0 ;  // populated with the hinted listnode prim 
+    4603     sn* j0 = root0->find_joint_to_candidate_listnode(prim0, q_note);
+    4604     if(j0 == nullptr) return nullptr ;
+    4605 
+    4606     std::vector<sn*> prim1 ;
+    4607     sn::DeepCopy(prim1, prim0);
+    4608 
+    4609     sn* ln = sn::Compound( prim1, TypeFromNote(q_note) );
+    4610 
+    4611     sn* j1 = j0->deepcopy();
+    4612 
+    4613     //j1->set_right( ln, false );  // NB this deletes the extraneous RHS just copied by j0->deepcopy  
+    4614     j1->set_child_leaking_prior(1, ln, false);
+    4615 
+    4616 
+    4617     // ordering may be critical here as nodes get created and deleted by the above 
+    4618 
+    4619     std::cerr << "]sn::CreateSmallerTreeWithListNode\n" ;
+    4620     return j1 ;
+    4621 }
+
+
+
+Do I need garbage collection ? NO : just some bug fix reworking of s_pool::get which was actually s_pool::lookup
+-------------------------------------------------------------------------------------------------------------------------
+
 Perhaps can implement something like garbage collection, such that I control when the 
 deletions happen rather than interleaving them with creations that causes a complicated situation. 
 
+Attempting to capture the problem in sysrap/tests/s_pool_test.sh revealed the source of the
+issue to be a s_pool::get impl that did not cope to any deletions. 
+
+
+
+After replacing s_pool::get with s_pool::getbyidx (which should cope with deletions) try putting back the deletions
+---------------------------------------------------------------------------------------------------------------------
+
+This seems to be working, but needs more testing. 
+
+
+::
+
+    calhost issues]$ o
+    On branch master
+    Your branch is up to date with 'origin/master'.
+
+    Changes not staged for commit:
+      (use "git add <file>..." to update what will be committed)
+      (use "git restore <file>..." to discard changes in working directory)
+        modified:   notes/issues/G4MultiUnion_within_G4BooleanSolid_has_voxelizer_SEGV.rst
+        modified:   sysrap/s_csg.h
+        modified:   sysrap/s_pool.h
+        modified:   sysrap/sn.h
+        modified:   sysrap/tests/Obj.h
+        modified:   sysrap/tests/s_pool_test.cc
+        modified:   sysrap/tests/s_pool_test.sh
+        modified:   u4/U4Solid.h
+
+    Untracked files:
+      (use "git add <file>..." to include in what will be committed)
+        sysrap/tests/Obj.cc
 

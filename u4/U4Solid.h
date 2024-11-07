@@ -461,8 +461,8 @@ inline void U4Solid::init_Tree_Shrink()
     {
     
         std::cerr << "U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous\n" ; 
-        std::cerr << "U4Solid::init_Tree_Shrink NOT DELETING \n" ;  
-        //delete root0 ; 
+        //std::cerr << "U4Solid::init_Tree_Shrink NOT DELETING \n" ;  
+        delete root0 ; 
     }
 }
 

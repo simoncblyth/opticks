@@ -972,9 +972,9 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     sn* n = Create( _n->typecode , nullptr, nullptr );  
     n->complement = _n->complement ; 
     n->lvid = _n->lvid ; 
-    n->xform = s_tv::pool->get(_n->xform) ; 
-    n->param = s_pa::pool->get(_n->param) ; 
-    n->aabb =  s_bb::pool->get(_n->aabb) ; 
+    n->xform = s_tv::pool->getbyidx(_n->xform) ; 
+    n->param = s_pa::pool->getbyidx(_n->param) ; 
+    n->aabb =  s_bb::pool->getbyidx(_n->aabb) ; 
 
     const _sn* _child = _n->first_child  > -1 ? &buf[_n->first_child] : nullptr  ; 
 
@@ -992,9 +992,9 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
     sn* n = Create( _n->typecode, l, r );  // sn::sn ctor sets parent of l and r to n 
     n->complement = _n->complement ; 
     n->lvid = _n->lvid ; 
-    n->xform = s_tv::pool->get(_n->xform) ; 
-    n->param = s_pa::pool->get(_n->param) ; 
-    n->aabb = s_bb::pool->get(_n->aabb) ; 
+    n->xform = s_tv::pool->getbyidx(_n->xform) ; 
+    n->param = s_pa::pool->getbyidx(_n->param) ; 
+    n->aabb = s_bb::pool->getbyidx(_n->aabb) ; 
 #endif
     return n ;  
 }  
@@ -1299,6 +1299,7 @@ inline void sn::set_child( int ix, sn* ch, bool copy )
 #endif
 
 }
+
 
 inline void sn::set_child_leaking_prior( int ix, sn* ch, bool copy )
 {
@@ -3951,7 +3952,7 @@ inline bool sn::Includes( const std::vector<sn*>& nds, sn* nd ) // static
 
 inline sn* sn::Get(int idx) // static 
 {
-    return pool->get(idx) ; 
+    return pool->getbyidx(idx) ; 
 }
 
 
@@ -4610,8 +4611,8 @@ inline sn* sn::CreateSmallerTreeWithListNode(sn* root0, int q_note ) // static
 
     sn* j1 = j0->deepcopy(); 
 
-    //j1->set_right( ln, false );  // NB this deletes the extraneous RHS just copied by j0->deepcopy  
-    j1->set_child_leaking_prior(1, ln, false);
+    j1->set_right( ln, false );  // NB this deletes the extraneous RHS just copied by j0->deepcopy  
+    //j1->set_child_leaking_prior(1, ln, false);
 
 
     // ordering may be critical here as nodes get created and deleted by the above 
