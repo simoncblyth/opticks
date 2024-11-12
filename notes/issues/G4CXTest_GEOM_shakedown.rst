@@ -122,49 +122,10 @@ No, but while investigated the UseGivenVelocity kludge I recall changing process
 
 
 
-Issue 3 : deviant very simple histories : TO BT BT SA : at 1000/1M level : maybe Chimney coincident surface ? 
-----------------------------------------------------------------------------------------------------------------
-
-::
-
-    .                  BASH_SOURCE : /data/blyth/junotop/opticks/g4cx/tests/../../sysrap/tests/sseq_index_test.sh 
-                              SDIR : /data/blyth/junotop/opticks/sysrap/tests 
-                               TMP : /data/blyth/opticks 
-                        EXECUTABLE : G4CXTest 
-                           VERSION : 98 
-                              BASE : /data/blyth/opticks/GEOM/J_2024aug27 
-                              GEOM : J_2024aug27 
-                            LOGDIR : /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98 
-                             AFOLD : /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/A000 
-                             BFOLD : /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/B000 
-                              FOLD : /data/blyth/opticks/sseq_index_test 
-    a_path $AFOLD/seq.npy /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/A000/seq.npy a_seq (1000000, 2, 2, )
-    b_path $BFOLD/seq.npy /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/B000/seq.npy b_seq (1000000, 2, 2, )
-    AB
-    [sseq_index_ab::desc u.size 152063 opt BRIEF mode 6sseq_index_ab_chi2::desc sum  2301.5411 ndf 1801.0000 sum/ndf     1.2779 sseq_index_ab_chi2_ABSUM_MIN:40.0000
-        TO AB                                                                                            :  126549 126392 :     0.0974 : Y :       2      4 :   
-        TO BT BT BT BT BT BT SD                                                                          :   70475  70600 :     0.1108 : Y :      18     11 :   
-        TO BT BT BT BT BT BT SA                                                                          :   57091  57086 :     0.0002 : Y :       5      1 :   
-        TO SC AB                                                                                         :   51434  51597 :     0.2579 : Y :       4     30 :   
-        TO SC BT BT BT BT BT BT SD                                                                       :   35876  36311 :     2.6213 : Y :      58     94 :   
-        TO SC BT BT BT BT BT BT SA                                                                       :   29663  29733 :     0.0825 : Y :     124     53 :   
-        TO SC SC AB                                                                                      :   19993  19819 :     0.7605 : Y :     137     51 :   
-    :r:`TO BT BT SA                                                                                      :   19822  18585 :    39.8409 : Y :      71     72 : DEVIANT  `
-        TO RE AB                                                                                         :   18319  18198 :     0.4009 : Y :       9      5 :   
-        TO SC SC BT BT BT BT BT BT SD                                                                    :   15451  15529 :     0.1964 : Y :      19     22 :   
-        TO SC SC BT BT BT BT BT BT SA                                                                    :   12785  12850 :     0.1648 : Y :      24    173 :   
-        TO BT BT AB                                                                                      :   10955  10998 :     0.0842 : Y :      72     41 :   
-        TO BT AB                                                                                         :    9253   9466 :     2.4237 : Y :      36     15 :   
-        TO SC SC SC AB                                                                                   :    7544   7392 :     1.5469 : Y :      90      8 :   
-        TO BT BT BT BT BT BT BT SA                                                                       :    7436   7473 :     0.0918 : Y :     176    144 :   
-        TO RE BT BT BT BT BT BT SD                                                                       :    7417   7352 :     0.2861 : Y :     197     99 :   
-        TO SC RE AB                                                                                      :    7137   7129 :     0.0045 : Y :     110     60 :   
-        TO RE BT BT BT BT BT BT SA                                                                       :    7124   7049 :     0.3969 : Y :      48     35 :   
-    :r:`TO SC BT BT SA                                                                                   :    6786   6159 :    30.3692 : Y :     120    126 : DEVIANT  `
-        TO SC BT BT AB                                                                                   :    6375   6580 :     3.2439 : Y :     153     74 :   
-        TO BT BT BT BT BT BT BT SR SA                                                                    :    6375   6315 :     0.2837 : Y :      16    184 :   
-        TO SC SC SC BT BT BT BT BT BT SD                                                                 :    6146   6149 :     0.0007 : Y :     145      0 :   
+Issue 3 : deviant very simple histories : TO BT BT SA : at 1000/1M level 
+--------------------------------------------------------------------------------
 
 
+* :doc:`G4CXTest_GEOM_deviant_simple_history_TO_BT_BT_SA_at_1000_per_1M_level`
 
 

@@ -3,6 +3,9 @@
 G4CXTest.py
 ============
 
+PICK=AB HSEL="TO BT BT SA" ~/o/G4CXTest_GEOM.sh dna
+
+
 """
 import os, logging, numpy as np
 from opticks.ana.fold import Fold, IsRemoteSession
@@ -25,6 +28,7 @@ PICK = os.environ.get("PICK","AB")
 AIDX = int(os.environ.get("AIDX","0"))
 BIDX = int(os.environ.get("BIDX","0"))
 
+H,V = 0,2  # X, Z
 
 
 if IsRemoteSession():  # HMM: maybe do this inside pvplt ?
@@ -183,14 +187,17 @@ if __name__ == '__main__':
         ww = pp[ew] if not ew is None else None
 
         ppf = pp.reshape(-1,3)
-        wwf = ww.reshape(-1,3) if not ww is None else None
+        print("ppf.shape : %s " % repr(ppf.shape) )
         
-
         g_pos = np.ones( [len(ppf), 4 ] ) 
         g_pos[:,:3] = ppf
         l_pos = np.dot( g_pos, e.f.sframe.w2m )
         u_pos = g_pos if GLOBAL else l_pos
 
+
+
+        wwf = ww.reshape(-1,3) if not ww is None else None
+        print("wwf.shape : %s " % repr(wwf.shape) )
 
         if not wwf is None: 
             h_pos = np.ones( [len(wwf), 4 ] ) 
@@ -204,26 +211,29 @@ if __name__ == '__main__':
         pass
 
 
-        H,V = 0,2  # X, Z
 
         if SEL == "1":
             sel = np.logical_and( np.abs(u_pos[:,H]) < 500, np.abs(u_pos[:,V]) < 500 )
             s_pos = u_pos[sel]
         else:
-            s_pos = u_pos
+            s_pos = None
         pass
 
 
-        if MODE == 2:
-            ax.scatter( s_pos[:,H], s_pos[:,V], s=0.1 )
-        elif MODE == 3:
-            pl.add_points(s_pos[:,:3])
+        if s_pos is None:
+            print("s_pos:None skip plotting : use SEL=1 to plot ")
         else:
+            if MODE == 2:
+                ax.scatter( s_pos[:,H], s_pos[:,V], s=0.1 )
+            elif MODE == 3:
+                pl.add_points(s_pos[:,:3])
+            else:
+                pass
             pass
         pass
 
-
         if not v_pos is None:
+            print("v_pos:NOT-None proceed with selected point plotting")
             if MODE == 2:
                 ax.scatter( v_pos[:,H], v_pos[:,V], s=0.1, c="r" )
             elif MODE == 3:
@@ -236,6 +246,7 @@ if __name__ == '__main__':
                 pass
             pass
         else:
+            print("v_pos:None skip selected point plotting")
             pass
         pass
 

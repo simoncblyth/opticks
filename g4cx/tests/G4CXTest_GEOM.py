@@ -21,6 +21,7 @@ from opticks.ana.p import *  # including cf boundary___
 
 MODE = int(os.environ.get("MODE","3"))
 SEL = int(os.environ.get("SEL","0"))
+HSEL = os.environ.get("HSEL","")    # History selection 
 PICK = os.environ.get("PICK","A")
 SAB_ = "SAB" in os.environ
 
@@ -69,6 +70,49 @@ if __name__ == '__main__':
         b = None
     pass
 
+
+    if not HSEL == "":
+        print("doing HSEL [%s] history selection " % HSEL )
+
+        wa = a.q_startswith_or(HSEL) if not a is None else None
+        wa_shape = "-" if wa is None else repr(wa.shape)
+        print("wa.shape %s " % wa_shape)
+
+        wb = b.q_startswith_or(HSEL) if not b is None else None
+        wb_shape = "-" if wb is None else repr(wb.shape)
+        print("wb.shape %s " % wb_shape)
+
+        ra = a.f.record[wa] if not a is None else None
+        ra_shape = "-" if ra is None else repr(ra.shape)
+        print("ra.shape %s " % ra_shape)
+
+        rb = b.f.record[wb] if not b is None else None
+        rb_shape = "-" if rb is None else repr(rb.shape)
+        print("rb.shape %s " % rb_shape)
+
+
+
+
+
+        st = slice(0,4)
+        ba = ra[:,st,3,0].view(np.uint32) >> 16 if not ra is None else None
+        bb = rb[:,st,3,0].view(np.uint32) >> 16 if not rb is None else None 
+        assert np.all( bb == 0 ) # unfortunately no boundary info for B, YET  
+
+
+        rra = np.sqrt(np.sum(ra[:,st,0,:3]*ra[:,st,0,:3],axis=2)) if not ra is None else None
+        rra_shape = "-" if rra is None else repr(rra.shape)  
+        print("rra.shape %s " % rra_shape )
+
+        rrb = np.sqrt(np.sum(rb[:,st,0,:3]*rb[:,st,0,:3],axis=2)) if not rb is None else None
+        rrb_shape = "-" if rrb is None else repr(rrb.shape)  
+        print("rrb.shape %s " % rrb_shape )
+
+    else:
+        print("set HSEL to make history selection ")
+        pass
+    pass 
+   
     ee = {'A':a, 'B':b} 
 
     if SAB_: 

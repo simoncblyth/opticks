@@ -239,6 +239,10 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then 
     echo -n 
 
+    ## UNTESTED
+    export OPTICKS_INPUT_PHOTON=RainXZ_Z230_10k_f8.npy
+    export OPTICKS_INPUT_PHOTON_FRAME=NNVT:0:1000
+
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
     echo -n 
 

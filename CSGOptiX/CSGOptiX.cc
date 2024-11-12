@@ -763,8 +763,10 @@ CSGOptiX::simtrace_launch via the SCSGOptiX.h protocol
 
 double CSGOptiX::simtrace(int eventID)
 {
+    LOG(LEVEL) << "[" ; 
     assert(sim); 
     double dt = sim->simtrace(eventID) ;  // (QSim)
+    LOG(LEVEL) << "] " << dt  ; 
     return dt ; 
 }
 

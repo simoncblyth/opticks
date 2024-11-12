@@ -435,8 +435,11 @@ double QSim::simtrace(int eventID)
     sev->t_PreLaunch = sstamp::Now() ; 
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
     sev->t_PostLaunch = sstamp::Now() ; 
-
     sev->t_Launch = dt ; 
+
+    // see ~/o/notes/issues/cxt_min_simtrace_revival.rst
+    sev->gather(); 
+
     sev->endOfEvent(eventID); 
 
     return dt ; 

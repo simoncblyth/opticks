@@ -388,6 +388,14 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     const float3& pos = (const float3&)p.q0.f  ; 
     const float3& mom = (const float3&)p.q1.f ; 
 
+
+#if defined(DEBUG_PIDX)
+    if(idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d pos.xyz %7.3f,%7.3f,%7.3f mom.xyz %7.3f,%7.3f,%7.3f  \n", idx, pos.x, pos.y, pos.z, mom.x, mom.y, mom.z ); 
+#endif
+
+
+
+
     trace( 
         params.handle,
         pos,

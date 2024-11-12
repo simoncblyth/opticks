@@ -1,7 +1,10 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 cxt_min.sh : Simtrace minimal executable and script for shakedown
 ===================================================================
+
+Uses CSGOptiXTMTest which just does "CSGOptiX::SimtraceMain()"
+depends on GEOM to pick geometry and MOI for targetting 
 
 Workstation::
 
@@ -21,6 +24,7 @@ SNAME=$(basename $BASH_SOURCE)
 SSTEM=${SNAME/.sh}
 ana_script=$SDIR/$SSTEM.py 
 
+allarg="info_fold_run_dbg_brab_grab_ana"
 
 case $(uname) in
    Linux) defarg=run_info ;;
@@ -29,14 +33,17 @@ esac
 
 [ -n "$BP" ] && defarg="info_dbg" 
 
+
 arg=${1:-$defarg}
 
-export OPTICKS_HASH=$(git -C $OPTICKS_HOME rev-parse --short HEAD)
+export OPTICKS_HASH=$(git -C $SDIR/.. rev-parse --short HEAD)
 
 bin=CSGOptiXTMTest
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
 source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit 
+
+export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 
 
 tmp=/tmp/$USER/opticks
@@ -51,13 +58,40 @@ export FOLD=$LOGDIR/$EVT
 export SCRIPT=$(basename $BASH_SOURCE)
 
 version=1
-VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
+VERSION=${VERSION:-$version}   
+
+export OPTICKS_EVENT_MODE=DebugLite
+export OPTICKS_INTEGRATION_MODE=1
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 LOGNAME=$bin.log
 
-export OPTICKS_INTEGRATION_MODE=1
+
+
+
+gdb__ () 
+{ 
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
 
 
 # pushing this too high tripped M3 max photon limit
@@ -72,20 +106,19 @@ export CEGS=16:0:9:2000   # XZ default
 #export CE_OFFSET=CE    ## offsets the grid by the CE 
 
 
-cvd=1   # default 1:TITAN RTX
-export CUDA_VISIBLE_DEVICES=${CVD:-$cvd}
-
 logging(){ 
-    #export CSGOptiX=INFO
-    #export QEvent=INFO 
+    export CSGOptiX=INFO
+    export QEvent=INFO 
     #export QSim=INFO
     #export SFrameGenstep=INFO
-    export CSGTarget=INFO
+    #export CSGTarget=INFO
+    #export SEvt=INFO 
 }
 [ -n "$LOG" ] && logging
 
 
-vars="GEOM LOGDIR BASE OPTICKS_HASH CVD CUDA_VISIBLE_DEVICES SDIR SNAME SSTEM FOLD script"
+vars="allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MOI LOG LOGDIR BASE OPTICKS_HASH CUDA_VISIBLE_DEVICES SDIR SNAME SSTEM FOLD bin script CEGS ana_script"
+
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -105,7 +138,7 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    if [ "${arg/run}" != "$arg" ]; then
        $bin
    elif [ "${arg/dbg}" != "$arg" ]; then
-       dbg__ $bin
+       gdb__ $bin
    fi 
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1 
 fi 
@@ -113,14 +146,17 @@ fi
 
 if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
     ## THIS OLD GRAB SYNCING TOO MUCH 
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
+    source $SDIR/../../bin/BASE_grab.sh $arg 
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source $OPTICKS_HOME/bin/rsync.sh $FOLD
+    source $SDIR/../../bin/rsync.sh $FOLD
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $ana_script
 fi 
+
+
+
 

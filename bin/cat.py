@@ -37,9 +37,9 @@ class Cat(object):
         lines = self.lines
         if self.dupes:
             dupes_ = lambda line:len(filter(lambda _:_ == line, lines))
-            return "\n".join(["%2s %-4d %-4d %s" % (dupes_(lines[i]), i,i+1, lines[i]) for i in self.selection])
+            return "\n".join(["%2s %-4d %s" % (dupes_(lines[i]), i, lines[i]) for i in self.selection])
         else:
-            return "\n".join(["%-4d %-4d %s" % (i,i+1, lines[i]) for i in self.selection])
+            return "\n".join(["%-4d %s" % (i, lines[i]) for i in self.selection])
         pass 
 
 if __name__ == '__main__':
