@@ -1,6 +1,8 @@
 FIXED cxs_min_major_difference_between_TITAN_RTX_OptiX7p5_and_RTX_5000_Ada_OptiX8p0
 ======================================================================================
 
+* THIS : WAS DUE TO ALL ZERO QCurandState FILES
+
 
 Issue : major simulation differences between P and A (different CUDA and OptiX and GPU)
 -----------------------------------------------------------------------------------------

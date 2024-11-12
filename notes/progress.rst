@@ -40,14 +40,27 @@ Progress
      think about how they are related to each other 
 
 
-2024 Oct
-----------
 
+
+2024 Nov : generalize translation to use listnode with unchanged source geometry 
+-------------------------------------------------------------------------------------
+
+* o : 11/05 : enable geometry translation to create smaller trees with listnode using sn::CreateSmallerTreeWithListNode rather than requiring G4MultiUnion in the G4 geometry, to avoid G4 voxelization SEGV
+
+
+2024 Oct : performance test comparing 1st and 3rd gen RTX with full JUNO geometry, conference+workshop reports
+----------------------------------------------------------------------------------------------------------------
+
+* https://simoncblyth.bitbucket.io/env/presentation/opticks_20241025_montreal_nEXO_light_simulations_workshop.html
+* https://simoncblyth.bitbucket.io/env/presentation/opticks_20241021_krakow_chep2024.html
+
+* o : 10/15 : md5sum checks show that the dud QCurandState were all zeros, plus that these states are consistent between the CUDA versions in use
+* o : 10/14 : investigate 3 in 10M photons issue of lpmtid being > 17612, avoid the CUDA_Exception 
 * o : 10/13 : update the progress notes 
 
 
-2024 Sep : CUDA 12.4 OptiX 8 compat : RTX 3rd gen test
---------------------------------------------------------
+2024 Sep : fixed intersect issue with CUDA 12.4 OptiX 8 compat : RTX 3rd gen test
+----------------------------------------------------------------------------------
 
 * o : 09/30 : enable skipahead as standard, configured with OPTICKS_EVENT_SKIPAHEAD. Switch to NPX::ArrayFromData from NPX::Make
 * o : 09/14 : add more efficient CombinedArray serialize/import to S4MaterialPropertyVector.h and std::vector of std::array serialize/import to NPX.h 
@@ -60,15 +73,17 @@ Progress
 * o : 09/02 : dump debugging CSG issue with optix 7.5 and cuda 12.4 : adding lots of dump debug to csg_intersect headers scares away the bug, but switching off the debug and it comes back : bizarre
 * o : 09/02 : CUDA level debug of the intersects shows no difference between 11.7 and 12.4 with OptiX 7.5 on TITAN_RTX and RTX_5000_Ada so resort to PIDX debug within OptiX raytrace
 
-2024 Aug 
----------
+
+2024 Aug : shakedown integrated triangles, Ada test reveals CUDA 12.4 CSG boolean issue 
+-----------------------------------------------------------------------------------------
 
 * o : 08/30 : notes on CUDA 12.4 Ada CSG boolean issue
 * o : 08/27 : shakedown forced triangulation, see notes/issues/flexible_forced_triangulation.rst
 * o : 08/26 : 9cf40f6c0 - first untested nearly full cut at flexible forced triangulation across all levels : stree.h CSGFoundry and SBT
 
-2024 Jul 
----------
+
+2024 Jul : updates for Geant4 11.2 
+--------------------------------------
 
 * http://localhost/env/presentation/opticks_20240702_kaiping_status_and_plan.html
 
@@ -76,11 +91,13 @@ Progress
   * 3x3x3 grid of MultiUnion/list-node each with 7x7x7=343 Orb
   * FastenerAcrylicConstruction  
 
-
 * o : 07/12 : change skin surface vector to map G4VERSION_NUMBER branch to 1122 
 
-2024 Jun : using forced triangles to handle torii
----------------------------------------------------
+
+
+2024 Jun : add user control for triangulated geom : apply to guidetube torii
+-------------------------------------------------------------------------------
+
 
 * http://localhost/env/presentation/opticks_20240606_ihep_panel_30min.html
  
@@ -95,8 +112,8 @@ Progress
 * o : 06/16 : provide way to download render pixels and flip the vertical prior to annotation and saving, plus start on interactive GPU side flip with traceyflip, add MOI targeted frame hop from M key
 * o : 06/11 : c4855b1e3 - start adding forced triangulation solids at stree::factorize stage 
 
-2024 May : listnode from simple G4MultiUnion operational
----------------------------------------------------------
+2024 May : listnode translation from simple G4MultiUnion operational
+------------------------------------------------------------------------
 
 * o : 05/16 : anaviz for listnode converted from G4MultiUnion now working, performantly rendering solid of 7x7x7=343 constituent Orbs that would be impossible without listnode
 * o : 05/15 : filling out G4MultiUnion sn.h CSGPrim/CSGNode listnode full conversion
@@ -108,9 +125,10 @@ Progress
 * o : 05/06 : start tri/ana generalization SBT setup using union of CustomPrim and Trimesh in the HitGroupData 
 
 
-2024 Apr : tri/ana integration at OptiX level
-----------------------------------------------
+2024 Apr : triangle + analytic integration at OptiX and OpenGL levels
+-----------------------------------------------------------------------
 
+* implement interactive geometry navigation (header-only approach for fast cycle)
 * http://localhost/env/presentation/opticks_20240418_ihep_epd_seminar_story_of_opticks.html
 
 
@@ -144,6 +162,8 @@ Progress
 2024 Mar : header-only SGLFW.h revival of triangulated OpenGL geometry viz, revive OptiX builtin triangle ray trace render
 ----------------------------------------------------------------------------------------------------------------------------
 
+* implement OpenGL rasterized viz + OptiX triangle geometry 
+
 * o : 03/28 : investigate velocity after reflection (TIR or otherwise), find that UseGivenVelocity keeps that working as well as refraction
 * o : 03/27 : Merged PR from Yuxiang for enhancements to lookup based ART calc
 * o : 03/26 : add InverseModelView IMV matrix calc in updateComposite and use that in updateEyeBasis to make the ray trace sensitive to the look rotation quaternion
@@ -165,8 +185,9 @@ Progress
 * o : 03/01 : add U4Mesh::MakeFold created meshes for all solids to stree created with U4Tree
 
 
-2024 Feb
-----------
+
+2024 Feb : CPU memory leak find+fix, lookahead to triangle geometry with OptiX 7
+--------------------------------------------------------------------------------------------
 
 * http://localhost/env/presentation/opticks_20240227_zhejiang_seminar.html
 
@@ -190,16 +211,18 @@ Progress
 * o : 02/01 : add sysrap/tests/sleak.sh in the style of sreport.sh but simpler as just focussing on leak checking 
 
 
-2024 Jan : VRAM leak finding 
--------------------------------
+2024 Jan : GPU memory leak find+fix
+-----------------------------------------------------
 
 
 * o : 01/24 :  notes on fixing the 14kb/launch VRAM leak due to use of separate CUDA stream for each launch, plus change non-controllable per launch logging to be under SEvt__MINIMAL control
 * o : 01/22 : implement running from a sequence of input gensteps such that cxs_min_igs.sh can redo the pure Opticks GPU optical propagation for gensteps persisted from a prior Geant4+Opticks eg okjob/jok-tds job
 * o : 01/02 : add NPX.h ArrayFromDiscoMapUnordered handling of int,int unordered_map
 
-2023 Dec
------------
+
+
+2023 Dec : multi-event profiling and leak finding infrastructure, intro Release build, first JUNO+Opticks release, 3 test scripts 
+------------------------------------------------------------------------------------------------------------------------------------
 
 * http://localhost/env/presentation/opticks_20231219_using_junosw_plus_opticks_release.html
 
@@ -223,11 +246,12 @@ Progress
 * o : 12/17 : quantify leak GB/s with linefit, reduce smonitor logging
 * o : 12/09 : examine preprocessor flattened CSGOptiX/CSGOptiX7.cu with preprocessor.sh to look for inadvertent use of printf and doubles as suggested by opticks-ptx for Release PTX showing a few of those left 
 * o : 12/01 : add run level profile recording
+* o : 12/01-07 : enhance multi event profiling and leak checking
 
 2023 Nov
 ----------
 
-
+* o : 11/25-30 : enhance profiling and reporting machinery eg NPFold::LoadNoData
 * o : 11/06 : bump the CXX dialect to c++17 now that are shifting to OptiX 7.5 CUDA 11.7
 * o : 11/03 : revisit tests : all sysrap passing
 * o : 11/01 : improve chi2 interpretation reporting by QCF : confirm fix A/B g4cx/tests/G4CXTest_raindrop.sh difference by using Opticks defaults that correspond closer to Geant4 
