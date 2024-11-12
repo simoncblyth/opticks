@@ -3,6 +3,13 @@
 G4CXTest_GEOM.py
 ======================
 
+This script is intended for simple plotting and 
+statistical SEvt comparison. 
+
+The alternate script G4CXTest.py is used for 
+more detailed plotting such as single photon path 
+illustration. 
+
 """
 import os, logging, textwrap, numpy as np
 from opticks.ana.fold import Fold
@@ -33,10 +40,10 @@ else:
 pass
 
 
-def eprint(expr, l, g ):
+def eprint(expr, _locals, _globals ):
     print(expr)
     try:
-       val = eval(expr,l,g)
+       val = eval(expr,_locals,_globals)
     except AttributeError:
        val = "eprint:AttributeError"
     pass
@@ -46,6 +53,7 @@ pass
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    print("MODE:%s SEL:%s PICK:%s SAB_:%s " % (MODE, SEL, PICK, SAB_) ) 
 
     if PICK == "A" or PICK == "AB" or SAB_:
         a = SEvt.Load("$AFOLD", symbol="a")

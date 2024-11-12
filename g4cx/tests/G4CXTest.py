@@ -1,5 +1,9 @@
 #!/usr/bin/env python 
+"""
+G4CXTest.py
+============
 
+"""
 import os, logging, numpy as np
 from opticks.ana.fold import Fold, IsRemoteSession
 from opticks.sysrap.sevt import SEvt, SAB
@@ -73,7 +77,7 @@ def onephotonplot(pl, e ):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
-    print("GLOBAL:%d MODE:%d SEL:%s" % (GLOBAL,MODE, SEL))
+    print("GLOBAL:%d MODE:%d SEL:%s PICK:%s " % (GLOBAL,MODE, SEL, PICK))
 
     a = SEvt.Load("$AFOLD", symbol="a")
     print(repr(a))

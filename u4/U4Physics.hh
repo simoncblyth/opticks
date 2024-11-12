@@ -26,6 +26,7 @@ class G4OpRayleigh ;
 #endif
 
 class G4VProcess ; 
+class G4ProcessManager ; 
 class G4FastSimulationManagerProcess ; 
 
 
@@ -60,6 +61,7 @@ struct U4_API U4Physics : public G4VUserPhysicsList
     void ConstructProcess();
     void ConstructEM();
     void ConstructOp();
+    void ConstructOp_opticalphoton(G4ProcessManager* pmanager, const G4String& particleName);
     static G4VProcess* CreateBoundaryProcess(); 
 
     static constexpr const char* _Cerenkov_DISABLE = "U4Physics__ConstructOp_Cerenkov_DISABLE" ; 

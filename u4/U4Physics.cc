@@ -335,19 +335,43 @@ void U4Physics::ConstructOp()
 
         if (particleName == "opticalphoton") 
         {
-            if(fAbsorption)    pmanager->AddDiscreteProcess(fAbsorption);
-            if(fRayleigh)      pmanager->AddDiscreteProcess(fRayleigh);
-
-            if(fScintillation) pmanager->AddProcess(fScintillation); // reemission needs to be after fAbsorption 
-            // notes/issues/Geant4_UseGivenVelocity_KLUDGE_may_be_avoided_by_doing_PostStepDoIt_for_boundary_after_scintillation
-
-            if(fBoundary)      pmanager->AddDiscreteProcess(fBoundary);
-            if(fFastSim)       pmanager->AddDiscreteProcess(fFastSim); 
+            ConstructOp_opticalphoton(pmanager, particleName); 
         }
-
-
     }
 }
+
+
+/**
+U4Physics::ConstructOp_opticalphoton
+------------------------------------
+
+TO AVOID THE UseGivenVelocity KLUDGE scintillation process needs to be after absorption
+BUT UNFORTUNATELY PUTTING Scintillation AFTER Absorption prevents REEMISSION from happening
+
+* ~/o/notes/issues/Geant4_UseGivenVelocity_KLUDGE_may_be_avoided_by_doing_PostStepDoIt_for_boundary_after_scintillation
+* ~/o/notes/issues/G4CXTest_GEOM_shakedown.rst
+
+**/
+
+void U4Physics::ConstructOp_opticalphoton(G4ProcessManager* pmanager, const G4String& particleName)
+{
+    assert( particleName == "opticalphoton" ); 
+
+    if(fScintillation) 
+    {
+        pmanager->AddProcess(fScintillation); 
+        pmanager->SetProcessOrderingToLast(fScintillation, idxAtRest);
+        pmanager->SetProcessOrderingToLast(fScintillation, idxPostStep);
+    }
+    if(fAbsorption)    pmanager->AddDiscreteProcess(fAbsorption);
+    if(fRayleigh)      pmanager->AddDiscreteProcess(fRayleigh);
+    if(fBoundary)      pmanager->AddDiscreteProcess(fBoundary);
+    if(fFastSim)       pmanager->AddDiscreteProcess(fFastSim); 
+}
+
+
+
+
 
 
 /**

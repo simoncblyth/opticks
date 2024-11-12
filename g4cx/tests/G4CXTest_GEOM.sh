@@ -299,7 +299,7 @@ gdb__()
 }
 
 
-vars="BASH_SOURCE allarg defarg arg SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPathFromGEOM bin VERSION TMP BASE PWD LOGDIR AFOLD BFOLD CUDA_VISIBLE_DEVICES ana_script TEST" 
+vars="BASH_SOURCE allarg defarg arg SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPathFromGEOM bin VERSION TMP BASE PWD LOGDIR AFOLD BFOLD CUDA_VISIBLE_DEVICES ana_script dna_script TEST" 
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -340,8 +340,8 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi
 
 if [ "${arg/gevt}" != "$arg" ]; then
-    source $OPTICKS_HOME/bin/rsync.sh $AFOLD
-    source $OPTICKS_HOME/bin/rsync.sh $BFOLD
+    source $SDIR/../../bin/rsync.sh $AFOLD
+    source $SDIR/../../bin/rsync.sh $BFOLD
 fi 
 
 if [ "${arg/chi2}" != "$arg" ]; then
