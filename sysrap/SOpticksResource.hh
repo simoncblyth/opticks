@@ -86,7 +86,7 @@ struct SYSRAP_API SOpticksResource
     static const char* CFBase();
     static const char* CFBaseAlt();
     static const char* CFBaseFromGEOM();
-    static const char* GDMLPathFromGEOM(); 
+    static const char* GDMLPathFromGEOM(const char* _geom=nullptr); 
     static const char* WrapLVForName(const char* name); 
 
     static const char* SearchCFBase(const char* dir); 
@@ -98,19 +98,14 @@ struct SYSRAP_API SOpticksResource
     static const char* OpticksGDMLPath_ ; 
     static const char* OpticksGDMLPath(); 
 
-    static const char* GDMLPath(); 
-    static const char* GDMLPath(const char* geom); 
+    //static const char* GDMLPath(); 
+    //static const char* GDMLPath(const char* geom); 
 
-    static const char* GEOMSub(); 
-    static const char* GEOMSub(const char* geom); 
+    static const char* GEOMSub(const char* _geom=nullptr); 
+    static const char* GEOMWrap(const char* _geom=nullptr); 
+    static const char* GEOMList(const char* _geom=nullptr);
 
-    static const char* GEOMWrap(); 
-    static const char* GEOMWrap(const char* geom); 
-
-    static const char* GEOMList(); 
-    static const char* GEOMList(const char* geom); 
-
-
+    static const char* GEOM_Aux(const char* geom, const char* aux); 
 
 
     static std::string Dump(); 

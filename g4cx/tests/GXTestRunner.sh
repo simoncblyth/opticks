@@ -21,21 +21,21 @@ geomscript=$HOME/.opticks/GEOM/GEOM.sh
 [ -s $geomscript ] && source $geomscript
 
 
-Resolve_GDMLPath()
+Resolve_GDMLPathFromGEOM()
 {   
-   local GDMLPath=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
-   if [ -f "$GDMLPath" ]; then 
-        export ${GEOM}_GDMLPath=$GDMLPath
-        echo $BASH_SOURCE : FOUND GDMLPath $GDMLPath
+   local origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
+   if [ -f "$origin" ]; then 
+        export ${GEOM}_GDMLPathFromGEOM=$origin
+        echo $BASH_SOURCE : FOUND origin $origin
    else 
-        echo $BASH_SOURCE : NOT-FOUND GDMLPath $GDMLPath
+        echo $BASH_SOURCE : NOT-FOUND origin $origin
    fi  
 }
-Resolve_GDMLPath
+Resolve_GDMLPathFromGEOM
 
 
 
-vars="HOME PWD GEOM BASH_SOURCE EXECUTABLE ARGS"
+vars="HOME PWD GEOM ${GEOM}_GDMLPathFromGEOM BASH_SOURCE EXECUTABLE ARGS"
 for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done 
 
 #env 

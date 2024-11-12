@@ -136,7 +136,7 @@ const char* U4VolumeMaker::PVG_WriteNames_Sub = "U4VolumeMaker_PVG_WriteNames_Su
 const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
     METH = "PVG_" ; 
-    const char* gdmlpath = SOpticksResource::GDMLPath(name) ;  // CAUTION this is different from GDMLPathFromGEOM  
+    const char* gdmlpath = SOpticksResource::GDMLPathFromGEOM(name) ; 
     const char* sub = SOpticksResource::GEOMSub(name);  
     bool exists = gdmlpath && spath::Exists(gdmlpath) ; 
 
@@ -248,6 +248,14 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
     return pv ; 
 }
 
+
+/**
+U4VolumeMaker::PVS_
+----------------------
+
+Special names with local C++ implementations of geometry 
+
+**/
 
 const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
 {

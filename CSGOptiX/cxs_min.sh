@@ -91,7 +91,7 @@ Resolve_CFBaseFromGEOM()
         echo $BASH_SOURCE : FOUND C_CFBaseFromGEOM $C_CFBaseFromGEOM containing $TestPath
     elif [ -f "$GDMLPathFromGEOM" ]; then 
         export ${GEOM}_GDMLPathFromGEOM=$GDMLPathFromGEOM
-        echo $BASH_SOURCE : FOUND GDMLPathFromFromGEOM $GDMLPathFromFromGEOM 
+        echo $BASH_SOURCE : FOUND GDMLPathFromGEOM $GDMLPathFromGEOM 
     else
         echo $BASH_SOURCE : NOT-FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
         echo $BASH_SOURCE : NOT-FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath

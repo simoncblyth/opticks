@@ -47,17 +47,17 @@ EOU
 DIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 bin=U4SimulateTest
 
-#geom=V1J008
-geom=FewPMT
 
 export VERSION=${N:-0}
-export GEOM=${GEOM:-$geom}
-
+source $HOME/.opticks/GEOM/GEOM.sh  # set GEOM : this script was used for FewPMT tests
 origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 if [ -f "$origin" ]; then
-   export ${GEOM}_GDMLPath=$origin
-   export U4VolumeMaker=INFO
+   export ${GEOM}_GDMLPathFromGEOM=$origin
 fi 
+
+
+
+
 
 geomscript=$DIR/$GEOM.sh 
 
@@ -137,6 +137,7 @@ source $DIR/storch_FillGenstep.sh
 
 
 loglevel(){
+   export U4VolumeMaker=INFO
    export U4Recorder=INFO
    export U4Physics=INFO
    export junoPMTOpticalModel=INFO

@@ -1,12 +1,10 @@
-#!/bin/bash -l 
+#!/bin/bash 
 
 defarg="run"
 arg=${1:-$defarg}
 
 bin=U4NavigatorTest
 
-#export GEOM=J004G
-#export J004G_GDMLPath=$HOME/.opticks/GEOM/J004/origin.gdml
 source $HOME/.opticks/GEOM/GEOM.sh 
 
 if [ "${arg/run}" != "$arg" ]; then 

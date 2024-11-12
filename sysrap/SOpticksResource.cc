@@ -9,7 +9,7 @@
 #include "sstr.h"
 #include "spath.h"
 
-#include "SPath.hh"
+#include "SPath.hh"   // on the way out 
 #include "spath.h"
 
 #include "sproc.h"
@@ -248,7 +248,7 @@ std::string SOpticksResource::Dump()
     const char* cfbase = CFBase(); 
     const char* cfbase_alt = CFBaseAlt(); 
     const char* cfbase_fg = CFBaseFromGEOM(); 
-    const char* gdmlpath = GDMLPath(); 
+    const char* gdmlpath = GDMLPathFromGEOM(); 
     const char* geom = GEOM(); 
     const char* usergeomdir = UserGEOMDir(); 
 
@@ -275,7 +275,7 @@ std::string SOpticksResource::Dump()
         << "SOpticksResource::CFBase()                 " << ( cfbase ? cfbase : "-" ) << std::endl 
         << "SOpticksResource::CFBaseAlt()              " << ( cfbase_alt ? cfbase_alt : "-" ) << std::endl 
         << "SOpticksResource::CFBaseFromGEOM()         " << ( cfbase_fg ? cfbase_fg : "-" ) << std::endl 
-        << "SOpticksResource::GDMLPath()               " << ( gdmlpath ? gdmlpath : "-" ) << std::endl
+        << "SOpticksResource::GDMLPathFromGEOM()       " << ( gdmlpath ? gdmlpath : "-" ) << std::endl
         << "SOpticksResource::GEOM()                   " << ( geom ? geom : "-" ) << std::endl
         << "SOpticksResource::UserGEOMDir()            " << ( usergeomdir ? usergeomdir : "-" ) << std::endl
         ;
@@ -361,20 +361,31 @@ SOpticksResource::GDMLPathFromGEOM
 Used for example from the argumentless G4CXOpticks::setGeometry
 
 Assumes a GEOM envvar, and looks for 2nd order envvar 
-that starts with the GEOM value::
+that starts with the GEOM value. 
 
-    export ${GEOM}_GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+As it is better for the C++ code to not make many 
+assumptions about a users file layout it is necessary 
+to specify where to find the GDML within the invoking 
+script. Typically that is done immediately after setting the 
+GEOM envvar at the head of a script with::
 
+    source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM envvar 
+    export ${GEOM}_GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml  
+
+Note that the presence of the 2nd order _GDMLPathFromGEOM both indicates
+where the GDML is and also indicates to some Geant4-centric executables
+to operate starting from GDML. 
 
 **/
 
-const char* SOpticksResource::GDMLPathFromGEOM()
+const char* SOpticksResource::GDMLPathFromGEOM(const char* _geom)
 {
-    const char* geom = GEOM(); 
+    const char* geom = _geom == nullptr ? GEOM() : _geom ; 
     const char* path =  geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GDMLPathFromGEOM")) ; 
     LOG(LEVEL) 
-        << " geom " << geom 
-        << " path " << path 
+        << " _geom " << ( _geom ? _geom : "-" ) 
+        << " geom " << ( geom ? geom : "-" ) 
+        << " path " << ( path ? path : "-" ) 
         ;
     return path ; 
 }
@@ -443,7 +454,6 @@ For example exercise this with::
 * the returned path is expected to be resolved by SPath::Resolve 
 * there is no check of the existance of the GDML path 
 
-**/
 
 
 const char* SOpticksResource::GDMLPath(){ return GDMLPath( GEOM()); }
@@ -454,22 +464,18 @@ const char* SOpticksResource::GDMLPath(const char* geom)
     return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GDMLPath")) ; 
 }
 
-const char* SOpticksResource::GEOMSub(){ return GEOMSub( GEOM()); }
-const char* SOpticksResource::GEOMSub(const char* geom)
-{
-    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GEOMSub")) ; 
-}
+**/
 
-const char* SOpticksResource::GEOMWrap(){ return GEOMWrap( GEOM()); }
-const char* SOpticksResource::GEOMWrap(const char* geom)
-{
-    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GEOMWrap")) ; 
-}
 
-const char* SOpticksResource::GEOMList(){ return GEOMList( GEOM()); }
-const char* SOpticksResource::GEOMList(const char* geom)
-{
-    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, "_GEOMList")) ; 
+
+const char* SOpticksResource::GEOMSub( const char* _geom){  return GEOM_Aux( _geom, "_GEOMSub"  ); }
+const char* SOpticksResource::GEOMWrap(const char* _geom){  return GEOM_Aux( _geom, "_GEOMWrap" ); }
+const char* SOpticksResource::GEOMList(const char* _geom){  return GEOM_Aux( _geom, "_GEOMList" ); }
+
+const char* SOpticksResource::GEOM_Aux(const char* _geom, const char* aux)
+{ 
+    const char* geom = _geom ? _geom : GEOM() ; 
+    return geom == nullptr ? nullptr : ssys::getenvvar(spath::Name(geom, aux)) ; 
 }
 
 
@@ -532,7 +538,7 @@ const char* SOpticksResource::Get(const char* key) // static
     else if( strcmp(key, "DefaultGeometryBase")==0) tok = SOpticksResource::DefaultGeometryBase(); 
     else if( strcmp(key, "DefaultGeometryDir")==0) tok = SOpticksResource::DefaultGeometryDir(); 
     else if( strcmp(key, "SomeGDMLPath")==0)     tok = SOpticksResource::SomeGDMLPath(); 
-    else if( strcmp(key, "GDMLPath")==0)         tok = SOpticksResource::GDMLPath(); 
+    else if( strcmp(key, "GDMLPathFromGEOM")==0) tok = SOpticksResource::GDMLPathFromGEOM(); 
     else if( strcmp(key, "CFBaseFromGEOM")==0)   tok = SOpticksResource::CFBaseFromGEOM(); 
     else if( strcmp(key, "UserGEOMDir")==0)      tok = SOpticksResource::UserGEOMDir(); 
     return tok ;  

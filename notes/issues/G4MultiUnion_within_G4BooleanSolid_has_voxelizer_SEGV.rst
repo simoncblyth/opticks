@@ -5,13 +5,25 @@ G4MultiUnion_within_G4BooleanSolid_has_voxelizer_SEGV
 NEXT
 -----
 
-* pyvista input photon check intersect 
 * statistical A-B input photon comparison 
+
+  * OIM/OPTICKS_INTEGRATION_MODE:3 
+
+
+Quick jok-ana check on laptop for input photons targetting PMT visually OK
+------------------------------------------------------------------------------
+
+::
+
+    jok-
+    jok-grab
+    jok-ana
 
 
 DONE
 -----
 
+* DONE : pyvista input photon visual check intersect 
 * DONE : check full geometry conversion
 * DONE : visualize
 * DONE : check again input photon running 

@@ -1,7 +1,7 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 sseq_index_test.sh
-==============
+======================
 
 ::
 
@@ -38,17 +38,15 @@ export sseq_index_ab_chi2_ABSUM_MIN=$C2CUT
 executable=G4CXTest 
 #executable=CSGOptiXSMTest
 export EXECUTABLE=${EXECUTABLE:-$executable}
-version=0
-export VERSION=${VERSION:-$version}
-#export BASE=$TMP/GEOM/$GEOM
-export BASE=/data/ihep/
-#export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
-export LOGDIR=$BASE/ALL$VERSION
 
+version=98
+export VERSION=${VERSION:-$version}
+export BASE=$TMP/GEOM/$GEOM
+export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
 export AFOLD=$LOGDIR/A000 
 export BFOLD=$LOGDIR/B000 
 
-vars="BASH_SOURCE SDIR TMP EXECUTABLE BASE GEOM LOGDIR AFOLD BFOLD FOLD"
+vars="BASH_SOURCE SDIR TMP EXECUTABLE VERSION BASE GEOM LOGDIR AFOLD BFOLD FOLD"
 
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
