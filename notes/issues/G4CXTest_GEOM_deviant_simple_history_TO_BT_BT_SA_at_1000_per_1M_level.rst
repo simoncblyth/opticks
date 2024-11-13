@@ -17,6 +17,8 @@ Investigation IDEAs in priority order
 
 * some boundaries look wrong : isnt the Steel within Acrylic not water ? 
 
+  * implementing B side boundaries would be good 
+
 * revive Geant4 "simtrace" equivalent for the sticks 
 
 * use inputphotons from CD center so the same A,B slots have photons in the 
@@ -27,6 +29,14 @@ Investigation IDEAs in priority order
   less of the photons that behave as expected 
 
 * get some event data into the raytrace vizualization view : so can see whats going down 
+
+
+simtrace cxt_min.sh : cross section thru Fastener geometry
+-----------------------------------------------------------
+
+laptop::
+
+    MODE=2 ~/o/cxt_min.sh ana
 
 
 
@@ -409,14 +419,6 @@ Tight groupings for first 3::
 Expected the Steel to be within Acrylic not Water
 ---------------------------------------------------
 
-::
-
-    P[blyth@localhost opticks]$ jgr lFasteners
-    ./Doc/detsim/anaelement.md:    PMTPosAnaMgr.BeginOfRunAction   INFO:  + lFasteners_phys : 480
-    ./Doc/oum/source/detsim/anaelement.md:    PMTPosAnaMgr.BeginOfRunAction   INFO:  + lFasteners_phys : 480
-    ./Simulation/DetSimV2/CentralDetector/src/FastenerAcrylicConstruction.cc:      "lFasteners",
-    P[blyth@localhost junosw]$ 
-
-
+Look into this over in ~/j/setupCD_Sticks_Fastener/Fastener_asis_sibling_soup.rst
 
 
