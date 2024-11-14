@@ -150,7 +150,7 @@ if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg
 fi 
 
 if [ "${arg/grab}" != "$arg" ]; then 
-    source $SDIR/../../bin/rsync.sh $FOLD
+    source $SDIR/../bin/rsync.sh $FOLD
 fi 
 
 if [ "${arg/ana}" != "$arg" ]; then

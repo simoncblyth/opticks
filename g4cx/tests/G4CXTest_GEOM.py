@@ -10,6 +10,11 @@ The alternate script G4CXTest.py is used for
 more detailed plotting such as single photon path 
 illustration. 
 
+::
+
+     PICK=AB HSEL="TO BT BT SA" ~/o/G4CXTest_GEOM.sh ana
+
+
 """
 import os, logging, textwrap, numpy as np
 from opticks.ana.fold import Fold
@@ -90,14 +95,20 @@ if __name__ == '__main__':
         rb_shape = "-" if rb is None else repr(rb.shape)
         print("rb.shape %s " % rb_shape)
 
+        ns = len(HSEL.split(" "))
+        st = slice(0,ns)
+        bnd_ra = ra[:,st,3,0].view(np.uint32) >> 16 if not ra is None else None
+        bnd_rb = rb[:,st,3,0].view(np.uint32) >> 16 if not rb is None else None 
+        assert np.all( bnd_rb == 0 ) # unfortunately no boundary info for B, YET  
 
+        lbnd_ra = ra[:,st.stop-1,3,0].view(np.uint32) >> 16 if not ra is None else None
+        u_lbnd_ra, n_lbnd_ra = np.unique(lbnd_ra, return_counts=True) 
 
-
-
-        st = slice(0,4)
-        ba = ra[:,st,3,0].view(np.uint32) >> 16 if not ra is None else None
-        bb = rb[:,st,3,0].view(np.uint32) >> 16 if not rb is None else None 
-        assert np.all( bb == 0 ) # unfortunately no boundary info for B, YET  
+        for i in range(len(u_lbnd_ra)):
+            print(" u_lbnd_ra[%2d] %3d   n_lbnd_ra[%2d] %7d   cf.sim.bndnamedict.get(%3d) : %s " % 
+                     ( i, u_lbnd_ra[i], i, n_lbnd_ra[i], u_lbnd_ra[i], cf.sim.bndnamedict.get(u_lbnd_ra[i], "err-bnd") ))
+            pass
+        pass 
 
 
         rra = np.sqrt(np.sum(ra[:,st,0,:3]*ra[:,st,0,:3],axis=2)) if not ra is None else None

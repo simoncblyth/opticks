@@ -11,13 +11,16 @@ Thoughts
 Investigation IDEAs in priority order
 --------------------------------------
 
-* WIP : revive simtrace cxt_min.sh to slice thru the sticks : to see the issue clearly
+* DONE : revive simtrace cxt_min.sh to slice thru the sticks : to see the issue clearly
+
+* TODO : inputphotons to targetting some sticks, focussing on the issue 
 
 * TODO : make plot showing both input_photon hits plus the simtrace of the same stick 
 
-* some boundaries look wrong : isnt the Steel within Acrylic not water ? 
+* DONE : ADDED CONFIG TO FIX : some boundaries look wrong : uni1 Steel should be within Acrylic not water 
 
-  * implementing B side boundaries would be good 
+  * impl geometry with fixed uni1 heirarchy option to compare current with 
+  * ~/j/setupCD_Sticks_Fastener/Fastener_asis_sibling_soup.rst
 
 * revive Geant4 "simtrace" equivalent for the sticks 
 
@@ -25,14 +28,18 @@ Investigation IDEAs in priority order
   same direction. Due to the simple history "TO BT BT SA" a large fraction of photons 
   will have "accidental" random alignment
 
-* use inputphotons to target some sticks, for higher stats of the issue and
-  less of the photons that behave as expected 
+* impl compositing of event data onto raytrace vizualization view : so can vizualize such issues directly 
 
-* get some event data into the raytrace vizualization view : so can see whats going down 
+* MAYBE : implement B side boundary recording in U4Recorder
 
 
-simtrace cxt_min.sh : cross section thru Fastener geometry
------------------------------------------------------------
+
+DONE : simtrace cxt_min.sh : cross section thru Fastener geometry
+----------------------------------------------------------------------
+
+workstation::
+
+    ~/o/cxt_min.sh
 
 laptop::
 
@@ -45,7 +52,7 @@ Issue : deviant simple history "TO BT BT SA"  : Opticks has 1000 more (out of 1M
 
 ::
 
-    ~/o/G4CXTest_GEOM.sh
+    ~/o/G4CXTest_GEOM.sh             ## A-B comparison starting from GDML
     ~/o/G4CXTest_GEOM.sh chi2
     ...
     .                  BASH_SOURCE : /data/blyth/junotop/opticks/g4cx/tests/../../sysrap/tests/sseq_index_test.sh 
@@ -72,7 +79,7 @@ Issue : deviant simple history "TO BT BT SA"  : Opticks has 1000 more (out of 1M
         TO SC SC AB                                                                                      :   19993  19819 :     0.7605 : Y :     137     51 :   
 
     :r:`TO BT BT SA                                                                                      :   19822  18585 :    39.8409 : Y :      71     72 : DEVIANT  `
-
+        ##   A-B  +1237
 
         TO RE AB                                                                                         :   18319  18198 :     0.4009 : Y :       9      5 :   
         TO SC SC BT BT BT BT BT BT SD                                                                    :   15451  15529 :     0.1964 : Y :      19     22 :   
@@ -92,13 +99,119 @@ Issue : deviant simple history "TO BT BT SA"  : Opticks has 1000 more (out of 1M
 
 
 
+With hierarchy fix : deviation bigger and to the other side (Opticks less) due to unexpected "TO BT SA" being higher
+-------------------------------------------------------------------------------------------------------------------------
+
+* A:Opticks reduced a lot in "TO BT BT SA" 
+* B:Geant4 almost unchanged 
+* "TO BT BT SA" deviation is bigger
+* now a much bigger deviation shows up "TO BT SA"
+
+
+::
+
+    a_path $AFOLD/seq.npy /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/A000/seq.npy a_seq (1000000, 2, 2, )
+    b_path $BFOLD/seq.npy /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/B000/seq.npy b_seq (1000000, 2, 2, )
+    AB
+    [sseq_index_ab::desc u.size 152262 opt BRIEF mode 6sseq_index_ab_chi2::desc sum  9998.5956 ndf 1825.0000 sum/ndf     5.4787 sseq_index_ab_chi2_ABSUM_MIN:40.0000
+        TO AB                                                                                            :  126549 126567 :     0.0013 : Y :       2      3 :   
+        TO BT BT BT BT BT BT SD                                                                          :   70475  70748 :     0.5277 : Y :      18      1 :   
+        TO BT BT BT BT BT BT SA                                                                          :   57091  56883 :     0.3796 : Y :       5      8 :   
+        TO SC AB                                                                                         :   51434  51320 :     0.1265 : Y :       4     12 :   
+        TO SC BT BT BT BT BT BT SD                                                                       :   35876  35757 :     0.1977 : Y :      58     11 :   
+        TO SC BT BT BT BT BT BT SA                                                                       :   29661  29875 :     0.7692 : Y :     124     22 :   
+        TO SC SC AB                                                                                      :   19993  20115 :     0.3711 : Y :     137     57 :   
+
+    :r:`TO BT BT SA                                                                                      :   15997  18574 :   192.0954 : Y :     205    118 : DEVIANT  `
+        ##  A-B = -2577   
+
+        TO RE AB                                                                                         :   18319  18519 :     1.0858 : Y :       9     41 :   
+        TO SC SC BT BT BT BT BT BT SD                                                                    :   15451  15590 :     0.6224 : Y :      19     75 :   
+        TO SC SC BT BT BT BT BT BT SA                                                                    :   12785  12972 :     1.3577 : Y :      24     35 :   
+        TO BT BT AB                                                                                      :   10955  11153 :     1.7733 : Y :      72     31 :   
+        TO BT AB                                                                                         :    9270   9271 :     0.0001 : Y :      36     26 :   
+        TO SC SC SC AB                                                                                   :    7544   7472 :     0.3452 : Y :      90    162 :   
+        TO BT BT BT BT BT BT BT SA                                                                       :    7435   7497 :     0.2574 : Y :     176     24 :   
+        TO RE BT BT BT BT BT BT SD                                                                       :    7417   7491 :     0.3673 : Y :     197     34 :   
+        TO SC RE AB                                                                                      :    7137   7135 :     0.0003 : Y :     110     17 :   
+        TO RE BT BT BT BT BT BT SA                                                                       :    7124   7104 :     0.0281 : Y :      48     79 :   
+        TO SC BT BT AB                                                                                   :    6374   6401 :     0.0571 : Y :     153     59 :   
+        TO BT BT BT BT BT BT BT SR SA                                                                    :    6375   6323 :     0.2129 : Y :      16     56 :   
+        TO BT BT BT BT SD                                                                                :    6147   6135 :     0.0117 : Y :      13    285 :   
+        TO SC SC SC BT BT BT BT BT BT SD                                                                 :    6146   6134 :     0.0117 : Y :     145     64 :   
+
+    :r:`TO SC BT BT SA                                                                                   :    4979   6119 :   117.1022 : Y :     120      5 : DEVIANT  `
+
+        TO SC BT AB                                                                                      :    5600   5933 :     9.6149 : Y :       8    147 :   
+        TO BT BT DR BT SA                                                                                :    5447   5546 :     0.8916 : Y :     600    161 :   
+        TO RE RE AB                                                                                      :    5539   5323 :     4.2953 : Y :     267    119 :   
+        TO BT BT BT SA                                                                                   :    5298   5316 :     0.0305 : Y :     745    192 :   
+        TO SC SC SC BT BT BT BT BT BT SA                                                                 :    5084   4999 :     0.7166 : Y :      23     15 :   
+        TO SC BT BT BT BT BT BT BT SA                                                                    :    4416   4476 :     0.4049 : Y :      20    421 :   
+
+    :r:`TO BT SA                                                                                         :    3828    168 :  3352.2523 : Y :      71   2700 : DEVIANT  `
+
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SD                                               :    3805   3760 :     0.2677 : Y :     362    107 :   
+        TO RE SC AB                                                                                      :    3660   3588 :     0.7152 : Y :      54     55 :   
+        TO SC BT BT BT BT BT BT BT SR SA                                                                 :    3153   3291 :     2.9553 : Y :     243    639 :   
+        TO SC RE BT BT BT BT BT BT SD                                                                    :    3190   3123 :     0.7111 : Y :     292    365 :   
+        TO BT BT BT BT BT BT BT SD                                                                       :    3129   3145 :     0.0408 : Y :     181     74 :   
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SA                                               :    3138   3141 :     0.0014 : Y :      22    712 :   
+        TO BT BT BT BT BT BT BT SR SR SA                                                                 :    3049   2954 :     1.5034 : Y :     286    444 :   
+
+
+
+
+Look into "TO BT SA" with LSExpDetectorConstruction__setupCD_Sticks_Fastener_CONFIG=1 
+------------------------------------------------------------------------------------------
+
+:: 
+
+    HSEL="TO BT SA" PICK=AB ~/o/G4CXTest_GEOM.sh ana 
+
+    ra.shape (3828, 32, 4, 4) 
+    rb.shape (168, 32, 4, 4) 
+
+    u_lbnd_ra[ 0] 108   n_lbnd_ra[ 0]    3822   cf.sim.bndnamedict.get(108) : Acrylic/Implicit_RINDEX_NoRINDEX_lAddition_phys_lFasteners_phys//Steel 
+    u_lbnd_ra[ 1] 125   n_lbnd_ra[ 1]       6   cf.sim.bndnamedict.get(125) : Vacuum/NNVTMCPPMT_PMT_20inch_mcp_plate_opsurface//Steel 
+
+
+Almost all the "TO BT SA" deviant are onto the Acrylic/Implicit_RINDEX_NoRINDEX_lAddition_phys_lFasteners_phys//Steel
+
+* NB this did not exit the Acrylic : so indicates the AdditionAcrylic is coincident? with the Acrylic sphere 
+
+  * this is not a long RT its tracing from within the Acrylic sphere and not hitting the otherside
+
+
 
 laptop pyvista plotting
 -------------------------
 
-Plotting that history : clumps onto sticks apparent::
+3D plotting that history : clumps onto sticks vaguely apparent::
+
+
+   ~/o/G4CXTest_GEOM.sh gevt
 
    PICK=AB HSEL="TO BT BT SA" SEL=0 ~/o/G4CXTest_GEOM.sh dna  
+
+
+After heirarchy fix the deviant "TO BT SA" is obviously from the "IonRing" of fastener::
+
+   PICK=AB HSEL="TO BT SA" SEL=0 ~/o/G4CXTest_GEOM.sh dna  
+
+
+Review AdditionAcrylicConstruction::m_simplify_csg  --additionacrylic-simplify-csg
+--------------------------------------------------------------------------------------
+
+This is just not doing subtraction of cavities for the fastener
+
+
+Is the cause of the "TO BT SA" the coincidence of AdditionAcrylic and the Acrylic sphere ?
+--------------------------------------------------------------------------------------------
+
+Add an rdelta to check this::
+
+    export AdditionAcrylicConstruction__rdelta_mm=1
 
 
 Viz check for targetting uni1
@@ -259,6 +372,13 @@ HMM, having boundary for B would be handy::
                      0:TO                    
 
 
+
+::
+
+    LSExpDetectorConstruction::setupCD_Sticks_Fastener  addition_PosR 17824 fastener_PosR 17844 fastener_dR 20 addition_lv YES fastener_lv YES
+
+
+
 Using 2D viz simtrace for uni1:0:0 shows those radial offsets to correspond to the IonRing::
 
    MODE=2 ~/o/cxt_min.sh ana 
@@ -410,8 +530,16 @@ Tight groupings for first 3::
     In [23]: np.c_[np.unique( ra[:,3,3,0].view(np.uint32) >> 16, return_counts=True )]
     Out[23]: 
     array([[   99, 14137],            ## Tyvek//CDInnerTyvekSurface/Water
-           [  107,  3828],            ## Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lFasteners_phys//Steel
+           [  107,  3828],            ## Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lFasteners_phys//Steel      
            [  108,  1857]])           ## Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lUpper_phys//Steel
+
+
+With fixed heirarchy, dont get the unexpected boundary::
+
+    ra.shape (15997, 32, 4, 4) 
+    rb.shape (18574, 32, 4, 4) 
+     u_lbnd_ra[ 0]  99   n_lbnd_ra[ 0]   14137   cf.sim.bndnamedict.get( 99) : Tyvek//CDInnerTyvekSurface/Water 
+     u_lbnd_ra[ 1] 107   n_lbnd_ra[ 1]    1860   cf.sim.bndnamedict.get(107) : Water/Implicit_RINDEX_NoRINDEX_pInnerWater_lUpper_phys//Steel 
 
 
 
