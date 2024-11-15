@@ -121,7 +121,27 @@ New CSG development : change alg for robustness
 * alt to ray tracing : SDF based "sphere-tracing" 
 
 
+New CSG development : general spherical shell, theta phi segment
+------------------------------------------------------------------
 
+G4Sphere impl of ray DistanceToIn and DistanceToOut are 900 lines each
+covering the many cases of intersecting rays with a "funny" shape. 
+
+* Is there a simpler way ? 
+
+* See the below headers for an old attempt to 
+  decompose into infinite phi + theta cuts, with idea that CSG algorithm 
+  can do the heavy lifting of handling all the cases. This worked to 
+  some extent, needs careful testing, maybe some cases not working:: 
+
+  CSG/csg_intersect_leaf_phicut.h
+  CSG/csg_intersect_leaf_thetacut.h
+  CSG/tests/intersect_leaf_thetacut_test.cc
+
+
+* https://core.ac.uk/download/pdf/158318251.pdf
+* ~/opticks_refs/spherical_ray_tracing_david_a_hannasch_158318251.pdf
+* 76 page MSc Thesis looks relevant, might provide insights
 
 
 
