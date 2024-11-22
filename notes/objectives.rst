@@ -200,6 +200,13 @@ Optimization (workstation level)
   * perf impl of many choices esp: geometry modelling,  eg instancing criteria
 
 
+Multi-GPU is it worthwhile ?
+------------------------------
+
+* process/job level could be trivial : scripts exploiting slurm capabilities
+* https://medium.com/gpgpu/multi-gpu-programming-6768eeb42e2c
+
+
 Production Optimization/Planning (cluster level) 
 --------------------------------------------------
 

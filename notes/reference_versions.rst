@@ -6,23 +6,36 @@ on choice of versions are more stringent than with simple CUDA usage.
 The current reference NVIDIA OptiX version used by Opticks is now 7.5.0 
 which was built with CUDA 11.7 and requires NVIDIA Driver of at least 515.43
 
-If your GPU is unable to work with Driver version 515.43 then I recommend
-usage of the old reference set. If you are brave and want to use a version 
-set somewhere inbetween those reference points then please report issues (or success)
-on the mailing list, including all the version numbers and copy/pasting the error.  
+
+Advice on which version set to use
+------------------------------------
+
++-----------------+----------------+-------------------+------------------+
+|                 |  Old Reference | Current Reference | Future Reference |
++=================+================+===================+==================+
+| NVIDIA OptiX    |  7.0.0         |    7.5.0          |   8.0.0          | 
++-----------------+----------------+-------------------+------------------+
+| NVIDIA Driver   |  435.21        |    515.43.04      |    550.76        |
++-----------------+----------------+-------------------+------------------+
+| NVIDIA CUDA     |  10.1          |    11.7           |    12.4          |
++-----------------+----------------+-------------------+------------------+
+| gcc             |  8.3.0         |    11.2.0         |    11.4.1        |
++-----------------+----------------+-------------------+------------------+
+|  OS             |  CentOS 7      |  CentOS 7         | AlmaLinux 9      | 
++-----------------+----------------+-------------------+------------------+
 
 
-+-----------------+----------------+-------------------+
-|                 |  Old Reference | Current Reference |
-+=================+================+===================+
-| NVIDIA OptiX    |  7.0.0         |    7.5.0          | 
-+-----------------+----------------+-------------------+
-| NVIDIA Driver   |  435.21        |    515.43.04      |
-+-----------------+----------------+-------------------+
-| NVIDIA CUDA     |  10.1          |    11.7           |
-+-----------------+----------------+-------------------+
-| gcc             |  8.3.0         |    11.2.0         |
-+-----------------+----------------+-------------------+
+* If you can use an NVIDIA Driver version that supports OptiX 8.0.0 then use the future version set.
+* If your NVIDIA Driver cannot yet handle OptiX 8.0.0 yet then use the OptiX 7.5.0 version set.  
+* If your NVIDIA Driver cannot yet handle OptiX 7.5.0 yet then use the OptiX 7.0.0 version set.  
+* OptiX prior to 7.0.0 was a totally different API that I am no longer supporting. 
+  
+Using version sets other than reference ones is development activity.
+I do not recommend new users to do that unless you have lots of experience with CUDA,
+in which case your feedback on testing other version sets is appreciated. Please report
+failures or successes to the mailing list including all the version numbers 
+and copy/pasting error messages.  
+
 
 
 Standard Version Sets Gleaned from NVIDIA OptiX Release Notes
@@ -70,6 +83,15 @@ the runfile approach is recommended. While package managers claim to
 be able to install CUDA, I do not trust them. Also package 
 managers have a tendency to update inappropriately.  More control is 
 needed when building against packages that build against CUDA. 
+
+
+
+Driver Requirements for CUDA Releases
+---------------------------------------
+
+* https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html#id5
+
+
 
 
 
