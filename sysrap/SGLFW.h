@@ -131,9 +131,9 @@ H
    invokes SGLM::home returning to initial position with no lookrotation or eyeshift [--home]
    and dumps this help string [--help]
 I
-   -
+   --snap-local
 J
-   -
+   --snap-local-inverted
 K
    save screen shot [--snap]
 L
@@ -208,6 +208,7 @@ then hop to the default frame.
     int  _width ;  // on retina 2x width 
     int  _height ;
     SIMG_Frame*  sif ; 
+    SIMG_Frame*  sid ; 
 
     // getStartPos
     double _start_x ; 
@@ -243,7 +244,8 @@ then hop to the default frame.
     int get_wanted_snap() const ;
 
     void download_pixels(); 
-    void init_sif(); 
+    void download_depth(); 
+    void init_img_frame(); 
     void writeJPG(const char* path) const ; 
     void snap_local(bool yflip); 
 
@@ -396,21 +398,23 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_9:
                               numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ; 
         case GLFW_KEY_M:
-                              set_wanted_frame_idx(-2)         ; break ;   // MOI target 
-        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom       ; break ; 
-        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin       ; break ; 
-        case GLFW_KEY_F:      toggle.tmax = !toggle.tmax  ; break ; 
-        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot  ; break ; 
-        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda  ; break ; 
-        case GLFW_KEY_U:      toggle.norm = !toggle.norm  ; break ; 
-        case GLFW_KEY_T:      toggle.tran = !toggle.tran  ; break ; 
-        case GLFW_KEY_B:      command("--desc")           ; break ; 
+                              set_wanted_frame_idx(-2)              ; break ;   // MOI target 
+        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom            ; break ; 
+        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin            ; break ; 
+        case GLFW_KEY_F:      toggle.tmax = !toggle.tmax            ; break ; 
+        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot            ; break ; 
+        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda            ; break ; 
+        case GLFW_KEY_U:      toggle.norm = !toggle.norm            ; break ; 
+        case GLFW_KEY_T:      toggle.tran = !toggle.tran            ; break ; 
+        case GLFW_KEY_B:      command("--desc")                     ; break ; 
         case GLFW_KEY_H:      command("--home") ; command("--help") ; break ; 
-        case GLFW_KEY_O:      command("--tcam")           ; break ;  
-        case GLFW_KEY_K:      command("--snap")           ; break ;  
-        case GLFW_KEY_L:      command("--snap-inverted")  ; break ;  
-        case GLFW_KEY_V:      command("--traceyflip")     ; break ;  
-        case GLFW_KEY_ESCAPE: command("--exit")           ; break ;  
+        case GLFW_KEY_O:      command("--tcam")                     ; break ;  
+        case GLFW_KEY_I:      command("--snap-local")               ; break ;  
+        case GLFW_KEY_J:      command("--snap-local-inverted")      ; break ;  
+        case GLFW_KEY_K:      command("--snap")                     ; break ;  
+        case GLFW_KEY_L:      command("--snap-inverted")            ; break ;  
+        case GLFW_KEY_V:      command("--traceyflip")               ; break ;  
+        case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;  
     }
    
     //if(modifiers > 0) gm.key_pressed_action(modifiers) ; // not triggered repeatedly enough for navigation
@@ -470,26 +474,70 @@ https://www.khronos.org/opengl/wiki/GLAPI/glPixelStore
 
 inline void SGLFW::download_pixels()
 {
-    if(sif == nullptr) init_sif();  
+    if(sif == nullptr) init_img_frame();  
 
     assert( _width > 0 && _width == sif->width ) ; 
     assert( _height > 0 && _height == sif->height ) ; 
 
     glPixelStorei(GL_PACK_ALIGNMENT,1);   // byte aligned output
     glReadPixels(0,0,_width,_height,GL_RGBA, GL_UNSIGNED_BYTE, sif->pixels );
+
+    if(sid != nullptr) download_depth(); 
 } 
 
-inline void SGLFW::init_sif()
+
+/**
+SGLFW::download_depth
+----------------------
+
+Depth component "native" type is GL_FLOAT in range 0. to 1. 
+when type is not GL_FLOAT then the read values are scaled depending 
+on the type, eg by 255. for type of GL_UNSIGNED_BYTE
+
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glReadPixels.xhtml 
+
+**/
+
+inline void SGLFW::download_depth()
+{
+    assert(sid); 
+    GLenum format = GL_DEPTH_COMPONENT ;
+    GLenum type = GL_UNSIGNED_BYTE ;
+    glPixelStorei(GL_PACK_ALIGNMENT,1);   // byte aligned output
+    glReadPixels(0,0,_width,_height, format, type, sid->pixels ); 
+}
+
+
+inline void SGLFW::init_img_frame()
 {
     assert( _width > 0 ); 
     assert( _height > 0 ); 
-    sif = new SIMG_Frame(_width, _height) ; 
+    int channels = 4 ; 
+
+    sif = new SIMG_Frame(_width, _height, channels ) ; 
+
+    bool DEPTH  = ssys::getenvbool("SGLFW__DEPTH"); 
+    if(DEPTH)
+    {
+        sid = new SIMG_Frame(_width, _height, 1 );
+    }
 }
 inline void SGLFW::writeJPG(const char* path) const 
 {
     std::cout << "SGLFW::writeJPG [" << ( path ? path : "-" ) << "]\n" ; 
     assert(sif); 
-    sif->writeJPG(path); 
+    sif->writeJPG(path);
+
+    if(sid)
+    {
+        const char* dpath = sstr::ReplaceEnd( path, ".jpg", "_depth.jpg" ); 
+        std::cout << "SGLFW::writeJPG [" << ( dpath ? dpath : "-" ) << "]\n" ; 
+        sid->writeJPG(dpath); 
+
+        const char* npath = sstr::ReplaceEnd( path, ".jpg", "_depth.npy" ); 
+        std::cout << "SGLFW::writeJPG [" << ( npath ? npath : "-" ) << "]\n" ; 
+        sid->writeNPY(npath); 
+    }
 }
 
 
@@ -500,13 +548,27 @@ SGLFW::snap_local
 Default stem of nullptr leads to use of current datetime formatted 
 string of form sstamp::DEFAULT_TIME_FMT 
 
+CAUTION : this is currently NOT used from::
+
+     ~/o/cx.sh 
+     CSGOptiXRenderInteractiveTest
+     CSGOptiX::snap
+
+It is used from::
+
+   sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+
 **/
 
 inline void SGLFW::snap_local(bool yflip)
 {
     download_pixels(); 
-    if(yflip) sif->flipVertical();
- 
+    if(yflip)
+    { 
+        sif->flipVertical();
+        if(sid) sid->flipVertical(); 
+    }
+
     const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", nullptr ); 
     int index = 0 ; 
     const char* ext = ".jpg" ;  
@@ -555,6 +617,8 @@ inline int SGLFW::command(const char* cmd)
     if(strcmp(cmd, "--tcam") == 0) tcam(); 
     if(strcmp(cmd, "--snap") == 0) snap(1); 
     if(strcmp(cmd, "--snap-inverted") == 0) snap(2); 
+    if(strcmp(cmd, "--snap-local") == 0) snap_local(false); 
+    if(strcmp(cmd, "--snap-local-inverted") == 0) snap_local(true); 
     if(strcmp(cmd, "--traceyflip") == 0) traceyflip(); 
     return 0 ;  
 }
@@ -797,7 +861,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
     wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -2)),   
-    wanted_snap(false),
+    wanted_snap(0),
     width(gm.Width()),
     height(gm.Height()),
     title(TITLE),
@@ -809,6 +873,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     _width(0),
     _height(0),
     sif(nullptr),
+    sid(nullptr),
     _start_x(0.),
     _start_y(0.),
     start_ndc(0.f,0.f),

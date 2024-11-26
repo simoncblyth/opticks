@@ -79,6 +79,30 @@ void main()
 }
 )";
 
+
+    static constexpr const char* s_frag_source_with_FragDepth = R"(
+#version 330 core
+
+// samples texture at UV coordinate
+
+in vec2 UV;
+out vec3 color;
+
+uniform sampler2D render_tex;
+
+void main()
+{
+    vec4 pixel = texture( render_tex, UV ).xyzw ;
+    color = pixel.xyz ; 
+    gl_FragDepth = pixel.w ; 
+}
+)";
+
+
+
+
+
+
 };
 
 /**
@@ -231,7 +255,9 @@ inline void SGLDisplay::init()
     GL_CHECK( glGenVertexArrays(1, &m_vertex_array ) );
     GL_CHECK( glBindVertexArray( m_vertex_array ) );
 
-    m_program = CreateGLProgram( s_vert_source, s_frag_source );
+    //m_program = CreateGLProgram( s_vert_source, s_frag_source );
+    m_program = CreateGLProgram( s_vert_source, s_frag_source_with_FragDepth );
+
     m_render_tex_uniform_loc = glGetUniformLocation( m_program, "render_tex" );
     assert( m_render_tex_uniform_loc > -1 ); 
 

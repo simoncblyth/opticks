@@ -158,13 +158,13 @@ static __forceinline__ __device__ void trace(
 //#if !defined(PRODUCTION) && defined(WITH_RENDER)
 #if defined(WITH_RENDER)
 
-__forceinline__ __device__ uchar4 make_color( const float3& normal )  // pure 
+__forceinline__ __device__ uchar4 make_pixel( const float3& normal, float depth )  // pure 
 {
     return make_uchar4(
             static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f ),
             static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f ),
             static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f ),
-            255u
+            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f )
             );
 }
 
@@ -220,7 +220,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 #endif
 
     float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
-
+    //float depth = 0.5f ; 
+    float depth = diddled_normal.z ; // JUST MACHINERY TEST : NEED TO USE PROJECTION FOR CORRECT DEPTH 
 
     unsigned index = idx.y * params.width + idx.x ;
 
@@ -230,7 +231,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render/params.pixels diddled_normal(%7.3f,%7.3f,%7.3f)  \n", diddled_normal.x, diddled_normal.y, diddled_normal.z ); 
 #endif
 
-        params.pixels[index] = make_color( diddled_normal ); 
+        params.pixels[index] = make_pixel( diddled_normal, depth ); 
     }
     if(params.isect)  
     {

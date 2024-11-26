@@ -158,6 +158,8 @@ optixrap/cu/material1_radiance.cu::
      79 }
 
 
+* depth info zHit_clip written to prd.result.w 
+
 
 front + ZProj : crucial for calculating pixel depth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -432,6 +434,218 @@ OpenGL DEPTH
     1115    if(container > 0) setTouch(container);
     1116    return container ;
     1117 }
+
+
+Depth investigations enabled with envvar SGLFW__DEPTH
+------------------------------------------------------
+
+Added saving of GL_DEPTH_COMPONENT pixels to SGLFW.h by generalizing SIMG_Frame.h
+
+* single channel _depth.jpg from SGLFW_SOPTIX_Scene_test.sh are very high key
+  can only vaguely see the depth info. Using imshow on the _depth.npy is clearer. 
+
+* doing the same with the ray traced CSGOptiXRenderInteractiveTest gives
+  a uniform grey depth map : everything at same depth (probably all zero ? why not black?) 
+
+* potentially issue with greyscale jpg compression ? So until learn more look at the _depth.npy
+
+::
+
+    P[blyth@localhost issues]$ o
+    On branch master
+    Your branch is up to date with 'origin/master'.
+
+    Changes to be committed:
+      (use "git restore --staged <file>..." to unstage)
+        deleted:    sysrap/tests/ssst1.sh
+
+    Changes not staged for commit:
+      (use "git add <file>..." to update what will be committed)
+      (use "git restore <file>..." to discard changes in working directory)
+        modified:   CSGOptiX/CSGOptiX.cc
+        modified:   CSGOptiX/Frame.h
+        modified:   CSGOptiX/cxr_min.sh
+        modified:   sysrap/SGLFW.h
+        modified:   sysrap/SIMG_Frame.h
+        modified:   sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
+        modified:   sysrap/tests/SIMGTest.py
+
+    Untracked files:
+      (use "git add <file>..." to include in what will be committed)
+        sysrap/tests/SGLFW__DEPTH.py
+        sysrap/tests/SGLFW__DEPTH.sh
+
+    P[blyth@localhost opticks]$ 
+
+
+OpenGL add GL_DEPTH_COMPONENT to ray traced pixels ?
+-----------------------------------------------------
+
+* https://stackoverflow.com/questions/13804794/render-2d-image-with-depth-in-opengl-preserving-depth-testing
+
+Load your depth map via glDrawPixels(..., ..., GL_DEPTH_COMPONENT, ..., ...) and render as usual.
+
+* http://www.opengl.org/sdk/docs/man2/xhtml/glDrawPixels.xml
+
+Using OpenGL pixel_buffer_object, you can bind depth textures. So the process would be as follows:
+
+* Load external texture
+* Load external depth texture
+* Create pixel_buffer_object with the two textures
+* Set PBO as render target and render the rest of your geometry (don't glClear before rendering).
+
+gl_FragDepth
+---------------
+
+https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_FragDepth.xhtml
+
+Declaration
+out float gl_FragDepth ;
+
+Description
+
+Available only in the fragment language, gl_FragDepth is an output variable
+that is used to establish the depth value for the current fragment. If depth
+buffering is enabled and no shader writes to gl_FragDepth, then the fixed
+function value for depth will be used (this value is contained in the z
+component of gl_FragCoord) otherwise, the value written to gl_FragDepth is
+used. If a shader statically assigns to gl_FragDepth, then the value of the
+fragment's depth may be undefined for executions of the shader that don't take
+that path. That is, if the set of linked fragment shaders statically contain a
+write to gl_FragDepth, then it is responsible for always writing it.
+
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/gl_FragCoord.xhtml
+
+
+oglrap/gl/tex/frag.glsl 
+--------------------------
+
+This is the shader formerly used to draw the ray traced pixels. 
+
+This is crucially how I did it before, storing the OptiX/CUDA 
+ray trace calculated depth in prd.result.w which then gets passed 
+as texture to OpenGL for viz together with other draws that 
+have natural depth. 
+
+::
+
+     21 #pragma debug(on)
+     22 
+     23 //in vec3 colour;
+     24 in vec2 texcoord;
+     25 
+     26 out vec4 frag_colour;
+     27 
+     28 uniform  vec4 ScanParam ;
+     29 uniform vec4 ClipPlane ;
+     30 uniform ivec4 NrmParam ;
+     31 
+     32 uniform sampler2D ColorTex ;
+     33 
+     34 void main ()
+     35 {
+     36    frag_colour = texture(ColorTex, texcoord);
+     37    float depth = frag_colour.w ;  // alpha is hijacked for depth in pinhole_camera.cu material1_radiance.cu
+     38    frag_colour.w = 1.0 ;
+     39 
+     40    gl_FragDepth = depth  ;
+     41 
+     42    if(NrmParam.z == 1)
+     43    {
+     44         if(depth < ScanParam.x || depth > ScanParam.y ) discard ;
+     45    }
+     46 }
+     47 
+     48 
+     49 //
+     50 //  the input color is ignored
+     51 //
+     52 //
+     53 // http://www.roxlu.com/2014/036/rendering-the-depth-buffer
+     54 //
+     55 // gl_FragDepth = 1.1 ;   // black
+     56 // gl_FragDepth = 1.0 ;   // black
+     57 // gl_FragDepth = 0.999 ; //  visible geometry
+     58 // gl_FragDepth = 0.0   ; //  visible geometry
+     59 //
+     60 // frag_colour = vec4( depth, depth, depth, 1.0 );
+     61 // vizualize fragment depth, the closer you get to geometry the darker it gets
+     62 // reaching black just before being near clipped
+     63 //
+
+
+
+ray tracing calculate z-depth : from Inigo Quilez (of SDF fame)
+-------------------------------------------------------------------
+
+* https://iquilezles.org/articles/raypolys/
+
+This is basic stuff, but why not to refresh memory from time to time and
+revisit the basic concepts once again. Say you are raymarching or raytracing
+some objects in a fragment shader, and you want to composite them with some
+other geometry that you rendered or will render through regular rasterization.
+The only thing you need to do is to output a depth value in your
+raytracing/marching shader, and let the depth buffer do the rest. The first to
+do, then, is to understand what "depth" means here.
+
+In a raytracer/marcher, you probably have access to the distance from the ray
+origin (you camera position) to the closest geometry/intersection point. That
+distance is not what you want to write to the depth buffer, as hardware
+rasterizers (OpenGL or DirectX) don't store distances to the camera, but the z
+of the geometry/intersection point. The reason is that this z value is still
+monotonically increasing with the distance, but has the property of being
+linear (linear like in "can be interpolated across the surface of a play 3D
+triangle). So, in your raymarcher, compute the intersection point, and use its
+z component for writing to the depth buffer.
+
+Well, that will not work just like that. your api of preference will remap your
+z values to a -1 to 1 range based on the near and far clipping planes you
+decided to set up. Furthermore, the remapping will probably also transform your
+z values to some other sort of scale that exploits the properties of
+perspective (like with a curve that compresses values in the far distance). So
+you will have to implement the same remapping in your shader before you can
+merge your raytraced/marched objects with the rest of the polygons.
+
+The mapping is simple, though, and is normally configured by the projection
+matrix. Grab your OpenGL Redbook, and have a look to the content of a standard
+projection matrix. The third and fourth row are what we need, since those are
+the ones that affect the z and w components of your points when transformed
+from eye to clip space. So, if ze is the z of your intersection point in camera
+(eye) space, then you can compute the clip space z and w as
+
+zc = -ze*(far+near)/(far-near) - 2*far*near/(far-near)
+wc = -ze
+
+The hardware will then do the perspective division and compute the z value in
+normalized device coordinates before converting it to a 24 bit depth value:
+
+zn = zc/zw = (far+near)/(far-near) + 2*far*near/(far-near)/ze
+
+which you can see it is a formula of the form zn = a + b/ze which produces the
+desired depth compression. You can check that the boundary conditions are met,
+by doing
+
+ze = -near -> zn = -1;
+ze = -far -> zn = 1;
+
+Yeah, remember that your depths in camera space are negative inwards the
+screen. So, our raytracing/marching shader should end with something like
+
+float a = (far+near)/(far-near);
+float b = 2.0*far*near/(far-near);
+gl_FragDepth = a + b/z;
+
+You probably want to upload a and b as uniforms to your shader.
+
+Alternatively, if you don't want mess with all this, you can directly grab the
+projection parameters from the projection matrix, and do something like
+
+float zc = ( (ModelView)ProjectionMatrix * vec4( intersectionPoint, 1.0 ) ).z;
+float wc = ( (ModelView)ProjectionMatrix * vec4( intersectionPoint, 1.0 ) ).w;
+gl_FragDepth = zc/wc;
+
+which is a little bit more expensive, but gives the same results...
+
 
 
 

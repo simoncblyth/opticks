@@ -21,6 +21,7 @@ As this uses GL interop it may be necessary to select the display GPU::
 
     CUDA_VISIBLE_DEVICES=1 ~/o/sysrap/tests/ssst.sh 
 
+
 Impl::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
@@ -144,6 +145,9 @@ export SOPTIX_PTX=$ptx
 export SOPTIX_XIR=$xir 
 export SOPTIX_KERNEL=$SOPTIX_PTX
 #export SOPTIX_KERNEL=$SOPTIX_XIR
+
+export SGLFW__DEPTH=1 
+
 
 
 # when using CMake generated ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx 
