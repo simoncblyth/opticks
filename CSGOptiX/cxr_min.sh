@@ -234,8 +234,8 @@ Resolve_CFBaseFromGEOM()
    : HMM : FOR SOME TESTS WANT TO LOAD GDML BUT FOR OTHERS CSGFoundry 
    : to handle that added gdml resolution to eg g4cx/tests/GXTestRunner.sh 
 
-   local A_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
-   local B_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+   local A_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+   local B_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
    local C_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
 
    local TestPath=CSGFoundry/prim.npy

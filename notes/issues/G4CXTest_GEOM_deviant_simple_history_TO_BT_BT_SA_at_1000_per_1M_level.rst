@@ -40,6 +40,8 @@ DONE : simtrace cxt_min.sh : cross section thru Fastener geometry
 workstation::
 
     ~/o/cxt_min.sh
+    MODE=2 ~/o/cxt_min.sh ana  ## matplotlib 2D
+    ##pyvista not installed on workstation
 
 laptop::
 
@@ -98,6 +100,200 @@ Issue : deviant simple history "TO BT BT SA"  : Opticks has 1000 more (out of 1M
         TO SC BT BT AB                                                                                   :    6375   6580 :     3.2439 : Y :     153     74 :   
         TO BT BT BT BT BT BT BT SR SA                                                                    :    6375   6315 :     0.2837 : Y :      16    184 :   
         TO SC SC SC BT BT BT BT BT BT SD                                                                 :    6146   6149 :     0.0007 : Y :     145      0 :   
+
+
+
+
+
+
+fix still working with the water layer
+----------------------------------------
+
+With jok.bash geometry config::
+
+    150    : jcv FastenerConstruction
+    151    unset FastenerConstruction__CONFIG
+    152 
+    153    local FC_ASIS=0                       ## geometry present but does not render
+    154    local FC_MULTIUNION_CONTIGUOUS=1
+    155    local FC_MULTIUNION_DISCONTIGUOUS=2   ## G4MultiUnion SEGV with input photons
+    156    local FC_LISTNODE_DISCONTIGUOUS=3     ## avoid the G4MultiUnion but still translate to listnode
+    157    local FC_LISTNODE_CONTIGUOUS=4
+    158 
+    159    #export FastenerConstruction__CONFIG=$FC_ASIS
+    160    #export FastenerConstruction__CONFIG=$FC_MULTIUNION_DISCONTIGUOUS  
+    161    export FastenerConstruction__CONFIG=$FC_LISTNODE_DISCONTIGUOUS
+    162 
+    163 
+    164 
+    165    unset LSExpDetectorConstruction__setupCD_Sticks_Fastener_CONFIG
+    166    local AAF_ASIS=0
+    167    local AAF_HIERARCHY=1
+    168    export LSExpDetectorConstruction__setupCD_Sticks_Fastener_CONFIG=$AAF_HIERARCHY
+    169 
+    170 
+    171    unset LSExpDetectorConstruction__setupCD_Sticks_Fastener_Hierarchy_DELTA_MM 
+    172    #local FC_DELTA_MM_DEFAULT=0.10
+    173    #local FC_DELTA_MM_ENLARGED_FOR_VISIBILITY=2
+    174    #export LSExpDetectorConstruction__setupCD_Sticks_Fastener_Hierarchy_DELTA_MM=$FC_DELTA_MM_ENLARGED_FOR_VISIBILITY
+    175 
+
+
+Persist geometry including GDML with jok run::
+
+    jok-;jok-tds-gdb 
+
+The do the from GDML run and A-B chi2 comparison::
+
+    ~/o/G4CXTest_GEOM.sh
+    ~/o/G4CXTest_GEOM.sh chi2
+
+::
+
+    P[blyth@localhost sysrap]$ ~/o/G4CXTest_GEOM.sh chi2
+    knobs is a function
+    knobs () 
+    { 
+        type $FUNCNAME;
+        local exceptionFlags;
+        local debugLevel;
+        local optLevel;
+        exceptionFlags=NONE;
+        debugLevel=NONE;
+        optLevel=LEVEL_3;
+        export PIP__CreatePipelineOptions_exceptionFlags=$exceptionFlags;
+        export PIP__CreateModule_debugLevel=$debugLevel;
+        export PIP__linkPipeline_debugLevel=$debugLevel;
+        export PIP__CreateModule_optLevel=$optLevel
+    }
+                       BASH_SOURCE : /data/blyth/junotop/opticks/g4cx/tests/../../sysrap/tests/sseq_index_test.sh 
+                              SDIR : /data/blyth/junotop/opticks/sysrap/tests 
+                               TMP : /data/blyth/opticks 
+                        EXECUTABLE : G4CXTest 
+                           VERSION : 98 
+                              BASE : /data/blyth/opticks/GEOM/J_2024aug27 
+                              GEOM : J_2024aug27 
+                            LOGDIR : /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98 
+                             AFOLD : /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/A000 
+                             BFOLD : /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/B000 
+                              FOLD : /data/blyth/opticks/sseq_index_test 
+    a_path $AFOLD/seq.npy /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/A000/seq.npy a_seq (1000000, 2, 2, )
+    b_path $BFOLD/seq.npy /data/blyth/opticks/GEOM/J_2024aug27/G4CXTest/ALL98/B000/seq.npy b_seq (1000000, 2, 2, )
+    AB
+    [sseq_index_ab::desc u.size 152006 opt BRIEF mode 6sseq_index_ab_chi2::desc sum  1970.0301 ndf 1823.0000 sum/ndf     1.0807 sseq_index_ab_chi2_ABSUM_MIN:40.0000
+        TO AB                                                                                            :  126549 127238 :     1.8705 : Y :       2      0 :   
+        TO BT BT BT BT BT BT SD                                                                          :   70475  70420 :     0.0215 : Y :      18      1 :   
+        TO BT BT BT BT BT BT SA                                                                          :   57092  56955 :     0.1646 : Y :       5      9 :   
+        TO SC AB                                                                                         :   51434  51096 :     1.1142 : Y :       4     49 :   
+        TO SC BT BT BT BT BT BT SD                                                                       :   35876  36125 :     0.8611 : Y :      58    104 :   
+        TO SC BT BT BT BT BT BT SA                                                                       :   29662  29855 :     0.6259 : Y :     124     25 :   
+        TO SC SC AB                                                                                      :   19993  19993 :     0.0000 : Y :     137     40 :   
+        TO RE AB                                                                                         :   18319  18320 :     0.0000 : Y :       9     18 :   
+        TO BT BT SA                                                                                      :   15985  15716 :     2.2826 : Y :     205     79 :   
+        TO SC SC BT BT BT BT BT BT SD                                                                    :   15451  15354 :     0.3054 : Y :      19     43 :   
+        TO SC SC BT BT BT BT BT BT SA                                                                    :   12785  12801 :     0.0100 : Y :      24     26 :   
+        TO BT BT AB                                                                                      :   10967  10899 :     0.2115 : Y :      72     71 :   
+        TO BT AB                                                                                         :    9253   9402 :     1.1901 : Y :      36     19 :   
+        TO BT BT BT SA                                                                                   :    9104   9020 :     0.3893 : Y :      71    747 :   
+        TO BT BT BT BT BT BT BT SA                                                                       :    7435   7642 :     2.8420 : Y :     176    265 :   
+        TO SC SC SC AB                                                                                   :    7544   7413 :     1.1474 : Y :      90    307 :   
+        TO RE BT BT BT BT BT BT SD                                                                       :    7417   7376 :     0.1136 : Y :     197     10 :   
+        TO SC RE AB                                                                                      :    7137   7216 :     0.4348 : Y :     110    209 :   
+        TO RE BT BT BT BT BT BT SA                                                                       :    7124   6974 :     1.5960 : Y :      48    220 :   
+        TO SC BT BT AB                                                                                   :    6384   6494 :     0.9396 : Y :     153     33 :   
+        TO BT BT BT BT BT BT BT SR SA                                                                    :    6375   6430 :     0.2362 : Y :      16     73 :   
+        TO SC SC SC BT BT BT BT BT BT SD                                                                 :    6146   6302 :     1.9550 : Y :     145     17 :   
+        TO BT BT BT BT SD                                                                                :    6147   5989 :     2.0570 : Y :      13    285 :   
+        TO SC BT AB                                                                                      :    5595   5762 :     2.4557 : Y :       8    329 :   
+        TO BT BT DR BT SA                                                                                :    5445   5558 :     1.1605 : Y :     600     78 :   
+        TO RE RE AB                                                                                      :    5539   5390 :     2.0314 : Y :     267    214 :   
+        TO SC SC SC BT BT BT BT BT BT SA                                                                 :    5084   5166 :     0.6560 : Y :      23    240 :   
+        TO SC BT BT SA                                                                                   :    4803   4886 :     0.7110 : Y :     120     97 :   
+        TO SC BT BT BT BT BT BT BT SA                                                                    :    4446   4425 :     0.0497 : Y :      20    256 :   
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SD                                               :    3805   3825 :     0.0524 : Y :     362    345 :   
+        TO RE SC AB                                                                                      :    3660   3493 :     3.8989 : Y :      54     93 :   
+        TO SC RE BT BT BT BT BT BT SD                                                                    :    3190   3200 :     0.0156 : Y :     292    110 :   
+        TO SC BT BT BT BT BT BT BT SR SA                                                                 :    3153   3176 :     0.0836 : Y :     243    139 :   
+        TO SC BT BT BT SA                                                                                :    3171   3134 :     0.2171 : Y :     121    135 :   
+        TO BT BT BT BT BT BT BT SD                                                                       :    3129   3136 :     0.0078 : Y :     181     74 :   
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SA                                               :    3133   3082 :     0.4185 : Y :      22    531 :   
+        TO BT BT BT BT BT BT BT SR SR SA                                                                 :    3049   3058 :     0.0133 : Y :     286     57 :   
+        TO SC SC BT BT AB                                                                                :    2869   2930 :     0.6417 : Y :     636     90 :   
+        TO BT BT BT BT AB                                                                                :    2913   2848 :     0.7334 : Y :     225    460 :   
+        TO SC RE BT BT BT BT BT BT SA                                                                    :    2877   2900 :     0.0916 : Y :     151      3 :   
+        TO SC BT BT BT BT SD                                                                             :    2843   2831 :     0.0254 : Y :     224    696 :   
+        TO RE SC BT BT BT BT BT BT SD                                                                    :    2827   2813 :     0.0348 : Y :     282    481 :   
+        TO SC SC SC SC AB                                                                                :    2745   2781 :     0.2345 : Y :     142    431 :   
+        TO SC SC BT AB                                                                                   :    2712   2761 :     0.4387 : Y :     987    616 :   
+        TO SC SC RE AB                                                                                   :    2626   2675 :     0.4529 : Y :     445     23 :   
+        TO RE SC BT BT BT BT BT BT SA                                                                    :    2618   2562 :     0.6054 : Y :     781    601 :   
+        TO SC SC SC SC BT BT BT BT BT BT SD                                                              :    2338   2354 :     0.0546 : Y :      59    101 :   
+        TO RE RE BT BT BT BT BT BT SD                                                                    :    2229   2238 :     0.0181 : Y :     655    574 :   
+        TO BT BT BT BT BT BT BT SR SR SR SA                                                              :    2208   2026 :     7.8233 : Y :     528    314 :   
+        TO RE RE BT BT BT BT BT BT SA                                                                    :    2180   2132 :     0.5343 : Y :    1501     98 :   
+        TO SC RE RE AB                                                                                   :    2118   2103 :     0.0533 : Y :    1340    286 :   
+        TO SC BT BT BT BT BT BT BT SD                                                                    :    2048   2048 :     0.0000 : Y :     876    213 :   
+        TO SC SC BT BT BT BT BT BT BT SA                                                                 :    2018   1989 :     0.2099 : Y :     851    911 :   
+        TO SC BT BT BT BT SA                                                                             :    1978   1940 :     0.3686 : Y :     799   1082 :   
+        TO SC SC BT BT SA                                                                                :    1915   1962 :     0.5698 : Y :     772    501 :   
+        TO SC SC SC SC BT BT BT BT BT BT SA                                                              :    1943   1893 :     0.6517 : Y :     525     95 :   
+        TO SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SD                                            :    1802   1762 :     0.4489 : Y :     448    510 :   
+        TO RE RE RE AB                                                                                   :    1610   1622 :     0.0446 : Y :    1230    406 :   
+        TO RE BT BT AB                                                                                   :    1523   1484 :     0.5058 : Y :    1117    462 :   
+        TO SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT SA                                            :    1482   1485 :     0.0030 : Y :    1225    762 :   
+    ]sseq_index_ab::desc
+
+    AB
+    [sseq_index_ab::desc u.size 152006 opt AZERO mode 1
+        TO SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT SR BT SD                                         :      -1     16 :     0.0000 : N :      -1  24615 : AZERO C2EXC  
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT SR BT SD                                            :      -1     13 :     0.0000 : N :      -1  73425 : AZERO C2EXC  
+        TO BT BT SR BT BT AB                                                                             :      -1     12 :     0.0000 : N :      -1  67480 : AZERO C2EXC  
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT SR SR BT SD                                         :      -1     11 :     0.0000 : N :      -1  71722 : AZERO C2EXC  
+    ]sseq_index_ab::desc
+
+    AB
+    [sseq_index_ab::desc u.size 152006 opt BZERO mode 2
+        TO BT BT DR BT BT BT SD                                                                          :      26     -1 :     0.0000 : N :    1930     -1 : BZERO C2EXC  
+        TO BT BT BT BT BT BT BR BT BT BT BT BT BT BT SR SD                                               :      15     -1 :     0.0000 : N :   12882     -1 : BZERO C2EXC  
+        TO SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT SR SD                                            :      13     -1 :     0.0000 : N :    5370     -1 : BZERO C2EXC  
+        TO SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT BT SD                                         :      13     -1 :     0.0000 : N :   54864     -1 : BZERO C2EXC  
+        TO SC SC SC SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT SA                                      :      12     -1 :     0.0000 : N :   42959     -1 : BZERO C2EXC  
+    ]sseq_index_ab::desc
+
+    AB
+    [sseq_index_ab::desc u.size 152006 opt DEVIANT mode 5
+    :r:`TO BT BR BT AB                                                                                   :     144     95 :    10.0460 : Y :    2809   2734 : DEVIANT  `
+    :r:`TO SC BT BT BT BT BT BT BR BT BT BT BT BT BT BT BT AB                                            :     115     69 :    11.5000 : Y :    5254   3849 : DEVIANT  `
+    :r:`TO SC SC SC SC BT BT BT BT BT BT BT BT SD                                                        :      61    104 :    11.2061 : Y :    2931  10623 : DEVIANT  `
+    :r:`TO BT BT BT BT BT BT BT SR BT BT BT BT BT BT BT BT BT BT BT BT BT SA                             :      38     74 :    11.5714 : Y :   21512  11070 : DEVIANT  `
+    :r:`TO BT BT BT BT BT DR BT SA                                                                       :      65     33 :    10.4490 : Y :    4302  18353 : DEVIANT  `
+    :r:`TO BT BT BT BT DR BT BT BT SA                                                                    :      23     54 :    12.4805 : Y :   92725  12466 : DEVIANT  `
+    :r:`TO BT BT BT BT BT BT BT BT SD                                                                    :      47      1 :    44.0833 : Y :   11355 814025 : DEVIANT  `
+    :r:`TO BT BT BT BT BR BR BR DR AB                                                                    :       5     36 :    23.4390 : Y :  185265  19130 : DEVIANT  `
+    :r:`TO RE SC SC SC SC BT BT AB                                                                       :      32     11 :    10.2558 : Y :   16749  69793 : DEVIANT  `
+    :r:`TO BT BT BT BT BT BT BT SR SR SR SR SR BT BT BT BT BT AB                                         :      32     11 :    10.2558 : Y :   34403  47012 : DEVIANT  `
+    ]sseq_index_ab::desc
+
+    f
+
+    CMDLINE:/data/blyth/junotop/opticks/sysrap/tests/sseq_index_test.py
+    f.base:/data/blyth/opticks/sseq_index_test
+
+      : f.sseq_index_ab_chi2                               :                 (4,) : 0:00:01.034498 
+
+     min_stamp : 2024-11-26 11:22:03.578964 
+     max_stamp : 2024-11-26 11:22:03.578964 
+     dif_stamp : 0:00:00 
+     age_stamp : 0:00:01.034498 
+    [1970.03 1823.     40.      0.  ]
+    c2sum/c2n:c2per(C2CUT)  1970.03/1823:1.081 (40) pv[1.000,> 0.05 : null-hyp ] 
+    c2sum :  1970.0301 c2n :  1823.0000 c2per:     1.0807  C2CUT:   40 
+    P[blyth@localhost sysrap]$ 
+
+
+
+
+
 
 
 

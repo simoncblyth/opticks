@@ -115,8 +115,10 @@ struct U4Tree
     // disable the below with settings with by defining the below envvar
     static constexpr const char* __DISABLE_OSUR_IMPLICIT = "U4Tree__DISABLE_OSUR_IMPLICIT" ; 
     static constexpr const char* __DISABLE_ISUR_IMPLICIT = "U4Tree__DISABLE_ISUR_IMPLICIT" ; 
+    static constexpr const char* __MATERIAL_DEBUG = "U4Tree__MATERIAL_DEBUG" ; 
     bool                                        enable_osur ; 
     bool                                        enable_isur ; 
+    int                                         material_debug ; 
 
     static U4Tree* Create( 
         stree* st,
@@ -252,7 +254,8 @@ inline U4Tree::U4Tree(
     rayleigh_table(CreateRayleighTable()),
     scint(nullptr),
     enable_osur(!ssys::getenvbool(__DISABLE_OSUR_IMPLICIT)),
-    enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT))
+    enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT)),
+    material_debug(ssys::getenvint(__MATERIAL_DEBUG,0)) 
 {
     init(); 
 }
@@ -319,6 +322,8 @@ SO THERE WILL BE MUCH LESS SCATTERING IN "vetoWater" THAN IN "Water"
 
 inline void U4Tree::initMaterials()
 {
+    LOG_IF(info, material_debug > 0 ) << "[" ; 
+
     initMaterials_r(top); 
     st->material = U4Material::MakePropertyFold(materials);  
 
@@ -328,6 +333,8 @@ inline void U4Tree::initMaterials()
     if(Water_RAYLEIGH) prop_override["Water/RAYLEIGH"] = Water_RAYLEIGH ; 
 
     st->standard->mat = U4Material::MakeStandardArray(materials, prop_override) ; 
+
+    LOG_IF(info, material_debug > 0 ) << "]" ; 
 }
 
 inline void U4Tree::initMaterials_NoRINDEX()
@@ -424,8 +431,27 @@ inline void U4Tree::initMaterials_r(const G4VPhysicalVolume* const pv)
 
     assert(mt);  
 
-    std::vector<const G4Material*>& m = materials ;  
-    if(std::find(m.begin(), m.end(), mt) == m.end()) initMaterial(mt);  
+    std::vector<const G4Material*>& m = materials ; 
+ 
+    bool new_material = std::find(m.begin(), m.end(), mt) == m.end(); 
+
+    if(new_material)
+    { 
+        LOG_IF(info, material_debug > 0 ) 
+           << " pv " << ( pv ? pv->GetName() : "-" )
+           << " lv " << ( lv ? lv->GetName() : "-" )
+           << " num_child " << num_child 
+           ;
+
+        LOG_IF(info, material_debug > 0 ) 
+           << " pv " << ( pv ? pv->GetName() : "-" )
+           << " lv " << ( lv ? lv->GetName() : "-" )
+           << " num_child " << num_child 
+           << " mt " << ( mt ? mt->GetName() : "-" )
+           ;
+
+        initMaterial(mt);  
+    } 
 }
 
 /**
