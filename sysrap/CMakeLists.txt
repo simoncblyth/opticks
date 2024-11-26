@@ -505,6 +505,7 @@ set(HEADERS
     SFrameConfig.hh
     SGeoConfig.hh
 
+    np.h
     NP.hh  
     NPU.hh 
     NPX.h 

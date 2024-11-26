@@ -41,7 +41,15 @@ inline void SGLFW_CUDA::init()
     //std::cout << "SGLFW_CUDA::init gl_display.desc " << gl_display->desc() ; 
 }
 
+
 extern void SGLFW_CUDA__fillOutputBuffer( dim3 numBlocks, dim3 threadsPerBlock, uchar4* output_buffer, int width, int height ); 
+/**
+SGLFW_CUDA::fillOutputBuffer
+----------------------------
+
+Unused ? In anycase intended for debug ? 
+
+**/
 inline void SGLFW_CUDA::fillOutputBuffer()
 {
     dim3 numBlocks ; 
@@ -56,6 +64,16 @@ inline void SGLFW_CUDA::fillOutputBuffer()
     output_buffer->unmap();
     CUDA_SYNC_CHECK();
 }
+
+/**
+SGLFW_CUDA::displayOutputBuffer
+--------------------------------
+
+Primary method, eg called from render loop of CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc 
+
+This enables OpenGL presentation of GPU buffer writted by CUDA/OptiX
+
+**/
 
 inline void SGLFW_CUDA::displayOutputBuffer(GLFWwindow* window)
 {

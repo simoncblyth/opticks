@@ -5,6 +5,7 @@ CSGOptiXRenderInteractiveTest.cc : Interactive raytrace rendering of analytic ge
 Analytic CSGOptiX rendering with SGLM/SGLFW interactive control/visualization. 
 Usage with::
 
+   ~/o/cx.sh 
    ~/o/CSGOptiX/cxr_min.sh 
 
 Note this provides only CSGOptiX ray trace rendering, there is no rasterized toggle 
@@ -31,6 +32,8 @@ TODO:
 * imgui reincarnation 
 
 * WIP: moved some common CSGOptiX stuff down to sysrap header-only such as jpg/png writing and image annotation 
+
+* TODO: composite OpenGL event representation pixels together with OptiX ray traced renders
 
 **/
 
@@ -129,9 +132,11 @@ int main(int argc, char** argv)
 
 
         uchar4* d_pixels = interop.output_buffer->map() ; 
+        // d_pixels : device side pointer to output, 
+        // mapping passes "baton" to CUDA/OptiX for filling    
 
         cx->setExternalDevicePixels(d_pixels); 
-        cx->render_launch(); 
+        cx->render_launch();     // ray tracing OptiX launch populating the pixels 
 
         int wanted_snap = gl.get_wanted_snap();
         if( wanted_snap == 1 || wanted_snap == 2 )
@@ -145,7 +150,7 @@ int main(int argc, char** argv)
             gl.set_wanted_snap(0); 
         }
 
-        interop.output_buffer->unmap() ; 
+        interop.output_buffer->unmap() ;   // unmap, pass baton back to OpenGL for display 
         interop.displayOutputBuffer(gl.window);
 
         gl.renderloop_tail();

@@ -363,6 +363,7 @@ struct SYSRAP_API SGLM : public SCMD
 
 
     glm::mat4 projection ; 
+    glm::vec4 zproj ; 
 
     glm::mat4 MV ; 
     glm::mat4 IMV ;
@@ -374,6 +375,8 @@ struct SYSRAP_API SGLM : public SCMD
     float* IDENTITY_ptr ; 
 
     void updateProjection(); 
+    static void FillZProjection(glm::vec4& zproj, const glm::mat4& proj, bool flip ); 
+
     float get_transverse_scale() const ; 
 
     void updateComposite(); 
@@ -551,6 +554,7 @@ inline SGLM::SGLM()
     orthographic_scale(1.f), 
 
     projection(1.f),
+    zproj(0.f, 0.f, 0.f, 0.f), 
     MV(1.f),
     IMV(1.f),
     MV_ptr(glm::value_ptr(MV)),
@@ -1418,6 +1422,34 @@ void SGLM::updateProjection()
     {
        case CAM_PERSPECTIVE:  projection = glm::frustum( left, right, bottom, top, near_abs, far_abs ); break ; 
        case CAM_ORTHOGRAPHIC: projection = glm::ortho( left, right, bottom, top, near_abs, far_abs )  ; break ;
+    }
+
+    FillZProjection(zproj, projection, false); 
+}
+
+/**
+SGLM::FillZProjection
+-----------------------
+
+After the ancient okc Camera::fillZProjection 
+
+**/
+
+void SGLM::FillZProjection(glm::vec4& ZProj, const glm::mat4& Proj, bool flip ) // static
+{
+    if( flip == false )
+    {
+        ZProj.x = Proj[0][2] ; 
+        ZProj.y = Proj[1][2] ; 
+        ZProj.z = Proj[2][2] ; 
+        ZProj.w = Proj[3][2] ; 
+    } 
+    else
+    {
+        ZProj.x = Proj[2][0] ; 
+        ZProj.y = Proj[2][1] ; 
+        ZProj.z = Proj[2][2] ; 
+        ZProj.w = Proj[2][3] ; 
     }
 }
 
