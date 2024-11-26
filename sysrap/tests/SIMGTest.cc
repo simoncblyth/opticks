@@ -9,6 +9,7 @@ The standardly build executable can be run with::
 For non-CMake build and run use::
 
     IMGPATH=/tmp/flower.jpg ~/o/sysrap/tests/SIMGTest.sh 
+    IMGPATH=$HOME/rocket.jpg ~/o/sysrap/tests/SIMGTest.sh 
 
 **/
 
@@ -42,6 +43,8 @@ int main(int argc, char** argv)
     img.writeJPG(50); 
     img.writeJPG(10); 
     img.writeJPG(5); 
+
+    img.writeNPY(); 
   
     return 0 ; 
 }

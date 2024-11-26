@@ -16,6 +16,7 @@ simplifies dependencies enabling headeronly access to this functionality.
 #include <cassert>
 
 #include "sdirectory.h"
+#include "np.h"
 
 struct STTF ; 
 
@@ -42,6 +43,10 @@ struct SIMG
    std::string desc() const ; 
 
    void annotate( const char* bottom_line=nullptr, const char* top_line=nullptr, int line_height=24 ) ;
+
+   void writeNPY() const ; 
+   void writeNPY(const char* dir, const char* name) const ; 
+   void writeNPY(const char* path) const ; 
 
    void writePNG() const ; 
    void writeJPG(int quality) const ; 
@@ -200,6 +205,36 @@ inline std::string SIMG::FormPath(const char* dir, const char* name)
     return s ; 
 }
 
+inline void SIMG::writeNPY() const
+{
+    assert(loadpath && loadext); 
+    const char* path = ChangeExt(loadpath, loadext, ".npy" ); 
+    writeNPY(path); 
+}
+
+inline void SIMG::writeNPY(const char* dir, const char* name) const 
+{
+    std::string pth = FormPath(dir, name); 
+    writeNPY(pth.c_str()); 
+}
+
+/**
+SIMG::writeNPY
+--------------
+
+View the array as an image in matplotlib with plt.imshow as demonstrated
+in sysrap/tests/SIMGTest.py and "ana" command of sysrap/tests/SIMGTest.sh 
+(similar to the old npy/ImageNPY.hpp)
+
+**/
+
+inline void SIMG::writeNPY(const char* path) const
+{
+    std::vector<int> shape = {height, width, channels } ; 
+    np::Write( path, shape, data, "<u1" ); 
+}
+
+ 
 inline void SIMG::writePNG() const 
 {
     assert(loadpath && loadext); 
