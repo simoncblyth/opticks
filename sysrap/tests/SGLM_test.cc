@@ -1,6 +1,7 @@
 // ~/o/sysrap/tests/SGLM_test.sh 
 
 #include <functional>
+#include "ssys.h"
 #include "SGLM.h"
 
 struct test_Assignment
@@ -16,22 +17,36 @@ struct test_Assignment
         std::cout << "SGLM::DemoMatrix<double> md " << std::endl << SGLM::Present_<double>(md) << std::endl ;  
         std::cout << "SGLM::DemoMatrix<float>  mf"  << std::endl << SGLM::Present_<float>(mf) << std::endl ;  
     }
-    static void Widening()
+    static int Widening()
     {
         test_Assignment t ; 
         t.md = t.mf ;  
         std::cout << "SGLM::DemoMatrix<double> t.md (after t.md = t.mf    widening mf values into md)  " << std::endl << SGLM::Present_<double>(t.md) << std::endl ;  
+        return 0 ; 
     }
-    static void Narrowing()
+    static int Narrowing()
     {
         test_Assignment t ; 
         t.mf = t.md ;  
         std::cout << "SGLM::DemoMatrix<float> t.mf (after t.mf = t.md    narrowing md values into mf)  " << std::endl << SGLM::Present_<float>(t.mf) << std::endl ;  
+        return 0 ;  
     }
 }; 
 
 
-void test_SGLM()
+struct SGLM_test
+{
+    static int Dump();  
+    static int descBasis();  
+    static int descProjection();  
+    static int command();  
+    static int VIZMASK();  
+
+    static int Main();  
+};  
+
+
+int SGLM_test::Dump()
 {
     // setenv("WH", "1024,768", true ); 
     // setenv("CE", "0,0,0,100", true) ; 
@@ -42,9 +57,10 @@ void test_SGLM()
 
     SGLM sglm ; 
     sglm.dump();
+    return 0 ; 
 }
 
-void test_SGLM_basis()
+int SGLM_test::descBasis()
 {
     SGLM gm ; 
     std::cout << gm.descBasis();
@@ -59,9 +75,34 @@ void test_SGLM_basis()
     assert( gm.get_near_abs() == near_abs ); 
     assert( gm.get_far_abs() == far_abs ); 
 
+    return 0 ; 
 }
 
-void test_SGLM_command()
+
+int SGLM_test::descProjection()
+{
+    SGLM gm ; 
+
+    float near_abs = 7.f ; 
+    float far_abs = 700.f ; 
+    gm.set_near_abs(near_abs); 
+    gm.set_far_abs(far_abs); 
+
+    gm.update(); 
+
+
+    std::cout << gm.descProjection();
+
+    assert( gm.get_near_abs() == near_abs ); 
+    assert( gm.get_far_abs() == far_abs ); 
+
+
+    return 0 ; 
+}
+
+
+
+int SGLM_test::command()
 {
     SGLM gm ; 
     SCMD* cm = (SCMD*)&gm ; 
@@ -76,35 +117,38 @@ void test_SGLM_command()
         ;
 
     std::cout << gm.desc() ; 
+    return 0 ; 
 }
 
 
-void test_VIZMASK()
+int SGLM_test::VIZMASK()
 {
     SGLM gm ; 
     std::cout 
         << "gm.vizmask " 
         << gm.vizmask 
         << "\n" 
-        << SBitSet
-
+        //<< SBitSet
         ;  
-
-    
-
-}
-
-
-int main()
-{
-    /*
-    test_Assignment::Widening(); 
-    test_Assignment::Narrowing(); 
-    test_SGLM_basis(); 
-    test_SGLM(); 
-    test_SGLM_command(); 
-    */
-    test_VIZMASK(); 
 
     return 0 ; 
 }
+
+int SGLM_test::Main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "Dump") ; 
+    int rc = 0 ; 
+    if(strcmp(TEST, "Dump")==0 )           rc += Dump(); 
+    if(strcmp(TEST, "descBasis")==0 )      rc += descBasis(); 
+    if(strcmp(TEST, "descProjection")==0 ) rc += descProjection(); 
+    if(strcmp(TEST, "command")==0 )        rc += command(); 
+    if(strcmp(TEST, "VIZMASK")==0 )        rc += VIZMASK(); 
+    if(strcmp(TEST, "Widening")==0 )       rc += test_Assignment::Widening(); 
+    if(strcmp(TEST, "Narrowing")==0 )      rc += test_Assignment::Narrowing(); 
+
+    return rc ;
+}
+
+int main(){ return SGLM_test::Main()  ; }
+
+

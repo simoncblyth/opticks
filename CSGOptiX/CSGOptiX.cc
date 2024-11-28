@@ -432,6 +432,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     geoptxpath(nullptr),
 #endif
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
+    launch_count(0),
     raygenmode(SEventConfig::RGMode()),
     params(InitParams(raygenmode,sglm)),
 #if OPTIX_VERSION < 70000
@@ -877,6 +878,8 @@ void CSGOptiX::setFrame(const sfr& lfr )
 
 void CSGOptiX::prepareParamRender()
 {
+    int prepareParamRender_DEBUG = ssys::getenvint(_prepareParamRender_DEBUG, 0) ;
+
     glm::vec3 eye ;
     glm::vec3 U ; 
     glm::vec3 V ; 
@@ -903,48 +906,60 @@ void CSGOptiX::prepareParamRender()
     traceyflip = sglm->traceyflip ; 
     length = 0.f ; 
 
-    if(!flight) 
-    {
-        LOG(level)
-            << std::endl 
-            << std::setw(20) << " extent "     << extent << std::endl 
-            << std::setw(20) << " sglm.fr.ce.w "  << sglm->fr.ce.w << std::endl 
-            << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
-            << std::setw(20) << " comp.length"   << length 
-            << std::endl 
-            << std::setw(20) << " tmin "       << tmin  << std::endl 
-            << std::setw(20) << " tmax "       << tmax  << std::endl 
-            << std::setw(20) << " vizmask "    << vizmask  << std::endl 
-            << std::endl 
-            << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
-            << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
-            << std::endl 
-            << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
-            << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
-            << std::endl 
-            << std::setw(25) << " sglm.get_nearfar_basis "  << sglm->get_nearfar_basis()  
-            << std::setw(25) << " sglm.get_nearfar_mode "  << sglm->get_nearfar_mode()  
-            << std::endl 
-            << std::setw(25) << " sglm.get_focal_basis "  << sglm->get_focal_basis()  
-            << std::setw(25) << " sglm.get_focal_mode "  << sglm->get_focal_mode()  
-            << std::endl 
-            << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
-            << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
-            << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
-            << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
-            << std::endl 
-            << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
-            << std::setw(20) << " traceyflip " << traceyflip << std::endl 
-            << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
-            ;
+    LOG_IF(info, prepareParamRender_DEBUG > 0 && launch_count == 0)
+        << _prepareParamRender_DEBUG << ":" << prepareParamRender_DEBUG
+        << std::endl 
+        << std::setw(20) << " launch_count " << launch_count << std::endl 
+        << std::setw(20) << " extent "     << extent << std::endl 
+        << std::setw(20) << " sglm.fr.ce.w "  << sglm->fr.ce.w << std::endl 
+        << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
+        << std::setw(20) << " comp.length"   << length 
+        << std::endl 
+        << std::setw(20) << " tmin "       << tmin  << std::endl 
+        << std::setw(20) << " tmax "       << tmax  << std::endl 
+        << std::setw(20) << " vizmask "    << vizmask  << std::endl 
+        << std::endl 
+        << std::setw(20) << " sglm.near "  << sglm->near  << std::endl 
+        << std::setw(20) << " sglm.get_near_abs "  << sglm->get_near_abs()  << std::endl 
+        << std::endl 
+        << std::setw(20) << " sglm.far "   << sglm->far  << std::endl 
+        << std::setw(20) << " sglm.get_far_abs "   << sglm->get_far_abs()  << std::endl 
+        << std::endl 
+        << std::setw(25) << " sglm.get_nearfar_basis "  << sglm->get_nearfar_basis()  
+        << std::setw(25) << " sglm.get_nearfar_mode "  << sglm->get_nearfar_mode()  
+        << std::endl 
+        << std::setw(25) << " sglm.get_focal_basis "  << sglm->get_focal_basis()  
+        << std::setw(25) << " sglm.get_focal_mode "  << sglm->get_focal_mode()  
+        << std::endl 
+        << std::setw(20) << " eye ("       << eye.x << " " << eye.y << " " << eye.z << " ) " << std::endl 
+        << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
+        << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
+        << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
+        << std::endl 
+        << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
+        << std::setw(20) << " traceyflip " << traceyflip << std::endl 
+        << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
+        << std::endl 
+        << "SGLM::DescEyeBasis (sglm->e,w,v,w)\n" 
+        << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) 
+        << std::endl 
+        << std::endl 
+        <<  "sglm.descEyeBasis\n" 
+        << sglm->descEyeBasis() 
+        << std::endl 
+        << "Composition basis  SGLM::DescEyeBasis( eye, U, V, W ) \n" 
+        << SGLM::DescEyeBasis( eye, U, V, W ) 
+        << std::endl 
+        << "sglm.descELU \n" 
+        << sglm->descELU() 
+        << std::endl  
+        << std::endl 
+        << "sglm.descLog " 
+        << std::endl 
+        << sglm->descLog() 
+        << std::endl 
+        ; 
 
-        LOG(level) << std::endl << "SGLM::DescEyeBasis (sglm->e,w,v,w) " << std::endl << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) << std::endl ;
-        LOG(level) << std::endl <<  "sglm.descEyeBasis " << std::endl << sglm->descEyeBasis() << std::endl ; 
-        LOG(level) << std::endl << "Composition basis " << std::endl << SGLM::DescEyeBasis( eye, U, V, W ) << std::endl ;
-        LOG(level) << std::endl  << "sglm.descELU " << std::endl << sglm->descELU() << std::endl ; 
-        LOG(level) << std::endl << "sglm.descLog " << std::endl << sglm->descLog() << std::endl ; 
-
-    }
 
 
     params->setView(eye, U, V, W);
@@ -1079,6 +1094,7 @@ double CSGOptiX::launch()
         CUDA_SYNC_CHECK();    
         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
         // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
+        launch_count += 1 ;   
     }
 #endif
 

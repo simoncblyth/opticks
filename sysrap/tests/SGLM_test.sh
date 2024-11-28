@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash  
 usage(){ cat << EOU
 SGLM_test.sh
 ============
@@ -19,9 +19,13 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
+#test=Dump
+test=descProjection
+export TEST=${TEST:-$test}
+
 export VIZMASK=t1
 
-vars="BASH_SOURCE name bin CUDA_PREFIX VIZMASK"
+vars="BASH_SOURCE name bin CUDA_PREFIX VIZMASK test TEST"
 for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done  
 
 gcc $name.cc -g -Wall -std=c++11 -lstdc++ -lm -I.. -I$OPTICKS_PREFIX/externals/glm/glm -I$CUDA_PREFIX/include -o $bin

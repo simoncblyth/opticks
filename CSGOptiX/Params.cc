@@ -27,6 +27,14 @@ void Params::setPIDXYZ(unsigned x, unsigned y, unsigned z)
 }
 
 
+/**
+Params::setView
+-----------------
+
+Canonical invokation from CSGOptiX::prepareParamRender
+
+**/
+
 void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
 {
     eye.x = eye_.x ;

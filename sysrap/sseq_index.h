@@ -5,6 +5,19 @@ sseq_index.h
 
 This reimplements some python/NumPy that is slow with large seq.npy
 
+Basis struct from sseq.h and NPX.h
+-------------------------------------
+
+sseq
+   sequence flag and boundary history "seqhis" "seqbnd" of a single photon, 
+   up to 32 step points 
+
+NPX.h
+    NPX::VecFromArray<sseq> reads vector<sseq> from NP seq array
+   
+
+Following structs are defined
+-------------------------------
 
 sseq_index_count
    struct holding index and count  
@@ -127,7 +140,7 @@ struct sseq_index
 {
     std::vector<sseq> q ;                   // typically large input array 
 
-    std::map<sseq, sseq_index_count> m ;  // map of unique sseq with counts and first indices
+    std::map<sseq, sseq_index_count> m ;    // map of unique sseq with counts and first indices
     std::vector<sseq_unique> u ;            // descending count ordered vector of sseq_unique 
 
     sseq_index( const NP* seq); 
@@ -160,6 +173,8 @@ Iterate over the source vector populating the
 map with the index of first occurrence and
 count of the frequencey of occurrence.  
 
+Relies on sseq hash specialization based on seqhis values
+
 **/
 
 inline void sseq_index::count_unique()
@@ -172,7 +187,8 @@ inline void sseq_index::count_unique()
 
         if(it == m.end()) 
         {
-            m[seq] = {i, 1} ;
+            int q_index_of_first_occurrence = i ;  
+            m[seq] = {q_index_of_first_occurrence, 1} ;
         }
         else 
         {
@@ -318,6 +334,17 @@ inline void sseq_index_ab::init()
     calc_chi2(); 
 }
 
+/**
+sseq_index_ab::collect_seq
+---------------------------
+
+sseq_index_count_ab 
+     4 integers with index and count from A and B
+
+
+**/
+
+
 inline void sseq_index_ab::collect_seq()
 {
     // collect from A into the map 
@@ -326,8 +353,11 @@ inline void sseq_index_ab::collect_seq()
         const sseq_unique& q_ic = a.u[i];
         const sseq& q = q_ic.q ;
         std::map<sseq, sseq_index_count_ab>::iterator it  = m.find(q);
-        if(it == m.end()) m[q] = { q_ic.ic , {-1,-1} } ; 
+        bool first_q = it == m.end() ;               // first find of sseq history q within m  
+        if(first_q) m[q] = { q_ic.ic , {-1,-1} } ;   // fill in the two A slots setting -1,-1 for B 
     }
+    // should always be first_q as m starts empty and are grabbing from uniques already 
+
 
     // collect from B into the map 
     for (int i = 0; i < int(b.u.size()); i++) 
@@ -335,8 +365,13 @@ inline void sseq_index_ab::collect_seq()
         const sseq_unique& q_ic = b.u[i];
         const sseq& q = q_ic.q ;
         std::map<sseq, sseq_index_count_ab>::iterator it  = m.find(q_ic.q);
-        if(it == m.end()) m[q] = { {-1,-1}, q_ic.ic } ; 
+
+        bool first_q = it == m.end() ; // first find of sseq history q within m  
+      
+        if(first_q) m[q] = { {-1,-1}, q_ic.ic } ;   // fill in the two B slots setting -1,-1 for A
         else it->second.b = q_ic.ic ; 
+        // already found (from A) so just fill in the B slot 
+
     }
 }
 

@@ -31,6 +31,16 @@ booting from a persisted geometry during testing due to the ~2s initialization t
     ~/opticks/CSGOptiX/cxs_min.sh
 
 
+
+chi2 subcommand
+----------------
+
+Uses::
+
+   $SDIR/../../sysrap/tests/sseq_index_test.sh info_run_ana
+
+
+
 storch::generate is used for both GPU and CPU generation
 ---------------------------------------------------------
 

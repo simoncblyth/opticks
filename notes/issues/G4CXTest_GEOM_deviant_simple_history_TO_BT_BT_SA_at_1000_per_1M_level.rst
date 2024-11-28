@@ -52,12 +52,13 @@ laptop::
 
 
 
-Issue : deviant simple history "TO BT BT SA"  : Opticks has 1000 more (out of 1M photons) with this history  
----------------------------------------------------------------------------------------------------------------
+Issue : deviant simple history "TO BT BT SA"  : Opticks has 1000 more (out of 1M photons) with this (mostly direct to Tyvek absorption) history  
+---------------------------------------------------------------------------------------------------------------------------------------------------
 
 ::
 
-    ~/o/G4CXTest_GEOM.sh             ## A-B comparison starting from GDML
+    jok-;jok-tds-gdb           ## insitu opticksMode:3 persisting geometry, including GDML
+    ~/o/G4CXTest_GEOM.sh             ## A-B comparison starting from GDML 
     ~/o/G4CXTest_GEOM.sh chi2
     ...
     .                  BASH_SOURCE : /data/blyth/junotop/opticks/g4cx/tests/../../sysrap/tests/sseq_index_test.sh 
@@ -143,7 +144,7 @@ Persist geometry including GDML with jok run::
 
     jok-;jok-tds-gdb 
 
-The do the from GDML run and A-B chi2 comparison::
+Then do the from GDML run and A-B chi2 comparison::
 
     ~/o/G4CXTest_GEOM.sh
     ~/o/G4CXTest_GEOM.sh chi2

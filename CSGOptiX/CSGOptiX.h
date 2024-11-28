@@ -83,6 +83,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
     std::vector<unsigned>  solid_selection ;
     std::vector<double>  launch_times ;
+    int                  launch_count ; 
 
     int               raygenmode ; 
     Params*           params  ; 
@@ -149,6 +150,7 @@ private:
     void setFrame(const sfr& fr_); 
 
 
+    static constexpr const char* _prepareParamRender_DEBUG = "CSGOptiX__prepareParamRender_DEBUG" ; 
     void prepareParamRender(); 
     void prepareParamSimulate(); 
     void prepareParam(); 

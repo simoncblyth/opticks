@@ -161,6 +161,22 @@ optixrap/cu/material1_radiance.cu::
 * depth info zHit_clip written to prd.result.w 
 
 
+ACCORDING TO ABOVE FOR camertype == 0u (perspective?)::
+
+    zHit_ndc = -ZProj.z  - ZProj.w/zHit_eye   
+
+             =     ZProj.z zHit_eye + ZProj.w 
+                  -------------------------------
+                           -ZHit_eye
+
+    Compare with http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+    A = ZProj.z   =?   -(f+n)/(f-n)
+    B = ZProj.w   =?    -2fn/(f-n)
+
+
+
+
 front + ZProj : crucial for calculating pixel depth
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -598,6 +614,11 @@ linear (linear like in "can be interpolated across the surface of a play 3D
 triangle). So, in your raymarcher, compute the intersection point, and use its
 z component for writing to the depth buffer.
 
+::
+
+   eye frame origin is the "camera" position looking along along -Z axis  
+   so the relevant z is eye frame z (which will be -ve)
+
 Well, that will not work just like that. your api of preference will remap your
 z values to a -1 to 1 range based on the near and far clipping planes you
 decided to set up. Furthermore, the remapping will probably also transform your
@@ -616,10 +637,40 @@ from eye to clip space. So, if ze is the z of your intersection point in camera
 zc = -ze*(far+near)/(far-near) - 2*far*near/(far-near)
 wc = -ze
 
+
+
+
 The hardware will then do the perspective division and compute the z value in
 normalized device coordinates before converting it to a 24 bit depth value:
 
 zn = zc/zw = (far+near)/(far-near) + 2*far*near/(far-near)/ze
+
+
+SCB correction + extension (comparing with http://www.songho.ca/opengl/gl_projectionmatrix.html)::
+
+
+    zn = zc/wc = (far+near)/(far-near) + 2*far*near/(far-near)/ze
+        
+
+
+     zn = zc/wc =  (far+near) + 2*far*near/ze     
+                   ------------------------------  
+                          (far-near)
+
+
+      zn [ ze = -near ] =  (far+near) - 2*far   =   near - far    = -1 
+                           ------------------      ------------
+                                 far - near         far - near 
+
+      zn [ ze = -far ] =  (far+near) - 2*near   =   far - near   = +1 
+                           ------------------      ------------
+                                 far - near         far - near 
+
+
+
+       zn * (-ze)  =  -(far+near)/(far-near) ze - 2*far*near/(far-near)
+
+
 
 which you can see it is a formula of the form zn = a + b/ze which produces the
 desired depth compression. You can check that the boundary conditions are met,

@@ -82,6 +82,9 @@ export CSGFoundry__Load_DUMP=1   # report the directory loaded
 
 export SGLFW__DEPTH=1   # dump _depth.jpg together with screenshots 
 
+export CSGOptiX__prepareParamRender_DEBUG=1
+export SGLM__updateProjection=1
+
 
 # TRANSITIONAL KLUDGE
 export SCENE_FOLD=/tmp/SScene_test

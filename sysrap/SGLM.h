@@ -141,6 +141,43 @@ Screen
 #include "SGLM_Parse.h"
 
 
+
+// inputs to projection matrix 
+struct SYSRAP_API lrbtnf 
+{
+    float left ; 
+    float right ; 
+    float bottom ;
+    float top ; 
+    float near ; 
+    float far ; 
+
+    // see http://www.songho.ca/opengl/gl_projectionmatrix.html
+    float A() const { return -(far+near)/(far-near) ; }  
+    float B() const { return -2.f*far*near/(far-near) ; }
+
+    std::string desc() const ;
+};
+
+std::string lrbtnf::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "lrbtnf::desc (inputs to glm::frustum OR glm::ortho )"
+       << " l " << std::setw(7) << std::fixed << std::setprecision(3) << left 
+       << " r " << std::setw(7) << std::fixed << std::setprecision(3) << right
+       << " b " << std::setw(7) << std::fixed << std::setprecision(3) << bottom
+       << " t " << std::setw(7) << std::fixed << std::setprecision(3) << top
+       << " n " << std::setw(7) << std::fixed << std::setprecision(3) << near
+       << " f " << std::setw(7) << std::fixed << std::setprecision(3) << far
+       << " A:-(f+n)(f-n) " << std::setw(7) << std::fixed << std::setprecision(3) << A()
+       << " B:-2fn/(f-n)  " << std::setw(7) << std::fixed << std::setprecision(3) << B()
+       << "\n"
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+
 struct SYSRAP_API SGLM : public SCMD 
 {
     static SGLM* INSTANCE ; 
@@ -358,10 +395,11 @@ struct SYSRAP_API SGLM : public SCMD
 
     std::string descFrame() const ; 
     std::string descBasis() const ; 
+    std::string descProj() const ; 
     std::string descProjection() const ; 
     std::string descComposite() const ; 
 
-
+    lrbtnf    proj ; 
     glm::mat4 projection ; 
     glm::vec4 zproj ; 
 
@@ -374,8 +412,10 @@ struct SYSRAP_API SGLM : public SCMD
     glm::mat4 IDENTITY ; 
     float* IDENTITY_ptr ; 
 
+    void left_right_bottom_top_near_far(lrbtnf& p) const ; 
     void updateProjection(); 
-    static void FillZProjection(glm::vec4& zproj, const glm::mat4& proj, bool flip ); 
+    static void FillZProjection(  glm::vec4& _zproj, const glm::mat4& _proj ); 
+    static void FillAltProjection(glm::vec4& _aproj, const glm::mat4& _proj ); 
 
     float get_transverse_scale() const ; 
 
@@ -803,6 +843,7 @@ std::string SGLM::desc() const
     ss << descNearFar() << std::endl ; 
     ss << descEyeSpace() << std::endl ; 
     ss << descEyeBasis() << std::endl ; 
+    ss << descProj() << std::endl ; 
     ss << descProjection() << std::endl ; 
     ss << descBasis() << std::endl ; 
     ss << descLog() << std::endl ; 
@@ -1392,6 +1433,23 @@ std::string SGLM::descNearFar() const
 
 
 
+
+void SGLM::left_right_bottom_top_near_far(lrbtnf& p) const
+{
+    //float fsc = get_focal_basis() ;
+    float fsc = get_transverse_scale() ;
+    float fscz = fsc/ZOOM  ; 
+    float aspect = Aspect(); 
+
+    p.left   = -aspect*fscz ;
+    p.right  =  aspect*fscz ;
+    p.bottom = -fscz ;
+    p.top    =  fscz ;
+    p.near   =  get_near_abs() ; 
+    p.far    =  get_far_abs()  ; 
+}
+
+
 /**
 SGLM::updateProjection
 -----------------------
@@ -1400,31 +1458,49 @@ Suspect that for consistency of rasterized and ray traced
 renders this will need to match SGLM::updateEyeBasis better in 
 the z-direction. 
 
+glm::frustum
+
+
 **/
 
 void SGLM::updateProjection()
 {
-    //float fsc = get_focal_basis() ;
-    float fsc = get_transverse_scale() ;
-    float fscz = fsc/ZOOM  ; 
-
-    float aspect = Aspect(); 
-    float left   = -aspect*fscz ;
-    float right  =  aspect*fscz ;
-    float bottom = -fscz ;
-    float top    =  fscz ;
-
-    float near_abs   = get_near_abs() ; 
-    float far_abs    = get_far_abs()  ; 
-
+    left_right_bottom_top_near_far(proj);  
     assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
     switch(cam)
     {
-       case CAM_PERSPECTIVE:  projection = glm::frustum( left, right, bottom, top, near_abs, far_abs ); break ; 
-       case CAM_ORTHOGRAPHIC: projection = glm::ortho( left, right, bottom, top, near_abs, far_abs )  ; break ;
+       case CAM_PERSPECTIVE:  projection = glm::frustum( proj.left, proj.right, proj.bottom, proj.top, proj.near, proj.far ) ; break ; 
+       case CAM_ORTHOGRAPHIC: projection = glm::ortho(   proj.left, proj.right, proj.bottom, proj.top, proj.near, proj.far ) ; break ;
     }
 
-    FillZProjection(zproj, projection, false); 
+    FillZProjection(zproj, projection); 
+
+
+    glm::vec4 altproj(0.f); 
+    FillAltProjection(altproj, projection); 
+
+    if(cam == CAM_PERSPECTIVE && ssys::getenvbool("SGLM__updateProjection")) std::cout 
+        << "SGLM::updateProjection"
+        << " zproj("
+        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.x << " " 
+        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.y << " "
+        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.z << " "
+        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.w << " " 
+        << ")"
+        << " proj.A " 
+        << std::setw(10) << std::fixed << std::setprecision(4) << proj.A() 
+        << " proj.B " 
+        << std::setw(10) << std::fixed << std::setprecision(4) << proj.B() 
+        << "\n" 
+        << " altproj("
+        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.x << " " 
+        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.y << " "
+        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.z << " "
+        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.w << " " 
+        << ")"
+        << "\n" 
+        ;
+
 }
 
 /**
@@ -1433,25 +1509,92 @@ SGLM::FillZProjection
 
 After the ancient okc Camera::fillZProjection 
 
+See ~/o/notes/issues/impl_composited_rendering_in_7plus_workflow.rst
+
+Opticks conventional matrix memory layout has 
+translation in slots [12 13 14] 
+ 
+          0   1   2    3
+          4   5   6    7
+          8   9  10   11
+        [12  13  14]  15
+        
+glm::mat4 element addressing is (row, col) (see stra_test::Elements) 
+so this is grabbing the third column.  
+
+          0  1 | 2|  3
+          4  5 | 6|  7
+          8  9 |10| 11
+         12 13 |14| 15
+
+Looking at glm/ext/matrix_clip_space.inl::
+
+    159     template<typename T>
+    160     GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> frustumRH_NO(T left, T right, T bottom, T top, T nearVal, T farVal)
+    161     {
+    162         mat<4, 4, T, defaultp> Result(0);
+    163         Result[0][0] = (static_cast<T>(2) * nearVal) / (right - left);
+    164         Result[1][1] = (static_cast<T>(2) * nearVal) / (top - bottom);
+    165         Result[2][0] = (right + left) / (right - left);
+    166         Result[2][1] = (top + bottom) / (top - bottom);
+    167         Result[2][2] = - (farVal + nearVal) / (farVal - nearVal);
+    168         Result[2][3] = static_cast<T>(-1);
+    169         Result[3][2] = - (static_cast<T>(2) * farVal * nearVal) / (farVal - nearVal);
+    170         return Result;
+    171     }
+ 
+Copying from above frustumRH_NO and expressing in glm::mat4 memory element order
+as standard for Opticks (NB transposed representation is more commonly shown)::
+
+
+   |     2n/(r-l)          0       {    0          }   0   |
+   |                               {               }       |  
+   |         0        2n/(t-b)     {    0          }   0   |
+   |                               {               }       | 
+   |     (r+l)/(r-l)  (t+b)/(t-b)  { -(f+n)/(f-n)  }  -1   |    
+   |                               {               }       |
+   |         0            0        { -2.*f*n/(f-n) }   0   |
+
+
+For perspective projection this grabs::
+
+   { 0 ,   0,  -(f+n)/(f-n),  -2.*f*n/(f-n) } 
+
+
 **/
 
-void SGLM::FillZProjection(glm::vec4& ZProj, const glm::mat4& Proj, bool flip ) // static
+
+void SGLM::FillZProjection(glm::vec4& _ZProj, const glm::mat4& _Proj) // static
 {
-    if( flip == false )
-    {
-        ZProj.x = Proj[0][2] ; 
-        ZProj.y = Proj[1][2] ; 
-        ZProj.z = Proj[2][2] ; 
-        ZProj.w = Proj[3][2] ; 
-    } 
-    else
-    {
-        ZProj.x = Proj[2][0] ; 
-        ZProj.y = Proj[2][1] ; 
-        ZProj.z = Proj[2][2] ; 
-        ZProj.w = Proj[2][3] ; 
-    }
+    _ZProj.x = _Proj[0][2] ; 
+    _ZProj.y = _Proj[1][2] ; 
+    _ZProj.z = _Proj[2][2] ; 
+    _ZProj.w = _Proj[3][2] ; 
 }
+
+/**
+SGLM::FillAltProjection
+----------------------
+
+For perspective projection this grabs::
+
+   {   (r+l)/(r-l) , (t+b)/(t-b) , -(f+n)/(f-n) ,  -1 }  
+
+
+**/
+
+void SGLM::FillAltProjection(glm::vec4& _AProj, const glm::mat4& _Proj) // static
+{
+    _AProj.x = _Proj[2][0] ; 
+    _AProj.y = _Proj[2][1] ; 
+    _AProj.z = _Proj[2][2] ; 
+    _AProj.w = _Proj[2][3] ; 
+
+    //assert( _AProj.w == -1.f ) ; 
+}
+
+
+
 
 
 float SGLM::get_transverse_scale() const
@@ -1674,6 +1817,16 @@ std::string SGLM::descBasis() const
     return s ; 
 }
 
+std::string SGLM::descProj() const
+{
+    int wid = 25 ; 
+    std::stringstream ss ;
+    ss << "SGLM::descProj" << std::endl ; 
+    ss << std::setw(wid) << " (lrbtnf)proj.desc " << proj.desc() << "\n" ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
+
 std::string SGLM::descProjection() const 
 {
     float fsc = get_focal_basis() ;
@@ -1703,6 +1856,8 @@ std::string SGLM::descProjection() const
     ss << std::setw(wid) << "near" << Present(near) << std::endl ;  
     ss << std::setw(wid) << "far"  << Present(far) << std::endl ;  
     ss << std::setw(wid) << "sglm.projection\n" << Present(projection) << std::endl ; 
+    ss << descProj() << std::endl ; 
+
     std::string str = ss.str(); 
     return str ; 
 }

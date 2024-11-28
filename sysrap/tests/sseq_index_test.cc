@@ -8,12 +8,11 @@ sysrap/tests/sseq_index_test.sh
     ~/opticks/sysrap/tests/sseq_index_test.sh 
 
 
-
-
 **/
 
 
 #include "NP.hh"
+#include "ssys.h"
 #include "sseq_index.h"
 
 int main()
@@ -26,19 +25,31 @@ int main()
     std::cout << "b_path " << b_path << " " << ( b_seq ? b_seq->get_lpath() : "-" ) << " b_seq " << ( b_seq ? b_seq->sstr() : "-" ) << std::endl ; 
     if(!(a_seq && b_seq)) return 0 ;  
 
+    const char* _DEBUG = "sseq_index_test__DEBUG" ; 
+    int DEBUG = ssys::getenvint(_DEBUG, 0);  
+    std::cout << _DEBUG << ":" << DEBUG << "\n" ; 
+
     sseq_index a(a_seq); 
     sseq_index b(b_seq); 
 
     sseq_index_ab ab(a, b); 
 
-    //std::cout << "A" << std::endl << a.desc(1000) << std::endl ; 
-    //std::cout << "B" << std::endl << b.desc(1000) << std::endl ; 
+    if( DEBUG > 0 )
+    {
+        std::cout << "A" << std::endl << a.desc(1000) << std::endl ; 
+        std::cout << "B" << std::endl << b.desc(1000) << std::endl ; 
+    }
    
     std::cout << "AB" << std::endl << ab.desc("BRIEF") << std::endl ; 
     std::cout << "AB" << std::endl << ab.desc("AZERO") << std::endl ; 
     std::cout << "AB" << std::endl << ab.desc("BZERO") << std::endl ; 
     std::cout << "AB" << std::endl << ab.desc("DEVIANT") << std::endl ; 
-    //std::cout << "AB" << std::endl << ab.desc("C2INCL") << std::endl ; 
+    
+    if(DEBUG > 0)
+    {
+        std::cout << "AB" << std::endl << ab.desc("C2INCL") << std::endl ; 
+    }
+
 
     ab.chi2.save("$FOLD"); 
 

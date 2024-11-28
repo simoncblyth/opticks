@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 
 ~/o/sysrap/tests/stra_test.sh
@@ -17,7 +17,37 @@ defarg="info_build_run"
 arg=${1:-$defarg}
 opt=-g
 
-vars="BASH_SOURCE arg opt FOLD"
+#test=Copy_Columns_3x4
+test=Elements
+export TEST=${TEST:-$test}
+
+vars="BASH_SOURCE arg opt FOLD test TEST"
+
+
+
+gdb__() 
+{ 
+    if [ -z "$BP" ]; then
+        H="";
+        B="";
+        T="-ex r";
+    else
+        H="-ex \"set breakpoint pending on\"";
+        B="";
+        for bp in $BP;
+        do
+            B="$B -ex \"break $bp\" ";
+        done;
+        T="-ex \"info break\" -ex r";
+    fi;
+    local runline="gdb $H $B $T --args $* ";
+    echo $runline;
+    date;
+    eval $runline;
+    date
+}
+
+
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -34,20 +64,10 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-   case $(uname) in
-      Darwin) lldb__ $bin  ;;
-      Linux)   gdb__ $bin ;;
-   esac
+   gdb__ $bin 
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi 
 
 exit 0 
-
-
-
-
-
-
-
 
 

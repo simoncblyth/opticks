@@ -1,4 +1,13 @@
-// ~/o/sysrap/tests/stra_test.sh
+/**
+stra_test.sh
+==============
+
+::
+
+    ~/o/sysrap/tests/stra_test.sh
+
+
+**/
 
 #include <sstream>
 #include <iostream>
@@ -6,20 +15,42 @@
 #include <vector>
 #include <string>
 
+#include "ssys.h"
 #include "stra.h"
 #include "sbb.h"
 
 
-void test_Desc()
+struct stra_test
+{  
+    static int Desc(); 
+    static int Place(); 
+
+    template<typename T> static int Rows(); 
+    template<typename T> static int Transform_AABB(); 
+    template<typename T> static int Transform_AABB_Inplace(); 
+    template<typename T> static int Transform_Vec(); 
+    template<typename T> static int Transform_Data(); 
+    template<typename T> static int Desc_strided(); 
+    template<typename T> static int Transform_Strided(); 
+    template<typename T> static int MakeTransformedArray(); 
+    template<typename T> static int Copy_Columns_3x4(); 
+    template<typename T> static int Elements(); 
+
+    static int Main(); 
+};
+
+
+int stra_test::Desc()
 {
     glm::tmat4x4<double> a(1.); 
     glm::tmat4x4<double> b(2.); 
     glm::tmat4x4<double> c(3.); 
 
     std::cout << stra<double>::Desc(a, b, c, "a", "b", "c" ); 
+    return 0 ; 
 }
 
-void test_Place()
+int stra_test::Place()
 {
     glm::tvec3<double> va(0,0,1) ;   // +Z
     glm::tvec3<double> vb(1,0,0) ;   // +X
@@ -61,11 +92,12 @@ void test_Place()
         << stra<double>::Desc(b[i]) 
         << std::endl 
         ;
+    return 0 ; 
 }
 
 
 template<typename T>
-void test_Rows()
+int stra_test::Rows()
 {
     std::array<T,16> a = { 
           0., 1., 2., 3., 
@@ -89,18 +121,23 @@ void test_Rows()
     std::cout << " q2 " << q2 << std::endl ; 
     std::cout << " q3 " << q3 << std::endl ; 
 
+    /*
+    // HUH: NOT COMPILING : NEEDS SOME EXTRA HEADER ?
     glm::tvec4<T> q01_min = glm::min<T>( q0, q1 ); 
     glm::tvec4<T> q01_max = glm::max<T>( q0, q1 ); 
 
     std::cout << " q01_min " << q01_min << std::endl ; 
     std::cout << " q01_max " << q01_max << std::endl ; 
+    */
+
+    return 0 ; 
 }
 
 
 template<typename T>
-void test_Transform_AABB()
+int stra_test::Transform_AABB()
 {
-    std::cout << "test_Transform_AABB" << std::endl ; 
+    std::cout << "stra_test::Transform_AABB" << std::endl ; 
 
     std::array<T,16> a = { 
           1., 0., 0., 0., 
@@ -121,12 +158,13 @@ void test_Transform_AABB()
     stra<T>::Transform_AABB( bb1.data(), bb0.data(),  m );   
 
     std::cout << " bb1 " << sbb::Desc(bb1.data()) << std::endl ; 
+    return 0 ; 
 }
 
 template<typename T>
-void test_Transform_AABB_Inplace()
+int stra_test::Transform_AABB_Inplace()
 {
-    std::cout << "test_Transform_AABB_Inplace" << std::endl ; 
+    std::cout << "stra_test::Transform_AABB_Inplace" << std::endl ; 
 
     std::array<T,16> a = { 
           1., 0., 0., 0., 
@@ -146,12 +184,13 @@ void test_Transform_AABB_Inplace()
     stra<T>::Transform_AABB_Inplace( bb1.data(),  m );   
 
     std::cout << " bb1 " << sbb::Desc(bb1.data()) << std::endl ; 
+    return 0 ; 
 }
 
 template<typename T>
-void test_Transform_Vec()
+int stra_test::Transform_Vec()
 {
-    std::cout << "test_Transform_Vec" << std::endl ; 
+    std::cout << "stra_test::Transform_Vec" << std::endl ; 
 
     std::array<T,16> a = { 
           1., 0., 0., 0., 
@@ -171,15 +210,16 @@ void test_Transform_Vec()
     std::cout << " pos0 " << stra<T>::Desc(pos0)  << std::endl ; 
     std::cout << " pos  " << stra<T>::Desc(pos)  << std::endl ; 
 
+    return 0 ; 
 }
 
 
 
 
 template<typename T>
-void test_Transform_Data()
+int stra_test::Transform_Data()
 {
-    std::cout << "test_Transform_Data" << std::endl ; 
+    std::cout << "stra_test::Transform_Data" << std::endl ; 
 
     std::array<T,16> a = { 
           1., 0., 0., 0., 
@@ -194,15 +234,16 @@ void test_Transform_Data()
     std::array<double,3> pos0 = { 0, 0, 0 } ; 
     std::array<double,3> pos = { 0, 0, 0 } ; 
 
-    stra<T>::Transform_Data(pos.data(), pos0.data(), m ); 
+    stra<T>::Transform_Data(pos.data(), pos0.data(), &m ); 
 
     std::cout << " pos0 " << stra<T>::Desc(pos0.data(), 1, 3, 0)  << std::endl ; 
     std::cout << " pos  " << stra<T>::Desc(pos.data(),  1, 3, 0 ) << std::endl ; 
 
+    return 0 ; 
 }
 
 template<typename T>
-void test_Desc_strided()
+int stra_test::Desc_strided()
 {
     std::array<T,64> a = { 
           1., 2., 3., 0., 
@@ -228,12 +269,13 @@ void test_Desc_strided()
 
 
    std::cout 
-       << "test_Desc_strided"
+       << "stra_test::Desc_strided"
        << std::endl 
        << stra<T>::Desc( a.data(), 4, 3, 16 ) 
        << std::endl 
        ;
-              
+
+   return 0 ; 
 }
 
 
@@ -241,9 +283,9 @@ void test_Desc_strided()
 
 
 template<typename T>
-void test_Transform_Strided()
+int stra_test::Transform_Strided()
 {
-    std::cout << "test_Transform_Strided" << std::endl ; 
+    std::cout << "stra_test::Transform_Strided" << std::endl ; 
 
     std::array<T,16> _m = { 
           1., 0., 0., 0., 
@@ -287,7 +329,7 @@ void test_Transform_Strided()
 
 
      std::cout 
-         << "test_Transform_Strided"
+         << "stra_test::Transform_Strided"
          << std::endl 
          << " p0 "
          << std::endl 
@@ -303,6 +345,7 @@ void test_Transform_Strided()
          << std::endl 
          ;
 
+    return 0 ; 
 }
 
 
@@ -310,9 +353,9 @@ void test_Transform_Strided()
 
 
 template<typename T>
-void test_MakeTransformedArray()
+int stra_test::MakeTransformedArray()
 {
-    std::cout << "test_MakeTransformedArray" << std::endl ; 
+    std::cout << "stra_test::MakeTransformedArray" << std::endl ; 
 
     std::array<double,12> _aa = {{
           0., 0., 0., 
@@ -351,13 +394,14 @@ void test_MakeTransformedArray()
         memcpy( glm::value_ptr(v) , bb + i*3, itemsize ); 
         std::cout << glm::to_string(v) << std::endl ;   
     }
+    return 0 ; 
 }
 
 
 template<typename T>
-void test_Copy_Columns_3x4()
+int stra_test::Copy_Columns_3x4()
 {
-    std::cout << "test_Copy_Columns_3x4" << std::endl ; 
+    std::cout << "stra_test::Copy_Columns_3x4" << std::endl ; 
     std::array<T,16> aa = {{
           0., 1., 2., 3., 
           4., 5., 6., 7.,
@@ -388,25 +432,110 @@ void test_Copy_Columns_3x4()
         << std::endl 
         ; 
 
+    return 0 ; 
 }
 
+/**
+stra_test::Elements
+----------------------
 
-int main()
+ |   0.   1.   2.   3.  |
+ |                      |
+ |   4.   5.   6.   7.  |
+ |                      |
+ |   8.   9.  10.  11.  |
+ |                      |
+ |  12.  13.  14.  15.  |
+
+
+ | P[0][0]  P[0][1]  P[0][2]  P[0][3]   |
+ |                                      |
+ | P[1][0]  P[1][1]  P[1][2]  P[1][3]   |
+ |                                      |
+ | P[2][0]  P[2][1]  P[2][2]  P[2][3]   |
+ |                                      |
+ | P[3][0]  P[3][1]  P[3][2]  P[3][3]   |
+ 
+
+glm::tmat4x4 (aka mat4) element access indices are (row, column) 
+
+But beware the matrix may be transposed relative 
+to your expectation : this happens often. 
+
+**/
+
+
+template<typename T>
+int stra_test::Elements()
 {
-    /*
-    test_Place(); 
-    test_Rows<double>();
-    test_Transform_AABB<double>();
-    test_Transform_AABB_Inplace<double>();
-    test_Desc_strided<double>();
-    test_Transform_Vec<double>();
-    test_Transform_Data<double>();
-    test_Transform_Strided<double>();
-    test_MakeTransformedArray<double>();
-    */
+    std::cout << "stra_test::Elements" << std::endl ; 
+    std::array<T,16> aa = {{
+          0., 1., 2., 3., 
+          4., 5., 6., 7.,
+          8., 9.,10.,11., 
+         12.,13.,14.,15.  
+    }}; 
 
-    test_Copy_Columns_3x4<double>();
+    glm::tmat4x4<T> P(0.) ; 
+    memcpy( glm::value_ptr(P) , aa.data(), 16*sizeof(T) ); 
+
+    const T* pp = glm::value_ptr(P) ; 
+
+    assert( P[0][0] == 0. );  
+    assert( P[0][1] == 1. );  
+    assert( P[0][2] == 2. );  
+    assert( P[0][3] == 3. );  
+
+    assert( P[1][0] == 4. );  
+    assert( P[1][1] == 5. );  
+    assert( P[1][2] == 6. );  
+    assert( P[1][3] == 7. );  
+     
+    assert( P[2][0] == 8. );  
+    assert( P[2][1] == 9. );  
+    assert( P[2][2] == 10. );  
+    assert( P[2][3] == 11. );  
+ 
+    assert( P[3][0] == 12. );  
+    assert( P[3][1] == 13. );  
+    assert( P[3][2] == 14. );  
+    assert( P[3][3] == 15. );  
+
+    int ni = 4 ; 
+    int nj = 4 ; 
+
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    {
+        int n = i*nj + j ; 
+        assert( P[i][j] == *(pp + n) );   
+        assert( P[i][j] == pp[n] );   
+    }
 
 
     return 0 ; 
 }
+
+
+
+int stra_test::Main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "Copy_Columns_3x4"); 
+    int rc = 0 ; 
+    if( strcmp(TEST,"Place")==0 )                   rc += Place();
+    if( strcmp(TEST,"Rows")==0 )                    rc += Rows<double>();
+    if( strcmp(TEST,"Transform_AABB")==0 )          rc += Transform_AABB<double>();
+    if( strcmp(TEST,"Transform_AABB_Inplace")==0 )  rc += Transform_AABB_Inplace<double>();
+    if( strcmp(TEST,"Transform_Vec")==0 )           rc += Transform_Vec<double>();
+    if( strcmp(TEST,"Transform_Data")==0 )          rc += Transform_Data<double>();
+    if( strcmp(TEST,"Transform_Strided")==0 )       rc += Transform_Strided<double>();
+    if( strcmp(TEST,"MakeTransformedArray")==0 )    rc += MakeTransformedArray<double>();
+    if( strcmp(TEST,"Desc_strided")==0 )            rc += Desc_strided<double>();
+    if( strcmp(TEST,"Copy_Columns_3x4")==0 )        rc += Copy_Columns_3x4<double>();
+    if( strcmp(TEST,"Elements")==0 )                rc += Elements<double>();
+    return rc ; 
+}
+
+int main(){ return stra_test::Main() ; }
+
+
