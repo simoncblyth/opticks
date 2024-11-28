@@ -45,6 +45,8 @@ struct stra
     static std::string Desc(const glm::tvec4<T>& t); 
     static std::string Desc(const glm::tvec3<T>& t); 
     static std::string Desc(const T* tt, int num); 
+    static std::string Desc(const T& t); 
+
     static std::string DescItems(const T* tt, int num_elem, int num_item, int edge_items=10 );
 
     static std::string Desc(const T* tt, int ni, int nj, int item_stride=0) ; 
@@ -169,6 +171,8 @@ std::string stra<T>::Desc(const glm::tvec3<T>& t)
     const T* tt = glm::value_ptr(t); 
     return Desc(tt, 3 ); 
 }
+
+
 template<typename T>
 std::string stra<T>::Desc(const T* tt, int num)
 {
@@ -176,7 +180,7 @@ std::string stra<T>::Desc(const T* tt, int num)
     for(int i=0 ; i < num ; i++) 
         ss 
             << ( i % 4 == 0 && num > 4 ? ".\n" : "" ) 
-            << " " << std::fixed << std::setw(10) << std::setprecision(4) << tt[i] 
+            << " " << Desc(tt[i]) 
             << ( i == num-1 && num > 4 ? ".\n" : "" ) 
             ;
 
@@ -184,6 +188,14 @@ std::string stra<T>::Desc(const T* tt, int num)
     return str ; 
 }
 
+template<typename T>
+std::string stra<T>::Desc(const T& t)
+{
+    std::stringstream ss ; 
+    ss << std::fixed << std::setw(10) << std::setprecision(4) << t ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 template<typename T>

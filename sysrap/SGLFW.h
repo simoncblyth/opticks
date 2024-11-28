@@ -162,7 +162,7 @@ V
 W
    (WASDQE) hold to change eyeshift, translate forwards 
 X
-   -
+   [--rendertype] toggle between normal and zdepth shading 
 Y
    experimental mouse control of eyerotation
 Z:toggle.zoom
@@ -265,6 +265,7 @@ then hop to the default frame.
     void _desc(); 
     void tcam(); 
     void traceyflip(); 
+    void rendertype(); 
     static std::string FormCommand(const char* token, float value); 
 
     void getWindowSize();
@@ -414,6 +415,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_K:      command("--snap")                     ; break ;  
         case GLFW_KEY_L:      command("--snap-inverted")            ; break ;  
         case GLFW_KEY_V:      command("--traceyflip")               ; break ;  
+        case GLFW_KEY_X:      command("--rendertype")               ; break ;  
         case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;  
     }
    
@@ -620,6 +622,7 @@ inline int SGLFW::command(const char* cmd)
     if(strcmp(cmd, "--snap-local") == 0) snap_local(false); 
     if(strcmp(cmd, "--snap-local-inverted") == 0) snap_local(true); 
     if(strcmp(cmd, "--traceyflip") == 0) traceyflip(); 
+    if(strcmp(cmd, "--rendertype") == 0) rendertype(); 
     return 0 ;  
 }
 
@@ -657,6 +660,11 @@ inline void SGLFW::traceyflip()
 {
     gm.command("--traceyflip"); 
 }
+inline void SGLFW::rendertype()
+{
+    gm.command("--rendertype"); 
+}
+
 
 
 

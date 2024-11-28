@@ -153,29 +153,12 @@ struct SYSRAP_API lrbtnf
     float far ; 
 
     // see http://www.songho.ca/opengl/gl_projectionmatrix.html
-    float A() const { return -(far+near)/(far-near) ; }  
-    float B() const { return -2.f*far*near/(far-near) ; }
-
+    float A_frustum() const ; 
+    float B_frustum() const ; 
+    float A_ortho() const ;   
+    float B_ortho() const ;   
     std::string desc() const ;
 };
-
-std::string lrbtnf::desc() const 
-{
-    std::stringstream ss ; 
-    ss << "lrbtnf::desc (inputs to glm::frustum OR glm::ortho )"
-       << " l " << std::setw(7) << std::fixed << std::setprecision(3) << left 
-       << " r " << std::setw(7) << std::fixed << std::setprecision(3) << right
-       << " b " << std::setw(7) << std::fixed << std::setprecision(3) << bottom
-       << " t " << std::setw(7) << std::fixed << std::setprecision(3) << top
-       << " n " << std::setw(7) << std::fixed << std::setprecision(3) << near
-       << " f " << std::setw(7) << std::fixed << std::setprecision(3) << far
-       << " A:-(f+n)(f-n) " << std::setw(7) << std::fixed << std::setprecision(3) << A()
-       << " B:-2fn/(f-n)  " << std::setw(7) << std::fixed << std::setprecision(3) << B()
-       << "\n"
-       ;
-    std::string str = ss.str(); 
-    return str ; 
-}
 
 
 struct SYSRAP_API SGLM : public SCMD 
@@ -278,6 +261,7 @@ struct SYSRAP_API SGLM : public SCMD
     void home(); 
     void tcam(); 
     void toggle_traceyflip(); 
+    void toggle_rendertype(); 
 
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump); 
     int command(const char* cmd); 
@@ -354,7 +338,8 @@ struct SYSRAP_API SGLM : public SCMD
     // results from updateEyeBasis
     glm::vec3 u ; 
     glm::vec3 v ; 
-    glm::vec3 w ; 
+    glm::vec3 w ;  
+    glm::vec3 wnorm ;  
     glm::vec3 e ; 
 
 
@@ -370,6 +355,7 @@ struct SYSRAP_API SGLM : public SCMD
     int  fullscreen ; 
     uint32_t vizmask ; 
     int   traceyflip ; 
+    int   rendertype ; 
 
 
     float nearfar_manual ; 
@@ -415,19 +401,36 @@ struct SYSRAP_API SGLM : public SCMD
     void left_right_bottom_top_near_far(lrbtnf& p) const ; 
     void updateProjection(); 
     static void FillZProjection(  glm::vec4& _zproj, const glm::mat4& _proj ); 
+    float zdepth_pos( const glm::tvec4<float>& p_eye ) const ; 
+    float zdepth0(    const float& z_eye ) const ; 
+    float zdepth1(    const float& z_eye ) const ; 
+    float zproj_A() const ; 
+    float zproj_B() const ; 
+
     static void FillAltProjection(glm::vec4& _aproj, const glm::mat4& _proj ); 
 
     float get_transverse_scale() const ; 
 
+
     void updateComposite(); 
 
 
-    void ce_corners_world( std::vector<glm::tvec4<double>>& v_world ) const ; 
-    void ce_midface_world( std::vector<glm::tvec4<double>>& v_world ) const ; 
-    void apply_MVP( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<double>>& v_world, bool flip ) const ; 
+    template<typename T> void ce_corners_world( std::vector<glm::tvec4<T>>& v_world ) const ; 
+    template<typename T> void ce_midface_world( std::vector<glm::tvec4<T>>& v_world ) const ; 
+
+    template<typename T>
+    static void Apply_XF( std::vector<glm::tvec4<float>>& v_out, const std::vector<glm::tvec4<T>>& v_in, const glm::tmat4x4<float>& XF, bool flip ); 
+
+    template<typename T>
+    void apply_MV(  std::vector<glm::tvec4<float>>& v_eye,  const std::vector<glm::tvec4<T>>& v_world, bool flip ) const ; 
+    template<typename T>
+    void apply_MVP( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<T>>& v_world, bool flip ) const ; 
+    template<typename T>
+    void apply_P(   std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<T>>& v_eye  , bool flip ) const ; 
 
     std::string desc_MVP() const ; 
     std::string desc_MVP_ce_corners() const ; 
+    std::string desc_MV_P_MVP_ce_corners() const ;
     std::string desc_MVP_ce_midface() const ; 
     static bool IsClipped(const glm::vec4& _ndc ); 
 
@@ -586,6 +589,7 @@ inline SGLM::SGLM()
     fullscreen(FULLSCREEN),
     vizmask(VIZMASK),
     traceyflip(TRACEYFLIP),
+    rendertype(0),
     nearfar_manual(0.f),
     focal_manual(0.f),
 
@@ -712,7 +716,10 @@ void SGLM::toggle_traceyflip()
 {
     traceyflip = !traceyflip ; 
 } 
-
+void SGLM::toggle_rendertype()
+{
+    rendertype = !rendertype ; 
+} 
 
 /**
 SGLM::Command
@@ -777,6 +784,7 @@ void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
         else if(strcmp(op,"home")==0) gm->home();  
         else if(strcmp(op,"tcam")==0) gm->tcam();  
         else if(strcmp(op,"traceyflip")==0) gm->toggle_traceyflip();  
+        else if(strcmp(op,"rendertype")==0) gm->toggle_rendertype();  
         else
         {
             std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl; 
@@ -1394,6 +1402,9 @@ void SGLM::updateEyeBasis()
     v = glm::vec3( IMV * top ) * fscz  ;  
     w = glm::vec3( IMV * gaz ) * lsc ;    
     e = glm::vec3( IMV * ori );   
+
+    wnorm = glm::normalize(w); 
+
 }
 
 /**
@@ -1476,30 +1487,35 @@ void SGLM::updateProjection()
     FillZProjection(zproj, projection); 
 
 
-    glm::vec4 altproj(0.f); 
-    FillAltProjection(altproj, projection); 
+    if(ssys::getenvbool("SGLM__updateProjection")) 
+    {
+        std::cout 
+            << "SGLM::updateProjection"
+            << " zproj("
+            << std::setw(10) << std::fixed << std::setprecision(4) << zproj.x << " " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << zproj.y << " "
+            << std::setw(10) << std::fixed << std::setprecision(4) << zproj.z << " "
+            << std::setw(10) << std::fixed << std::setprecision(4) << zproj.w << " " 
+            << ")"
+            << "\n" 
+            ; 
 
-    if(cam == CAM_PERSPECTIVE && ssys::getenvbool("SGLM__updateProjection")) std::cout 
-        << "SGLM::updateProjection"
-        << " zproj("
-        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.x << " " 
-        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.y << " "
-        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.z << " "
-        << std::setw(10) << std::fixed << std::setprecision(4) << zproj.w << " " 
-        << ")"
-        << " proj.A " 
-        << std::setw(10) << std::fixed << std::setprecision(4) << proj.A() 
-        << " proj.B " 
-        << std::setw(10) << std::fixed << std::setprecision(4) << proj.B() 
-        << "\n" 
-        << " altproj("
-        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.x << " " 
-        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.y << " "
-        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.z << " "
-        << std::setw(10) << std::fixed << std::setprecision(4) << altproj.w << " " 
-        << ")"
-        << "\n" 
-        ;
+        if(cam == CAM_PERSPECTIVE) std::cout 
+            << " proj.A_frustum " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << proj.A_frustum() 
+            << " proj.B_frustum " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << proj.B_frustum() 
+            << "\n" 
+            ;
+
+        if(cam == CAM_ORTHOGRAPHIC) std::cout 
+            << " proj.A_ortho " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << proj.A_ortho() 
+            << " proj.B_ortho " 
+            << std::setw(10) << std::fixed << std::setprecision(4) << proj.B_ortho() 
+            << "\n" 
+            ;
+     }
 
 }
 
@@ -1561,6 +1577,36 @@ For perspective projection this grabs::
    { 0 ,   0,  -(f+n)/(f-n),  -2.*f*n/(f-n) } 
 
 
+Looking at glm/ext/matrix_clip_space.inl::
+
+     54     template<typename T>
+     55     GLM_FUNC_QUALIFIER mat<4, 4, T, defaultp> orthoRH_NO(T left, T right, T bottom, T top, T zNear, T zFar)
+     56     {
+     57         mat<4, 4, T, defaultp> Result(1);
+     58         Result[0][0] = static_cast<T>(2) / (right - left);
+     59         Result[1][1] = static_cast<T>(2) / (top - bottom);
+     60         Result[2][2] = - static_cast<T>(2) / (zFar - zNear);
+     61         Result[3][0] = - (right + left) / (right - left);
+     62         Result[3][1] = - (top + bottom) / (top - bottom);
+     63         Result[3][2] = - (zFar + zNear) / (zFar - zNear);
+     64         return Result;
+     65     }
+
+Copying from above orthoRH_NO and expressing in glm::mat4 memory element order
+as standard for Opticks (NB transposed representation is more commonly shown)::
+
+
+    |   2/(r-l)        0              0             0   |
+    |     0           2/(t-b)         0             0   |
+    |     0            0            -2/(f-n)        0   |
+    |  -(r+l)/(r-l)   -(t+b)/(t-b)  -(f+n)/(f-n)    1   |
+
+
+For ortho this grabs::
+
+    { 0,   0,   -2/(f-n),   -(f+n)/(f-n)  }
+
+
 **/
 
 
@@ -1589,9 +1635,108 @@ void SGLM::FillAltProjection(glm::vec4& _AProj, const glm::mat4& _Proj) // stati
     _AProj.y = _Proj[2][1] ; 
     _AProj.z = _Proj[2][2] ; 
     _AProj.w = _Proj[2][3] ; 
-
-    //assert( _AProj.w == -1.f ) ; 
 }
+
+
+inline float lrbtnf::A_frustum() const { return -(far+near)/(far-near) ; }
+inline float lrbtnf::B_frustum() const { return -2.f*far*near/(far-near) ; }
+inline float lrbtnf::A_ortho() const   { return -2.f/(far-near) ; }
+inline float lrbtnf::B_ortho() const   { return -(far+near)/(far-near) ; }
+
+inline std::string lrbtnf::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "lrbtnf::desc (inputs to glm::frustum OR glm::ortho )"
+       << " l " << std::setw(7) << std::fixed << std::setprecision(3) << left 
+       << " r " << std::setw(7) << std::fixed << std::setprecision(3) << right
+       << " b " << std::setw(7) << std::fixed << std::setprecision(3) << bottom
+       << " t " << std::setw(7) << std::fixed << std::setprecision(3) << top
+       << " n " << std::setw(7) << std::fixed << std::setprecision(3) << near
+       << " f " << std::setw(7) << std::fixed << std::setprecision(3) << far
+       << " A_frustum:-(f+n)(f-n) " << std::setw(7) << std::fixed << std::setprecision(3) << A_frustum()
+       << " B_frustum:-2fn/(f-n)  " << std::setw(7) << std::fixed << std::setprecision(3) << B_frustum()
+       << " A_ortho:-2/(f-n)      " << std::setw(7) << std::fixed << std::setprecision(3) << A_ortho()
+       << " B_ortho:-(f+n)/(f-n)  " << std::setw(7) << std::fixed << std::setprecision(3) << B_ortho()
+       << "\n"
+       ;
+    std::string str = ss.str(); 
+    return str ; 
+}
+
+/**
+SGLM::zdepth_pos
+-------------------
+
+http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+**/
+
+
+float SGLM::zdepth_pos( const glm::tvec4<float>& p_eye ) const 
+{
+    glm::tvec4<float> c = projection * p_eye ; 
+    float zd = c.z/c.w ; 
+    return zd ; 
+}
+
+/**
+SGLM::zdepth0
+--------------
+
+
+**/
+
+
+float SGLM::zdepth0( const float& z_eye ) const 
+{
+    const float& ze = z_eye ; 
+    float A = zproj_A() ;  
+    float B = zproj_B() ; 
+    float zd(0.f) ; 
+
+    assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
+    switch(cam)
+    {
+        case CAM_PERSPECTIVE:  zd = -(A + B/ze) ; break ;    //zd = (A*ze + B)/(-ze) ; 
+        case CAM_ORTHOGRAPHIC: zd = A*ze + B    ; break ;  
+    }
+    return zd ; 
+}
+
+float SGLM::zdepth1( const float& z_eye ) const 
+{
+    const float& ze = z_eye ; 
+    const float& A = zproj.z ;  
+    const float& B = zproj.w ; 
+    assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
+    return cam == CAM_PERSPECTIVE ? -(A + B/ze) : A*ze + B  ;  
+}
+
+float SGLM::zproj_A() const
+{
+    assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
+    float A(0.f); 
+    switch(cam)
+    {
+        case CAM_PERSPECTIVE:  A = proj.A_frustum() ; break ;  
+        case CAM_ORTHOGRAPHIC: A = proj.A_ortho()   ; break ;  
+    }
+    return A ; 
+}
+
+float SGLM::zproj_B() const
+{
+    assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );  
+    float B(0.f); 
+    switch(cam)
+    {
+        case CAM_PERSPECTIVE:  B = proj.B_frustum() ; break ;  
+        case CAM_ORTHOGRAPHIC: B = proj.B_ortho()   ; break ;  
+    }
+    return B ; 
+}
+
+
 
 
 
@@ -1878,23 +2023,24 @@ std::string SGLM::descComposite() const
 
 
 
-
-void SGLM::ce_corners_world( std::vector<glm::tvec4<double>>& v_world ) const 
+template<typename T>
+void SGLM::ce_corners_world( std::vector<glm::tvec4<T>>& v_world ) const 
 {
-    std::vector<glm::tvec4<double>> corners ;
-    SCE::Corners( corners, fr.ce ); 
+    std::vector<glm::tvec4<T>> corners ;
+    SCE::Corners<T>( corners, fr.ce ); 
     assert(corners.size() == 8 ); 
 
     for(int i=0 ; i < 8 ; i++ )
     {
-        const glm::tvec4<double>& corner = corners[i]; 
+        const glm::tvec4<T>& corner = corners[i]; 
         v_world.push_back(corner); 
     }
 }
 
-void SGLM::ce_midface_world( std::vector<glm::tvec4<double>>& v_world ) const 
+template<typename T>
+void SGLM::ce_midface_world( std::vector<glm::tvec4<T>>& v_world ) const 
 {
-    std::vector<glm::tvec4<double>> midface ;
+    std::vector<glm::tvec4<T>> midface ;
     SCE::Midface( midface, fr.ce ); 
     assert(midface.size() == 6+1 ); 
 
@@ -1905,16 +2051,37 @@ void SGLM::ce_midface_world( std::vector<glm::tvec4<double>>& v_world ) const
 }
 
 
-void SGLM::apply_MVP( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<double>>& v_world, bool flip ) const 
+
+template<typename T>
+void SGLM::Apply_XF( std::vector<glm::tvec4<float>>& v_out, const std::vector<glm::tvec4<T>>& v_in, const glm::tmat4x4<float>& XF, bool flip )  // static
 {
-    int num = v_world.size(); 
+    int num = v_in.size(); 
     for(int i=0 ; i < num ; i++ )
     {
-        const glm::tvec4<float> p_world = v_world[i] ; 
-        glm::tvec4<float> p_clip = flip ? MVP * p_world : p_world*MVP ; 
-        v_clip.push_back(p_clip); 
+        const glm::tvec4<float> in = v_in[i] ;  // not by ref, to allow changing type
+        glm::tvec4<float> ou = flip ? XF*in : in*XF ; 
+        v_out.push_back(ou); 
     }
 }
+
+
+template<typename T>
+void SGLM::apply_MV( std::vector<glm::tvec4<float>>& v_eye, const std::vector<glm::tvec4<T>>& v_world, bool flip ) const 
+{
+    Apply_XF(v_eye, v_world, MV, flip); 
+}
+template<typename T>
+void SGLM::apply_MVP( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<T>>& v_world, bool flip ) const 
+{
+    Apply_XF(v_clip, v_world, MVP, flip); 
+}
+template<typename T>
+void SGLM::apply_P( std::vector<glm::tvec4<float>>& v_clip, const std::vector<glm::tvec4<T>>& v_eye, bool flip ) const 
+{
+    const glm::tmat4x4<float>& P = projection ;  
+    Apply_XF(v_clip, v_eye, P, flip); 
+}
+
 
 std::string SGLM::desc_MVP() const 
 {
@@ -1936,7 +2103,7 @@ std::string SGLM::desc_MVP_ce_corners() const
     static const int NUM = 8 ;
   
     std::vector<glm::tvec4<double>> v_world ; 
-    ce_corners_world(v_world); 
+    ce_corners_world<double>(v_world); 
     assert( v_world.size() == NUM ); 
 
     std::vector<glm::tvec4<float>> v_clip ; 
@@ -1969,7 +2136,98 @@ std::string SGLM::desc_MVP_ce_corners() const
     return str ; 
 }
 
+/**
+SGLM::desc_MV_P_MVP_ce_corners
+--------------------------------
 
+Used as testing ground for the zdepth calc, see: 
+
+* notes/issues/impl_composited_rendering_in_7plus_workflow.rst
+* http://www.songho.ca/opengl/gl_projectionmatrix.html
+
+**/
+
+std::string SGLM::desc_MV_P_MVP_ce_corners() const
+{
+    std::vector<glm::tvec4<float>> v_world ; 
+    std::vector<glm::tvec4<float>> v_eye ; 
+    std::vector<glm::tvec4<float>> v_clip_0 ; 
+    std::vector<glm::tvec4<float>> v_clip_1 ; 
+
+    static const int NUM = 8 ;
+    ce_corners_world(v_world); 
+    assert( v_world.size() == NUM ); 
+
+    bool flip = true ; 
+    apply_MV(   v_eye   ,  v_world, flip ); 
+    apply_P(    v_clip_0,  v_eye  , flip );
+    apply_MVP(  v_clip_1,  v_world, flip );
+ 
+    assert( v_eye.size() == NUM ); 
+    assert( v_clip_0.size() == NUM ); 
+    assert( v_clip_1.size() == NUM ); 
+
+    int wid = 25 ; 
+
+    std::stringstream ss ;
+    ss << "SGLM::desc_MV_P_MVP_ce_corners" << std::endl ; 
+
+    const glm::tvec3<float>& ray_origin = eye ; 
+    ss << std::setw(wid) << " ray_origin    " << ' '   << stra<float>::Desc(ray_origin) << ' ' << "\n" ;
+    ss << std::setw(wid) << " forward_ax    " << ' '   << stra<float>::Desc(forward_ax) << ' ' << "\n" ;
+    ss << std::setw(wid) << " wnorm(front)  " << ' '   << stra<float>::Desc(wnorm)      << ' ' << "\n" ;
+
+    for(int i=0 ; i < NUM ; i++ )
+    {
+        const glm::tvec4<float>& _world  = v_world[i] ; 
+        glm::tvec3<float> world(_world); 
+
+        const glm::tvec4<float>& _eye    = v_eye[i] ; 
+        const glm::tvec4<float>& _clip_0 = v_clip_0[i] ; 
+        const glm::tvec4<float>& _clip_1 = v_clip_1[i] ;
+
+        // imagine ray tracing intersects at each of the corners
+        glm::tvec3<float> ray_direction = glm::normalize( world - ray_origin  ); 
+        float distance = glm::length( world - ray_origin ); 
+        float ray_eye_z = -distance*glm::dot(forward_ax, ray_direction) ; 
+
+        float zd_p = zdepth_pos(_eye) ; 
+        float zd_0 = zdepth0(ray_eye_z) ; 
+        float zd_1 = zdepth1(ray_eye_z) ; 
+
+        glm::vec4 _ndc_0(_clip_0.x/_clip_0.w, _clip_0.y/_clip_0.w, _clip_0.z/_clip_0.w, 1.f );   
+        glm::vec4 _ndc_1(_clip_1.x/_clip_1.w, _clip_1.y/_clip_1.w, _clip_1.z/_clip_1.w, 1.f );   
+        // normalized device coordinates : from division by clip_0.w 
+
+        bool clipped_0 = IsClipped(_ndc_0) ; 
+        char bef_0 = clipped_0 ? '{' : ' ' ; 
+        char aft_0 = clipped_0 ? '}' : ' ' ; 
+
+        bool clipped_1 = IsClipped(_ndc_1) ; 
+        char bef_1 = clipped_1 ? '{' : ' ' ; 
+        char aft_1 = clipped_1 ? '}' : ' ' ; 
+
+        ss 
+            << "[" << i << "]\n" 
+            << std::setw(wid) << " ray_origin    " << ' '   << stra<float>::Desc(ray_origin) << ' ' << "\n" 
+            << std::setw(wid) << " _world        " << ' '   << stra<float>::Desc(_world)    << ' ' << "\n" 
+            << std::setw(wid) << " ray_direction " << ' '   << stra<float>::Desc(ray_direction) << ' ' << "\n" 
+            << std::setw(wid) << " _eye          " << ' '   << stra<float>::Desc(_eye)      << ' ' << "\n"
+            << std::setw(wid) << " _clip_0       " << ' '   << stra<float>::Desc(_clip_0)   << ' ' << "\n" 
+            << std::setw(wid) << " _clip_1       " << ' '   << stra<float>::Desc(_clip_1)   << ' ' << "\n" 
+            << std::setw(wid) << " _ndc_0        " << bef_0 << stra<float>::Desc(_ndc_0)    << aft_0 << "\n"
+            << std::setw(wid) << " _ndc_1        " << bef_1 << stra<float>::Desc(_ndc_1)    << aft_1 << "\n"
+            << std::setw(wid) << " zd_p          " << ' '   << stra<float>::Desc(zd_p)      << ' ' << "\n" 
+            << std::setw(wid) << " zd_0          " << ' '   << stra<float>::Desc(zd_0)      << ' ' << "\n" 
+            << std::setw(wid) << " zd_1          " << ' '   << stra<float>::Desc(zd_1)      << ' ' << "\n" 
+            << std::setw(wid) << " ray_eye_z     " << ' '   << stra<float>::Desc(ray_eye_z) << ' ' << "\n" 
+            << std::endl
+            ;
+    }
+    std::string str = ss.str(); 
+    return str ; 
+}
+    
 
 std::string SGLM::desc_MVP_ce_midface() const 
 {

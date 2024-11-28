@@ -56,6 +56,7 @@ struct Params
     uint32_t   cameratype ; 
 
     int32_t    traceyflip ; 
+    int32_t    rendertype ; 
     int32_t    origin_x;
     int32_t    origin_y;
   
@@ -63,8 +64,11 @@ struct Params
     float3     U ;
     float3     V ; 
     float3     W ;
+    float3     WNORM ;
     float      tmin ; 
     float      tmax ; 
+    float4     ZPROJ ; 
+
     unsigned   vizmask ; 
 
     float4     center_extent ; 
@@ -90,9 +94,14 @@ struct Params
     std::string desc() const ; 
     std::string detail() const ; 
 
-    void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
-    void setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ );
-    void setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_ ) ;
+    //void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
+    void setView(const glm::vec3& eye_, 
+                 const glm::vec3& U_, 
+                 const glm::vec3& V_, 
+                 const glm::vec3& W_,
+                 const glm::vec3& WNORM_ );
+
+    void setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_, int rendertype_, const glm::vec4& ZPROJ_ ) ;
     void setRaygenMode(int raygenmode_ );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
     void setVizmask(unsigned vizmask_); 

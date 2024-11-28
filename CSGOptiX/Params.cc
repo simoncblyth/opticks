@@ -35,7 +35,7 @@ Canonical invokation from CSGOptiX::prepareParamRender
 
 **/
 
-void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_ )
+void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3& V_, const glm::vec3& W_, const glm::vec3& WNORM_ )
 {
     eye.x = eye_.x ;
     eye.y = eye_.y ;
@@ -52,8 +52,14 @@ void Params::setView(const glm::vec3& eye_, const glm::vec3& U_, const glm::vec3
     W.x = W_.x ; 
     W.y = W_.y ; 
     W.z = W_.z ; 
+
+    WNORM.x = WNORM_.x ; 
+    WNORM.y = WNORM_.y ; 
+    WNORM.z = WNORM_.z ; 
+
 }
 
+/*
 void Params::setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_)
 {
     eye.x = eye_.x ;
@@ -72,13 +78,27 @@ void Params::setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4
     W.y = W_.y ; 
     W.z = W_.z ; 
 }
+*/
 
-void Params::setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_ )
+
+void Params::setCamera(
+    float tmin_, 
+    float tmax_, 
+    unsigned cameratype_, 
+    int traceyflip_, 
+    int rendertype_, 
+    const glm::vec4& ZPROJ_ )
 {
     tmin = tmin_ ; 
     tmax = tmax_ ; 
     cameratype = cameratype_ ; 
     traceyflip = traceyflip_ ; 
+    rendertype = rendertype_ ; 
+
+    ZPROJ.x = ZPROJ_.x ; 
+    ZPROJ.y = ZPROJ_.y ; 
+    ZPROJ.z = ZPROJ_.z ; 
+    ZPROJ.w = ZPROJ_.w ; 
 }
 
 std::string Params::desc() const 
@@ -93,6 +113,7 @@ std::string Params::desc() const
        << std::setw(20) << " depth " << std::setw(10) << depth  << std::endl 
        << std::setw(20) << " cameratype " << std::setw(10) << cameratype  << std::endl 
        << std::setw(20) << " traceyflip " << std::setw(10) << traceyflip  << std::endl 
+       << std::setw(20) << " rendertype " << std::setw(10) << rendertype  << std::endl 
        << std::setw(20) << " origin_x " << std::setw(10) << origin_x  << std::endl 
        << std::setw(20) << " origin_y " << std::setw(10) << origin_y  << std::endl 
        << std::setw(20) << " tmin " << std::setw(10) << tmin  << std::endl 

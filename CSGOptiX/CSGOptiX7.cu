@@ -158,12 +158,22 @@ static __forceinline__ __device__ void trace(
 //#if !defined(PRODUCTION) && defined(WITH_RENDER)
 #if defined(WITH_RENDER)
 
-__forceinline__ __device__ uchar4 make_pixel( const float3& normal, float depth )  // pure 
+__forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float depth )  // pure 
 {
     return make_uchar4(
             static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f ),
             static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f ),
             static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f )
+            );
+}
+
+__forceinline__ __device__ uchar4 make_zdepth_pixel( float depth )  // pure 
+{
+    return make_uchar4(
+            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
             static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f )
             );
 }
@@ -220,8 +230,11 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 #endif
 
     float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
-    //float depth = 0.5f ; 
-    float depth = diddled_normal.z ; // JUST MACHINERY TEST : NEED TO USE PROJECTION FOR CORRECT DEPTH 
+
+    float eye_z = -prd->distance()*dot(params.WNORM, direction) ;
+    const float& A = params.ZPROJ.z ;
+    const float& B = params.ZPROJ.w ;
+    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1 
 
     unsigned index = idx.y * params.width + idx.x ;
 
@@ -230,8 +243,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 #if defined(DEBUG_PIDX)
         //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render/params.pixels diddled_normal(%7.3f,%7.3f,%7.3f)  \n", diddled_normal.x, diddled_normal.y, diddled_normal.z ); 
 #endif
-
-        params.pixels[index] = make_pixel( diddled_normal, depth ); 
+        params.pixels[index] = params.rendertype == 0 ? make_normal_pixel( diddled_normal, zdepth ) : make_zdepth_pixel( zdepth ) ; 
     }
     if(params.isect)  
     {

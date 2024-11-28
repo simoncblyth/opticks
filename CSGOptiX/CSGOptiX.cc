@@ -880,31 +880,21 @@ void CSGOptiX::prepareParamRender()
 {
     int prepareParamRender_DEBUG = ssys::getenvint(_prepareParamRender_DEBUG, 0) ;
 
-    glm::vec3 eye ;
-    glm::vec3 U ; 
-    glm::vec3 V ; 
-    glm::vec3 W ; 
+    float extent = sglm->fr.ce.w ; 
+    const glm::vec3& eye = sglm->e ; 
+    const glm::vec3& U = sglm->u ; 
+    const glm::vec3& V = sglm->v ; 
+    const glm::vec3& W = sglm->w ; 
+    const glm::vec3& WNORM = sglm->wnorm ; 
+    const glm::vec4& ZPROJ = sglm->zproj ; 
 
-    float tmin ; 
-    float tmax ; 
-    unsigned vizmask ; 
-    unsigned cameratype ; 
-    float extent ; 
-    float length ; 
-    int traceyflip ; 
-   
-
-    extent = sglm->fr.ce.w ; 
-    eye = sglm->e ; 
-    U = sglm->u ; 
-    V = sglm->v ; 
-    W = sglm->w ; 
-    tmin = sglm->get_near_abs() ; 
-    tmax = sglm->get_far_abs() ; 
-    vizmask = sglm->vizmask ; 
-    cameratype = sglm->cam ; 
-    traceyflip = sglm->traceyflip ; 
-    length = 0.f ; 
+    float tmin = sglm->get_near_abs() ; 
+    float tmax = sglm->get_far_abs() ; 
+    unsigned vizmask = sglm->vizmask ; 
+    unsigned cameratype = sglm->cam ; 
+    int traceyflip = sglm->traceyflip ; 
+    int rendertype = sglm->rendertype ; 
+    float length = 0.f ; 
 
     LOG_IF(info, prepareParamRender_DEBUG > 0 && launch_count == 0)
         << _prepareParamRender_DEBUG << ":" << prepareParamRender_DEBUG
@@ -935,10 +925,12 @@ void CSGOptiX::prepareParamRender()
         << std::setw(20) << " U ("         << U.x << " " << U.y << " " << U.z << " ) " << std::endl
         << std::setw(20) << " V ("         << V.x << " " << V.y << " " << V.z << " ) " << std::endl
         << std::setw(20) << " W ("         << W.x << " " << W.y << " " << W.z << " ) " << std::endl
+        << std::setw(20) << " WNORM ("     << WNORM.x << " " << WNORM.y << " " << WNORM.z << " ) " << std::endl
         << std::endl 
         << std::setw(20) << " cameratype " << cameratype << " "           << SCAM::Name(cameratype) << std::endl 
         << std::setw(20) << " traceyflip " << traceyflip << std::endl 
         << std::setw(20) << " sglm.cam " << sglm->cam << " " << SCAM::Name(sglm->cam) << std::endl 
+        << std::setw(20) << " ZPROJ ("     << ZPROJ.x << " " << ZPROJ.y << " " << ZPROJ.z << " " << ZPROJ.w << " ) " << std::endl
         << std::endl 
         << "SGLM::DescEyeBasis (sglm->e,w,v,w)\n" 
         << SGLM::DescEyeBasis( sglm->e, sglm->u, sglm->v, sglm->w ) 
@@ -962,8 +954,8 @@ void CSGOptiX::prepareParamRender()
 
 
 
-    params->setView(eye, U, V, W);
-    params->setCamera(tmin, tmax, cameratype, traceyflip ); 
+    params->setView(eye, U, V, W, WNORM );
+    params->setCamera(tmin, tmax, cameratype, traceyflip, rendertype, ZPROJ ); 
     params->setVizmask(vizmask); 
 
     LOG(level) << std::endl << params->desc() ; 
