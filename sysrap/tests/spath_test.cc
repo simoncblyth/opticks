@@ -43,6 +43,7 @@ struct spath_test
    static int Read(); 
    static int EndsWith(); 
    static int SplitExt(int impl); 
+   static int Filesize(); 
 
    static int ALL();  
    static int Main();  
@@ -504,6 +505,19 @@ int spath_test::SplitExt(int impl)
     return rc  ; 
 }
 
+int spath_test::Filesize()
+{
+    long sz = spath::Filesize(spath::CWD(), __FILE__); 
+
+    std::cout 
+        << "spath_test::Filesize"
+        << "[" << __FILE__ << "]"
+        << " sz : " << sz
+        << "\n"
+        ;
+  
+    return sz > 0 ;
+}
 
 
 int spath_test::ALL()
@@ -575,6 +589,7 @@ int spath_test::Main()
     else if(strcmp(TEST, "EndsWith")==0) rc = EndsWith();
     else if(strcmp(TEST, "SplitExt0")==0) rc = SplitExt(0);
     else if(strcmp(TEST, "SplitExt")==0) rc = SplitExt(1);
+    else if(strcmp(TEST, "Filesize")==0) rc = Filesize();
     else if(strcmp(TEST, "ALL")==0) rc = ALL();
     return rc ; 
 }

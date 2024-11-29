@@ -103,6 +103,10 @@ private:
 public:
     static void MakeDirsForFile(const char* path); 
 
+    static long Filesize(const char* dir, const char* name); 
+    static long Filesize(const char* path); 
+    static const char* CWD(); 
+
 };
 
 
@@ -833,6 +837,31 @@ inline void spath::MakeDirsForFile(const char* path)
 }
 
 
+inline long spath::Filesize(const char* dir, const char* name)
+{
+    const char* path = Resolve(dir, name);     
+    return Filesize(path);  
+}
 
+inline long spath::Filesize(const char* path)
+{
+    FILE *fp = fopen(path,"rb");
+
+    bool failed = fp == nullptr ;
+    if(failed) std::cerr << "spath::Filesize unable to open file [" << path << "]\n" ;
+    assert(!failed);
+
+    fseek(fp, 0L, SEEK_END);
+    long file_size = ftell(fp);
+    rewind(fp);
+    return file_size ;
+}
+ 
+inline const char* spath::CWD()  // static
+{
+    char path[256] ; 
+    char* ret = getcwd(path, 256); 
+    return ret == nullptr ? nullptr : strdup(path); 
+}
 
 

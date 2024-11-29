@@ -5,15 +5,7 @@ SCurandState.hh
 
 See also qudarap/QCurandState.hh 
 
-Chunked States ?
--------------------
 
-* TODO: require num to be in millions and change num to be expressed in millions with "M" suffix
-* TODO: handle chunking by encoding (states_per_chunk, chunk_sequence_index) in the name
-
-  * hmm i recall doing something similar somewhere else with directory naming (probably precooked randoms)
-  * want approach to be extendable, adding more chunks without recreating all of them  
-  
 **/
 
 #include <string>
