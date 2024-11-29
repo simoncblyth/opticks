@@ -31,6 +31,16 @@ std::string SCurandState::Desc()  // static
     return s ; 
 }
 
+
+/**
+SCurandState::Path
+-------------------
+
+For concatenated loading this needs to become 
+a directory path not a file path
+
+**/
+
 const char* SCurandState::Path()  // static
 {
     if(DEFAULT_PATH == nullptr)
@@ -81,17 +91,19 @@ long SCurandState::RngMax()
     return RngMax(path) ; 
 }
 
+/**
+
+
+generalizing this, path becomes a directory 
+and the RngMax is determined by summing over
+all files in the directory with the expected prefix
+
+**/
+
+
 long SCurandState::RngMax(const char* path)
 {
-    FILE *fp = fopen(path,"rb");
-
-    bool failed = fp == nullptr ;
-    LOG_IF(fatal, failed ) << " unable to open file [" << path << "]" ;
-    assert(!failed);
-
-    fseek(fp, 0L, SEEK_END);
-    long file_size = ftell(fp);
-    rewind(fp);
+    long file_size = spath::Filesize(path); 
 
     long item_size = 44 ;
     bool expected_file_size = file_size % item_size == 0 ; 

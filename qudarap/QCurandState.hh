@@ -1,9 +1,10 @@
 #pragma once
 /**
-QCurandState.hh : creates states
-=====================================
+QCurandState.hh : allocate + create + download + save
+============================================================
 
-* loading from file is handled separately by QRng::Load 
+* creates states using curand_init with CUDA launchs configured by SLaunchSequence.h
+* loading/saving from/to file is handled separately by QRng
 
 The curandState originate on the device as a result of 
 calling curand_init and they need to be downloaded and stored

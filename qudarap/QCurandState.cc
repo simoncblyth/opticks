@@ -4,8 +4,7 @@
 #include "QCurandState.hh"
 #include "SCurandState.hh"
 #include "SLaunchSequence.h"
-#include "SSys.hh"
-#include "SPath.hh"
+#include "ssys.h"
 
 #include "qcurandstate.h"
 #include "curand_kernel.h" 
@@ -14,7 +13,7 @@ const plog::Severity QCurandState::LEVEL = SLOG::EnvLevel("QCurandState", "DEBUG
 
 extern "C" void QCurandState_curand_init(SLaunchSequence* lseq, qcurandstate* cs, qcurandstate* d_cs) ; 
 
-QCurandState* QCurandState::Create(){ return Create(SSys::getenvvar(EKEY,"1:0:0")); }
+QCurandState* QCurandState::Create(){ return Create(ssys::getenvvar(EKEY,"1:0:0")); }
 QCurandState* QCurandState::Create(const char* spec)
 {
     SCurandState scs(spec); 
@@ -25,7 +24,7 @@ QCurandState::QCurandState(const SCurandState& scs_)
     :
     scs(scs_),
     h_cs(new qcurandstate  { scs.num, scs.seed, scs.offset , nullptr} ),
-    cs(new qcurandstate    { scs.num, scs.seed, scs.offset, nullptr} ),
+    cs(new qcurandstate    { scs.num, scs.seed, scs.offset , nullptr} ),
     d_cs(nullptr),
     lseq(new SLaunchSequence(cs->num))
 {
@@ -37,9 +36,7 @@ void QCurandState::init()
     LOG_IF(info, scs.exists) << "scs.path " << scs.path << " exists already : NOTHING TO DO " ;
     if(scs.exists) return ; 
 
-
-
-    alloc(); 
+    alloc();
     create(); 
     download(); 
     save(); 

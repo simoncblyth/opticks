@@ -1,4 +1,11 @@
-// name=SLaunchSequence_test ; gcc $name.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
+/**
+SLaunchSequence_test.cc
+=========================
+
+~/o/sysrap/tests/SLaunchSequence_test.sh
+
+
+**/
 
 #include <iostream>
 #include "SLaunchSequence.h"

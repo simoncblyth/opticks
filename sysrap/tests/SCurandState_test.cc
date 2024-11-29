@@ -16,10 +16,18 @@ by creation and loading three chunks of 1M each
 
 struct SCurandState_test
 {
+    static int ctor();
     static int FileStates();
+    static int ParseDir();
     static int Main();
 };
 
+
+inline int SCurandState_test::ctor()
+{
+    _SCurandState cs ; 
+    return 0 ; 
+}
 
 inline int SCurandState_test::FileStates()
 {
@@ -28,11 +36,26 @@ inline int SCurandState_test::FileStates()
     return rc ; 
 }
 
+inline int SCurandState_test::ParseDir()
+{
+    std::vector<_SCurandChunk> chunks ; 
+    _SCurandChunk::ParseDir(chunks, _SCurandState::RNGDIR ); 
+
+    return 0 ; 
+}
+
+
+
+
+
+
 inline int SCurandState_test::Main()
 {
     const char* TEST = ssys::getenvvar("TEST", "FileStates");
     int rc = 0 ;  
+    if(strcmp(TEST,"ctor") == 0)       rc += ctor(); 
     if(strcmp(TEST,"FileStates") == 0) rc += FileStates(); 
+    if(strcmp(TEST,"ParseDir") == 0)   rc += ParseDir(); 
     return rc ; 
 }
 

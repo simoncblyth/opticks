@@ -22,6 +22,10 @@ QRng::QRng
 
 QRng instanciation is invoked from QSim::UploadComponents
 
+WIP: generalizing this to concatenated loads, the path needs to become 
+a directory which contains a collection of names to load 
+
+
 **/
 
 QRng::QRng(unsigned skipahead_event_offset)
