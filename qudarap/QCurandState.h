@@ -6,7 +6,7 @@ QCurandState.h
 Aims to replace QCurandState.{hh,cc} with more flexible 
 chunk based state handling using SCurandState.h 
 
-This can be dynamic depending on runtime choice of maxphoton, 
+Need to enable runtime choice of maxphoton, 
 also can partially load chunks to get the desired maxphoton
 appropriate for VRAM. 
 
@@ -55,6 +55,14 @@ inline _QCurandState::_QCurandState(const _SCurandState& _cs)
     init(); 
 }
 
+/**
+
+THE OBJECTIVE HERE IS THE CHUNKED STATES IN FILES
+NOT THE BIG CONTIGUOUS ARRAY OF STATES ON DEVICE
+SO BETTER TO DO CHUNK BY CHUNK 
+
+**/
+
 inline void _QCurandState::init()
 {
     if(cs.is_complete()) return ; 
@@ -62,16 +70,8 @@ inline void _QCurandState::init()
     std::cerr 
         << "_QCurandState::init"
         << " num_chunk " << num_chunk  
-        << " cs.all.num " << cs.all.num
         << "\n"
         ;
-
-    // HMM: THE OBJECTIVE HERE IS THE CHUNKED STATES IN FILES
-    // NOT THE BIG CONTIGUOUS ARRAY OF STATES ON DEVICE
-    // SO BETTER TO DO CHUNK BY CHUNK  ? 
-
-    // cs.all.states = QU::device_alloc_zero<curandState>(cs.all.num,"QCurandState::init") ; 
-    // cs.d_all = QU::UploadArray<SCurandChunk>(cs.all, 1, "QCurandState::init" );    
 
     for(int i=0 ; i < num_chunk ; i++)
     {
@@ -84,16 +84,27 @@ inline void _QCurandState::init()
 
 inline void _QCurandState::initChunk(SCurandChunk& c)
 {
-    scurandref* cr = &(c.data) ; 
-
-    cr->states = QU::device_alloc_zero<curandState>(cr->num,"QCurandState::initChunk") ; 
-    scurandref* d_cr = QU::UploadArray<scurandref>(cr, 1, "QCurandState::init" );    
+    scurandref* cr = &(c.ref) ; 
 
     SLaunchSequence lseq(cr->num);
 
+    cr->states = QU::device_alloc_zero<curandState>(cr->num,"QCurandState::initChunk") ;
+ 
+    scurandref* d_cr = QU::UploadArray<scurandref>(cr, 1, "QCurandState::initChunk" );    
+
     QCurandState_curand_init_chunk(&lseq, cr, d_cr); 
 
+    curandState* h_states = (curandState*)malloc(sizeof(curandState)*cr->num);
 
+    QU::copy_device_to_host( h_states, cr->states, cr->num ); 
+
+    QU::device_free<curandState>(cr->states); 
+
+    cr->states = h_states ; 
+
+    c.save(cs.dir);
+
+    free(h_states); 
 }
 
 
@@ -108,7 +119,6 @@ inline std::string _QCurandState::desc() const
     std::string str = ss.str() ; 
     return str ;
 }
-
 
 
 

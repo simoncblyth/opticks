@@ -63,7 +63,9 @@ HMM: 61M proves to be over optimistic for small VRAM, see ~/opticks/notes/max_ph
 
 
 
-TODO:chunked creation, chunk naming, chunked save/load 
+WIP:chunked creation, chunk naming, chunked save/load 
+
+See SCurandState.h SCurandChunk.h 
 
 **/
 

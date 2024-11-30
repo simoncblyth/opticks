@@ -383,6 +383,7 @@ template QUDARAP_API void   QU::device_free<quad2>(quad2*) ;
 template QUDARAP_API void   QU::device_free<quad4>(quad4*) ;
 template QUDARAP_API void   QU::device_free<sphoton>(sphoton*) ;
 template QUDARAP_API void   QU::device_free<uchar4>(uchar4*) ;
+template QUDARAP_API void   QU::device_free<curandState>(curandState*) ;
 
 
 template<typename T>

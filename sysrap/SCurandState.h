@@ -16,13 +16,11 @@ loading some chunks to get the desired number of states.
 
 The motivation is to allow the maxphoton to be dynamically decided 
 depending on VRAM by controlling the number of chunks in the available 
-sequence to be concatenate loaded at runtime. 
+sequence to be loaded+uploaded at runtime. 
  
 Actually there is no need for concatenation CPU side (only GPU side). 
 Can load and upload chunk-by-chunk to complete the contiguous 
 states GPU side. 
-
-* TODO : enforce a contiguous set of chunk indices 
 
 
 Related
@@ -77,7 +75,9 @@ inline _SCurandState::_SCurandState(const char* _dir)
 
 inline void _SCurandState::init()
 {
-    all.idx = 0 ; 
+    all.chunk_idx = 0 ; 
+    all.chunk_offset = 0 ; 
+
     all.num = 0 ;
     all.seed = 0 ; 
     all.offset = 0 ; 
@@ -105,7 +105,11 @@ inline void _SCurandState::init()
 inline void _SCurandState::initFromSize()
 {
     long num_size = size.size() ; 
-    for(long i=0 ; i < num_size ; i++) addChunk(size[i]); 
+    for(long i=0 ; i < num_size ; i++) 
+    {
+       ULL num = size[i]; 
+       addChunk(num);
+    }
 }
 
 
@@ -128,7 +132,7 @@ inline void _SCurandState::initMerged()
         if(d)
         {
             bool consistent = 
-                      d->idx == i && 
+                      d->chunk_idx == i && 
                       d->num == size[i] &&
                       d->seed == all.seed &&
                       d->offset == all.offset 
@@ -143,17 +147,29 @@ inline void _SCurandState::initMerged()
     }
 }
 
+
+
+
 inline void _SCurandState::addChunk(ULL num)
 {
-    ULL idx = chunk.size(); 
+    int num_chunk = chunk.size(); 
+    ULL num_cumulative = SCurandChunk::NumTotal_InRange(chunk, 0, num_chunk ); 
+
     SCurandChunk c = {} ; 
-    c.data = {idx, num, all.seed, all.offset, nullptr} ; 
+
+    c.ref.chunk_idx = num_chunk ; 
+    c.ref.chunk_offset = num_cumulative ; 
+    c.ref.num = num ; 
+    c.ref.seed = all.seed ; 
+    c.ref.offset = all.offset ; 
+    c.ref.states = nullptr ; 
+
     chunk.push_back(c); 
 }
 
 inline unsigned long long _SCurandState::num_total() const
 {
-    return SCurandChunk::NumTotal(chunk, size); 
+    return SCurandChunk::NumTotal_SizeCheck(chunk, size); 
 }
 
 

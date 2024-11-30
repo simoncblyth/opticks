@@ -12,6 +12,7 @@ Example from /usr/include/openssl/opensslv.h::
 **/
 
 #include <string>
+#include <vector>
 #include <sstream>
 
 #if defined __APPLE__
@@ -56,6 +57,8 @@ struct sdigest
     static std::string Buf(const char* buffer, int length); 
     static std::string Int(int i); 
     static std::string Path(const char* path, unsigned bufsize=8192 ); 
+    static std::string Paths(std::vector<std::string>& paths, unsigned bufsize=8192 );
+  
 
     static void Update( MD5_CTX& c, const std::string& str); 
     static void Update( MD5_CTX& c, const char* str ); 
@@ -148,6 +151,43 @@ inline std::string sdigest::Path(const char* path, unsigned bufsize )
     //std::cout << "sdigest::Path out [" << out << "]" << std::endl ; 
     return out ; 
 }
+
+inline std::string sdigest::Paths(std::vector<std::string>& paths, unsigned bufsize )
+{
+    sdigest dig ; 
+    char* data = new char[bufsize] ; 
+
+    int num_paths = paths.size(); 
+    for(int i=0 ; i < num_paths ; i++)
+    {
+        const char* path = paths[i].c_str(); 
+ 
+        FILE* fp = fopen(path, "rb");  
+        if (fp == NULL) 
+        {
+            std::cerr 
+                << "sdigest::Paths" 
+                << " failed to open"
+                << " path [" << path << "]\n" 
+                ; 
+            continue ; 
+        }
+
+        int bytes ; 
+        while ((bytes = fread (data, 1, bufsize, fp)) != 0) dig.add(data, bytes);   
+
+        fclose(fp);         
+    }
+
+    delete[] data ; 
+
+    std::string out = dig.finalize();
+    //std::cout << "sdigest::Path out [" << out << "]" << std::endl ; 
+    return out ; 
+}
+
+
+
 
 
 inline void sdigest::Update(MD5_CTX& c, const std::string& str)

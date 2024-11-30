@@ -25,7 +25,7 @@ SCurandChunk.h
 struct SYSRAP_API SCurandChunk
 {
     typedef unsigned long long ULL ; 
-    scurandref data = {} ; 
+    scurandref ref = {} ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -34,6 +34,7 @@ struct SYSRAP_API SCurandChunk
     std::string name() const ;
     const char* path(const char* _dir=nullptr) const ;
     bool path_exists(const char* _dir=nullptr) const ; 
+    int save( const char* _dir=nullptr ) const ; 
 
     static constexpr const long STATE_SIZE = 44 ;  
     static constexpr const char* RNGDIR = "${RNGDir:-$HOME/.opticks/rngcache/RNG}" ; 
@@ -41,7 +42,7 @@ struct SYSRAP_API SCurandChunk
     static constexpr const char* PREFIX = "SCurandChunk_" ; 
     static constexpr const char* EXT = ".bin" ; 
     static constexpr char DELIM = '_' ;
-    static constexpr const long NUM_ELEM = 4 ;  
+    static constexpr const long NUM_ELEM = 5 ;  
 
     static std::string Desc(const SCurandChunk& chunk, const char* _dir=nullptr ); 
     static std::string Desc(const std::vector<SCurandChunk>& chunk, const char* _dir=nullptr ); 
@@ -58,10 +59,11 @@ struct SYSRAP_API SCurandChunk
     static bool IsValid(const SCurandChunk& chunk, const char* _dir=nullptr);
     static int CountValid(const std::vector<SCurandChunk>& chunk, const char* _dir=nullptr );
     static scurandref* Find(std::vector<SCurandChunk>& chunk, long idx );
-    static ULL NumTotal(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& size );
+    static ULL NumTotal_SizeCheck(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& size );
+    static ULL NumTotal_InRange(  const std::vector<SCurandChunk>& chunk, ULL i0, ULL i1 ); 
 
-    static int Load( SCurandChunk& chunk, const char* name, long q_num=0, const char* _dir=nullptr );
-    static int Save( SCurandChunk& chunk, const char* name, const char* _dir=nullptr );
+    static int Load( SCurandChunk& chunk, const char* name, ULL q_num=0, const char* _dir=nullptr );
+
 
 #endif
 
@@ -80,11 +82,11 @@ inline std::string SCurandChunk::desc() const
 
 inline std::string SCurandChunk::meta() const
 {
-    return FormatMeta(data); 
+    return FormatMeta(ref); 
 }
 inline std::string SCurandChunk::name() const
 {
-    return FormatName(data); 
+    return FormatName(ref); 
 }
 inline const char* SCurandChunk::path(const char* _dir) const
 {
@@ -120,18 +122,27 @@ inline std::string SCurandChunk::Desc(const std::vector<SCurandChunk>& chunk, co
 
 
 
-inline int SCurandChunk::ParseDir(std::vector<SCurandChunk>& chunks, const char* _dir )
+inline int SCurandChunk::ParseDir(std::vector<SCurandChunk>& chunk, const char* _dir )
 {
     const char* dir = spath::Resolve(_dir ? _dir : RNGDIR) ; 
     std::vector<std::string> names ; 
     sdirectory::DirList( names, dir, PREFIX, EXT ); 
 
     int num_names = names.size(); 
+    int count = 0 ; 
+
     for(int i=0 ; i < num_names ; i++) 
     {
         const std::string& n = names[i] ; 
         SCurandChunk c = {} ; 
-        if(SCurandChunk::ParseName(c, n.c_str())==0) chunks.push_back(c); 
+        if(SCurandChunk::ParseName(c, n.c_str())==0) 
+        {
+            ULL chunk_offset = NumTotal_InRange(chunk, 0, chunk.size() ); 
+            assert( c.ref.chunk_offset == chunk_offset );
+            assert( c.ref.chunk_idx == count ); // chunk files must be in idx order 
+            chunk.push_back(c);
+            count += 1 ; 
+        }
     }
     return 0 ; 
 }
@@ -147,18 +158,18 @@ inline int SCurandChunk::ParseName( SCurandChunk& chunk, const char* name )
     std::string n = name ; 
     std::string meta = n.substr( strlen(PREFIX), strlen(name) - other ); 
 
-
     std::vector<std::string> elem ; 
     sstr::Split(meta.c_str(), DELIM, elem ); 
 
     unsigned num_elem = elem.size(); 
     if( num_elem != NUM_ELEM )  return 3 ; 
 
-    chunk.data.idx    =  std::atoll(elem[0].c_str()) ; 
-    chunk.data.num    =  ParseNum(elem[1].c_str()) ; 
-    chunk.data.seed   =  std::atoll(elem[2].c_str()) ; 
-    chunk.data.offset =  std::atoll(elem[3].c_str()) ; 
-    chunk.data.states = nullptr ; 
+    chunk.ref.chunk_idx    = std::atoll(elem[0].c_str()) ; 
+    chunk.ref.chunk_offset = ParseNum(elem[1].c_str()) ;
+    chunk.ref.num          = ParseNum(elem[2].c_str()) ; 
+    chunk.ref.seed         = std::atoll(elem[3].c_str()) ; 
+    chunk.ref.offset       = std::atoll(elem[4].c_str()) ; 
+    chunk.ref.states       = nullptr ; 
 
     std::cout << "SCurandChunk::ParseName " << std::setw(30) << n << " : [" << meta << "][" << chunk.name() << "]\n" ; 
     return 0 ; 
@@ -181,7 +192,10 @@ inline long SCurandChunk::ParseNum(const char* num)
 inline std::string SCurandChunk::FormatMeta(const scurandref& d)
 {
     std::stringstream ss ; 
-    ss << FormatIdx(d.idx) 
+    ss 
+       << FormatIdx(d.chunk_idx) 
+       << DELIM
+       << FormatNum(d.chunk_offset) 
        << DELIM
        << FormatNum(d.num)
        << DELIM
@@ -209,7 +223,7 @@ inline std::string SCurandChunk::FormatIdx(ULL idx)
 }
 inline std::string SCurandChunk::FormatNum(ULL num)
 {
-    ULL scale = num >= M ? M : 1  ; 
+    ULL scale = M  ; 
 
     bool intmul = num % scale == 0 ; 
     if(!intmul) std::cerr
@@ -218,13 +232,11 @@ inline std::string SCurandChunk::FormatNum(ULL num)
          << " intmul " << ( intmul ? "YES" : "NO " )
          << "\n"
          ; 
-
     assert( intmul && "integer multiples of 1000000 are required" ); 
-    char suffix = scale == M ? 'M' : '\0' ; 
-    std::stringstream ss; 
-    ss << num/scale ; 
-    if( suffix != '\0' ) ss << suffix ; 
+    ULL value = num/scale ; 
 
+    std::stringstream ss; 
+    ss << std::setw(4) << std::setfill('0') << value << 'M' ; 
     std::string str = ss.str(); 
     return str ;   
 }
@@ -260,7 +272,7 @@ inline bool SCurandChunk::IsValid(const SCurandChunk& chunk, const char* _dir )
     std::string n = chunk.name(); 
 
 
-    ULL chunk_num = chunk.data.num ; 
+    ULL chunk_num = chunk.ref.num ; 
     ULL file_num = NumFromFilesize(n.c_str(), _dir) ;  
     bool valid = chunk_num == file_num ; 
 
@@ -298,9 +310,9 @@ inline scurandref* SCurandChunk::Find(std::vector<SCurandChunk>& chunk, long q_i
     for(int i=0 ; i < num_chunk ; i++)
     {
         SCurandChunk& c = chunk[i] ;     
-        if( c.data.idx == q_idx ) 
+        if( c.ref.chunk_idx == q_idx ) 
         {
-            p = &(c.data) ;  
+            p = &(c.ref) ;  
             count += 1 ; 
         }
     }
@@ -309,20 +321,37 @@ inline scurandref* SCurandChunk::Find(std::vector<SCurandChunk>& chunk, long q_i
 }
 
 
-inline unsigned long long SCurandChunk::NumTotal(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& size )
+inline unsigned long long SCurandChunk::NumTotal_SizeCheck(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& size )
 {
     assert( chunk.size() == size.size() ) ;
     ULL tot = 0 ; 
     ULL num_chunk = chunk.size(); 
     for(ULL i=0 ; i < num_chunk ; i++)
     {
-        const scurandref& d = chunk[i].data ;     
-        assert( d.idx == i );  
+        const scurandref& d = chunk[i].ref ;     
+        assert( d.chunk_idx == i );  
         assert( d.num == size[i] );  
         tot += d.num ; 
     }
     return tot ; 
 }
+
+inline unsigned long long SCurandChunk::NumTotal_InRange( const std::vector<SCurandChunk>& chunk, ULL i0, ULL i1 )
+{
+    ULL num_chunk = chunk.size(); 
+    assert( i0 <= num_chunk ); 
+    assert( i1 <= num_chunk ); 
+
+    ULL num_tot = 0ull ; 
+    for(ULL i=i0 ; i < i1 ; i++) 
+    {
+        const scurandref& d = chunk[i].ref ;     
+        num_tot += d.num ; 
+    } 
+    return num_tot ; 
+}
+
+
 
 
 /**
@@ -337,43 +366,40 @@ A partial load is done for (q_num > 0 && q_num < file_num)
 **/
 
 
-inline int SCurandChunk::Load( SCurandChunk& chunk, const char* name, long q_num, const char* _dir )
+inline int SCurandChunk::Load( SCurandChunk& chunk, const char* name, ULL q_num, const char* _dir )
 {
     int prc = ParseName(chunk, name); 
-    std::cout << "SCurandChunk::Load prc " << prc << "\n" ; 
-    if(prc>0) return prc ; 
-
+    if(prc > 0) return prc ; 
+    
     const char* dir = _dir ? _dir : RNGDIR ; 
-    const char* path = spath::Resolve(dir, name);     
+    const char* p = spath::Resolve(dir, name); 
+    std::cout << "SCurandChunk::load path " << ( p ? p : "-" )  << "\n" ; 
 
-    std::cout << "SCurandChunk::Load path " << ( path ? path : "-" )  << "\n" ; 
-
-
-    FILE *fp = fopen(path,"rb");
+    FILE *fp = fopen(p,"rb");
 
     std::cout << "SCurandChunk::Load fp  " << ( fp ? "YES" : "NO " )  << "\n" ; 
 
     bool failed = fp == nullptr ; 
-    if(failed) std::cerr << "SCurandChunk::Load unable to open file [" << path << "]" << std::endl ; 
+    if(failed) std::cerr << "SCurandChunk::Load unable to open file [" << p << "]" << std::endl ; 
     if(failed) return 1 ; 
 
     fseek(fp, 0L, SEEK_END);
     long file_size = ftell(fp);
     rewind(fp);
 
-    std::cout << "SCurandChunk::Load file_size " << file_size  << "\n" ; 
+    std::cout << "SCurandChunk::load file_size " << file_size  << "\n" ; 
     assert( file_size % STATE_SIZE == 0 );  
 
     long file_num = file_size/STATE_SIZE;   // NB  STATE_SIZE not same as type_size
-    long name_num = chunk.data.num ;    // from ParseName
+    long name_num = chunk.ref.num ;    // from ParseName
 
     bool consistent_num = file_num == name_num ; 
     long read_num = ( q_num > 0 && q_num < file_num ) ? q_num : file_num ; 
-    chunk.data.num = read_num ; 
+    chunk.ref.num = read_num ; 
 
     std::cerr
         << "SCurandChunk::Load"
-        << " path " << path 
+        << " path " << p 
         << " q_num " << FormatNum(q_num)
         << " name_num " << FormatNum(name_num) << "(from parsing filename) "
         << " file_num " << FormatNum(file_num) << "(from file_size/STATE_SIZE) "
@@ -382,11 +408,11 @@ inline int SCurandChunk::Load( SCurandChunk& chunk, const char* name, long q_num
         << "\n"
         ; 
 
-    chunk.data.states = (curandState*)malloc(sizeof(curandState)*chunk.data.num);
+    chunk.ref.states = (curandState*)malloc(sizeof(curandState)*chunk.ref.num);
 
-    for(long i = 0 ; i < chunk.data.num ; ++i )
+    for(long i = 0 ; i < chunk.ref.num ; ++i )
     {   
-        curandState& rng = chunk.data.states[i] ;
+        curandState& rng = chunk.ref.states[i] ;
         fread(&rng.d,                     sizeof(unsigned int),1,fp);   //  1
         fread(&rng.v,                     sizeof(unsigned int),5,fp);   //  5 
         fread(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);   //  1 
@@ -401,55 +427,35 @@ inline int SCurandChunk::Load( SCurandChunk& chunk, const char* name, long q_num
 
 
 
-inline int SCurandChunk::Save( SCurandChunk& chunk, const char* name, const char* _dir )
+inline int SCurandChunk::save( const char* _dir ) const
 {
-    const char* dir = _dir ? _dir : RNGDIR ; 
-    const char* path = spath::Resolve(dir, name);     
-    bool exists = spath::Exists(path); 
+    const char* p = path(_dir); 
+    bool exists = spath::Exists(p); 
     std::cerr 
-        << "SCurandChunk::Save"
-        << " path " << ( path ? path : "-" )
+        << "SCurandChunk::save"
+        << " p " << ( p ? p : "-" )
         << " exists " << ( exists ? "YES" : "NO " )
         << "\n"
         ;  
 
     if(exists) return 1 ; 
 
-    SCurandChunk chk = {} ;
-    int prc = ParseName(chk, name); 
-    assert(prc == 0); 
-
-    long name_num = chk.data.num ;    // from ParseName
-    long chunk_num = chunk.data.num ; 
-    bool consistent_num = name_num == chunk_num ; 
-
-    std::cerr 
-        << "SCurandChunk::Save"
-        << " name_num " << name_num
-        << " chunk_num " << chunk_num
-        << " consistent_num " << ( consistent_num ? "YES" : "NO " )
-        << "\n"
-        ;
-
-    if(!consistent_num) return 2 ; 
-
-
-    sdirectory::MakeDirsForFile(path);
-    FILE *fp = fopen(path,"wb");
+    sdirectory::MakeDirsForFile(p);
+    FILE *fp = fopen(p,"wb");
     bool open_fail = fp == nullptr ; 
 
     if(open_fail) std::cerr 
         << "SCurandChunk::Save"
         << " FAILED to open file for writing" 
-        << ( path ? path : "-" ) 
+        << ( p ? p : "-" ) 
         << "\n" 
         ;
 
     if( open_fail ) return 3 ; 
 
-    for(long i = 0 ; i < chunk.data.num ; ++i )
+    for(ULL i = 0 ; i < ref.num ; ++i )
     {  
-        curandState& rng = chunk.data.states[i] ;
+        curandState& rng = ref.states[i] ;
         fwrite(&rng.d,                     sizeof(unsigned int),1,fp);
         fwrite(&rng.v,                     sizeof(unsigned int),5,fp);
         fwrite(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);

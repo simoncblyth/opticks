@@ -4,9 +4,11 @@ SCurandState_test.cc
 
 ~/o/sysrap/tests/SCurandState_test.sh 
 
-As an initial goal can try to effectively recreate QCurandState_3000000_0_0.bin
-by creation and loading three chunks of 1M each 
-
+NEXT: 
+    implement loading of any number of curandState within the range 
+    by deciding which chunks to load and typically doing 
+    a partial load of the last chunk 
+    (current range is 0->200M) 
 
 **/
 
@@ -16,6 +18,8 @@ by creation and loading three chunks of 1M each
 
 struct SCurandState_test
 {
+    static std::string ChunkName(); 
+
     static int ctor();
     static int NumFromFilesize();
     static int ParseDir();
@@ -23,6 +27,19 @@ struct SCurandState_test
     static int Main();
 };
 
+inline std::string SCurandState_test::ChunkName()
+{
+    SCurandChunk chunk = {} ;
+
+    chunk.ref.chunk_idx = 0 ; 
+    chunk.ref.chunk_offset = 0 ; 
+    chunk.ref.num = 1000000 ; 
+    chunk.ref.seed = 0 ; 
+    chunk.ref.offset = 0 ; 
+
+    std::string n = chunk.name(); 
+    return n ; 
+}
 
 inline int SCurandState_test::ctor()
 {
@@ -33,7 +50,8 @@ inline int SCurandState_test::ctor()
 
 inline int SCurandState_test::NumFromFilesize()
 {
-    long st = SCurandChunk::NumFromFilesize("QCurandState_1000000_0_0.bin" ); 
+    std::string n = ChunkName(); 
+    long st = SCurandChunk::NumFromFilesize(n.c_str()); 
     int rc = st == 1000000 ? 0 : 1 ; 
     return rc ; 
 }
@@ -48,12 +66,15 @@ inline int SCurandState_test::ParseDir()
 
 inline int SCurandState_test::ChunkLoadSave()
 {
-    SCurandChunk chunk = {} ; 
-    const char* name0 = "SCurandChunk_0000_1M_0_0.bin" ; 
-    const char* name1 = "SCurandChunk_1000_1M_0_0.bin" ; 
+    std::string n = ChunkName(); 
+ 
+    typedef unsigned long long ULL ; 
+    ULL q_num = 0 ; 
+    const char* dir = nullptr ;  
 
-    int rc0 = SCurandChunk::Load(chunk, name0 );
-    int rc1 = SCurandChunk::Save(chunk, name1 );
+    SCurandChunk chunk = {} ;
+    int rc0 = SCurandChunk::Load(chunk, n.c_str(), q_num, dir) ;
+    int rc1 = chunk.save("$FOLD"); 
 
     std::cout 
         << "SCurandState_test::ChunkLoadSave" 
@@ -69,12 +90,14 @@ inline int SCurandState_test::ChunkLoadSave()
 
 inline int SCurandState_test::Main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "NumFromFilesize");
+    const char* TEST = ssys::getenvvar("TEST", "ALL");
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
+
     int rc = 0 ;  
-    if(strcmp(TEST,"ctor") == 0)            rc += ctor(); 
-    if(strcmp(TEST,"NumFromFilesize") == 0) rc += NumFromFilesize(); 
-    if(strcmp(TEST,"ParseDir") == 0)        rc += ParseDir(); 
-    if(strcmp(TEST,"ChunkLoadSave") == 0)       rc += ChunkLoadSave(); 
+    if(ALL||strcmp(TEST,"ctor") == 0)            rc += ctor(); 
+    if(ALL||strcmp(TEST,"NumFromFilesize") == 0) rc += NumFromFilesize(); 
+    if(ALL||strcmp(TEST,"ParseDir") == 0)        rc += ParseDir(); 
+    if(ALL||strcmp(TEST,"ChunkLoadSave") == 0)   rc += ChunkLoadSave(); 
     return rc ; 
 }
 

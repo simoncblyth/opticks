@@ -4,6 +4,9 @@ QCurandState_Test.cc
 
 Testing the chunk-centric approach 
 
+~/o/qudarap/tests/QCurandState_Test.sh
+
+
 **/
 
 #include <iostream>
