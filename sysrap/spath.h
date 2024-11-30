@@ -854,6 +854,8 @@ inline long spath::Filesize(const char* path)
     fseek(fp, 0L, SEEK_END);
     long file_size = ftell(fp);
     rewind(fp);
+    fclose(fp); 
+
     return file_size ;
 }
  

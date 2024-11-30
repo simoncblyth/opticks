@@ -3,40 +3,27 @@
 SCurandState.h : More Flexible+capable replacement for SCurandState.{hh,cc}
 ============================================================================
 
+::
+
+    ~/o/sysrap/tests/SCurandState_test.sh
+
+
 Old impl fixes num (the total number of photon slots), 
-instead of doing that fix *states_per_chunk* the number of photons in a chunk 
-(maybe 1M photons per chunk in my usage, but it will be an input 
-to SCurandState ctor)
+instead of doing that move to a chunk-centric implementation
+in a way that is extensible via addition of chunks 
+and flexible by not loading all the chunks, or even partially 
+loading some chunks to get the desired number of states.  
 
 The motivation is to allow the maxphoton to be dynamically decided 
-by controlling the number of chunks in the available sequence to 
-be concatenate loaded at runtime. 
+depending on VRAM by controlling the number of chunks in the available 
+sequence to be concatenate loaded at runtime. 
  
-File names will need additional metadata:
+Actually there is no need for concatenation CPU side (only GPU side). 
+Can load and upload chunk-by-chunk to complete the contiguous 
+states GPU side. 
 
-* states_per_chunk  (NOT strictly needed as can determine from filesize) 
-* chunk_sequence_index
-* NOTE: want to be extensible, so no chunk_total 
+* TODO : enforce a contiguous set of chunk indices 
 
-
-Another consideration is creation of the states, do no want to
-need huge amounts of CPU memory to do that.
-
-
-* TODO: require num to be in millions and change num to be expressed in millions with "M" suffix
-* TODO: handle chunking by encoding (states_per_chunk, chunk_sequence_index) in the name
-* TODO: use fixed chunk size 
-
-  * hmm i recall doing something similar somewhere else with directory naming (probably precooked randoms)
-  * want approach to be extendable, adding more chunks without recreating all of them  
- 
-
-NP::Load
-   loads and concatenates arrays from a directory, will need similar : but cannot reuse
-   as need to analyse the file names to get the right sequence and load+concat the 
-   desired number of chunks 
-
-   will need to enforce a contiguous set of chunk indices 
 
 Related
 --------
@@ -49,191 +36,155 @@ sysrap/SLaunchSequence.h
 
 qudarap/QRng.{hh.cc}
 
-
-
-
 **/
 
 
-#include "sdirectory.h"
-#include "spath.h"
-#include <iomanip>
+#include "SCurandChunk.h"
+#include "SCurandSize.h"
+#include "SYSRAP_API_EXPORT.hh"
 
-struct _SCurandChunk
+
+struct SYSRAP_API _SCurandState   
 {
-    int idx ;     
-    int num ; 
-    int seed ;
-    int offset ; 
+    typedef unsigned long long ULL ;
+    const char* dir ; 
+    scurandref all = {} ; 
+    scurandref* d_all = nullptr ; 
+ 
+    std::vector<ULL> size = {} ; 
+    std::vector<SCurandChunk> chunk = {} ; 
 
-    std::string format() const ;
-
-    static constexpr const char* PREFIX = "SCurandChunk_" ; 
-    static constexpr const char* EXT = ".bin" ; 
-    static constexpr char DELIM = '_' ;
-    static constexpr const int NUM_ELEM = 4 ;  
-
-    static int ParseDir( std::vector<_SCurandChunk>& chunks, const char* _dir );
-    static int ParseName( _SCurandChunk& chunk, const char* name ); 
-    static int ParseNum(const char* num); 
-
-    static std::string FormatIdx(int idx);
-    static std::string FormatNum(int num); 
-};
-
-
-inline int _SCurandChunk::ParseDir(std::vector<_SCurandChunk>& chunks, const char* _dir )
-{
-    const char* dir = spath::Resolve(_dir) ; 
-    std::vector<std::string> names ; 
-    sdirectory::DirList( names, dir, PREFIX, EXT ); 
-
-    int num_names = names.size(); 
-    for(int i=0 ; i < num_names ; i++) 
-    {
-        const std::string& n = names[i] ; 
-        _SCurandChunk c = {} ; 
-        if(_SCurandChunk::ParseName(c, n.c_str())==0) chunks.push_back(c); 
-    }
-    return 0 ; 
-}
-
-inline int _SCurandChunk::ParseName( _SCurandChunk& chunk, const char* name )
-{
-    if(name == nullptr ) return 1 ;  
-    size_t other = strlen(PREFIX)+strlen(EXT) ; 
-    if( strlen(name) <= other ) return 2 ; 
-
-    std::string n = name ; 
-    std::string meta = n.substr( strlen(PREFIX), strlen(name) - other ); 
-
-
-    std::vector<std::string> elem ; 
-    sstr::Split(meta.c_str(), DELIM, elem ); 
-
-    unsigned num_elem = elem.size(); 
-    if( num_elem != NUM_ELEM )  return 3 ; 
-
-    chunk.idx    =  std::atoi(elem[0].c_str()) ; 
-    chunk.num    =  ParseNum(elem[1].c_str()) ; 
-    chunk.seed   =  std::atoi(elem[2].c_str()) ; 
-    chunk.offset =  std::atoi(elem[3].c_str()) ; 
-
-    std::cout << "_SCurandChunk::ParseName " << std::setw(30) << n << " : [" << meta << "][" << chunk.format() << "]\n" ; 
-    return 0 ; 
-}
-
-inline int _SCurandChunk::ParseNum(const char* num)
-{
-    char* n = strdup(num); 
-    char last = n[strlen(n)-1] ; 
-    int scale = 1 ; 
-    switch(last)
-    {
-        case 'k': scale = 1000    ; break ;  
-        case 'M': scale = 1000000 ; break ;  
-    }
-    if(scale > 1) n[strlen(n)-1] = '\0' ; 
-    int value = scale*std::atoi(num) ; 
-    return value ; 
-}
-
-
-inline std::string _SCurandChunk::format() const
-{
-    std::stringstream ss ; 
-    ss << FormatIdx(idx) 
-       << DELIM
-       << FormatNum(num)
-       << DELIM
-       << seed
-       << DELIM
-       << offset
-       ; 
-    std::string str = ss.str(); 
-    return str ;   
-}
-inline std::string _SCurandChunk::FormatIdx(int idx)
-{
-    std::stringstream ss; 
-    ss << std::setw(4) << std::setfill('0') << idx ;
-    std::string str = ss.str(); 
-    return str ;   
-}
-inline std::string _SCurandChunk::FormatNum(int num)
-{
-    int scale = 1 ; 
-    if( num >= 1000000 )     scale = 1000000 ;
-    else if( scale >= 1000 ) scale = 1000 ;  
-    assert( num % scale == 0 && "integer multiples of 1000 or 1000000 are required" ); 
-
-    char suffix = '\0' ; 
-    switch(scale)
-    {
-       case 1000:    suffix = 'k' ; break ;  
-       case 1000000: suffix = 'M' ; break ;  
-    }
-
-    std::stringstream ss; 
-    ss << num/scale ; 
-    if( suffix != '\0' ) ss << suffix ; 
-
-    std::string str = ss.str(); 
-    return str ;   
-}
-
-
-
-
-
-struct _SCurandState   
-{
     _SCurandState(const char* dir=nullptr); 
+    void init(); 
+    void initFromSize(); 
+    void initMerged();
 
-    std::vector<_SCurandChunk> chunks ; 
-
-    static constexpr const long STATE_SIZE = 44 ;  
-
-    static constexpr const char* RNGDIR = "${RNGDir:-$HOME/.opticks/rngcache/RNG}" ; 
-    static long FileStates(const char* name); 
-    static long FileStates(const char* dir, const char* name); 
+    void addChunk(ULL num);
+ 
+    ULL num_total() const ;
+    std::string desc() const ; 
+ 
+    bool is_complete() const ; 
 }; 
 
 
 inline _SCurandState::_SCurandState(const char* _dir)
+    :
+    dir( _dir ? strdup(_dir) : nullptr )
 {
-    const char* dir = _dir ? _dir : RNGDIR ; 
+    init(); 
+}
 
-    _SCurandChunk::ParseDir(chunks, dir);    // TODO: needs to work with non-existing dir too 
+inline void _SCurandState::init()
+{
+    all.idx = 0 ; 
+    all.num = 0 ;
+    all.seed = 0 ; 
+    all.offset = 0 ; 
+    all.states = nullptr ; 
+
+    SCurandSize::ParseSpec(size, nullptr); 
+    SCurandChunk::ParseDir(chunk, dir);  
+
+    int num_size = size.size() ; 
+    int num_chunk = chunk.size() ; 
+
+    if(num_chunk == 0)
+    {
+        initFromSize(); 
+    }
+    else if( num_chunk > 0 )
+    {
+        initMerged(); 
+    }
+
+    all.num = num_total(); 
 }
 
 
-inline long _SCurandState::FileStates(const char* name)
+inline void _SCurandState::initFromSize()
 {
-    return FileStates(nullptr, name);
-}
-inline long _SCurandState::FileStates(const char* _dir, const char* name)
-{
-    const char* dir = _dir ? _dir : RNGDIR ; 
-    long file_size = spath::Filesize(dir, name); 
-
-    bool expected_file_size = file_size % STATE_SIZE == 0 ; 
-    long states = file_size/STATE_SIZE ;
-
-    std::cerr
-        << "_SCurandState::FileStates"
-        << " dir " << ( dir ? dir : "-" )
-        << " name " << ( name ? name : "-" )
-        << " file_size " << file_size
-        << " STATE_SIZE " << STATE_SIZE
-        << " states " << states
-        << " expected_file_size " << ( expected_file_size ? "YES" : "NO" )
-        << "\n"
-        ;
-
-    assert( expected_file_size );
-    return states ; 
+    long num_size = size.size() ; 
+    for(long i=0 ; i < num_size ; i++) addChunk(size[i]); 
 }
 
 
+/**
+_SCurandState::initMerged
+----------------------------
+
+Expecting to miss chunks at the end, not the beginning 
+And existing chunks expected to be consistent with the 
+sizes and indices that this code would have created. 
+So changing the size SPEC for example would trip this up. 
+**/
+
+inline void _SCurandState::initMerged()
+{
+    long num_size = size.size() ; 
+    for(long i=0 ; i < num_size ; i++)
+    {
+        scurandref* d = SCurandChunk::Find(chunk, i );
+        if(d)
+        {
+            bool consistent = 
+                      d->idx == i && 
+                      d->num == size[i] &&
+                      d->seed == all.seed &&
+                      d->offset == all.offset 
+                      ;  
+            assert(consistent); 
+            if(!consistent) return ;  
+        } 
+        else
+        {
+            addChunk(size[i]); 
+        }
+    }
+}
+
+inline void _SCurandState::addChunk(ULL num)
+{
+    ULL idx = chunk.size(); 
+    SCurandChunk c = {} ; 
+    c.data = {idx, num, all.seed, all.offset, nullptr} ; 
+    chunk.push_back(c); 
+}
+
+inline unsigned long long _SCurandState::num_total() const
+{
+    return SCurandChunk::NumTotal(chunk, size); 
+}
+
+
+inline std::string _SCurandState::desc() const 
+{
+    int num_size = size.size(); 
+    int num_chunk = chunk.size(); 
+    int num_valid = SCurandChunk::CountValid(chunk, dir );  
+    bool complete = is_complete(); 
+
+    std::stringstream ss; 
+    ss 
+       << "[_SCurandState::desc\n" 
+       << " num_size " << num_size  << "\n" 
+       << " num_chunk " << num_chunk << "\n" 
+       << " num_valid " << num_valid << "\n" 
+       << " is_complete " << ( complete ? "YES" : "NO " ) << "\n" 
+       << " num_total " << SCurandChunk::FormatNum(num_total()) << "\n"
+       << SCurandSize::Desc(size)  
+       << "\n"  
+       << SCurandChunk::Desc(chunk, dir) 
+       << "]_SCurandState::desc\n" 
+       ; 
+    std::string str = ss.str(); 
+    return str ;   
+} 
+
+inline bool _SCurandState::is_complete() const
+{
+    int num_size = size.size(); 
+    int num_valid = SCurandChunk::CountValid(chunk, dir );  
+    return num_size == num_valid ; 
+} 
 

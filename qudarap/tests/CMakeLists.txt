@@ -32,6 +32,7 @@ set(TEST_SOURCES
 
 
    QCurandStateTest.cc
+   QCurandState_Test.cc
 )
 
 

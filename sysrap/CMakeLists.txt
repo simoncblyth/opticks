@@ -185,6 +185,12 @@ set(HEADERS
     SLaunchSequence.h 
 
 
+    SCurandSize.h
+    SCurandChunk.h
+    scurandref.h
+    SCurandState.h
+
+
     SCurandState.hh
     sproc.h
     sprof.h
