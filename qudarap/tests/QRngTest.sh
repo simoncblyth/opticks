@@ -17,19 +17,19 @@ name=QRngTest
 bin=$name
 script=$name.py 
 
-export FOLD=$TMP/$name   ## needs to match whats in QRngTest.cc
+export FOLD=$TMP/$name  
 mkdir -p $FOLD/float
 mkdir -p $FOLD/double
 
+#test=generate
+test=generate_with_skip
 
+export TEST=${TEST:-test}
 export QRng__init_VERBOSE=1
-
 
 defarg="info_run_ana"
 arg=${1:-$defarg}
-
-
-vars="FOLD bin script"
+vars="BASH_SOURCE defarg arg FOLD bin script test TEST"
 
 
 gdb__() 
@@ -55,7 +55,6 @@ gdb__()
 }
 
 
-
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
 fi 
@@ -72,7 +71,6 @@ if [ "${arg/dbg}" != "$arg" ]; then
    rm $name.log
 fi 
 
-
 if [ "${arg/ana}" != "$arg" ]; then 
     ${PYTHON:-python} $script
 fi 
@@ -80,6 +78,5 @@ fi
 if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} -i --pdb $script
 fi 
-
 
 

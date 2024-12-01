@@ -46,13 +46,17 @@ struct QUDARAP_API QRng
     static const plog::Severity LEVEL ; 
     static const QRng* INSTANCE ; 
     static const QRng* Get(); 
+    static std::string Desc();
 
     static const char* Load_FAIL_NOTES ; 
 #ifdef OLD_MONOLITHIC_CURANDSTATE
+    static constexpr const char* IMPL = "OLD_MONOLITHIC_CURANDSTATE" ; 
+
     static curandState* LoadAndUpload(ULL& rngmax, const char* path); 
     static curandState* Load(ULL& rngmax, const char* path); 
     static curandState* UploadAndFree(curandState* h_states, ULL num_states ); 
 #else
+    static constexpr const char* IMPL = "CHUNKED_CURANDSTATE" ; 
     static curandState* LoadAndUpload(ULL rngmax, const _SCurandState& cs); 
     _SCurandState   cs ; 
 #endif

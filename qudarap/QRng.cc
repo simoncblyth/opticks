@@ -24,6 +24,16 @@ const plog::Severity QRng::LEVEL = SLOG::EnvLevel("QRng", "DEBUG");
 const QRng* QRng::INSTANCE = nullptr ; 
 const QRng* QRng::Get(){ return INSTANCE ;  }
 
+std::string QRng::Desc() // static
+{
+    std::stringstream ss ; 
+    ss << "QRng::Desc"
+       << " IMPL " << IMPL 
+       ;
+    std::string str = ss.str() ;
+    return str ;  
+}
+
 
 /**
 QRng::QRng
@@ -358,17 +368,16 @@ std::string QRng::desc() const
 {
     std::stringstream ss ; 
     ss << "QRng"
-
-
        << " path " << path 
        << " rngmax " << rngmax 
        << " qr " << qr
        << " qr.skipahead_event_offset " << qr->skipahead_event_offset
        << " d_qr " << d_qr
+       << Desc() 
        ;
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 
 
