@@ -59,7 +59,7 @@ const char* SEventConfig::_MaxPhotonDefault = "M1" ;
 const char* SEventConfig::_MaxSimtraceDefault = "M1" ; 
 #else
 const char* SEventConfig::_MaxGenstepDefault = "M3" ; 
-const char* SEventConfig::_MaxPhotonDefault = "M3" ; 
+const char* SEventConfig::_MaxPhotonDefault = "M3" ;   // HMM: want to use 0 to signify set it automatically based on VRAM  
 const char* SEventConfig::_MaxSimtraceDefault = "M3" ; 
 #endif
 

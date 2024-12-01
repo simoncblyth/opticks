@@ -1,11 +1,20 @@
 #include <sstream>
 #include <cstring>
 #include "SLOG.hh"
+
+#include "QRng.hh"
+
+
+#ifdef OLD_MONOLITHIC_CURANDSTATE
 #include "SCurandState.hh"
+#else
+#include "SEventConfig.hh"
+#include "SCurandState.h"
+#endif
+
 #include "sdirectory.h"
 #include "ssys.h"
 
-#include "QRng.hh"
 #include "qrng.h"
 #include "QU.hh"
 
@@ -22,18 +31,21 @@ QRng::QRng
 
 QRng instanciation is invoked from QSim::UploadComponents
 
-WIP: generalizing this to concatenated loads, the path needs to become 
-a directory which contains a collection of names to load 
-
-
 **/
 
 QRng::QRng(unsigned skipahead_event_offset)
     :
+#ifdef OLD_MONOLITHIC_CURANDSTATE
     path(SCurandState::Path()),        // null path will assert in Load
     rngmax(0),
-    rng_states(Load(rngmax, path)),   // rngmax set based on file_size/item_size 
-    qr(new qrng(skipahead_event_offset)),
+    d_rng_states(LoadAndUpload(rngmax, path)),   // rngmax set based on file_size/item_size of path 
+#else
+    cs(nullptr),
+    path(cs.getDir()),                        // informational 
+    rngmax(SEventConfig::MaxCurandState()),    // max of : OPTICKS_MAX_PHOTON OPTICKS_MAX_SIMTRACE 
+    d_rng_states(LoadAndUpload(rngmax, cs)),   // 
+#endif
+    qr(new qrng(d_rng_states, skipahead_event_offset)),
     d_qr(nullptr)
 {
     init(); 
@@ -43,10 +55,8 @@ QRng::QRng(unsigned skipahead_event_offset)
 void QRng::init()
 {
     INSTANCE = this ; 
-    upload(); 
-    bool uploaded = d_qr != nullptr ; 
-    LOG_IF(fatal, !uploaded) << " FAILED to upload curand states " ;  
-    assert(uploaded); 
+
+    initMeta(); 
 
     bool VERBOSE = ssys::getenvbool(init_VERBOSE); 
     LOG_IF(info, VERBOSE)
@@ -54,6 +64,28 @@ void QRng::init()
          << "\n"
          << desc()
          ;  
+}
+
+/**
+QRng::initMeta
+------------------
+
+1. record device pointer qr->rng_startes
+
+2. upload qrng.h *qr* instance within single element array, setting d_qr
+
+**/
+
+void QRng::initMeta()
+{
+    assert( qr->rng_states == d_rng_states ) ; 
+
+    const char* label_1 = "QRng::initMeta/d_qr" ; 
+    d_qr = QU::UploadArray<qrng>(qr, 1, label_1 ); 
+
+    bool uploaded = d_qr != nullptr && d_rng_states != nullptr ; 
+    LOG_IF(fatal, !uploaded) << " FAILED to upload curandState and/or metadata " ;  
+    assert(uploaded); 
 }
 
 
@@ -66,9 +98,13 @@ QRng::~QRng()
 {
 }
 
+
+
+#ifdef OLD_MONOLITHIC_CURANDSTATE
+
 const char* QRng::Load_FAIL_NOTES = R"(
 QRng::Load_FAIL_NOTES
-=======================
+=================================
 
 QRng::Load failed to load the curandState files. 
 These files should have been created during the *opticks-full* installation 
@@ -87,15 +123,38 @@ as shown below::
 
 )" ;
 
+#else
+const char* QRng::Load_FAIL_NOTES = R"(
+QRng::Load_FAIL_NOTES
+===============================
+
+TODO : for new chunked impl
+
+)" ;
+
+#endif
+
+
+
+
+#ifdef OLD_MONOLITHIC_CURANDSTATE
+
 /**
-QRng::Load
-------------
+QRng::LoadAndUpload
+--------------------
 
 rngmax is an output argument obtained from file_size/item_size 
 
 **/
 
-curandState* QRng::Load(long& rngmax, const char* path)  // static 
+curandState* QRng::LoadAndUpload(ULL& rngmax, const char* path)  // static 
+{
+    curandState* h_states = Load(rngmax, path); 
+    curandState* d_states = UploadAndFree(h_states, rngmax ); 
+    return d_states ; 
+}
+
+curandState* QRng::Load(ULL& rngmax, const char* path)  // static 
 {
     bool null_path = path == nullptr ; 
     LOG_IF(fatal, null_path ) << " QRng::Load null path " ; 
@@ -130,7 +189,7 @@ curandState* QRng::Load(long& rngmax, const char* path)  // static
 
     curandState* rng_states = (curandState*)malloc(sizeof(curandState)*rngmax);
 
-    for(long i = 0 ; i < rngmax ; ++i )
+    for(ULL i = 0 ; i < rngmax ; ++i )
     {   
         curandState& rng = rng_states[i] ;
         fread(&rng.d,                     sizeof(unsigned int),1,fp);   //  1
@@ -145,7 +204,126 @@ curandState* QRng::Load(long& rngmax, const char* path)  // static
     return rng_states ; 
 }
 
+curandState* QRng::UploadAndFree(curandState* h_states, ULL num_states )  // static 
+{
+    const char* label_0 = "QRng::UploadAndFree/rng_states" ; 
+    curandState* d_states = QU::UploadArray<curandState>(h_states, num_states, label_0 ) ;   
+    free(h_states); 
+    return d_states ;  
+}
 
+
+
+
+#else
+
+/**
+QRng::LoadAndUpload
+----------------------
+
+rngmax
+    input argument that determines how many chunks of curandState to load and upload
+
+(_SCurandState)cs
+    vector of SCurandChunk metadata on the chunk files 
+
+
+For example with chunks of 10M each and rngmax of 25M::
+
+     10M     10M      10M
+   +------+--------+-------+
+   
+
+Read full chunks until doing so would go over rngmax, then 
+
+
+**/
+
+curandState* QRng::LoadAndUpload(ULL rngmax, const _SCurandState& cs)  // static 
+{
+    LOG(info) << cs.desc() ; 
+
+    curandState* d0 = QU::device_alloc<curandState>( rngmax, "QRng::LoadAndUpload/rngmax" ); 
+    curandState* d = d0 ; 
+
+    ULL available_chunk = cs.chunk.size(); 
+    ULL count = 0 ; 
+
+    std::cout 
+        << "QRng::LoadAndUpload"
+        << " rngmax " << rngmax
+        << " rngmax/M " << rngmax/M
+        << " available_chunk " << available_chunk 
+        << " cs.all.num/M " << cs.all.num/M 
+        << " d0 " << d0 
+        << "\n"
+        ;
+
+    for(ULL i=0 ; i < available_chunk ; i++)
+    {
+        ULL remaining = rngmax - count ;  
+
+        const SCurandChunk& chunk = cs.chunk[i]; 
+ 
+        bool partial_read = remaining < chunk.ref.num ;  
+
+        ULL num = partial_read ? remaining : chunk.ref.num ;
+
+        std::cout 
+            << "QRng::LoadAndUpload"
+            << " i " << std::setw(3) << i 
+            << " chunk.ref.num/M " << std::setw(4) << chunk.ref.num/M
+            << " count/M " << std::setw(4) << count/M
+            << " remaining/M " << std::setw(4) << remaining/M
+            << " partial_read " << ( partial_read ? "YES" : "NO " )
+            << " num/M " << std::setw(4) << num/M
+            << " d " << d 
+            << "\n"
+            ;
+
+        scurandref cr = chunk.load(num) ;
+  
+        assert( cr.states != nullptr); 
+
+        bool num_match = cr.num == num ; 
+        if(!num_match) std::cerr
+            << "QRng::LoadAndUpload"
+            << " num_match " << ( num_match ? "YES" : "NO " )
+            << " cr.num/M " << cr.num/M
+            << " num/M " << num/M
+            << "\n"
+            ;
+
+        assert(num_match); 
+
+        QU::copy_host_to_device<curandState>( d , cr.states , num ); 
+
+        free(cr.states); 
+
+        d += num ;  
+        count += num ;  
+
+        if(count > rngmax) assert(0); 
+        if(count == rngmax) break ;
+    }
+
+    bool complete = count == rngmax ; 
+    assert( complete );
+    return complete ? d0 : nullptr ; 
+}
+
+#endif
+
+
+/**
+QRng::Save
+------------
+
+Used from the old QCurandState::save
+
+TODO: eliminate, functionality duplicates in SCurandChunk::Save
+
+**/
 void QRng::Save( curandState* states, unsigned num_states, const char* path ) // static
 {
     sdirectory::MakeDirsForFile(path);
@@ -168,50 +346,20 @@ void QRng::Save( curandState* states, unsigned num_states, const char* path ) //
 }
 
 
-/**
-TODO : implement this and use for sanity check after loading
-
-bool QRng::IsAllZero( curandState* states, unsigned num_states ) //  static
-{
-    return false ; 
-}
-**/
 
 
-/**
-QRng::upload
---------------
 
-1. upload rng_states array that was loaded from file in the ctor, 
-   the *rngmax* number of elements in the array determines the maximum 
-   number of photon slots within a single launch
 
-2. record device pointer qr->rng_startes
 
-3. free the CPU side rng_states array
 
-4. upload qrng.h *qr* instance within single element array, 
-   setting d_qr
-
-**/
-
-void QRng::upload()
-{
-    const char* label_0 = "QRng::upload/rng_states" ; 
-    qr->rng_states = QU::UploadArray<curandState>(rng_states, rngmax, label_0 ) ;   
-
-    free(rng_states); 
-    rng_states = nullptr ; 
-
-    const char* label_1 = "QRng::upload/d_qr" ; 
-    d_qr = QU::UploadArray<qrng>(qr, 1, label_1 ); 
-}
 
 
 std::string QRng::desc() const
 {
     std::stringstream ss ; 
     ss << "QRng"
+
+
        << " path " << path 
        << " rngmax " << rngmax 
        << " qr " << qr
@@ -282,8 +430,5 @@ void QRng::generate_2( T* uu, unsigned ni, unsigned nv, unsigned event_idx )
 
 template void QRng::generate_2<float>( float*,   unsigned, unsigned, unsigned ); 
 template void QRng::generate_2<double>( double*, unsigned, unsigned, unsigned ); 
-
-
-
 
 

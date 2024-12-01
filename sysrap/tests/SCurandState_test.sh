@@ -19,7 +19,8 @@ bin=$FOLD/$name
 #test=NumFromFilesize
 #test=ParseDir
 #test=ChunkLoadSave
-test=ctor
+#test=ctor
+test=load
 
 export TEST=${TEST:-$test}
 

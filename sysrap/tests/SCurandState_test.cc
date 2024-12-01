@@ -18,27 +18,26 @@ NEXT:
 
 struct SCurandState_test
 {
-    static std::string ChunkName(); 
+    static SCurandChunk Chunk(); 
 
     static int ctor();
     static int NumFromFilesize();
     static int ParseDir();
     static int ChunkLoadSave();
+    static int load();
     static int Main();
 };
 
-inline std::string SCurandState_test::ChunkName()
+inline SCurandChunk SCurandState_test::Chunk()
 {
     SCurandChunk chunk = {} ;
-
     chunk.ref.chunk_idx = 0 ; 
     chunk.ref.chunk_offset = 0 ; 
     chunk.ref.num = 1000000 ; 
     chunk.ref.seed = 0 ; 
     chunk.ref.offset = 0 ; 
 
-    std::string n = chunk.name(); 
-    return n ; 
+    return chunk ; 
 }
 
 inline int SCurandState_test::ctor()
@@ -50,7 +49,8 @@ inline int SCurandState_test::ctor()
 
 inline int SCurandState_test::NumFromFilesize()
 {
-    std::string n = ChunkName(); 
+    SCurandChunk chunk = Chunk(); 
+    std::string n = chunk.name() ; 
     long st = SCurandChunk::NumFromFilesize(n.c_str()); 
     int rc = st == 1000000 ? 0 : 1 ; 
     return rc ; 
@@ -66,14 +66,15 @@ inline int SCurandState_test::ParseDir()
 
 inline int SCurandState_test::ChunkLoadSave()
 {
-    std::string n = ChunkName(); 
+    SCurandChunk chunk0 = Chunk(); 
+    std::string n0 = chunk0.name(); 
  
     typedef unsigned long long ULL ; 
     ULL q_num = 0 ; 
     const char* dir = nullptr ;  
 
     SCurandChunk chunk = {} ;
-    int rc0 = SCurandChunk::Load(chunk, n.c_str(), q_num, dir) ;
+    int rc0 = SCurandChunk::OldLoad(chunk, n0.c_str(), q_num, dir) ;
     int rc1 = chunk.save("$FOLD"); 
 
     std::cout 
@@ -86,6 +87,20 @@ inline int SCurandState_test::ChunkLoadSave()
     return rc0 + rc1 ; 
 }
 
+inline int SCurandState_test::load()
+{
+    SCurandChunk c = Chunk(); 
+    scurandref lref = c.load(); 
+
+    std::cout 
+        << "SCurandState_test::load\n"
+        << " c.ref.desc " << c.ref.desc() << "\n"
+        << " lref.desc  " << lref.desc() << "\n"
+        << "\n" 
+        ; 
+
+    return lref.states ? 0 : 1 ; 
+}
 
 
 inline int SCurandState_test::Main()
@@ -98,6 +113,7 @@ inline int SCurandState_test::Main()
     if(ALL||strcmp(TEST,"NumFromFilesize") == 0) rc += NumFromFilesize(); 
     if(ALL||strcmp(TEST,"ParseDir") == 0)        rc += ParseDir(); 
     if(ALL||strcmp(TEST,"ChunkLoadSave") == 0)   rc += ChunkLoadSave(); 
+    if(ALL||strcmp(TEST,"load") == 0)            rc += load(); 
     return rc ; 
 }
 

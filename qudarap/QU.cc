@@ -294,6 +294,7 @@ template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items, cons
 template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items, const char* label) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items, const char* label) ;
 template QUDARAP_API sstate*    QU::device_alloc<sstate>(unsigned num_items, const char* label) ;
+template QUDARAP_API curandState* QU::device_alloc<curandState>(unsigned num_items, const char* label) ;
 
 #ifndef PRODUCTION
 template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items, const char* label) ;
@@ -509,6 +510,7 @@ template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, un
 template void QU::copy_host_to_device<sphoton>(  sphoton* d,  const sphoton* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
 template void QU::copy_host_to_device<quad2>(    quad2* d,    const quad2* h, unsigned num_items);
+template void QU::copy_host_to_device<curandState>(    curandState* d,    const curandState* h, unsigned num_items);
 
 /**
 QU::NumItems

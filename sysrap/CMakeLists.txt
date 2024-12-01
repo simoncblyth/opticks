@@ -185,7 +185,7 @@ set(HEADERS
     SLaunchSequence.h 
 
 
-    SCurandSize.h
+    SCurandSpec.h
     SCurandChunk.h
     scurandref.h
     SCurandState.h

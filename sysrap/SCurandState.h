@@ -8,11 +8,13 @@ SCurandState.h : More Flexible+capable replacement for SCurandState.{hh,cc}
     ~/o/sysrap/tests/SCurandState_test.sh
 
 
-Old impl fixes num (the total number of photon slots), 
-instead of doing that move to a chunk-centric implementation
-in a way that is extensible via addition of chunks 
-and flexible by not loading all the chunks, or even partially 
-loading some chunks to get the desired number of states.  
+Old SCurandState.{hh,cc} impl fixed num, the entire total number of photon slots. 
+This SCurandState.h impl moves to a chunk-centric approach in order to be: 
+
+1. extensible via addition of chunks 
+2. flexible by not loading all chunks with partial loading 
+   of the last chunk if necessary to meet the runtime configured 
+   maximum number of states.  
 
 The motivation is to allow the maxphoton to be dynamically decided 
 depending on VRAM by controlling the number of chunks in the available 
@@ -38,25 +40,26 @@ qudarap/QRng.{hh.cc}
 
 
 #include "SCurandChunk.h"
-#include "SCurandSize.h"
+#include "SCurandSpec.h"
 #include "SYSRAP_API_EXPORT.hh"
 
 
 struct SYSRAP_API _SCurandState   
 {
     typedef unsigned long long ULL ;
+
     const char* dir ; 
-    scurandref all = {} ; 
-    scurandref* d_all = nullptr ; 
- 
-    std::vector<ULL> size = {} ; 
+    std::vector<ULL> spec = {} ; 
     std::vector<SCurandChunk> chunk = {} ; 
+    scurandref all = {} ; 
+
+    const char* getDir() const ; 
 
     _SCurandState(const char* dir=nullptr); 
-    void init(); 
-    void initFromSize(); 
-    void initMerged();
 
+    void init(); 
+    void initFromSpec(); 
+    void initFromDir();
     void addChunk(ULL num);
  
     ULL num_total() const ;
@@ -66,12 +69,31 @@ struct SYSRAP_API _SCurandState
 }; 
 
 
+inline const char* _SCurandState::getDir() const 
+{
+    return SCurandChunk::Dir(dir); 
+}
+
 inline _SCurandState::_SCurandState(const char* _dir)
     :
     dir( _dir ? strdup(_dir) : nullptr )
 {
     init(); 
 }
+
+
+/**
+_SCurandState::init
+---------------------
+
+1. parse SPEC populating spec vector with slots per chunk values
+2. parse directory populating chunk vector based on file names
+
+Whether chunk files exist or not already 
+the outcome of this instanciation remains the same, 
+namely a chunk vector that follows the spec vector. 
+
+**/
 
 inline void _SCurandState::init()
 {
@@ -83,66 +105,101 @@ inline void _SCurandState::init()
     all.offset = 0 ; 
     all.states = nullptr ; 
 
-    SCurandSize::ParseSpec(size, nullptr); 
+    SCurandSpec::ParseSpec(spec, nullptr); 
     SCurandChunk::ParseDir(chunk, dir);  
 
-    int num_size = size.size() ; 
+    int num_spec = spec.size() ; 
     int num_chunk = chunk.size() ; 
 
     if(num_chunk == 0)
     {
-        initFromSize(); 
+        initFromSpec(); 
     }
     else if( num_chunk > 0 )
     {
-        initMerged(); 
+        initFromDir(); 
     }
 
     all.num = num_total(); 
+
+    assert( spec.size() == chunk.size() );
 }
 
 
-inline void _SCurandState::initFromSize()
+
+
+inline void _SCurandState::initFromSpec()
 {
-    long num_size = size.size() ; 
-    for(long i=0 ; i < num_size ; i++) 
+    long num_spec = spec.size() ; 
+    for(long i=0 ; i < num_spec ; i++) 
     {
-       ULL num = size[i]; 
+       ULL num = spec[i]; 
        addChunk(num);
     }
 }
 
 
 /**
-_SCurandState::initMerged
+_SCurandState::initFromDir
 ----------------------------
 
-Expecting to miss chunks at the end, not the beginning 
-And existing chunks expected to be consistent with the 
-sizes and indices that this code would have created. 
-So changing the size SPEC for example would trip this up. 
+Expecting to find the first chunks to be consistent
+with the spec. When SPEC is extended appropriately 
+then chunks will be missing from the end, and will be 
+added from the spec. 
+
+Changing the size SPEC is any way that does not just extend
+the chunks would cause this to assert. 
+
+HMM: in principal could arrange to replace missing chunks
+but that luxury feature has not been implemented. 
+
+
+* iteration over spec vector to support spec extension
+
+* note that when the directory has all the chunk files
+  already this does nothing other than checking that 
+  the chunks follow the spec, the work of forming 
+  the chunks being done in the init
+
 **/
 
-inline void _SCurandState::initMerged()
+inline void _SCurandState::initFromDir()
 {
-    long num_size = size.size() ; 
-    for(long i=0 ; i < num_size ; i++)
+    ULL num_spec = spec.size() ; 
+
+    for(ULL i=0 ; i < num_spec ; i++)
     {
-        scurandref* d = SCurandChunk::Find(chunk, i );
-        if(d)
+        scurandref* r = SCurandChunk::Find(chunk, i );
+        ULL num_cumulative = SCurandChunk::NumTotal_InRange(chunk, 0, i ); 
+        bool already_have_chunk = r != nullptr ; 
+
+        if(already_have_chunk)   
         {
-            bool consistent = 
-                      d->chunk_idx == i && 
-                      d->num == size[i] &&
-                      d->seed == all.seed &&
-                      d->offset == all.offset 
+            bool r_chunk_follows_spec = 
+                      r->chunk_idx == i && 
+                      r->chunk_offset == num_cumulative && 
+                      r->num == spec[i] &&
+                      r->seed == all.seed &&
+                      r->offset == all.offset 
                       ;  
-            assert(consistent); 
-            if(!consistent) return ;  
+
+            assert(r_chunk_follows_spec); 
+            if(!r_chunk_follows_spec) std::cerr
+                << "_SCurandState::initFromDir"
+                << " r_chunk_follows_spec " << ( r_chunk_follows_spec ? "YES" : "NO " ) << "\n"
+                << " r.chunk_idx " << r->chunk_idx << " i " << i << "\n" 
+                << " r.chunk_offset " << r->chunk_offset << " num_cumulative " << num_cumulative << "\n" 
+                << " r.num " << r->num << " spec[i] " << spec[i] << "\n"
+                << " r.seed " << r->seed << " all.seed " << all.seed << "\n"
+                << " r.offset " << r->offset << " all.offset " << all.offset << "\n"
+                ; 
+
+            if(!r_chunk_follows_spec) return ;  
         } 
         else
         {
-            addChunk(size[i]); 
+            addChunk(spec[i]); 
         }
     }
 }
@@ -169,13 +226,15 @@ inline void _SCurandState::addChunk(ULL num)
 
 inline unsigned long long _SCurandState::num_total() const
 {
-    return SCurandChunk::NumTotal_SizeCheck(chunk, size); 
+    return SCurandChunk::NumTotal_SpecCheck(chunk, spec); 
 }
 
 
 inline std::string _SCurandState::desc() const 
 {
-    int num_size = size.size(); 
+    const char* _dir = getDir();
+
+    int num_spec = spec.size(); 
     int num_chunk = chunk.size(); 
     int num_valid = SCurandChunk::CountValid(chunk, dir );  
     bool complete = is_complete(); 
@@ -183,12 +242,14 @@ inline std::string _SCurandState::desc() const
     std::stringstream ss; 
     ss 
        << "[_SCurandState::desc\n" 
-       << " num_size " << num_size  << "\n" 
+       << " dir " << ( dir ? dir : "-" ) << "\n" 
+       << " getDir " << ( _dir ? _dir : "-" ) << "\n" 
+       << " num_spec " << num_spec  << "\n" 
        << " num_chunk " << num_chunk << "\n" 
        << " num_valid " << num_valid << "\n" 
        << " is_complete " << ( complete ? "YES" : "NO " ) << "\n" 
        << " num_total " << SCurandChunk::FormatNum(num_total()) << "\n"
-       << SCurandSize::Desc(size)  
+       << SCurandSpec::Desc(spec)  
        << "\n"  
        << SCurandChunk::Desc(chunk, dir) 
        << "]_SCurandState::desc\n" 
@@ -199,8 +260,8 @@ inline std::string _SCurandState::desc() const
 
 inline bool _SCurandState::is_complete() const
 {
-    int num_size = size.size(); 
+    int num_spec = spec.size(); 
     int num_valid = SCurandChunk::CountValid(chunk, dir );  
-    return num_size == num_valid ; 
+    return num_spec == num_valid ; 
 } 
 

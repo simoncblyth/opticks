@@ -4,7 +4,7 @@
 #include "SCurandChunk.h"
 #include "SYSRAP_API_EXPORT.hh"
 
-struct SYSRAP_API SCurandSize
+struct SYSRAP_API SCurandSpec
 {
     typedef unsigned long long ULL ;
     static constexpr const char* SPEC = "10x1M,9x10M,5x20M" ;  
@@ -15,11 +15,11 @@ struct SYSRAP_API SCurandSize
     static std::string Desc(const std::vector<ULL>& size); 
 };
 
-inline void SCurandSize::ParseSpec(std::vector<ULL>& size, const char* _spec )
+inline void SCurandSpec::ParseSpec(std::vector<ULL>& size, const char* _spec )
 {
     const char* spec = _spec ? _spec : SPEC ;
 
-    //std::cout << "[ SCurandSize::ParseSpec [" << spec << "]\n" ; 
+    //std::cout << "[ SCurandSpec::ParseSpec [" << spec << "]\n" ; 
 
     std::vector<std::string> group ; 
     sstr::Split(spec, GROUP_DELIM, group ); 
@@ -37,17 +37,17 @@ inline void SCurandSize::ParseSpec(std::vector<ULL>& size, const char* _spec )
 
         ULL mul = std::atoll(MUL); 
         ULL num = SCurandChunk::ParseNum(NUM); 
-        //std::cout << " SCurandSize::ParseSpec num [" << num << "]\n" ; 
+        //std::cout << " SCurandSpec::ParseSpec num [" << num << "]\n" ; 
 
         for(ULL j=0 ; j < mul ; j++) size.push_back(num); 
     }
-    //std::cout << "] SCurandSize::ParseSpec [" << spec << "]\n" ; 
+    //std::cout << "] SCurandSpec::ParseSpec [" << spec << "]\n" ; 
 }
 
-inline std::string SCurandSize::Desc(const std::vector<ULL>& _size)
+inline std::string SCurandSpec::Desc(const std::vector<ULL>& _size)
 {
     std::stringstream ss; 
-    ss << "SCurandSize::Desc" << " size.size " << _size.size() << "[" ; 
+    ss << "SCurandSpec::Desc" << " size.size " << _size.size() << "[" ; 
     ULL tot = 0 ; 
     for(int i=0 ; i < int(_size.size()) ; i++ ) 
     {

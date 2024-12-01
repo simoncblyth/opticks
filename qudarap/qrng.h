@@ -18,9 +18,9 @@ struct qrng
     QRNG_METHOD void get_rngstate_with_skipahead(curandStateXORWOW& rng, unsigned event_idx, unsigned photon_idx );  
 
 #else
-    qrng(unsigned skipahead_event_offset_)
+    qrng(curandStateXORWOW* rng_states_, unsigned skipahead_event_offset_)
         :
-        rng_states(nullptr),
+        rng_states(rng_states_),
         skipahead_event_offset(skipahead_event_offset_)
     {
     }

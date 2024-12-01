@@ -10,10 +10,25 @@ Need to enable runtime choice of maxphoton,
 also can partially load chunks to get the desired maxphoton
 appropriate for VRAM. 
 
-Related::
+The old impl split:
+
+1. creation of the curandState file with QCurandState.{hh,cc}
+2. loading+uploading of curandState file for simulation with QRng.{hh,cc}
+
+That definitely has advantages, as considerations for the 
+install time executables to prepare the curandState and for 
+runtime usage of the files are very different. 
+
+The chunk-centric impl follows the same split:
+
+1. creation of chunked curandState files with QCurandState.h 
+2. loading+uploading of chunked curandState files with QRng.{hh,cc} 
+
+Related tests::
 
     ~/o/qudarap/tests/QCurandState_Test.sh
     ~/o/sysrap/tests/SCurandState_test.sh
+    ~/o/qudarap/tests/QRngTest.sh
 
 **/
 
@@ -30,8 +45,7 @@ struct _QCurandState
     static _QCurandState* Create(const char* _dir=nullptr); 
 
     _SCurandState cs = {} ;
- 
-    _QCurandState(const _SCurandState& _cs); 
+    _QCurandState(const char* _dir); 
 
     void init(); 
     void initChunk(SCurandChunk& c);
@@ -44,22 +58,25 @@ struct _QCurandState
 
 inline _QCurandState* _QCurandState::Create(const char* _dir)
 {
-    _SCurandState cs(_dir); 
-    return new _QCurandState(cs); 
+    return new _QCurandState(_dir); 
 } 
 
-inline _QCurandState::_QCurandState(const _SCurandState& _cs)
+inline _QCurandState::_QCurandState(const char* _dir)
     :
-    cs(_cs)
+    cs(_dir)
 {
     init(); 
 }
 
-/**
 
-THE OBJECTIVE HERE IS THE CHUNKED STATES IN FILES
-NOT THE BIG CONTIGUOUS ARRAY OF STATES ON DEVICE
-SO BETTER TO DO CHUNK BY CHUNK 
+/**
+_QCurandState::init
+--------------------
+
+Completeness means all the chunk files exist. 
+
+Outcome of instanciation is a complete set of
+chunk files. 
 
 **/
 
@@ -80,6 +97,24 @@ inline void _QCurandState::init()
         initChunk(c);  
     }
 }
+
+
+/**
+_QCurandState::initChunk : generates curandState for chunk and saves to file
+-------------------------------------------------------------------------------
+
+1. prep sequence of launches needed for c.ref.num slots
+2. allocate + zero space on device for c.ref.num curandState 
+3. upload scurandref metadata struct 
+4. launch curand_init kernel on device populating curandState buffer
+5. allocate h_states on host 
+6. copy device to host 
+7. free on device
+8. change c.ref.states to host r_states
+9. save c.ref.states to file named according to scurandref chunk metadata values
+10. free h_states 
+
+**/
 
 
 inline void _QCurandState::initChunk(SCurandChunk& c)
