@@ -26,8 +26,14 @@ class QRngTest(object):
         upath = os.path.join(base, "u_0.npy")
         uupath = os.path.join(base, "uu.npy")
 
-        u = np.load(upath) if os.path.exists(upath) else None
-        uu = np.load(uupath) if os.path.exists(uupath) else None
+        if os.path.exists(upath):
+            os.system("ls -l %s" % upath)
+            u = np.load(upath)
+        pass
+        if os.path.exists(uupath):
+            os.system("ls -l %s" % uupath)
+            uu = np.load(uupath)
+        pass
 
         xtype = np.float32 if reldir.startswith("float") else np.float64
 

@@ -59,14 +59,16 @@ const char* SCurandStateMonolithic::Path()  // static
     return DEFAULT_PATH ; 
 }
 
-std::string SCurandStateMonolithic::Stem_(unsigned long long num, unsigned long long seed, unsigned long long offset)
+std::string SCurandStateMonolithic::Stem_(ULL num, ULL seed, ULL offset)
 {
+    assert( num % M == 0 ); 
+    ULL value = num/M ; 
     std::stringstream ss ; 
-    ss << NAME_PREFIX << "_" << num << "_" << seed << "_" << offset  ;   
+    ss << NAME_PREFIX << "_" << value << "M" << "_" << seed << "_" << offset  ;   
     std::string s = ss.str(); 
     return s ;   
 } 
-std::string SCurandStateMonolithic::Path_(unsigned long long num, unsigned long long seed, unsigned long long offset)
+std::string SCurandStateMonolithic::Path_(ULL num, ULL seed, ULL offset)
 {
     std::stringstream ss ; 
     ss << RNGDIR << "/" << Stem_(num, seed, offset) << ".bin" ; 
@@ -126,7 +128,7 @@ long SCurandStateMonolithic::RngMax(const char* path)
 
 
 
-SCurandStateMonolithic::SCurandStateMonolithic(unsigned long long num_, unsigned long long seed_, unsigned long long offset_)
+SCurandStateMonolithic::SCurandStateMonolithic(ULL num_, ULL seed_, ULL offset_)
     :
     spec(nullptr),
     num(num_),

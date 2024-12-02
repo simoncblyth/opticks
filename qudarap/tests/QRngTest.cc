@@ -101,12 +101,24 @@ int QRngTest::generate_evid()
 QRngTest::generate
 -------------------
 
+For rngmax M100 and nv:16 this leads to ~6GB output array::
+
+    In [2]: 100*1e6*16*4/(1024*1024*1024)
+    Out[2]: 5.9604644775390625
+
+Observed some truncation to 2GB ? 
+
+For rngmax M100 and nv:4 gets down to 1.5G avoiding truncation::
+
+    In [3]: 100*1e6*4*4/(1024*1024*1024)
+    Out[3]: 1.4901161193847656
+
 **/
 
 int QRngTest::generate()
 {
     unsigned ni = unsigned(qr.rngmax) ; 
-    unsigned nv = 16 ; 
+    unsigned nv = 4 ; 
     unsigned long long skipahead = ssys::getenvull(_SKIPAHEAD, 0ull) ; 
 
     NP* u = NP::Make<float>( ni, nv ); 
@@ -138,12 +150,21 @@ int QRngTest::main()
 int main(int argc, char** argv)
 {   
     OPTICKS_LOG(argc, argv); 
-    std::cout << "[main argv[0] " << argv[0] << "\n" ; 
+    std::cout 
+        << "[main argv[0] " << argv[0] 
+        << " QRng::IMPL[" << QRng::IMPL << "]"
+        << "\n"
+        ; 
 
     QRngTest t ; 
     int rc = t.main() ; 
 
-    std::cout << "]main argv[0] " << argv[0] << " rc:" << rc << "\n" ; 
+    std::cout 
+        << "]main argv[0] " << argv[0] 
+        << " QRng::IMPL[" << QRng::IMPL << "]"
+        << " rc:" << rc 
+        << "\n" 
+        ; 
 
     return rc ; 
 }

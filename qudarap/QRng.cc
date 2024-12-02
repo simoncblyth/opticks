@@ -153,7 +153,11 @@ TODO : for new chunked impl
 QRng::LoadAndUpload
 --------------------
 
-rngmax is an output argument obtained from file_size/item_size 
+In the old monolithic impl rngmax is an output argument obtained from file_size/item_size 
+and at the same time kinda an input to specify which file to load. 
+
+In the new chunked impl with partial chunk loading the rngmax is an input value
+that can be set to anything. 
 
 **/
 
@@ -407,6 +411,7 @@ std::string QRng::desc() const
     ss << "QRng::desc"
        << " path " << path 
        << " rngmax " << rngmax 
+       << " rngmax/M " << rngmax/M 
        << " qr " << qr
        << " qr.skipahead_event_offset " << qr->skipahead_event_offset
        << " d_qr " << d_qr

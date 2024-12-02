@@ -18,8 +18,6 @@ bin=$name
 script=$name.py 
 
 export FOLD=$TMP/$name  
-#mkdir -p $FOLD/float
-#mkdir -p $FOLD/double
 
 #test=generate
 #test=generate_evid
