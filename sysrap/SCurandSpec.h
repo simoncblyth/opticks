@@ -32,7 +32,7 @@ inline void SCurandSpec::ParseSeedOffset( ULL& seed, ULL& offset, const char* _s
     const char* spec = _spec ? _spec : SEED_OFFSET ; 
 
     std::vector<std::string> elem ; 
-    sstr::Split(_spec, SEED_OFFSET_DELIM, elem ); 
+    sstr::Split( spec, SEED_OFFSET_DELIM, elem ); 
 
     seed   = elem.size() > 0 ? std::atoll( elem[0].c_str() ) : 0ull ;     
     offset = elem.size() > 0 ? std::atoll( elem[1].c_str() ) : 0ull ;     

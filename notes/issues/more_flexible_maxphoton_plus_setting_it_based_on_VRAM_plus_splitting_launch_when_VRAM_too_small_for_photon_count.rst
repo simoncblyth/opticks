@@ -61,6 +61,25 @@ more_flexible_maxphoton
 
 
 
+shakedown
+-----------
+
+::
+
+
+    FAILS:  6   / 215   :  Mon Dec  2 19:38:33 2024   
+      2  /21  Test #2  : QUDARapTest.QRngTest                          ***Failed                      0.18   
+      6  /21  Test #6  : QUDARapTest.QSimTest                          ***Failed                      4.46   
+      12 /21  Test #12 : QUDARapTest.QSim_Lifecycle_Test               ***Failed                      4.41   
+      13 /21  Test #13 : QUDARapTest.QSimWithEventTest                 ***Failed                      4.26   
+      21 /21  Test #21 : QUDARapTest.QCurandStateTest                  ***Failed                      0.28   
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test         ***Failed                      33.06  
+
+
+
+
+
+
 
 VRAM detection
 -----------------
