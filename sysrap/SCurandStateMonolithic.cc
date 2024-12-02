@@ -6,25 +6,26 @@
 #include "sdirectory.h"
 #include "sstr.h"
 
-#include "SCurandState.hh"
+#include "SCurandStateMonolithic.hh"
 #include "SEventConfig.hh"
 
-const plog::Severity SCurandState::LEVEL = SLOG::EnvLevel("SCurandState", "DEBUG" );  
-const char* SCurandState::RNGDIR = spath::Resolve("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ; 
+const plog::Severity SCurandStateMonolithic::LEVEL = SLOG::EnvLevel("SCurandStateMonolithic", "DEBUG" );  
+const char* SCurandStateMonolithic::RNGDIR = spath::Resolve("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ; 
 
-const char* SCurandState::NAME_PREFIX = "QCurandState" ; 
-const char* SCurandState::DEFAULT_PATH = nullptr ; 
+//const char* SCurandStateMonolithic::NAME_PREFIX = "QCurandState" ; 
+const char* SCurandStateMonolithic::NAME_PREFIX = "QCurandStateMonolithic" ; 
+const char* SCurandStateMonolithic::DEFAULT_PATH = nullptr ; 
 
-std::string SCurandState::Desc()  // static
+std::string SCurandStateMonolithic::Desc()  // static
 {
     const char* path = Path() ; 
     long rngmax = RngMax() ; 
 
     std::stringstream ss ; 
-    ss << "SCurandState::Desc" << std::endl 
+    ss << "SCurandStateMonolithic::Desc" << std::endl 
        << " SEventConfig::MaxCurandState() " << SEventConfig::MaxCurandState() << std::endl
-       << " SCurandState::Path() " << path << std::endl 
-       << " SCurandState::RngMax() " << rngmax << std::endl 
+       << " SCurandStateMonolithic::Path() " << path << std::endl 
+       << " SCurandStateMonolithic::RngMax() " << rngmax << std::endl 
        << " RNGDIR  " << RNGDIR << std::endl 
        ;
     std::string s = ss.str() ;
@@ -33,15 +34,15 @@ std::string SCurandState::Desc()  // static
 
 
 /**
-SCurandState::Path
--------------------
+SCurandStateMonolithic::Path
+-----------------------------
 
 For concatenated loading this needs to become 
 a directory path not a file path
 
 **/
 
-const char* SCurandState::Path()  // static
+const char* SCurandStateMonolithic::Path()  // static
 {
     if(DEFAULT_PATH == nullptr)
     {
@@ -58,14 +59,14 @@ const char* SCurandState::Path()  // static
     return DEFAULT_PATH ; 
 }
 
-std::string SCurandState::Stem_(unsigned long long num, unsigned long long seed, unsigned long long offset)
+std::string SCurandStateMonolithic::Stem_(unsigned long long num, unsigned long long seed, unsigned long long offset)
 {
     std::stringstream ss ; 
     ss << NAME_PREFIX << "_" << num << "_" << seed << "_" << offset  ;   
     std::string s = ss.str(); 
     return s ;   
 } 
-std::string SCurandState::Path_(unsigned long long num, unsigned long long seed, unsigned long long offset)
+std::string SCurandStateMonolithic::Path_(unsigned long long num, unsigned long long seed, unsigned long long offset)
 {
     std::stringstream ss ; 
     ss << RNGDIR << "/" << Stem_(num, seed, offset) << ".bin" ; 
@@ -74,8 +75,8 @@ std::string SCurandState::Path_(unsigned long long num, unsigned long long seed,
 }
 
 /**
-SCurandState::RngMax
---------------------------
+SCurandStateMonolithic::RngMax
+-------------------------------
 
 Determine *RngMax* based on file size of the 
 configure curandstate array file divided by item_size of 44 bytes. 
@@ -85,7 +86,7 @@ Presumably the 44 bytes of content get padded to 48 bytes
 in the curandState which is typedef to curandStateXORWOW.
 
 **/
-long SCurandState::RngMax()
+long SCurandStateMonolithic::RngMax()
 {
     const char* path = Path(); 
     return RngMax(path) ; 
@@ -101,7 +102,7 @@ all files in the directory with the expected prefix
 **/
 
 
-long SCurandState::RngMax(const char* path)
+long SCurandStateMonolithic::RngMax(const char* path)
 {
     long file_size = spath::Filesize(path); 
 
@@ -125,7 +126,7 @@ long SCurandState::RngMax(const char* path)
 
 
 
-SCurandState::SCurandState(unsigned long long num_, unsigned long long seed_, unsigned long long offset_)
+SCurandStateMonolithic::SCurandStateMonolithic(unsigned long long num_, unsigned long long seed_, unsigned long long offset_)
     :
     spec(nullptr),
     num(num_),
@@ -138,7 +139,7 @@ SCurandState::SCurandState(unsigned long long num_, unsigned long long seed_, un
     init(); 
 }
 
-SCurandState::SCurandState(const char* spec_)
+SCurandStateMonolithic::SCurandStateMonolithic(const char* spec_)
     :
     spec(spec_ ? strdup(spec_) : nullptr),
     num(0),
@@ -151,7 +152,7 @@ SCurandState::SCurandState(const char* spec_)
     init(); 
 }
 
-void SCurandState::init()
+void SCurandStateMonolithic::init()
 {
     if(spec)
     {
@@ -172,7 +173,7 @@ void SCurandState::init()
     rngmax = exists ? RngMax( path.c_str() ) : 0 ; 
 }
 
-std::string SCurandState::desc() const 
+std::string SCurandStateMonolithic::desc() const 
 {
     std::stringstream ss ; 
     ss 

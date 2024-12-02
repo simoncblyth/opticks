@@ -1,7 +1,7 @@
 #pragma once
 /**
-SCurandState.hh
-=================
+SCurandStateMonolithic.hh
+==========================
 
 See also qudarap/QCurandState.hh 
 
@@ -12,7 +12,7 @@ See also qudarap/QCurandState.hh
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
-struct SYSRAP_API SCurandState
+struct SYSRAP_API SCurandStateMonolithic
 {
     static const plog::Severity LEVEL ; 
     static const char* RNGDIR ;
@@ -27,8 +27,8 @@ struct SYSRAP_API SCurandState
     static long RngMax(const char* path) ; 
 
 
-    SCurandState(const char* spec); 
-    SCurandState(unsigned long long num, unsigned long long seed, unsigned long long offset) ; 
+    SCurandStateMonolithic(const char* spec); 
+    SCurandStateMonolithic(unsigned long long num, unsigned long long seed, unsigned long long offset) ; 
     void init(); 
 
     std::string desc() const ; 

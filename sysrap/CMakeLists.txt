@@ -72,7 +72,7 @@ set(SOURCES
     SYSRAP_LOG.cc 
     SLOG.cc 
 
-    SCurandState.cc
+    SCurandStateMonolithic.cc
     SSys.cc
     SProf.cc
 
@@ -191,7 +191,7 @@ set(HEADERS
     SCurandState.h
 
 
-    SCurandState.hh
+    SCurandStateMonolithic.hh
     sproc.h
     sprof.h
     SProf.hh

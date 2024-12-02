@@ -109,9 +109,13 @@ int QRngTest::main()
     const char* TEST = ssys::getenvvar("TEST","generate"); 
     bool ALL = strcmp(TEST, "ALL") == 0 ; 
 
+    std::cout << "[QRngTest::main TEST:[" << TEST << "]\n" ; 
+
     int rc = 0 ; 
     if(ALL||strcmp(TEST,"generate")==0)           rc += generate(); 
     if(ALL||strcmp(TEST,"generate_with_skip")==0) rc += generate_with_skip(); 
+
+    std::cout << "]QRngTest::main rc:" << rc << "\n" ; 
 
     return rc ; 
 }
@@ -119,7 +123,13 @@ int QRngTest::main()
 int main(int argc, char** argv)
 {   
     OPTICKS_LOG(argc, argv); 
+    std::cout << "[main argv[0] " << argv[0] << "\n" ; 
+
     QRngTest t ; 
-    return t.main() ; 
+    int rc = t.main() ; 
+
+    std::cout << "]main argv[0] " << argv[0] << " rc:" << rc << "\n" ; 
+
+    return rc ; 
 }
 

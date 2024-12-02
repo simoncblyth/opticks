@@ -1,6 +1,6 @@
 /**
-QCurandStateTest.cc
-=====================
+QCurandStateMonolithicTest.cc
+===============================
 
 Used at install time via::
 
@@ -12,7 +12,7 @@ Used at install time via::
         local offset=${QUDARAP_RNG_OFFSET:-0};
         for size in $sizes;
         do
-            QCurandState_SPEC=$size:$seed:$offset ${OPTICKS_PREFIX}/lib/QCurandStateTest;
+            QCurandStateMonolithic_SPEC=$size:$seed:$offset ${OPTICKS_PREFIX}/lib/QCurandStateMonolithicTest;
             rc=$?;
             [ $rc -ne 0 ] && return $rc;
         done;
@@ -23,13 +23,13 @@ Used at install time via::
 **/
 
 #include "OPTICKS_LOG.hh"
-#include "QCurandState.hh"
+#include "QCurandStateMonolithic.hh"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    QCurandState* cs = QCurandState::Create() ; 
+    QCurandStateMonolithic* cs = QCurandStateMonolithic::Create() ; 
     LOG(info) << cs->desc() ;
 
     return 0 ; 

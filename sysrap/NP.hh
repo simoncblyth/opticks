@@ -6120,7 +6120,17 @@ inline void NP::save(const char* path_) const
     if(path == nullptr) return ; 
  
     int rc = U::MakeDirsForFile(path); 
-    if(VERBOSE) std::cout << "NP::save path [" << ( path ? path : "-" ) << "] rc:" << rc  << std::endl ; 
+    const char* _save_VERBOSE = "NP__save_VERBOSE" ; 
+    bool save_VERBOSE = getenv(_save_VERBOSE) != nullptr ; 
+
+    if(VERBOSE||save_VERBOSE) std::cout 
+          << "NP::save"
+          << " " << _save_VERBOSE << ":" << ( save_VERBOSE ? "YES" : "NO " )
+          << " path [" << ( path ? path : "-" ) << "]" 
+          << " rc:" << rc  
+          << "\n" 
+          ;
+ 
     assert( rc == 0 ); 
 
     std::string hdr = make_header(); 

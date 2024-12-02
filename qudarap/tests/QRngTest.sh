@@ -25,11 +25,13 @@ mkdir -p $FOLD/double
 test=generate_with_skip
 
 export TEST=${TEST:-test}
-export QRng__init_VERBOSE=1
 
 defarg="info_run_ana"
 arg=${1:-$defarg}
 vars="BASH_SOURCE defarg arg FOLD bin script test TEST"
+
+export QRng__init_VERBOSE=1
+export NP__save_VERBOSE=1
 
 
 gdb__() 

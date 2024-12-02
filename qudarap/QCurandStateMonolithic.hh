@@ -1,7 +1,7 @@
 #pragma once
 /**
-QCurandState.hh : allocate + create + download + save
-============================================================
+QCurandStateMonolithic.hh : allocate + create + download + save
+=================================================================
 
 * creates states using curand_init with CUDA launchs configured by SLaunchSequence.h
 * loading/saving from/to file is handled separately by QRng
@@ -13,7 +13,7 @@ into files named informatively with seeds, counts, offsets etc..
 A difficulty is that calling curand_init is a very heavy kernel, 
 so currently the below large files are created via multiple launches all 
 writing into the single files shown below.  
-The old cuRANDWrapper and new QCurandState have exactly the same contents. 
+The old cuRANDWrapper and new QCurandStateMonolithic have exactly the same contents. 
 
 +-----------+---------------+----------------+--------------------------------------------------------------------+
 |  num      | bytes (ls)    | filesize(du -h)|  path                                                              |
@@ -31,15 +31,15 @@ The old cuRANDWrapper and new QCurandState have exactly the same contents.
 |     1M    |    44000000   |    42M         | /home/blyth/.opticks/rngcache/RNG/cuRANDWrapper_1000000_0_0.bin    |
 +-----------+---------------+----------------+--------------------------------------------------------------------+
 
-+-----------+---------------+----------------+--------------------------------------------------------------------+
-|  num      | bytes (ls)    | filesize(du -h)|  path                                                              |
-+===========+===============+================+====================================================================+
-|    10M    |   440000000   |   420M         | /home/blyth/.opticks/rngcache/RNG/QCurandState_10000000_0_0.bin    |   
-+-----------+---------------+----------------+--------------------------------------------------------------------+
-|     3M    |   132000000   |   126M         | /home/blyth/.opticks/rngcache/RNG/QCurandState_3000000_0_0.bin     |
-+-----------+---------------+----------------+--------------------------------------------------------------------+
-|     1M    |    44000000   |    42M         | /home/blyth/.opticks/rngcache/RNG/QCurandState_1000000_0_0.bin     | 
-+-----------+---------------+----------------+--------------------------------------------------------------------+
++-----------+---------------+----------------+-------------------------------------------------------------------------------+
+|  num      | bytes (ls)    | filesize(du -h)|  path                                                                         |
++===========+===============+================+===============================================================================+
+|    10M    |   440000000   |   420M         | /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithiic_10000000_0_0.bin    |   
++-----------+---------------+----------------+-------------------------------------------------------------------------------+
+|     3M    |   132000000   |   126M         | /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_3000000_0_0.bin      |
++-----------+---------------+----------------+-------------------------------------------------------------------------------+
+|     1M    |    44000000   |    42M         | /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_1000000_0_0.bin      | 
++-----------+---------------+----------------+-------------------------------------------------------------------------------+
 
 
 With GPU VRAM of 48G the limit coming from combination of photons and curandStates is about 400M
@@ -73,25 +73,25 @@ See SCurandState.h SCurandChunk.h
 #include <cstdint>
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
-#include "SCurandState.hh"
+#include "SCurandStateMonolithic.hh"
 
 struct qcurandstate ; 
 struct SLaunchSequence ; 
 
-struct QUDARAP_API QCurandState
+struct QUDARAP_API QCurandStateMonolithic
 {
     static const plog::Severity LEVEL ; 
-    static constexpr const char* EKEY = "QCurandState_SPEC" ; 
-    static QCurandState* Create(); 
-    static QCurandState* Create(const char* spec); 
+    static constexpr const char* EKEY = "QCurandStateMonolithic_SPEC" ; 
+    static QCurandStateMonolithic* Create(); 
+    static QCurandStateMonolithic* Create(const char* spec); 
 
-    const SCurandState scs ; 
+    const SCurandStateMonolithic scs ; 
     qcurandstate* h_cs ; 
     qcurandstate* cs ; 
     qcurandstate* d_cs ; 
     SLaunchSequence* lseq ; 
 
-    QCurandState(const SCurandState& scs); 
+    QCurandStateMonolithic(const SCurandStateMonolithic& scs); 
     void init(); 
     void alloc(); 
     void create(); 

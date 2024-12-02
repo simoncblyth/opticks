@@ -36,7 +36,7 @@ set(TEST_SOURCES
    SDigestNPTest.cc
 
    SCFTest.cc
-   SCurandStateTest.cc
+   SCurandStateMonolithicTest.cc
 
    
    PLogTest.cc 

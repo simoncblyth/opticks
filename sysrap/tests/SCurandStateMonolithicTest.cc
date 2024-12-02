@@ -2,7 +2,7 @@
 #include <string>
 #include <vector>
 #include "OPTICKS_LOG.hh"
-#include "SCurandState.hh"
+#include "SCurandStateMonolithic.hh"
 
 int main(int argc, char** argv)
 {
@@ -14,11 +14,11 @@ int main(int argc, char** argv)
     for(unsigned i=0 ; i < specs.size() ; i++)
     {
         const char* spec = specs[i].c_str(); 
-        SCurandState scs(spec) ; 
+        SCurandStateMonolithic scs(spec) ; 
         std::cout << scs.desc() << std::endl  ; 
     }
 
-    LOG(info) << std::endl << SCurandState::Desc() ; 
+    LOG(info) << std::endl << SCurandStateMonolithic::Desc() ; 
 
     return 0 ; 
 }

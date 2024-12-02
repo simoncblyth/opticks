@@ -49,4 +49,35 @@ class QUDARAP_API QUDA_Exception : public std::runtime_error
 };
 
 
+struct QUDA
+{
+    static void  before_kernel( cudaEvent_t& start, cudaEvent_t& stop ); 
+    static float after_kernel(  cudaEvent_t& start, cudaEvent_t& stop );
+}; 
+
+inline void QUDA::before_kernel( cudaEvent_t& start, cudaEvent_t& stop )
+{
+    QUDA_CHECK( cudaEventCreate( &start ) );
+    QUDA_CHECK( cudaEventCreate( &stop ) );
+    QUDA_CHECK( cudaEventRecord( start,0 ) );
+}
+
+inline float QUDA::after_kernel( cudaEvent_t& start, cudaEvent_t& stop )
+{
+    float kernel_time = 0.f ;
+
+    QUDA_CHECK( cudaEventRecord( stop,0 ) );
+    QUDA_CHECK( cudaEventSynchronize(stop) );
+
+    QUDA_CHECK( cudaEventElapsedTime(&kernel_time, start, stop) );
+    QUDA_CHECK( cudaEventDestroy( start ) );
+    QUDA_CHECK( cudaEventDestroy( stop ) );
+
+    QUDA_CHECK( cudaDeviceSynchronize() );
+
+    return kernel_time ;
+}
+
+
+
 
