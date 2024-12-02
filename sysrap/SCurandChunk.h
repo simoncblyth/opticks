@@ -16,6 +16,7 @@ SCurandChunk.h
 #include "sstr.h"
 #include "ssys.h"
 #include "scurandref.h"
+#include "sdigest.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -59,9 +60,9 @@ struct SYSRAP_API SCurandChunk
     static ULL NumTotal_SpecCheck(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& spec );
     static ULL NumTotal_InRange(  const std::vector<SCurandChunk>& chunk, ULL i0, ULL i1 ); 
 
-    scurandref load( ULL read_num=0, const char* _dir=nullptr ) const ; 
+    scurandref load(ULL read_num=0, const char* _dir=nullptr, sdigest* dig=nullptr ) const ; 
     static int OldLoad( SCurandChunk& chunk, const char* name, ULL q_num=0, const char* _dir=nullptr );
-    static curandState* Load_( ULL& file_num, const char* path, ULL read_num ); 
+    static curandState* Load_( ULL& file_num, const char* path, ULL read_num, sdigest* dig ); 
 
     static int Save( curandState* states, unsigned num_states, const char* path ) ; 
     int save( const char* _dir=nullptr ) const ; 
@@ -391,13 +392,13 @@ inline unsigned long long SCurandChunk::NumTotal_InRange( const std::vector<SCur
 
 
 
-inline scurandref SCurandChunk::load( ULL read_num, const char* _dir ) const
+inline scurandref SCurandChunk::load( ULL read_num, const char* _dir, sdigest* dig ) const
 {
     scurandref lref(ref); 
     const char* p = path(_dir); 
 
     ULL file_num = 0 ; 
-    lref.states = Load_(file_num, p, read_num );
+    lref.states = Load_(file_num, p, read_num, dig );
     lref.num = read_num ; 
 
     return lref ;
@@ -427,7 +428,7 @@ inline int SCurandChunk::OldLoad( SCurandChunk& chunk, const char* name, ULL rea
     ULL name_num = chunk.ref.num ;         // from ParseName
 
     ULL file_num = 0 ; 
-    curandState* h_states = Load_( file_num, p, read_num ) ; 
+    curandState* h_states = Load_( file_num, p, read_num, nullptr ) ; 
 
     if( h_states )
     {
@@ -449,7 +450,7 @@ inline int SCurandChunk::OldLoad( SCurandChunk& chunk, const char* name, ULL rea
 }
 
 
-inline curandState* SCurandChunk::Load_( ULL& file_num, const char* path, ULL read_num )
+inline curandState* SCurandChunk::Load_( ULL& file_num, const char* path, ULL read_num, sdigest* dig )
 {
     FILE *fp = fopen(path,"rb");
 
@@ -490,15 +491,30 @@ inline curandState* SCurandChunk::Load_( ULL& file_num, const char* path, ULL re
 
     curandState* h_states = (curandState*)malloc(sizeof(curandState)*read_num);
 
+/**
+/usr/local/cuda-11.7/include/curand_kernel.h::
+
+     140 struct curandStateXORWOW {
+     141     unsigned int d, v[5];
+     142     int boxmuller_flag;
+     143     int boxmuller_flag_double;
+     144     float boxmuller_extra;
+     145     double boxmuller_extra_double;
+     146 };
+
+
+**/
+
+
     for(ULL i = 0 ; i < read_num ; ++i )
     {   
         curandState& rng = h_states[i] ;
-        fread(&rng.d,                     sizeof(unsigned int),1,fp);   //  1
-        fread(&rng.v,                     sizeof(unsigned int),5,fp);   //  5 
-        fread(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);   //  1 
-        fread(&rng.boxmuller_flag_double, sizeof(int)         ,1,fp);   //  1
-        fread(&rng.boxmuller_extra,       sizeof(float)       ,1,fp);   //  1
-        fread(&rng.boxmuller_extra_double,sizeof(double)      ,1,fp);   //  2    11*4 = 44 
+        fread(&rng.d,                     sizeof(unsigned),1,fp);  if(dig) dig->add_<unsigned>(&rng.d, 1 ); 
+        fread(&rng.v,                     sizeof(unsigned),5,fp);  if(dig) dig->add_<unsigned>( rng.v, 5 );
+        fread(&rng.boxmuller_flag,        sizeof(int)     ,1,fp);  if(dig) dig->add_<int>(&rng.boxmuller_flag,1); 
+        fread(&rng.boxmuller_flag_double, sizeof(int)     ,1,fp);  if(dig) dig->add_<int>(&rng.boxmuller_flag_double,1);
+        fread(&rng.boxmuller_extra,       sizeof(float)   ,1,fp);  if(dig) dig->add_<float>(&rng.boxmuller_extra,1);
+        fread(&rng.boxmuller_extra_double,sizeof(double)  ,1,fp);  if(dig) dig->add_<double>(&rng.boxmuller_extra_double,1);
     }   
     fclose(fp);
     return h_states ; 

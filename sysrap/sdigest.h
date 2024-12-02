@@ -65,6 +65,13 @@ struct sdigest
     static void Update( MD5_CTX& c, int i ); 
     static void Update( MD5_CTX& c, const char* buffer, int length); 
 
+    //template<typename T> static void Update_(MD5_CTX& c, T v );
+    template<typename T> static void Update_(MD5_CTX& c, T* vv, size_t count ); 
+
+    //template<typename T> void add_( T v ); 
+    template<typename T> void add_( T* vv, size_t count ); 
+
+
     static std::string Finalize(MD5_CTX& c); 
 }; 
 
@@ -95,8 +102,6 @@ inline void sdigest::add( const char* str ){ Update(ctx, str) ; }
 inline void sdigest::add( int i ){ Update(ctx, i ) ; }
 inline void sdigest::add( const char* str, int length ){ Update(ctx, str, length ) ; }
 inline std::string sdigest::finalize(){ return Finalize(ctx) ; } 
-
-
 
 
 
@@ -205,8 +210,6 @@ inline void sdigest::Update(MD5_CTX& c, int i )
     Update( c, (char*)&i, sizeof(int) ); 
 }
 
-
-
 inline void sdigest::Update(MD5_CTX& c, const char* buffer, int length) // static
 {
     const int blocksize = 512 ; 
@@ -221,6 +224,42 @@ inline void sdigest::Update(MD5_CTX& c, const char* buffer, int length) // stati
         buffer += blocksize ;
     }
 }
+
+
+
+/*
+template<typename T>
+inline void sdigest::Update_(MD5_CTX& c, T v )
+{
+    Update( c, (char*)&v, sizeof(T) ); 
+}
+
+template<typename T>
+inline void sdigest::add_( T v ){ Update_<T>(ctx, v );  }
+*/
+
+template<typename T>
+inline void sdigest::Update_(MD5_CTX& c, T* vv, size_t count )
+{
+    Update( c, (char*)vv, sizeof(T)*count ); 
+}
+
+template<typename T>
+inline void sdigest::add_( T* vv, size_t count ){ Update_<T>(ctx, vv, count  );  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 inline std::string sdigest::Finalize(MD5_CTX& c) // static
 {

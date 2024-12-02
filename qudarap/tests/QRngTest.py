@@ -2,7 +2,7 @@
 """
 ::
  
-    ipython -i QRngTest.py 
+    PICK=AB ~/o/qudarap/tests/QRngTest.sh pdb 
 
 """
 import logging 
@@ -89,34 +89,68 @@ class QRngTest(object):
         fig.savefig(path)
 
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     TEST = os.environ.get("TEST", "generate") 
+    PICK = os.environ.get("PICK", "A") 
 
-    reldir = "float/CHUNKED_CURANDSTATE"
-    #reldir = "double"
-    print("%s:TEST:%s reldir:%s" % ( sys.argv[0],TEST, reldir))
+    TYPE = "float"
+    a_IMPL = "CHUNKED_CURANDSTATE"
+    b_IMPL = "OLD_MONOLITHIC_CURANDSTATE"
 
-    t = QRngTest(reldir)  
+    a_reldir = "%s/%s" % (TYPE, a_IMPL)
+    b_reldir = "%s/%s" % (TYPE, b_IMPL)
 
-    if TEST == "generate":
-       u = t.u
-       print("u.shape\n",u.shape)
+    reldir = None
+    if PICK == "A":reldir = a_reldir
+    if PICK == "B":reldir = b_reldir
 
-    elif TEST == "generate_evid": 
+    print("%s:TEST:%s PICK:%s FOLD:%s reldir:%s" % ( sys.argv[0], TEST, PICK, QRngTest.FOLD, reldir))
 
-       t.uu_plot()
-       uu = t.uu
-       uuh = t.uuh
+    if PICK in tuple("AB"):       
+        t = QRngTest(reldir)  
 
-       print("uu.shape\n",uu.shape)
-       print("uu[:10]\n",uu[:10])
-       print("uu[-10:]\n",uu[-10:])
+        if TEST == "generate":
+            u = t.u
+            print("u.shape\n",u.shape)
+        elif TEST == "generate_evid": 
 
-       t.check_skipahead_shifts(1)
-    else:
-        print("%s:TEST:%s unhandled " % (sys.argv[0],TEST) )
+            t.uu_plot()
+            uu = t.uu
+            uuh = t.uuh
+
+            print("uu.shape\n",uu.shape)
+            print("uu[:10]\n",uu[:10])
+
+            t.check_skipahead_shifts(1)
+        else:
+            print("%s:TEST:%s unhandled : run ana/pdb individually for each TEST" % (sys.argv[0],TEST) )
+        pass
+
+    elif PICK == "AB":
+        a = QRngTest(a_reldir)  
+        b = QRngTest(b_reldir)  
+
+        if TEST == "generate":
+            au = a.u
+            bu = b.u
+            au_bu_match = np.all( au == bu )
+            print("au.shape\n",au.shape)
+            print("bu.shape\n",bu.shape)
+            print("au_bu_match:%d\n" % au_bu_match)
+            assert au_bu_match
+            
+        elif TEST == "generate_evid": 
+            auu = a.uu
+            buu = b.uu
+            auu_buu_match = np.all( auu == buu )  
+            print("auu.shape\n",auu.shape)
+            print("buu.shape\n",buu.shape)
+            print("auu_buu_match:%d\n" % auu_buu_match)
+            assert auu_buu_match
+        else:
+            print("%s:TEST:%s unhandled : run ana/pdb individually for each TEST" % (sys.argv[0],TEST) )
+        pass
     pass
 pass
 

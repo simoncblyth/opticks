@@ -85,9 +85,9 @@ NP* QRngTest::generate_evid( unsigned num_event, unsigned num_item, unsigned num
 
 int QRngTest::generate_evid()
 {
-    unsigned num_event = 10u ; 
-    unsigned num_item = 100u ; 
-    unsigned num_value = 256u ; 
+    unsigned num_event = 3u ; 
+    unsigned num_item = unsigned(qr.rngmax) ; ; 
+    unsigned num_value = 16u ; 
 
     NP* uu = generate_evid<float,1>( num_event, num_item, num_value ) ; 
 

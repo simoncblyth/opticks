@@ -22,7 +22,8 @@ export FOLD=$TMP/$name
 #mkdir -p $FOLD/double
 
 #test=generate
-test=generate_evid
+#test=generate_evid
+test=ALL
 
 export TEST=${TEST:-$test}
 

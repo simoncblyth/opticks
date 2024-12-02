@@ -1,10 +1,12 @@
 /**
-QCurandState_Test.cc
+QCurandStateTest.cc
 ======================
 
-Testing the chunk-centric approach 
+~/o/qudarap/tests/QCurandStateTest.sh
 
-~/o/qudarap/tests/QCurandState_Test.sh
+Used at install time by::
+
+     qudarap-prepare-installation 
 
 
 **/

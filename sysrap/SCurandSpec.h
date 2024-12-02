@@ -1,4 +1,10 @@
 #pragma once
+/**
+SCurandSpec.h
+==============
+
+
+**/
 
 #include <iostream>
 #include "SCurandChunk.h"
@@ -7,22 +13,37 @@
 struct SYSRAP_API SCurandSpec
 {
     typedef unsigned long long ULL ;
-    static constexpr const char* SPEC = "10x1M,9x10M,5x20M" ;  
-    static constexpr const char GROUP_DELIM  = ',' ; 
+
+    static constexpr const char* SEED_OFFSET = "0:0" ;  
+    static constexpr const char SEED_OFFSET_DELIM  = ':' ; 
+
+    static constexpr const char* CHUNKSIZES = "10x1M,9x10M,5x20M" ;  
+    static constexpr const char SIZEGROUP_DELIM  = ',' ; 
     static constexpr const char MUL_NUM_DELIM = 'x' ; 
 
-    static void ParseSpec(std::vector<ULL>& size, const char* _spec=nullptr ); 
+    static void ParseSeedOffset(ULL& seed, ULL& offset, const char* _spec=nullptr ); 
+    static void ParseChunkSizes(     std::vector<ULL>& size, const char* _spec=nullptr ); 
     static std::string Desc(const std::vector<ULL>& size); 
 };
 
-inline void SCurandSpec::ParseSpec(std::vector<ULL>& size, const char* _spec )
-{
-    const char* spec = _spec ? _spec : SPEC ;
 
-    //std::cout << "[ SCurandSpec::ParseSpec [" << spec << "]\n" ; 
+inline void SCurandSpec::ParseSeedOffset( ULL& seed, ULL& offset, const char* _spec )
+{
+    const char* spec = _spec ? _spec : SEED_OFFSET ; 
+
+    std::vector<std::string> elem ; 
+    sstr::Split(_spec, SEED_OFFSET_DELIM, elem ); 
+
+    seed   = elem.size() > 0 ? std::atoll( elem[0].c_str() ) : 0ull ;     
+    offset = elem.size() > 0 ? std::atoll( elem[1].c_str() ) : 0ull ;     
+}
+
+inline void SCurandSpec::ParseChunkSizes(std::vector<ULL>& size, const char* _spec )
+{
+    const char* spec = _spec ? _spec : CHUNKSIZES ; 
 
     std::vector<std::string> group ; 
-    sstr::Split(spec, GROUP_DELIM, group ); 
+    sstr::Split(spec, SIZEGROUP_DELIM, group ); 
 
     int num_group = group.size(); 
     for(int i=0 ; i < num_group ; i++)
@@ -37,11 +58,9 @@ inline void SCurandSpec::ParseSpec(std::vector<ULL>& size, const char* _spec )
 
         ULL mul = std::atoll(MUL); 
         ULL num = SCurandChunk::ParseNum(NUM); 
-        //std::cout << " SCurandSpec::ParseSpec num [" << num << "]\n" ; 
 
         for(ULL j=0 ; j < mul ; j++) size.push_back(num); 
     }
-    //std::cout << "] SCurandSpec::ParseSpec [" << spec << "]\n" ; 
 }
 
 inline std::string SCurandSpec::Desc(const std::vector<ULL>& _size)

@@ -6,7 +6,7 @@
 
 
 #ifdef OLD_MONOLITHIC_CURANDSTATE
-#include "SCurandState.hh"
+#include "SCurandStateMonolithic.hh"
 #else
 #include "SEventConfig.hh"
 #include "SCurandState.h"
@@ -46,7 +46,7 @@ QRng instanciation is invoked from QSim::UploadComponents
 QRng::QRng(unsigned skipahead_event_offset)
     :
 #ifdef OLD_MONOLITHIC_CURANDSTATE
-    path(SCurandState::Path()),        // null path will assert in Load
+    path(SCurandStateMonolithic::Path()),        // null path will assert in Load
     rngmax(0),
     d_rng_states(LoadAndUpload(rngmax, path)),   // rngmax set based on file_size/item_size of path 
 #else
@@ -234,7 +234,7 @@ QRng::LoadAndUpload
 rngmax
     input argument that determines how many chunks of curandState to load and upload
 
-(_SCurandState)cs
+(SCurandState)cs
     vector of SCurandChunk metadata on the chunk files 
 
 
@@ -246,6 +246,33 @@ For example with chunks of 10M each and rngmax of 25M::
 
 Read full chunks until doing so would go over rngmax, then 
 
+
+
+curandState load bytes digest 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    QRng::LoadAndUpload complete YES rngmax/M 3 rngmax 3000000 digest c5a80f522e9393efe0302b916affda06
+
+
+If rngmax lands on a border between files/chunks then the curandState load digest
+should match the output from md5sum on the corresponding state files. 
+For chunks it is necessary to concat the files first::
+
+    P[blyth@localhost RNG]$ md5sum QCurandStateMonolithic_3000000_0_0.bin
+    c5a80f522e9393efe0302b916affda06  QCurandStateMonolithic_3000000_0_0.bin
+
+    P[blyth@localhost RNG]$ cat SCurandChunk_0000_0000M_0001M_0_0.bin SCurandChunk_0001_0001M_0001M_0_0.bin SCurandChunk_0002_0002M_0001M_0_0.bin > /tmp/3M.bin
+    P[blyth@localhost RNG]$ md5sum /tmp/3M.bin
+    c5a80f522e9393efe0302b916affda06  /tmp/3M.bin
+
+    ## cat SCurandChunk_000[0-2]_00*M_0001M_0_0.bin > /tmp/3M.bin  ## wildcard way 
+
+
+Note that sizeof(curandState) is slightly larger than the itemsize in the file, 
+indicating that curandState in memory has some padding. Due to this digests of 
+the curandState in memory do not match those of the files or the loaded bytes.    
 
 **/
 
@@ -267,6 +294,9 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
         << " d0 " << d0 
         ;
 
+
+    sdigest dig ; 
+
     for(ULL i=0 ; i < available_chunk ; i++)
     {
         ULL remaining = rngmax - count ;  
@@ -287,7 +317,7 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
             << " d " << d 
             ;
 
-        scurandref cr = chunk.load(num) ;
+        scurandref cr = chunk.load(num, cs.dir, &dig ) ;
   
         assert( cr.states != nullptr); 
 
@@ -315,6 +345,17 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
 
     bool complete = count == rngmax ; 
     assert( complete );
+    std::string digest = dig.finalize(); 
+
+    std::cout 
+        << "QRng::LoadAndUpload"
+        << " complete " << ( complete ? "YES" : "NO ")
+        << " rngmax/M " << rngmax/M 
+        << " rngmax " << rngmax
+        << " digest " << digest 
+        << "\n"
+        ;
+
     return complete ? d0 : nullptr ; 
 }
 

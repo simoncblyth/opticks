@@ -23,14 +23,76 @@ qudarap-scd(){  cd $(qudarap-sdir); }
 qudarap-tcd(){  cd $(qudarap-tdir); }
 qudarap-bcd(){  cd $(qudarap-bdir); }
 
+
+
+
+qudarap-prepare-installation-notes(){ cat << EON
+qudarap-prepare-installation-notes
+---------------------------------------
+
+If you have lots of VRAM you can increase the 
+maximum possible launch size by expanding the CHUNKSIZES.  
+For example the initial 10x1M,9x10M,5x20M corresponds 
+to 200M curandStates in 24 file chunks.
+That could be expanded to 300M with::
+
+    10x1M,9x10M,10x20M
+
+NB you will get asserts if the change does not 
+ONLY expand the chunks. 
+
+To use different chunking delete all chunks and run again. 
+
+EON
+}
+
+
+
+qudarap-prepare-installation()
+{
+   # these are the defaults anyhow
+   export SCurandState__init_SEED_OFFSET=0:0
+   export SCurandState__init_CHUNKSIZES=10x1M,9x10M,5x20M
+
+   ${OPTICKS_PREFIX}/lib/QCurandStateTest
+
+   return $? 
+}
+
+qudarap-check-installation()
+{
+   echo -n
+}
+
+
+qudarap-divider()
+{
+   cat << EON
+===========================================================================================================
+  BELOW IS FOR THE OLD MONOLITHIC IMPL : LIKELY TO BE REMOVED ONCE CHUNKED APPROCH HAS BEEN FULLY TESTED
+===========================================================================================================
+EON
+}
+
+
+
+
+
+
+
+
+
+
+
 qudarap-prepare-sizes-Linux-(){  echo ${OPTICKS_QUDARAP_RNGMAX:-1,3,10} ; }
 qudarap-prepare-sizes-Darwin-(){ echo ${OPTICKS_QUDARAP_RNGMAX:-1,3} ; }
 qudarap-prepare-sizes(){ $FUNCNAME-$(uname)- | tr "," "\n"  ; }
 qudarap-rngdir(){ echo $(opticks-rngdir) ; }
 
-qudarap-prepare-installation-notes(){ cat << EON
-qudarap-prepare-installation-notes
------------------------------------
+
+qudarap-prepare-installation-old-notes(){ cat << EON
+qudarap-prepare-installation-old-notes
+---------------------------------------
 
 See::
 
@@ -52,14 +114,6 @@ HMM : THIS AWKWARDNESS SUGGESTS SPLITTING THE size and the seed:offset config
 EON
 }
 
-qudarap-prepare-installation()
-{
-   qudarap-prepare-installation-old
-}
-qudarap-check-installation()
-{
-   qudarap-check-installation-old
-}
 
 
 

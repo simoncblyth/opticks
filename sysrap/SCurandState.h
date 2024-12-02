@@ -97,15 +97,18 @@ namely a chunk vector that follows the spec vector.
 
 inline void SCurandState::init()
 {
+    all = {} ; 
     all.chunk_idx = 0 ; 
     all.chunk_offset = 0 ; 
-
     all.num = 0 ;
-    all.seed = 0 ; 
-    all.offset = 0 ; 
     all.states = nullptr ; 
 
-    SCurandSpec::ParseSpec(spec, nullptr); 
+    const char* SEED_OFFSET = ssys::getenvvar("SCurandState__init_SEED_OFFSET"); 
+    const char* CHUNKSIZES  = ssys::getenvvar("SCurandState__init_CHUNKSIZES"); 
+
+    SCurandSpec::ParseSeedOffset( all.seed, all.offset, SEED_OFFSET ); 
+    SCurandSpec::ParseChunkSizes( spec, CHUNKSIZES  ); 
+
     SCurandChunk::ParseDir(chunk, dir);  
 
     int num_spec = spec.size() ; 
