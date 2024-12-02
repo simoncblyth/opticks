@@ -18,21 +18,28 @@ bin=$name
 script=$name.py 
 
 export FOLD=$TMP/$name  
-mkdir -p $FOLD/float
-mkdir -p $FOLD/double
+#mkdir -p $FOLD/float
+#mkdir -p $FOLD/double
 
 #test=generate
-test=generate_with_skip
+test=generate_evid
 
-export TEST=${TEST:-test}
+export TEST=${TEST:-$test}
 
 defarg="info_run_ana"
 arg=${1:-$defarg}
 vars="BASH_SOURCE defarg arg FOLD bin script test TEST"
 
-export QRng__init_VERBOSE=1
-export NP__save_VERBOSE=1
 
+logging(){
+   type $FUNCNAME
+   export QRng=INFO
+   export QRng__init_VERBOSE=1
+   export NP__save_VERBOSE=1
+   #export SCurandChunk__ParseName_DEBUG=1
+}
+
+[ -n "$LOG" ] && logging 
 
 gdb__() 
 { 

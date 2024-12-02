@@ -70,6 +70,10 @@ struct sstr
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args ); 
 
+    template<typename ... Args>
+    static const char* Format( const char* fmt, Args ... args ); 
+
+
     static std::string FormatIndexDefault_( int idx, const char* hdr=nullptr  );  // "A000" "A001" "A002" ... 
     static std::string FormatIndex_( int idx, char prefix, int wid, const char* hdr ); 
     static const char* FormatIndex(  int idx, char prefix, int wid, const char* hdr ); 
@@ -558,6 +562,22 @@ inline std::string sstr::Format_( const char* fmt, Args ... args )
 }
 
 template std::string sstr::Format_( const char*, const char*, int, int ); 
+template std::string sstr::Format_( const char*, int ); 
+template std::string sstr::Format_( const char*, unsigned long long ); 
+
+
+template<typename ... Args>
+inline const char* sstr::Format( const char* fmt, Args ... args )
+{
+    std::string str = Format_(fmt, std::forward<Args>(args)... ); 
+    return strdup(str.c_str()); 
+}
+
+template const char* sstr::Format( const char*, const char*, int, int ); 
+template const char* sstr::Format( const char*, int  ); 
+template const char* sstr::Format( const char*, unsigned long long  ); 
+
+
 
 
 inline std::string sstr::FormatIndexDefault_( int idx, const char* hdr )

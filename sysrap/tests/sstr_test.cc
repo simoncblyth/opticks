@@ -1,4 +1,11 @@
-// ~/opticks/sysrap/tests/sstr_test.sh
+/**
+sstr_test.cc
+==============
+
+~/opticks/sysrap/tests/sstr_test.sh
+TEST=Format ~/opticks/sysrap/tests/sstr_test.sh
+
+**/
 
 #include <string>
 #include <vector>
@@ -427,6 +434,19 @@ void test_snprintf()
 } 
 
 
+void test_Format()
+{
+    const char* str_0 = sstr::Format("u_%d.npy", 214) ; 
+    const char* str_1 = sstr::Format("u_%llu.npy", 214ull ) ; 
+
+    std::cout 
+       << "test_Format\n"
+       << "str_0:[" << str_0 << "]\n"
+       << "str_1:[" << str_1 << "]\n"
+       ;
+} 
+
+
 
 struct Prof
 {
@@ -594,6 +614,7 @@ int sstr_test::Main()
     else if(strcmp(TEST, "ParseIntSpecList32")==0 )   test_ParseIntSpecList<int>();
     else if(strcmp(TEST, "ParseIntSpecListDemo")==0 ) test_ParseIntSpecList_demo<int>();
     else if(strcmp(TEST, "snprintf")==0 )             test_snprintf(); 
+    else if(strcmp(TEST, "Format") == 0 )             test_Format(); 
     else if(strcmp(TEST, "TAG")==0 )                  test_TAG(); 
     else if(strcmp(TEST, "StripTailUnique")==0 )      test_StripTail_Unique_0(); 
     else if(strcmp(TEST, "Extract") == 0 )            test_Extract(); 

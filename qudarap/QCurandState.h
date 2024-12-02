@@ -51,14 +51,15 @@ struct QCurandState
     void initChunk(SCurandChunk& c);
 
     std::string desc() const ; 
-
 }; 
-
 
 
 inline QCurandState* QCurandState::Create(const char* _dir)
 {
-    return new QCurandState(_dir); 
+    std::cerr << "[QCurandState::Create\n" ; 
+    QCurandState* qcs = new QCurandState(_dir); 
+    std::cerr << "]QCurandState::Create\n" ; 
+    return qcs ; 
 } 
 
 inline QCurandState::QCurandState(const char* _dir)
@@ -82,13 +83,16 @@ chunk files.
 
 inline void QCurandState::init()
 {
-    if(cs.is_complete()) return ; 
     int num_chunk = cs.chunk.size(); 
+    bool complete = cs.is_complete() ; 
     std::cerr 
         << "QCurandState::init"
-        << " num_chunk " << num_chunk  
+        << " cs.chunk.size " << num_chunk  
+        << " is_complete " << ( complete ? "YES" : "NO " ) 
         << "\n"
         ;
+
+    if(complete) return ; 
 
     for(int i=0 ; i < num_chunk ; i++)
     {

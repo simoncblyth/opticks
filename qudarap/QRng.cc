@@ -28,7 +28,7 @@ std::string QRng::Desc() // static
 {
     std::stringstream ss ; 
     ss << "QRng::Desc"
-       << " IMPL " << IMPL 
+       << " IMPL:" << IMPL 
        ;
     std::string str = ss.str() ;
     return str ;  
@@ -251,7 +251,7 @@ Read full chunks until doing so would go over rngmax, then
 
 curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static 
 {
-    LOG(info) << cs.desc() ; 
+    LOG(LEVEL) << cs.desc() ; 
 
     curandState* d0 = QU::device_alloc<curandState>( rngmax, "QRng::LoadAndUpload/rngmax" ); 
     curandState* d = d0 ; 
@@ -259,14 +259,12 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
     ULL available_chunk = cs.chunk.size(); 
     ULL count = 0 ; 
 
-    std::cout 
-        << "QRng::LoadAndUpload"
+    LOG(LEVEL)
         << " rngmax " << rngmax
         << " rngmax/M " << rngmax/M
         << " available_chunk " << available_chunk 
         << " cs.all.num/M " << cs.all.num/M 
         << " d0 " << d0 
-        << "\n"
         ;
 
     for(ULL i=0 ; i < available_chunk ; i++)
@@ -279,8 +277,7 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
 
         ULL num = partial_read ? remaining : chunk.ref.num ;
 
-        std::cout 
-            << "QRng::LoadAndUpload"
+        LOG(LEVEL)
             << " i " << std::setw(3) << i 
             << " chunk.ref.num/M " << std::setw(4) << chunk.ref.num/M
             << " count/M " << std::setw(4) << count/M
@@ -288,7 +285,6 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
             << " partial_read " << ( partial_read ? "YES" : "NO " )
             << " num/M " << std::setw(4) << num/M
             << " d " << d 
-            << "\n"
             ;
 
         scurandref cr = chunk.load(num) ;
@@ -296,12 +292,12 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
         assert( cr.states != nullptr); 
 
         bool num_match = cr.num == num ; 
-        if(!num_match) std::cerr
+
+        LOG_IF(fatal, !num_match)
             << "QRng::LoadAndUpload"
             << " num_match " << ( num_match ? "YES" : "NO " )
             << " cr.num/M " << cr.num/M
             << " num/M " << num/M
-            << "\n"
             ;
 
         assert(num_match); 
@@ -367,7 +363,7 @@ void QRng::Save( curandState* states, unsigned num_states, const char* path ) //
 std::string QRng::desc() const
 {
     std::stringstream ss ; 
-    ss << "QRng"
+    ss << "QRng::desc"
        << " path " << path 
        << " rngmax " << rngmax 
        << " qr " << qr
@@ -393,6 +389,13 @@ extern void QRng_generate(
     unsigned long long 
 );
 
+/**
+QRng::generate
+---------------
+
+Launch ni threads to generate ni*nv values, via [0:nv] loop in the kernel 
+
+**/
 
 template<typename T>
 void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahead_ )
@@ -414,30 +417,44 @@ template void QRng::generate<double>( double*, unsigned, unsigned, unsigned long
 
 
 
-
-
-
-
 template <typename T>
-extern void QRng_generate_2(dim3, dim3, qrng*, unsigned, T*, unsigned, unsigned );
+extern void QRng_generate_evid(
+    dim3, 
+    dim3, 
+    qrng*, 
+    unsigned, 
+    T*, 
+    unsigned, 
+    unsigned );
+
+
+/**
+QRng::generate_evid
+--------------------
+
+Launch ni threads to generate ni*nv values, via [0:nv] loop in the kernel 
+with some light touch encapsulation using event_idx to automate skipahead. 
+
+**/
+
 
 
 template<typename T>
-void QRng::generate_2( T* uu, unsigned ni, unsigned nv, unsigned event_idx )
+void QRng::generate_evid( T* uu, unsigned ni, unsigned nv, unsigned evid )
 {
-    const char* label = "QRng::generate_2:ni*nv" ; 
+    const char* label = "QRng::generate_evid:ni*nv" ; 
 
     T* d_uu = QU::device_alloc<T>(ni*nv, label );
 
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
 
-    QRng_generate_2<T>(numBlocks, threadsPerBlock, d_qr, event_idx, d_uu, ni, nv ); 
+    QRng_generate_evid<T>(numBlocks, threadsPerBlock, d_qr, evid, d_uu, ni, nv ); 
 
     QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv, label );
 }
 
 
-template void QRng::generate_2<float>( float*,   unsigned, unsigned, unsigned ); 
-template void QRng::generate_2<double>( double*, unsigned, unsigned, unsigned ); 
+template void QRng::generate_evid<float>( float*,   unsigned, unsigned, unsigned ); 
+template void QRng::generate_evid<double>( double*, unsigned, unsigned, unsigned ); 
 
 

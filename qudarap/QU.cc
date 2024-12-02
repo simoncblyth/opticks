@@ -464,7 +464,7 @@ template<typename T>
 void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items, const char* label)
 {
     size_t size = num_items*sizeof(T) ; 
-    LOG(info) 
+    LOG(LEVEL) 
         << "copy " << num_items 
         << " sizeof(T) " << sizeof(T) 
         << " label " << ( label ? label : "-" )

@@ -65,19 +65,9 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then
- gcc $name.cc -std=c++11 -lstdc++ -g -I.. -I$CUDA_PREFIX/include -o $bin
+    gcc $name.cc -std=c++11 -lstdc++ -g -I.. -I$CUDA_PREFIX/include -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi
-
-if [ "${arg/prep}" != "$arg" ]; then
-   iwd=$PWD 
-   cd $HOME/.opticks/rngcache/RNG
-   touch SCurandChunk_0000_1M_0_0.bin
-   touch SCurandChunk_0001_1M_0_0.bin
-   touch SCurandChunk_0002_1M_0_0.bin
-   touch SCurandChunk_0003_1M_0_0.bin
-   cd $iwd
-fi 
 
 if [ "${arg/run}" != "$arg" ]; then
     $bin

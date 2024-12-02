@@ -79,8 +79,8 @@ struct QUDARAP_API QRng
     std::string desc() const ; 
 
 
-    template <typename T> void generate(   T* u, unsigned ni, unsigned nv, unsigned long long skipahead_ ) ; 
-    template <typename T> void generate_2( T* u, unsigned ni, unsigned nv, unsigned event_idx ) ; 
+    template <typename T> void generate(      T* u, unsigned ni, unsigned nv, unsigned long long skipahead_ ) ; 
+    template <typename T> void generate_evid( T* u, unsigned ni, unsigned nv, unsigned evid ) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 

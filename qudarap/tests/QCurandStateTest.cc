@@ -17,7 +17,12 @@ int main(int argc, char** argv)
     std::cout << "[" << argv[0] << "\n" ; 
 
     QCurandState* cs = QCurandState::Create() ; 
-    std::cout << cs->desc() ;
+
+    std::cout 
+        << "[main cs.desc \n" 
+        << cs->desc() 
+        << "]main cs.desc \n" 
+        ;
 
     std::cout << "]" << argv[0] << "\n" ; 
     return 0 ; 

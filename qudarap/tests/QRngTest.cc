@@ -4,6 +4,9 @@ QRngTest.cc
 
 ~/o/qudarap/tests/QRngTest.sh 
 
+OPTICKS_MAX_PHOTON=M4 ~/o/qudarap/tests/QRngTest.sh
+
+
 **/
 
 #include "NP.hh"
@@ -15,12 +18,18 @@ QRngTest.cc
 
 struct QRngTest
 {
+    typedef unsigned long long ULL ; 
+    static constexpr const ULL M = 1000000ull ;
+    static constexpr const ULL skipahead_event_offset = 1ull  ;  // small for visibility  
+ 
     QRng qr ;
     QRngTest(); 
 
-    template <typename T> NP* generate_skipahead( int mode, unsigned num_event, unsigned num_item, unsigned num_value, unsigned skipahead_event_offset ); 
+    template <typename T, int MODE> NP* generate_evid( unsigned num_event, unsigned num_item, unsigned num_value ); 
 
-    int generate_with_skip();
+    int generate_evid();
+
+    static constexpr const char* _SKIPAHEAD = "QRngTest__generate_SKIPAHEAD" ; 
     int generate();
     int main();
 };
@@ -30,15 +39,13 @@ QRngTest::QRngTest()
     :
     qr()  // loads and uploads curandState
 {
-    LOG(info) << "[QRngTest" ; 
     LOG(info) << qr.desc() ; 
-    LOG(info) << "]QRngTest" ; 
 } 
    
 
 /**
-QRngTest::generate_skipahead
------------------------------
+QRngTest::generate_evid
+-------------------------
 
 num_event
 
@@ -48,59 +55,67 @@ num_item
 num_value
     number of randoms for the item 
 
+mode:0
+    low level manual setting of the skipahead using skipahead_event_offset
+
+mode:1
+    slight encapsulation for the event skipaheads
+
 skipahead_event_offset
     would normally be estimate of maximum number of random 
     values for the items : setting to 1 allows to check are getting the expected offsets into the sequence
 
 **/
 
-template <typename T>
-NP* QRngTest::generate_skipahead( int mode, unsigned num_event, unsigned num_item, unsigned num_value, unsigned skipahead_event_offset )
+template <typename T, int MODE>
+NP* QRngTest::generate_evid( unsigned num_event, unsigned num_item, unsigned num_value )
 {
     NP* uu = NP::Make<T>( num_event, num_item, num_value ); 
-
-    unsigned long long offset = skipahead_event_offset ; 
-
-    for( unsigned i=0 ; i < num_event ; i++)
+    for( unsigned evid=0 ; evid < num_event ; evid++)
     {
-        unsigned long long event_index = i ; 
-
-        T* target = uu->values<T>() + num_item*num_value*i ; 
-        if( mode == 0 )
+        T* target = uu->values<T>() + num_item*num_value*evid ; 
+        switch(MODE)
         {
-            unsigned long long skipahead_ = offset*event_index ; 
-            qr.generate<T>(   target, num_item, num_value, skipahead_ ) ;
-        } 
-        else if ( mode == 2 )
-        {
-            qr.generate_2<T>( target, num_item, num_value, i  ) ; break ; 
+           case 0: qr.generate<T>(      target, num_item, num_value, skipahead_event_offset*evid ) ; break ; 
+           case 1: qr.generate_evid<T>( target, num_item, num_value, evid  )                       ; break ; 
         }
     }
     return uu ; 
 }
 
-int QRngTest::generate_with_skip()
+int QRngTest::generate_evid()
 {
     unsigned num_event = 10u ; 
     unsigned num_item = 100u ; 
     unsigned num_value = 256u ; 
-    unsigned skipahead_event_offset = 1u ; 
 
-    int mode = 2 ; 
-    NP* uu = generate_skipahead<float>( mode, num_event, num_item, num_value, skipahead_event_offset ) ; 
+    NP* uu = generate_evid<float,1>( num_event, num_item, num_value ) ; 
 
     uu->save("$FOLD/float", QRng::IMPL, "uu.npy" ); 
 
     return 0 ; 
 }
 
+
+/**
+QRngTest::generate
+-------------------
+
+**/
+
 int QRngTest::generate()
 {
-    unsigned num = 1000000 ; 
-    unsigned long long skipahead_ = 0ull ; 
-    NP* u = NP::Make<float>( num ); 
-    qr.generate<float>(u->values<float>(), num, 1,  skipahead_ );
-    u->save("$FOLD/float", QRng::IMPL, "u.npy" ); 
+    unsigned ni = unsigned(qr.rngmax) ; 
+    unsigned nv = 16 ; 
+    unsigned long long skipahead = ssys::getenvull(_SKIPAHEAD, 0ull) ; 
+
+    NP* u = NP::Make<float>( ni, nv ); 
+
+    qr.generate<float>( u->values<float>(), ni, nv,  skipahead );
+
+    const char* name = sstr::Format("u_%llu.npy", skipahead ); 
+    u->save("$FOLD/float", QRng::IMPL, name ); 
+
     return 0 ; 
 }
 
@@ -112,8 +127,8 @@ int QRngTest::main()
     std::cout << "[QRngTest::main TEST:[" << TEST << "]\n" ; 
 
     int rc = 0 ; 
-    if(ALL||strcmp(TEST,"generate")==0)           rc += generate(); 
-    if(ALL||strcmp(TEST,"generate_with_skip")==0) rc += generate_with_skip(); 
+    if(ALL||strcmp(TEST,"generate")==0)      rc += generate(); 
+    if(ALL||strcmp(TEST,"generate_evid")==0) rc += generate_evid(); 
 
     std::cout << "]QRngTest::main rc:" << rc << "\n" ; 
 

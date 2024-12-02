@@ -1,10 +1,7 @@
 #include "stdio.h"
 
 #include "scuda.h"
-//#include "curand_kernel.h"
 #include "scurand.h"
-
-
 #include "qrng.h"
 
 /**
@@ -54,7 +51,7 @@ template void QRng_generate(dim3, dim3, double*, unsigned, unsigned, curandState
 
 
 /**
-_QRng_generate_2
+_QRng_generate_evid
 --------------------
 
 Try with a little bit of encapsulation into qrng. 
@@ -66,7 +63,7 @@ of randoms to be familiar/standard and suffer no overheads.
 **/
 
 template <typename T>
-__global__ void _QRng_generate_2(qrng* qr, unsigned event_idx, T* uu, unsigned ni, unsigned nv )
+__global__ void _QRng_generate_evid(qrng* qr, unsigned event_idx, T* uu, unsigned ni, unsigned nv )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= ni) return;
@@ -87,13 +84,13 @@ __global__ void _QRng_generate_2(qrng* qr, unsigned event_idx, T* uu, unsigned n
 }
 
 template <typename T>
-extern void QRng_generate_2(dim3 numBlocks, dim3 threadsPerBlock, qrng* qr, unsigned event_idx, T* uu, unsigned ni, unsigned nv )
+extern void QRng_generate_evid(dim3 numBlocks, dim3 threadsPerBlock, qrng* qr, unsigned event_idx, T* uu, unsigned ni, unsigned nv )
 {
-    printf("//QRng_generate_2 event_idx %d ni %d nv %d \n", event_idx, ni, nv ); 
-    _QRng_generate_2<T><<<numBlocks,threadsPerBlock>>>( qr, event_idx, uu, ni, nv );
+    printf("//QRng_generate_evid event_idx %d ni %d nv %d \n", event_idx, ni, nv ); 
+    _QRng_generate_evid<T><<<numBlocks,threadsPerBlock>>>( qr, event_idx, uu, ni, nv );
 } 
 
-template void QRng_generate_2(dim3, dim3, qrng*, unsigned, float*,  unsigned, unsigned ); 
-template void QRng_generate_2(dim3, dim3, qrng*, unsigned, double*, unsigned, unsigned ); 
+template void QRng_generate_evid(dim3, dim3, qrng*, unsigned, float*,  unsigned, unsigned ); 
+template void QRng_generate_evid(dim3, dim3, qrng*, unsigned, double*, unsigned, unsigned ); 
 
 

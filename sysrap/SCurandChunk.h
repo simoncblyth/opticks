@@ -14,6 +14,7 @@ SCurandChunk.h
 #include "sdirectory.h"
 #include "spath.h"
 #include "sstr.h"
+#include "ssys.h"
 #include "scurandref.h"
 
 #include "SYSRAP_API_EXPORT.hh"
@@ -41,6 +42,8 @@ struct SYSRAP_API SCurandChunk
     static std::string Desc(const SCurandChunk& chunk, const char* _dir=nullptr ); 
     static std::string Desc(const std::vector<SCurandChunk>& chunk, const char* _dir=nullptr ); 
     static int ParseDir( std::vector<SCurandChunk>& chunk, const char* _dir=nullptr );
+
+    static constexpr const char* ParseName_DEBUG = "SCurandChunk__ParseName_DEBUG" ; 
     static int ParseName( SCurandChunk& chunk, const char* name ); 
     static long ParseNum(const char* num); 
 
@@ -192,7 +195,15 @@ inline int SCurandChunk::ParseName( SCurandChunk& chunk, const char* name )
     chunk.ref.offset       = std::atoll(elem[4].c_str()) ; 
     chunk.ref.states       = nullptr ; 
 
-    std::cout << "SCurandChunk::ParseName " << std::setw(30) << n << " : [" << meta << "][" << chunk.name() << "]\n" ; 
+    int DEBUG = ssys::getenvint(ParseName_DEBUG,0); 
+
+    if(DEBUG > 0) std::cout 
+         << ParseName_DEBUG  
+         << " " << std::setw(30) << n 
+         << " : [" << meta << "][" 
+         << chunk.name() 
+         << "]\n" 
+         ; 
     return 0 ; 
 }
 

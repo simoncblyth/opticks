@@ -7,7 +7,7 @@
 """
 import logging 
 log = logging.getLogger(__name__)
-import os, numpy as np
+import os,sys, numpy as np
 
 try:
     import matplotlib.pyplot as plt 
@@ -22,20 +22,26 @@ class QRngTest(object):
     FOLD = os.path.expandvars("$FOLD")
     def __init__(self, reldir):
         base = os.path.join(self.FOLD, reldir)
-        uu = np.load(os.path.join(base, "uu.npy"))
-        dtype = uu.dtype
 
-        if reldir == "float":
-            assert dtype == np.float32
-        elif reldir == "double":
-            assert dtype == np.float64
-        else:
-            assert 0, "unexpected reldir %s " % reldir
-        pass
+        upath = os.path.join(base, "u_0.npy")
+        uupath = os.path.join(base, "uu.npy")
+
+        u = np.load(upath) if os.path.exists(upath) else None
+        uu = np.load(uupath) if os.path.exists(uupath) else None
+
+        xtype = np.float32 if reldir.startswith("float") else np.float64
+
+        if not u is None:assert(u.dtype == xtype)
+        if not uu is None:assert(uu.dtype == xtype)
+
         self.reldir = reldir
-        self.dtype = dtype
+        self.upath = upath
+        self.uupath = uupath
+
+        self.u = u
         self.uu = uu
-        self.h = np.histogram( self.uu )
+        self.uuh = np.histogram( self.uu ) if not uu is None else None
+
         self.title = "qudarap/tests/QRngTest.py %s " % base
 
 
@@ -45,6 +51,10 @@ class QRngTest(object):
 
            In [21]: np.all( uu[1,:,:-1] == uu[0,:,1:] )
            Out[21]: True
+
+        The first dimension is the event index, so with skipahead per event
+        of one expect to see the same randoms for each event but with a shift
+        of one from the prior event. 
 
         """
         uu = self.uu
@@ -57,10 +67,13 @@ class QRngTest(object):
             log.info("i0 %d i1 %d " % (i0,i1)) 
         pass
 
-    def plot(self):
+    def uu_plot(self):
+        """
+        Plot the uuh histogram : should be flat from 0 to 1 
+        """
         if plt is None: return 
         t = self
-        h = self.h 
+        h = self.uuh 
 
         fig, ax = plt.subplots(figsize=[12.8,7.2])
         fig.suptitle(self.title)
@@ -79,18 +92,32 @@ class QRngTest(object):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+    TEST = os.environ.get("TEST", "generate") 
 
-    reldir = "float"
+    reldir = "float/CHUNKED_CURANDSTATE"
     #reldir = "double"
+    print("%s:TEST:%s reldir:%s" % ( sys.argv[0],TEST, reldir))
+
     t = QRngTest(reldir)  
-    t.plot()
-    uu = t.uu
-    h = t.h
 
-    print("uu.shape\n",uu.shape)
-    print("uu[:10]\n",uu[:10])
-    print("uu[-10:]\n",uu[-10:])
+    if TEST == "generate":
+       u = t.u
+       print("u.shape\n",u.shape)
 
-    t.check_skipahead_shifts(1)
+    elif TEST == "generate_evid": 
+
+       t.uu_plot()
+       uu = t.uu
+       uuh = t.uuh
+
+       print("uu.shape\n",uu.shape)
+       print("uu[:10]\n",uu[:10])
+       print("uu[-10:]\n",uu[-10:])
+
+       t.check_skipahead_shifts(1)
+    else:
+        print("%s:TEST:%s unhandled " % (sys.argv[0],TEST) )
+    pass
+pass
 
 
