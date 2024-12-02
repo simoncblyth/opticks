@@ -1,14 +1,14 @@
 #!/bin/bash 
 usage(){ cat << EOU
-QCurandState_Test.sh
-=====================
+QCurandStateTest.sh : testing the new chunk-centric curandState approach
+=========================================================================
 
-~/o/qudarap/tests/QCurandState_Test.sh
+~/o/qudarap/tests/QCurandStateTest.sh
 
 EOU
 }
 
-name=QCurandState_Test
+name=QCurandStateTest
 
 
 gdb__ () 

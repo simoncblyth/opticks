@@ -28,7 +28,7 @@ states GPU side.
 Related
 --------
 
-qudarap/QCurandState.{hh,cc,cu}
+qudarap/QCurandStateMonolithic.{hh,cc,cu}
    alloc+create+download+save
 
 sysrap/SLaunchSequence.h
@@ -44,7 +44,7 @@ qudarap/QRng.{hh.cc}
 #include "SYSRAP_API_EXPORT.hh"
 
 
-struct SYSRAP_API _SCurandState   
+struct SYSRAP_API SCurandState   
 {
     typedef unsigned long long ULL ;
 
@@ -55,7 +55,7 @@ struct SYSRAP_API _SCurandState
 
     const char* getDir() const ; 
 
-    _SCurandState(const char* dir=nullptr); 
+    SCurandState(const char* dir=nullptr); 
 
     void init(); 
     void initFromSpec(); 
@@ -69,12 +69,12 @@ struct SYSRAP_API _SCurandState
 }; 
 
 
-inline const char* _SCurandState::getDir() const 
+inline const char* SCurandState::getDir() const 
 {
     return SCurandChunk::Dir(dir); 
 }
 
-inline _SCurandState::_SCurandState(const char* _dir)
+inline SCurandState::SCurandState(const char* _dir)
     :
     dir( _dir ? strdup(_dir) : nullptr )
 {
@@ -83,7 +83,7 @@ inline _SCurandState::_SCurandState(const char* _dir)
 
 
 /**
-_SCurandState::init
+SCurandState::init
 ---------------------
 
 1. parse SPEC populating spec vector with slots per chunk values
@@ -95,7 +95,7 @@ namely a chunk vector that follows the spec vector.
 
 **/
 
-inline void _SCurandState::init()
+inline void SCurandState::init()
 {
     all.chunk_idx = 0 ; 
     all.chunk_offset = 0 ; 
@@ -128,7 +128,7 @@ inline void _SCurandState::init()
 
 
 
-inline void _SCurandState::initFromSpec()
+inline void SCurandState::initFromSpec()
 {
     long num_spec = spec.size() ; 
     for(long i=0 ; i < num_spec ; i++) 
@@ -140,7 +140,7 @@ inline void _SCurandState::initFromSpec()
 
 
 /**
-_SCurandState::initFromDir
+SCurandState::initFromDir
 ----------------------------
 
 Expecting to find the first chunks to be consistent
@@ -164,7 +164,7 @@ but that luxury feature has not been implemented.
 
 **/
 
-inline void _SCurandState::initFromDir()
+inline void SCurandState::initFromDir()
 {
     ULL num_spec = spec.size() ; 
 
@@ -186,7 +186,7 @@ inline void _SCurandState::initFromDir()
 
             assert(r_chunk_follows_spec); 
             if(!r_chunk_follows_spec) std::cerr
-                << "_SCurandState::initFromDir"
+                << "SCurandState::initFromDir"
                 << " r_chunk_follows_spec " << ( r_chunk_follows_spec ? "YES" : "NO " ) << "\n"
                 << " r.chunk_idx " << r->chunk_idx << " i " << i << "\n" 
                 << " r.chunk_offset " << r->chunk_offset << " num_cumulative " << num_cumulative << "\n" 
@@ -207,7 +207,7 @@ inline void _SCurandState::initFromDir()
 
 
 
-inline void _SCurandState::addChunk(ULL num)
+inline void SCurandState::addChunk(ULL num)
 {
     int num_chunk = chunk.size(); 
     ULL num_cumulative = SCurandChunk::NumTotal_InRange(chunk, 0, num_chunk ); 
@@ -224,13 +224,13 @@ inline void _SCurandState::addChunk(ULL num)
     chunk.push_back(c); 
 }
 
-inline unsigned long long _SCurandState::num_total() const
+inline unsigned long long SCurandState::num_total() const
 {
     return SCurandChunk::NumTotal_SpecCheck(chunk, spec); 
 }
 
 
-inline std::string _SCurandState::desc() const 
+inline std::string SCurandState::desc() const 
 {
     const char* _dir = getDir();
 
@@ -241,7 +241,7 @@ inline std::string _SCurandState::desc() const
 
     std::stringstream ss; 
     ss 
-       << "[_SCurandState::desc\n" 
+       << "[SCurandState::desc\n" 
        << " dir " << ( dir ? dir : "-" ) << "\n" 
        << " getDir " << ( _dir ? _dir : "-" ) << "\n" 
        << " num_spec " << num_spec  << "\n" 
@@ -252,13 +252,13 @@ inline std::string _SCurandState::desc() const
        << SCurandSpec::Desc(spec)  
        << "\n"  
        << SCurandChunk::Desc(chunk, dir) 
-       << "]_SCurandState::desc\n" 
+       << "]SCurandState::desc\n" 
        ; 
     std::string str = ss.str(); 
     return str ;   
 } 
 
-inline bool _SCurandState::is_complete() const
+inline bool SCurandState::is_complete() const
 {
     int num_spec = spec.size(); 
     int num_valid = SCurandChunk::CountValid(chunk, dir );  

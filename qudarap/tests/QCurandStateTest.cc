@@ -12,10 +12,13 @@ Testing the chunk-centric approach
 #include <iostream>
 #include "QCurandState.h"
 
-int main()
+int main(int argc, char** argv)
 {
-    _QCurandState* cs = _QCurandState::Create() ; 
+    std::cout << "[" << argv[0] << "\n" ; 
+
+    QCurandState* cs = QCurandState::Create() ; 
     std::cout << cs->desc() ;
 
+    std::cout << "]" << argv[0] << "\n" ; 
     return 0 ; 
 }

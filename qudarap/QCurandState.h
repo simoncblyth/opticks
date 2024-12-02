@@ -40,12 +40,12 @@ Related tests::
 extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* lseq, scurandref* cr, scurandref* d_cr) ; 
 
 
-struct _QCurandState
+struct QCurandState
 {
-    static _QCurandState* Create(const char* _dir=nullptr); 
+    static QCurandState* Create(const char* _dir=nullptr); 
 
-    _SCurandState cs = {} ;
-    _QCurandState(const char* _dir); 
+    SCurandState cs = {} ;
+    QCurandState(const char* _dir); 
 
     void init(); 
     void initChunk(SCurandChunk& c);
@@ -56,12 +56,12 @@ struct _QCurandState
 
 
 
-inline _QCurandState* _QCurandState::Create(const char* _dir)
+inline QCurandState* QCurandState::Create(const char* _dir)
 {
-    return new _QCurandState(_dir); 
+    return new QCurandState(_dir); 
 } 
 
-inline _QCurandState::_QCurandState(const char* _dir)
+inline QCurandState::QCurandState(const char* _dir)
     :
     cs(_dir)
 {
@@ -70,7 +70,7 @@ inline _QCurandState::_QCurandState(const char* _dir)
 
 
 /**
-_QCurandState::init
+QCurandState::init
 --------------------
 
 Completeness means all the chunk files exist. 
@@ -80,12 +80,12 @@ chunk files.
 
 **/
 
-inline void _QCurandState::init()
+inline void QCurandState::init()
 {
     if(cs.is_complete()) return ; 
     int num_chunk = cs.chunk.size(); 
     std::cerr 
-        << "_QCurandState::init"
+        << "QCurandState::init"
         << " num_chunk " << num_chunk  
         << "\n"
         ;
@@ -100,7 +100,7 @@ inline void _QCurandState::init()
 
 
 /**
-_QCurandState::initChunk : generates curandState for chunk and saves to file
+QCurandState::initChunk : generates curandState for chunk and saves to file
 -------------------------------------------------------------------------------
 
 1. prep sequence of launches needed for c.ref.num slots
@@ -117,7 +117,7 @@ _QCurandState::initChunk : generates curandState for chunk and saves to file
 **/
 
 
-inline void _QCurandState::initChunk(SCurandChunk& c)
+inline void QCurandState::initChunk(SCurandChunk& c)
 {
     scurandref* cr = &(c.ref) ; 
 
@@ -144,10 +144,10 @@ inline void _QCurandState::initChunk(SCurandChunk& c)
 
 
 
-inline std::string _QCurandState::desc() const 
+inline std::string QCurandState::desc() const 
 {
     std::stringstream ss ; 
-    ss << "_QCurandState::desc\n"
+    ss << "QCurandState::desc\n"
        << cs.desc() 
        ; 
 

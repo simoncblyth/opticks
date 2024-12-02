@@ -42,7 +42,7 @@ inline SCurandChunk SCurandState_test::Chunk()
 
 inline int SCurandState_test::ctor()
 {
-    _SCurandState cs ; 
+    SCurandState cs ; 
     std::cout << cs.desc(); 
     return 0 ; 
 }

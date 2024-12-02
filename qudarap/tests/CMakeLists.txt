@@ -32,7 +32,7 @@ set(TEST_SOURCES
 
 
    QCurandStateMonolithicTest.cc
-   QCurandState_Test.cc
+   QCurandStateTest.cc
 )
 
 

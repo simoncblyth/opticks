@@ -249,7 +249,7 @@ Read full chunks until doing so would go over rngmax, then
 
 **/
 
-curandState* QRng::LoadAndUpload(ULL rngmax, const _SCurandState& cs)  // static 
+curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static 
 {
     LOG(info) << cs.desc() ; 
 

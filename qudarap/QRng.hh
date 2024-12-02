@@ -57,8 +57,8 @@ struct QUDARAP_API QRng
     static curandState* UploadAndFree(curandState* h_states, ULL num_states ); 
 #else
     static constexpr const char* IMPL = "CHUNKED_CURANDSTATE" ; 
-    static curandState* LoadAndUpload(ULL rngmax, const _SCurandState& cs); 
-    _SCurandState   cs ; 
+    static curandState* LoadAndUpload(ULL rngmax, const SCurandState& cs); 
+    SCurandState   cs ; 
 #endif
     static void Save( curandState* states, unsigned num_states, const char* path ); 
 
