@@ -184,22 +184,25 @@ inline void net_hdr::unpack( char* data, unsigned num_bytes, std::vector<unsigne
 
 struct NPS
 {
-    NPS(std::vector<int>& shape_ ) : shape(shape_) {}  ; 
+    typedef std::int64_t INT ; 
+    static constexpr const INT ONE = 1 ;  // -std=c++11 SOMETIMES GIVES LINK ERRORS : but NOT -std=c++17 
 
-    static int set_shape(std::vector<int>& shape_, int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) 
+    NPS(std::vector<INT>& shape_ ) : shape(shape_) {}  ; 
+
+    static NPS::INT set_shape(std::vector<INT>& shape_, INT ni, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) 
     {
         NPS sh(shape_); 
         sh.set_shape(ni,nj,nk,nl,nm,no); 
         return sh.size(); 
     }
 
-    static int copy_shape(std::vector<int>& dst, const std::vector<int>& src) 
+    static NPS::INT copy_shape(std::vector<INT>& dst, const std::vector<INT>& src) 
     {
-        for(unsigned i=0 ; i < src.size() ; i++) dst.push_back(src[i]); 
+        for(INT i=0 ; i < INT(src.size()) ; i++) dst.push_back(src[i]); 
         return size(dst); 
     }
 
-    static int copy_shape(std::vector<int>& dst, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1) 
+    static NPS::INT copy_shape(std::vector<INT>& dst, INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1) 
     {
         if(ni >= 0) dst.push_back(ni);   // experimental allow zero items
         if(nj > 0) dst.push_back(nj); 
@@ -210,7 +213,7 @@ struct NPS
         return size(dst); 
     }
 
-    void set_shape(int ni, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1)
+    void set_shape(INT ni, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1)
     {
         if(ni >= 0) shape.push_back(ni);   // experimental allow zero items
         if(nj > 0) shape.push_back(nj); 
@@ -219,15 +222,15 @@ struct NPS
         if(nm > 0) shape.push_back(nm); 
         if(no > 0) shape.push_back(no); 
     }
-    void set_shape(const std::vector<int>& other)
+    void set_shape(const std::vector<INT>& other)
     {
         copy_shape(shape, other); 
     }
 
-    static int change_shape(std::vector<int>& shp, int ni_, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1)
+    static NPS::INT change_shape(std::vector<INT>& shp, INT ni_, INT nj_=-1, INT nk_=-1, INT nl_=-1, INT nm_=-1, INT no_=-1)
     {
-        unsigned nv0 = size(shp); 
-        unsigned nv1 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_)*std::max(1,no_) ; 
+        INT nv0 = size(shp); 
+        INT nv1 = std::max(ONE,ni_)*std::max(ONE,nj_)*std::max(ONE,nk_)*std::max(ONE,nl_)*std::max(ONE,nm_)*std::max(ONE,no_) ; 
 
         if( nv0 != nv1 )  // try to devine a missing -1 entry 
         {
@@ -238,7 +241,7 @@ struct NPS
             else if( nm_ < 0 ) nm_ = nv0/nv1 ; 
             else if( no_ < 0 ) no_ = nv0/nv1 ; 
 
-            unsigned nv2 = std::max(1,ni_)*std::max(1,nj_)*std::max(1,nk_)*std::max(1,nl_)*std::max(1,nm_)*std::max(1,no_) ; 
+            INT nv2 = std::max(ONE,ni_)*std::max(ONE,nj_)*std::max(ONE,nk_)*std::max(ONE,nl_)*std::max(ONE,nm_)*std::max(ONE,no_) ; 
             bool expect = nv0 % nv1 == 0 && nv2 == nv0 ; 
 
             if(!expect) std::cout 
@@ -263,30 +266,30 @@ struct NPS
         return copy_shape(shp, ni_, nj_, nk_, nl_, nm_, no_ ); 
     }
 
-    static int product(const std::vector<int>& src )
+    static NPS::INT product(const std::vector<INT>& src )
     {
-        int nd = src.size(); 
-        int prod = 1 ; 
-        for(int i=0 ; i < nd ; i++) prod *= src[i] ; 
+        INT nd = src.size(); 
+        INT prod = 1 ; 
+        for(INT i=0 ; i < nd ; i++) prod *= src[i] ; 
         return prod ; 
     }
-    static void reshape(std::vector<int>& dst, const std::vector<int>& src )
+    static void reshape(std::vector<INT>& dst, const std::vector<INT>& src )
     {
         assert( product(dst) == product(src) ); 
         dst = src ; 
     }
 
     template<int P>
-    static void size_2D( int& width, int& height, const std::vector<int>& sh ) 
+    static void size_2D( INT& width, INT& height, const std::vector<INT>& sh ) 
     {
-        int nd = sh.size() ; 
+        INT nd = sh.size() ; 
         assert( nd > 1 && sh[nd-1] == P );  
         width = sh[nd-2] ; 
         height = 1 ; 
-        for(int i=0 ; i < nd-2 ; i++) height *= sh[i] ; 
+        for(INT i=0 ; i < nd-2 ; i++) height *= sh[i] ; 
     }
 
-    static std::string desc(const std::vector<int>& shape)
+    static std::string desc(const std::vector<INT>& shape)
     {
         std::stringstream ss ; 
         ss << "("  ; 
@@ -295,7 +298,7 @@ struct NPS
         return ss.str(); 
     } 
 
-    static std::string json(const std::vector<int>& shape)
+    static std::string json(const std::vector<INT>& shape)
     {
         std::stringstream ss ; 
         ss << "["  ; 
@@ -308,22 +311,22 @@ struct NPS
         return ss.str(); 
     } 
 
-    static int size(const std::vector<int>& shape)
+    static NPS::INT size(const std::vector<INT>& shape)
     {
-        int ndim = int(shape.size()); 
-        int sz = 1;
-        for(int i=0; i<ndim; ++i) sz *= shape[i] ;
+        INT ndim = INT(shape.size()); 
+        INT sz = 1;
+        for(INT i=0; i<ndim; ++i) sz *= shape[i] ;
         return ndim == 0 ? 0 : sz ;  
     }
 
-    static int itemsize(const std::vector<int>& shape)
+    static NPS::INT itemsize(const std::vector<INT>& shape)
     {
-        int sz = 1;
+        INT sz = 1;
         for(unsigned i=1; i<shape.size(); ++i) sz *= shape[i] ;
         return sz ;  
     }
 
-    static int itemsize_(const std::vector<int>& shape, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 )
+    static NPS::INT itemsize_(const std::vector<INT>& shape, INT i=-1, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1 )
     {
         // assert only one transition from valid indices to skipped indices 
         if( i == -1 )                                                      assert( j == -1 && k == -1 &&  l == -1 && m == -1 && o == -1 ) ;  
@@ -342,7 +345,7 @@ struct NPS
         if( i > -1 && j > -1 && k >  -1 && l >  -1 && m >  -1 && o == -1 ) dim0 = 5 ; 
         if( i > -1 && j > -1 && k >  -1 && l >  -1 && m >  -1 && o >  -1 ) dim0 = 6 ; 
 
-        int sz = 1;
+        INT sz = 1;
         if( dim0 < shape.size() )
         {
             for(unsigned d=dim0; d<shape.size(); ++d) sz *= shape[d] ;
@@ -366,37 +369,37 @@ struct NPS
 
     std::string desc() const { return desc(shape) ; }
     std::string json() const { return json(shape) ; }
-    int size() const { return size(shape) ; }
+    NPS::INT size() const { return size(shape) ; }
      
 
-    static int ni_(const std::vector<int>& shape) { return shape.size() > 0 ? shape[0] : 1 ;  }
-    static int nj_(const std::vector<int>& shape) { return shape.size() > 1 ? shape[1] : 1 ;  }
-    static int nk_(const std::vector<int>& shape) { return shape.size() > 2 ? shape[2] : 1 ;  }
-    static int nl_(const std::vector<int>& shape) { return shape.size() > 3 ? shape[3] : 1 ;  }
-    static int nm_(const std::vector<int>& shape) { return shape.size() > 4 ? shape[4] : 1 ;  }
-    static int no_(const std::vector<int>& shape) { return shape.size() > 5 ? shape[5] : 1 ;  }
+    static NPS::INT ni_(const std::vector<INT>& shape) { return shape.size() > 0 ? shape[0] : 1 ;  }
+    static NPS::INT nj_(const std::vector<INT>& shape) { return shape.size() > 1 ? shape[1] : 1 ;  }
+    static NPS::INT nk_(const std::vector<INT>& shape) { return shape.size() > 2 ? shape[2] : 1 ;  }
+    static NPS::INT nl_(const std::vector<INT>& shape) { return shape.size() > 3 ? shape[3] : 1 ;  }
+    static NPS::INT nm_(const std::vector<INT>& shape) { return shape.size() > 4 ? shape[4] : 1 ;  }
+    static NPS::INT no_(const std::vector<INT>& shape) { return shape.size() > 5 ? shape[5] : 1 ;  }
 
-    int ni_() const { return ni_(shape) ; }
-    int nj_() const { return nj_(shape) ; }
-    int nk_() const { return nk_(shape) ; }
-    int nl_() const { return nl_(shape) ; }
-    int nm_() const { return nm_(shape) ; }
-    int no_() const { return no_(shape) ; }
+    NPS::INT ni_() const { return ni_(shape) ; }
+    NPS::INT nj_() const { return nj_(shape) ; }
+    NPS::INT nk_() const { return nk_(shape) ; }
+    NPS::INT nl_() const { return nl_(shape) ; }
+    NPS::INT nm_() const { return nm_(shape) ; }
+    NPS::INT no_() const { return no_(shape) ; }
 
-    int idx(int i, int j, int k, int l, int m, int o)
+    NPS::INT idx(INT i, INT j, INT k, INT l, INT m, INT o)
     {
-        //int ni = ni_() ;
-        int nj = nj_() ; 
-        int nk = nk_() ; 
-        int nl = nl_() ;
-        int nm = nm_() ;
-        int no = no_() ;
+        [[maybe_unused]] INT ni = ni_() ;
+        INT nj = nj_() ; 
+        INT nk = nk_() ; 
+        INT nl = nl_() ;
+        INT nm = nm_() ;
+        INT no = no_() ;
 
         return  i*nj*nk*nl*nm*no + j*nk*nl*nm*no + k*nl*nm*no + l*nm*no + m*no + o ;
     }
 
 
-    std::vector<int>& shape ; 
+    std::vector<INT>& shape ; 
 };
 
 
@@ -516,7 +519,7 @@ struct U
     static int PathType( const char* path );  // directory:1 file:2 
     static int PathType( const char* base, const char* name );  // directory:1 file:2 
 
-    static void DirList(std::vector<std::string>& names, const char* path, 
+    static void DirList(std::vector<std::string>& names, const char* _path, 
                 const char* ext=nullptr, bool exclude=false, bool allow_nonexisting=false ); 
     static void Trim(std::vector<std::string>& names, const char* ext); 
     static void Split(const char* str, char delim,   std::vector<std::string>& elem); 
@@ -632,6 +635,8 @@ U::LoadVec
 
 Load bytes from binary file into vector that is sized accordingly. 
 The type is expected to be "char" or "unsigned char" 
+
+HMM: does this belong in NPX.h ? 
 
 **/
 template<typename T>
@@ -1406,12 +1411,14 @@ ext:nullptr
 
 inline void U::DirList(
     std::vector<std::string>& names, 
-    const char* path, 
+    const char* _path, 
     const char* ext, 
     bool exclude, 
     bool allow_nonexisting
    )
 {
+    const char* path = Resolve(_path); 
+
     DIR* dir = opendir(path) ;
     if(!dir && allow_nonexisting) return ; 
     if(!dir) std::cout << "U::DirList FAILED TO OPEN DIR " << ( path ? path : "-" ) << std::endl ; 
@@ -1836,48 +1843,50 @@ inline char* U::FirstToLastDigit(const char* str)
 
 struct NPU
 {
+    typedef std::int64_t INT ; 
+
     static constexpr char* MAGIC = (char*)"\x93NUMPY" ; 
     static constexpr bool  FORTRAN_ORDER = false ;
 
     template<typename T>
-    static std::string make_header(const std::vector<int>& shape );
+    static std::string make_header(const std::vector<INT>& shape );
 
     template<typename T>
-    static std::string make_jsonhdr(const std::vector<int>& shape );
+    static std::string make_jsonhdr(const std::vector<INT>& shape );
 
-    static void parse_header(std::vector<int>& shape, std::string& descr, char& uifc, int& ebyte, const std::string& hdr );
+    static void parse_header(std::vector<INT>& shape, std::string& descr, char& uifc, INT& ebyte, const std::string& hdr );
     static int  _parse_header_length(const std::string& hdr );
-    static void _parse_tuple(std::vector<int>& shape, const std::string& sh );
-    static void _parse_dict(bool& little_endian, char& uifc, int& width, std::string& descr, bool& fortran_order, const char* dict); 
+    static void _parse_tuple(std::vector<INT>& shape, const std::string& sh );
+    static void _parse_dict(bool& little_endian, char& uifc, INT& width, std::string& descr, bool& fortran_order, const char* dict); 
     static void _parse_dict(std::string& descr, bool& fortran_order, const char* dict);
-    static void _parse_descr(bool& little_endian, char& uifc, int& width, const char* descr);  
+    static void _parse_descr(bool& little_endian, char& uifc, INT& width, const char* descr);  
 
-    static int  _dtype_ebyte(const char* dtype);
-    static char _dtype_uifc(const char* dtype);
+    static NPU::INT  _dtype_ebyte(const char* dtype);
+    static char      _dtype_uifc(const char* dtype);
 
-    static std::string _make_descr(bool little_endian, char uifc, int width );
+    static std::string _make_descr(bool little_endian, char uifc, INT width );
     static std::string _make_narrow(const char* descr);  
     static std::string _make_wide(const char* descr);  
     static std::string _make_other(const char* descr, char other);  
 
-    static std::string _make_preamble( int major=1, int minor=0 );
-    static std::string _make_header(const std::vector<int>& shape, const char* descr="<f4" );
-    static std::string _make_jsonhdr(const std::vector<int>& shape, const char* descr="<f4" );
+    static std::string _make_preamble( INT major=1, INT minor=0 );
+    static std::string _make_header(const std::vector<INT>& shape, const char* descr="<f4" );
+    static std::string _make_jsonhdr(const std::vector<INT>& shape, const char* descr="<f4" );
     static std::string _little_endian_short_string( uint16_t dlen ) ; 
-    static std::string _make_tuple(const std::vector<int>& shape, bool json );
-    static std::string _make_dict(const std::vector<int>& shape, const char* descr );
-    static std::string _make_json(const std::vector<int>& shape, const char* descr );
+    static std::string _make_tuple(const std::vector<INT>& shape, bool json );
+    static std::string _make_dict(const std::vector<INT>& shape, const char* descr );
+    static std::string _make_json(const std::vector<INT>& shape, const char* descr );
     static std::string _make_header(const std::string& dict);
     static std::string _make_jsonhdr(const std::string& json);
 
-    static std::string xxdisplay(const std::string& hdr, int width, char non_printable );
+    static std::string xxdisplay(const std::string& hdr, INT width, char non_printable );
     static std::string _check(const char* path); 
     static int         check(const char* path); 
     static bool is_readable(const char* path);
 };
 
 template<typename T>
-inline std::string NPU::make_header(const std::vector<int>& shape )
+inline std::string NPU::make_header(const std::vector<INT>& shape )
 {
     //std::string descr = Desc<T>::descr() ;   
     std::string descr = descr_<T>::dtype() ;
@@ -1886,14 +1895,14 @@ inline std::string NPU::make_header(const std::vector<int>& shape )
 }
 
 template<typename T>
-inline std::string NPU::make_jsonhdr(const std::vector<int>& shape )
+inline std::string NPU::make_jsonhdr(const std::vector<INT>& shape )
 {
     //std::string descr = Desc<T>::descr() ; 
     std::string descr = descr_<T>::dtype() ;
     return _make_jsonhdr( shape, descr.c_str() ) ; 
 }
 
-inline std::string NPU::xxdisplay(const std::string& hdr, int width, char non_printable)
+inline std::string NPU::xxdisplay(const std::string& hdr, INT width, char non_printable)
 {
     std::stringstream ss ; 
     for(unsigned i=0 ; i < hdr.size() ; i++) 
@@ -2016,7 +2025,7 @@ NumPy np.save / np.load
 }
 
 
-inline void NPU::parse_header(std::vector<int>& shape, std::string& descr, char& uifc, int& ebyte, const std::string& hdr )
+inline void NPU::parse_header(std::vector<INT>& shape, std::string& descr, char& uifc, INT& ebyte, const std::string& hdr )
 {
     int hlen = _parse_header_length( hdr ) ; 
 
@@ -2073,7 +2082,7 @@ inline void NPU::parse_header(std::vector<int>& shape, std::string& descr, char&
 
 }
 
-inline void NPU::_parse_tuple(std::vector<int>& shape, const std::string& sh )
+inline void NPU::_parse_tuple(std::vector<INT>& shape, const std::string& sh )
 {
     std::istringstream f(sh);
     std::string s;
@@ -2081,7 +2090,7 @@ inline void NPU::_parse_tuple(std::vector<int>& shape, const std::string& sh )
     char delim = ',' ; 
     const char* trim = " " ;  
 
-    int ival(0) ; 
+    INT ival(0) ; 
 
     while (getline(f, s, delim)) 
     {
@@ -2111,7 +2120,7 @@ inline void NPU::_parse_tuple(std::vector<int>& shape, const std::string& sh )
 }
 
 
-inline void NPU::_parse_dict(bool& little_endian, char& uifc, int& ebyte, std::string& descr, bool& fortran_order, const char* dict)  // static 
+inline void NPU::_parse_dict(bool& little_endian, char& uifc, INT& ebyte, std::string& descr, bool& fortran_order, const char* dict)  // static 
 {
     _parse_dict(descr, fortran_order, dict); 
     _parse_descr(little_endian, uifc, ebyte, descr.c_str() ); 
@@ -2170,7 +2179,7 @@ inline void NPU::_parse_dict(std::string& descr, bool& fortran_order, const char
     fortran_order = elem[3].compare("False") == 0 ? false : true ; 
 }
 
-inline void NPU::_parse_descr(bool& little_endian, char& uifc, int& ebyte, const char* descr)  // static
+inline void NPU::_parse_descr(bool& little_endian, char& uifc, INT& ebyte, const char* descr)  // static
 {
     assert( strlen(descr) == 3 ); 
 
@@ -2198,13 +2207,13 @@ inline void NPU::_parse_descr(bool& little_endian, char& uifc, int& ebyte, const
     assert( ebyte == 1 || ebyte == 2 || ebyte == 4 || ebyte == 8 ); 
 }
 
-inline int NPU::_dtype_ebyte(const char* dtype)  // static 
+inline NPU::INT NPU::_dtype_ebyte(const char* dtype)  // static 
 {
     unsigned len = strlen(dtype) ; 
     assert( len == 2 || len == 3 ); 
 
     char c_ebyte = dtype[len-1] ;  
-    int ebyte = c_ebyte - '0' ; 
+    INT ebyte = c_ebyte - '0' ; 
     
     assert( ebyte == 1 || ebyte == 2 || ebyte == 4 || ebyte == 8 ); 
     return ebyte ; 
@@ -2218,7 +2227,7 @@ inline char NPU::_dtype_uifc(const char* dtype) // static
     return c_uifc ; 
 }
 
-inline std::string NPU::_make_descr(bool little_endian, char uifc, int width ) // static
+inline std::string NPU::_make_descr(bool little_endian, char uifc, INT width ) // static
 {
     std::stringstream ss ; 
     ss << ( little_endian ? '<' : '>' ) << uifc << width ;  
@@ -2229,7 +2238,7 @@ inline std::string NPU::_make_narrow(const char* descr) // static
 {
     bool little_endian ; 
     char uifc ; 
-    int ebyte ; 
+    INT ebyte ; 
     _parse_descr( little_endian, uifc, ebyte, descr ); 
     return _make_descr(little_endian, uifc, ebyte/2  ); 
 } 
@@ -2238,7 +2247,7 @@ inline std::string NPU::_make_wide(const char* descr) // static
 {
     bool little_endian ; 
     char uifc ; 
-    int ebyte ; 
+    INT ebyte ; 
     _parse_descr( little_endian, uifc, ebyte, descr ); 
     return _make_descr(little_endian, uifc, ebyte*2  ); 
 } 
@@ -2248,7 +2257,7 @@ inline std::string NPU::_make_other(const char* descr, char other) // static
 {
     bool little_endian ; 
     char uifc ; 
-    int ebyte ; 
+    INT ebyte ; 
     _parse_descr( little_endian, uifc, ebyte, descr ); 
     return _make_descr(little_endian, other, ebyte  ); 
 } 
@@ -2286,14 +2295,14 @@ inline int NPU::check(const char* path)
 
 
 
-inline std::string NPU::_make_header(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_header(const std::vector<INT>& shape, const char* descr )
 {
     std::string dict = _make_dict( shape, descr ); 
     std::string header = _make_header( dict ); 
     return header ; 
 }
 
-inline std::string NPU::_make_jsonhdr(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_jsonhdr(const std::vector<INT>& shape, const char* descr )
 {
     std::string json = _make_json( shape, descr ); 
     return json ; 
@@ -2301,7 +2310,7 @@ inline std::string NPU::_make_jsonhdr(const std::vector<int>& shape, const char*
 
 
 
-inline std::string NPU::_make_dict(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_dict(const std::vector<INT>& shape, const char* descr )
 {
     std::stringstream ss ; 
     ss << "{" ; 
@@ -2314,7 +2323,7 @@ inline std::string NPU::_make_dict(const std::vector<int>& shape, const char* de
     return ss.str(); 
 } 
 
-inline std::string NPU::_make_json(const std::vector<int>& shape, const char* descr )
+inline std::string NPU::_make_json(const std::vector<INT>& shape, const char* descr )
 {
     std::stringstream ss ; 
     ss << "{" ; 
@@ -2330,9 +2339,9 @@ inline std::string NPU::_make_json(const std::vector<int>& shape, const char* de
 
 
 
-inline std::string NPU::_make_tuple( const std::vector<int>& shape, bool json )
+inline std::string NPU::_make_tuple( const std::vector<INT>& shape, bool json )
 {
-    int ndim = shape.size() ;
+    INT ndim = shape.size() ;
     std::stringstream ss ; 
     ss <<  ( json ? "[" : "(" ) ; 
 
@@ -2342,7 +2351,7 @@ inline std::string NPU::_make_tuple( const std::vector<int>& shape, bool json )
     }
     else
     {
-        for(int i=0 ; i < ndim ; i++ ) ss << shape[i] << ( i == ndim - 1 ? "" : ", " )  ; 
+        for(INT i=0 ; i < ndim ; i++ ) ss << shape[i] << ( i == ndim - 1 ? "" : ", " )  ; 
     }
     ss << ( json ?  "] " : "), " ) ;    // hmm assuming shape comes last in json
     return ss.str(); 
@@ -2378,7 +2387,7 @@ inline std::string NPU::_little_endian_short_string( uint16_t dlen )
 }
 
 
-inline std::string NPU::_make_preamble( int major, int minor )
+inline std::string NPU::_make_preamble( INT major, INT minor )
 {
     std::string preamble(MAGIC) ; 
     preamble.push_back((char)major); 
@@ -2408,7 +2417,7 @@ inline std::string NPU::_make_header(const std::string& dict)
     ss << _little_endian_short_string( hlen ) ; 
     ss << dict ; 
  
-    for(int i=0 ; i < padding ; i++ ) ss << " " ; 
+    for(INT i=0 ; i < padding ; i++ ) ss << " " ; 
     ss << "\n" ;  
 
     return ss.str(); 
@@ -2560,7 +2569,7 @@ inline int UName::get(const char* name)
     size_t idx = std::distance( names.begin(), std::find(names.begin(), names.end(), name) ) ; 
     size_t num = names.size() ; 
     std::cout << "UName::get " << ( name ? name : "-" ) << " num " << num << " idx " << idx << std::endl ; 
-    return idx == num ? -1 : idx ; 
+    return idx == num ? -1 : int(idx) ; 
 } 
 inline std::string UName::desc() const
 {

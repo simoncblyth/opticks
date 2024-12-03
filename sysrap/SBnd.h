@@ -636,7 +636,7 @@ inline NP* SBnd::mat_from_bd(const NP* bd) const
     // 1. check consistency between bd (num_bd, 4) int pointers
     //    and bnd data eg (53, 4, 2, 761, 4, )
 
-    const std::vector<int>& bnd_sh = bnd->shape ; 
+    const std::vector<NP::INT>& bnd_sh = bnd->shape ; 
     assert( bnd && bnd->uifc == 'f' && bnd->ebyte == 8 ); 
     assert( int(bnd_sh.size()) == 5 ) ; 
     assert( bnd_sh[0] == bd->shape[0] );
@@ -645,11 +645,11 @@ inline NP* SBnd::mat_from_bd(const NP* bd) const
 
     // 2. first bd pass to find the number of material indices
 
-    int ni = bd->shape[0] ; 
-    int nj = 4 ; 
+    NP::INT ni = bd->shape[0] ; 
+    NP::INT nj = 4 ; 
 
     std::set<sidxname, sidxname_ordering> mm ;  
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         int omat = bd_v[i*nj+0] ; 
         int imat = bd_v[i*nj+3] ; 

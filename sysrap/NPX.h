@@ -30,7 +30,7 @@ struct NPX
     }; 
 
 
-    static NP* MakeDemo(const char* dtype="<f4" , int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    static NP* MakeDemo(const char* dtype="<f4" , NP::INT ni=-1, NP::INT nj=-1, NP::INT nk=-1, NP::INT nl=-1, NP::INT nm=-1, NP::INT no=-1 ); 
 
     template<typename T> static NP*  Make( const std::vector<T>& src ); 
     template<typename T> static NP*  Make( T d0, T v0, T d1, T v1 ); 
@@ -52,7 +52,7 @@ struct NPX
 
 
     template<typename T, typename S> 
-    static NP* ArrayFromVec__(const std::vector<S>& v, const std::vector<int>& itemshape ); 
+    static NP* ArrayFromVec__(const std::vector<S>& v, const std::vector<NP::INT>& itemshape ); 
 
     template<typename T, typename S, typename... Args> 
     static NP* ArrayFromVec(const std::vector<S>& v, Args ... args_itemshape );   // ArrayFromVec_ellipsis
@@ -137,7 +137,7 @@ struct NPX
     static NP* MakeCharArray( const std::vector<std::string>& nn ); 
 
     template<typename F, typename T>
-    static NP* BOA( NP* a, NP* b, int a_column=-1, int b_column=-1, std::ostream* out=nullptr  ); 
+    static NP* BOA( NP* a, NP* b, NP::INT a_column=-1, NP::INT b_column=-1, std::ostream* out=nullptr  ); 
 
 }; 
 
@@ -166,7 +166,7 @@ inline NP* NPX::MakeValues( const std::vector<std::pair<std::string, T>>& values
     std::vector<std::string> nams ; 
     std::vector<T> vals ; 
 
-    for(unsigned i=0 ; i < values.size() ; i++)
+    for(NP::INT i=0 ; i < NP::INT(values.size()) ; i++)
     {   
         const std::pair<std::string, T>& kv = values[i] ; 
         const char* k = kv.first.c_str() ; 
@@ -216,7 +216,7 @@ inline std::string NPX::DescValues(const NP* a) // static
 }
 
 
-inline NP* NPX::MakeDemo(const char* dtype, int ni, int nj, int nk, int nl, int nm, int no )
+inline NP* NPX::MakeDemo(const char* dtype, NP::INT ni, NP::INT nj, NP::INT nk, NP::INT nl, NP::INT nm, NP::INT no )
 {
     NP* a = new NP(dtype, ni, nj, nk, nl, nm, no);
     a->fillIndexFlat(); 
@@ -273,7 +273,7 @@ template<typename T, typename... Args>
 inline NP* NPX::ArrayFromData(const T* src, Args ... args )   
 {
     std::string dtype = descr_<T>::dtype() ; 
-    std::vector<int> shape = {args...};
+    std::vector<NP::INT> shape = {args...};
     if(shape.size() > 0 && shape[0] == 0) return nullptr ; 
     NP* a = new NP(dtype.c_str(), shape ); 
     a->read2(src);  
@@ -322,14 +322,14 @@ it is not possible to rely on having the obvious layout ?
 template<typename T, int N>
 inline NP* NPX::ArrayFromVecOfArrays(const std::vector<std::array<T,N>>& va )
 {
-    int ni = va.size();
-    int nj = N ;
+    NP::INT ni = va.size();
+    NP::INT nj = N ;
     NP* a = NP::Make<T>(ni, nj);
     T* aa = a->values<T>();
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         const std::array<T,N>& arr = va[i] ;
-        for(int j=0 ; j < nj ; j++) aa[i*nj+j] = arr[j] ;
+        for(NP::INT j=0 ; j < nj ; j++) aa[i*nj+j] = arr[j] ;
     }
     return a ;
 }
@@ -341,15 +341,15 @@ inline void NPX::VecOfArraysFromArray( std::vector<std::array<T,N>>& va, const N
     assert( a && a->uifc == 'f' && a->ebyte == sizeof(T) );
     assert( a && a->shape.size() == 2 );
 
-    int ni = a->shape[0];
-    int nj = a->shape[1];
+    NP::INT ni = a->shape[0];
+    NP::INT nj = a->shape[1];
     const T* aa = a->cvalues<T>();
 
     va.resize(ni);
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         std::array<T,N>& arr = va[i] ;
-        for(int j=0 ; j < nj ; j++) arr[j] = aa[i*nj+j] ;
+        for(NP::INT j=0 ; j < nj ; j++) arr[j] = aa[i*nj+j] ;
     }
 
 }
@@ -360,15 +360,15 @@ inline void NPX::VecOfArraysFromArray( std::vector<std::array<T,N>>& va, const N
 
 
 template<typename T, typename S> 
-inline NP* NPX::ArrayFromVec__(const std::vector<S>& v, const std::vector<int>& itemshape )   
+inline NP* NPX::ArrayFromVec__(const std::vector<S>& v, const std::vector<NP::INT>& itemshape )   
 {
     assert( sizeof(S) >= sizeof(T) );  
-    int ni = v.size() ; 
-    int nj = sizeof(S) / sizeof(T) ; 
+    NP::INT ni = v.size() ; 
+    NP::INT nj = sizeof(S) / sizeof(T) ; 
 
     const T* src = (T*)v.data() ; 
 
-    std::vector<int> shape ; 
+    std::vector<NP::INT> shape ; 
     shape.push_back(ni) ; 
 
     if(itemshape.size() == 0 )
@@ -377,8 +377,8 @@ inline NP* NPX::ArrayFromVec__(const std::vector<S>& v, const std::vector<int>& 
     }
     else 
     {
-        int itemcheck = 1 ; 
-        for(unsigned i=0 ; i < itemshape.size() ; i++)  
+        NP::INT itemcheck = 1 ; 
+        for(NP::INT i=0 ; i < NP::INT(itemshape.size()) ; i++)  
         {
             shape.push_back(itemshape[i]) ; 
             itemcheck *= itemshape[i] ; 
@@ -421,14 +421,14 @@ flat item count however.
 template<typename T, typename S, typename... Args> 
 inline NP* NPX::ArrayFromVec(const std::vector<S>& v, Args ... args_itemshape )   // ArrayFromVec_ellipsis
 {
-    std::vector<int> itemshape = {args_itemshape...};
+    std::vector<NP::INT> itemshape = {args_itemshape...};
     return ArrayFromVec__<T,S>(v, itemshape ); 
 }
 
 template<typename T, typename S> 
 inline NP* NPX::ArrayFromVec_(const std::vector<S>& v, const char* str_itemshape )
 {
-    std::vector<int> itemshape ; 
+    std::vector<NP::INT> itemshape ; 
     U::MakeVec(itemshape,  str_itemshape, ',' ); 
     return ArrayFromVec__<T,S>(v, itemshape ); 
 }
@@ -448,7 +448,7 @@ template<typename S>
 inline void NPX::VecFromArray(std::vector<S>& v, const NP* a )
 {
    if(a == nullptr || a->shape.size() == 0 ) return ; 
-   int ni = a->shape[0] ; 
+   NP::INT ni = a->shape[0] ; 
    unsigned ib = a->item_bytes() ;   
    bool expected_sizeof_item = sizeof(S) == ib  ; 
 
@@ -502,7 +502,7 @@ Used by NPX::ArrayFromMap
 template<typename S>
 inline int NPX::VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool contiguous_key ) // static
 {
-    int ni = int(m.size()) ; 
+    NP::INT ni = NP::INT(m.size()) ; 
 
     v.clear(); 
     v.resize(ni); 
@@ -510,7 +510,7 @@ inline int NPX::VecFromMap( std::vector<S>& v,  const std::map<int, S>& m, bool 
     typename std::map<int,S>::const_iterator it = m.begin()  ;
     int k0 = it->first ; 
 
-    for(int idx=0 ; idx < ni ; idx++)
+    for(NP::INT idx=0 ; idx < ni ; idx++)
     {   
         int k = it->first ; 
         v[idx] = it->second ;
@@ -562,7 +562,7 @@ inline void NPX::VecFromMapUnordered(
     int* _k1 
     )
 {
-    int ni = m.size()  ; 
+    NP::INT ni = m.size()  ; 
     v.clear(); 
     v.resize(ni); 
 
@@ -571,15 +571,15 @@ inline void NPX::VecFromMapUnordered(
         assert( key_order->size() == m.size() ) ; 
     }
 
-    int count(0) ; 
+    NP::INT count(0) ; 
     if( key_order == nullptr ) KeyRangeMapUnordered(_k0, _k1, m ) ; 
 
 
-    int k0_check(-999) ; 
+    NP::INT k0_check(-999) ; 
 
-    for(int idx=0 ; idx < ni ; idx++)
+    for(NP::INT idx=0 ; idx < ni ; idx++)
     {   
-        int k = key_order ? (*key_order)[idx] : *_k0 + idx  ; 
+        NP::INT k = key_order ? (*key_order)[idx] : *_k0 + idx  ; 
 
         // counting keys that are contiguous offsets from the idx 0 key  
         if( idx == 0 ) 
@@ -626,13 +626,13 @@ inline void NPX::MapFromVec( std::map<int, S>& m,  const std::vector<S>& v, int 
 {
     assert( contiguous_key == true ); 
 
-    int ni = int(v.size()) ; 
+    NP::INT ni = NP::INT(v.size()) ; 
     m.clear(); 
 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         const S& item = v[i] ; 
-        int key = k0 + i ;  
+        NP::INT key = k0 + i ;  
         m[key] = item ; 
     }
 }
@@ -652,13 +652,13 @@ inline void NPX::MapUnorderedFromVec( std::unordered_map<int, S>& m,  const std:
 {
     assert( is_contiguous_key == true ); 
 
-    int ni = int(v.size()) ; 
+    NP::INT ni = NP::INT(v.size()) ; 
     m.clear(); 
 
-    for(int idx=0 ; idx < ni ; idx++)
+    for(NP::INT idx=0 ; idx < ni ; idx++)
     {
         const S& item = v[idx] ; 
-        int key = kmin + idx ;  
+        NP::INT key = kmin + idx ;  
         m[key] = item ; 
     }
 }
@@ -864,15 +864,15 @@ inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int, S>& m 
 template<>
 inline NP* NPX::ArrayFromDiscoMap( const std::map<int,int>& m )
 {
-    int ni = m.size() ; 
-    int nj = 2 ; 
+    NP::INT ni = m.size() ; 
+    NP::INT nj = 2 ; 
     NP* a = NP::Make<int>(ni, nj) ;  
     int* aa = a->values<int>(); 
 
     typedef std::map<int,int> MII ; 
     MII::const_iterator it = m.begin(); 
 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         aa[i*nj+0] = it->first ;  
         aa[i*nj+1] = it->second ;  
@@ -901,16 +901,16 @@ inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int,int>& m
     for(MII::const_iterator it=m.begin() ; it != m.end() ; it++) keys.push_back(it->first); 
     std::sort(keys.begin(), keys.end());
 
-    int ni = m.size() ; 
-    assert( int(keys.size()) == ni ); 
+    NP::INT ni = m.size() ; 
+    assert( NP::INT(keys.size()) == ni ); 
  
-    int nj = 2 ; 
+    NP::INT nj = 2 ; 
     NP* a = NP::Make<int>(ni, nj) ;  
     int* aa = a->values<int>(); 
 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
-        int key = keys[i] ; 
+        NP::INT key = keys[i] ; 
         int val = m.at(key) ; 
         aa[i*nj+0] = key ;  
         aa[i*nj+1] = val ;  
@@ -941,12 +941,12 @@ template<>
 inline void NPX::DiscoMapFromArray( std::map<int, int>& m, const NP* a )
 {
     assert( a && a->uifc == 'i' && a->ebyte == 4 && a->shape.size() == 2 ); 
-    int ni = a->shape[0] ; 
-    int nj = a->shape[1] ;
+    NP::INT ni = a->shape[0] ; 
+    NP::INT nj = a->shape[1] ;
     assert( nj == 2 );  
 
     const int* aa = a->cvalues<int>(); 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         int k = aa[i*nj+0] ;  
         int v = aa[i*nj+1] ;  
@@ -959,12 +959,12 @@ template<>
 inline void NPX::DiscoMapUnorderedFromArray( std::unordered_map<int, int>& m, const NP* a )
 {
     assert( a && a->uifc == 'i' && a->ebyte == 4 && a->shape.size() == 2 ); 
-    int ni = a->shape[0] ; 
-    int nj = a->shape[1] ;
+    NP::INT ni = a->shape[0] ; 
+    NP::INT nj = a->shape[1] ;
     assert( nj == 2 );  
 
     const int* aa = a->cvalues<int>(); 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         int k = aa[i*nj+0] ;  
         int v = aa[i*nj+1] ;  
@@ -1005,12 +1005,12 @@ inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int, S>&
 template<>
 inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
 {
-    int ni = m.size() ; 
+    NP::INT ni = m.size() ; 
     typedef std::map<int,int> MII ; 
     MII::const_iterator it = m.begin(); 
     std::stringstream ss ; 
     ss << "NPX::DescDiscoMap" << std::endl << " m.size " << ni << std::endl ; 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         ss << "( " << it->first << " : " << it->second << " ) " << std::endl ;   
         it++ ; 
@@ -1023,12 +1023,12 @@ inline std::string NPX::DescDiscoMap( const std::map<int,int>& m )
 template<>
 inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int,int>& m )
 {
-    int ni = m.size() ; 
+    NP::INT ni = m.size() ; 
     typedef std::unordered_map<int,int> MII ; 
     MII::const_iterator it = m.begin(); 
     std::stringstream ss ; 
     ss << "NPX::DescDiscoMapUnordered" << std::endl << " m.size " << ni << std::endl ; 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         ss << "( " << it->first << " : " << it->second << " ) " << std::endl ;   
         it++ ; 
@@ -1069,7 +1069,7 @@ inline NP* NPX::FromNumpyString(const char* str)  // static
         int num_field = 0 ; 
 
         if(dump) std::cout << "fields.size " << fields.size() << std::endl ; 
-        for(int j=0 ; j < int(fields.size()) ; j++ )
+        for(NP::INT j=0 ; j < NP::INT(fields.size()) ; j++ )
         {
            const char* fld = fields[j].c_str() ;  
            char* fldd = U::FirstToLastDigit(fld); 
@@ -1153,7 +1153,7 @@ inline void NPX::Import_MSD( std::map<std::string, double>& msd, const NP* a) //
 {
     assert( a && a->uifc == 'f' && a->ebyte == 8 );
     assert( a->shape.size() == 1 );
-    assert( int(a->names.size()) == a->shape[0] );
+    assert( NP::INT(a->names.size()) == a->shape[0] );
 
     const double* vv = a->cvalues<double>() ;
     unsigned num_vals = a->shape[0] ;
@@ -1226,14 +1226,14 @@ inline NP* NPX::ArrayFromEnumMap( const std::map<int, std::string>& catMap)
 
 inline NP* NPX::MakeCharArray( const std::vector<std::string>& nn )
 {
-    int ni = int(nn.size()); 
-    int maxlen = 0 ; 
-    for(int i=0 ; i < ni ; i++) maxlen = std::max( int(strlen(nn[i].c_str())), maxlen ) ;
-    int nj = maxlen + 1 ; 
+    NP::INT ni = NP::INT(nn.size()); 
+    NP::INT maxlen = 0 ; 
+    for(NP::INT i=0 ; i < ni ; i++) maxlen = std::max( NP::INT(strlen(nn[i].c_str())), maxlen ) ;
+    NP::INT nj = maxlen + 1 ; 
 
     NP* a = NP::Make<char>(ni, nj) ; 
     char* aa = a->values<char>() ; 
-    for(int i=0 ; i < ni ; i++) for(int j=0 ; j < nj ; j++) aa[i*nj+j] = nn[i].c_str()[j] ; 
+    for(NP::INT i=0 ; i < ni ; i++) for(NP::INT j=0 ; j < nj ; j++) aa[i*nj+j] = nn[i].c_str()[j] ; 
     return a ;  
 }
 
@@ -1251,7 +1251,7 @@ F: float or double of the created array
 **/
 
 template<typename F, typename T>
-inline NP* NPX::BOA( NP* a, NP* b, int a_column, int b_column, std::ostream* out )  // static
+inline NP* NPX::BOA( NP* a, NP* b, NP::INT a_column, NP::INT b_column, std::ostream* out )  // static
 {
     if(out) *out 
        << "NPX::BOA"
@@ -1276,26 +1276,26 @@ inline NP* NPX::BOA( NP* a, NP* b, int a_column, int b_column, std::ostream* out
     assert( a->shape.size() == 2 ); 
     assert( b->shape.size() == 2 ); 
 
-    int a_ni = a->shape[0] ;  
-    int b_ni = b->shape[0] ;  
+    NP::INT a_ni = a->shape[0] ;  
+    NP::INT b_ni = b->shape[0] ;  
 
-    if(a->names.size() == 0) for(int i=0 ; i < a_ni ; i++) a->names.push_back( U::FormName_("A", i, nullptr )) ; 
-    if(b->names.size() == 0) for(int i=0 ; i < b_ni ; i++) b->names.push_back( U::FormName_("B", i, nullptr )) ; 
+    if(a->names.size() == 0) for(NP::INT i=0 ; i < a_ni ; i++) a->names.push_back( U::FormName_("A", i, nullptr )) ; 
+    if(b->names.size() == 0) for(NP::INT i=0 ; i < b_ni ; i++) b->names.push_back( U::FormName_("B", i, nullptr )) ; 
 
-    assert( int(a->names.size()) == a_ni ); 
-    assert( int(b->names.size()) == b_ni ); 
+    assert( NP::INT(a->names.size()) == a_ni ); 
+    assert( NP::INT(b->names.size()) == b_ni ); 
 
     assert( a_ni == b_ni ); 
-    int ni = a_ni ; 
+    NP::INT ni = a_ni ; 
 
-    int a_nj = a->shape[1] ; 
-    int b_nj = b->shape[1] ; 
+    NP::INT a_nj = a->shape[1] ; 
+    NP::INT b_nj = b->shape[1] ; 
 
     const T* aa = a->cvalues<T>();  
     const T* bb = b->cvalues<T>();  
 
-    int c_ni = ni ; 
-    int c_nj = 4 ; 
+    NP::INT c_ni = ni ; 
+    NP::INT c_nj = 4 ; 
 
     NP* c = NP::Make<F>(c_ni, c_nj); 
     c->set_meta<std::string>("creator", "NPX::BOA"); 
@@ -1310,7 +1310,7 @@ inline NP* NPX::BOA( NP* a, NP* b, int a_column, int b_column, std::ostream* out
     (*c->labels)[2] = "B/A" ; 
     (*c->labels)[3] = "A/B" ; 
 
-    for(int i=0 ; i < ni ; i++)
+    for(NP::INT i=0 ; i < ni ; i++)
     {
         T av = aa[i*a_nj+a_nj+a_column] ; 
         T bv = bb[i*b_nj+b_nj+b_column] ; 

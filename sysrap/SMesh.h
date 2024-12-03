@@ -902,7 +902,7 @@ inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth, st
     assert( sizeof(I3) == sizeof(int)*3 ); 
 
     std::vector<I3> tri(num_tri) ; 
-    assert( sizeof(I3)*tri.size() == a_tri->arr_bytes() ); 
+    assert( NP::INT(sizeof(I3)*tri.size()) == a_tri->arr_bytes() ); 
     memcpy( tri.data(), a_tri->bytes(), a_tri->arr_bytes() ); 
 
     NP* a_nrm = nullptr ; 
@@ -910,7 +910,7 @@ inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth, st
     {
         std::vector<D3> vtx(num_vtx) ; 
         std::vector<D3> nrm(num_vtx, {0,0,0}) ;
-        assert( sizeof(D3)*vtx.size() == a_vtx->arr_bytes() ); 
+        assert( NP::INT(sizeof(D3)*vtx.size()) == a_vtx->arr_bytes() ); 
         memcpy( vtx.data(), a_vtx->bytes(), a_vtx->arr_bytes() ); 
 
         if(smooth)
@@ -929,7 +929,7 @@ inline NP* SMesh::MakeNormals( const NP* a_vtx, const NP* a_tri, bool smooth, st
     {
         std::vector<F3> vtx(num_vtx) ; 
         std::vector<F3> nrm(num_vtx, {0.f,0.f,0.f}) ;
-        assert( sizeof(F3)*vtx.size() == a_vtx->arr_bytes() ); 
+        assert( NP::INT(sizeof(F3)*vtx.size()) == a_vtx->arr_bytes() ); 
         memcpy( vtx.data(), a_vtx->bytes(), a_vtx->arr_bytes() ); 
 
         if(smooth)

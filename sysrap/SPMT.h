@@ -407,7 +407,7 @@ inline void SPMT::init_rindex_thickness()
         }
     }
     rindex = NP::Combine(v_rindex); 
-    const std::vector<int>& shape = rindex->shape ; 
+    const std::vector<NP::INT>& shape = rindex->shape ; 
     assert( shape.size() == 3 );
     rindex->change_shape( NUM_PMTCAT, NUM_LAYER, NUM_PROP, shape[shape.size()-2], shape[shape.size()-1] );
 }

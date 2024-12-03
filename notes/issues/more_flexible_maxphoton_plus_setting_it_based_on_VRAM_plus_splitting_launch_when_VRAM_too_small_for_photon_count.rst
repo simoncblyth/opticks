@@ -230,6 +230,14 @@ Looks like truncation of array to 2GB somewhere::
     ipdb>                                                      
 
 
+Reproduce that error in  ~/np/tests/NP_Make_test.sh
+------------------------------------------------------
+
+* ~/o/notes/issues/NP_Make_2GB_truncation_int_bytes_somewhere.rst
+
+
+
+
 ::
 
     P[blyth@localhost RNG]$ cd /data/blyth/opticks/QRngTest/float/CHUNKED_CURANDSTATE/

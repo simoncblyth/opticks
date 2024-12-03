@@ -42,6 +42,9 @@ but the headers are also copied into opticks/sysrap.
 
 struct NP
 {
+    typedef std::int64_t INT ; 
+    static constexpr const INT TEN = 10 ; 
+
     static constexpr const char* EXT = ".npy" ; 
 #ifdef WITH_VERBOSE
     static const bool VERBOSE = true ; 
@@ -77,21 +80,21 @@ struct NP
 
     // STATIC CREATION METHODS 
 
-    template<typename T> static NP* MakeFromValues( const T* vals, int num_vals ); 
-    template<typename T> static int ALength(  T x0, T x1, T st ); 
+    template<typename T> static NP* MakeFromValues( const T* vals, INT num_vals ); 
+    template<typename T> static INT ALength(  T x0, T x1, T st ); 
     template<typename T> static NP* ARange(   T x0, T x1, T st ); 
-    template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, int npayload=-1 ); 
-    template<typename T> static NP* DeltaColumn(const NP* a, int jcol=0 ) ; 
+    template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, INT npayload=-1 ); 
+    template<typename T> static NP* DeltaColumn(const NP* a, INT jcol=0 ) ; 
 
-    template<typename T> static NP* MinusCosThetaLinearAngle(int nx=181); // from -1. to 1. 
+    template<typename T> static NP* MinusCosThetaLinearAngle(INT nx=181); // from -1. to 1. 
                          static NP* SqrtOneMinusSquare( const NP* a ); 
-                         static NP* Incremented( const NP* a, int offset  ); 
+                         static NP* Incremented( const NP* a, INT offset  ); 
      
     template<typename T> static NP* MakeDiv( const NP* src, unsigned mul  ); 
 
-    template<typename T> static NP* Make( int ni_=-1, int nj_=-1, int nk_=-1, int nl_=-1, int nm_=-1, int no_=-1 );
+    template<typename T> static NP* Make( INT ni_=-1, INT nj_=-1, INT nk_=-1, INT nl_=-1, INT nm_=-1, INT no_=-1 );
     template<typename T, typename ... Args> static NP*  Make_( Args ... shape ) ;  // Make_shape
-    template<typename T> static NP* MakeFlat(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    template<typename T> static NP* MakeFlat(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ); 
 
 
     //  MEMBER FUNCTIONS 
@@ -99,13 +102,13 @@ struct NP
     char*       bytes();  
     const char* bytes() const ;  
 
-    unsigned hdr_bytes() const ;  
-    unsigned num_items() const ;       // shape[0] 
-    unsigned num_values() const ;      // all values, product of shape[0]*shape[1]*...
-    unsigned num_itemvalues() const ;  // values after first dimension 
-    unsigned arr_bytes() const ;       // formerly num_bytes
-    unsigned item_bytes() const ;      // *item* comprises all dimensions beyond the first 
-    unsigned meta_bytes() const ;
+    INT hdr_bytes() const ;  
+    INT num_items() const ;       // shape[0] 
+    INT num_values() const ;      // all values, product of shape[0]*shape[1]*...
+    INT num_itemvalues() const ;  // values after first dimension 
+    INT arr_bytes() const ;       // formerly num_bytes
+    INT item_bytes() const ;      // *item* comprises all dimensions beyond the first 
+    INT meta_bytes() const ;
 
     template<typename T> bool is_itemtype() const ;  // size of item matches size of type
 
@@ -123,37 +126,37 @@ struct NP
 
 
     // CTOR
-    NP(const char* dtype_, const std::vector<int>& shape_ ); 
-    NP(const char* dtype_="<f4", int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    NP(const char* dtype_, const std::vector<INT>& shape_ ); 
+    NP(const char* dtype_="<f4", INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ); 
 
     void init(); 
-    void set_shape( int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1);  
-    void set_shape( const std::vector<int>& src_shape ); 
+    void set_shape( INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1);  
+    void set_shape( const std::vector<INT>& src_shape ); 
     // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape* 
-    bool has_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) const ;  
-    void change_shape(int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ) ;   // one dimension entry left at -1 can be auto-set
+    bool has_shape(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) const ;  
+    void change_shape(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) ;   // one dimension entry left at -1 can be auto-set
     void change_shape_to_3D() ; 
-    void reshape( const std::vector<int>& new_shape ); // product of shape before and after must be the same  
+    void reshape( const std::vector<INT>& new_shape ); // product of shape before and after must be the same  
 
-    template<int P> void size_2D( int& width, int& height ) const ; 
+    template<int P> void size_2D( INT& width, INT& height ) const ; 
 
 
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes 
 
 
-    unsigned  index(  int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
-    unsigned  index0( int i,  int j=-1,  int k=-1,  int l=-1, int m=-1, int o=-1) const ; 
+    INT index(  INT i,  INT j=0,  INT k=0,  INT l=0, INT m=0, INT o=0) const ; 
+    INT index0( INT i,  INT j=-1, INT k=-1,  INT l=-1, INT m=-1, INT o=-1) const ; 
 
-    unsigned dimprod(unsigned q) const ;    // product of dimensions starting from dimension q
-
-    template<typename... Args> 
-    unsigned index_(Args ... idxx ) const ; 
+    INT dimprod(unsigned q) const ;    // product of dimensions starting from dimension q
 
     template<typename... Args> 
-    unsigned stride_(Args ... idxx ) const ; 
+    INT index_(Args ... idxx ) const ; 
 
     template<typename... Args> 
-    unsigned offset_(Args ... idxx ) const ; 
+    INT stride_(Args ... idxx ) const ; 
+
+    template<typename... Args> 
+    INT offset_(Args ... idxx ) const ; 
 
 
     template<typename T>
@@ -169,7 +172,7 @@ struct NP
 
 
     template<typename T> 
-    void slice_(std::vector<T>& out, const std::vector<int>& idxx ) const ; 
+    void slice_(std::vector<T>& out, const std::vector<INT>& idxx ) const ; 
 
     template<typename T> 
     static std::string DescSlice(const std::vector<T>& out, unsigned edge ); 
@@ -178,22 +181,22 @@ struct NP
     static std::string DescSliceBrief(const std::vector<T>& out); 
 
 
-    static std::string DescIdx(const std::vector<int>& idxx ); 
+    static std::string DescIdx(const std::vector<INT>& idxx ); 
 
 
-    int pickdim__(    const std::vector<int>& idxx) const ; 
+    INT pickdim__(    const std::vector<INT>& idxx) const ; 
 
-    unsigned index__( const std::vector<int>& idxx) const ; 
-    unsigned stride__(const std::vector<int>& idxx) const ; 
-    unsigned offset__(const std::vector<int>& idxx) const ; 
+    INT index__( const std::vector<INT>& idxx) const ; 
+    INT stride__(const std::vector<INT>& idxx) const ; 
+    INT offset__(const std::vector<INT>& idxx) const ; 
 
 
 
-    unsigned  itemsize_(int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1) const ; 
-    void      itembytes_(const char** start,  unsigned& num_bytes, int i=-1, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 ) const  ; 
+    INT       itemsize_(INT i=-1, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1) const ; 
+    void      itembytes_(const char** start,  INT& num_bytes, INT i=-1, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1 ) const  ; 
 
-    template<typename T> T           get( int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0) const ; 
-    template<typename T> void        set( T val, int i,  int j=0,  int k=0,  int l=0, int m=0, int o=0 ) ; 
+    template<typename T> T           get( INT i,  INT j=0,  INT k=0,  INT l=0, INT m=0, INT o=0) const ; 
+    template<typename T> void        set( T val, INT i,  INT j=0,  INT k=0,  INT l=0, INT m=0, INT o=0 ) ; 
 
     template<typename T> bool is_allzero() const ; 
     bool is_empty() const ; 
@@ -205,14 +208,14 @@ struct NP
 
 
     template<typename T>
-    std::string descTable(int wid=7) const ; 
+    std::string descTable(INT wid=7) const ; 
 
     template<typename T>
     T findMinimumTimestamp() const ; 
 
     template<typename T>
     std::string descTable_(
-       int wid=7, 
+       INT wid=7, 
        const std::vector<std::string>* column_labels=nullptr, 
        const std::vector<std::string>* row_labels=nullptr
        ) const ; 
@@ -245,13 +248,13 @@ struct NP
 
     static NP* MakeSelectCopyE_( const NP* src, const char* ekey, const char* fallback=nullptr, char delim=',' ); 
     static NP* MakeSelectCopy_( const NP* src, const char* items ); 
-    static NP* MakeSelectCopy_( const NP* src, const std::vector<int>* items ); 
-    static NP* MakeSelectCopy_( const NP* src, const int* items, int num_items ); 
+    static NP* MakeSelectCopy_( const NP* src, const std::vector<INT>* items ); 
+    static NP* MakeSelectCopy_( const NP* src, const INT* items, INT num_items ); 
 
 
-    static NP* MakeItemCopy(  const NP* src, int i,int j=-1,int k=-1,int l=-1,int m=-1, int o=-1 ); 
-    void  item_shape(std::vector<int>& sub, int i, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1 ) const ; 
-    NP*   spawn_item(  int i, int j=-1, int k=-1, int l=-1, int m=-1, int o=-1  ) const ; 
+    static NP* MakeItemCopy(  const NP* src, INT i,INT j=-1,INT k=-1,INT l=-1,INT m=-1, INT o=-1 ); 
+    void  item_shape(std::vector<INT>& sub, INT i, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1 ) const ; 
+    NP*   spawn_item(  INT i, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1  ) const ; 
 
     template<typename T> static NP* MakeCDF(  const NP* src );
     template<typename T> static NP* MakeICDF(  const NP* src, unsigned nu, unsigned hd_factor, bool dump );
@@ -261,7 +264,7 @@ struct NP
  
     NP* copy() const ; 
 
-    template<typename S>                               int         count_if( std::function<bool(const S*)>) const ; 
+    template<typename S>                               INT         count_if( std::function<bool(const S*)>) const ; 
     template<typename T>                               NP*   simple_copy_if( std::function<bool(const T*)>) const ;  // atomic types only
     template<typename T, typename S>                   NP*          copy_if( std::function<bool(const S*)>) const ; 
     template<typename T, typename S, typename... Args> NP* flexible_copy_if( std::function<bool(const S*)>, Args ... itemshape ) const ; 
@@ -286,8 +289,8 @@ struct NP
     static NP* LoadNarrow(const char* dir, const char* name); 
     static NP* LoadNarrow(const char* path); 
 
-    template<typename T> int find_value_index(T value, T epsilon) const ; 
-    template<typename T> T   ifind2D(T value, int jcol, int jret ) const ; 
+    template<typename T> INT find_value_index(T value, T epsilon) const ; 
+    template<typename T> T   ifind2D(T value, INT jcol, INT jret ) const ; 
 
 
     bool is_pshaped() const ; 
@@ -304,8 +307,8 @@ struct NP
 
     template<typename T> T    plhs(unsigned column ) const ;  
     template<typename T> T    prhs(unsigned column ) const ;  
-    template<typename T> int  pfindbin(const T value, unsigned column, bool& in_range ) const ;  
-    template<typename T> void get_edges(T& lo, T& hi, unsigned column, int ibin) const ; 
+    template<typename T> INT  pfindbin(const T value, unsigned column, bool& in_range ) const ;  
+    template<typename T> void get_edges(T& lo, T& hi, unsigned column, INT ibin) const ; 
 
 
     template<typename T> T    psum(unsigned column ) const ;  
@@ -313,34 +316,34 @@ struct NP
     template<typename T> void pscale_add(T scale, T add, unsigned column);
     template<typename T> void pdump(const char* msg="NP::pdump", T d_scale=1., T v_scale=1.) const ; 
 
-    template<typename T> void minmax(T& mn, T&mx, unsigned j=1, int item=-1 ) const ; 
-    template<int N, typename T> void minmax2D_reshaped(T* mn, T* mx, int item_stride=1, int item_offset=0) ; // not-const as temporarily changes shape
-    template<typename T>        void minmax2D(T* mn, T* mx, int item_stride=1, int item_offset=0 ) const ; 
+    template<typename T> void minmax(T& mn, T&mx, unsigned j=1, INT item=-1 ) const ; 
+    template<int N, typename T> void minmax2D_reshaped(T* mn, T* mx, INT item_stride=1, INT item_offset=0) ; // not-const as temporarily changes shape
+    template<typename T>        void minmax2D(T* mn, T* mx, INT item_stride=1, INT item_offset=0 ) const ; 
 
     template<typename T> void linear_crossings( T value, std::vector<T>& crossings ) const ; 
     template<typename T> NP*  trapz() const ;                      // composite trapezoidal integration, requires pshaped
 
     template<typename T> void psplit(std::vector<T>& domain, std::vector<T>& values) const ; 
-    template<typename T> T    pdomain(const T value, int item=-1, bool dump=false  ) const ; 
-    template<typename T> T    interp(T x, int item=-1) const ;                  // requires pshaped 
-    template<typename T> T    interp2D(T x, T y, int item=-1) const ;   
+    template<typename T> T    pdomain(const T value, INT item=-1, bool dump=false  ) const ; 
+    template<typename T> T    interp(T x, INT item=-1) const ;                  // requires pshaped 
+    template<typename T> T    interp2D(T x, T y, INT item=-1) const ;   
 
 
-    template<typename T> T    interpHD(T u, unsigned hd_factor, int item=-1 ) const ; 
+    template<typename T> T    interpHD(T u, unsigned hd_factor, INT item=-1 ) const ; 
 
-    template<typename T> T    interp(int iprop, T x) const ;           // deprecated signature for combined_interp  
-    template<typename T> T    combined_interp_3(int i,               T x) const ;  // requires NP::Combine of pshaped arrays 
-    template<typename T> T    combined_interp_5(int i, int j, int k, T x) const ;  // requires NP::Combine of pshapes arrays 
+    template<typename T> T    interp(INT iprop, T x) const ;           // deprecated signature for combined_interp  
+    template<typename T> T    combined_interp_3(INT i,               T x) const ;  // requires NP::Combine of pshaped arrays 
+    template<typename T> T    combined_interp_5(INT i, INT j, INT k, T x) const ;  // requires NP::Combine of pshapes arrays 
 
-    template<typename T> T    _combined_interp(const T* vv, int niv, T x) const  ; 
+    template<typename T> T    _combined_interp(const T* vv, INT niv, T x) const  ; 
 
     template<typename T> static T FractionalRange( T x, T x0, T x1 ); 
 
 
-    template<typename T> NP*  cumsum(int axis=0) const ; 
+    template<typename T> NP*  cumsum(INT axis=0) const ; 
     template<typename T> void divide_by_last() ; 
     void fillIndexFlat(); 
-    void dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ; 
+    void dump(INT i0=-1, INT i1=-1, INT j0=-1, INT j1=-1) const ; 
 
     static std::string Brief(const NP* a); 
     std::string sstr() const ; 
@@ -356,9 +359,9 @@ struct NP
     void set_names( const std::vector<std::string>& lines ) ; 
     void get_names( std::vector<std::string>& lines ) const ; 
 
-    int  get_name_index( const char* qname ) const ;  
-    int  get_name_index( const char* qname, unsigned& count ) const ;  
-    static int NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ); 
+    INT  get_name_index( const char* qname ) const ;  
+    INT  get_name_index( const char* qname, unsigned& count ) const ;  
+    static INT NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ); 
     
     bool is_named_shape() const ; 
     template<typename T> T  get_named_value( const char* qname, T fallback ) const ; 
@@ -396,11 +399,11 @@ struct NP
     
     std::string descMeta() const ; 
 
-    static int         GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
+    static INT         GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
 
 
-    static int KeyIndex( const std::vector<std::string>& keys, const char* key ); 
-    static int FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ); 
+    static INT KeyIndex( const std::vector<std::string>& keys, const char* key ); 
+    static INT FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, INT idx0, INT idx1  ); 
 
     static std::string DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ); 
     static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) ; 
@@ -418,8 +421,8 @@ struct NP
     const char* get_lpath() const ; 
 
 
-    template<typename T> static int DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon ); 
-    static int Memcmp( const NP* a, const NP* b ); 
+    template<typename T> static INT DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon ); 
+    static INT Memcmp( const NP* a, const NP* b ); 
 
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names); 
 
@@ -470,7 +473,7 @@ struct NP
     void save_jsonhdr() const ;    
 
     template<typename T> std::string _present(T v) const ; 
-    template<typename T> void _dump(int i0=-1, int i1=-1, int j0=-1, int j1=-1) const ;   
+    template<typename T> void _dump(INT i0=-1, INT i1=-1, INT j0=-1, INT j1=-1) const ;   
 
 
     template<typename T> void read(const T* src);
@@ -479,9 +482,9 @@ struct NP
 
 
     template<typename T> static void Write(const char* dir, const char* name, const std::vector<T>& values ); 
-    template<typename T> static void Write(const char* dir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-    template<typename T> static void Write(const char* dir, const char* reldir, const char* name, const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
-    template<typename T> static void Write(const char* path                 , const T* data, int ni=-1, int nj=-1, int nk=-1, int nl=-1, int nm=-1, int no=-1 ); 
+    template<typename T> static void Write(const char* dir, const char* name, const T* data, INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ); 
+    template<typename T> static void Write(const char* dir, const char* reldir, const char* name, const T* data, INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ); 
+    template<typename T> static void Write(const char* path                 , const T* data, INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ); 
 
 
     static void WriteNames(const char* dir, const char* name,                     const std::vector<std::string>& names, unsigned num_names=0, bool append=false ); 
@@ -548,7 +551,7 @@ struct NP
   
     // primary data members 
     std::vector<char> data = {} ; 
-    std::vector<int>  shape ; 
+    std::vector<INT>  shape ; 
     std::string       meta ; 
     std::vector<std::string>  names ;  
     std::vector<std::string>* labels ; 
@@ -564,8 +567,8 @@ struct NP
     // results from parsing _hdr or set_dtype 
     const char* dtype ; 
     char        uifc ;    // element type code 
-    int         ebyte ;   // element bytes  
-    int         size ;    // number of elements from shape
+    INT         ebyte ;   // element bytes  
+    INT         size ;    // number of elements from shape
 
     // nodata:true used for lightweight access to metadata from many arrays
     bool        nodata ; 
@@ -583,13 +586,13 @@ template<typename T> inline T*        NP::values() { return (T*)data.data() ;  }
 template<typename T> inline void NP::fill(T value)
 {
     T* vv = values<T>(); 
-    for(int i=0 ; i < size ; i++) *(vv+i) = value ; 
+    for(INT i=0 ; i < size ; i++) *(vv+i) = value ; 
 }
 
 template<typename T> inline void NP::_fillIndexFlat(T offset)
 {
     T* vv = values<T>(); 
-    for(int i=0 ; i < size ; i++) *(vv+i) = T(i) + offset ; 
+    for(INT i=0 ; i < size ; i++) *(vv+i) = T(i) + offset ; 
 }
 
 
@@ -680,19 +683,19 @@ template   void NP::_fillIndexFlat<unsigned long long>(unsigned long long) ;
 // STATIC CREATION METHODS 
 
 template<typename T> 
-inline NP* NP::MakeFromValues( const T* vals, int num_vals )
+inline NP* NP::MakeFromValues( const T* vals, INT num_vals )
 {
     NP* a = NP::Make<T>(num_vals) ; 
     T* aa = a->values<T>(); 
-    for(int i=0 ; i < num_vals ; i++) aa[i] = vals[i] ; 
+    for(INT i=0 ; i < num_vals ; i++) aa[i] = vals[i] ; 
     return a ; 
 }
 
 template <typename T>
-inline int NP::ALength(T x0, T x1, T dx) // static
+inline NP::INT NP::ALength(T x0, T x1, T dx) // static
 {
     T x = x0 ; 
-    int n = 0 ; 
+    INT n = 0 ; 
     while( x < x1 )  // "<=" OR "<" ?  Follow np.arange 
     {   
        x += dx ;
@@ -724,16 +727,16 @@ inline NP* NP::ARange( T x0, T x1, T dx ) // static
 {
     assert( x1 > x0 ); 
     assert( dx > 0. ) ; 
-    int ni = ALength(x0,x1,dx) ; 
+    INT ni = ALength(x0,x1,dx) ; 
     NP* a = NP::Make<T>(ni) ; 
     T* aa = a->values<T>() ;  
-    for(int i=0 ; i < ni ; i++ ) aa[i] = x0 + T(i)*dx ; 
+    for(INT i=0 ; i < ni ; i++ ) aa[i] = x0 + T(i)*dx ; 
     return a ; 
 }
 
 
 template <typename T> 
-inline NP* NP::Linspace( T x0, T x1, unsigned nx, int npayload )  // static
+inline NP* NP::Linspace( T x0, T x1, unsigned nx, INT npayload )  // static
 {
     assert( x1 > x0 ); 
     assert( nx > 0 ) ; 
@@ -778,11 +781,11 @@ NP::DeltaColumn
 
 **/
 
-template<typename T> inline NP* NP::DeltaColumn(const NP* a, int jcol )
+template<typename T> inline NP* NP::DeltaColumn(const NP* a, INT jcol )
 {
     assert( a->shape.size() == 2 ); 
-    int ni = a->shape[0] ; 
-    int nj = a->shape[1] ; 
+    INT ni = a->shape[0] ; 
+    INT nj = a->shape[1] ; 
     assert( jcol < nj ); 
 
     NP* b = NP::MakeLike(a) ;
@@ -790,8 +793,8 @@ template<typename T> inline NP* NP::DeltaColumn(const NP* a, int jcol )
     const T* aa = a->cvalues<T>(); 
     T* bb = b->values<T>(); 
 
-    for(int i=0 ; i < ni ; i++)
-    for(int j=0 ; j < nj ; j++)
+    for(INT i=0 ; i < ni ; i++)
+    for(INT j=0 ; j < nj ; j++)
     bb[i*nj+j] = aa[i*nj+j] - aa[i*nj+jcol] ; 
 
     return b ; 
@@ -812,11 +815,11 @@ values will be provided at integer degrees from 0. to 180.
 
 **/
 
-template<typename T> inline NP* NP::MinusCosThetaLinearAngle(int nx) // static
+template<typename T> inline NP* NP::MinusCosThetaLinearAngle(INT nx) // static
 {
     NP* a = NP::Make<T>(nx); 
     T* aa = a->values<T>(); 
-    for(int i=0 ; i < nx ; i++) 
+    for(INT i=0 ; i < nx ; i++) 
     {
         T frac = nx == 1 ? T(0) : T(i)/T(nx-1) ;
         T theta = frac*M_PI ; 
@@ -830,7 +833,7 @@ inline NP* NP::SqrtOneMinusSquare( const NP* a ) // static
     assert( a->uifc == 'f' );   
     assert( a->ebyte == 4 || a->ebyte == 8  );   
     assert( a->shape.size() == 1 ); 
-    int num = a->shape[0] ; 
+    INT num = a->shape[0] ; 
 
     NP* b = NP::MakeLike(a); 
     assert( b->ebyte == a->ebyte ); 
@@ -839,22 +842,22 @@ inline NP* NP::SqrtOneMinusSquare( const NP* a ) // static
     {
         const double* aa = a->cvalues<double>(); 
         double* bb = b->values<double>(); 
-        for(int i=0 ; i < num ; i++ ) bb[i] = sqrt(1.  - aa[i]*aa[i]) ; 
+        for(INT i=0 ; i < num ; i++ ) bb[i] = sqrt(1.  - aa[i]*aa[i]) ; 
     }
     else if( a->ebyte == 4 )
     {
         const float* aa = a->cvalues<float>(); 
         float* bb = b->values<float>(); 
-        for(int i=0 ; i < num ; i++ ) bb[i] = sqrt(1.f - aa[i]*aa[i]) ; 
+        for(INT i=0 ; i < num ; i++ ) bb[i] = sqrt(1.f - aa[i]*aa[i]) ; 
     }
     return b ; 
 }
 
-inline NP* NP::Incremented( const NP* a, int offset ) // static
+inline NP* NP::Incremented( const NP* a, INT offset ) // static
 {
     assert( a->uifc == 'i' );   
     assert( a->ebyte == 4 || a->ebyte == 8  );   
-    int num = a->num_values() ;  // all dimensions
+    INT num = a->num_values() ;  // all dimensions
 
     NP* b = NP::MakeLike(a); 
 
@@ -862,13 +865,13 @@ inline NP* NP::Incremented( const NP* a, int offset ) // static
     {
         const long* aa = a->cvalues<long>(); 
         long* bb = b->values<long>(); 
-        for(int i=0 ; i < num ; i++ ) bb[i] = aa[i] + long(offset) ;  
+        for(INT i=0 ; i < num ; i++ ) bb[i] = aa[i] + long(offset) ;  
     }
     else if( a->ebyte == 4 )
     {
         const int* aa = a->cvalues<int>(); 
         int* bb = b->values<int>(); 
-        for(int i=0 ; i < num ; i++ ) bb[i] = aa[i] + offset ; 
+        for(INT i=0 ; i < num ; i++ ) bb[i] = aa[i] + offset ; 
     }
     return b ; 
 }
@@ -926,8 +929,8 @@ inline NP* NP::MakeDiv( const NP* src, unsigned mul  )
     unsigned src_bins = src_ni - 1 ; 
     unsigned dst_bins = src_bins*mul ;   
 
-    int dst_ni = dst_bins + 1 ; 
-    int dst_nj = ndim == 2 ? src->shape[1] : -1 ; 
+    INT dst_ni = dst_bins + 1 ; 
+    INT dst_nj = ndim == 2 ? src->shape[1] : -1 ; 
 
 #ifdef DEBUG
     std::cout 
@@ -996,7 +999,7 @@ inline NP* NP::MakeDiv( const NP* src, unsigned mul  )
 
 
 
-template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
+template <typename T> NP* NP::Make( INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string dtype = descr_<T>::dtype() ; 
     NP* a = new NP(dtype.c_str(), ni_,nj_,nk_,nl_,nm_, no_) ;    
@@ -1006,12 +1009,12 @@ template <typename T> NP* NP::Make( int ni_, int nj_, int nk_, int nl_, int nm_,
 template<typename T, typename ... Args> NP*  NP::Make_( Args ... shape_ )   // Make_shape static 
 {
     std::string dtype = descr_<T>::dtype() ; 
-    std::vector<int> shape = {shape_ ...};
+    std::vector<INT> shape = {shape_ ...};
     NP* a = new NP(dtype.c_str(), shape ) ;    
     return a ; 
 }
 
-template<typename T> NP* NP::MakeFlat(int ni, int nj, int nk, int nl, int nm, int no ) // static
+template<typename T> NP* NP::MakeFlat(INT ni, INT nj, INT nk, INT nl, INT nm, INT no ) // static
 {
     NP* a = NP::Make<T>(ni, nj, nk, nl, nm, no );  
     a->fillIndexFlat(); 
@@ -1027,13 +1030,13 @@ template<typename T> NP* NP::MakeFlat(int ni, int nj, int nk, int nl, int nm, in
 inline char*        NP::bytes() { return (char*)data.data() ;  } 
 inline const char*  NP::bytes() const { return (char*)data.data() ;  } 
 
-inline unsigned NP::hdr_bytes() const { return _hdr.length() ; }
-inline unsigned NP::num_items() const { return shape[0] ;  }
-inline unsigned NP::num_values() const { return NPS::size(shape) ;  }
-inline unsigned NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
-inline unsigned NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
-inline unsigned NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
-inline unsigned NP::meta_bytes() const { return meta.length() ; }
+inline NP::INT NP::hdr_bytes() const { return _hdr.length() ; }
+inline NP::INT NP::num_items() const { return shape[0] ;  }
+inline NP::INT NP::num_values() const { return NPS::size(shape) ;  }
+inline NP::INT NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
+inline NP::INT NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
+inline NP::INT NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
+inline NP::INT NP::meta_bytes() const { return meta.length() ; }
 
 
 template<typename T> 
@@ -1112,7 +1115,7 @@ NP::decode_header
 Array header _hdr is parsed setting the below and data is resized.
 
 shape
-    vector of int 
+    vector of INT 
 uifc
     element type code
 ebyte 
@@ -1185,7 +1188,7 @@ inline unsigned NP::prefix_size(unsigned index) const { return net_hdr::unpack(_
 
 
 // CTOR
-inline NP::NP(const char* dtype_, const std::vector<int>& shape_ )
+inline NP::NP(const char* dtype_, const std::vector<INT>& shape_ )
     :
     shape(shape_),
     labels(nullptr),
@@ -1199,7 +1202,7 @@ inline NP::NP(const char* dtype_, const std::vector<int>& shape_ )
 }
 
 // DEFAULT CTOR
-inline NP::NP(const char* dtype_, int ni, int nj, int nk, int nl, int nm, int no )
+inline NP::NP(const char* dtype_, INT ni, INT nj, INT nk, INT nl, INT nm, INT no )
     :
     labels(nullptr),
     dtype(strdup(dtype_)),
@@ -1234,27 +1237,27 @@ inline void NP::init()
 
 
 
-inline void NP::set_shape(int ni, int nj, int nk, int nl, int nm, int no)
+inline void NP::set_shape(INT ni, INT nj, INT nk, INT nl, INT nm, INT no)
 {
     size = NPS::copy_shape(shape, ni, nj, nk, nl, nm, no); 
     init(); 
 }
-inline void NP::set_shape(const std::vector<int>& src_shape)
+inline void NP::set_shape(const std::vector<INT>& src_shape)
 {
     size = NPS::copy_shape(shape, src_shape); 
     init(); 
 }
 
-inline bool NP::has_shape(int ni, int nj, int nk, int nl, int nm, int no) const 
+inline bool NP::has_shape(INT ni, INT nj, INT nk, INT nl, INT nm, INT no) const 
 {
     unsigned ndim = shape.size() ; 
     return 
-           ( ni == -1 || ( ndim > 0 && int(shape[0]) == ni)) && 
-           ( nj == -1 || ( ndim > 1 && int(shape[1]) == nj)) && 
-           ( nk == -1 || ( ndim > 2 && int(shape[2]) == nk)) && 
-           ( nl == -1 || ( ndim > 3 && int(shape[3]) == nl)) && 
-           ( nm == -1 || ( ndim > 4 && int(shape[4]) == nm)) && 
-           ( no == -1 || ( ndim > 5 && int(shape[5]) == no))  
+           ( ni == -1 || ( ndim > 0 && INT(shape[0]) == ni)) && 
+           ( nj == -1 || ( ndim > 1 && INT(shape[1]) == nj)) && 
+           ( nk == -1 || ( ndim > 2 && INT(shape[2]) == nk)) && 
+           ( nl == -1 || ( ndim > 3 && INT(shape[3]) == nl)) && 
+           ( nm == -1 || ( ndim > 4 && INT(shape[4]) == nm)) && 
+           ( no == -1 || ( ndim > 5 && INT(shape[5]) == no))  
            ;
 }
 
@@ -1268,9 +1271,9 @@ See tests/NPchange_shapeTest.cc
 
 **/
 
-inline void NP::change_shape(int ni, int nj, int nk, int nl, int nm, int no)
+inline void NP::change_shape(INT ni, INT nj, INT nk, INT nl, INT nm, INT no)
 {
-    int size2 = NPS::change_shape(shape, ni, nj, nk, nl, nm, no); 
+    INT size2 = NPS::change_shape(shape, ni, nj, nk, nl, nm, no); 
     bool expect =  size == size2  ;
     if(!expect) std::raise(SIGINT) ; 
     assert( size == size2 ); 
@@ -1292,15 +1295,15 @@ inline void NP::change_shape_to_3D()
     else if( ndim > 3 ) 
     {   
         if(VERBOSE) std::cerr << "NP::change_shape_to_3D : ndim > 3, reshaping needed, ndim: " << ndim  << std::endl ;   
-        int ni = 1 ; 
-        for(int i=0 ; i < int(ndim) - 2 ; i++) ni *= shape[i] ; 
+        INT ni = 1 ; 
+        for(INT i=0 ; i < INT(ndim) - 2 ; i++) ni *= shape[i] ; 
         // scrunch up the higher dimensions          
         change_shape(ni, shape[ndim-2], shape[ndim-1] );  
         if(VERBOSE) std::cerr << "NP::change_shape_to_3D : changed shape to : " << sstr() << std::endl  ; 
     }   
 }
 
-inline void NP::reshape( const std::vector<int>& new_shape )
+inline void NP::reshape( const std::vector<INT>& new_shape )
 {
     NPS::reshape(shape, new_shape); 
 }
@@ -1328,7 +1331,7 @@ NB the last dimension must match the template variable, 4 in the above example.
 **/
 
 template<int P>
-inline void NP::size_2D( int& width, int& height ) const 
+inline void NP::size_2D( INT& width, INT& height ) const 
 {
     NPS::size_2D<P>(width, height, shape) ;  
 }
@@ -1350,7 +1353,7 @@ change the total number of bytes in the array.
 inline void NP::set_dtype(const char* dtype_)
 {
     char uifc_ = NPU::_dtype_uifc(dtype_) ; 
-    int  ebyte_ = NPU::_dtype_ebyte(dtype_) ; 
+    INT  ebyte_ = NPU::_dtype_ebyte(dtype_) ; 
     assert( ebyte_ == 1 || ebyte_ == 2 || ebyte_ == 4 || ebyte_ == 8 ); 
 
     if(VERBOSE) std::cout 
@@ -1367,20 +1370,20 @@ inline void NP::set_dtype(const char* dtype_)
     }
     else if( ebyte_ < ebyte )
     {
-        int expand = ebyte/ebyte_ ; 
+        INT expand = ebyte/ebyte_ ; 
         std::cout << "NP::set_dtype : shifting to smaller ebyte increases array dimensions, expand: " << expand << std::endl ; 
         for(unsigned i=0 ; i < shape.size() ; i++ ) shape[i] *= expand ; 
     }
     else if( ebyte_ > ebyte )
     {
-        int shrink = ebyte_/ebyte ; 
+        INT shrink = ebyte_/ebyte ; 
         std::cout << "NP::set_dtype : shifting to larger ebyte decreases array dimensions, shrink: " << shrink << std::endl ; 
         for(unsigned i=0 ; i < shape.size() ; i++ ) shape[i] /= shrink  ; 
     }
 
-    int num_bytes  = size*ebyte ;      // old 
-    int size_ = NPS::size(shape) ;     // new
-    int num_bytes_ = size_*ebyte_ ;    // new 
+    INT num_bytes  = size*ebyte ;      // old 
+    INT size_ = NPS::size(shape) ;     // new
+    INT num_bytes_ = size_*ebyte_ ;    // new 
 
     bool allowed_change = num_bytes_ == num_bytes ; 
     if(!allowed_change)
@@ -1411,22 +1414,22 @@ in a dimension.
 
 **/
 
-inline unsigned NP::index( int i,  int j,  int k,  int l, int m, int o ) const 
+inline NP::INT NP::index( INT i,  INT j,  INT k,  INT l, INT m, INT o ) const 
 {
-    unsigned nd = shape.size() ; 
-    unsigned ni = nd > 0 ? shape[0] : 1 ; 
-    unsigned nj = nd > 1 ? shape[1] : 1 ; 
-    unsigned nk = nd > 2 ? shape[2] : 1 ; 
-    unsigned nl = nd > 3 ? shape[3] : 1 ; 
-    unsigned nm = nd > 4 ? shape[4] : 1 ; 
-    unsigned no = nd > 5 ? shape[5] : 1 ; 
+    INT nd = shape.size() ; 
+    INT ni = nd > 0 ? shape[0] : 1 ; 
+    INT nj = nd > 1 ? shape[1] : 1 ; 
+    INT nk = nd > 2 ? shape[2] : 1 ; 
+    INT nl = nd > 3 ? shape[3] : 1 ; 
+    INT nm = nd > 4 ? shape[4] : 1 ; 
+    INT no = nd > 5 ? shape[5] : 1 ; 
 
-    unsigned ii = i < 0 ? ni + i : i ; 
-    unsigned jj = j < 0 ? nj + j : j ; 
-    unsigned kk = k < 0 ? nk + k : k ; 
-    unsigned ll = l < 0 ? nl + l : l ; 
-    unsigned mm = m < 0 ? nm + m : m ; 
-    unsigned oo = o < 0 ? no + o : o ; 
+    INT ii = i < 0 ? ni + i : i ; 
+    INT jj = j < 0 ? nj + j : j ; 
+    INT kk = k < 0 ? nk + k : k ; 
+    INT ll = l < 0 ? nl + l : l ; 
+    INT mm = m < 0 ? nm + m : m ; 
+    INT oo = o < 0 ? no + o : o ; 
 
     return  ii*nj*nk*nl*nm*no + jj*nk*nl*nm*no + kk*nl*nm*no + ll*nm*no + mm*no + oo ;
 }
@@ -1439,23 +1442,23 @@ Same as NP::index but -ve "missing" indices are treated as if they were zero.
 
 **/
 
-inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const 
+inline NP::INT NP::index0( INT i,  INT j,  INT k,  INT l, INT m, INT o) const 
 {
-    unsigned nd = shape.size() ; 
+    INT nd = shape.size() ; 
 
-    unsigned ni = nd > 0 ? shape[0] : 1 ; 
-    unsigned nj = nd > 1 ? shape[1] : 1 ; 
-    unsigned nk = nd > 2 ? shape[2] : 1 ; 
-    unsigned nl = nd > 3 ? shape[3] : 1 ; 
-    unsigned nm = nd > 4 ? shape[4] : 1 ; 
-    unsigned no = nd > 5 ? shape[5] : 1 ; 
+    INT ni = nd > 0 ? shape[0] : 1 ; 
+    INT nj = nd > 1 ? shape[1] : 1 ; 
+    INT nk = nd > 2 ? shape[2] : 1 ; 
+    INT nl = nd > 3 ? shape[3] : 1 ; 
+    INT nm = nd > 4 ? shape[4] : 1 ; 
+    INT no = nd > 5 ? shape[5] : 1 ; 
 
-    unsigned ii = i < 0 ? 0 : i ; 
-    unsigned jj = j < 0 ? 0 : j ; 
-    unsigned kk = k < 0 ? 0 : k ; 
-    unsigned ll = l < 0 ? 0 : l ; 
-    unsigned mm = m < 0 ? 0 : m ; 
-    unsigned oo = o < 0 ? 0 : o ; 
+    INT ii = i < 0 ? 0 : i ; 
+    INT jj = j < 0 ? 0 : j ; 
+    INT kk = k < 0 ? 0 : k ; 
+    INT ll = l < 0 ? 0 : l ; 
+    INT mm = m < 0 ? 0 : m ; 
+    INT oo = o < 0 ? 0 : o ; 
 
     if(!(ii <  ni)) std::cerr << "NP::index0 ii/ni " << ii << "/" << ni  << std::endl ; 
 
@@ -1479,32 +1482,32 @@ inline unsigned NP::index0( int i,  int j,  int k,  int l, int m, int o) const
     //      i                   j                k             l          m       o 
 }
 
-inline unsigned NP::dimprod(unsigned q) const   // product of dimensions starting from dimension q
+inline NP::INT NP::dimprod(unsigned q) const   // product of dimensions starting from dimension q
 {
-    unsigned dim = 1 ; 
-    for(unsigned d=q ; d < shape.size() ; d++) dim *= shape[d] ; 
+    INT dim = 1 ; 
+    for(INT d=q ; d < INT(shape.size()) ; d++) dim *= shape[d] ; 
     return dim ;   
 } 
 
 
 template<typename... Args>
-inline unsigned NP::index_(Args ... idxx_) const 
+inline NP::INT NP::index_(Args ... idxx_) const 
 {
-    std::vector<int> idxx = {idxx_...};
+    std::vector<INT> idxx = {idxx_...};
     return index__(idxx); 
 }
 
 template<typename... Args>
-inline unsigned NP::stride_(Args ... idxx_) const 
+inline NP::INT NP::stride_(Args ... idxx_) const 
 {
-    std::vector<int> idxx = {idxx_...};
+    std::vector<INT> idxx = {idxx_...};
     return stride__(idxx); 
 }
 
 template<typename... Args>
-inline unsigned NP::offset_(Args ... idxx_) const 
+inline NP::INT NP::offset_(Args ... idxx_) const 
 {
-    std::vector<int> idxx = {idxx_...};
+    std::vector<INT> idxx = {idxx_...};
     return offset__(idxx); 
 }
 
@@ -1532,7 +1535,7 @@ inline std::string NP::ArrayString(const std::vector<T>& vec, unsigned modulo ) 
 template<typename T, typename... Args> 
 inline std::string NP::sliceArrayString(Args ... idxx_ ) const 
 {
-    std::vector<int> idxx = {idxx_...};
+    std::vector<INT> idxx = {idxx_...};
     std::vector<T> out ; 
     slice(out, idxx ); 
     return ArrayString(out, 10); 
@@ -1547,7 +1550,7 @@ NP::slice "slice_ellipsis"
 
 template<typename T, typename... Args> inline void NP::slice(std::vector<T>& out, Args ... idxx_ ) const 
 {
-   std::vector<int> idxx = {idxx_...};
+   std::vector<INT> idxx = {idxx_...};
    slice_(out, idxx); 
 }
 
@@ -1558,7 +1561,7 @@ template<typename T, typename... Args> inline void NP::slice(std::vector<T>& out
 
 
 
-template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vector<int>& idxx ) const 
+template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vector<INT>& idxx ) const 
 {
     if(NP::VERBOSE) 
     std::cout 
@@ -1571,7 +1574,7 @@ template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vect
     if(!all_dim) std::cerr << " idxx.size " << idxx.size() << " shape.size " << shape.size() << " all_dim " << all_dim << std::endl ; 
     assert(all_dim) ; 
 
-    int slicedim = pickdim__(idxx); 
+    INT slicedim = pickdim__(idxx); 
     assert( slicedim > -1 ); 
 
     unsigned start = index__(idxx) ; 
@@ -1593,153 +1596,149 @@ template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vect
         const T* vv = cvalues<T>(); 
         out.resize(numval); 
         for(unsigned i=0 ; i < numval ; i++) out[i] = vv[start+i*stride+offset] ; 
-    }
+}
 
 
-    template<typename T> inline std::string NP::DescSlice(const std::vector<T>& out, unsigned edge )  // static
+template<typename T> inline std::string NP::DescSlice(const std::vector<T>& out, unsigned edge )  // static
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < out.size() ; i++ ) 
+    {   
+         if( i < edge || i > (out.size() - edge) ) 
+            ss << std::setw(4) << i << std::setw(15) << std::setprecision(5) << std::fixed << out[i] << std::endl ; 
+         else if( i == edge )
+            ss << "..." << std::endl; 
+    }   
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+
+template<typename T> inline std::string NP::DescSliceBrief(const std::vector<T>& out )  // static
+{
+    T mn = std::numeric_limits<T>::max();  
+    T mx = std::numeric_limits<T>::min();  
+
+    for(unsigned i=0 ; i < out.size() ; i++ ) 
     {
-        std::stringstream ss ; 
-        for(unsigned i=0 ; i < out.size() ; i++ ) 
-        {   
-             if( i < edge || i > (out.size() - edge) ) 
-                ss << std::setw(4) << i << std::setw(15) << std::setprecision(5) << std::fixed << out[i] << std::endl ; 
-             else if( i == edge )
-                ss << "..." << std::endl; 
-        }   
-        std::string s = ss.str(); 
-        return s ; 
+        T v = out[i] ; 
+        if( mn > v ) mn = v ; 
+        if( mx < v ) mx = v ; 
     }
+    std::stringstream ss ; 
+    ss << " mn " << std::setw(15) << std::setprecision(5) << std::fixed << mn ; 
+    ss << " mx " << std::setw(15) << std::setprecision(5) << std::fixed << mx ; 
+    std::string s = ss.str(); 
+    return s ; 
+}
+
+inline std::string NP::DescIdx(const std::vector<INT>& idxx ) // static
+{
+    std::stringstream ss ;  
+    for(INT d=0 ; d < INT(idxx.size()) ; d++) ss << idxx[d] << " " ; 
+    std::string s = ss.str(); 
+    return s ;
+}
 
 
-    template<typename T> inline std::string NP::DescSliceBrief(const std::vector<T>& out )  // static
+/**
+NP::pickdim__
+----------------
+
+Returns ordinal of first -1 in idxx ?
+
+**/
+
+inline NP::INT NP::pickdim__(const std::vector<INT>& idxx) const
+{
+    INT pd = -1 ; 
+    INT num = 0 ; 
+    for(INT d=0 ; d < INT(shape.size()) ; d++)  
     {
-        T mn = std::numeric_limits<T>::max();  
-        T mx = std::numeric_limits<T>::min();  
-
-        for(unsigned i=0 ; i < out.size() ; i++ ) 
-        {
-            T v = out[i] ; 
-            if( mn > v ) mn = v ; 
-            if( mx < v ) mx = v ; 
+        INT dd = (d < INT(idxx.size()) ? idxx[d] : 1) ; 
+        if( dd == -1 )
+        { 
+            if(num == 0) pd = d ; 
+            num += 1 ;  
         }
-        std::stringstream ss ; 
-        ss << " mn " << std::setw(15) << std::setprecision(5) << std::fixed << mn ; 
-        ss << " mx " << std::setw(15) << std::setprecision(5) << std::fixed << mx ; 
-        std::string s = ss.str(); 
-        return s ; 
     }
+    assert( num == 0 || num == 1 ); 
+    return pd ; 
+}
 
-    inline std::string NP::DescIdx(const std::vector<int>& idxx ) // static
+
+/**
+NP::index__
+-------------
+
+Flat value index ontained from array indices, a -ve index terminates 
+the summation over dimensions so only the dimensions to the left of the
+-1 are summed.  This is used to from NP::slice to give the start index
+of the slice where the slice dimension is marked by the -1.  
+
+**/
+
+inline NP::INT NP::index__(const std::vector<INT>& idxx) const 
+{
+    INT idx = 0 ; 
+    for(INT d=0 ; d < INT(shape.size()) ; d++)  
     {
-        std::stringstream ss ;  
-        for(int d=0 ; d < int(idxx.size()) ; d++) ss << idxx[d] << " " ; 
-        std::string s = ss.str(); 
-        return s ;
+        INT dd = (d < INT(idxx.size()) ? idxx[d] : 1) ; 
+        if( dd == -1 ) break ; 
+        idx += dd*dimprod(d+1) ;  
     }
+    return idx ; 
+}
 
 
-    /**
-    NP::pickdim__
-    ----------------
+inline NP::INT NP::stride__(const std::vector<INT>& idxx) const 
+{
+    INT pd = pickdim__(idxx);  
+    assert( pd > -1 ); 
+    INT stride = dimprod(pd+1) ; 
+    return stride ; 
+}
 
-    Returns ordinal of first -1 in idxx ?
+inline NP::INT NP::offset__(const std::vector<INT>& idxx) const 
+{
+    INT pd = pickdim__(idxx);  
+    assert( pd > -1 ); 
 
-    **/
-
-    inline int NP::pickdim__(const std::vector<int>& idxx) const
+    INT offset = 0 ; 
+    for(INT d=pd+1 ; d < INT(shape.size()) ; d++)  
     {
-        int pd = -1 ; 
-        unsigned num = 0 ; 
-        for(unsigned d=0 ; d < shape.size() ; d++)  
-        {
-            int dd = (d < idxx.size() ? idxx[d] : 1) ; 
-            if( dd == -1 )
-            { 
-                if(num == 0) pd = d ; 
-                num += 1 ;  
-            }
-        }
-        assert( num == 0 || num == 1 ); 
-        return pd ; 
+        INT dd = (d < INT(idxx.size()) ? idxx[d] : 1) ; 
+        offset += dd*dimprod(d+1) ;  
     }
-
-
-    /**
-    NP::index__
-    -------------
-
-    Flat value index ontained from array indices, a -ve index terminates 
-    the summation over dimensions so only the dimensions to the left of the
-    -1 are summed.  This is used to from NP::slice to give the start index
-    of the slice where the slice dimension is marked by the -1.  
-
-    **/
-
-    inline unsigned NP::index__(const std::vector<int>& idxx) const 
-    {
-        unsigned idx = 0 ; 
-        for(unsigned d=0 ; d < shape.size() ; d++)  
-        {
-            int dd = (d < idxx.size() ? idxx[d] : 1) ; 
-            if( dd == -1 ) break ; 
-            idx += dd*dimprod(d+1) ;  
-        }
-        return idx ; 
-    }
-
-
-    inline unsigned NP::stride__(const std::vector<int>& idxx) const 
-    {
-        int pd = pickdim__(idxx);  
-        assert( pd > -1 ); 
-        unsigned stride = dimprod(pd+1) ; 
-        return stride ; 
-    }
-
-    inline unsigned NP::offset__(const std::vector<int>& idxx) const 
-    {
-        int pd = pickdim__(idxx);  
-        assert( pd > -1 ); 
-
-        unsigned offset = 0 ; 
-        for(unsigned d=pd+1 ; d < shape.size() ; d++)  
-        {
-            int dd = (d < idxx.size() ? idxx[d] : 1) ; 
-            offset += dd*dimprod(d+1) ;  
-        }
     return offset ; 
 }
 
 
-
-
-
-
-inline unsigned NP::itemsize_(int i, int j, int k, int l, int m, int o) const
+inline NP::INT NP::itemsize_(INT i, INT j, INT k, INT l, INT m, INT o) const
 {
     return NPS::itemsize_(shape, i, j, k, l, m, o) ; 
 }
 
-inline void NP::itembytes_(const char** start,  unsigned& num_bytes,  int i,  int j,  int k,  int l, int m, int o ) const 
+inline void NP::itembytes_(const char** start,  INT& num_bytes,  INT i,  INT j,  INT k,  INT l, INT m, INT o ) const 
 {
-    unsigned idx0 = index0(i,j,k,l,m,o) ; 
+    INT idx0 = index0(i,j,k,l,m,o) ; 
     *start = bytes() + idx0*ebyte ;  
 
-    unsigned sz = itemsize_(i, j, k, l, m, o) ; 
+    INT sz = itemsize_(i, j, k, l, m, o) ; 
     num_bytes = sz*ebyte ; 
 }
 
 
 
 
-template<typename T> inline T NP::get( int i,  int j,  int k,  int l, int m, int o) const 
+template<typename T> inline T NP::get( INT i,  INT j,  INT k,  INT l, INT m, INT o) const 
 {
     unsigned idx = index(i, j, k, l, m, o); 
     const T* vv = cvalues<T>() ;  
     return vv[idx] ; 
 }
 
-template<typename T> inline void NP::set( T val, int i,  int j,  int k,  int l, int m, int o) 
+template<typename T> inline void NP::set( T val, INT i,  INT j,  INT k,  INT l, INT m, INT o) 
 {
     unsigned idx = index(i, j, k, l, m, o); 
     T* vv = values<T>() ;  
@@ -1752,8 +1751,8 @@ template<typename T> inline bool NP::is_allzero() const
 {
     T zero = T(0) ; 
     const T* vv = cvalues<T>(); 
-    int num = 0 ; 
-    for(int i=0 ; i < size ; i++) if(vv[i] == zero) num += 1 ; 
+    INT num = 0 ; 
+    for(INT i=0 ; i < size ; i++) if(vv[i] == zero) num += 1 ; 
     bool allzero = num == size ; 
     return allzero ; 
 }
@@ -1816,7 +1815,7 @@ NP::descTable
 **/
 
 template<typename T>
-inline std::string NP::descTable(int wid) const 
+inline std::string NP::descTable(INT wid) const 
 {
     return descTable_<T>(wid, labels, &names ); 
 }
@@ -1831,8 +1830,8 @@ inline T NP::findMinimumTimestamp() const
     T MAX = std::numeric_limits<T>::max(); 
     T t0 = MAX ; 
 
-    int nv = num_values() ; 
-    for(int i=0 ; i < nv ; i++)
+    INT nv = num_values() ; 
+    for(INT i=0 ; i < nv ; i++)
     {
         T t = vv[i] ;
         if(!U::LooksLikeTimestamp<T>(t)) continue ; 
@@ -1849,7 +1848,7 @@ NP::descTable_
 **/
 
 template<typename T>
-inline std::string NP::descTable_(int wid, 
+inline std::string NP::descTable_(INT wid, 
     const std::vector<std::string>* column_labels, 
     const std::vector<std::string>* row_labels
   ) const 
@@ -1860,15 +1859,15 @@ inline std::string NP::descTable_(int wid,
 
     std::stringstream ss ; 
     ss << "NP::descTable_ " << sstr() << std::endl ; 
-    int ndim = shape.size() ; 
+    INT ndim = shape.size() ; 
     bool skip = ndim != 2 ; 
     if(skip) 
     {
         ss << " ERROR : UNEXPECTED SHAPE ndim " << ndim << std::endl ;
         ss << " column_labels " << std::endl ; 
-        if(column_labels) for(int i=0 ; i < int(column_labels->size()) ; i++) ss << (*column_labels)[i] << std::endl ; 
+        if(column_labels) for(INT i=0 ; i < INT(column_labels->size()) ; i++) ss << (*column_labels)[i] << std::endl ; 
         ss << " row_labels " << std::endl ; 
-        if(row_labels) for(int i=0 ; i < int(row_labels->size()) ; i++) ss << (*row_labels)[i] << std::endl ; 
+        if(row_labels) for(INT i=0 ; i < INT(row_labels->size()) ; i++) ss << (*row_labels)[i] << std::endl ; 
     }
 
     if(!skip)
@@ -1876,21 +1875,21 @@ inline std::string NP::descTable_(int wid,
         const T* vv = cvalues<T>() ; 
         T t0 = findMinimumTimestamp<T>() ; 
 
-        int ni = shape[0] ; 
-        int nj = shape[1] ; 
-        int cwid = wid ; 
-        int rwid = 2*wid ; 
+        INT ni = shape[0] ; 
+        INT nj = shape[1] ; 
+        INT cwid = wid ; 
+        INT rwid = 2*wid ; 
         
         std::vector<std::string> column_smry ; 
         if(column_labels) U::Summarize( column_smry, column_labels, cwid ); 
-        bool with_column_labels = int(column_smry.size()) == nj ;
+        bool with_column_labels = INT(column_smry.size()) == nj ;
 
         std::vector<std::string> row_smry ; 
         if(row_labels) U::Summarize( row_smry, row_labels, rwid ); 
-        bool with_row_labels = int(row_smry.size()) == ni ;
+        bool with_row_labels = INT(row_smry.size()) == ni ;
 
 
-        if(with_column_labels) for(int j=0 ; j < nj ; j++) ss 
+        if(with_column_labels) for(INT j=0 ; j < nj ; j++) ss 
             << U::Space( with_row_labels && j == 0  ? rwid+1 : 0 ) 
             << std::setw(cwid) 
             << column_smry[j] 
@@ -1898,12 +1897,12 @@ inline std::string NP::descTable_(int wid,
             ;  
 
         std::vector<T> column_totals(nj,0); 
-        int num_timestamp = 0 ; 
+        INT num_timestamp = 0 ; 
 
-        for(int i=0 ; i < ni ; i++) 
+        for(INT i=0 ; i < ni ; i++) 
         {
             if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ; 
-            for(int j=0 ; j < nj ; j++) 
+            for(INT j=0 ; j < nj ; j++) 
             {
                 T v = vv[i*nj+j] ;
                 bool timestamp = U::LooksLikeTimestamp<T>(v) ;
@@ -1924,7 +1923,7 @@ inline std::string NP::descTable_(int wid,
         if(with_column_totals)
         {
             if(with_row_labels) ss << std::setw(rwid) << "TOTAL:" << " " ; 
-            for(int j=0 ; j < nj ; j++) 
+            for(INT j=0 ; j < nj ; j++) 
             {
                 T v = column_totals[j] ; 
                 ss 
@@ -1937,7 +1936,7 @@ inline std::string NP::descTable_(int wid,
 
         if(with_column_labels) 
         {
-            for(int j=0 ; j < nj ; j++) 
+            for(INT j=0 ; j < nj ; j++) 
             {
                 if( strcmp(column_smry[j].c_str(), (*column_labels)[j].c_str()) != 0) ss 
                     << ( j == 0 ? "\n" : "" ) 
@@ -1952,7 +1951,7 @@ inline std::string NP::descTable_(int wid,
 
         if(with_row_labels) 
         {
-            for(int i=0 ; i < ni ; i++) 
+            for(INT i=0 ; i < ni ; i++) 
             {
                 if( strcmp(row_smry[i].c_str(), (*row_labels)[i].c_str()) != 0) ss 
                     << ( i == 0 ? "\n" : "" ) 
@@ -2005,11 +2004,11 @@ inline void NP::CopyMeta( NP* b, const NP* a ) // static
 
 inline void NP::set_preserve_last_column_integer_annotation()
 {
-    set_meta<int>(Preserve_Last_Column_Integer_Annotation, 1 );
+    set_meta<INT>(Preserve_Last_Column_Integer_Annotation, 1 );
 }
 inline bool NP::is_preserve_last_column_integer_annotation() const 
 {
-    return 1 == get_meta<int>(Preserve_Last_Column_Integer_Annotation, 0) ; 
+    return 1 == get_meta<INT>(Preserve_Last_Column_Integer_Annotation, 0) ; 
 }
 
 inline float NP::PreserveNarrowedDoubleInteger( double f )
@@ -2212,46 +2211,46 @@ NP::MakeSelectCopy
 template<typename... Args> 
 inline NP* NP::MakeSelectCopy( const NP* src, Args ... items_ )  // MakeSelectCopy_ellipsis
 {
-   std::vector<int> items = {items_...};
+   std::vector<INT> items = {items_...};
    return MakeSelectCopy_(src, &items ); 
 }
 
-template NP* NP::MakeSelectCopy( const NP* , int ); 
-template NP* NP::MakeSelectCopy( const NP* , int, int ); 
-template NP* NP::MakeSelectCopy( const NP* , int, int, int ); 
-template NP* NP::MakeSelectCopy( const NP* , int, int, int, int ); 
+template NP* NP::MakeSelectCopy( const NP* , INT ); 
+template NP* NP::MakeSelectCopy( const NP* , INT, INT ); 
+template NP* NP::MakeSelectCopy( const NP* , INT, INT, INT ); 
+template NP* NP::MakeSelectCopy( const NP* , INT, INT, INT, INT ); 
 
 inline NP* NP::MakeSelectCopyE_(  const NP* src, const char* ekey, const char* fallback, char delim )
 {
-    std::vector<int>* items = U::GetEnvVec<int>(ekey, fallback, delim ); 
+    std::vector<INT>* items = U::GetEnvVec<INT>(ekey, fallback, delim ); 
     return NP::MakeSelectCopy_( src, items )  ; 
 }
 inline NP* NP::MakeSelectCopy_(  const NP* src, const char* items_ )
 {
-    std::vector<int>* items = U::MakeVec<int>(items_); 
+    std::vector<INT>* items = U::MakeVec<INT>(items_); 
     return NP::MakeSelectCopy_( src, items ); 
 }
-inline NP* NP::MakeSelectCopy_(  const NP* src, const std::vector<int>* items )
+inline NP* NP::MakeSelectCopy_(  const NP* src, const std::vector<INT>* items )
 {
-    return items ? MakeSelectCopy_(src, items->data(), int(items->size()) ) : NP::MakeCopy(src) ; 
+    return items ? MakeSelectCopy_(src, items->data(), INT(items->size()) ) : NP::MakeCopy(src) ; 
 }
-inline NP* NP::MakeSelectCopy_(  const NP* src, const int* items, int num_items )
+inline NP* NP::MakeSelectCopy_(  const NP* src, const INT* items, INT num_items )
 {
     assert( items ); 
-    for(int i=0 ; i < num_items ; i++) assert( items[i] < int(src->shape[0]) ); 
-    std::vector<int> dst_shape(src->shape) ; 
+    for(INT i=0 ; i < num_items ; i++) assert( items[i] < INT(src->shape[0]) ); 
+    std::vector<INT> dst_shape(src->shape) ; 
     dst_shape[0] = num_items ; 
     NP* dst = new NP(src->dtype, dst_shape); 
     assert( src->item_bytes() == dst->item_bytes() );  
     unsigned size = src->item_bytes(); 
-    for(int i=0 ; i < num_items ; i++) 
+    for(INT i=0 ; i < num_items ; i++) 
     {
         memcpy( dst->bytes() + i*size, src->bytes() + items[i]*size , size ); 
     }
 
     // format string idlist list of items and set into metadata 
     std::stringstream ss ; 
-    for(int i=0 ; i < num_items ; i++) ss << items[i] << ( i < num_items-1 ? "," : "" ) ; 
+    for(INT i=0 ; i < num_items ; i++) ss << items[i] << ( i < num_items-1 ? "," : "" ) ; 
     std::string idlist = ss.str() ; 
     dst->set_meta<std::string>("idlist", idlist ); 
     // item indices become "id" when you use them to make a selection
@@ -2268,9 +2267,9 @@ and copies that item into the destination array.
 
 **/
 
-inline NP* NP::MakeItemCopy(  const NP* src, int i, int j, int k, int l, int m, int o )
+inline NP* NP::MakeItemCopy(  const NP* src, INT i, INT j, INT k, INT l, INT m, INT o )
 {
-    std::vector<int> sub_shape ; 
+    std::vector<INT> sub_shape ; 
     src->item_shape(sub_shape, i, j, k, l, m, o );   // shape of the item specified by (i,j,k,l,m,n)
     unsigned idx = src->index0(i, j, k, l, m, o ); 
 
@@ -2315,7 +2314,7 @@ would give item shape::
     (4096, 4096, 4 )
 
 **/
-inline void NP::item_shape(std::vector<int>& sub, int i, int j, int k, int l, int m, int o ) const 
+inline void NP::item_shape(std::vector<INT>& sub, INT i, INT j, INT k, INT l, INT m, INT o ) const 
 {
     unsigned nd = shape.size() ; 
 
@@ -2355,7 +2354,7 @@ inline void NP::item_shape(std::vector<int>& sub, int i, int j, int k, int l, in
     }
 }
 
-inline NP* NP::spawn_item(  int i, int j, int k, int l, int m, int o  ) const 
+inline NP* NP::spawn_item(  INT i, INT j, INT k, INT l, INT m, INT o  ) const 
 {
     return MakeItemCopy(this, i, j, k, l, m, o ); 
 }
@@ -2436,7 +2435,7 @@ inline NP* NP::MakeICDF(const NP* cdf, unsigned nu, unsigned hd_factor, bool dum
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-        int item = i ;  
+        INT item = i ;  
         if(dump) std::cout << "NP::MakeICDF" << " item " << item << std::endl ; 
 
         for(unsigned j=0 ; j < nj ; j++)
@@ -2666,13 +2665,13 @@ inline NP* NP::copy() const
 
 
 template<typename S>
-inline int NP::count_if(std::function<bool(const S*)> predicate) const 
+inline NP::INT NP::count_if(std::function<bool(const S*)> predicate) const 
 {
     assert( is_itemtype<S>() );  // size of type same as item_bytes
     const S* vv = cvalues<S>();  
-    int ni = num_items(); 
-    int count = 0 ; 
-    for(int i=0 ; i < ni ; i++) if(predicate(vv+i)) count += 1 ;  
+    INT ni = num_items(); 
+    INT count = 0 ; 
+    for(INT i=0 ; i < ni ; i++) if(predicate(vv+i)) count += 1 ;  
     return count ; 
 }
 
@@ -2681,8 +2680,8 @@ inline NP* NP::simple_copy_if(std::function<bool(const T*)> predicate ) const
 {
     assert( is_itemtype<T>() );  // size of type same as item_bytes
 
-    int ni = num_items(); 
-    int si = count_if<T>(predicate) ; 
+    INT ni = num_items(); 
+    INT si = count_if<T>(predicate) ; 
     assert( si <= ni ); 
 
     const T* aa = cvalues<T>();  
@@ -2690,8 +2689,8 @@ inline NP* NP::simple_copy_if(std::function<bool(const T*)> predicate ) const
     NP* b = NP::Make<T>(si) ; 
     T* bb = b->values<T>(); 
 
-    int _si = 0 ; 
-    for(int i=0 ; i < ni ; i++) 
+    INT _si = 0 ; 
+    for(INT i=0 ; i < ni ; i++) 
     {
         if(predicate(aa+i)) 
         {
@@ -2721,21 +2720,21 @@ template<typename T, typename S>
 inline NP* NP::copy_if(std::function<bool(const S*)> predicate ) const 
 {
     assert( sizeof(S) >= sizeof(T) );  
-    int ni = num_items(); 
+    INT ni = num_items(); 
 
-    int si = count_if<S>(predicate) ; 
-    int sj = sizeof(S) / sizeof(T) ; 
+    INT si = count_if<S>(predicate) ; 
+    INT sj = sizeof(S) / sizeof(T) ; 
 
 
     assert( si <= ni ); 
-    std::vector<int> sh(shape) ; 
-    int nd = sh.size(); 
+    std::vector<INT> sh(shape) ; 
+    INT nd = sh.size(); 
 
     assert( nd > 0 ); 
     sh[0] = si ; 
 
-    int itemcheck = 1 ; 
-    for(int i=1 ; i < nd ; i++) itemcheck *= sh[i] ; 
+    INT itemcheck = 1 ; 
+    for(INT i=1 ; i < nd ; i++) itemcheck *= sh[i] ; 
 
     bool sj_expect = itemcheck == sj ;
     if(!sj_expect) std::raise(SIGINT) ; 
@@ -2746,8 +2745,8 @@ inline NP* NP::copy_if(std::function<bool(const S*)> predicate ) const
     NP* b = NP::Make_<T>(sh) ; 
     S* bb = b->values<S>(); 
 
-    int _si = 0 ; 
-    for(int i=0 ; i < ni ; i++) 
+    INT _si = 0 ; 
+    for(INT i=0 ; i < ni ; i++) 
     {
         if(predicate(aa+i)) 
         {
@@ -2782,15 +2781,15 @@ template<typename T, typename S, typename... Args>
 inline NP* NP::flexible_copy_if(std::function<bool(const S*)> predicate, Args ... itemshape ) const 
 {
     assert( sizeof(S) >= sizeof(T) );  
-    int ni = num_items(); 
+    INT ni = num_items(); 
 
-    int si = count_if<S>(predicate) ; 
-    int sj = sizeof(S) / sizeof(T) ; 
+    INT si = count_if<S>(predicate) ; 
+    INT sj = sizeof(S) / sizeof(T) ; 
 
     assert( si <= ni ); 
 
-    std::vector<int> itemshape_ = {itemshape...};
-    std::vector<int> sh ; 
+    std::vector<INT> itemshape_ = {itemshape...};
+    std::vector<INT> sh ; 
     sh.push_back(si) ; 
 
     if(itemshape_.size() == 0 )
@@ -2799,8 +2798,8 @@ inline NP* NP::flexible_copy_if(std::function<bool(const S*)> predicate, Args ..
     }
     else 
     {
-        int itemcheck = 1 ; 
-        for(int i=0 ; i < int(itemshape_.size()) ; i++)  
+        INT itemcheck = 1 ; 
+        for(INT i=0 ; i < INT(itemshape_.size()) ; i++)  
         {
             sh.push_back(itemshape_[i]) ; 
             itemcheck *= itemshape_[i] ; 
@@ -2812,8 +2811,8 @@ inline NP* NP::flexible_copy_if(std::function<bool(const S*)> predicate, Args ..
     NP* b = NP::Make_<T>(sh) ; 
     S* bb = b->values<S>(); 
 
-    int _si = 0 ; 
-    for(int i=0 ; i < ni ; i++) 
+    INT _si = 0 ; 
+    for(INT i=0 ; i < ni ; i++) 
     {
         if(predicate(aa+i)) 
         {
@@ -2905,7 +2904,7 @@ inline NP* NP::Load_(const char* path)
 {
     if(!path) return nullptr ; 
     NP* a = new NP() ; 
-    int rc = a->load(path) ; 
+    INT rc = a->load(path) ; 
     return rc == 0 ? a  : nullptr ; 
 }
 
@@ -3001,12 +3000,12 @@ NP::find_value_index
 
 **/
 
-template<typename T> inline int NP::find_value_index(T value, T epsilon) const
+template<typename T> inline NP::INT NP::find_value_index(T value, T epsilon) const
 {
     const T* vv = cvalues<T>(); 
     unsigned ni = shape[0] ;
     unsigned ndim = shape.size() ; 
-    int idx = -1 ; 
+    INT idx = -1 ; 
     if(ndim == 1)
     {
         for(unsigned i=0 ; i < ni ; i++) 
@@ -3063,12 +3062,12 @@ or the *i* index if *jret* is -1.
 
 **/
 
-template<typename T> inline T NP::ifind2D(T ivalue, int jcol, int jret ) const
+template<typename T> inline T NP::ifind2D(T ivalue, INT jcol, INT jret ) const
 {
     if( shape.size() != 2 ) return -2 ;   
 
-    int ni = shape[0] ;
-    int nj = shape[1] ;
+    INT ni = shape[0] ;
+    INT nj = shape[1] ;
 
     if( jcol >= nj ) return -3 ; 
     if( jret >= nj ) return -4 ; 
@@ -3077,7 +3076,7 @@ template<typename T> inline T NP::ifind2D(T ivalue, int jcol, int jret ) const
 
     T vret = -1 ;  
  
-    for(int i=0 ; i < ni ; i++) 
+    for(INT i=0 ; i < ni ; i++) 
     {
         T vcol = vv[i*nj+jcol]; 
         bool match = vcol == ivalue ; 
@@ -3116,11 +3115,11 @@ inline bool NP::is_pconst() const
 {
     if(!is_pshaped()) return false ; 
     const T* vv = cvalues<T>(); 
-    int ni = shape[0] ; 
-    int nj = shape[1] ; 
+    INT ni = shape[0] ; 
+    INT nj = shape[1] ; 
     const T v0 = vv[0*nj+nj-1] ; 
-    int num_equal = 0 ;  
-    for(int i=0 ; i < ni ; i++) num_equal += vv[i*nj+nj-1] == v0 ? 1 : 0 ; 
+    INT num_equal = 0 ;  
+    for(INT i=0 ; i < ni ; i++) num_equal += vv[i*nj+nj-1] == v0 ? 1 : 0 ; 
     return num_equal == ni ; 
 }
 
@@ -3143,7 +3142,7 @@ template<typename T>
 inline T NP::pconst(T fallback) const
 {
     if(!is_pconst<T>()) return fallback ; 
-    int nj = shape[1] ; 
+    INT nj = shape[1] ; 
     const T* vv = cvalues<T>(); 
     const T v0 = vv[0*nj+nj-1] ; 
     return v0 ; 
@@ -3172,8 +3171,8 @@ inline NP* NP::MakePCopyNotDumb(const NP* a) // static
 template<typename T>
 inline NP* NP::MakePConst( T dl, T dr, T vc ) // static
 {
-    int ni = 2 ; 
-    int nj = 2 ; 
+    INT ni = 2 ; 
+    INT nj = 2 ; 
 
     NP* p = NP::Make<T>(ni,nj) ; 
     T*  pp = p->values<T>() ; 
@@ -3269,7 +3268,7 @@ This numbering scheme matches that used by np.digitize::
 
 **/
 
-template<typename T> inline int  NP::pfindbin(const T value, unsigned column, bool& in_range) const 
+template<typename T> inline NP::INT  NP::pfindbin(const T value, unsigned column, bool& in_range) const 
 {
     const T* vv = cvalues<T>(); 
 
@@ -3281,7 +3280,7 @@ template<typename T> inline int  NP::pfindbin(const T value, unsigned column, bo
     const T lhs = vv[nj*(0)+column] ; 
     const T rhs = vv[nj*(ni-1)+column] ; 
    
-    int ibin = -1 ; 
+    INT ibin = -1 ; 
     in_range = false ; 
     if( value < lhs )         // value==lhs is in_range 
     {
@@ -3322,7 +3321,7 @@ for out of range ibin = ni returns rhs edge for both lo and hi.
 
 **/
 
-template<typename T> inline void  NP::get_edges(T& lo, T& hi, unsigned column, int ibin) const 
+template<typename T> inline void  NP::get_edges(T& lo, T& hi, unsigned column, INT ibin) const 
 {
     const T* vv = cvalues<T>(); 
 
@@ -3339,7 +3338,7 @@ template<typename T> inline void  NP::get_edges(T& lo, T& hi, unsigned column, i
         lo = lhs ; 
         hi = lhs ; 
     }   
-    else if( ibin == int(ni) )
+    else if( ibin == INT(ni) )
     {
         lo = rhs ; 
         hi = rhs ; 
@@ -3421,7 +3420,7 @@ by looping over the first array dimension and comparing all values.
 
 **/
 
-template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j, int item ) const 
+template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j, INT item ) const 
 {
     unsigned ndim = shape.size() ; 
     assert( ndim == 2 || ndim == 3);  
@@ -3431,7 +3430,7 @@ template<typename T> inline void NP::minmax(T& mn, T&mx, unsigned j, int item ) 
     assert( j < nj ); 
 
     unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
-    assert( item < int(num_items) ); 
+    assert( item < INT(num_items) ); 
     unsigned item_offset = item == -1 ? 0 : ni*nj*item ; 
     const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
 
@@ -3464,14 +3463,14 @@ So (item_stride, item_offset) needs to be (4,0) where the
 item is the 4-plet chosen with the N template parameter.
 
 **/
-template<int N, typename T> inline void NP::minmax2D_reshaped(T* mn, T* mx, int item_stride, int item_offset ) 
+template<int N, typename T> inline void NP::minmax2D_reshaped(T* mn, T* mx, INT item_stride, INT item_offset ) 
 {
-    std::vector<int> sh = shape ; 
+    std::vector<INT> sh = shape ; 
     change_shape(-1,N); 
 
     assert( shape.size() == 2 ); 
-    [[maybe_unused]] int ni = shape[0] ; 
-    [[maybe_unused]] int nj = shape[1] ; 
+    [[maybe_unused]] INT ni = shape[0] ; 
+    [[maybe_unused]] INT nj = shape[1] ; 
     assert( nj == N && ni > 0 ); 
 
     minmax2D<T>(mn, mx, item_stride, item_offset ); 
@@ -3489,22 +3488,22 @@ with at least N elements.
 
 **/
 
-template<typename T> inline void NP::minmax2D(T* mn, T* mx, int item_stride, int item_offset ) const 
+template<typename T> inline void NP::minmax2D(T* mn, T* mx, INT item_stride, INT item_offset ) const 
 {
     assert( shape.size() == 2 ); 
-    int ni = shape[0] ; 
-    int nj = shape[1] ; 
+    INT ni = shape[0] ; 
+    INT nj = shape[1] ; 
 
-    for(int j=0 ; j < nj ; j++) mn[j] = std::numeric_limits<T>::max() ; 
-    for(int j=0 ; j < nj ; j++) mx[j] = std::numeric_limits<T>::min() ; 
+    for(INT j=0 ; j < nj ; j++) mn[j] = std::numeric_limits<T>::max() ; 
+    for(INT j=0 ; j < nj ; j++) mx[j] = std::numeric_limits<T>::min() ; 
 
     const T* vv = cvalues<T>() ; 
-    for(int i=0 ; i < ni ; i++)
+    for(INT i=0 ; i < ni ; i++)
     {
         if( i % item_stride != item_offset ) continue ; 
-        for(int j=0 ; j < nj ; j++)
+        for(INT j=0 ; j < nj ; j++)
         {
-            int idx = i*nj + j ; 
+            INT idx = i*nj + j ; 
             if( vv[idx] < mn[j] ) mn[j] = vv[idx] ;   
             if( vv[idx] > mx[j] ) mx[j] = vv[idx] ;   
         }
@@ -3684,7 +3683,7 @@ Also support arrys of shape (num_item, num_dom, 2 ) when item is used to pick th
 
 **/
 
-template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) const 
+template<typename T> inline T  NP::pdomain(const T value, INT item, bool dump ) const 
 {
     const T zero = 0. ; 
     unsigned ndim = shape.size() ; 
@@ -3698,7 +3697,7 @@ template<typename T> inline T  NP::pdomain(const T value, int item, bool dump ) 
     // note that with nj > 2 this allows other values to be carried 
 
     unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
-    assert( item < int(num_items) ); 
+    assert( item < INT(num_items) ); 
     unsigned item_offset = item == -1 ? 0 : ni*nj*item ;   // using item = 0 will have the same effect
 
     const T* vv = cvalues<T>() + item_offset ;  // shortcut approach to handling multiple items 
@@ -3842,16 +3841,16 @@ but you should be able to get very close.
 
 
 **/
-template<typename T> inline T  NP::interp2D(T x, T y, int item) const 
+template<typename T> inline T  NP::interp2D(T x, T y, INT item) const 
 {
-    int ndim = shape.size() ; 
+    INT ndim = shape.size() ; 
     assert( ndim == 2 || ndim == 3 ); 
 
-    int num_items = ndim == 3 ? shape[0] : 1 ; 
+    INT num_items = ndim == 3 ? shape[0] : 1 ; 
     assert( item < num_items ); 
-    int ni = shape[ndim-2]; 
-    int nj = shape[ndim-1];  // typically 2, but can be more 
-    int item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
+    INT ni = shape[ndim-2]; 
+    INT nj = shape[ndim-1];  // typically 2, but can be more 
+    INT item_offset = item == -1 ? 0 : ni*nj*item ;   // item=-1 same as item=0
 
     const T* vv = cvalues<T>() + item_offset ; 
     
@@ -3860,11 +3859,11 @@ template<typename T> inline T  NP::interp2D(T x, T y, int item) const
     // decompose floating point value into integral and fractional parts 
     T xBint ; 
     T xBfra = std::modf(xB, &xBint);
-    int j = int(xBint) ; 
+    INT j = INT(xBint) ; 
 
     T yBint ; 
     T yBfra = std::modf(yB, &yBint);
-    int i = int(yBint) ; 
+    INT i = INT(yBint) ; 
 
     const T one(1.);
 
@@ -3919,13 +3918,13 @@ so always explicitly define the template type : DO NOT RELY ON COMPILER WORKING 
 
 **/
 
-template<typename T> inline T NP::interp(T x, int item) const  
+template<typename T> inline T NP::interp(T x, INT item) const  
 {
     unsigned ndim = shape.size() ; 
     assert( ndim == 2 || ndim == 3 ); 
 
     unsigned num_items = ndim == 3 ? shape[0] : 1 ; 
-    bool num_items_expect = item < int(num_items)  ;
+    bool num_items_expect = item < INT(num_items)  ;
     assert( num_items_expect );
     if(!num_items_expect) std::raise(SIGINT); 
  
@@ -3941,8 +3940,8 @@ template<typename T> inline T NP::interp(T x, int item) const
 
     const T* vv = cvalues<T>() + item_offset ; 
 
-    int lo = 0 ;
-    int hi = ni-1 ;         // domain must be in ascending order 
+    INT lo = 0 ;
+    INT hi = ni-1 ;         // domain must be in ascending order 
 
 /*
     std::cout 
@@ -3966,7 +3965,7 @@ template<typename T> inline T NP::interp(T x, int item) const
     // binary search for domain bin containing x 
     while (lo < hi-1)
     {
-        int mi = (lo+hi)/2;
+        INT mi = (lo+hi)/2;
         if (x < vv[nj*mi+jdom]) hi = mi ;
         else lo = mi;
     }
@@ -4010,13 +4009,13 @@ across different numbers of dimensions.
 
 **/
 
-template<typename T> inline T NP::interpHD(T u, unsigned hd_factor, int item) const 
+template<typename T> inline T NP::interpHD(T u, unsigned hd_factor, INT item) const 
 {
     unsigned ndim = shape.size() ; 
     assert( ndim == 3 || ndim == 4 ); 
 
     unsigned num_items = ndim == 4 ? shape[0] : 1 ; 
-    assert( item < int(num_items) ); 
+    assert( item < INT(num_items) ); 
 
     unsigned ni = shape[ndim-3] ; 
     unsigned nj = shape[ndim-2] ; 
@@ -4036,8 +4035,8 @@ template<typename T> inline T NP::interpHD(T u, unsigned hd_factor, int item) co
     const T* vv = cvalues<T>() + item_offset ; 
 
     // lo and hi are standins for *i*
-    int lo = 0 ;
-    int hi = ni-1 ;
+    INT lo = 0 ;
+    INT hi = ni-1 ;
 
     if( u <= vv[lo*nj*nk+j*nk+kdom] ) return vv[lo*nj*nk+j*nk+kval] ; 
     if( u >= vv[hi*nj*nk+j*nk+kdom] ) return vv[hi*nj*nk+j*nk+kval] ; 
@@ -4045,7 +4044,7 @@ template<typename T> inline T NP::interpHD(T u, unsigned hd_factor, int item) co
     // binary search for domain bin containing x 
     while (lo < hi-1)
     {
-        int mi = (lo+hi)/2;
+        INT mi = (lo+hi)/2;
         if (u < vv[mi*nj*nk+j*nk+kdom] ) hi = mi ;
         else lo = mi;
     }
@@ -4069,7 +4068,7 @@ difficult to find bugs.
 
 **/
 
-template<typename T> inline T NP::interp(int i, T x) const  
+template<typename T> inline T NP::interp(INT i, T x) const  
 {  
     std::cerr << "NP::interp DEPRECATED SIGNATURE CHANGE NP::interp TO NP::combined_interp " << std::endl ; 
     return combined_interp_3<T>(i, x ); 
@@ -4139,12 +4138,12 @@ qudarap/qprop.h qprop<T>::interpolate
 
 **/
 
-template<typename T> inline T NP::combined_interp_3(int i, T x) const  
+template<typename T> inline T NP::combined_interp_3(INT i, T x) const  
 {
-    int ndim = shape.size() ; 
+    INT ndim = shape.size() ; 
     assert( ndim == 3 && shape[ndim-1] >= 2 && i < shape[0] && shape[1] > 1 ); 
 
-    int stride = shape[ndim-2]*shape[ndim-1] ; 
+    INT stride = shape[ndim-2]*shape[ndim-1] ; 
     const T* vv = cvalues<T>() + i*stride ; 
 
     return _combined_interp<T>( vv, stride, x ); 
@@ -4164,27 +4163,27 @@ Example array layout for complex refractive index::
 
 **/
 
-template<typename T> inline T NP::combined_interp_5(int i, int j, int k, T x) const  
+template<typename T> inline T NP::combined_interp_5(INT i, INT j, INT k, T x) const  
 {
-    int ndim = shape.size() ; 
+    INT ndim = shape.size() ; 
     assert( ndim == 5 ); 
-    int ni = shape[0] ; 
-    int nj = shape[1] ; 
-    int nk = shape[2] ; 
+    INT ni = shape[0] ; 
+    INT nj = shape[1] ; 
+    INT nk = shape[2] ; 
     bool args_expect =  i < ni && j < nj && k < nk ;
     assert( args_expect ); 
     if(!args_expect) std::raise(SIGINT); 
 
-    int nl = shape[ndim-2] ; 
-    int nm = shape[ndim-1] ; 
+    INT nl = shape[ndim-2] ; 
+    INT nm = shape[ndim-1] ; 
 
     bool shape_expect = nl > 1 && nm == 2  ;
     // require more than one domain items  
     assert( shape_expect );   
     if(!shape_expect) std::raise(SIGINT); 
 
-    int stride = shape[ndim-2]*shape[ndim-1] ; 
-    int iprop = i*nj*nk+j*nk+k ;   
+    INT stride = shape[ndim-2]*shape[ndim-1] ; 
+    INT iprop = i*nj*nk+j*nk+k ;   
     // maximum:  (ni-1)*nj*nk + (nj-1)*nk + (nk-1) = ni*nj*nk - nj*nk + nj*nk - nk + nk - 1 = ni*nj*nk - 1 
     
     const T* vv = cvalues<T>() + iprop*stride ; 
@@ -4205,24 +4204,24 @@ last column.
 
 **/
 
-template<typename T> inline T NP::_combined_interp(const T* vv, int niv, T x) const  
+template<typename T> inline T NP::_combined_interp(const T* vv, INT niv, T x) const  
 {
-    int ndim = shape.size() ; 
-    int ni = nview::int_from<T>( *(vv+niv-1) ) ; // NPU.hh:nview 
-    int nj = shape[ndim-1] ;  // normally 2 with (dom, val)
+    INT ndim = shape.size() ; 
+    INT ni = nview::int_from<T>( *(vv+niv-1) ) ; // NPU.hh:nview 
+    INT nj = shape[ndim-1] ;  // normally 2 with (dom, val)
 
-    int jdom = 0 ;       // 1st payload slot is "domain"
-    int jval = nj - 1 ;  // last payload slot is "value", with nj 2 (typical) that is 1  
+    INT jdom = 0 ;       // 1st payload slot is "domain"
+    INT jval = nj - 1 ;  // last payload slot is "value", with nj 2 (typical) that is 1  
 
-    int lo = 0 ;
-    int hi = ni-1 ;
+    INT lo = 0 ;
+    INT hi = ni-1 ;
 
     if( x <= vv[nj*lo+jdom] ) return vv[nj*lo+jval] ; 
     if( x >= vv[nj*hi+jdom] ) return vv[nj*hi+jval] ; 
 
     while (lo < hi-1)
     {
-        int mi = (lo+hi)/2;
+        INT mi = (lo+hi)/2;
         if (x < vv[nj*mi+jdom]) hi = mi ;
         else lo = mi;
     }
@@ -4260,13 +4259,13 @@ template<typename T> inline T NP::FractionalRange( T x, T x0, T x1 )  // static
 
 
 
-template<typename T> inline NP* NP::cumsum(int axis) const  
+template<typename T> inline NP* NP::cumsum(INT axis) const  
 {
     assert( axis == 1 && "for now only axis=1 implemented" ); 
     const T* vv = cvalues<T>(); 
     NP* cs = NP::MakeLike(this) ; 
     T* ss = cs->values<T>(); 
-    for(int p=0 ; p < size ; p++) ss[p] = vv[p] ;   // flat copy 
+    for(INT p=0 ; p < size ; p++) ss[p] = vv[p] ;   // flat copy 
 
     unsigned ndim = shape.size() ; 
 
@@ -4387,7 +4386,7 @@ inline void NP::fillIndexFlat()
 }
 
 
-inline void NP::dump(int i0, int i1, int j0, int j1) const 
+inline void NP::dump(INT i0, INT i1, INT j0, INT j1) const 
 {
     if(uifc == 'f')
     {   
@@ -4466,12 +4465,12 @@ template<typename T>
 inline std::string NP::repr() const 
 {
     const T* vv = cvalues<T>(); 
-    int nv = num_values() ; 
-    const int edge = 5 ; 
+    INT nv = num_values() ; 
+    const INT edge = 5 ; 
 
     std::stringstream ss ; 
     ss << "{" ; 
-    for(int i=0 ; i < nv ; i++) 
+    for(INT i=0 ; i < nv ; i++) 
     {     
         if( i < edge || i > nv - edge )
         {
@@ -4531,12 +4530,12 @@ inline void NP::get_names( std::vector<std::string>& lines ) const
 }
 
 //Returns 0-based index of first matching name, or -1 if the name is not found or the name is nullptr. 
-inline int NP::get_name_index( const char* qname ) const 
+inline NP::INT NP::get_name_index( const char* qname ) const 
 {
     unsigned count = 0 ; 
     return NameIndex(qname, count, names); 
 }
-inline int NP::get_name_index( const char* qname, unsigned& count ) const 
+inline NP::INT NP::get_name_index( const char* qname, unsigned& count ) const 
 {
     return NameIndex(qname, count, names); 
 }
@@ -4552,11 +4551,11 @@ Returns -1 if not found.
 
 **/
 
-inline int NP::NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ) // static
+inline NP::INT NP::NameIndex( const char* qname, unsigned& count, const std::vector<std::string>& names ) // static
 {
     if(names.size() == 0) return -1 ; 
 
-    int result(-1); 
+    INT result(-1); 
     count = 0 ; 
     for(unsigned i=0 ; i < names.size() ; i++)
     {   
@@ -4574,7 +4573,7 @@ inline int NP::NameIndex( const char* qname, unsigned& count, const std::vector<
 inline bool NP::is_named_shape() const 
 {
     //return int(shape.size()) == 2 && shape[1] == 1 && shape[0] == int(names.size()) ; 
-    return int(shape.size()) > 0 && shape[0] == int(names.size()) ; 
+    return INT(shape.size()) > 0 && shape[0] == INT(names.size()) ; 
 }
 
 template<typename T>
@@ -4594,10 +4593,10 @@ inline T NP::get_named_value( const char* qname, T fallback ) const
     const T* vv = cvalues<T>() ; 
   
     unsigned count(0); 
-    int idx = get_name_index(qname, count ); 
+    INT idx = get_name_index(qname, count ); 
 
     if(count != 1) return fallback ; 
-    if(idx < int(shape[0])) return vv[idx] ; 
+    if(idx < INT(shape[0])) return vv[idx] ; 
     return fallback ; 
 }
 
@@ -4688,16 +4687,16 @@ inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
     bool only_with_profile = true ; 
     GetMetaKV(meta, &keys, &vals, only_with_profile, ptn ); 
     assert( keys.size() == vals.size() ); 
-    int num_key = keys.size(); 
+    INT num_key = keys.size(); 
 
-    int ni = num_key ; 
-    int nj = 3 ; 
+    INT ni = num_key ; 
+    INT nj = 3 ; 
     bool dump = false ; 
 
     NP* prof = ni > 0 ? NP::Make<int64_t>(ni, nj ) : nullptr  ; 
     int64_t* pp = prof ? prof->values<int64_t>() : nullptr ; 
     if(prof) prof->labels = new std::vector<std::string> {"st[us]", "vm[kb]", "rs[kb]" } ; 
-    for(int i=0 ; i < ni ; i++)
+    for(INT i=0 ; i < ni ; i++)
     {
         const char* k = keys[i].c_str(); 
         const char* v = vals[i].c_str(); 
@@ -4960,7 +4959,7 @@ template<typename T> inline std::string NP::DescKV( const std::vector<std::pair<
     typedef std::pair<std::string, T> KV ; 
     std::stringstream ss ; 
     ss << "NP::DescKV" << std::endl ;  
-    for(int i=0 ; i < int(kvs.size()) ; i++) 
+    for(INT i=0 ; i < INT(kvs.size()) ; i++) 
     {    
         const KV& kv = kvs[i] ; 
         ss   
@@ -4981,7 +4980,7 @@ inline void NP::SetMetaKV_(
     const std::vector<std::string>& vals ) // static
 {
     assert( keys.size() == vals.size() ); 
-    for(int i=0 ; i < int(keys.size()); i++) SetMeta(meta, keys[i].c_str(), vals[i].c_str() ); 
+    for(INT i=0 ; i < INT(keys.size()); i++) SetMeta(meta, keys[i].c_str(), vals[i].c_str() ); 
 }
 
 inline void NP::setMetaKV_( const std::vector<std::string>& keys,  const std::vector<std::string>& vals )
@@ -5022,13 +5021,13 @@ HMM: simpler to just disqualify stamps during initialization
 
 **/
 
-inline int NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount ) // static
+inline NP::INT NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount ) // static
 {
-    int first = -1 ; 
-    int i_prev = -1 ; 
+    INT first = -1 ; 
+    INT i_prev = -1 ; 
     int64_t t_prev = -1 ; 
 
-    for(int i=0 ; i < int(stamps.size()) ; i++)
+    for(INT i=0 ; i < INT(stamps.size()) ; i++)
     {
         if(stamps[i] == 0) continue ; 
   
@@ -5043,10 +5042,10 @@ inline int NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_
 }
 
 
-inline int NP::KeyIndex( const std::vector<std::string>& keys, const char* key ) // static
+inline NP::INT NP::KeyIndex( const std::vector<std::string>& keys, const char* key ) // static
 {
-    int ikey = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), key )) ; 
-    return ikey == int(keys.size()) ? -1 : ikey ; 
+    INT ikey = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), key )) ; 
+    return ikey == INT(keys.size()) ? -1 : ikey ; 
 } 
 
 /**
@@ -5060,9 +5059,9 @@ range from idx0 to idx1.
 
 **/
 
-inline int NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ) // static
+inline NP::INT NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::string>& keys, const char* key, INT idx0, INT idx1  ) // static
 {
-    int k = -1 ; 
+    INT k = -1 ; 
     if( strchr(key,'%') == nullptr ) 
     {
         fkey = key ; 
@@ -5070,11 +5069,11 @@ inline int NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::stri
     }
     else
     {
-        const int N = 100 ; 
+        const INT N = 100 ; 
         char keybuf[N] ; 
-        for( int idx=idx0 ; idx < idx1 ; idx++)
+        for( INT idx=idx0 ; idx < idx1 ; idx++)
         {
-            int n = snprintf(keybuf, N, key, idx ) ;  
+            INT n = snprintf(keybuf, N, key, idx ) ;  
             if(!(n < N)) std::cerr << "NP::FormattedKeyIndex ERR n " << n << std::endl ; 
             assert( n < N ); 
             k = KeyIndex(keys, keybuf ) ; 
@@ -5104,7 +5103,7 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
     assert(juncture_ && strlen(juncture_) > 0); 
     std::vector<std::string> juncture ; 
     Split(juncture, juncture_ , ',' ); 
-    int num_juncture = juncture.size() ; 
+    INT num_juncture = juncture.size() ; 
 
     std::stringstream ss ;
     ss << "[NP::DescMetaKVS_juncture\n" ; 
@@ -5125,10 +5124,10 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
        ;
   
     int64_t tp = 0 ; 
-    for(int j=0 ; j < num_juncture ; j++)
+    for(INT j=0 ; j < num_juncture ; j++)
     {
         const char* j_key = juncture[j].c_str() ; 
-        int i = KeyIndex(keys, j_key) ; 
+        INT i = KeyIndex(keys, j_key) ; 
         if( i == -1 ) continue ; 
 
         const char* k = keys[i].c_str(); 
@@ -5223,7 +5222,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     U::LiteralAnno(ranges, anno, ranges_ , "#" ); 
     assert( ranges.size() == anno.size() ) ;  
 
-    int num_ranges = ranges.size() ; 
+    INT num_ranges = ranges.size() ; 
 
     if(ss) ss->imbue(std::locale("")) ; // commas for thousands
 
@@ -5242,7 +5241,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     char delim = ':' ;
     std::vector<std::string> specs ; 
 
-    for(int i=0 ; i < num_ranges ; i++)
+    for(INT i=0 ; i < num_ranges ; i++)
     {
         const std::string& range = ranges[i] ;  // 
         size_t pos = range.find(delim); 
@@ -5254,14 +5253,14 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* b = _b.c_str();  
 
         // idx0 idx1 specifies the range for wildcard replacements
-        int idx0 = 0 ; 
-        int idx1 = 30 ; 
-        for(int idx=idx0 ; idx < idx1 ; idx++)
+        INT idx0 = 0 ; 
+        INT idx1 = 30 ; 
+        for(INT idx=idx0 ; idx < idx1 ; idx++)
         {
             std::string akey ; 
             std::string bkey ; 
-            int ia = FormattedKeyIndex(akey, keys, a, idx, idx+1 ) ; 
-            int ib = FormattedKeyIndex(bkey, keys, b, idx, idx+1 ) ; 
+            INT ia = FormattedKeyIndex(akey, keys, a, idx, idx+1 ) ; 
+            INT ib = FormattedKeyIndex(bkey, keys, b, idx, idx+1 ) ; 
 
             bool found_range_pair = !akey.empty() && !bkey.empty() && ia > -1 && ib > -1 ; 
 
@@ -5278,7 +5277,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
 
     // Collect start times of the simple stamp ranges
 
-    int num_specs = specs.size(); 
+    INT num_specs = specs.size(); 
 
     if(ss) (*ss) 
        << ".NP::MakeMetaKVS_ranges num_specs:" << num_specs << "\n" 
@@ -5287,7 +5286,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
 
     std::vector<int64_t> stt(num_specs); 
 
-    for(int i=0 ; i < num_specs ; i++)
+    for(INT i=0 ; i < num_specs ; i++)
     {
         const char* spec = specs[i].c_str();  
         std::vector<std::string> elem ;     
@@ -5297,8 +5296,8 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* ak = elem[0].c_str(); 
         const char* bk = elem[1].c_str(); 
      
-        int ia = KeyIndex( keys, ak ); 
-        int ib = KeyIndex( keys, bk ); 
+        INT ia = KeyIndex( keys, ak ); 
+        INT ib = KeyIndex( keys, bk ); 
 
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
@@ -5312,7 +5311,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
  
     // Sort indices into ascending start time order 
 
-    std::vector<int> ii(num_specs); 
+    std::vector<INT> ii(num_specs); 
     std::iota(ii.begin(), ii.end(), 0); 
     auto order = [&stt](const size_t& a, const size_t &b) { return stt[a] < stt[b];}  ; 
     std::sort(ii.begin(), ii.end(), order );  
@@ -5320,19 +5319,19 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
 
     // present the ranges in order of start time 
 
-    int ni = num_specs ; 
-    int nj = 5 ; 
+    INT ni = num_specs ; 
+    INT nj = 5 ; 
 
     NP* _rr = NP::Make<int64_t>( ni, nj ) ; 
     int64_t* rr = _rr->values<int64_t>(); 
 
     int64_t ab_total = 0 ; 
-    int wid = 30 ;  
+    INT wid = 30 ;  
     _rr->labels = new std::vector<std::string> { "ta", "tb", "ab", "ia", "ib" } ; 
 
-    for(int j=0 ; j < num_specs ; j++)
+    for(INT j=0 ; j < num_specs ; j++)
     {
-        int i = ii[j]; 
+        INT i = ii[j]; 
         const char* spec = specs[i].c_str();  
         _rr->names.push_back(spec); 
 
@@ -5344,8 +5343,8 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* bk = elem[1].c_str(); 
         const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
      
-        int ia = KeyIndex( keys, ak ); 
-        int ib = KeyIndex( keys, bk ); 
+        INT ia = KeyIndex( keys, ak ); 
+        INT ib = KeyIndex( keys, bk ); 
 
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
@@ -5403,11 +5402,11 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
     assert( keys.size() == vals.size() ); 
     assert( keys.size() == tt.size() ); 
     assert( tt.size() == keys.size() ); 
-    int num_keys = keys.size() ;
+    INT num_keys = keys.size() ;
 
-    // sort indices into increasing time order
+    // sort indices INTo increasing time order
     // non-timestamped lines with placeholder timestamp zero will come first 
-    std::vector<int> ii(num_keys); 
+    std::vector<INT> ii(num_keys); 
     std::iota(ii.begin(), ii.end(), 0); 
     auto order = [&tt](const size_t& a, const size_t &b) { return tt[a] < tt[b];}  ; 
     std::sort(ii.begin(), ii.end(), order );  
@@ -5416,7 +5415,7 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
     int64_t t_second = 0 ; 
     int64_t t_prev  = 0 ; 
 
-    int t_count = 0 ; 
+    INT t_count = 0 ; 
 
     std::stringstream ss ; 
     ss.imbue(std::locale("")) ;  // commas for thousands
@@ -5434,9 +5433,9 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
 
 
 
-    for(int j=0 ; j < num_keys ; j++)
+    for(INT j=0 ; j < num_keys ; j++)
     {
-        int i = ii[j] ; 
+        INT i = ii[j] ; 
         const char* k = keys[i].c_str(); 
         const char* v = vals[i].c_str(); 
         int64_t     t = tt[i] ; 
@@ -5514,15 +5513,15 @@ inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_
     bool only_with_profile = false ; 
     GetMetaKV(meta, &keys, &vals, only_with_profile ); 
     assert( keys.size() == vals.size() ); 
-    int num_keys = keys.size(); 
+    INT num_keys = keys.size(); 
 
     int64_t t0 = std::numeric_limits<int64_t>::max() ; 
     std::vector<int64_t> tt ;  
-    std::vector<int> ii ; 
+    std::vector<INT> ii ; 
 
     // collect times and indices of all entries 
     // time is set to zero for entries without time stamps 
-    for(int i=0 ; i < num_keys ; i++)
+    for(INT i=0 ; i < num_keys ; i++)
     {
         const char* v = vals[i].c_str(); 
         bool looks_like_stamp = U::LooksLikeStampInt(v); 
@@ -5545,9 +5544,9 @@ inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_
 
     // use the time sorted indices to output in time order
     // entries without time info at t=0 appear first 
-    for(int j=0 ; j < num_keys ; j++)
+    for(INT j=0 ; j < num_keys ; j++)
     {
-        int i = ii[j] ; 
+        INT i = ii[j] ; 
         const char* k = keys[i].c_str(); 
         const char* v = vals[i].c_str(); 
         int64_t t = tt[i] ;  
@@ -5569,15 +5568,15 @@ inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_
     {
         std::vector<std::string> juncture ; 
         Split(juncture, juncture_ , ',' ); 
-        int num_juncture = juncture.size() ; 
+        INT num_juncture = juncture.size() ; 
         ss << "juncture:" << num_juncture << " [" << juncture_ << "] time ranges between junctures" << std::endl ; 
   
         int64_t tp = 0 ; 
-        for(int j=0 ; j < num_juncture ; j++)
+        for(INT j=0 ; j < num_juncture ; j++)
         {
             const char* j_key = juncture[j].c_str() ; 
-            int i = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), j_key )) ; 
-            if( i == int(keys.size()) ) continue ; 
+            INT i = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), j_key )) ; 
+            if( i == INT(keys.size()) ) continue ; 
 
             const char* k = keys[i].c_str(); 
             //const char* v = vals[i].c_str(); 
@@ -5623,7 +5622,7 @@ inline const char* NP::get_lpath() const
 
 
 template<typename T>
-inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsigned b_column, const T epsilon ) // static
+inline NP::INT NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsigned b_column, const T epsilon ) // static
 {
     const T* aa = a->cvalues<T>(); 
     const T* bb = b->cvalues<T>(); 
@@ -5642,7 +5641,7 @@ inline int NP::DumpCompare( const NP* a, const NP* b , unsigned a_column, unsign
 
     T av_sum = 0. ; 
     T bv_sum = 0. ; 
-    int mismatch = 0 ; 
+    INT mismatch = 0 ; 
 
     for(unsigned i=0 ; i < a_ni ; i++)
     {
@@ -5683,7 +5682,7 @@ NP::Memcmp
 
 **/
 
-inline int NP::Memcmp(const NP* a, const NP* b ) // static
+inline NP::INT NP::Memcmp(const NP* a, const NP* b ) // static
 {
     unsigned a_bytes = a->arr_bytes() ; 
     unsigned b_bytes = b->arr_bytes() ; 
@@ -5707,7 +5706,7 @@ inline NP* NP::Concatenate(const char* dir, const std::vector<std::string>& name
 template<typename T>
 inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static 
 {
-    [[maybe_unused]] int num_a = aa.size(); 
+    [[maybe_unused]] INT num_a = aa.size(); 
     assert( num_a > 0 ); 
     auto a0 = aa[0] ; 
     
@@ -5738,7 +5737,7 @@ inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static
     for(unsigned i=0 ; i < aa.size() ; i++) ni_total += aa[i]->shape[0] ; 
     if(VERBOSE) std::cout << "NP::Concatenate ni_total " << ni_total << std::endl ; 
 
-    std::vector<int> comb_shape ; 
+    std::vector<INT> comb_shape ; 
     NPS::copy_shape( comb_shape, a0->shape );  
     comb_shape[0] = ni_total ; 
 
@@ -5803,7 +5802,7 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate, const NP
     const NP* a0 = aa[0] ; 
 
     const char* dtype0 = a0->dtype ; 
-    int ebyte0 = a0->ebyte ; 
+    INT ebyte0 = a0->ebyte ; 
     unsigned ndim0 = a0->shape.size() ; 
     unsigned ldim0 = a0->shape[ndim0-1] ; 
     unsigned fdim_mx = a0->shape[0] ; 
@@ -5832,7 +5831,7 @@ inline NP* NP::Combine(const std::vector<const NP*>& aa, bool annotate, const NP
 
     if(parasite)
     {
-        assert( parasite->shape.size() == 1 && parasite->shape[0] == int(aa.size()) );   
+        assert( parasite->shape.size() == 1 && parasite->shape[0] == INT(aa.size()) );   
         assert( strcmp( parasite->dtype, dtype0) == 0 && "parasite arrays must have same dtype as those being combined" ); 
     }
 
@@ -6226,17 +6225,17 @@ NP::_dump
 -----------
 
 **/
-template <typename T> inline void NP::_dump(int i0_, int i1_, int j0_, int j1_ ) const 
+template <typename T> inline void NP::_dump(INT i0_, INT i1_, INT j0_, INT j1_ ) const 
 {
-    int ni = NPS::ni_(shape) ;  // ni_ nj_ nk_ returns shape dimension size or 1 if no such dimension
-    int nj = NPS::nj_(shape) ;
-    int nk = NPS::nk_(shape) ;
+    INT ni = NPS::ni_(shape) ;  // ni_ nj_ nk_ returns shape dimension size or 1 if no such dimension
+    INT nj = NPS::nj_(shape) ;
+    INT nk = NPS::nk_(shape) ;
 
-    int i0 = i0_ == -1 ? 0                : i0_ ;  
-    int i1 = i1_ == -1 ? std::min(ni, 10) : i1_ ;  
+    INT i0 = i0_ == -1 ? 0                : i0_ ;  
+    INT i1 = i1_ == -1 ? std::min(ni, TEN) : i1_ ;  
 
-    int j0 = j0_ == -1 ? 0                : j0_ ;  
-    int j1 = j1_ == -1 ? std::min(nj, 10) : j1_ ;  
+    INT j0 = j0_ == -1 ? 0                : j0_ ;  
+    INT j1 = j1_ == -1 ? std::min(nj, TEN) : j1_ ;  
 
 
     std::cout 
@@ -6256,12 +6255,12 @@ template <typename T> inline void NP::_dump(int i0_, int i1_, int j0_, int j1_ )
 
     const T* vv = cvalues<T>(); 
 
-    for(int i=i0 ; i < i1 ; i++){
+    for(INT i=i0 ; i < i1 ; i++){
         std::cout << "[" << std::setw(4) << i  << "] " ;
-        for(int j=j0 ; j < j1 ; j++){
-            for(int k=0 ; k < nk ; k++)
+        for(INT j=j0 ; j < j1 ; j++){
+            for(INT k=0 ; k < nk ; k++)
             {
-                int index = i*nj*nk + j*nk + k ; 
+                INT index = i*nj*nk + j*nk + k ; 
                 T v = *(vv + index) ; 
                 if(k%4 == 0 ) std::cout << " : " ;  
                 std::cout << _present<T>(v)  ;      
@@ -6285,14 +6284,14 @@ template <typename T> void NP::read(const T* src)
     T* v = values<T>(); 
 
     NPS sh(shape); 
-    for(int i=0 ; i < sh.ni_() ; i++ ) 
-    for(int j=0 ; j < sh.nj_() ; j++ )
-    for(int k=0 ; k < sh.nk_() ; k++ )
-    for(int l=0 ; l < sh.nl_() ; l++ )
-    for(int m=0 ; m < sh.nm_() ; m++ )
-    for(int o=0 ; o < sh.no_() ; o++ )
+    for(INT i=0 ; i < sh.ni_() ; i++ ) 
+    for(INT j=0 ; j < sh.nj_() ; j++ )
+    for(INT k=0 ; k < sh.nk_() ; k++ )
+    for(INT l=0 ; l < sh.nl_() ; l++ )
+    for(INT m=0 ; m < sh.nm_() ; m++ )
+    for(INT o=0 ; o < sh.no_() ; o++ )
     {  
-        int index = sh.idx(i,j,k,l,m,o); 
+        INT index = sh.idx(i,j,k,l,m,o); 
         *(v + index) = *(src + index ) ; 
     }   
 }
@@ -6315,19 +6314,19 @@ inline void NP::write(T* dst) const
 
 
 
-template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
+template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string path = U::form_path(dir, reldir, name); 
     Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_, no_ ); 
 }
 
-template <typename T> void NP::Write(const char* dir, const char* name, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
+template <typename T> void NP::Write(const char* dir, const char* name, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string path = U::form_path(dir, name); 
     Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_, no_ ); 
 }
 
-template <typename T> void NP::Write(const char* path, const T* data, int ni_, int nj_, int nk_, int nl_, int nm_, int no_ ) // static
+template <typename T> void NP::Write(const char* path, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string dtype = descr_<T>::dtype() ; 
     if(VERBOSE) std::cout 
@@ -6352,10 +6351,10 @@ template <typename T> void NP::Write(const char* path, const T* data, int ni_, i
 
 
 
-template void NP::Write<float>(   const char*, const char*, const float*,        int, int, int, int, int, int ); 
-template void NP::Write<double>(  const char*, const char*, const double*,       int, int, int, int, int, int ); 
-template void NP::Write<int>(     const char*, const char*, const int*,          int, int, int, int, int, int ); 
-template void NP::Write<unsigned>(const char*, const char*, const unsigned*,     int, int, int, int, int, int ); 
+template void NP::Write<float>(   const char*, const char*, const float*,        INT, INT, INT, INT, INT, INT ); 
+template void NP::Write<double>(  const char*, const char*, const double*,       INT, INT, INT, INT, INT, INT ); 
+template void NP::Write<int>(     const char*, const char*, const int*,          INT, INT, INT, INT, INT, INT ); 
+template void NP::Write<unsigned>(const char*, const char*, const unsigned*,     INT, INT, INT, INT, INT, INT ); 
 
 
 template<typename T> void NP::Write(const char* dir, const char* name, const std::vector<T>& values )
@@ -6457,10 +6456,10 @@ inline void NP::WriteNames_Simple(
     if( rc != 0 ) std::cerr << "NP::WriteNames_Simple ERR creating dirs " << std::endl ; 
     assert( rc == 0 ); 
 
-    int num_names = names.size(); 
+    INT num_names = names.size(); 
     std::ios_base::openmode mode = std::ios::out|std::ios::binary ; 
     std::ofstream fp(path, mode );
-    for( int i=0 ; i < num_names ; i++) fp << names[i] << std::endl ; 
+    for( INT i=0 ; i < num_names ; i++) fp << names[i] << std::endl ; 
     fp.close(); 
 }
     
