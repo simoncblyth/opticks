@@ -23,7 +23,7 @@ more_flexible_maxphoton
 
 * DONE : M100 matches after avoid arrays more that 2GB by using TEST=generate only and reducing NV from 16 to 4
 
-* TODO : find the source of the 2GB truncation : somewhere using int bytes and hitting the limit ?
+* DONE : find and fix the source of the 2GB truncation : NP.hh 
 
 * TODO : 200M
 

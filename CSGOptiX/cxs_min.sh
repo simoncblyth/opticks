@@ -175,10 +175,10 @@ case $VERSION in
 esac 
 
 #test=debug
-#test=ref1
+test=ref1
 #test=ref5
 #test=ref8
-test=ref10
+#test=ref10
 #test=input_genstep
 #test=input_photon
 

@@ -3877,11 +3877,47 @@ template<typename T> inline T  NP::interp2D(T x, T y, INT item) const
        ;
 #endif
 
-    assert( i < ni && i > -1 ); 
-    assert( j < nj && j > -1 );
+    bool i_inrange = i < ni && i > -1 ; 
+    bool j_inrange = j < nj && j > -1 ; 
+    bool ij_inrange = i_inrange && j_inrange ; 
+
+    if(!ij_inrange ) std::cerr  
+       << "NP::interp2D"
+       << "\n"
+       << " x " << std::fixed << std::setw(10) << std::setprecision(5) << x 
+       << " xB " << std::fixed << std::setw(10) << std::setprecision(5) << xB 
+       << " xBint " << std::fixed << std::setw(10) << std::setprecision(5) << xBint
+       << " xBfra " << std::fixed << std::setw(10) << std::setprecision(5) << xBfra
+       << " j " << j 
+       << " nj " << nj 
+       << "\n"
+       << " y " << std::fixed << std::setw(10) << std::setprecision(5) << y
+       << " yB " << std::fixed << std::setw(10) << std::setprecision(5) << yB
+       << " yBint " << std::fixed << std::setw(10) << std::setprecision(5) << yBint
+       << " yBfra " << std::fixed << std::setw(10) << std::setprecision(5) << yBfra
+       << " i " << i 
+       << " ni " << ni 
+       << "\n"
+       << " item " << item 
+       << " ndim " << ndim 
+       << " item_offset " << item_offset  
+       << " num_items " << num_items 
+       << " i_inrange " << ( i_inrange ? "YES" : "NO " )
+       << " j_inrange " << ( j_inrange ? "YES" : "NO " )
+       << " ij_inrange " << ( ij_inrange ? "YES" : "NO " )
+       << "\n"
+       ;
+
+    assert( ij_inrange );
+
+
+
+ 
     // (i,j) => (y,x)
-    T v00 = vv[(i+0)*nj+(j+0)];  T v01 = vv[(i+0)*nj+(j+1)];   // v01 at j+1 (at large x than v00)    
-    T v10 = vv[(i+1)*nj+(j+0)];  T v11 = vv[(i+1)*nj+(j+1)];     
+    T v00 = ij_inrange ? vv[(i+0)*nj+(j+0)] : 0. ;  
+    T v01 = ij_inrange ? vv[(i+0)*nj+(j+1)] : 0. ;   // v01 at j+1 (at large x than v00)    
+    T v10 = ij_inrange ? vv[(i+1)*nj+(j+0)] : 0. ;  
+    T v11 = ij_inrange ? vv[(i+1)*nj+(j+1)] : 0. ;     
 
 #ifdef VERBOSE 
     std::cout
