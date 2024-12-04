@@ -30,6 +30,8 @@ struct QRngTest
     int generate_evid();
 
     static constexpr const char* _SKIPAHEAD = "QRngTest__generate_SKIPAHEAD" ; 
+    static constexpr const char* _NV = "QRngTest__generate_NV" ; 
+
     int generate();
     int main();
 };
@@ -101,24 +103,22 @@ int QRngTest::generate_evid()
 QRngTest::generate
 -------------------
 
-For rngmax M100 and nv:16 this leads to ~6GB output array::
+For rngmax M100 and nv:16 this leads to ~6GB output array, 
+which was truncated to 2GB until improved NP.hh with NP::INT std::int64_t:: 
 
     In [2]: 100*1e6*16*4/(1024*1024*1024)
     Out[2]: 5.9604644775390625
 
-Observed some truncation to 2GB ? 
+::
 
-For rngmax M100 and nv:4 gets down to 1.5G avoiding truncation::
-
-    In [3]: 100*1e6*4*4/(1024*1024*1024)
-    Out[3]: 1.4901161193847656
+    OPTICKS_MAX_PHOTON=M200 TEST=generate ~/o/qudarap/tests/QRngTest.sh 
 
 **/
 
 int QRngTest::generate()
 {
     unsigned ni = unsigned(qr.rngmax) ; 
-    unsigned nv = 4 ; 
+    unsigned nv = ssys::getenvunsigned(_NV, 4u) ; 
     unsigned long long skipahead = ssys::getenvull(_SKIPAHEAD, 0ull) ; 
 
     NP* u = NP::Make<float>( ni, nv ); 

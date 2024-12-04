@@ -1,6 +1,13 @@
 more_flexible_maxphoton_plus_setting_it_based_on_VRAM_plus_splitting_launch_when_VRAM_too_small_for_photon_count
 ==================================================================================================================
 
+integrate + test new functionality
+------------------------------------
+
+* TODO : test bash level use of the new functionality qudarap-prepare-installation 
+
+* DONE : first impl of OPTICKS_MAX_PHOTON:0 to use Heuristic max photon based on VRAM, see SEventConfig::SetDevice
+
 
 more_flexible_maxphoton
 -------------------------
@@ -15,7 +22,7 @@ more_flexible_maxphoton
   and those files are very repetitive and large 
 
 * DONE : use chunk files and concatenate the appropriate number for the 
-  desired maxphoton, avoiding duplication 
+  desired maxphoton, avoiding duplication and adding flexibility
 
 * DONE : also do partial reads on the last chunk to decouple file sizes from maxphoton
 
@@ -25,16 +32,12 @@ more_flexible_maxphoton
 
 * DONE : find and fix the source of the 2GB truncation : NP.hh 
 
-* TODO : 200M
+* DONE : 200M matches in TEST=generate with NV=4 
 
-* TODO : test bash level use of the new functionality qudarap-prepare-installation 
 
-* TODO : implement OPTICKS_MAX_PHOTON:0 to correspond to maximum permitted by available
-         VRAM and modulo the limitation from the available chunks  
 
-         * give warning when the VRAM is large enough to warrant larger launches
-           than the chunks permit 
-
+Relevant sources
+-------------------
 
 ::
 
@@ -62,7 +65,6 @@ more_flexible_maxphoton
       (use "git add <file>..." to include in what will be committed)
         sysrap/tests/SLaunchSequence_test.sh
         sysrap/tests/sdirectory_test.sh
-
 
 
 FIXED reversion 
@@ -204,30 +206,10 @@ Looks like truncation of array to 2GB somewhere::
     ---> 31             u = np.load(upath)
          32         pass
          33         if os.path.exists(uupath):
-
-    ~/local/env/tools/conda/miniconda3/lib/python3.7/site-packages/numpy/lib/npyio.py in load(file, mmap_mode, allow_pickle, fix_imports, encoding)
-        438             else:
-        439                 return format.read_array(fid, allow_pickle=allow_pickle,
-    --> 440                                          pickle_kwargs=pickle_kwargs)
-        441         else:
-        442             # Try a pickle
-
-    ~/local/env/tools/conda/miniconda3/lib/python3.7/site-packages/numpy/lib/format.py in read_array(fp, allow_pickle, pickle_kwargs)
-        769             array = array.transpose()
-        770         else:
-    --> 771             array.shape = shape
-        772 
-        773     return array
-
+    ...
     ValueError: cannot reshape array of size 526258176 into shape (100000000,16)
     > /home/blyth/local/env/tools/conda/miniconda3/lib/python3.7/site-packages/numpy/lib/format.py(771)read_array()
-        769             array = array.transpose()
-        770         else:
-    --> 771             array.shape = shape
-        772 
-        773     return array
 
-    ipdb>                                                      
 
 
 Reproduce that error in  ~/np/tests/NP_Make_test.sh
@@ -271,8 +253,9 @@ Reproduce that error in  ~/np/tests/NP_Make_test.sh
 
 
 
-Cause of 2 GB truncation ? Maybe largest int limitation somewhere ? NP.hh ?
-------------------------------------------------------------------------------
+
+FIXED : Cause of 2 GB truncation ? Maybe largest int limitation somewhere ? NP.hh ?
+---------------------------------------------------------------------------------------------
 
 ::
 
@@ -284,7 +267,7 @@ Cause of 2 GB truncation ? Maybe largest int limitation somewhere ? NP.hh ?
 
 
 
-Reduce NV from 16 to 4 : reduces file size to 1.5G : then the generate test matches
+Reduce NV from 16 to 4 : reduces file size to 1.5G : then M100 generate test matches
 ---------------------------------------------------------------------------------------
 
 ::
@@ -334,6 +317,125 @@ Reduce NV from 16 to 4 : reduces file size to 1.5G : then the generate test matc
 
 
 
+M200 QRngTest.sh : matched
+----------------------------
+
+::
+
+    OPTICKS_MAX_PHOTON=M200 QRngTest__generate_NV=4 TEST=generate ~/o/qudarap/tests/QRngTest.sh run
+
+    P[blyth@localhost qudarap]$ OPTICKS_MAX_PHOTON=M200 QRngTest__generate_NV=4 TEST=generate ~/o/qudarap/tests/QRngTest.sh run
+    [main argv[0] QRngTest QRng::IMPL[CHUNKED_CURANDSTATE]
+    QRng::LoadAndUpload complete YES rngmax/M 200 rngmax 200000000 digest 6a2d46957f64e6e1bc459c538a503a58
+    2024-12-04 16:51:51.124 INFO  [315082] [QRngTest::QRngTest@44] QRng::desc path /home/blyth/.opticks/rngcache/RNG rngmax 200000000 rngmax/M 200 qr 0x1c56290 qr.skipahead_event_offset 1 d_qr 0x7f0672400000QRng::Desc IMPL:CHUNKED_CURANDSTATE
+    [QRngTest::main TEST:[generate]
+    //QRng_generate ni 200000000 nv 4 skipahead 0 
+    ]QRngTest::main rc:0
+    ]main argv[0] QRngTest QRng::IMPL[CHUNKED_CURANDSTATE] rc:0
+    P[blyth@localhost qudarap]$ 
+
+
+Chunked read digest matches the monolithic file::
+
+    P[blyth@localhost RNG]$ md5sum QCurandStateMonolithic_200M_0_0.bin 
+    6a2d46957f64e6e1bc459c538a503a58  QCurandStateMonolithic_200M_0_0.bin
+    P[blyth@localhost RNG]$ 
+
+    P[blyth@localhost CHUNKED_CURANDSTATE]$ du -h u_0.npy
+    3.0G    u_0.npy
+    P[blyth@localhost CHUNKED_CURANDSTATE]$ ls -l u_0.npy
+    -rw-rw-r--. 1 blyth blyth 3200000128 Dec  4 16:52 u_0.npy
+
+Expected filesize in bytes with the 128 byte header::
+
+    In [3]: 200*1000000*4*4   
+    Out[3]: 3200000000
+
+
+Flip the switch in QRng.hh::
+
+    qu
+    vi QRng.hh
+    om
+
+
+Run again::
+
+    P[blyth@localhost qudarap]$ OPTICKS_MAX_PHOTON=M200 QRngTest__generate_NV=4 TEST=generate ~/o/qudarap/tests/QRngTest.sh run
+    [main argv[0] QRngTest QRng::IMPL[OLD_MONOLITHIC_CURANDSTATE]
+    2024-12-04 17:00:42.702 INFO  [332488] [QRngTest::QRngTest@44] QRng::desc path /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_200M_0_0.bin rngmax 200000000 rngmax/M 200 qr 0x1c25780 qr.skipahead_event_offset 1 d_qr 0x7f1cd4400000QRng::Desc IMPL:OLD_MONOLITHIC_CURANDSTATE
+    [QRngTest::main TEST:[generate]
+    //QRng_generate ni 200000000 nv 4 skipahead 0 
+    ]QRngTest::main rc:0
+    ]main argv[0] QRngTest QRng::IMPL[OLD_MONOLITHIC_CURANDSTATE] rc:0
+    P[blyth@localhost qudarap]$ 
+
+
+Compare, matches::
+
+    P[blyth@localhost qudarap]$ PICK=AB TEST=generate ~/o/qudarap/tests/QRngTest.sh pdb
+    Python 3.7.7 (default, May  7 2020, 21:25:33) 
+    Type 'copyright', 'credits' or 'license' for more information
+    IPython 7.18.1 -- An enhanced Interactive Python. Type '?' for help.
+    /data/blyth/junotop/opticks/qudarap/tests/QRngTest.py:TEST:generate PICK:AB FOLD:/data/blyth/opticks/QRngTest reldir:None
+    -rw-rw-r--. 1 blyth blyth 3200000128 Dec  4 16:52 /data/blyth/opticks/QRngTest/float/CHUNKED_CURANDSTATE/u_0.npy
+    -rw-rw-r--. 1 blyth blyth 1920000144 Dec  2 21:15 /data/blyth/opticks/QRngTest/float/CHUNKED_CURANDSTATE/uu.npy
+    -rw-rw-r--. 1 blyth blyth 3200000128 Dec  4 17:00 /data/blyth/opticks/QRngTest/float/OLD_MONOLITHIC_CURANDSTATE/u_0.npy
+    -rw-rw-r--. 1 blyth blyth 1920000144 Dec  2 21:12 /data/blyth/opticks/QRngTest/float/OLD_MONOLITHIC_CURANDSTATE/uu.npy
+    au.shape
+     (200000000, 4)
+    bu.shape
+     (200000000, 4)
+    au_bu_match:1
+
+
+    In [1]: au
+    Out[1]: 
+    array([[0.74022, 0.43845, 0.51701, 0.15699],
+           [0.92099, 0.46036, 0.33346, 0.37252],
+           [0.03902, 0.25021, 0.18448, 0.96242],
+           [0.96896, 0.49474, 0.67338, 0.56277],
+           ...,
+           [0.32596, 0.06075, 0.70001, 0.15792],
+           [0.77092, 0.73217, 0.99293, 0.66166],
+           [0.07743, 0.88589, 0.13311, 0.08525],
+           [0.14177, 0.65988, 0.77002, 0.99305]], dtype=float32)
+
+    In [2]: bu
+    Out[2]: 
+    array([[0.74022, 0.43845, 0.51701, 0.15699],
+           [0.92099, 0.46036, 0.33346, 0.37252],
+           [0.03902, 0.25021, 0.18448, 0.96242],
+           [0.96896, 0.49474, 0.67338, 0.56277],
+           ...,
+           [0.32596, 0.06075, 0.70001, 0.15792],
+           [0.77092, 0.73217, 0.99293, 0.66166],
+           [0.07743, 0.88589, 0.13311, 0.08525],
+           [0.14177, 0.65988, 0.77002, 0.99305]], dtype=float32)
+
+
+    In [3]: np.where(au == 0.)
+    Out[3]: (array([], dtype=int64), array([], dtype=int64))
+
+    In [4]: np.where(bu == 0.)
+    Out[4]: (array([], dtype=int64), array([], dtype=int64))
+
+    In [5]: np.where(bu == 1.)
+    Out[5]: 
+    (array([ 45494023,  56700706,  87388694, 106515917, 109731375, 115817628, 120388692, 128290047, 132224065, 140951702, 145019702, 147138470, 164947865, 166091746, 167762821, 168649102, 170550692,
+            176719626, 179621639, 195222672, 195762010, 196989351]),
+     array([0, 1, 1, 3, 1, 0, 2, 1, 1, 1, 2, 0, 1, 0, 1, 3, 0, 0, 0, 0, 3, 2]))
+
+    In [6]: np.where(au == 1.)
+    Out[6]: 
+    (array([ 45494023,  56700706,  87388694, 106515917, 109731375, 115817628, 120388692, 128290047, 132224065, 140951702, 145019702, 147138470, 164947865, 166091746, 167762821, 168649102, 170550692,
+            176719626, 179621639, 195222672, 195762010, 196989351]),
+     array([0, 1, 1, 3, 1, 0, 2, 1, 1, 1, 2, 0, 1, 0, 1, 3, 0, 0, 0, 0, 3, 2]))
+
+    In [7]: 
+
+
+
 
 
 VRAM detection
@@ -346,17 +448,123 @@ mainly for metadata purposes. Maybe will need to move it earlier for this purpos
 * nvml has C api : ~/o/sysrap/smonitor.{sh,cc} uses that 
 
 
-Setting maxphoton based on VRAM
---------------------------------
+::
+
+    P[blyth@localhost qudarap]$ opticks-f sdevice.h
+    ./sysrap/CMakeLists.txt:    sdevice.h
+    ./sysrap/scontext.h:scontext.h : holds sdevice.h structs for all and visible GPUs
+    ./sysrap/scontext.h:    ./sysrap/sdevice.h
+    ./sysrap/scontext.h:#include "sdevice.h"
+    ./sysrap/sdevice.h:sdevice.h 
+    ./sysrap/sdevice.h:and metadata recording is handled with sdevice.h scontext.h 
+    ./sysrap/sdevice.h:* scontext.h needs updating to handle updated sdevice.h and 
+    ./sysrap/tests/sdevice_test.cc:#include "sdevice.h"
+    ./sysrap/tests/sdevice_test.sh:into run/event metadata. Or could access the sdevice.h struct 
+
+    P[blyth@localhost opticks]$ opticks-f scontext.h
+    ./CSGOptiX/CSGOptiX.cc:#include "scontext.h"   // GPU metadata
+    ./sysrap/CMakeLists.txt:    scontext.h
+    ./sysrap/scontext.h:scontext.h : holds sdevice.h structs for all and visible GPUs
+    ./sysrap/scontext.h:    [blyth@localhost sysrap]$ opticks-fl scontext.h 
+    ./sysrap/scontext.h:    ./sysrap/scontext.h
+    ./sysrap/sdevice.h:and metadata recording is handled with sdevice.h scontext.h 
+    ./sysrap/sdevice.h:* scontext.h needs updating to handle updated sdevice.h and 
+    ./sysrap/tests/scontext_test.cc:#include "scontext.h"
 
 
 
-splitting launch to handle more photon that fit into VRAM
+Currently scontext lives up in cx::
+
+     293 /**
+     294 CSGOptiX::InitMeta
+     295 -------------------
+     296 
+     297 **/
+     298 
+     299 void CSGOptiX::InitMeta(const SSim* ssim  )
+     300 {
+     301     std::string gm = GetGPUMeta() ;            // (QSim) scontext sdevice::brief
+     302     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
+     303 
+
+
+     386 scontext* CSGOptiX::SCTX = nullptr ;
+     387 
+     388 
+     389 /**
+     390 CSGOptiX::SetSCTX
+     391 ---------------------
+     392 
+     393 Instanciates CSGOptiX::SCTX(scontext) holding GPU metadata. 
+     394 Canonically invoked from head of CSGOptiX::Create.
+     395 
+     396 NOTE: Have sometimes observed few second hangs checking for GPU 
+     397 
+     398 **/
+     399 
+     400 void CSGOptiX::SetSCTX()
+     401 {
+     402     LOG(LEVEL) << "[ new scontext" ;
+     403     SCTX = new scontext ;
+     404     LOG(LEVEL) << "] new scontext" ;
+     405     LOG(LEVEL) << SCTX->desc() ;
+     406 }
+     407 
+     408 std::string CSGOptiX::GetGPUMeta(){ return SCTX ? SCTX->brief() : "ERR-NO-CSGOptiX-SCTX" ; }
+     409 
+
+
+
+     344 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
+     345 {
+     346     SProf::Add("CSGOptiX__Create_HEAD");
+     347     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ;
+     348 
+     349     SetSCTX();
+     350     QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
+     351 
+     352     InitEvt(fd);
+     353     InitSim( const_cast<SSim*>(fd->sim) ); // QSim instanciation after uploading SSim arrays
+     354     InitMeta(fd->sim);                     // recording GPU, switches etc.. into run metadata
+     355     InitGeo(fd);                           // uploads geometry 
+     356 
+     357     CSGOptiX* cx = new CSGOptiX(fd) ;
+
+
+
+But the config is down at SEventConfig level::
+
+     237 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
+     238 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
+     239 int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
+     240 int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; }
+
+
+Just SEventConfig::SetMaxPhoton from CSGOptiX ?
+
+
+WIP: Setting maxphoton based on VRAM
+--------------------------------------
+
+Heuristic calculation of maxphoton depends on available VRAM plus the 
+array recording that is enabled.  So need to do this in SEventConfig, within
+
+SEventConfig::SetVRAM
+
+
+NEXT: some big scans with VRAM measurement to improve the Heuristic 
+
+
+
+splitting launch to handle more photon than fit into VRAM
 --------------------------------------------------------------
 
 * doing all the launches at EndOfEvent ? or doing throughout event ? 
 * at the launch boundary : is splitting genstep possible (cloning and changing photon count on the excess) ? 
 * how to handle SEvt ?
+
+
+
 
 
 

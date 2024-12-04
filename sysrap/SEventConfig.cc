@@ -1051,3 +1051,155 @@ void SEventConfig::Save(const char* dir ) // static
     meta->save(dir, NAME ); 
 }
 
+/**
+SEventConfig::SetDevice
+-------------------------
+
+Maximum number of photon slots that can be simulated in a single GPU 
+launch depends on:
+
+1. VRAM, available from scontext.h invoked by CSGOptiX::Create
+
+2. sizeof(curandState)+photon 4x4x4 + plus optional enabled arrays
+   configured in SEventConfig::
+  
+   sizeof(curandStateXORWOW) 48 
+   sizeof(sphoton)           64=4*4*4   
+   .                       -----
+   .                        112 bytes per photon (absolute minimum)
+
+3. limited by available (chunked) curandState, see QRng.hh SCurandState.h  
+   (currently M200). BUT other than consuming disk it is perfectly possible 
+   to curand_init more chunks of curandState than could ever be used in 
+   currently available GPU VRAM (48GB, 80GB)
+   because many launches are done due to curand_init taking lots of stack. 
+
+   * for now could just assert in QRng that maxphoton is less than 
+     the available curandState slots  
+
+4. safety scaledown from theoretical maximum for reliability,
+   as detector geometry will take a few GB plus other processes 
+   will use some too  
+
+   * HMM: could access current free VRAM also, but that could change 
+     between the check and the launch 
+
+
+Experience with 48G GPU (48*1024*1024*1024 = 51539607552)::
+
+    400M photons with 48*1024*1024*1024 
+
+    In [3]: 48*1024*1024*1024/112/1e6
+    Out[3]: 460.1750674285714
+
+    In [6]: 48*1024*1024*1024/112/1e6*0.9   
+    Out[6]: 414.1575606857143
+
+    In [5]: 48*1024*1024*1024/112/1e6*0.87
+    Out[5]: 400.3523086628571
+
+
+Assuming get to use 90% of total VRAM in ballpark of observed 400M limit 
+
+TODO: measure total VRAM usage during large photon number scan to 
+provide some parameters to use in a better heuristic and get idea
+of variability. Expect linear with some pedestal.  
+
+HMM: NEED TO DEFER TO USER CONTROL : WILL NOT ALWAYS WANT TO DO LARGEST 
+POSSIBLE LAUNCHES 
+
+Q: Where does this MaxPhoton get used ? 
+A: QRng::QRng to decide on how many curandState to read from chunks
+
+**/
+
+void SEventConfig::SetDevice( size_t totalGlobalMem_bytes, std::string name )
+{
+    LOG(info) << DescDevice(totalGlobalMem_bytes, name) ;    
+
+    size_t mxp0  = MaxPhoton(); 
+    size_t hmxr = HeuristicMaxPhoton_Rounded(totalGlobalMem_bytes); 
+    if(mxp0 == 0) SetMaxPhoton(hmxr); 
+    size_t mxp1  = MaxPhoton(); 
+    
+    bool changed = mxp1 != mxp0  ; 
+
+    LOG(info) 
+        << " Configured_MaxPhoton/M " << mxp0/M
+        << " Final_MaxPhoton/M " << mxp1/M
+        << " HeuristicMaxPhoton_Rounded/M "  << hmxr/M
+        << " changed " << ( changed ? "YES" : "NO " ) 
+        << "\n"
+        << " (export OPTICKS_MAX_PHOTON=0 # to use VRAM based HeuristicMaxPhoton) " ; 
+        ;
+}
+
+/**
+SEventConfig::HeuristicMaxPhoton
+---------------------------------
+
+Currently no accounting for the configured debug arrays.
+Are assuming production type running. 
+
+For example the record array will scale memory per photon
+by factor of ~32 from the 32 step points 
+(not accounting for curandState).  
+
+When debug arrays are configured the user currently 
+needs to manually keep total photon count low (few millions) 
+to stay within VRAM.   
+ 
+**/
+size_t SEventConfig::HeuristicMaxPhoton( size_t totalGlobalMem_bytes )
+{
+    return size_t(float(totalGlobalMem_bytes)*0.87f/112.f) ; 
+} 
+
+/**
+SEventConfig::HeuristicMaxPhoton_Rounded
+-----------------------------------------
+
+Rounded down to nearest million. 
+
+**/
+
+size_t SEventConfig::HeuristicMaxPhoton_Rounded( size_t totalGlobalMem_bytes )
+{
+    size_t M = 1000000 ; 
+    size_t hmx = HeuristicMaxPhoton(totalGlobalMem_bytes); 
+    size_t hmx_M = hmx/M ;
+    return hmx_M*M ;  
+} 
+
+std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string name )  // static
+{
+    size_t hmx = HeuristicMaxPhoton(totalGlobalMem_bytes); 
+    size_t hmx_M = hmx/1000000 ; 
+    size_t hmxr = HeuristicMaxPhoton_Rounded(totalGlobalMem_bytes); 
+    size_t mxp  = MaxPhoton(); 
+
+    int wid = 35 ; 
+    std::stringstream ss ; 
+    ss << "SEventConfig::DescDevice"
+       << "\n"
+       << std::setw(wid) << "name                             : " << name
+       << "\n"                                                
+       << std::setw(wid) << "totalGlobalMem_bytes             : " << totalGlobalMem_bytes 
+       << "\n"                                                
+       << std::setw(wid) << "totalGlobalMem_GB                : " << totalGlobalMem_bytes/(1024*1024*1024) 
+       << "\n"                                                
+       << std::setw(wid) << "HeuristicMaxPhoton(VRAM)         : " << hmx 
+       << "\n"                                                
+       << std::setw(wid) << "HeuristicMaxPhoton(VRAM)/M       : " << hmx_M
+       << "\n"     
+       << std::setw(wid) << "HeuristicMaxPhoton_Rounded(VRAM) : " << hmxr
+       << "\n"     
+       << std::setw(wid) << "MaxPhoton                        : " << mxp
+       << "\n"     
+       ; 
+
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+

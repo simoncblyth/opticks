@@ -384,5 +384,10 @@ struct SYSRAP_API SEventConfig
     static NP* Serialize(); 
     static void Save(const char* dir) ; 
 
+    static void SetDevice( size_t totalGlobalMem_bytes, std::string name ); 
+    static size_t HeuristicMaxPhoton(         size_t totalGlobalMem_bytes ); 
+    static size_t HeuristicMaxPhoton_Rounded( size_t totalGlobalMem_bytes ); 
+    static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name ); 
+
 }; 
  

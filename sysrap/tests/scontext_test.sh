@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 scontext_test.sh
 =================
@@ -107,21 +107,27 @@ scontext_test.sh
 
 EOU
 }
-
-name=scontext_test
-bin=${TMP:-/tmp/$USER/opticks}/$name
-mkdir -p $(dirname $bin)
-
 cd $(dirname $(realpath $BASH_SOURCE))
 
-defarg="build_run"
+name=scontext_test
+FOLD=${TMP:-/tmp/$USER/opticks}
+bin=$FOLD/$name
+mkdir -p $FOLD
+
+defarg="info_build_run"
 arg=${1:-$defarg}
 
-CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
-
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 CUDA_LIBDIR=$CUDA_PREFIX/lib
+
 [ ! -d "$CUDA_LIBDIR" ] && CUDA_LIBDIR=$CUDA_PREFIX/lib64
 
+vars="BASH_SOURCE 0 PWD name TMP FOLD bin defarg arg CUDA_PREFIX CUDA_LIBDIR"
+
+if [ "${arg/info}" != "$arg" ]; then 
+   for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
+fi
 
 if [ "${arg/build}" != "$arg" ]; then 
    gcc $name.cc  \

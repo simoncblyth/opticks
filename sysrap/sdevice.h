@@ -58,6 +58,7 @@ struct sdevice
     const char* brief() const ;
     const char* desc() const ; 
     bool matches(const sdevice& other) const ; 
+    size_t totalGlobalMem_bytes() const ; 
     float totalGlobalMem_GB() const ;
     static int DeviceCount(); 
     static void Collect(std::vector<sdevice>& devices, bool ordinal_from_index=false ); 
@@ -74,6 +75,7 @@ struct sdevice
 
     static std::string Brief(const std::vector<sdevice>& devices ); 
     static std::string Desc( const std::vector<sdevice>& devices ); 
+    static std::string VRAM( const std::vector<sdevice>& devices ); 
 };
 
 
@@ -118,6 +120,10 @@ inline bool sdevice::matches(const sdevice& other) const
    return strncmp(other.uuid, uuid, sizeof(uuid)) == 0 && strncmp(other.name, name, sizeof(name)) == 0;   
 }
 
+inline size_t sdevice::totalGlobalMem_bytes() const
+{
+    return totalGlobalMem ; 
+} 
 inline float sdevice::totalGlobalMem_GB() const 
 {
     return float(totalGlobalMem)/float(1024*1024*1024)  ;  
@@ -471,4 +477,15 @@ inline std::string sdevice::Desc( const std::vector<sdevice>& devices )
     return str ; 
 }
 
+inline std::string sdevice::VRAM( const std::vector<sdevice>& devices )
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < devices.size() ; i++) 
+    {
+        const sdevice& d = devices[i] ; 
+        ss << d.totalGlobalMem_bytes() << "\n" ; 
+    }  
+    std::string str = ss.str(); 
+    return str ; 
+}
 

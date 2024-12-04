@@ -399,7 +399,10 @@ struct SYSRAP_API SGLM : public SCMD
     float* IDENTITY_ptr ; 
 
     void left_right_bottom_top_near_far(lrbtnf& p) const ; 
+
+   static constexpr const char* _updateProjection_DEBUG = "SGLM__updateProjection_DEBUG" ; 
     void updateProjection(); 
+
     static void FillZProjection(  glm::vec4& _zproj, const glm::mat4& _proj ); 
     float zdepth_pos( const glm::tvec4<float>& p_eye ) const ; 
     float zdepth0(    const float& z_eye ) const ; 
@@ -1487,10 +1490,11 @@ void SGLM::updateProjection()
     FillZProjection(zproj, projection); 
 
 
-    if(ssys::getenvbool("SGLM__updateProjection")) 
+
+    if(ssys::getenvbool(_updateProjection_DEBUG)) 
     {
         std::cout 
-            << "SGLM::updateProjection"
+            << _updateProjection_DEBUG
             << " zproj("
             << std::setw(10) << std::fixed << std::setprecision(4) << zproj.x << " " 
             << std::setw(10) << std::fixed << std::setprecision(4) << zproj.y << " "

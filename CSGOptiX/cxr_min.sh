@@ -76,18 +76,21 @@ bin=CSGOptiXRenderInteractiveTest
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit 
 source ~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit  
 
-
-export CSGFoundry__Load_DUMP=1   # report the directory loaded 
-
-
 export SGLFW__DEPTH=1   # dump _depth.jpg together with screenshots 
-
-export CSGOptiX__prepareParamRender_DEBUG=1
-export SGLM__updateProjection=1
-
 
 # TRANSITIONAL KLUDGE
 export SCENE_FOLD=/tmp/SScene_test
+
+
+
+logging(){ 
+   type $FUNCNAME
+   export CSGFoundry__Load_DUMP=1   # report the directory loaded 
+   export CSGOptiX__prepareParamRender_DEBUG=1
+   export SGLM__updateProjection_DEBUG=1
+}
+[ -n "$LOG" ] && logging 
+
 
 
 #eye=1000,1000,1000

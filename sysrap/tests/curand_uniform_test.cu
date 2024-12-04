@@ -50,7 +50,7 @@ void test_curand_uniform()
     dim3 threadsPerBlock ; 
     ConfigureLaunch(numBlocks, threadsPerBlock, ni ); 
 
-    printf("//test_curand_uniform \n"); 
+    printf("//test_curand_uniform  sizeof(curandStateXORWOW) %d \n", sizeof(curandStateXORWOW) ); 
     NP* h = NP::Make<float>( ni, nj ) ; 
     int arr_bytes = h->arr_bytes() ;
     float* hh = h->values<float>(); 
