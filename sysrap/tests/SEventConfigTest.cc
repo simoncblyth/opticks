@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "ssys.h"
 #include "salloc.h"
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
@@ -9,27 +10,27 @@
 
 struct SEventConfigTest
 {
-    static void Desc(); 
-    static void OutPath(); 
-    static void GatherCompList();
-    static void SaveCompList();
-    static void CompAuto();
-    static void SetCompAuto();
-    static void SetDefault();
-    static void Save();
-    static void InputGenstep(); 
+    static int Desc(); 
+    static int OutPath(); 
+    static int GatherCompList();
+    static int SaveCompList();
+    static int Initialize_Comp_();
+    static int SetDefault();
+    static int Save();
+    static int InputGenstep(); 
 
     static int main(); 
 
 }; 
 
-void SEventConfigTest::Desc()
+int SEventConfigTest::Desc()
 {
     LOG(info); 
     std::cout << SEventConfig::Desc() << std::endl ; 
+    return 0 ; 
 }
 
-void SEventConfigTest::OutPath()
+int SEventConfigTest::OutPath()
 {
     LOG(info); 
 
@@ -41,57 +42,42 @@ void SEventConfigTest::OutPath()
     LOG(info) << " SEventConfig::OutPath path_0 " << path_0 ; 
     LOG(info) << " SEventConfig::OutPath path_1 " << path_1 ; 
     LOG(info) << " SEventConfig::OutPath path_2 " << path_2 ; 
+    return 0 ; 
 }
 
 
-void SEventConfigTest::GatherCompList()
+int SEventConfigTest::GatherCompList()
 {
     std::vector<unsigned> gather_comps ; 
     SEventConfig::GatherCompList(gather_comps) ; 
     std::cout << SComp::Desc(gather_comps) << std::endl ; 
+    return 0 ; 
 }
 
-void SEventConfigTest::SaveCompList()
+int SEventConfigTest::SaveCompList()
 {
     std::vector<unsigned> save_comps ; 
     SEventConfig::SaveCompList(save_comps) ; 
     std::cout << SComp::Desc(save_comps) << std::endl ; 
+    return 0 ; 
 }
 
-void SEventConfigTest::CompAuto()
+int SEventConfigTest::Initialize_Comp_()
 {
     unsigned gather_mask = 0 ; 
     unsigned save_mask = 0 ; 
 
-    SEventConfig::CompAuto(gather_mask,save_mask ); 
+    SEventConfig::Initialize_Comp_(gather_mask,save_mask ); 
 
     LOG(info) << " SComp::Desc(gather_mask) " << SComp::Desc(gather_mask) ; 
     LOG(info) << " SComp::Desc(save_mask) " << SComp::Desc(save_mask) ; 
+    return 0 ; 
 }
 
 
-void SEventConfigTest::SetCompAuto()
-{
-    std::cout 
-        << "SEventConfigTest::SetCompAuto.0"
-        << std::endl 
-        << SEventConfig::Desc() 
-        << std::endl
-        ; 
 
-    /*
-    SEventConfig::SetCompAuto() ;     // NOW DONE BY SEventConfig::Initialize
 
-    std::cout 
-        << "SEventConfigTest::SetCompAuto.1"
-        << std::endl 
-        << SEventConfig::Desc() 
-        << std::endl
-        ; 
-    */
-}
-
-void SEventConfigTest::SetDefault()
+int SEventConfigTest::SetDefault()
 {
     std::cout 
         << "SEventConfigTest::SetDefault.0"
@@ -108,14 +94,16 @@ void SEventConfigTest::SetDefault()
         << SEventConfig::Desc() 
         << std::endl
         ; 
+    return 0 ; 
 }
 
-void SEventConfigTest::Save()
+int SEventConfigTest::Save()
 {
     SEventConfig::Save("$FOLD"); 
+    return 0 ; 
 }
 
-void SEventConfigTest::InputGenstep()
+int SEventConfigTest::InputGenstep()
 {
     for(int idx=0 ; idx < 100 ; idx++)
     {
@@ -123,6 +111,7 @@ void SEventConfigTest::InputGenstep()
         std::cout << " idx " << std::setw(4) << idx <<  " path " << ( path ? path : "-" ) << std::endl ; 
     }
 
+    return 0 ; 
 }
 
 
@@ -130,21 +119,20 @@ int SEventConfigTest::main()
 {
     SEventConfig::Initialize(); 
 
-    /*
-    OutPath(); 
-    GatherCompList(); 
-    SaveCompList(); 
-    CompAuto(); 
-    SetCompAuto(); 
-    SetDefault(); 
-    Save(); 
-    SetCompAuto(); 
-    InputGenstep(); 
-    */
-    Desc(); 
+    const char* TEST = ssys::getenvvar("TEST", "Desc"); 
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
 
+    int rc = 0 ; 
+    if(ALL||strcmp(TEST,"OutPath") == 0)          rc += OutPath();  
+    if(ALL||strcmp(TEST,"GatherCompList") == 0)   rc += GatherCompList();  
+    if(ALL||strcmp(TEST,"SaveCompList") == 0)     rc += SaveCompList();  
+    if(ALL||strcmp(TEST,"Initialize_Comp_") == 0) rc += Initialize_Comp_();  
+    if(ALL||strcmp(TEST,"SetDefault") == 0)       rc += SetDefault();  
+    if(ALL||strcmp(TEST,"Save") == 0)             rc += Save();  
+    if(ALL||strcmp(TEST,"Desc") == 0)             rc += Desc();  
+    if(ALL||strcmp(TEST,"InputGenstep") == 0)     rc += InputGenstep();  
 
-    return 0 ; 
+    return rc ; 
 }
 
 

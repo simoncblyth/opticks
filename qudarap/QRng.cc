@@ -52,7 +52,7 @@ QRng::QRng(unsigned skipahead_event_offset)
 #else
     cs(nullptr),
     path(cs.getDir()),                        // informational 
-    rngmax(SEventConfig::MaxCurandState()),    // max of : OPTICKS_MAX_PHOTON OPTICKS_MAX_SIMTRACE 
+    rngmax(SEventConfig::MaxCurand()),      
     d_rng_states(LoadAndUpload(rngmax, cs)),   // 
 #endif
     qr(new qrng(d_rng_states, skipahead_event_offset)),

@@ -119,9 +119,6 @@ private:
 public:
     static CSGOptiX* Create(CSGFoundry* foundry ); 
 
-    static scontext* SCTX ; 
-    static void SetSCTX(); 
-    static std::string GetGPUMeta(); 
 
     virtual ~CSGOptiX(); 
     CSGOptiX(const CSGFoundry* foundry ); 

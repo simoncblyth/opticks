@@ -4,7 +4,10 @@
 #include <limits>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
+
 struct NP ; 
+struct scontext ; 
+struct salloc ; 
 
 /**
 SEventConfig
@@ -20,8 +23,31 @@ shortterm debug : **do not implement here**. Instead
 implement local config locally using constexpr envvar keys 
 inside the structs. 
 
-Primary user of this config is QEvent::init 
 
+Usage
+------
+
+Usage is widespread, some of the more pertinent places: 
+
+SEvt::SEvt
+   invokes SEventConfig::Initialize
+   (HMM: run twice for for A-B testing when have multiple SEvt)
+
+QEvent::gatherComponent
+   guided by SEventConfig::GatherComp
+
+
+Future
+-------
+
+Static collection of methods and values approach is convenient and
+fits with the envvar controls while things are simple. 
+But getting a bit awkward eg for automating max photon config 
+based on available VRAM. Perhaps singleton future.
+
+
+Settings
+------------
 
 EventMode
     configures what will be persisted, ie what is in the SEvt
@@ -32,9 +58,13 @@ MaxPhoton
 
 MaxSimtrace
 
-MaxCurandState
-   from std::max of MaxPhoton and MaxSimtrace
+FORMERLY:MaxCurandState
+   std::max of MaxPhoton and MaxSimtrace
 
+MaxCurand
+   configured separately, corresponds to maximum curandState slots 
+   which is constrained by available VRAM 
+ 
 MaxRec
     normally 0, disabling creation of the QEvent domain compressed step record buffer
 
@@ -63,10 +93,10 @@ MaxTime (ns)
 struct SYSRAP_API SEventConfig
 {
     static const plog::Severity LEVEL ;  
-    static const int LIMIT ; 
     static constexpr const int MISSING_INDEX = std::numeric_limits<int>::max() ; 
 
-    static void Check(); 
+    static const int LIMIT ; 
+    static void LIMIT_Check(); 
     static std::string Desc(); 
     static std::string HitMaskLabel(); 
 
@@ -94,6 +124,8 @@ struct SYSRAP_API SEventConfig
 
     static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ; 
     static constexpr const char* kG4StateRerun = "OPTICKS_G4STATE_RERUN" ; 
+
+    static constexpr const char* kMaxCurand    = "OPTICKS_MAX_CURAND" ; 
 
     static constexpr const char* kMaxGenstep   = "OPTICKS_MAX_GENSTEP" ; 
     static constexpr const char* kMaxPhoton    = "OPTICKS_MAX_PHOTON" ; 
@@ -148,10 +180,11 @@ struct SYSRAP_API SEventConfig
     static const char* G4StateSpec(); 
     static int         G4StateRerun(); 
 
+    static int MaxCurand();  
+
     static int MaxGenstep(); 
     static int MaxPhoton(); 
     static int MaxSimtrace(); 
-    static int MaxCurandState();  // from max of MaxPhoton and MaxSimtrace
 
     static int MaxBounce(); 
     static int MaxRecord();  // full photon step record  
@@ -234,8 +267,6 @@ struct SYSRAP_API SEventConfig
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
     static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State/Torch
 
-
-
     static void SetStartIndex(int index0); 
     static void SetNumEvent(int nevt);            // NumEvent is used by some tests 
     static void SetNumPhoton(const char* spec);   // NumPhoton is used by some tests 
@@ -244,9 +275,12 @@ struct SYSRAP_API SEventConfig
     static void SetG4StateSpec(const char* spec); 
     static void SetG4StateRerun(int id); 
 
+    static void SetMaxCurand( int max_curand); 
+
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
     static void SetMaxSimtrace( int max_simtrace); 
+
     static void SetMaxBounce( int max_bounce); 
     static void SetMaxRecord( int max_record); 
     static void SetMaxRec(    int max_rec); 
@@ -281,9 +315,8 @@ struct SYSRAP_API SEventConfig
     static void SetSaveComp_(unsigned mask); 
     static void SetSaveComp(const char* names, char delim=',') ; 
 
-    static void  SetComp(); 
-    static void  CompAuto(unsigned& gather_mask, unsigned& save_mask ); 
 
+    // STATIC VALUES SET EARLY, MANY BASED ON ENVVARS
 
     static int         _IntegrationModeDefault ; 
     static const char* _EventModeDefault ; 
@@ -297,6 +330,8 @@ struct SYSRAP_API SEventConfig
     static const char* _G4StateSpecNotes ; 
     static int         _G4StateRerunDefault ; 
     static const char* _MaxBounceNotes ; 
+
+    static const char* _MaxCurandDefault ; 
 
     static const char* _MaxGenstepDefault ; 
     static const char* _MaxPhotonDefault ; 
@@ -348,9 +383,12 @@ struct SYSRAP_API SEventConfig
     static const char* _G4StateSpec ; 
     static int         _G4StateRerun ; 
 
+    static int _MaxCurand ; 
+
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
     static int _MaxSimtrace ; 
+
     static int _MaxBounce ; 
     static int _MaxRecord ; 
     static int _MaxRec ; 
@@ -376,9 +414,18 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonFrame ; 
 
 
-    static int Initialize_COUNT ; 
-    static int Initialize(); 
-    static uint64_t EstimateAlloc(); 
+
+    static scontext* CONTEXT ; 
+    static salloc*   ALLOC ; 
+    static std::string GetGPUMeta();
+
+    static int   Initialize_COUNT ; 
+    static int   Initialize(); 
+    static void  Initialize_Meta(); 
+    static void  Initialize_Max(); 
+    static void  Initialize_Comp(); 
+    static void  Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask ); 
+
 
     static constexpr const char* NAME = "SEventConfig.npy" ; 
     static NP* Serialize(); 
@@ -388,6 +435,8 @@ struct SYSRAP_API SEventConfig
     static size_t HeuristicMaxPhoton(         size_t totalGlobalMem_bytes ); 
     static size_t HeuristicMaxPhoton_Rounded( size_t totalGlobalMem_bytes ); 
     static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name ); 
+
+    static uint64_t EstimateAlloc(); 
 
 }; 
  

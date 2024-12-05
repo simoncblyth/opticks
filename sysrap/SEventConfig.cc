@@ -11,8 +11,11 @@
 #include "spath.h"
 #include "sdirectory.h"
 #include "salloc.h"
+#include "scontext.h"
 
 #include "SPath.hh"   // only SPath::Make to replace
+
+
 
 #include "SEventConfig.hh"
 #include "SRG.h"  // raygenmode
@@ -53,11 +56,14 @@ const char* SEventConfig::_OutNameDefault = nullptr ;
 const char* SEventConfig::_RGModeDefault = "simulate" ; 
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
+
 #ifdef __APPLE__
+const char* SEventConfig::_MaxCurandDefault = "M1" ; 
 const char* SEventConfig::_MaxGenstepDefault = "M1" ; 
 const char* SEventConfig::_MaxPhotonDefault = "M1" ; 
 const char* SEventConfig::_MaxSimtraceDefault = "M1" ; 
 #else
+const char* SEventConfig::_MaxCurandDefault = "M3" ; 
 const char* SEventConfig::_MaxGenstepDefault = "M3" ; 
 const char* SEventConfig::_MaxPhotonDefault = "M3" ;   // HMM: want to use 0 to signify set it automatically based on VRAM  
 const char* SEventConfig::_MaxSimtraceDefault = "M3" ; 
@@ -88,8 +94,12 @@ std::vector<int>* SEventConfig::_GetNumPhotonPerEvent()
 std::vector<int>* SEventConfig::_NumPhotonPerEvent = _GetNumPhotonPerEvent() ; 
 
 /**
+SEventConfig::_GetNumPhoton
+----------------------------
 
-OPTICKS_NUM_PHOTON=M1,2,3,4 OPTICKS_NUM_EVENT=4 SEventConfigTest 
+Used by some tests that define a sequence of photon counts as inputs::
+
+    OPTICKS_NUM_PHOTON=M1,2,3,4 OPTICKS_NUM_EVENT=4 SEventConfigTest 
 
 **/
 int SEventConfig::_GetNumPhoton(int idx)
@@ -149,6 +159,7 @@ int         SEventConfig::_EventSkipahead = ssys::getenvint(kEventSkipahead, _Ev
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault ); 
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
+int SEventConfig::_MaxCurand    = ssys::getenv_ParseInt(kMaxCurand,   _MaxCurandDefault ) ; 
 int SEventConfig::_MaxGenstep   = ssys::getenv_ParseInt(kMaxGenstep,  _MaxGenstepDefault ) ; 
 int SEventConfig::_MaxPhoton    = ssys::getenv_ParseInt(kMaxPhoton,   _MaxPhotonDefault ) ; 
 int SEventConfig::_MaxSimtrace  = ssys::getenv_ParseInt(kMaxSimtrace, _MaxSimtraceDefault ) ; 
@@ -234,10 +245,14 @@ int SEventConfig::G4StateRerun()
 }
 
 
+
+int SEventConfig::MaxCurand(){ return _MaxCurand ; } 
+//int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; } 
+
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
 int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
-int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; }
+
 
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
@@ -261,10 +276,18 @@ unsigned SEventConfig::SaveComp(){    return _SaveComp ; }
 float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
 
 
+/**
+SEventConfig::_InputGenstepPath
+--------------------------------
+
+OPTICKS_INPUT_GENSTEP
+    must provide a path with %d format tokens that are filled with idx 
+
+**/
+
 const char* SEventConfig::_InputGenstepPath(int idx)
 {
-    std::string str = sstr::Format_(_InputGenstep, idx ) ; 
-    return strdup(str.c_str()) ; 
+    return sstr::Format(_InputGenstep, idx ) ; 
 }
 const char* SEventConfig::InputGenstep(int idx)
 {
@@ -381,163 +404,52 @@ std::string SEventConfig::DescEventMode()  // static
 }
 
 
-void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; Check() ; }
-void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; Check() ; }
-void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; Check() ; }
+void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; LIMIT_Check() ; }
+void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; LIMIT_Check() ; }
 
-void SEventConfig::SetStartIndex(int index0){        _StartIndex = index0 ; Check() ; }
-void SEventConfig::SetNumEvent(int nevt){            _NumEvent = nevt ; Check() ; }
-void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdup(spec) : nullptr ; Check() ; }
-void SEventConfig::SetG4StateRerun(int id){          _G4StateRerun = id ; Check() ; }
+void SEventConfig::SetStartIndex(int index0){        _StartIndex = index0 ; LIMIT_Check() ; }
+void SEventConfig::SetNumEvent(int nevt){            _NumEvent = nevt ; LIMIT_Check() ; }
+void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdup(spec) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetG4StateRerun(int id){          _G4StateRerun = id ; LIMIT_Check() ; }
 
-void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; Check() ; }
-void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; Check() ; }
-void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtrace  ; Check() ; }
-void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; Check() ; }
-void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; Check() ; }
-void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; Check() ; }
-void SEventConfig::SetMaxAux(    int max_aux){     _MaxAux     = max_aux     ; Check() ; }
-void SEventConfig::SetMaxSup(    int max_sup){     _MaxSup     = max_sup     ; Check() ; }
-void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; Check() ; }
-void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; Check() ; }
-void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; Check() ; }
-void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat     = max_flat     ; Check() ; }
-void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; Check() ; }
-void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; Check() ; }
-void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; Check() ; }
-void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; Check() ; }
+void SEventConfig::SetMaxCurand(int max_curand){ _MaxCurand = max_curand ; LIMIT_Check() ; }
+
+void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; LIMIT_Check() ; }
+void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtrace  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxAux(    int max_aux){     _MaxAux     = max_aux     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxSup(    int max_sup){     _MaxSup     = max_sup     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat     = max_flat     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; LIMIT_Check() ; }
+void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 
-void SEventConfig::SetRGMode(   const char* mode){   _RGMode = SRG::Type(mode) ; Check() ; }
+void SEventConfig::SetRGMode(   const char* mode){   _RGMode = SRG::Type(mode) ; LIMIT_Check() ; }
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
 void SEventConfig::SetRGModeRender(){    SetRGMode( SRG::RENDER_ ); }
 void SEventConfig::SetRGModeTest(){      SetRGMode( SRG::TEST_ ); }
 
-void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; Check() ; }
+void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; LIMIT_Check() ; }
 
-void SEventConfig::SetInputGenstep(const char* ig){   _InputGenstep = ig ? strdup(ig) : nullptr ; Check() ; }
-void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; Check() ; }
-void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; Check() ; }
+void SEventConfig::SetInputGenstep(const char* ig){   _InputGenstep = ig ? strdup(ig) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
 
 void SEventConfig::SetGatherComp_(unsigned mask){ _GatherComp = mask ; }
 void SEventConfig::SetGatherComp(const char* names, char delim){  SetGatherComp_( SComp::Mask(names,delim)) ; }
 
 void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
-
-
-void SEventConfig::SetComp()
-{
-     unsigned gather_mask = 0 ; 
-     unsigned save_mask = 0 ; 
-     CompAuto(gather_mask, save_mask ); 
- 
-     SetGatherComp_(gather_mask); 
-     SetSaveComp_(  save_mask); 
-}
-
-
-/**
-SEventConfig::CompAuto
----------------------------
-
-Canonically invoked by SEventConfig::Initialize
-
-enum values like SCOMP_PHOTON are bitwise-ORed into the 
-gather and save masks based on configured MAX values. 
-
-**/
-
-void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
-{
-    if(IsRGModeSimulate() && IsNothing())
-    {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsNothing()" ; 
-        gather_mask = 0 ; 
-        save_mask = 0 ;  
-    }
-    else if(IsRGModeSimulate() && IsMinimal())
-    {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ; 
-        gather_mask = SCOMP_HIT ; 
-        save_mask = 0 ;  
-    }
-    else if(IsRGModeSimulate() && IsHit())
-    {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHit()" ; 
-        gather_mask = SCOMP_HIT | SCOMP_GENSTEP ; 
-        save_mask = SCOMP_HIT | SCOMP_GENSTEP ;   
-    }
-    else if(IsRGModeSimulate() && IsHitPhoton())
-    {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhoton()" ; 
-        gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP  ; 
-        save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP ;   
-    }
-    else if(IsRGModeSimulate() && IsHitPhotonSeq())
-    {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhotonSeq()" ; 
-        gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP  ; 
-        save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP ;   
-        SetMaxSeq(1);  
-    }
-    else if(IsRGModeSimulate() && IsHitSeq())
-    {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitSeq()" ; 
-        gather_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP  ; 
-        save_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP ;   
-        SetMaxSeq(1);  
-    }
-    else if(IsRGModeSimulate())
-    {
-        gather_mask |= SCOMP_DOMAIN ;  save_mask |= SCOMP_DOMAIN ; 
-
-        if(MaxGenstep()>0){  gather_mask |= SCOMP_GENSTEP ; save_mask |= SCOMP_GENSTEP ; }
-        if(MaxPhoton()>0) 
-        {
-            gather_mask |= SCOMP_INPHOTON ;  save_mask |= SCOMP_INPHOTON ;
-            gather_mask |= SCOMP_PHOTON   ;  save_mask |= SCOMP_PHOTON   ;   
-            gather_mask |= SCOMP_HIT      ;  save_mask |= SCOMP_HIT ; 
-            //gather_mask |= SCOMP_SEED ;   save_mask |= SCOMP_SEED ;  // only needed for deep debugging 
-        }
-        if(MaxRecord()>0){    gather_mask |= SCOMP_RECORD ;  save_mask |= SCOMP_RECORD ; }
-        if(MaxAux()>0){       gather_mask |= SCOMP_AUX    ;  save_mask |= SCOMP_AUX    ; }
-        if(MaxSup()>0){       gather_mask |= SCOMP_SUP    ;  save_mask |= SCOMP_SUP    ; }
-        if(MaxSeq()>0){       gather_mask |= SCOMP_SEQ    ;  save_mask |= SCOMP_SEQ    ; } 
-        if(MaxPrd()>0){       gather_mask |= SCOMP_PRD    ;  save_mask |= SCOMP_PRD    ; } 
-        if(MaxTag()>0){       gather_mask |= SCOMP_TAG    ;  save_mask |= SCOMP_TAG    ; } 
-        if(MaxFlat()>0){      gather_mask |= SCOMP_FLAT   ;  save_mask |= SCOMP_FLAT   ; }  
-    }
-    else if(IsRGModeSimtrace())
-    {
-        if(MaxGenstep()>0){   gather_mask |= SCOMP_GENSTEP  ;  save_mask |= SCOMP_GENSTEP ;  }
-        if(MaxSimtrace()>0){  gather_mask |= SCOMP_SIMTRACE ;  save_mask |= SCOMP_SIMTRACE ; }
-
-        LOG(LEVEL) 
-            << " MaxGenstep " << MaxGenstep()
-            << " MaxSimtrace " << MaxSimtrace()
-            << " gather_mask " << gather_mask 
-            << " save_mask " << save_mask 
-            ;
-
-    } 
-    else if(IsRGModeRender())
-    {
-        gather_mask |= SCOMP_PIXEL ;  save_mask |=  SCOMP_PIXEL ;
-    }
-
-    if(IsRunningModeG4StateSave() || IsRunningModeG4StateRerun())
-    {
-        LOG(LEVEL) << " adding SCOMP_G4STATE to comp list " ; 
-        gather_mask |= SCOMP_G4STATE ; save_mask |= SCOMP_G4STATE ; 
-    }
-    else
-    {
-        LOG(LEVEL) << " NOT : adding SCOMP_G4STATE to comp list " ; 
-    }
-
-}
 
 
 
@@ -547,7 +459,6 @@ void SEventConfig::CompAuto(unsigned& gather_mask, unsigned& save_mask )
 std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 
 
-//std::string SEventConfig::CompMaskLabel(){ return SComp::Desc( _CompMask ) ; }
 std::string SEventConfig::GatherCompLabel(){ return SComp::Desc( _GatherComp ) ; }
 std::string SEventConfig::SaveCompLabel(){   return SComp::Desc( _SaveComp ) ; }
 
@@ -580,8 +491,8 @@ int SEventConfig::NumSaveComp()
 
 
 /**
-SEventConfig::Check
-----------------------
+SEventConfig::LIMIT_Check
+---------------------------
 
 Since moved to compound stag/sflat in stag.h 
 MaxTag/MaxFlat must now either be 0 or 1, nothing else.
@@ -593,7 +504,7 @@ caused huge memory allocations in debug event modes.
 //const int SEventConfig::LIMIT = 16 ; 
 const int SEventConfig::LIMIT = 32 ; 
 
-void SEventConfig::Check()
+void SEventConfig::LIMIT_Check()
 {
    assert( _IntegrationMode >= -1 && _IntegrationMode <= 3 ); 
 
@@ -643,6 +554,10 @@ std::string SEventConfig::Desc()
        << std::setw(25) << kG4StateRerun
        << std::setw(20) << " G4StateRerun " << " : " << G4StateRerun() 
        << std::endl 
+       << std::setw(25) << kMaxCurand
+       << std::setw(20) << " MaxCurand " << " : " << MaxCurand() 
+       << std::setw(20) << " MaxCurand/M " << " : " << MaxCurand()/M
+       << std::endl 
        << std::setw(25) << kMaxGenstep 
        << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() 
        << std::setw(20) << " MaxGenstep/M " << " : " << MaxGenstep()/M
@@ -656,8 +571,8 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " MaxSimtrace/M " << " : " << MaxSimtrace()/M 
        << std::endl 
        << std::setw(25) << ""
-       << std::setw(20) << " MaxCurandState " << " : " << MaxCurandState() 
-       << std::setw(20) << " MaxCurandState/M " << " : " << MaxCurandState()/M
+       << std::setw(20) << " MaxCurand " << " : " << MaxCurand() 
+       << std::setw(20) << " MaxCurand/M " << " : " << MaxCurand()/M
        << std::endl 
        << std::setw(25) << kMaxBounce
        << std::setw(20) << " MaxBounce " << " : " << MaxBounce() 
@@ -883,19 +798,33 @@ const char* SEventConfig::OutDir(const char* reldir)
     return dir ; 
 }
 
+
+
+scontext* SEventConfig::CONTEXT = nullptr ; 
+salloc*   SEventConfig::ALLOC = nullptr ; 
+
+std::string SEventConfig::GetGPUMeta(){ return CONTEXT ? CONTEXT->brief() : "ERR-NO-SEventConfig-CONTEXT" ; }
+
+
 /**
 SEventConfig::Initialize
 -------------------------
 
 Canonically invoked from SEvt::SEvt 
 
-* NB must make any static call adjustments before SEvt instanciation 
-  for them to have any effect 
+* SO: must make any static call adjustments before SEvt instanciation 
 
-Former "StandardFullDebug" renamed "DebugHeavy" 
-is far too heavy for most debugging/validation, 
-"DebugLite" mode with photon, record, seq,  genstep 
-covers most needs.  
+
+DebugHeavy 
+    far too heavy for most debugging/validation
+DebugLite
+    mode with photon, record, seq,  genstep covers most needs 
+
+
+Future
+~~~~~~~
+
+* maybe move home from SEvt to SSim, as only one SSim but can be two or more SEvt sometimes
 
 **/
 
@@ -908,9 +837,25 @@ int SEventConfig::Initialize() // static
         << " (IN SOME CASES ITS CONVENIENT TO HAVE MORE THAN ONE SEvt, THOUGH "
         << "  SO MAYBE SHOULD MOVE THIS TO OPTICKS_LOG/SLOG ? "  
         ; 
-    // assert( Initialize_COUNT == 0); 
-    Initialize_COUNT += 1 ; 
 
+    if(Initialize_COUNT == 0) 
+    {
+        Initialize_Meta() ; 
+        Initialize_Max() ; 
+    }
+
+    Initialize_COUNT += 1 ; 
+    return 0 ; 
+}
+
+void SEventConfig::Initialize_Meta()
+{
+    CONTEXT = new scontext ; 
+    ALLOC = new salloc ; 
+}
+
+void SEventConfig::Initialize_Max() // static
+{
     const char* mode = EventMode(); 
     LOG(LEVEL) <<  " EventMode() " << mode ;  // eg Default, DebugHeavy
     LOG(LEVEL) 
@@ -922,11 +867,11 @@ int SEventConfig::Initialize() // static
 
     if(IsDefault())
     {
-        SetComp() ;
+        Initialize_Comp() ;
     }
     else if(IsNothing() || IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() || IsHitSeq() )
     {
-        SetComp() ;  
+        Initialize_Comp() ;  
     }
     else if(IsDebugHeavy())
     {
@@ -941,7 +886,7 @@ int SEventConfig::Initialize() // static
         SEventConfig::SetMaxFlat(1); 
         SEventConfig::SetMaxSup(1); 
 
-        SetComp() ;   // comp set based on Max values   
+        Initialize_Comp() ;   // comp set based on Max values   
     }
     else if(IsDebugLite())
     {
@@ -949,7 +894,7 @@ int SEventConfig::Initialize() // static
         SEventConfig::SetMaxRecord(max_bounce+1); 
         SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
 
-        SetComp() ;   // comp set based on Max values   
+        Initialize_Comp() ;   // comp set based on Max values   
     }
     else
     {
@@ -963,17 +908,133 @@ int SEventConfig::Initialize() // static
     }
 
     LOG(LEVEL) << Desc() ; 
-    return 0 ; 
 }
 
 
-uint64_t SEventConfig::EstimateAlloc()
+
+/**
+SEventConfig::Initialize_Comp
+-----------------------------
+
+Invoked by SEventConfig::Initialize
+
+**/
+
+
+void SEventConfig::Initialize_Comp()
 {
-    salloc* estimate = new salloc ; 
-    uint64_t tot = estimate->get_total() ; 
-    delete estimate ; 
-    return tot ; 
+     unsigned gather_mask = 0 ; 
+     unsigned save_mask = 0 ; 
+
+     Initialize_Comp_(gather_mask, save_mask ); 
+ 
+     SetGatherComp_(gather_mask); 
+     SetSaveComp_(  save_mask); 
 }
+
+
+/**
+SEventConfig::Initialize_Comp_
+------------------------------------
+
+Canonically invoked by SEventConfig::Initialize_Comp
+
+enum values like SCOMP_PHOTON are bitwise-ORed into the 
+gather and save masks based on configured MAX values. 
+
+**/
+
+void SEventConfig::Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask )
+{
+    if(IsRGModeSimulate() && IsNothing())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsNothing()" ; 
+        gather_mask = 0 ; 
+        save_mask = 0 ;  
+    }
+    else if(IsRGModeSimulate() && IsMinimal())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ; 
+        gather_mask = SCOMP_HIT ; 
+        save_mask = 0 ;  
+    }
+    else if(IsRGModeSimulate() && IsHit())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHit()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_GENSTEP ; 
+        save_mask = SCOMP_HIT | SCOMP_GENSTEP ;   
+    }
+    else if(IsRGModeSimulate() && IsHitPhoton())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhoton()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP ;   
+    }
+    else if(IsRGModeSimulate() && IsHitPhotonSeq())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhotonSeq()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP ;   
+        SetMaxSeq(1);  
+    }
+    else if(IsRGModeSimulate() && IsHitSeq())
+    {
+        LOG(LEVEL) << "IsRGModeSimulate() && IsHitSeq()" ; 
+        gather_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP  ; 
+        save_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP ;   
+        SetMaxSeq(1);  
+    }
+    else if(IsRGModeSimulate())
+    {
+        gather_mask |= SCOMP_DOMAIN ;  save_mask |= SCOMP_DOMAIN ; 
+
+        if(MaxGenstep()>0){  gather_mask |= SCOMP_GENSTEP ; save_mask |= SCOMP_GENSTEP ; }
+        if(MaxPhoton()>0) 
+        {
+            gather_mask |= SCOMP_INPHOTON ;  save_mask |= SCOMP_INPHOTON ;
+            gather_mask |= SCOMP_PHOTON   ;  save_mask |= SCOMP_PHOTON   ;   
+            gather_mask |= SCOMP_HIT      ;  save_mask |= SCOMP_HIT ; 
+            //gather_mask |= SCOMP_SEED ;   save_mask |= SCOMP_SEED ;  // only needed for deep debugging 
+        }
+        if(MaxRecord()>0){    gather_mask |= SCOMP_RECORD ;  save_mask |= SCOMP_RECORD ; }
+        if(MaxAux()>0){       gather_mask |= SCOMP_AUX    ;  save_mask |= SCOMP_AUX    ; }
+        if(MaxSup()>0){       gather_mask |= SCOMP_SUP    ;  save_mask |= SCOMP_SUP    ; }
+        if(MaxSeq()>0){       gather_mask |= SCOMP_SEQ    ;  save_mask |= SCOMP_SEQ    ; } 
+        if(MaxPrd()>0){       gather_mask |= SCOMP_PRD    ;  save_mask |= SCOMP_PRD    ; } 
+        if(MaxTag()>0){       gather_mask |= SCOMP_TAG    ;  save_mask |= SCOMP_TAG    ; } 
+        if(MaxFlat()>0){      gather_mask |= SCOMP_FLAT   ;  save_mask |= SCOMP_FLAT   ; }  
+    }
+    else if(IsRGModeSimtrace())
+    {
+        if(MaxGenstep()>0){   gather_mask |= SCOMP_GENSTEP  ;  save_mask |= SCOMP_GENSTEP ;  }
+        if(MaxSimtrace()>0){  gather_mask |= SCOMP_SIMTRACE ;  save_mask |= SCOMP_SIMTRACE ; }
+
+        LOG(LEVEL) 
+            << " MaxGenstep " << MaxGenstep()
+            << " MaxSimtrace " << MaxSimtrace()
+            << " gather_mask " << gather_mask 
+            << " save_mask " << save_mask 
+            ;
+
+    } 
+    else if(IsRGModeRender())
+    {
+        gather_mask |= SCOMP_PIXEL ;  save_mask |=  SCOMP_PIXEL ;
+    }
+
+    if(IsRunningModeG4StateSave() || IsRunningModeG4StateRerun())
+    {
+        LOG(LEVEL) << " adding SCOMP_G4STATE to comp list " ; 
+        gather_mask |= SCOMP_G4STATE ; save_mask |= SCOMP_G4STATE ; 
+    }
+    else
+    {
+        LOG(LEVEL) << " NOT : adding SCOMP_G4STATE to comp list " ; 
+    }
+
+}
+
+
 
 
 NP* SEventConfig::Serialize() // static
@@ -992,10 +1053,11 @@ NP* SEventConfig::Serialize() // static
     if(g4s) meta->set_meta<std::string>("G4StateSpec", g4s ); 
  
     meta->set_meta<int>("G4StateRerun", G4StateRerun() ); 
+    meta->set_meta<int>("MaxCurand", MaxCurand() );  
     meta->set_meta<int>("MaxGenstep", MaxGenstep() );  
     meta->set_meta<int>("MaxPhoton", MaxPhoton() );  
     meta->set_meta<int>("MaxSimtrace", MaxSimtrace() );  
-    meta->set_meta<int>("MaxCurandState", MaxCurandState() );  
+    meta->set_meta<int>("MaxCurand", MaxCurand() );  
 
     meta->set_meta<int>("MaxBounce", MaxBounce() );  
     meta->set_meta<int>("MaxRecord", MaxRecord() );  
@@ -1200,6 +1262,14 @@ std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string na
 
     std::string str = ss.str() ; 
     return str ; 
+}
+
+uint64_t SEventConfig::EstimateAlloc()
+{
+    salloc* estimate = new salloc ; 
+    uint64_t tot = estimate->get_total() ; 
+    delete estimate ; 
+    return tot ; 
 }
 
 

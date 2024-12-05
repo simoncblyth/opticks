@@ -540,7 +540,134 @@ But the config is down at SEventConfig level::
      240 int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; }
 
 
-Just SEventConfig::SetMaxPhoton from CSGOptiX ?
+Move scontext booting down to SEventConfig::Initialize ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Nope the natural place to instanciate scontext is SEventConfig::Initialize  
+in order to control the scontext/SEventConfig interaction 
+and use VRAM results in the config. 
+
+
+HMM signaling with OPTICKS_MAX_PHOTON=0 is problematic
+---------------------------------------------------------------
+
+SEventConfig.cc::
+
+     940     else if(IsRGModeSimulate())
+     941     {
+     942         gather_mask |= SCOMP_DOMAIN ;  save_mask |= SCOMP_DOMAIN ;
+     943 
+     944         if(MaxGenstep()>0){  gather_mask |= SCOMP_GENSTEP ; save_mask |= SCOMP_GENSTEP ; }
+     945         if(MaxPhoton()>0)
+     946         {
+     947             gather_mask |= SCOMP_INPHOTON ;  save_mask |= SCOMP_INPHOTON ;
+     948             gather_mask |= SCOMP_PHOTON   ;  save_mask |= SCOMP_PHOTON   ;
+     949             gather_mask |= SCOMP_HIT      ;  save_mask |= SCOMP_HIT ;
+     950             //gather_mask |= SCOMP_SEED ;   save_mask |= SCOMP_SEED ;  // only needed for deep debugging 
+     951         }
+
+
+Perhaps use MaxCurandState : because that is more explicit, regarding defining the Max Launch Slots ?
+
+::
+
+    P[blyth@localhost opticks]$ opticks-f MaxCurandState
+    ./qudarap/QRng.cc:    rngmax(SEventConfig::MaxCurandState()),    // max of : OPTICKS_MAX_PHOTON OPTICKS_MAX_SIMTRACE 
+    ./sysrap/SEventConfig.cc:int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; }
+    ./sysrap/SEventConfig.cc:       << std::setw(20) << " MaxCurandState " << " : " << MaxCurandState() 
+    ./sysrap/SEventConfig.cc:       << std::setw(20) << " MaxCurandState/M " << " : " << MaxCurandState()/M
+    ./sysrap/SEventConfig.cc:    meta->set_meta<int>("MaxCurandState", MaxCurandState() );  
+    ./sysrap/SEventConfig.hh:MaxCurandState
+    ./sysrap/SEventConfig.hh:    static int MaxCurandState();  // from max of MaxPhoton and MaxSimtrace
+    ./sysrap/SCurandStateMonolithic.cc:       << " SEventConfig::MaxCurandState() " << SEventConfig::MaxCurandState() << std::endl
+    ./sysrap/SCurandStateMonolithic.cc:        int rngmax = SEventConfig::MaxCurandState(); 
+    P[blyth@localhost opticks]$ 
+
+
+::
+
+     38 /**
+     39 QRng::QRng
+     40 ------------
+     41 
+     42 QRng instanciation is invoked from QSim::UploadComponents
+     43 
+     44 **/
+     45 
+     46 QRng::QRng(unsigned skipahead_event_offset)
+     47     :
+     48 #ifdef OLD_MONOLITHIC_CURANDSTATE
+     49     path(SCurandStateMonolithic::Path()),        // null path will assert in Load
+     50     rngmax(0),
+     51     d_rng_states(LoadAndUpload(rngmax, path)),   // rngmax set based on file_size/item_size of path 
+     52 #else
+     53     cs(nullptr),
+     54     path(cs.getDir()),                        // informational 
+     55     rngmax(SEventConfig::MaxCurandState()),    // max of : OPTICKS_MAX_PHOTON OPTICKS_MAX_SIMTRACE 
+     56     d_rng_states(LoadAndUpload(rngmax, cs)),   // 
+     57 #endif
+     58     qr(new qrng(d_rng_states, skipahead_event_offset)),
+     59     d_qr(nullptr)
+     60 {
+     61     init();
+     62 }
+
+
+
+
+
+
+scontext/SEventConfig coordination + booting
+------------------------------------------------
+
+::
+
+    P[blyth@localhost sysrap]$ opticks-f SEventConfig.hh
+    ./CSG/CSGSimtrace.cc:#include "SEventConfig.hh"
+    ./CSG/CSGFoundry.cc:#include "SEventConfig.hh"
+
+          
+
+    ./CSGOptiX/tests/CSGOptiXSimTest.cc:#include "SEventConfig.hh"
+    ./CSGOptiX/tests/CSGOptiXSimtraceTest.cc:#include "SEventConfig.hh"
+    ./CSGOptiX/tests/CXRaindropTest.cc:#include "SEventConfig.hh"
+    ./CSGOptiX/tests/CSGOptiXRenderTest.cc:#include "SEventConfig.hh"
+    ./CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:#include "SEventConfig.hh"
+    ./CSGOptiX/CSGOptiX.cc:#include "SEventConfig.hh"
+    ./extg4/X4Simtrace.cc:#include "SEventConfig.hh"
+    ./g4cx/tests/G4CXSimtraceTest.cc:#include "SEventConfig.hh"
+    ./g4cx/tests/G4CXSimulateTest.cc:#include "SEventConfig.hh"
+    ./g4cx/tests/G4CXApp.h:#include "SEventConfig.hh"
+    ./g4cx/tests/G4CXRenderTest.cc:#include "SEventConfig.hh"
+    ./g4cx/G4CXOpticks.cc:#include "SEventConfig.hh"
+    ./qudarap/tests/QEvent_Lifecycle_Test.cc:#include "SEventConfig.hh"
+    ./qudarap/tests/QSim_Lifecycle_Test.cc:#include "SEventConfig.hh"
+    ./qudarap/tests/QSimTest.cc:#include "SEventConfig.hh"
+
+    ./qudarap/QSim.cc:#include "SEventConfig.hh"
+    ./qudarap/QEvent.cc:#include "SEventConfig.hh"
+    ./qudarap/QRng.cc:#include "SEventConfig.hh"
+
+
+    ./sysrap/CMakeLists.txt:    SEventConfig.hh
+    ./sysrap/SCF.h:#include "SEventConfig.hh"
+    ./sysrap/SEventConfig.cc:#include "SEventConfig.hh"
+    ./sysrap/SEvt.cc:#include "SEventConfig.hh"
+    ./sysrap/SGeo.cc:#include "SEventConfig.hh"
+    ./sysrap/SOpticks.cc:#include "SEventConfig.hh"
+    ./sysrap/SSimtrace.h:#include "SEventConfig.hh"
+    ./sysrap/scontext.h:#include "SEventConfig.hh"
+    ./sysrap/tests/SEventConfigTest.cc:#include "SEventConfig.hh"
+    ./sysrap/tests/SEvtTest.cc:#include "SEventConfig.hh"
+    ./sysrap/sevent.h:#include "SEventConfig.hh"
+    ./sysrap/SCurandStateMonolithic.cc:#include "SEventConfig.hh"
+    ./u4/U4App.h:#include "SEventConfig.hh"
+    ./u4/tests/U4SimtraceTest.cc:#include "SEventConfig.hh"
+    ./u4/U4Tree.h:#include "SEventConfig.hh"
+    P[blyth@localhost opticks]$ 
+
+
+
 
 
 WIP: Setting maxphoton based on VRAM
@@ -555,15 +682,199 @@ SEventConfig::SetVRAM
 NEXT: some big scans with VRAM measurement to improve the Heuristic 
 
 
+salloc estimate
+~~~~~~~~~~~~~~~~~~~
+
+::
+
+     992 uint64_t SEventConfig::EstimateAlloc()
+     993 {
+     994     salloc* estimate = new salloc ;
+     995     uint64_t tot = estimate->get_total() ;
+     996     delete estimate ;
+     997     return tot ;
+     998 }
+
+
+
 
 splitting launch to handle more photon than fit into VRAM
 --------------------------------------------------------------
 
-* doing all the launches at EndOfEvent ? or doing throughout event ? 
-* at the launch boundary : is splitting genstep possible (cloning and changing photon count on the excess) ? 
-* how to handle SEvt ?
+* Easiest to reduce change and do the multiple launches at EndOfEvent
 
 
+Where/how to split the launch ? QSim::simulate seems best 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+What is needed:
+
+
+1. QSim::simulate collects from SEvt genstep slice structs, each with: 
+
+   * genstep slice indices {start,stop}, eg [0:num_gs] when can do single launch  
+   * photon {offset, count} , eg zero offset when can do single launch, count always <= SEventConfig::MaxCurand() 
+
+2. QSim::simulate loops over the genstep slices doing the launches
+
+4. SEvt::gather needs to use the slice struct photon {offset, count} 
+   to place the outputs into the correct place in the SEvt arrays at download 
+   
+   * recall that array saving is a debug activity, so assuming that the arrays 
+     fit into CPU memory is allowed 
+
+5. what about hit selection ? more involved because its selection over the photons
+
+
+   
+Note that the below are uploading:: 
+
+    QEvent::setGenstep
+    QEvent::setGenstepUpload_NP
+    QEvent::setGenstepUpload   
+
+
+
+genstep slice generalization 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* uploading sliced genstep can be done within QEvent::setGenstepUpload_NP
+  with additional genstep slice struct argument 
+
+::
+
+     211 int QEvent::setGenstepUpload_NP(const NP* gs_)
+     212 {
+     213     gs = gs_ ;
+     214     SGenstep::Check(gs);
+     215     LOG(LEVEL)
+     216         << " gs " << ( gs ? gs->sstr() : "-" )
+     217         << SGenstep::Desc(gs, 10)
+     218         ;
+     219 
+     220     int num_genstep = gs_ ? gs_->shape[0] : 0 ;
+     221     const char* data = gs_ ? gs_->bytes() : nullptr ;
+     222     const quad6* qq = (const quad6*)data ;
+     223     int rc = setGenstepUpload(qq, num_genstep);
+     224     return rc ;
+     225 }
+
+
+
+
+::
+
+     350 double QSim::simulate(int eventID, bool reset_)
+     351 {
+     352     SProf::Add("QSim__simulate_HEAD");
+     353 
+     354     LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
+     355     if( event == nullptr ) return -1. ;
+     356 
+     357     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
+     358 
+
+
+     /// need to get slices here 
+     /// [ loop over slices 
+
+     359     int rc = event->setGenstep() ;    // QEvent 
+     
+
+     360     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ;
+     361 
+     362 
+     363     SProf::Add("QSim__simulate_PREL");
+     364 
+     365     sev->t_PreLaunch = sstamp::Now() ;
+     366     double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
+     367     sev->t_PostLaunch = sstamp::Now() ;
+     368     sev->t_Launch = dt ;
+     369 
+     370     SProf::Add("QSim__simulate_POST");
+     371 
+     372     sev->gather();
+
+     /// ] end loop over slices 
+
+
+     373 
+     374     SProf::Add("QSim__simulate_DOWN");
+     375 
+     376     int num_ht = sev->getNumHit() ;   // NB from fold, so requires hits array gathering to be configured to get non-zero 
+     377     int num_ph = event->getNumPhoton() ;
+     378 
+     379     LOG_IF(info, SEvt::MINIMAL)
+     380         << " eventID " << eventID
+     381         << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt
+     382         << " ph " << std::setw(10) << num_ph
+     383         << " ph/M " << std::setw(10) << num_ph/M
+     384         << " ht " << std::setw(10) << num_ht
+     385         << " ht/M " << std::setw(10) << num_ht/M
+     386         << " reset_ " << ( reset_ ? "YES" : "NO " )
+     387         ;
+     388 
+     389     if(reset_) reset(eventID) ;
+     390     SProf::Add("QSim__simulate_TAIL");
+     391     return dt ;
+     392 }
+
+
+
+
+
+::
+
+     188 int QEvent::setGenstep()  // onto device
+     189 {
+     190     LOG_IF(info, SEvt::LIFECYCLE) << "[" ;
+     191     
+     192     
+     193     NP* gs_ = sev->getGenstepArray();
+     194     int rc = setGenstepUpload_NP(gs_) ;
+     195 
+     196     LOG_IF(info, SEvt::LIFECYCLE) << "]" ;
+     197 
+     198     return rc ;
+     199 }
+
+
+
+
+
+How to gather in slices ?
+---------------------------
+
+* (sevent)evt->num_photon adjusted for each sub-launch OR separate slice argument ?
+* additional slice arg is cleaner  (or setSlice method)
+
+::
+
+     559 void QEvent::gatherPhoton(NP* p) const
+     560 {   
+     561     bool expected_shape =  p->has_shape(evt->num_photon, 4, 4) ;  
+     562     LOG(expected_shape ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ;
+     563     assert(expected_shape ); 
+     564     int rc = QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon );
+     565 
+     566     LOG_IF(fatal, rc != 0) 
+     567          << " QU::copy_device_to_host photon FAILED "
+     568          << " evt->photon " << ( evt->photon ? "Y" : "N" )
+     569          << " evt->num_photon " <<  evt->num_photon
+     570          ;
+     571     
+     572     if(rc != 0) std::raise(SIGINT) ;
+     573     
+     574     LOG(LEVEL) << "] evt.num_photon " << evt->num_photon  ;
+     575 }
+     576 
+     577 NP* QEvent::gatherPhoton() const
+     578 {   
+     579     //NP* p = NP::Make<float>( evt->num_photon, 4, 4); 
+     580     NP* p = sev->makePhoton();
+     581     gatherPhoton(p);
+     582     return p ;
+     583 }
 
 
 

@@ -1,4 +1,15 @@
-#!/bin/bash -l 
+#!/bin/bash
+usage(){ cat << EOU
+salloc_test.sh
+===============
+
+~/o/sysrap/tests/salloc_test.sh 
+
+EOU
+}
+
+cd $(dirname $(realpath $BASH_SOURCE))
+source dbg__.sh 
 
 defarg="info_build_run"
 arg=${1:-$defarg}
@@ -10,24 +21,30 @@ export FOLD=/tmp/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
+script=$name.py 
 
-export BASE=$FOLD
-export BASE=/tmp/blyth/opticks/GEOM/$GEOM/ntds3
+export BASE=${BASE:-$FOLD}
 
-vars="BASH_SOURCE name FOLD BASE OPTICKS_PREFIX GEOM"
+vars="BASH_SOURCE name FOLD BASE OPTICKS_PREFIX GEOM TEST"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi 
 
-if [ "${arg/build}" != "$arg" ]; then 
+if [ "${arg/oldbuild}" != "$arg" ]; then 
     gcc $name.cc \
           -g \
           -std=c++11 -lstdc++ \
           -I.. \
+          -DOLD_GLM_SALLOC \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -o $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE oldbuild error && exit 1 
+fi 
+
+if [ "${arg/build}" != "$arg" ]; then 
+    gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi 
 
@@ -37,19 +54,22 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-
-    case $(uname) in 
-       Darwin) lldb__ $bin ;;
-       Linux) gdb__ $bin ;;
-    esac
+    dbg__ $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 
 
+if [ "${arg/pdb}" != "$arg" ]; then 
+    ${IPYTHON:-ipython} --pdb -i $script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 2 
+fi 
 
 if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $name.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2 
+    ${PYTHON:-python} $script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
 fi 
+
+
+
 
 exit 0 
 

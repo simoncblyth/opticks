@@ -9,8 +9,7 @@ Some device allocations such as those by QU::device_alloc
 are monitored when the *QU:alloc* *salloc* instance 
 has been instanciated. 
 
-TODO: bizarre, why use glm::tvec4 ? Remove that 
-
+WIP: replace glm::tvec4 with struct 
 
 ::
 
@@ -33,8 +32,19 @@ TODO: bizarre, why use glm::tvec4 ? Remove that
 #include <iostream>
 #include <iomanip>
 
+#ifdef OLD_GLM_SALLOC
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#else
+struct salloc_item
+{
+    uint64_t size ; 
+    uint64_t num_items ; 
+    uint64_t sizeof_item ; 
+    uint64_t spare ; 
+};
+#endif
+
 #include "NP.hh"
 
 struct salloc
@@ -44,7 +54,11 @@ struct salloc
 
     std::string meta ; 
     std::vector<std::string> label ; 
+#ifdef OLD_GLM_SALLOC
     std::vector<glm::tvec4<uint64_t>> alloc ; 
+#else
+    std::vector<salloc_item> alloc ; 
+#endif
     void add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare); 
     uint64_t get_total() const ; 
 
@@ -68,7 +82,15 @@ inline void salloc::add( const char* label_, uint64_t size, uint64_t num_items, 
 inline uint64_t salloc::get_total() const 
 {
     uint64_t tot = 0 ; 
-    for(unsigned i=0 ; i < alloc.size() ; i++) tot += alloc[i].x ; 
+    for(unsigned i=0 ; i < alloc.size() ; i++) 
+    {
+#ifdef OLD_GLM_SALLOC
+       tot += alloc[i].x ; 
+#else
+       tot += alloc[i].size ;
+#endif
+
+    }
     return tot ; 
 }
 
@@ -155,19 +177,30 @@ inline std::string salloc::desc() const
     assert( alloc.size() == label.size() ); 
     for(unsigned i=0 ; i < alloc.size() ; i++ )
     {
-        const glm::tvec4<uint64_t>& vec = alloc[i] ;   
         const char* lab = label[i].c_str() ; 
-
-        double size = double(vec.x) ; 
+#ifdef OLD_GLM_SALLOC
+        const glm::tvec4<uint64_t>& item = alloc[i] ;   
+        uint64_t _size = item.x ;  
+        uint64_t _num_items = item.y ; 
+        uint64_t _sizeof_item = item.z ; 
+        uint64_t _spare = item.w ; 
+#else
+        const salloc_item& item = alloc[i] ;   
+        uint64_t _size = item.size ;  
+        uint64_t _num_items = item.num_items ; 
+        uint64_t _sizeof_item = item.sizeof_item ; 
+        uint64_t _spare = item.spare ; 
+#endif
+        double size = double(_size) ; 
         double size_GB  = size/1e9 ; 
         float size_percent = 100.*size/double(tot) ; 
 
         ss 
             << spacer
-            << "[" << std::setw(15) << vec.x
-            << " " << std::setw(11) << vec.y
-            << " " << std::setw(11) << vec.z 
-            << " " << std::setw(11) << vec.w
+            << "[" << std::setw(15) << _size
+            << " " << std::setw(11) << _num_items
+            << " " << std::setw(11) << _sizeof_item
+            << " " << std::setw(11) << _spare
             << "]"
             << " " << std::setw(10) << std::fixed << std::setprecision(2) << size_GB
             << " " << std::setw(10) << std::fixed << std::setprecision(2) << size_percent

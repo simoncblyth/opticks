@@ -16,15 +16,6 @@ Canonical instance is CSGOptiX::SCTX instanciated by CSGOptiX::Create
     ./sysrap/tests/scontext_test.cc
     [blyth@localhost opticks]$ 
 
-Equivalent of this in the old workflow was 
-optixrap/OContext.cc OContext::initDevices
-
-Formerly used SCVD.h to promote "CVD" into "CUDA_VISIBLE_DEVICES" 
-in code in order to have more control over visible GPUs. 
-However find that approach no longer impacts CUDA. 
-Perhaps following a CUDA version/runtime/driver update the 
-CUDA_VISIBLE_DEVICES envvar is read earlier than previously. 
-
 ::
 
    ~/o/sysrap/tests/scontext_test.sh  

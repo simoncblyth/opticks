@@ -1,12 +1,28 @@
+/**
+salloc_test.cc
+==============
+
+~/o/sysrap/tests/salloc_test.sh 
+
+**/
+
 #include <cstdlib>
 #include <iostream>
 #include <limits>
 
+#include "ssys.h"
 #include "salloc.h"
 
 const char* BASE = getenv("BASE"); 
 
-void test_save_load()
+struct salloc_test
+{
+    static int save_load(); 
+    static int load(); 
+    static int main(); 
+};
+
+int salloc_test::save_load()
 {
     salloc* a = new salloc ; 
     a->add("one",   1, 0,0,0 ); 
@@ -23,21 +39,25 @@ void test_save_load()
 
     salloc* b = salloc::Load(BASE)  ; 
     std::cout << "b.desc" << std::endl << b->desc() ;     
-}
-
-void test_load()
-{
-    salloc* a = salloc::Load(BASE) ; 
-    std::cout << "a.desc" << std::endl << a->desc() ;     
-}
-
-
-int main(int argc, char** argv)
-{
-    /*
-    test_save_load(); 
-    */
-    test_load(); 
 
     return 0 ; 
 }
+
+int salloc_test::load()
+{
+    salloc* a = salloc::Load(BASE) ; 
+    std::cout << "a.desc" << std::endl << a->desc() ;     
+    return 0 ; 
+}
+
+int salloc_test::main()
+{
+    const char* TEST = ssys::getenvvar("TEST","save_load"); 
+    int rc = 0 ; 
+    if(strcmp(TEST,"save_load")==0 ) rc += save_load(); 
+    if(strcmp(TEST,"load")==0 )      rc += load(); 
+    return rc ; 
+}
+
+int main(){ return salloc_test::main() ; }
+    

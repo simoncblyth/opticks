@@ -47,7 +47,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "ssys.h"
 #include "spath.h"
 #include "smeta.h"
-#include "scontext.h"   // GPU metadata
 #include "SProf.hh"
 
 #include "SGLM.h"
@@ -298,7 +297,7 @@ CSGOptiX::InitMeta
 
 void CSGOptiX::InitMeta(const SSim* ssim  )
 {
-    std::string gm = GetGPUMeta() ;            // (QSim) scontext sdevice::brief
+    std::string gm = SEventConfig::GetGPUMeta() ;     // (QSim) scontext sdevice::brief
     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control 
 
     std::string switches = QSim::Switches() ;
@@ -346,8 +345,8 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     SProf::Add("CSGOptiX__Create_HEAD"); 
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
 
-    SetSCTX(); 
-    QU::alloc = new salloc ;   // HMM: maybe this belongs better in QSim ? 
+    QU::alloc = SEventConfig::ALLOC ; 
+
 
     InitEvt(fd); 
     InitSim( const_cast<SSim*>(fd->sim) ); // QSim instanciation after uploading SSim arrays
@@ -383,39 +382,13 @@ Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
 }
 
 
-scontext* CSGOptiX::SCTX = nullptr ; 
 
 
-/**
-CSGOptiX::SetSCTX
----------------------
-
-Instanciates CSGOptiX::SCTX(scontext) holding GPU metadata. 
-Canonically invoked from head of CSGOptiX::Create.
-
-NOTE: Have sometimes observed few second hangs checking for GPU 
-
-**/
-
-void CSGOptiX::SetSCTX()
-{ 
-    LOG(LEVEL) << "[ new scontext" ;  
-    SCTX = new scontext ; 
-    LOG(LEVEL) << "] new scontext" ; 
-    LOG(LEVEL) << SCTX->desc() ;    
-}
-
-std::string CSGOptiX::GetGPUMeta(){ return SCTX ? SCTX->brief() : "ERR-NO-CSGOptiX-SCTX" ; }
 
 CSGOptiX::~CSGOptiX()
 {
     destroy(); 
 }
-
-/**
-
-
-**/
 
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_) 
@@ -1269,7 +1242,7 @@ void CSGOptiX::render_save_(const char* stem_, bool inverted)
 
 
     const char* topline = ssys::getenvvar("TOPLINE", sproc::ExecutableName() ); 
-    std::string _extra = GetGPUMeta();  // scontext::brief giving GPU name 
+    std::string _extra = SEventConfig::GetGPUMeta();  // scontext::brief giving GPU name 
     const char* extra = strdup(_extra.c_str()) ;  
 
     const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
@@ -1383,7 +1356,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
         js["cfmeta"] = foundry->meta ; 
     }
 
-    std::string extra = GetGPUMeta(); 
+    std::string extra = SEventConfig::GetGPUMeta(); 
     js["scontext"] = extra.empty() ? "-" : strdup(extra.c_str()) ; 
 
     const std::vector<double>& t = launch_times ;
@@ -1418,7 +1391,7 @@ CSGOptiX::_OPTIX_VERSION
 -------------------------
 
 This depends on the the optix.h header only which provides the OPTIX_VERSION macro
-so it could be done at the lowest level, no need for it to be 
+SEventConfig::so it could be done at the lowest level, no need for it to be 
 up at this "elevation"
 
 TODO: relocate to OKConf or SysRap, BUT this must wait until switch to full proj 7 

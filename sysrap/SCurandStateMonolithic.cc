@@ -23,7 +23,7 @@ std::string SCurandStateMonolithic::Desc()  // static
 
     std::stringstream ss ; 
     ss << "SCurandStateMonolithic::Desc" << std::endl 
-       << " SEventConfig::MaxCurandState() " << SEventConfig::MaxCurandState() << std::endl
+       << " SEventConfig::MaxCurand() " << SEventConfig::MaxCurand() << std::endl
        << " SCurandStateMonolithic::Path() " << path << std::endl 
        << " SCurandStateMonolithic::RngMax() " << rngmax << std::endl 
        << " RNGDIR  " << RNGDIR << std::endl 
@@ -46,7 +46,7 @@ const char* SCurandStateMonolithic::Path()  // static
 {
     if(DEFAULT_PATH == nullptr)
     {
-        int rngmax = SEventConfig::MaxCurandState(); 
+        int rngmax = SEventConfig::MaxCurand(); 
         int seed = 0 ; 
         int offset = 0 ; 
         // seed and offset could some from SEventConfig too 
