@@ -103,7 +103,7 @@ SET(HEADERS
 
 
     QCurandStateMonolithic.hh
-    qcurandstate.h
+    qcurandwrap.h
 
 
     QSim.hh

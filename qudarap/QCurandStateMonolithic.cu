@@ -1,11 +1,11 @@
 #include <cstdio>
 #include "curand_kernel.h"
-#include "qcurandstate.h"
+#include "qcurandwrap.h"
 #include "QUDA_CHECK.h"
 #include "SLaunchSequence.h"
 
 
-__global__ void _QCurandStateMonolithic_curand_init(int threads_per_launch, int id_offset, qcurandstate* cs, curandState* states_thread_offset )
+__global__ void _QCurandStateMonolithic_curand_init(int threads_per_launch, int id_offset, qcurandwrap* cs, curandState* states_thread_offset )
 {
     int id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= threads_per_launch) return;
@@ -16,7 +16,7 @@ __global__ void _QCurandStateMonolithic_curand_init(int threads_per_launch, int 
 
 
 
-extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* seq,  qcurandstate* cs, qcurandstate* d_cs) 
+extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* seq,  qcurandwrap* cs, qcurandwrap* d_cs) 
 {
     // NB this is still on CPU, dereferencing d_cs here will BUS_ERROR 
 

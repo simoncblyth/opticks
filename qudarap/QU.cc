@@ -31,7 +31,7 @@
 #include "qdebug.h"
 #include "qscint.h"
 #include "qcerenkov.h"
-#include "qcurandstate.h"
+#include "qcurandwrap.h"
 #include "scurandref.h"
 #include "qmultifilm.h"
 
@@ -145,7 +145,7 @@ template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_
 template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items, const char* label) ;
 template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items, const char* label) ;
 template curandState*   QU::UploadArray<curandState>(const curandState* array, unsigned num_items, const char* label) ;
-template qcurandstate*  QU::UploadArray<qcurandstate>(const qcurandstate* array, unsigned num_items, const char* label) ;
+template qcurandwrap*   QU::UploadArray<qcurandwrap>(const qcurandwrap* array, unsigned num_items, const char* label) ;
 template scurandref*    QU::UploadArray<scurandref>(const scurandref* array, unsigned num_items, const char* label) ;
 template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items, const char* label) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items, const char* label) ;

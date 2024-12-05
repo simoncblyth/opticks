@@ -6,12 +6,12 @@
 #include "SLaunchSequence.h"
 #include "ssys.h"
 
-#include "qcurandstate.h"
+#include "qcurandwrap.h"
 #include "curand_kernel.h" 
 
 const plog::Severity QCurandStateMonolithic::LEVEL = SLOG::EnvLevel("QCurandStateMonolithic", "DEBUG" ); 
 
-extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* lseq, qcurandstate* cs, qcurandstate* d_cs) ; 
+extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* lseq, qcurandwrap* cs, qcurandwrap* d_cs) ; 
 
 QCurandStateMonolithic* QCurandStateMonolithic::Create(){ return Create(ssys::getenvvar(EKEY,"1:0:0")); }
 QCurandStateMonolithic* QCurandStateMonolithic::Create(const char* spec)
@@ -23,8 +23,8 @@ QCurandStateMonolithic* QCurandStateMonolithic::Create(const char* spec)
 QCurandStateMonolithic::QCurandStateMonolithic(const SCurandStateMonolithic& scs_)
     :
     scs(scs_),
-    h_cs(new qcurandstate  { scs.num, scs.seed, scs.offset , nullptr} ),
-    cs(new qcurandstate    { scs.num, scs.seed, scs.offset , nullptr} ),
+    h_cs(new qcurandwrap  { scs.num, scs.seed, scs.offset , nullptr} ),
+    cs(new qcurandwrap    { scs.num, scs.seed, scs.offset , nullptr} ),
     d_cs(nullptr),
     lseq(new SLaunchSequence(cs->num))
 {
@@ -46,7 +46,7 @@ void QCurandStateMonolithic::alloc()
 { 
     cs->states = QU::device_alloc_zero<curandState>(cs->num,"QCurandStateMonolithic::QCurandStateMonolithic/curandState") ; 
     LOG(info) << "after alloc" ; 
-    d_cs = QU::UploadArray<qcurandstate>(cs, 1, "QCurandStateMonolithic::alloc/qcurandstate" );    
+    d_cs = QU::UploadArray<qcurandwrap>(cs, 1, "QCurandStateMonolithic::alloc/qcurandwrap" );    
     LOG(info) << "after upload" ; 
 }
 void QCurandStateMonolithic::create() 

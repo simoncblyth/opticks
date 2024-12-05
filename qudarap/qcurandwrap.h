@@ -1,7 +1,7 @@
 #pragma once
 #include "curand_kernel.h"
 
-struct qcurandstate
+struct qcurandwrap
 {
     unsigned long long num ; 
     unsigned long long seed ; 

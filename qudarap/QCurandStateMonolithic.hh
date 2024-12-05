@@ -75,7 +75,7 @@ See SCurandState.h SCurandChunk.h
 #include "plog/Severity.h"
 #include "SCurandStateMonolithic.hh"
 
-struct qcurandstate ; 
+struct qcurandwrap ; 
 struct SLaunchSequence ; 
 
 struct QUDARAP_API QCurandStateMonolithic
@@ -86,9 +86,9 @@ struct QUDARAP_API QCurandStateMonolithic
     static QCurandStateMonolithic* Create(const char* spec); 
 
     const SCurandStateMonolithic scs ; 
-    qcurandstate* h_cs ; 
-    qcurandstate* cs ; 
-    qcurandstate* d_cs ; 
+    qcurandwrap* h_cs ; 
+    qcurandwrap* cs ; 
+    qcurandwrap* d_cs ; 
     SLaunchSequence* lseq ; 
 
     QCurandStateMonolithic(const SCurandStateMonolithic& scs); 
