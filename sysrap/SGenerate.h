@@ -3,6 +3,13 @@
 SGenerate.h
 =============
 
+This exists for a very specific purpose : to enable
+comparison between Opticks and Geant4 by providing 
+a way for photons from some types of gensteps to 
+be CPU generated in order to allow giving those
+photons to Geant4. 
+
+
 This started in SGenstep.hh but because it relies on 
 the MOCK_CURAND macro the method was moved to this header only SGenerate.h  
 to allow switching on MOCK_CURAND in the "user" code 

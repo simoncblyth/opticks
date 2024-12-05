@@ -152,6 +152,7 @@ The config used depends on:
 1. envvars such as OPTICKS_EVENT_MODE that can change default config values 
 2. static SEventConfig method calls done before SEvt instanciation 
    that change the default config values 
+3. available VRAM as detected by (scontext)SEventConfig::CONTEXT
 
 **/
 
@@ -1324,6 +1325,7 @@ bool SEvt::HaveDistinctOutputDirs() // static
     SEvt* i0 = Get(0); 
     SEvt* i1 = Get(1); 
     return i0->index != i1->index ; 
+   // NO LONGER NEEDED ? NOW THAT USE 'A' 'B' prefix ?
 }
 
 
@@ -1519,7 +1521,7 @@ ECPU
 -----
 
 As gensteps are collected before EGPU.beginOfEvent
-cannot clear EGPU at this juncture. 
+the clear_output excludes gs/gensteps as they are inputs. 
 
 Need to think of the lifecycle of both ECPU and EGPU together. 
 This remains true even with runningMode 1 which has no ECPU 
@@ -1542,7 +1544,7 @@ void SEvt::beginOfEvent(int eventID)
 
     LOG_IF(info, LIFECYCLE) << id() ; 
 
-    clear_output(); 
+    clear_output();   // output vectors and fold : excluding gensteps as thats input 
 
     addInputGenstep();  // does genstep setup for simtrace, input photon and torch running
 
@@ -1734,9 +1736,8 @@ SEvt::clear_genstep_vector
 ----------------------------
 
 1. set photon counts to zero 
-2. clears the vectors
+2. clears gs and genstep vectors
 
-Note that most of the vectors are only used with hostside running.
 
 
 **/
@@ -1757,6 +1758,21 @@ void SEvt::clear_genstep_vector()
 }
 
 
+
+/**
+SEvt::clear_output_vector
+---------------------------
+
+Notice
+
+1. no hit : thats a sub-selection of the photon 
+2. genstep+gs vectors are not cleared : they are inputs to the optical simulation, not outputs 
+
+Note that most of the vectors are only used with hostside running.
+
+**/
+
+
 void SEvt::clear_output_vector()
 {
     clear_output_vector_count += 1 ; 
@@ -1773,7 +1789,6 @@ void SEvt::clear_output_vector()
     simtrace.clear(); 
     aux.clear(); 
     sup.clear(); 
-    // NOTE no hit : thats a sub-selection of the photon 
     g4state = nullptr ;   // avoiding stale (g4state is special, as only used for 1st event) 
 }
 
@@ -1785,12 +1800,7 @@ void SEvt::clear_output_vector()
 SEvt::clear_output
 --------------------
 
-Clear vectors and the fold.
-
-Note this is called by:
-
-   (EGPU instance) QEvent::setGenstep 
-   (ECPU instance)
+Clear output vectors and the fold excluding the gensteps. 
 
 **/
 
@@ -1801,7 +1811,12 @@ void SEvt::clear_output()
     LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_output_vector " ; 
 
     clear_output_vector(); 
-    fold->clear_except("genstep", false, ','); 
+
+    const char* keylist = "genstep" ; 
+    bool copy = false ; 
+    char delim = ',' ; 
+
+    fold->clear_except(keylist, copy, delim ); 
 
     LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_output_vector " ; 
 

@@ -347,6 +347,19 @@ inline bool ssys::getenvbool( const char* ekey )
 {
     char* val = getenv(ekey);
     bool ival = val ? true : false ;
+
+    /*
+    // special casing a value indicating NO ?
+    if(val)  
+    {
+        if(strcmp(val,"NO") == 0) ival = false ;   
+        if(strcmp(val,"no") == 0) ival = false ;   
+        if(strcmp(val,"False") == 0) ival = false ;   
+        if(strcmp(val,"false") == 0) ival = false ;   
+        if(strcmp(val,"0") == 0) ival = false ;   
+    }
+    */
+
     return ival ; 
 }
 

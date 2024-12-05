@@ -205,31 +205,6 @@ int QEvent::setGenstep()  // onto device
 QEvent::setGenstepUpload_NP
 ------------------------------
 
-Recall that even with input photon running, still have gensteps.  
-If the number of gensteps is zero there are no photons and no launch. 
-
-
-1. if not already allocated QEvent::device_alloc_genstep_and_seed
-   using configured sevent::max_genstep sevent::max_photon values  
-
-2. QU::copy_host_to_device the sevent::num_genstep 
-   and setting pointer sevent::genstep 
-
-3. QU::device_memset zeroing the seed buffer : this is needed 
-   for each launch, doing at initialization only is not sufficient.
-   **This is a documented limitation of sysrap/iexpand.h**
-
-4. QEvent::count_genstep_photons_and_fill_seed_buffer
-
-   * calculates the total number of seeds (and photons) on device 
-     by adding the photons from each genstep and setting evt->num_seed
-
-   * populates seed buffer using num photons per genstep from genstep buffer, 
-     which is the way each photon thread refers back to its genstep
-
-5. setNumSimtrace/setInputPhoton/setNumPhoton which may allocate records
-
-
 **/
 
 
@@ -254,9 +229,31 @@ QEvent::setGenstepUpload
 ---------------------------
 
 Switch to quad6* arg to allow direct from vector upload, 
-avoiding the intermediate array.
 
-HMM: but then (NP)gs stays null so nothing to gather 
+Recall that even with input photon running, still have gensteps.  
+If the number of gensteps is zero there are no photons and no launch. 
+
+
+1. if not already allocated QEvent::device_alloc_genstep_and_seed
+   using configured sevent::max_genstep sevent::max_photon values  
+
+2. QU::copy_host_to_device the sevent::num_genstep 
+   and setting pointer sevent::genstep 
+
+3. QU::device_memset zeroing the seed buffer : this is needed 
+   for each launch, doing at initialization only is not sufficient.
+   **This is a documented limitation of sysrap/iexpand.h**
+
+4. QEvent::count_genstep_photons_and_fill_seed_buffer
+
+   * calculates the total number of seeds (and photons) on device 
+     by adding the photons from each genstep and setting evt->num_seed
+
+   * populates seed buffer using num photons per genstep from genstep buffer, 
+     which is the way each photon thread refers back to its genstep
+
+5. setNumSimtrace/setInputPhoton/setNumPhoton which may allocate records
+
 
 **/
 
@@ -551,6 +548,12 @@ NP* QEvent::getInputPhoton() const
 /**
 QEvent::gatherPhoton(NP* p) :  mutating API
 -------------------------------------------
+
+* QU::copy_device_to_host using (sevent)evt->photon/num_photon
+
+  * sevent.h needs changing for each sub-launch 
+
+
 **/
 
 void QEvent::gatherPhoton(NP* p) const 

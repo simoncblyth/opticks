@@ -220,6 +220,7 @@ set(HEADERS
 
     sdevice.h
     scontext.h
+    sslice.h 
 
     SSeq.hh
     STranche.hh
