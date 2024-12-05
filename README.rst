@@ -84,7 +84,7 @@ A high level overview of the sequence of steps to install Opticks are listed bel
 For details see http://simoncblyth.bitbucket.io/opticks/
 
 
-0. install "system" externals : NVIDIA GPU Driver, CUDA, OptiX 6.5  
+0. install "system" externals : NVIDIA GPU Driver, CUDA, OptiX 7, 7.5 or 8.0 (6.5 not supported)  
    following instructions from NVIDIA. Check they are working.
 1. use git to clone opticks bitbucket repository to your home directory, creating ~/opticks
 2. hookup the opticks bash functions to your bash shell 
@@ -121,7 +121,7 @@ Orientation documents for developing an Understanding of the Opticks codebase
 The orientation documentation seeks to highlight the Geant4+Opticks classes/functions 
 that you need to be familiar with to understand how Opticks 
 takes a Geant4 geometry and converts that into an  
-NVIDIA OptiX 6 geometry suitable for optical photon simulation.
+NVIDIA OptiX 7+ geometry suitable for optical photon simulation.
 
 By design the orientation is a far from complete guide to the codebase, I 
 just focus on classes/functions that you should look at first when 
