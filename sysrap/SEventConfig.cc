@@ -59,11 +59,13 @@ const char* SEventConfig::_HitMaskDefault = "SD" ;
 
 #ifdef __APPLE__
 const char* SEventConfig::_MaxCurandDefault = "M1" ; 
+const char* SEventConfig::_MaxSlotDefault = "M1" ; 
 const char* SEventConfig::_MaxGenstepDefault = "M1" ; 
 const char* SEventConfig::_MaxPhotonDefault = "M1" ; 
 const char* SEventConfig::_MaxSimtraceDefault = "M1" ; 
 #else
 const char* SEventConfig::_MaxCurandDefault = "M3" ; 
+const char* SEventConfig::_MaxSlotDefault = "M3" ; 
 const char* SEventConfig::_MaxGenstepDefault = "M3" ; 
 const char* SEventConfig::_MaxPhotonDefault = "M3" ;   // HMM: want to use 0 to signify set it automatically based on VRAM  
 const char* SEventConfig::_MaxSimtraceDefault = "M3" ; 
@@ -160,6 +162,7 @@ const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4Stat
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ; 
 
 int SEventConfig::_MaxCurand    = ssys::getenv_ParseInt(kMaxCurand,   _MaxCurandDefault ) ; 
+int SEventConfig::_MaxSlot      = ssys::getenv_ParseInt(kMaxSlot,     _MaxSlotDefault ) ; 
 int SEventConfig::_MaxGenstep   = ssys::getenv_ParseInt(kMaxGenstep,  _MaxGenstepDefault ) ; 
 int SEventConfig::_MaxPhoton    = ssys::getenv_ParseInt(kMaxPhoton,   _MaxPhotonDefault ) ; 
 int SEventConfig::_MaxSimtrace  = ssys::getenv_ParseInt(kMaxSimtrace, _MaxSimtraceDefault ) ; 
@@ -246,8 +249,9 @@ int SEventConfig::G4StateRerun()
 
 
 
-int SEventConfig::MaxCurand(){ return _MaxCurand ; } 
 //int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; } 
+int SEventConfig::MaxCurand(){ return _MaxCurand ; } 
+int SEventConfig::MaxSlot(){   return _MaxSlot ; } 
 
 int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
 int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
@@ -414,6 +418,7 @@ void SEventConfig::SetG4StateSpec(const char* spec){ _G4StateSpec = spec ? strdu
 void SEventConfig::SetG4StateRerun(int id){          _G4StateRerun = id ; LIMIT_Check() ; }
 
 void SEventConfig::SetMaxCurand(int max_curand){ _MaxCurand = max_curand ; LIMIT_Check() ; }
+void SEventConfig::SetMaxSlot(int max_slot){     _MaxSlot    = max_slot  ; LIMIT_Check() ; }
 
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; LIMIT_Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; LIMIT_Check() ; }
@@ -557,6 +562,10 @@ std::string SEventConfig::Desc()
        << std::setw(25) << kMaxCurand
        << std::setw(20) << " MaxCurand " << " : " << MaxCurand() 
        << std::setw(20) << " MaxCurand/M " << " : " << MaxCurand()/M
+       << std::endl
+       << std::setw(25) << kMaxSlot
+       << std::setw(20) << " MaxSlot " << " : " << MaxSlot() 
+       << std::setw(20) << " MaxSlot/M " << " : " << MaxSlot()/M
        << std::endl 
        << std::setw(25) << kMaxGenstep 
        << std::setw(20) << " MaxGenstep " << " : " << MaxGenstep() 
@@ -569,10 +578,6 @@ std::string SEventConfig::Desc()
        << std::setw(25) << kMaxSimtrace 
        << std::setw(20) << " MaxSimtrace " << " : " << MaxSimtrace() 
        << std::setw(20) << " MaxSimtrace/M " << " : " << MaxSimtrace()/M 
-       << std::endl 
-       << std::setw(25) << ""
-       << std::setw(20) << " MaxCurand " << " : " << MaxCurand() 
-       << std::setw(20) << " MaxCurand/M " << " : " << MaxCurand()/M
        << std::endl 
        << std::setw(25) << kMaxBounce
        << std::setw(20) << " MaxBounce " << " : " << MaxBounce() 
@@ -1054,10 +1059,10 @@ NP* SEventConfig::Serialize() // static
  
     meta->set_meta<int>("G4StateRerun", G4StateRerun() ); 
     meta->set_meta<int>("MaxCurand", MaxCurand() );  
+    meta->set_meta<int>("MaxSlot", MaxSlot() );  
     meta->set_meta<int>("MaxGenstep", MaxGenstep() );  
     meta->set_meta<int>("MaxPhoton", MaxPhoton() );  
     meta->set_meta<int>("MaxSimtrace", MaxSimtrace() );  
-    meta->set_meta<int>("MaxCurand", MaxCurand() );  
 
     meta->set_meta<int>("MaxBounce", MaxBounce() );  
     meta->set_meta<int>("MaxRecord", MaxRecord() );  
@@ -1179,26 +1184,29 @@ void SEventConfig::SetDevice( size_t totalGlobalMem_bytes, std::string name )
 {
     LOG(info) << DescDevice(totalGlobalMem_bytes, name) ;    
 
-    size_t mxp0  = MaxPhoton(); 
-    size_t hmxr = HeuristicMaxPhoton_Rounded(totalGlobalMem_bytes); 
-    if(mxp0 == 0) SetMaxPhoton(hmxr); 
-    size_t mxp1  = MaxPhoton(); 
+    size_t mxs0  = MaxSlot(); 
+    size_t hmxr = HeuristicMaxSlot_Rounded(totalGlobalMem_bytes); 
+
+    bool MaxSlot_is_zero = mxs0 == 0 ; 
+    if(MaxSlot_is_zero) SetMaxSlot(hmxr)
+; 
+    size_t mxs1  = MaxSlot(); 
     
-    bool changed = mxp1 != mxp0  ; 
+    bool changed = mxs1 != mxs0  ; 
 
     LOG(info) 
-        << " Configured_MaxPhoton/M " << mxp0/M
-        << " Final_MaxPhoton/M " << mxp1/M
-        << " HeuristicMaxPhoton_Rounded/M "  << hmxr/M
+        << " Configured_MaxSlot/M " << mxs0/M
+        << " Final_MaxSlot/M " << mxs1/M
+        << " HeuristicMaxSlot_Rounded/M "  << hmxr/M
         << " changed " << ( changed ? "YES" : "NO " ) 
         << "\n"
-        << " (export OPTICKS_MAX_PHOTON=0 # to use VRAM based HeuristicMaxPhoton) " ; 
+        << " (export OPTICKS_MAX_SLOT=0 # to use VRAM based HeuristicMaxPhoton) " ; 
         ;
 }
 
 /**
-SEventConfig::HeuristicMaxPhoton
----------------------------------
+SEventConfig::HeuristicMaxSlot
+-------------------------------
 
 Currently no accounting for the configured debug arrays.
 Are assuming production type running. 
@@ -1212,33 +1220,32 @@ needs to manually keep total photon count low (few millions)
 to stay within VRAM.   
  
 **/
-size_t SEventConfig::HeuristicMaxPhoton( size_t totalGlobalMem_bytes )
+size_t SEventConfig::HeuristicMaxSlot( size_t totalGlobalMem_bytes )
 {
     return size_t(float(totalGlobalMem_bytes)*0.87f/112.f) ; 
 } 
 
 /**
-SEventConfig::HeuristicMaxPhoton_Rounded
+SEventConfig::HeuristicMaxSlot_Rounded
 -----------------------------------------
 
 Rounded down to nearest million. 
 
 **/
 
-size_t SEventConfig::HeuristicMaxPhoton_Rounded( size_t totalGlobalMem_bytes )
+size_t SEventConfig::HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes )
 {
-    size_t M = 1000000 ; 
-    size_t hmx = HeuristicMaxPhoton(totalGlobalMem_bytes); 
+    size_t hmx = HeuristicMaxSlot(totalGlobalMem_bytes); 
     size_t hmx_M = hmx/M ;
     return hmx_M*M ;  
 } 
 
 std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string name )  // static
 {
-    size_t hmx = HeuristicMaxPhoton(totalGlobalMem_bytes); 
-    size_t hmx_M = hmx/1000000 ; 
-    size_t hmxr = HeuristicMaxPhoton_Rounded(totalGlobalMem_bytes); 
-    size_t mxp  = MaxPhoton(); 
+    size_t hmx = HeuristicMaxSlot(totalGlobalMem_bytes); 
+    size_t hmx_M = hmx/M ; 
+    size_t hmxr = HeuristicMaxSlot_Rounded(totalGlobalMem_bytes); 
+    size_t mxs  = MaxSlot(); 
 
     int wid = 35 ; 
     std::stringstream ss ; 
@@ -1250,13 +1257,13 @@ std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string na
        << "\n"                                                
        << std::setw(wid) << "totalGlobalMem_GB                : " << totalGlobalMem_bytes/(1024*1024*1024) 
        << "\n"                                                
-       << std::setw(wid) << "HeuristicMaxPhoton(VRAM)         : " << hmx 
+       << std::setw(wid) << "HeuristicMaxSlot(VRAM)           : " << hmx 
        << "\n"                                                
-       << std::setw(wid) << "HeuristicMaxPhoton(VRAM)/M       : " << hmx_M
+       << std::setw(wid) << "HeuristicMaxSlot(VRAM)/M         : " << hmx_M
        << "\n"     
-       << std::setw(wid) << "HeuristicMaxPhoton_Rounded(VRAM) : " << hmxr
+       << std::setw(wid) << "HeuristicMaxSlot_Rounded(VRAM)   : " << hmxr
        << "\n"     
-       << std::setw(wid) << "MaxPhoton                        : " << mxp
+       << std::setw(wid) << "MaxSlot                          : " << mxs
        << "\n"     
        ; 
 

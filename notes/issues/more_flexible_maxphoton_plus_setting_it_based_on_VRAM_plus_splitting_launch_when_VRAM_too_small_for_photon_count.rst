@@ -9,6 +9,22 @@ integrate + test new functionality
 * DONE : first impl of OPTICKS_MAX_PHOTON:0 to use Heuristic max photon based on VRAM, see SEventConfig::SetDevice
 
 
+OPTICKS_MAX_PHOTON/OPTICKS_MAX_CURAND/OPTICKS_MAX_SLOT
+---------------------------------------------------------
+
+OPTICKS_MAX_PHOTON 
+   no longer makes sense, as removing the constraint by splitting launches
+
+OPTICKS_MAX_CURAND
+   also does not make sense if provide reproducibility 
+   despite split launches by uploading appropriate ranges of curandState 
+
+   * number of curandState will need to exceed launch slots 
+
+OPTICKS_MAX_SLOT
+   current preference : explicit that it is a technical maximum coming from available VRAM 
+
+
 more_flexible_maxphoton
 -------------------------
 

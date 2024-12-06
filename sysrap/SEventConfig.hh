@@ -58,12 +58,20 @@ MaxPhoton
 
 MaxSimtrace
 
-FORMERLY:MaxCurandState
+FORMER:MaxCurandState
    std::max of MaxPhoton and MaxSimtrace
 
 MaxCurand
    configured separately, corresponds to maximum curandState slots 
    which is constrained by available VRAM 
+
+   * using slices of curandState to give reproducible results despite 
+     split launches MaxCurand not the thing that is VRAM constrained 
+     instead it is constrained by the available chunked files
+
+MaxSlot
+    maximum launch slots which is constrained by available VRAM 
+
  
 MaxRec
     normally 0, disabling creation of the QEvent domain compressed step record buffer
@@ -126,6 +134,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kG4StateRerun = "OPTICKS_G4STATE_RERUN" ; 
 
     static constexpr const char* kMaxCurand    = "OPTICKS_MAX_CURAND" ; 
+    static constexpr const char* kMaxSlot      = "OPTICKS_MAX_SLOT" ; 
 
     static constexpr const char* kMaxGenstep   = "OPTICKS_MAX_GENSTEP" ; 
     static constexpr const char* kMaxPhoton    = "OPTICKS_MAX_PHOTON" ; 
@@ -181,6 +190,7 @@ struct SYSRAP_API SEventConfig
     static int         G4StateRerun(); 
 
     static int MaxCurand();  
+    static int MaxSlot();  
 
     static int MaxGenstep(); 
     static int MaxPhoton(); 
@@ -276,6 +286,7 @@ struct SYSRAP_API SEventConfig
     static void SetG4StateRerun(int id); 
 
     static void SetMaxCurand( int max_curand); 
+    static void SetMaxSlot(   int max_slot); 
 
     static void SetMaxGenstep(int max_genstep); 
     static void SetMaxPhoton( int max_photon); 
@@ -332,6 +343,7 @@ struct SYSRAP_API SEventConfig
     static const char* _MaxBounceNotes ; 
 
     static const char* _MaxCurandDefault ; 
+    static const char* _MaxSlotDefault ; 
 
     static const char* _MaxGenstepDefault ; 
     static const char* _MaxPhotonDefault ; 
@@ -384,6 +396,7 @@ struct SYSRAP_API SEventConfig
     static int         _G4StateRerun ; 
 
     static int _MaxCurand ; 
+    static int _MaxSlot ; 
 
     static int _MaxGenstep ; 
     static int _MaxPhoton ; 
@@ -432,8 +445,8 @@ struct SYSRAP_API SEventConfig
     static void Save(const char* dir) ; 
 
     static void SetDevice( size_t totalGlobalMem_bytes, std::string name ); 
-    static size_t HeuristicMaxPhoton(         size_t totalGlobalMem_bytes ); 
-    static size_t HeuristicMaxPhoton_Rounded( size_t totalGlobalMem_bytes ); 
+    static size_t HeuristicMaxSlot(         size_t totalGlobalMem_bytes ); 
+    static size_t HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes ); 
     static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name ); 
 
     static uint64_t EstimateAlloc(); 
