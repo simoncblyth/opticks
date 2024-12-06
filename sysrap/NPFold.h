@@ -112,6 +112,7 @@ struct NPFold
     bool                      allowempty ; 
     bool                      verbose_ ; 
 
+    static constexpr const char INTKEY_PREFIX = 'f' ; 
     static constexpr const int UNDEF = -1 ; 
     static constexpr const bool VERBOSE = false ; 
     static constexpr const char* DOT_NPY = ".npy" ;  // formerly EXT
@@ -169,6 +170,7 @@ private:
 public:
 
     // [subfold handling 
+    void         add_subfold(int ikey     , NPFold* fo, char prefix ); // integer key formatted with prefix
     void         add_subfold(const char* f, NPFold* fo ); 
     int          get_num_subfold() const ;
     NPFold*      get_subfold(unsigned idx) const ; 
@@ -197,12 +199,20 @@ public:
         char delim=',' ) const ;  
 
 
+    void get_subfold_with_intkey(std::vector<const NPFold*>& subs, char prefix) const ; 
+    bool all_subfold_with_intkey(char prefix) const ; 
+
+    void concat(std::ostream* out=nullptr); 
+    bool can_concat(std::ostream* out=nullptr) const ; 
+
+    int maxdepth() const ; 
+    static int MaxDepth_r(const NPFold* nd, int d); 
 
 
     static int Traverse_r(const NPFold* nd, std::string nd_path, 
           std::vector<const NPFold*>& folds, 
           std::vector<std::string>& paths ); 
-    static std::string Concat(const char* base, const char* sub, char delim='/' ); 
+    static std::string FormSubPath(const char* base, const char* sub, char delim='/' ); 
 
     std::string desc_subfold(const char* top=TOP) const ;  
     void find_subfold_with_prefix(
@@ -212,6 +222,7 @@ public:
 
     bool is_empty() const ; 
     int total_items() const ; 
+
     // ]subfold handling 
 
 
@@ -225,7 +236,9 @@ public:
     void clear(); 
 private:
     void clear_(const std::vector<std::string>* keep); 
+    void clear_arrays(const std::vector<std::string>* keep); 
 public:
+    void clear_subfold(); 
     void clear_only(  const char* clrlist=nullptr, bool copy=true, char delim=','); 
     void clear_except(const char* keylist=nullptr, bool copy=true, char delim=','); 
     void clear_except_(const std::vector<std::string>& keep, bool copy ) ; 
@@ -250,7 +263,8 @@ public:
     int find(const char* k) const ; 
     bool has_key(const char* k) const ; 
     bool has_all_keys(const char* keys, char delim=',') const ; 
-
+    bool has_all_keys(const std::vector<std::string>& qq) const ; 
+    int  count_keys(const std::vector<std::string>& qq) const ; 
 
     const NP* get(const char* k) const ; 
     NP*       get_(const char* k); 
@@ -679,9 +693,13 @@ inline void NPFold::check_integrity() const
 
 
 
-
-
 // [ subfold handling 
+inline void NPFold::add_subfold(int ikey, NPFold* fo, char prefix )
+{
+    int wid = 3 ;
+    std::string skey = U::FormNameWithPrefix(prefix, ikey, wid); 
+    add_subfold(skey.c_str(), fo );  
+}
 inline void NPFold::add_subfold(const char* f, NPFold* fo )
 {
     if(fo == nullptr) return ; 
@@ -831,7 +849,158 @@ inline const void NPFold::find_subfold_with_all_keys(
     }
 } 
 
+/**
+NPFold::get_subfold_with_intkey
+---------------------------------
 
+Examples of intkey with prefix 'f': f000 f001 
+
+**/
+
+inline void NPFold::get_subfold_with_intkey(std::vector<const NPFold*>& subs, char prefix) const
+{
+    int num_sub = subfold.size(); 
+    for(int i=0 ; i < num_sub ; i++) 
+    {
+        const NPFold* sub = subfold[i] ; 
+        const std::string& fk = ff[i] ;  
+        const char* fkk = fk.c_str(); 
+        if( strlen(fkk) > 1 && fkk[0] == prefix && U::IsIntegerString(fkk+1) ) subs.push_back(sub); 
+    }
+}
+inline bool NPFold::all_subfold_with_intkey(char prefix) const
+{
+    std::vector<const NPFold*> subs ; 
+    get_subfold_with_intkey(subs, prefix); 
+    return subfold.size() == subs.size(); 
+}
+
+
+
+
+/**
+NPFold::concat
+---------------
+
+Concatenate common arrays from level 1 subfolds
+into the top level fold. 
+
+Typically usage::
+
+    fold->concat() ; 
+    fold->clear_subfold(); 
+
+Clearing subfold after concat avoids duplication 
+which uses twice the memory.  
+
+**/
+
+inline void NPFold::concat(std::ostream* out)
+{
+    bool can = can_concat(out); 
+    assert(can);
+
+    int num_sub = subfold.size(); 
+    const NPFold* sub0 = subfold[0] ; 
+    const std::vector<std::string>& kk0 = sub0->kk ; 
+
+    int num_k = kk0.size(); 
+    for(int i=0 ; i < num_k ; i++) 
+    {
+        const char* k = kk0[i].c_str(); 
+        std::vector<const NP*> aa ;          
+        for(int j=0 ; j < num_sub ; j++)
+        {
+            const NPFold* sub = subfold[j] ; 
+            const NP* a = sub->get(k);   
+            aa.push_back(a); 
+        }
+        NP* a = NP::Concatenate(aa);  
+        add(k, a); 
+    }
+
+    // deletions from am NPFold ?  
+}
+
+
+/**
+NPFold::can_concat
+-------------------
+
+Require:
+
+1. two level tree of subfold, ie maxdepth is 1 
+2. integer string keys with f prefix (for python identifier convenience) giving the concat order
+3. common array keys in all subfold::
+
+    f000/[a.npy,b.npy,c.npy]
+    f001/[a.npy,b.npy,c.npy]
+    f002/[a.npy,b.npy,c.npy]
+
+4. all common array keys must not be present within the top level folder
+
+**/
+
+inline bool NPFold::can_concat(std::ostream* out) const
+{
+    int d = maxdepth(); 
+    if(out) *out << "NPFold::can_concat maxdepth " << d << "\n" ;      
+    if(d != 1) return false ; 
+
+    int num_sub = subfold.size(); 
+    if(out) *out << "NPFold::can_concat num_sub " << num_sub << "\n" ;      
+    if(num_sub == 1) return false ; 
+
+    char prefix = INTKEY_PREFIX ; 
+    bool all_intkey = all_subfold_with_intkey(prefix); 
+    if(out) *out << "NPFold::can_concat all_intkey " << ( all_intkey ? "YES" : "NO " )  << "\n" ;      
+    if(!all_intkey) return false ; 
+
+    const NPFold* sub0 = subfold[0] ; 
+    const std::vector<std::string>& kk0 = sub0->kk ; 
+
+    int num_top_kk0 = count_keys(kk0); 
+    if(out) *out << "NPFold::can_concat num_top_kk0 " << num_top_kk0 << "\n" ; 
+    if(num_top_kk0 > 0) return false ; 
+
+    int sub_with_all_kk0 = 1 ; 
+    for(int i=1 ; i < num_sub ; i++) if(subfold[i]->has_all_keys(kk0)) sub_with_all_kk0 += 1 ; 
+    if(out) *out << "NPFold::can_concat sub_with_all_kk0 " << sub_with_all_kk0 << "\n" ;      
+
+    bool can = sub_with_all_kk0 == num_sub ; 
+    if(out) *out << "NPFold::can_concat can " << ( can ? "YES" : "NO " )  << "\n" ;      
+    return can ; 
+}
+
+/*
+NPFold::maxdepth
+-----------------
+
+Maximum depth of the tree of subfold, 0 for a single node tree.  
+
+*/
+
+
+inline int NPFold::maxdepth() const 
+{
+    return MaxDepth_r(this, 0); 
+}
+
+inline int NPFold::MaxDepth_r(const NPFold* nd, int d) // static
+{
+    assert( nd->subfold.size() == nd->ff.size() ); 
+    int num_sub = nd->subfold.size(); 
+    if(num_sub == 0) return d ; 
+
+    int mx = 0 ; 
+    for(int i=0 ; i < num_sub ; i++) 
+    {
+        const NPFold* sub = nd->subfold[i] ; 
+        mx = std::max(mx, MaxDepth_r(sub, d+1)); 
+    }
+    return mx ; 
+
+}
 
 
 
@@ -863,7 +1032,7 @@ inline int NPFold::Traverse_r(const NPFold* nd, std::string path,
     for(unsigned i=0 ; i < num_sub ; i++) 
     {
         const NPFold* sub = nd->subfold[i] ; 
-        std::string subpath = Concat(path.c_str(), nd->ff[i].c_str(), '/' ) ;  
+        std::string subpath = FormSubPath(path.c_str(), nd->ff[i].c_str(), '/' ) ;  
 
         int num = Traverse_r( sub, subpath,  folds, paths );  
         tot_items += num ; 
@@ -871,7 +1040,8 @@ inline int NPFold::Traverse_r(const NPFold* nd, std::string path,
     return tot_items ; 
 }
 
-inline std::string NPFold::Concat(const char* base, const char* sub, char delim ) // static
+
+inline std::string NPFold::FormSubPath(const char* base, const char* sub, char delim ) // static
 {
     assert(sub) ; // base can be nullptr : needed for root, but sub must always be defined 
     std::stringstream ss ;
@@ -1107,6 +1277,8 @@ inline std::string NPFold::DescKeys( const std::vector<std::string>& elem, char 
 
 
 
+
+
 /**
 NPFold::clear (clearing this fold and all subfold recursively)
 ----------------------------------------------------------------
@@ -1132,12 +1304,25 @@ of listed keys.
 3. clears the kk and aa vectors
 4. for each subfold call NPFold::clear on it and clear the subfold and ff vectors
 
+
+HUH: CLEARS ARRAY POINTER VECTOR BUT DOES NOT DELETE 
+ARRAYS WITH KEYS IN THE KEEP LIST SO IT LOOSES 
+ARRAY POINTERS OF KEPT ARRAYS  
+
+THAT CAN ONLY WORK IF THOSE POINTERS WERE GRABBED PREVIOUSLY 
+AS DEMONSTRATED BY clear_except
+
 **/
 
 inline void NPFold::clear_(const std::vector<std::string>* keep)
 {
     check_integrity(); 
+    clear_arrays(keep); 
+    clear_subfold(); 
+}
 
+inline void NPFold::clear_arrays(const std::vector<std::string>* keep)
+{
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
         const NP* a = aa[i]; 
@@ -1147,23 +1332,34 @@ inline void NPFold::clear_(const std::vector<std::string>* keep)
     } 
     aa.clear(); 
     kk.clear();  
+}
 
-    // HUH: CLEARS ARRAY POINTER VECTOR BUT DOES NOT DELETE 
-    // ARRAYS WITH KEYS IN THE KEEP LIST SO IT LOOSES 
-    // ARRAY POINTERS OF KEPT ARRAYS  
-    //
-    // THAT CAN ONLY WORK IF THOSE POINTERS WERE GRABBED PREVIOUSLY 
-    // AS THEY ARE BY clear_except
 
-    for(unsigned i=0 ; i < subfold.size() ; i++)
+/**
+NPFold::clear_subfold
+----------------------
+
+CAUTION: after doing clear_subfold nullify any pointers to objects that 
+were added to the subfolds and that are deleted by the clear_subfold.
+This avoids SIGSEGV from dereferencing those stale pointers. 
+
+**/
+
+inline void NPFold::clear_subfold()
+{
+    check_integrity(); 
+    int num_sub = subfold.size() ; 
+    int num_ff = ff.size() ; 
+
+    for(int i=0 ; i < int(subfold.size()) ; i++)
     {
         NPFold* sub = const_cast<NPFold*>(subfold[i]) ; 
         sub->clear();  
     }
-
     subfold.clear();
     ff.clear();       // folder keys 
 }
+
 
 /**
 NPFold::clear_except
@@ -1447,16 +1643,27 @@ inline bool NPFold::has_all_keys(const char* qq_, char delim) const
 {
     std::vector<std::string> qq ; 
     U::Split(qq_, delim, qq ) ;  
-    int num_q = qq.size() ; 
+    return has_all_keys(qq); 
+}
 
+inline bool NPFold::has_all_keys(const std::vector<std::string>& qq) const 
+{
+    int num_q = qq.size() ; 
+    int q_count = count_keys( qq ); 
+    bool has_all = num_q > 0 && q_count == num_q ; 
+    return has_all ; 
+}
+
+inline int NPFold::count_keys(const std::vector<std::string>& qq) const 
+{
+    int num_q = qq.size() ; 
     int q_count = 0 ; 
     for(int i=0 ; i < num_q ; i++) 
     {
        const char* q = qq[i].c_str() ; 
        if(has_key(q)) q_count += 1 ; 
     }
-    bool has_all = num_q > 0 && q_count == num_q ; 
-    return has_all ; 
+    return q_count ; 
 }
 
 

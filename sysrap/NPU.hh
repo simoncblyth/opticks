@@ -431,6 +431,18 @@ struct U
 
     static int setenvvar( const char* ekey, const char* value, bool overwrite=true, char special_empty_token='\0' );
 
+
+    template<typename ... Args>
+    static std::string Format_( const char* fmt, Args ... args );
+
+    template<typename ... Args>
+    static const char* Format( const char* fmt, Args ... args );
+
+
+
+    static std::string FormNameWithPrefix_( char prefix, int idx, int wid=3 ); 
+    static const char* FormNameWithPrefix( char prefix, int idx, int wid=3 ); 
+
     static std::string FormName_( int idx, int wid=3 ); 
     static const char* FormName( int idx, int wid=3 ); 
 
@@ -439,6 +451,8 @@ struct U
 
     static std::string FormName_( const char* prefix, const char* body, const char* ext ); 
     static const char* FormName( const char* prefix, const char* body, const char* ext ); 
+
+    static bool IsIntegerString(const char* str); 
 
     static bool isdigit_(char c ); 
     static bool isalnum_(char c ); 
@@ -1036,18 +1050,62 @@ inline int U::setenvvar( const char* ekey, const char* value, bool overwrite, ch
 
 
 
+template<typename ... Args>
+inline std::string U::Format_( const char* fmt, Args ... args )
+{
+    int sz = std::snprintf( nullptr, 0, fmt, args ... ) + 1 ; // +1 for null termination
+    assert( sz > 0 );   
+    std::vector<char> buf(sz) ;    
+    std::snprintf( buf.data(), sz, fmt, args ... );
+    return std::string( buf.begin(), buf.begin() + sz - 1 );  // exclude null termination 
+}
+
+template std::string U::Format_( const char*, const char*, int, int ); 
+template std::string U::Format_( const char*, int ); 
+template std::string U::Format_( const char*, unsigned long long ); 
+
+
+template<typename ... Args>
+inline const char* U::Format( const char* fmt, Args ... args )
+{
+    std::string str = Format_(fmt, std::forward<Args>(args)... ); 
+    return strdup(str.c_str()); 
+}
+
+template const char* U::Format( const char*, const char*, int, int ); 
+template const char* U::Format( const char*, int  );   
+template const char* U::Format( const char*, unsigned long long  );   
+
+
+
+
+
+
+inline std::string U::FormNameWithPrefix_( char prefix, int idx, int wid )
+{
+    std::stringstream ss ;  
+    ss << prefix << std::setfill('0') << std::setw(wid) << idx ; 
+    std::string s = ss.str(); 
+    return s ; 
+} 
+
+inline const char* U::FormNameWithPrefix( char prefix, int idx, int wid )
+{
+    std::string str = FormNameWithPrefix_(prefix, idx, wid) ; 
+    return strdup(str.c_str()); 
+}
 
 inline std::string U::FormName_( int idx, int wid )
 { 
     std::stringstream ss ;  
     ss << std::setfill('0') << std::setw(wid) << idx ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 inline const char* U::FormName( int idx, int wid )
 {
-    std::string s = FormName_(idx, wid) ; 
-    return strdup(s.c_str()); 
+    std::string str = FormName_(idx, wid) ; 
+    return strdup(str.c_str()); 
 }
 
 
@@ -1093,6 +1151,18 @@ inline const char* U::FormName( const char* prefix, const char* body, const char
     std::string name = FormName_(prefix, body, ext );  
     return strdup(name.c_str()); 
 }
+
+
+inline bool U::IsIntegerString(const char* str)
+{
+    if(!str) return false ;
+    if(strlen(str)==0) return false ;
+
+    std::string s(str);
+    return s.find_first_not_of("0123456789") == std::string::npos ;
+}
+
+
 
 // cctype
 
