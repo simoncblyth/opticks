@@ -26,7 +26,7 @@
 #include "SU.hh"
 
 #include "SComp.h"
-#include "SGenstep.hh"
+#include "SGenstep.h"
 #include "SEvent.hh"
 #include "SEvt.hh"
 #include "SEventConfig.hh"

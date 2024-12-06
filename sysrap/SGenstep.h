@@ -1,6 +1,6 @@
 #pragma once
 /**
-SGenstep.hh : genstep static utilities
+SGenstep.h : genstep static utilities
 ========================================
 
 Used by:
@@ -199,6 +199,12 @@ inline const quad6& SGenstep::GetGenstep(const NP* gs, unsigned gs_idx )
     return q ; 
 }
 
+
+/**
+SGenstep::GetGenstepSlices
+--------------------------
+
+**/
 
 inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs, int max_photon )
 {

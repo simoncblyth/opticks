@@ -10,7 +10,7 @@ be CPU generated in order to allow giving those
 photons to Geant4. 
 
 
-This started in SGenstep.hh but because it relies on 
+This started in SGenstep.h but because it relies on 
 the MOCK_CURAND macro the method was moved to this header only SGenerate.h  
 to allow switching on MOCK_CURAND in the "user" code 
 rather than the widely used sysrap library. 
@@ -32,7 +32,7 @@ struct SGenerate
 #include "storch.h"
 #include "scarrier.h"
 #include "scurand.h"   // without MOCK_CURAND this is an empty struct only 
-#include "SGenstep.hh"
+#include "SGenstep.h"
 #include "SEvt.hh"
 #include "SEvent.hh"
 #include "OpticksGenstep.h"

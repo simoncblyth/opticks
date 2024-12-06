@@ -1,9 +1,29 @@
 #pragma once
+/**
+sslice.h : python style gs[start:stop] slice of genstep arrays/vectors
+========================================================================
+
+gs_start
+   gs index starting the slice
+
+gs_stop
+   gs index stopping the slice, ie one beyond the last index
+
+ph_offset
+   total photons before this slice
+
+ph_count
+   total photons within this slice
+
+**/
 
 #include <vector>
 #include <sstream>
 #include <string>
 #include <iomanip>
+
+
+
 
 struct sslice
 {
@@ -31,9 +51,9 @@ inline std::string sslice::Label()
     std::stringstream ss ;
     ss << "       "
        << " "
-       << std::setw(4) << "star"
+       << std::setw(5) << "start"
        << " "
-       << std::setw(4) << "stop"
+       << std::setw(5) << "stop "
        << " "
        << std::setw(7) << "offset "
        << " "
@@ -47,9 +67,9 @@ inline std::string sslice::desc() const
     std::stringstream ss ;
     ss << "sslice "
        << "{"
-       << std::setw(4) << gs_start
+       << std::setw(5) << gs_start
        << ","
-       << std::setw(4) << gs_stop
+       << std::setw(5) << gs_stop
        << ","
        << std::setw(7) << ph_offset
        << ","

@@ -285,7 +285,7 @@ SFastSim_Debug.hh
 SFrameConfig.hh
 SFrameGenstep.hh
 SGDML.hh
-SGenstep.hh
+SGenstep.h
 SGeo.hh
 SGeoConfig.hh
 SIMG.hh

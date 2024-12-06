@@ -22,7 +22,7 @@
 #include "OpticksGenstep.h"
 
 #include "SEvt.hh"
-#include "SGenstep.hh"
+#include "SGenstep.h"
 #include "SEvent.hh"
 
 const plog::Severity SEvent::LEVEL = SLOG::EnvLevel("SEvent", "DEBUG") ; 

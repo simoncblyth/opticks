@@ -7,7 +7,7 @@ SGenstep_test.cc
 **/
 
 #include "ssys.h"
-#include "SGenstep.hh"
+#include "SGenstep.h"
 
 struct SGenstep_test
 {

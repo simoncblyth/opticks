@@ -10,7 +10,7 @@
 
 #include "SLOG.hh"
 #include "SRng.hh"
-#include "SGenstep.hh"
+#include "SGenstep.h"
 #include "OpticksGenstep.h"
 #include "SFrameGenstep.hh"
 #include "NP.hh"

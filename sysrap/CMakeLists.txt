@@ -139,7 +139,6 @@ set(SOURCES
 
 
     SEvent.cc
-    SGenstep.cc
     SFrameGenstep.cc
 
     SOpticks.cc
@@ -220,7 +219,6 @@ set(HEADERS
 
     sdevice.h
     scontext.h
-    sslice.h 
 
     SSeq.hh
     STranche.hh
@@ -481,7 +479,9 @@ set(HEADERS
     SMath.hh
 
     SEvent.hh
-    SGenstep.hh
+    SGenstep.h
+    sslice.h 
+
     SFrameGenstep.hh
 
     SThetaCut.hh

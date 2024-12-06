@@ -6,7 +6,7 @@
 #include "SPath.hh"
 #include "SEvent.hh"
 
-#include "SGenstep.hh"
+#include "SGenstep.h"
 #include "SFrameGenstep.hh"
 #include "SCenterExtentGenstep.hh"
 
