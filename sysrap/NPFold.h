@@ -110,6 +110,7 @@ struct NPFold
     // nodata:true used for lightweight access to metadata from many arrays
     bool                      nodata ; 
     bool                      allowempty ; 
+    bool                      skipdelete ;   // set to true on subfold during trivial concat
     bool                      verbose_ ; 
 
     static constexpr const char INTKEY_PREFIX = 'f' ; 
@@ -161,6 +162,7 @@ struct NPFold
     // CTOR
     NPFold(); 
     void set_verbose( bool v=true ); 
+    void set_skipdelete( bool v=true ); 
     void set_allowempty( bool v=true ); 
     void set_allowempty_r( bool v=true ); 
     static int SetAllowempty_r(NPFold* nd, bool v) ; 
@@ -170,10 +172,13 @@ private:
 public:
 
     // [subfold handling 
-    void         add_subfold(int ikey     , NPFold* fo, char prefix ); // integer key formatted with prefix
+    NPFold*      add_subfold(char prefix=INTKEY_PREFIX); 
+    void         add_subfold(int ikey     , NPFold* fo, char prefix=INTKEY_PREFIX ); // integer key formatted with prefix
     void         add_subfold(const char* f, NPFold* fo ); 
     int          get_num_subfold() const ;
     NPFold*      get_subfold(unsigned idx) const ; 
+
+    const char*  get_last_subfold_key() const ; 
     const char*  get_subfold_key(unsigned idx) const ; 
     int          get_subfold_idx(const char* f) const ; 
     NPFold*      get_subfold(const char* f) const ; 
@@ -203,6 +208,7 @@ public:
     bool all_subfold_with_intkey(char prefix) const ; 
 
     void concat(std::ostream* out=nullptr); 
+    NP* concat_(const char* k, std::ostream* out=nullptr); 
     bool can_concat(std::ostream* out=nullptr) const ; 
 
     int maxdepth() const ; 
@@ -633,6 +639,7 @@ inline NPFold::NPFold()
     loaddir(nullptr),
     nodata(false),
     allowempty(false),
+    skipdelete(false),
     verbose_(VERBOSE)
 {
     if(verbose_) std::cerr << "NPFold::NPFold" << std::endl ; 
@@ -641,6 +648,10 @@ inline NPFold::NPFold()
 inline void NPFold::set_verbose( bool v )
 {
     verbose_ = v ;  
+}
+inline void NPFold::set_skipdelete( bool v )
+{
+    skipdelete = v ; 
 }
 inline void NPFold::set_allowempty( bool v )
 {
@@ -694,30 +705,67 @@ inline void NPFold::check_integrity() const
 
 
 // [ subfold handling 
-inline void NPFold::add_subfold(int ikey, NPFold* fo, char prefix )
+
+inline NPFold* NPFold::add_subfold(char prefix)
+{
+    int ikey = subfold.size(); 
+    NPFold* sub = new NPFold ; 
+    add_subfold(ikey, sub, prefix ); 
+    return sub ; 
+} 
+
+inline void NPFold::add_subfold(int ikey, NPFold* sub, char prefix )
 {
     int wid = 3 ;
     std::string skey = U::FormNameWithPrefix(prefix, ikey, wid); 
-    add_subfold(skey.c_str(), fo );  
+    add_subfold(skey.c_str(), sub );  
 }
+
+/**
+NPFold::add_subfold
+--------------------
+
+CAUTION : this simply collects keys and NPFold pointers 
+into vectors, NO COPYING IS DONE.  
+However, clearing the fold will delete arrays within the fold. 
+Because of this beware of stale input pointers after clearing.   
+
+* Regard subfold added to an NPFold to belong to the fold 
+* Do not do silly things like adding the same pointer more than once 
+
+**/
+
+
 inline void NPFold::add_subfold(const char* f, NPFold* fo )
 {
     if(fo == nullptr) return ; 
 
-    bool unique_f = std::find( ff.begin(), ff.end(), f ) == ff.end() ; 
+    bool unique_f  = std::find( ff.begin(), ff.end(), f ) == ff.end() ; 
+    bool unique_fo = std::find( subfold.begin(), subfold.end(), fo ) == subfold.end() ; 
 
     if(!unique_f) std::cerr 
        << "NPFold::add_subfold" 
-       << " ERROR repeated f " << ( f ? f : "-" ) 
+       << " ERROR repeated subfold key f[" << ( f ? f : "-" ) << "]"  
        << " ff.size " << ff.size()
        << "\n" 
        ;   
-
     assert( unique_f ) ; 
+
+    if(!unique_fo) std::cerr 
+       << "NPFold::add_subfold" 
+       << " ERROR repeated subfold pointer with key f[" << ( f ? f : "-" ) << "]"  
+       << " subfold.size " << subfold.size()
+       << "\n" 
+       ;   
+    assert( unique_fo ) ; 
+
+
 
     ff.push_back(f); // subfold keys 
     subfold.push_back(fo); 
 }
+
+
 inline int NPFold::get_num_subfold() const
 {
     assert( ff.size() == subfold.size() ); 
@@ -729,6 +777,11 @@ inline NPFold* NPFold::get_subfold(unsigned idx) const
 }
 
 
+
+inline const char* NPFold::get_last_subfold_key() const 
+{
+    return ff.size() > 0 ? ff[ff.size()-1].c_str() : nullptr ; 
+}
 
 inline const char* NPFold::get_subfold_key(unsigned idx) const 
 {
@@ -890,8 +943,29 @@ Typically usage::
     fold->concat() ; 
     fold->clear_subfold(); 
 
-Clearing subfold after concat avoids duplication 
-which uses twice the memory.  
+Invoking *clear_subfold* after *concat* tidies up 
+resources used for the sub arrays halving the memory
+usage. 
+
+The trivial case of a single subfold is handled by simply 
+adding the subfold array pointers at top level and 
+invoking NPFold::set_skipdelete on the subfold to 
+prevent the active arrays from being deleted by clear_subfold. 
+
+Note that skipdelete is not called at top level, so the resources
+will be released when the top level is cleared.
+
+Future
+~~~~~~~~
+
+This approach is simple but transiently requires twice the end state memory. 
+Other more progressive approaches might avoid being so memory expensive.  
+Example of progressive approach would be to add an NPFold to another
+one by one.  
+
+Actually for the application of combining arrays from multiple launches, 
+there may be little advantage with more involved approaches 
+as probably the number of launches will normally be 1 and sometimes 2 or 3.  
 
 **/
 
@@ -899,28 +973,65 @@ inline void NPFold::concat(std::ostream* out)
 {
     bool can = can_concat(out); 
     assert(can);
+    if(!can) return ; 
 
-    int num_sub = subfold.size(); 
-    const NPFold* sub0 = subfold[0] ; 
-    const std::vector<std::string>& kk0 = sub0->kk ; 
+    int num_sub = subfold.size();
+    const NPFold* sub0 = num_sub > 0 ? subfold[0] : nullptr  ; 
+    const std::vector<std::string>* kk0 = sub0 ? &(sub0->kk) : nullptr ; 
 
-    int num_k = kk0.size(); 
+    int num_k = kk0 ? kk0->size() : 0 ; 
     for(int i=0 ; i < num_k ; i++) 
     {
-        const char* k = kk0[i].c_str(); 
-        std::vector<const NP*> aa ;          
-        for(int j=0 ; j < num_sub ; j++)
-        {
-            const NPFold* sub = subfold[j] ; 
-            const NP* a = sub->get(k);   
-            aa.push_back(a); 
-        }
-        NP* a = NP::Concatenate(aa);  
+        const char* k = (*kk0)[i].c_str(); 
+        NP* a = concat_(k, out ); 
         add(k, a); 
     }
-
-    // deletions from am NPFold ?  
 }
+
+/**
+NPFold::concat_
+----------------
+
+When there is only one subfold the concat is trivially 
+done by adding subfold arrays to this fold. 
+However in that situation the subfold must be 
+marked skipdelete to prevent clear_subfold which 
+is recommended after concat from deleting the 
+active top level array. 
+
+**/
+
+inline NP* NPFold::concat_(const char* k, std::ostream* out)
+{
+    int num_sub = subfold.size();
+    if( num_sub == 0 ) return nullptr ; 
+
+    NP* a = nullptr ; 
+    if( num_sub == 1 )
+    {
+        NPFold* sub0 = subfold[0] ; 
+        const NP* a0 = sub0->get(k); 
+        a = const_cast<NP*>(a0) ; 
+        sub0->set_skipdelete(true); 
+        if(out) *out << "NPFold::concat_ trivial concat set skipdelete on the single subfold \n" ;      
+    }
+    else if( num_sub > 1 )
+    {
+        std::vector<const NP*> aa ;          
+        for(int i=0 ; i < num_sub ; i++)
+        {
+            const NPFold* sub = subfold[i] ; 
+            const NP* asub = sub->get(k);   
+            aa.push_back(asub); 
+        }
+        if(out) *out << "NPFold::concat_ non-trivial concat \n" ;      
+        a = NP::Concatenate(aa);  
+    } 
+    return a ; 
+}
+
+
+
 
 
 /**
@@ -939,6 +1050,12 @@ Require:
 
 4. all common array keys must not be present within the top level folder
 
+
+The trivial case of a single subfold is handled 
+simply by adding the subfold pointers to this
+fold and calling NPFold::set_skipdelete on the 
+single subfold. 
+
 **/
 
 inline bool NPFold::can_concat(std::ostream* out) const
@@ -949,7 +1066,7 @@ inline bool NPFold::can_concat(std::ostream* out) const
 
     int num_sub = subfold.size(); 
     if(out) *out << "NPFold::can_concat num_sub " << num_sub << "\n" ;      
-    if(num_sub == 1) return false ; 
+    if(num_sub == 0) return false ; 
 
     char prefix = INTKEY_PREFIX ; 
     bool all_intkey = all_subfold_with_intkey(prefix); 
@@ -1174,6 +1291,18 @@ inline int NPFold::total_items() const
 NPFold::add
 ------------
 
+CAUTION : NO ARRAY COPYING IS DONE, 
+this simply collects key and pointer into vectors, 
+but clearing will delete those arrays. 
+
+* regard everything added to NPFold to belong to the fold. 
+* input pointers will become stale after clear, dereferencing 
+  them will SIGSEGV (if you are lucky) 
+
+This approach is used as NPFold is intended to work 
+with very large multi-gigabyte arrays : so users 
+need to think carefully regarding memory management.  
+
 When *k* ends with ".txt" the key is changed to ".npy"
 to simplify handling of empty NPX::Holder arrays. 
 
@@ -1214,6 +1343,15 @@ inline void NPFold::add_(const char* k, const NP* a)
         << descKeys()
         ; 
     assert( !have_key_already ); 
+
+    bool have_a_already = std::find( aa.begin(), aa.end(), a ) != aa.end() ; 
+    if(have_a_already) std::cerr 
+        << "NPFold::add_ FATAL : have_a_already k[" << k << "]"  
+        << std::endl 
+        << descKeys()
+        ; 
+    assert( !have_a_already ); 
+
 
     kk.push_back(k); 
     aa.push_back(a); 
@@ -1295,6 +1433,10 @@ inline void NPFold::clear()
 NPFold::clear_
 ----------------
 
+NB: std::vector<NP*>::clear destructs the (NP*) 
+pointers but not the objects (the NP arrays) they point to. 
+
+
 This method is private as it must be used in conjunction with 
 NPFold::clear_except in order to to keep (key, array) pairs
 of listed keys. 
@@ -1328,9 +1470,9 @@ inline void NPFold::clear_arrays(const std::vector<std::string>* keep)
         const NP* a = aa[i]; 
         const std::string& k = kk[i] ; 
         bool listed = keep && std::find( keep->begin(), keep->end(), k ) != keep->end() ; 
-        if(!listed) delete a ; 
+        if(!listed && !skipdelete) delete a ; 
     } 
-    aa.clear(); 
+    aa.clear();  
     kk.clear();  
 }
 
@@ -1349,9 +1491,10 @@ inline void NPFold::clear_subfold()
 {
     check_integrity(); 
     int num_sub = subfold.size() ; 
-    int num_ff = ff.size() ; 
+    [[maybe_unused]] int num_ff = ff.size() ; 
+    assert( num_ff == num_sub ) ; 
 
-    for(int i=0 ; i < int(subfold.size()) ; i++)
+    for(int i=0 ; i < num_sub ; i++)
     {
         NPFold* sub = const_cast<NPFold*>(subfold[i]) ; 
         sub->clear();  
