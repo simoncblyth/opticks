@@ -97,6 +97,9 @@ private:
 public:
     void setLauncher(SCSGOptiX* cx_ ); 
 
+    static constexpr const char* QSim__simulate_KEEP_SUBFOLD = "QSim__simulate_KEEP_SUBFOLD" ; 
+    static bool KEEP_SUBFOLD ; 
+
     double simulate(int eventID, bool reset_ );      // via cx launch 
     void   reset( int eventID);  
 

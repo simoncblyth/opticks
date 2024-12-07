@@ -94,6 +94,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     friend struct SEvtTest ; 
 
 
+    static constexpr const char* SEvt__NPFOLD_VERBOSE = "SEvt__NPFOLD_VERBOSE" ; 
+    static bool NPFOLD_VERBOSE ; 
+
     static constexpr const char* SEvt__GATHER = "SEvt__GATHER" ; 
     static bool GATHER ; 
 

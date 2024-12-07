@@ -516,7 +516,7 @@ std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitM
 
 
 std::string SEventConfig::GatherCompLabel(){ return SComp::Desc( _GatherComp ) ; }
-std::string SEventConfig::SaveCompLabel(){   return SComp::Desc( _SaveComp ) ; }
+std::string SEventConfig::SaveCompLabel(){   return SComp::Desc( _SaveComp ) ; } // used from SEvt::save
 
 
 void SEventConfig::GatherCompList( std::vector<unsigned>& gather_comp )

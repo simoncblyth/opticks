@@ -354,6 +354,8 @@ the launch.
 
 **/
 
+bool QSim::KEEP_SUBFOLD = ssys::getenvbool(QSim__simulate_KEEP_SUBFOLD); 
+
 double QSim::simulate(int eventID, bool reset_)
 {
     double tot_dt = 0. ; 
@@ -396,7 +398,17 @@ double QSim::simulate(int eventID, bool reset_)
         SProf::Add("QSim__simulate_DOWN"); 
     }
     sev->topfold->concat(); 
-    sev->topfold->clear_subfold(); 
+    if(KEEP_SUBFOLD)
+    { 
+        LOG(LEVEL) << " KEEP_SUBFOLD " ; 
+    }
+    else
+    {
+        LOG(LEVEL) << "[ clear_subfold " ; 
+        sev->topfold->clear_subfold(); 
+        LOG(LEVEL) << "] clear_subfold " ; 
+    }
+
 
     int num_ht = sev->getNumHit() ;   // NB from fold, so requires hits array gathering to be configured to get non-zero 
     int num_ph = event->getNumPhoton() ; 

@@ -1288,5 +1288,395 @@ Generalized to fabricate multi-gensteps::
    TEST=MakeTorchGenstep ~/o/sysrap/tests/SEventTest.sh
 
 
+multilaunch test
+-----------------
+
+~/o/cxs_min.sh::
+
+    224 elif [ "$TEST" == "ref10_multilaunch" ]; then
+    225 
+    226    opticks_num_photon=M10
+    227    opticks_num_genstep=10
+    228    opticks_max_photon=M10
+    229    opticks_num_event=1
+    230    opticks_running_mode=SRM_TORCH
+    231 
+    232    export OPTICKS_MAX_SLOT=M1
+    233 
+
+
+::
+
+   LOG=1 ~/o/cxs_min.sh run
+
+   TEST=ref10_multilaunch LOG=1 ~/o/cxs_min.sh run
+
+   TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+
+
+10 launches done, but double free at clearing::
+
+    (gdb) bt
+    #0  0x00007ffff5854387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff5855a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff5896ed7 in __libc_message () from /lib64/libc.so.6
+    #3  0x00007ffff589f299 in _int_free () from /lib64/libc.so.6
+    #4  0x00007ffff71a76d0 in NP::~NP (this=0x12a44340, __in_chrg=<optimized out>) at /data/blyth/opticks_Debug/include/SysRap/NP.hh:43
+    #5  0x00007ffff71c19c1 in NPFold::clear_arrays (this=0x1437a5e0, keep=0x0) at /data/blyth/opticks_Debug/include/SysRap/NPFold.h:1473
+    #6  0x00007ffff71c18c3 in NPFold::clear_ (this=0x1437a5e0, keep=0x0) at /data/blyth/opticks_Debug/include/SysRap/NPFold.h:1462
+    #7  0x00007ffff71c1891 in NPFold::clear (this=0x1437a5e0) at /data/blyth/opticks_Debug/include/SysRap/NPFold.h:1428
+    #8  0x00007ffff71c1ab8 in NPFold::clear_subfold (this=0xeda2d70) at /data/blyth/opticks_Debug/include/SysRap/NPFold.h:1500
+    #9  0x00007ffff71b040f in QSim::simulate (this=0x12a41fc0, eventID=0, reset_=true) at /home/blyth/opticks/qudarap/QSim.cc:399
+    #10 0x00007ffff7c00469 in CSGOptiX::simulate (this=0x12ab38d0, eventID=0) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:724
+    #11 0x00007ffff7bfd005 in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:167
+    #12 0x0000000000404a85 in main (argc=1, argv=0x7fffffff42f8) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) 
+
+
+    (gdb) f 9
+    #9  0x00007ffff71b040f in QSim::simulate (this=0x12a41fc0, eventID=0, reset_=true) at /home/blyth/opticks/qudarap/QSim.cc:399
+    399     sev->topfold->clear_subfold(); 
+    (gdb) list
+    394         // trying to use sub fold not top fold
+    395 
+    396         SProf::Add("QSim__simulate_DOWN"); 
+    397     }
+    398     sev->topfold->concat(); 
+    399     sev->topfold->clear_subfold(); 
+    400 
+    401     int num_ht = sev->getNumHit() ;   // NB from fold, so requires hits array gathering to be configured to get non-zero 
+    402     int num_ph = event->getNumPhoton() ; 
+    403 
+    (gdb) 
+
+
+Even with the clear_subfold commented::
+
+     393         sev->gather();
+     394         // trying to use sub fold not top fold
+     395 
+     396         SProf::Add("QSim__simulate_DOWN");
+     397     }
+     398     sev->topfold->concat();
+     399     //sev->topfold->clear_subfold(); 
+     400 
+
+get similar at reset::
+
+   TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+    (gdb) bt
+    #0  0x00007ffff5854387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff5855a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff5896ed7 in __libc_message () from /lib64/libc.so.6
+    #3  0x00007ffff589f299 in _int_free () from /lib64/libc.so.6
+    #4  0x00007ffff6e85c18 in NP::~NP (this=0x12a44340, __in_chrg=<optimized out>) at /home/blyth/opticks/sysrap/NP.hh:43
+    #5  0x00007ffff6f232d9 in NPFold::clear_arrays (this=0x1437a5e0, keep=0x0) at /home/blyth/opticks/sysrap/NPFold.h:1473
+    #6  0x00007ffff6f231db in NPFold::clear_ (this=0x1437a5e0, keep=0x0) at /home/blyth/opticks/sysrap/NPFold.h:1462
+    #7  0x00007ffff6f231a9 in NPFold::clear (this=0x1437a5e0) at /home/blyth/opticks/sysrap/NPFold.h:1428
+    #8  0x00007ffff6f233d0 in NPFold::clear_subfold (this=0xeda2d70) at /home/blyth/opticks/sysrap/NPFold.h:1500
+    #9  0x00007ffff6f231e7 in NPFold::clear_ (this=0xeda2d70, keep=0x7fffffff2b40) at /home/blyth/opticks/sysrap/NPFold.h:1463
+    #10 0x00007ffff6f235a5 in NPFold::clear_except_ (this=0xeda2d70, keep=std::vector of length 1, capacity 1 = {...}, copy=false) at /home/blyth/opticks/sysrap/NPFold.h:1566
+    #11 0x00007ffff6f237da in NPFold::clear_except (this=0xeda2d70, keeplist=0x7ffff703d909 "genstep", copy=false, delim=44 ',') at /home/blyth/opticks/sysrap/NPFold.h:1594
+    #12 0x00007ffff6f0726f in SEvt::clear_output (this=0xed59700) at /home/blyth/opticks/sysrap/SEvt.cc:1826
+    #13 0x00007ffff6f06460 in SEvt::endOfEvent (this=0xed59700, eventID=0) at /home/blyth/opticks/sysrap/SEvt.cc:1595
+    #14 0x00007ffff71b0855 in QSim::reset (this=0x12a41fc0, eventID=0) at /home/blyth/opticks/qudarap/QSim.cc:438
+    #15 0x00007ffff71b0742 in QSim::simulate (this=0x12a41fc0, eventID=0, reset_=true) at /home/blyth/opticks/qudarap/QSim.cc:414
+    #16 0x00007ffff7c00469 in CSGOptiX::simulate (this=0x12ab38d0, eventID=0) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:724
+    #17 0x00007ffff7bfd005 in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:167
+    #18 0x0000000000404a85 in main (argc=1, argv=0x7fffffff42f8) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) 
+
+add NPFold::set_skipdelete_r
+
+export SEvt__NPFOLD_VERBOSE=1
+
+
+left field
+--------------
+
+::
+
+   TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+
+    2024-12-07 20:51:28.447 INFO  [200267] [QRng::init@72] [QRng__init_VERBOSE] YES
+    QRng::desc path /home/blyth/.opticks/rngcache/RNG rngmax 3000000 rngmax/M 3 qr 0x129b1830 qr.skipahead_event_offset 100000 d_qr 0x7fffa4600200QRng::Desc IMPL:CHUNKED_CURANDSTATE
+    CSGOptiXSMTest: /home/blyth/opticks/sysrap/NPFold.h:796: void NPFold::add_subfold(const char*, NPFold*): Assertion `fo->parent == nullptr' failed.
+
+    Thread 1 "CSGOptiXSMTest" received signal SIGABRT, Aborted.
+    0x00007ffff5850387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007ffff5850387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff5851a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff58491a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff5849252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff6eb5ae9 in NPFold::add_subfold (this=0x12a1acc0, f=0x7ffff7045255 "jpmt", fo=0xc4ae610) at /home/blyth/opticks/sysrap/NPFold.h:796
+    #5  0x00007ffff6f5bbb9 in SPMT::serialize_ (this=0x129ca1b0) at /home/blyth/opticks/sysrap/SPMT.h:584
+    #6  0x00007ffff6f5bb5c in SPMT::serialize (this=0x129ca1b0) at /home/blyth/opticks/sysrap/SPMT.h:577
+    #7  0x00007ffff6f40753 in SSim::get_spmt_f (this=0x43a440) at /home/blyth/opticks/sysrap/SSim.cc:323
+    #8  0x00007ffff71abd0f in QSim::UploadComponents (ssim=0x43a440) at /home/blyth/opticks/qudarap/QSim.cc:183
+    #9  0x00007ffff7bfc5f2 in CSGOptiX::InitSim (ssim=0x43a440) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:283
+    #10 0x00007ffff7bfcc5b in CSGOptiX::Create (fd=0xec98320) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:352
+    #11 0x00007ffff7bfc007 in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:166
+    #12 0x0000000000404a85 in main (argc=1, argv=0x7fffffff42d8) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) 
+
+
+
+Tripped because the jpmt comes from SSim top so already has parent::
+
+    0580 inline NPFold* SPMT::serialize_() const   // formerly get_fold 
+     581 {
+     582     NPFold* fold = new NPFold ;
+     583 
+     584     if(jpmt) fold->add_subfold("jpmt", const_cast<NPFold*>(jpmt) ) ;
+     585 
+     586     if(rindex) fold->add("rindex", rindex) ;
+     587     if(thickness) fold->add("thickness", thickness) ;
+     588     if(qeshape) fold->add("qeshape", qeshape) ;
+     589     if(lcqs) fold->add("lcqs", lcqs) ;
+     590     return fold ;
+     591 }
+
+
+    310 const NPFold* SSim::get_jpmt() const
+    311 {
+    312     const NPFold* f = top ? top->find_subfold(JPMT_RELP) : nullptr ;
+    313     return f ;
+    314 }
+    315 const SPMT* SSim::get_spmt() const
+    316 {
+    317     const NPFold* jpmt = get_jpmt();
+    318     return jpmt ? new SPMT(jpmt) : nullptr ;
+    319 }
+    320 const NPFold* SSim::get_spmt_f() const
+    321 {
+    322     const SPMT* spmt = get_spmt() ;
+    323     const NPFold* spmt_f = spmt ? spmt->serialize() : nullptr ;
+    324     return spmt_f ;
+    325 }
+
+
+double free comes from the genstep : because it is repeated into every subfold
+-------------------------------------------------------------------------------
+
+In the below the genstep pointers are repeated::
+
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+    Rng::LoadAndUpload complete YES rngmax/M 3 rngmax 3000000 digest c5a80f522e9393efe0302b916affda06
+    2024-12-07 21:14:16.495 INFO  [255505] [QRng::init@72] [QRng__init_VERBOSE] YES
+    QRng::desc path /home/blyth/.opticks/rngcache/RNG rngmax 3000000 rngmax/M 3 qr 0x129b1830 qr.skipahead_event_offset 100000 d_qr 0x7fffa4600200QRng::Desc IMPL:CHUNKED_CURANDSTATE
+    NPFold::add_subfold  WARNING changing parent of added subfold fo 
+     fo.treepath [/extra/jpmt]
+     fo.parent.treepath [/extra]
+     this.treepath []
+
+    NPFold::clear_except( keeplist:genstep copy:0 delim:,)
+    NPFold::clear_subfold[]0xeda2d70
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f000/genstep.npy]0x12a44340
+    NPFold::add_ [/f000/hit.npy]0x14446570
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f001/genstep.npy]0x12a44340
+    NPFold::add_ [/f001/hit.npy]0x14446a20
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f002/genstep.npy]0x12a44340
+    NPFold::add_ [/f002/hit.npy]0x1437b360
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f003/genstep.npy]0x12a44340
+    NPFold::add_ [/f003/hit.npy]0x1437ba60
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f004/genstep.npy]0x12a44340
+    NPFold::add_ [/f004/hit.npy]0x14446c40
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f005/genstep.npy]0x12a44340
+    NPFold::add_ [/f005/hit.npy]0x14724890
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f006/genstep.npy]0x12a44340
+    NPFold::add_ [/f006/hit.npy]0x147249d0
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f007/genstep.npy]0x12a44340
+    NPFold::add_ [/f007/hit.npy]0x147250e0
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f008/genstep.npy]0x12a44340
+    NPFold::add_ [/f008/hit.npy]0x14725220
+    //qsim::propagate_at_surface_CustomART idx  640276 lpmtid 51681 : ERROR NOT-A-SENSOR : NAN_ABORT 
+    NPFold::add_ [/f009/genstep.npy]0x12a44340
+    NPFold::add_ [/f009/hit.npy]0x14725360
+    NPFold::add_ [/genstep.npy]0x14726220
+    NPFold::add_ [/hit.npy]0x147254a0
+    NPFold::clear_subfold[]0xeda2d70
+    NPFold::clear ALL [/f000]0x14377d50
+    NPFold::clear_arrays.delete[/f000/genstep.npy]0x12a44340
+    NPFold::clear_arrays.delete[/f000/hit.npy]0x14446570
+    NPFold::clear_subfold[/f000]0x14377d50
+    NPFold::clear ALL [/f001]0x1437a810
+    NPFold::clear_arrays.delete[/f001/genstep.npy]0x12a44340
+    *** Error in `/data/blyth/opticks_Debug/lib/CSGOptiXSMTest': double free or corruption (!prev): 0x000000001433e290 ***
+    ======= Backtrace: =========
+    /lib64/libc.so.6(+0x81299)[0x7ffff589a299]
+    /data/blyth/opticks_Debug/lib/../lib64/libQUDARap.so(+0x466e0)[0x7ffff71a46e0]
+    /data/blyth/opticks_Debug/lib/../lib64/libQUDARap.so(+0x6117b)[0x7ffff71bf17b]
+    /data/blyth/opticks_Debug/lib/../lib64/libQUDARap.so(+0x60fcd)[0x7ffff71befcd]
+    /data/blyth/opticks_Debug/lib/../lib64/libQUDARap.so(+0x60f7c)[0x7ffff71bef7c]
+
+
+
+The cause is the below "lie" that genstep can be treated like a gathered
+output when it is in fact an input::
+
+     898 NP* QEvent::gatherComponent_(unsigned cmp) const
+     899 {
+     900     NP* a = nullptr ;
+     901     switch(cmp)
+     902     {
+     903         case SCOMP_GENSTEP:   a = getGenstep()     ; break ;
+     904         case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;
+     905 
+     906         case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;
+     907         case SCOMP_HIT:       a = gatherHit()      ; break ;
+     908 #ifndef PRODUCTION
+     909         case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;
+     910         case SCOMP_RECORD:    a = gatherRecord()   ; break ;
+     911         case SCOMP_REC:       a = gatherRec()      ; break ;
+     912         case SCOMP_SEQ:       a = gatherSeq()      ; break ;
+     913         case SCOMP_PRD:       a = gatherPrd()      ; break ;
+
+
+
+     552 NP* QEvent::getGenstep() const
+     553 {
+     554     NP* _gs = const_cast<NP*>(gs) ; // const_cast so can use QEvent::gatherComponent_
+     555     LOG(LEVEL) << " _gs " << ( _gs ? _gs->sstr() : "-" ) ;
+     556     return _gs ;
+     557 }
+     558 NP* QEvent::getInputPhoton() const
+     559 {
+     560     return input_photon ;
+     561 }
+
+
+
+Changing to gatherGenstepFromDevice avoids the double free::
+
+     622 /**
+     623 QEvent::gatherGenstepFromDevice
+     624 ---------------------------------
+     625 
+     626 Gensteps originate on host and are uploaded to device, so downloading
+     627 them from device is not usually done. It is for debugging only. 
+     628 
+     629 **/
+     630 
+     631 NP* QEvent::gatherGenstepFromDevice() const
+     632 {
+     633     NP* a = NP::Make<float>( evt->num_genstep, 6, 4 );
+     634     QU::copy_device_to_host<quad6>( (quad6*)a->bytes(), evt->genstep, evt->num_genstep );
+     635     return a ;
+     636 }
+     637 
+
+
+
+Even with KEEP_SUBFOLD no subs are saved::
+
+    2024-12-07 22:08:09.963 INFO  [378837] [QEvent::gatherComponent@886] [ cmp 256 proceed 1 a 0x1474fd70
+    NPFold::add_ [/f009/hit.npy]0x1474fd70 (223235, 4, 4, )
+    NPFold::add_ [/genstep.npy]0x144187a0 (10, 6, 4, )
+    NPFold::add_ [/hit.npy]0x14419fb0 (2232350, 4, 4, )
+    2024-12-07 22:08:10.454 INFO  [378837] [QSim::simulate@403]  KEEP_SUBFOLD 
+    2024-12-07 22:08:10.454 INFO  [378837] [SEvt::endOfEvent@1590] SEvt::id EGPU (0)  GSV YES SEvt__endOfEvent
+    2024-12-07 22:08:10.454 INFO  [378837] [SEvt::save@3967] SEvt::id EGPU (0)  GSV YES SEvt__endOfEvent
+    2024-12-07 22:08:10.815 INFO  [378837] [SEvt::clear_output@1821] SEvt::id EGPU (0)  GSV YES SEvt__OTHER BEFORE clear_output_vector 
+    NPFold::clear_except( keeplist:genstep copy:0 delim:,)
+    NPFold::clear_arrays.delete[/hit.npy]0x14419fb0 (2232350, 4, 4, )
+    NPFold::clear_subfold[]0xeda2a80
+    NPFold::clear ALL [/f000]0x14377a40
+    NPFold::clear_arrays.delete[/f000/genstep.npy]0x14379df0 (1, 6, 4, )
+    NPFold::clear_arrays.delete[/f000/hit.npy]0x14446ab0 (223235, 4, 4, )
+    NPFold::clear_subfold[/f000]0x14377a40
+    NPFold::clear ALL [/f001]0x1437aed0
+    NPFold::clear_arrays.delete[/f001/genstep.npy]0x1437b530 (1, 6, 4, )
+
+
+
+Thats because of the shallow copy before saving of SEvt::save::
+
+    3965 void SEvt::save(const char* dir_)
+    3966 {
+    3967     LOG_IF(info, LIFECYCLE) << id() ;
+    3968 
+    3969     // former location of the gather 
+    3970 
+    3971     LOG(LEVEL) << descComponent() ;
+    3972     LOG(LEVEL) << descFold() ;
+    3973 
+    3974     bool shallow = true ; 
+    3975     std::string save_comp = SEventConfig::SaveCompLabel() ; 
+    3976     NPFold* save_fold = topfold->copy(save_comp.c_str(), shallow) ;
+    3977 
+    3978     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ;
+    3979     if(save_fold == nullptr) return ;
+    3980 
+    3981     const NP* seq = save_fold->get("seq");
+    3982     NP* seqnib = nullptr ; 
+    3983     NP* seqnib_table = nullptr ;
+    3984     if(seq)
+    3985     {   
+    3986         seqnib = CountNibbles(seq) ; 
+    3987         seqnib_table = CountNibbles_Table(seqnib) ;  
+    3988         save_fold->add("seqnib", seqnib );           
+    3989         save_fold->add("seqnib_table", seqnib_table ); 
+    3990         // NPFold::add does nothing with nullptr array 
+    3991     }
+    3992 
+    3993 
+    3994     int slic = save_fold->_save_local_item_count();
+    3995     if( slic > 0 )
+    3996     {   
+    3997         const char* dir = getOutputDir(dir_);   // THIS CREATES DIRECTORY
+    3998         LOG_IF(info, MINIMAL) << dir << " [" << save_comp << "]"  ;
+    3999         LOG(LEVEL) << descSaveDir(dir_) ;
+    4000 
+    4001         LOG(LEVEL) << "[ save_fold.save " << dir ;
+    4002         save_fold->save(dir); 
+    4003         LOG(LEVEL) << "] save_fold.save " << dir ;
+    4004 
+    4005         int num_save_comp = SEventConfig::NumSaveComp();
+    4006         if(num_save_comp > 0 ) saveFrame(dir);
+    4007         // could add frame to the fold ?  
+    4008         // for now just restrict to saving frame when other components are saved
+    4009     }
+    4010     else
+    4011     {
+    4012         LOG(LEVEL) << "SKIP SAVE AS NPFold::_save_local_item_count zero " ;
+    4013     }
+    4014 
+    4015     // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS 
+    4016     delete seqnib ;  
+    4017     delete seqnib_table ;  
+    4018 }
+
+
+
+TODO : add NPFold copying of subfold, for KEEP_SUBFOLD use from SEvt::save, so can check outputs from each slice launch
+------------------------------------------------------------------------------------------------------------------------
+
+
+TODO : add launch-by-launch curandState uploading OR perhaps load once all chunks and change QRng/qrng slot offsets for each launch
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+TODO : test exact matching between multi-launch and single launch 
+--------------------------------------------------------------------
+
+
+
+
+
+
 
 

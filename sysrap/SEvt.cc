@@ -44,6 +44,7 @@
 #include "SProf.hh"
 
 
+bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ; 
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
 bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ; 
@@ -230,6 +231,8 @@ components gatherered from device buffers.
 
 void SEvt::init()
 {
+    if(NPFOLD_VERBOSE) topfold->set_verbose();  
+
     setStage(SEvt__init); 
 
     LOG_IF(info, LIFECYCLE) << id() ; 
@@ -3500,6 +3503,7 @@ fold to get the stats.
 void SEvt::gather_components()   // *GATHER*
 {
     fold = topfold->add_subfold(); 
+    if(NPFOLD_VERBOSE) fold->set_verbose(); 
     const char* fkey = topfold->get_last_subfold_key();  // f000 f001 f001 ...
 
 

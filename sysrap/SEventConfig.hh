@@ -160,6 +160,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kHitMask      = "OPTICKS_HIT_MASK" ; 
     static constexpr const char* kRGMode       = "OPTICKS_RG_MODE" ; 
 
+    // TODO: remove these, as looks like always get trumped by SEventConfig::Initialize_Comp
     static constexpr const char* kGatherComp   = "OPTICKS_GATHER_COMP" ; 
     static constexpr const char* kSaveComp     = "OPTICKS_SAVE_COMP" ; 
 
