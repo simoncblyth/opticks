@@ -162,6 +162,7 @@ SEvt::SEvt()
     index(MISSING_INDEX),
     instance(MISSING_INSTANCE),
     stage(SEvt__SEvt),
+    gather_metadata_notopfold(0),
     t_BeginOfEvent(0),
 #ifndef PRODUCTION
     t_setGenstep_0(0),
@@ -190,7 +191,8 @@ SEvt::SEvt()
     random(nullptr),
     random_array(nullptr),
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
-    fold(new NPFold),
+    topfold(new NPFold),
+    fold(nullptr),
     cf(nullptr),
     hostside_running_resize_done(false),
     gather_done(false),
@@ -256,7 +258,8 @@ void SEvt::init()
 
 void SEvt::setFoldVerbose(bool v)
 {
-    fold->set_verbose(v); 
+    topfold->set_verbose(v); 
+    if(fold) fold->set_verbose(v); 
 }
 
 
@@ -264,9 +267,9 @@ const char* SEvt::GetSaveDir(int idx) // static
 { 
     return Exists(idx) ? Get(idx)->getSaveDir() : nullptr ; 
 }
-const char* SEvt::getSaveDir() const { return fold->savedir ; }
-const char* SEvt::getLoadDir() const { return fold->loaddir ; }
-int SEvt::getTotalItems() const { return fold->total_items() ; }
+const char* SEvt::getSaveDir() const { return topfold->savedir ; }
+const char* SEvt::getLoadDir() const { return topfold->loaddir ; }
+int SEvt::getTotalItems() const { return topfold->total_items() ; }
 
 /**
 SEvt::getSearchCFbase
@@ -629,7 +632,7 @@ NP* SEvt::makeG4State() const
 
 void SEvt::setG4State( NP* state) { g4state = state ; }
 NP* SEvt::gatherG4State() const {  return g4state ; } // gather is used prior to persisting, get is used after loading 
-const NP* SEvt::getG4State() const {  return fold->get(SComp::Name(SCOMP_G4STATE)) ; }
+const NP* SEvt::getG4State() const {  return topfold->get(SComp::Name(SCOMP_G4STATE)) ; }
 
 
 /**
@@ -1586,6 +1589,7 @@ void SEvt::endOfEvent(int eventID)
 
     endIndex(eventID);   // eventID is 0-based 
     endMeta(); 
+    gather_metadata();   
 
     save();              // gather and save SEventConfig configured arrays
     clear_output(); 
@@ -1763,6 +1767,7 @@ void SEvt::clear_genstep_vector()
 SEvt::clear_output_vector
 ---------------------------
 
+
 Notice
 
 1. no hit : thats a sub-selection of the photon 
@@ -1800,7 +1805,9 @@ void SEvt::clear_output_vector()
 SEvt::clear_output
 --------------------
 
-Clear output vectors and the fold excluding the gensteps. 
+* Called from SEvt::beginOfEvent and SEvt::endOfEvent
+* Clear output vectors and the fold excluding the gensteps. 
+
 
 **/
 
@@ -1816,12 +1823,21 @@ void SEvt::clear_output()
     bool copy = false ; 
     char delim = ',' ; 
 
-    fold->clear_except(keylist, copy, delim ); 
+    topfold->clear_except(keylist, copy, delim ); 
 
     LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_output_vector " ; 
 
     LOG(LEVEL) << "]" ; 
 }
+
+/**
+SEvt::clear_genstep
+---------------------
+
+* canonical call from SEvt::endOfEvent
+
+**/
+
 
 void SEvt::clear_genstep()
 {
@@ -1829,7 +1845,7 @@ void SEvt::clear_genstep()
     LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_genstep_vector " ; 
 
     clear_genstep_vector(); 
-    fold->clear_only("genstep", false, ','); 
+    topfold->clear_only("genstep", false, ','); 
 
     LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_genstep_vector " ; 
 }
@@ -3374,7 +3390,7 @@ std::string SEvt::descDir() const
 
 std::string SEvt::descFold() const 
 {
-    return fold->desc(); 
+    return topfold->desc(); 
 }
 std::string SEvt::Brief() // static
 {
@@ -3483,21 +3499,24 @@ fold to get the stats.
 
 void SEvt::gather_components()   // *GATHER*
 {
+    fold = topfold->add_subfold(); 
+    const char* fkey = topfold->get_last_subfold_key();  // f000 f001 f001 ...
+
+
     int num_genstep = -1 ; 
     int num_photon  = -1 ; 
     int num_hit     = -1 ; 
 
     int num_comp = gather_comp.size() ; 
 
-    LOG(LEVEL) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ; 
-    LOG_IF(info, GATHER) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ; 
-
+    LOG(LEVEL) << " num_comp " << num_comp << " from provider " << provider->getTypeName() << " fkey " << ( fkey ? fkey : "-" )   ; 
+    LOG_IF(info, GATHER) << " num_comp " << num_comp << " from provider " << provider->getTypeName() << " fkey " << ( fkey ? fkey : "-" ) ; 
 
     for(int i=0 ; i < num_comp ; i++)
     {
         unsigned cmp = gather_comp[i] ;   
         const char* k = SComp::Name(cmp);    
-        NP* a = provider->gatherComponent(cmp); 
+        NP* a = provider->gatherComponent(cmp);  // see QEvent::gatherComponent for GPU running 
         bool null_component = a == nullptr ;
 
         LOG(LEVEL) 
@@ -3511,8 +3530,6 @@ void SEvt::gather_components()   // *GATHER*
             << " a " << ( a ? a->brief() : "-" ) 
             << " null_component " << ( null_component ? "YES" : "NO " ) 
             ; 
-
-
 
 
         if(null_component) continue ;  
@@ -3547,18 +3564,25 @@ void SEvt::gather_components()   // *GATHER*
 SEvt::gather_metadata
 ----------------------
 
-HMM: replaces fold.meta with metadata from provider : either this SEvt or QEvent ?
+Lots of timing metadata, so try calling from SEvt::endOfEvent not SEvt::gather
 
-* does this make sense anymore ?  
+HMM: replaces fold.meta with metadata from provider : either this SEvt or QEvent ?
 
 **/
 
 
 void SEvt::gather_metadata()
 {
+    if(topfold == nullptr)
+    {
+        LOG_IF(error, gather_metadata_notopfold < 10) << " gather_metadata_notopfold " << gather_metadata_notopfold ; 
+        gather_metadata_notopfold += 1 ; 
+        return ; 
+    }
+
     std::string provmeta = provider->getMeta(); 
     LOG(LEVEL) << " provmeta ["<< provmeta << "]" ; 
-    fold->meta = provmeta ; 
+    topfold->meta = provmeta ; 
 }
 
 
@@ -3573,32 +3597,39 @@ into NPFold from the SCompProvider which can either be:
 * this SEvt instance for hostside running
 * the qudarap/QEvent instance for deviceside running, eg G4CXSimulateTest
 
+
+For multi-launch running genstep slices are uploaded 
+before each launch and *gather* is called after each launch.
+
 **/
 
 void SEvt::gather() 
 {
     setStage(SEvt__gather); 
-    LOG_IF(info, LIFECYCLE) << id() ; 
-    LOG_IF(fatal, gather_done) << " gather_done ALREADY : SKIPPING " ; 
-    if(gather_done) return ; 
-    gather_done = true ;   // SEvt::setNumPhoton which gets called by adding gensteps resets this to false
+    LOG_IF(info, LIFECYCLE) << id() ;
+ 
+    // LOG_IF(fatal, gather_done) << " gather_done ALREADY : SKIPPING " ; 
+    // if(gather_done) return ; 
+    // gather_done = true ; 
+    //   endOfEvent/clear_genstep/clear_genstep_vector resets this to false   
+
 
     gather_components(); 
-    gather_metadata(); 
+    // gather_metadata();   //  try moving to SEvt::endOfEvent just after endMeta
+
 }
-
-
 
 
 void SEvt::add_array( const char* k, const NP* a )
 {
+    assert(0);  // WHO CALLS THIS
     LOG(LEVEL) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
     fold->add(k, a);  
 }
 
 void SEvt::addEventConfigArray() 
 {
-    fold->add(SEventConfig::NAME, SEventConfig::Serialize() ); 
+    topfold->add(SEventConfig::NAME, SEventConfig::Serialize() ); 
 }
 
 /**
@@ -3873,9 +3904,9 @@ int SEvt::load(const char* dir_)
 
 int SEvt::loadfold( const char* dir )
 {
-    LOG(LEVEL) << "[ fold.load " << dir ; 
-    int rc = fold->load(dir); 
-    LOG(LEVEL) << "] fold.load " << dir ; 
+    LOG(LEVEL) << "[ topfold.load " << dir ; 
+    int rc = topfold->load(dir); 
+    LOG(LEVEL) << "] topfold.load " << dir ; 
     is_loaded = true ; 
     onload(); 
     return rc ; 
@@ -3884,7 +3915,7 @@ int SEvt::loadfold( const char* dir )
 
 void SEvt::onload()
 {
-    const NP* domain = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
+    const NP* domain = topfold->get(SComp::Name(SCOMP_DOMAIN)) ; 
     if(!domain) return ; 
 
     index = domain->get_meta<int>("index");  
@@ -3938,7 +3969,7 @@ void SEvt::save(const char* dir_)
 
     bool shallow = true ; 
     std::string save_comp = SEventConfig::SaveCompLabel() ; 
-    NPFold* save_fold = fold->copy(save_comp.c_str(), shallow) ; 
+    NPFold* save_fold = topfold->copy(save_comp.c_str(), shallow) ; 
 
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ; 
     if(save_fold == nullptr) return ;  
@@ -3997,25 +4028,30 @@ void SEvt::saveFrame(const char* dir) const
 }
 
 
-std::string SEvt::descComponent() const 
+std::string SEvt::descComponent() const
 {
-    const NP* genstep  = fold->get(SComp::Name(SCOMP_GENSTEP)) ; 
-    const NP* seed     = fold->get(SComp::Name(SCOMP_SEED)) ;  
-    const NP* photon   = fold->get(SComp::Name(SCOMP_PHOTON)) ; 
-    const NP* hit      = fold->get(SComp::Name(SCOMP_HIT)) ; 
-    const NP* record   = fold->get(SComp::Name(SCOMP_RECORD)) ; 
-    const NP* rec      = fold->get(SComp::Name(SCOMP_REC)) ;  
-    const NP* aux      = fold->get(SComp::Name(SCOMP_REC)) ;  
-    const NP* sup      = fold->get(SComp::Name(SCOMP_SUP)) ;  
-    const NP* seq      = fold->get(SComp::Name(SCOMP_SEQ)) ; 
-    const NP* domain   = fold->get(SComp::Name(SCOMP_DOMAIN)) ; 
-    const NP* simtrace = fold->get(SComp::Name(SCOMP_SIMTRACE)) ; 
-    const NP* g4state  = fold->get(SComp::Name(SCOMP_G4STATE)) ; 
-    const NP* pho      = fold->get(SComp::Name(SCOMP_PHO)) ; 
-    const NP* gs       = fold->get(SComp::Name(SCOMP_GS)) ; 
+    return DescComponent(topfold); 
+}
+ 
+std::string SEvt::DescComponent(const NPFold* f)  // static
+{
+    const NP* genstep  = f->get(SComp::Name(SCOMP_GENSTEP)) ; 
+    const NP* seed     = f->get(SComp::Name(SCOMP_SEED)) ;  
+    const NP* photon   = f->get(SComp::Name(SCOMP_PHOTON)) ; 
+    const NP* hit      = f->get(SComp::Name(SCOMP_HIT)) ; 
+    const NP* record   = f->get(SComp::Name(SCOMP_RECORD)) ; 
+    const NP* rec      = f->get(SComp::Name(SCOMP_REC)) ;  
+    const NP* aux      = f->get(SComp::Name(SCOMP_REC)) ;  
+    const NP* sup      = f->get(SComp::Name(SCOMP_SUP)) ;  
+    const NP* seq      = f->get(SComp::Name(SCOMP_SEQ)) ; 
+    const NP* domain   = f->get(SComp::Name(SCOMP_DOMAIN)) ; 
+    const NP* simtrace = f->get(SComp::Name(SCOMP_SIMTRACE)) ; 
+    const NP* g4state  = f->get(SComp::Name(SCOMP_G4STATE)) ; 
+    const NP* pho      = f->get(SComp::Name(SCOMP_PHO)) ; 
+    const NP* gs       = f->get(SComp::Name(SCOMP_GS)) ; 
 
     std::stringstream ss ; 
-    ss << "SEvt::descComponent" 
+    ss << "SEvt::DescComponent" 
        << std::endl 
        << std::setw(20) << " SEventConfig::GatherCompLabel " << SEventConfig::GatherCompLabel() << std::endl  
        << std::endl 
@@ -4091,8 +4127,8 @@ std::string SEvt::descComponent() const
        << " "
        << std::endl
        ;
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
 std::string SEvt::descComp() const 
 {
@@ -4136,18 +4172,18 @@ std::string SEvt::descVec() const
 
 
 
-const NP* SEvt::getGenstep() const { return fold->get(SComp::GENSTEP_) ;}
-const NP* SEvt::getPhoton() const {  return fold->get(SComp::PHOTON_) ; }
-const NP* SEvt::getHit() const {     return fold->get(SComp::HIT_) ; }
-const NP* SEvt::getAux() const {     return fold->get(SComp::AUX_) ; }
-const NP* SEvt::getSup() const {     return fold->get(SComp::SUP_) ; }
-const NP* SEvt::getPho() const {     return fold->get(SComp::PHO_) ; }
-const NP* SEvt::getGS() const {      return fold->get(SComp::GS_) ; }
+const NP* SEvt::getGenstep() const { return topfold->get(SComp::GENSTEP_) ;}
+const NP* SEvt::getPhoton() const {  return topfold->get(SComp::PHOTON_) ; }
+const NP* SEvt::getHit() const {     return topfold->get(SComp::HIT_) ; }
+const NP* SEvt::getAux() const {     return topfold->get(SComp::AUX_) ; }
+const NP* SEvt::getSup() const {     return topfold->get(SComp::SUP_) ; }
+const NP* SEvt::getPho() const {     return topfold->get(SComp::PHO_) ; }
+const NP* SEvt::getGS() const {      return topfold->get(SComp::GS_) ; }
 
-unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
+unsigned SEvt::getNumPhoton() const { return topfold->get_num(SComp::PHOTON_) ; }
 unsigned SEvt::getNumHit() const    
 { 
-    int num = fold->get_num(SComp::HIT_) ;  // number of items in array 
+    int num = topfold->get_num(SComp::HIT_) ;  // number of items in array 
     return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
 }
 
@@ -4525,7 +4561,7 @@ std::string SEvt::descFull(unsigned max_print) const
     ss << descFramePhoton(max_print) << std::endl ; 
 
     ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ; 
-    ss << ( fold ? fold->desc() : "no-fold" ) << std::endl ; 
+    ss << ( topfold ? topfold->desc() : "no-topfold" ) << std::endl ; 
     ss << "] SEvt::descFull "  << std::endl ; 
     std::string s = ss.str(); 
     return s ; 

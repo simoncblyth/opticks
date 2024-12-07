@@ -134,6 +134,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     int index ; 
     int instance ; 
     int stage ; 
+    int gather_metadata_notopfold ; 
 
     sprof p_SEvt__beginOfEvent_0 ; 
     sprof p_SEvt__beginOfEvent_1 ; 
@@ -159,7 +160,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     uint64_t t_PenultimatePoint ; 
     uint64_t t_LastPoint ; 
 
-
     double   t_Launch ; 
 
     sphoton_selector* selector ; 
@@ -179,6 +179,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     //      but its useful to have somewhere to hang it  
 
     const SCompProvider*  provider ; 
+    NPFold*               topfold ; 
     NPFold*               fold ; 
     const SGeo*           cf ; 
     const stree*          tree ; 
@@ -659,6 +660,8 @@ public:
     void saveFrame(const char* dir_) const ; 
 
     std::string descComponent() const ; 
+    static std::string DescComponent(const NPFold* f); 
+
     std::string descComp() const ; 
     std::string descVec() const ; 
 

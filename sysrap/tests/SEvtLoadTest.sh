@@ -1,7 +1,24 @@
-#!/bin/bash -l 
+#!/bin/bash
+usage(){ cat << EOU
+SEvtLoadTest.sh
+================
 
-export SEvt=INFO
-export SEventConfig=INFO
+~/o/sysrap/tests/SEvtLoadTest.sh
+
+EOU
+}
+
+cd $(dirname $(realpath $BASH_SOURCE))
+
+logging()
+{
+   type $FUNCNAME
+   export SEvt=INFO
+   export SEventConfig=INFO
+}
+
+[ -n "$LOG" ] && logging 
+
 
 
 ## these configure the directory from which to load
