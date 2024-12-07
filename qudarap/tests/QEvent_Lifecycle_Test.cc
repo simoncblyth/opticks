@@ -1,3 +1,11 @@
+/**
+QEvent_Lifecycle_Test.cc
+=========================
+
+~/o/qudarap/tests/QEvent_Lifecycle_Test.sh 
+
+
+**/
 
 #include <csignal>
 #include "OPTICKS_LOG.hh"
@@ -8,19 +16,19 @@
 
 struct QEvent_Lifecycle_Test
 {
-    static void Test(); 
+    static int EventLoop(); 
 }; 
 
 /**
-QEvent_Lifecycle_Test::Test
-----------------------------
+QEvent_Lifecycle_Test::EventLoop
+-------------------------------------
 
 Comments are from an input photon centric viewpoint 
 as those are useful for debugging. 
 
 **/
 
-void QEvent_Lifecycle_Test::Test()
+int QEvent_Lifecycle_Test::EventLoop()
 {
     SEvt* sev = SEvt::Create(SEvt::EGPU) ; 
     // instanciation may load input_photons if configured
@@ -62,6 +70,7 @@ void QEvent_Lifecycle_Test::Test()
 
         sev->endOfEvent(eventID); 
     }
+    return 0 ; 
 }
 
 int main(int argc, char** argv)
@@ -83,6 +92,5 @@ int main(int argc, char** argv)
 
     ssys::setenvvar("GEOM", "TEST_CC", overwrite ); 
 
-    QEvent_Lifecycle_Test::Test() ;
-    return 0 ; 
+    return QEvent_Lifecycle_Test::EventLoop() ;
 }

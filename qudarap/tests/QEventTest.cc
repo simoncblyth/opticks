@@ -1,3 +1,25 @@
+/**
+QEventTest.cc
+==============
+
+~/o/qudarap/tests/QEventTest.sh 
+
+TEST=one       ~/o/qudarap/tests/QEventTest.sh 
+TEST=one VERBOSE=1  ~/o/qudarap/tests/QEventTest.sh 
+
+
+TEST=sliced    ~/o/qudarap/tests/QEventTest.sh 
+TEST=many      ~/o/qudarap/tests/QEventTest.sh 
+TEST=loaded    ~/o/qudarap/tests/QEventTest.sh 
+TEST=checkEvt  ~/o/qudarap/tests/QEventTest.sh 
+TEST=quad6     ~/o/qudarap/tests/QEventTest.sh 
+
+TEST=ALL       ~/o/qudarap/tests/QEventTest.sh 
+
+
+**/
+
+
 #include "OPTICKS_LOG.hh"
 
 #include <csignal>
@@ -14,6 +36,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sstamp.h"
+#include "SGenstep.h"
 
 #include "SEvt.hh"
 #include "SEvent.hh"
@@ -23,24 +46,35 @@
 
 struct QEventTest
 { 
-    static void setGenstep_one() ; 
-    static void setGenstep_many() ; 
-    static void setGenstep_loaded(NP* gs); 
-    static void setGenstep_loaded(); 
-    static void setGenstep_checkEvt(); 
-    static void setGenstep_quad6(); 
+    static bool VERBOSE ; 
+
+    static int setGenstep_one() ; 
+    static int setGenstep_sliced() ; 
+    static int setGenstep_many() ; 
+    static int setGenstep_loaded(NP* gs); 
+    static int setGenstep_loaded(); 
+    static int setGenstep_checkEvt(); 
+    static int setGenstep_quad6(); 
 
     static int main(); 
 };
+
+
+bool QEventTest::VERBOSE = ssys::getenvbool("VERBOSE") ; 
 
 /**
 QEventTest::setGenstep_one
 --------------------------------
 
+1. QEvent::setGenstepUpload_NP one genstep to GPU 
+2. QEvent::gatherSeed downloads the resulting GPU seed buffer
+3. compares downloaded seed buffer with expectations
+
 **/
 
-void QEventTest::setGenstep_one()
+int QEventTest::setGenstep_one()
 {
+
     std::cout << "QEventTest::setGenstep_one" << std::endl ; 
     //                                             0  1  2  3  4  5  6  7  8  
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
@@ -49,13 +83,15 @@ void QEventTest::setGenstep_one()
 
 
     QEvent* event = new QEvent ; 
-    //LOG(info) << " event.desc (bef QEvent::setGenstep) " << event->desc() ; 
+    LOG_IF(info, VERBOSE) << " event.desc (bef QEvent::setGenstep) " << event->desc() ; 
+
+
     event->setGenstepUpload_NP(gs); 
-    //LOG(info) << " event.desc (aft QEvent::setGenstep) " << event->desc() ; 
+    LOG_IF(info, VERBOSE) << " event.desc (aft QEvent::setGenstep) " << event->desc() ; 
 
     int num_photon = event->getNumPhoton();  
     bool num_photon_expect = x_num_photon == num_photon ;
-    //LOG(info) << " num_photon " << num_photon << " x_num_photon " << x_num_photon ; 
+    LOG(info) << " num_photon " << num_photon << " x_num_photon " << x_num_photon ; 
     assert( num_photon_expect ); 
     if(!num_photon_expect) std::raise(SIGINT); 
 
@@ -79,11 +115,92 @@ void QEventTest::setGenstep_one()
     LOG(info) << " x_seed: " << SEvent::DescSeed(xseed_v, num_seed, 100 ); 
     LOG(info) << " seed_mismatch " << seed_mismatch ; 
 #endif
+    return 0 ; 
 }
 
-void QEventTest::setGenstep_many()
+
+int QEventTest::setGenstep_sliced()
 {
-    std::cout << "QEventTest::setGenstep_many" << std::endl ; 
+    std::cout << "QEventTest::setGenstep_sliced" << std::endl ; 
+
+    //                                             0    1    2    3  4    5    6    7    8  
+    std::vector<int> photon_counts_per_genstep = { 300, 500, 200, 0, 100, 300, 400, 200, 400 };  
+    int tot_photon = 0  ; 
+    NP* gs = SEvent::MakeCountGenstep(photon_counts_per_genstep, &tot_photon ) ; 
+
+    QEvent* event = new QEvent ; 
+    LOG_IF(info, VERBOSE) << " event.desc (bef QEvent::setGenstep) " << event->desc() ; 
+
+    int max_slot = 1000 ; 
+    std::vector<sslice> gs_slice ;
+    SGenstep::GetGenstepSlices( gs_slice, gs, max_slot );
+    int num_slice = gs_slice.size();
+
+    std::cout 
+        << "QEventTest::setGenstep_sliced" 
+        << " tot_photon " << tot_photon
+        << " max_slot " << max_slot
+        << " num_slice " << num_slice
+        << "\n" 
+        ; 
+
+    for(int i=0 ; i < num_slice ; i++)
+    {
+        const sslice& sl = gs_slice[i] ;
+
+        event->setGenstepUpload_NP(gs, sl.gs_start, sl.gs_stop ); 
+
+        int num_photon = event->getNumPhoton();  
+        bool num_photon_expect = sl.ph_count == num_photon ;
+
+        std::cout
+            << " i " << std::setw(3) << i 
+            << " sl " << sl.desc()
+            << " num_photon " << num_photon
+            << "\n"
+            ;
+
+        assert( num_photon_expect ); 
+        if(!num_photon_expect) std::raise(SIGINT); 
+
+#ifndef PRODUCTION
+
+        NP* seed_ = event->gatherSeed(); 
+        const int* seed_v = seed_->values<int>();   
+        int num_seed = seed_->shape[0] ;
+
+        assert( num_seed  == num_photon ); 
+        int edgeitems = 100 ; 
+        LOG(info) << " seed: "   << SEvent::DescSeed(seed_v, num_seed, edgeitems ); 
+
+#endif
+    } 
+    return 0 ; 
+}
+
+
+
+
+
+
+
+
+
+
+/**
+QEventTest::setGenstep_many
+----------------------------
+
+1. prepare num_v:3 gensteps together with corresponding photon and seed expectations
+2. repeatedly upload those three gensteps followed by seed downloads and comparisons with expectations  
+
+**/
+
+int QEventTest::setGenstep_many()
+{
+    std::cout 
+        << "QEventTest::setGenstep_many\n" ;
+ 
     const int num_v = 3 ; 
 
     typedef std::vector<int> VI ; 
@@ -120,11 +237,15 @@ void QEventTest::setGenstep_many()
     QEvent* event = new QEvent ; 
 
     int num_event = SEventConfig::NumEvent(); 
-
-    std::cout << " num_event " << num_event << std::endl ;
-
     int nj = num_v*num_event ; 
-    //int nj = 2 ; 
+
+    std::cout 
+        << "QEventTest::setGenstep_many" 
+        << " num_event " << num_event 
+        << " num_v " << num_v 
+        << " nj " << nj 
+        << "\n"
+        ;
 
     for(int j=0 ; j < nj ; j++)
     {
@@ -170,29 +291,65 @@ void QEventTest::setGenstep_many()
 #endif
 
     }
+    return 0 ; 
 }
 
-void QEventTest::setGenstep_loaded(NP* gs)
+/**
+QEventTest::setGenstep_loaded
+-------------------------------
+
+1. upload genstep with QEvent::setGenstepUpload_NP
+2. check that get non-zero num_photon + num_simtrace
+
+
+**/
+
+int QEventTest::setGenstep_loaded(NP* gs)
 {
+
+    std::cout 
+        << "QEventTest::setGenstep_loaded"
+        << " gs " << ( gs ? gs->sstr() : "-" )
+        << "\n"
+        ; 
+
     QEvent* event = new QEvent ; 
     event->setGenstepUpload_NP(gs); 
 
     unsigned num_photon = event->getNumPhoton() ; 
-    bool num_photon_expect = num_photon > 0 ;
+    unsigned num_simtrace = event->getNumSimtrace() ; 
+
+    std::cout 
+        << "QEventTest::setGenstep_loaded"
+        << " num_photon " << num_photon
+        << " num_simtrace " << num_simtrace
+        << "\n"
+        ;
+
+    bool num_photon_expect = num_photon + num_simtrace > 0 ;
     assert( num_photon_expect ); 
     if(!num_photon_expect) std::raise(SIGINT); 
 
     LOG(info) << event->desc() ; 
     //event->seed->download_dump("event->seed", 10); 
     event->checkEvt(); 
+    return 0 ; 
 }
 
-void QEventTest::setGenstep_loaded()
+int QEventTest::setGenstep_loaded()
 {
     std::cout << "QEventTest::setGenstep_loaded" << std::endl ; 
     const char* path_ = "$TMP/sysrap/SEventTest/cegs.npy" ;
     const char* path = spath::Resolve(path_); 
     NP* gs0 = NP::Load(path); 
+
+    std::cout 
+        << "QEventTest::setGenstep_loaded"
+        << " path " << ( path ? path : "-" ) 
+        << " gs0 " << ( gs0 ? gs0->sstr() : "-" )
+        << "\n"
+        ; 
+
 
     if( gs0 == nullptr )
     {
@@ -202,15 +359,16 @@ void QEventTest::setGenstep_loaded()
             << " path " << path 
             ;
         //assert(0); 
-        return ; 
+        return 0 ; 
     }
 
     gs0->dump(); 
     setGenstep_loaded(gs0); 
+    return 0 ; 
 }
 
 
-void QEventTest::setGenstep_checkEvt()
+int QEventTest::setGenstep_checkEvt()
 {
     std::cout << "QEventTest::setGenstep_checkEvt" << std::endl ; 
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
@@ -222,11 +380,12 @@ void QEventTest::setGenstep_checkEvt()
     assert( x_num_photon == x_total ) ; 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload_NP(gs); 
+    event->setGenstepUpload_NP(gs,-1,-1); 
     event->checkEvt(); 
+    return 0 ; 
 }
 
-void QEventTest::setGenstep_quad6()
+int QEventTest::setGenstep_quad6()
 {
     std::cout << "QEventTest::setGenstep_quad6" << std::endl ; 
 
@@ -244,34 +403,32 @@ void QEventTest::setGenstep_quad6()
 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload_NP( a_gs );  
+    event->setGenstepUpload_NP( a_gs,-1,-1 );  
 
     event->gs->dump(); 
     event->checkEvt(); 
 
     cudaDeviceSynchronize(); 
     event->sev->save( "$TMP/QEventTest/test_setGenstep_quad6" ); 
-}
 
+    return 0 ; 
+}
 
 
 int QEventTest::main()
 {
     const char* TEST = ssys::getenvvar("TEST", "ALL") ; 
-    if(strcmp(TEST, "ALL") == 0 )
-    {
-        setGenstep_one(); 
-        setGenstep_many(); 
-        setGenstep_loaded(); 
-        setGenstep_checkEvt(); 
-        setGenstep_quad6(); 
-        setGenstep_many(); 
-    }
-    else if( strcmp(TEST, "setGenstep_many") == 0 )
-    {
-        setGenstep_many(); 
-    }
-    return 0 ; 
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
+    int rc = 0 ; 
+
+    if(ALL||0==strcmp(TEST,"one"))      rc += setGenstep_one();   
+    if(ALL||0==strcmp(TEST,"sliced"))   rc += setGenstep_sliced();   
+    if(ALL||0==strcmp(TEST,"many"))     rc += setGenstep_many();   
+    if(ALL||0==strcmp(TEST,"loaded"))   rc += setGenstep_loaded();   
+    if(ALL||0==strcmp(TEST,"checkEvt")) rc += setGenstep_checkEvt();   
+    if(ALL||0==strcmp(TEST,"quad6"))    rc += setGenstep_quad6();   
+
+    return rc  ; 
 }
 
 

@@ -206,9 +206,13 @@ QEvent::setGenstepUpload_NP
 ------------------------------
 
 **/
+int QEvent::setGenstepUpload_NP(const NP* gs_ )
+{
+    int num_gs = gs_ ? gs_->shape[0] : 0 ;
+    return setGenstepUpload_NP(gs_, 0, num_gs ); 
+} 
 
-
-int QEvent::setGenstepUpload_NP(const NP* gs_) 
+int QEvent::setGenstepUpload_NP(const NP* gs_, int gs_start, int gs_stop ) 
 {
     gs = gs_ ; 
     SGenstep::Check(gs); 
@@ -217,10 +221,18 @@ int QEvent::setGenstepUpload_NP(const NP* gs_)
         << SGenstep::Desc(gs, 10)
         ;
 
-    int num_genstep = gs_ ? gs_->shape[0] : 0 ;
+    int num_gs = gs_ ? gs_->shape[0] : 0 ;
+
+    assert( gs_start >= 0 && gs_start <  num_gs ); 
+    assert( gs_stop  >= 1 && gs_stop  <= num_gs ); 
+
     const char* data = gs_ ? gs_->bytes() : nullptr ;
     const quad6* qq = (const quad6*)data ; 
-    int rc = setGenstepUpload(qq, num_genstep); 
+
+    assert( gs_start < num_gs ); 
+    assert( gs_stop <= num_gs );     
+
+    int rc = setGenstepUpload(qq, gs_start, gs_stop ); 
     return rc ; 
 }
 
@@ -257,14 +269,21 @@ If the number of gensteps is zero there are no photons and no launch.
 
 **/
 
-
-int QEvent::setGenstepUpload(const quad6* qq, int num_genstep ) 
+int QEvent::setGenstepUpload(const quad6* qq0, int num_gs )
 {
+    return setGenstepUpload(qq0, 0, num_gs ); 
+} 
+int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop ) 
+{
+    const quad6* qq = qq0 + gs_start ; 
+
+
     LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
 #ifndef PRODUCTION 
     sev->t_setGenstep_3 = sstamp::Now(); 
 #endif
 
+    int num_genstep = gs_stop - gs_start ; 
     bool zero_genstep = num_genstep == 0 ; 
 
     evt->num_genstep = num_genstep ; 
@@ -273,6 +292,8 @@ int QEvent::setGenstepUpload(const quad6* qq, int num_genstep )
     LOG_IF(info, LIFECYCLE) << " not_allocated " << ( not_allocated ? "YES" : "NO" ) ;  
 
     LOG(LEVEL) 
+        << " gs_start " << gs_start
+        << " gs_stop " << gs_stop
         << " evt.num_genstep " << evt->num_genstep 
         << " not_allocated " << ( not_allocated ? "YES" : "NO" ) 
         << " zero_genstep " << ( zero_genstep ? "YES" : "NO " )
@@ -756,7 +777,7 @@ unsigned QEvent::getNumHit() const
 QEvent::gatherHit
 ------------------
 
-1. count *evt.num_hit* passing the photon *selector* 
+1. on device count *evt.num_hit* passing the photon *selector* 
 2. allocate *evt.hit* GPU buffer
 3. copy_if from *evt.photon* to *evt.hit* using the photon *selector*
 4. host allocate the NP hits array

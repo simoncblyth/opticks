@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 notes(){ cat << EON
 QEvent_Lifecycle_Test.sh
 =========================
@@ -7,11 +7,13 @@ QEvent_Lifecycle_Test.sh
 
    ~/o/qudarap/tests/QEvent_Lifecycle_Test.sh
    LOG=1 ~/o/qudarap/tests/QEvent_Lifecycle_Test.sh 
-
    LOG=1 BP=mkdir ~/o/qudarap/tests/QEvent_Lifecycle_Test.sh
 
 EON
 }
+cd $(dirname $(realpath $BASH_SOURCE))
+source dbg__.sh 
+
 
 name=QEvent_Lifecycle_Test
 
@@ -29,7 +31,7 @@ export OPTICKS_EVENT_MODE=Nothing
 
 export FOLD=$TMP/GEOM/$GEOM/$name/ALL${VERSION:-0}
 
-vars="BASH_SOURCE name FOLD"
+vars="BASH_SOURCE 0 PWD name GEOM FOLD"
 
 defarg="run"
 [ -n "$BP" ] && defarg=dbg 

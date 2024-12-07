@@ -109,11 +109,15 @@ public:
     A2: Dont need the meta, need the method that access the underlying SEvt.  
     **/
 public:
-    int setGenstep();  // PRIMARY ACTION OF QEvent 
-
+    // PRIMARY ACTION OF QEvent : genstep uploading 
+    int setGenstep();  
+    int setGenstepUpload_NP(const NP* gs);
+    int setGenstepUpload_NP(const NP* gs,  int gs_start, int gs_stop );
 private:
-    int setGenstepUpload(const quad6* qq, int num_genstep ) ; 
-    int  setGenstepUpload_NP(const NP* gs);
+
+    int setGenstepUpload(const quad6* qq0, int num_gs ); 
+    int setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop ); 
+
     void device_alloc_genstep_and_seed(); 
     void setInputPhoton(); 
     void checkInputPhoton() const ; 

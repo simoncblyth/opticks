@@ -1,6 +1,11 @@
+dbg__()
+{
+    gdb__ $*
+}
+
+
 gdb__ () 
 { 
-    : opticks/opticks.bash prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
     if [ -z "$BP" ]; then
         H="";
         B="";
@@ -19,11 +24,5 @@ gdb__ ()
     date;
     eval $runline;
     date
-}
-
-
-dbg__()
-{
-    gdb__ $*
 }
 

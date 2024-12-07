@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 smonitor.sh : NVML based GPU memory monitor
 =============================================
