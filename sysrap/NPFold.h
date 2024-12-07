@@ -100,6 +100,7 @@ struct NPFold
     std::vector<std::string> ff ;  // keys of sub-NPFold 
     std::vector<NPFold*> subfold ;  
 
+
     // METADATA FIELDS 
     std::string               headline ; 
     std::string               meta ; 
@@ -109,9 +110,12 @@ struct NPFold
 
     // nodata:true used for lightweight access to metadata from many arrays
     bool                      nodata ; 
+
     bool                      allowempty ; 
     bool                      skipdelete ;   // set to true on subfold during trivial concat
     bool                      verbose_ ; 
+
+    NPFold*                   parent ;      // set by add_subfold
 
     static constexpr const char INTKEY_PREFIX = 'f' ; 
     static constexpr const int UNDEF = -1 ; 
@@ -161,11 +165,17 @@ struct NPFold
 
     // CTOR
     NPFold(); 
+
     void set_verbose( bool v=true ); 
     void set_skipdelete( bool v=true ); 
     void set_allowempty( bool v=true ); 
+
+    void set_verbose_r( bool v=true ); 
+    void set_skipdelete_r( bool v=true ); 
     void set_allowempty_r( bool v=true ); 
-    static int SetAllowempty_r(NPFold* nd, bool v) ; 
+
+    enum { SET_VERBOSE, SET_SKIPDELETE, SET_ALLOWEMPTY } ; 
+    static int SetFlag_r(NPFold* nd, int flag, bool v); 
 
 private:
     void check_integrity() const ; 
@@ -181,6 +191,12 @@ public:
     const char*  get_last_subfold_key() const ; 
     const char*  get_subfold_key(unsigned idx) const ; 
     int          get_subfold_idx(const char* f) const ; 
+    int          get_subfold_idx(const NPFold* fo) const ; 
+    const char*  get_subfold_key_within_parent() const ; 
+    void         get_treepath_(std::vector<std::string>& elem) const ; 
+    std::string  get_treepath(const char* k=nullptr) const ; 
+
+
     NPFold*      get_subfold(const char* f) const ; 
     bool         has_subfold(const char* f) const ; 
 
@@ -640,14 +656,16 @@ inline NPFold::NPFold()
     nodata(false),
     allowempty(false),
     skipdelete(false),
-    verbose_(VERBOSE)
+    verbose_(VERBOSE),
+    parent(nullptr)
 {
     if(verbose_) std::cerr << "NPFold::NPFold" << std::endl ; 
 }
 
+
 inline void NPFold::set_verbose( bool v )
-{
-    verbose_ = v ;  
+{  
+     verbose_ = v ;  
 }
 inline void NPFold::set_skipdelete( bool v )
 {
@@ -657,14 +675,29 @@ inline void NPFold::set_allowempty( bool v )
 {
     allowempty = v ; 
 }
+
+inline void NPFold::set_verbose_r( bool v )
+{
+    SetFlag_r(this, SET_VERBOSE, v); 
+}
+inline void NPFold::set_skipdelete_r( bool v )
+{
+    SetFlag_r(this, SET_SKIPDELETE, v); 
+}
 inline void NPFold::set_allowempty_r( bool v )
 {
-    SetAllowempty_r(this, v); 
+    SetFlag_r(this, SET_ALLOWEMPTY, v); 
 }
 
-inline int NPFold::SetAllowempty_r(NPFold* nd, bool v)
+inline int NPFold::SetFlag_r(NPFold* nd, int flag, bool v)
 {
-    nd->set_allowempty(v); 
+    switch(flag)
+    {
+        case SET_VERBOSE   : nd->set_verbose(v)    ; break ;   
+        case SET_SKIPDELETE: nd->set_skipdelete(v) ; break ;   
+        case SET_ALLOWEMPTY: nd->set_allowempty(v) ; break ;   
+    }
+
     int tot_fold = 1 ; 
 
     assert( nd->subfold.size() == nd->ff.size() ); 
@@ -672,15 +705,11 @@ inline int NPFold::SetAllowempty_r(NPFold* nd, bool v)
     for(int i=0 ; i < num_sub ; i++) 
     {
         NPFold* sub = nd->subfold[i] ; 
-        int num = SetAllowempty_r( sub, v );  
+        int num = SetFlag_r( sub, flag, v );  
         tot_fold += num ; 
     }
     return tot_fold ; 
 }
-
-
-
-
 
 
 
@@ -762,7 +791,25 @@ inline void NPFold::add_subfold(const char* f, NPFold* fo )
 
 
     ff.push_back(f); // subfold keys 
-    subfold.push_back(fo); 
+    subfold.push_back(fo);
+
+    if(fo->parent != nullptr)
+    {
+        std::string fo_treepath = fo->get_treepath(); 
+        std::string fo_parent_treepath = fo->parent->get_treepath(); 
+        std::string this_treepath = get_treepath(); 
+
+        std::cerr 
+            << "NPFold::add_subfold " 
+            << " WARNING changing parent of added subfold fo \n"
+            << " fo.treepath [" << fo_treepath << "]\n"
+            << " fo.parent.treepath [" << fo_parent_treepath << "]\n"
+            << " this.treepath [" << this_treepath << "]\n" 
+            << "\n"
+            ;
+    } 
+    //assert( fo->parent == nullptr ); 
+    fo->parent = this ; 
 }
 
 
@@ -792,6 +839,42 @@ inline int NPFold::get_subfold_idx(const char* f) const
     size_t idx = std::distance( ff.begin(), std::find( ff.begin(), ff.end(), f )) ; 
     return idx < ff.size() ? idx : UNDEF ; 
 }
+inline int NPFold::get_subfold_idx(const NPFold* fo) const
+{
+    size_t idx = std::distance( subfold.begin(), std::find( subfold.begin(), subfold.end(), fo )) ; 
+    return idx < subfold.size() ? idx : UNDEF ; 
+}
+
+inline const char* NPFold::get_subfold_key_within_parent() const
+{
+    int idx = parent ? parent->get_subfold_idx(this) : -1 ;  
+    return idx == -1 ? nullptr : parent->get_subfold_key(idx) ; 
+} 
+
+inline void NPFold::get_treepath_(std::vector<std::string>& elem) const
+{
+     const NPFold* n = this ;
+     while(n)
+     {
+         const char* sk = n->get_subfold_key_within_parent() ; 
+         elem.push_back(sk ? sk : ""); 
+         n = n->parent ;    
+     }
+} 
+inline std::string NPFold::get_treepath(const char* k) const
+{
+    std::vector<std::string> elem ; 
+    get_treepath_(elem); 
+    std::reverse(elem.begin(), elem.end());
+    std::stringstream ss ; 
+    int num_elem = elem.size(); 
+    for(int i=0 ; i < num_elem ; i++ ) ss << elem[i] << ( i < num_elem - 1 ? "/" : "" ) ; 
+    if(k) ss << "/" << k ; 
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
 inline NPFold* NPFold::get_subfold(const char* f) const 
 {
     int idx = get_subfold_idx(f) ; 
@@ -1334,7 +1417,11 @@ the pointer loosing connection with that previous allocation
 **/
 inline void NPFold::add_(const char* k, const NP* a) 
 {
-    if(verbose_) std::cerr << "NPFold::add_ [" << k  << "]" <<  std::endl ; 
+    if(verbose_) 
+    {
+        std::string p = get_treepath(k); 
+        std::cerr << "NPFold::add_ [" << p << "]" << a << " " << a->sstr() << "\n" ;
+    }
 
     bool have_key_already = std::find( kk.begin(), kk.end(), k ) != kk.end() ; 
     if(have_key_already) std::cerr 
@@ -1424,7 +1511,11 @@ NPFold::clear (clearing this fold and all subfold recursively)
 **/
 inline void NPFold::clear()
 {
-    if(verbose_) std::cerr << "NPFold::clear ALL" << std::endl ; 
+    if(verbose_) 
+    {
+        std::string p = get_treepath(); 
+        std::cerr << "NPFold::clear ALL [" << p << "]" << this << "\n" ; 
+    }
     clear_(nullptr);     
 }
 
@@ -1463,6 +1554,9 @@ inline void NPFold::clear_(const std::vector<std::string>* keep)
     clear_subfold(); 
 }
 
+
+
+
 inline void NPFold::clear_arrays(const std::vector<std::string>* keep)
 {
     for(unsigned i=0 ; i < aa.size() ; i++)
@@ -1470,7 +1564,15 @@ inline void NPFold::clear_arrays(const std::vector<std::string>* keep)
         const NP* a = aa[i]; 
         const std::string& k = kk[i] ; 
         bool listed = keep && std::find( keep->begin(), keep->end(), k ) != keep->end() ; 
-        if(!listed && !skipdelete) delete a ; 
+        if(!listed && !skipdelete) 
+        {
+            if(verbose_) 
+            {
+                std::string p = get_treepath(k.c_str()); 
+                std::cerr << "NPFold::clear_arrays.delete[" << p << "]" << a << " " << a->sstr() << "\n"; 
+            }
+            delete a ; 
+        }
     } 
     aa.clear();  
     kk.clear();  
@@ -1489,6 +1591,12 @@ This avoids SIGSEGV from dereferencing those stale pointers.
 
 inline void NPFold::clear_subfold()
 {
+    if(verbose_) 
+    {
+        std::string p = get_treepath(); 
+        std::cerr << "NPFold::clear_subfold[" << p << "]" << this << "\n"; 
+    }
+
     check_integrity(); 
     int num_sub = subfold.size() ; 
     [[maybe_unused]] int num_ff = ff.size() ; 
