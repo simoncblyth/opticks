@@ -1,4 +1,14 @@
 #pragma once
+/**
+SEvent.hh
+===========
+
+ALL THESE ARE STATIC GENSTEP UTILITIES
+
+TODO: MOVE THEM ALL TO HEADER ONLY SGenstep.h AND DELETE SEvent.{hh,cc}
+
+
+**/
 
 struct NP ; 
 struct quad4 ; 

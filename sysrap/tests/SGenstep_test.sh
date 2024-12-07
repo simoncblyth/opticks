@@ -22,7 +22,11 @@ arg=${1:-$defarg}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="BASH_SOURCE name"
+#test=Slices_3
+test=ALL
+export TEST=${TEST:-$test}
+
+vars="BASH_SOURCE name test TEST"
 
 if [ "${arg/info}" != "$arg" ]; then 
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -35,9 +39,8 @@ fi
 
 if [ "${arg/run}" != "$arg" ]; then 
     $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 fi
 
-
-
+exit 0
 

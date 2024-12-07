@@ -281,7 +281,7 @@ SEVENT_METHOD std::string sevent::descNum() const
     std::stringstream ss ; 
     ss 
         << " sevent::descNum  "  << std::endl 
-        << " evt.num_curand    " << std::setw(w) << num_curand   << std::endl 
+        << " evt.num_curand   "  << std::setw(w) << num_curand   << std::endl 
         << " evt.num_genstep  "  << std::setw(w) << num_genstep  << std::endl 
         << " evt.num_seed     "  << std::setw(w) << num_seed     << std::endl 
         << " evt.num_photon   "  << std::setw(w) << num_photon   << std::endl 

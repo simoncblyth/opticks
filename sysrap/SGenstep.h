@@ -3,6 +3,10 @@
 SGenstep.h : genstep static utilities
 ========================================
 
+TODO: incorporate all/most of the genstep methods from SEvent.{hh,cc}
+      here to avoid near duplicated impls 
+
+
 Used by:
 
 sysrap/SGenerate.h
@@ -57,6 +61,9 @@ struct SYSRAP_API SGenstep
 
     static int GetNumPhoton( const quad6* qq, unsigned gs_idx  ); 
     static int GetNumPhoton( const NP* gs, unsigned gs_idx  ); 
+
+    static int GetPhotonTotal( const NP* gs ); 
+    static int GetPhotonTotal( const NP* gs, int gs_start, int gs_stop  ); 
 
     static void Check(const NP* gs); 
     static NP* MakeArray(const std::vector<quad6>& gs ); 
@@ -182,6 +189,10 @@ inline int SGenstep::GetNumPhoton( const quad6& gs )
     return gs.q0.i.w ; 
 }
 
+
+
+
+
 inline void SGenstep::SetNumPhoton( quad6& gs, int num )
 {
     gs.q0.i.w = num ; 
@@ -203,6 +214,9 @@ inline const quad6& SGenstep::GetGenstep(const NP* gs, unsigned gs_idx )
 /**
 SGenstep::GetGenstepSlices
 --------------------------
+
+Populates the genstep slice vector with gs[start:stop] slices
+that do not exceed max_photon for the total number of photons.  
 
 **/
 
@@ -227,12 +241,16 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
 
         const quad6& q = qq[i] ;
         int num_ph = GetNumPhoton(q); 
-        extend_slice = (sl.ph_count + num_ph) <= max_photon ;  
+
+        int cand = sl.ph_count + num_ph ;  
+        extend_slice = cand <= max_photon ;  
 
         if(0) std::cout 
             << "SGenstep::GetGenstepSlices"
             << " i " << std::setw(4) << i 
-            << " num_ph " << num_ph 
+            << " sl.ph_count " << std::setw(7) << sl.ph_count 
+            << " num_ph " << std::setw(7) << num_ph 
+            << " cand  " << std::setw(7) << num_ph 
             << " extend_slice " << ( extend_slice ? "YES" : "NO " )
             << " last_gs " << ( last_gs ? "YES" : "NO " ) 
             << "\n"
@@ -242,7 +260,6 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
         { 
             sl.gs_stop = i+1 ; 
             sl.ph_count += num_ph ;  
-            if(last_gs) slice.push_back(sl) ;
         }
         else  // genstep does not fit, so close slice and start another 
         {
@@ -252,8 +269,9 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
             sl.ph_count = 0 ;          // back to zero  
             sl.ph_count += num_ph ; 
             sl.gs_start = i ;
-            sl.gs_stop = 0 ; 
+            sl.gs_stop = i+1 ;
         }  
+        if(last_gs) slice.push_back(sl) ;
     }
     sslice::SetOffset(slice); 
 
@@ -262,6 +280,21 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
 
 inline void SGenstep::CheckGenstepSlices(const std::vector<sslice>& slice, const NP* gs, int max_photon )
 {
+    int gs_tot = GetPhotonTotal(gs); 
+    int sl_tot = sslice::TotalPhoton(slice); 
+
+    bool tot_consistent = gs_tot == sl_tot ; 
+
+    if(!tot_consistent) std::cerr 
+       << "SGenstep::CheckGenstepSlices"
+       << " gs_tot " << gs_tot
+       << " sl_tot " << sl_tot
+       << " tot_consistent " << ( tot_consistent ? "YES" : "NO " ) 
+       << "\n" 
+       ;
+    assert(tot_consistent); 
+
+
     const quad6* qq = gs ? (quad6*)gs->cvalues<float>() : nullptr ; 
     int num_sl = slice.size(); 
     for(int i=0 ; i < num_sl ; i++)
@@ -317,6 +350,30 @@ inline int SGenstep::GetNumPhoton( const NP* gs, unsigned gs_idx  ) // static
     return GetNumPhoton(q) ; 
 }
 
+
+inline int SGenstep::GetPhotonTotal( const NP* gs ) // static
+{
+    int num_gs = gs ? gs->shape[0] : 0 ; 
+    return GetPhotonTotal( gs, 0, num_gs ); 
+}
+
+/**
+Genstep::GetPhotonTotal
+------------------------
+
+Returns total photon in genstep slice gs[start:stop]
+
+**/
+
+inline int SGenstep::GetPhotonTotal( const NP* gs, int gs_start, int gs_stop ) // static
+{
+    int num_gs = gs ? gs->shape[0] : 0 ; 
+    assert( gs_start <= num_gs ); 
+    assert( gs_stop  <= num_gs ); 
+    int tot = 0 ; 
+    for(int i=gs_start ; i < gs_stop ; i++ ) tot += GetNumPhoton(gs, i );     
+    return tot ; 
+}
 
 
 

@@ -37,7 +37,10 @@ struct sslice
     static std::string Label() ; 
     std::string desc() const ; 
     static std::string Desc(const std::vector<sslice>& sl ); 
-    static int TotalCount(const std::vector<sslice>& sl, int i0, int i1); 
+
+    static int TotalPhoton(const std::vector<sslice>& sl ); 
+    static int TotalPhoton(const std::vector<sslice>& sl, int i0, int i1); 
+
     static void SetOffset(std::vector<sslice>& slice); 
 }; 
 
@@ -90,7 +93,11 @@ inline std::string sslice::Desc(const std::vector<sslice>& sl)
     return str ; 
 }
 
-inline int sslice::TotalCount(const std::vector<sslice>& slice, int i0, int i1)
+inline int sslice::TotalPhoton(const std::vector<sslice>& slice)
+{
+    return TotalPhoton(slice, 0, slice.size() ); 
+}
+inline int sslice::TotalPhoton(const std::vector<sslice>& slice, int i0, int i1)
 {
     assert( i1 <= int(slice.size())) ; 
     int tot = 0 ; 
@@ -100,6 +107,6 @@ inline int sslice::TotalCount(const std::vector<sslice>& slice, int i0, int i1)
 
 inline void sslice::SetOffset(std::vector<sslice>& slice)
 {
-    for(int i=0 ; i < int(slice.size()) ; i++ ) slice[i].ph_offset = TotalCount(slice,0,i) ; 
+    for(int i=0 ; i < int(slice.size()) ; i++ ) slice[i].ph_offset = TotalPhoton(slice,0,i) ; 
 }
 
