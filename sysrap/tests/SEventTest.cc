@@ -1,13 +1,23 @@
+/**
+SEventTest.cc
+===============
+
+TEST=MakeCountGenstep SEventTest
+
+
+**/
+
+
 #include "OPTICKS_LOG.hh"
 
+#include "ssys.h"
+#include "spath.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
 #include "ssincos.h"
 
-
-#include "SPath.hh"
 #include "SEvent.hh"
 #include "SFrameGenstep.hh"
 #include "SCenterExtentGenstep.hh"
@@ -15,20 +25,83 @@
 
 #include "NP.hh"
 
-const char* BASE = "$TMP/sysrap/SEventTest" ; 
+const char* FOLD = "${FOLD:-$TMP/sysrap/SEventTest}" ; 
 
-const NP* test_MakeCountGenstep()
+struct SEventTest
+{ 
+    static const char* TEST ; 
+
+    static int Resolve(); 
+    static int MakeCountGenstep();
+    static int MakeTorchGenstep();
+
+    static const Tran<double>* GetTestTransform(int idx); 
+
+    static int       MakeCenterExtentGenstep_(); 
+    static const NP* MakeCenterExtentGenstep(int nx, int ny, int nz );  
+
+    static int GenerateCEG0_();
+    static int GenerateCEG0( const NP* gsa );
+
+    static int GenerateCEG1_();
+    static int GenerateCEG1( const NP* gsa );
+
+    static int Main(); 
+};
+
+const char* SEventTest::TEST = ssys::getenvvar("TEST", "Resolve"); 
+
+int SEventTest::Resolve()
+{
+   const char* path = spath::Resolve(FOLD); 
+   std::cout 
+        << "SEventTest::Resolve\n"
+        << " FOLD [" << FOLD << "]\n" 
+        << " path [" << ( path ? path : "-" ) << "]\n" 
+        ; 
+   return 0 ; 
+}
+
+int SEventTest::MakeCountGenstep()
 {
     std::vector<int> photon_counts_per_genstep = { 3, 5, 2, 0, 1, 3, 4, 2, 4 };  
     int x_total = 0 ; 
     const NP* gs = SEvent::MakeCountGenstep(photon_counts_per_genstep, &x_total ) ; 
-    gs->save(BASE, "cngs.npy"); 
+    gs->save(FOLD, "cngs.npy"); 
 
-    return gs ; 
+    std::cout 
+        << "SEventTest::MakeCountGenstep"
+        << " x_total " << x_total
+        << " gs " << ( gs ? gs->sstr() : "-" )
+        << "\n"
+        ;
+
+    return 0 ; 
+}
+
+int SEventTest::MakeTorchGenstep()
+{
+    const char* path = spath::Resolve(FOLD, "torch.npy"); 
+    const NP* gs = SEvent::MakeTorchGenstep() ; 
+    gs->save(path); 
+
+    std::cout 
+        << "SEventTest::MakeTorchGenstep"
+        << " path " << ( path ? path : "-" )  
+        << " gs " << ( gs ? gs->sstr() : "-" )
+        << "\n"
+        ;
+
+    return 0 ; 
 }
 
 
-const Tran<double>* GetTestTransform(int idx)
+
+
+
+
+
+const Tran<double>* SEventTest::GetTestTransform(int idx)
 {
     const Tran<double>* geotran = nullptr ;  
 
@@ -60,12 +133,17 @@ const Tran<double>* GetTestTransform(int idx)
 }
  
 
-
-const NP* test_MakeCenterExtentGenstep(int nx, int ny, int nz, const float4* ce_ ) 
+int SEventTest::MakeCenterExtentGenstep_()
 {
-    LOG(info); 
-    float4 ce( ce_ ? *ce_ :  make_float4( 1.f, 2.f, 3.f, 100.f ));  
+    const NP* gs = MakeCenterExtentGenstep( 2, 2, 2); 
+    std::cout << " gs " << ( gs ? gs->sstr() : "-" ) << "\n" ; 
+    return 0 ; 
+}
 
+const NP* SEventTest::MakeCenterExtentGenstep(int nx, int ny, int nz ) 
+{
+    float4 ce ; 
+    qvals( ce, "CE", "500,0,0,100" ); 
     LOG(info) << " ce " << ce ; 
 
     std::vector<int> cegs = {{nx, ny, nz, 10 }} ; 
@@ -82,13 +160,30 @@ const NP* test_MakeCenterExtentGenstep(int nx, int ny, int nz, const float4* ce_
 
     const NP* gs = SFrameGenstep::MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, ce_scale );  
 
-    gs->save(BASE, "cegs.npy");
+    const char* path = spath::Resolve(FOLD, "cegs.npy"); 
+    gs->save(path);
+
+    std::cout 
+         << "SEventTest::MakeCenterExtentGenstep"
+         << " path [" << ( path ? path : "-" ) << "]\n"
+         << " gs " << ( gs ? gs->sstr() : "-" ) 
+         << "\n"
+         ;
 
     return gs ;
 }
 
 
-void test_GenerateCenterExtentGenstep_0( const NP* gsa )
+int SEventTest::GenerateCEG0_()
+{
+    const NP* gs = MakeCenterExtentGenstep(3, 0, 3) ;
+    assert( gs ); 
+    gs->dump(0,gs->shape[0],4,6); 
+
+    return GenerateCEG0(gs); 
+}
+
+int SEventTest::GenerateCEG0( const NP* gsa )
 {   
     LOG(info); 
 
@@ -99,37 +194,54 @@ void test_GenerateCenterExtentGenstep_0( const NP* gsa )
     memcpy( ppa->bytes(),  (float*)pp.data(), ppa->arr_bytes() );
    
     std::cout << "ppa " << ppa->sstr() << std::endl ;
-    ppa->save(BASE, "ppa.npy"); 
+    ppa->save(FOLD, "ppa.npy"); 
+
+    return 0 ; 
 }
 
-void test_GenerateCenterExtentGenstep_1( const NP* gsa )
+int SEventTest::GenerateCEG1_()
+{
+    const NP* gs = MakeCenterExtentGenstep(3, 0, 3) ;
+    assert( gs ); 
+    gs->dump(0,gs->shape[0],4,6); 
+
+    return GenerateCEG1(gs); 
+}
+
+int SEventTest::GenerateCEG1( const NP* gsa )
 {   
     LOG(info); 
     float gridscale = 1.f ; // not usually used
     NP* ppa = SFrameGenstep::GenerateCenterExtentGenstepPhotons_( gsa, gridscale ); 
-    LOG(info) << "ppa " << ppa->sstr() << " saving ppa.npy to " << BASE  ;
-    ppa->save(BASE, "ppa.npy"); 
+    LOG(info) << "ppa " << ppa->sstr() << " saving ppa.npy to " << FOLD  ;
+    ppa->save(FOLD, "ppa.npy"); 
+    return 0 ; 
 }
 
+int SEventTest::Main()
+{
+    bool ALL = strcmp(TEST, "ALL") == 0 ;
+
+    std::cout << "SEventTest::Main TEST " << TEST << "\n" ; 
+
+    int rc = 0 ; 
+    if(ALL||0==strcmp(TEST, "Resolve"))                 rc += Resolve(); 
+    if(ALL||0==strcmp(TEST, "MakeCountGenstep"))        rc += MakeCountGenstep(); 
+    if(ALL||0==strcmp(TEST, "MakeTorchGenstep"))        rc += MakeTorchGenstep(); 
+
+    if(ALL||0==strcmp(TEST, "MakeCenterExtentGenstep")) rc += MakeCenterExtentGenstep_(); 
+    if(ALL||0==strcmp(TEST, "GenerateCEG0"))            rc += GenerateCEG0_(); 
+    if(ALL||0==strcmp(TEST, "GenerateCEG1"))            rc += GenerateCEG1_(); 
+
+    std::cout << "SEventTest::Main TEST " << TEST << " rc " << rc << "\n" ; 
+    return rc ; 
+}
 
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
-
-    float4 ce ; 
-    qvals( ce, "CE", "500,0,0,100" ); 
-    LOG(info) << " ce " << ce ; 
-
-    //const NP* gs = test_MakeCountGenstep() ; 
-    const NP* gs0 = test_MakeCenterExtentGenstep(3, 0, 3, &ce ) ;
-    assert( gs0 ); 
-    gs0->dump(0,gs0->shape[0],4,6); 
-
-    //test_GenerateCenterExtentGenstep_0(gs0); 
-    test_GenerateCenterExtentGenstep_1(gs0); 
-
-    return 0 ; 
+    return SEventTest::Main() ; 
 }           
 
 

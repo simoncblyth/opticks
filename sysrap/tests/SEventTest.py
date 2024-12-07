@@ -5,8 +5,7 @@ SEventTest.py
 
 ::
 
-    ipython -i tests/SEventTest.py 
-    ./SEventTest.sh 
+    ~/o/sysrap/tests/SEventTest.sh pdb 
 
 """
 
@@ -32,10 +31,7 @@ def test_transform():
     pos = p1[:,:3]   
     return pos 
 
-
-if __name__ == '__main__':
-    t = Fold.Load("/tmp/$USER/opticks/sysrap/SEventTest")
-
+def test_ppa(t):
     pos = t.ppa[:,0,:3]
     dir = t.ppa[:,1,:3]
     #pv = None
@@ -49,5 +45,23 @@ if __name__ == '__main__':
         cp = pl.show()    
     pass
 
+
+
+if __name__ == '__main__':
+    TEST = os.environ["TEST"]
+    print("TEST:%s" % TEST) 
+    t = Fold.Load("$FOLD", symbol="t")
+    print(t)
+
+    if TEST == "MakeTorchGenstep":
+        a = t.torch
+        print("a = t.torch\n",a)
+        print("a.shape\n", a.shape) 
+        e = "a[:,0].view(np.int32)"
+        print(e,"\n",eval(e))
+    pass
+   
+
+ 
 
 

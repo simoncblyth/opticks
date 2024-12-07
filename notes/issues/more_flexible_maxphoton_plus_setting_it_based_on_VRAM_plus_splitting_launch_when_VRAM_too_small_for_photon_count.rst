@@ -1235,4 +1235,58 @@ Start adding sliced genstep launch to QEvent SEvt
 
 
 
+How to test sliced launches ? 
+---------------------------------
+
+* cxs_min.sh often uses a single torch genstep, need to change that to test genstep sliced multi-launch
+* cxs_min.sh large_evt : try to get to 300M 400M with only 24G VRAM 
+
+::
+
+    247 elif [ "$TEST" == "large_evt" ]; then
+    248 
+    249    opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
+    250    opticks_max_photon=M200   ## cost: QRng init time + VRAM 
+    251    opticks_num_event=1
+    252    opticks_running_mode=SRM_TORCH
+    253 
+
+
+how to config split genstep torch running ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     741 void SEvt::addInputGenstep()
+     742 {
+
+     785             else if( has_torch )
+     786             {
+     787                 if( SEvent::HasGENSTEP() )
+     788                 {
+     789                     // expected with G4CXApp.h U4Recorder running : see G4CXApp::GeneratePrimaries
+     790                     // this is because the gensteps are needed really early with Geant4 running 
+     791                     igs = SEvent::GetGENSTEP() ;
+     792                 }
+     793                 else
+     794                 {
+     795                     int index_arg = getIndexArg();
+     796                     igs = SEvent::MakeTorchGenstep(index_arg);  // pass index to allow changing num photons per event
+     797                 }
+     798             }
+     799             assert(igs); 
+     800             addGenstep(igs);
+
+
+
+Generalized to fabricate multi-gensteps::
+
+   SEvent::MakeGenstep
+   SEventConfig::
+
+
+   TEST=MakeTorchGenstep ~/o/sysrap/tests/SEventTest.sh
+
+
+
 

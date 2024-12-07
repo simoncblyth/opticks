@@ -327,10 +327,14 @@ void QSim::post_launch()
 QSim::simulate
 ---------------
 
-Canonically invoked from G4CXOpticks::simulate
+Two canonical invokations:
+
+1. G4CXOpticks::simulate for full dependency running 
+2. CSGOptiX::simulate for pure CSGOptiX level testing such as by ~/o/cxs_min.sh 
+
 Collected genstep are uploaded and the CSGOptiX kernel is launched to generate and propagate. 
 
-NB the surprising fact that this calls CSGOptiX::simulate (using a protocol), 
+NB the surprising fact that this calls CSGOptiX::simulate_launch (using a protocol), 
 that seems funny dependency-wise but its needed for genstep preparation prior to 
 the launch. 
 
@@ -366,6 +370,7 @@ double QSim::simulate(int eventID, bool reset_)
     std::vector<sslice> gs_slice ; 
     SGenstep::GetGenstepSlices( gs_slice, gs_, SEventConfig::MaxSlot() ); 
     int num_slice = gs_slice.size(); 
+    LOG(LEVEL) << sslice::Desc(gs_slice); 
 
     for(int i=0 ; i < num_slice ; i++)
     {

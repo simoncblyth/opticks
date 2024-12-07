@@ -137,10 +137,10 @@ HMM: perhaps SEventConfig to do this in standardized place ?
 
 **/
 
-NP* SEvent::MakeTorchGenstep(   int idx_arg){    return MakeGenstep( OpticksGenstep_TORCH, idx_arg ) ; }
+NP* SEvent::MakeTorchGenstep(   int idx_arg){ return MakeGenstep( OpticksGenstep_TORCH, idx_arg ) ; }
 NP* SEvent::MakeCerenkovGenstep(int idx_arg){ return MakeGenstep( OpticksGenstep_CERENKOV, idx_arg ) ; }
-NP* SEvent::MakeScintGenstep(   int idx_arg){    return MakeGenstep( OpticksGenstep_SCINTILLATION, idx_arg ) ; }
-NP* SEvent::MakeCarrierGenstep( int idx_arg){  return MakeGenstep( OpticksGenstep_CARRIER, idx_arg ) ; }
+NP* SEvent::MakeScintGenstep(   int idx_arg){ return MakeGenstep( OpticksGenstep_SCINTILLATION, idx_arg ) ; }
+NP* SEvent::MakeCarrierGenstep( int idx_arg){ return MakeGenstep( OpticksGenstep_CARRIER, idx_arg ) ; }
 
 
 /**
@@ -157,9 +157,10 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
 {
     bool with_index = index_arg != -1 ; 
     if(with_index) assert( index_arg >= 0 );  // index_arg is 0-based 
-    int num_ph = with_index ? SEventConfig::NumPhoton(index_arg) : ssys::getenvint("SEvent_MakeGenstep_num_ph", 100 ) ; 
+    int num_ph = with_index ? SEventConfig::NumPhoton(index_arg)  : ssys::getenvint("SEvent__MakeGenstep_num_ph", 100 ) ; 
+    int num_gs = with_index ? SEventConfig::NumGenstep(index_arg) : ssys::getenvint("SEvent__MakeGenstep_num_gs", 1   ) ;
+ 
     bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump"); 
-    unsigned num_gs = 1 ; 
     const int M = 1000000 ; 
 
     LOG(LEVEL) 
@@ -168,39 +169,52 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
         << " with_index " << ( with_index ? "YES" : "NO " )
         << " num_ph " << num_ph 
         << " num_ph/M " << num_ph/M 
+        << " num_gs " << num_gs 
         << " dump " << dump
         ; 
+
+    assert( num_gs > 0 ); 
 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );  
     gs->set_meta<std::string>("creator", "SEvent::MakeGenstep" ); 
     gs->set_meta<int>("num_ph", num_ph ); 
+    gs->set_meta<int>("num_gs", num_gs ); 
     gs->set_meta<int>("index_arg",  index_arg ); 
+
+
+    int gs_start = 0 ; 
+    int gs_stop = num_gs ; 
+    int gs_ph   = num_ph/num_gs ; // divide the num_ph equally between the num_gs   
 
     switch(gentype)
     {
-        case  OpticksGenstep_TORCH:         FillGenstep<storch>(   gs, num_ph, dump) ; break ; 
-        case  OpticksGenstep_CERENKOV:      FillGenstep<scerenkov>(gs, num_ph, dump) ; break ; 
-        case  OpticksGenstep_SCINTILLATION: FillGenstep<sscint>(   gs, num_ph, dump) ; break ; 
-        case  OpticksGenstep_CARRIER:       FillGenstep<scarrier>( gs, num_ph, dump) ; break ; 
+        case  OpticksGenstep_TORCH:         FillGenstep<storch>(   gs, gs_start, gs_stop, gs_ph, dump) ; break ; 
+        case  OpticksGenstep_CERENKOV:      FillGenstep<scerenkov>(gs, gs_start, gs_stop, gs_ph, dump) ; break ; 
+        case  OpticksGenstep_SCINTILLATION: FillGenstep<sscint>(   gs, gs_start, gs_stop, gs_ph, dump) ; break ; 
+        case  OpticksGenstep_CARRIER:       FillGenstep<scarrier>( gs, gs_start, gs_stop, gs_ph, dump) ; break ; 
     }
     return gs ; 
 }
 
 template<typename T>
-void SEvent::FillGenstep( NP* gs, int numphoton_per_genstep, bool dump )
+void SEvent::FillGenstep( NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump )
 {
+    int num_gs = gs ? gs->shape[0] : 0 ; 
+    assert( gs_start <  num_gs );
+    assert( gs_stop  <= num_gs );
+
     T* tt = (T*)gs->bytes() ; 
-    for(int i=0 ; i < gs->shape[0] ; i++ ) 
+    for(int i=gs_start ; i < gs_stop ; i++ ) 
     {
         unsigned genstep_id = i ; 
         T::FillGenstep( tt[i], genstep_id, numphoton_per_genstep, dump ) ; 
     }
 }
 
-template void SEvent::FillGenstep<storch>(    NP* gs, int numphoton_per_genstep, bool dump ); 
-template void SEvent::FillGenstep<scerenkov>( NP* gs, int numphoton_per_genstep, bool dump ); 
-template void SEvent::FillGenstep<sscint>(    NP* gs, int numphoton_per_genstep, bool dump ); 
-template void SEvent::FillGenstep<scarrier>(  NP* gs, int numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<storch>(    NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<scerenkov>( NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<sscint>(    NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump ); 
+template void SEvent::FillGenstep<scarrier>(  NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump ); 
 
 
 /**

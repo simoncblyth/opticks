@@ -128,6 +128,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kStartIndex   = "OPTICKS_START_INDEX" ; 
     static constexpr const char* kNumEvent     = "OPTICKS_NUM_EVENT" ; 
     static constexpr const char* kNumPhoton    = "OPTICKS_NUM_PHOTON" ; 
+    static constexpr const char* kNumGenstep   = "OPTICKS_NUM_GENSTEP" ; 
     static constexpr const char* kEventSkipahead  = "OPTICKS_EVENT_SKIPAHEAD" ; 
 
     static constexpr const char* kG4StateSpec  = "OPTICKS_G4STATE_SPEC" ; 
@@ -335,6 +336,7 @@ struct SYSRAP_API SEventConfig
     static int         _StartIndexDefault ; 
     static int         _NumEventDefault ; 
     static const char* _NumPhotonDefault ; 
+    static const char* _NumGenstepDefault ; 
 
     static int         _EventSkipaheadDefault ; 
     static const char* _G4StateSpecDefault ; 
@@ -382,10 +384,18 @@ struct SYSRAP_API SEventConfig
 
     static std::vector<int>* _GetNumPhotonPerEvent(); 
     static std::vector<int>* _NumPhotonPerEvent ; 
+
+    static std::vector<int>* _GetNumGenstepPerEvent(); 
+    static std::vector<int>* _NumGenstepPerEvent ; 
+
     static int               _GetNumPhoton(int idx); 
+    static int               _GetNumGenstep(int idx); 
+
+
     static int               _GetNumEvent(); 
-    static int               NumPhoton(int idx); // some tests need varying photon count 
-    static int               NumEvent();         // some tests use event count and nned to detect last event 
+    static int               NumPhoton(int idx);  // some tests need varying photon count for each event
+    static int               NumGenstep(int idx); // some tests need varying numbers of genstep for each event
+    static int               NumEvent();          // some tests use event count and need to detect last event 
     static int               EventIndex(int idx) ; 
     static int               EventIndexArg(int index) ; 
     static bool              IsFirstEvent(int idx);   // 0-based idx (such as Geant4 eventID)

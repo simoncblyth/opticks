@@ -787,7 +787,7 @@ void SEvt::addInputGenstep()
                 if( SEvent::HasGENSTEP() )   
                 {   
                     // expected with G4CXApp.h U4Recorder running : see G4CXApp::GeneratePrimaries
-                    // this is because the gensteps are needed really really with Geant4 running 
+                    // this is because the gensteps are needed really early with Geant4 running 
                     igs = SEvent::GetGENSTEP() ; 
                 }
                 else

@@ -3,6 +3,10 @@ usage(){ cat << EOU
 cxs_min.sh : minimal executable and script for shakedown
 ============================================================
 
+Uses ~oneline main::
+
+     CSGOptiX::SimulateMain();
+
 Usage::
 
     ~/o/cxs_min.sh
@@ -73,9 +77,9 @@ Resolve_CFBaseFromGEOM()
    : HMM : FOR SOME TESTS WANT TO LOAD GDML BUT FOR OTHERS CSGFoundry 
    : to handle that added gdml resolution to eg g4cx/tests/GXTestRunner.sh 
 
-   local C_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
-   local B_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
-   local A_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
+   local A_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+   local B_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
+   local C_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
 
    local TestPath=CSGFoundry/prim.npy
    local GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
@@ -397,7 +401,7 @@ export QRng__init_VERBOSE=1
 
 
 
-vars="GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON"
+vars="PWD GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 

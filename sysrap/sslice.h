@@ -85,7 +85,9 @@ inline std::string sslice::desc() const
 
 inline std::string sslice::Desc(const std::vector<sslice>& sl)
 {
+    int tot_photon = TotalPhoton(sl) ; 
     std::stringstream ss ;
+    ss << "sslice::Desc num_slice " << sl.size() << " TotalPhoton " << tot_photon << "\n" ; 
     for(int i=0 ; i < int(sl.size()) ; i++ ) ss << std::setw(3) << i << " : " << sl[i].desc() << "\n" ;  
     ss << std::setw(3) << " " << "   " << Label() << "\n" ; 
 

@@ -33,6 +33,7 @@ const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 int         SEventConfig::_StartIndexDefault = 0 ;
 int         SEventConfig::_NumEventDefault = 1 ;
 const char* SEventConfig::_NumPhotonDefault = nullptr ;
+const char* SEventConfig::_NumGenstepDefault = nullptr ;
 int         SEventConfig::_EventSkipaheadDefault = 100000 ;  // APPROPRIATE SKIPAHEAD DEPENDS ON HOW MANY RANDOMS CONSUMED BY PHOTON SIMULATION
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ; 
@@ -90,10 +91,19 @@ int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefaul
 
 std::vector<int>* SEventConfig::_GetNumPhotonPerEvent()
 {
-    const char* NumPhotonSpec = ssys::getenvvar(kNumPhoton,  _NumPhotonDefault ); 
-    return sstr::ParseIntSpecList<int>( NumPhotonSpec, ',' ); 
+    const char* spec = ssys::getenvvar(kNumPhoton,  _NumPhotonDefault ); 
+    return sstr::ParseIntSpecList<int>( spec, ',' ); 
 }
 std::vector<int>* SEventConfig::_NumPhotonPerEvent = _GetNumPhotonPerEvent() ; 
+
+
+std::vector<int>* SEventConfig::_GetNumGenstepPerEvent()
+{
+    const char* spec = ssys::getenvvar(kNumGenstep,  _NumGenstepDefault ); 
+    return sstr::ParseIntSpecList<int>( spec, ',' ); 
+}
+std::vector<int>* SEventConfig::_NumGenstepPerEvent = _GetNumGenstepPerEvent() ; 
+
 
 /**
 SEventConfig::_GetNumPhoton
@@ -124,31 +134,72 @@ int SEventConfig::_GetNumPhoton(int idx)
     return (*_NumPhotonPerEvent)[idx] ; 
 }
 
+
+int SEventConfig::_GetNumGenstep(int idx)
+{
+    if(_NumGenstepPerEvent == nullptr) return 0 ; 
+
+    int nevt0 = NumEvent() ; 
+    int nevt1 = _NumGenstepPerEvent->size() ;
+    bool match = nevt0 == nevt1 ;  
+    LOG_IF(fatal, !match) 
+        << " NumEvent MISMATCH BETWEEN " 
+        << std::endl 
+        << " nevt0:_NumEvent                " << nevt0 << "( from " << kNumEvent   << ":" << ( getenv(kNumEvent) ? getenv(kNumEvent) : "-" ) << ") "
+        << " nevt1:_NumGenstepPerEvent.size " << nevt1 << "( from " << kNumGenstep << ":" << ( getenv(kNumGenstep) ? getenv(kNumGenstep) : "-" ) << ") "
+        ; 
+    assert( match ); 
+    if(idx < 0 ) idx += nevt0 ;   // allow -ve indices to count from the back 
+    if(idx >= nevt0) return 0 ; 
+
+    return (*_NumGenstepPerEvent)[idx] ; 
+}
+
+
 /**
+SEventConfig::_GetNumEvent
+--------------------------
 
 ::
 
-    OPTICKS_NUM_EVENT=4 OPTICKS_NUM_PHOTON=M1:3 SEventConfigTest 
+    OPTICKS_NUM_EVENT=4 OPTICKS_NUM_PHOTON=M1:3 OPTICKS_NUM_GENSTEP=M1:3 SEventConfigTest 
 
 **/
 
 int SEventConfig::_GetNumEvent()
 {
     bool have_NumPhotonPerEvent = _NumPhotonPerEvent && _NumPhotonPerEvent->size() > 0 ; 
-    bool override_NumEvent = have_NumPhotonPerEvent && int(_NumPhotonPerEvent->size()) != _NumEvent ; 
+    bool have_NumGenstepPerEvent = _NumGenstepPerEvent && _NumGenstepPerEvent->size() > 0 ; 
+
+    int numEvent_fromPhotonList  = have_NumPhotonPerEvent ? _NumPhotonPerEvent->size() : 0 ; 
+    int numEvent_fromGenstepList = have_NumGenstepPerEvent ? _NumGenstepPerEvent->size() : 0 ; 
+    int numEvent_fromList = std::max(numEvent_fromPhotonList, numEvent_fromGenstepList); 
+
+    if( numEvent_fromPhotonList > 0 && numEvent_fromGenstepList > 0 )
+    {
+        assert( numEvent_fromPhotonList == numEvent_fromGenstepList ); 
+    }
+
+    bool override_NumEvent = numEvent_fromList > 0  && numEvent_fromList != _NumEvent ; 
+
     LOG_IF(error, override_NumEvent ) 
         << " Overriding NumEvent "
         << "(" << kNumEvent  << ")" 
         << " value " << _NumEvent 
-        << " as inconsistent with NumPhoton list length "
+        << " as inconsistent with NumPhoton OR NumGenstep list length "
+        << "\n" 
         << "(" << kNumPhoton << ")" 
-        << " of " << ( _NumPhotonPerEvent ? _NumPhotonPerEvent->size() : -1 )
+        << " numEvent_fromPhotonList " << numEvent_fromPhotonList
+        << "\n" 
+        << "(" << kNumGenstep << ")" 
+        << " numEvent_fromGenstepList " << numEvent_fromGenstepList
         ;
-    return override_NumEvent ? int(_NumPhotonPerEvent->size()) : _NumEvent ; 
+    return override_NumEvent ? numEvent_fromList : _NumEvent ; 
 }
 
 
-int SEventConfig::NumPhoton(int idx){ return _GetNumPhoton(idx) ; }
+int SEventConfig::NumPhoton( int idx){ return _GetNumPhoton(idx) ; }
+int SEventConfig::NumGenstep(int idx){ return _GetNumGenstep(idx) ; }
 int SEventConfig::NumEvent(){         return _GetNumEvent() ; }
 int SEventConfig::EventIndex(int idx){ return _StartIndex + idx ; }
 int SEventConfig::EventIndexArg(int index){ return index == MISSING_INDEX ? -1 : index - _StartIndex ; }
@@ -549,6 +600,11 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " NumPhoton(0) " << " : " << NumPhoton(0) 
        << std::setw(20) << " NumPhoton(1) " << " : " << NumPhoton(1) 
        << std::setw(20) << " NumPhoton(-1) " << " : " << NumPhoton(-1) 
+       << std::endl 
+       << std::setw(25) << kNumGenstep
+       << std::setw(20) << " NumGenstep(0) " << " : " << NumGenstep(0) 
+       << std::setw(20) << " NumGenstep(1) " << " : " << NumGenstep(1) 
+       << std::setw(20) << " NumGenstep(-1) " << " : " << NumGenstep(-1) 
        << std::endl 
        << std::setw(25) << kG4StateSpec
        << std::setw(20) << " G4StateSpec " << " : " << G4StateSpec() 

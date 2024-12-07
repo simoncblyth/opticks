@@ -5,8 +5,9 @@ SEvent.hh
 
 ALL THESE ARE STATIC GENSTEP UTILITIES
 
-TODO: MOVE THEM ALL TO HEADER ONLY SGenstep.h AND DELETE SEvent.{hh,cc}
-
+BUT CANNOT MOVE THEM ALL TO HEADER ONLY SGenstep.h 
+AND DELETE SEvent.{hh,cc} BECAUSE THIS USES SEventConfig 
+COMPLICATING THINGS
 
 **/
 
@@ -52,7 +53,7 @@ struct SYSRAP_API SEvent
     static NP* MakeGenstep(int gentype, int idx_arg=-1); 
 
     template <typename T> 
-    static void FillGenstep( NP* gs, int numphoton_per_genstep, bool dump ) ; 
+    static void FillGenstep( NP* gs, int gs_start, int gs_stop, int numphoton_per_genstep, bool dump ) ; 
 
 
     static NP* MakeSeed( const NP* gs ); 
