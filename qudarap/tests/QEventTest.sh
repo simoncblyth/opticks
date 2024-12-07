@@ -6,6 +6,8 @@ QEventTest.sh
 ::
    
    ~/o/qudarap/tests/QEventTest.sh 
+   ~/o/qudarap/tests/QEventTest.sh dbg
+
    TEST=one ~/o/qudarap/tests/QEventTest.sh 
    BP=cudaMalloc ~/o/qudarap/tests/QEventTest.sh 
 

@@ -15,6 +15,9 @@
 #include "SEventConfig.hh"
 #include "SCSGOptiX.h"
 
+#include "SGenstep.h"
+#include "sslice.h"
+
 #include "NP.hh"
 #include "QUDA_CHECK.h"
 #include "QU.hh"
@@ -349,6 +352,7 @@ the launch.
 
 double QSim::simulate(int eventID, bool reset_)
 {
+    double tot_dt = 0. ; 
     SProf::Add("QSim__simulate_HEAD"); 
 
     LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
@@ -356,29 +360,45 @@ double QSim::simulate(int eventID, bool reset_)
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
-    int rc = event->setGenstep() ;    // QEvent 
-    LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
+    NP* gs_ = sev->getGenstepArray();  
 
-    SProf::Add("QSim__simulate_PREL"); 
+    std::vector<sslice> gs_slice ; 
+    SGenstep::GetGenstepSlices( gs_slice, gs_, SEventConfig::MaxSlot() ); 
+    int num_slice = gs_slice.size(); 
 
-    sev->t_PreLaunch = sstamp::Now() ; 
-    double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
-    sev->t_PostLaunch = sstamp::Now() ; 
-    sev->t_Launch = dt ; 
+    for(int i=0 ; i < num_slice ; i++)
+    {
+        const sslice& sl = gs_slice[i] ; 
 
-    SProf::Add("QSim__simulate_POST"); 
+        int rc = event->setGenstepUpload_NP(gs_, sl.gs_start, sl.gs_stop ) ; 
+        LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
-    sev->gather(); 
+        SProf::Add("QSim__simulate_PREL"); 
 
-    SProf::Add("QSim__simulate_DOWN"); 
+        sev->t_PreLaunch = sstamp::Now() ; 
+        double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
+        sev->t_PostLaunch = sstamp::Now() ; 
+        sev->t_Launch = dt ; 
+
+        tot_dt += dt ; 
+
+        SProf::Add("QSim__simulate_POST"); 
+
+        sev->gather(); 
+        // trying to use sub fold not top fold
+
+        SProf::Add("QSim__simulate_DOWN"); 
+    }
+    sev->topfold->concat(); 
+    sev->topfold->clear_subfold(); 
 
     int num_ht = sev->getNumHit() ;   // NB from fold, so requires hits array gathering to be configured to get non-zero 
     int num_ph = event->getNumPhoton() ; 
 
     LOG_IF(info, SEvt::MINIMAL) 
         << " eventID " << eventID 
-        << " dt " << std::setw(11) << std::fixed << std::setprecision(6) << dt 
+        << " tot_dt " << std::setw(11) << std::fixed << std::setprecision(6) << tot_dt 
         << " ph " << std::setw(10) << num_ph 
         << " ph/M " << std::setw(10) << num_ph/M 
         << " ht " << std::setw(10) << num_ht 
@@ -388,7 +408,8 @@ double QSim::simulate(int eventID, bool reset_)
 
     if(reset_) reset(eventID) ; 
     SProf::Add("QSim__simulate_TAIL"); 
-    return dt ; 
+
+    return tot_dt ; 
 }
 
 /**
@@ -397,12 +418,13 @@ QSim::reset
 
 When *QSim::simulate* is called with argument *reset:true* the
 *QSim::reset* method is called which invokes SEvt::endOfEvent in order
-to clean up the SEvt after saving any Opticks configured arrays.
+to clean up the SEvt. Normally that would be done after saving 
+any Opticks configured arrays.
 
 When *QSim::simulate* is called with argument *reset:false*
 the *QSim::reset* method must be called separately in order to avoid a memory leak. 
 Using *reset:false* is typically done in order to keep arrays alive longer 
-to enable copying the info from the gathered arrays into non-Opticks collections.  
+to enable copying from the gathered arrays into non-Opticks collections.  
 
 **/
 void QSim::reset(int eventID)

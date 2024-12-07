@@ -46,6 +46,7 @@ TEST=ALL       ~/o/qudarap/tests/QEventTest.sh
 
 struct QEventTest
 { 
+    static const char* TEST ; 
     static bool VERBOSE ; 
 
     static int setGenstep_one() ; 
@@ -60,7 +61,8 @@ struct QEventTest
 };
 
 
-bool QEventTest::VERBOSE = ssys::getenvbool("VERBOSE") ; 
+const char* QEventTest::TEST    = ssys::getenvvar("TEST", "ALL") ; 
+bool        QEventTest::VERBOSE = ssys::getenvbool("VERBOSE") ; 
 
 /**
 QEventTest::setGenstep_one
@@ -380,7 +382,7 @@ int QEventTest::setGenstep_checkEvt()
     assert( x_num_photon == x_total ) ; 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload_NP(gs,-1,-1); 
+    event->setGenstepUpload_NP(gs); 
     event->checkEvt(); 
     return 0 ; 
 }
@@ -403,7 +405,7 @@ int QEventTest::setGenstep_quad6()
 
 
     QEvent* event = new QEvent ; 
-    event->setGenstepUpload_NP( a_gs,-1,-1 );  
+    event->setGenstepUpload_NP( a_gs);  
 
     event->gs->dump(); 
     event->checkEvt(); 
@@ -417,7 +419,6 @@ int QEventTest::setGenstep_quad6()
 
 int QEventTest::main()
 {
-    const char* TEST = ssys::getenvvar("TEST", "ALL") ; 
     bool ALL = strcmp(TEST, "ALL") == 0 ; 
     int rc = 0 ; 
 

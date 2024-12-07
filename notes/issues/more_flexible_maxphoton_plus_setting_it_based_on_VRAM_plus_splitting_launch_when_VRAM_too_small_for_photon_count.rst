@@ -9,14 +9,15 @@ integrate + test new functionality
 * DONE : first impl of OPTICKS_MAX_PHOTON:0 to use Heuristic max photon based on VRAM, see SEventConfig::SetDevice
 
 
-OPTICKS_MAX_PHOTON/OPTICKS_MAX_CURAND/OPTICKS_MAX_SLOT
----------------------------------------------------------
+OPTICKS_MAX_PHOTON/OPTICKS_MAX_CURAND/OPTICKS_MAX_SLOT as what is VRAM constrained ? 
+--------------------------------------------------------------------------------------
 
 OPTICKS_MAX_PHOTON 
-   no longer makes sense, as removing the constraint by splitting launches
+   no longer makes sense as the thing that is constrained, as are removing the constraint 
+   by splitting launches
 
 OPTICKS_MAX_CURAND
-   also does not make sense if provide reproducibility 
+   also does not make sense as the constrained thing if provide reproducibility 
    despite split launches by uploading appropriate ranges of curandState 
 
    * number of curandState will need to exceed launch slots 
@@ -460,6 +461,8 @@ VRAM detection
 Do that at initialization just before loading states, sdevice is already in use somewhere, 
 mainly for metadata purposes. Maybe will need to move it earlier for this purpose. 
 
+* YEP: moved to SEventConfig::Initialize_Meta
+
 * cuda has device API : ~/o/sysrap/sdevice.h  uses that 
 * nvml has C api : ~/o/sysrap/smonitor.{sh,cc} uses that 
 
@@ -489,7 +492,7 @@ mainly for metadata purposes. Maybe will need to move it earlier for this purpos
 
 
 
-Currently scontext lives up in cx::
+Old scontext was invoked up in cx::
 
      293 /**
      294 CSGOptiX::InitMeta
@@ -556,10 +559,10 @@ But the config is down at SEventConfig level::
      240 int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; }
 
 
-Move scontext booting down to SEventConfig::Initialize ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DONE : Move scontext booting down to SEventConfig::Initialize
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Nope the natural place to instanciate scontext is SEventConfig::Initialize  
+The natural place to instanciate scontext is SEventConfig::Initialize  
 in order to control the scontext/SEventConfig interaction 
 and use VRAM results in the config. 
 
@@ -729,7 +732,9 @@ What is needed:
 1. QSim::simulate collects from SEvt genstep slice structs, each with: 
 
    * genstep slice indices {start,stop}, eg [0:num_gs] when can do single launch  
-   * photon {offset, count} , eg zero offset when can do single launch, count always <= SEventConfig::MaxCurand() 
+   * photon {offset, count} , eg zero offset when can do single launch, count always <= SEventConfig::MaxSlot() 
+   * DONE : SGenstep::GetGenstepSlices 
+
 
 2. QSim::simulate loops over the genstep slices doing the launches
 
@@ -743,21 +748,39 @@ What is needed:
 
 
    
-Note that the below are uploading:: 
+
+
+QSim/QEvent how to use the genstep slices ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+::
 
     QEvent::setGenstep
     QEvent::setGenstepUpload_NP
     QEvent::setGenstepUpload   
 
 
-
 genstep slice generalization 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * uploading sliced genstep can be done within QEvent::setGenstepUpload_NP
   with additional genstep slice struct argument 
 
 ::
+
+
+     188 int QEvent::setGenstep()  // onto device
+     189 {
+     190     LOG_IF(info, SEvt::LIFECYCLE) << "[" ;
+     191 
+     192 
+     193     NP* gs_ = sev->getGenstepArray();
+     194     int rc = setGenstepUpload_NP(gs_) ;
+     195 
+     196     LOG_IF(info, SEvt::LIFECYCLE) << "]" ;
+     197 
+     198     return rc ;
+     199 }
+
 
      211 int QEvent::setGenstepUpload_NP(const NP* gs_)
      212 {
@@ -777,6 +800,305 @@ genstep slice generalization
 
 
 
+how to gather outputs and place them at appropriate offset positions in arrays 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* initial CPU array creation before the loop which 
+  gets offset populated by each launch ?
+
+* thats very different to current approach of creating the arrays 
+  for each component and adding them to the fold : instead will 
+  have to create the fold with empty arrays and then offset populate them. 
+  Thats doable for most components where the array sizes are known ahead of time.  
+  But cannot be done like that for hits : the most important one. 
+
+* for hits do not know the size will get from each launch, 
+  so will just need to gather multiple NP arrays and concatenate them.
+
+* actually the way SEvt::gather_components is implemented it is easier to collect
+  (NPFold)fold for each launch and concatenate the arrays from within those fold 
+
+* actually could do this for all components, array collection other than hits
+  is a debugging activity : so should not expend effort to make it fast/memory-efficient
+
+* ordinarily would not have arrays (other than hit) enabled when doing 
+  large simulations that need split launches  
+
+
+::
+
+    3484 void SEvt::gather_components()   // *GATHER*
+    3485 {
+    3486     int num_genstep = -1 ;
+    3487     int num_photon  = -1 ;
+    3488     int num_hit     = -1 ;
+    3489 
+    3490     int num_comp = gather_comp.size() ;
+    3491 
+    3492     LOG(LEVEL) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ;
+    3493     LOG_IF(info, GATHER) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ;
+    3494 
+    3495 
+    3496     for(int i=0 ; i < num_comp ; i++)
+    3497     {
+    3498         unsigned cmp = gather_comp[i] ;
+    3499         const char* k = SComp::Name(cmp);
+    3500         NP* a = provider->gatherComponent(cmp);
+    3501         bool null_component = a == nullptr ;
+    3502 
+    3503         LOG(LEVEL)
+    3504             << " k " << std::setw(15) << k
+    3505             << " a " << ( a ? a->brief() : "-" )
+    3506             << " null_component " << ( null_component ? "YES" : "NO " )
+    3507             ;
+    3508 
+    3509         LOG_IF(info, GATHER)
+    3510             << " k " << std::setw(15) << k
+    3511             << " a " << ( a ? a->brief() : "-" )
+    3512             << " null_component " << ( null_component ? "YES" : "NO " )
+    3513             ;
+    3514 
+    3515 
+    3516 
+    3517 
+    3518         if(null_component) continue ;
+    3519         fold->add(k, a);
+    3520 
+    3521         int num = a->shape[0] ;
+    3522         if(     SComp::IsGenstep(cmp)) num_genstep = num ;
+    3523         else if(SComp::IsPhoton(cmp))  num_photon = num ;
+    3524         else if(SComp::IsHit(cmp))     num_hit = num ;
+    3525     }
+    3526 
+    3527     gather_total += 1 ;
+    3528 
+    3529     if(num_genstep > -1) genstep_total += num_genstep ;
+    3530     if(num_photon > -1)  photon_total += num_photon ;
+    3531     if(num_hit > -1)     hit_total += num_hit ;
+
+
+
+::
+
+     572 void QEvent::gatherPhoton(NP* p) const
+     573 {
+     574     bool expected_shape =  p->has_shape(evt->num_photon, 4, 4) ;
+     575     LOG(expected_shape ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ;
+     576     assert(expected_shape );
+     577     int rc = QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon );
+     578 
+     579     LOG_IF(fatal, rc != 0)
+     580          << " QU::copy_device_to_host photon FAILED "
+     581          << " evt->photon " << ( evt->photon ? "Y" : "N" )
+     582          << " evt->num_photon " <<  evt->num_photon
+     583          ;
+     584 
+     585     if(rc != 0) std::raise(SIGINT) ;
+     586 
+     587     LOG(LEVEL) << "] evt.num_photon " << evt->num_photon  ;
+     588 }
+     589 
+     590 NP* QEvent::gatherPhoton() const
+     591 {
+     592     //NP* p = NP::Make<float>( evt->num_photon, 4, 4); 
+     593     NP* p = sev->makePhoton();
+     594     gatherPhoton(p);
+     595     return p ;
+     596 }
+
+
+
+Modify NPFold::add OR create NPFold{Collection/Set/Seq} OR use two level NPFold/NPFold
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* NPFold::add to collect multiple arrays under the same key ?
+* OR: come up with keys hit_0 hit_1 ... for each launch 
+* OR: keep NPFold asis but create NPFoldCollection that manages multiple NPFold with associated index 
+  and does the concatenation in a way hidden from user : so the NPFoldCollection presents
+  an API just like NPFold but with the addition of an index 
+* HMM: NPFold can already contain other NPFold : so can just use two level NPFold/NPFold, 
+  with some added ConcatIfNeeded methods that do nothing if the NPFold layout only one level 
+
+* SEvt could hold "topfold/efold/evtfold" plus "slicefold/currentfold/subfold/fold" 
+  pointing to the current within topfold
+
+  * "topfold" and "subfold" would be the same for non multi-launch  
+  * for two level NPFold with keys that are repeated across sibling NPFold 
+    the NPFold::Concat would concat the subfold into topfold then delete the 2nd level subfold
+
+* Need NPFold::getDepth NPFold::getMaxTreeDepth
+
+
+SEvt (NPFold)fold lifecycle
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Q: where to use topfold and where fold ? 
+Q: where to "fold = topfold->add_subfold()"  ? 
+Q: where to "topfold->concat()" ?
+
+
+* NPFold(fold) instanciated with SEvt  (hmm maybe impl NPFoldCollection) 
+
+
+::
+
+    0159 SEvt::SEvt()
+     160     :
+     161     cfgrc(SEventConfig::Initialize()),
+     162     index(MISSING_INDEX),
+     163     instance(MISSING_INSTANCE),
+
+     192     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init 
+     193     fold(new NPFold),
+
+
+     257 void SEvt::setFoldVerbose(bool v)
+     258 {
+     259     fold->set_verbose(v);
+     260 }
+     261 
+     262 
+     263 const char* SEvt::GetSaveDir(int idx) // static 
+     264 {
+     265     return Exists(idx) ? Get(idx)->getSaveDir() : nullptr ;
+     266 }
+     267 const char* SEvt::getSaveDir() const { return fold->savedir ; }
+     268 const char* SEvt::getLoadDir() const { return fold->loaddir ; }
+     269 int SEvt::getTotalItems() const { return fold->total_items() ; }
+     270 
+
+     632 const NP* SEvt::getG4State() const {  return fold->get(SComp::Name(SCOMP_G4STATE)) ; }
+
+
+    1810 void SEvt::clear_output()
+    1811 {   
+    1812     setStage(SEvt__clear_output);
+    1813 
+    1814     LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_output_vector " ;
+    1815 
+    1816     clear_output_vector();
+    1817 
+    1818     const char* keylist = "genstep" ;
+    1819     bool copy = false ;
+    1820     char delim = ',' ;
+    1821 
+    1822     fold->clear_except(keylist, copy, delim );
+    1823 
+    1824     LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_output_vector " ;
+    1825 
+    1826     LOG(LEVEL) << "]" ;
+    1827 }
+
+
+Input gensteps would be directly into topfold::
+
+    1829 void SEvt::clear_genstep()
+    1830 {
+    1831     setStage(SEvt__clear_genstep);
+    1832     LOG_IF(info, LIFECYCLE) << id() << " BEFORE clear_genstep_vector " ; 
+    1833 
+    1834     clear_genstep_vector();
+    1835     fold->clear_only("genstep", false, ',');
+    1836 
+    1837     LOG_IF(info, LIFECYCLE) << id() << " AFTER clear_genstep_vector " ;
+    1838 }
+
+Output arrays collected into 2nd level fold::
+
+    3487 void SEvt::gather_components()   // *GATHER*
+    3488 {
+    3489     int num_genstep = -1 ;
+    3490     int num_photon  = -1 ;
+    3491     int num_hit     = -1 ;
+    3492 
+    3493     int num_comp = gather_comp.size() ;
+    3494 
+    3495     LOG(LEVEL) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ;
+    3496     LOG_IF(info, GATHER) << " num_comp " << num_comp << " from provider " << provider->getTypeName() ;
+    3497 
+    3498 
+    3499     for(int i=0 ; i < num_comp ; i++)
+    3500     {
+    3501         unsigned cmp = gather_comp[i] ;
+    3502         const char* k = SComp::Name(cmp);
+    3503         NP* a = provider->gatherComponent(cmp);  // see QEvent::gatherComponent for GPU running 
+    3504         bool null_component = a == nullptr ;
+    3505 
+    3506         LOG(LEVEL)
+    3507             << " k " << std::setw(15) << k
+    3508             << " a " << ( a ? a->brief() : "-" )
+    3509             << " null_component " << ( null_component ? "YES" : "NO " )
+    3510             ;
+    3511 
+    3512         LOG_IF(info, GATHER)
+    3513             << " k " << std::setw(15) << k
+    3514             << " a " << ( a ? a->brief() : "-" )
+    3515             << " null_component " << ( null_component ? "YES" : "NO " )
+    3516             ;
+    3517 
+    3518 
+    3519 
+    3520 
+    3521         if(null_component) continue ;
+    3522         fold->add(k, a);
+    3523 
+    3524         int num = a->shape[0] ;
+    3525         if(     SComp::IsGenstep(cmp)) num_genstep = num ;
+    3526         else if(SComp::IsPhoton(cmp))  num_photon = num ;
+    3527         else if(SComp::IsHit(cmp))     num_hit = num ;
+    3528     }
+    3529 
+
+
+The subfold would normally be transient in memory only, 
+so things like metadata not specific to the launch would need 
+to go into topfold::
+
+    3596 void SEvt::add_array( const char* k, const NP* a )
+    3597 {
+    3598     LOG(LEVEL) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ;
+    3599     fold->add(k, a);
+    3600 }
+    3601 
+    3602 void SEvt::addEventConfigArray()
+    3603 {
+    3604     fold->add(SEventConfig::NAME, SEventConfig::Serialize() );
+    3605 }
+
+
+The getters would normally be from topfold, unless debugging.
+Flexibilitity to switch fold between topfold and the subfold : not worthwhile ?::
+
+   SEvt::setFoldIndex -1:top 0,1,2,3:subfold
+
+Getters:::
+
+    4142 const NP* SEvt::getGenstep() const { return fold->get(SComp::GENSTEP_) ;}
+    4143 const NP* SEvt::getPhoton() const {  return fold->get(SComp::PHOTON_) ; }
+    4144 const NP* SEvt::getHit() const {     return fold->get(SComp::HIT_) ; }
+    4145 const NP* SEvt::getAux() const {     return fold->get(SComp::AUX_) ; }
+    4146 const NP* SEvt::getSup() const {     return fold->get(SComp::SUP_) ; }
+    4147 const NP* SEvt::getPho() const {     return fold->get(SComp::PHO_) ; }
+    4148 const NP* SEvt::getGS() const {      return fold->get(SComp::GS_) ; }
+    4149 
+    4150 unsigned SEvt::getNumPhoton() const { return fold->get_num(SComp::PHOTON_) ; }
+    4151 unsigned SEvt::getNumHit() const
+    4152 {
+    4153     int num = fold->get_num(SComp::HIT_) ;  // number of items in array 
+    4154     return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
+    4155 }
+
+
+
+How to change NPFold ?
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* DONE: Added NPFold::concat that concatenates common subfold arrays into top level, 
+  so the subfold can correspond to each launch  
+
+
+control the launch loop
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
@@ -891,6 +1213,25 @@ How to gather in slices ?
      581     gatherPhoton(p);
      582     return p ;
      583 }
+
+
+
+
+Start adding sliced genstep launch to QEvent SEvt
+---------------------------------------------------
+
+::
+
+    FAILS:  3   / 215   :  Sat Dec  7 14:23:59 2024   
+      87 /107 Test #87 : SysRapTest.SEvtLoadTest                       ***Exception: SegFault         0.21   
+      96 /107 Test #96 : SysRapTest.SEvt_test                          ***Exception: SegFault         0.20    null fold
+      10 /21  Test #10 : QUDARapTest.QEventTest                        ***Failed                      0.76    -1 asserts
+                                 
+
+    om-test-help
+    -------------
+
+
 
 
 
