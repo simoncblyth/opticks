@@ -10,11 +10,13 @@ print("]from opticks.sysrap.sevt import SEvt, SAB")
 
 
 
+TEST = os.environ.get("TEST","")
 PLOT = os.environ.get("PLOT","scatter")
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","3")) 
 SEL = int(os.environ.get("SEL","0")) 
 
+print("before pvplt import MODE:%d " % MODE) 
 
 if MODE in [2,3]:
     from opticks.ana.pvplt import *   

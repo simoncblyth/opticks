@@ -191,6 +191,7 @@ TEST=${TEST:-$test}
 if [ "$TEST" == "debug" ]; then 
 
    opticks_num_photon=100
+   opticks_num_genstep=1
    opticks_max_photon=M1
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
@@ -198,13 +199,16 @@ if [ "$TEST" == "debug" ]; then
 elif [ "$TEST" == "ref1" ]; then 
 
    opticks_num_photon=M1
+   opticks_num_genstep=10
    opticks_max_photon=M1
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
 
+
 elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" == "ref8" -o "$TEST" == "ref9" -o "$TEST" == "ref10" ]; then 
 
    opticks_num_photon=M${TEST:3}
+   opticks_num_genstep=1
    opticks_max_photon=M10
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
@@ -212,13 +216,28 @@ elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" ==
 elif [ "$TEST" == "refX" ]; then 
 
    opticks_num_photon=${X:-7500000}
+   opticks_num_genstep=1
    opticks_max_photon=M10
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
 
+elif [ "$TEST" == "ref10_multilaunch" ]; then 
+
+   opticks_num_photon=M10
+   opticks_num_genstep=10
+   opticks_max_photon=M10
+   opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+
+   export OPTICKS_MAX_SLOT=M1   # causes M10 to be done in 10 launches 
+   export SEvt__NPFOLD_VERBOSE=1 
+   export QSim__simulate_KEEP_SUBFOLD=1
+ 
+
 elif [ "$TEST" == "tiny_scan" ]; then 
 
    opticks_num_photon=K1:10
+   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1
    opticks_max_photon=M1
    opticks_num_event=10
    opticks_running_mode=SRM_TORCH
@@ -226,6 +245,7 @@ elif [ "$TEST" == "tiny_scan" ]; then
 elif [ "$TEST" == "large_scan" ]; then 
 
    opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
+   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
    opticks_max_photon=M100   ## cost: QRng init time + VRAM 
    opticks_num_event=20
    opticks_running_mode=SRM_TORCH
@@ -233,6 +253,7 @@ elif [ "$TEST" == "large_scan" ]; then
 elif [ "$TEST" == "medium_scan" ]; then 
 
    opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100  # duplication of M1 is to workaround lack of metadata
+   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1,1,1
    opticks_max_photon=M100   
    opticks_num_event=12
    opticks_running_mode=SRM_TORCH
@@ -240,6 +261,7 @@ elif [ "$TEST" == "medium_scan" ]; then
 elif [ "$TEST" == "larger_scan" ]; then 
 
    opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200  # duplication of M1 is to workaround lack of metadata
+   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
    opticks_max_photon=M200   
    opticks_num_event=22
    opticks_running_mode=SRM_TORCH
@@ -247,6 +269,7 @@ elif [ "$TEST" == "larger_scan" ]; then
 elif [ "$TEST" == "large_evt" ]; then 
 
    opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
+   opticks_num_genstep=1
    opticks_max_photon=M200   ## cost: QRng init time + VRAM 
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
@@ -254,6 +277,7 @@ elif [ "$TEST" == "large_evt" ]; then
 elif [ "$TEST" == "input_genstep" ]; then
 
    opticks_num_photon=     # ignored ?
+   opticks_num_genstep=    # ignored
    opticks_max_photon=M1 
    opticks_num_event=1000 
    opticks_running_mode=SRM_INPUT_GENSTEP
@@ -262,6 +286,7 @@ elif [ "$TEST" == "input_genstep" ]; then
 elif [ "$TEST" == "input_photon" ]; then
 
    opticks_num_photon=     # ignored ?
+   opticks_num_genstep=    # ignored
    opticks_max_photon=M1 
    opticks_num_event=1
    opticks_running_mode=SRM_INPUT_PHOTON
@@ -280,6 +305,7 @@ opticks_integration_mode=1
 
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
 export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon} 
+export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep} 
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
@@ -325,7 +351,11 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then 
 
-    #export SEvent_MakeGenstep_num_ph=100000  NOT USED WHEN USING OPTICKS_NUM_PHOTON
+    #export SEvent_MakeGenstep_num_ph=100000  OVERRIDEN BY OPTICKS_NUM_PHOTON
+    #export SEvent__MakeGenstep_num_gs=10     OVERRIDEN BY OPTICKS_NUM_GENSTEP
+
+
+
     #src="rectangle"
     #src="disc"
     src="sphere"
@@ -348,6 +378,8 @@ elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
         export storch_FillGenstep_pos=0,0,0
         export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
     fi 
+
+
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_GUN" ]; then 
 
@@ -401,7 +433,7 @@ export QRng__init_VERBOSE=1
 
 
 
-vars="PWD GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON"
+vars="PWD GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON script"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
@@ -458,8 +490,17 @@ if [ "${arg/gevt}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR/$EVT
 fi 
 
+
+if [ "${arg/pdb1}" != "$arg" ]; then
+    ${ipython:-ipython} --pdb -i $script
+fi 
+
+if [ "${arg/pdb0}" != "$arg" ]; then
+    MODE=0 ${ipython:-ipython} --pdb -i $script
+fi 
+
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $script
+    MODE=0 ${PYTHON:-python} $script
 fi 
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
