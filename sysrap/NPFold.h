@@ -140,6 +140,7 @@ struct NPFold
 
     static const char* BareKey(const char* k);  // without .npy 
     static std::string FormKey(const char* k, bool change_txt_to_npy ); 
+    static std::string FormKey(const char* k ); 
 
     static bool    IsValid(const NPFold* fold); 
     static NPFold* LoadIfExists(const char* base);  
@@ -192,13 +193,19 @@ public:
     const char*  get_subfold_key(unsigned idx) const ; 
     int          get_subfold_idx(const char* f) const ; 
     int          get_subfold_idx(const NPFold* fo) const ; 
+
     const char*  get_subfold_key_within_parent() const ; 
     void         get_treepath_(std::vector<std::string>& elem) const ; 
     std::string  get_treepath(const char* k=nullptr) const ; 
 
-
     NPFold*      get_subfold(const char* f) const ; 
     bool         has_subfold(const char* f) const ; 
+
+
+    void find_arrays_with_key(  std::vector<const NP*>& rr, std::vector<std::string>& tt, const char* q_key) const ; 
+    void find_arrays_with_key_r(std::vector<const NP*>& rr, std::vector<std::string>& tt, const char* q_key) const ; 
+    static void FindArraysWithKey_r(const NPFold* nd, std::vector<const NP*>& rr, std::vector<std::string>& tt, const char* q_key, int d); 
+    static std::string DescArraysAndPaths( std::vector<const NP*>& rr, std::vector<std::string>& tt ); 
 
 
     const NP*      find_array(const char* apath) const ; 
@@ -266,12 +273,17 @@ public:
     void clear_except_(const std::vector<std::string>& keep, bool copy ) ; 
 
 
-
-
-    NPFold* copy( const char* keylist, bool shallow, char delim=',' ) const ; 
-    NPFold* copy_all(bool shallow) const ; 
+    //OLD API: NPFold* copy( const char* keylist, bool shallow_array_copy, char delim=',' ) const ; 
+    NPFold* deepcopy(const char* keylist=nullptr, char delim=',' ) const ; 
+    NPFold* shallowcopy(const char* keylist=nullptr, char delim=',' ) const ; 
+private:
+    // make private to find them all and switch to above form
+    NPFold* copy(   bool shallow_array_copy, const char* keylist=nullptr, char delim=',' ) const ; 
+public:
+    static NPFold* Copy(const NPFold* src, bool shallow_array_copy, std::vector<std::string>* keys ); 
     static void CopyMeta( NPFold* b , const NPFold* a ); 
-
+    static void CopyArray(   NPFold* dst , const NPFold* src, bool shallow_array_copy, std::vector<std::string>* keys ); 
+    static void CopySubfold( NPFold* dst , const NPFold* src, bool shallow_array_copy, std::vector<std::string>* keys ); 
 
     int count_keys( const std::vector<std::string>* keys ) const ; 
 
@@ -441,6 +453,7 @@ swapped to .npy for more standard handling.
 
 **/
 
+
 inline std::string NPFold::FormKey(const char* k, bool change_txt_to_npy) 
 {
     bool is_npy = IsNPY(k); 
@@ -460,9 +473,19 @@ inline std::string NPFold::FormKey(const char* k, bool change_txt_to_npy)
     }
 
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str(); 
+    return str ; 
 }
+
+inline std::string NPFold::FormKey(const char* k)
+{
+    bool is_npy = IsNPY(k); 
+    std::stringstream ss ; 
+    ss << k ; 
+    if(!is_npy) ss << DOT_NPY ; 
+    std::string str = ss.str(); 
+    return str ; 
+} 
 
 
 inline bool NPFold::IsValid(const NPFold* fold) // static
@@ -888,6 +911,82 @@ inline bool NPFold::has_subfold(const char* f) const
 
 
 /**
+NPFold::find_arrays_with_key
+-----------------------------
+
+Collect arrays and treepaths within this fold that have the query key.
+Would normally expect either zero or one entries.  
+
+The query key has ".npy" appended if not already present. 
+
+**/
+
+inline void NPFold::find_arrays_with_key(std::vector<const NP*>& rr, std::vector<std::string>& tt, const char* q_key) const 
+{
+    std::string q = FormKey(q_key); 
+    for(int i=0 ; i < int(kk.size()) ; i++)
+    {
+        const char* k = kk[i].c_str(); 
+        const NP* a = aa[i] ; 
+        bool qk_match = strcmp(q.c_str(), k) == 0 ; 
+
+        if(qk_match)
+        {
+            std::string t = get_treepath(k); 
+            rr.push_back(a); 
+            tt.push_back(t); 
+        }
+    }
+}
+
+/**
+NPFold::find_arrays_with_key_r
+--------------------------------
+
+Recursively collect arrays and treepaths within the entire tree of folders that 
+have the query key.
+
+**/
+
+inline void NPFold::find_arrays_with_key_r(std::vector<const NP*>& rr, std::vector<std::string>& tt, const char* q_key) const 
+{
+    FindArraysWithKey_r(this, rr, tt, q_key, 0); 
+}
+
+inline void NPFold::FindArraysWithKey_r(const NPFold* nd, std::vector<const NP*>& rr, std::vector<std::string>& tt, const char* q_key, int d)
+{
+    nd->find_arrays_with_key(rr, tt, q_key); 
+    for(int i=0 ; i < int(nd->subfold.size()) ; i++ ) FindArraysWithKey_r(nd->subfold[i], rr, tt, q_key, d+1 ); 
+}
+
+inline std::string NPFold::DescArraysAndPaths( std::vector<const NP*>& rr, std::vector<std::string>& tt ) // static
+{
+    assert( rr.size() == tt.size() );
+    int num = rr.size() ; 
+    std::stringstream ss ;
+    ss << "NPFold::DescArraysAndPaths num " << num << "\n" ; 
+    for(int i=0 ; i < num ; i++ )
+    {
+        const NP* r = rr[i] ; 
+        const char* t = tt[i].c_str() ; 
+        ss 
+           << std::setw(10) << r->sstr()
+           << " : "
+           << std::setw(30) << ( t ? t : "-" ) 
+           << " : "
+           << r 
+           << "\n"        
+           ;
+    }  
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
+/**
 NPFold::find_array
 --------------------
 
@@ -910,7 +1009,6 @@ inline const NP* NPFold::find_array(const char* base, const char* name) const
     return fold ? fold->get(name) : nullptr  ; 
 }
  
-
 inline NPFold* NPFold::find_subfold_(const char* qpath) const 
 {
     const NPFold* f = find_subfold(qpath) ; 
@@ -1239,6 +1337,10 @@ inline int NPFold::Traverse_r(const NPFold* nd, std::string path,
     }
     return tot_items ; 
 }
+
+
+
+
 
 
 inline std::string NPFold::FormSubPath(const char* base, const char* sub, char delim ) // static
@@ -1731,6 +1833,19 @@ inline void NPFold::clear_only(const char* clearlist, bool copy, char delim )
 }
 
 
+
+inline NPFold* NPFold::deepcopy( const char* keylist, char delim ) const 
+{
+    bool shallow_array_copy = false ; 
+    return copy(shallow_array_copy, keylist, delim); 
+}
+inline NPFold* NPFold::shallowcopy( const char* keylist, char delim ) const 
+{
+    bool shallow_array_copy = true ; 
+    return copy(shallow_array_copy, keylist, delim); 
+}
+
+
 /**
 NPFold::copy
 ---------------
@@ -1747,22 +1862,21 @@ shallow:true
 shallow:false 
     arrays are copies and new array pointers used 
 
+NB the shallow refers to the arrays, not the NPFold that
+are lightweight whose pointers are never copies as is 
 
-CURRENTLY subfold are not copied. 
+Also the keylist refer to array keys, not folder keys
 
 **/
 
-inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) const 
+inline NPFold* NPFold::copy(bool shallow_array_copy, const char* keylist, char delim ) const 
 {
-    check_integrity(); 
-
     std::vector<std::string> keys ; 
     if(keylist) SplitKeys(keys, keylist, delim); 
     // SplitKeys adds .npy to keys if not already present 
 
     int count = count_keys(&keys) ; 
-    
-    if( count == 0 && VERBOSE) std::cerr
+    if( keylist && count == 0 && VERBOSE) std::cerr
         << "NPFold::copy"
         << " VERBOSE " << ( VERBOSE ? "YES" : "NO " ) 
         << " NOTE COUNT_KEYS GIVING ZERO "
@@ -1775,55 +1889,56 @@ inline NPFold* NPFold::copy( const char* keylist, bool shallow, char delim ) con
         << std::endl 
         ; 
 
-    //if( count == 0 ) return nullptr ; 
-    // sometimes want fold metadata without any arrays
+    return NPFold::Copy(this, shallow_array_copy, &keys ); 
+}
 
-    NPFold* f = new NPFold ; 
-    CopyMeta(f, this);  // copy metadata to the new fold
 
-    for(unsigned i=0 ; i < aa.size() ; i++)
+inline NPFold* NPFold::Copy(const NPFold* src, bool shallow_array_copy, std::vector<std::string>* keys ) // static
+{
+    src->check_integrity(); 
+    NPFold* dst = new NPFold ; 
+    CopyMeta(dst, src);
+    CopyArray(  dst, src, shallow_array_copy, keys );
+    CopySubfold(dst, src, shallow_array_copy, keys );
+    dst->check_integrity(); 
+    return dst ; 
+}
+
+inline void NPFold::CopyMeta( NPFold* dst , const NPFold* src ) // static
+{
+    dst->meta = src->meta ; 
+    dst->names = src->names ; 
+    dst->savedir = src->savedir ? strdup(src->savedir) : nullptr ; 
+    dst->loaddir = src->loaddir ? strdup(src->loaddir) : nullptr ; 
+    dst->nodata  = src->nodata ; 
+}
+
+inline void NPFold::CopyArray( NPFold* dst , const NPFold* src, bool shallow_array_copy, std::vector<std::string>* keys ) // static
+{
+    for(int i=0 ; i < int(src->aa.size()) ; i++)
     {
-        const NP* a = aa[i]; 
-        const char* k = kk[i].c_str() ; 
-        bool listed = keylist && std::find( keys.begin(), keys.end(), k ) != keys.end() ; 
-        if(listed)
+        const NP* a = src->aa[i]; 
+        const char* k = src->kk[i].c_str() ; 
+        bool listed = keys && std::find( keys->begin(), keys->end(), k ) != keys->end() ; 
+        if(keys == nullptr || listed)
         { 
-            f->add_( k, shallow ? a : NP::MakeCopy(a) ); 
+            dst->add_( k, shallow_array_copy ? a : NP::MakeCopy(a) ); 
         }
     } 
-    return f ; 
 }
 
-inline NPFold* NPFold::copy_all(bool shallow) const 
+inline void NPFold::CopySubfold( NPFold* dst , const NPFold* src, bool shallow_array_copy, std::vector<std::string>* keys ) // static
 {
-    check_integrity(); 
-
-    NPFold* f = new NPFold ; 
-    CopyMeta(f, this);  // copy metadata to the new fold
-
-    for(unsigned i=0 ; i < aa.size() ; i++)
+    for(int i=0 ; i < int(src->ff.size()) ; i++)
     {
-        const NP* a = aa[i]; 
-        const char* k = kk[i].c_str() ; 
-        f->add_( k, shallow ? a : NP::MakeCopy(a) ); 
+        const char* k = src->ff[i].c_str() ; 
+        NPFold* fo = Copy(src->subfold[i], shallow_array_copy, keys); 
+        dst->add_subfold( k, fo ); 
     } 
-    return f ; 
 }
 
 
 
-
-
-
-
-inline void NPFold::CopyMeta( NPFold* b , const NPFold* a ) // static
-{
-    b->meta = a->meta ; 
-    b->names = a->names ; 
-    b->savedir = a->savedir ? strdup(a->savedir) : nullptr ; 
-    b->loaddir = a->loaddir ? strdup(a->loaddir) : nullptr ; 
-    b->nodata  = a->nodata ; 
-}
 
 
 

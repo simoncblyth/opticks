@@ -3960,6 +3960,19 @@ then the directory is suffixed with the index::
 
     /some/directory/A001
 
+
+
+
+Notice the mixed memory handling in the below.
+The save_fold is shallow copied from topfold, indicating 
+it does not own its arrays and should not be deleted.
+All fine so far. But then seqnib and seqnib_table are created
+and added ... so those would leak without the manual deletes
+at the tail.  
+
+How to avoid the need for such care ? NPFold has a skipdelete flag, 
+but that is at fold level./ Perhaps need each array to have skipdelete ?
+
 **/
 
 void SEvt::save(const char* dir_) 
@@ -3971,9 +3984,8 @@ void SEvt::save(const char* dir_)
     LOG(LEVEL) << descComponent() ; 
     LOG(LEVEL) << descFold() ; 
 
-    bool shallow = true ; 
     std::string save_comp = SEventConfig::SaveCompLabel() ; 
-    NPFold* save_fold = topfold->copy(save_comp.c_str(), shallow) ; 
+    NPFold* save_fold = topfold->shallowcopy(save_comp.c_str());   
 
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ; 
     if(save_fold == nullptr) return ;  

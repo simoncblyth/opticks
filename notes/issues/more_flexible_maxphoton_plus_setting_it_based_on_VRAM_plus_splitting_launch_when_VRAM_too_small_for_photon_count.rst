@@ -1603,7 +1603,7 @@ Even with KEEP_SUBFOLD no subs are saved::
 
 
 
-Thats because of the shallow copy before saving of SEvt::save::
+Thats because NPFold::copy was not including the subfold in SEvt::save::
 
     3965 void SEvt::save(const char* dir_)
     3966 {
@@ -1662,8 +1662,12 @@ Thats because of the shallow copy before saving of SEvt::save::
 
 
 
-TODO : add NPFold copying of subfold, for KEEP_SUBFOLD use from SEvt::save, so can check outputs from each slice launch
+DONE : add NPFold copying of subfold, for KEEP_SUBFOLD use from SEvt::save, so can check outputs from each slice launch
 ------------------------------------------------------------------------------------------------------------------------
+
+See::
+
+    ~/np/tests/NPFold_copy_test.sh
 
 
 TODO : add launch-by-launch curandState uploading OR perhaps load once all chunks and change QRng/qrng slot offsets for each launch
