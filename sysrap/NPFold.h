@@ -238,16 +238,25 @@ public:
     static int MaxDepth_r(const NPFold* nd, int d); 
 
 
-    static int Traverse_r(const NPFold* nd, std::string nd_path, 
-          std::vector<const NPFold*>& folds, 
-          std::vector<std::string>& paths ); 
+    static constexpr const int MXD_NOLIMIT = 0 ; 
+    static int Traverse_r(
+        const NPFold* nd, 
+        std::string nd_path, 
+        std::vector<const NPFold*>& folds, 
+        std::vector<std::string>& paths, 
+        int d, 
+        int mxd=MXD_NOLIMIT );   
+
     static std::string FormSubPath(const char* base, const char* sub, char delim='/' ); 
 
     std::string desc_subfold(const char* top=TOP) const ;  
     void find_subfold_with_prefix(
          std::vector<const NPFold*>& subs, 
          std::vector<std::string>* subpaths,
-         const char* prefix ) const ; 
+         const char* prefix,
+         int maxdepth ) const ; 
+
+    static std::string DescFoldAndPaths( const std::vector<const NPFold*>& subs, const std::vector<std::string>& subpaths ); 
 
     bool is_empty() const ; 
     int total_items() const ; 
@@ -1029,7 +1038,7 @@ inline const NPFold* NPFold::find_subfold(const char* qpath) const
 {
     std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
-    Traverse_r( this, "",  folds, paths ); 
+    Traverse_r( this, "",  folds, paths, 0, MXD_NOLIMIT  ); 
     size_t idx = std::distance( paths.begin(), std::find( paths.begin(), paths.end(), qpath ) ) ; 
 
     if(VERBOSE) 
@@ -1316,14 +1325,23 @@ like a file system.
 
 **/
 
-inline int NPFold::Traverse_r(const NPFold* nd, std::string path, 
-                 std::vector<const NPFold*>& folds, std::vector<std::string>& paths ) // static
+inline int NPFold::Traverse_r(
+     const NPFold* nd, 
+     std::string path, 
+     std::vector<const NPFold*>& folds, 
+     std::vector<std::string>& paths, 
+     int d, 
+     int mxd ) // static
 {
-    folds.push_back(nd); 
-    paths.push_back(path); 
 
     assert( nd->subfold.size() == nd->ff.size() ); 
     unsigned num_sub = nd->subfold.size(); 
+
+    if(mxd == 0 || d <= mxd )
+    {
+        folds.push_back(nd); 
+        paths.push_back(path); 
+    }
 
     int tot_items = nd->num_items() ; 
 
@@ -1332,7 +1350,7 @@ inline int NPFold::Traverse_r(const NPFold* nd, std::string path,
         const NPFold* sub = nd->subfold[i] ; 
         std::string subpath = FormSubPath(path.c_str(), nd->ff[i].c_str(), '/' ) ;  
 
-        int num = Traverse_r( sub, subpath,  folds, paths );  
+        int num = Traverse_r( sub, subpath,  folds, paths, d+1, mxd );  
         tot_items += num ; 
     }
     return tot_items ; 
@@ -1369,7 +1387,7 @@ inline std::string NPFold::desc_subfold(const char* top)  const
     std::vector<std::string>   paths ;
     assert( folds.size() == paths.size() ); 
 
-    int tot_items = Traverse_r( this, top,  folds, paths ); 
+    int tot_items = Traverse_r( this, top,  folds, paths, 0, MXD_NOLIMIT ); 
 
     std::stringstream ss ; 
     ss << " tot_items " << tot_items << std::endl ; 
@@ -1392,16 +1410,24 @@ inline std::string NPFold::desc_subfold(const char* top)  const
     return s ; 
 }
 
+/**
+NPFold::find_subfold_with_prefix
+--------------------------------
+
+**/
+
+
 inline void NPFold::find_subfold_with_prefix(
     std::vector<const NPFold*>& subs, 
     std::vector<std::string>* subpaths, 
-    const char* prefix ) const 
+    const char* prefix, 
+    int maxdepth ) const 
 {
     std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
 
 
-    int tot_items = Traverse_r( this, TOP,  folds, paths ); 
+    int tot_items = Traverse_r( this, TOP,  folds, paths, 0, maxdepth ); 
 
     assert( folds.size() == paths.size() ); 
     int num_paths = paths.size(); 
@@ -1413,6 +1439,7 @@ inline void NPFold::find_subfold_with_prefix(
         std::cerr 
             << "NPFold::find_subfold_with_prefix"
             << " prefix " << ( prefix ? prefix : "-" )
+            << " maxdepth " << maxdepth 
             << " TOP " << TOP 
             << " folds.size " << folds.size() 
             << " paths.size " << paths.size() 
@@ -1441,6 +1468,25 @@ inline void NPFold::find_subfold_with_prefix(
     }
 }
 
+inline std::string NPFold::DescFoldAndPaths( const std::vector<const NPFold*>& subs, const std::vector<std::string>& subpaths )
+{
+    assert( subs.size() == subpaths.size() ); 
+    std::stringstream ss ;
+    ss << "[NPFold::DescFoldAndPaths\n" ; 
+    for(int i=0 ; i < int(subs.size()) ; i++ )
+    {
+        const NPFold* sub = subs[i]; 
+        const char* p = subpaths[i].c_str(); \
+        ss 
+           << " sub " << ( sub ? "YES" : "NO " ) 
+           << "  p  " << p
+           << "\n"
+           ; 
+    }   
+    ss << "]NPFold::DescFoldAndPaths\n" ; 
+    std::string str = ss.str() ;
+    return str ; 
+}
 
 
 
@@ -1464,7 +1510,7 @@ inline int NPFold::total_items() const
     std::vector<const NPFold*> folds ;
     std::vector<std::string>   paths ;
     
-    int tot_items = Traverse_r( this, TOP,  folds, paths ); 
+    int tot_items = Traverse_r( this, TOP,  folds, paths, 0, MXD_NOLIMIT ); 
     return tot_items ; 
 }
 
@@ -2129,7 +2175,19 @@ If the key is not found returns an empty string
 **/
 inline std::string NPFold::get_meta_string(const char* key) const
 {
-    return NP::get_meta_string(meta, key);  
+    bool meta_empty = meta.empty(); 
+    if(meta_empty) 
+    {
+        std::string tp = get_treepath(); 
+        std::cerr 
+            << "NPFold::get_meta_string"
+            << " meta_empty " << ( meta_empty ? "YES" : "NO " )
+            << " key " << ( key ? key : "-" )
+            << " treepath " << tp
+            << "\n"
+            ;  
+    }
+    return meta_empty ? "" : NP::get_meta_string(meta, key);  
 }
 
 
@@ -2760,7 +2818,9 @@ inline NP* NPFold::subcount( const char* prefix ) const
     // 1. find subfold with prefix
     std::vector<const NPFold*> subs ; 
     std::vector<std::string> subpaths ; 
-    find_subfold_with_prefix(subs, &subpaths,  prefix );  
+    int maxdepth = 1 ;  // only one level ? 
+
+    find_subfold_with_prefix(subs, &subpaths,  prefix, maxdepth );  
     assert( subs.size() == subpaths.size() ); 
     int num_sub = int(subs.size()) ; 
 
@@ -2829,6 +2889,8 @@ inline NP* NPFold::subcount( const char* prefix ) const
 }
 
 
+
+
 /**
 NPFold::submeta
 ------------------
@@ -2843,7 +2905,9 @@ inline NP* NPFold::submeta(const char* prefix, const char* column_key ) const
 
     std::vector<const NPFold*> subs ; 
     std::vector<std::string> subpaths ; 
-    find_subfold_with_prefix(subs, &subpaths,  prefix );  
+    int maxdepth = 1 ;  // only look one level down
+
+    find_subfold_with_prefix(subs, &subpaths,  prefix, maxdepth );  
     assert( subs.size() == subpaths.size() ); 
 
     // collect metadata (k,v) pairs that are the same for all the subs as well as other keys
@@ -2899,11 +2963,14 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
 { 
     std::vector<const NPFold*> subs ; 
     std::vector<std::string> subpaths ; 
-    find_subfold_with_prefix(subs, &subpaths,  prefix );  
+    int maxdepth = 1 ;  // only one level down
+    find_subfold_with_prefix(subs, &subpaths,  prefix, maxdepth );  
     assert( subs.size() == subpaths.size() ); 
     int num_sub = int(subs.size()) ;
 
+
     bool dump = getenv("NPFold__substamp_DUMP") != nullptr ; 
+
 
     const NPFold* sub0 = num_sub > 0 ? subs[0] : nullptr ; 
 
@@ -2913,11 +2980,13 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     if(dump) std::cout 
         << "[NPFold::substamp" 
         << " find_subfold_with_prefix " << prefix
+        << " maxdepth " << maxdepth 
         << " num_sub " << num_sub
         << " sub0 " << ( sub0 ? sub0->stats() : "-" )
         << " num_stamp0 " << num_stamp0
         << " skip " << ( skip ? "YES" : "NO ") 
         << std::endl
+        << DescFoldAndPaths(subs, subpaths)
         ;
 
     NPFold* out = nullptr ; 
@@ -3017,7 +3086,8 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
 {
     std::vector<const NPFold*> subs ; 
     std::vector<std::string> subpaths ; 
-    find_subfold_with_prefix(subs, &subpaths,  prefix );  
+    int maxdepth = 1 ;  // only one level down
+    find_subfold_with_prefix(subs, &subpaths,  prefix, maxdepth );  
     assert( subs.size() == subpaths.size() ); 
     int num_sub = int(subs.size()) ; 
     int num_prof0 = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
@@ -3028,6 +3098,7 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
     if(dump) std::cout 
         << "[NPFold::subprofile"
         << " find_subfold_with_prefix " << prefix
+        << " maxdepth " << maxdepth
         << " num_sub " << num_sub 
         << " num_prof0 " << num_prof0
         << " skip " << ( skip ? "YES" : "NO ") 

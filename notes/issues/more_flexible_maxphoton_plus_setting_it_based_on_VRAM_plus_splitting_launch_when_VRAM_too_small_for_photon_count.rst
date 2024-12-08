@@ -1670,6 +1670,49 @@ See::
     ~/np/tests/NPFold_copy_test.sh
 
 
+Get the subfold::
+
+    TEST=ref10_multilaunch ~/o/cxs_min.sh pdb0
+
+    In [10]: a.f
+    Out[10]: 
+    a
+
+    CMDLINE:/data/blyth/junotop/opticks/CSGOptiX/cxs_min.py
+    a.base:/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1/A000
+
+      : a.genstep                                          :           (10, 6, 4) : 0:11:56.995033 
+      : a.hit                                              :      (2232350, 4, 4) : 0:11:56.971033 
+      : a.NPFold_index                                     :                (12,) : 0:11:56.383029 
+      : a.NPFold_meta                                      :                   25 : 0:11:56.295029 
+      : a.NPFold_names                                     :                 (0,) : 0:11:56.295029 
+      : a.sframe                                           :            (4, 4, 4) : 0:11:56.295029 
+      : a.sframe_meta                                      :                    5 : 0:11:56.295029 
+      : a.f000                                             : SUBFOLD 
+      : a.f001                                             : SUBFOLD 
+      : a.f002                                             : SUBFOLD 
+      : a.f003                                             : SUBFOLD 
+      : a.f004                                             : SUBFOLD 
+      : a.f005                                             : SUBFOLD 
+      : a.f006                                             : SUBFOLD 
+      : a.f007                                             : SUBFOLD 
+      : a.f008                                             : SUBFOLD 
+      : a.f009                                             : SUBFOLD 
+
+     min_stamp : 2024-12-08 14:10:15.887270 
+     max_stamp : 2024-12-08 14:10:16.587274 
+     dif_stamp : 0:00:00.700004 
+     age_stamp : 0:11:56.295029 
+
+
+
+FIXED : With subfold trips up sreport
+---------------------------------------
+
+* :doc:`sreport_tripped_up_by_keeping_multilaunch_subfold`
+
+
+
 TODO : add launch-by-launch curandState uploading OR perhaps load once all chunks and change QRng/qrng slot offsets for each launch
 -------------------------------------------------------------------------------------------------------------------------------------
 

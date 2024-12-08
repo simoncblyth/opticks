@@ -146,7 +146,6 @@ knobs()
    export NPFold__substamp_DUMP=1
 
 }
-knobs
 
 
 version=1
@@ -433,7 +432,7 @@ export QRng__init_VERBOSE=1
 
 
 
-vars="PWD GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON script"
+vars="defarg arg PWD GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON script"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
@@ -448,6 +447,8 @@ if [ "${arg/fold}" != "$arg" ]; then
 fi 
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
+
+   knobs
 
    if [ -f "$LOGFILE" ]; then 
        echo $BASH_SOURCE : run : delete prior LOGFILE $LOGFILE 

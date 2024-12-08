@@ -424,7 +424,8 @@ struct U
     static const char* BaseName_NoSepAsis_( const char* path ); 
 
 
-    static std::string FormSiblingPath( const char* sibname , const char* dirpath ); 
+    static std::string FormSiblingPath0( const char* sibname , const char* dirpath ); 
+    static std::string FormSiblingPath(  const char* sibname , const char* dirpath ); 
     static std::string FormExecutableSiblingPath( const char* argv0 , const char* dirpath ); 
     static bool        IsExecutableSiblingPath(   const char* argv0,  const char* dirpath ); 
     static int SetEnvDefaultExecutableSiblingPath(const char* ekey, char* argv0, const char* dirpath ); 
@@ -868,6 +869,26 @@ inline const char* U::BaseName_NoSepAsis_( const char* path )
 
 
 
+/**
+U::FormSiblingPath0
+---------------------
+
+For example::
+
+   sibname : sreport
+   dirpath : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
+   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sreport
+
+**/
+
+inline std::string U::FormSiblingPath0( const char* sibname , const char* dirpath )
+{
+    std::stringstream ss ; 
+    std::string container = DirName(dirpath) ; 
+    ss << container << "/" << sibname ; 
+    std::string str = ss.str(); 
+    return str ; 
+}
 
 
 /**
@@ -878,20 +899,14 @@ For example::
 
    sibname : sreport
    dirpath : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0
-   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport   (now)
-   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/sreport   (formerly)
+   returns : /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport 
 
 **/
 
 inline std::string U::FormSiblingPath( const char* sibname , const char* dirpath )
 {
     std::stringstream ss ; 
-    /*
-    std::string container = DirName(dirpath) ; 
-    ss << container << "/" << sibname ; 
-    */    
     ss << dirpath << "_" << sibname ; 
-
     std::string str = ss.str(); 
     return str ; 
 }
