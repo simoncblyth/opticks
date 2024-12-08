@@ -2044,7 +2044,7 @@ Back to the check::
 
     TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
 
-
+Now it works::
 
 
 
