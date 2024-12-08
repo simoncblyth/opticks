@@ -1,5 +1,12 @@
 #include "SPMT.h"
 
+/*
+struct SPMT_test
+{
+};
+*/
+
+
 int main(int argc, char** argv)
 {
     SPMT* pmt = SPMT::Load(); 

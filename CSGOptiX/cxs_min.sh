@@ -229,7 +229,7 @@ elif [ "$TEST" == "ref10_multilaunch" ]; then
    opticks_running_mode=SRM_TORCH
 
    export OPTICKS_MAX_SLOT=M1   # causes M10 to be done in 10 launches 
-   export SEvt__NPFOLD_VERBOSE=1 
+   #export SEvt__NPFOLD_VERBOSE=1 
    export QSim__simulate_KEEP_SUBFOLD=1
  
 

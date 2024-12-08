@@ -5456,6 +5456,8 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
 
     INT t_count = 0 ; 
 
+    if(num_keys == 0) return "" ;
+
     std::stringstream ss ; 
     ss.imbue(std::locale("")) ;  // commas for thousands
 
@@ -5468,9 +5470,6 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
         << " only_with_stamp " << ( only_with_stamp ? "YES" : "NO " )     
         << "\n"
         ;
-
-
-
 
     for(INT j=0 ; j < num_keys ; j++)
     {

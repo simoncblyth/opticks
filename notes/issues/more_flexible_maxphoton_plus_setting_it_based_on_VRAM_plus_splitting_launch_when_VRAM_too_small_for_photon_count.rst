@@ -1706,15 +1706,355 @@ Get the subfold::
 
 
 
-FIXED : With subfold trips up sreport
----------------------------------------
+FIXED : With subfold trips up sreport with missing metadata on sub-sub-fold error
+-----------------------------------------------------------------------------------
 
 * :doc:`sreport_tripped_up_by_keeping_multilaunch_subfold`
 
 
 
+DONE : avoid the parent changing, presumably with a deepcopy then independent change 
+-------------------------------------------------------------------------------------
+
+* need to consider what flags should be copied
+
+::
+
+    NPFold::add_subfold  WARNING changing parent of added subfold fo 
+     fo.treepath [/extra/jpmt]
+     fo.parent.treepath [/extra]
+     this.treepath []
+
+
+Put NPFold::add_subfold skipped assert back to find cause of changing parent::
+
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+
+    QRng::LoadAndUpload complete YES rngmax/M 3 rngmax 3000000 digest c5a80f522e9393efe0302b916affda06
+    2024-12-08 16:29:50.760 INFO  [344452] [QRng::init@72] [QRng__init_VERBOSE] YES
+    QRng::desc path /home/blyth/.opticks/rngcache/RNG rngmax 3000000 rngmax/M 3 qr 0x129b1830 qr.skipahead_event_offset 100000 d_qr 0x7fffa4600200QRng::Desc IMPL:CHUNKED_CURANDSTATE
+    NPFold::add_subfold  WARNING changing parent of added subfold fo 
+     fo.treepath [/extra/jpmt]
+     fo.parent.treepath [/extra]
+     this.treepath []
+
+    CSGOptiXSMTest: /home/blyth/opticks/sysrap/NPFold.h:843: void NPFold::add_subfold(const char*, NPFold*): Assertion `fo->parent == nullptr' failed.
+
+    Thread 1 "CSGOptiXSMTest" received signal SIGABRT, Aborted.
+    0x00007ffff584c387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007ffff584c387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff584da78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff58451a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff5845252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x00007ffff6eb1ec1 in NPFold::add_subfold (this=0x12a1acc0, f=0x7ffff7042bad "jpmt", fo=0xc4ae610) at /home/blyth/opticks/sysrap/NPFold.h:843
+    #5  0x00007ffff6f5856d in SPMT::serialize_ (this=0x129ca1b0) at /home/blyth/opticks/sysrap/SPMT.h:584
+    #6  0x00007ffff6f58510 in SPMT::serialize (this=0x129ca1b0) at /home/blyth/opticks/sysrap/SPMT.h:577
+    #7  0x00007ffff6f3d0fb in SSim::get_spmt_f (this=0x43a440) at /home/blyth/opticks/sysrap/SSim.cc:323
+    #8  0x00007ffff71a9d0f in QSim::UploadComponents (ssim=0x43a440) at /home/blyth/opticks/qudarap/QSim.cc:183
+    #9  0x00007ffff7bfc5f2 in CSGOptiX::InitSim (ssim=0x43a440) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:283
+    #10 0x00007ffff7bfcc5b in CSGOptiX::Create (fd=0xec98320) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:352
+    #11 0x00007ffff7bfc007 in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:166
+    #12 0x0000000000404a85 in main (argc=1, argv=0x7fffffff4038) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) 
+
+
+
+Comes from grabbing fold from one tree and adding it to another::
+
+     580 inline NPFold* SPMT::serialize_() const   // formerly get_fold 
+     581 {
+     582     NPFold* fold = new NPFold ;
+     583 
+     584     if(jpmt) fold->add_subfold("jpmt", const_cast<NPFold*>(jpmt) ) ;
+     585 
+     586     if(rindex) fold->add("rindex", rindex) ;
+     587     if(thickness) fold->add("thickness", thickness) ;
+     588     if(qeshape) fold->add("qeshape", qeshape) ;
+     589     if(lcqs) fold->add("lcqs", lcqs) ;
+     590     return fold ;
+     591 }
+
+::
+
+    299 /**
+    300 SSim::get_jpmt
+    301 ---------------
+    302 
+    303 Note that if the top fold does not have the JPMT_RELP "extra/jpmt"  subfold
+    304 then this returns nullptr. 
+    305 
+    306 So that means must first call SSim::AddExtraSubfold
+    307 
+    308 **/
+    309 
+    310 const NPFold* SSim::get_jpmt() const 
+    311 {
+    312     const NPFold* f = top ? top->find_subfold(JPMT_RELP) : nullptr ;
+    313     return f ; 
+    314 }
+    315 const SPMT* SSim::get_spmt() const 
+    316 {
+    317     const NPFold* jpmt = get_jpmt();
+    318     return jpmt ? new SPMT(jpmt) : nullptr ; 
+    319 }
+    320 const NPFold* SSim::get_spmt_f() const
+    321 {
+    322     const SPMT* spmt = get_spmt() ;
+    323     const NPFold* spmt_f = spmt ? spmt->serialize() : nullptr ;
+    324     return spmt_f ; 
+    325 }
+
+
+
+Reproduced it::
+
+    P[blyth@localhost tests]$ TEST=subcopy ~/np/tests/NPFold_copy_test.sh dbg
+    gdb -ex r --args /tmp/NPFold_copy_test/NPFold_copy_test
+    Sun Dec  8 16:42:34 CST 2024
+    GNU gdb (GDB) 12.1
+    ...
+    Starting program: /tmp/NPFold_copy_test/NPFold_copy_test 
+    [NPFold_copy_test::subcopy
+     zzz.get_treepath :  /z/zz
+    ]NPFold_copy_test::subcopy
+    NPFold::add_subfold  WARNING changing parent of added subfold fo 
+     fo.treepath [/z/zz]
+     fo.parent.treepath [/z]
+     this.treepath []
+
+    NPFold_copy_test: ../NPFold.h:843: void NPFold::add_subfold(const char*, NPFold*): Assertion `fo->parent == nullptr' failed.
+
+    Program received signal SIGABRT, Aborted.
+    0x00007ffff782f387 in raise () from /lib64/libc.so.6
+    (gdb) bt
+    #0  0x00007ffff782f387 in raise () from /lib64/libc.so.6
+    #1  0x00007ffff7830a78 in abort () from /lib64/libc.so.6
+    #2  0x00007ffff78281a6 in __assert_fail_base () from /lib64/libc.so.6
+    #3  0x00007ffff7828252 in __assert_fail () from /lib64/libc.so.6
+    #4  0x000000000041368c in NPFold::add_subfold (this=0x4574f0, f=0x42fcf7 "hmm", fo=0x4569c0) at ../NPFold.h:843
+    #5  0x00000000004055cb in NPFold_copy_test::subcopy () at NPFold_copy_test.cc:179
+    #6  0x00000000004056e0 in NPFold_copy_test::Main () at NPFold_copy_test.cc:196
+    #7  0x00000000004056f1 in main () at NPFold_copy_test.cc:201
+    (gdb) 
+
+
+
+Avoid the assert with deepcopy::
+
+    167 int NPFold_copy_test::subcopy()
+    168 {
+    169     NPFold* f = MakeFold();
+    170     NPFold* zzz = f->find_subfold_("z/zz");
+    171     NPFold* zzz_c = zzz->deepcopy();
+    172 
+    173     std::cout
+    174         << "[NPFold_copy_test::subcopy\n"
+    175         << " NPFold::Treepath(zzz)   : " << NPFold::Treepath(zzz) << "\n"
+    176         << " NPFold::Treepath(zzz_c) : " << NPFold::Treepath(zzz_c) << "\n"
+    177         << "]NPFold_copy_test::subcopy\n"
+    178         ;
+    179 
+    180     NPFold* n = new NPFold ;
+    181     // n->add_subfold("hmm", zzz);   // parent changing assert
+    182     n->add_subfold("hmm", zzz_c);
+    183 
+    184     n->save("$FOLD/$TEST");
+    185 
+    186     return 0 ;
+    187 }
+
+
+Check fix::
+
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+
+Nope some issue with the deepcopy. Yep reversion in NPFold, was skipping arrays in the copy::
+
+    QRng::desc path /home/blyth/.opticks/rngcache/RNG rngmax 3000000 rngmax/M 3 qr 0x129b1830 qr.skipahead_event_offset 100000 d_qr 0x7fffa4600200QRng::Desc IMPL:CHUNKED_CURANDSTATE
+
+    Thread 1 "CSGOptiXSMTest" received signal SIGINT, Interrupt.
+    0x00007ffff6bea4fb in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007ffff6bea4fb in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff6f57bde in SPMT::init_rindex_thickness (this=0x129cb080) at /home/blyth/opticks/sysrap/SPMT.h:364
+    #2  0x00007ffff6f57af0 in SPMT::init (this=0x129cb080) at /home/blyth/opticks/sysrap/SPMT.h:327
+    #3  0x00007ffff6f57a80 in SPMT::SPMT (this=0x129cb080, jpmt_=0x129ca1b0) at /home/blyth/opticks/sysrap/SPMT.h:307
+    #4  0x00007ffff6f3d0e0 in SSim::get_spmt (this=0x43a440) at /home/blyth/opticks/sysrap/SSim.cc:322
+    #5  0x00007ffff6f3d128 in SSim::get_spmt_f (this=0x43a440) at /home/blyth/opticks/sysrap/SSim.cc:326
+    #6  0x00007ffff71a9d0f in QSim::UploadComponents (ssim=0x43a440) at /home/blyth/opticks/qudarap/QSim.cc:183
+    #7  0x00007ffff7bfc5f2 in CSGOptiX::InitSim (ssim=0x43a440) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:283
+    #8  0x00007ffff7bfcc5b in CSGOptiX::Create (fd=0xec98320) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:352
+    #9  0x00007ffff7bfc007 in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:166
+    #10 0x0000000000404a85 in main (argc=1, argv=0x7fffffff42b8) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) f 1
+    #1  0x00007ffff6f57bde in SPMT::init_rindex_thickness (this=0x129cb080) at /home/blyth/opticks/sysrap/SPMT.h:364
+    364     if(!CONST_items_expect) std::raise(SIGINT); 
+    (gdb) f 2
+    #2  0x00007ffff6f57af0 in SPMT::init (this=0x129cb080) at /home/blyth/opticks/sysrap/SPMT.h:327
+    327     init_rindex_thickness(); 
+
+
+
+::
+
+     353 inline void SPMT::init_rindex_thickness()
+     354 {
+     355     if(MPT == nullptr || CONST == nullptr) return ;
+     356     int MPT_sub = MPT->get_num_subfold() ;
+     357     int CONST_items = CONST->num_items() ;
+     358 
+     359     bool MPT_sub_expect = MPT_sub == NUM_PMTCAT  ;
+     360     if(!MPT_sub_expect) std::raise(SIGINT);
+     361     assert( MPT_sub_expect );    // NUM_PMTCAT:3
+     362 
+     363     bool CONST_items_expect = CONST_items == NUM_PMTCAT  ;
+     364     LOG_IF(fatal, !CONST_items_expect )
+     365         << " CONST_items " << CONST_items
+     366         << " NUM_PMTCAT " << NUM_PMTCAT
+     367         << " MPT_sub " << MPT_sub
+     368         ;
+     369 
+     370     if(!CONST_items_expect) std::raise(SIGINT);
+     371     assert( CONST_items_expect );
+     372 
+     373     double dscale = 1e-6 ;  // make energy domain scale consistent 
+
+
+::
+
+    QRng::LoadAndUpload complete YES rngmax/M 3 rngmax 3000000 digest c5a80f522e9393efe0302b916affda06
+    2024-12-08 17:28:57.511 INFO  [5795] [QRng::init@72] [QRng__init_VERBOSE] YES
+    QRng::desc path /home/blyth/.opticks/rngcache/RNG rngmax 3000000 rngmax/M 3 qr 0x129b1830 qr.skipahead_event_offset 100000 d_qr 0x7fffa4600200QRng::Desc IMPL:CHUNKED_CURANDSTATE
+    2024-12-08 17:28:57.645 FATAL [5795] [SPMT::init_rindex_thickness@364]  CONST_items 0 NUM_PMTCAT 3 MPT_sub 3
+
+    Thread 1 "CSGOptiXSMTest" received signal SIGINT, Interrupt.
+    0x00007ffff6bea4fb in raise () from /lib64/libpthread.so.0
+    (gdb) bt
+    #0  0x00007ffff6bea4fb in raise () from /lib64/libpthread.so.0
+    #1  0x00007ffff6f57d1a in SPMT::init_rindex_thickness (this=0x129cb080) at /home/blyth/opticks/sysrap/SPMT.h:370
+    #2  0x00007ffff6f57af0 in SPMT::init (this=0x129cb080) at /home/blyth/opticks/sysrap/SPMT.h:327
+    #3  0x00007ffff6f57a80 in SPMT::SPMT (this=0x129cb080, jpmt_=0x129ca1b0) at /home/blyth/opticks/sysrap/SPMT.h:307
+    #4  0x00007ffff6f3d0e0 in SSim::get_spmt (this=0x43a440) at /home/blyth/opticks/sysrap/SSim.cc:322
+    #5  0x00007ffff6f3d128 in SSim::get_spmt_f (this=0x43a440) at /home/blyth/opticks/sysrap/SSim.cc:326
+    #6  0x00007ffff71a9d0f in QSim::UploadComponents (ssim=0x43a440) at /home/blyth/opticks/qudarap/QSim.cc:183
+    #7  0x00007ffff7bfc5f2 in CSGOptiX::InitSim (ssim=0x43a440) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:283
+    #8  0x00007ffff7bfcc5b in CSGOptiX::Create (fd=0xec98320) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:352
+    #9  0x00007ffff7bfc007 in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:166
+    #10 0x0000000000404a85 in main (argc=1, argv=0x7fffffff4178) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb) 
+
+
+
+
+~/o/sysrap/tests/SSim_Test.sh::
+
+    In [2]: f.extra.jpmt
+    Out[2]: 
+    jpmt
+
+    CMDLINE:/data/blyth/junotop/opticks/sysrap/tests/SSim_Test.py
+    jpmt.base:/home/blyth/.opticks/GEOM/J_2024nov27/CSGFoundry/SSim/extra/jpmt
+
+      : jpmt.NPFold_index                                  :                 (3,) : 9 days, 1:59:48.105884 
+      : jpmt.PMTParamData                                  : SUBFOLD 
+      : jpmt.PMTSimParamData                               : SUBFOLD 
+      : jpmt.PMT_RINDEX                                    : SUBFOLD 
+      : jpmt.NPFold_names                                  :                 (0,) : 9 days, 1:59:48.089884 
+
+     min_stamp : 2024-11-29 15:41:20.663103 
+     max_stamp : 2024-11-29 15:41:20.679103 
+     dif_stamp : 0:00:00.016000 
+     age_stamp : 9 days, 1:59:48.089884 
+
+    In [3]: 
+
+
+
+::
+
+    TEST=get_jpmt_nocopy  ~/o/sysrap/tests/SSimTest.sh
+
+    Tocalhost sysrap]$ TEST=get_jpmt_nocopy  ~/o/sysrap/tests/SSimTest.sh
+         BASH_SOURCE : /home/blyth/o/sysrap/tests/SSimTest.sh 
+                name : SSimTest 
+                GEOM : J_2024nov27 
+                FOLD :  
+    2024-12-08 18:42:25.307 INFO  [188181] [SSimTest::get_jpmt_nocopy@170] [NPFold::desc
+    NPFold::desc_subfold
+     tot_items 32
+     folds 10
+     paths 10
+      0 [/]  stamp:0
+      1 [//PMTParamData]  stamp:0
+      2 [//PMTSimParamData]  stamp:0
+      3 [//PMTSimParamData/MPT]  stamp:0
+      4 [//PMTSimParamData/MPT/000]  stamp:0
+      5 [//PMTSimParamData/MPT/001]  stamp:0
+      6 [//PMTSimParamData/MPT/003]  stamp:0
+      7 [//PMTSimParamData/CONST]  stamp:0
+      8 [//PMTSimParamData/QEshape]  stamp:0
+      9 [//PMT_RINDEX]  stamp:0
+    NPFold::desc(0) 
+    NPFold::desc( 0)
+     loaddir:/home/blyth/.opticks/GEOM/J_2024nov27/CSGFoundry/SSim/extra/jpmt subfold 3 ff 3 kk 0 aa 0
+
+
+    PMTParamData
+    NPFold::desc( 1)
+     loaddir:/home/blyth/.opticks/GEOM/J_2024nov27/CSGFoundry/SSim/extra/jpmt/PMTParamData subfold 0 ff 0 kk 1 aa 1
+
+                           pmtCat.npy : (43212, 2, )
+
+
+    PMTSimParamData
+    NPFold::desc( 1)
+     loaddir:/home/blyth/.opticks/GEOM/J_2024nov27/CSGFoundry/SSim/extra/jpmt/PMTSimParamData subfold 3 ff 3 kk 9 aa 9
+
+                            pmtID.npy : (45612, 1, )
+                          qeScale.npy : (45612, 1, )
+                          lpmtCat.npy : (17612, 1, )
+                           pmtCat.npy : (45612, 2, )
+                       pmtCatName.npy : (5, )
+                        pmtCatVec.npy : (45612, 1, )
+                         spmtData.npy : (25600, 10, )
+                         lpmtData.npy : (20012, 9, )
+                         pmtTotal.npy : (4, )
+
+    MPT
+    NPFold::desc( 2)
+     loaddir:/home/blyth/.opticks/GEOM/J_2024nov27/CSGFoundry/SSim/extra/jpmt/PMTSimParamData/MPT subfold 3 ff 3 kk 0 aa 0
+
+
+    000
+    NPFold::desc( 3)
+     loaddir:/home/blyth/.opticks/GEOM/J_2024nov27/CSGFoundry/SSim/extra/jpmt/PMTSimParamData/MPT/000 subfold 0 ff 0 kk 4 aa 4
+
+                                           ARC_KINDEX.npy : (2, 2, )
+                                           ARC_RINDEX.npy : (14, 2, )
+                                           PHC_KINDEX.npy : (14, 2, )
+                                           PHC_RINDEX.npy : (14, 2, )
+
+
+
+
+Back to the check::
+
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
+
+
+
+
+
+
+
+
+
 TODO : add launch-by-launch curandState uploading OR perhaps load once all chunks and change QRng/qrng slot offsets for each launch
 -------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 TODO : test exact matching between multi-launch and single launch 

@@ -99,6 +99,7 @@ public:
     const SPrd* get_sprd() const ; 
 
 
+    const NPFold* get_jpmt_nocopy() const ;   // raw PMT info 
     const NPFold* get_jpmt() const ;   // raw PMT info 
     const SPMT*   get_spmt() const ;   // struct that summarizes PMT info  
     const NPFold* get_spmt_f() const ; // fold with summarized PMT info 
