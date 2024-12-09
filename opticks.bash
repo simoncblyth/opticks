@@ -273,12 +273,18 @@ GEOM(){
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  } 
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
-on(){ cd $(opticks-home)/notes/issues ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/$(ls -t | head -1) ;  }
-onn(){ cd $(opticks-home)/notes/issues ; ls -lt | head -100 ;  }
-on1(){   : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt | head -30 ; vi $(ls -1t | head -1) ;  }
-on2(){   : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt | head -30 ; vi $(ls -1t | head -2 | tail -1) ;  }
-on100(){ : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt | head -100  ;  }
 
+on(){ cd $(opticks-home)/notes  ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/$(ls -t | head -1) ;  }
+onn(){ cd $(opticks-home)/notes ; ls -lt | head -100 ;  }
+on1(){   : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt *.rst | head -30 ; vi $(ls -1t *.rst | head -1) ;  }
+on2(){   : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt *.rst | head -30 ; vi $(ls -1t *.rst | head -2 | tail -1) ;  }
+on100(){ : opticks.bash ; opticks-;opticks-notes-cd ; ls -lt *.rst | head -100  ;  }
+
+oi(){  cd $(opticks-home)/notes/issues ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/issues/$(ls -t | head -1) ;  }
+oii(){ cd $(opticks-home)/notes/issues ; ls -lt | head -100 ;  }
+oi1(){   : opticks.bash ; opticks-;opticks-issues-cd ; ls -lt *.rst | head -30 ; vi $(ls -1t *.rst | head -1) ;  }
+oi2(){   : opticks.bash ; opticks-;opticks-issues-cd ; ls -lt *.rst | head -30 ; vi $(ls -1t *.rst | head -2 | tail -1) ;  }
+oi100(){ : opticks.bash ; opticks-;opticks-issues-cd ; ls -lt *.rst | head -100  ;  }
 
 cu(){  local cu ; date ; for cu in *.cu ; do echo touch $cu && touch $cu ; done ; ls -l *.cu ;  } 
 
@@ -3055,7 +3061,8 @@ opticks-docs-make()
 
 
 
-opticks-notes-cd(){ cd $(opticks-home)/notes/issues/$1 ; }
+opticks-issues-cd(){  cd $(opticks-home)/notes/issues/$1 ; }
+opticks-notes-cd(){ cd $(opticks-home)/notes/$1 ; }
 opticks-refs-cd(){  cd $HOME/opticks_refs ; }
 opticks-refs-ls(){  opticks-refs-cd ; ls -lt *.pdf | head -30 ; }
 or(){ 

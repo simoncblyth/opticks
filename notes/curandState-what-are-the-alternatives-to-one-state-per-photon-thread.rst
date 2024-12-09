@@ -63,7 +63,33 @@ crovella + talonmies suggest to reuse curandState within the thread, so can have
 curand-done-right : interesting because it builds ontop of curand_Philox4x32_10 rather minimally
 -----------------------------------------------------------------------------------------------------
 
+::
+
+    +     //auto randoms = curanddr::uniforms<2>(uint4{0,0,0,seed}, index);
+    +     curanddr::vector_t<2,float> randoms = curanddr::uniforms<2>(uint4{0,0,0,seed}, index);
+
+
+
 * https://github.com/kshitijl/curand-done-right/blob/master/README.md
+* https://github.com/moderngpu/moderngpu/
+* https://github.com/moderngpu/moderngpu/wiki
+
+
+
+::
+
+    cd ~/curand-done-right
+
+    P[blyth@localhost curand-done-right]$ git submodule init
+    Submodule 'examples/moderngpu' (https://github.com/moderngpu/moderngpu.git) registered for path 'examples/moderngpu'
+
+    P[blyth@localhost curand-done-right]$ git submodule update
+    Cloning into 'examples/moderngpu'...
+    ...
+    Submodule path 'examples/moderngpu': checked out 'c1fd31df008d79f727483e795b1ee1ce45b782ca'
+
+
+
 
 
 ::

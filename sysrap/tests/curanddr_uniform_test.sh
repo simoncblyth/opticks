@@ -1,16 +1,16 @@
 #!/bin/bash
 usage(){ cat << EOU
-curand_uniform_test.sh 
+curanddr_uniform_test.sh 
 ========================
 
-~/o/sysrap/tests/curand_uniform_test.sh
+~/o/sysrap/tests/curanddr_uniform_test.sh
 
 EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=curand_uniform_test
+name=curanddr_uniform_test
 src=$name.cu
 script=$name.py 
 
