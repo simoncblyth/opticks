@@ -114,7 +114,7 @@ inline void SCurandState::init()
     int num_spec = spec.size() ; 
     int num_chunk = chunk.size() ; 
 
-    if(num_chunk == 0)
+    if(num_chunk == 0)   // no chunk files found
     {
         initFromSpec(); 
     }

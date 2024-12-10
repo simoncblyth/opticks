@@ -1,7 +1,9 @@
 #pragma once
-#include "curand_kernel.h"
 
 /**
+scurandref
+===========
+
 chunk_idx
    index of the chunk
 chunk_offset
@@ -17,6 +19,9 @@ offset
 
 
 **/
+
+#include "curand_kernel.h"
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include <string>

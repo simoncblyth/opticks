@@ -354,6 +354,15 @@ inline scurandref* SCurandChunk::Find(std::vector<SCurandChunk>& chunk, long q_i
 }
 
 
+/**
+SCurandChunk::NumTotal_SpecCheck
+---------------------------------
+
+Total number of states in the chunks 
+
+**/
+
+
 inline unsigned long long SCurandChunk::NumTotal_SpecCheck(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& spec )
 {
     assert( chunk.size() == spec.size() ) ;

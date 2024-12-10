@@ -278,11 +278,49 @@ Note that sizeof(curandState) is slightly larger than the itemsize in the file,
 indicating that curandState in memory has some padding. Due to this digests of 
 the curandState in memory do not match those of the files or the loaded bytes.    
 
+
+rethink auto rngmax:0
+~~~~~~~~~~~~~~~~~~~~~~~
+
+While implementing multiple launch running realize that 
+reproducibility requires curandState "ix" slot offsetting 
+for launches beyond the first. This should allow results from 
+multiple launches to exactly match unsplit launches.   
+
+Initially thought that would entail re-uploading the 
+states. But it would be simpler to upload all the available 
+states at initialization and just offset for each launch.  
+Note this is "vertical" picking the slot, not "horizontal" 
+offsetting for the skipahead done from event to event.  
+
+While this means need VRAM for the states it looks likely 
+that will soon jump to Philox counter based RNG, which will 
+remove the need for loading states.  Offsetting of counters
+appropriately will still be needed. 
+
+rngmax:0
+   load all available states, 
+rngmax>0 
+   load specified number of states
+
+
 **/
 
-curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static 
+curandState* QRng::LoadAndUpload(ULL _rngmax, const SCurandState& cs)  // static 
 {
     LOG(LEVEL) << cs.desc() ; 
+
+    ULL tot_available_states = cs.all.num ; 
+    ULL rngmax = _rngmax > 0 ? _rngmax : tot_available_states ; 
+
+    LOG_IF(error, _rngmax == 0 ) 
+        << "\n" 
+        << " WARNING : _rngmax is ZERO : will load+upload all SCurandChunk files "
+        << " consuming significant VRAM and enabling very large launches "
+        << " set [" << SEventConfig::kMaxCurand << "] non-zero eg M3 to control "
+        << " tot_available_states/M " << tot_available_states/M 
+        << " rngmax/M " << rngmax/M
+        ;
 
     curandState* d0 = QU::device_alloc<curandState>( rngmax, "QRng::LoadAndUpload/rngmax" ); 
     curandState* d = d0 ; 
@@ -295,6 +333,8 @@ curandState* QRng::LoadAndUpload(ULL rngmax, const SCurandState& cs)  // static
         << " rngmax/M " << rngmax/M
         << " available_chunk " << available_chunk 
         << " cs.all.num/M " << cs.all.num/M 
+        << " tot_available_states/M " << tot_available_states/M 
+        << " rngmax/M " << rngmax/M
         << " d0 " << d0 
         ;
 
