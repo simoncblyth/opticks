@@ -1,13 +1,13 @@
 #pragma once
 /**
-srng.h : C++ standard random number generation
+srngcpu.h : C++ standard random number generation
 =================================================
 
 Instead of generating randoms it is also possible to 
 use curand precooked randoms by calling the below method 
 with the photon index as argument::
 
-    srng::setSequenceIndex
+    srngcpu::setSequenceIndex
 
 This is done by SGenerate::GeneratePhotons when the below EKEY is set::
 
@@ -25,7 +25,7 @@ To extend that see::
 #include <random>
 #include "s_seq.h"
 
-struct srng
+struct srngcpu
 {
     int                                     seed ;  
     std::mt19937_64                         engine ;
@@ -35,7 +35,7 @@ struct srng
     s_seq*                                  seq ; 
 
 
-    srng(); 
+    srngcpu(); 
     std::string desc() const ; 
 
     void set_fake(double fake_); 
@@ -45,14 +45,14 @@ struct srng
     float  generate_float(); 
     double generate_double(); 
 
-    static float  uniform(srng* state );
-    static double uniform_double(srng* state ); 
+    static float  uniform(srngcpu* state );
+    static double uniform_double(srngcpu* state ); 
 
     std::string demo(int n) ; 
 }; 
 
 
-inline srng::srng() 
+inline srngcpu::srngcpu() 
     : 
     seed(1),
     fdist(0,1), 
@@ -63,47 +63,47 @@ inline srng::srng()
     engine.seed(seed) ; 
 }
 
-inline std::string srng::desc() const 
+inline std::string srngcpu::desc() const 
 {
     std::stringstream ss ; 
-    ss << "srng::desc" << std::endl ; 
+    ss << "srngcpu::desc" << std::endl ; 
     std::string str = ss.str(); 
     return str ; 
 }
 
-inline void srng::set_fake(double fake_){ fake = fake_ ; } 
+inline void srngcpu::set_fake(double fake_){ fake = fake_ ; } 
 
-inline float srng::generate_float()
+inline float srngcpu::generate_float()
 {
     if( fake >= 0.f ) return fake ; 
     float u = seq && seq->is_enabled() ? seq->flat() : fdist(engine) ; 
     return u ; 
 } 
-inline double srng::generate_double()
+inline double srngcpu::generate_double()
 { 
     if( fake >= 0.f ) return fake ; 
     double u = seq && seq->is_enabled() ? seq->flat() : ddist(engine) ; 
     return u ; 
 }
-inline void srng::setSequenceIndex(int idx)
+inline void srngcpu::setSequenceIndex(int idx)
 {
     if( seq == nullptr ) seq = new s_seq ; 
     seq->setSequenceIndex(idx); 
 }
-inline int srng::getSequenceIndex() const 
+inline int srngcpu::getSequenceIndex() const 
 {
     return seq == nullptr ? -2 : seq->getSequenceIndex() ; 
 }
 
 
 
-inline float  srng::uniform(srng* state ){        return state->generate_float() ; } 
-inline double srng::uniform_double(srng* state ){ return state->generate_double() ; } 
+inline float  srngcpu::uniform(srngcpu* state ){        return state->generate_float() ; } 
+inline double srngcpu::uniform_double(srngcpu* state ){ return state->generate_double() ; } 
 
-inline std::string srng::demo(int n) 
+inline std::string srngcpu::demo(int n) 
 {
     std::stringstream ss ; 
-    ss << "srng::demo seq " << getSequenceIndex()  << std::endl ;
+    ss << "srngcpu::demo seq " << getSequenceIndex()  << std::endl ;
     for(int i=0 ; i < n ; i++) ss 
          << std::setw(4) << i 
          << " : " 
@@ -115,8 +115,8 @@ inline std::string srng::demo(int n)
 }
 
 
-//inline float  curand_uniform(srng* state ){         return state->generate_float() ; }
-//inline double curand_uniform_double(srng* state ){ return state->generate_double() ; }
+//inline float  curand_uniform(srngcpu* state ){         return state->generate_float() ; }
+//inline double curand_uniform_double(srngcpu* state ){ return state->generate_double() ; }
 
 
 

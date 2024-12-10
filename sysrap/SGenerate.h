@@ -79,7 +79,7 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_ )
     curandStateXORWOW rng ; 
     rng.seed = rng_seed ;   
 #else
-    srng rng ;
+    srngcpu rng ;
     rng.seed = rng_seed ;   
 #endif
 

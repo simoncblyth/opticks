@@ -27,7 +27,6 @@ Want to be able to switch the RNG impl with a recompile to compare:
     100    double boxmuller_extra_double;
     101 };
 
-
 ~/opticks/sysrap/curandlite/curandStatePhilox4_32_10_OpticksLite.h::
 
      42 struct curandStatePhilox4_32_10_OpticksLite
@@ -49,6 +48,9 @@ Want to be able to switch the RNG impl with a recompile to compare:
      146 };
 
 
+qudarap code flexibility
+---------------------------
+
 qrng.h::
      
     #if defined(MOCK_CUDA)
@@ -59,11 +61,15 @@ qrng.h::
 
 
 Then changing all curandState curandStateXORWOW to RNG in qudarap, worked ok.
-Not so easy in sysrap, due to mock cuda complications with scurand.h and scarrier.h
 
+
+sysrap ? 
+-----------
+
+Not so easy in sysrap, due to mock cuda complications with scurand.h and scarrier.h
 The problem being they need to work with both with mock and real cuda ? 
 
-Maybe template the generate etc method to avoid the complication ? 
+Maybe templated generate method etc can avoid the complication ? 
 
 
 ::
@@ -100,5 +106,20 @@ Maybe template the generate etc method to avoid the complication ?
     ./sysrap/tests/scarrier_test.cc:scarrier_test.cc : CPU tests of scarrier.h CUDA code using mocking 
     ./sysrap/tests/scarrier_test.cc:#include "scarrier.h"
     P[blyth@localhost opticks]$ 
+
+
+
+srng.h is misleadingly named, rename to srngcpu.h
+--------------------------------------------------
+
+::
+
+    P[blyth@localhost qudarap]$ opticks-f srng.h 
+    ./sysrap/s_mock_curand.h:#include "srng.h"
+    ./sysrap/scarrier.h:#include "srng.h"
+    ./sysrap/tests/srng_test.cc:#include "srng.h"
+    ./sysrap/scurand.h:   #include "srng.h"
+    P[blyth@localhost opticks]$ 
+
 
 

@@ -337,7 +337,7 @@ set(HEADERS
     sblackbody.h
     tcomplex.h
 
-    srng.h
+    srngcpu.h
     s_mock_curand.h
     scurand.h  
 

@@ -4,7 +4,7 @@ s_mock_curand.h
 =================
 
 s_mock_curand provides a wrapper for the random 
-generation of srng that allows CUDA intended code
+generation of srngcpu that allows CUDA intended code
 to be tricked into running on CPU. 
 
 This is conditionally included by scurand.h 
@@ -18,10 +18,10 @@ but that does that matter as instanciation doesnt need testing.
 
 **/
 
-#include "srng.h"
+#include "srngcpu.h"
 
-typedef srng curandStateXORWOW ; 
-typedef srng curandState_t ; 
+typedef srngcpu curandStateXORWOW ; 
+typedef srngcpu curandState_t ; 
 //
 inline float curand_uniform(curandState_t* state ){         return state->generate_float() ; }
 inline double curand_uniform_double(curandState_t* state ){ return state->generate_double() ; }

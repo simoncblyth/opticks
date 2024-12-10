@@ -9,7 +9,7 @@
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
    #include "s_mock_curand.h"
 #else
-   #include "srng.h"
+   #include "srngcpu.h"
 #endif
 
 #endif 
