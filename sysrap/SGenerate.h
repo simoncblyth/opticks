@@ -76,9 +76,11 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_ )
 
     unsigned rng_seed = 1u ; 
 #if defined(MOCK_CURAND)
-    curandStateXORWOW rng(rng_seed); 
+    curandStateXORWOW rng ; 
+    rng.seed = rng_seed ;   
 #else
-    srng rng(rng_seed);  
+    srng rng ;
+    rng.seed = rng_seed ;   
 #endif
 
     for(int i=0 ; i < tot_photon ; i++ )

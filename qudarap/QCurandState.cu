@@ -3,6 +3,7 @@
 #include "QUDA_CHECK.h"
 #include "SLaunchSequence.h"
 #include "scurandref.h"
+#include "qrng.h"
 
 
 /**
@@ -18,7 +19,7 @@ states_thread_offset
 **/
 
 
-__global__ void _QCurandState_curand_init_chunk(int threads_per_launch, int id_offset, scurandref* cr, curandState* states_thread_offset )
+__global__ void _QCurandState_curand_init_chunk(int threads_per_launch, int id_offset, scurandref* cr, RNG* states_thread_offset )
 {
     int id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= threads_per_launch) return;
@@ -57,7 +58,7 @@ extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* seq,  scurandref
 
         int id_offset = l.thread_offset + cr->chunk_offset ;   
 
-        curandState* states_thread_offset = cr->states  + l.thread_offset ; 
+        RNG* states_thread_offset = cr->states  + l.thread_offset ; 
      
         QUDA::before_kernel( start, stop );
 

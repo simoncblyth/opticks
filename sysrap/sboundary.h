@@ -100,10 +100,10 @@ struct sboundary
     float3 A_parallel ; 
     float3 alt_pol ;  // check an alternative polarization expression  
 
-    sboundary(curandStateXORWOW& rng, sctx& ctx );  
+    sboundary(RNG& rng, sctx& ctx );  
 };
 
-inline sboundary::sboundary( curandStateXORWOW& rng, sctx& ctx ) 
+inline sboundary::sboundary( RNG& rng, sctx& ctx ) 
     :
     p(ctx.p),
     s(ctx.s),

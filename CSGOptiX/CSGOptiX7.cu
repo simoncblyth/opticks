@@ -67,6 +67,7 @@ __intersection__is
 // simulation 
 #include <curand_kernel.h>
 
+#include "qrng.h"
 #include "qsim.h"
 
 #include "csg_intersect_leaf.h"
@@ -297,9 +298,9 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
 //#define OLD_WITHOUT_SKIPAHEAD 1
 #ifdef OLD_WITHOUT_SKIPAHEAD
-    curandState rng = sim->rngstate[idx] ;   
+    RNG rng = sim->rngstate[idx] ;   
 #else
-    curandState rng ; 
+    RNG rng ; 
     sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, idx );
 #endif
 
@@ -393,7 +394,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     const quad6& gs     = evt->genstep[genstep_id] ; 
      
     qsim* sim = params.sim ; 
-    curandState rng = sim->rngstate[idx] ;   
+    RNG rng = sim->rngstate[idx] ;   
 
     quad4 p ;  
     sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );  

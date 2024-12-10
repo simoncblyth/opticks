@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-scurandref
-===========
+scurandref : NOT GENERAL : SPECIFIC TO curandStateXORWOW
+===========================================================
 
 chunk_idx
    index of the chunk
@@ -39,7 +39,7 @@ struct scurandref
     unsigned long long num ; 
     unsigned long long seed ;
     unsigned long long offset ;
-    curandState*  states  ; 
+    curandStateXORWOW* states  ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else

@@ -33,7 +33,7 @@ qudarap-prepare-installation-notes
 If you have lots of VRAM you can increase the 
 maximum possible launch size by expanding the CHUNKSIZES.  
 For example the initial 10x1M,9x10M,5x20M corresponds 
-to 200M curandStates in 24 file chunks.
+to 200M RNG in 24 file chunks.
 That could be expanded to 300M with::
 
     10x1M,9x10M,10x20M
@@ -107,7 +107,7 @@ NB changing the below envvars can adjust the QCurandStateMonolithic_SPEC::
 But doing this is for expert usage only because it will then 
 be necessary to set QCurandStateMonolithic_SPEC correspondingly
 when running Opticks executables for them to find
-the customized curandState files. 
+the customized RNG files. 
 
 HMM : THIS AWKWARDNESS SUGGESTS SPLITTING THE size and the seed:offset config
 

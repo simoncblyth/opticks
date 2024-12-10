@@ -47,7 +47,13 @@ so these polarizations that would be quashed dissappear into the origin
 import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.pvplt import *
-import pyvista as pv
+
+try:
+    import pyvista as pv
+except ImportError:
+    pv = None
+pass
+
 COLORS = "cyan red green blue cyan magenta yellow pink orange purple lightgreen".split()
 
 import matplotlib as mp
@@ -64,7 +70,6 @@ if __name__ == '__main__':
     label = os.environ.get("TOPLINE", "sboundary_test.py")
     B = int(os.environ.get("B","1")) 
 
-    pl = pvplt_plotter(label=label)   
 
     lim = slice(None)
 
@@ -84,36 +89,43 @@ if __name__ == '__main__':
     ppv = np.c_[pp[:,0,2],pp[:,B,2]]  
     print("ppv = np.c_[pp[:,0,2],pp[:,B,2]] \n", repr(ppv))
 
-    pvplt_viewpoint( pl ) 
-
-    N = len(pp)
-    ii = list(range(N))  
-
-    wscale = False 
-    wcut = True 
-
-    for i in ii:
-        frac = float(i)/float(N)
-        polcol = cmap(frac)
-        #polcol = COLORS[ i % len(COLORS)]
-        pvplt_photon( pl, pp[i:i+1,0], polcol=polcol, polscale=polscale, wscale=wscale, wcut=wcut )
-        pvplt_photon( pl, pp[i:i+1,B], polcol=polcol, polscale=polscale, wscale=wscale, wcut=wcut )
-    pass
 
 
     pos = np.array( [[0,0,0]] , dtype=np.float32 )
     rvec = np.array( [[mom00[0],mom00[1],-mom00[2] ]], dtype=np.float32 ) 
     vec1 = np.array( [[mom10]], dtype=np.float32 ) 
 
-    pvplt_lines( pl, pos, rvec )
-    pvplt_lines( pl, pos, vec1 )
-
     lhs  = np.array( [[-1,0,0]], dtype=np.float32 )
     rhs  = np.array( [[ 1,0,0]], dtype=np.float32 )
-    pvplt_add_line_a2b( pl, lhs, rhs )
 
-    cp = pl.show() 
-    
-    print(cp)
-    
+
+
+    if not pv is None:
+        pl = pvplt_plotter(label=label)   
+        pvplt_viewpoint( pl ) 
+
+        N = len(pp)
+        ii = list(range(N))  
+
+        wscale = False 
+        wcut = True 
+
+        for i in ii:
+            frac = float(i)/float(N)
+            polcol = cmap(frac)
+            #polcol = COLORS[ i % len(COLORS)]
+            pvplt_photon( pl, pp[i:i+1,0], polcol=polcol, polscale=polscale, wscale=wscale, wcut=wcut )
+            pvplt_photon( pl, pp[i:i+1,B], polcol=polcol, polscale=polscale, wscale=wscale, wcut=wcut )
+        pass
+
+
+        pvplt_lines( pl, pos, rvec )
+        pvplt_lines( pl, pos, vec1 )
+
+        pvplt_add_line_a2b( pl, lhs, rhs )
+
+        cp = pl.show() 
+        
+        print(cp)
+        
 

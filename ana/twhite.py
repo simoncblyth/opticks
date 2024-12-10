@@ -52,7 +52,7 @@ the inverse CDF *source_texture* that it uses.
     ## optixrap/cu/torchstep.h
 
     241 __device__ void
-    242 generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
+    242 generate_torch_photon(Photon& p, TorchStep& ts, RNG &rng)
     243 {
     244       p.wavelength = ts.wavelength > 50.f ? ts.wavelength : source_lookup(curand_uniform(&rng));  // Planck black body source 6500K standard illuminant 
     245 

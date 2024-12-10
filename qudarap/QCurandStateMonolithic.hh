@@ -6,7 +6,7 @@ QCurandStateMonolithic.hh : allocate + create + download + save
 * creates states using curand_init with CUDA launchs configured by SLaunchSequence.h
 * loading/saving from/to file is handled separately by QRng
 
-The curandState originate on the device as a result of 
+The RNG originate on the device as a result of 
 calling curand_init and they need to be downloaded and stored
 into files named informatively with seeds, counts, offsets etc..
 
@@ -42,9 +42,9 @@ The old cuRANDWrapper and new QCurandStateMonolithic have exactly the same conte
 +-----------+---------------+----------------+-------------------------------------------------------------------------------+
 
 
-With GPU VRAM of 48G the limit coming from combination of photons and curandStates is about 400M
+With GPU VRAM of 48G the limit coming from combination of photons and RNGs is about 400M
 
-* curandState item size in the files is 44 bytes which get padded to 48 bytes in curandState type
+* curand StateXORWOW item size in the files is 44 bytes which get padded to 48 bytes in curand StateXORWOW type
 * dealing with 16.4GB files for 400M states is uncomfortable, so will need to rearrange into multiple files
 * chunking into files of 10M states each would correspond to 40 files of 10M states each (420M bytes) 
 * with 40-100 files of 10M states each could push to one billion photon launch if had GPU with 100G VRAM 

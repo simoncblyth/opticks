@@ -113,7 +113,7 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     unsigned skipahead_event_offset = SEventConfig::EventSkipahead()  ; 
     LOG(LEVEL) << "[ new QRng skipahead_event_offset : " << skipahead_event_offset << " " << SEventConfig::kEventSkipahead ;
-    QRng* rng = new QRng(skipahead_event_offset)  ;  // loads and uploads curandState 
+    QRng* rng = new QRng(skipahead_event_offset)  ;  // loads and uploads RNG 
     LOG(LEVEL) << "] new QRng " << rng->desc()  ;
 
     LOG(LEVEL) << rng->desc(); 
@@ -711,7 +711,7 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
 
     for(unsigned t=0 ; t < num_tranche ; t++)
     {
-        // *id_offset* controls which rngstates/curandState to use
+        // *id_offset* controls which rngstates/RNG to use
         unsigned id_offset = ni_tranche_size*t ; 
         std::string name = QU::rng_sequence_name<T>(PREFIX, ni_tranche_size, nj, nk, id_offset ) ;  
 

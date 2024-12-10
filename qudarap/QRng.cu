@@ -17,12 +17,12 @@ Simple curand generation with skipahead, no encapsulation.
 
 
 template <typename T>
-__global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, curandStateXORWOW* r, unsigned long long skipahead_  )
+__global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, RNG* r, unsigned long long skipahead_  )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= ni) return;
 
-    curandState rng = *(r + id) ; 
+    RNG rng = *(r + id) ; 
     skipahead( skipahead_, &rng ); 
 
     unsigned ibase = id*nv ; 
@@ -38,15 +38,15 @@ __global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, curandStateXORWO
 }
 
 template <typename T>
-extern void QRng_generate(dim3 numBlocks, dim3 threadsPerBlock, T* uu, unsigned ni, unsigned nv, curandStateXORWOW* r, unsigned long long skipahead_ )
+extern void QRng_generate(dim3 numBlocks, dim3 threadsPerBlock, T* uu, unsigned ni, unsigned nv, RNG* r, unsigned long long skipahead_ )
 {
     printf("//QRng_generate ni %d nv %d skipahead %llu \n", ni, nv, skipahead_ ); 
     _QRng_generate<T><<<numBlocks,threadsPerBlock>>>( uu, ni, nv, r, skipahead_ );
 } 
 
 
-template void QRng_generate(dim3, dim3, float*, unsigned, unsigned, curandStateXORWOW*, unsigned long long ); 
-template void QRng_generate(dim3, dim3, double*, unsigned, unsigned, curandStateXORWOW*, unsigned long long ); 
+template void QRng_generate(dim3, dim3, float*, unsigned, unsigned, RNG*, unsigned long long ); 
+template void QRng_generate(dim3, dim3, double*, unsigned, unsigned, RNG*, unsigned long long ); 
 
 
 
@@ -68,7 +68,7 @@ __global__ void _QRng_generate_evid(qrng* qr, unsigned event_idx, T* uu, unsigne
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= ni) return;
 
-    curandState rng ; 
+    RNG rng ; 
     qr->get_rngstate_with_skipahead(rng, event_idx, id ); 
 
     unsigned ibase = id*nv ; 

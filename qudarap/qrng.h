@@ -6,19 +6,25 @@
    #define QRNG_METHOD 
 #endif 
 
+#include <curand_kernel.h>
 
+
+#if defined(MOCK_CUDA)
+#else
 struct curandStateXORWOW ; 
+using RNG = curandStateXORWOW ; 
+#endif
 
 struct qrng
 {
-    curandStateXORWOW*  rng_states ; 
+    RNG*                rng_states ; 
     unsigned            skipahead_event_offset ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
-    QRNG_METHOD void get_rngstate_with_skipahead(curandStateXORWOW& rng, unsigned event_idx, unsigned photon_idx );  
+    QRNG_METHOD void get_rngstate_with_skipahead(RNG& rng, unsigned event_idx, unsigned photon_idx );  
 
 #else
-    qrng(curandStateXORWOW* rng_states_, unsigned skipahead_event_offset_)
+    qrng(RNG* rng_states_, unsigned skipahead_event_offset_)
         :
         rng_states(rng_states_),
         skipahead_event_offset(skipahead_event_offset_)
@@ -30,7 +36,6 @@ struct qrng
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 
-#include <curand_kernel.h>
 
 /**
 qrng::get_rngstate_with_skipahead  (formerly qrng::random_setup)
@@ -50,7 +55,7 @@ light touch encapsulation of setup only as want generation of randoms to be fami
 
 **/
 
-inline QRNG_METHOD void qrng::get_rngstate_with_skipahead(curandStateXORWOW& rng, unsigned event_idx, unsigned photon_idx )
+inline QRNG_METHOD void qrng::get_rngstate_with_skipahead(RNG& rng, unsigned event_idx, unsigned photon_idx )
 {
     unsigned long long skipahead_ = skipahead_event_offset*event_idx ; 
     rng = *(rng_states + photon_idx) ; 

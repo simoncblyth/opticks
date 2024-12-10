@@ -29,9 +29,12 @@ Build and run::
 
 const char* FOLD = getenv("FOLD") ; 
 
+using RNG = srng ;  // simpler than s_mock_curand.h typedef
+
+
 int main(int argc, char** argv)
 {
-    curandStateXORWOW rng(1u) ; 
+    RNG rng ;   
 
     float3 nrm = make_float3(0.f, 0.f, 1.f ); // surface normal in +z direction 
 

@@ -12,17 +12,17 @@ appropriate for VRAM.
 
 The old impl split:
 
-1. creation of the curandState file with QCurandState.{hh,cc}
-2. loading+uploading of curandState file for simulation with QRng.{hh,cc}
+1. creation of the RNG file with QCurandState.{hh,cc}
+2. loading+uploading of RNG file for simulation with QRng.{hh,cc}
 
 That definitely has advantages, as considerations for the 
-install time executables to prepare the curandState and for 
+install time executables to prepare the RNG and for 
 runtime usage of the files are very different. 
 
 The chunk-centric impl follows the same split:
 
-1. creation of chunked curandState files with QCurandState.h 
-2. loading+uploading of chunked curandState files with QRng.{hh,cc} 
+1. creation of chunked RNG files with QCurandState.h 
+2. loading+uploading of chunked RNG files with QRng.{hh,cc} 
 
 Related tests::
 
@@ -35,6 +35,8 @@ Related tests::
 #include "SCurandState.h"
 #include "SLaunchSequence.h"
 #include "QU.hh"
+
+#include "qrng.h"
 
 
 extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* lseq, scurandref* cr, scurandref* d_cr) ; 
@@ -104,13 +106,13 @@ inline void QCurandState::init()
 
 
 /**
-QCurandState::initChunk : generates curandState for chunk and saves to file
+QCurandState::initChunk : generates RNG for chunk and saves to file
 -------------------------------------------------------------------------------
 
 1. prep sequence of launches needed for c.ref.num slots
-2. allocate + zero space on device for c.ref.num curandState 
+2. allocate + zero space on device for c.ref.num RNG 
 3. upload scurandref metadata struct 
-4. launch curand_init kernel on device populating curandState buffer
+4. launch curand_init kernel on device populating RNG buffer
 5. allocate h_states on host 
 6. copy device to host 
 7. free on device
@@ -127,17 +129,17 @@ inline void QCurandState::initChunk(SCurandChunk& c)
 
     SLaunchSequence lseq(cr->num);
 
-    cr->states = QU::device_alloc_zero<curandState>(cr->num,"QCurandState::initChunk") ;
+    cr->states = QU::device_alloc_zero<RNG>(cr->num,"QCurandState::initChunk") ;
  
     scurandref* d_cr = QU::UploadArray<scurandref>(cr, 1, "QCurandState::initChunk" );    
 
     QCurandState_curand_init_chunk(&lseq, cr, d_cr); 
 
-    curandState* h_states = (curandState*)malloc(sizeof(curandState)*cr->num);
+    RNG* h_states = (RNG*)malloc(sizeof(RNG)*cr->num);
 
     QU::copy_device_to_host( h_states, cr->states, cr->num ); 
 
-    QU::device_free<curandState>(cr->states); 
+    QU::device_free<RNG>(cr->states); 
 
     cr->states = h_states ; 
 

@@ -4,7 +4,7 @@
 
 
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g )
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, unsigned id, RNG& rng, const GS& g )
 {
     float u0 ;
     float u1 ; 
@@ -101,7 +101,7 @@ to sample the RINDEX
 
 
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng, const GS& g )
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& q, unsigned id, RNG& rng, const GS& g )
 {
     T u0 ;
     T u1 ; 
@@ -188,7 +188,7 @@ Which things have most need to be  double to make any difference ?
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_expt(qsim* sim, quad4& q, unsigned id, curandStateXORWOW& rng )
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_expt(qsim* sim, quad4& q, unsigned id, RNG& rng )
 {
     double BetaInverse = 1.5 ; 
     double Pmin = 1.55 ; 
@@ -264,7 +264,7 @@ Makes much more sense to fabricate genstep on CPU and upload it.
 **/
 
 
-inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(qsim* sim, unsigned id, curandStateXORWOW& rng ) 
+inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(qsim* sim, unsigned id, RNG& rng ) 
 {
     QG qg ;      
     GS& g = qg.g ; 
@@ -274,7 +274,7 @@ inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(q
     return wavelength ; 
 }
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng ) 
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& p, unsigned id, RNG& rng ) 
 {
     QG qg ;      
     GS& g = qg.g ; 
@@ -284,7 +284,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& p, u
 }
 
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& p, unsigned id, curandStateXORWOW& rng) 
+inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& p, unsigned id, RNG& rng) 
 {
     QG qg ;      
     GS& g = qg.g ; 

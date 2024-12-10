@@ -36,7 +36,7 @@ TODO: split off debug functions from actually used functions
 _QSim_rng_sequence
 --------------------
 
-id_offset : applies to sim.rngstate array controlling which curandState to use
+id_offset : applies to sim.rngstate array controlling which RNG to use
 
 **/
 
@@ -45,7 +45,7 @@ __global__ void _QSim_rng_sequence(qsim* sim, T* seq, unsigned ni, unsigned nv, 
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= ni) return;
-    curandState rng = sim->rngstate[id+id_offset]; 
+    RNG rng = sim->rngstate[id+id_offset]; 
     unsigned ibase = id*nv ; 
 
     for(unsigned v=0 ; v < nv ; v++)
@@ -60,7 +60,7 @@ __global__ void _QSim_rng_sequence_with_skipahead(qsim* sim, T* seq, unsigned ni
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= ni) return;
-    curandState rng ;
+    RNG rng ;
     sim->rng->get_rngstate_with_skipahead(rng, sim->evt->index, id+id_offset) ; 
 
     if( id == 0 ) printf("//_QSim_rng_sequence_with_skipahead id %d sim->evt->index %d \n", id, sim->evt->index ); 
@@ -108,7 +108,7 @@ __global__ void _QSim_scint_wavelength(qsim* sim, float* wavelength, unsigned nu
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
-    curandState rng = sim->rngstate[id]; 
+    RNG rng = sim->rngstate[id]; 
 
     float u_wl = curand_uniform(&rng); 
     float wl = sim->scint->wavelength(u_wl) ; 
@@ -133,7 +133,7 @@ __global__ void _QSim_RandGaussQ_shoot(qsim* sim, float* vv, unsigned num_v )
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_v) return;
 
-    curandState rng = sim->rngstate[id]; 
+    RNG rng = sim->rngstate[id]; 
 
     float mean = 5.f ; 
     float stdDev = 0.1f ; 
@@ -161,7 +161,7 @@ __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, u
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
     
     //printf("//_QSim_dbg_gs_generate sim.cerenkov %p sim.scint %p \n", sim->cerenkov, sim->scint ); 
 
@@ -203,7 +203,7 @@ __global__ void _QSim_generate_photon(qsim* sim)
 
     if (idx >= evt->num_photon) return;
     
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
     unsigned genstep_id = evt->seed[idx] ; 
     const quad6& gs     = evt->genstep[genstep_id] ; 
 
@@ -300,7 +300,7 @@ __global__ void _QSim_rayleigh_scatter_align( qsim* sim, sphoton* photon,  unsig
 
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ; 
@@ -318,7 +318,7 @@ __global__ void _QSim_propagate_to_boundary( qsim* sim, sphoton* photon, unsigne
 
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ;  
@@ -349,7 +349,7 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ;  
@@ -378,7 +378,7 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ; 
@@ -409,7 +409,7 @@ __global__ void _QSim_propagate_at_multifilm_mutate( qsim* sim, sphoton* photon,
 
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ; 
@@ -444,7 +444,7 @@ __global__ void _QSim_hemisphere_polarized( qsim* sim, sphoton* photon, unsigned
 
     //printf("//_QSim_hemisphere_polarized idx %d num_photon %d polz %d \n", idx, num_photon, polz ); 
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ; 
@@ -480,7 +480,7 @@ __global__ void _QSim_reflect_generate( qsim* sim, sphoton* photon, unsigned num
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
     sctx ctx = {} ; 
 
     ctx.idx = idx ; 
@@ -509,7 +509,7 @@ __global__ void _QSim_quad_launch( qsim* sim, quad* q, unsigned num_quad, qdebug
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_quad ) return;
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
 
     sctx ctx = {} ; 
     ctx.idx = idx ; 
@@ -629,7 +629,7 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
     printf("//_QSim_mock_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
 #endif
 
-    curandState rng = sim->rngstate[idx] ; 
+    RNG rng = sim->rngstate[idx] ; 
     sphoton p = evt->photon[idx] ;   
     p.set_idx(idx); 
 

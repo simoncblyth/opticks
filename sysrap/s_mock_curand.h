@@ -20,12 +20,11 @@ but that does that matter as instanciation doesnt need testing.
 
 #include "srng.h"
 
-//typedef curandStateXORWOW curandState_t ; 
 typedef srng curandStateXORWOW ; 
 typedef srng curandState_t ; 
-
-float curand_uniform(curandState_t* state ){         return state->generate_float() ; }
-double curand_uniform_double(curandState_t* state ){ return state->generate_double() ; }
+//
+inline float curand_uniform(curandState_t* state ){         return state->generate_float() ; }
+inline double curand_uniform_double(curandState_t* state ){ return state->generate_double() ; }
 
 
 

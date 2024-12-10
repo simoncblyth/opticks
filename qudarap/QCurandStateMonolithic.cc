@@ -8,6 +8,7 @@
 
 #include "qcurandwrap.h"
 #include "curand_kernel.h" 
+#include "qrng.h"
 
 const plog::Severity QCurandStateMonolithic::LEVEL = SLOG::EnvLevel("QCurandStateMonolithic", "DEBUG" ); 
 
@@ -44,7 +45,7 @@ void QCurandStateMonolithic::init()
 
 void QCurandStateMonolithic::alloc()
 { 
-    cs->states = QU::device_alloc_zero<curandState>(cs->num,"QCurandStateMonolithic::QCurandStateMonolithic/curandState") ; 
+    cs->states = QU::device_alloc_zero<RNG>(cs->num,"QCurandStateMonolithic::QCurandStateMonolithic/RNG") ; 
     LOG(info) << "after alloc" ; 
     d_cs = QU::UploadArray<qcurandwrap>(cs, 1, "QCurandStateMonolithic::alloc/qcurandwrap" );    
     LOG(info) << "after upload" ; 
@@ -56,7 +57,7 @@ void QCurandStateMonolithic::create()
 }
 void QCurandStateMonolithic::download() 
 {
-    h_cs->states = (curandState*)malloc(sizeof(curandState)*cs->num);
+    h_cs->states = (RNG*)malloc(sizeof(RNG)*cs->num);
     QU::copy_device_to_host( h_cs->states, cs->states, cs->num ); 
     LOG(info) << "after copy_device_to_host  "  ; 
 }

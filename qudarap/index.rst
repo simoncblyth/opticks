@@ -9,7 +9,7 @@ qsim.h QSim.hh
     acting as coordinator of all the below
 
 QRng.hh
-    loading+uploading curandState : use curand without the stack cost of curand_init
+    loading+uploading RNG : use curand without the stack cost of curand_init
 
 QTex.hh
     2D texture creation 

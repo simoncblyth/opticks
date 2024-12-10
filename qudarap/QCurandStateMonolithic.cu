@@ -1,11 +1,13 @@
 #include <cstdio>
 #include "curand_kernel.h"
 #include "qcurandwrap.h"
+#include "qrng.h"
+
 #include "QUDA_CHECK.h"
 #include "SLaunchSequence.h"
 
 
-__global__ void _QCurandStateMonolithic_curand_init(int threads_per_launch, int id_offset, qcurandwrap* cs, curandState* states_thread_offset )
+__global__ void _QCurandStateMonolithic_curand_init(int threads_per_launch, int id_offset, qcurandwrap* cs, RNG* states_thread_offset )
 {
     int id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= threads_per_launch) return;
@@ -32,7 +34,7 @@ extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* seq,  qcuran
 
         int id_offset = l.thread_offset ;   
 
-        curandState* states_thread_offset = cs->states  + l.thread_offset ; 
+        RNG* states_thread_offset = cs->states  + l.thread_offset ; 
      
         QUDA::before_kernel( start, stop );
 

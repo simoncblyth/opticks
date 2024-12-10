@@ -48,7 +48,7 @@ class SimtracePositions(object):
         280     const quad6& gs     = evt->genstep[genstep_id] ;
         281 
         282     qsim* sim = params.sim ;
-        283     curandState rng = sim->rngstate[idx] ;
+        283     RNG rng = sim->rngstate[idx] ;
         284 
         285     quad4 p ;
         286     sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );

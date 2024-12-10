@@ -27,6 +27,7 @@ To extend that see::
 
 struct srng
 {
+    int                                     seed ;  
     std::mt19937_64                         engine ;
     std::uniform_real_distribution<float>   fdist ; 
     std::uniform_real_distribution<double>  ddist ; 
@@ -34,7 +35,7 @@ struct srng
     s_seq*                                  seq ; 
 
 
-    srng(unsigned seed_=1); 
+    srng(); 
     std::string desc() const ; 
 
     void set_fake(double fake_); 
@@ -51,14 +52,15 @@ struct srng
 }; 
 
 
-inline srng::srng(unsigned seed_) 
+inline srng::srng() 
     : 
+    seed(1),
     fdist(0,1), 
     ddist(0,1),
     fake(-1.),
     seq(nullptr)
 { 
-    engine.seed(seed_) ; 
+    engine.seed(seed) ; 
 }
 
 inline std::string srng::desc() const 
@@ -111,5 +113,12 @@ inline std::string srng::demo(int n)
     std::string str = ss.str(); 
     return str ; 
 }
+
+
+//inline float  curand_uniform(srng* state ){         return state->generate_float() ; }
+//inline double curand_uniform_double(srng* state ){ return state->generate_double() ; }
+
+
+
 
 

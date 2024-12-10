@@ -94,7 +94,7 @@ void QRng::initMeta()
     d_qr = QU::UploadArray<qrng>(qr, 1, label_1 ); 
 
     bool uploaded = d_qr != nullptr && d_rng_states != nullptr ; 
-    LOG_IF(fatal, !uploaded) << " FAILED to upload curandState and/or metadata " ;  
+    LOG_IF(fatal, !uploaded) << " FAILED to upload RNG and/or metadata " ;  
     assert(uploaded); 
 }
 
@@ -116,12 +116,12 @@ const char* QRng::Load_FAIL_NOTES = R"(
 QRng::Load_FAIL_NOTES
 =================================
 
-QRng::Load failed to load the curandState files. 
+QRng::Load failed to load the RNG files. 
 These files should have been created during the *opticks-full* installation 
 by the bash function *opticks-prepare-installation* 
 which runs *qudarap-prepare-installation*. 
 
-Investigate by looking at the contents of the curandState directory, 
+Investigate by looking at the contents of the RNG directory, 
 as shown below::
 
     epsilon:~ blyth$ ls -l  ~/.opticks/rngcache/RNG/
@@ -161,14 +161,14 @@ that can be set to anything.
 
 **/
 
-curandState* QRng::LoadAndUpload(ULL& rngmax, const char* path)  // static 
+RNG* QRng::LoadAndUpload(ULL& rngmax, const char* path)  // static 
 {
-    curandState* h_states = Load(rngmax, path); 
-    curandState* d_states = UploadAndFree(h_states, rngmax ); 
+    RNG* h_states = Load(rngmax, path); 
+    RNG* d_states = UploadAndFree(h_states, rngmax ); 
     return d_states ; 
 }
 
-curandState* QRng::Load(ULL& rngmax, const char* path)  // static 
+RNG* QRng::Load(ULL& rngmax, const char* path)  // static 
 {
     bool null_path = path == nullptr ; 
     LOG_IF(fatal, null_path ) << " QRng::Load null path " ; 
@@ -185,7 +185,7 @@ curandState* QRng::Load(ULL& rngmax, const char* path)  // static
     long file_size = ftell(fp);
     rewind(fp);
 
-    long type_size = sizeof(curandState) ;  
+    long type_size = sizeof(RNG) ;  
     long item_size = 44 ; 
 
     rngmax = file_size/item_size ; 
@@ -201,11 +201,11 @@ curandState* QRng::Load(ULL& rngmax, const char* path)  // static
 
     assert( file_size % item_size == 0 );  
 
-    curandState* rng_states = (curandState*)malloc(sizeof(curandState)*rngmax);
+    RNG* rng_states = (RNG*)malloc(sizeof(RNG)*rngmax);
 
     for(ULL i = 0 ; i < rngmax ; ++i )
     {   
-        curandState& rng = rng_states[i] ;
+        RNG& rng = rng_states[i] ;
         fread(&rng.d,                     sizeof(unsigned int),1,fp);   //  1
         fread(&rng.v,                     sizeof(unsigned int),5,fp);   //  5 
         fread(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);   //  1 
@@ -218,10 +218,10 @@ curandState* QRng::Load(ULL& rngmax, const char* path)  // static
     return rng_states ; 
 }
 
-curandState* QRng::UploadAndFree(curandState* h_states, ULL num_states )  // static 
+RNG* QRng::UploadAndFree(RNG* h_states, ULL num_states )  // static 
 {
     const char* label_0 = "QRng::UploadAndFree/rng_states" ; 
-    curandState* d_states = QU::UploadArray<curandState>(h_states, num_states, label_0 ) ;   
+    RNG* d_states = QU::UploadArray<RNG>(h_states, num_states, label_0 ) ;   
     free(h_states); 
     return d_states ;  
 }
@@ -236,7 +236,7 @@ QRng::LoadAndUpload
 ----------------------
 
 rngmax
-    input argument that determines how many chunks of curandState to load and upload
+    input argument that determines how many chunks of RNG to load and upload
 
 (SCurandState)cs
     vector of SCurandChunk metadata on the chunk files 
@@ -252,7 +252,7 @@ Read full chunks until doing so would go over rngmax, then
 
 
 
-curandState load bytes digest 
+RNG load bytes digest 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
@@ -260,7 +260,7 @@ curandState load bytes digest
     QRng::LoadAndUpload complete YES rngmax/M 3 rngmax 3000000 digest c5a80f522e9393efe0302b916affda06
 
 
-If rngmax lands on a border between files/chunks then the curandState load digest
+If rngmax lands on a border between files/chunks then the RNG load digest
 should match the output from md5sum on the corresponding state files. 
 For chunks it is necessary to concat the files first::
 
@@ -274,16 +274,16 @@ For chunks it is necessary to concat the files first::
     ## cat SCurandChunk_000[0-2]_00*M_0001M_0_0.bin > /tmp/3M.bin  ## wildcard way 
 
 
-Note that sizeof(curandState) is slightly larger than the itemsize in the file, 
-indicating that curandState in memory has some padding. Due to this digests of 
-the curandState in memory do not match those of the files or the loaded bytes.    
+Note that sizeof(RNG) is slightly larger than the itemsize in the file, 
+indicating that RNG in memory has some padding. Due to this digests of 
+the RNG in memory do not match those of the files or the loaded bytes.    
 
 
 rethink auto rngmax:0
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 While implementing multiple launch running realize that 
-reproducibility requires curandState "ix" slot offsetting 
+reproducibility requires RNG "ix" slot offsetting 
 for launches beyond the first. This should allow results from 
 multiple launches to exactly match unsplit launches.   
 
@@ -306,7 +306,7 @@ rngmax>0
 
 **/
 
-curandState* QRng::LoadAndUpload(ULL _rngmax, const SCurandState& cs)  // static 
+RNG* QRng::LoadAndUpload(ULL _rngmax, const SCurandState& cs)  // static 
 {
     LOG(LEVEL) << cs.desc() ; 
 
@@ -322,8 +322,8 @@ curandState* QRng::LoadAndUpload(ULL _rngmax, const SCurandState& cs)  // static
         << " rngmax/M " << rngmax/M
         ;
 
-    curandState* d0 = QU::device_alloc<curandState>( rngmax, "QRng::LoadAndUpload/rngmax" ); 
-    curandState* d = d0 ; 
+    RNG* d0 = QU::device_alloc<RNG>( rngmax, "QRng::LoadAndUpload/rngmax" ); 
+    RNG* d = d0 ; 
 
     ULL available_chunk = cs.chunk.size(); 
     ULL count = 0 ; 
@@ -376,7 +376,7 @@ curandState* QRng::LoadAndUpload(ULL _rngmax, const SCurandState& cs)  // static
 
         assert(num_match); 
 
-        QU::copy_host_to_device<curandState>( d , cr.states , num ); 
+        QU::copy_host_to_device<RNG>( d , cr.states , num ); 
 
         free(cr.states); 
 
@@ -415,7 +415,7 @@ Used from the old QCurandState::save
 TODO: eliminate, functionality duplicates in SCurandChunk::Save
 
 **/
-void QRng::Save( curandState* states, unsigned num_states, const char* path ) // static
+void QRng::Save( RNG* states, unsigned num_states, const char* path ) // static
 {
     sdirectory::MakeDirsForFile(path);
     FILE *fp = fopen(path,"wb");
@@ -424,7 +424,7 @@ void QRng::Save( curandState* states, unsigned num_states, const char* path ) //
 
     for(unsigned i = 0 ; i < num_states ; ++i )
     {   
-        curandState& rng = states[i] ;
+        RNG& rng = states[i] ;
         fwrite(&rng.d,                     sizeof(unsigned int),1,fp);
         fwrite(&rng.v,                     sizeof(unsigned int),5,fp);
         fwrite(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);
@@ -471,7 +471,7 @@ extern void QRng_generate(
     T*, 
     unsigned,
     unsigned,
-    curandState*,
+    RNG*,
     unsigned long long 
 );
 

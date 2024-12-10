@@ -2049,12 +2049,13 @@ Now it works::
 
 
 
+DONE : OPTICKS_MAX_CURAND=0 now loads all chunks 
+-----------------------------------------------------
 
 
 
-TODO : add launch-by-launch curandState uploading OR perhaps load once all chunks and change QRng/qrng slot offsets for each launch
--------------------------------------------------------------------------------------------------------------------------------------
-
+TODO : change QRng/qrng slot offsets for each launch
+--------------------------------------------------------
 
 
 TODO : test exact matching between multi-launch and single launch 

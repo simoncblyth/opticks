@@ -5,6 +5,9 @@ sboundary_test.sh
 
 ::
 
+    ~/o/sysrap/tests/sboundary_test.sh
+
+
     N=160 POLSCALE=10 AOI=BREWSTER ./sboundary_test.sh 
     N=160 POLSCALE=10 AOI=45 ./sboundary_test.sh 
 
@@ -14,6 +17,9 @@ EOU
 }
 
 name=sboundary_test
+cd $(dirname $(realpath $BASH_SOURCE))
+export PYTHONPATH=$PWD/../../..
+
 export FOLD=/tmp/$USER/opticks/$name
 mkdir -p $FOLD
 
@@ -42,15 +48,19 @@ export TOPLINE=${TOPLINE:-$topline}
 export GEOM=AOI_${AOI}
 
 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
+
 defarg=build_run_ana
 arg=${1:-$defarg}
 
 if [ "${arg/build}" != "$arg" ]; then 
    gcc $name.cc \
-          -std=c++11 -lstdc++ \
+          -std=c++11 -lstdc++ -lm \
           -I.. \
           -DMOCK_CURAND \
-          -I/usr/local/cuda/include \
+          -I$CUDA_PREFIX/include \
           -I$OPTICKS_PREFIX/externals/glm/glm \
           -I$OPTICKS_PREFIX/externals/plog/include \
           -o $FOLD/$name 

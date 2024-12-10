@@ -30,11 +30,17 @@ struct scarrier
     quad q4 ; 
     quad q5 ; 
 
+
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
    SCARRIER_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 #else
    SCARRIER_METHOD static void generate( sphoton& p, srng&              rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 #endif
+
+//   template<typename T>
+//   SCARRIER_METHOD static void generate( sphoton& p, T& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
+
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 #else
@@ -42,6 +48,10 @@ struct scarrier
 #endif
 
 }; 
+
+
+//template<typename T>
+//inline SCARRIER_METHOD void scarrier::generate( sphoton& p_, T& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id )  // static
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
@@ -60,9 +70,6 @@ inline SCARRIER_METHOD void scarrier::generate( sphoton& p_, srng&              
     p.q3.f = gs.q5.f ; 
     p.set_flag(TORCH); 
 }
-
-
-
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) 
 #else

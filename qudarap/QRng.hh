@@ -18,15 +18,15 @@ randoms to simulate an item(photon).
 
 TODO : implement sanity check for use after loading::
 
-    bool QRng::IsAllZero( curandState* states, unsigned num_states ) //  static
+    bool QRng::IsAllZero( RNG* states, unsigned num_states ) //  static
 
 **/
 
 #include <string>
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
-#include "curand_kernel.h"   // need header as curandState is typedef to curandXORWOW
-
+#include "curand_kernel.h"   
+#include "qrng.h"
 
 //#define OLD_MONOLITHIC_CURANDSTATE 1
 
@@ -52,19 +52,19 @@ struct QUDARAP_API QRng
 #ifdef OLD_MONOLITHIC_CURANDSTATE
     static constexpr const char* IMPL = "OLD_MONOLITHIC_CURANDSTATE" ; 
 
-    static curandState* LoadAndUpload(ULL& rngmax, const char* path); 
-    static curandState* Load(ULL& rngmax, const char* path); 
-    static curandState* UploadAndFree(curandState* h_states, ULL num_states ); 
+    static RNG* LoadAndUpload(ULL& rngmax, const char* path); 
+    static RNG* Load(ULL& rngmax, const char* path); 
+    static RNG* UploadAndFree(RNG* h_states, ULL num_states ); 
 #else
     static constexpr const char* IMPL = "CHUNKED_CURANDSTATE" ; 
-    static curandState* LoadAndUpload(ULL rngmax, const SCurandState& cs); 
+    static RNG* LoadAndUpload(ULL rngmax, const SCurandState& cs); 
     SCurandState   cs ; 
 #endif
-    static void Save( curandState* states, unsigned num_states, const char* path ); 
+    static void Save( RNG* states, unsigned num_states, const char* path ); 
 
     const char*    path ; 
     ULL            rngmax ; 
-    curandState*   d_rng_states ; 
+    RNG*           d_rng_states ; 
 
     qrng*          qr ;  
     qrng*          d_qr ;  

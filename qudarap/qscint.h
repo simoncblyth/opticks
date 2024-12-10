@@ -12,10 +12,7 @@ qscint.h
 #endif 
 
 
-#if defined(MOCK_CUDA)
-#else
-struct curandStateXORWOW ; 
-#endif
+#include "qrng.h"
 
 struct quad4 ; 
 struct quad6 ; 
@@ -30,9 +27,9 @@ struct qscint
     unsigned            hd_factor ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-    QSCINT_METHOD void    generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, int photon_id, int genstep_id ) const ; 
-    QSCINT_METHOD void    reemit(   sphoton& p, curandStateXORWOW& rng, float scintillationTime) const ;
-    QSCINT_METHOD void    momw_polw(sphoton& p, curandStateXORWOW& rng) const ; 
+    QSCINT_METHOD void    generate( sphoton& p, RNG& rng, const quad6& gs, int photon_id, int genstep_id ) const ; 
+    QSCINT_METHOD void    reemit(   sphoton& p, RNG& rng, float scintillationTime) const ;
+    QSCINT_METHOD void    momw_polw(sphoton& p, RNG& rng) const ; 
     // sets direction, polarization and wavelength as needed by both generate and reemit
 
     QSCINT_METHOD float   wavelength(     const float& u0) const ; 
@@ -57,7 +54,7 @@ qscint::generate_photon
 
 inline QSCINT_METHOD void qscint::generate(
     sphoton& p, 
-    curandStateXORWOW& rng, 
+    RNG& rng, 
     const quad6& _gs, 
     int photon_id, 
     int genstep_id ) const 
@@ -101,7 +98,7 @@ the Geant4 properties directly.  What about geocache ? Can hold/persist with GSc
 
 **/
 
-inline QSCINT_METHOD void qscint::reemit(sphoton& p, curandStateXORWOW& rng, float scintillationTime) const 
+inline QSCINT_METHOD void qscint::reemit(sphoton& p, RNG& rng, float scintillationTime) const 
 {
     momw_polw(p, rng); 
     float u3 = curand_uniform(&rng) ; 
@@ -117,7 +114,7 @@ Translation of "jcv DsG4Scintillation"
 
 **/
 
-inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, curandStateXORWOW& rng) const 
+inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, RNG& rng) const 
 {
     float u0 = curand_uniform(&rng); 
     float u1 = curand_uniform(&rng); 
