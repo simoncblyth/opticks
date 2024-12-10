@@ -349,12 +349,30 @@ inline NP* sstandard::make_optical(
             }
             else if(is_sur)
             {
-                const char* sn = snam::get(suname, idx) ; 
-                if(idx > -1 ) assert(sn) ;  
+                const char* surfname = snam::get(suname, idx) ; 
+
+                bool no_surfname_for_surface_idx = idx > -1 && surfname == nullptr ; 
+
+                if(no_surfname_for_surface_idx) std::cerr 
+                    << "sstandard::make_optical"
+                    << " ERROR "
+                    << " no_surfname_for_surface_idx " << ( no_surfname_for_surface_idx ? "YES" : "NO " ) 
+                    << " sur idx from bd " << idx 
+                    << " but no corresponding surfname "
+                    << " suname.size " << suname.size()
+                    << " surface.subfold.size " << surface->subfold.size()
+                    << " surface.ff.size " << surface->ff.size()
+                    << "\n"
+                    << " snam::Desc(suname)\n" 
+                    << snam::Desc(suname)
+                    << "\n"
+                    ;      
+
+                if(idx > -1 ) assert(surfname) ;  
                 // all surf should have name, do not always have surf
 
-                NPFold* surf = sn ? surface->get_subfold(sn) : nullptr ;
-                bool is_implicit = sn && strncmp(sn, IMPLICIT_PREFIX, strlen(IMPLICIT_PREFIX) ) == 0 ; 
+                NPFold* surf = surfname ? surface->get_subfold(surfname) : nullptr ;
+                bool is_implicit = surfname && strncmp(surfname, IMPLICIT_PREFIX, strlen(IMPLICIT_PREFIX) ) == 0 ; 
                 int Type = -2 ; 
                 int Finish = -2 ; 
                 int ModelValuePercent = -2 ; 
@@ -401,7 +419,7 @@ inline NP* sstandard::make_optical(
                     << " OSN " << OSN 
                     << " ems " << ems
                     << " emsn " << smatsur::Name(ems) 
-                    << " sn " << ( sn ? sn : "-" ) 
+                    << " surfname " << ( surfname ? surfname : "-" ) 
                     << std::endl 
                     ; 
 

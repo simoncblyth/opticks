@@ -65,7 +65,9 @@ struct U4Surface
     static const std::vector<G4LogicalSkinSurface*>*   PrepareSkinSurfaceVector(const G4LogicalSkinSurfaceTable* tab ); 
 
     static void    Collect( std::vector<const G4LogicalSurface*>& surfaces ); 
-    static NPFold* MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ); 
+    static void    CollectRawNames( std::vector<std::string>& rawnames, const std::vector<const G4LogicalSurface*>& surfaces ); 
+
+    static NPFold* MakeFold(const std::vector<const G4LogicalSurface*>& surfaces, const std::vector<std::string>& keys ); 
     static NPFold* MakeFold(); 
     static G4LogicalSurface* Find( const G4VPhysicalVolume* thePrePV, const G4VPhysicalVolume* thePostPV ) ;  
 
@@ -302,6 +304,19 @@ inline void U4Surface::Collect( std::vector<const G4LogicalSurface*>& surfaces )
     }
 }
 
+inline void U4Surface::CollectRawNames( std::vector<std::string>& rawnames, const std::vector<const G4LogicalSurface*>& surfaces )
+{
+    for(unsigned i=0 ; i < surfaces.size() ; i++)
+    {   
+        const G4LogicalSurface* ls = surfaces[i] ; 
+        const G4String& name = ls->GetName() ; 
+        const char* raw = name.c_str() ; 
+        rawnames.push_back(raw); 
+    }
+}
+
+
+
 /**
 U4Surface::MakeFold
 --------------------
@@ -310,14 +325,16 @@ Canonical usage from U4Tree::initSurfaces creating the stree::surface NPFold.
 
 **/
 
-inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& surfaces ) // static
+inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& surfaces, const std::vector<std::string>& keys ) // static
 {
+    assert( surfaces.size() == keys.size() ); 
+
     NPFold* fold = new NPFold ; 
     for(unsigned i=0 ; i < surfaces.size() ; i++)
     {   
         const G4LogicalSurface* ls = surfaces[i] ; 
-        const G4String& name = ls->GetName() ; 
-        const char* key = name.c_str() ; 
+        [[maybe_unused]] const char* rawname = ls->GetName().c_str() ; 
+        const char* key = keys[i].c_str() ; 
 
         G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(ls->GetSurfaceProperty());
 
@@ -335,6 +352,7 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
         assert(mpt);  
         NPFold* sub = U4MaterialPropertiesTable::MakeFold(mpt) ; 
 
+        sub->set_meta<std::string>("rawname", rawname) ; 
         sub->set_meta<std::string>("OpticalSurfaceName", osn) ; 
         sub->set_meta<std::string>("TypeName", U4SurfaceType::Name(theType)) ; 
         sub->set_meta<std::string>("ModelName", U4OpticalSurfaceModel::Name(theModel)) ; 
@@ -376,9 +394,17 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
 
 inline NPFold* U4Surface::MakeFold()
 {
+    assert(0) ; // this is just used from tests i guess
     std::vector<const G4LogicalSurface*> surfaces ; 
     Collect(surfaces); 
-    return MakeFold(surfaces) ; 
+
+    std::vector<std::string> suname_raw ;  
+    U4Surface::CollectRawNames(suname_raw, surfaces); 
+
+    std::vector<std::string> suname ;  
+    sstr::StripTail_Unique( suname, suname_raw, "0x" );
+
+    return MakeFold(surfaces, suname) ; 
 }
 
 

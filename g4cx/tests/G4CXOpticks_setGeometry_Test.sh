@@ -90,6 +90,7 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
+source dbg__.sh 
 
 defarg=info_run_ana
 arg=${1:-$defarg}
@@ -100,22 +101,16 @@ script=$bin.py
 source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
 [ -z "$GEOM" ] && echo $BASH_SOURCE : FATAL GEOM $GEOM MUST BE SET && exit 1 
 
-tmp=/tmp/$USER/opticks
-TMP=${TMP:-$tmp}
-export FOLD=$TMP/$bin/$GEOM
-mkdir -p $FOLD
+
+#if [ "$GEOM" == "gabor_pfrich_min" ]; then 
+#   echo $BASH_SOURCE : GEOM $GEOM : DEBUGGING : ALLOW DUPLICATE FOLDER KEYS 
+#   export NPFold__add_subfold_ALLOW_DUPLICATE_KEY=1
+#fi 
+
 
 case $GEOM in 
    FewPMT) geomscript=../../u4/tests/FewPMT.sh ;;
 esac
-
-
-origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml    # path to GDML
-
-
-if [ -f "$origin" ]; then
-    export ${GEOM}_GDMLPathFromGEOM=$origin      # export path to GDML 
-fi 
 
 if [ -n "$geomscript" -a -f "$geomscript" ]; then 
     echo $BASH_SOURCE : GEOM $GEOM : sourcing geomscript $geomscript
@@ -123,6 +118,16 @@ if [ -n "$geomscript" -a -f "$geomscript" ]; then
 else
     echo $BASH_SOURCE : GEOM $GEOM : no geomscript    
 fi 
+
+
+
+
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+export FOLD=$TMP/$bin/$GEOM
+mkdir -p $FOLD
+
 
 
 vars="BASH_SOURCE arg SDIR GEOM FOLD bin geomscript script origin"
@@ -161,8 +166,6 @@ logging(){
 [ -n "$LOG" ] && logging 
 
 
-
-
 [ -n "$LOG" ] && logging 
 env | grep =INFO
 
@@ -176,24 +179,31 @@ if [ "${arg/clean}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : clean error && exit 1 
 fi 
 
-
 if [ "${arg/run}" != "$arg" ]; then 
+    ## run does geometry setup like for dbg
     ./GXTestRunner.sh $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-    export TAIL="-o run"
-    case $(uname) in 
-       Darwin) lldb__ $bin  ;; 
-       Linux)  gdb__  $bin ;;
-    esac
+
+    origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml    # path to GDML
+    if [ -f "$origin" ]; then
+        export ${GEOM}_GDMLPathFromGEOM=$origin      # export path to GDML 
+    fi 
+
+    gdb__  $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi 
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $script
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
+    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error && exit 3
+fi 
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${PYTHON:-python} $script
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 4
 fi 
 
 exit 0

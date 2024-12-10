@@ -286,7 +286,7 @@ struct stree
 #endif
 
 
-    static constexpr const char* SUINDEX = "suindex.npy" ;
+    //static constexpr const char* SUINDEX = "suindex.npy" ;
 
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* CSG = "csg" ;
@@ -326,14 +326,15 @@ struct stree
     std::vector<int>         mtline ;     
     std::map<int,int>        mtindex_to_mtline ;   // filled from mtindex and mtline via init_material_mapping
 
+    std::vector<std::string> suname_raw ;   // surface names, direct from Geant4
     std::vector<std::string> suname ;       // surface names
-    std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
+    //std::vector<int>         suindex ;      // HMM: is this needed, its just 0,1,2,...
     std::vector<int4>        vbd ; 
     std::vector<std::string> bdname ; 
     std::vector<std::string> implicit ;  // names of implicit surfaces
 
     std::vector<std::string> soname_raw ;   // solid names, my have 0x pointer suffix 
-    std::vector<std::string> soname ;       // unique solid names, created with sstr::StripTail_unique with _1 _2 ... uniqing 
+    std::vector<std::string> soname ;       // unique solid names, created with sstr::StripTail_Unique with _1 _2 ... uniqing 
     std::vector<sn*>         solids ;       // used from U4Tree::initSolid but not available postcache, instead use sn::Get methods 
 
     std::vector<glm::tmat4x4<double>> m2w ; // local (relative to parent) "model2world" transforms for all nodes
@@ -662,11 +663,12 @@ struct stree
     int add_material( const char* name, unsigned g4index ); 
     int num_material() const ; 
 
-    int add_surface( const char* name ); 
+    int add_extra_surface( const char* name ); 
+    int add_extra_surface( const std::vector<std::string>& names  ); 
+
     int get_surface( const char* name ) const ; 
     int num_surface() const ;   // total including implicit  
 
-    int add_surface( const std::vector<std::string>& names  ); 
 
     int add_surface_implicit( const char* name ); 
     int get_surface_implicit( const char* name ) const ; 
@@ -755,8 +757,9 @@ inline std::string stree::desc_size(char div) const
        << " mtindex " << mtindex.size() << div 
        << " mtline " << mtline.size() << div 
        << " mtindex_to_mtline " << mtindex_to_mtline.size() << div 
+       << " suname_raw " << suname_raw.size() << div 
        << " suname " << suname.size() << div 
-       << " suindex " << suindex.size() << div 
+       //<< " suindex " << suindex.size() << div 
        << " vbd " << vbd.size() << div 
        << " bdname " << bdname.size() << div 
        << " implicit " << implicit.size() << div 
@@ -3104,7 +3107,7 @@ inline NPFold* stree::serialize() const
 
     fold->add( SUNAME,   NPX::Holder(suname) ); 
     fold->add( IMPLICIT, NPX::Holder(implicit) ); 
-    fold->add( SUINDEX,  NPX::ArrayFromVec<int,int>( suindex )  ); 
+    //fold->add( SUINDEX,  NPX::ArrayFromVec<int,int>( suindex )  ); 
 
     NPFold* f_standard = standard->serialize() ; 
     fold->add_subfold( STANDARD, f_standard ); 
@@ -3229,7 +3232,7 @@ inline void stree::import(const NPFold* fold)
     ImportArray<int, int>( force_triangulate_lvid, fold->get(FORCE_TRIANGULATE_LVID) );
 
     ImportArray<int, int>( mtindex, fold->get(MTINDEX) );
-    ImportArray<int, int>( suindex, fold->get(SUINDEX) );
+    //ImportArray<int, int>( suindex, fold->get(SUINDEX) );
  
     NPX::DiscoMapFromArray<int>( mtindex_to_mtline, fold->get(MTINDEX_TO_MTLINE) ); 
  
@@ -4899,8 +4902,8 @@ inline int stree::num_material() const
 }
 
 /**
-stree::add_surface
---------------------
+stree::add_extra_surface
+-------------------------
 
 If the name is already present in the suname list 
 just returns the 0-based index otherwise add to suname 
@@ -4908,7 +4911,7 @@ and return the new index.
 
 **/
 
-inline int stree::add_surface( const char* name )
+inline int stree::add_extra_surface( const char* name )
 {
     int idx = -1 ; 
     int prior = stree::GetValueIndex<std::string>( suname, name ) ; 
@@ -4920,7 +4923,7 @@ inline int stree::add_surface( const char* name )
     {
         idx = suname.size() ; 
         suname.push_back(name) ;   
-        suindex.push_back(idx); 
+        //suindex.push_back(idx); 
         int idx2 = stree::GetValueIndex<std::string>( suname, name ) ; 
         bool idx_expect = idx2 == idx ; 
         assert( idx_expect );
@@ -4928,6 +4931,20 @@ inline int stree::add_surface( const char* name )
     }   
     return idx ; 
 } 
+
+
+inline int stree::add_extra_surface(const std::vector<std::string>& names  )
+{
+    int idx = -1 ; 
+    for(unsigned i=0 ; i < names.size() ; i++) 
+    {    
+        const char* surname = names[i].c_str() ; 
+        idx = add_extra_surface( surname ); 
+    }    
+    return idx ; 
+} 
+
+
 inline int stree::get_surface( const char* name ) const 
 {
     return stree::GetValueIndex<std::string>(suname, name ) ; 
@@ -4937,17 +4954,6 @@ inline int stree::num_surface() const
     return suname.size();  
 }
 
-
-inline int stree::add_surface(const std::vector<std::string>& names  )
-{
-    int idx = -1 ; 
-    for(unsigned i=0 ; i < names.size() ; i++) 
-    {    
-        const char* sn = names[i].c_str() ; 
-        idx = add_surface( sn ); 
-    }    
-    return idx ; 
-} 
 
 
 
@@ -4965,7 +4971,7 @@ NOW RETURNING THE STANDARD SURFACE IDX
 
 inline int stree::add_surface_implicit( const char* name )
 {
-    int idx = add_surface(name);   
+    int idx = add_extra_surface(name);   
 
     int implicit_idx = stree::GetValueIndex<std::string>( implicit, name ) ; 
     if(implicit_idx == -1)  // new implicit 

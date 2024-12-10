@@ -315,6 +315,8 @@ the stripped names use it as the key otherwise
 try different numbered suffix _0 _1 _2 _3 until 
 a unique key amoungst the keys is found.
 
+The default end is "0x" for pointer tail suffix.
+
 **/
 
 inline void sstr::StripTail_Unique( std::vector<std::string>& keys, const std::vector<std::string>& src, const char* end )

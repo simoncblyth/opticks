@@ -491,16 +491,32 @@ U4Tree::initSurfaces
 inline void U4Tree::initSurfaces()
 {
     U4Surface::Collect(surfaces);  
-    st->surface = U4Surface::MakeFold(surfaces); 
+
+    U4Surface::CollectRawNames(st->suname_raw, surfaces); 
+
+    sstr::StripTail_Unique( st->suname, st->suname_raw, "0x" );
+
+    assert( st->suname.size() == st->suname_raw.size() ); 
+
+
+    st->surface = U4Surface::MakeFold(surfaces, st->suname ); 
+
     num_surface_standard = int(surfaces.size()) ; 
 
+
+    /*
+    // no longet needed for standard surfaces ?
     for(int i=0 ; i < num_surface_standard ; i++)
     {
         const G4LogicalSurface* ls = surfaces[i] ; 
-        const G4String& name_ = ls->GetName() ; 
-        const char* name = name_.c_str(); 
+        const G4String& rawname_ = ls->GetName() ; 
+        const char* rawname = rawname_.c_str(); 
+        const char* name = st->suname[i].c_str(); 
+
         st->add_surface(name);  
     }
+    */
+
 }
 
 /**
@@ -543,7 +559,7 @@ inline void U4Tree::initSurfaces_Serialize()
     {
         const U4SurfacePerfect& perf = perfect[i] ; 
         const char* name = perf.name.c_str() ; 
-        st->add_surface( name );   
+        st->add_extra_surface( name );   
     }
 
 
@@ -612,6 +628,15 @@ inline void U4Tree::initSolids_Mesh()
 {
     st->mesh = U4Mesh::MakeFold(solids, st->soname ) ; 
 }
+
+
+/**
+U4Tree::initSolids_r
+----------------------
+
+The raw source names of solids are collected into st->soname_raw vector
+
+**/
 
 inline void U4Tree::initSolids_r(const G4VPhysicalVolume* const pv)
 {

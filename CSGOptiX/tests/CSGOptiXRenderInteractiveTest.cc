@@ -58,30 +58,7 @@ int main(int argc, char** argv)
     CSGFoundry* fd = CSGFoundry::Load(); 
 
     SScene* scene = fd->getScene(); 
-
-    if(scene->is_empty())
-    {
-        LOG(fatal) << "CSGFoundry::Load GIVES EMPTY SCENE : TRANSITIONAL KLUDGE : TRY TO LOAD FROM SCENE_FOLD " ; 
-        //scene = SScene::Load("$SCENE_FOLD");   
-        //fd->setOverrideScene(scene); 
-    }
-    else
-    {
-        LOG(info) << "standard CSGFoundry::Load has scene : no need to kludge OverrideScene " ; 
-    }
-
-
-    static const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;  
-    static const char* _SGLM_DESC = "CSGOptiXRenderInteractiveTest__SGLM_DESC" ;  
-    bool FRAME_HOP = ssys::getenvbool(_FRAME_HOP); 
-    bool SGLM_DESC = ssys::getenvbool(_SGLM_DESC); 
-
-
-    CSGOptiX* cx = CSGOptiX::Create(fd) ;
-
-    SGLM& gm = *(cx->sglm) ; 
-    SGLFW gl(gm); 
-    SGLFW_CUDA interop(gm); 
+    assert(!scene->is_empty()); 
 
     stree* st = fd->getTree(); 
     assert(st);
@@ -90,13 +67,24 @@ int main(int argc, char** argv)
     const char* PFX = "EXTENT:" ;
     float extent = sstr::StartsWith(MOI, PFX) ? sstr::To<float>( MOI + strlen(PFX) ) : 0.f ;  
     // this extent handling is primarily for use with simple single solid test geometries
-    int sleep_break = ssys::getenvint("SLEEP_BREAK",0); 
-
 
     sfr mfr = extent > 0.f ? sfr::MakeFromExtent<float>(extent) :  st->get_frame(MOI);    // HMM: what about when start from CSGMaker geometry ? 
     mfr.set_idx(-2);                 // maybe should start from stree/snode/sn geometry with an streemaker.h ?  
+    // moved stree::get_frame prior to popping up the window, so failures 
+    // from bad MOI dont cause hang 
 
- 
+    static const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;  
+    static const char* _SGLM_DESC = "CSGOptiXRenderInteractiveTest__SGLM_DESC" ;  
+    bool FRAME_HOP = ssys::getenvbool(_FRAME_HOP); 
+    bool SGLM_DESC = ssys::getenvbool(_SGLM_DESC); 
+
+    CSGOptiX* cx = CSGOptiX::Create(fd) ;
+
+    SGLM& gm = *(cx->sglm) ; 
+    SGLFW gl(gm); 
+    SGLFW_CUDA interop(gm); 
+
+    int sleep_break = ssys::getenvint("SLEEP_BREAK",0); 
 
     std::cout << "before loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ; 
 

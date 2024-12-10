@@ -190,6 +190,8 @@ public:
     // [subfold handling 
     NPFold*      add_subfold(char prefix=INTKEY_PREFIX); 
     void         add_subfold(int ikey     , NPFold* fo, char prefix=INTKEY_PREFIX ); // integer key formatted with prefix
+
+    static constexpr const char* _NPFold__add_subfold_ALLOW_DUPLICATE_KEY = "NPFold__add_subfold_ALLOW_DUPLICATE_KEY" ; 
     void         add_subfold(const char* f, NPFold* fo ); 
     int          get_num_subfold() const ;
     NPFold*      get_subfold(unsigned idx) const ; 
@@ -809,13 +811,22 @@ inline void NPFold::add_subfold(const char* f, NPFold* fo )
     bool unique_f  = std::find( ff.begin(), ff.end(), f ) == ff.end() ; 
     bool unique_fo = std::find( subfold.begin(), subfold.end(), fo ) == subfold.end() ; 
 
+
+    int ALLOW_DUPLICATE_KEY = U::GetEnvInt(_NPFold__add_subfold_ALLOW_DUPLICATE_KEY, 0 ); 
+
     if(!unique_f) std::cerr 
        << "NPFold::add_subfold" 
        << " ERROR repeated subfold key f[" << ( f ? f : "-" ) << "]"  
        << " ff.size " << ff.size()
+       << "[" << _NPFold__add_subfold_ALLOW_DUPLICATE_KEY << "] " << ALLOW_DUPLICATE_KEY 
        << "\n" 
        ;   
-    assert( unique_f ) ; 
+
+    if( !unique_f && ALLOW_DUPLICATE_KEY == 0 )
+    {
+        assert( unique_f ) ; 
+        std::raise(SIGINT);   // release builds remove assert 
+    }
 
     if(!unique_fo) std::cerr 
        << "NPFold::add_subfold" 
