@@ -2151,7 +2151,7 @@ needed to accommodate the photons from the last genstep collected.
 void SEvt::setNumPhoton(unsigned num_photon)
 {
     //LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ; 
-    bool num_photon_allowed = num_photon <= (unsigned)(evt->max_photon) ;
+    bool num_photon_allowed = num_photon <= (unsigned)(evt->max_photon) ;   // evt->max_slot ? 
     const int M = 1000000 ; 
 
     LOG_IF(fatal, !num_photon_allowed) << " num_photon/M " << num_photon/M << " evt.max_photon/M " << evt->max_photon/M ;
@@ -2177,6 +2177,9 @@ void SEvt::setNumPhoton(unsigned num_photon)
 
     hostside_running_resize_done = false ;    
 }
+
+
+
 
 /**
 SEvt::setNumSimtrace

@@ -378,8 +378,11 @@ double QSim::simulate(int eventID, bool reset_)
     {
         const sslice& sl = gs_slice[i] ; 
 
-        int rc = event->setGenstepUpload_NP(gs_, sl.gs_start, sl.gs_stop ) ; 
+        LOG(info) << sl.desc() ; 
+
+        int rc = event->setGenstepUpload_NP(gs_, &sl ) ; 
         LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
+
 
         SProf::Add("QSim__simulate_PREL"); 
 
@@ -428,6 +431,40 @@ double QSim::simulate(int eventID, bool reset_)
 
     return tot_dt ; 
 }
+
+
+
+/**
+QSim::getPhotonSlotOffset
+---------------------------
+
+The photon slot offset is available 
+from QEvent after setGenstepUpload_NP
+
+The first genstep slice yields an offset of zero.
+So this only yields non-zero offsets for multi-launch
+running,
+
+
+The photon_slot_offset is uploaded to Params on device prior 
+to simulate launches by CSGOptiX::prepareParamSimulate
+
+The offset is used at head of CSGOptiX7.cu:simulate  to offset the
+launch index. 
+
+Hence the sum of the offset and the 
+number of photons in the launch must be less than
+or equal the number of states uploaded. 
+
+**/
+
+
+
+int QSim::getPhotonSlotOffset() const
+{
+    return event->getPhotonSlotOffset() ; 
+}
+
 
 /**
 QSim::reset

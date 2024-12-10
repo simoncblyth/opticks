@@ -298,10 +298,10 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 
 //#define OLD_WITHOUT_SKIPAHEAD 1
 #ifdef OLD_WITHOUT_SKIPAHEAD
-    RNG rng = sim->rngstate[idx] ;   
+    RNG rng = sim->rngstate[params.photon_slot_offset + idx] ;   
 #else
     RNG rng ; 
-    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, idx );
+    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, params.photon_slot_offset + idx );
 #endif
 
 

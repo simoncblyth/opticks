@@ -112,6 +112,7 @@ struct sevent
     // TODO: make all these below unsigned
     // sevent::init sets these max using values from SEventConfig 
     int      max_curand ; 
+    int      max_slot   ; 
     int      max_genstep ;  // eg:      100,000
     int      max_photon  ;  // eg:  100,000,000
     int      max_simtrace ; // eg: 100,000,000
@@ -205,6 +206,7 @@ struct sevent
 SEVENT_METHOD void sevent::init()
 {
     max_curand   = SEventConfig::MaxCurand() ; 
+    max_slot     = SEventConfig::MaxSlot() ; 
     max_genstep  = SEventConfig::MaxGenstep() ; 
     max_photon   = SEventConfig::MaxPhoton()  ; 
     max_simtrace = SEventConfig::MaxSimtrace()  ; 
@@ -257,6 +259,7 @@ SEVENT_METHOD std::string sevent::descMax() const
     ss 
         << "sevent::descMax    " << std::endl 
         << " evt.max_curand    " << std::setw(w) << max_curand   << std::endl 
+        << " evt.max_slot      " << std::setw(w) << max_slot     << std::endl 
         << " evt.max_genstep   " << std::setw(w) << max_genstep  << std::endl 
         << " evt.max_photon    " << std::setw(w) << max_photon   << std::endl 
         << " evt.max_simtrace  " << std::setw(w) << max_simtrace << std::endl 
@@ -432,6 +435,8 @@ SEVENT_METHOD void sevent::get_config( quad4& cfg ) const
 
 SEVENT_METHOD void sevent::get_meta(std::string& meta) const 
 {
+    NP::SetMeta<uint64_t>(meta,"evt.max_curand", max_curand); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_slot", max_slot); 
     NP::SetMeta<uint64_t>(meta,"evt.max_photon", max_photon); 
     NP::SetMeta<uint64_t>(meta,"evt.max_record", max_record); 
     NP::SetMeta<uint64_t>(meta,"evt.max_rec", max_rec); 
@@ -464,6 +469,7 @@ SEVENT_METHOD void sevent::zero()
 {
     index = 0 ; 
 
+    //num_slot = 0 ; 
     num_curand = 0 ; 
     num_genstep = 0 ; 
     num_seed  = 0 ; 

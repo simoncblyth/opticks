@@ -175,7 +175,8 @@ Params::Params(int raygenmode_, unsigned width, unsigned height, unsigned depth)
     vizmask(0xff),
     sim(nullptr),
     evt(nullptr),
-    event_index(0)
+    event_index(0),
+    photon_slot_offset(0)
 {
     setRaygenMode(raygenmode_); 
     setSize(width, height, depth); 
@@ -202,7 +203,10 @@ void Params::setVizmask(unsigned vizmask_)
     vizmask = vizmask_ ; 
 } 
 
-
+void Params::setPhotonSlotOffset(int photon_slot_offset_)
+{
+    photon_slot_offset = photon_slot_offset_ ; 
+}
 
 
 Params* Params::d_param = nullptr ; 

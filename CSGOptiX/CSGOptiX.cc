@@ -954,7 +954,10 @@ Per-event simulate setup invoked just prior to optix launch
 void CSGOptiX::prepareParamSimulate()  
 {
     LOG(LEVEL); 
+    params->setPhotonSlotOffset(sim->getPhotonSlotOffset()); 
 }
+
+
 
 /**
 CSGOptiX::prepareParam and upload

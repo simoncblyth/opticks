@@ -78,7 +78,7 @@ struct Params
     qsim*        sim ; 
     sevent*      evt ;         // HMM: inside sim too ?
     int  event_index ; 
-
+    int  photon_slot_offset ;   // for multi-launch to match single-launch 
 
     // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1  
     uint3     pidxyz ; 
@@ -108,6 +108,7 @@ struct Params
 
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
     void setPIDXYZ(unsigned x, unsigned y, unsigned z); 
+    void setPhotonSlotOffset(int _photon_slot_offset); 
 
 #endif
 

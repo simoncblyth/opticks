@@ -178,10 +178,11 @@ case $VERSION in
 esac 
 
 #test=debug
-test=ref1
+#test=ref1
 #test=ref5
 #test=ref8
 #test=ref10
+test=ref10_multilaunch
 #test=input_genstep
 #test=input_photon
 
@@ -228,8 +229,10 @@ elif [ "$TEST" == "ref10_multilaunch" ]; then
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
 
-   export OPTICKS_MAX_CURAND=0
-   export OPTICKS_MAX_SLOT=M1   # causes M10 to be done in 10 launches 
+   #export OPTICKS_MAX_CURAND=0    # zero loads all states : ready for whopper launches
+   export OPTICKS_MAX_CURAND=M10   # non-zero loads the specified number
+ 
+   export OPTICKS_MAX_SLOT=M1      # causes M10 to be done in 10 launches 
    #export SEvt__NPFOLD_VERBOSE=1 
    export QSim__simulate_KEEP_SUBFOLD=1
  

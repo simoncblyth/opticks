@@ -2057,6 +2057,68 @@ DONE : OPTICKS_MAX_CURAND=0 now loads all chunks
 TODO : change QRng/qrng slot offsets for each launch
 --------------------------------------------------------
 
+Need to give ph_offset to qrng on device before each launch.
+Previously it was constant::
+
+     279 void QSim::init()
+     280 {
+     281     sim = new qsim ;
+     282     sim->base = base ? base->d_base : nullptr ;
+     283     sim->evt = event ? event->getDevicePtr() : nullptr ;
+     284     sim->rngstate = rng ? rng->qr->rng_states : nullptr ;
+     285     sim->rng = rng ? rng->d_qr : nullptr ;
+     286 
+     287     sim->bnd = bnd ? bnd->d_qb : nullptr ;
+     288     sim->multifilm = multifilm ? multifilm->d_multifilm : nullptr ;
+     289     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ;
+     290     sim->scint = scint ? scint->d_scint : nullptr ;
+     291     sim->pmt = pmt ? pmt->d_pmt : nullptr ;
+     292 
+     293     d_sim = QU::UploadArray<qsim>(sim, 1, "QSim::init.sim" );
+     294 
+     295     INSTANCE = this ;
+     296     LOG(LEVEL) << desc() ;
+     297     LOG(LEVEL) << descComponents() ;
+     298 }
+
+
+Actually its more general than just qrng, need an idx_offset uploaded to the qsim instance or even more general the params::
+
+    288 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
+    289 {
+    290     sevent* evt = params.evt ;
+    291     if (launch_idx.x >= evt->num_photon) return;
+    292 
+    293     unsigned idx = launch_idx.x ;  // aka photon_idx
+    294     unsigned genstep_idx = evt->seed[idx] ;
+    295     const quad6& gs = evt->genstep[genstep_idx] ;
+    296 
+    297     qsim* sim = params.sim ;
+    298 
+    299 //#define OLD_WITHOUT_SKIPAHEAD 1
+    300 #ifdef OLD_WITHOUT_SKIPAHEAD
+    301     RNG rng = sim->rngstate[idx] ;
+    302 #else
+    303     RNG rng ;
+    304     sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, idx );
+    305 #endif
+    306 
+    307 
+
+Params.h::
+
+     77     // simulation 
+     78     qsim*        sim ;
+     79     sevent*      evt ;         // HMM: inside sim too ?
+     80     int  event_index ;
+     81     int  photon_offset ;   // for multi-launch to match single-launch 
+     82 
+     83     // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1  
+     84     uint3     pidxyz ;
+     85 
+
+
+
 
 TODO : test exact matching between multi-launch and single launch 
 --------------------------------------------------------------------

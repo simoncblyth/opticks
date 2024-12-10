@@ -150,7 +150,7 @@ int QEventTest::setGenstep_sliced()
     {
         const sslice& sl = gs_slice[i] ;
 
-        event->setGenstepUpload_NP(gs, sl.gs_start, sl.gs_stop ); 
+        event->setGenstepUpload_NP(gs, &sl ); 
 
         int num_photon = event->getNumPhoton();  
         bool num_photon_expect = sl.ph_count == num_photon ;

@@ -9,6 +9,7 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+#include "sslice.h"
 
 #ifndef PRODUCTION
 #include "srec.h"
@@ -99,6 +100,7 @@ QEvent::QEvent()
     evt(sev ? sev->evt : nullptr),
     d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),
     gs(nullptr),
+    gss(nullptr),
     input_photon(nullptr),
     upload_count(0)
 {
@@ -208,33 +210,65 @@ QEvent::setGenstepUpload_NP
 **/
 int QEvent::setGenstepUpload_NP(const NP* gs_ )
 {
-    int num_gs = gs_ ? gs_->shape[0] : 0 ;
-    return setGenstepUpload_NP(gs_, 0, num_gs ); 
+    return setGenstepUpload_NP(gs_, nullptr ); 
 } 
 
-int QEvent::setGenstepUpload_NP(const NP* gs_, int gs_start, int gs_stop ) 
+int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ ) 
 {
     gs = gs_ ; 
+    gss = gss_ ? new sslice(*gss_) : nullptr ; 
+
     SGenstep::Check(gs); 
+
     LOG(LEVEL) 
         << " gs " << ( gs ? gs->sstr() : "-" )
         << SGenstep::Desc(gs, 10)
         ;
 
-    int num_gs = gs_ ? gs_->shape[0] : 0 ;
+    int num_gs = gs ? gs->shape[0] : 0 ;
+
+    int gs_start = gss ? gss->gs_start : 0 ; 
+    int gs_stop  = gss ? gss->gs_stop  : num_gs ; 
 
     assert( gs_start >= 0 && gs_start <  num_gs ); 
     assert( gs_stop  >= 1 && gs_stop  <= num_gs ); 
 
-    const char* data = gs_ ? gs_->bytes() : nullptr ;
+    const char* data = gs ? gs->bytes() : nullptr ;
     const quad6* qq = (const quad6*)data ; 
 
     assert( gs_start < num_gs ); 
     assert( gs_stop <= num_gs );     
 
     int rc = setGenstepUpload(qq, gs_start, gs_stop ); 
+
+    assert( gss->ph_count == evt->num_photon ); 
+    // genstep consistency 
+
+    int last_rng_state_idx = gss->ph_offset + gss->ph_count ; 
+    bool in_range = last_rng_state_idx <= evt->max_curand ; 
+
+    LOG_IF(error, !in_range)
+        << " gss.desc " << gss->desc()
+        << " gss->ph_offset " << gss->ph_offset
+        << " gss->ph_count " << gss->ph_count
+        << " gss->ph_offset + gss->ph_count " << last_rng_state_idx
+        << " evt->max_curand " << evt->max_curand
+        << " evt->num_curand " << evt->num_curand
+        << " evt->max_slot " << evt->max_slot
+        ; 
+
+    assert( in_range );  
+    // NB not max_slot as its the size of the RNG state array that matters 
+
     return rc ; 
 }
+
+int QEvent::getPhotonSlotOffset() const
+{
+    return gss ? gss->ph_offset : 0 ; 
+}
+
+
 
 /**
 QEvent::setGenstepUpload
@@ -320,7 +354,7 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
     sev->t_setGenstep_5 = sstamp::Now(); 
 #endif
 
-    QU::device_memset<int>(   evt->seed,    0, evt->max_photon );
+    QU::device_memset<int>(   evt->seed,    0, evt->max_photon );    // need evt->max_slot ? 
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_6 = sstamp::Now(); 
@@ -368,6 +402,11 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
 
     return rc ; 
 }
+
+
+
+
+
 
 /**
 QEvent::device_alloc_genstep_and_seed
@@ -950,6 +989,8 @@ void QEvent::setNumPhoton(unsigned num_photon )
     if( evt->photon == nullptr ) device_alloc_photon();  
     uploadEvt(); 
 }
+
+
 void QEvent::setNumSimtrace(unsigned num_simtrace)
 {
     sev->setNumSimtrace(num_simtrace); 

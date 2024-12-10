@@ -4,15 +4,11 @@
 QRng
 ====
 
-Aiming for a pure CUDA struct providing the essential features 
-of optixrap/ORng but without any OptiX
+Canonical instanciation within QSim::UploadComponents
 
 Small *skipahead_event_offsets* are for functionality testing, 
 typically the offset should be greater than the maximum number of 
 randoms to simulate an item(photon). 
-
-
-
 
 
 
