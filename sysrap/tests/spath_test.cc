@@ -63,7 +63,6 @@ struct spath_test
    static int SplitExt(int impl); 
    static int Filesize(); 
 
-   static int ALL();  
    static int Main();  
 };
 
@@ -582,82 +581,48 @@ int spath_test::Filesize()
         << "\n"
         ;
   
-    return sz > 0 ;
+    return sz > 0 ? 0 : 1 ;
 }
 
-
-int spath_test::ALL()
-{
-    int rc = 0 ; 
-
-    rc += Resolve_defaultOutputPath() ; 
-    //rc += DefaultOutputPath();      // comment as writes
-    rc += Resolve_with_undefined_token();
-    rc += Resolve_with_undefined_TMP();
-    rc += Resolve_inline();
-    rc += ResolveToken(); 
-    rc += Resolve(); 
-    rc += Exists(); 
-    rc += Exists2(); 
-    rc += Basename(); 
-    rc += Name(); 
-    rc += Remove(); 
-    rc += IsTokenWithFallback(); 
-    rc += ResolveTokenWithFallback(); 
-    rc += _ResolveToken(); 
-    rc += Resolve(); 
-    rc += Resolve_setenvvar(); 
-    rc += Resolve_setenvmap(); 
-    rc += ResolveToken1(); 
-    rc += Resolve1(); 
-    rc += _Check(); 
-    rc += Write(); 
-    //rc += WriteIntoInvokingDirectory();   // comment as leaves droppings
-    //rc += Read(); 
-
-    return rc ; 
-}
 
 
 int spath_test::Main()
 {
-    //const char* test = "Resolve_defaultOutputPath" ;
-    //const char* test = "Read" ;
-    //const char* test = "EndsWith" ;
-    const char* test = "SplitExt" ;
+    const char* test = "ALL" ;
  
     const char* TEST = ssys::getenvvar("TEST", test ); 
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
+
     int rc = 0 ; 
-    if(     strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc = Resolve_defaultOutputPath();
-    else if(strcmp(TEST, "DefaultOutputPath")==0) rc = DefaultOutputPath();
-    else if(strcmp(TEST, "Resolve_with_undefined_token")==0) rc = Resolve_with_undefined_token();
-    else if(strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc = Resolve_with_undefined_TMP();
-    else if(strcmp(TEST, "Resolve_inline")==0) rc = Resolve_inline();
-    else if(strcmp(TEST, "ResolveToken")==0) rc = ResolveToken();
-    else if(strcmp(TEST, "Resolve")==0) rc = Resolve();
-    else if(strcmp(TEST, "Exists")==0) rc = Exists();
-    else if(strcmp(TEST, "Exists2")==0) rc = Exists2();
-    else if(strcmp(TEST, "Basename")==0) Basename();
-    else if(strcmp(TEST, "Name")==0) rc = Name();
-    else if(strcmp(TEST, "Remove")==0) rc = Remove();
-    else if(strcmp(TEST, "IsTokenWithFallback")==0) rc = IsTokenWithFallback();
-    else if(strcmp(TEST, "ResolveTokenWithFallback")==0) rc = ResolveTokenWithFallback();
-    else if(strcmp(TEST, "_ResolveToken")==0) rc = _ResolveToken();
-    else if(strcmp(TEST, "Resolve")==0) rc = Resolve();
-    else if(strcmp(TEST, "Resolve_setenvvar")==0) rc = Resolve_setenvvar();
-    else if(strcmp(TEST, "Resolve_setenvmap")==0) rc = Resolve_setenvmap();
-    else if(strcmp(TEST, "ResolveToken1")==0) rc = ResolveToken1();
-    else if(strcmp(TEST, "Resolve1")==0) rc = Resolve1();
-    else if(strcmp(TEST, "Resolve3")==0) rc = Resolve3();
-    else if(strcmp(TEST, "_Check")==0) rc = _Check();
-    else if(strcmp(TEST, "Write")==0) rc = Write();
-    else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
-    else if(strcmp(TEST, "Read")==0) rc = Read();
-    else if(strcmp(TEST, "EndsWith")==0) rc = EndsWith();
-    else if(strcmp(TEST, "SplitExt0")==0) rc = SplitExt(0);
-    else if(strcmp(TEST, "SplitExt")==0) rc = SplitExt(1);
-    else if(strcmp(TEST, "Filesize")==0) rc = Filesize();
-    else if(strcmp(TEST, "ALL")==0) rc = ALL();
+    if(     ALL||strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc += Resolve_defaultOutputPath();
+    //else if(ALL||strcmp(TEST, "DefaultOutputPath")==0) rc += DefaultOutputPath();
+    else if(ALL||strcmp(TEST, "Resolve_with_undefined_token")==0) rc += Resolve_with_undefined_token();
+    else if(ALL||strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc += Resolve_with_undefined_TMP();
+    else if(ALL||strcmp(TEST, "Resolve_inline")==0) rc += Resolve_inline();
+    else if(ALL||strcmp(TEST, "ResolveToken")==0) rc += ResolveToken();
+    else if(ALL||strcmp(TEST, "Resolve")==0) rc += Resolve();
+    else if(ALL||strcmp(TEST, "Exists")==0) rc += Exists();
+    else if(ALL||strcmp(TEST, "Exists2")==0) rc += Exists2();
+    else if(ALL||strcmp(TEST, "Basename")==0) Basename();
+    else if(ALL||strcmp(TEST, "Name")==0) rc += Name();
+    else if(ALL||strcmp(TEST, "Remove")==0) rc += Remove();
+    else if(ALL||strcmp(TEST, "IsTokenWithFallback")==0) rc += IsTokenWithFallback();
+    else if(ALL||strcmp(TEST, "ResolveTokenWithFallback")==0) rc += ResolveTokenWithFallback();
+    else if(ALL||strcmp(TEST, "_ResolveToken")==0) rc += _ResolveToken();
+    else if(ALL||strcmp(TEST, "Resolve")==0) rc += Resolve();
+    else if(ALL||strcmp(TEST, "Resolve_setenvvar")==0) rc += Resolve_setenvvar();
+    else if(ALL||strcmp(TEST, "Resolve_setenvmap")==0) rc += Resolve_setenvmap();
+    else if(ALL||strcmp(TEST, "ResolveToken1")==0) rc += ResolveToken1();
+    else if(ALL||strcmp(TEST, "Resolve1")==0) rc += Resolve1();
+    else if(ALL||strcmp(TEST, "Resolve3")==0) rc += Resolve3();
+    else if(ALL||strcmp(TEST, "_Check")==0) rc += _Check();
+    else if(ALL||strcmp(TEST, "Write")==0) rc += Write();
+    //else if(ALL||strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc += WriteIntoInvokingDirectory();
+    //else if(ALL||strcmp(TEST, "Read")==0) rc += Read();
+    else if(ALL||strcmp(TEST, "EndsWith")==0) rc += EndsWith();
+    else if(ALL||strcmp(TEST, "SplitExt0")==0) rc += SplitExt(0);
+    else if(ALL||strcmp(TEST, "SplitExt")==0) rc += SplitExt(1);
+    else if(ALL||strcmp(TEST, "Filesize")==0) rc += Filesize();
     return rc ; 
 }
 

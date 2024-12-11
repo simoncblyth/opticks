@@ -1,4 +1,13 @@
 #pragma once
+/**
+qrng.h
+=======
+
+
+
+
+
+**/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QRNG_METHOD __device__
@@ -11,8 +20,9 @@
 
 #if defined(MOCK_CUDA)
 #else
-struct curandStateXORWOW ; 
 using RNG = curandStateXORWOW ; 
+//using RNG = curandStatePhilox4_32_10 ; 
+//using RNG = curandStatePhilox4_32_10_OpticksLite ; 
 #endif
 
 struct qrng

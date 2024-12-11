@@ -1,24 +1,17 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 SGeneratr__test.sh
 ====================
 
-CPU test of CUDA code to generate torch photons using s_mock_curand.h::
+CPU test of CUDA code to generate torch photons using srngcpu.h::
 
-   ./SGenerate__test.sh build
-   ./SGenerate__test.sh run
-   ./SGenerate__test.sh ana
+   ~/o/sysrap/tests/SGenerate__test.sh
 
-   ./SGenerate__test.sh build_run_ana   # default 
-
-
-    ~/opticks/sysrap/tests/SGenerate__test.sh 
 
 EOU
 }
 
-SDIR=$(dirname $(realpath $BASH_SOURCE))
-cd $SDIR 
+cd $(dirname $(realpath $BASH_SOURCE))
 
 name=SGenerate__test 
 
@@ -31,16 +24,14 @@ export FOLD=$TMP/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
-script=$SDIR/$name.py
+script=$name.py
 
-defarg=build_run_ana
+defarg=info_build_run_ana
 arg=${1:-$defarg}
-
 
 export SGenerate__GeneratePhotons_RNG_PRECOOKED=1
 
-
-vars="BASH_SOURCE SDIR U4TDIR CUDA_PREFIX OPTICKS_PREFIX FOLD bin script"
+vars="BASH_SOURCE U4TDIR CUDA_PREFIX OPTICKS_PREFIX FOLD bin script"
 
 src=sphere
 if [ "$src" == "sphere" ]; then
@@ -57,8 +48,6 @@ if [ "$storch_FillGenstep_type" == "" ]; then
     exit 1 
 fi 
 
-
-
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
 fi
@@ -67,13 +56,13 @@ if [ "${arg/build}" != "$arg" ]; then
 
     opt=-DNOT_MOCK_CURAND
 
-    gcc $name.cc -std=c++11 -lstdc++ \
+    gcc $name.cc -std=c++11 -lstdc++ -lm -g \
            $opt \
            -I.. \
            -I$CUDA_PREFIX/include \
            -I$OPTICKS_PREFIX/externals/glm/glm \
            -I$OPTICKS_PREFIX/externals/plog/include \
-           -L$OPTICKS_PREFIX/lib \
+           -L$OPTICKS_PREFIX/lib64 \
            -lSysRap \
            -o $bin
 
@@ -85,11 +74,15 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $script
-    [ $? -ne 0 ] && echo $msg ana error && exit 3 
+    [ $? -ne 0 ] && echo $msg pdb error && exit 3 
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${PYTHON:-python} $script
+    [ $? -ne 0 ] && echo $msg ana error && exit 4
 fi
 
 exit 0 
-
 

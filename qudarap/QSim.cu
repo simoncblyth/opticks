@@ -11,6 +11,7 @@ TODO: split off debug functions from actually used functions
 
 
 #include "stdio.h"
+#include "qrng.h"
 
 #include "scuda.h"
 #include "squad.h"

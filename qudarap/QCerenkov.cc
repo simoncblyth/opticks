@@ -8,6 +8,8 @@
 #include "squad.h"
 #include "sphoton.h"
 #include "scerenkov.h"
+
+#include "qrng.h"
 #include "qcerenkov.h"
 
 #include "NP.hh"

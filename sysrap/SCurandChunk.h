@@ -3,6 +3,11 @@
 SCurandChunk.h  NB NOT GENERAL : THIS IS SPECIFIC TO curandStateXORWOW
 ========================================================================
 
+
+The Load_ and Save methods are specific to curandStateXORWOW, most 
+of the rest is more general. But there is no need 
+for saving states for counter based RNG such as Philox 
+
 ::
 
     ~/o/sysrap/tests/SCurandState_test.sh

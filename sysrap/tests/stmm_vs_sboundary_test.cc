@@ -1,8 +1,11 @@
-// ./stmm_vs_sboundary_test.sh
-
 /**
 stmm_vs_sboundary_test.cc
 ============================
+
+::
+
+   ~/o/sysrap/tests/stmm_vs_sboundary_test.sh
+
 
 Specialize the stmm.h stack calc to 2 non-thin layers and compare with sboundary.h 
 
@@ -47,6 +50,9 @@ boundary.
 
 **/
 
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "sphoton.h"
 #include "sstate.h"
 #include "srec.h"
@@ -54,7 +60,7 @@ boundary.
 #include "stag.h"
 #include "sevent.h"
 #include "sctx.h"
-#include "scurand.h"
+//#include "scurand.h"
 #include "sboundary.h"
 #include "stmm.h"
 
@@ -276,7 +282,7 @@ sboundary.h::
 
 int main(int argc, char** argv)
 {
-    curandStateXORWOW rng(1u) ; 
+    RNG rng ; 
     rng.set_fake(0.);     // 0.:force transmit 1.:force reflect 
 
     float3 mom = normalize(make_float3(1.f, 0.f, -1.f)) ; 

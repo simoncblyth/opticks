@@ -53,7 +53,6 @@ From u4/CustomBoundary.h:doIt::
 
 **/
 
-#include "scurand.h"
 
 struct sboundary
 {

@@ -1,17 +1,16 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 SGeneratr_test.sh
-================
+===================
 
-CPU test of CUDA code to generate torch photons using s_mock_curand.h::
+CPU test of CUDA code to generate torch photons::
 
-   ./SGenerate_test.sh build
-   ./SGenerate_test.sh run
-   ./SGenerate_test.sh ana
-   ./SGenerate_test.sh build_run_ana   # default 
+   ~/o/sysrap/tests/SGenerate_test.sh
 
 EOU
 }
+
+
 
 SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 U4TDIR=$(cd $SDIR/../../u4/tests && pwd)
@@ -65,13 +64,13 @@ if [ "${arg/build}" != "$arg" ]; then
     #opt=-DMOCK_CURAND
     opt=-DDUMMY
 
-    gcc $name.cc -std=c++11 -lstdc++ \
+    gcc $name.cc -std=c++11 -lstdc++ -g -lm \
            $opt \
            -I.. \
            -I$CUDA_PREFIX/include \
            -I$OPTICKS_PREFIX/externals/glm/glm \
            -I$OPTICKS_PREFIX/externals/plog/include \
-           -L$OPTICKS_PREFIX/lib \
+           -L$OPTICKS_PREFIX/lib64 \
            -lSysRap \
            -o $bin
 
@@ -83,9 +82,14 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $script
-    [ $? -ne 0 ] && echo $msg ana error && exit 3 
+    [ $? -ne 0 ] && echo $msg pdb error && exit 3 
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${PYTHON:-python} $script
+    [ $? -ne 0 ] && echo $msg ana error && exit 4 
 fi
 
 exit 0 

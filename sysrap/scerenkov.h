@@ -17,7 +17,7 @@ scerenkov.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/cerenkov
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
-#include "scurand.h"
+//#include "scurand.h"
 #include "smath.h"
 #include "scuda.h"
 #include "squad.h"

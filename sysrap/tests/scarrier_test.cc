@@ -10,16 +10,17 @@ Standalone compile and run with::
 #include <numeric>
 #include <vector>
 
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "scuda.h"
 #include "squad.h"
-#include "scurand.h"    // this brings in s_mock_curand.h for CPU when MOCK_CURAND macro is defined 
+
 #include "sphoton.h"
 #include "scarrier.h"
-
-#include "SPath.hh"
 #include "SEvent.hh"
-
 #include "NP.hh"
+
 
 
 NP* make_carrier_photon( const NP* gs, const NP* se )
@@ -27,7 +28,7 @@ NP* make_carrier_photon( const NP* gs, const NP* se )
     const quad6* gg = (quad6*)gs->bytes() ;  
     const int*   seed = (int*)se->bytes() ;  
 
-    curandStateXORWOW rng ;   // typedef to srng by s_mock_curand.h 
+    RNG rng ; 
 
     int tot_photon = se->shape[0] ; 
     NP* ph = NP::Make<float>( tot_photon, 4, 4); 

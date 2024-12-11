@@ -740,8 +740,15 @@ class SEvt(object):
 class SAB(object):
     """
     Comparison of pairs of SEvt 
-    """
 
+    This is based on the seq array histories, requiring the SEvt to have been created with
+    OPTICKS_EVENT_MODE such as::
+
+         HitPhotonSeq
+         HitSeq
+
+    See ~/o/cxs_min.sh 
+    """
     def __getitem__(self, sli):
         self.sli = sli
         return self  

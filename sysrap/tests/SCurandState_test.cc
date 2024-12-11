@@ -4,12 +4,6 @@ SCurandState_test.cc
 
 ~/o/sysrap/tests/SCurandState_test.sh 
 
-NEXT: 
-    implement loading of any number of curandState within the range 
-    by deciding which chunks to load and typically doing 
-    a partial load of the last chunk 
-    (current range is 0->200M) 
-
 **/
 
 #include "ssys.h"

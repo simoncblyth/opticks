@@ -73,6 +73,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "CSGView.h"
 
 // qudarap
+#include "qrng.h"
 #include "QU.hh"
 #include "QSim.hh"
 #include "qsim.h"

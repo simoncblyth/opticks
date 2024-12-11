@@ -2212,10 +2212,15 @@ Opps getting duplicated elem, now fixed::
 
 
 
-WIP : check exact matching between multi-launch and single launch 
---------------------------------------------------------------------
+DONE : confirmed exact hit matching between multi-launch and single launch for 10M at least with simple 1M sub-launces
+--------------------------------------------------------------------------------------------------------------------------
 
+::
 
+    TEST=ref10_onelaunch   ~/o/cxs_min.sh dbg 
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg 
+
+    ~/o/cxs_min.sh AB
 
 
 cxs_min.sh::
@@ -2244,12 +2249,29 @@ cxs_min.sh::
     245    #export QSim__simulate_KEEP_SUBFOLD=1
 
 
+
+After offset fix
+~~~~~~~~~~~~~~~~~~
+
 ::
 
-    TEST=ref10_onelaunch   ~/o/cxs_min.sh dbg 
-    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg 
+    In [3]: np.all( a.f.genstep == b.f.genstep )
+    Out[3]: True
 
-    ~/o/cxs_min.sh AB
+    In [4]: np.all( a.f.hit == b.f.hit )
+    Out[4]: True
+
+    In [5]: a.f.hit.shape
+    Out[5]: (2227986, 4, 4)
+
+    In [6]: b.f.hit.shape
+    Out[6]: (2227986, 4, 4)
+
+
+
+
+Before hiding the multi-launch from recording get (3,2) 31-bit discrpant for all by first 10%
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 

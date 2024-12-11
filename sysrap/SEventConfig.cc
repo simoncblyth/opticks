@@ -1327,7 +1327,7 @@ std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string na
        << "\n"     
        << std::setw(wid) << "HeuristicMaxSlot_Rounded(VRAM)   : " << hmxr
        << "\n"     
-       << std::setw(wid) << "MaxSlot                          : " << mxs
+       << std::setw(wid) << "MaxSlot/M                        : " << mxs/M
        << "\n"     
        ; 
 

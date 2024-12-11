@@ -5,27 +5,18 @@
    #include "curand_kernel.h"
 #else
    #define SCURAND_METHOD 
-
-#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
-   #include "s_mock_curand.h"
-#else
    #include "srngcpu.h"
-#endif
-
 #endif 
 
 template <typename T>
 struct scurand
 {
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-   static SCURAND_METHOD T uniform( curandStateXORWOW* rng );  
-#endif
+   static SCURAND_METHOD T uniform( RNG* rng );  
 };
 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
 
-template<> inline float scurand<float>::uniform( curandStateXORWOW* rng ) 
+template<> inline float scurand<float>::uniform( RNG* rng ) 
 { 
 #ifdef FLIP_RANDOM
     return 1.f - curand_uniform(rng) ;
@@ -34,7 +25,7 @@ template<> inline float scurand<float>::uniform( curandStateXORWOW* rng )
 #endif
 }
 
-template<> inline double scurand<double>::uniform( curandStateXORWOW* rng ) 
+template<> inline double scurand<double>::uniform( RNG* rng ) 
 { 
 #ifdef FLIP_RANDOM
     return 1. - curand_uniform_double(rng) ;
@@ -43,6 +34,5 @@ template<> inline double scurand<double>::uniform( curandStateXORWOW* rng )
 #endif
 }
 
-#endif
 
 

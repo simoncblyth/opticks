@@ -24,8 +24,8 @@ The .cc that includes this needs to plant the INSTANCE, eg::
 struct MockTexture
 {
     NP* a ; 
-    int width ; 
-    int height ; 
+    NP::INT width ; 
+    NP::INT height ; 
     float4 dom ; 
 
     MockTexture(const NP* a); 
@@ -85,7 +85,7 @@ inline std::string MockTexture::dump() const
     std::stringstream ss ; 
     ss << "MockTexture::dump<" <<  (sizeof(T) == 16 ? "float4" : "float" ) << ">" << std::endl ;    
     const T* vv = a->cvalues<T>() ; 
-    for(int i=0 ; i < std::min(10, width*height) ; i++)
+    for(NP::INT i=0 ; i < std::min(NP::INT(10), width*height) ; i++)
     {
         ss << " *(vv+" << std::setw(3) << i << ") : " << *(vv+i) << std::endl; 
     }

@@ -73,10 +73,16 @@ if [ "${arg/run}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
 fi 
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/pdb}" != "$arg" ]; then 
    ${IPYTHON:-ipython} --pdb -i $name.py 
-   [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3 
+   [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 3 
 fi 
+
+if [ "${arg/ana}" != "$arg" ]; then 
+   ${PYTHON:-python} $name.py 
+   [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4 
+fi 
+
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs

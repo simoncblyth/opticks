@@ -19,36 +19,6 @@ Techniques to implement the spirit of the old torch gensteps in much less code
 * macros to use same headers on CPU and GPU, eg enum strings live with enum values in same header 
   but are hidden from nvcc
 
-
-Old Implementation
---------------------
-
-optixrap/cu/torchstep.h 
-   OptiX 6 generation 
-
-npy/TorchStepNPY.hpp
-npy/TorchStepNPY.cpp
-   CPU side preparation of the torch gensteps with enum name strings  
-  
-   * parsing config ekv strings into gensteps with param language 
-   * TorchStepNPY::updateAfterSetFrameTransform 
-     frame transform is used to convert from local frame 
-     source, target and polarization into the frame provided.
-  
-npy/GenstepNPY.hpp 
-npy/GenstepNPY.cpp 
-    * holds m_onestep NStep struct 
-    * handles frame targetting 
-
-npy/NStep.hpp
-    6 transport quads that are copied into the genstep buffer by addStep
-    m_ctrl/m_post/m_dirw/m_polw/m_zeaz/m_beam
-
-    m_array NPY<float> of shape (1,6,4)
-
-npy/NStep.cpp
-    NPY::setQuadI NPY::setQuad into the array
-
 **/
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -58,10 +28,11 @@ npy/NStep.cpp
 #endif 
 
 
+
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
-#include "scurand.h"
+//#include "scurand.h"
 #include "smath.h"
 #include "storchtype.h"
 
@@ -96,11 +67,7 @@ struct storch
 
     // NB : organized into 6 quads : are constained not to change that 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-   STORCH_METHOD static void generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
-#else
-   STORCH_METHOD static void generate( sphoton& p, srngcpu&              rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
-#endif
+    STORCH_METHOD static void generate( sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ); 
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -218,11 +185,7 @@ Old workflow equivalent ~/opticks/optixrap/cu/torchstep.h
 
 **/
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-STORCH_METHOD void storch::generate( sphoton& p, curandStateXORWOW& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
-#else
-STORCH_METHOD void storch::generate( sphoton& p, srngcpu&           rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
-#endif
+STORCH_METHOD void storch::generate( sphoton& p, RNG& rng, const quad6& gs_, unsigned photon_id, unsigned genstep_id )  // static
 {
     const storch& gs = (const storch&)gs_ ;   // casting between union-ed types : quad6 and storch  
 
@@ -252,13 +215,10 @@ STORCH_METHOD void storch::generate( sphoton& p, srngcpu&           rng, const q
         p.time = gs.time ; 
         p.mom = gs.mom ; 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
         float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
         float u_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
-#else
-        float u_zenith  = gs.zenith.x  + srngcpu::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
-        float u_azimuth = gs.azimuth.x + srngcpu::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
-#endif
+
+
 
         float r = gs.radius*u_zenith ;
 
@@ -294,13 +254,8 @@ STORCH_METHOD void storch::generate( sphoton& p, srngcpu&           rng, const q
         p.wavelength = gs.wavelength ; 
         p.time = gs.time ; 
 
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
         float u_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
         float u_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
-#else
-        float u_zenith  = gs.zenith.x  + srngcpu::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
-        float u_azimuth = gs.azimuth.x + srngcpu::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
-#endif
 
         float phi = 2.f*M_PIf*u_azimuth ;  // azimuth range 0->2pi 
         float sinPhi = sinf(phi); 
@@ -358,13 +313,9 @@ STORCH_METHOD void storch::generate( sphoton& p, srngcpu&           rng, const q
 
         do
         {
-#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
             u0_zenith  = gs.zenith.x  + curand_uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;   // aka polar theta 
             u1_azimuth = gs.azimuth.x + curand_uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;   // aka azimuth phi
-#else
-            u0_zenith  = gs.zenith.x  + srngcpu::uniform(&rng)*(gs.zenith.y-gs.zenith.x)   ;
-            u1_azimuth = gs.azimuth.x + srngcpu::uniform(&rng)*(gs.azimuth.y-gs.azimuth.x) ;
-#endif
+
             u = 2.f*u0_zenith - 1.f ; 
             v = 2.f*u1_azimuth - 1.f ; 
             b = u*u + v*v ; 

@@ -4,7 +4,7 @@ sboundary_test.cc
 
 Build and run::
 
-    ./sboundary_test.sh
+    ~/o/sysrap/tests/sboundary_test.sh
 
 
               
@@ -17,6 +17,9 @@ Build and run::
 
 **/
 
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "sphoton.h"
 #include "sstate.h"
 #include "srec.h"
@@ -24,12 +27,11 @@ Build and run::
 #include "stag.h"
 #include "sevent.h"
 #include "sctx.h"
-#include "scurand.h"
+
 #include "sboundary.h"
 
 const char* FOLD = getenv("FOLD") ; 
 
-using RNG = srng ;  // simpler than s_mock_curand.h typedef
 
 
 int main(int argc, char** argv)

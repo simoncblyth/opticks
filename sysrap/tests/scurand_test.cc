@@ -1,11 +1,19 @@
-// name=scurand_test ; gcc $name.cc -g -I.. -DMOCK_CURAND -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name
+/**
+~/o/sysrap/tests/scurand_test.sh 
+
+**/
+
 
 #include <cstdio>
+
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "scurand.h"
 
 int main()
 {
-    curandStateXORWOW rng(1u) ;   
+    RNG rng ;   
 
     for(int i=0 ; i < 20 ; i++)
     {

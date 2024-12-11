@@ -114,9 +114,9 @@ inline std::string srngcpu::demo(int n)
     return str ; 
 }
 
-
-//inline float  curand_uniform(srngcpu* state ){         return state->generate_float() ; }
-//inline double curand_uniform_double(srngcpu* state ){ return state->generate_double() ; }
+// "mocking" the curand API 
+inline float  curand_uniform(srngcpu* state ){         return state->generate_float() ; }
+inline double curand_uniform_double(srngcpu* state ){ return state->generate_double() ; }
 
 
 

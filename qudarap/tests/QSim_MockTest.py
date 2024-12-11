@@ -2,11 +2,18 @@
 
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import *
-import matplotlib.pyplot as mp
+
+MODE=int(os.environ.get("MODE","0")) 
+print("A.MODE:%d" % MODE )
+
+if MODE in [2,3]:
+    from opticks.ana.pvplt import *
+    import matplotlib.pyplot as mp
+pass
+print("B.MODE:%d" % MODE )
+
 SIZE = np.array([1280, 720])
 
-MODE=int(os.environ.get("MODE","3")) 
 CHECK = os.environ.get("CHECK", "SmearNormal_SigmaAlpha")
 
 if __name__ == '__main__':

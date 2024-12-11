@@ -2,8 +2,10 @@
 #include <csignal>
 
 
+#include "qrng.h"
+
 #include "SLOG.hh"
-#include "SSys.hh"
+#include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
@@ -51,7 +53,7 @@ qscint* QScint::MakeInstance(const QTex<float>* tex) // static
     qscint* scint = new qscint ; 
     scint->scint_tex = tex->texObj ; 
     scint->scint_meta = tex->d_meta ;
-    bool qscint_disable_hd = SSys::getenvbool("QSCINT_DISABLE_HD"); 
+    bool qscint_disable_hd = ssys::getenvbool("QSCINT_DISABLE_HD"); 
     scint->hd_factor = qscint_disable_hd ? 0u : tex->getHDFactor() ;
     return scint ; 
 }
@@ -98,7 +100,7 @@ QTex<float>* QScint::MakeScintTex(const NP* src, unsigned hd_factor )  // static
     unsigned nx = nj ; // width 
   
 
-    bool qscint_disable_interpolation = SSys::getenvbool("QSCINT_DISABLE_INTERPOLATION"); 
+    bool qscint_disable_interpolation = ssys::getenvbool("QSCINT_DISABLE_INTERPOLATION"); 
     char filterMode = qscint_disable_interpolation ? 'P' : 'L' ; 
 
     LOG_IF(fatal, qscint_disable_interpolation) << "QSCINT_DISABLE_INTERPOLATION active using filterMode " << filterMode ; 

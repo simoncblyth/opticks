@@ -1,7 +1,55 @@
 RNG_flexibility
 ===================
 
-Want to be able to switch the RNG impl with a recompile to compare:
+
+DONE : removed old s_mock_curand.h 
+----------------------------------------
+
+::
+
+    typedef srngcpu curandStateXORWOW ; 
+    typedef srngcpu curandState_t ; 
+    //
+    inline float curand_uniform(curandState_t* state ){         return state->generate_float() ; }
+    inline double curand_uniform_double(curandState_t* state ){ return state->generate_double() ; }
+
+
+
+::
+
+    P[blyth@localhost opticks]$ opticks-f s_mock_curand.h
+    ./qudarap/tests/QSim_MockTest.cc:    sysrap/s_mock_curand.h 
+    ./qudarap/tests/QSim_MockTest.cc:#include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
+    ./sysrap/CMakeLists.txt:    s_mock_curand.h
+    ./sysrap/s_mock_curand.h:s_mock_curand.h : AIMING TO REMOVE  
+    P[blyth@localhost opticks]$ 
+
+
+
+DONE : Replaced s_mock_curand.h with more explicit + easier to use approach
+-------------------------------------------------------------------------------
+
+Prefer more explicit approach, namely:
+
+1. all use of curand that is not specific to one state type 
+   should use RNG for the type
+
+2. usage later specialized to specific type with eg::
+
+    // on CPU
+    #include "srngcpu.h"
+    using RNG = srngcpu ;
+
+    // on GPU 
+    #include "curand_kernel.h"
+    using RNG = curandStateXORWOW ;
+
+
+
+
+Want to be able to switch the RNG impl with a recompile to compare different impl
+------------------------------------------------------------------------------------
+
     
 +---------------------------------------+----------------+--------------------------------------------------+
 |                                       |  sizeof bytes  |   notes                                          |
@@ -48,6 +96,14 @@ Want to be able to switch the RNG impl with a recompile to compare:
      146 };
 
 
+
+
+
+
+
+
+
+
 qudarap code flexibility
 ---------------------------
 
@@ -70,6 +126,12 @@ Not so easy in sysrap, due to mock cuda complications with scurand.h and scarrie
 The problem being they need to work with both with mock and real cuda ? 
 
 Maybe templated generate method etc can avoid the complication ? 
+
+* nope went for the same simple approach::
+
+      #include "srngcpu.h"
+      using RNG = srngcpu ; 
+
 
 
 ::
@@ -107,6 +169,38 @@ Maybe templated generate method etc can avoid the complication ?
     ./sysrap/tests/scarrier_test.cc:#include "scarrier.h"
     P[blyth@localhost opticks]$ 
 
+
+::
+
+    P[blyth@localhost tests]$ grep curandState *.*
+    curand_uniform_test.cu:#include "curandlite/curandStatePhilox4_32_10_OpticksLite.h"
+    curand_uniform_test.cu:using opticks_curandState_t = curandStatePhilox4_32_10_OpticksLite ; 
+    curand_uniform_test.cu:        printf("test_curand_uniform<curandStateXORWOW>()"); 
+    curand_uniform_test.cu:        test_curand_uniform<curandStateXORWOW>();
+    curand_uniform_test.cu:        printf("test_curand_uniform<curandStatePhilox4_32_10>()"); 
+    curand_uniform_test.cu:        test_curand_uniform<curandStatePhilox4_32_10>();
+    curand_uniform_test.cu:        printf("test_curand_uniform<curandStatePhilox4_32_10_OpticksLite>()"); 
+    curand_uniform_test.cu:        test_curand_uniform<curandStatePhilox4_32_10_OpticksLite>();
+    curand_uniform_test.cu:        printf("test_curand_uniform<opticks_curandState_t>()"); 
+    curand_uniform_test.cu:        test_curand_uniform<opticks_curandState_t>();
+    scerenkov_test.cc:    curandStateXORWOW rng(1u); 
+    SCurandState_test.cc:    implement loading of any number of curandState within the range 
+    scurand_test.cc:    curandStateXORWOW rng(1u) ;   
+    s_mock_curand_test.cc:void test_mock_curand_0(curandState_t& rng)
+    s_mock_curand_test.cc:void test_mock_curand_1(curandStateXORWOW& rng)
+    s_mock_curand_test.cc:    curandState_t rng(1u) ;   
+    s_mock_curand_test.cc:    curandStateXORWOW rng(1u) ;   
+    stmm_vs_sboundary_test.cc:    curandStateXORWOW rng(1u) ; 
+    storch_test.cc:    curandStateXORWOW rng(1u); 
+    P[blyth@localhost tests]$ 
+
+
+
+Maybe eliminate scurand.h use from qudarap ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Nope its used from some test code in qcerenkov.h : should split that off perhaps
+for kernel cleanup. 
 
 
 srng.h is misleadingly named, rename to srngcpu.h

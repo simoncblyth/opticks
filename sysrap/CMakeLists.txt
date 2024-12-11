@@ -167,6 +167,10 @@ set(SOURCES
 ) 
     
 
+set(CURANDLITE_HEADERS
+    curandlite/curandStatePhilox4_32_10_OpticksLite.h
+) 
+
 
 set(HEADERS
     OPTICKS_LOG.hh
@@ -338,7 +342,6 @@ set(HEADERS
     tcomplex.h
 
     srngcpu.h
-    s_mock_curand.h
     scurand.h  
 
     s_mock_texture.h
@@ -796,6 +799,10 @@ set( SCRIPTS
     OpticksCSG.py
 )
 install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
+
+
+
+install(FILES ${CURANDLITE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/curandlite)
 
 
 add_subdirectory(tests)

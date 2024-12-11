@@ -629,11 +629,14 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(RNG& rng, sctx& ctx )
         if(u1 < 0.5f ) cosTheta = -cosTheta ; 
         // could use uniform_sphere here : but not doing so to follow G4OpRayleigh more closely 
 
-
         float sinPhi ; 
         float cosPhi ; 
+
 #if defined(MOCK_CURAND ) || defined(MOCK_CUDA)
-        __sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
+        //__sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);   // apple extension
+        float phi = 2.f*M_PIf*u2 ;  
+        sinPhi = sinf(phi);  
+        cosPhi = cosf(phi); 
 #else
         sincosf(2.f*M_PIf*u2,&sinPhi,&cosPhi);
 #endif
@@ -654,7 +657,10 @@ inline QSIM_METHOD void qsim::rayleigh_scatter(RNG& rng, sctx& ctx )
         {
 
 #if defined( MOCK_CURAND ) || defined(MOCK_CUDA)
-            __sincosf(2.f*M_PIf*u3,&sinPhi,&cosPhi);
+            //__sincosf(2.f*M_PIf*u3,&sinPhi,&cosPhi);
+            phi = 2.f*M_PIf*u3 ;  
+            sinPhi = sinf(phi);  
+            cosPhi = cosf(phi); 
 #else
             sincosf(2.f*M_PIf*u3,&sinPhi,&cosPhi);
 #endif
@@ -2230,7 +2236,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )
         else if( ems == smatsur_Surface_zplus_sensor_CustomART )
         {
 #if defined(WITH_CUSTOM4)
-            command = base->custom_lut == 0u ? propagate_at_surface_CustomART( flag, rng, ctx ) : propagate_at_surface_MultiFilm(flag, rng, ctx );
+            command = propagate_at_surface_CustomART( flag, rng, ctx ) ; 
+            //command = base->custom_lut == 0u ? propagate_at_surface_CustomART( flag, rng, ctx ) : propagate_at_surface_MultiFilm(flag, rng, ctx );
 
 #endif
         }

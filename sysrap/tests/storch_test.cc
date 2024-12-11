@@ -1,6 +1,6 @@
 /**
-storch_test.cc : CPU tests of storch.h CUDA code using mocking 
-================================================================
+storch_test.cc : CPU tests of storch.h CUDA code using "mocking" with srngcpu.h
+=================================================================================
 
 Standalone compile and run with::
 
@@ -13,9 +13,11 @@ HMM: not standalone anymore, currently using libSysrap
 #include <vector>
 #include <cstdlib>
 
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "scuda.h"
 #include "squad.h"
-#include "scurand.h"    // this brings in s_mock_curand.h for CPU when MOCK_CURAND macro is defined 
 #include "sphoton.h"
 #include "storch.h"
 #include "SEvent.hh"
@@ -79,7 +81,7 @@ NP* storch_test::make_torch_photon( const NP* gs, const NP* se )
     const quad6* gg = (quad6*)gs->bytes() ;  
     const int*   seed = (int*)se->bytes() ;  
 
-    curandStateXORWOW rng(1u); 
+    RNG rng ; 
 
     int tot_photon = se->shape[0] ; 
     NP* ph = NP::Make<float>( tot_photon, 4, 4); 

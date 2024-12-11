@@ -11,7 +11,7 @@ Testing GPU code on CPU requires mocking of CUDA API including:
 There are now lots of examples of curand mocking, 
 search for MOCK_CURAND, MOCK_CUDA. See::
 
-    sysrap/s_mock_curand.h 
+    sysrap/srngcpu.h
     sysrap/scurand.h 
 
 Mocking tex2D lookups is not so common. See::
@@ -27,7 +27,7 @@ headers that come with it : so operating at lower level.
 
 Standalone compile and run with::
 
-   ./QSim_MockTest.sh 
+   ~/o/qudarap/tests/QSim_MockTest.sh 
 
 **/
 
@@ -45,7 +45,10 @@ Standalone compile and run with::
 #include "sstate.h"
 #include "scerenkov.h"
 
-#include "scurand.h"    // includes s_mock_curand.h when MOCK_CURAND OR MOCK_CUDA defined 
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
+
 #include "stexture.h"   // includes s_mock_texture.h when MOCK_TEXTURE OR MOCK_CUDA defined 
 
 #include "SPMT.h"
@@ -63,13 +66,15 @@ Standalone compile and run with::
 
 struct QSim_MockTest
 {
+    static const char* TEST ; 
+
     static constexpr const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard" ; 
     static constexpr const char* BND = 
     "Pyrex/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/HamamatsuR12860_PMT_20inch_photocathode_mirror_logsurf/Vacuum" ;
 
     const char* FOLD ; 
     const char* CHECK ; 
-    curandStateXORWOW rng ; 
+    RNG         rng ; 
 
     const NP* optical ; 
     const NP* bnd ; 
@@ -94,32 +99,35 @@ struct QSim_MockTest
     void init_bnd(); 
     std::string desc() const; 
 
-    void generate_photon_dummy(); 
-    void uniform_sphere();
+    int generate_photon_dummy(); 
+    int uniform_sphere();
 
-    void propagate_at_boundary_manual();
+    int propagate_at_boundary_manual();
 
     void setup_prd(    quad2& prd ); 
     void setup_photon( sphoton& p );
 
 #ifdef WITH_CUSTOM4
-    void propagate_at_surface_CustomART_manual();   
+    int propagate_at_surface_CustomART_manual();   
 #endif
 
-    void fill_state(); 
-    void propagate_at_boundary();
-    void propagate();
+    int fill_state(); 
+    int propagate_at_boundary();
+    int propagate();
     void SmearNormal(int chk, float value); 
-    void SmearNormal_SigmaAlpha_one(); 
+    int SmearNormal_SigmaAlpha_one(); 
+    int run(); 
 
-    void run(); 
+    int main(); 
 };
+
+const char* QSim_MockTest::TEST = ssys::getenvvar("TEST", "ALL") ; 
 
 inline QSim_MockTest::QSim_MockTest()
     :
     FOLD(ssys::getenvvar("FOLD")),
     CHECK(spath::Basename(FOLD)),
-    rng(1u),
+    rng(),
     optical(NP::Load(BASE, "optical.npy")),
     bnd(    NP::Load(BASE, "bnd.npy")),
     q_base( new QBase ),
@@ -140,6 +148,7 @@ inline QSim_MockTest::QSim_MockTest()
 
 inline void QSim_MockTest::init()
 {
+    rng.seed = 1 ; 
     init_bnd(); 
 
     assert( q_pmt ); 
@@ -187,7 +196,7 @@ inline std::string QSim_MockTest::desc() const
     return str ; 
 }
 
-inline void QSim_MockTest::generate_photon_dummy()
+inline int QSim_MockTest::generate_photon_dummy()
 {
     sphoton p ; 
     p.zero(); 
@@ -196,15 +205,17 @@ inline void QSim_MockTest::generate_photon_dummy()
     unsigned photon_id = 0 ; 
     unsigned genstep_id = 0 ; 
     sim->generate_photon_dummy(p, rng, gs, photon_id, genstep_id ); 
+    return 0 ; 
 }
 
-inline void QSim_MockTest::uniform_sphere()
+inline int QSim_MockTest::uniform_sphere()
 {
     for(int i=0 ; i < 10 ; i++)
     {
         float3 dir = sim->uniform_sphere(rng); 
         printf("//test_uniform_sphere dir (%10.4f %10.4f %10.4f) \n", dir.x, dir.y, dir.z ); 
     }
+    return 0 ; 
 }
 
 
@@ -235,7 +246,7 @@ to that mom, all in the XY plane::
 Clearly the dot product if that and +Z is zero. 
      
 **/
-inline void QSim_MockTest::propagate_at_boundary_manual()
+inline int QSim_MockTest::propagate_at_boundary_manual()
 {
     float3 mom = normalize(make_float3(1.f, 0.f, -1.f)) ; 
 
@@ -289,15 +300,16 @@ inline void QSim_MockTest::propagate_at_boundary_manual()
             << " p  " << p.descDir() 
             << std::endl
             ; 
-     }
+    }
 
-     NP* a = NP::Make<float>(N,2,4,4) ; 
-     a->read2<float>( (float*)pp.data() ); 
-     a->save("$FOLD/pp.npy");  
+    NP* a = NP::Make<float>(N,2,4,4) ; 
+    a->read2<float>( (float*)pp.data() ); 
+    a->save("$FOLD/pp.npy");  
+    return 0 ; 
 }
 
 
-inline void QSim_MockTest::propagate_at_boundary()
+inline int QSim_MockTest::propagate_at_boundary()
 {
     std::cout 
         << "QSim_MockTest::propagate_at_boundary"
@@ -332,6 +344,7 @@ inline void QSim_MockTest::propagate_at_boundary()
 
     std::cout << "p1 " << p << std::endl ; 
  
+    return 0 ; 
 }
 
 
@@ -369,7 +382,7 @@ Lower level version with manual sstate filling
 
 **/
 
-inline void QSim_MockTest::propagate_at_surface_CustomART_manual()
+inline int QSim_MockTest::propagate_at_surface_CustomART_manual()
 {
     quad2 prd ; 
     setup_prd(prd) ; 
@@ -407,12 +420,13 @@ inline void QSim_MockTest::propagate_at_surface_CustomART_manual()
         << " ctrl " << ctrl << " : " << sflow::desc(ctrl)  
         << std::endl 
         ;
+    return 0 ; 
 }
 #endif 
 
 
 
-inline void QSim_MockTest::fill_state()
+inline int QSim_MockTest::fill_state()
 {
     std::cout 
         << "QSim_MockTest::fill_state" 
@@ -436,6 +450,7 @@ inline void QSim_MockTest::fill_state()
             << std::endl
             ; 
     }
+    return 0 ; 
 }
 
 
@@ -448,7 +463,7 @@ appropriate qsim::propagate_at_boundary method.
 
 **/
 
-inline void QSim_MockTest::propagate()
+inline int QSim_MockTest::propagate()
 {
     quad2 prd ; 
     setup_prd(prd) ; 
@@ -468,6 +483,8 @@ inline void QSim_MockTest::propagate()
 
     std::cout << "p0 " << p0 << std::endl ; 
     std::cout << "p1 " << p1 << std::endl ; 
+
+    return 0 ; 
 }
 
 /**
@@ -525,7 +542,7 @@ inline void QSim_MockTest::SmearNormal(int chk, float value)
 
 
 
-inline void QSim_MockTest::SmearNormal_SigmaAlpha_one()
+inline int QSim_MockTest::SmearNormal_SigmaAlpha_one()
 {
     rng.setSequenceIndex(0); 
 
@@ -538,9 +555,10 @@ inline void QSim_MockTest::SmearNormal_SigmaAlpha_one()
     ctx.idx = 0 ; 
 
     sim->SmearNormal_SigmaAlpha(rng, &smeared_normal, &direct, &normal, sigma_alpha, ctx );
+    return 0 ; 
 }
 
-inline void QSim_MockTest::run()
+inline int QSim_MockTest::run()
 {
     if(     strcmp(CHECK,"smear_normal_sigma_alpha")==0) SmearNormal(0, 0.1f) ;   
     else if(strcmp(CHECK,"smear_normal_polish")==0)     SmearNormal(1, 0.8f) ; 
@@ -553,7 +571,33 @@ inline void QSim_MockTest::run()
             << std::endl
             ;
     } 
+    return 0 ; 
+}
 
+
+inline int QSim_MockTest::main()
+{
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
+    int rc = 0 ; 
+
+    if(ALL||0==strcmp(TEST, "propagate_at_surface_CustomART_manual"))
+    {
+#ifdef WITH_CUSTOM4
+       rc += propagate_at_surface_CustomART_manual() ; 
+#else
+       std::cout << "NOT-WITH_CUSTOM4 " << std::endl ; 
+       rc += 1 ;  
+#endif
+    }
+
+    if(ALL||0==strcmp(TEST,"propagate_at_boundary_manual")) rc += propagate_at_boundary_manual() ; 
+    if(ALL||0==strcmp(TEST,"fill_state"))                   rc += fill_state() ; 
+    if(ALL||0==strcmp(TEST,"propagate_at_boundary"))        rc += propagate_at_boundary() ; 
+    if(ALL||0==strcmp(TEST,"propagate"))                    rc += propagate() ; 
+    if(ALL||0==strcmp(TEST,"SmearNormal_SigmaAlpha_one"))   rc += SmearNormal_SigmaAlpha_one() ; 
+    if(ALL||0==strcmp(TEST,"run"))                          rc += run(); 
+
+    return rc ; 
 }
 
 
@@ -562,25 +606,6 @@ int main(int argc, char** argv)
 {
     QSim_MockTest t ; 
     std::cout << t.desc() ; 
-
-#ifdef WITH_CUSTOM4
-    t.propagate_at_surface_CustomART_manual() ; 
-#else
-    std::cout << "NOT-WITH_CUSTOM4 " << std::endl ; 
-#endif
-
-
-    /*
-    t.propagate_at_boundary_manual() ; 
-    t.fill_state() ; 
-    t.propagate_at_boundary() ; 
-    t.propagate() ; 
-    t.SmearNormal_debug() ; 
-    t.SmearNormal_SigmaAlpha_one() ; 
-    t.run(); 
-    */
-
-
-    return 0 ; 
+    return t.main() ; 
 }
 

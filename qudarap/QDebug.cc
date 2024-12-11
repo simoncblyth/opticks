@@ -2,6 +2,8 @@
 
 #include <sstream>
 
+#include "qrng.h"
+
 #include "scuda.h"
 #include "squad.h"
 #include "sscint.h"

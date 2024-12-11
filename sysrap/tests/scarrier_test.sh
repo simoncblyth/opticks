@@ -3,7 +3,7 @@ usage(){ cat << EOU
 scarrier_test.sh
 ================
 
-CPU test of CUDA code to generate carrier photons using s_mock_curand.h::
+CPU test of CUDA code to generate carrier photons using srngcpu.h::
 
     ~/o/sysrap/tests/scarrier_test.sh 
 
@@ -21,6 +21,9 @@ script=$name.py
 defarg=info_build_run_ana
 arg=${1:-$defarg}
 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
+
 vars="BASH_SOURCE FOLD name bin script PWD defarg arg OPTICKS_PREFIX"
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -28,10 +31,10 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -std=c++11 -lstdc++ \
+    gcc $name.cc -std=c++11 -lstdc++ -g -lm \
            -DMOCK_CURAND \
            -I.. \
-           -I/usr/local/cuda/include \
+           -I$CUDA_PREFIX/include \
            -I$OPTICKS_PREFIX/externals/plog/include \
            -I$OPTICKS_PREFIX/externals/glm/glm \
            -L$OPTICKS_PREFIX/lib64 \

@@ -1,16 +1,11 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 storch_test.sh
 ================
 
-CPU test of CUDA code to generate torch photons using s_mock_curand.h::
+CPU test of CUDA code to generate torch photons using srngcpu.h::
 
-   ~/opticks/sysrap/tests/storch_test.sh build
-   ~/opticks/sysrap/tests/storch_test.sh run
-   ~/opticks/sysrap/tests/storch_test.sh ana
-
-   ~/opticks/sysrap/tests/storch_test.sh build_run_ana   
-
+   ~/opticks/sysrap/tests/storch_test.sh
 
 HMM : unless can get the implementation to work header only its 
 kinda pointless not including storch_test in the CMake built 
@@ -18,10 +13,7 @@ ones as normally need to rebuild sysrap anyhow.
 
 EOU
 }
-
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-
-cd $(dirname $BASH_SOURCE)
+cd $(dirname $(realpath $BASH_SOURCE))
 
 case $(uname) in 
    Darwin) defarg=build_env_run_ana ;; 
@@ -169,7 +161,7 @@ if [ "${arg/build}" != "$arg" ]; then
 
     gcc $name.cc \
         -o $bin \
-        -std=c++11 -lstdc++ \
+        -std=c++11 -lstdc++ -g -lm \
         -DMOCK_CURAND \
         -I.. \
         -I$CUDA_PREFIX/include \
@@ -191,10 +183,17 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $msg run error && exit 2 
 fi
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $script
-    [ $? -ne 0 ] && echo $msg ana error && exit 3 
+    [ $? -ne 0 ] && echo $msg pdb error && exit 3 
 fi
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${PYTHON:-python} $script
+    [ $? -ne 0 ] && echo $msg ana error && exit 4 
+fi
+
+
 
 if [ "${arg/grab}" != "$arg" ]; then 
     echo $msg odir $odir

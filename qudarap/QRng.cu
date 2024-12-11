@@ -1,8 +1,8 @@
 #include "stdio.h"
 
 #include "scuda.h"
-#include "scurand.h"
 #include "qrng.h"
+#include "scurand.h"
 
 /**
 _QRng_generate

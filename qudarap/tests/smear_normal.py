@@ -7,11 +7,15 @@ smear_normal.py
 
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import *
-import matplotlib.pyplot as mp
+MODE=int(os.environ.get("MODE","0")) 
+
+if MODE in [1,2,3]:
+    from opticks.ana.pvplt import *
+    import matplotlib.pyplot as mp
+pass
+
 SIZE = np.array([1280, 720])
 
-MODE=int(os.environ.get("MODE","3")) 
 TEST = os.environ.get("TEST", "")
 CHECK = os.environ.get("CHECK", "SmearNormal_SigmaAlpha")
 

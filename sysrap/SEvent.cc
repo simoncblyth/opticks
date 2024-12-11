@@ -7,6 +7,9 @@
 #include "stran.h"
 #include "sframe.h"
 
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "storch.h"
 #include "scerenkov.h"
 #include "sscint.h"

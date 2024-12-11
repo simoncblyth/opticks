@@ -10,7 +10,9 @@
 #include "curand_kernel.h"
 #include "curandlite/curandStatePhilox4_32_10_OpticksLite.h"
 
-using opticks_curandState_t = curandStatePhilox4_32_10_OpticksLite ; 
+//using RNG = curandStateXORWOW ; 
+//using RNG = curandStatePhilox4_32_10 ; 
+using RNG = curandStatePhilox4_32_10_OpticksLite ; 
 
 
 /**
@@ -107,11 +109,9 @@ int main()
     }
     else if(MODE == 3)
     {
-        printf("test_curand_uniform<opticks_curandState_t>()"); 
-        test_curand_uniform<opticks_curandState_t>();
+        printf("test_curand_uniform<RNG>()"); 
+        test_curand_uniform<RNG>();
     }
-
-
 
 
     return 0 ; 

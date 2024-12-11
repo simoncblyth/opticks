@@ -29,9 +29,13 @@ struct SGenerate
 #include "scuda.h"
 #include "squad.h"
 #include "sphoton.h"
+
+#include "srngcpu.h"
+using RNG = srngcpu ; 
+
 #include "storch.h"
 #include "scarrier.h"
-#include "scurand.h"   // without MOCK_CURAND this is an empty struct only 
+
 #include "SGenstep.h"
 #include "SEvt.hh"
 #include "SEvent.hh"
@@ -75,13 +79,8 @@ inline NP* SGenerate::GeneratePhotons(const NP* gs_ )
     sphoton* pp = (sphoton*)ph->bytes() ; 
 
     unsigned rng_seed = 1u ; 
-#if defined(MOCK_CURAND)
-    curandStateXORWOW rng ; 
+    RNG rng ;
     rng.seed = rng_seed ;   
-#else
-    srngcpu rng ;
-    rng.seed = rng_seed ;   
-#endif
 
     for(int i=0 ; i < tot_photon ; i++ )
     {   

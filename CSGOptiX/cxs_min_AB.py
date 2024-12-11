@@ -1,6 +1,11 @@
 #!/usr/bin/env python
+"""
 
-import os, logging, numpy as np
+~/o/cxs_min.sh AB 
+
+"""
+
+import os, logging, textwrap, numpy as np
 log = logging.getLogger(__name__)
 
 print("[from opticks.sysrap.sevt import SEvt, SAB")
@@ -25,8 +30,22 @@ if __name__ == '__main__':
     pass
 
 
-    e = a 
+    EXPR = filter(None,textwrap.dedent(r"""
+    np.all( a.f.genstep == b.f.genstep )
+    np.all( a.f.hit == b.f.hit )
+    a.f.hit.shape
+    b.f.hit.shape
+    """).split("\n"))
 
+    for expr in EXPR:
+        val = str(eval(expr)) if not expr.startswith("#") else ""
+        fmt = "%-80s \n%s\n" if len(val.split("\n")) > 1 else "%-80s : %s"
+        print(fmt % (expr, val))
+    pass
+
+    
+
+    e = a 
     qtab = e.minimal_qtab()
     print("qtab")
     print(qtab)

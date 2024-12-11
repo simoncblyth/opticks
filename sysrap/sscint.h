@@ -20,7 +20,7 @@ For now just implemnet for JUNO specific variant : collectGenstep_DsG4Scintillat
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
-#include "scurand.h"
+//#include "scurand.h"
 #include "scuda.h"
 #include "smath.h"
 #include "squad.h"

@@ -1,4 +1,11 @@
-#!/bin/bash -l 
+#!/bin/bash
+usage(){ cat << EOU
+
+~/o/sysrap/tests/scerenkov__test.sh
+
+EOU
+}
+cd $(dirname $(realpath $BASH_SOURCE))
 
 name=scerenkov__test
 bin=/tmp/$name

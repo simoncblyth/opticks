@@ -1,6 +1,11 @@
+/**
+
+~/o/sysrap/tests/SGenerate_test.sh 
+
+**/
+
 #include "OPTICKS_LOG.hh"
 #include "SEvt.hh"
-#include "spath.h"
 #include "SGenerate.h"
 
 int main(int argc, char** argv)
@@ -13,9 +18,8 @@ int main(int argc, char** argv)
     NP* gs = evt->gatherGenstep();     
     NP* ph = SGenerate::GeneratePhotons(gs); 
 
-    const char* dir = spath::Resolve("$TMP/SGenerate_test"); 
-    gs->save(dir, "gs.npy"); 
-    ph->save(dir, "ph.npy"); 
+    gs->save("$FOLD/gs.npy"); 
+    ph->save("$FOLD/ph.npy"); 
 
     return 0 ; 
 }
