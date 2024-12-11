@@ -2215,10 +2215,7 @@ Opps getting duplicated elem, now fixed::
 WIP : check exact matching between multi-launch and single launch 
 --------------------------------------------------------------------
 
-::
 
-    TEST=ref10_onelaunch   ~/o/cxs_min.sh dbg 
-    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg 
 
 
 cxs_min.sh::
@@ -2246,6 +2243,127 @@ cxs_min.sh::
     244    #export SEvt__NPFOLD_VERBOSE=1 
     245    #export QSim__simulate_KEEP_SUBFOLD=1
 
+
+::
+
+    TEST=ref10_onelaunch   ~/o/cxs_min.sh dbg 
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg 
+
+    ~/o/cxs_min.sh AB
+
+::
+
+    In [23]: a.f.base
+    Out[23]: '/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_ref10_multilaunch/A000'
+
+    In [24]: b.f.base
+    Out[24]: '/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_ref10_onelaunch/A000'
+
+
+
+    In [2]: np.all( a.f.genstep == b.f.genstep )
+    Out[2]: True
+
+    In [3]: np.all( a.f.hit == b.f.hit )
+    Out[3]: False
+
+    In [4]: a.f.hit.shape
+    Out[4]: (2227986, 4, 4)
+
+    In [5]: b.f.hit.shape
+    Out[5]: (2227986, 4, 4)
+
+
+    In [6]: a.f.hit[0]
+    Out[6]: 
+    array([[-1666.758, 18499.756,  5480.538,    98.225],
+           [   -0.102,     0.963,     0.251,     0.   ],
+           [   -0.023,     0.25 ,    -0.968,   420.   ],
+           [    0.   ,     0.   ,    -0.   ,     0.   ]], dtype=float32)
+
+    In [7]: b.f.hit[0]
+    Out[7]: 
+    array([[-1666.758, 18499.756,  5480.538,    98.225],
+           [   -0.102,     0.963,     0.251,     0.   ],
+           [   -0.023,     0.25 ,    -0.968,   420.   ],
+           [    0.   ,     0.   ,    -0.   ,     0.   ]], dtype=float32)
+
+    In [8]: np.where( a.f.hit != b.f.hit )
+    Out[8]: 
+    (array([ 223235,  223236,  223237,  223238,  223239, ..., 2227981, 2227982, 2227983, 2227984, 2227985]),
+     array([3, 3, 3, 3, 3, ..., 3, 3, 3, 3, 3]),
+     array([2, 2, 2, 2, 2, ..., 2, 2, 2, 2, 2]))
+
+
+    In [9]: w = np.where( a.f.hit != b.f.hit )
+
+    In [11]: np.all( w[1] == 3 )
+    Out[11]: True
+
+    In [13]: np.all( w[2] == 2 )
+    Out[13]: True
+
+
+
+90% of (3,2) discrepant, probably all launches after first::
+
+    In [14]: w[0].shape
+    Out[14]: (2004751,)
+
+    In [15]: a.f.hit.shape
+    Out[15]: (2227986, 4, 4)
+
+    In [16]: a.f.hit.shape[0]
+    Out[16]: 2227986
+
+    In [17]: w[0].shape[0]/a.f.hit.shape[0]
+    Out[17]: 0.8998041280331205
+
+
+The index within the sphoton is not being offset, as it should be::
+
+    In [18]: a.f.hit[:,3,2].view(np.int32)
+    Out[18]: array([-2147483635, -2147483630, -2147483629, -2147483622, -2147483620, ..., -2146483677, -2146483671, -2146483662, -2146483654, -2146483649], dtype=int32)
+
+    In [19]: a.f.hit[:,3,2].view(np.uint32)
+    Out[19]: array([2147483661, 2147483666, 2147483667, 2147483674, 2147483676, ..., 2148483619, 2148483625, 2148483634, 2148483642, 2148483647], dtype=uint32)
+
+    In [20]: a.f.hit[:,3,2].view(np.uint32) & 0x7fffffff
+    Out[20]: array([    13,     18,     19,     26,     28, ..., 999971, 999977, 999986, 999994, 999999], dtype=uint32)
+
+    In [21]: b.f.hit[:,3,2].view(np.uint32) & 0x7fffffff
+    Out[21]: array([     13,      18,      19,      26,      28, ..., 9999971, 9999977, 9999986, 9999994, 9999999], dtype=uint32)
+
+
+::
+
+    +----+----------------+----------------+----------------+----------------+--------------------------+
+    | q  |      x         |      y         |     z          |      w         |  notes                   |
+    +====+================+================+================+================+==========================+
+    |    |  pos.x         |  pos.y         |  pos.z         |  time          |                          |
+    | q0 |                |                |                |                |                          |
+    |    |                |                |                |                |                          |
+    +----+----------------+----------------+----------------+----------------+--------------------------+
+    |    |  mom.x         |  mom.y         | mom.z          |  iindex        |                          |
+    | q1 |                |                |                | (unsigned)     |                          |
+    |    |                |                |                |                |                          |
+    +----+----------------+----------------+----------------+----------------+--------------------------+
+    |    |  pol.x         |  pol.y         |  pol.z         |  wavelength    |                          |
+    | q2 |                |                |                |                |                          |
+    |    |                |                |                |                |                          |
+    +----+----------------+----------------+----------------+----------------+--------------------------+
+    |    | boundary_flag  |  identity      |  orient_idx    |  flagmask      |  (unsigned)              |
+    | q3 | (3,0)          |                |  orient:1bit   |                |                          |
+    |    |                |                |  (3,2)         |                |                          |
+    +----+----------------+----------------+----------------+----------------+--------------------------+
+
+
+orient (1 bit)
+    set according to the sign of cosTheta 
+    (dot product of surface normal and momentum at last intersect) 
+
+idx (31 bit)
+    photon index, always exists even before any intersect
 
 
 

@@ -62,10 +62,11 @@ arg=${1:-$defarg}
 
 bin=CSGOptiXSMTest
 script=$SDIR/cxs_min.py
+script_AB=$SDIR/cxs_min_AB.py
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
-vars="$vars BASH_SOURCE SDIR defarg arg bin script GEOM"
+vars="$vars BASH_SOURCE SDIR defarg arg bin script script_AB GEOM"
 
 tmp=/tmp/$USER/opticks
 export TMP=${TMP:-$tmp}
@@ -162,6 +163,7 @@ version=1
 export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
 
+vars="$vars version VERSION"
 
 
 #test=debug
@@ -175,29 +177,38 @@ test=ref10_multilaunch
 
 export TEST=${TEST:-$test}
 
-vars="$vars version VERSION test TEST"
-
-
 
 opticks_event_reldir=ALL${VERSION:-0}_${TEST:-none}   ## matches SEventConfig::_DefaultEventReldir OPTICKS_EVENT_RELDIR
+vars="$vars test TEST opticks_event_reldir"
 
-vars="$vars opticks_event_reldir"
+
+case $TEST in 
+ref10_multilaunch) alt_TEST=ref10_onelaunch ;;
+ref10_onelaunch)   alt_TEST=ref10_multilaunch ;;
+esac
+
+alt_opticks_event_reldir=ALL${VERSION:-0}_${alt_TEST} 
+vars="$vars alt_TEST alt_opticks_event_reldir"
 
 
 
 export LOGDIR=$BINBASE/$opticks_event_reldir
 export AFOLD=$BINBASE/$opticks_event_reldir/$EVT
-#export STEM=ALL${VERSION}_${PLOT}
 export STEM=${opticks_event_reldir}_${PLOT}
 
-#export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
-#export BFOLD=$BASE/jok-tds/ALL0/A001    ## comparison with "A" from another executable
+#export BFOLD=$BASE/G4CXTest/ALL0/$EVT 
+#export BFOLD=$BASE/jok-tds/ALL0/A001  
+#BFOLD_NOTE="comparison with A from another executable"
+
+export BFOLD=$BINBASE/$alt_opticks_event_reldir/$EVT   # comparison with alt_TEST
+BFOLD_NOTE="comparison with alt_TEST:$alt_TEST"
+
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 LOGFILE=$bin.log
 
-vars="$vars LOGDIR AFOLD STEM LOGFILE"
+vars="$vars LOGDIR AFOLD BFOLD BFOLD_NOTE STEM LOGFILE"
 
 
 case $VERSION in 
@@ -478,7 +489,7 @@ export QRng__init_VERBOSE=1
 
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%-30s : %s \n" $var ${!var} ; done 
+   for var in $vars ; do printf "%-30s : %s \n" "$var" "${!var}" ; done 
 fi 
 
 if [ "${arg/env}" != "$arg" ]; then 
@@ -542,6 +553,11 @@ fi
 if [ "${arg/pdb0}" != "$arg" ]; then
     MODE=0 ${ipython:-ipython} --pdb -i $script
 fi 
+
+if [ "${arg/AB}" != "$arg" ]; then
+    MODE=0 ${ipython:-ipython} --pdb -i $script_AB
+fi 
+
 
 if [ "${arg/ana}" != "$arg" ]; then
     MODE=0 ${PYTHON:-python} $script

@@ -288,20 +288,26 @@ COMPARE WITH qsim::mock_propagate
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
     sevent* evt = params.evt ; 
-    if (launch_idx.x >= evt->num_photon) return;
+    if (launch_idx.x >= evt->num_photon) return;   // ? evt->num_slot ? 
 
-    unsigned idx = launch_idx.x ;  // aka photon_idx
-    unsigned genstep_idx = evt->seed[idx] ; 
+    unsigned idx = launch_idx.x ;  
+    unsigned genstep_idx = evt->seed[idx] ;   
     const quad6& gs = evt->genstep[genstep_idx] ; 
-     
+    // genstep needs the raw index, from zero for each genstep slice sub-launch
+
+    unsigned photon_idx = params.photon_slot_offset + idx ;  
+    // rng_state access and array recording needs the absolute photon_idx
+    // for multi-launch and single-launch simulation to match.  
+    // The offset hides the technicality of the multi-launch from output. 
+
     qsim* sim = params.sim ;
 
 //#define OLD_WITHOUT_SKIPAHEAD 1
 #ifdef OLD_WITHOUT_SKIPAHEAD
-    RNG rng = sim->rngstate[params.photon_slot_offset + idx] ;   
+    RNG rng = sim->rngstate[photon_idx] ;   
 #else
     RNG rng ; 
-    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, params.photon_slot_offset + idx );
+    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, photon_idx );
 #endif
 
 
@@ -310,7 +316,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     ctx.prd = prd ; 
     ctx.idx = idx ; 
 
-    sim->generate_photon(ctx.p, rng, gs, idx, genstep_idx );  
+    sim->generate_photon(ctx.p, rng, gs, photon_idx, genstep_idx );  
 
     int command = START ; 
     int bounce = 0 ;  
@@ -346,6 +352,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     ctx.end();  // write seq, tag, flat 
 #endif
     evt->photon[idx] = ctx.p ;
+    // not photon_idx, needs to go from zero for photons from a slice of genstep array
 }
 
 #endif
@@ -381,30 +388,32 @@ if( index > 0 )
 
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
-    unsigned idx = launch_idx.x ;  // aka photon_id
+    unsigned idx = launch_idx.x ;
     sevent* evt  = params.evt ; 
-    if (idx >= evt->num_simtrace) return;
+    if (idx >= evt->num_simtrace) return;    // num_slot for multi launch simtrace ?
 
-    unsigned genstep_id = evt->seed[idx] ; 
+    unsigned genstep_idx = evt->seed[idx] ; 
+    unsigned photon_idx  = params.photon_slot_offset + idx ;  
+    // photon_idx same as idx for first launch, offset beyond first for multi-launch 
 
 #if defined(DEBUG_PIDX)
-    if(idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d genstep_id %d evt->num_simtrace %d \n", idx, genstep_id, evt->num_simtrace ); 
+    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d photon_idx %d  genstep_idx %d evt->num_simtrace %d \n", idx, photon_idx, genstep_idx, evt->num_simtrace ); 
 #endif
 
-    const quad6& gs     = evt->genstep[genstep_id] ; 
+    const quad6& gs = evt->genstep[genstep_idx] ; 
      
     qsim* sim = params.sim ; 
-    RNG rng = sim->rngstate[idx] ;   
+    RNG rng = sim->rngstate[photon_idx] ; //TODO: photon_slot_offset for multi-launch ?  
 
     quad4 p ;  
-    sim->generate_photon_simtrace(p, rng, gs, idx, genstep_id );  
+    sim->generate_photon_simtrace(p, rng, gs, photon_idx, genstep_idx );  
 
     const float3& pos = (const float3&)p.q0.f  ; 
     const float3& mom = (const float3&)p.q1.f ; 
 
 
 #if defined(DEBUG_PIDX)
-    if(idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d pos.xyz %7.3f,%7.3f,%7.3f mom.xyz %7.3f,%7.3f,%7.3f  \n", idx, pos.x, pos.y, pos.z, mom.x, mom.y, mom.z ); 
+    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d pos.xyz %7.3f,%7.3f,%7.3f mom.xyz %7.3f,%7.3f,%7.3f  \n", idx, pos.x, pos.y, pos.z, mom.x, mom.y, mom.z ); 
 #endif
 
 
@@ -421,6 +430,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     );
 
     evt->add_simtrace( idx, p, prd, params.tmin ); 
+    // not photon_idx, needs to go from zero for photons from a slice of genstep array
 }
 #endif
 
