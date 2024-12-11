@@ -241,24 +241,32 @@ int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
 
     int rc = setGenstepUpload(qq, gs_start, gs_stop ); 
 
-    assert( gss->ph_count == evt->num_photon ); 
-    // genstep consistency 
+    if(gss == nullptr) return rc ; 
+
+
+    bool gss_consistent = gss->ph_count == evt->num_photon ; 
+    LOG_IF(fatal, !gss_consistent )
+        << " gss.desc " << gss->desc() << "\n"
+        << " gss->ph_count " << gss->ph_count << "\n"
+        << " evt->num_photon " << evt->num_photon << "\n"
+        << " gss_consistent " << ( gss_consistent ? "YES" : "NO " ) << "\n"
+        ;
 
     int last_rng_state_idx = gss->ph_offset + gss->ph_count ; 
     bool in_range = last_rng_state_idx <= evt->max_curand ; 
 
-    LOG_IF(error, !in_range)
-        << " gss.desc " << gss->desc()
-        << " gss->ph_offset " << gss->ph_offset
-        << " gss->ph_count " << gss->ph_count
-        << " gss->ph_offset + gss->ph_count " << last_rng_state_idx
-        << " evt->max_curand " << evt->max_curand
-        << " evt->num_curand " << evt->num_curand
-        << " evt->max_slot " << evt->max_slot
+    LOG_IF(fatal, !in_range)
+        << " gss.desc " << gss->desc() << "\n"
+        << " gss->ph_offset " << gss->ph_offset << "\n"
+        << " gss->ph_count " << gss->ph_count << "\n"
+        << " gss->ph_offset + gss->ph_count " << last_rng_state_idx << "(last_rng_state_idx) must be <= max_curand for valid rng_state access\n" 
+        << " evt->max_curand " << evt->max_curand << "\n"
+        << " evt->num_curand " << evt->num_curand << "\n"
+        << " evt->max_slot " << evt->max_slot << "\n"
         ; 
 
+    assert( gss_consistent ); 
     assert( in_range );  
-    // NB not max_slot as its the size of the RNG state array that matters 
 
     return rc ; 
 }

@@ -2054,7 +2054,7 @@ DONE : OPTICKS_MAX_CURAND=0 now loads all chunks
 
 
 
-TODO : change QRng/qrng slot offsets for each launch
+DONE : change photon_slot_offset for each launch
 --------------------------------------------------------
 
 Need to give ph_offset to qrng on device before each launch.
@@ -2080,7 +2080,6 @@ Previously it was constant::
      296     LOG(LEVEL) << desc() ;
      297     LOG(LEVEL) << descComponents() ;
      298 }
-
 
 Actually its more general than just qrng, need an idx_offset uploaded to the qsim instance or even more general the params::
 
@@ -2118,12 +2117,73 @@ Params.h::
      85 
 
 
+::
+
+    Your branch is up to date with 'origin/master'.
+
+    Changes not staged for commit:
+      (use "git add <file>..." to update what will be committed)
+      (use "git restore <file>..." to discard changes in working directory)
+        modified:   CSGOptiX/CSGOptiX.cc
+        modified:   CSGOptiX/CSGOptiX7.cu
+        modified:   CSGOptiX/Params.cc
+        modified:   CSGOptiX/Params.h
+        modified:   CSGOptiX/cxs_min.sh
+        modified:   notes/issues/more_flexible_maxphoton_plus_setting_it_based_on_VRAM_plus_splitting_launch_when_VRAM_too_small_for_photon_count.rst
+        modified:   qudarap/QEvent.cc
+        modified:   qudarap/QEvent.hh
+        modified:   qudarap/QRng.hh
+        modified:   qudarap/QSim.cc
+        modified:   qudarap/QSim.hh
+        modified:   qudarap/tests/QEventTest.cc
+        modified:   sysrap/SEvt.cc
+        modified:   sysrap/sevent.h
+
+    no changes added to commit (use "git add" and/or "git commit -a")
+    P[blyth@localhost opticks]$ 
+    P[blyth@localhost opticks]$ 
+    P[blyth@localhost opticks]$ git add . 
+    P[blyth@localhost opticks]$ git commit -m "get photon_slot_offset into Params on device for multi-launch genstep slices after the first, so multi-launch should be able to match single-launch"
+    [master 05c53ef7b] get photon_slot_offset into Params on device for multi-launch genstep slices after the first, so multi-launch should be able to match single-launch
+     14 files changed, 187 insertions(+), 26 deletions(-)
+    P[blyth@localhost opticks]$ 
 
 
-TODO : test exact matching between multi-launch and single launch 
+
+DONE : fixed reversion from when no genstep slice "gss"
+-------------------------------------------------------
+
+::
+
+    FAILS:  3   / 215   :  Tue Dec 10 23:01:08 2024   
+      10 /21  Test #10 : QUDARapTest.QEventTest                        ***Failed                      0.50   
+      11 /21  Test #11 : QUDARapTest.QEvent_Lifecycle_Test             ***Failed                      0.47   
+      13 /21  Test #13 : QUDARapTest.QSimWithEventTest                 ***Failed                      5.99   
+
+
+::
+
+    0x00007ffff7615ac9 in QEvent::setGenstepUpload_NP (this=0x522270, gs_=0x520c20, gss_=0x0) at /home/blyth/opticks/qudarap/QEvent.cc:244
+    244     assert( gss->ph_count == evt->num_photon ); 
+    (gdb) bt
+    #0  0x00007ffff7615ac9 in QEvent::setGenstepUpload_NP (this=0x522270, gs_=0x520c20, gss_=0x0) at /home/blyth/opticks/qudarap/QEvent.cc:244
+    #1  0x00007ffff76156ec in QEvent::setGenstepUpload_NP (this=0x522270, gs_=0x520c20) at /home/blyth/opticks/qudarap/QEvent.cc:213
+    #2  0x0000000000409bb1 in QEventTest::setGenstep_one () at /home/blyth/opticks/qudarap/tests/QEventTest.cc:91
+    #3  0x000000000040be10 in QEventTest::main () at /home/blyth/opticks/qudarap/tests/QEventTest.cc:425
+    #4  0x000000000040c04f in main (argc=1, argv=0x7fffffff4928) at /home/blyth/opticks/qudarap/tests/QEventTest.cc:442
+    (gdb) 
+
+
+
+
+
+TODO : check exact matching between multi-launch and single launch 
 --------------------------------------------------------------------
 
 
+
+TODO : stress test with progressively larger multi-launch : then try a vlarge scan going beyond VRAM constraints
+------------------------------------------------------------------------------------------------------------------
 
 
 
