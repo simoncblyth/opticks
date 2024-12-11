@@ -73,7 +73,7 @@ inline void SSimtrace::Scan(const G4VSolid* solid, const char* base )
     const char* soname = soname_.c_str() ; 
     //LOG(LEVEL) << "[ " << soname ; 
 
-    SEvt::SetReldir(soname); 
+    SEventConfig::SetEventReldir(soname); 
 
     SSimtrace t ; 
     t.setSolid(solid); 

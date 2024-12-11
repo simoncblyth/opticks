@@ -25,7 +25,7 @@ struct SEvtTest
     static void LifeCycle(); 
     static void InputPhoton(); 
     static void getSaveDir(); 
-    static void getOutputDir(); 
+    static void getDir(); 
     static void setMetaProf(); 
     static void hostside_running_resize_(); 
     static void CountNibbles(); 
@@ -210,16 +210,14 @@ void SEvtTest::getSaveDir()
 }
 
 
-void SEvtTest::getOutputDir()
+void SEvtTest::getDir()
 {
     SEvt* evt = SEvt::Create(0);
-    const char* dir0 = evt->getOutputDir_OLD(); 
-    const char* dir1 = evt->getOutputDir(); 
+    const char* dir0 = evt->getDir(); 
 
     LOG(info) 
-        << "getOutputDir" << std::endl 
+        << "getDir" << std::endl 
         << " dir0 [" << ( dir0 ? dir0 : "-" ) << "]" << std::endl 
-        << " dir1 [" << ( dir1 ? dir1 : "-" ) << "]" << std::endl 
         ;
 }
 
@@ -332,7 +330,7 @@ void SEvtTest::Main()
     if( strcmp(TEST, "LifeCycle") == 0 ) LifeCycle();
     if( strcmp(TEST, "InputPhoton") == 0 ) InputPhoton();
     if( strcmp(TEST, "getSaveDir") == 0 ) getSaveDir();
-    if( strcmp(TEST, "getOutputDir") == 0 ) getOutputDir();
+    if( strcmp(TEST, "getDir") == 0 )      getDir();
     if( strcmp(TEST, "setMetaProf") == 0 ) setMetaProf();
     if( strcmp(TEST, "hostside_running_resize_") == 0 ) hostside_running_resize_();
     if( strcmp(TEST, "CountNibbles") == 0 ) CountNibbles();

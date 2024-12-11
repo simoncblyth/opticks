@@ -456,10 +456,12 @@ public:
     static int  GetIndex(int idx); 
     static S4RandomArray* GetRandomArray(int idx); 
 
-    static const char*  DEFAULT_RELDIR ; 
-    static const char* RELDIR ; 
-    static void SetReldir(const char* reldir); 
-    static const char* GetReldir(); 
+
+    // MOVED TO SEventConfig::EventReldir 
+    //static const char*  DEFAULT_RELDIR ; 
+    //static const char* RELDIR ; 
+    //static void SetReldir(const char* reldir); 
+    //static const char* GetReldir(); 
 
 
     static int GetNumPhotonCollected(int idx); 
@@ -642,16 +644,15 @@ public:
     bool hasIndex() const ; 
     bool hasInstance() const ; 
 
-    const char* getOutputDir_OLD(const char* base_=nullptr) const ; 
-    const char* getOutputDir(const char* base_=nullptr) const ; 
+
+    static const char* DefaultBase(const char* base_=nullptr) ; 
+    static const char* RunDir( const char* base_=nullptr ); 
+    const char* getDir(const char* base_=nullptr) const ; 
 
     char getInstancePrefix() const ; 
     std::string getIndexString_(const char* hdr) const ; 
     const char* getIndexString(const char* hdr) const ; 
 
-
-    static const char* RunDir( const char* base_=nullptr ); 
-    static const char* DefaultDir() ; 
 
     std::string descSaveDir(const char* dir_) const ; 
 

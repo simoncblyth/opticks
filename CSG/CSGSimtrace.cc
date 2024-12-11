@@ -24,7 +24,7 @@ CSGSimtrace::CSGSimtrace()
     sim(SSim::Create()),
     fd(CSGFoundry::Load()),
     evt(SEvt::Create(0)),
-    outdir(evt->getOutputDir()), 
+    outdir(evt->getDir()), 
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z')),
     SELECTION(getenv("SELECTION")),

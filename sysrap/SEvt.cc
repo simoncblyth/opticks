@@ -752,7 +752,7 @@ void SEvt::addInputGenstep()
         if(frs)
         {
             LOG(LEVEL) << " non-default frs " << frs << " passed to SEvt::SetReldir " ; 
-            SEvt::SetReldir(frs);  
+            SEventConfig::SetEventReldir(frs);  
         }
   
         NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);  
@@ -1059,8 +1059,8 @@ SEvt* SEvt::Create_ECPU(){ return Create(ECPU) ; }
  
 SEvt* SEvt::Create(int ins)  // static
 { 
-    const char* alldir = spath::Resolve("ALL${VERSION:-0}") ; 
-    SEvt::SetReldir(alldir); 
+    //const char* alldir = spath::Resolve("ALL${VERSION:-0}") ; 
+    //SEvt::SetReldir(alldir); 
 
     assert( ins == 0 || ins == 1); 
     SEvt* ev = new SEvt ; 
@@ -1276,7 +1276,7 @@ SEvt* SEvt::LoadRelative(const char* rel, int ins, int idx  )  // static
 {
     LOG(LEVEL) << "[" ; 
 
-    if(rel != nullptr) SetReldir(rel); 
+    if(rel != nullptr) SEventConfig::SetEventReldir(rel); 
 
     SEvt* ev = SEvt::Create(ins) ; 
     if(idx > -1) ev->setIndex(idx); 
@@ -1668,12 +1668,11 @@ S4RandomArray* SEvt::GetRandomArray(int idx)
 
 
 // SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
-
-const char* SEvt::DEFAULT_RELDIR = "ALL${VERSION:-0}" ;   
-const char* SEvt::RELDIR = nullptr ; 
-void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
-const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
-
+// MOVED TO SEventConfig::EventReldir 
+//const char* SEvt::DEFAULT_RELDIR = "ALL${VERSION:-0}" ;   
+//const char* SEvt::RELDIR = nullptr ; 
+//void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
+//const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
 
 int SEvt::GetNumPhotonCollected(int idx){    return Exists(idx) ? Get(idx)->getNumPhotonCollected() : UNDEF ; }
 int SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getNumPhotonGenstepMax() : UNDEF ; }
@@ -3702,21 +3701,21 @@ Only when more control of the output is needed is it appropriate to use OPTICKS_
 
 void SEvt::save() 
 {
-    const char* dir = DefaultDir(); 
-    save(dir); 
+    const char* base = DefaultBase(); 
+    save(base); 
 }
 void SEvt::saveExtra( const char* name, const NP* a  ) const 
 {
-    const char* dir = DefaultDir(); 
+    const char* dir = getDir(); 
     saveExtra( dir, name , a );  
 }
 
 
 int SEvt::load()
 {
-    const char* dir = DefaultDir(); 
-    int rc = load(dir); 
-    LOG(LEVEL) << "SEvt::DefaultDir " << dir << " rc " << rc ;
+    const char* base = DefaultBase(); 
+    int rc = load(base); 
+    LOG(LEVEL) << "SEvt::DefaultBase " << base << " rc " << rc ;
     return rc ;  
 }
 
@@ -3744,49 +3743,33 @@ bool SEvt::hasInstance() const
 
 
 
-/**
-SEvt::getOutputDir_OLD
------------------------
 
-Returns the directory that will be used by SEvt::save so long as
-the same base_ argument is used, which may be nullptr to use the default. 
+const char* SEvt::DefaultBase(const char* base_) // static
+{
+    const char* base = base_ ? base_ : spath::DefaultOutputDir() ; // this is "$TMP/GEOM/$GEOM/$ExecutableName" 
+    return base ;  
+}
+
+
+/**
+SEvt::RunDir
+--------------
+
+Directory without event index, used for run level metadata. 
 
 **/
 
-const char* SEvt::getOutputDir_OLD(const char* base_) const 
+const char* SEvt::RunDir( const char* base_ )  // static
 {
-    const char* defd = DefaultDir() ; 
-    const char* base = base_ ? base_ : defd ; 
-    const char* reldir = GetReldir() ;   // eg "ALL" or "ALL0" or "ALL${VERSION:-0}"
-    const char* sidx = hasIndex() ? getIndexString(nullptr) : nullptr ; 
-    const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
-    sdirectory::MakeDirs(path,0); 
-
-    LOG(info)
-        << std::endl  
-        << " base_  " << ( base_ ? base_ : "-" )
-        << std::endl  
-        << " base   " << ( base ? base : "-" )
-        << std::endl  
-        << " reldir " << ( reldir ? reldir : "-" )
-        << std::endl  
-        << " SEvt::DefaultDir " << ( defd ? defd : "-" )
-        << std::endl  
-        << " spath::Resolve(\"$DefaultOutputDir\" )"
-        << spath::Resolve("$DefaultOutputDir" )
-        << std::endl  
-        << " spath::Resolve(\"$TMP\" )"
-        << spath::Resolve("$TMP" )
-        << std::endl  
-        << " path    " << ( path ? path : "-" )  
-        << std::endl  
-        ;
-
-    return path ;  
+    const char* base = DefaultBase(base_); 
+    const char* reldir = SEventConfig::EventReldir() ; 
+    const char* dir = spath::Resolve(base, reldir ); 
+    sdirectory::MakeDirs(dir,0); 
+    return dir ; 
 }
 
 /**
-SEvt::getOutputDir
+SEvt::getDir
 ----------------------------
 
 Reimpl in a way that is faster to understand, 
@@ -3797,12 +3780,22 @@ high level control here in one place.
 HMM: could expand on that approach exposing ALL$VERSION 
 here too instead of hiding in Reldir
 
+Example with::
+
+    TMP               /data/blyth/opticks 
+    GEOM              J_2024nov27 
+    ExecutableName    CSGOptiXSMTest
+    VERSION           1
+    Reldir            ALL1
+    sidx:IndexString  A000
+    OutputDir         /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1/A000/
+
 **/
 
-const char* SEvt::getOutputDir(const char* base_) const 
+const char* SEvt::getDir(const char* base_) const 
 {
-    const char* base = base_ ? base_ : "$TMP/GEOM/$GEOM/$ExecutableName" ; 
-    const char* reldir = GetReldir() ; 
+    const char* base = DefaultBase(base_); 
+    const char* reldir = SEventConfig::EventReldir() ; 
     const char* sidx = hasIndex() ? getIndexString(nullptr) : nullptr ; 
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(path,0); 
@@ -3854,36 +3847,10 @@ const char* SEvt::getIndexString(const char* hdr) const
 
 
 
-
-/**
-SEvt::RunDir
---------------
-
-Directory without event index, used for run level metadata. 
-
-**/
-
-const char* SEvt::RunDir( const char* base_ )  // static
-{
-    const char* base = base_ ? base_ : SEvt::DefaultDir() ; 
-    const char* reldir = GetReldir() ; 
-    const char* dir = spath::Resolve(base, reldir ); 
-    sdirectory::MakeDirs(dir,0); 
-    return dir ; 
-}
-
-const char* SEvt::DefaultDir() // static
-{
-    return SEventConfig::OutFold() ; 
-}
-
-
-
-
 std::string SEvt::descSaveDir(const char* dir_) const 
 {
-    const char* dir = getOutputDir(dir_); 
-    const char* reldir = GetReldir() ; 
+    const char* dir = getDir(dir_); 
+    const char* reldir = SEventConfig::EventReldir() ; 
     bool with_index = index != MISSING_INDEX ;  
     std::stringstream ss ; 
     ss << "SEvt::descSaveDir"
@@ -3899,10 +3866,13 @@ std::string SEvt::descSaveDir(const char* dir_) const
     return str ;  
 } 
 
-int SEvt::load(const char* dir_) 
+int SEvt::load(const char* base_) 
 {
-    const char* dir = getOutputDir(dir_); 
-    LOG(LEVEL) << " dir " << dir ; 
+    const char* dir = getDir(base_); 
+    LOG(LEVEL) 
+        << " base_ " << ( base_ ? base_ : "-" )
+        << " dir " << ( dir ? dir : "-" )
+        ; 
     LOG_IF(fatal, dir == nullptr) << " null dir : probably missing environment : run script, not executable directly " ;   
     assert(dir); 
     int rc = loadfold(dir); 
@@ -4009,7 +3979,7 @@ void SEvt::save(const char* dir_)
     int slic = save_fold->_save_local_item_count(); 
     if( slic > 0 )
     {
-        const char* dir = getOutputDir(dir_);   // THIS CREATES DIRECTORY
+        const char* dir = getDir(dir_);   // THIS CREATES DIRECTORY
         LOG_IF(info, MINIMAL) << dir << " [" << save_comp << "]"  ; 
         LOG(LEVEL) << descSaveDir(dir_) ; 
 
@@ -4034,7 +4004,7 @@ void SEvt::save(const char* dir_)
 
 void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
 {
-    const char* dir = getOutputDir(dir_); 
+    const char* dir = getDir(dir_); 
     a->save(dir, name );  
 } 
 

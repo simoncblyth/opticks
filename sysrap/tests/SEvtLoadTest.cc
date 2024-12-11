@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
     if(rerun == false)
     {  
-        SEvt::SetReldir(reldir);  
+        SEventConfig::SetEventReldir(reldir);  
         evt = SEvt::Create(0);        
     }   
     else
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     if(evt->is_loaded)
     {
-        SEvt::SetReldir("SEvtLoadTest"); 
+        SEventConfig::SetEventReldir("SEvtLoadTest"); 
         //evt->clear_except("g4state"); 
         evt->save(); 
     }

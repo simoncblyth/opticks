@@ -1868,8 +1868,7 @@ Avoid the assert with deepcopy::
 
 Check fix::
 
-    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg
-
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg 
 
 Nope some issue with the deepcopy. Yep reversion in NPFold, was skipping arrays in the copy::
 
@@ -2175,10 +2174,80 @@ DONE : fixed reversion from when no genstep slice "gss"
 
 
 
+DONE : move Reldir setting to SEventConfig, and support things like ALL${VERSION:-0}${TEST:-}
+-----------------------------------------------------------------------------------------------
+
+::
+
+    1670 // SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
+    1671 
+    1672 const char* SEvt::DEFAULT_RELDIR = "ALL${VERSION:-0}" ;
+    1673 const char* SEvt::RELDIR = nullptr ;
+    1674 void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
+    1675 const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
+    1676 
+
+Opps getting duplicated elem, now fixed::
+
+    0 drwxr-xr-x. 3 blyth blyth 34 Dec 11 11:33 .
+    0 drwxr-xr-x. 3 blyth blyth 18 Dec 11 11:33 ALL1_ref10_onelaunch
+    P[blyth@localhost opticks]$ l /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_ref10_onelaunch/A000/ALL1_ref10_onelaunch/
+    total 0
+    0 drwxr-xr-x. 2 blyth blyth 152 Dec 11 11:33 A000
+    0 drwxr-xr-x. 3 blyth blyth  18 Dec 11 11:33 .
+    0 drwxr-xr-x. 3 blyth blyth  34 Dec 11 11:33 ..
+    P[blyth@localhost opticks]$ l /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_ref10_onelaunch/A000/ALL1_ref10_onelaunch/A000/
+    total 139272
+         0 drwxr-xr-x. 2 blyth blyth       152 Dec 11 11:33 .
+         4 -rw-rw-r--. 1 blyth blyth       113 Dec 11 11:33 sframe_meta.txt
+         4 -rw-rw-r--. 1 blyth blyth       384 Dec 11 11:33 sframe.npy
+         4 -rw-rw-r--. 1 blyth blyth       667 Dec 11 11:33 NPFold_meta.txt
+         0 -rw-rw-r--. 1 blyth blyth         0 Dec 11 11:33 NPFold_names.txt
+         4 -rw-rw-r--. 1 blyth blyth        20 Dec 11 11:33 NPFold_index.txt
+    139252 -rw-rw-r--. 1 blyth blyth 142591232 Dec 11 11:33 hit.npy
+         0 drwxr-xr-x. 3 blyth blyth        18 Dec 11 11:33 ..
+         4 -rw-rw-r--. 1 blyth blyth      1088 Dec 11 11:33 genstep.npy
+    P[blyth@localhost opticks]$ 
 
 
-TODO : check exact matching between multi-launch and single launch 
+
+
+WIP : check exact matching between multi-launch and single launch 
 --------------------------------------------------------------------
+
+::
+
+    TEST=ref10_onelaunch   ~/o/cxs_min.sh dbg 
+    TEST=ref10_multilaunch ~/o/cxs_min.sh dbg 
+
+
+cxs_min.sh::
+
+    224 elif [ "$TEST" == "ref10_multilaunch" -o "$TEST" == "ref10_onelaunch" ]; then
+    225 
+    226    opticks_num_photon=M10
+    227    opticks_num_genstep=10
+    228    opticks_max_photon=M10
+    229    opticks_num_event=1
+    230    opticks_running_mode=SRM_TORCH
+    231 
+    232    #export OPTICKS_MAX_CURAND=0    # zero loads all states : ready for whopper launches
+    233    export OPTICKS_MAX_CURAND=M10   # non-zero loads the specified number
+    234 
+    235    case $TEST in
+    236       ref10_multilaunch) opticks_max_slot=M1 ;;     ## causes M10 to be done in 10 launches
+    237       ref10_onelaunch)   opticks_max_slot=M10 ;;
+    238    esac
+    239    
+    240    export OPTICKS_MAX_SLOT=$opticks_max_slot      
+    241    
+    242    export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_$TEST'
+    243    
+    244    #export SEvt__NPFOLD_VERBOSE=1 
+    245    #export QSim__simulate_KEEP_SUBFOLD=1
+
+
+
 
 
 

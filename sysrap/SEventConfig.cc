@@ -54,6 +54,8 @@ float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression us
 float SEventConfig::_MaxTimeDefault = 10.f ; // ns 
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ; 
 const char* SEventConfig::_OutNameDefault = nullptr ; 
+//const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}" ; 
+const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${TEST:-none}" ; 
 const char* SEventConfig::_RGModeDefault = "simulate" ; 
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
@@ -231,6 +233,7 @@ float SEventConfig::_MaxExtent  = ssys::getenvfloat(kMaxExtent, _MaxExtentDefaul
 float SEventConfig::_MaxTime    = ssys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
 const char* SEventConfig::_OutFold = ssys::getenvvar(kOutFold, _OutFoldDefault ); 
 const char* SEventConfig::_OutName = ssys::getenvvar(kOutName, _OutNameDefault ); 
+const char* SEventConfig::_EventReldir = ssys::getenvvar(kEventReldir, _EventReldirDefault ); 
 int SEventConfig::_RGMode = SRG::Type(ssys::getenvvar(kRGMode, _RGModeDefault)) ;    
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(ssys::getenvvar(kHitMask, _HitMaskDefault )) ;   
 
@@ -322,6 +325,7 @@ float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
+const char* SEventConfig::EventReldir(){   return _EventReldir ; }
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 
 unsigned SEventConfig::GatherComp(){  return _GatherComp ; } 
@@ -487,6 +491,7 @@ void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; L
 void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; LIMIT_Check() ; }
 void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetEventReldir(   const char* v){   _EventReldir = v ? strdup(v) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 
 void SEventConfig::SetRGMode(   const char* mode){   _RGMode = SRG::Type(mode) ; LIMIT_Check() ; }
@@ -707,6 +712,9 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << kOutName
        << std::setw(20) << " OutName " << " : " << ( OutName() ? OutName() : "-" )  
+       << std::endl 
+       << std::setw(25) << kEventReldir
+       << std::setw(20) << " EventReldir " << " : " << ( EventReldir() ? EventReldir() : "-" )  
        << std::endl 
        << std::setw(25) << kPropagateEpsilon
        << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon() 

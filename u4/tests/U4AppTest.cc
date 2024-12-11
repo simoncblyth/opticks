@@ -25,12 +25,12 @@ int main(int argc, char** argv)
 
     std::string desc = U4App::Desc(); 
     LOG(info) << " desc " << desc ; 
-    SEvt::SetReldir(desc.c_str() ); 
+    SEventConfig::SetEventReldir(desc.c_str() ); 
 
     SEventConfig::SetDebugLite(); 
     SEvt* evt = SEvt::Create(SEvt::EGPU) ;  // ECPU would be more appropriate
      // SEvt must be instanciated before QEvent
-    const char* outdir = evt->getOutputDir(); 
+    const char* outdir = evt->getDir(); 
     LOG(info) << "outdir [" << outdir << "]" ; 
     LOG(info) << " desc [" << desc << "]" ; 
  

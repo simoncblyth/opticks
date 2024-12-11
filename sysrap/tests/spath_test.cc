@@ -1,4 +1,21 @@
-// ~/opticks/sysrap/tests/spath_test.sh
+/**
+spath_test.cc
+===============
+
+::
+
+     ~/opticks/sysrap/tests/spath_test.sh
+     TEST=ResolveToken ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve      ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve3     ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve_setenvvar ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve_setenvmap ~/opticks/sysrap/tests/spath_test.sh
+       
+     TEST=DefaultOutputPath ~/opticks/sysrap/tests/spath_test.sh
+
+
+
+**/
 
 #include <cassert>
 #include <iostream>
@@ -27,6 +44,7 @@ struct spath_test
 
    static int Resolve_(const char* spec); 
    static int Resolve1(); 
+   static int Resolve3(); 
    static int Resolve(); 
    static int Resolve_setenvvar(); 
    static int Resolve_setenvmap(); 
@@ -237,11 +255,59 @@ int spath_test::Resolve_(const char* spec)
 
 int spath_test::Resolve1()
 {
-    //Resolve_("${RNGDir:-$HOME/.opticks/rngcache/RNG}") ;
-    Resolve_("$DefaultOutputDir") ;
+    std::vector<std::string> pp = { 
+       "${RNGDir:-$HOME/.opticks/rngcache/RNG}", 
+       "$DefaultOutputDir",
+       "$DefaultOutputDir/$TEST",
+       "$DefaultOutputDir/${TEST:-notest}",
+     } ; 
+
+    for(int i=0 ; i < int(pp.size()) ; i++)
+    {
+        const char* p = pp[i].c_str(); 
+        const char* path0 = spath::ResolvePath(p) ;
+        const char* path1 = spath::ResolvePathGeneralized(p) ;
+        std::cout 
+            << "spath_test::Resolve1\n"
+            << " p                             : " << p << "\n"
+            << " spath::ResolvePath            : " << ( path0 ? path0 : "-" ) << "\n"
+            << " spath::ResolvePathGeneralized : " << ( path1 ? path1 : "-" ) << "\n"
+            << "\n"
+            ;
+    }
+
     return 0 ; 
 }
 
+int spath_test::Resolve3()
+{
+    const char* base = "$TMP/GEOM/$GEOM/$ExecutableName" ; 
+    const char* sidx = "A000" ; 
+
+    std::vector<std::string> pp = { 
+         "ALL${VERSION:-0}", 
+         "ALL${VERSION:-0}${TEST:-}", 
+         "ALL${VERSION:-0}${XTEST:-}",
+         "ALL${VERSION:-0}${XTEST:-notest}"
+     } ; 
+ 
+ 
+    for(int i=0 ; i < int(pp.size()) ; i++)
+    {
+        const char* reldir = pp[i].c_str(); 
+        const char* path = spath::Resolve(base,reldir,sidx ) ; 
+        std::cout 
+            << "spath_test::Resolve3\n"
+            << " base   : " << base << "\n"
+            << " reldir : " << reldir << "\n"
+            << " sidx   : " << sidx << "\n"
+            << " path   : " << ( path ? path : "-" ) << "\n\n"
+            ;
+    }
+
+    return 0 ; 
+
+}
 
 int spath_test::Resolve()
 {
@@ -582,6 +648,7 @@ int spath_test::Main()
     else if(strcmp(TEST, "Resolve_setenvmap")==0) rc = Resolve_setenvmap();
     else if(strcmp(TEST, "ResolveToken1")==0) rc = ResolveToken1();
     else if(strcmp(TEST, "Resolve1")==0) rc = Resolve1();
+    else if(strcmp(TEST, "Resolve3")==0) rc = Resolve3();
     else if(strcmp(TEST, "_Check")==0) rc = _Check();
     else if(strcmp(TEST, "Write")==0) rc = Write();
     else if(strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc = WriteIntoInvokingDirectory();
@@ -598,21 +665,5 @@ int main(int argc, char** argv)
 {
     return spath_test::Main(); 
 }
-
-/**
-
-::
-
-     ~/opticks/sysrap/tests/spath_test.sh
-     TEST=ResolveToken ~/opticks/sysrap/tests/spath_test.sh
-     TEST=Resolve      ~/opticks/sysrap/tests/spath_test.sh
-     TEST=Resolve_setenvvar ~/opticks/sysrap/tests/spath_test.sh
-     TEST=Resolve_setenvmap ~/opticks/sysrap/tests/spath_test.sh
-       
-     TEST=DefaultOutputPath ~/opticks/sysrap/tests/spath_test.sh
-
-
-**/
-
 
 

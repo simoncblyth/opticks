@@ -45,7 +45,9 @@ Monitor for GPU memory leaks::
 EOU
 }
 
+vars=""
 SDIR=$(dirname $(realpath $BASH_SOURCE))
+
 
 case $(uname) in
    Linux) defarg=run_report_info ;;
@@ -63,11 +65,16 @@ script=$SDIR/cxs_min.py
 
 source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
 
+vars="$vars BASH_SOURCE SDIR defarg arg bin script GEOM"
+
+tmp=/tmp/$USER/opticks
+export TMP=${TMP:-$tmp}
 export EVT=${EVT:-A000}
-export BASE=${TMP:-/tmp/$USER/opticks}/GEOM/$GEOM
+export BASE=$TMP/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export SCRIPT=$(basename $BASH_SOURCE)
 
+vars="$vars TMP EVT BASE BINBASE SCRIPT"
 
 Resolve_CFBaseFromGEOM()
 {
@@ -86,13 +93,13 @@ Resolve_CFBaseFromGEOM()
 
     if [ -d "$A_CFBaseFromGEOM" -a -f "$A_CFBaseFromGEOM/$TestPath" ]; then
         export ${GEOM}_CFBaseFromGEOM=$A_CFBaseFromGEOM
-        echo $BASH_SOURCE : FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
+        #echo $BASH_SOURCE : FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
     elif [ -d "$B_CFBaseFromGEOM" -a -f "$B_CFBaseFromGEOM/$TestPath" ]; then
         export ${GEOM}_CFBaseFromGEOM=$B_CFBaseFromGEOM
-        echo $BASH_SOURCE : FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath
+        #echo $BASH_SOURCE : FOUND B_CFBaseFromGEOM $B_CFBaseFromGEOM containing $TestPath
     elif [ -d "$C_CFBaseFromGEOM" -a -f "$C_CFBaseFromGEOM/$TestPath" ]; then
         export ${GEOM}_CFBaseFromGEOM=$C_CFBaseFromGEOM
-        echo $BASH_SOURCE : FOUND C_CFBaseFromGEOM $C_CFBaseFromGEOM containing $TestPath
+        #echo $BASH_SOURCE : FOUND C_CFBaseFromGEOM $C_CFBaseFromGEOM containing $TestPath
     elif [ -f "$GDMLPathFromGEOM" ]; then 
         export ${GEOM}_GDMLPathFromGEOM=$GDMLPathFromGEOM
         echo $BASH_SOURCE : FOUND GDMLPathFromGEOM $GDMLPathFromGEOM 
@@ -105,6 +112,7 @@ Resolve_CFBaseFromGEOM()
 }
 Resolve_CFBaseFromGEOM
 
+vars="$vars ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPathFromGEOM"
 
 
 
@@ -151,13 +159,36 @@ knobs()
 version=1
 #version=98   ## set to 98 for low stats debugging
 
-VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
-export VERSION
+export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
 
-export LOGDIR=$BINBASE/ALL$VERSION
-export AFOLD=$BINBASE/ALL$VERSION/$EVT
-export STEM=ALL${VERSION}_${PLOT}
+
+
+#test=debug
+#test=ref1
+#test=ref5
+#test=ref8
+#test=ref10
+test=ref10_multilaunch
+#test=input_genstep
+#test=input_photon
+
+export TEST=${TEST:-$test}
+
+vars="$vars version VERSION test TEST"
+
+
+
+opticks_event_reldir=ALL${VERSION:-0}_${TEST:-none}   ## matches SEventConfig::_DefaultEventReldir OPTICKS_EVENT_RELDIR
+
+vars="$vars opticks_event_reldir"
+
+
+
+export LOGDIR=$BINBASE/$opticks_event_reldir
+export AFOLD=$BINBASE/$opticks_event_reldir/$EVT
+#export STEM=ALL${VERSION}_${PLOT}
+export STEM=${opticks_event_reldir}_${PLOT}
 
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT  ## comparison with "A" from another executable
 #export BFOLD=$BASE/jok-tds/ALL0/A001    ## comparison with "A" from another executable
@@ -165,6 +196,9 @@ export STEM=ALL${VERSION}_${PLOT}
 mkdir -p $LOGDIR 
 cd $LOGDIR 
 LOGFILE=$bin.log
+
+vars="$vars LOGDIR AFOLD STEM LOGFILE"
+
 
 case $VERSION in 
  0) opticks_event_mode=Minimal ;;
@@ -177,16 +211,8 @@ case $VERSION in
 99) opticks_event_mode=DebugHeavy ;;  # formerly StandardFullDebug
 esac 
 
-#test=debug
-#test=ref1
-#test=ref5
-#test=ref8
-#test=ref10
-test=ref10_multilaunch
-#test=input_genstep
-#test=input_photon
+vars="$vars opticks_event_mode"
 
-TEST=${TEST:-$test}
 
 if [ "$TEST" == "debug" ]; then 
 
@@ -221,7 +247,7 @@ elif [ "$TEST" == "refX" ]; then
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
 
-elif [ "$TEST" == "ref10_multilaunch" ]; then 
+elif [ "$TEST" == "ref10_multilaunch" -o "$TEST" == "ref10_onelaunch" ]; then 
 
    opticks_num_photon=M10
    opticks_num_genstep=10
@@ -231,11 +257,18 @@ elif [ "$TEST" == "ref10_multilaunch" ]; then
 
    #export OPTICKS_MAX_CURAND=0    # zero loads all states : ready for whopper launches
    export OPTICKS_MAX_CURAND=M10   # non-zero loads the specified number
+
+   case $TEST in 
+      *multilaunch) opticks_max_slot=M1 ;;     ## causes M10 to be done in 10 launches
+        *onelaunch) opticks_max_slot=M10 ;; 
+   esac 
  
-   export OPTICKS_MAX_SLOT=M1      # causes M10 to be done in 10 launches 
+   export OPTICKS_MAX_SLOT=$opticks_max_slot      
+
+   export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_$TEST' 
+
    #export SEvt__NPFOLD_VERBOSE=1 
-   export QSim__simulate_KEEP_SUBFOLD=1
- 
+   #export QSim__simulate_KEEP_SUBFOLD=1
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
@@ -297,6 +330,10 @@ elif [ "$TEST" == "input_photon" ]; then
 
 fi 
 
+vars="$vars opticks_num_photon opticks_num_genstep opticks_max_photon opticks_num_event opticks_running_mode"
+
+
+
 #opticks_running_mode=SRM_DEFAULT
 #opticks_running_mode=SRM_INPUT_PHOTON
 #opticks_running_mode=SRM_GUN
@@ -315,6 +352,9 @@ export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
+
+vars="$vars OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
+
 
 
 
@@ -436,10 +476,9 @@ export QRng__init_VERBOSE=1
 
 
 
-vars="defarg arg PWD GEOM BASE TEST LOGDIR BINBASE CVD CUDA_VISIBLE_DEVICES SDIR FOLD LOG NEVT opticks_num_photon OPTICKS_NUM_PHOTON script"
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" $var ${!var} ; done 
+   for var in $vars ; do printf "%-30s : %s \n" $var ${!var} ; done 
 fi 
 
 if [ "${arg/env}" != "$arg" ]; then 
