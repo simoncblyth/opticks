@@ -74,7 +74,7 @@ struct qsim
 {
     qbase*              base ; 
     sevent*             evt ; 
-    RNG*  rngstate ; 
+    void*               rngstate ; 
     qrng*               rng ; 
     qbnd*               bnd ; 
     qmultifilm*         multifilm;

@@ -12,7 +12,7 @@
 
 const plog::Severity QCurandStateMonolithic::LEVEL = SLOG::EnvLevel("QCurandStateMonolithic", "DEBUG" ); 
 
-extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* lseq, qcurandwrap* cs, qcurandwrap* d_cs) ; 
+extern "C" void QCurandStateMonolithic_curand_init(SLaunchSequence* lseq, qcurandwrap<XORWOW>* cs, qcurandwrap<XORWOW>* d_cs) ; 
 
 QCurandStateMonolithic* QCurandStateMonolithic::Create(){ return Create(ssys::getenvvar(EKEY,"1:0:0")); }
 QCurandStateMonolithic* QCurandStateMonolithic::Create(const char* spec)
@@ -24,8 +24,8 @@ QCurandStateMonolithic* QCurandStateMonolithic::Create(const char* spec)
 QCurandStateMonolithic::QCurandStateMonolithic(const SCurandStateMonolithic& scs_)
     :
     scs(scs_),
-    h_cs(new qcurandwrap  { scs.num, scs.seed, scs.offset , nullptr} ),
-    cs(new qcurandwrap    { scs.num, scs.seed, scs.offset , nullptr} ),
+    h_cs(new qcurandwrap<XORWOW>  { scs.num, scs.seed, scs.offset , nullptr} ),
+    cs(new qcurandwrap<XORWOW>    { scs.num, scs.seed, scs.offset , nullptr} ),
     d_cs(nullptr),
     lseq(new SLaunchSequence(cs->num))
 {
@@ -45,9 +45,9 @@ void QCurandStateMonolithic::init()
 
 void QCurandStateMonolithic::alloc()
 { 
-    cs->states = QU::device_alloc_zero<RNG>(cs->num,"QCurandStateMonolithic::QCurandStateMonolithic/RNG") ; 
+    cs->states = QU::device_alloc_zero<XORWOW>(cs->num,"QCurandStateMonolithic::QCurandStateMonolithic") ; 
     LOG(info) << "after alloc" ; 
-    d_cs = QU::UploadArray<qcurandwrap>(cs, 1, "QCurandStateMonolithic::alloc/qcurandwrap" );    
+    d_cs = QU::UploadArray<qcurandwrap<XORWOW>>(cs, 1, "QCurandStateMonolithic::alloc/qcurandwrap" );    
     LOG(info) << "after upload" ; 
 }
 void QCurandStateMonolithic::create() 
@@ -57,7 +57,7 @@ void QCurandStateMonolithic::create()
 }
 void QCurandStateMonolithic::download() 
 {
-    h_cs->states = (RNG*)malloc(sizeof(RNG)*cs->num);
+    h_cs->states = (XORWOW*)malloc(sizeof(XORWOW)*cs->num);
     QU::copy_device_to_host( h_cs->states, cs->states, cs->num ); 
     LOG(info) << "after copy_device_to_host  "  ; 
 }

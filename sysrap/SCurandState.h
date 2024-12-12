@@ -52,7 +52,7 @@ struct SYSRAP_API SCurandState
     const char* dir ; 
     std::vector<ULL> spec = {} ; 
     std::vector<SCurandChunk> chunk = {} ; 
-    scurandref all = {} ; 
+    scurandref<curandStateXORWOW> all = {} ; 
 
     const char* getDir() const ; 
 
@@ -178,7 +178,7 @@ inline void SCurandState::initFromDir()
 
     for(ULL i=0 ; i < num_spec ; i++)
     {
-        scurandref* r = SCurandChunk::Find(chunk, i );
+        scurandref<curandStateXORWOW>* r = SCurandChunk::Find(chunk, i );
         ULL num_cumulative = SCurandChunk::NumTotal_InRange(chunk, 0, i ); 
         bool already_have_chunk = r != nullptr ; 
 
@@ -326,7 +326,7 @@ inline T* SCurandState::loadAndUpload( unsigned rngmax )
             << "\n"
             ;
 
-        scurandref cr = ck.load(num, dir, &dig ) ; 
+        scurandref<curandStateXORWOW> cr = ck.load(num, dir, &dig ) ; 
   
         assert( cr.states != nullptr); 
 

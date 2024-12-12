@@ -2,7 +2,7 @@
 QRngTest.cc
 ============
 
-~/o/qudarap/tests/QRngTest.sh 
+TEST=ctor ~/o/qudarap/tests/QRngTest.sh 
 
 OPTICKS_MAX_PHOTON=M4 ~/o/qudarap/tests/QRngTest.sh
 
@@ -27,6 +27,7 @@ struct QRngTest
 
     template <typename T, int MODE> NP* generate_evid( unsigned num_event, unsigned num_item, unsigned num_value ); 
 
+    int ctor();
     int generate_evid();
 
     static constexpr const char* _SKIPAHEAD = "QRngTest__generate_SKIPAHEAD" ; 
@@ -39,11 +40,16 @@ struct QRngTest
 
 QRngTest::QRngTest()
     :
-    qr()  // loads and uploads curandState
+    qr()  // may load and upload curandState depending on srng<RNG>::UPLOAD_RNG_STATES
 {
     LOG(info) << qr.desc() ; 
 } 
    
+int QRngTest::ctor()
+{
+    LOG(info) << qr.desc() ; 
+    return 0 ; 
+}
 
 /**
 QRngTest::generate_evid
@@ -76,10 +82,11 @@ NP* QRngTest::generate_evid( unsigned num_event, unsigned num_item, unsigned num
     for( unsigned evid=0 ; evid < num_event ; evid++)
     {
         T* target = uu->values<T>() + num_item*num_value*evid ; 
+        assert(target); 
         switch(MODE)
         {
-           case 0: qr.generate<T>(      target, num_item, num_value, skipahead_event_offset*evid ) ; break ; 
-           case 1: qr.generate_evid<T>( target, num_item, num_value, evid  )                       ; break ; 
+           case 0: /*qr.generate<T>(      target, num_item, num_value, skipahead_event_offset*evid )*/ ; break ; 
+           case 1: /*qr.generate_evid<T>( target, num_item, num_value, evid  )                      */ ; break ; 
         }
     }
     return uu ; 
@@ -123,7 +130,7 @@ int QRngTest::generate()
 
     NP* u = NP::Make<float>( ni, nv ); 
 
-    qr.generate<float>( u->values<float>(), ni, nv,  skipahead );
+    //qr.generate<float>( u->values<float>(), ni, nv,  skipahead );
 
     const char* name = sstr::Format("u_%llu.npy", skipahead ); 
     u->save("$FOLD/float", QRng::IMPL, name ); 
@@ -139,6 +146,7 @@ int QRngTest::main()
     std::cout << "[QRngTest::main TEST:[" << TEST << "]\n" ; 
 
     int rc = 0 ; 
+    if(ALL||strcmp(TEST,"ctor")==0)          rc += ctor(); 
     if(ALL||strcmp(TEST,"generate")==0)      rc += generate(); 
     if(ALL||strcmp(TEST,"generate_evid")==0) rc += generate_evid(); 
 

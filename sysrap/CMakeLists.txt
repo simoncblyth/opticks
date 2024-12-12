@@ -341,6 +341,7 @@ set(HEADERS
     sblackbody.h
     tcomplex.h
 
+    srng.h
     srngcpu.h
     scurand.h  
 

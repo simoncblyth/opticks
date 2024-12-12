@@ -281,7 +281,7 @@ void QSim::init()
     sim = new qsim ; 
     sim->base = base ? base->d_base : nullptr ; 
     sim->evt = event ? event->getDevicePtr() : nullptr ; 
-    sim->rngstate = rng ? rng->qr->rng_states : nullptr ; 
+    sim->rngstate = rng ? rng->qr->uploaded_states : nullptr ; 
     sim->rng = rng ? rng->d_qr : nullptr ; 
 
     sim->bnd = bnd ? bnd->d_qb : nullptr ; 
@@ -368,6 +368,11 @@ double QSim::simulate(int eventID, bool reset_)
 
 
     NP* gs_ = sev->getGenstepArray();  
+
+    bool gs_null = gs_ == nullptr ; 
+    LOG_IF(fatal, gs_null ) << " gs_null " << ( gs_null ? "YES" : "NO " ) ; 
+    assert( !gs_null ); 
+
 
     std::vector<sslice> gs_slice ; 
     SGenstep::GetGenstepSlices( gs_slice, gs_, SEventConfig::MaxSlot() ); 
@@ -898,18 +903,12 @@ extern void QSim_generate_photon(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim
 QSim::generate_photon
 -----------------------
 
-HMM : getting assert for QSimWithEventTest from the below 
-QEvent::setGenstep because the genstep has already been set and uploaded 
-and the genstep vector cleared. 
-
 **/
 
 
 void QSim::generate_photon()
 {
     LOG(LEVEL) << "[" ; 
-
-     // event->setGenstep();   // ??see above?? 
 
     unsigned num_photon = event->getNumPhoton() ;  
     LOG(info) << " num_photon " << num_photon ; 

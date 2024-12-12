@@ -1,7 +1,5 @@
 #include "OPTICKS_LOG.hh"
 
-#include "SSys.hh"
-#include "SPath.hh"
 #include "SEvt.hh"
 #include "SSim.hh"
 #include "NP.hh"

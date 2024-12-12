@@ -19,9 +19,10 @@ script=$name.py
 
 export FOLD=$TMP/$name  
 
+test=ctor
 #test=generate
 #test=generate_evid
-test=ALL
+#test=ALL
 
 export TEST=${TEST:-$test}
 

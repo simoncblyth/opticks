@@ -403,7 +403,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     const quad6& gs = evt->genstep[genstep_idx] ; 
      
     qsim* sim = params.sim ; 
-    RNG rng = sim->rngstate[photon_idx] ; //TODO: photon_slot_offset for multi-launch ?  
+    RNG rng = ((RNG*)sim->rngstate)[photon_idx] ; //TODO: photon_slot_offset for multi-launch ?  
 
     quad4 p ;  
     sim->generate_photon_simtrace(p, rng, gs, photon_idx, genstep_idx );  

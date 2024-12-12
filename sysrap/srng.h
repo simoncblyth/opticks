@@ -26,6 +26,7 @@ struct srng
     static constexpr const char CODE = '?' ;
     static constexpr const char* NAME = "?" ;
     static constexpr unsigned SIZE = 0 ;
+    static constexpr bool UPLOAD_RNG_STATES = false ;
 };
 
 template<typename T> 
@@ -50,6 +51,7 @@ struct srng<curandStateXORWOW>
     static constexpr char CODE = 'X' ;
     static constexpr const char* NAME = "XORWOW" ; 
     static constexpr unsigned SIZE = sizeof(curandStateXORWOW) ; 
+    static constexpr bool UPLOAD_RNG_STATES = true ; 
 };
 
 template<> 
@@ -58,8 +60,8 @@ struct srng<curandStatePhilox4_32_10>
     static constexpr char CODE = 'P' ;
     static constexpr const char* NAME = "Philox4_32_10" ; 
     static constexpr unsigned SIZE = sizeof(curandStatePhilox4_32_10) ; 
+    static constexpr bool UPLOAD_RNG_STATES = false ; 
 };
-
 
 
 #ifdef WITH_CURANDLITE
@@ -71,6 +73,7 @@ struct srng<curandStatePhilox4_32_10_OpticksLite>
     static constexpr char CODE = 'O' ;
     static constexpr const char* NAME = "Philox4_32_10_OpticksLite" ; 
     static constexpr unsigned SIZE = sizeof(curandStatePhilox4_32_10_OpticksLite) ; 
+    static constexpr bool UPLOAD_RNG_STATES = false ; 
 };
 
 #endif

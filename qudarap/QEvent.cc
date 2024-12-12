@@ -626,9 +626,12 @@ QEvent::gatherPhoton(NP* p) :  mutating API
 
 void QEvent::gatherPhoton(NP* p) const 
 {
+
     bool expected_shape =  p->has_shape(evt->num_photon, 4, 4) ; 
     LOG(expected_shape ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
+    LOG(info) << "[ evt.num_photon " << evt->num_photon << " p.sstr " << p->sstr() << " evt.photon " << evt->photon ; 
     assert(expected_shape ); 
+
     int rc = QU::copy_device_to_host<sphoton>( (sphoton*)p->bytes(), evt->photon, evt->num_photon ); 
 
     LOG_IF(fatal, rc != 0) 

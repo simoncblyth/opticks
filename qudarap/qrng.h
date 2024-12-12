@@ -21,9 +21,16 @@ into here and use this from there
 
 #if defined(MOCK_CUDA)
 #else
-using RNG = curandStateXORWOW ; 
-//using RNG = curandStatePhilox4_32_10 ; 
-//using RNG = curandStatePhilox4_32_10_OpticksLite ; 
+
+using XORWOW = curandStateXORWOW ;
+using Philox = curandStatePhilox4_32_10 ; 
+
+#ifdef WITH_CURANDLITE
+using PhiloxLite = curandStatePhilox4_32_10_OpticksLite ; 
+#endif
+
+//using RNG = Philox ;
+using RNG = XORWOW ;
 #endif
 
 
@@ -34,22 +41,24 @@ struct qrng
 
     ULL  seed ;
     ULL  offset ; 
+    ULL  skipahead_event_offset ; 
 
-    RNG*                rng_states ; 
-    unsigned            skipahead_event_offset ; 
+    void*   uploaded_states ; 
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
     QRNG_METHOD void get_rngstate_with_skipahead(RNG& rng, unsigned event_idx, unsigned photon_idx );  
 
 #else
-    qrng(RNG* rng_states_, unsigned skipahead_event_offset_)
+    qrng(ULL seed_, ULL offset_, ULL skipahead_event_offset_, void* uploaded_states_)
         :
-        seed(0ull),
-        offset(0ull),
-        rng_states(rng_states_),
-        skipahead_event_offset(skipahead_event_offset_)
+        seed(seed_),
+        offset(offset_),
+        skipahead_event_offset(skipahead_event_offset_),
+        uploaded_states(uploaded_states_)
     {
     }
+
 #endif
 
 }; 
@@ -110,13 +119,13 @@ inline QRNG_METHOD void qrng::get_rngstate_with_skipahead(RNG& rng, unsigned eve
     ULL skipahead_ = skipahead_event_offset*event_idx ; 
     ULL subsequence_ = photon_idx ; 
 
-    if( rng_states == nullptr )
+    if( uploaded_states == nullptr )
     {
         curand_init( seed, subsequence_, offset, &rng ) ;
     }
     else
     {
-        rng = *(rng_states + photon_idx) ; 
+        rng = *( ((RNG*)uploaded_states) + photon_idx) ; 
     }    
 
     skipahead( skipahead_, &rng ); 

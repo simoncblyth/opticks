@@ -145,9 +145,10 @@ template int*           QU::UploadArray<int>(const int* array, unsigned num_item
 template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items, const char* label) ;
 template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items, const char* label) ;
 template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items, const char* label) ;
-template RNG*           QU::UploadArray<RNG>(const RNG* array, unsigned num_items, const char* label) ;
-template qcurandwrap*   QU::UploadArray<qcurandwrap>(const qcurandwrap* array, unsigned num_items, const char* label) ;
-template scurandref*    QU::UploadArray<scurandref>(const scurandref* array, unsigned num_items, const char* label) ;
+template XORWOW*        QU::UploadArray<XORWOW>(const XORWOW* array, unsigned num_items, const char* label) ;
+template Philox*        QU::UploadArray<Philox>(const Philox* array, unsigned num_items, const char* label) ;
+template qcurandwrap<XORWOW>*   QU::UploadArray<qcurandwrap<XORWOW>>(const qcurandwrap<XORWOW>* array, unsigned num_items, const char* label) ;
+template scurandref<XORWOW>*    QU::UploadArray<scurandref<XORWOW>>(const scurandref<XORWOW>* array, unsigned num_items, const char* label) ;
 template qsim*          QU::UploadArray<qsim>(const qsim* array, unsigned num_items, const char* label) ;
 template qprop<float>*  QU::UploadArray<qprop<float>>(const qprop<float>* array, unsigned num_items, const char* label) ;
 template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* array, unsigned num_items, const char* label) ;
@@ -186,7 +187,8 @@ template  unsigned*      QU::DownloadArray<unsigned>(const unsigned* d_array, un
 template  int*           QU::DownloadArray<int>(const int* d_array, unsigned num_items) ;
 template  quad4*         QU::DownloadArray<quad4>(const quad4* d_array, unsigned num_items) ;
 template  quad2*         QU::DownloadArray<quad2>(const quad2* d_array, unsigned num_items) ;
-template  RNG*           QU::DownloadArray<RNG>(const RNG* d_array, unsigned num_items) ;
+template  XORWOW*        QU::DownloadArray<XORWOW>(const XORWOW* d_array, unsigned num_items) ;
+template  Philox*        QU::DownloadArray<Philox>(const Philox* d_array, unsigned num_items) ;
 template  qprop<float>*  QU::DownloadArray<qprop<float>>(const qprop<float>* d_array, unsigned num_items) ;
 template  qprop<double>* QU::DownloadArray<qprop<double>>(const qprop<double>* d_array, unsigned num_items) ;
 
@@ -295,7 +297,8 @@ template QUDARAP_API quad6*     QU::device_alloc<quad6>(unsigned num_items, cons
 template QUDARAP_API sevent*    QU::device_alloc<sevent>(unsigned num_items, const char* label) ;
 template QUDARAP_API qdebug*    QU::device_alloc<qdebug>(unsigned num_items, const char* label) ;
 template QUDARAP_API sstate*    QU::device_alloc<sstate>(unsigned num_items, const char* label) ;
-template QUDARAP_API RNG*       QU::device_alloc<RNG>(unsigned num_items, const char* label) ;
+template QUDARAP_API XORWOW*    QU::device_alloc<XORWOW>(unsigned num_items, const char* label) ;
+template QUDARAP_API Philox*    QU::device_alloc<Philox>(unsigned num_items, const char* label) ;
 
 #ifndef PRODUCTION
 template QUDARAP_API srec*      QU::device_alloc<srec>(unsigned num_items, const char* label) ;
@@ -336,7 +339,8 @@ T* QU::device_alloc_zero(unsigned num_items, const char* label)
 
 template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items, const char* label) ;
 template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(  unsigned num_items, const char* label) ;
-template QUDARAP_API RNG*       QU::device_alloc_zero<RNG>(  unsigned num_items, const char* label) ;
+template QUDARAP_API XORWOW*    QU::device_alloc_zero<XORWOW>(  unsigned num_items, const char* label) ;
+template QUDARAP_API Philox*    QU::device_alloc_zero<Philox>(  unsigned num_items, const char* label) ;
 
 #ifndef PRODUCTION
 template QUDARAP_API srec*      QU::device_alloc_zero<srec>(   unsigned num_items, const char* label) ;
@@ -385,7 +389,8 @@ template QUDARAP_API void   QU::device_free<quad2>(quad2*) ;
 template QUDARAP_API void   QU::device_free<quad4>(quad4*) ;
 template QUDARAP_API void   QU::device_free<sphoton>(sphoton*) ;
 template QUDARAP_API void   QU::device_free<uchar4>(uchar4*) ;
-template QUDARAP_API void   QU::device_free<RNG>(RNG*) ;
+template QUDARAP_API void   QU::device_free<XORWOW>(XORWOW*) ;
+template QUDARAP_API void   QU::device_free<Philox>(Philox*) ;
 
 
 template<typename T>
@@ -415,7 +420,8 @@ template int QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_i
 template int QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
 template int QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
 template int QU::copy_device_to_host<sstate>( sstate* h, sstate* d,  unsigned num_items);
-template int QU::copy_device_to_host<RNG>( RNG* h, RNG* d,  unsigned num_items);
+template int QU::copy_device_to_host<XORWOW>( XORWOW* h, XORWOW* d,  unsigned num_items);
+template int QU::copy_device_to_host<Philox>( Philox* h, Philox* d,  unsigned num_items);
 #ifndef PRODUCTION
 template int QU::copy_device_to_host<srec>( srec* h, srec* d,  unsigned num_items);
 template int QU::copy_device_to_host<sseq>( sseq* h, sseq* d,  unsigned num_items);
@@ -511,7 +517,8 @@ template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, un
 template void QU::copy_host_to_device<sphoton>(  sphoton* d,  const sphoton* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
 template void QU::copy_host_to_device<quad2>(    quad2* d,    const quad2* h, unsigned num_items);
-template void QU::copy_host_to_device<RNG>(      RNG* d,      const RNG* h,   unsigned num_items);
+template void QU::copy_host_to_device<XORWOW>(   XORWOW* d,   const XORWOW* h,   unsigned num_items);
+template void QU::copy_host_to_device<Philox>(   Philox* d,   const Philox* h,   unsigned num_items);
 
 /**
 QU::NumItems

@@ -39,7 +39,7 @@ Related tests::
 #include "qrng.h"
 
 
-extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* lseq, scurandref* cr, scurandref* d_cr) ; 
+extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* lseq, scurandref<XORWOW>* cr, scurandref<XORWOW>* d_cr) ; 
 
 
 struct QCurandState
@@ -111,13 +111,13 @@ QCurandState::initChunk : generates RNG for chunk and saves to file
 
 1. prep sequence of launches needed for c.ref.num slots
 2. allocate + zero space on device for c.ref.num RNG 
-3. upload scurandref metadata struct 
+3. upload scurandref<XORWOW> metadata struct 
 4. launch curand_init kernel on device populating RNG buffer
 5. allocate h_states on host 
 6. copy device to host 
 7. free on device
 8. change c.ref.states to host r_states
-9. save c.ref.states to file named according to scurandref chunk metadata values
+9. save c.ref.states to file named according to scurandref<XORWOW> chunk metadata values
 10. free h_states 
 
 **/
@@ -125,21 +125,21 @@ QCurandState::initChunk : generates RNG for chunk and saves to file
 
 inline void QCurandState::initChunk(SCurandChunk& c)
 {
-    scurandref* cr = &(c.ref) ; 
+    scurandref<XORWOW>* cr = &(c.ref) ; 
 
     SLaunchSequence lseq(cr->num);
 
-    cr->states = QU::device_alloc_zero<RNG>(cr->num,"QCurandState::initChunk") ;
+    cr->states = QU::device_alloc_zero<XORWOW>(cr->num,"QCurandState::initChunk") ;
  
-    scurandref* d_cr = QU::UploadArray<scurandref>(cr, 1, "QCurandState::initChunk" );    
+    scurandref<XORWOW>* d_cr = QU::UploadArray<scurandref<XORWOW>>(cr, 1, "QCurandState::initChunk" );    
 
     QCurandState_curand_init_chunk(&lseq, cr, d_cr); 
 
-    RNG* h_states = (RNG*)malloc(sizeof(RNG)*cr->num);
+    XORWOW* h_states = (XORWOW*)malloc(sizeof(XORWOW)*cr->num);
 
     QU::copy_device_to_host( h_states, cr->states, cr->num ); 
 
-    QU::device_free<RNG>(cr->states); 
+    QU::device_free<XORWOW>(cr->states); 
 
     cr->states = h_states ; 
 

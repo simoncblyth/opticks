@@ -31,6 +31,7 @@ offset
 #endif
 
 
+template<typename T>
 struct scurandref
 {
     unsigned long long chunk_idx ; 
@@ -39,7 +40,7 @@ struct scurandref
     unsigned long long num ; 
     unsigned long long seed ;
     unsigned long long offset ;
-    curandStateXORWOW* states  ; 
+    T*                 states  ; 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -51,7 +52,8 @@ struct scurandref
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-inline std::string scurandref::desc() const 
+template<typename T>
+inline std::string scurandref<T>::desc() const 
 {
     std::stringstream ss ; 
     ss << "scurandref::desc"

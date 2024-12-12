@@ -2,7 +2,6 @@
 
 #include "scuda.h"
 #include "qrng.h"
-#include "scurand.h"
 
 /**
 _QRng_generate
@@ -16,13 +15,16 @@ Simple curand generation with skipahead, no encapsulation.
 **/
 
 
+/*
+#include "scurand.h"
+
 template <typename T>
-__global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, RNG* r, unsigned long long skipahead_  )
+__global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, XORWOW* r, unsigned long long skipahead_  )
 {
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= ni) return;
 
-    RNG rng = *(r + id) ; 
+    XORWOW rng = *(r + id) ; 
     skipahead( skipahead_, &rng ); 
 
     unsigned ibase = id*nv ; 
@@ -38,15 +40,17 @@ __global__ void _QRng_generate(T* uu, unsigned ni, unsigned nv, RNG* r, unsigned
 }
 
 template <typename T>
-extern void QRng_generate(dim3 numBlocks, dim3 threadsPerBlock, T* uu, unsigned ni, unsigned nv, RNG* r, unsigned long long skipahead_ )
+extern void QRng_generate(dim3 numBlocks, dim3 threadsPerBlock, T* uu, unsigned ni, unsigned nv, XORWOW* r, unsigned long long skipahead_ )
 {
     printf("//QRng_generate ni %d nv %d skipahead %llu \n", ni, nv, skipahead_ ); 
     _QRng_generate<T><<<numBlocks,threadsPerBlock>>>( uu, ni, nv, r, skipahead_ );
 } 
 
 
-template void QRng_generate(dim3, dim3, float*, unsigned, unsigned, RNG*, unsigned long long ); 
-template void QRng_generate(dim3, dim3, double*, unsigned, unsigned, RNG*, unsigned long long ); 
+template void QRng_generate(dim3, dim3, float*, unsigned, unsigned, XORWOW*, unsigned long long ); 
+template void QRng_generate(dim3, dim3, double*, unsigned, unsigned, XORWOW*, unsigned long long ); 
+
+*/
 
 
 
@@ -61,6 +65,8 @@ Using light touch encapsulation of setup only as want generation
 of randoms to be familiar/standard and suffer no overheads.
 
 **/
+
+/*
 
 template <typename T>
 __global__ void _QRng_generate_evid(qrng* qr, unsigned event_idx, T* uu, unsigned ni, unsigned nv )
@@ -92,5 +98,7 @@ extern void QRng_generate_evid(dim3 numBlocks, dim3 threadsPerBlock, qrng* qr, u
 
 template void QRng_generate_evid(dim3, dim3, qrng*, unsigned, float*,  unsigned, unsigned ); 
 template void QRng_generate_evid(dim3, dim3, qrng*, unsigned, double*, unsigned, unsigned ); 
+
+*/
 
 

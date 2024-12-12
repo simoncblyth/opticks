@@ -28,7 +28,7 @@ for saving states for counter based RNG such as Philox
 struct SYSRAP_API SCurandChunk
 {
     typedef unsigned long long ULL ; 
-    scurandref ref = {} ; 
+    scurandref<curandStateXORWOW> ref = {} ; 
 
     std::string desc() const ;
     std::string meta() const ;
@@ -55,17 +55,17 @@ struct SYSRAP_API SCurandChunk
 
     static std::string FormatIdx(ULL idx);
     static std::string FormatNum(ULL num);
-    static std::string FormatMeta(const scurandref& d ); 
-    static std::string FormatName(const scurandref& d ); 
+    static std::string FormatMeta(const scurandref<curandStateXORWOW>& d ); 
+    static std::string FormatName(const scurandref<curandStateXORWOW>& d ); 
 
     static ULL NumFromFilesize(const char* name, const char* _dir=nullptr); 
     static bool IsValid(const SCurandChunk& chunk, const char* _dir=nullptr);
     static int CountValid(const std::vector<SCurandChunk>& chunk, const char* _dir=nullptr );
-    static scurandref* Find(std::vector<SCurandChunk>& chunk, long idx );
+    static scurandref<curandStateXORWOW>* Find(std::vector<SCurandChunk>& chunk, long idx );
     static ULL NumTotal_SpecCheck(const std::vector<SCurandChunk>& chunk, const std::vector<ULL>& spec );
     static ULL NumTotal_InRange(  const std::vector<SCurandChunk>& chunk, ULL i0, ULL i1 ); 
 
-    scurandref load(ULL read_num=0, const char* _dir=nullptr, sdigest* dig=nullptr ) const ; 
+    scurandref<curandStateXORWOW> load(ULL read_num=0, const char* _dir=nullptr, sdigest* dig=nullptr ) const ; 
     static int OldLoad( SCurandChunk& chunk, const char* name, ULL q_num=0, const char* _dir=nullptr );
     static curandStateXORWOW* Load_( ULL& file_num, const char* path, ULL read_num, sdigest* dig ); 
 
@@ -227,7 +227,7 @@ inline long SCurandChunk::ParseNum(const char* num)
 
 
 
-inline std::string SCurandChunk::FormatMeta(const scurandref& d)
+inline std::string SCurandChunk::FormatMeta(const scurandref<curandStateXORWOW>& d)
 {
     std::stringstream ss ; 
     ss 
@@ -244,7 +244,7 @@ inline std::string SCurandChunk::FormatMeta(const scurandref& d)
     std::string str = ss.str(); 
     return str ;   
 }
-inline std::string SCurandChunk::FormatName(const scurandref& d)
+inline std::string SCurandChunk::FormatName(const scurandref<curandStateXORWOW>& d)
 {
     std::stringstream ss ; 
     ss << PREFIX << FormatMeta(d) << EXT ; 
@@ -340,11 +340,11 @@ inline int SCurandChunk::CountValid(const std::vector<SCurandChunk>& chunk, cons
     return count ; 
 }
 
-inline scurandref* SCurandChunk::Find(std::vector<SCurandChunk>& chunk, long q_idx )
+inline scurandref<curandStateXORWOW>* SCurandChunk::Find(std::vector<SCurandChunk>& chunk, long q_idx )
 {
     int num_chunk = chunk.size(); 
     int count = 0 ; 
-    scurandref* p = nullptr ; 
+    scurandref<curandStateXORWOW>* p = nullptr ; 
     for(int i=0 ; i < num_chunk ; i++)
     {
         SCurandChunk& c = chunk[i] ;     
@@ -375,7 +375,7 @@ inline unsigned long long SCurandChunk::NumTotal_SpecCheck(const std::vector<SCu
     ULL num_chunk = chunk.size(); 
     for(ULL i=0 ; i < num_chunk ; i++)
     {
-        const scurandref& d = chunk[i].ref ;     
+        const scurandref<curandStateXORWOW>& d = chunk[i].ref ;     
         assert( d.chunk_idx == i );  
         assert( d.num == spec[i] );  
         tot += d.num ; 
@@ -392,7 +392,7 @@ inline unsigned long long SCurandChunk::NumTotal_InRange( const std::vector<SCur
     ULL num_tot = 0ull ; 
     for(ULL i=i0 ; i < i1 ; i++) 
     {
-        const scurandref& d = chunk[i].ref ;     
+        const scurandref<curandStateXORWOW>& d = chunk[i].ref ;     
         num_tot += d.num ; 
     } 
     return num_tot ; 
@@ -406,9 +406,9 @@ inline unsigned long long SCurandChunk::NumTotal_InRange( const std::vector<SCur
 
 
 
-inline scurandref SCurandChunk::load( ULL read_num, const char* _dir, sdigest* dig ) const
+inline scurandref<curandStateXORWOW> SCurandChunk::load( ULL read_num, const char* _dir, sdigest* dig ) const
 {
-    scurandref lref(ref); 
+    scurandref<curandStateXORWOW> lref(ref); 
     const char* p = path(_dir); 
 
     ULL file_num = 0 ; 

@@ -45,22 +45,41 @@ struct QUDARAP_API QRng
     static std::string Desc();
 
     static const char* Load_FAIL_NOTES ; 
+
+
+
 #ifdef OLD_MONOLITHIC_CURANDSTATE
     static constexpr const char* IMPL = "OLD_MONOLITHIC_CURANDSTATE" ; 
-
-    static RNG* LoadAndUpload(ULL& rngmax, const char* path); 
-    static RNG* Load(ULL& rngmax, const char* path); 
-    static RNG* UploadAndFree(RNG* h_states, ULL num_states ); 
+    static XORWOW* LoadAndUpload(ULL& rngmax, const char* path); 
+    static XORWOW* Load(ULL& rngmax, const char* path); 
+    static XORWOW* UploadAndFree(RNG* h_states, ULL num_states ); 
 #else
     static constexpr const char* IMPL = "CHUNKED_CURANDSTATE" ; 
-    static RNG* LoadAndUpload(ULL rngmax, const SCurandState& cs); 
+    static XORWOW* LoadAndUpload(ULL rngmax, const SCurandState& cs); 
+#endif
+    static void Save( XORWOW* states, unsigned num_states, const char* path ); 
+
+
+    const char* RNGNAME ; 
+    bool  UPLOAD_RNG_STATES ; 
+
+#ifndef OLD_MONOLITHIC_CURANDSTATE
     SCurandState   cs ; 
 #endif
-    static void Save( RNG* states, unsigned num_states, const char* path ); 
-
     const char*    path ; 
-    ULL            rngmax ; 
-    RNG*           d_rng_states ; 
+    ULL            rngmax ;
+ 
+    XORWOW*   d_uploaded_states ; 
+
+
+    // when not using saved states need to curand_init, hence requires seed and offset
+    ULL            seed ;
+    ULL            offset ; 
+    ULL            skipahead_event_offset ; 
+
+    const char*    SEED_OFFSET ;
+    int            parse_rc ; 
+
 
     qrng*          qr ;  
     qrng*          d_qr ;  

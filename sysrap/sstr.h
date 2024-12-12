@@ -460,6 +460,8 @@ inline void sstr::PrefixSuffixParse(std::vector<std::string>& elem, const char* 
 }
 
 
+
+
 inline void sstr::Split( const char* str, char delim,   std::vector<std::string>& elem )
 {
     std::stringstream ss; 

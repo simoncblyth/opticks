@@ -21,13 +21,13 @@ struct SYSRAP_API SCurandSpec
     static constexpr const char SIZEGROUP_DELIM  = ',' ; 
     static constexpr const char MUL_NUM_DELIM = 'x' ; 
 
-    static void ParseSeedOffset(ULL& seed, ULL& offset, const char* _spec=nullptr ); 
-    static void ParseChunkSizes(     std::vector<ULL>& size, const char* _spec=nullptr ); 
+    static int ParseSeedOffset(ULL& seed, ULL& offset, const char* _spec=nullptr ); 
+    static int ParseChunkSizes(     std::vector<ULL>& size, const char* _spec=nullptr ); 
     static std::string Desc(const std::vector<ULL>& size); 
 };
 
 
-inline void SCurandSpec::ParseSeedOffset( ULL& seed, ULL& offset, const char* _spec )
+inline int SCurandSpec::ParseSeedOffset( ULL& seed, ULL& offset, const char* _spec )
 {
     const char* spec = _spec ? _spec : SEED_OFFSET ; 
 
@@ -36,9 +36,11 @@ inline void SCurandSpec::ParseSeedOffset( ULL& seed, ULL& offset, const char* _s
 
     seed   = elem.size() > 0 ? std::atoll( elem[0].c_str() ) : 0ull ;     
     offset = elem.size() > 0 ? std::atoll( elem[1].c_str() ) : 0ull ;     
+
+    return 0 ; 
 }
 
-inline void SCurandSpec::ParseChunkSizes(std::vector<ULL>& size, const char* _spec )
+inline int SCurandSpec::ParseChunkSizes(std::vector<ULL>& size, const char* _spec )
 {
     const char* spec = _spec ? _spec : CHUNKSIZES ; 
 
@@ -61,6 +63,7 @@ inline void SCurandSpec::ParseChunkSizes(std::vector<ULL>& size, const char* _sp
 
         for(ULL j=0 ; j < mul ; j++) size.push_back(num); 
     }
+    return 0 ; 
 }
 
 inline std::string SCurandSpec::Desc(const std::vector<ULL>& _size)

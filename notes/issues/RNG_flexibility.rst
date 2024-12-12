@@ -104,6 +104,17 @@ curand XORWOW vs Philox4_32_10
 
 * https://forums.developer.nvidia.com/t/should-a-kernel-initializing-random-states-with-curand-init-be-so-slow/62666
 
+
+Getting things to work with Philox
+--------------------------------------
+
+::
+
+    FAILS:  2   / 215   :  Thu Dec 12 22:35:42 2024   
+      6  /21  Test #6  : QUDARapTest.QSimTest                          ***Failed                      5.34   
+      13 /21  Test #13 : QUDARapTest.QSimWithEventTest                 ***Failed                      4.94   
+
+
   
 Checking curand_init and curand_uniform for different curandState impl
 --------------------------------------------------------------------------

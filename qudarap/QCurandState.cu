@@ -19,7 +19,7 @@ states_thread_offset
 **/
 
 
-__global__ void _QCurandState_curand_init_chunk(int threads_per_launch, int id_offset, scurandref* cr, RNG* states_thread_offset )
+__global__ void _QCurandState_curand_init_chunk(int threads_per_launch, int id_offset, scurandref<XORWOW>* cr, XORWOW* states_thread_offset )
 {
     int id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= threads_per_launch) return;
@@ -41,7 +41,7 @@ but do need chunk_offset for the input side.
 
 **/
 
-extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* seq,  scurandref* cr, scurandref* d_cr) 
+extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* seq,  scurandref<XORWOW>* cr, scurandref<XORWOW>* d_cr) 
 {
     // NB this is still on CPU, dereferencing d_cs here will BUS_ERROR 
 
@@ -58,8 +58,10 @@ extern "C" void QCurandState_curand_init_chunk(SLaunchSequence* seq,  scurandref
 
         int id_offset = l.thread_offset + cr->chunk_offset ;   
 
-        RNG* states_thread_offset = cr->states  + l.thread_offset ; 
-     
+        XORWOW* states_thread_offset = cr->states  + l.thread_offset ; 
+        // THIS: IS NOT GENERAL : STATE LOADING IS ONLY RELEVANT FOR XORWOW     
+
+
         QUDA::before_kernel( start, stop );
 
         _QCurandState_curand_init_chunk<<<l.blocks_per_launch,l.threads_per_block>>>( l.threads_per_launch, id_offset, d_cr, states_thread_offset  );  
