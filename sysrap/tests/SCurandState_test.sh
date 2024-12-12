@@ -20,7 +20,8 @@ bin=$FOLD/$name
 #test=ParseDir
 #test=ChunkLoadSave
 #test=ctor
-test=load
+#test=load
+test=loadAndUpload
 
 export TEST=${TEST:-$test}
 
@@ -65,7 +66,11 @@ if [ "${arg/info}" != "$arg" ]; then
 fi 
 
 if [ "${arg/build}" != "$arg" ]; then
-    gcc $name.cc -std=c++11 -lstdc++ -g -I.. -I$CUDA_PREFIX/include -o $bin
+    gcc $name.cc \
+          -std=c++11 -lstdc++ -lm -lcrypto -lssl -g -I.. \
+          -I$CUDA_PREFIX/include \
+          -L$CUDA_PREFIX/lib64 -lcudart \
+         -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 fi
 

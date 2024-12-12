@@ -1,25 +1,26 @@
-// name=srng_test ; gcc $name.cc -I.. -std=c++11 -lstdc++ -o /tmp/$name && /tmp/$name
+/**
 
+~/o/sysrap/tests/srng_test.sh 
+
+**/
+
+#include <iostream>
 #include "srng.h"
+
+using RNG0 = curandStateXORWOW ; 
+using RNG1 = curandStatePhilox4_32_10 ; 
+
+#ifdef WITH_CURANDLITE
+using RNG2 = curandStatePhilox4_32_10_OpticksLite ; 
+#endif
 
 int main()
 {
-    srng r ; 
-    std::cout << r.desc() ; 
-    std::cout << r.demo(10) << std::endl ;  
+    std::cout << srng_Desc<RNG0>() << "\n\n" ; 
+    std::cout << srng_Desc<RNG1>() << "\n\n" ; 
+#ifdef WITH_CURANDLITE
+    std::cout << srng_Desc<RNG2>() << "\n\n" ; 
+#endif
 
-
-    r.setSequenceIndex(0) ; 
-    std::cout << r.demo(10) << std::endl ;  
-
-    r.setSequenceIndex(1) ; 
-    std::cout << r.demo(10) << std::endl ;  
-
-    // Returning to 0 continues the randoms in that stream (for a photon index)
-    // they do not repeat unless the cursor is reset or cycled
-    r.setSequenceIndex(0) ;   
-    std::cout << r.demo(10) << std::endl ;  
-
- 
-    return 0 ; 
-}  
+    return 0 ;  
+}

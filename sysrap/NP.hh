@@ -1,4 +1,6 @@
-#pragma once
+#ifndef NP_HH
+#define NP_HH
+
 /**
 NP : Header-only Array Creation and persisting as NumPy .npy files
 ====================================================================
@@ -7071,4 +7073,4 @@ inline std::istream& operator>>(std::istream& is, NP& a)
     return is;
 }
 
-
+#endif

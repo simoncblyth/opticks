@@ -1070,7 +1070,7 @@ double CSGOptiX::launch()
     TP t1 = std::chrono::high_resolution_clock::now();
     DT _dt = t1 - t0;
 
-    launch_dt = _dt.count() ; 
+    launch_dt = _dt.count() ;   // mis-named this is kernel execution time, NOT kernel launch time
     launch_times.push_back(launch_dt);  
 
     LOG(LEVEL) 

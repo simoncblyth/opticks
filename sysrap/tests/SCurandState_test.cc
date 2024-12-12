@@ -9,6 +9,9 @@ SCurandState_test.cc
 #include "ssys.h"
 #include "SCurandState.h"
 
+#include <curand_kernel.h>
+using RNG = curandStateXORWOW ;
+
 
 struct SCurandState_test
 {
@@ -19,6 +22,8 @@ struct SCurandState_test
     static int ParseDir();
     static int ChunkLoadSave();
     static int load();
+    static int loadAndUpload();
+
     static int Main();
 };
 
@@ -97,6 +102,21 @@ inline int SCurandState_test::load()
 }
 
 
+
+inline int SCurandState_test::loadAndUpload()
+{
+    SCurandState cs ; 
+    std::cout << cs.desc() ; 
+
+    unsigned rngmax = 1000000 ;  
+    RNG* d0 = cs.loadAndUpload<RNG>(rngmax);  
+
+    std::cout << " d0 " << d0 << std::endl ; 
+
+    return 0 ; 
+}
+
+
 inline int SCurandState_test::Main()
 {
     const char* TEST = ssys::getenvvar("TEST", "ALL");
@@ -108,6 +128,7 @@ inline int SCurandState_test::Main()
     if(ALL||strcmp(TEST,"ParseDir") == 0)        rc += ParseDir(); 
     if(ALL||strcmp(TEST,"ChunkLoadSave") == 0)   rc += ChunkLoadSave(); 
     if(ALL||strcmp(TEST,"load") == 0)            rc += load(); 
+    if(ALL||strcmp(TEST,"loadAndUpload") == 0)   rc += loadAndUpload(); 
     return rc ; 
 }
 

@@ -97,8 +97,169 @@ Want to be able to switch the RNG impl with a recompile to compare different imp
 
 
 
+curand XORWOW vs Philox4_32_10
+-----------------------------------
+
+* https://forums.developer.nvidia.com/t/quick-benchmark-comparison-of-different-parallel-random-number-generators/40591
+
+* https://forums.developer.nvidia.com/t/should-a-kernel-initializing-random-states-with-curand-init-be-so-slow/62666
+
+  
+Checking curand_init and curand_uniform for different curandState impl
+--------------------------------------------------------------------------
+
+Takeaway:
+
+* Philox4_32_10 is winner 
+* Philox4_32_10_OpticksLite comes close, but not worth hassle if does not signifcantly improve 
+* CAVEAT : this is just doing curand_init and curand_uniform : the stack that required will
+  implications on the rest of the simulation  
+
+  * so that means need to make a similar comparison for full simulation 
 
 
+::
+    
+    P[blyth@localhost opticks]$ ~/o/sysrap/tests/curand_uniform_test.sh
+             BASH_SOURCE : /home/blyth/o/sysrap/tests/curand_uniform_test.sh 
+                    name : curand_uniform_test 
+                     src : curand_uniform_test.cu 
+                  script : curand_uniform_test.py 
+                     bin : /data/blyth/opticks/curand_uniform_test/curand_uniform_test 
+                    FOLD : /data/blyth/opticks/curand_uniform_test 
+                     OPT : -use_fast_math -DWITH_CURANDLITE 
+                      NI : 10000000 
+                      NJ : 16 
+     t1 - t0 : output allocations [us] 1883714
+     rngmax 10000000 rngmax/M 10 available_chunk 24 all.num/M 200 rngmax/M 10 d0 0x7f026a000000
+     i   0 ck.ref.num/M    1 count/M    0 remaining/M   10 partial_read NO  num/M    1 d 0x7f026a000000
+     i   1 ck.ref.num/M    1 count/M    1 remaining/M    9 partial_read NO  num/M    1 d 0x7f026cdc6c00
+     i   2 ck.ref.num/M    1 count/M    2 remaining/M    8 partial_read NO  num/M    1 d 0x7f026fb8d800
+     i   3 ck.ref.num/M    1 count/M    3 remaining/M    7 partial_read NO  num/M    1 d 0x7f0272954400
+     i   4 ck.ref.num/M    1 count/M    4 remaining/M    6 partial_read NO  num/M    1 d 0x7f027571b000
+     i   5 ck.ref.num/M    1 count/M    5 remaining/M    5 partial_read NO  num/M    1 d 0x7f02784e1c00
+     i   6 ck.ref.num/M    1 count/M    6 remaining/M    4 partial_read NO  num/M    1 d 0x7f027b2a8800
+     i   7 ck.ref.num/M    1 count/M    7 remaining/M    3 partial_read NO  num/M    1 d 0x7f027e06f400
+     i   8 ck.ref.num/M    1 count/M    8 remaining/M    2 partial_read NO  num/M    1 d 0x7f0280e36000
+     i   9 ck.ref.num/M    1 count/M    9 remaining/M    1 partial_read NO  num/M    1 d 0x7f0283bfcc00
+    SCurandState::loadAndUpload complete YES rngmax/M 10 rngmax 10000000 digest ffe00cfef9d97aeef4c1cf085fd46a6a(cf md5sum of cat-ed chunk(s))
+     t2 - t1 : loadAndUpload [us] 3273220
+
+     dt0 3273228 ms 119.979263 [t1-t0;us]   120047 states NO  download NO  four_by_four NO  name XORWOW
+     dt0 3393335 ms   7.869184 [t1-t0;us]     7877 states YES download NO  four_by_four NO  name XORWOW
+     dt0 3401224 ms   5.373152 [t1-t0;us]     5380 states NO  download NO  four_by_four NO  name Philox4_32_10
+     dt0 3406620 ms   7.155616 [t1-t0;us]     7163 states NO  download NO  four_by_four NO  name Philox4_32_10_OpticksLite
+
+     dt0 3413794 ms 117.149826 [t1-t0;us]   117157 states NO  download NO  four_by_four YES name XORWOW
+     dt0 3530967 ms   7.495072 [t1-t0;us]     7502 states YES download NO  four_by_four YES name XORWOW
+     dt0 3538480 ms   3.867456 [t1-t0;us]     3875 states NO  download NO  four_by_four YES name Philox4_32_10
+     dt0 3542370 ms   3.880960 [t1-t0;us]     3890 states NO  download NO  four_by_four YES name Philox4_32_10_OpticksLite
+
+     dt0 3546271 ms  85.575714 [t1-t0;us]    86531 states NO  download NO  four_by_four NO  name XORWOW
+     dt0 3632817 ms   8.580960 [t1-t0;us]     8587 states YES download NO  four_by_four NO  name XORWOW
+     dt0 3641415 ms   3.845760 [t1-t0;us]     3857 states NO  download NO  four_by_four NO  name Philox4_32_10
+     dt0 3645282 ms   3.860480 [t1-t0;us]     3868 states NO  download NO  four_by_four NO  name Philox4_32_10_OpticksLite
+
+     dt0 3649160 ms  84.454819 [t1-t0;us]    85468 states NO  download NO  four_by_four YES name XORWOW
+     dt0 3734642 ms   7.616608 [t1-t0;us]     7623 states YES download NO  four_by_four YES name XORWOW
+     dt0 3742276 ms   3.861952 [t1-t0;us]     3872 states NO  download NO  four_by_four YES name Philox4_32_10
+     dt0 3746159 ms   3.862528 [t1-t0;us]     3869 states NO  download NO  four_by_four YES name Philox4_32_10_OpticksLite
+    f
+
+    CMDLINE:curand_uniform_test.py
+    f.base:/data/blyth/opticks/curand_uniform_test
+
+      : f.RNG4                                             :       (10000000, 16) : 0:08:43.330069 
+      : f.RNG5                                             :       (10000000, 16) : 0:08:39.881046 
+      : f.RNG6                                             :       (10000000, 16) : 0:08:36.458023 
+      : f.RNG7                                             :       (10000000, 16) : 0:08:33.058000 
+
+     min_stamp : 2024-12-12 16:31:01.412687 
+     max_stamp : 2024-12-12 16:31:11.684756 
+     dif_stamp : 0:00:10.272069 
+     age_stamp : 0:08:33.058000 
+
+
+
+qrng.h how to do the curand_init there ?
+--------------------------------------------
+
+::
+
+    1012 QUALIFIERS void curand_init(unsigned long long seed,
+    1013                                  unsigned long long subsequence,
+    1014                                  unsigned long long offset,
+    1015                                  curandStatePhilox4_32_10_t *state)
+    1016 {
+    1017     state->ctr = make_uint4(0, 0, 0, 0);
+    1018     state->key.x = (unsigned int)seed;
+    1019     state->key.y = (unsigned int)(seed>>32);
+    1020     state->STATE = 0;
+    1021     state->boxmuller_flag = 0;
+    1022     state->boxmuller_flag_double = 0;
+    1023     state->boxmuller_extra = 0.f;
+    1024     state->boxmuller_extra_double = 0.;
+    1025     skipahead_sequence(subsequence, state);
+    1026     skipahead(offset, state);
+    1027 }
+
+
+
+skipahead:offset
+   ctr.xyzw
+
+skipahead_sequence:subsequence  
+   ctr.zw
+
+
+
+::
+
+    106 QUALIFIERS void Philox_State_Incr(curandStatePhilox4_32_10_t* s, unsigned long long n)
+    107 {
+    108    unsigned int nlo = (unsigned int)(n);
+    109    unsigned int nhi = (unsigned int)(n>>32);
+    110 
+    111    s->ctr.x += nlo;
+    112    if( s->ctr.x < nlo )
+    113       nhi++;
+    114 
+    115    s->ctr.y += nhi;
+    116    if(nhi <= s->ctr.y)
+    117       return;
+    118    if(++s->ctr.z) return;
+    119    ++s->ctr.w;
+    120 }
+    121 
+    122 QUALIFIERS void Philox_State_Incr_hi(curandStatePhilox4_32_10_t* s, unsigned long long n)
+    123 {
+    124    unsigned int nlo = (unsigned int)(n);
+    125    unsigned int nhi = (unsigned int)(n>>32);
+    126 
+    127    s->ctr.z += nlo;
+    128    if( s->ctr.z < nlo )
+    129       nhi++;
+    130 
+    131    s->ctr.w += nhi;
+    132 }
+
+     985 QUALIFIERS void skipahead_sequence(unsigned long long n, curandStatePhilox4_32_10_t *state)
+     986 {
+     987     Philox_State_Incr_hi(state, n);
+     988     state->output = curand_Philox4x32_10(state->ctr,state->key);
+     989 }
+
+     961 QUALIFIERS void skipahead(unsigned long long n, curandStatePhilox4_32_10_t *state)
+     962 {
+     963     state->STATE += (n & 3);
+     964     n /= 4;
+     965     if( state->STATE > 3 ){
+     966         n += 1;
+     967         state->STATE -= 4;
+     968     }
+     969     Philox_State_Incr(state, n);
+     970     state->output = curand_Philox4x32_10(state->ctr,state->key);
+     971 }
 
 
 

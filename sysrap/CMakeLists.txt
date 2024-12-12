@@ -503,6 +503,7 @@ set(HEADERS
 
     CUDA_CHECK.h
     SCU.h 
+    SCU_.h 
     OPTIX_CHECK.h
  
 

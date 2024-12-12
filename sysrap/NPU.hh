@@ -1,4 +1,5 @@
-#pragma once
+#ifndef NPU_HH
+#define NPU_HH
 
 /**
 NPU.hh : Utilities used from NP.hh
@@ -38,6 +39,7 @@ other projects together with NP.hh
 desc : type codes and sizes used by descr_
 ---------------------------------------------
 **/
+
 
 template<typename T>
 struct desc 
@@ -2746,4 +2748,4 @@ inline std::string uc8::desc() const
     return str ; 
 }
 
-
+#endif

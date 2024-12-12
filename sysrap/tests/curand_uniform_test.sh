@@ -9,12 +9,15 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
+source dbg__.sh
 
 name=curand_uniform_test
 src=$name.cu
 script=$name.py 
 
-export FOLD=/tmp/$name
+tmp=/data/$USER/opticks
+export TMP=${TMP:-$tmp}
+export FOLD=$TMP/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
@@ -24,7 +27,15 @@ arg=${1:-$defarg}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="BASH_SOURCE SDIR name altname src script bin FOLD"
+OPT="-use_fast_math -DWITH_CURANDLITE"
+
+M=1000000
+ni=$(( 10*M ))
+nj=16 
+export NI=${NI:-$ni}
+export NJ=${NJ:-$nj}
+
+vars="BASH_SOURCE name src script bin FOLD OPT NI NJ"
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -32,10 +43,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then 
-    #opt="-use_fast_math"
-    opt="" 
-    echo $msg opt $opt
-    nvcc $src -std=c++11 $opt -I$HOME/np -I..  -I$CUDA_PREFIX/include -o $bin
+    nvcc $src -std=c++17 $OPT -lcrypto -lssl -I$HOME/np -I..  -I$CUDA_PREFIX/include -o $bin
     [ $? -ne 0 ] && echo compilation error && exit 1
 fi 
 
@@ -45,6 +53,11 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
+    dbg__ $bin
+    [ $? -ne 0 ] && echo dbg  error && exit 2
+fi 
+
+if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo dbg error && exit 3
 fi 

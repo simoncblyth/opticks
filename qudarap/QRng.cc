@@ -235,6 +235,9 @@ RNG* QRng::UploadAndFree(RNG* h_states, ULL num_states )  // static
 QRng::LoadAndUpload
 ----------------------
 
+TODO : replace this, using SCurandState::loadAndUpload
+
+
 rngmax
     input argument that determines how many chunks of RNG to load and upload
 
@@ -302,6 +305,7 @@ rngmax:0
    load all available states, 
 rngmax>0 
    load specified number of states
+
 
 
 **/

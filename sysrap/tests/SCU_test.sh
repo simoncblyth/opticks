@@ -1,37 +1,27 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
-SCU_test.sh
-============
 
-::
-
-    ~/o/sysrap/tests/SCU_test.sh 
-
+~/o/sysrap/tests/SCU_test.sh 
 
 EOU
 }
-
 cd $(dirname $(realpath $BASH_SOURCE))
-name=SCU_test
-bin=/tmp/$name
+
+
+defarg=info_build_run
+arg=${1:-$defarg}
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
-for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done
 
-vars="BASH_SOURCE CUDA_PREFIX cuda_l name"
-for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
+name=SCU_test
+bin=/tmp/$name
 
 gcc $name.cc \
-     -std=c++11 -lstdc++ -g \
-     -I$CUDA_PREFIX/include \
-     -I.. \
-     -L$CUDA_PREFIX/$cuda_l -lcudart \
-     -o $bin
-[ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
+    -I$CUDA_PREFIX/include \
+    -I.. \
+    -L$CUDA_PREFIX/lib64 \
+    -std=c++17 -lstdc++ -lcudart -g -o $bin && $bin
 
-$bin 
-[ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 
-exit 0 
 

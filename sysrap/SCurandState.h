@@ -42,11 +42,12 @@ qudarap/QRng.{hh.cc}
 #include "SCurandChunk.h"
 #include "SCurandSpec.h"
 #include "SYSRAP_API_EXPORT.hh"
-
+#include "SCU_.h"
 
 struct SYSRAP_API SCurandState   
 {
     typedef unsigned long long ULL ;
+    static constexpr const ULL M = 1000000ull ; 
 
     const char* dir ; 
     std::vector<ULL> spec = {} ; 
@@ -66,6 +67,10 @@ struct SYSRAP_API SCurandState
     std::string desc() const ; 
  
     bool is_complete() const ; 
+
+    template<typename T>
+    T* loadAndUpload( unsigned rngmax ) ; 
+
 }; 
 
 
@@ -267,4 +272,102 @@ inline bool SCurandState::is_complete() const
     int num_valid = SCurandChunk::CountValid(chunk, dir );  
     return num_spec == num_valid ; 
 } 
+
+
+/**
+SCurandState::loadAndUpload
+----------------------------
+
+This is intended to replace QRng::LoadAndUpload 
+
+**/
+
+
+template<typename T>
+inline T* SCurandState::loadAndUpload( unsigned rngmax )
+{
+    T* d0 = SCU_::device_alloc<T>( rngmax, "SCurandState::loadAndUpload" );
+    T* d = d0 ; 
+
+    ULL available_chunk = chunk.size(); 
+    ULL count = 0 ; 
+
+    std::cout
+        << " rngmax " << rngmax
+        << " rngmax/M " << rngmax/M
+        << " available_chunk " << available_chunk 
+        << " all.num/M " << all.num/M 
+        << " rngmax/M " << rngmax/M
+        << " d0 " << d0  
+        << "\n"
+        ;
+
+
+    sdigest dig ; 
+
+    for(ULL i=0 ; i < available_chunk ; i++)
+    {   
+        ULL remaining = rngmax - count ;   
+
+        const SCurandChunk& ck = chunk[i]; 
+ 
+        bool partial_read = remaining < ck.ref.num ;   
+
+        ULL num = partial_read ? remaining : ck.ref.num ;
+
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " ck.ref.num/M " << std::setw(4) << ck.ref.num/M
+            << " count/M " << std::setw(4) << count/M
+            << " remaining/M " << std::setw(4) << remaining/M
+            << " partial_read " << ( partial_read ? "YES" : "NO " )
+            << " num/M " << std::setw(4) << num/M
+            << " d " << d 
+            << "\n"
+            ;
+
+        scurandref cr = ck.load(num, dir, &dig ) ; 
+  
+        assert( cr.states != nullptr); 
+
+        bool num_match = cr.num == num ; 
+
+        if(!num_match) std::cerr
+            << "SCurandState::loadAndUpload"
+            << " num_match " << ( num_match ? "YES" : "NO " )
+            << " cr.num/M " << cr.num/M
+            << " num/M " << num/M
+            << "\n"
+            ;
+
+        assert(num_match); 
+
+        SCU_::copy_host_to_device<T>( d , cr.states , num );  
+
+        free(cr.states); 
+
+        d += num ;   
+        count += num ;   
+
+        if(count > rngmax) assert(0); 
+        if(count == rngmax) break ;
+    }   
+
+    bool complete = count == rngmax ;
+    assert( complete );
+    std::string digest = dig.finalize();
+
+    std::cout
+        << "SCurandState::loadAndUpload"
+        << " complete " << ( complete ? "YES" : "NO ")
+        << " rngmax/M " << rngmax/M
+        << " rngmax " << rngmax
+        << " digest " << digest << "(cf md5sum of cat-ed chunk(s))" 
+        << "\n"
+        ;
+
+    return complete ? d0 : nullptr ;
+}
+
+
 
