@@ -10,8 +10,11 @@ lambertian_direction.py
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import *
-import pyvista as pv
+MODE = int(os.environ.get("MODE","0"))
+if MODE in [2,3]:
+    from opticks.ana.pvplt import *
+    import pyvista as pv
+pass
 
 TEST = os.environ["TEST"]
 GUI = not "NOGUI" in os.environ
@@ -26,25 +29,29 @@ if __name__ == '__main__':
 
     print( " TEST : %s " % TEST)
     print( "q.shape %s " % str(q.shape) )
-    print(" using lim for plotting %s " % lim )
-
-    label = TEST
-    pl = pvplt_plotter(label=label)   
-
-  
-    pvplt_viewpoint( pl ) 
-    pl.add_points( q[:,:3][lim] )
 
 
-    outpath = os.path.expandvars("$FOLD/figs/%s.png" % label )
-    outdir = os.path.dirname(outpath)
-    if not os.path.isdir(outdir):
-        os.makedirs(outdir)
+    if MODE == 3:
+        print(" using lim for plotting %s " % lim )
+
+        label = TEST
+        pl = pvplt_plotter(label=label)   
+
+      
+        pvplt_viewpoint( pl ) 
+        pl.add_points( q[:,:3][lim] )
+
+
+        outpath = os.path.expandvars("$FOLD/figs/%s.png" % label )
+        outdir = os.path.dirname(outpath)
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        pass
+
+        print(" outpath: %s " % outpath ) 
+        cp = pl.show(screenshot=outpath) if GUI else None
+        # INTERACTIVE CAPTURES CONTROLLED FROM BASH NOW MORE OFTEN USED
     pass
-
-    print(" outpath: %s " % outpath ) 
-    cp = pl.show(screenshot=outpath) if GUI else None
-    # INTERACTIVE CAPTURES CONTROLLED FROM BASH NOW MORE OFTEN USED
-
+pass
 
    

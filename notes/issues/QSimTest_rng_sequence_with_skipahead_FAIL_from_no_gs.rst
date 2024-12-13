@@ -57,7 +57,10 @@ rng_sequence : FIXED
 
 
 
-wavelength_scintillation
----------------------------
+wavelength_scintillation : FIXED
+-----------------------------------
+
+
+
 
 

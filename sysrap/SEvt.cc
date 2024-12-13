@@ -3626,11 +3626,20 @@ void SEvt::gather()
 }
 
 
+/**
+SEvt::add_array  
+-----------------
+
+Q: WHO CALLS THIS ? 
+A: QSim::fake_propagate 
+
+**/
+
+
 void SEvt::add_array( const char* k, const NP* a )
 {
-    assert(0);  // WHO CALLS THIS
     LOG(LEVEL) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ; 
-    fold->add(k, a);  
+    topfold->add(k, a);  
 }
 
 void SEvt::addEventConfigArray() 

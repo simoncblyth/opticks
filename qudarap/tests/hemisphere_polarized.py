@@ -33,23 +33,28 @@ Notice with S-polarized that the polarization vectors Z-component is zero
 """
 import os, numpy as np
 from opticks.ana.fold import Fold
-from opticks.ana.pvplt import *
-import pyvista as pv
+MODE = int(os.environ.get("MODE","0"))
 
-FOLD = os.environ["FOLD"]
+
+if MODE in [2,3]:
+    from opticks.ana.pvplt import *
+    import pyvista as pv
+pass
+
 TEST = os.environ["TEST"]
 GUI = not "NOGUI" in os.environ
 
 
 if __name__ == '__main__':
-    t = Fold.Load(FOLD)
+    t = Fold.Load(symbol="t")
+    print(repr(t))
+
 
     p = t.p
     prd = t.prd
     lim = slice(0,1000)
 
     print( " TEST : %s " % TEST)
-    print( " FOLD : %s " % FOLD)
     print( "p.shape %s " % str(p.shape) )
     print( "prd.shape %s " % str(prd.shape) )
     print(" using lim for plotting %s " % lim )
@@ -65,23 +70,24 @@ if __name__ == '__main__':
     print("pol\n", pol) 
     print("pos\n", pos) 
 
-    label = "pvplt_polarized"
-    pl = pvplt_plotter(label=label)   
+    if MODE == 3:
+        label = "pvplt_polarized"
+        pl = pvplt_plotter(label=label)   
 
-    pvplt_viewpoint( pl ) 
-    pvplt_polarized( pl, pos[lim], mom[lim], pol[lim] )
-    pvplt_lines(     pl, pos[lim], mom[lim] )
+        pvplt_viewpoint( pl ) 
+        pvplt_polarized( pl, pos[lim], mom[lim], pol[lim] )
+        pvplt_lines(     pl, pos[lim], mom[lim] )
 
+        pvplt_arrows( pl, point, normal )
 
-    pvplt_arrows( pl, point, normal )
+        outpath = os.path.join(FOLD, "figs/%s.png" % label )
+        outdir = os.path.dirname(outpath)
+        if not os.path.isdir(outdir):
+            os.makedirs(outdir)
+        pass
 
-    outpath = os.path.join(FOLD, "figs/%s.png" % label )
-    outdir = os.path.dirname(outpath)
-    if not os.path.isdir(outdir):
-        os.makedirs(outdir)
+        print(" outpath: %s " % outpath ) 
+        cp = pl.show(screenshot=outpath) if GUI else None
     pass
-
-    print(" outpath: %s " % outpath ) 
-    cp = pl.show(screenshot=outpath) if GUI else None
-
+pass
    

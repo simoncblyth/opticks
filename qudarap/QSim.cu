@@ -366,7 +366,7 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
-    //printf("//_QSim_propagate_at_boundary_mutate blockIdx.x %d blockDim.x %d threadIdx.x %d id %d \n", blockIdx.x, blockDim.x, threadIdx.x, id ); 
+    if(idx % 100 == 0) printf("//_QSim_propagate_at_boundary_mutate blockIdx.x %d blockDim.x %d threadIdx.x %d idx %d \n", blockIdx.x, blockDim.x, threadIdx.x, idx ); 
 
     if (idx >= num_photon) return;
 

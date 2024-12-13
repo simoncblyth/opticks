@@ -545,7 +545,10 @@ void QSimTest::photon_launch_mutate()
     assert( src_subfold ); 
 
     unsigned num_photon = num ; 
-    NP* a = NP::Load("$FOLD", src_subfold,  "p.npy" ); 
+    NP* a = NP::Load("$BASE", src_subfold,  "p.npy" ); 
+
+    // U::Resolve does not support "$FOLD/.." so use "$BASE" 
+    // and plant that in QSimTest.sh  
 
     if( a == nullptr )
     {

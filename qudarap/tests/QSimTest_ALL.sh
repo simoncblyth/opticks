@@ -22,40 +22,40 @@ boundary_lookup_ls
 
 wavelength_scintillation
 
-### wavelength_cerenkov
+wavelength_cerenkov
 
 scint_generate
 cerenkov_generate
 
-#fill_state_0
-#fill_state_1
+fill_state_0
+fill_state_1
 
-#rayleigh_scatter_align
+rayleigh_scatter_align
 
-#propagate_to_boundary
+propagate_to_boundary
 
-#hemisphere_s_polarized
-#hemisphere_p_polarized
-#hemisphere_x_polarized
+hemisphere_s_polarized
+hemisphere_p_polarized
+hemisphere_x_polarized
 
-#propagate_at_boundary_s_polarized
-#propagate_at_boundary_p_polarized
-#propagate_at_boundary_x_polarized
+propagate_at_boundary_s_polarized
+propagate_at_boundary_p_polarized
+propagate_at_boundary_x_polarized
 
-#propagate_at_boundary
-#propagate_at_boundary_normal_incidence
+propagate_at_boundary
+propagate_at_boundary_normal_incidence
 
-#random_direction_marsaglia
-#lambertian_direction
-#reflect_diffuse
-#reflect_specular
-#propagate_at_surface
-#randgaussq_shoot
+random_direction_marsaglia
+lambertian_direction
+reflect_diffuse
+reflect_specular
+propagate_at_surface
+randgaussq_shoot
 
-#fake_propagate
-#gentorch
+fake_propagate
+gentorch
 
-#smear_normal_sigma_alpha
+smear_normal_sigma_alpha
 
 EOT
 )

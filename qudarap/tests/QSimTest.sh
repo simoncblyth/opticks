@@ -83,7 +83,8 @@ test=scint_generate
 #test=smear_normal_sigma_alpha
 
 export TEST=${TEST:-$test}
-export FOLD=/tmp/$name/$TEST
+export BASE=/tmp/$name
+export FOLD=$BASE/$TEST
 mkdir -p $FOLD
 
 M1=1000000
