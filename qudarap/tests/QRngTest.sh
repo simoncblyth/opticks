@@ -12,6 +12,7 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
+source dbg__.sh 
 
 name=QRngTest
 bin=$name
@@ -19,17 +20,16 @@ script=$name.py
 
 export FOLD=$TMP/$name  
 
-test=ctor
-#test=generate
-#test=generate_evid
+#test=ctor
+test=generate
 #test=ALL
 
 export TEST=${TEST:-$test}
 
 defarg="info_run_ana"
 arg=${1:-$defarg}
-vars="BASH_SOURCE defarg arg FOLD bin script test TEST"
 
+vars="BASH_SOURCE defarg arg FOLD bin script test TEST"
 
 logging(){
    type $FUNCNAME
@@ -40,28 +40,6 @@ logging(){
 }
 
 [ -n "$LOG" ] && logging 
-
-gdb__() 
-{ 
-    if [ -z "$BP" ]; then
-        H="";
-        B="";
-        T="-ex r";
-    else
-        H="-ex \"set breakpoint pending on\"";
-        B="";
-        for bp in $BP;
-        do
-            B="$B -ex \"break $bp\" ";
-        done;
-        T="-ex \"info break\" -ex r";
-    fi;
-    local runline="gdb $H $B $T --args $* ";
-    echo $runline;
-    date;
-    eval $runline;
-    date
-}
 
 
 if [ "${arg/info}" != "$arg" ]; then 
@@ -82,10 +60,13 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then 
     ${PYTHON:-python} $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
 fi 
 
 if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} -i --pdb $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error && exit 4
 fi 
 
+exit 0 
 

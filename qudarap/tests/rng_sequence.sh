@@ -20,8 +20,7 @@ functionality into a separate executable
 EOU
 }
 
-SDIR=$(dirname $(realpath $BASH_SOURCE))
-cd $SDIR 
+cd $(dirname $(realpath $BASH_SOURCE))
 
 arg=${1:-ana}
 

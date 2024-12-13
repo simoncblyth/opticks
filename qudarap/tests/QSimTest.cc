@@ -64,7 +64,6 @@ struct QSimTest
 
     static const bool rng_sequence_PRECOOKED ; 
     void rng_sequence(unsigned ni, int ni_tranche_size); 
-    void rng_sequence_with_skipahead(unsigned ni, int ni_tranche_size); 
 
 
     void boundary_lookup_all();
@@ -140,36 +139,18 @@ void QSimTest::rng_sequence(unsigned ni, int ni_tranche_size_)
     unsigned nj = 16 ; 
     unsigned nk = 16 ; 
     unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
-    bool skipahead = false ;
 
     const char* udir = rng_sequence_PRECOOKED ? "$HOME/.opticks/precooked/QSimTest/rng_sequence" : "$FOLD" ; 
+    LOG(info) << " idir " << udir ; 
+
+
     LOG_IF(error, rng_sequence_PRECOOKED) 
         << " QSimTest__rng_sequence_PRECOOKED envvar triggers directory override " << std::endl 
         << " default  [" << "$FOLD" << "] " << std::endl 
         << " override [" << udir << "]"  
         ; 
 
-  
-
-    qs->rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size, skipahead ); 
-}
-
-
-void QSimTest::rng_sequence_with_skipahead(unsigned ni, int ni_tranche_size_)
-{
-    unsigned nj = 16 ; 
-    unsigned nk = 16 ; 
-    unsigned ni_tranche_size = ni_tranche_size_ > 0 ? ni_tranche_size_ : ni ; 
-    bool skipahead = true  ;
-
-    const char* eventID_key = "QSimTest__rng_sequence_with_skipahead__eventID";
-    int eventID = ssys::getenvint(eventID_key,1) ; 
-    bool reset = false ; 
-    LOG(info) << " eventID_key " << eventID_key << " eventID " << eventID ; 
-
-    qs->simulate(eventID, reset); 
-
-    qs->rng_sequence<float>("$FOLD", ni, nj, nk, ni_tranche_size, skipahead ); 
+    qs->rng_sequence<float>(udir, ni, nj, nk, ni_tranche_size ); 
 }
 
 
@@ -355,7 +336,7 @@ void QSimTest::wavelength()
     }
     else if( type == WAVELENGTH_CERENKOV )
     {
-      //  w = qs->cerenkov_wavelength_rejection_sampled(num); 
+        //w = qs->cerenkov_wavelength_rejection_sampled(num);  // MOVED TO QSim_dbg.cu 
         assert(0); 
         ss << "_cerenkov" ; 
     }
@@ -659,7 +640,6 @@ void QSimTest::main()
     switch(type)
     {
         case RNG_SEQUENCE:                  rng_sequence(num, ni_tranche_size)                ; break ; 
-        case RNG_SEQUENCE_WITH_SKIPAHEAD:   rng_sequence_with_skipahead(num, ni_tranche_size) ; break ; 
 
         case WAVELENGTH_SCINTILLATION:      
         case WAVELENGTH_CERENKOV:           
@@ -733,8 +713,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* testname = ssys::getenvvar("TEST", "hemisphere_s_polarized"); 
-    int type = QSimLaunch::Type(testname); 
+    const char* TEST = ssys::getenvvar("TEST", "hemisphere_s_polarized"); 
+    LOG(info) << "[ TEST " << TEST ; 
+
+
+    int type = QSimLaunch::Type(TEST); 
     unsigned num = QSimTest::Num(argc, argv); 
 
     SSim* sim = SSim::Load(); 
@@ -764,6 +747,6 @@ int main(int argc, char** argv)
 
     cudaDeviceSynchronize();
 
-    LOG(info) << " qst.rc " << qst.rc ; 
+    LOG(info) << "] TEST " << TEST << " qst.rc " << qst.rc ; 
     return qst.rc  ; 
 }

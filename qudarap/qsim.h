@@ -74,8 +74,8 @@ struct qsim
 {
     qbase*              base ; 
     sevent*             evt ; 
-    void*               rngstate ; 
-    qrng*               rng ; 
+    //RNG*                rng_state ;  // <== NOW ONLY AVAILABLE FOR XORWOW ? NEED TO REMOVE : HIDING IN qrng<RNG>
+    qrng<RNG>*          rng ; 
     qbnd*               bnd ; 
     qmultifilm*         multifilm;
     qcerenkov*          cerenkov ; 
@@ -145,7 +145,6 @@ inline qsim::qsim()    // instanciated on CPU (see QSim::init_sim) and copied to
         :
         base(nullptr),
         evt(nullptr),
-        rngstate(nullptr),
         rng(nullptr),
         bnd(nullptr),
         multifilm(nullptr),

@@ -155,7 +155,7 @@ template qprop<double>* QU::UploadArray<qprop<double>>(const qprop<double>* arra
 template qpmt<float>*   QU::UploadArray<qpmt<float>>(const qpmt<float>* array, unsigned num_items, const char* label) ;
 template qpmt<double>*  QU::UploadArray<qpmt<double>>(const qpmt<double>* array, unsigned num_items, const char* label) ;
 template qmultifilm*    QU::UploadArray<qmultifilm>(const qmultifilm* array, unsigned num_items, const char* label) ;
-template qrng*          QU::UploadArray<qrng>(const qrng* array, unsigned num_items, const char* label) ;
+template qrng<RNG>*     QU::UploadArray<qrng<RNG>>(const qrng<RNG>* array, unsigned num_items, const char* label) ;
 template qbnd*          QU::UploadArray<qbnd>(const qbnd* array, unsigned num_items, const char* label) ;
 template sevent*        QU::UploadArray<sevent>(const sevent* array, unsigned num_items, const char* label) ;
 template qdebug*        QU::UploadArray<qdebug>(const qdebug* array, unsigned num_items, const char* label) ;

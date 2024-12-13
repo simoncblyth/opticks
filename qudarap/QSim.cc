@@ -281,7 +281,7 @@ void QSim::init()
     sim = new qsim ; 
     sim->base = base ? base->d_base : nullptr ; 
     sim->evt = event ? event->getDevicePtr() : nullptr ; 
-    sim->rngstate = rng ? rng->qr->uploaded_states : nullptr ; 
+    //sim->rng_state = rng ? rng->qr->uploaded_states : nullptr ; 
     sim->rng = rng ? rng->d_qr : nullptr ; 
 
     sim->bnd = bnd ? bnd->d_qb : nullptr ; 
@@ -564,7 +564,7 @@ std::string QSim::descFull() const
        << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec    
        << " qsim.h:sim 0x"      << std::hex << std::uint64_t(sim)      << std::dec 
        << " qsim.h:d_sim 0x"    << std::hex << std::uint64_t(d_sim)    << std::dec 
-       << " sim->rngstate 0x"   << std::hex << std::uint64_t(sim->rngstate) << std::dec  // tending to SEGV on some systems
+       //<< " sim->rng_state 0x"   << std::hex << std::uint64_t(sim->rng_state) << std::dec  // tending to SEGV on some systems
        << " sim->base 0x"       << std::hex << std::uint64_t(sim->base)  << std::dec
        << " sim->bnd 0x"        << std::hex << std::uint64_t(sim->bnd)   << std::dec
        << " sim->scint 0x"      << std::hex << std::uint64_t(sim->scint) << std::dec
@@ -663,7 +663,7 @@ Upping to 1M would be 100x 20M = 2000M  2GB
 
 
 template <typename T>
-extern void QSim_rng_sequence(  dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset, bool skipahead ); 
+extern void QSim_rng_sequence(  dim3 numBlocks, dim3 threadsPerBlock, qsim* d_sim, T* seq, unsigned ni, unsigned nj, unsigned id_offset ); 
 
 
 /**
@@ -677,7 +677,7 @@ ni_tranche : item tranche size
 
 nv : number randoms to generate for each item
 
-id_offset : acts on the rngstates array 
+id_offset : acts on the rng_state array 
 
 skipahead : used curand skipahead offsets depending on sim->evt->index and OPTICKS_EVENT_SKIPAHEAD
 
@@ -685,7 +685,7 @@ skipahead : used curand skipahead offsets depending on sim->evt->index and OPTIC
 **/
 
 template <typename T>
-void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset, bool skipahead )
+void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_offset )
 {
     configureLaunch(ni_tranche, 1 ); 
 
@@ -695,7 +695,7 @@ void QSim::rng_sequence( T* seq, unsigned ni_tranche, unsigned nv, unsigned id_o
 
     T* d_seq = QU::device_alloc<T>(num_rng, label ); 
 
-    QSim_rng_sequence<T>( numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset, skipahead );  
+    QSim_rng_sequence<T>( numBlocks, threadsPerBlock, d_sim, d_seq, ni_tranche, nv, id_offset );  
 
     QU::copy_device_to_host_and_free<T>( seq, d_seq, num_rng, label ); 
 }
@@ -722,7 +722,7 @@ Default *dir* is $TMP/QSimTest/rng_sequence leading to npy paths like::
 **/
 
 template <typename T>
-void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead  )
+void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size )
 {
     assert( ni >= ni_tranche_size && ni % ni_tranche_size == 0 );   // total size *ni* must be integral multiple of *ni_tranche_size*
     unsigned num_tranche = ni/ni_tranche_size ; 
@@ -731,11 +731,9 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
     unsigned size = ni_tranche_size*nv ;   // number of randoms to be generated in each launch 
     std::string reldir = QU::rng_sequence_reldir<T>(PREFIX, ni, nj, nk, ni_tranche_size  ) ;  
 
-    std::cout 
-        << "QSim::rng_sequence" 
+    LOG(info)
         << " ni " << ni
         << " ni_tranche_size " << ni_tranche_size
-        << " skipahead " << ( skipahead ? "YES" : "NO ")
         << " num_tranche " << num_tranche 
         << " reldir " << reldir.c_str()
         << " nj " << nj
@@ -743,17 +741,28 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
         << " nv(nj*nk) " << nv 
         << " size(ni_tranche_size*nv) " << size 
         << " typecode " << QU::typecode<T>() 
-        << std::endl 
         ; 
 
 
     // NB seq array memory gets reused for each launch and saved to different paths
     NP* seq = NP::Make<T>(ni_tranche_size, nj, nk) ; 
-    T* values = seq->values<T>(); 
+    T* seq_values = seq->values<T>(); 
+    NP::INT seq_nv = seq->num_values(); 
+
+
+    LOG(info)
+        << " seq " << ( seq ? seq->sstr() : "-" )
+        << " seq_values " << seq_values
+        << " seq_nv " << seq_nv
+        << " seq_values[0] " << seq_values[0]
+        << " seq_values[seq_nv-1] " << seq_values[seq_nv-1]
+        ;
+     
+
 
     for(unsigned t=0 ; t < num_tranche ; t++)
     {
-        // *id_offset* controls which rngstates/RNG to use
+        // *id_offset* controls which rng_state/RNG to use
         unsigned id_offset = ni_tranche_size*t ; 
         std::string name = QU::rng_sequence_name<T>(PREFIX, ni_tranche_size, nj, nk, id_offset ) ;  
 
@@ -764,7 +773,7 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
             << std::endl 
             ; 
 
-        rng_sequence( values, ni_tranche_size, nv, id_offset, skipahead );  
+        rng_sequence( seq_values, ni_tranche_size, nv, id_offset );  
          
         const char* path = spath::Resolve(dir, reldir.c_str(), name.c_str() ); 
         seq->save(path); 
@@ -773,21 +782,8 @@ void QSim::rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk,
 
 
 
-template void QSim::rng_sequence<float>(  const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead  ); 
-template void QSim::rng_sequence<double>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead  ); 
-
-
-
-
-
-
-
-
-
-
-
-
-
+template void QSim::rng_sequence<float>(  const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ); 
+template void QSim::rng_sequence<double>( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ); 
 
 
 
@@ -826,8 +822,7 @@ NP* QSim::scint_wavelength(unsigned num_wavelength, unsigned& hd_factor )
 
     NP* w = NP::Make<float>(num_wavelength) ; 
 
-    const char* label = "QSim::scint_wavelength" ; 
-    QU::copy_device_to_host_and_free<float>( (float*)w->bytes(), d_wavelength, num_wavelength, label ); 
+    QU::copy_device_to_host_and_free<float>( (float*)w->bytes(), d_wavelength, num_wavelength, "QSim::scint_wavelength" ); 
 
     LOG(LEVEL) << "]" ; 
 

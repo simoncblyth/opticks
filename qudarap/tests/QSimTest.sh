@@ -28,8 +28,6 @@ defarg=run_ana
 
 if [ "$(uname)" == "Darwin" ]; then
    defarg="run_ana"
-   #defarg="ana"
-   #export PLOT=1
 fi 
 
 if [ -n "$BP" ]; then 
@@ -43,15 +41,15 @@ msg="=== $BASH_SOURCE :"
 
 
 #test=rng_sequence
-test=rng_sequence_with_skipahead
+
 #test=boundary_lookup_all
 #test=boundary_lookup_water
 #test=boundary_lookup_ls
 
 #test=wavelength_scintillation
-#test=wavelength_cerenkov
+#test=wavelength_cerenkov         ### non-active moved to QSim_dbg.cu 
 
-#test=scint_generate
+test=scint_generate
 #test=cerenkov_generate
 
 #test=fill_state_0
@@ -99,7 +97,7 @@ nrm=0,0,1
 #nrm=0,0,-1
 
 case $TEST in
-    rng_sequence|rng_sequence_with_skipahead) num=$M1 ;; 
+    rng_sequence) num=$M1 ;; 
     random_direction_marsaglia) num=$M1 ;; 
     lambertian_direction) num=$M1 ;; 
     randgaussq_shoot) num=$M1 ;; 
@@ -118,8 +116,9 @@ esac
 
 
 case $TEST in
-           rng_sequence)   script=rng_sequence.py   ;;
-           rng_sequence_with_skipahead)   script=rng_sequence_with_skipahead.py   ;;
+          X_rng_sequence)   script=rng_sequence.py   ;;
+          rng_sequence)   script=QSimTest.py   ;;
+           X_rng_sequence_with_skipahead)   script=rng_sequence_with_skipahead.py   ;;
 random_direction_marsaglia) script=random_direction_marsaglia.py ;; 
    boundary_lookup_all)    script=boundary_lookup_all.py ;;
    boundary_lookup_water)  script=boundary_lookup_line.py ;;
@@ -231,7 +230,21 @@ relative_stem(){   ## THIS IS USING OBSOLETE GEOCACHE PATHS
 }
 
 
+if [ "${arg/pdb}" != "$arg" ]; then 
+   echo $BASH_SOURCE pdb script $script
+   ${IPYTHON:-ipython} --pdb -i $script
+   [ $? -ne 0 ] && echo $msg pdb error && exit 2
+fi
+
 if [ "${arg/ana}" != "$arg" ]; then 
+   echo $BASH_SOURCE ana script $script
+   ${PYTHON:-python} $script
+   [ $? -ne 0 ] && echo $msg ana error && exit 3
+fi
+
+
+
+if [ "${arg/OLDana}" != "$arg" ]; then 
 
     # PYVISTA_KILL_DISPLAY envvar is observed to speedup exiting from ipython after pyvista plotting 
     # see https://github.com/pyvista/pyvista/blob/main/pyvista/plotting/plotting.py

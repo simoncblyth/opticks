@@ -9,7 +9,7 @@ __global__ void _QSim_cerenkov_wavelength_rejection_sampled(qsim* sim, float* wa
     unsigned id = blockIdx.x*blockDim.x + threadIdx.x;
     if (id >= num_wavelength) return;
 
-    RNG rng = sim->rngstate[id]; 
+    RNG rng = sim->rng_state[id]; 
 
     float wl = qcerenkov::cerenkov_wavelength_rejection_sampled(sim, id, rng);   
 
@@ -29,7 +29,7 @@ __global__ void _QSim_cerenkov_generate(qsim* sim, quad4* photon, unsigned num_p
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
-    RNG rng = sim->rngstate[idx]; 
+    RNG rng = sim->rng_state[idx]; 
 
     quad4 p ;   
     qcerenkov::cerenkov_generate(sim, p, idx, rng);   
@@ -50,7 +50,7 @@ __global__ void _QSim_cerenkov_generate_enprop(qsim* sim, quad4* photon, unsigne
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
-    RNG rng = sim->rngstate[idx]; 
+    RNG rng = sim->rng_state[idx]; 
 
     quad4 p ;   
     qcerenkov::cerenkov_generate_enprop<T>(sim, p, idx, rng);   
@@ -76,7 +76,7 @@ __global__ void _QSim_cerenkov_generate_expt(qsim* sim, quad4* photon, unsigned 
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
 
-    RNG rng = sim->rngstate[idx]; 
+    RNG rng = sim->rng_state[idx]; 
 
     quad4 p ;   
     qcerenkov::cerenkov_generate_expt(sim, p, idx, rng);   

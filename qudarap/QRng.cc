@@ -48,26 +48,44 @@ QRng::QRng(unsigned skipahead_event_offset_)
     :
     RNGNAME(srng<RNG>::NAME),
     UPLOAD_RNG_STATES(srng<RNG>::UPLOAD_RNG_STATES),
-#ifdef OLD_MONOLITHIC_CURANDSTATE
-    path(SCurandStateMonolithic::Path()),        // null path will assert in Load
-    rngmax(0),
-    d_uploaded_states(LoadAndUpload(rngmax, path)),   // rngmax set based on file_size/item_size of path 
-#else
-    cs(nullptr),
-    path(cs.getDir()),                        // informational 
-    rngmax(SEventConfig::MaxCurand()),      
-    d_uploaded_states(UPLOAD_RNG_STATES ? LoadAndUpload(rngmax, cs) : nullptr),   // 
-#endif
+    skipahead_event_offset(skipahead_event_offset_),
     seed(0ull),
     offset(0ull),
-    skipahead_event_offset(skipahead_event_offset_),
     SEED_OFFSET(ssys::getenvvar("QRng__SEED_OFFSET")),
     parse_rc(SCurandSpec::ParseSeedOffset(seed, offset, SEED_OFFSET )),
-    qr(nullptr),
-    d_qr(nullptr)
+    qr(new qrng<RNG>(seed, offset, skipahead_event_offset)), 
+    d_qr(nullptr),
+#ifdef OLD_MONOLITHIC_CURANDSTATE
+    rngmax(0)
+#else
+    rngmax(SEventConfig::MaxCurand()),
+    cs(nullptr)
+#endif
 {
     init(); 
 }
+
+
+
+template<> void QRng::initStates<Philox>()
+{ 
+    LOG(info) << "initStates<Philox> DO NOTHING " ; 
+}
+
+template<> void QRng::initStates<XORWOW>()
+{ 
+    bool is_XORWOW = strcmp( srng<XORWOW>::NAME, "XORWOW") == 0 ; 
+    assert( is_XORWOW ); 
+
+    LOG(info) << "initStates<XORWOW> LoadAndUpload and set_uploaded_states " ; 
+#ifdef OLD_MONOLITHIC_CURANDSTATE
+    XORWOW* d_uploaded_states = LoadAndUpload(rngmax, SCurandStateMonolithic::Path()) ;  
+#else
+    XORWOW* d_uploaded_states = LoadAndUpload(rngmax, cs); 
+#endif
+    qr->set_uploaded_states( d_uploaded_states ); 
+}
+
 
 
 void QRng::init()
@@ -75,18 +93,7 @@ void QRng::init()
     INSTANCE = this ; 
     assert(parse_rc == 0 ); 
 
-    if( d_uploaded_states )
-    {
-        qr = new qrng(seed, offset, skipahead_event_offset, d_uploaded_states); 
-    }
-    else
-    {
-        qr = new qrng(seed, offset, skipahead_event_offset, nullptr ); 
-    }
-
-
-
-
+    initStates<RNG>(); 
     initMeta(); 
 
     bool VERBOSE = ssys::getenvbool(init_VERBOSE); 
@@ -96,6 +103,10 @@ void QRng::init()
          << desc()
          ;  
 }
+
+
+
+
 
 /**
 QRng::initMeta
@@ -109,21 +120,15 @@ QRng::initMeta
 
 void QRng::initMeta()
 {
-    //assert( qr->rng_states == d_rng_states ) ; 
-
     const char* label_1 = "QRng::initMeta/d_qr" ; 
-    d_qr = QU::UploadArray<qrng>(qr, 1, label_1 ); 
+    d_qr = QU::UploadArray<qrng<RNG>>(qr, 1, label_1 ); 
 
-    //bool uploaded = d_qr != nullptr && d_rng_states != nullptr ; 
-    //LOG_IF(fatal, !uploaded) << " FAILED to upload RNG and/or metadata " ;  
-    //assert(uploaded); 
+    bool uploaded = d_qr != nullptr ; 
+    LOG_IF(fatal, !uploaded) << " FAILED to upload RNG and/or metadata " ;  
+    assert(uploaded); 
 }
 
 
-void QRng::cleanup()
-{
-    QUDA_CHECK(cudaFree(qr->uploaded_states)); 
-}
 
 QRng::~QRng()
 {
@@ -182,14 +187,14 @@ that can be set to anything.
 
 **/
 
-RNG* QRng::LoadAndUpload(ULL& rngmax, const char* path)  // static 
+XORWOW* QRng::LoadAndUpload(ULL& rngmax, const char* path)  // static 
 {
-    RNG* h_states = Load(rngmax, path); 
-    RNG* d_states = UploadAndFree(h_states, rngmax ); 
+    XORWOW* h_states = Load(rngmax, path); 
+    XORWOW* d_states = UploadAndFree(h_states, rngmax ); 
     return d_states ; 
 }
 
-RNG* QRng::Load(ULL& rngmax, const char* path)  // static 
+XORWOW* QRng::Load(ULL& rngmax, const char* path)  // static 
 {
     bool null_path = path == nullptr ; 
     LOG_IF(fatal, null_path ) << " QRng::Load null path " ; 
@@ -222,11 +227,11 @@ RNG* QRng::Load(ULL& rngmax, const char* path)  // static
 
     assert( file_size % item_size == 0 );  
 
-    RNG* rng_states = (RNG*)malloc(sizeof(RNG)*rngmax);
+    XORWOW* rng_states = (XORWOW*)malloc(sizeof(XORWOW)*rngmax);
 
     for(ULL i = 0 ; i < rngmax ; ++i )
     {   
-        RNG& rng = rng_states[i] ;
+        XORWOW& rng = rng_states[i] ;
         fread(&rng.d,                     sizeof(unsigned int),1,fp);   //  1
         fread(&rng.v,                     sizeof(unsigned int),5,fp);   //  5 
         fread(&rng.boxmuller_flag,        sizeof(int)         ,1,fp);   //  1 
@@ -239,16 +244,13 @@ RNG* QRng::Load(ULL& rngmax, const char* path)  // static
     return rng_states ; 
 }
 
-RNG* QRng::UploadAndFree(RNG* h_states, ULL num_states )  // static 
+XORWOW* QRng::UploadAndFree(XORWOW* h_states, ULL num_states )  // static 
 {
     const char* label_0 = "QRng::UploadAndFree/rng_states" ; 
-    RNG* d_states = QU::UploadArray<RNG>(h_states, num_states, label_0 ) ;   
+    XORWOW* d_states = QU::UploadArray<XORWOW>(h_states, num_states, label_0 ) ;   
     free(h_states); 
     return d_states ;  
 }
-
-
-
 
 #else
 
@@ -469,17 +471,16 @@ std::string QRng::desc() const
 {
     std::stringstream ss ; 
     ss << "QRng::desc\n"
-       << " RNGNAME " << ( RNGNAME ? RNGNAME : "-" ) << "\n" 
-       << " UPLOAD_RNG_STATES " << ( UPLOAD_RNG_STATES ? "YES" : "NO " ) << "\n"
-       << " seed " << seed << "\n"
-       << " offset " << offset << "\n"
-       << " path " << path << "\n"
-       << " rngmax " << rngmax << "\n"
-       << " rngmax/M " << rngmax/M << "\n"
-       << " qr " << qr << "\n"
-       << " qr.skipahead_event_offset " << qr->skipahead_event_offset << "\n"
-       << " d_qr " << d_qr << "\n"
-       << Desc() 
+       << std::setw(30) << " IMPL " << IMPL << "\n" 
+       << std::setw(30) << " RNGNAME " << ( RNGNAME ? RNGNAME : "-" ) << "\n" 
+       << std::setw(30) << " UPLOAD_RNG_STATES " << ( UPLOAD_RNG_STATES ? "YES" : "NO " ) << "\n"
+       << std::setw(30) << " seed " << seed << "\n"
+       << std::setw(30) << " offset " << offset << "\n"
+       << std::setw(30) << " rngmax " << rngmax << "\n"
+       << std::setw(30) << " rngmax/M " << rngmax/M << "\n"
+       << std::setw(30) << " qr " << qr << "\n"
+       << std::setw(30) << " qr.skipahead_event_offset " << qr->skipahead_event_offset << "\n"
+       << std::setw(30) << " d_qr " << d_qr << "\n"
        ;
 
     std::string str = ss.str(); 
@@ -494,46 +495,7 @@ template <typename T>
 extern void QRng_generate(
     dim3, 
     dim3, 
-    T*, 
-    unsigned,
-    unsigned,
-    RNG*,
-    unsigned long long 
-);
-
-/**
-QRng::generate
----------------
-
-Launch ni threads to generate ni*nv values, via [0:nv] loop in the kernel 
-
-
-template<typename T>
-void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned long long skipahead_ )
-{
-    T* d_uu = QU::device_alloc<T>(ni*nv, "QRng::generate:ni*nv");
-
-    QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
-
-    QRng_generate<T>(numBlocks, threadsPerBlock, d_uu, ni, nv, qr->uploaded_states, skipahead_ ); 
-
-    const char* label = "QRng::generate" ; 
-    QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv, label );
-}
-
-
-template void QRng::generate<float>( float*,   unsigned, unsigned, unsigned long long ); 
-template void QRng::generate<double>( double*, unsigned, unsigned, unsigned long long ); 
-**/
-
-
-
-
-template <typename T>
-extern void QRng_generate_evid(
-    dim3, 
-    dim3, 
-    qrng*, 
+    qrng<RNG>*, 
     unsigned, 
     T*, 
     unsigned, 
@@ -541,32 +503,31 @@ extern void QRng_generate_evid(
 
 
 /**
-QRng::generate_evid
---------------------
+QRng::generate
+-----------------
 
 Launch ni threads to generate ni*nv values, via [0:nv] loop in the kernel 
 with some light touch encapsulation using event_idx to automate skipahead. 
 
-
+**/
 
 
 template<typename T>
-void QRng::generate_evid( T* uu, unsigned ni, unsigned nv, unsigned evid )
+void QRng::generate( T* uu, unsigned ni, unsigned nv, unsigned evid )
 {
-    const char* label = "QRng::generate_evid:ni*nv" ; 
+    const char* label = "QRng::generate:ni*nv" ; 
 
     T* d_uu = QU::device_alloc<T>(ni*nv, label );
 
     QU::ConfigureLaunch(numBlocks, threadsPerBlock, ni, 1 );  
 
-    QRng_generate_evid<T>(numBlocks, threadsPerBlock, d_qr, evid, d_uu, ni, nv ); 
+    QRng_generate<T>(numBlocks, threadsPerBlock, d_qr, evid, d_uu, ni, nv ); 
 
     QU::copy_device_to_host_and_free<T>( uu, d_uu, ni*nv, label );
 }
 
 
-template void QRng::generate_evid<float>( float*,   unsigned, unsigned, unsigned ); 
-template void QRng::generate_evid<double>( double*, unsigned, unsigned, unsigned ); 
-**/
+template void QRng::generate<float>( float*,   unsigned, unsigned, unsigned ); 
+template void QRng::generate<double>( double*, unsigned, unsigned, unsigned ); 
 
 

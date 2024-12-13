@@ -1,13 +1,22 @@
 #!/usr/bin/env python 
 """
 
-ipython -i tests/QSimTest.py 
+~/o/qudarap/tests/QSimTest.sh ana
+~/o/qudarap/tests/QSimTest.sh pdb
 
 
 """
-import numpy as np, logging
+import os, numpy as np, logging
+
+np.set_printoptions(suppress=True, linewidth=200)
+MODE = int(os.environ.get("MODE", "0"))
 log = logging.getLogger(__name__)
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib.pyplot as plt
+except ImportError:
+    plt = None
+
 import os
 
 class QSimTest(object):
@@ -15,10 +24,9 @@ class QSimTest(object):
         pass
 
     def rng_sequence(self):
-        fold = os.path.expandvars("/tmp/$USER/opticks/QSimTest/rng_sequence_f_ni1000000_nj16_nk16_tranche100000")
+        fold = os.path.expandvars("$FOLD/rng_sequence_f_ni1000000_nj16_nk16_tranche100000")
         symbols = "abcdefghijklmnopqrstuvwxyz"
         names = sorted(os.listdir(fold))
-
         arrs = []
         for i, name in enumerate(names):
             sym = symbols[i]
@@ -33,9 +41,9 @@ class QSimTest(object):
         globals()["seq"] = seq
     pass
     def multifilm_lut(self):
-        fold = os.path.expandvars("/tmp/$USER/opticks/QSimTest/multifilm_lut_result.npy")
+        fold = os.path.expandvars("$FOLD/multifilm_lut_result.npy")
         interp_result = np.load(fold)
-        sample = np.load("/tmp/debug_multi_film_table/sample.npy")
+        sample = np.load("$FOLD/sample.npy")
         #bnd_range = sample.shape[1]
         bnd_range = 2 
         for bnd in range(bnd_range):
@@ -55,12 +63,19 @@ class QSimTest(object):
             plt.suptitle("boundary Type = {}".format(bnd),fontsize = 30 )
             plt.show()        
            
- 
-
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     t = QSimTest()
-   # t.rng_sequence() 
-    t.multifilm_lut()
 
+    TEST = os.environ.get("TEST","")
+    print("TEST:%s" % TEST );   
+
+    if TEST == "rng_sequence":
+        t.rng_sequence() 
+    elif TEST == "multifilm_lut":
+        t.multifilm_lut()
+    else:
+        print("TEST UNHANDLED:%s" % TEST );   
+    pass
+pass

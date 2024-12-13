@@ -126,13 +126,13 @@ public:
 
 
     template<typename T>
-    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset, bool skipahead );
+    void rng_sequence( dim3 numblocks, dim3 threadsPerBlock, qsim* d_sim, T* d_seq, unsigned ni_tranche, unsigned nv, unsigned ioffset );
 
     template<typename T>
-    void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset, bool skipahead ); 
+    void rng_sequence( T* seq, unsigned ni, unsigned nj, unsigned ioffset ); 
 
     template<typename T>
-    void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size, bool skipahead );
+    void rng_sequence( const char* dir, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size );
 
 
     NP* scint_wavelength( unsigned num_wavelength, unsigned& hd_factor ); 
@@ -140,7 +140,7 @@ public:
     NP* RandGaussQ_shoot(unsigned num_v ); 
 
 
-    NP* cerenkov_wavelength_rejection_sampled( unsigned num_wavelength ); 
+    // NP* cerenkov_wavelength_rejection_sampled( unsigned num_wavelength ); 
     void dump_wavelength(                       float* wavelength, unsigned num_wavelength, unsigned edgeitems=10 ); 
 
 

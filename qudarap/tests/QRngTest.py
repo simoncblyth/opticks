@@ -116,19 +116,13 @@ if __name__ == '__main__':
     if PICK in tuple("AB"):       
         t = QRngTest(reldir)  
 
-        if TEST == "generate":
-            u = t.u
-            print("u.shape\n",u.shape)
-        elif TEST == "generate_evid": 
-
-            t.uu_plot()
+        if TEST == "generate": 
             uu = t.uu
             uuh = t.uuh
-
             print("uu.shape\n",uu.shape)
             print("uu[:10]\n",uu[:10])
-
             t.check_skipahead_shifts(1)
+            #t.uu_plot()
         else:
             print("%s:TEST:%s unhandled : run ana/pdb individually for each TEST" % (sys.argv[0],TEST) )
         pass
@@ -138,15 +132,6 @@ if __name__ == '__main__':
         b = QRngTest(b_reldir)  
 
         if TEST == "generate":
-            au = a.u
-            bu = b.u
-            au_bu_match = np.all( au == bu )
-            print("au.shape\n",au.shape)
-            print("bu.shape\n",bu.shape)
-            print("au_bu_match:%d\n" % au_bu_match)
-            assert au_bu_match
-            
-        elif TEST == "generate_evid": 
             auu = a.uu
             buu = b.uu
             auu_buu_match = np.all( auu == buu )  

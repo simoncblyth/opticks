@@ -31,7 +31,6 @@ TODO : implement sanity check for use after loading::
 #include "SCurandState.h"
 #endif
 
-struct qrng ; 
 
 
 struct QUDARAP_API QRng 
@@ -62,40 +61,33 @@ struct QUDARAP_API QRng
 
     const char* RNGNAME ; 
     bool  UPLOAD_RNG_STATES ; 
+    ULL            skipahead_event_offset ; 
+    ULL            seed ;
+    ULL            offset ; 
+    const char*    SEED_OFFSET ;
+    int            parse_rc ; 
+    qrng<RNG>*     qr ;  
+    qrng<RNG>*     d_qr ;  
+    ULL            rngmax ;
 
 #ifndef OLD_MONOLITHIC_CURANDSTATE
     SCurandState   cs ; 
 #endif
-    const char*    path ; 
-    ULL            rngmax ;
- 
-    XORWOW*   d_uploaded_states ; 
 
-
-    // when not using saved states need to curand_init, hence requires seed and offset
-    ULL            seed ;
-    ULL            offset ; 
-    ULL            skipahead_event_offset ; 
-
-    const char*    SEED_OFFSET ;
-    int            parse_rc ; 
-
-
-    qrng*          qr ;  
-    qrng*          d_qr ;  
 
     QRng(unsigned skipahead_event_offset=1) ;  
     void init(); 
+
+    template<typename R> void initStates();
+
     void initMeta(); 
 
     virtual ~QRng(); 
 
-    void cleanup(); 
     std::string desc() const ; 
 
 
-    template <typename T> void generate(      T* u, unsigned ni, unsigned nv, unsigned long long skipahead_ ) ; 
-    template <typename T> void generate_evid( T* u, unsigned ni, unsigned nv, unsigned evid ) ; 
+    template <typename T> void generate( T* u, unsigned ni, unsigned nv, unsigned evid ) ; 
 
     dim3 numBlocks ; 
     dim3 threadsPerBlock ; 

@@ -20,31 +20,10 @@ So have to implement all methods in each specialization, or use a separate helpe
 #include <sstream>
 #include <string>
 
-template<typename T> 
-struct srng
-{ 
-    static constexpr const char CODE = '?' ;
-    static constexpr const char* NAME = "?" ;
-    static constexpr unsigned SIZE = 0 ;
-    static constexpr bool UPLOAD_RNG_STATES = false ;
-};
 
-template<typename T> 
-inline std::string srng_Desc()
-{
-    std::stringstream ss ; 
-    ss 
-       << "[srng_Desc\n" 
-       <<  " srng<T>::NAME " << srng<T>::NAME << "\n"
-       <<  " srng<T>::CODE " << srng<T>::CODE << "\n"
-       <<  " srng<T>::SIZE " << srng<T>::SIZE << "\n"
-       << "]srng_Desc" 
-       ; 
-    std::string str = ss.str() ; 
-    return str ; 
-}
+template<typename T> struct srng {};
 
-
+// template specializations for the different states
 template<> 
 struct srng<curandStateXORWOW>  
 { 
@@ -63,10 +42,8 @@ struct srng<curandStatePhilox4_32_10>
     static constexpr bool UPLOAD_RNG_STATES = false ; 
 };
 
-
 #ifdef WITH_CURANDLITE
 #include "curandlite/curandStatePhilox4_32_10_OpticksLite.h"
-
 template<> 
 struct srng<curandStatePhilox4_32_10_OpticksLite>  
 { 
@@ -75,6 +52,25 @@ struct srng<curandStatePhilox4_32_10_OpticksLite>
     static constexpr unsigned SIZE = sizeof(curandStatePhilox4_32_10_OpticksLite) ; 
     static constexpr bool UPLOAD_RNG_STATES = false ; 
 };
-
 #endif
+
+
+// helper function
+template<typename T> 
+inline std::string srng_Desc()
+{
+    std::stringstream ss ; 
+    ss 
+       << "[srng_Desc\n" 
+       <<  " srng<T>::NAME " << srng<T>::NAME << "\n"
+       <<  " srng<T>::CODE " << srng<T>::CODE << "\n"
+       <<  " srng<T>::SIZE " << srng<T>::SIZE << "\n"
+       << "]srng_Desc" 
+       ; 
+    std::string str = ss.str() ; 
+    return str ; 
+}
+
+
+
 

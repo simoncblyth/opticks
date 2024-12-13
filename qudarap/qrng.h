@@ -3,76 +3,21 @@
 qrng.h
 =======
 
-TODO: incorporate the curand_init call from QCurandState.cu
-into here and use this from there
+Despite differences between template specializations regarding *uploaded_states* 
+all specializations have the same init_with_skipahead signature. 
+The ctor is only compiled on CPU, as the instance get instanciated on CPU 
+before being uploaded to GPU. 
 
 
+init_with_skipahead
+---------------------
 
-**/
+1. With XORWOW copy the *photon_idx* element of uploaded_states array 
+   to the curandState reference argument, with others curand_init is cheap, 
+   so is used directly.  For XORWOW the curand_init is done in separate
+   launches creating the chunked states files with QCurandState.cu
 
-#if defined(__CUDACC__) || defined(__CUDABE__)
-   #define QRNG_METHOD __device__
-#else
-   #define QRNG_METHOD 
-#endif 
-
-#include <curand_kernel.h>
-
-
-#if defined(MOCK_CUDA)
-#else
-
-using XORWOW = curandStateXORWOW ;
-using Philox = curandStatePhilox4_32_10 ; 
-
-#ifdef WITH_CURANDLITE
-using PhiloxLite = curandStatePhilox4_32_10_OpticksLite ; 
-#endif
-
-//using RNG = Philox ;
-using RNG = XORWOW ;
-#endif
-
-
-
-struct qrng
-{
-    using ULL = unsigned long long ; 
-
-    ULL  seed ;
-    ULL  offset ; 
-    ULL  skipahead_event_offset ; 
-
-    void*   uploaded_states ; 
-
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-    QRNG_METHOD void get_rngstate_with_skipahead(RNG& rng, unsigned event_idx, unsigned photon_idx );  
-
-#else
-    qrng(ULL seed_, ULL offset_, ULL skipahead_event_offset_, void* uploaded_states_)
-        :
-        seed(seed_),
-        offset(offset_),
-        skipahead_event_offset(skipahead_event_offset_),
-        uploaded_states(uploaded_states_)
-    {
-    }
-
-#endif
-
-}; 
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-
-
-/**
-qrng::get_rngstate_with_skipahead  (formerly qrng::random_setup)
------------------------------------------------------------------
-
-light touch encapsulation of setup only as want generation of randoms to be familiar/standard and suffer no overheads
-
-1. copy the *photon_idx* element of the rng_states array to the curandState reference argument
+   * hence only qrng<XORWOW> template specialization has *uploaded_states* member
 
 2. skipahead the curandState by skipahead_event_offset*event_idx 
    The offset can be configured using the OPTICKS_EVENT_SKIPAHEAD envvar.
@@ -91,44 +36,156 @@ seed
 
 subsequence
    uses photon_idx
+   [current usage focusses on this RNG "dimension"]
+
+   * TODO: check implications of using different RNG "dimensions" for different purposes
+
 
 offset 
    use as simulation constant
 
 
-With Philox the curand_init does skipahead and skipahead_sequence advancing ctr.xyzw::
+**/
 
-    skipahead(offset,&rng)
-       ctr.xyzw
-       BUT: offset default zero 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+   #define QRNG_METHOD __device__
+#else
+   #define QRNG_METHOD 
+#endif 
 
-    skipahead_sequence(subsequence,&rng)  
-       ctr.zw
+#include <curand_kernel.h>
+
+using ULL = unsigned long long ; 
+
+#if defined(MOCK_CUDA)
+#else
+
+using XORWOW = curandStateXORWOW ;
+using Philox = curandStatePhilox4_32_10 ; 
+
+#ifdef WITH_CURANDLITE
+using PhiloxLite = curandStatePhilox4_32_10_OpticksLite ; 
+#endif
+
+using RNG = Philox ;
+//using RNG = XORWOW ;
+
+#endif
 
 
-My current usage focusses on the "subsequence" for dimension
+template<typename T> struct qrng {} ; 
 
-TODO: check performance implications of using different RNG "dimensions" 
-for different purposes
 
+template<> 
+struct qrng<XORWOW>
+{
+    ULL  seed ;
+    ULL  offset ; 
+    ULL  skipahead_event_offset ; 
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+    XORWOW*   uploaded_states ; 
+#else
+    void*     uploaded_states ; 
+#endif
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+    QRNG_METHOD void init(XORWOW& rng, unsigned event_idx, unsigned photon_idx )
+    {  
+        rng = uploaded_states[photon_idx] ; 
+        ULL skipahead_ = skipahead_event_offset*event_idx ; 
+        skipahead( skipahead_, &rng ); 
+    }
+#else
+    qrng(ULL seed_, ULL offset_, ULL skipahead_event_offset_ )
+        :
+        seed(seed_),
+        offset(offset_),
+        skipahead_event_offset(skipahead_event_offset_),
+        uploaded_states(nullptr)
+    {
+    }
+
+    void set_uploaded_states( void*  uploaded_states_ )
+    {
+        uploaded_states = uploaded_states_ ;
+    } 
+
+#endif
+}; 
+
+
+/**
+qrng<Philox>
+-------------
+
+With Philox the curand_init does skipahead and skipahead_sequence advancing ctr.xyzw:
+
+skipahead(offset,&rng)
+   ctr.xyzw
+
+skipahead_sequence(subsequence,&rng)  
+   ctr.zw
 
 **/
 
-inline QRNG_METHOD void qrng::get_rngstate_with_skipahead(RNG& rng, unsigned event_idx, unsigned photon_idx )
+template<> 
+struct qrng<Philox>
 {
-    ULL skipahead_ = skipahead_event_offset*event_idx ; 
-    ULL subsequence_ = photon_idx ; 
+    ULL  seed ;
+    ULL  offset ; 
+    ULL  skipahead_event_offset ; 
 
-    if( uploaded_states == nullptr )
-    {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+    QRNG_METHOD void init(Philox& rng, unsigned event_idx, unsigned photon_idx )
+    {  
+        ULL subsequence_ = photon_idx ; 
         curand_init( seed, subsequence_, offset, &rng ) ;
+        ULL skipahead_ = skipahead_event_offset*event_idx ; 
+        skipahead( skipahead_, &rng ); 
     }
-    else
+#else
+    qrng(ULL seed_, ULL offset_, ULL skipahead_event_offset_ )
+        :
+        seed(seed_),
+        offset(offset_),
+        skipahead_event_offset(skipahead_event_offset_)
     {
-        rng = *( ((RNG*)uploaded_states) + photon_idx) ; 
-    }    
-
-    skipahead( skipahead_, &rng ); 
-}
+    }
+    void set_uploaded_states( void* ){}
 #endif
- 
+}; 
+
+
+#ifdef WITH_CURANDLITE
+template<> 
+struct qrng<PhiloxLite>
+{
+    ULL  seed ;
+    ULL  offset ; 
+    ULL  skipahead_event_offset ; 
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+    QRNG_METHOD void init(PhiloxLite& rng, unsigned event_idx, unsigned photon_idx )
+    {  
+        ULL subsequence_ = photon_idx ; 
+        curand_init( seed, subsequence_, offset, &rng ) ;
+        ULL skipahead_ = skipahead_event_offset*event_idx ; 
+        skipahead( skipahead_, &rng ); 
+    }
+#else
+    qrng(ULL seed_, ULL offset_, ULL skipahead_event_offset_ )
+        :
+        seed(seed_),
+        offset(offset_),
+        skipahead_event_offset(skipahead_event_offset_)
+    {
+    }
+    void set_uploaded_states( void* ){}
+#endif
+}; 
+#endif
+
+
