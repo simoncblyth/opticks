@@ -449,6 +449,15 @@ presumably because the CUDA context is lost as a result of the timeout making
 all the device pointers invalid. The copyback is the usual thing to fail because 
 it is the normally the first thing to use the stale pointers after the kernel launch. 
 
+
+Debug tip 0 
+~~~~~~~~~~~~~
+
+Simply add "return 0" to call with issue, and 
+progressivley move that forwards to find where
+the issue is. 
+
+
 Debug tip 1 : check kernel inputs 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

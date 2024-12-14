@@ -30,7 +30,7 @@ as those are useful for debugging.
 
 int QEvent_Lifecycle_Test::EventLoop()
 {
-    SEvt* sev = SEvt::Create(SEvt::EGPU) ; 
+    SEvt* sev = SEvt::Create_EGPU() ; 
     // instanciation may load input_photons if configured
     assert( sev );  
 
@@ -38,6 +38,8 @@ int QEvent_Lifecycle_Test::EventLoop()
     // calls SEvt::setFrame which 
     // for non-placeholder frame might transform the input photons
     // using the frame transform 
+
+
 
     QEvent* event = new QEvent ; // grabs SEvt::EGPU  
 
@@ -55,14 +57,10 @@ int QEvent_Lifecycle_Test::EventLoop()
         // SEvt::beginOfEvent calls SEvt::setFrameGenstep which creates 
         // the input photon genstep and calls SEvt::addGenstep
 
-        int rc = event->setGenstep(); 
+        NP* igs = sev->makeGenstepArrayFromVector();  
+        int rc = event->setGenstepUpload_NP(igs); 
         assert( rc == 0 );
         if(rc!=0) std::raise(SIGINT); 
-        // QEvent::setGenstep 
-        //    1. SEvt::gatherGenstep yielding NP* gs 
-        //    2. SEvt::clear which clears vectors and NPFold::clear which deletes arrays 
-        //    2. calls QEvent::setInputPhoton which invokes SEvt::gatherInputPhoton and uploads 
-        //
 
         // IN REALITY THE LAUNCH WOULD BE HERE
         // propagating the photons, changing GPU side buffers 

@@ -40,6 +40,9 @@ source $HOME/.opticks/GEOM/GEOM.sh
 msg="=== $BASH_SOURCE :"
 
 
+#export QSim__photon_launch_mutate_DEBUG_NUM_PHOTON=1
+
+
 #test=rng_sequence
 
 #test=boundary_lookup_all
@@ -49,7 +52,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_scintillation
 #test=wavelength_cerenkov         ### non-active moved to QSim_dbg.cu 
 
-test=scint_generate
+#test=scint_generate
 #test=cerenkov_generate
 
 #test=fill_state_0
@@ -77,7 +80,7 @@ test=scint_generate
 #test=propagate_at_surface
 #test=randgaussq_shoot
 
-#test=fake_propagate
+test=fake_propagate
 #test=gentorch
 
 #test=smear_normal_sigma_alpha
@@ -152,13 +155,13 @@ export NRM=${NRM:-$nrm}
 loglevels()
 {
     #export SEvent=INFO
-    #export SEvt=INFO
+    export SEvt=INFO
     #export QBnd=INFO
     #export QSim=INFO
     #export QEvent=INFO
     export QNonExisting=INFO 
 }
-loglevels
+[ -n "$LOG" ] && loglevels
 
 
 export SPRD_BND=$(cat << EOV

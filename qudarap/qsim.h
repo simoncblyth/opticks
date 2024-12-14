@@ -40,7 +40,6 @@ TODO:
 
 #include "storch.h"
 #include "scarrier.h"
-//#include "scurand.h"
 #include "sevent.h"
 #include "sstate.h"
 #include "smatsur.h"
@@ -74,7 +73,6 @@ struct qsim
 {
     qbase*              base ; 
     sevent*             evt ; 
-    //RNG*                rng_state ;  // <== NOW ONLY AVAILABLE FOR XORWOW ? NEED TO REMOVE : HIDING IN qrng<RNG>
     qrng<RNG>*          rng ; 
     qbnd*               bnd ; 
     qmultifilm*         multifilm;
@@ -129,7 +127,7 @@ struct qsim
     QSIM_METHOD void    reflect_diffuse(                       RNG& rng, sctx& ctx );
     QSIM_METHOD void    reflect_specular(                      RNG& rng, sctx& ctx );
 
-    QSIM_METHOD void    mock_propagate( sphoton& p, const quad2* mock_prd, RNG& rng, unsigned idx ); 
+    QSIM_METHOD void    fake_propagate( sphoton& p, const quad2* mock_prd, RNG& rng, unsigned idx ); 
     QSIM_METHOD int     propagate(const int bounce, RNG& rng, sctx& ctx ); 
 
     QSIM_METHOD void    hemisphere_polarized( unsigned polz, bool inwards, RNG& rng, sctx& ctx ); 
@@ -999,6 +997,18 @@ incidence.
 
 inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, RNG& rng, sctx& ctx, float theTransmittance ) const 
 {
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    if(ctx.idx == base->pidx)
+    printf("//propagate_at_boundary.DEBUG_PIDX ctx.idx %d base %p base.pidx %d \n", ctx.idx, base, base->pidx  ); 
+#endif
+
+#if !defined(PRODUCTION) && defined(DEBUG_TAG)
+    if(ctx.idx == base->pidx)
+    printf("//propagate_at_boundary.DEBUG_TAG ctx.idx %d base %p base.pidx %d \n", ctx.idx, base, base->pidx  ); 
+#endif
+    return 0 ; 
+
+
     sphoton& p = ctx.p ; 
     const sstate& s = ctx.s ; 
 
@@ -2013,8 +2023,8 @@ inline QSIM_METHOD void qsim::reflect_specular( RNG& rng, sctx& ctx )
 }
 
 /**
-qsim::mock_propagate TODO: rename to mock_simulate 
-------------------------------------------------------
+qsim::fake_propagate
+-----------------------
 
 This uses mock input prd (quad2) to provide a CUDA only (no OptiX, no geometry) 
 test of qsim propagation machinery. 
@@ -2051,7 +2061,7 @@ so can switch them off easily in production running
 
 **/
 
-inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd, RNG& rng, unsigned idx )
+inline QSIM_METHOD void qsim::fake_propagate( sphoton& p, const quad2* mock_prd, RNG& rng, unsigned idx )
 {
     p.set_flag(TORCH);  // setting initial flag : in reality this should be done by generation
 
@@ -2078,7 +2088,7 @@ inline QSIM_METHOD void qsim::mock_propagate( sphoton& p, const quad2* mock_prd,
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
         if(idx == base->pidx) 
-        printf("//qsim.mock_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
+        printf("//qsim.fake_propagate idx %d bounce %d evt.max_bounce %d prd.q0.f.xyzw (%10.4f %10.4f %10.4f %10.4f) \n", 
              idx, bounce, evt->max_bounce, ctx.prd->q0.f.x, ctx.prd->q0.f.y, ctx.prd->q0.f.z, ctx.prd->q0.f.w );  
 #endif
         command = sim->propagate(bounce, rng, ctx ); 

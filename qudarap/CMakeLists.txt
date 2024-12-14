@@ -34,6 +34,10 @@ set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE)
 
 
+set(DEV_SOURCES
+    QSim_cerenkov_dev.cu
+)
+
 set(SOURCES
     QUDARAP_LOG.cc
 
@@ -44,6 +48,7 @@ set(SOURCES
 
     QSim.cc
     QSim.cu
+
 
     QPMT.cc
     QPMT.cu 
@@ -95,6 +100,9 @@ set(SOURCES
 
     QBuf.cc
 )
+
+
+
 
 SET(HEADERS
     QUDARAP_LOG.hh
@@ -160,9 +168,6 @@ SET(HEADERS
 )
 
 
-# OLD_WAY needed GGeo
-# Opticks::SysRap
-# Opticks::GGeo
 
 if(UNIX AND NOT APPLE)
   set(LIBS ${LIBS} ssl )  
@@ -212,9 +217,14 @@ https://stackoverflow.com/questions/34490294/what-does-configdebugrelease-mean-i
 target_compile_definitions( ${name}
     PUBLIC
       OPTICKS_QUDARAP 
-      $<$<CONFIG:Debug>:DEBUG_TAG>
       $<$<CONFIG:Debug>:DEBUG_PIDX>
 )
+#[=[
+
+DEBUG_TAG
+   collects all generated randoms for getting aligned running to work 
+      $<$<CONFIG:Debug>:DEBUG_TAG>
+#]=]
 
 
 #[=[

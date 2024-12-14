@@ -17,7 +17,6 @@ scerenkov.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/cerenkov
 #include "OpticksGenstep.h"
 #include "OpticksPhoton.h"
 
-//#include "scurand.h"
 #include "smath.h"
 #include "scuda.h"
 #include "squad.h"
@@ -57,17 +56,15 @@ struct scerenkov
     SCERENKOV_METHOD float Pmin() const { return smath::hc_eVnm/Wmax ; } 
     SCERENKOV_METHOD float Pmax() const { return smath::hc_eVnm/Wmin ; } 
 
+   static void FillGenstep( scerenkov& gs, int matline, int numphoton_per_genstep, bool dump ) ; 
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
    float* cdata() const {  return (float*)&gentype ; }
-   static void FillGenstep( scerenkov& gs, int matline, int numphoton_per_genstep, bool dump ) ; 
    std::string desc() const ; 
 #endif
 
 };
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
 
 
 
@@ -128,6 +125,11 @@ inline void scerenkov::FillGenstep( scerenkov& gs, int matline, int numphoton_pe
     gs.postVelocity = 20.f ; 
 
 }
+
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
 
 inline std::string scerenkov::desc() const 
 {

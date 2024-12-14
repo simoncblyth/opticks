@@ -307,7 +307,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     RNG rng = sim->rngstate[photon_idx] ;   
 #else
     RNG rng ; 
-    sim->rng->get_rngstate_with_skipahead( rng, sim->evt->index, photon_idx );
+    sim->rng->init( rng, sim->evt->index, photon_idx );
 #endif
 
 
@@ -403,7 +403,8 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     const quad6& gs = evt->genstep[genstep_idx] ; 
      
     qsim* sim = params.sim ; 
-    RNG rng = ((RNG*)sim->rngstate)[photon_idx] ; //TODO: photon_slot_offset for multi-launch ?  
+    RNG rng ;
+    sim->rng->init(rng, 0, photon_idx) ; 
 
     quad4 p ;  
     sim->generate_photon_simtrace(p, rng, gs, photon_idx, genstep_idx );  

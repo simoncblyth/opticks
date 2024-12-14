@@ -167,54 +167,26 @@ std::string QEvent::desc_alloc() const
 
 
 
-
-
-/**
-QEvent::setGenstep
--------------------
-
-Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
-
-Differences from _OLD version
-
-1. no gatherGenstep, no intermediated NP array, instead 
-   get genstep data direct from inside the vecs with no copying 
-
-2. no SEvt::clear as that is too much dealing with 
-   other lifecycle concerns that do not belong in
-   a "setGenstep" method
-
-
-**/
-
-int QEvent::setGenstep()  // onto device
-{
-    LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
-
-
-    NP* gs_ = sev->getGenstepArray();  
-    int rc = setGenstepUpload_NP(gs_) ; 
-
-    LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
-
-    return rc ; 
-}
-
-
-
-
 /**
 QEvent::setGenstepUpload_NP
 ------------------------------
 
+Canonically invoked from QSim::simulate and QSim::simtrace just prior to cx->launch 
+
 **/
 int QEvent::setGenstepUpload_NP(const NP* gs_ )
 {
-    return setGenstepUpload_NP(gs_, nullptr ); 
+    LOG_IF(info, SEvt::LIFECYCLE) << "[" ; 
+    int rc = setGenstepUpload_NP(gs_, nullptr ); 
+    LOG_IF(info, SEvt::LIFECYCLE) << "]" ; 
+    return rc ; 
 } 
 
 int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ ) 
 {
+    LOG_IF( fatal, gs_ == nullptr ) << " gs_ null " ; 
+    assert( gs_ ); 
+
     gs = gs_ ; 
     gss = gss_ ? new sslice(*gss_) : nullptr ; 
 
@@ -391,7 +363,7 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
     }
     else if(OpticksGenstep_::IsInputPhoton(gencode0)) // OpticksGenstep_INPUT_PHOTON  (NOT: _TORCH)
     {
-        setInputPhoton(); 
+        setInputPhotonAndUpload(); 
     }
     else
     {
@@ -436,8 +408,8 @@ void QEvent::device_alloc_genstep_and_seed()
 
 
 /**
-QEvent::setInputPhoton
-------------------------
+QEvent::setInputPhotonAndUpload
+------------------------------------
 
 This is a private method invoked only from QEvent::setGenstepUpload
 
@@ -478,7 +450,7 @@ This is a private method invoked only from QEvent::setGenstepUpload
 
 **/
 
-void QEvent::setInputPhoton()
+void QEvent::setInputPhotonAndUpload()
 {
     LOG_IF(info, LIFECYCLE) ; 
     LOG(LEVEL); 
@@ -488,10 +460,6 @@ void QEvent::setInputPhoton()
     int numph = input_photon->shape[0] ; 
     setNumPhoton( numph ); 
     QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), numph ); 
-
-    // HMM: there is a getter ... 
-    //delete input_photon ; 
-    //input_photon = nullptr ;  
 }
 
 void QEvent::checkInputPhoton() const 
@@ -517,22 +485,6 @@ void QEvent::checkInputPhoton() const
     assert(expected_numph); 
 }
 
-
-
-
-/**
-QEvent::setGenstep
--------------------
-
-Was being used by  QEventTest::setGenstep_quad6
-
-int QEvent::setGenstep(quad6* qgs, unsigned num_gs )  // TODO: what uses this ? eliminate ?
-{
-    NP* gs_ = NP::Make<float>( num_gs, 6, 4 ); 
-    gs_->read2( (float*)qgs );   
-    return setGenstepUpload( gs_ ); 
-}
-**/
 
 
 

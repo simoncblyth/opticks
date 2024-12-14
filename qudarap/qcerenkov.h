@@ -15,7 +15,6 @@ qcerenkov.h
 #include "smath.h"
 #include "OpticksPhoton.h"
 
-
 #include "qrng.h"
 
 
@@ -384,21 +383,6 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavel
 }
 
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

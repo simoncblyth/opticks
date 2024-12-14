@@ -47,6 +47,7 @@ with the actual code being tested.
 
 struct QSimTest
 {
+    static constexpr const unsigned M = 1000000 ; 
     static const char* FOLD ; 
     static const plog::Severity LEVEL ; 
     static void  EventConfig(unsigned type, const SPrd* prd);  // must be run after SEvt is instanciated
@@ -395,8 +396,31 @@ void QSimTest::generate_photon()
     assert(evt); 
 
     evt->addGenstep(gs); 
+    unsigned num_photon_after_SEvt__addGenstep = qs->event->getNumPhoton(); 
+
+
+    NP* igs = evt->makeGenstepArrayFromVector();        
+    qs->event->setGenstepUpload_NP(igs); 
+    unsigned num_photon_after_QEvent__setGenstep = qs->event->getNumPhoton(); 
+
+
+    LOG(info) 
+       << "\n"
+       << " gs_config " << gs_config
+       << " gs " << ( gs ? gs->sstr() : "-" )   
+       << "\n"
+       << " num_photon_after_SEvt__addGenstep " 
+       <<   num_photon_after_SEvt__addGenstep 
+       << "\n"
+       << " num_photon_after_QEvent__setGenstep " 
+       <<   num_photon_after_QEvent__setGenstep
+       << "\n"
+       ;
+
 
     qs->generate_photon();  
+
+
 
     NP* p = qs->event->gatherPhoton(); 
     p->save("$FOLD/p.npy"); 
@@ -562,15 +586,28 @@ void QSimTest::photon_launch_mutate()
         return ; 
     } 
 
-    LOG(info) << " loaded " << a->sstr() << " from src_subfold " << src_subfold ; 
-    unsigned num_photon_ = a->shape[0] ; 
+    unsigned num_photon_loaded = a->shape[0] ; 
+    bool num_photon_consistent = num_photon_loaded == num_photon ;
 
-    bool num_photon_expect = num_photon_ == num_photon ;
-    assert( num_photon_expect ); 
-    if(!num_photon_expect) std::raise(SIGINT); 
+    LOG(info) 
+        << "\n" 
+        << " a.sstr " << a->sstr() << "\n" 
+        << " from src_subfold " << src_subfold << "\n"
+        << " a.lpath " << a->get_lpath() << "\n"
+        << " num_photon_loaded " << num_photon_loaded << "\n"
+        << " num_photon_loaded/M " << num_photon_loaded/M  << "\n"
+        << " num_photon " << num_photon << "\n"
+        << " num_photon/M " << num_photon/M << "\n"
+        << " num_photon_consistent " << ( num_photon_consistent ? "YES" : "NO " ) << "\n"
+        ; 
+
+    assert( num_photon_consistent ); 
+    if(!num_photon_consistent) std::raise(SIGINT); 
 
     sphoton* photons = (sphoton*)a->bytes() ; 
     qs->photon_launch_mutate( photons, num_photon, type ); 
+
+
 
     a->save("$FOLD/p.npy"); 
 

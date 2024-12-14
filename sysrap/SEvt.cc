@@ -3059,7 +3059,7 @@ As gensteps always originate on CPU its kinda silly to call access gather-ing.
 
 **/
 
-NP* SEvt::gatherGenstep() const { return getGenstepArray() ; }
+NP* SEvt::gatherGenstep() const { return makeGenstepArrayFromVector() ; }
 
 
 quad6* SEvt::getGenstepVecData() const 
@@ -3071,7 +3071,17 @@ int SEvt::getGenstepVecSize() const
     return genstep.size(); 
 }
 
-NP* SEvt::getGenstepArray() const 
+
+/**
+SEvt::makeGenstepArrayFromVector (formerly misnamed getGenstepArray)
+----------------------------------------------------------------------
+
+Makes NP array from contents of genstep vector
+
+**/
+
+
+NP* SEvt::makeGenstepArrayFromVector() const 
 {
     return NPX::ArrayFromData<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ; 
 }

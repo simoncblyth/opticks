@@ -12,6 +12,7 @@
 #include "SSim.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "SEvent.hh"
 #include "SEventConfig.hh"
 #include "SCSGOptiX.h"
 
@@ -344,8 +345,7 @@ the launch.
 
        EGPU.SEvt::beginOfEvent
 
-       QEvent::setGenstep
-          QEvent::setGenstepUpload(quad6*)
+       QEvent::setGenstepUpload(quad6*)
 
        SCSGOptiX::simulate_launch 
 
@@ -366,26 +366,25 @@ double QSim::simulate(int eventID, bool reset_)
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
+    NP* igs = sev->makeGenstepArrayFromVector();  
 
-    NP* gs_ = sev->getGenstepArray();  
-
-    bool gs_null = gs_ == nullptr ; 
-    LOG_IF(fatal, gs_null ) << " gs_null " << ( gs_null ? "YES" : "NO " ) ; 
-    assert( !gs_null ); 
+    bool igs_null = igs == nullptr ; 
+    LOG_IF(fatal, igs_null ) << " igs_null " << ( igs_null ? "YES" : "NO " ) ; 
+    assert( !igs_null ); 
 
 
-    std::vector<sslice> gs_slice ; 
-    SGenstep::GetGenstepSlices( gs_slice, gs_, SEventConfig::MaxSlot() ); 
-    int num_slice = gs_slice.size(); 
-    LOG(LEVEL) << sslice::Desc(gs_slice); 
+    std::vector<sslice> igs_slice ; 
+    SGenstep::GetGenstepSlices( igs_slice, igs, SEventConfig::MaxSlot() ); 
+    int num_slice = igs_slice.size(); 
+    LOG(LEVEL) << sslice::Desc(igs_slice); 
 
     for(int i=0 ; i < num_slice ; i++)
     {
-        const sslice& sl = gs_slice[i] ; 
+        const sslice& sl = igs_slice[i] ; 
 
         LOG(info) << sl.desc() ; 
 
-        int rc = event->setGenstepUpload_NP(gs_, &sl ) ; 
+        int rc = event->setGenstepUpload_NP(igs, &sl ) ; 
         LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ; 
 
 
@@ -510,7 +509,9 @@ double QSim::simtrace(int eventID)
 {
     sev->beginOfEvent(eventID); 
 
-    int rc = event->setGenstep();  
+    NP* igs = sev->makeGenstepArrayFromVector();  
+    int rc = event->setGenstepUpload_NP(igs) ; 
+
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ; 
 
     sev->t_PreLaunch = sstamp::Now() ; 
@@ -908,14 +909,11 @@ void QSim::generate_photon()
     unsigned num_photon = event->getNumPhoton() ;  
     LOG(info) << " num_photon " << num_photon ; 
 
-    if( num_photon == 0 )
-    {
-        LOG(fatal) 
-           << " num_photon zero : MUST QEvent::setGenstep before QSim::generate_photon "  
-           ; 
-        return ; 
-    }
+    LOG_IF(fatal, num_photon == 0 )
+        << " num_photon zero : MUST QEvent::setGenstep before QSim::generate_photon "  
+        ; 
 
+    assert( num_photon > 0 ); 
     assert( d_sim ); 
 
     configureLaunch( num_photon, 1 ); 
@@ -1096,18 +1094,30 @@ void QSim::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigned t
     const char* label_0 = "QSim::photon_launch_mutate/d_photon" ; 
     sphoton* d_photon = QU::UploadArray<sphoton>(photon, num_photon, label_0 );  
 
-    unsigned threads_per_block = 512 ;  
-    configureLaunch1D( num_photon, threads_per_block ); 
 
-    QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, num_photon, d_dbg, type );  
+    unsigned DEBUG_NUM_PHOTON = ssys::getenvunsigned(_QSim__photon_launch_mutate_DEBUG_NUM_PHOTON, 0 ); 
+    bool DEBUG_NUM_PHOTON_valid = DEBUG_NUM_PHOTON > 0 && DEBUG_NUM_PHOTON <= num_photon ; 
+
+    unsigned u_num_photon = DEBUG_NUM_PHOTON_valid ? DEBUG_NUM_PHOTON  : num_photon ; 
+
+    LOG_IF( error, DEBUG_NUM_PHOTON_valid ) 
+        << _QSim__photon_launch_mutate_DEBUG_NUM_PHOTON 
+        << " DEBUG_NUM_PHOTON " << DEBUG_NUM_PHOTON
+        << " num_photon " << num_photon 
+        << " u_num_photon " << u_num_photon 
+        ; 
+
+    unsigned threads_per_block = 512 ;  
+    configureLaunch1D( u_num_photon, threads_per_block ); 
+
+    QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, u_num_photon, d_dbg, type );  
 
     const char* label_1 = "QSim::photon_launch_mutate" ; 
-    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, num_photon, label_1 ); 
+    QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, u_num_photon, label_1 ); 
 }
  
  
 
-extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad2* prd );  
 
 
 /**
@@ -1144,10 +1154,15 @@ quad2* QSim::UploadFakePRD(const NP* ip, const NP* prd) // static
 
 
 
+extern void QSim_fake_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad2* prd );  
+
 /**
 
 QSim::fake_propagate (formerly mock_propagate)
 -----------------------------------------------
+
+This is only invoked from QSimTest::fake_propagate
+
 
 Was renamed from "mock" to "fake" as is within Opticks "mock" is 
 used to mean without using CUDA. 
@@ -1169,12 +1184,14 @@ void QSim::fake_propagate( const NP* prd, unsigned type )
 
     quad2* d_prd = UploadFakePRD(ip, prd) ; 
 
-    int rc = event->setGenstep();   
+    NP* igs = sev->makeGenstepArrayFromVector(); 
+    
+    int rc = event->setGenstepUpload_NP(igs);   
     assert( rc == 0 ); 
     if(rc!=0) std::raise(SIGINT); 
 
     sev->add_array("prd0", prd );  
-    // NB QEvent::setGenstep calls SEvt/clear so this addition 
+    // NB SEvt::beginOfEvent calls SEvt/clear so this addition 
     // must be after that to succeed in being added to SEvt saved arrays
 
     int num_photon = event->getNumPhoton(); 
@@ -1194,7 +1211,7 @@ void QSim::fake_propagate( const NP* prd, unsigned type )
     unsigned threads_per_block = 512 ;  
     configureLaunch1D( num_photon, threads_per_block ); 
 
-    QSim_mock_propagate_launch(numBlocks, threadsPerBlock, d_sim, d_prd );  
+    QSim_fake_propagate_launch(numBlocks, threadsPerBlock, d_sim, d_prd );  
 
     cudaDeviceSynchronize();
 

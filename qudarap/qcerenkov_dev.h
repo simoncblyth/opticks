@@ -1,10 +1,43 @@
+#pragma once
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+   #define QCERENKOV_DEV_METHOD __device__
+#else
+   #define QCERENKOV_DEV_METHOD 
+#endif 
+
+
+#include "qrng.h"
+#include "scerenkov.h"
+
+
+struct qcerenkov_dev
+{
+#if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
+
+    QCERENKOV_DEV_METHOD static void generate(              qsim* sim, quad4& q, unsigned id, RNG& rng, const scerenkov& gs );
+
+    template<typename T>
+    QCERENKOV_DEV_METHOD static void generate_enprop(       qsim* sim, quad4& q, unsigned id, RNG& rng, const scerenkov& gs ); 
+    QCERENKOV_DEV_METHOD static void generate_expt_double(  qsim* sim, quad4& q, unsigned id, RNG& rng ); 
+
+
+    QCERENKOV_DEV_METHOD static float wavelength_rejection_sampled(qsim* sim, unsigned id, RNG& rng ) ; 
+    QCERENKOV_DEV_METHOD static void  generate(qsim* sim, quad4& p, unsigned id, RNG& rng ); 
+
+    template<typename T>
+    QCERENKOV_DEV_METHOD static void generate_enprop(qsim* sim, quad4& p, unsigned id, RNG& rng); 
+
+
+#endif
+
+};
 
 
 
 
-
-
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, unsigned id, RNG& rng, const GS& g )
+inline QCERENKOV_DEV_METHOD void qcerenkov_dev::generate(qsim* sim, quad4& q, unsigned id, RNG& rng, const scerenkov& gs )
 {
     float u0 ;
     float u1 ; 
@@ -18,8 +51,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, u
     float sin2Theta ;
     float u_mxs2_s2 ;
 
-    // should be MaterialLine no ?
-    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
+    unsigned line = gs.matline ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
 
     unsigned loop = 0u ; 
 
@@ -31,15 +63,15 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, u
         u0 = curand_uniform(&rng) ;
 #endif
 
-        w_linear = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
+        w_linear = gs.Wmin + u0*(gs.Wmax - gs.Wmin) ; 
 
-        wavelength = g.ck1.Wmin*g.ck1.Wmax/w_linear ;  
+        wavelength = gs.Wmin*gs.Wmax/w_linear ;  
 
         float4 props = sim->boundary_lookup( wavelength, line, 0u); 
 
         sampledRI = props.x ;
 
-        cosTheta = g.ck1.BetaInverse / sampledRI ;
+        cosTheta = gs.BetaInverse / sampledRI ;
 
         sin2Theta = (1.f - cosTheta)*(1.f + cosTheta);  
 
@@ -49,13 +81,13 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, u
         u1 = curand_uniform(&rng) ;
 #endif
 
-        u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
+        u_mxs2_s2 = u1*gs.maxSin2 - sin2Theta ;
 
         loop += 1 ; 
 
-        if( id == sim->pidx )
+        if( id == sim->base->pidx )
         {
-            printf("//qcerenkov::cerenkov_generate id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+            printf("//qcerenkov_dev::cerenkov_generate id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
@@ -71,7 +103,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, u
     q.q1.f.x = sin2Theta ; 
     q.q1.u.y = 0u ; 
     q.q1.u.z = 0u ; 
-    q.q1.f.w = g.ck1.BetaInverse ; 
+    q.q1.f.w = gs.BetaInverse ; 
 
     q.q2.f.x = w_linear ;    // linear sampled wavelenth
     q.q2.f.y = wavelength ;  // reciprocalized trick : does it really work  
@@ -90,8 +122,8 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& q, u
 
 
 /**
-qcerenkov::cerenkov_generate_enprop
------------------------------------
+qcerenkov_dev::generate_enprop
+--------------------------------
 
 Variation assuming Wmin, Wmax contain Pmin Pmax and using qprop::interpolate 
 to sample the RINDEX
@@ -101,7 +133,7 @@ to sample the RINDEX
 
 
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& q, unsigned id, RNG& rng, const GS& g )
+inline QCERENKOV_DEV_METHOD void qcerenkov_dev::generate_enprop(qsim* sim, quad4& q, unsigned id, RNG& rng, const scerenkov& gs )
 {
     T u0 ;
     T u1 ; 
@@ -113,31 +145,30 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad
 
     T one(1.) ; 
 
-    // should be MaterialLine no ?
-    unsigned line = g.st.MaterialIndex ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
+    unsigned line = gs.matline ; //   line :  4*boundary_idx + OMAT/IMAT (0/3)
     unsigned loop = 0u ; 
 
     do {
 
         u0 = scurand<T>::uniform(&rng) ;
 
-        energy = g.ck1.Wmin + u0*(g.ck1.Wmax - g.ck1.Wmin) ; 
+        energy = gs.Wmin + u0*(gs.Wmax - gs.Wmin) ; 
 
         sampledRI = sim->prop->interpolate( 0u, energy ); 
 
-        cosTheta = g.ck1.BetaInverse / sampledRI ;
+        cosTheta = gs.BetaInverse / sampledRI ;
 
         sin2Theta = (one - cosTheta)*(one + cosTheta);  
 
         u1 = scurand<T>::uniform(&rng) ;
 
-        u_mxs2_s2 = u1*g.ck1.maxSin2 - sin2Theta ;
+        u_mxs2_s2 = u1*gs.maxSin2 - sin2Theta ;
 
         loop += 1 ; 
 
-        if( id == sim->pidx )
+        if( id == sim->base->pidx )
         {
-            printf("//qcerenkov::cerenkov_generate_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
+            printf("//qcerenkov_dev::generate_enprop id %d loop %3d u0 %10.5f ri %10.5f ct %10.5f s2 %10.5f u_mxs2_s2 %10.5f \n", id, loop, u0, sampledRI, cosTheta, sin2Theta, u_mxs2_s2 );
         }
 
 
@@ -156,7 +187,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad
     q.q1.f.x = sin2Theta ; 
     q.q1.u.y = 0u ; 
     q.q1.u.z = 0u ; 
-    q.q1.f.w = g.ck1.BetaInverse ; 
+    q.q1.f.w = gs.BetaInverse ; 
 
     q.q2.f.x = 0.f ; 
     q.q2.f.y = 0.f ; 
@@ -176,7 +207,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad
 
 
 /**
-qcerenkov::cerenkov_generate_expt
+qcerenkov_dev::generate_expt_double
 -------------------------------------
 
 This does the sampling all in double, narrowing to 
@@ -188,7 +219,7 @@ Which things have most need to be  double to make any difference ?
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_expt(qsim* sim, quad4& q, unsigned id, RNG& rng )
+inline QCERENKOV_DEV_METHOD void qcerenkov_dev::generate_expt_double(qsim* sim, quad4& q, unsigned id, RNG& rng )
 {
     double BetaInverse = 1.5 ; 
     double Pmin = 1.55 ; 
@@ -255,7 +286,7 @@ inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_expt(qsim* sim, quad4&
 
 
 /**
-qcerenkov:cerenkov_wavelength_rejection_sampled
+qcerenkov_dev:cerenkov_wavelength_rejection_sampled
 --------------------------------------------
 
 HUH: this is using a GPU fabricated genstep everytime : that is kinda crazy approach.
@@ -264,33 +295,40 @@ Makes much more sense to fabricate genstep on CPU and upload it.
 **/
 
 
-inline QCERENKOV_METHOD float qcerenkov::cerenkov_wavelength_rejection_sampled(qsim* sim, unsigned id, RNG& rng ) 
+inline QCERENKOV_DEV_METHOD float qcerenkov_dev::wavelength_rejection_sampled(qsim* sim, unsigned id, RNG& rng ) 
 {
-    QG qg ;      
-    GS& g = qg.g ; 
-    bool energy_range = false ; 
-    cerenkov_fabricate_genstep(sim, g, energy_range); 
-    float wavelength = cerenkov_wavelength_rejection_sampled(sim, id, rng, g);   
+
+    int matline = 0u ; 
+    int numphoton_per_genstep = 10u ; 
+
+    // MAKES MORE SENSE TO PREP GS ON CPU ?
+    scerenkov gs ;
+    scerenkov::FillGenstep(gs, matline, numphoton_per_genstep, false );  
+
+    float wavelength = wavelength_rejection_sampled(sim, id, rng );   
     return wavelength ; 
 }
 
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate(qsim* sim, quad4& p, unsigned id, RNG& rng ) 
+inline QCERENKOV_DEV_METHOD void qcerenkov_dev::generate(qsim* sim, quad4& p, unsigned id, RNG& rng ) 
 {
-    QG qg ;      
-    GS& g = qg.g ; 
-    bool energy_range = false ; 
-    cerenkov_fabricate_genstep(sim, g, energy_range); 
-    cerenkov_generate(sim, p, id, rng, g ); 
+    int matline = 0u ; 
+    int numphoton_per_genstep = 10u ; 
+
+    scerenkov gs ;
+    scerenkov::FillGenstep(gs, matline, numphoton_per_genstep, false );  
+
+    generate(sim, p, id, rng, gs ); 
 }
 
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::cerenkov_generate_enprop(qsim* sim, quad4& p, unsigned id, RNG& rng) 
+inline QCERENKOV_DEV_METHOD void qcerenkov_dev::generate_enprop(qsim* sim, quad4& p, unsigned id, RNG& rng) 
 {
-    QG qg ;      
-    GS& g = qg.g ; 
-    bool energy_range = true ; 
-    cerenkov_fabricate_genstep(sim, g, energy_range); 
+    int matline = 0u ; 
+    int numphoton_per_genstep = 10u ; 
 
-    cerenkov_generate_enprop<T>(sim, p, id, rng, g ); 
+    scerenkov gs ;
+    scerenkov::FillGenstep(gs, matline, numphoton_per_genstep, false );  
+
+    generate_enprop<T>(sim, p, id, rng, gs ); 
 }
 

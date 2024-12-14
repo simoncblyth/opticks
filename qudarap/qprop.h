@@ -1,7 +1,7 @@
 #pragma once
 /**
-qprop
-=======
+qprop.h
+========
 
 HMM: this relies on the prop arrays having last column integer 
 annotation as done by NP::combine but there is no naming 

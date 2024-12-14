@@ -130,8 +130,13 @@ extern void QSim_RandGaussQ_shoot(  dim3 numBlocks, dim3 threadsPerBlock, qsim* 
 }
 
 
+/**
+_QSim_dbg_gs_generate
+------------------------
 
+Generate photons using the debug cerenkov or scint genstep 
 
+**/
 
 
 __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type )
@@ -366,14 +371,13 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
-    if(idx % 100 == 0) printf("//_QSim_propagate_at_boundary_mutate blockIdx.x %d blockDim.x %d threadIdx.x %d idx %d \n", blockIdx.x, blockDim.x, threadIdx.x, idx ); 
-
     if (idx >= num_photon) return;
+
 
     RNG rng ; 
     sim->rng->init(rng, 0, idx ) ; 
 
-
+    //printf("//_QSim_propagate_at_boundary_mutate.after rnginit blockIdx.x %d blockDim.x %d threadIdx.x %d idx %d dbg %p \n", blockIdx.x, blockDim.x, threadIdx.x, idx, dbg ); 
 
     sctx ctx = {} ; 
     ctx.idx = idx ; 
@@ -384,9 +388,10 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
     quad4&  q  = (quad4&)ctx.p ; 
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ;
+
+    //printf("//_QSim_propagate_at_boundary_mutate bef callidx %d \n", idx ); 
  
     unsigned flag = 0 ; 
-    //sim->propagate_at_boundary( flag, p, prd, s, rng, idx, tagr );  
     sim->propagate_at_boundary( flag, rng, ctx );  
 
     q.q3.u.w = flag ;  // non-standard
@@ -570,6 +575,8 @@ extern void QSim_quad_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qu
 QSim_photon_launch
 --------------------
 
+Invoked from QSim::photon_launch_mutate all pointer args are on device. 
+
 **/
 
 extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg, unsigned type  )
@@ -612,18 +619,21 @@ extern void QSim_photon_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, 
 
 
     }
+
+    cudaDeviceSynchronize(); 
+    printf("//QSim_photon_launch post launch cudaDeviceSynchronize \n"); 
 }
 
 
 /**
-_QSim_mock_propagate
+_QSim_fake_propagate
 -----------------------
 
 TODO: compare performance using reference or pointer into global mem here rather than local stack copy    
 
 **/
 
-__global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
+__global__ void _QSim_fake_propagate( qsim* sim, quad2* prd )
 {
     sevent* evt = sim->evt ; 
     int idx = blockIdx.x*blockDim.x + threadIdx.x;
@@ -632,7 +642,7 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
 #ifdef DEBUG_PIDX
     qbase* base = sim->base ;  
     if( idx == base->pidx )
-    printf("//_QSim_mock_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
+    printf("//_QSim_fake_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record ); 
 #endif
 
 
@@ -643,14 +653,14 @@ __global__ void _QSim_mock_propagate( qsim* sim, quad2* prd )
     sphoton p = evt->photon[idx] ;   
     p.set_idx(idx); 
 
-    sim->mock_propagate( p, prd, rng, idx );  
+    sim->fake_propagate( p, prd, rng, idx );  
 
 }
 
 
-extern void QSim_mock_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad2* prd )
+extern void QSim_fake_propagate_launch(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, quad2* prd )
 {
-    _QSim_mock_propagate<<<numBlocks,threadsPerBlock>>>( sim, prd ); 
+    _QSim_fake_propagate<<<numBlocks,threadsPerBlock>>>( sim, prd ); 
 }
 
 

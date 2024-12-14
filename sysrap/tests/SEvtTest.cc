@@ -11,6 +11,7 @@
 #include "sdirectory.h"
 #include "ssys.h"
 
+#include "SEvent.hh"
 #include "SEventConfig.hh"
 #include "SEvt.hh"
 #include "NPFold.h"
@@ -21,51 +22,52 @@ struct SEvtTest
     static constexpr const int M = 1000000 ; 
     static const char* TEST ; 
 
-    static void AddGenstep(); 
-    static void LifeCycle(); 
-    static void InputPhoton(); 
-    static void getSaveDir(); 
-    static void getDir(); 
-    static void setMetaProf(); 
-    static void hostside_running_resize_(); 
-    static void CountNibbles(); 
-    static void getGenstepArray(); 
+    static int AddGenstep(); 
+    static int LifeCycle(); 
+    static int InputPhoton(); 
+    static int getSaveDir(); 
+    static int getDir(); 
+    static int setMetaProf(); 
+    static int hostside_running_resize_(); 
+    static int CountNibbles(); 
+    static int makeGenstepArrayFromVector(); 
 
-    static void Main(); 
+    static int Main(int argc, char** argv); 
  
 };
 
 
 const char* SEvtTest::TEST = ssys::getenvvar("TEST", "CountNibbles" ); 
 
-void SEvtTest::AddGenstep()
+int SEvtTest::AddGenstep()
 {
-   SEvt* evt = SEvt::Create(0) ; 
-   bool evt_expect = SEvt::Get(0) == evt ;
-   assert( evt_expect );  
-   if(!evt_expect) std::raise(SIGINT); 
+    SEvt* evt = SEvt::Create(0) ; 
+    bool evt_expect = SEvt::Get(0) == evt ;
+    assert( evt_expect );  
+    if(!evt_expect) std::raise(SIGINT); 
 
-   for(unsigned i=0 ; i < 10 ; i++)
-   {
-       quad6 q ; 
-       q.set_numphoton(1000) ; 
-       unsigned gentype = i % 2 == 0 ? OpticksGenstep_SCINTILLATION : OpticksGenstep_CERENKOV ;  
-       q.set_gentype(gentype); 
+    for(unsigned i=0 ; i < 10 ; i++)
+    {
+        quad6 q ; 
+        q.set_numphoton(1000) ; 
+        unsigned gentype = i % 2 == 0 ? OpticksGenstep_SCINTILLATION : OpticksGenstep_CERENKOV ;  
+        q.set_gentype(gentype); 
 
-       SEvt::AddGenstep(q);    
-   }
+        SEvt::AddGenstep(q);    
+    }
 
-   std::cout << SEvt::Get(0)->desc() << std::endl ; 
+    std::cout << SEvt::Get(0)->desc() << std::endl ; 
+    return 0 ; 
 }
 
 
-void SEvtTest::LifeCycle()
+int SEvtTest::LifeCycle()
 {
     unsigned max_bounce = 9 ; 
     SEventConfig::SetMaxBounce(max_bounce); 
     SEventConfig::SetMaxRecord(max_bounce+1); 
     SEventConfig::SetMaxRec(max_bounce+1); 
-    SEventConfig::SetMaxSeq(max_bounce+1); 
+    SEventConfig::SetMaxSeq(1); 
 
     SEvt* evt = SEvt::Create(0) ; 
 
@@ -141,19 +143,20 @@ void SEvtTest::LifeCycle()
 
     evt->save("$TMP/SEvtTest");
     LOG(info) << evt->desc() ;
+    return 0 ; 
 }
 
-void SEvtTest::InputPhoton()
+int SEvtTest::InputPhoton()
 {
     const char* ipf = SEventConfig::InputPhotonFrame();  
-    if( ipf == nullptr) return ; 
+    if( ipf == nullptr) return 1 ; 
 
     SEvt* evt = SEvt::Create(0) ; 
     LOG(info) << evt->desc() ;
 
     NP* ip = evt->getInputPhoton(); 
     LOG_IF(fatal, !ip ) << " FAILED TO getInputPhoton " ; 
-    if(!ip) return ; 
+    if(!ip) return 1 ; 
 
     
     const char* FOLD = spath::Resolve("$TMP/SEvtTest/test_InputPhoton"); 
@@ -172,6 +175,7 @@ void SEvtTest::InputPhoton()
     tr->save( FOLD, SStr::Name("tr",ipf, ".npy" )) ;  
 
     */
+    return 0 ; 
 }
 
 
@@ -189,7 +193,7 @@ Only after the save does the savedir get set.
 **/
 
 
-void SEvtTest::getSaveDir()
+int SEvtTest::getSaveDir()
 {
     SEvt* evt = SEvt::Create(0);
 
@@ -207,10 +211,11 @@ void SEvtTest::getSaveDir()
         << " savedir0 " << ( savedir0 ? savedir0 : "(null)" )  
         << " savedir1 " << ( savedir1 ? savedir1 : "(null)" )  
         ; 
+    return 0 ; 
 }
 
 
-void SEvtTest::getDir()
+int SEvtTest::getDir()
 {
     SEvt* evt = SEvt::Create(0);
     const char* dir0 = evt->getDir(); 
@@ -219,10 +224,11 @@ void SEvtTest::getDir()
         << "getDir" << std::endl 
         << " dir0 [" << ( dir0 ? dir0 : "-" ) << "]" << std::endl 
         ;
+    return 0 ; 
 }
 
 
-void SEvtTest::setMetaProf()
+int SEvtTest::setMetaProf()
 {
     SEvt* evt = SEvt::Create(0);
 
@@ -231,6 +237,7 @@ void SEvtTest::setMetaProf()
     evt->setMetaProf("test_setMeta", prof ); 
 
     std::cout << "evt->meta" << std::endl << evt->meta << std::endl ;  
+    return 0 ; 
 }
 
 /**
@@ -241,7 +248,7 @@ Profile time, VM, RSS change from hostside_running_resize
 
 **/
 
-void SEvtTest::hostside_running_resize_()
+int SEvtTest::hostside_running_resize_()
 {
     int num = 10*M ; 
     bool edump = false ; 
@@ -281,13 +288,14 @@ void SEvtTest::hostside_running_resize_()
         << sprof::Desc(p1, p2 ) 
         ; 
 
+    return 0 ; 
 }
 
-void SEvtTest::CountNibbles()
+int SEvtTest::CountNibbles()
 {
     const char* path = spath::Resolve("$SEQPATH"); 
     NP* seq = path ? NP::LoadIfExists(path) : nullptr ;
-    if(seq == nullptr) return ; 
+    if(seq == nullptr) return 0 ; 
 
     NP* seqnib = SEvt::CountNibbles(seq); 
     NP* seqnib_table = SEvt::CountNibbles_Table(seqnib); 
@@ -311,37 +319,60 @@ void SEvtTest::CountNibbles()
     fold->add( "seqnib", seqnib ); 
     fold->add( "seqnib_table", seqnib_table ); 
     fold->save("$FOLD"); 
+    return 0 ; 
 }
 
-void SEvtTest::getGenstepArray()
+int SEvtTest::makeGenstepArrayFromVector()
 {
+    std::cout << "[ SEvtTest::makeGenstepArrayFromVector \n"; 
+
     SEvt::Create_EGPU() ; 
     SEvt* evt = SEvt::Get_EGPU(); 
 
-    NP* gs = evt->getGenstepArray(); 
+    NP* gs0 = evt->makeGenstepArrayFromVector(); // get array from the genstep vector  
+    assert( gs0 == nullptr && "before adding genstep to vector expect null ") ;   
+
+    const NP* igs = SEvent::MakeDemoGenstep("torch");
+    evt->addGenstep(igs);  // converts into quad6 which are added to vector
+
+    NP* gs = evt->makeGenstepArrayFromVector(); // get array from the genstep vector  
+    assert( gs != nullptr && "after adding genstep to vector expect non-null array ") ;   
+
+
     std::cout << " gs " << ( gs ? gs->sstr() : "-" ) << std::endl ;  
+
+    NPFold* fold = new NPFold ; 
+    fold->add( "igs", igs ); 
+    fold->add( "gs", gs ); 
+    fold->save("$FOLD"); 
+
+    std::cout << "] SEvtTest::makeGenstepArrayFromVector \n"; 
+    return 0 ; 
 }
 
 
 
-void SEvtTest::Main()
-{
-    if( strcmp(TEST, "AddGenstep") == 0 ) AddGenstep();
-    if( strcmp(TEST, "LifeCycle") == 0 ) LifeCycle();
-    if( strcmp(TEST, "InputPhoton") == 0 ) InputPhoton();
-    if( strcmp(TEST, "getSaveDir") == 0 ) getSaveDir();
-    if( strcmp(TEST, "getDir") == 0 )      getDir();
-    if( strcmp(TEST, "setMetaProf") == 0 ) setMetaProf();
-    if( strcmp(TEST, "hostside_running_resize_") == 0 ) hostside_running_resize_();
-    if( strcmp(TEST, "CountNibbles") == 0 ) CountNibbles();
-    if( strcmp(TEST, "getGenstepArray") == 0 ) getGenstepArray();
-}
-
-int main(int argc, char** argv)
+int SEvtTest::Main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
     SEventConfig::SetRGModeTest(); 
-    SEvtTest::Main(); 
-    return 0 ; 
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
+
+    int rc = 0 ; 
+
+    if(ALL||strcmp(TEST, "AddGenstep") == 0 )   rc += AddGenstep();
+    if(ALL||strcmp(TEST, "LifeCycle") == 0 )    rc += LifeCycle();
+    if(ALL||strcmp(TEST, "InputPhoton") == 0 )  rc += InputPhoton();
+    if(ALL||strcmp(TEST, "getSaveDir") == 0 )   rc += getSaveDir();
+    if(ALL||strcmp(TEST, "getDir") == 0 )       rc += getDir();
+    if(ALL||strcmp(TEST, "setMetaProf") == 0 )  rc += setMetaProf();
+    if(ALL||strcmp(TEST, "hostside_running_resize_") == 0 ) rc += hostside_running_resize_();
+    if(ALL||strcmp(TEST, "CountNibbles") == 0 )  rc += CountNibbles();
+    if(ALL||strcmp(TEST, "makeGenstepArrayFromVector") == 0 ) rc += makeGenstepArrayFromVector();
+
+    return rc ; 
 }
+
+int main(int argc, char** argv){ return SEvtTest::Main(argc, argv); }
+
 // ~/opticks/sysrap/tests/SEvtTest.sh 

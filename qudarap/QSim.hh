@@ -156,7 +156,7 @@ public:
     NP* quad_launch_generate(unsigned num_quad, unsigned type ); 
     NP* photon_launch_generate(unsigned num_photon, unsigned type ); 
 
-
+    static constexpr const char* _QSim__photon_launch_mutate_DEBUG_NUM_PHOTON = "QSim__photon_launch_mutate_DEBUG_NUM_PHOTON" ; 
     void photon_launch_mutate(   sphoton* photon, unsigned num_photon, unsigned type ); 
 
 

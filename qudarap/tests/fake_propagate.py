@@ -17,9 +17,9 @@ from opticks.sysrap.sevt import SEvt
 
 
 if __name__ == '__main__':
-
-    #t = Fold.Load()
-    t = SEvt.Load(symbol="t", NEVT=0)
+    fold = os.path.expandvars("$TMP/GEOM/$GEOM/QSimTest/ALL0_fake_propagate/A000")
+    t = SEvt.Load(fold, symbol="t", NEVT=0)
+    print(repr(t))
 
     PIDX = int(os.environ.get("PIDX","-1"))
     FONT_SIZE= int(os.environ.get("FONT_SIZE","36"))
@@ -27,7 +27,7 @@ if __name__ == '__main__':
 
 
 
-if 1:
+if 0:
     p = t.f.photon
     r = t.f.record
     seq = t.f.seq
