@@ -23,11 +23,38 @@ BASE=$HOME/.opticks/GEOM
 
 source $BASE/GEOM.sh 
 
-vars="0 BASE GEOM"
+vars="0 BASE GEOM TAR"
 
-defarg="info_run"
+defarg="info_tar"
 
 arg=${1:-$defarg}
+
+
+if [ -z "$GEOM" ]; then 
+   echo ERROR - GEOM envvar is not defined
+   exit 1 
+else
+   echo GEOM $GEOM is defined
+fi 
+
+if [ ! -d "$BASE/$GEOM" ]; then
+   echo ERROR - GEOM $GEOM directory $BASE/$GEOM does not exist  
+else
+   echo GEOM $GEOM directory $BASE/$GEOM exists
+fi 
+
+TAR=$BASE/$GEOM.tar
+
+
+if [ -f "$TAR" ]; then
+   if [ -n "$VERBOSE" ] ; then 
+      tar tvf $TAR
+   fi 
+   du -h $TAR
+
+   md5sum $TAR
+fi 
+
 
 if [ "${arg/info}" != "${arg}" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
@@ -37,36 +64,28 @@ if [ "${arg/help}" != "${arg}" ]; then
    usage
 fi 
 
-if [ "${arg/run}" != "${arg}" ]; then
+if [ "${arg/tar}" != "${arg}" ]; then
 
-    if [ -z "$GEOM" ]; then 
-       echo ERROR - GEOM envvar is not defined
-       exit 1 
-    else
-       echo GEOM $GEOM is defined
-    fi 
-
-    if [ ! -d "$BASE/$GEOM" ]; then
-       echo ERROR - GEOM $GEOM directory $BASE/$GEOM does not exist  
-    else
-       echo GEOM $GEOM directory $BASE/$GEOM exists
-    fi 
-
-    if [ -f "$BASE/$GEOM.tar" ]; then
-       echo GEOM $BASE/${GEOM}.tar exists already   
-       cd $BASE
-
-       if [ -n "$VERBOSE" ] ; then 
-           tar tvf ${GEOM}.tar
-       fi 
-
-       du -h ${GEOM}.tar
+    if [ -f "$TAR" ]; then
+       echo TAR $TAR exists already
     else
        echo Creating GEOM tarball ${GEOM}.tar
        cd $BASE
        tar cvf ${GEOM}.tar ${GEOM}/*
     fi 
+fi 
+
+
+if [ "${arg/scp}" != "${arg}" ]; then
+    if [ -f "$TAR" ]; then
+        cmd="scp $TAR L:g/"
+        echo $cmd 
+        eval $cmd 
+   else
+        echo $BASH_SOURCE : must create TAR $TAR before can scp  
+   fi 
 
 fi 
+
 
 

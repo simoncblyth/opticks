@@ -58,21 +58,29 @@ MaxPhoton
 
 MaxSimtrace
 
-FORMER:MaxCurandState
-   std::max of MaxPhoton and MaxSimtrace
+MaxCurand 
+   Used by QRng with XORWOW running when curandState files are needed.
+   With chunked curandstate controls how many chunk files and how much 
+   of the final chunk to load into memory. 
 
-MaxCurand
-   configured separately, corresponds to maximum curandState slots 
-   which is constrained by available VRAM 
+   With OLD_MONOLITHIC_CURANDSTATE specifies which monolithic file to load. 
 
-   * using slices of curandState to give reproducible results despite 
-     split launches MaxCurand not the thing that is VRAM constrained 
-     instead it is constrained by the available chunked files
+   In both cases the value limits the total number of photons that can be 
+   XORWOW simulated irrespective of multi-launching to fit within VRAM. 
 
-MaxSlot
-    maximum launch slots which is constrained by available VRAM 
 
+MaxSlot OPTICKS_MAX_SLOT
+    maximum CUDA launch slots
  
+    With OPTICKS_MAX_SLOT:0 SEventConfig::HeuristicMaxSlot_Rounded is
+    used to set MaxSlot to a VRAM appropriate value.  
+
+    For non-zero OPTICKS_MAX_SLOT the specified value is used. 
+
+    For large numbers of photons the value will determine how many 
+    launches are done. 
+
+
 MaxRec
     normally 0, disabling creation of the QEvent domain compressed step record buffer
 

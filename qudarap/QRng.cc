@@ -69,7 +69,11 @@ QRng::QRng(unsigned skipahead_event_offset_)
 
 template<> void QRng::initStates<Philox>()
 { 
-    LOG(info) << "initStates<Philox> DO NOTHING " ; 
+    LOG(info)
+        << "initStates<Philox> DO NOTHING : No LoadAndUpload needed " 
+        << " rngmax " << rngmax 
+        << " SEventConfig::MaxCurand " << SEventConfig::MaxCurand()
+        ; 
 }
 
 template<> void QRng::initStates<XORWOW>()

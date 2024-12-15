@@ -12,13 +12,21 @@ sbuild_test
 
 #include <iostream>
 #include "sbuild.h"
+#include "ssys.h"
 
-int main()
+struct sbuild_test
 {
-    printf("sbuild::BUILD_TYPE [%s]\n", sbuild::BUILD_TYPE ); 
+    static int main();  
+}; 
 
-    std::cout << sbuild::Desc() ; 
-
+inline int sbuild_test::main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "ContextString"); 
+    bool ALL = strcmp(TEST, "ALL") == 0 ; 
+    if(ALL||0==strcmp(TEST,"Desc"))          std::cout << sbuild::Desc() << "\n" ; 
+    if(ALL||0==strcmp(TEST,"ContextString")) std::cout << sbuild::ContextString() << "\n" ; 
     return 0 ; 
 }
+
+int main(){ return sbuild_test::main() ; }
 

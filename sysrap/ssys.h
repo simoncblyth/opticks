@@ -262,7 +262,7 @@ inline const char* ssys::getenvvar(const char* ekey)
 inline const char* ssys::getenvvar(const char* ekey, const char* fallback)
 {
     const char* val = getenvvar(ekey);
-    return val ? val : fallback ; 
+    return ( val && strlen(val)>0) ? val : fallback ;   // 2024/12 "" => fallback
 }
 inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char q, char r)
 {
@@ -275,9 +275,21 @@ inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char 
 
 inline int ssys::getenv_ParseInt(const char* ekey, const char* fallback)
 {
-    const char* spec = getenvvar(ekey, fallback); 
+    const char* spec = getenvvar(ekey, fallback);
     bool valid = spec != nullptr && strlen(spec) > 0 ;  
-    if(!valid) return -1 ;
+    if(!valid)
+    { 
+        std::cerr 
+            << "ssys::getenv_ParseInt"
+            << " ekey " << ( ekey ? ekey : "-" )
+            << " fallback " << ( fallback ? fallback : "-" )
+            << " spec [" << ( spec ? spec :  "-" ) << "]" 
+            << " valid " << ( valid ? "YES" : "NO " )
+            << "\n"
+            ;
+  
+        return -1 ;
+    }
     return sstr::ParseInt<int>(spec) ;  
 }
 

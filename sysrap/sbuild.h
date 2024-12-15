@@ -103,6 +103,8 @@ struct sbuild
     static bool IsRelease(){ return strcmp(BUILD_TYPE, Release) == 0 ; }
 
     static std::string Desc(); 
+    static std::string ContextString(); 
+
     static bool BuildTypeMatches(const char* arg); 
     static bool RNGMatches(const char* arg); 
     static bool Matches(const char* arg); 
@@ -114,9 +116,10 @@ inline std::string sbuild::Desc() // static
     std::stringstream ss ; 
     ss 
        << "[sbuild::Desc\n"
-       << " sbuild::BUILD_TYPE   : [" << BUILD_TYPE << "]\n" 
-       << " sbuild::IsDebug()    :  "  << ( IsDebug() ? "YES" : "NO " ) << "\n"  
-       << " sbuild::IsRelease()    :  "  << ( IsRelease() ? "YES" : "NO " ) << "\n"  
+       << " sbuild::ContextString() : [" << ContextString() << "]\n" 
+       << " sbuild::BUILD_TYPE      : [" << BUILD_TYPE << "]\n" 
+       << " sbuild::IsDebug()       :  "  << ( IsDebug() ? "YES" : "NO " ) << "\n"  
+       << " sbuild::IsRelease()     :  "  << ( IsRelease() ? "YES" : "NO " ) << "\n"  
        << " sbuild::BuildTypeMatches(\"Cheese\") : " << sbuild::BuildTypeMatches("Cheese") << "\n"
        << " sbuild::BuildTypeMatches(\"Cheese Debug \") : " << sbuild::BuildTypeMatches("Cheese Debug") << "\n"
        << " sbuild::BuildTypeMatches(\"Cheese Release \") : " << sbuild::BuildTypeMatches("Cheese Release ") << "\n"
@@ -144,7 +147,13 @@ inline std::string sbuild::Desc() // static
     return str ; 
 }
 
-
+inline std::string sbuild::ContextString() // static
+{
+    std::stringstream ss ; 
+    ss << BUILD_TYPE << "_" << RNGName() ;  
+    std::string str = ss.str() ; 
+    return str ; 
+}
 
 
 /**

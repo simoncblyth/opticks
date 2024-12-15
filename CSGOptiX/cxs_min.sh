@@ -172,14 +172,19 @@ vars="$vars version VERSION"
 #test=ref5
 #test=ref8
 #test=ref10
-test=ref10_multilaunch
+#test=ref10_multilaunch
 #test=input_genstep
 #test=input_photon
+test=large_evt
+
 
 export TEST=${TEST:-$test}
 
+
 #ctx=Debug_XORWOW 
-ctx=Debug_Philox
+#ctx=Debug_Philox
+ctx=$(TEST=ContextString sbuild_test)
+
 export OPTICKS_EVENT_NAME=${ctx}_${TEST}   
 ## SEventConfig::Initialize_EventName asserts OPTICKS_EVENT_NAME sbuild::Matches config of the build 
 
@@ -274,19 +279,15 @@ elif [ "$TEST" == "ref10_multilaunch" -o "$TEST" == "ref10_onelaunch" ]; then
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
 
-   #export OPTICKS_MAX_CURAND=0    # zero loads all states : ready for whopper launches
-   export OPTICKS_MAX_CURAND=M10   # non-zero loads the specified number
+   #opticks_max_curand=0    # zero loads all states : ready for whopper XORWOW running 
+   #opticks_max_curand=M10  # non-zero loads the specified number
+   #opricks_max_curand not relevant for Philox as no need to load states, so default is G1 1-billion-states 
 
    case $TEST in 
       *multilaunch) opticks_max_slot=M1 ;;     ## causes M10 to be done in 10 launches
         *onelaunch) opticks_max_slot=M10 ;; 
    esac 
- 
-   export OPTICKS_MAX_SLOT=$opticks_max_slot      
 
-
-   #export SEvt__NPFOLD_VERBOSE=1 
-   #export QSim__simulate_KEEP_SUBFOLD=1
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
@@ -322,11 +323,21 @@ elif [ "$TEST" == "larger_scan" ]; then
 
 elif [ "$TEST" == "large_evt" ]; then 
 
-   opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
-   opticks_num_genstep=1
-   opticks_max_photon=M200   ## cost: QRng init time + VRAM 
+   opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
+   opticks_num_genstep=10
+   opticks_max_photon=M200         ## cost: QRng init time + VRAM (with XORWOW) 
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
+   opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
+
+elif [ "$TEST" == "vlarge_evt" ]; then 
+
+   opticks_num_photon=M500  
+   opticks_num_genstep=500
+   opticks_max_photon=M200   
+   opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+   opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
 
 elif [ "$TEST" == "input_genstep" ]; then
 
@@ -371,9 +382,12 @@ export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
+
 vars="$vars OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
 
-
+export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
+export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot
+vars="$vars OPTICKS_MAX_CURAND OPTICKS_MAX_SLOT" 
 
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then 
@@ -480,22 +494,21 @@ logging(){
     export QEvent=INFO 
     export QSim=INFO
     export SEvt__LIFECYCLE=1
-
-    
-
 }
 [ -n "$LOG" ] && logging
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
 [ -n "$MINIMAL"  ] && export SEvt__MINIMAL=1
 
+export QRng__init_VERBOSE=1
 export SEvt__MINIMAL=1  ## just output dir 
 #export SEvt__DIRECTORY=1  ## getDir dumping 
 
+#export SEvt__NPFOLD_VERBOSE=1 
+#export QSim__simulate_KEEP_SUBFOLD=1
 #export SEvt__transformInputPhoton_VERBOSE=1
 #export CSGFoundry__getFrameE_VERBOSE=1
 #export CSGFoundry__getFrame_VERBOSE=1
-export QRng__init_VERBOSE=1
 
 
 
@@ -509,7 +522,8 @@ if [ "${arg/env}" != "$arg" ]; then
 fi 
 
 if [ "${arg/fold}" != "$arg" ]; then
-    echo $FOLD
+    echo $AFOLD
+    du -hs $AFOLD/*
 fi 
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then

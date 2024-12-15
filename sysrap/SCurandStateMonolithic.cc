@@ -37,9 +37,6 @@ std::string SCurandStateMonolithic::Desc()  // static
 SCurandStateMonolithic::Path
 -----------------------------
 
-For concatenated loading this needs to become 
-a directory path not a file path
-
 **/
 
 const char* SCurandStateMonolithic::Path()  // static
@@ -93,16 +90,6 @@ long SCurandStateMonolithic::RngMax()
     const char* path = Path(); 
     return RngMax(path) ; 
 }
-
-/**
-
-
-generalizing this, path becomes a directory 
-and the RngMax is determined by summing over
-all files in the directory with the expected prefix
-
-**/
-
 
 long SCurandStateMonolithic::RngMax(const char* path)
 {

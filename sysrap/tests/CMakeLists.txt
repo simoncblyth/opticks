@@ -36,7 +36,6 @@ set(TEST_SOURCES
    SDigestNPTest.cc
 
    SCFTest.cc
-   SCurandStateMonolithicTest.cc
 
    
    PLogTest.cc 
@@ -136,7 +135,16 @@ set(TEST_SOURCES
    ssys_test.cc
    srng_test.cc
    sbuild_test.cc
+
+   SCurandStateMonolithicTest.cc
+
 )
+
+
+#if(RNG_XORWOW)
+#  list(APPEND TEST_SOURCES SCurandStateMonolithicTest.cc)
+#endif()
+# better to just do nothing in the executable to avoid need to cleaning when switching
 
 
 set(REPORT_SOURCES

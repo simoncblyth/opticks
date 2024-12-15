@@ -820,14 +820,15 @@ sstr::ParseIntSpec
 * spec with prefix both uses the scales to multiply the value and sets the scale for subsequent
 * spec without prefix is multiplied by the current scale 
 
-+-----+-------------+
-| pfx |   scale     |
-+=====+=============+
-|  h  |       100   | 
-|  K  |     1,000   | 
-|  H  |   100,000   |
-|  M  | 1,000,000   |
-+-----+-------------+
++-----+-------------------+
+| pfx |   scale           |
++=====+===================+
+|  h  |            100    | 
+|  K  |          1,000    | 
+|  H  |        100,000    |
+|  M  |      1,000,000    |
+|  G  |  1,000,000,000    |                 
++-----+-------------------+
 
 Examples::
 
@@ -865,10 +866,11 @@ inline void sstr::ParseScale( const char* spec, T& scale )
     {
         switch(spec[0])
         {
-            case 'h': scale = 100     ; break ;  
-            case 'K': scale = 1000    ; break ;  
-            case 'H': scale = 100000   ; break ;  
-            case 'M': scale = 1000000 ; break ;  
+            case 'h': scale = 100        ; break ;  
+            case 'K': scale = 1000       ; break ;  
+            case 'H': scale = 100000     ; break ;  
+            case 'M': scale = 1000000    ; break ;  
+            case 'G': scale = 1000000000 ; break ;  // maximum int is 2,147,483,647  G2 
         }
     }
 }

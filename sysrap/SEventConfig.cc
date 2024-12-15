@@ -68,11 +68,24 @@ const char* SEventConfig::_MaxGenstepDefault = "M1" ;
 const char* SEventConfig::_MaxPhotonDefault = "M1" ; 
 const char* SEventConfig::_MaxSimtraceDefault = "M1" ; 
 #else
+
+#if defined(RNG_XORWOW)
 const char* SEventConfig::_MaxCurandDefault = "M3" ; 
-const char* SEventConfig::_MaxSlotDefault = "M3" ; 
+const char* SEventConfig::_MaxSlotDefault = "M3" ;  
 const char* SEventConfig::_MaxGenstepDefault = "M3" ; 
-const char* SEventConfig::_MaxPhotonDefault = "M3" ;   // HMM: want to use 0 to signify set it automatically based on VRAM  
+const char* SEventConfig::_MaxPhotonDefault = "M3" ;     
 const char* SEventConfig::_MaxSimtraceDefault = "M3" ; 
+
+#elif defined(RNG_PHILOX) || defined(RNG_PHILITEOX)
+const char* SEventConfig::_MaxCurandDefault = "G1" ; // nominal 1-billion states, as Philox has no need for curandState loading  
+const char* SEventConfig::_MaxSlotDefault = "0" ;     // see SEventConfig::SetDevice : set according to VRAM  
+const char* SEventConfig::_MaxGenstepDefault = "M10" ;  // adhoc  
+const char* SEventConfig::_MaxPhotonDefault = "G1" ;     
+const char* SEventConfig::_MaxSimtraceDefault = "G1" ; 
+#endif
+
+
+
 #endif
 
 
@@ -306,7 +319,6 @@ int SEventConfig::G4StateRerun()
 
 
 
-//int SEventConfig::MaxCurandState(){ return std::max( MaxPhoton(), MaxSimtrace() ) ; } 
 int SEventConfig::MaxCurand(){ return _MaxCurand ; } 
 int SEventConfig::MaxSlot(){   return _MaxSlot ; } 
 
@@ -1282,11 +1294,17 @@ TODO: measure total VRAM usage during large photon number scan to
 provide some parameters to use in a better heuristic and get idea
 of variability. Expect linear with some pedestal.  
 
-HMM: NEED TO DEFER TO USER CONTROL : WILL NOT ALWAYS WANT TO DO LARGEST 
-POSSIBLE LAUNCHES 
 
-Q: Where does this MaxPhoton get used ? 
-A: QRng::QRng to decide on how many curandState to read from chunks
+Invoked at first SEvt instanciation::
+
+    SEventConfig::SetDevice
+    scontext::initConfig
+    scontext::init
+    scontext::scontext
+    SEventConfig::Initialize_Meta
+    SEventConfig::Initialize
+    SEvt::SEvt
+    SEvt::Create
 
 **/
 

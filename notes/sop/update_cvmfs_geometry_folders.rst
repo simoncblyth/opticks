@@ -39,6 +39,8 @@ Instructions
 
    scp ~/.opticks/GEOM/J_2024aug27.tar L:g/   ## use g to avoid afs
 
+    ## or use : ~/o/bin/GEOM_tar.sh scp 
+
 
 4. copy from lxlogin to cvmfs stratum 0::
 
@@ -48,8 +50,10 @@ Instructions
     Enter passphrase for key '/afs/ihep.ac.cn/users/b/blyth/.ssh/id_rsa': 
     J_2024aug27.tar       
 
+    scp J_2024nov27.tar O:
 
-5. explode the .tar into /cvmfs::
+
+5. ssh from lxlogin to cvmfs stratum 0::
 
     [blyth@lxlogin004 ~]$ ssh O
     Enter passphrase for key '/afs/ihep.ac.cn/users/b/blyth/.ssh/id_rsa': 
@@ -88,6 +92,7 @@ Instructions
     tar xvf ~/J_2024aug27.tar   ## explode ontop of existing directory tree
 
     cd /cvmfs ; cvmfs_server publish -m "inplace update /cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/J_2024aug27 " opticks.ihep.ac.cn 
+    cd /cvmfs ; cvmfs_server publish -m "add /cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/J_2024nov27 " opticks.ihep.ac.cn 
 
 
 ::

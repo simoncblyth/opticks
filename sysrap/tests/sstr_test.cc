@@ -5,6 +5,8 @@ sstr_test.cc
 ~/opticks/sysrap/tests/sstr_test.sh
 TEST=Format ~/opticks/sysrap/tests/sstr_test.sh
 
+TEST=ParseIntSpecList32 ~/opticks/sysrap/tests/sstr_test.sh
+
 **/
 
 #include <string>
@@ -322,9 +324,9 @@ void test_empty()
 template<typename T>
 void test_ParseIntSpecList()
 {
-     const char* _spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2,h1:4" ; 
+     const char* _spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2,G2,h1:4" ; 
 
-     std::vector<T> expect = {1,2,3,100,200,100,500,600,700,1000,10000,11000,12000,1000000,2000000,3000000,1000,2000,1000000,100000,200000,100,200,300,400 } ;  
+     std::vector<T> expect = {1,2,3,100,200,100,500,600,700,1000,10000,11000,12000,1000000,2000000,3000000,1000,2000,1000000,100000,200000,2000000000,100,200,300,400 } ;  
      int num_expect = expect.size(); 
 
      std::vector<std::string> spec ; 
@@ -365,10 +367,10 @@ void test_ParseIntSpecList()
 
          pass += int(match) ; 
          std::cout  
-              << std::setw(10) << ( s ? s : "-" )
-              << std::setw(10) << e
-              << std::setw(10) << v
-              << std::setw(10) << l
+              << std::setw(11) << ( s ? s : "-" )
+              << std::setw(11) << e
+              << std::setw(11) << v
+              << std::setw(11) << l
               << ( match ? " " : " ERROR MISMATCH" )
               << std::endl 
               ;
