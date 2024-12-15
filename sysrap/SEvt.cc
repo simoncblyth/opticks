@@ -48,6 +48,7 @@ bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
 bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ; 
+bool SEvt::DIRECTORY = ssys::getenvbool(SEvt__DIRECTORY) ; 
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 
 
@@ -1667,13 +1668,6 @@ S4RandomArray* SEvt::GetRandomArray(int idx)
 }
 
 
-// SetReldir can be used with the default SEvt::save() changing the last directory element before the index if present
-// MOVED TO SEventConfig::EventReldir 
-//const char* SEvt::DEFAULT_RELDIR = "ALL${VERSION:-0}" ;   
-//const char* SEvt::RELDIR = nullptr ; 
-//void        SEvt::SetReldir(const char* reldir_){ RELDIR = reldir_ ? strdup(reldir_) : nullptr ; }
-//const char* SEvt::GetReldir(){ return RELDIR ? RELDIR : DEFAULT_RELDIR ; }
-
 int SEvt::GetNumPhotonCollected(int idx){    return Exists(idx) ? Get(idx)->getNumPhotonCollected() : UNDEF ; }
 int SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getNumPhotonGenstepMax() : UNDEF ; }
 int SEvt::GetNumPhotonFromGenstep(int idx){  return Exists(idx) ? Get(idx)->getNumPhotonFromGenstep() : UNDEF ; }
@@ -1681,7 +1675,6 @@ int SEvt::GetNumGenstepFromGenstep(int idx){ return Exists(idx) ? Get(idx)->getN
 int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getNumHit() : UNDEF ; }
 int SEvt::GetNumHit_EGPU(){  return GetNumHit(EGPU) ; }
 int SEvt::GetNumHit_ECPU(){  return GetNumHit(ECPU) ; }
-
 
 
 
@@ -3819,16 +3812,13 @@ const char* SEvt::getDir(const char* base_) const
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ; 
     sdirectory::MakeDirs(path,0); 
 
-    LOG(LEVEL)
+    LOG_IF(info, DIRECTORY)
         << std::endl  
-        << " base_  " << ( base_ ? base_ : "-" )
-        << std::endl  
-        << " reldir   " << ( reldir ? reldir : "-" )
-        << std::endl  
-        << " sidx   " << ( sidx ? sidx : "-" )
-        << std::endl  
-        << " path   " << ( path ? path : "-" )
-        << std::endl  
+        << " base_  " << ( base_ ? base_ : "-" ) << "\n"
+        << " SEventConfig::EventReldir   " << ( reldir ? reldir : "-" ) << "\n"
+        << " SEventConfig::_EventReldirDefault " << SEventConfig::_EventReldirDefault << "\n"
+        << " sidx   " << ( sidx ? sidx : "-" ) << "\n"
+        << " path   " << ( path ? path : "-" ) << "\n"
         ;
 
     return path ; 
@@ -3876,6 +3866,7 @@ std::string SEvt::descSaveDir(const char* dir_) const
        << " dir_ " << ( dir_ ? dir_ : "-" )
        << " dir  " << ( dir  ? dir  : "-" )
        << " reldir " << ( reldir ? reldir : "-" )
+       << " SEventConfig::_EventReldirDefault " << SEventConfig::_EventReldirDefault
        << " with_index " << ( with_index ? "Y" : "N" )
        << " index " << ( with_index ? index : -1 ) 
        << " this " << std::hex << this << std::dec

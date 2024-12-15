@@ -154,6 +154,7 @@ knobs()
 
    export NPFold__substamp_DUMP=1
 
+
 }
 
 
@@ -177,10 +178,17 @@ test=ref10_multilaunch
 
 export TEST=${TEST:-$test}
 
+#ctx=Debug_XORWOW 
+ctx=Debug_Philox
+export OPTICKS_EVENT_NAME=${ctx}_${TEST}   
+## SEventConfig::Initialize_EventName asserts OPTICKS_EVENT_NAME sbuild::Matches config of the build 
 
-opticks_event_reldir=ALL${VERSION:-0}_${TEST:-none}   ## matches SEventConfig::_DefaultEventReldir OPTICKS_EVENT_RELDIR
-vars="$vars test TEST opticks_event_reldir"
 
+opticks_event_reldir=ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}   ## matches SEventConfig::_DefaultEventReldir OPTICKS_EVENT_RELDIR
+export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}'  
+# opticks_event_reldir is resolved here, OPTICKS_EVENT_RELDIR by SEvt/SEventConfig 
+
+vars="$vars test TEST opticks_event_reldir OPTICKS_EVENT_RELDIR"
 
 case $TEST in 
 ref10_multilaunch) alt_TEST=ref10_onelaunch ;;
@@ -276,7 +284,6 @@ elif [ "$TEST" == "ref10_multilaunch" -o "$TEST" == "ref10_onelaunch" ]; then
  
    export OPTICKS_MAX_SLOT=$opticks_max_slot      
 
-   export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_$TEST' 
 
    #export SEvt__NPFOLD_VERBOSE=1 
    #export QSim__simulate_KEEP_SUBFOLD=1
@@ -474,11 +481,16 @@ logging(){
     export QSim=INFO
     export SEvt__LIFECYCLE=1
 
+    
+
 }
 [ -n "$LOG" ] && logging
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
+[ -n "$MINIMAL"  ] && export SEvt__MINIMAL=1
 
+export SEvt__MINIMAL=1  ## just output dir 
+#export SEvt__DIRECTORY=1  ## getDir dumping 
 
 #export SEvt__transformInputPhoton_VERBOSE=1
 #export CSGFoundry__getFrameE_VERBOSE=1

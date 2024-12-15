@@ -947,9 +947,18 @@ void SEventConfig::Initialize_EventName()
     if(EventName()==nullptr) return ; 
 
     bool build_matches_EventName = sbuild::Matches(EventName()) ;   
-    //LOG_IF( error, !build_matches_EventName)
-    LOG_IF( error, true )
-        << " kEventName " << kEventName 
+
+    LOG(LEVEL)
+        << "\n"
+        << " kEventName " << kEventName << "\n"
+        << " SEventConfig::EventName() " << EventName() << "\n"
+        << " build_matches_EventName " << ( build_matches_EventName ? "YES" : "NO " ) << "\n"
+        << sbuild::Desc()
+        ;
+
+    LOG_IF( error, !build_matches_EventName)
+        << "\n"
+        << " kEventName " << kEventName << "\n"
         << " SEventConfig::EventName() " << EventName() << "\n"
         << " build_matches_EventName " << ( build_matches_EventName ? "YES" : "NO " ) << "\n"
         << sbuild::Desc()
@@ -957,6 +966,7 @@ void SEventConfig::Initialize_EventName()
         ; 
 
     assert(build_matches_EventName); 
+    if(!build_matches_EventName) std::raise(SIGINT); 
 }
 
 void SEventConfig::Initialize_Max() // static
