@@ -102,7 +102,16 @@ QRngTest::generate
 
 int QRngTest::generate()
 {
-    unsigned num_item = unsigned(qr.rngmax) ; ; 
+    unsigned rngmax = qr.rngmax ; // this is G1 1 billiom for Philox 
+    unsigned M = 1000000u ; 
+    unsigned num_item = std::min( M, rngmax ); 
+
+    LOG(info) 
+        << " rngmax " << rngmax 
+        << " rngmax/M " << rngmax/M 
+        << " num_item " << num_item
+        << " num_item/M " << num_item/M
+        ;
 
     NP* uu = generate<float>( num_event, num_item, num_value ) ; 
 

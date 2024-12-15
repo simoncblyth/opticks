@@ -8,44 +8,67 @@ cxs_min_large_evt_shakedown
 
 
 
-WIP : check the large event on Ada
+WIP : check large_evt on Ada
 --------------------------------------
 
 1. DONE : update /cvmfs with GEOM J_2024nov27
-2. WIP: update opticks and check opticks-t 
+2. DONE: update opticks 
+3. DONE : Skip SCurandStateMonolithicTest for RNG_PHILOX
+4. WIP: get opticks-t to pass
+5. TODO: get ~/o/qudarap/tests/QSimTest_ALL.sh to pass 
 
-TODO : review all use of max_photon : many of them need to be max_slot
+::
+
+    A[blyth@localhost ~]$ SCurandStateMonolithicTest
+    2024-12-15 22:04:37.604 INFO  [44143] [main@11] 
+     spec      1:0:0 num    1000000 seed          0 offset          0 path /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_1M_0_0.bin exists 1 rngmax 1000000
+     spec      3:0:0 num    3000000 seed          0 offset          0 path /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_3M_0_0.bin exists 0 rngmax 0
+     spec     10:0:0 num   10000000 seed          0 offset          0 path /home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_10M_0_0.bin exists 0 rngmax 0
+    spath::Filesize unable to open file [/home/blyth/.opticks/rngcache/RNG/QCurandStateMonolithic_3M_0_0.bin]
+    SCurandStateMonolithicTest: /home/blyth/opticks/sysrap/spath.h:852: static long int spath::Filesize(const char*): Assertion `!failed' failed.
+    Aborted (core dumped)
+    A[blyth@localhost ~]$ 
+
+
+Issue 2 : opticks-t Ada fails
+----------------------------------
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      108/109 Test #108: SysRapTest.SSimTest                           Passed                         17.82  
+      2  /22  Test #2  : QUDARapTest.QRngTest                          ***Failed                      237.74 
+
+
+    FAILS:  4   / 218   :  Sun Dec 15 22:31:06 2024   
+      2  /22  Test #2  : QUDARapTest.QRngTest                          ***Failed                      237.74 
+      10 /22  Test #10 : QUDARapTest.QEventTest                        ***Failed                      0.16   
+      11 /22  Test #11 : QUDARapTest.QEvent_Lifecycle_Test             ***Failed                      0.18   
+      13 /22  Test #13 : QUDARapTest.QSimWithEventTest                 ***Failed                      2.18   
+
+
+
+
+
+
+SKIP : review all use of max_photon : many of them need to be max_slot
 -----------------------------------------------------------------------------
 
-TODO : revisit sevent reporting of the max 
---------------------------------------------
+Hmm : easier to just set max_photon to very large value 
+
 
 
 
 Issue 1 : genstep slice check rng_state assert
 --------------------------------------------------
 
-* rngmax messed up by empty string OPTICKS_MAX_CURAND="" leading to max_curand -1
+* rngmax messed up by empty string OPTICKS_MAX_CURAND="" leading to max_curand -1::
 
-  * changed ssys::getenvvar with empty string value to use fallback 
-  * changed SEventConfig::_MaxCurandDefault to "G1" nominal 1 Giga-states 
+    In [1]: np.uint64(-1)
+    Out[1]: 18446744073709551615
 
-
-SEventConfig::
-
-  79 #elif defined(RNG_PHILOX) || defined(RNG_PHILITEOX)
-  80 const char* SEventConfig::_MaxCurandDefault = "G1" ;
-  81 const char* SEventConfig::_MaxSlotDefault = "M3" ;       // HMM: want to use 0 to signify set it automatically based on VRAM 
-  82 const char* SEventConfig::_MaxGenstepDefault = "M3" ;
-  83 const char* SEventConfig::_MaxPhotonDefault = "M3" ;
-  84 const char* SEventConfig::_MaxSimtraceDefault = "M3" ;
-  85 #endif
-  86 
-
-
-
-
-
+* changed ssys::getenvvar with empty string value to use fallback 
+* changed SEventConfig::_MaxCurandDefault to "G1" nominal 1 Giga-states 
 
 ::
 
@@ -88,15 +111,6 @@ SEventConfig::
     ./cxs_min.sh: line 533: 68680 Aborted                 (core dumped) $bin
     ./cxs_min.sh run error
     P[blyth@localhost opticks]$ 
-
-
-rngmax
-----------
-
-::
-
-    In [1]: np.uint64(-1)
-    Out[1]: 18446744073709551615
 
 
 
