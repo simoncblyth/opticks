@@ -53,28 +53,11 @@ offset
    #define QRNG_METHOD 
 #endif 
 
-#include <curand_kernel.h>
+#include "srng.h"
 
 using ULL = unsigned long long ; 
 
-#if defined(MOCK_CUDA)
-#else
-
-using XORWOW = curandStateXORWOW ;
-using Philox = curandStatePhilox4_32_10 ; 
-
-#ifdef WITH_CURANDLITE
-using PhiloxLite = curandStatePhilox4_32_10_OpticksLite ; 
-#endif
-
-using RNG = Philox ;
-//using RNG = XORWOW ;
-
-#endif
-
-
 template<typename T> struct qrng {} ; 
-
 
 template<> 
 struct qrng<XORWOW>
@@ -159,7 +142,7 @@ struct qrng<Philox>
 }; 
 
 
-#ifdef WITH_CURANDLITE
+#ifdef RNG_PHILITEOX
 template<> 
 struct qrng<PhiloxLite>
 {

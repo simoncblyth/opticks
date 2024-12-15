@@ -128,12 +128,14 @@ set(TEST_SOURCES
    SNameTest.cc
 
    scontext_test.cc
-   ssys_test.cc
    SProfTest.cc
 
    SEvt_test.cc
    sseq_index_test.cc
 
+   ssys_test.cc
+   srng_test.cc
+   sbuild_test.cc
 )
 
 

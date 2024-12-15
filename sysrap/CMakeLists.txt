@@ -342,6 +342,7 @@ set(HEADERS
     tcomplex.h
 
     srng.h
+    sbuild.h
     srngcpu.h
     scurand.h  
 
@@ -732,13 +733,11 @@ PLOG_LOCAL
    integration with packages (like junosw) that do not hide 
    symbols by default  
 
-
-# TRY USING BUILD_TYPE dependent flags with generator expression
-#target_compile_definitions( ${name} PUBLIC OPTICKS_SYSRAP )
-#target_compile_definitions( ${name} PUBLIC WITH_CHILD ) 
-#target_compile_definitions( ${name} PUBLIC PRODUCTION )
-#target_compile_definitions( ${name} PUBLIC PLOG_LOCAL ) 
-#target_compile_definitions( ${name} PRIVATE DEBUG_TAG )    
+RNG_XORWOW/RNG_PHILOX/RNG_PHILITEOX
+   Use one of these to pick the curandState implementation, in srng.h
+   picking RNG_XORWOW requires curandState files which slows
+   down initialization greatly when simulating many millions 
+   of photons 
 
 #]=]
 
@@ -758,6 +757,8 @@ target_compile_definitions( ${name}
       OPTICKS_SYSRAP 
       WITH_CHILD
       PLOG_LOCAL
+      RNG_PHILOX
+
       $<$<CONFIG:Debug>:DEBUG_TAG>
       $<$<CONFIG:Debug>:DEBUG_PIDX>
       $<$<CONFIG:Debug>:DEBUG_PIDXYZ>
