@@ -981,6 +981,7 @@ void QEvent::device_alloc_photon()
     SetAllocMeta( QU::alloc, evt );   // do this first as memory errors likely to happen in following lines
 
     LOG(LEVEL) 
+        << " evt.max_slot   " << evt->max_slot
         << " evt.max_photon " << evt->max_photon 
         << " evt.num_photon " << evt->num_photon 
 #ifndef PRODUCTION
@@ -993,15 +994,15 @@ void QEvent::device_alloc_photon()
 #endif
         ;
 
-    evt->photon  = evt->max_photon > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon, "QEvent::device_alloc_photon/max_photon*sizeof(sphoton)" ) : nullptr ; 
+    evt->photon  = evt->max_slot > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot, "QEvent::device_alloc_photon/max_slot*sizeof(sphoton)" ) : nullptr ; 
 
 #ifndef PRODUCTION
-    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_photon * evt->max_record, "max_photon*max_record*sizeof(sphoton)" ) : nullptr ; 
-    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_photon * evt->max_rec   , "max_photon*max_rec*sizeof(srec)"    ) : nullptr ; 
-    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_photon * evt->max_prd   , "max_photon*max_prd*sizeof(quad2)"    ) : nullptr ; 
-    evt->seq     = evt->max_seq   == 1 ? QU::device_alloc_zero<sseq>(    evt->max_photon                  , "max_photon*sizeof(sseq)"    ) : nullptr ; 
-    evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_photon                  , "max_photon*sizeof(stag)"    ) : nullptr ; 
-    evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_photon                  , "max_photon*sizeof(sflat)"   ) : nullptr ; 
+    evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot * evt->max_record, "max_slot*max_record*sizeof(sphoton)" ) : nullptr ; 
+    evt->rec     = evt->max_rec    > 0 ? QU::device_alloc_zero<srec>(    evt->max_slot * evt->max_rec   , "max_slot*max_rec*sizeof(srec)"    ) : nullptr ; 
+    evt->prd     = evt->max_prd    > 0 ? QU::device_alloc_zero<quad2>(   evt->max_slot * evt->max_prd   , "max_slot*max_prd*sizeof(quad2)"    ) : nullptr ; 
+    evt->seq     = evt->max_seq   == 1 ? QU::device_alloc_zero<sseq>(    evt->max_slot                  , "max_slot*sizeof(sseq)"    ) : nullptr ; 
+    evt->tag     = evt->max_tag   == 1 ? QU::device_alloc_zero<stag>(    evt->max_slot                  , "max_slot*sizeof(stag)"    ) : nullptr ; 
+    evt->flat    = evt->max_flat  == 1 ? QU::device_alloc_zero<sflat>(   evt->max_slot                  , "max_slot*sizeof(sflat)"   ) : nullptr ; 
 #endif
 
     LOG(LEVEL) << desc() ; 
@@ -1023,7 +1024,7 @@ void QEvent::SetAllocMeta(salloc* alloc, const sevent* evt)  // static
 void QEvent::device_alloc_simtrace()
 {
     LOG_IF(info, LIFECYCLE) ; 
-    evt->simtrace = QU::device_alloc<quad4>( evt->max_simtrace, "QEvent::device_alloc_simtrace/max_simtrace" ) ; 
+    evt->simtrace = QU::device_alloc<quad4>( evt->max_slot, "QEvent::device_alloc_simtrace/max_slot" ) ; 
     LOG(LEVEL) 
         << " evt.num_simtrace " << evt->num_simtrace 
         << " evt.max_simtrace " << evt->max_simtrace

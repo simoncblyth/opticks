@@ -46,6 +46,7 @@ TEST=ALL       ~/o/qudarap/tests/QEventTest.sh
 
 struct QEventTest
 { 
+    static constexpr const int M = 1000000 ; 
     static const char* TEST ; 
     static bool VERBOSE ; 
 
@@ -61,7 +62,7 @@ struct QEventTest
 };
 
 
-const char* QEventTest::TEST    = ssys::getenvvar("TEST", "ALL") ; 
+const char* QEventTest::TEST    = ssys::getenvvar("TEST", "many") ; // ALL: leads to cumulative OOM fail ?  
 bool        QEventTest::VERBOSE = ssys::getenvbool("VERBOSE") ; 
 
 /**
@@ -324,7 +325,9 @@ int QEventTest::setGenstep_loaded(NP* gs)
     std::cout 
         << "QEventTest::setGenstep_loaded"
         << " num_photon " << num_photon
+        << " num_photon/M " << num_photon/M
         << " num_simtrace " << num_simtrace
+        << " num_simtrace/M " << num_simtrace/M
         << "\n"
         ;
 
