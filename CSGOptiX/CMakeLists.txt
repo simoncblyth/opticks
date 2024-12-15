@@ -97,18 +97,15 @@ message(STATUS "_generated_OBJ_files ${_generated_OBJ_files}")
 message(STATUS "_generated_PTX_files ${_generated_PTX_files}") 
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
-#target_compile_definitions( ${name} PRIVATE DEBUG_SIX )
+
 target_compile_definitions( ${name} PRIVATE WITH_PRD )  # using Pointer trick means can reduce attrib and payload to 2 
-target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
-target_compile_definitions( ${name} PUBLIC DEBUG_TAG )
-
-# target_compile_definitions( ${name} PUBLIC DEBUG_PIDXYZ )  ## NOW FROM SYSRAP Debug/Release CONTROL 
-
-
-
 target_compile_definitions( ${name} PUBLIC WITH_SIMULATE )
 target_compile_definitions( ${name} PUBLIC WITH_SIMTRACE )
 target_compile_definitions( ${name} PUBLIC WITH_RENDER )
+target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
+
+# target_compile_definitions( ${name} PUBLIC DEBUG_TAG )     ## NOW FROM sysrap/CMakeLists.txt
+# target_compile_definitions( ${name} PUBLIC DEBUG_PIDXYZ )  ## NOW FROM sysrap/CMakeLists.txt Debug/Release CONTROL 
 
 #[=[
 

@@ -130,7 +130,6 @@ set(U4AppTest_SOURCES
 set(TGT U4AppTest)
 add_executable(${TGT} ${U4AppTest_SOURCES})
 target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND ) 
-target_compile_definitions( ${TGT} PUBLIC DEBUG_TAG ) 
 target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)
 

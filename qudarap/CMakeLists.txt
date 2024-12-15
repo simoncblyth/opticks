@@ -217,13 +217,15 @@ https://stackoverflow.com/questions/34490294/what-does-configdebugrelease-mean-i
 target_compile_definitions( ${name}
     PUBLIC
       OPTICKS_QUDARAP 
-      $<$<CONFIG:Debug>:DEBUG_PIDX>
 )
 #[=[
 
-DEBUG_TAG
-   collects all generated randoms for getting aligned running to work 
-      $<$<CONFIG:Debug>:DEBUG_TAG>
+Global compile definitions such as DEBUG_TAG and DEBUG_PIDX are defined in sysrap/CMakeLists.txt 
+and should be flipped there, NOT HERE. 
+
+For local debugging do flips within files, and do not commit like that 
+as they may cause difficult to debug build inconsistencies. 
+
 #]=]
 
 
