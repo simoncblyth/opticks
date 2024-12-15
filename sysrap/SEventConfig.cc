@@ -12,6 +12,7 @@
 #include "sdirectory.h"
 #include "salloc.h"
 #include "scontext.h"
+#include "sbuild.h"
 
 #include "SPath.hh"   // only SPath::Make to replace
 
@@ -29,6 +30,7 @@ const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG
 
 int         SEventConfig::_IntegrationModeDefault = -1 ;
 const char* SEventConfig::_EventModeDefault = "Default" ; 
+const char* SEventConfig::_EventNameDefault = nullptr ; 
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 int         SEventConfig::_StartIndexDefault = 0 ;
 int         SEventConfig::_NumEventDefault = 1 ;
@@ -54,8 +56,7 @@ float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression us
 float SEventConfig::_MaxTimeDefault = 10.f ; // ns 
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ; 
 const char* SEventConfig::_OutNameDefault = nullptr ; 
-//const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}" ; 
-const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${TEST:-none}" ; 
+const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}" ; // coordinate with kEventName
 const char* SEventConfig::_RGModeDefault = "simulate" ; 
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
@@ -87,6 +88,7 @@ const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 
 int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault ); 
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault ); 
+const char* SEventConfig::_EventName  = ssys::getenvvar(kEventName,  _EventNameDefault ); 
 int         SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault)); 
 int         SEventConfig::_StartIndex = ssys::getenvint(kStartIndex, _StartIndexDefault ); 
 int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefault ); 
@@ -253,6 +255,7 @@ bool        SEventConfig::GPU_Simulation(){  return _IntegrationMode == 1 || _In
 bool        SEventConfig::CPU_Simulation(){  return _IntegrationMode == 2 || _IntegrationMode == 3 ; }
 
 const char* SEventConfig::EventMode(){ return _EventMode ; }
+const char* SEventConfig::EventName(){ return _EventName ; }
 
 
 /**
@@ -465,6 +468,7 @@ std::string SEventConfig::DescEventMode()  // static
 
 void SEventConfig::SetIntegrationMode(int mode){ _IntegrationMode = mode ; LIMIT_Check() ; }
 void SEventConfig::SetEventMode(const char* mode){ _EventMode = mode ? strdup(mode) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetEventName(const char* name){ _EventName = name ? strdup(name) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetRunningMode(const char* mode){ _RunningMode = SRM::Type(mode) ; LIMIT_Check() ; }
 
 void SEventConfig::SetStartIndex(int index0){        _StartIndex = index0 ; LIMIT_Check() ; }
@@ -591,6 +595,9 @@ std::string SEventConfig::Desc()
        << std::endl 
        << std::setw(25) << kEventMode
        << std::setw(20) << " EventMode " << " : " << EventMode() 
+       << std::endl 
+       << std::setw(25) << kEventName
+       << std::setw(20) << " EventName " << " : " << ( EventName() ? EventName() : "-" ) 
        << std::endl 
        << std::setw(25) << kRunningMode
        << std::setw(20) << " RunningMode " << " : " << RunningMode() 
@@ -910,6 +917,7 @@ int SEventConfig::Initialize() // static
     if(Initialize_COUNT == 0) 
     {
         Initialize_Meta() ; 
+        Initialize_EventName() ; 
         Initialize_Max() ; 
     }
 
@@ -921,6 +929,34 @@ void SEventConfig::Initialize_Meta()
 {
     CONTEXT = new scontext ; 
     ALLOC = new salloc ; 
+}
+
+/**
+EventConfig::Initialize_EventName
+-----------------------------------
+
+Examples that would match some builds::
+
+   export OPTICKS_EVENT_NAME="SomePrefix_Debug_Philox_SomeSuffix" 
+   export OPTICKS_EVENT_NAME="Debug_XORWOW" 
+
+**/
+
+void SEventConfig::Initialize_EventName()
+{
+    if(EventName()==nullptr) return ; 
+
+    bool build_matches_EventName = sbuild::Matches(EventName()) ;   
+    //LOG_IF( error, !build_matches_EventName)
+    LOG_IF( error, true )
+        << " kEventName " << kEventName 
+        << " SEventConfig::EventName() " << EventName() << "\n"
+        << " build_matches_EventName " << ( build_matches_EventName ? "YES" : "NO " ) << "\n"
+        << sbuild::Desc()
+        << " FIX by changing " << kEventName << " or rebuilding with suitable config "
+        ; 
+
+    assert(build_matches_EventName); 
 }
 
 void SEventConfig::Initialize_Max() // static

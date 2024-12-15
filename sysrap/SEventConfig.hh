@@ -95,6 +95,12 @@ MaxTime (ns)
 | SEventConfig::OutFold         | "$DefaultOutputDir"                     | OPTICKS_OUT_FOLD                      |
 +-------------------------------+-----------------------------------------+---------------------------------------+
 
+
+EventName [OPTICKS_EVENT_NAME envvar] 
+    When OPTICKS_EVENT_NAME is defined it is constrained to match the build settings 
+    and it also controls the default event reldir used by SEvt::save
+    (requires kEventName to match the token used as part of _EventReldirDefault) 
+
 **/
 
 
@@ -122,8 +128,8 @@ struct SYSRAP_API SEventConfig
 
     static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ; 
     static constexpr const char* kEventMode       = "OPTICKS_EVENT_MODE" ; 
-
-    static constexpr const char* kRunningMode  = "OPTICKS_RUNNING_MODE" ; 
+    static constexpr const char* kEventName       = "OPTICKS_EVENT_NAME" ;  
+    static constexpr const char* kRunningMode     = "OPTICKS_RUNNING_MODE" ; 
 
     static constexpr const char* kStartIndex   = "OPTICKS_START_INDEX" ; 
     static constexpr const char* kNumEvent     = "OPTICKS_NUM_EVENT" ; 
@@ -176,6 +182,7 @@ struct SYSRAP_API SEventConfig
     static bool        CPU_Simulation() ; // 2 or 3 
 
     static const char* EventMode(); 
+    static const char* EventName(); 
     static int         RunningMode(); 
     static const char* RunningModeLabel(); 
 
@@ -279,6 +286,7 @@ struct SYSRAP_API SEventConfig
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework 
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
+    static void SetEventName(const char* name);  
     static void SetRunningMode(const char* mode); // RunningMode configures how running is done, eg Default/DefaultSaveG4State/RerunG4State/Torch
 
     static void SetStartIndex(int index0); 
@@ -336,6 +344,7 @@ struct SYSRAP_API SEventConfig
 
     static int         _IntegrationModeDefault ; 
     static const char* _EventModeDefault ; 
+    static const char* _EventNameDefault ; 
     static const char* _RunningModeDefault ; 
     static int         _StartIndexDefault ; 
     static int         _NumEventDefault ; 
@@ -383,6 +392,7 @@ struct SYSRAP_API SEventConfig
 
     static int         _IntegrationMode ; 
     static const char* _EventMode ; 
+    static const char* _EventName ; 
     static int         _RunningMode ; 
     static int         _StartIndex ; 
     static int         _NumEvent ; 
@@ -451,6 +461,7 @@ struct SYSRAP_API SEventConfig
     static int   Initialize_COUNT ; 
     static int   Initialize(); 
     static void  Initialize_Meta(); 
+    static void  Initialize_EventName(); 
     static void  Initialize_Max(); 
     static void  Initialize_Comp(); 
     static void  Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask ); 

@@ -16,13 +16,12 @@ CMake shared compile definitions for group of projects : Maybe CMake Presets ? O
 
   Effective Modern CMake  
 
-
 * https://stackoverflow.com/questions/47611319/target-compile-definitions-for-multiple-cmake-targets
 
 
 
-DEBUG_TAG defined in multiple projects : TODO : central place for that
--------------------------------------------------------------------------------
+DEBUG_TAG defined in multiple projects : DONE : just use sysrap/CMakeLists.txt as central place for global tags
+-------------------------------------------------------------------------------------------------------------------
 
 HMM: maybe can just use fact that everything depends on sysrap/CMakeLists.txt
 
