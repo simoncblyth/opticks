@@ -6,16 +6,89 @@ cxs_min_large_evt_shakedown
 
     TEST=large_evt ~/o/cxs_min.sh 
 
+::
 
-WIP : check large_evt on Titan+Ada
+    324 elif [ "$TEST" == "large_evt" ]; then
+    325 
+    326    opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
+    327    opticks_num_genstep=10
+    328    opticks_max_photon=M200         ##  HMM: is this setting still needed ?  
+    329    opticks_num_event=1
+    330    opticks_running_mode=SRM_TORCH
+    331    opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
+    332 
+
+43M hits in 2.6G NP file::
+
+    TEST=large_evt ~/o/cxs_min.sh pdb0
+
+    P[blyth@localhost A000]$ du -hs *
+    4.0K    genstep.npy
+    2.6G    hit.npy
+    4.0K    NPFold_index.txt
+    4.0K    NPFold_meta.txt
+    0   NPFold_names.txt
+    4.0K    sframe_meta.txt
+    4.0K    sframe.npy
+    P[blyth@localhost A000]$ 
+
+
+    CMDLINE:/data/blyth/junotop/opticks/CSGOptiX/cxs_min.py
+    a.base:/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_large_evt/A000
+
+      : a.genstep                                          :           (10, 6, 4) : 0:07:11.523289 
+      : a.hit                                              :     (43131315, 4, 4) : 0:07:10.144282 
+      : a.NPFold_index                                     :                 (2,) : 0:06:47.130159 
+      : a.NPFold_meta                                      :                   25 : 0:06:47.130159 
+      : a.NPFold_names                                     :                 (0,) : 0:06:47.130159 
+      : a.sframe                                           :            (4, 4, 4) : 0:06:47.129159 
+      : a.sframe_meta                                      :                    5 : 0:06:47.129159 
+
+     min_stamp : 2024-12-16 11:11:41.845859 
+     max_stamp : 2024-12-16 11:12:06.239989 
+     dif_stamp : 0:00:24.394130 
+     age_stamp : 0:06:47.129159 
+
+    In [2]: a.f.hit.shape
+    Out[2]: (43131315, 4, 4)
+
+    In [3]: a.f.hit.shape[0]
+    Out[3]: 43131315
+
+    In [4]: a.f.hit.shape[0]/1e6
+    Out[4]: 43.131315
+
+    In [10]: a.f.hit.size*4/1e9
+    Out[10]: 2.76040416
+
+
+    In [5]: a.f.hit[0]
+    Out[5]: 
+    array([[ 5185.962, 15506.361, 10186.535,   299.563],
+           [   -0.006,     0.924,     0.383,     0.   ],
+           [    0.307,     0.366,    -0.878,   420.   ],
+           [    0.   ,     0.   ,    -0.   ,     0.   ]], dtype=float32)
+
+    In [6]: a.f.hit[-1]
+    Out[6]: 
+    array([[18200.55 , -4519.022, -4705.968,   109.102],
+           [    0.946,    -0.173,    -0.274,     0.   ],
+           [   -0.322,    -0.42 ,    -0.849,   420.   ],
+           [    0.   ,     0.   ,    -0.   ,     0.   ]], dtype=float32)
+
+    In [7]: 
+
+
+
+
+DONE : check large_evt on Titan+Ada
 --------------------------------------
 
-1. DONE : update /cvmfs with GEOM J_2024nov27
+1. DONE: update /cvmfs with GEOM J_2024nov27
 2. DONE: update opticks 
-3. DONE : Skip SCurandStateMonolithicTest for RNG_PHILOX
+3. DONE: Skip SCurandStateMonolithicTest for RNG_PHILOX
 4. DONE: get opticks-t to pass
-5. TODO: get ~/o/qudarap/tests/QSimTest_ALL.sh to pass 
-
+5. DONE: get ~/o/qudarap/tests/QSimTest_ALL.sh to pass 
 
 
 Issue 2 : FIXED : opticks-t fails from max_photon 1 billion with OOM 
@@ -164,12 +237,6 @@ OOM from fake_propagate
      FAIL  : 1 
      === 022 === [ TEST=fake_propagate /data/blyth/junotop/opticks/qudarap/tests/QSimTest.sh 
      === 022 === ] ***FAIL*** 
-
-
-
-
-
-
 
 
 

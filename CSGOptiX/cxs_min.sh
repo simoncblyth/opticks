@@ -175,7 +175,8 @@ vars="$vars version VERSION"
 #test=ref10_multilaunch
 #test=input_genstep
 #test=input_photon
-test=large_evt
+#test=large_evt
+test=vlarge_evt
 
 
 export TEST=${TEST:-$test}
@@ -213,9 +214,9 @@ export STEM=${opticks_event_reldir}_${PLOT}
 #export BFOLD=$BASE/jok-tds/ALL0/A001  
 #BFOLD_NOTE="comparison with A from another executable"
 
-export BFOLD=$BINBASE/$alt_opticks_event_reldir/$EVT   # comparison with alt_TEST
-BFOLD_NOTE="comparison with alt_TEST:$alt_TEST"
-
+#export BFOLD=$BINBASE/$alt_opticks_event_reldir/$EVT   # comparison with alt_TEST
+#BFOLD_NOTE="comparison with alt_TEST:$alt_TEST"
+BFOLD_NOTE="defining BFOLD makes python script do SAB comparison"
 
 mkdir -p $LOGDIR 
 cd $LOGDIR 
@@ -325,7 +326,7 @@ elif [ "$TEST" == "large_evt" ]; then
 
    opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
    opticks_num_genstep=10
-   opticks_max_photon=M200         ## cost: QRng init time + VRAM (with XORWOW) 
+   opticks_max_photon=M200      
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
    opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
@@ -333,11 +334,11 @@ elif [ "$TEST" == "large_evt" ]; then
 elif [ "$TEST" == "vlarge_evt" ]; then 
 
    opticks_num_photon=M500  
-   opticks_num_genstep=500
-   opticks_max_photon=M200   
+   opticks_num_genstep=20
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
-   opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
+   #opticks_max_photon=M200        ## G1 default so no need to set  
+   #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
 
 elif [ "$TEST" == "input_genstep" ]; then
 
@@ -572,16 +573,20 @@ if [ "${arg/gevt}" != "$arg" ]; then
 fi 
 
 
+if [ "${arg/du}" != "$arg" ]; then
+    du -hs $AFOLD/*
+fi
+
 if [ "${arg/pdb1}" != "$arg" ]; then
-    ${ipython:-ipython} --pdb -i $script
+    ${IPYTHON:-ipython} --pdb -i $script
 fi 
 
 if [ "${arg/pdb0}" != "$arg" ]; then
-    MODE=0 ${ipython:-ipython} --pdb -i $script
+    MODE=0 ${IPYTHON:-ipython} --pdb -i $script
 fi 
 
 if [ "${arg/AB}" != "$arg" ]; then
-    MODE=0 ${ipython:-ipython} --pdb -i $script_AB
+    MODE=0 ${IPYTHON:-ipython} --pdb -i $script_AB
 fi 
 
 

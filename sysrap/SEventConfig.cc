@@ -61,14 +61,6 @@ const char* SEventConfig::_RGModeDefault = "simulate" ;
 const char* SEventConfig::_HitMaskDefault = "SD" ; 
 
 
-#ifdef __APPLE__
-const char* SEventConfig::_MaxCurandDefault = "M1" ; 
-const char* SEventConfig::_MaxSlotDefault = "M1" ; 
-const char* SEventConfig::_MaxGenstepDefault = "M1" ; 
-const char* SEventConfig::_MaxPhotonDefault = "M1" ; 
-const char* SEventConfig::_MaxSimtraceDefault = "M1" ; 
-#else
-
 #if defined(RNG_XORWOW)
 const char* SEventConfig::_MaxCurandDefault = "M3" ; 
 const char* SEventConfig::_MaxSlotDefault = "M3" ;  
@@ -84,9 +76,6 @@ const char* SEventConfig::_MaxPhotonDefault = "G1" ;
 const char* SEventConfig::_MaxSimtraceDefault = "G1" ; 
 #endif
 
-
-
-#endif
 
 
 const char* SEventConfig::_GatherCompDefault = SComp::ALL_ ; 
