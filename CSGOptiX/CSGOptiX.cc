@@ -404,7 +404,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     geoptxpath(nullptr),
 #endif
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation 
-    launch_count(0),
+    kernel_count(0),
     raygenmode(SEventConfig::RGMode()),
     params(InitParams(raygenmode,sglm)),
 #if OPTIX_VERSION < 70000
@@ -419,7 +419,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     framebuf(nullptr), 
 #endif
     meta(new SMeta),
-    launch_dt(0.),
+    kernel_dt(0.),
     sctx(nullptr),
     sim(QSim::Get()),  
     event(sim == nullptr  ? nullptr : sim->event)
@@ -868,10 +868,10 @@ void CSGOptiX::prepareParamRender()
     int rendertype = sglm->rendertype ; 
     float length = 0.f ; 
 
-    LOG_IF(info, prepareParamRender_DEBUG > 0 && launch_count == 0)
+    LOG_IF(info, prepareParamRender_DEBUG > 0 && kernel_count == 0)
         << _prepareParamRender_DEBUG << ":" << prepareParamRender_DEBUG
         << std::endl 
-        << std::setw(20) << " launch_count " << launch_count << std::endl 
+        << std::setw(20) << " kernel_count " << kernel_count << std::endl 
         << std::setw(20) << " extent "     << extent << std::endl 
         << std::setw(20) << " sglm.fr.ce.w "  << sglm->fr.ce.w << std::endl 
         << std::setw(20) << " sglm.getGazeLength "  << sglm->getGazeLength()  << std::endl 
@@ -1035,7 +1035,8 @@ double CSGOptiX::launch()
 
     typedef std::chrono::time_point<std::chrono::high_resolution_clock> TP ;
     typedef std::chrono::duration<double> DT ;
-    TP t0 = std::chrono::high_resolution_clock::now();
+    TP _t0 = std::chrono::high_resolution_clock::now();
+    int64_t t0 = sstamp::Now(); 
 
     LOG(LEVEL) 
          << " raygenmode " << raygenmode
@@ -1061,22 +1062,28 @@ double CSGOptiX::launch()
         CUDA_SYNC_CHECK();    
         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
         // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)  
-        launch_count += 1 ;   
+        kernel_count += 1 ;   
     }
 #endif
 
-    TP t1 = std::chrono::high_resolution_clock::now();
-    DT _dt = t1 - t0;
 
-    launch_dt = _dt.count() ;   // mis-named this is kernel execution time, NOT kernel launch time
-    launch_times.push_back(launch_dt);  
+    TP _t1 = std::chrono::high_resolution_clock::now();
+    DT _dt = _t1 - _t0;
+
+    int64_t t1 = sstamp::Now(); 
+    int64_t dt = t1 - t0 ; 
+
+    kernel_dt = _dt.count() ;   // formerly mis-named launch_dt
+    kernel_times.push_back(kernel_dt);  
+
+    kernel_times_.push_back(dt); 
 
     LOG(LEVEL) 
           << " (params.width, params.height, params.depth) ( " 
           << params->width << "," << params->height << "," << params->depth << ")"  
-          << std::fixed << std::setw(7) << std::setprecision(4) << launch_dt  
+          << std::fixed << std::setw(7) << std::setprecision(4) << kernel_dt  
           ; 
-    return launch_dt ; 
+    return kernel_dt ; 
 }
 
 
@@ -1200,7 +1207,7 @@ double CSGOptiX::render( const char* stem_ )
 {
     render_launch();   
     render_save(stem_);   
-    return launch_dt ; 
+    return kernel_dt ; 
 }
 
 
@@ -1248,7 +1255,7 @@ void CSGOptiX::render_save_(const char* stem_, bool inverted)
     const char* extra = strdup(_extra.c_str()) ;  
 
     const char* botline_ = ssys::getenvvar("BOTLINE", nullptr ); 
-    std::string bottom_line = CSGOptiX::Annotation(launch_dt, botline_, extra ); 
+    std::string bottom_line = CSGOptiX::Annotation(kernel_dt, botline_, extra ); 
     const char* botline = bottom_line.c_str() ; 
 
 
@@ -1256,12 +1263,12 @@ void CSGOptiX::render_save_(const char* stem_, bool inverted)
           << " stem " << stem 
           << " outpath " << outpath 
           << " outdir " << ( outdir ? outdir : "-" )
-          << " launch_dt " << launch_dt 
+          << " kernel_dt " << kernel_dt 
           << " topline [" <<  topline << "]"
           << " botline [" <<  botline << "]"
           ; 
 
-    LOG(info) << outpath  << " : " << AnnotationTime(launch_dt, extra)  ; 
+    LOG(info) << outpath  << " : " << AnnotationTime(kernel_dt, extra)  ; 
 
     unsigned line_height = 24 ; 
     snap(outpath, botline, topline, line_height, inverted  );   
@@ -1361,7 +1368,7 @@ void CSGOptiX::saveMeta(const char* jpg_path) const
     std::string extra = SEventConfig::GetGPUMeta(); 
     js["scontext"] = extra.empty() ? "-" : strdup(extra.c_str()) ; 
 
-    const std::vector<double>& t = launch_times ;
+    const std::vector<double>& t = kernel_times ;
     if( t.size() > 0 )
     {
         double mn, mx, av ;

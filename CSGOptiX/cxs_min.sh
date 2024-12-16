@@ -365,6 +365,11 @@ elif [ "$TEST" == "input_photon" ]; then
    opticks_running_mode=SRM_INPUT_PHOTON
    #opticks_event_mode=Nothing
 
+else
+
+   echo $BASH_SOURCE : ERROR TEST $TEST IS NOT HANDLED
+   exit 1 
+
 fi 
 
 vars="$vars opticks_num_photon opticks_num_genstep opticks_max_photon opticks_num_event opticks_running_mode"
@@ -507,9 +512,11 @@ logging(){
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
 [ -n "$MINIMAL"  ] && export SEvt__MINIMAL=1
+[ -n "$MINTIME"  ] && export SEvt__MINTIME=1
 
 export QRng__init_VERBOSE=1
 export SEvt__MINIMAL=1  ## just output dir 
+export SEvt__MINTIME=1  ## minimal timing info from QSim::simulate
 #export SEvt__DIRECTORY=1  ## getDir dumping 
 
 #export SEvt__NPFOLD_VERBOSE=1 

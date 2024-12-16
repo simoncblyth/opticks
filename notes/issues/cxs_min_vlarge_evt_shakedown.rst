@@ -5,6 +5,7 @@ cxs_min_vlarge_evt_shakedown
 ::
 
     TEST=vlarge_evt ~/o/cxs_min.sh 
+    TEST=vvlarge_evt ~/o/cxs_min.sh 
 
 ::
 
@@ -17,6 +18,13 @@ cxs_min_vlarge_evt_shakedown
     340    #opticks_max_photon=M200        ## G1 default so no need to set  
     341    #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
     342 
+
+    343 elif [ "$TEST" == "vvlarge_evt" ]; then
+    344 
+    345    opticks_num_photon=G1
+    346    opticks_num_genstep=40
+    347    opticks_num_event=1
+    348    opticks_running_mode=SRM_TORCH
 
 
 Comment the max Philox defaults cover it::
@@ -35,6 +43,23 @@ Comment the max Philox defaults cover it::
       75 const char* SEventConfig::_MaxPhotonDefault = "G1" ; 
       76 const char* SEventConfig::_MaxSimtraceDefault = "G1" ;
       77 #endif
+
+
+
+Ada managed 1 billion photons in 4 launches of 250M taking 2 min clocktime, kernel time less than 100s::
+
+    2024-12-16 14:03:30.575 INFO  [56770] [QSim::simulate@385] sslice {    0,   10,      0,250000000}
+    2024-12-16 14:03:56.724 INFO  [56770] [QSim::simulate@385] sslice {   10,   20,250000000,250000000}
+    2024-12-16 14:04:23.235 INFO  [56770] [QSim::simulate@385] sslice {   20,   30,500000000,250000000}
+    2024-12-16 14:04:49.998 INFO  [56770] [QSim::simulate@385] sslice {   30,   40,750000000,250000000}
+    2024-12-16 14:05:29.785 INFO  [56770] [QSim::simulate@423]  eventID 0 tot_dt   94.502935 ph  250000000 ph/M        250 ht  215633111 ht/M        215 reset_ YES
+    2024-12-16 14:05:29.785 INFO  [56770] [SEvt::save@3993] /data1/blyth/tmp/GEOM/J_2024aug27/CSGOptiXSMTest/ALL1_Debug_Philox_vvlarge_evt/A000 [genstep,hit]
+
+
+With 13G of hits::
+
+    A[blyth@localhost CSGOptiX]$ TEST=vvlarge_evt ~/o/cxs_min.sh du
+    13G /data1/blyth/tmp/GEOM/J_2024aug27/CSGOptiXSMTest/ALL1_Debug_Philox_vvlarge_evt/A000/hit.npy
 
 
 

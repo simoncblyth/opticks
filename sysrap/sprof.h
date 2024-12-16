@@ -24,7 +24,7 @@ See for example ~/opticks/sysrap/tests/sleak.py
 
 struct sprof
 {
-    int64_t st ;  // microsecond timestamp
+    int64_t st ;  // us microsecond (10^-6) timestamp
     int32_t vm ;  // KB
     int32_t rs ;  // KB 
 

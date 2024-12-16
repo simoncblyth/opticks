@@ -48,6 +48,7 @@ bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ; 
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ; 
 bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ; 
+bool SEvt::MINTIME = ssys::getenvbool(SEvt__MINTIME) ; 
 bool SEvt::DIRECTORY = ssys::getenvbool(SEvt__DIRECTORY) ; 
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ; 
 

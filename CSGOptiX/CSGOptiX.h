@@ -82,8 +82,9 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     plog::Severity    level = plog::debug ;   // quell prolific logging using level instead of LEVEL
 
     std::vector<unsigned>  solid_selection ;
-    std::vector<double>  launch_times ;
-    int                  launch_count ; 
+    std::vector<double>    kernel_times ;
+    std::vector<int64_t>   kernel_times_ ;
+    int                    kernel_count ; 
 
     int               raygenmode ; 
     Params*           params  ; 
@@ -101,7 +102,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
     Frame* framebuf ; 
     SMeta* meta ; 
-    double launch_dt ;   // of prior launch  
+    double kernel_dt ;   // execution time of prior kernel   
 
     scontext*    sctx ; 
     QSim*        sim ; 

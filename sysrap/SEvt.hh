@@ -106,6 +106,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__MINIMAL = "SEvt__MINIMAL" ; 
     static bool MINIMAL ; 
 
+    static constexpr const char* SEvt__MINTIME = "SEvt__MINTIME" ; 
+    static bool MINTIME ; 
+
     static constexpr const char* SEvt__DIRECTORY = "SEvt__DIRECTORY" ; 
     static bool DIRECTORY ; 
 

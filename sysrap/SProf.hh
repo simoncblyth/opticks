@@ -24,7 +24,7 @@ struct SYSRAP_API SProf
     static constexpr const char* FMT = "%0.3d" ; 
     static constexpr const int N = 10 ; 
     static char TAG[N] ; 
-    static int  SetTag(int idx, const char* fmt=FMT ); 
+    static int  SetTag(int idx, const char* fmt=FMT ); // used to distinguish profiles from multiple events 
     static bool HasTag(); 
     static const char* Tag(); 
     static void UnsetTag(); 
@@ -32,7 +32,7 @@ struct SYSRAP_API SProf
     static std::vector<sprof>       PROF ; 
     static std::vector<std::string> NAME ; 
 
-    static void Add(const char* name); 
+    static int64_t Add(const char* name); 
     static void Add( const char* name, const sprof& prof); 
     static int32_t Delta_RS();  // RS difference of last two stamps, or -1 when do not have more that one stamp 
     static int32_t Range_RS();  // RS range between first and last stamps  
@@ -70,11 +70,12 @@ inline void SProf::UnsetTag()
 
 
 
-inline void SProf::Add(const char* name)
+inline int64_t SProf::Add(const char* name)
 { 
     sprof prof ; 
     sprof::Stamp(prof); 
     Add(name, prof); 
+    return prof.st ; 
 }
 
 inline void SProf::Add( const char* _name, const sprof& prof)
