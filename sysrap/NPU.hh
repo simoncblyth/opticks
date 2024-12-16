@@ -1629,6 +1629,11 @@ This resolves spec with multiple tokens, eg::
 
 Any unresolved token causes nullptr to be returned.
 
+TODO support ".." to go up a level eg::
+
+    $FOLD/../other/a.npy 
+
+
 **/
 
 inline const char* U::Resolve(const char* spec_, const char* rel1_, const char* rel2_ )

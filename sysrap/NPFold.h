@@ -354,9 +354,14 @@ public:
 #endif
 
     int  load_dir(const char* base) ; 
+    static constexpr const char* load_dir_DUMP = "NPFold__load_dir_DUMP" ; 
+
     int  load_index(const char* base) ; 
+    static constexpr const char* load_index_DUMP = "NPFold__load_index_DUMP" ; 
 
     int load(const char* base ) ; 
+    static constexpr const char* load_DUMP = "NPFold__load_DUMP" ; 
+
     int load(const char* base, const char* rel0, const char* rel1=nullptr ) ; 
 
 
@@ -389,15 +394,21 @@ public:
 
     // SUMMARIZE FOLD ARRAY COUNTS
     NP* subcount( const char* prefix ) const ; 
+    static constexpr const char* subcount_DUMP = "NPFold__subcount_DUMP" ; 
+
     NP* submeta(const char* prefix, const char* column=nullptr ) const ; 
 
     // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
 
     NPFold* substamp(  const char* prefix, const char* keyname) const ; 
+    static constexpr const char* substamp_DUMP = "NPFold__substamp_DUMP" ; 
+
     NPFold* subprofile(const char* prefix, const char* keyname) const ; 
+    static constexpr const char* subprofile_DUMP = "NPFold__subprofile_DUMP" ; 
 
     template<typename ... Args>
     NPFold* subfold_summary(const char* method, Args ... args_  ) const  ; 
+    static constexpr const char* subfold_summary_DUMP = "NPFold__subfold_summary_DUMP" ; 
 
     template<typename F, typename T>
     NP* compare_subarrays(const char* key, const char* asym="a", const char* bsym="b", std::ostream* out=nullptr  ); 
@@ -2543,9 +2554,9 @@ inline int NPFold::load_dir(const char* _base)
 {
     const char* base = nodata ? _base + 1 : _base ;
 
-    static const char* DUMP = "NPFold__load_dir_DUMP" ; 
-    bool dump = getenv(DUMP) != nullptr  ; 
-    if(dump) std::cout << DUMP << " : [" << ( base ? base : "-" )  << "]" << std::endl ;  
+    int _DUMP = U::GetEnvInt(load_dir_DUMP , 0); 
+
+    if(_DUMP > 0) std::cout << "[" << load_dir_DUMP << " : [" << ( base ? base : "-" )  << "]\n" ;  
   
     std::vector<std::string> names ;
     const char* ext = nullptr ; 
@@ -2562,7 +2573,7 @@ inline int NPFold::load_dir(const char* _base)
 
         if( type == U::FILE_PATH && U::EndsWith(name, "_meta.txt"))
         {
-            if(VERBOSE) std::cerr << "NPFold::load_dir SKIP metadata sidecar " << name << std::endl ;
+            if(_DUMP > 0) std::cerr << "-NPFold::load_dir SKIP metadata sidecar " << name << std::endl ;
         }
         else if( type == U::FILE_PATH ) 
         {
@@ -2570,13 +2581,16 @@ inline int NPFold::load_dir(const char* _base)
         }
         else if( type == U::DIR_PATH && U::StartsWith(name, "_"))
         {
-            if(VERBOSE) std::cerr << "NPFold::load_dir SKIP directory starting with _" << name << std::endl ;
+            if(_DUMP > 0) std::cerr << "-NPFold::load_dir SKIP directory starting with _" << name << std::endl ;
         }
         else if( type == U::DIR_PATH ) 
         {
             load_subfold(_base, name);  // instanciates NPFold and add_subfold
         }
     }
+
+    if(_DUMP > 0) std::cout << "]" << load_dir_DUMP << " : [" << ( base ? base : "-" )  << "]\n" ;  
+
     return 0 ; 
 }
 
@@ -2584,10 +2598,8 @@ inline int NPFold::load_dir(const char* _base)
 inline int NPFold::load_index(const char* _base) 
 {
     const char* base = nodata ? _base + 1 : _base ;  
-
-    static const char* DUMP = "NPFold__load_index_DUMP" ; 
-    bool dump = getenv(DUMP) != nullptr  ; 
-    if(dump) std::cout << DUMP << " : [" << ( base ? base : "-" )  << "]" << std::endl ;  
+    int _DUMP = U::GetEnvInt(load_index_DUMP,0); 
+    if(_DUMP>0) std::cout << "[" << load_index_DUMP << " : [" << ( base ? base : "-" )  << "]\n" ;  
 
 
     std::vector<std::string> keys ; 
@@ -2604,6 +2616,7 @@ inline int NPFold::load_index(const char* _base)
             load_subfold(_base, key);  // instanciates NPFold and add_subfold
         }
     }
+    if(_DUMP>0) std::cout << "]" << load_index_DUMP << " : [" << ( base ? base : "-" )  << "]\n" ;  
     return 0 ; 
 }
 
@@ -2621,13 +2634,12 @@ inline int NPFold::load(const char* _base)
     nodata = NP::IsNoData(_base) ;  // _path starting with NP::NODATA_PREFIX eg '@' 
     const char* base = nodata ? _base + 1 : _base ;  
 
-    static const char* DUMP = "NPFold__load_DUMP" ; 
-    bool dump = getenv(DUMP) != nullptr  ; 
-    if(dump) std::cout << DUMP << " : [" << ( base ? base : "-" )  << "]" << std::endl ;  
+    int _DUMP = U::GetEnvInt(load_DUMP, 0); 
+    if(_DUMP>0) std::cout << "[" << load_DUMP << " : [" << ( base ? base : "-" )  << "]\n" ;  
 
 
     bool exists = NP::Exists(base); 
-    if(!exists && dump) std::cout << "NPFold::load non-existing base[" << ( base ? base : "-" ) << "]" << std::endl ;  
+    if(!exists && _DUMP>0) std::cout << "NPFold::load non-existing base[" << ( base ? base : "-" ) << "]" << std::endl ;  
     if(!exists) return 1 ; 
 
     loaddir = strdup(base); 
@@ -2640,6 +2652,7 @@ inline int NPFold::load(const char* _base)
     bool has_index = NP::Exists(base, INDEX) ; 
     int rc = has_index ? load_index(_base) : load_dir(_base) ; 
 
+    if(_DUMP>0) std::cout << "]" << load_DUMP << " : [" << ( base ? base : "-" ) << " rc " << rc << "]\n" ;  
     return rc ; 
 }
 inline int NPFold::load(const char* base_, const char* rel0, const char* rel1) 
@@ -2925,10 +2938,11 @@ inline NP* NPFold::subcount( const char* prefix ) const
         a->labels->push_back(_uk); 
     } 
 
-    bool dump = getenv("NPFold__subcount_DUMP") != nullptr  ; 
-    if(dump) std::cout << "[NPFold.hh:subcount" << std::endl ; 
-    if(dump) std::cout <<  " num_ukey " << num_ukey << std::endl ;
-    if(dump) for(int i=0 ; i < num_ukey ; i++ ) std::cout << a->names[i] << std::endl ; 
+    int _DUMP = U::GetEnvInt(subcount_DUMP,0); 
+
+    if(_DUMP>0) std::cout << "[" << subcount_DUMP << "\n" ; 
+    if(_DUMP>0) std::cout <<  " num_ukey " << num_ukey << std::endl ;
+    if(_DUMP>0) for(int i=0 ; i < num_ukey ; i++ ) std::cout << a->names[i] << std::endl ; 
 
     for(int i=0 ; i < ni ; i++) 
     {
@@ -2945,7 +2959,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
             int count = idx < num_key ? counts[idx] : -1  ; 
             aa[i*nj+j] = count ;  
 
-            if(dump) std::cout 
+            if(_DUMP>0) std::cout 
                 << std::setw(20) << uk 
                 << " idx " << idx 
                 << " count " << count 
@@ -2953,7 +2967,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
                 ; 
         }
     }
-    if(dump) std::cout << "]NPFold.hh:subcount" << std::endl ; 
+    if(_DUMP>0) std::cout << "]" << subcount_DUMP << "\n" ; 
     return a ; 
 }
 
@@ -3038,7 +3052,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     int num_sub = int(subs.size()) ;
 
 
-    bool dump = getenv("NPFold__substamp_DUMP") != nullptr ; 
+    int _DUMP = U::GetEnvInt(substamp_DUMP, 0 ); 
 
 
     const NPFold* sub0 = num_sub > 0 ? subs[0] : nullptr ; 
@@ -3046,8 +3060,8 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     int num_stamp0 = sub0 ? sub0->getMetaNumStamp() : 0 ;  
     bool skip = num_sub == 0 || num_stamp0 == 0 ; 
 
-    if(dump) std::cout 
-        << "[NPFold::substamp" 
+    if(_DUMP) std::cout 
+        << "[" << substamp_DUMP 
         << " find_subfold_with_prefix " << prefix
         << " maxdepth " << maxdepth 
         << " num_sub " << num_sub
@@ -3106,7 +3120,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
 
             if(i == 0) comkeys = keys ; 
             bool same_keys = i == 0 ? true : keys == comkeys ; 
-            if(dump) std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
+            if(_DUMP>0) std::cout << sub->loaddir << " stamps.size " << stamps.size() << " " << ( same_keys ? "Y" : "N" ) << std::endl; 
             assert(same_keys); 
 
             for(int j=0 ; j < nj ; j++) tt[i*nj+j] = stamps[j] ; 
@@ -3127,9 +3141,9 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
         out->add(U::FormName("delta_",keyname,nullptr), dt );
         out->add("subcount", count ); 
     }
-    if(dump) std::cout 
-        << "]NPFold::substamp" 
-        << std::endl
+    if(_DUMP>0) std::cout 
+        << "]" << substamp_DUMP 
+        << "\n"
         ;
     return out ; 
 }
@@ -3162,10 +3176,11 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
     int num_prof0 = num_sub > 0 ? subs[0]->getMetaNumProfile() : 0 ;  
     bool skip = num_sub == 0 || num_prof0 == 0 ; 
 
-    bool dump = getenv("NPFold__subprofile_DUMP") != nullptr ; 
+    int _DUMP = U::GetEnvInt(subprofile_DUMP, 0 ); 
 
-    if(dump) std::cout 
-        << "[NPFold::subprofile"
+
+    if(_DUMP>0) std::cout 
+        << "[" << subprofile_DUMP
         << " find_subfold_with_prefix " << prefix
         << " maxdepth " << maxdepth
         << " num_sub " << num_sub 
@@ -3202,7 +3217,7 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
             const NPFold* sub = subs[i] ; 
             const char* subpath = subpaths[i].c_str() ; 
 
-            if(dump) std::cout 
+            if(_DUMP>0) std::cout 
                 << subpath 
                 << std::endl
                 << sub->descMetaKV()
@@ -3218,7 +3233,7 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
 
             if(i == 0) comkeys = keys ; 
             bool same_keys = i == 0 ? true : keys == comkeys ; 
-            if(dump) std::cout 
+            if(_DUMP>0) std::cout 
                  << "sub.loaddir " << sub->loaddir 
                  << " keys.size " << keys.size() 
                  << " " << ( same_keys ? "Y" : "N" )
@@ -3241,8 +3256,8 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
         out = new NPFold ; 
         out->add(keyname, t );
     }
-    std::cout 
-        << "]NPFold::subprofile" 
+    if(_DUMP>0) std::cout 
+        << "]" << subprofile_DUMP
         << std::endl
         ;
     return out ; 
@@ -3270,6 +3285,9 @@ each group of subfold specified by the argument paths.
 template<typename ... Args>
 inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) const 
 {
+    int _DUMP = U::GetEnvInt( subfold_summary_DUMP, 0 ); 
+
+
     std::vector<std::string> args = {args_...};
 
     std::vector<std::string> uargs ; 
@@ -3282,6 +3300,19 @@ inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) con
         uargs.push_back( arg ); 
     }
     int num_uargs = uargs.size() ; 
+    if(_DUMP > 0) 
+    {
+        std::cerr 
+           << "@[" << subfold_summary_DUMP
+           << " method [" << ( method ? method : "-" ) << "]" 
+           << " args.size " << args.size() 
+           << " uargs.size " << uargs.size() 
+           << " uargs("
+           ;
+           
+        for(int i=0 ; i < num_uargs ; i++) std::cerr << uargs[i] << " " ; 
+        std::cerr << ")\n" ;     
+    }
 
 
     std::stringstream hh ; 
@@ -3327,8 +3358,9 @@ inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) con
 
         if(sub == nullptr && arr == nullptr) 
         {
-            std::cerr 
-                << "NPFold::subfold_summary"
+            if( _DUMP > 0 ) std::cerr 
+                << "@-NPFold::subfold_summary"
+                << " method [" << ( method ? method : "-" ) << "]"  
                 << " k [" << k << "]"
                 << " v [" << v << "]"
                 << " sub " << ( sub ? "YES" : "NO " ) 
@@ -3345,6 +3377,12 @@ inline NPFold* NPFold::subfold_summary(const char* method, Args ... args_  ) con
     hh << ")" ;  
 
     if(spec_ff) spec_ff->headline = hh.str(); 
+    if(_DUMP > 0) std::cerr 
+        << "@[" << subfold_summary_DUMP
+        << " method [" << ( method ? method : "-" ) << "]" 
+        << "\n" 
+        ;
+ 
     return spec_ff ;  
 }
 

@@ -152,7 +152,7 @@ knobs()
    #export CSGOptiX=INFO
 
 
-   export NPFold__substamp_DUMP=1
+   #export NPFold__substamp_DUMP=1
 
 
 }
@@ -175,8 +175,9 @@ vars="$vars version VERSION"
 #test=ref10_multilaunch
 #test=input_genstep
 #test=input_photon
-#test=large_evt
-test=vlarge_evt
+test=large_evt
+#test=vlarge_evt
+#test=vvlarge_evt
 
 
 export TEST=${TEST:-$test}
@@ -326,10 +327,11 @@ elif [ "$TEST" == "large_evt" ]; then
 
    opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
    opticks_num_genstep=10
-   opticks_max_photon=M200      
    opticks_num_event=1
    opticks_running_mode=SRM_TORCH
-   opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
+
+   #opticks_max_photon=M200      
+   #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
 
 elif [ "$TEST" == "vlarge_evt" ]; then 
 

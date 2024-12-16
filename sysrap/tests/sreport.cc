@@ -269,10 +269,14 @@ inline std::string sreport::desc_subcount() const
 
 
 
+/**
+sreport_Creator
+---------------
 
+1. loads folder metadata with NPFold::LoadNoData 
+2. instanciates and populates sreport instance
 
-
-
+**/
 
 struct sreport_Creator
 { 
@@ -304,7 +308,12 @@ inline sreport_Creator::sreport_Creator( const char* dirp_ )
     run(fold_valid ? fold->get("run") : nullptr),
     report(new sreport)
 {
-    std::cout << "[sreport_Creator::sreport_Creator" << std::endl ;
+    std::cout 
+        << "[sreport_Creator::sreport_Creator"
+        << " fold_valid " << ( fold_valid ? "YES" : "NO " )
+        << " run " << ( run ? "YES" : "NO " ) 
+        << "\n"
+        ;
     init(); 
     std::cout << "]sreport_Creator::sreport_Creator" << std::endl ;
 }

@@ -106,6 +106,7 @@ Debugging::
 EOU
 }
 
+IDIR=$(pwd)
 cd $(dirname $(realpath $BASH_SOURCE))
 source dbg__.sh 
 SDIR=$(pwd)
@@ -116,7 +117,8 @@ name=sreport
 src=$SDIR/$name.cc
 script=$SDIR/$name.py
 
-DEV=0  ## set to 1 to standalone build the sreport binary before use
+dev=0
+DEV=${DEV:-$dev}  ## set to 1 to standalone build the sreport binary before use
 if [ "$DEV" = "0" ]; then
     bin=$name                                   ## standard binary 
     defarg="run_info_ana"
@@ -141,7 +143,8 @@ source $HOME/.opticks/GEOM/GEOM.sh
 #job=N5
 #job=S5
 #job=Y1
-job=N7   
+#job=N7   
+job=N8   
 #job=A7   
 #job=S7  
 
@@ -160,15 +163,22 @@ case $JOB in
   N3) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL2 ;;
   N6) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
   N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ; LAB="TITAN RTX : Debug" ;; 
+  N8) DIR=/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_large_evt ; LAB="TITAN RTX" ;; 
   A7) DIR=/data1/blyth/tmp/GEOM/$GEOM/CSGOptiXSMTest/ALL1    ; LAB="Ada RTX 5000 : Debug" ;;
   S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ; LAB="TITAN RTX : Release" ;; 
 
   Y1) DIR=/tmp/ihep/opticks/GEOM/$GEOM/jok-tds/ALLLUT_1_ENE_-1_OIM_1_GUN_5 ;; ## 'yuxiang': Release TODO
+  II) DIR=$IDIR  ;;
 esac
 
 export STEM=${JOB}_${PLOT}_${PICK}
 export SREPORT_FOLD=${DIR}_${name}   ## SREPORT_FOLD is output directory used by binary, export it for python 
 export MODE=2                        ## 2:matplotlib plotting 
+
+
+#export NPFold__subfold_summary_DEBUG=1
+#export NPFold__subprofile_DUMP=1
+
 
 vars="0 BASH_SOURCE arg defarg DEV bin script SDIR JOB LAB DIR SREPORT_FOLD MODE name STEM PLOT PICK"
 
@@ -178,7 +188,6 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then 
     gcc $src -g -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
-    #gcc $src -O3 -DNDEBUG -std=c++11 -lstdc++ -I$SDIR/.. -o $bin 
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
 fi
 

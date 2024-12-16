@@ -359,7 +359,9 @@ bool QSim::KEEP_SUBFOLD = ssys::getenvbool(QSim__simulate_KEEP_SUBFOLD);
 double QSim::simulate(int eventID, bool reset_)
 {
     double tot_dt = 0. ; 
+
     int64_t tot_idt = 0 ; 
+    int64_t tot_gdt = 0 ; 
 
     uint64_t tot_ph = 0 ; 
 
@@ -406,11 +408,13 @@ double QSim::simulate(int eventID, bool reset_)
         tot_ph += sl.ph_count ; 
 
 
-        SProf::Add("QSim__simulate_POST"); 
+        int64_t t_POST = SProf::Add("QSim__simulate_POST"); 
 
         sev->gather(); 
 
-        SProf::Add("QSim__simulate_DOWN"); 
+        int64_t t_DOWN = SProf::Add("QSim__simulate_DOWN"); 
+
+        tot_gdt += ( t_DOWN - t_POST ) ; 
     }
 
     int64_t t_LEND = SProf::Add("QSim__simulate_LEND"); 
@@ -421,47 +425,46 @@ double QSim::simulate(int eventID, bool reset_)
     int64_t t_PCAT = SProf::Add("QSim__simulate_PCAT"); 
 
     int tot_ht = sev->getNumHit() ;  // NB from fold, so requires hits array gathering to be configured to get non-zero 
-    int last_launch_num_ph = event->getNumPhoton() ;  
 
     LOG_IF(info, SEvt::MINIMAL) 
         << " eventID " << eventID 
         << " tot_dt " << std::setw(11) << std::fixed << std::setprecision(6) << tot_dt 
         << " tot_ph " << std::setw(10) << tot_ph 
-        << " tot_ph/M " << std::setw(10) << tot_ph/M 
+        << " tot_ph/M " << std::setw(10) << std::fixed << std::setprecision(6) << float(tot_ph)/float(M) 
         << " tot_ht " << std::setw(10) << tot_ht 
-        << " tot_ht/M " << std::setw(10) << tot_ht/M
-        << " last_launch_num_ph " << std::setw(10) << last_launch_num_ph
-        << " last_launch_num_ph/M " << std::setw(10) << last_launch_num_ph/M
-        << " tot_ht/tot_ph " << std::setw(10) << std::fixed << std::setprecision(6) << tot_ht/tot_ph
+        << " tot_ht/M " << std::setw(10) << std::fixed << std::setprecision(6) << float(tot_ht)/float(M)
+        << " tot_ht/tot_ph " << std::setw(10) << std::fixed << std::setprecision(6) << float(tot_ht)/float(tot_ph)
         << " reset_ " << ( reset_ ? "YES" : "NO " ) 
         ;
-        
 
+    int64_t t_BRES  = SProf::Add("QSim__simulate_BRES"); 
     if(reset_) reset(eventID) ; 
     int64_t t_TAIL  = SProf::Add("QSim__simulate_TAIL"); 
 
     LOG_IF(info, SEvt::MINTIME) << "\n"
         << SEvt::SEvt__MINTIME
         << "\n"
-        << " (LEND - LBEG) "   << std::setw(10) << ( t_LEND - t_LBEG ) 
-        << " (LEND - LBEG)/M " << std::setw(10) << ( t_LEND - t_LBEG )/M 
-        << " (multilaunch loop begin to end) " 
-        << "\n"
-        << " (PCAT - LEND) "   << std::setw(10) << ( t_PCAT - t_LEND ) 
-        << " (PCAT - LEND)/M " << std::setw(10) << ( t_PCAT - t_LEND )/M
-        << " (topfold concat and clear subfold) "
-        << "\n"
-        << " (TAIL - HEAD) " << std::setw(10) << ( t_TAIL - t_HEAD ) 
-        << " (TAIL - HEAD)/M " << std::setw(10) << ( t_TAIL - t_HEAD )/M
+        << " (TAIL - HEAD)/M " << std::setw(10) << std::fixed << std::setprecision(6) << float( t_TAIL - t_HEAD )/M
         << " (head to tail of QSim::simulate method) "
         << "\n"
-        << " tot_idt " << std::setw(10) << tot_idt
-        << " tot_idt/M " << std::setw(10) << tot_idt/M
+        << " (LEND - LBEG)/M " << std::setw(10) << std::fixed << std::setprecision(6) << float( t_LEND - t_LBEG )/M 
+        << " (multilaunch loop begin to end) " 
+        << "\n"
+        << " (PCAT - LEND)/M " << std::setw(10) << std::fixed << std::setprecision(6) << float( t_PCAT - t_LEND )/M
+        << " (topfold concat and clear subfold) "
+        << "\n"
+        << " (TAIL - BRES)/M " << std::setw(10) << std::fixed << std::setprecision(6) << float( t_TAIL - t_BRES )/M
+        << " (QSim::reset which saves hits) "
+        << "\n"
+        << " tot_idt/M       " << std::setw(10) << std::fixed << std::setprecision(6) << float(tot_idt)/M
         << " (sum of kernel execution int64_t stamp differences in microseconds)" 
         << "\n"
-        << " tot_dt " << std::setw(10) << std::fixed << std::setprecision(6) << tot_dt 
-        << " int64_t(tot_dt*M) " << std::setw(10) << std::fixed << std::setprecision(10) << int64_t(tot_dt*M) 
+        << " tot_dt          " << std::setw(10) << std::fixed << std::setprecision(6) << tot_dt 
+        << " int(tot_dt*M)   " << std::setw(10) << int64_t(tot_dt*M) 
         << " (sum of kernel execution double chrono stamp differences in seconds, and scaled to ms) "  
+        << "\n"
+        << " tot_gdt/M       " << std::setw(10) << std::fixed << std::setprecision(6) << float(tot_gdt)/M
+        << " (sum of SEvt::gather int64_t stamp differences in microseconds)" 
         << "\n"
         ; 
 
