@@ -43,6 +43,15 @@ Note that this means that can rsync just the small report directory
 and still be able to present the report and make plots on laptop concerning 
 run folders with many large arrays left on the server. 
 
+
+Debugging Notes
+-----------------
+
+Debugging this is whacky as its mostly stringstream preparation
+so cout/cerr reporting sometimes seems out of place compared to 
+the report output. For this reason its important to label most
+output with where it comes from to speedup understanding+debug. 
+
 **/
 
 #include "NPFold.h"

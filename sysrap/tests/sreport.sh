@@ -129,6 +129,8 @@ else
 fi
 
 [ -n "$PLOT" ] && defarg="ana"
+[ -n "$BP" ] && defarg="dbg"
+
 arg=${1:-$defarg}
 
 

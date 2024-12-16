@@ -1263,14 +1263,7 @@ inline NP* NPX::BOA( NP* a, NP* b, NP::INT a_column, NP::INT b_column, std::ostr
        ;
 
     bool abort = a == nullptr || b == nullptr ;
-    if(abort) std::cerr 
-        << "NPX::BOA ABORT A or B null "
-        << std::endl 
-        << " A " << ( a ? a->sstr() : "-" )
-        << std::endl 
-        << " B " << ( b ? b->sstr() : "-" )
-        << std::endl 
-        ;
+    if(abort && out) *out << "NPX::BOA ABORT A or B null \n" ; 
     if(abort) return nullptr ; 
 
     assert( a->shape.size() == 2 ); 

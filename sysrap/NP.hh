@@ -407,6 +407,7 @@ struct NP
     static INT         GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
 
 
+    static void KeyIndices( std::vector<INT>& indices, const std::vector<std::string>& keys, const char* key ); 
     static INT KeyIndex( const std::vector<std::string>& keys, const char* key ); 
     static INT FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, INT idx0, INT idx1  ); 
 
@@ -5082,6 +5083,10 @@ inline NP::INT NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, in
     return first ;     
 }
 
+inline void NP::KeyIndices( std::vector<INT>& indices, const std::vector<std::string>& keys, const char* key ) // static
+{
+    for(INT i=0 ; i < INT(keys.size()) ; i++) if(strcmp(keys[i].c_str(), key) == 0) indices.push_back(i); 
+} 
 
 inline NP::INT NP::KeyIndex( const std::vector<std::string>& keys, const char* key ) // static
 {
@@ -5093,7 +5098,7 @@ inline NP::INT NP::KeyIndex( const std::vector<std::string>& keys, const char* k
 NP::FormattedKeyIndex
 ----------------------
 
-Search for key within a list of keys. When found returns the index, otherwise returns -1. 
+Search for key within a keys[idx0:idx1].  When found returns the index, otherwise returns -1. 
 When the key string contains a "%" character it is assumed to be a format 
 string suitable for formatting a single integer index that is tried in the 
 range from idx0 to idx1.  
@@ -5131,10 +5136,21 @@ inline NP::INT NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::
 
 /**
 NP::DescMetaKVS_juncture
---------------------------
+-------------------------
 
-* split juncture string on comma delimiters
-* loop over juncture j_key looking up the corresponding KeyIndex
+Example juncture::
+
+    SEvt__Init_RUN_META,SEvt__BeginOfRun,SEvt__EndOfRun,SEvt__Init_RUN_META
+
+1. split juncture string on comma delimiters
+2. loop over juncture j_key looking up the corresponding KeyIndex
+3. report deltas between the timestamps looked up from the juncture keys
+
+Essentially this is just a selected key version of the full descMetaKVS
+listing that precedes it which can be easier to understand with careful 
+choice of juncture keys appropriate for the parts of the code that 
+take the time. The ordering is entirely from the input juncture key
+order with no sorting. So delta times can be negative. 
 
 **/
 
@@ -5200,14 +5216,11 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
 NP::DescMetaKVS_ranges
 ------------------------
 
-Newline delimited list of colon separated pairs of tags, optionally with annotation::
 
-   CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL    ## annotation here 
-   CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL    ## annotation here 
+Impl notes
+~~~~~~~~~~~
 
-
-HMM : repetitious nature of this suggests needs a "record" struct 
-to avoid redoing things 
+Repetitious nature of this suggests needs a "record" struct to avoid redoing things 
 
 **/
 
@@ -5246,13 +5259,33 @@ inline NP* NP::makeMetaKVS_ranges(const char* ranges_ ) const
 NP::MakeMetaKVS_ranges
 -----------------------
 
-TODO: totals within annotation groups 
+Ranges are newline delimited with colon separated pairs of tags and optional annotatio, eg::
+
+   SEvt__Init_RUN_META:CSGFoundry__Load_HEAD                     ## init
+   CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL                   ## load_geom
+   CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL                   ## upload_geom
+   A%0.3d_QSim__simulate_HEAD:A%0.3d_QSim__simulate_PREL         ## upload_genstep
+   A%0.3d_QSim__simulate_PREL:A%0.3d_QSim__simulate_POST         ## simulate
+   A%0.3d_QSim__simulate_POST:A%0.3d_QSim__simulate_TAIL         ## download 
+
+Stamp keys are wildcarded by including strings like %0.3d 
+so need to pre-pass looking for keys with a range of indices, 
+so effectively are generating simple ranges without wildcard 
+based on the keys, wildcards and idx range.  
+
+1. split the colon delimited range pair from the ## delimited annotation
+2. generate specs vector of wildcard resolved key ranges
 
 
-1. split the comma delimited range pair from the ## delimited annotation
 
+
+HMM: with repeated keys which currently happens with multi-launch 
+this code is unaware of that and just acts on the timestamp of
+the first key found. It would be more meaningful to find all the ranges 
+and sum them, with reporting on how many were summed.  
 
 **/
+
 
 
 inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss ) 
@@ -5274,11 +5307,9 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
        << std::endl 
        ; 
 
-    // Stamp keys are wildcarded by including strings like %0.3d 
-    // so need to pre-pass looking for keys with a range of indices, 
-    // so effectively are generating simple ranges without wildcard 
-    // based on the keys, wildcards and idx range.  
- 
+
+    // generate specs of wildcard resolved ranges 
+
     char delim = ':' ;
     std::vector<std::string> specs ; 
 
@@ -5358,6 +5389,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     std::sort(ii.begin(), ii.end(), order );  
 
 
+
     // present the ranges in order of start time 
 
     INT ni = num_specs ; 
@@ -5369,6 +5401,7 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     int64_t ab_total = 0 ; 
     INT wid = 30 ;  
     _rr->labels = new std::vector<std::string> { "ta", "tb", "ab", "ia", "ib" } ; 
+
 
     for(INT j=0 ; j < num_specs ; j++)
     {
@@ -5417,6 +5450,83 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
        << std::endl 
        ;  
  
+
+
+
+
+    // try to generalize to handle multiple of the same keys with different timestamps (eg multi-launch)
+    struct keypair
+    { 
+        INT ia, ib ;
+        const char* no ; 
+    };
+
+    std::vector<keypair> kpp ; 
+
+    for(INT i=0 ; i < num_specs ; i++)
+    {
+        const char* spec = specs[i].c_str();  
+        std::vector<std::string> elem ;     
+        U::Split( spec, ':', elem );  
+        assert( elem.size() > 1 ); 
+
+        const char* ak = elem[0].c_str(); 
+        const char* bk = elem[1].c_str(); 
+        const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
+
+        std::vector<INT> iia ; 
+        KeyIndices(iia, keys, ak ); 
+
+        std::vector<INT> iib ; 
+        KeyIndices(iib, keys, bk ); 
+
+        INT na = iia.size(); 
+        INT nb = iib.size(); 
+
+        if(na == nb) 
+        {
+            for(INT j=0 ; j < na ; j++) kpp.push_back({iia[j],iib[j], strdup(no)}); 
+        }
+        else if( na > nb && nb == 1 ) 
+        {
+            kpp.push_back( {iia[na-1], iib[0], strdup(no) } ); 
+        }
+        else if( nb > na && na == 1 ) 
+        {
+            kpp.push_back( {iia[0], iib[nb-1], strdup(no) } ); 
+        }
+
+    }
+
+    INT num_kpp = kpp.size(); 
+    if(ss) (*ss) << ".NP::MakeMetaKVS_ranges kpp.size " << kpp.size() << "\n" ; 
+ 
+    // Sort indices into ascending start time order 
+    //std::vector<INT> ikp(num_kpp); 
+    //std::iota(ikp.begin(), ikp.end(), 0); 
+    //auto kp_order = [&tt,&ikp](const size_t& a, const size_t &b) { return tt[ikp[a].ia] < tt[ikp[b].ia];}  ; 
+    //std::sort(ikp.begin(), ikp.end(), kp_order );  
+
+    for(INT j=0 ; j < num_kpp ; j++)
+    {
+        //INT i = ikp[j]; 
+        INT i = j ; 
+        const keypair& kp = kpp[i]; 
+        INT ia = kp.ia ;  
+        INT ib = kp.ib ;  
+        const char* no = kp.no ; 
+
+        if(ss) (*ss) 
+            << " " << std::setw(wid) << keys[ia]
+            << " ==> "
+            << " " << std::setw(wid) << keys[ib]
+            << "      " << std::setw(16) << std::right << ( tt[ib] - tt[ia] )
+            << ( no == nullptr ? "" : "    ## " ) << ( no ? no : "" ) 
+            << std::endl
+            ;  
+    }
+
+
     return _rr ;        
 }
 
@@ -5427,8 +5537,11 @@ NP::DescMetaKVS
 
 1. GetMetaKVS extracting key, val pairs and microsecond timestamps,  
    lines without 16 digit timestamps have placeholder timestamps of zero 
-   
-
+2. std::iota create vector of indices 0,1,2,3...num_key - 1
+3. sort indices into increasing timestamp order, all placeholder zeros will be at start
+4. report time stamps with deltas from 1st, 2nd and previous
+5. DescMetaKVS_juncture
+6. DescMetaKVS_ranges
 
 **/
 
@@ -5445,10 +5558,10 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
     assert( tt.size() == keys.size() ); 
     INT num_keys = keys.size() ;
 
-    // sort indices INTo increasing time order
+    // sort indices into increasing time order
     // non-timestamped lines with placeholder timestamp zero will come first 
     std::vector<INT> ii(num_keys); 
-    std::iota(ii.begin(), ii.end(), 0); 
+    std::iota(ii.begin(), ii.end(), 0);  // init to 0,1,2,3,..., num_keys-1
     auto order = [&tt](const size_t& a, const size_t &b) { return tt[a] < tt[b];}  ; 
     std::sort(ii.begin(), ii.end(), order );  
 
