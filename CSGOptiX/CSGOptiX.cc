@@ -346,8 +346,6 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     SProf::Add("CSGOptiX__Create_HEAD"); 
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ; 
 
-    QU::alloc = SEventConfig::ALLOC ; 
-
 
     InitEvt(fd); 
     InitSim( const_cast<SSim*>(fd->sim) ); // QSim instanciation after uploading SSim arrays

@@ -17,7 +17,7 @@
 #include "sphoton.h"
 #include "sevent.h"
 #include "salloc.h"
-
+#include "SEventConfig.hh"
 
 #include "QUDA_CHECK.h"
 #include "QU.hh"
@@ -41,6 +41,14 @@ const plog::Severity QU::LEVEL = SLOG::EnvLevel("QU", "DEBUG") ;
 bool QU::MEMCHECK = ssys::getenvbool(_MEMCHECK); 
 
 salloc* QU::alloc = nullptr ;   // used to monitor allocations, instanciated in CSGOptiX::Create
+
+
+void QU::alloc_add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare) // static
+{
+   if(!alloc) alloc = SEventConfig::ALLOC ; 
+   if(alloc ) alloc->add(label, size, num_items, sizeof_item , spare); 
+}
+
 
 template <typename T> 
 char QU::typecode()
@@ -127,8 +135,8 @@ T* QU::UploadArray(const T* array, unsigned num_items, const char* label ) // st
        << " label " << ( label ? label : "-" )
        ;
 
-
-    if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
+    
+    alloc_add( label, size, num_items, sizeof(T), 0 ) ; 
 
     T* d_array = nullptr ; 
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), size )); 
@@ -252,7 +260,10 @@ void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
             LOG(error) << "save salloc record to " << out ; 
             alloc->save(out) ; 
         }
-
+        else
+        {
+            ss << "QU::_cudaMalloc NO ALLOC monitor enabled\n" ;   
+        }
         throw QUDA_Exception( ss.str().c_str() );             
     }                                                        
 }
@@ -276,7 +287,7 @@ T* QU::device_alloc( unsigned num_items, const char* label )
         ; 
 
 
-    if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
+    alloc_add( label, size, num_items, sizeof(T), 0 ) ; 
 
     T* d ;  
     _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
@@ -326,7 +337,7 @@ T* QU::device_alloc_zero(unsigned num_items, const char* label)
         ; 
 
 
-    if(alloc) alloc->add( label, size, num_items, sizeof(T), 0 ) ; 
+    alloc_add( label, size, num_items, sizeof(T), 0 ) ; 
 
     T* d ;  
     _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 

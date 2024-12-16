@@ -1345,7 +1345,10 @@ by factor of ~32 from the 32 step points
 
 When debug arrays are configured the user currently 
 needs to manually keep total photon count low (few millions) 
-to stay within VRAM.   
+to stay within VRAM.  See::
+
+    QSimTest::fake_propagate
+    QSimTest::EventConfig 
  
 **/
 size_t SEventConfig::HeuristicMaxSlot( size_t totalGlobalMem_bytes )

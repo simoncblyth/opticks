@@ -136,16 +136,17 @@ inline std::string salloc::desc() const
     double tot_GB = double(tot)/1e9 ; 
 
     std::stringstream ss ; 
-    ss << "salloc::desc"
+    ss 
+       << "[salloc::desc"
        << " alloc.size " << alloc.size()
        << " label.size " << label.size()
-       << std::endl
+       << "\n"
        ;
 
-    ss << "salloc.meta"
-       << std::endl 
+    ss 
+       << "[salloc.meta\n"
        << ( meta.empty() ? "-" : meta )
-       << std::endl 
+       << "]salloc.meta\n"
        ;
 
     const char* spacer = "     " ;  
@@ -215,7 +216,9 @@ inline std::string salloc::desc() const
        << " " << std::setw(11) << "" 
        << " "
        << " " << std::setw(10) << std::fixed << std::setprecision(2) << tot_GB
-       << std::endl 
+       << "\n"
+       << "]salloc::desc"
+       << "\n"
        ;
     std::string s = ss.str(); 
     return s ; 

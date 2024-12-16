@@ -98,6 +98,7 @@ struct sphoton ;
 
 struct sevent
 {
+    static constexpr unsigned M = 1000000 ; 
     static constexpr unsigned genstep_itemsize = 6*4 ; 
     static constexpr unsigned genstep_numphoton_offset = 3 ; 
     static constexpr float w_lo = 60.f ; 
@@ -438,6 +439,13 @@ SEVENT_METHOD void sevent::get_meta(std::string& meta) const
     NP::SetMeta<uint64_t>(meta,"evt.max_curand", max_curand); 
     NP::SetMeta<uint64_t>(meta,"evt.max_slot", max_slot); 
     NP::SetMeta<uint64_t>(meta,"evt.max_photon", max_photon); 
+    NP::SetMeta<uint64_t>(meta,"evt.num_photon", num_photon); 
+
+    NP::SetMeta<uint64_t>(meta,"evt.max_curand/M", max_curand/M); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_slot/M", max_slot/M); 
+    NP::SetMeta<uint64_t>(meta,"evt.max_photon/M", max_photon/M);
+    NP::SetMeta<uint64_t>(meta,"evt.num_photon/M", num_photon/M);
+ 
     NP::SetMeta<uint64_t>(meta,"evt.max_record", max_record); 
     NP::SetMeta<uint64_t>(meta,"evt.max_rec", max_rec); 
     NP::SetMeta<uint64_t>(meta,"evt.max_seq", max_seq); 
@@ -445,7 +453,6 @@ SEVENT_METHOD void sevent::get_meta(std::string& meta) const
     NP::SetMeta<uint64_t>(meta,"evt.max_tag", max_tag); 
     NP::SetMeta<uint64_t>(meta,"evt.max_flat", max_flat); 
 
-    NP::SetMeta<uint64_t>(meta,"evt.num_photon", num_photon); 
     NP::SetMeta<uint64_t>(meta,"evt.num_record", num_record); 
     NP::SetMeta<uint64_t>(meta,"evt.num_rec", num_rec); 
     NP::SetMeta<uint64_t>(meta,"evt.num_seq", num_seq); 

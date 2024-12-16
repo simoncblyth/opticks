@@ -16,6 +16,8 @@ struct QUDARAP_API QU
 
     static salloc* alloc ; 
 
+    static void alloc_add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare); 
+
     template <typename T>
     static char typecode() ; 
 

@@ -50,7 +50,6 @@ struct QSimTest
     static constexpr const unsigned M = 1000000 ; 
     static const char* FOLD ; 
     static const plog::Severity LEVEL ; 
-    static void  EventConfig(unsigned type, const SPrd* prd);  // must be run after SEvt is instanciated
     static unsigned Num(int argc, char** argv); 
 
     const SPrd* sprd ; 
@@ -89,7 +88,10 @@ struct QSimTest
 
     void photon_launch_generate(); 
     void photon_launch_mutate(); 
+
+    static void  EventConfig(unsigned type, const SPrd* prd);  // must be run after SEvt is instanciated
     void fake_propagate(); 
+
     void quad_launch_generate(); 
 
 
@@ -489,6 +491,62 @@ void QSimTest::photon_launch_generate()
     qs->dbg->save("$FOLD"); 
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+QSimTest::EventConfig
+-----------------------
+
+This is invoked from the QSimTest main  immediately 
+prior to SEvt EGPU instanciation. 
+
+For the FAKE_PROPAGATE test the SEventConfig settings 
+are adjusted to configure the QEvent GPU buffers.
+This must be done prior to QEvent::init which happens 
+when QSim is instanciated.
+
+**/
+
+void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
+{
+    SEvt* sev = SEvt::Get_EGPU();
+    LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for fake_propagate bounce consistency " ;  
+    assert(sev == nullptr); 
+
+    LOG(LEVEL) << "[ " <<  QSimLaunch::Name(type) ; 
+    if( type == FAKE_PROPAGATE )
+    {
+        LOG(LEVEL) << prd->desc() ;  
+        int maxbounce = prd->getNumBounce(); 
+
+        SEventConfig::SetMaxBounce(maxbounce); 
+        SEventConfig::SetEventMode("DebugLite"); 
+        SEventConfig::Initialize();   
+
+        SEventConfig::SetMaxGenstep(1);    // FAKE_PROPAGATE starts from input photons but uses a single placeholder genstep 
+
+        unsigned mx = 1000000 ;  
+        SEventConfig::SetMaxPhoton(mx);   // used for QEvent buffer sizing 
+        SEventConfig::SetMaxSlot(mx); 
+        // greatly reduced MaxSlot as debug arrays in use
+
+        LOG(LEVEL) << " SEventConfig::Desc " << SEventConfig::Desc() ;
+    }
+    LOG(LEVEL) << "] " <<  QSimLaunch::Name(type) ; 
+}
+
+
 /**
 QSimTest::fake_propagate
 ----------------------------------------
@@ -496,7 +554,6 @@ QSimTest::fake_propagate
 NB QSimTest::EventConfig does FAKE_PROPAGATE specific SEventConfig setup of event maxima 
 
 **/
-
 
 void QSimTest::fake_propagate()
 {
@@ -612,44 +669,6 @@ void QSimTest::photon_launch_mutate()
     a->save("$FOLD/p.npy"); 
 
     qs->dbg->save("$FOLD"); 
-}
-
-/**
-QSimTest::EventConfig
------------------------
-
-SEventConfig settings to configure the QEvent GPU buffers
-must be done prior to QEvent::init which happens when QSim is instanciated.
-
-TODO : looks like for FAKE_PROPAGATE are changing config after 
-SEvt instanciation, hence the changes dont do anything ? 
-
-SO THIS NEEDS REWORKING TO CHANGE CONFIG EARLIER 
-
-**/
-
-void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
-{
-    SEvt* sev = SEvt::Get_EGPU();
-    LOG_IF(fatal, sev != nullptr ) << "QSimTest::EventConfig must be done prior to instanciating SEvt, eg for fake_propagate bounce consistency " ;  
-    assert(sev == nullptr); 
-
-    LOG(LEVEL) << "[ " <<  QSimLaunch::Name(type) ; 
-    if( type == FAKE_PROPAGATE )
-    {
-        LOG(LEVEL) << prd->desc() ;  
-        int maxbounce = prd->getNumBounce(); 
-
-        SEventConfig::SetMaxBounce(maxbounce); 
-        SEventConfig::SetEventMode("DebugLite"); 
-        SEventConfig::Initialize();   
-
-        SEventConfig::SetMaxGenstep(1);        // FAKE_PROPAGATE starts from input photons but uses a single placeholder genstep 
-        SEventConfig::SetMaxPhoton(1000000);   // used for QEvent buffer sizing 
-
-        LOG(LEVEL) << " SEventConfig::Desc " << SEventConfig::Desc() ;
-    }
-    LOG(LEVEL) << "] " <<  QSimLaunch::Name(type) ; 
 }
 
 
@@ -776,7 +795,6 @@ int main(int argc, char** argv)
 
 
     QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
-
 
     [[maybe_unused]] SEvt* ev = SEvt::Create_EGPU() ; 
     assert(ev);
