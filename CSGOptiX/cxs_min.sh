@@ -340,6 +340,13 @@ elif [ "$TEST" == "vlarge_evt" ]; then
    #opticks_max_photon=M200        ## G1 default so no need to set  
    #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
 
+elif [ "$TEST" == "vvlarge_evt" ]; then 
+
+   opticks_num_photon=G1  
+   opticks_num_genstep=40
+   opticks_num_event=1
+   opticks_running_mode=SRM_TORCH
+
 elif [ "$TEST" == "input_genstep" ]; then
 
    opticks_num_photon=     # ignored ?
