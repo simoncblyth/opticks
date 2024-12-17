@@ -5,20 +5,30 @@
 NP : Header-only Array Creation and persisting as NumPy .npy files
 ====================================================================
 
-Related headers in dependency order:
+* TODO: relocate higher level NP.hh functionality up to NPX.h
+* TODO: relocate lower level NP.hh functionality down to NPU.hh
+
+
+Dependencies of the NP family of headers::
+
+    NPFold.h : NPX.h
+
+    NPX.h : NP.hh
+
+    NP.hh : NPU.hh
+
+    NPU.hh : system headers only
+
+
 
 NPU.hh
     underpinnings of NP.hh
 NP.hh
     core of save/load arrays into .npy NumPy format files 
-
-    * TODO: relocate more NP.hh functionality down to NPU.hh OR up to NPX.h
-
 NPX.h
     extras such as static converters 
 NPFold.h
-    managing and persisting collections of arrays 
-
+    managing and persisting collections of arrays and other NPFold 
 
 Primary source is https://github.com/simoncblyth/np/
 but the headers are also copied into opticks/sysrap. 
@@ -383,9 +393,6 @@ struct NP
     static void GetMetaKV_( const char* metadata    , VS* keys, VS* vals, bool only_with_profile, const char* ptn=nullptr ); 
     static void GetMetaKV(  const std::string& meta , VS* keys, VS* vals, bool only_with_profile, const char* ptn=nullptr ); 
 
-    static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
-    static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
-
     template<typename T> static T    GetMeta( const std::string& mt, const char* key, T fallback ); 
 
     template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
@@ -407,14 +414,40 @@ struct NP
     static INT         GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, int64_t discount=200000 );  // 200k us, ie 0.2 s 
 
 
-    static void KeyIndices( std::vector<INT>& indices, const std::vector<std::string>& keys, const char* key ); 
-    static INT KeyIndex( const std::vector<std::string>& keys, const char* key ); 
-    static INT FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, INT idx0, INT idx1  ); 
 
     static std::string DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, int64_t t0, const char* juncture_ ); 
+
+
     static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) ; 
-    static NP*  MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss=nullptr ) ; 
-    NP* makeMetaKVS_ranges(const char* ranges_ ) const ;  
+    static std::string DescMetaKVS_ranges2( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) ; 
+
+    static void Resolve_ranges( std::vector<std::string>& specs, const std::vector<std::string>& keys, const char* ranges_, std::ostream* ss=nullptr ); 
+    static void TimeOrder_ranges( std::vector<int>& spec_order, const std::vector<std::string>& specs, const std::vector<std::string>& keys, const std::vector<int64_t>& tt, std::ostream* ss=nullptr ); 
+    static NP*  MakeMetaKVS_ranges_table( 
+        const std::vector<int>& spec_order, 
+        const std::vector<std::string>& specs,  
+        const std::vector<std::string>& keys, 
+        const std::vector<int64_t>& tt, 
+        std::ostream* ss=nullptr ) ; 
+
+    static NP* MakeMetaKVS_ranges2_table( 
+        const std::vector<std::string>& specs, 
+        const std::vector<std::string>& keys, 
+        const std::vector<int64_t>& tt, 
+        std::ostream* ss=nullptr ) ; 
+
+
+    static NP* MakeMetaKVS_ranges(  const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss=nullptr ); 
+    static NP* MakeMetaKVS_ranges2( const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss=nullptr ); 
+
+
+    static NP* MakeMetaKVS_ranges( const std::string& meta_, const char* ranges_, std::ostream* ss=nullptr ); 
+    static NP* MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_, std::ostream* ss=nullptr ); 
+
+
+
+
+    //NP* makeMetaKVS_ranges(const char* ranges_ ) const ;  
 
 
     static std::string DescMetaKVS(const std::string& meta, const char* juncture = nullptr, const char* ranges=nullptr ); 
@@ -4816,63 +4849,6 @@ inline void NP::GetMetaKV(
 }
 
 
-/**
-NP::GetMetaKVS_
-----------------
-
-1. parse the metadata string, for each line split key from val using ":" delimiter 
-2. where the value looks like a contemporary microsecond uint64_t timestamp (16 digits) extract that
-3. where the value looks like profile triplet eg 1111111111111111,2222,3333 with first field a 16 digit timestamp extract that
-
-Note that for only_with_stamp:false placeholder timestamp values of zero are provided
-for lines without stamps or profile triplets.  
-
-**/
-
-inline void NP::GetMetaKVS_(
-    const char* metadata, 
-    std::vector<std::string>* keys, 
-    std::vector<std::string>* vals, 
-    std::vector<int64_t>* stamps, 
-    bool only_with_stamp ) // static 
-{
-    if(metadata == nullptr) return ; 
-    std::stringstream ss;
-    ss.str(metadata);
-    std::string s;
-    char delim = ':' ; 
-
-    while (std::getline(ss, s))
-    { 
-        size_t pos = s.find(delim); 
-        if( pos != std::string::npos )
-        {
-            std::string _k = s.substr(0, pos);
-            std::string _v = s.substr(pos+1);
-            const char* k = _k.c_str(); 
-            const char* v = _v.c_str(); 
-            bool disqualify_key = strlen(k) > 0 && k[0] == '_' ; 
-            bool looks_like_stamp = U::LooksLikeStampInt(v); 
-            bool looks_like_prof  = U::LooksLikeProfileTriplet(v); 
-            int64_t t = 0 ; 
-            if(looks_like_stamp) t = U::To<int64_t>(v) ;
-            if(looks_like_prof)  t = strtoll(v, nullptr, 10);
-            bool select = only_with_stamp ? ( t > 0 && !disqualify_key )  : true ; 
-            if(!select) continue ; 
-
-            if(keys) keys->push_back(k); 
-            if(vals) vals->push_back(v);
-            if(stamps) stamps->push_back(t);
-        }
-    } 
-}
-
-inline void NP::GetMetaKVS( const std::string& meta, std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp  )
-{
-    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
-    return GetMetaKVS_( metadata, keys, vals, stamps, only_with_stamp ); 
-}
-
 
 
 template<typename T> inline T NP::GetMeta(const std::string& mt, const char* key, T fallback) // static 
@@ -5083,55 +5059,7 @@ inline NP::INT NP::GetFirstStampIndex_OLD(const std::vector<int64_t>& stamps, in
     return first ;     
 }
 
-inline void NP::KeyIndices( std::vector<INT>& indices, const std::vector<std::string>& keys, const char* key ) // static
-{
-    for(INT i=0 ; i < INT(keys.size()) ; i++) if(strcmp(keys[i].c_str(), key) == 0) indices.push_back(i); 
-} 
 
-inline NP::INT NP::KeyIndex( const std::vector<std::string>& keys, const char* key ) // static
-{
-    INT ikey = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), key )) ; 
-    return ikey == INT(keys.size()) ? -1 : ikey ; 
-} 
-
-/**
-NP::FormattedKeyIndex
-----------------------
-
-Search for key within a keys[idx0:idx1].  When found returns the index, otherwise returns -1. 
-When the key string contains a "%" character it is assumed to be a format 
-string suitable for formatting a single integer index that is tried in the 
-range from idx0 to idx1.  
-
-**/
-
-inline NP::INT NP::FormattedKeyIndex( std::string& fkey, const std::vector<std::string>& keys, const char* key, INT idx0, INT idx1  ) // static
-{
-    INT k = -1 ; 
-    if( strchr(key,'%') == nullptr ) 
-    {
-        fkey = key ; 
-        k = KeyIndex(keys, key ) ; 
-    }
-    else
-    {
-        const INT N = 100 ; 
-        char keybuf[N] ; 
-        for( INT idx=idx0 ; idx < idx1 ; idx++)
-        {
-            INT n = snprintf(keybuf, N, key, idx ) ;  
-            if(!(n < N)) std::cerr << "NP::FormattedKeyIndex ERR n " << n << std::endl ; 
-            assert( n < N ); 
-            k = KeyIndex(keys, keybuf ) ; 
-            if( k > -1 ) 
-            {
-                fkey = keybuf ; 
-                break ; 
-            }
-        }
-    }
-    return k ; 
-} 
 
 
 /**
@@ -5181,10 +5109,10 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
        ;
   
     int64_t tp = 0 ; 
-    for(INT j=0 ; j < num_juncture ; j++)
+    for(int j=0 ; j < num_juncture ; j++)
     {
         const char* j_key = juncture[j].c_str() ; 
-        INT i = KeyIndex(keys, j_key) ; 
+        int i = U::KeyIndex(keys, j_key) ; 
         if( i == -1 ) continue ; 
 
         const char* k = keys[i].c_str(); 
@@ -5216,11 +5144,7 @@ inline std::string NP::DescMetaKVS_juncture( const std::vector<std::string>& key
 NP::DescMetaKVS_ranges
 ------------------------
 
-
-Impl notes
-~~~~~~~~~~~
-
-Repetitious nature of this suggests needs a "record" struct to avoid redoing things 
+This does not handle repeated keys, eg from multi-launch running. 
 
 **/
 
@@ -5234,32 +5158,93 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
        ;
 
     NP* a = MakeMetaKVS_ranges(keys, tt, ranges_ , &ss ); 
-    ss << " a " << a->sstr(); 
-    ss << "]NP::DescMetaKVS_ranges\n" ; 
+
+    ss << "]NP::DescMetaKVS_ranges"
+       << " a " << ( a ? a->sstr() : "-" ) 
+       << "\n" 
+       ; 
+
     std::string str = ss.str(); 
     return str ;
 }
 
-inline NP* NP::makeMetaKVS_ranges(const char* ranges_ ) const 
+
+/**
+NP::DescMetaKVS_ranges2
+------------------------
+
+This attempts to handle repeated keys reasonably, eg from multi-launch running. 
+
+**/
+
+inline std::string NP::DescMetaKVS_ranges2( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) 
 {
-    std::vector<std::string> keys ;  
-    std::vector<std::string> vals ;  
-    std::vector<int64_t> tt ;  
-    bool only_with_stamp = true ; 
-    GetMetaKVS(meta, &keys, &vals, &tt, only_with_stamp ); 
-    assert( keys.size() == vals.size() ); 
-    assert( keys.size() == tt.size() ); 
-    assert( tt.size() == keys.size() ); 
-    return MakeMetaKVS_ranges(keys, tt, ranges_ , nullptr ); 
+    std::stringstream ss ; 
+    ss << "[NP::DescMetaKVS_ranges2\n" 
+       << "[ranges\n"  
+       << ( ranges_ ? ranges_ : "-" )
+       << "]ranges\n"
+       ;
+
+    NP* a = MakeMetaKVS_ranges2(keys, tt, ranges_ , &ss ); 
+
+    ss << "]NP::DescMetaKVS_ranges2"
+       << " a " << ( a ? a->sstr() : "-" ) 
+       << "\n" 
+       ; 
+
+    std::string str = ss.str(); 
+    return str ;
 }
+
+
+
 
 
 
 /**
 NP::MakeMetaKVS_ranges
------------------------
+------------------------
 
-Ranges are newline delimited with colon separated pairs of tags and optional annotatio, eg::
+Former NP::makeMetaKVS_ranges turned static with meta arg. 
+
+**/
+
+inline NP* NP::MakeMetaKVS_ranges(const std::string& meta_, const char* ranges_ , std::ostream* ss) // static
+{
+    std::vector<std::string> keys ;  
+    std::vector<std::string> vals ;  
+    std::vector<int64_t> tt ;  
+    bool only_with_stamp = true ; 
+    U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp ); 
+    assert( keys.size() == vals.size() ); 
+    assert( keys.size() == tt.size() ); 
+    assert( tt.size() == keys.size() ); 
+    return MakeMetaKVS_ranges(keys, tt, ranges_ , ss ); 
+}
+
+inline NP* NP::MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_ , std::ostream* ss) // static
+{
+    std::vector<std::string> keys ;  
+    std::vector<std::string> vals ;  
+    std::vector<int64_t> tt ;  
+    bool only_with_stamp = true ; 
+    U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp ); 
+    assert( keys.size() == vals.size() ); 
+    assert( keys.size() == tt.size() ); 
+    assert( tt.size() == keys.size() ); 
+    return MakeMetaKVS_ranges2(keys, tt, ranges_ , ss ); 
+}
+
+
+
+
+
+/**
+NP::Resolve_ranges
+-------------------
+
+Ranges are newline delimited with colon separated pairs of tags and mandatory annotation, eg::
 
    SEvt__Init_RUN_META:CSGFoundry__Load_HEAD                     ## init
    CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL                   ## load_geom
@@ -5274,21 +5259,15 @@ so effectively are generating simple ranges without wildcard
 based on the keys, wildcards and idx range.  
 
 1. split the colon delimited range pair from the ## delimited annotation
-2. generate specs vector of wildcard resolved key ranges
+2. generate specs vector of wildcard resolved key ranges including the annotation 
 
+The output specs are of form::
 
-
-
-HMM: with repeated keys which currently happens with multi-launch 
-this code is unaware of that and just acts on the timestamp of
-the first key found. It would be more meaningful to find all the ranges 
-and sum them, with reporting on how many were summed.  
+    A000_QSim__simulate_HEAD:A000_QSim__simulate_PREL:upload_genstep
 
 **/
 
-
-
-inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss ) 
+inline void NP::Resolve_ranges( std::vector<std::string>& specs, const std::vector<std::string>& keys, const char* ranges_, std::ostream* ss ) 
 {
     assert(ranges_ && strlen(ranges_) > 0); 
     std::vector<std::string> ranges ; 
@@ -5296,24 +5275,23 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
     U::LiteralAnno(ranges, anno, ranges_ , "#" ); 
     assert( ranges.size() == anno.size() ) ;  
 
-    INT num_ranges = ranges.size() ; 
+    int num_keys = keys.size() ; 
+    int num_ranges = ranges.size() ; 
 
     if(ss) ss->imbue(std::locale("")) ; // commas for thousands
 
     if(ss) (*ss) 
-       << "[NP::MakeMetaKVS_ranges\n" 
-       << "ranges:" << num_ranges 
-       << " time ranges between pairs of stamps " 
+       << "[NP::Resolve_ranges\n" 
+       << " num_keys :" << num_keys
+       << " num_ranges :" << num_ranges 
        << std::endl 
        ; 
-
 
     // generate specs of wildcard resolved ranges 
 
     char delim = ':' ;
-    std::vector<std::string> specs ; 
 
-    for(INT i=0 ; i < num_ranges ; i++)
+    for(int i=0 ; i < num_ranges ; i++)
     {
         const std::string& range = ranges[i] ;  // 
         size_t pos = range.find(delim); 
@@ -5325,14 +5303,14 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* b = _b.c_str();  
 
         // idx0 idx1 specifies the range for wildcard replacements
-        INT idx0 = 0 ; 
-        INT idx1 = 30 ; 
-        for(INT idx=idx0 ; idx < idx1 ; idx++)
+        int idx0 = 0 ; 
+        int idx1 = 30 ; 
+        for(int idx=idx0 ; idx < idx1 ; idx++)
         {
             std::string akey ; 
             std::string bkey ; 
-            INT ia = FormattedKeyIndex(akey, keys, a, idx, idx+1 ) ; 
-            INT ib = FormattedKeyIndex(bkey, keys, b, idx, idx+1 ) ; 
+            int ia = U::FormattedKeyIndex(akey, keys, a, idx, idx+1 ) ; 
+            int ib = U::FormattedKeyIndex(bkey, keys, b, idx, idx+1 ) ; 
 
             bool found_range_pair = !akey.empty() && !bkey.empty() && ia > -1 && ib > -1 ; 
 
@@ -5345,20 +5323,37 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
             }
         }
     }
-
-
-    // Collect start times of the simple stamp ranges
-
-    INT num_specs = specs.size(); 
+    int num_specs = specs.size(); 
 
     if(ss) (*ss) 
-       << ".NP::MakeMetaKVS_ranges num_specs:" << num_specs << "\n" 
-       ;  
+       << "]NP::Resolve_ranges\n" 
+       << " num_keys :" << num_keys
+       << " num_ranges :" << num_ranges 
+       << " num_specs :"  << num_specs
+       << std::endl 
+       ; 
 
+}
+
+
+/**
+NP::TimeOrder_ranges
+---------------------
+
+1. collect lhs (start) times of the ranges into stt
+2. sort spec_order indices into ascending time order
+
+**/
+
+
+inline void NP::TimeOrder_ranges( std::vector<int>& spec_order, const std::vector<std::string>& specs, const std::vector<std::string>& keys, const std::vector<int64_t>& tt, std::ostream* ss ) 
+{
+    assert( spec_order.size() == specs.size() ) ; 
+    int num_specs = specs.size(); 
 
     std::vector<int64_t> stt(num_specs); 
 
-    for(INT i=0 ; i < num_specs ; i++)
+    for(int i=0 ; i < num_specs ; i++)
     {
         const char* spec = specs[i].c_str();  
         std::vector<std::string> elem ;     
@@ -5368,14 +5363,14 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* ak = elem[0].c_str(); 
         const char* bk = elem[1].c_str(); 
      
-        INT ia = KeyIndex( keys, ak ); 
-        INT ib = KeyIndex( keys, bk ); 
+        int ia = U::KeyIndex( keys, ak ); 
+        int ib = U::KeyIndex( keys, bk ); 
 
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
 
         bool expect = ta > 0 && tb > 0 ; 
-        if(!expect) std::cerr << "NP::MakeMetaKVS_ranges MISSING KEY " << std::endl ;   
+        if(!expect) std::cerr << "NP::TimeOrder_ranges MISSING KEY " << std::endl ;   
         assert(expect ); 
 
         stt[i] = ta ;   
@@ -5383,29 +5378,34 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
  
     // Sort indices into ascending start time order 
 
-    std::vector<INT> ii(num_specs); 
-    std::iota(ii.begin(), ii.end(), 0); 
+    std::iota(spec_order.begin(), spec_order.end(), 0); 
     auto order = [&stt](const size_t& a, const size_t &b) { return stt[a] < stt[b];}  ; 
-    std::sort(ii.begin(), ii.end(), order );  
+    std::sort(spec_order.begin(), spec_order.end(), order );  
+}
 
+inline NP* NP::MakeMetaKVS_ranges_table( 
+    const std::vector<int>& spec_order, 
+    const std::vector<std::string>& specs,  
+    const std::vector<std::string>& keys, 
+    const std::vector<int64_t>& tt, 
+    std::ostream* ss ) 
+{
+    assert( spec_order.size() == specs.size() ) ; 
+    int num_specs = specs.size(); 
 
-
-    // present the ranges in order of start time 
-
-    INT ni = num_specs ; 
-    INT nj = 5 ; 
+    int ni = num_specs ; 
+    int nj = 5 ; 
 
     NP* _rr = NP::Make<int64_t>( ni, nj ) ; 
     int64_t* rr = _rr->values<int64_t>(); 
 
     int64_t ab_total = 0 ; 
-    INT wid = 30 ;  
+    int wid = 30 ;  
     _rr->labels = new std::vector<std::string> { "ta", "tb", "ab", "ia", "ib" } ; 
 
-
-    for(INT j=0 ; j < num_specs ; j++)
+    for(int j=0 ; j < num_specs ; j++)
     {
-        INT i = ii[j]; 
+        int i = spec_order[j]; 
         const char* spec = specs[i].c_str();  
         _rr->names.push_back(spec); 
 
@@ -5417,8 +5417,8 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* bk = elem[1].c_str(); 
         const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
      
-        INT ia = KeyIndex( keys, ak ); 
-        INT ib = KeyIndex( keys, bk ); 
+        int ia = U::KeyIndex( keys, ak ); 
+        int ib = U::KeyIndex( keys, bk ); 
 
         int64_t ta = ia > -1 ? tt[ia] : 0 ; 
         int64_t tb = ib > -1 ? tt[ib] : 0 ; 
@@ -5437,6 +5437,8 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
             << " ==> "
             << " " << std::setw(wid) << bk
             << "      " << std::setw(16) << std::right << ab 
+            << "      " << std::setw(16) << std::right << ta 
+            << "      " << std::setw(16) << std::right << tb 
             << ( no == nullptr ? "" : "    ## " ) << ( no ? no : "" ) 
             << std::endl
             ;  
@@ -5450,20 +5452,31 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
        << std::endl 
        ;  
  
+    return _rr ; 
+}
 
+/**
+NP::MakeMetaKVS_ranges2_table
+------------------------------
 
+1. For each range lookup the a and b key indices into keys vector.  
+2. When the number of indices for a and b matches simply collect indices and time stamps for the range into the kpp tuple vector
+3. When one indice is found for b and more than one for a find the a index closest in absolute time difference to b
+4. Ditto for a and b situation reversed 
+5. sort indices of the kpp tuple into ascending a(start) time order 
 
+**/
 
-    // try to generalize to handle multiple of the same keys with different timestamps (eg multi-launch)
-    struct keypair
-    { 
-        INT ia, ib ;
-        const char* no ; 
-    };
+inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs, const std::vector<std::string>& keys, const std::vector<int64_t>& tt, std::ostream* ss ) 
+{
+    int num_specs = specs.size(); 
+    if(ss) (*ss) << "[NP::MakeMetaKVS_ranges2_table num_specs " << num_specs << "\n"; 
 
-    std::vector<keypair> kpp ; 
+    using KP = std::tuple<int,int,int64_t,int64_t,const char*, int> ; 
 
-    for(INT i=0 ; i < num_specs ; i++)
+    std::vector<KP> kpp ; 
+
+    for(int i=0 ; i < num_specs ; i++)
     {
         const char* spec = specs[i].c_str();  
         std::vector<std::string> elem ;     
@@ -5473,62 +5486,208 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, std::ve
         const char* ak = elem[0].c_str(); 
         const char* bk = elem[1].c_str(); 
         const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ; 
+        const char* uno = no ? strdup(no) : nullptr ; 
 
-        std::vector<INT> iia ; 
-        KeyIndices(iia, keys, ak ); 
+        std::vector<int> iia ; 
+        U::KeyIndices(iia, keys, ak ); 
 
-        std::vector<INT> iib ; 
-        KeyIndices(iib, keys, bk ); 
+        std::vector<int> iib ; 
+        U::KeyIndices(iib, keys, bk ); 
 
-        INT na = iia.size(); 
-        INT nb = iib.size(); 
+        int na = iia.size(); 
+        int nb = iib.size(); 
 
         if(na == nb) 
         {
-            for(INT j=0 ; j < na ; j++) kpp.push_back({iia[j],iib[j], strdup(no)}); 
+            for(int j=0 ; j < na ; j++) kpp.push_back({iia[j],iib[j],tt[iia[j]],tt[iib[j]], uno, i }); 
         }
-        else if( na > nb && nb == 1 ) 
+        else if( na > 1 && nb == 1 ) 
         {
-            kpp.push_back( {iia[na-1], iib[0], strdup(no) } ); 
+            // pick smallest absolute delta between the multiple a and single b 
+            std::vector<int64_t> att ;   
+            for(int a=0 ; a < na ; a++) att.push_back( std::abs( tt[iia[a]] - tt[iib[0]] ) );  
+            int ia = std::distance(std::begin(att), std::min_element(std::begin(att), std::end(att)));       
+            kpp.push_back( {iia[ia], iib[0], tt[iia[ia]], tt[iib[0]], uno, i } ); 
         }
-        else if( nb > na && na == 1 ) 
+        else if( nb > 1 && na == 1 ) 
         {
-            kpp.push_back( {iia[0], iib[nb-1], strdup(no) } ); 
+            // pick smallest absolute delta between the multiple b and single a 
+            std::vector<int64_t> btt ;   
+            for(int b=0 ; b < nb ; b++) btt.push_back( std::abs( tt[iib[b]] - tt[iia[0]] ) );  
+            int ib = std::distance(std::begin(btt), std::min_element(std::begin(btt), std::end(btt)));       
+            kpp.push_back( {iia[0], iib[ib], tt[iia[0]], tt[iib[ib]], uno, i } ); 
         }
-
     }
 
-    INT num_kpp = kpp.size(); 
-    if(ss) (*ss) << ".NP::MakeMetaKVS_ranges kpp.size " << kpp.size() << "\n" ; 
+    int num_kpp = kpp.size(); 
+    if(ss) (*ss) << ".NP::MakeMetaKVS_ranges2_table kpp.size " << kpp.size() << "\n" ; 
  
     // Sort indices into ascending start time order 
-    //std::vector<INT> ikp(num_kpp); 
-    //std::iota(ikp.begin(), ikp.end(), 0); 
-    //auto kp_order = [&tt,&ikp](const size_t& a, const size_t &b) { return tt[ikp[a].ia] < tt[ikp[b].ia];}  ; 
-    //std::sort(ikp.begin(), ikp.end(), kp_order );  
+    std::vector<int> ikp(num_kpp); 
+    std::iota(ikp.begin(), ikp.end(), 0); 
+    auto kp_order = [&kpp](const size_t& a, const size_t &b) { return std::get<2>(kpp[a]) < std::get<2>(kpp[b]);}  ; 
+    std::sort(ikp.begin(), ikp.end(), kp_order );  
 
-    for(INT j=0 ; j < num_kpp ; j++)
+
+    int dbg = 0 ; 
+    int ni = num_kpp ; 
+    int nj = 5 ; 
+
+    NP* _rr = NP::Make<int64_t>( ni, nj ) ; 
+    int64_t* rr = _rr->values<int64_t>(); 
+
+    int wid = 30 ;  
+    _rr->labels = new std::vector<std::string> { "ta", "tb", "ab", "ia", "ib" } ; 
+
+    int64_t ab_total = 0 ; 
+
+    int prev_ispec = -1; 
+
+    std::vector<std::tuple<int,int64_t>> abs ; 
+
+    for(int j=0 ; j < num_kpp ; j++)
     {
-        //INT i = ikp[j]; 
-        INT i = j ; 
-        const keypair& kp = kpp[i]; 
-        INT ia = kp.ia ;  
-        INT ib = kp.ib ;  
-        const char* no = kp.no ; 
+        int i = ikp[j] ; 
+
+        const KP& kp = kpp[i]; 
+        int ia = std::get<0>(kp) ;  
+        int ib = std::get<1>(kp) ;  
+        int64_t ta = std::get<2>(kp) ;  
+        int64_t tb = std::get<3>(kp) ;  
+        const char* no = std::get<4>(kp) ; 
+        int ispec = std::get<5>(kp) ;    // when ispec stays the same its a repeated range  
+        const char* spec = specs[ispec].c_str();  
+        _rr->names.push_back(spec); 
+         
+        bool rep = prev_ispec == ispec ; 
+        int64_t ab = tb - ta ;
+        abs.push_back( {ispec, ab } ); 
+
+        int64_t ab_cumsum = 0 ;  // sum ab so far with the same spec
+        for(int i=0 ; i < int(abs.size()) ; i++) if( std::get<0>(abs[i]) == ispec ) ab_cumsum += std::get<1>(abs[i]) ;  
+
+
+        ab_total += ab ;  
+
+        rr[nj*j+0] = ta ; 
+        rr[nj*j+1] = tb ;
+        rr[nj*j+2] = ab ;
+        rr[nj*j+3] = ia ;
+        rr[nj*j+4] = ib ;
 
         if(ss) (*ss) 
             << " " << std::setw(wid) << keys[ia]
             << " ==> "
             << " " << std::setw(wid) << keys[ib]
-            << "      " << std::setw(16) << std::right << ( tt[ib] - tt[ia] )
+            << "      " << std::setw(16) << std::right << ab
+            ; 
+
+        if(ss && dbg > 0 ) (*ss)
+            << "      " << std::setw(16) << std::right << ta 
+            << "      " << std::setw(16) << std::right << tb 
+            ; 
+
+        if(ss) (*ss)
+            << ( rep ? " REP " : "     " ) 
+            ; 
+
+        if(ss && rep) (*ss)
+            << "      " << std::setw(16) << std::right << ab_cumsum
+            ; 
+         
+        if(ss && !rep) (*ss)
+            << "      " << std::setw(16) << ""
+            ; 
+ 
+        if(ss) (*ss)
             << ( no == nullptr ? "" : "    ## " ) << ( no ? no : "" ) 
             << std::endl
             ;  
+        prev_ispec = ispec; 
     }
 
+    if(ss) (*ss) 
+       << " " << std::setw(wid) << ""
+       << "     " 
+       << " " << std::setw(wid) << "TOTAL:"
+       << "      " << std::setw(16) << std::right << ab_total 
+       << std::endl 
+       ;  
+
+    if(ss) (*ss) 
+       << "]NP::MakeMetaKVS_ranges2_table num_keys:" << keys.size() << "\n" 
+       ;  
 
     return _rr ;        
 }
+
+
+
+
+
+
+
+
+
+/**
+NP::MakeMetaKVS_ranges
+-----------------------
+
+Does not handle repeated keys well, as happens with multi-launch. 
+See ranges2 which attempts to fix that. 
+
+**/
+
+inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss ) 
+{
+    std::vector<std::string> specs ;
+    Resolve_ranges(specs, keys, ranges_, ss ); 
+    int num_specs = specs.size(); 
+
+    if(ss) (*ss) 
+       << ".NP::MakeMetaKVS_ranges num_specs:" << num_specs << "\n" 
+       ;  
+
+    std::vector<int> spec_order(num_specs) ; 
+    TimeOrder_ranges( spec_order, specs, keys, tt, ss );  
+
+    // present the ranges in order of start time 
+    NP* rr = MakeMetaKVS_ranges_table(spec_order, specs, keys, tt, ss );  
+
+    return rr ; 
+}
+
+
+/**
+NP::MakeMetaKVS_ranges2
+-------------------------
+
+HMM: with repeated keys which currently happens with multi-launch 
+this code is unaware of that and just acts on the timestamp of
+the first key found. It would be more meaningful to find all the ranges 
+and sum them, with reporting on how many were summed.  
+
+**/
+
+inline NP* NP::MakeMetaKVS_ranges2( const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss ) 
+{
+    if(ss) (*ss) 
+       << "[NP::MakeMetaKVS_ranges2 num_keys:" << keys.size() << "\n" 
+       ;  
+
+    std::vector<std::string> specs ;
+    Resolve_ranges(specs, keys, ranges_, ss ); 
+    int num_specs = specs.size(); 
+
+    NP* rr = MakeMetaKVS_ranges2_table(specs, keys, tt, ss );  
+
+    if(ss) (*ss) 
+       << "]NP::MakeMetaKVS_ranges2 num_specs:" << num_specs << " rr " << ( rr ? rr->sstr() : "-" ) << "\n" 
+       ;  
+
+    return rr ; 
+}
+
 
 
 /**
@@ -5548,11 +5707,12 @@ NP::DescMetaKVS
 
 inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture_ , const char* ranges_ )  // static
 {
-    std::vector<std::string> keys ;  
-    std::vector<std::string> vals ;  
-    std::vector<int64_t> tt ;  
+    VS keys ;  
+    VS vals ;  
+    VT tt ;
+  
     bool only_with_stamp = false ; 
-    GetMetaKVS(meta, &keys, &vals, &tt, only_with_stamp ); 
+    U::GetMetaKVS(meta, &keys, &vals, &tt, only_with_stamp ); 
     assert( keys.size() == vals.size() ); 
     assert( keys.size() == tt.size() ); 
     assert( tt.size() == keys.size() ); 
@@ -5627,7 +5787,7 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
            ;
     }
     if(juncture_ && strlen(juncture_) > 0 ) ss << DescMetaKVS_juncture(keys, tt, t_first, juncture_ ); 
-    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges(keys, tt, ranges_ ); 
+    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges2(keys, tt, ranges_ ); 
 
     ss << "]NP::DescMetaKVS\n" ; 
 

@@ -87,7 +87,6 @@ Hid fts.h usage behind WITH_FTS as getting compilation error on Linux::
 #include <sstream>
 #include <iomanip>
 
-#include "NP.hh"
 #include "NPX.h"
 
 struct NPFold 
@@ -2699,7 +2698,7 @@ inline void NPFold::getMetaKVS(
     std::vector<int64_t>* stamps, 
     bool only_with_stamp ) const 
 {
-    NP::GetMetaKVS(meta, keys, vals, stamps, only_with_stamp ); 
+    U::GetMetaKVS(meta, keys, vals, stamps, only_with_stamp ); 
 }
 
 inline int NPFold::getMetaNumStamp() const 

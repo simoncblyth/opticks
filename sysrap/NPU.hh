@@ -28,6 +28,7 @@ other projects together with NP.hh
 #include <chrono>
 #include <cctype>
 #include <locale>
+#include <tuple>
 
 
 #include <sys/types.h>
@@ -408,6 +409,10 @@ struct NPS
 
 struct U
 {
+    typedef std::vector<std::string> VS ; 
+    typedef std::vector<int64_t> VT ; 
+
+
     static constexpr const bool VERBOSE = false ; 
     static constexpr const bool RAISE = true ; 
 
@@ -574,6 +579,15 @@ struct U
     static char* FirstDigit(const char* str); 
     static char* FirstToLastDigit(const char* str); 
 
+
+    static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
+    static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp ); 
+
+    static void KeyIndices( std::vector<int>& indices, const std::vector<std::string>& keys, const char* key ); 
+    static int KeyIndex( const std::vector<std::string>& keys, const char* key ); 
+    static int FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ); 
+
+    static void SplitTuple( std::vector<std::string>& keys, std::vector<int64_t>& tt, const std::vector<std::tuple<std::string,  int64_t>>& kt ); 
 };
 
 
@@ -1921,6 +1935,144 @@ inline char* U::FirstToLastDigit(const char* str)
 }
 
 
+/**
+U::GetMetaKVS_   (formerly NP::GetMetaKVS_)
+----------------------------------------------
+
+1. parse the metadata string, for each line split key from val using ":" delimiter 
+2. where the value looks like a contemporary microsecond uint64_t timestamp (16 digits) extract that
+3. where the value looks like profile triplet eg 1111111111111111,2222,3333 with first field a 16 digit timestamp extract that
+
+Note that for only_with_stamp:false placeholder timestamp values of zero are provided
+for lines without stamps or profile triplets.  
+
+**/
+
+inline void U::GetMetaKVS_(
+    const char* metadata, 
+    std::vector<std::string>* keys, 
+    std::vector<std::string>* vals, 
+    std::vector<int64_t>* stamps, 
+    bool only_with_stamp ) // static 
+{
+    if(metadata == nullptr) return ; 
+    std::stringstream ss;
+    ss.str(metadata);
+    std::string s;
+    char delim = ':' ; 
+
+    while (std::getline(ss, s))
+    { 
+        size_t pos = s.find(delim); 
+        if( pos != std::string::npos )
+        {
+            std::string _k = s.substr(0, pos);
+            std::string _v = s.substr(pos+1);
+            const char* k = _k.c_str(); 
+            const char* v = _v.c_str(); 
+            bool disqualify_key = strlen(k) > 0 && k[0] == '_' ; 
+            bool looks_like_stamp = U::LooksLikeStampInt(v); 
+            bool looks_like_prof  = U::LooksLikeProfileTriplet(v); 
+            int64_t t = 0 ; 
+            if(looks_like_stamp) t = U::To<int64_t>(v) ;
+            if(looks_like_prof)  t = strtoll(v, nullptr, 10);
+            bool select = only_with_stamp ? ( t > 0 && !disqualify_key )  : true ; 
+            if(!select) continue ; 
+
+            if(keys) keys->push_back(k); 
+            if(vals) vals->push_back(v);
+            if(stamps) stamps->push_back(t);
+        }
+    } 
+}
+
+/**
+U::GetMetaKVS (formerly NP::GetMetaKVS)
+------------------------------------------
+
+**/
+
+
+inline void U::GetMetaKVS( const std::string& meta, std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp  )
+{
+    const char* metadata = meta.empty() ? nullptr : meta.c_str() ; 
+    return GetMetaKVS_( metadata, keys, vals, stamps, only_with_stamp ); 
+}
+
+
+
+inline void U::KeyIndices( std::vector<int>& indices, const std::vector<std::string>& keys, const char* key ) // static
+{
+    for(int i=0 ; i < int(keys.size()) ; i++) if(strcmp(keys[i].c_str(), key) == 0) indices.push_back(i); 
+} 
+
+inline int U::KeyIndex( const std::vector<std::string>& keys, const char* key ) // static
+{
+    int ikey = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), key )) ; 
+    return ikey == int(keys.size()) ? -1 : ikey ; 
+} 
+
+/**
+U::FormattedKeyIndex   (former NP::FormattedKeyIndex)
+----------------------------------------------------------
+
+Search for key within a keys[idx0:idx1].  When found returns the index, otherwise returns -1. 
+When the key string contains a "%" character it is assumed to be a format 
+string suitable for formatting a single integer index that is tried in the 
+range from idx0 to idx1.  
+
+**/
+
+inline int U::FormattedKeyIndex( std::string& fkey, const std::vector<std::string>& keys, const char* key, int idx0, int idx1  ) // static
+{
+    int k = -1 ; 
+    if( strchr(key,'%') == nullptr ) 
+    {
+        fkey = key ; 
+        k = KeyIndex(keys, key ) ; 
+    }
+    else
+    {
+        const int N = 100 ; 
+        char keybuf[N] ; 
+        for( int idx=idx0 ; idx < idx1 ; idx++)
+        {
+            int n = snprintf(keybuf, N, key, idx ) ;  
+            if(!(n < N)) std::cerr << "U::FormattedKeyIndex ERR n " << n << std::endl ; 
+            assert( n < N ); 
+            k = KeyIndex(keys, keybuf ) ; 
+            if( k > -1 ) 
+            {
+                fkey = keybuf ; 
+                break ; 
+            }
+        }
+    }
+    return k ; 
+} 
+
+
+inline void U::SplitTuple( std::vector<std::string>& keys, std::vector<int64_t>& tt, const std::vector<std::tuple<std::string,  int64_t>>& kt )
+{
+    for(int i=0 ; i < int(kt.size()) ; i++)
+    {
+        keys.push_back(std::get<0>(kt[i])); 
+        tt.push_back(std::get<1>(kt[i])); 
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2514,6 +2666,43 @@ inline std::string NPU::_make_header(const std::string& dict)
 
     return ss.str(); 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

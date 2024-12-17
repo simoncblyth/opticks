@@ -337,8 +337,8 @@ inline void sreport_Creator::init()
     report->run     = run ? run->copy() : nullptr ; 
     std::cout << "-sreport_Creator::init.2.run       :" << ( report->run ? report->run->sstr() : "-" ) << std::endl ; 
 
-    report->ranges = run ? run->makeMetaKVS_ranges( sreport::RANGES ) : nullptr ; 
-    std::cout << "-sreport_Creator::init.3.ranges    :" << ( report->ranges ?  report->ranges->sstr() : "-" ) <<  std::endl ; 
+    report->ranges = run ? NP::MakeMetaKVS_ranges2( run->meta, sreport::RANGES ) : nullptr ; 
+    std::cout << "-sreport_Creator::init.3.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) <<  std::endl ; 
 
 
     std::cout << "-sreport_Creator::init.4 fold_valid " << ( fold_valid ? "Y" : "N" ) << std::endl ; 
