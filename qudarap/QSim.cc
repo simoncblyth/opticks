@@ -388,6 +388,8 @@ double QSim::simulate(int eventID, bool reset_)
 
     for(int i=0 ; i < num_slice ; i++)
     {
+        SProf::Add("QSim__simulate_PRUP");
+ 
         const sslice& sl = igs_slice[i] ; 
 
         LOG(info) << sl.desc() ; 

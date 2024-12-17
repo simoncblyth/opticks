@@ -65,9 +65,12 @@ struct sreport
         SEvt__Init_RUN_META:CSGFoundry__Load_HEAD                     ## init
         CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL                   ## load_geom
         CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL                   ## upload_geom
-        A%0.3d_QSim__simulate_HEAD:A%0.3d_QSim__simulate_PREL         ## upload_genstep
-        A%0.3d_QSim__simulate_PREL:A%0.3d_QSim__simulate_POST         ## simulate
-        A%0.3d_QSim__simulate_POST:A%0.3d_QSim__simulate_TAIL         ## download 
+        A%0.3d_QSim__simulate_HEAD:A%0.3d_QSim__simulate_LBEG         ## slice_genstep
+        A%0.3d_QSim__simulate_PRUP:A%0.3d_QSim__simulate_PREL         ## upload genstep slice
+        A%0.3d_QSim__simulate_PREL:A%0.3d_QSim__simulate_POST         ## simulate slice
+        A%0.3d_QSim__simulate_POST:A%0.3d_QSim__simulate_DOWN         ## download slice
+        A%0.3d_QSim__simulate_LEND:A%0.3d_QSim__simulate_PCAT         ## concat slices
+        A%0.3d_QSim__simulate_BRES:A%0.3d_QSim__simulate_TAIL         ## save arrays 
        )" ; 
 
     bool    VERBOSE ;

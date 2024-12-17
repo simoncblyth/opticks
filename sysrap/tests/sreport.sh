@@ -20,6 +20,12 @@ by this sreport.sh script.
 
    ~/opticks/sysrap/tests/sreport.sh
 
+   DEV=1 ~/opticks/sysrap/tests/sreport.sh
+       ## Using DEV=1 does local build, faster than CMake build.
+       ## Its good to do this while changing NP.hh/NPX.h/NPFold.h 
+       ## metadata handling 
+
+
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh           ## summarize SEvt folders
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh grab      ## from remote to local 
    JOB=N3 ~/opticks/sysrap/tests/sreport.sh ana       ## local plotting 
@@ -146,7 +152,8 @@ source $HOME/.opticks/GEOM/GEOM.sh
 #job=S5
 #job=Y1
 #job=N7   
-job=N8   
+#job=N8   
+job=N9   
 #job=A7   
 #job=S7  
 
@@ -166,6 +173,7 @@ case $JOB in
   N6) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL3 ;;
   N7) DIR=/data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ; LAB="TITAN RTX : Debug" ;; 
   N8) DIR=/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_large_evt ; LAB="TITAN RTX" ;; 
+  N9) DIR=/data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_vlarge_evt ; LAB="TITAN RTX" ;;
   A7) DIR=/data1/blyth/tmp/GEOM/$GEOM/CSGOptiXSMTest/ALL1    ; LAB="Ada RTX 5000 : Debug" ;;
   S7) DIR=/data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ; LAB="TITAN RTX : Release" ;; 
 
