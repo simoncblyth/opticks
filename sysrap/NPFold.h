@@ -2888,7 +2888,14 @@ inline std::string NPFold::Desc_MIMSD(const std::map<int, std::map<std::string, 
 NPFold::subcount
 ------------------
 
-1. find subfold with prefix
+Collects arrays item counts from multiple subfold
+into single array for easy analysis/plotting etc.
+Typical use is for comparing genstep, hit, photon etc 
+counts between multiple events during test scans.  
+
+
+1. find subfold of this fold with the prefix argument, 
+   eg with prefix "//A" finds A000 A001 A002 ...
 2. get unique list of array keys from all subfold 
 3. create 2d array with array counts for each sub 
 
@@ -2899,7 +2906,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
     // 1. find subfold with prefix
     std::vector<const NPFold*> subs ; 
     std::vector<std::string> subpaths ; 
-    int maxdepth = 1 ;  // only one level ? 
+    int maxdepth = 1 ;  // only one level 
 
     find_subfold_with_prefix(subs, &subpaths,  prefix, maxdepth );  
     assert( subs.size() == subpaths.size() ); 
@@ -3033,11 +3040,19 @@ inline NP* NPFold::submeta(const char* prefix, const char* column_key ) const
 NPFold::substamp
 --------------------
 
+Primary use of substamp is for comparisons of timestamp difference from begin of event 
+between multiple events eg A000 A001
+
 1. finds vector of subfold of this fold with the path prefix, eg "//A" "//B" 
 2. access metadata stamps for all the subfold, those with the same stamp keys
-   as the first are collected into a summary stamps array 
+   as the first are collected into a summary stamps array
+
+   * collects metadata times from multiple folders for different events into 
+     single arrays for easy comparison, eg when scanning with a sequence of 
+     events with increasing numbers of photons
+ 
 3. labels array of the common stamp keys 
-4. these arrays are returns in an NPFold
+4. these arrays are returned in an NPFold
 
 **/
 
@@ -3394,6 +3409,13 @@ template NPFold* NPFold::subfold_summary( const char*, const char*, const char*,
 NPFold::compare_subarrays
 ----------------------------
 
+1. access *key* array from two subfold (*asym* and *bsym*) 
+   eg A000 and B000 which could be Opticks and Geant4 events 
+
+2. look for "subcount" summary arrays in the two folders, 
+   "subcount" sumaries contain array counts from multiple folders 
+
+
 **/
 
 template<typename F, typename T>
@@ -3424,29 +3446,29 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
        << " a_subcount " << ( a_subcount ? "YES" : "NO " )
        << " b_subcount " << ( b_subcount ? "YES" : "NO " )
        << " boa " << ( boa ? "YES" : "NO " )
-       << std::endl 
-       << "-NPFold::compare_subarray.a_subcount" 
-       << std::endl 
-       << ( a_subcount ? a_subcount->descTable<int>(8) : "-" )
-       << std::endl 
-       << "-NPFold::compare_subarray.b_subcount" 
-       << std::endl 
-       << ( b_subcount ? b_subcount->descTable<int>(8) : "-" )
-       << std::endl 
-       << "-NPFold::compare_subarray." << asym 
-       << std::endl
-       << ( a ? a->descTable<T>(8) : "-" )
-       << std::endl
-       << "-NPFold::compare_subarray." << bsym 
-       << std::endl
-       << ( b ? b->descTable<T>(8) : "-" )
-       << std::endl
-       << "-NPFold::compare_subarray.boa "
-       << std::endl 
-       << ( boa ? boa->descTable<F>(12) : "-" ) 
-       << std::endl
+       << "\n" 
+       << "-[NPFold::compare_subarray.a_subcount" << "\n" 
+       << ( a_subcount ? a_subcount->descTable<int>(8) : "-\n" )
+       << "-]NPFold::compare_subarray.a_subcount" 
+       << "\n" 
+       << "-[NPFold::compare_subarray.b_subcount" << "\n"
+       << ( b_subcount ? b_subcount->descTable<int>(8) : "-\n" ) 
+       << "-]NPFold::compare_subarray.b_subcount" 
+       << "\n"
+       << "-[NPFold::compare_subarray." << asym << "\n"
+       << ( a ? a->descTable<T>(8) : "-\n" )
+       << "-]NPFold::compare_subarray." << asym 
+       << "\n"
+       << "-[NPFold::compare_subarray." << bsym << "\n"
+       << ( b ? b->descTable<T>(8) : "-\n" )
+       << "-]NPFold::compare_subarray." << bsym 
+       << "\n"
+       << "-[NPFold::compare_subarray.boa " << "\n"
+       << ( boa ? boa->descTable<F>(12) : "-\n" ) 
+       << "-]NPFold::compare_subarray.boa " 
+       << "\n"
        << "]NPFold::compare_subarray"
-       << std::endl
+       << "\n"
        ;
     return boa ; 
 }  

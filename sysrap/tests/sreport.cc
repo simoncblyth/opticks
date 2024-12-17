@@ -168,8 +168,9 @@ inline std::string sreport::desc() const
 inline std::string sreport::desc_run() const
 {
     std::stringstream ss ; 
-    ss << "[sreport.desc_run (run is dummy small array used as somewhere to hang metadata) " << std::endl 
-       << ( run ? run->sstr() : "-" ) << std::endl 
+    ss << "[sreport.desc_run (run is dummy small array used as somewhere to hang metadata) "
+       << ( run ? run->sstr() : "-" ) 
+       << "\n"
        << "[sreport.desc_run.descMetaKVS " << std::endl 
        << ( run ? run->descMetaKVS(JUNCTURE, RANGES) : "-" ) << std::endl
        << "]sreport.desc_run.descMetaKVS " << std::endl 
@@ -196,9 +197,11 @@ inline std::string sreport::desc_runprof() const
 inline std::string sreport::desc_ranges() const
 {
     std::stringstream ss ; 
-    ss << "[sreport.desc_ranges" << std::endl 
-       << ( ranges ? ranges->sstr() : "-" ) << std::endl 
-       << ".sreport.desc_ranges.descTable " << std::endl 
+    ss << "[sreport.desc_ranges"  
+       << " ranges : " << ( ranges ? ranges->sstr() : "-" ) << std::endl 
+       << ".sreport.desc_ranges.descTable "
+       << " ( ta,tb : timestamps expressed as seconds from first timestamp, ab: (tb-ta) )"
+       << "\n" 
        << ( ranges ? ranges->descTable<int64_t>(17) : "-" ) << std::endl
        << "]sreport.desc_ranges" << std::endl 
        ; 
@@ -206,8 +209,16 @@ inline std::string sreport::desc_ranges() const
     return str ;  
 }
 
+/**
+report::desc_substamp
+-----------------------
+
+The substamp NPFold is created by::
+
+   substamp = fold->subfold_summary("substamp",   ASEL, BSEL)
 
 
+**/
 
 inline std::string sreport::desc_substamp() const
 {

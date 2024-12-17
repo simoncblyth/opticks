@@ -1255,11 +1255,9 @@ inline NP* NPX::BOA( NP* a, NP* b, NP::INT a_column, NP::INT b_column, std::ostr
 {
     if(out) *out 
        << "NPX::BOA"
-       << std::endl 
        << " A " << ( a ? a->sstr() : "-" )
-       << std::endl 
        << " B " << ( b ? b->sstr() : "-" )
-       << std::endl 
+       << "\n" 
        ;
 
     bool abort = a == nullptr || b == nullptr ;
