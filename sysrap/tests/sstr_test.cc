@@ -3,9 +3,10 @@ sstr_test.cc
 ==============
 
 ~/opticks/sysrap/tests/sstr_test.sh
-TEST=Format ~/opticks/sysrap/tests/sstr_test.sh
 
-TEST=ParseIntSpecList32 ~/opticks/sysrap/tests/sstr_test.sh
+TEST=Format ~/opticks/sysrap/tests/sstr_test.sh
+TEST=ParseIntSpecList32   ~/opticks/sysrap/tests/sstr_test.sh
+TEST=ParseIntSpecListDemo ~/opticks/sysrap/tests/sstr_test.sh
 
 **/
 
@@ -401,7 +402,9 @@ void test_ParseIntSpecList_demo()
          "h1:10",
          "K1:10",
          "H1:10",
-         "M1:10"
+         "M1:10",
+         "M1x10",
+         "1x5,2x5"
      };  
     int num_spec = spec.size(); 
      

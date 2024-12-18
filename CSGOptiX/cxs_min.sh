@@ -251,92 +251,93 @@ vars="$vars opticks_event_mode"
 
 if [ "$TEST" == "debug" ]; then 
 
-   opticks_num_photon=100
-   opticks_num_genstep=1
-   opticks_max_photon=M1
    opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=100
    opticks_running_mode=SRM_TORCH
+   #opticks_max_photon=M1
 
 elif [ "$TEST" == "ref1" ]; then 
 
-   opticks_num_photon=M1
-   opticks_num_genstep=10
-   opticks_max_photon=M1
    opticks_num_event=1
+   opticks_num_genstep=10
+   opticks_num_photon=M1
    opticks_running_mode=SRM_TORCH
-
+   #opticks_max_photon=M1
 
 elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" == "ref8" -o "$TEST" == "ref9" -o "$TEST" == "ref10" ]; then 
 
-   opticks_num_photon=M${TEST:3}
-   opticks_num_genstep=1
-   opticks_max_photon=M10
    opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=M${TEST:3}
    opticks_running_mode=SRM_TORCH
+   #opticks_max_photon=M10
 
 elif [ "$TEST" == "refX" ]; then 
 
-   opticks_num_photon=${X:-7500000}
-   opticks_num_genstep=1
-   opticks_max_photon=M10
    opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=${X:-7500000}
    opticks_running_mode=SRM_TORCH
+   #opticks_max_photon=M10
 
 elif [ "$TEST" == "ref10_multilaunch" -o "$TEST" == "ref10_onelaunch" ]; then 
 
-   opticks_num_photon=M10
-   opticks_num_genstep=10
-   opticks_max_photon=M10
    opticks_num_event=1
+   opticks_num_genstep=10
+   opticks_num_photon=M10
    opticks_running_mode=SRM_TORCH
 
+   #opticks_max_photon=M10
    #opticks_max_curand=0    # zero loads all states : ready for whopper XORWOW running 
-   #opticks_max_curand=M10  # non-zero loads the specified number
-   #opricks_max_curand not relevant for Philox as no need to load states, so default is G1 1-billion-states 
+   #opticks_max_curand=M10  # non-zero loads the specified number : this not relevant for PHILOX with default G1 1billion states
 
    case $TEST in 
       *multilaunch) opticks_max_slot=M1 ;;     ## causes M10 to be done in 10 launches
         *onelaunch) opticks_max_slot=M10 ;; 
    esac 
-
+   ## Normally leave max_slot as default zero indicating to pick max_slot according to VRAM.
+   ## Are specifying here to compare multilaunch and onelaunch running of the same photons.
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
-   opticks_num_photon=K1:10
-   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1
-   opticks_max_photon=M1
    opticks_num_event=10
+   opticks_num_genstep=1x10
+   opticks_num_photon=K1:10
    opticks_running_mode=SRM_TORCH
+   #opticks_max_photon=M1
 
 elif [ "$TEST" == "large_scan" ]; then 
 
-   opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
-   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-   opticks_max_photon=M100   ## cost: QRng init time + VRAM 
    opticks_num_event=20
+   opticks_num_genstep=1x20
+   opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
    opticks_running_mode=SRM_TORCH
+   #opticks_max_photon=M100 
 
 elif [ "$TEST" == "medium_scan" ]; then 
 
-   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100  # duplication of M1 is to workaround lack of metadata
-   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1,1,1
-   opticks_max_photon=M100   
    opticks_num_event=12
+   opticks_num_genstep=1x12
+   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100  # duplication of M1 is to workaround lack of metadata
    opticks_running_mode=SRM_TORCH
+   #opticks_max_photon=M100   
 
 elif [ "$TEST" == "larger_scan" ]; then 
 
-   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200  # duplication of M1 is to workaround lack of metadata
-   opticks_num_genstep=1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
-   opticks_max_photon=M200   
    opticks_num_event=22
+   opticks_num_genstep=1x22
+   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200  # duplication of M1 is to workaround lack of metadata
    opticks_running_mode=SRM_TORCH
+
+   #opticks_max_photon=M200   
+
 
 elif [ "$TEST" == "large_evt" ]; then 
 
-   opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
-   opticks_num_genstep=10
    opticks_num_event=1
+   opticks_num_genstep=10
+   opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
    opticks_running_mode=SRM_TORCH
 
    #opticks_max_photon=M200      
@@ -344,37 +345,38 @@ elif [ "$TEST" == "large_evt" ]; then
 
 elif [ "$TEST" == "vlarge_evt" ]; then 
 
-   opticks_num_photon=M500  
-   opticks_num_genstep=20
    opticks_num_event=1
+   opticks_num_genstep=20
+   opticks_num_photon=M500  
    opticks_running_mode=SRM_TORCH
    #opticks_max_photon=M200        ## G1 default so no need to set  
    #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM   
 
 elif [ "$TEST" == "vvlarge_evt" ]; then 
 
-   opticks_num_photon=G1  
-   opticks_num_genstep=40
    opticks_num_event=1
+   opticks_num_genstep=40
+   opticks_num_photon=G1  
    opticks_running_mode=SRM_TORCH
 
 elif [ "$TEST" == "input_genstep" ]; then
 
-   opticks_num_photon=     # ignored ?
-   opticks_num_genstep=    # ignored
-   opticks_max_photon=M1 
    opticks_num_event=1000 
+   opticks_num_genstep=    # ignored
+   opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_GENSTEP
    opticks_event_mode=Nothing
 
+   #opticks_max_photon=M1 
+
 elif [ "$TEST" == "input_photon" ]; then
 
-   opticks_num_photon=     # ignored ?
-   opticks_num_genstep=    # ignored
-   opticks_max_photon=M1 
    opticks_num_event=1
+   opticks_num_genstep=    # ignored
+   opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_PHOTON
    #opticks_event_mode=Nothing
+   #opticks_max_photon=M1 
 
 else
 
@@ -383,8 +385,7 @@ else
 
 fi 
 
-vars="$vars opticks_num_photon opticks_num_genstep opticks_max_photon opticks_num_event opticks_running_mode"
-
+vars="$vars opticks_num_event opticks_num_genstep opticks_num_photon opticks_running_mode opticks_max_slot"
 
 
 #opticks_running_mode=SRM_DEFAULT
@@ -396,15 +397,17 @@ opticks_start_index=0
 opticks_max_bounce=31
 opticks_integration_mode=1
 
-export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}
-export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon} 
-export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep} 
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
-export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}
-export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
+export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep} 
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon} 
+
+export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}   # SRM_TORCH/SRM_INPUT_PHOTON/SRM_INPUT_GENSTEP
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}         # what arrays are saved eg Hit,HitPhoton,HitPhotonSeq 
+
+export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}         # no needed much now with PHILOX and multi-launch     
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
-export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 
 vars="$vars OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"

@@ -880,15 +880,18 @@ inline void sstr::ParseScale( const char* spec, T& scale )
 sstr::ParseIntSpecList
 ------------------------
 
-Parses delimited string into vector of ints, for examples
+Parses delimited string into vector of ints, eg:
 
 +---------------------+------------------------------------------------------+
 |  spec               | values                                               | 
 +=====================+======================================================+
 |  "M1,2,3,4,5,K1,2"  | 1000000,2000000,3000000,4000000,5000000,1000,2000    |
 |  "M1:5,K1:2"        | 1000000,2000000,3000000,4000000,5000000,1000,2000    |
+|  "1x5,M1x5          | 1,1,1,1,1,1000000,1000000,1000000,1000000,1000000    |
 +---------------------+------------------------------------------------------+
 
+The repeated value spec "M1x5" meaning 5 times M1 puts the multiplicity to the right 
+in order to work with the scale specification to the left. 
 
 **/
 
@@ -904,19 +907,31 @@ inline void sstr::ParseIntSpecList( std::vector<T>& values, const char* spec, ch
     {
         const char* e = elem.c_str(); 
         const char* p = strstr(e, ":" ); 
+        const char* x = strstr(e, "x" ); 
 
-        if( p == nullptr )
+
+        if( p == nullptr && x == nullptr)
         {
             values.push_back(ParseIntSpec<T>( e, scale )); 
         }
-        else
+        else if ( p || x )
         {
-            const char* q = isdigit_(e[0]) ? e : e + 1 ; 
+            const char* q = isdigit_(e[0]) ? e : e + 1 ;  // jump past scale char if present
             T i0, i1 ; 
-            ParsePair<T>( q , i0, i1, ':' );
+            ParsePair<T>( q , i0, i1, p ? ':' : 'x' );
             ParseScale<T>( e, scale ); 
-            for(T i=i0 ; i <= i1 ; i++) values.push_back(i*scale) ;      
+
+            if( p )
+            {
+               for(T i=i0 ; i <= i1 ; i++) values.push_back(i*scale) ;      
+            }
+            else if( x )
+            {
+                for(T i=0 ; i < i1 ; i++) values.push_back(i0*scale) ;      
+            }
         }
+
+
     }
 }
 
