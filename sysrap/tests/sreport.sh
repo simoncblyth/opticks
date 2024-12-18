@@ -3,6 +3,10 @@ usage(){ cat << EOU
 sreport.sh : summarize SEvt metadata into eg ALL0_sreport SREPORT_FOLD 
 ========================================================================
 
+The natural directory from which to use sreport is the run folder 
+(aka the LOGDIR) which is one level above the event folders. 
+In this way the subfolders "A000,A001,.." correspond to each event. 
+
 The output NPFold and summary NPFold from several scripts are managed 
 by this sreport.sh script. 
 

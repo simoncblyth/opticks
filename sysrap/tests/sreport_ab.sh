@@ -12,9 +12,12 @@ sreport_ab.sh : comparison between two report folders
    A_JOB=N7 B_JOB=A7 PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport_ab.sh
 
 
-This plotting has traditionally been done on laptop, after rsync-ing the 
+Usage from laptop example
+--------------------------
+
+This performance plotting has traditionally been done on laptop, after rsync-ing the 
 small metadata only "_sreport" folders from REMOTE workstations which 
-are ssh tunnel connected to laptop, via eg:
+are ssh tunnel connected to laptop, via eg::
 
    laptop> ## check the P and A tunnels are running 
    laptop> o ; git pull   ## update opticks source, for the scripts only 
@@ -25,12 +28,16 @@ are ssh tunnel connected to laptop, via eg:
    laptop> TMP=/data1/blyth/tmp TEST=medium_scan REMOTE=A ~/o/cxs_min.sh info   ## check remote LOGDIR is  correct 
    laptop> TMP=/data1/blyth/tmp TEST=medium_scan REMOTE=A ~/o/cxs_min.sh grep   ## rsync the report to laptop
 
-::
+
+For reference the "grep" ~/o/cxs_min.sh grep subcommand::
 
     600 if [ "${arg/grep}" != "$arg" ]; then
     601     source $OPTICKS_HOME/bin/rsync.sh ${LOGDIR}_sreport
     602 fi
 
+NB the LOGDIR (aka the run dir) is one level above the event folders
+and the sreport folder is a sibling to that containing only metadata
+of small size.  
 
 
 EOU
@@ -46,8 +53,8 @@ script=$name.py
 
 source $HOME/.opticks/GEOM/GEOM.sh 
 
-a=N7   
-b=A7   
+a=N8   
+b=A8   
 
 export A=${A:-$a}
 export B=${B:-$b}
@@ -59,7 +66,7 @@ resolve(){
       S7) echo /data/simon/opticks/GEOM/J_2024aug27/CSGOptiXSMTest/ALL1 ;; 
 
       N8) echo /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;; 
-      A8) echo /data1/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;; 
+      A8) echo /data1/blyth/tmp/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;; 
     esac
 }
 
