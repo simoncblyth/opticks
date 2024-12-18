@@ -14,6 +14,15 @@ Usage::
     ~/o/cxs_min.sh run       ## create SEvt 
     ~/o/cxs_min.sh report    ## summarize SEvt metadata   
 
+
+::
+
+    TEST=vvlarge_evt ~/o/cxs_min.sh   
+         ## caution tries to simulate a billion photons 
+         ## for JUNO writes ~12GB of hits 
+
+
+
 Debug::
 
     BP=SEvt::SEvt               ~/opticks/CSGOptiX/cxs_min.sh

@@ -5421,8 +5421,6 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
 
     int64_t ab_total = 0 ; 
 
-    int prev_ispec = -1; 
-
     std::vector<std::tuple<int,int64_t>> abs ; 
 
     for(int j=0 ; j < num_kpp ; j++)
@@ -5439,12 +5437,20 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
         const char* spec = specs[ispec].c_str();  
         _rr->names.push_back(spec); 
          
-        bool rep = prev_ispec == ispec ; 
         int64_t ab = tb - ta ;
         abs.push_back( {ispec, ab } ); 
 
         int64_t ab_cumsum = 0 ;  // sum ab so far with the same spec
-        for(int i=0 ; i < int(abs.size()) ; i++) if( std::get<0>(abs[i]) == ispec ) ab_cumsum += std::get<1>(abs[i]) ;  
+        int ab_cumsum_num = 0 ; 
+        for(int i=0 ; i < int(abs.size()) ; i++) 
+        {
+            if( std::get<0>(abs[i]) == ispec ) 
+            {
+                ab_cumsum += std::get<1>(abs[i]) ;
+                ab_cumsum_num += 1 ;   
+            }
+        }
+        bool rep = ab_cumsum_num > 1 ;  
 
 
         ab_total += ab ;  
@@ -5483,7 +5489,6 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
             << ( no == nullptr ? "" : "    ## " ) << ( no ? no : "" ) 
             << std::endl
             ;  
-        prev_ispec = ispec; 
     }
 
     if(ss) (*ss) 
