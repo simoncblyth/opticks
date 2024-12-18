@@ -184,17 +184,21 @@ vars="$vars version VERSION"
 #test=ref10_multilaunch
 #test=input_genstep
 #test=input_photon
-test=large_evt
+#test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
-
+test=medium_scan
 
 export TEST=${TEST:-$test}
 
 
 #ctx=Debug_XORWOW 
 #ctx=Debug_Philox
-ctx=$(TEST=ContextString sbuild_test)
+
+case $(uname) in
+   Darwin) ctx=Debug_Philox ;;
+    Linux) ctx=$(TEST=ContextString sbuild_test) ;;
+esac
 
 export OPTICKS_EVENT_NAME=${ctx}_${TEST}   
 ## SEventConfig::Initialize_EventName asserts OPTICKS_EVENT_NAME sbuild::Matches config of the build 
@@ -321,7 +325,12 @@ elif [ "$TEST" == "medium_scan" ]; then
    opticks_num_genstep=1x12
    opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100  # duplication of M1 is to workaround lack of metadata
    opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M100   
+   #opticks_max_photon=M100 
+  
+   # Remember multi-launch needs multiple gensteps in order to slice them up
+   # such that each slice fits into VRAM.  
+   # So for big photon counts its vital to use multiple genstep.  
+
 
 elif [ "$TEST" == "larger_scan" ]; then 
 

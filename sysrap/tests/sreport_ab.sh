@@ -5,9 +5,33 @@ sreport_ab.sh : comparison between two report folders
 
 ::
 
+   ~/o/sreport_ab.sh
+
    A_JOB=N7 B_JOB=A7 ~/opticks/sysrap/tests/sreport_ab.sh
 
    A_JOB=N7 B_JOB=A7 PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport_ab.sh
+
+
+This plotting has traditionally been done on laptop, after rsync-ing the 
+small metadata only "_sreport" folders from REMOTE workstations which 
+are ssh tunnel connected to laptop, via eg:
+
+   laptop> ## check the P and A tunnels are running 
+   laptop> o ; git pull   ## update opticks source, for the scripts only 
+
+   laptop> TMP=/data/blyth/opticks TEST=medium_scan REMOTE=P ~/o/cxs_min.sh info   ## check remote LOGDIR is  correct 
+   laptop> TMP=/data/blyth/opticks TEST=medium_scan REMOTE=P ~/o/cxs_min.sh grep   ## rsync the report to laptop
+
+   laptop> TMP=/data1/blyth/tmp TEST=medium_scan REMOTE=A ~/o/cxs_min.sh info   ## check remote LOGDIR is  correct 
+   laptop> TMP=/data1/blyth/tmp TEST=medium_scan REMOTE=A ~/o/cxs_min.sh grep   ## rsync the report to laptop
+
+::
+
+    600 if [ "${arg/grep}" != "$arg" ]; then
+    601     source $OPTICKS_HOME/bin/rsync.sh ${LOGDIR}_sreport
+    602 fi
+
+
 
 EOU
 }
@@ -30,14 +54,17 @@ export B=${B:-$b}
 
 resolve(){
     case $1 in 
-      N7) echo /data/blyth/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;; 
-      A7) echo /data1/blyth/tmp/GEOM/$GEOM/CSGOptiXSMTest/ALL1    ;;
-      S7) echo /data/simon/opticks/GEOM/$GEOM/CSGOptiXSMTest/ALL1 ;; 
+      N7) echo /data/blyth/opticks/GEOM/J_2024aug27/CSGOptiXSMTest/ALL1 ;; 
+      A7) echo /data1/blyth/tmp/GEOM/J_2024aug27/CSGOptiXSMTest/ALL1    ;;
+      S7) echo /data/simon/opticks/GEOM/J_2024aug27/CSGOptiXSMTest/ALL1 ;; 
+
+      N8) echo /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;; 
+      A8) echo /data1/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;; 
     esac
 }
 
-
-export PLOT="AB_Substamp_ALL_Etime_vs_Photon"
+plot=AB_Substamp_ALL_Etime_vs_Photon
+export PLOT=${PLOT:-$plot}
 
 export A_SREPORT_FOLD=$(resolve $A)_sreport  
 export B_SREPORT_FOLD=$(resolve $B)_sreport  

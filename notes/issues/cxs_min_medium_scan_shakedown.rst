@@ -40,4 +40,9 @@ Added handling of 1x12 to sstr::ParseIntSpecList::
 
 
 
+HMM issue with lack of metadata in first event seems fixed, need to do some plotting to be sure
+-------------------------------------------------------------------------------------------------
+
+
+
 
