@@ -3825,6 +3825,10 @@ labelFactorSubtrees
    label all nodes of subtrees of all repeats with repeat_index, 
    leaving remainder nodes at default of zero repeat_index
 
+findForceTriangulateLVID
+   populates force_triangulate_lvid vector of lvid int based on force_triangulate
+   envvar and solid names. The vector is used by stree::is_force_triangulate 
+
 collectGlobalNodes
    collect global non-instanced nodes into *rem* vector and depending on envvars collect 
    nodes to be force triangulated into *tri* vector

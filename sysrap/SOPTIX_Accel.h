@@ -5,6 +5,7 @@ SOPTIX_Accel.h : builds acceleration structure GAS or IAS from the buildInputs
 
 Used by::
 
+    SBT::createGAS
     SOPTIX_MeshGroup.h for GAS 
     SOPTIX_Scene.h for IAS 
 
@@ -69,8 +70,8 @@ inline SOPTIX_Accel* SOPTIX_Accel::Create( OptixDeviceContext& context, const st
 SOPTIX_Accel::SOPTIX_Accel
 ---------------------------
 
-1. collect SOPTIX_BuildInput:bi into bis and bi->buildInput into buildInputs 
-   (names of all are required to match)
+1. collect SOPTIX_BuildInput:bi into bis and bi->buildInput into buildInputs. 
+   The names of all the SOPTIX_BuildInput in the bis vector are required to match.
 
 2. create the acceleration structure from the buildInputs 
 

@@ -1707,6 +1707,18 @@ float SGLM::zdepth0( const float& z_eye ) const
     return zd ; 
 }
 
+/**
+SGLM::zdepth1
+--------------
+
+Compare with CSGOptiX7.cu:render::
+
+    235     float eye_z = -prd->distance()*dot(params.WNORM, direction) ;
+    236     const float& A = params.ZPROJ.z ;
+    237     const float& B = params.ZPROJ.w ;
+    238     float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1 
+
+**/
 float SGLM::zdepth1( const float& z_eye ) const 
 {
     const float& ze = z_eye ; 

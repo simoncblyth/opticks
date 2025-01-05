@@ -3,6 +3,15 @@ usage(){ cat << EOU
 cxr_min.sh : minimal executable and script for shakedown
 ============================================================
 
+This uses one of two executables:
+
+CSGOptiXRenderInteractiveTest
+   interactive ray trace executable using OpenGL/CUDA interop
+
+CSGOptiXRMTest
+   single image ray trace executable with no OpenGL dependency is
+   used when SNAP envvar is defined 
+
 See also:
 
 cxr_grab.sh 

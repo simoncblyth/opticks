@@ -46,6 +46,13 @@ Prefer more explicit approach, namely:
 
 
 
+Philox ref
+-----------
+
+* https://www.thesalmons.org/john/random123/papers/random123sc11.pdf
+
+* https://github.com/DEShawResearch/random123
+
 
 Want to be able to switch the RNG impl with a recompile to compare different impl
 ------------------------------------------------------------------------------------

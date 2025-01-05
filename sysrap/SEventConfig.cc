@@ -1233,6 +1233,17 @@ void SEventConfig::Save(const char* dir ) // static
 SEventConfig::SetDevice
 -------------------------
 
+Invoked at first SEvt instanciation::
+
+    SEventConfig::SetDevice
+    scontext::initConfig
+    scontext::init
+    scontext::scontext
+    SEventConfig::Initialize_Meta
+    SEventConfig::Initialize
+    SEvt::SEvt
+    SEvt::Create
+
 Maximum number of photon slots that can be simulated in a single GPU 
 launch depends on:
 
@@ -1282,18 +1293,6 @@ Assuming get to use 90% of total VRAM in ballpark of observed 400M limit
 TODO: measure total VRAM usage during large photon number scan to 
 provide some parameters to use in a better heuristic and get idea
 of variability. Expect linear with some pedestal.  
-
-
-Invoked at first SEvt instanciation::
-
-    SEventConfig::SetDevice
-    scontext::initConfig
-    scontext::init
-    scontext::scontext
-    SEventConfig::Initialize_Meta
-    SEventConfig::Initialize
-    SEvt::SEvt
-    SEvt::Create
 
 **/
 

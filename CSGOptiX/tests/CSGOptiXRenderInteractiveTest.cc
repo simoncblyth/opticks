@@ -126,6 +126,11 @@ int main(int argc, char** argv)
         cx->setExternalDevicePixels(d_pixels); 
         cx->render_launch();     // ray tracing OptiX launch populating the pixels 
 
+
+        // TODO: try moving wanted snap stuff to SGLM:gm not SGLFW:gl ?  
+        //       gl provides the user choice, everything else to gm ?
+        //       then could hide most of frame hopping detail 
+
         int wanted_snap = gl.get_wanted_snap();
         if( wanted_snap == 1 || wanted_snap == 2 )
         {
