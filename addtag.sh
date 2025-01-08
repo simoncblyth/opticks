@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU | sed 's/^/# /' 
 addtag.sh
 ==========
@@ -27,12 +27,21 @@ Workflow for adding Opticks tags:
 2. commit changes including okconf/OpticksVersionNumber.hh::
 
        git commit -m "Prepare to resume tagging with addtag.sh v0.2.0 OPTICKS_VERSION_NUMBER 20" 
+       git commit -m "Prepare to addtag.sh v0.3.0 OPTICKS_VERSION_NUMBER 30" 
 
 3. push code changes to BOTH bitbucket and github::
-
-       git push 
-       git push github
       
+       cd ~/opticks 
+       git push  
+
+       # if not done already add "github" remote in addition to the normal bitbucket 
+       git remote -v 
+       git remote add github git@github.com:simoncblyth/opticks.git 
+       git remote -v 
+
+       git push github
+   
+   
 4. run this tag add and pushing script, check output commands and run if correct::
 
        cd ~/opticks
