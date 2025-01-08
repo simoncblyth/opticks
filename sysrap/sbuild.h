@@ -104,6 +104,7 @@ struct sbuild
 
     static std::string Desc(); 
     static std::string ContextString(); 
+    static const char* BuildType(); 
 
     static bool BuildTypeMatches(const char* arg); 
     static bool RNGMatches(const char* arg); 
@@ -154,6 +155,12 @@ inline std::string sbuild::ContextString() // static
     std::string str = ss.str() ; 
     return str ; 
 }
+
+inline const char* sbuild::BuildType() // static
+{
+    return BUILD_TYPE ; 
+}
+
 
 
 /**

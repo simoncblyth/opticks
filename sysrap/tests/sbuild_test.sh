@@ -5,6 +5,21 @@ sbuild_test.sh
 
 ~/o/sysrap/tests/sbuild_test.sh 
 
+NB sbuild_test can be built locally by this script
+OR by the standard CMake build
+
+Using the standard binary off the PATH::
+
+    TEST=RNGName sbuild_test
+    Philox
+
+    TEST=BuildType sbuild_test
+    Debug
+
+    TEST=ContextString sbuild_test
+    Debug_Philox
+
+
 EOU
 }
 cd $(dirname $(realpath $BASH_SOURCE))

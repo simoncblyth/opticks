@@ -357,10 +357,18 @@ void U4Recorder::EndOfEventAction_(int eventID_)
         LOG(LEVEL) << "not-(WITH_PMTSIM and POM_DEBUG)"  ;   
     #endif
 
+
+    // adding to topfold 
     sev->add_array("TRS.npy", U4VolumeMaker::GetTransforms() );
     sev->add_array("U4R.npy", MakeMetaArray() ); 
     sev->addEventConfigArray(); 
-    sev->gather() ; 
+
+    sev->gather() ;             // now gathers into fold, separate from topfold 
+
+    // ~/j/issues/jok-tds-B-side-missing-NPFold-concat.rst 
+    sev->topfold->concat();         // in this trivial one fold case just copies pointers and arranges skipdelete on fold arrays
+    sev->topfold->clear_subfold();
+
     sev->endOfEvent(eventID_);  // does save and clear
 
     const char* savedir = sev->getSaveDir() ; 
