@@ -37,7 +37,7 @@ struct QUDARAP_API QU
     static void Download(std::vector<T>& vec, const T* d_array, unsigned num_items) ;    
 
 
-
+    static const char* _cudaMalloc_OOM_NOTES ; 
     static void _cudaMalloc( void** p2p, size_t size, const char* label ); 
 
 

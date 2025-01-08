@@ -239,8 +239,20 @@ template QUDARAP_API void  QU::device_free_and_alloc<uchar4>(uchar4** dd, unsign
 template QUDARAP_API void  QU::device_free_and_alloc<float4>(float4** dd, unsigned num_items) ;
 template QUDARAP_API void  QU::device_free_and_alloc<quad4>(quad4** dd, unsigned num_items) ;
 
+const char* QU::_cudaMalloc_OOM_NOTES = R"( ;
+QU::_cudaMalloc_OOM_NOTES
+==========================
 
+When running with debug arrays, such as the record array, enabled
+it is necessary to set max_slot to something reasonable, otherwise with the 
+default max_slot of zero, it gets set to a high value (eg M197 with 24GB) 
+appropriate for production running with the available VRAM. 
 
+One million is typically reasonable for debugging:: 
+
+   export OPTICKS_MAX_SLOT=M1
+
+)" ;
 
 void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
 {
@@ -259,6 +271,8 @@ void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
             sdirectory::MakeDirs(out,0); 
             LOG(error) << "save salloc record to " << out ; 
             alloc->save(out) ; 
+
+            ss << _cudaMalloc_OOM_NOTES  ; 
         }
         else
         {
