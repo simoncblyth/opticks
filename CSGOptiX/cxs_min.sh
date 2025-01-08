@@ -177,7 +177,7 @@ vars="$vars version VERSION"
 
 
 #test=debug
-#test=ref1
+test=ref1
 #test=ref5
 #test=ref8
 #test=ref10
@@ -187,7 +187,7 @@ vars="$vars version VERSION"
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
-test=medium_scan
+#test=medium_scan
 
 export TEST=${TEST:-$test}
 
@@ -267,7 +267,7 @@ elif [ "$TEST" == "ref1" ]; then
    opticks_num_genstep=10
    opticks_num_photon=M1
    opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M1
+   opticks_max_slot=M1
 
 elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" == "ref8" -o "$TEST" == "ref9" -o "$TEST" == "ref10" ]; then 
 

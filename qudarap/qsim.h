@@ -1006,8 +1006,7 @@ inline QSIM_METHOD int qsim::propagate_at_boundary(unsigned& flag, RNG& rng, sct
     if(ctx.idx == base->pidx)
     printf("//propagate_at_boundary.DEBUG_TAG ctx.idx %d base %p base.pidx %d \n", ctx.idx, base, base->pidx  ); 
 #endif
-    return 0 ; 
-
+    // stray "return 0;" left here 2024-12-14 caused : ~/j/issues/jok-tds-missing-BR-BT-on-A-side.rst 
 
     sphoton& p = ctx.p ; 
     const sstate& s = ctx.s ; 
