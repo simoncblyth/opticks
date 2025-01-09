@@ -607,6 +607,7 @@ extern "C" __global__ void __closesthit__ch()
 #if defined(DEBUG_PIDX)
     //const uint3 idx = optixGetLaunchIndex();
     //if(idx.x == 10 && idx.y == 10) printf("//__closesthit__ch idx(%u,%u,%u) type %d \n", idx.x, idx.y, idx.z, type); 
+    //if(identity == 52264 || identity == 52265 || identity == 52266) printf("//__closesthit__ch iindex %u type %d identity %d \n", iindex, type, identity ); 
 #endif
 
     if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE || type == 0)  // WHY GETTING ZERO HERE ? 

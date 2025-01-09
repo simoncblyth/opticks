@@ -2147,7 +2147,12 @@ void SEvt::setNumPhoton(unsigned num_photon)
     bool num_photon_allowed = num_photon <= (unsigned)(evt->max_photon) ;   // evt->max_slot ? 
     const int M = 1000000 ; 
 
-    LOG_IF(fatal, !num_photon_allowed) << " num_photon/M " << num_photon/M << " evt.max_photon/M " << evt->max_photon/M ;
+    LOG_IF(fatal, !num_photon_allowed) 
+        << " num_photon/M " << num_photon/M 
+        << " evt.max_photon/M " << evt->max_photon/M 
+        << " num_photon " << num_photon
+        << " evt.max_photon " << evt->max_photon 
+        ;
     assert( num_photon_allowed );
 
     evt->index = index ; 

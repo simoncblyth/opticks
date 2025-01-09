@@ -15,6 +15,12 @@ Workstation::
     PRECOOKED=1 ~/o/G4CXTest_GEOM.sh
 
 
+Q: This is running from GDML, is the force triangulation done ? 
+A: probably not without the config::
+
+   export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
+
+
 
 Laptop::
 
@@ -81,10 +87,20 @@ VERSION=${VERSION:-$version}
 export VERSION    ## used in SEvt output directory name ALL$VERSION
 
 
+ctx=$(TEST=ContextString sbuild_test)  ## eg Debug_Philox see sbuild.h 
+export OPTICKS_EVENT_NAME=$ctx  # used by SEventConfig::EventReldir "OPTICKS_EVENT_RELDIR"
+
+opticks_event_reldir=ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}   
+export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}'  ## this is the default in SEventConfig
+## above two lines match SEventConfig::_DefaultEventReldir
+## resolution of first line happens here for bash consumption, resolution of 2nd done in SEventConfig
+## HMM: MAYBE SIMPLIFY BY JUST DEFINING RELDIR HERE, BUT THE CODE DEFAULT IS HANDY ?
+
 TMP=${TMP:-/tmp/$USER/opticks}
+
 export SCRIPT=$(basename $BASH_SOURCE)
 export BASE=$TMP/GEOM/$GEOM
-export LOGDIR=$BASE/$bin/ALL$VERSION
+export LOGDIR=$BASE/$bin/$opticks_event_reldir
 export AFOLD=$LOGDIR/A000 
 export BFOLD=$LOGDIR/B000 
 #export BFOLD=$TMP/GEOM/$GEOM/CSGOptiXSMTest/ALL/A000  ## TMP OVERRIDE COMPARE A-WITH-A from CSGOptiXSMTest
@@ -162,32 +178,32 @@ TEST=${TEST:-$test}
 if [ "$TEST" == "reference" ]; then 
 
    opticks_num_photon=M1
-   opticks_max_photon=M1
+   opticks_max_slot=M1
    opticks_num_event=1
 
 elif [ "$TEST" == "small" ]; then 
 
    opticks_num_photon=H1
-   opticks_max_photon=M1
+   opticks_max_slot=M1
    opticks_num_event=1
 
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
    opticks_num_photon=K1:10
-   opticks_max_photon=M1
+   opticks_max_slot=M1
    opticks_num_event=10
 
 elif [ "$TEST" == "large_scan" ]; then 
 
    opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
-   opticks_max_photon=M100   ## cost: QRng init time + VRAM 
+   opticks_max_slot=M100  
    opticks_num_event=20
 
 elif [ "$TEST" == "large_evt" ]; then 
 
-   opticks_num_photon=M200   ## OOM with TITAN RTX 24G 
-   opticks_max_photon=M200   ## cost: QRng init time + VRAM 
+   opticks_num_photon=M180   ## M200 gives OOM with TITAN RTX 24G with debug arrays enabled
+   opticks_max_slot=M180
    opticks_num_event=1
 
 fi 
@@ -205,7 +221,7 @@ opticks_running_mode=SRM_TORCH
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}   
 export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}   
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}  
-export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}  
+export OPTICKS_MAX_SLOT=${OPTICKS_MAX_SLOT:-$opticks_max_slot}  
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
@@ -363,8 +379,13 @@ if [ "${arg/chi2}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE sseq_index_test chi2 ERROR && exit 3 
 fi 
 
-if [ "${arg/ana}" != "$arg" ]; then
+if [ "${arg/pdb}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $ana_script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error with ana_script $ana_script && exit 4
+fi 
+
+if [ "${arg/ana}" != "$arg" ]; then
+    ${PYTHON:-python} $ana_script 
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error with ana_script $ana_script && exit 4
 fi 
 

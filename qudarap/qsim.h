@@ -1767,12 +1767,11 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     }
 #endif
 
-    if(lpmtid < 0 || lpmtid >= 17612 )
+    if(lpmtid < 0 || lpmtid >= 17612 )  // find Custom4 hits onto WP PMTs are causing this warning, so comment it, see ~/j/issues/jok-tds-mu-running-NOT-A-SENSOR-warnings.rst
     {
         flag = NAN_ABORT ; 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-        //if( ctx.idx == base->pidx ) 
-        printf("//qsim::propagate_at_surface_CustomART idx %7d lpmtid %d : ERROR NOT-A-SENSOR : NAN_ABORT \n", ctx.idx, lpmtid ); 
+        //printf("//qsim::propagate_at_surface_CustomART idx %7d lpmtid %d : ERROR NOT-A-SENSOR : NAN_ABORT \n", ctx.idx, lpmtid ); 
 #endif
         return BREAK ; 
     }

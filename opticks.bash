@@ -20,7 +20,7 @@
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
 GEOM_TEMPLATE(){ cat << EOT
-#!/bin/bash -l 
+#!/bin/bash
 notes(){ cat << EON
 ~/.opticks/GEOM/GEOM.sh
 =========================
@@ -36,6 +36,43 @@ EON
 #geom=V1J008
 geom=V1J009
 export GEOM=\$geom
+#
+EOT
+}
+
+CTX_TEMPLATE(){ cat << EOT
+#!/bin/bash
+notes(){ cat << EON
+~/.opticks/CTX/CTX.sh
+=========================
+
+* CTX.sh IS NOT UNDER SOURCE CONTROL BECAUSE IT IS OFTEN USER+GEOMETRY SPECIFIC
+
+EON
+}
+
+ctx=Debug_Philox
+export CTX=\$ctx
+#
+EOT
+}
+
+
+TEST_TEMPLATE(){ cat << EOT
+#!/bin/bash
+notes(){ cat << EON
+~/.opticks/TEST/TEST.sh
+=========================
+
+* TEST.sh IS NOT UNDER SOURCE CONTROL BECAUSE IT IS OFTEN USER+GEOMETRY SPECIFIC
+
+EON
+}
+
+#test=GUN0
+test=GUN1
+#test=GUN2
+export TEST=\$test
 #
 EOT
 }
@@ -199,6 +236,69 @@ MOI(){
   eval $cmd
 }
 
+
+
+
+CTX(){ 
+  : opticks/opticks.bash
+
+  local script=$HOME/.opticks/CTX/CTX.sh 
+ 
+  if [ ! -f "$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $script 
+     mkdir -p $(dirname $script)
+     CTX_TEMPLATE > $script
+  fi 
+
+  source $script 
+
+  local defarg="vi"
+  local arg=${1:-$defarg} 
+  local vars="FUNCNAME defarg arg args script CTX" 
+
+  if [ "$arg" == "vi" ]; then 
+     cmd="vi $script"  
+  elif [ "$arg" == "info" ]; then  
+     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+     cmd="echo -n"
+  else
+     cmd="echo expecting arg to be one of $args not $arg" 
+  fi 
+  echo $cmd
+  eval $cmd
+}
+
+
+
+TEST(){ 
+  : opticks/opticks.bash
+
+  local script=$HOME/.opticks/TEST/TEST.sh 
+ 
+  if [ ! -f "$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $script 
+     mkdir -p $(dirname $script)
+     TEST_TEMPLATE > $script
+  fi 
+
+  source $script 
+
+  local defarg="vi"
+  local arg=${1:-$defarg} 
+  local vars="FUNCNAME defarg arg args script TEST" 
+
+  if [ "$arg" == "vi" ]; then 
+     cmd="vi $script"  
+  elif [ "$arg" == "info" ]; then  
+     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+     cmd="echo -n"
+  else
+     cmd="echo expecting arg to be one of $args not $arg" 
+  fi 
+  echo $cmd
+  eval $cmd
+
+}
 
 
 GEOM(){ 

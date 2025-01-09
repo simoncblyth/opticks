@@ -205,8 +205,8 @@ export OPTICKS_EVENT_NAME=${ctx}_${TEST}
 
 
 opticks_event_reldir=ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}   ## matches SEventConfig::_DefaultEventReldir OPTICKS_EVENT_RELDIR
-export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}'  
-# opticks_event_reldir is resolved here, OPTICKS_EVENT_RELDIR by SEvt/SEventConfig 
+export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}'  ## this is the default in SEventConfig
+# opticks_event_reldir is resolved here, OPTICKS_EVENT_RELDIR resolved by SEvt/SEventConfig 
 
 vars="$vars test TEST opticks_event_reldir OPTICKS_EVENT_RELDIR"
 
