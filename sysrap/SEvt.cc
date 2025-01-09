@@ -3186,7 +3186,8 @@ This means that hit must come after photon in the component order
 
 NP* SEvt::gatherHit() const 
 { 
-    const NP* p = getPhoton(); 
+    const NP* p = fold->get(SComp::PHOTON_) ;  
+    // cannot use getPhoton here as that gets the photons from topfold which is only populated after gather 
     NP* h = p ? p->copy_if<float, sphoton>(*selector) : nullptr ;  
     return h ; 
 }

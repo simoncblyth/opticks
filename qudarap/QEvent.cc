@@ -840,7 +840,7 @@ NP* QEvent::gatherHit_() const
 
     SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
 
-    NP* hit = NP::Make<float>( evt->num_hit, 4, 4 );   // TODO: use SEvt::makeHit ?
+    NP* hit = NP::Make<float>( evt->num_hit, 4, 4 ); 
 
     QU::copy_device_to_host<sphoton>( (sphoton*)hit->bytes(), evt->hit, evt->num_hit );
 
