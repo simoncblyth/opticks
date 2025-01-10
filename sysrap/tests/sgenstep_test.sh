@@ -22,9 +22,10 @@ source $HOME/.opticks/TEST/TEST.sh
 
 RELDIR=${CTX}_${TEST}
 
-export GSPATH=$TMP/GEOM/$GEOM/jok-tds/$RELDIR/A000_OIM1/genstep.npy
+export GSFOLD=$TMP/GEOM/$GEOM/jok-tds/$RELDIR/A000_OIM1
+export GSPATH=$GSFOLD/genstep.npy
 
-vars="BASH_SOURCE defarg arg name script GEOM CTX TEST RELDIR GSPATH"
+vars="BASH_SOURCE defarg arg name script GEOM CTX TEST RELDIR GSDIR GSPATH"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done 
@@ -39,6 +40,11 @@ if [ "${arg/ana}" != "$arg" ]; then
    ${PYTHON:-python} $script 
    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2 
 fi 
+
+if [ "${arg/grab}" != "$arg" ]; then 
+    source ../../bin/rsync.sh $GSFOLD  
+    [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3
+fi
 
 exit 0 
 
