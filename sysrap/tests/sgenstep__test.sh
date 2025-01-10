@@ -2,14 +2,14 @@
 
 usage(){ cat << EOU
 
-~/o/sysrap/tests/sgenstep_test.sh 
+~/o/sysrap/tests/sgenstep__test.sh 
 
 EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=sgenstep_test
+name=sgenstep__test
 script=$name.py
 
 defarg="info_pdb"
@@ -25,7 +25,7 @@ RELDIR=${CTX}_${TEST}
 export GSFOLD=$TMP/GEOM/$GEOM/jok-tds/$RELDIR/A000_OIM1
 export GSPATH=$GSFOLD/genstep.npy
 
-vars="BASH_SOURCE defarg arg name script GEOM CTX TEST RELDIR GSDIR GSPATH"
+vars="BASH_SOURCE defarg arg name script GEOM CTX TEST RELDIR GSFOLD GSPATH"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done 

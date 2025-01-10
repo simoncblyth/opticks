@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 """
-sgenstep_test.py
+sgenstep__test.py
 ================
 
-~/o/sysrap/tests/sgenstep_test.sh 
+~/o/sysrap/tests/sgenstep__test.sh 
 
 """
 import os 
@@ -12,12 +12,13 @@ u_ = lambda a:np.c_[np.unique(a,return_counts=True)]
 MODE = int(os.environ.get("MODE","0"))
 
 pvplt_plotter = None
+pvplt_viewpoint = None
 pvplt_arrows = None
 pvplt_lines = None
 
 if MODE in [2,3]:
     try:
-        from opticks.ana.pvplt import pvplt_plotter, pvplt_arrows, pvplt_lines
+        from opticks.ana.pvplt import pvplt_plotter, pvplt_viewpoint, pvplt_arrows, pvplt_lines
     except ImportError:
         pass
     pass
