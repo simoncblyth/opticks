@@ -325,11 +325,14 @@ def pvplt_arrows( pl, pos, vec, color='yellow', factor=0.15 ):
     pl.add_mesh(vec_arrows, color=color, show_scalar_bar=False)
 
 
-def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
+def pvplt_lines( pl, pos, vec, linecolor='white', pointcolor='white', factor=1.0 ):
     """
     :param pl: plotter
     :param pos: (n,3) array
     :param vec: (n,3) array
+
+    2025/01 : changed args to use separate line and point color
+
     """
     init_pl = pl == None 
     if init_pl:
@@ -339,8 +342,8 @@ def pvplt_lines( pl, pos, vec, color='white', factor=1.0 ):
     pos_cloud['vec'] = vec
     geom = pv.Line(pointa=(0.0, 0., 0.), pointb=(1.0, 0., 0.),)
     vec_lines = pos_cloud.glyph(orient='vec', scale=False, factor=factor, geom=geom)
-    pl.add_mesh(pos_cloud, render_points_as_spheres=True, show_scalar_bar=False)
-    pl.add_mesh(vec_lines, color=color, show_scalar_bar=False)
+    pl.add_mesh(pos_cloud, color=pointcolor, render_points_as_spheres=True, show_scalar_bar=False)
+    pl.add_mesh(vec_lines, color=linecolor, show_scalar_bar=False)
 
 
 def pvplt_frame( pl, sfr, local=False ):
