@@ -1276,7 +1276,10 @@ inline NP* NPX::BOA( NP* a, NP* b, NP::INT a_column, NP::INT b_column, std::ostr
     assert( NP::INT(a->names.size()) == a_ni ); 
     assert( NP::INT(b->names.size()) == b_ni ); 
 
-    assert( a_ni == b_ni ); 
+    bool samelength = a_ni == b_ni ; 
+    if(!samelength && out) *out << "NPX::BOA ABORT as not same length a_ni " << a_ni << " b_ni " << b_ni << "\n" ; 
+    if(!samelength) return nullptr ; 
+
     NP::INT ni = a_ni ; 
 
     NP::INT a_nj = a->shape[1] ; 
