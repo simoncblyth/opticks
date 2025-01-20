@@ -3366,6 +3366,37 @@ inline std::string stree::descForceTriangulateLVID() const
     return str ; 
 }
 
+
+/**
+stree::is_force_triangulate
+----------------------------
+
+How this info gets used is spread over the geometry handling
+of sysrap, CSG and CSGOptiX packages. Relevant methods/fields include::
+
+stree::get_ridx_type
+stree::tri
+stree::rem
+
+CSGSolid::setIntent
+   invoked by the below importers
+
+CSGImport::importSolid
+CSGImport::importSolidGlobal
+CSGImport::importSolidFactor
+
+CSGFoundry::isSolidTrimesh
+   returns depending on the CSGSolid intent 
+
+SBT::createGAS
+   depending on CSGFoundry::isSolidTrimesh switches between the mesh and analytic buildInput 
+   passed to SOPTIX_Accel::Create 
+
+
+In order to dump the triangulation status, best to dump the solids
+**/
+
+
 inline bool stree::is_force_triangulate( int lvid ) const 
 {
     return slist::Contains( force_triangulate_lvid, lvid );  
@@ -3994,15 +4025,15 @@ the R solid(s) followed by the instanced F solids and then the T solid::
 
 Expectation for compound solids:
 
-+-----+-------------------------------+--------------------------------------------------------+
-|     | solid type                    |  note                                                  |
-+=====+===============================+========================================================+
-|  R  |  global non-instanced         |   1 solid formed from the many *rem* nodes             |              
-+-----+-------------------------------+--------------------------------------------------------+
-|  F  |  factor/instanced             |  0...~10 solids with a few nodes each                  |
-+-----+-------------------------------+--------------------------------------------------------+
-|  T  |  triangulated non-instanced   |  from any *tri* nodes depending on stree envvar config | 
-+-----+-------------------------------+--------------------------------------------------------+
++-----+-------------------------------+----------------------------------------------------------------------------+
+|     | solid type                    |  note                                                                      |
++=====+===============================+============================================================================+
+|  R  |  global non-instanced         |   1 solid formed from the many *rem* nodes                                 |              
++-----+-------------------------------+----------------------------------------------------------------------------+
+|  F  |  factor/instanced             |  0...~10 solids with a few nodes each                                      |
++-----+-------------------------------+----------------------------------------------------------------------------+
+|  T  |  triangulated non-instanced   |  0 or 1 solid formed from any *tri* nodes depending on stree envvar config | 
++-----+-------------------------------+----------------------------------------------------------------------------+
 
 Indices of ranges of the 3 types of compound solids:
 

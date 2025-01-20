@@ -21,6 +21,10 @@ A: probably not without the config::
    export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
 
 
+TODO: confirmation in metadata of what is triangulated in the geometry, stree level for details and CSGFoundry::descSolidIntent
+for the collective situation 
+
+
 
 Laptop::
 
@@ -38,12 +42,14 @@ booting from a persisted geometry during testing due to the ~2s initialization t
 
 
 
-chi2 subcommand
-----------------
+chi2 subcommand uses a faster C++ sseq index comparison implementation of the python/NumPy chi2 calc
+---------------------------------------------------------------------------------------------------------
 
 Uses::
 
    $SDIR/../../sysrap/tests/sseq_index_test.sh info_run_ana
+
+*  ~/opticks/sysrap/tests/sseq_index_test.sh
 
 
 
@@ -62,11 +68,6 @@ storch::generate is used for both GPU and CPU generation
   storch::generate    
 
 
-For faster sseq index comparison see the C++ impl
------------------------------------------------------
-
-*  ~/opticks/sysrap/tests/sseq_index_test.sh
-
 
 EOU
 }
@@ -80,6 +81,9 @@ dna_script=$SDIR/G4CXTest.py
 
 source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for finding geometry
 export ${GEOM}_GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
+
+## TODO: some confirmation in metadata of which solids are triangulated eg CSGFoundry::descSolidIntent but with the node names too ? 
 
 
 version=98
@@ -177,34 +181,38 @@ TEST=${TEST:-$test}
 
 if [ "$TEST" == "reference" ]; then 
 
+   opticks_num_event=1
+   opticks_num_genstep=1
    opticks_num_photon=M1
    opticks_max_slot=M1
-   opticks_num_event=1
 
 elif [ "$TEST" == "small" ]; then 
 
+   opticks_num_event=1
+   opticks_num_genstep=1
    opticks_num_photon=H1
    opticks_max_slot=M1
-   opticks_num_event=1
-
 
 elif [ "$TEST" == "tiny_scan" ]; then 
 
+   opticks_num_event=10
+   opticks_num_genstep=1x10
    opticks_num_photon=K1:10
    opticks_max_slot=M1
-   opticks_num_event=10
 
 elif [ "$TEST" == "large_scan" ]; then 
 
+   opticks_num_event=20
+   opticks_num_genstep=1x10,10x10
    opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
    opticks_max_slot=M100  
-   opticks_num_event=20
 
 elif [ "$TEST" == "large_evt" ]; then 
 
+   opticks_num_event=1
+   opticks_num_genstep=40
    opticks_num_photon=M180   ## M200 gives OOM with TITAN RTX 24G with debug arrays enabled
    opticks_max_slot=M180
-   opticks_num_event=1
 
 fi 
 
@@ -218,14 +226,19 @@ opticks_running_mode=SRM_TORCH
 #opticks_running_mode=SRM_INPUT_GENSTEP    ## NOT IMPLEMENTED FOR GEANT4
 #opticks_running_mode=SRM_GUN
 
-export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}   
-export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}   
+
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}  
+export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep}   
+export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}  
+
+export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}   # SRM_TORCH/SRM_INPUT_PHOTON/SRM_INPUT_GENSTEP
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}         # what arrays are saved eg Hit,HitPhoton,HitPhotonSeq 
+
+ 
 export OPTICKS_MAX_SLOT=${OPTICKS_MAX_SLOT:-$opticks_max_slot}  
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
-export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}
 
 
 if [ -n "$PRECOOKED" ]; then 

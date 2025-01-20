@@ -83,6 +83,25 @@ char CSGSolid::getIntent() const
 {
     return intent ; 
 }
+
+/**
+CSGSolid::setIntent
+--------------------
+
+Canonical usage is from CSGImport::importSolid which invokes one of two methods for each solid
+depending on stree::get_ridx_type::
+
+1. CSGImport::importSolidGlobal  
+   
+   * for ridx_type 'R' analytic global solid (from stree.h "rem" vector of nodes) 
+   * for ridx_type 'T' triangulated global solid (from stree.h "tri" vector of nodes)
+
+2. CSGImport::importSolidFactor
+
+   * for ridx_type 'F' analytic factor solid 
+
+**/
+
 void CSGSolid::setIntent(char _intent)
 {
     assert(_intent == 'R' || _intent == 'F' || _intent == 'T' ); 

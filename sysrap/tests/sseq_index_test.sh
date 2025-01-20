@@ -35,18 +35,34 @@ export C2CUT=${C2CUT:-$c2cut}
 export sseq_index_ab_chi2_ABSUM_MIN=$C2CUT
 
 
-executable=G4CXTest 
-#executable=CSGOptiXSMTest
-export EXECUTABLE=${EXECUTABLE:-$executable}
+vars="BASH_SOURCE SDIR name C2CUT"
 
-version=98
-export VERSION=${VERSION:-$version}
-export BASE=$TMP/GEOM/$GEOM
-export LOGDIR=$BASE/$EXECUTABLE/ALL$VERSION
-export AFOLD=$LOGDIR/A000 
-export BFOLD=$LOGDIR/B000 
 
-vars="BASH_SOURCE SDIR TMP EXECUTABLE VERSION BASE GEOM LOGDIR AFOLD BFOLD FOLD"
+if [ -n "$AFOLD" -a -n "$BFOLD" ]; then
+
+    MSG="Using EXTERNALLY configured AFOLD BFOLD"  # eg by ~/o/G4CXTest_GEOM.sh  
+    vars="$vars MSG AFOLD BFOLD"
+
+else
+
+    MSG="Using INTERNALLY configured AFOLD BFOLD"
+
+    executable=G4CXTest 
+    #executable=CSGOptiXSMTest
+    export EXECUTABLE=${EXECUTABLE:-$executable}
+
+    version=98
+    export VERSION=${VERSION:-$version}
+    export BASE=$TMP/GEOM/$GEOM
+    export CONTEXT=Debug_Philox
+    export LOGDIR=$BASE/$EXECUTABLE/ALL${VERSION}_${CONTEXT}
+    export AFOLD=$LOGDIR/A000 
+    export BFOLD=$LOGDIR/B000 
+
+    vars="$vars MSG TMP EXECUTABLE VERSION BASE GEOM LOGDIR AFOLD BFOLD"
+fi 
+
+
 
 defarg="info_build_run_ana"
 arg=${1:-$defarg}
@@ -66,9 +82,14 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2 
 fi 
 
-if [ "${arg/ana}" != "$arg" ]; then 
+if [ "${arg/pdb}" != "$arg" ]; then 
     ${IPYTHON:-ipython} --pdb  $script 
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
+    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error && exit 3
+fi 
+
+if [ "${arg/ana}" != "$arg" ]; then 
+    ${PYTHON:-python}  $script 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 4
 fi 
 
 exit 0 

@@ -1561,6 +1561,14 @@ const char* CSGFoundry::getSolidLabel_(int ridx) const
     return so ? so->label : nullptr ; 
 }
 
+
+/**
+CSGFoundry::getSolidIntent
+---------------------------
+
+**/
+
+
 char CSGFoundry::getSolidIntent(int ridx) const
 {
     const CSGSolid* so = getSolid(ridx); 

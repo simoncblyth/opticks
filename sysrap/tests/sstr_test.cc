@@ -404,7 +404,8 @@ void test_ParseIntSpecList_demo()
          "H1:10",
          "M1:10",
          "M1x10",
-         "1x5,2x5"
+         "1x5,2x5",
+         "1001"
      };  
     int num_spec = spec.size(); 
      

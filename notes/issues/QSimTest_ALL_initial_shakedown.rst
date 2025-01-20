@@ -452,3 +452,37 @@ wavelength_cerenkov
 
 
 
+
+Rerun 2025/01/20 : 3/25 FAILs
+--------------------------------
+
+::
+
+    Mon Jan 20 14:51:33 CST 2025
+
+     TOTAL : 25 
+     PASS  : 22 
+     FAIL  : 3 
+     === 013 === [ TEST=propagate_at_boundary_s_polarized /data/blyth/junotop/opticks/qudarap/tests/QSimTest.sh 
+     === 013 === ] ***FAIL*** 
+     === 014 === [ TEST=propagate_at_boundary_p_polarized /data/blyth/junotop/opticks/qudarap/tests/QSimTest.sh 
+     === 014 === ] ***FAIL*** 
+     === 015 === [ TEST=propagate_at_boundary_x_polarized /data/blyth/junotop/opticks/qudarap/tests/QSimTest.sh 
+     === 015 === ] ***FAIL*** 
+
+
+
+::
+
+    P[blyth@localhost tests]$ TEST=propagate_at_boundary_s_polarized /data/blyth/junotop/opticks/qudarap/tests/QSimTest.sh 
+
+    //QSim_photon_launch sim 0x7f622e629e00 photon 0x7f6231e00000 num_photon 1000000 dbg 0x7f622e605200 type 25 name propagate_at_boundary_s_polarized 
+    //QSim_photon_launch post launch cudaDeviceSynchronize 
+    terminate called after throwing an instance of 'QUDA_Exception'
+      what():  CUDA call (cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost ) ) failed with error: 'misaligned address' (/home/blyth/opticks/qudarap/QU.cc:514)
+
+    /data/blyth/junotop/opticks/qudarap/tests/QSimTest.sh: line 210: 395000 Aborted                 (core dumped) $bin
+
+
+
+

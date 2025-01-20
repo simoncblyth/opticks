@@ -15,7 +15,25 @@ Usage::
     ~/o/cxs_min.sh report    ## summarize SEvt metadata   
 
 
-::
+
+This script is used for many purposes in development and testing 
+making it require understanding and often editing before use,
+plus the setting of the TEST envvar to select the type of  
+test to perform.  
+
+This script runs the CSGOptiXSMTest executable which has no Geant4 dependency,
+so it is restricted to purely optical running and loads the persisted CSGFoundry
+from ~/.opticks/GEOM/$GEOM/CSGFoundry using GEOM envvar 
+set by ~/.opticks/GEOM/GEOM.sh 
+
+This script is most commonly used for "torch" running where initial photons
+are generated in simple patterns and with numbers of photons configured by the 
+script. Input photons and input gensteps can also be configured. Small scans
+simulating multiple events with varying numbers of photons can also be configured, 
+often simply by selecting a TEST envvar value. 
+
+
+Examples::
 
     TEST=vvlarge_evt ~/o/cxs_min.sh   
          ## caution tries to simulate a billion photons 
@@ -414,6 +432,7 @@ export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}   # S
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}         # what arrays are saved eg Hit,HitPhoton,HitPhotonSeq 
 
 export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}         # no needed much now with PHILOX and multi-launch     
+
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
