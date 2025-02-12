@@ -292,7 +292,6 @@ using opticks-prepend-prefix eg::
     opticks-prepend-prefix /usr/local/opticks_externals/clhep
     opticks-prepend-prefix /usr/local/opticks_externals/xercesc
     opticks-prepend-prefix /usr/local/opticks_externals/g4 
-    opticks-prepend-prefix /usr/local/opticks_externals/boost
 
 After that it is necessary to cleaninstall Opticks with::
 
