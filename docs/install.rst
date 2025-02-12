@@ -12,9 +12,9 @@ Overview of Opticks installation steps
 A high level overview of the sequence of steps to install Opticks are listed below.
 
 
-0. install "system" externals : NVIDIA GPU Driver, CUDA, OptiX 6.5  
+0. install "system" externals : NVIDIA GPU Driver, CUDA, OptiX 7.0 or later (see below for how to pick the version)  
    following instructions from NVIDIA. Check they are working.
-1. use git to clone opticks bitbucket repository to your home directory, creating ~/opticks
+1. use git to clone opticks **bitbucket** (not github, that is often behind) repository to your home directory, creating ~/opticks
 2. hookup the opticks bash functions to your bash shell 
   
    * cp ~/opticks/example.opticks_config ~/.opticks_config
@@ -26,7 +26,7 @@ A high level overview of the sequence of steps to install Opticks are listed bel
    * opticks-info
    * bash -lc "opticks-info"
 
-4. install the foreign externals OR use preexisting installs of boost,clhep,xercesc,g4
+4. install the foreign externals OR use preexisting installs of clhep,xercesc,g4
 
    * opticks-foreign     # lists them 
    * opticks-foreign-install    # installs them 
@@ -38,20 +38,14 @@ A high level overview of the sequence of steps to install Opticks are listed bel
 
 6. install the "automated" externals and opticks itself with **opticks-full**
 
-7. create the geocache with **geocache-create**, see :doc:`testing`
-
-8. test the opticks build with **opticks-t**, see :doc:`testing`
+7. test the opticks build with **opticks-t**, see :doc:`testing`
 
 
 Platform Support
 --------------------
 
-A recent Scientific Linux or CentOS Linux are the target platforms for production running of Opticks, 
+A recent Scientific Linux or CentOS Linux or Alma Linux are the target platforms for production running of Opticks, 
 but I am happy to try to help with installations on any Linux supported by CUDA.
-
-Initial development was done on macOS (late 2013 MacBook pro : the last Mac laptop with an NVIDIA GPU) 
-with occasional ports to keep thinks working on Scientific Linux. But now due to the lack of Macs 
-with NVIDIA GPUs development has moved to Linux CentOS 7 and Scientific Linux.
 
 
 Get Opticks 
@@ -167,7 +161,6 @@ its externals requires unix tools including:
 
 * bash shell
 * git 
-* mercurial (is this still needed?)
 * curl
 * tar
 * zip
@@ -230,24 +223,15 @@ Version Requirements
 
 For details, see :doc:`externals`
 
-OptiX 6.5 
-~~~~~~~~~~
+OptiX 7.0 or later 
+~~~~~~~~~~~~~~~~~~~~~
 
-The latest OptiX 7.1 is not yet supported.  
+OptiX 6.5 and earlier is no longer supported.  
 
 OpenGL 4.1
 ~~~~~~~~~~~~
 
 Opticks uses GLSL shaders with version 410, corresponding to at least OpenGL 4.1
-
-
-Boost 1.53+
-~~~~~~~~~~~~
-
-The recommended minimum boost version is 1.53 as that is what I am using. 
-You might be able to survive with an earlier version, 
-but anything before 1.41 is known not to work. 
-
 
 
 Building Opticks with **opticks-full**
@@ -315,11 +299,6 @@ After that it is necessary to cleaninstall Opticks with::
     o   
     om- 
     om-cleaninstall
-
-
-
-
-
 
 
 
