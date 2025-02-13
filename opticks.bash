@@ -1282,14 +1282,24 @@ opticks-setup--(){   source $(opticks-setup-path) ; }
 
 opticks-setup-generate-notes(){ cat << EON
 
+opticks-setup-generate-notes
+==============================
 
+opticks-setup-generate is invoked via the below stack of bash functions::
 
+    opticks-full
+    opticks-full-make
+    opticks-setup-generate
+
+The setup files written by opticks-setup-generate are crucial to the Opticks
+build as they set environment vars such as CMAKE_PREFIX_PATH that
+configure where CMake will look for externals including NVIDIA OptiX and CUDA.   
 
 EON
 }
 opticks-setup-generate(){
 
-    : opticks-full/opticks-setup-generate
+    : opticks-full/opticks-full-make/opticks-setup-generate
 
     local msg="=== $FUNCNAME :"
     local rc
