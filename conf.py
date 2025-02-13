@@ -93,7 +93,9 @@ release = '0.0.1'
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build', 'notes/*']
+exclude_patterns = ['_build', 'notes/*', 'thrustrap/*', 'GeoChain/*', 'optixrap/*', 'oglrap/*', 'cudarap/*', 'opticksgl/*', 
+  'cfg4/*', 'boostrap/*', 'ok/*', 'ggeo/*', 'okop/*', 'CSG_GGeo/*', 'g4ok/*', 'c4/*', 'okg4/*', 'opticksgeo/*', 
+  'integration/*', 'oxrap/*', 'numpyserver/*' ]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
