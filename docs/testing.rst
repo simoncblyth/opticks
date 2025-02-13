@@ -67,16 +67,25 @@ The *opticks-t* function runs ctests for all the opticks packages::
 
 
 
-Translating a GDML geometry into Opticks/CSGFoundry directory 
------------------------------------------------------------------
+Many tests will fail until you convert and configure a geometry
+----------------------------------------------------------------
 
-Many tests will fail unless you have translated a geometry 
-and selected it. Start by studying the documentation within the script::
+You will get many opticks-t test fails until you convert a geometry
+and configure the test executables to use the geometry. 
+An example script to try to convert your detector GDML to an Opticks 
+CSGFoundry geometry is::
 
-    g4cx/tests/G4CXOpticks_setGeometry_Test.sh
+   ~/opticks/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
 
-That includes instructions for selecting the geometry
-via your ~/.opticks/GEOM/GEOM.sh 
+There is a long comment in this script explaining it and the standard 
+config approach via your ~/.opticks/GEOM/GEOM.sh.
+You can also see forum threads like the below which explain doing this::
+
+    https://groups.io/g/opticks/topic/which_tests_should_i_run/103068306
+
+If you succeed then you should get about 218 opticks-t tests 
+to pass and no fails. 
+
 
 
 Opticks Analysis and Debugging using Python, IPython, NumPy and Matplotlib : manage with **miniconda**

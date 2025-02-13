@@ -1,11 +1,11 @@
-geometry_and_input_photon_config
-================================
+geometry_config
+=================
 
-Standard user script for geometry and input photon config
------------------------------------------------------------
+Default location for geometry config script
+---------------------------------------------------
 
-The below standard location is used to config both geometry 
-and input photons::
+The below default location is used my many Opticks scripts to 
+configure the geometry by setting the GEOM envvar::
 
    $HOME/.opticks/GEOM/GEOM.sh 
 
@@ -22,7 +22,7 @@ Example of ~/.opticks/GEOM/GEOM.sh
 
 ::
 
-    #!/bin/bash -l 
+    #!/bin/bash
     notes(){ cat << EON
     ~/.opticks/GEOM/GEOM.sh
     =========================
