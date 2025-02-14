@@ -82,7 +82,6 @@ set(TEST_SOURCES
    SOpticksTest.cc
    SOpticksKeyTest.cc
 
-   SRngSpecTest.cc 
 
    CheckGeoTest.cc
 
@@ -140,21 +139,17 @@ set(TEST_SOURCES
 
 )
 
+set(RETIRED_TEST_SOURCES
+   SProcTest.cc
+   SRngSpecTest.cc 
+)
 
-#if(RNG_XORWOW)
-#  list(APPEND TEST_SOURCES SCurandStateMonolithicTest.cc)
-#endif()
-# better to just do nothing in the executable to avoid need to cleaning when switching
 
 
 set(REPORT_SOURCES
    sreport.cc
 )
 
-
-set(RETIRED_TEST_SOURCES
-   SProcTest.cc
-)
 
 
 

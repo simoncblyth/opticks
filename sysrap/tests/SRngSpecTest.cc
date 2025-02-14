@@ -1,3 +1,21 @@
+/**
+SRngSpecTest.cc
+================
+
+This checks the existance of rngcache files eg QCurandState_1000000_0_0.bin
+
+But there have been two developments that makes this irrelevant:
+
+1. switch from monolithic QCurandState_1000000_0_0.bin to chunked 
+   SCurandChunk_0000_0000M_0001M_0_0.bin that avoids duplication
+
+2. switch from XORWOW that needs the state files to Philox that does not 
+
+
+Hence this test is now removed from the active ctest list and can be deleted in future. 
+
+**/
+
 #include <sstream>
 #include <csignal>
 #include <vector>
