@@ -2605,8 +2605,9 @@ opticks-prepare-installation()
     local msg="=== $FUNCNAME :"
     echo $msg 
 
-    qudarap-
-    qudarap-prepare-installation
+    #qudarap-
+    #qudarap-prepare-installation
+    : following move to Philox no more need to prepare curandState files
 
     opticks-prepare-InputPhotons
 }

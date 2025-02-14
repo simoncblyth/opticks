@@ -30,6 +30,8 @@ qudarap-prepare-installation-notes(){ cat << EON
 qudarap-prepare-installation-notes
 ---------------------------------------
 
+**FOLLOWING THE MOVE TO PHILOX THIS IS NO LONGER NEEDED**
+
 If you have lots of VRAM you can increase the 
 maximum possible launch size by expanding the CHUNKSIZES.  
 For example the initial 10x1M,9x10M,5x20M corresponds 
