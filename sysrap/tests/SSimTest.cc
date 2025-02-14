@@ -94,8 +94,8 @@ int SSimTest::findName()
 
     const SSim* sim = SSim::Load(); 
     const NP* bnd = sim->get(snam::BND); 
-    std::cout << " bnd " << bnd->sstr() << std::endl ; 
-    std::cout << " bnd.names " << bnd->names.size() << std::endl ; 
+    std::cout << " bnd " << ( bnd ? bnd->sstr() : "null-bnd" ) << " snam::BND " << snam::BND << std::endl ; 
+    std::cout << " bnd.names " << ( bnd ? bnd->names.size() : -1 ) << std::endl ; 
 
 
     for(unsigned a=0 ; a < names.size() ; a++ )
