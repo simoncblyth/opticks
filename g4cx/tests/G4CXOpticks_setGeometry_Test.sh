@@ -9,21 +9,9 @@ G4CXOpticks_setGeometry_Test.sh
     LOG=1 ~/o/g4cx/tests/G4CXOpticks_setGeometry_Test.sh
 
 
-
-
-
-Test of geometry conversions in isolation::
+Test of geometry conversion in isolation::
                   
-    OLD : Geant4 --[X4]--> GGeo ----[CSG_GGeo]--->  CSGFoundry 
-    NEW : Geant4 --[U4]--> SSim/stree --[CSGImport]-> CSGFoundry 
-
-CAUTIONS:
-
-1. runs from GDML, so SensitiveDetector info is lost
-
-   * SO NOT USEFUL FOR CHECKING SENSORS
-
-2. this currently does the old workflow and some parts of the new workflow
+   Geant4 --[U4]--> SSim/stree --[CSGImport]-> CSGFoundry 
 
 
 HOW TO LOAD YOUR GDML FILE WITH THIS SCRIPT
@@ -102,12 +90,6 @@ source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM en
 [ -z "$GEOM" ] && echo $BASH_SOURCE : FATAL GEOM $GEOM MUST BE SET && exit 1 
 
 
-#if [ "$GEOM" == "gabor_pfrich_min" ]; then 
-#   echo $BASH_SOURCE : GEOM $GEOM : DEBUGGING : ALLOW DUPLICATE FOLDER KEYS 
-#   export NPFold__add_subfold_ALLOW_DUPLICATE_KEY=1
-#fi 
-
-
 case $GEOM in 
    FewPMT) geomscript=../../u4/tests/FewPMT.sh ;;
 esac
@@ -138,11 +120,9 @@ export GProperty_SIGINT=1
 #export BFile__preparePath_SIGINT=1
 #export GGeo__save_SIGINT=1
 
-#savedir=~/.opticks/GEOM/$GEOM
-#savedir=/tmp/GEOM/$GEOM
-#export SAVEDIR=${SAVEDIR:-$savedir}
+savedir=~/.opticks/GEOM/$GEOM
 
-export G4CXOpticks__setGeometry_saveGeometry=$FOLD
+export G4CXOpticks__setGeometry_saveGeometry=$savedir
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
 #export NNodeNudger__DISABLE=1
@@ -151,8 +131,7 @@ export G4CXOpticks__saveGeometry_saveGGeo=1
 #export s_csg_level=2 
 #export sn__level=2
 #export U4Tree__DISABLE_OSUR_IMPLICIT=1
-export X4PhysicalVolume__ENABLE_OSUR_IMPLICIT=1
-
+#export X4PhysicalVolume__ENABLE_OSUR_IMPLICIT=1
 
 
 logging(){ 
@@ -164,19 +143,11 @@ logging(){
    #export U4VolumeMaker=INFO
 }
 [ -n "$LOG" ] && logging 
-
-
-[ -n "$LOG" ] && logging 
 env | grep =INFO
 
 
 if [ "${arg/info}" != "$arg" ]; then 
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
-fi 
-
-if [ "${arg/clean}" != "$arg" ]; then 
-    cd $TMP && rm -rf "G4CXOpticks_setGeometry_Test/$GEOM"  && ## hardcode for safety
-    [ $? -ne 0 ] && echo $BASH_SOURCE : clean error && exit 1 
 fi 
 
 if [ "${arg/run}" != "$arg" ]; then 
