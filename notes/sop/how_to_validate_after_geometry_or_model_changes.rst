@@ -88,21 +88,7 @@ The chi2 sub-command uses the ~/o/sysrap/tests/sseq_index_test.sh script and a
 separate C++ executable to form and present the chi2, this replaces the old python "SAB" 
 implementation of the same which was too slow. 
 
-
-
- 
-
-
-
-
-
-
 * ~/o/notes/issues/G4CXTest_GEOM_shakedown_2025.rst
-
-
-
-
-
 
 
 
