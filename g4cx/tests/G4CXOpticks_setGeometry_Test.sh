@@ -104,15 +104,7 @@ fi
 
 
 
-
-tmp=/tmp/$USER/opticks
-TMP=${TMP:-$tmp}
-export FOLD=$TMP/$bin/$GEOM
-mkdir -p $FOLD
-
-
-
-vars="BASH_SOURCE arg SDIR GEOM FOLD bin geomscript script origin"
+vars="BASH_SOURCE arg SDIR GEOM savedir FOLD bin geomscript script origin"
 
 
 export GProperty_SIGINT=1
@@ -122,6 +114,7 @@ export GProperty_SIGINT=1
 
 savedir=~/.opticks/GEOM/$GEOM
 
+export FOLD=$savedir
 export G4CXOpticks__setGeometry_saveGeometry=$savedir
 export G4CXOpticks__saveGeometry_saveGGeo=1
 
