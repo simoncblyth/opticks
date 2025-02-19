@@ -2,6 +2,17 @@ zepeng-reports-std-locale-issue
 ===============================
 
 
+Potential fix::
+
+    > Also, how did you fix the std::locale issue ? It might effect other people, 
+    > so I would like to know the fix. 
+    I’m using a container so the problem probably won’t be seen by most people. 
+    I binded the system locales to my container.
+    --bind /usr/lib/locale:/usr/lib/locale
+
+    Thanks,
+    Zepeng
+
 
 
 2025/2/17 zepeng SSimTest::
