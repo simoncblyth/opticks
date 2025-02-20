@@ -368,10 +368,23 @@ __global__ void _QSim_propagate_at_boundary_generate( qsim* sim, sphoton* photon
 }
 
 
+
+/**
+_QSim_propagate_at_boundary_mutate
+------------------------------------
+
+Observe pullback fails after running this when qsim::propagate_at_boundary
+uses tagr for DEBUG_TAG recording of random consumption.  
+
+**/
+
 __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, unsigned num_photon, qdebug* dbg )
 {
     unsigned idx = blockIdx.x*blockDim.x + threadIdx.x;
     if (idx >= num_photon) return;
+
+    //printf("//_QSim_propagate_at_boundary_mutate.head blockIdx.x %d blockDim.x %d threadIdx.x %d idx %d dbg %p \n", blockIdx.x, blockDim.x, threadIdx.x, idx, dbg ); 
+
 
 
     RNG rng ; 
@@ -379,6 +392,7 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
 
     //printf("//_QSim_propagate_at_boundary_mutate.after rnginit blockIdx.x %d blockDim.x %d threadIdx.x %d idx %d dbg %p \n", blockIdx.x, blockDim.x, threadIdx.x, idx, dbg ); 
 
+    
     sctx ctx = {} ; 
     ctx.idx = idx ; 
     ctx.p = photon[idx] ;
@@ -389,16 +403,21 @@ __global__ void _QSim_propagate_at_boundary_mutate( qsim* sim, sphoton* photon, 
     q.q0.f = q.q1.f ;   // non-standard record initial mom and pol into q0, q3
     q.q3.f = q.q2.f ;
 
-    //printf("//_QSim_propagate_at_boundary_mutate bef callidx %d \n", idx ); 
+    //if(idx%1000==0) printf("//_QSim_propagate_at_boundary_mutate bef callidx %d \n", idx ); 
  
+
+
     unsigned flag = 0 ; 
+ 
     sim->propagate_at_boundary( flag, rng, ctx );  
 
     q.q3.u.w = flag ;  // non-standard
 
     photon[idx] = ctx.p ; 
 
-    //printf("//_QSim_propagate_at_boundary_mutate idx %d ", idx); 
+
+
+    //if(idx%1000==0) printf("//_QSim_propagate_at_boundary_mutate idx %d \n", idx); 
 }
 
 

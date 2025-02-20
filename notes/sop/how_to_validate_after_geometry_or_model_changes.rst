@@ -15,21 +15,35 @@ Unit tests, implemented using CMake/ctests
 
     om-;om-test   ## single package tests 
 
-    opticks-t     ## tests like the above for all active packages (2025/01/20 0/218 FAIL)
+    opticks-t     ## tests like the above for all active packages 
+
+::
+
+   FAILS:  0   / 216   :  Thu Feb 20 10:17:44 2025
 
 
-Expanded tests 
----------------
+
+Expanded tests : QSimTest_ALL.sh 
+-------------------------------------
 
 These tests expand on some the above ctests particularly for 
 executables that encompass many tests selected via TEST envvar 
 which are simpler to run and debug outside of ctests::
 
-    ~/o/qudarap/tests/QSimTest_ALL.sh    ## QSimTest tests
+    ~/o/qudarap/tests/QSimTest_ALL.sh    ## QSimTest tests (2025/02/20 0/25 FAIL)
 
-       ## see notes/issues/QSimTest_ALL_initial_shakedown.rst  (2025/01/20 3/25 FAIL)
 
-    ~/o/qudarap/tests/QEventTest_ALL.sh  ## QEventTest tests   (2023/01/20 0/6 FAIL)
+See ~/o/notes/issues/DEBUG_TAG_within_debug_tag_look_again.rst for the last 
+issue that caused 3/25 FAILs related to DEBUG_TAG and tagr usage in kernels.
+
+
+
+Expanded tests : QEventTest_ALL.sh 
+-------------------------------------
+
+::
+
+    ~/o/qudarap/tests/QEventTest_ALL.sh  ## QEventTest tests   (2024/01/20 0/6 FAIL)
 
 
 Standalone tests of related repository
@@ -37,7 +51,7 @@ Standalone tests of related repository
 
 ::
 
-    ~/np/tests/go.sh    ## standalone NP tests (2025/01/20 8/57 FAIL)
+    ~/np/tests/go.sh    ## standalone NP tests (2025/02/20 0/57 FAIL)
 
 
 
@@ -49,7 +63,7 @@ making it require understanding and often editing before use,
 plus the setting of the TEST envvar to select the type of 
 test to perform.  
 
-This script runs the CSGOptiXSMTest executable which has no Geant4 dependency,
+The script runs the CSGOptiXSMTest executable which has no Geant4 dependency,
 so it is restricted to purely optical running and loads the persisted CSGFoundry
 from ~/.opticks/GEOM/$GEOM/CSGFoundry using GEOM envvar 
 set by ~/.opticks/GEOM/GEOM.sh 

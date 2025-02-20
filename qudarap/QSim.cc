@@ -1131,23 +1131,28 @@ void QSim::photon_launch_mutate(sphoton* photon, unsigned num_photon, unsigned t
     const char* label_0 = "QSim::photon_launch_mutate/d_photon" ; 
     sphoton* d_photon = QU::UploadArray<sphoton>(photon, num_photon, label_0 );  
 
-
     unsigned DEBUG_NUM_PHOTON = ssys::getenvunsigned(_QSim__photon_launch_mutate_DEBUG_NUM_PHOTON, 0 ); 
     bool DEBUG_NUM_PHOTON_valid = DEBUG_NUM_PHOTON > 0 && DEBUG_NUM_PHOTON <= num_photon ; 
-
     unsigned u_num_photon = DEBUG_NUM_PHOTON_valid ? DEBUG_NUM_PHOTON  : num_photon ; 
+    bool SKIP_LAUNCH = ssys::getenvbool(_QSim__photon_launch_mutate_SKIP_LAUNCH) ; 
 
-    LOG_IF( error, DEBUG_NUM_PHOTON_valid ) 
+    LOG_IF( error, DEBUG_NUM_PHOTON_valid || true ) 
         << _QSim__photon_launch_mutate_DEBUG_NUM_PHOTON 
         << " DEBUG_NUM_PHOTON " << DEBUG_NUM_PHOTON
         << " num_photon " << num_photon 
         << " u_num_photon " << u_num_photon 
+        << _QSim__photon_launch_mutate_SKIP_LAUNCH  
+        << " " << ( SKIP_LAUNCH ? "YES" : "NO " ) 
         ; 
 
-    unsigned threads_per_block = 512 ;  
-    configureLaunch1D( u_num_photon, threads_per_block ); 
 
-    QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, u_num_photon, d_dbg, type );  
+    if( SKIP_LAUNCH == false )
+    {
+        unsigned threads_per_block = 512 ;  
+        configureLaunch1D( u_num_photon, threads_per_block ); 
+        QSim_photon_launch(numBlocks, threadsPerBlock, d_sim, d_photon, u_num_photon, d_dbg, type );  
+    }
+
 
     const char* label_1 = "QSim::photon_launch_mutate" ; 
     QU::copy_device_to_host_and_free<sphoton>( photon, d_photon, u_num_photon, label_1 ); 
