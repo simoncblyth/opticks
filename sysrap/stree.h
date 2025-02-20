@@ -3869,7 +3869,7 @@ collectGlobalNodes
 
 inline void stree::factorize()
 {
-    if(level>0) std::cout << "[ stree::factorize " << std::endl ;
+    if(level>0) std::cout << "[ stree::factorize (" << level << ")" << std::endl ;
 
     classifySubtrees(); 
     disqualifyContainedRepeats();
@@ -3881,7 +3881,8 @@ inline void stree::factorize()
     collectGlobalNodes(); 
 
     if(level>0) std::cout << desc_factor() << std::endl ;
-    if(level>0) std::cout << "] stree::factorize " << std::endl ;
+    if(level>0) std::cout << desc_lvid() << std::endl ;
+    if(level>0) std::cout << "] stree::factorize (" << level << ")" << std::endl ;
 }
 
 

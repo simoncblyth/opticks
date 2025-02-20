@@ -24,17 +24,8 @@ cd $(dirname $(realpath $BASH_SOURCE))
 name=QSimTest 
 
 bin=$name
-defarg=run_ana
 
-if [ "$(uname)" == "Darwin" ]; then
-   defarg="run_ana"
-fi 
 
-if [ -n "$BP" ]; then 
-   defarg="dbg"
-fi 
-
-arg=${1:-$defarg}
 
 source $HOME/.opticks/GEOM/GEOM.sh
 msg="=== $BASH_SOURCE :"
@@ -86,9 +77,28 @@ test=fake_propagate
 #test=smear_normal_sigma_alpha
 
 export TEST=${TEST:-$test}
-export BASE=/tmp/$name
-export FOLD=$BASE/$TEST
+export FOLD=/tmp/QSimTest/$TEST   ## CAUTION clean subcommand deletes this directory and contents 
 mkdir -p $FOLD
+
+
+
+defarg=run_ana
+if [ "$(uname)" == "Darwin" ]; then
+   defarg="run_ana"
+fi 
+
+if [ -n "$BP" ]; then 
+   defarg="dbg"
+fi 
+
+if [ "$TEST" == "rng_sequence" ]; then
+   defarg="run_ana_clean"  # delete FOLD after test as writes almost 1GB 
+fi 
+
+
+arg=${1:-$defarg}
+
+
 
 M1=1000000
 K2=100000
@@ -214,6 +224,38 @@ if [ "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $msg dbg error && exit 2 
 fi
 
+if [ "${arg/pdb}" != "$arg" ]; then 
+   echo $BASH_SOURCE pdb script $script
+   ${IPYTHON:-ipython} --pdb -i $script
+   [ $? -ne 0 ] && echo $msg pdb error && exit 2
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then 
+   echo $BASH_SOURCE ana script $script
+   ${PYTHON:-python} $script
+   [ $? -ne 0 ] && echo $msg ana error && exit 3
+fi
+
+
+if [ "${arg/clean}" != "$arg" ]; then 
+   iwd=$PWD
+   cd $(dirname $FOLD)
+
+   if [ -d "$TEST" ]; then
+       if [ ${#TEST} -gt 3 ]; then
+           echo $msg : delete TEST [$TEST] folder from $(dirname $FOLD) namelength ${#TEST} 
+           rm -rf $TEST 
+       else
+            echo $msg : TEST [$TEST] name too short ${#TEST} : NOT DELETING 
+       fi 
+   else
+       echo $msg : TEST [$TEST] folder not present within $(dirname $FOLD) 
+   fi 
+   cd $iwd
+fi
+
+
+
 
 
 relative_stem(){   ## THIS IS USING OBSOLETE GEOCACHE PATHS 
@@ -232,20 +274,6 @@ relative_stem(){   ## THIS IS USING OBSOLETE GEOCACHE PATHS
    
    echo $rel 
 }
-
-
-if [ "${arg/pdb}" != "$arg" ]; then 
-   echo $BASH_SOURCE pdb script $script
-   ${IPYTHON:-ipython} --pdb -i $script
-   [ $? -ne 0 ] && echo $msg pdb error && exit 2
-fi
-
-if [ "${arg/ana}" != "$arg" ]; then 
-   echo $BASH_SOURCE ana script $script
-   ${PYTHON:-python} $script
-   [ $? -ne 0 ] && echo $msg ana error && exit 3
-fi
-
 
 
 if [ "${arg/OLDana}" != "$arg" ]; then 

@@ -132,6 +132,10 @@ Default dir is $TMP/QSimTest/rng_sequence leading to npy paths like::
 
     /tmp/blyth/opticks/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy
 
+As default ni of 1M taking too much space on /tmp/QSimTest/rng_sequence arranged to delete the FOLD after ana at bash level::
+
+    977M    rng_sequence
+
 **/
 
 
