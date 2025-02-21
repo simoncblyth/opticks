@@ -8,18 +8,22 @@ Protocol base used to facilitate lower level package access
 to limited geometry information, by passing the higher level 
 CSGFoundry instance down to it cast down to this SGeo protocol base.
 
-::
+Only a little usage from active code::
 
-    epsilon:sysrap blyth$ opticks-f SGeo.hh 
+    epsilon:opticks blyth$ opticks-f SGeo.hh 
     ./CSG/CSGFoundry.h:#include "SGeo.hh"
-
     ./sysrap/CMakeLists.txt:    SGeo.hh
     ./sysrap/CheckGeo.hh:#include "SGeo.hh"
-    ./sysrap/tests/SGeoTest.cc:#include "SGeo.hh"
+    ./sysrap/SGeo.hh:    epsilon:sysrap blyth$ opticks-f SGeo.hh 
+    ./sysrap/SGeo.hh:    ./CSG/CSGFoundry.h:#include "SGeo.hh"
     ./sysrap/SEvt.cc:#include "SGeo.hh"
     ./sysrap/SGeo.cc:#include "SGeo.hh"
 
-    ./g4cx/G4CXOpticks.cc:#include "SGeo.hh"
+    ##DEAD
+    ./GeoChain/GeoChain.cc:#include "SGeo.hh"
+    ./ggeo/GGeo.hh:#include "SGeo.hh"
+    ./ggeo/tests/GGeoTest.cc:#include "SGeo.hh"
+    ./optickscore/OpticksDbg.cc:#include "SGeo.hh"
 
 
 **/
@@ -27,8 +31,7 @@ CSGFoundry instance down to it cast down to this SGeo protocol base.
 #include "plog/Severity.h"
 #include <string>
 #include "SYSRAP_API_EXPORT.hh"
-
-struct sframe ; 
+#include "sframe.h"   // Zepeng reports needed for Rocky Linux 9/gcc 11.3 
 struct stree ; 
 
 struct SYSRAP_API SGeo 
