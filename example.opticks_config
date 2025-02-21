@@ -24,7 +24,8 @@ export OPTICKS_CUDA_PREFIX=/usr/local/cuda
 export OPTICKS_OPTIX_PREFIX=/usr/local/optix
 
 export OPTICKS_COMPUTE_CAPABILITY=70     # NVIDIA TITAN RTX 
-# export OPTICKS_COMPUTE_CAPABILITY=80   # NVIDIA A100 (zepeng report) 
+# export OPTICKS_COMPUTE_CAPABILITY=80   # NVIDIA A100          (Zepeng) 
+# export OPTICKS_COMPUTE_CAPABILITY=86   # NVIDIA RTX A4000     (Zepeng)
 # export OPTICKS_COMPUTE_CAPABILITY=89   # NVIDIA RTX 5000 Ada Generation 
 
 
