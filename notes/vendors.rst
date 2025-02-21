@@ -2,13 +2,20 @@ vendors : Ray tracing framework vendors
 ==========================================
 
 
+
+
+
 * https://analyticsindiamag.com/deep-tech/6-alternatives-to-cuda/
 
 * https://en.wikipedia.org/wiki/Ray-tracing_hardware
 
 * https://chipsandcheese.com/p/raytracing-on-amds-rdna-2-3-and-nvidias-turing-and-pascal
 
+* https://www.modular.com/blog/democratizing-ai-compute-part-3-how-did-cuda-succeed
 
+
+GPU vendors and progress with compute and ray tracing frameworks
+-------------------------------------------------------------------
 
 0. NVIDIA, Compute Unified Device Architecture (CUDA)
 
@@ -31,11 +38,25 @@ vendors : Ray tracing framework vendors
 3. Intel Xe2 GPU, Vulkan 
 
    * https://wccftech.com/intel-xe2-gpus-50-percent-uplift-new-ray-tracing-cores-lunar-lake-arc-battlemage-discrete/
-
    
 
-4. ?Huawei, HarmonyOS NEXT, Ascend 910, Da Vinci GPU  
+4. Huawei, HarmonyOS NEXT, Ascend 910, Da Vinci GPU  
 
    * cloud ray trace rendering announced
+   * https://www.huaweicentral.com/huawei-brings-harmonyos-next-cloud-rendering-for-realistic-gaming-experience/
+   * https://www.nextplatform.com/2024/08/13/huaweis-hisilicon-can-compete-with-nvidia-gpus-in-china/
+
+
+Interesting uses of GPU
+-------------------------
+
+Deepseek : PTX level use of NVIDIA GPUs
+
+* https://medium.com/@amin32846/unlock-warp-level-performance-deepseeks-practical-techniques-for-specialized-gpu-tasks-a6cf0c68a178
+
+
+
+
+
 
 
