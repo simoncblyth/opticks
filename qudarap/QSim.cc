@@ -525,6 +525,7 @@ to enable copying from the gathered arrays into non-Opticks collections.
 void QSim::reset(int eventID)
 {
     SProf::Add("QSim__reset_HEAD"); 
+    event->clear();  
     sev->endOfEvent(eventID);
     LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
     SProf::Add("QSim__reset_TAIL"); 

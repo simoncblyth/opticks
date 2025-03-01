@@ -243,10 +243,29 @@ int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
     return rc ; 
 }
 
+
 int QEvent::getPhotonSlotOffset() const
 {
     return gss ? gss->ph_offset : 0 ; 
 }
+
+
+/**
+QEvent::clear
+--------------
+
+This is called from QSim::reset
+The former omission of gs deletion was reported by Ilker Parmaksiz.
+
+**/
+
+void QEvent::clear()
+{
+    delete gs ; 
+    gs = nullptr ; 
+}
+
+
 
 
 
