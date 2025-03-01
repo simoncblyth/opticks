@@ -41,6 +41,22 @@ Progress
 
 
 
+2025 Feb
+---------
+
+* o : 02/20 : switch OFF DEBUG_TAG from sysrap/CMakeLists.txt avoiding three QSimTest_ALL.sh fails from stagr usage
+
+2025 Jan : testing the migrations revealed reversions, now fixed
+-------------------------------------------------------------------
+
+* o : 01/09 : fix reversion of no hits array on B side following multi-launch impl as was trying to get photons from topfold before the gather, fix by getting from fold
+
+2024 Dec : migrate from XORWOW to Philox removing need for curandState files, add out-of-core to QSim::simulate -> Opticks unlimited by VRAM or state files
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* o : 12/17 : adjust QSim::simulate profile stamps for multi-launch running
+* o : 12/13 : complete initial migration from curand XORWOW to Philox  
+
 
 2024 Nov : generalize translation to use listnode with unchanged source geometry 
 -------------------------------------------------------------------------------------

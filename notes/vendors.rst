@@ -38,13 +38,35 @@ GPU vendors and progress with compute and ray tracing frameworks
 3. Intel Xe2 GPU, Vulkan 
 
    * https://wccftech.com/intel-xe2-gpus-50-percent-uplift-new-ray-tracing-cores-lunar-lake-arc-battlemage-discrete/
-   
+   * https://www.intel.com/content/www/us/en/content-details/726653/a-quick-guide-to-intel-s-ray-tracing-hardware.html   
 
 4. Huawei, HarmonyOS NEXT, Ascend 910, Da Vinci GPU  
 
    * cloud ray trace rendering announced
    * https://www.huaweicentral.com/huawei-brings-harmonyos-next-cloud-rendering-for-realistic-gaming-experience/
    * https://www.nextplatform.com/2024/08/13/huaweis-hisilicon-can-compete-with-nvidia-gpus-in-china/
+
+
+5. Imagination Tech "IMG CXT GPU" : IP for mobile GPU with hardware ray tracing
+
+   * https://www.imaginationtech.com/news/imagination-launches-the-most-advanced-ray-tracing-gpu/
+
+
+6. Vulkan Compute Shaders
+
+   * https://github.com/GPSnoopy/RayTracingInVulkan
+
+
+
+
+
+LumiBench
+---------
+
+* https://people.ece.ubc.ca/aamodt/publications/papers/lumibench.iiswc2023.pdf
+* ~/opticks_refs/lumibench_iiswc2023.pdf
+
+
 
 
 Interesting uses of GPU
