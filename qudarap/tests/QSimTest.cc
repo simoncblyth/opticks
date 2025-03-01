@@ -637,9 +637,11 @@ void QSimTest::photon_launch_mutate()
 
     if( a == nullptr )
     {
+        const char* a_path = U::Resolve("$BASE", src_subfold,  "p.npy" ); 
         LOG(fatal) 
              << "failed to NP::Load photons from "
-             <<  " src_subfold " << src_subfold   
+             << " src_subfold [" << ( src_subfold ? src_subfold : "-" ) << "]"   
+             << " a_path [" << ( a_path ? a_path : "-" ) << "]" 
              << std::endl 
              << " YOU PROBABLY NEED TO RUN ANOTHER TEST FIRST TO GENERATE THE PHOTONS "
              ;

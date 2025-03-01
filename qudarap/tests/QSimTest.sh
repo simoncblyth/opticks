@@ -77,6 +77,10 @@ test=fake_propagate
 #test=smear_normal_sigma_alpha
 
 export TEST=${TEST:-$test}
+export BASE=/tmp/QSimTest         ## BASE NEEDED BY QSimTest::photon_launch_mutate 
+                                  ## AS U::Resolve DOES NOT YET SUPPORT "$FOLD/.." 
+                                  ## TODO:bring it over, done it elsewhere?
+       
 export FOLD=/tmp/QSimTest/$TEST   ## CAUTION clean subcommand deletes this directory and contents 
 mkdir -p $FOLD
 
