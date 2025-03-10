@@ -27,6 +27,12 @@ NVIDIA OptiX Ray Trace Toolkit
 
 
 
+Toolkit
+--------
+
+* https://github.com/NVIDIA/optix-toolkit
+
+
 Old 2022 Thread between Ami and David Hart
 --------------------------------------------
 
