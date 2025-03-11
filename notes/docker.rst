@@ -1008,9 +1008,59 @@ NVIDIA : Example Dockerfiles for the official NVIDIA images published on Docker 
 
 
 
+docker ps
+----------
+
+::
+
+    A[blyth@localhost ~]$ docker ps 
+    CONTAINER ID   IMAGE             COMMAND       CREATED       STATUS       PORTS     NAMES
+    6b3ce5ee784f   junosw/base:el9   "/bin/bash"   2 hours ago   Up 2 hours             jel9a
+    A[blyth@localhost ~]$ 
 
 
+docker ps -a
+---------------
 
+Careful to clean up containers otherwise will use resources including names::
+
+    A[blyth@localhost ~]$ docker ps -a
+    CONTAINER ID   IMAGE                                          COMMAND                  CREATED        STATUS                      PORTS     NAMES
+    6b3ce5ee784f   junosw/base:el9                                "/bin/bash"              2 hours ago    Up 2 hours                            jel9a
+    21f111998ecc   junosw/base:el9                                "/bin/bash"              3 hours ago    Exited (127) 2 hours ago              jel9z
+    1852b173f0d6   junosw/base:el9                                "mock-gitlab-ci.sh"      3 hours ago    Created                               jel9y
+    8380bd2324ae   junosw/base:el9                                "/bin/bash"              3 hours ago    Exited (0) 3 hours ago                jel9x
+    798abcf0117e   junosw/base:el9                                "/bin/bash"              3 hours ago    Exited (0) 3 hours ago                jel9
+    7b689d6d8275   junosw/base:el9                                "/bin/bash"              3 hours ago    Exited (0) 3 hours ago                mystifying_merkle
+    b64fc653a9d9   junosw/base:el9                                "/bin/bash"              3 hours ago    Exited (0) 3 hours ago                blissful_aryabhata
+    5f24d0579c8f   al9-cvmfs                                      "bash"                   21 hours ago   Exited (0) 20 hours ago               intelligent_feynman
+    f0cda1c4de93   al9-cvmfs                                      "/bin/sh -c 'echo $(…"   21 hours ago   Exited (0) 21 hours ago               stupefied_gould
+    601f97838478   al9-cvmfs                                      "bash"                   21 hours ago   Exited (0) 20 hours ago               ecstatic_morse
+    495f75b73f75   al9-cvmfs                                      "/bin/sh -c 'echo $(…"   21 hours ago   Exited (0) 21 hours ago               happy_lewin
+    c80a7da3099f   nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   "/opt/nvidia/nvidia_…"   22 hours ago   Exited (0) 22 hours ago               nervous_panini
+    76d06c775104   nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   "/opt/nvidia/nvidia_…"   22 hours ago   Exited (0) 22 hours ago               inspiring_hypatia
+    a42e97a965eb   nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   "/opt/nvidia/nvidia_…"   22 hours ago   Exited (0) 22 hours ago               fervent_perlman
+    517976de35b9   nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   "/opt/nvidia/nvidia_…"   22 hours ago   Exited (127) 22 hours ago             musing_ishizaka
+    107c835344f6   nvidia/cuda:12.4.1-devel-rockylinux9           "/opt/nvidia/nvidia_…"   32 hours ago   Exited (0) 25 hours ago               confident_taussig
+    4e022fb353d9   nvidia/cuda:12.4.1-devel-rockylinux9           "/opt/nvidia/nvidia_…"   33 hours ago   Exited (137) 32 hours ago             hopeful_keldysh
+    5a3d456ce126   9cc24f05f309                                   "/bin/bash"              2 days ago     Exited (0) 2 days ago                 charming_poitras
+    07ffa7881649   9cc24f05f309                                   "/bin/bash"              2 days ago     Exited (0) 2 days ago                 sweet_lewin
+    e764899bb314   bb42                                           "/bin/sh -c 'echo $(…"   2 days ago     Exited (0) 2 days ago                 fervent_mclean
+    ceac34c1139b   bb42                                           "/bin/sh -c 'echo $(…"   2 days ago     Exited (0) 2 days ago                 lucid_khorana
+    A[blyth@localhost ~]$ 
+
+
+::
+
+    docker run  # Run a command in a **new** container
+
+    docker start -a container-name    # Start one or more stopped containers
+    
+    docker stop registry-v1    ## need to stop before can remove 
+
+    A[blyth@localhost ~]$ docker rm lucid_khorana fervent_mclean sweet_lewin charming_poitras
+
+    
 
 
 

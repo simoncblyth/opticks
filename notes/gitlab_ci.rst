@@ -8,8 +8,6 @@ Which approach for Opticks CI ?
 * CUDA from Docker image based FROM junosw/base:el9 to create  opticks/junosw-cuda-el9
 
   * junotop/junoenv/docker/Dockerfile-junosw-opticks-cuda-el9 
-  * 
-
 
 
 Approach:
@@ -19,13 +17,25 @@ Approach:
 
    * that is "FROM almalinux:9"
 
-Try::
+HMM::
 
    FROM junosw/base:el9
 
+OR start from the official nvidia/cuda image so 
+dont have to change the more invoked Dockerfile
 
-2. build image in GHA, check size
+2. build Dockerfile image in GHA, check size
+
+   * ~/sandbox/.github/workflows/junosw-build-docker-image-and-scp.yml
+   * ~/sandbox/junosw/Dockerfile
+
+
 3. draw on nvidia/cuda Dockerfile to add whats needed for CUDA
+
+   * try with just runtime
+   * building opticks external is done separately, and installed to /cvmfs  
+   * the goal of the image is to allow running the junosw+opticks build NOT to allow building opticks
+
 4. add the /cvmfs config
 
 
@@ -52,8 +62,15 @@ Docker image size will be big ... so
 
 * worrying about how to shrink Docker image size can be deferred
 
+  * other than simple things like trying just the runtime libs
   * *not such a big deal for JUNO CI anyhow, aim for yearly image updates*
 
+
+cvmfs
+------
+
+* http://cvmfs-stratum-one.ihep.ac.cn/cvmfs/software/client_configure/ihep.ac.cn/ihep.ac.cn.pub
+* https://cvmfs-stratum-one.ihep.ac.cn/cvmfs/software/client_configure/ihep.ac.cn/opticks.ihep.ac.cn.pub
 
 
 
@@ -94,6 +111,7 @@ Those are referring to images from https://hub.docker.com/r/junosw/base/tags
 * https://docs.gitlab.com/ci/docker/using_docker_images/
 
 
+
 gitlab docker
 ~~~~~~~~~~~~~~
 
@@ -105,7 +123,358 @@ may have a different default WORKDIR defined. To move to your WORKDIR, save the
 WORKDIR as an environment variable so you can reference it in the container
 during the job’s runtime.
 
+
+
+junotop/junosw/.gitlab-ci.yml
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     30 .build_job_template:
+     31   stage: build
+     32   image: junosw/base:el9
+     33   variables:
+     34     JUNOTOP: /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/Jlatest
+     35     JUNO_CLANG_PREFIX:
+     36     EXTRA_BUILD_FLAGS:
+     37   script:
+     38     - sudo mount -t cvmfs juno.ihep.ac.cn /cvmfs/juno.ihep.ac.cn
+     39     - export JUNO_OFFLINE_OFF=1 # Disable the official JUNOSW when build JUNOSW
+     40     - source $JUNOTOP/setup.sh
+     41     - if [ -n "$JUNO_CLANG_PREFIX" ]; then source $JUNO_CLANG_PREFIX/bashrc; fi
+     42     - env $EXTRA_BUILD_FLAGS ./build.sh
+     43 
+     44 ##############################################################################
+     45 # Build Job (el9)
+     46 ##############################################################################
+     47 
+     48 build-job:gcc11:el9:       # This job runs in the build stage, which runs first.
+     49   extends: .build_job_template
+     50   artifacts:
+     51     paths:
+     52       - InstallArea
+
+
+
+sudo mount -t cvmfs juno.ihep.ac.cn /cvmfs/juno.ihep.ac.cn
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+   sudo mount -t cvmfs juno.ihep.ac.cn /cvmfs/juno.ihep.ac.cn
+
+   mount -t [type] [device] [dir]
+
+
+
+* https://docs.docker.com/engine/storage/bind-mounts/
+
+* https://stackoverflow.com/questions/64021556/how-to-execute-a-shell-script-that-has-mount-command-inside-dockerfile
+* https://stackoverflow.com/questions/63516389/using-mount-command-while-docker-build
+
+Looks like cannot "mount" within the Dockerfile building
+
+* https://cernvm-forum.cern.ch/t/mount-cvmfs-in-container-without-access-to-docker-options/392
+
+
+* https://awesome-workshop.github.io/docker-cms/04-docker-cvmfs/index.html
+
+
+
+test gitlab ci locally ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://stackoverflow.com/questions/32933174/use-gitlab-ci-to-run-tests-locally
+
+NOT ANY MORE : FEATURE REMOVED
+
+gitlab-runner 
+~~~~~~~~~~~~~~~
+
+* https://docs.gitlab.com/runner/install/
+* https://docs.gitlab.com/runner/commands/#limitations-of-gitlab-runner-exec
+
+* https://docs.gitlab.com/runner/install/linux-repository/?tab=RHEL%2FCentOS%2FFedora%2FAmazon+Linux
+
+curl blocked, need to start proxy, plus el9 needs "socks5h" not "socks5"::
+
+    A[blyth@localhost ~]$ curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh" 
+    curl: (7) Failed to connect to 127.0.0.1 port 8080: Connection refused
+    A[blyth@localhost ~]$ curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh" 
+    curl: (97) connection to proxy closed
+
+    A[blyth@localhost ~]$ vi ~/.curlrc
+    A[blyth@localhost ~]$ cat ~/.curlrc   ## on AlmaLinux9 need "socks5h" not "socks5"
+    proxy=socks5h://127.0.0.1:8080
+
+    A[blyth@localhost ~]$ curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh" 
+    #!/bin/bash
+
+    unknown_os ()
+    {
+    ...
+
+
+   curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh" | sudo bash
+
  
+
+::
+
+    A[blyth@localhost ~]$ curl -o script.rpm.sh -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh" 
+      % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                     Dload  Upload   Total   Spent    Left  Speed
+    100  7983  100  7983    0     0   7230      0  0:00:01  0:00:01 --:--:--  7230
+    A[blyth@localhost ~]$ vi script.rpm.sh
+    A[blyth@localhost ~]$ cat script.rpm.sh | sudo bash 
+    Detected operating system as almalinux/9.
+    Checking for curl...
+    Detected curl...
+    Downloading repository file: https://packages.gitlab.com/install/repositories/runner/gitlab-runner/config_file.repo?os=almalinux&dist=9&source=script
+    done.
+    Installing yum-utils...
+    ...
+    The repository is setup! You can now install packages.
+    A[blyth@localhost ~]$ 
+
+
+    A[blyth@localhost ~]$ sudo dnf install gitlab-runner
+
+
+    A[blyth@localhost ~]$ which gitlab-runner
+    /usr/bin/gitlab-runner
+    A[blyth@localhost ~]$ gitlab-runner --help
+    NAME:
+       gitlab-runner - a GitLab Runner
+
+    USAGE:
+       gitlab-runner [global options] command [command options] [arguments...]
+
+    VERSION:
+       17.9.1 (bbf75488)
+
+
+
+
+Argh "gitlab-runner exec" has been removed from gitlab-runner 16.0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+
+::
+
+    gitlab-runner exec docker test --docker-volumes "/home/elboletaire/.ssh/id_rsa:/root/.ssh/id_rsa:ro"
+
+
+* https://gitlab.com/gitlab-org/gitlab/-/issues/385235
+
+::
+
+    deprecation notice in the 15.8 release post and fully remove gitlab-runner exec from the runner code base in the 16.0 release
+
+
+
+Alt to "gitlab-runner exec" 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* https://stackoverflow.com/questions/78661760/any-altenatives-of-gitlab-runner-exec-docker-job-name-to-test-ci-cd-locally
+
+Manual approach::
+
+    lint-before-merge:
+      stage: linting
+      image: python:3.12
+      rules:
+        - if: ($CI_PIPELINE_SOURCE == "merge_request_event" && 
+                  ($CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"|| $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"))
+      script:
+        - pip install flake8
+        - flake8 . 
+
+
+::
+
+    sudo docker run -it --rm --name my-running-script \
+          -w "/app" -v "$PWD":"/app" python:3.12 /bin/bash -c "pip install flake8 ; flake8 --exclude venv  ; echo "executed""
+
+
+    #Where $PWD is my project with its ".gitlab-ci.yml"
+
+
+* https://github.com/firecow/gitlab-ci-local
+
+
+
+try to manually do what gitlab does
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    A[blyth@localhost ~]$ scp L004:g/junosw_base_el9.tar . 
+
+    A[blyth@localhost ~]$ docker load -i junosw_base_el9.tar
+    6dca6b3e8763: Loading layer [==================================================>]  189.8MB/189.8MB
+    2a11bd70fe4d: Loading layer [==================================================>]  20.99kB/20.99kB
+    9451ba00a6af: Loading layer [==================================================>]  8.704kB/8.704kB
+    6de449af58fe: Loading layer [==================================================>]  3.072kB/3.072kB
+    1a8e11921bf7: Loading layer [==================================================>]  35.48MB/35.48MB
+    2c03d98f88c8: Loading layer [==================================================>]  56.32kB/56.32kB
+    1b1a1c0628ff: Loading layer [==================================================>]  31.78MB/31.78MB
+    e515567f7c0b: Loading layer [==================================================>]  87.04MB/87.04MB
+    0e4c7cd2124c: Loading layer [==================================================>]  1.786GB/1.786GB
+    4be8f469385d: Loading layer [==================================================>]  6.656kB/6.656kB
+    e869c153961b: Loading layer [==================================================>]  222.3MB/222.3MB
+    81d50fdb49ef: Loading layer [==================================================>]   78.4MB/78.4MB
+    ec4928d864b7: Loading layer [==================================================>]  80.85MB/80.85MB
+    5773258293ac: Loading layer [==================================================>]  78.24MB/78.24MB
+    39b75e8fb774: Loading layer [==================================================>]  78.64MB/78.64MB
+    96544d0002e4: Loading layer [==================================================>]  79.01MB/79.01MB
+    Loaded image: junosw/base:el9
+    A[blyth@localhost ~]$ 
+
+    A[blyth@localhost ~]$ docker images
+    REPOSITORY                                     TAG                        IMAGE ID       CREATED         SIZE
+    al9-cvmfs                                      latest                     ebccb0ed032b   18 hours ago    451MB
+    nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   latest                     72c9d5a2da10   19 hours ago    2.47GB
+    bb42                                           latest                     c9d2aec48d25   5 months ago    4.27MB
+    nvidia/cuda                                    12.4.1-devel-rockylinux9   ab9135746936   11 months ago   7.11GB
+    <none>                                         <none>                     9cc24f05f309   15 months ago   176MB
+    junosw/base                                    el9                        0fed15e4f2a2   15 months ago   2.69GB
+       
+    A[blyth@localhost ~]$ docker run -it junosw/base:el9 
+    [juno@b64fc653a9d9 ~]$ ls -alst
+    total 12
+    0 drwx------. 2 juno juno  62 Nov 21  2023 .
+    0 drwxr-xr-x. 1 root root  18 Nov 21  2023 ..
+    4 -rw-r--r--. 1 juno juno  18 Jan 23  2023 .bash_logout
+    4 -rw-r--r--. 1 juno juno 141 Jan 23  2023 .bash_profile
+    4 -rw-r--r--. 1 juno juno 492 Jan 23  2023 .bashrc
+    [juno@b64fc653a9d9 ~]$ pwd
+    /home/juno
+    [juno@b64fc653a9d9 ~]$ 
+     
+
+
+docker run script within container
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+     33   variables:
+     34     JUNOTOP: /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/Jlatest
+     35     JUNO_CLANG_PREFIX:
+     36     EXTRA_BUILD_FLAGS:
+     37   script:
+     38     - sudo mount -t cvmfs juno.ihep.ac.cn /cvmfs/juno.ihep.ac.cn
+     39     - export JUNO_OFFLINE_OFF=1 # Disable the official JUNOSW when build JUNOSW
+     40     - source $JUNOTOP/setup.sh
+     41     - if [ -n "$JUNO_CLANG_PREFIX" ]; then source $JUNO_CLANG_PREFIX/bashrc; fi
+     42     - env $EXTRA_BUILD_FLAGS ./build.sh
+ 
+::
+
+    You can also run a local script from the host directly::
+
+        docker exec -i mycontainer bash < mylocal.sh 
+
+    This reads the local host script and runs it
+    inside the container. You can do this with other things (like .tgz files piped
+    into tar) - its just using the '-i' to pipe into the container process std
+    input. – Marvin Commented Dec 8, 2017 at 15:32
+
+::
+
+    A[blyth@localhost ~]$ docker run -it --name jel9 junosw/base:el9 
+    [juno@798abcf0117e ~]$ 
+        
+    A[blyth@localhost ~]$ docker ps
+    CONTAINER ID   IMAGE             COMMAND       CREATED          STATUS          PORTS     NAMES
+    798abcf0117e   junosw/base:el9   "/bin/bash"   14 seconds ago   Up 14 seconds             jel9
+    A[blyth@localhost ~]$ docker exec jel9 pwd
+    /home/juno
+
+    A[blyth@localhost ~]$ docker exec -i jel9 bash < docker-mock-gitlab-ci.sh 
+    bash
+    /home/juno
+    A[blyth@localhost ~]$
+
+
+
+    A[blyth@localhost ~]$ docker exec -i jel9 bash < docker-mock-gitlab-ci.sh 
+    bash
+    /home/juno
+    Fuse not loaded
+    total 0
+    0 drwxr-xr-x. 2 root root  6 Nov 21  2023 .
+    0 drwxr-xr-x. 5 root root 76 Nov 21  2023 ..
+    A[blyth@localhost ~]$ 
+
+
+
+Run it with /cvmfs mounted::
+
+    A[blyth@localhost ~]$ docker run -it -v /cvmfs:/cvmfs:ro --name jel9 junosw/base:el9 
+    docker: Error response from daemon: Conflict. The container name "/jel9" is already in use by container "798abcf0117e334ae41d6d4a40f2fc08a040e0dc0e14c39286f0da2121b206bf". You have to remove (or rename) that container to be able to reuse that name.
+
+    Run 'docker run --help' for more information
+
+    A[blyth@localhost ~]$ docker run -it -v /cvmfs:/cvmfs:ro --name jel9x junosw/base:el9 
+    [juno@8380bd2324ae ~]$ 
+
+
+Still says "Fuse not loaded" but seems to work:: 
+
+    A[blyth@localhost ~]$ docker exec -i jel9x bash < docker-mock-gitlab-ci.sh 
+    bash
+    /home/juno
+    Fuse not loaded
+    total 14
+    1 drwxrwxr-x.  3 975 975   26 Feb  3 15:50 dbdata
+    1 drwxr-xr-x.  9 975 975   93 Dec 11 14:33 docutil
+    1 drwxrwxr-x.  4 975 975   29 Sep 11 08:23 singularity
+    1 drwxrwxr-x.  5 975 975   33 Jun 27  2024 el9_amd64_gcc11
+    1 drwxrwxr-x.  5 975 975   29 Jun 13  2024 centos7_amd64_gcc1120
+    1 drwxrwxr-x.  7 975 975   30 Jan  5  2024 sw
+    1 drwxrwxr-x.  3 975 975   33 Dec 18  2023 centos7_amd64_gcc1120_opticks
+    1 drwxrwxr-x.  4 975 975   29 Dec  1  2021 centos7_amd64_gcc830
+    1 -rw-rw-r--.  1 975 975   32 Mar 27  2021 .cvmfsdirtab
+    1 -rw-rw-r--.  1 975 975   28 Mar 27  2021 .cvmfsdirtab~
+    1 drwxrwxr-x.  3 975 975   33 Jun  4  2020 sl7_amd64_gcc485
+    1 drwxrwxr-x.  4 975 975   28 Jun  2  2020 ci
+    1 drwxrwxr-x.  4 975 975   52 May 13  2020 sl6_amd64_gcc447
+    1 drwxrwxr-x.  4 975 975   25 Apr 28  2020 sl6_amd64_gcc830
+    1 drwxrwxr-x.  4 975 975   52 Nov 27  2019 sl6_amd64_gcc494
+    1 drwxrwxr-x.  9 975 975  162 Jun 28  2019 sl6_amd64_gcc44
+    1 drwxrwxr-x.  3 975 975   29 Jun 25  2019 sl7_amd64_gcc48
+    1 drwxrwxr-x.  4 975 975   58 Mar 22  2017 sl5_amd64_gcc41
+    1 -rw-r--r--.  1 975 975   45 Mar 27  2015 new_repository
+    5 drwxr-xr-x. 18 975 975 4096 Mar 27  2015 .
+    A[blyth@localhost ~]$ 
+
+
+
+need to get the mounting sorted
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hmm the build.sh giving lots of errors from ro filesystem.
+Want to read from local directory and write into the container. 
+ 
+* https://docs.docker.com/engine/storage/bind-mounts/
+* https://ritviknag.com/tech-tips/how-to-mount-current-working-directory-to-your-docker-container/
+
+::
+
+    docker run \
+      -it \
+      --platform linux/amd64 \
+      --mount type=bind,src=.,dst=/usr/app \
+      --mount type=volume,dst=/usr/app/node_modules \
+      alpine:latest
+
+
+
+
+
 RockyLinux vs AlmaLinux
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -4,9 +4,6 @@ notes/docker-cuda
 
 
 
-
-
-
 examine nvidia/cuda images on hub.docker.com and correponding Dockerfile on gitlab.com 
 ---------------------------------------------------------------------------------------
 
@@ -50,9 +47,9 @@ examine nvidia/cuda images on hub.docker.com and correponding Dockerfile on gitl
     FROM ${IMAGE_NAME}:12.4.1-devel-rockylinux9 as base
 
 
-
-
 * https://hub.docker.com/_/rockylinux/tags
+
+
 
 ::
 
@@ -65,6 +62,26 @@ examine nvidia/cuda images on hub.docker.com and correponding Dockerfile on gitl
 
 
 
+gitlab clone blocked
+----------------------
+
+* gitlab-vi for workaround
+
+
+::
+
+    epsilon:rockylinux9 blyth$ pwd
+    /Users/blyth/cuda/dist/12.4.1/rockylinux9
+
+    epsilon:rockylinux9 blyth$ find . -name Dockerfile
+    ./devel/Dockerfile
+    ./devel/cudnn/Dockerfile
+    ./runtime/Dockerfile
+    ./runtime/cudnn/Dockerfile
+    ./base/Dockerfile
+
+
+
 TARGETARCH
 -----------
 
@@ -72,9 +89,11 @@ TARGETARCH
 * https://github.com/BretFisher/multi-platform-docker-build/blob/main/README.md
 
 
-Opticks Users Dockerfile
--------------------------
 
+User Dockerfile
+------------------
+
+* https://hub.docker.com/search?q=opticks 
 * https://github.com/seriksen/opticks_docker/blob/main/Dockerfile
 
 
@@ -181,6 +200,8 @@ missing samples
     [root@107c835344f6 /]# cd /usr/local/cuda/
     [root@107c835344f6 cuda]# ls
     bin  compat  compute-sanitizer	extras	gds  include  lib64  man  nvml	nvvm  share  src  targets
+
+
 
 
 
@@ -421,6 +442,169 @@ Configure Docker to use "nvidia-container-toolkit"
 
 
 
+
+
+
+Check nvidia_cuda_12_4_1_runtime_rockylinux9_amd64
+----------------------------------------------------
+
+
+* https://github.com/simoncblyth/sandbox/blob/master/nv/Dockerfile
+
+::
+
+    ARG FROM_REF
+    FROM --platform=$BUILDPLATFORM $FROM_REF
+
+
+* https://github.com/simoncblyth/sandbox/blob/master/.github/workflows/nv-build-docker-image-and-scp.yml
+
+::
+
+     ref=nvidia/cuda:12.4.1-runtime-rockylinux9 
+     nam=nvidia_cuda_12_4_1_runtime_rockylinux9_amd64
+     out=/tmp/$nam.tar
+
+     echo ref $ref
+     echo nam $nam
+     echo out $out
+
+     cd nv 
+
+     echo "[ build "
+     docker buildx build --build-arg FROM_REF=$ref --platform amd64 --tag $nam .
+     echo "] build " 
+
+
+
+::
+
+   
+    A[blyth@localhost ~]$ scp L004:g/nvidia_cuda_12_4_1_runtime_rockylinux9_amd64.tar .
+
+
+    A[blyth@localhost ~]$ docker load -i nvidia_cuda_12_4_1_runtime_rockylinux9_amd64.tar
+    5f70bf18a086: Loading layer [==================================================>]  1.024kB/1.024kB
+    Loaded image: nvidia_cuda_12_4_1_runtime_rockylinux9_amd64:latest
+
+    A[blyth@localhost ~]$ docker images
+    REPOSITORY                                     TAG                        IMAGE ID       CREATED          SIZE
+    nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   latest                     72c9d5a2da10   14 minutes ago   2.47GB
+    bb42                                           latest                     c9d2aec48d25   5 months ago     4.27MB
+    nvidia/cuda                                    12.4.1-devel-rockylinux9   ab9135746936   11 months ago    7.11GB
+    <none>                                         <none>                     9cc24f05f309   15 months ago    176MB
+    A[blyth@localhost ~]$ 
+
+
+Without the extra args fails to find nvidia-smi::
+
+    A[blyth@localhost ~]$ docker run -it nvidia_cuda_12_4_1_runtime_rockylinux9_amd64
+
+    ==========
+    == CUDA ==
+    ==========
+
+    CUDA Version 12.4.1
+
+    Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+    This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+    By pulling and using the container, you accept the terms and conditions of this license:
+    https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+    A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+    WARNING: The NVIDIA Driver was not detected.  GPU functionality will not be available.
+       Use the NVIDIA Container Toolkit to start this container with GPU support; see
+       https://docs.nvidia.com/datacenter/cloud-native/ .
+
+    /bin/sh: line 1: nvidia-smi: command not found
+    A[blyth@localhost ~]$ 
+
+
+With "--runtime=nvidia --gpus all" it behaves::
+
+    A[blyth@localhost ~]$ sudo docker run -it --runtime=nvidia --gpus all nvidia_cuda_12_4_1_runtime_rockylinux9_amd64
+    [sudo] password for blyth: 
+
+    ==========
+    == CUDA ==
+    ==========
+
+    CUDA Version 12.4.1
+
+    Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+    This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+    By pulling and using the container, you accept the terms and conditions of this license:
+    https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+    A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+    Mon Mar 10 12:56:19 2025       
+    +-----------------------------------------------------------------------------------------+
+    | NVIDIA-SMI 550.76                 Driver Version: 550.76         CUDA Version: 12.4     |
+    |-----------------------------------------+------------------------+----------------------+
+    | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+    |                                         |                        |               MIG M. |
+    |=========================================+========================+======================|
+    |   0  NVIDIA RTX 5000 Ada Gene...    Off |   00000000:AC:00.0 Off |                  Off |
+    | 30%   37C    P8             15W /  250W |     138MiB /  32760MiB |      0%      Default |
+    |                                         |                        |                  N/A |
+    +-----------------------------------------+------------------------+----------------------+
+                                                                                             
+    +-----------------------------------------------------------------------------------------+
+    | Processes:                                                                              |
+    |  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+    |        ID   ID                                                               Usage      |
+    |=========================================================================================|
+    +-----------------------------------------------------------------------------------------+
+    A[blyth@localhost ~]$ 
+
+
+    A[blyth@localhost ~]$ sudo docker run -it --runtime=nvidia --gpus all nvidia_cuda_12_4_1_runtime_rockylinux9_amd64 bash 
+
+    ==========
+    == CUDA ==
+    ==========
+
+    CUDA Version 12.4.1
+
+    Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+    This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+    By pulling and using the container, you accept the terms and conditions of this license:
+    https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+    A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+    [root@c80a7da3099f /]# nvidia-smi
+    Mon Mar 10 12:59:41 2025       
+    +-----------------------------------------------------------------------------------------+
+    | NVIDIA-SMI 550.76                 Driver Version: 550.76         CUDA Version: 12.4     |
+    |-----------------------------------------+------------------------+----------------------+
+    | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+    |                                         |                        |               MIG M. |
+    |=========================================+========================+======================|
+    |   0  NVIDIA RTX 5000 Ada Gene...    Off |   00000000:AC:00.0 Off |                  Off |
+    | 30%   37C    P8             15W /  250W |     138MiB /  32760MiB |      0%      Default |
+    |                                         |                        |                  N/A |
+    +-----------------------------------------+------------------------+----------------------+
+                                                                                             
+    +-----------------------------------------------------------------------------------------+
+    | Processes:                                                                              |
+    |  GPU   GI   CI        PID   Type   Process name                              GPU Memory |
+    |        ID   ID                                                               Usage      |
+    |=========================================================================================|
+    +-----------------------------------------------------------------------------------------+
+    [root@c80a7da3099f /]# 
+
+
+
+
+
 Tao junosw Dockerfile
 ----------------------
 
@@ -474,6 +658,15 @@ HMM: now have the container with GPU access, how to proceed
 * https://www.jmoisio.eu/en/blog/2020/06/01/building-cpp-containers-using-docker-and-cmake/
 
 
+Dockerfile ARG and ENV
+-----------------------
+
+* https://www.docker.com/blog/docker-best-practices-using-arg-and-env-in-your-dockerfiles/
+* Unlike ARG, the ENV command allows you to define a variable that can be accessed both at build time and 
+
+::
+
+    --build-arg FROM_REF=$ref 
 
 
 
@@ -522,14 +715,6 @@ https://github.com/ozen/optix-docker/blob/master/Dockerfile::
 
 
 
-nvidia-docker
----------------
-
-* https://github.com/NVIDIA/nvidia-docker
-* This project has been superseded by the NVIDIA Container Toolkit.
-
-
-
 NVIDIA Container Toolkit 
 -------------------------
 
@@ -542,9 +727,6 @@ NICE INTRO DOC
 ---------------
 
 * https://docs.nvidia.com/deeplearning/frameworks/user-guide/index.html
-
-
-
 
 
 
@@ -563,14 +745,10 @@ https://docs.docker.com/engine/release-notes/19.03/
 * https://github.com/moby/moby/pull/38828
 
 
-
 Dockerfile
 ------------
 
 * https://docs.docker.com/reference/dockerfile/
-
-
-
 
 ::
 
@@ -580,12 +758,6 @@ Dockerfile
 
     FROM extras:${CODE_VERSION}
     CMD  /code/run-extras
-
-
-
-
-
-
 
 
 
