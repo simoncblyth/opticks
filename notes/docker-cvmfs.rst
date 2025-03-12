@@ -88,3 +88,22 @@ Mounting works::
 
 
 
+
+using cvmfs with docker
+------------------------
+
+* https://cvmfs.readthedocs.io/en/latest/cpt-containers.html
+
+
+Accessing CVMFS from Docker locally
+-------------------------------------
+
+* https://awesome-workshop.github.io/docker-cms/04-docker-cvmfs/index.html
+
+
+* https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/02_stratum0_client/
+* https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/02_stratum0_client/
+
+
+
+

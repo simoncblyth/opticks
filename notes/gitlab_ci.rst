@@ -5,30 +5,49 @@ Which approach for Opticks CI ?
 ---------------------------------
 
 * Opticks and OptiX from /cvmfs not Docker image because that fits the pattern of other junosw externals
-* CUDA from Docker image based FROM junosw/base:el9 to create  opticks/junosw-cuda-el9
-
-  * junotop/junoenv/docker/Dockerfile-junosw-opticks-cuda-el9 
 
 
-Approach:
+Current Dockerfile:
+
+* https://code.ihep.ac.cn/JUNO/offline/junoenv/-/blob/main/docker/Dockerfile-junosw-base-el9
+* junotop/junoenv/docker/Dockerfile-junosw-base-el9  
+
+New one to create:
+
+* junotop/junoenv/docker/Dockerfile-junosw-cuda-rl9   
+* No Opticks in name, just adding CUDA.
 
 
-1. start with https://code.ihep.ac.cn/JUNO/offline/junoenv/-/blob/main/docker/Dockerfile-junosw-base-el9?ref_type=heads
+nvidia/cuda:12.4.1-devel-rockylinux9
 
-   * that is "FROM almalinux:9"
+First approach to try for Dockerfile-junosw-cuda-rl9:
 
-HMM::
+* change the "FROM almalinux:9" from Dockerfile-junosw-base-el9  into eg::
 
-   FROM junosw/base:el9
+    FROM nvidia/cuda:12.4.1-runtime-rockylinux9
+    FROM nvidia/cuda:12.4.1-devel-rockylinux9
 
-OR start from the official nvidia/cuda image so 
-dont have to change the more invoked Dockerfile
+The nvidia Dockerfile are not so simple, so doing the converse and appending
+cuda setup to the junosw-base-el9  would be time consuming now and 
+difficult to maintain for future CUDA version bumps::
+
+    epsilon:cuda blyth$ git remote -v
+    origin	https://gitlab.com/nvidia/container-images/cuda.git (fetch)
+    origin	https://gitlab.com/nvidia/container-images/cuda.git (push)
+
+    ./dist/12.4.1/rockylinux9/base/Dockerfile
+    ./dist/12.4.1/rockylinux9/runtime/Dockerfile
+    ./dist/12.4.1/rockylinux9/devel/Dockerfile
+
+    ./dist/12.4.1/rockylinux9/runtime/cudnn/Dockerfile
+    ./dist/12.4.1/rockylinux9/devel/cudnn/Dockerfile
+
+
 
 2. build Dockerfile image in GHA, check size
 
    * ~/sandbox/.github/workflows/junosw-build-docker-image-and-scp.yml
    * ~/sandbox/junosw/Dockerfile
-
 
 3. draw on nvidia/cuda Dockerfile to add whats needed for CUDA
 
@@ -37,6 +56,8 @@ dont have to change the more invoked Dockerfile
    * the goal of the image is to allow running the junosw+opticks build NOT to allow building opticks
 
 4. add the /cvmfs config
+
+
 
 
 Docker image size will be big ... so
@@ -472,26 +493,313 @@ Want to read from local directory and write into the container.
       alpine:latest
 
 
+Above expts encapsulated into https://github.com/simoncblyth/sandbox/blob/master/docker-mock-gitlab-ci.sh
+-----------------------------------------------------------------------------------------------------------
+
+Usage::
+
+     ~/sandbox/docker-mock-gitlab-ci.sh run   # start container
+     ~/sandbox/docker-mock-gitlab-ci.sh exec  # invoke build script in above container
 
 
 
-RockyLinux vs AlmaLinux
-~~~~~~~~~~~~~~~~~~~~~~~~
+RockyLinux and AlmaLinux are close relatives : so below try junosw build with the rockylinux9 that comes with nvidia/cuda image
+---------------------------------------------------------------------------------------------------------------------------------
 
 * https://tuxcare.com/blog/almalinux-vs-rocky-linux-comparing-enterprise-linux-distributions/
 
 
-nvida cuda docker image for almalinux 9
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check junosw build with junosw/cuda:2.4.1-runtime-rockylinux9 : IT WORKS
+------------------------------------------------------------------------------------------
+
+::
+
+    A[blyth@localhost ~]$ scp L004:g/junosw_cuda_12_4_1_runtime_rockylinux9.tar .
 
 
 
-junoenv Dockerfile
-~~~~~~~~~~~~~~~~~~~~
+    A[blyth@localhost ~]$ docker load -i junosw_cuda_12_4_1_runtime_rockylinux9.tar
+    5f70bf18a086: Loading layer [==================================================>]  1.024kB/1.024kB
+    cfbded2b796b: Loading layer [==================================================>]  19.97kB/19.97kB
+    ...
+    80b1c74719ee: Loading layer [==================================================>]  40.14MB/40.14MB
+    Loaded image: junosw/cuda:12.4.1-runtime-rockylinux9
 
-* https://code.ihep.ac.cn/JUNO/offline/junoenv/-/blob/main/docker/Dockerfile-junosw-base-el9
+
+    A[blyth@localhost ~]$ docker images
+    REPOSITORY                                     TAG                          IMAGE ID       CREATED          SIZE
+    junosw/cuda                                    12.4.1-runtime-rockylinux9   3b3a3332ae87   31 minutes ago   5.81GB
+    junosw/base                                    el9                          987e8bddae3e   20 hours ago     2.51GB
+    al9-cvmfs                                      latest                       ebccb0ed032b   44 hours ago     451MB
+    nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   latest                       72c9d5a2da10   45 hours ago     2.47GB
+    bb42                                           latest                       c9d2aec48d25   5 months ago     4.27MB
+    nvidia/cuda                                    12.4.1-devel-rockylinux9     ab9135746936   11 months ago    7.11GB
+    <none>                                         <none>                       9cc24f05f309   15 months ago    176MB
+    <none>                                         <none>                       0fed15e4f2a2   15 months ago    2.69GB
+    A[blyth@localhost ~]$ 
 
 
+
+    A[blyth@localhost ~]$ docker run --runtime=nvidia --gpus=all --rm -it junosw/cuda:12.4.1-runtime-rockylinux9 
+
+    ==========
+    == CUDA ==
+    ==========
+
+    CUDA Version 12.4.1
+
+    Container image Copyright (c) 2016-2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+    This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+    By pulling and using the container, you accept the terms and conditions of this license:
+    https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+    A copy of this license is made available in this container at /NGC-DL-CONTAINER-LICENSE for your convenience.
+
+    [juno@ba1bcc1640be ~]$ nvidia-smi
+    Wed Mar 12 09:17:38 2025       
+    +-----------------------------------------------------------------------------------------+
+    | NVIDIA-SMI 550.76                 Driver Version: 550.76         CUDA Version: 12.4     |
+    |-----------------------------------------+------------------------+----------------------+
+
+
+
+
+
+
+docker load of same tagged different tar junosw_base_el9_built.tar
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+::
+
+    A[blyth@localhost ~]$ scp L004:g/junosw_base_el9.tar junosw_base_el9_built.tar
+
+
+    A[blyth@localhost ~]$ docker images
+    REPOSITORY                                     TAG                        IMAGE ID       CREATED         SIZE
+    al9-cvmfs                                      latest                     ebccb0ed032b   41 hours ago    451MB
+    nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   latest                     72c9d5a2da10   42 hours ago    2.47GB
+    bb42                                           latest                     c9d2aec48d25   5 months ago    4.27MB
+    nvidia/cuda                                    12.4.1-devel-rockylinux9   ab9135746936   11 months ago   7.11GB
+    <none>                                         <none>                     9cc24f05f309   15 months ago   176MB
+    junosw/base                                    el9                        0fed15e4f2a2   15 months ago   2.69GB
+
+
+    A[blyth@localhost ~]$ docker load --platform linux/amd64 --input junosw_base_el9_built.tar
+    7828e2f9e2fe: Loading layer [==================================================>]  19.97kB/19.97kB
+    bdd4ecfb4213: Loading layer [==================================================>]  5.632kB/5.632kB
+    4cfe1abca629: Loading layer [==================================================>]  3.072kB/3.072kB
+    5b95069dfed0: Loading layer [==================================================>]  61.77MB/61.77MB
+    6737bd33acb4: Loading layer [==================================================>]   55.3kB/55.3kB
+    ca14a9c9abef: Loading layer [==================================================>]  26.48MB/26.48MB
+    8e74b0612cf4: Loading layer [==================================================>]     89MB/89MB
+    b7705250c6f9: Loading layer [==================================================>]  1.798GB/1.798GB
+    38281dd9cc74: Loading layer [==================================================>]  6.656kB/6.656kB
+    8f3bf5a55921: Loading layer [==================================================>]  173.9MB/173.9MB
+    96845dfb595b: Loading layer [==================================================>]   39.6MB/39.6MB
+    79d450f6d554: Loading layer [==================================================>]  42.05MB/42.05MB
+    392742ae750a: Loading layer [==================================================>]  39.45MB/39.45MB
+    04feea1ed969: Loading layer [==================================================>]   39.9MB/39.9MB
+    7061644242bd: Loading layer [==================================================>]  40.28MB/40.28MB
+    5f70bf18a086: Loading layer [==================================================>]  1.024kB/1.024kB
+    The image junosw/base:el9 already exists, renaming the old one with ID sha256:0fed15e4f2a2d99ad86ac76e42ac10393ae339f6ce9d81f0288a280611838b38 to empty string
+    Loaded image: junosw/base:el9
+
+    A[blyth@localhost ~]$ docker images
+    REPOSITORY                                     TAG                        IMAGE ID       CREATED         SIZE
+    junosw/base                                    el9                        987e8bddae3e   17 hours ago    2.51GB
+    al9-cvmfs                                      latest                     ebccb0ed032b   41 hours ago    451MB
+    nvidia_cuda_12_4_1_runtime_rockylinux9_amd64   latest                     72c9d5a2da10   42 hours ago    2.47GB
+    bb42                                           latest                     c9d2aec48d25   5 months ago    4.27MB
+    nvidia/cuda                                    12.4.1-devel-rockylinux9   ab9135746936   11 months ago   7.11GB
+    <none>                                         <none>                     9cc24f05f309   15 months ago   176MB
+    <none>                                         <none>                     0fed15e4f2a2   15 months ago   2.69GB
+    A[blyth@localhost ~]$ 
+
+
+
+Start container and exec the build in two sessions::
+
+    ~/sandbox/docker-mock-gitlab-ci.sh run
+    ~/sandbox/docker-mock-gitlab-ci.sh exec
+
+
+Doing the build very quick, and not a good test of the GHA built image, because of prior artifacts, so clean first::
+
+    A[blyth@localhost junosw]$ sudo rm -rf build InstallArea   ## need sudo as belong to juno user
+
+Then exec::
+
+    ~/sandbox/docker-mock-gitlab-ci.sh exec
+
+
+Try cuda_runtime recipe
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+~/sandbox/.github/workflows/junosw-build-docker-image-and-scp.yml::
+
+     37            #recipe=default
+     38            recipe=cuda_runtime
+     39            #recipe=cuda_devel
+     40 
+     41            if [ "$recipe" == "default" ]; then
+     42 
+     43              ref=almalinux:9
+     44              tag=junosw/base:el9
+     45              nam=junosw_base_el9
+     46 
+     47            elif [ "$recipe" == "cuda_runtime" ]; then
+     48 
+     49              ref=nvidia/cuda:12.4.1-runtime-rockylinux9
+     50              tag=junosw/cuda:12.4.1-runtime-rockylinux9
+     51              nam=junosw_cuda_12_4_1_runtime_rockylinux9
+     52 
+     53            elif [ "$recipe" == "cuda_devel" ]; then
+     54 
+     55              ref=nvidia/cuda:12.4.1-devel-rockylinux9
+     56              tag=junosw/cuda:12.4.1-devel-rockylinux9
+     57              nam=junosw_cuda_12_4_1_devel_rockylinux9
+     58 
+     59            fi
+     60            out=/tmp/$nam.tar
+       
+
+
+* issue 1 : missing "almalinux-release-devel", switch to "rocky-repos" seems to work 
+
+::
+
+    ERROR: failed to solve: process "/bin/sh -c dnf install -y almalinux-release-devel" did not complete successfully: exit code: 1
+    Error: Process completed with exit code 1.
+
+    A[blyth@localhost junosw]$ rpm -ql almalinux-release-devel
+    /etc/yum.repos.d/almalinux-devel.repo
+
+    A[blyth@localhost junosw]$ cat /etc/yum.repos.d/almalinux-devel.repo
+    # Devel repo for AlmaLinux
+    # Not for production. For buildroot use only
+
+    [devel]
+    name=AlmaLinux $releasever - Devel
+    mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel
+    ...
+
+Take a look within rockylinux9::
+
+    docker run -it --runtime=nvidia --gpus all nvidia/cuda:12.4.1-devel-rockylinux9
+
+
+    [root@69f2729917f3 yum.repos.d]# dnf  whatprovides /etc/yum.repos.d/rocky-devel.repo
+    cuda                                                                                                                                                             86 kB/s | 2.6 MB     00:30    
+    Rocky Linux 9 - BaseOS                                                                                                                                          851 kB/s | 2.3 MB     00:02    
+    Rocky Linux 9 - AppStream                                                                                                                                       2.2 MB/s | 8.6 MB     00:03    
+    Rocky Linux 9 - Extras                                                                                                                                           15 kB/s |  16 kB     00:01    
+    rocky-repos-9.3-1.3.el9.noarch : Rocky Linux Package Repositories
+    Repo        : @System
+    Matched from:
+    Filename    : /etc/yum.repos.d/rocky-devel.repo
+
+    rocky-repos-9.5-1.2.el9.noarch : Rocky Linux Package Repositories
+    Repo        : baseos
+    Matched from:
+    Filename    : /etc/yum.repos.d/rocky-devel.repo
+
+    [root@69f2729917f3 yum.repos.d]# 
+
+
+* https://wiki.rockylinux.org/rocky/repo/#notes-on-devel
+
+
+issue 2 : missing redhat-lsb-core on rockylinux9, commenting it seems to work
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* https://www.reddit.com/r/RockyLinux/comments/wjlh0s/need_to_install_redhatlsbcore_on_rocky_linux_9/?rdt=62275
+
+
+Duiesel 2y ago : Now redhat-lsb-core package available in devel repo.
+So just do following::
+
+    sudo dnf install -y yum-utils
+    sudo dnf config-manager --set-enabled devel
+    sudo dnf update -y
+    sudo dnf install redhat-lsb-core
+
+
+* https://bodhi.fedoraproject.org/updates/FEDORA-EPEL-2023-336dbb57e0
+
+* https://access.redhat.com/solutions/6973382
+
+* https://en.wikipedia.org/wiki/Linux_Standard_Base
+
+LSB is an abandoned Linux standardization attempt
+
+
+* building image succeeds without redhat-lsb-core and with 
+
+
+issue 3 : little hope for junosw+opticks build with runtime due to lack of cuda headers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Trifurcate
+
+1. create full fat recipe=cuda_devel image  junosw/cuda:12.4.1-devel-rockylinux9  
+2. proceed with j+o build with runtime to see where the fails are
+3. find where the fat comes from the below and try to slim 
+ 
+   * ~/cuda/dist/12.4.1/rockylinux9/devel/Dockerfile
+
+
+::
+
+    [juno@558e34cf2c21 include]$ ls -alst
+    total 100
+     0 drwxr-xr-x. 3 root root   139 Apr  8  2024 .
+     0 drwxr-xr-x. 1 root root    32 Apr  8  2024 ..
+     0 drwxr-xr-x. 3 root root   144 Apr  8  2024 nvtx3
+    56 -rw-r--r--. 1 root root 53680 Mar 15  2024 nvToolsExt.h
+     8 -rw-r--r--. 1 root root  6009 Mar 15  2024 nvToolsExtCuda.h
+     8 -rw-r--r--. 1 root root  5192 Mar 15  2024 nvToolsExtCudaRt.h
+    12 -rw-r--r--. 1 root root  8360 Mar 15  2024 nvToolsExtOpenCL.h
+    16 -rw-r--r--. 1 root root 14562 Mar 15  2024 nvToolsExtSync.h
+    [juno@558e34cf2c21 include]$ pwd
+    /usr/local/cuda/include
+
+
+
+
+try to build runtimeplus image
+---------------------------------
+
+::
+
+    [ save 
+    Wed Mar 12 13:18:01 UTC 2025
+    write /dev/stdout: no space left on device
+    Error: Process completed with exit code 1.
+
+
+* https://github.com/marketplace/actions/maximize-build-disk-space
+
+At the time of writing, public Github-hosted runners are using Azure DS2_v2
+virtual machines, featuring a 84GB OS disk on / and a 14GB temp disk mounted on
+/mnt.
+
+* https://github.com/actions/runner-images/issues/2840
+
+
+
+Rejig the Dockerfile to be more like base reduces disk space.     
+
+
+
+
+Older notes
+-------------
 
 
 gitlab pipeline web interface
@@ -723,24 +1031,5 @@ junosw/cmake/legacy/JUNODependencies.cmake
 
 junotop/junoenv/docker/README
 -------------------------------
-
-
-
-using cvmfs with docker
-------------------------
-
-* https://cvmfs.readthedocs.io/en/latest/cpt-containers.html
-
-
-Accessing CVMFS from Docker locally
--------------------------------------
-
-* https://awesome-workshop.github.io/docker-cms/04-docker-cvmfs/index.html
-
-
-* https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/02_stratum0_client/
-* https://cvmfs-contrib.github.io/cvmfs-tutorial-2021/02_stratum0_client/
-
-
 
 
