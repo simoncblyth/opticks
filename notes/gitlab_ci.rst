@@ -772,8 +772,8 @@ Trifurcate
 
 
 
-try to build runtimeplus image
----------------------------------
+try to build runtimeplus image : exceeds GHA VM space
+---------------------------------------------------------
 
 ::
 
@@ -792,10 +792,101 @@ virtual machines, featuring a 84GB OS disk on / and a 14GB temp disk mounted on
 * https://github.com/actions/runner-images/issues/2840
 
 
+After rejig ~/sandbox/junosw/Dockerfile-junosw-cuda-runtimeplus-rl9 to be more like base uses less disk space
+----------------------------------------------------------------------------------------------------------------     
 
-Rejig the Dockerfile to be more like base reduces disk space.     
+
+Using ~/sandbox/.github/workflows/junosw-build-docker-image-and-scp.yml::
+
+     34            echo "[ Build docker image and scp "
+     35            pwd
+     36 
+     37            #recipe=base
+     38            #recipe=runtime
+     39            recipe=runtimeplus
+     40            #recipe=devel
+     41 
+     42            tag=junosw/cuda:12.4.1-${recipe}-rockylinux9
+     43            nam=junosw_cuda_12_4_1_${recipe}_rockylinux9
+     44            #out=/tmp/$nam.tar   ## suspect less quota on /tmp 
+     45            out=$PWD/$nam.tar
+
+GHA::
+
+    REPOSITORY    TAG                              IMAGE ID       CREATED          SIZE
+    junosw/cuda   12.4.1-runtimeplus-rockylinux9   3d505c100ea8   17 seconds ago   7.89GB
+    Wed Mar 12 14:41:49 UTC 2025
+
+    ...
+
+    7.5G	/home/runner/work/sandbox/sandbox/junosw_cuda_12_4_1_runtimeplus_rockylinux9.tar
 
 
+    [scp.0
+    Wed Mar 12 14:43:15 UTC 2025
+    Wed Mar 12 15:41:28 UTC 2025
+    ]scp.0
+
+
+* scp took ~1hr for 7.5G
+
+
+Test junosw build with junosw/cuda:12.4.1-runtimeplus-rockylinux9
+--------------------------------------------------------------------
+
+::
+
+    scp L004:g/junosw_cuda_12_4_1_runtimeplus_rockylinux9.tar .    
+         ## grab tar created by GHA
+
+    docker load -i junosw_cuda_12_4_1_runtimeplus_rockylinux9.tar
+         ## create the image 
+
+    docker images
+         ## list images
+
+    docker ps -a
+         ## list containers
+
+    docker run -it --rm junosw/cuda:12.4.1-runtimeplus-rockylinux9
+         ## without GPU access, gives warning re no GPU detected
+
+    docker run -it --rm --runtime=nvidia --gpus=all junosw/cuda:12.4.1-runtimeplus-rockylinux9
+         ## with GPU access, nvidia-smi works
+
+
+::
+
+    A[blyth@localhost ~]$ docker load -i junosw_cuda_12_4_1_runtimeplus_rockylinux9.tar
+    f99b0574066c: Loading layer [==================================================>]   3.23GB/3.23GB      ##
+    1a71b3728186: Loading layer [==================================================>]  19.97kB/19.97kB
+    8557adab9336: Loading layer [==================================================>]  5.632kB/5.632kB
+    d152ff33c263: Loading layer [==================================================>]  3.072kB/3.072kB
+    39646110c209: Loading layer [==================================================>]  48.64MB/48.64MB
+    9aa2fcce755d: Loading layer [==================================================>]  166.4kB/166.4kB
+    8d2db3762123: Loading layer [==================================================>]  31.35MB/31.35MB
+    ca1d7ab5c65c: Loading layer [==================================================>]  92.63MB/92.63MB
+    3177780ecd95: Loading layer [==================================================>]  1.683GB/1.683GB     ##
+    d4cc24c6c263: Loading layer [==================================================>]  6.656kB/6.656kB
+    dc3bc5123512: Loading layer [==================================================>]  176.5MB/176.5MB
+    ca85e6ef08f9: Loading layer [==================================================>]  41.85MB/41.85MB
+    d12dab9dada4: Loading layer [==================================================>]  44.04MB/44.04MB
+    428fa992aee9: Loading layer [==================================================>]  41.43MB/41.43MB
+    bd9b2afee25f: Loading layer [==================================================>]  41.84MB/41.84MB
+    c6d44b6e02d6: Loading layer [==================================================>]   42.2MB/42.2MB
+    0c91a270d8d1: Loading layer [==================================================>]  664.6kB/664.6kB
+    5f70bf18a086: Loading layer [==================================================>]  1.024kB/1.024kB
+    Loaded image: junosw/cuda:12.4.1-runtimeplus-rockylinux9
+    A[blyth@localhost ~]$ 
+
+    ## 18 layers, only two are GB 3.23+1.68 = 4.91 G //// where is the other ~2.5 GB ? 
+    ## how do the layers correspond to the Dockerfile lines ? 
+
+
+junosw+opticks build within container
+---------------------------------------
+
+* :doc:`docker_junosw_opticks_container_build_shakedown`
 
 
 Older notes

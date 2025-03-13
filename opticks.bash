@@ -3077,6 +3077,15 @@ they are encompassed by the Opticks version.
 CUDA is treated separately and lib access is from LD_LIBRARY_PATH
 so perhaps it belongs in the name ? 
 
+junosw releases::
+
+    /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.2.3/
+
+
+HMM better to start from junosw pattern, but with cuda version::
+
+    /cvmfs/opticks.ihep.ac.cn/el9_amd64_gcc11_cuda12.4/Release/v0.0.1/
+
 
 EON
 }
