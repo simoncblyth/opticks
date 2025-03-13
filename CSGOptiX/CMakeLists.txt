@@ -21,14 +21,6 @@ file(WRITE ${buildenvpath} "export OPTIX_VERSION=${OpticksOptiX_VERSION}\n")
 message(STATUS "write to buildenvpath ${buildenvpath} ")
 
 
-include_directories(
-    ${CUDA_INCLUDE_DIRS}
-    ${CSG_INCLUDE_DIRS}
-    ${OpticksOptiX_INCLUDE}
-    ${OPTICKS_PREFIX}/externals/glm/glm
-    ${CMAKE_CURRENT_SOURCE_DIR} 
-)
-
 
 #set(COMPUTE_CAPABILITY $ENV{OPTICKS_COMPUTE_CAPABILITY})
 #set(CUDA_NVCC_FLAGS)
@@ -122,6 +114,17 @@ WITH_THRUST compile definition
 
 target_compile_definitions( ${name} PRIVATE WITH_THRUST )
 
+
+
+target_include_directories(${name}
+   PUBLIC
+      $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
+      $<INSTALL_INTERFACE:externals/glm/glm>
+      ${CUDA_INCLUDE_DIRS}
+      ${OpticksOptiX_INCLUDE}
+      ${CSG_INCLUDE_DIRS}
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
 
 
 target_link_libraries(${name} 

@@ -193,6 +193,7 @@ $FUNCNAME
 
    okdist-ext    : $(okdist-ext)
    okdist-prefix : $(okdist-prefix)
+   opticks-tag   : $(opticks-tag)
    okdist-name   : $(okdist-name)
    okdist-path   : $(okdist-path)
 

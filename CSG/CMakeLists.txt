@@ -6,12 +6,12 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 find_package(CUDA REQUIRED) 
 find_package(SysRap REQUIRED)
 
-include_directories(
-    ${CUDA_INCLUDE_DIRS}
-    ${OPTICKS_PREFIX}/externals/glm/glm
-    ${OPTICKS_PREFIX}/include/SysRap
-    ${CMAKE_CURRENT_SOURCE_DIR} 
-)
+#include_directories(
+#    ${CUDA_INCLUDE_DIRS}
+#    ${OPTICKS_PREFIX}/externals/glm/glm
+#    ${OPTICKS_PREFIX}/include/SysRap
+#    ${CMAKE_CURRENT_SOURCE_DIR} 
+#)
 
 set(SOURCES)
 set(HEADERS)
@@ -172,9 +172,15 @@ target_compile_definitions( ${name} PUBLIC WITH_S_BB )
 
 target_include_directories(${name}
      PUBLIC
-           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-           $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        ${CUDA_INCLUDE_DIRS}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        $<INSTALL_INTERFACE:externals/glm/glm>
 )
+
+
+
 
 #target_link_libraries(${name} PUBLIC ${CUDA_LIBRARIES} Opticks::SysRap)
 target_link_libraries(${name} ${CUDA_LIBRARIES} Opticks::SysRap)

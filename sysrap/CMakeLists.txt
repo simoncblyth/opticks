@@ -52,11 +52,6 @@ find_package(Custom4 CONFIG)
 message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
 
 
-include_directories(
-    ${OPTICKS_PREFIX}/externals/glm/glm
-)
-
-
 set(WITH_SLOG YES)
 
 
@@ -697,8 +692,11 @@ endif()
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
    ${CUDA_INCLUDE_DIRS}
-   ${OPTICKS_PREFIX}/externals/glm/glm
+   $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
+   $<INSTALL_INTERFACE:externals/glm/glm>
 )
+
+
 
 
 #[=[

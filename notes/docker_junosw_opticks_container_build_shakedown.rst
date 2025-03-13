@@ -4,8 +4,10 @@ docker_junosw_opticks_container_build_shakedown
 
 Workflow::
 
-   ~/sandbox/docker-mock-gitlab-ci.sh run   ## start container 
-   ~/sandbox/docker-mock-gitlab-ci.sh exec  ## exec build into container
+   ~/sandbox/docker-mock-gitlab-ci.sh run        ## start container 
+
+   cd ~/junosw && sudo rm -rf build InstallArea  ## for clean build test 
+   ~/sandbox/docker-mock-gitlab-ci.sh exec       ## exec build into container
 
 
 
@@ -107,5 +109,41 @@ Review old okdist and cvmfs release machinery : overhaul needed for containers a
            all paths starting with the okdist-prefix  
 
     A[blyth@localhost local]$ 
+
+
+
+
+Do a scratch release with okdist-- and tarball extraction onto /cvmfs/opticks.ihep.ac.cn/
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Try okdist::
+
+    okdist-
+    okdist--
+
+    list tarball : /data1/blyth/local/opticks_Debug/Opticks-v0.3.1.tar
+    -rw-r--r--. 1 blyth blyth 329356800 Mar 13 15:42 /data1/blyth/local/opticks_Debug/Opticks-v0.3.1.tar
+    315M	/data1/blyth/local/opticks_Debug/Opticks-v0.3.1.tar
+    === okdist-tarball-extract
+    [2025-03-13 15:42:47,117] p3514318 {/home/blyth/opticks/bin/oktar.py:251} INFO - extracting tarball with common prefix Opticks-v0.3.1/x86_64--gcc11-geant4_10_04_p02-dbg into base /data1/blyth/local/opticks_Debug 
+    okdist-ls
+    -rw-r--r--. 1 blyth blyth 329356800 Mar 13 15:42 /data1/blyth/local/opticks_Debug/Opticks-v0.3.1.tar
+    315M	/data1/blyth/local/opticks_Debug/Opticks-v0.3.1.tar
+    A[blyth@localhost opticks_Debug]$ 
+
+
+Perhaps assuming that just tagged. Yep, proceed anyway. 
+
+Follow hcvmfs- instructions to copy tarball to cvmfs-stratum-zero and extract/commit into cvmfs
+This takes ~5min to do and ~5min for it to appear. 
+
+ 
+
+Issue 2 : glm include path inconsistency 
+-----------------------------------------
+
+:doc:`issues/build_time_prefix_for_glm_headers_leaking_into_install_tree`
+
+
 
 
