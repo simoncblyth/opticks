@@ -1182,6 +1182,19 @@ gitlab ci yml extends
 gitlab yml extends override script
 -----------------------------------
 
+* https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/822
+
+
+using docker save .tar with OCI 
+----------------------------------
+
+::
+ 
+    ctr -n k8s.io images import --digests simoncblyth_cuda_12_4_1_runtimeplus_rockylinux9.tar
+
+
+
+ 
 
 
 

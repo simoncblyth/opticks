@@ -838,19 +838,21 @@ opticks-setup-find-config-prefix(){
    : mimick CMake "find_package name CONFIG" identifing the first prefix in the path 
    local name=${1:-Geant4}
    local prefix=""
-
+   local rc=0
    local ifs=$IFS
    IFS=: 
    for pfx in $CMAKE_PREFIX_PATH ; do 
 
-      ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2>/dev/null 1>&2
-      [ $? -eq 0 ] && prefix=$pfx && break    
+      : protect cmds that can give non-zero rc from "set -e" via pipeline but catch the rc
+      rc=1
+      ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2>/dev/null 1>&2 && rc=$?
+      [ $rc -eq 0 ] && prefix=$pfx && break
 
-      ls -1 $pfx/lib*/cmake/$name-*/${name}Config.cmake 2>/dev/null 1>&2
-      [ $? -eq 0 ] && prefix=$pfx && break    
+      ls -1 $pfx/lib*/cmake/$name-*/${name}Config.cmake 2>/dev/null 1>&2 && rc=$?
+      [ $rc -eq 0 ] && prefix=$pfx && break
 
-      ls -1 $pfx/lib*/cmake/$name/${name}Config.cmake 2>/dev/null 1>&2
-      [ $? -eq 0 ] && prefix=$pfx && break    
+      ls -1 $pfx/lib*/cmake/$name/${name}Config.cmake 2>/dev/null 1>&2 && rc=$?
+      [ $rc -eq 0 ] && prefix=$pfx && break
 
       # NB not general, doesnt find the lowercased form : but works for Geant4 and Boost 
    done 
@@ -1652,7 +1654,7 @@ opticks-goc()
 }
 
 
-opticks-setup-funcs-(){ opticks-setup-funcs-- | perl -pe 's,cd_func,cd,g' -  ; }
+opticks-setup-funcs-(){ opticks-setup-funcs-- | perl -pe 's,cd_func,cd,g' - | perl -pe 's,--color=auto,,g' -  ; }
 opticks-setup-funcs--(){ 
    echo "# $FUNCNAME"
    declare -f opticks-setup- 
@@ -1809,10 +1811,6 @@ opticks-setup- append $LIBRARY_PATH \$OPTICKS_PREFIX/externals/lib64
 
 opticks-setup- append $LIBRARY_PATH \$OPTICKS_CUDA_PREFIX/lib
 opticks-setup- append $LIBRARY_PATH \$OPTICKS_CUDA_PREFIX/lib64
-
-# from optix7 no libs, just headers, impl in driver 
-#opticks-setup- append $LIBRARY_PATH \$OPTICKS_OPTIX_PREFIX/lib
-#opticks-setup- append $LIBRARY_PATH \$OPTICKS_OPTIX_PREFIX/lib64
 
 EOS
 }
