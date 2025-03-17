@@ -12,6 +12,7 @@ find_package(OpticksOptiX REQUIRED MODULE)
 
 get_target_property(CSG_INCLUDE_DIRS Opticks::CSG INTERFACE_INCLUDE_DIRECTORIES)
 
+
 message(STATUS "CSG_FOUND     : ${CSG_FOUND} ")
 message(STATUS "CSG_INCLUDE_DIRS : ${CSG_INCLUDE_DIRS} ")
 message(STATUS "OpticksOptiX_VERSION  : ${OpticksOptiX_VERSION} ")
@@ -115,14 +116,24 @@ WITH_THRUST compile definition
 target_compile_definitions( ${name} PRIVATE WITH_THRUST )
 
 
+#[=[
+      ${CSG_INCLUDE_DIRS}
+/usr/local/cuda-12.4/include;/data1/blyth/local/opticks_Debug/include/CSG;/data1/blyth/local/opticks_Debug/externals/glm/glm;/data1/blyth/local/opticks_Debug/include/CSG 
+
+      $<BUILD_INTERFACE:/dummy/cx/begin/build>
+      $<INSTALL_INTERFACE:/dummy/cx/begin/install>
+
+      $<BUILD_INTERFACE:/dummy/cx/end/build>
+      $<INSTALL_INTERFACE:/dummy/cx/end/install>
+#]=]
+
 
 target_include_directories(${name}
    PUBLIC
       $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
       $<INSTALL_INTERFACE:externals/glm/glm>
-      ${CUDA_INCLUDE_DIRS}
       ${OpticksOptiX_INCLUDE}
-      ${CSG_INCLUDE_DIRS}
+      ${CUDA_INCLUDE_DIRS}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 

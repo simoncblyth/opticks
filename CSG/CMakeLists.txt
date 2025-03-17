@@ -6,12 +6,6 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 find_package(CUDA REQUIRED) 
 find_package(SysRap REQUIRED)
 
-#include_directories(
-#    ${CUDA_INCLUDE_DIRS}
-#    ${OPTICKS_PREFIX}/externals/glm/glm
-#    ${OPTICKS_PREFIX}/include/SysRap
-#    ${CMAKE_CURRENT_SOURCE_DIR} 
-#)
 
 set(SOURCES)
 set(HEADERS)

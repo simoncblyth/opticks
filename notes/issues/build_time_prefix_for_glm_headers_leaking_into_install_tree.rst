@@ -105,6 +105,79 @@ CSGOptiX
 Similar fix. 
 
 
+CSG not fixed
+~~~~~~~~~~~~~~~~
+
+::
+
+      Imported target "Opticks::G4CX" includes non-existent path
+
+        "/data1/blyth/local/opticks_Debug/include/CSG"
+
+      in its INTERFACE_INCLUDE_DIRECTORIES.  Possible reasons include:
+
+      * The path was deleted, renamed, or moved to another location.
+
+      * An install or uninstall procedure did not complete successfully.
+
+      * The installation package was faulty and references files it does not
+      provide.
+
+
+
+
+Look harder
+--------------
+
+::
+
+    A[blyth@localhost cmake]$ pwd
+    /data1/blyth/local/opticks_Debug/lib64/cmake
+    A[blyth@localhost cmake]$ find . -name '*.cmake' -exec grep -H opticks_Debug {} \;
+    ./sysrap/sysrap-config.cmake:INTERFACE_INCLUDE_DIRECTORIES:/data1/blyth/local/opticks_Debug/externals/plog/include
+ 
+    ./csgoptix/csgoptix-targets.cmake:  
+        INTERFACE_INCLUDE_DIRECTORIES 
+            "${_IMPORT_PREFIX}/externals/glm/glm;
+             /usr/local/cuda-12.4/include;
+             /usr/local/cuda-12.4/include;
+             /cvmfs/opticks.ihep.ac.cn/external/OptiX_800/include;
+             /data1/blyth/local/opticks_Debug/include/CSG;
+             /data1/blyth/local/opticks_Debug/include/CSG;
+             /data1/blyth/local/opticks_Debug/externals/glm/glm;
+             ${_IMPORT_PREFIX}/include/CSGOptiX"
+
+
+    A[blyth@localhost cmake]$ 
+
+
+::
+
+    A[blyth@localhost opticks]$ find . -name CMakeLists.txt -exec grep -H glm/glm {} \;
+    ./CSG/CMakeLists.txt:#    ${OPTICKS_PREFIX}/externals/glm/glm
+    ./CSG/CMakeLists.txt:        $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
+    ./CSG/CMakeLists.txt:        $<INSTALL_INTERFACE:externals/glm/glm>
+    ./CSGOptiX/CMakeLists.txt:      $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
+    ./CSGOptiX/CMakeLists.txt:      $<INSTALL_INTERFACE:externals/glm/glm>
+
+
+    ./CSG_GGeo/CMakeLists.txt:    ${OPTICKS_PREFIX}/externals/glm/glm
+    ./GeoChain/CMakeLists.txt:    ${OPTICKS_PREFIX}/externals/glm/glm
+    ./c4/CMakeLists.txt:    ${OPTICKS_PREFIX}/externals/glm/glm
+
+    ./examples/UseOptiX7GeometryInstanced/CMakeLists.txt:    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    ./examples/UseOptiX7GeometryInstancedGAS/CMakeLists.txt:    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    ./examples/UseOptiX7GeometryInstancedGASComp/CMakeLists.txt:    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    ./examples/UseOptiX7GeometryInstancedGASCompDyn/CMakeLists.txt:    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    ./examples/UseOptiX7GeometryModular/CMakeLists.txt:    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    ./examples/UseOptiX7GeometryStandalone/CMakeLists.txt:    ${CMAKE_INSTALL_PREFIX}/externals/glm/glm
+    ./examples/UseOptiXGeometryInstancedStandalone/CMakeLists.txt:    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/externals/glm/glm"
+    ./examples/UseOptiXGeometryStandalone/CMakeLists.txt:    INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/externals/glm/glm"
+
+    ./sysrap/CMakeLists.txt:   $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
+    ./sysrap/CMakeLists.txt:   $<INSTALL_INTERFACE:externals/glm/glm>
+
+    A[blyth@localhost opticks]$ 
 
 
 
