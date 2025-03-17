@@ -59,6 +59,33 @@ difficult to maintain for future CUDA version bumps::
 
 
 
+How are nightlies invoked ?
+-----------------------------
+
+* https://code.ihep.ac.cn/JUNO/offline/junosw/-/pipeline_schedules
+
+
+::
+
+    /cvmfs/juno_nightlies.ihep.ac.cn/el9_amd64_gcc11/b/build-tools/build.sh 
+
+    A[blyth@localhost Thu]$ cat /cvmfs/juno_nightlies.ihep.ac.cn/el9_amd64_gcc11/b/latest/setup.sh
+    export JUNOTOP=/cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.2.0
+    export WORKTOP=/cvmfs/juno_nightlies.ihep.ac.cn/el9_amd64_gcc11/b/Thu
+    source $JUNOTOP/setup.sh
+    source $WORKTOP/junosw/InstallArea/setup.sh
+
+
+
+
+
+Gitlab CI/CD
+------------
+
+* https://docs.gitlab.com/ci/
+* https://code.ihep.ac.cn/JUNO/offline/junosw/-/jobs
+
+
 
 Docker image size will be big ... so
 --------------------------------------
@@ -1122,5 +1149,40 @@ junosw/cmake/legacy/JUNODependencies.cmake
 
 junotop/junoenv/docker/README
 -------------------------------
+
+
+
+config.toml
+------------
+
+::
+
+    A[blyth@localhost sandbox]$ sudo cat  /etc/gitlab-runner/config.toml
+    concurrent = 1
+    check_interval = 0
+    shutdown_timeout = 0
+
+    [session_server]
+      session_timeout = 1800
+    A[blyth@localhost sandbox]$ 
+
+
+
+gitlab docker executor
+------------------------
+
+* https://docs.gitlab.com/runner/executors/docker/
+
+
+gitlab ci yml extends
+-----------------------
+
+* https://docs.gitlab.com/ci/yaml/yaml_optimization/
+
+gitlab yml extends override script
+-----------------------------------
+
+
+
 
 
