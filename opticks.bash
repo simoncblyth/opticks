@@ -943,7 +943,6 @@ EOP
 
 opticks-foreign(){ 
    cat << EOL
-boost
 clhep
 xercesc
 g4

@@ -23,7 +23,7 @@ Three type of externals : system, foreign and automated
 
    These foreign externals can optionally be installed using::
  
-        opticks-foreign    # list them, currently : boost, clhep, xercesc, g4
+        opticks-foreign    # list them, currently : clhep, xercesc, g4
         opticks-foreign-install  
 
 3. **automated** externals are automatically installed by `opticks-full`.  To list them::
@@ -73,7 +73,6 @@ Foreign Externals
 Listing the foreign externals with bash function **opticks-foreign**::
 
     epsilon:opticks blyth$ opticks-foreign
-    boost
     clhep
     xercesc
     g4
@@ -81,14 +80,22 @@ Listing the foreign externals with bash function **opticks-foreign**::
 
 What these do:
 
-boost
-    system, program_options, filesystem, regex
+
 clhep
     optionally needed by geant4 
 xercesc
     XML parsing needed by g4 GDML functionality
 g4
     geant4 
+
+
+Former Foreign Externals
+-------------------------
+
+Dependency on boost has been removed. 
+
+boost
+    system, program_options, filesystem, regex
 
 
 Automated Externals
@@ -113,9 +120,9 @@ Base externals
 ----------------
 
 bcm
-    boost CMake modules, target export/import for CMake 3.5+ 
-    allows config to direct dependencies only, the rest of the tree
-    gets configured automatically  
+    boost CMake modules (mis-named: not really boost related), 
+    target export/import for CMake 3.5+ allows config to direct 
+    dependencies only, the rest of the tree gets configured automatically  
 glm
     vector, matrix, 3D projection mathematics
 plog
@@ -135,42 +142,6 @@ imgui
     immediate mode OpenGL GUI     
     
      
-
-Boost C++ Libraries
-----------------------
-
-The Boost components listed in the table need to be installed.
-These are widely available via package managers. Use the standard one for 
-your system. The FindBoost.cmake provided with cmake is used to locate the installation.
-
-=====================  ===============  =============   ==============================================================================
-directory              precursor        pkg name        notes
-=====================  ===============  =============   ==============================================================================
-boost                  boost-           Boost           components: system thread program_options log log_setup filesystem regex 
-=====================  ===============  =============   ==============================================================================
-
-
-The recommended minimum boost version is 1.53 as that is what I am using. 
-You might be able to survive with an earlier version, 
-but anything before 1.41 is known not to work. 
-
-
-Updating Boost 
-~~~~~~~~~~~~~~~~
-
-If your version of Boost is not recent enough the cmake configuring 
-step will yield errors like the below.::
-
-      CMake Error at /home/blyth/local/env/tools/cmake/cmake-3.5.2-Linux-x86_64/share/cmake-3.5/Modules/FindBoost.cmake:1657 (message):
-      Unable to find the requested Boost libraries.
-
-      Boost version: 1.41.0
-
-If possible use your system package manager to update Boost. If that is 
-not possible then do a local Boost install.  Opticks includes bash functions
-starting *boost-* that can get and install Boost locally.
-
-
 
 
 Opticks Pre-requisites : NVIDIA OptiX and NVIDIA CUDA 
@@ -221,51 +192,26 @@ on your system before installing Opticks.::
 Versions of CUDA and OptiX 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-I recommend you start your installation attempt with OptiX 6.5
+I recommend you start your installation attempt with OptiX 7.0 or 7.5 or 8.0
+(depending on your NVIDIA Driver version) 
 together with the version of CUDA that it was built against, as stated in 
 the OptiX release notes. 
 This version pinning between CUDA and OptiX is because Opticks links against 
-both the OptiX library and the CUDA runtime.
+both OptiX and the CUDA runtime.
 
 If you cannot use the latest CUDA (because of kernel incompatibility) you will need to
 use an older OptiX version contemporary with the CUDA version that your kernel supports.
-
-Version combinations that have been used:
-
-*current*
-   CUDA 10.1, OptiX 6.5.0
-
-*previous*
-   CUDA 9.1, OptiX 5.1.1
-   CUDA 9.1, OptiX 5.1.0
-
-*earlier* 
-   CUDA 7.0, OptiX 3.80
-
-
-The *current* version combination is regularly tested, the *previous* one
-relies on your bug reports https://groups.io/g/opticks/topics to keep it working. 
-Any issues with *earlier* version combinations will not be addressed.  
 
 
 The reason for the extremes of caution regarding version combinations of drivers 
 is that the interface to the GPU is via kernel extensions where if anything goes 
 wrong there is no safety net. A bad kernel extension will cause kernel panics, 
 your machine crashes and continues to crash until the bad driver is removed 
-(on macOS the removal can be done by resetting NVRAM).
 
 
 NVIDIA Driver Versions
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-   ========  ===============  ===================  ============================================  =================================== 
-    OptiX     Date              Driver (Linux)       Working                                       Problems Reported
-   ========  ===============  ===================  ============================================  ===================================
-     6.5.0     Aug 26, 2019       435.17             435.21 CUDA 10.1  TITAN RTX, TITAN V          Sajan: 440.33.01 and CUDA 10.2
-     7.0.0     July 29, 2019      435.12
-     6.0.0     Feb 2018           418.30 
-   ========  ===============  ===================  ============================================  ===================================
 
 
 The release notes from every version of OptiX states the 
@@ -289,84 +235,8 @@ If you cannot change your driver version this sometimes means that
 an older version of OptiX must be used to work with your driver.
  
 
-OptiX 6.5.0 (August 26, 2019)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Quote from release notes::
-
-   OptiX 6.5.0 requires that you install the 436.02 driver on Windows or the 435.17 Driver for linux. Operating System:
-
-   * Windows 7/8.1/10 64-bit
-   * Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
-
-
-Problems with OptiX 6.5.0, Driver 440.33.01, CUDA 10.2
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* https://www.nvidia.com/en-gb/drivers/unix/
-
-Search the OptiX forum for "driver" and looking for Linux reports:
-
-* https://forums.developer.nvidia.com/search?q=driver%20%20category%3A167
-* https://forums.developer.nvidia.com/t/optix7-and-game-ready-driver-440-97/83907
-
-From droettger of NVIDIA on Nov 20, 2019 regarding a problem with optix7::
-
-    Yes, there was a bug in R440 drivers and a serious test escape.
-
-    This has been fixed in the meantime. The just released Windows driver 441.28 has picked up the fix already.
-    Unfortunately Linux 440.31 drivers have been cut before the fix. The next 441 Linux drivers should have it.
-
-    If you already hacked that integer field to 0 when preTransform is null, the expected value when preTransform is actually containing 3x4 matrices is 0x21E1.
-
-
-
-OptiX 7.0.0 (July 29, 2019)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**An entirely new API : not yet supported by Opticks.**
-
-Quote from release notes::
-
-   OptiX 7.0.0 requires that you install the 435.80 driver on Windows or the 435.12 Driver for linux. 
-   Note OptiX dll from the SDK are no longer needed since the symbols are loaded from the driver.
-
-   * Windows 7/8.1/10 64-bit; 
-   * Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
-
-
-OptiX 6.0.0 (February 2018)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-**first version of OptiX with support for Turing GPUs and RT Cores**
-
-Quote from release notes::
-
-   Graphics Driver:
-
-   * Windows: driver version 418.81 or later is required.
-   * Linux: driver version 418.30 or later is required.
-
-   OS:
-
-   * Windows 7/8.1/10 64-bit
-   * Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit
-
-
-Using a non-standard OptiX version
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Opticks tends to adopt new OptiX versions very soon after they become
-available approximately twice per year. This is because OptiX continues 
-to improve rapidly. Updating OptiX typically also requires an update of 
-the CUDA version and the NVIDIA driver.  
-
-Sometimes due to the suitable NVIDIA driver not yet being installed by 
-your system admin it is necessary to use older OptiX+CUDA versions.  
-Opticks aims to allow this for recent version combinations only.
-
-
-Building Opticks against "foreign" externals such as Geant4, Boost
+Building Opticks against "foreign" externals such as Geant4
 -------------------------------------------------------------------
 
 When integrating Opticks with a detector simulation framework 
@@ -374,7 +244,6 @@ it is important that externals that are in common between Opticks and the framew
 are one and the same to avoid symbol inconsistency between different versions of libraries. 
 The most likely packages to be in common are::
 
-     Boost 
      Geant4 
      XercesC
      GLEW  
@@ -386,6 +255,12 @@ the CMake based build will pick use the find_package.py script::
     epsilon:opticks blyth$ find_package.py Geant4
     Geant4                         : /usr/local/foreign/lib/Geant4-10.5.1/Geant4Config.cmake 
     Geant4                         : /usr/local/opticks/externals/lib/Geant4-10.4.2/Geant4Config.cmake 
+
+
+
+
+Former pkg-config based opticks-config builds (eg for CMT) are no longer maintained and the infrastructure will be removed 
+----------------------------------------------------------------------------------------------------------------------------
 
 If you can integrate Opticks with your framework using CMake then the non-CMake 
 opticks-config system which is based on pkg-config pc files is not relevant to you. 
@@ -420,7 +295,6 @@ necessary for do several things:
 3. generate any missing pc files with::
 
       g4-pcc-all
-      boost-pcc-all
 
    These use find_package.py which iterates over prefixes in CMAKE_PREFIX_PATH
    writing .pc files.
@@ -467,3 +341,7 @@ The *g4-* precursor selects a version of Geant4.  Currently a bit dated, this is
 The coupling between Opticks and Geant4 is intended to be weak : so a range of 
 recent versions of Geant4 are intended to be supported.
  
+
+
+
+
