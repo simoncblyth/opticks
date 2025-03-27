@@ -59,8 +59,8 @@ difficult to maintain for future CUDA version bumps::
 
 
 
-How are nightlies invoked ?
------------------------------
+How are nightly nightlies invoked ?
+--------------------------------------
 
 * https://code.ihep.ac.cn/JUNO/offline/junosw/-/pipeline_schedules
 
@@ -1194,7 +1194,302 @@ using docker save .tar with OCI
 
 
 
- 
+register gitlab-runner
+-----------------------
+
+* https://medium.com/geekculture/5-ways-that-can-help-you-to-debug-your-gitlab-pipeline-b871fd626652
+
+
+j+o build succeeded : how to test/use it ? 
+--------------------------------------------
+
+* https://code.ihep.ac.cn/JUNO/offline/junosw/-/jobs/65514
+* /builds/JUNO/offline/junosw/InstallArea
+
+
+
+gitlab-ci artifacts:
+----------------------
+
+* https://docs.gitlab.com/ci/jobs/job_artifacts/
+
+deployment examples
+---------------------
+
+* https://github.com/key4hep/EDM4hep/blob/main/.gitlab-ci.yml
+
+
+gitlab variables
+-----------------
+
+* https://about.gitlab.com/blog/2021/02/05/ci-deployment-and-environments/
+* https://docs.gitlab.com/ci/variables/predefined_variables/
+* https://docs.gitlab.com/user/project/deploy_tokens/#gitlab-deploy-token
+
+
+* https://code.ihep.ac.cn/JUNO/offline/junosw/-/settings/ci_cd
+
+
+Masked and hidden::
+
+    Masked in job logs, and can never be revealed in the CI/CD settings after the variable is saved. 
+
+
+gitlab secure files : Project-level Secure Files API
+------------------------------------------------------
+
+* https://docs.gitlab.com/ci/secure_files/
+* https://code.ihep.ac.cn/help/api/secure_files.md
+
+::
+
+   curl --request GET --header "PRIVATE-TOKEN: <your_access_token>" \
+              https://gitlab.example.com/api/v4/projects/1/secure_files/1/download --output myfile.jks
+
+
+gitlab personal access tokens
+-------------------------------
+
+* https://docs.gitlab.com/user/profile/personal_access_tokens/
+
+* https://docs.gitlab.com/api/rest/authentication/#personalprojectgroup-access-tokens
+
+
+
+
+
+download-secure-files approach 
+-------------------------------
+
+* https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files
+
+* downloads binary and runs it 
+* downloads all the secure files
+* above REST API looks better than this
+
+::
+
+    test:
+      variables:
+        SECURE_FILES_DOWNLOAD_PATH: './where/files/should/go/'
+      script:
+        - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
+
+
+::
+
+    epsilon:~ blyth$ curl "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer"
+    #!/usr/bin/env bash
+
+    # This installer will:
+    # 1. Detect the target platform, and download the appropriate distribution
+    # 2. Copy the distribution to the bin directory as `download-secure-files`
+    # 3. Make `download-secure-files` executable
+    # 4. Run `download-secure-files`
+    # Please note:
+    # * This will only work on Linux and macOS systems
+    # * curl and bash are required
+    ...
+    download_url="https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/releases/permalink/latest/downloads/${bin_filename}"
+    ...
+
+
+
+REST API approach to get secure files
+-----------------------------------------
+
+Explored in ~/.ssh/gitlab_com_sandlab_api.sh : works, but awkward and brittle.
+
+
+File type CI/CD variable looks better
+---------------------------------------
+
+* https://docs.gitlab.com/ci/jobs/ssh_keys/#verifying-the-ssh-host-keys
+* https://docs.gitlab.com/ci/variables/#use-file-type-cicd-variables
+
+* https://about.gitlab.com/blog/2018/08/02/using-the-gitlab-ci-slash-cd-for-smart-home-configuration-management/#preparing-the-server-and-gitlab-for-ssh-access
+* https://docs.gitlab.com/ci/jobs/ssh_keys/
+* https://gitlab.com/gitlab-examples/ssh-private-key/
+
+* https://stackoverflow.com/questions/64699458/storing-ssh-private-key-in-gitlab-repository-variables 
+
+
+
+gitlab environments
+--------------------
+
+* https://docs.gitlab.com/ci/environments/
+
+A GitLab environment represents a specific deployment target for your
+application, like development, staging, or production. Use it to manage
+different configurations and deploy code during various stages of your software
+lifecycle.
+
+
+gitlab ssh keys
+-----------------
+
+* https://docs.gitlab.com/ci/jobs/ssh_keys/
+* https://gitlab.com/gitlab-examples/ssh-private-key/
+
+::
+
+        ## Create a shell script that will echo the environment variable SSH_PASSPHRASE
+      - echo 'echo $SSH_PASSPHRASE' > ~/.ssh/tmp && chmod 700 ~/.ssh/tmp
+
+      ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+      ## We're using tr to fix line endings which makes ed25519 keys work
+      ## without extra base64 encoding.
+      ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+      ##
+      ## If ssh-add needs a passphrase, it will read the passphrase from the current
+      ## terminal if it was run from a terminal.  If ssh-add does not have a terminal
+      ## associated with it but DISPLAY and SSH_ASKPASS are set, it will execute the
+      ## program specified by SSH_ASKPASS and open an X11 window to read the
+      ## passphrase.  This is particularly useful when calling ssh-add from a
+      ## .xsession or related script. Setting DISPLAY=None drops the use of X11.
+      - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | DISPLAY=None SSH_ASKPASS=~/.ssh/tmp ssh-add -
+
+      ##
+      ## Use ssh-keyscan to scan the keys of your private server. Replace gitlab.com
+      ## with your own domain name. You can copy and repeat that command if you have
+      ## more than one server to connect to.
+      ##
+      - ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
+      - chmod 644 ~/.ssh/known_hosts
+
+
+
+TODO : expt with this in new repo https://gitlab.com/simoncblyth/sandlab
+--------------------------------------------------------------------------
+
+
+gitlab access artifacts from previous stage
+--------------------------------------------
+
+* https://stackoverflow.com/questions/38140996/how-can-i-pass-gitlab-artifacts-to-another-stage
+
+
+gitlab secrets
+----------------
+
+* https://docs.gitlab.com/ci/secrets/
+
+
+gitlab file type variable flags
+---------------------------------
+
+Protect variable
+   Export variable to pipelines running on protected branches and tags only.
+
+Expand variable reference
+   $ will be treated as the start of a reference to another variable.
+
+   * https://gitlab.com/gitlab-org/gitlab/-/merge_requests/102212
+
+
+::
+
+Unable to create masked variable because:
+
+    The value cannot contain the following characters: whitespace characters.
+
+
+* https://forum.gitlab.com/t/mask-openssh-key/102405
+
+it turns out you can add base64 variables and mask them! but you need to remove the linebreaks.
+Example::
+
+   openssl base64 -in <input_file> | tr -d ‘\n’
+
+
+Use base64 to remove the newlines
+-----------------------------------
+
+* ~/env/tools/base64.bash
+
+See ~/.ssh/SANDLAB_DEPLOY_KEY.rst
+
+
+
+gitlab what are protected branches
+-------------------------------------
+
+* https://docs.gitlab.com/user/project/repository/branches/protected/
+
+Protected branches enforce specific permissions on branches in GitLab to ensure
+code stability and quality. Protected branches: Control which users can merge
+and push code changes. Prevent accidental deletion of critical branches.
+
+* The default branch for your repository is protected by default.
+
+gitlab sign up without the trial
+---------------------------------
+
+* https://forum.gitlab.com/t/why-force-users-to-start-free-trial-and-why-sign-up-multiple-times/103525
+
+
+
+
+bitbucket pipelines
+---------------------
+
+* https://support.atlassian.com/bitbucket-cloud/docs/get-started-with-bitbucket-pipelines/
+
+
+
+
+deploy j+o tarball
+--------------------
+
+::
+
+    A[blyth@localhost junosw]$ tar --transform "s/^InstallArea/jwhatever\/jversion/" -cf jwhatever.tar InstallArea
+    A[blyth@localhost junosw]$ l
+    total 40808
+    40700 -rw-r--r--.  1 blyth blyth 41676800 Mar 19 17:16 jwhatever.tar
+        4 drwxr-xr-x. 29 blyth blyth     4096 Mar 19 17:16 .
+        4 drwx------. 32 blyth blyth     4096 Mar 19 17:14 ..
+        4 drwxr-xr-x.  8 blyth blyth     4096 Mar 18 14:53 .git
+        8 -rw-r--r--.  1 blyth blyth     8144 Mar 18 14:52 .gitlab-ci.yml
+        4 drwxr-xr-x. 27 blyth blyth     4096 Mar 17 11:01 build
+        0 drwxr-xr-x.  6 blyth blyth       92 Mar 17 11:01 InstallArea
+        0 drwxr-xr-x.  3 blyth blyth      104 Mar 11 16:43 cmake
+        8 -rwxr-xr-x.  1 blyth blyth     4174 Mar 11 16:43 junorun
+        4 -rw-r--r--.  1 blyth blyth     1749 Mar 11 16:43 setup.sh
+
+    A[blyth@localhost junosw]$ tar tvf jwhatever.tar
+    drwxr-xr-x blyth/blyth       0 2025-03-17 11:01 jwhatever/jversion/
+    drwxr-xr-x blyth/blyth       0 2025-03-17 11:01 jwhatever/jversion/bin/
+    ...
+    -rwxr-xr-x blyth/blyth    1722 2025-03-11 16:43 jwhatever/jversion/bin/tut_detsim.py
+    -rwxr-xr-x blyth/blyth    3708 2025-03-11 16:43 jwhatever/jversion/bin/tut_elec2rec.py
+    -rwxr-xr-x blyth/blyth    3986 2025-03-11 16:43 jwhatever/jversion/bin/tut_rtraw2rec.py
+
+
+check gitlab-ci built j+o tarball
+----------------------------------
+
+::
+
+    A[blyth@localhost ~]$ mv ~/J25.2.3_Opticks-v0.3.3.tar /data1/blyth/local/
+    A[blyth@localhost local]$ tar xvf J25.2.3_Opticks-v0.3.3.tar
+
+
+    A[blyth@localhost el9_amd64_gcc11]$ pwd
+    /data1/blyth/local/J25.2.3_Opticks-v0.3.3/el9_amd64_gcc11
+    A[blyth@localhost el9_amd64_gcc11]$ ll
+    total 76
+    drwxr-xr-x.   2 blyth blyth  4096 Mar 20 15:53 bin
+    -rw-r--r--.   1 blyth blyth   301 Mar 20 15:53 ENV.bash
+    drwxr-xr-x.  87 blyth blyth  4096 Mar 20 15:53 include
+    drwxr-xr-x.   3 blyth blyth 20480 Mar 20 15:53 lib64
+    drwxr-xr-x. 112 blyth blyth  4096 Mar 20 15:53 python
+    -rw-r--r--.   1 blyth blyth 17243 Mar 20 15:23 setup.csh
+    -rw-r--r--.   1 blyth blyth 17243 Mar 20 15:23 setup.sh
+    A[blyth@localhost el9_amd64_gcc11]$ 
+
+
 
 
 

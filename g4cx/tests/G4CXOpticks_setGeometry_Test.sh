@@ -28,8 +28,7 @@ for this config from this bash script are::
 So to load your own GDML using this script, without changing this script:
 
 1. decide on identifier string for your geometry, eg Z36 
-2. create or edit the file $HOME/.opticks/GEOM/GEOM.sh for example containing
-   (NB this file is not in the repository, it is in ~/.opticks)::
+2. create or edit the file $HOME/.opticks/GEOM/GEOM.sh (NB not in repo) for example containing::
 
      #!/bin/bash 
      # THIS SCRIPT DOES ONE THING ONLY : IT EXPORTS GEOM

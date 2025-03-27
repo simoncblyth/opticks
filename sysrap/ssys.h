@@ -247,15 +247,19 @@ inline const char* ssys::getenvvar(const char* ekey)
     {
         const char* path = get_replacement_path(val) ;   
 
-        std::cout 
-            << "ssys::getenvvar.is_path_prefixed " 
-            << " path " << ( path ? path : "-" )
-            << std::endl 
-            ;                   
-
         std::string txt ;    
         bool path_exists = spath::Read( txt, path );
         val = path_exists ? strdup(txt.c_str()) : nullptr ;  
+
+        std::cout 
+            << "ssys::getenvvar.is_path_prefixed "
+            << " ekey " << ( ekey ? ekey : "-" ) 
+            << " path " << ( path ? path : "-" )
+            << " path_exists " << ( path_exists ? "YES" : "NO " )
+            << " val " << ( val ? val : "-" ) 
+            << std::endl 
+            ;                   
+
     }
     return val ; 
 }
