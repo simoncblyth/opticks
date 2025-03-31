@@ -1,6 +1,6 @@
 #pragma once
 /**
-SCUDA_OutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA 
+SCUDA_OutputBuffer.h : Allows an OpenGL PBO buffer to be accessed from CUDA
 ============================================================================
 
 Adapted from SDK/CUDAOutputBuffer.h
@@ -42,7 +42,7 @@ public:
     // Allocate or update device pointer as necessary for CUDA access
     PIXEL_FORMAT* map();
     void unmap();
-    std::string desc() const ; 
+    std::string desc() const ;
 
     int32_t        width() const  { return m_width;  }
     int32_t        height() const { return m_height; }
@@ -73,7 +73,7 @@ private:
 
 template <typename PIXEL_FORMAT>
 inline SCUDA_OutputBuffer<PIXEL_FORMAT>::SCUDA_OutputBuffer( SCUDA_OutputBufferType type, int32_t width, int32_t height )
-    : 
+    :
     m_type( type )
 {
     // If using GL Interop, expect that the active device is also the display device.
@@ -82,8 +82,8 @@ inline SCUDA_OutputBuffer<PIXEL_FORMAT>::SCUDA_OutputBuffer( SCUDA_OutputBufferT
         int current_device, is_display_device;
         CUDA_CHECK( cudaGetDevice( &current_device ) );
         CUDA_CHECK( cudaDeviceGetAttribute( &is_display_device, cudaDevAttrKernelExecTimeout, current_device ) );
-        if( !is_display_device ) std::cerr << "GL interop is only available on display device" << std::endl ; 
-        assert( is_display_device ); 
+        if( !is_display_device ) std::cerr << "SCUDA_OutputBuffer::SCUDA_OutputBuffer GL interop is only available on display device" << std::endl ;
+        assert( is_display_device );
     }
     resize( width, height );
 }
@@ -126,8 +126,8 @@ SCUDA_OutputBuffer::resize
 
 In interop mode sets:
 
-1. m_pbo : reference to "PBO" GL_ARRAY_BUFFER 
-2. m_cuda_gfx_resource : reference resulting from registering as CUDA graphics resource 
+1. m_pbo : reference to "PBO" GL_ARRAY_BUFFER
+2. m_cuda_gfx_resource : reference resulting from registering as CUDA graphics resource
 
 **/
 
@@ -135,8 +135,8 @@ In interop mode sets:
 template <typename PIXEL_FORMAT>
 void SCUDA_OutputBuffer<PIXEL_FORMAT>::resize( int32_t width, int32_t height )
 {
-    if( width < 1 ) width = 1 ; 
-    if( height < 1 ) height = 1 ; 
+    if( width < 1 ) width = 1 ;
+    if( height < 1 ) height = 1 ;
 
     if( m_width == width && m_height == height )
         return;
@@ -201,7 +201,7 @@ void SCUDA_OutputBuffer<PIXEL_FORMAT>::resize( int32_t width, int32_t height )
 SCUDA_OutputBuffer::map
 -----------------------
 
-In interop mode sets and returns m_device_pixels pointer 
+In interop mode sets and returns m_device_pixels pointer
 allowing CUDA to write to the underlying graphics "PBO" buffer.
 
 **/
@@ -237,8 +237,8 @@ PIXEL_FORMAT* SCUDA_OutputBuffer<PIXEL_FORMAT>::map()
 SCUDA_OutputBuffer::unmap
 --------------------------
 
-Relinquishes CUDA access to the PBO graphics buffer, allowing 
-subequent rendering with OpenGL. 
+Relinquishes CUDA access to the PBO graphics buffer, allowing
+subequent rendering with OpenGL.
 
 **/
 
@@ -263,34 +263,34 @@ void SCUDA_OutputBuffer<PIXEL_FORMAT>::unmap()
 
 
 template <typename PIXEL_FORMAT>
-std::string SCUDA_OutputBuffer<PIXEL_FORMAT>::desc() const 
+std::string SCUDA_OutputBuffer<PIXEL_FORMAT>::desc() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "SCUDA_OutputBuffer::desc"
-       << std::endl 
-       << " int(m_type) " << int(m_type) 
-       << std::endl 
-       << " m_width " << m_width 
-       << std::endl 
-       << " m_height " << m_height  
-       << std::endl 
+       << std::endl
+       << " int(m_type) " << int(m_type)
+       << std::endl
+       << " m_width " << m_width
+       << std::endl
+       << " m_height " << m_height
+       << std::endl
        << " m_cuda_gfx_resource " << ( m_cuda_gfx_resource ? "YES" : "NO " )
-       << std::endl 
+       << std::endl
        << " m_pbo " << m_pbo
-       << std::endl 
+       << std::endl
        << " m_device_pixels " << ( m_device_pixels ? "YES" : "NO " )
-       << std::endl 
+       << std::endl
        << " m_host_zcopy_pixels " << ( m_host_zcopy_pixels ? "YES" : "NO " )
-       << std::endl 
+       << std::endl
        << " m_host_pixels.size " << m_host_pixels.size()
-       << std::endl 
+       << std::endl
        << " m_stream " << m_stream
-       << std::endl 
-       << " m_device_idx " << m_device_idx 
-       << std::endl 
+       << std::endl
+       << " m_device_idx " << m_device_idx
+       << std::endl
        ;
-    std::string str = ss.str(); 
-    return str ; 
+    std::string str = ss.str();
+    return str ;
 }
 
 /**
@@ -375,7 +375,7 @@ SCUDA_OutputBuffer::getHostPointer
 ----------------------------------
 
 In all modes other than ZERO_COPY resizes the m_host_pixels vector
-can downloads the mapped graphics device buffer contents to the host vector. 
+can downloads the mapped graphics device buffer contents to the host vector.
 In ZERO_COPY just returns m_host_zcopy_pixels.
 
 **/

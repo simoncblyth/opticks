@@ -1,9 +1,9 @@
-#!/bin/bash 
+#!/bin/bash
 usage(){ cat << EOU
 SGLFW_SOPTIX_Scene_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
 
-NB because this loads a pre-existing SScene it is necessary to 
+NB because this loads a pre-existing SScene it is necessary to
 regenerate the SScene from Geant4 using eg jok-tds when there
 are geometry issues.
 
@@ -12,14 +12,14 @@ Assuming the scene folder exists already::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     SCENE=0 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh   ## default 
+    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh   ## default
     SCENE=2 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     SCENE=3 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     ## SCENE picks between different scene directories
 
 As this uses GL interop it may be necessary to select the display GPU::
 
-    CUDA_VISIBLE_DEVICES=1 ~/o/sysrap/tests/ssst.sh 
+    CUDA_VISIBLE_DEVICES=1 ~/o/sysrap/tests/ssst.sh
 
 
 Impl::
@@ -32,26 +32,26 @@ One step way to create the stree and scene from gdml or other geometry source
 
 ::
 
-    ~/o/u4/tests/U4TreeCreateSSimTest.sh  
+    ~/o/u4/tests/U4TreeCreateSSimTest.sh
 
 
-Two step way to create the scene folder from gdml or other geometry source 
+Two step way to create the scene folder from gdml or other geometry source
 -----------------------------------------------------------------------------
 
-1. load geometry and use U4Tree::Create to convert to stree.h and persist the tree::   
+1. load geometry and use U4Tree::Create to convert to stree.h and persist the tree::
 
-    ~/o/u4/tests/U4TreeCreateTest.sh 
+    ~/o/u4/tests/U4TreeCreateTest.sh
         # create and persist stree.h (eg from gdml or j/PMTSim via GEOM config)
 
 2. load stree and create corresponding SScene::
 
-    ~/o/sysrap/tests/SScene_test.sh 
+    ~/o/sysrap/tests/SScene_test.sh
         # create and persist SScene.h from loaded stree.h
-  
+
 
 Simpler Prior Developments
 ---------------------------
-    
+
 Related simpler priors::
 
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh
@@ -62,15 +62,15 @@ Related simpler priors::
 Which GL/glew.h is picked up ?
 ---------------------------------
 
-On changing env from JUNO-opticks to ONLY-opticks build directly with 
-opticks-full note that have changed the OpenGL version in use 
+On changing env from JUNO-opticks to ONLY-opticks build directly with
+opticks-full note that have changed the OpenGL version in use
 causing missing symbol GL_CONTEXT_LOST
 
 Fixed that with GL_VERSION_4_5 check, but why the older version ?
 
 * probably just a change in glew header not a change in actual GL version used
 
-Adding "-M" to gcc commandline lists all the 
+Adding "-M" to gcc commandline lists all the
 included headers in Makefile dependency format.
 This shows are picking up system headers::
 
@@ -81,10 +81,10 @@ This shows are picking up system headers::
 
 Which corresponds to::
 
-    //SGLFW::init GL_RENDERER [NVIDIA TITAN RTX/PCIe/SSE2] 
-    //SGLFW::init GL_VERSION [4.1.0 NVIDIA 515.43.04] 
+    //SGLFW::init GL_RENDERER [NVIDIA TITAN RTX/PCIe/SSE2]
+    //SGLFW::init GL_VERSION [4.1.0 NVIDIA 515.43.04]
 
-HMM: this maybe because I removed glew and glfw from the 
+HMM: this maybe because I removed glew and glfw from the
 standard externals ?
 
 HMM: but after installing those get::
@@ -102,11 +102,11 @@ Return to system with::
 
    glfw-
    glfw-manifest-wipe
-   glfw-manifest-wipe | sh 
+   glfw-manifest-wipe | sh
 
    glew-
    glew-manifest-wipe
-   glew-manifest-wipe | sh 
+   glew-manifest-wipe | sh
 
 
 
@@ -118,7 +118,7 @@ name=SGLFW_SOPTIX_Scene_test
 
 
 #source $HOME/.opticks/GEOM/GEOM.sh
-#[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1 
+#[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
 
 
 export FOLD=/tmp/$USER/opticks/$name
@@ -131,9 +131,9 @@ export BASE=$TMP/GEOM/$GEOM/$name
 if [ -n "$LOG" ]; then
    export SOPTIX_Scene__DUMP=1
    export SGLFW_Scene__DUMP=1
-   echo LOG defined - enable dumping 
+   echo $BASH_SOURCE - LOG defined - enable dumping
 else
-   echo run with LOG defined for dumping 
+   echo $BASH_SOURCE - run with LOG defined for dumping
 fi
 
 
@@ -141,33 +141,34 @@ cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
 xir=$FOLD/SOPTIX.optixir
 
-export SOPTIX_PTX=$ptx 
-export SOPTIX_XIR=$xir 
+export SOPTIX_PTX=$ptx
+export SOPTIX_XIR=$xir
 export SOPTIX_KERNEL=$SOPTIX_PTX
 #export SOPTIX_KERNEL=$SOPTIX_XIR
 
-export SGLFW__DEPTH=1 
+export SGLFW__DEPTH=1
 
 
 
-# when using CMake generated ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx 
-# following pattern $OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx" 
+# when using CMake generated ptx will be smth like:$OPTICKS_PREFIX/ptx/sysrap_generated_SOPTIX.cu.ptx
+# following pattern $OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx"
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
-for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done 
+for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done
 
 optix_prefix=${OPTICKS_OPTIX_PREFIX}
 OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
+[ -z "$OPTIX_PREFIX" ] && echo $BASH_SOURCE - ERROR no OPTIX_PREFIX or OPTICKS_OPTIX_PREFIX && exit 1
 
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
 
-source $HOME/.opticks/GEOM/GEOM.sh 
- 
+source $HOME/.opticks/GEOM/GEOM.sh
+
 scene=0
-case ${SCENE:-$scene} in 
+case ${SCENE:-$scene} in
 0) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
 1) scene_fold=/tmp/SScene_test ;;
 2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
@@ -184,7 +185,7 @@ dump=0
 DUMP=${DUMP:-$dump}
 export SGLM__set_frame_DUMP=$DUMP
 
-#export SGLFW_SOPTIX_Scene_test_DUMP=1  
+#export SGLFW_SOPTIX_Scene_test_DUMP=1
 
 
 #wh=1024,768
@@ -205,7 +206,7 @@ cam=perspective
 #fullscreen=0
 fullscreen=1
 
-tmin=0.1    
+tmin=0.1
 #escale=asis
 escale=extent
 
@@ -220,7 +221,7 @@ export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
 
 
-handle=-1 # -1:IAS 0...8 GAS indices 
+handle=-1 # -1:IAS 0...8 GAS indices
 export HANDLE=${HANDLE:-$handle}
 
 frame=-1
@@ -241,9 +242,9 @@ arg=${1:-$defarg}
 
 if [ ! -d "$SCENE_FOLD/scene" ]; then
   echo $BASH_SOURCE : FATAL SCENE_FOLD $SCENE_FOLD does not contain scene
-  echo $BASH_SOURCE : with newly created CSGFoundry/SSim there is no need for manual SCENE_FOLD as will be in CSGFoundry/SSim/scene  
-  #arg=info  
-fi 
+  echo $BASH_SOURCE : with newly created CSGFoundry/SSim there is no need for manual SCENE_FOLD as will be in CSGFoundry/SSim/scene
+  #arg=info
+fi
 
 
 
@@ -253,7 +254,7 @@ vars="BASH_SOURCE defarg arg CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOP
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
-fi 
+fi
 
 if [ "${arg/ptx}" != "$arg" ]; then
     echo $BASH_SOURCE ptx
@@ -266,7 +267,7 @@ if [ "${arg/ptx}" != "$arg" ]; then
         -I$CUDA_PREFIX/include  \
         -I$OPTIX_PREFIX/include  \
         -o $ptx
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1
     ls -alst $ptx
     echo $BASH_SOURCE ptx DONE
 fi
@@ -278,8 +279,8 @@ xir-notes(){ cat << EOU
 
    With "-G" and default options::
 
-       [ 2][COMPILE FEEDBACK]: COMPILE ERROR: Optimized debugging is not supported. 
-        Module is built with full debug info, but requested debug level is not 
+       [ 2][COMPILE FEEDBACK]: COMPILE ERROR: Optimized debugging is not supported.
+        Module is built with full debug info, but requested debug level is not
         "OPTIX_COMPILE_DEBUG_LEVEL_FULL".
 
 EOU
@@ -297,14 +298,14 @@ if [ "${arg/xir}" != "$arg" ]; then
         -I$CUDA_PREFIX/include  \
         -I$OPTIX_PREFIX/include  \
         -o $xir
-    [ $? -ne 0 ] && echo $BASH_SOURCE : xir build error && exit 1 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : xir build error && exit 1
     ls -alst $xir
     echo $BASH_SOURCE xir DONE
 fi
 
 
-gdb__() 
-{ 
+gdb__()
+{
     : opticks/opticks.bash prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
     if [ -z "$BP" ]; then
         H="";
@@ -333,7 +334,7 @@ if [ "${arg/build}" != "$arg" ]; then
     echo $BASH_SOURCE build
     [ "$(uname)" == "Darwin" ] && echo $BASH_SOURCE : ERROR : THIS NEEDS OPTIX7+ SO LINUX ONLY && exit 1
 
-    # -M lists paths of all included headers in Makefile dependency format 
+    # -M lists paths of all included headers in Makefile dependency format
     # -M \
     gcc $name.cc \
         -fvisibility=hidden \
@@ -360,27 +361,27 @@ if [ "${arg/build}" != "$arg" ]; then
         -lGL  \
         -o $bin
 
- 
-        
-    # -Wno-unused-private-field \  ## clang-ism ? 
 
-    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
+
+    # -Wno-unused-private-field \  ## clang-ism ?
+
+    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
     echo $BASH_SOURCE build DONE
-fi 
+fi
 
 if [ "${arg/dbg}" != "$arg" -o -n "$GDB" ]; then
-    #dbg__ $bin 
-    gdb__ $bin 
+    #dbg__ $bin
+    gdb__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
 
     LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64
-    echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config 
+    echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config
 
-    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0 
-    $bin 
+    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0
+    $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
@@ -390,10 +391,10 @@ if [ "${arg/grab}" != "$arg" ]; then
 fi
 
 if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg 
-fi 
+    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
+fi
 
 
 
-exit 0 
+exit 0
 
