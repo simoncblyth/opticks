@@ -20,16 +20,16 @@ if [ -z "$OPTICKS_HOME" ]; then
    echo $0 - setting OPTICKS_HOME [$OPTICKS_HOME]
 else
    echo $0 - using OPTICKS_HOME [$OPTICKS_HOME]
-fi 
+fi
 
-if [ -z "$CMAKE_PREFIX_PATH" ]; then 
-   echo $0 - ERROR - MISSING CMAKE_PREFIX_PATH - NEEDED TO FIND OPTICKS EXTERNALS THIS IS BASED ON  && exit 1 
-fi 
+if [ -z "$CMAKE_PREFIX_PATH" ]; then
+   echo $0 - ERROR - MISSING CMAKE_PREFIX_PATH - NEEDED TO FIND OPTICKS EXTERNALS THIS IS BASED ON  && exit 1
+fi
 
 
-bdir=/tmp/$USER/opticks/$name/build 
+bdir=/tmp/$USER/opticks/$name/build
 idir=/tmp/$USER/opticks/$name/install
-mkdir -p $bdir && cd $bdir && pwd 
+mkdir -p $bdir && cd $bdir && pwd
 
 
 PREFIX=$idir
@@ -41,14 +41,14 @@ arg=${1:-$defarg}
 if [ "${arg/info}" != "$arg" ]; then
    vv="defarg arg sdir name bdir idir bin PREFIX OPTICKS_PREFIX OPTICKS_HOME"
    for v in $vv ; do printf "%20s : %s\n" "$v" "${!v}" ; done
-fi 
+fi
 
-if [ "${arg/clean}" != "$arg" ]; then 
-    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+if [ "${arg/clean}" != "$arg" ]; then
+    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
     rm -rf $idir && mkdir -p $idir
-fi 
+fi
 
-if [ "${arg/build}" != "$arg" ]; then 
+if [ "${arg/build}" != "$arg" ]; then
 
     cmake $sdir \
          -DCMAKE_BUILD_TYPE=Debug \
@@ -57,15 +57,15 @@ if [ "${arg/build}" != "$arg" ]; then
          -DCMAKE_MODULE_PATH=$OPTICKS_HOME/cmake/Modules
 
     make
-    make install   
+    make install
 fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then
     echo executing $bin
     $bin
-fi 
+fi
 
-if [ "${arg/check}" != "$arg" ]; then 
+if [ "${arg/check}" != "$arg" ]; then
     echo ls -alst $bin
     ls -alst $bin
     date
