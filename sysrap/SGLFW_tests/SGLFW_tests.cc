@@ -31,7 +31,7 @@ void test_SGLFW_GLenum()
 
 void test_SGLFW_Attribute(const char* name, const char* spec)
 {
-    SGLFW_Attribute att(name, spec); 
+    SGLFW_Attrib att(name, spec); 
     std::cout << att.desc() << std::endl ; 
 }
 

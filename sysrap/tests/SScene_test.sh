@@ -91,7 +91,7 @@ if [ "${arg/build}" != "$arg" ]; then
          ../s_bb.cc \
          ../s_csg.cc \
          -DWITH_CHILD \
-         -std=c++11 -lstdc++ -lm \
+         -std=c++17 -lstdc++ -lm \
          -I.. -g \
          -I$GLM_PREFIX \
          -I${CUDA_PREFIX}/include \

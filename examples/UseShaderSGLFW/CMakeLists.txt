@@ -7,7 +7,8 @@ set(OpticksGLFW_ALT ON)
 set(OpticksGLFW_VERBOSE ON)
 
 
-include_directories($ENV{OPTICKS_HOME}/sysrap)   ## just header-only structs not the full shebang  
+include_directories($ENV{OPTICKS_HOME}/sysrap)            ## just header-only structs not the full shebang  
+include_directories($ENV{OPTICKS_PREFIX}/include/SysRap)  ## needed for the generated sconfig.h 
 include_directories($ENV{CUDA_PREFIX}/include)
 
 find_package(GLM         REQUIRED MODULE)

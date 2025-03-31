@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 SOPTIX_Scene_test.sh
 =====================
@@ -34,8 +34,6 @@ cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
 export SOPTIX_PTX=$ptx 
 
-opticks-
-glm-
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
@@ -43,6 +41,11 @@ for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done
 
 optix_prefix=${OPTICKS_OPTIX_PREFIX}
 OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
+
+if [ -z "$OPTIX_PREFIX" ]; then 
+   echo $0 - MISSING OPTIX_PREFIX && exit 1 
+fi 
+
 
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
@@ -92,7 +95,7 @@ arg=${1:-$defarg}
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX"
+vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX OPTICKS_PREFIX cuda_l SCENE_FOLD FOLD SOPTIX_PTX"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -100,7 +103,7 @@ fi
 
 if [ "${arg/ptx}" != "$arg" ]; then
    nvcc $cu \
-        -ptx -std=c++11 \
+        -ptx -std=c++17 \
         -c \
         -lineinfo \
         -use_fast_math \
@@ -113,11 +116,12 @@ fi
 
 if [ "${arg/build}" != "$arg" ]; then
     gcc $name.cc \
-        -std=c++11 -lstdc++ -lm -ldl  -g \
+        -std=c++17 -lstdc++ -lm -ldl  -g \
         -I${SYSRAP_DIR} \
         -I$CUDA_PREFIX/include \
         -I$OPTIX_PREFIX/include \
-        -I$(glm-prefix) \
+        -I$OPTICKS_PREFIX/externals/glm/glm \
+         -DWITH_CHILD \
         -L$CUDA_PREFIX/$cuda_l -lcudart \
         -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
