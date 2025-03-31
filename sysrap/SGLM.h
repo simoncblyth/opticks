@@ -255,6 +255,9 @@ struct SYSRAP_API SGLM : public SCMD
     void setEyeRotation(float angle_deg, glm::vec3 axis ); 
     void setEyeRotation( const glm::vec2& a, const glm::vec2& b ); 
 
+    void setDepthTest(int _depth_test);
+    int depthTest() const ;
+
     void cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned modifiers ); 
     void key_pressed_action( unsigned modifiers ); 
 
@@ -313,6 +316,9 @@ struct SYSRAP_API SGLM : public SCMD
     glm::quat q_lookrot ; 
     glm::quat q_eyerot ; 
     glm::vec3 eyeshift  ; 
+   
+    int       depth_test ; 
+
 
     float     get_escale_() const ; 
     glm::mat4 get_escale() const ; 
@@ -576,6 +582,7 @@ inline SGLM::SGLM()
     q_lookrot(1.f,0.f,0.f,0.f),   // identity quaternion
     q_eyerot(1.f,0.f,0.f,0.f),   // identity quaternion
     eyeshift(0.f,0.f,0.f),
+    depth_test(1),
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
     top_ax(0.f,0.f,0.f),
@@ -635,6 +642,14 @@ void SGLM::setEyeRotation(float angle_deg, glm::vec3 axis )
 }
 
 
+void SGLM::setDepthTest(int _depth_test)
+{
+    depth_test = _depth_test ; 
+}
+int SGLM::depthTest() const 
+{
+    return depth_test ; 
+}
 
 
 

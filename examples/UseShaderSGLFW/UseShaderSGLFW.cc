@@ -70,53 +70,102 @@ void main()
 
 )glsl";
 
+/**
+gl_FragDepth = 0.1 ; 
+gl_FragDepth = 0.5 ; 
+    NB omitting a suitable setting for gl_FragDepth 
+    when depth testing is enabled results in a black window.
+    Depth testing is enabled in SGLFW::init with GL_DEPTH_TEST 
+    and DepthFunc GL_LESS
+
+**/
+
+
+
 int main(void)
 {
     SGLM gm ; 
+    gm.setDepthTest(0);
+
     SGLFW gl(gm); 
-
-    SGLFW_Program prog(nullptr, "vPos", nullptr, nullptr, nullptr, nullptr ); 
-    prog.createFromText( vertex_shader_text, geometry_shader_text, fragment_shader_text); 
-    prog.use(); 
-
-    GLint mvp_location = prog.getUniformLocation("MVP");   
-    assert( sizeof(vertices) == sizeof(float)*5*3 ); 
+    GLFWwindow* window = gl.window ; 
 
     SGLFW_VAO vao ; 
     vao.bind(); 
 
+#ifdef WITH_INDICES
     SGLFW_Buffer ibuf( sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW ); 
     ibuf.bind();
     ibuf.upload();
+#endif
 
+    assert( sizeof(vertices) == sizeof(float)*5*3 ); 
     SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW ); 
     vbuf.bind();
     vbuf.upload();
 
+
+
+    SGLFW_Program prog(nullptr, "vPos", nullptr, nullptr, nullptr, nullptr ); 
+    prog.createFromText( vertex_shader_text, geometry_shader_text, fragment_shader_text); 
+
+    GLint mvp_location = prog.getUniformLocation("MVP");   
+    printf("mvp_location : %d \n", mvp_location ); 
+
+
+//#define OLD_ATTRIB 1   
+
+#ifdef OLD_ATTRIB
+
+    printf("// OLD_ATTRIB \n" ); 
+    GLint vpos_location = prog.getAttribLocation("vPos"); 
+    GLint vcol_location = prog.getAttribLocation("vCol");
+ 
+    printf("//vpos_location %d \n", vpos_location );  
+    printf("//vcol_location %d \n", vcol_location );  
+    
+    glEnableVertexAttribArray(vpos_location); 
+    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);                   
+    glEnableVertexAttribArray(vcol_location);
+    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 2)); 
+
+#else
+    printf("// NOT-OLD_ATTRIB \n" ); 
     prog.enableVertexAttribArray( "vPos", "2,GL_FLOAT,GL_FALSE,20,0,false" );  // 20 == sizeof(float)*5 stride in bytes
     prog.enableVertexAttribArray( "vCol", "3,GL_FLOAT,GL_FALSE,20,8,false" );  // 8 == sizeof(float)*2 offset in bytes 
     // getting two attrib from the same array via different size and offset 
+#endif
+
+
 
     int count(0);
     int renderlooplimit(200); 
     bool exitloop(false); 
 
-    while (!glfwWindowShouldClose(gl.window) && !exitloop)
+    while (!glfwWindowShouldClose(window) && !exitloop)
     {
         int width, height;
-        glfwGetFramebufferSize(gl.window, &width, &height);
+        glfwGetFramebufferSize(window, &width, &height);
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+        glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(1.5f));
         float* mvp_f = glm::value_ptr( mvp ); 
+
+        prog.use(); 
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp_f );
 
+         
+#ifdef WITH_INDICES
         int indices_count = 3 ; 
         GLvoid* indices_offset = (GLvoid*)(sizeof(GLubyte) * 0) ; 
         glDrawElements(GL_TRIANGLES, indices_count, GL_UNSIGNED_BYTE, indices_offset );
+#else
+        //printf("//glDrawArrays\n");  
+        glDrawArrays(GL_TRIANGLES, 0, 3 );
+#endif
 
-        glfwSwapBuffers(gl.window);
+        glfwSwapBuffers(window);
         glfwPollEvents();
         exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;   
     }

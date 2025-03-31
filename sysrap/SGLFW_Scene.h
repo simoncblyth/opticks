@@ -107,6 +107,19 @@ SGLFW_Scene::initProg
 
 Create the shaders 
 
+wire
+   wireframe
+
+iwire
+   instanced wireframe
+
+norm
+   normal shader
+
+inorm
+   instanced normal shader
+   
+
 **/
 
 inline void SGLFW_Scene::initProg()

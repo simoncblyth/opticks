@@ -196,6 +196,7 @@ then hop to the default frame.
 
     int width ; 
     int height ; 
+    int depth_test ; 
 
     const char* title ; 
     GLFWwindow* window ; 
@@ -872,6 +873,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     wanted_snap(0),
     width(gm.Width()),
     height(gm.Height()),
+    depth_test(gm.depthTest()),
     title(TITLE),
     window(nullptr),
     count(0),
@@ -922,6 +924,7 @@ Example responses::
 
 inline void SGLFW::init()
 {
+    printf("[SGLFW::init\n"); 
     glfwSetErrorCallback(SGLFW::Error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
 
@@ -938,9 +941,11 @@ inline void SGLFW::init()
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
  
 #elif __linux
+
+    printf(".SGLFW::init.__linux\n"); 
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);  // also used 6 here 
-    //glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 6);  // 1/6 ?
+    glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   
     // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,   
@@ -951,6 +956,7 @@ inline void SGLFW::init()
     GLFWmonitor* monitor = gm.fullscreen ? glfwGetPrimaryMonitor() : nullptr ;   // nullptr for windowed mode
     GLFWwindow* share = nullptr ;     // window whose context to share resources with, or NULL to not share resources
 
+    printf(".SGLFW::init width %d height %d\n", width, height); 
     window = glfwCreateWindow(width, height, title, monitor, share);
     if (!window)
     {   
@@ -983,9 +989,16 @@ inline void SGLFW::init()
 
 
     //  https://learnopengl.com/Advanced-OpenGL/Depth-testing
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);  
-
+    if(depth_test == 0)
+    {
+        printf("//SGLFW::init NOT-ENABLED depth_test %d \n", depth_test );  
+    } 
+    else
+    {
+        printf("//SGLFW::init ENABLED depth_test %d \n", depth_test );  
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);  
+    } 
 
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // otherwise gl_PointSize setting ignored, setting in geom not vert shader used when present 
 
@@ -993,5 +1006,6 @@ inline void SGLFW::init()
     glfwSwapInterval(interval);
 
     //home(); // maybe too soon to do this, as flaky where the cursor starts  
+    printf("]SGLFW::init\n"); 
 }
 

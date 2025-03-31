@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <iostream>
 
+
+// 2d position and color together
+
 static const struct
 {
     float x, y;
@@ -91,6 +94,13 @@ void main()
 
 )glsl";
 
+
+/**
+    color = vCol;
+    color = vec3(1.0,0.0,0.0);
+**/
+
+
 static const char* fragment_shader_text = R"glsl(
 #version 410 core
 in vec3 color;
@@ -104,6 +114,12 @@ void main()
 )glsl";
 
 
+/**
+    frag_color = vec4(1.0,0.0,0.0, 1.0);
+
+**/
+
+
 
 static void error_callback(int error, const char* description)
 {
@@ -114,11 +130,18 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
+
+
+
+
 int main(void)
 {
+
+    //[ SGLFW::init
+
     GLFWwindow* window;
-    GLuint vertex_buffer, vertex_shader, fragment_shader, program;
-    GLint mvp_location, vpos_location, vcol_location;
+
+
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
@@ -152,7 +175,8 @@ int main(void)
 #endif
 
 
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    //window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
+    window = glfwCreateWindow(1024, 768, "Simple example", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -172,49 +196,62 @@ int main(void)
     printf(" renderer %s \n", renderer ); 
     printf(" version %s \n", version ); 
 
-
-
     glfwSwapInterval(1);
 
+    //] SGLFW::init
 
-    unsigned vao ; 
-    check(__FILE__, __LINE__);
+
+    unsigned vao ;                                                              check(__FILE__, __LINE__);
     glGenVertexArrays (1, &vao);                                                check(__FILE__, __LINE__);
     glBindVertexArray (vao);                                                    check(__FILE__, __LINE__);
-
-
+    
+    GLuint vertex_buffer ;
     glGenBuffers(1, &vertex_buffer);                                            check(__FILE__, __LINE__);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);                               check(__FILE__, __LINE__);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  check(__FILE__, __LINE__);
-
-    vertex_shader = glCreateShader(GL_VERTEX_SHADER);                           check(__FILE__, __LINE__);
-
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                check(__FILE__, __LINE__);
-    glCompileShader(vertex_shader);                                             check(__FILE__, __LINE__);
-
-    int params = -1; 
-    glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) print_shader_info_log(vertex_shader) ; 
-
-    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                       check(__FILE__, __LINE__);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            check(__FILE__, __LINE__);
-    glCompileShader(fragment_shader);                                           check(__FILE__, __LINE__);
-
-    glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) print_shader_info_log(fragment_shader) ; 
+    // vec2 position and vec3 color within the vertices buffer
 
 
-    program = glCreateProgram();               check(__FILE__, __LINE__);
-    glAttachShader(program, vertex_shader);    check(__FILE__, __LINE__);
-    glAttachShader(program, fragment_shader);  check(__FILE__, __LINE__);
-    glLinkProgram(program);                    check(__FILE__, __LINE__);
-    mvp_location = glGetUniformLocation(program, "MVP");   check(__FILE__, __LINE__);
-    vpos_location = glGetAttribLocation(program, "vPos");  check(__FILE__, __LINE__);
-    vcol_location = glGetAttribLocation(program, "vCol");  check(__FILE__, __LINE__);
-    glEnableVertexAttribArray(vpos_location);              check(__FILE__, __LINE__);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);  check(__FILE__, __LINE__);
-    glEnableVertexAttribArray(vcol_location);                                                   check(__FILE__, __LINE__);
+    GLuint program;
+    { 
+        // compile vertex shader
+        GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    check(__FILE__, __LINE__);
+        glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                check(__FILE__, __LINE__);
+        glCompileShader(vertex_shader);                                             check(__FILE__, __LINE__);
+        int v_params = -1; 
+        glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &v_params);
+        if (GL_TRUE != v_params) print_shader_info_log(vertex_shader) ; 
+
+        // compile fragment shader
+        GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                check(__FILE__, __LINE__);
+        glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            check(__FILE__, __LINE__);
+        glCompileShader(fragment_shader);                                           check(__FILE__, __LINE__);
+        int f_params = -1; 
+        glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &f_params);
+        if (GL_TRUE != f_params) print_shader_info_log(fragment_shader) ; 
+
+        // link program
+        program = glCreateProgram();               check(__FILE__, __LINE__);
+        glAttachShader(program, vertex_shader);    check(__FILE__, __LINE__);
+        glAttachShader(program, fragment_shader);  check(__FILE__, __LINE__);
+        glLinkProgram(program);                    check(__FILE__, __LINE__);
+    }
+
+
+    // get uniform and attribute locations from program
+    GLint mvp_location = glGetUniformLocation(program, "MVP");   check(__FILE__, __LINE__);
+    GLint vpos_location = glGetAttribLocation(program, "vPos");  check(__FILE__, __LINE__);
+    GLint vcol_location = glGetAttribLocation(program, "vCol");  check(__FILE__, __LINE__);
+
+    printf("//mvp_location  %d \n", mvp_location );  
+    printf("//vpos_location %d \n", vpos_location );  
+    printf("//vcol_location %d \n", vcol_location );  
+
+    glEnableVertexAttribArray(vpos_location);                                  check(__FILE__, __LINE__);
+    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) 0);                    check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(vcol_location);                                                                     check(__FILE__, __LINE__);
     glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 5, (void*) (sizeof(float) * 2));  check(__FILE__, __LINE__);
+    //  the offset of 2 floats picks the color triplet from the single vertices buffer
 
 
     int count(0);
@@ -228,8 +265,7 @@ int main(void)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(0.5f));
-
+        glm::mat4 mvp = glm::scale(glm::mat4(1.0f), glm::vec3(1.5f));
         float* mvp_f = glm::value_ptr( mvp ); 
 
         glUseProgram(program);

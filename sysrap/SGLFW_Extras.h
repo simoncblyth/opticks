@@ -337,14 +337,24 @@ struct SGLFW_VAO
     GLuint id ; 
 
     SGLFW_VAO(); 
+    void init(); 
     void bind(); 
     void unbind(); 
 };
 
 inline SGLFW_VAO::SGLFW_VAO()
+    :
+    id(-1)
 {
+    init(); 
+}
+
+inline void SGLFW_VAO::init()
+{
+    printf("SGLFW_VAO::init\n"); 
     glGenVertexArrays (1, &id);  SGLFW__check(__FILE__, __LINE__);
 }
+
 inline void SGLFW_VAO::bind()
 {
     glBindVertexArray(id);        SGLFW__check(__FILE__, __LINE__);
