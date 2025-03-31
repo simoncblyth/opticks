@@ -81,8 +81,18 @@ inline SCUDA_OutputBuffer<PIXEL_FORMAT>::SCUDA_OutputBuffer( SCUDA_OutputBufferT
     {
         int current_device, is_display_device;
         CUDA_CHECK( cudaGetDevice( &current_device ) );
+
         CUDA_CHECK( cudaDeviceGetAttribute( &is_display_device, cudaDevAttrKernelExecTimeout, current_device ) );
-        if( !is_display_device ) std::cerr << "SCUDA_OutputBuffer::SCUDA_OutputBuffer GL interop is only available on display device" << std::endl ;
+
+        const char* xdg_session_type = getenv("XDG_SESSION_TYPE");
+        if( xdg_session_type != nullptr && strcmp(xdg_session_type, "wayland") == 0)
+        {
+            is_display_device = 1;   // determining is_display_device from timeout seems not to work with Xwayland
+        }
+
+        if( !is_display_device ) std::cerr
+              << "SCUDA_OutputBuffer::SCUDA_OutputBuffer GL interop is only available on display device \n"
+              << "  xdg_session_type [" << ( xdg_session_type ? xdg_session_type : "-'" ) << "\n" ;
         assert( is_display_device );
     }
     resize( width, height );
