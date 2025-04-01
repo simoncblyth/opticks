@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
     int sleep_break = ssys::getenvint("SLEEP_BREAK",0); 
 
-    std::cout << "before loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ; 
+    if(gl.level > 0) std::cout << "main:before loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ; 
 
  
     while(gl.renderloop_proceed())
@@ -100,7 +100,7 @@ int main(int argc, char** argv)
             int wanted_frame_idx = gl.get_wanted_frame_idx() ; // -2 until press number key 0-9, back to -2 when press M  
             if(!gm.has_frame_idx(wanted_frame_idx) )
             {
-                std::cout << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
+                if(gl.level > 0) std::cout << "main:" << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n"; 
                 if( wanted_frame_idx == -2 )
                 { 
                     gm.set_frame(mfr);  

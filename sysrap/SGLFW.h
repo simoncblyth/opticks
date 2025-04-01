@@ -1,14 +1,14 @@
 #pragma once
 /**
-SGLFW.h : Light touch OpenGL render loop and key handling 
+SGLFW.h : Light touch OpenGL render loop and key handling
 ===========================================================
 
-Light touch encapsulation of OpenGL window and shader program, 
-that means trying to hide boilerplate, but not making lots of 
-decisions for user and getting complicated and inflexible like 
-the old oglrap/Frame.hh oglrap/OpticksViz did. 
+Light touch encapsulation of OpenGL window and shader program,
+that means trying to hide boilerplate, but not making lots of
+decisions for user and getting complicated and inflexible like
+the old oglrap/Frame.hh oglrap/OpticksViz did.
 
-WASD : Navigation in 3D space 
+WASD : Navigation in 3D space
 -------------------------------
 
 * FPS : first-person shooters
@@ -48,7 +48,7 @@ makes this user interface more powerful than ‘Click-to-Move’.
 If done properly, one can keep a point of the virtual
 environment fixed in the center of the view while moving
 around it.
-    
+
 **/
 
 #include <cassert>
@@ -94,37 +94,37 @@ around it.
 #include "SIMG_Frame.h"
 
 
-struct SGLFW : public SCMD 
+struct SGLFW : public SCMD
 {
     static constexpr const char* HELP =  R"LITERAL(
 SGLFW.h
 ========
 
 ::
-                  
 
-                 Q  W 
+
+                 Q  W
                  | /
                  |/
              A---+---D
                 /|
                / |
-              S  E          
+              S  E
 
 
 A
-   (WASDQE) hold to change eyeshift, translate left 
+   (WASDQE) hold to change eyeshift, translate left
 B
    invokes SGLM::desc describing view parameters [--desc]
 C
-   toggle.cuda between rasterized and raytrace render 
+   toggle.cuda between rasterized and raytrace render
    [currently only implemented for sysrap triangulated renderer]
 D
-   (WASDQE) hold to change eyeshift, translate right 
+   (WASDQE) hold to change eyeshift, translate right
 E
-   (WASDQE) hold to change eyeshift, translate down 
+   (WASDQE) hold to change eyeshift, translate down
 F
-   toggle.tmax : then change far by moving cursor vertically 
+   toggle.tmax : then change far by moving cursor vertically
 G
    -
 H
@@ -141,161 +141,162 @@ L
 M
    hop to the MOI envvar configured frame [not supported by all renderers]
 N
-   toggle.tmin : then change near by moving cursor vertically 
+   toggle.tmin : then change near by moving cursor vertically
 O
    switch camera between perspective and orthographic projections [--tcam]
 P
    -
 Q
-   (WASDQE) hold to change eyeshift, translate up 
+   (WASDQE) hold to change eyeshift, translate up
 
 R
-   hold down while arcball dragging mouse to change look rotation 
+   hold down while arcball dragging mouse to change look rotation
 S
-   (WASDQE) hold to change eyeshift, translate backwards 
+   (WASDQE) hold to change eyeshift, translate backwards
 T:toggle.tran
    no longer used : now use holding down WASDQE keys to change the eyeshift
 U:toggle.norm
-   for rasterized render toggle between wireframe and normal shading 
+   for rasterized render toggle between wireframe and normal shading
 V
-   [--traceyflip] invert vertical of the raytrace render, via Param.h signal to kernel 
+   [--traceyflip] invert vertical of the raytrace render, via Param.h signal to kernel
 W
-   (WASDQE) hold to change eyeshift, translate forwards 
+   (WASDQE) hold to change eyeshift, translate forwards
 X
-   [--rendertype] toggle between normal and zdepth shading 
+   [--rendertype] toggle between normal and zdepth shading
 Y
    experimental mouse control of eyerotation
 Z:toggle.zoom
-   change zoom scaling by moving cursor vertically 
+   change zoom scaling by moving cursor vertically
 
 
 0,1,2,3,4,5,6,7,8,9
    hop to frame "num" or default if no such frame
-   
+
 0,1,2,3,4,5,6,7,8,9 + SHIFT
    hop to frame "num + 10" using offset for SHIFT modifier
 
 0,1,2,3,4,5,6,7,8,9 + ALT
    hop to frame "num + 20" using offset for ALT modifier
-   (hop to default frame if there is no frame with the index) 
+   (hop to default frame if there is no frame with the index)
 
 0,1,2,3,4,5,6,7,8,9 + SHIFT + ALT
    hop to frame "num + 30" using offset for SHIFT and ALT modifier
-   (hop to default frame if there is no frame with the index) 
+   (hop to default frame if there is no frame with the index)
 
 With all num_key frame selection is there is no frame with the index
-then hop to the default frame.  
+then hop to the default frame.
 
 
-)LITERAL" ; 
-    static constexpr const char* TITLE = "SGLFW" ; 
+)LITERAL" ;
+    static constexpr const char* TITLE = "SGLFW" ;
 
-    SGLM& gm ; 
-    int wanted_frame_idx ; 
-    int wanted_snap ; 
+    SGLM& gm ;
+    int level ;
+    int wanted_frame_idx ;
+    int wanted_snap ;
 
-    int width ; 
-    int height ; 
-    int depth_test ; 
+    int width ;
+    int height ;
+    int depth_test ;
 
-    const char* title ; 
-    GLFWwindow* window ; 
+    const char* title ;
+    GLFWwindow* window ;
 
-    int count ; 
-    int renderlooplimit ; 
-    bool exitloop ; 
+    int count ;
+    int renderlooplimit ;
+    bool exitloop ;
 
-    bool dump ; 
-    int  _width ;  // on retina 2x width 
+    bool dump ;
+    int  _width ;  // on retina 2x width
     int  _height ;
-    SIMG_Frame*  sif ; 
-    SIMG_Frame*  sid ; 
+    SIMG_Frame*  sif ;
+    SIMG_Frame*  sid ;
 
     // getStartPos
-    double _start_x ; 
-    double _start_y ; 
+    double _start_x ;
+    double _start_y ;
 
     glm::vec2 start_ndc ;  // from key_pressed
     glm::vec2 move_ndc ;   // from cursor_moved
-    glm::vec4 drag ; 
+    glm::vec4 drag ;
 
-    SGLFW_Toggle toggle = {} ; 
-    SGLFW_Keys keys = {} ; 
+    SGLFW_Toggle toggle = {} ;
+    SGLFW_Keys keys = {} ;
 
 
 
-    bool renderloop_proceed(); 
-    void renderloop_exit(); 
-    void renderloop_head(); 
-    void renderloop_tail(); 
+    bool renderloop_proceed();
+    void renderloop_exit();
+    void renderloop_head();
+    void renderloop_tail();
 
-    void handle_event(GLEQevent& event); 
+    void handle_event(GLEQevent& event);
 
     void window_refresh();
-    void key_pressed(unsigned key); 
-    void numkey_pressed(unsigned num, unsigned modifiers); 
+    void key_pressed(unsigned key);
+    void numkey_pressed(unsigned num, unsigned modifiers);
 
-    void set_wanted_frame_idx(int _idx); 
+    void set_wanted_frame_idx(int _idx);
     int  get_wanted_frame_idx() const ;
 
 
 
-    void snap(int w); 
-    void set_wanted_snap(int w); 
+    void snap(int w);
+    void set_wanted_snap(int w);
     int get_wanted_snap() const ;
 
-    void download_pixels(); 
-    void download_depth(); 
-    void init_img_frame(); 
-    void writeJPG(const char* path) const ; 
-    void snap_local(bool yflip); 
+    void download_pixels();
+    void download_depth();
+    void init_img_frame();
+    void writeJPG(const char* path) const ;
+    void snap_local(bool yflip);
 
-    void key_repeated(unsigned key); 
-    void key_released(unsigned key); 
+    void key_repeated(unsigned key);
+    void key_released(unsigned key);
 
-    void button_pressed(unsigned button, unsigned mods); 
-    void button_released(unsigned button, unsigned mods); 
+    void button_pressed(unsigned button, unsigned mods);
+    void button_released(unsigned button, unsigned mods);
 
 
-    void cursor_moved(int ix, int iy); 
-    void cursor_moved_action(); 
+    void cursor_moved(int ix, int iy);
+    void cursor_moved_action();
 
-    int command(const char* cmd); 
-    static void Help(); 
-    void home(); 
-    void _desc(); 
-    void tcam(); 
-    void traceyflip(); 
-    void rendertype(); 
-    static std::string FormCommand(const char* token, float value); 
+    int command(const char* cmd);
+    static void Help();
+    void home();
+    void _desc();
+    void tcam();
+    void traceyflip();
+    void rendertype();
+    static std::string FormCommand(const char* token, float value);
 
     void getWindowSize();
     std::string descWindowSize() const;
 
     void setCursorPos(float ndc_x, float ndc_y);
-    void getStartPos(); 
+    void getStartPos();
     std::string descDrag() const;
-    std::string descStartPos() const;  
+    std::string descStartPos() const;
 
-    SGLFW(SGLM& gm ); 
-    virtual ~SGLFW(); 
-    static void Error_callback(int error, const char* description); 
-    void init(); 
+    SGLFW(SGLM& gm );
+    virtual ~SGLFW();
+    static void Error_callback(int error, const char* description);
+    void init();
 
-}; 
+};
 
 inline bool SGLFW::renderloop_proceed()
 {
-    return !glfwWindowShouldClose(window) && !exitloop ; 
+    return !glfwWindowShouldClose(window) && !exitloop ;
 }
 inline void SGLFW::renderloop_exit()
 {
-    std::cout << "SGLFW::renderloop_exit" << std::endl; 
+    std::cout << "SGLFW::renderloop_exit" << std::endl;
     glfwSetWindowShouldClose(window, true);
 }
 inline void SGLFW::renderloop_head()
 {
-    dump = count % 100000 == 0 ; 
+    dump = count % 100000 == 0 ;
 
     getWindowSize();
     glViewport(0, 0, _width, _height);
@@ -303,7 +304,7 @@ inline void SGLFW::renderloop_head()
 
     if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
 
-    if(count == 0 ) home(); 
+    if(count == 0 ) home();
 }
 
 
@@ -334,17 +335,17 @@ See oglrap/Frame::handle_event
 
 inline void SGLFW::handle_event(GLEQevent& event)
 {
-    //std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl; 
+    //std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl;
     switch(event.type)
     {
-        case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ; 
+        case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ;
         case GLEQ_KEY_REPEATED:  key_repeated(event.keyboard.key)       ; break ;
         case GLEQ_KEY_RELEASED:  key_released(event.keyboard.key)       ; break ;
-        case GLEQ_BUTTON_PRESSED:  button_pressed(  event.mouse.button, event.mouse.mods)  ; break ; 
-        case GLEQ_BUTTON_RELEASED: button_released( event.mouse.button, event.mouse.mods)  ; break ; 
+        case GLEQ_BUTTON_PRESSED:  button_pressed(  event.mouse.button, event.mouse.mods)  ; break ;
+        case GLEQ_BUTTON_RELEASED: button_released( event.mouse.button, event.mouse.mods)  ; break ;
         case GLEQ_CURSOR_MOVED:    cursor_moved(event.pos.x, event.pos.y) ; break ;
-        case GLEQ_WINDOW_REFRESH:  window_refresh()                       ; break ; 
-        default:                                                          ; break ; 
+        case GLEQ_WINDOW_REFRESH:  window_refresh()                       ; break ;
+        default:                                                          ; break ;
     }
 }
 
@@ -360,7 +361,7 @@ By observation this event fires only in initialization
 
 inline void SGLFW::window_refresh()
 {
-    home(); 
+    home();
 }
 
 
@@ -368,7 +369,7 @@ inline void SGLFW::window_refresh()
 SGLFW::key_pressed
 --------------------
 
-HMM:dont like the arbitrary split between here and SGLM.h for interaction control 
+HMM:dont like the arbitrary split between here and SGLM.h for interaction control
 Maybe remove the toggle or do that in SGLM ?
 
 **/
@@ -376,15 +377,15 @@ Maybe remove the toggle or do that in SGLM ?
 
 inline void SGLFW::key_pressed(unsigned key)
 {
-    keys.key_pressed(key); 
+    keys.key_pressed(key);
     unsigned modifiers = keys.modifiers() ;
 
-    getStartPos(); 
-    std::cout 
-        << descStartPos() 
-        << descWindowSize() 
+    getStartPos();
+    if(level > 1) std::cout
+        << descStartPos()
+        << descWindowSize()
         << std::endl
-        ; 
+        ;
 
     switch(key)
     {
@@ -398,31 +399,31 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_7:
         case GLFW_KEY_8:
         case GLFW_KEY_9:
-                              numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ; 
+                              numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ;
         case GLFW_KEY_M:
-                              set_wanted_frame_idx(-2)              ; break ;   // MOI target 
-        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom            ; break ; 
-        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin            ; break ; 
-        case GLFW_KEY_F:      toggle.tmax = !toggle.tmax            ; break ; 
-        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot            ; break ; 
-        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda            ; break ; 
-        case GLFW_KEY_U:      toggle.norm = !toggle.norm            ; break ; 
-        case GLFW_KEY_T:      toggle.tran = !toggle.tran            ; break ; 
-        case GLFW_KEY_B:      command("--desc")                     ; break ; 
-        case GLFW_KEY_H:      command("--home") ; command("--help") ; break ; 
-        case GLFW_KEY_O:      command("--tcam")                     ; break ;  
-        case GLFW_KEY_I:      command("--snap-local")               ; break ;  
-        case GLFW_KEY_J:      command("--snap-local-inverted")      ; break ;  
-        case GLFW_KEY_K:      command("--snap")                     ; break ;  
-        case GLFW_KEY_L:      command("--snap-inverted")            ; break ;  
-        case GLFW_KEY_V:      command("--traceyflip")               ; break ;  
-        case GLFW_KEY_X:      command("--rendertype")               ; break ;  
-        case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;  
+                              set_wanted_frame_idx(-2)              ; break ;   // MOI target
+        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom            ; break ;
+        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin            ; break ;
+        case GLFW_KEY_F:      toggle.tmax = !toggle.tmax            ; break ;
+        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot            ; break ;
+        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda            ; break ;
+        case GLFW_KEY_U:      toggle.norm = !toggle.norm            ; break ;
+        case GLFW_KEY_T:      toggle.tran = !toggle.tran            ; break ;
+        case GLFW_KEY_B:      command("--desc")                     ; break ;
+        case GLFW_KEY_H:      command("--home") ; command("--help") ; break ;
+        case GLFW_KEY_O:      command("--tcam")                     ; break ;
+        case GLFW_KEY_I:      command("--snap-local")               ; break ;
+        case GLFW_KEY_J:      command("--snap-local-inverted")      ; break ;
+        case GLFW_KEY_K:      command("--snap")                     ; break ;
+        case GLFW_KEY_L:      command("--snap-inverted")            ; break ;
+        case GLFW_KEY_V:      command("--traceyflip")               ; break ;
+        case GLFW_KEY_X:      command("--rendertype")               ; break ;
+        case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;
     }
-   
+
     //if(modifiers > 0) gm.key_pressed_action(modifiers) ; // not triggered repeatedly enough for navigation
 
-    std::cout << toggle.desc() << std::endl ; 
+    if(level > 1) std::cout << toggle.desc() << std::endl ;
 }
 
 inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
@@ -432,28 +433,28 @@ inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
     bool with_alt = SGLM_Modifiers::IsAlt(modifiers) ;
     bool with_super = SGLM_Modifiers::IsSuper(modifiers) ;
 
-    unsigned offset = 0 ; 
-    if(         with_shift && !with_alt)  offset = 10 ; 
+    unsigned offset = 0 ;
+    if(         with_shift && !with_alt)  offset = 10 ;
     else if(   !with_shift &&  with_alt)  offset = 20 ;
     else if(    with_shift &&  with_alt)  offset = 30 ;
 
-    unsigned num = _num + offset ; 
+    unsigned num = _num + offset ;
 
-    std::cout 
+    if(level > 1) std::cout
         << "SGLFW::numkey_pressed"
-        << " _num " << _num 
-        << " modifiers " << modifiers 
+        << " _num " << _num
+        << " modifiers " << modifiers
         << " SGLM_Modifiers::Desc(modifiers) " << SGLM_Modifiers::Desc(modifiers)
-        << " offset " << offset 
-        << " num " << num 
+        << " offset " << offset
+        << " num " << num
         << " with_shift " << with_shift
         << " with_control " << with_control
         << " with_alt " << with_alt
         << " with_super " << with_super
-        << "\n" 
-        ; 
+        << "\n"
+        ;
 
-    set_wanted_frame_idx(num); 
+    set_wanted_frame_idx(num);
 }
 inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }
 inline int  SGLFW::get_wanted_frame_idx() const { return wanted_frame_idx ; }
@@ -477,69 +478,79 @@ https://www.khronos.org/opengl/wiki/GLAPI/glPixelStore
 
 inline void SGLFW::download_pixels()
 {
-    if(sif == nullptr) init_img_frame();  
+    if(sif == nullptr) init_img_frame();
 
-    assert( _width > 0 && _width == sif->width ) ; 
-    assert( _height > 0 && _height == sif->height ) ; 
+    assert( _width > 0 && _width == sif->width ) ;
+    assert( _height > 0 && _height == sif->height ) ;
 
     glPixelStorei(GL_PACK_ALIGNMENT,1);   // byte aligned output
     glReadPixels(0,0,_width,_height,GL_RGBA, GL_UNSIGNED_BYTE, sif->pixels );
 
-    if(sid != nullptr) download_depth(); 
-} 
+    if(sid != nullptr) download_depth();
+}
 
 
 /**
 SGLFW::download_depth
 ----------------------
 
-Depth component "native" type is GL_FLOAT in range 0. to 1. 
-when type is not GL_FLOAT then the read values are scaled depending 
+Depth component "native" type is GL_FLOAT in range 0. to 1.
+when type is not GL_FLOAT then the read values are scaled depending
 on the type, eg by 255. for type of GL_UNSIGNED_BYTE
 
-* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glReadPixels.xhtml 
+* https://registry.khronos.org/OpenGL-Refpages/gl4/html/glReadPixels.xhtml
 
 **/
 
 inline void SGLFW::download_depth()
 {
-    assert(sid); 
+    assert(sid);
     GLenum format = GL_DEPTH_COMPONENT ;
     GLenum type = GL_UNSIGNED_BYTE ;
     glPixelStorei(GL_PACK_ALIGNMENT,1);   // byte aligned output
-    glReadPixels(0,0,_width,_height, format, type, sid->pixels ); 
+    glReadPixels(0,0,_width,_height, format, type, sid->pixels );
 }
+
+
+/**
+SGLFW::init_img_frame
+-------------------------
+
+export SGLFW__DEPTH=1
+   enables download and saving of jpg depth maps together with ordinary screenshots
+
+**/
 
 
 inline void SGLFW::init_img_frame()
 {
-    assert( _width > 0 ); 
-    assert( _height > 0 ); 
-    int channels = 4 ; 
+    assert( _width > 0 );
+    assert( _height > 0 );
+    int channels = 4 ;
 
-    sif = new SIMG_Frame(_width, _height, channels ) ; 
+    sif = new SIMG_Frame(_width, _height, channels ) ;
 
-    bool DEPTH  = ssys::getenvbool("SGLFW__DEPTH"); 
+    bool DEPTH  = ssys::getenvbool("SGLFW__DEPTH");
     if(DEPTH)
     {
         sid = new SIMG_Frame(_width, _height, 1 );
     }
 }
-inline void SGLFW::writeJPG(const char* path) const 
+inline void SGLFW::writeJPG(const char* path) const
 {
-    std::cout << "SGLFW::writeJPG [" << ( path ? path : "-" ) << "]\n" ; 
-    assert(sif); 
+    std::cout << "SGLFW::writeJPG [" << ( path ? path : "-" ) << "]\n" ;
+    assert(sif);
     sif->writeJPG(path);
 
     if(sid)
     {
-        const char* dpath = sstr::ReplaceEnd( path, ".jpg", "_depth.jpg" ); 
-        std::cout << "SGLFW::writeJPG [" << ( dpath ? dpath : "-" ) << "]\n" ; 
-        sid->writeJPG(dpath); 
+        const char* dpath = sstr::ReplaceEnd( path, ".jpg", "_depth.jpg" );
+        std::cout << "SGLFW::writeJPG [" << ( dpath ? dpath : "-" ) << "]\n" ;
+        sid->writeJPG(dpath);
 
-        const char* npath = sstr::ReplaceEnd( path, ".jpg", "_depth.npy" ); 
-        std::cout << "SGLFW::writeJPG [" << ( npath ? npath : "-" ) << "]\n" ; 
-        sid->writeNPY(npath); 
+        const char* npath = sstr::ReplaceEnd( path, ".jpg", "_depth.npy" );
+        std::cout << "SGLFW::writeJPG [" << ( npath ? npath : "-" ) << "]\n" ;
+        sid->writeNPY(npath);
     }
 }
 
@@ -548,12 +559,12 @@ inline void SGLFW::writeJPG(const char* path) const
 SGLFW::snap_local
 -----------------
 
-Default stem of nullptr leads to use of current datetime formatted 
-string of form sstamp::DEFAULT_TIME_FMT 
+Default stem of nullptr leads to use of current datetime formatted
+string of form sstamp::DEFAULT_TIME_FMT
 
 CAUTION : this is currently NOT used from::
 
-     ~/o/cx.sh 
+     ~/o/cx.sh
      CSGOptiXRenderInteractiveTest
      CSGOptiX::snap
 
@@ -565,18 +576,18 @@ It is used from::
 
 inline void SGLFW::snap_local(bool yflip)
 {
-    download_pixels(); 
+    download_pixels();
     if(yflip)
-    { 
+    {
         sif->flipVertical();
-        if(sid) sid->flipVertical(); 
+        if(sid) sid->flipVertical();
     }
 
-    const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", nullptr ); 
-    int index = 0 ; 
-    const char* ext = ".jpg" ;  
+    const char* stem = ssys::getenvvar("SGLFW__snap_local_STEM", nullptr );
+    int index = 0 ;
+    const char* ext = ".jpg" ;
     bool unique = true ;
-    const char* path = spath::DefaultOutputPath(stem, index, ext, unique); 
+    const char* path = spath::DefaultOutputPath(stem, index, ext, unique);
     spath::MakeDirsForFile(path);
 
     writeJPG(path);
@@ -585,26 +596,26 @@ inline void SGLFW::snap_local(bool yflip)
 
 inline void SGLFW::key_repeated(unsigned key)
 {
-    //std::cout << "SGLFW::key_repeated " << key << "\n" ; 
-    keys.key_pressed(key); 
+    //std::cout << "SGLFW::key_repeated " << key << "\n" ;
+    keys.key_pressed(key);
     unsigned modifiers = keys.modifiers() ;
-    if(modifiers == 0) return ;  
-    gm.key_pressed_action(modifiers) ; 
-    gm.update(); 
+    if(modifiers == 0) return ;
+    gm.key_pressed_action(modifiers) ;
+    gm.update();
 }
 
 inline void SGLFW::key_released(unsigned key)
 {
-    keys.key_released(key); 
+    keys.key_released(key);
 }
 
 inline void SGLFW::button_pressed(unsigned button, unsigned mods)
 {
-    std::cout << "SGLFW::button_pressed " << button << " " << mods << "\n" ; 
+    std::cout << "SGLFW::button_pressed " << button << " " << mods << "\n" ;
 }
 inline void SGLFW::button_released(unsigned button, unsigned mods)
 {
-    std::cout << "SGLFW::button_released " << button << " " << mods << "\n" ; 
+    std::cout << "SGLFW::button_released " << button << " " << mods << "\n" ;
 }
 
 
@@ -613,57 +624,57 @@ inline void SGLFW::button_released(unsigned button, unsigned mods)
 
 inline int SGLFW::command(const char* cmd)
 {
-    if(strcmp(cmd, "--exit") == 0) renderloop_exit(); 
-    if(strcmp(cmd, "--help") == 0) Help(); 
-    if(strcmp(cmd, "--home") == 0) home(); 
-    if(strcmp(cmd, "--desc") == 0) _desc(); 
-    if(strcmp(cmd, "--tcam") == 0) tcam(); 
-    if(strcmp(cmd, "--snap") == 0) snap(1); 
-    if(strcmp(cmd, "--snap-inverted") == 0) snap(2); 
-    if(strcmp(cmd, "--snap-local") == 0) snap_local(false); 
-    if(strcmp(cmd, "--snap-local-inverted") == 0) snap_local(true); 
-    if(strcmp(cmd, "--traceyflip") == 0) traceyflip(); 
-    if(strcmp(cmd, "--rendertype") == 0) rendertype(); 
-    return 0 ;  
+    if(strcmp(cmd, "--exit") == 0) renderloop_exit();
+    if(strcmp(cmd, "--help") == 0) Help();
+    if(strcmp(cmd, "--home") == 0) home();
+    if(strcmp(cmd, "--desc") == 0) _desc();
+    if(strcmp(cmd, "--tcam") == 0) tcam();
+    if(strcmp(cmd, "--snap") == 0) snap(1);
+    if(strcmp(cmd, "--snap-inverted") == 0) snap(2);
+    if(strcmp(cmd, "--snap-local") == 0) snap_local(false);
+    if(strcmp(cmd, "--snap-local-inverted") == 0) snap_local(true);
+    if(strcmp(cmd, "--traceyflip") == 0) traceyflip();
+    if(strcmp(cmd, "--rendertype") == 0) rendertype();
+    return 0 ;
 }
 
-inline void SGLFW::Help() 
+inline void SGLFW::Help()
 {
-    std::cout << HELP ; 
+    std::cout << HELP ;
 }
 
 /**
 SGLFW::home
 -------------
 
-1. center cursor position 
-2. zero the eyeshift and rotations, set zoom to 1  
+1. center cursor position
+2. zero the eyeshift and rotations, set zoom to 1
 
-WIP: invoking doing this from ctor at tail of SGLFW::init flaky 
-     so try from renderloop_head for count==0  
+WIP: invoking doing this from ctor at tail of SGLFW::init flaky
+     so try from renderloop_head for count==0
 
 **/
 
 inline void SGLFW::home()
 {
-    setCursorPos(0.f,0.f); 
-    gm.command("--home"); 
-} 
+    setCursorPos(0.f,0.f);
+    gm.command("--home");
+}
 inline void SGLFW::_desc()
 {
-    gm.command("--desc"); 
+    gm.command("--desc");
 }
 inline void SGLFW::tcam()
 {
-    gm.command("--tcam"); 
+    gm.command("--tcam");
 }
 inline void SGLFW::traceyflip()
 {
-    gm.command("--traceyflip"); 
+    gm.command("--traceyflip");
 }
 inline void SGLFW::rendertype()
 {
-    gm.command("--rendertype"); 
+    gm.command("--rendertype");
 }
 
 
@@ -672,8 +683,8 @@ inline void SGLFW::rendertype()
 
 inline std::string SGLFW::FormCommand(const char* token, float value)  // static
 {
-    std::stringstream ss ; 
-    ss << token << " " << value ; 
+    std::stringstream ss ;
+    ss << token << " " << value ;
     std::string str = ss.str();
     return str ;
 }
@@ -695,7 +706,7 @@ inline void SGLFW::getWindowSize()
 }
 inline std::string SGLFW::descWindowSize() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "SGLFW::descWindowSize"
        << " wh["
        << std::setw(4) << width
@@ -703,7 +714,7 @@ inline std::string SGLFW::descWindowSize() const
        << std::setw(4) << height
        << "]"
        << " _wh["
-       << std::setw(4) << _width 
+       << std::setw(4) << _width
        << ","
        << std::setw(4) << _height
        << "]"
@@ -715,8 +726,8 @@ inline std::string SGLFW::descWindowSize() const
 
 inline void SGLFW::setCursorPos(float ndc_x, float ndc_y )
 {
-    float x = (1.f + ndc_x)*width/2.f ; 
-    float y = (1.f - ndc_y)*height/2.f ; 
+    float x = (1.f + ndc_x)*width/2.f ;
+    float y = (1.f - ndc_y)*height/2.f ;
     glfwSetCursorPos(window, x, y );
 }
 
@@ -744,8 +755,8 @@ inline void SGLFW::getStartPos()
 {
     glfwGetCursorPos(window, &_start_x, &_start_y );
 
-    start_ndc.x = 2.f*_start_x/width - 1.f ; 
-    start_ndc.y = 1.f - 2.f*_start_y/height ; 
+    start_ndc.x = 2.f*_start_x/width - 1.f ;
+    start_ndc.y = 1.f - 2.f*_start_y/height ;
 }
 
 /**
@@ -761,78 +772,78 @@ As cursor_moved gets called repeatedly during mouse
 movements the drag.z drag.w tend to be small.
 
 To combat this for local rotation control via quaternion
-use the abolute start position (from key_pressed) 
-and current position from cursor_moved. 
+use the abolute start position (from key_pressed)
+and current position from cursor_moved.
 
 **/
 inline void SGLFW::cursor_moved(int ix, int iy)
 {
-    move_ndc.x  = 2.f*float(ix)/width - 1.f ;   
-    move_ndc.y  = 1.f - 2.f*float(iy)/height ; 
+    move_ndc.x  = 2.f*float(ix)/width - 1.f ;
+    move_ndc.y  = 1.f - 2.f*float(iy)/height ;
 
-    float dx = move_ndc.x - drag.x ; 
+    float dx = move_ndc.x - drag.x ;
     float dy = move_ndc.y - drag.y ;   // delta with the prior call to cursor_moved
 
-    drag.x = move_ndc.x ; 
-    drag.y = move_ndc.y ; 
-    drag.z = dx ; 
-    drag.w = dy ; 
+    drag.x = move_ndc.x ;
+    drag.y = move_ndc.y ;
+    drag.z = dx ;
+    drag.w = dy ;
 
-    cursor_moved_action(); 
+    cursor_moved_action();
 }
 
 inline void SGLFW::cursor_moved_action()
 {
     unsigned modifiers = keys.modifiers() ;
-    float dy = drag.w ; 
+    float dy = drag.w ;
     if(toggle.zoom)
     {
-        std::string cmd = FormCommand("--inc-zoom", dy*100 ); 
+        std::string cmd = FormCommand("--inc-zoom", dy*100 );
         gm.command(cmd.c_str()) ;
-    } 
+    }
     else if(toggle.tmin)
     {
-        std::string cmd = FormCommand("--inc-tmin", dy ); 
+        std::string cmd = FormCommand("--inc-tmin", dy );
         gm.command(cmd.c_str()) ;
     }
     else if(toggle.tmax)
     {
-        std::string cmd = FormCommand("--inc-tmax", dy*100 ); 
+        std::string cmd = FormCommand("--inc-tmax", dy*100 );
         gm.command(cmd.c_str()) ;
     }
     /*
     else if(toggle.lrot)
     {
-        //std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ; 
-        gm.setLookRotation(start_ndc, move_ndc); 
-        gm.update(); 
+        //std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ;
+        gm.setLookRotation(start_ndc, move_ndc);
+        gm.update();
     }
     else if(toggle.tran)
     {
         gm.setEyeShift(start_ndc, move_ndc, modifiers );
-        gm.update(); 
+        gm.update();
     }
     */
     else
     {
         gm.cursor_moved_action(start_ndc, move_ndc, modifiers );
-        gm.update(); 
+        gm.update();
     }
 }
 
 inline std::string SGLFW::descDrag() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss
-        << " (" 
-        << std::setw(10) << std::fixed << std::setprecision(3) << drag.x 
+        << " ("
+        << std::setw(10) << std::fixed << std::setprecision(3) << drag.x
         << ","
         << std::setw(10) << std::fixed << std::setprecision(3) << drag.y
         << ","
         << std::setw(10) << std::fixed << std::setprecision(3) << drag.z
         << ","
         << std::setw(10) << std::fixed << std::setprecision(3) << drag.w
-        << ")" 
+        << ")"
         ;
     std::string str = ss.str();
     return str ;
@@ -841,10 +852,10 @@ inline std::string SGLFW::descDrag() const
 
 inline std::string SGLFW::descStartPos() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "SGLFW::descCursorPos"
        << "["
-       << std::setw(7) << std::fixed << std::setprecision(2) << _start_x 
+       << std::setw(7) << std::fixed << std::setprecision(2) << _start_x
        << ","
        << std::setw(7) << std::fixed << std::setprecision(2) << _start_y
        << "]"
@@ -862,14 +873,15 @@ inline std::string SGLFW::descStartPos() const
 SGLFW::SGLFW
 -------------
 
- -1:corresponds to frame formed from entire CE center-extent  
+ -1:corresponds to frame formed from entire CE center-extent
 
 **/
 
 inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
-    wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -2)),   
+    level(ssys::getenvint("SGLFW_LEVEL", 0)),
+    wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -2)),
     wanted_snap(0),
     width(gm.Width()),
     height(gm.Height()),
@@ -877,7 +889,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     title(TITLE),
     window(nullptr),
     count(0),
-    renderlooplimit(ssys::getenvint("SGLFW__renderlooplimit",1000000)), 
+    renderlooplimit(ssys::getenvint("SGLFW__renderlooplimit",1000000)),
     exitloop(false),
     dump(false),
     _width(0),
@@ -890,7 +902,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     move_ndc(0.f,0.f),
     drag(0.f,0.f,0.f,0.f)
 {
-    init(); 
+    init();
 }
 
 inline SGLFW::~SGLFW()
@@ -924,7 +936,7 @@ Example responses::
 
 inline void SGLFW::init()
 {
-    printf("[SGLFW::init\n"); 
+    if(level > 1) printf("[SGLFW::init level %d \n", level);
     glfwSetErrorCallback(SGLFW::Error_callback);
     if (!glfwInit()) exit(EXIT_FAILURE);
 
@@ -932,80 +944,84 @@ inline void SGLFW::init()
 
 #if defined __APPLE__
     glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 3);  // version specifies the minimum, not what will get on mac
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2); 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #elif defined _MSC_VER
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1); 
- 
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+
 #elif __linux
 
-    printf(".SGLFW::init.__linux\n"); 
-    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4); 
+    if(level > 1) printf(".SGLFW::init.__linux\n");
+    glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 6);  // 1/6 ?
     glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // remove stuff deprecated in requested release
     glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);   
-    // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,   
+    glfwWindowHint( GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+    // https://learnopengl.com/In-Practice/Debugging Debug output is core since OpenGL version 4.3,
 #endif
 
 
-    // HMM: using fullscreen mode with resolution less than display changes display resolution 
+    // HMM: using fullscreen mode with resolution less than display changes display resolution
     GLFWmonitor* monitor = gm.fullscreen ? glfwGetPrimaryMonitor() : nullptr ;   // nullptr for windowed mode
     GLFWwindow* share = nullptr ;     // window whose context to share resources with, or NULL to not share resources
 
-    printf(".SGLFW::init width %d height %d\n", width, height); 
+    if(level > 1) printf(".SGLFW::init width %d height %d\n", width, height);
     window = glfwCreateWindow(width, height, title, monitor, share);
     if (!window)
-    {   
+    {
         glfwTerminate();
         exit(EXIT_FAILURE);
-    }   
-    //glfwSetKeyCallback(window, SGLFW::key_callback);  // using gleq event for key callbacks not this manual approach 
+    }
+    //glfwSetKeyCallback(window, SGLFW::key_callback);  // using gleq event for key callbacks not this manual approach
     glfwMakeContextCurrent(window);
 
     gleqTrackWindow(window);  // replaces callbacks, see https://github.com/glfw/gleq
-    
+
     glewExperimental = GL_TRUE;
-    glewInit (); 
+    glewInit ();
 
-    
 
-    GLenum err0 = glGetError() ; 
-    GLenum err1 = glGetError() ; 
-    bool err0_expected = err0 == GL_INVALID_ENUM ; // long-standing glew bug apparently 
-    bool err1_expected = err1 == GL_NO_ERROR ; 
-    if(!err0_expected) printf("//SGLFW::init UNEXPECTED err0 %d \n", err0 ); 
-    if(!err1_expected) printf("//SGLFW::init UNEXPECTED err1 %d \n", err1 ); 
-    //assert( err0_expected );  
-    //assert( err1_expected );  
+
+    GLenum err0 = glGetError() ;
+    GLenum err1 = glGetError() ;
+    bool err0_expected = err0 == GL_INVALID_ENUM ; // long-standing glew bug apparently
+    bool err1_expected = err1 == GL_NO_ERROR ;
+    if(!err0_expected) printf("//SGLFW::init UNEXPECTED err0 %d \n", err0 );
+    if(!err1_expected) printf("//SGLFW::init UNEXPECTED err1 %d \n", err1 );
+    //assert( err0_expected );
+    //assert( err1_expected );
 
     const GLubyte* renderer = glGetString (GL_RENDERER);
     const GLubyte* version = glGetString (GL_VERSION);
-    printf("//SGLFW::init GL_RENDERER [%s] \n", renderer );
-    printf("//SGLFW::init GL_VERSION [%s] \n", version );
+
+    if(level > 0)
+    {
+        printf("//SGLFW::init GL_RENDERER [%s] \n", renderer );
+        printf("//SGLFW::init GL_VERSION [%s] \n", version );
+    }
 
 
     //  https://learnopengl.com/Advanced-OpenGL/Depth-testing
     if(depth_test == 0)
     {
-        printf("//SGLFW::init NOT-ENABLED depth_test %d \n", depth_test );  
-    } 
+        if(level > 1) printf("//SGLFW::init NOT-ENABLED depth_test %d \n", depth_test );
+    }
     else
     {
-        printf("//SGLFW::init ENABLED depth_test %d \n", depth_test );  
+        if(level > 1) printf("//SGLFW::init ENABLED depth_test %d \n", depth_test );
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);  
-    } 
+        glDepthFunc(GL_LESS);
+    }
 
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // otherwise gl_PointSize setting ignored, setting in geom not vert shader used when present 
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE); // otherwise gl_PointSize setting ignored, setting in geom not vert shader used when present
 
     int interval = 1 ; // The minimum number of screen updates to wait for until the buffers are swapped by glfwSwapBuffers.
     glfwSwapInterval(interval);
 
-    //home(); // maybe too soon to do this, as flaky where the cursor starts  
-    printf("]SGLFW::init\n"); 
+    //home(); // too soon to do this, as flaky where the cursor starts
+    if(level > 1) printf("]SGLFW::init\n");
 }
 

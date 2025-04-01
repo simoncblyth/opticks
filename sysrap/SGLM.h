@@ -179,6 +179,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kESCALE = "ESCALE" ; 
     static constexpr const char* kVIZMASK = "VIZMASK" ; 
     static constexpr const char* kTRACEYFLIP = "TRACEYFLIP" ; 
+    static constexpr const char* kLEVEL = "SGLM_LEVEL" ; 
 
     // static defaults, some can be overridden in the instance 
     static glm::ivec2 WH ; 
@@ -199,6 +200,7 @@ struct SYSRAP_API SGLM : public SCMD
     static int   ESCALE ; 
     static uint32_t VIZMASK ; 
     static int   TRACEYFLIP ; 
+    static int   LEVEL ; 
 
 
     static void SetWH( int width, int height ); 
@@ -515,6 +517,7 @@ int        SGLM::FULLSCREEN  = EValue<int>(kFULLSCREEN,   "0") ;
 int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis" 
 uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );  
 int        SGLM::TRACEYFLIP  = ssys::getenvint(kTRACEYFLIP,  0 ) ; 
+int        SGLM::LEVEL  = ssys::getenvint(kLEVEL,  0 ) ; 
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -523,13 +526,13 @@ inline void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; 
 inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
 inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
 
-inline void SGLM::SetZOOM( float v ){ ZOOM = v ; std::cout << "SGLM::SetZOOM " << ZOOM << std::endl ; }
-inline void SGLM::SetTMIN( float v ){ TMIN = v ; std::cout << "SGLM::SetTMIN " << TMIN << std::endl ; }
-inline void SGLM::SetTMAX( float v ){ TMAX = v ; std::cout << "SGLM::SetTMAX " << TMAX << std::endl ; }
+inline void SGLM::SetZOOM( float v ){ ZOOM = v ; if(LEVEL>0) std::cout << "SGLM::SetZOOM " << ZOOM << std::endl ; }
+inline void SGLM::SetTMIN( float v ){ TMIN = v ; if(LEVEL>0) std::cout << "SGLM::SetTMIN " << TMIN << std::endl ; }
+inline void SGLM::SetTMAX( float v ){ TMAX = v ; if(LEVEL>0) std::cout << "SGLM::SetTMAX " << TMAX << std::endl ; }
 
 inline void SGLM::IncZOOM( float v ){ ZOOM += v ; /*std::cout << "SGLM::IncZOOM " << ZOOM << std::endl ;*/ }
 inline void SGLM::IncTMIN( float v ){ TMIN += v ; /*std::cout << "SGLM::IncTMIN " << TMIN << std::endl ;*/ }
-inline void SGLM::IncTMAX( float v ){ TMAX += v ; std::cout << "SGLM::IncTMAX " << TMAX << std::endl ; }
+inline void SGLM::IncTMAX( float v ){ TMAX += v ; if(LEVEL>0) std::cout << "SGLM::IncTMAX " << TMAX << std::endl ; }
 
 
 inline void SGLM::SetCAM( const char* cam ){ CAM = SCAM::Type(cam) ; }
