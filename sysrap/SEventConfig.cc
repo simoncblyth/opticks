@@ -1332,7 +1332,7 @@ void SEventConfig::SetDevice( size_t totalGlobalMem_bytes, std::string name )
 
 void SEventConfig::SetDeviceName( const char* name )
 {
-    _DeviceName = name ? nullptr : strdup(name) ;
+    _DeviceName = name ? strdup(name) : nullptr ;
 }
 
 

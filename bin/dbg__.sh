@@ -3,7 +3,7 @@
 
 dbg__() 
 { 
-    : opticks/examples/dbg__.sh
+    : bin/dbg__.sh
  
     if [ -z "$BP" ]; then
         H="";
