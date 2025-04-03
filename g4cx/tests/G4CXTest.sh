@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 G4CXTest.sh : Standalone bi-simulation with G4CXApp::Main
 ===========================================================

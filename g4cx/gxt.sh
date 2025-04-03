@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 gxt.sh : G4CXSimtraceTest 
 =============================================================================================================
@@ -130,6 +130,8 @@ analog timings : showing log lines taking more than 2 percent of total time
 EOU
 }
 
+cd $(dirname $(realpath $BASH_SOURCE))
+
 msg="=== $BASH_SOURCE :"
 
 case $(uname) in 
@@ -148,7 +150,8 @@ bin=G4CXSimtraceTest
 log=$bin.log
 home=$(dirname $BASH_SOURCE)/..
 
-source $home/bin/GEOM_.sh   # use geom_ bash function to edit 
+#source $home/bin/GEOM_.sh   # use geom_ bash function to edit 
+source $HOME/.opticks/GEOM/GEOM.sh 
 
 if [ -n "$OPTICKS_INPUT_PHOTON" ]; then 
    echo $msg WARNING : simtrace running and input photons cannot be used together  : unset OPTICKS_INPUT_PHOTON

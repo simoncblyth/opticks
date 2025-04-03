@@ -6,24 +6,24 @@ Usually invoked from U4SimtraceTest.sh
 
 This does simtrace scans of all unique solids in a Geant4 geometry tree and
 saves the placement transforms of all nodes into *base* directory with NP set_names
-containing the solid names of all nodes.  These folders of .npy files 
-can be presented as 2D cross sections of the geometry using U4SimtraceTest.py 
+containing the solid names of all nodes.  These folders of .npy files
+can be presented as 2D cross sections of the geometry using U4SimtraceTest.py
 as orchestrated by U4SimtraceTest.sh
 
 Although in principal this should work for any geometry it is intended to
 assist with debugging within small test geometries.  With large geometries it
-will be very slow and write huge amounts of output. 
+will be very slow and write huge amounts of output.
 
-HMM: Actually this is not so general, because the gensteps pick a plane 
+HMM: Actually this is not so general, because the gensteps pick a plane
 in which to collect intersects : so combining those only makes sense
-when the transforms of the solids correspond. So it will work for the 
-solids of a single PMT, but will not usually work across multiple PMTs. 
+when the transforms of the solids correspond. So it will work for the
+solids of a single PMT, but will not usually work across multiple PMTs.
 
-Of course CSGOptiX simtrace that does similar on GPU works fine 
-across any geometry with solids having any relation to each other. 
+Of course CSGOptiX simtrace that does similar on GPU works fine
+across any geometry with solids having any relation to each other.
 
-TODO: review the GPU simtrace approach and see if something similar 
-could be done with G4Navigator (see initial work in U4Navigator.h) 
+TODO: review the GPU simtrace approach and see if something similar
+could be done with G4Navigator (see initial work in U4Navigator.h)
 
 **/
 
@@ -38,39 +38,39 @@ could be done with G4Navigator (see initial work in U4Navigator.h)
 
 struct U4SimtraceTest
 {
-    stree st ; 
-    U4Tree ut ; 
+    stree st ;
+    U4Tree ut ;
 
-    U4SimtraceTest(const G4VPhysicalVolume* pv ); 
-    void scan(const char* base ); 
-}; 
+    U4SimtraceTest(const G4VPhysicalVolume* pv );
+    void scan(const char* base );
+};
 
 inline U4SimtraceTest::U4SimtraceTest(const G4VPhysicalVolume* pv )
     :
-    ut(&st, pv)   // instanciation of U4Tree populates the stree 
+    ut(&st, pv)   // instanciation of U4Tree populates the stree
     // NOTE : DIRECT USE OF U4Tree CTOR IS NON-STANDARD
-    // NORMALLY SHOULD USE VIA U4Tree::Create 
+    // NORMALLY SHOULD USE VIA U4Tree::Create
 {
 }
 
 inline void U4SimtraceTest::scan(const char* base)
 {
-    ut.simtrace_scan(base) ; 
+    ut.simtrace_scan(base) ;
 }
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
 
-    SEventConfig::SetRGModeSimtrace(); 
+    SEventConfig::SetRGModeSimtrace();
 
-    const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  // sensitive to GEOM envvar 
-    LOG(info) << " U4VolumeMaker::Desc() " << U4VolumeMaker::Desc() ; 
-    
-    U4SimtraceTest t(pv); 
-    t.scan("$FOLD");  
+    const G4VPhysicalVolume* pv = U4VolumeMaker::PV();  // sensitive to GEOM envvar
+    LOG(info) << " U4VolumeMaker::Desc() " << U4VolumeMaker::Desc() ;
 
-    return 0 ; 
+    U4SimtraceTest t(pv);
+    t.scan("$FOLD");
+
+    return 0 ;
 }
 
 

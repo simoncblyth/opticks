@@ -154,6 +154,9 @@ GEOM envvar is private to each user.
 GEOM vi
     edit GEOM.sh script that sets GEOM envvar
 
+GEOM ex
+    source the GEOM.sh script which exports GEOM envvar
+
 GEOM grab 
     rsync remote GEOM directory to local 
 
@@ -329,6 +332,8 @@ GEOM(){
 
   if [ "$arg" == "vi" ]; then 
      cmd="vi $HOME/$script"  
+  elif [ "$arg" == "ex" ]; then  
+     cmd="source $HOME/$script"  
   elif [ "$arg" == "grab" -o "$arg" == "get" ]; then  
      cmd="source $OPTICKS_HOME/bin/rsync.sh $GEOMDIR"
   elif [ "$arg" == "tmpget" ]; then  
