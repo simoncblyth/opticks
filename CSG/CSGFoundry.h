@@ -5,11 +5,11 @@
 #include <glm/glm.hpp>
 #include "plog/Severity.h"
 
-struct SBitSet ; 
-struct NP ; 
-struct SSim ; 
-struct stree ; 
-struct SScene ; 
+struct SBitSet ;
+struct NP ;
+struct SSim ;
+struct stree ;
+struct SScene ;
 
 #include "scuda.h"
 #include "squad.h"
@@ -18,11 +18,11 @@ struct SScene ;
 #include "stran.h"
 #include "SGeo.hh"
 
-struct sframe ; 
-struct SName ; 
-struct CSGTarget ; 
-struct CSGMaker ; 
-struct CSGImport ; 
+struct sframe ;
+struct SName ;
+struct CSGTarget ;
+struct CSGMaker ;
+struct CSGImport ;
 
 #include "CSGEnum.h"
 #include "CSGSolid.h"
@@ -55,22 +55,22 @@ CSGFoundry
                                                    |        |       |       |   |       |
                                                    |        |       |       |   |       |
                                                    |        |       |       |   |       |
-                                                   +--------+       |       |   |       |  
+                                                   +--------+       |       |   |       |
                                                                     |       |   |       |
                                                                     |       |   |       |
                                                                     |       |   |       |
                                                                     |       |   |       |
                                                                     +-------+   +-------+
-       
-inst 
+
+inst
    array of qat4 with single solid references (gas_idx)
 
 solid
-   references range of prim with (numPrim, primOffset)  
+   references range of prim with (numPrim, primOffset)
 prim
    references range of node with (numNode, nodeOffset) (roughly corresponds to G4VSolid)
 node
-   references single transform with tranOffset 
+   references single transform with tranOffset
    sometimes references range of planes with (planOffset, numPlan)
    (CSG constituent nodes : sphere, box, boolean operators)
 
@@ -78,8 +78,8 @@ tran
     array of qat4 node transforms, same size as itra
 itra
     array of qat4 node inverse transforms, same size as tran
-plan 
-    array of float4 planes 
+plan
+    array of float4 planes
 
 
 **/
@@ -87,43 +87,43 @@ plan
 
 struct CSG_API CSGFoundry : public SGeo
 {
-    static const plog::Severity LEVEL ; 
-    static const int  VERBOSE ; 
-    static const unsigned IMAX ; 
-    static const char* BASE ; 
-    static const char* RELDIR ; 
-    static const constexpr unsigned UNDEFINED = ~0u ; 
+    static const plog::Severity LEVEL ;
+    static const int  VERBOSE ;
+    static const unsigned IMAX ;
+    static const char* BASE ;
+    static const char* RELDIR ;
+    static const constexpr unsigned UNDEFINED = ~0u ;
 
     // MOVED TO CSGMaker
     //static CSGFoundry* MakeGeom(const char* geom);
-    //static CSGFoundry* MakeDemo(); 
-    //static CSGFoundry* LoadGeom(const char* geom=nullptr); 
+    //static CSGFoundry* MakeDemo();
+    //static CSGFoundry* LoadGeom(const char* geom=nullptr);
 
 
-    const char* descELV() const ; 
-    static const char* ELVString(const SName* id); 
-    static const SBitSet* ELV(const SName* id); 
+    const char* descELV() const ;
+    static const char* ELVString(const SName* id);
+    static const SBitSet* ELV(const SName* id);
 
-    static bool Load_saveAlt ; 
+    static bool Load_saveAlt ;
     static CSGFoundry* CreateFromSim();
     static CSGFoundry* Load();
-    static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv ); 
+    static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv );
 
-    static const char* ResolveCFBase_(); 
-    static const char* ResolveCFBase(); 
+    static const char* ResolveCFBase_();
+    static const char* ResolveCFBase();
 
-    static constexpr const char* _Load_DUMP = "CSGFoundry__Load_DUMP" ; 
+    static constexpr const char* _Load_DUMP = "CSGFoundry__Load_DUMP" ;
     static CSGFoundry* Load_();
     static CSGFoundry* Load(const char* base, const char* rel=RELDIR );
 
-    void setOverrideSim( const SSim* ssim ); 
-    const SSim* getSim() const ; 
+    void setOverrideSim( const SSim* ssim );
+    const SSim* getSim() const ;
 
-    // TODO: farm off comparison machinery into another struct 
+    // TODO: farm off comparison machinery into another struct
 
-    static int Compare(const CSGFoundry* a , const CSGFoundry* b ); 
-    static int WIP_CompareStruct(const CSGFoundry* a , const CSGFoundry* b ); 
-    static std::string DescCompare( const CSGFoundry* a, const CSGFoundry* b ); 
+    static int Compare(const CSGFoundry* a , const CSGFoundry* b );
+    static int WIP_CompareStruct(const CSGFoundry* a , const CSGFoundry* b );
+    static std::string DescCompare( const CSGFoundry* a, const CSGFoundry* b );
 
     template<typename T>
     static int CompareVec( const char* name, const std::vector<T>& a, const std::vector<T>& b );
@@ -132,30 +132,31 @@ struct CSG_API CSGFoundry : public SGeo
     template<typename T>
     static int CompareStruct( const char* name, const std::vector<T>& a, const std::vector<T>& b );
 
-    static int CompareFloat4( const char* name, const std::vector<float4>& aa, const std::vector<float4>& bb ); 
-    static bool Float4_IsDiff( const float4& a , const float4& b ); 
+    static int CompareFloat4( const char* name, const std::vector<float4>& aa, const std::vector<float4>& bb );
+    static bool Float4_IsDiff( const float4& a , const float4& b );
 
 
     static int CompareBytes(const void* a, const void* b, unsigned num_bytes);
 
-    static CSGFoundry* INSTANCE ; 
-    static CSGFoundry* Get() ; 
+    static CSGFoundry* INSTANCE ;
+    static CSGFoundry* Get() ;
 
+    static constexpr const char* SAVE_OPT = "CSGFoundry__SAVE_OPT" ;
     CSGFoundry();
-    void init(); 
+    void init();
 
     const char* getFold() const ;
-    void setFold(const char* fold); 
-    void setGeom(const char* geom); 
-    void setOrigin(const CSGFoundry* origin); 
-    void setElv(const SBitSet* elv); 
+    void setFold(const char* fold);
+    void setGeom(const char* geom);
+    void setOrigin(const CSGFoundry* origin);
+    void setElv(const SBitSet* elv);
 
     std::string brief() const ;
     std::string desc() const ;
     std::string descBase() const ;
     std::string descComp() const ;
-    std::string descSolid() const ; 
-    std::string descMeshName() const ; 
+    std::string descSolid() const ;
+    std::string descMeshName() const ;
     std::string descGAS() const ;
 
     void summary(const char* msg="CSGFoundry::summary") const ;
@@ -163,44 +164,44 @@ struct CSG_API CSGFoundry : public SGeo
     std::string descInst(unsigned ias_idx_, unsigned long long emm=~0ull ) const ;
 
     std::string descInstance() const ;   // IDX=0,10,100,1000,10000
-    std::string descInstance(unsigned idx) const ; 
+    std::string descInstance(unsigned idx) const ;
 
     void dump() const ;
     void dumpSolid() const ;
     void dumpSolid(unsigned solidIdx ) const ;
     int findSolidIdx(const char* label) const  ; // -1 if not found
-    void findSolidIdx(std::vector<unsigned>& solid_idx, const char* label) const ; 
-    std::string descSolidIdx( const std::vector<unsigned>& solid_selection ) ; 
+    void findSolidIdx(std::vector<unsigned>& solid_idx, const char* label) const ;
+    std::string descSolidIdx( const std::vector<unsigned>& solid_selection ) ;
 
     void dumpPrim() const ;
     void dumpPrim(unsigned solidIdx ) const ;
     std::string descPrim() const ;
     std::string descPrim(unsigned solidIdx) const  ;
 
-    int getPrimBoundary(unsigned primIdx) const ; 
-    int getPrimBoundary_( const CSGPrim* pr ) const ; 
+    int getPrimBoundary(unsigned primIdx) const ;
+    int getPrimBoundary_( const CSGPrim* pr ) const ;
 
-    void setPrimBoundary(unsigned primIdx, unsigned boundary) ; 
+    void setPrimBoundary(unsigned primIdx, unsigned boundary) ;
 
-    std::string detailPrim() const ; 
-    std::string detailPrim(unsigned primIdx) const ; 
+    std::string detailPrim() const ;
+    std::string detailPrim(unsigned primIdx) const ;
 
-    std::string descPrimSpec() const ; 
-    std::string descPrimSpec(unsigned solidIdx) const ; 
+    std::string descPrimSpec() const ;
+    std::string descPrimSpec(unsigned solidIdx) const ;
 
 
     void dumpNode() const ;
     void dumpNode(unsigned solidIdx ) const ;
     std::string descNode() const ;
     std::string descNode(unsigned solidIdx) const  ;
-    std::string descTran(unsigned solidIdx) const  ; 
+    std::string descTran(unsigned solidIdx) const  ;
 
 
     AABB iasBB(unsigned ias_idx_, unsigned long long emm=0ull ) const ;
     float4 iasCE(unsigned ias_idx_, unsigned long long emm=0ull ) const;
     void   iasCE(float4& ce, unsigned ias_idx_, unsigned long long emm=0ull ) const;
     void   gasCE(float4& ce, unsigned gas_idx ) const ;
-    void   gasCE(float4& ce, const std::vector<unsigned>& gas_idxs ) const ; 
+    void   gasCE(float4& ce, const std::vector<unsigned>& gas_idxs ) const ;
 
     float  getMaxExtent(const std::vector<unsigned>& solid_selection) const ;
     std::string descSolids(const std::vector<unsigned>& solid_selection) const ;
@@ -214,27 +215,27 @@ struct CSG_API CSGFoundry : public SGeo
 
 
     const CSGSolid*   getSolidByName(const char* name) const ;
-    const CSGSolid*   getSolid_(int solidIdx) const ;   // -ve counts from back 
-    unsigned          getSolidIdx(const CSGSolid* so) const ; 
+    const CSGSolid*   getSolid_(int solidIdx) const ;   // -ve counts from back
+    unsigned          getSolidIdx(const CSGSolid* so) const ;
 
-    const char* getSolidLabel_(int ridx) const ; 
-    char getSolidIntent(int ridx) const ; 
-    std::string descSolidIntent() const ; 
+    const char* getSolidLabel_(int ridx) const ;
+    char getSolidIntent(int ridx) const ;
+    std::string descSolidIntent() const ;
 
 
     unsigned getNumSolid(int type_) const ;
-    unsigned getNumSolid() const;        // STANDARD_SOLID count 
-    unsigned getNumSolidTotal() const;   // all solid count 
+    unsigned getNumSolid() const;        // STANDARD_SOLID count
+    unsigned getNumSolidTotal() const;   // all solid count
 
-    unsigned getNumPrim() const;   
+    unsigned getNumPrim() const;
     unsigned getNumNode() const;
     unsigned getNumPlan() const;
     unsigned getNumTran() const;
     unsigned getNumItra() const;
     unsigned getNumInst() const;
 
-    const CSGSolid*   getSolid(unsigned solidIdx) const ;  
-    const CSGPrim*    getPrim(unsigned primIdx) const ;    
+    const CSGSolid*   getSolid(unsigned solidIdx) const ;
+    const CSGPrim*    getPrim(unsigned primIdx) const ;
     const CSGNode*    getNode(unsigned nodeIdx) const ;
     const float4*     getPlan(unsigned planIdx) const ;
     const qat4*       getTran(unsigned tranIdx) const ;
@@ -244,35 +245,35 @@ struct CSG_API CSGFoundry : public SGeo
     CSGNode*          getNode_(unsigned nodeIdx);
 
 
-    void              getNodePlanes(std::vector<float4>& planes, const CSGNode* nd) const ;  
+    void              getNodePlanes(std::vector<float4>& planes, const CSGNode* nd) const ;
     const CSGPrim*    getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const ;
     const CSGNode*    getSolidPrimNode(unsigned solidIdx, unsigned primIdxRel, unsigned nodeIdxRel) const ;
 
     void getMeshPrimCopies(  std::vector<CSGPrim>& select_prim, unsigned mesh_idx ) const ;
-    void getMeshPrimPointers(std::vector<const CSGPrim*>& select_prim, unsigned mesh_idx ) const ; 
-    const CSGPrim* getMeshPrim( unsigned midx, unsigned mord ) const ; 
+    void getMeshPrimPointers(std::vector<const CSGPrim*>& select_prim, unsigned mesh_idx ) const ;
+    const CSGPrim* getMeshPrim( unsigned midx, unsigned mord ) const ;
 
     unsigned getNumMeshPrim(unsigned mesh_idx ) const ;
-    std::string descMeshPrim() const ;  
+    std::string descMeshPrim() const ;
 
-    unsigned getNumSelectedPrimInSolid(const CSGSolid* solid, const SBitSet* elv ) const ; 
+    unsigned getNumSelectedPrimInSolid(const CSGSolid* solid, const SBitSet* elv ) const ;
 
 
     CSGSolid* addSolid(unsigned num_prim, const char* label, int primOffset_ = -1 );
 
-    int       addPrim_solidLocalPrimIdx() const ; 
+    int       addPrim_solidLocalPrimIdx() const ;
     CSGPrim*  addPrim(int num_node, int nodeOffset_ = -1 );
 
-    int       addNode_solidLocalNodeIdx() const ; 
-    CSGNode*  addNode(CSGNode nd); 
+    int       addNode_solidLocalNodeIdx() const ;
+    CSGNode*  addNode(CSGNode nd);
     CSGNode*  addNode();
     CSGNode*  addNode(CSGNode nd, const std::vector<float4>* pl, const Tran<double>* tr );
     CSGNode*  addNodes(const std::vector<CSGNode>& nds );
 
     CSGNode*  addNode(AABB& bb, CSGNode nd );
-    CSGNode*  addNodes(AABB& bb, std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs  ); 
+    CSGNode*  addNodes(AABB& bb, std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs  );
 
-    CSGPrim*  addPrimNodes(AABB& bb, const std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs=nullptr ); 
+    CSGPrim*  addPrimNodes(AABB& bb, const std::vector<CSGNode>& nds, const std::vector<const Tran<double>*>* trs=nullptr );
 
 
     float4*   addPlan(const float4& pl );
@@ -285,60 +286,64 @@ struct CSG_API CSGFoundry : public SGeo
     template<typename T> unsigned addTran_( const Tran<T>* tr  );
     unsigned addTran( const qat4* tr, const qat4* it ) ;
     unsigned addTran() ;
-    void     addTranPlaceholder(); 
+    void     addTranPlaceholder();
 
     // adds transform and associates it with the node
-    template<typename T> const qat4* addNodeTran(CSGNode* nd, const Tran<T>* tr, bool transform_node_aabb  ); 
-    void addNodeTran(CSGNode* nd ); 
+    template<typename T> const qat4* addNodeTran(CSGNode* nd, const Tran<T>* tr, bool transform_node_aabb  );
+    void addNodeTran(CSGNode* nd );
 
 
-    void addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index, bool firstcall ); 
-    void addInstanceVector(const std::vector<glm::tmat4x4<float>>& v_inst_f4 ); 
-    void addInstancePlaceholder(); 
+    void addInstance(const float* tr16, int gas_idx, int sensor_identifier, int sensor_index, bool firstcall );
+    void addInstanceVector(const std::vector<glm::tmat4x4<float>>& v_inst_f4 );
+    void addInstancePlaceholder();
 
 
     // via maker
-    void makeDemoSolids();  
-    void importSim(); 
+    void makeDemoSolids();
+    void importSim();
 
 
-    CSGSolid* make(const char* name); 
+    CSGSolid* make(const char* name);
 
 
-    static void DumpAABB(const char* msg, const float* aabb); 
+    static void DumpAABB(const char* msg, const float* aabb);
 
 
-    const char* getBaseDir(bool create) const ; 
+    const char* getBaseDir(bool create) const ;
 
     void save_(const char* dir) const ;
+    bool save__(const char* elem) const ;
+    void setSaveOpt(const char* save_opt_);
+    const char* getSaveOpt() const ;
+
     void save(const char* base, const char* rel=nullptr ) const ;
-    void saveAlt() const ; 
+    void saveAlt() const ;
 
-    // these argumentless methods require CFBASE envvar or geom member to be set 
-    void save() const ; 
-    void load() ; 
+    // these argumentless methods require CFBASE envvar or geom member to be set
+    void save() const ;
+    void load() ;
 
-    static const char* load_FAIL_base_null_NOTES ; 
-    static const char* LoadFailNotes(); 
+    static const char* load_FAIL_base_null_NOTES ;
+    static const char* LoadFailNotes();
 
-    void load( const char* base, const char* rel ) ; 
-    void setCFBase( const char* cfbase_ ); 
-    const char* getCFBase() const ; 
-    const char* getOriginCFBase() const ; 
+    void load( const char* base, const char* rel ) ;
+    void setCFBase( const char* cfbase_ );
+    const char* getCFBase() const ;
+    const char* getOriginCFBase() const ;
 
-    static const char* LOAD_FAIL_NOTES ; 
-    void load( const char* dir ) ; 
-    NP* loadAux(const char* auxrel="Values/values.npy" ) const ; 
+    static const char* LOAD_FAIL_NOTES ;
+    void load( const char* dir ) ;
+    NP* loadAux(const char* auxrel="Values/values.npy" ) const ;
 
-    static int MTime(const char* dir, const char* fname_); 
+    static int MTime(const char* dir, const char* fname_);
 
 
-    template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false ); 
+    template<typename T> void loadArray( std::vector<T>& vec, const char* dir, const char* name, bool optional=false );
 
     void upload();
-    bool isUploaded() const ; 
+    bool isUploaded() const ;
 
-    void inst_find_unique(); 
+    void inst_find_unique();
     unsigned getNumUniqueGAS() const ;
     unsigned getNumUniqueIAS() const ;
     /*
@@ -350,72 +355,72 @@ struct CSG_API CSGFoundry : public SGeo
 
     unsigned getNumInstancesGAS(int gas_idx) const ;
     void     getInstanceTransformsGAS(std::vector<qat4>&  select_qv, int gas_idx ) const ;  // collecting by value : TODO eliminate, swiching to getInstancePointersGAS
-    void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, int gas_idx ) const ;  // collecting pointers to the actual instances 
+    void     getInstancePointersGAS(  std::vector<const qat4*>& select_qi, int gas_idx ) const ;  // collecting pointers to the actual instances
 
-    int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ; 
+    int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ;
     const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
 
-    // id 
-    void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ; 
-    const char* getName(unsigned midx) const ;  
+    // id
+    void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
+    const char* getName(unsigned midx) const ;
 
-    static const char* getFrame_NOTES ; 
-    sframe getFrame() const ; 
-    sframe getFrame(const char* moi_or_iidx) const ; 
+    static const char* getFrame_NOTES ;
+    sframe getFrame() const ;
+    sframe getFrame(const char* moi_or_iidx) const ;
 
-    static constexpr const char* getFrame_VERBOSE = "CSGFoundry__getFrame_VERBOSE" ; 
-    int getFrame(sframe& fr, const char* frs ) const ; 
-    int getFrame(sframe& fr, int midx, int mord, int gord) const ; 
-    int getFrame(sframe& fr, int ins_idx ) const ; 
+    static constexpr const char* getFrame_VERBOSE = "CSGFoundry__getFrame_VERBOSE" ;
+    int getFrame(sframe& fr, const char* frs ) const ;
+    int getFrame(sframe& fr, int midx, int mord, int gord) const ;
+    int getFrame(sframe& fr, int ins_idx ) const ;
 
-    static constexpr const char* getFrameE_VERBOSE = "CSGFoundry__getFrameE_VERBOSE" ; 
-    sframe getFrameE() const ; 
-    static void AfterLoadOrCreate(); 
+    static constexpr const char* getFrameE_VERBOSE = "CSGFoundry__getFrameE_VERBOSE" ;
+    sframe getFrameE() const ;
+    static void AfterLoadOrCreate();
 
 
-    // target  
+    // target
     int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
 
-    template <typename T> void setMeta( const char* key, T value ); 
-    template <typename T> T    getMeta( const char* key, T fallback); 
-    bool hasMeta() const ; 
+    template <typename T> void setMeta( const char* key, T value );
+    template <typename T> T    getMeta( const char* key, T fallback);
+    bool hasMeta() const ;
 
     void kludgeScalePrimBBox( const char* label, float dscale );
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
 
-    unsigned getNumMeshName() const ; 
-    unsigned getNumSolidLabel() const ; 
-    int findSolidWithLabel(const char* q_mml) const ; 
-    bool isSolidTrimesh_posthoc_kludge(int gas_idx) const ;  // see SGeoConfig::SolidTrimesh 
-    bool isSolidTrimesh(int gas_idx) const ;  // see notes/issues/flexible_forced_triangulation.rst 
+    unsigned getNumMeshName() const ;
+    unsigned getNumSolidLabel() const ;
+    int findSolidWithLabel(const char* q_mml) const ;
+    bool isSolidTrimesh_posthoc_kludge(int gas_idx) const ;  // see SGeoConfig::SolidTrimesh
+    bool isSolidTrimesh(int gas_idx) const ;  // see notes/issues/flexible_forced_triangulation.rst
 
-    static void CopyNames(    CSGFoundry* dst, const CSGFoundry* src ); 
-    static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src ); 
+    static void CopyNames(    CSGFoundry* dst, const CSGFoundry* src );
+    static void CopyMeshName( CSGFoundry* dst, const CSGFoundry* src );
 
-    void getMeshName( std::vector<std::string>& mname ) const ; 
-    void getPrimName( std::vector<std::string>& pname ) const ; 
+    void getMeshName( std::vector<std::string>& mname ) const ;
+    void getPrimName( std::vector<std::string>& pname ) const ;
 
-    // SGeo protocol 
-    unsigned getNumMeshes() const ; 
-    const char* getMeshName(unsigned midx) const ; 
-    int getMeshIndexWithName(const char* name, bool startswith) const ; 
-    int lookup_mtline(int mtindex) const ; 
-    std::string desc_mt() const ; 
+    // SGeo protocol
+    unsigned getNumMeshes() const ;
+    const char* getMeshName(unsigned midx) const ;
+    int getMeshIndexWithName(const char* name, bool startswith) const ;
+    int lookup_mtline(int mtindex) const ;
+    std::string desc_mt() const ;
 
-    stree* getTree() const ; 
-    SScene* getScene() const ; 
-    void setOverrideScene(SScene* _scene); 
+    stree* getTree() const ;
+    SScene* getScene() const ;
+    void setOverrideScene(SScene* _scene);
 
 
-    int findMeshIndex(const char* qname) const ; 
+    int findMeshIndex(const char* qname) const ;
 
-    const std::string descELV2(const SBitSet* elv) const ; 
-    const std::string descELV(const SBitSet* elv) const ; 
+    const std::string descELV2(const SBitSet* elv) const ;
+    const std::string descELV(const SBitSet* elv) const ;
 
-    const std::string& getSolidMMLabel(unsigned sidx) const ; 
-    void addSolidMMLabel(const char* label); 
-    void addMeshName(const char* name); 
+    const std::string& getSolidMMLabel(unsigned sidx) const ;
+    void addSolidMMLabel(const char* label);
+    void addMeshName(const char* name);
 
     // MEMBERS
 
@@ -424,47 +429,49 @@ struct CSG_API CSGFoundry : public SGeo
     std::vector<std::string> meshname ;  // GGeo::getMeshNames/GMeshLib (G4VSolid names from Geant4) should be primName in CF model ?
     std::vector<std::string> mmlabel ;   // from GGeo::getMergedMeshLabels eg of form "3084:sWorld" "7:HamamatsuR12860sMask_virtual"
 
-    std::vector<CSGSolid>  solid ;   
-    std::vector<CSGPrim>   prim ; 
-    std::vector<CSGNode>   node ; 
-    std::vector<float4>    plan ; 
-    std::vector<qat4>      tran ;  
-    std::vector<qat4>      itra ;  
-    std::vector<qat4>      inst ;  
+    std::vector<CSGSolid>  solid ;
+    std::vector<CSGPrim>   prim ;
+    std::vector<CSGNode>   node ;
+    std::vector<float4>    plan ;
+    std::vector<qat4>      tran ;
+    std::vector<qat4>      itra ;
+    std::vector<qat4>      inst ;
 
 
-    CSGPrim*    d_prim ; 
-    CSGNode*    d_node ; 
-    float4*     d_plan ; 
-    qat4*       d_itra ; 
+    CSGPrim*    d_prim ;
+    CSGNode*    d_node ;
+    float4*     d_plan ;
+    qat4*       d_itra ;
 
 
     std::vector<int> gas ;
 
 
-    const SSim* sim ; 
-    CSGImport*  import ; 
-    SName*    id ;   // holds the meshname vector of G4VSolid names 
+    const SSim* sim ;
+    CSGImport*  import ;
+    SName*    id ;   // holds the meshname vector of G4VSolid names
 
-    CSGTarget*  target ; 
-    CSGMaker*   maker ; 
-    bool        deepcopy_everynode_transform ; 
-
-    CSGSolid*   last_added_solid ; 
-    CSGPrim*    last_added_prim ; 
-    CSGNode*    last_added_node ; 
+    CSGTarget*  target ;
+    CSGMaker*   maker ;
+    bool        deepcopy_everynode_transform ;
 
 
-    void setPrimBoundary(unsigned primIdx, const char* bname) ; 
-    int  mtime ; 
+    CSGSolid*   last_added_solid ;
+    CSGPrim*    last_added_prim ;
+    CSGNode*    last_added_node ;
 
-    std::string meta ; 
-    const char* fold ; 
-    const char* cfbase ; 
-    const char* geom ; 
-    const char* loaddir ; 
 
-    const CSGFoundry* origin ; 
-    const SBitSet*    elv ; 
+    void setPrimBoundary(unsigned primIdx, const char* bname) ;
+    int  mtime ;
+
+    std::string meta ;
+    const char* fold ;
+    const char* cfbase ;
+    const char* geom ;
+    const char* loaddir ;
+
+    const CSGFoundry* origin ;
+    const SBitSet*    elv ;
+    const char* save_opt ;
 };
 
