@@ -111,7 +111,7 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    if [ "${arg/run}" != "$arg" ]; then
        $bin
    elif [ "${arg/dbg}" != "$arg" ]; then
-       source ../bin/dbg__.sh
+       source $SDIR/../bin/dbg__.sh
        dbg__ $bin
    fi
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1
@@ -120,11 +120,11 @@ fi
 
 if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
     ## THIS OLD GRAB SYNCING TOO MUCH
-    source ../../bin/BASE_grab.sh $arg
+    source $SDIR/../bin/BASE_grab.sh $arg
 fi
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source ../../bin/rsync.sh $FOLD
+    source $SDIR/../bin/rsync.sh $FOLD
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
