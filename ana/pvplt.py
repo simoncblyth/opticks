@@ -130,7 +130,7 @@ def mpplt_focus(xlim, ylim):
     aspect = (xlim[1]-xlim[0])/(ylim[1]-ylim[0])   
     log.info("mpplt_focus xlim:%s ylim:%s FOCUS:%s " % (str(xlim),str(ylim), str(FOCUS)))
 
-
+    return xlim, ylim
 
 def pvplt_viewpoint(pl, reset=False, verbose=False):
     """

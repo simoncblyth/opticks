@@ -7,54 +7,53 @@ Canonical usage from tests/CSGSimtraceTest.cc
 
 The heart of this is CSGQuery on CPU intersect functionality using the csg headers
 
-    
+
 **/
 
 #include "plog/Severity.h"
 #include <vector>
 #include "sframe.h"
 
-struct CSGFoundry ; 
-struct SEvt ; 
-struct SSim ; 
-struct CSGQuery ; 
-struct CSGDraw ; 
-struct NP ; 
-struct quad4 ; 
+struct CSGFoundry ;
+struct SEvt ;
+struct SSim ;
+struct CSGQuery ;
+struct CSGDraw ;
+struct NP ;
+struct quad4 ;
 
 #include "CSG_API_EXPORT.hh"
 
 struct CSG_API CSGSimtrace
 {
-    static const plog::Severity LEVEL ; 
-    static int Preinit(); 
+    static const plog::Severity LEVEL ;
+    static int Preinit();
 
-    int prc ; 
+    int prc ;
     const char* geom ;
-    SSim* sim ; 
-    const CSGFoundry* fd ; 
-    SEvt* evt ; 
-    const char* outdir ; 
+    SSim* sim ;
+    const CSGFoundry* fd ;
+    SEvt* sev ;
+    const char* outdir ;
 
     sframe frame ;
-    CSGQuery* q ; 
-    CSGDraw* d ; 
+    CSGQuery* q ;
+    CSGDraw* d ;
 
-    const char* SELECTION ; 
-    std::vector<int>* selection ; 
-    int num_selection ; 
-    NP* selection_simtrace ; 
-    quad4* qss ; 
+    const char* SELECTION ;
+    std::vector<int>* selection ;
+    int num_selection ;
+    NP* selection_simtrace ;
+    quad4* qss ;
 
-    CSGSimtrace();  
-    void init(); 
+    CSGSimtrace();
+    void init();
 
     int simtrace();
     int simtrace_all();
     int simtrace_selection();
 
-    void saveEvent();  
-}; 
+};
 
 
 

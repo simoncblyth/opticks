@@ -1,21 +1,23 @@
 /**
-CSGSimtraceTest
-======================
+CSGSimtraceTest : CPU testing of CUDA capable csg intersection headers
+========================================================================
 
-Used from script CSG/ct.sh 
+Used from script CSG/ct.sh
 
 **/
 #include "OPTICKS_LOG.hh"
+#include "SEventConfig.hh"
 #include "CSGSimtrace.hh"
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
+
+    SEventConfig::SetRGModeSimtrace();
 
     CSGSimtrace t ;
-    t.simtrace(); 
-    t.saveEvent() ; 
+    t.simtrace();
 
-    return 0 ; 
+    return 0 ;
 }
 

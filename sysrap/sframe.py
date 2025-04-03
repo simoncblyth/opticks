@@ -393,7 +393,7 @@ class sframe(object):
         ylim = self.bbox[:,V]  
 
         log.info("mp_subplots xlim %s ylim %s " % (str(xlim), str(ylim)))  
-        xlim, ylim = mpplt_focus(xlim, ylim)
+        #xlim, ylim = mpplt_focus(xlim, ylim)
 
         topline = os.environ.get("TOPLINE", "sframe.py:mp_subplots:TOPLINE")
         botline = os.environ.get("BOTLINE", "sframe.py:mp_subplots:BOTLINE")
