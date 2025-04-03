@@ -95,7 +95,8 @@ controlled via envvar::
 struct U4Tree
 {
     static constexpr const plog::Severity LEVEL = plog::info ; 
-    friend struct U4SimtraceTest ; // for U4Tree ctor  
+    friend struct U4SimtraceTest ;       // for U4Tree ctor  
+    friend struct U4SimtraceSimpleTest ; // for U4Tree ctor  
 
     stree*                                      st ; 
     const G4VPhysicalVolume* const              top ; 
@@ -189,7 +190,7 @@ private:
     void identifySensitiveGlobals(); 
 
 public:
-    void simtrace_scan(const char* base ) const ; 
+    void simtrace_scan(const char* base) const ; 
     static void SimtraceScan( const G4VPhysicalVolume* const pv, const char* base ); 
 }; 
 
@@ -1180,7 +1181,7 @@ simtrace after the first SSimtrace::Scan call.
 
 **/
 
-inline void U4Tree::simtrace_scan(const char* base ) const 
+inline void U4Tree::simtrace_scan(const char* base) const 
 {
     LOG(info) << "[ " << SEventConfig::RGModeLabel() ; 
     st->save_trs(base); 
@@ -1196,7 +1197,7 @@ inline void U4Tree::simtrace_scan(const char* base ) const
         if(!soname_expect) std::raise(SIGINT);
 
         LOG(info) << " i " << std::setw(3) << i << " RGMode: " << SEventConfig::RGModeLabel() ; 
-        SSimtrace::Scan(solid, base) ;   
+        SSimtrace::Scan(solid) ;   
     } 
     LOG(info) << "] " << SEventConfig::RGModeLabel() ; 
 }

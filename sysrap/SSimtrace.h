@@ -47,10 +47,10 @@ struct SEvt ;
 struct SSimtrace
 {
     static constexpr const plog::Severity LEVEL = info ; 
-    static void Scan( const G4VSolid* solid, const char* base=nullptr ); 
+    static void Scan( const G4VSolid* solid ); 
 
     const G4VSolid* solid ; 
-    SEvt* evt ; 
+    SEvt* sev ; 
     sframe frame ;  
 
     SSimtrace(); 
@@ -58,16 +58,15 @@ struct SSimtrace
 
     void setSolid(const G4VSolid* solid); 
     void simtrace(); 
-    void saveEvent(const char* base); 
 };
 
 #include "SEvt.hh"
 #include "SEventConfig.hh"
 #include "ssolid.h"
 #include "SLOG.hh"
+#include "NPFold.h"
 
-
-inline void SSimtrace::Scan(const G4VSolid* solid, const char* base )
+inline void SSimtrace::Scan(const G4VSolid* solid )
 {
     G4String soname_ = solid->GetName(); 
     const char* soname = soname_.c_str() ; 
@@ -78,7 +77,6 @@ inline void SSimtrace::Scan(const G4VSolid* solid, const char* base )
     SSimtrace t ; 
     t.setSolid(solid); 
     t.simtrace(); 
-    t.saveEvent(base) ; 
 
     //LOG(LEVEL) << "] " << soname ; 
 }
@@ -86,13 +84,13 @@ inline void SSimtrace::Scan(const G4VSolid* solid, const char* base )
 inline SSimtrace::SSimtrace()
     :
     solid(nullptr), 
-    evt(nullptr)
+    sev(nullptr)
 {
 }
 
 inline SSimtrace::~SSimtrace()
 {
-    delete evt ; 
+    delete sev ; 
 }
 
 inline void SSimtrace::setSolid(const G4VSolid* solid_)
@@ -136,24 +134,28 @@ inline void SSimtrace::simtrace()
     // especially SEvt::setFrame_HostsideSimtrace which 
     // generates simtrace photons
 
-    evt = SEvt::Create(SEvt::ECPU) ; 
-    evt->setFrame(frame);    // 
+    sev = SEvt::Create_ECPU() ; 
+    sev->setFrame(frame);    // 
 
-    evt->beginOfEvent(0);   // invokes SEvt::addFrameGenstep for RGModeSimtrace
+    int eventID = 0 ; 
 
-    unsigned num_simtrace = evt->simtrace.size() ;   
+    sev->beginOfEvent(eventID);   // invokes SEvt::addFrameGenstep for RGModeSimtrace
+
+    unsigned num_simtrace = sev->simtrace.size() ;   
     LOG(LEVEL) << " num_simtrace " << num_simtrace ; 
 
     bool dump = false ; 
     for(unsigned i=0 ; i < num_simtrace ; i++)
     {
-        quad4& p = evt->simtrace[i] ; 
+        quad4& p = sev->simtrace[i] ; 
         ssolid::Simtrace(p, solid, dump);  
     }
+
+    sev->gather();
+    sev->topfold->concat();
+    sev->topfold->clear_subfold();
+
+    sev->endOfEvent(eventID); 
 }
 
-inline void SSimtrace::saveEvent(const char* base)
-{
-    evt->save(base);  
-}
 

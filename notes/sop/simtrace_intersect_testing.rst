@@ -58,6 +58,13 @@ Selected Scripts with "Simtrace" code
         ## has PMTSim_standalone complications (juno only lib giving access to JUNO geometry),
         ## maybe easier to make another executable without that dependency to avoids the complication
 
+
+    ./u4/tests/U4SimtraceSimpleTest.{sh,cc,py}
+        ## to avoid complications with the above start this one 
+        ## without the PMTSim_standalone dep for non-JUNO tests
+
+
+
 Scripts with "Simtrace"
 -------------------------------
 

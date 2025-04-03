@@ -72,6 +72,7 @@ set(TEST_SOURCES
 
 
    U4PhysicsTableTest.cc 
+   U4SimtraceSimpleTest.cc
 )
 
 set(EXPECTED_TO_FAIL_SOURCES
