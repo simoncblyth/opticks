@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
 
-    e = SEvt.Load(symbol="e")
+    e = SEvt.Load(symbol="e")   ## default load from FOLD envvar dir
     print(repr(e))
     label = e.f.base
 

@@ -55,13 +55,21 @@ Scripts with "Simtrace"
 
     P[blyth@localhost opticks]$ find . -name '*.sh' -exec grep -l imtrace {} \;
     ./CSG/CSGSimtraceRerunTest.sh   
+
         ## CSGSimtraceRerunTest.cc : repeating simtrace GPU intersects on the CPU with the csg_intersect CUDA code 
         ## uses CSGQuery::intersect_again : looks worthy of revival
 
     ./CSG/CSGSimtraceSampleTest.sh
     ./CSG/Values.sh
     ./CSG/cf_ct.sh
+
     ./CSG/ct.sh
+        ## revived 2025 April 3 : querying uses SOPR=0:0 selecting CSGSolid:CSGPrim by index 
+        ## uses tests/CSG/CSGSimtraceTest.{py,cc} using CSGSimtrace.cc CSGQuery.cc 
+        ##
+        ## SOPR=2:1 LOG=1 ~/o/CSG/ct.sh    ## uses matplotlib plotting
+        ##  HMM: this was an early one later used pyvista with 3D option
+
     ./CSG/ct_chk.sh
     ./CSG/mct.sh
     ./CSG/nmskMaskOut.sh
@@ -95,6 +103,8 @@ Scripts with "Simtrace"
     ./extg4/mx4t.sh
     ./extg4/x4t.sh
     ./extg4/xxs.sh
+          ## extg4 is DEAD CODE
+
 
     ./g4cx/cf_gxt.sh
     ./g4cx/gxt.sh
@@ -102,8 +112,10 @@ Scripts with "Simtrace"
           ## LOTS OF WORK NEEDED TO REVIVE
 
     ./g4cx/tests/G4CXTest.sh
+          ## glance suggests simtrace is here just used for scenery against which to show photon histories  
 
     ./sysrap/tests/SSimtrace_check.sh
+
     ./u4/tests/FewPMT.sh
     ./u4/tests/U4SimtracePlot.sh
     ./u4/tests/U4SimtraceTest.sh
@@ -112,6 +124,8 @@ Scripts with "Simtrace"
     ./u4/tests/U4SimtraceTest_two_pmt_cf.sh
     ./u4/tests/U4SimulateTest.sh
     ./u4/tests/viz.sh
+
+
     P[blyth@localhost opticks]$ 
 
 

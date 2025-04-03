@@ -562,6 +562,9 @@ double QSim::simtrace(int eventID)
     // see ~/o/notes/issues/cxt_min_simtrace_revival.rst
     sev->gather();
 
+    sev->topfold->concat();
+    sev->topfold->clear_subfold();
+
     sev->endOfEvent(eventID);
 
     return dt ;
