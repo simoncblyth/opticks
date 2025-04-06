@@ -174,8 +174,10 @@ okdist-release-dir(){         echo ${OKDIST_RELEASE_DIR:-$(okdist-release-dir-de
 okdist-title(){   echo Opticks ; }
 okdist-version(){ opticks-tag ; } 
 okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing 
-okdist-prefix(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
-okdist-name(){   echo $(okdist-title)-$(okdist-version)$(okdist-ext) ; }
+okdist-prefix-old(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }  
+okdist-prefix(){ echo $(opticks-okdist-dirlabel)/$(okdist-stem) ; }  
+okdist-stem(){   echo $(okdist-title)-$(okdist-version) ; }
+okdist-name(){   echo $(okdist-stem)$(okdist-ext) ; }
 okdist-path(){   echo $(okdist-release-dir)/$(okdist-name) ; }    
 
 

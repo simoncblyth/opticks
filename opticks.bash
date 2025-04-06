@@ -3094,8 +3094,9 @@ EON
 
 opticks-okdist-mode(){ echo dbg ; }
 opticks-okdist-dirlabel(){ 
-    g4- 
-    local label=$(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode) 
+    #g4- 
+    #local label=$(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode) 
+    local label=$(opticks-os-release)_$(opticks-os-arch)_$(opticks-compiler-version)
     local ulabel=${label//\//} 
     : remove all slashes from the label
     echo $ulabel 
@@ -3103,22 +3104,21 @@ opticks-okdist-dirlabel(){
 
 opticks-compiler-version(){  echo gcc$(opticks-gcc-version) ; } 
 opticks-gcc-version(){ gcc -dumpversion | perl -pe 's/\.//g' - ; } # 4.2.1 clang compatibility with gcc ?
-opticks-os-release(){ opticks-$(uname)-release- ; }
-opticks-Darwin-release-(){  sw_vers -productVersion ; }  # eg 10.13.6 
-opticks-Linux-release-(){   cat /etc/redhat-release | perl -ne 'm/(\w*) Linux release (\d)\.(\d)/ && print "${1}/${2}" ' ; }
-opticks-Linux-release()
-{
-   ## TODO: Ubuntu 
-   if [ -f /etc/redhat-release ]; then
-        local rr=$(opticks-Linux-release-) 
-        case $(dirname $rr) in 
-           Scientific)  echo slc$(basename $rr)    ;;
-               CentOS)  echo centos$(basename $rr) ;;
-        esac 
-   else 
-       echo UNKNOWN
-   fi 
+
+opticks-os-arch(){
+   case $(uname -m) in
+     x86_64) echo amd64 ;;
+   esac
 }
+
+opticks-os-release(){ 
+   local v=$(opticks-redhat-release) ; 
+   case $v in
+     7.5) echo el7 ;;
+     9.5) echo el9 ;;
+   esac 
+}
+opticks-redhat-release(){  cat /etc/redhat-release | sed  's/.*\s\([0-9]*\.[0-9]*\).*/\1/' - ; }
 
 
 

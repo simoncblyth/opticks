@@ -142,8 +142,8 @@ class OKTar(object):
 
         elem = prefix.split("/")
         assert len(elem) == 2, "expecting prefix with two path elements : %s " % prefix
-        xstem = elem[0]
-        assert self.stem == xstem, "tarball name stem [%s] must match first elem of prefix [%s]" % (self.stem, xstem) 
+        xstem = elem[1]
+        assert self.stem == xstem, "tarball name stem [%s] must match second elem of prefix [%s]" % (self.stem, xstem) 
 
         tarmode = self.TarMode(self.name) 
         base = os.path.realpath(os.getcwd())
@@ -235,7 +235,7 @@ class OKTar(object):
         pfx = pfx[:-1] 
         elem = pfx.split(os.sep)
         assert len(elem) == 2, elem  
-        assert self.stem == elem[0], ( self.stem, elem[0], "stem of tarball name must match the top level prefix element inside" )
+        assert self.stem == elem[1], ( self.stem, elem[1], "stem of tarball name must match the 2nd level prefix element inside" )
         self.pfx = pfx 
 
         if not os.path.isdir(base):
