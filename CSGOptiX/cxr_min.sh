@@ -254,6 +254,8 @@ Resolve_CFBaseFromGEOM()
    local A_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
    local B_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
    local C_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
+   local D_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/oj/releases/J25.3.0_Opticks-v0.3.5/el9_amd64_gcc11/Latest/.opticks/GEOM/J25_3_0_Opticks_v0_3_5
+
 
    local TestPath=CSGFoundry/prim.npy
    local GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
@@ -267,6 +269,9 @@ Resolve_CFBaseFromGEOM()
     elif [ -d "$C_CFBaseFromGEOM" -a -f "$C_CFBaseFromGEOM/$TestPath" ]; then
         export ${GEOM}_CFBaseFromGEOM=$C_CFBaseFromGEOM
         echo $BASH_SOURCE : FOUND C_CFBaseFromGEOM $C_CFBaseFromGEOM containing $TestPath
+    elif [ -d "$D_CFBaseFromGEOM" -a -f "$D_CFBaseFromGEOM/$TestPath" ]; then
+        export ${GEOM}_CFBaseFromGEOM=$D_CFBaseFromGEOM
+        echo $BASH_SOURCE : FOUND D_CFBaseFromGEOM $D_CFBaseFromGEOM containing $TestPath
     elif [ -f "$GDMLPathFromGEOM" ]; then 
         export ${GEOM}_GDMLPathFromGEOM=$GDMLPathFromGEOM
         echo $BASH_SOURCE : FOUND GDMLPathFromGEOM $GDMLPathFromGEOM 
