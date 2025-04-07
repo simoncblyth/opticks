@@ -1755,7 +1755,7 @@ opticks-setup-()
     else
         st="nodir" 
     fi 
-    [ -n "$OPTICKS_SETUP_VERBOSE" ] && printf "=== %s %10s %10s %20s %s\n" $FUNCNAME $st $mode $var $dir  
+    if [ -n "$OPTICKS_SETUP_VERBOSE" ];  then printf "=== %s %10s %10s %20s %s\n" $FUNCNAME $st $mode $var $dir ; fi
 }
 
 opticks-setup-info-()
@@ -3119,9 +3119,7 @@ opticks-os-release(){
    esac 
 }
 opticks-redhat-release(){  cat /etc/redhat-release | sed  's/.*\s\([0-9]*\.[0-9]*\).*/\1/' - ; }
-
-
-
+opticks-redhat-release-alt(){ cat /etc/redhat-release|tr -cd "[0-9][.]" ; } # -cd:complement set and delete not translate 
 
 
 
