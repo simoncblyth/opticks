@@ -160,7 +160,7 @@ Converting geometry
     straightforward way to do the conversion. I run G4CXOpticks_setGeometry_Test.sh
     to do it. Let me know if there is a better way.
 
-Doing it from the top like you did is best if you want to 
+Doing it from the top, from gdml,  like you did is best if you want to 
 avoid spending time to understand the lower level
 CSG and sn.h code and lower level scripts.
 
@@ -173,11 +173,18 @@ specific task is faster and simpler than generalizing other
 scripts. I agree there are too many scripts, but finding time to
 tidy or document them all is difficult. 
 
-I suggest you use the bash and python scripts as examples
-of how to do things rather than trying to debug them. It is
-easier to learn by writing your own bash+python, 
-especially with ipython.
+I suggest you use the bash and python scripts as scratch examples
+of the pattern for how to do things rather than trying to debug them or find 
+a script that does precisely what you want. Which will usually 
+be futile.  
 
+It is easier to learn by writing your own bash+python, 
+especially with ipython. The bash invoke C++
+test executables, usually with "run" arg and python 
+scripts with "ana" or "pdb" args.
+
+With the experience of writing the bash+python it 
+then becomes easier to follow the scripts. 
 
 
 
@@ -185,7 +192,7 @@ especially with ipython.
 ---------------------------------
 
 Converting from the top (ie starting from gdml) eg with g4cx/tests/G4CXOpticks_setGeometry_Test.sh
-will also enables you to 3D ray trace visualize your geometry with:: 
+also enables you to 3D ray trace visualize your geometry with:: 
 
     epsilon:opticks blyth$ cat CSGOptiX/cxr_minimal.sh 
     #!/bin/bash
@@ -233,10 +240,12 @@ both live and dead pkgs.
 The general pattern is for the bash script to define envvars
 identifying the folders to compare, eg A_FOLD B_FOLD etc.. 
 Usually a “run” argument to the bash script does the intersects
-and “ana” 
+and “ana” or "pdb" does plotting with matplotlib in 2D or pyvista in 3D. 
 
-Which are loaded in python with Fold.Load (or sometimes with sevt.Load)
-
+The event folders are loaded in python with Fold.Load, default argument 
+is the FOLD envvar.  
+Sometimes sevt.Load is used too, but that builds on top of Fold.Load, so
+it is best to use Fold.Load first. 
 
 ::
 
