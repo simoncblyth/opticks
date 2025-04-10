@@ -7,9 +7,17 @@ sreport_ab.sh : comparison between two report folders
 
    ~/o/sreport_ab.sh
 
-   A_JOB=N7 B_JOB=A7 ~/opticks/sysrap/tests/sreport_ab.sh
+   A=N7 B=A7 ~/opticks/sysrap/tests/sreport_ab.sh
 
-   A_JOB=N7 B_JOB=A7 PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport_ab.sh
+   A=N7 B=A7 PLOT=Substamp_ALL_Etime_vs_Photon ~/o/sreport_ab.sh
+
+   A=N7 B=A7 PLOT=AB_Substamp_ALL_Etime_vs_Photon ~/o/sreport_ab.sh
+       ## commandline that reproduces chep 2024 v0 fig 5 
+       ## (XORWOW with 100M state loading)
+
+   A=N8 B=A8 PLOT=AB_Substamp_ALL_Etime_vs_Photon ~/o/sreport_ab.sh
+       ## commandline showing Philox scan
+       ## (Philox with inline curand_init, no loading)
 
 
 Usage from laptop example
@@ -38,6 +46,9 @@ For reference the "grep" ~/o/cxs_min.sh grep subcommand::
 NB the LOGDIR (aka the run dir) is one level above the event folders
 and the sreport folder is a sibling to that containing only metadata
 of small size.  
+
+
+
 
 
 EOU

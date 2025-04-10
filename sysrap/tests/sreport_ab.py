@@ -47,7 +47,9 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
         YSCALE_ = ["log", "linear" ] 
         YSCALE = os.environ.get("YSCALE", YSCALE_[1])
         assert YSCALE in YSCALE_
-  
+ 
+        SLICE = list(map(int, os.environ.get("SLICE", "3:12").split(":")))
+ 
         YMIN = float(os.environ.get("YMIN", "1e-2"))
         YMAX = float(os.environ.get("YMAX", "45"))
 
@@ -55,8 +57,8 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
             fig, axs = mpplt_plotter(nrows=1, ncols=1, label=title, equal=False)
             ax = axs[0]
 
-
-            sli = slice(3,12)
+            sli = slice(*SLICE)
+            #sli = slice(3,12)
             #sli = slice(None)
 
             deg = 1  # 1:lin 2:par 
