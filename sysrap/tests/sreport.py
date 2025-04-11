@@ -595,18 +595,84 @@ class SUB_META(object):
 
 class RUN_META(object):
     @classmethod
-    def QSim__Switches(cls, fold):
+    def _QSim__Switches(cls, fold):
         """
         eg: 'CONFIG_Release PRODUCTION WITH_CHILD WITH_CUSTOM4 PLOG_LOCAL '
         """
         SKIPS = "WITH_CHILD PLOG_LOCAL".split(); 
         switches = list(filter(lambda _:not _.startswith("NOT-"), fold.run_meta.QSim__Switches.split(","))) 
         switches = list(filter(lambda _:not _ in SKIPS, switches )) 
+        return switches 
+
+    @classmethod
+    def QSim__Switches(cls, fold):
+        """
+        eg: 'CONFIG_Release PRODUCTION WITH_CHILD WITH_CUSTOM4 PLOG_LOCAL '
+        """
+        switches = cls._QSim__Switches(fold) 
         return " ".join(switches)  
+
+    @classmethod
+    def QSim__RNGLabel(cls, fold):
+        switches = cls._QSim__Switches(fold) 
+        return "RNG_PHILOX" if "RNG_PHILOX" in switches else "RNG_XORWOW"   
 
 
     @classmethod
+    def ABCD_Title(cls, *rr):
+        SCRIPT = None
+        for i, r in enumerate(rr):
+            _SCRIPT = getattr(r.run_meta, 'SCRIPT', "cxs_min.sh")
+            if i == 0:
+                SCRIPT = _SCRIPT 
+            else:
+                assert SCRIPT == _SCRIPT 
+            pass 
+        pass
+        topline = "%s ## %s " % ( COMMANDLINE, SCRIPT )
+
+        cvar = ["RUNNING_MODE","EVENT_MODE","MAX_BOUNCE"] 
+        #cvar += ["MAX_PHOTON"]
+        #cvar += ["NUM_PHOTON"]
+
+        ctrls = [] 
+        for var in cvar:
+            val = None
+            for i, r in enumerate(rr):
+                _val = getattr(r.run_meta, "OPTICKS_%s" % var, "?" )
+
+                if i == 0:
+                    val = _val
+                else:
+                    assert val == _val, ( val,  _val ) 
+                pass
+            pass
+            ctrls.append("%s:%s" % (var,val)) 
+        pass
+        ctrl = " ".join(ctrls)
+
+        for i, r in enumerate(rr):
+            SWITCHES = cls.QSim__Switches(r)
+            print(SWITCHES)
+        pass  
+        title = "\n".join([topline, ctrl])
+        return title 
+
+    @classmethod
     def AB_Title(cls, a, b):
+        """
+        :param a: sreport Fold
+        :param b: sreport Fold
+        :return str: title 
+
+        In addition to providing the title this also
+        asserts consistency between the sreport fold
+        for the below run_meta:
+
+        1. SCRIPT
+        2. OPTICKS_RUNNING_MODE, OPTICKS_EVENT_MODE, OPTICKS_MAX_BOUNCE, OPTICKS_MAX_PHOTON
+        3. QSim__Switches
+        """
         a_SCRIPT = getattr(a.run_meta, 'SCRIPT', "cxs_min.sh")  
         b_SCRIPT = getattr(b.run_meta, 'SCRIPT', "cxs_min.sh")  
         assert a_SCRIPT == b_SCRIPT, (a_SCRIPT, b_SCRIPT)

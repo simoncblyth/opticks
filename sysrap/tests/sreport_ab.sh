@@ -88,7 +88,7 @@ export A_SREPORT_FOLD=$(resolve $A)_sreport
 export B_SREPORT_FOLD=$(resolve $B)_sreport  
 export MODE=2                                 ## 2:matplotlib plotting 
 
-vars="0 BASH_SOURCE arg defarg A B A_SREPORT_FOLD B_SREPORT_FOLD MODE PLOT"
+vars="0 BASH_SOURCE arg defarg A B A_SREPORT_FOLD B_SREPORT_FOLD MODE PLOT script"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
