@@ -214,6 +214,10 @@ But thats means cannot use the normal EGPU pattern of adding gensteps
 in the SEvt::beginOfEvent call.  
 That causes kludgy SEvt::addFrameGenstep
 
+Torch running assumes comma delimited genstep and photon config
+with the same number of entries in each. 
+
+
 **/
 
 void G4CXApp::GeneratePrimaries(G4Event* event)
@@ -233,7 +237,7 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     else if(SEventConfig::IsRunningModeTorch())
     {
         int idx_arg = eventID ; 
-        NP* gs = SEvent::MakeTorchGenstep(idx_arg) ;        
+        NP* gs = SEvent::MakeTorchGenstep(idx_arg) ;  // idx_arg > -1 implies comma delimited num_gs num_ph envvars       
         NP* ph = SGenerate::GeneratePhotons(gs); 
         U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
         delete ph ; 

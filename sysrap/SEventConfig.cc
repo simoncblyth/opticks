@@ -93,6 +93,10 @@ const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDef
 const char* SEventConfig::_EventName  = ssys::getenvvar(kEventName,  _EventNameDefault );
 const char* SEventConfig::_DeviceName  = nullptr ;
 int         SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode, _RunningModeDefault));
+
+
+
+
 int         SEventConfig::_StartIndex = ssys::getenvint(kStartIndex, _StartIndexDefault );
 int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefault );
 
@@ -119,6 +123,13 @@ SEventConfig::_GetNumPhoton
 Used by some tests that define a sequence of photon counts as inputs::
 
     OPTICKS_NUM_PHOTON=M1,2,3,4 OPTICKS_NUM_EVENT=4 SEventConfigTest
+
+
+Expected to define the below of envvars with equal numbers of entries::
+ 
+   OPTICKS_NUM_PHOTON=M1,2,3,4
+   OPTICKS_NUM_GENSTEP=1,1,1,1
+
 
 **/
 int SEventConfig::_GetNumPhoton(int idx)

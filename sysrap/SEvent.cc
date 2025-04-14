@@ -160,6 +160,8 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
 {
     bool with_index = index_arg != -1 ; 
     if(with_index) assert( index_arg >= 0 );  // index_arg is 0-based 
+
+
     int num_ph = with_index ? SEventConfig::NumPhoton(index_arg)  : ssys::getenvint("SEvent__MakeGenstep_num_ph", 100 ) ; 
     int num_gs = with_index ? SEventConfig::NumGenstep(index_arg) : ssys::getenvint("SEvent__MakeGenstep_num_gs", 1   ) ;
  
