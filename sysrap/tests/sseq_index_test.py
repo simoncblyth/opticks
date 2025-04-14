@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 """
-sseq_index_test.py
-====================
+sseq_index_test.py : just for the NumPy statistical methods
+==============================================================
 
 Need this python despite most of comparison done in C++ 
 as getting chi2 cdf in C++ is too involved 
+
+
+1. load persisted c2 info from $FOLD
+2. do statistical null-hyp calc and report
 
 """
 

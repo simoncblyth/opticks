@@ -1,11 +1,23 @@
 /**
-sysrap/tests/sseq_index_test.sh 
-=================================
+sysrap/tests/sseq_index_test.sh : C++ photon history comparison using seq.npy arrays
+=====================================================================================
 
+1. loads arrays a_seq and b_seq from $AFOLD/seq.npy and $BFOLD/seq.npy 
+2. instanciate sseq_index a and b from the a_seq and b_seq arrays
+3. instanciate sseq_index_ab comparing a and b 
+4. report on history differences between a and b using sseq_index_ab methods
+5. saves comparison metadata to $FOLD directory 
 
 ::
 
     ~/opticks/sysrap/tests/sseq_index_test.sh 
+
+
+Requirements
+-------------
+
+* AFOLD and BFOLD envvars pointing to SEvt folders 
+  containing seq.npy photon history files
 
 
 **/

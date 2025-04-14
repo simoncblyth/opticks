@@ -223,6 +223,15 @@ SSEQ_METHOD bool sseq::operator< (const sseq& other) const
 {
     return seqhis[1] == other.seqhis[1] ? seqhis[0] < other.seqhis[0] : seqhis[1] < other.seqhis[1] ; 
 }
+
+/**
+sseq::operator==
+------------------
+
+NB only seqhis is used to check equality, not seqbnd
+
+**/
+
 SSEQ_METHOD bool sseq::operator==(const sseq& other) const 
 {
     return seqhis[1] == other.seqhis[1] && seqhis[0] == other.seqhis[0] ; 
