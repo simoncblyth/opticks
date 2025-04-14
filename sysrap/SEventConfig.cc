@@ -56,7 +56,7 @@ float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression us
 float SEventConfig::_MaxTimeDefault = 10.f ; // ns
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ;
 const char* SEventConfig::_OutNameDefault = nullptr ;
-const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}" ; // coordinate with kEventName
+const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-no_opticks_event_name}" ; // coordinate with kEventName
 const char* SEventConfig::_RGModeDefault = "simulate" ;
 const char* SEventConfig::_HitMaskDefault = "SD" ;
 
@@ -126,7 +126,7 @@ Used by some tests that define a sequence of photon counts as inputs::
 
 
 Expected to define the below of envvars with equal numbers of entries::
- 
+
    OPTICKS_NUM_PHOTON=M1,2,3,4
    OPTICKS_NUM_GENSTEP=1,1,1,1
 
@@ -343,6 +343,20 @@ float SEventConfig::MaxExtent(){ return _MaxExtent ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
+
+/**
+SEventConfig::EventReldir
+---------------------------
+
+Usually left at the default of::
+
+     ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-no_opticks_event_name}
+
+Note that if OPTICKS_EVENT_NAME is defined it is constrained by
+SEventConfig::Initialize_EventName to contain the build context string,
+eg Debug_Philox.
+
+**/
 const char* SEventConfig::EventReldir(){   return _EventReldir ; }
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
 
@@ -950,7 +964,7 @@ void SEventConfig::Initialize_Meta()
 }
 
 /**
-EventConfig::Initialize_EventName
+SEventConfig::Initialize_EventName
 -----------------------------------
 
 Examples that would match some builds::

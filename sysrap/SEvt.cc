@@ -3762,11 +3762,23 @@ bool SEvt::hasInstance() const
 }
 
 
+/**
+SEvt::DefaultBase
+-------------------
 
+If argument is defined it is used, otherwise::
+
+   $TMP/GEOM/$GEOM/$ExecutableName
+
+Note that when Opticks is used from python the OPTICKS_SCRIPT
+envvar can be used to override the not very useful detected
+ExecutableName of "python3.11" or whatever.
+
+**/
 
 const char* SEvt::DefaultBase(const char* base_) // static
 {
-    const char* base = base_ ? base_ : spath::DefaultOutputDir() ; // this is "$TMP/GEOM/$GEOM/$ExecutableName"
+    const char* base = base_ ? base_ : spath::DefaultOutputDir() ;
     return base ;
 }
 
