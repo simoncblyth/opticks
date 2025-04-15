@@ -58,6 +58,8 @@ Workflow for adding Opticks tags:
    A> ssh O
    O> ./deploy_to_cvmfs.sh Opticks-v0.3.2.tar
 
+   ## OR use the function : okdist-deploy-to-cvmfs 
+   ##
    ## /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-vLatest
    ## details in hcvmfs-
 
