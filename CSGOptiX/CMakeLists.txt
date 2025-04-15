@@ -23,6 +23,9 @@ message(STATUS "write to buildenvpath ${buildenvpath} ")
 
 
 
+
+
+
 #set(COMPUTE_CAPABILITY $ENV{OPTICKS_COMPUTE_CAPABILITY})
 #set(CUDA_NVCC_FLAGS)
 #list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
@@ -146,10 +149,17 @@ target_link_libraries(${name}
          Opticks::QUDARap
 )
 
-# Opticks::OpticksCore
+
+set(INSTALLED_SCRIPTS
+   cxr_min.sh 
+)
+
 
 install(FILES ${_generated_PTX_files} DESTINATION ptx)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
+
+
 
 add_subdirectory(tests)
 

@@ -42,7 +42,7 @@ set(INSTALLED_SCRIPTS
    CTestLog.py  
    CMakeModules.py 
    oktar.py
-
+   dbg__.sh
 )
 
 #if(APPLE)
