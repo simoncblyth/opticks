@@ -25,22 +25,26 @@ SDIR=$PWD
 
 allarg="info_fold_run_dbg_brab_grab_ana"
 
-case $(uname) in
-   Linux) defarg=run_info ;;
-   Darwin) defarg=grab_ana ;;
-esac
-
+defarg=run_info
 [ -n "$BP" ] && defarg="info_dbg"
 arg=${1:-$defarg}
 
-export OPTICKS_HASH=$(git -C $SDIR/.. rev-parse --short HEAD)
 
 bin=CSGOptiXTMTest
+which_bin=$(which $bin)
 
-source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
-source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit
-
-export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
+if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
+    ## distributed usage : where have one fixed geometry for each distribution
+    echo $BASH_SOURCE - External GEOM setup detected
+    vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
+    for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
+else
+    ## development usage : where need to often switch between geometries 
+    source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
+    export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+    source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit
+fi
 
 
 tmp=/tmp/$USER/opticks
@@ -50,8 +54,7 @@ export EVT=${EVT:-A000}
 export BASE=$TMP/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
-#export FOLD=$LOGDIR/$EVT
-export FOLD=$TMP/GEOM/$GEOM/CSGOptiXTMTest/${MOI:-0}/$EVT
+export FOLD=$TMP/GEOM/$GEOM/$bin/${MOI:-0}/$EVT
 export SCRIPT=$(basename $BASH_SOURCE)
 
 version=1
@@ -66,7 +69,7 @@ LOGNAME=$bin.log
 
 
 # pushing this too high tripped M3 max photon limit
-# 16*9*2000 = 0.288 (HMM must be
+# 16*9*2000 = 0.288 
 export CEGS=16:0:9:2000   # XZ default
 #export CEGS=16:0:9:1000   # XZ default
 #export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
@@ -90,7 +93,7 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
-vars="allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MOI LOG LOGDIR BASE OPTICKS_HASH CUDA_VISIBLE_DEVICES SDIR FOLD bin script CEGS ana_script"
+vars="allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES SDIR FOLD bin which_bin script CEGS ana_script"
 
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -111,7 +114,7 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    if [ "${arg/run}" != "$arg" ]; then
        $bin
    elif [ "${arg/dbg}" != "$arg" ]; then
-       source $SDIR/../bin/dbg__.sh
+       source dbg__.sh
        dbg__ $bin
    fi
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1

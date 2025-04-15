@@ -474,6 +474,7 @@ fold(){
 }
 
 
+opticks-hash(){  git -C $(dirname $BASH_SOURCE) rev-parse --short HEAD ; }
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-ldir(){     echo $(dirname $BASH_SOURCE) ; }
 opticks-vi(){       vi $(opticks-source) ; }
