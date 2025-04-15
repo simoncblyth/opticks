@@ -40,7 +40,7 @@ if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFro
     vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
     for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 else
-    ## development usage : where need to often switch between geometries 
+    ## development source tree usage : where need to often switch between geometries 
     source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
     export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
     source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit

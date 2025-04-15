@@ -91,7 +91,19 @@ bin=CSGOptiXSMTest
 script=$SDIR/cxs_min.py
 script_AB=$SDIR/cxs_min_AB.py
 
-source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar 
+
+External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
+if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
+    ## distributed usage : where have one fixed geometry for each distribution
+    echo $BASH_SOURCE - External GEOM setup detected
+    vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
+    for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
+else
+    ## development source tree usage : where need to often switch between geometries 
+    source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
+    export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
+fi
+
 
 vars="$vars BASH_SOURCE SDIR defarg arg bin script script_AB GEOM"
 
@@ -112,6 +124,8 @@ Resolve_CFBaseFromGEOM()
    : HMM : FOR SOME TESTS WANT TO LOAD GDML BUT FOR OTHERS CSGFoundry 
    : to handle that added gdml resolution to eg g4cx/tests/GXTestRunner.sh 
 
+   local External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOMS
+
    local A_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
    local B_CFBaseFromGEOM=$TMP/G4CXOpticks_setGeometry_Test/$GEOM
    local C_CFBaseFromGEOM=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM
@@ -119,7 +133,9 @@ Resolve_CFBaseFromGEOM()
    local TestPath=CSGFoundry/prim.npy
    local GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
 
-    if [ -d "$A_CFBaseFromGEOM" -a -f "$A_CFBaseFromGEOM/$TestPath" ]; then
+    if [ -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/$TestPath" ]; then
+        echo $BASH_SOURCE : USING EXTERNALLY SETUP GEOMETRY ENVIRONMENT : EG FROM OJ DISTRIBUTION
+    elif [ -d "$A_CFBaseFromGEOM" -a -f "$A_CFBaseFromGEOM/$TestPath" ]; then
         export ${GEOM}_CFBaseFromGEOM=$A_CFBaseFromGEOM
         #echo $BASH_SOURCE : FOUND A_CFBaseFromGEOM $A_CFBaseFromGEOM containing $TestPath
     elif [ -d "$B_CFBaseFromGEOM" -a -f "$B_CFBaseFromGEOM/$TestPath" ]; then
@@ -519,29 +535,6 @@ fi
 
 
 
-gdb__() 
-{ 
-    : prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
-    if [ -z "$BP" ]; then
-        H="";
-        B="";
-        T="-ex r";
-    else
-        H="-ex \"set breakpoint pending on\"";
-        B="";
-        for bp in $BP;
-        do
-            B="$B -ex \"break $bp\" ";
-        done;
-        T="-ex \"info break\" -ex r";
-    fi;
-    local runline="gdb $H $B $T --args $* ";
-    echo $runline;
-    date;
-    eval $runline;
-    date
-}
-
 
 logging(){ 
     export CSGFoundry=INFO
@@ -598,7 +591,8 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
        [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
        date +"%Y-%m-%d %H:%M:%S.%3N  %N : ]$BASH_SOURCE "
    elif [ "${arg/dbg}" != "$arg" ]; then
-       gdb__ $bin 
+       source dbg__.sh
+       dbg__ $bin 
        [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1 
    fi 
 fi 
