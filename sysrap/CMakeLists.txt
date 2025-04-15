@@ -801,13 +801,18 @@ ${PLog_TOPMETA}
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-set( SCRIPTS 
+set( OLD_SCRIPTS 
     __init__.py
     OpticksCSG.py
 )
+
+set( SCRIPTS 
+    __init__.py
+    sframe.py
+    sevt.py
+)
+
 install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
-
-
 
 install(FILES ${CURANDLITE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/curandlite)
 

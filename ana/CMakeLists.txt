@@ -6,7 +6,7 @@ include(OpticksBuildOptions)
 get_filename_component(PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
 # order of increasing dependency 
-set(SCRIPTS
+set(OLD_SCRIPTS
 
    __init__.py
    nbase.py
@@ -44,6 +44,26 @@ set(SCRIPTS
    tboolean.py
 
 )
+
+
+set(SCRIPTS
+    __init__.py
+    nbase.py
+    base.py
+    npmeta.py
+    axes.py
+    enum_.py
+    qcf.py
+    fold.py
+    eget.py
+    pvplt.py
+
+    histype.py
+    hismask.py
+    nibble.py
+    p.py
+)
+
 
 install(PROGRAMS ${PARENT_DIR}/__init__.py  DESTINATION py/opticks)
 install(PROGRAMS ${SCRIPTS}                 DESTINATION py/opticks/ana)

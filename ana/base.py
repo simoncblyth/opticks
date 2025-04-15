@@ -31,8 +31,8 @@ from collections import OrderedDict as odict
 import numpy as np
 from opticks.ana.enum_ import Enum 
 
-from opticks.ana.key import keydir 
-KEYDIR = keydir()
+#from opticks.ana.key import keydir 
+#KEYDIR = keydir()
 
 log = logging.getLogger(__name__) 
 
