@@ -49,17 +49,20 @@ Workflow for adding Opticks tags:
        ./addtag.sh | sh      # run those commands
        open https://github.com/simoncblyth/opticks/tags # check web interface
 
-5. run okdist- okdist-- to create distribution tarball for the release
+5. create distribution tarball for the release::
 
-6. scp the okdist tarball to O and deploy to /cvmfs/opticks.ihep.ac.cn/ok/releases
+       okdist-;okdist--
+
+6. scp the okdist tarball to O and deploy to eg /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/
    and update the Opticks-vLatest link::
 
-   A> scp /data1/blyth/local/opticks_Debug/Opticks-v0.3.2.tar O:
-   A> ssh O
-   O> ./ok_deploy_to_cvmfs.sh Opticks-v0.3.2.tar
+       okdist-;okdist-deploy-to-cvmfs
 
-   ## OR use the function : okdist-deploy-to-cvmfs 
-   ## details in hcvmfs-
+   OR do that manually replacing the appropriate version in the below::   
+
+       A> scp /data1/blyth/local/opticks_Debug/Opticks-v0.3.2.tar O:
+       A> ssh O
+       O> ./ok_deploy_to_cvmfs.sh Opticks-v0.3.2.tar   ## cvmfs details in hcvmfs-
 
 NB this simple script assumes single digit 0-9 major/minor/patch version integers
 

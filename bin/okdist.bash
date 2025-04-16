@@ -392,7 +392,7 @@ okdist-deploy-to-cvmfs()
    local name=$(basename $dist)
 
    local cmd0="scp $dist O:"
-   local cmd1="ssh O \"CVMFS=0 ./ok_deploy_to_cvmfs.sh $name\""
+   local cmd1="ssh O \"./ok_deploy_to_cvmfs.sh $name\""
    local ii="0 1"
 
    for i in $ii
@@ -400,7 +400,7 @@ okdist-deploy-to-cvmfs()
       _cmd="cmd$i"
       echo ${_cmd}
       echo ${!_cmd}
-      #eval ${!_cmd}
+      eval ${!_cmd}
       [ $? -ne 0 ] && echo $FUNCNAME - FAILED
    done
 
