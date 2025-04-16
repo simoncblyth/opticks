@@ -2,7 +2,7 @@
 import os, sys, re,  numpy as np, logging, datetime
 log = logging.getLogger(__name__)
 
-from opticks.ana.key import keydir
+#from opticks.ana.key import keydir
 from opticks.ana.fold import Fold, STR
 from opticks.sysrap.OpticksCSG import CSG_
 

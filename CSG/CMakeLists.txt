@@ -3,7 +3,7 @@ set(name CSG)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
-find_package(CUDA REQUIRED) 
+find_package(CUDA REQUIRED)
 find_package(SysRap REQUIRED)
 
 
@@ -42,18 +42,18 @@ list(APPEND SOURCES
 
     CSG_LOG.cc
 )
-    
+
 #    CSGGenstep.cc
-#    CSG_stree_Convert.h 
+#    CSG_stree_Convert.h
 
 list(APPEND CSG_HEADERS
-    CSGNode.h 
+    CSGNode.h
 
     CU.h
     CSGPrim.h
     CSGSolid.h
 
-    CSGParams.h 
+    CSGParams.h
 
     CSGFoundry.h
 
@@ -75,8 +75,8 @@ list(APPEND CSG_HEADERS
     CSGSimtrace.hh
     CSGDebug_Cylinder.hh
 
-    CSG_LOG.hh 
-    CSG_API_EXPORT.hh 
+    CSG_LOG.hh
+    CSG_API_EXPORT.hh
 )
 
 
@@ -85,9 +85,9 @@ list(APPEND CSG_HEADERS
 
 
 list(APPEND INTERSECT_HEADERS
-    csg_intersect_leaf.h 
-    csg_intersect_node.h 
-    csg_intersect_tree.h 
+    csg_intersect_leaf.h
+    csg_intersect_node.h
+    csg_intersect_tree.h
 
     csg_intersect_leaf_box3.h
     csg_intersect_leaf_convexpolyhedron.h
@@ -143,15 +143,15 @@ target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
 #[=[
 DEBUG,DEBUG_RECORD,DEBUG_CYLINDER,DEBUG_CONE preprocessor macros
 -------------------------------------------------------------------
- 
-* WARNING : these DEBUG flags are exceedingly verbose 
-* note that nvcc compilation will fail when these are enabled, 
-  as they are intended for CPU debugging of GPU code. 
-  Some use std::vector for collecting CSGRecords. 
 
-* the flags effect critical parts of CSG intersection algorithm 
-* flags are intended for CPU debugging of CUDA compatible code 
-* only use them for tests of single or small numbers of intersections 
+* WARNING : these DEBUG flags are exceedingly verbose
+* note that nvcc compilation will fail when these are enabled,
+  as they are intended for CPU debugging of GPU code.
+  Some use std::vector for collecting CSGRecords.
+
+* the flags effect critical parts of CSG intersection algorithm
+* flags are intended for CPU debugging of CUDA compatible code
+* only use them for tests of single or small numbers of intersections
 * DO NOT COMMIT WITH THESE UNCOMMENTED
 
 #]=]
@@ -180,9 +180,18 @@ target_include_directories(${name}
 target_link_libraries(${name} ${CUDA_LIBRARIES} Opticks::SysRap)
 
 
+
+set( SCRIPTS
+    __init__.py
+   CSGFoundry.py
+)
+
+
+
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/CSG)
 
 
 add_subdirectory(tests)

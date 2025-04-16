@@ -218,7 +218,7 @@ fi
 
 
 if [ "${arg/cf2}" != "$arg" ]; then
-    $DIR/../../sysrap/tests/sseq_index_test.sh info_run_ana
+    sseq_index_test.sh info_run_ana
     [ $? -ne 0 ] && echo $BASH_SOURCE : cf2 error && exit 5
 fi
 

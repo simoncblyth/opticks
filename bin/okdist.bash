@@ -306,6 +306,24 @@ okdist-tarball-extract(){
    $(opticks-home)/bin/oktar.py $(okdist-path) extract --base $(okdist-release-dir) ;
 }
 
+okdist-tarball-extract-plant-latest-link()
+{
+    local pfx=$(okdist-release-prefix) ## eg /data/blyth/opticks_Debug/el7_amd64_gcc1120/Opticks-v0.3.5
+    local nam=$(basename $pfx)    ## eg Opticks-v0.3.5
+    local dir=$(dirname $pfx)     ## eg /data/blyth/opticks_Debug/el7_amd64_gcc1120
+    local LNK=Opticks-vLatest
+    local iwd=$PWD
+    cd $dir && ln -sfn $nam $LNK
+    [ $? -ne 0 ] && echo $FUNCNAME - ERROR PLANTING LINK && return 1
+
+    pwd
+    ls -alst .
+
+    cd $iwd
+    return 0
+}
+
+
 okdist-tarball-dump(){
    : bin/okdist.bash extract tarball into release dir
 
@@ -328,6 +346,7 @@ okdist--(){
    okdist-install-extras
    okdist-tarball-create
    okdist-tarball-extract
+   okdist-tarball-extract-plant-latest-link
    okdist-ls
 
    #echo $msg okdist-deploy-opticks-site
