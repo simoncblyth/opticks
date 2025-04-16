@@ -56,13 +56,10 @@ Workflow for adding Opticks tags:
 
    A> scp /data1/blyth/local/opticks_Debug/Opticks-v0.3.2.tar O:
    A> ssh O
-   O> ./deploy_to_cvmfs.sh Opticks-v0.3.2.tar
+   O> ./ok_deploy_to_cvmfs.sh Opticks-v0.3.2.tar
 
    ## OR use the function : okdist-deploy-to-cvmfs 
-   ##
-   ## /cvmfs/opticks.ihep.ac.cn/ok/releases/Opticks-vLatest
    ## details in hcvmfs-
-
 
 NB this simple script assumes single digit 0-9 major/minor/patch version integers
 
