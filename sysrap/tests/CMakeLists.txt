@@ -5,6 +5,8 @@ include(OpticksBuildOptions)
 
 set(INSTALLED_SCRIPTS
    STestRunner.sh   
+   sseq_index_test.sh
+   sseq_index_test.py
 )
 
 install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)

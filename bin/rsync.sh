@@ -1,8 +1,27 @@
-#!/bin/bash -l 
-
+#!/bin/bash
 usage(){ cat << EOU
 rsync.sh 
 ==========
+
+Update copies a remote directory to local node.
+The argument directory is expected not to have a trailing slash. 
+When the argument begins with "." the local destination
+directory is prefixed with $HOME
+
+Only files with the below filetype extensions are copied::
+
+   .gdml
+   .txt
+   .log
+   .tlog
+   .npy
+   .jpg
+   .mp4   
+   .json 
+
+Configure the remote node with REMOTE envvar. 
+Default REMOTE is "P" which requires a "host P" 
+entry in ~/.ssh/config 
 
 Usage::
 

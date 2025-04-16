@@ -37,7 +37,12 @@ EOU
 SDIR=$(dirname $(realpath $BASH_SOURCE))
 CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
 
-source $HOME/.opticks/GEOM/GEOM.sh
+if [ -n "$GEOM" ]; then
+    echo $BASH_SOURCE - using externally configured GEOM $GEOM
+else
+    source $HOME/.opticks/GEOM/GEOM.sh
+fi 
+
 TMP=${TMP:-/tmp/$USER/opticks}
 
 name=sseq_index_test
@@ -49,7 +54,7 @@ mkdir -p $FOLD
 if [ -n "$DEV" ]; then
     bin=$FOLD/$name
     bin_note="using dev binary - built by this script"
-d   efarg="info_build_run_ana"
+    defarg="info_build_run_ana"
 else
     bin=$name
     bin_note="using installed binary - built by om/CMake - use DEV=1 to use dev binary"
@@ -111,6 +116,8 @@ if [ "${arg/build}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
+    : needs AFOLD and BFOLD to configure where to load seq.npy from 
+    : needs FOLD to config where to write chi2 info
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi

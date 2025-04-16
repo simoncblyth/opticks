@@ -183,13 +183,13 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
-    source $DIR/../../bin/dbg__.sh
+    source dbg__.sh
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $DIR/../../bin/rsync.sh $evtfold
+    source rsync.sh $evtfold
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3
 fi
 

@@ -43,6 +43,7 @@ set(INSTALLED_SCRIPTS
    CMakeModules.py 
    oktar.py
    dbg__.sh
+   rsync.sh
 )
 
 #if(APPLE)

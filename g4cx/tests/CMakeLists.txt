@@ -5,6 +5,8 @@ include(OpticksBuildOptions)
 
 set(INSTALLED_SCRIPTS
     GXTestRunner.sh 
+    G4CXTest_raindrop.sh
+    G4CXTest_raindrop.py
 )
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
