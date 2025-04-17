@@ -5,7 +5,7 @@
 #include <iomanip>
 #include "ssys.h"
 
-void test_popen_0()
+int test_popen_0()
 {
     const char* cmd = "md5 -q -s hello" ; 
     bool chomp = false ; 
@@ -17,16 +17,26 @@ void test_popen_0()
         << " ret [" << ret << "]" 
         << std::endl 
         ; 
+    return 0 ; 
 }
 
-void test_popen_1()
+int test_popen_1()
 {
     std::cout << ssys::popen("md5 -q -s hello") << std::endl ; 
+    return 0 ; 
 }
 
-void test_username()
+
+int  test_is_remote_session()
+{
+    std::cout << "ssys::is_remote_session [" << ( ssys::is_remote_session() ? "YES" : "NO " ) << "]" << std::endl ; 
+    return 0 ; 
+}
+
+int test_username()
 {
     std::cout << "ssys::username [" << ssys::username() << "]" << std::endl ; 
+    return 0 ; 
 }
 void test_which ()
 {
@@ -482,9 +492,18 @@ void test_getenvintpick()
 
 int main(int argc, char** argv)
 {
+
+    const char* TEST = ssys::getenvvar("TEST", "is_remote_session"); 
+    bool ALL = strcmp("ALL", TEST) == 0 ; 
+
+    int rc = 0 ; 
+    if(ALL||0==strcmp(TEST,"popen_0")) rc += test_popen_0() ; 
+    if(ALL||0==strcmp(TEST,"popen_1")) rc += test_popen_1() ; 
+    if(ALL||0==strcmp(TEST,"username")) rc += test_username() ; 
+    if(ALL||0==strcmp(TEST,"is_remote_session")) rc += test_is_remote_session() ; 
+
+
     /*
-    test_popen_0(); 
-    test_popen_1();
     test_getenv_vec(); 
     test_getenv_(); 
     test_getenvvec_string_1(); 
@@ -495,7 +514,6 @@ int main(int argc, char** argv)
     test_getenv_kv(); 
     test_getenvfloat(); 
     test_getenvdouble(); 
-    test_username(); 
     test_which(); 
     test_getenvvar(); 
     test_is_listed(); 
@@ -519,11 +537,10 @@ int main(int argc, char** argv)
     test_getenvintvec(); 
     test_getenvfloatvec_fallback(); 
     test_getenvintpick(); 
-    */
-
     test_getenvvar_path_replacement();
+    */
  
-    return 0 ; 
+    return rc ; 
 }
 
 // ~/opticks/sysrap/tests/ssys_test.sh

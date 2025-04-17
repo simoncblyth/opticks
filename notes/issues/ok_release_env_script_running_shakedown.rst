@@ -317,3 +317,52 @@ After that "cf2" succeeds.
 
 
 
+
+Testing actual release with git@github.com:simoncblyth/ok.git find viz attempt over ssh crashes gnome-shell
+-----------------------------------------------------------------------------------------------------------------
+
+::
+
+    ok env
+    cxr_min.sh 
+
+Need to detect remote ssh usage and give an error before attempting to popup a window::
+
+    P[blyth@localhost ~]$ opticks-f SSH_
+    ./ana/fold.py:    has_SSH_CLIENT = not os.environ.get("SSH_CLIENT", None) is None 
+    ./ana/fold.py:    has_SSH_TTY = not os.environ.get("SSH_TTY", None) is None 
+    ./ana/fold.py:    return has_SSH_CLIENT or has_SSH_TTY
+    ./bin/OpticksCTestRunner.sh:   [ -n "$SSH_CLIENT" -o -n "$SSH_TTY" ] && echo YES || echo NO
+    ./bin/OpticksCTestRunner.sh:   SSH_CLIENT  \"$SSH_CLIENT\" 
+    ./bin/OpticksCTestRunner.sh:   SSH_TTY     \"$SSH_TTY\"
+    ./examples/UseOptiXGeometry/go.sh:if [ -n "$SSH_TTY" ]; then 
+    ./examples/UseOptiXGeometryInstanced/go.sh:if [ -n "$SSH_TTY" ]; then 
+    ./examples/UseOptiXGeometryInstancedOCtx/go.sh:if [ -n "\$SSH_TTY" ]; then 
+    ./examples/UseOptiXGeometryOCtx/go.sh:if [ -n "$SSH_TTY" ]; then 
+    ./examples/UseOptiXTextureLayeredOKImgGeo/go.sh:if [ -n "$SSH_TTY" ]; then 
+    ./sysrap/SSys.cc:    char* ssh_client = getenv("SSH_CLIENT");
+    ./sysrap/SSys.cc:    char* ssh_tty = getenv("SSH_TTY");
+    P[blyth@localhost opticks]$ cd ~/ok
+
+
+::
+
+    357 bool SSys::IsRemoteSession()
+    358 {
+    359     char* ssh_client = getenv("SSH_CLIENT");
+    360     char* ssh_tty = getenv("SSH_TTY");
+    361 
+    362     bool is_remote = ssh_client != NULL || ssh_tty != NULL ;
+    363 
+    364     LOG(verbose) << "SSys::IsRemoteSession"
+    365                << " ssh_client " << ssh_client
+    366                << " ssh_tty " << ssh_tty
+    367                << " is_remote " << is_remote
+    368                ;
+    369 
+    370     return is_remote ;
+    371 }
+
+
+
+

@@ -107,6 +107,7 @@ struct ssys
     static int              listed_count(       std::vector<int>* ncount, const std::vector<std::string>* nn, const char* n ); 
     static std::string desc_listed_count( const std::vector<int>* ncount, const std::vector<std::string>* nn ); 
 
+    static bool is_remote_session(); 
     static const char* username(); 
 
     static void Dump(const char* msg); 
@@ -736,6 +737,26 @@ inline std::string ssys::desc_listed_count( const std::vector<int>* ncount, cons
     return str ;  
 }
 
+
+/**
+ssys::is_remote_session
+-------------------------
+
+Returns true when the environment has one or more of the below envvars::
+
+    SSH_CLIENT
+    SSH_TTY
+
+**/
+
+
+inline bool ssys::is_remote_session()
+{
+    char* ssh_client = getenv("SSH_CLIENT");
+    char* ssh_tty = getenv("SSH_TTY");
+    bool is_remote = ssh_client != nullptr || ssh_tty != nullptr ; 
+    return is_remote ; 
+}
 
 
 

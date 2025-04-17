@@ -54,6 +54,20 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+
+    static const char* _CXRI_REMOTE = "CSGOptiXRenderInteractiveTest__REMOTE" ;  
+    bool CXRI_REMOTE = ssys::getenvbool(_CXRI_REMOTE); 
+    bool is_remote_session = ssys::is_remote_session(); 
+
+    if(is_remote_session && !CXRI_REMOTE )
+    {
+        std::cout << "main : ABORTING : as detected remote session from SSH_TTY SSH_CLIENT \n"; 
+        std::cout << "to override : export " << _CXRI_REMOTE << "=1  ## warning have see gnome-shell crash with Wayland \n" ; 
+        return 0 ;  
+    }
+
+
+
     SEventConfig::SetRGModeRender(); 
     CSGFoundry* fd = CSGFoundry::Load(); 
 
@@ -75,8 +89,10 @@ int main(int argc, char** argv)
 
     static const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;  
     static const char* _SGLM_DESC = "CSGOptiXRenderInteractiveTest__SGLM_DESC" ;  
+
     bool FRAME_HOP = ssys::getenvbool(_FRAME_HOP); 
     bool SGLM_DESC = ssys::getenvbool(_SGLM_DESC); 
+
 
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
 

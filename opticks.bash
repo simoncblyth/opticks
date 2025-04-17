@@ -3268,32 +3268,35 @@ opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $
 
 okconf-(){          . $(opticks-home)/okconf/okconf.bash && okconf-env $* ; }
 sysrap-(){          . $(opticks-home)/sysrap/sysrap.bash && sysrap-env $* ; }
-brap-(){            . $(opticks-home)/boostrap/brap.bash && brap-env $* ; }
-npy-(){             . $(opticks-home)/npy/npy.bash && npy-env $* ; }
-okc-(){             . $(opticks-home)/optickscore/okc.bash && okc-env $* ; }
 
-ggeo-(){            . $(opticks-home)/ggeo/ggeo.bash && ggeo-env $* ; }
-asirap-(){          . $(opticks-home)/assimprap/asirap.bash && asirap-env $* ; }
-openmeshrap-(){     . $(opticks-home)/openmeshrap/openmeshrap.bash && openmeshrap-env $* ; }
-okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
+#brap-(){            . $(opticks-home)/boostrap/brap.bash && brap-env $* ; }
+#npy-(){             . $(opticks-home)/npy/npy.bash && npy-env $* ; }
+#okc-(){             . $(opticks-home)/optickscore/okc.bash && okc-env $* ; }
 
-oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
-cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
+#ggeo-(){            . $(opticks-home)/ggeo/ggeo.bash && ggeo-env $* ; }
+#asirap-(){          . $(opticks-home)/assimprap/asirap.bash && asirap-env $* ; }
+#openmeshrap-(){     . $(opticks-home)/openmeshrap/openmeshrap.bash && openmeshrap-env $* ; }
+#okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
+
+#oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
+#cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
+
 qudarap-(){         . $(opticks-home)/qudarap/qudarap.bash && qudarap-env $* ; }
-thrap-(){           . $(opticks-home)/thrustrap/thrap.bash && thrap-env $* ; }
-oxrap-(){           . $(opticks-home)/optixrap/oxrap.bash && oxrap-env $* ; }
 
-okop-(){            . $(opticks-home)/okop/okop.bash && okop-env $* ; }
-okgl-(){            . $(opticks-home)/opticksgl/okgl.bash && okgl-env $* ; }
-ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
-cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
-okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
+#thrap-(){           . $(opticks-home)/thrustrap/thrap.bash && thrap-env $* ; }
+#oxrap-(){           . $(opticks-home)/optixrap/oxrap.bash && oxrap-env $* ; }
 
-g4ok-(){            . $(opticks-home)/g4ok/g4ok.bash && g4ok-env $* ; }
-x4-(){              . $(opticks-home)/extg4/x4.bash  && x4-env $* ; }
-c4-(){              . $(opticks-home)/c4/c4.bash  && c4-env $* ; }
-x4gen-(){           . $(opticks-home)/extg4/x4gen.bash  && x4gen-env $* ; }
-yog-(){             . $(opticks-home)/yoctoglrap/yog.bash && yog-env $* ; }
+#okop-(){            . $(opticks-home)/okop/okop.bash && okop-env $* ; }
+#okgl-(){            . $(opticks-home)/opticksgl/okgl.bash && okgl-env $* ; }
+#ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
+#cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
+#okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
+
+#g4ok-(){            . $(opticks-home)/g4ok/g4ok.bash && g4ok-env $* ; }
+#x4-(){              . $(opticks-home)/extg4/x4.bash  && x4-env $* ; }
+#c4-(){              . $(opticks-home)/c4/c4.bash  && c4-env $* ; }
+#x4gen-(){           . $(opticks-home)/extg4/x4gen.bash  && x4gen-env $* ; }
+#yog-(){             . $(opticks-home)/yoctoglrap/yog.bash && yog-env $* ; }
 
 bin-(){             . $(opticks-home)/bin/bin.bash && bin-env $* ; }
 integration-(){     . $(opticks-home)/integration/integration.bash && integration-env $* ; }

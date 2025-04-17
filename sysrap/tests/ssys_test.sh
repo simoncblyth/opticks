@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash 
 usage(){ cat << EOU
 ssys_test.sh
 =============
@@ -9,6 +9,7 @@ ssys_test.sh
 
 EOU
 }
+cd $(dirname $(realpath $BASH_SOURCE))
 
 name=ssys_test 
 bin=${TMP:-/tmp/$USER/opticks}/$name 
@@ -17,12 +18,6 @@ mkdir -p $(dirname $bin)
 defarg="build_run"
 arg=${1:-$defarg}
 
-cd $(dirname $BASH_SOURCE)
-
-if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
-fi 
 
 
 export MULTILINE=$(cat << EOV
@@ -55,22 +50,30 @@ export VERSION=214
 export COMMANDLINE="Some-COMMANDLINE-with-spaces after the spaces start"
 
 
-
 export GEOM=J_2024aug27
 export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
 
 
 
+
+
+if [ "${arg/build}" != "$arg" ]; then 
+    echo [ $BASH_SOURCE build
+    gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1 
+    echo ] $BASH_SOURCE build
+fi 
+
 if [ "${arg/run}" != "$arg" ]; then 
+    echo [ $BASH_SOURCE run
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
+    echo ] $BASH_SOURCE run
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then 
-   case $(uname) in 
-     Darwin) lldb__ $bin ;;
-     Linux)  gdb__ $bin ;;
-   esac
+   source dbg__.sh
+   dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3 
 fi 
 
