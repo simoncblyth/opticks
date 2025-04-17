@@ -32,7 +32,19 @@ DIR=$(pwd)
 bin=G4CXTest
 script=G4CXTest_raindrop.py
 
-export GEOM=RaindropRockAirWater  # GEOM is identifier for a geometry
+
+
+geom=RaindropRockAirWater
+
+if [ -n "$GEOM" -a "$GEOM" != "$geom" ]; then
+   echo $BASH_SOURCE - detected different external GEOM $GEOM geom $geom - do some unset
+   _SScene__initFromTree_addFrames=$SScene__initFromTree_addFrames
+   _stree__force_triangulate_solid=$stree__force_triangulate_solid
+   unset SScene__initFromTree_addFrames
+   unset stree__force_triangulate_solid
+fi
+
+export GEOM=$geom  # GEOM is identifier for a geometry
 
 vars="$vars BASH_SOURCE PWD DIR bin script GEOM"
 
