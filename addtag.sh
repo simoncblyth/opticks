@@ -9,6 +9,8 @@ Workflow for adding Opticks tags:
 
 0. check if now is an appropriate time to tag, by running tests::
 
+   oo                       ## update build
+   opticks-setup-generate   ## if have changed the setup bashrc 
    opticks-t
 
 1. edit okconf/OpticksVersionNumber.hh increasing OPTICKS_VERSION_NUMBER
