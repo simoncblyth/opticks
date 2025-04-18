@@ -5,9 +5,9 @@ BASE_grab.sh
 
 Usage::
 
-   BASE=/directory/to/grab/from source $OPTICKS_HOME/bin/BASE_grab.sh grab
-   BASE=/directory/to/grab/from source $OPTICKS_HOME/bin/BASE_grab.sh open
-   BASE=/directory/to/grab/from source $OPTICKS_HOME/bin/BASE_grab.sh clean
+   BASE=/directory/to/grab/from source BASE_grab.sh grab
+   BASE=/directory/to/grab/from source BASE_grab.sh open
+   BASE=/directory/to/grab/from source BASE_grab.sh clean
 
 EOU
 }
@@ -20,7 +20,7 @@ for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 
 if [ "${arg/grab}" != "$arg" ]; then 
     echo $BASH_SOURCE grabbing from remote 
-    source $OPTICKS_HOME/bin/rsync.sh $BASE
+    source rsync.sh $BASE
 fi 
 
 if [ "${arg/clean}" != "$arg" ]; then 

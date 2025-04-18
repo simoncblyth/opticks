@@ -44,6 +44,7 @@ set(INSTALLED_SCRIPTS
    oktar.py
    dbg__.sh
    rsync.sh
+   BASE_grab.sh
 )
 
 #if(APPLE)

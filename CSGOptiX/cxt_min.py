@@ -3,6 +3,23 @@
 cxt_min.py 
 ===========
 
+1. loads simtrace SEvt from $FOLD
+2. check validity with do asserts on the simtrace gensteps
+3. prepare genstep ugrid positions and upos simtrace intersect positions 
+   depending on GLOBAL envvar
+
+GLOBAL:1
+   leave positions as is
+
+GLOBAL:0
+   apply the e.f.sframe.w2m (world2model) 4x4 transform to 
+   the global positions converting them into the model frame  
+
+4. plot the ugrid and upos points with in 2D with matplotlib MODE:2 
+   OR in 3D with pyvista MODE:3
+
+
+
 TODO: cherry pick from tests/CSGOptiXSimtraceTest.py and simplify 
 for minimal simtrace plotting 
 
@@ -12,7 +29,7 @@ from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt
 
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
-MODE = int(os.environ.get("MODE","3")) 
+MODE = int(os.environ.get("MODE","2")) 
 
 if MODE in [2,3]:
     from opticks.ana.pvplt import *   

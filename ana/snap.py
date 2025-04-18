@@ -3,6 +3,8 @@
 snap.py : analysis of scan metadata
 ======================================
 
+HAS THIS BEEN FULLY SUPERCEEDED BY the C++ sreport/NPX.h etc.. METADATA HANDLING ?  
+
 ::
 
 

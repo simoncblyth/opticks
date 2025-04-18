@@ -1,27 +1,84 @@
 #!/bin/bash
 usage(){ cat << EOU
-cxt_min.sh : CSGOptiXTMTest Simtrace minimal executable and script for shakedown
-==================================================================================
+cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting 
+===============================================================
 
-Uses CSGOptiXTMTest which just does "CSGOptiX::SimtraceMain()"
-depends on GEOM to pick geometry and MOI for targetting
+Former label "CSGOptiXTMTest Simtrace minimal executable and script for shakedown"
+but has become the standard simtrace script.
+Uses CSGOptiXTMTest which just does "CSGOptiX::SimtraceMain()".
 
-Workstation::
+Envar controls:
 
-   ~/o/cxt_min.sh
-   LOG=1 ~/o/cxt_min.sh
+GEOM
+   picks the geometry together with ${GEOM}_CFBaseFromGEOM
 
-Laptop::
+MOI
+   specify the frame in which simtrace gensteps will be generated, 
+   which sets the region where most of the intersects will be found
 
-   ~/o/cxt_min.sh grab
-   NOGRID=1 MODE=2 ~/o/cxt_min.sh ana
+CEGS
+   "CE-center-extent-Gensteps" specifies orientatation of the grid of 
+   gensteps and the number of simtrace rays from each genstep origin   
+
+
+Usage pattern assuming analysis python environment with 
+matplotlib and/or pyvista on laptop::
+
+   cxt_min.sh info_run               ## on workstation
+   cxt_min.sh grab                   ## on laptop
+   NOGRID=1 MODE=2 cxt_min.sh ana    ## on laptop
+
+
+Command arguments:
+
+info
+   output many vars
+fold 
+   output just $FOLD where simtrace SEvt are persisted
+run
+   executes the CSGOptiXTMTest executable with main being just "CSGOptiX::SimtraceMain()"
+   
+   1. loads envvar configured geometry
+   2. generates envvar configured simtrace gensteps
+   3. runs CSGOptiX:simtrace which uses OptiX on GPU to intersect
+      simtrace rays with the gometry, saving them into the simtrace array
+   4. saves SEVt including simtrace array to $FOLD
+
+dbg
+   runs the above under gdb 
+
+brab
+   old grab for rsyncing the SEvt FOLD between machines
+grab 
+   rsync an SEvt FOLD from remote to local machine
+
+
+pdb
+   ${IPYTHON:-ipython} plotting of simtrace intersects, typically 
+   giving 2D cross section through geometry with matplotlib (MODE:2)
+   OR 3D intersect view with pyvista (MODE:3)
+
+ana
+   as above but with ${PYTHON:-python} 
+
+
+About IPYTHON/PYTHON ipython/python overrides
+-----------------------------------------------
+
+"Official" python environments might not include the 
+matplotlib/pyvista plotting packages which 
+will cause MODE 2/3 to give errors for "pdb" and "ana". 
+Workaround this by defining IPYTHON/PYTHON envvars
+to pick a python install (eg from miniconda) 
+which does include the plotting libraries.
+
+
 
 EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-ana_script=$(realpath cxt_min.py)
-SDIR=$PWD
+script=$(realpath $PWD/cxt_min.py)   ## use python script that is sibling to the bash script
 
 allarg="info_fold_run_dbg_brab_grab_ana"
 
@@ -93,7 +150,7 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
-vars="allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES SDIR FOLD bin which_bin script CEGS ana_script"
+vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM FOLD MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS"
 
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -122,16 +179,20 @@ fi
 
 
 if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
-    ## THIS OLD GRAB SYNCING TOO MUCH
-    source $SDIR/../bin/BASE_grab.sh $arg
+    ## THIS OLD BASE_grab.sh SYNCS TOO MUCH : BUT IT DOES OTHER THINGS LIKE list and pub
+    source BASE_grab.sh $arg
 fi
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source $SDIR/../bin/rsync.sh $FOLD
+    source rsync.sh $FOLD
+fi
+
+if [ "${arg/pdb}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $script
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $ana_script
+    ${PYTHON:-python} $script
 fi
 
 

@@ -27,7 +27,9 @@ import os, logging
 log = logging.getLogger(__name__)
 import numpy as np
 
-D_ = os.environ.get("D", "3")
+## when have pyvista will almost certainly also have matplotlib but not conversely
+## so defaulting to 2D MODE:2 is more sensible 
+D_ = os.environ.get("D", "2")   
 MODE_ = os.environ.get("MODE", D_ )
 MODE = int(MODE_)
 mp = None
