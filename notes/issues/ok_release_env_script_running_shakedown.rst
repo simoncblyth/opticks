@@ -366,3 +366,77 @@ Need to detect remote ssh usage and give an error before attempting to popup a w
 
 
 
+OPTICKS_MAX_SLOT=M1 cxt_min.sh   ## CUDA error when try to simtrace over the slots
+--------------------------------------------------------------------------------------
+
+HMM: would have expected to get a cleaner error 
+when try to simtrace more rays than slots, OR simtrace would 
+do multiple launches. 
+
+
+::
+
+    (base) A[blyth@localhost ~]$ ok test4
+                     arg : test4
+                   regex : test([[:digit:]]{1,2})
+                      m0 : test4
+                      m1 : 4
+                 cmdline : OPTICKS_MAX_SLOT=M1 cxt_min.sh
+    [ cmdline - OPTICKS_MAX_SLOT=M1 cxt_min.sh
+    -bash OK_LOGDIR /tmp/blyth/opticks/GEOM/J25_3_0_Opticks_v0_3_5/ok_sh
+    /tmp/blyth/opticks/GEOM/J25_3_0_Opticks_v0_3_5/ok_sh
+    OPTICKS_MAX_SLOT=M1 cxt_min.sh
+    /data1/blyth/local/opticks_Debug/bin/cxt_min.sh - External GEOM setup detected
+                     External_CFBaseFromGEOM : J25_3_0_Opticks_v0_3_5_CFBaseFromGEOM 
+       J25_3_0_Opticks_v0_3_5_CFBaseFromGEOM : /cvmfs/opticks.ihep.ac.cn/oj/releases/J25.3.0_Opticks-v0.3.5/el9_amd64_gcc11/2025_04_14/.opticks/GEOM/J25_3_0_Opticks_v0_3_5 
+             BASH_SOURCE : /data1/blyth/local/opticks_Debug/bin/cxt_min.sh 
+                  script : /data1/blyth/local/opticks_Debug/bin/cxt_min.py 
+                     bin : CSGOptiXTMTest 
+               which_bin : /data1/blyth/local/opticks_Debug/lib/CSGOptiXTMTest 
+                  allarg : info_fold_run_dbg_brab_grab_ana 
+                  defarg : run_info 
+                     arg : run_info 
+                    GEOM : J25_3_0_Opticks_v0_3_5 
+    J25_3_0_Opticks_v0_3_5_CFBaseFromGEOM : /cvmfs/opticks.ihep.ac.cn/oj/releases/J25.3.0_Opticks-v0.3.5/el9_amd64_gcc11/2025_04_14/.opticks/GEOM/J25_3_0_Opticks_v0_3_5 
+                    FOLD : /data1/blyth/tmp/GEOM/J25_3_0_Opticks_v0_3_5/CSGOptiXTMTest/0/A000 
+                     MOI :  
+                     LOG :  
+                  LOGDIR : /data1/blyth/tmp/GEOM/J25_3_0_Opticks_v0_3_5/CSGOptiXTMTest/ 
+                    BASE : /data1/blyth/tmp/GEOM/J25_3_0_Opticks_v0_3_5 
+    CUDA_VISIBLE_DEVICES : 0 
+                    CEGS : 16:0:9:2000 
+    /data1/blyth/local/opticks_Debug/bin/cxt_min.sh : run/dbg : delete prior LOGNAME CSGOptiXTMTest.log
+    2025-04-18 16:14:18.084 INFO  [723229] [SEventConfig::SetDevice@1333] SEventConfig::DescDevice
+    name                             : NVIDIA RTX 5000 Ada Generation
+    totalGlobalMem_bytes             : 33796980736
+    totalGlobalMem_GB                : 31
+    HeuristicMaxSlot(VRAM)           : 262530128
+    HeuristicMaxSlot(VRAM)/M         : 262
+    HeuristicMaxSlot_Rounded(VRAM)   : 262000000
+    MaxSlot/M                        : 1
+
+    2025-04-18 16:14:18.084 INFO  [723229] [SEventConfig::SetDevice@1345]  Configured_MaxSlot/M 1 Final_MaxSlot/M 1 HeuristicMaxSlot_Rounded/M 262 changed NO  DeviceName NVIDIA RTX 5000 Ada Generation HasDevice YES
+    (export OPTICKS_MAX_SLOT=0 # to use VRAM based HeuristicMaxPhoton) 
+    2025-04-18 16:14:18.168 INFO  [723229] [QRng::initStates@72] initStates<Philox> DO NOTHING : No LoadAndUpload needed  rngmax 1000000000 SEventConfig::MaxCurand 1000000000
+    //CSGOptiX7.cu : simtrace idx 0 photon_idx 0  genstep_idx 0 evt->num_simtrace 1254000 
+    //CSGOptiX7.cu : simtrace idx 0 pos.xyz -96000.000,  0.000,-54000.000 mom.xyz  -0.805,  0.000,  0.593  
+    terminate called after throwing an instance of 'CUDA_Exception'
+      what():  CUDA error on synchronize with error 'an illegal memory access was encountered' (/home/blyth/opticks/CSGOptiX/CSGOptiX.cc:1064)
+
+    /data1/blyth/local/opticks_Debug/bin/cxt_min.sh: line 178: 723229 Aborted                 (core dumped) $bin
+    /data1/blyth/local/opticks_Debug/bin/cxt_min.sh run/dbg error
+    /tmp/blyth/opticks/GEOM/J25_3_0_Opticks_v0_3_5/ok_sh
+    -bash OK_LOGDIR /tmp/blyth/opticks/GEOM/J25_3_0_Opticks_v0_3_5/ok_sh
+    total 0
+    0 drwxr-xr-x. 2 blyth blyth  6 Apr 17 14:36 .
+    0 drwxr-xr-x. 6 blyth blyth 87 Apr 17 14:36 ..
+    /home/blyth
+    ] cmdline - OPTICKS_MAX_SLOT=M1 cxt_min.sh
+    (base) A[blyth@localhost ~]$ 
+
+
+
+::
+
+    OPTICKS_MAX_SLOT=M2 cxt_min.sh
+
