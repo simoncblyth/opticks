@@ -28,3 +28,27 @@ Create "ok" environment for Opticks analysis::
 
     conda install conda-forge::pyvista
 
+
+
+
+Experience with recent ipython + matplotlib with Wayland
+------------------------------------------------------------
+
+Warning::
+
+   qt.qpa.plugin: Count not find the Qt platform plugin "wayland" in ""
+
+Below avoids the warning, and appears the same::
+
+   export QT_QPA_PLATFORM=xcb 
+
+
+Experience with recent ipython+pyvista 
+----------------------------------------
+
+Following plotting get SEGV on exit
+
+
+
+
+
