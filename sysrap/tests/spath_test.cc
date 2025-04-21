@@ -330,7 +330,8 @@ int spath_test::Resolve()
         "$DefaultOutputDir/some/further/relative/path",
         "${RNGDir:-$HOME/.opticks/rngcache/RNG}",
         "${SEvt__INPUT_PHOTON_DIR:-$HOME/.opticks/InputPhotons}",
-        "${PrecookedDir:-$HOME/.opticks/precooked}/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy"
+        "${PrecookedDir:-$HOME/.opticks/precooked}/QSimTest/rng_sequence/rng_sequence_f_ni1000000_nj16_nk16_tranche100000/rng_sequence_f_ni100000_nj16_nk16_ioffset000000.npy",
+        "${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx}"
         } ; 
 
     for(unsigned i=0 ; i < specs.size() ; i++) Resolve_( specs[i].c_str() ); 

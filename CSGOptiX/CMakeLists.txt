@@ -152,6 +152,7 @@ target_link_libraries(${name}
 
 set(INSTALLED_SCRIPTS
    cxr_min.sh
+   cxr_min_debug.sh
    cxt_min.sh
    cxt_min.py
 )

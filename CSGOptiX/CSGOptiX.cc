@@ -398,28 +398,15 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     outdir(SEventConfig::OutFold()),
-#if OPTIX_VERSION < 70000
-    ptxpath(spath::Resolve("$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX6.cu.ptx")),
-    geoptxpath(spath::Resolve("OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX6geo.cu.ptx")),
-#else
-    ptxpath(spath::Resolve("$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx")),
-    geoptxpath(nullptr),
-#endif
+    ptxpath(spath::Resolve("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx}")),
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation
     kernel_count(0),
     raygenmode(SEventConfig::RGMode()),
     params(InitParams(raygenmode,sglm)),
-#if OPTIX_VERSION < 70000
-    six(new Six(ptxpath, geoptxpath, params)),
-    dummy0(nullptr),
-    dummy1(nullptr),
-    framebuf(new Frame(params->width, params->height, params->depth, six->d_pixel, six->d_isect, six->d_photon)),
-#else
     ctx(nullptr),
     pip(nullptr),
     sbt(nullptr),
     framebuf(nullptr),
-#endif
     meta(new SMeta),
     kernel_dt(0.),
     sctx(nullptr),
