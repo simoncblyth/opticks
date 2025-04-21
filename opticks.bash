@@ -3898,6 +3898,7 @@ gdb__ ()
 
 
 opticks-ptx-(){ echo $(opticks-prefix)/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx ; }
+opticks-ptx-head(){   head -19 $(opticks-ptx-) ; }
 
 opticks-ptx(){
 
