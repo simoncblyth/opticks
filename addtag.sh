@@ -136,7 +136,7 @@ cat << EOC | sed "s/^/$pfx/"
 
 git tag -a $vntag -m "OPTICKS_VERSION_NUMBER ${ntag_num}"
 git push --tags
-git push github --tags
+git push github --tags  ## if origin currently github this is not needed
 
 EOC
 
