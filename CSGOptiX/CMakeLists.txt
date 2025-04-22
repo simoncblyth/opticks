@@ -136,12 +136,6 @@ target_compile_definitions( ${name}PTX   PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS
 target_compile_definitions( ${name}      PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
 target_compile_definitions( ${name}PTX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
 
-
-#string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
-#message(STATUS "${name} COMPUTE_ARCHITECTURES_STR ${COMPUTE_ARCHITECTURES_STR} ")
-#set_target_properties(${name}PTX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
-# nvcc fatal   : Option '--ptx (-ptx)' is not allowed when compiling for multiple GPU architectures
-
 set_target_properties(${name}PTX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}")  ## single integer CC of oldest GPU
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir 
@@ -153,8 +147,17 @@ target_compile_options( ${name}PTX
 
 
 #[=[
+
+CUDA_ARCHITECTURES
+--------------------
+
+Note that for ptx generation must specify a single GPU architecture otherwise::
+
+    nvcc fatal   : Option '--ptx (-ptx)' is not allowed when compiling for multiple GPU architectures
+
 Compile Definition Notes
 ----------------------------
+
 
 WITH_PRD
 ~~~~~~~~~

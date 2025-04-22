@@ -895,8 +895,63 @@ opticks-optix-prefix(){
 opticks-cuda-prefix(){ echo ${OPTICKS_CUDA_PREFIX:-/usr/local/cuda} ; }
 
 
-opticks-compute-architectures(){ echo ${OPTICKS_COMPUTE_ARCHITECTURES:-0} ; }
+opticks-compute-notes(){ cat << EON
+opticks-compute-notes
+-----------------------
+
+Both the compute envvars are read by correspondingly named 
+bash functions which are used by om-cmake-okconf which 
+result in generation of the okconf CMake target which includes
+the okconf-config.cmake::
+
+    $OPTICKS_PREFIX/lib64/cmake/okconf/okconf-config.cmake
+
+This config sets CMake COMPUTE variables available from all the active packages, eg::
+
+    set(COMPUTE_CAPABILITY 70)
+    set(COMPUTE_ARCHITECTURES 70,89)
+
+In this way the user specified envvar values are fed into all packages. 
+
+
+OPTICKS_COMPUTE_CAPABILITY
+
+    integer string eg "70" or "89" (representing "compute_70" or "compute_89")
+    identifying the virtual CUDA machine that nvcc will target when generating ptx 
+    for OptiX consumption via OptixModuleCreate in PIP.cc 
+
+    An appropriate value is the lowest capability of GPU you want to support.
+
+OPTICKS_COMPUTE_ARCHITECTURES
+    NB if this envvar is not defined it defaults to the value of 
+    OPTICKS_COMPUTE_CAPABILITY
+
+    comma delimited list (or single integer) of compute_XY or sm_XY 
+    integer specifications which is modified to a semicolon delimited list and then 
+    passed to the CMake CUDA_ARCHITECTURES target property
+    
+    An appropriate value is the GPUs you want to support. 
+
+    For usage see CUDA targets::
+
+        #opticks-fl CUDA_ARCHITECTURES
+        sysrap/CMakeLists.txt
+        qudarap/CMakeLists.txt
+        CSG/CMakeLists.txt
+        CSGOptiX/CMakeLists.txt  
+
+    * https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html
+
+    NB the CUDA_ARCHITECTURES are used by general CUDA compilation
+    whereas generation of PTX for OptiX consumption uses the single integer COMPUTE_CAPABILITY
+
+
+
+EON
+}
+
 opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:-0} ; }
+opticks-compute-architectures(){ echo ${OPTICKS_COMPUTE_ARCHITECTURES:-$(opticks-compute-capability)} ; }
 
 opticks-externals(){
 : emits to stdout the names of the bash precursors that download and install the externals

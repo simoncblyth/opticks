@@ -36,12 +36,20 @@ Workflow for adding Opticks tags:
        cd ~/opticks 
        git push  
 
-       # if not done already add "github" remote in addition to the normal bitbucket 
+       # if not done already add "bitbucket" and "github" remotes
        git remote -v 
+       git remote add bitbucket git@bitbucket.org:simoncblyth/opticks.git 
        git remote add github git@github.com:simoncblyth/opticks.git 
        git remote -v 
 
+       # to change remote origin while proxying to others stop working 
+       git remote set-url origin  git@github.com:simoncblyth/opticks.git 
+       git remote set-url origin  git@bitbucket.org:simoncblyth/opticks.git
+       git remote set-url origin  git@gitlab.com:simoncblyth/opticks.git
+
+       git push              ## to whichever is currently origin 
        git push github
+       git push bitbucket
    
    
 4. run this tag add and pushing script, check output commands and run if correct::

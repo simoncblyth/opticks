@@ -188,12 +188,9 @@ add_library( ${name} SHARED ${SOURCES} ${HEADERS} )
 
 string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
 set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
-
+# cmake --help-policy CMP0104
 message(STATUS "${name} COMPUTE_ARCHITECTURES_STR ${COMPUTE_ARCHITECTURES_STR} ")
 
-
-# cmake --help-policy CMP0104
-#set_target_properties( ${name} PROPERTIES CUDA_ARCHITECTURES "70;75;89")
 
 get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
 message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
