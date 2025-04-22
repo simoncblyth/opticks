@@ -391,6 +391,16 @@ CSGOptiX::~CSGOptiX()
     destroy();
 }
 
+/**
+
+Before CMake CUDA rejig::
+
+    _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx}"),
+
+
+**/
+
+
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     :
@@ -398,7 +408,14 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     outdir(SEventConfig::OutFold()),
-    ptxpath(spath::Resolve("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx}")),
+#ifdef CONFIG_Debug
+    _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/objects-Debug/CSGOptiXPTX/CSGOptiX7.ptx}"),
+#elif CONFIG_Release
+    _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/objects-Release/CSGOptiXPTX/CSGOptiX7.ptx}"),
+#else
+    _ptxpath(nullptr),
+#endif
+    ptxpath(_ptxpath ? spath::Resolve(_ptxpath) : nullptr),
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation
     kernel_count(0),
     raygenmode(SEventConfig::RGMode()),
@@ -430,8 +447,8 @@ void CSGOptiX::init()
 
     assert( outdir && "expecting OUTDIR envvar " );
 
+    LOG(LEVEL) << " _ptxpath " << _ptxpath  ;
     LOG(LEVEL) << " ptxpath " << ptxpath  ;
-    LOG(LEVEL) << " geoptxpath " << ( geoptxpath ? geoptxpath : "-" ) ;
 
     initCtx();
     initPIP();

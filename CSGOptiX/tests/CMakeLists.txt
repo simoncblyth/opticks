@@ -29,6 +29,7 @@ set(SINGLE_SOURCES
 
 )
 
+
 set(VIZ_SOURCES
     CSGOptiXRenderInteractiveTest.cc
 )
@@ -44,7 +45,7 @@ set(TEST_SOURCES
 foreach(SRC ${SINGLE_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
-    target_link_libraries(${TGT} CSGOptiX)
+    target_link_libraries(${TGT} CSGOptiX CUDA::cudart)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
@@ -60,6 +61,7 @@ foreach(SRC ${VIZ_SOURCES})
           CSGOptiX
           Opticks::OpticksGLEW
           Opticks::OpticksGLFW 
+          CUDA::cudart
          )
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
@@ -69,14 +71,12 @@ endforeach()
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
-    target_link_libraries(${TGT} CSGOptiX)
+    target_link_libraries(${TGT} CSGOptiX CUDA::cudart)
     install(TARGETS ${TGT} DESTINATION lib)
 
-    #add_test(${name}.${TGT} ${TGT})
     add_test(
        NAME ${name}.${TGT} 
        COMMAND bash CXTestRunner.sh ${TGT}
-       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CXTestRunner.sh ${TGT}
     )
 endforeach()
 

@@ -139,10 +139,12 @@ set(U4HitTest_SOURCES
     U4HitTest.cc
 )
 
+find_package(CUDAToolkit)
+
 find_package(CSG REQUIRED)
 set(TGT U4HitTest)
 add_executable(${TGT} ${U4HitTest_SOURCES})
-target_link_libraries(${TGT} U4 Opticks::CSG)
+target_link_libraries(${TGT} U4 Opticks::CSG CUDA::cudart)  ## unexpected CUDA dependency via SCU.h
 install(TARGETS ${TGT} DESTINATION lib)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_standalone_FOUND     : ${PMTSim_standalone_FOUND}")

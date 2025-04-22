@@ -878,7 +878,8 @@ om-cmake-okconf()
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
        -DOptiX_INSTALL_DIR=$(opticks-optix-prefix) \
-       -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
+       -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
+       -DCOMPUTE_ARCHITECTURES=$(opticks-compute-architectures)
 
     # TODO: arrange for this and om-cmake to merge
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-

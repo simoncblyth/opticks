@@ -1,9 +1,14 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSGOptiX)
-project(${name} VERSION 0.1.0)
+#project(${name} VERSION 0.1.0)
+project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions)
 
-find_package(CUDA REQUIRED)
+#find_package(CUDA REQUIRED)
+find_package(CUDAToolkit)
+
+find_package(SysRap REQUIRED)
 find_package(QUDARap REQUIRED)
 find_package(CSG REQUIRED)
 
@@ -49,6 +54,15 @@ list(APPEND SOURCES
     CSGOptiX.cc
     Frame.cc
     CSGOPTIX_LOG.cc
+
+    Ctx.cc
+    Properties.cc
+    GAS.cc
+    GAS_Builder.cc
+    PIP.cc
+    IAS.cc
+    IAS_Builder.cc
+    SBT.cc
 )
 
 list(APPEND HEADERS
@@ -57,56 +71,99 @@ list(APPEND HEADERS
     CSGOPTIX_LOG.hh
 )
 
-if(OpticksOptiX_VERSION GREATER_EQUAL 70000)
-   list(APPEND CU_SOURCES
-        CSGOptiX7.cu
-        Check.cu
-    )
-   list(APPEND SOURCES
-        Ctx.cc
-        Properties.cc
-        GAS.cc
-        GAS_Builder.cc
-        PIP.cc
-        IAS.cc
-        IAS_Builder.cc
-        SBT.cc
-    )
-else()
-   # TODO: note that have to manually touch .cu in order to pick up changed CSG headers in build, find way to fix this
-   list(APPEND CU_SOURCES
-        CSGOptiX6.cu
-        CSGOptiX6geo.cu
-   )
-   list(APPEND SOURCES
-        Six.cc
-   )
-endif()
+list(APPEND CU_SOURCES
+    CSGOptiX7.cu
+    Check.cu
+)
+
 
 message(STATUS "CU_SOURCES : ${CU_SOURCES} ")
 
 
-CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
-CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
 
-message(STATUS "_generated_OBJ_files ${_generated_OBJ_files}")
-message(STATUS "_generated_PTX_files ${_generated_PTX_files}")
+add_library( ${name}PTX OBJECT ${CU_SOURCES} )
+#set_property( TARGET ${name}PTX PROPERTY CUDA_PTX_COMPILATION ON)
+#set_property( TARGET ${name}PTX PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
+set_target_properties( ${name}PTX 
+    PROPERTIES
+         CUDA_PTX_COMPILATION ON
+         POSITION_INDEPENDENT_CODE ON
+         CUDA_SEPARABLE_COMPILATION ON
+)
 
-target_compile_definitions( ${name} PRIVATE WITH_PRD )  # using Pointer trick means can reduce attrib and payload to 2
-target_compile_definitions( ${name} PUBLIC WITH_SIMULATE )
-target_compile_definitions( ${name} PUBLIC WITH_SIMTRACE )
-target_compile_definitions( ${name} PUBLIC WITH_RENDER )
-target_compile_definitions( ${name} PUBLIC OPTICKS_CSGOPTIX )
-
-# target_compile_definitions( ${name} PUBLIC DEBUG_TAG )     ## NOW FROM sysrap/CMakeLists.txt
-# target_compile_definitions( ${name} PUBLIC DEBUG_PIDXYZ )  ## NOW FROM sysrap/CMakeLists.txt Debug/Release CONTROL
 
 #[=[
+#CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
+#CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
+#message(STATUS "_generated_OBJ_files ${_generated_OBJ_files}")
+#message(STATUS "_generated_PTX_files ${_generated_PTX_files}")
+#add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
+#]=]
 
-WITH_THRUST compile definition
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+add_library( ${name} SHARED ${SOURCES} ${HEADERS}     )
+add_dependencies( ${name} ${name}PTX )
+
+
+## CAUTION : DUPLICATION BETWEEN HERE AND sysrap/CMakeLists.txt
+set(CSGOptiX_COMPILE_DEFINITIONS_PUBLIC
+
+    $<$<CONFIG:Debug>:CONFIG_Debug>
+    $<$<CONFIG:RelWithDebInfo>:CONFIG_RelWithDebInfo>
+    $<$<CONFIG:Release>:CONFIG_Release>
+    $<$<CONFIG:MinSizeRel>:CONFIG_MinSizeRel>
+    $<$<CONFIG:Debug>:DEBUG_PIDX>
+    $<$<CONFIG:Debug>:DEBUG_PIDXYZ>
+    $<$<CONFIG:Release>:PRODUCTION>
+
+    RNG_PHILOX
+
+    WITH_SIMULATE
+    WITH_SIMTRACE
+    WITH_RENDER
+    OPTICKS_CSGOPTIX
+)
+
+set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE
+
+    WITH_PRD
+    WITH_THRUST
+)
+
+target_compile_definitions( ${name}      PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
+target_compile_definitions( ${name}PTX   PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
+
+target_compile_definitions( ${name}      PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
+target_compile_definitions( ${name}PTX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
+
+
+#string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
+#message(STATUS "${name} COMPUTE_ARCHITECTURES_STR ${COMPUTE_ARCHITECTURES_STR} ")
+#set_target_properties(${name}PTX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
+# nvcc fatal   : Option '--ptx (-ptx)' is not allowed when compiling for multiple GPU architectures
+
+set_target_properties(${name}PTX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}")  ## single integer CC of oldest GPU
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir 
+
+target_compile_options( ${name}PTX 
+   PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
+)
+
+
+#[=[
+Compile Definition Notes
+----------------------------
+
+WITH_PRD
+~~~~~~~~~
+
+using Pointer trick means can reduce attrib and payload to 2
+
+
+WITH_THRUST 
+~~~~~~~~~~~~
 
 * WITH_THRUST is needed for Custom4 on GPU complex math functions used by qpmt.h
 
@@ -116,7 +173,6 @@ WITH_THRUST compile definition
 
 #]=]
 
-target_compile_definitions( ${name} PRIVATE WITH_THRUST )
 
 
 #[=[
@@ -140,10 +196,21 @@ target_include_directories(${name}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
+target_include_directories(${name}PTX
+   PUBLIC
+      ${OpticksOptiX_INCLUDE}
+      $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}> 
+      $<BUILD_INTERFACE:${OPTICKS_PREFIX}/include/SysRap>
+      $<BUILD_INTERFACE:${OPTICKS_PREFIX}/include/CSG>
+      $<BUILD_INTERFACE:${OPTICKS_PREFIX}/include/QUDARap>
+)
+
+
+#${CUDA_LIBRARIES}
 
 target_link_libraries(${name}
      PUBLIC
-         ${CUDA_LIBRARIES}
+         CUDA::cudart
          Opticks::OptiX
          Opticks::CSG
          Opticks::QUDARap
@@ -158,9 +225,12 @@ set(INSTALLED_SCRIPTS
 )
 
 
-install(FILES ${_generated_PTX_files} DESTINATION ptx)
+#install(FILES ${_generated_PTX_files} DESTINATION ptx)
+install( TARGETS ${name}PTX OBJECTS DESTINATION ptx )
+
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
+
 
 
 

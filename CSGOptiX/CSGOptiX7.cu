@@ -145,13 +145,13 @@ static __forceinline__ __device__ void trace(
             p0, p1, p2, p3, p4, p5, p6, p7
             );
     // unclear where the uint_as_float CUDA device function is defined, seems CUDA intrinsic without header ?
-    prd->q0.f.x = uint_as_float( p0 );
-    prd->q0.f.y = uint_as_float( p1 );
-    prd->q0.f.z = uint_as_float( p2 );
-    prd->q0.f.w = uint_as_float( p3 ); 
+    prd->q0.f.x = __uint_as_float( p0 );
+    prd->q0.f.y = __uint_as_float( p1 );
+    prd->q0.f.z = __uint_as_float( p2 );
+    prd->q0.f.w = __uint_as_float( p3 ); 
     prd->set_identity(p4) ; 
     prd->set_boundary(p5) ;  
-    prd->set_lposcost(uint_as_float(p6)) ;  
+    prd->set_lposcost(__uint_as_float(p6)) ;  
     prd->set_iindex(p7) ;  
 #endif
 }
@@ -479,10 +479,10 @@ extern "C" __global__ void __raygen__rg()
 **/
 static __forceinline__ __device__ void setPayload( float normal_x, float normal_y, float normal_z, float distance, unsigned identity, unsigned boundary, float lposcost, unsigned iindex )
 {
-    optixSetPayload_0( float_as_uint( normal_x ) );
-    optixSetPayload_1( float_as_uint( normal_y ) );
-    optixSetPayload_2( float_as_uint( normal_z ) );
-    optixSetPayload_3( float_as_uint( distance ) );
+    optixSetPayload_0( __float_as_uint( normal_x ) );
+    optixSetPayload_1( __float_as_uint( normal_y ) );
+    optixSetPayload_2( __float_as_uint( normal_z ) );
+    optixSetPayload_3( __float_as_uint( distance ) );
     optixSetPayload_4( identity );
     optixSetPayload_5( boundary );
     optixSetPayload_6( lposcost );  
@@ -529,7 +529,7 @@ extern "C" __global__ void __miss__ms()
     prd->set_identity(identity); 
     prd->set_lposcost(lposcost); 
 #else
-    setPayload( ms->r, ms->g, ms->b, 0.f, identity, boundary, lposcost );  // communicate from ms->rg
+    setPayload( ms->r, ms->g, ms->b, 0.f, identity, boundary, lposcost, 0u );  // communicate from ms->rg
 #endif
 }
 
@@ -673,14 +673,14 @@ extern "C" __global__ void __closesthit__ch()
 #else
         const float3 local_normal =    // geometry object frame normal at intersection point 
             make_float3(
-                    uint_as_float( optixGetAttribute_0() ),
-                    uint_as_float( optixGetAttribute_1() ),
-                    uint_as_float( optixGetAttribute_2() )
+                    __uint_as_float( optixGetAttribute_0() ),
+                    __uint_as_float( optixGetAttribute_1() ),
+                    __uint_as_float( optixGetAttribute_2() )
                     );
 
-        const float distance = uint_as_float(  optixGetAttribute_3() ) ;  
+        const float distance = __uint_as_float(  optixGetAttribute_3() ) ;  
         unsigned boundary = optixGetAttribute_4() ; 
-        const float lposcost = uint_as_float( optixGetAttribute_5() ) ; 
+        const float lposcost = __uint_as_float( optixGetAttribute_5() ) ; 
         float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
 
         setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost, iindex );  // communicate from ch->rg
@@ -755,12 +755,12 @@ extern "C" __global__ void __intersection__is()
         }   
 #else
         unsigned a0, a1, a2, a3, a4, a5  ; // MUST CORRESPOND TO num_attribute_values in PIP::PIP 
-        a0 = float_as_uint( isect.x );     // isect.xyz is object frame normal of geometry at intersection point 
-        a1 = float_as_uint( isect.y );
-        a2 = float_as_uint( isect.z );
-        a3 = float_as_uint( isect.w ) ; 
+        a0 = __float_as_uint( isect.x );     // isect.xyz is object frame normal of geometry at intersection point 
+        a1 = __float_as_uint( isect.y );
+        a2 = __float_as_uint( isect.z );
+        a3 = __float_as_uint( isect.w ) ; 
         a4 = boundary ; 
-        a5 = float_as_uint( lposcost ); 
+        a5 = __float_as_uint( lposcost ); 
         optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5 );   
 #endif
         // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 

@@ -895,21 +895,8 @@ opticks-optix-prefix(){
 opticks-cuda-prefix(){ echo ${OPTICKS_CUDA_PREFIX:-/usr/local/cuda} ; }
 
 
-opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:-$($FUNCNAME-)} ; }
-opticks-compute-capability-()
-{
-    local t=$NODE_TAG
-    case $t in
-       E) echo 30 ;;
-       D) echo 30 ;;
-    RYAN) echo 30 ;;
-     GTL) echo 30 ;;
-    H5H2) echo 50 ;;
-       X) echo 52 ;;
-  SDUGPU) echo 30 ;;
-       *) echo  0 ;;
-    esac
-}
+opticks-compute-architectures(){ echo ${OPTICKS_COMPUTE_ARCHITECTURES:-0} ; }
+opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:-0} ; }
 
 opticks-externals(){
 : emits to stdout the names of the bash precursors that download and install the externals

@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name G4CX)
 set(desc "Top Level")
-project(${name} VERSION 0.1.0)
+project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 #[=[

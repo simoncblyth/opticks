@@ -78,7 +78,7 @@ message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
-    target_link_libraries(${TGT} Opticks::CSG)
+    target_link_libraries(${TGT} Opticks::CSG CUDA::cudart)
     install(TARGETS ${TGT} DESTINATION lib)
 
     #add_test(${name}.${TGT} ${TGT})
@@ -93,8 +93,7 @@ endforeach()
 
 set(TGT CSGDemoTest)
 add_executable(${TGT} CSGDemoTest.cc DemoGeo.cc DemoGrid.cc)
-#target_link_libraries(${TGT} Opticks::CSG Opticks::OpticksCore)
-target_link_libraries(${TGT} Opticks::CSG)
+target_link_libraries(${TGT} Opticks::CSG CUDA::cudart)
 install(TARGETS ${TGT} DESTINATION lib)
 
 

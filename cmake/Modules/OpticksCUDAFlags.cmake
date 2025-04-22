@@ -78,6 +78,9 @@ endif()
 set(CUDA_NVCC_FLAGS)
 
 if(NOT (COMPUTE_CAPABILITY LESS 30))
+    
+   ## FOLLOWING MOVE TO CMake CUDA LANGUAGE THIS IS NOT BEINF USED ANYMORE
+   list(APPEND CUDA_NVCC_FLAGS "--plant-some-non-existing-option")
 
    #list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${COMPUTE_CAPABILITY}")
    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")

@@ -334,7 +334,9 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
 
     if(not_allocated) 
     {
+        LOG(LEVEL) << "[ device_alloc_genstep_and_seed " ; 
         device_alloc_genstep_and_seed() ; 
+        LOG(LEVEL) << "] device_alloc_genstep_and_seed " ; 
     }
 
  
@@ -347,13 +349,19 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
 #endif
 
     if( qq != nullptr )
-    QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)qq, evt->num_genstep ); 
+    {
+        LOG(LEVEL) << "[ QU::copy_host_to_device " ; 
+        QU::copy_host_to_device<quad6>( evt->genstep, (quad6*)qq, evt->num_genstep ); 
+        LOG(LEVEL) << "] QU::copy_host_to_device " ; 
+    }
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_5 = sstamp::Now(); 
 #endif
 
+    LOG(LEVEL) << "[ QU::device_memset " ; 
     QU::device_memset<int>(   evt->seed,    0, evt->max_photon );    // need evt->max_slot ? 
+    LOG(LEVEL) << "] QU::device_memset " ; 
 
 #ifndef PRODUCTION 
     sev->t_setGenstep_6 = sstamp::Now(); 
@@ -363,7 +371,9 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
     {
         //count_genstep_photons();   // sets evt->num_seed
         //fill_seed_buffer() ;       // populates seed buffer
+        LOG(LEVEL) << "[ count_genstep_photons_and_fill_seed_buffer " ; 
         count_genstep_photons_and_fill_seed_buffer();   // combi-function doing what both the above do 
+        LOG(LEVEL) << "] count_genstep_photons_and_fill_seed_buffer " ; 
     }
     else
     {

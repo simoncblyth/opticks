@@ -1,9 +1,13 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSG)
-project(${name} VERSION 0.1.0)
+#project(${name} VERSION 0.1.0)
+project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
-find_package(CUDA REQUIRED)
+#find_package(CUDA REQUIRED)
+find_package(CUDAToolkit)
+
 find_package(SysRap REQUIRED)
 
 
@@ -131,10 +135,12 @@ message(STATUS "CMAKE_INSTALL_LIBDIR     : ${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 
 
-#add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
-CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 
+string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
+set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
@@ -164,9 +170,11 @@ DEBUG,DEBUG_RECORD,DEBUG_CYLINDER,DEBUG_CONE preprocessor macros
 target_compile_definitions( ${name} PUBLIC WITH_S_BB )
 
 
+# ${CUDA_INCLUDE_DIRS}
+
 target_include_directories(${name}
      PUBLIC
-        ${CUDA_INCLUDE_DIRS}
+        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>

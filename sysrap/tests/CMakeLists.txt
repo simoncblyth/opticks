@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(name SysRapTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
@@ -127,7 +127,6 @@ set(TEST_SOURCES
 
    SNameTest.cc
 
-   scontext_test.cc
    SProfTest.cc
 
    SEvt_test.cc
@@ -140,6 +139,13 @@ set(TEST_SOURCES
    SCurandStateMonolithicTest.cc
 
 )
+
+
+set(CUDART_TEST_SOURCES
+
+   scontext_test.cc
+)
+
 
 set(RETIRED_TEST_SOURCES
    SProcTest.cc
@@ -208,6 +214,27 @@ foreach(SRC ${TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
 endforeach()
+
+foreach(SRC ${CUDART_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} SysRap CUDA::cudart)
+
+
+    target_include_directories( ${TGT} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
+    )    
+
+
+
+    install(TARGETS ${TGT} DESTINATION lib)
+    add_test(${name}.${TGT} ${TGT})
+endforeach()
+
+
+
+
 
 
 

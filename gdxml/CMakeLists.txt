@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name GDXML)
 set(desc "XML Level xercesc fixing GDML")
 project(${name} VERSION 0.1.0)

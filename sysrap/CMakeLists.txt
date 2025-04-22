@@ -1,7 +1,9 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
-project(${name} VERSION 0.1.0)
+#project(${name} VERSION 0.1.0)
+project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 
@@ -44,7 +46,10 @@ But as OpticksCSG.h updates are rare, For now just need to remember to generate 
 find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
-find_package(OpticksCUDA REQUIRED MODULE)
+
+#find_package(OpticksCUDA REQUIRED MODULE)
+find_package(CUDAToolkit)   ## for CUDA::cudart 
+
 
 set(Custom4_VERBOSE ON) 
 find_package(Custom4 CONFIG)
@@ -652,10 +657,16 @@ endif()
 set(WITH_NP YES)
 
 
-CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 
-#add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
+message( STATUS "COMPUTE_ARCHITECTURES     : ${COMPUTE_ARCHITECTURES}" )
+message( STATUS "COMPUTE_ARCHITECTURES_STR : ${COMPUTE_ARCHITECTURES_STR}" )
+set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
+
+
 #set_target_properties( ${name} 
 #                       PROPERTIES 
 #                         INTERFACE_DESCRIPTION ${desc}
@@ -688,14 +699,15 @@ if(SysRap_VERBOSE)
   echo_target_std(Opticks::OKConf) 
   #echo_target_std(${name}) 
 endif()
+   
+#${CUDA_INCLUDE_DIRS}
 
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-   ${CUDA_INCLUDE_DIRS}
+   ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
    $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
    $<INSTALL_INTERFACE:externals/glm/glm>
 )
-
 
 
 
@@ -752,8 +764,8 @@ if(Custom4_FOUND)
    target_include_directories( ${name} PUBLIC ${Custom4_INCLUDE_DIR})
 endif()
 
-target_compile_definitions( ${name}
-    PUBLIC
+
+set(SYSRAP_COMPILE_DEFINITIONS
       $<$<CONFIG:Debug>:CONFIG_Debug>
       $<$<CONFIG:RelWithDebInfo>:CONFIG_RelWithDebInfo>
       $<$<CONFIG:Release>:CONFIG_Release>
@@ -769,6 +781,16 @@ target_compile_definitions( ${name}
       $<$<CONFIG:Release>:PRODUCTION>
 )
 
+
+target_compile_definitions( ${name}
+    PUBLIC
+           ${SYSRAP_COMPILE_DEFINITIONS}
+)
+
+
+
+#get_target_property(sysrap_def ${name} COMPILE_DEFINITIONS)
+#message(STATUS " sysrap_def : ${sysrap_def} " )
 
 
 
@@ -794,6 +816,8 @@ bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER  "
 ## SysRap TOPMATTER
 
 ${PLog_TOPMETA}
+
+## trying to pass compile definitions this way difficult
 
 ## end SysRap TOPMATTER
 ")

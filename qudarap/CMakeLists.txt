@@ -1,6 +1,8 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name QUDARap)
-project(${name} VERSION 0.1.0)
+#project(${name} VERSION 0.1.0)
+project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions NO_POLICY_SCOPE)      
 
 
@@ -30,8 +32,9 @@ A successful find of Custom4 runs some CMake config, see::
 
 
 
-set(OpticksCUDA_VERBOSE ON)
-find_package(OpticksCUDA REQUIRED MODULE)
+#set(OpticksCUDA_VERBOSE ON)
+#find_package(OpticksCUDA REQUIRED MODULE)
+find_package(CUDAToolkit)
 
 
 set(DEV_SOURCES
@@ -177,10 +180,20 @@ endif()
 
 
 
+#set(CUDA_NVCC_FLAGS)
 
 
+#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+add_library( ${name} SHARED ${SOURCES} ${HEADERS} )
 
-CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
+set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
+
+message(STATUS "${name} COMPUTE_ARCHITECTURES_STR ${COMPUTE_ARCHITECTURES_STR} ")
+
+
+# cmake --help-policy CMP0104
+#set_target_properties( ${name} PROPERTIES CUDA_ARCHITECTURES "70;75;89")
 
 get_target_property(ILL ${name} INTERFACE_LINK_LIBRARIES)
 message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
@@ -201,8 +214,17 @@ if(Custom4_FOUND)
    target_include_directories( ${name} PUBLIC ${Custom4_INCLUDE_DIR})
 endif()
 
+
+
+
 target_link_libraries( ${name} ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
+
+
+
+
+
+
 
 #[=[
 

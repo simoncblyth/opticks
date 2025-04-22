@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
+#cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 set(name OKConf)
 project(${name} VERSION 0.1.0)
 set(FLAGS_VERBOSE ON)
@@ -37,7 +38,19 @@ running one is a bad one.  So paths need to be overridden.
 #]=]
 
 set(OpticksCUDA_VERBOSE YES)
-find_package(OpticksCUDA MODULE QUIET) 
+
+#find_package(OpticksCUDA MODULE QUIET)    ## eg 12040
+find_package(CUDAToolkit)
+
+# https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html
+message( STATUS "CUDAToolkit_VERSION         : ${CUDAToolkit_VERSION} " )
+message( STATUS "CUDAToolkit_VERSION_MAJOR   : ${CUDAToolkit_VERSION_MAJOR} " )
+message( STATUS "CUDAToolkit_VERSION_MINOR   : ${CUDAToolkit_VERSION_MINOR} " )
+message( STATUS "CUDAToolkit_VERSION_PATCH   : ${CUDAToolkit_VERSION_PATCH} " )
+
+math(EXPR CUDAToolkit_VERSION_INTEGER "${CUDAToolkit_VERSION_MAJOR}*1000 + ${CUDAToolkit_VERSION_MINOR}*10" )
+message( STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER} " )
+
 
 set(OptiX_VERBOSE ON)
 find_package(OptiX       MODULE QUIET) 
@@ -46,15 +59,16 @@ find_package(G4          MODULE QUIET)
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
 message(STATUS "OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
-message(STATUS "OpticksCUDA_API_VERSION : ${OpticksCUDA_API_VERSION}")
+#message(STATUS "OpticksCUDA_API_VERSION : ${OpticksCUDA_API_VERSION}")
+message(STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER}")
 message(STATUS "G4_VERSION_INTEGER      : ${G4_VERSION_INTEGER}")
 message(STATUS "COMPUTE_CAPABILITY      : ${COMPUTE_CAPABILITY}")
-
+message(STATUS "COMPUTE_ARCHITECTURES   : ${COMPUTE_ARCHITECTURES}")
 
 
 # generate define header for hardcoding in the library 
 
-set(OKCONF_CUDA_API_VERSION_INTEGER "${OpticksCUDA_API_VERSION}")
+set(OKCONF_CUDA_API_VERSION_INTEGER "${CUDAToolkit_VERSION_INTEGER}")
 set(OKCONF_OPTIX_VERSION_INTEGER  "${OptiX_VERSION_INTEGER}")
 set(OKCONF_OPTIX_INSTALL_DIR      "${OptiX_INSTALL_DIR}")
 set(OKCONF_GEANT4_VERSION_INTEGER "${G4_VERSION_INTEGER}")
@@ -122,16 +136,20 @@ top_meta_target(G4_TOPMETA          "G4"          "${G4_targets}" )
 
 set(PC_VERBOSE ON)
 
+
+
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
 ## OKConf generated TOPMATTER
 
 set(OptiX_INSTALL_DIR ${OptiX_INSTALL_DIR})
 set(COMPUTE_CAPABILITY ${COMPUTE_CAPABILITY})
+set(COMPUTE_ARCHITECTURES ${COMPUTE_ARCHITECTURES})
 
 if(OKConf_VERBOSE)
   message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : OKConf_VERBOSE     : \${OKConf_VERBOSE} \")
   message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR  : \${OptiX_INSTALL_DIR} \")
   message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : COMPUTE_CAPABILITY : \${COMPUTE_CAPABILITY} \")
+  message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : COMPUTE_ARCHITECTURES : \${COMPUTE_ARCHITECTURES} \")
 endif()
 
 include(OpticksCUDAFlags)

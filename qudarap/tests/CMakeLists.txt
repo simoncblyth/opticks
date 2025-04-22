@@ -13,24 +13,18 @@ install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
 set(TEST_SOURCES
 
-   QTexRotateTest.cc
 
    QRngTest.cc
    QScintTest.cc
    QCerenkovIntegralTest.cc
    QPolyTest.cc
-   QSimTest.cc
    QSimDescTest.cc
-   QOpticalTest.cc 
    QPropTest.cc 
-   QEventTest.cc 
    QEvent_Lifecycle_Test.cc
-   QSimWithEventTest.cc 
    QSimCreateTest.cc 
    QUTest.cc
    QTexMakerTest.cc
    QTexLookupTest.cc
-   QBufTest.cc
    QMultiFilmTest.cc
 
 
@@ -39,6 +33,19 @@ set(TEST_SOURCES
 
    qrng_test.cc
 )
+
+set(CUDART_TEST_SOURCES
+
+   QTexRotateTest.cc
+   QBufTest.cc
+   QOpticalTest.cc 
+   QSimWithEventTest.cc 
+   QSimTest.cc
+   QEventTest.cc 
+
+)
+
+
 
 set( JUNO_SPECIFIC_TEST_SOURCES
    QSim_Lifecycle_Test.cc
@@ -73,6 +80,26 @@ foreach(SRC ${TEST_SOURCES})
     )
 
 endforeach()
+
+
+foreach(SRC ${CUDART_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} QUDARap CUDA::cudart )
+    install(TARGETS ${TGT} DESTINATION lib)
+
+    #add_test(${name}.${TGT} ${TGT})
+    add_test(
+       NAME ${name}.${TGT} 
+       COMMAND bash QTestRunner.sh ${TGT}
+       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/QTestRunner.sh ${TGT}
+    )
+
+endforeach()
+
+
+
+
 
 
 #[=[
