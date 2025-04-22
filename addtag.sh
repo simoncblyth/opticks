@@ -139,12 +139,12 @@ git push --tags
 EOC
 
 origin=$(git remote get-url origin)
-if [ "${origin/github}" != "$origin" ]; then
+if [ "${origin/github}" != "$origin" -a -z "$SKIP_BITBUCKET" ]; then
    echo ${pfx}git push bitbucket --tags  \# as origin looks to be github
-elif [ "${origin/bitbucket}" != "$origin" ]; then
+elif [ "${origin/bitbucket}" != "$origin" -a -z "$SKIP_GITHUB" ]; then
    echo ${pfx}git push github --tags  \# as origin looks to be bitbucket
 else
-   echo \# failed to identify origin $origin
+   echo \#\# failed to identify origin $origin or are skipping SKIP_BITBUCKET [$SKIP_BITBUCKET] SKIP_GITHUB [$SKIP_GITHUB]
 fi 
 echo 
 
