@@ -136,8 +136,16 @@ cat << EOC | sed "s/^/$pfx/"
 
 git tag -a $vntag -m "OPTICKS_VERSION_NUMBER ${ntag_num}"
 git push --tags
-git push github --tags  ## if origin currently github this is not needed
-
 EOC
+
+origin=$(git remote get-url origin)
+if [ "${origin/github}" != "$origin" ]; then
+   echo ${pfx}git push bitbucket --tags  \# as origin looks to be github
+elif [ "${origin/bitbucket}" != "$origin" ]; then
+   echo ${pfx}git push github --tags  \# as origin looks to be bitbucket
+else
+   echo \# failed to identify origin $origin
+fi 
+echo 
 
 exit 0 
