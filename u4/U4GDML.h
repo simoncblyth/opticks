@@ -12,7 +12,8 @@ struct U4GDML
     static const bool VERBOSE ; 
     static constexpr const char* SensDet = "SensDet" ; // string used by G4GDMLParse SD aux 
     static constexpr const plog::Severity LEVEL = info ; 
-    static constexpr const char* DefaultGDMLPath = "$UserGEOMDir/origin.gdml" ;  
+    //static constexpr const char* DefaultGDMLPath = "$UserGEOMDir/origin.gdml" ;  
+    static constexpr const char* DefaultGDMLPath = "$CFBaseFromGEOM/origin.gdml" ;  
 
     static const G4VPhysicalVolume* Read();
     static const G4VPhysicalVolume* Read(const char* path);
@@ -76,7 +77,7 @@ inline const G4VPhysicalVolume* U4GDML::Read()
 
 inline const G4VPhysicalVolume* U4GDML::Read(const char* path_)
 {
-    const char* path = path_ ? path_ : DefaultGDMLPath ; 
+    const char* path = spath::Resolve(path_ ? path_ : DefaultGDMLPath) ; 
     bool exists = path ? spath::Exists(path) : false ; 
     LOG_IF(fatal, !exists) << " path invalid or does not exist [" << path << "]" ; 
     if(!exists) return nullptr ; 

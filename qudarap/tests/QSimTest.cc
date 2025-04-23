@@ -785,7 +785,12 @@ int main(int argc, char** argv)
     int type = QSimLaunch::Type(TEST); 
     unsigned num = QSimTest::Num(argc, argv); 
 
+    LOG(info) << "[SSim::Load" ; 
     SSim* sim = SSim::Load(); 
+    LOG(info) << "]SSim::Load" ; 
+    assert(sim); 
+
+
     QSim::UploadComponents(sim);   // instanciates things like QBnd : NORMALLY FIRST GPU ACCESS 
     const SPrd* prd = sim->get_sprd() ; 
 

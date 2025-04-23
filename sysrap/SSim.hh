@@ -66,7 +66,7 @@ struct SYSRAP_API SSim
     static std::string DescCompare( const SSim* a , const SSim* b ); 
 
     static SSim* Create(); 
-    static const char* DEFAULT ; 
+    //static const char* DEFAULT ; 
     static SSim* Load(); 
     static SSim* Load_(const char* dir); 
     static SSim* Load(const char* base, const char* reldir=RELDIR ); 

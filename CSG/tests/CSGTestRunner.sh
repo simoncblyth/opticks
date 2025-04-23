@@ -43,8 +43,11 @@ Resolve_CFBaseFromGEOM()
     fi  
 }
 
-Resolve_CFBaseFromGEOM
-
+if [ -n "$GEOM" -a -n "${GEOM}_CFBaseFromGEOM" ]; then
+   echo $BASH_SOURCE - using external config for GEOM $GEOM ${GEOM}_CFBaseFromGEOM 
+else
+   Resolve_CFBaseFromGEOM
+fi
 
 
 

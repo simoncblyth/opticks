@@ -86,17 +86,24 @@ SSim* SSim::Create()
 SSim::Load from persisted geometry  : used for testing 
 -------------------------------------------------------
  
+Formerly used::
+
+    const char* SSim::DEFAULT = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry" ; 
+
+But thats a non-standard way to resolve GEOM geometry
+
 **/
 
-const char* SSim::DEFAULT = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry" ; 
 
-SSim* SSim::Load(){ return Load_(DEFAULT) ; }
+SSim* SSim::Load(){ return Load_(nullptr) ; }
 
 SSim* SSim::Load_(const char* base_)
 {
     LOG(LEVEL) << "[" ; 
-    const char* base = spath::Resolve(base_ ? base_ : DEFAULT ); 
+    const char* ssb = spath::Resolve("$CFBaseFromGEOM/CSGFoundry") ; 
+    const char* base = spath::Resolve(base_ ? base_ : ssb ); 
     LOG(LEVEL) 
+       << " ssb [" << ( ssb ? ssb : "-" ) << "]"
        << " base_ [" << ( base_ ? base_ : "-" ) << "]"
        << " base [" << ( base ? base : "-" ) << "]" 
        ;

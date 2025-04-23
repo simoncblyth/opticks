@@ -2821,7 +2821,7 @@ CSGFoundry::LOAD_FAIL_NOTES
 The CSGFoundry directory does not exist. To create it you probably need to
 run one of several CSGFoundry creating scripts. Which one to use depends on
 what the geometry is that you want to create. Some of the scripts require
-setting the GEOM name within $HOME/.opticks/GEOM.txt to pick between
+export the GEOM envvar within $HOME/.opticks/GEOM/GEOM.sh to pick between
 different geometries.
 
 CSG/CSGMakerTest.sh
@@ -2919,7 +2919,7 @@ int CSGFoundry::MTime(const char* dir, const char* fname_) // static
 
 
 
-void CSGFoundry::setGeom(const char* geom_)
+void CSGFoundry::setGeom(const char* geom_)  // setGeomName would be clearer
 {
     geom = geom_ ? strdup(geom_) : nullptr ;
 }

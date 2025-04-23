@@ -22,7 +22,8 @@ Use this from CMakeLists.txt with::
         install(TARGETS ${TGT} DESTINATION lib)
         add_test(
            NAME ${name}.${TGT} 
-           COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/STestRunner.sh ${TGT}
+           COMMAND ${BASH_EXECUTABLE} STestRunner.sh ${TGT}
+           # from PATH for portability 
         )   
     endforeach()
 

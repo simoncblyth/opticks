@@ -13,7 +13,7 @@ spath_test.cc
        
      TEST=DefaultOutputPath ~/opticks/sysrap/tests/spath_test.sh
 
-
+     TEST=CFBaseFromGEOM ~/opticks/sysrap/tests/spath_test.sh
 
 **/
 
@@ -62,6 +62,7 @@ struct spath_test
    static int EndsWith(); 
    static int SplitExt(int impl); 
    static int Filesize(); 
+   static int CFBaseFromGEOM(); 
 
    static int Main();  
 };
@@ -585,6 +586,19 @@ int spath_test::Filesize()
     return sz > 0 ? 0 : 1 ;
 }
 
+int spath_test::CFBaseFromGEOM()
+{
+    const char* cfb = spath::CFBaseFromGEOM() ; 
+    const char* ori = spath::Resolve("$CFBaseFromGEOM/origin.gdml") ; 
+    bool has = spath::has_CFBaseFromGEOM() ;
+
+    std::cout 
+         << " spath::CFBaseFromGEOM()                         [" << ( cfb ? cfb : "-" ) << "]\n" 
+         << " spath::Resolve(\"$CFBaseFromGEOM/origin.gdml\")   [" << ( ori ? ori : "-" ) << "]\n"
+         << " spath::has_CFBaseFromGEOM()                     [" << ( has ? "YES" : "NO " ) << "]\n" 
+         ;
+    return 0 ; 
+}
 
 
 int spath_test::Main()
@@ -624,6 +638,7 @@ int spath_test::Main()
     else if(ALL||strcmp(TEST, "SplitExt0")==0) rc += SplitExt(0);
     else if(ALL||strcmp(TEST, "SplitExt")==0) rc += SplitExt(1);
     else if(ALL||strcmp(TEST, "Filesize")==0) rc += Filesize();
+    else if(ALL||strcmp(TEST, "CFBaseFromGEOM")==0) rc += CFBaseFromGEOM();
     return rc ; 
 }
 

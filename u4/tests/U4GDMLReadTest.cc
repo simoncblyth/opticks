@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
-    const char* path = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/origin.gdml"); 
+    const char* path = spath::Resolve("$CFBaseFromGEOM/origin.gdml") ; 
 
     LOG(info) 
         << " argv[0] "

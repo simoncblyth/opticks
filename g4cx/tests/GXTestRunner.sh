@@ -21,6 +21,11 @@ geomscript=$HOME/.opticks/GEOM/GEOM.sh
 [ -s $geomscript ] && source $geomscript
 
 
+
+
+
+
+
 Resolve_GDMLPathFromGEOM()
 {   
    local origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml 
@@ -31,8 +36,12 @@ Resolve_GDMLPathFromGEOM()
         echo $BASH_SOURCE : NOT-FOUND origin $origin
    fi  
 }
-Resolve_GDMLPathFromGEOM
 
+if [ -n "$GEOM" -a -n "${GEOM}_CFBaseFromGEOM" ]; then
+    echo $BASH_SOURCE - use externaly set GEOM CFBaseFromGEOM
+else
+    Resolve_GDMLPathFromGEOM
+fi
 
 
 vars="HOME PWD GEOM ${GEOM}_GDMLPathFromGEOM BASH_SOURCE EXECUTABLE ARGS"

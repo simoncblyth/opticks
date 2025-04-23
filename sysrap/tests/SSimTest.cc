@@ -47,28 +47,33 @@ const char* SSimTest::TEST = U::GetEnv("TEST","ALL");
 
 int SSimTest::Load()
 {
+    std::cout << "[Load\n" ; 
     SSim* sim = SSim::Load(); 
     std::cout << ( sim ? sim->desc() : "-" ) ;  
+    std::cout << "]Load\n" ; 
     return 0 ; 
 }
 int SSimTest::Load_get()
 {
-    std::cout << "[test_Load_get " << std::endl ; 
+    std::cout << "[Load_get " << std::endl ; 
     SSim* sim = SSim::Load(); 
     std::cout << " sim " << ( sim ? "YES" : "NO " ) << std::endl ; 
     const NP* optical = sim ? sim->get(snam::OPTICAL) : nullptr ; 
     std::cout << " optical " << ( optical ? optical->sstr() : "-" ) << std::endl ; 
-    std::cout << "]test_Load_get " << std::endl ; 
+    std::cout << "]Load_get " << std::endl ; 
     return 0 ; 
 }
 int SSimTest::Create()
 {
+    std::cout << "[Create\n" ; 
     SSim* sim = SSim::Create(); 
     LOG(info) << " sim.desc " << sim->desc() ; 
+    std::cout << "]Create\n" ; 
     return 0 ; 
 }
 int SSimTest::findName()
 {
+    std::cout << "[findName\n" ; 
     std::vector<std::string> names = {
         "Air", 
         "Rock", 
@@ -123,12 +128,14 @@ int SSimTest::findName()
          }
          std::cout << std::endl ;  
     }
+    std::cout << "]findName\n" ; 
     return 0 ; 
 }
 
 
 int SSimTest::addFake()
 {
+    std::cout << "[addFake\n" ; 
     SSim* sim = SSim::Load(); 
     std::string bef = sim->desc(); 
 
@@ -142,15 +149,18 @@ int SSimTest::addFake()
 
     std::cout << "bef" << std::endl << bef << std::endl ; 
     std::cout << "aft" << std::endl << aft << std::endl ; 
+    std::cout << "]addFake\n" ; 
     return 0 ; 
 }
 
 int SSimTest::addFake_ellipsis()
 {
+    std::cout << "[addFake_ellipsis\n" ; 
     SSim* sim = SSim::Load(); 
     sim->addFake("Air///Water"); 
     sim->addFake("Air///Water", "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air"); 
     sim->addFake("Air///Water", "Rock/perfectAbsorbSurface/perfectAbsorbSurface/Air", "Water///Air" ); 
+    std::cout << "]addFake_ellipsis\n" ; 
     return 0 ; 
 }
 
@@ -158,37 +168,47 @@ int SSimTest::addFake_ellipsis()
 
 int SSimTest::get_bnd()
 {
+    std::cout << "[get_bnd\n" ; 
     SSim* sim = SSim::Load(); 
     const NP* bnd = sim->get_bnd(); 
     LOG(info) << bnd->desc() ;  
+    std::cout << "]get_bnd\n" ; 
     return 0 ; 
 }
 int SSimTest::get_jpmt_nocopy()
 {
+    std::cout << "[get_jpmt_nocopy\n" ; 
     SSim* sim = SSim::Load(); 
     const NPFold* f  = sim->get_jpmt_nocopy(); 
     LOG(info) << f->desc() ;  
+    std::cout << "]get_jpmt_nocopy\n" ; 
     return 0 ; 
 }
 int SSimTest::get_jpmt()
 {
+    std::cout << "[get_jpmt\n" ; 
     SSim* sim = SSim::Load(); 
     const NPFold* f  = sim->get_jpmt(); 
     LOG(info) << f->desc() ;  
+    std::cout << "]get_jpmt\n" ; 
     return 0 ; 
 }
 int SSimTest::get_spmt()
 {
+    std::cout << "[get_spmt\n" ; 
     SSim* sim = SSim::Load(); 
     const SPMT* spmt  = sim->get_spmt(); 
     LOG(info) << spmt->desc() ;  
+    std::cout << "]get_spmt\n" ; 
     return 0 ; 
 }
 int SSimTest::get_spmt_f()
 {
+    std::cout << "[get_spmt_f\n" ; 
     SSim* sim = SSim::Load(); 
     const NPFold* spmt_f  = sim->get_spmt_f(); 
     LOG(info) << spmt_f->desc() ;  
+    std::cout << "]get_spmt_f\n" ; 
     return 0 ; 
 }
 

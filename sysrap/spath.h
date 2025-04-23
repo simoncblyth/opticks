@@ -80,6 +80,11 @@ public:
     template<typename ... Args>
     static const char* Name( Args ... args ); 
 
+    template<typename ... Args>
+    static char* Name_( Args ... args ); 
+
+
+
 
     template<typename ... Args>
     static bool Exists( Args ... args ); 
@@ -105,7 +110,10 @@ public:
 
     static long Filesize(const char* dir, const char* name); 
     static long Filesize(const char* path); 
-    static const char* CWD(); 
+
+    static char* CWD(); 
+    static char* CFBaseFromGEOM();
+    static bool  has_CFBaseFromGEOM(); 
 
 };
 
@@ -359,6 +367,8 @@ is no corresponding envvar.
 +-------------------+-------------------------------------+---------------------------------------------------------------+
 |  DefaultOutputDir | result of spath::DefaultOutputDir() | $TMP/GEOM/$GEOM/$ExecutableName                               |                                        
 +-------------------+-------------------------------------+---------------------------------------------------------------+
+|  CFBaseFromGEOM   | result of spath::CFBaseFromGEOM()   | depends on two envvars : GEOM and ${GEOM}_CFBaseFromGEOM      |                                        
++-------------------+-------------------------------------+---------------------------------------------------------------+
 
 **/
 
@@ -378,6 +388,7 @@ inline char* spath::_ResolveToken(const char* token)
     if( val == nullptr && strcmp(tok, "TMP") == 0)              val = DefaultTMP() ; 
     if( val == nullptr && strcmp(tok, "ExecutableName")   == 0) val = sproc::ExecutableName() ; 
     if( val == nullptr && strcmp(tok, "DefaultOutputDir") == 0) val = DefaultOutputDir() ; 
+    if( val == nullptr && strcmp(tok, "CFBaseFromGEOM") == 0)   val = CFBaseFromGEOM() ; 
     return val ; 
 }
 
@@ -675,6 +686,14 @@ template std::string spath::_Name( const char*, const char* );
 template std::string spath::_Name( const char*, const char*, const char* ); 
 template std::string spath::_Name( const char*, const char*, const char*, const char* ); 
 
+template std::string spath::_Name( char* ); 
+template std::string spath::_Name( char*, char* ); 
+template std::string spath::_Name( char*, char*, char* ); 
+template std::string spath::_Name( char*, char*, char*, char* ); 
+
+
+
+
 template<typename ... Args>
 inline const char* spath::Name( Args ... args )  // static
 {
@@ -688,6 +707,18 @@ template const char* spath::Name( const char*, const char*, const char* );
 template const char* spath::Name( const char*, const char*, const char*, const char* ); 
 
 
+
+template<typename ... Args>
+inline char* spath::Name_( Args ... args )  // static
+{
+    std::string s = _Name(std::forward<Args>(args)...)  ; 
+    return strdup(s.c_str()) ; 
+} 
+
+template char* spath::Name_( char* ); 
+template char* spath::Name_( char*, char* ); 
+template char* spath::Name_( char*, char*, char* ); 
+template char* spath::Name_( char*, char*, char*, char* ); 
 
 
 
@@ -859,11 +890,43 @@ inline long spath::Filesize(const char* path)
     return file_size ;
 }
  
-inline const char* spath::CWD()  // static
+inline char* spath::CWD()  // static
 {
     char path[256] ; 
     char* ret = getcwd(path, 256); 
     return ret == nullptr ? nullptr : strdup(path); 
 }
+
+
+/**
+spath::CFBaseFromGEOM
+----------------------
+
+Moving this here from SOpticksResource
+
+**/
+
+inline char* spath::CFBaseFromGEOM()
+{
+    char* geom = getenv("GEOM") ; 
+    char* name = spath::Name_(geom ? geom : "MISSING_GEOM", "_CFBaseFromGEOM") ; 
+    char* path = geom == nullptr ? nullptr : getenv(name) ; 
+
+    if(VERBOSE) std::cout 
+        << "spath::CFBaseFromGEOM" 
+        << " geom " << ( geom ? geom : "-" )  
+        << " name " << ( name ? name : "-" )
+        << " path " << ( path ? path : "-" )
+        << "\n"
+        ;
+    return path  ; 
+}
+
+inline bool spath::has_CFBaseFromGEOM()
+{
+    char* cfb = CFBaseFromGEOM(); 
+    return cfb != nullptr ; 
+}
+
 
 

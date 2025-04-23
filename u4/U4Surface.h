@@ -394,7 +394,7 @@ inline NPFold* U4Surface::MakeFold(const std::vector<const G4LogicalSurface*>& s
 
 inline NPFold* U4Surface::MakeFold()
 {
-    assert(0) ; // this is just used from tests i guess
+    //assert(0) ; // this is just used from U4SurfaceTest it seems 
     std::vector<const G4LogicalSurface*> surfaces ; 
     Collect(surfaces); 
 

@@ -211,7 +211,12 @@ void G4CXOpticks::setGeometry()
 {
     LOG(LEVEL) << " argumentless " ;
 
-    if(ssys::hasenv_(SOpticksResource::OpticksGDMLPath_))
+    if(spath::has_CFBaseFromGEOM())
+    {
+        LOG(LEVEL) << " has_CFBaseFromGEOM " ;
+        setGeometry(spath::Resolve("$CFBaseFromGEOM/origin.gdml"));
+    }
+    else if(ssys::hasenv_(SOpticksResource::OpticksGDMLPath_))
     {
         LOG(LEVEL) << " OpticksGDMLPath " ;
         setGeometry(SOpticksResource::OpticksGDMLPath());

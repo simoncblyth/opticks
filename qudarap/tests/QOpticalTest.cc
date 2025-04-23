@@ -7,6 +7,7 @@ makes no sense to treat them separately
 
 **/
 #include <cuda_runtime.h>
+#include "spath.h"
 #include "scuda.h"
 #include "NP.hh"
 
@@ -14,8 +15,12 @@ makes no sense to treat them separately
 
 int main(int argc, char** argv)
 {
-    const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard" ; 
-    NP* optical = NP::Load(BASE, "optical.npy") ; 
+    //const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard" ; 
+    //NP* optical = NP::Load(BASE, "optical.npy") ; 
+
+    const char* path = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/stree/standard/optical.npy"); 
+    NP* optical = NP::Load(path) ; 
+
     if( optical == nullptr ) return 1 ; 
    
     std::cout 
