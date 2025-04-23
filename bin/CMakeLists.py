@@ -36,6 +36,8 @@ class Dependent(object):
 
 class CMakeLists(object):
    """  
+   Reads the content of CMakeLists.txt file and extracts 
+   metadata such as the name and find_package names
    """
    NAME = "CMakeLists.txt"
    name_ptn = re.compile("^set\(name (?P<name>\S*)\).*")
@@ -44,6 +46,10 @@ class CMakeLists(object):
 
    @classmethod
    def HasOpticksBuildOptions(cls, lines): 
+       """
+       :param lines: of the CMakeLists.txt file
+       :return obo_found: True when a line including the OpticksBuildOptions is found
+       """ 
        obo_found = False
        for line in lines:
            if line.startswith(cls.obo_txt):
@@ -59,11 +65,18 @@ class CMakeLists(object):
        self.precursor = precursor
        self.name = None
        self.deps = []
+
        self.parse()
   
    def parse(self):
        """
-       Parse lines from a single CMakeList.txt
+       Parse lines from a single CMakeLists.txt, extracting: 
+
+       name 
+          eg SysRap CSG U4 CSGOptiX CSGOptiXTest
+       deps 
+          list of find_package names   
+
        """
        obo_found = False
        for line in self.lines:
@@ -153,6 +166,10 @@ class OpticksCMakeProj(object):
 
     @classmethod
     def find_export_tag(cls, names):
+        """
+        :param names: list of files within a directory
+        :return tag: None or the prefix of TAG_API_EXPORT.hh file eg SYSRAP CSG CSGOPTIX
+        """ 
         tail = "_API_EXPORT.hh"
         names = list(filter(lambda _:_.endswith(tail), names))
         tag = names[0].replace(tail,"") if len(names) == 1 else None
@@ -171,6 +188,10 @@ class OpticksCMakeProj(object):
 
     @classmethod
     def read_pkgs(cls, home=None):
+        """
+        :param home: None or string of source directory path to a project with multiple CMakeLists.txt files
+        :return pkg: dictionary keyed on CMakeLists.txt names containing the CMakeLists objects
+        """
         if home is None:
             home = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         pass
@@ -181,7 +202,7 @@ class OpticksCMakeProj(object):
                 log.debug("proceed %s " % dirpath ) 
                 reldir = dirpath[len(home)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
-                tag = cls.find_export_tag(names)
+                tag = cls.find_export_tag(names)  ## eg SYSRAP CSG U4 CSGOPTIX 
                 precursor = cls.find_bash_precursor(names)
                 lines = list(map(str.strip, open(path,"r").readlines() ))
 
@@ -202,8 +223,14 @@ class OpticksCMakeProj(object):
 
 
     def __init__(self, home=None):
+        """
+        self.pkgs
+              dict of CMakeLists objects keyed on pkg names
+        self.keys 
+              list of active package names
+        """ 
         pkgs = self.read_pkgs(home=home)
-        keys = pkgs.keys()
+        keys = pkgs.keys()   ## CMakeLists.txt names eg SysRap
         log.debug(repr(keys))
         for k in keys:
             o = int(self.order.get(k,-2))

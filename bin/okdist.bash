@@ -145,6 +145,12 @@ under the installation prefix::
     ctest --output-on-failure  ## run them all
 
 
+Unfortunately running ctest from readonly directory 
+like cvmfs does not work, see 
+
+* https://gitlab.kitware.com/cmake/cmake/-/issues/23231
+
+
 okdist testing on workstation
 -----------------------------------
 
@@ -243,6 +249,21 @@ okdist-install-metadata()
 
 
 
+okdist-install-update()
+{
+   : rerun some things that might have changed since opticks-full 
+
+   opticks-setup-generate   ## include identifier envvars
+
+   local iwd=$PWD
+   opticks-
+   opticks-cd  ## install directory
+   opticks-install-extras   ## avoid stale ctest by updating before release
+
+   cd $iwd
+}
+
+
 okdist-install-extras()
 {
    local msg="=== $FUNCNAME :"
@@ -250,6 +271,7 @@ okdist-install-extras()
 
    opticks-
    opticks-cd  ## install directory
+
 
    echo $msg write metadata
    okdist-install-metadata
@@ -343,6 +365,8 @@ okdist-lst(){
 }
 
 okdist--(){
+
+   okdist-install-update
    okdist-install-extras
    okdist-tarball-create
    okdist-tarball-extract

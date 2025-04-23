@@ -1453,6 +1453,7 @@ opticks-bashrc-generate-(){
 
     opticks-bashrc-prefix-
 
+    opticks-setup-identifier-
     opticks-setup-misc-
     opticks-setup-funcs-
 
@@ -1468,6 +1469,25 @@ opticks-utils-generate--(){
    echo "# $FUNCNAME"
    echo "# some funcs are needed before sourcing release : so collect them here "
    declare -f opticks-prepend-prefix
+}
+
+
+opticks-setup-identifier-(){ cat << EOI
+
+# [ $FUNCNAME
+export OPTICKS_IDENTIFIER=$($(opticks-home)/git_identifier.sh)
+export OPTICKS_IDENTIFIER_NOTE="$($(opticks-home)/git_identifier.sh NOTE)"
+export OPTICKS_IDENTIFIER_TIME="$($(opticks-home)/git_identifier.sh TIME)"
+okid()
+{
+    : $FUNCNAME
+    local vv="OPTICKS_PREFIX OPTICKS_IDENTIFIER OPTICKS_IDENTIFIER_NOTE OPTICKS_IDENTIFIER_TIME"
+    for v in \$vv ; do printf "%30s : %s \n"  "\$v" "\${!v}" ; done
+}
+# ] $FUNCNAME
+
+EOI
+
 }
 
 
@@ -2301,15 +2321,36 @@ opticks-install-tests()
 
    PYTHONPATH=$fold $script $bdir --dest $dest
    local testscript=$dest/ctest.sh
-
-   cat << EOT > $testscript
-#!/bin/bash -l
-#ctest -N
-ctest --output-on-failure
-EOT
-
+   opticks-install-tests-script- > $testscript
    chmod ugo+x $testscript
 }
+
+opticks-install-tests-script-(){ cat << EOS
+#!/bin/bash
+
+cd \$(dirname \$(realpath \$BASH_SOURCE))
+
+# As ctest doesnt currently work from a readonly dir
+# this copies the released ctest metadata folders to TTMP
+# directory and runs the ctest from there
+#
+# ctest -N
+# ctest --output-on-failure
+
+ttmp=/tmp/\$USER/opticks/tests
+TTMP=\${TTMP:-\$ttmp}
+mkdir -p \$TTMP
+cp -r . \${TTMP}/
+
+cd \$TTMP
+pwd
+
+ctest -N
+ctest --output-on-failure
+
+EOS
+}
+
 
 opticks-install-cmake-modules()
 {
@@ -3957,5 +3998,20 @@ opticks-ptx(){
 
 }
 
+
+
+opticks-prefix-find-stale()
+{
+   local iwd=$PWD
+   cd $OPTICKS_PREFIX
+   pwd
+   local tops="lib lib64"
+   local ref=lib/OKConfTest
+   for top in $tops ; do
+       echo $FUNCNAME find files in $top 10 minutes or more older than ref $ref 
+       find $top -type f ! -newermt "$(date -r $ref) - 10 min"
+   done
+   cd $iwd
+}
 
 
