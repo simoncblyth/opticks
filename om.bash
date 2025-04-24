@@ -571,7 +571,16 @@ om-echo-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
 om-clean-all(){     om-all ${FUNCNAME/-all} $* ; return $? ; }
 om-find-all(){      om-all ${FUNCNAME/-all} $* ; return $? ; }
 
-om-testlog(){      CTestLog.py $(om-bdir) $* ; }
+
+om-geom(){
+   : get GEOM from subshell to avoid exporting into this shell
+   : HMM - this could be misleading with runners that dont follow the convention
+   local geomscript=$HOME/.opticks/GEOM/GEOM.sh
+   local geom=$([ -s $geomscript ] && source $geomscript > /dev/null && echo $GEOM)
+   echo $geom
+}
+
+om-testlog(){ GEOM=$(om-geom) CTestLog.py $(om-bdir) $* ; }
 
 
 om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
@@ -1057,6 +1066,9 @@ om-test-one()
     ctest $* $CTESTARG --interactive-debug-mode 0 --output-on-failure  2>&1 | tee -a $log
 
     date          | tee -a $log
+
+    local geom=$(om-geom)
+    echo GEOM $geom | tee -a $log
 
     cd $iwd
 }
