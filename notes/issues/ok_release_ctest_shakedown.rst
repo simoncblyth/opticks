@@ -387,8 +387,8 @@ After setup geometry provision in /hpcfs/juno/junogpu/blyth/.opticks/GEOM/GEOM.s
 
 
 
-Changes for release ctest have broken standard ctest
---------------------------------------------------------
+A : Changes for release ctest have broken standard ctest
+----------------------------------------------------------
 
 
 Initially::
@@ -400,7 +400,7 @@ Initially::
       19 /21  Test #19 : QUDARapTest.QSimWithEventTest                 ***Failed                      0.38   
       20 /21  Test #20 : QUDARapTest.QSimTest                          ***Failed                      0.38   
 
-Then::
+Then after fixes::
 
     SLOW: tests taking longer that 15 seconds
       107/108 Test #107: SysRapTest.SSimTest                           Passed                         19.36  
@@ -409,4 +409,231 @@ Then::
     FAILS:  1   / 217   :  Wed Apr 23 21:37:09 2025   
       28 /43  Test #28 : CSGTest.CSGQueryTest                          ***Failed                      0.10  
       ## CSGMaker CSGFoundry GEOM  config needs tidy up    
+
+
+
+
+P : standard ctest
+-------------------
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                           Passed                         84.35  
+      6  /43  Test #6  : CSGTest.CSGPrimTest                           Passed                         20.38  
+      1  /2   Test #1  : G4CXTest.G4CXRenderTest                       Passed                         33.25  
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test         Passed                         33.25  
+
+
+    FAILS:  1   / 217   :  Wed Apr 23 22:04:33 2025   
+      28 /43  Test #28 : CSGTest.CSGQueryTest                          ***Failed                      0.25   
+
+
+
+Cluster : 1/214 FAIL + several tests now slow following geom rejig
+---------------------------------------------------------------------
+
+::
+
+    557 138/214 Test #138: CSGTest.CSGLogTest .......................................   Passed    0.03 sec
+    558         Start 139: CSGTest.CSGMakerTest
+    559 139/214 Test #139: CSGTest.CSGMakerTest .....................................   Passed  588.97 sec
+    560         Start 140: CSGTest.CSGQueryTest
+    561 140/214 Test #140: CSGTest.CSGQueryTest .....................................***Failed    0.74 sec
+    562 /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.3.9/bin/CSGTestRunner.sh - using external config for GEOM J25_3_0_Opticks_v0_3_5 J25_3_0_Opticks_v0_3_5_CFBaseFromGEOM
+    563                 HOME : /hpcfs/juno/junogpu/blyth
+    564                  PWD : /scratch/tmp/blyth/opticks/tests/CSG/tests
+    565                 GEOM : J25_3_0_Opticks_v0_3_5
+    566          BASH_SOURCE : /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.3.9/bin/CSGTestRunner.sh
+    567           EXECUTABLE : CSGQueryTest
+    568                 ARGS :
+    569 2025-04-24 09:57:02.954 FATAL [2112737] [CSGFoundry::load@2851]  dir is not readable [/hpcfs/juno/junogpu/blyth/.opticks/GEOM/J25_3_0_Opticks_v0_3_5/CSGFoundry]
+    570 
+    571 CSGFoundry::LOAD_FAIL_NOTES
+    572 ==============================
+    573 
+    574 The CSGFoundry directory does not exist. To create it you probably need to
+    575 run one of several CSGFoundry creating scripts. Which one to use depends on
+    576 what the geometry is that you want to create. Some of the scripts require
+    577 export the GEOM envvar within $HOME/.opticks/GEOM/GEOM.sh to pick between
+    578 different geometries.
+    579 
+    580 CSG/CSGMakerTest.sh
+    581     CSG level creation of simple test CSGFoundry
+    582 
+    583 G4CX/G4CXTest.sh
+    584     Creates Geant4 geometry translates and saves into CSGFoundry
+    585 
+    586 
+    587 
+    588 CSGQueryTest: /home/blyth/opticks/CSG/CSGFoundry.cc:1389: const CSGPrim* CSGFoundry::getSolidPrim(unsigned int, unsigned int) const: Assertion `so' failed.
+    589 /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.3.9/bin/CSGTestRunner.sh: line 58: 2112737 Aborted                 (core dumped) $EXECUTABLE $@
+    590 /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.3.9/bin/CSGTestRunner.sh : FAIL from CSGQueryTest
+    591 
+    592         Start 141: CSGTest.CSGSimtraceTest
+    593 141/214 Test #141: CSGTest.CSGSimtraceTest ..................................   Passed    4.85 sec
+    594         Start 142: CSGTest.CSGSimtraceRerunTest
+    595 142/214 Test #142: CSGTest.CSGSimtraceRerunTest .............................   Passed    2.52 sec
+
+
+    739 214/214 Test #214: G4CXTest.G4CXOpticks_setGeometry_Test ....................   Passed   29.23 sec
+    740 
+    741 99% tests passed, 1 tests failed out of 214
+    742 
+    743 Total Test time (real) = 903.71 sec
+    744 
+
+
+
+Cluster : release ctest : one fail for CSGQueryTest + two big slowdowns : SSimTest + CSGMakerTest following geometry access rejig
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Copied slurm output to A to use newly added bin/CTestLog.py single log parsing::
+
+    A[blyth@localhost opticks]$ bin/CTestLog.py /tmp/2091440.out
+    ...
+
+    LOGS:
+    CTestLog :                 None :      1/   214 : 2025-04-24 11:45:47.330902 : /tmp/2091440.out 
+
+
+    SLOW: tests taking longer that 15 seconds
+      111/214 Test #111: SysRapTest.SSimTest                                     Passed                         133.81 
+      139/214 Test #139: CSGTest.CSGMakerTest                                    Passed                         588.97 
+      213/214 Test #213: G4CXTest.G4CXRenderTest                                 Passed                         30.05  
+      214/214 Test #214: G4CXTest.G4CXOpticks_setGeometry_Test                   Passed                         29.23  
+
+
+    FAILS:  1   / 214   :  Thu Apr 24 11:45:47 2025   
+      140/214 Test #140: CSGTest.CSGQueryTest                                    ***Failed                      0.74   
+
+
+
+P : opticks-tl
+------------------
+
+::
+
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                           Passed                         84.35  
+      6  /43  Test #6  : CSGTest.CSGPrimTest                           Passed                         20.38  
+      1  /2   Test #1  : G4CXTest.G4CXRenderTest                       Passed                         33.25  
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test         Passed                         33.25  
+
+
+    FAILS:  1   / 217   :  Wed Apr 23 22:04:33 2025   
+      28 /43  Test #28 : CSGTest.CSGQueryTest                          ***Failed                      0.25   
+
+
+
+P : opticks-t
+---------------
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                           Passed                         85.76  
+      6  /43  Test #6  : CSGTest.CSGPrimTest                           Passed                         20.71  
+      1  /2   Test #1  : G4CXTest.G4CXRenderTest                       Passed                         34.26  
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test         Passed                         32.42  
+
+
+    FAILS:  1   / 217   :  Thu Apr 24 14:08:53 2025   
+      28 /43  Test #28 : CSGTest.CSGQueryTest                          ***Failed                      0.26   
+
+
+
+
+A : opticks-t 
+--------------
+
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                                     Passed                         19.83  
+
+    FAILS:  1   / 217   :  Thu Apr 24 14:01:11 2025   
+      28 /43  Test #28 : CSGTest.CSGQueryTest                                    ***Failed                      0.12   
+
+
+
+A : ~/o/CSG/tests/CSGQueryTest.sh dbg
+---------------------------------------------
+
+::
+
+    CSGQueryTest: /home/blyth/opticks/CSG/CSGFoundry.cc:1389: const CSGPrim* CSGFoundry::getSolidPrim(unsigned int, unsigned int) const: Assertion `so' failed.
+
+    Program received signal SIGABRT, Aborted.
+    ...
+    #4  0x00007ffff64373c6 in __assert_fail () from /lib64/libc.so.6
+    #5  0x00007ffff7c482d6 in CSGFoundry::getSolidPrim (this=0x462e30, solidIdx=0, primIdxRel=0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1389
+    #6  0x00007ffff7d0cc73 in CSGQuery::selectPrim (this=0x4637f0, solidIdx=0, primIdxRel=0) at /home/blyth/opticks/CSG/CSGQuery.cc:79
+    #7  0x00007ffff7d0cc24 in CSGQuery::init (this=0x4637f0) at /home/blyth/opticks/CSG/CSGQuery.cc:74
+    #8  0x00007ffff7d0ca6f in CSGQuery::CSGQuery (this=0x4637f0, fd_=0x462e30) at /home/blyth/opticks/CSG/CSGQuery.cc:49
+    #9  0x0000000000405c91 in CSGQueryTest::CSGQueryTest (this=0x7fffffffb8a0) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:82
+    #10 0x000000000040774a in main (argc=2, argv=0x7fffffffba48) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:377
+    (gdb) f 10
+    #10 0x000000000040774a in main (argc=2, argv=0x7fffffffba48) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:377
+    377	    CSGQueryTest t ; 
+    (gdb) f 9
+    #9  0x0000000000405c91 in CSGQueryTest::CSGQueryTest (this=0x7fffffffb8a0) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:82
+    82	    q(new CSGQuery(fd)),
+    (gdb) f 8
+    #8  0x00007ffff7d0ca6f in CSGQuery::CSGQuery (this=0x4637f0, fd_=0x462e30) at /home/blyth/opticks/CSG/CSGQuery.cc:49
+    49	    init(); 
+    (gdb) f 7
+    #7  0x00007ffff7d0cc24 in CSGQuery::init (this=0x4637f0) at /home/blyth/opticks/CSG/CSGQuery.cc:74
+    74	    selectPrim(solidIdx, primIdxRel );  
+    (gdb) f 6
+    #6  0x00007ffff7d0cc73 in CSGQuery::selectPrim (this=0x4637f0, solidIdx=0, primIdxRel=0) at /home/blyth/opticks/CSG/CSGQuery.cc:79
+    79	    const CSGPrim* pr = fd->getSolidPrim(solidIdx, primIdxRel); 
+    (gdb) p fd
+    $1 = (const CSGFoundry *) 0x462e30
+    (gdb) f 5
+    #5  0x00007ffff7c482d6 in CSGFoundry::getSolidPrim (this=0x462e30, solidIdx=0, primIdxRel=0) at /home/blyth/opticks/CSG/CSGFoundry.cc:1389
+    1389	    assert(so);
+    (gdb) 
+
+
+
+
+
+Problem from non-standard geometry loading via CSGMaker::LoadGeom::
+
+     79 CSGQueryTest::CSGQueryTest()
+     80     :
+     81     fd(CSGMaker::LoadGeom()),
+     82     q(new CSGQuery(fd)),
+     83     d(new CSGDraw(q,'Z')),
+     84     gsid(0),
+     85     dump(SSys::getenvint("DUMP",0)),
+     86     dump_hit(  (dump & 1) != 0 ),
+     87     dump_miss( (dump & 2) != 0 ),
+     88     dump_dist( (dump & 4) != 0 ),
+     89     name("noname"),
+     90     isects(nullptr)
+     91 {
+     92     if(VERBOSE > 0 )
+
+
+
+Move the assert earlier where the real problem is::
+
+    (gdb) bt
+    #0  0x00007ffff648b52c in __pthread_kill_implementation () from /lib64/libc.so.6
+    #1  0x00007ffff643e686 in raise () from /lib64/libc.so.6
+    #2  0x00007ffff6428833 in abort () from /lib64/libc.so.6
+    #3  0x00007ffff642875b in __assert_fail_base.cold () from /lib64/libc.so.6
+    #4  0x00007ffff64373c6 in __assert_fail () from /lib64/libc.so.6
+    #5  0x00007ffff7c4ef63 in CSGFoundry::load (this=0x462e30, dir_=0x4635a0 "/home/blyth/.opticks/GEOM/J25_3_0_Opticks_v0_3_5/CSGFoundry") at /home/blyth/opticks/CSG/CSGFoundry.cc:2859
+    #6  0x00007ffff7c4e9df in CSGFoundry::load (this=0x462e30, base_=0x465e30 "/home/blyth/.opticks/GEOM/J25_3_0_Opticks_v0_3_5", rel=0x7ffff7d9cd2c "CSGFoundry") at /home/blyth/opticks/CSG/CSGFoundry.cc:2774
+    #7  0x00007ffff7c4e67c in CSGFoundry::load (this=0x462e30) at /home/blyth/opticks/CSG/CSGFoundry.cc:2728
+    #8  0x00007ffff7cf038e in CSGMaker::LoadGeom (geom=0x7fffffffc70d "J25_3_0_Opticks_v0_3_5") at /home/blyth/opticks/CSG/CSGMaker.cc:1496
+    #9  0x0000000000405c65 in CSGQueryTest::CSGQueryTest (this=0x7fffffffb8a0) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:81
+    #10 0x000000000040774a in main (argc=2, argv=0x7fffffffba48) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:377
+    (gdb) 
+
 

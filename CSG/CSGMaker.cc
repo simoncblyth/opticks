@@ -1485,16 +1485,18 @@ HMM: is there reason for this anymore : simpler
 to treat full geometries and small geometries just the same 
 from the point of view of loading. 
 
-**/
 
 
 CSGFoundry* CSGMaker::LoadGeom(const char* geom) // static
 {
     if(geom == nullptr) geom = ssys::getenvvar("GEOM", "GeneralSphereDEV") ; 
-    CSGFoundry* fd = new CSGFoundry();  
-    fd->setGeom(geom); 
-    fd->load(); 
 
+    //CSGFoundry* fd = new CSGFoundry();  
+    //fd->setGeom(geom); 
+    //fd->load(); 
+
+    CSGFoundry* fd = CSGFoundry::Load();  
+    
     const char* meta = fd->meta.empty() ? nullptr : fd->meta.c_str();  
 
     LOG(LEVEL) 
@@ -1507,4 +1509,5 @@ CSGFoundry* CSGMaker::LoadGeom(const char* geom) // static
     return fd ; 
 } 
 
+**/
 

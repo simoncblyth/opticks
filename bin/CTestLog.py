@@ -26,6 +26,18 @@ Collective reporting from a bunch of separate ctest.log files::
 
     CTestLog.py /usr/local/opticks-cmake-overhaul/build
 
+Or from a single logfile::
+
+    CTestLog.py /tmp/2091440.out 
+
+
+Canonical usage from opticks-t/om-test/om-testlog::
+
+    om-testlog () 
+    { 
+        CTestLog.py $(om-bdir) $*
+    }
+
 
 """
 import sys, re, os, logging, argparse, datetime
@@ -34,7 +46,7 @@ log = logging.getLogger(__name__)
 
 class Test(dict):
 
-    tmpl = "  %(num)-3s/%(den)-3s Test #%(num2)-3s: %(name)-45s %(result)-30s %(time)-6s "  
+    tmpl = "  %(num)-3s/%(den)-3s Test #%(num2)-3s: %(name)-55s %(result)-30s %(time)-6s "  
 
     def __init__(self, *args, **kwa):
         dict.__init__(self, *args, **kwa)
@@ -69,12 +81,14 @@ class CTestLog(object):
                     continue
                 pass
                 path = os.path.join(dirpath, cls.NAME)
-                log.debug("reading %s " % path)
-                lines = list(map(str.rstrip, open(path,"r").readlines() ))
-                lg = cls(lines, path=path, reldir=reldir)
+                lg = cls.Parse(path, reldir)
                 logs.append(lg)
             pass
         pass
+        cls.calc_totals(logs)
+
+    @classmethod
+    def calc_totals(cls, logs):
         tot = {}
         tot["tests"] = 0 
         tot["fails"] = 0 
@@ -82,9 +96,16 @@ class CTestLog(object):
             tot["tests"] += len(lg.tests) 
             tot["fails"] += len(lg.fails) 
         pass
-        cls.logs = logs 
+        cls.logs = logs
         cls.tot = tot
-        cls.dt = max(map(lambda lg:lg.dt, logs ))
+        cls.dt = max(map(lambda lg:lg.dt, cls.logs ))
+ 
+
+    @classmethod
+    def examine_single_logfile(cls, args):
+        lg = cls.Parse(args.base, None)
+        lgs = [lg]
+        cls.calc_totals(lgs)
 
     @classmethod
     def desc_totals(cls):
@@ -92,11 +113,18 @@ class CTestLog(object):
 
     num_tests = property(lambda self:len(self.tests))
     num_fails = property(lambda self:len(self.fails))
+
+    @classmethod
+    def Parse(cls, path, reldir):
+        log.debug("reading %s " % path)
+        lines = list(map(str.rstrip, open(path,"r").readlines() ))
+        lg = cls(lines, path=path, reldir=reldir)
+        return lg 
  
     def __init__(self, lines, path=None, reldir=None):
         self.lines = lines
         self.reldir = reldir
-        self.name = os.path.basename(reldir)
+        self.name = os.path.basename(reldir) if not reldir is None else None
         self.path = path 
         self.tests = []
         self.fails = []
@@ -127,7 +155,7 @@ class CTestLog(object):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(__doc__)
-    parser.add_argument( "base", nargs="*",  help="Dump tree" )
+    parser.add_argument( "base", nargs="*",  help="Directory in which to look for ctest.log files OR filepath" )
     parser.add_argument( "--withtop", action="store_true", help="Switch on handling of the usually skipped top level test results" )
     parser.add_argument( "--slow", default="15", help="Slow test time cut in seconds" )
     parser.add_argument( "--level", default="info", help="log level" )
@@ -143,8 +171,11 @@ if __name__ == '__main__':
         args.base = args.base[0]
     pass
 
-    CTestLog.examine_logs(args)
-
+    if os.path.isdir(args.base):
+        CTestLog.examine_logs(args)
+    else:
+        CTestLog.examine_single_logfile(args)
+    pass  
     lgs = sorted(CTestLog.logs, key=lambda lg:lg.dt)
 
     print("\n\nTESTS:")

@@ -26,7 +26,6 @@
 
 #include "SEventConfig.hh"
 #include "SGeoConfig.hh"
-#include "SOpticksResource.hh"
 #include "NP.hh"
 
 #include "SEvt.hh"
@@ -1386,10 +1385,12 @@ the *so->primOffset* together with *primIdxRel* to get the CSGPrim pointer.
 const CSGPrim*  CSGFoundry::getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const
 {
     const CSGSolid* so = getSolid(solidIdx);
+    LOG_IF(fatal, so == nullptr) << "Failed to getSolid solidIdx " << solidIdx ; 
     assert(so);
 
     unsigned primIdx = so->primOffset + primIdxRel ;
     const CSGPrim* pr = getPrim(primIdx);
+    LOG_IF(fatal, pr == nullptr) << "Failed to getPrim primIdxRel " << primIdxRel ; 
     assert(pr);
 
     return pr ;
@@ -2590,7 +2591,6 @@ void CSGFoundry::save() const
 }
 
 
-//const char* cfdir = SPath::Resolve("$DefaultOutputDir", DIRPATH);
 
 
 void CSGFoundry::save(const char* base, const char* rel) const
@@ -2615,7 +2615,7 @@ See notes/issues/primIdx-and-skips.rst
 
 void CSGFoundry::saveAlt() const
 {
-    const char* cfbase_alt = SOpticksResource::CFBaseAlt();
+    const char* cfbase_alt = spath::Resolve("CFBASE_ALT"); 
     if( cfbase && cfbase_alt && strcmp(cfbase, cfbase_alt) == 0 )
     {
         LOG(fatal)
@@ -2844,14 +2844,19 @@ TODO: adopt NPFold
 
 void CSGFoundry::load( const char* dir_ )
 {
-    const char* dir = SPath::Resolve(dir_, NOOP );
-    bool readable = SPath::IsReadable(dir);
-    if( readable == false )
-    {
-        LOG(fatal) << " dir is not readable [" << dir << "]" ;
-        std::cout << LOAD_FAIL_NOTES << std::endl ;
-        return ;
-    }
+    const char* dir = spath::Resolve(dir_); 
+    bool readable = spath::is_readable(dir);
+
+    LOG_IF(fatal, !readable ) 
+       << " dir-not-readable "
+       << " dir_ [" << ( dir_ ? dir_ : "-" ) << "]"
+       << " dir [" << ( dir ? dir : "-" ) << "]" 
+       << "\n"
+       << LOAD_FAIL_NOTES
+       ;
+
+    assert(readable) ; 
+    if( !readable ) return ;
 
     loaddir = strdup(dir) ;
     LOG(LEVEL) << "[ loaddir " << loaddir ;
@@ -3131,38 +3136,22 @@ CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 CSGFoundry::ResolveCFBase
 ---------------------------
 
-The cfbase path is sensitive to envvars CFBASE
-
-Load precedence:
-
-0. when GEOM and "GEOM"_CFBaseFromGEOM are defined that directory is used
-1. when CFBASE envvar is defined the CSGFoundry directory within CFBASE dir will be loaded
-
+When GEOM and "GEOM"_CFBaseFromGEOM are defined that directory is used
+The former use of CFBASE envvar with SOpticksResource::CFBase is removed. 
 
 **/
 
-const char* CSGFoundry::ResolveCFBase_() // static
+const char* CSGFoundry::ResolveCFBase() 
 {
-    const char* cfbase = SOpticksResource::CFBaseFromGEOM() ;
-
-    LOG_IF(info, cfbase == nullptr ) << " SOpticksResource::CFBaseFromGEOM gave null debug with : export SOpticksResource=INFO " ;
-
-    LOG(LEVEL) << "cfbase from SOpticksResource::CFBaseFromGEOM : " << ( cfbase ? cfbase : "no-cfbase : try next SOpticksResource::CFBase  " ) ;
-    if(cfbase == nullptr) cfbase = SOpticksResource::CFBase() ;  // standard or override
-    LOG(LEVEL) << "cfbase " << ( cfbase ? cfbase : "no-cfbase from SOpticksResource::CFBase" ) ;
-    return cfbase ;
+    const char* cfbase = spath::CFBaseFromGEOM(); 
+    bool readable = spath::is_readable(cfbase, "CSGFoundry" ); 
+    LOG_IF(fatal, !readable) << " cfbase/CSGFoundry directory [" << cfbase << "]/CSGFoundry" << " IS NOT READABLE " ;
+    return readable ? cfbase : nullptr ; 
 }
 
-const char* CSGFoundry::ResolveCFBase() // static
-{
-    const char* cfbase = ResolveCFBase_();
-    bool readable = cfbase == nullptr ? false : SPath::IsReadable(cfbase, "CSGFoundry") ;
-    LOG(LEVEL) << " cfbase " << cfbase << " readable " << readable ;
 
-    LOG_IF(fatal, !readable) << " cfbase/CSGFoundry directory " << cfbase << "/CSGFoundry" << " IS NOT READABLE " ;
 
-    return readable ? cfbase : nullptr ;
-}
+
 
 /**
 CSGFoundry::Load_

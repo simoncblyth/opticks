@@ -115,6 +115,9 @@ public:
     static char* CFBaseFromGEOM();
     static bool  has_CFBaseFromGEOM(); 
 
+    static bool is_readable(const char* base, const char* name); 
+    static bool is_readable(const char* path ); 
+
 };
 
 
@@ -928,5 +931,29 @@ inline bool spath::has_CFBaseFromGEOM()
     return cfb != nullptr ; 
 }
 
+
+inline bool spath::is_readable(const char* base, const char* name)  // static 
+{
+    std::stringstream ss ; 
+    if( base && name )
+    {
+        ss << base << "/" << name ; 
+    }
+    else if( name )
+    {
+        ss << name ; 
+    }
+    std::string s = ss.str(); 
+    return is_readable(s.c_str()); 
+}
+inline bool spath::is_readable(const char* path_)  // static 
+{
+    const char* path = path_ ? spath::Resolve(path_) : nullptr ; 
+    if( path == nullptr ) return false ; 
+    std::ifstream fp(path, std::ios::in|std::ios::binary);
+    bool readable = !fp.fail(); 
+    fp.close(); 
+    return readable ; 
+}
 
 

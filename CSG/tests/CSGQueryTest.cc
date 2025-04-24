@@ -78,7 +78,7 @@ const int CSGQueryTest::VERBOSE = SSys::getenvint("VERBOSE", 0 );
 
 CSGQueryTest::CSGQueryTest()
     :
-    fd(CSGMaker::LoadGeom()),
+    fd(CSGFoundry::Load()),
     q(new CSGQuery(fd)),
     d(new CSGDraw(q,'Z')),
     gsid(0),
@@ -99,6 +99,8 @@ CSGQueryTest::CSGQueryTest()
 void CSGQueryTest::operator()( char mode)
 {
     LOG_IF(info, VERBOSE > 0) << " mode " << mode ; 
+    bool bad_mode = false ; 
+
     switch(mode)
     {
         case 'O': OneIntersection() ; break ; 
@@ -111,8 +113,12 @@ void CSGQueryTest::operator()( char mode)
         case '0': PacmanPhiLine0()  ; break ; 
         case '1': PacmanPhiLine1()  ; break ; 
         case '2': PacmanPhiLine2()  ; break ; 
-        default: assert(0 && "mode unhandled" ) ; break ; 
+        default: bad_mode = true     ; break ; 
     }
+
+    LOG_IF(error, bad_mode ) << " bad_mode [" << mode << "]" ; 
+    assert( bad_mode == false ); 
+
 }
 
 void CSGQueryTest::create_isects()

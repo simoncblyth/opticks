@@ -109,7 +109,7 @@ struct CSG_API CSGFoundry : public SGeo
     static CSGFoundry* Load();
     static CSGFoundry* CopySelect(const CSGFoundry* src, const SBitSet* elv );
 
-    static const char* ResolveCFBase_();
+    //static const char* ResolveCFBase_();
     static const char* ResolveCFBase();
 
     static constexpr const char* _Load_DUMP = "CSGFoundry__Load_DUMP" ;

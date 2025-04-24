@@ -14,6 +14,7 @@ spath_test.cc
      TEST=DefaultOutputPath ~/opticks/sysrap/tests/spath_test.sh
 
      TEST=CFBaseFromGEOM ~/opticks/sysrap/tests/spath_test.sh
+     TEST=is_readable ~/opticks/sysrap/tests/spath_test.sh
 
 **/
 
@@ -63,6 +64,7 @@ struct spath_test
    static int SplitExt(int impl); 
    static int Filesize(); 
    static int CFBaseFromGEOM(); 
+   static int is_readable(); 
 
    static int Main();  
 };
@@ -600,6 +602,26 @@ int spath_test::CFBaseFromGEOM()
     return 0 ; 
 }
 
+int spath_test::is_readable()
+{
+    bool is0 = spath::is_readable("$CFBaseFromGEOM/origin.gdml") ;  
+    bool is1 = spath::is_readable("$CFBaseFromGEOM", "origin.gdml") ;  
+    bool is2 = spath::is_readable("$CFBaseFromGEOM") ;  
+    bool is3 = spath::is_readable("$CFBaseFromGEOM/") ;  
+    bool is4 = spath::is_readable("$SomeNonExistingToken") ;  
+
+    std::cout 
+         << " spath::is_readable(\"$CFBaseFromGEOM/origin.gdml\")    [" << ( is0 ? "YES" : "NO " ) << "]\n" 
+         << " spath::is_readable(\"$CFBaseFromGEOM\",\"origin.gdml\")  [" << ( is1 ? "YES" : "NO " ) << "]\n" 
+         << " spath::is_readable(\"$CFBaseFromGEOM\")                [" << ( is2 ? "YES" : "NO " ) << "]\n" 
+         << " spath::is_readable(\"$CFBaseFromGEOM/\")               [" << ( is3 ? "YES" : "NO " ) << "]\n" 
+         << " spath::is_readable(\"$SomeNonExistingToken\")          [" << ( is4 ? "YES" : "NO " ) << "]\n" 
+         ;
+    assert( is0 == is1 );
+    return 0 ; 
+}
+
+
 
 int spath_test::Main()
 {
@@ -639,6 +661,7 @@ int spath_test::Main()
     else if(ALL||strcmp(TEST, "SplitExt")==0) rc += SplitExt(1);
     else if(ALL||strcmp(TEST, "Filesize")==0) rc += Filesize();
     else if(ALL||strcmp(TEST, "CFBaseFromGEOM")==0) rc += CFBaseFromGEOM();
+    else if(ALL||strcmp(TEST, "is_readable")==0) rc += is_readable();
     return rc ; 
 }
 

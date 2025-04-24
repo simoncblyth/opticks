@@ -147,7 +147,7 @@ struct CSG_API CSGMaker
 
     static CSGFoundry* MakeGeom(const char* geom);
     static CSGFoundry* MakeDemo(); 
-    static CSGFoundry* LoadGeom(const char* geom=nullptr); 
+    //static CSGFoundry* LoadGeom(const char* geom=nullptr); 
 
 
 };
