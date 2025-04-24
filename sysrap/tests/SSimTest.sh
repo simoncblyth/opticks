@@ -9,10 +9,12 @@ TEST=addFake ~/o/sysrap/tests/SSimTest.sh dbg
 EOU
 }
 cd $(dirname $(realpath $BASH_SOURCE))
-source dbg__.sh 
 
 source $HOME/.opticks/GEOM/GEOM.sh 
-#unset GEOM # check without 
+if [ -n "$UNSET" ]; then
+     unset GEOM 
+     echo $BASH_SOURCE check without GEOM
+fi 
 
 name=SSimTest
 defarg="info_run"
@@ -30,6 +32,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then 
+   source dbg__.sh 
    dbg__ $name
    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi

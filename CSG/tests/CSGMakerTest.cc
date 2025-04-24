@@ -72,7 +72,6 @@ int main(int argc, char** argv)
 
          fd->save(base);  
 
-         //CSGFoundry* lfd = CSGFoundry::LoadGeom( name );
          CSGFoundry* lfd = CSGFoundry::Load(base); 
 
 

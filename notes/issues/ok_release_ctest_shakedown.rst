@@ -509,6 +509,31 @@ Copied slurm output to A to use newly added bin/CTestLog.py single log parsing::
 
 
 
+
+Extremely slow CSGMakerTest must be bug. YEP, must have been loading full geometry 20 times::
+
+     59      std::vector<std::string> names ;
+     60      GetNames(names, listnames);
+     61      if(listnames) return 0 ;
+     62 
+     63      for(unsigned i=0 ; i < names.size() ; i++)
+     64      {
+     65          const char* name = names[i].c_str() ;
+     66          LOG(info) << name ;
+     67 
+     68          CSGFoundry* fd = CSGMaker::MakeGeom( name );
+     69          LOG(info) << fd->desc();
+     70 
+     71          const char* base = spath::Join("$TMP/CSGMakerTest",name) ;
+     72 
+     73          fd->save(base);
+     74 
+     75          CSGFoundry* lfd = CSGFoundry::Load(base);
+     76 
+
+
+
+
 P : opticks-tl
 ------------------
 
@@ -635,5 +660,19 @@ Move the assert earlier where the real problem is::
     #9  0x0000000000405c65 in CSGQueryTest::CSGQueryTest (this=0x7fffffffb8a0) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:81
     #10 0x000000000040774a in main (argc=2, argv=0x7fffffffba48) at /home/blyth/opticks/CSG/tests/CSGQueryTest.cc:377
     (gdb) 
+
+
+A: opticks-t after fix
+------------------------
+
+::
+
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                                     Passed                         19.17  
+
+
+    FAILS:  0   / 217   :  Thu Apr 24 16:21:11 2025   
+
 
 
