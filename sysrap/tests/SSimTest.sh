@@ -4,6 +4,7 @@ SSimTest.sh
 =============
 
 ~/o/sysrap/tests/SSimTest.sh 
+LOG=1 ~/o/sysrap/tests/SSimTest.sh dbg
 TEST=addFake ~/o/sysrap/tests/SSimTest.sh dbg
 
 EOU
@@ -15,6 +16,12 @@ if [ -n "$UNSET" ]; then
      unset GEOM 
      echo $BASH_SOURCE check without GEOM
 fi 
+
+logging(){
+   type $FUNCNAME
+   export SSim=INFO
+}
+[ -n "$LOG" ] && logging 
 
 name=SSimTest
 defarg="info_run"

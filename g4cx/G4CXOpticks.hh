@@ -38,6 +38,7 @@ struct G4CX_API G4CXOpticks
     static G4CXOpticks* INSTANCE ;
     static G4CXOpticks* Get(); 
     static G4CXOpticks* SetGeometry() ; 
+    static G4CXOpticks* SetGeometryFromGDML() ; 
     static G4CXOpticks* SetGeometry(const G4VPhysicalVolume* world) ; 
     static G4CXOpticks* SetGeometry_JUNO(const G4VPhysicalVolume* world, const G4VSensitiveDetector* sd, NPFold* jpmt, const NP* jlut ) ; 
 
@@ -71,6 +72,7 @@ public:
 
 private: 
     void setGeometry(); 
+    void setGeometryFromGDML(); 
     void setGeometry(const char* gdmlpath);
     void setGeometry(const G4VPhysicalVolume* world);  
     static const char* setGeometry_saveGeometry ; 

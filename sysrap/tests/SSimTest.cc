@@ -170,8 +170,9 @@ int SSimTest::get_bnd()
 {
     std::cout << "[get_bnd\n" ; 
     SSim* sim = SSim::Load(); 
-    const NP* bnd = sim->get_bnd(); 
-    LOG(info) << bnd->desc() ;  
+    const NP* bnd = sim ? sim->get_bnd() : nullptr ; 
+    LOG(info) << ( bnd ? bnd->desc() : "get_bnd FAIL" ) ; 
+    assert( bnd ); 
     std::cout << "]get_bnd\n" ; 
     return 0 ; 
 }

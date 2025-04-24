@@ -199,12 +199,12 @@ if __name__ == '__main__':
         pass
     pass
 
-    print("\n\nFAILS:  %s  :  %s   " % ( CTestLog.desc_totals(), CTestLog.dt.strftime("%c")))
+    print("\n\nFAILS:  %s  :  %s  :  GEOM %s  " % ( CTestLog.desc_totals(), CTestLog.dt.strftime("%c"), os.environ.get("GEOM", "no-geom")))
     for lg in lgs:
         for tst in lg.fails:
             print(tst)
         pass
     pass
-
+    print("\n\n") 
 
 

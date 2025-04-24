@@ -676,3 +676,107 @@ A: opticks-t after fix
 
 
 
+
+P : opticks-t with GEOM J25_3_0_Opticks_v0_3_5 from /cvmfs
+---------------------------------------------------------------
+
+::
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                                     Passed                         82.72  
+      6  /43  Test #6  : CSGTest.CSGPrimTest                                     Passed                         20.68  
+      1  /2   Test #1  : G4CXTest.G4CXRenderTest                                 Passed                         33.52  
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test                   Passed                         32.56  
+
+
+    FAILS:  0   / 217   :  Thu Apr 24 16:46:22 2025   
+
+
+Slow /cvmfs::
+
+    SLOW: tests taking longer that 15 seconds
+      107/108 Test #107: SysRapTest.SSimTest                                     Passed                         80.64  
+      6  /43  Test #6  : CSGTest.CSGPrimTest                                     Passed                         21.63  
+      1  /2   Test #1  : G4CXTest.G4CXRenderTest                                 Passed                         34.04  
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test                   Passed                         32.32  
+
+    FAILS:  0   / 217   :  Thu Apr 24 20:13:45 2025
+
+
+Avoid going from GDML in G4CXOpticks::SetGeometry shaves 20s::
+
+    === om-test-one : g4cx            /home/blyth/opticks/g4cx                                     /data/blyth/opticks_Debug/build/g4cx                         
+    Thu Apr 24 20:19:58 CST 2025
+    ctest --interactive-debug-mode 0 --output-on-failure
+    Test project /data/blyth/opticks_Debug/build/g4cx
+        Start 1: G4CXTest.G4CXRenderTest
+    1/2 Test #1: G4CXTest.G4CXRenderTest .................   Passed   16.32 sec
+        Start 2: G4CXTest.G4CXOpticks_setGeometry_Test
+    2/2 Test #2: G4CXTest.G4CXOpticks_setGeometry_Test ...   Passed   10.70 sec
+
+    100% tests passed, 0 tests failed out of 2
+
+Local instead of cvmfs, factor of 4 faster::
+
+    P[blyth@localhost g4cx]$ om-test
+    === om-test-one : g4cx            /home/blyth/opticks/g4cx                                     /data/blyth/opticks_Debug/build/g4cx                         
+    Thu Apr 24 20:22:19 CST 2025
+    ctest --interactive-debug-mode 0 --output-on-failure
+    Test project /data/blyth/opticks_Debug/build/g4cx
+        Start 1: G4CXTest.G4CXRenderTest
+    1/2 Test #1: G4CXTest.G4CXRenderTest .................   Passed    3.28 sec
+        Start 2: G4CXTest.G4CXOpticks_setGeometry_Test
+    2/2 Test #2: G4CXTest.G4CXOpticks_setGeometry_Test ...   Passed    2.31 sec
+
+    100% tests passed, 0 tests failed out of 2
+
+
+
+P : opticks-t with GEOM J25_3_0_Opticks_v0_3_5_local from ~/.opticks/GEOM/$GEOM
+---------------------------------------------------------------------------------
+
+Make a local copy::
+
+     mkdir -p ~/.opticks/GEOM/J25_3_0_Opticks_v0_3_5_local
+     cp -r /cvmfs/opticks.ihep.ac.cn/oj/releases/J25.3.0_Opticks-v0.3.5/el9_amd64_gcc11/2025_04_14/.opticks/GEOM/J25_3_0_Opticks_v0_3_5/. ~/.opticks/GEOM/J25_3_0_Opticks_v0_3_5_local/
+
+
+Time with local copy::
+
+    SLOW: tests taking longer that 15 seconds
+      1  /2   Test #1  : G4CXTest.G4CXRenderTest                                 Passed                         33.82  
+      2  /2   Test #2  : G4CXTest.G4CXOpticks_setGeometry_Test                   Passed                         32.57  
+
+
+    FAILS:  0   / 217   :  Thu Apr 24 20:04:07 2025   
+
+
+Those two are slow because are doing the full translation from GDML. 
+
+G4CXRenderTest.cc::
+
+     18 int main(int argc, char** argv)
+     19 {
+     20     OPTICKS_LOG(argc, argv);
+     21 
+     22     LOG(info) << "[ cu first " ;
+     23     cudaDeviceSynchronize();
+     24     LOG(info) << "] cu first " ;
+     25 
+     26     SEventConfig::SetRGModeRender();
+     27     SEventConfig::Initialize();   // for simulation this auto-called from SEvt::SEvt
+     28 
+     29     LOG(info) << "[ SetGeometry " ;
+     30     G4CXOpticks* gx = G4CXOpticks::SetGeometry() ;  // sensitive to SomGDMLPath, GEOM, CFBASE
+     31     LOG(info) << "] SetGeometry " ;
+     32 
+     33     gx->render();       // sensitive to MOI, EYE, LOOK, UP
+     34 
+     35     return 0 ;
+     36 }
+
+
+
+
+
+

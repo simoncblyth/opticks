@@ -52,6 +52,16 @@ G4CXOpticks* G4CXOpticks::SetGeometry()
     g4cx->setGeometry();
     return g4cx ;
 }
+
+G4CXOpticks* G4CXOpticks::SetGeometryFromGDML()
+{
+    G4CXOpticks* g4cx = new G4CXOpticks ;
+    g4cx->setGeometryFromGDML();
+    return g4cx ;
+}
+
+
+
 G4CXOpticks* G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
 {
     G4CXOpticks* g4cx = new G4CXOpticks ;
@@ -196,18 +206,12 @@ std::string G4CXOpticks::desc() const
 }
 
 /**
-G4CXOpticks::setGeometry
----------------------------
-
-Without argument method geometry source depends on existance of envvars : SomeGDMLPath, CFBASE, GEOM
-
-When not loading geometry from a CFBASE directory the CSGFoundry::save() method
-is which saves the geometry to "$DefaultOutputDir/CSGFoundry"
-for use from python for example.
+G4CXOpticks::setGeometryFromGDML
+-----------------------------------
 
 **/
 
-void G4CXOpticks::setGeometry()
+void G4CXOpticks::setGeometryFromGDML()
 {
     LOG(LEVEL) << " argumentless " ;
 
@@ -216,31 +220,18 @@ void G4CXOpticks::setGeometry()
         LOG(LEVEL) << " has_CFBaseFromGEOM " ;
         setGeometry(spath::Resolve("$CFBaseFromGEOM/origin.gdml"));
     }
-    else if(ssys::hasenv_(SOpticksResource::OpticksGDMLPath_))
+    else
     {
-        LOG(LEVEL) << " OpticksGDMLPath " ;
-        setGeometry(SOpticksResource::OpticksGDMLPath());
+        LOG(fatal) << " failed to setGeometryFromGDML " ;
+        assert(0);
     }
-    else if(ssys::hasenv_(SOpticksResource::SomeGDMLPath_))
-    {
-        LOG(LEVEL) << " SomeGDMLPath " ;
-        setGeometry(SOpticksResource::SomeGDMLPath());
-    }
-    else if(ssys::hasenv_(SOpticksResource::CFBASE_))
-    {
-        LOG(LEVEL) << " CFBASE " ;
-        setGeometry(CSGFoundry::Load());
-    }
-    else if(ssys::hasenv_("GEOM"))
-    {
-       // this may load GDML using U4VolumeMaker::PVG if "${GEOM}_GDMLPath" is defined
-        LOG(LEVEL) << " GEOM/U4VolumeMaker::PV " ;
-        setGeometry( U4VolumeMaker::PV() );
-    }
-    else if(SOpticksResource::CFBaseFromGEOM())
-    {
-        LOG(LEVEL) << "[ CFBASEFromGEOM " ;
+}
 
+
+void G4CXOpticks::setGeometry()
+{
+    if(spath::has_CFBaseFromGEOM())
+    {
         LOG(LEVEL) << "[ CSGFoundry::Load " ;
         CSGFoundry* cf = CSGFoundry::Load() ;
         LOG(LEVEL) << "] CSGFoundry::Load " ;
@@ -248,15 +239,6 @@ void G4CXOpticks::setGeometry()
         LOG(LEVEL) << "[ setGeometry(cf)  " ;
         setGeometry(cf);
         LOG(LEVEL) << "] setGeometry(cf)  " ;
-
-        LOG(LEVEL) << "] CFBASEFromGEOM " ;
-    }
-    else if(SOpticksResource::GDMLPathFromGEOM())
-    {
-        // may load GDML directly if "${GEOM}_GDMLPathFromGEOM" is defined
-        LOG(LEVEL) << "[ GDMLPathFromGEOM " ;
-        setGeometry(SOpticksResource::GDMLPathFromGEOM()) ;
-        LOG(LEVEL) << "] GDMLPathFromGEOM " ;
     }
     else
     {
@@ -264,6 +246,8 @@ void G4CXOpticks::setGeometry()
         assert(0);
     }
 }
+
+
 
 void G4CXOpticks::setGeometry(const char* gdmlpath)
 {
