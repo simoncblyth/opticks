@@ -157,7 +157,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument( "base", nargs="*",  help="Directory in which to look for ctest.log files OR filepath" )
     parser.add_argument( "--withtop", action="store_true", help="Switch on handling of the usually skipped top level test results" )
-    parser.add_argument( "--slow", default="15", help="Slow test time cut in seconds" )
+    parser.add_argument( "--slow", default="15", help="Slow test time cut in seconds, comma delimited list of values accepted" )
     parser.add_argument( "--level", default="info", help="log level" )
     args = parser.parse_args()
 
@@ -192,10 +192,13 @@ if __name__ == '__main__':
         print(repr(lg))
     pass
 
-    print("\n\nSLOW: tests taking longer that %s seconds" % args.slow )
-    for lg in lgs:
-        for tst in filter(lambda tst:float(tst['time'])>float(args.slow),lg.tests):
-            print(tst)
+    tt=list(map(float, args.slow.split(",")))
+    for t in tt:
+        print("\n\nSLOW: tests taking longer that %s seconds" % str(t) )
+        for lg in lgs:
+            for tst in filter(lambda tst:float(tst['time'])>float(t),lg.tests):
+                print(tst)
+            pass
         pass
     pass
 

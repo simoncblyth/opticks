@@ -2320,35 +2320,9 @@ opticks-install-tests()
    : as part of the installation
 
    PYTHONPATH=$fold $script $bdir --dest $dest
-   local testscript=$dest/ctest.sh
-   opticks-install-tests-script- > $testscript
-   chmod ugo+x $testscript
-}
 
-opticks-install-tests-script-(){ cat << EOS
-#!/bin/bash
+   : the bin/ctest.sh installed script assumes this $OPTICKS_PREFIX/tests dest of tests
 
-cd \$(dirname \$(realpath \$BASH_SOURCE))
-
-# As ctest doesnt currently work from a readonly dir
-# this copies the released ctest metadata folders to TTMP
-# directory and runs the ctest from there
-#
-# ctest -N
-# ctest --output-on-failure
-
-ttmp=/tmp/\$USER/opticks/tests
-TTMP=\${TTMP:-\$ttmp}
-mkdir -p \$TTMP
-cp -r . \${TTMP}/
-
-cd \$TTMP
-pwd
-
-ctest -N
-ctest --output-on-failure
-
-EOS
 }
 
 

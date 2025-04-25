@@ -45,6 +45,7 @@ set(INSTALLED_SCRIPTS
    dbg__.sh
    rsync.sh
    BASE_grab.sh
+   ctest.sh
 )
 
 #if(APPLE)
