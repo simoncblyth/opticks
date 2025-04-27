@@ -14,7 +14,6 @@
 #include "ssys.h"
 #include "SPlace.h"
 
-#include "SOpticksResource.hh"
 #include "SLOG.hh"
 
 #include "U4.hh"
@@ -111,12 +110,10 @@ const G4VPhysicalVolume* U4VolumeMaker::PV(const char* name)
 U4VolumeMaker::PVG_
 ---------------------
 
-Attempts to load geometry from a gdmlpath using the SOpticksResource::GDMLPath 
-resolution method.  For example for a GEOM name of hello the gdmlpath is obtained
-from the envvar hello_GDMLPath with nullptr being returned when there is no such 
-envvar. 
+Attempts to load geometry from a gdmlpath using the spath::GDMLPathFromGEOM 
+resolution method. 
 
-Additionally using SOpticksResource::GDMLSub resolution when hello_GDMLSub 
+Additionally using spath::GDMLSub resolution when hello_GDMLSub 
 envvar exists the string obtained is used to select a PV from within the loaded 
 tree of volumes.  For example with GEOM of J000 the below envvar is checked::
 
@@ -136,9 +133,10 @@ const char* U4VolumeMaker::PVG_WriteNames_Sub = "U4VolumeMaker_PVG_WriteNames_Su
 const G4VPhysicalVolume* U4VolumeMaker::PVG_(const char* name)
 {
     METH = "PVG_" ; 
-    const char* gdmlpath = SOpticksResource::GDMLPathFromGEOM(name) ; 
-    const char* sub = SOpticksResource::GEOMSub(name);  
+    const char* gdmlpath = spath::GDMLPathFromGEOM(name) ; 
     bool exists = gdmlpath && spath::Exists(gdmlpath) ; 
+
+    const char* sub = spath::GEOMSub(name);  
 
     std::cerr 
         << "U4VolumeMaker::PVG_"
@@ -202,7 +200,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVP_(const char* name)
     METH = "PVP_" ; 
     const G4VPhysicalVolume* pv = nullptr ; 
 #ifdef WITH_PMTSIM
-    const char* geomlist = SOpticksResource::GEOMList(name);   // consult envvar name_GEOMList 
+    const char* geomlist = spath::GEOMList(name);   // consult envvar name_GEOMList 
     std::vector<std::string> names ; 
     if( geomlist == nullptr )
     {
@@ -376,7 +374,7 @@ which when present must be one of : AroundCylinder, AroundSphere, AroundCircle
 
 const G4VPhysicalVolume* U4VolumeMaker::Wrap( const char* name, std::vector<G4LogicalVolume*>& items_lv )
 {
-    const char* wrap = SOpticksResource::GEOMWrap(name);  
+    const char* wrap = spath::GEOMWrap(name);  
     LOG(LEVEL) << "[ name " << name << " GEOMWrap " << ( wrap ? wrap : "-" ) ; 
     std::cerr << "U4VolumeMaker::Wrap "  << "[ name " << name << " GEOMWrap " << ( wrap ? wrap : "-" ) << std::endl ; 
     const G4VPhysicalVolume* pv = wrap == nullptr ? WrapRockWater( items_lv ) : WrapAroundItem( name, items_lv, wrap );  

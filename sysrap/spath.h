@@ -112,8 +112,19 @@ public:
     static long Filesize(const char* path); 
 
     static char* CWD(); 
-    static char* CFBaseFromGEOM();
-    static bool  has_CFBaseFromGEOM(); 
+
+    // WIP: replacing SOpticksResource
+    static const char* GEOM(const char* _geom=nullptr); 
+    static const char* GEOM_Aux(const char* geom, const char* aux); 
+    static const char* GEOMSub(const char* _geom=nullptr); 
+    static const char* GEOMWrap(const char* _geom=nullptr); 
+    static const char* GEOMList(const char* _geom=nullptr);
+
+
+    static char* CFBaseFromGEOM(const char* _geom=nullptr);
+    static bool  has_CFBaseFromGEOM(const char* _geom=nullptr); 
+
+    static char* GDMLPathFromGEOM(const char* _geom=nullptr);
 
     static bool is_readable(const char* base, const char* name); 
     static bool is_readable(const char* path ); 
@@ -901,6 +912,32 @@ inline char* spath::CWD()  // static
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+inline const char* spath::GEOM(const char* _geom){  return _geom ? _geom : getenv("GEOM") ; }
+inline const char* spath::GEOM_Aux(const char* _geom, const char* aux)
+{ 
+    const char* geom = _geom ? _geom : GEOM() ; 
+    const char* name = spath::Name(geom, aux) ; 
+    return geom == nullptr ? nullptr : getenv(name) ; 
+}
+
+inline const char* spath::GEOMSub( const char* _geom){  return GEOM_Aux( _geom, "_GEOMSub"  ); }
+inline const char* spath::GEOMWrap(const char* _geom){  return GEOM_Aux( _geom, "_GEOMWrap" ); }
+inline const char* spath::GEOMList(const char* _geom){  return GEOM_Aux( _geom, "_GEOMList" ); }
+
+
+
 /**
 spath::CFBaseFromGEOM
 ----------------------
@@ -909,9 +946,9 @@ Moving this here from SOpticksResource
 
 **/
 
-inline char* spath::CFBaseFromGEOM()
+inline char* spath::CFBaseFromGEOM(const char* _geom)
 {
-    char* geom = getenv("GEOM") ; 
+    const char* geom = GEOM(_geom);
     char* name = spath::Name_(geom ? geom : "MISSING_GEOM", "_CFBaseFromGEOM") ; 
     char* path = geom == nullptr ? nullptr : getenv(name) ; 
 
@@ -925,10 +962,17 @@ inline char* spath::CFBaseFromGEOM()
     return path  ; 
 }
 
-inline bool spath::has_CFBaseFromGEOM()
+inline bool spath::has_CFBaseFromGEOM(const char* _geom)
 {
-    char* cfb = CFBaseFromGEOM(); 
+    char* cfb = CFBaseFromGEOM(_geom); 
     return cfb != nullptr ; 
+}
+
+
+inline char* spath::GDMLPathFromGEOM(const char* _geom)
+{
+    char* cfb = CFBaseFromGEOM(_geom); 
+    return cfb ? spath::Name_(cfb, "/origin.gdml") : nullptr ; 
 }
 
 

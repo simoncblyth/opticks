@@ -46,6 +46,8 @@ if [ -n "$UNSET" ]; then
 fi 
 
 
+export hello_GEOMSub="yep"
+
 
 
 defarg=info_build_run

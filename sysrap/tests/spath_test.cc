@@ -15,6 +15,8 @@ spath_test.cc
 
      TEST=CFBaseFromGEOM ~/opticks/sysrap/tests/spath_test.sh
      TEST=is_readable ~/opticks/sysrap/tests/spath_test.sh
+     TEST=GEOMSub ~/opticks/sysrap/tests/spath_test.sh
+     TEST=GDMLPathFromGEOM ~/opticks/sysrap/tests/spath_test.sh
 
 **/
 
@@ -65,6 +67,8 @@ struct spath_test
    static int Filesize(); 
    static int CFBaseFromGEOM(); 
    static int is_readable(); 
+   static int GEOMSub(); 
+   static int GDMLPathFromGEOM();
 
    static int Main();  
 };
@@ -592,6 +596,7 @@ int spath_test::CFBaseFromGEOM()
 {
     const char* cfb = spath::CFBaseFromGEOM() ; 
     const char* ori = spath::Resolve("$CFBaseFromGEOM/origin.gdml") ; 
+
     bool has = spath::has_CFBaseFromGEOM() ;
 
     std::cout 
@@ -609,6 +614,8 @@ int spath_test::is_readable()
     bool is2 = spath::is_readable("$CFBaseFromGEOM") ;  
     bool is3 = spath::is_readable("$CFBaseFromGEOM/") ;  
     bool is4 = spath::is_readable("$SomeNonExistingToken") ;  
+    bool is5 = spath::is_readable("$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt") ; 
+
 
     std::cout 
          << " spath::is_readable(\"$CFBaseFromGEOM/origin.gdml\")    [" << ( is0 ? "YES" : "NO " ) << "]\n" 
@@ -616,8 +623,39 @@ int spath_test::is_readable()
          << " spath::is_readable(\"$CFBaseFromGEOM\")                [" << ( is2 ? "YES" : "NO " ) << "]\n" 
          << " spath::is_readable(\"$CFBaseFromGEOM/\")               [" << ( is3 ? "YES" : "NO " ) << "]\n" 
          << " spath::is_readable(\"$SomeNonExistingToken\")          [" << ( is4 ? "YES" : "NO " ) << "]\n" 
+         << " spath::is_readable(\"$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt\")          [" << ( is5 ? "YES" : "NO " ) << "]\n" 
          ;
     assert( is0 == is1 );
+    return 0 ; 
+}
+
+int spath_test::GEOMSub()
+{
+    const char* x_gsub = getenv("hello_GEOMSub"); 
+    const char* gsub = spath::GEOMSub("hello") ;    
+    bool validmatch = x_gsub != nullptr && gsub != nullptr && strcmp( x_gsub, gsub ) == 0 ;
+
+    std::cout
+       << "spath_test::GEOMSub"
+       << " x_gsub " << ( x_gsub ? x_gsub : "-" ) 
+       << " gsub  " << ( gsub ? gsub : "-" )
+       << " validmatch " << ( validmatch ? "YES" : "NO " ) 
+       << "\n"
+       ;
+ 
+    //assert( validmatch );  
+    return 0 ; 
+}
+
+int spath_test::GDMLPathFromGEOM()
+{
+    const char* path = spath::GDMLPathFromGEOM(); 
+
+    std::cout 
+       << "spath_test::GDMLPathFromGEOM"
+       << " [" << ( path ? path : "-" ) << "]\n"
+       ;
+
     return 0 ; 
 }
 
@@ -662,6 +700,8 @@ int spath_test::Main()
     else if(ALL||strcmp(TEST, "Filesize")==0) rc += Filesize();
     else if(ALL||strcmp(TEST, "CFBaseFromGEOM")==0) rc += CFBaseFromGEOM();
     else if(ALL||strcmp(TEST, "is_readable")==0) rc += is_readable();
+    else if(ALL||strcmp(TEST, "GEOMSub")==0) rc += GEOMSub();
+    else if(ALL||strcmp(TEST, "GDMLPathFromGEOM")==0) rc += GDMLPathFromGEOM();
     return rc ; 
 }
 
