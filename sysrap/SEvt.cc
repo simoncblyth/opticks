@@ -2566,7 +2566,14 @@ void SEvt::rjoinPhoton(const spho& label)
     LOG(LEVEL) << label.desc() ;
 
     unsigned idx = label.id ;
-    assert( idx < pho.size() );
+    bool in_range = idx < pho.size() ;
+    LOG_IF(fatal, !in_range )
+         << " NOT-in_range "
+         << " idx " << idx
+         << " pho.size " << pho.size()
+         ;
+    assert( in_range );
+    if(!in_range) std::raise(SIGINT);
 
     // check labels of parent and child are as expected
     const spho& parent_label = pho[idx];

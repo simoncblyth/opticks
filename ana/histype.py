@@ -102,8 +102,8 @@ class HisType(SeqType):
 
         """
         qq = np.zeros( (len(q), 32), dtype=np.int8 )  # 32 bytes for each item, ie 64 nibbles 
-        for i in np.arange(16): qq[:,i]    = ( q[:,0] >> (4*i) ) & 0xf     
-        for i in np.arange(16): qq[:,16+i] = ( q[:,1] >> (4*i) ) & 0xf     
+        for i in np.arange(16): qq[:,i]    = ( q[:,0] >> np.uint8(4*i) ) & 0xf     
+        for i in np.arange(16): qq[:,16+i] = ( q[:,1] >> np.uint8(4*i) ) & 0xf     
         return qq 
 
     def __init__(self):
