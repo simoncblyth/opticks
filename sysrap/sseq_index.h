@@ -320,6 +320,7 @@ sseq_index_ab
 
 struct sseq_index_ab
 {
+    static constexpr const char* _sseq_index_ab__desc_NUM_MAX = "sseq_index_ab__desc_NUM_MAX" ; 
     const sseq_index& a ;
     const sseq_index& b ;
 
@@ -447,10 +448,16 @@ inline std::string sseq_index_ab::desc(const char* opt) const
     else if( strstr(opt,"DEVIANT")) mode = DEVIANT ;
     else if( strstr(opt,"BRIEF"))   mode = BRIEF ;
 
-    int num = u.size();
+    int u_size = u.size();
+    int NUM_MAX = ssys::getenvint(_sseq_index_ab__desc_NUM_MAX, 0) ;
+    int num = NUM_MAX > 0 ? std::min( u_size, NUM_MAX ) : u_size ; 
+
     std::stringstream ss ;
     ss
-        << "[sseq_index_ab::desc u.size " << num
+        << "[sseq_index_ab::desc"
+        << " u_size " << u_size
+        << " NUM_MAX " << NUM_MAX
+        << " num " << num
         << " opt " << opt
         << " mode " << mode
         << ( mode == BRIEF ? chi2.desc()  : "" )

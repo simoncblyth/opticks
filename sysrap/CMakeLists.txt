@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
-#project(${name} VERSION 0.1.0)
 project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
@@ -11,10 +9,10 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 SysRap
 ========
 
-The default RPATH setup from OpticksBuildOptions of 
+The default RPATH setup from OpticksBuildOptions of
 "set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)"
-appears to only work if your executables link to a library 
-which is in the same directory as the library you are creating.  
+appears to only work if your executables link to a library
+which is in the same directory as the library you are creating.
 Fortunately thats easy to do by linking with Opticks::OKConf.
 
 Attempting to detect the CUDA version::
@@ -25,21 +23,21 @@ Requires:
 
 * CMake 3.17
 * "LANGUAGES CUDA" on the project line
-* BUT: it messes up clang compiler detection in cmake/Modules/OpticksCXXFlags.cmake 
+* BUT: it messes up clang compiler detection in cmake/Modules/OpticksCXXFlags.cmake
 * so use envvar OPTICKS_CUDA_NVCC_DIALECT detection in cmake/Modules/OpticksCXXFlags.cmake to kludge this
 
 
 OpticksCSG.py managed as source despite needing manual regeneration after OpticksCSG.h updates
 -------------------------------------------------------------------------------------------------
 
-NB generation of OpticksCSG.py is not automated, unlike the generation of other things like status json.  
-This is because it is expedient for the generated python to be managed as a source file for simplicity.  
-It would be cleaner to generate json that a future OpticksCSG.py parses. 
+NB generation of OpticksCSG.py is not automated, unlike the generation of other things like status json.
+This is because it is expedient for the generated python to be managed as a source file for simplicity.
+It would be cleaner to generate json that a future OpticksCSG.py parses.
 But as OpticksCSG.h updates are rare, For now just need to remember to generate manually with::
 
     cd ~/opticks/sysrap
-    ../bin/c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
-   
+    ../bin/c_enums_to_python.py OpticksCSG.h > OpticksCSG.py
+
 
 #]=]
 
@@ -47,11 +45,10 @@ find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 
-#find_package(OpticksCUDA REQUIRED MODULE)
-find_package(CUDAToolkit)   ## for CUDA::cudart 
+find_package(CUDAToolkit)   ## for CUDA::cudart
 
 
-set(Custom4_VERBOSE ON) 
+set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
 
 message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
@@ -69,8 +66,8 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/inc/${SYSRAP_GENERATED_HEADER}  DESTIN
 
 
 set(SOURCES
-    SYSRAP_LOG.cc 
-    SLOG.cc 
+    SYSRAP_LOG.cc
+    SLOG.cc
 
     SCurandStateMonolithic.cc
     SSys.cc
@@ -144,14 +141,14 @@ set(SOURCES
     SOpticks.cc
     SOpticksResource.cc
     SOpticksKey.cc
-    SThetaCut.cc 
-    SPhiCut.cc 
+    SThetaCut.cc
+    SPhiCut.cc
 
     SCenterExtentGenstep.cc
 
     OpticksPhoton.cc
 
-    SU.cu 
+    SU.cu
 
     SEventConfig.cc
     SFrameConfig.cc
@@ -164,12 +161,12 @@ set(SOURCES
     SFastSimOpticalModel.cc
 
     SOpBoundaryProcess.cc
-) 
-    
+)
+
 
 set(CURANDLITE_HEADERS
     curandlite/curandStatePhilox4_32_10_OpticksLite.h
-) 
+)
 
 
 set(HEADERS
@@ -180,12 +177,12 @@ set(HEADERS
     SYSRAP_HEAD.hh
     SYSRAP_TAIL.hh
     SLOG.hh
-    slog.h 
+    slog.h
 
     PLOG.hh
-    SLOG_INIT.hh  
+    SLOG_INIT.hh
 
-    SLaunchSequence.h 
+    SLaunchSequence.h
 
 
     SCurandSpec.h
@@ -202,7 +199,7 @@ set(HEADERS
 
     SBacktrace.h
     SStackFrame.h
-    SProfile.h 
+    SProfile.h
 
     ssys.h
     SSys.hh
@@ -212,13 +209,13 @@ set(HEADERS
 
     schrono.h
     stimer.h
-    sstamp.h 
+    sstamp.h
 
     SBnd.h
     SPrd.h
 
     SPath.hh
-    spath.h 
+    spath.h
     sdirectory.h
 
     sdevice.h
@@ -235,21 +232,21 @@ set(HEADERS
     SCount.hh
 
     slist.h
-    sfreq.h 
+    sfreq.h
     snode.h
-    stree.h 
-    suniquename.h 
+    stree.h
+    suniquename.h
 
     sstandard.h
-    sprop.h 
-    sproplist.h 
-    sidxname.h 
+    sprop.h
+    sproplist.h
+    sidxname.h
 
-    snam.h 
-    smatsur.h 
+    snam.h
+    smatsur.h
 
 
-    strid.h 
+    strid.h
     sfactor.h
 
     snd.hh
@@ -259,23 +256,23 @@ set(HEADERS
 
     s_pool.h
     s_csg.h
-    sn.h 
-    s_pa.h 
-    s_bb.h 
-    s_tv.h 
+    sn.h
+    s_pa.h
+    s_bb.h
+    s_tv.h
 
-    st.h 
-    stra.h 
+    st.h
+    stra.h
     sgeomtools.h
- 
+
     spa.h
     sxf.h
     sbb.h
-    
+
     sdigest.h
     SDigest.hh
 
-    
+
 
     SDigestNP.hh
     SDirect.hh
@@ -312,7 +309,7 @@ set(HEADERS
     s_time.h
 
     SPPM.hh
-    sppm.h 
+    sppm.h
 
     SColor.hh
     SId.hh
@@ -334,22 +331,22 @@ set(HEADERS
     SRng.hh
     SBuf.hh
 
-    SName.h 
-    SLabel.h 
+    SName.h
+    SLabel.h
 
-    smath.h 
+    smath.h
     sblackbody.h
     tcomplex.h
 
     srng.h
     sbuild.h
     srngcpu.h
-    scurand.h  
+    scurand.h
 
     s_mock_texture.h
-    stexture.h  
+    stexture.h
 
-    njuffa_erfcinvf.h 
+    njuffa_erfcinvf.h
     s_mock_erfcinvf.h
 
 
@@ -357,21 +354,21 @@ set(HEADERS
     squadx.h
 
     sphoton.h
-    sphit.h 
+    sphit.h
     spho.h
-    sgs.h 
-    srec.h 
-    srec.h 
-    sseq.h 
+    sgs.h
+    srec.h
+    srec.h
+    sseq.h
     sseq_index.h
 
     sframe.h
     sfr.h
-    SCE.h 
-    SCSGOptiX.h 
+    SCE.h
+    SCSGOptiX.h
 
-    SPMT.h 
-    SPMTAccessor.h 
+    SPMT.h
+    SPMTAccessor.h
 
     storchtype.h
 
@@ -380,17 +377,17 @@ set(HEADERS
     scerenkov.h
     sscint.h
     sevent.h
-    sstate.h 
+    sstate.h
     sctx.h
     salloc.h
 
     SGenerate.h
-    
+
     sflow.h
     sqat4.h
     saabb.h
     stran.h
-    stmm.h 
+    stmm.h
 
     SPlace.h
     SPlaceSphere.h
@@ -401,14 +398,14 @@ set(HEADERS
     ssincos.h
     sxyz.h
     sc4u.h
-    stag.h 
+    stag.h
 
     sbit_.h
     sbibit.h
 
     sview.h
-    strided_range.h 
-    iexpand.h 
+    strided_range.h
+    iexpand.h
 
 
     SOpticks.hh
@@ -427,7 +424,7 @@ set(HEADERS
 
     GL_CHECK.h
 
-    SScene.h 
+    SScene.h
     SMesh.h
     SMeshGroup.h
 
@@ -440,12 +437,12 @@ set(HEADERS
     SGLFW_GLEQ.h
 
     SGLDisplay.h
-    SCUDA_OutputBuffer.h 
+    SCUDA_OutputBuffer.h
     SGLFW_CUDA.h
 
-    SCUDA_Mesh.h 
-    SCU_BufferView.h 
-    SCUDA_MeshGroup.h 
+    SCUDA_Mesh.h
+    SCU_BufferView.h
+    SCUDA_MeshGroup.h
     SCSGPrimSpec.h
 
     scuda.h
@@ -465,12 +462,12 @@ set(HEADERS
     SOPTIX_Pipeline.h
     SOPTIX_SBT.h
     SOPTIX_Scene.h
-    
+
     SOPTIX_BuildInput.h
     SOPTIX_BuildInput_Mesh.h
     SOPTIX_BuildInput_CPA.h
     SOPTIX_BuildInput_IA.h
-    
+
     gleq.h
 
     SDir.h
@@ -478,14 +475,14 @@ set(HEADERS
     SCAM.h
     SBAS.h
 
-    SEvt.hh 
+    SEvt.hh
 
     SOpticksKey.hh
     SMath.hh
 
     SEvent.hh
     SGenstep.h
-    sslice.h 
+    sslice.h
 
     SFrameGenstep.hh
 
@@ -496,7 +493,7 @@ set(HEADERS
     SCenterExtentFrame.h
     SPresent.h
 
-    SCenterExtentGenstep.hh 
+    SCenterExtentGenstep.hh
     scanvas.h
 
     OpticksGenstep.h
@@ -504,25 +501,25 @@ set(HEADERS
     OpticksPhoton.hh
 
     CUDA_CHECK.h
-    SCU.h 
-    SCU_.h 
+    SCU.h
+    SCU_.h
     OPTIX_CHECK.h
- 
+
 
     SU.hh
-    SComponent_OLD.hh 
-    SComp.h 
+    SComponent_OLD.hh
+    SComp.h
 
     SEventConfig.hh
-    SRM.h 
+    SRM.h
     SFrameConfig.hh
     SGeoConfig.hh
 
     np.h
-    NP.hh  
-    NPU.hh 
-    NPX.h 
-    NPFold.h 
+    NP.hh
+    NPU.hh
+    NPX.h
+    NPFold.h
     SSim.hh
     SPropMockup.h
 
@@ -530,8 +527,8 @@ set(HEADERS
     S4MaterialPropertyVector.h
 
     SNameOrder.h
-    S4.h 
-    S4Surface.h 
+    S4.h
+    S4Surface.h
     S4TreeBorder.h
 
     S4RandomMonitor.h
@@ -545,7 +542,7 @@ set(HEADERS
     SPhoton_Debug.h
     SUniformRand.h
 
-    sgeomdefs.h 
+    sgeomdefs.h
     sfmt.h
     ssolid.h
     SIntersect.h
@@ -566,7 +563,7 @@ set(RETIRED_HEADERS
 
 
 
-# using absolute ANADIR avoids build environment requiring it in PATH 
+# using absolute ANADIR avoids build environment requiring it in PATH
 get_filename_component(ANADIR ../ana ABSOLUTE)
 get_filename_component(BINDIR ../bin ABSOLUTE)
 
@@ -578,34 +575,34 @@ message(STATUS "ANADIR : ${ANADIR}")
 set(HGS ${CMAKE_CURRENT_SOURCE_DIR}/OpticksGenstep.h)
 set(IGS ${CMAKE_CURRENT_BINARY_DIR}/OpticksGenstep_Enum.ini)
 add_custom_command(
-   OUTPUT 
+   OUTPUT
          ${IGS}
-   COMMAND 
+   COMMAND
           ${ANADIR}/enum_.py ${HGS} --quiet --simple --inipath ${IGS}
-   DEPENDS 
+   DEPENDS
          ${HGS}
 )
 add_custom_target(PythonGS ALL DEPENDS ${IGS} )
 
 #[=[
 
-   cd ~/opticks/sysrap ; ../ana/enum_.py OpticksGenstep.h --quiet --simple --inipath /tmp/OpticksGenstep_Enum.ini && cat /tmp/OpticksGenstep_Enum.ini 
+   cd ~/opticks/sysrap ; ../ana/enum_.py OpticksGenstep.h --quiet --simple --inipath /tmp/OpticksGenstep_Enum.ini && cat /tmp/OpticksGenstep_Enum.ini
 #]=]
 
 
-## HMM:the flags change very infrequently : easier to code generate into source directories for discoverability 
+## HMM:the flags change very infrequently : easier to code generate into source directories for discoverability
 set(HPH ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.h)
 set(IPH ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Enum.ini)
 add_custom_command(
-   OUTPUT 
+   OUTPUT
          ${IPH}
-   COMMAND 
+   COMMAND
           ${ANADIR}/enum_.py ${HPH} --quiet --inipath ${IPH}
-   DEPENDS 
+   DEPENDS
          ${HPH}
 )
 add_custom_target(PythonPH ALL DEPENDS ${IPH} )
-# ALL : Indicates that this custom target should be added to the 
+# ALL : Indicates that this custom target should be added to the
 # default build target so that it will be run every time.
 
 
@@ -614,24 +611,24 @@ set(CCFL ${CMAKE_CURRENT_SOURCE_DIR}/OpticksPhoton.hh)
 set(PYJS ${CMAKE_CURRENT_BINARY_DIR}/OpticksPhoton_Abbrev.json)
 
 add_custom_command(
-   OUTPUT 
+   OUTPUT
          ${PYJS}
-   COMMAND 
+   COMMAND
          ${ANADIR}/OpticksPhoton.py ${CCFL} --quiet --jsonpath ${PYJS}
-   DEPENDS 
+   DEPENDS
          ${CCFL}
 )
 add_custom_target(PythonJSON ALL DEPENDS ${PYJS} )
 
 
-list(APPEND HEADERS 
-  ${IGS} 
-  ${IPH} 
+list(APPEND HEADERS
+  ${IGS}
+  ${IPH}
   ${PYJS}
-) 
+)
 
 
-if(NLJSON_FOUND)  
+if(NLJSON_FOUND)
    message(STATUS "SYSRAP.NLJSON_FOUND")
    list(APPEND SOURCES  SMeta.cc)
    list(APPEND HEADERS  SMeta.hh)
@@ -641,16 +638,16 @@ endif()
 
 set(WITH_SIMG YES)
 if(WITH_SIMG)
-    list(APPEND HEADERS   stb_image.h  stb_image_write.h)   
-    list(APPEND HEADERS   SIMG.h  )   
-    list(APPEND HEADERS   SIMG_Frame.h  )   
+    list(APPEND HEADERS   stb_image.h  stb_image_write.h)
+    list(APPEND HEADERS   SIMG.h  )
+    list(APPEND HEADERS   SIMG_Frame.h  )
 endif()
 
 
 set(WITH_STTF YES)
 if(WITH_STTF)
     list(APPEND HEADERS stb_truetype.h)
-    list(APPEND HEADERS STTF.h)    
+    list(APPEND HEADERS STTF.h)
 endif()
 
 
@@ -667,20 +664,20 @@ message( STATUS "COMPUTE_ARCHITECTURES_STR : ${COMPUTE_ARCHITECTURES_STR}" )
 set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
 
 
-#set_target_properties( ${name} 
-#                       PROPERTIES 
+#set_target_properties( ${name}
+#                       PROPERTIES
 #                         INTERFACE_DESCRIPTION ${desc}
 #                         INTERFACE_PKG_CONFIG_REQUIRES ${preq}
 #                     )
 
 set_property( TARGET ${name} PROPERTY INTERFACE_DESCRIPTION ${desc} )
-#set_property( TARGET ${name} PROPERTY INTERFACE_PKG_CONFIG_REQUIRES ${preq} ) 
+#set_property( TARGET ${name} PROPERTY INTERFACE_PKG_CONFIG_REQUIRES ${preq} )
 
 
 #target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
 target_link_libraries( ${name} Opticks::PLog Opticks::OKConf )
 
-#Opticks::OpticksCUDA 
+#Opticks::OpticksCUDA
 
 if(NLJSON_FOUND)
 #target_link_libraries(${name} PUBLIC Opticks::NLJSON)
@@ -696,13 +693,13 @@ endif()
 
 set(SysRap_VERBOSE OFF)
 if(SysRap_VERBOSE)
-  echo_target_std(Opticks::OKConf) 
-  #echo_target_std(${name}) 
+  echo_target_std(Opticks::OKConf)
+  #echo_target_std(${name})
 endif()
-   
+
 #${CUDA_INCLUDE_DIRS}
 
-target_include_directories( ${name} PUBLIC 
+target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
    ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
    $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
@@ -716,45 +713,45 @@ SysRap Compile Definitions
 ----------------------------
 
 former  WITH..SND
-   switched the below to use the old inflexible snd.hh CSG node impl, 
+   switched the below to use the old inflexible snd.hh CSG node impl,
    instead of the default more flexible sn.h impl:
 
    sysrap/stree.h
-       WITH..SND saves CSG nodes in CSGFoundry/SSim/stree/csg 
-       NOT:WITH..SND saves CSG nodes in CSGFoundry/SSim/stree/_csg 
+       WITH..SND saves CSG nodes in CSGFoundry/SSim/stree/csg
+       NOT:WITH..SND saves CSG nodes in CSGFoundry/SSim/stree/_csg
 
-   u4/U4Tree.h u4/U4Solid.h u4/U4Polycone.h 
+   u4/U4Tree.h u4/U4Solid.h u4/U4Polycone.h
        WITH..SND uses snd.hh idx int as CSG root
-       NOT:WITH..SND uses sn.h sn* pointer as CSG root 
-    
+       NOT:WITH..SND uses sn.h sn* pointer as CSG root
+
 WITH_CHILD
    sysrap/sn.h uses child vector of sn pointers supporting n-ary trees
 
 NOT:WITH_CHILD
    sysrap/sn.h uses left, right sn pointers supporting only binary trees
 
-DEBUG_TAG 
+DEBUG_TAG
 
    $<$<CONFIG:Debug>:DEBUG_TAG>
 
    ONLY LEAVE ENABLED WHEN DOING RANDOM ALIGNED RUNNING TESTS
 
-   needed for random aligned running in multiple pkgs: sysrap, qudarap, u4  
-   however making this PUBLIC makes rebuilding real heavy 
-   so must rely on making coordinated switches when doing random aligned running  
+   needed for random aligned running in multiple pkgs: sysrap, qudarap, u4
+   however making this PUBLIC makes rebuilding real heavy
+   so must rely on making coordinated switches when doing random aligned running
 
 
 
 PLOG_LOCAL
    changes visibility of plog external symbols, allowing better
-   integration with packages (like junosw) that do not hide 
-   symbols by default  
+   integration with packages (like junosw) that do not hide
+   symbols by default
 
 RNG_XORWOW/RNG_PHILOX/RNG_PHILITEOX
    Use one of these to pick the curandState implementation, in srng.h
    picking RNG_XORWOW requires curandState files which slows
-   down initialization greatly when simulating many millions 
-   of photons 
+   down initialization greatly when simulating many millions
+   of photons
 
 #]=]
 
@@ -771,7 +768,7 @@ set(SYSRAP_COMPILE_DEFINITIONS
       $<$<CONFIG:Release>:CONFIG_Release>
       $<$<CONFIG:MinSizeRel>:CONFIG_MinSizeRel>
 
-      OPTICKS_SYSRAP 
+      OPTICKS_SYSRAP
       WITH_CHILD
       PLOG_LOCAL
       RNG_PHILOX
@@ -786,11 +783,6 @@ target_compile_definitions( ${name}
     PUBLIC
            ${SYSRAP_COMPILE_DEFINITIONS}
 )
-
-
-
-#get_target_property(sysrap_def ${name} COMPILE_DEFINITIONS)
-#message(STATUS " sysrap_def : ${sysrap_def} " )
 
 
 
@@ -810,7 +802,7 @@ message(STATUS "PLog_targets:${PLog_targets}")
 top_meta_target(PLog_TOPMETA    "PLog" "${PLog_targets}" )
 
 message(STATUS "${PLog_TOPMETA}")
- 
+
 set(PC_VERBOSE ON)
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER  "
 ## SysRap TOPMATTER
@@ -825,12 +817,12 @@ ${PLog_TOPMETA}
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-set( OLD_SCRIPTS 
+set( OLD_SCRIPTS
     __init__.py
     OpticksCSG.py
 )
 
-set( SCRIPTS 
+set( SCRIPTS
     __init__.py
     sframe.py
     sevt.py

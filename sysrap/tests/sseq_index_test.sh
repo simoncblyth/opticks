@@ -50,6 +50,8 @@ export FOLD=$TMP/$name
 mkdir -p $FOLD
 
 
+export sseq_index_ab__desc_NUM_MAX=40
+
 
 if [ -n "$DEV" ]; then
     bin=$FOLD/$name

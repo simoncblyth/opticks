@@ -729,7 +729,11 @@ inline stree::stree()
 
 inline void stree::init()
 {
-    if(level > 0) std::cout << "stree::init " << std::endl ;
+    if(level > 0) std::cout 
+         << "stree::init " 
+         << " force_triangulate_solid [" << ( force_triangulate_solid ? force_triangulate_solid : "-" ) << "]" 
+         << std::endl 
+         ;
 }
 
 

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(name SysRapTest)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)   
+include(OpticksBuildOptions)
 
 set(INSTALLED_SCRIPTS
-   STestRunner.sh   
+   STestRunner.sh
    sseq_index_test.sh
    sseq_index_test.py
 )
@@ -39,26 +39,26 @@ set(TEST_SOURCES
 
    SCFTest.cc
 
-   
-   PLogTest.cc 
-   SLOG_Test.cc 
-   SLOGTest.cc 
-   SYSRAP_LOG_Test.cc 
+
+   PLogTest.cc
+   SLOG_Test.cc
+   SLOGTest.cc
+   SYSRAP_LOG_Test.cc
    SYSRAP_LOG_FileAppenderTest.cc
 
    SYSRAP_OPTICKS_LOG_Test.cc
-   SYSRAP_OPTICKS_LOG_NULL_Test.cc 
-   SOPTICKS_LOG_Test.cc 
+   SYSRAP_OPTICKS_LOG_NULL_Test.cc
+   SOPTICKS_LOG_Test.cc
 
    OPTICKS_LOG_Test.cc
    sLOG_MACRO_Test.cc
    SLOG_exename_Test.cc
-   SLOG_Banner_Test.cc 
-    
+   SLOG_Banner_Test.cc
+
    reallocTest.cc
    OpticksCSGTest.cc
    hash_define_without_value.cc
-   SDirectTest.cc 
+   SDirectTest.cc
    S_freopen_redirect_test.cc
    S_get_option_Test.cc
 
@@ -75,7 +75,7 @@ set(TEST_SOURCES
    SAbbrevTest.cc
    SPPMTest.cc
    SColorTest.cc
-   SPackTest.cc 
+   SPackTest.cc
    SBitTest.cc
    SBitSetTest.cc
    SEnabledTest.cc
@@ -95,7 +95,7 @@ set(TEST_SOURCES
    CastTest.cc
 
    SOpticksVersionNumberTest.cc
-   SRngTest.cc 
+   SRngTest.cc
    SDirTest.cc
    SDiceTest.cc
 
@@ -108,7 +108,7 @@ set(TEST_SOURCES
    SEventTest.cc
    SThetaCutTest.cc
    SPhiCutTest.cc
-   scanvasTest.cc 
+   scanvasTest.cc
 
    OpticksPhotonTest.cc
    SUTest.cc
@@ -122,7 +122,7 @@ set(TEST_SOURCES
    SEvt__UU_BURN_Test.cc
 
    SEvt_Lifecycle_Test.cc
-   SEvt__HasInputPhoton_Test.cc 
+   SEvt__HasInputPhoton_Test.cc
    SEvt_AddEnvMeta_Test.cc
 
    SNameTest.cc
@@ -149,7 +149,7 @@ set(CUDART_TEST_SOURCES
 
 set(RETIRED_TEST_SOURCES
    SProcTest.cc
-   SRngSpecTest.cc 
+   SRngSpecTest.cc
 )
 
 
@@ -209,7 +209,7 @@ foreach(SRC ${TEST_SOURCES})
     target_include_directories( ${TGT} PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
-    )    
+    )
 
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
@@ -224,7 +224,7 @@ foreach(SRC ${CUDART_TEST_SOURCES})
     target_include_directories( ${TGT} PRIVATE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
-    )    
+    )
 
 
 
@@ -253,7 +253,7 @@ endforeach()
 
 
 
-set(TEST_COLORS 
+set(TEST_COLORS
     red
     green
     blue
@@ -296,12 +296,12 @@ foreach(SRC ${BASH_RUN_TEST_SOURCES})
     target_link_libraries(${TGT} SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(
-       NAME ${name}.${TGT} 
-       COMMAND bash STestRunner.sh ${TGT}  
+       NAME ${name}.${TGT}
+       COMMAND bash STestRunner.sh ${TGT}
        #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/STestRunner.sh ${TGT}
     )
     #[=[
-    Try to be more portable by getting bash and Runner off the PATH 
+    Try to be more portable by getting bash and Runner off the PATH
     #]=]
 endforeach()
 
