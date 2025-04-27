@@ -405,8 +405,8 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
     LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 WITH_PMTSIM " ; 
 
 #elif defined(WITH_CUSTOM4)
-    //const U4PMTAccessor* pmt = new U4PMTAccessor ; // DUMMY PLACEHOLDER
-    const char* jpmt = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" ; 
+    const char* jpmt = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt"); 
+
     const SPMTAccessor* pmt = SPMTAccessor::Load(jpmt) ; 
     const char* geom = ssys::getenvvar("GEOM", "no-GEOM") ; 
     LOG_IF(fatal, pmt == nullptr ) 
@@ -414,7 +414,7 @@ G4VProcess* U4Physics::CreateBoundaryProcess()  // static
          << " GEOM " << ( geom ? geom : "-" )      
          ; 
 
-    // assert(pmt) ;  // trying to get C4 to work without the PMT info, just assert when really need PMT info 
+    assert(pmt) ;  // trying to get C4 to work without the PMT info, just assert when really need PMT info 
     const C4IPMTAccessor* ipmt = pmt ;  
     proc = new C4OpBoundaryProcess(ipmt);
     LOG(LEVEL) << "create C4OpBoundaryProcess :  WITH_CUSTOM4 NOT:WITH_PMTSIM " ; 

@@ -72,7 +72,6 @@ set(TEST_SOURCES
 
 
    U4PhysicsTableTest.cc 
-   U4SimtraceSimpleTest.cc
 )
 
 set(EXPECTED_TO_FAIL_SOURCES
@@ -84,6 +83,7 @@ set(SLOW_SOURCES
    U4TreeCreateTest.cc
    U4TreeCreateSSimTest.cc
    U4TreeCreateSSimLoadTest.cc
+   U4SimtraceSimpleTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

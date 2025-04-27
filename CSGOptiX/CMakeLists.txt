@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSGOptiX)
-#project(${name} VERSION 0.1.0)
 project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions)
 
-#find_package(CUDA REQUIRED)
+set(Custom4_VERBOSE ON)
+find_package(Custom4 CONFIG)
+
 find_package(CUDAToolkit)
 
 find_package(SysRap REQUIRED)
@@ -18,31 +18,15 @@ find_package(OpticksOptiX REQUIRED MODULE)
 get_target_property(CSG_INCLUDE_DIRS Opticks::CSG INTERFACE_INCLUDE_DIRECTORIES)
 
 
-message(STATUS "CSG_FOUND     : ${CSG_FOUND} ")
-message(STATUS "CSG_INCLUDE_DIRS : ${CSG_INCLUDE_DIRS} ")
-message(STATUS "OpticksOptiX_VERSION  : ${OpticksOptiX_VERSION} ")
+message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
+message(STATUS "${name} CSG_FOUND     : ${CSG_FOUND} ")
+message(STATUS "${name} CSG_INCLUDE_DIRS : ${CSG_INCLUDE_DIRS} ")
+message(STATUS "${name} OpticksOptiX_VERSION  : ${OpticksOptiX_VERSION} ")
 
 set(buildenvpath ${CMAKE_CURRENT_BINARY_DIR}/buildenv.sh)
 file(WRITE ${buildenvpath} "export OPTIX_VERSION=${OpticksOptiX_VERSION}\n")
 message(STATUS "write to buildenvpath ${buildenvpath} ")
 
-
-
-
-
-
-#set(COMPUTE_CAPABILITY $ENV{OPTICKS_COMPUTE_CAPABILITY})
-#set(CUDA_NVCC_FLAGS)
-#list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
-#list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
-#list(APPEND CUDA_NVCC_FLAGS "-O2")
-#list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
-#list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
-
-#[=[
-CUDA_NVCC_FLAGS are set in cmake/Modules/OpticksCUDAFlags.cmake
-its better to set them in one place
-#]=]
 
 
 set(SOURCES)
@@ -85,21 +69,13 @@ add_library( ${name}PTX OBJECT ${CU_SOURCES} )
 #set_property( TARGET ${name}PTX PROPERTY CUDA_PTX_COMPILATION ON)
 #set_property( TARGET ${name}PTX PROPERTY POSITION_INDEPENDENT_CODE ON)
 
-set_target_properties( ${name}PTX 
+set_target_properties( ${name}PTX
     PROPERTIES
          CUDA_PTX_COMPILATION ON
          POSITION_INDEPENDENT_CODE ON
          CUDA_SEPARABLE_COMPILATION ON
 )
 
-
-#[=[
-#CUDA_WRAP_SRCS( ${name} PTX _generated_PTX_files ${CU_SOURCES} )
-#CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
-#message(STATUS "_generated_OBJ_files ${_generated_OBJ_files}")
-#message(STATUS "_generated_PTX_files ${_generated_PTX_files}")
-#add_library( ${name} SHARED ${SOURCES} ${HEADERS}  ${_generated_OBJ_files} ${_generated_PTX_files}   )
-#]=]
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}     )
 add_dependencies( ${name} ${name}PTX )
@@ -130,6 +106,14 @@ set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE
     WITH_THRUST
 )
 
+
+
+
+if(Custom4_FOUND)
+   list(APPEND CSGOptiX_COMPILE_DEFINITIONS_PUBLIC WITH_CUSTOM4)
+endif()
+
+
 target_compile_definitions( ${name}      PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
 target_compile_definitions( ${name}PTX   PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
 
@@ -138,9 +122,9 @@ target_compile_definitions( ${name}PTX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS
 
 set_target_properties(${name}PTX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}")  ## single integer CC of oldest GPU
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir
 
-target_compile_options( ${name}PTX 
+target_compile_options( ${name}PTX
    PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
 )
@@ -187,6 +171,7 @@ WITH_THRUST
 
       $<BUILD_INTERFACE:/dummy/cx/end/build>
       $<INSTALL_INTERFACE:/dummy/cx/end/install>
+      ${CUDA_INCLUDE_DIRS}
 #]=]
 
 
@@ -195,21 +180,24 @@ target_include_directories(${name}
       $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
       $<INSTALL_INTERFACE:externals/glm/glm>
       ${OpticksOptiX_INCLUDE}
-      ${CUDA_INCLUDE_DIRS}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
 target_include_directories(${name}PTX
    PUBLIC
       ${OpticksOptiX_INCLUDE}
-      $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}> 
+      $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
       $<BUILD_INTERFACE:${OPTICKS_PREFIX}/include/SysRap>
       $<BUILD_INTERFACE:${OPTICKS_PREFIX}/include/CSG>
       $<BUILD_INTERFACE:${OPTICKS_PREFIX}/include/QUDARap>
 )
 
+if(Custom4_FOUND)
+   target_include_directories( ${name}PTX PUBLIC ${Custom4_INCLUDE_DIR})
+endif()
 
-#${CUDA_LIBRARIES}
+
+
 
 target_link_libraries(${name}
      PUBLIC
@@ -225,6 +213,10 @@ set(INSTALLED_SCRIPTS
    cxr_min_debug.sh
    cxt_min.sh
    cxt_min.py
+
+   cxs_min.sh
+   cxs_min.py
+   cxs_min_AB.py
 )
 
 
