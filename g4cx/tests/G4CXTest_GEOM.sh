@@ -105,9 +105,20 @@ ana_script=$SDIR/G4CXTest_GEOM.py
 dna_script=$SDIR/G4CXTest.py 
 
 source $HOME/.opticks/GEOM/GEOM.sh   # set GEOM and associated envvars for finding geometry
-export ${GEOM}_GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml
-export stree__force_triangulate_solid='filepath:$HOME/.opticks/GEOM/${GEOM}_meshname_stree__force_triangulate_solid.txt'
-export SSim__stree_level=1 
+#export ${GEOM}_GDMLPathFromGEOM=$HOME/.opticks/GEOM/$GEOM/origin.gdml
+# no longer needed as using spath::GDMLPathFromGEOM
+
+_cfb=${GEOM}_CFBaseFromGEOM
+cfb=${!_cfb}
+tessname=$cfb/CSGFoundry/tessname.txt
+
+if [ -f "$tessname" ]; then
+    export stree__force_triangulate_solid="filepath:$tessname"
+    export SSim__stree_level=1 
+else
+    echo $BASH_SOURCE tessname $tessname DOES NOT EXIST
+fi 
+
 
 ## CURRENTLY CAN MANUALLY CHECK WHAT IS TRIANGULATED BY UPPING THE LOGGING 
 ## TODO: some reporting in metadata of which solids are triangulated that gets saved with event metadata
@@ -170,7 +181,8 @@ VERSION=${VERSION:-$version}
 export VERSION    ## used in SEvt output directory name ALL$VERSION
 
 
-ctx=$(TEST=ContextString sbuild_test)  ## eg Debug_Philox see sbuild.h 
+#ctx=$(TEST=ContextString sbuild_test)  ## eg Debug_Philox see sbuild.h 
+ctx=Debug_Philox
 #export OPTICKS_EVENT_NAME=$ctx  # used by SEventConfig::EventReldir "OPTICKS_EVENT_RELDIR"
 export OPTICKS_EVENT_NAME=${ctx}_${TEST}
 
@@ -182,6 +194,8 @@ export OPTICKS_EVENT_RELDIR='ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-none}'  ## t
 ## HMM: MAYBE SIMPLIFY BY JUST DEFINING RELDIR HERE, BUT THE CODE DEFAULT IS HANDY ?
 
 TMP=${TMP:-/tmp/$USER/opticks}
+
+# /data1/blyth/tmp/GEOM/J25_3_0_Opticks_v0_3_5/G4CXTest/ALL98_Debug_Philox_ref5
 
 export SCRIPT=$(basename $BASH_SOURCE)
 export BASE=$TMP/GEOM/$GEOM
@@ -359,28 +373,6 @@ defarg="info_env_run_report_ana"
 arg=${1:-$defarg}
 
 
-gdb__() 
-{ 
-    if [ -z "$BP" ]; then
-        H="";
-        B="";
-        T="-ex r";
-    else
-        H="-ex \"set breakpoint pending on\"";
-        B="";
-        for bp in $BP;
-        do
-            B="$B -ex \"break $bp\" ";
-        done;
-        T="-ex \"info break\" -ex r";
-    fi;
-    local runline="gdb $H $B $T --args $* ";
-    echo $runline;
-    date;
-    eval $runline;
-    date
-}
-
 
 vars="BASH_SOURCE allarg defarg arg SDIR GEOM ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPathFromGEOM bin VERSION"
 vars="$vars TMP BASE PWD"
@@ -405,7 +397,8 @@ if [ "${arg/run}" != "$arg" ]; then
 fi 
 
 if [ "${arg/dbg}" != "$arg" ]; then
-    gdb__ $bin
+    source dbg__.sh
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
 fi 
 
@@ -431,11 +424,13 @@ if [ "${arg/gevt}" != "$arg" ]; then
 fi 
 
 if [ "${arg/chi2}" != "$arg" ]; then
-    $SDIR/../../sysrap/tests/sseq_index_test.sh info_run_ana
+    #$SDIR/../../sysrap/tests/sseq_index_test.sh info_run_ana
+    sseq_index_test.sh info_run_ana
     [ $? -ne 0 ] && echo $BASH_SOURCE sseq_index_test chi2 ERROR && exit 3 
 fi 
 
 if [ "${arg/pdb}" != "$arg" ]; then
+    export SAB=1
     ${IPYTHON:-ipython} --pdb -i $ana_script 
     [ $? -ne 0 ] && echo $BASH_SOURCE pdb error with ana_script $ana_script && exit 4
 fi 
@@ -449,7 +444,6 @@ if [ "${arg/dna}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $dna_script 
     [ $? -ne 0 ] && echo $BASH_SOURCE dna error with dna_script $dna_script && exit 4
 fi 
-
 
 
 

@@ -7,6 +7,10 @@ set(INSTALLED_SCRIPTS
     GXTestRunner.sh 
     G4CXTest_raindrop.sh
     G4CXTest_raindrop.py
+
+    G4CXTest_GEOM.sh
+    G4CXTest_GEOM.py
+    G4CXTest.py
 )
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 

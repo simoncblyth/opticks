@@ -9,7 +9,7 @@ G4CXTest.cc : Standalone bi-simulation
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
-    return G4CXApp::Main(); 
+    OPTICKS_LOG(argc, argv);
+    return G4CXApp::Main();
 }
 
