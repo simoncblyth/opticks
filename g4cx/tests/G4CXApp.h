@@ -179,7 +179,8 @@ G4VPhysicalVolume* G4CXApp::Construct()
     LOG(info) << "]" ;
 
     // Collect extra JUNO PMT info only when persisted NPFold exists.
-    SSim::AddExtraSubfold("jpmt", "$PMTSimParamData_BASE" );
+    SSim::AddExtraSubfold("jpmt", "$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt" ); 
+
 
     if(SEventConfig::GPU_Simulation())
     {

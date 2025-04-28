@@ -1778,12 +1778,12 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx ) 
-    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f pre-ARTE \n", 
-           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );  
+    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f pmt %p pre-ARTE \n", 
+           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, pmt );  
 #endif
 
-    float ARTE[4] ; 
-    if(lpmtid > -1) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
+    float ARTE[4] = {} ; 
+    if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );   
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx ) 

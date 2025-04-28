@@ -94,6 +94,7 @@ struct QUDARAP_API QSim
 private:
     QSim();
     void init();
+    static constexpr const char* _QSim__REQUIRE_PMT = "QSim__REQUIRE_PMT" ; 
 public:
     void setLauncher(SCSGOptiX* cx_ ); 
 

@@ -78,6 +78,9 @@ struct SYSRAP_API SGeoConfig
 
     static std::vector<std::string>*  Arglist() ; 
     static void GeometrySpecificSetup(const SName* id); 
+    static bool JUNO_Detected(const SName* id); 
+
+
 };
 
  

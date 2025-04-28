@@ -183,13 +183,27 @@ void QSim::UploadComponents( const SSim* ssim  )
 
 
 
+
     const NPFold* spmt_f = ssim->get_spmt_f() ;
     QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ;
-    LOG_IF(LEVEL, qpmt == nullptr )
-        << " NO QPMT instance "
+
+    bool has_PMT = spmt_f != nullptr && qpmt != nullptr ; 
+    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT); 
+    bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ; 
+
+    LOG_IF(fatal, MISSING_PMT )
+        << " MISSING_PMT "
+        << " has_PMT " << ( has_PMT ? "YES" : "NO " )
+        << " REQUIRE_PMT " << ( REQUIRE_PMT ? "YES" : "NO " )
+        << " MISSING_PMT " << ( MISSING_PMT ? "YES" : "NO " )
         << " spmt_f " << ( spmt_f ? "YES" : "NO " )
         << " qpmt " << ( qpmt ? "YES" : "NO " )
         ;
+
+    assert(MISSING_PMT == false) ; 
+    if(MISSING_PMT)  std::raise(SIGINT);
+
+
 
     LOG(LEVEL)
         << QPMT<float>::Desc()
@@ -292,6 +306,31 @@ void QSim::init()
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ;
     sim->scint = scint ? scint->d_scint : nullptr ;
     sim->pmt = pmt ? pmt->d_pmt : nullptr ;
+
+
+    bool has_PMT = pmt != nullptr && sim->pmt != nullptr ; 
+    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT); 
+    bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ;  
+
+    LOG(LEVEL)
+        << " MISSING_PMT " << ( MISSING_PMT ? "YES" : "NO " )
+        << " has_PMT " << ( has_PMT ? "YES" : "NO " )
+        << " QSim::pmt " << ( pmt ? "YES" : "NO " ) 
+        << " QSim::pmt->d_pmt " << ( sim->pmt ? "YES" : "NO " )
+        << " [" << _QSim__REQUIRE_PMT << "] " << ( REQUIRE_PMT ? "YES" : "NO " )   
+        ;
+
+    LOG_IF(fatal, MISSING_PMT )
+        << " MISSING_PMT ABORT "
+        << " MISSING_PMT " << ( MISSING_PMT ? "YES" : "NO " )
+        << " has_PMT " << ( has_PMT ? "YES" : "NO " )
+        << " QSim::pmt " << ( pmt ? "YES" : "NO " ) 
+        << " QSim::pmt->d_pmt " << ( sim->pmt ? "YES" : "NO " )
+        << " [" << _QSim__REQUIRE_PMT << "] " << ( REQUIRE_PMT ? "YES" : "NO " )   
+        ;
+
+    assert(MISSING_PMT == false) ; 
+    if(MISSING_PMT)  std::raise(SIGINT);
 
     d_sim = QU::UploadArray<qsim>(sim, 1, "QSim::init.sim" );
 

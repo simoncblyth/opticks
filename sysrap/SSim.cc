@@ -31,9 +31,14 @@ SSim* SSim::CreateOrReuse()
     return INSTANCE ? INSTANCE : Create() ; 
 }
 
-void SSim::AddExtraSubfold(const char* k, const char* dir) // static
+void SSim::AddExtraSubfold(const char* k, const char* _dir) // static
 {
-    LOG(LEVEL) << " k " << k << " dir " << dir ;  
+    const char* dir = spath::Resolve(_dir); 
+    LOG(LEVEL) 
+        << " k " << k 
+        << " _dir " << _dir
+        << " dir " << dir
+         ;  
     if(NPFold::Exists(dir)) 
     {
         NPFold* fold = NPFold::Load(dir) ;
@@ -85,12 +90,6 @@ SSim* SSim::Create()
 /**
 SSim::Load from persisted geometry  : used for testing 
 -------------------------------------------------------
- 
-Formerly used::
-
-    const char* SSim::DEFAULT = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry" ; 
-
-But thats a non-standard way to resolve GEOM geometry
 
 **/
 
@@ -319,8 +318,13 @@ from NPFold::add_subfold. But causes other problems.
 
 const NPFold* SSim::get_jpmt_nocopy() const 
 {
+
     NPFold* f = top ? top->find_subfold_(JPMT_RELP) : nullptr ; 
     //if(f) f->set_verbose_r(); 
+    LOG(LEVEL) 
+        << " (NPFold)top " << ( top ? "YES" : "NO " ) 
+        << " (NPFold)f " << ( f ? "YES" : "NO " ) 
+        ;
     return f ; 
 }
 
@@ -328,12 +332,25 @@ const NPFold* SSim::get_jpmt() const
 {
     const NPFold* f = get_jpmt_nocopy(); 
     const NPFold* fc  = f ? f->deepcopy() : nullptr ;   
+
+    LOG(LEVEL)
+        << " (NPFold)f " << ( f ? "YES" : "NO " ) 
+        << " (NPFold)fc " << ( fc ? "YES" : "NO " ) 
+        ;
+
     return fc ; 
 }
 const SPMT* SSim::get_spmt() const 
 {
     const NPFold* jpmt = get_jpmt(); 
-    return jpmt ? new SPMT(jpmt) : nullptr ; 
+    const SPMT* spmt = jpmt ? new SPMT(jpmt) : nullptr ; 
+
+    LOG(LEVEL)
+        << " (NPFold)jpmt " << ( jpmt ? "YES" : "NO " ) 
+        << " (SPMT)spmt " << ( spmt ? "YES" : "NO " ) 
+        ;
+
+    return spmt ; 
 }
 
 /**
@@ -350,6 +367,12 @@ const NPFold* SSim::get_spmt_f() const
 {
     const SPMT* spmt = get_spmt() ;
     const NPFold* spmt_f = spmt ? spmt->serialize() : nullptr ;
+
+    LOG(LEVEL)
+        << " (SPMT)spmt " << ( spmt ? "YES" : "NO " ) 
+        << " (NPFold)spmt_f " << ( spmt_f ? "YES" : "NO " ) 
+        ;
+
     return spmt_f ; 
 }
 

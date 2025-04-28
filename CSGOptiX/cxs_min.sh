@@ -69,6 +69,14 @@ Monitor for GPU memory leaks::
     ~/o/sysrap/smonitor.sh ana   ## plot
 
 
+pdb1
+   ipython cxs_min.py
+
+pdb0
+   as pdb1 with MODE=0 for no pyvista or matplotlib usage
+   useful for loading/examining the SEvt with ipython
+   from anywhere
+
 EOU
 }
 
@@ -157,8 +165,8 @@ knobs()
 }
 
 
-version=1
-#version=98   ## set to 98 for low stats debugging
+#version=1
+version=98   ## set to 98 for low stats debugging
 
 export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
@@ -265,7 +273,7 @@ elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" ==
    opticks_num_genstep=1
    opticks_num_photon=M${TEST:3}
    opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M10
+   opticks_max_slot=M${TEST:3}
 
 elif [ "$TEST" == "refX" ]; then
 
@@ -273,7 +281,7 @@ elif [ "$TEST" == "refX" ]; then
    opticks_num_genstep=1
    opticks_num_photon=${X:-7500000}
    opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M10
+   opticks_max_slot=$opticks_num_photon
 
 elif [ "$TEST" == "ref10_multilaunch" -o "$TEST" == "ref10_onelaunch" ]; then
 

@@ -120,6 +120,9 @@ else
 fi 
 
 
+
+
+
 ## CURRENTLY CAN MANUALLY CHECK WHAT IS TRIANGULATED BY UPPING THE LOGGING 
 ## TODO: some reporting in metadata of which solids are triangulated that gets saved with event metadata
 
@@ -143,6 +146,21 @@ elif [ "$TEST" == "ref5" ]; then
    opticks_num_genstep=1
    opticks_num_photon=M5
    opticks_max_slot=M5
+
+
+elif [ "$TEST" == "one" ]; then 
+
+   opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=1
+   opticks_max_slot=1
+
+elif [ "$TEST" == "two" ]; then 
+
+   opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=2
+   opticks_max_slot=2
 
 elif [ "$TEST" == "small" ]; then 
 
@@ -172,6 +190,12 @@ elif [ "$TEST" == "large_evt" ]; then
    opticks_num_photon=M180   ## M200 gives OOM with TITAN RTX 24G with debug arrays enabled
    opticks_max_slot=M180
 
+else
+
+   echo $BASH_SOURCE ERROR TEST $TEST IS NOT HANDLED
+   echo $BASH_SOURCE ERROR TEST $TEST IS NOT HANDLED
+   echo $BASH_SOURCE ERROR TEST $TEST IS NOT HANDLED ... SLEEPING 
+   sleep 100
 fi 
 
 

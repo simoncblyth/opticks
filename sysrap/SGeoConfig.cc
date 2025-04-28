@@ -316,10 +316,9 @@ live which is to be avoided.
 **/
 void SGeoConfig::GeometrySpecificSetup(const SName* id)  // static
 {
-    const char* JUNO_names = "HamamatsuR12860sMask,HamamatsuR12860_PMT_20inch,NNVTMCPPMT_PMT_20inch" ;  
-    bool JUNO_detected = id->hasNames(JUNO_names); 
-    LOG(LEVEL) << " JUNO_detected " << JUNO_detected ; 
-    if(JUNO_detected)
+    bool _JUNO_Detected = JUNO_Detected(id) ; 
+    LOG(LEVEL) << " _JUNO_Detected " << _JUNO_Detected ; 
+    if(_JUNO_Detected)
     {
         //const char* skips = "NNVTMCPPMTsMask_virtual,HamamatsuR12860sMask_virtual,mask_PMT_20inch_vetosMask_virtual" ;
         const char* skips = nullptr ; 
@@ -330,7 +329,13 @@ void SGeoConfig::GeometrySpecificSetup(const SName* id)  // static
         // USING dynamic ELVSelection here would be inappropriate : as dynamic selection 
         // means the persisted geometry does not match the used geometry.   
     }
-    
+}
+
+bool SGeoConfig::JUNO_Detected(const SName* id)
+{
+    const char* JUNO_names = "HamamatsuR12860sMask,HamamatsuR12860_PMT_20inch,NNVTMCPPMT_PMT_20inch" ;  
+    bool with_JUNO_names = id ? id->hasNames(JUNO_names) : false ; 
+    return with_JUNO_names ; 
 }
 
 
