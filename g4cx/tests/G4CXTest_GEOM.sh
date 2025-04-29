@@ -455,7 +455,7 @@ fi
 
 if [ "${arg/pdb}" != "$arg" ]; then
     export SAB=1
-    ${IPYTHON:-ipython} --pdb -i $ana_script 
+    PYTHONPATH=$OPTICKS_PREFIX/py ${IPYTHON:-ipython} --pdb -i $ana_script 
     [ $? -ne 0 ] && echo $BASH_SOURCE pdb error with ana_script $ana_script && exit 4
 fi 
 

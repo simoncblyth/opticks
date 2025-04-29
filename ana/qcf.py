@@ -7,6 +7,17 @@ qcf.py
 """
 import os, logging, numpy as np
 from opticks.ana.nbase import chi2, chi2_pvalue
+
+try:
+    import opticks.ana.idxstring as idxstring
+except ImportError:
+    idxstring = None
+pass
+
+with_f2py_idxstring = not idxstring is None
+with_argmax = True 
+print("qcf.py[ with_argmax %d with_f2py_idxstring %d ]" % ( with_argmax, with_f2py_idxstring ))
+
 log = logging.getLogger(__name__)
 
 class QU(object):
@@ -36,6 +47,7 @@ class QU(object):
         self.q = q 
         self.uxno = u,x,n,o
         self.u = u 
+        self.ufort = np.asfortranarray(u)
         self.x = x 
         self.n = n 
         self.o = o 
@@ -90,14 +102,24 @@ class QCF(object):
         qu = np.unique(np.concatenate([aqu.u,bqu.u]))       ## unique histories of both A and B in uncontrolled order
         ab = np.zeros( (len(qu),3,2), dtype=np.int64 )
 
-        log.info("QCF.__init__ [ qu loop")
-        for i, q in enumerate(qu):
+        log.info("QCF.__init__ [ qu loop : with_f2py_idxstring %s " % ( "YES" if with_f2py_idxstring else "NO "))
+        for i, qv in enumerate(qu):
 
             # here are finding all indices when just want the first  
-            ai_ = np.where(aqu.u == q )[0]           # find indices in the a and b unique lists 
-            bi_ = np.where(bqu.u == q )[0]
-            ai = ai_[0] if len(ai_) == 1 else -1
-            bi = bi_[0] if len(bi_) == 1 else -1
+            if with_f2py_idxstring:
+                ## try using fortran compiled into numpy module with f2py, see ana/idxstring.sh 
+                ai = idxstring.find_first(qv, aqu.ufort)
+                bi = idxstring.find_first(qv, bqu.ufort)
+            elif with_argmax:
+                ai = ( qv == aqu.u).argmax()
+                bi = ( qv == bqu.u).argmax()
+            else:
+                ## fallback to slow approach 
+                ai_ = np.where(aqu.u == qv )[0]           # find indices in the a and b unique lists 
+                bi_ = np.where(bqu.u == qv )[0]
+                ai = ai_[0] if len(ai_) == 1 else -1
+                bi = bi_[0] if len(bi_) == 1 else -1
+            pass
 
             # NB the ai and bi are internal indices into the separate A and B lists
             # so they are necessary but not ordinarily surfaced 
