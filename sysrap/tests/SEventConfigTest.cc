@@ -15,7 +15,7 @@ struct SEventConfigTest
     static int GatherCompList();
     static int SaveCompList();
     static int Initialize_Comp_();
-    static int SetDefault();
+    static int SetMinimal();
     static int Save();
     static int InputGenstep(); 
 
@@ -77,19 +77,19 @@ int SEventConfigTest::Initialize_Comp_()
 
 
 
-int SEventConfigTest::SetDefault()
+int SEventConfigTest::SetMinimal()
 {
     std::cout 
-        << "SEventConfigTest::SetDefault.0"
+        << "SEventConfigTest::SetMinimal.0"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
         ; 
 
-    SEventConfig::SetDefault() ;     
+    SEventConfig::SetMinimal() ;     
 
     std::cout 
-        << "SEventConfigTest::SetDefault.1"
+        << "SEventConfigTest::SetMinimal.1"
         << std::endl 
         << SEventConfig::Desc() 
         << std::endl
@@ -127,7 +127,7 @@ int SEventConfigTest::main()
     if(ALL||strcmp(TEST,"GatherCompList") == 0)   rc += GatherCompList();  
     if(ALL||strcmp(TEST,"SaveCompList") == 0)     rc += SaveCompList();  
     if(ALL||strcmp(TEST,"Initialize_Comp_") == 0) rc += Initialize_Comp_();  
-    if(ALL||strcmp(TEST,"SetDefault") == 0)       rc += SetDefault();  
+    if(ALL||strcmp(TEST,"SetMinimal") == 0)       rc += SetMinimal();  
     if(ALL||strcmp(TEST,"Save") == 0)             rc += Save();  
     if(ALL||strcmp(TEST,"Desc") == 0)             rc += Desc();  
     if(ALL||strcmp(TEST,"InputGenstep") == 0)     rc += InputGenstep();  

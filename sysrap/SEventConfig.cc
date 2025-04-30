@@ -29,7 +29,7 @@
 const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ;
 
 int         SEventConfig::_IntegrationModeDefault = -1 ;
-const char* SEventConfig::_EventModeDefault = "Default" ;
+const char* SEventConfig::_EventModeDefault = Minimal ;  // previously was Default
 const char* SEventConfig::_EventNameDefault = nullptr ;
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 int         SEventConfig::_StartIndexDefault = 0 ;
@@ -42,7 +42,7 @@ const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for Mi
 int         SEventConfig::_G4StateRerunDefault = -1 ;
 const char* SEventConfig::_MaxBounceNotes = "MaxBounceLimit:31, MaxRecordLimit:32 (see sseq.h)" ;
 
-int SEventConfig::_MaxBounceDefault = 9 ;
+int SEventConfig::_MaxBounceDefault = 31 ;  // was previously too small at 9
 
 int SEventConfig::_MaxRecordDefault = 0 ;
 int SEventConfig::_MaxRecDefault = 0 ;
@@ -446,7 +446,7 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 
 
 
-void SEventConfig::SetDefault(){            SetEventMode(Default)           ; }
+//void SEventConfig::SetDefault(){            SetEventMode(Default)           ; }
 void SEventConfig::SetDebugHeavy(){         SetEventMode(DebugHeavy) ; }
 void SEventConfig::SetDebugLite(){          SetEventMode(DebugLite) ; }
 void SEventConfig::SetNothing(){            SetEventMode(Nothing)           ; }
@@ -456,7 +456,7 @@ void SEventConfig::SetHitPhoton(){          SetEventMode(HitPhoton)         ; }
 void SEventConfig::SetHitPhotonSeq(){       SetEventMode(HitPhotonSeq)      ; }
 void SEventConfig::SetHitSeq(){             SetEventMode(HitSeq)            ; }
 
-bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
+//bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
 bool SEventConfig::IsDebugHeavy(){        return _EventMode && strcmp(_EventMode, DebugHeavy) == 0 ; }
 bool SEventConfig::IsDebugLite(){         return _EventMode && strcmp(_EventMode, DebugLite) == 0 ; }
 bool SEventConfig::IsNothing(){           return _EventMode && strcmp(_EventMode, Nothing) == 0 ; }
@@ -470,8 +470,6 @@ std::string SEventConfig::DescEventMode()  // static
 {
     std::stringstream ss ;
     ss << "SEventConfig::DescEventMode" << std::endl
-       << Default
-       << std::endl
        << DebugHeavy
        << std::endl
        << DebugLite
@@ -1012,11 +1010,7 @@ void SEventConfig::Initialize_Max() // static
 
     int max_bounce = MaxBounce();
 
-    if(IsDefault())
-    {
-        Initialize_Comp() ;
-    }
-    else if(IsNothing() || IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() || IsHitSeq() )
+    if(IsNothing() || IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() || IsHitSeq() )
     {
         Initialize_Comp() ;
     }
