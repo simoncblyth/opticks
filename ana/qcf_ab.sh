@@ -9,7 +9,12 @@ qcf_ab.sh
 
     source qcf_ab.sh 
 
-    source qcf_ab.sh  pdb 
+    source ~/opticks/ana/qcf_ab.sh      ## build install and test
+    source ~/opticks/ana/qcf_ab.sh pdb  ## just test 
+
+If you get errors, first check if you are in the appropriate 
+python conda analysis environment which includes the meson package. 
+
 
 EOU
 }
@@ -31,7 +36,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
-   f2py -c --backend meson -m $name $name.f90
+   f2py -c --backend meson -m $name -DF2PY_REPORT_ON_ARRAY_COPY=1 $name.f90
    [ $? -ne 0 ] && echo $BASH_SOURCE build error 
 fi 
 

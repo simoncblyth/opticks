@@ -384,7 +384,7 @@ inline void sseq_index_ab::collect_seq()
     {
         const sseq_unique& q_ic = b.u[i];
         const sseq& q = q_ic.q ;
-        std::map<sseq, sseq_index_count_ab>::iterator it  = m.find(q_ic.q);
+        std::map<sseq, sseq_index_count_ab>::iterator it  = m.find(q);
 
         bool first_q = it == m.end() ; // first find of sseq history q within m
 

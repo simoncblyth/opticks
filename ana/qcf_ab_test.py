@@ -1,7 +1,21 @@
 #!/usr/bin/env python
 """
+qcf_ab_test.py
+=================
 
-https://github.com/numpy/numpy/pull/19388
+Get into your conda python analysis environment, eg::
+
+    hookup_conda_ok
+
+Compile the .f90 into C python module, install it then 
+invoke this test which imports it and invoked its method. 
+
+    source ~/opticks/ana/qcf_ab.sh
+
+OR::
+
+    cd ~/opticks/ana
+    source qcf_ab.sh   
 
 """
 
@@ -48,6 +62,7 @@ b = np.array([
       
 au, ax, an = np.unique(a, return_index=True, return_counts=True)
 bu, bx, bn = np.unique(b, return_index=True, return_counts=True)
+qu = np.unique(np.concatenate([au,bu]))  ## unique histories of both A and B in uncontrolled order
 
 auf = np.asfortranarray(au)
 buf = np.asfortranarray(bu)
@@ -60,11 +75,8 @@ print("bu",bu)
 print("bx",bx)
 print("bn",bn)
 
-qu = np.unique(np.concatenate([au,bu]))  ## unique histories of both A and B in uncontrolled order
 
-
-
-ab = qcf_ab.foo(qu, au,ax,an,bu,bx,bn )
+ab = qcf_ab.foo(qu, au,ax,an, bu,bx,bn )
 
 print("ab.shape %s " % str(ab.shape))
 print("ab", ab)

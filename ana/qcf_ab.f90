@@ -1,6 +1,6 @@
 ! https://numpy.org/doc/2.2/f2py/f2py-examples.html
 ! pass array of strings from C to fortran
-
+! this is used from ana/qcf.py see ana/qcf_ab.sh
 
 subroutine find_first(needle, haystack, haystack_length, idx)
    !! Find the first index of `needle` in `haystack`.
@@ -28,6 +28,7 @@ end
 
 subroutine foo( qu_len, qu, a_len,au,ax,an, b_len,bu,bx,bn, ab )
    implicit none
+
    integer, intent(in)  :: qu_len
    integer, intent(in)  :: a_len
    integer, intent(in)  :: b_len
@@ -54,11 +55,11 @@ subroutine foo( qu_len, qu, a_len,au,ax,an, b_len,bu,bx,bn, ab )
        call find_first(qu(k), au, a_len, ai)
        call find_first(qu(k), bu, b_len, bi)
 
-       print*,k,qu(k)
-       print*,"ai", ai
-       print*,"bi", bi
+       !print*,k,qu(k)
+       !print*,"ai", ai
+       !print*,"bi", bi
 
-       ab(k,0,0) = ai*100          ! ai is internal index into au, the A unique list 
+       ab(k,0,0) = ai           ! ai is internal index into au, the A unique list 
        if (ai > -1) then
            ab(k,1,0) = ax(ai)   ! index of first occurrence in original A seq list
            ab(k,2,0) = an(ai)   ! count in A or 0 when not present 
@@ -67,7 +68,7 @@ subroutine foo( qu_len, qu, a_len,au,ax,an, b_len,bu,bx,bn, ab )
            ab(k,2,0) = 0 
        end if
 
-       ab(k,0,1) = bi*100            ! bi is internal index into bu, the B unique list 
+       ab(k,0,1) = bi           ! bi is internal index into bu, the B unique list 
        if (ai > -1) then
            ab(k,1,1) = bx(bi)   ! index of first occurrence in original B seq list
            ab(k,2,1) = bn(bi)   ! count in B or 0 when not present 

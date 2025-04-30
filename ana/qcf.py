@@ -5,18 +5,20 @@ qcf.py
 
 
 """
-import os, logging, numpy as np
+import os, time, logging, numpy as np
 from opticks.ana.nbase import chi2, chi2_pvalue
 
 try:
-    import opticks.ana.idxstring as idxstring
+    import opticks.ana.qcf_ab as qcf_ab
 except ImportError:
-    idxstring = None
+    qcf_ab = None
 pass
 
-with_f2py_idxstring = not idxstring is None
-with_argmax = True 
-print("qcf.py[ with_argmax %d with_f2py_idxstring %d ]" % ( with_argmax, with_f2py_idxstring ))
+TEST = os.environ.get("TEST","NO-TEST")
+with_f2py_idxstring = False
+with_f2py_qcf_ab = not qcf_ab is None
+with_argmax = False
+print("qcf.py[ with_argmax %d with_f2py_qcf_ab %d ]" % ( with_argmax, with_f2py_qcf_ab ))
 
 log = logging.getLogger(__name__)
 
@@ -72,10 +74,108 @@ class QCF(object):
     """
     Used for example from sevt.py:SAB
     """
+    def init_qcf_ab(self, qu, aqu, bqu ):
+        """
+        10 minutes for 5M is less than half the time of python, but still too long
+
+        INFO:opticks.ana.qcf: QCF.init_qcf_ab : USE_F2PY:1 with_f2py_qcf_ab:1 NOT_FAST:0 TEST:ref5 dt:641.10 seconds
+        INFO:opticks.ana.qcf: QCF.init_qcf_ab : USE_F2PY:0 with_f2py_qcf_ab:1 NOT_FAST:1 TEST:ref5 dt:1541.30 seconds
+
+        C++ approach of sseq_index_test.cc is so much faster, 
+        from algorithm that was implemented for C++ without any NumPy influence.
+
+        sseq_index_test__DEBUG:0
+         t0 1745996063332040
+         t1 1745996064521818 (t1 - t0)  1189778 1.189778
+         t2 1745996065685023 (t2 - t1)  1163205 1.163205
+         t3 1745996066184435 (t3 - t2)   499412 0.499412
+
+        """ 
+        NOT_FAST = "NOT_FAST" in os.environ
+        USE_F2PY = with_f2py_qcf_ab and not NOT_FAST
+        t0 = time.time()
+        if USE_F2PY:
+            log.info("[ QCF.init_qcf_ab.foo" )  
+            ab = qcf_ab.foo(qu, aqu.u,aqu.x,aqu.n,  bqu.u,bqu.x,bqu.n )
+            log.info("] QCF.init_qcf_ab.foo")  
+        else:
+            log.info("[ QCF.init_qcf_ab_py")  
+            ab = self.init_qcf_ab_py( qu, aqu, bqu )
+            log.info("] QCF.init_qcf_ab_py")  
+        pass
+        t1 = time.time()
+        dt = t1 - t0
+        log.info(" QCF.init_qcf_ab : USE_F2PY:%d with_f2py_qcf_ab:%d NOT_FAST:%d TEST:%s dt:%5.2f seconds" % (USE_F2PY, with_f2py_qcf_ab, NOT_FAST, TEST, dt) )  
+        return ab 
+
+
+    def init_qcf_ab_py( self, qu, aqu, bqu ):
+        """
+        :param qu: "|S96" array of unique history strings from both A and B in uncontrolled order
+        :param aqu: QU instance for A, containg unique histories, first indices in A seq array and history frequency counts
+        :param bqu: QU instance for B, containg unique histories, first indices in B seq array and history frequency counts
+        :return ab: integer array if shape (len(qu),3,2) that does A-B comparison between the histories allowing history chi2 to be calculated from it
+        """
+        ab = np.zeros( (len(qu),3,2), dtype=np.int64 )
+
+        log.info("QCF.init_qcf_ab [ qu loop : with_f2py_idxstring %s " % ( "YES" if with_f2py_idxstring else "NO "))
+        for i, qv in enumerate(qu):
+            if with_argmax:
+                ai = ( qv == aqu.u).argmax()
+                bi = ( qv == bqu.u).argmax()
+            else:
+                ## fallback to slow where first approach 
+                ai_ = np.where(aqu.u == qv )[0]           # find indices in the a and b unique lists 
+                bi_ = np.where(bqu.u == qv )[0]
+                ai = ai_[0] if len(ai_) == 1 else -1
+                bi = bi_[0] if len(bi_) == 1 else -1
+            pass
+
+            # NB the ai and bi are internal indices into the separate A and B lists
+            # so they are necessary but not ordinarily surfaced 
+            # as not very human digestible 
+            #
+            # effectively ai and bi are pointers into the two unique lists
+           
+            if i % 1000 == 0:
+                log.info("QCF.init_qcf_ab . qu loop %d " % i )
+            pass
+
+            ab[i,0,0] = ai                            ## internal index into the A unique list 
+            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1  ## index of first occurrence in original A seq list
+            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0   ## count in A or 0 when not present 
+
+            ab[i,0,1] = bi                            ## internal index into the B unique list 
+            ab[i,1,1] = bqu.x[bi] if bi > -1 else -1  ## index of first occurrence in original B seq list
+            ab[i,2,1] = bqu.n[bi] if bi > -1 else 0   ## count in B or 0 when not present 
+        pass
+        log.info("QCF.init_qcf_ab ] qu loop")
+        return ab 
+
+
+
     def __init__(self, _aq, _bq, symbol="qcf"):
         """
         :param _aq: photon history strings for event A
         :param _bq: ditto for B 
+
+        Example of testing this::
+
+            hookup_conda_ok   ## get into analysis environment 
+            TEST=small G4CXTest_GEOM.sh pdb
+            TEST=small G4CXTest_GEOM.sh chi2
+
+        NB when invoked as shown above are using the installed qcf.py, so after changes install with::
+
+            cd ~/opticks/ana
+            om
+
+        To update the f2py fortran speedup use::
+
+            hookup_conda_ok
+            vi ~/opticks/ana/qcf_ab.{f90,sh}
+            source ~/opticks/ana/qcf_ab.sh 
+
         """
         _same_shape = _aq.shape == _bq.shape
         if not _same_shape:
@@ -100,46 +200,10 @@ class QCF(object):
         bqu = QU(bq, symbol=bsym ) 
 
         qu = np.unique(np.concatenate([aqu.u,bqu.u]))       ## unique histories of both A and B in uncontrolled order
-        ab = np.zeros( (len(qu),3,2), dtype=np.int64 )
 
-        log.info("QCF.__init__ [ qu loop : with_f2py_idxstring %s " % ( "YES" if with_f2py_idxstring else "NO "))
-        for i, qv in enumerate(qu):
 
-            # here are finding all indices when just want the first  
-            if with_f2py_idxstring:
-                ## try using fortran compiled into numpy module with f2py, see ana/idxstring.sh 
-                ai = idxstring.find_first(qv, aqu.ufort)
-                bi = idxstring.find_first(qv, bqu.ufort)
-            elif with_argmax:
-                ai = ( qv == aqu.u).argmax()
-                bi = ( qv == bqu.u).argmax()
-            else:
-                ## fallback to slow approach 
-                ai_ = np.where(aqu.u == qv )[0]           # find indices in the a and b unique lists 
-                bi_ = np.where(bqu.u == qv )[0]
-                ai = ai_[0] if len(ai_) == 1 else -1
-                bi = bi_[0] if len(bi_) == 1 else -1
-            pass
+        ab = self.init_qcf_ab( qu, aqu, bqu )
 
-            # NB the ai and bi are internal indices into the separate A and B lists
-            # so they are necessary but not ordinarily surfaced 
-            # as not very human digestible 
-            #
-            # effectively ai and bi are pointers into the two unique lists
-           
-            if i % 1000 == 0:
-                log.info("QCF.__init__ . qu loop %d " % i )
-            pass
-
-            ab[i,0,0] = ai                            ## internal index into the A unique list 
-            ab[i,1,0] = aqu.x[ai] if ai > -1 else -1  ## index of first occurrence in original A seq list
-            ab[i,2,0] = aqu.n[ai] if ai > -1 else 0   ## count in A or 0 when not present 
-
-            ab[i,0,1] = bi                            ## internal index into the B unique list 
-            ab[i,1,1] = bqu.x[bi] if bi > -1 else -1  ## index of first occurrence in original B seq list
-            ab[i,2,1] = bqu.n[bi] if bi > -1 else 0   ## count in B or 0 when not present 
-        pass
-        log.info("QCF.__init__ ] qu loop")
 
         # last dimension 0,1 corresponding to A,B 
 

@@ -26,9 +26,12 @@ Requirements
 #include "NP.hh"
 #include "ssys.h"
 #include "sseq_index.h"
+#include "sstamp.h"
 
 int main()
 {
+
+
     const char* a_path = "$AFOLD/seq.npy" ; 
     const char* b_path = "$BFOLD/seq.npy" ; 
     NP* a_seq = NP::LoadIfExists(a_path); 
@@ -41,10 +44,22 @@ int main()
     int DEBUG = ssys::getenvint(_DEBUG, 0);  
     std::cout << _DEBUG << ":" << DEBUG << "\n" ; 
 
+    int64_t t0 = sstamp::Now(); 
+
     sseq_index a(a_seq); 
+    int64_t t1 = sstamp::Now(); 
+
     sseq_index b(b_seq); 
+    int64_t t2 = sstamp::Now(); 
 
     sseq_index_ab ab(a, b); 
+    int64_t t3 = sstamp::Now(); 
+
+
+    std::cout << " t0 " << t0 << "\n" ; 
+    std::cout << " t1 " << t1 << " (t1 - t0) " << std::setw(8) << ( t1 - t0 ) << " " << std::fixed << std::setprecision(6) << std::setw(8) << ( t1 - t0)/1e6 << "\n" ; 
+    std::cout << " t2 " << t2 << " (t2 - t1) " << std::setw(8) << ( t2 - t1 ) << " " << std::fixed << std::setprecision(6) << std::setw(8) << ( t2 - t1)/1e6 << "\n" ; 
+    std::cout << " t3 " << t3 << " (t3 - t2) " << std::setw(8) << ( t3 - t2 ) << " " << std::fixed << std::setprecision(6) << std::setw(8) << ( t3 - t2)/1e6 << "\n" ; 
 
     if( DEBUG > 0 )
     {
