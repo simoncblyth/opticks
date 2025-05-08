@@ -19,6 +19,40 @@ pvplt_add_contiguous_line_segments
 mpplt_add_contiguous_line_segments
 
 
+pyvista plotter keys/mouse controls
+------------------------------------
+
+* https://docs.pyvista.org/api/plotting/plotting
+
+* r : Reset the camera to view all datasets
+
+* up/down : Zoom in and out
+
+* mouse-wheel or right-click (mac: ctl+click) : Continuously zoom the rendering scene
+
+  * BUT : when start too zoomed in this takes forever, instead use up/down 
+    for coarse zoom control and and then use mouse-wheel once have control 
+
+* shift+click or middle-click  (mac:shift+click): Pan the rendering scene
+
+  * press shift and drag the mouse around to pan
+
+
+
+* q : Close the rendering window
+* f : Focus and zoom in on a point
+* v : Isometric camera view
+* w : Switch all datasets to a wireframe representation
+* r : Reset the camera to view all datasets
+* s : Switch all datasets to a surface representation
+* shift+click or middle-click (mac:shift+click) : Pan the rendering scene
+* left-click (mac:cmd+click) : Rotate the rendering scene in 3D
+* ctrl+click : Rotate the rendering scene in 2D (view-plane)
+* mouse-wheel or right-click (mac:ctl+click) : Continuously zoom the rendering scene
+* shift+s : Save a screenshot (only on BackgroundPlotter)
+* shift+c : Enable interactive cell selection/picking
+* up/down : Zoom in and out
+* +/- : Increase/decrease the point size and line widths
 
 
 """
