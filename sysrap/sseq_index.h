@@ -118,6 +118,13 @@ inline double sseq_qab::c2(bool& included, int absum_min) const
     return included ? abdif*abdif/absum : 0 ;
 }
 
+/**
+sseq_qab::desc
+----------------
+
+For chi2 inclusion the sum of a and b counts must exceed absum_min
+
+**/
 
 inline std::string sseq_qab::desc(int absum_min) const
 {
@@ -320,7 +327,8 @@ sseq_index_ab
 
 struct sseq_index_ab
 {
-    static constexpr const char* _sseq_index_ab__desc_NUM_MAX = "sseq_index_ab__desc_NUM_MAX" ; 
+    static constexpr const char* NAME = "sseq_index_ab.npy" ;
+    static constexpr const char* _sseq_index_ab__desc_NUM_MAX = "sseq_index_ab__desc_NUM_MAX" ;
     const sseq_index& a ;
     const sseq_index& b ;
 
@@ -334,6 +342,8 @@ struct sseq_index_ab
     void collect_seq();
     void order_seq();
     void calc_chi2();
+    NP* serialize() const ;
+    void save(const char* dir) const ;
 
     std::string desc(const char* opt) const ;
 
@@ -428,6 +438,43 @@ inline void sseq_index_ab::calc_chi2()
     }
 }
 
+
+inline NP* sseq_index_ab::serialize() const
+{
+    int num = u.size();
+    NP* a = NP::Make<int>(num, 4) ;
+    int* aa = a->values<int>();
+
+    for(int i=0 ; i < num ; i++)
+    {
+        const sseq_qab& ui = u[i] ;
+        const sseq& q = ui.q ;
+
+        std::string name = q.seqhis_();  // not trimmed
+        a->names.push_back(name);
+
+        const sseq_index_count& a = ui.a ;
+        const sseq_index_count& b = ui.b ;
+
+        aa[i*4+0] = a.count ;
+        aa[i*4+1] = b.count ;
+        aa[i*4+2] = a.index ;
+        aa[i*4+3] = b.index ;
+    }
+    return a ;
+}
+
+inline void sseq_index_ab::save(const char* dir) const
+{
+    NP* a = serialize();
+    if(dir == nullptr) a->save(NAME);
+    else a->save(dir, NAME);
+}
+
+
+
+
+
 /**x
 sseq_index_ab::desc
 ---------------------
@@ -449,8 +496,19 @@ inline std::string sseq_index_ab::desc(const char* opt) const
     else if( strstr(opt,"BRIEF"))   mode = BRIEF ;
 
     int u_size = u.size();
-    int NUM_MAX = ssys::getenvint(_sseq_index_ab__desc_NUM_MAX, 0) ;
-    int num = NUM_MAX > 0 ? std::min( u_size, NUM_MAX ) : u_size ; 
+    int NUM_MAX = ssys::getenvint(_sseq_index_ab__desc_NUM_MAX, 40) ;
+
+    int num = 0 ; 
+    if( mode == AZERO || mode == BZERO || mode == DEVIANT)
+    {
+        // dont obey NUM_MAX for these problem finding modes as would miss issues
+        num = u_size ; 
+    }
+    else
+    {
+        num = NUM_MAX > 0 ? std::min( u_size, NUM_MAX ) : u_size ;
+    }
+
 
     std::stringstream ss ;
     ss

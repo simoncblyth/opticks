@@ -4,7 +4,7 @@ sseq_index_test.sh
 ======================
 
 NB the sseq_index_test executable is both installed
-and can also be locally build with this script
+and can also be locally built with this script
 during development
 
 
@@ -50,7 +50,8 @@ export FOLD=$TMP/$name
 mkdir -p $FOLD
 
 
-export sseq_index_ab__desc_NUM_MAX=40
+#unset sseq_index_ab__desc_NUM_MAX
+#export sseq_index_ab__desc_NUM_MAX=40
 
 
 if [ -n "$DEV" ]; then
