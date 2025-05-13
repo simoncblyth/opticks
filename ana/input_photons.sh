@@ -54,7 +54,9 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
+   echo [ ls -alst ~/.opticks/InputPhotons
    ls -alst ~/.opticks/InputPhotons
+   echo ] ls -alst ~/.opticks/InputPhotons
 fi
 
 

@@ -390,7 +390,7 @@ class InputPhotons(object):
     R500 = "_R500" 
 
 
-    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
+    NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", RS+"1M", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
     NAMES += [RAINXZ+"100", RAINXZ+"1000", RAINXZ+"100k", RAINXZ+"10k" ]
     NAMES += [RAINXZ+Z230+"_100", RAINXZ+Z230+"_1000", RAINXZ+Z230+"_100k", RAINXZ+Z230+"_10k", RAINXZ+Z230+"_1M" ]
     NAMES += [RAINXZ+Z195+"_100", RAINXZ+Z195+"_1000", RAINXZ+Z195+"_100k", RAINXZ+Z195+"_10k" ]
@@ -406,7 +406,8 @@ class InputPhotons(object):
         meta = dict(seed=args.seed, name=name, creator="input_photons.py")
         log.info("generate %s " % name)
         if name.startswith(self.RS):  
-            num = int(name[len(self.RS):])
+            d = parsetail(name, prefix=self.RS)
+            num = d["N"]
             p = self.GenerateRandomSpherical(num)    
         elif name.startswith(self.UXZ) or name.startswith(self.DXZ):  
             num = None
@@ -526,6 +527,11 @@ class InputPhotonDefaults(object):
 
 def parsetail(name, prefix=""):
     """
+    1. extract tail following prefix from name
+    2. split tail on any "_" into elem array
+    3. for each elem item starting with one of XYZR extract that integer into eg d["X"]
+    4. for elem item ending with "k" or "M" scale the extracted integer by 1000 or 1000000 and set d["N"]
+
     """
     d = { 'N':None,'X':None, 'Y':None, 'Z':None, 'R':None }
     assert name.startswith(prefix)
