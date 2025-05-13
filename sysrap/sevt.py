@@ -11,23 +11,23 @@ log = logging.getLogger(__name__)
 from opticks.ana.fold import Fold
 
 print("[from opticks.ana.p import * ")
-from opticks.ana.p import * 
+from opticks.ana.p import *
 print("]from opticks.ana.p import * ")
 
 from opticks.ana.eget import eslice_
 from opticks.ana.base import PhotonCodeFlags
 from opticks.ana.qcf import QU,QCF,QCFZero
-from opticks.ana.npmeta import NPMeta    
+from opticks.ana.npmeta import NPMeta
 
 
-pcf = PhotonCodeFlags() 
+pcf = PhotonCodeFlags()
 fln = pcf.fln
 fla = pcf.fla
 
 
 MODE = int(os.environ.get("MODE","2"))
 if MODE > 0:
-    from opticks.ana.pvplt import * 
+    from opticks.ana.pvplt import *
 else:
     pass
 pass
@@ -36,7 +36,7 @@ QLIM=eslice_("QLIM", "0:10")
 
 
 axes = 0, 2  # X,Z
-H,V = axes 
+H,V = axes
 
 
 class SEvt(object):
@@ -50,7 +50,7 @@ class SEvt(object):
         NEVT = int(kwa.get("NEVT",0))
         log.info("SEvt.Load NEVT:%d " % NEVT)
         if NEVT > 0:
-            f = cls.LoadConcat(*args,**kwa) 
+            f = cls.LoadConcat(*args,**kwa)
         else:
             f = Fold.Load(*args, **kwa )
         pass
@@ -59,14 +59,14 @@ class SEvt(object):
     @classmethod
     def LoadConcat(cls, *args, **kwa):
         """
-        HMM maybe should load the separate SEvt and then concat those, 
-        rather than trying to concat at the lower Fold level 
+        HMM maybe should load the separate SEvt and then concat those,
+        rather than trying to concat at the lower Fold level
         """
         NEVT = int(kwa.get("NEVT",0))
         assert NEVT > 0
-        f = Fold.LoadConcat(*args, **kwa) 
-        assert hasattr(f, 'ff') 
-        return f 
+        f = Fold.LoadConcat(*args, **kwa)
+        assert hasattr(f, 'ff')
+        return f
 
     def __init__(self, f, **kwa):
         """
@@ -74,7 +74,7 @@ class SEvt(object):
         :param kwa: override param, only W2M accepted
         """
 
-        self.f = f 
+        self.f = f
         self.symbol = f.symbol
         self._r = None
         self.r = None
@@ -84,7 +84,7 @@ class SEvt(object):
         self.W2M = kwa.get("W2M", None)
         print("sevt.init W2M\n", self.W2M )
 
-        self.init_run(f) 
+        self.init_run(f)
         self.init_meta(f)
         self.init_fold_meta_timestamp(f)
         self.init_fold_meta(f)
@@ -94,7 +94,7 @@ class SEvt(object):
         self.init_record_sframe(f)
         self.init_SEventConfig_meta(f)
         self.init_seq(f)
-        self.init_aux(f) 
+        self.init_aux(f)
         self.init_ee(f)    ## handling of concatenated SEvt is done currently only for ee
         self.init_aux_t(f)
         self.init_sup(f)
@@ -116,11 +116,11 @@ class SEvt(object):
                 run_base = os.path.dirname(base)
                 if not run_base in run_bases:
                     run_bases.append(run_base)
-                pass  
+                pass
         else:
             pass
         pass
-        assert len(run_bases) == 1 
+        assert len(run_bases) == 1
         urun_base = run_bases[0]
         return urun_base
 
@@ -136,27 +136,27 @@ class SEvt(object):
         #fp = Fold.Load(urun_base) if os.path.exists(urun_path) else None
         #print("] sevt.init_run Fold.Load ")
         #run_meta = not fp is None and getattr(fp,'run_meta', None) != None
-        #self.fp = fp 
+        #self.fp = fp
 
         urun_meta = os.path.join( urun_base, "run_meta.txt" )
         run_meta = NPMeta.Load(urun_meta) if os.path.exists(urun_meta) else None
         has_run_meta = not run_meta is None
 
-        prof2stamp_ = lambda prof:prof.split(",")[0]  
+        prof2stamp_ = lambda prof:prof.split(",")[0]
 
-        rr_ = [prof2stamp_(run_meta.SEvt__BeginOfRun), 
+        rr_ = [prof2stamp_(run_meta.SEvt__BeginOfRun),
                prof2stamp_(run_meta.SEvt__EndOfRun  )] if has_run_meta else [0,0]
 
         rr = np.array(rr_, dtype=np.uint64 )
 
-        self.rr = rr   
+        self.rr = rr
         self.run_meta = run_meta
 
         qwns = ["FAKES_SKIP",]
         for qwn in qwns:
-            mval = list(map(int,getattr(run_meta, qwn, ["-1"] ) if has_run_meta else ["-2"])) 
+            mval = list(map(int,getattr(run_meta, qwn, ["-1"] ) if has_run_meta else ["-2"]))
             setattr(self, qwn, mval[0] )
-        pass  
+        pass
 
 
     def init_env(self, f):
@@ -166,10 +166,10 @@ class SEvt(object):
         opt = os.environ.get("%sOPT" % f.symbol.upper(), "")
         off_ = os.environ.get("%sOFF" % f.symbol.upper(), "0,0,0")
         off = np.array(list(map(float,off_.split(","))))
-        log.info("SEvt.__init__  symbol %s pid %d opt %s off %s " % (f.symbol, pid, opt, str(off)) ) 
+        log.info("SEvt.__init__  symbol %s pid %d opt %s off %s " % (f.symbol, pid, opt, str(off)) )
 
-        self.pid = pid   
-        self.opt = opt 
+        self.pid = pid
+        self.opt = opt
         self.off = off
 
     def init_meta(self, f):
@@ -178,18 +178,18 @@ class SEvt(object):
         metakey = os.environ.get("METAKEY", "junoSD_PMT_v2_Opticks_meta" )
         meta = getattr(f, metakey, None)
         self.metakey = metakey
-        self.meta = meta 
+        self.meta = meta
 
     def init_fold_meta_timestamp(self, f):
         """
         """
-        if getattr(f, "NPFold_meta", None) == None: return  
+        if getattr(f, "NPFold_meta", None) == None: return
         msrc = f.NPFold_meta
-        if msrc is None: return 
+        if msrc is None: return
 
         def mts_(key):
             val = msrc.get_value(key)
-            if val == '': val = "0" 
+            if val == '': val = "0"
             return np.uint64(val)
 
         bor = mts_("T_BeginOfRun")
@@ -222,15 +222,15 @@ class SEvt(object):
         self.ettd = ettd
         self.ettv = ettv
         self.ettl = ettl
-        self.ettc = ettc 
+        self.ettc = ettc
 
 
     def init_fold_meta(self, f):
         """
         """
-        if getattr(f, "NPFold_meta", None) == None: return  
+        if getattr(f, "NPFold_meta", None) == None: return
         msrc = f.NPFold_meta
-        if msrc is None: return 
+        if msrc is None: return
 
         GEOM = msrc.get_value("GEOM")
         CHECK = msrc.get_value("CHECK")
@@ -238,13 +238,13 @@ class SEvt(object):
         VERSION = msrc.get_value("VERSION")
         if LAYOUT.find(" ") > -1: LAYOUT = ""
 
-        SCRIPT = os.environ.get("SCRIPT", "") 
+        SCRIPT = os.environ.get("SCRIPT", "")
 
         GEOMList = msrc.get_value("${GEOM}_GEOMList", "")
         if GEOMList.endswith("GEOMList"): GEOMList = ""
 
         TITLE = "N=%s %s # %s/%s " % (VERSION, SCRIPT, LAYOUT, CHECK )
-        IDE = list(filter(None,[f.symbol.upper(), GEOM, GEOMList, "N%s"%VERSION, LAYOUT, CHECK])) 
+        IDE = list(filter(None,[f.symbol.upper(), GEOM, GEOMList, "N%s"%VERSION, LAYOUT, CHECK]))
         ID = "_".join(IDE)
 
         self.CHECK = CHECK
@@ -259,17 +259,17 @@ class SEvt(object):
 
     def init_U4R_names(self, f):
         U4R_names = getattr(f, "U4R_names", None)
-        SPECS = np.array(U4R_names.lines) if not U4R_names is None else None 
+        SPECS = np.array(U4R_names.lines) if not U4R_names is None else None
         self.SPECS = SPECS
 
     def init_photon(self, f):
         if hasattr(f,'photon') and not f.photon is None:
-            iix = f.photon[:,1,3].view(np.int32) 
+            iix = f.photon[:,1,3].view(np.int32)
         else:
             iix = None
         pass
 
-        self.iix = iix        
+        self.iix = iix
 
     def init_record(self, f):
         """
@@ -278,20 +278,20 @@ class SEvt(object):
         if hasattr(f,'record') and not f.record is None:
 
             if f.record.dtype.name == 'float32':
-                iir = f.record[:,:,1,3].view(np.int32) 
+                iir = f.record[:,:,1,3].view(np.int32)
                 idr = f.record[:,:,1,3].view(np.int32)
             elif f.record.dtype.name == 'float64':
-                iir = f.record[:,:,1,3].view(np.int64) 
+                iir = f.record[:,:,1,3].view(np.int64)
                 idr = f.record[:,:,1,3].view(np.int64)
             else:
-                assert False 
+                assert False
             pass
         else:
             iir = None
             idr = None
         pass
-        self.iir = iir        
-        self.idr = idr        
+        self.iir = iir
+        self.idr = idr
 
     def init_record_sframe(self, f):
 
@@ -302,30 +302,30 @@ class SEvt(object):
 
         if with_sframe and with_record:
             gpos = np.ones( f.record.shape[:-1] )  ## trim last dimension reducing eg (10000,32,4,4) to (10000, 32, 4)
-            gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons   
+            gpos[:,:,:3] = f.record[:,:,0,:3]      ## point positions of all photons
             w2m = W2M if not W2M is None else f.sframe.w2m
-            lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame     
+            lpos = np.dot( gpos, w2m )  ## transform all points from global to local frame
         else:
             w2m = W2M if not W2M is None else None
             gpos = None
             lpos = None
         pass
         self.w2m = w2m
-        self.gpos = gpos 
-        self.lpos = lpos 
-         
+        self.gpos = gpos
+        self.lpos = lpos
+
 
 
     def init_SEventConfig_meta(self, f):
         meta = getattr(f, 'SEventConfig_meta', {})
 
-        ipl = getattr(meta, "InputPhoton", []) 
+        ipl = getattr(meta, "InputPhoton", [])
         ip = ipl[0] if len(ipl)==1 else None
 
-        ipfl = getattr(meta, "InputPhotonFrame", []) 
+        ipfl = getattr(meta, "InputPhotonFrame", [])
         ipf = ipfl[0] if len(ipfl)==1 else None
- 
-        ipcl = getattr(meta, "InputPhotonCheck", []) 
+
+        ipcl = getattr(meta, "InputPhotonCheck", [])
         ipc = ipc[0] if len(ipcl)==1 else None
 
         self.ip = ip
@@ -337,20 +337,20 @@ class SEvt(object):
 
     def q_startswith_or(self, pfx1="TO BT BT BT SA", pfx2="TO BT BT BT SD", encoding="utf-8"):
         return np.flatnonzero(np.logical_or(
-                   np.char.startswith(self.q,pfx1.encode(encoding)), 
-                   np.char.startswith(self.q,pfx2.encode(encoding)) 
+                   np.char.startswith(self.q,pfx1.encode(encoding)),
+                   np.char.startswith(self.q,pfx2.encode(encoding))
                ))
 
     def q_startswith_or_(self, pfxs_="TO BT BT BT SA,TO BT BT BT SD", delim=",", encoding="utf-8"):
         """
-        Another way to implement this is with np.any 
+        Another way to implement this is with np.any
         """
         pfxs = pfxs_.split(delim)
         aa = []
         for pfx in pfxs:
             aa.append( np.char.startswith(self.q, pfx.encode(encoding)))
         pass
-        return np.flatnonzero(np.logical_or.reduce(aa)) 
+        return np.flatnonzero(np.logical_or.reduce(aa))
 
     def init_seq(self, f):
         """
@@ -358,7 +358,7 @@ class SEvt(object):
         +---------------------+----------------------------------------------------------+
         | a.f.seq.shape       | (1000000, 2, 2)                                          |
         +---------------------+----------------------------------------------------------+
-        | a.f.seq[:,0].shape  | (1000000, 2)                                             |      
+        | a.f.seq[:,0].shape  | (1000000, 2)                                             |
         +---------------------+----------------------------------------------------------+
         | a.f.seq[0,0]        | array([14748335283153718477, 37762157772], dtype=uint64) |
         +---------------------+----------------------------------------------------------+
@@ -366,16 +366,16 @@ class SEvt(object):
         """
         symbol = f.symbol
         qlim = QLIM
-        qtab_ = "np.c_[qn,qi,qu][quo][qlim]" 
+        qtab_ = "np.c_[qn,qi,qu][quo][qlim]"
 
-        if hasattr(f,'seq') and not f.seq is None: 
+        if hasattr(f,'seq') and not f.seq is None:
             q_ = f.seq[:,0]
-            q  = ht.seqhis(q_)  # ht from opticks.ana.p 
-            qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles 
-            n = np.sum( seqnib_(q_), axis=1 )  # occupied nibbles, ie number of history points  
+            q  = ht.seqhis(q_)  # ht from opticks.ana.p
+            qq = ht.Convert(q_)  # (n,32) int8 : for easy access to nibbles
+            n = np.sum( seqnib_(q_), axis=1 )  # occupied nibbles, ie number of history points
 
-            qu, qi, qn = np.unique(q, return_index=True, return_counts=True) 
-            quo = np.argsort(qn)[::-1]  
+            qu, qi, qn = np.unique(q, return_index=True, return_counts=True)
+            quo = np.argsort(qn)[::-1]
 
             qtab = eval(qtab_)
             qtab_ = qtab_.replace("q","%s.q" % symbol)
@@ -386,7 +386,7 @@ class SEvt(object):
             nore = np.ones(len(qq), dtype=np.bool )       # start all true
             nore[np.where(qq == pcf.RE)[0]] = 0     # knock out photons with reemission in their histories
 
-            noscab = np.ones(len(qq), dtype=np.bool )     # start all true  
+            noscab = np.ones(len(qq), dtype=np.bool )     # start all true
             noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
             noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
         else:
@@ -396,7 +396,7 @@ class SEvt(object):
             n = None
             qu, qi, qn = None, None, None
             quo = None
-            qtab = None 
+            qtab = None
 
             nosc = None
             nore = None
@@ -406,14 +406,14 @@ class SEvt(object):
         self.q_ = q_
         self.q = q
         self.qq = qq
-        self.n = n 
+        self.n = n
 
         self.qu = qu
         self.qi = qi
         self.qn = qn
 
         self.quo = quo
-        self.qtab = qtab 
+        self.qtab = qtab
 
         self.qlim = qlim
         self.qtab_ = qtab_
@@ -426,12 +426,12 @@ class SEvt(object):
 
     def minimal_qtab(self, sli="[:10]", dump=False):
         """
-        :return qtab: history table in descending count order 
+        :return qtab: history table in descending count order
         """
         e = self
-        uq,iq,nq = np.unique(e.q, return_index=True, return_counts=True) 
-        oq = np.argsort(nq)[::-1]  
-        expr ="np.c_[nq,iq,uq][oq]%(sli)s" % locals()  
+        uq,iq,nq = np.unique(e.q, return_index=True, return_counts=True)
+        oq = np.argsort(nq)[::-1]
+        expr ="np.c_[nq,iq,uq][oq]%(sli)s" % locals()
         qtab = eval(expr)
         if dump:
             log.info("minimal_qtab : %s " % expr)
@@ -441,15 +441,15 @@ class SEvt(object):
 
     def init_aux(self, f):
         """
-        Note aux is currently CPU only 
+        Note aux is currently CPU only
         """
-        if hasattr(f, 'aux') and not f.aux is None: 
+        if hasattr(f, 'aux') and not f.aux is None:
             fk = f.aux[:,:,2,2].view(np.uint32)    ## fakemask : for investigating fakes when FAKES_SKIP is disabled
             spec_ = f.aux[:,:,2,3].view(np.int32)   ## step spec
             max_point = f.aux.shape[1]   # instead of hardcoding typical values like 32 or 10, use array shape
-            uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,max_point,4) ## see sysrap/spho.h c4/C4Pho.h 
-            eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level 
-            ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level   
+            uc4 = f.aux[:,:,2,2].copy().view(np.uint8).reshape(-1,max_point,4) ## see sysrap/spho.h c4/C4Pho.h
+            eph = uc4[:,:,1]          # .y    ProcessHits enum at step point level
+            ep = np.max(eph, axis=1 ) #       ProcessHits enum at photon level
         else:
             fk = None
             spec_ = None
@@ -461,18 +461,18 @@ class SEvt(object):
         self.fk = fk
         self.spec_ = spec_
         self.uc4 = uc4
-        self.eph = eph   # ProcessHits EPH enum at step point level 
-        self.ep  = ep    # ProcessHits EPH enum at photon level  
+        self.eph = eph   # ProcessHits EPH enum at step point level
+        self.ep  = ep    # ProcessHits EPH enum at photon level
 
     def init_ee(self, f):
         """
-        microsecond[us] timestamps (UTC epoch) [BeginOfEvent,EndOfEvent,Begin2End] 
+        microsecond[us] timestamps (UTC epoch) [BeginOfEvent,EndOfEvent,Begin2End]
 
-        For concatenated SEvt the total of all the EndOfEvent-BeginOfEvent 
+        For concatenated SEvt the total of all the EndOfEvent-BeginOfEvent
         is placed into ee[-1]
 
         TIMING METADATA HAS BEEN MOVED FROM THE PHOTON TO THE FOLD
-        with_ff = not getattr(f, 'ff', None) is None 
+        with_ff = not getattr(f, 'ff', None) is None
         log.info("init_ee with_ff:%d" % (with_ff))
         if with_ff:
             kk = f.ff.keys()
@@ -484,22 +484,22 @@ class SEvt(object):
                 k_boe = np.uint64(fk.photon_meta.t_BeginOfEvent[0])
                 k_eoe = np.uint64(fk.photon_meta.t_EndOfEvent[0])
                 k_b2e = np.uint64(k_eoe-k_boe)
-                b2e += k_b2e  
+                b2e += k_b2e
             pass
         else:
-            boe, eoe, b2e = 0,0,0 
-        pass 
+            boe, eoe, b2e = 0,0,0
+        pass
         self.ee = np.array([boe, eoe, b2e], dtype=np.uint64 )
         """
 
     def init_junoSD_PMT_v2_SProfile(self, f):
         """
-        The timestamps come from sysrap/sstamp.h and are datetime64[us] (UTC) compliant 
+        The timestamps come from sysrap/sstamp.h and are datetime64[us] (UTC) compliant
 
         pf
-            uint64_t microsecond timestamps collected by SProfile.h 
-        pfr  
-            uint64_t (last - first) timestamp difference for each SProfile (currently ProcessHits call)  
+            uint64_t microsecond timestamps collected by SProfile.h
+        pfr
+            uint64_t (last - first) timestamp difference for each SProfile (currently ProcessHits call)
 
 
         More than 10% of time spent in ProcessHits::
@@ -511,27 +511,27 @@ class SEvt(object):
             Out[17]: 0.11134881257006096
 
         """
-        if hasattr(f, 'junoSD_PMT_v2_SProfile') and not f.junoSD_PMT_v2_SProfile is None: 
+        if hasattr(f, 'junoSD_PMT_v2_SProfile') and not f.junoSD_PMT_v2_SProfile is None:
             pf = f.junoSD_PMT_v2_SProfile
             pfmx = np.max(pf[:,1:], axis=1 )
             pfmi = pf[:,1]
             pfr = pfmx - pfmi
         else:
-            pf = None 
+            pf = None
             pfmx = None
             pfmi = None
             pfr = None
         pass
-        self.pf = pf  ## CAUTION: multiple ProcessHits calls per photon, so not in photon index order 
+        self.pf = pf  ## CAUTION: multiple ProcessHits calls per photon, so not in photon index order
         self.pfmx = pfmx
         self.pfmi = pfmi
-        self.pfr  = pfr 
+        self.pfr  = pfr
 
 
 
     def init_aux_t(self, f):
-        if hasattr(f, 'aux') and not f.aux is None: 
-            t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps 
+        if hasattr(f, 'aux') and not f.aux is None:
+            t = f.aux[:,:,3,:2].copy().view(np.uint64).squeeze()   # step point timestamps
         else:
             t = None
         pass
@@ -539,28 +539,28 @@ class SEvt(object):
 
     def init_sup(self, f):
         """
-        sup is CPU only 
+        sup is CPU only
 
-        photon level beginPhoton endPhoton time stamps from the sup quad4 
+        photon level beginPhoton endPhoton time stamps from the sup quad4
         """
         if hasattr(f,'sup') and not f.sup is None:
             s0 = f.sup[:,0,:2].copy().view(np.uint64).squeeze()  # SEvt::beginPhoton (xsup.q0.w.x)
             s1 = f.sup[:,0,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q0.w.y)
-            ss = s1 - s0      # endPhoton - beginPhoton 
+            ss = s1 - s0      # endPhoton - beginPhoton
 
-            f0 = f.sup[:,1,:2].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.x) t_PenultimatePoint 
-            f1 = f.sup[:,1,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.y) t_LastPoint 
-            ff = f1 - f0      # LastPoint - PenultimatePoint 
+            f0 = f.sup[:,1,:2].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.x) t_PenultimatePoint
+            f1 = f.sup[:,1,2:].copy().view(np.uint64).squeeze()  # SEvt::finalPhoton (xsup.q1.w.y) t_LastPoint
+            ff = f1 - f0      # LastPoint - PenultimatePoint
 
-            h0 = f.sup[:,2,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(0) (xsup.q2.w.x)  
+            h0 = f.sup[:,2,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(0) (xsup.q2.w.x)
             h1 = f.sup[:,2,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(0) (xsup.q2.w.y)
             hh = h1 - h0                      # timestamp range of SEvt::AddProcessHitsStamp(0) calls
-            hc = f.sup[:,3,0].view(np.int32) 
+            hc = f.sup[:,3,0].view(np.int32)
 
-            i0 = f.sup[:,4,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(1) (xsup.q4.w.x)  
+            i0 = f.sup[:,4,:2].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(1) (xsup.q4.w.x)
             i1 = f.sup[:,4,2:].copy().view(np.uint64).squeeze()  # SEvt::addProcessHitsStamp(1) (xsup.q4.w.y)
             ii = i1 - i0                      # timestamp range of SEvt::AddProcessHitsStamp(1) calls
-            ic = f.sup[:,5,0].view(np.int32) 
+            ic = f.sup[:,5,0].view(np.int32)
 
             hi0 = i0 - h0
             hi1 = i1 - h1
@@ -588,19 +588,19 @@ class SEvt(object):
         pass
         if not getattr(self, 't', None) is None and not s0 is None:
             t0 = s0.min()
-            tt = self.t.copy() 
-            tt[np.where( tt != 0 )] -= t0   # subtract earliest time "pedestal", but leave the zeros 
+            tt = self.t.copy()
+            tt[np.where( tt != 0 )] -= t0   # subtract earliest time "pedestal", but leave the zeros
         else:
             t0 = None
             tt = None
-        pass 
+        pass
 
         self.t0 = t0    # scalar : event minimum time stamp (which is minimum s0:beginPhoton timestamp)
-        self.tt = tt    # array of photon step point time stamps relative to t0 
+        self.tt = tt    # array of photon step point time stamps relative to t0
 
         self.s0 = s0    # array of beginPhoton time stamps (UTC epoch)
         self.s1 = s1    # array of endPhoton time stamps (UTC epoch)
-        self.ss = ss    # array of endPhoton-beginPhoton timestamp differences 
+        self.ss = ss    # array of endPhoton-beginPhoton timestamp differences
 
         self.f0 = f0    # array of PenultimatePoint timestamps (UTC epoch)
         self.f1 = f1    # array of LastPoint timestamps (UTC epoch)
@@ -608,21 +608,21 @@ class SEvt(object):
 
         self.h0 = h0    # array of SEvt::AddProcessHitsStamp(0) range begin (UTC epoch)
         self.h1 = h1    # array of SEvt::AddProcessHitsStamp(0) range end (UTC epoch)
-        self.hh = hh    # array of SEvt::AddProcessHitsStamp(0) ranges (microseconds [us]) 
+        self.hh = hh    # array of SEvt::AddProcessHitsStamp(0) ranges (microseconds [us])
         self.hc = hc    # array of SEvt::AddProcessHitsStamp(0) call counts for each photon
 
         self.i0 = i0    # array of SEvt::AddProcessHitsStamp(1) range begin (UTC epoch)
         self.i1 = i1    # array of SEvt::AddProcessHitsStamp(1) range end (UTC epoch)
-        self.ii = ii    # array of SEvt::AddProcessHitsStamp(1) ranges (microseconds [us]) 
+        self.ii = ii    # array of SEvt::AddProcessHitsStamp(1) ranges (microseconds [us])
         self.ic = ic    # array of SEvt::AddProcessHitsStamp(1) call counts for each photon
 
-        self.hi0 = hi0  # array of range begin SEvt::AddProcessHitsStamp(1)-SEvt::AddProcessHitsStamp(0)  
-        self.hi1 = hi1  # array of range end   SEvt::AddProcessHitsStamp(1)-SEvt::AddProcessHitsStamp(0) 
+        self.hi0 = hi0  # array of range begin SEvt::AddProcessHitsStamp(1)-SEvt::AddProcessHitsStamp(0)
+        self.hi1 = hi1  # array of range end   SEvt::AddProcessHitsStamp(1)-SEvt::AddProcessHitsStamp(0)
 
     def __repr__(self):
-        fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s " 
-        return fmt % ( self.symbol, self.pid, self.opt, str(self.off), self.symbol, self.f.base ) 
-   
+        fmt = "SEvt symbol %s pid %s opt %s off %s %s.f.base %s "
+        return fmt % ( self.symbol, self.pid, self.opt, str(self.off), self.symbol, self.f.base )
+
     def _get_pid(self):
         return self._pid
     def _set_pid(self, pid):
@@ -638,11 +638,11 @@ class SEvt(object):
             r = _r[wl > 0]    ## select wl>0 to avoid lots of record buffer zeros, example shape (13, 4, 4)
 
             g = np.ones([len(r),4])
-            g[:,:3] = r[:,0,:3]  
+            g[:,:3] = r[:,0,:3]
 
             w2m = W2M if not W2M is None else f.sframe.w2m
             l = np.dot( g, w2m )
-            ld = np.diff(l,axis=0) 
+            ld = np.diff(l,axis=0)
 
             pass
             _aux = getattr(f, 'aux', None)
@@ -653,11 +653,11 @@ class SEvt(object):
             else:
                 a = _a[wl > 0]
                 ast = a[:len(a),1,3].copy().view(np.int8)[::4]
-            pass  
-            qpid = q[pid][0].decode("utf-8").strip()  
+            pass
+            qpid = q[pid][0].decode("utf-8").strip()
 
-            npoi = (len(qpid)+1)//3 
-            qkey = " ".join(map(lambda _:"%0.2d"%_, range(npoi)))  
+            npoi = (len(qpid)+1)//3
+            qkey = " ".join(map(lambda _:"%0.2d"%_, range(npoi)))
 
             #label = "%s %sPID:%d\n%s " % (qpid, symbol.upper(), pid, qkey)
             label = "%s\n%s" % (qpid, qkey)
@@ -682,18 +682,18 @@ class SEvt(object):
         self.ast = ast
         self.qpid = qpid
         self.label = label
-        self.g = g 
-        self.l = l 
+        self.g = g
+        self.l = l
         self.ld = ld
 
     pid = property(_get_pid, _set_pid)
 
 
     #def _get_w2m(self):
-    #    return self._w2m 
+    #    return self._w2m
     #
     #def _set_w2m(self, w2m=None):
-    #    self._w2m = w2m if not w2m is None else f.sframe.w2m 
+    #    self._w2m = w2m if not w2m is None else f.sframe.w2m
 
 
 
@@ -702,7 +702,7 @@ class SEvt(object):
         """
         ## need np.abs as detected fakes that are not skipped are negated
         In [10]: np.c_[a.spec[5,:a.n[5]],a.SPECS[np.abs(a.spec[5,:a.n[5]])]]
-        Out[10]: 
+        Out[10]:
         array([['0', 'UNSET'],
                ['1', 'Water/Water:pInnerWater/pLPMT_Hamamatsu_R12860'],
                ['2', 'Water/AcrylicMask:pLPMT_Hamamatsu_R12860/HamamatsuR12860pMask'],
@@ -712,7 +712,7 @@ class SEvt(object):
                ['6', 'Pyrex/Pyrex:HamamatsuR12860_PMT_20inch_body_phys/HamamatsuR12860_PMT_20inch_body_phys']], dtype='<U94')
 
         In [1]: a.spec_(5)
-        Out[1]: 
+        Out[1]:
         array([['0', 'UNSET'],
                ['1', 'Water/Water:pInnerWater/pLPMT_Hamamatsu_R12860'],
                ['2', 'Water/AcrylicMask:pLPMT_Hamamatsu_R12860/HamamatsuR12860pMask'],
@@ -722,7 +722,7 @@ class SEvt(object):
                ['6', 'Pyrex/Pyrex:HamamatsuR12860_PMT_20inch_body_phys/HamamatsuR12860_PMT_20inch_body_phys']], dtype='<U94')
 
         In [2]: b.spec_(5)
-        Out[2]: 
+        Out[2]:
         array([['0', 'UNSET'],
                ['1', 'Water/Water:pInnerWater/pLPMT_Hamamatsu_R12860'],
                ['2', 'Water/AcrylicMask:pLPMT_Hamamatsu_R12860/HamamatsuR12860pMask'],
@@ -737,9 +737,38 @@ class SEvt(object):
         return np.c_[spec,t.SPECS[np.abs(spec)]]
 
 
+class SABHit(object):
+    def __init__(self, a, b):
+        self.a = a
+        self.b = b
+        assert not a is None and not b is None
+
+    def __repr__(self):
+        a = len(self.a.f.hit)
+        a_std = np.sqrt(a)
+        a_rel = a_std/a  # estimate of rel error from sqrt of count, as Poisson
+
+        b = len(self.b.f.hit)
+        b_std = np.sqrt(b)
+        b_rel = b_std/b   # estimate of rel error from sqrt of count, as Poisson
+
+        ab_rel = a_rel + b_rel # assume uncorrelated : so add relative errors
+        ba_rel = a_rel + b_rel # assume uncorrelated : so add relative errors
+
+        ab = float(a)/float(b)
+        ab_std = (ab_rel)*ab
+
+        ba = float(b)/float(a)
+        ba_std = (ba_rel)*ba
+
+        fmt = "\n\nSABHit  a_nhit : ( %7d +- %4d )  b_nhit:(  %7d +- %4d )  a/b: ( %6.3f +- %6.3f )  b/a: ( %6.3f +- %6.3f)  [assume uncorr.]\n\n"
+        return fmt % ( a, int(a_std), b, int(b_std),  ab, ab_std, ba, ba_std )
+
+
+
 class SAB(object):
     """
-    Comparison of pairs of SEvt 
+    Comparison of pairs of SEvt
 
     This is based on the seq array histories, requiring the SEvt to have been created with
     OPTICKS_EVENT_MODE such as::
@@ -747,17 +776,17 @@ class SAB(object):
          HitPhotonSeq
          HitSeq
 
-    See ~/o/cxs_min.sh 
+    See ~/o/cxs_min.sh
     """
     def __getitem__(self, sli):
         self.sli = sli
-        return self  
+        return self
 
-    def __init__(self, a, b): 
+    def __init__(self, a, b):
 
         self.sli = slice(None)
         log.info("[")
-        if a.q is None or b.q is None: 
+        if a.q is None or b.q is None:
             qcf = None
             qcf0 = None
         else:
@@ -770,8 +799,8 @@ class SAB(object):
             meta = NPMeta.Compare( a.meta, b.meta  )
         pass
 
-        self.a = a 
-        self.b = b 
+        self.a = a
+        self.b = b
         self.qcf = qcf
         self.qcf0 = qcf0
         self.meta = meta
@@ -780,11 +809,11 @@ class SAB(object):
     def q_startswith(self, prefix="TO BT BT SA"):
         """
         This is a cheating way to find accidentally random aligned photons
-        for debugging purposes. 
+        for debugging purposes.
         It is especially useful with eg rain_point storch.h where all photons
-        start with same position and direction. 
+        start with same position and direction.
         """
-        return np.where( np.logical_and( self.a.q == self.b.q, np.char.startswith(self.a.q, prefix.encode("utf-8")) ))   
+        return np.where( np.logical_and( self.a.q == self.b.q, np.char.startswith(self.a.q, prefix.encode("utf-8")) ))
 
     def __repr__(self):
         ab = self
@@ -833,22 +862,22 @@ class KeyIdx(object):
         self.symbol = symbol
     def __getattr__(self, k):
         wk = np.where( self.kk == k)[0]
-        return wk[0] if len(wk) == 1 else -1 
+        return wk[0] if len(wk) == 1 else -1
     def __repr__(self):
-        kk = self.kk 
+        kk = self.kk
         symbol = self.symbol
-        ii = np.arange(len(kk))  
+        ii = np.arange(len(kk))
         lines = []
         lines.append("KeyIdx %s" % symbol)
         for i, k in enumerate(kk):
-            lines.append("%s.%s = %d " % (symbol, k, i)) 
+            lines.append("%s.%s = %d " % (symbol, k, i))
         pass
         return "\n".join(lines)
- 
+
 class MSAB(object):
     """
     Comparison of metadata across NEVT pairs of SEvt
-    Typically NEVT is small, eg 10 
+    Typically NEVT is small, eg 10
     """
 
     EXPRS = r"""
@@ -884,7 +913,7 @@ class MSAB(object):
 
         first = True
         kk0 = None
-        skk0 = None 
+        skk0 = None
         ffield0 = None
         ifield0 = None
         tfield0 = None
@@ -909,7 +938,7 @@ class MSAB(object):
             pass
 
             ab = SAB(a,b)
-            mab[i] = ab 
+            mab[i] = ab
 
 
             kk = ab.meta.kk
@@ -918,8 +947,8 @@ class MSAB(object):
             skk = ab.meta.skk
             tab = ab.meta.tab
 
-            # metadata fields that look like floats, integers, timestamps 
-            ffield = np.unique(np.where(np.char.find(tab,'.') > -1 )[0])  
+            # metadata fields that look like floats, integers, timestamps
+            ffield = np.unique(np.where(np.char.find(tab,'.') > -1 )[0])
             ifield = np.unique(np.where( np.logical_and( np.char.str_len( tab ) < 15, np.char.find(tab, '.') == -1 ))[0])
             tfield = np.unique(np.where( np.logical_and( np.char.str_len( tab ) > 15, np.char.find(tab, '.') == -1 ))[0])
 
@@ -956,7 +985,7 @@ class MSAB(object):
 
             # hmm how to present together with c2sum, c2n, c2per ?
             if "c2desc" in os.environ:
-                fmt = " %s : %%s " % efmt 
+                fmt = " %s : %%s " % efmt
                 print( fmt % ( i, ab.qcf.c2desc))
             else:
                 if "DUMP" in os.environ:print(repr(ab))
@@ -967,8 +996,8 @@ class MSAB(object):
         self.c2tab = c2tab
         self.c2tab_zero = np.all( c2tab == 0. )
 
-        self.mab = mab 
-        akk = np.array( list(kk0)) 
+        self.mab = mab
+        akk = np.array( list(kk0))
         ikk = akk[ifield]
         fkk = akk[ffield]
         tkk = akk[tfield]
@@ -976,20 +1005,20 @@ class MSAB(object):
         ik = KeyIdx(ikk, symbol="%s.ik" % self.symbol )
         fk = KeyIdx(fkk, symbol="%s.fk" % self.symbol )
         tk = KeyIdx(tkk, symbol="%s.tk" % self.symbol )
-       
+
         c_itab = np.zeros( (itab.shape[0], itab.shape[1], NEVT ), dtype=np.uint64 )
-        for i in range(len(itabs)): 
-            c_itab[:,:,i] = itabs[i]  
+        for i in range(len(itabs)):
+            c_itab[:,:,i] = itabs[i]
         pass
         c_ftab = np.zeros( (ftab.shape[0], ftab.shape[1], NEVT ), dtype=np.float64 )
-        for i in range(len(ftabs)): 
-            c_ftab[:,:,i] = ftabs[i]  
+        for i in range(len(ftabs)):
+            c_ftab[:,:,i] = ftabs[i]
         pass
         c_ttab = np.zeros( (ttab.shape[0], ttab.shape[1], NEVT ), dtype=np.uint64 )
-        for i in range(len(ttabs)): 
-            c_ttab[:,:,i] = ttabs[i]  
+        for i in range(len(ttabs)):
+            c_ttab[:,:,i] = ttabs[i]
         pass
-       
+
         self.ikk = ikk
         self.fkk = fkk
         self.tkk = tkk
@@ -1008,18 +1037,18 @@ class MSAB(object):
         """
         :param tabsym: attribute symbol of table
         :param keys: array of names for each table item
-        :param nline: number of lines for each table item 
-        :return str: annoted table string 
+        :param nline: number of lines for each table item
+        :return str: annoted table string
 
-        Annotate a numpy array repr with keys 
-        TODO: split off into reusable AnnoTab? object 
+        Annotate a numpy array repr with keys
+        TODO: split off into reusable AnnoTab? object
         """
-        expr = "%%(sym)s.%s" % tabsym 
+        expr = "%%(sym)s.%s" % tabsym
         lines = []
         lines.append("\n%s\n" % ( expr % {'sym':self.symbol} ))
         rawlines = repr(eval(expr % {'sym':"self" })).split("\n")
         for i, line in enumerate(rawlines):
-            j = i//nline 
+            j = i//nline
             anno = "%2d:%s" % (j,keys[j]) if i % nline == 0 else ""
             lines.append("%s       %s " % (line, anno ))
         pass
@@ -1027,18 +1056,18 @@ class MSAB(object):
 
     def __repr__(self):
         lines = []
-        lines.append(self.annotab("c_itab", self.ikk, 3)) 
-        lines.append(self.annotab("c_ftab", self.fkk, 3)) 
+        lines.append(self.annotab("c_itab", self.ikk, 3))
+        lines.append(self.annotab("c_ftab", self.fkk, 3))
         pass
         fmt_ptn = re.compile("FMT:(.*)\s*")
- 
+
         for expr in self.exprs:
             fmt_match = fmt_ptn.search(expr)
             fmt = fmt_match.groups()[0].replace("%%","%") if not fmt_match is None else None
             if "c2tab" in expr and self.c2tab_zero: continue
             lines.append("\n%s\n" % ( expr % {'sym':self.symbol} ))
             value = eval( expr % {'sym':"self"} )
-            urep = repr(value) if fmt is None else fmt % value  
+            urep = repr(value) if fmt is None else fmt % value
             lines.append(urep)
         pass
         return "\n".join(lines)
@@ -1050,7 +1079,7 @@ if __name__ == '__main__':
 
     FOLD = os.environ.get("FOLD", None)
     log.info(" -- SEvt.Load FOLD" )
-    a = SEvt.Load(FOLD, symbol="a")   # optional photon histories 
+    a = SEvt.Load(FOLD, symbol="a")   # optional photon histories
     print(a)
 
     beg_ = "a.f.record[:,0,0,:3]"
@@ -1079,8 +1108,8 @@ if __name__ == '__main__':
         ax.set_ylim(-250,250)
         ax.set_xlim(-500,500)
 
-        if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1, c="b" )  
-        if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )  
+        if not ppos0 is None: ax.scatter( ppos0[:,H], ppos0[:,V], s=1, c="b" )
+        if not ppos1 is None: ax.scatter( ppos1[:,H], ppos1[:,V], s=1, c="r" )
 
         fig.show()
     elif MODE == 3:
