@@ -117,7 +117,7 @@ struct SYSRAP_API SEventConfig
     static const plog::Severity LEVEL ;
     static constexpr const int MISSING_INDEX = std::numeric_limits<int>::max() ;
 
-    static const int LIMIT ;
+    static int  RecordLimit(); // sseq::SLOTS typically 32
     static void LIMIT_Check();
     static std::string Desc();
     static std::string HitMaskLabel();

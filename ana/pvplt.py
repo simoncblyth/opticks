@@ -66,6 +66,8 @@ import numpy as np
 D_ = os.environ.get("D", "2")
 MODE_ = os.environ.get("MODE", D_ )
 MODE = int(MODE_)
+print("pvplt MODE:%d " % (MODE))
+
 mp = None
 pv = None
 
@@ -87,6 +89,7 @@ if MODE in [3,-3]:
     try:
         import pyvista as pv
     except ImportError:
+        print("pvplt.py : FAILED to import pyvista MODE:%d" % MODE)
         pv = None
     pass
 pass

@@ -2622,7 +2622,8 @@ void SEvt::rjoinPhoton(const spho& label)
 #ifndef PRODUCTION
     const int& bounce = slot[idx] ; assert( bounce > 0 );
     int prior = bounce - 1 ;
-    int num_slots = evt->max_bounce + 1  ;
+    //int num_slots = evt->max_bounce + 1  ;
+    int num_slots = SEventConfig::RecordLimit()  ;
     // at truncation point and beyond cannot compare or do rejoin fixup
     if( evt->seq && prior < num_slots  )
     {

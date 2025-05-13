@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ssys.h"
+#include "sseq.h"
 #include "sstr.h"
 #include "spath.h"
 #include "sdirectory.h"
@@ -40,11 +41,11 @@ int         SEventConfig::_EventSkipaheadDefault = 100000 ;  // APPROPRIATE SKIP
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ;
 int         SEventConfig::_G4StateRerunDefault = -1 ;
-const char* SEventConfig::_MaxBounceNotes = "MaxBounceLimit:31, MaxRecordLimit:32 (see sseq.h)" ;
+const char* SEventConfig::_MaxBounceNotes = "WIP: remove bounce limit, record limit is inherent from sseq.h sseq::SLOTS " ;
 
 int SEventConfig::_MaxBounceDefault = 31 ;  // was previously too small at 9
-
 int SEventConfig::_MaxRecordDefault = 0 ;
+
 int SEventConfig::_MaxRecDefault = 0 ;
 int SEventConfig::_MaxAuxDefault = 0 ;
 int SEventConfig::_MaxSupDefault = 0 ;
@@ -593,17 +594,21 @@ caused huge memory allocations in debug event modes.
 
 **/
 
-//const int SEventConfig::LIMIT = 16 ;
-const int SEventConfig::LIMIT = 32 ;
+int SEventConfig::RecordLimit() // static
+{
+    return sseq::SLOTS ;
+}
 
 void SEventConfig::LIMIT_Check()
 {
    assert( _IntegrationMode >= -1 && _IntegrationMode <= 3 );
 
-   assert( _MaxBounce >= 0 && _MaxBounce <  LIMIT ) ;   // TRY 0 : FOR DEBUG
-   assert( _MaxRecord >= 0 && _MaxRecord <= LIMIT ) ;
-   assert( _MaxRec    >= 0 && _MaxRec    <= LIMIT ) ;
-   assert( _MaxPrd    >= 0 && _MaxPrd    <= LIMIT ) ;
+   //assert( _MaxBounce >= 0 && _MaxBounce <  LIMIT ) ;
+   // MaxBounce should not in principal be limited
+
+   assert( _MaxRecord >= 0 && _MaxRecord <= RecordLimit() ) ;
+   assert( _MaxRec    >= 0 && _MaxRec    <= RecordLimit() ) ;
+   assert( _MaxPrd    >= 0 && _MaxPrd    <= RecordLimit() ) ;
 
    assert( _MaxSeq    >= 0 && _MaxSeq    <= 1 ) ;    // formerly incorrectly allowed up to LIMIT
    assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ;
@@ -761,6 +766,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kInputPhoton
        << std::setw(20) << " InputPhoton " << " : " << ( InputPhoton() ? InputPhoton() : "-" )
+       << std::endl
+       << std::setw(25) << "RecordLimit() "
+       << std::setw(20) << " (sseq::SLOTS) " << " : " << RecordLimit()
        << std::endl
        ;
     std::string s = ss.str();
@@ -1002,13 +1010,13 @@ void SEventConfig::Initialize_EventName()
 void SEventConfig::Initialize_Max() // static
 {
     const char* mode = EventMode();
-    LOG(LEVEL) <<  " EventMode() " << mode ;  // eg Default, DebugHeavy
+    int record_limit = RecordLimit();
     LOG(LEVEL)
-        <<  " RunningMode() " << RunningMode()
-        <<  " RunningModeLabel() " << RunningModeLabel()
+        << " EventMode() " << mode     // eg Default, DebugHeavy
+        << " RunningMode() " << RunningMode()
+        << " RunningModeLabel() " << RunningModeLabel()
+        << " record_limit " << record_limit
         ;
-
-    int max_bounce = MaxBounce();
 
     if(IsNothing() || IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() || IsHitSeq() )
     {
@@ -1017,11 +1025,11 @@ void SEventConfig::Initialize_Max() // static
     else if(IsDebugHeavy())
     {
         SEventConfig::SetMaxRec(0);
-        SEventConfig::SetMaxRecord(max_bounce+1);
-        SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
+        SEventConfig::SetMaxRecord(record_limit);
+        SEventConfig::SetMaxPrd(record_limit);
+        SEventConfig::SetMaxAux(record_limit);
 
-        SEventConfig::SetMaxPrd(max_bounce+1);
-        SEventConfig::SetMaxAux(max_bounce+1);
+        SEventConfig::SetMaxSeq(1);
         // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else
         SEventConfig::SetMaxTag(1);
         SEventConfig::SetMaxFlat(1);
@@ -1032,7 +1040,7 @@ void SEventConfig::Initialize_Max() // static
     else if(IsDebugLite())
     {
         SEventConfig::SetMaxRec(0);
-        SEventConfig::SetMaxRecord(max_bounce+1);
+        SEventConfig::SetMaxRecord(record_limit);
         SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
 
         Initialize_Comp() ;   // comp set based on Max values
