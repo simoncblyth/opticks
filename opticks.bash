@@ -2111,18 +2111,25 @@ opticks-prepend-prefix(){
 opticks-setup-geant4-(){ cat << EOS
 # $FUNCNAME
 
-export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
+## FINDING PREFIX TAKES ALMOST 10 SECONDS WITH LARGE CMAKE_PREFIX_PATH
+## SO AVOID DOING THAT WHEN DETECT GEANT4 ENV ALREADY SETUP
 
-if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
-    if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then
-        [ -n "\$OPTICKS_SETUP_VERBOSE" ] && echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
-        source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
-    else
-        echo ERROR no \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : \$OPTICKS_GEANT4_PREFIX
-        return 1
-    fi
+if [ -n "\$G4LEDATA" ]; then
+    echo \$BASH_SOURCE - USE DETECTED GEANT4 ENVIRONMENT 
+    export OPTICKS_GEANT4_PREFIX=\$(dirname \$(dirname \$(dirname \$(dirname \$G4LEDATA))))
 else
-    echo === $FUNCNAME : WARNING no OPTICKS_GEANT4_PREFIX : Geant4 will need be setup by other means
+    export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
+    if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
+        if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then
+            [ -n "\$OPTICKS_SETUP_VERBOSE" ] && echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
+            source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
+        else
+            echo ERROR no \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : \$OPTICKS_GEANT4_PREFIX
+            return 1
+        fi
+    else
+        echo === $FUNCNAME : WARNING no OPTICKS_GEANT4_PREFIX : Geant4 will need be setup by other means
+    fi
 fi
 
 EOS
