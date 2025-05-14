@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 build.sh
 ===========
@@ -8,19 +8,19 @@ Usage
 
 ::
 
-  ~/o/examples/UseGeometryShader/build.sh 
+  ~/o/examples/UseGeometryShader/build.sh
   EYE=0,-4,0,1 ~/o/examples/UseGeometryShader/build.sh run
 
-  RECORD_FOLD=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p003 ~/o/examples/UseGeometryShader/build.sh 
+  RECORD_FOLD=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p003 ~/o/examples/UseGeometryShader/build.sh
   RECORD_FOLD=/data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p003 ~/o/examples/UseGeometryShader/build.sh  ana
 
-HMM: for debug need a mode that draws all points 
+HMM: for debug need a mode that draws all points
 
 
 OpenGL graphics externals : GLEW, GLFW
 ----------------------------------------
 
-As the graphics externals are not currently included in standard build, 
+As the graphics externals are not currently included in standard build,
 need to manually get and install them with::
 
     glew-
@@ -32,9 +32,9 @@ need to manually get and install them with::
 Prepare record array
 ----------------------
 
-Rather than using a real record array it is 
-convenient for debugging to use a fabricated one 
-with photons with step points propagating 
+Rather than using a real record array it is
+convenient for debugging to use a fabricated one
+with photons with step points propagating
 in a known simple shape : expanding concentric circles.
 Create that record array with::
 
@@ -45,9 +45,9 @@ The extent of step point positions and times are (10 "mm", 10 "ns")
 Linux issue ?
 --------------
 
-Suspect the Linux CMake build may be finding a GLEW 
+Suspect the Linux CMake build may be finding a GLEW
 lib other than the one installed by opticks-full.
-That could cause issues.  
+That could cause issues.
 For example there is one as an external of ROOT::
 
    #glew_prefix=/data/blyth/junotop/ExternalLibs/ROOT/6.24.06
@@ -58,21 +58,21 @@ For example there is one as an external of ROOT::
 Commands : info, build, run, dbg, examine
 --------------------------------------------
 
-examine 
+examine
     uses otool/ldd to dump the libraries linked from the executable
 
 
 About the render
 ----------------
 
-With default "EYE=0,-3,0,1" in perspective rendering on both macOS and Linux 
-the ninth ring just gets to top and bottom of render. 
-BUT: the circle appears slightly elliptical : longer vertically that horizontally 
-when would expect equal. 
+With default "EYE=0,-3,0,1" in perspective rendering on both macOS and Linux
+the ninth ring just gets to top and bottom of render.
+BUT: the circle appears slightly elliptical : longer vertically that horizontally
+when would expect equal.
 
 Is the aspect ratio calc in the view math using correct screen size, accounting for "chrome" ?
 
-TODO: orthographic mode switch  
+TODO: orthographic mode switch
 
 
 EOU
@@ -86,7 +86,7 @@ cd $(dirname $(realpath $BASH_SOURCE))
 name=UseGeometryShader
 bdir=/tmp/$name
 bin=$bdir/$name
-script=$name.py 
+script=$name.py
 
 mkdir -p $bdir
 
@@ -103,10 +103,12 @@ export SHADER_FOLD=$sdir/$SHADER
 rec=0
 REC=${REC:-$rec}
 case $REC in
- 0) record_fold=/tmp/sphoton_test ;;
+ 0) record_fold=/tmp/sphoton_test ;;   ## create with ~/o/sysrap/tests/sphoton_test.sh
  1) record_fold=$TMP/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL/p001 ;;
  2) record_fold=$TMP/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000 ;;
  3) record_fold=/tmp/OpticalAppTest ;;
+ 4) record_fold=/tmp/blyth/opticks/GEOM/J25_3_0_opticks_Debug/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/A000 ;;
+ 5) record_fold=/tmp/blyth/opticks/GEOM/J25_3_0_opticks_Debug/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/B000 ;;
  *) record_fold=$REC ;;
 esac
 echo $BASH_SOURCE REC $REC record_fold $record_fold
@@ -120,16 +122,16 @@ eye=0,-2,0
 EYE=${EYE:-$eye}
 export EYE
 
-zoom=1   
+zoom=1
 export ZOOM=${ZOOM:-$zoom}
 
 vars="BASH_SOURCE PWD name bdir sdir CUDA_PREFIX OPTICKS_PREFIX SHADER_FOLD RECORD_FOLD bin EYE ZOOM"
 
-if [ "${arg/info}" != "$arg" ]; then 
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+if [ "${arg/info}" != "$arg" ]; then
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/build}" != "$arg" ]; then 
+if [ "${arg/build}" != "$arg" ]; then
     if [ "$(uname)" == "Darwin" ]; then
 
         echo $BASH_SOURCE : Darwin build
@@ -173,7 +175,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -Wno-unused-private-field \
         -Wno-shadow \
         -Wsign-compare \
-        -g -O0 -std=c++11 \
+        -g -O0 -std=c++17 \
         -I../../sysrap \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/include \
@@ -193,38 +195,38 @@ if [ "${arg/run}" != "$arg" ]; then
 
    if [ "$(uname)" == "Darwin" ]; then
 
-      echo $BASH_SOURCE : Darwin running $bin : benefits from RPATH ? 
+      echo $BASH_SOURCE : Darwin running $bin : benefits from RPATH ?
       $bin
       [ $? -ne 0 ] && echo $BASH_SOURCE : Darwin run error && exit 3
 
     elif [ "$(uname)" == "Linux" ]; then
 
       LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64
-      echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config 
+      echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config
       $bin
       [ $? -ne 0 ] && echo $BASH_SOURCE : Linux run error && exit 3
 
     fi
-fi 
+fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
    dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 4
-fi 
+fi
 
-if [ "${arg/examine}" != "$arg" ]; then 
+if [ "${arg/examine}" != "$arg" ]; then
    echo $BASH_SOURCE : examine libs of the binary $bin
    case $(uname) in
       Darwin) otool -L $bin ;;
       Linux)  ldd $bin ;;
    esac
    [ $? -ne 0 ] && echo $BASH_SOURCE : examine error && exit 5
-fi 
+fi
 
 if [ "${arg/ana}" != "$arg" ]; then
    ${IPYTHON:-ipython} --pdb -i  $script
    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 6
-fi 
+fi
 
-exit 0 
+exit 0
 
