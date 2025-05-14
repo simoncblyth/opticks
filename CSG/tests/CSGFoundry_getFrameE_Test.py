@@ -20,5 +20,5 @@ if __name__ == '__main__':
     print(repr(t.sframe))
 
     m2w = t.m2w[0] 
-
+    print("m2w\n", m2w)
 

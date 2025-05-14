@@ -3704,6 +3704,8 @@ Called from some high level methods eg: CSGFoundry::Load
 The idea behind this is to auto connect SEvt with the frame
 from the geometry.
 
+HMM: not called after Create, see CSGOptiX::initFrame
+
 **/
 
 void CSGFoundry::AfterLoadOrCreate() // static
