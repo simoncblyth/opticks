@@ -47,7 +47,8 @@ struct ssys
 
     static unsigned long long getenvull(const char* ekey, unsigned long long fallback);
     static int getenvint(const char* ekey, int fallback);
-    static int getenvintpick(const char* ekey, const std::vector<std::string>& strs, int fallback );
+    static int getenvintspec( const char* ekey, const char* fallback);
+    static int getenvintpick( const char* ekey, const std::vector<std::string>& strs, int fallback );
 
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);
     static unsigned getenvunsigned_fallback_max(const char* ekey );
@@ -319,6 +320,22 @@ inline int ssys::getenvint(const char* ekey, int fallback)
 {
     char* val = getenv(ekey);
     return val ? std::atoi(val) : fallback ;
+}
+
+/**
+ssys::getenvintspec
+--------------------
+
+Uses sstr::ParseInt to convert spec like M1 M2 k10 to integers.
+
+**/
+
+inline int ssys::getenvintspec(const char* ekey, const char* fallback)
+{
+    char* val = getenv(ekey);
+    const char* spec = val ? val : fallback ;
+    int ival = sstr::ParseInt<int>( spec ? spec : "0" );
+    return ival ;
 }
 
 
