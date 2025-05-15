@@ -729,10 +729,10 @@ inline stree::stree()
 
 inline void stree::init()
 {
-    if(level > 0) std::cout 
-         << "stree::init " 
-         << " force_triangulate_solid [" << ( force_triangulate_solid ? force_triangulate_solid : "-" ) << "]" 
-         << std::endl 
+    if(level > 0) std::cout
+         << "stree::init "
+         << " force_triangulate_solid [" << ( force_triangulate_solid ? force_triangulate_solid : "-" ) << "]"
+         << std::endl
          ;
 }
 
@@ -2038,6 +2038,8 @@ here at stree level.
 
 * look inside rem snode for the specified (lvid, lvid_ordinal) ?
 
+TODO: avoid the duplication in frame access impls
+
 **/
 inline int stree::get_frame_remainder(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const
 {
@@ -2058,6 +2060,9 @@ stree::_get_frame_global
 --------------------------
 
 For ridx_type '?' look for the frame first using rem nodes and then tri nodes
+
+TODO: make this work with repeat_ordinal -2 and -3
+
 
 **/
 

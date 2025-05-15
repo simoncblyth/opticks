@@ -75,6 +75,7 @@ around it.
 
 #include "ssys.h"
 #include "spath.h"
+#include "schrono.h"
 
 #include "SMesh.h"
 #include "SGLM.h"
@@ -189,9 +190,11 @@ then hop to the default frame.
 
 )LITERAL" ;
     static constexpr const char* TITLE = "SGLFW" ;
+    static constexpr const char* _SLEEP_BREAK = "SGLFW__SLEEP_BREAK" ;
 
     SGLM& gm ;
     int level ;
+    int sleep_break ;
     int wanted_frame_idx ;
     int wanted_snap ;
 
@@ -285,9 +288,27 @@ then hop to the default frame.
 
 };
 
+/**
+SGLFW::renderloop_proceed
+----------------------------
+
+For envvar SGLFW__SLEEP_BREAK:1 the
+renderloop is exited after one second of
+sleep before doing any render.
+Some debug ?
+
+**/
+
 inline bool SGLFW::renderloop_proceed()
 {
-    return !glfwWindowShouldClose(window) && !exitloop ;
+    if(sleep_break == 1)
+    {
+        std::cout << "SGLFW::renderloop_proceed " << _SLEEP_BREAK << std::endl;
+        schrono::sleep(1);
+        exitloop = true ;
+    }
+    bool proceed = !glfwWindowShouldClose(window) && !exitloop ;
+    return proceed ;
 }
 inline void SGLFW::renderloop_exit()
 {
@@ -881,6 +902,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     :
     gm(_gm),
     level(ssys::getenvint("SGLFW_LEVEL", 0)),
+    sleep_break(ssys::getenvint(_SLEEP_BREAK,0)),
     wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -2)),
     wanted_snap(0),
     width(gm.Width()),
