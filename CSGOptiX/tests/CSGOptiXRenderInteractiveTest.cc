@@ -53,29 +53,17 @@ TODO:
 struct CSGOptiXRenderInteractiveTest
 {
     static constexpr const char* _ALLOW_REMOTE = "CSGOptiXRenderInteractiveTest__ALLOW_REMOTE" ;
-    static constexpr const char* _FRAME_HOP = "CSGOptiXRenderInteractiveTest__FRAME_HOP" ;
-    static constexpr const char* _SGLM_DESC = "CSGOptiXRenderInteractiveTest__SGLM_DESC" ;
-    static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
-
     static int Initialize(bool allow_remote);
-    static sfr MOI_Frame(float _extent, stree* _st, const char* MOI);
 
     bool ALLOW_REMOTE ;
-    bool FRAME_HOP ;
-    bool SGLM_DESC ;
-    const char* MOI ;
     int irc ;
 
     CSGFoundry* fd ;
-    SScene*     scene ;
-    stree*      st ;
-    float       extent ;
-    sfr         mfr ;
+    SGLM*       gm ;
     CSGOptiX*   cx ;
 
-    SGLM& gm ;
-    SGLFW gl ;
-    SGLFW_CUDA interop ;   // holder of CUDA/OptiX buffer
+    SGLFW*      gl ;
+    SGLFW_CUDA* interop ;   // holder of CUDA/OptiX buffer
 
     CSGOptiXRenderInteractiveTest();
     void init();
@@ -100,31 +88,16 @@ inline int CSGOptiXRenderInteractiveTest::Initialize(bool allow_remote)
     return 0 ;
 }
 
-inline sfr CSGOptiXRenderInteractiveTest::MOI_Frame(float _extent, stree* _st, const char* MOI)
-{
-    assert( _st );
-    sfr mfr = _extent > 0.f ? sfr::MakeFromExtent<float>(_extent) :  _st->get_frame(MOI);    // HMM: what about when start from CSGMaker geometry ?
-    mfr.set_idx(-2);                 // maybe should start from stree/snode/sn geometry with an streemaker.h ?
-    return mfr ;
-}
-
 
 inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
     :
     ALLOW_REMOTE(ssys::getenvbool(_ALLOW_REMOTE)),
-    FRAME_HOP(ssys::getenvbool(_FRAME_HOP)),
-    SGLM_DESC(ssys::getenvbool(_SGLM_DESC)),
-    MOI(ssys::getenvvar("MOI", "0:0:-1")),   // default lvid 0 in remainder
     irc(Initialize(ALLOW_REMOTE)),
     fd(CSGFoundry::Load()),
-    scene(fd ? fd->getScene() : nullptr),
-    st( fd ? fd->getTree() : nullptr),
-    extent( sstr::StartsWith(MOI, _EXTENT_PFX) ? sstr::To<float>( MOI + strlen(_EXTENT_PFX) ) : 0.f ),
-    mfr(MOI_Frame(extent, st, MOI)),
-    cx( fd ? CSGOptiX::Create(fd) : nullptr ),
-    gm(*(cx->sglm)),
-    gl(gm),
-    interop(gm)
+    gm(new SGLM),
+    cx(nullptr),
+    gl(nullptr),
+    interop(nullptr)
 {
     init();
 }
@@ -133,10 +106,18 @@ inline void CSGOptiXRenderInteractiveTest::init()
 {
     assert( irc == 0 );
     assert(fd);
+    stree* tree = fd->getTree(); 
+    assert(tree);
+    SScene* scene = fd->getScene() ; 
     assert(scene);
-    assert(st);
+    gm->setTreeScene(tree, scene); 
 
-    if(gl.level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl.get_wanted_frame_idx() << "\n" ;
+    cx = CSGOptiX::Create(fd) ; 
+    gl = new SGLFW(*gm); 
+    interop = new SGLFW_CUDA(*gm); 
+
+
+    if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
 }
 
 /**
@@ -145,29 +126,15 @@ CSGOptiXRenderInteractiveTest::handle_frame_hop
 
 When gl sees frame hop keypress get the frame and pass that to gm
 
-**/
+wanted_frame_idx is  -2 until press number key 0-9, 
+and is set back to -2 when press M for the MOI starting frame
 
+**/
 
 inline void CSGOptiXRenderInteractiveTest::handle_frame_hop()
 {
-    if(!FRAME_HOP) return ;
-
-    int wanted_frame_idx = gl.get_wanted_frame_idx() ; // -2 until press number key 0-9, back to -2 when press M
-    bool frame_hop = !gm.has_frame_idx(wanted_frame_idx) ;
-    if(frame_hop)
-    {
-        if(gl.level > 0) std::cout << "main:" << _FRAME_HOP << " wanted_frame_idx: " << wanted_frame_idx << "\n";
-        if( wanted_frame_idx == -2 )
-        {
-            gm.set_frame(mfr);
-            if(SGLM_DESC) std::cout << _SGLM_DESC << "\n"  << gm.desc() ;
-        }
-        else if( wanted_frame_idx >= 0 )
-        {
-            sfr wfr = scene->getFrame(wanted_frame_idx) ;
-            gm.set_frame(wfr);
-        }
-    }
+    int wanted_frame_idx = gl->get_wanted_frame_idx() ; 
+    gm->handle_frame_hop(wanted_frame_idx); 
 }
 
 
@@ -182,17 +149,8 @@ Formerly done between render_launch and unmap
 
 inline void CSGOptiXRenderInteractiveTest::handle_snap()
 {
-    int wanted_snap = gl.get_wanted_snap();
-    if( wanted_snap == 1 || wanted_snap == 2 )
-    {
-        std::cout << "CSGOptiXRenderInteractiveTest::handle_snap gl.get_wanted_snap calling cx->render_snap \n" ;
-        switch(wanted_snap)
-        {
-            case 1: cx->render_save()          ; break ;
-            case 2: cx->render_save_inverted() ; break ;
-        }
-        gl.set_wanted_snap(0);
-    }
+    int wanted_snap = gl->get_wanted_snap();
+    if(cx->handle_snap(wanted_snap)) gl->set_wanted_snap(0);
 }
 
 /**
@@ -210,17 +168,16 @@ CSGOptiXRenderInteractiveTest::optix_render_to_buffer
 
 inline void CSGOptiXRenderInteractiveTest::optix_render_to_buffer()
 {
-    uchar4* d_pixels = interop.output_buffer->map() ;
+    uchar4* d_pixels = interop->output_buffer->map() ;
     cx->setExternalDevicePixels(d_pixels);
     cx->render_launch();
-    interop.output_buffer->unmap() ;
+    interop->output_buffer->unmap() ;
 }
 
 inline void CSGOptiXRenderInteractiveTest::display_buffer()
 {
-    interop.displayOutputBuffer(gl.window);
+    interop->displayOutputBuffer(gl->window);
 }
-
 
 
 int main(int argc, char** argv)
@@ -228,18 +185,18 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     CSGOptiXRenderInteractiveTest t ;
-    SGLFW& gl = t.gl ;
+    SGLFW* gl = t.gl ;
 
-    while(gl.renderloop_proceed())
+    while(gl->renderloop_proceed())
     {
-        gl.renderloop_head();
+        gl->renderloop_head();
         t.handle_frame_hop();
         t.handle_snap();
 
         t.optix_render_to_buffer();
 
         t.display_buffer();
-        gl.renderloop_tail();
+        gl->renderloop_tail();
     }
     return 0 ;
 }

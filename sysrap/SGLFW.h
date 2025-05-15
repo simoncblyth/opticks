@@ -193,6 +193,8 @@ then hop to the default frame.
     static constexpr const char* _SLEEP_BREAK = "SGLFW__SLEEP_BREAK" ;
 
     SGLM& gm ;
+
+
     int level ;
     int sleep_break ;
     int wanted_frame_idx ;
@@ -282,6 +284,7 @@ then hop to the default frame.
     std::string descStartPos() const;
 
     SGLFW(SGLM& gm );
+
     virtual ~SGLFW();
     static void Error_callback(int error, const char* description);
     void init();
@@ -570,7 +573,7 @@ inline void SGLFW::writeJPG(const char* path) const
         sid->writeJPG(dpath);
 
         const char* npath = sstr::ReplaceEnd( path, ".jpg", "_depth.npy" );
-        std::cout << "SGLFW::writeJPG [" << ( npath ? npath : "-" ) << "]\n" ;
+        std::cout << "SGLFW::writeNPY [" << ( npath ? npath : "-" ) << "]\n" ;
         sid->writeNPY(npath);
     }
 }
@@ -671,7 +674,7 @@ SGLFW::home
 1. center cursor position
 2. zero the eyeshift and rotations, set zoom to 1
 
-WIP: invoking doing this from ctor at tail of SGLFW::init flaky
+WIP: doing this from ctor at tail of SGLFW::init flaky
      so try from renderloop_head for count==0
 
 **/
@@ -926,6 +929,11 @@ inline SGLFW::SGLFW(SGLM& _gm )
 {
     init();
 }
+
+
+
+
+
 
 inline SGLFW::~SGLFW()
 {
