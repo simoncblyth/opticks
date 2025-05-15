@@ -404,7 +404,7 @@ Before CMake CUDA rejig::
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     :
-    sglm(new SGLM),
+    sglm(SGLM::Get()),
     flight(SGeoConfig::FlightConfig()),
     foundry(foundry_),
     outdir(SEventConfig::OutFold()),
@@ -1204,6 +1204,21 @@ const char* CSGOptiX::getRenderStemDefault() const
 }
 
 
+
+
+bool CSGOptiX::handle_snap(int wanted_snap)
+{
+    bool can_handle = wanted_snap == 1 || wanted_snap == 2 ;
+    if(!can_handle) return false ;
+    switch(wanted_snap)
+    {
+        case 1: render_save()          ; break ;
+        case 2: render_save_inverted() ; break ;
+    }
+    return true ;
+}
+
+
 /**
 CSGOptiX::render (formerly render_snap)
 -------------------------------------------
@@ -1215,6 +1230,7 @@ double CSGOptiX::render( const char* stem_ )
     render_save(stem_);
     return kernel_dt ;
 }
+
 
 
 /**
