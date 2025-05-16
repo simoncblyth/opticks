@@ -20,9 +20,8 @@ source $HOME/.opticks/GEOM/GEOM.sh
 [ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
 
 
-
-record_path=/tmp/blyth/opticks/GEOM/$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/A000/record.npy
-export SRECORD_PATH=${SRECORD_PATH:-$record_path}
+afold=/tmp/blyth/opticks/GEOM/$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/A000
+export AFOLD=${AFOLD:-$afold}
 
 export FOLD=/tmp/$USER/opticks/$name
 bin=$FOLD/$name
@@ -33,8 +32,6 @@ cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done
 
-#optix_prefix=${OPTICKS_OPTIX_PREFIX}
-#OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
@@ -47,11 +44,16 @@ recorder_shader_fold=../../examples/UseGeometryShader/rec_flying_point_persist
 export RECORDER_SHADER_FOLD=$recorder_shader_fold
 
 
-dump=0
-DUMP=${DUMP:-$dump}
-export SGLM__set_frame_DUMP=$DUMP
 
-export SGLFW_Event_test_DUMP=1
+
+logging(){
+    type $FUNCNAME
+    export SGLM__set_frame_DUMP=1
+    export SGLM__setTreeScene_DUMP=1
+    export SGLFW_Event_test_DUMP=1
+}
+[ -n "$LOG" ] && logging 
+
 
 
 #wh=1024,768
@@ -87,28 +89,30 @@ export CAM=${CAM:-$cam}
 zoom=1
 export ZOOM=${ZOOM:-$zoom}
 
-#handle=-1 # -1:IAS 0...8 GAS indices
-#export HANDLE=${HANDLE:-$handle}
-#:
-#frame=-1
-#export SGLFW_FRAME=${SGLFW_FRAME:-$frame}
+
+#soptix_handle=-1 # IAS 
+#soptix_handle=0  # GAS0 global
+#soptix_handle=1  # GAS1 
+#export SOPTIX_HANDLE=${SOPTIX_HANDLE:-$soptix_handle}
+## NB SOPTIX is for optix handled triangles : thats not yet implemented for this apph
+
 
 #vizmask=t   # 0xff no masking
 #vizmask=t0  # 0xfe mask global
 #export VIZMASK=${VIZMASK:-$vizmask}
 
 
-#export SOPTIX_SBT__initHitgroup_DUMP=1
-
 
 
 defarg="info_build_run"
 arg=${1:-$defarg}
 
+[ -n "$BP" ] && defarg="dbg"
+
 
 PATH=$PATH:$CUDA_PREFIX/bin
 
-vars="BASH_SOURCE defarg arg CUDA_PREFIX cuda_l SCENE_FOLD FOLD bin SGLFW_FRAME"
+vars="BASH_SOURCE defarg arg CUDA_PREFIX cuda_l SCENE_FOLD FOLD bin SGLFW_FRAME SOPTIX_HANDLE"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done

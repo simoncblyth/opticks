@@ -35,13 +35,16 @@ int main()
     const char* ss = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim") ;
     SScene* scene = SScene::Load(ss) ;
     stree* tree = stree::Load(ss);
-
     if(DUMP) std::cout << scene->desc() ;
 
-    SRecordInfo* sr = SRecordInfo::Load("$SRECORD_PATH") ;
+    const char* rp = spath::Resolve("$AFOLD/record.npy"); 
+    SRecordInfo* sr = SRecordInfo::Load(rp) ;
+    if(DUMP) std::cout << sr->desc() ; 
 
     SGLM gm ;
     gm.setTreeScene(tree, scene);
+
+
 
     SGLFW_Event glsc(scene, gm , sr);
     SGLFW* gl = glsc.gl ;
@@ -49,11 +52,10 @@ int main()
     while(gl->renderloop_proceed())
     {
         gl->renderloop_head();
-
-        int wanted_frame_idx = gl->get_wanted_frame_idx() ;
-        gm.handle_frame_hop(wanted_frame_idx);
+        gl->handle_frame_hop();
 
         glsc.render();
+
         gl->renderloop_tail();
     }
     return 0 ;

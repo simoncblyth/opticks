@@ -39,7 +39,7 @@ struct SRecordInfo
     const float get_t1() const ;
     const float get_ts() const ;
 
-    void desc() const ;
+    std::string desc() const ;
 };
 
 
@@ -59,14 +59,24 @@ inline SRecordInfo::SRecordInfo()
 {
 }
 
-inline void SRecordInfo::load(const char* record_path)
+/**
+SRecordInfo::load
+-------------------
+
+Expected shape like (10000, 10, 4, 4)
+
+**/
+
+
+inline void SRecordInfo::load(const char* path)
 {
-    // expect shape like (10000, 10, 4, 4) of type np.float32
-    NP* _a = NP::Load(record_path) ;
+    NP* _a = NP::Load(path) ;
     record = NP::MakeNarrowIfWide(_a) ;
 
-    if(record==nullptr) std::cout << "FAILED to load RECORD_PATH [" << record_path << "]" << std::endl ;
-    if(record==nullptr) std::cout << " CREATE IT WITH [TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh] " << std::endl ;
+    if(record==nullptr) std::cout 
+         << "SRecordInfo::load FAILED for  [" << ( path ? path : "-" )  << "]\n" 
+         << " CREATE EXAMPLE WITH [TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh] \n" 
+         ;
     assert(record);
 
     assert(record->shape.size() == 4);
@@ -129,11 +139,11 @@ inline const float SRecordInfo::get_ts() const
 }
 
 
-inline void SRecordInfo::desc() const
+inline std::string SRecordInfo::desc() const
 {
-    std::cout
-        << "SRecordInfo.desc() "
-        << std::endl
+    std::stringstream ss ; 
+    ss
+        << "[SRecordInfo.desc\n"
         << std::setw(20) << " mn " << mn
         << std::endl
         << std::setw(20) << " mx " << mx
@@ -146,6 +156,9 @@ inline void SRecordInfo::desc() const
         << std::endl
         << std::setw(20) << " record_count " << record_count
         << std::endl
+        << "]SRecordInfo.desc\n"
         ;
+    std::string str = ss.str() ;
+    return str ; 
 }
 

@@ -36,8 +36,6 @@ inorm
 
 struct SGLFW_Event
 {
-    //static int RenderLoop(const SScene* scene, SGLM& gm );
-
     const SScene* sc ;
     SGLM&         gm ;
     SGLFW*        gl ;
@@ -54,7 +52,7 @@ struct SGLFW_Event
 
     std::vector<SGLFW_Mesh*> mesh ;
 
-    SGLFW_Event(const SScene* scene, SGLM& gm, SRecordInfo* recorder );
+    SGLFW_Event(const SScene* scene, SGLM& gm, SRecordInfo* record );
     void init();
     void initProg();
     void initMesh();
@@ -109,7 +107,6 @@ inline void SGLFW_Event::init()
 inline void SGLFW_Event::initRecord()
 {
     sr->init_minmax2D();
-    sr->desc() ;
 
     record = new SGLFW_Record(sr);
 

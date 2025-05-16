@@ -789,6 +789,11 @@ which are accessed by number keys 0-9 with and without modifier keys ALT, SHIFT,
 So it only makes sense to have up to 40 lines in the file. See SGLFW::HELP for details.
 The framespec lines are converted into sfr.h instances by stree::get_frame.
 
+
+
+TODO: move addFrames addFrame getFrame to SGLM as its not triangulated related 
+
+
 **/
 
 inline void SScene::addFrames(const char* path, const stree* st)
