@@ -11,11 +11,6 @@ are geometry issues.
 Assuming the scene folder exists already::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=0 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=1 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh   ## default
-    SCENE=2 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    SCENE=3 ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
-    ## SCENE picks between different scene directories
 
 As this uses GL interop it may be necessary to select the display GPU::
 
@@ -110,6 +105,20 @@ Return to system with::
 
 
 
+Now using standard geometry folder access, rather than the old
+manual approach::
+
+    scene=0
+    case ${SCENE:-$scene} in
+    0) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
+    1) scene_fold=/tmp/SScene_test ;;
+    2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
+    3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
+    4) scene_fold=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
+    esac
+    export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
+
+
 EOU
 }
 
@@ -117,8 +126,19 @@ cd $(dirname $(realpath $BASH_SOURCE))
 name=SGLFW_SOPTIX_Scene_test
 
 
-#source $HOME/.opticks/GEOM/GEOM.sh
-#[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
+source $HOME/.opticks/GEOM/GEOM.sh
+[ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
+
+_CFB=${GEOM}_CFBaseFromGEOM
+
+if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
+   echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB} 
+   exit 1 
+fi
+
+
+
+
 
 
 export FOLD=/tmp/$USER/opticks/$name
@@ -128,13 +148,18 @@ mkdir -p $FOLD
 export BASE=$TMP/GEOM/$GEOM/$name
 
 
-if [ -n "$LOG" ]; then
+
+logging()
+{
+   type $FUNCNAME
    export SOPTIX_Scene__DUMP=1
    export SGLFW_Scene__DUMP=1
-   echo $BASH_SOURCE - LOG defined - enable dumping
-else
-   echo $BASH_SOURCE - run with LOG defined for dumping
-fi
+   export SGLM__set_frame_DUMP=1
+   #export SGLFW_SOPTIX_Scene_test_DUMP=1
+   #export SOPTIX_SBT__initHitgroup_DUMP=1
+}
+[ -n "$LOG" ] && logging 
+
 
 
 cu=../SOPTIX.cu
@@ -165,27 +190,10 @@ sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
 
-source $HOME/.opticks/GEOM/GEOM.sh
-
-scene=0
-case ${SCENE:-$scene} in
-0) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
-1) scene_fold=/tmp/SScene_test ;;
-2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
-3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
-4) scene_fold=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
-esac
-export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
 
 
 shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
 export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
-
-dump=0
-DUMP=${DUMP:-$dump}
-export SGLM__set_frame_DUMP=$DUMP
-
-#export SGLFW_SOPTIX_Scene_test_DUMP=1
 
 
 #wh=1024,768
@@ -232,19 +240,12 @@ vizmask=t   # 0xff no masking
 export VIZMASK=${VIZMASK:-$vizmask}
 
 
-#export SOPTIX_SBT__initHitgroup_DUMP=1
 
 
 
 defarg="info_ptx_xir_build_run"
 arg=${1:-$defarg}
 
-
-if [ ! -d "$SCENE_FOLD/scene" ]; then
-  echo $BASH_SOURCE : FATAL SCENE_FOLD $SCENE_FOLD does not contain scene
-  echo $BASH_SOURCE : with newly created CSGFoundry/SSim there is no need for manual SCENE_FOLD as will be in CSGFoundry/SSim/scene
-  #arg=info
-fi
 
 
 
@@ -304,29 +305,6 @@ if [ "${arg/xir}" != "$arg" ]; then
 fi
 
 
-gdb__()
-{
-    : opticks/opticks.bash prepares and invokes gdb - sets up breakpoints based on BP envvar containing space delimited symbols;
-    if [ -z "$BP" ]; then
-        H="";
-        B="";
-        T="-ex r";
-    else
-        H="-ex \"set breakpoint pending on\"";
-        B="";
-        for bp in $BP;
-        do
-            B="$B -ex \"break $bp\" ";
-        done;
-        T="-ex \"info break\" -ex r";
-    fi;
-    local runline="gdb $H $B $T --args $* ";
-    echo $runline;
-    date;
-    eval $runline;
-    date
-}
-
 
 
 if [ "${arg/build}" != "$arg" ]; then
@@ -356,6 +334,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -L$CUDA_PREFIX/$cuda_l -lcudart \
         -lstdc++ \
         -lm -ldl \
+        -L$OPTICKS_PREFIX/lib64 -lSysRap \
         -L$OPTICKS_PREFIX/externals/lib -lGLEW \
         -L$OPTICKS_PREFIX/externals/lib64 -lglfw \
         -lGL  \
@@ -370,15 +349,16 @@ if [ "${arg/build}" != "$arg" ]; then
 fi
 
 if [ "${arg/dbg}" != "$arg" -o -n "$GDB" ]; then
-    #dbg__ $bin
-    gdb__ $bin
+    source dbg__.sh  
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
 
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64:$OPTICKS_PREFIX/lib64
     echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config
+    echo $LD_LIBRARY_PATH | tr ":" "\n"
 
     [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0
     $bin

@@ -108,6 +108,7 @@ inline void SOPTIX_Module::init()
     size_t sizeof_log = 0 ;
     char log[2048]; 
 
+#if OPTIX_VERSION <= 70600
     OPTIX_CHECK_LOG( optixModuleCreateFromPTX(
                 context,
                 &options.moduleCompileOptions,
@@ -118,6 +119,19 @@ inline void SOPTIX_Module::init()
                 &sizeof_log,
                 &module
                 ) );
+#else
+    OPTIX_CHECK_LOG( optixModuleCreate(
+                context,
+                &options.moduleCompileOptions,
+                &options.pipelineCompileOptions,
+                bin.data(),
+                bin.size(),
+                log,
+                &sizeof_log,
+                &module
+                ) );
+
+#endif
 
     std::string _log( log, log+sizeof_log ); 
     if(sizeof_log > 0) std::cout << _log ; 

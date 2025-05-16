@@ -8,6 +8,8 @@ SGLFW__DEPTH.sh
 
 EXE=CSGOptiXRenderInteractiveTest ~/o/sysrap/tests/SGLFW__DEPTH.sh
 
+imshow plotting of depth .npy 
+
 
 EOU
 }
@@ -39,6 +41,5 @@ fi
 if [ "${arg/ana}" != "$arg" ]; then
    ${IPYTHON:-ipython} -i --pdb $script 
 fi 
-
 
 

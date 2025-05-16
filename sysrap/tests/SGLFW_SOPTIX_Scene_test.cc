@@ -29,10 +29,16 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 int main()
 {
     bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP"); 
-    SScene* scene = SScene::Load("$SCENE_FOLD") ; 
+
+    const char* ss = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim") ;
+    SScene* scene = SScene::Load(ss) ;
+    stree* tree = stree::Load(ss);
     if(DUMP) std::cout << scene->desc() ; 
  
     SGLM gm ;
+    gm.setTreeScene(tree, scene); 
+
+
     SGLFW_Scene gls(scene, gm );
     SOPTIX      opx(scene, gm) ; 
     SGLFW_CUDA  interop(gm);    // interop buffer display coordination  
@@ -42,13 +48,18 @@ int main()
     while(gl->renderloop_proceed())
     {   
         gl->renderloop_head();
+        gl->handle_frame_hop();
 
+        /*
         int wanted_frame_idx = gl->get_wanted_frame_idx() ;
         if(!gm.has_frame_idx(wanted_frame_idx) )
         {
             sfr wfr = scene->getFrame(wanted_frame_idx) ; 
             gm.set_frame(wfr);   
         } 
+        */
+
+
 
         if( gl->toggle.cuda )
         {

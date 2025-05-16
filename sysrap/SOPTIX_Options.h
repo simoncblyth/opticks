@@ -186,8 +186,10 @@ inline void SOPTIX_Options::init_pipelineLinkOptions()
     OptixPayloadType* payloadType = nullptr ; 
     programGroupOptions.payloadType = payloadType ; 
 
+#if OPTIX_VERSION <= 70600
     OptixCompileDebugLevel debugLevel = SOPTIX_OPT::DebugLevel(_link_debugLevel)  ;
     pipelineLinkOptions.debugLevel = debugLevel ;
+#endif
     pipelineLinkOptions.maxTraceDepth = _maxTraceDepth ; 
 }
 
@@ -198,8 +200,10 @@ inline std::string SOPTIX_Options::Desc_pipelineLinkOptions(const OptixPipelineL
        << "[SOPTIX_Options::Desc_pipelineLinkOptions" << std::endl
        << " pipeline_link_options.maxTraceDepth   " << pipeline_link_options.maxTraceDepth  << std::endl
        << std::endl
+#if OPTIX_VERSION <= 70600
        << " pipeline_link_options.debugLevel      " << pipeline_link_options.debugLevel  
        << " " << SOPTIX_OPT::DebugLevel_( pipeline_link_options.debugLevel )
+#endif
        << "]SOPTIX_Options::Desc_pipelineLinkOptions" << std::endl
        ;
     std::string str = ss.str() ;

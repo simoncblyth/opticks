@@ -225,7 +225,12 @@ inline void SOPTIX_Pipeline::initPipeline()
     for(unsigned i=0 ; i < num_program_groups ; i++)
     {
         OptixProgramGroup& pg = program_groups[i] ; 
+
+#if OPTIX_VERSION <= 70600
         OPTIX_CHECK( optixUtilAccumulateStackSizes( pg, &stackSizes ) );
+#else
+        OPTIX_CHECK( optixUtilAccumulateStackSizes( pg, &stackSizes, pipeline ) );
+#endif
     }
 
     OPTIX_CHECK( optixUtilComputeStackSizes(
