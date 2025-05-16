@@ -259,6 +259,8 @@ then hop to the default frame.
     void snap(int w);
     void set_wanted_snap(int w);
     int get_wanted_snap() const ;
+    void handle_snap(); 
+
 
     void download_pixels();
     void download_depth();
@@ -537,6 +539,30 @@ inline int SGLFW::get_wanted_snap() const { return wanted_snap ; }
 
 
 /**
+SGLFW::handle_snap
+-------------------
+
+**/
+
+
+inline void SGLFW::handle_snap()
+{
+    int _wanted_snap = get_wanted_snap();
+    if( _wanted_snap == 1 || _wanted_snap == 2 )
+    {
+        std::cout << "SGLFW::handle_snap _wanted_snap " << _wanted_snap << "\n" ;
+        bool yflip = _wanted_snap == 1 ;
+        snap_local(yflip);
+        set_wanted_snap(0);
+    }
+}
+
+
+
+
+
+
+/**
 SGLFW::download_pixels
 --------------------------
 
@@ -689,7 +715,32 @@ inline void SGLFW::button_released(unsigned button, unsigned mods)
 }
 
 
+/**
+SGLFW::command
+---------------
 
++--------+-------------------------+------------------------+
+|  key   | command                 | note                   |
++========+=========================+========================+
+|   I    | --snap-local            |                        |
++--------+-------------------------+------------------------+
+|   J    | --snap-local-inverted   |                        |
++--------+-------------------------+------------------------+
+|   K    | --snap                  |                        |
++--------+-------------------------+------------------------+
+|   L    | --snap-inverted         |                        |
++--------+-------------------------+------------------------+
+
+Seems the difference between --snap-local and --snap 
+is whether the snap is done immediately or slightly delayed 
+via the wanted mechanism.  Suspect that in this case 
+of direct OpenGL snapshots there is no benefit from the 
+distinction. However for OptiX snapshots can imagine 
+that this is needed for a check in the render loop
+to see the "notification" and do the OptiX snap without
+needing any dependency. 
+
+**/
 
 
 inline int SGLFW::command(const char* cmd)

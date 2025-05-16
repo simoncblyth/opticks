@@ -19,12 +19,15 @@ objects, modules may be destroyed with optixModuleDestroy.
 
 struct SOPTIX_Module
 { 
+    static int Initialize(); 
+
     enum { UNKNOWN, PTX, OPTIXIR } ; 
     static constexpr const char* UNKNOWN_ = "UNKNOWN" ; 
     static constexpr const char* PTX_     = "PTX" ; 
     static constexpr const char* OPTIXIR_ = "OPTIXIR" ; 
     static const char* Type(int type) ; 
 
+    int irc ; 
     OptixDeviceContext& context ; 
     const SOPTIX_Options& options ; 
     const char* path ; 
@@ -42,6 +45,12 @@ struct SOPTIX_Module
 
     void init(); 
 };
+
+inline int SOPTIX_Module::Initialize()
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Module::Initialize\n" ; 
+    return 0 ;
+}
 
 inline const char* SOPTIX_Module::Type(int type)
 {
@@ -77,6 +86,7 @@ inline SOPTIX_Module::SOPTIX_Module(
     const char*           _path
     )
     :
+    irc(Initialize()),
     context(_context),
     options(_options),
     path(spath::Resolve(_path)),
@@ -97,11 +107,13 @@ also does optixir ?
 
 inline void SOPTIX_Module::init()
 {
+    int level = SOPTIX_Options::Level() ; 
+    if(level>0) std::cout << "[SOPTIX_Module::init level " << level << "\n" ; 
     if(      sstr::EndsWith(path, "ptx") )    type = PTX  ; 
     else if( sstr::EndsWith(path, "optixir")) type = OPTIXIR ; 
 
     bool read_ok = spath::Read(bin, path );  // should work with PTX as well as OPTIXIR
-    std::cout << "SOPTIX_Module::init\n" << desc() << "\n" ; 
+    if(level > 1) std::cout << "-SOPTIX_Module::init\n" << desc() << "\n" ; 
 
     assert(  read_ok );    
 
@@ -134,7 +146,8 @@ inline void SOPTIX_Module::init()
 #endif
 
     std::string _log( log, log+sizeof_log ); 
-    if(sizeof_log > 0) std::cout << _log ; 
+    if(sizeof_log > 0) std::cout << "[optixModuleCreate _log \n" << _log  << "\n]optixModuleCreate _log\n" ;
     assert( sizeof_log == 0 ); 
+    if(level > 0) std::cout << "]SOPTIX_Module::init\n" ; 
 }
 

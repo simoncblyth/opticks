@@ -5,14 +5,20 @@ SOPTIX_Pipeline.h : Create OptixPipeline from OptixModule
 
 **/
 
+#include "SOPTIX_Options.h"
+
+
 struct SOPTIX_Pipeline
 { 
+    static int Initialize(); 
+
     static constexpr const char* RG = "__raygen__rg" ;
     static constexpr const char* MS = "__miss__ms" ;
     static constexpr const char* IS = "__intersection__is" ;
     static constexpr const char* CH = "__closesthit__ch" ;
     static constexpr const char* AH = "__anyhit__ah" ;
 
+    int irc ; 
     OptixDeviceContext& context ; 
     OptixModule& module ; 
     const SOPTIX_Options& options ;  
@@ -58,6 +64,12 @@ struct SOPTIX_Pipeline
 };
 
 
+inline int SOPTIX_Pipeline::Initialize()
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Pipeline::Initialize\n"; 
+    return 0 ; 
+}
+
 inline std::string SOPTIX_Pipeline::desc() const 
 {
     std::stringstream ss ; 
@@ -78,6 +90,7 @@ inline SOPTIX_Pipeline::SOPTIX_Pipeline(
     const SOPTIX_Options& _options 
     )
     :
+    irc(Initialize()),
     context(_context),
     module(_module),
     options(_options)
@@ -87,10 +100,12 @@ inline SOPTIX_Pipeline::SOPTIX_Pipeline(
 
 inline void SOPTIX_Pipeline::init()
 {
+    if(SOPTIX_Options::Level()>0) std::cout << "[SOPTIX_Pipeline::init\n"; 
     initRaygen();
     initMiss();
     initHitgroup();
     initPipeline();
+    if(SOPTIX_Options::Level()>0) std::cout << "]SOPTIX_Pipeline::init\n"; 
 }
 
 

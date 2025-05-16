@@ -17,11 +17,15 @@ SOPTIX_Context.h : OptixDeviceContext + SOPTIX_Properties
 #include "OPTIX_CHECK.h"
 
 #include "SOPTIX_Properties.h"
+#include "SOPTIX_Options.h"
+
 
 struct SOPTIX_Context
 {  
+    static int Initialize(); 
     static void LogCB( unsigned int level, const char* tag, const char* message, void* /*cbdata */) ;     
 
+    int irc ; 
     const char* VERSION ; 
     OptixDeviceContext context ; 
     SOPTIX_Properties* props ; 
@@ -31,6 +35,13 @@ struct SOPTIX_Context
     SOPTIX_Context(); 
     void init(); 
 };
+
+
+inline int SOPTIX_Context::Initialize()
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Context::Initialize\n" ; 
+    return 0 ;     
+}
 
 inline void SOPTIX_Context::LogCB( unsigned int level, const char* tag, const char* message, void* /*cbdata */)  // static 
 {   
@@ -53,6 +64,7 @@ inline std::string SOPTIX_Context::desc() const
 
 inline SOPTIX_Context::SOPTIX_Context()
     :
+    irc(Initialize()),
     VERSION(_xstr(OPTIX_VERSION)),
     context(nullptr),
     props(nullptr)
@@ -70,6 +82,7 @@ Initialize CUDA and create OptiX context
 
 inline void SOPTIX_Context::init()
 {
+    if(SOPTIX_Options::Level()>0) std::cout << "[SOPTIX_Context::init\n" ; 
     CUDA_CHECK(cudaFree( 0 ) );
 
     OPTIX_CHECK( optixInit() );
@@ -84,6 +97,7 @@ inline void SOPTIX_Context::init()
     OPTIX_CHECK( optixDeviceContextCreate( cuCtx, &options, &context ) );
 
     props = new SOPTIX_Properties(context); 
+    if(SOPTIX_Options::Level()>0) std::cout << "]SOPTIX_Context::init\n" ; 
 }
 
 

@@ -1,21 +1,21 @@
 /**
-SGLFW_SOPTIX_Scene_test.cc 
+SGLFW_SOPTIX_Scene_test.cc
 ============================
 
-Started from SOPTIX_Scene_test.cc, a pure CUDA ppm render of optix triangles, 
-added OpenGL interop viz for interactive view and parameter changing. 
+Started from SOPTIX_Scene_test.cc, a pure CUDA ppm render of optix triangles,
+added OpenGL interop viz for interactive view and parameter changing.
 
 Usage and impl::
 
-    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh 
+    ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
 
-For a simpler non-encapsulated non-interactive OptiX only ppm render test, see:: 
+For a simpler non-encapsulated non-interactive OptiX only ppm render test, see::
 
-    ~/o/sysrap/tests/SOPTIX_Scene_test.sh 
+    ~/o/sysrap/tests/SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SOPTIX_Scene_test.cc
 
-DONE: view maths for raytrace and rasterized now match each other quite closely 
+DONE: view maths for raytrace and rasterized now match each other quite closely
 
 **/
 
@@ -28,62 +28,52 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 
 int main()
 {
-    bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP"); 
+    bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP");
 
     const char* ss = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim") ;
     SScene* scene = SScene::Load(ss) ;
     stree* tree = stree::Load(ss);
-    if(DUMP) std::cout << scene->desc() ; 
- 
+    if(DUMP) std::cout << scene->desc() ;
+
+    //std::cout << "[SGLM\n" ; 
     SGLM gm ;
-    gm.setTreeScene(tree, scene); 
+    gm.setTreeScene(tree, scene);
+    //std::cout << "]SGLM\n" ; 
 
-
+    //std::cout << "[SGLFW_Scene\n" ; 
     SGLFW_Scene gls(scene, gm );
-    SOPTIX      opx(scene, gm) ; 
-    SGLFW_CUDA  interop(gm);    // interop buffer display coordination  
+    //std::cout << "]SGLFW_Scene\n" ; 
 
-    SGLFW* gl = gls.gl ; 
+    //std::cout << "[SOPTIX\n" ; 
+    SOPTIX      opx(scene, gm) ;
+    //std::cout << "]SOPTIX\n" ; 
+
+    std::cout << "[SGLFW_CUDA\n" ; 
+    SGLFW_CUDA  interop(gm);    // interop buffer display coordination
+    std::cout << "]SGLFW_CUDA\n" ; 
+
+    SGLFW* gl = gls.gl ;
 
     while(gl->renderloop_proceed())
-    {   
+    {
         gl->renderloop_head();
         gl->handle_frame_hop();
 
-        /*
-        int wanted_frame_idx = gl->get_wanted_frame_idx() ;
-        if(!gm.has_frame_idx(wanted_frame_idx) )
-        {
-            sfr wfr = scene->getFrame(wanted_frame_idx) ; 
-            gm.set_frame(wfr);   
-        } 
-        */
-
-
-
         if( gl->toggle.cuda )
         {
-            uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : for CUDA access 
-            opx.render(d_pixels); 
+            uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : for CUDA access
+            opx.render(d_pixels);
             interop.output_buffer->unmap() ;                  // unmap buffer : access back to OpenGL
             interop.displayOutputBuffer(gl->window);
         }
         else
-        { 
-            gls.render(); 
-        } 
-
-        int wanted_snap = gl->get_wanted_snap();
-        if( wanted_snap == 1 || wanted_snap == 2 )
         {
-            std::cout << "wanted_snap " << wanted_snap << "\n" ; 
-            bool yflip = wanted_snap == 1 ; 
-            gl->snap_local(yflip);  
-            gl->set_wanted_snap(0);
+            gls.render();
         }
 
+        gl->handle_snap(); 
         gl->renderloop_tail();
-    }   
-    return 0 ; 
+    }
+    return 0 ;
 }
 

@@ -13,10 +13,16 @@ be analytic
 
 #include "ssys.h"
 #include "SOPTIX_BuildInput_IA.h"
+#include "SOPTIX_Options.h"
 
 struct SOPTIX_Scene
 {
+    static int Initialize(); 
+
     static constexpr const char* _DUMP = "SOPTIX_Scene__DUMP" ;
+
+    int             irc ; 
+    int             level ; 
     bool            DUMP ;
     SOPTIX_Context* ctx ;
     const SScene*   scene ;
@@ -42,6 +48,12 @@ struct SOPTIX_Scene
     OptixTraversableHandle getHandle(int idx) const ;
 };
 
+
+inline int SOPTIX_Scene::Initialize()
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Scene::Initialize\n" ; 
+    return 0 ; 
+}
 
 inline std::string SOPTIX_Scene::desc() const
 {
@@ -82,6 +94,8 @@ inline std::string SOPTIX_Scene::descIAS() const
 
 inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, const SScene* _scene )
     :
+    irc(Initialize()),
+    level(SOPTIX_Options::Level()),
     DUMP(ssys::getenvbool(_DUMP)),
     ctx(_ctx),
     scene(_scene),
@@ -92,25 +106,30 @@ inline SOPTIX_Scene::SOPTIX_Scene( SOPTIX_Context* _ctx, const SScene* _scene )
 
 inline void SOPTIX_Scene::init()
 {
+    if(level>0) std::cout << "[SOPTIX_Scene::init\n" ; 
     init_GAS();
     init_Instances();
     init_IAS();
+    if(level>0) std::cout << "]SOPTIX_Scene::init\n" ; 
 }
 
 inline void SOPTIX_Scene::init_GAS()
 {
     int num_mg = scene->meshgroup.size() ;
-    if(DUMP) std::cout << "SOPTIX_Scene::init_GAS num_mg " << num_mg << std::endl ;
+    if(level>0) std::cout << "[SOPTIX_Scene::init_GAS num_mg " << num_mg << std::endl ;
 
     for(int i=0 ; i < num_mg ; i++)
     {
+        if(level>0) std::cout << "-[SOPTIX_Scene::init_GAS i " << i << std::endl ;
         const SMeshGroup*  mg = scene->meshgroup[i];
         SOPTIX_MeshGroup* xmg = SOPTIX_MeshGroup::Create(mg) ;
         meshgroup.push_back(xmg);
 
         SOPTIX_Accel* gas = SOPTIX_Accel::Create( ctx->context, xmg->bis );
         meshgas.push_back(gas);
+        if(level>0) std::cout << "-]SOPTIX_Scene::init_GAS i " << i << std::endl ;
     }
+    if(level>0) std::cout << "]SOPTIX_Scene::init_GAS num_mg " << num_mg << std::endl ;
 }
 
 
@@ -141,6 +160,9 @@ inline void SOPTIX_Scene::init_Instances()
 {
     size_t num_gas  = scene->inst_info.size();
     size_t num_inst = scene->inst_tran.size();
+    if(level>0) std::cout << "[SOPTIX_Scene::init_Instances num_gas " << num_gas << " num_inst " << num_inst << std::endl ;
+
+
     [[maybe_unused]] size_t num_col3 = scene->inst_col3.size();
     assert( num_inst == num_col3 );
 
@@ -220,12 +242,15 @@ inline void SOPTIX_Scene::init_Instances()
         }
         sbtOffset += num_bi ;
     }
+    if(level>0) std::cout << "]SOPTIX_Scene::init_Instances num_gas " << num_gas << " num_inst " << num_inst << std::endl ;
 }
 
 inline void SOPTIX_Scene::init_IAS()
 {
+    if(level>0) std::cout << "[SOPTIX_Scene::init_IAS\n" ; 
     SOPTIX_BuildInput* bi = new SOPTIX_BuildInput_IA(instances);
     ias = SOPTIX_Accel::Create( ctx->context, bi );
+    if(level>0) std::cout << "]SOPTIX_Scene::init_IAS\n" ; 
 }
 
 /**

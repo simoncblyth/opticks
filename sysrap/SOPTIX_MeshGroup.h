@@ -23,11 +23,14 @@ Q: Can see the point of having multiple triangle BuildInputs
 
 #include "SCUDA_Mesh.h"
 #include "SOPTIX_BuildInput_Mesh.h"
+#include "SOPTIX_Options.h"
 
 struct SOPTIX_MeshGroup
 {
-    const SCUDA_MeshGroup* cmg ; 
+    static int Initialize(); 
 
+    int irc ; 
+    const SCUDA_MeshGroup* cmg ; 
     std::vector<const SOPTIX_BuildInput*> bis ; 
 
     std::string desc() const ; 
@@ -35,8 +38,16 @@ struct SOPTIX_MeshGroup
 
     SOPTIX_MeshGroup( const SCUDA_MeshGroup* cmg ); 
     void init(); 
+
     static SOPTIX_MeshGroup* Create( const SMeshGroup* mg );  // more vertical API
 }; 
+
+inline int SOPTIX_MeshGroup::Initialize()
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_MeshGroup::Initialize\n" ; 
+    return 0 ; 
+}
+
 
 inline std::string SOPTIX_MeshGroup::desc() const 
 {
@@ -67,6 +78,7 @@ SOPTIX_MeshGroup::SOPTIX_MeshGroup
 
 inline SOPTIX_MeshGroup::SOPTIX_MeshGroup( const SCUDA_MeshGroup* _cmg )
     :
+    irc(Initialize()),
     cmg(_cmg)
 {
     init();
@@ -74,12 +86,14 @@ inline SOPTIX_MeshGroup::SOPTIX_MeshGroup( const SCUDA_MeshGroup* _cmg )
 
 inline void SOPTIX_MeshGroup::init()
 {
+    if(SOPTIX_Options::Level()>0) std::cout << "[SOPTIX_Meshgroup::init\n" ; 
     size_t num_part = cmg->num_part() ;  
     for(size_t i=0 ; i < num_part ; i++)
     {
         const SOPTIX_BuildInput* bi = new SOPTIX_BuildInput_Mesh(cmg, i); 
         bis.push_back(bi); 
     }
+    if(SOPTIX_Options::Level()>0) std::cout << "]SOPTIX_Meshgroup::init\n" ; 
 }
 
 

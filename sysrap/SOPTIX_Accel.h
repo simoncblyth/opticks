@@ -17,9 +17,13 @@ A: SOPTIX_Scene.h (used for triangulated rendering) holds buildInputs vector for
 
 #include "SOPTIX_Desc.h"
 #include "SOPTIX_BuildInput.h"
+#include "SOPTIX_Options.h"
+
 
 struct SOPTIX_Accel
 {
+    static int Initialize(); 
+    int irc ; 
     CUdeviceptr buffer ;
     OptixTraversableHandle handle ; 
 
@@ -36,7 +40,17 @@ struct SOPTIX_Accel
     static SOPTIX_Accel* Create(OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis );  
 private:
     SOPTIX_Accel( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis );  
+    void init(    OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis ); 
+
+
 };
+
+
+inline int SOPTIX_Accel::Initialize()
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "-SOPTIX_Accel::Initialize\n" ; 
+    return 0 ; 
+}
 
 
 inline std::string SOPTIX_Accel::desc() const
@@ -80,11 +94,19 @@ SOPTIX_Accel::SOPTIX_Accel
 
 inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis )     
     :
+    irc(Initialize()),
     buffer(0), 
     handle(0), 
     compacted_size(0),
     compacted(false)
 { 
+    init(context, _bis); 
+}
+
+inline void SOPTIX_Accel::init( OptixDeviceContext& context, const std::vector<const SOPTIX_BuildInput*>& _bis )
+{
+    if(SOPTIX_Options::Level()>0) std::cout << "[SOPTIX_Accel::init\n" ; 
+
     const char* name0 = nullptr ;  
 
     for(unsigned i=0 ; i < _bis.size() ; i++) 
@@ -155,6 +177,8 @@ inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vecto
     emitProperty.result  = ( CUdeviceptr )( (char*)outputBuffer + compactedSizeOffset );
     unsigned numEmittedProperties = 1 ; 
 
+    if(SOPTIX_Options::Level()>0) std::cout << "-[SOPTIX_Accel::init.optixAccelBuild\n" ; 
+
     OPTIX_CHECK( optixAccelBuild( context,
                                   stream,   
                                   accelOptions,
@@ -169,6 +193,7 @@ inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vecto
                                   numEmittedProperties  
                                   ) );
 
+    if(SOPTIX_Options::Level()>0) std::cout << "-]SOPTIX_Accel::init.optixAccelBuild\n" ; 
 
     CUDA_CHECK( cudaFree( (void*)tempBuffer ) ); 
 
@@ -194,5 +219,6 @@ inline SOPTIX_Accel::SOPTIX_Accel( OptixDeviceContext& context, const std::vecto
         compacted = false ; 
         buffer = outputBuffer ; 
     }
+    if(SOPTIX_Options::Level()>0) std::cout << "]SOPTIX_Accel::init\n" ; 
 }
 

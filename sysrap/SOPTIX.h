@@ -23,13 +23,16 @@ SOPTIX_HANDLE
 #include "SOPTIX_SBT.h"
 #include "SOPTIX_Params.h"
 #include "SOPTIX_Pixels.h"
+#include "SOPTIX_Options.h"
 
 
 struct SOPTIX
 {
     static constexpr const char* _HANDLE = "SOPTIX_HANDLE" ;
+    static int  Initialize(); 
 
-    SGLM&           gm ;
+    int             irc ; 
+    SGLM&           gm  ;
 
     SOPTIX_Context  ctx ;
     SOPTIX_Options  opt ;
@@ -49,6 +52,8 @@ struct SOPTIX
     SOPTIX_Pixels*  pix ;   // optional internally managed pixels
 
     SOPTIX(const SScene* _scn, SGLM& _gm );
+    void init();
+
     void set_param(uchar4* d_pixels);
     void render(uchar4* d_pixels);
     void render_ppm(const char* _path);
@@ -56,8 +61,17 @@ struct SOPTIX
 };
 
 
+
+inline int SOPTIX::Initialize()
+{
+    if(SOPTIX_Options::Level() > 0) std::cout << "[SOPTIX::Initialize\n" ; 
+    return 0 ; 
+}
+
+
 inline SOPTIX::SOPTIX(const SScene* _scn, SGLM& _gm)
     :
+    irc(Initialize()),
     gm(_gm),
     mod(ctx.context, opt, "$SOPTIX_KERNEL" ),
     pip(ctx.context, mod.module, opt ),
@@ -68,8 +82,13 @@ inline SOPTIX::SOPTIX(const SScene* _scn, SGLM& _gm)
     handle(scn.getHandle(HANDLE)),
     pix(nullptr)
 {
-    std::cout
-        << "SOPTIX::SOPTIX "
+    init();
+}
+
+inline void SOPTIX::init()
+{
+    if(SOPTIX_Options::Level() > 0)  std::cout
+        << "]SOPTIX::init "
         << _HANDLE
         << " HANDLE " << HANDLE
         << "\n"

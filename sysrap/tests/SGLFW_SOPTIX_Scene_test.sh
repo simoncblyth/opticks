@@ -152,11 +152,12 @@ export BASE=$TMP/GEOM/$GEOM/$name
 logging()
 {
    type $FUNCNAME
-   export SOPTIX_Scene__DUMP=1
-   export SGLFW_Scene__DUMP=1
-   export SGLM__set_frame_DUMP=1
+   #export SGLFW_Scene__DUMP=1
+   #export SGLM__set_frame_DUMP=1
    #export SGLFW_SOPTIX_Scene_test_DUMP=1
    #export SOPTIX_SBT__initHitgroup_DUMP=1
+   export SOPTIX_Options__LEVEL=1
+   export SOPTIX_Scene__DUMP=1
 }
 [ -n "$LOG" ] && logging 
 
