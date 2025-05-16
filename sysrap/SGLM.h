@@ -188,6 +188,8 @@ struct SYSRAP_API SGLM : public SCMD
 
     static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* _SGLM_DESC = "SGLM_DESC" ;
+    static constexpr const char* __setTreeScene_DUMP = "SGLM__setTreeScene_DUMP" ;
+
 
     // static defaults, some can be overridden in the instance
     static glm::ivec2 WH ;
@@ -676,8 +678,11 @@ inline void SGLM::setTreeScene( stree* _tree, SScene* _scene )
         }
     }
 
-    std::cout
-        << "SGLM::setTreeScene"
+    bool DUMP = ssys::getenvbool(__setTreeScene_DUMP) ;
+    if(DUMP) std::cout
+        << "SGLM::setTreeScene "
+        << __setTreeScene_DUMP
+        << " DUMP " << ( DUMP ? "YES" : "NO " )
         << " MOI [" << MOI << "] "
         << " moi_fr \n"
         << moi_fr.desc()

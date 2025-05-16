@@ -49,6 +49,16 @@ If done properly, one can keep a point of the virtual
 environment fixed in the center of the view while moving
 around it.
 
+envvars
+---------
+
+SGLFW_FRAME:int
+    sets initial wanted_frame_idx controlling the initial viewpoint.
+    NB needs to be corresponding bookmark framespec for this to work.
+    Typically left at default of -2 which corresponds to the MOI envvar
+    selected frame, which defaults to 0:0:-1 for an overall view. 
+
+
 **/
 
 #include <cassert>
@@ -243,7 +253,7 @@ then hop to the default frame.
 
     void set_wanted_frame_idx(int _idx);
     int  get_wanted_frame_idx() const ;
-
+    void handle_frame_hop(); 
 
 
     void snap(int w);
@@ -318,6 +328,17 @@ inline void SGLFW::renderloop_exit()
     std::cout << "SGLFW::renderloop_exit" << std::endl;
     glfwSetWindowShouldClose(window, true);
 }
+
+
+/**
+SGLFW::renderloop_head
+------------------------
+
+HMM: perhaps handle_frame_hop from here ? 
+
+**/
+
+
 inline void SGLFW::renderloop_head()
 {
     dump = count % 100000 == 0 ;
@@ -346,6 +367,8 @@ inline void SGLFW::renderloop_tail()
 
     exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 }
+
+
 
 
 
@@ -482,6 +505,29 @@ inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
 }
 inline void SGLFW::set_wanted_frame_idx(int _idx){ wanted_frame_idx = _idx ; }
 inline int  SGLFW::get_wanted_frame_idx() const { return wanted_frame_idx ; }
+
+
+
+/**
+SGLFW::handle_frame_hop
+-------------------------
+
+When frame hop keypress detected pass the wanted frame idx to gm.
+The wanted_frame_idx starts as -2 until press a number key 0-9 
+without or with modifiers shift/alt/shift+alt. 
+The wanted_frame_idx is set back to -2 when press M 
+for the MOI starting frame.
+
+**/
+
+
+inline void SGLFW::handle_frame_hop()
+{
+    int _wanted_frame_idx = get_wanted_frame_idx() ;
+    gm.handle_frame_hop(_wanted_frame_idx);
+}
+
+
 
 
 inline void SGLFW::snap(int w){ set_wanted_snap(w); }

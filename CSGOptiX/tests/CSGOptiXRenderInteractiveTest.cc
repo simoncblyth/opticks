@@ -66,9 +66,9 @@ struct CSGOptiXRenderInteractiveTest
     SGLFW_CUDA* interop ;   // holder of CUDA/OptiX buffer
 
     CSGOptiXRenderInteractiveTest();
+
     void init();
-    void handle_frame_hop();
-    void handle_snap();
+    void handle_snap_cx();
     void optix_render_to_buffer();
     void display_buffer();
 
@@ -120,34 +120,17 @@ inline void CSGOptiXRenderInteractiveTest::init()
     if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
 }
 
-/**
-CSGOptiXRenderInteractiveTest::handle_frame_hop
--------------------------------------------------
-
-When gl sees frame hop keypress get the frame and pass that to gm
-
-wanted_frame_idx is  -2 until press number key 0-9, 
-and is set back to -2 when press M for the MOI starting frame
-
-**/
-
-inline void CSGOptiXRenderInteractiveTest::handle_frame_hop()
-{
-    int wanted_frame_idx = gl->get_wanted_frame_idx() ; 
-    gm->handle_frame_hop(wanted_frame_idx); 
-}
-
 
 /**
-CSGOptiXRenderInteractiveTest::handle_snap
----------------------------------------------
+CSGOptiXRenderInteractiveTest::handle_snap_cx
+----------------------------------------------
 
 Saves ray trace geometry screenshots when certain keys pressed.
 Formerly done between render_launch and unmap
 
 **/
 
-inline void CSGOptiXRenderInteractiveTest::handle_snap()
+inline void CSGOptiXRenderInteractiveTest::handle_snap_cx()
 {
     int wanted_snap = gl->get_wanted_snap();
     if(cx->handle_snap(wanted_snap)) gl->set_wanted_snap(0);
@@ -190,12 +173,12 @@ int main(int argc, char** argv)
     while(gl->renderloop_proceed())
     {
         gl->renderloop_head();
-        t.handle_frame_hop();
-        t.handle_snap();
+        gl->handle_frame_hop();
 
+        t.handle_snap_cx();
         t.optix_render_to_buffer();
-
         t.display_buffer();
+
         gl->renderloop_tail();
     }
     return 0 ;
