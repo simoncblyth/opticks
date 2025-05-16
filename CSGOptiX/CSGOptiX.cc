@@ -398,6 +398,8 @@ Before CMake CUDA rejig::
     _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx}"),
 
 
+TODO: generalize for ptx or optixir
+
 **/
 
 
@@ -469,35 +471,26 @@ void CSGOptiX::init()
 void CSGOptiX::initCtx()
 {
     LOG(LEVEL) << "[" ;
-#if OPTIX_VERSION < 70000
-#else
     ctx = new Ctx ;
     LOG(LEVEL) << std::endl << ctx->desc() ;
-#endif
     LOG(LEVEL) << "]" ;
 }
 
 void CSGOptiX::initPIP()
 {
     LOG(LEVEL) << "["  ;
-#if OPTIX_VERSION < 70000
-#else
     LOG(LEVEL)
         << " ptxpath " << ( ptxpath ? ptxpath : "-" )
         ;
 
     pip = new PIP(ptxpath, ctx->props ) ;
-#endif
     LOG(LEVEL) << "]" ;
 }
 
 void CSGOptiX::initSBT()
 {
     LOG(LEVEL) << "[" ;
-#if OPTIX_VERSION < 70000
-#else
     sbt = new SBT(pip) ;
-#endif
     LOG(LEVEL) << "]" ;
 }
 
@@ -511,7 +504,6 @@ void CSGOptiX::initCheckSim()
     {
         LOG_IF(fatal, sim == nullptr) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
         assert(sim);
-
     }
 }
 
@@ -519,13 +511,8 @@ void CSGOptiX::initCheckSim()
 void CSGOptiX::initStack()
 {
     LOG(LEVEL);
-#if OPTIX_VERSION < 70000
-#else
     pip->configureStack();
-#endif
-
 }
-
 
 void CSGOptiX::initParams()
 {
@@ -554,14 +541,10 @@ void CSGOptiX::initGeometry()
     LOG_IF(fatal, !is_uploaded) << "foundry must be uploaded prior to CSGOptiX::initGeometry " ;
     assert( is_uploaded );
 
-#if OPTIX_VERSION < 70000
-    six->setFoundry(foundry);
-#else
     LOG(LEVEL) << "[ sbt.setFoundry " ;
     sbt->setFoundry(foundry);
     params->handle = sbt->getTOPHandle() ;
     LOG(LEVEL) << "] sbt.setFoundry " ;
-#endif
     LOG(LEVEL) << "]" ;
 }
 
@@ -645,12 +628,9 @@ internally allocated device pixels.
 
 void CSGOptiX::initRender()
 {
-#if OPTIX_VERSION < 70000
-#else
     LOG(LEVEL) << "[" ;
     framebuf = new Frame(params->width, params->height, params->depth, nullptr ) ;
     LOG(LEVEL) << "]" ;
-#endif
 
     if(SEventConfig::IsRGModeRender())
     {
@@ -685,22 +665,16 @@ void CSGOptiX::initPIDXYZ()
 
 void CSGOptiX::setExternalDevicePixels(uchar4* _d_pixel )
 {
-#if OPTIX_VERSION < 70000
-#else
     framebuf->setExternalDevicePixels(_d_pixel) ;
     params->pixels = framebuf->d_pixel ;
-#endif
 }
 
 
 void CSGOptiX::destroy()
 {
     LOG(LEVEL);
-#if OPTIX_VERSION < 70000
-#else
     delete sbt ;
     delete pip ;
-#endif
 }
 
 

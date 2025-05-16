@@ -89,15 +89,13 @@ static __forceinline__ __device__ void trace(
 }
 
 
-__forceinline__ __device__ uchar4 make_color( const float3& normal, unsigned identity, unsigned boundary )  // pure 
+__forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float depth )  // pure 
 {
-    // identity and boundary not used 
-    float scale = 1.f ; 
     return make_uchar4(
-            static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f )*scale ,
-            static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f )*scale ,
-            static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f )*scale ,
-            255u
+            static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( normal.y, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( normal.z, 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f )
             );
 }
 
@@ -119,10 +117,13 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     //const bool yflip = true ;
     //if(yflip) d.y = -d.y ;
 
-    //printf("//render params.eye (%7.3f %7.3f %7.3f)\n", params.eye.x, params.eye.y, params.eye.z); 
-    //printf("//render params.U (%7.3f %7.3f %7.3f)\n", params.U.x, params.U.y, params.U.z); 
-    //printf("//render params.V (%7.3f %7.3f %7.3f)\n", params.V.x, params.V.y, params.V.z); 
-    //printf("//render params.W (%7.3f %7.3f %7.3f)\n", params.W.x, params.W.y, params.W.z); 
+#ifdef DBG_PIDX   
+    bool dbg = idx.x == dim.x/2 && idx.y == dim.y/2 ; 
+    if(dbg) printf("//render.DBG_PIDX params.eye (%7.3f %7.3f %7.3f)\n", params.eye.x, params.eye.y, params.eye.z); 
+    if(dbg) printf("//render.DBG_PIDX params.U   (%7.3f %7.3f %7.3f)\n", params.U.x, params.U.y, params.U.z); 
+    if(dbg) printf("//render.DBG_PIDX params.V   (%7.3f %7.3f %7.3f)\n", params.V.x, params.V.y, params.V.z); 
+    if(dbg) printf("//render.DBG_PIDX params.W   (%7.3f %7.3f %7.3f)\n", params.W.x, params.W.y, params.W.z); 
+#endif
 
     const unsigned cameratype = params.cameratype ;  
     const float3 dxyUV = d.x * params.U + d.y * params.V ; 
@@ -145,7 +146,20 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     // "diddling" changes range of elements from -1.f:1.f to 0.f:1.f same as  (n+1.f)/2.f   
     unsigned index = idx.y * params.width + idx.x ;
 
-    params.pixels[index] = make_color( diddled_normal, prd->identity(), prd->boundary() ); 
+
+
+    float eye_z = -prd->distance()*dot(params.WNORM, direction) ;
+    const float& A = params.ZPROJ.z ;
+    const float& B = params.ZPROJ.w ;
+    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1 
+
+    uchar4 pixel = make_normal_pixel( diddled_normal, zdepth ); 
+
+#ifdef DBG_PIDX   
+    if(dbg) printf("//render.DBG_PIDX pixel (%d %d %d %d) \n", pixel.x, pixel.y, pixel.z, pixel.w); 
+#endif
+
+    params.pixels[index] = pixel ; 
 }
  
 
@@ -154,7 +168,10 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    //printf("//__raygen__rg\n"); 
+#ifdef DBG_PIDX   
+    bool dbg = idx.x == dim.x/2 && idx.y == dim.y/2 ; 
+    if(dbg)  printf("//__raygen__rg.DBG_PIDX idx(%d,%d,%d) dim(%d,%d,%d)\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z ); 
+#endif
 
     quad2 prd ; 
     prd.zero(); 
@@ -294,11 +311,11 @@ extern "C" __global__ void __closesthit__ch()
 __intersection__is
 ====================
 
-With triangles there is no role for IS 
+With inbuilt triangles there is no role for IS 
 
-**/
 extern "C" __global__ void __intersection__is()
 {
 }
 
+**/
 

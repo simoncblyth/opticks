@@ -3,6 +3,14 @@
 SGLFW_Event.h : manage scene data and OpenGL render pipelines
 ===============================================================
 
+Yuxiang appears started from SGLFW_Scene and added 
+rendering of record arrays together with the OpenGL
+mesh based render. 
+
+The difference between SGLFW_Scene.h and SGLFW_Event.h
+is not big enough to merit the duplication. 
+
+
 Primary members
 -----------------
 
@@ -30,15 +38,17 @@ inorm
 **/
 
 #include "SScene.h"
+#include "SGLFW.h"
+
 #include "SRecordInfo.h"
 #include "SGLFW_Record.h"
-#include "SGLFW.h"
 
 struct SGLFW_Event
 {
     const SScene* sc ;
     SGLM&         gm ;
     SGLFW*        gl ;
+
     SRecordInfo*  sr;
 
     // map of these ? or pairs ?
@@ -56,6 +66,7 @@ struct SGLFW_Event
     void init();
     void initProg();
     void initMesh();
+
     void initRecord();
 
     SGLFW_Program* getIProg() const ;
@@ -107,9 +118,7 @@ inline void SGLFW_Event::init()
 inline void SGLFW_Event::initRecord()
 {
     sr->init_minmax2D();
-
     record = new SGLFW_Record(sr);
-
 }
 
 
@@ -132,7 +141,7 @@ inline void SGLFW_Event::initProg()
 
 
     rec_prog = new SGLFW_Program("$RECORDER_SHADER_FOLD", nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr );
-    //rec_prog = new SGLFW_Program("$RECORDER_SHADER_FOLD", nullptr, nullptr, nullptr, nullptr, nullptr );
+    // there is no instanced variant of rec_prog
 }
 
 /**
@@ -195,6 +204,9 @@ inline void SGLFW_Event::render()
     int num_mesh = mesh.size();
     for(int i=0 ; i < num_mesh ; i++)
     {
+        bool viz = gm.is_vizmask_set(i);  
+        if(!viz) continue ; 
+
         SGLFW_Mesh* _mesh = mesh[i] ;
         SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;
         _mesh->render(_prog);

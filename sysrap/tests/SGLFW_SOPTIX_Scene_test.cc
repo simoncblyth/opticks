@@ -53,6 +53,7 @@ int main()
     std::cout << "]SGLFW_CUDA\n" ; 
 
     SGLFW* gl = gls.gl ;
+    bool first = true ;  ; 
 
     while(gl->renderloop_proceed())
     {
@@ -63,6 +64,15 @@ int main()
         {
             uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : for CUDA access
             opx.render(d_pixels);
+
+            if(first)
+            {
+                first = false ;  
+                const char* path = "/tmp/out.ppm";  
+                std::cout << " opx.render_ppm path [" << path << "]\n" ;   
+                opx.render_ppm(path); 
+            }
+
             interop.output_buffer->unmap() ;                  // unmap buffer : access back to OpenGL
             interop.displayOutputBuffer(gl->window);
         }

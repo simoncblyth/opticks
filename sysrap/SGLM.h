@@ -254,6 +254,7 @@ struct SYSRAP_API SGLM : public SCMD
     static const char* TRACEYFLIP_Label() ;
 
     static void Copy(float* dst, const glm::vec3& src );
+    static void Copy(float* dst, const glm::vec4& src );
 
     // member methods
     std::string descInput() const ;
@@ -586,6 +587,14 @@ inline void SGLM::Copy(float* dst, const glm::vec3& src )
     dst[1] = src.y ;
     dst[2] = src.z ;
 }
+inline void SGLM::Copy(float* dst, const glm::vec4& src )
+{
+    dst[0] = src.x ;
+    dst[1] = src.y ;
+    dst[2] = src.z ;
+    dst[3] = src.w ;
+}
+
 
 
 

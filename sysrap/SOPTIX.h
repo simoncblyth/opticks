@@ -95,6 +95,16 @@ inline void SOPTIX::init()
         ;
 }
 
+
+/**
+SOPTIX::set_param
+------------------
+
+cf CSGOptiX::prepareParamRender
+
+**/
+
+
 inline void SOPTIX::set_param(uchar4* d_pixels)
 {
     par.width = gm.Width() ;
@@ -109,6 +119,11 @@ inline void SOPTIX::set_param(uchar4* d_pixels)
     SGLM::Copy(&par.U.x  , gm.u );
     SGLM::Copy(&par.V.x  , gm.v );
     SGLM::Copy(&par.W.x  , gm.w );
+
+    SGLM::Copy(&par.WNORM.x, gm.wnorm ); 
+    SGLM::Copy(&par.ZPROJ.x, gm.zproj ); 
+
+
     par.handle = handle ;
 
     par.upload(d_param);

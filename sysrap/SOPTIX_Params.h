@@ -2,6 +2,12 @@
 /**
 SOPTIX_Params.h : render control 
 ==================================
+
+This is populated by SOPTIX::set_param
+
+cf: CSGOptiX/Params.h
+
+
 **/
 
 #include <optix.h>
@@ -23,6 +29,9 @@ struct SOPTIX_Params
     float3 U;  
     float3 V;  
     float3 W;  
+
+    float3 WNORM ; 
+    float4 ZPROJ ; 
 
     OptixTraversableHandle handle ;
 

@@ -105,20 +105,6 @@ Return to system with::
 
 
 
-Now using standard geometry folder access, rather than the old
-manual approach::
-
-    scene=0
-    case ${SCENE:-$scene} in
-    0) scene_fold=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
-    1) scene_fold=/tmp/SScene_test ;;
-    2) scene_fold=$TMP/G4CXOpticks_setGeometry_Test/$GEOM/CSGFoundry/SSim ;;
-    3) scene_fold=$TMP/U4TreeCreateSSimTest/$GEOM/SSim ;;
-    4) scene_fold=/cvmfs/opticks.ihep.ac.cn/.opticks/GEOM/$GEOM/CSGFoundry/SSim ;;
-    esac
-    export SCENE_FOLD=${SCENE_FOLD:-$scene_fold}
-
-
 EOU
 }
 
@@ -135,9 +121,6 @@ if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
    echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB} 
    exit 1 
 fi
-
-
-
 
 
 
@@ -258,20 +241,34 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/ptx}" != "$arg" ]; then
-    echo $BASH_SOURCE ptx
+if [ "${arg/ptx}" != "$arg" -o "${arg/xir}" != "$arg" ]; then
+
+    opt=""
+    if [ "${arg/ptx}" != "$arg" ]; then
+        out=$ptx
+        opt=-ptx
+    elif [ "${arg/xir}" != "$arg" ]; then
+        out=$xir
+        opt=-optix-ir
+    fi 
+    echo $BASH_SOURCE arg $arg out $out opt $opt
+
+    # -DDBG_PIDX
+
     nvcc $cu \
-        -ptx -std=c++11 \
+        $opt \
+        -std=c++11 \
         -c \
         -lineinfo \
         -use_fast_math \
         -I.. \
         -I$CUDA_PREFIX/include  \
         -I$OPTIX_PREFIX/include  \
-        -o $ptx
-    [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1
-    ls -alst $ptx
-    echo $BASH_SOURCE ptx DONE
+        -o $out
+    [ $? -ne 0 ] && echo $BASH_SOURCE : out $out build error && exit 1
+    ls -alst $out
+
+    echo $BASH_SOURCE out $out DONE
 fi
 
 
@@ -287,24 +284,6 @@ xir-notes(){ cat << EOU
 
 EOU
 }
-
-if [ "${arg/xir}" != "$arg" ]; then
-    echo $BASH_SOURCE xir
-    nvcc $cu \
-        -optix-ir \
-        -std=c++11 \
-        -c \
-        -lineinfo \
-        -use_fast_math \
-        -I.. \
-        -I$CUDA_PREFIX/include  \
-        -I$OPTIX_PREFIX/include  \
-        -o $xir
-    [ $? -ne 0 ] && echo $BASH_SOURCE : xir build error && exit 1
-    ls -alst $xir
-    echo $BASH_SOURCE xir DONE
-fi
-
 
 
 
