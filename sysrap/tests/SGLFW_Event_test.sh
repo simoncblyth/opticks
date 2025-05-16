@@ -5,8 +5,11 @@ SGLFW_Event_test.sh : triangulated raytrace and rasterized visualization
 
 ~/o/sysrap/tests/SGLFW_Event_test.sh
 
-MOI=sChimneyLS:0:-1 ~/o/sysrap/tests/SGLFW_Event_test.sh run
+MOI=sChimneyAcrylic:0:-1 EYE=0,10000,0 T0=100 ~/o/sysrap/tests/SGLFW_Event_test.sh run
 
+MOI=sChimneyLS:0:-1 T1=10 NT=1000 ~/o/sysrap/tests/SGLFW_Event_test.sh run
+
+MOI=sChimneyLS:0:-1 T1=30 NT=1000 TIMESCALE=10 ~/o/sysrap/tests/SGLFW_Event_test.sh run
 
 
 EOU
@@ -21,7 +24,10 @@ source $HOME/.opticks/GEOM/GEOM.sh
 
 
 afold=/tmp/blyth/opticks/GEOM/$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/A000
+bfold=/tmp/blyth/opticks/GEOM/$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/B000
 export AFOLD=${AFOLD:-$afold}
+export BFOLD=${BFOLD:-$bfold}
+
 
 export FOLD=/tmp/$USER/opticks/$name
 bin=$FOLD/$name
@@ -52,7 +58,7 @@ logging(){
     export SGLM__setTreeScene_DUMP=1
     export SGLFW_Event_test_DUMP=1
 }
-[ -n "$LOG" ] && logging 
+[ -n "$LOG" ] && logging
 
 
 
@@ -90,17 +96,16 @@ zoom=1
 export ZOOM=${ZOOM:-$zoom}
 
 
-#soptix_handle=-1 # IAS 
+#soptix_handle=-1 # IAS
 #soptix_handle=0  # GAS0 global
-#soptix_handle=1  # GAS1 
+#soptix_handle=1  # GAS1
 #export SOPTIX_HANDLE=${SOPTIX_HANDLE:-$soptix_handle}
 ## NB SOPTIX is for optix handled triangles : thats not yet implemented for this apph
 
 
-#vizmask=t   # 0xff no masking
-#vizmask=t0  # 0xfe mask global
-#export VIZMASK=${VIZMASK:-$vizmask}
-
+vizmask=t    # "t"  not everything ie 0xff : no masking
+#vizmask=t0  # "t0" not 0-th bit ie 0xfe : ie mask global
+export VIZMASK=${VIZMASK:-$vizmask}
 
 
 
@@ -167,8 +172,9 @@ fi
 
 if [ "${arg/run}" != "$arg" ]; then
 
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64
     echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config
+    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64:$OPTICKS_PREFIX/lib64
+    echo $LD_LIBRARY_PATH | tr ":" "\n"
 
     [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0
     $bin

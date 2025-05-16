@@ -185,6 +185,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kVIZMASK = "VIZMASK" ;
     static constexpr const char* kTRACEYFLIP = "TRACEYFLIP" ;
     static constexpr const char* kLEVEL = "SGLM_LEVEL" ;
+    static constexpr const char* kTIMESCALE = "TIMESCALE" ;
 
     static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* _SGLM_DESC = "SGLM_DESC" ;
@@ -211,6 +212,7 @@ struct SYSRAP_API SGLM : public SCMD
     static uint32_t VIZMASK ;
     static int   TRACEYFLIP ;
     static int   LEVEL ;
+    static float TIMESCALE ;
 
 
     static void SetWH( int width, int height );
@@ -444,6 +446,8 @@ struct SYSRAP_API SGLM : public SCMD
     float get_transverse_scale() const ;
 
 
+
+
     void updateComposite();
 
 
@@ -518,6 +522,18 @@ struct SYSRAP_API SGLM : public SCMD
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale);
 
+    bool enabled_bump_time = true ;
+    glm::vec4 timeparam = {} ;
+
+    void init_time( float t0, float t1, int ns);
+    float get_t0() const ;
+    float get_t1() const ;
+    float get_ts() const ;
+    float get_time() const ;
+    bool in_timerange(float t) const ;
+    void set_time( float t );
+    void bump_time();
+    void inc_time( float dy );
 
 };
 
@@ -540,6 +556,8 @@ int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis"
 uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );
 int        SGLM::TRACEYFLIP  = ssys::getenvint(kTRACEYFLIP,  0 ) ;
 int        SGLM::LEVEL  = ssys::getenvint(kLEVEL,  0 ) ;
+float      SGLM::TIMESCALE = EValue<float>(kTIMESCALE, "1.0");
+
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
@@ -889,6 +907,7 @@ void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
         else if(strcmp(k,"inc-zoom")==0) IncZOOM(SValue<float>(v)) ;
         else if(strcmp(k,"inc-tmin")==0) IncTMIN(SValue<float>(v)) ;
         else if(strcmp(k,"inc-tmax")==0) IncTMAX(SValue<float>(v)) ;
+        else if(strcmp(k,"inc-time")==0) gm->inc_time(SValue<float>(v)) ;
         else
         {
             std::cout << "SGLM::Command unhandled kv [" << k << "," << v << "]" << std::endl ;
@@ -2681,5 +2700,100 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
       }} ;
     return glm::make_mat4x4<T>(demo.data()) ;
 }
+
+
+/**
+SGLM::init_time
+----------------------
+
+t0
+    start time
+t1
+    end time
+
+ts:int
+    number of render calls with which to increment
+    the event time from t0 to t1 : typically a large
+    value like 5000 to avoid excessively fast animation
+
+
+timeparam quad:
+
+   +---------+----------+--------------+-------------+
+   | t_start | t_stop   |  t_step      | t_current   |
+   +=========+==========+==============+=============+
+   |  t0     |   t1     |  (t1-t0)/ts  |     t       |
+   +---------+----------+--------------+-------------+
+
+**/
+
+
+inline void SGLM::init_time( float t0, float t1, int ns)
+{
+    assert( ns > 1 );
+
+    timeparam.x = t0 ;
+    timeparam.y = t1 ;
+    timeparam.z = (t1-t0)/float(ns) ;
+    timeparam.w = t0 ;
+}
+
+
+inline float SGLM::get_t0() const
+{
+    return timeparam.x ;
+}
+inline float SGLM::get_t1() const
+{
+    return timeparam.y ;
+}
+inline float SGLM::get_ts() const
+{
+    return timeparam.z ;
+}
+inline float SGLM::get_time() const
+{
+    return timeparam.w ;
+}
+inline bool SGLM::in_timerange(float t) const
+{
+    return t >= timeparam.x && t <= timeparam.y ;
+}
+
+
+
+/**
+SGLM::set_time
+----------------
+
+Whem t is not within the t0 to t1 range sets time to t0
+
+**/
+
+inline void SGLM::set_time( float t )
+{
+    timeparam.w = in_timerange(t) ? t : timeparam.x ;
+}
+
+
+inline void SGLM::bump_time()
+{
+    if(!enabled_bump_time) return ;
+    set_time( get_time() + get_ts() );
+}
+
+inline void SGLM::inc_time(float dy)
+{
+    std::cout
+        << "SGLM::inc_time"
+        << " dy " << dy
+        << " TIMESCALE " << TIMESCALE
+        << " dy*TIMESCALE " << dy*TIMESCALE
+        << "\n"
+        ;
+
+    set_time( get_time() + dy*TIMESCALE );
+}
+
 
 

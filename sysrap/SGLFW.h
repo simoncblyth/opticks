@@ -56,7 +56,7 @@ SGLFW_FRAME:int
     sets initial wanted_frame_idx controlling the initial viewpoint.
     NB needs to be corresponding bookmark framespec for this to work.
     Typically left at default of -2 which corresponds to the MOI envvar
-    selected frame, which defaults to 0:0:-1 for an overall view. 
+    selected frame, which defaults to 0:0:-1 for an overall view.
 
 
 **/
@@ -164,8 +164,12 @@ R
    hold down while arcball dragging mouse to change look rotation
 S
    (WASDQE) hold to change eyeshift, translate backwards
-T:toggle.tran
-   no longer used : now use holding down WASDQE keys to change the eyeshift
+T:toggle.time
+   toggles simulation time scrubbing for record arrays, 
+   when enabled moving mouse up/down changes the simulation time. 
+   Adjust mouse movement sensitivity with TIMESCALE envvar, default 1.0 
+   During scrubbing the automated time increments are disabled.  
+
 U:toggle.norm
    for rasterized render toggle between wireframe and normal shading
 V
@@ -246,6 +250,8 @@ then hop to the default frame.
     void renderloop_tail();
 
     void handle_event(GLEQevent& event);
+    void post_handle_key();
+
 
     void window_refresh();
     void key_pressed(unsigned key);
@@ -253,13 +259,13 @@ then hop to the default frame.
 
     void set_wanted_frame_idx(int _idx);
     int  get_wanted_frame_idx() const ;
-    void handle_frame_hop(); 
+    void handle_frame_hop();
 
 
     void snap(int w);
     void set_wanted_snap(int w);
     int get_wanted_snap() const ;
-    void handle_snap(); 
+    void handle_snap();
 
 
     void download_pixels();
@@ -336,7 +342,7 @@ inline void SGLFW::renderloop_exit()
 SGLFW::renderloop_head
 ------------------------
 
-HMM: perhaps handle_frame_hop from here ? 
+HMM: perhaps handle_frame_hop from here ?
 
 **/
 
@@ -396,7 +402,18 @@ inline void SGLFW::handle_event(GLEQevent& event)
         case GLEQ_WINDOW_REFRESH:  window_refresh()                       ; break ;
         default:                                                          ; break ;
     }
+
+    if( event.type == GLEQ_KEY_PRESSED || event.type == GLEQ_KEY_REPEATED || event.type == GLEQ_KEY_RELEASED )
+    {
+        post_handle_key();
+    }
 }
+
+inline void SGLFW::post_handle_key()
+{
+    gm.enabled_bump_time = !toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
+}
+
 
 
 
@@ -457,7 +474,7 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_R:      toggle.lrot = !toggle.lrot            ; break ;
         case GLFW_KEY_C:      toggle.cuda = !toggle.cuda            ; break ;
         case GLFW_KEY_U:      toggle.norm = !toggle.norm            ; break ;
-        case GLFW_KEY_T:      toggle.tran = !toggle.tran            ; break ;
+        case GLFW_KEY_T:      toggle.time = !toggle.time            ; break ;
         case GLFW_KEY_B:      command("--desc")                     ; break ;
         case GLFW_KEY_H:      command("--home") ; command("--help") ; break ;
         case GLFW_KEY_O:      command("--tcam")                     ; break ;
@@ -471,9 +488,10 @@ inline void SGLFW::key_pressed(unsigned key)
     }
 
     //if(modifiers > 0) gm.key_pressed_action(modifiers) ; // not triggered repeatedly enough for navigation
-
     if(level > 1) std::cout << toggle.desc() << std::endl ;
 }
+
+
 
 inline void SGLFW::numkey_pressed(unsigned _num, unsigned modifiers)
 {
@@ -515,9 +533,9 @@ SGLFW::handle_frame_hop
 -------------------------
 
 When frame hop keypress detected pass the wanted frame idx to gm.
-The wanted_frame_idx starts as -2 until press a number key 0-9 
-without or with modifiers shift/alt/shift+alt. 
-The wanted_frame_idx is set back to -2 when press M 
+The wanted_frame_idx starts as -2 until press a number key 0-9
+without or with modifiers shift/alt/shift+alt.
+The wanted_frame_idx is set back to -2 when press M
 for the MOI starting frame.
 
 **/
@@ -731,14 +749,14 @@ SGLFW::command
 |   L    | --snap-inverted         |                        |
 +--------+-------------------------+------------------------+
 
-Seems the difference between --snap-local and --snap 
-is whether the snap is done immediately or slightly delayed 
-via the wanted mechanism.  Suspect that in this case 
-of direct OpenGL snapshots there is no benefit from the 
-distinction. However for OptiX snapshots can imagine 
+Seems the difference between --snap-local and --snap
+is whether the snap is done immediately or slightly delayed
+via the wanted mechanism.  Suspect that in this case
+of direct OpenGL snapshots there is no benefit from the
+distinction. However for OptiX snapshots can imagine
 that this is needed for a check in the render loop
 to see the "notification" and do the OptiX snap without
-needing any dependency. 
+needing any dependency.
 
 **/
 
@@ -932,6 +950,11 @@ inline void SGLFW::cursor_moved_action()
         std::string cmd = FormCommand("--inc-tmax", dy*100 );
         gm.command(cmd.c_str()) ;
     }
+    else if(toggle.time)
+    {
+        std::string cmd = FormCommand("--inc-time", dy );
+        gm.command(cmd.c_str()) ;
+    }
     /*
     else if(toggle.lrot)
     {
@@ -939,12 +962,7 @@ inline void SGLFW::cursor_moved_action()
         gm.setLookRotation(start_ndc, move_ndc);
         gm.update();
     }
-    else if(toggle.tran)
-    {
-        gm.setEyeShift(start_ndc, move_ndc, modifiers );
-        gm.update();
-    }
-    */
+   */
     else
     {
         gm.cursor_moved_action(start_ndc, move_ndc, modifiers );

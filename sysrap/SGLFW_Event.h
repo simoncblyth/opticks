@@ -3,12 +3,10 @@
 SGLFW_Event.h : manage scene data and OpenGL render pipelines
 ===============================================================
 
-Yuxiang appears started from SGLFW_Scene and added 
-rendering of record arrays together with the OpenGL
-mesh based render. 
-
-The difference between SGLFW_Scene.h and SGLFW_Event.h
-is not big enough to merit the duplication. 
+Yuxiang started from SGLFW_Scene and added rendering of record arrays
+together with the OpenGL mesh based render.
+The changes between SGLFW_Scene.h and SGLFW_Event.h
+are not big enough to merit the duplication in the longterm.
 
 
 Primary members
@@ -49,16 +47,14 @@ struct SGLFW_Event
     SGLM&         gm ;
     SGLFW*        gl ;
 
-    SRecordInfo*  sr;
+    SGLFW_Record*   record;
 
-    // map of these ? or pairs ?
     SGLFW_Program* wire ;
     SGLFW_Program* iwire ;
     SGLFW_Program* norm ;
     SGLFW_Program* inorm ;
 
     SGLFW_Program*  rec_prog;
-    SGLFW_Record*   record;
 
     std::vector<SGLFW_Mesh*> mesh ;
 
@@ -67,12 +63,9 @@ struct SGLFW_Event
     void initProg();
     void initMesh();
 
-    void initRecord();
-
     SGLFW_Program* getIProg() const ;
     SGLFW_Program* getProg() const ;
 
-    SGLFW_Program* getRecProg() const ;
 
     void render();
     void renderloop();
@@ -88,22 +81,18 @@ inline SGLFW_Program* SGLFW_Event::getProg() const
     return gl->toggle.norm ? norm : wire ;
 }
 
-inline SGLFW_Program* SGLFW_Event::getRecProg() const
-{
-    return rec_prog;
-}
 
 inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm, SRecordInfo* _sr)
     :
-    sc(_sc)
-   ,gm(_gm)
-   ,gl(new SGLFW(gm))
-   ,sr(_sr)
-   ,wire(nullptr)
-   ,iwire(nullptr)
-   ,norm(nullptr)
-   ,inorm(nullptr)
-   ,rec_prog(nullptr)
+    sc(_sc),
+    gm(_gm),
+    gl(new SGLFW(gm)),
+    record(SGLFW_Record::Create(gm, _sr)),
+    wire(nullptr),
+    iwire(nullptr),
+    norm(nullptr),
+    inorm(nullptr),
+    rec_prog(nullptr)
 {
     init();
 }
@@ -112,14 +101,8 @@ inline void SGLFW_Event::init()
 {
     initProg();
     initMesh();
-    initRecord();
 }
 
-inline void SGLFW_Event::initRecord()
-{
-    sr->init_minmax2D();
-    record = new SGLFW_Record(sr);
-}
 
 
 /**
@@ -204,16 +187,15 @@ inline void SGLFW_Event::render()
     int num_mesh = mesh.size();
     for(int i=0 ; i < num_mesh ; i++)
     {
-        bool viz = gm.is_vizmask_set(i);  
-        if(!viz) continue ; 
+        bool viz = gm.is_vizmask_set(i);
+        if(!viz) continue ;
 
         SGLFW_Mesh* _mesh = mesh[i] ;
         SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;
         _mesh->render(_prog);
     }
 
-    //record.npy render
-    record->render(rec_prog);
+    if(record) record->render(rec_prog);   //record.npy render
 }
 
 

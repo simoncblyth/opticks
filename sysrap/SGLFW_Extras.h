@@ -60,13 +60,13 @@ HMM: move to SGLM_Toggle as no use of GLFW
 
 struct SGLFW_Toggle
 {
-    bool zoom ;
-    bool tmin ;
-    bool tmax ;
-    bool lrot ;
-    bool cuda ;
-    bool norm ;
-    bool tran ;
+    bool zoom = false ;
+    bool tmin = false ;
+    bool tmax = false ;
+    bool lrot = false ;
+    bool cuda = false ;
+    bool norm = false ;
+    bool time = false ;
 
     std::string desc() const ;
 };
@@ -81,7 +81,7 @@ inline std::string SGLFW_Toggle::desc() const
        << " lrot:" << ( lrot ? "Y" : "N" )
        << " cuda:" << ( cuda ? "Y" : "N" )
        << " norm:" << ( norm ? "Y" : "N" )
-       << " tran:" << ( tran ? "Y" : "N" )
+       << " time:" << ( time ? "Y" : "N" )
        ;
     std::string str = ss.str();
     return str ;

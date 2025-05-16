@@ -21,7 +21,6 @@ inline int SRecordInfo_test::Load()
 {
     std::cout << "[SRecordInfo_test::Load" << std::endl ;
     SRecordInfo* sr= SRecordInfo::Load("$SRECORD_PATH") ;
-    sr->init_minmax2D();
     sr->desc() ;
     std::cout << "]SRecordInfo_test::Load" << std::endl ;
     return 0 ;
