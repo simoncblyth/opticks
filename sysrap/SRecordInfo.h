@@ -17,7 +17,6 @@ struct SRecordInfo
 {
     static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";
 
-    bool dump ;
     NP* record;
     int record_first ;
     int record_count ;  // all step points across all photon
@@ -33,9 +32,9 @@ struct SRecordInfo
     const float* get_mn() const ;
     const float* get_mx() const ;
     const float* get_ce() const ;
+
     const float get_t0() const ;
     const float get_t1() const ;
-    const int   get_num_time() const ;
 
     std::string desc() const ;
 };
@@ -56,7 +55,6 @@ inline SRecordInfo* SRecordInfo::Load(const char* _path)
 
 inline SRecordInfo::SRecordInfo(NP* _record)
     :
-    dump(ssys::getenvbool("SRecordInfo_dump")),
     record(_record),
     record_first(0),
     record_count(0)
@@ -111,31 +109,13 @@ inline const float* SRecordInfo::get_ce() const
     return &ce.x ;
 }
 
-
 inline const float SRecordInfo::get_t0() const
 {
-    float t0 = ssys::getenvfloat("T0", mn.w );
-    return t0;
+    return mn.w ;
 }
 inline const float SRecordInfo::get_t1() const
 {
-    float t1 = ssys::getenvfloat("T1", mx.w );
-    return t1;
-}
-
-/**
-SRecordInfo::get_num_time
---------------------------
-
-Number of render loop time bumps to go from t0 to t1
-
-**/
-
-
-inline const int SRecordInfo::get_num_time() const
-{
-    int nt = ssys::getenvint("NT", 5000 );
-    return nt ;
+    return mx.w ;
 }
 
 

@@ -139,11 +139,12 @@ Screen
 
 #include "SYSRAP_API_EXPORT.hh"
 
+#include "SRecordInfo.h"
 #include "SCMD.h"
 #include "SGLM_Modifiers.h"
 #include "SGLM_Parse.h"
 
-struct SRecordInfo ; 
+struct SRecordInfo ;
 
 
 
@@ -253,9 +254,17 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kLEVEL = "SGLM_LEVEL" ;
     static constexpr const char* kTIMESCALE = "TIMESCALE" ;
 
+    static constexpr const char* kT0 = "T0" ;
+    static constexpr const char* kT1 = "T1" ;
+    static constexpr const char* kTN = "TN" ;  // int:number of render loop time bumps to go from T0 to T1
+
+
+
+
     static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* _SGLM_DESC = "SGLM_DESC" ;
     static constexpr const char* __setTreeScene_DUMP = "SGLM__setTreeScene_DUMP" ;
+    static constexpr const char* __init_time_DUMP = "SGLM__init_time_DUMP" ;
 
 
     // static defaults, some can be overridden in the instance
@@ -278,7 +287,13 @@ struct SYSRAP_API SGLM : public SCMD
     static uint32_t VIZMASK ;
     static int   TRACEYFLIP ;
     static int   LEVEL ;
+
     static float TIMESCALE ;
+
+    // record time range
+    static float  T0 ;
+    static float  T1 ;
+    static int    TN ;
 
 
     static void SetWH( int width, int height );
@@ -335,10 +350,6 @@ struct SYSRAP_API SGLM : public SCMD
     stree*  tree ;
     SScene* scene ;
     void setTreeScene( stree* _tree, SScene* _scene );
-
-    SRecordInfo* ar ; 
-    SRecordInfo* br ; 
-    void setRecordInfo( SRecordInfo* ar, SRecordInfo* br ); 
 
     void handle_frame_hop(int wanted_frame_idx);
 
@@ -593,25 +604,37 @@ struct SYSRAP_API SGLM : public SCMD
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale);
 
+
+    SRecordInfo* ar ;
+    SRecordInfo* br ;
+    void setRecordInfo( SRecordInfo* ar, SRecordInfo* br );
+
     bool enabled_bump_time = true ;
     glm::vec4 timeparam = {} ;
+    const float* timeparam_ptr ;
 
-    void init_time( float t0, float t1, int ns);
+
+    void init_time();
+    void reset_time();
+    std::string desc_time() const ;
+
     float get_t0() const ;
     float get_t1() const ;
     float get_ts() const ;
+    int get_tn() const ;
+
+
     float get_time() const ;
     bool in_timerange(float t) const ;
     void set_time( float t );
     void bump_time();
     void inc_time( float dy );
 
-
-
     SGLM_Toggle toggle = {} ;
     SGLM_Option option = {} ;
 
-
+    void renderloop_head();
+    void renderloop_tail();
 
 };
 
@@ -635,6 +658,11 @@ uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );
 int        SGLM::TRACEYFLIP  = ssys::getenvint(kTRACEYFLIP,  0 ) ;
 int        SGLM::LEVEL  = ssys::getenvint(kLEVEL,  0 ) ;
 float      SGLM::TIMESCALE = EValue<float>(kTIMESCALE, "1.0");
+
+
+float      SGLM::T0 = EValue<float>(kT0, "0.0" );
+float      SGLM::T1 = EValue<float>(kT1, "0.0" );
+int        SGLM::TN = ssys::getenvint(kTN, 5000 );
 
 
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
@@ -700,8 +728,6 @@ inline SGLM::SGLM()
     SGLM_DESC(ssys::getenvbool(_SGLM_DESC)),
     tree(nullptr),
     scene(nullptr),
-    ar(nullptr),
-    br(nullptr),
     rtp_tangential(false),
     extent_scale(false),
     model2world(1.f),
@@ -750,7 +776,11 @@ inline SGLM::SGLM()
     MVP_ptr(glm::value_ptr(MVP)),
     IDENTITY(1.f),
     IDENTITY_ptr(glm::value_ptr(IDENTITY)),
-    MOI(ssys::getenvvar("MOI", "0:0:-1"))
+    MOI(ssys::getenvvar("MOI", "0:0:-1")),
+    ar(nullptr),
+    br(nullptr),
+    enabled_bump_time(true),
+    timeparam_ptr(glm::value_ptr(timeparam))
 {
     init();
 }
@@ -797,12 +827,6 @@ inline void SGLM::setTreeScene( stree* _tree, SScene* _scene )
         ;
 
 }
-inline void SGLM::setRecordInfo( SRecordInfo* _ar, SRecordInfo* _br )
-{
-    ar = _ar ; 
-    br = _br ; 
-} 
-
 
 inline void SGLM::handle_frame_hop(int wanted_frame_idx)
 {
@@ -2788,6 +2812,25 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
 
 
 /**
+SGLM::setRecordInfo
+--------------------
+
+Invoked for example from SGLFW_Event_test.cc to enable
+rendering of record step points together with geometry.
+
+**/
+
+
+inline void SGLM::setRecordInfo( SRecordInfo* _ar, SRecordInfo* _br )
+{
+    ar = _ar ;
+    br = _br ;
+
+    init_time();
+}
+
+
+/**
 SGLM::init_time
 ----------------------
 
@@ -2796,7 +2839,7 @@ t0
 t1
     end time
 
-ts:int
+tn:int
     number of render calls with which to increment
     the event time from t0 to t1 : typically a large
     value like 5000 to avoid excessively fast animation
@@ -2807,21 +2850,76 @@ timeparam quad:
    +---------+----------+--------------+-------------+
    | t_start | t_stop   |  t_step      | t_current   |
    +=========+==========+==============+=============+
-   |  t0     |   t1     |  (t1-t0)/ts  |     t       |
+   |  t0     |   t1     |  (t1-t0)/tn  |     t       |
    +---------+----------+--------------+-------------+
 
 **/
 
 
-inline void SGLM::init_time( float t0, float t1, int ns)
+inline void SGLM::init_time()
 {
-    assert( ns > 1 );
+    float t0 = T0 ;
+    float t1 = T1 ;
+    int tn = TN ;
+
+    bool t_noenv = t0 == 0.f && t1 == 0.f ;  // envvars T0 and T1 unset or non-sensical
+    if(t_noenv)
+    {
+        t0 = std::min( ar ? ar->get_t0() : 0.f   ,  br ? br->get_t0() :   0.f );
+        t1 = std::max( ar ? ar->get_t1() : 100.f ,  br ? br->get_t1() : 100.f );
+    }
+
+    assert( tn > 1 );
 
     timeparam.x = t0 ;
     timeparam.y = t1 ;
-    timeparam.z = (t1-t0)/float(ns) ;
+    timeparam.z = (t1-t0)/float(tn) ;
     timeparam.w = t0 ;
+
+    bool DUMP = ssys::getenvbool(__init_time_DUMP) ;
+
+    if(DUMP) std::cout
+         << "SGLM::init_time"
+         << " [" << __init_time_DUMP << "] "
+         << " " << ( DUMP ? "YES" : "NO " )
+         << "\n"
+         << desc_time()
+         ;
+
 }
+
+inline void SGLM::reset_time()
+{
+    float t0 = get_t0();
+    set_time(t0) ;
+}
+
+std::string SGLM::desc_time() const
+{
+    float t = get_time();
+    float t0 = get_t0();
+    float t1 = get_t1();
+    float ts = get_ts();
+    int   tn = get_tn();
+
+    std::stringstream ss ;
+    ss
+       << "[SGLM::desc_time\n"
+       << " T0 " << std::fixed << std::setw(7) << std::setprecision(3) << T0 << "\n"
+       << " T1 " << std::fixed << std::setw(7) << std::setprecision(3) << T1 << "\n"
+       << " t  " << std::fixed << std::setw(7) << std::setprecision(3) << t  << "\n"
+       << " t0 " << std::fixed << std::setw(7) << std::setprecision(3) << t0 << "\n"
+       << " t1 " << std::fixed << std::setw(7) << std::setprecision(3) << t1 << "\n"
+       << " ts " << std::fixed << std::setw(7) << std::setprecision(3) << ts << "\n"
+       << " tn "  <<  std::setw(6) << tn << "\n"
+       << "]SGLM::desc_time\n"
+       ;
+
+    std::string str = ss.str();
+    return str ;
+
+}
+
 
 
 inline float SGLM::get_t0() const
@@ -2836,6 +2934,16 @@ inline float SGLM::get_ts() const
 {
     return timeparam.z ;
 }
+inline int SGLM::get_tn() const
+{
+    float t0 = get_t0();
+    float t1 = get_t1();
+    float ts = get_ts();
+    return int((t1 - t0)/ts ) ;
+}
+
+
+
 inline float SGLM::get_time() const
 {
     return timeparam.w ;
@@ -2881,4 +2989,27 @@ inline void SGLM::inc_time(float dy)
 }
 
 
+
+inline void SGLM::renderloop_head()
+{
+
+
+}
+
+
+/**
+SGLM::renderloop_tail
+----------------------
+
+Invoked from SGLFW::renderloop_tail
+
+At each call the simulation time is bumped until the
+time exceeds t1 at which point it is returned to t0.
+
+**/
+
+inline void SGLM::renderloop_tail()
+{
+    if( option.A || option.B ) bump_time();
+}
 

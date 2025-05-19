@@ -51,15 +51,15 @@ int main()
     gm.setRecordInfo( ar, br ); 
 
 
-    SGLFW_Event glsc(scene, gm );
-    SGLFW* gl = glsc.gl ;
+    SGLFW_Event glev(scene, gm );
+    SGLFW* gl = glev.gl ;
 
     while(gl->renderloop_proceed())
     {
         gl->renderloop_head();
         gl->handle_frame_hop();
 
-        glsc.render();
+        glev.render();
 
         gl->renderloop_tail();
     }

@@ -128,10 +128,14 @@ A
 
 alt+A
    toggle gm.option.A controlling rendering of SRecordInfo A
+   (use T0 T1 and TN to control time range and animation speed)
+
 B
    -
+
 alt+B
    toggle gm.option.B controlling rendering of SRecordInfo B
+   (use T0 T1 and TN to control time range and animation speed)
 
 C
    gm.toggle.cuda between rasterized and raytrace render
@@ -159,7 +163,7 @@ M
    hop to the MOI envvar configured frame [not supported by all renderers]
 
 alt+M
-   toggle gm.option.M controlling rendering of mesh geometry by SGLFW_Event.h 
+   toggle gm.option.M controlling rendering of mesh geometry by SGLFW_Event.h
 
 N
    gm.toggle.tmin : then change near by moving cursor vertically
@@ -171,18 +175,21 @@ Q
    (WASDQE) hold to change eyeshift, translate up
 
 R
-   hold down while arcball dragging the mouse to change the look rotation. 
-   This means that can make large shifts in viewpoint in the form of rotating the 
+   hold down while arcball dragging the mouse to change the look rotation.
+   This means that can make large shifts in viewpoint in the form of rotating the
    viewpoint around the look point, which is normally the origin of the target frame.
 
 S
    (WASDQE) hold to change eyeshift, translate backwards
 
 T:gm.toggle.time
-   toggles simulation time scrubbing for record arrays, 
-   when enabled moving mouse up/down changes the simulation time. 
-   Adjust mouse movement sensitivity with TIMESCALE envvar, default 1.0 
-   During scrubbing the automated time increments are disabled.  
+   toggles simulation time scrubbing for record arrays,
+   when enabled moving mouse up/down changes the simulation time.
+   Adjust mouse movement sensitivity with TIMESCALE envvar, default 1.0
+   During scrubbing the automated time increments are disabled.
+
+alt+T
+   gm.reset_time back to t0(T0) for the alt-A and alt-B enabled record array renders
 
 U:gm.toggle.norm
    for rasterized render toggle between wireframe and normal shading
@@ -195,7 +202,7 @@ X
    [only implemented for analytic ray trace, not triangulated ray trace]
 
 Y
-   controls eyerotation, hold down and drag mouse around to change eyerotation, 
+   controls eyerotation, hold down and drag mouse around to change eyerotation,
    allowing to "turn around"
 
 
@@ -377,6 +384,8 @@ inline void SGLFW::renderloop_head()
     if(dump) std::cout << "SGLFW::renderloop_head" << " gl.count " << count << std::endl ;
 
     if(count == 0 ) home();
+
+    gm.renderloop_head();
 }
 
 
@@ -393,6 +402,8 @@ inline void SGLFW::renderloop_tail()
     }
 
     exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
+
+    gm.renderloop_tail();
 }
 
 
@@ -456,12 +467,12 @@ SGLFW::key_pressed
 
 HMM:dont like the arbitrary split between here and SGLM.h for interaction control
 Maybe remove the toggle or do that in SGLM ?
-Better to do all key handling in one place to avoid confusion for duplicated usage. 
+Better to do all key handling in one place to avoid confusion for duplicated usage.
 
-Q: Where is WASD navigation control ? 
+Q: Where is WASD navigation control ?
 A: SGLFW_Keys::modifiers : when WASDQERY keys are down corresponding modifier enum bits are set
    SGLFW_Modifiers::IsW/A/S/D/Z/X/Q/E/R/Y : interprets the modifier bit field
-   SGLM::key_pressed_action : acts on the modified to change the eyeshift vector in 6 directions 
+   SGLM::key_pressed_action : acts on the modified to change the eyeshift vector in 6 directions
 
 **/
 
@@ -478,7 +489,7 @@ inline void SGLFW::key_pressed(unsigned key)
         << std::endl
         ;
 
-    // other than number keys could require all the below 
+    // other than number keys could require all the below
     // to not have any modifiers
 
 
@@ -529,16 +540,17 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_Q:
             case GLFW_KEY_E:
             case GLFW_KEY_Y:  // Y : mouse control of eyerotation included in SGLM_Modnav
-                                 ; break ; 
+                                 ; break ;
         }
-    } 
+    }
     else if( SGLM_Modifiers::IsAlt(modifiers))
     {
         switch(key)
         {
-            case GLFW_KEY_A:   gm.option.A = !gm.option.A     ; break ; 
-            case GLFW_KEY_B:   gm.option.B = !gm.option.B     ; break ; 
-            case GLFW_KEY_M:   gm.option.M = !gm.option.M     ; break ; 
+            case GLFW_KEY_A:   gm.option.A = !gm.option.A     ; break ;
+            case GLFW_KEY_B:   gm.option.B = !gm.option.B     ; break ;
+            case GLFW_KEY_M:   gm.option.M = !gm.option.M     ; break ;
+            case GLFW_KEY_T:   gm.reset_time()                ; break ;
         }
     }
 
