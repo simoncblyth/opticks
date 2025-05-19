@@ -417,6 +417,7 @@ set(HEADERS
 
     SCMD.h
 
+    SRecordInfo.h
     SGLM.h
     SGLM_Parse.h
     SGLM_Modifiers.h
@@ -434,6 +435,8 @@ set(HEADERS
     SGLFW_Program.h
     SGLFW_Mesh.h
     SGLFW_Scene.h
+    SGLFW_Record.h
+    SGLFW_Evt.h
     SGLFW_GLEQ.h
 
     SGLDisplay.h
@@ -831,7 +834,7 @@ set( SCRIPTS
 install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
 
 install(FILES ${CURANDLITE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/curandlite)
-
+install(DIRECTORY gl/ DESTINATION gl)
 
 add_subdirectory(tests)
 

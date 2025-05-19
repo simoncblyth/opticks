@@ -51,7 +51,7 @@ struct SOPTIX
 
     SOPTIX_Pixels*  pix ;   // optional internally managed pixels
 
-    SOPTIX(const SScene* _scn, SGLM& _gm );
+    SOPTIX(SGLM& _gm );
     void init();
 
     void set_param(uchar4* d_pixels);
@@ -69,13 +69,13 @@ inline int SOPTIX::Initialize()
 }
 
 
-inline SOPTIX::SOPTIX(const SScene* _scn, SGLM& _gm)
+inline SOPTIX::SOPTIX(SGLM& _gm)
     :
     irc(Initialize()),
     gm(_gm),
     mod(ctx.context, opt, "$SOPTIX_KERNEL" ),
     pip(ctx.context, mod.module, opt ),
-    scn(&ctx, _scn ),
+    scn(&ctx, gm.scene ),
     sbt(pip, scn ),
     d_param(SOPTIX_Params::DeviceAlloc()),
     HANDLE(ssys::getenvint(_HANDLE, -1)),

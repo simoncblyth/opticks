@@ -45,6 +45,7 @@ TODO:
 #include "CSGOptiX.h"
 #include "SGLFW.h"
 #include "SGLFW_CUDA.h"
+#include "SGLFW_Evt.h"
 
 #include "SScene.h"
 
@@ -58,19 +59,25 @@ struct CSGOptiXRenderInteractiveTest
     bool ALLOW_REMOTE ;
     int irc ;
 
+    SRecordInfo* ar ;
+    SRecordInfo* br ;
+
     CSGFoundry* fd ;
     SGLM*       gm ;
     CSGOptiX*   cx ;
 
     SGLFW*      gl ;
     SGLFW_CUDA* interop ;   // holder of CUDA/OptiX buffer
+    SGLFW_Evt*  glev ;
 
     CSGOptiXRenderInteractiveTest();
 
     void init();
+
     void handle_snap_cx();
     void optix_render_to_buffer();
-    void display_buffer();
+    void display_optix_buffer();
+    void optix_render();
 
 };
 
@@ -93,11 +100,14 @@ inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
     :
     ALLOW_REMOTE(ssys::getenvbool(_ALLOW_REMOTE)),
     irc(Initialize(ALLOW_REMOTE)),
+    ar(SRecordInfo::Load("$AFOLD/record.npy")),
+    br(SRecordInfo::Load("$BFOLD/record.npy")),
     fd(CSGFoundry::Load()),
     gm(new SGLM),
     cx(nullptr),
     gl(nullptr),
-    interop(nullptr)
+    interop(nullptr),
+    glev(nullptr)
 {
     init();
 }
@@ -106,16 +116,17 @@ inline void CSGOptiXRenderInteractiveTest::init()
 {
     assert( irc == 0 );
     assert(fd);
-    stree* tree = fd->getTree(); 
+    stree* tree = fd->getTree();
     assert(tree);
-    SScene* scene = fd->getScene() ; 
+    SScene* scene = fd->getScene() ;
     assert(scene);
-    gm->setTreeScene(tree, scene); 
+    gm->setTreeScene(tree, scene);
+    gm->setRecordInfo(ar, br);
 
-    cx = CSGOptiX::Create(fd) ; 
-    gl = new SGLFW(*gm); 
-    interop = new SGLFW_CUDA(*gm); 
-
+    cx = CSGOptiX::Create(fd) ;
+    gl = new SGLFW(*gm);
+    interop = new SGLFW_CUDA(*gm);
+    glev    = new SGLFW_Evt(*gl);
 
     if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
 }
@@ -157,9 +168,17 @@ inline void CSGOptiXRenderInteractiveTest::optix_render_to_buffer()
     interop->output_buffer->unmap() ;
 }
 
-inline void CSGOptiXRenderInteractiveTest::display_buffer()
+inline void CSGOptiXRenderInteractiveTest::display_optix_buffer()
 {
     interop->displayOutputBuffer(gl->window);
+}
+
+
+inline void CSGOptiXRenderInteractiveTest::optix_render()
+{
+    handle_snap_cx();
+    optix_render_to_buffer();
+    display_optix_buffer();
 }
 
 
@@ -175,9 +194,8 @@ int main(int argc, char** argv)
         gl->renderloop_head();
         gl->handle_frame_hop();
 
-        t.handle_snap_cx();
-        t.optix_render_to_buffer();
-        t.display_buffer();
+        if(gl->gm.option.O) t.optix_render(); // alt-O toggle
+        t.glev->render(); // alt-A/B toggle record array render
 
         gl->renderloop_tail();
     }

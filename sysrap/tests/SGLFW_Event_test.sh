@@ -22,11 +22,8 @@ name=SGLFW_Event_test
 source $HOME/.opticks/GEOM/GEOM.sh
 [ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
 
+source $HOME/.opticks/EVT/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
 
-afold=/tmp/blyth/opticks/GEOM/$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/A000
-bfold=/tmp/blyth/opticks/GEOM/$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/B000
-export AFOLD=${AFOLD:-$afold}
-export BFOLD=${BFOLD:-$bfold}
 
 
 export FOLD=/tmp/$USER/opticks/$name
@@ -41,13 +38,6 @@ for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done
 
 sysrap_dir=..
 SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
-
-
-shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
-export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
-
-recorder_shader_fold=../../examples/UseGeometryShader/rec_flying_point_persist
-export RECORDER_SHADER_FOLD=$recorder_shader_fold
 
 
 
@@ -124,7 +114,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
-   ff="AFOLD BFOLD SHADER_FOLD RECORDER_SHADER_FOLD FOLD"
+   ff="AFOLD BFOLD FOLD"
    for f in $ff ; do printf "%20s : ls -alst %s\n" "$f" "${!f}" ; ls -alst ${!f} ; done
 fi
 

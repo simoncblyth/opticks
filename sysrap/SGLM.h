@@ -211,6 +211,7 @@ struct SYSRAP_API SGLM_Option
     bool A = false ;
     bool B = false ;
     bool M = true ;
+    bool O = true ;
     std::string desc() const ;
 };
 
@@ -221,6 +222,7 @@ inline std::string SGLM_Option::desc() const
        << " A:" << ( A ? "Y" : "N" )
        << " B:" << ( B ? "Y" : "N" )
        << " M:" << ( M ? "Y" : "N" )
+       << " O:" << ( O ? "Y" : "N" )
        ;
     std::string str = ss.str();
     return str ;

@@ -1,6 +1,6 @@
 #!/bin/bash
 usage(){ cat << EOU
-cxr_min.sh : Ray trace geometry rendering script 
+cxr_min.sh : Ray trace geometry rendering script
 ====================================================
 
 Formerly described as "minimal script for shakedown"
@@ -77,6 +77,9 @@ else
 fi
 
 
+source $HOME/.opticks/EVT/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
+
+
 ## MOI envvar controls the initial view, use M key to return to this, number keys to other bookmark frames
 
 moi=~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit
@@ -84,7 +87,8 @@ if [ -f "$moi" ]; then
    source $moi
 else
    export MOI=-1
-fi 
+fi
+
 
 
 
@@ -134,9 +138,9 @@ escale=extent
 traceyflip=0
 
 
-## Formerly had some MOI dependent setting of 
+## Formerly had some MOI dependent setting of
 ## view defaults, but as the view defaults apply
-## to all frames have removed that kludge. 
+## to all frames have removed that kludge.
 
 export WH=${WH:-$wh}
 export FULLSCREEN=${FULLSCREEN:-$fullscreen}
@@ -250,7 +254,7 @@ if [ "${arg/dbg}" != "$arg" ]; then
        rm "$LOG"
    fi
    ## use installed script, not the source one so works from distribution
-   source dbg__.sh    
+   source dbg__.sh
    dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1
 fi

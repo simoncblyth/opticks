@@ -1,13 +1,13 @@
 /**
-CSGOptiX7.cu 
+CSGOptiX7.cu
 ===================
 
 NB: ONLY CODE THAT MUST BE HERE DUE TO OPTIX DEPENDENCY SHOULD BE HERE
-everything else should be located elsewhere : mostly in qudarap: sevent, qsim 
-or the sysrap basis types sphoton quad4 quad2 etc.. where the code is reusable 
-and more easily tested. 
+everything else should be located elsewhere : mostly in qudarap: sevent, qsim
+or the sysrap basis types sphoton quad4 quad2 etc.. where the code is reusable
+and more easily tested.
 
-Functions 
+Functions
 -----------
 
 trace
@@ -22,26 +22,26 @@ render
 simulate
     raygen function : qsim::generate_photon, bounce while loop, qsim::propagate
 
-    * ifndef PRODUCTION sctx::trace sctx::point record the propagation point-by-point 
+    * ifndef PRODUCTION sctx::trace sctx::point record the propagation point-by-point
 
 simtrace
     raygen function : qsim.h generate_photon_simtrace, trace, sevent::add_simtrace
 
 __raygen__rg
-    calls one of the above raygen functions depending on params.raygenmode 
+    calls one of the above raygen functions depending on params.raygenmode
 
 setPayload
     mechanics of communication when not using WITH_PRD
 
 __miss_ms
-    default quad2 prd OR payload for rays that miss 
+    default quad2 prd OR payload for rays that miss
 
 __closesthit__ch
-    populate quad2 prd OR payload for rays that intersect    
+    populate quad2 prd OR payload for rays that intersect
 
 __intersection__is
     converts OptiX HitGroupData into corresponding CSGNode and calls intersect_prim
-    giving float4 isect: (normal_at_intersect, distance) 
+    giving float4 isect: (normal_at_intersect, distance)
 
 **/
 
@@ -64,7 +64,7 @@ __intersection__is
 #include "sevent.h"
 #include "sctx.h"
 
-// simulation 
+// simulation
 #include <curand_kernel.h>
 
 #include "qrng.h"
@@ -89,9 +89,9 @@ trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
 Outcome of trace is to populate *prd* by payload and attribute passing.
-When WITH_PRD macro is defined only 2 32-bit payload values are used to 
-pass the 64-bit  pointer, otherwise more payload and attributes values 
-are used to pass the contents IS->CH->RG. 
+When WITH_PRD macro is defined only 2 32-bit payload values are used to
+pass the 64-bit  pointer, otherwise more payload and attributes values
+are used to pass the contents IS->CH->RG.
 
 See __closesthit__ch to see where the payload p0-p7 comes from.
 **/
@@ -104,16 +104,16 @@ static __forceinline__ __device__ void trace(
         float                  tmax,
         quad2*                 prd,
         unsigned               visibilityMask
-        )   
+        )
 {
-    const float rayTime = 0.0f ; 
-    OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE 
-    const unsigned SBToffset = 0u ; 
-    const unsigned SBTstride = 1u ; 
-    const unsigned missSBTIndex = 0u ; 
+    const float rayTime = 0.0f ;
+    OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE
+    const unsigned SBToffset = 0u ;
+    const unsigned SBTstride = 1u ;
+    const unsigned missSBTIndex = 0u ;
 #ifdef WITH_PRD
-    uint32_t p0, p1 ; 
-    packPointer( prd, p0, p1 ); // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload 
+    uint32_t p0, p1 ;
+    packPointer( prd, p0, p1 ); // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload
     optixTrace(
             handle,
             ray_origin,
@@ -129,7 +129,7 @@ static __forceinline__ __device__ void trace(
             p0, p1
             );
 #else
-    uint32_t p0, p1, p2, p3, p4, p5, p6, p7  ; 
+    uint32_t p0, p1, p2, p3, p4, p5, p6, p7  ;
     optixTrace(
             handle,
             ray_origin,
@@ -148,18 +148,18 @@ static __forceinline__ __device__ void trace(
     prd->q0.f.x = __uint_as_float( p0 );
     prd->q0.f.y = __uint_as_float( p1 );
     prd->q0.f.z = __uint_as_float( p2 );
-    prd->q0.f.w = __uint_as_float( p3 ); 
-    prd->set_identity(p4) ; 
-    prd->set_boundary(p5) ;  
-    prd->set_lposcost(__uint_as_float(p6)) ;  
-    prd->set_iindex(p7) ;  
+    prd->q0.f.w = __uint_as_float( p3 );
+    prd->set_identity(p4) ;
+    prd->set_boundary(p5) ;
+    prd->set_lposcost(__uint_as_float(p6)) ;
+    prd->set_iindex(p7) ;
 #endif
 }
 
 //#if !defined(PRODUCTION) && defined(WITH_RENDER)
 #if defined(WITH_RENDER)
 
-__forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float depth )  // pure 
+__forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float depth )  // pure
 {
     return make_uchar4(
             static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f ),
@@ -169,7 +169,7 @@ __forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float
             );
 }
 
-__forceinline__ __device__ uchar4 make_zdepth_pixel( float depth )  // pure 
+__forceinline__ __device__ uchar4 make_zdepth_pixel( float depth )  // pure
 {
     return make_uchar4(
             static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
@@ -182,11 +182,11 @@ __forceinline__ __device__ uchar4 make_zdepth_pixel( float depth )  // pure
 
 
 /**
-render : non-pure, uses params for viewpoint inputs and pixels output 
+render : non-pure, uses params for viewpoint inputs and pixels output
 -----------------------------------------------------------------------
 
-Bugs with normal(0.f,0.f,0.f) via normalizing yields diddled_normal(nan,nan,nan) 
-which make_color manages to clamp to (0,0,0) black.  
+Bugs with normal(0.f,0.f,0.f) via normalizing yields diddled_normal(nan,nan,nan)
+which make_color manages to clamp to (0,0,0) black.
 
 **/
 
@@ -194,7 +194,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 {
 
 #if defined(DEBUG_PIDX)
-    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render idx(%d,%d,%d) dim(%d,%d,%d) \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z ); 
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render idx(%d,%d,%d) dim(%d,%d,%d) \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z );
 #endif
 
     float2 d = 2.0f * make_float2(
@@ -203,13 +203,13 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
             ) - 1.0f;
 
 
-    const unsigned cameratype = params.cameratype ;  
-    const float3 dxyUV = d.x * params.U + params.V * ( params.traceyflip ? -d.y : d.y ) ; 
+    const unsigned cameratype = params.cameratype ;
+    const float3 dxyUV = d.x * params.U + params.V * ( params.traceyflip ? -d.y : d.y ) ;
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
     //                           cameratype 0u:perspective,                    1u:orthographic
 
-    trace( 
+    trace(
         params.handle,
         origin,
         direction,
@@ -220,66 +220,74 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     );
 
 #if defined(DEBUG_PIDX)
-    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render prd.distance(%7.3f)  prd.lposcost(%7.3f)  \n", prd->distance(), prd->lposcost()  ); 
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render prd.distance(%7.3f)  prd.lposcost(%7.3f)  \n", prd->distance(), prd->lposcost()  );
 #endif
 
 
-    const float3* normal = prd->normal();  
+
+
+
+    const float3* normal = prd->normal();
 
 #if defined(DEBUG_PIDX)
-    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render normal(%7.3f,%7.3f,%7.3f)  \n", normal->x, normal->y, normal->z ); 
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render normal(%7.3f,%7.3f,%7.3f)  \n", normal->x, normal->y, normal->z );
 #endif
 
-    float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal" 
+    float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal"
 
     float eye_z = -prd->distance()*dot(params.WNORM, direction) ;
     const float& A = params.ZPROJ.z ;
     const float& B = params.ZPROJ.w ;
-    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1 
+    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1
+
+    if( prd->is_boundary_miss() ) zdepth = 0.999f ;
+    // setting miss zdepth to 1.f give black miss pixels, 0.999f gives expected mid-grey from normal of (0.f,0.f,0.f)
+    // previously with zdepth of zero for miss pixels found that OpenGL record rendering did not
+    // appear infront of the grey miss pixels : because they were behind them (zdepth > 0.f ) presumably
 
     unsigned index = idx.y * params.width + idx.x ;
 
-    if(params.pixels) 
+    if(params.pixels)
     {
 #if defined(DEBUG_PIDX)
-        //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render/params.pixels diddled_normal(%7.3f,%7.3f,%7.3f)  \n", diddled_normal.x, diddled_normal.y, diddled_normal.z ); 
+        //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render/params.pixels diddled_normal(%7.3f,%7.3f,%7.3f)  \n", diddled_normal.x, diddled_normal.y, diddled_normal.z );
 #endif
-        params.pixels[index] = params.rendertype == 0 ? make_normal_pixel( diddled_normal, zdepth ) : make_zdepth_pixel( zdepth ) ; 
+        params.pixels[index] = params.rendertype == 0 ? make_normal_pixel( diddled_normal, zdepth ) : make_zdepth_pixel( zdepth ) ;
     }
-    if(params.isect)  
+    if(params.isect)
     {
         float3 position = origin + direction*prd->distance() ;
-        params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ; 
+        params.isect[index]  = make_float4( position.x, position.y, position.z, __uint_as_float(prd->identity())) ;
     }
 
 
 }
 #endif
- 
+
 
 #if defined(WITH_SIMULATE)
 
 /**
-simulate : uses params for input: gensteps, seeds and output photons 
+simulate : uses params for input: gensteps, seeds and output photons
 ----------------------------------------------------------------------
 
-Contrast with the monolithic old way with OptiXRap/cu/generate.cu:generate 
+Contrast with the monolithic old way with OptiXRap/cu/generate.cu:generate
 
-This method aims to get as much as possible of its functionality from 
-separately implemented and tested headers. 
+This method aims to get as much as possible of its functionality from
+separately implemented and tested headers.
 
-The big thing that CSGOptiX provides is geometry intersection, only that must be here. 
+The big thing that CSGOptiX provides is geometry intersection, only that must be here.
 Everything else should be implemented and tested elsewhere, mostly in QUDARap headers.
 
-Hence this "simulate" needs to act as a coordinator. 
+Hence this "simulate" needs to act as a coordinator.
 Params take central role in enabling this:
 
 
 Params
 ~~~~~~~
 
-* CPU side params including qsim.h sevent.h pointers instanciated in CSGOptiX::CSGOptiX 
-  and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam 
+* CPU side params including qsim.h sevent.h pointers instanciated in CSGOptiX::CSGOptiX
+  and populated by CSGOptiX::init methods before being uploaded by CSGOptiX::prepareParam
 
 COMPARE WITH qsim::mock_propagate
 
@@ -287,69 +295,69 @@ COMPARE WITH qsim::mock_propagate
 
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
-    sevent* evt = params.evt ; 
-    if (launch_idx.x >= evt->num_photon) return;   // ? evt->num_slot ? 
+    sevent* evt = params.evt ;
+    if (launch_idx.x >= evt->num_photon) return;   // ? evt->num_slot ?
 
-    unsigned idx = launch_idx.x ;  
-    unsigned genstep_idx = evt->seed[idx] ;   
-    const quad6& gs = evt->genstep[genstep_idx] ; 
+    unsigned idx = launch_idx.x ;
+    unsigned genstep_idx = evt->seed[idx] ;
+    const quad6& gs = evt->genstep[genstep_idx] ;
     // genstep needs the raw index, from zero for each genstep slice sub-launch
 
-    unsigned photon_idx = params.photon_slot_offset + idx ;  
+    unsigned photon_idx = params.photon_slot_offset + idx ;
     // rng_state access and array recording needs the absolute photon_idx
-    // for multi-launch and single-launch simulation to match.  
-    // The offset hides the technicality of the multi-launch from output. 
+    // for multi-launch and single-launch simulation to match.
+    // The offset hides the technicality of the multi-launch from output.
 
     qsim* sim = params.sim ;
 
 //#define OLD_WITHOUT_SKIPAHEAD 1
 #ifdef OLD_WITHOUT_SKIPAHEAD
-    RNG rng = sim->rngstate[photon_idx] ;   
+    RNG rng = sim->rngstate[photon_idx] ;
 #else
-    RNG rng ; 
+    RNG rng ;
     sim->rng->init( rng, sim->evt->index, photon_idx );
 #endif
 
 
-    sctx ctx = {} ; 
-    ctx.evt = evt ; 
-    ctx.prd = prd ; 
-    ctx.idx = idx ; 
+    sctx ctx = {} ;
+    ctx.evt = evt ;
+    ctx.prd = prd ;
+    ctx.idx = idx ;
 
-    sim->generate_photon(ctx.p, rng, gs, photon_idx, genstep_idx );  
+    sim->generate_photon(ctx.p, rng, gs, photon_idx, genstep_idx );
 
-    int command = START ; 
-    int bounce = 0 ;  
+    int command = START ;
+    int bounce = 0 ;
 #ifndef PRODUCTION
-    ctx.point(bounce);  
+    ctx.point(bounce);
 #endif
     while( bounce < evt->max_bounce )
-    {    
-        trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd, params.vizmask );  // geo query filling prd      
+    {
+        trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd, params.vizmask );  // geo query filling prd
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
-        // propagate can do nothing meaningful without a boundary 
+        // propagate can do nothing meaningful without a boundary
 
-        // HMM: normalize here or within CSG ? Actually only needed for 
-        // geometry with active scaling, such as ellipsoid.  
+        // HMM: normalize here or within CSG ? Actually only needed for
+        // geometry with active scaling, such as ellipsoid.
         // TODO: move this so its only done when needed
         //     ~/o/notes/issues/CSGOptiX_simulate_avoid_normalizing_every_normal.rst
         //
 
-        float3* normal = prd->normal();  
-        *normal = normalize(*normal); 
+        float3* normal = prd->normal();
+        *normal = normalize(*normal);
 
 #ifndef PRODUCTION
-        ctx.trace(bounce);  
+        ctx.trace(bounce);
 #endif
-        command = sim->propagate(bounce, rng, ctx); 
-        bounce++;     
+        command = sim->propagate(bounce, rng, ctx);
+        bounce++;
 #ifndef PRODUCTION
-        ctx.point(bounce) ; 
+        ctx.point(bounce) ;
 #endif
-        if(command == BREAK) break ;    
-    }    
+        if(command == BREAK) break ;
+    }
 #ifndef PRODUCTION
-    ctx.end();  // write seq, tag, flat 
+    ctx.end();  // write seq, tag, flat
 #endif
     evt->photon[idx] = ctx.p ;
     // not photon_idx, needs to go from zero for photons from a slice of genstep array
@@ -365,23 +373,23 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 simtrace
 ----------
 
-Used for making 2D cross section views of geometry intersects  
+Used for making 2D cross section views of geometry intersects
 
-Note how seeding is still needed here despite the highly artificial 
-nature of the center-extent grid of gensteps as the threads of the launch 
-still needs to access different gensteps across the grid. 
+Note how seeding is still needed here despite the highly artificial
+nature of the center-extent grid of gensteps as the threads of the launch
+still needs to access different gensteps across the grid.
 
 TODO: Compose frames of pixels, isect and "fphoton" within the cegs window
 using the positions of the intersect "photons".
-Note that multiple threads may be writing to the same pixel 
+Note that multiple threads may be writing to the same pixel
 that is apparently not a problem, just which does it is uncontrolled.
 
 unsigned index = iz * params.width + ix ;
 if( index > 0 )
 {
     params.pixels[index] = make_uchar4( 255u, 0u, 0u, 255u) ;
-    params.isect[index] = make_float4( ipos.x, ipos.y, ipos.z, uint_as_float(identity)) ; 
-    params.fphoton[index] = p ; 
+    params.isect[index] = make_float4( ipos.x, ipos.y, ipos.z, uint_as_float(identity)) ;
+    params.fphoton[index] = p ;
 }
 **/
 
@@ -389,54 +397,54 @@ if( index > 0 )
 static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
     unsigned idx = launch_idx.x ;
-    sevent* evt  = params.evt ; 
+    sevent* evt  = params.evt ;
     if (idx >= evt->num_simtrace) return;    // num_slot for multi launch simtrace ?
 
-    unsigned genstep_idx = evt->seed[idx] ; 
-    unsigned photon_idx  = params.photon_slot_offset + idx ;  
-    // photon_idx same as idx for first launch, offset beyond first for multi-launch 
+    unsigned genstep_idx = evt->seed[idx] ;
+    unsigned photon_idx  = params.photon_slot_offset + idx ;
+    // photon_idx same as idx for first launch, offset beyond first for multi-launch
 
 #if defined(DEBUG_PIDX)
-    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d photon_idx %d  genstep_idx %d evt->num_simtrace %d \n", idx, photon_idx, genstep_idx, evt->num_simtrace ); 
+    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d photon_idx %d  genstep_idx %d evt->num_simtrace %d \n", idx, photon_idx, genstep_idx, evt->num_simtrace );
 #endif
 
-    const quad6& gs = evt->genstep[genstep_idx] ; 
-     
-    qsim* sim = params.sim ; 
+    const quad6& gs = evt->genstep[genstep_idx] ;
+
+    qsim* sim = params.sim ;
     RNG rng ;
-    sim->rng->init(rng, 0, photon_idx) ; 
+    sim->rng->init(rng, 0, photon_idx) ;
 
-    quad4 p ;  
-    sim->generate_photon_simtrace(p, rng, gs, photon_idx, genstep_idx );  
+    quad4 p ;
+    sim->generate_photon_simtrace(p, rng, gs, photon_idx, genstep_idx );
 
-    const float3& pos = (const float3&)p.q0.f  ; 
-    const float3& mom = (const float3&)p.q1.f ; 
+    const float3& pos = (const float3&)p.q0.f  ;
+    const float3& mom = (const float3&)p.q1.f ;
 
 
 #if defined(DEBUG_PIDX)
-    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d pos.xyz %7.3f,%7.3f,%7.3f mom.xyz %7.3f,%7.3f,%7.3f  \n", idx, pos.x, pos.y, pos.z, mom.x, mom.y, mom.z ); 
+    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d pos.xyz %7.3f,%7.3f,%7.3f mom.xyz %7.3f,%7.3f,%7.3f  \n", idx, pos.x, pos.y, pos.z, mom.x, mom.y, mom.z );
 #endif
 
 
 
 
-    trace( 
+    trace(
         params.handle,
         pos,
         mom,
         params.tmin,
         params.tmax,
-        prd, 
+        prd,
         params.vizmask
     );
 
-    evt->add_simtrace( idx, p, prd, params.tmin ); 
+    evt->add_simtrace( idx, p, prd, params.tmin );
     // not photon_idx, needs to go from zero for photons from a slice of genstep array
 }
 #endif
 
 /**
-for angular efficiency need intersection point in object frame to get the angles  
+for angular efficiency need intersection point in object frame to get the angles
 **/
 
 extern "C" __global__ void __raygen__rg_dummy()
@@ -448,28 +456,28 @@ extern "C" __global__ void __raygen__rg()
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-    //bool midpix = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ; 
-    //if(midpix) printf("//__raygen_rg.midpix params.raygenmode %d  \n", params.raygenmode); 
+    //bool midpix = idx.x == dim.x/2 && idx.y == dim.y/2 && idx.z == dim.z/2 ;
+    //if(midpix) printf("//__raygen_rg.midpix params.raygenmode %d  \n", params.raygenmode);
 
-    quad2 prd ; 
-    prd.zero(); 
+    quad2 prd ;
+    prd.zero();
 
-  
+
     switch( params.raygenmode )
     {
 
 #ifdef WITH_SIMULATE
-        case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;  
+        case SRG_SIMULATE:  simulate( idx, dim, &prd ) ; break ;
 #endif
 #ifdef WITH_RENDER
-        case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;  
+        case SRG_RENDER:    render(   idx, dim, &prd ) ; break ;
 #endif
 #ifdef WITH_SIMTRACE
-        case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;  
+        case SRG_SIMTRACE:  simtrace( idx, dim, &prd ) ; break ;
 #endif
     }
 
-} 
+}
 
 
 #ifdef WITH_PRD
@@ -485,10 +493,10 @@ static __forceinline__ __device__ void setPayload( float normal_x, float normal_
     optixSetPayload_3( __float_as_uint( distance ) );
     optixSetPayload_4( identity );
     optixSetPayload_5( boundary );
-    optixSetPayload_6( lposcost );  
-    optixSetPayload_7( iindex   );  
+    optixSetPayload_6( lposcost );
+    optixSetPayload_7( iindex   );
 
-    // num_payload_values PIP::PIP must match the payload slots used up to maximum of 8 
+    // num_payload_values PIP::PIP must match the payload slots used up to maximum of 8
     // NB : payload is distinct from attributes
 }
 #endif
@@ -497,9 +505,9 @@ static __forceinline__ __device__ void setPayload( float normal_x, float normal_
 __miss__ms
 -------------
 
-* missing "normal" is somewhat render specific and this is used for 
-  all raygenmode but Miss should never happen with real simulations 
-* Miss can happen with simple geometry testing however when shoot 
+* missing "normal" is somewhat render specific and this is used for
+  all raygenmode but Miss should never happen with real simulations
+* Miss can happen with simple geometry testing however when shoot
   rays from outside the "world"
 
 **/
@@ -508,26 +516,26 @@ __miss__ms
 extern "C" __global__ void __miss__ms()
 {
     MissData* ms  = reinterpret_cast<MissData*>( optixGetSbtDataPointer() );
-    const unsigned identity = 0xffffffffu ; 
+    const unsigned identity = 0xffffffffu ;  // TODO: should be enum
     const unsigned boundary = 0xffffu ;
-    const float lposcost = 0.f ; 
-  
+    const float lposcost = 0.f ;
+
 #ifdef WITH_PRD
-    quad2* prd = SOPTIX_getPRD<quad2>(); 
+    quad2* prd = SOPTIX_getPRD<quad2>();
 
-    prd->q0.f.x = ms->r ;   
-    prd->q0.f.y = ms->g ; 
-    prd->q0.f.z = ms->b ; 
-    prd->q0.f.w = 0.f ; 
+    prd->q0.f.x = ms->r ;
+    prd->q0.f.y = ms->g ;
+    prd->q0.f.z = ms->b ;
+    prd->q0.f.w = 1.f ;     // attempt to allow rendering infront of miss pixels, but dont work
 
-    prd->q1.u.x = 0u ; 
-    prd->q1.u.y = 0u ; 
-    prd->q1.u.z = 0u ; 
-    prd->q1.u.w = 0u ; 
+    prd->q1.u.x = 0u ;
+    prd->q1.u.y = 0u ;
+    prd->q1.u.z = 0u ;
+    prd->q1.u.w = 0u ;
 
-    prd->set_boundary(boundary); 
-    prd->set_identity(identity); 
-    prd->set_lposcost(lposcost); 
+    prd->set_boundary(boundary);
+    prd->set_identity(identity);
+    prd->set_lposcost(lposcost);
 #else
     setPayload( ms->r, ms->g, ms->b, 0.f, identity, boundary, lposcost, 0u );  // communicate from ms->rg
 #endif
@@ -541,39 +549,39 @@ optixGetInstanceIndex (aka iindex)
     0-based index within IAS
 
 optixGetInstanceId (aka identity)
-    user supplied instanceId, 
+    user supplied instanceId,
     see IAS_Builder::Build, sysrap/sqat4.h sqat4::get_IAS_OptixInstance_instanceId
-    from July 2023: carries sensor_identifier+1 as needed for QPMT 
+    from July 2023: carries sensor_identifier+1 as needed for QPMT
 
 optixGetPrimitiveIndex (aka prim_idx)
     (not currently propagated)
-    local index of AABB within the GAS, 
+    local index of AABB within the GAS,
     see GAS_Builder::MakeCustomPrimitivesBI_11N  (1+index-of-CSGPrim within CSGSolid/GAS).
-    Note that instanced solids adds little to the number of AABB, 
+    Note that instanced solids adds little to the number of AABB,
     most come from unfortunate repeated usage of prims in the non-instanced global
     GAS with repeatIdx 0 (JUNO up to ~4000)
 
 optixGetRayTmax
-    In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
+    In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace
     if no hit has been reported
 
 
 optixGetPrimitiveType
-    OPTIX_PRIMITIVE_TYPE_CUSTOM   = 0x2500    ## 9472 : GET THIS 
+    OPTIX_PRIMITIVE_TYPE_CUSTOM   = 0x2500    ## 9472 : GET THIS
     OPTIX_PRIMITIVE_TYPE_TRIANGLE = 0x2531    ## 9521 : HUH:GETTING ZERO WHEN EXPECT THIS ?
 
 
 ana:CH
    intersect IS program populates most of the prd per-ray-data struct
-   including the trace distance and local normal at intersect 
-   this CH program just adds instance info and transforms the normal 
-   from object to world space 
+   including the trace distance and local normal at intersect
+   this CH program just adds instance info and transforms the normal
+   from object to world space
 
 tri:CH
-   builtin triangles have no user defined intersect program, so this tri:CH 
-   program must populate everything that the ana:IS and ana:CH does  
+   builtin triangles have no user defined intersect program, so this tri:CH
+   program must populate everything that the ana:IS and ana:CH does
 
-tri:boundary   
+tri:boundary
 
 
 ana:normals
@@ -582,38 +590,38 @@ ana:normals
 tri:normals
    Possibilities:
 
-   1. normal from cross product of vertex positions, 
+   1. normal from cross product of vertex positions,
       GPU float precision calc
 
-   2. normal from barycentric weighted vertex normals 
+   2. normal from barycentric weighted vertex normals
       (probably best for sphere/torus or similar with small triangles)
 
-   3. pick normal of one of the vertices, 
+   3. pick normal of one of the vertices,
       profits from double precision vertex normal calculated
       ahead of time
-      (probably best for cube or similar with large triangles) 
+      (probably best for cube or similar with large triangles)
 
-   Which is best depends on the shape and how the input 
-   vertex normals are calculated.  
+   Which is best depends on the shape and how the input
+   vertex normals are calculated.
 
 **/
 
 extern "C" __global__ void __closesthit__ch()
 {
-    unsigned iindex = optixGetInstanceIndex() ; 
-    unsigned identity = optixGetInstanceId() ;  
-    OptixPrimitiveType type = optixGetPrimitiveType(); // HUH: getting type 0, when expect OPTIX_PRIMITIVE_TYPE_TRIANGLE 
+    unsigned iindex = optixGetInstanceIndex() ;
+    unsigned identity = optixGetInstanceId() ;
+    OptixPrimitiveType type = optixGetPrimitiveType(); // HUH: getting type 0, when expect OPTIX_PRIMITIVE_TYPE_TRIANGLE
 
 #if defined(DEBUG_PIDX)
     //const uint3 idx = optixGetLaunchIndex();
-    //if(idx.x == 10 && idx.y == 10) printf("//__closesthit__ch idx(%u,%u,%u) type %d \n", idx.x, idx.y, idx.z, type); 
-    //if(identity == 52264 || identity == 52265 || identity == 52266) printf("//__closesthit__ch iindex %u type %d identity %d \n", iindex, type, identity ); 
+    //if(idx.x == 10 && idx.y == 10) printf("//__closesthit__ch idx(%u,%u,%u) type %d \n", idx.x, idx.y, idx.z, type);
+    //if(identity == 52264 || identity == 52265 || identity == 52266) printf("//__closesthit__ch iindex %u type %d identity %d \n", iindex, type, identity );
 #endif
 
-    if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE || type == 0)  // WHY GETTING ZERO HERE ? 
+    if(type == OPTIX_PRIMITIVE_TYPE_TRIANGLE || type == 0)  // WHY GETTING ZERO HERE ?
     {
         const HitGroupData* hg = reinterpret_cast<HitGroupData*>( optixGetSbtDataPointer() );
-        const TriMesh& mesh = hg->mesh ; 
+        const TriMesh& mesh = hg->mesh ;
 
         const unsigned prim_idx = optixGetPrimitiveIndex();
         const float2   barys    = optixGetTriangleBarycentrics();
@@ -640,23 +648,23 @@ extern "C" __global__ void __closesthit__ch()
         // cannot get Object frame ray_origin/direction in CH (only IS,AH)
         //const float3 ray_origin = optixGetObjectRayOrigin();
         //const float3 ray_direction = optixGetObjectRayDirection();
-        //const float3 lpos = ray_origin + t*ray_direction  ; 
-        // HMM: could use P to give the local position ?  
+        //const float3 lpos = ray_origin + t*ray_direction  ;
+        // HMM: could use P to give the local position ?
 
-        float lposcost = normalize_z(P); // scuda.h 
+        float lposcost = normalize_z(P); // scuda.h
 
 #ifdef WITH_PRD
-        quad2* prd = SOPTIX_getPRD<quad2>(); 
+        quad2* prd = SOPTIX_getPRD<quad2>();
 
-        prd->q0.f.x = N.x ;  
-        prd->q0.f.y = N.y ;  
-        prd->q0.f.z = N.z ;  
-        prd->q0.f.w = t ;  
+        prd->q0.f.x = N.x ;
+        prd->q0.f.y = N.y ;
+        prd->q0.f.z = N.z ;
+        prd->q0.f.w = t ;
 
         prd->set_identity( identity ) ;
         prd->set_iindex(   iindex ) ;
-        prd->set_boundary (mesh.boundary) ; 
-        prd->set_lposcost(lposcost); 
+        prd->set_boundary (mesh.boundary) ;
+        prd->set_lposcost(lposcost);
 #else
         setPayload( N.x, N.y, N.z, t, identity, mesh.boundary, lposcost, iindex );  // communicate from ch->rg
 #endif
@@ -664,24 +672,24 @@ extern "C" __global__ void __closesthit__ch()
     else if(type == OPTIX_PRIMITIVE_TYPE_CUSTOM)
     {
 #ifdef WITH_PRD
-        quad2* prd = SOPTIX_getPRD<quad2>(); 
+        quad2* prd = SOPTIX_getPRD<quad2>();
 
         prd->set_identity( identity ) ;
         prd->set_iindex(   iindex ) ;
-        float3* normal = prd->normal(); 
-        *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;  
+        float3* normal = prd->normal();
+        *normal = optixTransformNormalFromObjectToWorldSpace( *normal ) ;
 #else
-        const float3 local_normal =    // geometry object frame normal at intersection point 
+        const float3 local_normal =    // geometry object frame normal at intersection point
             make_float3(
                     __uint_as_float( optixGetAttribute_0() ),
                     __uint_as_float( optixGetAttribute_1() ),
                     __uint_as_float( optixGetAttribute_2() )
                     );
 
-        const float distance = __uint_as_float(  optixGetAttribute_3() ) ;  
-        unsigned boundary = optixGetAttribute_4() ; 
-        const float lposcost = __uint_as_float( optixGetAttribute_5() ) ; 
-        float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;  
+        const float distance = __uint_as_float(  optixGetAttribute_3() ) ;
+        unsigned boundary = optixGetAttribute_4() ;
+        const float lposcost = __uint_as_float( optixGetAttribute_5() ) ;
+        float3 normal = optixTransformNormalFromObjectToWorldSpace( local_normal ) ;
 
         setPayload( normal.x, normal.y, normal.z, distance, identity, boundary, lposcost, iindex );  // communicate from ch->rg
 #endif
@@ -695,13 +703,13 @@ __intersection__is
 HitGroupData provides the numNode and nodeOffset of the intersected CSGPrim.
 Which Prim gets intersected relies on the CSGPrim::setSbtIndexOffset
 
-Note that optixReportIntersection returns a bool, but that is 
+Note that optixReportIntersection returns a bool, but that is
 only relevant when using anyHit as it provides a way to ignore hits.
-But Opticks does not use anyHit so the returned bool should 
-always be true. 
+But Opticks does not use anyHit so the returned bool should
+always be true.
 
-The attributes passed into optixReportIntersection are 
-available within the CH (and AH) programs. 
+The attributes passed into optixReportIntersection are
+available within the CH (and AH) programs.
 
 HMM: notice that HitGroupData::numNode is not used here, must be looking that up ?
 COULD: reduce HitGroupData to just the nodeOffset
@@ -714,61 +722,61 @@ extern "C" __global__ void __intersection__is()
 #if defined(DEBUG_PIDXYZ)
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
-    bool dumpxyz = idx.x == params.pidxyz.x && idx.y == params.pidxyz.y && idx.z == params.pidxyz.z ; 
-    //if(dumpxyz) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dumpxyz:%d \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dumpxyz); 
+    bool dumpxyz = idx.x == params.pidxyz.x && idx.y == params.pidxyz.y && idx.z == params.pidxyz.z ;
+    //if(dumpxyz) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dumpxyz:%d \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dumpxyz);
 #else
-    bool dumpxyz = false ; 
+    bool dumpxyz = false ;
 #endif
 
 
-    HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();  
-    int nodeOffset = hg->prim.nodeOffset ; 
+    HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();
+    int nodeOffset = hg->prim.nodeOffset ;
 
     const CSGNode* node = params.node + nodeOffset ;  // root of tree
-    const float4* plan = params.plan ;  
-    const qat4*   itra = params.itra ;  
+    const float4* plan = params.plan ;
+    const qat4*   itra = params.itra ;
 
-    const float  t_min = optixGetRayTmin() ; 
+    const float  t_min = optixGetRayTmin() ;
     const float3 ray_origin = optixGetObjectRayOrigin();
     const float3 ray_direction = optixGetObjectRayDirection();
 
-    float4 isect ; // .xyz normal .w distance 
-    isect.x = 0.f ; 
-    isect.y = 0.f ; 
-    isect.z = 0.f ; 
-    isect.w = 0.f ; 
+    float4 isect ; // .xyz normal .w distance
+    isect.x = 0.f ;
+    isect.y = 0.f ;
+    isect.z = 0.f ;
+    isect.w = 0.f ;
 
-    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dumpxyz ); 
+    bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dumpxyz );
     if(valid_isect)
     {
-        const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h 
+        const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h
         const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
-        const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary 
+        const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary
 
 #ifdef WITH_PRD
         if(optixReportIntersection( isect.w, hitKind))
         {
-            quad2* prd = SOPTIX_getPRD<quad2>(); // access prd addr from RG program  
-            prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one 
-            prd->set_boundary(boundary) ; 
-            prd->set_lposcost(lposcost); 
-        }   
+            quad2* prd = SOPTIX_getPRD<quad2>(); // access prd addr from RG program
+            prd->q0.f = isect ;  // .w:distance and .xyz:normal which starts as the local frame one
+            prd->set_boundary(boundary) ;
+            prd->set_lposcost(lposcost);
+        }
 #else
-        unsigned a0, a1, a2, a3, a4, a5  ; // MUST CORRESPOND TO num_attribute_values in PIP::PIP 
-        a0 = __float_as_uint( isect.x );     // isect.xyz is object frame normal of geometry at intersection point 
+        unsigned a0, a1, a2, a3, a4, a5  ; // MUST CORRESPOND TO num_attribute_values in PIP::PIP
+        a0 = __float_as_uint( isect.x );     // isect.xyz is object frame normal of geometry at intersection point
         a1 = __float_as_uint( isect.y );
         a2 = __float_as_uint( isect.z );
-        a3 = __float_as_uint( isect.w ) ; 
-        a4 = boundary ; 
-        a5 = __float_as_uint( lposcost ); 
-        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5 );   
+        a3 = __float_as_uint( isect.w ) ;
+        a4 = boundary ;
+        a5 = __float_as_uint( lposcost );
+        optixReportIntersection( isect.w, hitKind, a0, a1, a2, a3, a4, a5 );
 #endif
-        // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs 
-        // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch 
+        // IS:optixReportIntersection writes the attributes that can be read in CH and AH programs
+        // max 8 attribute registers, see PIP::PIP, communicate to __closesthit__ch
     }
 
 #if defined(DEBUG_PIDXYZ)
-    //if(dumpxyz) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dumpxyz:%d valid_isect:%d\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dumpxyz, valid_isect); 
+    //if(dumpxyz) printf("//__intersection__is  idx(%u,%u,%u) dim(%u,%u,%u) dumpxyz:%d valid_isect:%d\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, dumpxyz, valid_isect);
 #endif
 
 

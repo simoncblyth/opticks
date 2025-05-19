@@ -146,6 +146,7 @@ struct quad2
     quad q0 ; 
     quad q1 ;
 
+
     SQUAD_METHOD void zero();
     SQUAD_METHOD float* data() ;
     SQUAD_METHOD const float* cdata() const ;
@@ -158,11 +159,14 @@ struct quad2
     SQUAD_METHOD unsigned iindex() const ;
     SQUAD_METHOD unsigned identity() const ;
     SQUAD_METHOD unsigned boundary() const ;
+    SQUAD_METHOD bool is_boundary_miss() const ;
 
     SQUAD_METHOD void set_lposcost(float lpc);
     SQUAD_METHOD void set_iindex(  unsigned ii);
     SQUAD_METHOD void set_identity(unsigned id);
     SQUAD_METHOD void set_boundary(unsigned bn);
+
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -190,6 +194,7 @@ SQUAD_METHOD float          quad2::lposcost() const {   return q1.f.x ; }
 SQUAD_METHOD unsigned       quad2::iindex() const {     return q1.u.y ; }
 SQUAD_METHOD unsigned       quad2::identity() const {   return q1.u.z ; }
 SQUAD_METHOD unsigned       quad2::boundary() const {   return q1.u.w ; }
+SQUAD_METHOD bool           quad2::is_boundary_miss() const {   return q1.u.w == 0xffffu ; }
 
 SQUAD_METHOD void           quad2::set_lposcost(float lpc)   { q1.f.x = lpc ; }
 SQUAD_METHOD void           quad2::set_iindex(  unsigned ii) { q1.u.y = ii ;  }

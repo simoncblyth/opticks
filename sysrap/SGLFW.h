@@ -169,6 +169,10 @@ N
    gm.toggle.tmin : then change near by moving cursor vertically
 O
    switch camera between perspective and orthographic projections [--tcam]
+
+alt+O
+   option.O toggle display of optix ray traced geometry  
+
 P
    invokes SGLM::desc describing view parameters [--desc]
 Q
@@ -550,6 +554,7 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_A:   gm.option.A = !gm.option.A     ; break ;
             case GLFW_KEY_B:   gm.option.B = !gm.option.B     ; break ;
             case GLFW_KEY_M:   gm.option.M = !gm.option.M     ; break ;
+            case GLFW_KEY_O:   gm.option.O = !gm.option.O     ; break ;
             case GLFW_KEY_T:   gm.reset_time()                ; break ;
         }
     }

@@ -8,6 +8,8 @@ together with the OpenGL mesh based render.
 The changes between SGLFW_Scene.h and SGLFW_Event.h
 are not big enough to merit the duplication in the longterm.
 
+Hence have extracted the non-duplicated into SGLGW_Evt.h
+
 
 Primary members
 -----------------
@@ -35,6 +37,7 @@ inorm
 
 **/
 
+#include "spath.h"
 #include "SScene.h"
 #include "SGLFW.h"
 
@@ -43,13 +46,13 @@ inorm
 
 struct SGLFW_Event
 {
-    const SScene* sc ;
+    SGLFW&        gl ;
     SGLM&         gm ;
-    SGLFW*        gl ;
 
     SGLFW_Record*   ar ;
     SGLFW_Record*   br ;
 
+    const char* shader_fold ;
     SGLFW_Program* wire ;
     SGLFW_Program* iwire ;
     SGLFW_Program* norm ;
@@ -59,11 +62,12 @@ struct SGLFW_Event
 
     std::vector<SGLFW_Mesh*> mesh ;
 
-    SGLFW_Event(const SScene* scene, SGLM& gm );
+    SGLFW_Event(SGLFW& _gl );
     void init();
     void initProg();
-    void initMesh();
+    std::string  desc() const; 
 
+    void initMesh();
     SGLFW_Program* getIProg() const ;
     SGLFW_Program* getProg() const ;
 
@@ -71,6 +75,7 @@ struct SGLFW_Event
     void render_mesh();
     void renderloop();
 };
+
 
 
 inline SGLFW_Program* SGLFW_Event::getIProg() const
@@ -83,13 +88,15 @@ inline SGLFW_Program* SGLFW_Event::getProg() const
 }
 
 
-inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm )
+
+
+inline SGLFW_Event::SGLFW_Event(SGLFW& _gl )
     :
-    sc(_sc),
-    gm(_gm),
-    gl(new SGLFW(gm)),
+    gl(_gl),
+    gm(gl.gm),
     ar(SGLFW_Record::Create(gm.ar, gm.timeparam_ptr)),
     br(SGLFW_Record::Create(gm.br, gm.timeparam_ptr)),
+    shader_fold("${SGLFW_Event__shader_fold:-$OPTICKS_PREFIX/gl}"),
     wire(nullptr),
     iwire(nullptr),
     norm(nullptr),
@@ -117,17 +124,29 @@ Create the shaders
 
 inline void SGLFW_Event::initProg()
 {
-    // HMM: could discover these from file system
-    wire = new SGLFW_Program("$SHADER_FOLD/wireframe", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr );
-    iwire = new SGLFW_Program("$SHADER_FOLD/iwireframe", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr );
+    wire = new SGLFW_Program(spath::Resolve(shader_fold,  "wireframe"), "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr );
+    iwire = new SGLFW_Program(spath::Resolve(shader_fold, "iwireframe"), "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr );
 
-    norm = new SGLFW_Program("$SHADER_FOLD/normal", "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr );
-    inorm = new SGLFW_Program("$SHADER_FOLD/inormal", "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr );
+    norm = new SGLFW_Program(spath::Resolve(shader_fold, "normal"), "vPos", "vNrm", nullptr, "MVP", gm.MVP_ptr );
+    inorm = new SGLFW_Program(spath::Resolve(shader_fold, "inormal"), "vPos", "vNrm", "vInstanceTransform", "MVP", gm.MVP_ptr );
 
-
-    rec_prog = new SGLFW_Program("$RECORDER_SHADER_FOLD", nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr );
-    // there is no instanced variant of rec_prog
+    rec_prog = new SGLFW_Program(spath::Resolve(shader_fold, "rec_flying_point_persist"), nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr );
 }
+
+
+inline std::string  SGLFW_Event::desc() const
+{
+    std::stringstream ss;
+    ss
+        << "[SGLFW_Event::desc\n"
+        << "  shader_fold [" << ( shader_fold ? shader_fold : "-" ) << "]\n"
+        << "]SGLFW_Event::desc\n"
+        ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 /**
 
@@ -144,21 +163,21 @@ HMM: how to match ray trace IAS/GAS handle selection ?
 
 inline void SGLFW_Event::initMesh()
 {
-    int num_meshmerge = sc->meshmerge.size();
+    int num_meshmerge = gm.scene->meshmerge.size();
 
-    const std::vector<glm::tmat4x4<float>>& inst_tran = sc->inst_tran ;
+    const std::vector<glm::tmat4x4<float>>& inst_tran = gm.scene->inst_tran ;
     const float* values = (const float*)inst_tran.data() ;
     int item_values = 4*4 ;
 
     for(int i=0 ; i < num_meshmerge ; i++)
     {
-        const int4&  _inst_info = sc->inst_info[i] ;
+        const int4&  _inst_info = gm.scene->inst_info[i] ;
 
         int num_inst = _inst_info.y ;
         int offset   = _inst_info.z ;
         bool is_instanced = num_inst > 1 ;
 
-        const SMesh* _mm = sc->meshmerge[i] ;
+        const SMesh* _mm = gm.scene->meshmerge[i] ;
 
         SGLFW_Mesh* _mesh = new SGLFW_Mesh(_mm);
         if( is_instanced )
@@ -228,11 +247,16 @@ in the main or elsewhere and not use this simple renderloop.
 
 inline void SGLFW_Event::renderloop()
 {
-    while(gl->renderloop_proceed())
+    while(gl.renderloop_proceed())
     {
-        gl->renderloop_head();  // clears
+        gl.renderloop_head();  // clears
         render();
-        gl->renderloop_tail();      // swap buffers, poll events
+        gl.renderloop_tail();      // swap buffers, poll events
     }
 }
+
+
+
+
+
 

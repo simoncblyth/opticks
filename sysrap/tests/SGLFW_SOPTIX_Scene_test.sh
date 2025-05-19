@@ -118,9 +118,11 @@ source $HOME/.opticks/GEOM/GEOM.sh
 _CFB=${GEOM}_CFBaseFromGEOM
 
 if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
-   echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB} 
-   exit 1 
+   echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB}
+   exit 1
 fi
+
+source $HOME/.opticks/EVT/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
 
 
 
@@ -142,7 +144,7 @@ logging()
    export SOPTIX_Options__LEVEL=1
    export SOPTIX_Scene__DUMP=1
 }
-[ -n "$LOG" ] && logging 
+[ -n "$LOG" ] && logging
 
 
 
@@ -175,9 +177,6 @@ SYSRAP_DIR=${SYSRAP_DIR:-$sysrap_dir}
 
 
 
-
-shader_fold=../../examples/UseShaderSGLFW_SScene_encapsulated/gl
-export SHADER_FOLD=${SHADER_FOLD:-$shader_fold}
 
 
 #wh=1024,768

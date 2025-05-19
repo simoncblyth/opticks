@@ -26,7 +26,8 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "SScene.h"
 #include "SRecordInfo.h"
 #include "SGLFW.h"
-#include "SGLFW_Event.h"
+#include "SGLFW_Scene.h"
+#include "SGLFW_Evt.h"
 
 int main()
 {
@@ -48,20 +49,23 @@ int main()
 
     SGLM gm ;
     gm.setTreeScene(tree, scene);
-    gm.setRecordInfo( ar, br ); 
+    gm.setRecordInfo( ar, br );
+
+    SGLFW gl(gm);
+    //SGLFW_Event ev(gl);    // includes mesh rendering that belongs in _Scene
+    SGLFW_Evt   ev(gl);
+    SGLFW_Scene sc(gl);
 
 
-    SGLFW_Event glev(scene, gm );
-    SGLFW* gl = glev.gl ;
-
-    while(gl->renderloop_proceed())
+    while(gl.renderloop_proceed())
     {
-        gl->renderloop_head();
-        gl->handle_frame_hop();
+        gl.renderloop_head();
+        gl.handle_frame_hop();
 
-        glev.render();
+        if(gm.option.M) sc.render();
+        ev.render();
 
-        gl->renderloop_tail();
+        gl.renderloop_tail();
     }
     return 0 ;
 }

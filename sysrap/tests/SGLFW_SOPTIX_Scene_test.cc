@@ -24,7 +24,9 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "SScene.h"
 #include "SOPTIX.h"
 #include "SGLFW.h"
+#include "SGLFW_Evt.h"
 #include "SGLFW_Scene.h"
+
 
 int main()
 {
@@ -35,36 +37,33 @@ int main()
     stree* tree = stree::Load(ss);
     if(DUMP) std::cout << scene->desc() ;
 
-    //std::cout << "[SGLM\n" ; 
+    SRecordInfo* ar = SRecordInfo::Load("$AFOLD/record.npy") ;
+    SRecordInfo* br = SRecordInfo::Load("$BFOLD/record.npy") ;
+
+
     SGLM gm ;
     gm.setTreeScene(tree, scene);
-    //std::cout << "]SGLM\n" ; 
+    gm.setRecordInfo( ar, br ); 
 
-    //std::cout << "[SGLFW_Scene\n" ; 
-    SGLFW_Scene gls(scene, gm );
-    //std::cout << "]SGLFW_Scene\n" ; 
+    SGLFW gl(gm); 
 
-    //std::cout << "[SOPTIX\n" ; 
-    SOPTIX      opx(scene, gm) ;
-    //std::cout << "]SOPTIX\n" ; 
+    SGLFW_Scene glsc(gl);
+    SGLFW_Evt   glev(gl); 
 
-    std::cout << "[SGLFW_CUDA\n" ; 
+    SOPTIX      opx(gm) ;
     SGLFW_CUDA  interop(gm);    // interop buffer display coordination
-    std::cout << "]SGLFW_CUDA\n" ; 
 
-    SGLFW* gl = gls.gl ;
     bool first = true ;  ; 
 
-    while(gl->renderloop_proceed())
+    while(gl.renderloop_proceed())
     {
-        gl->renderloop_head();
-        gl->handle_frame_hop();
+        gl.renderloop_head();
+        gl.handle_frame_hop();
 
-        if( gl->toggle.cuda )
+        if( gm.toggle.cuda )
         {
-            uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : for CUDA access
+            uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : give access to CUDA
             opx.render(d_pixels);
-
             if(first)
             {
                 first = false ;  
@@ -72,17 +71,17 @@ int main()
                 std::cout << " opx.render_ppm path [" << path << "]\n" ;   
                 opx.render_ppm(path); 
             }
-
-            interop.output_buffer->unmap() ;                  // unmap buffer : access back to OpenGL
-            interop.displayOutputBuffer(gl->window);
+            interop.output_buffer->unmap() ;                  // unmap buffer : end CUDA access, back to OpenGL
+            interop.displayOutputBuffer(gl.window);     
         }
         else
         {
-            gls.render();
+            glsc.render();
         }
+        glev.render(); 
 
-        gl->handle_snap(); 
-        gl->renderloop_tail();
+        gl.handle_snap(); 
+        gl.renderloop_tail();
     }
     return 0 ;
 }
