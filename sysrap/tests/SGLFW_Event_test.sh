@@ -123,6 +123,11 @@ if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
 fi
 
+if [ "${arg/ls}" != "$arg" ]; then
+   ff="AFOLD BFOLD SHADER_FOLD RECORDER_SHADER_FOLD FOLD"
+   for f in $ff ; do printf "%20s : ls -alst %s\n" "$f" "${!f}" ; ls -alst ${!f} ; done
+fi
+
 
 if [ "${arg/build}" != "$arg" ]; then
 

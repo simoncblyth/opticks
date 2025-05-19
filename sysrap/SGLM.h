@@ -143,6 +143,9 @@ Screen
 #include "SGLM_Modifiers.h"
 #include "SGLM_Parse.h"
 
+struct SRecordInfo ; 
+
+
 
 
 // inputs to projection matrix
@@ -162,6 +165,69 @@ struct SYSRAP_API lrbtnf
     float B_ortho() const ;
     std::string desc() const ;
 };
+
+
+
+/**
+SGLM_Toggle
+-------------
+
+Formerly SGLFW_Toggle from SGLFW_Extras.h
+
+**/
+
+struct SYSRAP_API SGLM_Toggle
+{
+    bool zoom = false ;
+    bool tmin = false ;
+    bool tmax = false ;
+    bool lrot = false ;
+    bool cuda = false ;
+    bool norm = false ;
+    bool time = false ;
+    std::string desc() const ;
+};
+
+inline std::string SGLM_Toggle::desc() const
+{
+    std::stringstream ss ;
+    ss << "SGLM_Toggle::desc"
+       << " zoom:" << ( zoom ? "Y" : "N" )
+       << " tmin:" << ( tmin ? "Y" : "N" )
+       << " tmax:" << ( tmax ? "Y" : "N" )
+       << " lrot:" << ( lrot ? "Y" : "N" )
+       << " cuda:" << ( cuda ? "Y" : "N" )
+       << " norm:" << ( norm ? "Y" : "N" )
+       << " time:" << ( time ? "Y" : "N" )
+       ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+struct SYSRAP_API SGLM_Option
+{
+    bool A = false ;
+    bool B = false ;
+    bool M = true ;
+    std::string desc() const ;
+};
+
+inline std::string SGLM_Option::desc() const
+{
+    std::stringstream ss ;
+    ss << "SGLM_Option::desc"
+       << " A:" << ( A ? "Y" : "N" )
+       << " B:" << ( B ? "Y" : "N" )
+       << " M:" << ( M ? "Y" : "N" )
+       ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
 
 
 struct SYSRAP_API SGLM : public SCMD
@@ -269,6 +335,11 @@ struct SYSRAP_API SGLM : public SCMD
     stree*  tree ;
     SScene* scene ;
     void setTreeScene( stree* _tree, SScene* _scene );
+
+    SRecordInfo* ar ; 
+    SRecordInfo* br ; 
+    void setRecordInfo( SRecordInfo* ar, SRecordInfo* br ); 
+
     void handle_frame_hop(int wanted_frame_idx);
 
     void setLookRotation(float angle_deg, glm::vec3 axis );
@@ -535,6 +606,13 @@ struct SYSRAP_API SGLM : public SCMD
     void bump_time();
     void inc_time( float dy );
 
+
+
+    SGLM_Toggle toggle = {} ;
+    SGLM_Option option = {} ;
+
+
+
 };
 
 SGLM* SGLM::INSTANCE = nullptr ;
@@ -622,6 +700,8 @@ inline SGLM::SGLM()
     SGLM_DESC(ssys::getenvbool(_SGLM_DESC)),
     tree(nullptr),
     scene(nullptr),
+    ar(nullptr),
+    br(nullptr),
     rtp_tangential(false),
     extent_scale(false),
     model2world(1.f),
@@ -717,6 +797,11 @@ inline void SGLM::setTreeScene( stree* _tree, SScene* _scene )
         ;
 
 }
+inline void SGLM::setRecordInfo( SRecordInfo* _ar, SRecordInfo* _br )
+{
+    ar = _ar ; 
+    br = _br ; 
+} 
 
 
 inline void SGLM::handle_frame_hop(int wanted_frame_idx)
@@ -794,11 +879,11 @@ void SGLM::setEyeRotation( const glm::vec2& a, const glm::vec2& b )
 
 void SGLM::cursor_moved_action( const glm::vec2& a, const glm::vec2& b, unsigned modifiers )
 {
-    if(SGLM_Modifiers::IsR(modifiers))
+    if(SGLM_Modnav::IsR(modifiers))
     {
         setLookRotation(a,b);
     }
-    else if(SGLM_Modifiers::IsY(modifiers))
+    else if(SGLM_Modnav::IsY(modifiers))
     {
         setEyeRotation(a,b);
     }
@@ -823,14 +908,14 @@ void SGLM::key_pressed_action( unsigned modifiers )
     float factor = SGLM_Modifiers::IsShift(modifiers) ? 5.f : 1.f ;
     float speed = factor*extent()/100. ;
 
-    if(SGLM_Modifiers::IsW(modifiers)) eyeshift.z += speed ;
-    if(SGLM_Modifiers::IsS(modifiers)) eyeshift.z -= speed ;
+    if(SGLM_Modnav::IsW(modifiers)) eyeshift.z += speed ;
+    if(SGLM_Modnav::IsS(modifiers)) eyeshift.z -= speed ;
 
-    if(SGLM_Modifiers::IsA(modifiers)) eyeshift.x += speed ; // sign surprised me here
-    if(SGLM_Modifiers::IsD(modifiers)) eyeshift.x -= speed ;
+    if(SGLM_Modnav::IsA(modifiers)) eyeshift.x += speed ; // sign surprised me here
+    if(SGLM_Modnav::IsD(modifiers)) eyeshift.x -= speed ;
 
-    if(SGLM_Modifiers::IsQ(modifiers)) eyeshift.y += speed ;
-    if(SGLM_Modifiers::IsE(modifiers)) eyeshift.y -= speed ;
+    if(SGLM_Modnav::IsQ(modifiers)) eyeshift.y += speed ;
+    if(SGLM_Modnav::IsE(modifiers)) eyeshift.y -= speed ;
 }
 
 

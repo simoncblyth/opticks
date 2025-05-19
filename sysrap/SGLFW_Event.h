@@ -47,7 +47,8 @@ struct SGLFW_Event
     SGLM&         gm ;
     SGLFW*        gl ;
 
-    SGLFW_Record*   record;
+    SGLFW_Record*   ar ;
+    SGLFW_Record*   br ;
 
     SGLFW_Program* wire ;
     SGLFW_Program* iwire ;
@@ -58,7 +59,7 @@ struct SGLFW_Event
 
     std::vector<SGLFW_Mesh*> mesh ;
 
-    SGLFW_Event(const SScene* scene, SGLM& gm, SRecordInfo* record );
+    SGLFW_Event(const SScene* scene, SGLM& gm );
     void init();
     void initProg();
     void initMesh();
@@ -66,28 +67,29 @@ struct SGLFW_Event
     SGLFW_Program* getIProg() const ;
     SGLFW_Program* getProg() const ;
 
-
     void render();
+    void render_mesh();
     void renderloop();
 };
 
 
 inline SGLFW_Program* SGLFW_Event::getIProg() const
 {
-    return gl->toggle.norm ? inorm : iwire ;
+    return gm.toggle.norm ? inorm : iwire ;
 }
 inline SGLFW_Program* SGLFW_Event::getProg() const
 {
-    return gl->toggle.norm ? norm : wire ;
+    return gm.toggle.norm ? norm : wire ;
 }
 
 
-inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm, SRecordInfo* _sr)
+inline SGLFW_Event::SGLFW_Event(const SScene* _sc, SGLM& _gm )
     :
     sc(_sc),
     gm(_gm),
     gl(new SGLFW(gm)),
-    record(SGLFW_Record::Create(gm, _sr)),
+    ar(SGLFW_Record::Create(gm, gm.ar)),
+    br(SGLFW_Record::Create(gm, gm.br)),
     wire(nullptr),
     iwire(nullptr),
     norm(nullptr),
@@ -174,7 +176,23 @@ inline void SGLFW_Event::initMesh()
 SGLFW_Event::render
 --------------------
 
-TODO: indirect OpenGL to avoid the draw loop
+**/
+
+inline void SGLFW_Event::render()
+{
+    if(      gm.option.M) render_mesh() ; 
+    if(ar && gm.option.A) ar->render(rec_prog);   //record.npy render
+    if(br && gm.option.B) br->render(rec_prog);   //record.npy render
+}
+
+
+/**
+SGLFW_Event::render_mesh
+-------------------------
+
+Possibility: indirect OpenGL to avoid the draw loop
+but while the number of meshes is small the 
+motivation is not strong. 
 
 Note the draw loop does have the advantage of
 being able to use different shader pipeline
@@ -182,7 +200,7 @@ for different mesh (eg to highlight things).
 
 **/
 
-inline void SGLFW_Event::render()
+inline void SGLFW_Event::render_mesh()
 {
     int num_mesh = mesh.size();
     for(int i=0 ; i < num_mesh ; i++)
@@ -194,9 +212,8 @@ inline void SGLFW_Event::render()
         SGLFW_Program* _prog = _mesh->has_inst() ? getIProg() : getProg() ;
         _mesh->render(_prog);
     }
-
-    if(record) record->render(rec_prog);   //record.npy render
 }
+
 
 
 /**

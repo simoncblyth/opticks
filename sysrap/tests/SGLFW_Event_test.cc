@@ -39,20 +39,19 @@ int main()
 
     SRecordInfo* ar = SRecordInfo::Load("$AFOLD/record.npy") ;
     SRecordInfo* br = SRecordInfo::Load("$BFOLD/record.npy") ;
-    SRecordInfo* sr = br ;
-    // HMM: how to implement flipping between A and B records ?
 
     if(DUMP) std::cout
          << " ar " << ( ar ? ar->desc() : "-" ) << "\n"
          << " br " << ( br ? br->desc() : "-" ) << "\n"
-         << " sr " << ( sr ? sr->desc() : "-" ) << "\n"
          ;
 
 
     SGLM gm ;
     gm.setTreeScene(tree, scene);
+    gm.setRecordInfo( ar, br ); 
 
-    SGLFW_Event glsc(scene, gm, sr);
+
+    SGLFW_Event glsc(scene, gm );
     SGLFW* gl = glsc.gl ;
 
     while(gl->renderloop_proceed())

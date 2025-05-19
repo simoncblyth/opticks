@@ -125,17 +125,23 @@ SGLFW.h
 
 A
    (WASDQE) hold to change eyeshift, translate left
+
+alt+A
+   toggle gm.option.A controlling rendering of SRecordInfo A
 B
-   invokes SGLM::desc describing view parameters [--desc]
+   -
+alt+B
+   toggle gm.option.B controlling rendering of SRecordInfo B
+
 C
-   toggle.cuda between rasterized and raytrace render
+   gm.toggle.cuda between rasterized and raytrace render
    [currently only implemented for sysrap triangulated renderer]
 D
    (WASDQE) hold to change eyeshift, translate right
 E
    (WASDQE) hold to change eyeshift, translate down
 F
-   toggle.tmax : then change far by moving cursor vertically
+   gm.toggle.tmax : then change far by moving cursor vertically
 G
    -
 H
@@ -151,26 +157,34 @@ L
    save Y inverted screen shot [--snap-inverted]
 M
    hop to the MOI envvar configured frame [not supported by all renderers]
+
+alt+M
+   toggle gm.option.M controlling rendering of mesh geometry by SGLFW_Event.h 
+
 N
-   toggle.tmin : then change near by moving cursor vertically
+   gm.toggle.tmin : then change near by moving cursor vertically
 O
    switch camera between perspective and orthographic projections [--tcam]
 P
-   -
+   invokes SGLM::desc describing view parameters [--desc]
 Q
    (WASDQE) hold to change eyeshift, translate up
 
 R
-   hold down while arcball dragging mouse to change look rotation
+   hold down while arcball dragging the mouse to change the look rotation. 
+   This means that can make large shifts in viewpoint in the form of rotating the 
+   viewpoint around the look point, which is normally the origin of the target frame.
+
 S
    (WASDQE) hold to change eyeshift, translate backwards
-T:toggle.time
+
+T:gm.toggle.time
    toggles simulation time scrubbing for record arrays, 
    when enabled moving mouse up/down changes the simulation time. 
    Adjust mouse movement sensitivity with TIMESCALE envvar, default 1.0 
    During scrubbing the automated time increments are disabled.  
 
-U:toggle.norm
+U:gm.toggle.norm
    for rasterized render toggle between wireframe and normal shading
 V
    [--traceyflip] invert vertical of the raytrace render, via Param.h signal to kernel
@@ -178,9 +192,14 @@ W
    (WASDQE) hold to change eyeshift, translate forwards
 X
    [--rendertype] toggle between normal and zdepth shading
+   [only implemented for analytic ray trace, not triangulated ray trace]
+
 Y
-   experimental mouse control of eyerotation
-Z:toggle.zoom
+   controls eyerotation, hold down and drag mouse around to change eyerotation, 
+   allowing to "turn around"
+
+
+Z:gm.toggle.zoom
    change zoom scaling by moving cursor vertically
 
 
@@ -239,7 +258,7 @@ then hop to the default frame.
     glm::vec2 move_ndc ;   // from cursor_moved
     glm::vec4 drag ;
 
-    SGLFW_Toggle toggle = {} ;
+    //SGLFW_Toggle toggle = {} ; // moved to SGLM
     SGLFW_Keys keys = {} ;
 
 
@@ -411,7 +430,7 @@ inline void SGLFW::handle_event(GLEQevent& event)
 
 inline void SGLFW::post_handle_key()
 {
-    gm.enabled_bump_time = !toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
+    gm.enabled_bump_time = !gm.toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
 }
 
 
@@ -437,6 +456,12 @@ SGLFW::key_pressed
 
 HMM:dont like the arbitrary split between here and SGLM.h for interaction control
 Maybe remove the toggle or do that in SGLM ?
+Better to do all key handling in one place to avoid confusion for duplicated usage. 
+
+Q: Where is WASD navigation control ? 
+A: SGLFW_Keys::modifiers : when WASDQERY keys are down corresponding modifier enum bits are set
+   SGLFW_Modifiers::IsW/A/S/D/Z/X/Q/E/R/Y : interprets the modifier bit field
+   SGLM::key_pressed_action : acts on the modified to change the eyeshift vector in 6 directions 
 
 **/
 
@@ -453,6 +478,10 @@ inline void SGLFW::key_pressed(unsigned key)
         << std::endl
         ;
 
+    // other than number keys could require all the below 
+    // to not have any modifiers
+
+
     switch(key)
     {
         case GLFW_KEY_0:
@@ -466,29 +495,57 @@ inline void SGLFW::key_pressed(unsigned key)
         case GLFW_KEY_8:
         case GLFW_KEY_9:
                               numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ;
-        case GLFW_KEY_M:
-                              set_wanted_frame_idx(-2)              ; break ;   // MOI target
-        case GLFW_KEY_Z:      toggle.zoom = !toggle.zoom            ; break ;
-        case GLFW_KEY_N:      toggle.tmin = !toggle.tmin            ; break ;
-        case GLFW_KEY_F:      toggle.tmax = !toggle.tmax            ; break ;
-        case GLFW_KEY_R:      toggle.lrot = !toggle.lrot            ; break ;
-        case GLFW_KEY_C:      toggle.cuda = !toggle.cuda            ; break ;
-        case GLFW_KEY_U:      toggle.norm = !toggle.norm            ; break ;
-        case GLFW_KEY_T:      toggle.time = !toggle.time            ; break ;
-        case GLFW_KEY_B:      command("--desc")                     ; break ;
-        case GLFW_KEY_H:      command("--home") ; command("--help") ; break ;
-        case GLFW_KEY_O:      command("--tcam")                     ; break ;
-        case GLFW_KEY_I:      command("--snap-local")               ; break ;
-        case GLFW_KEY_J:      command("--snap-local-inverted")      ; break ;
-        case GLFW_KEY_K:      command("--snap")                     ; break ;
-        case GLFW_KEY_L:      command("--snap-inverted")            ; break ;
-        case GLFW_KEY_V:      command("--traceyflip")               ; break ;
-        case GLFW_KEY_X:      command("--rendertype")               ; break ;
-        case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;
+    }
+
+    if(SGLM_Modifiers::IsNone(modifiers))
+    {
+        switch(key)
+        {
+            case GLFW_KEY_M:
+                                  set_wanted_frame_idx(-2)              ; break ;   // MOI target
+            case GLFW_KEY_Z:      gm.toggle.zoom = !gm.toggle.zoom            ; break ;   // HMM: also in SGLM_Modnav
+            case GLFW_KEY_N:      gm.toggle.tmin = !gm.toggle.tmin            ; break ;
+            case GLFW_KEY_F:      gm.toggle.tmax = !gm.toggle.tmax            ; break ;
+            case GLFW_KEY_R:      gm.toggle.lrot = !gm.toggle.lrot            ; break ;    // HMM: also in SGLM_Modnav
+            case GLFW_KEY_C:      gm.toggle.cuda = !gm.toggle.cuda            ; break ;
+            case GLFW_KEY_U:      gm.toggle.norm = !gm.toggle.norm            ; break ;
+            case GLFW_KEY_T:      gm.toggle.time = !gm.toggle.time            ; break ;
+            case GLFW_KEY_P:      command("--desc")                     ; break ;
+            case GLFW_KEY_H:      command("--home") ; command("--help") ; break ;
+            case GLFW_KEY_O:      command("--tcam")                     ; break ;
+            case GLFW_KEY_I:      command("--snap-local")               ; break ;
+            case GLFW_KEY_J:      command("--snap-local-inverted")      ; break ;
+            case GLFW_KEY_K:      command("--snap")                     ; break ;
+            case GLFW_KEY_L:      command("--snap-inverted")            ; break ;
+            case GLFW_KEY_V:      command("--traceyflip")               ; break ;
+            case GLFW_KEY_X:      command("--rendertype")               ; break ;   // HMM: also in SGLM_Modnav
+            case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;
+
+
+            case GLFW_KEY_W:   // WASDQE keys control navigation via SGLM_Modnav
+            case GLFW_KEY_A:
+            case GLFW_KEY_S:
+            case GLFW_KEY_D:
+            case GLFW_KEY_Q:
+            case GLFW_KEY_E:
+            case GLFW_KEY_Y:  // Y : mouse control of eyerotation included in SGLM_Modnav
+                                 ; break ; 
+        }
+    } 
+    else if( SGLM_Modifiers::IsAlt(modifiers))
+    {
+        switch(key)
+        {
+            case GLFW_KEY_A:   gm.option.A = !gm.option.A     ; break ; 
+            case GLFW_KEY_B:   gm.option.B = !gm.option.B     ; break ; 
+            case GLFW_KEY_M:   gm.option.M = !gm.option.M     ; break ; 
+        }
     }
 
     //if(modifiers > 0) gm.key_pressed_action(modifiers) ; // not triggered repeatedly enough for navigation
-    if(level > 1) std::cout << toggle.desc() << std::endl ;
+    if(level > 1) std::cout << gm.toggle.desc() << std::endl ;
+    if(level > 1) std::cout << gm.option.desc() << std::endl ;
+
 }
 
 
@@ -725,11 +782,11 @@ inline void SGLFW::key_released(unsigned key)
 
 inline void SGLFW::button_pressed(unsigned button, unsigned mods)
 {
-    std::cout << "SGLFW::button_pressed " << button << " " << mods << "\n" ;
+    std::cout << "SGLFW::button_pressed UNHANDLED " << button << " " << mods << "\n" ;
 }
 inline void SGLFW::button_released(unsigned button, unsigned mods)
 {
-    std::cout << "SGLFW::button_released " << button << " " << mods << "\n" ;
+    std::cout << "SGLFW::button_released UNHANDLED " << button << " " << mods << "\n" ;
 }
 
 
@@ -935,28 +992,28 @@ inline void SGLFW::cursor_moved_action()
 {
     unsigned modifiers = keys.modifiers() ;
     float dy = drag.w ;
-    if(toggle.zoom)
+    if(gm.toggle.zoom)
     {
         std::string cmd = FormCommand("--inc-zoom", dy*100 );
         gm.command(cmd.c_str()) ;
     }
-    else if(toggle.tmin)
+    else if(gm.toggle.tmin)
     {
         std::string cmd = FormCommand("--inc-tmin", dy );
         gm.command(cmd.c_str()) ;
     }
-    else if(toggle.tmax)
+    else if(gm.toggle.tmax)
     {
         std::string cmd = FormCommand("--inc-tmax", dy*100 );
         gm.command(cmd.c_str()) ;
     }
-    else if(toggle.time)
+    else if(gm.toggle.time)
     {
         std::string cmd = FormCommand("--inc-time", dy );
         gm.command(cmd.c_str()) ;
     }
     /*
-    else if(toggle.lrot)
+    else if(gm.toggle.lrot)
     {
         //std::cout << "SGLFW::cursor_moved_action.lrot " << std::endl ;
         gm.setLookRotation(start_ndc, move_ndc);

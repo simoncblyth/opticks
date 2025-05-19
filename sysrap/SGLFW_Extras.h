@@ -53,40 +53,6 @@ inline void SGLFW__check(const char* path, int line) // static
 
 
 
-/**
-HMM: move to SGLM_Toggle as no use of GLFW
-
-**/
-
-struct SGLFW_Toggle
-{
-    bool zoom = false ;
-    bool tmin = false ;
-    bool tmax = false ;
-    bool lrot = false ;
-    bool cuda = false ;
-    bool norm = false ;
-    bool time = false ;
-
-    std::string desc() const ;
-};
-
-inline std::string SGLFW_Toggle::desc() const
-{
-    std::stringstream ss ;
-    ss << "SGLFW_Toggle::desc"
-       << " zoom:" << ( zoom ? "Y" : "N" )
-       << " tmin:" << ( tmin ? "Y" : "N" )
-       << " tmax:" << ( tmax ? "Y" : "N" )
-       << " lrot:" << ( lrot ? "Y" : "N" )
-       << " cuda:" << ( cuda ? "Y" : "N" )
-       << " norm:" << ( norm ? "Y" : "N" )
-       << " time:" << ( time ? "Y" : "N" )
-       ;
-    std::string str = ss.str();
-    return str ;
-}
-
 
 
 

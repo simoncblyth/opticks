@@ -48,14 +48,14 @@ inline unsigned SGLFW_Keys::modifiers() const
     if( down[GLFW_KEY_LEFT_ALT]     || down[GLFW_KEY_RIGHT_ALT] )      modifiers += SGLM_Modifiers::MOD_ALT ; 
     if( down[GLFW_KEY_LEFT_SUPER]   || down[GLFW_KEY_RIGHT_SUPER] )    modifiers += SGLM_Modifiers::MOD_SUPER ; 
 
-    if( down[GLFW_KEY_W] ) modifiers += SGLM_Modifiers::MOD_W ; 
-    if( down[GLFW_KEY_A] ) modifiers += SGLM_Modifiers::MOD_A ; 
-    if( down[GLFW_KEY_S] ) modifiers += SGLM_Modifiers::MOD_S ; 
-    if( down[GLFW_KEY_D] ) modifiers += SGLM_Modifiers::MOD_D ; 
-    if( down[GLFW_KEY_Q] ) modifiers += SGLM_Modifiers::MOD_Q ; 
-    if( down[GLFW_KEY_E] ) modifiers += SGLM_Modifiers::MOD_E ; 
-    if( down[GLFW_KEY_R] ) modifiers += SGLM_Modifiers::MOD_R ; 
-    if( down[GLFW_KEY_Y] ) modifiers += SGLM_Modifiers::MOD_Y ; 
+    if( down[GLFW_KEY_W] ) modifiers += SGLM_Modnav::MOD_W ; 
+    if( down[GLFW_KEY_A] ) modifiers += SGLM_Modnav::MOD_A ; 
+    if( down[GLFW_KEY_S] ) modifiers += SGLM_Modnav::MOD_S ; 
+    if( down[GLFW_KEY_D] ) modifiers += SGLM_Modnav::MOD_D ; 
+    if( down[GLFW_KEY_Q] ) modifiers += SGLM_Modnav::MOD_Q ; 
+    if( down[GLFW_KEY_E] ) modifiers += SGLM_Modnav::MOD_E ; 
+    if( down[GLFW_KEY_R] ) modifiers += SGLM_Modnav::MOD_R ; 
+    if( down[GLFW_KEY_Y] ) modifiers += SGLM_Modnav::MOD_Y ; 
 
     return modifiers ; 
 }
