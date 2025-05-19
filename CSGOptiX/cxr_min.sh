@@ -30,6 +30,9 @@ Example commandlines using installed script::
     MOI=PMT_20inch_veto:0:1000 cxr_min.sh
 
 
+    EMM=2,3,4 EYE=3,3,0 cxr_min.sh
+
+
 Use ELV to exclude virtual PMT wrapper volumes::
 
     ELV=t:HamamatsuR12860sMask_virtual,NNVTMCPPMTsMask_virtual,mask_PMT_20inch_vetosMask_virtual cxr_min.sh
@@ -73,22 +76,11 @@ if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFro
     vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
     for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 else
-    source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
+    source ~/.opticks/GEOM/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
 fi
 
-
-source $HOME/.opticks/EVT/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
-
-
-## MOI envvar controls the initial view, use M key to return to this, number keys to other bookmark frames
-
-moi=~/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit
-if [ -f "$moi" ]; then
-   source $moi
-else
-   export MOI=-1
-fi
-
+source $HOME/.opticks/GEOM/EVT.sh   ## optionally sets AFOLD BFOLD where event info is loaded from
+source $HOME/.opticks/GEOM/MOI.sh   ## sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
 
 
 

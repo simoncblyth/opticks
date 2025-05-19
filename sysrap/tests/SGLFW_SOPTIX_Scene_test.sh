@@ -122,8 +122,8 @@ if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
    exit 1
 fi
 
-source $HOME/.opticks/EVT/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
-
+source $HOME/.opticks/GEOM/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
+source $HOME/.opticks/GEOM/MOI.sh   ## optionally sets MOI envvar controlling initial viewpoint
 
 
 export FOLD=/tmp/$USER/opticks/$name

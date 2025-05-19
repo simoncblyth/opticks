@@ -78,7 +78,7 @@ EOT
 }
 
 MOI_TEMPLATE(){ cat << EOT
-#!/bin/bash -l
+#!/bin/bash
 notes(){ cat << EON
 ~/.opticks/GEOM/MOI.sh : exports MOI midx:mord:gord configuring a frame in a geometry
 ======================================================================================
@@ -138,7 +138,28 @@ EOT
 }
 
 
+EVT_TEMPLATE(){ cat << EOT
+#!/bin/bash
+usage(){ cat << EON
+~/.opticks/GEOM/EVT.sh
+========================
 
+Export event related config such as AFOLD and BFOLD.
+Typically these need to be tied to a particular GEOM.
+
+EON
+}
+
+if [ "\$GEOM" == "J25_3_0_opticks_Debug" ]; then
+    afold=/tmp/blyth/opticks/GEOM/\$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/A000
+    bfold=/tmp/blyth/opticks/GEOM/\$GEOM/InputPhotonsCheck/ALL1_DebugPhilox_sChimneyLS:0:-2_SGenerate_ph_disc_M1/B000
+    export AFOLD=\${AFOLD:-\$afold}
+    export BFOLD=\${BFOLD:-\$bfold}
+fi
+
+
+EOT
+}
 
 
 
@@ -238,6 +259,26 @@ MOI(){
   echo $cmd
   eval $cmd
 }
+
+EVT(){
+  : opticks/opticks.bash
+
+  local script=.opticks/GEOM/EVT.sh
+  if [ ! -f "$HOME/$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $HOME/$script
+     EVT_TEMPLATE > $HOME/$script
+  fi
+  local defarg="vi"
+  local arg=${1:-$defarg}
+  if [ "$arg" == "vi" ]; then
+     cmd="vi $HOME/$script"
+  fi
+  echo $cmd
+  eval $cmd
+}
+
+
+
 
 
 
@@ -899,8 +940,8 @@ opticks-compute-notes(){ cat << EON
 opticks-compute-notes
 -----------------------
 
-Both the compute envvars are read by correspondingly named 
-bash functions which are used by om-cmake-okconf which 
+Both the compute envvars are read by correspondingly named
+bash functions which are used by om-cmake-okconf which
 result in generation of the okconf CMake target which includes
 the okconf-config.cmake::
 
@@ -911,26 +952,26 @@ This config sets CMake COMPUTE variables available from all the active packages,
     set(COMPUTE_CAPABILITY 70)
     set(COMPUTE_ARCHITECTURES 70,89)
 
-In this way the user specified envvar values are fed into all packages. 
+In this way the user specified envvar values are fed into all packages.
 
 
 OPTICKS_COMPUTE_CAPABILITY
 
     integer string eg "70" or "89" (representing "compute_70" or "compute_89")
-    identifying the virtual CUDA machine that nvcc will target when generating ptx 
-    for OptiX consumption via OptixModuleCreate in PIP.cc 
+    identifying the virtual CUDA machine that nvcc will target when generating ptx
+    for OptiX consumption via OptixModuleCreate in PIP.cc
 
     An appropriate value is the lowest capability of GPU you want to support.
 
 OPTICKS_COMPUTE_ARCHITECTURES
-    NB if this envvar is not defined it defaults to the value of 
+    NB if this envvar is not defined it defaults to the value of
     OPTICKS_COMPUTE_CAPABILITY
 
-    comma delimited list (or single integer) of compute_XY or sm_XY 
-    integer specifications which is modified to a semicolon delimited list and then 
+    comma delimited list (or single integer) of compute_XY or sm_XY
+    integer specifications which is modified to a semicolon delimited list and then
     passed to the CMake CUDA_ARCHITECTURES target property
-    
-    An appropriate value is the GPUs you want to support. 
+
+    An appropriate value is the GPUs you want to support.
 
     For usage see CUDA targets::
 
@@ -938,7 +979,7 @@ OPTICKS_COMPUTE_ARCHITECTURES
         sysrap/CMakeLists.txt
         qudarap/CMakeLists.txt
         CSG/CMakeLists.txt
-        CSGOptiX/CMakeLists.txt  
+        CSGOptiX/CMakeLists.txt
 
     * https://cmake.org/cmake/help/latest/prop_tgt/CUDA_ARCHITECTURES.html
 
@@ -2115,7 +2156,7 @@ opticks-setup-geant4-(){ cat << EOS
 ## SO AVOID DOING THAT WHEN DETECT GEANT4 ENV ALREADY SETUP
 
 if [ -n "\$G4LEDATA" ]; then
-    echo \$BASH_SOURCE - USE DETECTED GEANT4 ENVIRONMENT 
+    echo \$BASH_SOURCE - USE DETECTED GEANT4 ENVIRONMENT
     export OPTICKS_GEANT4_PREFIX=\$(dirname \$(dirname \$(dirname \$(dirname \$G4LEDATA))))
 else
     export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
@@ -3989,7 +4030,7 @@ opticks-prefix-find-stale()
    local tops="lib lib64"
    local ref=lib/OKConfTest
    for top in $tops ; do
-       echo $FUNCNAME find files in $top 10 minutes or more older than ref $ref 
+       echo $FUNCNAME find files in $top 10 minutes or more older than ref $ref
        find $top -type f ! -newermt "$(date -r $ref) - 10 min"
    done
    cd $iwd

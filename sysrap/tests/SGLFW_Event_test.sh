@@ -22,8 +22,8 @@ name=SGLFW_Event_test
 source $HOME/.opticks/GEOM/GEOM.sh
 [ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
 
-source $HOME/.opticks/EVT/EVT.sh   ##  optionally sets AFOLD BFOLD where event info is loaded from
-
+source $HOME/.opticks/GEOM/EVT.sh   ## optionally sets AFOLD BFOLD where event info is loaded from
+source $HOME/.opticks/GEOM/MOI.sh   ## optionally sets MOI envvar controlling initial viewpoint
 
 
 export FOLD=/tmp/$USER/opticks/$name
