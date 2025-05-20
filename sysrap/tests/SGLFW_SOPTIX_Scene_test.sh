@@ -3,10 +3,6 @@ usage(){ cat << EOU
 SGLFW_SOPTIX_Scene_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
 
-NB because this loads a pre-existing SScene it is necessary to
-regenerate the SScene from Geant4 using eg jok-tds when there
-are geometry issues.
-
 
 Assuming the scene folder exists already::
 
@@ -16,10 +12,13 @@ As this uses GL interop it may be necessary to select the display GPU::
 
     CUDA_VISIBLE_DEVICES=1 ~/o/sysrap/tests/ssst.sh
 
-
 Impl::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+
+
+TODO : Incorporate this into release
+--------------------------------------
 
 
 One step way to create the stree and scene from gdml or other geometry source

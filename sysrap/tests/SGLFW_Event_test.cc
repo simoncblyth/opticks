@@ -52,10 +52,8 @@ int main()
     gm.setRecordInfo( ar, br );
 
     SGLFW gl(gm);
-    //SGLFW_Event ev(gl);    // includes mesh rendering that belongs in _Scene
     SGLFW_Evt   ev(gl);
     SGLFW_Scene sc(gl);
-
 
     while(gl.renderloop_proceed())
     {

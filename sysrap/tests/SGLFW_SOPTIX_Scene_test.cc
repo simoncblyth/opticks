@@ -22,10 +22,11 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "ssys.h"
 #include "SGLM.h"
 #include "SScene.h"
-#include "SOPTIX.h"
+
 #include "SGLFW.h"
-#include "SGLFW_Evt.h"
 #include "SGLFW_Scene.h"
+#include "SGLFW_Evt.h"
+#include "SGLFW_SOPTIX.h"
 
 
 int main()
@@ -40,47 +41,29 @@ int main()
     SRecordInfo* ar = SRecordInfo::Load("$AFOLD/record.npy") ;
     SRecordInfo* br = SRecordInfo::Load("$BFOLD/record.npy") ;
 
-
     SGLM gm ;
     gm.setTreeScene(tree, scene);
-    gm.setRecordInfo( ar, br ); 
+    gm.setRecordInfo( ar, br );
 
-    SGLFW gl(gm); 
+    SGLFW gl(gm);
 
-    SGLFW_Scene glsc(gl);
-    SGLFW_Evt   glev(gl); 
-
-    SOPTIX      opx(gm) ;
-    SGLFW_CUDA  interop(gm);    // interop buffer display coordination
-
-    bool first = true ;  ; 
+    SGLFW_Scene  sc(gl);
+    SGLFW_Evt    ev(gl);
+    SGLFW_SOPTIX ox(gl);
 
     while(gl.renderloop_proceed())
     {
         gl.renderloop_head();
         gl.handle_frame_hop();
 
-        if( gm.toggle.cuda )
+        if(gm.option.M)
         {
-            uchar4* d_pixels = interop.output_buffer->map() ; // map buffer : give access to CUDA
-            opx.render(d_pixels);
-            if(first)
-            {
-                first = false ;  
-                const char* path = "/tmp/out.ppm";  
-                std::cout << " opx.render_ppm path [" << path << "]\n" ;   
-                opx.render_ppm(path); 
-            }
-            interop.output_buffer->unmap() ;                  // unmap buffer : end CUDA access, back to OpenGL
-            interop.displayOutputBuffer(gl.window);     
+            if( gm.toggle.cuda ) ox.render();
+            else                 sc.render();
         }
-        else
-        {
-            glsc.render();
-        }
-        glev.render(); 
+        ev.render();
 
-        gl.handle_snap(); 
+        gl.handle_snap();
         gl.renderloop_tail();
     }
     return 0 ;

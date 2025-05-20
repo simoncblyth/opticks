@@ -182,6 +182,7 @@ R
    hold down while arcball dragging the mouse to change the look rotation.
    This means that can make large shifts in viewpoint in the form of rotating the
    viewpoint around the look point, which is normally the origin of the target frame.
+   Conversely that can be considered to look like rotation of the target object.
 
 S
    (WASDQE) hold to change eyeshift, translate backwards
@@ -231,6 +232,10 @@ Z:gm.toggle.zoom
 With all num_key frame selection is there is no frame with the index
 then hop to the default frame.
 
+
+TODO: panning toggle, to enable translating viewpoint "sideways" (ie keeping the 
+direction of the view the same, but translating in perpendicular direction
+selected by mouse drag direction, old Opticks oglrap may have this)
 
 )LITERAL" ;
     static constexpr const char* TITLE = "SGLFW" ;
