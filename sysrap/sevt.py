@@ -380,13 +380,13 @@ class SEvt(object):
             qtab = eval(qtab_)
             qtab_ = qtab_.replace("q","%s.q" % symbol)
 
-            nosc = np.ones(len(qq), dtype=np.bool )       # start all true
+            nosc = np.ones(len(qq), dtype=np.bool_ )       # start all true
             nosc[np.where(qq == pcf.SC)[0]] = 0     # knock out photons with scatter in their histories
 
-            nore = np.ones(len(qq), dtype=np.bool )       # start all true
+            nore = np.ones(len(qq), dtype=np.bool_ )       # start all true
             nore[np.where(qq == pcf.RE)[0]] = 0     # knock out photons with reemission in their histories
 
-            noscab = np.ones(len(qq), dtype=np.bool )     # start all true
+            noscab = np.ones(len(qq), dtype=np.bool_ )     # start all true
             noscab[np.where(qq == pcf.SC)[0]] = 0   # knock out photons with scatter in their histories
             noscab[np.where(qq == pcf.AB)[0]] = 0   # knock out photons with bulk absorb  in their histories
         else:
@@ -744,21 +744,21 @@ class SABHit(object):
         assert not a is None and not b is None
 
     def __repr__(self):
-        a = len(self.a.f.hit)
+        a = len(self.a.f.hit) if hasattr(self.a.f, "hit") else 0
         a_std = np.sqrt(a)
-        a_rel = a_std/a  # estimate of rel error from sqrt of count, as Poisson
+        a_rel = a_std/a  if a != 0 else 0 # estimate of rel error from sqrt of count, as Poisson
 
-        b = len(self.b.f.hit)
+        b = len(self.b.f.hit) if hasattr(self.b.f, "hit") else 0
         b_std = np.sqrt(b)
-        b_rel = b_std/b   # estimate of rel error from sqrt of count, as Poisson
+        b_rel = b_std/b if b != 0 else 0  # estimate of rel error from sqrt of count, as Poisson
 
         ab_rel = a_rel + b_rel # assume uncorrelated : so add relative errors
         ba_rel = a_rel + b_rel # assume uncorrelated : so add relative errors
 
-        ab = float(a)/float(b)
+        ab = float(a)/float(b) if b != 0 else 0
         ab_std = (ab_rel)*ab
 
-        ba = float(b)/float(a)
+        ba = float(b)/float(a) if a != 0 else 0
         ba_std = (ba_rel)*ba
 
         fmt = "\n\nSABHit  a_nhit : ( %7d +- %4d )  b_nhit:(  %7d +- %4d )  a/b: ( %6.3f +- %6.3f )  b/a: ( %6.3f +- %6.3f)  [assume uncorr.]\n\n"
