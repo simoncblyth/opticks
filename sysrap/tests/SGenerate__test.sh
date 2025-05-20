@@ -50,11 +50,11 @@ if [ "$src" == "sphere" ]; then
 elif [ "$src" == "disc" ]; then
 
     export storch_FillGenstep_type=disc
-    export storch_FillGenstep_radius=1000
+    export storch_FillGenstep_radius=399       # 1mm less than sChimneyLS outer radius
     export storch_FillGenstep_zenith=0,1       # radial range scale
     export storch_FillGenstep_azimuth=0,1      # phi segment twopi fraction
     export storch_FillGenstep_mom=0,0,1
-    export storch_FillGenstep_pos=0,0,0
+    export storch_FillGenstep_pos=0,0,$(( -1963 - 500 ))   # -1963 is base of sChimneyLS
 
 fi
 
