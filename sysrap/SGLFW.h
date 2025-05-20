@@ -171,7 +171,7 @@ O
    switch camera between perspective and orthographic projections [--tcam]
 
 alt+O
-   option.O toggle display of optix ray traced geometry  
+   option.O toggle display of optix ray traced geometry
 
 P
    invokes SGLM::desc describing view parameters [--desc]
@@ -336,6 +336,7 @@ then hop to the default frame.
     virtual ~SGLFW();
     static void Error_callback(int error, const char* description);
     void init();
+    void setWindowTitle(const char* title);
 
 };
 
@@ -408,6 +409,7 @@ inline void SGLFW::renderloop_tail()
     exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 
     gm.renderloop_tail();
+    setWindowTitle(gm.title.c_str());
 }
 
 
@@ -1243,4 +1245,11 @@ inline void SGLFW::init()
     //home(); // too soon to do this, as flaky where the cursor starts
     if(level > 1) printf("]SGLFW::init\n");
 }
+
+inline void SGLFW::setWindowTitle(const char* title)
+{
+    glfwSetWindowTitle(window, title);
+}
+
+
 

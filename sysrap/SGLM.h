@@ -462,6 +462,8 @@ struct SYSRAP_API SGLM : public SCMD
     std::string descEyeBasis() const ;
 
 
+
+
     // modes
     int  cam ;
     int  nearfar ;
@@ -512,7 +514,9 @@ struct SYSRAP_API SGLM : public SCMD
     glm::mat4 IDENTITY ;
     float* IDENTITY_ptr ;
     const char* MOI ;
+    std::string title ;
 
+    void updateTitle();
     void left_right_bottom_top_near_far(lrbtnf& p) const ;
 
     static constexpr const char* _updateProjection_DEBUG = "SGLM__updateProjection_DEBUG" ;
@@ -779,6 +783,7 @@ inline SGLM::SGLM()
     IDENTITY(1.f),
     IDENTITY_ptr(glm::value_ptr(IDENTITY)),
     MOI(ssys::getenvvar("MOI", "0:0:-1")),
+    title("SGLM"),
     ar(nullptr),
     br(nullptr),
     enabled_bump_time(true),
@@ -1155,6 +1160,8 @@ SGLM::set_frame
 inline void SGLM::set_frame( const sfr& fr_ )
 {
     fr = fr_ ;
+    //std::cout << "SGLM::set_frame [" << fr.get_name() << "]\n";
+
     update();
 
     int DUMP = ssys::getenvint(_DUMP, 0);
@@ -1235,6 +1242,8 @@ inline void SGLM::update()
 
     updateComposite();   // projection,word2camera -> MVP
     updateEyeBasis();   //  IMV, camera2world,apect,ZOOM,focal_basis,...->u,v,w,e  [used for ray trace rendering]
+
+    updateTitle();
 
     addlog("SGLM::update", "]");
 }
@@ -1653,6 +1662,9 @@ void SGLM::updateEyeBasis()
 
 }
 
+
+
+
 /**
 SGLM::updateNearFar
 --------------------------
@@ -1688,7 +1700,13 @@ std::string SGLM::descNearFar() const
 }
 
 
-
+void SGLM::updateTitle()
+{
+    std::stringstream ss ;
+    ss << fr.get_name() ;
+    ss << " sglm.e(c2w*ori) [" << Present(e) << "]" ;
+    title = ss.str();
+}
 
 
 void SGLM::left_right_bottom_top_near_far(lrbtnf& p) const
