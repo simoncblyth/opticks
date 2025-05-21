@@ -125,7 +125,7 @@ vars="$vars TMP EVT BASE BINBASE SCRIPT"
 vars="$vars ${GEOM}_CFBaseFromGEOM ${GEOM}_GDMLPathFromGEOM"
 
 # pulled out complicated Resolve_CFBaseFromGEOM.sh from here
-# instead rely on user to setup geometry access envvar 
+# instead rely on user to setup geometry access envvar
 # in GEOM.sh or elsewhere
 
 knobs()
@@ -175,13 +175,13 @@ vars="$vars version VERSION"
 
 
 #test=debug
-test=ref1
+#test=ref1
 #test=ref5
 #test=ref8
 #test=ref10
 #test=ref10_multilaunch
 #test=input_genstep
-#test=input_photon
+test=input_photon
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
@@ -384,6 +384,7 @@ elif [ "$TEST" == "input_photon" ]; then
    opticks_running_mode=SRM_INPUT_PHOTON
    #opticks_event_mode=Nothing
    #opticks_max_photon=M1
+   opticks_max_slot=M3
 
 else
 
@@ -439,32 +440,43 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
-    #ipho=RainXZ_Z195_1000_f8.npy      ## ok
-    #ipho=RainXZ_Z230_1000_f8.npy      ## ok
-    #ipho=RainXZ_Z230_10k_f8.npy       ## ok
-    ipho=RainXZ_Z230_100k_f8.npy
-    #ipho=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
-    #ipho=GridXY_X700_Z230_10k_f8.npy
-    #ipho=GridXY_X1000_Z1000_40k_f8.npy
+    ## cf with ipcv : ~/j/InputPhotonsCheck/InputPhotonsCheck.sh
 
-    #moi=-1
-    #moi=sWorld:0:0
-    #moi=NNVT:0:0
-    #moi=NNVT:0:50
-    moi=NNVT:0:1000
-    #moi=PMT_20inch_veto:0:1000
-    #moi=sChimneyAcrylic
+    #sevt__input_photon_dir=/cvmfs/opticks.ihep.ac.cn/.opticks/InputPhotons
+    #sevt__input_photon_dir=$HOME/.opticks/InputPhotons
+    #sevt__input_photon_dir=/data1/blyth/tmp/SGenerate__test
+    sevt__input_photon_dir=$TMP/SGenerate__test
+
+    #opticks_input_photon=RainXZ_Z195_1000_f8.npy      ## ok
+    #opticks_input_photon=RainXZ_Z230_1000_f8.npy      ## ok
+    #opticks_input_photon=RainXZ_Z230_10k_f8.npy       ## ok
+    #opticks_input_photon=RainXZ_Z230_100k_f8.npy
+    #opticks_input_photon=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
+    #opticks_input_photon=GridXY_X700_Z230_10k_f8.npy
+    #opticks_input_photon=GridXY_X1000_Z1000_40k_f8.npy
+    opticks_input_photon=SGenerate_ph_disc_K1.npy
+
+    #opticks_input_photon_frame=-1
+    #opticks_input_photon_frame=sWorld:0:0
+    #opticks_input_photon_frame=NNVT:0:0
+    #opticks_input_photon_frame=NNVT:0:50
+    #opticks_input_photon_frame=NNVT:0:1000
+    #opticks_input_photon_frame=PMT_20inch_veto:0:1000
+    #opticks_input_photon_frame=sChimneyAcrylic
+    #opticks_input_photon_frame=sTarget
+    opticks_input_photon_frame=sChimneyLS:0:-2
 
     # SEventConfig
-    export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$ipho};
-    export OPTICKS_INPUT_PHOTON_FRAME=${MOI:-$moi}
+    export SEvt__INPUT_PHOTON_DIR=${SEvt__INPUT_PHOTON_DIR:-$sevt__input_photon_dir}
+    export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$opticks_input_photon};
+    export OPTICKS_INPUT_PHOTON_FRAME=${OPTICKS_INPUT_PHOTON_FRAME:-$opticks_input_photon_frame}
+
+    vars="$vars SEvt__INPUT_PHOTON_DIR OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME"
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
 
     #export SEvent_MakeGenstep_num_ph=100000  OVERRIDEN BY OPTICKS_NUM_PHOTON
     #export SEvent__MakeGenstep_num_gs=10     OVERRIDEN BY OPTICKS_NUM_GENSTEP
-
-
 
     #src="rectangle"
     #src="disc"
@@ -516,8 +528,8 @@ logging(){
 export QRng__init_VERBOSE=1
 export SEvt__MINIMAL=1  ## just output dir
 export SEvt__MINTIME=1  ## minimal timing info from QSim::simulate
-#export SEvt__DIRECTORY=1  ## getDir dumping
 
+#export SEvt__DIRECTORY=1  ## getDir dumping
 #export SEvt__NPFOLD_VERBOSE=1
 #export QSim__simulate_KEEP_SUBFOLD=1
 #export SEvt__transformInputPhoton_VERBOSE=1
@@ -591,6 +603,7 @@ if [ "${arg/du}" != "$arg" ]; then
     du -hs $AFOLD/*
 fi
 
+
 if [ "${arg/pdb1}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
 fi
@@ -603,10 +616,11 @@ if [ "${arg/AB}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script_AB
 fi
 
-
 if [ "${arg/ana}" != "$arg" ]; then
     MODE=0 ${PYTHON:-python} $script
 fi
+
+
 
 if [ "$arg" == "pvcap" -o "$arg" == "pvpub" -o "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$AFOLD/figs
