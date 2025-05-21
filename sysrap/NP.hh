@@ -2054,6 +2054,10 @@ inline void NP::CopyMeta( NP* b, const NP* a ) // static
     b->names = a->names ;
     b->nodata = a->nodata ;
     if(a->labels) b->labels = new std::vector<std::string>( a->labels->begin(), a->labels->end() ) ;
+
+    // pass along transient strings set on loading
+    b->lpath = a->lpath ;
+    b->lfold = a->lfold ;
 }
 
 

@@ -1059,7 +1059,7 @@ class MSAB(object):
         lines.append(self.annotab("c_itab", self.ikk, 3))
         lines.append(self.annotab("c_ftab", self.fkk, 3))
         pass
-        fmt_ptn = re.compile("FMT:(.*)\s*")
+        fmt_ptn = re.compile("FMT:(.*)\\s*")
 
         for expr in self.exprs:
             fmt_match = fmt_ptn.search(expr)

@@ -36,7 +36,7 @@ set(FORMER_INSTALLED_SCRIPTS
    opticks-site-local.bash
 )
 
-set(INSTALLED_SCRIPTS
+set(SH_SCRIPTS
 
    CTestTestfile.py 
    CTestLog.py  
@@ -46,11 +46,9 @@ set(INSTALLED_SCRIPTS
    rsync.sh
    BASE_grab.sh
    ctest.sh
+   cat.py
 )
 
-#if(APPLE)
-#   list(APPEND SCRIPTS OKTest_macOS_standalone.sh)
-#endif()
 
 
 # top level python needs to go in bin, 
@@ -68,18 +66,18 @@ include(GNUInstallDirs)
 message(STATUS "Bin.CMAKE_INSTALL_BINDIR:${CMAKE_INSTALL_BINDIR}")
 
 
-install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
+install(PROGRAMS ${SH_SCRIPTS}   DESTINATION bin)
 
 #install_bin_symlink( oc.bash oc )
 #install_bin_symlink( oc.bash opticks-config )
 
 
-set(PYSCRIPTS
+set(PY_SCRIPTS
    __init__.py 
    CMakeLists.py
 )
 
-install(PROGRAMS ${PYSCRIPTS} DESTINATION py/opticks/bin)
+install(PROGRAMS ${PY_SCRIPTS} DESTINATION py/opticks/bin)
 
 
 add_subdirectory(tests)

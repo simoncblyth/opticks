@@ -121,9 +121,12 @@ inline const float SRecordInfo::get_t1() const
 
 inline std::string SRecordInfo::desc() const
 {
+    const char* lpath = record ? record->lpath.c_str() : nullptr ; 
+
     std::stringstream ss ;
     ss
         << "[SRecordInfo.desc\n"
+        << " lpath [" << ( lpath ? lpath : "-" ) << "]\n"
         << std::setw(20) << " mn " << mn
         << std::endl
         << std::setw(20) << " mx " << mx

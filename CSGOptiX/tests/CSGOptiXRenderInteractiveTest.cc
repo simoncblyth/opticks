@@ -79,6 +79,7 @@ struct CSGOptiXRenderInteractiveTest
     void display_optix_buffer();
     void optix_render();
 
+    std::string desc() const ;
 };
 
 
@@ -181,12 +182,28 @@ inline void CSGOptiXRenderInteractiveTest::optix_render()
     display_optix_buffer();
 }
 
+inline std::string CSGOptiXRenderInteractiveTest::desc() const
+{
+    std::stringstream ss ;
+    ss
+        << "[CSGOptiXRenderInteractiveTest::desc\n"
+        << " ar\n" << ( ar ? ar->desc() : "-" ) << "\n"
+        << " br\n" << ( br ? br->desc() : "-" ) << "\n"
+        << "]CSGOptiXRenderInteractiveTest::desc\n"
+        ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
     CSGOptiXRenderInteractiveTest t ;
+    std::cout << t.desc() ;
+
     SGLFW* gl = t.gl ;
 
     while(gl->renderloop_proceed())

@@ -30,6 +30,7 @@ Requirements
 
 int main()
 {
+    std::cout << "[sseq_index_test.cc\n" ;
     const char* a_path = "$AFOLD/seq.npy" ;
     const char* b_path = "$BFOLD/seq.npy" ;
     NP* a_seq = NP::LoadIfExists(a_path);
@@ -79,6 +80,7 @@ int main()
 
     ab.chi2.save("$FOLD");
     ab.save("$FOLD");
+    std::cout << "]sseq_index_test.cc\n" ;
 
     return 0 ;
 }

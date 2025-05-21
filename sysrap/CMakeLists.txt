@@ -825,13 +825,19 @@ set( OLD_SCRIPTS
     OpticksCSG.py
 )
 
-set( SCRIPTS
+set( PY_SCRIPTS
     __init__.py
     sframe.py
     sevt.py
 )
 
-install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/sysrap)
+set( SH_SCRIPTS
+    SABTest.sh
+    SABTest.py
+)
+
+install(PROGRAMS ${PY_SCRIPTS}  DESTINATION py/opticks/sysrap)
+install(PROGRAMS ${SH_SCRIPTS}  DESTINATION bin)
 
 install(FILES ${CURANDLITE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/curandlite)
 install(DIRECTORY gl/ DESTINATION gl)
