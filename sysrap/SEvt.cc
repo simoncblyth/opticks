@@ -47,6 +47,7 @@
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ;
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ;
+bool SEvt::FRAME = ssys::getenvbool(SEvt__FRAME) ;
 bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ;
 bool SEvt::MINTIME = ssys::getenvbool(SEvt__MINTIME) ;
 bool SEvt::DIRECTORY = ssys::getenvbool(SEvt__DIRECTORY) ;
@@ -664,6 +665,13 @@ to call this for each frame, usually once only.
 
 void SEvt::setFrame(const sframe& fr )
 {
+    const char* name = fr.get_name() ;
+    LOG_IF(info, FRAME)
+        << " [" << SEvt__FRAME << "]"
+        << " fr.get_name " << ( name ? name : "-" ) << "\n"
+        << " fr.desc\n"
+        << fr.desc()
+        ;
     frame = fr ;
     transformInputPhoton();
 }
@@ -751,14 +759,15 @@ void SEvt::addInputGenstep()
     if(SEventConfig::IsRGModeSimtrace())
     {
         const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
-        if(frs)
-        {
-            LOG(LEVEL) << " non-default frs " << frs << " passed to SEvt::SetReldir " ;
-            SEventConfig::SetEventReldir(frs);
-        }
 
+        LOG_IF(info, FRAME)
+            << "[" << SEvt__FRAME << "] "
+            << " Simtrace:frame.get_frs " << ( frs ? frs : "-" ) ;
+            ;
+
+        if(frs) SEventConfig::SetEventReldir(frs);
         NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
-        LOG(LEVEL) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ;
+        LOG_IF(info, FRAME) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ;
         addGenstep(gs);
 
         if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();

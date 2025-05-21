@@ -1,6 +1,6 @@
 #!/bin/bash
 usage(){ cat << EOU
-cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting 
+cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 ===============================================================
 
 Former label "CSGOptiXTMTest Simtrace minimal executable and script for shakedown"
@@ -13,15 +13,15 @@ GEOM
    picks the geometry together with ${GEOM}_CFBaseFromGEOM
 
 MOI
-   specify the frame in which simtrace gensteps will be generated, 
+   specify the frame in which simtrace gensteps will be generated,
    which sets the region where most of the intersects will be found
 
 CEGS
-   "CE-center-extent-Gensteps" specifies orientatation of the grid of 
-   gensteps and the number of simtrace rays from each genstep origin   
+   "CE-center-extent-Gensteps" specifies orientatation of the grid of
+   gensteps and the number of simtrace rays from each genstep origin
 
 
-Usage pattern assuming analysis python environment with 
+Usage pattern assuming analysis python environment with
 matplotlib and/or pyvista on laptop::
 
    cxt_min.sh info_run               ## on workstation
@@ -29,15 +29,18 @@ matplotlib and/or pyvista on laptop::
    NOGRID=1 MODE=2 cxt_min.sh ana    ## on laptop
 
 
+   MODE=3 NOGRID=1 ./cxt_min.sh pdb
+
+
 Command arguments:
 
 info
    output many vars
-fold 
+fold
    output just $FOLD where simtrace SEvt are persisted
 run
    executes the CSGOptiXTMTest executable with main being just "CSGOptiX::SimtraceMain()"
-   
+
    1. loads envvar configured geometry
    2. generates envvar configured simtrace gensteps
    3. runs CSGOptiX:simtrace which uses OptiX on GPU to intersect
@@ -45,33 +48,39 @@ run
    4. saves SEVt including simtrace array to $FOLD
 
 dbg
-   runs the above under gdb 
+   runs the above under gdb
 
 brab
    old grab for rsyncing the SEvt FOLD between machines
-grab 
+grab
    rsync an SEvt FOLD from remote to local machine
 
 
 pdb
-   ${IPYTHON:-ipython} plotting of simtrace intersects, typically 
+   ${IPYTHON:-ipython} plotting of simtrace intersects, typically
    giving 2D cross section through geometry with matplotlib (MODE:2)
    OR 3D intersect view with pyvista (MODE:3)
 
 ana
-   as above but with ${PYTHON:-python} 
+   as above but with ${PYTHON:-python}
 
 
 About IPYTHON/PYTHON ipython/python overrides
 -----------------------------------------------
 
-"Official" python environments might not include the 
-matplotlib/pyvista plotting packages which 
-will cause MODE 2/3 to give errors for "pdb" and "ana". 
+"Official" python environments might not include the
+matplotlib/pyvista plotting packages which
+will cause MODE 2/3 to give errors for "pdb" and "ana".
 Workaround this by defining IPYTHON/PYTHON envvars
-to pick a python install (eg from miniconda) 
+to pick a python install (eg from miniconda)
 which does include the plotting libraries.
 
+matplotlib wayland warning but pdb succeeds to plot
+------------------------------------------------------
+
+::
+
+   qt.qpa.plugin: Could not find the Qt platform plugin "wayland" in ""
 
 
 EOU
@@ -82,7 +91,7 @@ script=$(realpath $PWD/cxt_min.py)   ## use python script that is sibling to the
 
 allarg="info_fold_run_dbg_brab_grab_ana"
 
-defarg=run_info
+defarg=info_run_info_pdb
 [ -n "$BP" ] && defarg="info_dbg"
 arg=${1:-$defarg}
 
@@ -97,9 +106,8 @@ if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFro
     vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
     for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 else
-    ## development source tree usage : where need to often switch between geometries 
+    ## development source tree usage : where need to often switch between geometries
     source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
-    export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
     source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit
 fi
 
@@ -126,7 +134,7 @@ LOGNAME=$bin.log
 
 
 # pushing this too high tripped M3 max photon limit
-# 16*9*2000 = 0.288 
+# 16*9*2000 = 0.288
 export CEGS=16:0:9:2000   # XZ default
 #export CEGS=16:0:9:1000   # XZ default
 #export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
@@ -147,7 +155,16 @@ logging(){
     #export SEvt=INFO
     export SEvt__LIFECYCLE=INFO
 }
+
+debug()
+{
+    type $FUNCNAME
+    export CSGFoundry__getFrameE_VERBOSE=1
+    export SEvt__FRAME=1
+}
+
 [ -n "$LOG" ] && logging
+[ -n "$DBG" ] && debug
 
 
 vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM FOLD MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS"
@@ -160,6 +177,12 @@ fi
 if [ "${arg/fold}" != "$arg" ]; then
     echo $FOLD
 fi
+
+if [ "${arg/ls}" != "$arg" ]; then
+    ff="FOLD"
+    for f in $ff ; do printf "%20s : ls -alst %s \n" "$f" "${!f}"  && ls -alst ${!f} ; done 
+fi
+
 
 if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
 

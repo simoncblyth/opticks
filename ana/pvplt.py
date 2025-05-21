@@ -314,6 +314,10 @@ def mpplt_plotter(nrows=1, ncols=1, label="", equal=True):
     Change type detection to check for np.ndarray as that
     is more stable than matplotlib type names.
     """
+
+    if mpp is None:
+        print("mplt_plotter : ERROR mpp is None : try again after conda hookup and activation\n")
+    pass
     fig, axs0 = mpp.subplots(nrows=nrows, ncols=ncols, figsize=SIZE/100.) # 100 dpi
 
     if type(axs0) is np.ndarray:

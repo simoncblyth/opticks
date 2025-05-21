@@ -12,6 +12,9 @@ usage(){ cat << EOU
 cxs.sh : hybrid rendering/simulation machinery, eg creating 2D ray trace cross sections
 ========================================================================================
 
+DONT FOLLOW THIS : PREFER cxt_min.sh 
+
+
 TODO: partition creation and analysis more clearly... currently some 
       stuff comes from metadata written during creation and 
       cannot be updated during analysis

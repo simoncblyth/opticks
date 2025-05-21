@@ -550,6 +550,29 @@ a.q2
 a.q3 
     initial dir, prd.identity
 
+
++----+----------------+----------------+----------------+----------------+--------------------------+
+| q  |      x         |      y         |     z          |      w         |  notes                   |
++====+================+================+================+================+==========================+
+|    |  nrm.x         |  nrm.y         |  nrm.z         |  t/distance    | surface normal at isect, |
+| q0 |                |                |                |                | ray trace distance       |
+|    |                |                |                |                |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+|    |  pos.x         |  pos.y         | pos.z          |  tmin          | intersect_position, tmin |
+| q1 |                |                |                |                |                          |
+|    |                |                |                |                |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+|    |  pos0.x        |  pos0.y        |  pos0.z        | (unsigned)     | origin_position,boundary |
+| q2 |                |                |                | boundary       |                          |
+|    |                |                |                | (2,3)          |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+|    | dir0.x         |  dir0.y        |  dir0.z        | (unsigned)     | initial direction, id    |
+| q3 | (3,0)          |                |                | identity       |                          |
+|    |                |                |                | (3,3)          |                          |
++----+----------------+----------------+----------------+----------------+--------------------------+
+
+NB : simtrace has almost totally different content and layout compared with photon and record
+
 **/
 
 SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
