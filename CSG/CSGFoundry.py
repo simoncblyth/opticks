@@ -283,6 +283,54 @@ class Deprecated_SSim(object):
         pass
 
 
+class BoundaryTable(object):
+    def __init__(self, bn, bdn):
+        """
+        :param bn: large array of boundary indices
+        :param bdn: small array if boundary names
+        """
+        u, x, n = np.unique(bn, return_index=True, return_counts=True)
+        o = np.argsort(n)[::-1]
+        b = bdn[u]
+
+        _tab = "np.c_[u, n, x, b][o]"
+        tab = eval(_tab)
+
+        self.u = u[o]
+        self.x = x[o]
+        self.n = n[o]
+        self.b = b[o]
+
+        self._tab = _tab
+        self.tab = tab
+
+    def __repr__(self):
+        """
+        """
+
+        vfmt = " %4d %8d %8d : %s "
+        sfmt = " %4s %8s %8s : %s "
+        tfmt = " %4s %8d %8s : %s "
+
+        label = sfmt % ( ".u", ".n", ".x", ".b" )
+        lines = []
+        lines.append("[cf.btab")
+        lines.append(label)
+        ntot = 0
+
+        for row in self.tab:
+            n = int(row[1])
+            line = vfmt % ( int(row[0]), n, int(row[2]), row[3] )
+            ntot += n
+            lines.append(line)
+        pass
+        lines.append(label)
+        lines.append(tfmt % ("",ntot, "",".ntot"))
+        lines.append("]cf.btab")
+        self.ntot = ntot
+        return "\n".join(lines)
+
+
 
 class CSGFoundry(object):
     FOLD = os.path.expandvars("$TMP/CSG_GGeo/CSGFoundry")
@@ -461,42 +509,101 @@ class CSGFoundry(object):
         self.spo = self.solid[:,1,1].view(np.int32) # solid primOffset
         self.sce = self.solid[:,2].view(np.float32)
 
+
+    def boundary_table(self, bn):
+        """
+        :param bn: array of boundary indices, eg millions of them
+        :return bn_tab: string table showing unique boundary indices, names, counts and first indices into the bn array
+        """
+        btab = BoundaryTable(bn, self.bdn)
+        self.btab = btab
+        return self.btab
+
+
     def dict_find_boundary_indices_re_match(self, _bndptn_dict):
         """
         :param _bndptn_dict: label keys, regexp pattern string values
         :return d: dict with same label keys and arrays of matching cf.bdn boundary indices
+
+        Boundaries unmatched by the provided regexp values are
+        grouped within the key with a blank value if provided.
         """
         d = {}
+        anno = {}
+        matched = np.array([], dtype=np.int64 )
+        unmatched_k = None
         for k, v in _bndptn_dict.items():
-            d[k] = self.find_boundary_indices_re_match(v)
+            if v == '':
+                unmatched_k = k
+                continue
+            pass
+            qbn, bb, label = self.find_boundary_indices_re_match(v)
+            matched = np.concatenate( (matched, qbn) )
+            d[k] = qbn
+            anno[k] = label
         pass
-        return d
+
+        c = dict(matched=matched, all=np.arange(len(self.bdn)))
+        c['unmatched'] = np.where(np.isin(c['all'], c['matched'], invert=True ))[0]
+        if not unmatched_k is None:
+            d[unmatched_k] = c['unmatched']
+            anno[unmatched_k] = "OTHER"
+        pass
+        return d, anno
 
 
-    def find_boundary_indices_re_match(self, _bndptn):
+    def find_boundary_indices_re_match(self, _ptn):
         """
-        :param _bndptn: regexp string
-        :return qbn: array of cf.bdn boundary indices that match the pattern
+        :param _ptn: boundary regexp string
+        :return qbn,bb,label:
+
+        qbn
+           array of cf.bdn boundary indices that match the pattern
+        bb
+           array of boundary names matching the pattern
+        label
+           match key when the pattern string includes one eg (?<label>.*$)
+           otherwise the pattern string itself
+
 
         Typically would have a few hundred boundary names for a geometry
         so the slowness of np.vectorize is not a problem.
 
-        Example _bndptn::
+        Example _ptn::
 
             .*
             .*/Vacuum$
             .*/LatticedShellSteel$
             .*/Steel$
             Water/.*/Water$
+            (?P<Water_Virtuals>:Water/.*/Water$)
             .*/Tyvek$
 
         """
-        bndptn = re.compile(_bndptn)
-        _re_match_ = lambda elem:bool(bndptn.match(elem))
-        re_match = np.vectorize(_re_match_)
+        ptn = re.compile(_ptn)
+        _re_match = lambda s:bool(ptn.match(s))
+        re_match = np.vectorize(_re_match)
+
+        def _re_key(s):
+            keys = list(ptn.match(s).groupdict().keys())
+            return keys[0] if len(keys) == 1 else _ptn
+        pass
+        re_key = np.vectorize(_re_key)
+
         _qbn = re_match(self.bdn)   # boundary array bool match or not array
-        qbn = np.where(_qbn)      # indices of boundary array matching the regexp
-        return qbn
+        qbn = np.where(_qbn)[0]     # indices of boundary array matching the regexp
+        bb = self.bdn[qbn]
+
+        if len(qbn) == 0:
+            log.info("_ptn:[%s] did not match any boundaries" % _ptn )
+            label = "NO_MATCH"
+        else:
+            _kk = re_key(bb)
+            kk = np.unique(_kk)
+            assert len(kk) == 1
+            label = kk[0]
+        pass
+        return qbn, bb, label
 
 
     def find_primIdx_from_nodeIdx(self, nodeIdx_):

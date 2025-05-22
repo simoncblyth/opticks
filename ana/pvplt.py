@@ -30,8 +30,8 @@ pyvista plotter keys/mouse controls
 
 * mouse-wheel or right-click (mac: ctl+click) : Continuously zoom the rendering scene
 
-  * BUT : when start too zoomed in this takes forever, instead use up/down 
-    for coarse zoom control and and then use mouse-wheel once have control 
+  * BUT : when start too zoomed in this takes forever, instead use up/down
+    for coarse zoom control and and then use mouse-wheel once have control
 
 * shift+click or middle-click  (mac:shift+click): Pan the rendering scene
 
@@ -239,7 +239,7 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False):
     pl = pv.Plotter(window_size=SIZE*2 )
     pvplt_viewpoint(pl, reset=False, verbose=verbose)
 
-    if not "NOGRID" in os.environ:
+    if "GRID" in os.environ:
         pl.show_grid()
     else:
         print("pvplt_plotter NOGRID")
@@ -248,6 +248,21 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False):
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
     return pl
 
+def pvplt_show(pl, incpoi=0., legend=False):
+    """
+    :param incpoi: float inrement to point size and line width, eg -5
+
+    The below envvar take precedence over arguments::
+
+        INCPOI=-5.
+        LEGEND=1
+
+    """
+    INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
+    pl.increment_point_size_and_line_width(INCPOI)
+    LEGEND = bool(os.environ.get("LEGEND", legend))
+    if LEGEND: pl.add_legend()
+    return pl.show()
 
 
 def mpplt_annotate_fig( fig, label  ):
