@@ -1,10 +1,172 @@
 #!/usr/bin/env python
 import os, sys, re,  numpy as np, logging, datetime
+from configparser import ConfigParser
+from collections import OrderedDict
 log = logging.getLogger(__name__)
 
 #from opticks.ana.key import keydir
 from opticks.ana.fold import Fold, STR
 from opticks.sysrap.OpticksCSG import CSG_
+
+
+class BoundaryNameConfig(object):
+    """
+    Parses ini file of the below form::
+
+        [key_boundary_regexp]
+        red = (?P<Water_Virtuals>Water/.*/Water$)
+        blue = Water///Acrylic$
+        magenta = Water/Implicit_RINDEX_NoRINDEX_pOuterWaterInCD_pInnerReflector//Tyvek$
+        yellow = DeadWater/Implicit_RINDEX_NoRINDEX_pDeadWater_pTyvekFilm//Tyvek$
+        pink = Air/CDTyvekSurface//Tyvek$
+        cyan = Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterInCD_pCentralDetector/Water$
+        orange = Water/Steel_surface//Steel$
+        grey =
+        # empty value is special cased to mean all other boundary names
+
+    Defaults path is $HOME/.opticks/GEOM/cxt_min.ini
+    """
+
+    @classmethod
+    def Parse(cls, _path, _section ):
+        cp = cls(_path, _section)
+        return cp.bdict
+
+    def __init__(self, _path, _section ):
+        path = os.path.expandvars(_path)
+        cfg = ConfigParser()
+        cfg.read(path)
+        sect = cfg[_section]
+        bdict = OrderedDict(sect)
+
+        self._path = _path
+        self.path = path
+        self._section = _section
+        self.cfg = cfg
+        self.bdict = bdict
+
+
+
+class BoundaryTable(object):
+    def __init__(self, bn, bdn, d_qbn={}, KEY=None):
+        """
+        :param bn: large array of boundary indices
+        :param bdn: small array of boundary names
+        :param d_qbn: dict keyed on colors with arrays of boundary indices as values
+        """
+        u, x, n = np.unique(bn, return_index=True, return_counts=True)
+
+        # form array with the keys that each boundary index is grouped into
+        akk = np.repeat("????????????????", len(u))
+        for i in range(len(u)):
+            kk = []
+            for k, qbn in d_qbn.items():
+                if len(np.where(np.isin(qbn, u[i]))[0]) == 1:
+                    kk.append(k)
+                pass
+            pass
+            akk[i] = ",".join(kk)
+        pass
+        o = np.argsort(n)[::-1]
+        b = bdn[u]
+
+        _tab = "np.c_[akk, u, n, x, b][o]"
+        tab = eval(_tab)
+
+        self.akk = akk[o]
+        self.u = u[o]
+        self.x = x[o]
+        self.n = n[o]
+        self.b = b[o]
+
+        self.KEY = KEY
+
+        self.d_qbn = d_qbn
+        self._tab = _tab
+        self.tab = tab
+
+    def __repr__(self):
+        """
+        """
+        vfmt = " %12s : %4d %8d %8d : %s "
+        sfmt = " %12s : %4s %8s %8s : %s "
+        tfmt = " %12s : %4s %8d %8s : %s "
+
+        label = sfmt % ( ".akk", ".u", ".n", ".x", ".b" )
+        lines = []
+        lines.append("[cf.btab KEY:%s" % self.KEY )
+        lines.append(label)
+        ntot = 0
+
+        if not self.KEY is None:
+            KK = np.array(self.KEY.split(","))
+            sel = np.where(np.isin(self.tab[:,0], KK))[0]
+        else:
+            sel = slice(None)
+        pass
+
+        for row in self.tab[sel]:
+            akk = row[0]
+            u = int(row[1])
+            n = int(row[2])
+            x = int(row[3])
+            b = row[4]
+
+            line = vfmt % ( akk, u, n, x, b )
+            ntot += n
+            lines.append(line)
+        pass
+        lines.append(label)
+        lines.append(tfmt % ("", "",ntot, "",".ntot"))
+        lines.append("]cf.btab")
+        self.ntot = ntot
+        return "\n".join(lines)
+
+
+
+
+
+
+class CXT_Boundary(object):
+    def __init__(self, bn, d_qbn, d_anno, cf_bdn):
+        """
+        :param bn: large array of boundary indices
+        :param d_qbn: dict keyed on colors with boundary indices array values
+        :param d_anno: dict keyed on colors with label values
+        :param cf_bdn: small array of all boundary names
+        """
+        self.bn = bn
+        self.d_qbn = d_qbn
+        self.d_anno = d_anno
+        self.cf_bdn = cf_bdn
+
+        wdict = {}
+        for k,qbn in self.d_qbn.items():
+            _w = np.isin( bn, qbn )   # bool array indicating which elem of bn are in the qbn array
+            w = np.where(_w)[0]       # indices of bn array with boundaries matching the regexp
+            wdict[k] = w
+        pass
+        self.wdict = wdict
+
+    def __repr__(self):
+        lines = []
+        lines.append("[CXT_Boundary___________________________________")
+
+        for k,qbn in self.d_qbn.items():
+            _w = np.isin( self.bn, qbn )   # bool array indicating which elem of bn are in the qbn array
+            w = np.where(_w)[0]       # indices of bn array with boundaries matching the regexp
+            label = self.d_anno[k]
+            bb = self.cf_bdn[qbn]
+            line = " %10s %100s nbb:%4d %s " % (k, label, len(bb), str(qbn[:10]))
+            lines.append(line)
+        pass
+        lines.append("]CXT_Boundary___________________________________")
+        return "\n".join(lines)
+
+
+
+
+
 
 class CSGObject(object):
     @classmethod
@@ -283,54 +445,6 @@ class Deprecated_SSim(object):
         pass
 
 
-class BoundaryTable(object):
-    def __init__(self, bn, bdn):
-        """
-        :param bn: large array of boundary indices
-        :param bdn: small array if boundary names
-        """
-        u, x, n = np.unique(bn, return_index=True, return_counts=True)
-        o = np.argsort(n)[::-1]
-        b = bdn[u]
-
-        _tab = "np.c_[u, n, x, b][o]"
-        tab = eval(_tab)
-
-        self.u = u[o]
-        self.x = x[o]
-        self.n = n[o]
-        self.b = b[o]
-
-        self._tab = _tab
-        self.tab = tab
-
-    def __repr__(self):
-        """
-        """
-
-        vfmt = " %4d %8d %8d : %s "
-        sfmt = " %4s %8s %8s : %s "
-        tfmt = " %4s %8d %8s : %s "
-
-        label = sfmt % ( ".u", ".n", ".x", ".b" )
-        lines = []
-        lines.append("[cf.btab")
-        lines.append(label)
-        ntot = 0
-
-        for row in self.tab:
-            n = int(row[1])
-            line = vfmt % ( int(row[0]), n, int(row[2]), row[3] )
-            ntot += n
-            lines.append(line)
-        pass
-        lines.append(label)
-        lines.append(tfmt % ("",ntot, "",".ntot"))
-        lines.append("]cf.btab")
-        self.ntot = ntot
-        return "\n".join(lines)
-
-
 
 class CSGFoundry(object):
     FOLD = os.path.expandvars("$TMP/CSG_GGeo/CSGFoundry")
@@ -473,6 +587,7 @@ class CSGFoundry(object):
         if bdn is None: log.fatal("CSGFoundry fail to access sim.stree.standard.bnd_names : geometry incomplete" )
         if type(bdn) is np.ndarray: sim.bndnamedict = self.namelist_to_namedict(bdn)
         pass
+        self.bdn_config = BoundaryNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_boundary_regexp")
         self.bdn = bdn
         self.sim = sim
 
@@ -510,15 +625,36 @@ class CSGFoundry(object):
         self.sce = self.solid[:,2].view(np.float32)
 
 
-    def boundary_table(self, bn):
+    def boundary_table(self, bn, d_qbn={}, KEY=None):
         """
-        :param bn: array of boundary indices, eg millions of them
+        :param bn: array of boundary indices, typically millions of them
+        :param d_qbn: dict of color keys with values that are arrays of boundary indices
         :return bn_tab: string table showing unique boundary indices, names, counts and first indices into the bn array
         """
-        btab = BoundaryTable(bn, self.bdn)
+        btab = BoundaryTable(bn, self.bdn, d_qbn, KEY)
         self.btab = btab
-        return self.btab
+        return btab
 
+
+    def simtrace_boundary_analysis(self, bn, KEY=os.environ.get("KEY", None) ):
+        """
+        Group simtrace intersects according to their boundary indices
+        using groups specified by regexp matching boundary names.
+
+        Typically would have a few hundred boundary names
+        in cf.bdn but potentially millions of simtrace intersects
+        in the bn array.
+
+        :param bn: large array of boundary indices
+        :param KEY: color key OR None
+        :return cxtb,btab:
+        """
+        d_qbn, d_anno = self.dict_find_boundary_indices_re_match(self.bdn_config)
+        cxtb = CXT_Boundary(bn, d_qbn, d_anno, self.bdn)
+        btab = self.boundary_table(bn, d_qbn, KEY)
+        self.cxtb = cxtb
+        self.btab = btab
+        return cxtb, btab
 
     def dict_find_boundary_indices_re_match(self, _bndptn_dict):
         """

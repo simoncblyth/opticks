@@ -239,10 +239,11 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False):
     pl = pv.Plotter(window_size=SIZE*2 )
     pvplt_viewpoint(pl, reset=False, verbose=verbose)
 
-    if "GRID" in os.environ:
+    GRID = 1 == int(os.environ.get("GRID","0"))
+    if GRID:
         pl.show_grid()
     else:
-        print("pvplt_plotter NOGRID")
+        print("pvplt_plotter !(GRID==1) ")
     pass
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
@@ -261,7 +262,7 @@ def pvplt_show(pl, incpoi=0., legend=False):
     INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
     pl.increment_point_size_and_line_width(INCPOI)
     LEGEND = bool(os.environ.get("LEGEND", legend))
-    if LEGEND: pl.add_legend()
+    if LEGEND: pl.add_legend(font_family="courier", size=(0.3,0.3))
     return pl.show()
 
 

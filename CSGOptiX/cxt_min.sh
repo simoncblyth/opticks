@@ -3,6 +3,30 @@ usage(){ cat << EOU
 cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 ===============================================================
 
+::
+
+     GSGRID=0 KEY=blue,orange,lightblue cxt_min.sh pdb
+     GSGRID=0 GRID=1 GLOBAL=1 XKEY=blue,orange,lightblue cxt_min.sh pdb
+     GSGRID=0 GRID=1 GLOBAL=1 KEY=blue,lightblue,cornflowerblue cxt_min.sh pdb
+     GSGRID=0 GRID=0 GLOBAL=0 KEY=blue,lightblue,cornflowerblue,orange cxt_min.sh pdb
+
+     GSGRID=0 GRID=0 GLOBAL=0 XKEY=blue,lightblue,cornflowerblue,orange KEY=magenta cxt_min.sh pdb
+     GSGRID=0 GRID=0 GLOBAL=0 KEY=blue,lightblue,cornflowerblue,orange,magenta,tomato cxt_min.sh pdb
+         ## illuminating re the Tyvek:magenta,tomato L shape at top of LowerChimney
+
+
+TODO: add option to draw a spinkle of intersect normal direction arrows
+
+
+Coincident surface checking
+------------------------------
+
+Take a very close look, will see color variation as zoom
+in/out when there are coincident intersects with different
+boundaries
+
+
+
 Former label "CSGOptiXTMTest Simtrace minimal executable and script for shakedown"
 but has become the standard simtrace script.
 Uses CSGOptiXTMTest which just does "CSGOptiX::SimtraceMain()".
@@ -26,10 +50,7 @@ matplotlib and/or pyvista on laptop::
 
    cxt_min.sh info_run               ## on workstation
    cxt_min.sh grab                   ## on laptop
-   NOGRID=1 MODE=2 cxt_min.sh ana    ## on laptop
-
-
-   MODE=3 NOGRID=1 ./cxt_min.sh pdb
+   GRID=1 MODE=2 cxt_min.sh ana      ## on laptop
 
 
 Command arguments:
@@ -115,6 +136,14 @@ fi
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 
+
+mode=3
+eye=0,10000,0
+
+export MODE=${MODE:-$mode}
+export EYE=${EYE:-$eye}
+
+
 export EVT=${EVT:-A000}
 export BASE=$TMP/GEOM/$GEOM
 export BINBASE=$BASE/$bin
@@ -133,17 +162,20 @@ cd $LOGDIR
 LOGNAME=$bin.log
 
 
-# pushing this too high tripped M3 max photon limit
-# 16*9*2000 = 0.288
-export CEGS=16:0:9:2000   # XZ default
-#export CEGS=16:0:9:1000   # XZ default
-#export CEGS=16:0:9:100     # XZ reduce rays for faster rsync
-#export CEGS=16:9:0:1000    # try XY
+## see SFrameGenstep::StandardizeCEGS for CEGS/CEHIGH [4]/[7]/[8] layouts
+
+export CEGS=16:0:9:2000   # [4] XZ default
+#export CEGS=16:0:9:1000  # [4] XZ default
+#export CEGS=16:0:9:100   # [4] XZ reduce rays for faster rsync
+#export CEGS=16:9:0:1000  # [4] try XY
+
+
+export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
+export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
+export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
 
 ## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000
-
 #export CE_OFFSET=CE    ## offsets the grid by the CE
-
 
 logging(){
     type $FUNCNAME
@@ -180,7 +212,7 @@ fi
 
 if [ "${arg/ls}" != "$arg" ]; then
     ff="FOLD"
-    for f in $ff ; do printf "%20s : ls -alst %s \n" "$f" "${!f}"  && ls -alst ${!f} ; done 
+    for f in $ff ; do printf "%20s : ls -alst %s \n" "$f" "${!f}"  && ls -alst ${!f} ; done
 fi
 
 
@@ -217,5 +249,14 @@ fi
 if [ "${arg/ana}" != "$arg" ]; then
     ${PYTHON:-python} $script
 fi
+
+if [ "${arg/cfg}" != "$arg" ]; then
+    cfgpath=$(realpath ~/.opticks/GEOM/cxt_min.ini)
+    cmd="vim $cfgpath"
+    echo $cmd
+    eval  $cmd
+fi
+
+
 
 

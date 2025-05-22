@@ -36,15 +36,15 @@ import os, re, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from collections import OrderedDict
-from configparser import ConfigParser
 from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt
 from opticks.ana.p import cf    # load CSGFoundry geometry info
+from opticks.CSG.CSGFoundry import BoundaryNameConfig
 
-GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
 MODE = int(os.environ.get("MODE","2"))
-GSGRID = "GSGRID" in os.environ
-FRAME = "FRAME" in os.environ
+GLOBAL = 1 == int(os.environ.get("GLOBAL","0"))
+GSGRID = 1 == int(os.environ.get("GSGRID","0"))
+FRAME = 1 == int(os.environ.get("FRAME","0"))
 
 if MODE in [2,3]:
     import opticks.ana.pvplt as pvp
@@ -52,56 +52,20 @@ pass
 
 
 
-class CXT_Config(object):
-    """
-    Parses ini file of the below form::
-
-        [key_boundary_regexp]
-        red = (?P<Water_Virtuals>Water/.*/Water$)
-        blue = Water///Acrylic$
-        magenta = Water/Implicit_RINDEX_NoRINDEX_pOuterWaterInCD_pInnerReflector//Tyvek$
-        yellow = DeadWater/Implicit_RINDEX_NoRINDEX_pDeadWater_pTyvekFilm//Tyvek$
-        pink = Air/CDTyvekSurface//Tyvek$
-        cyan = Tyvek//Implicit_RINDEX_NoRINDEX_pOuterWaterInCD_pCentralDetector/Water$
-        orange = Water/Steel_surface//Steel$
-        grey =
-        # empty value is special cased to mean all other boundary names
-
-    Defaults path is $HOME/.opticks/GEOM/cxt_min.ini
-    """
-
-    @classmethod
-    def Parse(cls, _path, _section ):
-        cp = cls(_path, _section)
-        return cp.bdict
-
-    def __init__(self, _path, _section ):
-        path = os.path.expandvars(_path)
-        cfg = ConfigParser()
-        cfg.read(path)
-        sect = cfg[_section]
-        bdict = OrderedDict(sect)
-
-        self._path = _path
-        self.path = path
-        self._section = _section
-        self.cfg = cfg
-        self.bdict = bdict
-
-
-
 if __name__ == '__main__':
 
     print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
 
-    e = SEvt.Load(symbol="e")   ## default load from FOLD envvar dir
-    print(repr(e))
-    label = e.f.base
+    e = SEvt.Load("$FOLD", symbol="e")   ## default load from FOLD envvar dir
 
+    print(repr(e))
+
+    label = e.f.base
     sf = e.f.sframe
+    w2m = sf.w2m
+
     gs = e.f.genstep
     st = e.f.simtrace
-    w2m = sf.w2m
 
     gs_pos = gs[:,1]
     all_one = np.all( gs_pos[:,3] == 1. )
@@ -118,42 +82,30 @@ if __name__ == '__main__':
     lgrid = np.dot( ggrid, w2m )
     ugrid = ggrid if GLOBAL else lgrid
 
+    st_x = st[:,1,0]
+    st_y = st[:,1,1]
+    st_z = st[:,1,2]
+    #presel = st_x < -20000   ## presel helps to identify boundaries
+    #presel = slice(None)
+    presel = np.abs(st_x) < 1000
 
-    bn = st[:,2,3].view(np.int32)   ## simtrace intersect boundary indices
-    btab = cf.boundary_table(bn)
+
+    ust = st[presel]
+
+
+    bn = ust[:,2,3].view(np.int32)   ## simtrace intersect boundary indices
+
+    KEY = os.environ.get("KEY", None)
+    KK = KEY.split(",") if not KEY is None else []
+
+
+    cxtb, btab = cf.simtrace_boundary_analysis(bn, KEY)
+    print(repr(cxtb))
     print(repr(btab))
 
 
-    """
-    Form selection of simtrace intersects
-    that have boundaries matching a regexp.
-    Typically would have a few hundred boundary names
-    in cf.bdn but potentially millions of simtrace intersects
-    in the bn array.
-    """
 
-    bdict = CXT_Config.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_boundary_regexp")
-    d_qbn, d_anno = cf.dict_find_boundary_indices_re_match(bdict)
-
-    print("---------------------------------------------------\n")
-    wdict = {}
-    for k,qbn in d_qbn.items():
-
-        qbn = d_qbn[k]   # boundary indices
-        label = d_anno[k]
-        bb = cf.bdn[qbn]
-
-        print(" %10s %100s nbb:%4d %s " % (k, label, len(bb), str(qbn[:10])))
-        #print("\n".join(cf.bdn[qbn]))
-        #print("\n")
-        _w = np.isin( bn, qbn )   # bool array indicating which elem of bn are in the qbn array
-        w = np.where(_w)[0]       # indices of bn array with boundaries matching the regexp
-        wdict[k] = w
-    pass
-    print("---------------------------------------------------\n")
-
-
-    gpos = st[:,1].copy()
+    gpos = ust[:,1].copy()
     gpos[...,3] = 1.
     lpos = np.dot( gpos, w2m )
     upos = gpos if GLOBAL else lpos
@@ -161,12 +113,16 @@ if __name__ == '__main__':
     X,Y,Z = 0,1,2
     H,V = X,Z
 
+
+
+
     if MODE == 2:
         pl = pvp.mpplt_plotter(label=label)
         fig, axs = pl
         ax = axs[0]
 
-        for k, w in wdict.items():
+        for k, w in cxtb.wdict.items():
+            if not KEY is None and not k in KK: continue
             ax.scatter( upos[w,H], upos[w,V], s=0.1, color=k )
         pass
 
@@ -181,9 +137,15 @@ if __name__ == '__main__':
         pvp.pvplt_viewpoint(pl)   # sensitive to EYE, LOOK, UP envvars
         if FRAME: pvp.pvplt_frame(pl, sf, local=not GLOBAL )
 
-        for k, w in wdict.items():
-            label = d_anno[k]
-            pl.add_points(upos[w,:3], color=k, label=label )
+        for k, w in cxtb.wdict.items():
+            if not KEY is None and not k in KK: continue
+            nw = len(w)
+            label = "%10s %8d %s" % (k,nw,cxtb.d_anno[k])
+            if nw > 0:
+                pl.add_points(upos[w,:3], color=k, label=label )
+            else:
+                print(label)
+            pass
         pass
 
         if GSGRID: pl.add_points(ugrid[:,:3], color="r" )
