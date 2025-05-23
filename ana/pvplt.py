@@ -88,6 +88,7 @@ pass
 if MODE in [3,-3]:
     try:
         import pyvista as pv
+        #pv.global_theme.full_screen = True
     except ImportError:
         print("pvplt.py : FAILED to import pyvista MODE:%d" % MODE)
         pv = None
@@ -116,14 +117,13 @@ if not pv is None:
 pass
 
 GUI = not "NOGUI" in os.environ
-SIZE = np.array([1280, 720] )
-ASPECT = float(SIZE[0])/float(SIZE[1])  # 1280/720 = 1.7777777777777777
-
 
 eary_ = lambda ekey, edef:np.array( list(map(float, os.environ.get(ekey,edef).split(","))) )
+eintary_ = lambda ekey, edef:np.array( list(map(int, os.environ.get(ekey,edef).split(","))) )
 efloat_ = lambda ekey, edef: float( os.environ.get(ekey,edef) )
 
-
+SIZE = eintary_("SIZE", "1280,720")
+ASPECT = float(SIZE[0])/float(SIZE[1])  # 1280/720 = 1.7777777777777777
 
 XDIST = efloat_("XDIST", "200")
 FOCUS = eary_("FOCUS", "0,0,0")
@@ -236,7 +236,11 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False):
     if verbose:
         print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
     pass
-    pl = pv.Plotter(window_size=SIZE*2 )
+
+    WSIZE = SIZE*2
+    print("pvplt_plotter WSIZE:%s" % repr(WSIZE))
+
+    pl = pv.Plotter(window_size=WSIZE)
     pvplt_viewpoint(pl, reset=False, verbose=verbose)
 
     GRID = 1 == int(os.environ.get("GRID","0"))

@@ -43,6 +43,7 @@ from opticks.CSG.CSGFoundry import BoundaryNameConfig
 
 MODE = int(os.environ.get("MODE","2"))
 NORMAL = int(os.environ.get("NORMAL","0"))
+NORMAL_FILTER = int(os.environ.get("NORMAL_FILTER","10000"))
 
 GLOBAL = 1 == int(os.environ.get("GLOBAL","0"))
 GSGRID = 1 == int(os.environ.get("GSGRID","0"))
@@ -52,6 +53,28 @@ if MODE in [2,3]:
     import opticks.ana.pvplt as pvp
 pass
 
+
+class IdentityTable(object):
+    def __init__(self, ii ):
+        u, x, n = np.unique(ii, return_index=True, return_counts=True )
+        o = np.argsort(n)[::-1]
+
+        _tab = "np.c_[u,n,x][o]"
+        tab = eval(_tab) 
+
+        self._tab = _tab
+        self.tab = tab
+
+        self.u = u[o]
+        self.x = x[o]
+        self.n = n[o]
+
+    def __repr__(self):
+       lines =  []
+       lines.append("[IdentityTable")
+       lines.append(repr(self.tab))
+       lines.append("]IdentityTable")
+       return "\n".join(lines)
 
 
 if __name__ == '__main__':
@@ -87,14 +110,27 @@ if __name__ == '__main__':
     st_x = st[:,1,0]
     st_y = st[:,1,1]
     st_z = st[:,1,2]
-    #presel = st_x < -20000   ## presel helps to identify boundaries
-    presel = slice(None)
-    #presel = np.abs(st_x) < 1000
+    st_id = st[:,3,3].view(np.int32) 
+
+    presel = slice(None)                                        ## ALL
+
+    #presel = st_x < -20000                                     ## x < -20m
+    #presel = np.abs(st_x) < 1000                               ## |x|<1m 
+
+    #presel = st_id == 0                                        ## non-instanced
+    #presel = np.logical_and( st_id > 0, st_id < 30000 )        ## LPMT
+    #presel = np.logical_and( st_id >= 30000, st_id < 50000 )   ## SPMT
+    #presel = st_id >= 50000                                    ## pool PMTS
+    
 
 
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
 
     bn = ust[:,2,3].view(np.int32)   ## simtrace intersect boundary indices
+    ii = ust[:,3,3].view(np.int32)
+
+    iitab = IdentityTable(ii)
+    print(repr(iitab))
 
     KEY = os.environ.get("KEY", None)
     KK = KEY.split(",") if not KEY is None else []
@@ -150,7 +186,7 @@ if __name__ == '__main__':
             label = "%10s %8d %s" % (k,len(w),cxtb.d_anno[k])
             pvp.pvplt_add_points(pl, upos[w,:3], color=k, label=label )
 
-            if NORMAL > 0: pvp.pvplt_add_delta_lines(pl, upos[w,:3][::10000], 20*unrm[w,:3][::10000], color=k )
+            if NORMAL > 0: pvp.pvplt_add_delta_lines(pl, upos[w,:3][::NORMAL_FILTER], 20*unrm[w,:3][::NORMAL_FILTER], color=k )
         pass
 
         if GSGRID: pl.add_points(ugrid[:,:3], color="r" )
