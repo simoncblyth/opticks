@@ -9,7 +9,7 @@ TODO: try removing the placeholders
 
 struct RaygenData
 {
-    float placeholder ; 
+    float placeholder ;
 };
 
 struct MissData
@@ -20,25 +20,27 @@ struct MissData
 
 struct CustomPrim
 {
-    int numNode ;   
-    int nodeOffset ; 
+    int numNode ;
+    int nodeOffset ;
+    int globalPrimIdx ;
 };
 
 struct TriMesh
 {
-    unsigned boundary ;  
-    uint3*  indice ;  // indices of triangle vertices and normal 
-    float3* vertex ; 
-    float3* normal ; 
+    unsigned boundary ;
+    uint3*  indice ;  // indices of triangle vertices and normal
+    float3* vertex ;
+    float3* normal ;
+    int globalPrimIdx ;
 };
 
 
-struct HitGroupData   
+struct HitGroupData
 {
     union
     {
-        CustomPrim prim ; 
-        TriMesh    mesh ;    
+        CustomPrim prim ;
+        TriMesh    mesh ;
     };
 };
 

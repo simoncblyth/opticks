@@ -158,13 +158,17 @@ struct quad2
     SQUAD_METHOD float lposcost() const ;
     SQUAD_METHOD unsigned iindex() const ;
     SQUAD_METHOD unsigned identity() const ;
-    SQUAD_METHOD unsigned boundary() const ;
-    SQUAD_METHOD bool is_boundary_miss() const ;
 
     SQUAD_METHOD void set_lposcost(float lpc);
     SQUAD_METHOD void set_iindex(  unsigned ii);
     SQUAD_METHOD void set_identity(unsigned id);
-    SQUAD_METHOD void set_boundary(unsigned bn);
+
+    SQUAD_METHOD void set_globalPrimIdx_boundary_(unsigned globalPrimIdx_boundary);
+    SQUAD_METHOD void set_globalPrimIdx_boundary(unsigned gp, unsigned bn);
+    SQUAD_METHOD unsigned globalPrimIdx_boundary() const ;
+    SQUAD_METHOD unsigned globalPrimIdx() const ;
+    SQUAD_METHOD unsigned boundary() const ;
+    SQUAD_METHOD bool is_boundary_miss() const ;
 
 
 
@@ -193,17 +197,18 @@ SQUAD_METHOD float          quad2::distance() const {   return q0.f.w ; }
 SQUAD_METHOD float          quad2::lposcost() const {   return q1.f.x ; }
 SQUAD_METHOD unsigned       quad2::iindex() const {     return q1.u.y ; }
 SQUAD_METHOD unsigned       quad2::identity() const {   return q1.u.z ; }
-SQUAD_METHOD unsigned       quad2::boundary() const {   return q1.u.w ; }
-SQUAD_METHOD bool           quad2::is_boundary_miss() const {   return q1.u.w == 0xffffu ; }
 
 SQUAD_METHOD void           quad2::set_lposcost(float lpc)   { q1.f.x = lpc ; }
 SQUAD_METHOD void           quad2::set_iindex(  unsigned ii) { q1.u.y = ii ;  }
 SQUAD_METHOD void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
-SQUAD_METHOD void           quad2::set_boundary(unsigned bn) { q1.u.w = bn ;  }
 
+SQUAD_METHOD void           quad2::set_globalPrimIdx_boundary_(unsigned globalPrimIdx_boundary) { q1.u.w = globalPrimIdx_boundary ;  }
+SQUAD_METHOD void           quad2::set_globalPrimIdx_boundary(unsigned globalPrimIdx, unsigned boundary) { q1.u.w = (( globalPrimIdx & 0xffffu ) << 16 ) | ( boundary & 0xffffu ) ; }
+SQUAD_METHOD unsigned       quad2::globalPrimIdx_boundary() const {              return   q1.u.w ; }
+SQUAD_METHOD unsigned       quad2::globalPrimIdx() const {                       return   q1.u.w >> 16 ; }
+SQUAD_METHOD unsigned       quad2::boundary() const {                            return   q1.u.w & 0xffffu ; }
 
-
-
+SQUAD_METHOD bool           quad2::is_boundary_miss() const {                    return ( q1.u.w & 0xffffu ) == 0xffffu ; }
 
 
 struct quad4 

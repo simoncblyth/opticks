@@ -54,13 +54,13 @@ if MODE in [2,3]:
 pass
 
 
-class IdentityTable(object):
+class GlobalPrimIdxTable(object):
     def __init__(self, ii ):
         u, x, n = np.unique(ii, return_index=True, return_counts=True )
         o = np.argsort(n)[::-1]
 
         _tab = "np.c_[u,n,x][o]"
-        tab = eval(_tab) 
+        tab = eval(_tab)
 
         self._tab = _tab
         self.tab = tab
@@ -69,12 +69,37 @@ class IdentityTable(object):
         self.x = x[o]
         self.n = n[o]
 
+
+
+
+
+class UniqueTable(object):
+    def __init__(self, symbol, ii, names=None ):
+        u, x, c = np.unique(ii, return_index=True, return_counts=True )
+        o = np.argsort(c)[::-1]
+        nn = names[u] if not names is None else None
+
+        _tab = "np.c_[u,c,x,nn][o]" if not nn is None else "np.c_[u,c,x][o]"
+        tab = eval(_tab)
+
+        self.symbol = symbol
+        self._tab = _tab
+        self.tab = tab
+
+        self.u = u[o]
+        self.x = x[o]
+        self.c = c[o]
+        self.n = nn[o] if not nn is None else None
+
+
     def __repr__(self):
        lines =  []
-       lines.append("[IdentityTable")
+       lines.append("[%s" % self.symbol)
        lines.append(repr(self.tab))
-       lines.append("]IdentityTable")
+       lines.append("]%s" % self.symbol)
        return "\n".join(lines)
+
+
 
 
 if __name__ == '__main__':
@@ -110,27 +135,54 @@ if __name__ == '__main__':
     st_x = st[:,1,0]
     st_y = st[:,1,1]
     st_z = st[:,1,2]
-    st_id = st[:,3,3].view(np.int32) 
+    st_gp = st[:,2,3].view(np.int32) >> 16
+    st_bn = st[:,2,3].view(np.int32) & 0xffff
+    st_id = st[:,3,3].view(np.int32)
 
     presel = slice(None)                                        ## ALL
 
     #presel = st_x < -20000                                     ## x < -20m
-    #presel = np.abs(st_x) < 1000                               ## |x|<1m 
+    #presel = np.abs(st_x) < 1000                               ## |x|<1m
 
-    #presel = st_id == 0                                        ## non-instanced
-    #presel = np.logical_and( st_id > 0, st_id < 30000 )        ## LPMT
-    #presel = np.logical_and( st_id >= 30000, st_id < 50000 )   ## SPMT
-    #presel = st_id >= 50000                                    ## pool PMTS
-    
+    PRESEL = os.environ.get("PRESEL", "")
+    if PRESEL.startswith("GP:"):
+        presel = st_gp == int(PRESEL[3:])
+    elif PRESEL == "LPMT":
+        presel = np.logical_and( st_id > 0, st_id < 30000 )
+    elif PRESEL == "SPMT":
+        presel = np.logical_and( st_id >= 30000, st_id < 50000 )
+    elif PRESEL == "PPMT":
+        presel = st_id >= 50000   ## pool PMTS
+    elif PRESEL == "GLOBAL":
+        presel = st_id == 0   ## non-instanced
+    else:
+        presel = slice(None)
+    pass
+
+    #presel = st_gp == 10
+    #presel = st_gp == 2919
+    #presel = st_gp == 2919
+
 
 
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
 
-    bn = ust[:,2,3].view(np.int32)   ## simtrace intersect boundary indices
+    gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
+    gp = gp_bn >> 16
+    bn = gp_bn & 0xffff
+
     ii = ust[:,3,3].view(np.int32)
 
-    iitab = IdentityTable(ii)
-    print(repr(iitab))
+    idtab = UniqueTable("idtab", ii, None)
+    print(repr(idtab))
+
+    gptab = UniqueTable("gptab", gp, cf.primname)
+    print(repr(gptab))
+
+
+
+
+
 
     KEY = os.environ.get("KEY", None)
     KK = KEY.split(",") if not KEY is None else []

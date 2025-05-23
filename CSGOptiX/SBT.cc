@@ -1029,6 +1029,18 @@ void SBT::createHitgroup()
                 unsigned localPrimIdx = trimesh ? j : k ;
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx );
+
+                unsigned globalPrimIdx_1 = prim->globalPrimIdx();
+
+                bool same_globalPrimIdx = globalPrimIdx == globalPrimIdx_1 ;
+                LOG_IF(info, !same_globalPrimIdx)
+                    << " globalPrimIdx   " << std::setw(5) << globalPrimIdx
+                    << " globalPrimIdx_1 " << std::setw(5) << globalPrimIdx_1
+                    << " YOU PROBABLY NEED TO RECREATE THE PERSISTED CSGFoundry GEOMETRY "
+                    ;
+
+                assert( globalPrimIdx == globalPrimIdx_1 );
+
                 int boundary = foundry->getPrimBoundary_(prim);
                 assert( boundary > -1 );
 
@@ -1038,7 +1050,7 @@ void SBT::createHitgroup()
                 }
                 else
                 {
-                    setMeshData( hg->data.mesh, cmg, localPrimIdx, boundary );
+                    setMeshData( hg->data.mesh, cmg, localPrimIdx, boundary, globalPrimIdx );
                 }
 
                 unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx );
@@ -1113,7 +1125,7 @@ void SBT::createHitgroup()
 
                 unsigned globalPrimIdx = primOffset + localPrimIdx ;
                 const CSGPrim* prim = foundry->getPrim( globalPrimIdx );
-                setPrimData( hg->data.prim, prim );  // copy numNode, nodeOffset from CSGPrim into hg->data
+                setPrimData( hg->data.prim, prim, globalPrimIdx );  // copy numNode, nodeOffset from CSGPrim into hg->data
                 unsigned check_sbt_offset = getOffset(gas_idx, localPrimIdx );
 
                 bool sbt_offset_expect = check_sbt_offset == sbt_offset ;
@@ -1171,10 +1183,11 @@ Called from SBT::createHitgroup to populate HitGroupData for analytic geometry.
 
 **/
 
-void SBT::setPrimData( CustomPrim& cp, const CSGPrim* prim)
+void SBT::setPrimData( CustomPrim& cp, const CSGPrim* prim )
 {
     cp.numNode = prim->numNode();
     cp.nodeOffset = prim->nodeOffset();
+    cp.globalPrimIdx = prim->globalPrimIdx();
 }
 
 void SBT::checkPrimData( CustomPrim& cp, const CSGPrim* prim)
@@ -1203,12 +1216,13 @@ Note similarity to SOPTIX_SBT::initHitgroup
 
 **/
 
-void SBT::setMeshData( TriMesh& tm, const SCUDA_MeshGroup* cmg, int j, int boundary )
+void SBT::setMeshData( TriMesh& tm, const SCUDA_MeshGroup* cmg, int j, int boundary, unsigned globalPrimIdx )
 {
     tm.boundary = boundary ;
     tm.vertex = reinterpret_cast<float3*>( cmg->vtx.pointer(j) );
     tm.normal = reinterpret_cast<float3*>( cmg->nrm.pointer(j) );
     tm.indice = reinterpret_cast<uint3*>(  cmg->idx.pointer(j) );
+    tm.globalPrimIdx = globalPrimIdx ;
 }
 #endif
 

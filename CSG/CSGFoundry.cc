@@ -1385,12 +1385,12 @@ the *so->primOffset* together with *primIdxRel* to get the CSGPrim pointer.
 const CSGPrim*  CSGFoundry::getSolidPrim(unsigned solidIdx, unsigned primIdxRel) const
 {
     const CSGSolid* so = getSolid(solidIdx);
-    LOG_IF(fatal, so == nullptr) << "Failed to getSolid solidIdx " << solidIdx ; 
+    LOG_IF(fatal, so == nullptr) << "Failed to getSolid solidIdx " << solidIdx ;
     assert(so);
 
     unsigned primIdx = so->primOffset + primIdxRel ;
     const CSGPrim* pr = getPrim(primIdx);
-    LOG_IF(fatal, pr == nullptr) << "Failed to getPrim primIdxRel " << primIdxRel ; 
+    LOG_IF(fatal, pr == nullptr) << "Failed to getPrim primIdxRel " << primIdxRel ;
     assert(pr);
 
     return pr ;
@@ -2234,6 +2234,11 @@ CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
     pr.setTranOffset(tran.size());     // HMM are tranOffset and planOffset used now that use global referencing  ?
     pr.setPlanOffset(plan.size());     // but still handy to keep them for debugging
 
+    pr.setGlobalPrimIdx(globalPrimIdx); // recent addition
+
+    // setPrimIdx invoked from caller CSGImport::importPrim
+
+
     prim.push_back(pr);
 
     last_added_prim = prim.data() + globalPrimIdx ;
@@ -2475,6 +2480,7 @@ CSGSolid* CSGFoundry::addDeepCopySolid(unsigned solidIdx, const char* label )
         cpr->setMeshIdx(opr->meshIdx());    // copy the metadata that makes sense to be copied
         cpr->setRepeatIdx(opr->repeatIdx());
         cpr->setPrimIdx(opr->primIdx());
+        cpr->setGlobalPrimIdx(opr->globalPrimIdx());
 
         for(int nodeIdx=opr->nodeOffset() ; nodeIdx < opr->nodeOffset()+opr->numNode() ; nodeIdx++)
         {
@@ -2615,7 +2621,7 @@ See notes/issues/primIdx-and-skips.rst
 
 void CSGFoundry::saveAlt() const
 {
-    const char* cfbase_alt = spath::Resolve("CFBASE_ALT"); 
+    const char* cfbase_alt = spath::Resolve("CFBASE_ALT");
     if( cfbase && cfbase_alt && strcmp(cfbase, cfbase_alt) == 0 )
     {
         LOG(fatal)
@@ -2844,18 +2850,18 @@ TODO: adopt NPFold
 
 void CSGFoundry::load( const char* dir_ )
 {
-    const char* dir = spath::Resolve(dir_); 
+    const char* dir = spath::Resolve(dir_);
     bool readable = spath::is_readable(dir);
 
-    LOG_IF(fatal, !readable ) 
+    LOG_IF(fatal, !readable )
        << " dir-not-readable "
        << " dir_ [" << ( dir_ ? dir_ : "-" ) << "]"
-       << " dir [" << ( dir ? dir : "-" ) << "]" 
+       << " dir [" << ( dir ? dir : "-" ) << "]"
        << "\n"
        << LOAD_FAIL_NOTES
        ;
 
-    assert(readable) ; 
+    assert(readable) ;
     if( !readable ) return ;
 
     loaddir = strdup(dir) ;
@@ -3137,16 +3143,16 @@ CSGFoundry::ResolveCFBase
 ---------------------------
 
 When GEOM and "GEOM"_CFBaseFromGEOM are defined that directory is used
-The former use of CFBASE envvar with SOpticksResource::CFBase is removed. 
+The former use of CFBASE envvar with SOpticksResource::CFBase is removed.
 
 **/
 
-const char* CSGFoundry::ResolveCFBase() 
+const char* CSGFoundry::ResolveCFBase()
 {
-    const char* cfbase = spath::CFBaseFromGEOM(); 
-    bool readable = spath::is_readable(cfbase, "CSGFoundry" ); 
+    const char* cfbase = spath::CFBaseFromGEOM();
+    bool readable = spath::is_readable(cfbase, "CSGFoundry" );
     LOG_IF(fatal, !readable) << " cfbase/CSGFoundry directory [" << cfbase << "]/CSGFoundry" << " IS NOT READABLE " ;
-    return readable ? cfbase : nullptr ; 
+    return readable ? cfbase : nullptr ;
 }
 
 
