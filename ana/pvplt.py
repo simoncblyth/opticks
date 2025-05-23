@@ -1020,6 +1020,73 @@ def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
     return cp
 
 
+def pvplt_add_points( pl, pos, **kwa ):
+    if len(pos) == 0:
+        print("pvplt_add_points len(pos) ZERO   %s " % repr(kwa))
+        return
+    pass
+    print("pvplt_add_points pos.shape %s kwa %s " % ( str(pos.shape), str(kwa) ))
+    pos_cloud = pv.PolyData(pos)
+    pl.add_mesh(pos_cloud, **kwa )
+
+
+def pvplt_make_delta_lines( pos, delta ):
+    """
+    :param pos: (n,3) coordinates
+    :param delta: (n,3) offsets
+    :return vlin, lines:
+
+    vlin
+        (n,3) vertices of start and end points of the lines
+
+    lines
+        specification with number of points to join (2)
+        and indices into vlin, eg::
+
+             np.array( [[2,100,101], [2,102,103]] ).ravel()
+
+    """
+    assert(len(pos) == len(delta))
+
+    num_line = len(pos)
+    vlin = np.zeros([num_line,2,3])
+    vlin[:,0] = pos
+    vlin[:,1] = pos + delta
+    vlin = vlin.reshape(-1,3)
+
+    _lines = np.zeros( (num_line,3), dtype=np.int64 )
+    _lines[:,0] = 2                           # 2 indices for each line segment
+    _lines[:,1] = np.arange(0, 2*num_line,2)  # line start index within vlin
+    _lines[:,2] = 1 + _lines[:,1]               # line end index within vlin
+    lines = _lines.ravel()
+
+    return vlin, lines
+
+
+def pvplt_add_delta_lines( pl, pos, delta, **kwa ):
+    """
+    :param pl: plotter
+    :param pos: (n,3) coordinates
+    :param delta: (n,3) offsets
+    """
+    vlin, lines = pvplt_make_delta_lines(pos, delta )
+    pvplt_add_lines(pl, vlin, lines, **kwa )
+
+
+def pvplt_add_lines( pl, pos, lines, **kwa ):
+    """
+    :param pos: float array of shape (n,3)
+    :param lines: int array of form np.array([[2,0,1],[2,1,2]]).ravel()
+    """
+    if len(pos) == 0:
+        print("pvplt_add_lines len(pos) ZERO   %s " % repr(kwa))
+        return
+    pass
+    print("pvplt_add_lines pos.shape %s lines.shape %s kwa %s " % ( str(pos.shape), str(lines.shape), str(kwa) ))
+    pos_lines = pv.PolyData(pos, lines=lines)
+    pl.add_mesh(pos_lines, **kwa )
+
+
 if __name__ == '__main__':
     test_pvplt_contiguous_line_segments()
 pass

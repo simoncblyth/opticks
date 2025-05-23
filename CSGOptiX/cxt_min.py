@@ -42,6 +42,8 @@ from opticks.ana.p import cf    # load CSGFoundry geometry info
 from opticks.CSG.CSGFoundry import BoundaryNameConfig
 
 MODE = int(os.environ.get("MODE","2"))
+NORMAL = int(os.environ.get("NORMAL","0"))
+
 GLOBAL = 1 == int(os.environ.get("GLOBAL","0"))
 GSGRID = 1 == int(os.environ.get("GSGRID","0"))
 FRAME = 1 == int(os.environ.get("FRAME","0"))
@@ -86,12 +88,11 @@ if __name__ == '__main__':
     st_y = st[:,1,1]
     st_z = st[:,1,2]
     #presel = st_x < -20000   ## presel helps to identify boundaries
-    #presel = slice(None)
-    presel = np.abs(st_x) < 1000
+    presel = slice(None)
+    #presel = np.abs(st_x) < 1000
 
 
-    ust = st[presel]
-
+    ust = st[presel]   ## example ust shape (13812151, 4, 4)
 
     bn = ust[:,2,3].view(np.int32)   ## simtrace intersect boundary indices
 
@@ -104,16 +105,23 @@ if __name__ == '__main__':
     print(repr(btab))
 
 
-
+    ## simtrace layout see sysrap/sevent.h
+    gnrm = ust[:,0].copy()
     gpos = ust[:,1].copy()
-    gpos[...,3] = 1.
+
+    gnrm[...,3] = 0.   ## transform as vector
+    gpos[...,3] = 1.   ## transform as position
+
+    lnrm = np.dot( gnrm, w2m )
     lpos = np.dot( gpos, w2m )
+
+    unrm = gnrm if GLOBAL else lnrm
     upos = gpos if GLOBAL else lpos
+
+
 
     X,Y,Z = 0,1,2
     H,V = X,Z
-
-
 
 
     if MODE == 2:
@@ -139,13 +147,10 @@ if __name__ == '__main__':
 
         for k, w in cxtb.wdict.items():
             if not KEY is None and not k in KK: continue
-            nw = len(w)
-            label = "%10s %8d %s" % (k,nw,cxtb.d_anno[k])
-            if nw > 0:
-                pl.add_points(upos[w,:3], color=k, label=label )
-            else:
-                print(label)
-            pass
+            label = "%10s %8d %s" % (k,len(w),cxtb.d_anno[k])
+            pvp.pvplt_add_points(pl, upos[w,:3], color=k, label=label )
+
+            if NORMAL > 0: pvp.pvplt_add_delta_lines(pl, upos[w,:3][::10000], 20*unrm[w,:3][::10000], color=k )
         pass
 
         if GSGRID: pl.add_points(ugrid[:,:3], color="r" )
