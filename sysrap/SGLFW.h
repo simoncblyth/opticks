@@ -123,6 +123,10 @@ SGLFW.h
               S  E
 
 
+
+SPACE
+   toggle gm.toggle.stop : when stopped mouse movement does nothing  
+
 A
    (WASDQE) hold to change eyeshift, translate left
 
@@ -538,6 +542,7 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_C:      gm.toggle.cuda = !gm.toggle.cuda            ; break ;
             case GLFW_KEY_U:      gm.toggle.norm = !gm.toggle.norm            ; break ;
             case GLFW_KEY_T:      gm.toggle.time = !gm.toggle.time            ; break ;
+            case GLFW_KEY_SPACE:  gm.toggle.stop = !gm.toggle.stop            ; break ;
             case GLFW_KEY_P:      command("--desc")                     ; break ;
             case GLFW_KEY_H:      command("--home") ; command("--help") ; break ;
             case GLFW_KEY_O:      command("--tcam")                     ; break ;
@@ -1033,13 +1038,25 @@ inline void SGLFW::cursor_moved(int ix, int iy)
     cursor_moved_action();
 }
 
+
+/**
+SGLFW::cursor_moved_action
+----------------------------
+
+HMM: potentially the adhoc sensitivity factors below should 
+depend on the extent of the geometry and the time range of the
+event being rendered ? 
+
+**/
+
+
 inline void SGLFW::cursor_moved_action()
 {
     unsigned modifiers = keys.modifiers() ;
     float dy = drag.w ;
     if(gm.toggle.zoom)
     {
-        std::string cmd = FormCommand("--inc-zoom", dy*100 );
+        std::string cmd = FormCommand("--inc-zoom", dy*5 );
         gm.command(cmd.c_str()) ;
     }
     else if(gm.toggle.tmin)
@@ -1065,7 +1082,7 @@ inline void SGLFW::cursor_moved_action()
         gm.update();
     }
    */
-    else
+    else if(!gm.toggle.stop)
     {
         gm.cursor_moved_action(start_ndc, move_ndc, modifiers );
         gm.update();

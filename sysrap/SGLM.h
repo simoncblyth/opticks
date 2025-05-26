@@ -186,6 +186,7 @@ struct SYSRAP_API SGLM_Toggle
     bool cuda = false ;
     bool norm = false ;
     bool time = false ;
+    bool stop = false ;
     std::string desc() const ;
 };
 
@@ -200,6 +201,7 @@ inline std::string SGLM_Toggle::desc() const
        << " cuda:" << ( cuda ? "Y" : "N" )
        << " norm:" << ( norm ? "Y" : "N" )
        << " time:" << ( time ? "Y" : "N" )
+       << " stop:" << ( stop ? "Y" : "N" )
        ;
     std::string str = ss.str();
     return str ;

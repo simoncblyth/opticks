@@ -54,24 +54,6 @@ if MODE in [2,3]:
 pass
 
 
-class GlobalPrimIdxTable(object):
-    def __init__(self, ii ):
-        u, x, n = np.unique(ii, return_index=True, return_counts=True )
-        o = np.argsort(n)[::-1]
-
-        _tab = "np.c_[u,n,x][o]"
-        tab = eval(_tab)
-
-        self._tab = _tab
-        self.tab = tab
-
-        self.u = u[o]
-        self.x = x[o]
-        self.n = n[o]
-
-
-
-
 
 class UniqueTable(object):
     def __init__(self, symbol, ii, names=None ):
@@ -145,8 +127,20 @@ if __name__ == '__main__':
     #presel = np.abs(st_x) < 1000                               ## |x|<1m
 
     PRESEL = os.environ.get("PRESEL", "")
-    if PRESEL.startswith("GP:"):
-        presel = st_gp == int(PRESEL[3:])
+    if PRESEL.startswith("PRIM:"):
+        spec = PRESEL[len("PRIM:"):]
+        gps = np.array([], dtype=np.int64)
+        for elem in spec.split(","):
+            if str.isdigit(elem): 
+                gps = np.concatenate(gps, int(elem))
+            else:
+                egp = np.unique(np.where( cf.primname == elem )) 
+                gps = np.concatenate( (gps, egp) )
+            pass 
+        pass
+        gps = np.unique(gps)
+        presel = np.isin(st_gp, gps )
+        pass
     elif PRESEL == "LPMT":
         presel = np.logical_and( st_id > 0, st_id < 30000 )
     elif PRESEL == "SPMT":
@@ -168,10 +162,10 @@ if __name__ == '__main__':
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
 
     gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
-    gp = gp_bn >> 16
-    bn = gp_bn & 0xffff
+    gp = gp_bn >> 16      ## globalPrimIdx 
+    bn = gp_bn & 0xffff   ## boundary 
 
-    ii = ust[:,3,3].view(np.int32)
+    ii = ust[:,3,3].view(np.int32)   ## instanceIndex 
 
     idtab = UniqueTable("idtab", ii, None)
     print(repr(idtab))
@@ -179,9 +173,7 @@ if __name__ == '__main__':
     gptab = UniqueTable("gptab", gp, cf.primname)
     print(repr(gptab))
 
-
-
-
+    ## would be good to see the globalPrimIdx that correspond to a boundary
 
 
     KEY = os.environ.get("KEY", None)
@@ -243,7 +235,7 @@ if __name__ == '__main__':
 
         if GSGRID: pl.add_points(ugrid[:,:3], color="r" )
 
-        cp = pvp.pvplt_show(pl, incpoi=-5, legend=True )
+        cp = pvp.pvplt_show(pl, incpoi=-5, legend=True, title=None )
     else:
         pass
     pass

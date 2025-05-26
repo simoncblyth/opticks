@@ -199,7 +199,16 @@ debug()
 [ -n "$DBG" ] && debug
 
 
-vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM FOLD MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS"
+vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM FOLD MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS TITLE"
+
+## define TITLE based on ana/pdb control envvars
+title="cxt_min.sh pdb"
+ee="LINE GLOBAL PRESEL KEY NORMAL NORMAL_FILTER GRID GSGRID"
+for e in $ee ; do
+   printf "%20s : %s \n" "$e" "${!e}" 
+   [ -n "${!e}" ] && title="$e=${!e} $title"
+done
+export TITLE="$title"
 
 
 if [ "${arg/info}" != "$arg" ]; then

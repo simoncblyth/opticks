@@ -243,17 +243,11 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False):
     pl = pv.Plotter(window_size=WSIZE)
     pvplt_viewpoint(pl, reset=False, verbose=verbose)
 
-    GRID = 1 == int(os.environ.get("GRID","0"))
-    if GRID:
-        pl.show_grid()
-    else:
-        print("pvplt_plotter !(GRID==1) ")
-    pass
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
     return pl
 
-def pvplt_show(pl, incpoi=0., legend=False):
+def pvplt_show(pl, incpoi=0., legend=False, title=None):
     """
     :param incpoi: float inrement to point size and line width, eg -5
 
@@ -261,13 +255,37 @@ def pvplt_show(pl, incpoi=0., legend=False):
 
         INCPOI=-5.
         LEGEND=1
+        TITLE="The PyVista Window Title"
 
     """
-    INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
-    pl.increment_point_size_and_line_width(INCPOI)
+    TITLE = os.environ.get("TITLE", title)
+
     LEGEND = bool(os.environ.get("LEGEND", legend))
     if LEGEND: pl.add_legend(font_family="courier", size=(0.3,0.3))
-    return pl.show()
+    print("pvplt_show title:%s TITLE:%s " % (title, TITLE))
+
+    GRID = 1 == int(os.environ.get("GRID","0"))
+    if GRID:
+        bounds = efloatarray_("BOUNDS", "0,0,0,0,0,0" ) if "BOUNDS" in os.environ else None
+        axes_ranges = efloatarray_("AXES_RANGES", "0,0,0,0,0,0" ) if "AXES_RANGES" in os.environ else None
+        print("pvplt_show bounds [%s] " % str(bounds)) 
+        print("pvplt_show axes_ranges [%s] " % str(axes_ranges)) 
+        pl.show_grid(bounds=bounds, axes_ranges=axes_ranges )
+    else:
+        print("pvplt_show !(GRID==1) ")
+    pass
+
+    if "LINE" in os.environ:
+        line = efloatarray_("LINE", "0,0,17000,0,0,22000")
+        a = line[:3] 
+        b = line[3:]
+        pvplt_add_line_a2b(pl, a, b)
+    pass
+
+    INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
+    pl.increment_point_size_and_line_width(INCPOI)
+
+    return pl.show(title=TITLE)
 
 
 def mpplt_annotate_fig( fig, label  ):
