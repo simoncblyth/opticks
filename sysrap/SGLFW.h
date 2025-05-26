@@ -196,6 +196,12 @@ T:gm.toggle.time
 alt+T
    gm.reset_time back to t0(T0) for the alt-A and alt-B enabled record array renders
 
+shift+T
+   gm.reset_time_TT to TT for  alt-A and alt-B enabled record array renders
+
+ctrl+T
+   toggles gm.enabled_time_halt
+
 U:gm.toggle.norm
    for rasterized render toggle between wireframe and normal shading
 V
@@ -452,7 +458,7 @@ inline void SGLFW::handle_event(GLEQevent& event)
 
 inline void SGLFW::post_handle_key()
 {
-    gm.enabled_bump_time = !gm.toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
+    gm.enabled_time_bump = !gm.toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
 }
 
 
@@ -565,6 +571,21 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_T:   gm.reset_time()                ; break ;
         }
     }
+    else if( SGLM_Modifiers::IsShift(modifiers))
+    {
+        switch(key)
+        {
+            case GLFW_KEY_T:   gm.reset_time_TT()             ; break ;
+        }
+    }
+    else if( SGLM_Modifiers::IsControl(modifiers))
+    {
+        switch(key)
+        {
+            case GLFW_KEY_T:   gm.toggle_time_halt()             ; break ;
+        }
+    }
+
 
     //if(modifiers > 0) gm.key_pressed_action(modifiers) ; // not triggered repeatedly enough for navigation
     if(level > 1) std::cout << gm.toggle.desc() << std::endl ;

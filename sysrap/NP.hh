@@ -268,6 +268,11 @@ struct NP
 
     static NP* MakeSelection( const NP* src, const NP* sel );  // sel expected to contain integer indices selecting items in src
 
+    static int ParseSliceString(std::vector<INT>& idxx, const char* _sli );
+    template<typename T> static NP* MakeSliceSelection( const NP* src, const char* sel );
+    template<typename T> NP* makeWhereSelection( const char* _sel ) const ;
+
+
     static NP* MakeItemCopy(  const NP* src, INT i,INT j=-1,INT k=-1,INT l=-1,INT m=-1, INT o=-1 );
     void  item_shape(std::vector<INT>& sub, INT i, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1 ) const ;
     NP*   spawn_item(  INT i, INT j=-1, INT k=-1, INT l=-1, INT m=-1, INT o=-1  ) const ;
@@ -289,6 +294,9 @@ struct NP
     // load array asis
     static NP* LoadIfExists(const char* path);
     static NP* Load(const char* path);
+
+    template<typename T> static NP* LoadSlice( const char* path, const char* _sel );
+
     static bool ExistsArrayFolder(const char* path );
 
     static NP* Load_(const char* path);
@@ -1597,8 +1605,14 @@ template<typename T, typename... Args> inline void NP::slice(std::vector<T>& out
 
 
 
+/**
+NP::slice_
+-----------
 
+Collect a slice of values from the array into the out vector which is
+first resized for fit them.
 
+**/
 
 
 template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vector<INT>& idxx ) const
@@ -1633,9 +1647,9 @@ template<typename T> inline void NP::slice_(std::vector<T>& out, const std::vect
         << std::endl
         ;
 
-        const T* vv = cvalues<T>();
-        out.resize(numval);
-        for(unsigned i=0 ; i < numval ; i++) out[i] = vv[start+i*stride+offset] ;
+    const T* vv = cvalues<T>();
+    out.resize(numval);
+    for(unsigned i=0 ; i < numval ; i++) out[i] = vv[start+i*stride+offset] ;
 }
 
 
@@ -1711,9 +1725,9 @@ inline NP::INT NP::pickdim__(const std::vector<INT>& idxx) const
 NP::index__
 -------------
 
-Flat value index ontained from array indices, a -ve index terminates
+Flat value index obtained from array indices, a -ve index terminates
 the summation over dimensions so only the dimensions to the left of the
--1 are summed.  This is used to from NP::slice to give the start index
+-1 are summed.  This is used from NP::slice to give the start index
 of the slice where the slice dimension is marked by the -1.
 
 **/
@@ -1730,6 +1744,18 @@ inline NP::INT NP::index__(const std::vector<INT>& idxx) const
     return idx ;
 }
 
+/**
+NP::stride__
+--------------
+
+1. find ordinal of first -1 in idxx
+2. compute stride from product of array dimensions to the right of the -1
+
+For example with an array of shape (100000, 32, 4, 4) and idxx (-1,)
+the pickdim is 0 and the stride is 32*4*4
+
+**/
+
 
 inline NP::INT NP::stride__(const std::vector<INT>& idxx) const
 {
@@ -1738,6 +1764,18 @@ inline NP::INT NP::stride__(const std::vector<INT>& idxx) const
     INT stride = dimprod(pd+1) ;
     return stride ;
 }
+
+
+/**
+NP::offset__
+--------------
+
+1. find ordinal of first -1 in idxx
+2.
+
+
+**/
+
 
 inline NP::INT NP::offset__(const std::vector<INT>& idxx) const
 {
@@ -2317,6 +2355,15 @@ inline NP* NP::MakeSelectCopy_(  const NP* src, const INT* items, INT num_items 
     return dst ;
 }
 
+/**
+NP::MakeSelection
+--------------------
+
+*sel* is an array of indices into the *src* array
+
+**/
+
+
 inline NP* NP::MakeSelection( const NP* src, const NP* sel )
 {
     INT num_sel = sel->shape[0] ;
@@ -2338,6 +2385,129 @@ inline NP* NP::MakeSelection( const NP* src, const NP* sel )
 
     return dst ;
 }
+
+
+/**
+NP::ParseSliceString
+------------------------
+
+Parse string of the below forms int vector of integers where ":"
+is special cased to become -1::
+
+     [:,0,0,0]
+     [:,0,0,1]
+     [:,0,0,2]
+
+**/
+
+inline int NP::ParseSliceString(std::vector<INT>& idxx, const char* _sli )
+{
+    size_t len = _sli ? strlen(_sli) : 0 ;
+    if(len < 2) return 1 ;
+
+    const char* o = strstr(_sli, "[");
+    const char* c = strstr(_sli, "]");
+
+    if(o == nullptr) return 2 ;
+    if(c == nullptr) return 3 ;
+    if(c - o <= 0 ) return 4 ;
+
+    // copy starting from the char after the "[" up to the char before the "]"
+    char* sli = strndup(o+1, c - o - 1 );
+    //std::cout << "NP::ParseSliceString /" << sli << "/\n" ;
+
+    char delim = ',' ;
+
+    std::stringstream ss;
+    ss.str(sli);
+    std::string s;
+    while (std::getline(ss, s, delim))
+    {
+        if(0 == strcmp(s.c_str(),":"))
+        {
+            idxx.push_back(-1);
+        }
+        else
+        {
+            std::istringstream iss(s);
+            INT t ;
+            iss >> t ;
+            idxx.push_back(t) ;
+        }
+    }
+    return 0 ;
+}
+
+
+
+/**
+NP::MakeSliceSelection
+------------------------
+
+In [15]: a[a[:,0,0,0] < 0].shape
+Out[15]: (514, 32, 4, 4)
+
+In [16]: a[a[:,0,0,0] > 0].shape
+Out[16]: (486, 32, 4, 4)
+
+**/
+
+
+template<typename T>
+inline NP* NP::MakeSliceSelection( const NP* src, const char* _sel )
+{
+    NP* sel = src->makeWhereSelection<T>(_sel);
+    return MakeSelection(src, sel) ;
+}
+
+/**
+NP::makeWhereSelection
+-------------------------
+
+1. parse selection string like [:,0,0,2] < 0.5
+   extracting the slice specification and cut
+
+2. get the slice and apply the cut to yield
+   a where array of indices for which the
+   selection is true
+
+**/
+
+template<typename T>
+inline NP* NP::makeWhereSelection( const char* _sel ) const
+{
+    std::vector<INT> idxx ;
+    int rc = ParseSliceString(idxx, _sel);
+    if(rc !=0 ) std::cout << "NP::makeWhereSelection FAIL to parse [" << ( _sel ? _sel : "-" ) << "]\n" ;
+    if(rc !=0 ) return nullptr ;
+
+    const char* gt = strstr(_sel, ">");
+    const char* lt = strstr(_sel, "<");
+    if( gt && lt ) return nullptr ;
+    const char* pt = gt ? gt : lt ;
+    std::istringstream iss(pt+1) ;
+
+    T cut(0.f);
+    iss >> cut ;
+    //std::cout << " cut[" << cut << "]\n";
+
+    std::vector<T> vals ;
+    slice_(vals, idxx);
+
+    std::vector<INT> where ;
+    //std::cout << " vals.size " << vals.size() << "\n" ;
+    for(INT i=0 ; i < INT(vals.size()) ; i++)
+    {
+        T value = vals[i] ;
+        bool select = ( gt && value > cut ) || ( lt && value < cut );
+        if(select) where.push_back(i);
+    }
+
+    return MakeFromValues<INT>(where.data(), where.size() ) ;
+}
+
+
+
 
 
 
@@ -2960,6 +3130,36 @@ inline NP* NP::Load(const char* path_)
     if(VERBOSE) std::cerr << "] NP::Load " << path << std::endl ;
     return a ;
 }
+
+
+template<typename T>
+inline NP* NP::LoadSlice( const char* _path, const char* _sel )
+{
+    const char* path = U::Resolve(_path);
+    if(!Exists(path)) return nullptr ;
+
+    NP* __a = NP::Load(path) ;
+    NP* _a = __a ? NP::MakeNarrowIfWide(__a) : nullptr  ;
+
+    const char* sel = nullptr ;
+    if(_sel && strlen(_sel ) > 1)
+    {
+        bool starts_with_dollar = _sel[0] == '$' ;
+        sel = starts_with_dollar ? U::GetEnv(_sel+1, nullptr) : _sel ;
+        if(VERBOSE) std::cout
+            << "NP::LoadSlice"
+            << " starts_with_dollar " << ( starts_with_dollar ? "YES" : "NO " )
+            << " _sel [" << ( _sel ? _sel : "-" ) << "]"
+            << " sel ["  << ( sel ? sel : "-" ) << "]"
+            << "\n"
+            ;
+    }
+    NP* a = sel ? NP::MakeSliceSelection<T>(_a, sel) : _a ;
+    return a ;
+}
+
+
+
 
 /**
 NP::ExistsArrayFolder

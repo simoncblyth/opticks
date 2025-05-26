@@ -258,6 +258,7 @@ struct SYSRAP_API SGLM : public SCMD
 
     static constexpr const char* kT0 = "T0" ;
     static constexpr const char* kT1 = "T1" ;
+    static constexpr const char* kTT = "TT" ;
     static constexpr const char* kTN = "TN" ;  // int:number of render loop time bumps to go from T0 to T1
 
 
@@ -295,6 +296,7 @@ struct SYSRAP_API SGLM : public SCMD
     // record time range
     static float  T0 ;
     static float  T1 ;
+    static float  TT ;
     static int    TN ;
 
 
@@ -615,13 +617,17 @@ struct SYSRAP_API SGLM : public SCMD
     SRecordInfo* br ;
     void setRecordInfo( SRecordInfo* ar, SRecordInfo* br );
 
-    bool enabled_bump_time = true ;
+    bool enabled_time_bump = true ;
+    bool enabled_time_halt = false ; 
     glm::vec4 timeparam = {} ;
     const float* timeparam_ptr ;
 
 
     void init_time();
     void reset_time();
+    void reset_time_TT();
+    void toggle_time_halt();
+
     std::string desc_time() const ;
 
     float get_t0() const ;
@@ -633,7 +639,7 @@ struct SYSRAP_API SGLM : public SCMD
     float get_time() const ;
     bool in_timerange(float t) const ;
     void set_time( float t );
-    void bump_time();
+    void time_bump();
     void inc_time( float dy );
 
     SGLM_Toggle toggle = {} ;
@@ -668,6 +674,7 @@ float      SGLM::TIMESCALE = EValue<float>(kTIMESCALE, "1.0");
 
 float      SGLM::T0 = EValue<float>(kT0, "0.0" );
 float      SGLM::T1 = EValue<float>(kT1, "0.0" );
+float      SGLM::TT = EValue<float>(kTT, "0.0" );
 int        SGLM::TN = ssys::getenvint(kTN, 5000 );
 
 
@@ -786,7 +793,8 @@ inline SGLM::SGLM()
     title("SGLM"),
     ar(nullptr),
     br(nullptr),
-    enabled_bump_time(true),
+    enabled_time_bump(true),
+    enabled_time_halt(false),
     timeparam_ptr(glm::value_ptr(timeparam))
 {
     init();
@@ -2914,6 +2922,30 @@ inline void SGLM::reset_time()
     set_time(t0) ;
 }
 
+/**
+SGLM::reset_time_TT
+--------------------
+
+SGLFW.h invokes this from renderloop when press shift+T
+causing time to be reset to value of TT envvar (default 0.f)
+and the animation to be disabled. 
+
+Resume animation with alt+T
+
+**/
+
+inline void SGLM::reset_time_TT()
+{
+    std::cout << "SGLM::reset_time_TT " << TT << "\n" ; 
+    set_time(TT) ;
+}
+
+inline void SGLM::toggle_time_halt()
+{
+    enabled_time_halt = !enabled_time_halt ; 
+}
+
+
 std::string SGLM::desc_time() const
 {
     float t = get_time();
@@ -2989,9 +3021,9 @@ inline void SGLM::set_time( float t )
 }
 
 
-inline void SGLM::bump_time()
+inline void SGLM::time_bump()
 {
-    if(!enabled_bump_time) return ;
+    if(!enabled_time_bump || enabled_time_halt) return ;
     set_time( get_time() + get_ts() );
 }
 
@@ -3030,6 +3062,6 @@ time exceeds t1 at which point it is returned to t0.
 
 inline void SGLM::renderloop_tail()
 {
-    if( option.A || option.B ) bump_time();
+    if( option.A || option.B ) time_bump();
 }
 

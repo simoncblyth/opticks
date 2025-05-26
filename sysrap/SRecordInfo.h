@@ -25,7 +25,7 @@ struct SRecordInfo
     float4 mx = {} ;
     float4 ce = {} ;
 
-    static SRecordInfo* Load(const char* path);
+    static SRecordInfo* Load(const char* path, const char* _slice=nullptr );
     SRecordInfo(NP* record);
     void init() ;
 
@@ -39,17 +39,16 @@ struct SRecordInfo
     std::string desc() const ;
 };
 
+/**
+SRecordInfo::Load
+------------------
 
-inline SRecordInfo* SRecordInfo::Load(const char* _path)
+**/
+
+inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
 {
-    const char* path = spath::Resolve(_path);
-    if(!spath::Exists(path)) return nullptr ;
-
-    NP* _a = NP::Load(path) ;
-    NP* a = _a ? NP::MakeNarrowIfWide(_a) : nullptr  ;
-
-    SRecordInfo* s = new SRecordInfo(a) ;
-    return s ;
+    NP* a = NP::LoadSlice<float>(_path, _slice); 
+    return new SRecordInfo(a); 
 }
 
 

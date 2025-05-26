@@ -101,8 +101,8 @@ inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
     :
     ALLOW_REMOTE(ssys::getenvbool(_ALLOW_REMOTE)),
     irc(Initialize(ALLOW_REMOTE)),
-    ar(SRecordInfo::Load("$AFOLD/record.npy")),
-    br(SRecordInfo::Load("$BFOLD/record.npy")),
+    ar(SRecordInfo::Load("$AFOLD/record.npy", "$AFOLD_RECORD_SLICE")),
+    br(SRecordInfo::Load("$BFOLD/record.npy", "$BFOLD_RECORD_SLICE")),
     fd(CSGFoundry::Load()),
     gm(new SGLM),
     cx(nullptr),
