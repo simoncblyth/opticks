@@ -266,7 +266,6 @@ struct SYSRAP_API SGLM : public SCMD
 
 
 
-    static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* _SGLM_DESC = "SGLM_DESC" ;
     static constexpr const char* __setTreeScene_DUMP = "SGLM__setTreeScene_DUMP" ;
     static constexpr const char* __init_time_DUMP = "SGLM__init_time_DUMP" ;
@@ -517,7 +516,6 @@ struct SYSRAP_API SGLM : public SCMD
     float*    MVP_ptr ;
     glm::mat4 IDENTITY ;
     float* IDENTITY_ptr ;
-    const char* MOI ;
     std::string title ;
 
     void updateTitle();
@@ -620,7 +618,7 @@ struct SYSRAP_API SGLM : public SCMD
     void setRecordInfo( SRecordInfo* ar, SRecordInfo* br );
 
     bool enabled_time_bump = true ;
-    bool enabled_time_halt = false ; 
+    bool enabled_time_halt = false ;
     glm::vec4 timeparam = {} ;
     const float* timeparam_ptr ;
 
@@ -791,7 +789,6 @@ inline SGLM::SGLM()
     MVP_ptr(glm::value_ptr(MVP)),
     IDENTITY(1.f),
     IDENTITY_ptr(glm::value_ptr(IDENTITY)),
-    MOI(ssys::getenvvar("MOI", "0:0:-1")),
     title("SGLM"),
     ar(nullptr),
     br(nullptr),
@@ -818,26 +815,13 @@ inline void SGLM::setTreeScene( stree* _tree, SScene* _scene )
     tree = _tree ;
     scene = _scene ;
 
-    float _extent = sstr::StartsWith(MOI, _EXTENT_PFX) ? sstr::To<float>( MOI + strlen(_EXTENT_PFX) ) : 0.f ;
-
-    if( _extent > 0.f )
-    {
-        moi_fr = sfr::MakeFromExtent<float>(_extent) ;
-    }
-    else
-    {
-        if(tree)
-        {
-            moi_fr = tree->get_frame(MOI);
-        }
-    }
+    moi_fr = tree->get_frame_moi();
 
     bool DUMP = ssys::getenvbool(__setTreeScene_DUMP) ;
     if(DUMP) std::cout
         << "SGLM::setTreeScene "
         << __setTreeScene_DUMP
         << " DUMP " << ( DUMP ? "YES" : "NO " )
-        << " MOI [" << MOI << "] "
         << " moi_fr \n"
         << moi_fr.desc()
         << "\n"
@@ -2930,7 +2914,7 @@ SGLM::reset_time_TT
 
 SGLFW.h invokes this from renderloop when press shift+T
 causing time to be reset to value of TT envvar (default 0.f)
-and the animation to be disabled. 
+and the animation to be disabled.
 
 Resume animation with alt+T
 
@@ -2938,13 +2922,13 @@ Resume animation with alt+T
 
 inline void SGLM::reset_time_TT()
 {
-    std::cout << "SGLM::reset_time_TT " << TT << "\n" ; 
+    std::cout << "SGLM::reset_time_TT " << TT << "\n" ;
     set_time(TT) ;
 }
 
 inline void SGLM::toggle_time_halt()
 {
-    enabled_time_halt = !enabled_time_halt ; 
+    enabled_time_halt = !enabled_time_halt ;
 }
 
 

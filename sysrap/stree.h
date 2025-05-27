@@ -5,17 +5,13 @@ stree.h : minimal representation of the structural geometry tree
 
 This is exploring a minimal approach to geometry translation
 
-* see also u4/U4Tree.h that populates stree.h from traversals of Geant4 volumes.
-* stree.h is part of the attempt to replace lots of GGeo code, notably: GInstancer.cc GNode.cc
+* u4/U4Tree.h populates stree.h from traversals of Geant4 volumes.
+* stree.h replaces lots of GGeo code, notably: GInstancer.cc GNode.cc
 
-WIP : stree fold getting messy
---------------------------------
+* mat/sur/bnd materials/surfaces/boundaries are handled by sstandard
 
-* DONE : split off mat/sur/bnd into sstandard
-* TODO : split off structural transforms, nodes etc.. into subfold
-
-Exmple
---------
+Example of stree.h population
+------------------------------
 
 ~/o/u4/tests/U4TreeCreateTest.sh
 
@@ -251,6 +247,7 @@ struct stree_standin
 
 struct stree
 {
+    static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
 
@@ -364,6 +361,8 @@ struct stree
     NPFold* material ;   // material properties from G4 MPTs
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata
     NPFold* mesh ; // triangulation of all solids
+    const char* MOI ;
+
 
     std::vector<glm::tmat4x4<double>> inst ;
     std::vector<glm::tmat4x4<float>>  inst_f4 ;
@@ -441,10 +440,19 @@ struct stree
 
 
 
-    const snode* pick_lvid_ordinal_node( int lvid, int ordinal, char _src ) const ;
+    const snode* pick_lvid_ordinal_node( int lvid, int ordinal, char ridx_type ) const ;
+    const snode* _pick_lvid_ordinal_node( int lvid, int ordinal, char ridx_type ) const ;
+
     int pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int parse_spec(int& lvid, int& lvid_ordinal, int& repeat_ordinal, const char* q_spec ) const ;
     int pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) const ;
+
+
+   // transitional method for matching with CSGFoundry::getFrame
+    void get_frame_f4( sframe& fr, int idx ) const ;
+
+
+    sfr  get_frame_moi() const ;
     sfr  get_frame(const char* q_spec) const ;
     bool has_frame(const char* q_spec) const ;
 
@@ -455,6 +463,9 @@ struct stree
     int get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int _get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, char ridx_type ) const ;
+
+    int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node ) const ;
+    int get_node_bb(     std::array<double,6>& bb , const snode& node ) const ;
 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ;
@@ -647,9 +658,6 @@ struct stree
     const glm::tmat4x4<float>*  get_inst_f4(int idx) const ;
     const glm::tmat4x4<float>*  get_iinst_f4(int idx) const ;
 
-    // transitional method for matching with CSGFoundry::getFrame
-    void get_frame_f4( sframe& fr, int idx ) const ;
-
 
     void get_mtindex_range(int& mn, int& mx ) const ;
     std::string desc_mt() const ;
@@ -722,7 +730,8 @@ inline stree::stree()
     standard(new sstandard),
     material(new NPFold),
     surface(new NPFold),
-    mesh(new NPFold)
+    mesh(new NPFold),
+    MOI(ssys::getenvvar("MOI", "0:0:-1"))
 {
     init();
 }
@@ -1681,21 +1690,45 @@ inline int stree::find_lvid_node( const char* q_spec ) const
 stree::pick_lvid_ordinal_node
 -------------------------------
 
+For ridx_type '?' look for the frame first using rem 'R' nodes and then tri 'T' nodes
+
+**/
+inline const snode* stree::pick_lvid_ordinal_node( int lvid, int lvid_ordinal, char ridx_type  ) const
+{
+    const snode* _node = nullptr ;
+    assert( ridx_type == 'R' || ridx_type == 'T' || ridx_type == '?' );
+    if( ridx_type == 'R' || ridx_type == 'T' )  // remainder OR triangulated
+    {
+        _node = _pick_lvid_ordinal_node(lvid, lvid_ordinal, ridx_type );
+    }
+    else if( ridx_type == '?' )
+    {
+        _node = _pick_lvid_ordinal_node(lvid, lvid_ordinal, 'R' );
+        if(_node == nullptr)
+        {
+            _node = _pick_lvid_ordinal_node(lvid, lvid_ordinal, 'T' );
+        }
+    }
+    return _node ;
+}
+
+
+/**
+stree::_pick_lvid_ordinal_node
+-------------------------------
+
 Returns selected node (pointer into nds vector)
 
-1. collect indices of all snode (volumes) with lvid shape from the _src vector nds/rem/tri
+1. collect indices of all snode (volumes) with lvid shape from the ridx_type vector nds/rem/tri
 2. select the ordinal-th snode (-ve ordinal counts from back of the selected set)
 3. use selected nn node index from find_lvid_nodes, which is an absolute nidx
    to return pointer into the nds vector or nullptr
 
-   * TODO check for  _src of rem/tri ?
-
-
 **/
-inline const snode* stree::pick_lvid_ordinal_node( int lvid, int lvid_ordinal, char _src  ) const
+inline const snode* stree::_pick_lvid_ordinal_node( int lvid, int lvid_ordinal, char ridx_type  ) const
 {
     std::vector<int> nn ;
-    find_lvid_nodes( nn, lvid, _src );
+    find_lvid_nodes( nn, lvid, ridx_type );
 
     int num = nn.size() ;
     if( lvid_ordinal < 0 ) lvid_ordinal += num ;
@@ -1719,7 +1752,7 @@ This is trying to repeat the MOI logic from CSGTarget::getInstanceTransform
 
 inline int stree::pick_lvid_ordinal_repeat_ordinal_inst_( int lvid, int lvid_ordinal, int repeat_ordinal ) const
 {
-    const snode* n = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'N' );
+    const snode* n = _pick_lvid_ordinal_node(lvid, lvid_ordinal, 'N' );
     if( n == nullptr ) return -1 ;
 
     int q_gas_idx = n->repeat_index ;  // aka gas_idx
@@ -1746,7 +1779,6 @@ from 1st field and integers lvid_ordinal repeat_ordinal from 2nd and 3rd::
     GZ1.B06_07_FlangeI_Web_FlangeII:0:0
     GZ1.A06_07_FlangeI_Web_FlangeII:15:0
     GZ1.B06_07_FlangeI_Web_FlangeII:15:0
-
     0:0:0
 
 When no 2nd and 3rd field is provided eg with "sDeadWater" the
@@ -1754,13 +1786,11 @@ ordinals default to 0.
 
 A integer string in the first field is converted to lvid int.
 
-
 TODO: get this to ignore comments in the q_spec line like::
 
     sDeadWater:0:-1   # some comment
 
 **/
-
 
 inline int stree::parse_spec(
     int& lvid,
@@ -1810,6 +1840,47 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) co
     return inst_idx ;
 }
 
+/**
+stree::get_frame_f4
+--------------------
+
+transitional method to match with CSGFoundry::getFrame
+
+See ~/o/notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
+
+**/
+
+inline void stree::get_frame_f4( sframe& fr, int idx ) const
+{
+    typedef glm::tmat4x4<float> M44 ;
+
+    const M44* _m2w = get_inst_f4(idx);
+    const M44* _w2m = get_iinst_f4(idx);
+
+    assert( sizeof(M44) == sizeof(fr.m2w ) );
+    memcpy( fr.m2w.data(), _m2w , sizeof(M44) );
+    memcpy( fr.w2m.data(), _w2m , sizeof(M44) );
+}
+
+
+/**
+stree::get_frame_moi
+---------------------
+
+Special cased MOI envvar starting "EXTENT:" normally MOI is of the below form::
+
+    sWaterTube:0:-1
+
+
+**/
+
+inline sfr stree::get_frame_moi() const
+{
+    float _extent = sstr::StartsWith(MOI, _EXTENT_PFX) ? sstr::To<float>( MOI + strlen(_EXTENT_PFX) ) : 0.f ;
+    sfr mf =  _extent > 0.f ? sfr::MakeFromExtent<float>(_extent) : get_frame(MOI) ;
+    return mf ;
+}
+
 
 /**
 stree::get_frame
@@ -1846,7 +1917,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
 
 
     [[maybe_unused]] int get_rc = 0 ;
-    if( repeat_ordinal == -1 )
+    if( repeat_ordinal == -1 || repeat_ordinal == -2 || repeat_ordinal == -3 )
     {
         get_rc = get_frame_global(  f,  lvid, lvid_ordinal, repeat_ordinal );
     }
@@ -1911,7 +1982,7 @@ inline bool stree::has_frame(const char* q_spec) const
     f.set_name(q_spec);
 
     int get_rc = 0 ;
-    if( repeat_ordinal == -1 )
+    if( repeat_ordinal == -1 || repeat_ordinal == -2 || repeat_ordinal == -3)
     {
         get_rc = get_frame_global(  f,  lvid, lvid_ordinal, repeat_ordinal );
     }
@@ -2059,42 +2130,100 @@ inline int stree::get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repea
 stree::_get_frame_global
 --------------------------
 
-For ridx_type '?' look for the frame first using rem nodes and then tri nodes
+This is called for special cased -ve repeat_ordinal, which 
+is only appropriate for global non-instanced volumes. 
 
-TODO: make this work with repeat_ordinal -2 and -3
+1. find the snode using (lvid, lvid_ordinal, ridx_type) 
+2. compute bounding box and hence center_extent for the snode
+3. form frame transforms m2w/w2m using SCenterExtentFrame or not
+   depending on repeat_ordinal -1/-2/-3
 
+Global repeat_ordinal special case convention
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+repeat_ordinal:-1
+   sets CE only, does not set m2w w2m into the frame
+   [WHAT USE IS THIS ?]
+
+repeat_ordinal:-2
+   sets CE, m2w, w2m into the frame using SCenterExtentFrame with rtp_tangential:false
+
+repeat_ordinal:-3
+   sets CE, m2w, w2m into the frame using SCenterExtentFrame with rtp_tangential:true
+
+
+27 May 2025 behaviour change for repeat_ordinal:-1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+WIP: test this
+
+Formerly the stree::_get_frame_global repeat_ordinal:-1 gave frames 
+with transforms that CSGTarget::getFrameComponents 
+would need repeat_ordinal:-2 for.
+
+The stree::_get_frame_global implementation is 
+now aligned with CSGTarget::getFrameComponents
+to avoid the need to keep swapping MOI -1/-2 arising from 
+a former difference in the convention used. 
 
 **/
 
-
 inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, char ridx_type ) const
 {
-    assert( repeat_ordinal == -1 ); // other -ve values could select special cases handling like RTP frame
-    assert( ridx_type == 'R' || ridx_type == 'T' || ridx_type == '?' );
-
-    const snode* _node = nullptr ;
-
-    if( ridx_type == 'R' || ridx_type == 'T' )
-    {
-        _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, ridx_type );
-    }
-    else if( ridx_type == '?' )
-    {
-        _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'R' );
-        if(_node == nullptr)
-        {
-            _node = pick_lvid_ordinal_node(lvid, lvid_ordinal, 'T' );
-        }
-    }
-
-
+    assert( repeat_ordinal == -1 || repeat_ordinal == -2 || repeat_ordinal == -3 );
+    const snode* _node = pick_lvid_ordinal_node( lvid, lvid_ordinal, ridx_type );
     if(_node == nullptr) return 1 ;
 
     const snode& node = *_node ;
 
-    std::vector<const sn*> bds ;
+    std::array<double,4> ce = {} ;
+    std::array<double,6> bb = {} ;
+    int rc = get_node_ce_bb( ce, bb, node );
+    f.set_ce(ce.data() );
+
+    if( repeat_ordinal == -2 || repeat_ordinal == -3 )
+    {
+        bool rtp_tangential = repeat_ordinal == -3 ? true : false ;
+        bool extent_scale = false ;
+        SCenterExtentFrame<double> cef(ce[0], ce[1], ce[2], ce[3], rtp_tangential, extent_scale ) ;
+        f.m2w = cef.model2world ;
+        f.w2m = cef.world2model ;
+    }
+
+    if(get_frame_dump) std::cout
+        << "stree::get_frame_remainder"
+        << "\n"
+        << " lvid " << lvid
+        << " soname[lvid] " << soname[lvid]
+        << " soname[node.lvid] " << ( soname[node.lvid] )
+        << "\n"
+        << " lvid_ordinal " << lvid_ordinal
+        << " repeat_ordinal " << repeat_ordinal
+        << "\n"
+        << " node.desc " << ( node.desc())
+        << "\n"
+        << " bb \n"
+        << s_bb::Desc( bb.data() )
+        << "\n"
+        ;
+
+    return rc ;
+}
+
+inline int stree::get_node_ce_bb(    std::array<double,4>& ce , std::array<double,6>& bb,  const snode& node ) const
+{
+    int rc = get_node_bb(bb, node);
+    s_bb::CenterExtent( ce.data(), bb.data() );
+    return rc ;
+}
+
+inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) const
+{
+    int lvid = node.lvid ;
+
+    std::vector<const sn*> bds ;         // binary tree nodes
     sn::GetLVNodesComplete(bds, lvid);   // many nullptr in unbalanced deep complete binary trees
-    int bn = bds.size();                 // binary nodes
+    int bn = bds.size();                 // number of binary tree nodes
 
     std::vector<const sn*> lns ;
     sn::GetLVListnodes( lns, lvid );
@@ -2104,7 +2233,6 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
     assert( ln == 0 || ln == 1 ); // simplify initial impl  : see CSGImport::importPrim
 
     std::ostream* out = nullptr ;
-    std::array<double,6> bb = {} ;
 
     std::vector<const sn*> subs ;
 
@@ -2144,7 +2272,6 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
     }
 
 
-
     // NOT FULLY TESTED : but it succeeds to do nothing with subtracted multiunion of holes (that becomes listnode)
     int num_sub_total = subs.size();
     for( int i=0 ; i < num_sub_total ; i++ )
@@ -2160,43 +2287,11 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
         if(tv && leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
         // HMM does the complement message get thru to listnode subs ?
     }
-
-
-
-    std::array<double,4> ce = {} ;
-    s_bb::CenterExtent( ce.data(), bb.data() );
-    f.set_ce(ce.data() );
-
-    bool rtp_tangential = false ;
-    bool extent_scale = false ;
-    SCenterExtentFrame<double> cef(ce[0], ce[1], ce[2], ce[3], rtp_tangential, extent_scale ) ;
-
-    f.m2w = cef.model2world ;
-    f.w2m = cef.world2model ;
-
-    if(get_frame_dump) std::cout
-        << "stree::get_frame_remainder"
-        << "\n"
-        << " lvid " << lvid
-        << " soname[lvid] " << soname[lvid]
-        << " soname[node.lvid] " << ( soname[node.lvid] )
-        << "\n"
-        << " lvid_ordinal " << lvid_ordinal
-        << " repeat_ordinal " << repeat_ordinal
-        << "\n"
-        << " node.desc " << ( node.desc())
-        << "\n"
-        << " bn " << bn
-        << "\n"
-        << " ln " << ln
-        << "\n"
-        << " bb \n"
-        << s_bb::Desc( bb.data() )
-        << "\n"
-        ;
-
     return 0 ;
 }
+
+
+
 
 
 
@@ -4796,29 +4891,6 @@ inline const glm::tmat4x4<float>* stree::get_iinst_f4(int idx) const
     return idx > -1 && idx < int(iinst_f4.size()) ? &iinst_f4[idx] : nullptr ;
 }
 
-
-/**
-stree::get_frame_f4
---------------------
-
-transitional method to match with CSGFoundry::getFrame
-
-See ~/o/notes/issues/sframe_dtor_double_free_from_CSGOptiX__initFrame.rst
-
-**/
-
-inline void stree::get_frame_f4( sframe& fr, int idx ) const
-{
-    typedef glm::tmat4x4<float> M44 ;
-
-    const M44* _m2w = get_inst_f4(idx);
-    const M44* _w2m = get_iinst_f4(idx);
-
-    assert( sizeof(M44) == sizeof(fr.m2w ) );
-    memcpy( fr.m2w.data(), _m2w , sizeof(M44) );
-    memcpy( fr.w2m.data(), _w2m , sizeof(M44) );
-
-}
 
 
 /**
