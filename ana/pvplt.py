@@ -285,7 +285,15 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
     pl.increment_point_size_and_line_width(INCPOI)
 
+    #pl.enable_point_picking(callback=pvplt_picked_point, use_picker=True)
+
     return pl.show(title=TITLE)
+
+def pvplt_picked_point(picked_point, picker):
+    print("pvplt_picked_point callback %s " % str(picked_point))
+    point_idx = picker.GetPointId()
+    print("pvplt_picked_point point_idx:%s " % point_idx)
+pass
 
 
 def mpplt_annotate_fig( fig, label  ):
@@ -1050,6 +1058,7 @@ def pvplt_add_points( pl, pos, **kwa ):
     print("pvplt_add_points pos.shape %s kwa %s " % ( str(pos.shape), str(kwa) ))
     pos_cloud = pv.PolyData(pos)
     pl.add_mesh(pos_cloud, **kwa )
+    return pos_cloud
 
 
 def pvplt_make_delta_lines( pos, delta ):

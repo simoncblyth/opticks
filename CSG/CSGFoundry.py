@@ -9,7 +9,7 @@ from opticks.ana.fold import Fold, STR
 from opticks.sysrap.OpticksCSG import CSG_
 
 
-class BoundaryNameConfig(object):
+class KeyNameConfig(object):
     """
     Parses ini file of the below form::
 
@@ -47,56 +47,68 @@ class BoundaryNameConfig(object):
 
 
 
-class BoundaryTable(object):
-    def __init__(self, bn, bdn, d_qbn={}, KEY=None):
+class NameTable(object):
+    def __init__(self, symbol, ix, ixn, d_qix={}, KEY=None):
         """
-        :param bn: large array of boundary indices
-        :param bdn: small array of boundary names
-        :param d_qbn: dict keyed on colors with arrays of boundary indices as values
+        :param symbol:
+        :param ix: large array of indices (eg boundaries or globalPrimIdx)
+        :param ixn: smallish array of names
+        :param d_qix: dict keyed on colors with arrays of ixn indices as values
         """
-        u, x, n = np.unique(bn, return_index=True, return_counts=True)
+        u, x, c = np.unique(ix, return_index=True, return_counts=True)
 
         # form array with the keys that each boundary index is grouped into
         akk = np.repeat("????????????????", len(u))
         for i in range(len(u)):
             kk = []
-            for k, qbn in d_qbn.items():
-                if len(np.where(np.isin(qbn, u[i]))[0]) == 1:
+            for k, qix in d_qix.items():
+                if len(np.where(np.isin(qix, u[i]))[0]) == 1:
                     kk.append(k)
                 pass
             pass
             akk[i] = ",".join(kk)
         pass
-        o = np.argsort(n)[::-1]
-        b = bdn[u]
+        n = ixn[u]
+        o = np.argsort(c)[::-1]
 
-        _tab = "np.c_[akk, u, n, x, b][o]"
+        _tab = "np.c_[akk, u, c, x, n][o]"
         tab = eval(_tab)
 
+        self.symbol = symbol
         self.akk = akk[o]
         self.u = u[o]
         self.x = x[o]
+        self.c = c[o]
         self.n = n[o]
-        self.b = b[o]
 
         self.KEY = KEY
 
-        self.d_qbn = d_qbn
+        self.d_qix = d_qix
         self._tab = _tab
         self.tab = tab
+        self.ixn = ixn
+
+    def get_names(self, k):
+        """
+        print("\n".join(cf.primname[cf.cxtp.d_qix['thistle']]))
+        """ 
+        return self.ixn[self.d_qix[k]]
+
+    def dump_names(self, k):
+        names = self.get_names(k)
+        print("\n".join(names))
 
     def __repr__(self):
         """
         """
-        vfmt = " %12s : %4d %8d %8d : %s "
-        sfmt = " %12s : %4s %8s %8s : %s "
-        tfmt = " %12s : %4s %8d %8s : %s "
+        vfmt = " %20s : %4d %8d %8d : %s "
+        sfmt = " %20s : %4s %8s %8s : %s "
+        tfmt = " %20s : %4s %8d %8s : %s "
 
-        label = sfmt % ( ".akk", ".u", ".n", ".x", ".b" )
+        label = sfmt % ( ".akk", ".u", ".c", ".x", ".n" )
         lines = []
-        lines.append("[cf.btab KEY:%s" % self.KEY )
+        lines.append("[cf.%s KEY:%s" % (self.symbol, self.KEY) )
         lines.append(label)
-        ntot = 0
 
         if not self.KEY is None:
             KK = np.array(self.KEY.split(","))
@@ -105,62 +117,66 @@ class BoundaryTable(object):
             sel = slice(None)
         pass
 
+        ctot = 0
         for row in self.tab[sel]:
             akk = row[0]
             u = int(row[1])
-            n = int(row[2])
+            c = int(row[2])
             x = int(row[3])
-            b = row[4]
+            n = row[4]
 
-            line = vfmt % ( akk, u, n, x, b )
-            ntot += n
+            line = vfmt % ( akk, u, c, x, n )
+            ctot += c
             lines.append(line)
         pass
         lines.append(label)
-        lines.append(tfmt % ("", "",ntot, "",".ntot"))
-        lines.append("]cf.btab")
-        self.ntot = ntot
+        lines.append(tfmt % ("", "",ctot, "",".ctot"))
+        lines.append("]cf.%s" % self.symbol )
+        self.ctot = ctot
         return "\n".join(lines)
 
 
 
-
-
-
-class CXT_Boundary(object):
-    def __init__(self, bn, d_qbn, d_anno, cf_bdn):
+class GroupedNameTable(object):
+    def __init__(self, symbol, ix, d_qix, d_anno, cf_ixn, lwid=100):
         """
-        :param bn: large array of boundary indices
-        :param d_qbn: dict keyed on colors with boundary indices array values
+        :param symbol: identifier 
+        :param ix: large array of indices
+        :param d_qix: dict keyed on colors with indices array values
         :param d_anno: dict keyed on colors with label values
-        :param cf_bdn: small array of all boundary names
+        :param cf_ixn: small array of all names
+        :param lwid: width of the label field
         """
-        self.bn = bn
-        self.d_qbn = d_qbn
+        self.symbol = symbol
+        self.ix = ix
+        self.d_qix = d_qix
         self.d_anno = d_anno
-        self.cf_bdn = cf_bdn
+        self.cf_ixn = cf_ixn
+        self.lwid = lwid
 
         wdict = {}
-        for k,qbn in self.d_qbn.items():
-            _w = np.isin( bn, qbn )   # bool array indicating which elem of bn are in the qbn array
-            w = np.where(_w)[0]       # indices of bn array with boundaries matching the regexp
+        for k,qix in self.d_qix.items():
+            _w = np.isin( ix, qix )   # bool array indicating which elem of ix are in the qix array
+            w = np.where(_w)[0]       # indices of ix array with ix names matching the regexp
             wdict[k] = w
         pass
         self.wdict = wdict
 
     def __repr__(self):
+        """
+        """
         lines = []
-        lines.append("[CXT_Boundary___________________________________")
-
-        for k,qbn in self.d_qbn.items():
-            _w = np.isin( self.bn, qbn )   # bool array indicating which elem of bn are in the qbn array
+        lines.append("[cf.%s___________________________________" % self.symbol )
+        fmt = " %%15s %%%(lwid)ds nnn:%%4d %%s " % dict(lwid=self.lwid)
+        for k,qix in self.d_qix.items():
+            _w = np.isin( self.ix, qix )   # bool array indicating which elem of bn are in the qbn array
             w = np.where(_w)[0]       # indices of bn array with boundaries matching the regexp
             label = self.d_anno[k]
-            bb = self.cf_bdn[qbn]
-            line = " %10s %100s nbb:%4d %s " % (k, label, len(bb), str(qbn[:10]))
+            nn = self.cf_ixn[qix]
+            line = fmt % (k, label, len(nn), str(qix[:10]))
             lines.append(line)
         pass
-        lines.append("]CXT_Boundary___________________________________")
+        lines.append("]cf.%s_______ cf.%s.d_qix ____________________________" % ( self.symbol, self.symbol) )
         return "\n".join(lines)
 
 
@@ -587,7 +603,8 @@ class CSGFoundry(object):
         if bdn is None: log.fatal("CSGFoundry fail to access sim.stree.standard.bnd_names : geometry incomplete" )
         if type(bdn) is np.ndarray: sim.bndnamedict = self.namelist_to_namedict(bdn)
         pass
-        self.bdn_config = BoundaryNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_boundary_regexp")
+        self.bdn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_boundary_regexp")
+        self.prn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_prim_regexp")
         self.bdn = bdn
         self.sim = sim
 
@@ -631,7 +648,6 @@ class CSGFoundry(object):
         :param d_qbn: dict of color keys with values that are arrays of boundary indices
         :return bn_tab: string table showing unique boundary indices, names, counts and first indices into the bn array
         """
-        btab = BoundaryTable(bn, self.bdn, d_qbn, KEY)
         self.btab = btab
         return btab
 
@@ -649,37 +665,47 @@ class CSGFoundry(object):
         :param KEY: color key OR None
         :return cxtb,btab:
         """
-        d_qbn, d_anno = self.dict_find_boundary_indices_re_match(self.bdn_config)
-        cxtb = CXT_Boundary(bn, d_qbn, d_anno, self.bdn)
-        btab = self.boundary_table(bn, d_qbn, KEY)
-        self.cxtb = cxtb
+        d_qbn, d_anno = self.Dict_find_name_indices_re_match(self.bdn, self.bdn_config)
+        btab = NameTable("btab", bn, self.bdn, d_qbn, KEY)
+        cxtb = GroupedNameTable("cxtb", bn, d_qbn, d_anno, self.bdn, lwid=100)
         self.btab = btab
+        self.cxtb = cxtb
         return cxtb, btab
 
-    def dict_find_boundary_indices_re_match(self, _bndptn_dict):
-        """
-        :param _bndptn_dict: label keys, regexp pattern string values
-        :return d: dict with same label keys and arrays of matching cf.bdn boundary indices
+    def simtrace_prim_analysis(self, pr, KEY=os.environ.get("KEY", None) ):
+        d_qpr, d_anno = self.Dict_find_name_indices_re_match(self.primname, self.prn_config)
+        ptab = NameTable("ptab", pr, self.primname, d_qpr, KEY)
+        cxtp = GroupedNameTable("cxtp", pr, d_qpr, d_anno, self.primname, lwid=50)
+        self.ptab = ptab
+        self.cxtp = cxtp
+        return cxtp, ptab 
 
-        Boundaries unmatched by the provided regexp values are
+    @classmethod
+    def Dict_find_name_indices_re_match(cls, names, _nameptn_dict):
+        """
+        :param names: array of names 
+        :param _nameptn_dict: label keys, regexp pattern string values
+        :return d: dict with same label keys and arrays of matching names indices
+
+        Names unmatched by the provided regexp values are
         grouped within the key with a blank value if provided.
         """
         d = {}
         anno = {}
         matched = np.array([], dtype=np.int64 )
         unmatched_k = None
-        for k, v in _bndptn_dict.items():
+        for k, v in _nameptn_dict.items():
             if v == '':
                 unmatched_k = k
                 continue
             pass
-            qbn, bb, label = self.find_boundary_indices_re_match(v)
-            matched = np.concatenate( (matched, qbn) )
-            d[k] = qbn
+            qnm, nn, label = cls.Find_name_indices_re_match(names, v)
+            matched = np.concatenate( (matched, qnm) )
+            d[k] = qnm
             anno[k] = label
         pass
 
-        c = dict(matched=matched, all=np.arange(len(self.bdn)))
+        c = dict(matched=matched, all=np.arange(len(names)))
         c['unmatched'] = np.where(np.isin(c['all'], c['matched'], invert=True ))[0]
         if not unmatched_k is None:
             d[unmatched_k] = c['unmatched']
@@ -688,21 +714,21 @@ class CSGFoundry(object):
         return d, anno
 
 
-    def find_boundary_indices_re_match(self, _ptn):
+    @classmethod
+    def Find_name_indices_re_match(cls, names, _ptn):
         """
-        :param _ptn: boundary regexp string
-        :return qbn,bb,label:
+        :param _ptn: name regexp string
+        :return qnm,nn,label:
 
-        qbn
-           array of cf.bdn boundary indices that match the pattern
-        bb
-           array of boundary names matching the pattern
+        qnm
+           array of names array indices that match the pattern
+        nn
+           array of names matching the pattern
         label
            match key when the pattern string includes one eg (?<label>.*$)
            otherwise the pattern string itself
 
-
-        Typically would have a few hundred boundary names for a geometry
+        Typically would have a few hundred to a few thousand names for a geometry
         so the slowness of np.vectorize is not a problem.
 
         Example _ptn::
@@ -726,20 +752,20 @@ class CSGFoundry(object):
         pass
         re_key = np.vectorize(_re_key)
 
-        _qbn = re_match(self.bdn)   # boundary array bool match or not array
-        qbn = np.where(_qbn)[0]     # indices of boundary array matching the regexp
-        bb = self.bdn[qbn]
+        _qnm = re_match(names)      # names array bool name match array
+        qnm = np.where(_qnm)[0]     # indices of names array matching the regexp
+        nn = names[qnm]
 
-        if len(qbn) == 0:
-            log.info("_ptn:[%s] did not match any boundaries" % _ptn )
+        if len(qnm) == 0:
+            log.info("_ptn:[%s] did not match any names" % _ptn )
             label = "NO_MATCH"
         else:
-            _kk = re_key(bb)
+            _kk = re_key(nn)
             kk = np.unique(_kk)
             assert len(kk) == 1
             label = kk[0]
         pass
-        return qbn, bb, label
+        return qnm, nn, label
 
 
     def find_primIdx_from_nodeIdx(self, nodeIdx_):

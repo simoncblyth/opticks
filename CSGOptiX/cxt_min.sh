@@ -14,6 +14,9 @@ cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
      GSGRID=0 GRID=0 GLOBAL=0 KEY=blue,lightblue,cornflowerblue,orange,magenta,tomato cxt_min.sh pdb
          ## illuminating re the Tyvek:magenta,tomato L shape at top of LowerChimney
 
+     PRIMTAB=1 NORMAL=1 cxt_min.sh pdb 
+
+
 
 TODO: add option to draw a spinkle of intersect normal direction arrows
 
@@ -203,7 +206,7 @@ vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFrom
 
 ## define TITLE based on ana/pdb control envvars
 title="cxt_min.sh pdb"
-ee="LINE GLOBAL PRESEL KEY NORMAL NORMAL_FILTER GRID GSGRID"
+ee="LINE GLOBAL PRESEL KEY NORMAL NORMAL_FILTER GRID GSGRID PRIMTAB"
 for e in $ee ; do
    printf "%20s : %s \n" "$e" "${!e}" 
    [ -n "${!e}" ] && title="$e=${!e} $title"

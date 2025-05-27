@@ -39,7 +39,7 @@ from collections import OrderedDict
 from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt
 from opticks.ana.p import cf    # load CSGFoundry geometry info
-from opticks.CSG.CSGFoundry import BoundaryNameConfig
+from opticks.CSG.CSGFoundry import KeyNameConfig
 
 MODE = int(os.environ.get("MODE","2"))
 NORMAL = int(os.environ.get("NORMAL","0"))
@@ -88,6 +88,9 @@ if __name__ == '__main__':
 
     print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
 
+    prn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_prim_regexp")
+
+
     e = SEvt.Load("$FOLD", symbol="e")   ## default load from FOLD envvar dir
 
     print(repr(e))
@@ -131,12 +134,12 @@ if __name__ == '__main__':
         spec = PRESEL[len("PRIM:"):]
         gps = np.array([], dtype=np.int64)
         for elem in spec.split(","):
-            if str.isdigit(elem): 
+            if str.isdigit(elem):
                 gps = np.concatenate(gps, int(elem))
             else:
-                egp = np.unique(np.where( cf.primname == elem )) 
+                egp = np.unique(np.where( cf.primname == elem ))
                 gps = np.concatenate( (gps, egp) )
-            pass 
+            pass
         pass
         gps = np.unique(gps)
         presel = np.isin(st_gp, gps )
@@ -162,27 +165,32 @@ if __name__ == '__main__':
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
 
     gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
-    gp = gp_bn >> 16      ## globalPrimIdx 
-    bn = gp_bn & 0xffff   ## boundary 
+    gp = gp_bn >> 16      ## globalPrimIdx
+    bn = gp_bn & 0xffff   ## boundary
 
-    ii = ust[:,3,3].view(np.int32)   ## instanceIndex 
+    ii = ust[:,3,3].view(np.int32)   ## instanceIndex
 
     idtab = UniqueTable("idtab", ii, None)
     print(repr(idtab))
 
-    gptab = UniqueTable("gptab", gp, cf.primname)
-    print(repr(gptab))
+    #gptab = UniqueTable("gptab", gp, cf.primname)
+    #print(repr(gptab))
 
     ## would be good to see the globalPrimIdx that correspond to a boundary
-
 
     KEY = os.environ.get("KEY", None)
     KK = KEY.split(",") if not KEY is None else []
 
-
     cxtb, btab = cf.simtrace_boundary_analysis(bn, KEY)
     print(repr(cxtb))
     print(repr(btab))
+
+    cxtp, ptab = cf.simtrace_prim_analysis(gp, KEY)
+    print(repr(cxtp))
+    print(repr(ptab))
+
+    PRIMTAB = "PRIMTAB" in os.environ
+    cxtable = cxtp if PRIMTAB else cxtb
 
 
     ## simtrace layout see sysrap/sevent.h
@@ -204,6 +212,64 @@ if __name__ == '__main__':
     H,V = X,Z
 
 
+    class SimtracePlot(object):
+        """
+        defined inline as uses::
+
+             KEY
+             upos
+             unrm
+             NORMAL_FILTER
+
+        """
+        def __init__(self, pl, cxtable):
+            self.cxtable = cxtable
+            pl.enable_point_picking(callback=self, use_picker=True, show_message=False)
+            pcloud = {}
+            pcinfo = np.zeros( (len(cxtable.wdict),3), dtype=np.int64 )
+            i = 0
+            keys = np.array(list(cxtable.wdict.keys()))
+            for k, w in cxtable.wdict.items():
+                if not KEY is None and not k in KK: continue
+                label = self.get_label(k)
+                pcloud[k] = pvp.pvplt_add_points(pl, upos[w,:3], color=k, label=label )
+                n_verts = pcloud[k].n_verts if not pcloud[k] is None else 0
+                pcinfo[i,0] = n_verts
+                if NORMAL > 0: pvp.pvplt_add_delta_lines(pl, upos[w,:3][::NORMAL_FILTER], 20*unrm[w,:3][::NORMAL_FILTER], color=k, pickable=False )
+                i += 1
+            pass
+            pcinfo[:,1] = np.cumsum(pcinfo[:,0])
+            pcinfo[:,2] = pcinfo[:,0] + pcinfo[:,1] - 1
+            self.pcloud = pcloud
+            self.pcinfo = pcinfo
+            self.keys = keys
+
+        def get_label(self, k):
+            cxtable = self.cxtable
+            w = cxtable.wdict[k]
+            label = "%10s %8d %s" % (k,len(w),cxtable.d_anno[k])
+            return label
+
+        def __call__(self, picked_point, picker):
+            """
+            """
+            self.picked_point = picked_point
+            self.picker = picker
+
+            pcloud = self.pcloud
+            pcinfo = self.pcinfo
+
+            dataSet = picker.GetDataSet()
+            pointId = picker.GetPointId()
+
+            idx= list(pcloud.values()).index(dataSet)
+            k = list(pcloud.keys())[idx]
+            label = self.get_label(k)
+
+            print("SimtracePlot.__call__ picked_point %s pointId %d idx %d k %s label %s " % (str(picked_point), pointId, idx, k, label) )
+        pass
+    pass
+
     if MODE == 2:
         pl = pvp.mpplt_plotter(label=label)
         fig, axs = pl
@@ -223,23 +289,16 @@ if __name__ == '__main__':
     elif MODE == 3:
         pl = pvp.pvplt_plotter(label)
         pvp.pvplt_viewpoint(pl)   # sensitive to EYE, LOOK, UP envvars
-        if FRAME: pvp.pvplt_frame(pl, sf, local=not GLOBAL )
+        if FRAME: pvp.pvplt_frame(pl, sf, local=not GLOBAL, pickable=False )
 
-        for k, w in cxtb.wdict.items():
-            if not KEY is None and not k in KK: continue
-            label = "%10s %8d %s" % (k,len(w),cxtb.d_anno[k])
-            pvp.pvplt_add_points(pl, upos[w,:3], color=k, label=label )
+        spl = SimtracePlot(pl, cxtable)
 
-            if NORMAL > 0: pvp.pvplt_add_delta_lines(pl, upos[w,:3][::NORMAL_FILTER], 20*unrm[w,:3][::NORMAL_FILTER], color=k )
-        pass
-
-        if GSGRID: pl.add_points(ugrid[:,:3], color="r" )
+        if GSGRID: pl.add_points(ugrid[:,:3], color="r", pickable=False )
 
         cp = pvp.pvplt_show(pl, incpoi=-5, legend=True, title=None )
     else:
         pass
     pass
 pass
-
 
 
