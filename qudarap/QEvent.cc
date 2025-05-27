@@ -208,9 +208,6 @@ int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
     const char* data = gs ? gs->bytes() : nullptr ;
     const quad6* qq = (const quad6*)data ; 
 
-    assert( gs_start < num_gs ); 
-    assert( gs_stop <= num_gs );     
-
     int rc = setGenstepUpload(qq, gs_start, gs_stop ); 
 
     if(gss == nullptr) return rc ; 
@@ -467,7 +464,7 @@ This is a private method invoked only from QEvent::setGenstepUpload
    * are not downloaded from device
 
    Effectively input photons are a cheat to avoid 
-   on device generation that is convenuent for 
+   on device generation that is convenient for 
    debugging, and especially useful to provide
    common inputs for random aligned bi-simulation. 
 

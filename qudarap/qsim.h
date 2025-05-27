@@ -2362,7 +2362,10 @@ qsim::generate_photon_simtrace
 * NB simtrace cxs center-extent-genstep are very different to standard Cerenkov/Scintillation gensteps
 
 These gensteps are for example created in SEvent::MakeCenterExtentGensteps the below generation
-should be comparable to the CPU implementation SEvent::GenerateCenterExtentGenstepsPhotons
+should be comparable to the CPU implementation::
+
+    SFrameGenstep::GenerateCenterExtentGenstepPhotons
+    SFrameGenstep::GenerateSimtracePhotons
 
 HMM: note that the photon_id is global to the launch making it potentially a very large number
 but for identication purposes having a local to the photons of the genstep index would
@@ -2371,6 +2374,9 @@ be more useful and would allow storage within much less bits.
 TODO: implement local index by including photon_id offset with the gensteps
 
 * NB the sxyz.h enum order is different to the python one  eg XYZ=0
+
+SEE : sevent::add_simtrace 
+
 **/
 
 inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
@@ -2390,9 +2396,7 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const
     //printf("//qsim.generate_photon_simtrace gridaxes %d gs.q1 (%10.4f %10.4f %10.4f %10.4f) \n", gridaxes, gs.q1.f.x, gs.q1.f.y, gs.q1.f.z, gs.q1.f.w );
 
     float u0 = curand_uniform(&rng);
-
     float sinPhi, cosPhi;
-
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     __sincosf(2.f*M_PIf*u0,&sinPhi,&cosPhi);
 #else
@@ -2426,7 +2430,7 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const
 
     unsigned char ucj = (photon_id < 255 ? photon_id : 255 ) ;
     gsid.c4.w = ucj ;
-    p.q3.u.w = gsid.u ;
+    p.q3.u.w = gsid.u ;   // WARNING : THIS GSID LOOKS TO BE STOMPED ON BY sevent::add_simtrace 
 }
 
 /**

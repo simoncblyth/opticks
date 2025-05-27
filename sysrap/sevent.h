@@ -573,6 +573,9 @@ a.q3
 
 NB : simtrace has almost totally different content and layout compared with photon and record
 
+SEE qsim::generate_photon_simtrace 
+
+
 **/
 
 SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const quad2* prd, float tmin )
