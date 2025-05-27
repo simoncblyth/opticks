@@ -16,6 +16,8 @@ cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 
      PRIMTAB=1 NORMAL=1 cxt_min.sh pdb 
 
+     PRIMTAB=1 NORMAL=1 NORMAL_FILTER=100 KEY=~yellow,green ./cxt_min.sh pdb
+           ## inverted key selection
 
 
 TODO: add option to draw a spinkle of intersect normal direction arrows

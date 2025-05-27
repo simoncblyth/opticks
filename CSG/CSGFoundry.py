@@ -91,7 +91,7 @@ class NameTable(object):
     def get_names(self, k):
         """
         print("\n".join(cf.primname[cf.cxtp.d_qix['thistle']]))
-        """ 
+        """
         return self.ixn[self.d_qix[k]]
 
     def dump_names(self, k):
@@ -111,8 +111,15 @@ class NameTable(object):
         lines.append(label)
 
         if not self.KEY is None:
+            if self.KEY.startswith("~"):
+                KEY = self.KEY[1:]
+                invert = True
+            else:
+                KEY = self.KEY
+                invert = False
+            pass
             KK = np.array(self.KEY.split(","))
-            sel = np.where(np.isin(self.tab[:,0], KK))[0]
+            sel = np.where(np.isin(self.tab[:,0], KK, invert=invert))[0]
         else:
             sel = slice(None)
         pass
@@ -140,7 +147,7 @@ class NameTable(object):
 class GroupedNameTable(object):
     def __init__(self, symbol, ix, d_qix, d_anno, cf_ixn, lwid=100):
         """
-        :param symbol: identifier 
+        :param symbol: identifier
         :param ix: large array of indices
         :param d_qix: dict keyed on colors with indices array values
         :param d_anno: dict keyed on colors with label values
@@ -642,15 +649,6 @@ class CSGFoundry(object):
         self.sce = self.solid[:,2].view(np.float32)
 
 
-    def boundary_table(self, bn, d_qbn={}, KEY=None):
-        """
-        :param bn: array of boundary indices, typically millions of them
-        :param d_qbn: dict of color keys with values that are arrays of boundary indices
-        :return bn_tab: string table showing unique boundary indices, names, counts and first indices into the bn array
-        """
-        self.btab = btab
-        return btab
-
 
     def simtrace_boundary_analysis(self, bn, KEY=os.environ.get("KEY", None) ):
         """
@@ -678,12 +676,12 @@ class CSGFoundry(object):
         cxtp = GroupedNameTable("cxtp", pr, d_qpr, d_anno, self.primname, lwid=50)
         self.ptab = ptab
         self.cxtp = cxtp
-        return cxtp, ptab 
+        return cxtp, ptab
 
     @classmethod
     def Dict_find_name_indices_re_match(cls, names, _nameptn_dict):
         """
-        :param names: array of names 
+        :param names: array of names
         :param _nameptn_dict: label keys, regexp pattern string values
         :return d: dict with same label keys and arrays of matching names indices
 

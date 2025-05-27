@@ -179,7 +179,16 @@ if __name__ == '__main__':
     ## would be good to see the globalPrimIdx that correspond to a boundary
 
     KEY = os.environ.get("KEY", None)
-    KK = KEY.split(",") if not KEY is None else []
+    KEY_invert = False
+    if not KEY is None:
+        if KEY.startswith("~"):
+            KEY = KEY[1:]
+            KEY_invert = True
+        pass
+        KK = KEY.split(",")
+    else:
+        KK = None
+    pass
 
     cxtb, btab = cf.simtrace_boundary_analysis(bn, KEY)
     print(repr(cxtb))
@@ -216,7 +225,7 @@ if __name__ == '__main__':
         """
         defined inline as uses::
 
-             KEY
+             KK
              upos
              unrm
              NORMAL_FILTER
@@ -229,8 +238,14 @@ if __name__ == '__main__':
             pcinfo = np.zeros( (len(cxtable.wdict),3), dtype=np.int64 )
             i = 0
             keys = np.array(list(cxtable.wdict.keys()))
+            #print("SimtracePlot keys:%s" % str(keys))
             for k, w in cxtable.wdict.items():
-                if not KEY is None and not k in KK: continue
+                if not KK is None:
+                    skip0 = KEY_invert is False and not k in KK
+                    skip1 = KEY_invert is True and k in KK
+                    if skip0: continue
+                    if skip1: continue
+                pass
                 label = self.get_label(k)
                 pcloud[k] = pvp.pvplt_add_points(pl, upos[w,:3], color=k, label=label )
                 n_verts = pcloud[k].n_verts if not pcloud[k] is None else 0
@@ -247,7 +262,7 @@ if __name__ == '__main__':
         def get_label(self, k):
             cxtable = self.cxtable
             w = cxtable.wdict[k]
-            label = "%10s %8d %s" % (k,len(w),cxtable.d_anno[k])
+            label = "%15s %8d %s" % (k,len(w),cxtable.d_anno[k])
             return label
 
         def __call__(self, picked_point, picker):

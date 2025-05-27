@@ -66,6 +66,8 @@ import numpy as np
 D_ = os.environ.get("D", "2")
 MODE_ = os.environ.get("MODE", D_ )
 MODE = int(MODE_)
+VERBOSE = int(os.environ.get("VERBOSE", "0")) == 1
+
 print("pvplt MODE:%d " % (MODE))
 
 mp = None
@@ -272,7 +274,7 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
         print("pvplt_show axes_ranges [%s] " % str(axes_ranges)) 
         pl.show_grid(bounds=bounds, axes_ranges=axes_ranges )
     else:
-        print("pvplt_show !(GRID==1) ")
+        if VERBOSE: print("pvplt_show !(GRID==1) ")
     pass
 
     if "LINE" in os.environ:
@@ -1052,10 +1054,10 @@ def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
 
 def pvplt_add_points( pl, pos, **kwa ):
     if len(pos) == 0:
-        print("pvplt_add_points len(pos) ZERO   %s " % repr(kwa))
-        return
+        if VERBOSE: print("pvplt_add_points len(pos) ZERO   %s " % repr(kwa))
+        return None
     pass
-    print("pvplt_add_points pos.shape %s kwa %s " % ( str(pos.shape), str(kwa) ))
+    #print("pvplt_add_points pos.shape %s kwa %s " % ( str(pos.shape), str(kwa) ))
     pos_cloud = pv.PolyData(pos)
     pl.add_mesh(pos_cloud, **kwa )
     return pos_cloud
@@ -1108,15 +1110,17 @@ def pvplt_add_lines( pl, pos, lines, **kwa ):
     """
     :param pos: float array of shape (n,3)
     :param lines: int array of form np.array([[2,0,1],[2,1,2]]).ravel()
+  
+    Used for adding intersect normals
     """
     if len(pos) == 0:
-        print("pvplt_add_lines len(pos) ZERO   %s " % repr(kwa))
-        return
+        if VERBOSE: print("pvplt_add_lines len(pos) ZERO   %s " % repr(kwa))
+        return None
     pass
-    print("pvplt_add_lines pos.shape %s lines.shape %s kwa %s " % ( str(pos.shape), str(lines.shape), str(kwa) ))
+    if VERBOSE: print("pvplt_add_lines pos.shape %s lines.shape %s kwa %s " % ( str(pos.shape), str(lines.shape), str(kwa) ))
     pos_lines = pv.PolyData(pos, lines=lines)
     pl.add_mesh(pos_lines, **kwa )
-
+    return pos_lines
 
 if __name__ == '__main__':
     test_pvplt_contiguous_line_segments()
