@@ -179,13 +179,14 @@ G4VPhysicalVolume* G4CXApp::Construct()
     LOG(info) << "]" ;
 
     // Collect extra JUNO PMT info only when persisted NPFold exists.
-    SSim::AddExtraSubfold("jpmt", "$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt" ); 
+    SSim::AddExtraSubfold("jpmt", "$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt" );
 
 
     if(SEventConfig::GPU_Simulation())
     {
         G4CXOpticks::SetGeometry(pv_) ;
         G4CXOpticks::SaveGeometry() ;
+        fRecorder->setU4Tree(G4CXOpticks::GetU4Tree());
     }
     else
     {

@@ -10,21 +10,31 @@ U4Simtrace.h
 #include <iostream>
 #include "U4Navigator.h"
 #include "SEvt.hh"
+#include "U4Tree.h"
 
 struct U4Simtrace
 {
-    static void EndOfRunAction();
-    static void Scan();
+    static void EndOfRunAction(const U4Tree* tree);
+    static void Scan(const U4Tree* tree);
 };
 
-inline void U4Simtrace::EndOfRunAction()
+/**
+U4Simtrace::EndOfRunAction
+---------------------------
+
+Invoked from U4Recorder::EndOfRunAction when configured by envvar
+
+**/
+
+
+inline void U4Simtrace::EndOfRunAction(const U4Tree* tree)
 {
     std::cout << "[U4Simtrace::EndOfRunAction\n" ;
-    Scan();
+    Scan(tree);
     std::cout << "]U4Simtrace::EndOfRunAction\n" ;
 }
 
-inline void U4Simtrace::Scan()
+inline void U4Simtrace::Scan(const U4Tree* tree)
 {
     int eventID = 998 ;
 
@@ -42,12 +52,16 @@ inline void U4Simtrace::Scan()
         << std::endl
         ;
 
-    bool dump = false ;
+
+    U4Navigator nav(tree);
     for(int i=0 ; i < num_simtrace ; i++)
     {
         quad4& p = evt->simtrace[i] ;
-        U4Navigator::Simtrace(p, dump);
+        nav.simtrace(p);
+        if( i % 10000 == 0 ) std::cout << nav.isect.desc() << "\n" ;
     }
+    std::cout << nav.stats.desc() << "\n" ;
+
 
 
     evt->gather();        // follow QSim::simulate

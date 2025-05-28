@@ -37,6 +37,8 @@ void G4CXOpticks::SetSensorIdentifier( U4SensorIdentifier* sid ){ SensorIdentifi
 
 G4CXOpticks* G4CXOpticks::INSTANCE = nullptr ;
 G4CXOpticks* G4CXOpticks::Get(){ return INSTANCE ; }
+const U4Tree* G4CXOpticks::GetU4Tree(){ return INSTANCE ? INSTANCE->tr : nullptr ; }
+
 
 /**
 G4CXOpticks::SetGeometry

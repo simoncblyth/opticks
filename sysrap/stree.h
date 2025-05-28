@@ -151,6 +151,12 @@ can avoid the searching
 The natural place to keep map back info is within the instance transforms.
 
 
+mapping stree.h/nidx to CSGFoundry/globalPrimIdx ?
+----------------------------------------------------
+
+see populate_nidx_prim
+
+
 mapping for the remainder non-instanced volumes
 -------------------------------------------------
 
@@ -162,7 +168,7 @@ start from root nidx:0 and will have lots of gaps.
 Actually the natural place to keep "map-back" info for the remainder
 is withing the CSGPrim.  Normally use of that is for identity purposes is restricted
 because tthe CSGPrim are references from all the instances but for the remainder
-the CSGPrim are only referenced once (?). TODO: check this
+the CSGPrim are only referenced once.
 
 TODO: collect the nidx of the remainder into stree.h ?
 
@@ -371,6 +377,8 @@ struct stree
 
     std::vector<int4>                 inst_info ;
     std::vector<int>                  inst_nidx ;
+
+    std::vector<int>                  nidx_prim ; // experimental: populated by populate_nidx_prim
 
     stree();
 
@@ -2130,10 +2138,10 @@ inline int stree::get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repea
 stree::_get_frame_global
 --------------------------
 
-This is called for special cased -ve repeat_ordinal, which 
-is only appropriate for global non-instanced volumes. 
+This is called for special cased -ve repeat_ordinal, which
+is only appropriate for global non-instanced volumes.
 
-1. find the snode using (lvid, lvid_ordinal, ridx_type) 
+1. find the snode using (lvid, lvid_ordinal, ridx_type)
 2. compute bounding box and hence center_extent for the snode
 3. form frame transforms m2w/w2m using SCenterExtentFrame or not
    depending on repeat_ordinal -1/-2/-3
@@ -2157,14 +2165,14 @@ repeat_ordinal:-3
 
 WIP: test this
 
-Formerly the stree::_get_frame_global repeat_ordinal:-1 gave frames 
-with transforms that CSGTarget::getFrameComponents 
+Formerly the stree::_get_frame_global repeat_ordinal:-1 gave frames
+with transforms that CSGTarget::getFrameComponents
 would need repeat_ordinal:-2 for.
 
-The stree::_get_frame_global implementation is 
+The stree::_get_frame_global implementation is
 now aligned with CSGTarget::getFrameComponents
-to avoid the need to keep swapping MOI -1/-2 arising from 
-a former difference in the convention used. 
+to avoid the need to keep swapping MOI -1/-2 arising from
+a former difference in the convention used.
 
 **/
 
@@ -5326,6 +5334,27 @@ inline void stree::init_mtindex_to_mtline()
 inline int stree::lookup_mtline( int mtindex ) const
 {
     return mtindex_to_mtline.count(mtindex) == 0 ? -1 :  mtindex_to_mtline.at(mtindex) ;
+}
+
+
+/**
+stree::populate_nidx_prim
+----------------------------
+
+mapping stree.h/nidx to CSGFoundry/globalPrimIdx ?
+
+Need to "faux_import" ie a stripped down form of CSGImport::importSolid
+within stree to establish the correspondence between nidx and globalPrimIdx
+Every nidx will have a single globalPrimIdx but its not 1:1
+multiple nidx will have the same globalPrimIdx due to instancing.
+
+**/
+
+
+inline void stree::populate_nidx_prim()
+{
+
+
 }
 
 

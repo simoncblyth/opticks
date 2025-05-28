@@ -61,8 +61,8 @@ void CSGImport::import()
 
 void CSGImport::importNames()
 {
-    st->get_mmlabel( fd->mmlabel);  
-    st->get_meshname(fd->meshname);  
+    st->get_mmlabel( fd->mmlabel);    // populate fd->mmlabel from the stree
+    st->get_meshname(fd->meshname);   // populate fd->meshname from the stree
 }
 
 

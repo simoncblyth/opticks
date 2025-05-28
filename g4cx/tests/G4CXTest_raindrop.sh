@@ -16,6 +16,10 @@ see storch::FillGenstep for how to customize that.
     ~/opticks/g4cx/tests/G4CXTest_raindrop.sh
     ~/opticks/g4cx/tests/G4CXTest_raindrop_CPU.sh
 
+    B_SIMTRACE=1 G4CXTest_raindrop.sh
+
+
+
     EYE=0,-400,0 ~/opticks/g4cx/tests/G4CXTest_raindrop.sh ana
 
     PICK=A MODE=3 SELECT="TO BT BR BR BR BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh
@@ -31,7 +35,7 @@ vars=""
 DIR=$(pwd)
 bin=G4CXTest
 script=G4CXTest_raindrop.py
-
+simtrace_script=G4CXTest_raindrop_simtrace.py
 
 
 geom=RaindropRockAirWater
@@ -58,7 +62,7 @@ if [ -n "$KLUDGE" ]; then
     export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1
 fi
 
-if [ -n "$B_SIMTRACE" ];
+if [ -n "$B_SIMTRACE" ]; then
     export U4Recorder__EndOfRunAction_Simtrace=1
     #export SEvt__SIMTRACE=1
 fi
@@ -159,7 +163,7 @@ mode=3 # pyvista
 export MODE=${MODE:-$mode}
 
 
-vars="$vars OPTICKS_INTEGRATION_MODE OPTICKS_EVENT_MODE TMP evtfold reldir OPTICKS_EVENT_NAME AFOLD BFOLD MODE"
+vars="$vars OPTICKS_INTEGRATION_MODE OPTICKS_EVENT_MODE TMP evtfold reldir OPTICKS_EVENT_NAME AFOLD BFOLD TFOLD MODE"
 
 
 event_debug()
@@ -250,6 +254,13 @@ if [ "${arg/pdb}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with script $script && exit 4
 fi
+
+if [ "${arg/tra}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $simtrace_script
+    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with simtrace_script $simtrace_script && exit 4
+fi
+
+
 
 
 if [ "${arg/cf2}" != "$arg" ]; then

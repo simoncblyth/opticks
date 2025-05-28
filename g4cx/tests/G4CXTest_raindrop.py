@@ -15,13 +15,12 @@ PICK = os.environ.get("PICK","B")
 
 if MODE in [2,3]:
     try:
-        #import pyvista as pv
         import opticks.ana.pvplt as pvp
     except ImportError:
         pvp = None
     pass
 else:
-    pv = None
+    pvp = None
 pass
 
 
