@@ -703,6 +703,10 @@ struct stree
     //void import_bnd(const NP* bnd);
     void init_mtindex_to_mtline();
     int lookup_mtline( int mtindex ) const ;
+
+    // experimental
+    void populate_nidx_prim();
+
 };
 
 
