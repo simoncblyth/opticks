@@ -120,7 +120,7 @@ struct SYSRAP_API SEventConfig
     static int  RecordLimit(); // sseq::SLOTS typically 32
     static void LIMIT_Check();
     static std::string Desc();
-    static std::string HitMaskLabel();
+    static std::string DescHitMask();
 
 
     // [TODO : RECONSIDER OUTDIR OUTNAME MECHANICS FOLLOWING SEVT LAYOUT
@@ -254,8 +254,8 @@ struct SYSRAP_API SEventConfig
 
     static const char* RGModeLabel();
 
-    static std::string GatherCompLabel();
-    static std::string SaveCompLabel();
+    static std::string DescGatherComp();
+    static std::string DescSaveComp();
 
     static void GatherCompList( std::vector<unsigned>& gather_comp ) ;
     static int NumGatherComp();
@@ -472,11 +472,13 @@ struct SYSRAP_API SEventConfig
 
     static int   Initialize_COUNT ;
     static int   Initialize();
+
     static void  Initialize_Meta();
     static void  Initialize_EventName();
-    static void  Initialize_Max();
     static void  Initialize_Comp();
-    static void  Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask );
+    static void  Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask );
+    static void  Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask );
+    static void  Initialize_Comp_Render_(  unsigned& gather_mask, unsigned& save_mask );
 
 
     static constexpr const char* NAME = "SEventConfig.npy" ;

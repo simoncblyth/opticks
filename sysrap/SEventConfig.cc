@@ -526,11 +526,29 @@ void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? st
 void SEventConfig::SetEventReldir(   const char* v){   _EventReldir = v ? strdup(v) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
 
-void SEventConfig::SetRGMode(   const char* mode){   _RGMode = SRG::Type(mode) ; LIMIT_Check() ; }
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
 void SEventConfig::SetRGModeRender(){    SetRGMode( SRG::RENDER_ ); }
 void SEventConfig::SetRGModeTest(){      SetRGMode( SRG::TEST_ ); }
+
+void SEventConfig::SetRGMode( const char* mode)
+{
+    int prior_RGMode = _RGMode ;
+    _RGMode = SRG::Type(mode) ;
+    bool changed_mode = prior_RGMode != _RGMode ;
+    if(changed_mode)
+    {
+        std::cout << "SEventConfig::SetRGMode mode changed calling Initialize_Comp \n" ;
+        Initialize_Comp();
+        std::cout << " DescGatherComp " << DescGatherComp() << "\n" ;
+        std::cout << " DescSaveComp   " << DescSaveComp() << "\n" ;
+    }
+    LIMIT_Check() ;
+}
+
+
+
+
 
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; LIMIT_Check() ; }
 
@@ -541,19 +559,15 @@ void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip
 void SEventConfig::SetGatherComp_(unsigned mask){ _GatherComp = mask ; }
 void SEventConfig::SetGatherComp(const char* names, char delim){  SetGatherComp_( SComp::Mask(names,delim)) ; }
 
+
 void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
 
 
+std::string SEventConfig::DescHitMask(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 
-
-
-
-std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
-
-
-std::string SEventConfig::GatherCompLabel(){ return SComp::Desc( _GatherComp ) ; }
-std::string SEventConfig::SaveCompLabel(){   return SComp::Desc( _SaveComp ) ; } // used from SEvt::save
+std::string SEventConfig::DescGatherComp(){ return SComp::Desc( _GatherComp ) ; }
+std::string SEventConfig::DescSaveComp(){   return SComp::Desc( _SaveComp ) ; } // used from SEvt::save
 
 
 void SEventConfig::GatherCompList( std::vector<unsigned>& gather_comp )
@@ -716,7 +730,7 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " HitMask " << " : " << HitMask()
        << std::endl
        << std::setw(25) << ""
-       << std::setw(20) << " HitMaskLabel " << " : " << HitMaskLabel()
+       << std::setw(20) << " DescHitMask " << " : " << DescHitMask()
        << std::endl
        << std::setw(25) << kMaxExtent
        << std::setw(20) << " MaxExtent " << " : " << MaxExtent()
@@ -741,13 +755,13 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " GatherComp " << " : " << GatherComp()
        << std::endl
        << std::setw(25) << ""
-       << std::setw(20) << " GatherCompLabel " << " : " << GatherCompLabel()
+       << std::setw(20) << " DescGatherComp " << " : " << DescGatherComp()
        << std::endl
        << std::setw(25) << kSaveComp
        << std::setw(20) << " SaveComp " << " : " << SaveComp()
        << std::endl
        << std::setw(25) << ""
-       << std::setw(20) << " SaveCompLabel " << " : " << SaveCompLabel()
+       << std::setw(20) << " DescSaveComp " << " : " << DescSaveComp()
        << std::endl
        << std::setw(25) << kOutFold
        << std::setw(20) << " OutFold " << " : " << OutFold()
@@ -956,12 +970,12 @@ int SEventConfig::Initialize() // static
     {
         Initialize_Meta() ;
         Initialize_EventName() ;
-        Initialize_Max() ;
+        Initialize_Comp() ;
     }
-
     Initialize_COUNT += 1 ;
     return 0 ;
 }
+
 
 void SEventConfig::Initialize_Meta()
 {
@@ -1007,7 +1021,46 @@ void SEventConfig::Initialize_EventName()
     if(!build_matches_EventName) std::raise(SIGINT);
 }
 
-void SEventConfig::Initialize_Max() // static
+
+
+/**
+SEventConfig::Initialize_Comp
+-----------------------------
+
+Invoked by SEventConfig::Initialize
+AND by SetRGMode when the RG mode is changed.
+That is not a normal thing to do, but can happen
+when doing EndOfRun simtracing.
+
+**/
+
+
+void SEventConfig::Initialize_Comp()
+{
+    unsigned gather_mask = 0 ;
+    unsigned save_mask = 0 ;
+
+    if(     IsRGModeSimulate()) Initialize_Comp_Simulate_(gather_mask, save_mask);
+    else if(IsRGModeSimtrace()) Initialize_Comp_Simtrace_(gather_mask, save_mask);
+    else if(IsRGModeRender())   Initialize_Comp_Render_(gather_mask, save_mask);
+
+    SetGatherComp_(gather_mask);
+    SetSaveComp_(  save_mask);
+}
+
+
+/**
+SEventConfig::Initialize_Comp_Simulate_
+----------------------------------------
+
+Canonically invoked by SEventConfig::Initialize_Comp
+
+enum values like SCOMP_PHOTON are bitwise-ORed into the
+gather and save masks based on configured MAX values.
+
+**/
+
+void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask )
 {
     const char* mode = EventMode();
     int record_limit = RecordLimit();
@@ -1018,11 +1071,7 @@ void SEventConfig::Initialize_Max() // static
         << " record_limit " << record_limit
         ;
 
-    if(IsNothing() || IsMinimal() || IsHit() || IsHitPhoton() || IsHitPhotonSeq() || IsHitSeq() )
-    {
-        Initialize_Comp() ;
-    }
-    else if(IsDebugHeavy())
+    if(IsDebugHeavy())
     {
         SEventConfig::SetMaxRec(0);
         SEventConfig::SetMaxRecord(record_limit);
@@ -1035,105 +1084,56 @@ void SEventConfig::Initialize_Max() // static
         SEventConfig::SetMaxFlat(1);
         SEventConfig::SetMaxSup(1);
 
-        Initialize_Comp() ;   // comp set based on Max values
     }
     else if(IsDebugLite())
     {
         SEventConfig::SetMaxRec(0);
         SEventConfig::SetMaxRecord(record_limit);
         SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
-
-        Initialize_Comp() ;   // comp set based on Max values
-    }
-    else
-    {
-        LOG(fatal) << "mode [" << mode << "] IS NOT RECOGNIZED "  ;
-        LOG(fatal) << " options " << std::endl << DescEventMode() ;
-
-        std::cerr << "mode [" << mode << "] IS NOT RECOGNIZED " << std::endl   ;
-        std::cerr << " options " << std::endl << DescEventMode() << std::endl ;
-
-        std::raise(SIGINT);
     }
 
-    LOG(LEVEL) << Desc() ;
-}
 
 
 
-/**
-SEventConfig::Initialize_Comp
------------------------------
-
-Invoked by SEventConfig::Initialize
-
-**/
-
-
-void SEventConfig::Initialize_Comp()
-{
-     unsigned gather_mask = 0 ;
-     unsigned save_mask = 0 ;
-
-     Initialize_Comp_(gather_mask, save_mask );
-
-     SetGatherComp_(gather_mask);
-     SetSaveComp_(  save_mask);
-}
-
-
-/**
-SEventConfig::Initialize_Comp_
-------------------------------------
-
-Canonically invoked by SEventConfig::Initialize_Comp
-
-enum values like SCOMP_PHOTON are bitwise-ORed into the
-gather and save masks based on configured MAX values.
-
-**/
-
-void SEventConfig::Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask )
-{
-    if(IsRGModeSimulate() && IsNothing())
+    if(IsNothing())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsNothing()" ;
+        LOG(LEVEL) << "IsNothing()" ;
         gather_mask = 0 ;
         save_mask = 0 ;
     }
-    else if(IsRGModeSimulate() && IsMinimal())
+    else if(IsMinimal())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsMinimal()" ;
+        LOG(LEVEL) << "IsMinimal()" ;
         gather_mask = SCOMP_HIT ;
         save_mask = 0 ;
     }
-    else if(IsRGModeSimulate() && IsHit())
+    else if(IsHit())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHit()" ;
+        LOG(LEVEL) << "IsHit()" ;
         gather_mask = SCOMP_HIT | SCOMP_GENSTEP ;
         save_mask = SCOMP_HIT | SCOMP_GENSTEP ;
     }
-    else if(IsRGModeSimulate() && IsHitPhoton())
+    else if(IsHitPhoton())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhoton()" ;
+        LOG(LEVEL) << "IsHitPhoton()" ;
         gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP  ;
         save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_GENSTEP ;
     }
-    else if(IsRGModeSimulate() && IsHitPhotonSeq())
+    else if(IsHitPhotonSeq())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitPhotonSeq()" ;
+        LOG(LEVEL) << "IsHitPhotonSeq()" ;
         gather_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP  ;
         save_mask = SCOMP_HIT | SCOMP_PHOTON | SCOMP_SEQ | SCOMP_GENSTEP ;
         SetMaxSeq(1);
     }
-    else if(IsRGModeSimulate() && IsHitSeq())
+    else if(IsHitSeq())
     {
-        LOG(LEVEL) << "IsRGModeSimulate() && IsHitSeq()" ;
+        LOG(LEVEL) << "IsHitSeq()" ;
         gather_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP  ;
         save_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP ;
         SetMaxSeq(1);
     }
-    else if(IsRGModeSimulate())
+    else
     {
         gather_mask |= SCOMP_DOMAIN ;  save_mask |= SCOMP_DOMAIN ;
 
@@ -1153,23 +1153,6 @@ void SEventConfig::Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask )
         if(MaxTag()>0){       gather_mask |= SCOMP_TAG    ;  save_mask |= SCOMP_TAG    ; }
         if(MaxFlat()>0){      gather_mask |= SCOMP_FLAT   ;  save_mask |= SCOMP_FLAT   ; }
     }
-    else if(IsRGModeSimtrace())
-    {
-        if(MaxGenstep()>0){   gather_mask |= SCOMP_GENSTEP  ;  save_mask |= SCOMP_GENSTEP ;  }
-        if(MaxSimtrace()>0){  gather_mask |= SCOMP_SIMTRACE ;  save_mask |= SCOMP_SIMTRACE ; }
-
-        LOG(LEVEL)
-            << " MaxGenstep " << MaxGenstep()
-            << " MaxSimtrace " << MaxSimtrace()
-            << " gather_mask " << gather_mask
-            << " save_mask " << save_mask
-            ;
-
-    }
-    else if(IsRGModeRender())
-    {
-        gather_mask |= SCOMP_PIXEL ;  save_mask |=  SCOMP_PIXEL ;
-    }
 
     if(IsRunningModeG4StateSave() || IsRunningModeG4StateRerun())
     {
@@ -1180,9 +1163,27 @@ void SEventConfig::Initialize_Comp_(unsigned& gather_mask, unsigned& save_mask )
     {
         LOG(LEVEL) << " NOT : adding SCOMP_G4STATE to comp list " ;
     }
-
 }
 
+void SEventConfig::Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask )
+{
+    assert(IsRGModeSimtrace());
+    if(MaxGenstep()>0){   gather_mask |= SCOMP_GENSTEP  ;  save_mask |= SCOMP_GENSTEP ;  }
+    if(MaxSimtrace()>0){  gather_mask |= SCOMP_SIMTRACE ;  save_mask |= SCOMP_SIMTRACE ; }
+
+    LOG(info)
+        << " MaxGenstep " << MaxGenstep()
+        << " MaxSimtrace " << MaxSimtrace()
+        << " gather_mask " << gather_mask
+        << " save_mask " << save_mask
+        ;
+
+}
+void SEventConfig::Initialize_Comp_Render_(unsigned& gather_mask, unsigned& save_mask )
+{
+    assert(IsRGModeRender());
+    gather_mask |= SCOMP_PIXEL ;  save_mask |=  SCOMP_PIXEL ;
+}
 
 
 
@@ -1231,8 +1232,8 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<unsigned>("GatherComp", GatherComp() );
     meta->set_meta<unsigned>("SaveComp", SaveComp() );
 
-    meta->set_meta<std::string>("GatherCompLabel", GatherCompLabel());
-    meta->set_meta<std::string>("SaveCompLabel", SaveCompLabel());
+    meta->set_meta<std::string>("DescGatherComp", DescGatherComp());
+    meta->set_meta<std::string>("DescSaveComp", DescSaveComp());
 
     meta->set_meta<float>("PropagateEpsilon", PropagateEpsilon() );
 
