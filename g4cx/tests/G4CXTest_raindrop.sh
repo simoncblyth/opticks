@@ -58,6 +58,13 @@ if [ -n "$KLUDGE" ]; then
     export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1
 fi
 
+if [ -n "$B_SIMTRACE" ];
+    export U4Recorder__EndOfRunAction_Simtrace=1
+    #export SEvt__SIMTRACE=1
+fi
+
+
+
 if [ "$U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE" == "1" ]; then
     version=1
 else
@@ -72,13 +79,15 @@ vars="$vars VERSION"
 export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
 
 
+
+
 #num=1000
 #num=5000
 #num=H1
 num=M1
 NUM=${NUM:-$num}
 
-## For torch running MUST NOW configure OPTICKS_NUM_PHOTON and OPTICKS_NUM_GENSTEP 
+## For torch running MUST NOW configure OPTICKS_NUM_PHOTON and OPTICKS_NUM_GENSTEP
 ## envvars with the same number of comma delimited values OR just 1 value without comma
 
 export OPTICKS_NUM_PHOTON=$NUM
@@ -141,6 +150,8 @@ reldir=ALL${VERSION}_${OPTICKS_EVENT_NAME}
 
 export AFOLD=$evtfold/$bin/$reldir/A000
 export BFOLD=$evtfold/$bin/$reldir/B000
+export TFOLD=$evtfold/$bin/$reldir/M998   # HMM could use zero now
+
 
 #mode=0 # no plotting
 #mode=2 # matplotlib
@@ -210,6 +221,12 @@ if [ "${arg/grab}" != "$arg" ]; then
     source rsync.sh $evtfold
     [ $? -ne 0 ] && echo $BASH_SOURCE : grab error && exit 3
 fi
+
+if [ "${arg/ls}" != "$arg" ]; then
+     ff="AFOLD BFOLD TFOLD"
+     for f in $ff ; do printf "\n\n%s : ls -alst %s \n\n" "$f" "${!f}" && ls -alst ${!f} ; done
+fi
+
 
 if [ "${arg/old}" != "$arg" ]; then
     export SAVE_SEL=1
