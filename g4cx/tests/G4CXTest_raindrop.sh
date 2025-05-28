@@ -65,6 +65,9 @@ fi
 if [ -n "$B_SIMTRACE" ]; then
     export U4Recorder__EndOfRunAction_Simtrace=1
     #export SEvt__SIMTRACE=1
+
+    export stree__populate_nidx_prim=1
+
 fi
 
 

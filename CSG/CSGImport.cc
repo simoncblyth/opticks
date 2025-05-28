@@ -212,7 +212,7 @@ CSGSolid* CSGImport::importSolidFactor(int ridx, char ridx_type )
 
 
     int  num_rem = st->get_num_remainder() ;
-    assert( num_rem == 1 ) ;
+    assert( num_rem == 1 ) ;  // YEP: always one
 
     int num_factor = st->factor.size() ;
     assert( ridx - num_rem < num_factor );
