@@ -1,5 +1,5 @@
-MOI_-2_or_-1_simtrace_vs_raytrace_getframe_error
-======================================================
+FIXED : MOI_-2_or_-1_simtrace_vs_raytrace_getframe_error
+=============================================================
 
 
 Sometime need -1 and sometimes -2 (convention deviation in global frame access)::

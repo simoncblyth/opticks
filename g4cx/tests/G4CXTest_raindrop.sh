@@ -78,11 +78,12 @@ export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
 num=M1
 NUM=${NUM:-$num}
 
-## For torch running MUST NOW configure the below two NUM envvars
-## with the same number of comma delimited values, or just 1 value
+## For torch running MUST NOW configure OPTICKS_NUM_PHOTON and OPTICKS_NUM_GENSTEP 
+## envvars with the same number of comma delimited values OR just 1 value without comma
 
 export OPTICKS_NUM_PHOTON=$NUM
 export OPTICKS_NUM_GENSTEP=1
+
 export OPTICKS_RUNNING_MODE="SRM_TORCH"
 export OPTICKS_MAX_SLOT=M1
 
@@ -125,7 +126,7 @@ export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$oim}
 
 #mode=Minimal
 mode=DebugLite
-export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$mode} # configure what to gather and save
+export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$mode} # configure what to gather and save via SEvt
 
 
 # below directories match those used by SEvt saving
@@ -141,8 +142,13 @@ reldir=ALL${VERSION}_${OPTICKS_EVENT_NAME}
 export AFOLD=$evtfold/$bin/$reldir/A000
 export BFOLD=$evtfold/$bin/$reldir/B000
 
+#mode=0 # no plotting
+#mode=2 # matplotlib
+mode=3 # pyvista
+export MODE=${MODE:-$mode}
 
-vars="$vars OPTICKS_INTEGRATION_MODE OPTICKS_EVENT_MODE TMP evtfold reldir OPTICKS_EVENT_NAME AFOLD BFOLD"
+
+vars="$vars OPTICKS_INTEGRATION_MODE OPTICKS_EVENT_MODE TMP evtfold reldir OPTICKS_EVENT_NAME AFOLD BFOLD MODE"
 
 
 event_debug()

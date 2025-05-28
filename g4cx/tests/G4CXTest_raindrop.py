@@ -15,10 +15,10 @@ PICK = os.environ.get("PICK","B")
 
 if MODE in [2,3]:
     try:
-        import pyvista as pv
-        from opticks.ana.pvplt import pvplt_plotter, pvplt_viewpoint
+        #import pyvista as pv
+        import opticks.ana.pvplt as pvp
     except ImportError:
-        pv = None
+        pvp = None
     pass
 else:
     pv = None
@@ -140,12 +140,12 @@ if __name__ == '__main__':
             elabel = "%s : %s " % ( e.symbol.upper(), e.f.base )
             label = context + " ## " + elabel
 
-            if MODE == 3 and not pv is None:
+            if MODE == 3 and not pvp is None:
                 if len(poi) == 0:
                     print("FAILED TO SELECT ANY POI : SKIP PLOTTING" )
                 else:
-                    pl = pvplt_plotter(label)
-                    pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
+                    pl = pvp.pvplt_plotter(label)
+                    pvp.pvplt_viewpoint(pl) # sensitive EYE, LOOK, UP, ZOOM envvars eg EYE=0,-3,0 
                     pl.add_points( poi, color="green", point_size=3.0 )
                     pl.add_points( pos, color="red", point_size=3.0 )
                     pl.add_points( beg, color="blue", point_size=3.0 )

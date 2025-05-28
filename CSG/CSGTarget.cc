@@ -237,7 +237,7 @@ int CSGTarget::getFrameComponents(float4& ce, int midx, int mord, int gord, qat4
         if( gord == -1 )
         {
             LOG(info) << "(gord == -1) qptr transform will not be set, typically defaulting to identity " ;
-            assert(0) ; // WHAT IS USING -1 WITH CE SET AND IDENTITY TRANSFORMS ?
+            assert(0) ; // WHAT IS USING -1 WITH CE SET AND IDENTITY TRANSFORMS ?  COMMONLY 0:0:-1 default MOI
         }
         else if( gord == -2 )
         {
