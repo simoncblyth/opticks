@@ -120,6 +120,12 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__CLEAR_SIGINT = "SEvt__CLEAR_SIGINT" ;
     static bool CLEAR_SIGINT ;
 
+    static constexpr const char* SEvt__SIMTRACE = "SEvt__SIMTRACE" ;
+    static bool SIMTRACE ;
+
+
+
+
     enum { SEvt__SEvt,
            SEvt__init,
            SEvt__beginOfEvent,

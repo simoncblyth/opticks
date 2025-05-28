@@ -52,6 +52,7 @@ bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ;
 bool SEvt::MINTIME = ssys::getenvbool(SEvt__MINTIME) ;
 bool SEvt::DIRECTORY = ssys::getenvbool(SEvt__DIRECTORY) ;
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ;
+bool SEvt::SIMTRACE = ssys::getenvbool(SEvt__SIMTRACE) ;
 
 
 const char* SEvt::descStage() const
@@ -252,7 +253,8 @@ void SEvt::init()
     SEventConfig::SaveCompList(save_comp);      // populate save_comp vector based on SaveCompMask
 
 
-    LOG(LEVEL) << " SEventConfig::GatherCompLabel "  << SEventConfig::GatherCompLabel() ;   // CompMaskLabel
+    LOG(LEVEL) << " SEventConfig::DescGatherComp "  << SEventConfig::DescGatherComp() ;
+    LOG(LEVEL) << " SEventConfig::DescSaveComp "    << SEventConfig::DescSaveComp() ;
     LOG(LEVEL) << descComp() ;
 
     //initInputGenstep();   // for per-event genstep moved to SEvt::beginOfEvent/SEvt::addInputGenstep
@@ -760,14 +762,20 @@ void SEvt::addInputGenstep()
     {
         const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
 
-        LOG_IF(info, FRAME)
-            << "[" << SEvt__FRAME << "] "
-            << " Simtrace:frame.get_frs " << ( frs ? frs : "-" ) ;
+        LOG_IF(info, SIMTRACE )
+            << "[" << SEvt__SIMTRACE << "] "
+            << " frame.get_frs " << ( frs ? frs : "-" ) ;
             ;
 
-        if(frs) SEventConfig::SetEventReldir(frs);
+        //if(frs) SEventConfig::SetEventReldir(frs); // dont do that, default is more standard
+        // doing this is hangover from separate simtracing of related volumes presumably
+
         NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
-        LOG_IF(info, FRAME) << " simtrace gs " << ( gs ? gs->sstr() : "-" ) ;
+        LOG_IF(info, SIMTRACE)
+            << "[" << SEvt__SIMTRACE << "] "
+            << " simtrace gs " << ( gs ? gs->sstr() : "-" )
+            ;
+
         addGenstep(gs);
 
         if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
@@ -846,7 +854,7 @@ const NP*   SEvt::GetFrameArray(int idx){ return Exists(idx) ? Get(idx)->getFram
 SEvt::setFrame_HostsideSimtrace
 ---------------------------------
 
-Called from SEvt::setFrame when sframe::is_hostside_simtrace, eg at behest of X4Simtrace::simtrace
+Called from SEvt::setFrame when sframe::is_hostside_simtrace, eg at behest of U4Simtrace
 
 **/
 
@@ -854,7 +862,7 @@ void SEvt::setFrame_HostsideSimtrace()
 {
     unsigned num_photon_gs = getNumPhotonFromGenstep();
     unsigned num_photon_evt = evt->num_photon ;
-    LOG(LEVEL)
+    LOG_IF(info, SIMTRACE)
          << "frame.is_hostside_simtrace"
          << " num_photon_gs " << num_photon_gs
          << " num_photon_evt " << num_photon_evt
@@ -863,11 +871,11 @@ void SEvt::setFrame_HostsideSimtrace()
     assert( num_photon_gs == num_photon_evt );
     setNumSimtrace( num_photon_gs );
 
-    LOG(LEVEL) << " before hostside_running_resize simtrace.size " << simtrace.size() ;
+    LOG_IF(info, SIMTRACE) << " before hostside_running_resize simtrace.size " << simtrace.size() ;
 
     hostside_running_resize();
 
-    LOG(LEVEL) << " after hostside_running_resize simtrace.size " << simtrace.size() ;
+    LOG_IF(info, SIMTRACE) << " after hostside_running_resize simtrace.size " << simtrace.size() ;
 
     SFrameGenstep::GenerateSimtracePhotons( simtrace, genstep );
 }
@@ -939,9 +947,10 @@ such as saving simulation SEvt is completed.
 
 SEvt* SEvt::CreateSimtraceEvent()  // static
 {
-    LOG(LEVEL) << "[" ;
+    LOG_IF(info, SIMTRACE) << "[" ;
 
     SEvt* prior = SEvt::Get(0);
+    assert(prior);
     if(prior == nullptr ) return nullptr ;
 
     sframe& pfr = prior->frame ;
@@ -950,7 +959,7 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     if( pfr.ce.w == 0.f )
     {
         pfr.ce.w = 200.f ;
-        LOG(LEVEL)
+        LOG_IF(info, SIMTRACE)
             << " kludging frame extent, this happens with U4SimulateTest "
             << " as the CSGFoundry geometry is not available causing the "
             << " SEvt sframe to be default "
@@ -962,12 +971,13 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     // especially SEvt::setFrame_HostsideSimtrace which
     // generates simtrace photons
 
-    SEventConfig::SetRGModeSimtrace();
-    LOG(LEVEL) << " SWITCH : SEventConfig::SetRGModeSimtrace " ;
+    SEventConfig::SetRGModeSimtrace(); // now added handling to redo Initialize_Comp when changing mode
+
+    LOG_IF(info, SIMTRACE) << " SWITCH : SEventConfig::SetRGModeSimtrace " ;
     SEvt* ste = new SEvt ;
     ste->setFrame(pfr);
 
-    LOG(LEVEL) << "] ste.simtrace.size " << ste->simtrace.size() ;
+    LOG_IF(info, SIMTRACE) << "] ste.simtrace.size " << ste->simtrace.size() ;
 
     return ste ;
 }
@@ -3216,6 +3226,7 @@ NP* SEvt::gatherHit() const
 
 NP* SEvt::gatherSimtrace() const
 {
+    LOG_IF(info, SIMTRACE) << " evt->simtrace " << ( evt->simtrace ? "YES" : "NO " ) ;
     if( evt->simtrace == nullptr ) return nullptr ;
     NP* p = makeSimtrace();
     p->read2( (float*)evt->simtrace );
@@ -3327,6 +3338,10 @@ const char* SEvt::getTypeName() const
 /**
 SEvt::gatherComponent
 ------------------------
+
+If the cmp is within the SEventConfig::GatherComp mask
+then invoke the corresponding gather... method otherwise
+return nullptr.
 
 NB this is for hostside running only, for device-side running
 the SCompProvider is the QEvent not the SEvt, so this method
@@ -3502,7 +3517,7 @@ std::string SEvt::descDbg() const
 SEvt::gather_components : collects fresh arrays into NPFold from provider
 ---------------------------------------------------------------------------
 
-SEvt::gather_components is invoked by SEvt::gather from SEvt::save::
+SEvt::gather_components is invoked by SEvt::gather from QSim::simulate::
 
 
      +-------------------+                 +-----------------+
@@ -3510,6 +3525,14 @@ SEvt::gather_components is invoked by SEvt::gather from SEvt::save::
      |   OR              | === gather ===> |                 |
      | SEvt vecs         |                 |                 |
      +-------------------+                 +-----------------+
+
+
+
+The SEvt::gather was formerly invoked from SEvt::save, but that
+is incompatible with getting access to hits so the invokation
+of the gather must now be done from high level methods such
+as QSim::simulate.
+
 
 
 1. invokes gatherComponent on the SCompProvider instance which is either
@@ -3543,7 +3566,7 @@ void SEvt::gather_components()   // *GATHER*
     int num_comp = gather_comp.size() ;
 
     LOG(LEVEL) << " num_comp " << num_comp << " from provider " << provider->getTypeName() << " fkey " << ( fkey ? fkey : "-" )   ;
-    LOG_IF(info, GATHER) << " num_comp " << num_comp << " from provider " << provider->getTypeName() << " fkey " << ( fkey ? fkey : "-" ) ;
+    LOG_IF(info, GATHER||SIMTRACE) << " num_comp " << num_comp << " from provider " << provider->getTypeName() << " fkey " << ( fkey ? fkey : "-" ) ;
 
     for(int i=0 ; i < num_comp ; i++)
     {
@@ -3634,6 +3657,9 @@ into NPFold from the SCompProvider which can either be:
 For multi-launch running genstep slices are uploaded
 before each launch and *gather* is called after each launch.
 
+
+For an example of where this should be invoked from see QSim::simulate
+
 **/
 
 void SEvt::gather()
@@ -3641,15 +3667,7 @@ void SEvt::gather()
     setStage(SEvt__gather);
     LOG_IF(info, LIFECYCLE) << id() ;
 
-    // LOG_IF(fatal, gather_done) << " gather_done ALREADY : SKIPPING " ;
-    // if(gather_done) return ;
-    // gather_done = true ;
-    //   endOfEvent/clear_genstep/clear_genstep_vector resets this to false
-
-
     gather_components();
-    // gather_metadata();   //  try moving to SEvt::endOfEvent just after endMeta
-
 }
 
 
@@ -3738,7 +3756,7 @@ Only when more control of the output is needed is it appropriate to use OPTICKS_
 void SEvt::save()
 {
     const char* base = DefaultBase();
-    LOG_IF(info, LIFECYCLE) << " base [" << ( base ? base : "-" ) << "]" ;
+    LOG_IF(info, LIFECYCLE || SIMTRACE) << " base [" << ( base ? base : "-" ) << "]" ;
     save(base);
 }
 void SEvt::saveExtra( const char* name, const NP* a  ) const
@@ -3849,7 +3867,7 @@ const char* SEvt::getDir(const char* base_) const
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ;
     sdirectory::MakeDirs(path,0);
 
-    LOG_IF(info, DIRECTORY)
+    LOG_IF(info, DIRECTORY || SIMTRACE)
         << std::endl
         << " base_  " << ( base_ ? base_ : "-" ) << "\n"
         << " SEventConfig::EventReldir   " << ( reldir ? reldir : "-" ) << "\n"
@@ -3965,12 +3983,12 @@ SEvt::save
 -------------
 
 Saving arrays is a debugging activity configured
-with SEventConfig::SaveCompLabel that has a large impact on performance.
+with SEventConfig::DescSaveComp that has a large impact on performance.
 
 Gathering arrays (eg downloading them from device buffers to host)
 was formerly invoked from here, but the *gather* has now been moved upwards
 to QSim::simulate to allow collecting hits into other collections.
-The arrays to gather are configured with SEventConfig::GatherCompLabel
+The arrays to gather are configured with SEventConfig::DescGatherComp
 separately from the arrays to save. Clearly its necessary to gather
 a component in order to save it.
 
@@ -3981,11 +3999,10 @@ then the directory is suffixed with the index::
     /some/directory/A001
 
 
-
-
 Notice the mixed memory handling in the below.
 The save_fold is shallow copied from topfold, indicating
 it does not own its arrays and should not be deleted.
+
 All fine so far. But then seqnib and seqnib_table are created
 and added ... so those would leak without the manual deletes
 at the tail.
@@ -3997,15 +4014,19 @@ but that is at fold level./ Perhaps need each array to have skipdelete ?
 
 void SEvt::save(const char* dir_)
 {
-    LOG_IF(info, LIFECYCLE) << id() << " dir_[" << ( dir_ ? dir_ : "-" ) << "]" ;
+    LOG_IF(info, LIFECYCLE || SIMTRACE) << id() << " dir_[" << ( dir_ ? dir_ : "-" ) << "]" ;
 
     //  gather();   MOVED gather upwards to allow copying hits into other collections
 
     LOG(LEVEL) << descComponent() ;
     LOG(LEVEL) << descFold() ;
 
-    std::string save_comp = SEventConfig::SaveCompLabel() ;
+    std::string save_comp = SEventConfig::DescSaveComp() ;
     NPFold* save_fold = topfold->shallowcopy(save_comp.c_str());
+
+    LOG_IF(info, SIMTRACE) << " topfold.desc   " << ( topfold ? topfold->desc() : "-" )  ;
+    LOG_IF(info, SIMTRACE) << " save_fold.desc " << ( save_fold ? save_fold->desc() : "-" ) ;
+
 
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ;
     if(save_fold == nullptr) return ;
@@ -4027,7 +4048,7 @@ void SEvt::save(const char* dir_)
     if( slic > 0 )
     {
         const char* dir = getDir(dir_);   // THIS CREATES DIRECTORY
-        LOG_IF(info, MINIMAL) << dir << " [" << save_comp << "]"  ;
+        LOG_IF(info, MINIMAL||SIMTRACE) << dir << " [" << save_comp << "]"  ;
         LOG(LEVEL) << descSaveDir(dir_) ;
 
         LOG(LEVEL) << "[ save_fold.save " << dir ;
@@ -4089,9 +4110,9 @@ std::string SEvt::DescComponent(const NPFold* f)  // static
     std::stringstream ss ;
     ss << "SEvt::DescComponent"
        << std::endl
-       << std::setw(20) << " SEventConfig::GatherCompLabel " << SEventConfig::GatherCompLabel() << std::endl
+       << std::setw(20) << " SEventConfig::DescGatherComp " << SEventConfig::DescGatherComp() << std::endl
        << std::endl
-       << std::setw(20) << " SEventConfig::SaveCompLabel " << SEventConfig::SaveCompLabel() << std::endl
+       << std::setw(20) << " SEventConfig::DescSaveComp " << SEventConfig::DescSaveComp() << std::endl
        << std::setw(20) << "hit" << " "
        << std::setw(20) << ( hit ? hit->sstr() : "-" )
        << " "
