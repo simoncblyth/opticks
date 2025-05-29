@@ -18,9 +18,17 @@ by directly compiling the needed SysRap sources and not using the full SysRap li
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+cd $(dirname $(realpath $BASH_SOURCE))
+SDIR=$PWD
 
 bin=U4TreeCreateTest
+script=$bin.py
+
+export TMP=${TMP:-/tmp/$USER/opticks}
+export FOLD=$TMP/$bin
+
+
+
 defarg="info_run_ana"
 arg=${1:-$defarg}
 
@@ -29,6 +37,7 @@ logging()
    type $FUNCNAME
    export U4VolumeMaker=INFO
    export U4Solid=INFO
+   #export stree__level=1
    export DUMMY=INFO
 }
 [ -n "$LOG" ] && logging
@@ -53,11 +62,7 @@ else
 fi
 
 
-TMP=${TMP:-/tmp/$USER/opticks}
-export FOLD=$TMP/$bin
-script=$SDIR/$bin.py
-
-vars="BASH_SOURCE defarg arg SDIR bin GEOM _CFB CFB xgdmlpath note TMP FOLD script"
+vars="BASH_SOURCE SDIR defarg arg bin GEOM _CFB CFB xgdmlpath note TMP FOLD script"
 
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -67,6 +72,7 @@ fi
 if [ "${arg/clean}" != "$arg" ]; then
     cd $TMP && rm -rf U4TreeCreateTest  # hardcode directory name for safety
     [ $? -ne 0 ] && echo $BASH_SOURCE clean error && exit 1
+    cd $SDIR
 fi
 
 if [ "${arg/run}" != "$arg" ]; then

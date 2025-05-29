@@ -55,7 +55,7 @@ vars="$vars BASH_SOURCE PWD DIR bin script GEOM"
 # THESE ARE NOW THE DEFAULTS
 export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,0,1,1.333
 export U4VolumeMaker_RaindropRockAirWater_MATS=VACUUM,G4_Pb,G4_AIR,G4_WATER
-export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
+export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=90
 export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Box  # default:Orb  (Box also impl)
 
 if [ -n "$KLUDGE" ]; then

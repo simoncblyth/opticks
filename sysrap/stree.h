@@ -325,7 +325,7 @@ struct stree
 
     static constexpr const char* PRIM_NIDX = "prim_nidx.npy" ;
     static constexpr const char* NIDX_PRIM = "nidx_prim.npy" ;
-
+    static constexpr const char* PRNAME = "prname.txt" ;
 
 
     int level ;                            // verbosity
@@ -391,6 +391,7 @@ struct stree
 
     std::vector<int>                  prim_nidx ; // experimental: see populate_prim_nidx
     std::vector<int>                  nidx_prim ; // experimental: see populate_nidx_prim
+    std::vector<std::string>          prname ;    // prim names from faux_importPrim
 
     stree();
 
@@ -722,6 +723,7 @@ struct stree
     void faux_importSolidGlobal(int ridx, char ridx_type);
     void faux_importSolidFactor(int ridx, char ridx_type);
     int  faux_importPrim(int primIdx, const snode& node );
+    const char* get_prname(int globalPrimIdx) const ;
     int  search_prim_for_nidx_first(int nidx) const ;
 
     void populate_nidx_prim();
@@ -754,7 +756,7 @@ HMM the force_triangulate_solid envvar only relevant for stree creation, not wit
 
 inline stree::stree()
     :
-    level(ssys::getenvint("stree_level", 0)),
+    level(ssys::getenvint("stree__level", 0)),
     force_triangulate_solid(ssys::getenvvar(stree__force_triangulate_solid,nullptr)),
     get_frame_dump(ssys::getenvbool(stree__get_frame_dump)),
     sensor_count(0),
@@ -3292,14 +3294,20 @@ inline NPFold* stree::serialize() const
     {
         NP* _prim_nidx = NPX::ArrayFromVec<int,int>( prim_nidx ) ;
         NP* _nidx_prim = NPX::ArrayFromVec<int,int>( nidx_prim ) ;
+        NP* _prname = NPX::Holder(prname) ;
+
         fold->add( PRIM_NIDX, _prim_nidx );
         fold->add( NIDX_PRIM, _nidx_prim );
+        fold->add( PRNAME,  _prname );
     }
 #else
     NP* _prim_nidx = NPX::ArrayFromVec<int,int>( prim_nidx ) ;
     NP* _nidx_prim = NPX::ArrayFromVec<int,int>( nidx_prim ) ;
+    NP* _prname = NPX::Holder(prname) ;
+
     fold->add( PRIM_NIDX, _prim_nidx );
     fold->add( NIDX_PRIM, _nidx_prim );
+    fold->add( PRNAME,  _prname );
 #endif
 
 
@@ -3473,14 +3481,14 @@ inline void stree::import(const NPFold* fold)
     {
         ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
         ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM) );
+        ImportNames( prname, fold->get(PRNAME) );
     }
 #else
     ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
     ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM) );
+    ImportNames( prname, fold->get(PRNAME) );
 #endif
-
 }
-
 
 
 inline int stree::Compare( const std::vector<int>& a, const std::vector<int>& b ) // static
@@ -5526,19 +5534,26 @@ inline int stree::faux_importPrim(int primIdx, const snode& node )
 {
     int globalPrimIdx = prim_nidx.size();
     int nidx = node.index ;
-    const char* so = soname[node.lvid].c_str();
+    const char* prn = soname[node.lvid].c_str();
 
     if(level > 2) std::cout
         << "stree::faux_importPrim"
         << " primIdx " << std::setw(4) << primIdx
         << " globalPrimIdx " << std::setw(6) << globalPrimIdx
         << " nidx " << std::setw(8) << nidx
-        << " soname[node.lvid] " << so
+        << " prn(=soname[node.lvid]) " << prn
         << "\n"
         ;
 
     prim_nidx.push_back(nidx);
+    prname.push_back(prn);
     return globalPrimIdx ;
+}
+
+
+inline const char* stree::get_prname(int globalPrimIdx) const
+{
+    return globalPrimIdx < int(prname.size()) ? prname[globalPrimIdx].c_str() : nullptr ;
 }
 
 
@@ -5556,7 +5571,6 @@ inline int stree::search_prim_for_nidx_first(int nidx) const
     size_t gpi = std::distance( prim_nidx.begin(), std::find(prim_nidx.begin(), prim_nidx.end(), nidx ));
     return gpi < prim_nidx.size() ? int(gpi) : -1  ;
 }
-
 
 
 /**

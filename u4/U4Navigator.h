@@ -53,7 +53,7 @@ inline std::string U4Navigator_Stats::desc() const
 
 struct U4Navigator_Intersect
 {
-    G4ThreeVector isect = {} ;
+    G4ThreeVector ipos = {} ;
     G4VPhysicalVolume* pv0 = nullptr ;
     G4VPhysicalVolume* pv1 = nullptr ;
     G4LogicalVolume* lv1 = nullptr ;
@@ -61,6 +61,8 @@ struct U4Navigator_Intersect
     G4double t = 0. ;
     G4bool valid = false ;
     int nidx = -10 ;
+    int prim = -10 ;
+    const char* prn = nullptr ;
 
     void zero();
     std::string desc() const ;
@@ -69,7 +71,7 @@ struct U4Navigator_Intersect
 
 inline void U4Navigator_Intersect::zero()
 {
-    isect = {} ;
+    ipos = {} ;
     pv0 = nullptr ;
     pv1 = nullptr ;
     lv1 = nullptr ;
@@ -77,17 +79,22 @@ inline void U4Navigator_Intersect::zero()
     t = 0 ;
     valid = false ;
     nidx = -10 ;
+    prim = -10 ;
+    prn = nullptr ;
 }
 
 inline std::string U4Navigator_Intersect::desc() const
 {
     std::stringstream ss ;
     ss
+        << " t " << std::setw(10) << std::fixed << std::setprecision(3) << t
         << " valid "  << ( valid ? "YES" : "NO " )
+        << " nidx "  << std::setw(8) << nidx
+        << " prim "  << std::setw(6) << prim
+        << " prn " << ( prn ? prn : "-" )
         << " pv0 " << ( pv0 ? pv0->GetName() : "-" )
         << " pv1 " << ( pv1 ? pv1->GetName() : "-" )
         << " so1 " << ( so1 ? so1->GetName() : "-" )
-        << " nidx "  << nidx
         ;
 
     std::string str = ss.str() ;
@@ -148,34 +155,63 @@ Canonical caller U4Navigator::simtrace
 
 inline void U4Navigator::getIntersect( const G4ThreeVector& ori, const G4ThreeVector& dir )
 {
+    isect.zero();
+
     if( nav == nullptr ) nav = GetNav();
 
-    const G4bool pRelativeSearch=false ;
-    const G4bool ignoreDirection=false ;
-    isect.pv0 = nav->LocateGlobalPointAndSetup(ori, &dir, pRelativeSearch, ignoreDirection );
-
-    stats.num_call++ ;
-    if(isect.pv0 == nullptr) stats.num_nullpv0++ ;
-    if(isect.pv0 != nullptr) stats.num_withpv0++ ;
-
-    const G4double pCurrentProposedStepLength = kInfinity ;
-    G4double pNewSafety ;
-
-    isect.t = nav->ComputeStep(ori, dir, pCurrentProposedStepLength, pNewSafety);
-    isect.valid =  isect.t != kInfinity ;
-
-    if( isect.valid )
+    G4VPhysicalVolume* pv0 = nullptr ;
     {
-        isect.isect = ori + isect.t*dir ;
-        isect.pv1 = nav->LocateGlobalPointAndSetup(isect.isect, nullptr, false, true );
+        const G4bool pRelativeSearch=false ;
+        const G4bool ignoreDirection=false ;
+        pv0 = nav->LocateGlobalPointAndSetup(ori, &dir, pRelativeSearch, ignoreDirection );
+    }
+    stats.num_call++ ;
+    if(pv0 == nullptr) stats.num_nullpv0++ ;
+    if(pv0 != nullptr) stats.num_withpv0++ ;
+
+
+    G4double t ;
+    {
+        const G4double pCurrentProposedStepLength = kInfinity ;
+        G4double pNewSafety ;
+        t = nav->ComputeStep(ori, dir, pCurrentProposedStepLength, pNewSafety);
+    }
+
+    G4bool valid = t > 0. && t != kInfinity ;
+
+    isect.pv0 = pv0 ;
+    isect.t = t ;
+    isect.valid = valid ;
+
+    assert(tree);
+
+    if( valid )
+    {
+        G4ThreeVector ipos = ori + t*dir ;
+        G4VPhysicalVolume* pv1 = nav->LocateGlobalPointAndSetup(ipos, nullptr, false, true );
+        G4LogicalVolume* lv1 = pv1 ? pv1->GetLogicalVolume() : nullptr ;
+        G4VSolid* so1 = lv1 ? lv1->GetSolid() : nullptr ;
+
+        isect.ipos = ipos ;
+        isect.pv1 = pv1 ;
+        isect.lv1 = lv1 ;
+        isect.so1 = so1 ;
+
+
+        // try to identify the intersected volume
+        int nidx        = pv1  == nullptr ? -1      : tree->get_nidx( pv1 )           ; // look for pv1 in stree::pvs vector
+        int prim        = nidx == -1      ? -1      : tree->get_prim_for_nidx( nidx ) ;
+        const char* prn = prim == -1      ? nullptr : tree->get_prname( prim )        ;
+
+        isect.nidx = nidx ;
+        isect.prim = prim ;
+        isect.prn = prn ;
+
         stats.num_isect += 1;
         if(isect.pv1 == nullptr) stats.num_nullpv1++ ;
         if(isect.pv1 != nullptr) stats.num_withpv1++ ;
-
-        isect.lv1 = isect.pv1 ? isect.pv1->GetLogicalVolume() : nullptr ;
-        isect.so1 = isect.lv1 ? isect.lv1->GetSolid() : nullptr ;
-        isect.nidx = tree ? tree->get_nidx( isect.pv1 ) : -2 ;
     }
+
 }
 
 /**
@@ -195,6 +231,8 @@ HMM: how to get the surface normal at the intersect position ?
 * q2.f.xyz trace origin
 * q3.f.xyz trace direction
 
+The simtrace layout is documented in sevent::add_simtrace
+
 **/
 
 inline void U4Navigator::simtrace( quad4& p )
@@ -202,27 +240,29 @@ inline void U4Navigator::simtrace( quad4& p )
     G4ThreeVector ori(p.q2.f.x, p.q2.f.y, p.q2.f.z);
     G4ThreeVector dir(p.q3.f.x, p.q3.f.y, p.q3.f.z);
 
-    isect.zero();
     getIntersect(ori, dir);
-    if(!isect.valid) return ;
 
-    float tmin = 0.f ;
-
+    p.q0.f.x = 0.f ; // not yet implemented : surface normal at intersect
+    p.q0.f.y = 0.f ;
+    p.q0.f.z = 0.f ;
     p.q0.f.w = isect.t ;
 
-    p.q1.f.x = float(isect.isect.x()) ;
-    p.q1.f.y = float(isect.isect.y()) ;
-    p.q1.f.z = float(isect.isect.z()) ;
-    p.q1.f.w = tmin  ;
+    p.q1.f.x = float(isect.ipos.x()) ;
+    p.q1.f.y = float(isect.ipos.y()) ;
+    p.q1.f.z = float(isect.ipos.z()) ;
+    p.q1.f.w = 0.f  ; // tmin
 
-    unsigned globalPrimIdx = isect.nidx ;
-    // TODO: nidx not really equivalent to A side globalPrimIdx,
-    // maybe can do better using U4Tree/stree info ?
-    // Probably best to do this in stree::populate_nidx_prim
+    unsigned globalPrimIdx = isect.prim == -1 ? 0xffffu : ( isect.prim & 0xffffu ) ;
+    // Formerly isect.nidx but as that is not equivalent globalPrimIdx
+    // so have added U4Tree/stree functionality to get the globalPrimIdx
+    // rather than CSGFoundry which is the natural place to get globalPrimIdx from.
 
-    unsigned boundary = 0u ;
-    unsigned globalPrimIdx_boundary = ( globalPrimIdx << 16 ) | boundary ;
+    unsigned boundary = 0u & 0xffffu ;
+    unsigned globalPrimIdx_boundary = ( globalPrimIdx << 16 ) | boundary  ;
+    unsigned identity = 0u ;
+
     p.q2.u.w = globalPrimIdx_boundary ;
+    p.q3.u.w = identity ;
 }
 
 
