@@ -253,8 +253,11 @@ struct stree_standin
 
 struct stree
 {
+
+#ifdef STREE_CAREFUL
     static constexpr const char* stree__populate_prim_nidx = "stree__populate_prim_nidx" ;
     static constexpr const char* stree__populate_nidx_prim = "stree__populate_nidx_prim" ;
+#endif
 
     static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
@@ -722,6 +725,7 @@ struct stree
     int  search_prim_for_nidx_first(int nidx) const ;
 
     void populate_nidx_prim();
+    void check_nidx_prim() const ;
     int  get_prim_for_nidx(int nidx) const ;
 
 };
@@ -3278,6 +3282,7 @@ inline NPFold* stree::serialize() const
     NP* _mtindex_to_mtline = NPX::ArrayFromDiscoMap<int>( mtindex_to_mtline ) ;
 
 
+#ifdef STREE_CAREFUL
     if(ssys::getenvbool(stree__populate_prim_nidx))
     {
         NP* _prim_nidx = NPX::ArrayFromVec<int,int>( prim_nidx ) ;
@@ -3290,6 +3295,12 @@ inline NPFold* stree::serialize() const
         fold->add( PRIM_NIDX, _prim_nidx );
         fold->add( NIDX_PRIM, _nidx_prim );
     }
+#else
+    NP* _prim_nidx = NPX::ArrayFromVec<int,int>( prim_nidx ) ;
+    NP* _nidx_prim = NPX::ArrayFromVec<int,int>( nidx_prim ) ;
+    fold->add( PRIM_NIDX, _prim_nidx );
+    fold->add( NIDX_PRIM, _nidx_prim );
+#endif
 
 
     fold->add( FACTOR, _factor );
@@ -3453,6 +3464,7 @@ inline void stree::import(const NPFold* fold)
     ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX) );
 
 
+#ifdef STREE_CAREFUL
     if(ssys::getenvbool(stree__populate_prim_nidx))
     {
         ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
@@ -3462,6 +3474,10 @@ inline void stree::import(const NPFold* fold)
         ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
         ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM) );
     }
+#else
+    ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
+    ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM) );
+#endif
 
 }
 
@@ -4054,6 +4070,7 @@ inline void stree::factorize()
     if(level>0) std::cout << desc_factor() << std::endl ;
     if(level>0) std::cout << desc_lvid() << std::endl ;
 
+#ifdef STREE_CAREFUL
     if(ssys::getenvbool(stree__populate_prim_nidx))
     {
         populate_prim_nidx();
@@ -4062,10 +4079,15 @@ inline void stree::factorize()
     {
         populate_prim_nidx();
         populate_nidx_prim();
+        check_nidx_prim();
     }
+#else
+    populate_prim_nidx();
+    populate_nidx_prim();
+    check_nidx_prim();
+#endif
 
     if(level>0) std::cout << "] stree::factorize (" << level << ")" << std::endl ;
-
 }
 
 
@@ -5403,7 +5425,7 @@ inline int stree::lookup_mtline( int mtindex ) const
 stree::populate_prim_nidx
 ----------------------------
 
-mapping stree.h/nidx to CSGFoundry/globalPrimIdx ?
+mapping stree.h/nidx to CSGFoundry/globalPrimIdx
 
 Need to "faux_import" ie a stripped down form of CSGImport::importSolid
 within stree to establish the correspondence between nidx and globalPrimIdx
@@ -5420,7 +5442,9 @@ identified with the instance index.
 
 inline void stree::populate_prim_nidx()
 {
+    if(level > 0) std::cout << "[stree::populate_prim_nidx\n" ;
     faux_importSolid();
+    if(level > 0) std::cout << "]stree::populate_prim_nidx\n" ;
 }
 
 inline void stree::faux_importSolid()
@@ -5476,7 +5500,7 @@ inline void stree::faux_importSolidFactor(int ridx, char ridx_type )
     std::vector<snode> nodes ;
     get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal) ;
 
-    std::cout
+    if(level > 1) std::cout
         << " stree::faux_importSolidFactor "
         << " ridx " << ridx
         << " ridx_type " << ridx_type
@@ -5501,7 +5525,19 @@ inline void stree::faux_importSolidFactor(int ridx, char ridx_type )
 inline int stree::faux_importPrim(int primIdx, const snode& node )
 {
     int globalPrimIdx = prim_nidx.size();
-    prim_nidx.push_back(node.index);
+    int nidx = node.index ;
+    const char* so = soname[node.lvid].c_str();
+
+    if(level > 2) std::cout
+        << "stree::faux_importPrim"
+        << " primIdx " << std::setw(4) << primIdx
+        << " globalPrimIdx " << std::setw(6) << globalPrimIdx
+        << " nidx " << std::setw(8) << nidx
+        << " soname[node.lvid] " << so
+        << "\n"
+        ;
+
+    prim_nidx.push_back(nidx);
     return globalPrimIdx ;
 }
 
@@ -5534,7 +5570,10 @@ Needs to be called after populate_prim_nidx
 
 inline void stree::populate_nidx_prim()
 {
-    nidx_prim.resize(nds.size());
+    if(level > 0) std::cout << "[stree::populate_nidx_prim\n" ;
+
+    int num_nd = nds.size();
+    nidx_prim.resize(num_nd);
     std::fill( nidx_prim.begin(), nidx_prim.end(), -1 );
 
     int num_ridx = get_num_ridx() ;
@@ -5544,8 +5583,13 @@ inline void stree::populate_nidx_prim()
         int q_repeat_index = ridx ;
 
         std::vector<snode> nodes_first ;
-        get_repeat_node(nodes_first, q_repeat_index, 0) ;
+        std::vector<snode> nodes_all ;
+
+        get_repeat_node(nodes_first, q_repeat_index,  0) ; //  0:first
+        get_repeat_node(nodes_all,   q_repeat_index, -2) ; // -2:all
+
         int num_nodes_first = nodes_first.size();
+        int num_nodes_all = nodes_all.size();
 
         // first repeat nodes should all have corresponding prim
         std::vector<int> gpi_first(num_nodes_first);
@@ -5556,12 +5600,22 @@ inline void stree::populate_nidx_prim()
             gpi_first[i] = gpi ;
         }
 
-        std::vector<snode> nodes_all ;
-        get_repeat_node(nodes_all, q_repeat_index, -2) ;
-        int num_nodes_all = nodes_all.size();
-        // hmm can getting these in regular pattern be relied on
+        int num_repeat = num_nodes_first > 0 ? num_nodes_all/num_nodes_first : 0  ;
+        int all_modulo_first =  num_nodes_first > 0 ? num_nodes_all % num_nodes_first : -1 ;
+
+        // hmm can getting the nodes in regular pattern be relied on
         // if so can use that pattern to pass the prim
         // from the first to all the repeats
+
+        if(level > 1) std::cout
+            << "-stree::populate_nidx_prim"
+            << " ridx " << std::setw(2) << ridx
+            << " num_nodes_first " << std::setw(8) << num_nodes_first
+            << " num_nodes_all " << std::setw(8) << num_nodes_all
+            << " num_repeat " << std::setw(6) << num_repeat
+            << " all_modulo_first " << std::setw(5) << all_modulo_first
+            << "\n"
+            ;
 
         if(num_nodes_first == 0)
         {
@@ -5574,33 +5628,41 @@ inline void stree::populate_nidx_prim()
         }
         else if(num_nodes_first > 0)
         {
-            assert( num_nodes_all % num_nodes_first == 0 );
-            int num_repeat = num_nodes_all/num_nodes_first ;
-
-            std::cout
-                << "stree::populate_nidx_prim"
-                << " ridx " << ridx
-                << " num_nodes_first " << num_nodes_first
-                << " num_nodes_all " << num_nodes_all
-                << " num_repeat " << num_repeat
-                << "\n"
-                ;
-
-
             for(int j=0 ; j < num_nodes_all ; j++)
             {
                 int i = j % num_nodes_first ;  // maybe ?
                 int gpi0 = gpi_first[i] ;
-
                 int nidx = nodes_all[j].index ;
                 nidx_prim[nidx] = gpi0 ;
             }
-
         }
-
-
     }
+    if(level > 0) std::cout << "]stree::populate_nidx_prim\n" ;
 }
+
+
+inline void stree::check_nidx_prim() const
+{
+    if(level > 0) std::cout << "[stree::check_nidx_prim\n" ;
+    int num_nd = nds.size();
+    int num_nidx_prim = nidx_prim.size();
+    assert( num_nd == num_nidx_prim );
+
+    for(int nidx=0 ; nidx < num_nd ; nidx++)
+    {
+        int gpi = nidx_prim[nidx] ;
+        bool dump = level > 2 || gpi < 0 ;
+        if(dump) std::cout
+            << "-stree::check_nidx_prim"
+            << " nidx " << std::setw(8) << nidx
+            << " gpi(=nidx_prim[nidx]) " << std::setw(5) << gpi
+            << "\n"
+           ;
+        assert(gpi > -1);
+    }
+    if(level > 0) std::cout << "]stree::check_nidx_prim\n" ;
+}
+
 
 /**
 stree::get_prim_for_nidx
