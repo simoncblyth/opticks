@@ -585,9 +585,9 @@ struct stree
 
 
     template<typename S, typename T>   // S:compound type T:atomic "transport" type
-    static void ImportArray( std::vector<S>& vec, const NP* a );
+    static void ImportArray( std::vector<S>& vec, const NP* a, const char* label );
 
-    static void ImportNames( std::vector<std::string>& names, const NP* a );
+    static void ImportNames( std::vector<std::string>& names, const NP* a, const char* label );
 
 
     static stree* Load(const char* base=BASE , const char* reldir=RELDIR );
@@ -3331,25 +3331,30 @@ inline NPFold* stree::serialize() const
 
 
 template<typename S, typename T>
-inline void stree::ImportArray( std::vector<S>& vec, const NP* a )
+inline void stree::ImportArray( std::vector<S>& vec, const NP* a, const char* label  )
 {
-    if(a == nullptr) return ;
+    if(a == nullptr)
+    {
+        std::cerr << "stree::ImportArray array is null, label[" << ( label ? label : "-" ) << "]\n" ;
+        return ;
+    }
     vec.resize(a->shape[0]);
     memcpy( (T*)vec.data(),    a->cvalues<T>() ,    a->arr_bytes() );
 }
 
-template void stree::ImportArray<snode, int>(std::vector<snode>& , const NP* );
-template void stree::ImportArray<int  , int>(std::vector<int>&   , const NP* );
-template void stree::ImportArray<int4 , int>(std::vector<int4>&  , const NP* );
-template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::tmat4x4<double>>& , const NP* );
-template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP* );
-template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP* );
+template void stree::ImportArray<snode, int>(std::vector<snode>& , const NP* , const char* label);
+template void stree::ImportArray<int  , int>(std::vector<int>&   , const NP* , const char* label);
+template void stree::ImportArray<int4 , int>(std::vector<int4>&  , const NP* , const char* label);
+template void stree::ImportArray<glm::tmat4x4<double>, double>(std::vector<glm::tmat4x4<double>>& , const NP*, const char* label );
+template void stree::ImportArray<glm::tmat4x4<float>, float>(std::vector<glm::tmat4x4<float>>& , const NP*, const char* label );
+template void stree::ImportArray<sfactor, int>(std::vector<sfactor>& , const NP*, const char* label );
 
-inline void stree::ImportNames( std::vector<std::string>& names, const NP* a ) // static
+inline void stree::ImportNames( std::vector<std::string>& names, const NP* a, const char* label ) // static
 {
     if( a == nullptr )
     {
-        std::cerr << "stree::ImportNames a is null " << std::endl ;
+        std::cerr << "stree::ImportNames array is null, label[" << ( label ? label : "-" ) << "]\n" ;
+        std::cerr << "(typically means the stree.h serialization code has changed compared to the version used for saving the tree)\n" ;
         return ;
     }
     a->get_names(names);
@@ -3394,23 +3399,23 @@ inline void stree::import(const NPFold* fold)
         return ;
     }
 
-    ImportArray<snode, int>( nds,                  fold->get(NDS) );
-    ImportArray<snode, int>( rem,                  fold->get(REM) );
-    ImportArray<snode, int>( tri,                  fold->get(TRI) );
-    ImportArray<glm::tmat4x4<double>, double>(m2w, fold->get(M2W) );
-    ImportArray<glm::tmat4x4<double>, double>(w2m, fold->get(W2M) );
-    ImportArray<glm::tmat4x4<double>, double>(gtd, fold->get(GTD) );
+    ImportArray<snode, int>( nds,                  fold->get(NDS), NDS );
+    ImportArray<snode, int>( rem,                  fold->get(REM), REM );
+    ImportArray<snode, int>( tri,                  fold->get(TRI), TRI );
+    ImportArray<glm::tmat4x4<double>, double>(m2w, fold->get(M2W), M2W );
+    ImportArray<glm::tmat4x4<double>, double>(w2m, fold->get(W2M), W2M );
+    ImportArray<glm::tmat4x4<double>, double>(gtd, fold->get(GTD), GTD );
 
-    ImportNames( soname,            fold->get(SONAME) );
-    ImportNames( mtname,            fold->get(MTNAME) );
-    ImportNames( mtname_no_rindex,  fold->get(MTNAME_NO_RINDEX) );
-    ImportNames( suname,            fold->get(SUNAME) );
-    ImportNames( implicit,          fold->get(IMPLICIT) );
+    ImportNames( soname,            fold->get(SONAME) , SONAME);
+    ImportNames( mtname,            fold->get(MTNAME) , MTNAME);
+    ImportNames( mtname_no_rindex,  fold->get(MTNAME_NO_RINDEX), MTNAME_NO_RINDEX );
+    ImportNames( suname,            fold->get(SUNAME) ,  SUNAME );
+    ImportNames( implicit,          fold->get(IMPLICIT), IMPLICIT);
 
-    ImportArray<int, int>( force_triangulate_lvid, fold->get(FORCE_TRIANGULATE_LVID) );
+    ImportArray<int, int>( force_triangulate_lvid, fold->get(FORCE_TRIANGULATE_LVID), FORCE_TRIANGULATE_LVID );
 
-    ImportArray<int, int>( mtindex, fold->get(MTINDEX) );
-    //ImportArray<int, int>( suindex, fold->get(SUINDEX) );
+    ImportArray<int, int>( mtindex, fold->get(MTINDEX),  MTINDEX );
+    //ImportArray<int, int>( suindex, fold->get(SUINDEX), SUINDEX );
 
     NPX::DiscoMapFromArray<int>( mtindex_to_mtline, fold->get(MTINDEX_TO_MTLINE) );
 
@@ -3447,46 +3452,46 @@ inline void stree::import(const NPFold* fold)
     _csg->import(csg_f);
 
 
-    ImportNames( digs, fold->get(DIGS) );
-    ImportNames( subs, fold->get(SUBS) );
+    ImportNames( digs, fold->get(DIGS), DIGS );
+    ImportNames( subs, fold->get(SUBS), SUBS );
 
     NPFold* f_subs_freq = fold->get_subfold(SUBS_FREQ) ;
     subs_freq->import(f_subs_freq);
 
-    ImportArray<sfactor, int>( factor, fold->get(FACTOR) );
+    ImportArray<sfactor, int>( factor, fold->get(FACTOR), FACTOR );
 
     material = fold->get_subfold( MATERIAL) ;
     surface  = fold->get_subfold( SURFACE ) ;
     mesh     = fold->get_subfold( MESH ) ;
 
-    ImportArray<glm::tmat4x4<double>, double>(inst,   fold->get(INST));
-    ImportArray<glm::tmat4x4<double>, double>(iinst,  fold->get(IINST));
-    ImportArray<glm::tmat4x4<float>, float>(inst_f4,  fold->get(INST_F4));
-    ImportArray<glm::tmat4x4<float>, float>(iinst_f4, fold->get(IINST_F4));
+    ImportArray<glm::tmat4x4<double>, double>(inst,   fold->get(INST), INST);
+    ImportArray<glm::tmat4x4<double>, double>(iinst,  fold->get(IINST), IINST);
+    ImportArray<glm::tmat4x4<float>, float>(inst_f4,  fold->get(INST_F4), INST_F4);
+    ImportArray<glm::tmat4x4<float>, float>(iinst_f4, fold->get(IINST_F4), IINST_F4);
 
-    ImportArray<int, int>( sensor_id, fold->get(SENSOR_ID) );
+    ImportArray<int, int>( sensor_id, fold->get(SENSOR_ID), SENSOR_ID );
     sensor_count = sensor_id.size();
-    ImportNames( sensor_name, fold->get(SENSOR_NAME) );
+    ImportNames( sensor_name, fold->get(SENSOR_NAME), SENSOR_NAME );
 
-    ImportArray<int4,int>( inst_info, fold->get(INST_INFO) );
-    ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX) );
+    ImportArray<int4,int>( inst_info, fold->get(INST_INFO), INST_INFO );
+    ImportArray<int, int>( inst_nidx, fold->get(INST_NIDX), INST_NIDX );
 
 
 #ifdef STREE_CAREFUL
     if(ssys::getenvbool(stree__populate_prim_nidx))
     {
-        ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
+        ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX), PRIM_NIDX );
     }
     else if(ssys::getenvbool(stree__populate_nidx_prim))
     {
-        ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
-        ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM) );
-        ImportNames( prname, fold->get(PRNAME) );
+        ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX), PRIM_NIDX );
+        ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM), NIDX_PRIM );
+        ImportNames( prname, fold->get(PRNAME), PRNAME );
     }
 #else
-    ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX) );
-    ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM) );
-    ImportNames( prname, fold->get(PRNAME) );
+    ImportArray<int, int>( prim_nidx, fold->get(PRIM_NIDX), PRIM_NIDX );
+    ImportArray<int, int>( nidx_prim, fold->get(NIDX_PRIM), NIDX_PRIM );
+    ImportNames( prname, fold->get(PRNAME), PRNAME );
 #endif
 }
 

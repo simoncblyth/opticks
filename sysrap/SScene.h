@@ -713,9 +713,9 @@ inline void SScene::import(const NPFold* fold)
     const NP* _inst_tran = fold->get(INST_TRAN);
     const NP* _inst_col3 = fold->get(INST_COL3);
 
-    stree::ImportArray<glm::tmat4x4<float>, float>( inst_tran, _inst_tran );
-    stree::ImportArray<int4, int>( inst_info, _inst_info );
-    stree::ImportArray<glm::tvec4<int32_t>, int>( inst_col3, _inst_col3 );
+    stree::ImportArray<glm::tmat4x4<float>, float>( inst_tran, _inst_tran, INST_TRAN );
+    stree::ImportArray<int4, int>(                  inst_info, _inst_info, INST_INFO );
+    stree::ImportArray<glm::tvec4<int32_t>, int>(   inst_col3, _inst_col3, INST_COL3 );
     if(DUMP) std::cout << "]SScene::import \n" ;
 }
 
@@ -791,7 +791,7 @@ The framespec lines are converted into sfr.h instances by stree::get_frame.
 
 
 
-TODO: move addFrames addFrame getFrame to SGLM as its not triangulated related 
+TODO: move addFrames addFrame getFrame to SGLM as its not triangulated related
 
 
 **/

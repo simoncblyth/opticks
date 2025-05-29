@@ -38,8 +38,8 @@ int main()
     stree* tree = stree::Load(ss);
     if(DUMP) std::cout << scene->desc() ;
 
-    SRecordInfo* ar = SRecordInfo::Load("$AFOLD/record.npy") ;
-    SRecordInfo* br = SRecordInfo::Load("$BFOLD/record.npy") ;
+    SRecordInfo* ar = SRecordInfo::Load("$AFOLD/record.npy", "$AFOLD_RECORD_SLICE" ) ;
+    SRecordInfo* br = SRecordInfo::Load("$BFOLD/record.npy", "$BFOLD_RECORD_SLICE" ) ;
 
     SGLM gm ;
     gm.setTreeScene(tree, scene);

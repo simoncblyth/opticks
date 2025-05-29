@@ -5,10 +5,10 @@ SGenerate__test.sh
 
 CPU test of CUDA code to generate torch photons using srngcpu.h::
 
-   om-  # for build environment
-   ~/o/sysrap/tests/SGenerate__test.sh info_build_run
+   lo # build environment with conda
 
-   hookup_conda_ok  # BYOC
+   ~/o/sysrap/tests/SGenerate__test.sh info_build_run_ls
+
    MODE=3 ~/o/sysrap/tests/SGenerate__test.sh pdb
 
 
@@ -59,8 +59,8 @@ elif [ "$src" == "disc" ]; then
 fi
 
 pfx=SGenerate
-#export SEvent__MakeGenstep_num_ph=M1
-export SEvent__MakeGenstep_num_ph=K1
+export SEvent__MakeGenstep_num_ph=M1
+#export SEvent__MakeGenstep_num_ph=K1
 export SGenerate__test_GS_NAME=${pfx}_gs_${src}_${SEvent__MakeGenstep_num_ph}.npy
 export SGenerate__test_PH_NAME=${pfx}_ph_${src}_${SEvent__MakeGenstep_num_ph}.npy
 

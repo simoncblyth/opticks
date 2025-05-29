@@ -32,7 +32,7 @@ TODO: cherry pick from tests/CSGOptiXSimtraceTest.py and simplify
 for minimal simtrace plotting
 
 """
-import os, re, logging, numpy as np
+import os, sys, re, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from collections import OrderedDict
@@ -94,6 +94,11 @@ if __name__ == '__main__':
     e = SEvt.Load("$FOLD", symbol="e")   ## default load from FOLD envvar dir
 
     print(repr(e))
+    if e is None:
+        fmt = "ABORT script as failed to SEvt.Load from FOLD[%s] GEOM is [%s]"
+        print(fmt % (os.environ.get("FOLD", None), os.environ.get("GEOM", None)))
+        sys.exit(0)
+    pass
 
     label = e.f.base
     sf = e.f.sframe

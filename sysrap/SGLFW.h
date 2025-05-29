@@ -125,7 +125,7 @@ SGLFW.h
 
 
 SPACE
-   toggle gm.toggle.stop : when stopped mouse movement does nothing  
+   toggle gm.toggle.stop : when stopped mouse movement does nothing
 
 A
    (WASDQE) hold to change eyeshift, translate left
@@ -243,9 +243,12 @@ With all num_key frame selection is there is no frame with the index
 then hop to the default frame.
 
 
-TODO: panning toggle, to enable translating viewpoint "sideways" (ie keeping the 
+TODO: panning toggle, to enable translating viewpoint "sideways" (ie keeping the
 direction of the view the same, but translating in perpendicular direction
 selected by mouse drag direction, old Opticks oglrap may have this)
+
+TODO: automated view rotation around an axis, eg +Z
+
 
 )LITERAL" ;
     static constexpr const char* TITLE = "SGLFW" ;
@@ -1043,9 +1046,9 @@ inline void SGLFW::cursor_moved(int ix, int iy)
 SGLFW::cursor_moved_action
 ----------------------------
 
-HMM: potentially the adhoc sensitivity factors below should 
+HMM: potentially the adhoc sensitivity factors below should
 depend on the extent of the geometry and the time range of the
-event being rendered ? 
+event being rendered ?
 
 **/
 

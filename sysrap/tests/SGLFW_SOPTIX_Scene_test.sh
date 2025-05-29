@@ -186,7 +186,8 @@ wh=2560,1440
 #eye=-10,-10,0
 #eye=-10,0,0
 #eye=0,-10,0
-eye=-1,-1,0
+#eye=-1,-1,0
+eye=1,0,0
 up=0,0,1
 look=0,0,0
 
@@ -248,7 +249,7 @@ if [ "${arg/ptx}" != "$arg" -o "${arg/xir}" != "$arg" ]; then
     elif [ "${arg/xir}" != "$arg" ]; then
         out=$xir
         opt=-optix-ir
-    fi 
+    fi
     echo $BASH_SOURCE arg $arg out $out opt $opt
 
     # -DDBG_PIDX
@@ -288,10 +289,6 @@ EOU
 if [ "${arg/build}" != "$arg" ]; then
 
     echo $BASH_SOURCE build
-    [ "$(uname)" == "Darwin" ] && echo $BASH_SOURCE : ERROR : THIS NEEDS OPTIX7+ SO LINUX ONLY && exit 1
-
-    # -M lists paths of all included headers in Makefile dependency format
-    # -M \
     gcc $name.cc \
         -fvisibility=hidden \
         -fvisibility-inlines-hidden \
@@ -318,31 +315,20 @@ if [ "${arg/build}" != "$arg" ]; then
         -lGL  \
         -o $bin
 
-
-
-    # -Wno-unused-private-field \  ## clang-ism ?
-
     [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
     echo $BASH_SOURCE build DONE
 fi
 
 if [ "${arg/dbg}" != "$arg" -o -n "$GDB" ]; then
-    source dbg__.sh  
+    source dbg__.sh
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64:$OPTICKS_PREFIX/lib64
-    echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config
-    echo $LD_LIBRARY_PATH | tr ":" "\n"
-
-    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
-
 
 if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg
@@ -351,8 +337,6 @@ fi
 if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/BASE_grab.sh $arg
 fi
-
-
 
 exit 0
 
