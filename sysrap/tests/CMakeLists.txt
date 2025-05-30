@@ -7,6 +7,8 @@ set(INSTALLED_SCRIPTS
    STestRunner.sh
    sseq_index_test.sh
    sseq_index_test.py
+
+   SGLFW_SOPTIX_Scene_test.sh
 )
 
 install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
@@ -141,6 +143,12 @@ set(TEST_SOURCES
 )
 
 
+set( OPTIX_TEST_SOURCES
+
+   SGLFW_SOPTIX_Scene_test.cc
+
+)
+
 set(CUDART_TEST_SOURCES
 
    scontext_test.cc
@@ -226,14 +234,35 @@ foreach(SRC ${CUDART_TEST_SOURCES})
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
     )
 
-
-
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
 endforeach()
 
 
 
+find_package(OpticksGLEW REQUIRED MODULE)
+find_package(OpticksGLFW REQUIRED MODULE)
+
+
+foreach(SRC ${OPTIX_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT}
+        SysRap
+        CUDA::cudart
+        Opticks::OpticksGLEW
+        Opticks::OpticksGLFW
+    )
+
+    target_include_directories( ${TGT} PRIVATE
+        ${OpticksOptiX_INCLUDE}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
+    )
+
+    install(TARGETS ${TGT} DESTINATION lib)
+    add_test(${name}.${TGT} ${TGT})
+endforeach()
 
 
 

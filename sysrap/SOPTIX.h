@@ -6,7 +6,7 @@ SOPTIX.h : top level coordinator of triangulated raytrace render
 envvars
 --------
 
-SOPTIX_HANDLE
+SOPTIX__HANDLE
 
 
 
@@ -28,11 +28,13 @@ SOPTIX_HANDLE
 
 struct SOPTIX
 {
-    static constexpr const char* _HANDLE = "SOPTIX_HANDLE" ;
-    static int  Initialize(); 
+    static constexpr const char* __HANDLE = "SOPTIX__HANDLE" ;
+    static int  Initialize();
 
-    int             irc ; 
+    int             irc ;
     SGLM&           gm  ;
+    const char*     _optixpath ;
+    const char*     optixpath ;
 
     SOPTIX_Context  ctx ;
     SOPTIX_Options  opt ;
@@ -58,14 +60,14 @@ struct SOPTIX
     void render(uchar4* d_pixels);
     void render_ppm(const char* _path);
 
+    std::string desc() const ;
 };
-
 
 
 inline int SOPTIX::Initialize()
 {
-    if(SOPTIX_Options::Level() > 0) std::cout << "[SOPTIX::Initialize\n" ; 
-    return 0 ; 
+    if(SOPTIX_Options::Level() > 0) std::cout << "[SOPTIX::Initialize\n" ;
+    return 0 ;
 }
 
 
@@ -73,12 +75,20 @@ inline SOPTIX::SOPTIX(SGLM& _gm)
     :
     irc(Initialize()),
     gm(_gm),
-    mod(ctx.context, opt, "$SOPTIX_KERNEL" ),
+#ifdef CONFIG_Debug
+    _optixpath("${SOPTIX__optixpath:-$OPTICKS_PREFIX/optix/objects-Debug/SysRap_OPTIX/SOPTIX.ptx}"),
+#elif CONFIG_Release
+    _optixpath("${SOPTIX__optixpath:-$OPTICKS_PREFIX/optix/objects-Release/SysRap_OPTIX/SOPTIX.ptx}"),
+#else
+    _optixpath(nullptr),
+#endif
+    optixpath(_optixpath ? spath::Resolve(_optixpath) : nullptr),
+    mod(ctx.context, opt, optixpath ),
     pip(ctx.context, mod.module, opt ),
     scn(&ctx, gm.scene ),
     sbt(pip, scn ),
     d_param(SOPTIX_Params::DeviceAlloc()),
-    HANDLE(ssys::getenvint(_HANDLE, -1)),
+    HANDLE(ssys::getenvint(__HANDLE, -1)),
     handle(scn.getHandle(HANDLE)),
     pix(nullptr)
 {
@@ -87,12 +97,8 @@ inline SOPTIX::SOPTIX(SGLM& _gm)
 
 inline void SOPTIX::init()
 {
-    if(SOPTIX_Options::Level() > 0)  std::cout
-        << "]SOPTIX::init "
-        << _HANDLE
-        << " HANDLE " << HANDLE
-        << "\n"
-        ;
+    if(SOPTIX_Options::Level() > 0)  std::cout << "]SOPTIX::init \n" ;
+    if(SOPTIX_Options::Level() > 1)  std::cout << desc() ;
 }
 
 
@@ -120,8 +126,8 @@ inline void SOPTIX::set_param(uchar4* d_pixels)
     SGLM::Copy(&par.V.x  , gm.v );
     SGLM::Copy(&par.W.x  , gm.w );
 
-    SGLM::Copy(&par.WNORM.x, gm.wnorm ); 
-    SGLM::Copy(&par.ZPROJ.x, gm.zproj ); 
+    SGLM::Copy(&par.WNORM.x, gm.wnorm );
+    SGLM::Copy(&par.ZPROJ.x, gm.zproj );
 
 
     par.handle = handle ;
@@ -160,7 +166,20 @@ inline void SOPTIX::render_ppm(const char* _path)
     pix->download();
 
     pix->save_ppm(path);
-
-
-
 }
+
+
+inline std::string SOPTIX::desc() const
+{
+    std::stringstream ss ;
+    ss
+        << "[SOPTIX::desc\n"
+        << " _optixpath [" << ( _optixpath ? _optixpath : "-" ) << "]\n"
+        << " optixpath  [" << ( optixpath ? optixpath : "-" ) << "]\n"
+        << " [" << __HANDLE << "] " << HANDLE << "\n"
+        << "]SOPTIX::desc\n"
+        ;
+    std::string str = ss.str() ;
+    return str ;
+}
+

@@ -3,7 +3,7 @@ SOPTIX.cu
 ===========
 
 
-Functions 
+Functions
 -----------
 
 trace
@@ -16,16 +16,16 @@ render
     raygen function : calling trace and "shading" pixels
 
 __raygen__rg
-    calls one of the above raygen functions depending on params.raygenmode 
+    calls one of the above raygen functions depending on params.raygenmode
 
 setPayload
     mechanics of communication when not using WITH_PRD
 
 __miss_ms
-    default quad2 prd OR payload for rays that miss 
+    default quad2 prd OR payload for rays that miss
 
 __closesthit__ch
-    populate quad2 prd OR payload for rays that intersect    
+    populate quad2 prd OR payload for rays that intersect
 
 **/
 
@@ -48,9 +48,9 @@ trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
 Outcome of trace is to populate *prd* by payload and attribute passing.
-When WITH_PRD macro is defined only 2 32-bit payload values are used to 
-pass the 64-bit  pointer, otherwise more payload and attributes values 
-are used to pass the contents IS->CH->RG. 
+When WITH_PRD macro is defined only 2 32-bit payload values are used to
+pass the 64-bit  pointer, otherwise more payload and attributes values
+are used to pass the contents IS->CH->RG.
 
 See __closesthit__ch to see where the payload p0-p7 comes from.
 **/
@@ -63,15 +63,15 @@ static __forceinline__ __device__ void trace(
         float                  tmax,
         quad2*                 prd,
         unsigned               visibilityMask
-        )   
+        )
 {
-    const float rayTime = 0.0f ; 
-    OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE 
-    const unsigned SBToffset = 0u ; 
-    const unsigned SBTstride = 1u ; 
-    const unsigned missSBTIndex = 0u ; 
-    uint32_t p0, p1 ; 
-    packPointer( prd, p0, p1 );  // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload  
+    const float rayTime = 0.0f ;
+    OptixRayFlags rayFlags = OPTIX_RAY_FLAG_DISABLE_ANYHIT ;   // OPTIX_RAY_FLAG_NONE
+    const unsigned SBToffset = 0u ;
+    const unsigned SBTstride = 1u ;
+    const unsigned missSBTIndex = 0u ;
+    uint32_t p0, p1 ;
+    packPointer( prd, p0, p1 );  // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload
     optixTrace(
             handle,
             ray_origin,
@@ -89,7 +89,7 @@ static __forceinline__ __device__ void trace(
 }
 
 
-__forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float depth )  // pure 
+__forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float depth )  // pure
 {
     return make_uchar4(
             static_cast<uint8_t>( clamp( normal.x, 0.0f, 1.0f ) *255.0f ),
@@ -102,7 +102,7 @@ __forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float
 
 
 /**
-render : non-pure, uses params for viewpoint inputs and pixels output 
+render : non-pure, uses params for viewpoint inputs and pixels output
 -----------------------------------------------------------------------
 
 **/
@@ -117,21 +117,21 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     //const bool yflip = true ;
     //if(yflip) d.y = -d.y ;
 
-#ifdef DBG_PIDX   
-    bool dbg = idx.x == dim.x/2 && idx.y == dim.y/2 ; 
-    if(dbg) printf("//render.DBG_PIDX params.eye (%7.3f %7.3f %7.3f)\n", params.eye.x, params.eye.y, params.eye.z); 
-    if(dbg) printf("//render.DBG_PIDX params.U   (%7.3f %7.3f %7.3f)\n", params.U.x, params.U.y, params.U.z); 
-    if(dbg) printf("//render.DBG_PIDX params.V   (%7.3f %7.3f %7.3f)\n", params.V.x, params.V.y, params.V.z); 
-    if(dbg) printf("//render.DBG_PIDX params.W   (%7.3f %7.3f %7.3f)\n", params.W.x, params.W.y, params.W.z); 
+#ifdef DBG_PIDX
+    bool dbg = idx.x == dim.x/2 && idx.y == dim.y/2 ;
+    if(dbg) printf("//render.DBG_PIDX params.eye (%7.3f %7.3f %7.3f)\n", params.eye.x, params.eye.y, params.eye.z);
+    if(dbg) printf("//render.DBG_PIDX params.U   (%7.3f %7.3f %7.3f)\n", params.U.x, params.U.y, params.U.z);
+    if(dbg) printf("//render.DBG_PIDX params.V   (%7.3f %7.3f %7.3f)\n", params.V.x, params.V.y, params.V.z);
+    if(dbg) printf("//render.DBG_PIDX params.W   (%7.3f %7.3f %7.3f)\n", params.W.x, params.W.y, params.W.z);
 #endif
 
-    const unsigned cameratype = params.cameratype ;  
-    const float3 dxyUV = d.x * params.U + d.y * params.V ; 
+    const unsigned cameratype = params.cameratype ;
+    const float3 dxyUV = d.x * params.U + d.y * params.V ;
     const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
     //                           cameratype 0u:perspective,                    1u:orthographic
 
-    trace( 
+    trace(
         params.handle,
         origin,
         direction,
@@ -141,9 +141,9 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         params.vizmask
     );
 
-    const float3* normal = prd->normal();  
-    float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; 
-    // "diddling" changes range of elements from -1.f:1.f to 0.f:1.f same as  (n+1.f)/2.f   
+    const float3* normal = prd->normal();
+    float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ;
+    // "diddling" changes range of elements from -1.f:1.f to 0.f:1.f same as  (n+1.f)/2.f
     unsigned index = idx.y * params.width + idx.x ;
 
 
@@ -151,41 +151,41 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     float eye_z = -prd->distance()*dot(params.WNORM, direction) ;
     const float& A = params.ZPROJ.z ;
     const float& B = params.ZPROJ.w ;
-    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1 
+    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1
 
-    uchar4 pixel = make_normal_pixel( diddled_normal, zdepth ); 
+    uchar4 pixel = make_normal_pixel( diddled_normal, zdepth );
 
-#ifdef DBG_PIDX   
-    if(dbg) printf("//render.DBG_PIDX pixel (%d %d %d %d) \n", pixel.x, pixel.y, pixel.z, pixel.w); 
+#ifdef DBG_PIDX
+    if(dbg) printf("//render.DBG_PIDX pixel (%d %d %d %d) \n", pixel.x, pixel.y, pixel.z, pixel.w);
 #endif
 
-    params.pixels[index] = pixel ; 
+    params.pixels[index] = pixel ;
 }
- 
+
 
 extern "C" __global__ void __raygen__rg()
 {
     const uint3 idx = optixGetLaunchIndex();
     const uint3 dim = optixGetLaunchDimensions();
 
-#ifdef DBG_PIDX   
-    bool dbg = idx.x == dim.x/2 && idx.y == dim.y/2 ; 
-    if(dbg)  printf("//__raygen__rg.DBG_PIDX idx(%d,%d,%d) dim(%d,%d,%d)\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z ); 
+#ifdef DBG_PIDX
+    bool dbg = idx.x == dim.x/2 && idx.y == dim.y/2 ;
+    if(dbg)  printf("//__raygen__rg.DBG_PIDX idx(%d,%d,%d) dim(%d,%d,%d)\n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z );
 #endif
 
-    quad2 prd ; 
-    prd.zero(); 
- 
+    quad2 prd ;
+    prd.zero();
+
     render( idx, dim, &prd );
-} 
+}
 
 /**
 __miss__ms
 -------------
 
-* missing "normal" is somewhat render specific and this is used for 
-  all raygenmode but Miss should never happen with real simulations 
-* Miss can happen with simple geometry testing however when shoot 
+* missing "normal" is somewhat render specific and this is used for
+  all raygenmode but Miss should never happen with real simulations
+* Miss can happen with simple geometry testing however when shoot
   rays from outside the "world"
 
 **/
@@ -193,45 +193,47 @@ __miss__ms
 extern "C" __global__ void __miss__ms()
 {
     SOPTIX_MissData* ms = reinterpret_cast<SOPTIX_MissData*>( optixGetSbtDataPointer() );
-    const unsigned identity = 0xffffffffu ; 
+    const unsigned identity = 0xffffffffu ;
+    const unsigned globalPrimIdx = 0xffffu ;
     const unsigned boundary = 0xffffu ;
-    const float lposcost = 0.f ; 
+    const float lposcost = 0.f ;
 
-    // printf("//__miss__ms ms.bg_color (%7.3f %7.3f %7.3f) \n", ms->bg_color.x, ms->bg_color.x, ms->bg_color.z ); 
-  
-    quad2* prd = SOPTIX_getPRD<quad2>(); 
+    // printf("//__miss__ms ms.bg_color (%7.3f %7.3f %7.3f) \n", ms->bg_color.x, ms->bg_color.x, ms->bg_color.z );
 
-    prd->q0.f.x = ms->bg_color.x ;  // HMM: thats setting the normal, so it will be diddled  
-    prd->q0.f.y = ms->bg_color.y ; 
-    prd->q0.f.z = ms->bg_color.z ; 
-    prd->q0.f.w = 0.f ; 
+    quad2* prd = SOPTIX_getPRD<quad2>();
 
-    prd->q1.u.x = 0u ; 
-    prd->q1.u.y = 0u ; 
-    prd->q1.u.z = 0u ; 
-    prd->q1.u.w = 0u ; 
+    prd->q0.f.x = ms->bg_color.x ;  // HMM: thats setting the normal, so it will be diddled
+    prd->q0.f.y = ms->bg_color.y ;
+    prd->q0.f.z = ms->bg_color.z ;
+    prd->q0.f.w = 0.f ;
 
-    prd->set_boundary(boundary); 
-    prd->set_identity(identity); 
-    prd->set_lposcost(lposcost); 
+    prd->q1.u.x = 0u ;
+    prd->q1.u.y = 0u ;
+    prd->q1.u.z = 0u ;
+    prd->q1.u.w = 0u ;
+
+    prd->set_globalPrimIdx_boundary(globalPrimIdx, boundary);
+
+    prd->set_identity(identity);
+    prd->set_lposcost(lposcost);
 }
 
 /**
-__closesthit__ch 
+__closesthit__ch
 =================
 
 optixGetInstanceIndex (aka iindex)
     0-based index within IAS
 
 optixGetInstanceId (aka identity)
-    user supplied instanceId, 
+    user supplied instanceId,
 
 optixGetPrimitiveIndex (aka prim_idx)
-    CustomPrimitiveArray: local index of AABB within the GAS, 
+    CustomPrimitiveArray: local index of AABB within the GAS,
     TriangleArray: local index of triangle (HMM: within one buildInput?)
 
 optixGetRayTmax
-    In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace 
+    In intersection and CH returns the current smallest reported hitT or the tmax passed into rtTrace
     if no hit has been reported
 
 
@@ -240,7 +242,7 @@ optixGetPrimitiveType
 
 
 In general will need to branch between::
- 
+
     OPTIX_BUILD_INPUT_TYPE_CUSTOM_PRIMITIVES
     OPTIX_BUILD_INPUT_TYPE_TRIANGLES
 
@@ -250,13 +252,13 @@ currently just handles triangles.
 
 extern "C" __global__ void __closesthit__ch()
 {
-    //OptixPrimitiveType type = optixGetPrimitiveType(); 
-    //printf("//CH type %u \n", type );  hex(9521) = '0x2531'   OPTIX_PRIMITIVE_TYPE_TRIANGLE   
+    //OptixPrimitiveType type = optixGetPrimitiveType();
+    //printf("//CH type %u \n", type );  hex(9521) = '0x2531'   OPTIX_PRIMITIVE_TYPE_TRIANGLE
 
     const SOPTIX_HitgroupData* hit_group_data = reinterpret_cast<SOPTIX_HitgroupData*>( optixGetSbtDataPointer() );
-    const SOPTIX_TriMesh& mesh = hit_group_data->mesh ; 
+    const SOPTIX_TriMesh& mesh = hit_group_data->mesh ;
 
-    //printf("//__closesthit__ch\n"); 
+    //printf("//__closesthit__ch\n");
 
     const unsigned prim_idx = optixGetPrimitiveIndex();
     const float2   barys    = optixGetTriangleBarycentrics();
@@ -277,33 +279,35 @@ extern "C" __global__ void __closesthit__ch()
     const float3 N = normalize( optixTransformNormalFromObjectToWorldSpace( Ng ) );
     // HMM: could get normal by bary-weighting vertex normals ?
 
-    unsigned iindex = optixGetInstanceIndex() ; 
-    unsigned identity = optixGetInstanceId() ;  
-    unsigned boundary = 0 ; 
-    // HMM: need to plant boundary in HitGroupData ? 
-    // cf CSGOptiX/Analytic: node->boundary();// all nodes of tree have same boundary 
+    unsigned iindex = optixGetInstanceIndex() ;
+    unsigned identity = optixGetInstanceId() ;
+    unsigned globalPrimIdx = 0u ;
+    unsigned boundary = 0u ;
+    // HMM: need to plant boundary in HitGroupData ?
+    // cf CSGOptiX/Analytic: node->boundary();// all nodes of tree have same boundary
 
     float t = optixGetRayTmax() ;
 
     // cannot get Object frame ray_origin/direction in CH (only IS,AH)
     //const float3 ray_origin = optixGetObjectRayOrigin();
     //const float3 ray_direction = optixGetObjectRayDirection();
-    //const float3 lpos = ray_origin + t*ray_direction  ; 
-    // HMM: could use P to give the local position ?  
+    //const float3 lpos = ray_origin + t*ray_direction  ;
+    // HMM: could use P to give the local position ?
 
-    float lposcost = normalize_z(P); // scuda.h 
+    float lposcost = normalize_z(P); // scuda.h
 
-    quad2* prd = SOPTIX_getPRD<quad2>(); 
 
-    prd->q0.f.x = N.x ;  
-    prd->q0.f.y = N.y ;  
-    prd->q0.f.z = N.z ;  
-    prd->q0.f.w = t ;  
+    quad2* prd = SOPTIX_getPRD<quad2>();
+
+    prd->q0.f.x = N.x ;
+    prd->q0.f.y = N.y ;
+    prd->q0.f.z = N.z ;
+    prd->q0.f.w = t ;
 
     prd->set_identity( identity ) ;
     prd->set_iindex(   iindex ) ;
-    prd->set_boundary(boundary) ; 
-    prd->set_lposcost(lposcost); 
+    prd->set_globalPrimIdx_boundary(globalPrimIdx, boundary) ;
+    prd->set_lposcost(lposcost);
 
 }
 
@@ -311,7 +315,7 @@ extern "C" __global__ void __closesthit__ch()
 __intersection__is
 ====================
 
-With inbuilt triangles there is no role for IS 
+With inbuilt triangles there is no role for IS
 
 extern "C" __global__ void __intersection__is()
 {

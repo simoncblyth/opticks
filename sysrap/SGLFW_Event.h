@@ -9,6 +9,7 @@ The changes between SGLFW_Scene.h and SGLFW_Event.h
 are not big enough to merit the duplication in the longterm.
 
 Hence have extracted the non-duplicated into SGLGW_Evt.h
+making it likely that can remove this.
 
 
 Primary members
@@ -65,7 +66,7 @@ struct SGLFW_Event
     SGLFW_Event(SGLFW& _gl );
     void init();
     void initProg();
-    std::string  desc() const; 
+    std::string  desc() const;
 
     void initMesh();
     SGLFW_Program* getIProg() const ;
@@ -199,7 +200,7 @@ SGLFW_Event::render
 
 inline void SGLFW_Event::render()
 {
-    if(      gm.option.M) render_mesh() ; 
+    if(      gm.option.M) render_mesh() ;
     if(ar && gm.option.A) ar->render(rec_prog);   //record.npy render
     if(br && gm.option.B) br->render(rec_prog);   //record.npy render
 }
@@ -210,8 +211,8 @@ SGLFW_Event::render_mesh
 -------------------------
 
 Possibility: indirect OpenGL to avoid the draw loop
-but while the number of meshes is small the 
-motivation is not strong. 
+but while the number of meshes is small the
+motivation is not strong.
 
 Note the draw loop does have the advantage of
 being able to use different shader pipeline

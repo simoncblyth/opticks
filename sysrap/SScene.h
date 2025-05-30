@@ -45,7 +45,7 @@ with OptiX ray trace and OpenGL rasterized.
 
 struct SScene
 {
-    static constexpr const bool DUMP = false ;
+    static constexpr const char* __level = "SScene__level" ;
     static constexpr const char* RELDIR = "scene" ;
     static constexpr const char* MESHGROUP = "meshgroup" ;
     static constexpr const char* MESHMERGE = "meshmerge" ;
@@ -54,6 +54,7 @@ struct SScene
     static constexpr const char* INST_COL3 = "inst_col3.npy" ;
     static constexpr const char* INST_INFO = "inst_info.npy" ;
 
+    int level ;
     std::vector<const SMeshGroup*>    meshgroup ;
     std::vector<const SMesh*>         meshmerge ;
     std::vector<sfr>                  frame ;
@@ -130,14 +131,18 @@ struct SScene
 
 inline SScene* SScene::Load(const char* dir)
 {
-    if(DUMP) std::cout << "SScene::Load dir " << ( dir ? dir : "-" ) << "\n" ;
+    int level = ssys::getenvint(__level, 0);
+    if(level > 0) std::cout << "[SScene::Load dir " << ( dir ? dir : "-" ) << "\n" ;
     SScene* s = new SScene ;
     s->load(dir);
     s->check();
+    if(level > 0) std::cout << "]SScene::Load dir " << ( dir ? dir : "-" ) << "\n" ;
     return s ;
 }
 
 inline SScene::SScene()
+    :
+    level(ssys::getenvint(__level, 0))
 {
 }
 
@@ -162,6 +167,7 @@ inline void SScene::check() const
          << "SScene::check"
          << " num_frame " << num_frame
          << " num_frame_expect " << ( num_frame_expect ? "YES" : "NO " )
+         << " (expect more than zero frames) "
          << "\n"
          ;
 
@@ -247,8 +253,10 @@ inline void SScene::initFromTree_Global(const stree* st, char ridx_type, int rid
     assert( _nodes );
 
     int num_node = _nodes->size() ;
-    if(DUMP) std::cout
+
+    if(level>0) std::cout
         << "[ SScene::initFromTree_Global"
+        << " level " << level
         << " num_node " << num_node
         << " ridx_type " << ridx_type
         << " ridx " << ridx
@@ -265,8 +273,9 @@ inline void SScene::initFromTree_Global(const stree* st, char ridx_type, int rid
     meshmerge.push_back(_mesh);
     meshgroup.push_back(mg);
 
-    if(DUMP) std::cout
+    if(level>0) std::cout
         << "] SScene::initFromTree_Global"
+        << " level " << level
         << " num_node " << num_node
         << " ridx_type " << ridx_type
         << " ridx " << ridx
@@ -310,12 +319,13 @@ inline void SScene::initFromTree_Factor_(int ridx, const stree* st)
     st->get_repeat_node(nodes, q_repeat_index, q_repeat_ordinal) ;
     int num_node = nodes.size();
 
-    if(DUMP) std::cout
-       << "SScene::initFromTree_Factor"
-       << " ridx " << ridx
-       << " num_node " << num_node
-       << std::endl
-       ;
+    if(level>0) std::cout
+        << "SScene::initFromTree_Factor"
+        << " level " << level
+        << " ridx " << ridx
+        << " num_node " << num_node
+        << std::endl
+        ;
 
     SMeshGroup* mg = new SMeshGroup ;
     for(int i=0 ; i < num_node ; i++)
@@ -373,7 +383,7 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
     mg->names.push_back(so);
 
 
-    if(DUMP) std::cout
+    if(level>0) std::cout
        << "SScene::initFromTree_Node"
        << " node.lvid " << node.lvid
        << " st.soname[node.lvid] " << st->soname[node.lvid]
@@ -382,7 +392,7 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
        << std::endl
        ;
 
-    if(DUMP && !is_identity_m2w) std::cout << _mesh->descTransform() << std::endl ;
+    if(level>0 && !is_identity_m2w) std::cout << _mesh->descTransform() << std::endl ;
 }
 
 inline void SScene::initFromTree_Instance(const stree* st)
@@ -626,27 +636,27 @@ inline NPFold* SScene::serialize_meshgroup() const
 inline void SScene::import_meshmerge(const NPFold* _meshmerge )
 {
     int num_meshmerge = _meshmerge ? _meshmerge->get_num_subfold() : 0 ;
-    if(DUMP) std::cout << "[SScene::import_meshmerge  num_meshmerge " << num_meshmerge << "\n" ;
+    if(level>0) std::cout << "[SScene::import_meshmerge  num_meshmerge " << num_meshmerge << "\n" ;
     for(int i=0 ; i < num_meshmerge ; i++)
     {
         const NPFold* sub = _meshmerge->get_subfold(i);
         const SMesh* m = SMesh::Import(sub) ;
         meshmerge.push_back(m);
     }
-    if(DUMP) std::cout << "]SScene::import_meshmerge  num_meshmerge " << num_meshmerge << "\n" ;
+    if(level>0) std::cout << "]SScene::import_meshmerge  num_meshmerge " << num_meshmerge << "\n" ;
 }
 
 inline void SScene::import_meshgroup(const NPFold* _meshgroup )
 {
     int num_meshgroup = _meshgroup ? _meshgroup->get_num_subfold() : 0 ;
-    if(DUMP) std::cout << "[SScene::import_meshgroup  num_meshgroup " << num_meshgroup << "\n" ;
+    if(level>0) std::cout << "[SScene::import_meshgroup  num_meshgroup " << num_meshgroup << "\n" ;
     for(int i=0 ; i < num_meshgroup ; i++)
     {
         const NPFold* sub = _meshgroup->get_subfold(i);
         const SMeshGroup* mg = SMeshGroup::Import(sub) ;
         meshgroup.push_back(mg);
     }
-    if(DUMP) std::cout << "]SScene::import_meshgroup  num_meshgroup " << num_meshgroup << "\n" ;
+    if(level>0) std::cout << "]SScene::import_meshgroup  num_meshgroup " << num_meshgroup << "\n" ;
 }
 
 
@@ -698,7 +708,7 @@ inline NPFold* SScene::serialize() const
 }
 inline void SScene::import(const NPFold* fold)
 {
-    if(DUMP) std::cout << "[SScene::import \n" ;
+    if(level>0) std::cout << "[SScene::import \n" ;
     if(fold == nullptr) std::cerr << "SScene::import called with NULL fold argument\n" ;
     if(fold == nullptr) return ;
 
@@ -716,7 +726,7 @@ inline void SScene::import(const NPFold* fold)
     stree::ImportArray<glm::tmat4x4<float>, float>( inst_tran, _inst_tran, INST_TRAN );
     stree::ImportArray<int4, int>(                  inst_info, _inst_info, INST_INFO );
     stree::ImportArray<glm::tvec4<int32_t>, int>(   inst_col3, _inst_col3, INST_COL3 );
-    if(DUMP) std::cout << "]SScene::import \n" ;
+    if(level>0) std::cout << "]SScene::import \n" ;
 }
 
 inline void SScene::save(const char* dir) const
@@ -726,7 +736,7 @@ inline void SScene::save(const char* dir) const
 }
 inline void SScene::load(const char* dir)
 {
-    if(DUMP) std::cout << "SScene::load dir " << ( dir ? dir : "-" ) << "\n" ;
+    if(level>0) std::cout << "SScene::load dir " << ( dir ? dir : "-" ) << "\n" ;
     NPFold* fold = NPFold::Load(dir, RELDIR);
     import(fold);
 }
@@ -962,7 +972,7 @@ inline SScene* SScene::CopySelect( const SScene* src, const SBitSet* elv ) // st
 
     int d_num_mg = dst->meshgroup.size() ;
 
-    if(DUMP) std::cout << "SScene::CopySelect d_num_mg " << d_num_mg << "\n" ;
+    if(src->level>0) std::cout << "SScene::CopySelect d_num_mg " << d_num_mg << "\n" ;
 
     // pre-alloc makes it simpler to increment instance by instance
     dst->inst_info.resize(d_num_mg);

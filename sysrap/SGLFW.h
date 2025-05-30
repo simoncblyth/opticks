@@ -52,12 +52,6 @@ around it.
 envvars
 ---------
 
-SGLFW_FRAME:int
-    sets initial wanted_frame_idx controlling the initial viewpoint.
-    NB needs to be corresponding bookmark framespec for this to work.
-    Typically left at default of -2 which corresponds to the MOI envvar
-    selected frame, which defaults to 0:0:-1 for an overall view.
-
 
 **/
 
@@ -1143,7 +1137,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     gm(_gm),
     level(ssys::getenvint("SGLFW_LEVEL", 0)),
     sleep_break(ssys::getenvint(_SLEEP_BREAK,0)),
-    wanted_frame_idx(ssys::getenvint("SGLFW_FRAME", -2)),
+    wanted_frame_idx(-2),  // -2:means the MOI frame
     wanted_snap(0),
     width(gm.Width()),
     height(gm.Height()),

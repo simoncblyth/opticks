@@ -9,6 +9,7 @@ Used from SGLFW_Event.h
 **/
 
 
+#include "spath.h"
 #include "scuda.h"
 #include "NP.hh"
 
@@ -47,8 +48,24 @@ SRecordInfo::Load
 
 inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
 {
-    NP* a = NP::LoadSlice<float>(_path, _slice); 
-    return new SRecordInfo(a); 
+    const char* path = spath::Resolve(_path);
+    bool looks_unresolved = spath::LooksUnresolved(path, _path);
+
+    if(looks_unresolved)
+    {
+        std::cout
+            << "SRecordInfo::Load"
+            << " FAILED : DUE TO MISSING ENVVAR\n"
+            << " _path [" << ( _path ? _path : "-" ) << "]\n"
+            << " path ["  << (  path ?  path : "-" ) << "]\n"
+            << " looks_unresolved " << ( looks_unresolved ? "YES" : "NO " )
+            << "\n"
+            ;
+        return nullptr ;
+    }
+
+    NP* a = NP::LoadSlice<float>(path, _slice);
+    return new SRecordInfo(a);
 }
 
 
@@ -120,7 +137,7 @@ inline const float SRecordInfo::get_t1() const
 
 inline std::string SRecordInfo::desc() const
 {
-    const char* lpath = record ? record->lpath.c_str() : nullptr ; 
+    const char* lpath = record ? record->lpath.c_str() : nullptr ;
 
     std::stringstream ss ;
     ss

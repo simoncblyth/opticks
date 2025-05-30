@@ -3,6 +3,8 @@
 SOPTIX_Binding.h : CPU/GPU SBT records
 =======================================
 
+TODO: unify with CSGOptiX/Binding.h ?
+
 **/
 
 
@@ -26,14 +28,14 @@ struct SOPTIX_MissData
 
 struct SOPTIX_TriMesh
 {
-    uint3*  indice ; 
-    float3* vertex ; 
-    float3* normal ; 
+    uint3*  indice ;
+    float3* vertex ;
+    float3* normal ;
 };
 
-struct SOPTIX_HitgroupData 
+struct SOPTIX_HitgroupData
 {
-    SOPTIX_TriMesh mesh ; 
+    SOPTIX_TriMesh mesh ;
 };
 
 

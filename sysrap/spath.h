@@ -59,6 +59,8 @@ public:
     template<typename ... Args>
     static const char* Resolve(Args ... args );
 
+    static bool LooksUnresolved( const char* path , const char* _path );
+
     static bool EndsWith( const char* path, const char* q);
     static int SplitExt0(std::string& dir, std::string& stem, std::string& ext, const char* path );
     static int SplitExt(std::string& dir, std::string& stem, std::string& ext, const char* path );
@@ -539,6 +541,14 @@ template const char* spath::Resolve( const char* );
 template const char* spath::Resolve( const char*, const char* );
 template const char* spath::Resolve( const char*, const char*, const char* );
 template const char* spath::Resolve( const char*, const char*, const char*, const char* );
+
+
+inline bool spath::LooksUnresolved( const char* path , const char* _path )
+{
+    bool _path_starts_with_dollar = _path && strlen(_path) > 1 && _path[0] == '$'  ;
+    bool path_is_same_without_dollar = path && strlen(path) > 1 && strcmp(_path+1, path) == 0  ;
+    return _path_starts_with_dollar && path_is_same_without_dollar ;
+}
 
 
 inline bool spath::EndsWith( const char* path, const char* q)

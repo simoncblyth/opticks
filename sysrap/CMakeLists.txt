@@ -4,6 +4,7 @@ set(desc "System Level Utilities depending")
 project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir
 
 #[=[
 SysRap
@@ -162,6 +163,12 @@ set(SOURCES
 
     SOpBoundaryProcess.cc
 )
+
+
+
+
+
+
 
 
 set(CURANDLITE_HEADERS
@@ -566,6 +573,11 @@ set(RETIRED_HEADERS
 
 
 
+
+
+
+
+
 # using absolute ANADIR avoids build environment requiring it in PATH
 get_filename_component(ANADIR ../ana ABSOLUTE)
 get_filename_component(BINDIR ../bin ABSOLUTE)
@@ -657,7 +669,6 @@ endif()
 set(WITH_NP YES)
 
 
-#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 
@@ -683,14 +694,12 @@ target_link_libraries( ${name} Opticks::PLog Opticks::OKConf )
 #Opticks::OpticksCUDA
 
 if(NLJSON_FOUND)
-#target_link_libraries(${name} PUBLIC Opticks::NLJSON)
 target_link_libraries(${name}  Opticks::NLJSON)
 endif()
 
 
 if(UNIX AND NOT APPLE)
 message(STATUS "adding ssl crypto for UNIX AND NOT APPLE")
-#target_link_libraries( ${name} PUBLIC ssl crypto )
 target_link_libraries( ${name} ssl crypto )
 endif()
 
@@ -700,7 +709,6 @@ if(SysRap_VERBOSE)
   #echo_target_std(${name})
 endif()
 
-#${CUDA_INCLUDE_DIRS}
 
 target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -795,6 +803,56 @@ endif()
 if(WITH_SLOG)
 target_compile_definitions( ${name} PUBLIC WITH_SLOG)
 endif()
+
+
+
+
+
+
+
+set(OPTIX_SOURCES)
+list(APPEND OPTIX_SOURCES
+    SOPTIX.cu
+)
+
+set(OpticksOptiX_VERBOSE ON)
+find_package(OpticksOptiX REQUIRED MODULE)
+
+message(STATUS "${name} OPTIX_SOURCES        : ${OPTIX_SOURCES} ")
+message(STATUS "${name} OpticksOptiX_VERSION : ${OpticksOptiX_VERSION} ")
+message(STATUS "${name} OpticksOptiX_INCLUDE : ${OpticksOptiX_INCLUDE} ")
+message(STATUS "${name} COMPUTE_CAPABILITY   : ${COMPUTE_CAPABILITY} ")
+
+add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
+add_dependencies( ${name} ${name}_OPTIX )
+
+
+set_target_properties( ${name}_OPTIX
+    PROPERTIES
+         CUDA_PTX_COMPILATION ON
+         POSITION_INDEPENDENT_CODE ON
+         CUDA_SEPARABLE_COMPILATION ON
+         CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}"    ## single integer CC of oldest GPU
+)
+
+target_include_directories(${name}_OPTIX
+   PUBLIC
+      ${OpticksOptiX_INCLUDE}
+      $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
+
+target_compile_options( ${name}_OPTIX
+   PRIVATE
+        $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
+)
+
+install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )
+
+
+
+
+
 
 
 
