@@ -30,7 +30,7 @@ message(STATUS "write to buildenvpath ${buildenvpath} ")
 
 
 set(SOURCES)
-set(CU_SOURCES)
+set(OPTIX_SOURCES)
 
 
 list(APPEND SOURCES
@@ -55,30 +55,27 @@ list(APPEND HEADERS
     CSGOPTIX_LOG.hh
 )
 
-list(APPEND CU_SOURCES
+list(APPEND OPTIX_SOURCES
     CSGOptiX7.cu
     Check.cu
 )
 
 
-message(STATUS "CU_SOURCES : ${CU_SOURCES} ")
+message(STATUS "OPTIX_SOURCES : ${OPTIX_SOURCES} ")
 
 
 
-add_library( ${name}PTX OBJECT ${CU_SOURCES} )
-#set_property( TARGET ${name}PTX PROPERTY CUDA_PTX_COMPILATION ON)
-#set_property( TARGET ${name}PTX PROPERTY POSITION_INDEPENDENT_CODE ON)
+add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
 
-set_target_properties( ${name}PTX
+set_target_properties( ${name}_OPTIX
     PROPERTIES
          CUDA_PTX_COMPILATION ON
          POSITION_INDEPENDENT_CODE ON
          CUDA_SEPARABLE_COMPILATION ON
 )
 
-
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}     )
-add_dependencies( ${name} ${name}PTX )
+add_dependencies( ${name} ${name}_OPTIX )
 
 
 ## CAUTION : DUPLICATION BETWEEN HERE AND sysrap/CMakeLists.txt
@@ -114,17 +111,17 @@ if(Custom4_FOUND)
 endif()
 
 
-target_compile_definitions( ${name}      PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
-target_compile_definitions( ${name}PTX   PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
+target_compile_definitions( ${name}         PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
+target_compile_definitions( ${name}_OPTIX   PUBLIC  "${CSGOptiX_COMPILE_DEFINITIONS_PUBLIC}" )
 
-target_compile_definitions( ${name}      PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
-target_compile_definitions( ${name}PTX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
+target_compile_definitions( ${name}         PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
+target_compile_definitions( ${name}_OPTIX   PRIVATE "${CSGOptiX_COMPILE_DEFINITIONS_PRIVATE}" )
 
-set_target_properties(${name}PTX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}")  ## single integer CC of oldest GPU
+set_target_properties(${name}_OPTIX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}")  ## single integer CC of oldest GPU
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir
 
-target_compile_options( ${name}PTX
+target_compile_options( ${name}_OPTIX
    PRIVATE
         $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
 )
@@ -149,7 +146,7 @@ WITH_PRD
 using Pointer trick means can reduce attrib and payload to 2
 
 
-WITH_THRUST 
+WITH_THRUST
 ~~~~~~~~~~~~
 
 * WITH_THRUST is needed for Custom4 on GPU complex math functions used by qpmt.h
@@ -183,7 +180,7 @@ target_include_directories(${name}
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-target_include_directories(${name}PTX
+target_include_directories(${name}_OPTIX
    PUBLIC
       ${OpticksOptiX_INCLUDE}
       $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
@@ -193,7 +190,7 @@ target_include_directories(${name}PTX
 )
 
 if(Custom4_FOUND)
-   target_include_directories( ${name}PTX PUBLIC ${Custom4_INCLUDE_DIR})
+   target_include_directories( ${name}_OPTIX PUBLIC ${Custom4_INCLUDE_DIR})
 endif()
 
 
@@ -220,8 +217,7 @@ set(INSTALLED_SCRIPTS
 )
 
 
-#install(FILES ${_generated_PTX_files} DESTINATION ptx)
-install( TARGETS ${name}PTX OBJECTS DESTINATION ptx )
+install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)

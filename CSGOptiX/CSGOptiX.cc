@@ -392,16 +392,8 @@ CSGOptiX::~CSGOptiX()
 }
 
 /**
-
-Before CMake CUDA rejig::
-
-    _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/CSGOptiX_generated_CSGOptiX7.cu.ptx}"),
-
-
 TODO: generalize for ptx or optixir
-
 **/
-
 
 
 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
@@ -411,13 +403,13 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     foundry(foundry_),
     outdir(SEventConfig::OutFold()),
 #ifdef CONFIG_Debug
-    _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/objects-Debug/CSGOptiXPTX/CSGOptiX7.ptx}"),
+    _optixpath("${CSGOptiX__optixpath:-$OPTICKS_PREFIX/optix/objects-Debug/CSGOptiX_OPTIX/CSGOptiX7.ptx}"),
 #elif CONFIG_Release
-    _ptxpath("${CSGOptiX__cu_ptx:-$OPTICKS_PREFIX/ptx/objects-Release/CSGOptiXPTX/CSGOptiX7.ptx}"),
+    _optixpath("${CSGOptiX__optixpath:-$OPTICKS_PREFIX/optix/objects-Release/CSGOptiX_OPTIX/CSGOptiX7.ptx}"),
 #else
-    _ptxpath(nullptr),
+    _optixpath(nullptr),
 #endif
-    ptxpath(_ptxpath ? spath::Resolve(_ptxpath) : nullptr),
+    optixpath(_optixpath ? spath::Resolve(_optixpath) : nullptr),
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation
     kernel_count(0),
     raygenmode(SEventConfig::RGMode()),
@@ -449,8 +441,8 @@ void CSGOptiX::init()
 
     assert( outdir && "expecting OUTDIR envvar " );
 
-    LOG(LEVEL) << " _ptxpath " << _ptxpath  ;
-    LOG(LEVEL) << " ptxpath " << ptxpath  ;
+    LOG(LEVEL) << " _optixpath " << _optixpath  ;
+    LOG(LEVEL) << " optixpath " << optixpath  ;
 
     initCtx();
     initPIP();
@@ -480,10 +472,10 @@ void CSGOptiX::initPIP()
 {
     LOG(LEVEL) << "["  ;
     LOG(LEVEL)
-        << " ptxpath " << ( ptxpath ? ptxpath : "-" )
+        << " optixpath " << ( optixpath ? optixpath : "-" )
         ;
 
-    pip = new PIP(ptxpath, ctx->props ) ;
+    pip = new PIP(optixpath, ctx->props ) ;
     LOG(LEVEL) << "]" ;
 }
 
