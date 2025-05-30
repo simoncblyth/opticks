@@ -59,6 +59,18 @@ git checkout v0.2.2
 Release Notes
 ----------------
 
+v0.4.3 2025/05/30
+~~~~~~~~~~~~~~~~~~~
+
+* bring SGLFW_SOPTIX_Scene_test.sh into release 
+* start getting B side simtrace to work with U4Recorder__EndOfRunAction_Simtrace using U4Navigator.h U4Simtrace.h
+* enhance A side simtrace analysis cxt_min.sh 
+* add globalPrimIdx to Binding.h OptiX geometry for debugging 
+* integrate record rendering with geometry rendering 
+* move navigation functionality like frame hop and interface control from mains into SGLM.h SGLFW.h 
+* bring SRecordInfo.h into use 
+
+
 v0.4.2 2025/05/15
 ~~~~~~~~~~~~~~~~~~
 
@@ -78,6 +90,8 @@ Snapshot Tags History
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                                                               |
 +============+=========+=========================+=====================================================================================================================+
+| 2025/05/30 | v0.4.3  | 43                      | integrate OpenGL event record rendering with geometry render, globalPrimIdx added to Binding.h, cxt_min.sh enhance  |
++------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/05/15 | v0.4.2  | 42                      | remove OPTICKS_MAX_BOUNCE limit, increase default OPTICKS_MAX_BOUNCE from 9 to 31, skip slow find-geant4-prefix     |
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/04/28 | v0.4.1  | 41                      | fix WITH_CUSTOM4 regression and outdated jpmt access in G4CXTest                                                    |
