@@ -2156,13 +2156,19 @@ opticks-setup-geant4-(){ cat << EOS
 ## SO AVOID DOING THAT WHEN DETECT GEANT4 ENV ALREADY SETUP
 
 if [ -n "\$G4LEDATA" ]; then
-    echo \$BASH_SOURCE - USE DETECTED GEANT4 ENVIRONMENT
+
+    if [ -n "\$OPTICKS_SETUP_VERBOSE" ]; then
+        echo \$BASH_SOURCE - USE DETECTED GEANT4 ENVIRONMENT
+    fi
     export OPTICKS_GEANT4_PREFIX=\$(dirname \$(dirname \$(dirname \$(dirname \$G4LEDATA))))
 else
     export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
     if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
         if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then
-            [ -n "\$OPTICKS_SETUP_VERBOSE" ] && echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
+
+            if [ -n "\$OPTICKS_SETUP_VERBOSE" ]; then
+                echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
+            fi
             source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
         else
             echo ERROR no \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh at OPTICKS_GEANT4_PREFIX : \$OPTICKS_GEANT4_PREFIX

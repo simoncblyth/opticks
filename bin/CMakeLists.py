@@ -40,8 +40,8 @@ class CMakeLists(object):
    metadata such as the name and find_package names
    """
    NAME = "CMakeLists.txt"
-   name_ptn = re.compile("^set\(name (?P<name>\S*)\).*")
-   find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
+   name_ptn = re.compile("^set\\(name (?P<name>\\S*)\\).*")
+   find_ptn = re.compile("^find_package\\((?P<findargs>.*)\\).*")
    obo_txt = "include(OpticksBuildOptions"
 
    @classmethod

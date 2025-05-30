@@ -4,29 +4,29 @@
 ## This file is part of Opticks
 ## (see https://bitbucket.org/simoncblyth/opticks).
 ##
-## Licensed under the Apache License, Version 2.0 (the "License"); 
-## you may not use this file except in compliance with the License.  
+## Licensed under the Apache License, Version 2.0 (the "License");
+## you may not use this file except in compliance with the License.
 ## You may obtain a copy of the License at
 ##
 ##   http://www.apache.org/licenses/LICENSE-2.0
 ##
-## Unless required by applicable law or agreed to in writing, software 
-## distributed under the License is distributed on an "AS IS" BASIS, 
-## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-## See the License for the specific language governing permissions and 
+## Unless required by applicable law or agreed to in writing, software
+## distributed under the License is distributed on an "AS IS" BASIS,
+## WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+## See the License for the specific language governing permissions and
 ## limitations under the License.
 ##
 
 om-source(){ echo $BASH_SOURCE ; }
 om-vi(){ vi $(om-source) ; }
-om-env(){  olocal- ; opticks- ; 
+om-env(){  olocal- ; opticks- ;
   local msg="=== $FUNCNAME :"
   if [ "$1" == "quiet" -o "$1" == "q" -o -n "$OPTICKS_QUIET" ]; then
      #echo $msg quiet running
      oe- 2> /dev/null
   else
-     echo $msg normal running
-     oe- ; 
+     #echo $msg normal running
+     oe- ;
   fi
 }
 om-usage(){ cat << EOU
@@ -34,18 +34,18 @@ om-usage(){ cat << EOU
 OM : Opticks Minimal Approach to Configuring and Building
 ===========================================================
 
-The below subproj functions configure, build, install or test 
-either one, all or a range of Opticks subprojects 
+The below subproj functions configure, build, install or test
+either one, all or a range of Opticks subprojects
 in the appropriate dependency order.
 
 The commands are sensitive to the invoking directory, performing
-actions for all subprojects when invoked from top level 
-directories. Also an argument can be used to select a 
-starting subproject, eg "cudarap:" starts from there 
+actions for all subprojects when invoked from top level
+directories. Also an argument can be used to select a
+starting subproject, eg "cudarap:" starts from there
 or ":" starts from the subproject of the current directory.
 
-When building for the first time it is necessary to 
-use "om-install" as later subprojects cannot be configured 
+When building for the first time it is necessary to
+use "om-install" as later subprojects cannot be configured
 until earlier ones have been installed.
 
 Usage Examples
@@ -58,7 +58,7 @@ om-subs :opticksgeo
     same as the above, as first is implicit
 
 om-test :opticksgeo
-    run the tests for all subprojects from the first okconf upto opticksgeo    
+    run the tests for all subprojects from the first okconf upto opticksgeo
 
 
 Partial test running
@@ -66,53 +66,53 @@ Partial test running
 
 ::
 
-    TESTARG="-R U4TreeCreate" om-test  ## runs just the tests with that pattern 
+    TESTARG="-R U4TreeCreate" om-test  ## runs just the tests with that pattern
     TESTARG="-E U4TreeTest" om-test   ## exclude the regexp tests
 
-The TESTARG is included on the ctest command line, see ctest --help    
+The TESTARG is included on the ctest command line, see ctest --help
 
-Real World Usage 
+Real World Usage
 ------------------
 
 ::
 
-   ggeo    # change directory to ggeo 
+   ggeo    # change directory to ggeo
    okc     # change directory to optickscore
-   vi OpticksSwitches.h 
+   vi OpticksSwitches.h
 
-   om      # build just current dir project 
-   om :    # build current dir project and all subsequent 
+   om      # build just current dir project
+   om :    # build current dir project and all subsequent
    om +    # build all subsequent proj (not including current)
-   ## a bug preventing "om :" and "om +" from working has been fixed 
- 
-   om-subs :    #  list this project and all subsequent 
-   om-subs +    #  list all subsequent projects 
+   ## a bug preventing "om :" and "om +" from working has been fixed
+
+   om-subs :    #  list this project and all subsequent
+   om-subs +    #  list all subsequent projects
 
 
 
-SUBPROJ FUNCTIONS 
+SUBPROJ FUNCTIONS
 -----------------
 
 om-subs
    list subprojects in dependency order
 
 om-conf
-   configures using cmake 
+   configures using cmake
 
 om-make
-   build and install 
+   build and install
 
 om--
    shorter name for om-make
 
 om
    even shorter function that does om-;om--
-   
+
 om-install
-   configures, builds and installs by doing both om-conf and om-make 
+   configures, builds and installs by doing both om-conf and om-make
 
 om-cleaninstall
-   cleans, configures, builds and installs by doing om-clean, om-conf and om-make 
+   cleans, configures, builds and installs by doing om-clean, om-conf and om-make
 
 om-prefix-clean
    really deep clean that deletes the dirs within opticks-prefix : lib lib64 include build
@@ -121,18 +121,18 @@ om-prefix-clean
 om-test
    runs ctests
 
-om-visit 
+om-visit
    visits each subproj in turn
- 
+
 om-echo
    echos the pwd of each subproj
- 
+
 
 OTHER FUNCTIONS
 -----------------
 
 om-cd
-   cd from a source tree directory to the corresponding 
+   cd from a source tree directory to the corresponding
    directory in the build tree or vice versa
 
 
@@ -145,14 +145,14 @@ om-make-all
 om-test-all
 
 om-testlog
-    parse test logs from previous test runs and present summary totals 
+    parse test logs from previous test runs and present summary totals
 
 
-    
+
 EOU
-} 
+}
 
-om-home-default(){  echo $(dirname $(om-source)) ; } 
+om-home-default(){  echo $(dirname $(om-source)) ; }
 om-home(){   echo ${OPTICKS_HOME:-$(om-home-default)} ; }
 
 #om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
@@ -182,7 +182,7 @@ for pfx in os.environ["CMAKE_PREFIX_PATH"].split(":"):
         libdir = os.path.join(pfx,lib)
         if os.path.isdir(libdir):   # judge on libdir not pkgconfig dir as need to create initially for some
             dirs.append(os.path.join(libdir, "pkgconfig"))
-            break   # second sub:lib64 ignored if there is a lib 
+            break   # second sub:lib64 ignored if there is a lib
         pass
     pass
 print(":".join(dirs))
@@ -199,14 +199,14 @@ EOD
 }
 om-prefix-clean-notes(){ cat << EON
 
-See notes/issues/CMake_dependency_include_dirs_issue_reported_by_Hans.rst 
+See notes/issues/CMake_dependency_include_dirs_issue_reported_by_Hans.rst
 
-If users report CMake dependency issues, the cause might not be due to CMake 
-but rather due to failures to include stale headers.  In order to find 
+If users report CMake dependency issues, the cause might not be due to CMake
+but rather due to failures to include stale headers.  In order to find
 these bad inclusions a deeper clean than om-cleaninstall is needed.
 In that case use::
 
-    om-prefix-clean 
+    om-prefix-clean
 
 EON
 }
@@ -214,23 +214,23 @@ om-prefix-clean(){
    local msg="=== $FUNCNAME :"
    cd $(om-prefix)
    pwd
-   local dirs=$(om-prefix-clean-dirs-) 
-   echo $msg om-prefix : $(om-prefix)  
-   echo $msg pwd       : $(pwd)  
-   echo $msg om-prefix-clean-dirs- : $dirs  
-  
+   local dirs=$(om-prefix-clean-dirs-)
+   echo $msg om-prefix : $(om-prefix)
+   echo $msg pwd       : $(pwd)
+   echo $msg om-prefix-clean-dirs- : $dirs
+
    local ans
    read -p "$msg enter YES to proceed with deletion of prefix dirs : " ans
 
-   if [ "$ans" == "YES" ]; then 
+   if [ "$ans" == "YES" ]; then
        local cmd
-       for dir in $dirs ; do 
-           cmd="rm -rf $dir" 
+       for dir in $dirs ; do
+           cmd="rm -rf $dir"
            echo $cmd
            eval $cmd
-       done 
+       done
    else
-       echo $msg SKIPPED 
+       echo $msg SKIPPED
    fi
 }
 
@@ -245,29 +245,29 @@ om-bdir-trim-tests()
     local iwd=$(pwd)
     local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
     local bdir=$(om-bdir $name)
-    echo $bdir  
+    echo $bdir
 }
 
 
-om-bdir(){  
-   : TODO separate bdir depending on Release/Debug so its faster to switch 
+om-bdir(){
+   : TODO separate bdir depending on Release/Debug so its faster to switch
    local gen=$(om-cmake-generator)
-   case $gen in 
+   case $gen in
       "Unix Makefiles") echo $(om-prefix)/build/$1 ;;
                "Xcode") echo $(om-prefix)/build_xcode/$1 ;;
    esac
 }
-om-sdir(){  
-   : TODO generalize current approach of just special casing pkg names, could use a naming convention jPMTSim 
-   case $1 in 
-      PMTSim) echo $HOME/j/$1 ;; 
-      PMTFastSim) echo $HOME/j/$1 ;; 
+om-sdir(){
+   : TODO generalize current approach of just special casing pkg names, could use a naming convention jPMTSim
+   case $1 in
+      PMTSim) echo $HOME/j/$1 ;;
+      PMTFastSim) echo $HOME/j/$1 ;;
            *) echo $(om-home)/$1 ;;
    esac
 }
 om-bdir-real(){ echo $(realpath $(om-bdir)) ; }
 om-sdir-real(){ echo $(realpath $(om-sdir)) ; }
- 
+
 
 om-url(){ echo http://bitbucket.org/simoncblyth/$(om-name)/src/$(om-rdir) ; }
 om-open(){ open $(om-url) ; }
@@ -275,7 +275,7 @@ om-open(){ open $(om-url) ; }
 om-info(){ cat << EOI
 
    om-home-default    : $(om-home-default)
-   om-home            : $(om-home)  from OPTICKS_HOME envvar if defined 
+   om-home            : $(om-home)  from OPTICKS_HOME envvar if defined
    om-name            : $(om-name)
    om-local           : $(om-local)  from LOCAL_BASE envvar if defined
    om-fold            : $(om-fold)
@@ -286,7 +286,7 @@ om-info(){ cat << EOI
 
 
    CMAKE_PREFIX_PATH  : $CMAKE_PREFIX_PATH
-   PKG_CONFIG_PATH    : $PKG_CONFIG_PATH 
+   PKG_CONFIG_PATH    : $PKG_CONFIG_PATH
 
 
 EOI
@@ -317,7 +317,7 @@ EOS
 
 om-subs--all(){ cat << EOS
 # to update this list : opticks-deps --subdirs
-# the names must be the case correct directory names 
+# the names must be the case correct directory names
 okconf
 sysrap
 #boostrap
@@ -343,7 +343,7 @@ om-subs-minimal-notes(){ cat << EON
 om-subs-minimal
 ================
 
-Minimimal package build of Opticks intended to facilitate 
+Minimimal package build of Opticks intended to facilitate
 loading from separately created geocache and OptiX 7 rendering.
 This is convenient for use on nodes which are difficult to work with.
 
@@ -382,16 +382,16 @@ boostrap      # REMOVE
 npy           # REMOVE
 optickscore   # REMOVE
 ggeo          # REMOVE
-extg4         # REMOVE 
+extg4         # REMOVE
 ana
-analytic      
-bin 
-CSG    
-CSG_GGeo      # REMOVE 
+analytic
+bin
+CSG
+CSG_GGeo      # REMOVE
 GeoChain      # REMOVE
-qudarap     
-gdxml  
-u4   
+qudarap
+gdxml
+u4
 CSGOptiX
 g4cx
 EOS
@@ -400,35 +400,35 @@ EOS
 
 om-subs-alt-notes(){ cat << EON
 
-TODO: 
+TODO:
 
-* need to generalize om/opticks-deps machinery to work with new OptiX7 chain of sub pkgs, 
-  so far have been manually building them and relying on the old chain too using 
-  new pkg shortcuts : c, cg, qu, cx  
+* need to generalize om/opticks-deps machinery to work with new OptiX7 chain of sub pkgs,
+  so far have been manually building them and relying on the old chain too using
+  new pkg shortcuts : c, cg, qu, cx
 
 * subs are pkg directory names, some new pkgs dirs not using lowercase convention
 
 * have been avoiding boostrap and npy dependency in new developments
-  moving instead to sysrap/NP and SPath but have been using optickscore and ggeo 
+  moving instead to sysrap/NP and SPath but have been using optickscore and ggeo
 
-  * BUT, it will take considerable effort to migrate away from 
-    boostrap and npy usage in ggeo and elsewhere, not worthwhile currently 
+  * BUT, it will take considerable effort to migrate away from
+    boostrap and npy usage in ggeo and elsewhere, not worthwhile currently
 
 * using an envvar OM_ALT to signal that the alt pkgs should be
   appended to the usual list seems like a good approach ..
-  because of minimal disruption as needs no new base functions.  
+  because of minimal disruption as needs no new base functions.
 
-  * actually could just add to standard pkgs all but CSGOptiX 
-    which needs special handling for OptiX7 b7 building ? 
+  * actually could just add to standard pkgs all but CSGOptiX
+    which needs special handling for OptiX7 b7 building ?
 
   * could make building of CSGOptiX dependent on OPTICKS_OPTIX7_PREFIX being defined ?
-    hmm : not quite so simple still building it with Six swap without 7 
+    hmm : not quite so simple still building it with Six swap without 7
 
 
 When working on the new pkgs only starting from CSG, build just those with::
 
-    c 
-    om :     # colon means build this pkg and subsequent 
+    c
+    om :     # colon means build this pkg and subsequent
     cx
     ./b7
 
@@ -449,7 +449,7 @@ EOS
 
 om-subs--()
 {
-   case ${OM_SUBS:-all} in 
+   case ${OM_SUBS:-all} in
      all)     om-subs--all ;;
      minimal) om-subs--minimal ;;
      alt)     om-subs--alt ;;
@@ -464,24 +464,24 @@ om-subs-notes(){ cat << EON
 om-subs
 --------
 
-Default with no argument lists all subproject directory names 
-in build dependency order. Arguments can be used to select 
+Default with no argument lists all subproject directory names
+in build dependency order. Arguments can be used to select
 ranges of names.
- 
+
 Shorthand forms  ":" and "+" only work from within a subproj
 which is taken as the first, all other forms work from anywhere.
 
 :
-    subproj from current onwards  
+    subproj from current onwards
 +
-    subproj from next onwards  
+    subproj from next onwards
 
 :last
-    subprojects from the first "okconf" to the last specified inclusive, 
-    eg ":ok" lists all up to and including "ok" 
+    subprojects from the first "okconf" to the last specified inclusive,
+    eg ":ok" lists all up to and including "ok"
 
 first:last
-    subprojects from the "first" to "last" inclusive 
+    subprojects from the "first" to "last" inclusive
 
 EON
 }
@@ -489,35 +489,35 @@ EON
 om-subs(){
 
    local arg=$1
-   [ -z "$arg" ] && om-subs- && return    
+   [ -z "$arg" ] && om-subs- && return
    ## without argument just return the hardcoded list, with argument returns selection from the list
- 
+
    local iwd=$(pwd)
    local name=$(basename $iwd)
 
    local mode=":"
    local first
-   local last 
+   local last
 
-   ## expand shorthand argument into full 
+   ## expand shorthand argument into full
    [ "$arg" == ":" ] && arg="${name}:" && mode=":"
    [ "$arg" == "+" ] && arg="${name}:" && mode="+"
 
-   ## form ":last" means from okconf (1st project)  
+   ## form ":last" means from okconf (1st project)
    [ "${arg:0:1}" == ":" ] && first="okconf" || first=${arg/:*}
    last=${arg/*:}
 
-   #echo $FUNCNAME arg $arg name $name first $first last $last  
+   #echo $FUNCNAME arg $arg name $name first $first last $last
 
-   local sel=0 
+   local sel=0
    local sub
    om-subs- | while read sub ; do
-       [ "${sub}" == "$first" -a "${mode}" == ":" ] && sel=1 
-       [ "${sub}" == "$first" -a "${mode}" == "+" ] && sel=2 
+       [ "${sub}" == "$first" -a "${mode}" == ":" ] && sel=1
+       [ "${sub}" == "$first" -a "${mode}" == "+" ] && sel=2
        [ "$sel" == "1" ] && echo $sub
        [ "${sub}" == "$last" -a "${mode}" == ":" ] && sel=0
        [ "$sel" == "2" ] && sel=1
-   done 
+   done
 }
 
 
@@ -527,19 +527,19 @@ om-subs0(){
   local iwd=$(pwd)
   local name=$(basename $iwd)
 
-  if [ -z "$arg" ]; then 
+  if [ -z "$arg" ]; then
       om-subs-
   else
       [ "$arg" == ":" ] && arg="${name}:"
       [ "$arg" == "+" ] && arg="${name}+"
-      local sel=0 
+      local sel=0
       local sub
       om-subs- | while read sub ; do
-         [ "${sub}:" == "$arg" ] && sel=1 
-         [ "${sub}+" == "$arg" ] && sel=2 
+         [ "${sub}:" == "$arg" ] && sel=1
+         [ "${sub}+" == "$arg" ] && sel=2
          [ "$sel" == "1" ] && echo $sub
          [ "$sel" == "2" ] && sel=1
-      done 
+      done
   fi
 }
 
@@ -553,8 +553,8 @@ om-reldir()
    local sdir=$(om-sdir)
    local bdir=$(om-bdir)
    case $cwd in
-      $sdir*) echo ${cwd/$sdir} ;; 
-      $bdir*) echo ${cwd/$bdir} ;; 
+      $sdir*) echo ${cwd/$sdir} ;;
+      $bdir*) echo ${cwd/$bdir} ;;
    esac
 }
 om-bcd(){ cd $(om-bdir $(om-reldir)) ; pwd ;  }
@@ -597,18 +597,18 @@ om-test-help
 
 NB : are now running each test via test runners such as::
 
-    STestRunner.sh 
-    CSGTestRunner.sh 
+    STestRunner.sh
+    CSGTestRunner.sh
 
-To rerun selected tests use CTESTARG to change the ctest commandline, 
+To rerun selected tests use CTESTARG to change the ctest commandline,
 for example using the "-R" regexp option eg::
 
-    CTESTARG="-R U4TreeCreateTest" om-test 
-    CTESTARG="-R U4TreeCreate"     om-test     
+    CTESTARG="-R U4TreeCreateTest" om-test
+    CTESTARG="-R U4TreeCreate"     om-test
 
 Or directly use ctest for more control::
 
-    st     # cd ~/opticks/sysrap/tests 
+    st     # cd ~/opticks/sysrap/tests
     ct     # cd ~/opticks/CSG/tests
     qt     # cd ~/opticks/qudarap/tests
     u4t    # cd ~/opticks/u4/tests
@@ -617,51 +617,51 @@ Or directly use ctest for more control::
 
     om-cd  # cd to build directory (eg /usr/local/opticks/build/CSG/tests)
 
-    ctest -N                                      # list tests 
-    ctest -R U4TreeCreateTest --output-on-failure # run tests matching a pattern 
+    ctest -N                                      # list tests
+    ctest -R U4TreeCreateTest --output-on-failure # run tests matching a pattern
     ctest --help                                  # to see the possibilities
 
 To rebuild a test and rerun it use::
- 
+
     TEST=SBndTest om-t  # NB no environment setup : so only for very simple tests
 
-To run a test with the debugger within the test runner environment, 
-pick the appropriate runner for the package of the test and use a command 
+To run a test with the debugger within the test runner environment,
+pick the appropriate runner for the package of the test and use a command
 such as::
 
     CSGTestRunner.sh "gdb CSGFoundry_CreateFromSimTest"
 
-NB this and ctest running uses the installed test runners, so 
+NB this and ctest running uses the installed test runners, so
 must install before changes to runners take effect.
 
 
 EOH
 }
 
-om-test(){    
+om-test(){
     local rc=0
-    #om-testenv-push 
-    om-one-or-all test $* 
+    #om-testenv-push
+    om-one-or-all test $*
     rc=$?
     #om-testenv-pop
     #om-test-help   # call this from opticks-t- to avoid repetition
-    return $rc  
+    return $rc
 }
 om-echo(){    om-one-or-all echo $* ; return $? ; }
 om-clean(){   om-one-or-all clean $* ; return $? ; }
 om-find(){    om-one-or-all find $* ; return $? ; }
 
 om--(){       om-make $* ; }     ## just this proj
-om---(){      om-make-all : ; }  ## all projs from this one onwards 
-om----(){     om-make-all + ; }  ## all projs following this one 
+om---(){      om-make-all : ; }  ## all projs from this one onwards
+om----(){     om-make-all + ; }  ## all projs following this one
 
 
 om-testenv-notes(){ cat << EON
 om-testenv-notes
 ------------------
 
-TRYING TO USE BASH RUNNERS INSTEAD OF THIS, AS THAT PLAYS 
-BETTER WITH CTEST INSTALLED TESTS  
+TRYING TO USE BASH RUNNERS INSTEAD OF THIS, AS THAT PLAYS
+BETTER WITH CTEST INSTALLED TESTS
 
 EON
 }
@@ -670,33 +670,33 @@ om-testenv-vars(){ echo BASH_SOURCE FUNCNAME OM_KEEP_GEOM GEOM OPTICKS_T_GEOM ; 
 
 om-testenv-dump(){
     local pfx="$1"
-    if [ -z "$QUIET" ]; then 
+    if [ -z "$QUIET" ]; then
         local fmt="$pfx %20s : %s \n"
         local vars="$(om-testenv-vars)"
         local var ; for var in $vars ; do printf "$fmt" "$var" "${!var}" ; done
-    fi 
+    fi
 }
 
 om-testenv-push()
 {
-    om-testenv-dump "[push" 
+    om-testenv-dump "[push"
 
     export OM_KEEP_GEOM=$GEOM
 
     local geom_script=$HOME/.opticks/GEOM/GEOM.sh
 
-    if [ -s $geom_script ]; then 
+    if [ -s $geom_script ]; then
         source $geom_script
         # script is expected to always set GEOM
         # and perhaps set OPTICKS_T_GEOM
-    fi 
+    fi
     export GEOM=${OPTICKS_T_GEOM:-$GEOM}
 
-    om-testenv-dump "]push" 
+    om-testenv-dump "]push"
 }
 om-testenv-pop()
 {
-    om-testenv-dump "[pop " 
+    om-testenv-dump "[pop "
 
     if [ -n "$OM_KEEP_GEOM" ] ; then
         export GEOM=$OM_KEEP_GEOM
@@ -705,7 +705,7 @@ om-testenv-pop()
         unset GEOM
     fi
 
-    om-testenv-dump "]pop " 
+    om-testenv-dump "]pop "
 }
 
 
@@ -715,15 +715,15 @@ om-check()
     local msg="=== $FUNCNAME :"
     local bdir=$(om-bdir)
     local rc=0
-    if [ ! -d "$bdir" ]; then 
-        echo $msg top level bdir $bdir does not exist : creating it 
-        mkdir -p $bdir  
-    fi 
-    if [ ! -d "$bdir" ]; then 
-        echo $msg top level bdir $bdir does not exist : create failed 
+    if [ ! -d "$bdir" ]; then
+        echo $msg top level bdir $bdir does not exist : creating it
+        mkdir -p $bdir
+    fi
+    if [ ! -d "$bdir" ]; then
+        echo $msg top level bdir $bdir does not exist : create failed
         rc=1
-    fi 
-    return $rc 
+    fi
+    return $rc
 }
 
 
@@ -731,8 +731,8 @@ om-all-notes(){ cat << EON
 om-all-notes
 ==============
 
-om-all runs the func passed in the argument 
-in each of the sub-package bdir 
+om-all runs the func passed in the argument
+in each of the sub-package bdir
 
 
 EON
@@ -753,32 +753,32 @@ om-all()
 
     local subs=$(om-subs $*)    # need to accept the argument to handle :/+ for building from here onwards
     local name
-    : switched to for loop is easier for error propagation than piping 
-    for name in $subs 
-    do 
+    : switched to for loop is easier for error propagation than piping
+    for name in $subs
+    do
         local sdir=$(om-sdir $name)
         local bdir=$(om-bdir $name)
         mkdir -p $bdir
         local udir
-        : only om-find needs sdir the others need bdir 
+        : only om-find needs sdir the others need bdir
         case $func in
           om-find) udir=$sdir ;;
                 *) udir=$bdir ;;
         esac
-        
+
         cd $udir
 
         $func
         rc=$?
         [ "$rc" != "0" ] && echo $msg ERROR bdir $bdir : non-zero rc $rc && return $rc
-    done 
+    done
     cd $iwd
     return $rc
 }
 
 om-one-or-all()
 {
-    local rc=0 
+    local rc=0
     local func=$1
     local arg=$2  # not normally used
     local iwd=$(pwd)
@@ -786,21 +786,21 @@ om-one-or-all()
 
     om-check
     rc=$?
-    [ "$rc" != "0" ] && echo $msg ERROR om-check failed && om-info && return $rc 
+    [ "$rc" != "0" ] && echo $msg ERROR om-check failed && om-info && return $rc
 
     if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o  "${arg/:}" != "$arg" -o  "${arg/+}" != "$arg"    ]; then
-        om-$func-all $arg 
+        om-$func-all $arg
         rc=$?
     else
-        om-$func-one $arg 
+        om-$func-one $arg
         rc=$?
     fi
 
     if [ "$rc" != "0" ]; then
-       echo $msg non-zero rc $rc 
-    fi 
+       echo $msg non-zero rc $rc
+    fi
     cd $iwd
-    return $rc 
+    return $rc
 }
 
 om-echo-one(){ echo $(pwd) ; }
@@ -834,7 +834,7 @@ om-visit-one()
     if [ ! -d "$bdir" ]; then
          echo $msg bdir $bdir does not exist : creating it
          mkdir -p $bdir
-    fi 
+    fi
     cd $bdir
     printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
 }
@@ -851,18 +851,18 @@ om-conf-one()
     if [ "$arg" == "clean" ]; then
          echo $msg removed bdir $bdir as directed by clean argument
          rm -rf $bdir
-    fi 
+    fi
 
     if [ ! -d "$bdir" ]; then
          echo $msg bdir $bdir does not exist : creating it
          mkdir -p $bdir
-    fi 
+    fi
 
     cd $bdir
     printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
 
     local rc=0
-    if [ "$name" == "okconf" ]; then     
+    if [ "$name" == "okconf" ]; then
         om-cmake-okconf $sdir
         rc=$?
     else
@@ -875,11 +875,11 @@ om-conf-one()
 
 om-cmake-okconf()
 {
-    local sdir=$1  
+    local sdir=$1
     local bdir=$PWD
     [ "$sdir" == "$bdir" ] && echo ERROR sdir and bdir are the same $sdir && return 1000
 
-    local rc 
+    local rc
     cmake $sdir \
        -G "$(om-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
@@ -900,17 +900,17 @@ om-cmake-okconf()
 
 om-cmake()
 {
-    local sdir=$1  
+    local sdir=$1
     local bdir=$PWD
     [ "$sdir" == "$bdir" ] && echo ERROR sdir and bdir are the same $sdir && return 1000
 
-    local rc 
+    local rc
     cmake $sdir \
        -G "$(om-cmake-generator)" \
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DOPTICKS_PREFIX=$(om-prefix) \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
-       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules
 
     #  -DCMAKE_FIND_DEBUG_MODE=1 \
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
@@ -926,7 +926,7 @@ om-cmake-dump(){ local sdir=${1:-sdir} ; cat << EOD
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \\
        -DOPTICKS_PREFIX=$(om-prefix) \\
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \\
-       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules
 
     om-cmake-generator : $(om-cmake-generator)
     opticks-buildtype  : $(opticks-buildtype)
@@ -956,7 +956,7 @@ $FUNCNAME
 
 
    opticks-compute-capability : $(opticks-compute-capability)
-   OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY 
+   OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY
 
    NODE_TAG                   : $NODE_TAG
 
@@ -964,13 +964,13 @@ EOI
 }
 
 
-om-nproc(){ 
+om-nproc(){
    case $(uname) in
       Linux) echo ${OM_NPROC:-$(nproc)} ;;
       Darwin) echo 2 ;;
    esac
 }
-    
+
 
 om-make-one()
 {
@@ -983,24 +983,24 @@ om-make-one()
     printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
 
     if [ ! -d $bdir ]; then
-       echo $msg ERROR bdir $bdir does not exist : you need to om-install OR om-conf once before using om-make or the om-- shortcut  
+       echo $msg ERROR bdir $bdir does not exist : you need to om-install OR om-conf once before using om-make or the om-- shortcut
        rc=1
        return $rc
-    fi 
+    fi
 
     if [ ! -f $bdir/Makefile ]; then
-       echo $msg ERROR bdir $bdir exists but does not contain a Makefile : you need to om-install OR om-conf once before using om-make or the om-- shortcut  
+       echo $msg ERROR bdir $bdir exists but does not contain a Makefile : you need to om-install OR om-conf once before using om-make or the om-- shortcut
        rc=2
        return $rc
-    fi 
+    fi
 
 
     cd $bdir
     local t0=$(date +"%s")
 
     local pr=$(om-nproc)
-    
-    if [ $pr -gt 1 ]; then 
+
+    if [ $pr -gt 1 ]; then
         make all -j$pr
     else
         cmake --build .  --target all
@@ -1013,9 +1013,9 @@ om-make-one()
     [ "$rc" != "0" ] && cd $iwd && return $rc
 
     #echo d1 $d1
-    [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2  
+    [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2
 
-    if [ $pr -gt 1 ]; then 
+    if [ $pr -gt 1 ]; then
         make install -j$pr
     else
         cmake --build .  --target install
@@ -1037,12 +1037,12 @@ To debug ctest running::
     cd ~/opticks/u4
     om-cd  # change to bdir
 
-    ctest -N    # list tests 
-    ctest -V --interactive-debug-mode 0   
-        ## verbose output, but with the non-interactive mode used by test running   
+    ctest -N    # list tests
+    ctest -V --interactive-debug-mode 0
+        ## verbose output, but with the non-interactive mode used by test running
 
-NB see SSys::GetInteractivityLevel the --interactive-debug-mode results in ctest 
-setting envvar CTEST_INTERACTIVE_DEBUG_MODE     
+NB see SSys::GetInteractivityLevel the --interactive-debug-mode results in ctest
+setting envvar CTEST_INTERACTIVE_DEBUG_MODE
 
 
 EON
@@ -1062,7 +1062,7 @@ om-test-one()
     local log=ctest.log
     date          | tee $log
 
-    echo ctest $CTESTARG --interactive-debug-mode 0 --output-on-failure  
+    echo ctest $CTESTARG --interactive-debug-mode 0 --output-on-failure
     ctest $* $CTESTARG --interactive-debug-mode 0 --output-on-failure  2>&1 | tee -a $log
 
     date          | tee -a $log
@@ -1083,7 +1083,7 @@ om-clean-one()
     local sdir=$(om-sdir $name)
     local bdir=$(om-bdir $name)
     cd $sdir
-    local cmd="rm -rf $bdir && mkdir -p $bdir" 
+    local cmd="rm -rf $bdir && mkdir -p $bdir"
     echo $cmd
     eval $cmd
 
@@ -1094,7 +1094,7 @@ om-clean-one()
 
 
 
-om-find-one(){   
+om-find-one(){
    local str="${1:-ENV_HOME}"
    local opt=${2:--H}
    local iwd=$(pwd)
@@ -1134,13 +1134,13 @@ om-tl(){ cat $(om-test-log) ; }
 om-divider(){ cat << EOD
 //////////////////////////////////////////////////////////////////////////////////
 
-My bash functions tend to grow, in order to avoid confusing users 
-trying to install Opticks should try to distinguish between 
+My bash functions tend to grow, in order to avoid confusing users
+trying to install Opticks should try to distinguish between
 
-1. essentials for building 
+1. essentials for building
 2. useful additions for developers
 
-This divider attempts to make that split.  Possibly relocate the below into 
+This divider attempts to make that split.  Possibly relocate the below into
 an omu- to make that distinction stronger.
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -1149,20 +1149,20 @@ EOD
 
 
 om-mk-notes(){ cat << EON
-om-mk 
+om-mk
 =======
 
-om-mk allows running commands from the parallel build tree, 
-particularly useful for quickly building and running/debugging 
-single test executables. This is especially useful with projects 
-like NPY which is quite slow to build fully, as it allows just the 
+om-mk allows running commands from the parallel build tree,
+particularly useful for quickly building and running/debugging
+single test executables. This is especially useful with projects
+like NPY which is quite slow to build fully, as it allows just the
 needed code to be built for the test executable.
 
-Note this works so long as the source changes are all within the 
-current subproj. If there are changes in other projs this will not 
+Note this works so long as the source changes are all within the
+current subproj. If there are changes in other projs this will not
 detect that::
 
-   npy-c 
+   npy-c
    cd tests
 
    om-mk "make help | grep Test"
@@ -1171,12 +1171,12 @@ detect that::
 
    om-mk "make NConvexPolyhedronSegmentTest  && ./NConvexPolyhedronSegmentTest"
 
-       ## build and run a single test 
-    
+       ## build and run a single test
+
    TEST=NSceneLoadTest om-t
 
 
-Note that this does not install ... and 
+Note that this does not install ... and
 there seems no way to install just the one test ?
 
 EON
@@ -1199,34 +1199,34 @@ om-mk()
     local msg="=== $FUNCNAME :"
     local iwd=$(pwd)
     local rdir=$(om-reldir)   #  relative dir, when invoked from within source or build trees
-    [ "${rdir/tests}" == "${rdir}" ] && rdir="$rdir/tests"  
+    [ "${rdir/tests}" == "${rdir}" ] && rdir="$rdir/tests"
     local bdir=$(om-bdir $rdir)
     cd $bdir
-    echo $msg bdir $bdir rdir $rdir : $1 
+    echo $msg bdir $bdir rdir $rdir : $1
     eval $1
     cd $iwd
 }
 
-om-pdir() 
-{ 
+om-pdir()
+{
     local here=$(realpath $(pwd -P));
     local stop=$(om-sdir-real);
     local btop=$(om-bdir-real);
-    stop=${stop%/}  
-    btop=${btop%/}   
-    :  remove trailing slash 
+    stop=${stop%/}
+    btop=${btop%/}
+    :  remove trailing slash
 
     [ -n "$DEBUG" ] && echo $FUNCNAME here $here stop $stop btop $btop
 
-    : symbolic links can trick this 
-    case $here in 
+    : symbolic links can trick this
+    case $here in
         $stop)  echo $btop ;;
         $btop)  echo $stop ;;
         $stop*) echo $btop/${here/$stop\/} ;;
         $btop*) echo $stop/${here/$btop\/} ;;
              *) echo "" ;;
     esac
-    return 0 
+    return 0
 }
 
 om-rdir()
@@ -1234,16 +1234,16 @@ om-rdir()
     local here=$(pwd -P);
     local stop=$(om-sdir);
     local btop=$(om-bdir);
-    stop=${stop%/}  # remove trailing slash 
-    btop=${btop%/}   
-    case $here in 
+    stop=${stop%/}  # remove trailing slash
+    btop=${btop%/}
+    case $here in
         $stop)  echo "" ;;
         $btop)  echo "" ;;
         $stop*) echo ${here/$stop\/} ;;
         $btop*) echo ${here/$btop\/} ;;
              *) echo "" ;;
     esac
-    return 0 
+    return 0
 }
 
 om-cd()
@@ -1270,7 +1270,7 @@ om-gen()
    [ -z "$nam" ] && nam=$(basename $rel)
 
    local dir=$(dirname $rel)
-   mkdir -p $dir 
+   mkdir -p $dir
 
    om-gen- $nam $rel > $rel.bash
 
@@ -1287,16 +1287,16 @@ $1-vi(){ vi \$($1-source) om.bash opticks.bash externals/externals.bash ; }
 $1-env(){  olocal- ; opticks- ; }
 $1-usage(){ cat << EOU
 
-$1 Usage 
+$1 Usage
 ===================
 
 Generate a file for bash precursor functions or notes using om-gen like this::
 
    om-gen yoctoglrap/yog         # makes precursor yog-
-   om-gen notes/geant4/opnovice 
+   om-gen notes/geant4/opnovice
 
 Hook up a line like the below to opticks.bash or externals/externals.bash::
-  
+
    $1-(){ . \$(opticks-home)/$2.bash      && $1-env \$* ; }
 
 
@@ -1304,9 +1304,9 @@ EOU
 }
 
 $1-dir(){ echo \$(dirname \$($1-source)) ; }
-$1-cd(){  cd \$($1-dir) ; } 
-$1-c(){   cd \$($1-dir) ; } 
-$1--(){   opticks-- \$($1-dir) ; } 
+$1-cd(){  cd \$($1-dir) ; }
+$1-c(){   cd \$($1-dir) ; }
+$1--(){   opticks-- \$($1-dir) ; }
 
 EOT
 }
@@ -1327,7 +1327,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
 
-    return 0 ; 
+    return 0 ;
 }
 
 EOT
@@ -1340,24 +1340,24 @@ om-libpath(){
    local libprefix=$OPTICKS_PREFIX
    case $(uname) in
       Darwin) echo $libprefix/lib:$libprefix/externals/lib ;;
-      Linux) echo $libprefix/lib64:$libprefix/externals/lib:/lib64 ;; 
+      Linux) echo $libprefix/lib64:$libprefix/externals/lib:/lib64 ;;
    esac
 }
 
 om-run()
 {
    case $(uname) in
-     Linux)  LD_LIBRARY_PATH=$(om-libpath) $*   ;; 
-     Darwin) DYLD_LIBRARY_PATH=$(om-libpath) $* ;; 
+     Linux)  LD_LIBRARY_PATH=$(om-libpath) $*   ;;
+     Darwin) DYLD_LIBRARY_PATH=$(om-libpath) $* ;;
    esac
 }
 
 om-run-notes(){ cat << EON
-om-run 
-   workaround a failure to setup RPATH for some executables. 
-   Of order 375 Opticks executables do not need this... 
+om-run
+   workaround a failure to setup RPATH for some executables.
+   Of order 375 Opticks executables do not need this...
    but some executables made in examples do for unkown reasons.
-   This temorarily sets the library path to enable them to find 
+   This temorarily sets the library path to enable them to find
    the Opticks libs.
 
 Usage::

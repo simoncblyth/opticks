@@ -10,6 +10,18 @@ okdist-usage(){  cat << \EOU
 Opticks Binary Distribution : create tarball for explosion on cvmfs
 =====================================================================
 
+
+Deprecation Warning with newer python
+--------------------------------------
+
+== okdist-tarball-extract
+[2025-05-30 17:39:40,429] p1880701 {/home/blyth/opticks/bin/oktar.py:251} INFO - extracting tarball with common prefix el9_amd64_gcc11/Opticks-v0.4.3 into base /data1/blyth/local/opticks_Debug 
+/home/blyth/opticks/bin/oktar.py:252: DeprecationWarning: Python 3.14 will, by default, filter extracted tar archives and reject files or modify their metadata. Use the filter argument to control this behavior.
+  self.t.extractall(base)
+/data1/blyth/local/opticks_Debug/el9_amd64_gcc11
+
+
+
 Dev Notes
 ----------
 
