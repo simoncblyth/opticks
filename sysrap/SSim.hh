@@ -43,7 +43,7 @@ struct SYSRAP_API SSim
     NPFold*   extra ;
     stree*    tree ;    // instanciated with SSim::SSim
     SScene*   scene ;
-
+    int64_t   toploadtime ;
 
     static const plog::Severity LEVEL ;
     static const int stree_level ;
