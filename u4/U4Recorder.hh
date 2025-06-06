@@ -12,8 +12,25 @@ The U4Recorder relies on the RunAction, EventAction  etc.. classes
 calling those lifecycle methods.
 
 
+Using G4VUserTrackInformation photon label info without accessing them 
+------------------------------------------------------------------------
 
+As detector simulation frameworks will be using the 
+G4VUserTrackInformation for other purposes it causes 
+incompatibility to require that the track info is 
+solely used by Opticks. 
 
+To workaround this problem have added partner lower level 
+track methods with names ending with "_" that take an int* label.
+The int* label is a pointer back to the photon label data
+back in the Geant4 track info of each track. 
+
+Passing that int* pointer as a parameter alongside the track 
+avoids needing to have detector framework track info 
+classes to delve into the track info here.  Instead
+that access to the label can to be done in the detector 
+framework. This avoids conflicts over the use of the track
+info by enabling it to be shared. 
 
 **/
 
@@ -92,13 +109,19 @@ public:
     void BeginOfEventAction_(int eventID_);
     void EndOfEventAction_(int eventID_);
 
-    void PreUserTrackingAction(const G4Track*);
-    void PostUserTrackingAction(const G4Track*);
+    void PreUserTrackingAction(const G4Track* );
+    void PostUserTrackingAction(const G4Track* );
+
+    void PreUserTrackingAction_( const G4Track*, int* label );
+    void PostUserTrackingAction_(const G4Track*, int* label );
 
     void PreUserTrackingAction_Optical(const G4Track*);
+    void PreUserTrackingAction_Optical_(const G4Track*, int* label );
 
     void PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track );
     void PreUserTrackingAction_Optical_FabricateLabel( const G4Track* track ) ;
+    void PreUserTrackingAction_Optical_FabricateLabel_( const G4Track* track, int* label ); 
+
     void GetLabel( spho& ulabel, const G4Track* track );
 
 
@@ -108,7 +131,8 @@ public:
     static NP* MakeMetaArray() ;
     static void SaveMeta(const char* savedir);
 
-    void PostUserTrackingAction_Optical(const G4Track*);
+    void PostUserTrackingAction_Optical( const G4Track*);
+    void PostUserTrackingAction_Optical_(const G4Track*, int* label);
 
 
     void UserSteppingAction(const G4Step*);

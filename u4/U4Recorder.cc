@@ -385,8 +385,12 @@ void U4Recorder::EndOfEventAction_(int eventID_)
     SaveMeta(savedir);
 
 }
+
 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
+
+void U4Recorder::PreUserTrackingAction_(const G4Track* track, int* label){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical_(track, label); }
+void U4Recorder::PostUserTrackingAction_(const G4Track* track, int* label){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical_(track, label); }
 
 
 
@@ -434,8 +438,15 @@ HMM: can this same mechanism be used for FastSim handback to OrdinarySim ?
 
 void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
 {
-    LOG(LEVEL) << "[" ;
+    spho ulabel = {} ;
+    PreUserTrackingAction_Optical_GetLabel(ulabel, track);
+    PreUserTrackingAction_Optical_(track, ulabel.data() );
+}
 
+
+void U4Recorder::PreUserTrackingAction_Optical_(const G4Track* track, int* label)
+{
+    LOG(LEVEL) << "[" ;
     if(UseGivenVelocity_KLUDGE == 1)
     {
         LOG(LEVEL) << " YES:UseGivenVelocity_KLUDGE " ;
@@ -448,8 +459,14 @@ void U4Recorder::PreUserTrackingAction_Optical(const G4Track* track)
     }
 
 
-    spho ulabel = {} ;
-    PreUserTrackingAction_Optical_GetLabel(ulabel, track);
+    spho& ulabel = reinterpret_cast<spho&>(*label);
+
+    if(ulabel.isPlaceholder())
+    {
+        int track_id = U4Track::Id(track);
+        ulabel.set_fabricated_(track_id);
+    }
+
 
     bool skip = !Enabled(ulabel) ;
     LOG_IF( info, skip ) << " Enabled-SKIP  EIDX/GIDX " << EIDX << "/" << GIDX ;
@@ -590,6 +607,18 @@ void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel( const G4Track* tr
 
     saveOrLoadStates(label->id);  // moved here as labelling happens once per torch/input photon
 }
+
+
+void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel_( const G4Track* track, int* label )
+{
+    spho& q = reinterpret_cast<spho&>(*label) ;
+    if(q.isPlaceholder())
+    {
+        int track_id = U4Track::Id(track);
+        q.set_fabricated_(track_id); 
+    }
+}
+
 
 /**
 U4Recorder::GetLabel
@@ -772,7 +801,16 @@ U4Recorder::PostUserTrackingAction_Optical
 
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
-    LOG(LEVEL) << "[" ;
+    spho ulabel = {} ; 
+    GetLabel(ulabel, track); 
+    PostUserTrackingAction_Optical_(track, ulabel.data()); 
+}    
+
+void U4Recorder::PostUserTrackingAction_Optical_(const G4Track* track, int* label)
+{
+    spho& ulabel = reinterpret_cast<spho&>(*label);
+    if(!Enabled(ulabel)) return ; // EIDX, GIDX skipping
+
     G4TrackStatus tstat = track->GetTrackStatus();
     LOG(LEVEL) << U4TrackStatus::Name(tstat) ;
 
@@ -782,9 +820,6 @@ void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
     LOG_IF(info, !is_fStopAndKill_or_fSuspend ) << " not is_fStopAndKill_or_fSuspend  post.tstat " << U4TrackStatus::Name(tstat) ;
     assert( is_fStopAndKill_or_fSuspend );
 
-    spho ulabel = {} ;
-    GetLabel( ulabel, track );
-    if(!Enabled(ulabel)) return ; // EIDX, GIDX skipping
 
     if(is_fStopAndKill)
     {

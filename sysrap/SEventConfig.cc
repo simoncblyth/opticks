@@ -447,7 +447,6 @@ const char* SEventConfig::RGModeLabel(){ return SRG::Name(_RGMode) ; }
 
 
 
-//void SEventConfig::SetDefault(){            SetEventMode(Default)           ; }
 void SEventConfig::SetDebugHeavy(){         SetEventMode(DebugHeavy) ; }
 void SEventConfig::SetDebugLite(){          SetEventMode(DebugLite) ; }
 void SEventConfig::SetNothing(){            SetEventMode(Nothing)           ; }
@@ -457,7 +456,6 @@ void SEventConfig::SetHitPhoton(){          SetEventMode(HitPhoton)         ; }
 void SEventConfig::SetHitPhotonSeq(){       SetEventMode(HitPhotonSeq)      ; }
 void SEventConfig::SetHitSeq(){             SetEventMode(HitSeq)            ; }
 
-//bool SEventConfig::IsDefault(){           return _EventMode && strcmp(_EventMode, Default) == 0 ; }
 bool SEventConfig::IsDebugHeavy(){        return _EventMode && strcmp(_EventMode, DebugHeavy) == 0 ; }
 bool SEventConfig::IsDebugLite(){         return _EventMode && strcmp(_EventMode, DebugLite) == 0 ; }
 bool SEventConfig::IsNothing(){           return _EventMode && strcmp(_EventMode, Nothing) == 0 ; }
