@@ -97,13 +97,13 @@ G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const
 
 
     int opticksMode = SEventConfig::IntegrationMode();
-    if(opticksMode == 2) SetNoGPU() ;
+    if(opticksMode == 0 || opticksMode == 2) SetNoGPU() ;
 
     LOG(info) << "[ WITH_G4CXOPTICKS opticksMode " << opticksMode << " sd " << sd  ;
 
     G4CXOpticks* gx = nullptr ;
 
-    if( opticksMode == 1 || opticksMode == 3 || opticksMode == 2 )
+    if( opticksMode == 0 || opticksMode == 1 || opticksMode == 3 || opticksMode == 2 )
     {
         gx = SetGeometry(world) ;
         SaveGeometry();
