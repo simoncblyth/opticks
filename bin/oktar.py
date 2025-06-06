@@ -55,7 +55,7 @@ class OKTar(object):
     bin
     lib
     lib64
-    ptx
+    optix
     include
     cmake
     py
