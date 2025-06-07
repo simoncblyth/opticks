@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 QPMTTest
 ==========
@@ -22,9 +22,9 @@ export SCRIPT
 REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=QPMTTest
 
-source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar 
+source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar
 
-defarg="run_ana"
+defarg="info_run_ana"
 arg=${1:-$defarg}
 
 logging(){
@@ -36,44 +36,48 @@ logging
 export FOLD=${TMP:-/tmp/$USER/opticks}/$name
 vars="REALDIR FOLD GEOM name"
 
-if [ "${arg/info}" != "$arg" ]; then 
-    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/build}" != "$arg" ]; then  
-   echo $BASH_SOURCE : ERROR : QPMTTest IS BUILT BY STANDARD OM : NOT THIS SCRIPT && exit 1 
-fi 
- 
-if [ "${arg/run}" != "$arg" ]; then  
+if [ "${arg/build}" != "$arg" ]; then
+   echo $BASH_SOURCE : ERROR : QPMTTest IS BUILT BY STANDARD OM : NOT THIS SCRIPT && exit 1
+fi
+
+if [ "${arg/run}" != "$arg" ]; then
     $name
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
-fi 
+fi
 
-if [ "${arg/dbg}" != "$arg" ]; then  
-    case $(uname) in
-       Darwin) lldb__ $name ;;
-       Linux) gdb__ $name ;;
-    esac
+if [ "${arg/dbg}" != "$arg" ]; then
+    source dbg__.sh
+    dbg__ $name
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
-fi 
+fi
 
-if [ "${arg/ana}" != "$arg" ]; then  
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/$name.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2 
-fi 
+if [ "${arg/pdb}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $REALDIR/$name.py
+    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 2
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then
+    ${PYTHON:-python} $REALDIR/$name.py
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2
+fi
+
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs
     export CAP_REL=QPMTTest
     export CAP_STEM=QPMTTest
-    case $arg in  
-       mpcap) source mpcap.sh cap  ;;  
-       mppub) source mpcap.sh env  ;;  
+    case $arg in
+       mpcap) source mpcap.sh cap  ;;
+       mppub) source mpcap.sh env  ;;
     esac
 
-    if [ "$arg" == "mppub" ]; then 
-        source epub.sh 
-    fi  
-fi 
+    if [ "$arg" == "mppub" ]; then
+        source epub.sh
+    fi
+fi
 
-exit 0 
+exit 0

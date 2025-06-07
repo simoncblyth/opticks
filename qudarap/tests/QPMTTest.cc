@@ -7,7 +7,7 @@ The lpmtcat 0,1,2 correspond to NNVT,HAMA,NNVT_HiQE
 
 ::
 
-    In [6]: np.where( t.qpmt.src_lcqs[:,0] == 0 )  ## NNVT 
+    In [6]: np.where( t.qpmt.src_lcqs[:,0] == 0 )  ## NNVT
     Out[6]:
     (array([   55,    98,   137,   267,   368,   372,   374,   378,   388,   391,   393,   394,   396,   398,   404,   409, ..., 17198, 17199, 17201, 17205, 17206, 17209, 17219, 17224, 17231, 17234,
             17242, 17255, 17327, 17504, 17526, 17537]),)
@@ -28,7 +28,7 @@ The lpmtcat 0,1,2 correspond to NNVT,HAMA,NNVT_HiQE
     In [10]: np.unique( t.qpmt.src_lcqs[:,0], return_counts=True )[1].sum()
     Out[10]: 17612
 
- 
+
 **/
 
 #include <cuda_runtime.h>
@@ -38,22 +38,22 @@ The lpmtcat 0,1,2 correspond to NNVT,HAMA,NNVT_HiQE
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
 
-    std::cout << " Before: " << QPMT<float>::Desc() << std::endl ; 
+    std::cout << " Before: " << QPMT<float>::Desc() << std::endl ;
 
-    const NPFold* jpmt = get_jpmt_fold(); 
-    LOG_IF(fatal, jpmt==nullptr) << " jpmt==nullptr " ;  
-    if(jpmt==nullptr) return 0 ;  
+    const NPFold* jpmt = get_jpmt_fold();
+    LOG_IF(fatal, jpmt==nullptr) << " jpmt==nullptr " ;
+    if(jpmt==nullptr) return 0 ;
 
-    QPMTTest<float> t(jpmt); 
-    NPFold* f = t.serialize(); 
+    QPMTTest<float> t(jpmt);
+    NPFold* f = t.serialize();
     cudaDeviceSynchronize();
-    f->save("/tmp/$USER/opticks/QPMTTest"); 
+    f->save("/tmp/$USER/opticks/QPMTTest");
 
-    std::cout << " Final: " << QPMT<float>::Desc() << std::endl ; 
+    std::cout << " Final: " << QPMT<float>::Desc() << std::endl ;
 
-    return 0 ; 
+    return 0 ;
 }
 
 

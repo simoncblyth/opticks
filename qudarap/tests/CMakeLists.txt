@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name QUDARapTest)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)   
+include(OpticksBuildOptions)
 
 set(INSTALLED_SCRIPTS
-   QTestRunner.sh 
+   QTestRunner.sh
 )
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
@@ -19,9 +19,9 @@ set(TEST_SOURCES
    QCerenkovIntegralTest.cc
    QPolyTest.cc
    QSimDescTest.cc
-   QPropTest.cc 
+   QPropTest.cc
    QEvent_Lifecycle_Test.cc
-   QSimCreateTest.cc 
+   QSimCreateTest.cc
    QUTest.cc
    QTexMakerTest.cc
    QTexLookupTest.cc
@@ -38,10 +38,10 @@ set(CUDART_TEST_SOURCES
 
    QTexRotateTest.cc
    QBufTest.cc
-   QOpticalTest.cc 
-   QSimWithEventTest.cc 
+   QOpticalTest.cc
+   QSimWithEventTest.cc
    QSimTest.cc
-   QEventTest.cc 
+   QEventTest.cc
 
 )
 
@@ -52,10 +52,10 @@ set( JUNO_SPECIFIC_TEST_SOURCES
 )
 
 
-## THESE NEED REJIG : THEY FAIL FOR LACK OF DEPENDENCIES 
+## THESE NEED REJIG : THEY FAIL FOR LACK OF DEPENDENCIES
 set(KNOWN_FAIL_TEST_SOURCES
    QCerenkovTest.cc
-   QBndTest.cc 
+   QBndTest.cc
 )
 
 set(OTHER_TEST_SOURCES
@@ -74,7 +74,7 @@ foreach(SRC ${TEST_SOURCES})
 
     #add_test(${name}.${TGT} ${TGT})
     add_test(
-       NAME ${name}.${TGT} 
+       NAME ${name}.${TGT}
        COMMAND bash QTestRunner.sh ${TGT}
        #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/QTestRunner.sh ${TGT}
     )
@@ -90,7 +90,7 @@ foreach(SRC ${CUDART_TEST_SOURCES})
 
     #add_test(${name}.${TGT} ${TGT})
     add_test(
-       NAME ${name}.${TGT} 
+       NAME ${name}.${TGT}
        COMMAND bash QTestRunner.sh ${TGT}
        #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/QTestRunner.sh ${TGT}
     )
@@ -128,13 +128,13 @@ endforeach()
 
 
 
-## HMM: switch to Custom4 (not getting that indirectly via PMTSim) 
+## HMM: switch to Custom4 (not getting that indirectly via PMTSim)
 find_package(PMTSim_standalone CONFIG)
 
 if(PMTSim_standalone_FOUND)
 
     set(PMTSIM_TEST_SOURCES
-        QPMTTest.cc 
+        QPMTTest.cc
     )
 
     foreach(SRC ${PMTSIM_TEST_SOURCES})

@@ -61,6 +61,7 @@ struct qpmt
 
     qprop<F>* rindex_prop ;
     qprop<F>* qeshape_prop ;
+    qprop<F>* cetheta_prop ;
 
     F*        thickness ;
     F*        lcqs ;
@@ -71,6 +72,7 @@ struct qpmt
     QPMT_METHOD int  get_lpmtcat(  int pmtid ) const  ;
     QPMT_METHOD F    get_qescale( int pmtid ) const  ;
     QPMT_METHOD F    get_lpmtcat_qe( int pmtcat, F energy_eV ) const ;
+    QPMT_METHOD F    get_lpmtcat_ce( int pmtcat, F theta ) const ;
 
     QPMT_METHOD F    get_lpmtcat_rindex(    int lpmtcat, int layer, int prop, F energy_eV ) const ;
     QPMT_METHOD F    get_lpmtcat_rindex_wl( int lpmtcat, int layer, int prop, F wavelength_nm ) const ;
@@ -108,8 +110,11 @@ inline QPMT_METHOD F qpmt<F>::get_lpmtcat_qe( int lpmtcat, F energy_eV ) const
 {
     return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? qeshape_prop->interpolate( lpmtcat, energy_eV ) : -1.f ;
 }
-
-
+template<typename F>
+inline QPMT_METHOD F qpmt<F>::get_lpmtcat_ce( int lpmtcat, F theta ) const
+{
+    return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? cetheta_prop->interpolate( lpmtcat, theta ) : -1.f ;
+}
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_lpmtcat_rindex( int lpmtcat, int layer, int prop, F energy_eV ) const
 {

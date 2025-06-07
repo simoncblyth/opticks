@@ -1,18 +1,19 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
-QPMT_Test.sh : standalone build variant of standardly build QPMTTest.sh 
+QPMT_Test.sh : standalone build variant of standardly build QPMTTest.sh
 ==============================================================================================
 
 * standalone builds are useful for testing and to see exactly
-  what are depending on 
+  what are depending on
 
-* note that the build is using libSysRap, it would be lower level to 
+* note that the build is using libSysRap, it would be lower level to
   directly operate from the sysrap sources : but the tree of dependencies
-  needs pruning to make that workable in addition to making more of 
-  sysrap header only 
+  needs pruning to make that workable in addition to making more of
+  sysrap header only
+
+2025/06 : not building with RNG errors, HMM need srng.h include into many QSim.cc ?
 
 
-   
 EOU
 }
 
@@ -26,7 +27,7 @@ name=QPMT_Test
 export FOLD=/tmp/$name
 bin=$FOLD/$name
 
-source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar 
+source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar
 
 defarg="build_run_ana"
 arg=${1:-$defarg}
@@ -37,8 +38,11 @@ logging(){
 logging
 
 
-custom4_prefix=${OPTICKS_PREFIX/_Debug}_externals/custom4/0.1.9
+#custom4_prefix=${OPTICKS_PREFIX/_Debug}_externals/custom4/0.1.9
+custom4_prefix=$HOME/customgeant4
 CUSTOM4_PREFIX=${CUSTOM4_PREFIX:-$custom4_prefix}
+#CUSTOM4_INCLUDE=$CUSTOM4_PREFIX/include/Custom4
+CUSTOM4_INCLUDE=$CUSTOM4_PREFIX
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
@@ -51,49 +55,52 @@ JPMTDIR=$GEOMDIR/CSGFoundry/SSim/extra/jpmt
 vars="BASH_SOURCE REALDIR REALFOLD FOLD GEOM name CUSTOM4_PREFIX CUDA_PREFIX GEOMDIR JPMTDIR"
 
 
-if [ "${arg/info}" != "$arg" ]; then 
-    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/build}" != "$arg" ]; then  
+if [ "${arg/build}" != "$arg" ]; then
 
     mkdir -p $FOLD
 
     cus="QPMT QProp"
-    for cu in $cus 
+    for cu in $cus
     do
         cui=$REALFOLD/$cu.cu
-        cuo=$FOLD/${cu}_cu.o  
+        cuo=$FOLD/${cu}_cu.o
+        echo $BASH_SOURCE compile $cui
+
         nvcc -c $cui \
              -std=c++11 -lstdc++ \
              -I.. \
              -DWITH_THRUST \
              -DWITH_CUSTOM4 \
-             -I$CUSTOM4_PREFIX/include/Custom4 \
+             -I$CUSTOM4_INCLUDE \
              -I$OPTICKS_PREFIX/include/SysRap \
              -o $cuo
         [ $? -ne 0 ] && echo $BASH_SOURCE : nvcc compile error cu $cu  && exit 1
         echo $BASH_SOURCE : cui $cui cuo $cuo
-    done 
+    done
 
     ccs="QPMT QProp QU"
-    for cc in $ccs 
-    do 
+    for cc in $ccs
+    do
         cci=$REALFOLD/$cc.cc
-        cco=$FOLD/${cc}_cc.o  
+        cco=$FOLD/${cc}_cc.o
+        echo $BASH_SOURCE compile $cci
         gcc -c $cci \
         -g \
         -std=c++11 \
         -I.. \
         -DWITH_CUSTOM4 \
         -DWITH_THRUST \
-        -I$CUSTOM4_PREFIX/include/Custom4 \
+        -I$CUSTOM4_INCLUDE \
         -I$OPTICKS_PREFIX/include/SysRap \
         -I$OPTICKS_PREFIX/include/OKConf \
         -I$OPTICKS_PREFIX/externals/plog/include \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$CUDA_PREFIX/include \
-        -o $cco   
+        -o $cco
        [ $? -ne 0 ] && echo $BASH_SOURCE : gcc compile error cc $cc  && exit 2
        echo $BASH_SOURCE : cci $cci cco $cco
     done
@@ -109,7 +116,7 @@ if [ "${arg/build}" != "$arg" ]; then
         -I.. \
         -DWITH_CUSTOM4 \
         -DWITH_THRUST \
-        -I$CUSTOM4_PREFIX/include/Custom4 \
+        -I$CUSTOM4_INCLUDE \
         -I$OPTICKS_PREFIX/include/SysRap \
         -I$OPTICKS_PREFIX/include/OKConf \
         -I$OPTICKS_PREFIX/externals/plog/include \
@@ -122,40 +129,40 @@ if [ "${arg/build}" != "$arg" ]; then
         -lcudart \
         -o $bin
        [ $? -ne 0 ] && echo $BASH_SOURCE : gcc comple link error  && exit 2
- 
-       echo $BASH_SOURCE : compiled and linked bin : $bin 
-fi 
- 
-if [ "${arg/run}" != "$arg" ]; then  
+
+       echo $BASH_SOURCE : compiled and linked bin : $bin
+fi
+
+if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 3
-fi 
+fi
 
-if [ "${arg/dbg}" != "$arg" ]; then  
+if [ "${arg/dbg}" != "$arg" ]; then
     case $(uname) in
        Darwin) lldb__ $bin ;;
        Linux) gdb__ $bin ;;
     esac
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 4
-fi 
+fi
 
-if [ "${arg/ana}" != "$arg" ]; then  
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/QPMTTest.py 
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2 
-fi 
+if [ "${arg/ana}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $REALDIR/QPMTTest.py
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2
+fi
 
 if [ "$arg" == "mpcap" -o "$arg" == "mppub" ]; then
     export CAP_BASE=$FOLD/figs
     export CAP_REL=QPMTTest
     export CAP_STEM=QPMTTest
-    case $arg in  
-       mpcap) source mpcap.sh cap  ;;  
-       mppub) source mpcap.sh env  ;;  
+    case $arg in
+       mpcap) source mpcap.sh cap  ;;
+       mppub) source mpcap.sh env  ;;
     esac
 
-    if [ "$arg" == "mppub" ]; then 
-        source epub.sh 
-    fi  
-fi 
+    if [ "$arg" == "mppub" ]; then
+        source epub.sh
+    fi
+fi
 
-exit 0 
+exit 0

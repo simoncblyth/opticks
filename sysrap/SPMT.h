@@ -141,9 +141,11 @@ struct SPMT
     static const int N_MCT ;
     static const int N_SPOL ;
 
-    static constexpr const char* QEshape_PMTCAT_NAMES = "QEshape_NNVT.npy,QEshape_R12860.npy,QEshape_NNVT_HiQE.npy" ;
+    static constexpr const char* QE_shape_PMTCAT_NAMES = "QEshape_NNVT.npy,QEshape_R12860.npy,QEshape_NNVT_HiQE.npy" ;
     // follows PMTCategory kPMT enum order but using QEshape array naming convention
     // because there is no consistently used naming convention have to do these dirty things
+
+    static constexpr const char* CE_theta_PMTCAT_NAMES = "CE_NNVTMCP.npy,CE_R12860.npy,CE_NNVTMCP_HiQE.npy" ;
 
     static const NPFold* Serialize(const char* path=nullptr);
     static SPMT* Load(const char* path=nullptr);
@@ -151,7 +153,11 @@ struct SPMT
 
     void init();
     void init_rindex_thickness();
-    void init_qeshape();
+
+    static NP* MakeCatPropArrayFromFold( const NPFold* fold, const char* _names, std::vector<const NP*>& v_prop, double domain_scale );
+
+    void init_qe_energy();
+    void init_ce_theta();
     void init_lcqs();
     static int TranslateCat(int lpmtcat);
 
@@ -252,14 +258,17 @@ struct SPMT
     const NPFold* PMTSimParamData ;
     const NPFold* MPT ;              // ARC_RINDEX, ARC_KINDEX, PHC_RINDEX, PHC_KINDEX
     const NPFold* CONST ;            // ARC_THICKNESS PHC_THICKNESS
-    const NPFold* QEshape ;
+    const NPFold* QE_shape ;
+    const NPFold* CE_theta ;
 
     std::vector<const NP*> v_rindex ;
     std::vector<const NP*> v_qeshape ;
+    std::vector<const NP*> v_cetheta ;
     std::vector<LCQS>      v_lcqs ;    // NUM_LPMT
 
     NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, N_EN, 2:[energy,value] )
     NP* qeshape ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
+    NP* cetheta ;   // (NUM_PMTCAT, EN_SAMPLES~44, 2:[energy,value] )
     NP* lcqs ;      // (NUM_LPMT, 2)
     NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )
 
@@ -299,10 +308,12 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     PMTSimParamData(jpmt ? jpmt->get_subfold("PMTSimParamData") : nullptr ),
     MPT(            PMTSimParamData ? PMTSimParamData->get_subfold("MPT")   : nullptr ),
     CONST(          PMTSimParamData ? PMTSimParamData->get_subfold("CONST") : nullptr ),
-    QEshape(        PMTSimParamData ? PMTSimParamData->get_subfold("QEshape") : nullptr ),
+    QE_shape(      PMTSimParamData ? PMTSimParamData->get_subfold("QEshape") : nullptr ),
+    CE_theta(       PMTSimParamData ? PMTSimParamData->get_subfold("CEtheta") : nullptr ),
     v_lcqs(NUM_LPMT),
     rindex(nullptr),
     qeshape(nullptr),
+    cetheta(nullptr),
     lcqs(nullptr),
     thickness(NP::Make<float>(NUM_PMTCAT, NUM_LAYER, 1)),
     tt(thickness->values<float>())
@@ -328,7 +339,8 @@ for upload to GPU (by QPMT) with various changes:
 inline void SPMT::init()
 {
     init_rindex_thickness();
-    init_qeshape();
+    init_qe_energy();
+    init_ce_theta();
     init_lcqs();
 }
 
@@ -425,41 +437,60 @@ inline void SPMT::init_rindex_thickness()
     rindex->change_shape( NUM_PMTCAT, NUM_LAYER, NUM_PROP, shape[shape.size()-2], shape[shape.size()-1] );
 }
 
+
+
 /**
-SPMT::init_qeshape
--------------------
+SPMT::MakeCatPropArrayFromFold
+--------------------------------
 
 1. selects just the LPMT relevant 3 PMTCAT
-2. energy domain scaled to use eV whilst still in double
+2. domain scaling is done whilst still in double precision
    and before combination to avoid stomping on last column int
    (HMM NP::Combine may have special handling to preserve that now?)
 
 **/
 
-inline void SPMT::init_qeshape()
+inline NP* SPMT::MakeCatPropArrayFromFold( const NPFold* fold, const char* _names, std::vector<const NP*>& v_prop, double domain_scale ) // static
 {
-    if(QEshape == nullptr) return ;
-    int QEshape_items = QEshape->num_items() ;
-    if(VERBOSE) std::cout << "SPMT::init_qeshape QEshape_items : " << QEshape_items << std::endl ;
+    if(fold == nullptr) return nullptr ;
+    int num_items = fold->num_items();
+    if(VERBOSE) std::cout << "SPMT::MakeCatPropArrayFromFold num_items : " << num_items << "\n" ;
 
     std::vector<std::string> names ;
-    U::Split(QEshape_PMTCAT_NAMES, ',', names );
+    U::Split(_names, ',', names );
 
     for(unsigned i=0 ; i < names.size() ; i++)
     {
         const char* k = names[i].c_str();
-        const NP* v = QEshape->get(k);
+        const NP* v = fold->get(k);
         if(VERBOSE) std::cout << std::setw(20) << k << " : " << ( v ? v->sstr() : "-" ) << std::endl ;
 
         NP* vc = v->copy();
-        vc->pscale(1e6, 0);  // MeV to eV
+        vc->pscale(domain_scale, 0);
         NP* vn = NP::MakeWithType<float>(vc);   // narrow
 
-        v_qeshape.push_back(vn) ;
+        v_prop.push_back(vn) ;
     }
-    qeshape = NP::Combine(v_qeshape);
-    qeshape->set_names(names);
+    NP* catprop = NP::Combine(v_prop);
+    catprop->set_names(names);
+    return catprop ;
 }
+
+
+inline void SPMT::init_qe_energy()
+{
+    double domain_scale = 1e6 ; // MeV to eV
+    qeshape = MakeCatPropArrayFromFold( QE_shape, QE_shape_PMTCAT_NAMES, v_qeshape, domain_scale );
+}
+inline void SPMT::init_ce_theta()
+{
+    double domain_scale = 1. ;
+    cetheta = MakeCatPropArrayFromFold( CE_theta, CE_theta_PMTCAT_NAMES, v_cetheta, domain_scale );
+}
+
+
+
+
 
 /**
 SPMT::init_lcqs
@@ -574,6 +605,7 @@ inline std::string SPMT::desc() const
     ss << "rindex " << ( rindex ? rindex->sstr() : "-" ) << std::endl ;
     ss << "thickness " << ( thickness ? thickness->sstr() : "-" ) << std::endl ;
     ss << "qeshape " << ( qeshape ? qeshape->sstr() : "-" ) << std::endl ;
+    ss << "cetheta " << ( cetheta ? cetheta->sstr() : "-" ) << std::endl ;
     ss << "lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl ;
 
     std::string str = ss.str();
@@ -586,6 +618,7 @@ inline bool SPMT::is_complete() const
        rindex != nullptr &&
        thickness != nullptr &&
        qeshape != nullptr &&
+       cetheta != nullptr &&
        lcqs != nullptr
        ;
 }
@@ -604,6 +637,7 @@ inline NPFold* SPMT::serialize_() const   // formerly get_fold
     if(rindex) fold->add("rindex", rindex) ;
     if(thickness) fold->add("thickness", thickness) ;
     if(qeshape) fold->add("qeshape", qeshape) ;
+    if(cetheta) fold->add("cetheta", cetheta) ;
     if(lcqs) fold->add("lcqs", lcqs) ;
     return fold ;
 }
