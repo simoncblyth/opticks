@@ -86,16 +86,22 @@ inline NPFold* QPMTTest<T>::make_qscan() const
     qscan->add("lpmtid",  lpmtid ) ;
     qscan->add("lpmtcat", lpmtcat ) ;
 
-    qscan->add("lpmtcat_rindex",    qpmt->lpmtcat_(qpmt_RINDEX,  energy_eV_domain) ) ;
-    qscan->add("lpmtcat_qeshape",   qpmt->lpmtcat_(qpmt_QESHAPE, energy_eV_domain) ) ;
-    qscan->add("lpmtcat_cetheta",   qpmt->lpmtcat_(qpmt_CETHETA, theta_radians_domain) ) ;
-    qscan->add("lpmtcat_stackspec", qpmt->lpmtcat_(qpmt_CATSPEC, energy_eV_domain) ) ;
+    qscan->add("lpmtcat_rindex",    qpmt->lpmtcat_scan(qpmt_RINDEX,  energy_eV_domain) ) ;
+    qscan->add("lpmtcat_qeshape",   qpmt->lpmtcat_scan(qpmt_QESHAPE, energy_eV_domain) ) ;
+    qscan->add("lpmtcat_stackspec", qpmt->lpmtcat_scan(qpmt_CATSPEC, energy_eV_domain) ) ;
 
-    qscan->add("spec", qpmt->mct_lpmtid_(qpmt_SPEC, mct_domain, lpmtid) ) ;
-    qscan->add("art" , qpmt->mct_lpmtid_(qpmt_ART , mct_domain, lpmtid) ) ;
-    qscan->add("arte", qpmt->mct_lpmtid_(qpmt_ARTE, mct_domain, lpmtid) ) ;
-    qscan->add("comp", qpmt->mct_lpmtid_(qpmt_COMP, mct_domain, lpmtid) ) ;
-    qscan->add("ll",   qpmt->mct_lpmtid_(qpmt_LL  , mct_domain, lpmtid) ) ;
+    qscan->add("lpmtcat_cetheta",   qpmt->lpmtcat_scan(qpmt_CETHETA, theta_radians_domain) ) ;
+
+
+    qscan->add("spec",    qpmt->mct_lpmtid_scan(qpmt_SPEC,    mct_domain, lpmtid) ) ;
+    qscan->add("spec_ce", qpmt->mct_lpmtid_scan(qpmt_SPEC_ce, mct_domain, lpmtid) ) ;
+
+    qscan->add("art" , qpmt->mct_lpmtid_scan(qpmt_ART , mct_domain, lpmtid) ) ;
+    qscan->add("arte", qpmt->mct_lpmtid_scan(qpmt_ARTE, mct_domain, lpmtid) ) ;
+    qscan->add("comp", qpmt->mct_lpmtid_scan(qpmt_COMP, mct_domain, lpmtid) ) ;
+    qscan->add("ll",   qpmt->mct_lpmtid_scan(qpmt_LL  , mct_domain, lpmtid) ) ;
+
+    qscan->add("arte_ce", qpmt->mct_lpmtid_scan(qpmt_ARTE_ce, mct_domain, lpmtid) ) ;
 
     return qscan ;
 }

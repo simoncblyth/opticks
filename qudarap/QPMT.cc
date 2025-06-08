@@ -10,8 +10,8 @@ QPMT::init_lcqs
 QPMT::lpmtcat_check
     check domain and lookup shape consistency
 
-QPMT::lpmtcat_
-   interface in .cc to kernel launcher QPMT_lpmtcat in .cu
+QPMT::lpmtcat_scan
+   interface in .cc to kernel launcher QPMT_lpmtcat_scan in .cu
 
 QPMT::mct_lpmtid_
    interface in .cc to kernel launcher QPMT_mct_lpmtid in .cu
@@ -155,6 +155,10 @@ inline void QPMT<T>::init_lcqs()
 
 
 
+/**
+NB these decls cannot be extern "C" as need C++ name mangling for template types
+**/
+
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 
 template <typename F>
@@ -179,9 +183,8 @@ extern void QPMT_mct_lpmtid_MOCK(
 
 
 #else
-// NB these cannot be extern "C" as need C++ name mangling for template types
 template <typename T>
-extern void QPMT_lpmtcat(
+extern void QPMT_lpmtcat_scan(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<T>* pmt,
@@ -192,7 +195,7 @@ extern void QPMT_lpmtcat(
 );
 
 template <typename T>
-extern void QPMT_mct_lpmtid(
+extern void QPMT_mct_lpmtid_scan(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<T>* pmt,
@@ -278,8 +281,10 @@ T* QPMT<T>::Alloc(NP* out, const char* label)
 
 
 /**
-QPMT::lpmtcat_
+QPMT::lpmtcat_scan
 --------------------
+
+Canonical usage from QPMTTest.h make_qscan
 
 1. create hostside lookup array for the output
 2. upload domain array to d_domain
@@ -287,17 +292,18 @@ QPMT::lpmtcat_
 4. invoke QPMT_lpmtcat launch using d_pmt pointer argument
 5. copy d_lookup to h_lookup
 
-For some etype the lookup contains an energy_eV scans for all pmt cat (3),
-layers (4) and props (2) (RINDEX, KINDEX).
-So the shape of the lookup output is  (3,4,2, domain_width )
+The shape of the lookup output depends on the etype.
+For some etype the lookup contains energy_eV scans for all pmt cat (3),
+layers (4) and props (2) (RINDEX, KINDEX) resulting in
+lookup shape of (3,4,2, domain_width ).
 
-Those are populated with nested loops (24 props) in the kernel
+The lookup are populated with nested loops (eg 3*4*2=24 props) in the kernel
 with the energy domain passed in as input. Parallelism is over the energy.
 
 **/
 
 template<typename T>
-NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
+NP* QPMT<T>::lpmtcat_scan(int etype, const NP* domain ) const
 {
     const char* elabel = qpmt_enum::Label(etype) ;
 
@@ -306,7 +312,7 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
     lpmtcat_check_domain_lookup_shape(etype, domain, lookup) ;
     unsigned lookup_num_values = lookup->num_values() ;
 
-    const T* d_domain = Upload(domain, "QPMT::lpmtcat_/d_domain" );
+    const T* d_domain = Upload(domain, "QPMT::lpmtcat_scan/d_domain" );
 
     LOG(LEVEL)
         << " etype " << etype
@@ -319,7 +325,7 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 
     T* h_lookup = lookup->values<T>() ;
 
-    T* d_lookup = Alloc(lookup, "QPMT<T>::lpmtcat_/d_lookup" );
+    T* d_lookup = Alloc(lookup, "QPMT<T>::lpmtcat_scan/d_lookup" );
 
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
@@ -329,9 +335,9 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
     dim3 threadsPerBlock ;
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u );
 
-    QPMT_lpmtcat(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain );
+    QPMT_lpmtcat_scan(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain );
 
-    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, lookup_num_values, "QPMT::lpmtcat_/cd2haf" );
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, lookup_num_values, "QPMT::lpmtcat_scan/cd2haf" );
     cudaDeviceSynchronize();
 #endif
 
@@ -340,8 +346,11 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 
 
 /**
-QPMT::mct_lpmtid_
--------------------
+QPMT::mct_lpmtid_scan
+----------------------
+
+Canonical usage from QPMTTest.h make_qscan
+
 
 mct means minus_cos_theta for an AOI scan
 
@@ -352,16 +361,31 @@ mct means minus_cos_theta for an AOI scan
 5. invoke launch QPMT_mct_lpmtid
 6. download d_lookup to h_lookup
 
+
+Q: Can dependency on CUSTOM4 be avoided ?
+A: NO, as using multilayer stack calc so need the
+   header with the TMM calc from CUSTOM4.
+   Dont want to duplicate that header.
+
 **/
 
 template<typename T>
-NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
+NP* QPMT<T>::mct_lpmtid_scan(int etype, const NP* domain, const NP* lpmtid ) const
 {
     const char* elabel = qpmt_enum::Label(etype) ;
     unsigned num_domain = domain->shape[0] ;
     unsigned num_lpmtid = lpmtid->shape[0] ;
 
     NP* lookup = MakeArray_lpmtid(etype, num_domain, num_lpmtid );
+    LOG_IF(fatal, lookup == nullptr)
+          << " etype " << etype
+          << " elabel " << elabel
+          << " FATAL no lookup "
+          ;
+
+    assert(lookup);
+    if(!lookup) std::raise(SIGINT);
+
     unsigned num_lookup = lookup->num_values() ;
 
 
@@ -391,10 +415,6 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
         ;
 
 
-// Q: Can dependency on CUSTOM4 be removed ?
-// A: Must be using the multilayer stack calc so depending on
-//    CUSTOM4 is inevitable without duplication of code.
-
 
 #ifdef WITH_CUSTOM4
     T* h_lookup = lookup->values<T>() ;
@@ -402,7 +422,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     T* d_lookup = h_lookup ;
 #else
-    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::lpmtid::d_lookup") ;
+    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT::mct_lpmtid_scan/d_lookup") ;
 #endif
 
     assert( lpmtid->uifc == 'i' && lpmtid->ebyte == 4 );
@@ -411,8 +431,8 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
     const T*   d_domain = domain->cvalues<T>() ;
     const int* d_lpmtid = lpmtid->cvalues<int>() ;
 #else
-    const char* label_0 = "QPMT::mct_lpmtid_/d_domain" ;
-    const char* label_1 = "QPMT::mct_lpmtid_/d_lpmtid" ;
+    const char* label_0 = "QPMT::mct_lpmtid_scan/d_domain" ;
+    const char* label_1 = "QPMT::mct_lpmtid_scan/d_lpmtid" ;
 
     const T*   d_domain = QU::UploadArray<T>(   domain->cvalues<T>(),   num_domain, label_0) ;
     const int* d_lpmtid = QU::UploadArray<int>( lpmtid->cvalues<int>(), num_lpmtid, label_1) ;
@@ -428,7 +448,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
     dim3 threadsPerBlock ;
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u );
 
-    QPMT_mct_lpmtid(
+    QPMT_mct_lpmtid_scan(
         numBlocks,
         threadsPerBlock,
         d_pmt,
@@ -441,13 +461,13 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
     cudaDeviceSynchronize();
 
-    const char* label = "QPMT::mct_lpmtid_" ;
+    const char* label = "QPMT::mct_lpmtid_scan" ;
     QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label );
     cudaDeviceSynchronize();
 #endif
 
 #else
-    LOG(fatal) << " QPMT::mct_lpmtid_ requires compilation WITH_CUSTOM4 " ;
+    LOG(fatal) << " QPMT::mct_lpmtid_scan requires compilation WITH_CUSTOM4 " ;
     assert(0) ;
 #endif
 

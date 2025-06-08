@@ -1745,6 +1745,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     const sphoton& p = ctx.p ;
     const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal
     int lpmtid = ctx.prd->identity() - 1 ;  // identity comes from optixInstance.instanceId where 0 means not-a-sensor
+    const float lposcost = ctx.prd->lposcost() ;  // local frame intersect position cosine theta
+
     //int lpmtid = p.identity ;
 
     float minus_cos_theta = dot(p.mom, *normal);
@@ -1764,6 +1766,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
            ctx.idx, cross_mom_nrm.x, cross_mom_nrm.y, cross_mom_nrm.z, length(cross_mom_nrm)  );
     printf("//qsim::propagate_at_surface_CustomART idx %7d : dot_pol_cross_mom_nrm = %10.8f \n", ctx.idx, dot_pol_cross_mom_nrm );
     printf("//qsim::propagate_at_surface_CustomART idx %7d : minus_cos_theta = %10.8f \n", ctx.idx, minus_cos_theta );
+    printf("//qsim::propagate_at_surface_CustomART idx %7d : lposcost = %10.8f (expect 0->1)\n", ctx.idx, lposcost );
     }
 #endif
 
@@ -1783,12 +1786,15 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
 #endif
 
     float ARTE[4] = {} ;
-    if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );
+
+    //if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );
+    if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ARTE_ce(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
+
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx )
-    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n",
-           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, ARTE[0], ARTE[1], ARTE[2], ARTE[3] );
+    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f lpc %7.3f ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n",
+           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost, ARTE[0], ARTE[1], ARTE[2], ARTE[3] );
 #endif
 
 
@@ -2375,7 +2381,7 @@ TODO: implement local index by including photon_id offset with the gensteps
 
 * NB the sxyz.h enum order is different to the python one  eg XYZ=0
 
-SEE : sevent::add_simtrace 
+SEE : sevent::add_simtrace
 
 **/
 
@@ -2430,7 +2436,7 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const
 
     unsigned char ucj = (photon_id < 255 ? photon_id : 255 ) ;
     gsid.c4.w = ucj ;
-    p.q3.u.w = gsid.u ;   // WARNING : THIS GSID LOOKS TO BE STOMPED ON BY sevent::add_simtrace 
+    p.q3.u.w = gsid.u ;   // WARNING : THIS GSID LOOKS TO BE STOMPED ON BY sevent::add_simtrace
 }
 
 /**

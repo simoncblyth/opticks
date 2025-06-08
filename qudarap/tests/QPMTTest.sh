@@ -8,6 +8,7 @@ NB : standard qudarap/om builds the QPMTTest binary, not this script
 ::
 
    PLOT=qeshape ~/o/qudarap/tests/QPMTTest.sh pdb
+   PLOT=cetheta ~/o/qudarap/tests/QPMTTest.sh pdb
 
    OPT=A_,Aa,As,Ap ./QPMTTest.sh ana
    OPT=R_,Ra,Rs,Rp ./QPMTTest.sh ana

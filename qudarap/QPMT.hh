@@ -90,8 +90,8 @@ struct QUDARAP_API QPMT
     static const T* Upload(const NP* arr, const char* label);
     static T* Alloc(NP* out, const char* label);
 
-    NP*  lpmtcat_( int etype, const NP* domain) const ;
-    NP*  mct_lpmtid_(  int etype, const NP* domain, const NP* lpmtid) const ;
+    NP*  lpmtcat_scan(     int etype, const NP* domain) const ;
+    NP*  mct_lpmtid_scan(  int etype, const NP* domain, const NP* lpmtid) const ;
 
 };
 
@@ -250,11 +250,13 @@ inline NP* QPMT<T>::MakeArray_lpmtid(int etype, unsigned num_domain, unsigned nu
     NP* lookup = nullptr ;
     switch(etype)
     {
-       case qpmt_SPEC: lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ;
-       case qpmt_ART:  lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ;
-       case qpmt_COMP: lookup = NP::Make<T>( ni, nj, 1, 4, 4, 2 )  ; break ;
-       case qpmt_LL:   lookup = NP::Make<T>( ni, nj, 4, 4, 4, 2 )  ; break ;
-       case qpmt_ARTE: lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
+       case qpmt_SPEC:    lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ;
+       case qpmt_SPEC_ce: lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ;
+       case qpmt_ART:     lookup = NP::Make<T>( ni, nj, 4, 4  )       ; break ;
+       case qpmt_COMP:    lookup = NP::Make<T>( ni, nj, 1, 4, 4, 2 )  ; break ;
+       case qpmt_LL:      lookup = NP::Make<T>( ni, nj, 4, 4, 4, 2 )  ; break ;
+       case qpmt_ARTE:    lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
+       case qpmt_ARTE_ce: lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
     }
     return lookup ;
 }

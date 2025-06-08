@@ -7,7 +7,7 @@ _QPMT_lpmtcat_qeshape
 _QPMT_lpmtcat_stackspec
     kernel funcs taking (qpmt,lookup,domain,domain_width) args
 
-QPMT_lpmtcat
+QPMT_lpmtcat_scan
     CPU entry point to launch above kernels controlled by etype
 
 
@@ -20,7 +20,7 @@ _QPMT_mct_lpmtid
     * within lpmtid loop calls qpmt.h method depending on etype
     * etype : (qpmt_SPEC qpmt_LL qpmt_COMP qpmt_ART qpmt_ARTE)
 
-QPMT_mct_lpmtid
+QPMT_mct_lpmtid_scan
     CPU entry point to launch above kernel passing etype
 
 
@@ -120,7 +120,9 @@ __global__ void _QPMT_lpmtcat_cetheta( qpmt<F>* pmt, F* lookup , const F* domain
 
     for(int i=0 ; i < ni ; i++)
     {
-        F value = pmt->cetheta_prop->interpolate(i, theta_radians );
+        int lpmtcat = i ;
+        //F value = pmt->cetheta_prop->interpolate(lpmtcat, theta_radians );
+        F value = pmt->get_lpmtcat_ce( lpmtcat, theta_radians );
 
         int index = i * domain_width + ix ; // output index into lookup
         lookup[index] = value ;
@@ -156,7 +158,7 @@ __global__ void _QPMT_lpmtcat_stackspec( qpmt<F>* pmt, F* lookup , const F* doma
 }
 
 
-template <typename F> extern void QPMT_lpmtcat(
+template <typename F> extern void QPMT_lpmtcat_scan(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<F>* pmt,
@@ -175,7 +177,7 @@ template <typename F> extern void QPMT_lpmtcat(
     }
 }
 
-template void QPMT_lpmtcat(
+template void QPMT_lpmtcat_scan(
    dim3,
    dim3,
    qpmt<float>*,
@@ -223,8 +225,21 @@ __global__ void _QPMT_lpmtid_stackspec(
 }
 
 
+
+
+
+/**
+_QPMT_mct_lpmtid
+-----------------
+
+* using templated payload size P as it needs to be a compile time constant
+* parallelism over mct domain only
+* loops over the provided list of pmtid
+
+
+**/
+
 #ifdef WITH_CUSTOM4
-// templated payload size P as it needs to be a compile time constant
 template <typename F, int P>
 __global__ void _QPMT_mct_lpmtid(
     qpmt<F>* pmt,
@@ -238,11 +253,12 @@ __global__ void _QPMT_mct_lpmtid(
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
 
-    //printf("//_QPMT_mct_lpmtid ix %d num_lpmtid %d P %d \n", ix, num_lpmtid, P );
+    //printf("//_QPMT_mct_lpmtid etype %d ix %d num_lpmtid %d P %d \n", etype, ix, num_lpmtid, P );
 
     F minus_cos_theta = domain[ix] ;
     F wavelength_nm = 440.f ;
     F dot_pol_cross_mom_nrm = 0.f ; // SPOL zero is pure P polarized
+    F lposcost = 0.5f ;  // np.acos(0.5) 1.047197
 
     const int& ni = num_lpmtid ;
     const int& nj = domain_width ;   // minus_cos_theta values "AOI"
@@ -252,12 +268,15 @@ __global__ void _QPMT_mct_lpmtid(
 
     for(int i=0 ; i < ni ; i++)  // over num_lpmtid
     {
-        int index = i*nj*P + j*P  ;
         int pmtid = lpmtid[i] ;
 
         if( etype == qpmt_SPEC )
         {
-            pmt->get_lpmtid_SPEC(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm );
+            pmt->get_lpmtid_SPEC(payload, pmtid, wavelength_nm );
+        }
+        else if( etype == qpmt_SPEC_ce )
+        {
+            pmt->get_lpmtid_SPEC_ce(payload, pmtid, wavelength_nm, lposcost );
         }
         else if( etype == qpmt_LL )
         {
@@ -275,13 +294,19 @@ __global__ void _QPMT_mct_lpmtid(
         {
             pmt->get_lpmtid_ARTE(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm );
         }
+        else if( etype == qpmt_ARTE_ce )
+        {
+            pmt->get_lpmtid_ARTE_ce(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
+        }
 
+
+        int index = i*nj*P + j*P  ;  // output index
         for( int k=0 ; k < P ; k++) lookup[index+k] = payload[k] ;
     }
 }
 
 
-template <typename F> extern void QPMT_mct_lpmtid(
+template <typename F> extern void QPMT_mct_lpmtid_scan(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<F>* pmt,
@@ -293,11 +318,15 @@ template <typename F> extern void QPMT_mct_lpmtid(
     unsigned num_lpmtid
 )
 {
-    printf("//QPMT_mct_lpmtid etype %d domain_width %d num_lpmtid %d \n", etype, domain_width, num_lpmtid);
+    printf("//QPMT_mct_lpmtid_scan etype %d domain_width %d num_lpmtid %d \n", etype, domain_width, num_lpmtid);
 
     switch(etype)
     {
         case qpmt_SPEC:
+           _QPMT_mct_lpmtid<F,16><<<numBlocks,threadsPerBlock>>>(
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ;
+
+        case qpmt_SPEC_ce:
            _QPMT_mct_lpmtid<F,16><<<numBlocks,threadsPerBlock>>>(
               pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ;
 
@@ -316,9 +345,18 @@ template <typename F> extern void QPMT_mct_lpmtid(
         case qpmt_ARTE:
            _QPMT_mct_lpmtid<F,4><<<numBlocks,threadsPerBlock>>>(
               pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ;
+
+        case qpmt_ARTE_ce:
+           _QPMT_mct_lpmtid<F,4><<<numBlocks,threadsPerBlock>>>(
+              pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ;
+
+        default:
+              printf("//PMT_mct_lpmtid_scan etype %d UNHANDLED \n", etype)   ; break ;
+
     }
 }
 
-template void QPMT_mct_lpmtid<float>(   dim3, dim3, qpmt<float>*, int etype, float*,  const float* , unsigned, const int*, unsigned);
+template void QPMT_mct_lpmtid_scan<float>(   dim3, dim3, qpmt<float>*, int etype, float*,  const float* , unsigned, const int*, unsigned);
+// end WITH_CUSTOM4
 #endif
 
