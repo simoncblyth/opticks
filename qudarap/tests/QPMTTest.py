@@ -3,15 +3,15 @@
 import os, numpy as np, matplotlib as mp
 from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
-SIZE = np.array([1280, 720]) 
+SIZE = np.array([1280, 720])
 np.set_printoptions(edgeitems=16)
 
-hc_eVnm = 1239.84198433200208455673 
+hc_eVnm = 1239.84198433200208455673
 
 e2w_ = lambda e:hc_eVnm/e
 w2e_ = lambda w:hc_eVnm/w
 
-PMTIDX = int(os.environ.get("PMTIDX","0")) # 0-based index into list of lpmtid 
+PMTIDX = int(os.environ.get("PMTIDX","0")) # 0-based index into list of lpmtid
 SCRIPT = os.environ.get("SCRIPT", "unknown-SCRIPT")
 
 class QPMTTest(object):
@@ -19,39 +19,50 @@ class QPMTTest(object):
     NAMES = "NNVT HAMA NNVTHiQE".split()
 
     def __init__(self, t):
-        self.t = t 
-        self.init_energy_eV_domain() 
-        self.init_mct_domain() 
+        self.t = t
+        self.init_energy_eV_domain()
+        self.init_theta_radians_domain()
+        self.init_mct_domain()
         self.title_prefix = "%s : %s " % ( SCRIPT, t.base )
 
     def init_mct_domain(self):
         mct = self.t.qscan.mct_domain
-        self.mct = mct 
+        self.mct = mct
 
     def init_energy_eV_domain(self):
         e = self.t.qscan.energy_eV_domain
         #e0,e1 = 2.3, 3.3
         e0,e1 = 1.55, 4.3
         w0,w1 = e2w_(e0), e2w_(e1)
-        se = np.logical_and( e >= e0, e <= e1 ) 
-        self.se = se 
+        se = np.logical_and( e >= e0, e <= e1 )
+        self.se = se
         self.e0 = e0
         self.e1 = e1
         self.w0 = w0
         self.w1 = w1
 
+    def init_theta_radians_domain(self):
+        h = self.t.qscan.theta_radians_domain
+        h0 = h[0]
+        h1 = h[-1]
+        se = np.logical_and( h >= h0, h <= h1 )
+
+        self.h0 = h0
+        self.h1 = h1
+        self.se = se
+
     def present_qeshape(self):
-        t = self.t 
-        se = self.se  
-        e = t.qscan.energy_eV_domain
+        t = self.t
+        se = self.se
+        d = t.qscan.energy_eV_domain
         a = t.qscan.lpmtcat_qeshape
         if a is None: return
 
-        prop_ni = t.qpmt.qeshape[:,-1,-1].view(np.int32)  
+        prop_ni = t.qpmt.qeshape[:,-1,-1].view(np.int32)  ## last values from input prop arrays
 
         v0,v1 = 0.0,0.38
 
-        assert len(a.shape) == 2, interp.shape 
+        assert len(a.shape) == 2, interp.shape
 
         ni = a.shape[0]  # pmtcat
         nj = a.shape[1]  # energy
@@ -64,15 +75,15 @@ class QPMTTest(object):
         for i in range(ni):
             ax = axs[i]
             ax.set_ylim( v0, v1 )
-            v = a[i] 
+            v = a[i]
             name = self.NAMES[i]
-            label = "%s qeshape" % name 
+            label = "%s qeshape" % name
             ax.set_xlabel("energy [eV]")
-            ax.plot( e[se], v[se], label=label ) 
-            ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left 
+            ax.plot( d[se], v[se], label=label )
+            ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left
 
-            p_e = t.qpmt.qeshape[i,:prop_ni[i],0] 
-            p_v = t.qpmt.qeshape[i,:prop_ni[i],1] 
+            p_e = t.qpmt.qeshape[i,:prop_ni[i],0]
+            p_v = t.qpmt.qeshape[i,:prop_ni[i],1]
             p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
 
             ax.scatter( p_e[p_s], p_v[p_s] )
@@ -80,17 +91,58 @@ class QPMTTest(object):
         fig.show()
 
 
+    def present_cetheta(self):
+        t = self.t
+        se = self.se
+        d = t.qscan.theta_radians_domain
+        a = t.qscan.lpmtcat_cetheta
+        if a is None: return
+
+        prop_ni = t.qpmt.cetheta[:,-1,-1].view(np.int32)  ## last values from input prop arrays
+
+        v0,v1 = 0.0,1.1
+
+        assert len(a.shape) == 2, interp.shape
+
+        ni = a.shape[0]  # pmtcat
+        nj = a.shape[1]  # theta
+
+        title = "%s : cetheta GPU interpolation lines and values " % self.title_prefix
+
+        fig, axs = mp.pyplot.subplots(1, ni, figsize=SIZE/100.)
+        fig.suptitle(title)
+
+        for i in range(ni):
+            ax = axs[i]
+            ax.set_ylim( v0, v1 )
+            v = a[i]
+            name = self.NAMES[i]
+            label = "%s cetheta" % name
+            ax.set_xlabel("theta [radians]")
+            ax.plot( d[se], v[se], label=label )
+            ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left
+
+            ## input (domain,value) pairs used by the interpolation
+            p_d = t.qpmt.cetheta[i,:prop_ni[i],0]
+            p_v = t.qpmt.cetheta[i,:prop_ni[i],1]
+            p_s = np.logical_and( p_d >= self.h0, p_d <= self.h1 )
+
+            ax.scatter( p_d[p_s], p_v[p_s] )
+        pass
+        fig.show()
+
+
     def present_rindex(self):
-        t = self.t 
+        t = self.t
 
         a = t.qscan.lpmtcat_rindex
-        if a is None: return 
-        assert len(a.shape) == 4, a.shape 
+        if a is None: return
+        assert len(a.shape) == 4, a.shape
 
-        se = self.se  
+        se = self.se
         e = t.qscan.energy_eV_domain
 
-        prop_ni = t.qpmt.rindex[:,-1,-1].view(np.int32)  
+        prop_ni = t.qpmt.rindex[:,-1,-1].view(np.int32)
         v0,v1 = -0.1,3.2
 
         ni = a.shape[0]  # pmtcat
@@ -116,24 +168,24 @@ class QPMTTest(object):
             # secondary_xaxis w2e_ : RuntimeWarning: divide by zero encountered in true_divide
 
             for j in range(nj):
-                if j in [0,3]: continue   # skip layers 0,3 Pyrex,Vacuum 
+                if j in [0,3]: continue   # skip layers 0,3 Pyrex,Vacuum
                 for k in range(nk):
-                    v = a[i,j,k]  
-                    iprop = i*nj*nk + j*nk + k 
+                    v = a[i,j,k]
+                    iprop = i*nj*nk + j*nk + k
 
                     label = "L%d %sINDEX" % ( j, "R" if k == 0 else "K" )
 
-                    ax.plot( e[se], v[se], label=label ) 
+                    ax.plot( e[se], v[se], label=label )
 
                     p_ni = prop_ni[iprop]
-                    p_e = t.qpmt.rindex[iprop,:p_ni,0] 
-                    p_v = t.qpmt.rindex[iprop,:p_ni,1] 
+                    p_e = t.qpmt.rindex[iprop,:p_ni,0]
+                    p_v = t.qpmt.rindex[iprop,:p_ni,1]
 
                     p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
                     ax.scatter( p_e[p_s], p_v[p_s] )
                 pass
             pass
-            ax.legend(loc=os.environ.get("LOC", "lower right")) # upper/center/lower right/left 
+            ax.legend(loc=os.environ.get("LOC", "lower right")) # upper/center/lower right/left
         pass
         fig.show()
 
@@ -144,13 +196,13 @@ class QPMTTest(object):
         Out[2]: (9, 181, 4, 4)
         """
 
-        t = self.t 
-        lpmtid = t.qscan.lpmtid[PMTIDX] 
+        t = self.t
+        lpmtid = t.qscan.lpmtid[PMTIDX]
 
         all_art = t.qscan.art
-        if all_art is None: 
-            print("present_art : ABORT t.qscan.art is None ") 
-            return 
+        if all_art is None:
+            print("present_art : ABORT t.qscan.art is None ")
+            return
         pass
         art = all_art[PMTIDX]
         mct = t.qscan.mct_domain
@@ -158,8 +210,8 @@ class QPMTTest(object):
         consistent = len(art) == len(mct)
 
         if not consistent:
-            log.error("present_lpmtid_ART : INCONSISTENT : art.shape %s mct.shape %s " % 
-                     (str(art.shape), str(mct.shape)) ) 
+            log.error("present_lpmtid_ART : INCONSISTENT : art.shape %s mct.shape %s " %
+                     (str(art.shape), str(mct.shape)) )
             return
         pass
         assert consistent
@@ -180,13 +232,13 @@ class QPMTTest(object):
         T_   = art[...,2,3]
 
         SF    = art[...,3,0]
-        wl    = art[...,3,1] 
+        wl    = art[...,3,1]
         ARTa  = art[...,3,2]
         mct   = art[...,3,3]
 
 
         opt = os.environ.get("OPT", "A_,R_,T_,As,Rs,Ts,Ap,Rp,Tp,Aa,Ra,Ta")
-        title = "%s : PMTIDX %d lpmtid %d OPT %s " % (t.base, PMTIDX, lpmtid, opt) 
+        title = "%s : PMTIDX %d lpmtid %d OPT %s " % (t.base, PMTIDX, lpmtid, opt)
         fig, ax = plt.subplots(1, figsize=SIZE/100.)
         fig.suptitle(title)
 
@@ -213,14 +265,14 @@ class QPMTTest(object):
 
         ax.legend()
         fig.show()
-            
-       
+
+
 
     def check_lpmtcat(self):
-        t = self.t 
+        t = self.t
 
-        expect_lpmtcat = t.src_lcqs[t.lpmtid,0] 
-        lpmtcat = t.lpmtid_stackspec[:,:,0,3].view(np.int32)    
+        expect_lpmtcat = t.src_lcqs[t.lpmtid,0]
+        lpmtcat = t.lpmtid_stackspec[:,:,0,3].view(np.int32)
         assert( np.all( lpmtcat[:,0] == expect_lpmtcat ) )
 
         lpmtid = t.lpmtid
@@ -232,7 +284,7 @@ class QPMTTest(object):
         expr = "np.c_[lpmtid,lpmtid_lpmtcat,lpmtid_qe_scale,lpmtid_qe_shape,lpmtid_qe]"
         lpmtid_tab = eval(expr)
         print("lpmtid_tab:%s\n%s" % ( expr,  lpmtid_tab))
-        print(" note the qe_shape factor depends only on lpmtcat, the others have lpmtid dependency ") 
+        print(" note the qe_shape factor depends only on lpmtcat, the others have lpmtid dependency ")
         print(" also note the qe_shape factor for lpmtcat 0:NNVT and 2:NNVT_HiQE are the same, diff from 1:HAMA  ")
 
 
@@ -244,13 +296,16 @@ if __name__ == '__main__':
 
     #plot = "rindex"
     #plot = "qeshape"
-    plot = "art"
+    plot = "cetheta"
+    #plot = "art"
 
     PLOT = os.environ.get("PLOT", plot )
     if PLOT == "rindex":
         pt.present_rindex()
     elif PLOT == "qeshape":
         pt.present_qeshape()
+    elif PLOT == "cetheta":
+        pt.present_cetheta()
     elif PLOT == "art":
         pt.present_art()
     else:

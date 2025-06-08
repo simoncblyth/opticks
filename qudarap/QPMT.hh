@@ -18,6 +18,7 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 #include "NPFold.h"
 
 #include "sproc.h"
+#include "qpmt_enum.h"
 #include "qpmt.h"
 #include "QProp.hh"
 
@@ -68,6 +69,7 @@ struct QUDARAP_API QPMT
 
     // .cc
     void init();
+    void init_prop();
     void init_thickness();
     void init_lcqs();
 
@@ -83,7 +85,11 @@ struct QUDARAP_API QPMT
     static NP* MakeArray_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid );
 
     // .cc
-    void lpmtcat_check( int etype, const NP* domain, const NP* lookup) const ;
+    void lpmtcat_check_domain_lookup_shape( int etype, const NP* domain, const NP* lookup) const ;
+
+    static const T* Upload(const NP* arr, const char* label);
+    static T* Alloc(NP* out, const char* label);
+
     NP*  lpmtcat_( int etype, const NP* domain) const ;
     NP*  mct_lpmtid_(  int etype, const NP* domain, const NP* lpmtid) const ;
 
@@ -228,6 +234,7 @@ inline NP* QPMT<T>::MakeArray_lpmtcat(int etype, unsigned num_domain )   // stat
     {
        case qpmt_RINDEX:  lookup = NP::Make<T>( ni, nj, nk, num_domain ) ; break ;
        case qpmt_QESHAPE: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
+       case qpmt_CETHETA: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
        case qpmt_CATSPEC: lookup = NP::Make<T>( ni, num_domain, 4, 4  )  ; break ;
     }
     return lookup ;

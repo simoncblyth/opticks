@@ -7,6 +7,8 @@ NB : standard qudarap/om builds the QPMTTest binary, not this script
 
 ::
 
+   PLOT=qeshape ~/o/qudarap/tests/QPMTTest.sh pdb
+
    OPT=A_,Aa,As,Ap ./QPMTTest.sh ana
    OPT=R_,Ra,Rs,Rp ./QPMTTest.sh ana
 
@@ -16,11 +18,12 @@ NB : standard qudarap/om builds the QPMTTest binary, not this script
 EOU
 }
 
+cd $(dirname $(realpath $BASH_SOURCE))
 SCRIPT=$(basename $BASH_SOURCE)
 export SCRIPT
 
-REALDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 name=QPMTTest
+script=$name.py
 
 source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar
 
@@ -28,13 +31,14 @@ defarg="info_run_ana"
 arg=${1:-$defarg}
 
 logging(){
+   type $FUNCNAME
    export QPMT=INFO
-   export QU=INFO
+   #export QU=INFO
 }
-logging
+[ -n "$LOG" ] && logging
 
 export FOLD=${TMP:-/tmp/$USER/opticks}/$name
-vars="REALDIR FOLD GEOM name"
+vars="PWD FOLD GEOM ${GEOM}_CFBaseFromGEOM name"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
@@ -49,6 +53,12 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
 fi
 
+if [ "${arg/ls}" != "$arg" ]; then
+    echo ls -alst $FOLD
+    ls -alst $FOLD
+fi
+
+
 if [ "${arg/dbg}" != "$arg" ]; then
     source dbg__.sh
     dbg__ $name
@@ -56,12 +66,12 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 if [ "${arg/pdb}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $REALDIR/$name.py
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 2
 fi
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${PYTHON:-python} $REALDIR/$name.py
+    ${PYTHON:-python} $script
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 2
 fi
 

@@ -99,6 +99,7 @@ struct NP
     template<typename T> static NP* DeltaColumn(const NP* a, INT jcol=0 ) ;
 
     template<typename T> static NP* MinusCosThetaLinearAngle(INT nx=181); // from -1. to 1.
+    template<typename T> static NP* ThetaRadians(INT nx=181, T theta_max_pi=1. ); // from 0. to theta_max_pi*PI
                          static NP* SqrtOneMinusSquare( const NP* a );
                          static NP* Incremented( const NP* a, INT offset  );
 
@@ -848,9 +849,25 @@ template<typename T> inline NP* NP::DeltaColumn(const NP* a, INT jcol )
     return b ;
 }
 
+/**
+NP::ThetaRadians
+-------------------
 
+Angle range from zero to theta_max_pi
 
+**/
 
+template<typename T> inline NP* NP::ThetaRadians(INT nx, T theta_max_pi ) // static
+{
+    NP* a = NP::Make<T>(nx);
+    T* aa = a->values<T>();
+    for(INT i=0 ; i < nx ; i++)
+    {
+        T frac = nx == 1 ? T(0) : T(i)/T(nx-1) ;
+        aa[i] = theta_max_pi*M_PI*frac ;
+    }
+    return a ;
+}
 
 /**
 NP::MinusCosThetaLinearAngle

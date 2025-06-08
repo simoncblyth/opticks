@@ -78,6 +78,8 @@ QPMT::init
 template<typename T>
 inline void QPMT<T>::init()
 {
+    LOG(LEVEL) << "[" ;
+
     INSTANCE = this ;
 
     const int ni = qpmt_NUM_CAT ;   // 3:NNVT/HAMA/NNVT_HiQE
@@ -95,13 +97,9 @@ inline void QPMT<T>::init()
     if(!src_rindex_expect) std::raise(SIGINT);
     if(!src_thickness_expect) std::raise(SIGINT);
 
-    pmt->rindex_prop = rindex_prop->getDevicePtr() ;
-    pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;
-    pmt->cetheta_prop = cetheta_prop->getDevicePtr() ;
-
+    init_prop();
     init_thickness();
     init_lcqs();
-
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     d_pmt = pmt ;
@@ -109,9 +107,17 @@ inline void QPMT<T>::init()
     d_pmt = QU::UploadArray<qpmt<T>>( (const qpmt<T>*)pmt, 1u, "QPMT::init/d_pmt" ) ;
     // getting above line to link required template instanciation at tail of qpmt.h
 #endif
-
-
+    LOG(LEVEL) << "]" ;
 }
+
+template<typename T>
+inline void QPMT<T>::init_prop()
+{
+    pmt->rindex_prop = rindex_prop->getDevicePtr() ;
+    pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;
+    pmt->cetheta_prop = cetheta_prop->getDevicePtr() ;
+}
+
 
 template<typename T>
 inline void QPMT<T>::init_thickness()
@@ -125,7 +131,6 @@ inline void QPMT<T>::init_thickness()
 #endif
 
     pmt->thickness = d_thickness ;
-
 }
 
 template<typename T>
@@ -204,29 +209,70 @@ extern void QPMT_mct_lpmtid(
 
 
 template<typename T>
-void QPMT<T>::lpmtcat_check( int etype, const NP* domain, const NP* lookup) const
+void QPMT<T>::lpmtcat_check_domain_lookup_shape( int etype, const NP* domain, const NP* lookup) const
 {
-
+    const char* elabel = qpmt_enum::Label(etype) ;
     bool domain_expect = domain->shape.size() == 1 && domain->shape[0] > 0 ;
+
+    LOG_IF(fatal, !domain_expect)
+        << " etype " << etype
+        << " elabel " << elabel
+        << " FATAL UNEXPECTED DOMAIN SHAPE "
+        << " domain.sstr " << ( domain ? domain->sstr() : "-" )
+        ;
+
     assert( domain_expect );
     if(!domain_expect) std::raise(SIGINT);
 
     unsigned num_domain = domain->shape[0] ;
     unsigned num_domain_1 = 0 ;
 
-    if( etype == qpmt_RINDEX || etype == qpmt_QESHAPE )
+    switch(etype)
     {
-        num_domain_1 = lookup->shape[lookup->shape.size()-1] ;
-    }
-    else if ( etype == qpmt_CATSPEC )
-    {
-        num_domain_1 = lookup->shape[lookup->shape.size()-3] ;  // (4,4) payload
+        case qpmt_RINDEX : num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
+        case qpmt_QESHAPE: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
+        case qpmt_CETHETA: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
+        case qpmt_CATSPEC: num_domain_1 = lookup->shape[lookup->shape.size()-3] ; break ; // (4,4) payload
     }
 
     bool num_domain_expect = num_domain == num_domain_1 ;
+
+    LOG_IF(fatal, !num_domain_expect)
+        << " etype " << etype
+        << " elabel " << elabel
+        << " FATAL DOMAIN MISMATCH "
+        << " num_domain " << num_domain
+        << " num_domain_1 " << num_domain_1
+        ;
+
     assert( num_domain_expect );
     if(!num_domain_expect) std::raise(SIGINT) ;
 
+}
+
+template<typename T>
+const T* QPMT<T>::Upload(const NP* arr, const char* label)
+{
+    unsigned num_arr = arr->shape[0] ;
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+    const T* d_arr = arr->cvalues<T>() ;
+#else
+    const T* d_arr = QU::UploadArray<T>( arr->cvalues<T>(), num_arr, label ) ;
+#endif
+    return d_arr ;
+}
+
+
+template<typename T>
+T* QPMT<T>::Alloc(NP* out, const char* label)
+{
+    unsigned num_values = out->num_values() ;
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+    T* d_arr = out->values<T> ;
+#else
+    T* d_arr = QU::device_alloc<T>(num_values,label) ;
+#endif
+    return d_arr ;
 }
 
 
@@ -253,34 +299,28 @@ with the energy domain passed in as input. Parallelism is over the energy.
 template<typename T>
 NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 {
+    const char* elabel = qpmt_enum::Label(etype) ;
+
     unsigned num_domain = domain->shape[0] ;
     NP* lookup = MakeArray_lpmtcat(etype, num_domain );
-    lpmtcat_check(etype, domain, lookup) ;
-    unsigned num_lookup = lookup->num_values() ;
+    lpmtcat_check_domain_lookup_shape(etype, domain, lookup) ;
+    unsigned lookup_num_values = lookup->num_values() ;
 
-    const char* label_0 = "QPMT::lpmtcat_/d_domain" ;
-
-#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
-    const T* d_domain = domain->cvalues<T>() ;
-#else
-    const T* d_domain = QU::UploadArray<T>( domain->cvalues<T>(), num_domain, label_0 ) ;
-#endif
+    const T* d_domain = Upload(domain, "QPMT::lpmtcat_/d_domain" );
 
     LOG(LEVEL)
         << " etype " << etype
+        << " elabel " << elabel
         << " domain " << domain->sstr()
         << " num_domain " << num_domain
         << " lookup " << lookup->sstr()
-        << " num_lookup " << num_lookup
+        << " lookup_num_values " << lookup_num_values
         ;
 
     T* h_lookup = lookup->values<T>() ;
 
-#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
-    T* d_lookup = h_lookup ;
-#else
-    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT<T>::lpmtcat::d_lookup") ;
-#endif
+    T* d_lookup = Alloc(lookup, "QPMT<T>::lpmtcat_/d_lookup" );
+
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QPMT_lpmtcat_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain );
@@ -291,10 +331,8 @@ NP* QPMT<T>::lpmtcat_(int etype, const NP* domain ) const
 
     QPMT_lpmtcat(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain );
 
-    const char* label_1 = "QPMT::lpmtcat_" ;
-    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, label_1 );
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, lookup_num_values, "QPMT::lpmtcat_/cd2haf" );
     cudaDeviceSynchronize();
-
 #endif
 
     return lookup ;
@@ -319,6 +357,7 @@ mct means minus_cos_theta for an AOI scan
 template<typename T>
 NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 {
+    const char* elabel = qpmt_enum::Label(etype) ;
     unsigned num_domain = domain->shape[0] ;
     unsigned num_lpmtid = lpmtid->shape[0] ;
 
@@ -342,6 +381,7 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
 
     LOG(LEVEL)
         << " etype " << etype
+        << " elabel " << elabel
         << " domain " << domain->sstr()
         << " lpmtid " << lpmtid->sstr()
         << " num_domain " << num_domain
@@ -351,7 +391,11 @@ NP* QPMT<T>::mct_lpmtid_(int etype, const NP* domain, const NP* lpmtid ) const
         ;
 
 
-   // TODO: can this dependency on CUSTOM4 be removed ?
+// Q: Can dependency on CUSTOM4 be removed ?
+// A: Must be using the multilayer stack calc so depending on
+//    CUSTOM4 is inevitable without duplication of code.
+
+
 #ifdef WITH_CUSTOM4
     T* h_lookup = lookup->values<T>() ;
 

@@ -29,29 +29,47 @@ The lpmtcat 0,1,2 correspond to NNVT,HAMA,NNVT_HiQE
     Out[10]: 17612
 
 
+2025/06
+----------
+
+::
+
+    In [3]: np.c_[np.unique( t.qpmt.src_lcqs[:,0], return_counts=True )]
+    Out[3]:
+    array([[   0, 2738],
+           [   1, 4955],
+           [   2, 9919]])
+
+    In [4]: tab = np.c_[np.unique( t.qpmt.src_lcqs[:,0], return_counts=True )]
+
+    In [5]: tab[:,1].sum()
+    Out[5]: np.int64(17612)
+
+
 **/
 
 #include <cuda_runtime.h>
 #include "OPTICKS_LOG.hh"
-#include "get_jpmt_fold.h"
+#include "SPMT.h"
 #include "QPMTTest.h"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    std::cout << " Before: " << QPMT<float>::Desc() << std::endl ;
+    std::cout << "QPMTTest.main.Before:" << QPMT<float>::Desc() << std::endl ;
 
-    const NPFold* jpmt = get_jpmt_fold();
-    LOG_IF(fatal, jpmt==nullptr) << " jpmt==nullptr " ;
+    const NPFold* jpmt = SPMT::Serialize();
+
+    LOG_IF(fatal, jpmt==nullptr) << " jpmt==nullptr : probably GEOM,${GEOM}_CFBaseFromGEOM envvars not setup ?" ;
     if(jpmt==nullptr) return 0 ;
 
     QPMTTest<float> t(jpmt);
     NPFold* f = t.serialize();
     cudaDeviceSynchronize();
-    f->save("/tmp/$USER/opticks/QPMTTest");
+    f->save("$FOLD");
 
-    std::cout << " Final: " << QPMT<float>::Desc() << std::endl ;
+    std::cout << "QPMTTest.main.After:" << QPMT<float>::Desc() << std::endl ;
 
     return 0 ;
 }

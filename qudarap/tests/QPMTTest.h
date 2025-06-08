@@ -23,17 +23,17 @@ struct QPMTTest
 
     const QPMT<T>* qpmt ;
 
-    const char* lpmtid_list ;
-    NP*         lpmtid ;
+    const char* lpmtid_list ;  // comma delimited string of ints from LPMTID_LIST envvar or default
+    NP*         lpmtid ;       // array created from the string
     int         num_lpmtid ;
 
-    NP*         lpmtcat ;
+    NP*         lpmtcat ;      // array of cpu side category lookups using QPMT::get_lpmtcat
     int         num_lpmtcat ;
 
     NP*         energy_eV_domain ;
-    int         num_mct ;
-    NP*         mct_domain ;
-
+    NP*         theta_radians_domain ;   // from 0. to pi/2
+    int         num_mct ;            // input from NUM_MCT envvar or default
+    NP*         mct_domain ;         // from NP::MinusCosThetaLinearAngle
 
     QPMTTest(const NPFold* jpmt );
 
@@ -69,6 +69,7 @@ inline QPMTTest<T>::QPMTTest(const NPFold* jpmt  )
     lpmtcat(NP::Make<int>(num_lpmtid)),
     num_lpmtcat(qpmt->get_lpmtcat(lpmtcat->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)), // CPU side lookups
     energy_eV_domain(NP::Linspace<T>(1.55,15.50,1550-155+1)),
+    theta_radians_domain(NP::ThetaRadians<T>(91,0.5)),
     num_mct(ssys::getenvint("NUM_MCT",900)),   // 181
     mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct)))
 {
@@ -80,12 +81,14 @@ inline NPFold* QPMTTest<T>::make_qscan() const
     NPFold* qscan = new NPFold ;
 
     qscan->add("energy_eV_domain", energy_eV_domain ) ;
+    qscan->add("theta_radians_domain", theta_radians_domain ) ;
     qscan->add("mct_domain", mct_domain ) ;
     qscan->add("lpmtid",  lpmtid ) ;
     qscan->add("lpmtcat", lpmtcat ) ;
 
     qscan->add("lpmtcat_rindex",    qpmt->lpmtcat_(qpmt_RINDEX,  energy_eV_domain) ) ;
     qscan->add("lpmtcat_qeshape",   qpmt->lpmtcat_(qpmt_QESHAPE, energy_eV_domain) ) ;
+    qscan->add("lpmtcat_cetheta",   qpmt->lpmtcat_(qpmt_CETHETA, theta_radians_domain) ) ;
     qscan->add("lpmtcat_stackspec", qpmt->lpmtcat_(qpmt_CATSPEC, energy_eV_domain) ) ;
 
     qscan->add("spec", qpmt->mct_lpmtid_(qpmt_SPEC, mct_domain, lpmtid) ) ;

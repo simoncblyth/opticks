@@ -13,6 +13,9 @@ qpmt.h
 #endif
 
 
+
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include "QUDARAP_API_EXPORT.hh"
@@ -29,17 +32,6 @@ template <typename T> struct qprop ;
 #include "C4MultiLayrStack.h"
 #endif
 
-enum {
-  qpmt_RINDEX,
-  qpmt_KINDEX,
-  qpmt_QESHAPE,
-  qpmt_CATSPEC,
-  qpmt_SPEC,
-  qpmt_ART,
-  qpmt_COMP,
-  qpmt_LL,
-  qpmt_ARTE
-};
 
 enum {
   qpmt_NUM_CAT = 3,

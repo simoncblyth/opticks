@@ -84,6 +84,7 @@ Related developments
 #include "squad.h"
 #include "ssys.h"
 #include "sproc.h"
+#include "spath.h"
 
 #ifdef WITH_CUSTOM4
 #include "C4MultiLayrStack.h"
@@ -128,7 +129,8 @@ struct SPMT
     */
 
     static constexpr const bool VERBOSE = false ;
-    static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" ;
+    //static constexpr const char* PATH = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extra/jpmt" ;
+    static constexpr const char* PATH = "$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt" ;
 
     static constexpr int NUM_PMTCAT = 3 ; // (NNVT, HAMA, NNVT_HiQE)
     static constexpr int NUM_LAYER = 4 ;  // (Pyrex, ARC, PHC, Vacuum)
@@ -290,7 +292,7 @@ inline const NPFold* SPMT::Serialize(const char* path) // static
 
 inline SPMT* SPMT::Load(const char* path_)
 {
-    const char* path = path_ != nullptr ? path_ : PATH ;
+    const char* path = spath::Resolve( path_ != nullptr ? path_ : PATH ) ;
     bool unresolved = sstr::StartsWith(path,"CFBaseFromGEOM");
     if(unresolved) printf("SPMT::Load unresolved path[%s]\n", path) ;
     NPFold* fold = NPFold::LoadIfExists(path) ;

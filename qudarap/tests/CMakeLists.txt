@@ -42,6 +42,7 @@ set(CUDART_TEST_SOURCES
    QSimWithEventTest.cc
    QSimTest.cc
    QEventTest.cc
+   QPMTTest.cc
 
 )
 
