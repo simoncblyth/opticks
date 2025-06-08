@@ -59,16 +59,24 @@ git checkout v0.2.2
 Release Notes
 ----------------
 
+v0.4.4 2025/06/08
+~~~~~~~~~~~~~~~~~~
+
+* switch to collection efficiency scaling using qpmt::get_lpmtid_ARTE_ce from qsim::propagate_at_surface_CustomART, add ce tests to QPMTTest.sh
+* revive QPMTTest.sh and add cetheta GPU interpolation test
+* add lower level track API to U4Recorder.hh that may enable sharing of Geant4 track info between Opticks and other usage
+
+
 v0.4.3 2025/05/30
 ~~~~~~~~~~~~~~~~~~~
 
-* bring SGLFW_SOPTIX_Scene_test.sh into release 
+* bring SGLFW_SOPTIX_Scene_test.sh into release
 * start getting B side simtrace to work with U4Recorder__EndOfRunAction_Simtrace using U4Navigator.h U4Simtrace.h
-* enhance A side simtrace analysis cxt_min.sh 
-* add globalPrimIdx to Binding.h OptiX geometry for debugging 
-* integrate record rendering with geometry rendering 
-* move navigation functionality like frame hop and interface control from mains into SGLM.h SGLFW.h 
-* bring SRecordInfo.h into use 
+* enhance A side simtrace analysis cxt_min.sh
+* add globalPrimIdx to Binding.h OptiX geometry for debugging
+* integrate record rendering with geometry rendering
+* move navigation functionality like frame hop and interface control from mains into SGLM.h SGLFW.h
+* bring SRecordInfo.h into use
 
 
 v0.4.2 2025/05/15
@@ -90,6 +98,8 @@ Snapshot Tags History
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                                                               |
 +============+=========+=========================+=====================================================================================================================+
+| 2025/06/08 | v0.4.4  | 44                      | add collection efficiency scaling from qpmt::get_lpmtid_ARTE_ce, add separate label U4Recorder API                  |
++------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/05/30 | v0.4.3  | 43                      | integrate OpenGL event record rendering with geometry render, globalPrimIdx added to Binding.h, cxt_min.sh enhance  |
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/05/15 | v0.4.2  | 42                      | remove OPTICKS_MAX_BOUNCE limit, increase default OPTICKS_MAX_BOUNCE from 9 to 31, skip slow find-geant4-prefix     |
