@@ -28,7 +28,10 @@ vars="BASH_SOURCE PWD FOLD CUDA_PREFIX name bin script TEST"
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-test=make_record_array
+#test=make_record_array
+#test=set_flag
+test=add_flagmask
+
 TEST=${TEST:-$test}
 export TEST
 
@@ -50,9 +53,14 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 fi
 
-if [ "${arg/ana}" != "$arg" ]; then
+if [ "${arg/pdb}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
+    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 3
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then
+    ${PYTHON:-python} $script
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi
 
 exit 0

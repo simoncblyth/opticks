@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 OpticksPhotonTest.sh
 ======================
@@ -10,7 +10,11 @@ OpticksPhotonTest.sh
 EOU
 }
 
-source $HOME/.opticks/GEOM/GEOM.sh 
-OpticksPhotonTest 
+source $HOME/.opticks/GEOM/GEOM.sh
+
+test=GetHitMask
+export TEST=${TEST:-$test}
+
+OpticksPhotonTest
 
 

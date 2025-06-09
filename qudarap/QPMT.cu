@@ -294,9 +294,9 @@ __global__ void _QPMT_mct_lpmtid(
         {
             pmt->get_lpmtid_ARTE(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm );
         }
-        else if( etype == qpmt_ARTE_ce )
+        else if( etype == qpmt_ATQC )
         {
-            pmt->get_lpmtid_ARTE_ce(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
+            pmt->get_lpmtid_ATQC(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
         }
 
 
@@ -346,7 +346,7 @@ template <typename F> extern void QPMT_mct_lpmtid_scan(
            _QPMT_mct_lpmtid<F,4><<<numBlocks,threadsPerBlock>>>(
               pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ;
 
-        case qpmt_ARTE_ce:
+        case qpmt_ATQC:
            _QPMT_mct_lpmtid<F,4><<<numBlocks,threadsPerBlock>>>(
               pmt, etype, lookup, domain, domain_width, lpmtid, num_lpmtid ) ;  break ;
 

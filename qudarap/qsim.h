@@ -1742,7 +1742,7 @@ lpmtid:-1
 inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG& rng, sctx& ctx) const
 {
 
-    const sphoton& p = ctx.p ;
+    sphoton& p = ctx.p ;
     const float3* normal = (float3*)&ctx.prd->q0.f.x ;  // geometrical outwards normal
     int lpmtid = ctx.prd->identity() - 1 ;  // identity comes from optixInstance.instanceId where 0 means not-a-sensor
     const float lposcost = ctx.prd->lposcost() ;  // local frame intersect position cosine theta
@@ -1781,27 +1781,26 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx )
-    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f pmt %p pre-ARTE \n",
+    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f pmt %p pre-ATQC \n",
            ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, pmt );
 #endif
 
-    float ARTE[4] = {} ;
+    float ATQC[4] = {} ;
 
-    //if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ARTE(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm );
-    if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ARTE_ce(ARTE, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
+    if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ATQC(ATQC, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
 
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx )
-    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f lpc %7.3f ARTE ( %7.3f %7.3f %7.3f %7.3f ) \n",
-           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost, ARTE[0], ARTE[1], ARTE[2], ARTE[3] );
+    printf("//qsim::propagate_at_surface_CustomART idx %d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f lpc %7.3f ATQC ( %7.3f %7.3f %7.3f %7.3f  ) \n",
+           ctx.idx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost, ATQC[0], ATQC[1], ATQC[2], ATQC[3] );
 #endif
 
 
-    const float& theAbsorption = ARTE[0];
-    //const float& theReflectivity = ARTE[1];
-    const float& theTransmittance = ARTE[2];
-    const float& theEfficiency = ARTE[3];
+    const float& theAbsorption        = ATQC[0];
+    const float& theTransmittance     = ATQC[1];
+    const float& theEfficiency        = ATQC[2];
+    const float& collectionEfficiency = ATQC[3];
 
     float u_theAbsorption = curand_uniform(&rng);
     int action = u_theAbsorption < theAbsorption  ? BREAK : CONTINUE ;
@@ -1809,19 +1808,30 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx )
-    printf("//qsim.propagate_at_surface_CustomART idx %d lpmtid %d ARTE ( %7.3f %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n",
-        ctx.idx, lpmtid, ARTE[0], ARTE[1], ARTE[2], ARTE[3], u_theAbsorption, action  );
+        printf("//qsim.propagate_at_surface_CustomART idx %d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n",
+        ctx.idx, lpmtid, ATQC[0], ATQC[1], ATQC[2], ATQC[3], u_theAbsorption, action  );
 #endif
 
     if( action == BREAK )
     {
         float u_theEfficiency = curand_uniform(&rng) ;
+        float u_collectionEfficiency = curand_uniform(&rng);
+
         flag = u_theEfficiency < theEfficiency ? SURFACE_DETECT : SURFACE_ABSORB ;
 
+        unsigned ce_flag = flag == SURFACE_DETECT
+                                 ?
+                                     (  u_collectionEfficiency < collectionEfficiency ? EFFICIENCY_COLLECT : EFFICIENCY_CULL )
+                                 :
+                                     0u
+                                 ;
+
+        p.flagmask |= ce_flag ;  // sneak into flagmask without changing flag
+
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    if( ctx.idx == base->pidx )
-    printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA idx %d lpmtid %d ARTE ( %7.3f %7.3f %7.3f %7.3f ) u_theEfficiency  %7.3f theEfficiency %7.3f flag %d \n",
-        ctx.idx, lpmtid, ARTE[0], ARTE[1], ARTE[2], ARTE[3], u_theEfficiency, theEfficiency, flag  );
+        if( ctx.idx == base->pidx )
+            printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA EC/EX idx %d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) u_theEfficiency  %7.3f theEfficiency %7.3f flag %d ce_flag %d\n",
+                                                                    ctx.idx, lpmtid, ATQC[0],ATQC[1], ATQC[2],ATQC[3],  u_theEfficiency,  theEfficiency, flag, ce_flag  );
 #endif
 
     }
@@ -1829,9 +1839,9 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     {
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    if( ctx.idx == base->pidx )
-    printf("//qsim.propagate_at_surface_CustomART.CONTINUE idx %d lpmtid %d ARTE ( %7.3f %7.3f %7.3f %7.3f ) theTransmittance %7.3f  \n",
-        ctx.idx, lpmtid, ARTE[0], ARTE[1], ARTE[2], ARTE[3], theTransmittance  );
+        if( ctx.idx == base->pidx )
+            printf("//qsim.propagate_at_surface_CustomART.CONTINUE idx %d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) theTransmittance %7.3f  \n",
+            ctx.idx, lpmtid, ATQC[0], ATQC[1], ATQC[2], ATQC[3], theTransmittance  );
 #endif
 
         propagate_at_boundary( flag, rng, ctx, theTransmittance  );
@@ -2237,8 +2247,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )
         {
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
             if( ctx.idx == base->pidx )
-            printf("//qsim.propagate.body (lposcost < 0.f) idx %d bounce %d command %d flag %d ems %d \n",
-                     ctx.idx, bounce, command, flag, ems  );
+                printf("//qsim.propagate.body (lposcost < 0.f) idx %d bounce %d command %d flag %d ems %d \n",
+                ctx.idx, bounce, command, flag, ems  );
 #endif
             command = propagate_at_surface( flag, rng, ctx ) ;
         }
@@ -2256,6 +2266,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )
         }
     }
     ctx.p.set_flag(flag);
+    // Q: Does flag need to be single bit at this point OR can multiple "flags" be OR-ed together here ?
+    // A: Decided to keep the flag as single bitted, and directly set EFFICENCY_COLLECT/CULL into ctx.p.flagmask
 
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)

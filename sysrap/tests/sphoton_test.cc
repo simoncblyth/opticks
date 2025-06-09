@@ -4,9 +4,9 @@ sphoton_test.cc
 
 ::
 
-     ~/o/sysrap/tests/sphoton_test.sh 
-     OFFSET=100,100,100 ~/o/sysrap/tests/sphoton_test.sh 
-     OFFSET=1000,1000,1000 ~/o/sysrap/tests/sphoton_test.sh 
+     ~/o/sysrap/tests/sphoton_test.sh
+     OFFSET=100,100,100 ~/o/sysrap/tests/sphoton_test.sh
+     OFFSET=1000,1000,1000 ~/o/sysrap/tests/sphoton_test.sh
 
 
 **/
@@ -24,87 +24,131 @@ sphoton_test.cc
 
 struct sphoton_test
 {
-    static std::string dump_(const char* label, unsigned mask); 
-    static void dump( const char* label, unsigned mask); 
+    static std::string dump_(const char* label, unsigned mask);
+    static void dump( const char* label, unsigned mask);
 
-    static void qphoton_(); 
-    static void cast(); 
-    static void ephoton_(); 
-    static void make_ephoton_array();
-    static void sphoton_selector_();
-    static void change_flagmask();
-    static void digest();
-    static void sphotond_();
-    static void Get();
-    static void dGet();
-    static void set_polarization(); 
-    static void dot_pol_cross_mom_nrm();
-    static void make_record_array();
+    static int qphoton_();
+    static int cast();
+    static int ephoton_();
+    static int make_ephoton_array();
+    static int sphoton_selector_();
+    static int set_flag();
+    static int add_flagmask();
+    static int change_flagmask();
+    static int digest();
+    static int sphotond_();
+    static int Get();
+    static int dGet();
+    static int set_polarization();
+    static int dot_pol_cross_mom_nrm();
+    static int make_record_array();
 
-    static int main(); 
+    static int main();
 };
 
 
 std::string sphoton_test::dump_(const char* label, unsigned mask)
 {
-    std::bitset<32> bs(mask); 
-    std::stringstream ss ; 
-    ss << std::setw(25) << label << " " << bs << " " << std::setw(2) << bs.count() ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::bitset<32> bs(mask);
+    std::stringstream ss ;
+    ss << std::setw(25) << label << " " << bs << " " << std::setw(2) << bs.count() ;
+    std::string s = ss.str();
+    return s ;
 }
-void sphoton_test::dump( const char* label, unsigned mask) 
+void sphoton_test::dump( const char* label, unsigned mask)
 {
-    std::cout << dump_(label, mask) << std::endl ; 
+    std::cout << dump_(label, mask) << std::endl ;
 }
 
-void sphoton_test::qphoton_()
+int sphoton_test::qphoton_()
 {
-    qphoton qp ; 
-    qp.q.zero(); 
-    std::cout << qp.q.desc() << std::endl ; 
+    qphoton qp ;
+    qp.q.zero();
+    std::cout << qp.q.desc() << std::endl ;
+    return 0;
 }
-void sphoton_test::cast()
+int sphoton_test::cast()
 {
-    sphoton p ; 
-    quad4& q = (quad4&)p ; 
-    q.zero(); 
+    sphoton p ;
+    quad4& q = (quad4&)p ;
+    q.zero();
 
-    p.wavelength = 501.f ; 
+    p.wavelength = 501.f ;
 
-    std::cout << q.desc() << std::endl ; 
-    std::cout << p.desc() << std::endl ; 
+    std::cout << q.desc() << std::endl ;
+    std::cout << p.desc() << std::endl ;
+    return 0;
 }
-void sphoton_test::ephoton_()
+int sphoton_test::ephoton_()
 {
-    sphoton p ; 
-    p.ephoton(); 
-    std::cout << p.desc() << std::endl ; 
+    sphoton p ;
+    p.ephoton();
+    std::cout << p.desc() << std::endl ;
+    return 0;
 }
-void sphoton_test::make_ephoton_array()
+int sphoton_test::make_ephoton_array()
 {
-    NP* p = sphoton::make_ephoton_array(8); 
-    std::cout 
-        << " p " << ( p ? p->sstr() : "-" ) 
-        << std::endl 
+    NP* p = sphoton::make_ephoton_array(8);
+    std::cout
+        << " p " << ( p ? p->sstr() : "-" )
+        << std::endl
         << " p.repr " << ( p ? p->repr<float>() : "-" )
-        << std::endl 
-        ; 
-    p->save("$FOLD/sphoton_test_make_ephoton_array.npy") ; 
+        << std::endl
+        ;
+    p->save("$FOLD/sphoton_test_make_ephoton_array.npy") ;
+    return 0;
 }
 
-void sphoton_test::sphoton_selector_()
+int sphoton_test::sphoton_selector_()
 {
-    sphoton p ; 
-    p.ephoton(); 
+    sphoton p ;
+    p.ephoton();
 
-    unsigned hitmask = 0xdeadbeef ; 
-    sphoton_selector s(hitmask) ; 
-    assert( s(p) == false ); 
+    unsigned hitmask = 0xdeadbeef ;
+    sphoton_selector s(hitmask) ;
+    assert( s(p) == false );
 
-    p.set_flag(hitmask); 
-    assert( s(p) == true ); 
+    p.set_flag(hitmask);
+    assert( s(p) == true );
+    return 0;
 }
+
+int sphoton_test::set_flag()
+{
+    sphoton p = {} ;
+    std::cout << "set_flag.0 : " << p.descFlag() << "\n" ;
+
+    p.set_flag( SURFACE_DETECT );
+    std::cout << "set_flag.1 : " << p.descFlag() << "\n" ;
+
+    p.set_flag( EFFICIENCY_COLLECT );
+    std::cout << "set_flag.2 : " << p.descFlag() << "\n" ;
+
+    return 0 ;
+}
+
+int sphoton_test::add_flagmask()
+{
+    sphoton p = {} ;
+    std::cout << "add_flagmask.0 : " << p.descFlag() << "\n" ;
+
+    p.add_flagmask( SURFACE_DETECT );
+    std::cout << "add_flagmask.1 SURFACE_DETECT : " << p.descFlag() << "\n" ;
+
+    p.add_flagmask( EFFICIENCY_COLLECT );
+    std::cout << "add_flagmask.2 EFFICIENCY_COLLECT : " << p.descFlag() << "\n" ;
+
+    p.add_flagmask( EFFICIENCY_CULL );
+    std::cout << "add_flagmask.3 EFFICIENCY_CULL : " << p.descFlag() << "\n" ;
+
+
+
+    return 0 ;
+}
+
+
+
+
 
 
 /**
@@ -133,113 +177,118 @@ void sphoton_test::sphoton_selector_()
 
 **/
 
-void sphoton_test::change_flagmask()
+int sphoton_test::change_flagmask()
 {
-    unsigned flagmask = 0u ;         dump("zero", flagmask );  
-    flagmask |= CERENKOV ;           dump("|= CERENKOV", flagmask ); 
-    flagmask |= SCINTILLATION ;      dump("|= SCINTILLATION", flagmask ); 
-    flagmask |= MISS ;               dump("|= MISS", flagmask ); 
-    flagmask |= BULK_ABSORB ;        dump("|= BULK_ABSORB", flagmask ); 
-    flagmask |= BULK_REEMIT ;        dump("|= BULK_REEMIT", flagmask ); 
-    flagmask |= BULK_SCATTER ;       dump("|= BULK_SCATTER", flagmask ); 
-    flagmask |= SURFACE_DETECT ;     dump("|= SURFACE_DETECT", flagmask ); 
-    flagmask |= SURFACE_ABSORB ;     dump("|= SURFACE_ABSORB", flagmask );   
-    flagmask |= SURFACE_DREFLECT ;   dump("|= SURFACE_DREFLECT", flagmask ); 
-    flagmask |= SURFACE_SREFLECT ;   dump("|= SURFACE_SREFLECT", flagmask ); 
-    flagmask |= BOUNDARY_REFLECT ;   dump("|= BOUNDARY_REFLECT", flagmask ); 
-    flagmask |= BOUNDARY_TRANSMIT ;  dump("|= BOUNDARY_TRANSMIT", flagmask ); 
-    flagmask |= TORCH ;              dump("|= TORCH", flagmask); 
-    flagmask |= NAN_ABORT ;          dump("|= NAN_ABORT", flagmask );  
-    flagmask |= EFFICIENCY_CULL ;    dump("|= EFFICIENCY_CULL", flagmask ); 
-    flagmask |= EFFICIENCY_COLLECT ; dump("|= EFFICIENCY_COLLECT", flagmask) ;  
-    flagmask &= ~BULK_ABSORB ;       dump("&= ~BULK_ABSORB", flagmask); 
-    flagmask &= ~BULK_REEMIT ;       dump("&= ~BULK_REEMIT", flagmask); 
-    flagmask |=  BULK_REEMIT ;       dump("|=  BULK_REEMIT", flagmask); 
-    flagmask |=  BULK_ABSORB ;       dump("|=  BULK_ABSORB", flagmask); 
+    unsigned flagmask = 0u ;         dump("zero", flagmask );
+    flagmask |= CERENKOV ;           dump("|= CERENKOV", flagmask );
+    flagmask |= SCINTILLATION ;      dump("|= SCINTILLATION", flagmask );
+    flagmask |= MISS ;               dump("|= MISS", flagmask );
+    flagmask |= BULK_ABSORB ;        dump("|= BULK_ABSORB", flagmask );
+    flagmask |= BULK_REEMIT ;        dump("|= BULK_REEMIT", flagmask );
+    flagmask |= BULK_SCATTER ;       dump("|= BULK_SCATTER", flagmask );
+    flagmask |= SURFACE_DETECT ;     dump("|= SURFACE_DETECT", flagmask );
+    flagmask |= SURFACE_ABSORB ;     dump("|= SURFACE_ABSORB", flagmask );
+    flagmask |= SURFACE_DREFLECT ;   dump("|= SURFACE_DREFLECT", flagmask );
+    flagmask |= SURFACE_SREFLECT ;   dump("|= SURFACE_SREFLECT", flagmask );
+    flagmask |= BOUNDARY_REFLECT ;   dump("|= BOUNDARY_REFLECT", flagmask );
+    flagmask |= BOUNDARY_TRANSMIT ;  dump("|= BOUNDARY_TRANSMIT", flagmask );
+    flagmask |= TORCH ;              dump("|= TORCH", flagmask);
+    flagmask |= NAN_ABORT ;          dump("|= NAN_ABORT", flagmask );
+    flagmask |= EFFICIENCY_CULL ;    dump("|= EFFICIENCY_CULL", flagmask );
+    flagmask |= EFFICIENCY_COLLECT ; dump("|= EFFICIENCY_COLLECT", flagmask) ;
+    flagmask &= ~BULK_ABSORB ;       dump("&= ~BULK_ABSORB", flagmask);
+    flagmask &= ~BULK_REEMIT ;       dump("&= ~BULK_REEMIT", flagmask);
+    flagmask |=  BULK_REEMIT ;       dump("|=  BULK_REEMIT", flagmask);
+    flagmask |=  BULK_ABSORB ;       dump("|=  BULK_ABSORB", flagmask);
+    return 0;
 }
 
-void sphoton_test::digest()
+int sphoton_test::digest()
 {
-    sphoton p ; 
-    p.ephoton(); 
+    sphoton p ;
+    p.ephoton();
 
-    std::cout 
-        << " p.digest()   " << p.digest() << std::endl 
-        << " p.digest(16) " << p.digest(16) << std::endl 
-        << " p.digest(12) " << p.digest(12) << std::endl 
-        ; 
+    std::cout
+        << " p.digest()   " << p.digest() << std::endl
+        << " p.digest(16) " << p.digest(16) << std::endl
+        << " p.digest(12) " << p.digest(12) << std::endl
+        ;
 
+    return 0;
 }
 
-void sphoton_test::sphotond_()
+int sphoton_test::sphotond_()
 {
-    sphoton  f ; 
-    sphotond d ; 
+    sphoton  f ;
+    sphotond d ;
 
-    assert( sizeof(d) == 2*sizeof(f) ); 
-    assert( sizeof(f) == 16*sizeof(float) ); 
-    assert( sizeof(d) == 16*sizeof(double) ); 
+    assert( sizeof(d) == 2*sizeof(f) );
+    assert( sizeof(f) == 16*sizeof(float) );
+    assert( sizeof(d) == 16*sizeof(double) );
+    return 0;
 }
 
-void sphoton_test::Get()
+int sphoton_test::Get()
 {
-    std::cout << "test_sphoton::Get" << std::endl ; 
-    float time_0 =  3.f ; 
-    float time_1 = 13.f ; 
+    std::cout << "test_sphoton::Get" << std::endl ;
+    float time_0 =  3.f ;
+    float time_1 = 13.f ;
 
-    NP* a = NP::Make<float>(2, 4, 4); 
+    NP* a = NP::Make<float>(2, 4, 4);
     std::array<float, 32> vv = {{
-       0.f,  1.f,  2.f,  time_0, 
-       4.f,  5.f,  6.f,  7.f, 
-       8.f,  9.f, 10.f, 11.f, 
+       0.f,  1.f,  2.f,  time_0,
+       4.f,  5.f,  6.f,  7.f,
+       8.f,  9.f, 10.f, 11.f,
       12.f, 13.f, 14.f, 15.f,
 
-      10.f, 11.f, 12.f, time_1, 
-      14.f, 15.f, 16.f, 17.f, 
-      18.f, 19.f, 20.f, 21.f, 
+      10.f, 11.f, 12.f, time_1,
+      14.f, 15.f, 16.f, 17.f,
+      18.f, 19.f, 20.f, 21.f,
       22.f, 23.f, 24.f, 25.f
-     }}; 
+     }};
 
-    memcpy( a->values<float>(), vv.data(), sizeof(float)*vv.size() ); 
+    memcpy( a->values<float>(), vv.data(), sizeof(float)*vv.size() );
 
-    sphoton p0 ; 
-    sphoton::Get(p0, a, 0 ); 
-    assert( p0.time == time_0 ); 
+    sphoton p0 ;
+    sphoton::Get(p0, a, 0 );
+    assert( p0.time == time_0 );
 
-    sphoton p1 ; 
-    sphoton::Get(p1, a, 1 ); 
-    assert( p1.time == time_1 ); 
+    sphoton p1 ;
+    sphoton::Get(p1, a, 1 );
+    assert( p1.time == time_1 );
+    return 0;
 }
 
-void sphoton_test::dGet()
+int sphoton_test::dGet()
 {
-    std::cout << "test_sphoton::dGet" << std::endl ; 
+    std::cout << "test_sphoton::dGet" << std::endl ;
 
-    double time_0 =  3. ; 
-    double time_1 = 13. ; 
+    double time_0 =  3. ;
+    double time_1 = 13. ;
 
-    NP* a = NP::Make<double>(2, 4, 4); 
+    NP* a = NP::Make<double>(2, 4, 4);
     std::array<double, 32> vv = {{
-       0.,  1.,  2.,  time_0, 
-       4.,  5.,  6.,  7., 
-       8.,  9., 10., 11., 
+       0.,  1.,  2.,  time_0,
+       4.,  5.,  6.,  7.,
+       8.,  9., 10., 11.,
       12., 13., 14., 15.,
 
-      10., 11., 12., time_1, 
-      14., 15., 16., 17., 
-      18., 19., 20., 21., 
+      10., 11., 12., time_1,
+      14., 15., 16., 17.,
+      18., 19., 20., 21.,
       22., 23., 24., 25.
-     }}; 
+     }};
 
-    memcpy( a->values<double>(), vv.data(), sizeof(double)*vv.size() ); 
+    memcpy( a->values<double>(), vv.data(), sizeof(double)*vv.size() );
 
-    sphotond p0 ; 
-    sphotond::Get(p0, a, 0 ); 
-    assert( p0.time == time_0 ); 
+    sphotond p0 ;
+    sphotond::Get(p0, a, 0 );
+    assert( p0.time == time_0 );
 
-    sphotond p1 ; 
-    sphotond::Get(p1, a, 1 ); 
-    assert( p1.time == time_1 ); 
+    sphotond p1 ;
+    sphotond::Get(p1, a, 1 );
+    assert( p1.time == time_1 );
+    return 0;
 }
 
 
@@ -251,60 +300,60 @@ set_polarization
 
     .      nrm
             Z
-     mom    |         
-        \   | 
-         \  | 
-          \ | 
-           \| 
+     mom    |
+        \   |
+         \  |
+          \ |
+           \|
      -------+--------- X
-          
+
 
 * pol:transverse to mom
-* trv:perpendicular to plane of incidence (-Y axis into page) 
+* trv:perpendicular to plane of incidence (-Y axis into page)
 
 
 **/
 
-void sphoton_test::set_polarization()
+int sphoton_test::set_polarization()
 {
-    std::cout << "sphoton_test::set_polarization" << std::endl ; 
+    std::cout << "sphoton_test::set_polarization" << std::endl ;
 
-    float3 nrm = make_float3(0.f, 0.f, 1.f) ; 
+    float3 nrm = make_float3(0.f, 0.f, 1.f) ;
     float3 mom = normalize(make_float3( 1.f, 0.f, -1.f ));
- 
+
     float3 trv = normalize(cross(mom, nrm )) ;   // -Y
     float3 trv1 = normalize(cross(nrm, mom )) ;  // +Y
 
-    std::cout 
-        << " nrm "  << nrm << std::endl 
-        << " mom "  << mom << std::endl 
-        << " trv "  << trv << std::endl 
-        << " trv1 "  << trv1 << std::endl 
+    std::cout
+        << " nrm "  << nrm << std::endl
+        << " mom "  << mom << std::endl
+        << " trv "  << trv << std::endl
+        << " trv1 "  << trv1 << std::endl
         ;
 
-    sphoton p ; 
-    p.zero(); 
-    p.mom = mom ; 
+    sphoton p ;
+    p.zero();
+    p.mom = mom ;
 
-    const int N = 16 ; 
+    const int N = 16 ;
     for(int i=0 ; i <= N ; i++)
     {
-        float frac_twopi = float(i)/float(N)  ; 
-        p.set_polarization(frac_twopi) ; 
+        float frac_twopi = float(i)/float(N)  ;
+        p.set_polarization(frac_twopi) ;
 
-        std::cout 
-            << p.descDir() 
+        std::cout
+            << p.descDir()
             << " frac_twopi " << std::fixed << std::setw(7) << std::setprecision(3) << frac_twopi
             //<< " dot(p.mom,p.pol) " << std::fixed << std::setw(7) << std::setprecision(3) << dot(p.mom,p.pol)
             << " dot(p.pol, nrm) " << std::fixed << std::setw(7) << std::setprecision(3) <<  dot(p.pol, nrm)
             << " dot(p.pol, trv) " << std::fixed << std::setw(7) << std::setprecision(3) <<  dot(p.pol, trv)
-            << std::endl 
-            ; 
+            << std::endl
+            ;
 
-        // dot(p.pol, nrm) zero where p.pol is orthogonal to the normal 
+        // dot(p.pol, nrm) zero where p.pol is orthogonal to the normal
 
     }
-
+    return 0;
 }
 
 
@@ -314,19 +363,19 @@ dot_pol_cross_mom_nrm
 -----------------------
 
 
-    mom      nrm 
+    mom      nrm
        .      |
          .    |
            .  |
              .|
      ---------+----------
 
-* mom and nrm vectors define the plane of incidence, they lie within it 
-* pol is transverse to mom, so there is a circle of possible directions including 
+* mom and nrm vectors define the plane of incidence, they lie within it
+* pol is transverse to mom, so there is a circle of possible directions including
 
-  * transverse to plane of incidence (S polarized) 
-  * within the plane of incidence (P polarized) 
-  * combination of S and P polarizations by 
+  * transverse to plane of incidence (S polarized)
+  * within the plane of incidence (P polarized)
+  * combination of S and P polarizations by
     sweeping the pol vector around the mom vector
     whilst staying transverse to the mom vector
 
@@ -334,74 +383,75 @@ dot_pol_cross_mom_nrm
 **/
 
 
-void sphoton_test::dot_pol_cross_mom_nrm()
+int sphoton_test::dot_pol_cross_mom_nrm()
 {
-    printf("//sphoton_test::dot_pol_cross_mom_nrm \n"); 
+    printf("//sphoton_test::dot_pol_cross_mom_nrm \n");
 
-    float3 nrm = normalize(make_float3(0.f, 0.f, 1.f)) ; 
+    float3 nrm = normalize(make_float3(0.f, 0.f, 1.f)) ;
 
     //float3 mom = normalize(make_float3(1.f, 0.f, -1.f ));  // 45 degrees
     //float3 mom = normalize(make_float3(2.f, 0.f, -1.f ));  // shallower
     float3 mom = normalize(make_float3(1.f, 0.f, -2.f ));    // steeper
 
 
-    float3 tra = cross( mom, nrm ) ; 
-    float ltr = length(tra) ; 
-    float mct = dot(mom,nrm) ; 
-    float st = sqrt( 1.f - mct*mct ); 
-    float llmm = ltr*ltr + mct*mct ;   // tis close to 1.f 
+    float3 tra = cross( mom, nrm ) ;
+    float ltr = length(tra) ;
+    float mct = dot(mom,nrm) ;
+    float st = sqrt( 1.f - mct*mct );
+    float llmm = ltr*ltr + mct*mct ;   // tis close to 1.f
 
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss
-        << " nrm "  << nrm 
-        << " mom "  << mom 
-        << " tra "  << tra 
-        << " mct "  << mct 
-        << " st "  << st 
-        << " ltr "  << ltr 
+        << " nrm "  << nrm
+        << " mom "  << mom
+        << " tra "  << tra
+        << " mct "  << mct
+        << " st "  << st
+        << " ltr "  << ltr
         << " llmm "  << llmm
         ;
 
-    std::string str = ss.str(); 
-    std::cout << str << std::endl ; 
-    
+    std::string str = ss.str();
+    std::cout << str << std::endl ;
 
-    sphoton p ; 
-    p.zero(); 
-    p.mom = mom ; 
 
-    const int N = ssys::getenvint("N", 16)  ; 
+    sphoton p ;
+    p.zero();
+    p.mom = mom ;
 
-    NP* a = NP::Make<float>(N, 4); 
-    float* aa = a->values<float>(); 
+    const int N = ssys::getenvint("N", 16)  ;
+
+    NP* a = NP::Make<float>(N, 4);
+    float* aa = a->values<float>();
 
     for(int i=0 ; i < N ; i++)
     {
-        float frac_twopi = float(i)/float(N)  ; 
-        p.set_polarization(frac_twopi) ; 
-        float check_pol_mom_transverse = dot(p.mom,p.pol) ; 
-        assert( std::abs(check_pol_mom_transverse) < 1e-6f ) ; 
+        float frac_twopi = float(i)/float(N)  ;
+        p.set_polarization(frac_twopi) ;
+        float check_pol_mom_transverse = dot(p.mom,p.pol) ;
+        assert( std::abs(check_pol_mom_transverse) < 1e-6f ) ;
 
         float pot = dot( p.pol, tra ) ;  // value is cos(pol-trans-angle)*sin(mom-nrm-angle)
-        float pot_st = pot/st ;   // this is spol_frac which stays in range from -1. to 1. 
-        float pot_mct = pot/mct ; // some unholy combination that is not constrained to -1. to 1. 
+        float pot_st = pot/st ;   // this is spol_frac which stays in range from -1. to 1.
+        float pot_mct = pot/mct ; // some unholy combination that is not constrained to -1. to 1.
 
-        std::cout 
-            << p.descDir() 
+        std::cout
+            << p.descDir()
             << " frac_twopi " << std::fixed << std::setw(7) << std::setprecision(3) << frac_twopi
             << " pot " << std::fixed << std::setw(7) << std::setprecision(3) << pot
             << " pot_mct " << std::fixed << std::setw(7) << std::setprecision(3) << pot_mct
             << " pot_st " << std::fixed << std::setw(7) << std::setprecision(3) << pot_st
-            << std::endl 
-            ; 
+            << std::endl
+            ;
 
-        aa[i*4+0] = frac_twopi ; 
-        aa[i*4+1] = pot ; 
-        aa[i*4+2] = pot_mct ; 
-        aa[i*4+3] = pot_st ; 
+        aa[i*4+0] = frac_twopi ;
+        aa[i*4+1] = pot ;
+        aa[i*4+2] = pot_mct ;
+        aa[i*4+3] = pot_st ;
     }
-    a->save("$FOLD/dot_pol_cross_mom_nrm.npy"); 
-} 
+    a->save("$FOLD/dot_pol_cross_mom_nrm.npy");
+    return 0;
+}
 
 
 /**
@@ -421,96 +471,103 @@ sphoton_test::make_record_array
 
 
 
-void sphoton_test::make_record_array()
+int sphoton_test::make_record_array()
 {
-    std::vector<float>* offset = ssys::getenvfloatvec("OFFSET","0,0,0"); 
-    assert( offset && offset->size() == 3 ); 
+    std::vector<float>* offset = ssys::getenvfloatvec("OFFSET","0,0,0");
+    assert( offset && offset->size() == 3 );
 
-    std::cout << "sphoton_test::make_record_array OFFSET [ " ; 
-    for(int i=0 ; i < 3 ; i++) std::cout 
-         << std::fixed << std::setw(10) << std::setprecision(4) << (*offset)[i] 
+    std::cout << "sphoton_test::make_record_array OFFSET [ " ;
+    for(int i=0 ; i < 3 ; i++) std::cout
+         << std::fixed << std::setw(10) << std::setprecision(4) << (*offset)[i]
          ;
-    std::cout << " ]" << std::endl ;  
+    std::cout << " ]" << std::endl ;
 
 
-    NP* a = NP::Make<float>( 360, 10, 4, 4 ); 
-    int ni = a->shape[0] ; 
-    int nj = a->shape[1] ; 
-    int nk = a->shape[2] ; 
-    int nl = a->shape[3] ; 
-    float* aa = a->values<float>(); 
+    NP* a = NP::Make<float>( 360, 10, 4, 4 );
+    int ni = a->shape[0] ;
+    int nj = a->shape[1] ;
+    int nk = a->shape[2] ;
+    int nl = a->shape[3] ;
+    float* aa = a->values<float>();
 
     for(int i=0 ; i < ni ; i++)
     {
-        float t = 2.f*M_PIf * float(i)/360.  ; 
-        float ct = cos(t);   
-        float st = sin(t);   
+        float t = 2.f*M_PIf * float(i)/360.  ;
+        float ct = cos(t);
+        float st = sin(t);
 
         for(int j=0 ; j < nj ; j++)
         {
-            int idx_ij = i*nj*nk*nl + j*nk*nl ; 
-            sphoton p = {} ; 
+            int idx_ij = i*nj*nk*nl + j*nk*nl ;
+            sphoton p = {} ;
 
             // XZ ripples on pond heading outwards from origin
-            p.pos.x = (*offset)[0] + ct*float(j) ;  
-            p.pos.y = (*offset)[1] + 0.f ;  
-            p.pos.z = (*offset)[2] + st*float(j) ; 
-            p.time = float(j) ; 
+            p.pos.x = (*offset)[0] + ct*float(j) ;
+            p.pos.y = (*offset)[1] + 0.f ;
+            p.pos.z = (*offset)[2] + st*float(j) ;
+            p.time = float(j) ;
 
-            p.mom.x = ct ;  
-            p.mom.y = 0.f ;  
-            p.mom.z = st ; 
+            p.mom.x = ct ;
+            p.mom.y = 0.f ;
+            p.mom.z = st ;
 
-            memcpy( aa + idx_ij, p.cdata(), sizeof(float)*nk*nl ); 
+            memcpy( aa + idx_ij, p.cdata(), sizeof(float)*nk*nl );
         }
     }
-    a->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" ); 
+    a->set_meta<std::string>("rpos", "4,GL_FLOAT,GL_FALSE,64,0,false" );
     // Q:What reads this OpenGL attribute metadata ?
     // A:sysrap/SGLFW.h SGLFW_Attribute
 
 
-    static const int N = 4 ;  
-    float mn[N] = {} ;  
+    static const int N = 4 ;
+    float mn[N] = {} ;
     float mx[N] = {} ;
 
-    int item_stride = 4 ; 
-    int item_offset = 0 ; 
+    int item_stride = 4 ;
+    int item_offset = 0 ;
 
-    a->minmax2D_reshaped<N,float>(mn, mx, item_stride, item_offset ); 
-    for(int j=0 ; j < N ; j++) std::cout 
-          << std::setw(2) << j 
-          << " mn " 
+    a->minmax2D_reshaped<N,float>(mn, mx, item_stride, item_offset );
+    for(int j=0 ; j < N ; j++) std::cout
+          << std::setw(2) << j
+          << " mn "
           << std::setw(10) << std::fixed << std::setprecision(4) << mn[j]
-          << " mx " 
+          << " mx "
           << std::setw(10) << std::fixed << std::setprecision(4) << mx[j]
           << std::endl
           ;
 
-    a->save("$FOLD/record.npy"); 
+    a->save("$FOLD/record.npy");
+    return 0;
 }
 
 int sphoton_test::main()
 {
-    const char* TEST = ssys::getenvvar("TEST","make_record_array") ; 
+    const char* TEST = ssys::getenvvar("TEST","make_record_array") ;
+    bool ALL = 0 == strcmp(TEST, "ALL");
 
-    if(     strcmp(TEST, "qphoton_")==0)  qphoton_(); 
-    else if(strcmp(TEST, "cast")==0)     cast(); 
-    else if(strcmp(TEST, "ephoton_")==0)            ephoton_(); 
-    else if(strcmp(TEST, "make_ephoton_array")==0) make_ephoton_array(); 
-    else if(strcmp(TEST, "sphoton_selector_")==0)  sphoton_selector_(); 
-    else if(strcmp(TEST, "change_flagmask")==0)    change_flagmask(); 
-    else if(strcmp(TEST, "digest")==0)   digest(); 
-    else if(strcmp(TEST, "sphotond_")==0)   sphotond_(); 
-    else if(strcmp(TEST, "Get")==0)   Get(); 
-    else if(strcmp(TEST, "dGet")==0)   dGet(); 
-    else if(strcmp(TEST, "set_polarization")==0)   set_polarization(); 
-    else if(strcmp(TEST, "dot_pol_cross_mom_nrm")==0)   dot_pol_cross_mom_nrm(); 
-    else if(strcmp(TEST, "make_record_array")==0)   make_record_array(); 
-    return 0 ; 
+    int rc = 0 ;
+
+    if(ALL||0==strcmp(TEST, "qphoton_"))              rc += qphoton_();
+    if(ALL||0==strcmp(TEST, "cast"))                  rc += cast();
+    if(ALL||0==strcmp(TEST, "ephoton_"))              rc += ephoton_();
+    if(ALL||0==strcmp(TEST, "make_ephoton_array"))    rc += make_ephoton_array();
+    if(ALL||0==strcmp(TEST, "sphoton_selector_"))     rc += sphoton_selector_();
+    if(ALL||0==strcmp(TEST, "set_flag"))              rc += set_flag();
+    if(ALL||0==strcmp(TEST, "add_flagmask"))          rc += add_flagmask();
+    if(ALL||0==strcmp(TEST, "change_flagmask"))       rc += change_flagmask();
+    if(ALL||0==strcmp(TEST, "digest"))                rc += digest();
+    if(ALL||0==strcmp(TEST, "sphotond_"))             rc += sphotond_();
+    if(ALL||0==strcmp(TEST, "Get"))                   rc += Get();
+    if(ALL||0==strcmp(TEST, "dGet"))                  rc += dGet();
+    if(ALL||0==strcmp(TEST, "set_polarization"))      rc += set_polarization();
+    if(ALL||0==strcmp(TEST, "dot_pol_cross_mom_nrm")) rc += dot_pol_cross_mom_nrm();
+    if(ALL||0==strcmp(TEST, "make_record_array"))     rc += make_record_array();
+
+    return rc ;
 }
 
 int main()
 {
-    return sphoton_test::main(); 
+    return sphoton_test::main();
 }
 

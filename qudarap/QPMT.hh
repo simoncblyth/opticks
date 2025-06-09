@@ -256,7 +256,7 @@ inline NP* QPMT<T>::MakeArray_lpmtid(int etype, unsigned num_domain, unsigned nu
        case qpmt_COMP:    lookup = NP::Make<T>( ni, nj, 1, 4, 4, 2 )  ; break ;
        case qpmt_LL:      lookup = NP::Make<T>( ni, nj, 4, 4, 4, 2 )  ; break ;
        case qpmt_ARTE:    lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
-       case qpmt_ARTE_ce: lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
+       case qpmt_ATQC:    lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
     }
     return lookup ;
 }

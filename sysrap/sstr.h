@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <cassert>
 #include <algorithm>
+#include <csignal>
 
 struct sstr
 {
@@ -60,6 +61,9 @@ struct sstr
     static void Split(     const char* str, char delim,   std::vector<std::string>& elem );
     static void SplitTrim( const char* str, char delim,   std::vector<std::string>& elem );
     static void SplitTrimSuppress( const char* str, char delim,   std::vector<std::string>& elem );
+
+    static int ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, char kvdelim) ;
+
 
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str );
     static void chop( char** head, char** tail, const char* delim, const char* str );
@@ -505,6 +509,48 @@ inline void sstr::SplitTrimSuppress( const char* str, char delim,   std::vector<
         }
     }
 }
+
+
+/**
+sstr::ekv_split
+-----------------
+
+**/
+
+
+inline int sstr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, char kvdelim)
+{
+    int err = 0 ;
+    bool warn = true ;
+    const char* line = strdup(line_);
+    typedef std::pair<std::string,std::string> KV ;
+    std::istringstream f(line);
+    std::string s;
+    while (getline(f, s, edelim))
+    {
+        std::vector<std::string> kv ;
+        Split( s.c_str(), kvdelim, kv );
+
+        if(kv.size() == 2)
+        {
+            ekv.push_back(KV(kv[0],kv[1]));
+        }
+        else
+        {
+            if(warn) std::cerr
+               << "sstr::ekv_split ignoring malformed kv [" << s.c_str() << "]\n"
+               << "sstr::ekv_split line [" << line << "]\n"
+               ;
+            err++ ;
+            std::raise(SIGINT);
+        }
+    }
+    return err ;
+}
+
+
+
+
 
 
 

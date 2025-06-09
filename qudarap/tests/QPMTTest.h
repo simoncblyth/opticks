@@ -98,10 +98,10 @@ inline NPFold* QPMTTest<T>::make_qscan() const
 
     qscan->add("art" , qpmt->mct_lpmtid_scan(qpmt_ART , mct_domain, lpmtid) ) ;
     qscan->add("arte", qpmt->mct_lpmtid_scan(qpmt_ARTE, mct_domain, lpmtid) ) ;
+    qscan->add("atqc", qpmt->mct_lpmtid_scan(qpmt_ATQC, mct_domain, lpmtid) ) ;
     qscan->add("comp", qpmt->mct_lpmtid_scan(qpmt_COMP, mct_domain, lpmtid) ) ;
     qscan->add("ll",   qpmt->mct_lpmtid_scan(qpmt_LL  , mct_domain, lpmtid) ) ;
 
-    qscan->add("arte_ce", qpmt->mct_lpmtid_scan(qpmt_ARTE_ce, mct_domain, lpmtid) ) ;
 
     return qscan ;
 }

@@ -34,10 +34,10 @@ def test_make_record_array(a):
     H,V = X,Z
 
     for j in range(10):
-        ax.scatter( a[:,j,0,H], a[:,j,0,V], label=str(j) ) 
+        ax.scatter( a[:,j,0,H], a[:,j,0,V], label=str(j) )
     pass
 
-    
+
     ax.legend()
     fig.show()
 
@@ -49,13 +49,13 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
-   
-    a = getattr(t,"dot_pol_cross_mom_nrm", None)     
+
+    a = getattr(t,"dot_pol_cross_mom_nrm", None)
     if not a is None:
        test_dot_pol_cross_mom_nrm(a)
-    pass 
+    pass
 
-    a = t.record
+    a = getattr(t, "record", None)
     if not a is None:
         test_make_record_array(a)
     pass
