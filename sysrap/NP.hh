@@ -101,6 +101,8 @@ struct NP
     template<typename T> static NP* MinusCosThetaLinearAngle(INT nx=181); // from -1. to 1.
     template<typename T> static NP* ThetaRadians(INT nx=181, T theta_max_pi=1. ); // from 0. to theta_max_pi*PI
                          static NP* SqrtOneMinusSquare( const NP* a );
+                         static NP* Cos( const NP* src );
+                         static NP* MakeWithCosineDomain( const NP* src, bool reverse );
                          static NP* Incremented( const NP* a, INT offset  );
 
     template<typename T> static NP* MakeDiv( const NP* src, unsigned mul  );
@@ -472,6 +474,7 @@ struct NP
 
     template<typename T> static INT DumpCompare( const NP* a, const NP* b, unsigned a_column, unsigned b_column, const T epsilon );
     static INT Memcmp( const NP* a, const NP* b );
+    static bool SameData( const NP* a, const NP* b );
 
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names);
 
@@ -917,6 +920,78 @@ inline NP* NP::SqrtOneMinusSquare( const NP* a ) // static
     }
     return b ;
 }
+
+
+inline NP* NP::Cos( const NP* a ) // static
+{
+    assert( a->uifc == 'f' );
+    assert( a->ebyte == 4 || a->ebyte == 8  );
+    assert( a->shape.size() == 1 );
+    INT ni = a->shape[0] ;
+    NP* b = NP::MakeLike(a);
+    for(INT i=0 ; i < ni ; i++ )
+    {
+        int idx = i ;
+        if( a->ebyte == 8 )
+        {
+            const double* aa = a->cvalues<double>();
+            double* bb = b->values<double>();
+            bb[idx] = std::cos(aa[idx]) ;
+        }
+        else if ( a->ebyte == 4 )
+        {
+            const float* aa = a->cvalues<float>();
+            float* bb = b->values<float>();
+            bb[idx] = std::cos(aa[idx]) ;
+        }
+    }
+    return b ;
+
+}
+
+inline NP* NP::MakeWithCosineDomain( const NP* a, bool reverse ) // static
+{
+    assert( a->uifc == 'f' );
+    assert( a->ebyte == 4 || a->ebyte == 8  );
+    assert( a->shape.size() == 2 );
+    INT ni = a->shape[0] ;
+    INT nj = a->shape[1] ;
+    assert( nj == 2 );
+
+    NP* b = NP::MakeLike(a);
+    assert( b->ebyte == a->ebyte );
+
+    for(INT i=0 ; i < ni ; i++ )
+    {
+        INT a_item = i ;
+        INT b_item = reverse ? ni - 1 - i : i ;
+
+        for(INT j=0 ; j < nj ; j++ )
+        {
+            int a_idx = a_item*nj + j ;
+            int b_idx = b_item*nj + j ;  ;
+
+            if( a->ebyte == 8 )
+            {
+                const double* aa = a->cvalues<double>();
+                double* bb = b->values<double>();
+                bb[b_idx] = j == 0 ? std::cos(aa[a_idx]) : aa[a_idx] ;
+            }
+            else if ( a->ebyte == 4 )
+            {
+                const float* aa = a->cvalues<float>();
+                float* bb = b->values<float>();
+                bb[b_idx] = j == 0 ? std::cos(aa[a_idx]) : aa[a_idx] ;
+            }
+        }
+    }
+
+    return b ;
+}
+
+
+
+
 
 inline NP* NP::Incremented( const NP* a, INT offset ) // static
 {
@@ -6294,9 +6369,14 @@ NP::Memcmp
 
 inline NP::INT NP::Memcmp(const NP* a, const NP* b ) // static
 {
-    unsigned a_bytes = a->arr_bytes() ;
-    unsigned b_bytes = b->arr_bytes() ;
-    return a_bytes == b_bytes ? memcmp(a->bytes(), b->bytes(), a_bytes) : -1 ;
+    unsigned a_bytes = a ? a->arr_bytes() : 0 ;
+    unsigned b_bytes = b ? b->arr_bytes() : 0 ;
+    return a_bytes == b_bytes && a_bytes > 0 ? memcmp(a->bytes(), b->bytes(), a_bytes) : -1 ;
+}
+
+inline bool NP::SameData( const NP* a, const NP* b )
+{
+    return 0 == Memcmp(a, b );
 }
 
 /**

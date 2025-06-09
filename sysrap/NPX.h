@@ -122,7 +122,7 @@ struct NPX
 
 
     template<typename T>
-    static NP* FromNumpyString(const char* str) ;
+    static NP* FromNumpyString(const char* str, bool dump=false) ;
 
     static NP* CategoryArrayFromString(const char* str, int catfield, const char* cats, char delim=',');
     static NP* LoadCategoryArrayFromTxtFile(const char* base, const char* relp, int catfield, const char* cats, char delim=',');
@@ -1059,18 +1059,21 @@ inline std::string NPX::DescDiscoMapUnordered( const std::unordered_map<int,int>
 
 
 
+/**
+NPX::FromNumpyString
+---------------------
 
 
-
-
+**/
 
 
 template <typename T>
-inline NP* NPX::FromNumpyString(const char* str)  // static
+inline NP* NPX::FromNumpyString(const char* str, bool dump)  // static
 {
+    static const char* dtype_pfx = "dtype=" ;
+
     std::vector<T> vec ;
     std::stringstream fss(str);
-    bool dump = false ;
 
     int num_field_0 = 0 ;
     std::string line ;
@@ -1086,11 +1089,17 @@ inline NP* NPX::FromNumpyString(const char* str)  // static
         int num_field = 0 ;
 
         if(dump) std::cout << "fields.size " << fields.size() << std::endl ;
+        if(dump) for(NP::INT j=0 ; j < NP::INT(fields.size()) ; j++ ) std::cout << "{" << fields[j].c_str() << "}\n" ;
+
         for(NP::INT j=0 ; j < NP::INT(fields.size()) ; j++ )
         {
            const char* fld = fields[j].c_str() ;
            char* fldd = U::FirstToLastDigit(fld);
            if(fldd == nullptr) continue ;
+
+           // dtype fields like "dtype=int32" contain digits but not ones to grab
+           bool dtype_field = 0 == strncmp(fld, dtype_pfx, strlen(dtype_pfx));
+           if(dtype_field) continue ;
 
            T val = U::To<T>(fldd) ;
 
@@ -1098,6 +1107,7 @@ inline NP* NPX::FromNumpyString(const char* str)  // static
                << "{" << fld << "}"
                << "{" << fldd << "}"
                << "{" << val << "}"
+               << " num_field: " << num_field
                <<  std::endl
                ;
            num_field += 1 ;
