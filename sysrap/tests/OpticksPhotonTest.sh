@@ -12,7 +12,8 @@ EOU
 
 source $HOME/.opticks/GEOM/GEOM.sh
 
-test=GetHitMask
+#test=GetHitMask
+test=AbbrevToFlag
 export TEST=${TEST:-$test}
 
 OpticksPhotonTest

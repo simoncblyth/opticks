@@ -544,6 +544,7 @@ set(HEADERS
     S4RandomMonitor.h
     S4RandomArray.h
 
+    SProcessHits_EPH.h
 
     SFastSim_Debug.hh
     SFastSimOpticalModel.hh
