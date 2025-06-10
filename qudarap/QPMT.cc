@@ -116,6 +116,7 @@ inline void QPMT<T>::init_prop()
     pmt->rindex_prop = rindex_prop->getDevicePtr() ;
     pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;
     pmt->cetheta_prop = cetheta_prop->getDevicePtr() ;
+    pmt->cecosth_prop = cecosth_prop->getDevicePtr() ;
 }
 
 
@@ -235,6 +236,7 @@ void QPMT<T>::lpmtcat_check_domain_lookup_shape( int etype, const NP* domain, co
         case qpmt_RINDEX : num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_QESHAPE: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_CETHETA: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
+        case qpmt_CECOSTH: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_CATSPEC: num_domain_1 = lookup->shape[lookup->shape.size()-3] ; break ; // (4,4) payload
     }
 

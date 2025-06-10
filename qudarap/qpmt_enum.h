@@ -11,6 +11,7 @@ enum {
   qpmt_KINDEX,
   qpmt_QESHAPE,
   qpmt_CETHETA,
+  qpmt_CECOSTH,
   qpmt_CATSPEC,
   qpmt_SPEC,
   qpmt_SPEC_ce,
@@ -31,6 +32,7 @@ struct qpmt_enum
     static constexpr const char* _qpmt_KINDEX  = "qpmt_KINDEX" ;
     static constexpr const char* _qpmt_QESHAPE = "qpmt_QESHAPE" ;
     static constexpr const char* _qpmt_CETHETA = "qpmt_CETHETA" ;
+    static constexpr const char* _qpmt_CECOSTH = "qpmt_CECOSTH" ;
     static constexpr const char* _qpmt_CATSPEC = "qpmt_CATSPEC" ;
     static constexpr const char* _qpmt_SPEC    = "qpmt_SPEC" ;
     static constexpr const char* _qpmt_SPEC_ce = "qpmt_SPEC_ce" ;
@@ -52,6 +54,7 @@ inline const char* qpmt_enum::Label(int e)
         case qpmt_KINDEX:  s = _qpmt_KINDEX  ; break ;
         case qpmt_QESHAPE: s = _qpmt_QESHAPE ; break ;
         case qpmt_CETHETA: s = _qpmt_CETHETA ; break ;
+        case qpmt_CECOSTH: s = _qpmt_CECOSTH ; break ;
         case qpmt_CATSPEC: s = _qpmt_CATSPEC ; break ;
         case qpmt_SPEC:    s = _qpmt_SPEC    ; break ;
         case qpmt_SPEC_ce: s = _qpmt_SPEC_ce ; break ;

@@ -55,8 +55,9 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
-    echo ls -alst $FOLD
-    ls -alst $FOLD
+
+    ff="FOLD ${GEOM}_CFBaseFromGEOM"
+    for f in $ff ; do printf "\nls -alst ${!f} ## $f\n"  && ls -alst ${!f} ; done
 fi
 
 

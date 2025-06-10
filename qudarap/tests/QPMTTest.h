@@ -32,6 +32,8 @@ struct QPMTTest
 
     NP*         energy_eV_domain ;
     NP*         theta_radians_domain ;   // from 0. to pi/2
+    NP*         costh_domain ;           // from 0. to 1.  (reverse:true)
+
     int         num_mct ;            // input from NUM_MCT envvar or default
     NP*         mct_domain ;         // from NP::MinusCosThetaLinearAngle
 
@@ -70,6 +72,7 @@ inline QPMTTest<T>::QPMTTest(const NPFold* jpmt  )
     num_lpmtcat(qpmt->get_lpmtcat(lpmtcat->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)), // CPU side lookups
     energy_eV_domain(NP::Linspace<T>(1.55,15.50,1550-155+1)),
     theta_radians_domain(NP::ThetaRadians<T>(91,0.5)),
+    costh_domain(NP::Cos(theta_radians_domain)),
     num_mct(ssys::getenvint("NUM_MCT",900)),   // 181
     mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct)))
 {
@@ -82,15 +85,17 @@ inline NPFold* QPMTTest<T>::make_qscan() const
 
     qscan->add("energy_eV_domain", energy_eV_domain ) ;
     qscan->add("theta_radians_domain", theta_radians_domain ) ;
+    qscan->add("costh_domain", costh_domain ) ;
     qscan->add("mct_domain", mct_domain ) ;
     qscan->add("lpmtid",  lpmtid ) ;
     qscan->add("lpmtcat", lpmtcat ) ;
 
     qscan->add("lpmtcat_rindex",    qpmt->lpmtcat_scan(qpmt_RINDEX,  energy_eV_domain) ) ;
-    qscan->add("lpmtcat_qeshape",   qpmt->lpmtcat_scan(qpmt_QESHAPE, energy_eV_domain) ) ;
     qscan->add("lpmtcat_stackspec", qpmt->lpmtcat_scan(qpmt_CATSPEC, energy_eV_domain) ) ;
+    qscan->add("lpmtcat_qeshape",   qpmt->lpmtcat_scan(qpmt_QESHAPE, energy_eV_domain) ) ;
 
     qscan->add("lpmtcat_cetheta",   qpmt->lpmtcat_scan(qpmt_CETHETA, theta_radians_domain) ) ;
+    qscan->add("lpmtcat_cecosth",   qpmt->lpmtcat_scan(qpmt_CECOSTH, costh_domain ) ) ;
 
 
     qscan->add("spec",    qpmt->mct_lpmtid_scan(qpmt_SPEC,    mct_domain, lpmtid) ) ;

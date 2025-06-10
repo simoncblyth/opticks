@@ -59,12 +59,12 @@ int main(int argc, char** argv)
 
     std::cout << "QPMTTest.main.Before:" << QPMT<float>::Desc() << std::endl ;
 
-    const NPFold* jpmt = SPMT::Serialize();
+    const NPFold* jpmt_f = SPMT::Serialize();  // this the SPMT processed and serialized info, not the raw one
 
-    LOG_IF(fatal, jpmt==nullptr) << " jpmt==nullptr : probably GEOM,${GEOM}_CFBaseFromGEOM envvars not setup ?" ;
-    if(jpmt==nullptr) return 0 ;
+    LOG_IF(fatal, jpmt_f==nullptr) << " jpmt_f==nullptr : probably GEOM,${GEOM}_CFBaseFromGEOM envvars not setup ?" ;
+    if(jpmt_f==nullptr) return 0 ;
 
-    QPMTTest<float> t(jpmt);
+    QPMTTest<float> t(jpmt_f);
     NPFold* f = t.serialize();
     cudaDeviceSynchronize();
     f->save("$FOLD");

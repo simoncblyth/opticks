@@ -54,6 +54,7 @@ struct qpmt
     qprop<F>* rindex_prop ;
     qprop<F>* qeshape_prop ;
     qprop<F>* cetheta_prop ;
+    qprop<F>* cecosth_prop ;
 
     F*        thickness ;
     F*        lcqs ;
@@ -72,7 +73,9 @@ struct qpmt
 
     QPMT_METHOD void get_lpmtcat_stackspec( F* spec16, int pmtcat, F energy_eV ) const ;
     QPMT_METHOD void get_lpmtid_stackspec(  F* spec16, int pmtid,  F energy_eV ) const ;
+
     QPMT_METHOD void get_lpmtid_stackspec_ce_acosf( F* spec, int lpmtid, F energy_eV, F lposcost ) const ;
+    QPMT_METHOD void get_lpmtid_stackspec_ce(       F* spec, int lpmtid, F energy_eV, F lposcost ) const ;
 
 
 #ifdef WITH_CUSTOM4
@@ -194,21 +197,17 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F en
 
 
 /**
-get_lpmtid_stackspec_ce_acosf
-------------------------------
+get_lpmtid_stackspec_ce_acosf (see alternative get_lpmtid_stackspec_ce_acosf)
+-------------------------------------------------------------------------------
 
-
-TODO: compare with alternative avoiding acosf by interpolating directly with costh domain, eg::
-
-   const F ce = cecosth_prop->interpolate( lpmtcat, lposcost );
-
+This uses cetheta_prop interpolation forcing use of acosf to get theta
 
 lposcost
     local position cosine theta,
     expected range 1->0 (as front of PMT is +Z)
     so theta_radians expected 0->pi/2
 
-Called by qpmt::get_lpmtid_ARTQC
+Currently called by qpmt::get_lpmtid_ATQC
 
 **/
 
@@ -237,6 +236,43 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce_acosf( F* spec, int lpm
 
 
 
+/**
+get_lpmtid_stackspec_ce
+-------------------------
+
+This uses cecosth_prop interpolation avoiding use of acosf
+as directly interpolate in the cosine.
+
+lposcost
+    local position cosine theta,
+    expected range 1->0 (as front of PMT is +Z)
+    so theta_radians expected 0->pi/2
+
+Potentially called by qpmt::get_lpmtid_ATQC
+
+**/
+
+
+template<typename F>
+inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce( F* spec, int lpmtid, F energy_eV, F lposcost ) const
+{
+    const int& lpmtcat = i_lcqs[lpmtid*2+0] ;
+
+    const F& qe_scale = lcqs[lpmtid*2+1] ;
+    const F qe_shape = qeshape_prop->interpolate( lpmtcat, energy_eV ) ;
+    const F qe = qe_scale*qe_shape ;
+
+    const F ce = cecosth_prop->interpolate( lpmtcat, lposcost );
+
+    spec[0*4+3] = lpmtcat ;       //  3
+    spec[1*4+3] = ce ;            //  7
+    spec[2*4+3] = qe_shape ;      // 11
+    spec[3*4+3] = qe ;            // 15
+
+    get_lpmtcat_stackspec( spec, lpmtcat, energy_eV );
+
+    //printf("//qpmt::get_lpmtid_stackspec_ce lpmtid %d lpmtcat %d lposcost %7.3f  ce %7.3f spec[7] %7.3f \n", lpmtid, lpmtcat, lposcost, ce, spec[7] );
+}
 
 
 
@@ -465,6 +501,12 @@ ATQC[3] C
    CE collection efficiency, depending on theta of local position on PMT surface
    obtained by interpolation over theta domain (OR maybe in future costheta domain)
 
+
+TODO: compare between the alternates::
+
+    get_lpmtid_stackspec_ce_acosf   // interpolates ce in theta of local position in PMT frame
+    get_lpmtid_stackspec_ce         // interpolates ce in costheta of local position in PMT frame
+
 **/
 
 template<typename F>
@@ -479,7 +521,10 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_ATQC(
     const F energy_eV = hc_eVnm/wavelength_nm ;
 
     F spec[16] ;
+
     get_lpmtid_stackspec_ce_acosf( spec, lpmtid, energy_eV, lposcost );
+  //get_lpmtid_stackspec_ce(       spec, lpmtid, energy_eV, lposcost );
+
 
     const F* ss = spec ;
     const F& ce = spec[7] ;

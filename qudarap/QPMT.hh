@@ -42,8 +42,9 @@ struct QUDARAP_API QPMT
 
     const NP* src_rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, NEN, 2:[energy,value] )
     const NP* src_thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )
-    const NP* src_qeshape ;   // (NUM_PMTCAT, NEN_SAMPLES~44, 2:[energy,value] )
-    const NP* src_cetheta ;   // (NUM_PMTCAT, NEN_SAMPLES~44, 2:[theta,value] )
+    const NP* src_qeshape ;   // (NUM_PMTCAT, NUM_SAMPLES~44, 2:[energy,value] )
+    const NP* src_cetheta ;   // (NUM_PMTCAT, NUM_SAMPLES~9, 2:[theta,value] )
+    const NP* src_cecosth ;   // (NUM_PMTCAT, NUM_SAMPLES~9, 2:[costh,value] )
     const NP* src_lcqs ;      // (NUM_LPMT, 2:[cat,qescale])
 
     const NP* rindex3 ;       // (NUM_PMTCAT*NUM_LAYER*NUM_PROP,  NEN, 2:[energy,value] )
@@ -55,6 +56,9 @@ struct QUDARAP_API QPMT
 
     const NP* cetheta ;
     const QProp<T>* cetheta_prop ;
+
+    const NP* cecosth ;
+    const QProp<T>* cecosth_prop ;
 
 
     const NP* thickness ;
@@ -121,6 +125,7 @@ inline QPMT<T>::QPMT(const NPFold* jpmt )
     src_thickness(jpmt->get("thickness")),
     src_qeshape(  jpmt->get("qeshape")),
     src_cetheta(  jpmt->get("cetheta")),
+    src_cecosth(  jpmt->get("cecosth")),
     src_lcqs(     jpmt->get_optional("lcqs")),
     rindex3(  NP::MakeCopy3D(src_rindex)),   // make copy and change shape to 3D
     rindex(   NP::MakeWithType<T>(rindex3)), // adopt template type, potentially narrowing
@@ -129,6 +134,8 @@ inline QPMT<T>::QPMT(const NPFold* jpmt )
     qeshape_prop(new QProp<T>(qeshape)),
     cetheta(   NP::MakeWithType<T>(src_cetheta)), // adopt template type, potentially narrowing
     cetheta_prop(new QProp<T>(cetheta)),
+    cecosth(   NP::MakeWithType<T>(src_cecosth)), // adopt template type, potentially narrowing
+    cecosth_prop(new QProp<T>(cecosth)),
     thickness(NP::MakeWithType<T>(src_thickness)),
     lcqs(src_lcqs ? NP::MakeWithType<T>(src_lcqs) : nullptr),
     i_lcqs( lcqs ? (int*)lcqs->cvalues<T>() : nullptr ),    // CPU side lookup lpmtid->lpmtcat 0/1/2
@@ -148,17 +155,20 @@ inline NPFold* QPMT<T>::serialize() const  // formerly get_fold
     fold->add("src_rindex", src_rindex );
     fold->add("src_qeshape", src_qeshape );
     fold->add("src_cetheta", src_cetheta );
+    fold->add("src_cecosth", src_cecosth );
     fold->add("src_lcqs", src_lcqs );
 
     fold->add("thickness", thickness );
     fold->add("rindex", rindex );
     fold->add("qeshape", qeshape );
     fold->add("cetheta", cetheta );
+    fold->add("cecosth", cecosth );
     fold->add("lcqs", lcqs );
 
     fold->add("rindex_prop_a", rindex_prop->a );
     fold->add("qeshape_prop_a", qeshape_prop->a );
     fold->add("cetheta_prop_a", cetheta_prop->a );
+    fold->add("cecosth_prop_a", cecosth_prop->a );
 
     return fold ;
 }
@@ -174,11 +184,13 @@ inline std::string QPMT<T>::desc() const
        << std::setw(w) << "rindex "    << rindex->sstr() << std::endl
        << std::setw(w) << "qeshape " << qeshape->sstr() << std::endl
        << std::setw(w) << "cetheta " << cetheta->sstr() << std::endl
+       << std::setw(w) << "cecosth " << cecosth->sstr() << std::endl
        << std::setw(w) << "thickness " << thickness->sstr() << std::endl
        << std::setw(w) << "lcqs " << lcqs->sstr() << std::endl
        << std::setw(w) << " pmt.rindex_prop " << pmt->rindex_prop  << std::endl
        << std::setw(w) << " pmt.qeshape_prop " << pmt->qeshape_prop  << std::endl
        << std::setw(w) << " pmt.cetheta_prop " << pmt->cetheta_prop  << std::endl
+       << std::setw(w) << " pmt.cecosth_prop " << pmt->cecosth_prop  << std::endl
        << std::setw(w) << " pmt.thickness " << pmt->thickness  << std::endl
        << std::setw(w) << " pmt.lcqs " << pmt->lcqs  << std::endl
        << std::setw(w) << " d_pmt " << d_pmt   << std::endl
@@ -233,9 +245,10 @@ inline NP* QPMT<T>::MakeArray_lpmtcat(int etype, unsigned num_domain )   // stat
     switch(etype)
     {
        case qpmt_RINDEX:  lookup = NP::Make<T>( ni, nj, nk, num_domain ) ; break ;
+       case qpmt_CATSPEC: lookup = NP::Make<T>( ni, num_domain, 4, 4  )  ; break ;
        case qpmt_QESHAPE: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
        case qpmt_CETHETA: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
-       case qpmt_CATSPEC: lookup = NP::Make<T>( ni, num_domain, 4, 4  )  ; break ;
+       case qpmt_CECOSTH: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
     }
     return lookup ;
 }

@@ -23,6 +23,7 @@ class QPMTTest(object):
         self.init_energy_eV_domain()
         self.init_theta_radians_domain()
         self.init_mct_domain()
+        self.init_costh_domain()
         self.title_prefix = "%s : %s " % ( SCRIPT, t.base )
 
     def init_mct_domain(self):
@@ -34,26 +35,39 @@ class QPMTTest(object):
         #e0,e1 = 2.3, 3.3
         e0,e1 = 1.55, 4.3
         w0,w1 = e2w_(e0), e2w_(e1)
-        se = np.logical_and( e >= e0, e <= e1 )
-        self.se = se
+        ese = np.logical_and( e >= e0, e <= e1 )
+
         self.e0 = e0
         self.e1 = e1
         self.w0 = w0
         self.w1 = w1
+        self.ese = ese
 
     def init_theta_radians_domain(self):
         h = self.t.qscan.theta_radians_domain
         h0 = h[0]
         h1 = h[-1]
-        se = np.logical_and( h >= h0, h <= h1 )
+        hse = np.logical_and( h >= h0, h <= h1 )
 
         self.h0 = h0
         self.h1 = h1
-        self.se = se
+        self.hse = hse
+
+    def init_costh_domain(self):
+        c = self.t.qscan.costh_domain
+        c0 = c[-1]   ## flip the order as reversed
+        c1 = c[0]
+        cse = np.logical_and( c >= c0, c <= c1 )
+
+        self.c0 = c0
+        self.c1 = c1
+        self.cse = cse
+
+
 
     def present_qeshape(self):
         t = self.t
-        se = self.se
+        se = self.ese
         d = t.qscan.energy_eV_domain
         a = t.qscan.lpmtcat_qeshape
         if a is None: return
@@ -93,7 +107,7 @@ class QPMTTest(object):
 
     def present_cetheta(self):
         t = self.t
-        se = self.se
+        se = self.hse
         d = t.qscan.theta_radians_domain
         a = t.qscan.lpmtcat_cetheta
         if a is None: return
@@ -130,6 +144,50 @@ class QPMTTest(object):
             ax.scatter( p_d[p_s], p_v[p_s] )
         pass
         fig.show()
+
+
+    def present_cecosth(self):
+        t = self.t
+        se = self.cse
+        d = t.qscan.costh_domain
+        a = t.qscan.lpmtcat_cecosth
+        if a is None: return
+
+        prop_ni = t.qpmt.cecosth[:,-1,-1].view(np.int32)  ## last values from input prop arrays
+
+        v0,v1 = 0.0,1.1
+
+        assert len(a.shape) == 2, interp.shape
+
+        ni = a.shape[0]  # pmtcat
+        nj = a.shape[1]  # theta
+
+        title = "%s : cecosth GPU interpolation lines and values " % self.title_prefix
+
+        fig, axs = mp.pyplot.subplots(1, ni, figsize=SIZE/100.)
+        fig.suptitle(title)
+
+        for i in range(ni):
+            ax = axs[i]
+            ax.set_ylim( v0, v1 )
+            v = a[i]
+            name = self.NAMES[i]
+            label = "%s cecosth" % name
+            ax.set_xlabel("cosine_theta")
+            ax.plot( d[se], v[se], label=label )
+            ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left
+
+            ## input (domain,value) pairs used by the interpolation
+            p_d = t.qpmt.cecosth[i,:prop_ni[i],0]
+            p_v = t.qpmt.cecosth[i,:prop_ni[i],1]
+            p_s = np.logical_and( p_d >= self.c0, p_d <= self.c1 )
+
+            ax.scatter( p_d[p_s], p_v[p_s] )
+        pass
+        fig.show()
+
+
+
 
 
     def present_rindex(self):
@@ -190,6 +248,30 @@ class QPMTTest(object):
         fig.show()
 
 
+    def present_atqc(self):
+        """
+        In [4]: t.qscan.atqc.shape
+        Out[4]: (9, 900, 4)
+
+        In [5]: t.qscan.lpmtid
+        Out[5]: array([    0,    10,    55,    98,   100,   137,  1000, 10000, 17611], dtype=int32)
+
+        t.qscan.mct_domain.shape
+        Out[8]: (900,)
+
+        900 is scan over mct : minus_cos_theta of angle of incidence   (NOT landing position) 
+
+        atqc[:,:,3]
+              behaves as expected, fixed across the scan at high values ~0.91 - 0.97 depending on pmtid 
+
+        """
+        pass
+        t = self.t
+        mct = t.qscan.mct_domain
+        atqc = t.qscan.atqc
+
+
+
     def present_art(self):
         """
         In [2]: t.qscan.art.shape
@@ -197,7 +279,7 @@ class QPMTTest(object):
         """
 
         t = self.t
-        lpmtid = t.qscan.lpmtid[PMTIDX]
+        lpmtid = t.qscan.lpmtid[PMTIDX]   # pick lpmtid by PMTIDX
 
         all_art = t.qscan.art
         if all_art is None:
@@ -296,7 +378,8 @@ if __name__ == '__main__':
 
     #plot = "rindex"
     #plot = "qeshape"
-    plot = "cetheta"
+    #plot = "cetheta"
+    plot = "cecosth"
     #plot = "art"
 
     PLOT = os.environ.get("PLOT", plot )
@@ -306,6 +389,8 @@ if __name__ == '__main__':
         pt.present_qeshape()
     elif PLOT == "cetheta":
         pt.present_cetheta()
+    elif PLOT == "cecosth":
+        pt.present_cecosth()
     elif PLOT == "art":
         pt.present_art()
     else:

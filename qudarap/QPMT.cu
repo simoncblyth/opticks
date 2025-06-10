@@ -52,14 +52,14 @@ Each thread does all pmtcat,layers and props for a single energy_eV.
 **/
 
 template <typename F>
-__global__ void _QPMT_lpmtcat_rindex( qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
+__global__ void _QPMT_lpmtcat_rindex( int etype, qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
-    F energy_eV = domain[ix] ;
+    F domain_value = domain[ix] ;    // energy_eV
 
-    //printf("//_QPMT_rindex domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV );
-    // wierd unsigned/int diff between qpmt.h and here ? to get it to compile fo device
+    //printf("//_QPMT_rindex domain_width %d ix %d domain_value %10.4f \n", domain_width, ix, domain_value );
+    // wierd unsigned/int diff between qpmt.h and here ? to get it to compile for device
     // switching to enum rather than constexpr const avoids the wierdness
 
     const int& ni = qpmt_NUM_CAT ;
@@ -76,7 +76,7 @@ __global__ void _QPMT_lpmtcat_rindex( qpmt<F>* pmt, F* lookup , const F* domain,
         int iprop = i*nj*nk+j*nk+k ;            // linearized higher dimensions
         int index = iprop * domain_width + ix ; // output index into lookup
 
-        F value = pmt->rindex_prop->interpolate(iprop, energy_eV );
+        F value = pmt->rindex_prop->interpolate(iprop, domain_value );
 
         //printf("//_QPMT_lpmtcat_rindex iprop %d index %d value %10.4f \n", iprop, index, value );
 
@@ -85,62 +85,15 @@ __global__ void _QPMT_lpmtcat_rindex( qpmt<F>* pmt, F* lookup , const F* domain,
 }
 
 
+
 template <typename F>
-__global__ void _QPMT_lpmtcat_qeshape( qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
+__global__ void _QPMT_lpmtcat_stackspec( int etype, qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
 {
     unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
     if (ix >= domain_width ) return;
-    F energy_eV = domain[ix] ;
+    F domain_value = domain[ix] ;
 
-    //printf("//_QPMT_lpmtcat_qeshape domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV );
-
-    const int& ni = qpmt_NUM_CAT ;
-
-    for(int i=0 ; i < ni ; i++)
-    {
-        F value = pmt->qeshape_prop->interpolate(i, energy_eV );
-
-        int index = i * domain_width + ix ; // output index into lookup
-        lookup[index] = value ;
-    }
-}
-
-
-
-template <typename F>
-__global__ void _QPMT_lpmtcat_cetheta( qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
-{
-    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
-    if (ix >= domain_width ) return;
-    F theta_radians = domain[ix] ;
-
-    //printf("//_QPMT_lpmtcat_cetheta domain_width %d ix %d theta_radians %10.4f \n", domain_width, ix, theta_radians );
-
-    const int& ni = qpmt_NUM_CAT ;
-
-    for(int i=0 ; i < ni ; i++)
-    {
-        int lpmtcat = i ;
-        //F value = pmt->cetheta_prop->interpolate(lpmtcat, theta_radians );
-        F value = pmt->get_lpmtcat_ce( lpmtcat, theta_radians );
-
-        int index = i * domain_width + ix ; // output index into lookup
-        lookup[index] = value ;
-    }
-}
-
-
-
-
-
-template <typename F>
-__global__ void _QPMT_lpmtcat_stackspec( qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
-{
-    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
-    if (ix >= domain_width ) return;
-    F energy_eV = domain[ix] ;
-
-    //printf("//_QPMT_lpmtcat_stackspec domain_width %d ix %d energy_eV %10.4f \n", domain_width, ix, energy_eV );
+    //printf("//_QPMT_lpmtcat_stackspec domain_width %d ix %d domain_value %10.4f \n", domain_width, ix, domain_value );
 
     const int& ni = qpmt_NUM_CAT ;
     const int& nj = domain_width ;
@@ -152,10 +105,59 @@ __global__ void _QPMT_lpmtcat_stackspec( qpmt<F>* pmt, F* lookup , const F* doma
     for(int i=0 ; i < ni ; i++)  // over pmtcat
     {
         int index = i*nj*nk + j*nk  ;
-        pmt->get_lpmtcat_stackspec(ss, i, energy_eV );
+        pmt->get_lpmtcat_stackspec(ss, i, domain_value );
         for( int k=0 ; k < nk ; k++) lookup[index+k] = ss[k] ;
     }
 }
+
+
+
+template <typename F>
+__global__ void _QPMT_lpmtcat_launch( int etype, qpmt<F>* pmt, F* lookup , const F* domain, unsigned domain_width )
+{
+    unsigned ix = blockIdx.x * blockDim.x + threadIdx.x;
+    if (ix >= domain_width ) return;
+    F domain_value = domain[ix] ;
+
+    //printf("//_QPMT_lpmtcat_launch etype %d domain_width %d ix %d theta_radians %10.4f \n", etype, domain_width, ix, theta_radians );
+
+    const int& ni = qpmt_NUM_CAT ;
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        int lpmtcat = i ;
+        F value = 0.f ;
+
+        if( etype == qpmt_QESHAPE )
+        {
+            value = pmt->qeshape_prop->interpolate( lpmtcat, domain_value );
+        }
+        else if( etype == qpmt_CETHETA )
+        {
+            //value = pmt->cetheta_prop->interpolate(lpmtcat, domain_value );
+            value = pmt->get_lpmtcat_ce( lpmtcat, domain_value );
+        }
+        else if ( etype == qpmt_CECOSTH )
+        {
+            value = pmt->cecosth_prop->interpolate(lpmtcat, domain_value );
+        }
+
+
+        int index = i * domain_width + ix ; // output index into lookup
+        lookup[index] = value ;
+    }
+}
+
+
+
+
+/**
+QPMT_lpmtcat_scan
+-------------------
+
+Performs CUDA launches, invoked from QPMT.cc QPMT<T>::lpmtcat_scan
+
+**/
 
 
 template <typename F> extern void QPMT_lpmtcat_scan(
@@ -168,12 +170,14 @@ template <typename F> extern void QPMT_lpmtcat_scan(
     unsigned domain_width
 )
 {
+
     switch(etype)
     {
-        case qpmt_RINDEX   : _QPMT_lpmtcat_rindex<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width )    ; break ;
-        case qpmt_QESHAPE  : _QPMT_lpmtcat_qeshape<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width )   ; break ;
-        case qpmt_CETHETA  : _QPMT_lpmtcat_cetheta<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width )   ; break ;
-        case qpmt_CATSPEC  : _QPMT_lpmtcat_stackspec<F><<<numBlocks,threadsPerBlock>>>( pmt, lookup, domain, domain_width ) ; break ;
+        case qpmt_RINDEX   : _QPMT_lpmtcat_rindex<F><<<numBlocks,threadsPerBlock>>>(    etype, pmt, lookup, domain, domain_width )   ; break ;
+        case qpmt_CATSPEC  : _QPMT_lpmtcat_stackspec<F><<<numBlocks,threadsPerBlock>>>( etype, pmt, lookup, domain, domain_width )   ; break ;
+        case qpmt_QESHAPE  : _QPMT_lpmtcat_launch<F><<<numBlocks,threadsPerBlock>>>(    etype, pmt, lookup, domain, domain_width )   ; break ;
+        case qpmt_CETHETA  : _QPMT_lpmtcat_launch<F><<<numBlocks,threadsPerBlock>>>(    etype, pmt, lookup, domain, domain_width )   ; break ;
+        case qpmt_CECOSTH  : _QPMT_lpmtcat_launch<F><<<numBlocks,threadsPerBlock>>>(    etype, pmt, lookup, domain, domain_width )   ; break ;
     }
 }
 
@@ -186,6 +190,12 @@ template void QPMT_lpmtcat_scan(
    const float* ,
    unsigned
   );
+
+
+
+
+
+
 
 
 /**
