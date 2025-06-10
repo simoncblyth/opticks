@@ -288,6 +288,24 @@ void U4Recorder::init_SEvt()
     }
 }
 
+
+/**
+U4Recorder::addProcessHits_EPH
+-------------------------------
+
+Invoked from U4RecorderAnaMgr::EndOfEventAction
+
+HMM: what about clearing for the next evt ?
+
+**/
+
+
+void U4Recorder::addProcessHits_EPH(NP* eph_meta)
+{
+    sev->addProcessHits_EPH(eph_meta);
+}
+
+
 void U4Recorder::setU4Tree(const U4Tree* _tree)
 {
     tree = _tree ;
@@ -615,7 +633,7 @@ void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel_( const G4Track* t
     if(q.isPlaceholder())
     {
         int track_id = U4Track::Id(track);
-        q.set_fabricated_(track_id); 
+        q.set_fabricated_(track_id);
     }
 }
 
@@ -801,10 +819,10 @@ U4Recorder::PostUserTrackingAction_Optical
 
 void U4Recorder::PostUserTrackingAction_Optical(const G4Track* track)
 {
-    spho ulabel = {} ; 
-    GetLabel(ulabel, track); 
-    PostUserTrackingAction_Optical_(track, ulabel.data()); 
-}    
+    spho ulabel = {} ;
+    GetLabel(ulabel, track);
+    PostUserTrackingAction_Optical_(track, ulabel.data());
+}
 
 void U4Recorder::PostUserTrackingAction_Optical_(const G4Track* track, int* label)
 {
@@ -1200,6 +1218,19 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 const double U4Recorder::SLOW_FAKE = ssys::getenvdouble("U4Recorder__SLOW_FAKE", 1e-2) ;
 const bool U4Recorder::UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft = ssys::getenvbool(UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_) ;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**

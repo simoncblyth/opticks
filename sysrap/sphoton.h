@@ -190,6 +190,12 @@ struct sphoton
     SPHOTON_METHOD std::string descDetail() const ;
     SPHOTON_METHOD std::string descFlag() const ;
     SPHOTON_METHOD std::string descDigest() const ;
+
+    SPHOTON_METHOD const char* flag_() const ;
+    SPHOTON_METHOD const char* abbrev_() const ;
+    SPHOTON_METHOD std::string flagmask_() const ;
+
+
     SPHOTON_METHOD void ephoton() ;
     SPHOTON_METHOD void normalize_mom_pol();
     SPHOTON_METHOD void transverse_mom_pol();
@@ -328,13 +334,27 @@ SPHOTON_METHOD std::string sphoton::descDigest() const
 }
 
 
+SPHOTON_METHOD const char* sphoton::flag_() const
+{
+    return OpticksPhoton::Flag(flag()) ;
+}
+
+SPHOTON_METHOD const char* sphoton::abbrev_() const
+{
+    return OpticksPhoton::Abbrev(flag()) ;
+}
+SPHOTON_METHOD std::string sphoton::flagmask_() const
+{
+    return OpticksPhoton::FlagMask(flagmask) ;
+}
+
 SPHOTON_METHOD std::string sphoton::descFlag() const
 {
     std::stringstream ss ;
     ss
        << " sphoton idx " << idx()
-       << " flag " << OpticksPhoton::Flag(flag())
-       << " flagmask " << OpticksPhoton::FlagMask(flagmask)
+       << " flag " << flag_()
+       << " flagmask " << flagmask_()
        ;
     std::string s = ss.str();
     return s ;

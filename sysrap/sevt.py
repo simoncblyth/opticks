@@ -18,7 +18,9 @@ from opticks.ana.eget import eslice_
 from opticks.ana.base import PhotonCodeFlags
 from opticks.ana.qcf import QU,QCF,QCFZero
 from opticks.ana.npmeta import NPMeta
+from opticks.ana.hismask import HisMask
 
+hm = HisMask()
 
 pcf = PhotonCodeFlags()
 fln = pcf.fln
@@ -262,14 +264,46 @@ class SEvt(object):
         SPECS = np.array(U4R_names.lines) if not U4R_names is None else None
         self.SPECS = SPECS
 
+    @classmethod
+    def Make_flagmask_table(cls, flagmask):
+        """
+
+            In [30]: np.c_[ label, fmtab[:,1] ][:20]
+            Out[30]:
+            array([['TO|BT|SA', '326185'],
+                   ['EC|TO|BT|SD', '312177'],
+                   ['TO|BT|SR|SA', '56805'],
+                   ['TO|BT|BR|SR|SA', '53334'],
+                   ['TO|BT|BR|SA', '42888'],
+                   ['TO|BT|BR|AB', '37716'],
+                   ['EC|TO|BT|BR|SD', '21709'],
+                   ['TO|BT|BR|SA|SC', '20683'],
+                   ['TO|BT|BR|SC|AB', '15776'],
+                   ['EC|TO|BT|BR|SD|SC', '13679'],
+                   ['TO|BT|AB', '12490'],
+                   ['TO|BT|BR|SR|SA|SC', '8668'],
+
+        """
+        _fmtabraw = np.c_[np.unique(flagmask,return_counts=True)]
+        fmtabraw = _fmtabraw[np.argsort(_fmtabraw[:,1])][::-1]
+        label = hm.label(fmtabraw[:,0])
+        fmtab = np.c_[ label, fmtabraw[:,1] ]
+        return fmtab
+
     def init_photon(self, f):
         if hasattr(f,'photon') and not f.photon is None:
             iix = f.photon[:,1,3].view(np.int32)
+            flagmask = f.photon[:,3,3].view(np.int32)
+            fmtab = self.Make_flagmask_table(flagmask)
         else:
             iix = None
+            flagmask = None
+            fmtab = None
         pass
-
         self.iix = iix
+        self.flagmask = flagmask
+        self.fmtab = fmtab
+
 
     def init_record(self, f):
         """

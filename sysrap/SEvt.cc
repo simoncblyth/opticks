@@ -43,6 +43,8 @@
 #include "SComp.h"
 #include "SProf.hh"
 
+#include "SProcessHits_EPH.h"
+
 
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ;
@@ -53,6 +55,7 @@ bool SEvt::MINTIME = ssys::getenvbool(SEvt__MINTIME) ;
 bool SEvt::DIRECTORY = ssys::getenvbool(SEvt__DIRECTORY) ;
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ;
 bool SEvt::SIMTRACE = ssys::getenvbool(SEvt__SIMTRACE) ;
+bool SEvt::EPH_ = ssys::getenvbool(SEvt__EPH) ;
 
 
 const char* SEvt::descStage() const
@@ -198,6 +201,7 @@ SEvt::SEvt()
     provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init
     topfold(new NPFold),
     fold(nullptr),
+    extrafold(new NPFold),
     cf(nullptr),
     hostside_running_resize_done(false),
     gather_done(false),
@@ -2930,8 +2934,13 @@ SEvt::finalPhoton : only used for hostside running
 Canonically called from U4Recorder::PostUserTrackingAction_Optical
 
 1. asserts label is same lineage as current_pho
-2. calls sctx::end on ctx, copying ctx.seq into evt->seq[idx]
-3. copies ctx.p into evt->photon[idx]
+2. using ProcessHits EPH enum value may change final photon step flags
+   of SURFACE_DETECT(SD) to EFFICIENCY_COLLECT(EC) or EFFICIENCY_CULL(EX)
+
+   Q: Does SD need to be scrubbed from flagmask to correspond to A side ?
+
+3. calls sctx::end on ctx, copying ctx.seq into evt->seq[idx]
+4. copies ctx.p into evt->photon[idx]
 
 **/
 
@@ -2945,6 +2954,24 @@ void SEvt::finalPhoton(const spho& label)
     sctx& ctx = current_ctx ;
     assert( ctx.idx == idx );
 
+
+    int eph_flag = finalPhoton_eph_flag(label);  // eph_flag will often be zero
+
+    LOG_IF(info, EPH_)
+        << " before:ctx.p.abbrev_() [" << ctx.p.abbrev_() << "]"
+        << " eph_flag [" << OpticksPhoton::Abbrev(eph_flag) << "]"
+        ;
+
+    if( eph_flag > 0 )
+    {
+#ifdef AFTER_FLAGMASK_HAS_BEEN_VERIFIED
+        ctx.p.set_flag(eph_flag);      // sets both flag and flagmask
+#else
+        ctx.p.flagmask |= eph_flag ;
+#endif
+    }
+
+
 #ifndef PRODUCTION
 #ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;
@@ -2957,6 +2984,46 @@ void SEvt::finalPhoton(const spho& label)
 
     evt->photon[idx] = ctx.p ;   // HUH: why not do this in ctx.end ?
 }
+
+/**
+SEvt::finalPhoton_eph_flag
+---------------------------
+
+Arrive at RIP final flag based on the eph enum from ProcessHits, that
+got here via the track info label plus U4RecorderAnaMgr/U4Recorder
+
+see "jcv junoSD_PMT_v2"
+
+**/
+
+int SEvt::finalPhoton_eph_flag(const spho& label) const
+{
+    int eph = label.eph();
+
+    bool is_eph_collect = eph == EPH::SAVENORM || eph == EPH::YMERGE ;
+    bool is_eph_cull    = eph == EPH::NDECULL  ;
+
+    int eph_flag = is_eph_collect ?
+                                         EFFICIENCY_COLLECT
+                                  :
+                                         ( is_eph_cull ? EFFICIENCY_CULL : 0 )
+                                  ;
+
+    LOG_IF(info, EPH_)
+         << " gen " << std::setw(2) << label.gen()
+         << " eph " << std::setw(2) << eph
+         << " ext " << std::setw(2) << label.ext()
+         << " flg " << std::setw(2) << label.flg()
+         << " eph_ " << EPH::Name(eph)
+         << " is_eph_collect " << ( is_eph_collect ? "YES" : "NO " )
+         << " is_eph_cull " << ( is_eph_cull ? "YES" : "NO " )
+         << " eph_flag " << OpticksPhoton::Flag(eph_flag)
+         ;
+
+    return eph_flag ;
+}
+
+
 
 
 
@@ -3684,13 +3751,29 @@ A: QSim::fake_propagate
 void SEvt::add_array( const char* k, const NP* a )
 {
     LOG(LEVEL) << " k " << k << " a " << ( a ? a->sstr() : "-" ) ;
-    topfold->add(k, a);
+    extrafold->add(k, a);
 }
 
 void SEvt::addEventConfigArray()
 {
-    topfold->add(SEventConfig::NAME, SEventConfig::Serialize() );
+    extrafold->add(SEventConfig::NAME, SEventConfig::Serialize() );
 }
+
+/**
+SEvt::addProcessHits_EPH
+-------------------------
+
+Called from U4Recorder::addProcessHits_EPH
+
+**/
+
+void SEvt::addProcessHits_EPH(NP* eph_meta)
+{
+    LOG(info) << " eph_meta " << ( eph_meta ? eph_meta->sstr() : "-" ) ;
+    extrafold->add("SProcessHits_EPH", eph_meta );
+}
+
+
 
 /**
 SEvt::save
@@ -4042,6 +4125,18 @@ void SEvt::save(const char* dir_)
         save_fold->add("seqnib_table", seqnib_table );
         // NPFold::add does nothing with nullptr array
     }
+
+    if(extrafold)
+    {
+        int extra_items = extrafold->num_items();
+        for(int i=0 ; i < extra_items ; i++)
+        {
+            const char* key = extrafold->get_key(i);
+            const NP* arr = extrafold->get_array(i);
+            save_fold->add(key, arr);
+        }
+    }
+
 
 
     int slic = save_fold->_save_local_item_count();

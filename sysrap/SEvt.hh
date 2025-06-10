@@ -123,6 +123,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__SIMTRACE = "SEvt__SIMTRACE" ;
     static bool SIMTRACE ;
 
+    static constexpr const char* SEvt__EPH = "SEvt__EPH" ;
+    static bool EPH_ ;
 
 
 
@@ -201,6 +203,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     const SCompProvider*  provider ;
     NPFold*               topfold ;
     NPFold*               fold ;
+    NPFold*               extrafold ;
+
     const SGeo*           cf ;
     const stree*          tree ;
 
@@ -562,6 +566,7 @@ public:
 #endif
 
     void finalPhoton(const spho& sp);
+    int finalPhoton_eph_flag(const spho& label) const;
 
     static void AddProcessHitsStamp(int idx, int p);
     void addProcessHitsStamp(int p) ;
@@ -644,6 +649,7 @@ public:
     // add extra metadata arrays to be saved within SEvt fold
     void add_array( const char* k, const NP* a );
     void addEventConfigArray() ;
+    void addProcessHits_EPH(NP* eph_meta);
 
 
     // save methods not const as call gather

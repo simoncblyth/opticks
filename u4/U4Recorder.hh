@@ -12,25 +12,25 @@ The U4Recorder relies on the RunAction, EventAction  etc.. classes
 calling those lifecycle methods.
 
 
-Using G4VUserTrackInformation photon label info without accessing them 
+Using G4VUserTrackInformation photon label info without accessing them
 ------------------------------------------------------------------------
 
-As detector simulation frameworks will be using the 
-G4VUserTrackInformation for other purposes it causes 
-incompatibility to require that the track info is 
-solely used by Opticks. 
+As detector simulation frameworks will be using the
+G4VUserTrackInformation for other purposes it causes
+incompatibility to require that the track info is
+solely used by Opticks.
 
-To workaround this problem have added partner lower level 
+To workaround this problem have added partner lower level
 track methods with names ending with "_" that take an int* label.
 The int* label is a pointer back to the photon label data
-back in the Geant4 track info of each track. 
+back in the Geant4 track info of each track.
 
-Passing that int* pointer as a parameter alongside the track 
-avoids needing to have detector framework track info 
+Passing that int* pointer as a parameter alongside the track
+avoids needing to have detector framework track info
 classes to delve into the track info here.  Instead
-that access to the label can to be done in the detector 
+that access to the label can to be done in the detector
 framework. This avoids conflicts over the use of the track
-info by enabling it to be shared. 
+info by enabling it to be shared.
 
 **/
 
@@ -91,6 +91,7 @@ private:
     void init();
     void init_SEvt();
 public:
+    void addProcessHits_EPH(NP* eph_stats);
 
     int eventID ;
     const G4Track* transient_fSuspend_track ;
@@ -120,7 +121,7 @@ public:
 
     void PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track );
     void PreUserTrackingAction_Optical_FabricateLabel( const G4Track* track ) ;
-    void PreUserTrackingAction_Optical_FabricateLabel_( const G4Track* track, int* label ); 
+    void PreUserTrackingAction_Optical_FabricateLabel_( const G4Track* track, int* label );
 
     void GetLabel( spho& ulabel, const G4Track* track );
 
