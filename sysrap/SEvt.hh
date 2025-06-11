@@ -652,16 +652,10 @@ public:
     void addProcessHits_EPH(NP* eph_meta);
 
 
-    // save methods not const as call gather
-    void save() ;
-    void saveExtra( const char* name, const NP* a ) const ;
 
     int  load() ;
 
 
-
-    void save(const char* base, const char* reldir );
-    void save(const char* base, const char* reldir1, const char* reldir2 );
 
     bool hasIndex() const ;
     bool hasInstance() const ;
@@ -682,8 +676,16 @@ public:
     int  loadfold( const char* dir );
     void onload();
 
+    // save methods not const as call gather
+    void save(const char* base, const char* reldir1, const char* reldir2 );
+    void save(const char* base, const char* reldir );
+    void save() ;
     void save(const char* dir);
-    void saveExtra(const char* dir_, const char* name, const NP* a ) const ;
+
+
+    void saveExtra( const char* name, const NP* a ) const ;
+    void saveExtra( const char* base, const char* name, const NP* a ) const ;
+
     void saveFrame(const char* dir_) const ;
 
     std::string descComponent() const ;

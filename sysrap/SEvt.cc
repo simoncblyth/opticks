@@ -1340,14 +1340,6 @@ void SEvt::Save()
     if(Exists(1)) Get(1)->save();
 }
 
-/*
-void SEvt::SaveExtra( const char* name, const NP* a)
-{
-    if(Exists(0)) Get(0)->saveExtra(name, a);
-    if(Exists(1)) Get(1)->saveExtra(name, a);
-}
-*/
-
 
 bool SEvt::HaveDistinctOutputDirs() // static
 {
@@ -3763,90 +3755,20 @@ void SEvt::addEventConfigArray()
 SEvt::addProcessHits_EPH
 -------------------------
 
-Called from U4Recorder::addProcessHits_EPH
+Called from U4Recorder::addProcessHits_EPH but as that is
+called from U4RecorderAnaMgr::EndOfEventAction it is too late
+for the extrafold save.
 
 **/
 
 void SEvt::addProcessHits_EPH(NP* eph_meta)
 {
-    LOG(info) << " eph_meta " << ( eph_meta ? eph_meta->sstr() : "-" ) ;
-    extrafold->add("SProcessHits_EPH", eph_meta );
+    LOG_IF(info, EPH_) << " eph_meta " << ( eph_meta ? eph_meta->sstr() : "-" ) ;
+
+    saveExtra( "SProcessHits_EPH.npy", eph_meta );
 }
 
 
-
-/**
-SEvt::save
---------------
-
-The component arrays are gathered by SEvt::gather_components
-into the NPFold and then saved. Which components to gather and save
-are configured via SEventConfig::GatherComp and SEventConfig::SaveComp
-using the SComp enumeration.
-
-The arrays are gathered from the SCompProvider object, which
-may be QEvent for on device running or SEvt itself for U4Recorder
-Geant4 tests.
-
-SEvt::save persists NP arrays into the default directory
-or the directory argument provided.
-
-The FALLBACK_DIR which is used for the SEvt::DefaultDir is obtained from SEventConfig::OutFold
-which is normally "$DefaultOutputDir" $TMP/GEOM/$GEOM/ExecutableName
-This can be overriden using SEventConfig::SetOutFold or by setting the
-envvar OPTICKS_OUT_FOLD.
-
-It is normally much easier to use the default of "$DefaultOutputDir" as this
-takes care of lots of the bookkeeping automatically.
-However in some circumstances such as with the B side of aligned running (U4RecorderTest)
-it is appropriate to use the override code or envvar to locate B side outputs together
-with the A side.
-
-
-**Override with TMP envvar rather than OPTICKS_OUT_FOLD to still have auto-bookkeeping**
-
-Note that when needing to override the default output directory it is usually
-preferable to use TMP envvar as most of the automatic bookkeeping will still be done in that case.
-
-The below examples are with GEOM envvar set to "Pasta" and "FewPMT" with different executables:
-
-+--------------------------------------------+-----------------------------------------------------------+
-|   TMP envvar                               |  SEvt saveDir                                             |
-+============================================+===========================================================+
-|    undefined                               |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
-+--------------------------------------------+-----------------------------------------------------------+
-|   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
-+--------------------------------------------+-----------------------------------------------------------+
-|   undefined                                |   /tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL0/000  |
-+--------------------------------------------+-----------------------------------------------------------+
-
-Only when more control of the output is needed is it appropriate to use OPTICKS_OUT_FOLD envvar.
-
-+--------------------------------------------+-----------------------------------------------------------+
-|  OPTICKS_OUT_FOLD envvar                   |  SEvt saveDir                                             |
-+============================================+===========================================================+
-|   undefined                                |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
-+--------------------------------------------+-----------------------------------------------------------+
-|   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/ALL                                  |
-+--------------------------------------------+-----------------------------------------------------------+
-|   /tmp/$USER/opticks/GEOM/$GEOM/SEvtTest   |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
-+--------------------------------------------+-----------------------------------------------------------+
-
-* see tests/SEvtTest_saveDir.sh
-
-**/
-
-void SEvt::save()
-{
-    const char* base = DefaultBase();
-    LOG_IF(info, LIFECYCLE || SIMTRACE) << " base [" << ( base ? base : "-" ) << "]" ;
-    save(base);
-}
-void SEvt::saveExtra( const char* name, const NP* a  ) const
-{
-    const char* dir = getDir();
-    saveExtra( dir, name , a );
-}
 
 
 int SEvt::load()
@@ -3855,17 +3777,6 @@ int SEvt::load()
     int rc = load(base);
     LOG(LEVEL) << "SEvt::DefaultBase " << base << " rc " << rc ;
     return rc ;
-}
-
-void SEvt::save(const char* bas, const char* rel )
-{
-    const char* dir = spath::Resolve(bas, rel);
-    save(dir);
-}
-void SEvt::save(const char* bas, const char* rel1, const char* rel2 )
-{
-    const char* dir = spath::Resolve(bas, rel1, rel2);
-    save(dir);
 }
 
 
@@ -3950,7 +3861,7 @@ const char* SEvt::getDir(const char* base_) const
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ;
     sdirectory::MakeDirs(path,0);
 
-    LOG_IF(info, DIRECTORY || SIMTRACE)
+    LOG_IF(info, DIRECTORY || SIMTRACE || LIFECYCLE )
         << std::endl
         << " base_  " << ( base_ ? base_ : "-" ) << "\n"
         << " SEventConfig::EventReldir   " << ( reldir ? reldir : "-" ) << "\n"
@@ -4060,6 +3971,87 @@ void SEvt::onload()
 
 
 
+void SEvt::save(const char* bas, const char* rel1, const char* rel2 )
+{
+    const char* dir = spath::Resolve(bas, rel1, rel2);
+    save(dir);
+}
+void SEvt::save(const char* bas, const char* rel )
+{
+    const char* dir = spath::Resolve(bas, rel);
+    save(dir);
+}
+
+/**
+SEvt::save
+--------------
+
+The component arrays are gathered by SEvt::gather_components
+into the NPFold and then saved. Which components to gather and save
+are configured via SEventConfig::GatherComp and SEventConfig::SaveComp
+using the SComp enumeration.
+
+The arrays are gathered from the SCompProvider object, which
+may be QEvent for on device running or SEvt itself for U4Recorder
+Geant4 tests.
+
+SEvt::save persists NP arrays into the default directory
+or the directory argument provided.
+
+The FALLBACK_DIR which is used for the SEvt::DefaultDir is obtained from SEventConfig::OutFold
+which is normally "$DefaultOutputDir" $TMP/GEOM/$GEOM/ExecutableName
+This can be overriden using SEventConfig::SetOutFold or by setting the
+envvar OPTICKS_OUT_FOLD.
+
+It is normally much easier to use the default of "$DefaultOutputDir" as this
+takes care of lots of the bookkeeping automatically.
+However in some circumstances such as with the B side of aligned running (U4RecorderTest)
+it is appropriate to use the override code or envvar to locate B side outputs together
+with the A side.
+
+
+**Override with TMP envvar rather than OPTICKS_OUT_FOLD to still have auto-bookkeeping**
+
+Note that when needing to override the default output directory it is usually
+preferable to use TMP envvar as most of the automatic bookkeeping will still be done in that case.
+
+The below examples are with GEOM envvar set to "Pasta" and "FewPMT" with different executables:
+
++--------------------------------------------+-----------------------------------------------------------+
+|   TMP envvar                               |  SEvt saveDir                                             |
++============================================+===========================================================+
+|    undefined                               |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+|   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+|   undefined                                |   /tmp/blyth/opticks/GEOM/FewPMT/U4SimulateTest/ALL0/000  |
++--------------------------------------------+-----------------------------------------------------------+
+
+Only when more control of the output is needed is it appropriate to use OPTICKS_OUT_FOLD envvar.
+
++--------------------------------------------+-----------------------------------------------------------+
+|  OPTICKS_OUT_FOLD envvar                   |  SEvt saveDir                                             |
++============================================+===========================================================+
+|   undefined                                |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+|   /tmp/$USER/opticks                       |   /tmp/blyth/opticks/ALL                                  |
++--------------------------------------------+-----------------------------------------------------------+
+|   /tmp/$USER/opticks/GEOM/$GEOM/SEvtTest   |   /tmp/blyth/opticks/GEOM/Pasta/SEvtTest/ALL              |
++--------------------------------------------+-----------------------------------------------------------+
+
+* see tests/SEvtTest_saveDir.sh
+
+**/
+
+void SEvt::save()
+{
+    const char* base = DefaultBase();
+    LOG_IF(info, LIFECYCLE || SIMTRACE) << " base [" << ( base ? base : "-" ) << "]" ;
+    save(base);
+}
+
+
+
 
 /**
 SEvt::save
@@ -4129,6 +4121,8 @@ void SEvt::save(const char* dir_)
     if(extrafold)
     {
         int extra_items = extrafold->num_items();
+        LOG_IF(info, EPH_) << "adding extra_items " << extra_items << " to save_fold " ;
+
         for(int i=0 ; i < extra_items ; i++)
         {
             const char* key = extrafold->get_key(i);
@@ -4136,7 +4130,6 @@ void SEvt::save(const char* dir_)
             save_fold->add(key, arr);
         }
     }
-
 
 
     int slic = save_fold->_save_local_item_count();
@@ -4165,9 +4158,84 @@ void SEvt::save(const char* dir_)
     delete seqnib_table ;
 }
 
-void SEvt::saveExtra(const char* dir_, const char* name, const NP* a ) const
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/**
+SEvt::saveExtra(name,a)
+------------------------
+
+Save extra array into the standard SEvt folder
+The name is expected to end with ".npy"
+
+For example with name of "somearray.npy" might
+save to::
+
+    /data1/blyth/tmp/GEOM/SEVT_TEST/SEvtTest/ALL0_no_opticks_event_name/somearray.npy
+
+The directory depends on the name of the executable eg "SEvtTest" and envvars::
+
+    TMP                  /data1/blyth/tmp
+    GEOM                 SEVT_TEST
+    VERSION              0
+    OPTICKS_EVENT_NAME   no_opticks_event_name
+
+**/
+
+void SEvt::saveExtra( const char* name, const NP* a  ) const
 {
-    const char* dir = getDir(dir_);
+    const char* dir = getDir();
+    LOG_IF(info, LIFECYCLE)
+        << "saveExtra(name,a)\n"
+        << "name[" << name << "]\n"
+        << "dir [" << dir << "]\n"
+        << "   a[" << ( a ? a->sstr() : "-" ) << "]"
+        ;
+
+    a->save(dir, name);
+}
+
+
+/**
+SEvt::saveExtra(base, name,a)
+---------------------------------
+
+The name is expected to end with ".npy"
+
+Save extra array into directory with the specified base folder,
+but with the organizational reldir.  For example with base "/tmp"
+and name "somearray.npy" and no other envvars or SEvt index
+setup might save to::
+
+    /tmp/ALL0_no_opticks_event_name/somearray.npy
+
+Setting envvars VERSION and OPTICKS_EVENT_NAME would
+change the reldir. Also setting an index on the event would
+add a subfold like "A000" or "B000".
+
+**/
+
+void SEvt::saveExtra(const char* base, const char* name, const NP* a ) const
+{
+    const char* dir = getDir(base);
+    LOG_IF(info, LIFECYCLE)
+        << "saveExtra(base,name,a)\n"
+        << "base[" << base << "]\n"
+        << "dir [" << dir  << "]\n"
+        << "name[" << name << "]\n"
+        << "   a[" << ( a ? a->sstr() : "-" ) << "]"
+        ;
     a->save(dir, name );
 }
 

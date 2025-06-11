@@ -260,8 +260,12 @@ class SEvt(object):
         self.ID = ID
 
     def init_U4R_names(self, f):
+        """
+        Now its an array with UNSET
+        """
         U4R_names = getattr(f, "U4R_names", None)
-        SPECS = np.array(U4R_names.lines) if not U4R_names is None else None
+        #SPECS = np.array(U4R_names.lines) if not U4R_names is None else None
+        SPECS = U4R_names if not U4R_names is None else None
         self.SPECS = SPECS
 
     @classmethod
