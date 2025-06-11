@@ -44,6 +44,7 @@ namespace EPH
     static constexpr const char* SAVENORM_ = "EPH_SAVENORM" ; // 10
     static constexpr const char* SAVEMUON_ = "EPH_SAVEMUON" ; // 11
 
+
     static const char* Name(int eph)
     {
         const char* sn = nullptr ;
@@ -86,6 +87,15 @@ namespace EPH
 
 struct SProcessHits_EPH
 {
+    static constexpr const char* EndOfEvent_Simulate_count_   = "EndOfEvent_Simulate_count" ;
+    static constexpr const char* EndOfEvent_Simulate_EGPU_hit_ = "EndOfEvent_Simulate_EGPU_hit" ;
+    static constexpr const char* EndOfEvent_hitCollection_entries0_ = "EndOfEvent_hitCollection_entries0" ;
+    static constexpr const char* EndOfEvent_hitCollection_entries1_ = "EndOfEvent_hitCollection_entries1" ;
+    static constexpr const char* EndOfEvent_Simulate_merged_count_   = "EndOfEvent_Simulate_merged_count" ;
+    static constexpr const char* EndOfEvent_Simulate_savehit_count_   = "EndOfEvent_Simulate_savehit_count" ;
+    static constexpr const char* EndOfEvent_Simulate_merged_total_   = "EndOfEvent_Simulate_merged_total" ;
+    static constexpr const char* EndOfEvent_Simulate_savehit_total_   = "EndOfEvent_Simulate_savehit_total" ;
+
     int ProcessHits_count ;
     int ProcessHits_true  ;
     int ProcessHits_false ;
@@ -104,6 +114,15 @@ struct SProcessHits_EPH
     int YSAVE ;         // 9
     int SAVENORM ;       // 10
     int SAVEMUON ;       // 11
+
+    int EndOfEvent_Simulate_count ;
+    int EndOfEvent_Simulate_EGPU_hit ;
+    int EndOfEvent_hitCollection_entries0 ;
+    int EndOfEvent_hitCollection_entries1 ;
+    int EndOfEvent_Simulate_merged_count ;
+    int EndOfEvent_Simulate_savehit_count ;
+    int EndOfEvent_Simulate_merged_total ;
+    int EndOfEvent_Simulate_savehit_total ;
 
     SProcessHits_EPH();
     void zero() ;
@@ -127,6 +146,7 @@ inline void SProcessHits_EPH::zero()
     ProcessHits_false = 0 ;
     SaveNormHit_count = 0 ;
     SaveMuonHit_count = 0 ;
+
     UNSET = 0 ;
     NDIS = 0 ;
     NOPT = 0 ;
@@ -139,29 +159,47 @@ inline void SProcessHits_EPH::zero()
     YSAVE = 0 ;
     SAVENORM = 0 ;
     SAVEMUON = 0 ;
+
+    EndOfEvent_Simulate_count = 0 ;
+    EndOfEvent_Simulate_EGPU_hit = 0 ;
+    EndOfEvent_hitCollection_entries0 = 0 ;
+    EndOfEvent_hitCollection_entries1 = 0 ;
+    EndOfEvent_Simulate_merged_count = 0 ;
+    EndOfEvent_Simulate_savehit_count = 0 ;
+    EndOfEvent_Simulate_merged_total = 0 ;
+    EndOfEvent_Simulate_savehit_total = 0 ;
 }
 
 inline std::string SProcessHits_EPH::desc() const
 {
+    int w = 30 ;
     std::stringstream ss ;
     ss << "SProcessHits_EPH::desc" << std::endl
-       << " ProcessHits_count  " << std::setw(8) << ProcessHits_count << std::endl
-       << " ProcessHits_true   " << std::setw(8) << ProcessHits_true  << std::endl
-       << " ProcessHits_false  " << std::setw(8) << ProcessHits_false << std::endl
-       << " SaveNormHit_count  " << std::setw(8) << SaveNormHit_count << std::endl
-       << " SaveMuonHit_count  " << std::setw(8) << SaveMuonHit_count << std::endl
-       << std::setw(20) << EPH::UNSET_   << std::setw(8) << UNSET << std::endl   // 0
-       << std::setw(20) << EPH::NDIS_    << std::setw(8) << NDIS << std::endl    // 1
-       << std::setw(20) << EPH::NOPT_    << std::setw(8) << NOPT << std::endl    // 2
-       << std::setw(20) << EPH::NEDEP_   << std::setw(8) << NEDEP << std::endl   // 3
-       << std::setw(20) << EPH::NBOUND_  << std::setw(8) << NBOUND << std::endl  // 4
-       << std::setw(20) << EPH::NPROC_   << std::setw(8) << NPROC << std::endl   // 5
-       << std::setw(20) << EPH::NDETECT_ << std::setw(8) << NDETECT << std::endl // 6
-       << std::setw(20) << EPH::NDECULL_ << std::setw(8) << NDECULL << std::endl // 7
-       << std::setw(20) << EPH::YMERGE_  << std::setw(8) << YMERGE << std::endl  // 8
-       << std::setw(20) << EPH::YSAVE_   << std::setw(8) << YSAVE << std::endl   // 9
-       << std::setw(20) << EPH::SAVENORM_ << std::setw(8) << SAVENORM << std::endl // 11
-       << std::setw(20) << EPH::SAVEMUON_ << std::setw(8) << SAVEMUON << std::endl // 12
+       << std::setw(w) << "ProcessHits_count"            << std::setw(8) << ProcessHits_count << std::endl
+       << std::setw(w) << "ProcessHits_true"             << std::setw(8) << ProcessHits_true  << std::endl
+       << std::setw(w) << "ProcessHits_false"            << std::setw(8) << ProcessHits_false << std::endl
+       << std::setw(w) << "SaveNormHit_count"            << std::setw(8) << SaveNormHit_count << std::endl
+       << std::setw(w) << "SaveMuonHit_count"            << std::setw(8) << SaveMuonHit_count << std::endl
+       << std::setw(w) << EPH::UNSET_   << std::setw(8) << UNSET << std::endl   // 0
+       << std::setw(w) << EPH::NDIS_    << std::setw(8) << NDIS << std::endl    // 1
+       << std::setw(w) << EPH::NOPT_    << std::setw(8) << NOPT << std::endl    // 2
+       << std::setw(w) << EPH::NEDEP_   << std::setw(8) << NEDEP << std::endl   // 3
+       << std::setw(w) << EPH::NBOUND_  << std::setw(8) << NBOUND << std::endl  // 4
+       << std::setw(w) << EPH::NPROC_   << std::setw(8) << NPROC << std::endl   // 5
+       << std::setw(w) << EPH::NDETECT_ << std::setw(8) << NDETECT << std::endl // 6
+       << std::setw(w) << EPH::NDECULL_ << std::setw(8) << NDECULL << std::endl // 7
+       << std::setw(w) << EPH::YMERGE_  << std::setw(8) << YMERGE << std::endl  // 8
+       << std::setw(w) << EPH::YSAVE_   << std::setw(8) << YSAVE << std::endl   // 9
+       << std::setw(w) << EPH::SAVENORM_ << std::setw(8) << SAVENORM << std::endl // 11
+       << std::setw(w) << EPH::SAVEMUON_ << std::setw(8) << SAVEMUON << std::endl // 12
+       << std::setw(w) << EndOfEvent_Simulate_count_    << std::setw(8) << EndOfEvent_Simulate_count << std::endl
+       << std::setw(w) << EndOfEvent_Simulate_EGPU_hit_ << std::setw(8) << EndOfEvent_Simulate_EGPU_hit << std::endl
+       << std::setw(w) << EndOfEvent_hitCollection_entries0_ << std::setw(8) << EndOfEvent_hitCollection_entries0 << std::endl
+       << std::setw(w) << EndOfEvent_hitCollection_entries1_ << std::setw(8) << EndOfEvent_hitCollection_entries1 << std::endl
+       << std::setw(w) << EndOfEvent_Simulate_merged_count_  << std::setw(8) << EndOfEvent_Simulate_merged_count << std::endl
+       << std::setw(w) << EndOfEvent_Simulate_savehit_count_  << std::setw(8) << EndOfEvent_Simulate_savehit_count << std::endl
+       << std::setw(w) << EndOfEvent_Simulate_merged_total_  << std::setw(8) << EndOfEvent_Simulate_merged_total << std::endl
+       << std::setw(w) << EndOfEvent_Simulate_savehit_total_  << std::setw(8) << EndOfEvent_Simulate_savehit_total << std::endl
        ;
     std::string str = ss.str();
     return str ;
@@ -202,6 +240,7 @@ inline void SProcessHits_EPH::get_kvs( std::vector<std::pair<std::string, int>>&
     kvs.push_back(KV("ProcessHits_false", ProcessHits_false));
     kvs.push_back(KV("SaveNormHit_count", SaveNormHit_count));
     kvs.push_back(KV("SaveMuonHit_count", SaveMuonHit_count));
+
     kvs.push_back(KV("UNSET", UNSET));
     kvs.push_back(KV("NDIS", NDIS));
     kvs.push_back(KV("NOPT", NOPT));
@@ -214,6 +253,15 @@ inline void SProcessHits_EPH::get_kvs( std::vector<std::pair<std::string, int>>&
     kvs.push_back(KV("YSAVE", YSAVE));
     kvs.push_back(KV("SAVENORM", SAVENORM));
     kvs.push_back(KV("SAVEMUON", SAVEMUON));
+
+    kvs.push_back(KV(EndOfEvent_Simulate_count_,    EndOfEvent_Simulate_count));
+    kvs.push_back(KV(EndOfEvent_Simulate_EGPU_hit_, EndOfEvent_Simulate_EGPU_hit));
+    kvs.push_back(KV(EndOfEvent_hitCollection_entries0_, EndOfEvent_hitCollection_entries0));
+    kvs.push_back(KV(EndOfEvent_hitCollection_entries1_, EndOfEvent_hitCollection_entries1));
+    kvs.push_back(KV(EndOfEvent_Simulate_merged_count_,  EndOfEvent_Simulate_merged_count));
+    kvs.push_back(KV(EndOfEvent_Simulate_savehit_count_, EndOfEvent_Simulate_savehit_count));
+    kvs.push_back(KV(EndOfEvent_Simulate_merged_total_,  EndOfEvent_Simulate_merged_total));
+    kvs.push_back(KV(EndOfEvent_Simulate_savehit_total_, EndOfEvent_Simulate_savehit_total));
 }
 
 

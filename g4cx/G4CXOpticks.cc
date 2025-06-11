@@ -628,18 +628,27 @@ The Geant4 call order gleaned from g4-cls G4EventManager
 with the related calls to G4CXOpticks and U4Recorder
 that were used previously::
 
-    G4VSensitiveDetector::Initialize
+    G4VSensitiveDetector::Initialize(G4HCofThisEvent*HCE)
+    (eg junoSD_PMT_v2::Initialize)
 
     G4UserEventAction::BeginOfEventAction  ==> U4Recorder::BeginOfEventAction
 
 
-    G4VSensitiveDetector::EndOfEvent       ==> G4CXOpticks::simulate : AS HITS NEEDED HERE
+    G4VSensitiveDetector::EndOfEvent(G4HCofThisEvent*HCE)   ==> G4CXOpticks::simulate : AS HITS NEEDED HERE
+    (eg junoSD_PMT_v2::EndOfEvent)
 
     G4UserEventAction::EndOfEventAction    ==> U4Recorder::EndOfEventAction
 
 
-The old call order presented complications as the simulate call needs the gensteps
+
+
+The above old call order is problematic as the simulate call needs the gensteps
 from the SEvt::ECPU that is only wrapped up at U4Recorder::EndOfEventAction.
+
+
+
+
+
 This SensitiveDetector pair of methods enables rearranging the order::
 
     G4VSensitiveDetector::Initialize       ==> U4Recorder::BeginOfEventAction

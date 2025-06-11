@@ -562,7 +562,8 @@ void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
 
 
-std::string SEventConfig::DescHitMask(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
+std::string SEventConfig::DescHitMask(){   return OpticksPhoton::FlagMask( _HitMask ) ; }
+std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
 
 std::string SEventConfig::DescGatherComp(){ return SComp::Desc( _GatherComp ) ; }
 std::string SEventConfig::DescSaveComp(){   return SComp::Desc( _SaveComp ) ; } // used from SEvt::save
@@ -1226,6 +1227,7 @@ NP* SEventConfig::Serialize() // static
     if(on) meta->set_meta<std::string>("OutName", on );
 
     meta->set_meta<unsigned>("HitMask", HitMask() );
+    meta->set_meta<std::string>("HitMaskLabel", HitMaskLabel() );
 
     meta->set_meta<unsigned>("GatherComp", GatherComp() );
     meta->set_meta<unsigned>("SaveComp", SaveComp() );

@@ -54,6 +54,14 @@ EventMode
 RunningMode
     configures how running is done, eg Default/DefaultSaveG4State/RerunG4State
 
+HitMask OPTICKS_HIT_MASK a comma delimited string that determines which
+    subset of photons are downloaded into the "hit" array.
+    Default is SD.  Settings that could be used::
+
+        SD : SURFACE_DETECT
+        EC : EFFICIENCY_COLLECT
+        EX : EFFICIENCY_CULL
+
 MaxPhoton
 
 MaxSimtrace
@@ -121,6 +129,7 @@ struct SYSRAP_API SEventConfig
     static void LIMIT_Check();
     static std::string Desc();
     static std::string DescHitMask();
+    static std::string HitMaskLabel();
 
 
     // [TODO : RECONSIDER OUTDIR OUTNAME MECHANICS FOLLOWING SEVT LAYOUT

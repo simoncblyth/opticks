@@ -385,7 +385,7 @@ void U4Recorder::EndOfEventAction_(int eventID_)
     #endif
 
 
-    // adding to topfold
+    // adding to extrafold
     sev->add_array("TRS.npy", U4VolumeMaker::GetTransforms() );
     sev->add_array("U4R.npy", MakeMetaArray() );
     sev->addEventConfigArray();
@@ -401,8 +401,8 @@ void U4Recorder::EndOfEventAction_(int eventID_)
     const char* savedir = sev->getSaveDir() ;
     LOG(LEVEL) << " savedir " << ( savedir ? savedir : "-" );
     SaveMeta(savedir);
-
 }
+
 
 void U4Recorder::PreUserTrackingAction(const G4Track* track){  LOG(LEVEL) ; if(U4Track::IsOptical(track)) PreUserTrackingAction_Optical(track); }
 void U4Recorder::PostUserTrackingAction(const G4Track* track){ LOG(LEVEL) ; if(U4Track::IsOptical(track)) PostUserTrackingAction_Optical(track); }
