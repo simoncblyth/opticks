@@ -1184,6 +1184,13 @@ void SEventConfig::Initialize_Comp_Render_(unsigned& gather_mask, unsigned& save
     gather_mask |= SCOMP_PIXEL ;  save_mask |=  SCOMP_PIXEL ;
 }
 
+/**
+SEventConfig::Serialize
+-----------------------
+
+Called for example from SEvt::addEventConfigArray
+
+**/
 
 
 NP* SEventConfig::Serialize() // static
