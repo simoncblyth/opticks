@@ -509,6 +509,7 @@ private:
 public:
     void clear_genstep() ;
     void clear_output() ;
+    void clear_extra() ;
 
     void setIndex(int index_arg) ;
     void endIndex(int index_arg) ;

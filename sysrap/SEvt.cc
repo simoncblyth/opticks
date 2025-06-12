@@ -1614,6 +1614,7 @@ void SEvt::endOfEvent(int eventID)
     save();              // gather and save SEventConfig configured arrays
     clear_output();
     clear_genstep();
+    clear_extra();
 
 
     SaveRunMeta(); // saving run_meta.txt at end of every event incase of crashes
@@ -1840,6 +1841,16 @@ void SEvt::clear_output()
 
     LOG(LEVEL) << "]" ;
 }
+
+void SEvt::clear_extra()
+{
+    LOG_IF(info, LIFECYCLE) << id() << " BEFORE extrafold.clear " ;
+
+    extrafold->clear();
+
+    LOG_IF(info, LIFECYCLE) << id() << " AFTER extrafold.clear " ;
+}
+
 
 /**
 SEvt::clear_genstep

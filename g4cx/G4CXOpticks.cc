@@ -652,11 +652,13 @@ from the SEvt::ECPU that is only wrapped up at U4Recorder::EndOfEventAction.
 This SensitiveDetector pair of methods enables rearranging the order::
 
     G4VSensitiveDetector::Initialize       ==> U4Recorder::BeginOfEventAction
+    (eg junoSD_PMT_v2::Initialize)
 
     G4UserEventAction::BeginOfEventAction
 
 
     G4VSensitiveDetector::EndOfEvent       ==> U4Recorder::EndOfEventAction,
+    (eg junoSD_PMT_v2::EndOfEvent)
                                            ==> G4CXOpticks::simulate : AS HITS NEEDED HERE
 
     G4UserEventAction::EndOfEventAction
