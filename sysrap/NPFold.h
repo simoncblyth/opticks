@@ -1251,13 +1251,32 @@ inline void NPFold::concat(std::ostream* out)
     const NPFold* sub0 = num_sub > 0 ? subfold[0] : nullptr  ;
     const std::vector<std::string>* kk0 = sub0 ? &(sub0->kk) : nullptr ;
 
+
     int num_k = kk0 ? kk0->size() : 0 ;
+
+    if(out) *out 
+        << "NPFold::concat"
+        << " num_sub " << num_sub
+        << " num_k " << num_k
+        << "\n" 
+        ; 
+
     for(int i=0 ; i < num_k ; i++)
     {
         const char* k = (*kk0)[i].c_str();
         NP* a = concat_(k, out );
+
+        if(out) *out 
+            << "NPFold::concat"
+            << " k " << ( k ? k : "-" )
+            << " a " << ( a ? a->sstr() : "-" )
+            << "\n" 
+            ; 
+
         add(k, a);
     }
+
+
 }
 
 /**

@@ -48,6 +48,7 @@
 
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ;
+bool SEvt::SAVE = ssys::getenvbool(SEvt__SAVE) ;
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ;
 bool SEvt::FRAME = ssys::getenvbool(SEvt__FRAME) ;
 bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ;
@@ -4104,7 +4105,7 @@ but that is at fold level./ Perhaps need each array to have skipdelete ?
 
 void SEvt::save(const char* dir_)
 {
-    LOG_IF(info, LIFECYCLE || SIMTRACE) << id() << " dir_[" << ( dir_ ? dir_ : "-" ) << "]" ;
+    LOG_IF(info, LIFECYCLE || SIMTRACE || SAVE) << id() << " dir_[" << ( dir_ ? dir_ : "-" ) << "]" ;
 
     //  gather();   MOVED gather upwards to allow copying hits into other collections
 
@@ -4114,8 +4115,9 @@ void SEvt::save(const char* dir_)
     std::string save_comp = SEventConfig::DescSaveComp() ;
     NPFold* save_fold = topfold->shallowcopy(save_comp.c_str());
 
-    LOG_IF(info, SIMTRACE) << " topfold.desc   " << ( topfold ? topfold->desc() : "-" )  ;
-    LOG_IF(info, SIMTRACE) << " save_fold.desc " << ( save_fold ? save_fold->desc() : "-" ) ;
+    LOG_IF(info, SAVE) << " save_comp " << save_comp ;
+    //LOG_IF(info, SAVE) << " topfold.desc   " << ( topfold ? topfold->desc() : "-" )  ;
+    //LOG_IF(info, SAVE) << " save_fold.desc " << ( save_fold ? save_fold->desc() : "-" ) ;
 
 
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ;

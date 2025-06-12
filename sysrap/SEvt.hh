@@ -100,6 +100,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__GATHER = "SEvt__GATHER" ;
     static bool GATHER ;
 
+    static constexpr const char* SEvt__SAVE = "SEvt__SAVE" ;
+    static bool SAVE ;
+
     static constexpr const char* SEvt__LIFECYCLE = "SEvt__LIFECYCLE" ;
     static bool LIFECYCLE ;
 

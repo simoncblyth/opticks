@@ -165,8 +165,8 @@ knobs()
 }
 
 
-version=0
-#version=1
+#version=0  
+version=1
 #version=98   ## set to 98 for low stats debugging
 
 export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
@@ -374,7 +374,6 @@ elif [ "$TEST" == "input_genstep" ]; then
    opticks_num_genstep=    # ignored
    opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_GENSTEP
-   opticks_event_mode=Nothing
 
    #opticks_max_photon=M1
 
@@ -384,8 +383,8 @@ elif [ "$TEST" == "input_genstep_muon" ]; then
    opticks_num_genstep=    # ignored
    opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_GENSTEP
-   opticks_event_mode=Minimal
-   opticks_max_slot=M10
+   #opticks_max_slot=M10  ## three launches
+   opticks_max_slot=0     ## whole-in-one
 
 elif [ "$TEST" == "input_photon" ]; then
 
@@ -393,8 +392,6 @@ elif [ "$TEST" == "input_photon" ]; then
    opticks_num_genstep=    # ignored
    opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_PHOTON
-   #opticks_event_mode=Nothing
-   #opticks_max_photon=M1
    opticks_max_slot=M3
 
 else
@@ -413,8 +410,15 @@ vars="$vars opticks_num_event opticks_num_genstep opticks_num_photon opticks_run
 
 
 opticks_start_index=0
-opticks_max_bounce=31
+#opticks_max_bounce=31
+opticks_max_bounce=63
 opticks_integration_mode=1
+
+
+
+#opticks_hit_mask=SD
+#opticks_hit_mask=EC
+#export OPTICKS_HIT_MASK=${OPTICKS_HIT_MASK:-$opticks_hit_mask}
 
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep}
@@ -430,7 +434,7 @@ export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 
 
-vars="$vars OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
+vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
 
 export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
 export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot
@@ -530,7 +534,9 @@ logging(){
     export CSGOptiX=INFO
     export QEvent=INFO
     export QSim=INFO
-    export SEvt__LIFECYCLE=1
+    #export SEvt__LIFECYCLE=1
+    export SEvt__GATHER=1
+    export SEvt__SAVE=1
 }
 [ -n "$LOG" ] && logging
 [ -n "$LIFECYCLE" ] && export SEvt__LIFECYCLE=1

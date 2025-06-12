@@ -472,7 +472,13 @@ double QSim::simulate(int eventID, bool reset_)
 
     int64_t t_LEND = SProf::Add("QSim__simulate_LEND");
 
-    sev->topfold->concat();
+    std::stringstream ss ;
+    std::ostream* out = SEvt::GATHER ? &ss : nullptr ;
+    sev->topfold->concat(out);
+
+    LOG_IF(info, SEvt::GATHER) << ss.str() ;
+
+
     if(!KEEP_SUBFOLD) sev->topfold->clear_subfold();
 
     int64_t t_PCAT = SProf::Add("QSim__simulate_PCAT");
