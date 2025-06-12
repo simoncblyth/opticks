@@ -46,6 +46,12 @@
 
 const plog::Severity QSim::LEVEL = SLOG::EnvLevel("QSim", "DEBUG");
 
+const bool QSim::SKIP_NO_IGS = ssys::getenvbool(_QSim__SKIP_NO_IGS);
+const int   QSim::SAVE_IGS_EVENTID = ssys::getenvint(_QSim__SAVE_IGS_EVENTID,-1) ;
+const char* QSim::SAVE_IGS_PATH = ssys::getenvvar(_QSim__SAVE_IGS_PATH, "$TMP/.opticks/igs.npy");
+
+
+
 QSim* QSim::INSTANCE = nullptr ;
 QSim* QSim::Get(){ return INSTANCE ; }
 
@@ -187,9 +193,9 @@ void QSim::UploadComponents( const SSim* ssim  )
     const NPFold* spmt_f = ssim->get_spmt_f() ;
     QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ;
 
-    bool has_PMT = spmt_f != nullptr && qpmt != nullptr ; 
-    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT); 
-    bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ; 
+    bool has_PMT = spmt_f != nullptr && qpmt != nullptr ;
+    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT);
+    bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ;
 
     LOG_IF(fatal, MISSING_PMT )
         << " MISSING_PMT "
@@ -200,7 +206,7 @@ void QSim::UploadComponents( const SSim* ssim  )
         << " qpmt " << ( qpmt ? "YES" : "NO " )
         ;
 
-    assert(MISSING_PMT == false) ; 
+    assert(MISSING_PMT == false) ;
     if(MISSING_PMT)  std::raise(SIGINT);
 
 
@@ -308,28 +314,28 @@ void QSim::init()
     sim->pmt = pmt ? pmt->d_pmt : nullptr ;
 
 
-    bool has_PMT = pmt != nullptr && sim->pmt != nullptr ; 
-    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT); 
-    bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ;  
+    bool has_PMT = pmt != nullptr && sim->pmt != nullptr ;
+    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT);
+    bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ;
 
     LOG(LEVEL)
         << " MISSING_PMT " << ( MISSING_PMT ? "YES" : "NO " )
         << " has_PMT " << ( has_PMT ? "YES" : "NO " )
-        << " QSim::pmt " << ( pmt ? "YES" : "NO " ) 
+        << " QSim::pmt " << ( pmt ? "YES" : "NO " )
         << " QSim::pmt->d_pmt " << ( sim->pmt ? "YES" : "NO " )
-        << " [" << _QSim__REQUIRE_PMT << "] " << ( REQUIRE_PMT ? "YES" : "NO " )   
+        << " [" << _QSim__REQUIRE_PMT << "] " << ( REQUIRE_PMT ? "YES" : "NO " )
         ;
 
     LOG_IF(fatal, MISSING_PMT )
         << " MISSING_PMT ABORT "
         << " MISSING_PMT " << ( MISSING_PMT ? "YES" : "NO " )
         << " has_PMT " << ( has_PMT ? "YES" : "NO " )
-        << " QSim::pmt " << ( pmt ? "YES" : "NO " ) 
+        << " QSim::pmt " << ( pmt ? "YES" : "NO " )
         << " QSim::pmt->d_pmt " << ( sim->pmt ? "YES" : "NO " )
-        << " [" << _QSim__REQUIRE_PMT << "] " << ( REQUIRE_PMT ? "YES" : "NO " )   
+        << " [" << _QSim__REQUIRE_PMT << "] " << ( REQUIRE_PMT ? "YES" : "NO " )
         ;
 
-    assert(MISSING_PMT == false) ; 
+    assert(MISSING_PMT == false) ;
     if(MISSING_PMT)  std::raise(SIGINT);
 
     d_sim = QU::UploadArray<qsim>(sim, 1, "QSim::init.sim" );
@@ -411,19 +417,42 @@ double QSim::simulate(int eventID, bool reset_)
     LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
     if( event == nullptr ) return -1. ;
 
-    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
+
+
+    // moved igs pickup prior to beginOfEvent to avoid potential bookkeeping
+    // issues from early return after SEvt::beginOfEvent
 
     NP* igs = sev->makeGenstepArrayFromVector();
 
-    bool igs_null = igs == nullptr ;
-    LOG_IF(fatal, igs_null ) << " igs_null " << ( igs_null ? "YES" : "NO " ) ;
-    assert( !igs_null );
+    {
+        bool igs_null = igs == nullptr ;
+        LOG_IF(fatal, igs_null )
+            << " " << _QSim__SKIP_NO_IGS << " : " << ( SKIP_NO_IGS ? "YES" : "NO " )
+            << " igs_null " << ( igs_null ? "YES" : "NO " )
+            ;
 
+        if( igs_null && SKIP_NO_IGS ) return 0. ;
+        if( igs_null ) return 0. ;  // HMM : DOES EARLY RETURN MESS THINGS UP ?
+        //assert( !igs_null );
+    }
+
+    MaybeSaveIGS(eventID, igs);
+
+
+
+    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     std::vector<sslice> igs_slice ;
     SGenstep::GetGenstepSlices( igs_slice, igs, SEventConfig::MaxSlot() );
     int num_slice = igs_slice.size();
-    LOG(LEVEL) << sslice::Desc(igs_slice);
+    LOG(LEVEL)
+        << " igs " << ( igs ? igs->sstr() : "-" )
+        << " MaxSlot " << SEventConfig::MaxSlot()
+        << " MaxSlot/M " << SEventConfig::MaxSlot()/1000000
+        << " sslice::Desc(igs_slice)\n"
+        << sslice::Desc(igs_slice)
+        << " num_slice " << num_slice
+        ;
 
     int64_t t_LBEG = SProf::Add("QSim__simulate_LBEG");
 
@@ -512,6 +541,52 @@ double QSim::simulate(int eventID, bool reset_)
         ;
 
     return tot_dt ;
+}
+
+
+/**
+QSim::MaybeSaveIGS
+--------------------
+
+Invoked from QSim::simulate just prior to the launch loop
+over genstep slices. To configure saving of the gensteps
+use the below envvars::
+
+    export QSim__SAVE_IGS_EVENTID=6                   ## default -1 does not save
+    export QSim__SAVE_IGS_PATH=$TMP/.opticks/igs.npy  ## default path below $TMP
+
+Saving gensteps prior to launch is useful for eventID that cause crashes,
+as the saved gensteps can then be used with input genstep running::
+
+    export OPTICKS_RUNNING_MODE=SRM_INPUT_GENSTEP
+
+That enables fast cycle rerunning without Geant4 initalization, see eg::
+
+    TEST=input_genstep_muon cxs_min.sh
+
+A potential cause of crashes is the heuristic OPTICKS_MAX_SLOT
+determined based on available VRAM is too optimistically large.
+Try manually reducing slots to see if memory limits are the cause::
+
+    export OPTICKS_MAX_SLOT=M100
+
+**/
+
+void QSim::MaybeSaveIGS(int eventID, NP* igs) // static
+{
+    const char* igs_path = SAVE_IGS_PATH ? spath::Resolve(SAVE_IGS_PATH) : nullptr ;
+    bool save_igs = igs && SAVE_IGS_EVENTID == eventID && igs_path ;
+    LOG(LEVEL)
+        << " eventID " << eventID
+        << " igs " << ( igs ? igs->sstr() : "-" )
+        << " [" << _QSim__SAVE_IGS_EVENTID << "] " <<  SAVE_IGS_EVENTID
+        << " [" << _QSim__SAVE_IGS_PATH    << "] " << ( SAVE_IGS_PATH ? SAVE_IGS_PATH : "-" )
+        << " igs_path [" << ( igs_path ? igs_path : "-" ) << "]"
+        << " save_igs " << ( save_igs ? "YES" : "NO " )
+        ;
+
+    if(!save_igs) return ;
+    igs->save(igs_path);
 }
 
 

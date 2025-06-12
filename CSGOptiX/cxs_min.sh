@@ -165,8 +165,9 @@ knobs()
 }
 
 
+version=0
 #version=1
-version=98   ## set to 98 for low stats debugging
+#version=98   ## set to 98 for low stats debugging
 
 export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
@@ -181,7 +182,8 @@ vars="$vars version VERSION"
 #test=ref10
 #test=ref10_multilaunch
 #test=input_genstep
-test=input_photon
+test=input_genstep_muon
+#test=input_photon
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
@@ -376,6 +378,15 @@ elif [ "$TEST" == "input_genstep" ]; then
 
    #opticks_max_photon=M1
 
+elif [ "$TEST" == "input_genstep_muon" ]; then
+
+   opticks_num_event=1
+   opticks_num_genstep=    # ignored
+   opticks_num_photon=     # ignored ?
+   opticks_running_mode=SRM_INPUT_GENSTEP
+   opticks_event_mode=Minimal
+   opticks_max_slot=M10
+
 elif [ "$TEST" == "input_photon" ]; then
 
    opticks_num_event=1
@@ -429,7 +440,9 @@ vars="$vars OPTICKS_MAX_CURAND OPTICKS_MAX_SLOT"
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
 
     #igs=$BASE/jok-tds/ALL0/A000/genstep.npy
-    igs=$BASE/jok-tds/ALL0/A%0.3d/genstep.npy
+    #igs=$BASE/jok-tds/ALL0/A%0.3d/genstep.npy
+    igs=$HOME/.opticks/crash_muon_igs.npy
+
     if [ "${igs/\%}" != "$igs" ]; then
         igs0=$(printf "$igs" 0)
     else

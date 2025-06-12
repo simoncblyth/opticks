@@ -95,6 +95,12 @@ private:
     QSim();
     void init();
     static constexpr const char* _QSim__REQUIRE_PMT = "QSim__REQUIRE_PMT" ; 
+    static constexpr const char* _QSim__SKIP_NO_IGS = "QSim__SKIP_NO_IGS" ; 
+    static constexpr const char* _QSim__SAVE_IGS_EVENTID = "QSim__SAVE_IGS_EVENTID" ; 
+    static constexpr const char* _QSim__SAVE_IGS_PATH    = "QSim__SAVE_IGS_PATH" ; 
+    static const bool  SKIP_NO_IGS ; 
+    static const int   SAVE_IGS_EVENTID ; 
+    static const char* SAVE_IGS_PATH ; 
 public:
     void setLauncher(SCSGOptiX* cx_ ); 
 
@@ -102,6 +108,8 @@ public:
     static bool KEEP_SUBFOLD ; 
 
     double simulate(int eventID, bool reset_ );      // via cx launch 
+    static void MaybeSaveIGS(int eventID, NP* igs);
+
     int    getPhotonSlotOffset() const ; 
 
     void   reset( int eventID);  
