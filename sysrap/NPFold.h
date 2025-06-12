@@ -192,6 +192,8 @@ public:
 
     static constexpr const char* _NPFold__add_subfold_ALLOW_DUPLICATE_KEY = "NPFold__add_subfold_ALLOW_DUPLICATE_KEY" ;
     void         add_subfold(const char* f, NPFold* fo );
+
+    bool         has_zero_subfold() const ;
     int          get_num_subfold() const ;
     NPFold*      get_subfold(unsigned idx) const ;
 
@@ -878,6 +880,10 @@ inline void NPFold::add_subfold(const char* f, NPFold* fo )
 }
 
 
+inline bool NPFold::has_zero_subfold() const
+{
+    return 0 == get_num_subfold();
+}
 inline int NPFold::get_num_subfold() const
 {
     assert( ff.size() == subfold.size() );
@@ -1229,6 +1235,14 @@ as probably the number of launches will normally be 1 and sometimes 2 or 3.
 
 inline void NPFold::concat(std::ostream* out)
 {
+    bool zero_sub = has_zero_subfold();
+    if(out) *out << "NPFold::concat zero_sub " << ( zero_sub ? "YES" : "NO " ) << "\n" ;
+    if(zero_sub)
+    {
+        if(out) *out << "NPFold::concat zero_sub TRIVIAL NOTHING TO CONCAT \n" ;
+        return ;
+    }
+
     bool can = can_concat(out);
     assert(can);
     if(!can) return ;
@@ -1249,6 +1263,9 @@ inline void NPFold::concat(std::ostream* out)
 /**
 NPFold::concat_
 ----------------
+
+Concatenates corresponding key arrays from all the
+immediate subfold of this fold.
 
 When there is only one subfold the concat is trivially
 done by adding subfold arrays to this fold.

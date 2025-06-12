@@ -232,7 +232,7 @@ that do not exceed max_photon for the total number of photons.
 inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs, int max_photon )
 {
     Check(gs);
-    int num_gs = gs->shape[0];
+    int num_gs = gs ? gs->shape[0] : 0 ;
     const quad6* qq = gs ? (quad6*)gs->cvalues<float>() : nullptr ;
 
     sslice sl = {};
@@ -355,6 +355,7 @@ inline int SGenstep::GetNumPhoton( const quad6* qq, unsigned gs_idx  ) // static
 
 inline int SGenstep::GetNumPhoton( const NP* gs, unsigned gs_idx  ) // static
 {
+    if( gs == nullptr) return 0 ;
     const quad6& q = GetGenstep(gs, gs_idx);
     return GetNumPhoton(q) ;
 }

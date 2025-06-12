@@ -27,26 +27,26 @@ ph_count
 
 struct sslice
 {
-    int gs_start ; 
-    int gs_stop ; 
-    int ph_offset ; 
-    int ph_count ; 
+    int gs_start ;
+    int gs_stop ;
+    int ph_offset ;
+    int ph_count ;
 
-    bool matches(int start, int stop, int offset, int count ) const ; 
+    bool matches(int start, int stop, int offset, int count ) const ;
 
-    static std::string Label() ; 
-    std::string desc() const ; 
-    static std::string Desc(const std::vector<sslice>& sl ); 
+    static std::string Label() ;
+    std::string desc() const ;
+    static std::string Desc(const std::vector<sslice>& sl );
 
-    static int TotalPhoton(const std::vector<sslice>& sl ); 
-    static int TotalPhoton(const std::vector<sslice>& sl, int i0, int i1); 
+    static int TotalPhoton(const std::vector<sslice>& sl );
+    static int TotalPhoton(const std::vector<sslice>& sl, int i0, int i1);
 
-    static void SetOffset(std::vector<sslice>& slice); 
-}; 
+    static void SetOffset(std::vector<sslice>& slice);
+};
 
 inline bool sslice::matches(int start, int stop, int offset, int count ) const
 {
-    return gs_start == start && gs_stop == stop && ph_offset == offset && ph_count == count ; 
+    return gs_start == start && gs_stop == stop && ph_offset == offset && ph_count == count ;
 }
 
 inline std::string sslice::Label()
@@ -63,7 +63,7 @@ inline std::string sslice::Label()
        << std::setw(7) << "count "
        ;
     std::string str = ss.str() ;
-    return str ; 
+    return str ;
 }
 inline std::string sslice::desc() const
 {
@@ -80,35 +80,61 @@ inline std::string sslice::desc() const
        << "}"
        ;
     std::string str = ss.str() ;
-    return str ; 
+    return str ;
 }
 
 inline std::string sslice::Desc(const std::vector<sslice>& sl)
 {
-    int tot_photon = TotalPhoton(sl) ; 
+    int tot_photon = TotalPhoton(sl) ;
     std::stringstream ss ;
-    ss << "sslice::Desc num_slice " << sl.size() << " TotalPhoton " << tot_photon << "\n" ; 
-    for(int i=0 ; i < int(sl.size()) ; i++ ) ss << std::setw(3) << i << " : " << sl[i].desc() << "\n" ;  
-    ss << std::setw(3) << " " << "   " << Label() << "\n" ; 
+    ss << "sslice::Desc num_slice " << sl.size() << " TotalPhoton " << tot_photon << "\n" ;
+    for(int i=0 ; i < int(sl.size()) ; i++ ) ss << std::setw(3) << i << " : " << sl[i].desc() << "\n" ;
+    ss << std::setw(3) << " " << "   " << Label() << "\n" ;
 
     std::string str = ss.str() ;
-    return str ; 
+    return str ;
 }
 
 inline int sslice::TotalPhoton(const std::vector<sslice>& slice)
 {
-    return TotalPhoton(slice, 0, slice.size() ); 
+    return TotalPhoton(slice, 0, slice.size() );
 }
+
+/**
+sslice::TotalPhoton
+----------------------
+
+NB i0, i1 use python style slice indexing, ie::
+
+    In [4]: np.arange(10)[0:4]
+    Out[4]: array([0, 1, 2, 3])
+
+    In [5]: np.arange(10)[0:9]
+    Out[5]: array([0, 1, 2, 3, 4, 5, 6, 7, 8])
+
+    In [6]: np.arange(10)[0:10]
+    Out[6]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    In [7]: np.arange(10)
+    Out[7]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    In [8]: np.arange(10)[0:0]
+    Out[8]: array([], dtype=int64)
+
+
+**/
+
+
 inline int sslice::TotalPhoton(const std::vector<sslice>& slice, int i0, int i1)
 {
-    assert( i1 <= int(slice.size())) ; 
-    int tot = 0 ; 
-    for(int i=i0 ; i < i1 ; i++ ) tot += slice[i].ph_count ; 
-    return tot ; 
+    assert( i1 <= int(slice.size())) ;
+    int tot = 0 ;
+    for(int i=i0 ; i < i1 ; i++ ) tot += slice[i].ph_count ;
+    return tot ;
 }
 
 inline void sslice::SetOffset(std::vector<sslice>& slice)
 {
-    for(int i=0 ; i < int(slice.size()) ; i++ ) slice[i].ph_offset = TotalPhoton(slice,0,i) ; 
+    for(int i=0 ; i < int(slice.size()) ; i++ ) slice[i].ph_offset = TotalPhoton(slice,0,i) ;
 }
 

@@ -46,7 +46,7 @@
 
 const plog::Severity QSim::LEVEL = SLOG::EnvLevel("QSim", "DEBUG");
 
-const bool QSim::SKIP_NO_IGS = ssys::getenvbool(_QSim__SKIP_NO_IGS);
+const bool  QSim::REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT);
 const int   QSim::SAVE_IGS_EVENTID = ssys::getenvint(_QSim__SAVE_IGS_EVENTID,-1) ;
 const char* QSim::SAVE_IGS_PATH = ssys::getenvvar(_QSim__SAVE_IGS_PATH, "$TMP/.opticks/igs.npy");
 
@@ -194,7 +194,6 @@ void QSim::UploadComponents( const SSim* ssim  )
     QPMT<float>* qpmt = spmt_f ? new QPMT<float>(spmt_f) : nullptr ;
 
     bool has_PMT = spmt_f != nullptr && qpmt != nullptr ;
-    bool REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT);
     bool MISSING_PMT = REQUIRE_PMT == true && has_PMT == false ;
 
     LOG_IF(fatal, MISSING_PMT )
@@ -418,29 +417,11 @@ double QSim::simulate(int eventID, bool reset_)
     if( event == nullptr ) return -1. ;
 
 
-
-    // moved igs pickup prior to beginOfEvent to avoid potential bookkeeping
-    // issues from early return after SEvt::beginOfEvent
+    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     NP* igs = sev->makeGenstepArrayFromVector();
 
-    {
-        bool igs_null = igs == nullptr ;
-        LOG_IF(fatal, igs_null )
-            << " " << _QSim__SKIP_NO_IGS << " : " << ( SKIP_NO_IGS ? "YES" : "NO " )
-            << " igs_null " << ( igs_null ? "YES" : "NO " )
-            ;
-
-        if( igs_null && SKIP_NO_IGS ) return 0. ;
-        if( igs_null ) return 0. ;  // HMM : DOES EARLY RETURN MESS THINGS UP ?
-        //assert( !igs_null );
-    }
-
     MaybeSaveIGS(eventID, igs);
-
-
-
-    sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
 
     std::vector<sslice> igs_slice ;
     SGenstep::GetGenstepSlices( igs_slice, igs, SEventConfig::MaxSlot() );
@@ -482,7 +463,7 @@ double QSim::simulate(int eventID, bool reset_)
 
         int64_t t_POST = SProf::Add("QSim__simulate_POST");
 
-        sev->gather();
+        sev->gather();  // gather into *fold* just added to *topfold*
 
         int64_t t_DOWN = SProf::Add("QSim__simulate_DOWN");
 
@@ -574,11 +555,13 @@ Try manually reducing slots to see if memory limits are the cause::
 
 void QSim::MaybeSaveIGS(int eventID, NP* igs) // static
 {
+    bool igs_null = igs == nullptr ;
     const char* igs_path = SAVE_IGS_PATH ? spath::Resolve(SAVE_IGS_PATH) : nullptr ;
     bool save_igs = igs && SAVE_IGS_EVENTID == eventID && igs_path ;
     LOG(LEVEL)
         << " eventID " << eventID
         << " igs " << ( igs ? igs->sstr() : "-" )
+        << " igs_null " << ( igs_null ? "YES" : "NO " )
         << " [" << _QSim__SAVE_IGS_EVENTID << "] " <<  SAVE_IGS_EVENTID
         << " [" << _QSim__SAVE_IGS_PATH    << "] " << ( SAVE_IGS_PATH ? SAVE_IGS_PATH : "-" )
         << " igs_path [" << ( igs_path ? igs_path : "-" ) << "]"

@@ -3604,6 +3604,10 @@ of the gather must now be done from high level methods such
 as QSim::simulate.
 
 
+0. invokes NPFold::add_subfold on the *topfold* giving *fold*
+   into which the gathering is done. This is done to support 
+   multilaunch running by invoking NPFold::concat on the *topfold*
+   after the launch loop of QSim::simulate
 
 1. invokes gatherComponent on the SCompProvider instance which is either
    this SEvt instance for CPU/U4Recorder running OR the QEvent instance
