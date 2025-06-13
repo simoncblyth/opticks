@@ -318,11 +318,11 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     sim->rng->init( rng, sim->evt->index, photon_idx );
 #endif
 
-
     sctx ctx = {} ;
     ctx.evt = evt ;
     ctx.prd = prd ;
-    ctx.idx = idx ;
+    //ctx.idx = idx ;
+    ctx.idx = photon_idx ; // 2025/06 change to absolute idx for PIDX dumping
 
     sim->generate_photon(ctx.p, rng, gs, photon_idx, genstep_idx );
 

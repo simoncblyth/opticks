@@ -113,7 +113,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 private:
     static Params* InitParams( int raygenmode, const SGLM* sglm  ) ;
     static void InitEvt(  CSGFoundry* fd  );
-    static void InitMeta( const SSim* ssim );
+    static void InitMeta();
     static void InitSim(  SSim* ssim );
     static void InitGeo(  CSGFoundry* fd );
 
@@ -126,6 +126,7 @@ public:
 
 private:
     void init();
+    void initMeta();
     void initCtx();
     void initPIP();
     void initSBT();
