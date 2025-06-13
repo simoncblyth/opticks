@@ -132,6 +132,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__EPH = "SEvt__EPH" ;
     static bool EPH_ ;
 
+    static constexpr const char* SEvt__RUNMETA = "SEvt__RUNMETA" ;
+    static bool RUNMETA ;
+
 
 
     enum { SEvt__SEvt,

@@ -58,6 +58,7 @@ bool SEvt::DIRECTORY = ssys::getenvbool(SEvt__DIRECTORY) ;
 bool SEvt::CLEAR_SIGINT = ssys::getenvbool(SEvt__CLEAR_SIGINT) ;
 bool SEvt::SIMTRACE = ssys::getenvbool(SEvt__SIMTRACE) ;
 bool SEvt::EPH_ = ssys::getenvbool(SEvt__EPH) ;
+bool SEvt::RUNMETA = ssys::getenvbool(SEvt__RUNMETA) ;
 
 
 const char* SEvt::descStage() const
@@ -1476,7 +1477,8 @@ just the last.
 void SEvt::SaveRunMeta(const char* base)
 {
     const char* dir = RunDir(base);
-    LOG(LEVEL)
+    LOG_IF(info, RUNMETA)
+        << " [" << SEvt__RUNMETA << "]"
         << " base " << ( base ? base : "-" )
         << " dir " << ( dir ? dir : "-" )
         ;

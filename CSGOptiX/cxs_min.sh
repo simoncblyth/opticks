@@ -549,7 +549,7 @@ logging(){
 [ -n "$MINIMAL"  ] && export SEvt__MINIMAL=1
 [ -n "$MINTIME"  ] && export SEvt__MINTIME=1
 [ -n "$INDEX"  ] && export SEvt__INDEX=1
-
+[ -n "$RUNMETA"  ] && export SEvt__RUNMETA=1
 [ -n "$CRASH" ] && export CSGOptiX__optixpath=$OPTICKS_PREFIX/ptx/objects-Debug/CSGOptiXOPTIX/CSGOptiX7.ptx
 
 export QRng__init_VERBOSE=1
