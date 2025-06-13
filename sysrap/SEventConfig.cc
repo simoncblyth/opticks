@@ -85,6 +85,7 @@ const char* SEventConfig::_SaveCompDefault = SComp::ALL_ ;
 float SEventConfig::_PropagateEpsilonDefault = 0.05f ;
 
 const char* SEventConfig::_InputGenstepDefault = nullptr ;
+const char* SEventConfig::_InputGenstepSelectionDefault = nullptr ;
 const char* SEventConfig::_InputPhotonDefault = nullptr ;
 const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 
@@ -261,6 +262,7 @@ unsigned SEventConfig::_SaveComp    = SComp::Mask(ssys::getenvvar(kSaveComp,   _
 float SEventConfig::_PropagateEpsilon = ssys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ;
 
 const char* SEventConfig::_InputGenstep = ssys::getenvvar(kInputGenstep, _InputGenstepDefault );
+const char* SEventConfig::_InputGenstepSelection = ssys::getenvvar(kInputGenstepSelection, _InputGenstepSelectionDefault );
 const char* SEventConfig::_InputPhoton = ssys::getenvvar(kInputPhoton, _InputPhotonDefault );
 const char* SEventConfig::_InputPhotonFrame = ssys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault );
 
@@ -385,6 +387,15 @@ const char* SEventConfig::InputGenstep(int idx)
 {
     return ( idx == -1 || _InputGenstep == nullptr ) ? _InputGenstep : _InputGenstepPath(idx) ;
 }
+const char* SEventConfig::InputGenstepSelection(int /*idx*/) // for now one selection for all eventID
+{
+    return _InputGenstepSelection  ;
+}
+
+
+
+
+
 
 bool SEventConfig::InputGenstepPathExists(int idx)
 {
@@ -551,6 +562,7 @@ void SEventConfig::SetRGMode( const char* mode)
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; LIMIT_Check() ; }
 
 void SEventConfig::SetInputGenstep(const char* ig){   _InputGenstep = ig ? strdup(ig) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetInputGenstepSelection(const char* igsel){   _InputGenstepSelection = igsel ? strdup(igsel) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
 
@@ -776,6 +788,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kInputGenstep
        << std::setw(20) << " InputGenstep " << " : " << ( InputGenstep() ? InputGenstep() : "-" )
+       << std::endl
+       << std::setw(25) << kInputGenstepSelection
+       << std::setw(20) << " InputGenstepSelection " << " : " << ( InputGenstepSelection() ? InputGenstepSelection() : "-" )
        << std::endl
        << std::setw(25) << kInputPhoton
        << std::setw(20) << " InputPhoton " << " : " << ( InputPhoton() ? InputPhoton() : "-" )
@@ -1247,6 +1262,10 @@ NP* SEventConfig::Serialize() // static
 
     const char* ig  = InputGenstep() ;
     if(ig)  meta->set_meta<std::string>("InputGenstep", ig );
+
+    const char* igsel  = InputGenstepSelection() ;
+    if(igsel)  meta->set_meta<std::string>("InputGenstepSelection", igsel );
+
 
     const char* ip  = InputPhoton() ;
     if(ip)  meta->set_meta<std::string>("InputPhoton", ip );

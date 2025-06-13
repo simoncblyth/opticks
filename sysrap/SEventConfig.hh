@@ -190,6 +190,7 @@ struct SYSRAP_API SEventConfig
 
     static constexpr const char* kPropagateEpsilon = "OPTICKS_PROPAGATE_EPSILON" ;
     static constexpr const char* kInputGenstep     = "OPTICKS_INPUT_GENSTEP" ;
+    static constexpr const char* kInputGenstepSelection  = "OPTICKS_INPUT_GENSTEP_SELECTION" ;
     static constexpr const char* kInputPhoton      = "OPTICKS_INPUT_PHOTON" ;
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ;
 
@@ -249,6 +250,7 @@ struct SYSRAP_API SEventConfig
 
     static const char* _InputGenstepPath(int idx=-1);
     static const char* InputGenstep(int idx=-1);
+    static const char* InputGenstepSelection(int idx=-1);
     static bool InputGenstepPathExists(int idx);
 
 
@@ -350,6 +352,7 @@ struct SYSRAP_API SEventConfig
 
     static void SetPropagateEpsilon( float eps) ;
     static void SetInputGenstep(const char* input_genstep);
+    static void SetInputGenstepSelection(const char* input_genstep_selection);
     static void SetInputPhoton(const char* input_photon);
     static void SetInputPhotonFrame(const char* input_photon_frame);
 
@@ -406,6 +409,7 @@ struct SYSRAP_API SEventConfig
 
     static float _PropagateEpsilonDefault  ;
     static const char* _InputGenstepDefault ;
+    static const char* _InputGenstepSelectionDefault ;
     static const char* _InputPhotonDefault ;
     static const char* _InputPhotonFrameDefault ;
 
@@ -470,6 +474,7 @@ struct SYSRAP_API SEventConfig
 
     static float _PropagateEpsilon ;
     static const char* _InputGenstep ;
+    static const char* _InputGenstepSelection ;
     static const char* _InputPhoton ;
     static const char* _InputPhotonFrame ;
 
