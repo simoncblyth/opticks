@@ -2409,6 +2409,16 @@ template NP* NP::MakeSelectCopy( const NP* , INT, INT );
 template NP* NP::MakeSelectCopy( const NP* , INT, INT, INT );
 template NP* NP::MakeSelectCopy( const NP* , INT, INT, INT, INT );
 
+/**
+NP::MakeSelectCopyE_
+-----------------------
+
+Create an array from index listed items specified in the *ekey* envvar.
+For example with the default delim of ',' and envvar 0,1,10 would
+select those items from the source array.
+
+**/
+
 inline NP* NP::MakeSelectCopyE_(  const NP* src, const char* ekey, const char* fallback, char delim )
 {
     std::vector<INT>* items = U::GetEnvVec<INT>(ekey, fallback, delim );
@@ -2423,6 +2433,15 @@ inline NP* NP::MakeSelectCopy_(  const NP* src, const std::vector<INT>* items )
 {
     return items ? MakeSelectCopy_(src, items->data(), INT(items->size()) ) : NP::MakeCopy(src) ;
 }
+
+/**
+NP::MakeSelectCopy_
+--------------------
+
+Create an array from the index listed *items* in the *src* array.
+
+**/
+
 inline NP* NP::MakeSelectCopy_(  const NP* src, const INT* items, INT num_items )
 {
     assert( items );

@@ -36,6 +36,7 @@ struct sslice
 
     static std::string Label() ;
     std::string desc() const ;
+    std::string idx_desc(int idx) const ;
     static std::string Desc(const std::vector<sslice>& sl );
 
     static int TotalPhoton(const std::vector<sslice>& sl );
@@ -54,13 +55,13 @@ inline std::string sslice::Label()
     std::stringstream ss ;
     ss << "       "
        << " "
-       << std::setw(5) << "start"
+       << std::setw(6) << "start"
        << " "
-       << std::setw(5) << "stop "
+       << std::setw(6) << "stop "
        << " "
-       << std::setw(7) << "offset "
+       << std::setw(8) << "offset "
        << " "
-       << std::setw(7) << "count "
+       << std::setw(8) << "count "
        ;
     std::string str = ss.str() ;
     return str ;
@@ -70,27 +71,36 @@ inline std::string sslice::desc() const
     std::stringstream ss ;
     ss << "sslice "
        << "{"
-       << std::setw(5) << gs_start
+       << std::setw(6) << gs_start
        << ","
-       << std::setw(5) << gs_stop
+       << std::setw(6) << gs_stop
        << ","
-       << std::setw(7) << ph_offset
+       << std::setw(8) << ph_offset
        << ","
-       << std::setw(7) << ph_count
+       << std::setw(8) << ph_count
        << "}"
        ;
     std::string str = ss.str() ;
     return str ;
 }
 
+inline std::string sslice::idx_desc(int idx) const
+{
+    std::stringstream ss ;
+    ss << std::setw(4) << idx << " : " <<  desc() ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
 inline std::string sslice::Desc(const std::vector<sslice>& sl)
 {
     int tot_photon = TotalPhoton(sl) ;
     std::stringstream ss ;
     ss << "sslice::Desc num_slice " << sl.size() << " TotalPhoton " << tot_photon << "\n" ;
-    for(int i=0 ; i < int(sl.size()) ; i++ ) ss << std::setw(3) << i << " : " << sl[i].desc() << "\n" ;
-    ss << std::setw(3) << " " << "   " << Label() << "\n" ;
-
+    ss << std::setw(4) << "" << "   " << Label() << "\n" ;
+    for(int i=0 ; i < int(sl.size()) ; i++ ) ss << sl[i].idx_desc(i) << "\n" ;
+    ss << std::setw(4) << "" << "   " << Label() << "\n" ;
     std::string str = ss.str() ;
     return str ;
 }

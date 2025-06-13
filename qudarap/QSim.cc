@@ -49,6 +49,7 @@ const plog::Severity QSim::LEVEL = SLOG::EnvLevel("QSim", "DEBUG");
 const bool  QSim::REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT);
 const int   QSim::SAVE_IGS_EVENTID = ssys::getenvint(_QSim__SAVE_IGS_EVENTID,-1) ;
 const char* QSim::SAVE_IGS_PATH = ssys::getenvvar(_QSim__SAVE_IGS_PATH, "$TMP/.opticks/igs.npy");
+const bool  QSim::CONCAT = ssys::getenvbool(_QSim__CONCAT);
 
 
 
@@ -426,7 +427,8 @@ double QSim::simulate(int eventID, bool reset_)
     std::vector<sslice> igs_slice ;
     SGenstep::GetGenstepSlices( igs_slice, igs, SEventConfig::MaxSlot() );
     int num_slice = igs_slice.size();
-    LOG(LEVEL)
+    LOG(info)
+        << " eventID " << std::setw(6) << eventID
         << " igs " << ( igs ? igs->sstr() : "-" )
         << " MaxSlot " << SEventConfig::MaxSlot()
         << " MaxSlot/M " << SEventConfig::MaxSlot()/1000000
@@ -443,7 +445,7 @@ double QSim::simulate(int eventID, bool reset_)
 
         const sslice& sl = igs_slice[i] ;
 
-        LOG(info) << sl.desc() ;
+        LOG(info) << sl.idx_desc(i) ;
 
         int rc = event->setGenstepUpload_NP(igs, &sl ) ;
         LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ;
@@ -473,10 +475,12 @@ double QSim::simulate(int eventID, bool reset_)
     int64_t t_LEND = SProf::Add("QSim__simulate_LEND");
 
     std::stringstream ss ;
-    std::ostream* out = SEvt::GATHER ? &ss : nullptr ;
-    sev->topfold->concat(out);
+    std::ostream* out = CONCAT ? &ss : nullptr ;
+    int concat_rc = sev->topfold->concat(out);
 
-    LOG_IF(info, SEvt::GATHER) << ss.str() ;
+    LOG_IF(info, CONCAT) << ss.str() ;
+    LOG_IF(fatal, concat_rc != 0) << " sev->topfold->concat FAILED " ;
+    assert(concat_rc == 0);
 
 
     if(!KEEP_SUBFOLD) sev->topfold->clear_subfold();

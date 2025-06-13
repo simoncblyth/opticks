@@ -243,8 +243,12 @@ public:
 
     void get_subfold_with_intkey(std::vector<const NPFold*>& subs, char prefix) const ;
     bool all_subfold_with_intkey(char prefix) const ;
+    void get_all_subfold_unique_keys(std::vector<std::string>& uks) const ;
 
-    void concat(std::ostream* out=nullptr);
+
+
+    int concat_strict(std::ostream* out=nullptr);
+    int concat(std::ostream* out=nullptr);
     NP* concat_(const char* k, std::ostream* out=nullptr);
     bool can_concat(std::ostream* out=nullptr) const ;
 
@@ -1192,12 +1196,30 @@ inline bool NPFold::all_subfold_with_intkey(char prefix) const
     return subfold.size() == subs.size();
 }
 
+inline void NPFold::get_all_subfold_unique_keys(std::vector<std::string>& uk) const
+{
+    int num_sub = subfold.size();
+    for(int i=0 ; i < num_sub ; i++)
+    {
+        const NPFold* sub = subfold[i] ;
+        int num_k = sub->kk.size();
+        for(int j=0 ; j < num_k ; j++)
+        {
+            const std::string& k = sub->kk[j];
+            if(std::find(uk.begin(), uk.end(), k) == uk.end()) uk.push_back(k);
+        }
+    }
+}
+
+
+
+
 
 
 
 /**
-NPFold::concat
----------------
+NPFold::concat_strict
+----------------------
 
 Concatenate common arrays from level 1 subfolds
 into the top level fold.
@@ -1233,58 +1255,106 @@ as probably the number of launches will normally be 1 and sometimes 2 or 3.
 
 **/
 
-inline void NPFold::concat(std::ostream* out)
+inline int NPFold::concat_strict(std::ostream* out)
 {
     bool zero_sub = has_zero_subfold();
-    if(out) *out << "NPFold::concat zero_sub " << ( zero_sub ? "YES" : "NO " ) << "\n" ;
+    if(out) *out << "NPFold::concat_strict zero_sub " << ( zero_sub ? "YES" : "NO " ) << "\n" ;
     if(zero_sub)
     {
-        if(out) *out << "NPFold::concat zero_sub TRIVIAL NOTHING TO CONCAT \n" ;
-        return ;
+        if(out) *out << "NPFold::concat_strict zero_sub TRIVIAL NOTHING TO CONCAT \n" ;
+        return 0 ;
     }
 
     bool can = can_concat(out);
-    assert(can);
-    if(!can) return ;
+    if(!can)
+    {
+        std::cerr << "NPFold::concat_strict can_concat FAIL : problem with subfold ? return 1 \n";
+        return 1 ;
+    }
+
 
     int num_sub = subfold.size();
     const NPFold* sub0 = num_sub > 0 ? subfold[0] : nullptr  ;
     const std::vector<std::string>* kk0 = sub0 ? &(sub0->kk) : nullptr ;
 
-
     int num_k = kk0 ? kk0->size() : 0 ;
 
-    if(out) *out 
-        << "NPFold::concat"
+    if(out) *out
+        << "NPFold::concat_strict"
         << " num_sub " << num_sub
         << " num_k " << num_k
-        << "\n" 
-        ; 
+        << "\n"
+        ;
 
     for(int i=0 ; i < num_k ; i++)
     {
         const char* k = (*kk0)[i].c_str();
         NP* a = concat_(k, out );
 
-        if(out) *out 
+        if(out) *out
+            << "NPFold::concat_strict"
+            << " k " << ( k ? k : "-" )
+            << " a " << ( a ? a->sstr() : "-" )
+            << "\n"
+            ;
+
+        add(k, a);
+    }
+    return 0 ;
+}
+
+inline int NPFold::concat(std::ostream* out)
+{
+    bool zero_sub = has_zero_subfold();
+    if(out) *out << "NPFold::concat zero_sub " << ( zero_sub ? "YES" : "NO " ) << "\n" ;
+    if(zero_sub)
+    {
+        if(out) *out << "NPFold::concat zero_sub TRIVIAL NOTHING TO CONCAT \n" ;
+        return 0 ;
+    }
+
+    std::vector<std::string> uk ;
+    get_all_subfold_unique_keys(uk);
+
+    int num_uk = uk.size() ;
+
+    if(out) *out
+        << "NPFold::concat"
+        << " subfold.size " << subfold.size()
+        << " num_uk " << num_uk
+        << "\n"
+        ;
+
+
+    for(int i=0 ; i < num_uk ; i++)
+    {
+        const char* k = uk[i].c_str();
+
+        NP* a = concat_(k, out );
+
+        if(out) *out
             << "NPFold::concat"
             << " k " << ( k ? k : "-" )
             << " a " << ( a ? a->sstr() : "-" )
-            << "\n" 
-            ; 
+            << "\n"
+            ;
 
         add(k, a);
     }
 
-
+    return 0 ;
 }
+
+
+
+
+
 
 /**
 NPFold::concat_
 ----------------
 
-Concatenates corresponding key arrays from all the
-immediate subfold of this fold.
+Concatenates arrays with key *k* from all immediate subfold.
 
 When there is only one subfold the concat is trivially
 done by adding subfold arrays to this fold.
@@ -1316,7 +1386,7 @@ inline NP* NPFold::concat_(const char* k, std::ostream* out)
         {
             const NPFold* sub = subfold[i] ;
             const NP* asub = sub->get(k);
-            aa.push_back(asub);
+            if(asub) aa.push_back(asub);
         }
         if(out) *out << "NPFold::concat_ non-trivial concat \n" ;
         a = NP::Concatenate(aa);
@@ -1360,7 +1430,7 @@ inline bool NPFold::can_concat(std::ostream* out) const
 
     int num_sub = subfold.size();
     if(out) *out << "NPFold::can_concat num_sub " << num_sub << "\n" ;
-    if(num_sub == 0) return false ;
+    if(num_sub == 0) return false ;  // ACTUALLY : THATS TRIVIAL CASE
 
     char prefix = INTKEY_PREFIX ;
     bool all_intkey = all_subfold_with_intkey(prefix);
@@ -1369,6 +1439,9 @@ inline bool NPFold::can_concat(std::ostream* out) const
 
     const NPFold* sub0 = subfold[0] ;
     const std::vector<std::string>& kk0 = sub0->kk ;
+    // reliance on the first sub being complete is not appropriate
+    // need to collect unique keys from all subs
+    // and combine as they are available
 
     int num_top_kk0 = count_keys(kk0);
     if(out) *out << "NPFold::can_concat num_top_kk0 " << num_top_kk0 << "\n" ;
@@ -1377,6 +1450,8 @@ inline bool NPFold::can_concat(std::ostream* out) const
     int sub_with_all_kk0 = 1 ;
     for(int i=1 ; i < num_sub ; i++) if(subfold[i]->has_all_keys(kk0)) sub_with_all_kk0 += 1 ;
     if(out) *out << "NPFold::can_concat sub_with_all_kk0 " << sub_with_all_kk0 << "\n" ;
+    // HMM: when really slicing small for debug purposes it can happen that do not
+    // get any hits from some slices
 
     bool can = sub_with_all_kk0 == num_sub ;
     if(out) *out << "NPFold::can_concat can " << ( can ? "YES" : "NO " )  << "\n" ;

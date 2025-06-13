@@ -103,6 +103,10 @@ private:
 
     static constexpr const char* _QSim__SAVE_IGS_PATH    = "QSim__SAVE_IGS_PATH" ;
     static const char* SAVE_IGS_PATH ;
+
+    static constexpr const char* _QSim__CONCAT    = "QSim__CONCAT" ;
+    static const bool CONCAT ;
+
 public:
     void setLauncher(SCSGOptiX* cx_ );
 
