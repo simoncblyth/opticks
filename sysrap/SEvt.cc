@@ -49,6 +49,7 @@
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
 bool SEvt::GATHER = ssys::getenvbool(SEvt__GATHER) ;
 bool SEvt::SAVE = ssys::getenvbool(SEvt__SAVE) ;
+bool SEvt::INDEX = ssys::getenvbool(SEvt__INDEX) ;
 bool SEvt::LIFECYCLE = ssys::getenvbool(SEvt__LIFECYCLE) ;
 bool SEvt::FRAME = ssys::getenvbool(SEvt__FRAME) ;
 bool SEvt::MINIMAL = ssys::getenvbool(SEvt__MINIMAL) ;
@@ -328,6 +329,18 @@ const char* SEvt::getSearchCFBase() const
 const char* SEvt::INPUT_GENSTEP_DIR = spath::Resolve("${SEvt__INPUT_GENSTEP_DIR:-$HOME/.opticks/InputGensteps}") ;
 const char* SEvt::INPUT_PHOTON_DIR = spath::Resolve("${SEvt__INPUT_PHOTON_DIR:-$HOME/.opticks/InputPhotons}") ;
 
+
+/**
+SEvt::ResolveInputArray
+------------------------
+
+When *spec* starts with a letter AZaz it is assumed to be a relative path within
+the SEvt__INPUT_GENSTEP_DIR which defaults to $HOME/.opticks/InputGensteps.
+
+When *spec* starts with a non-letter such as "$" or "/" it is assumed
+to specify an absolute path and the *dir* argument is ignored.
+
+**/
 
 const char* SEvt::ResolveInputArray(const char* spec, const char* dir) // static
 {
@@ -1381,6 +1394,7 @@ void SEvt::SaveGenstepLabels(const char* dir, const char* name)
 void SEvt::BeginOfRun()
 {
     SetRunProf("SEvt__BeginOfRun");
+    SaveRunMeta();  // HMM: for crash debug, RunMeta is saved at BeginOfRun EndOfRun and endOfEvent
 }
 
 
@@ -1411,6 +1425,7 @@ void SEvt::SetRunMeta(const char* k, T v )
 
 template void SEvt::SetRunMeta<int>(      const char*, int  );
 template void SEvt::SetRunMeta<uint64_t>( const char*, uint64_t  );
+template void SEvt::SetRunMeta<int64_t>(  const char*, int64_t  );
 template void SEvt::SetRunMeta<unsigned>( const char*, unsigned  );
 template void SEvt::SetRunMeta<float>(    const char*, float  );
 template void SEvt::SetRunMeta<double>(   const char*, double  );
@@ -1874,11 +1889,23 @@ void SEvt::clear_genstep()
 }
 
 
+/**
+SEvt::setIndex
+---------------
+
+index_arg
+    zero based event index expected to come from Geant4 eventID for example
+
+index
+    event index obtained from SEventConfig::EventIndex(index_arg)
+    which may be offset by the OPTICKS_START_INDEX envvar
+
+**/
 
 void SEvt::setIndex(int index_arg)
 {
     assert( index_arg >= 0 );
-    index = SEventConfig::EventIndex(index_arg) ;  // may be offset by OPTICKS_START_INDEX
+    index = SEventConfig::EventIndex(index_arg) ;
     t_BeginOfEvent = sstamp::Now();                // moved here from the static
 
     setRunProf_Annotated("SEvt__setIndex_" );
@@ -2182,7 +2209,13 @@ void SEvt::setNumPhoton(unsigned num_photon)
         ;
     assert( num_photon_allowed );
 
+    LOG_IF(info, INDEX)
+        << " set SEvt::index to sevent::index " << index
+        << " num_photon " << num_photon
+        ;
+
     evt->index = index ;
+
     evt->num_photon = num_photon ;
     evt->num_seq    = evt->max_seq  == 1 ? evt->num_photon : 0 ;
     evt->num_tag    = evt->max_tag  == 1 ? evt->num_photon : 0 ;
@@ -3606,7 +3639,7 @@ as QSim::simulate.
 
 
 0. invokes NPFold::add_subfold on the *topfold* giving *fold*
-   into which the gathering is done. This is done to support 
+   into which the gathering is done. This is done to support
    multilaunch running by invoking NPFold::concat on the *topfold*
    after the launch loop of QSim::simulate
 
