@@ -59,6 +59,25 @@ git checkout v0.2.2
 Release Notes
 ----------------
 
+* start from "git lg -n20" and summarize useful commit messages worthy of mention
+
+v0.4.5 2025/06/13 : Theta dependent CE culling on GPU working with qpmt::get_lpmtid_ATQC
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* reimpl NPFold::concat less strictly to enable concat of hits when launches are sliced finely resulting in some subfold not having hits
+* change ctx.idx to the global photon_idx from the local within the launch idx for more meaningful PIDX dumping
+* collect metadata regarding the optixpath mtime into SEvt run metadata from CSGOptiX::initMeta
+
+  * stale optixpath found to be the cause of the muon CUDA crash reported by Haosen, eg "CRASH=1 cxs_min.sh"
+
+* make QSim::simulate handle zero gensteps
+* add QSim::MaybeSaveIGS to enable fast cycle input genstep debug of eventID that cause CUDA launch crashes
+* use ProcessHits EPH info to change finalPhoton SD flags into EC/EX EFFICIENCY_COLLECT/EFFICIENCY_CULL
+* make CE over costh available to qsim.h using cecosth_prop enabling get_lpmtid_stackspec_ce as alternative to get_lpmtid_stackspec_ce_acosf
+* change to qpmt::get_lpmtid_ATQC returning absorption,transmission,qe,ce as need to do separate collectionEfficiency throw
+* fix NP::FromNumpyString
+
+
 v0.4.4 2025/06/08
 ~~~~~~~~~~~~~~~~~~
 
@@ -98,6 +117,8 @@ Snapshot Tags History
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                                                               |
 +============+=========+=========================+=====================================================================================================================+
+| 2025/06/13 | v0.4.5  | 45                      | Theta dependent CE culling with qpmt::get_lpmtid_ATQC becoming usable                                               |
++------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/08 | v0.4.4  | 44                      | add collection efficiency scaling from qpmt::get_lpmtid_ARTE_ce, add separate label U4Recorder API                  |
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/05/30 | v0.4.3  | 43                      | integrate OpenGL event record rendering with geometry render, globalPrimIdx added to Binding.h, cxt_min.sh enhance  |
