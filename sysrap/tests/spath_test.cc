@@ -24,10 +24,12 @@ spath_test.cc
 #include <iostream>
 #include <iomanip>
 
+
 #include "ssys.h"
 #include "sstr.h"
 #include "spath.h"
 #include "sdirectory.h"
+#include "sstamp.h"
 
 
 struct spath_test
@@ -70,6 +72,7 @@ struct spath_test
    static int is_readable();
    static int GEOMSub();
    static int GDMLPathFromGEOM();
+   static int last_write_time();
 
    static int Main();
 };
@@ -683,6 +686,32 @@ int spath_test::GDMLPathFromGEOM()
 
 
 
+int spath_test::last_write_time()
+{
+    const char* path = spath::Resolve("$HOME/.bash_profile");
+    if(!spath::Exists(path)) return 0 ;
+
+    int64_t now = sstamp::Now();
+    int64_t mtime = spath::last_write_time(path);
+
+    int64_t age_secs = sstamp::age_seconds(mtime);
+    int64_t age_days = sstamp::age_days(mtime);
+
+    std::cout
+        << "spath_test::last_write_time\n"
+        << " path [" << ( path ? path : "-" ) << "]\n"
+        << " int64_t mtime = spath::last_write_time(\"" << path << "\")\n"
+        << "        mtime  [" << mtime << "]\n"
+        << " sstamp::Now() [" << now << "]\n"
+        << " sstamp::Format(now)   [" << sstamp::Format(now) << "]\n"
+        << " sstamp::Format(mtime) [" << sstamp::Format(mtime) << "]\n"
+        << " age_secs " << age_secs << "\n"
+        << " age_days " << age_days << "\n"
+        ;
+
+    return 0 ;
+}
+
 int spath_test::Main()
 {
     const char* test = "ALL" ;
@@ -723,6 +752,7 @@ int spath_test::Main()
     if(ALL||strcmp(TEST, "is_readable")==0) rc += is_readable();
     if(ALL||strcmp(TEST, "GEOMSub")==0) rc += GEOMSub();
     if(ALL||strcmp(TEST, "GDMLPathFromGEOM")==0) rc += GDMLPathFromGEOM();
+    if(ALL||strcmp(TEST, "last_write_time")==0) rc += last_write_time();
 
     //if(ALL||strcmp(TEST, "DefaultOutputPath")==0) rc += DefaultOutputPath();
     //if(ALL||strcmp(TEST, "WriteIntoInvokingDirectory")==0) rc += WriteIntoInvokingDirectory();

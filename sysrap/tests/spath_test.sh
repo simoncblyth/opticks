@@ -25,7 +25,9 @@ bin=$FOLD/$name
 mkdir -p $FOLD
 
 #test=Filesize
-test=ALL
+#test=ALL
+test=last_write_time
+
 export TEST=${TEST:-$test}
 
 export EXECUTABLE=$bin

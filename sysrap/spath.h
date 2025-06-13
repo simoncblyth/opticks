@@ -131,6 +131,9 @@ public:
     static bool is_readable(const char* base, const char* name);
     static bool is_readable(const char* path );
 
+    static int64_t last_write_time(const char* path, bool dump=false);
+
+
 };
 
 
@@ -608,8 +611,6 @@ inline int spath::SplitExt(std::string& dir, std::string& stem, std::string& ext
 
 
 
-
-
 template<typename ... Args>
 inline std::string spath::_Join( Args ... args_  )  // static
 {
@@ -1016,5 +1017,69 @@ inline bool spath::is_readable(const char* path_)  // static
     fp.close();
     return readable ;
 }
+
+
+
+
+/**
+spath::last_write_time
+-----------------------
+
+Returns microseconds since the unix epoch of the mtime of the file,
+or zero if it does not exist.
+
+https://www.cppstories.com/2024/file-time-cpp20/
+
+**/
+
+inline int64_t spath::last_write_time(const char* path, bool dump)
+{
+    int64_t lwt = 0 ;
+
+#ifdef WITH_FILESYSTEM_NOT_WORKING
+    std::filesystem::path p(path);
+    std::filesystem::file_time_type ftt = std::filesystem::last_write_time(p);
+    //std::time_t cft = std::chrono::system_clock::to_time_t(ftt);
+    //std::cout << "  cft:  " << std::ctime(&cft) << '\n';
+
+    //std::time_t tt = decltype(ftt)::clock::to_time_t(ftt);
+    //  ‘to_time_t’ is not a member of ‘std::chrono::time_point<std::filesystem::__file_clock>::clock’
+
+    using namespace std::chrono;
+    auto sys_now = system_clock::now();
+    auto fil_now = decltype(ftt)::clock::now();
+
+    int64_t t_sys = duration_cast<microseconds>(sys_now.time_since_epoch()).count() ;
+    int64_t t_fil = duration_cast<microseconds>(fil_now.time_since_epoch()).count() ;
+    int64_t t_ftt = duration_cast<microseconds>(ftt.time_since_epoch()).count() ;
+
+    //const auto sct = std::chrono::clock_cast<std::chrono::system_clock>(ftt);
+    //int64_t t = std::chrono::duration_cast<std::chrono::microseconds >(sct.time_since_epoch()).count() ;
+
+    std::cout
+        << " t_sys       [" << t_sys  << "]\n"
+        << " t_fil       [" << t_fil << "]\n"
+        << " t_ftt       [" << t_fil << "]\n"
+        ;
+#else
+
+    struct stat fs;
+    int rc = stat(path, &fs) ;
+    std::time_t mtime = rc == 0 ? fs.st_mtime : 0 ;
+
+    if(dump)
+    {
+        char* str = std::asctime(std::localtime(&mtime));
+        std::cout << "spath::last_write_time str [" << str << "]\n" ;
+    }
+
+    using namespace std::chrono;
+    const auto from = system_clock::from_time_t(mtime);
+    lwt = duration_cast<microseconds>(from.time_since_epoch()).count();
+#endif
+    return lwt ;
+}
+
+
 
 

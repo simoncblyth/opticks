@@ -294,9 +294,11 @@ void CSGOptiX::InitSim( SSim* ssim  )
 CSGOptiX::InitMeta
 -------------------
 
+Invoked from CSGOptiX::Create prior to instanciation
+
 **/
 
-void CSGOptiX::InitMeta(const SSim* ssim  )
+void CSGOptiX::InitMeta()
 {
     std::string gm = SEventConfig::GetGPUMeta() ;     // (QSim) scontext sdevice::brief
     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control
@@ -351,7 +353,7 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 
     InitEvt(fd);
     InitSim( const_cast<SSim*>(fd->sim) ); // QSim instanciation after uploading SSim arrays
-    InitMeta(fd->sim);                     // recording GPU, switches etc.. into run metadata
+    InitMeta();                            // recording GPU, switches etc.. into run metadata
     InitGeo(fd);                           // uploads geometry
 
     CSGOptiX* cx = new CSGOptiX(fd) ;
@@ -444,6 +446,7 @@ void CSGOptiX::init()
     LOG(LEVEL) << " _optixpath " << _optixpath  ;
     LOG(LEVEL) << " optixpath " << optixpath  ;
 
+    initMeta();
     initCtx();
     initPIP();
     initSBT();
@@ -459,6 +462,20 @@ void CSGOptiX::init()
     LOG(LEVEL) << "]" ;
 }
 
+
+void CSGOptiX::initMeta()
+{
+    int64_t mtime = spath::last_write_time(optixpath);
+    std::string str = sstamp::Format(mtime);
+    int64_t age_secs = sstamp::age_seconds(mtime);
+    int64_t age_days = sstamp::age_days(mtime);
+
+    SEvt::SetRunMetaString("optixpath", optixpath );
+    SEvt::SetRunMetaString("optixpath_mtime_str", str.c_str() );
+    SEvt::SetRunMeta<int64_t>("optixpath_mtime", mtime );
+    SEvt::SetRunMeta<int64_t>("optixpath_age_secs", age_secs );
+    SEvt::SetRunMeta<int64_t>("optixpath_age_days", age_days );
+}
 
 void CSGOptiX::initCtx()
 {

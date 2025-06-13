@@ -9,44 +9,47 @@
 
 struct sstamp
 {
-    static int64_t Now(); 
-    static std::string Format(int64_t t=0, const char* fmt="%FT%T.", bool _subsec=true); 
+    static int64_t Now();
+    static std::string Format(int64_t t=0, const char* fmt="%FT%T.", bool _subsec=true);
 
-    static constexpr const char* DEFAULT_TIME_FMT = "%Y%m%d_%H%M%S_" ; 
-    static std::string FormatTimeStem(const char* _stem=nullptr, int64_t t=0, bool _subsec=false); 
+    static constexpr const char* DEFAULT_TIME_FMT = "%Y%m%d_%H%M%S_" ;
+    static std::string FormatTimeStem(const char* _stem=nullptr, int64_t t=0, bool _subsec=false);
 
-    static std::string FormatInt(int64_t t, int wid ); 
-    static bool LooksLikeStampInt(const char* str); 
-    static void sleep(int seconds); 
-    static void sleep_us(int microseconds); 
-}; 
+    static std::string FormatInt(int64_t t, int wid );
+    static bool LooksLikeStampInt(const char* str);
+    static void sleep(int seconds);
+    static void sleep_us(int microseconds);
+
+    static int64_t age_seconds(int64_t t);
+    static int64_t age_days(int64_t t);
+};
 
 inline int64_t sstamp::Now()
 {
     using Clock = std::chrono::system_clock;
     using Unit  = std::chrono::microseconds ;
     std::chrono::time_point<Clock> t0 = Clock::now();
-    return std::chrono::duration_cast<Unit>(t0.time_since_epoch()).count() ;  
+    return std::chrono::duration_cast<Unit>(t0.time_since_epoch()).count() ;
 }
 /**
 stamp::Format
 --------------
 
-Time string from uint64_t with the microseconds since UTC epoch, 
+Time string from uint64_t with the microseconds since UTC epoch,
 t=0 is special cased to give the current time
 
 **/
 
 inline std::string sstamp::Format(int64_t t, const char* fmt, bool _subsec)
 {
-    if(t == 0) t = Now() ; 
+    if(t == 0) t = Now() ;
     using Clock = std::chrono::system_clock;
-    using Unit  = std::chrono::microseconds  ; 
-    std::chrono::time_point<Clock> tp{Unit{t}} ; 
+    using Unit  = std::chrono::microseconds  ;
+    std::chrono::time_point<Clock> tp{Unit{t}} ;
     std::time_t tt = Clock::to_time_t(tp);
 
-    std::stringstream ss ; 
-    ss << std::put_time(std::localtime(&tt), fmt ) ; 
+    std::stringstream ss ;
+    ss << std::put_time(std::localtime(&tt), fmt ) ;
 
     if(_subsec)
     {
@@ -54,8 +57,8 @@ inline std::string sstamp::Format(int64_t t, const char* fmt, bool _subsec)
         auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
         ss << std::setfill('0') << std::setw(6) << subsec.count() ;
     }
-    std::string str = ss.str(); 
-    return str ; 
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -63,33 +66,33 @@ inline std::string sstamp::Format(int64_t t, const char* fmt, bool _subsec)
 sstamp::FormatTimeStem
 ------------------------
 
- +----------------------+---------------------------------------------+ 
+ +----------------------+---------------------------------------------+
  |  _stem               |    return                                   |
  +======================+=============================================+
  | nullptr              |   time t formatted with DEFAULT_TIME_FMT    |
- +----------------------+---------------------------------------------+ 
+ +----------------------+---------------------------------------------+
  | string with "%"      |  time t formatted with _stem as the fmt     |
- +----------------------+---------------------------------------------+ 
+ +----------------------+---------------------------------------------+
  | any other string     |  return unchanged                           |
- +----------------------+---------------------------------------------+ 
+ +----------------------+---------------------------------------------+
 
 **/
 
 
 inline std::string sstamp::FormatTimeStem(const char* _stem, int64_t t, bool _subsec)
 {
-    std::string stem ; 
+    std::string stem ;
     if(_stem == nullptr)
     {
-        stem = Format(t, DEFAULT_TIME_FMT, _subsec ); 
+        stem = Format(t, DEFAULT_TIME_FMT, _subsec );
     }
     else if( strstr(_stem,"%") )
     {
-        stem = Format(t, _stem, _subsec ); 
-    } 
+        stem = Format(t, _stem, _subsec );
+    }
     else
     {
-        stem = _stem ;   
+        stem = _stem ;
     }
     return stem ;
 }
@@ -98,11 +101,11 @@ inline std::string sstamp::FormatTimeStem(const char* _stem, int64_t t, bool _su
 
 inline std::string sstamp::FormatInt(int64_t t, int wid ) // static
 {
-    std::stringstream ss ; 
-    if( t > -1 ) ss << std::setw(wid) << t ;  
-    else         ss << std::setw(wid) << "" ; 
-    std::string str = ss.str(); 
-    return str ; 
+    std::stringstream ss ;
+    if( t > -1 ) ss << std::setw(wid) << t ;
+    else         ss << std::setw(wid) << "" ;
+    std::string str = ss.str();
+    return str ;
 }
 
 /**
@@ -127,10 +130,10 @@ Contemporary microsecond uint64_t timestamps since Sept 2001 look like below wit
 
 inline bool sstamp::LooksLikeStampInt(const char* str) // static
 {
-    int length = strlen(str) ; 
-    int digits = 0 ;  
-    for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;   
-    return length == 16 && digits == length  ; 
+    int length = strlen(str) ;
+    int digits = 0 ;
+    for(int i=0 ; i < length ; i++) if(str[i] >= '0' && str[i] <= '9') digits += 1 ;
+    return length == 16 && digits == length  ;
 }
 
 inline void sstamp::sleep(int seconds)
@@ -157,6 +160,19 @@ inline void sstamp::sleep_us(int us)
 {
     std::chrono::microseconds dura(us);
     std::this_thread::sleep_for( dura );
+}
+
+inline int64_t sstamp::age_seconds(int64_t t)
+{
+    int64_t now = Now();
+    int64_t duration = now - t ;
+    int64_t age_sec = duration/1000000 ;
+    return age_sec ;
+}
+inline int64_t sstamp::age_days(int64_t t)
+{
+    int64_t age_sec = age_seconds(t);
+    return age_sec/(24*60*60) ;
 }
 
 
