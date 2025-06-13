@@ -383,8 +383,9 @@ elif [ "$TEST" == "input_genstep_muon" ]; then
    opticks_num_genstep=    # ignored
    opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_GENSTEP
-   #opticks_max_slot=M10  ## three launches
-   opticks_max_slot=0     ## whole-in-one
+   opticks_max_slot=M10  ## 3 launches
+   #opticks_max_slot=M1    ## ~34 launches
+   #opticks_max_slot=0     ## whole-in-one
 
 elif [ "$TEST" == "input_photon" ]; then
 
@@ -447,6 +448,8 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
     #igs=$BASE/jok-tds/ALL0/A%0.3d/genstep.npy
     igs=$HOME/.opticks/crash_muon_igs.npy
 
+
+
     if [ "${igs/\%}" != "$igs" ]; then
         igs0=$(printf "$igs" 0)
     else
@@ -454,6 +457,8 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
     fi
     [ ! -f "$igs0" ] && echo $BASH_SOURCE : FATAL : NO SUCH PATH : igs0 $igs0 igs $igs && exit 1
     export OPTICKS_INPUT_GENSTEP=$igs
+    export OPTICKS_START_INDEX=6   ## enabled reproducing photons from original eventID 6 from the igs
+
 
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
@@ -543,6 +548,9 @@ logging(){
 [ -n "$MEMCHECK" ] && export QU__MEMCHECK=1
 [ -n "$MINIMAL"  ] && export SEvt__MINIMAL=1
 [ -n "$MINTIME"  ] && export SEvt__MINTIME=1
+[ -n "$INDEX"  ] && export SEvt__INDEX=1
+
+[ -n "$CRASH" ] && export CSGOptiX__optixpath=$OPTICKS_PREFIX/ptx/objects-Debug/CSGOptiXOPTIX/CSGOptiX7.ptx
 
 export QRng__init_VERBOSE=1
 export SEvt__MINIMAL=1  ## just output dir

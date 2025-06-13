@@ -8,8 +8,8 @@ qcerenkov.h
 #if defined(__CUDACC__) || defined(__CUDABE__)
    #define QCERENKOV_METHOD __device__
 #else
-   #define QCERENKOV_METHOD 
-#endif 
+   #define QCERENKOV_METHOD
+#endif
 
 #include "scurand.h"
 #include "smath.h"
@@ -18,144 +18,149 @@ qcerenkov.h
 #include "qrng.h"
 
 
-struct scerenkov ; 
-struct qbase ; 
-struct qbnd ; 
-struct quad6 ; 
-template <typename T> struct qprop ; 
+struct scerenkov ;
+struct qbase ;
+struct qbnd ;
+struct quad6 ;
+template <typename T> struct qprop ;
 
 /**
 
-HMM: the qsim member causes chicken-egg setup problem, 
-as want a cerenkov member of qsim 
+HMM: the qsim member causes chicken-egg setup problem,
+as want a cerenkov member of qsim
 
-* using it for sim->boundary_lookup, sim->prop 
+* using it for sim->boundary_lookup, sim->prop
   so need to break things up at finer level for easier reuse
 
 **/
 
 struct qcerenkov
 {
-    qbase* base ; 
-    qbnd*  bnd ;  
-    qprop<float>*  prop ;  
+    qbase* base ;
+    qbnd*  bnd ;
+    qprop<float>*  prop ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QCERENKOV_METHOD void generate( sphoton& p,  RNG& rng, const quad6& gs    , int idx, int genstep_id ) const ;
 
     template<typename T>
-    QCERENKOV_METHOD void wavelength_sampled_enprop( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int genstep_id ) const ;  
-    QCERENKOV_METHOD void wavelength_sampled_bndtex( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int genstep_id ) const ; 
+    QCERENKOV_METHOD void wavelength_sampled_enprop( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int genstep_id ) const ;
+    QCERENKOV_METHOD void wavelength_sampled_bndtex( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int genstep_id ) const ;
 
-    QCERENKOV_METHOD void fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const ; 
+    QCERENKOV_METHOD void fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const ;
 #endif
 
 };
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, RNG& rng, const quad6& _gs, int idx, int gsid ) const 
+inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, RNG& rng, const quad6& _gs, int idx, int gsid ) const
 {
-    //printf("//qcerenkov::generate idx %d \n", idx ); 
+    //printf("//qcerenkov::generate idx %d \n", idx );
 
     const scerenkov& gs = (const scerenkov&)_gs ;
-    const float3 p0 = normalize(gs.DeltaPosition) ;   // TODO: see if can normalize inside the genstep at collection  
+    const float3 p0 = normalize(gs.DeltaPosition) ;   // TODO: see if can normalize inside the genstep at collection
 
-    float wavelength ; 
-    float cosTheta ; 
-    float sin2Theta ; 
+    float wavelength ;
+    float cosTheta ;
+    float sin2Theta ;
 
-    //wavelength = 500.f ; cosTheta = 0.70710678f ; sin2Theta = 0.5f ; 
-   
-    wavelength_sampled_bndtex(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;  
-    //wavelength_sampled_enprop<float>(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;  
-    //wavelength_sampled_enprop<double>(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;  
+    //wavelength = 500.f ; cosTheta = 0.70710678f ; sin2Theta = 0.5f ;
+
+    wavelength_sampled_bndtex(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;
+    //wavelength_sampled_enprop<float>(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;
+    //wavelength_sampled_enprop<double>(wavelength, cosTheta, sin2Theta, rng, gs, idx, gsid) ;
 
     float sinTheta = sqrtf(sin2Theta);
 
-    // Generate random position of photon on cone surface 
-    // defined by Theta 
+    // Generate random position of photon on cone surface
+    // defined by Theta
 
-    float u0 = curand_uniform(&rng); 
+    float u0 = curand_uniform(&rng);
     float phi = 2.f*M_PIf*u0 ;
-    float sinPhi = sin(phi); 
-    float cosPhi = cos(phi); 
+    float sinPhi = sin(phi);
+    float cosPhi = cos(phi);
 
     // calculate x,y, and z components of photon energy
-    // (in coord system with primary particle direction 
+    // (in coord system with primary particle direction
     //  aligned with the z axis)
 
-    p.mom.x = sinTheta*cosPhi ; 
-    p.mom.y = sinTheta*sinPhi ; 
-    p.mom.z = cosTheta ; 
+    p.mom.x = sinTheta*cosPhi ;
+    p.mom.y = sinTheta*sinPhi ;
+    p.mom.z = cosTheta ;
 
-    // Rotate momentum direction back to global reference system 
-    smath::rotateUz(p.mom, p0 ); 
+    // Rotate momentum direction back to global reference system
+    smath::rotateUz(p.mom, p0 );
 
-    // Determine polarization of new photon 
+    // Determine polarization of new photon
 
-    p.pol.x = cosTheta*cosPhi ; 
+    p.pol.x = cosTheta*cosPhi ;
     p.pol.y = cosTheta*sinPhi ;
     p.pol.z = -sinTheta ;
 
-   
-    // Rotate back to original coord system 
-    smath::rotateUz(p.pol, p0 ); 
 
-    p.wavelength = wavelength ;  
-    //p.weight = 1.f ; 
-    p.iindex = 0u ; 
+    // Rotate back to original coord system
+    smath::rotateUz(p.pol, p0 );
 
-    float fraction ; 
-    float delta ; 
+    p.wavelength = wavelength ;
+    //p.weight = 1.f ;
+    p.iindex = 0u ;
 
-    fraction_sampled( fraction, delta, rng, gs, idx, gsid ); 
+    float fraction ;
+    float delta ;
 
-    float midVelocity = gs.preVelocity + fraction*( gs.postVelocity - gs.preVelocity )*0.5f ;   
+    fraction_sampled( fraction, delta, rng, gs, idx, gsid );
+
+    float midVelocity = gs.preVelocity + fraction*( gs.postVelocity - gs.preVelocity )*0.5f ;
 
     p.time = gs.time + delta / midVelocity ;
-    p.pos = gs.pos + fraction * gs.DeltaPosition ;   // NB here gs.DeltaPosition must not be normalized 
+    p.pos = gs.pos + fraction * gs.DeltaPosition ;   // NB here gs.DeltaPosition must not be normalized
 
-    p.zero_flags(); 
+    p.zero_flags();
     p.set_flag(CERENKOV) ;
- 
-} 
+
+}
 
 /**
 qcerenkov::fraction_sampled
 ------------------------------
 
 Note that N and NumberOfPhotons are never used below.
-The point of the the rejection sampling loop is to come up with a 
-*fraction* and *delta* that fulfils the theoretical constraint.  
-This *fraction* controls where the photon gets generated along the 
-genstep line segment with the rejection sampling serving 
-to get the appropriate distribution of generation along that line. 
+The point of the the rejection sampling loop is to come up with a
+*fraction* and *delta* that fulfils the theoretical constraint.
+This *fraction* controls where the photon gets generated along the
+genstep line segment with the rejection sampling serving
+to get the appropriate distribution of generation along that line.
+
+Consider the case of DeltaN zero due to gs.MeanNumberOfPhotons1
+and gs.MeanNumberOfPhotons2 being equal. The NumberOfPhotons
+gets set to MeanNumberOfPhotons1. N will be less that that
+so the loop will only turn once with fraction being random.
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const 
+inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const
 {
-    float NumberOfPhotons ;   
-    float N ; 
-    float u ; 
+    float NumberOfPhotons ;
+    float N ;
+    float u ;
 
-    float MeanNumberOfPhotonsMax = fmaxf( gs.MeanNumberOfPhotons1, gs.MeanNumberOfPhotons2 );  
-    float DeltaN = (gs.MeanNumberOfPhotons1-gs.MeanNumberOfPhotons2) ; 
-    do  
-    {   
+    float MeanNumberOfPhotonsMax = fmaxf( gs.MeanNumberOfPhotons1, gs.MeanNumberOfPhotons2 );
+    float DeltaN = (gs.MeanNumberOfPhotons1-gs.MeanNumberOfPhotons2) ;
+    do
+    {
         fraction = curand_uniform(&rng) ;
 
         delta = fraction * gs.step_length ;
 
         NumberOfPhotons = gs.MeanNumberOfPhotons1 - fraction * DeltaN  ;
 
-        u = curand_uniform(&rng) ; 
+        u = curand_uniform(&rng) ;
 
         N = u * MeanNumberOfPhotonsMax ;
 
     } while (N > NumberOfPhotons);
 
-    //printf("//qcerenkov::fraction_sampled fraction %10.4f delta %10.4f \n", fraction, delta ); 
+    //printf("//qcerenkov::fraction_sampled fraction %10.4f delta %10.4f \n", fraction, delta );
 
 }
 
@@ -165,7 +170,7 @@ inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float&
 qcerenkov::wavelength_sampled_bndtex
 -----------------------------------------------------
 
-wavelength between Wmin and Wmax is uniform-reciprocal-sampled 
+wavelength between Wmin and Wmax is uniform-reciprocal-sampled
 to mimic uniform energy range sampling without taking reciprocals
 twice
 
@@ -174,95 +179,95 @@ g4-cls G4Cerenkov::
     251   G4double Pmin = Rindex->GetMinLowEdgeEnergy();
     252   G4double Pmax = Rindex->GetMaxLowEdgeEnergy();
     253   G4double dp = Pmax - Pmin;
-    254 
+    254
     255   G4double nMax = Rindex->GetMaxValue();
-    256 
+    256
     257   G4double BetaInverse = 1./beta;
-    258 
+    258
     259   G4double maxCos = BetaInverse / nMax;
     260   G4double maxSin2 = (1.0 - maxCos) * (1.0 + maxCos);
-    261 
+    261
     ...
     270   for (G4int i = 0; i < fNumPhotons; i++) {
-    271   
+    271
     272       // Determine photon energy
-    273   
+    273
     274       G4double rand;
     275       G4double sampledEnergy, sampledRI;
     276       G4double cosTheta, sin2Theta;
-    277 
+    277
     278       // sample an energy
-    279 
+    279
     280       do {
     281          rand = G4UniformRand();
     282          sampledEnergy = Pmin + rand * dp;                // linear energy sample in Pmin -> Pmax
     283          sampledRI = Rindex->Value(sampledEnergy);
-    284          cosTheta = BetaInverse / sampledRI;              // what cone angle that energy sample corresponds to 
-    285 
-    286          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);   
+    284          cosTheta = BetaInverse / sampledRI;              // what cone angle that energy sample corresponds to
+    285
+    286          sin2Theta = (1.0 - cosTheta)*(1.0 + cosTheta);
     287          rand = G4UniformRand();
-    288 
+    288
     289         // Loop checking, 07-Aug-2015, Vladimir Ivanchenko
-    290       } while (rand*maxSin2 > sin2Theta);                // constrain   
-    291 
+    290       } while (rand*maxSin2 > sin2Theta);                // constrain
+    291
 
 ::
 
-                        
-                        
-                  \    B    /                        
-              \    .   |   .    /                            AC     ct / n          1         i       BetaInverse 
+
+
+                  \    B    /
+              \    .   |   .    /                            AC     ct / n          1         i       BetaInverse
           \    C       |       C    /             cos th =  ---- =  --------   =  ------ =   ---  =  -------------
       \    .    \      |      /    .     /                   AB       bct           b n       n        sampledRI
        .         \    bct    /          .
                   \    |    /                                  BetaInverse
-                   \   |   /  ct                  maxCos  =  ----------------- 
-                    \  |th/  ----                                nMax                                                
+                   \   |   /  ct                  maxCos  =  -----------------
+                    \  |th/  ----                                nMax
                      \ | /    n
                       \|/
                        A
 
-    Particle travels AB, light travels AC,  ACB is right angle 
+    Particle travels AB, light travels AC,  ACB is right angle
 
 
-     Only get Cerenkov radiation when   
+     Only get Cerenkov radiation when
 
-            cos th <= 1 , 
+            cos th <= 1 ,
 
-            beta >= beta_min = 1/n        BetaInverse <= BetaInverse_max = n 
-
-
-     At the small beta threshold AB = AC,   beta = beta_min = 1/n     eg for n = 1.333, beta_min = 0.75  
-
-            cos th = 1,  th = 0         light is in direction of the particle 
+            beta >= beta_min = 1/n        BetaInverse <= BetaInverse_max = n
 
 
-     For ultra relativistic particle beta = 1, there is a maximum angle 
+     At the small beta threshold AB = AC,   beta = beta_min = 1/n     eg for n = 1.333, beta_min = 0.75
 
-            th = arccos( 1/n )      
+            cos th = 1,  th = 0         light is in direction of the particle
+
+
+     For ultra relativistic particle beta = 1, there is a maximum angle
+
+            th = arccos( 1/n )
 
     In [5]: np.arccos(0.75)*180./np.pi
     Out[5]: 41.40962210927086
 
 
-     So the beta range to have Cerenkov is  : 
+     So the beta range to have Cerenkov is  :
 
-                1/n       slowest, cos th = 1, th = 0   
+                1/n       slowest, cos th = 1, th = 0
 
-          ->    1         ultra-relativistic, maximum cone angle th  arccos(1/n)     
- 
-
-     Corresponds to BetaInverse range 
-
-           BetaInverse =  n            slowest, cos th = 1, th = 0    cone in particle direction 
-    
-           BetaInverse  = 1           
+          ->    1         ultra-relativistic, maximum cone angle th  arccos(1/n)
 
 
+     Corresponds to BetaInverse range
 
-                
+           BetaInverse =  n            slowest, cos th = 1, th = 0    cone in particle direction
+
+           BetaInverse  = 1
+
+
+
+
      The above considers a fixed refractive index.
-     Actually refractive index varies with wavelength resulting in 
+     Actually refractive index varies with wavelength resulting in
      a range of cone angles for a fixed particle beta.
 
 
@@ -270,55 +275,55 @@ g4-cls G4Cerenkov::
     * ~/opticks_refs/external_pergamon_jelley_pdf_18410.pdf
 
 
-HMM: when there is no permissable cerenkov for the material RINDEX this is just going to infinite spin ? 
+HMM: when there is no permissable cerenkov for the material RINDEX this is just going to infinite spin ?
 Added the loop count to prevent that.  BUT whats the proper way to avoid that ?
 
-The numphotons should be zero in that situation : so this is an issue of testing with 
-fabricated gensteps that should not be an issue with real gensteps.  
+The numphotons should be zero in that situation : so this is an issue of testing with
+fabricated gensteps that should not be an issue with real gensteps.
 
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const 
+inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const
 {
-    //printf("//qcerenkov::wavelength_sampled_bndtex bnd %p gs.matline %d \n", bnd, gs.matline ); 
+    //printf("//qcerenkov::wavelength_sampled_bndtex bnd %p gs.matline %d \n", bnd, gs.matline );
     float u0 ;
-    float u1 ; 
-    float w ; 
+    float u1 ;
+    float w ;
     float sampledRI ;
     float u_maxSin2 ;
 
-    unsigned count = 0 ; 
+    unsigned count = 0 ;
 
     do {
         u0 = curand_uniform(&rng) ;
 
-        w = gs.Wmin + u0*(gs.Wmax - gs.Wmin) ; 
+        w = gs.Wmin + u0*(gs.Wmax - gs.Wmin) ;
 
-        wavelength = gs.Wmin*gs.Wmax/w ; // reciprocalization : arranges flat energy distribution, expressed in wavelength 
+        wavelength = gs.Wmin*gs.Wmax/w ; // reciprocalization : arranges flat energy distribution, expressed in wavelength
 
-        float4 props = bnd->boundary_lookup(wavelength, gs.matline, 0u); 
+        float4 props = bnd->boundary_lookup(wavelength, gs.matline, 0u);
 
         sampledRI = props.x ;
 
-        //printf("//qcerenkov::wavelength_sampled_bndtex count %d wavelength %10.4f sampledRI %10.4f \n", count, wavelength, sampledRI );  
+        //printf("//qcerenkov::wavelength_sampled_bndtex count %d wavelength %10.4f sampledRI %10.4f \n", count, wavelength, sampledRI );
 
         cosTheta = gs.BetaInverse / sampledRI ;
 
-        sin2Theta = fmaxf( 0.f, (1.f - cosTheta)*(1.f + cosTheta));  
+        sin2Theta = fmaxf( 0.f, (1.f - cosTheta)*(1.f + cosTheta));
 
         u1 = curand_uniform(&rng) ;
 
         u_maxSin2 = u1*gs.maxSin2 ;
 
-        count += 1 ; 
+        count += 1 ;
 
     } while ( u_maxSin2 > sin2Theta && count < 100 );
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if(count > 50)
-    printf("//qcerenkov::wavelength_sampled_bndtex idx %6d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d matline %d \n", 
-              idx , sampledRI, cosTheta, sin2Theta, wavelength, count, gs.matline );  
+    printf("//qcerenkov::wavelength_sampled_bndtex idx %6d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d matline %d \n",
+              idx , sampledRI, cosTheta, sin2Theta, wavelength, count, gs.matline );
 #endif
 
 }
@@ -328,46 +333,46 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
 qcerenkov::wavelength_sampled_enprop
 --------------------------------------
 
-template type controls the type used for the rejection sampling, not the return type 
+template type controls the type used for the rejection sampling, not the return type
 
 
 **/
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavelength, float& f_cosTheta, float& f_sin2Theta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const 
+inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavelength, float& f_cosTheta, float& f_sin2Theta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const
 {
     T u0 ;
-    T u1 ; 
-    T energy ; 
+    T u1 ;
+    T energy ;
     T sampledRI ;
     T cosTheta ;
     T sin2Theta ;
     T u_mxs2_s2 ;
 
-    T one(1.) ; 
-    T zero(0.) ; 
+    T one(1.) ;
+    T zero(0.) ;
 
-    T pmin = gs.Pmin() ; 
-    T pmax = gs.Pmax() ; 
+    T pmin = gs.Pmin() ;
+    T pmax = gs.Pmax() ;
 
-    unsigned loop = 0u ; 
+    unsigned loop = 0u ;
 
     do {
 
         u0 = scurand<T>::uniform(&rng) ;
 
-        energy = pmin + u0*(pmax - pmin) ; 
+        energy = pmin + u0*(pmax - pmin) ;
 
-        sampledRI = prop->interpolate( 0u, energy ); 
+        sampledRI = prop->interpolate( 0u, energy );
 
         cosTheta = gs.BetaInverse / sampledRI ;
 
-        sin2Theta = (one - cosTheta)*(one + cosTheta);  
+        sin2Theta = (one - cosTheta)*(one + cosTheta);
 
         u1 = scurand<T>::uniform(&rng) ;
 
         u_mxs2_s2 = u1*gs.maxSin2 - sin2Theta ;
 
-        loop += 1 ; 
+        loop += 1 ;
 
         if( idx == base->pidx )
         {
@@ -377,9 +382,9 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavel
 
     } while ( u_mxs2_s2 > zero );
 
-    f_wavelength = smath::hc_eVnm/energy ; 
-    f_cosTheta = cosTheta ;  
-    f_sin2Theta = sin2Theta ;  
+    f_wavelength = smath::hc_eVnm/energy ;
+    f_cosTheta = cosTheta ;
+    f_sin2Theta = sin2Theta ;
 }
 
 #endif

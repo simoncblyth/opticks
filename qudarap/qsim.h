@@ -2170,7 +2170,7 @@ Prior to supporting special surfaces, within the command == BOUNDARY used::
 
 **/
 
-inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )
+inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )  // ::simulate
 {
     const unsigned boundary = ctx.prd->boundary() ;
     const unsigned identity = ctx.prd->identity() ; // sensor_identifier+1, 0:not-a-sensor
@@ -2183,6 +2183,8 @@ inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( ctx.idx == base->pidx )
     {
+    printf("\n//qsim.propagate.head idx %d : ctx.evt.index %d evt.index %d \n", ctx.idx, ctx.evt->index, evt->index );
+
     printf("\n//qsim.propagate.head idx %d : bnc %d boundary %d cosTheta %10.8f \n", ctx.idx, bounce, boundary, cosTheta );
 
     printf("//qsim.propagate.head idx %d : mom = np.array([%10.8f,%10.8f,%10.8f]) ; lmom = %10.8f  \n",
