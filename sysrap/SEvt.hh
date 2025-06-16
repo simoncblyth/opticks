@@ -136,6 +136,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     static bool RUNMETA ;
 
 
+    static constexpr const char* SEvt__SAVE_NOTHING = "SEvt__SAVE_NOTHING" ;
+    static bool SAVE_NOTHING ;
+
+
+
 
     enum { SEvt__SEvt,
            SEvt__init,
@@ -463,10 +468,8 @@ public:
     static void SetRunProf(const char* k);  // NOW
     void setRunProf_Annotated(const char* hdr) const  ;
 
-
+    static bool IsSaveNothing();
     static void SaveRunMeta(const char* base=nullptr );
-
-
 
 
     void setMetaString(const char* k, const char* v);

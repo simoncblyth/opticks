@@ -497,6 +497,9 @@ bool SEventConfig::IsHitPhoton(){         return _EventMode && strcmp(_EventMode
 bool SEventConfig::IsHitPhotonSeq(){      return _EventMode && strcmp(_EventMode, HitPhotonSeq) == 0 ; }
 bool SEventConfig::IsHitSeq(){            return _EventMode && strcmp(_EventMode, HitSeq) == 0 ; }
 
+bool SEventConfig::IsMinimalOrNothing(){ return IsMinimal() ||  IsNothing() ; }
+
+
 std::string SEventConfig::DescEventMode()  // static
 {
     std::stringstream ss ;

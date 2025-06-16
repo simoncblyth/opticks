@@ -60,6 +60,8 @@ bool SEvt::SIMTRACE = ssys::getenvbool(SEvt__SIMTRACE) ;
 bool SEvt::EPH_ = ssys::getenvbool(SEvt__EPH) ;
 bool SEvt::RUNMETA = ssys::getenvbool(SEvt__RUNMETA) ;
 
+bool SEvt::SAVE_NOTHING = ssys::getenvbool(SEvt__SAVE_NOTHING);
+
 
 const char* SEvt::descStage() const
 {
@@ -1459,7 +1461,22 @@ void SEvt::setRunProf_Annotated(const char* hdr) const
 
 
 
+/**
+SEvt::IsSaveNothing
+--------------------
 
+When using OPTICKS_EVENT_MODE of Minimal or Nothing
+the saving of run metadata and directory creation
+can be disabled with::
+
+    export SEvt__SAVE_NOTHING=1
+
+**/
+
+bool SEvt::IsSaveNothing() // static
+{
+    return SEventConfig::IsMinimalOrNothing() && SAVE_NOTHING ;
+}
 
 
 
@@ -1477,13 +1494,17 @@ just the last.
 void SEvt::SaveRunMeta(const char* base)
 {
     const char* dir = RunDir(base);
+
+    bool is_save_nothing = IsSaveNothing();
+
     LOG_IF(info, RUNMETA)
         << " [" << SEvt__RUNMETA << "]"
+        << " is_save_nothing " << ( is_save_nothing ? "YES" : "NO " )
         << " base " << ( base ? base : "-" )
         << " dir " << ( dir ? dir : "-" )
         ;
 
-    RUN_META->save(dir, "run.npy") ;
+    if(!is_save_nothing) RUN_META->save(dir, "run.npy") ;
 }
 
 void SEvt::setMetaString(const char* k, const char* v)
@@ -3876,7 +3897,9 @@ const char* SEvt::RunDir( const char* base_ )  // static
     const char* base = DefaultBase(base_);
     const char* reldir = SEventConfig::EventReldir() ;
     const char* dir = spath::Resolve(base, reldir );
-    sdirectory::MakeDirs(dir,0);
+
+    bool is_save_nothing = IsSaveNothing();
+    if(!is_save_nothing) sdirectory::MakeDirs(dir,0);
     return dir ;
 }
 
@@ -3910,7 +3933,9 @@ const char* SEvt::getDir(const char* base_) const
     const char* reldir = SEventConfig::EventReldir() ;
     const char* sidx = hasIndex() ? getIndexString(nullptr) : nullptr ;
     const char* path = sidx ? spath::Resolve(base,reldir,sidx ) : spath::Resolve(base, reldir) ;
-    sdirectory::MakeDirs(path,0);
+
+    bool is_save_nothing = IsSaveNothing();
+    if(!is_save_nothing) sdirectory::MakeDirs(path,0);
 
     LOG_IF(info, DIRECTORY || SIMTRACE || LIFECYCLE )
         << std::endl

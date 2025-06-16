@@ -321,6 +321,9 @@ struct SYSRAP_API SEventConfig
     static bool IsHitPhotonSeq();
     static bool IsHitSeq();
 
+    static bool IsMinimalOrNothing();
+
+
     static std::string DescEventMode() ;
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework
