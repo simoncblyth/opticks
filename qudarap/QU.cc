@@ -37,75 +37,75 @@
 #include "qmultifilm.h"
 
 
-const plog::Severity QU::LEVEL = SLOG::EnvLevel("QU", "DEBUG") ; 
-bool QU::MEMCHECK = ssys::getenvbool(_MEMCHECK); 
+const plog::Severity QU::LEVEL = SLOG::EnvLevel("QU", "DEBUG") ;
+bool QU::MEMCHECK = ssys::getenvbool(_MEMCHECK);
 
 salloc* QU::alloc = nullptr ;   // used to monitor allocations, instanciated in CSGOptiX::Create
 
 
-void QU::alloc_add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare) // static
+void QU::alloc_add(const char* label, uint64_t num_items, uint64_t sizeof_item ) // static
 {
-   if(!alloc) alloc = SEventConfig::ALLOC ; 
-   if(alloc ) alloc->add(label, size, num_items, sizeof_item , spare); 
+   if(!alloc) alloc = SEventConfig::ALLOC ;
+   if(alloc ) alloc->add(label, num_items, sizeof_item );
 }
 
 
-template <typename T> 
+template <typename T>
 char QU::typecode()
-{ 
-    char c = '?' ; 
+{
+    char c = '?' ;
     switch(sizeof(T))
     {
-        case 4: c = 'f' ; break ; 
-        case 8: c = 'd' ; break ; 
+        case 4: c = 'f' ; break ;
+        case 8: c = 'd' ; break ;
     }
-    return c ; 
-}  
+    return c ;
+}
 
-template char QU::typecode<float>() ; 
-template char QU::typecode<double>() ; 
+template char QU::typecode<float>() ;
+template char QU::typecode<double>() ;
 
 
 template <typename T>
-std::string QU::rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) // static 
+std::string QU::rng_sequence_name(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) // static
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << prefix
        << "_" << QU::typecode<T>()
-       << "_ni" << ni 
-       << "_nj" << nj 
-       << "_nk" << nk 
-       << "_ioffset" << std::setw(6) << std::setfill('0') << ioffset 
+       << "_ni" << ni
+       << "_nj" << nj
+       << "_nk" << nk
+       << "_ioffset" << std::setw(6) << std::setfill('0') << ioffset
        << ".npy"
-       ; 
+       ;
 
-    std::string name = ss.str(); 
-    return name ; 
+    std::string name = ss.str();
+    return name ;
 }
 
-template std::string QU::rng_sequence_name<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ; 
-template std::string QU::rng_sequence_name<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ; 
+template std::string QU::rng_sequence_name<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ;
+template std::string QU::rng_sequence_name<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ioffset ) ;
 
 
 
 template <typename T>
-std::string QU::rng_sequence_reldir(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) // static 
+std::string QU::rng_sequence_reldir(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) // static
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << prefix
        << "_" << QU::typecode<T>()
-       << "_ni" << ni 
-       << "_nj" << nj 
-       << "_nk" << nk 
-       << "_tranche" << ni_tranche_size 
-       ; 
+       << "_ni" << ni
+       << "_nj" << nj
+       << "_nk" << nk
+       << "_tranche" << ni_tranche_size
+       ;
 
-    std::string reldir = ss.str(); 
-    return reldir ; 
+    std::string reldir = ss.str();
+    return reldir ;
 }
 
-template std::string QU::rng_sequence_reldir<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) ; 
-template std::string QU::rng_sequence_reldir<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) ; 
+template std::string QU::rng_sequence_reldir<float>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) ;
+template std::string QU::rng_sequence_reldir<double>(const char* prefix, unsigned ni, unsigned nj, unsigned nk, unsigned ni_tranche_size ) ;
 
 
 
@@ -123,29 +123,29 @@ T* QU::UploadArray(const T* array, unsigned num_items, const char* label ) // st
 {
     size_t size = num_items*sizeof(T) ;
 
-    LOG(LEVEL) 
+    LOG(LEVEL)
        << " num_items " << num_items
-       << " size " << size 
+       << " size " << size
        << " label " << ( label ? label : "-" )
        ;
 
-    LOG_IF(info, MEMCHECK) 
+    LOG_IF(info, MEMCHECK)
        << " num_items " << num_items
-       << " size " << size 
+       << " size " << size
        << " label " << ( label ? label : "-" )
        ;
 
-    
-    alloc_add( label, size, num_items, sizeof(T), 0 ) ; 
 
-    T* d_array = nullptr ; 
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), size )); 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, size, cudaMemcpyHostToDevice )); 
-    return d_array ; 
+    alloc_add( label, num_items, sizeof(T) ) ;
+
+    T* d_array = nullptr ;
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), size ));
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, size, cudaMemcpyHostToDevice ));
+    return d_array ;
 }
 
 
-// IF NEED THESE FROM REMOVE PKG WILL NEED TO QUDARAP_API 
+// IF NEED THESE FROM REMOVE PKG WILL NEED TO QUDARAP_API
 template float*         QU::UploadArray<float>(const float* array, unsigned num_items, const char* label ) ;
 template double*        QU::UploadArray<double>(const double* array, unsigned num_items, const char* label) ;
 template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigned num_items, const char* label) ;
@@ -174,19 +174,19 @@ template qbase*         QU::UploadArray<qbase>(const qbase* array, unsigned num_
 
 
 /**
-QU::DownloadArray  
+QU::DownloadArray
 -------------------
 
-Allocate on host and copy from device to host 
+Allocate on host and copy from device to host
 
 **/
 
 template <typename T>
 T* QU::DownloadArray(const T* d_array, unsigned num_items ) // static
 {
-    T* array = new T[num_items] ;   
-    QUDA_CHECK( cudaMemcpy( array, d_array, sizeof(T)*num_items, cudaMemcpyDeviceToHost )); 
-    return array ; 
+    T* array = new T[num_items] ;
+    QUDA_CHECK( cudaMemcpy( array, d_array, sizeof(T)*num_items, cudaMemcpyDeviceToHost ));
+    return array ;
 }
 
 
@@ -204,29 +204,29 @@ template  qprop<double>* QU::DownloadArray<qprop<double>>(const qprop<double>* d
 template <typename T>
 void QU::Download(std::vector<T>& vec, const T* d_array, unsigned num_items)  // static
 {
-    vec.resize( num_items); 
-    QUDA_CHECK( cudaMemcpy( static_cast<void*>( vec.data() ), d_array, num_items*sizeof(T), cudaMemcpyDeviceToHost)); 
+    vec.resize( num_items);
+    QUDA_CHECK( cudaMemcpy( static_cast<void*>( vec.data() ), d_array, num_items*sizeof(T), cudaMemcpyDeviceToHost));
 }
 
 
-template QUDARAP_API void QU::Download<float>(   std::vector<float>& vec,    const float* d_array,    unsigned num_items); 
-template QUDARAP_API void QU::Download<unsigned>(std::vector<unsigned>& vec, const unsigned* d_array, unsigned num_items); 
-template QUDARAP_API void QU::Download<int>(     std::vector<int>& vec,      const int* d_array,      unsigned num_items); 
-template QUDARAP_API void QU::Download<uchar4>(  std::vector<uchar4>& vec,   const uchar4* d_array,   unsigned num_items); 
-template QUDARAP_API void QU::Download<float4>(  std::vector<float4>& vec,   const float4* d_array,   unsigned num_items); 
-template QUDARAP_API void QU::Download<quad4>(   std::vector<quad4>& vec,    const quad4* d_array,    unsigned num_items); 
+template QUDARAP_API void QU::Download<float>(   std::vector<float>& vec,    const float* d_array,    unsigned num_items);
+template QUDARAP_API void QU::Download<unsigned>(std::vector<unsigned>& vec, const unsigned* d_array, unsigned num_items);
+template QUDARAP_API void QU::Download<int>(     std::vector<int>& vec,      const int* d_array,      unsigned num_items);
+template QUDARAP_API void QU::Download<uchar4>(  std::vector<uchar4>& vec,   const uchar4* d_array,   unsigned num_items);
+template QUDARAP_API void QU::Download<float4>(  std::vector<float4>& vec,   const float4* d_array,   unsigned num_items);
+template QUDARAP_API void QU::Download<quad4>(   std::vector<quad4>& vec,    const quad4* d_array,    unsigned num_items);
 
 
 
 template<typename T>
 void QU::device_free_and_alloc(T** dd, unsigned num_items ) // dd: pointer-to-device-pointer
 {
-    size_t size = num_items*sizeof(T) ; 
-    LOG_IF(info, MEMCHECK) << " size " << size << " num_items " << num_items ; 
+    size_t size = num_items*sizeof(T) ;
+    LOG_IF(info, MEMCHECK) << " size " << size << " num_items " << num_items ;
 
     QUDA_CHECK( cudaFree( reinterpret_cast<void*>( *dd ) ) );
-    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( dd ), size )); 
-    assert( *dd ); 
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( dd ), size ));
+    assert( *dd );
 }
 
 
@@ -244,11 +244,11 @@ QU::_cudaMalloc_OOM_NOTES
 ==========================
 
 When running with debug arrays, such as the record array, enabled
-it is necessary to set max_slot to something reasonable, otherwise with the 
-default max_slot of zero, it gets set to a high value (eg M197 with 24GB) 
-appropriate for production running with the available VRAM. 
+it is necessary to set max_slot to something reasonable, otherwise with the
+default max_slot of zero, it gets set to a high value (eg M197 with 24GB)
+appropriate for production running with the available VRAM.
 
-One million is typically reasonable for debugging:: 
+One million is typically reasonable for debugging::
 
    export OPTICKS_MAX_SLOT=M1
 
@@ -256,57 +256,63 @@ One million is typically reasonable for debugging::
 
 void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
 {
-    cudaError_t err = cudaMalloc(p2p, size ) ;  
-    if( err != cudaSuccess ) 
-    {                         
-        std::stringstream ss; 
-        ss << "CUDA call (" << label << " ) failed with error: '"    
-           << cudaGetErrorString( err )                          
-           << "' (" __FILE__ << ":" << __LINE__ << ")\n";  
+    cudaError_t err = cudaMalloc(p2p, size ) ;
+    if( err != cudaSuccess )
+    {
+        std::stringstream ss;
+        ss << "CUDA call (" << label << " ) failed with error: '"
+           << cudaGetErrorString( err )
+           << "' (" __FILE__ << ":" << __LINE__ << ")\n";
 
-        if(alloc) 
+        if(alloc)
         {
-            ss << alloc->desc() ; 
-            const char* out = spath::Resolve("$DefaultOutputDir") ; 
-            sdirectory::MakeDirs(out,0); 
-            LOG(error) << "save salloc record to " << out ; 
-            alloc->save(out) ; 
+            ss << alloc->desc() ;
+            const char* out = spath::Resolve("$DefaultOutputDir") ;
+            sdirectory::MakeDirs(out,0);
+            LOG(error) << "save salloc record to " << out ;
+            alloc->save(out) ;
 
-            ss << _cudaMalloc_OOM_NOTES  ; 
+            ss << _cudaMalloc_OOM_NOTES  ;
+
+            salloc* estimate = SEventConfig::AllocEstimate();
+            ss << "\n\n" ;
+            ss << "[SEventConfig::AllocEstimate\n" ;
+            ss << estimate->desc() ;
+            ss << "]SEventConfig::AllocEstimate\n" ;
         }
         else
         {
-            ss << "QU::_cudaMalloc NO ALLOC monitor enabled\n" ;   
+            ss << "QU::_cudaMalloc NO ALLOC monitor enabled\n" ;
         }
-        throw QUDA_Exception( ss.str().c_str() );             
-    }                                                        
+        throw QUDA_Exception( ss.str().c_str() );
+    }
 }
 
 
 template<typename T>
 T* QU::device_alloc( unsigned num_items, const char* label )
 {
-    size_t size = num_items*sizeof(T) ; 
+    size_t size = num_items*sizeof(T) ;
 
-    LOG(LEVEL) 
-        << " num_items " << std::setw(10) << num_items 
-        << " size " << std::setw(10) << size 
-        << " label " << std::setw(15) << label 
-        ; 
+    LOG(LEVEL)
+        << " num_items " << std::setw(10) << num_items
+        << " size " << std::setw(10) << size
+        << " label " << std::setw(15) << label
+        ;
 
-    LOG_IF(info, MEMCHECK) 
-        << " num_items " << std::setw(10) << num_items 
-        << " size " << std::setw(10) << size 
-        << " label " << std::setw(15) << label 
-        ; 
+    LOG_IF(info, MEMCHECK)
+        << " num_items " << std::setw(10) << num_items
+        << " size " << std::setw(10) << size
+        << " label " << std::setw(15) << label
+        ;
 
 
-    alloc_add( label, size, num_items, sizeof(T), 0 ) ; 
+    alloc_add( label, num_items, sizeof(T) ) ;
 
-    T* d ;  
-    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
+    T* d ;
+    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label );
 
-    return d ; 
+    return d ;
 }
 
 template QUDARAP_API float*     QU::device_alloc<float>(unsigned num_items, const char* label) ;
@@ -336,30 +342,32 @@ template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items, co
 template<typename T>
 T* QU::device_alloc_zero(unsigned num_items, const char* label)
 {
-    size_t size = num_items*sizeof(T) ; 
+    size_t size = num_items*sizeof(T) ;
 
-    LOG(LEVEL) 
-        << " num_items " << std::setw(10) << num_items 
-        << " size " << std::setw(10) << size 
-        << " label " << std::setw(15) << label 
-        ; 
+    LOG(LEVEL)
+        << " num_items " << std::setw(10) << num_items
+        << " sizeof(T) " << std::setw(10) << sizeof(T)
+        << " size " << std::setw(10) << size
+        << " label " << std::setw(15) << label
+        ;
 
-    LOG_IF(info, MEMCHECK) 
-        << " num_items " << std::setw(10) << num_items 
-        << " size " << std::setw(10) << size 
-        << " label " << std::setw(15) << label 
-        ; 
+    LOG_IF(info, MEMCHECK)
+        << " num_items " << std::setw(10) << num_items
+        << " sizeof(T) " << std::setw(10) << sizeof(T)
+        << " size " << std::setw(10) << size
+        << " label " << std::setw(15) << label
+        ;
 
 
-    alloc_add( label, size, num_items, sizeof(T), 0 ) ; 
+    alloc_add( label, num_items, sizeof(T) ) ;
 
-    T* d ;  
-    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label ); 
+    T* d ;
+    _cudaMalloc( reinterpret_cast<void**>( &d ), size, label );
 
-    int value = 0 ; 
-    QUDA_CHECK( cudaMemset(d, value, size )); 
+    int value = 0 ;
+    QUDA_CHECK( cudaMemset(d, value, size ));
 
-    return d ; 
+    return d ;
 }
 
 template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items, const char* label) ;
@@ -380,8 +388,15 @@ template QUDARAP_API sflat*     QU::device_alloc_zero<sflat>(  unsigned num_item
 template<typename T>
 void QU::device_memset( T* d, int value, unsigned num_items )
 {
-    size_t size = num_items*sizeof(T) ; 
-    QUDA_CHECK( cudaMemset(d, value, size )); 
+    size_t size = num_items*sizeof(T) ;
+
+    LOG_IF(info, MEMCHECK)
+        << " num_items " << std::setw(10) << num_items
+        << " sizeof(T) " << std::setw(10) << sizeof(T)
+        << " size " << std::setw(10) << size
+        ;
+
+    QUDA_CHECK( cudaMemset(d, value, size ));
 }
 
 template QUDARAP_API void     QU::device_memset<int>(int*, int, unsigned ) ;
@@ -401,10 +416,10 @@ template QUDARAP_API void     QU::device_memset<sphoton>(sphoton*, int, unsigned
 template<typename T>
 void QU::device_free( T* d)
 {
-    LOG_IF(info, MEMCHECK) ; 
+    LOG_IF(info, MEMCHECK) ;
     // HMM: could use salloc to find the label ?
 
-    QUDA_CHECK( cudaFree(d) ); 
+    QUDA_CHECK( cudaFree(d) );
 }
 
 template QUDARAP_API void   QU::device_free<float>(float*) ;
@@ -421,18 +436,18 @@ template QUDARAP_API void   QU::device_free<Philox>(Philox*) ;
 template<typename T>
 int QU::copy_device_to_host( T* h, T* d,  unsigned num_items)
 {
-    if( d == nullptr ) std::cerr 
+    if( d == nullptr ) std::cerr
         << "QU::copy_device_to_host"
         << " ERROR : device pointer is null "
-        << std::endl 
+        << std::endl
         ;
 
-    if( d == nullptr ) return 1 ;  
+    if( d == nullptr ) return 1 ;
 
-    size_t size = num_items*sizeof(T) ; 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
+    size_t size = num_items*sizeof(T) ;
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost ));
 
-    return 0 ; 
+    return 0 ;
 }
 
 
@@ -465,38 +480,38 @@ QU::copy_device_to_host_and_free
 
 Normally the problem is not related to the copying but rather some issue
 with the kernel being called. So start by doing "binary" search
-simplifying the kernel to find where the issue is.  
+simplifying the kernel to find where the issue is.
 
 When a kernel misbehaves, such as going into an infinite loop for example, the
-connection to the GPU will typically timeout. Subsequent attempts to copyback arrays that 
-should have been written by the kernel would then fail during the cudaMemcpy 
-presumably because the CUDA context is lost as a result of the timeout making 
-all the device pointers invalid. The copyback is the usual thing to fail because 
-it is the normally the first thing to use the stale pointers after the kernel launch. 
+connection to the GPU will typically timeout. Subsequent attempts to copyback arrays that
+should have been written by the kernel would then fail during the cudaMemcpy
+presumably because the CUDA context is lost as a result of the timeout making
+all the device pointers invalid. The copyback is the usual thing to fail because
+it is the normally the first thing to use the stale pointers after the kernel launch.
 
 
-Debug tip 0 
+Debug tip 0
 ~~~~~~~~~~~~~
 
-Simply add "return 0" to call with issue, and 
+Simply add "return 0" to call with issue, and
 progressivley move that forwards to find where
-the issue is. 
+the issue is.
 
 
-Debug tip 1 : check kernel inputs 
+Debug tip 1 : check kernel inputs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Instead of doing whatever computation in the kernel, 
-populate the output array with the inputs. 
-This checks both having expected inputs at the kernel 
-and the copy out machinery. 
+Instead of doing whatever computation in the kernel,
+populate the output array with the inputs.
+This checks both having expected inputs at the kernel
+and the copy out machinery.
 
 Debug tip 2 : check intermediate kernel results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Intead of doing the full kernel calculation, check the 
-first half of the calculation by copying intermediate 
-results into the output array. 
+Intead of doing the full kernel calculation, check the
+first half of the calculation by copying intermediate
+results into the output array.
 
 
 **/
@@ -504,15 +519,15 @@ results into the output array.
 template<typename T>
 void QU::copy_device_to_host_and_free( T* h, T* d,  unsigned num_items, const char* label)
 {
-    size_t size = num_items*sizeof(T) ; 
-    LOG(LEVEL) 
-        << "copy " << num_items 
-        << " sizeof(T) " << sizeof(T) 
+    size_t size = num_items*sizeof(T) ;
+    LOG(LEVEL)
+        << "copy " << num_items
+        << " sizeof(T) " << sizeof(T)
         << " label " << ( label ? label : "-" )
-        ;  
+        ;
 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost )); 
-    QUDA_CHECK( cudaFree(d) ); 
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( h ), d , size, cudaMemcpyDeviceToHost ));
+    QUDA_CHECK( cudaFree(d) );
 }
 
 
@@ -539,8 +554,8 @@ template void QU::copy_device_to_host_and_free<sstate>( sstate* h, sstate* d,  u
 template<typename T>
 void QU::copy_host_to_device( T* d, const T* h, unsigned num_items)
 {
-    size_t size = num_items*sizeof(T) ; 
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice )); 
+    size_t size = num_items*sizeof(T) ;
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d ), h , size, cudaMemcpyHostToDevice ));
 }
 
 template void QU::copy_host_to_device<float>(    float* d,   const float* h, unsigned num_items);
@@ -559,50 +574,50 @@ QU::NumItems
 ---------------
 
 Apply heuristics to determine the number of intended GPU buffer items
-using the size of the template type and the shape of the NP array. 
+using the size of the template type and the shape of the NP array.
 
 **/
 
 template <typename T>
 unsigned QU::NumItems( const NP* a )
 {
-    unsigned num_items = 0 ; 
+    unsigned num_items = 0 ;
 
     if( sizeof(T) == sizeof(float)*6*4 )   // looks like quad6
     {
         if(a->shape.size() == 3 )
         {
-            assert( a->has_shape( -1, 6, 4) ); 
-            num_items = a->shape[0] ; 
+            assert( a->has_shape( -1, 6, 4) );
+            num_items = a->shape[0] ;
         }
     }
-    else if( sizeof(T) == sizeof(float)*4*4 )   // looks like quad4 
+    else if( sizeof(T) == sizeof(float)*4*4 )   // looks like quad4
     {
         if(a->shape.size() == 3 )
         {
-            assert( a->has_shape( -1, 4, 4) ); 
-            num_items = a->shape[0] ; 
+            assert( a->has_shape( -1, 4, 4) );
+            num_items = a->shape[0] ;
         }
         else if(a->shape.size() == 4 )
         {
-            assert( a->shape[2] == 2 && a->shape[3] == 4 ); 
-            num_items = a->shape[0]*a->shape[1] ; 
+            assert( a->shape[2] == 2 && a->shape[3] == 4 );
+            num_items = a->shape[0]*a->shape[1] ;
         }
-    }  
+    }
     else if( sizeof(T) == sizeof(float)*4*2 ) // looks like quad2
     {
         if(a->shape.size() == 3 )
         {
-            assert( a->has_shape( -1, 2, 4) ); 
-            num_items = a->shape[0] ; 
+            assert( a->has_shape( -1, 2, 4) );
+            num_items = a->shape[0] ;
         }
         else if(a->shape.size() == 4 )
         {
-            assert( a->shape[2] == 2 && a->shape[3] == 4 ); 
-            num_items = a->shape[0]*a->shape[1] ; 
+            assert( a->shape[2] == 2 && a->shape[3] == 4 );
+            num_items = a->shape[0]*a->shape[1] ;
         }
-    }  
-    return num_items ; 
+    }
+    return num_items ;
 }
 
 template unsigned QU::NumItems<quad2>(const NP* );
@@ -614,34 +629,34 @@ template unsigned QU::NumItems<quad6>(const NP* );
 QU::copy_host_to_device
 ------------------------
 
-HMM: encapsulating determination of num_items is less useful than 
-would initially expect because will always need to know 
+HMM: encapsulating determination of num_items is less useful than
+would initially expect because will always need to know
 and record the num_items in a shared GPU/CPU location like sevent.
-And also will often need to allocate the buffer first too. 
+And also will often need to allocate the buffer first too.
 
-Suggesting should generally use this via QEvent. 
+Suggesting should generally use this via QEvent.
 
 **/
 
 template <typename T>
 unsigned QU::copy_host_to_device( T* d, const NP* a)
 {
-    unsigned num_items = NumItems<T>(a); 
+    unsigned num_items = NumItems<T>(a);
     if( num_items == 0 )
     {
-        LOG(fatal) << " failed to devine num_items for array " << a->sstr() << " with template type where sizeof(T) " << sizeof(T) ; 
+        LOG(fatal) << " failed to devine num_items for array " << a->sstr() << " with template type where sizeof(T) " << sizeof(T) ;
     }
 
     if( num_items > 0 )
     {
-        copy_host_to_device( d, (T*)a->bytes(), num_items ); 
+        copy_host_to_device( d, (T*)a->bytes(), num_items );
     }
-    return num_items ; 
+    return num_items ;
 }
 
-template unsigned QU::copy_host_to_device<quad2>( quad2* , const NP* );   
-template unsigned QU::copy_host_to_device<quad4>( quad4* , const NP* );   
-template unsigned QU::copy_host_to_device<quad6>( quad6* , const NP* );   
+template unsigned QU::copy_host_to_device<quad2>( quad2* , const NP* );
+template unsigned QU::copy_host_to_device<quad4>( quad4* , const NP* );
+template unsigned QU::copy_host_to_device<quad6>( quad6* , const NP* );
 
 
 
@@ -658,77 +673,77 @@ QU::ConfigureLaunch
 
 void QU::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
 {
-    threadsPerBlock.x = 512 ; 
-    threadsPerBlock.y = 1 ; 
-    threadsPerBlock.z = 1 ; 
- 
-    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
-    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
-    numBlocks.z = 1 ; 
+    threadsPerBlock.x = 512 ;
+    threadsPerBlock.y = 1 ;
+    threadsPerBlock.z = 1 ;
 
-    // hmm this looks to not handle height other than 1 
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ;
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ;
+
+    // hmm this looks to not handle height other than 1
 }
 
 void QU::ConfigureLaunch1D( dim3& numBlocks, dim3& threadsPerBlock, unsigned num, unsigned threads_per_block ) // static
 {
-    threadsPerBlock.x = threads_per_block ; 
-    threadsPerBlock.y = 1 ; 
-    threadsPerBlock.z = 1 ; 
- 
-    numBlocks.x = (num + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
-    numBlocks.y = 1 ; 
-    numBlocks.z = 1 ; 
+    threadsPerBlock.x = threads_per_block ;
+    threadsPerBlock.y = 1 ;
+    threadsPerBlock.z = 1 ;
+
+    numBlocks.x = (num + threadsPerBlock.x - 1) / threadsPerBlock.x ;
+    numBlocks.y = 1 ;
+    numBlocks.z = 1 ;
 }
 
 
 
 void QU::ConfigureLaunch2D( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height ) // static
 {
-    threadsPerBlock.x = 16 ; 
-    threadsPerBlock.y = 16 ; 
-    threadsPerBlock.z = 1 ; 
- 
-    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ; 
+    threadsPerBlock.x = 16 ;
+    threadsPerBlock.y = 16 ;
+    threadsPerBlock.z = 1 ;
+
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ;
     numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
-    numBlocks.z = 1 ; 
+    numBlocks.z = 1 ;
 }
 
 
 void QU::ConfigureLaunch16( dim3& numBlocks, dim3& threadsPerBlock ) // static
 {
-    threadsPerBlock.x = 16 ; 
-    threadsPerBlock.y = 1 ; 
-    threadsPerBlock.z = 1 ; 
+    threadsPerBlock.x = 16 ;
+    threadsPerBlock.y = 1 ;
+    threadsPerBlock.z = 1 ;
 
-    numBlocks.x = 1 ; 
-    numBlocks.y = 1 ; 
-    numBlocks.z = 1 ; 
+    numBlocks.x = 1 ;
+    numBlocks.y = 1 ;
+    numBlocks.z = 1 ;
 }
 
 
-std::string QU::Desc(const dim3& d, int w) // static 
+std::string QU::Desc(const dim3& d, int w) // static
 {
-    std::stringstream ss ; 
-    ss << "( " 
-        << std::setw(w) << d.x 
-        << " " 
-        << std::setw(w) << d.y 
-        << " " 
-        << std::setw(w) << d.z 
+    std::stringstream ss ;
+    ss << "( "
+        << std::setw(w) << d.x
+        << " "
+        << std::setw(w) << d.y
+        << " "
+        << std::setw(w) << d.z
         << ")"
         ;
-    std::string s = ss.str(); 
-    return s ; 
+    std::string s = ss.str();
+    return s ;
 }
 
 std::string QU::DescLaunch( const dim3& numBlocks, const dim3& threadsPerBlock ) // static
 {
-    std::stringstream ss ; 
-    ss 
-        << " numBlocks " << Desc(numBlocks,4) 
+    std::stringstream ss ;
+    ss
+        << " numBlocks " << Desc(numBlocks,4)
         << " threadsPerBlock " << Desc(threadsPerBlock, 4)
         ;
-    std::string s = ss.str(); 
-    return s ; 
+    std::string s = ss.str();
+    return s ;
 }
 

@@ -186,10 +186,10 @@ vars="$vars version VERSION"
 #test=ref10
 #test=ref10_multilaunch
 #test=input_genstep
-#test=input_genstep_muon
+test=input_genstep_muon
 
 #test=input_photon_chimney
-test=input_photon_nnvt
+#test=input_photon_nnvt
 #test=input_photon_target
 #test=input_photon_wp_pmt
 
@@ -392,9 +392,14 @@ elif [ "$TEST" == "input_genstep_muon" ]; then
    opticks_num_genstep=    # ignored
    opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_GENSTEP
-   opticks_max_slot=M10  ## 3 launches
+
+   #opticks_max_slot=H1     ##
+   opticks_max_slot=M1     ##
+   #opticks_max_slot=M5    ##
+   #opticks_max_slot=M10   ## 3 launches
    #opticks_max_slot=M1    ## ~34 launches
    #opticks_max_slot=0     ## whole-in-one
+
 
 elif [ "${TEST:0:12}" == "input_photon" ]; then
 

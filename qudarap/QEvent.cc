@@ -303,6 +303,17 @@ int QEvent::setGenstepUpload(const quad6* qq0, int num_gs )
 {
     return setGenstepUpload(qq0, 0, num_gs );
 }
+
+/**
+QEvent::setGenstepUpload
+-------------------------
+
+HMM: evt->num_seed comes from summing the genstep photon counts
+
+
+**/
+
+
 int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
 {
     const quad6* qq = qq0 + gs_start ;
@@ -357,7 +368,7 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
 #endif
 
     LOG(LEVEL) << "[ QU::device_memset " ;
-    QU::device_memset<int>(   evt->seed,    0, evt->max_photon );    // need evt->max_slot ?
+    QU::device_memset<int>(   evt->seed,    0, evt->max_slot );  // was max_photon but max_slot makes more sense
     LOG(LEVEL) << "] QU::device_memset " ;
 
 #ifndef PRODUCTION
@@ -426,9 +437,16 @@ the hostside sevent.h "evt->genstep" "evt->seed"
 void QEvent::device_alloc_genstep_and_seed()
 {
     LOG_IF(info, LIFECYCLE) ;
-    LOG(LEVEL) << " device_alloc genstep and seed " ;
-    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "QEvent::setGenstep/device_alloc_genstep_and_seed:quad6" ) ;
-    evt->seed    = QU::device_alloc<int>(   evt->max_photon , "QEvent::setGenstep/device_alloc_genstep_and_seed:int seed" )  ;
+    LOG(LEVEL)
+        << " device_alloc genstep and seed "
+        << " evt.max_genstep " << evt->max_genstep
+        << " evt.max_slot " << evt->max_slot
+        << " evt.max_photon " << evt->max_photon
+        ;
+    evt->genstep = QU::device_alloc<quad6>( evt->max_genstep, "QEvent::setGenstep/device_alloc_genstep_and_seed:quad6/max_genstep" ) ;
+    evt->seed    = QU::device_alloc<int>(   evt->max_slot   , "QEvent::setGenstep/device_alloc_genstep_and_seed:int/max_slot" )  ;
+                                     //     ^^^^^^^^^^^^^^^ was max_photon but max_slot now makes more sense
+
 }
 
 

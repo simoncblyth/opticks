@@ -296,7 +296,7 @@ COMPARE WITH qsim::mock_propagate
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
 {
     sevent* evt = params.evt ;
-    if (launch_idx.x >= evt->num_photon) return;   // ? evt->num_slot ?
+    if (launch_idx.x >= evt->num_seed) return;   // was evt->num_photon
 
     unsigned idx = launch_idx.x ;
     unsigned genstep_idx = evt->seed[idx] ;
@@ -321,8 +321,10 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     sctx ctx = {} ;
     ctx.evt = evt ;   // sevent.h
     ctx.prd = prd ;   // squad.h quad2
-    //ctx.idx = idx ;
-    ctx.idx = photon_idx ; // 2025/06 change to absolute idx for PIDX dumping
+
+    ctx.idx = idx ;
+    ctx.pidx = photon_idx ;
+
 
     sim->generate_photon(ctx.p, rng, gs, photon_idx, genstep_idx );
 
