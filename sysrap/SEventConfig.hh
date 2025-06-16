@@ -386,6 +386,7 @@ struct SYSRAP_API SEventConfig
 
     static void SetGatherComp_(unsigned mask);
     static void SetGatherComp(const char* names, char delim=',') ;
+    static bool GatherRecord();
 
     static void SetSaveComp_(unsigned mask);
     static void SetSaveComp(const char* names, char delim=',') ;
@@ -551,7 +552,8 @@ struct SYSRAP_API SEventConfig
     static size_t HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes );
     static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name );
 
-    static uint64_t EstimateAlloc();
+    static salloc*   AllocEstimate(int _max_slot=0);
+    static uint64_t  AllocEstimateTotal(int _max_slot=0);
 
 };
 

@@ -14,6 +14,7 @@
 #include "salloc.h"
 #include "scontext.h"
 #include "sbuild.h"
+#include "sphoton.h"
 
 #include "SPath.hh"   // only SPath::Make to replace
 
@@ -600,7 +601,7 @@ void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip
 
 void SEventConfig::SetGatherComp_(unsigned mask){ _GatherComp = mask ; }
 void SEventConfig::SetGatherComp(const char* names, char delim){  SetGatherComp_( SComp::Mask(names,delim)) ; }
-
+bool SEventConfig::GatherRecord(){  return ( _GatherComp & SCOMP_RECORD ) != 0 ; }
 
 void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
@@ -1504,12 +1505,27 @@ std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string na
     return str ;
 }
 
-uint64_t SEventConfig::EstimateAlloc()
+
+salloc* SEventConfig::AllocEstimate(int _max_slot)
 {
+    uint64_t max_slot = _max_slot == 0 ? MaxSlot() : _max_slot ;
+    uint64_t max_record = MaxRecord();
+    uint64_t max_genstep = MaxGenstep();
+
     salloc* estimate = new salloc ;
-    uint64_t tot = estimate->get_total() ;
-    delete estimate ;
-    return tot ;
+    estimate->add("QEvent::setGenstep/device_alloc_genstep_and_seed:quad6/max_genstep", max_genstep, sizeof(quad6) ) ;
+    estimate->add("QEvent::setGenstep/device_alloc_genstep_and_seed:int/max_slot", max_slot, sizeof(int));
+    estimate->add("QEvent::device_alloc_photon/max_slot*sizeof(sphoton)", max_slot, sizeof(sphoton)) ;
+    if(GatherRecord()) estimate->add("QEvent::device_alloc_photon/max_slot*max_record*sizeof(sphoton)", max_slot*max_record, sizeof(sphoton) );
+
+    return estimate ;
 }
 
+uint64_t SEventConfig::AllocEstimateTotal(int _max_slot)
+{
+    salloc* estimate = AllocEstimate(_max_slot);
+    uint64_t total = estimate->get_total();
+    delete estimate ;
+    return total ;
+}
 
