@@ -13,14 +13,14 @@ print("]from opticks.sysrap.sevt import SEvt, SAB")
 TEST = os.environ.get("TEST","")
 PLOT = os.environ.get("PLOT","scatter")
 GLOBAL = int(os.environ.get("GLOBAL","0")) == 1
-MODE = int(os.environ.get("MODE","3")) 
-SEL = int(os.environ.get("SEL","0")) 
+MODE = int(os.environ.get("MODE","3"))
+SEL = int(os.environ.get("SEL","0"))
 
-print("before pvplt import MODE:%d " % MODE) 
+print("before pvplt import MODE:%d " % MODE)
 
 if MODE in [2,3]:
-    from opticks.ana.pvplt import *   
-    # HMM this import overrides MODE, so need to keep defaults the same 
+    from opticks.ana.pvplt import *
+    # HMM this import overrides MODE, so need to keep defaults the same
 pass
 
 if __name__ == '__main__':
@@ -30,17 +30,17 @@ if __name__ == '__main__':
     a = SEvt.Load("$AFOLD", symbol="a")
     print(repr(a))
 
-    if "BFOLD" in os.environ:   
-        b = SEvt.Load("$BFOLD", symbol="b") 
+    if "BFOLD" in os.environ:
+        b = SEvt.Load("$BFOLD", symbol="b")
         print(repr(b))
-        ab = SAB(a,b) 
+        ab = SAB(a,b)
         print(repr(ab))
     pass
 
 
-    e = a 
+    e = a
 
-    qtab = e.minimal_qtab()
+    qtab = e.minimal_qtab()  # requires seq array saving to be useful
     print("qtab")
     print(qtab)
 
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         found = "genstep"
     else:
         pp = None
-        found = "NONE" 
+        found = "NONE"
         pass
     pass
 
@@ -82,8 +82,8 @@ if __name__ == '__main__':
         if PLOT.startswith("seqnib") and hasattr(e.f, "seqnib"):
             expl = "Photon History Step Counts Occurrence in single 1M photon event"
         elif PLOT.startswith("thit") and hasattr(e.f, "hit"):
-            expl = "Histogram hit times[ns] of all(and step tail) : from  1M photon TORCH event"       
-        pass 
+            expl = "Histogram hit times[ns] of all(and step tail) : from  1M photon TORCH event"
+        pass
         title = "\n".join([label, expl])
         pl = mpplt_plotter(label=title)
         fig, axs = pl
@@ -97,7 +97,7 @@ if __name__ == '__main__':
         pvplt_viewpoint(pl)   # sensitive to EYE, LOOK, UP envvars
         pvplt_frame(pl, e.f.sframe, local=not GLOBAL )
     pass
-    
+
 
     H,V = 0,2  # X, Z
 
@@ -105,7 +105,7 @@ if __name__ == '__main__':
         sel = np.logical_and( np.abs(upos[:,H]) < 500, np.abs(upos[:,V]) < 500 )
         spos = upos[sel]
     else:
-        spos = upos 
+        spos = upos
     pass
 
     if MODE == 2:
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         if PLOT.startswith("scatter"):
             ax.scatter( spos[:,H], spos[:,V], s=0.1 )
         elif PLOT.startswith("seqnib") and hasattr(e.f, "seqnib"):
-            seqnib = e.f.seqnib  
+            seqnib = e.f.seqnib
 
             bounce = np.arange(len(seqnib))
             ax.set_aspect('auto')
@@ -121,26 +121,26 @@ if __name__ == '__main__':
             ax.scatter( bounce, seqnib )
             ax.set_ylabel("Photon counts for step points (0->31)", fontsize=20 )
 
-            cs_seqnib = np.cumsum(seqnib)   
-            ax2 = ax.twinx() 
+            cs_seqnib = np.cumsum(seqnib)
+            ax2 = ax.twinx()
             ax2.plot( bounce, cs_seqnib, linestyle="dashed" )
             ax2.set_ylabel( "Cumulative counts rising to total of 1M photons", fontsize=20 )
         elif PLOT.startswith("thit") and hasattr(e.f, "hit"):
-            hit_time = e.f.hit[:,0,3] 
-            mn_hit_time = hit_time.min() 
-            mx_hit_time = hit_time.max() 
+            hit_time = e.f.hit[:,0,3]
+            mn_hit_time = hit_time.min()
+            mx_hit_time = hit_time.max()
             bins = np.linspace( mn_hit_time, mx_hit_time, 100 )
 
-            hit_time_n,_  = np.histogram(hit_time, bins=bins ) 
+            hit_time_n,_  = np.histogram(hit_time, bins=bins )
             ax.set_aspect('auto')
             ax.plot( bins[:-1], hit_time_n, drawstyle="steps-mid", label="Simulated Hit time [ns]" )
 
-            hit_idx = e.f.hit.view(np.uint32)[:,3,2] & 0x7fffffff    
-            hit_nib = a.f.seqnib[hit_idx]   # nibbles of the hits  
+            hit_idx = e.f.hit.view(np.uint32)[:,3,2] & 0x7fffffff
+            hit_nib = a.f.seqnib[hit_idx]   # nibbles of the hits
 
             cut = 23
             hit_time_sel = hit_time[hit_nib>cut]
-            sel_time_n, _ = np.histogram(hit_time_sel, bins=bins) 
+            sel_time_n, _ = np.histogram(hit_time_sel, bins=bins)
 
             ax.plot( bins[:-1], sel_time_n, drawstyle="steps-mid", label="Simulated Hit time [ns] for step points > %d " % cut  )
 
@@ -148,18 +148,18 @@ if __name__ == '__main__':
             ax.set_xlabel("Simulated time[ns]", fontsize=20)
 
             ax.set_yscale('log')
-            ax.legend() 
-            # need the seqnib of each photon so can check times of the big seqnib 
-            # PLOT=thit MODE=2 ~/o/cxs_min.sh  
+            ax.legend()
+            # need the seqnib of each photon so can check times of the big seqnib
+            # PLOT=thit MODE=2 ~/o/cxs_min.sh
         else:
             print("PLOT:%s unhandled" % PLOT)
-        pass 
+        pass
     elif MODE == 3:
         if PLOT.startswith("scatter"):
             pl.add_points(spos[:,:3])
         else:
             pass
-        pass 
+        pass
     else:
         pass
     pass
@@ -172,5 +172,5 @@ if __name__ == '__main__':
 pass
 
 
- 
+
 

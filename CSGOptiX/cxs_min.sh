@@ -83,6 +83,7 @@ EOU
 vars=""
 SDIR=$(dirname $(realpath $BASH_SOURCE))
 
+vars="$vars BASH_SOURCE SDIR"
 
 case $(uname) in
    Linux) defarg=run_report_info ;;
@@ -93,11 +94,14 @@ esac
 [ -n "$PLOT" ] && defarg=ana
 
 arg=${1:-$defarg}
+allarg=info_env_fold_run_dbg_meta_report_grab_grep_gevt_du_pdb1_pdb0_AB_ana_pvcap_pvpub_mpcap_mppub
+vars="$vars defarg arg allarg"
 
 
 bin=CSGOptiXSMTest
 script=$SDIR/cxs_min.py
 script_AB=$SDIR/cxs_min_AB.py
+vars="$vars bin script script_AB"
 
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
@@ -111,7 +115,7 @@ else
     #export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 fi
 
-vars="$vars BASH_SOURCE SDIR defarg arg bin script script_AB GEOM"
+vars="$vars GEOM"
 
 tmp=/tmp/$USER/opticks
 export TMP=${TMP:-$tmp}
@@ -165,9 +169,9 @@ knobs()
 }
 
 
-#version=0  
-version=1
-#version=98   ## set to 98 for low stats debugging
+#version=0
+#version=1
+version=98   ## set to 98 for low stats debugging
 
 export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
@@ -182,8 +186,13 @@ vars="$vars version VERSION"
 #test=ref10
 #test=ref10_multilaunch
 #test=input_genstep
-test=input_genstep_muon
-#test=input_photon
+#test=input_genstep_muon
+
+#test=input_photon_chimney
+test=input_photon_nnvt
+#test=input_photon_target
+#test=input_photon_wp_pmt
+
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
@@ -387,13 +396,56 @@ elif [ "$TEST" == "input_genstep_muon" ]; then
    #opticks_max_slot=M1    ## ~34 launches
    #opticks_max_slot=0     ## whole-in-one
 
-elif [ "$TEST" == "input_photon" ]; then
+elif [ "${TEST:0:12}" == "input_photon" ]; then
 
    opticks_num_event=1
    opticks_num_genstep=    # ignored
    opticks_num_photon=     # ignored ?
    opticks_running_mode=SRM_INPUT_PHOTON
    opticks_max_slot=M3
+
+   if [ "${TEST:12}" == "_chimney" ]; then
+
+      sevt__input_photon_dir=$TMP/SGenerate__test
+
+      opticks_input_photon=SGenerate_ph_disc_K1.npy
+
+      opticks_input_photon_frame=sChimneyLS:0:-2
+      #opticks_input_photon_frame=sChimneyAcrylic
+
+   elif [ "${TEST:12}" == "_nnvt" ]; then
+
+      #sevt__input_photon_dir=/cvmfs/opticks.ihep.ac.cn/.opticks/InputPhotons
+      sevt__input_photon_dir=$HOME/.opticks/InputPhotons
+
+      opticks_input_photon=RainXZ_Z230_100k_f8.npy
+      #opticks_input_photon=RainXZ_Z230_1000_f8.npy      ## ok
+      #opticks_input_photon=RainXZ_Z230_10k_f8.npy       ## ok
+      #opticks_input_photon=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
+
+      opticks_input_photon_frame=NNVT:0:0
+      #opticks_input_photon_frame=NNVT:0:50
+      #opticks_input_photon_frame=NNVT:0:1000
+
+   elif [ "${TEST:12}" == "_wp_pmt" ]; then
+
+      sevt__input_photon_dir=$HOME/.opticks/InputPhotons
+      opticks_input_photon=RainXZ_Z230_100k_f8.npy
+      opticks_input_photon_frame=PMT_20inch_veto:0:1000
+
+   elif [ "${TEST:12}" == "_target" ]; then
+
+       #opticks_input_photon=GridXY_X700_Z230_10k_f8.npy
+       #opticks_input_photon=GridXY_X1000_Z1000_40k_f8.npy
+
+       #opticks_input_photon_frame=-1
+       #opticks_input_photon_frame=sWorld:0:0
+       opticks_input_photon_frame=sTarget
+
+   else
+       echo $BASH_SOURCE : ERROR TEST [$TEST] SUFFIX AFTER input_photon [${TEST:12}] IS NOT HANDLED
+       exit 1
+   fi
 
 else
 
@@ -448,8 +500,6 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
     #igs=$BASE/jok-tds/ALL0/A%0.3d/genstep.npy
     igs=$HOME/.opticks/crash_muon_igs.npy
 
-
-
     if [ "${igs/\%}" != "$igs" ]; then
         igs0=$(printf "$igs" 0)
     else
@@ -463,35 +513,18 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
 elif [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_PHOTON" ]; then
 
     ## cf with ipcv : ~/j/InputPhotonsCheck/InputPhotonsCheck.sh
-
-    #sevt__input_photon_dir=/cvmfs/opticks.ihep.ac.cn/.opticks/InputPhotons
-    #sevt__input_photon_dir=$HOME/.opticks/InputPhotons
-    #sevt__input_photon_dir=/data1/blyth/tmp/SGenerate__test
-    sevt__input_photon_dir=$TMP/SGenerate__test
-
-    #opticks_input_photon=RainXZ_Z195_1000_f8.npy      ## ok
-    #opticks_input_photon=RainXZ_Z230_1000_f8.npy      ## ok
-    #opticks_input_photon=RainXZ_Z230_10k_f8.npy       ## ok
-    #opticks_input_photon=RainXZ_Z230_100k_f8.npy
-    #opticks_input_photon=RainXZ_Z230_X700_10k_f8.npy  ## X700 to illuminate multiple PMTs
-    #opticks_input_photon=GridXY_X700_Z230_10k_f8.npy
-    #opticks_input_photon=GridXY_X1000_Z1000_40k_f8.npy
-    opticks_input_photon=SGenerate_ph_disc_K1.npy
-
-    #opticks_input_photon_frame=-1
-    #opticks_input_photon_frame=sWorld:0:0
-    #opticks_input_photon_frame=NNVT:0:0
-    #opticks_input_photon_frame=NNVT:0:50
-    #opticks_input_photon_frame=NNVT:0:1000
-    #opticks_input_photon_frame=PMT_20inch_veto:0:1000
-    #opticks_input_photon_frame=sChimneyAcrylic
-    #opticks_input_photon_frame=sTarget
-    opticks_input_photon_frame=sChimneyLS:0:-2
-
     # SEventConfig
     export SEvt__INPUT_PHOTON_DIR=${SEvt__INPUT_PHOTON_DIR:-$sevt__input_photon_dir}
     export OPTICKS_INPUT_PHOTON=${OPTICKS_INPUT_PHOTON:-$opticks_input_photon};
     export OPTICKS_INPUT_PHOTON_FRAME=${OPTICKS_INPUT_PHOTON_FRAME:-$opticks_input_photon_frame}
+
+    ippath=${SEvt__INPUT_PHOTON_DIR}/${OPTICKS_INPUT_PHOTON}
+    if [ ! -f "$ippath" ]; then
+        echo $BASH_SOURCE - ERROR ippath [$ippath] DOES NOT EXIST
+        exit 1
+    fi
+
+
 
     vars="$vars SEvt__INPUT_PHOTON_DIR OPTICKS_INPUT_PHOTON OPTICKS_INPUT_PHOTON_FRAME"
 
