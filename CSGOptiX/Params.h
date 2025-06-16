@@ -4,7 +4,7 @@
 Params.h
 ===========
 
-* CPU side params instanciated in CSGOptiX::CSGOptiX and populated by CSGOptiX::init methods 
+* CPU side params instanciated in CSGOptiX::CSGOptiX and populated by CSGOptiX::init methods
 
 **/
 
@@ -18,97 +18,102 @@ Params.h
 #include <string>
 #endif
 
-struct CSGNode ; 
-struct qat4 ; 
-struct quad4 ; 
-struct quad6 ; 
-struct qsim ; 
-struct sevent ; 
+struct CSGNode ;
+struct qat4 ;
+struct quad4 ;
+struct quad6 ;
+struct qsim ;
+struct sevent ;
 
 
 struct Params
 {
-    // render/simtrace/simulate switch 
+    // render/simtrace/simulate switch
     int32_t    raygenmode ;
 
     // geometry : from Foundry
-    // notice no CSGPrim here as that is just a sequence of CSGNode handled by  
-    CSGNode*   node ; 
-    float4*    plan ; 
-    qat4*      tran ; 
-    qat4*      itra ; 
+    // notice no CSGPrim here as that is just a sequence of CSGNode handled by
+    CSGNode*   node ;
+    float4*    plan ;
+    qat4*      tran ;
+    qat4*      itra ;
 
 #if OPTIX_VERSION < 70000
-    void*                   handle ;  
+    void*                   handle ;
 #else
-    OptixTraversableHandle  handle ; 
+    OptixTraversableHandle  handle ;
 #endif
 
-    // frame rendering 
+    // frame rendering
     uchar4*    pixels ;
     float4*    isect ;
     quad4*     fphoton ;
 
-    // render control 
+    // render control
     uint32_t   width;
     uint32_t   height;
     uint32_t   depth;
-    uint32_t   cameratype ; 
+    uint32_t   cameratype ;
 
-    int32_t    traceyflip ; 
-    int32_t    rendertype ; 
+    int32_t    traceyflip ;
+    int32_t    rendertype ;
     int32_t    origin_x;
     int32_t    origin_y;
-  
+
     float3     eye;
     float3     U ;
-    float3     V ; 
+    float3     V ;
     float3     W ;
     float3     WNORM ;
-    float      tmin ; 
-    float      tmax ; 
-    float4     ZPROJ ; 
+    float      tmin ;
 
-    unsigned   vizmask ; 
+    float      tmin0 ;
+    unsigned   PropagateEpsilon0Mask ;
 
-    float4     center_extent ; 
-    uint4      cegs ; 
+    float      tmax ;
+    float4     ZPROJ ;
 
-    // simulation 
-    qsim*        sim ; 
+    unsigned   vizmask ;
+
+    float4     center_extent ;
+    uint4      cegs ;
+
+    // simulation
+    qsim*        sim ;
     sevent*      evt ;         // HMM: inside sim too ?
-    int  event_index ; 
-    int  photon_slot_offset ;   // for multi-launch to match single-launch 
+    int  event_index ;
+    int  photon_slot_offset ;   // for multi-launch to match single-launch
+    float max_time ;           // ns
 
-    // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1  
-    uint3     pidxyz ; 
+
+    // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1
+    uint3     pidxyz ;
 
 
 #ifndef __CUDACC__
-    static Params* d_param ; 
+    static Params* d_param ;
 
-    Params(int raygenmode, unsigned width, unsigned height, unsigned depth); 
-    void device_alloc(); 
-    void upload(); 
+    Params(int raygenmode, unsigned width, unsigned height, unsigned depth);
+    void device_alloc();
+    void upload();
 
-    std::string desc() const ; 
-    std::string detail() const ; 
+    std::string desc() const ;
+    std::string detail() const ;
 
-    //void setView(const glm::vec4& eye_, const glm::vec4& U_, const glm::vec4& V_, const glm::vec4& W_ );
-    void setView(const glm::vec3& eye_, 
-                 const glm::vec3& U_, 
-                 const glm::vec3& V_, 
+    void setView(const glm::vec3& eye_,
+                 const glm::vec3& U_,
+                 const glm::vec3& V_,
                  const glm::vec3& W_,
                  const glm::vec3& WNORM_ );
 
     void setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_, int rendertype_, const glm::vec4& ZPROJ_ ) ;
     void setRaygenMode(int raygenmode_ );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
-    void setVizmask(unsigned vizmask_); 
+    void setVizmask(unsigned vizmask_);
 
-    void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering 
-    void setPIDXYZ(unsigned x, unsigned y, unsigned z); 
-    void setPhotonSlotOffset(int _photon_slot_offset); 
+    void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering
+    void setPIDXYZ(unsigned x, unsigned y, unsigned z);
+    void setPhotonSlotOffset(int _photon_slot_offset);
 
 #endif
 

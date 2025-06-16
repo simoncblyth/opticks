@@ -580,8 +580,15 @@ void CSGOptiX::initSimulate()
     LOG(LEVEL) ;
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
+
+    params->tmin0 = SEventConfig::PropagateEpsilon0() ;  // epsilon used after step points with flags in below mask
+    params->PropagateEpsilon0Mask = SEventConfig::PropagateEpsilon0Mask();  // eg from CK|SI|TO|SC|RE
+
     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
     params->tmax = 1000000.f ;
+    params->max_time = SEventConfig::MaxTime() ;
+
+
 }
 
 

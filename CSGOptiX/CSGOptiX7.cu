@@ -319,8 +319,8 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
 
     sctx ctx = {} ;
-    ctx.evt = evt ;
-    ctx.prd = prd ;
+    ctx.evt = evt ;   // sevent.h
+    ctx.prd = prd ;   // squad.h quad2
     //ctx.idx = idx ;
     ctx.idx = photon_idx ; // 2025/06 change to absolute idx for PIDX dumping
 
@@ -331,9 +331,11 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #ifndef PRODUCTION
     ctx.point(bounce);
 #endif
-    while( bounce < evt->max_bounce )
+    while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
     {
-        trace( params.handle, ctx.p.pos, ctx.p.mom, params.tmin, params.tmax, prd, params.vizmask );  // geo query filling prd
+        float tmin = ctx.p.boundary_flag & params.PropagateEpsilon0Mask ? params.tmin0 : params.tmin ;
+
+        trace( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask );  // geo query filling prd
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
         // propagate can do nothing meaningful without a boundary
 
