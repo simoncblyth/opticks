@@ -7136,6 +7136,11 @@ ate : 'at end'
     sets the stream position at the end of the file when you open it,
     but you are free to move it around (seek) and write wherever it pleases you.
 
+num_names_
+    when different from default of zero this restricts
+    the number of names written (HMM: Why? What needs that?)
+
+
 **/
 
 inline void NP::WriteNames(

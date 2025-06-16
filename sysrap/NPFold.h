@@ -113,6 +113,7 @@ struct NPFold
 
     // [TRANSIENT FIELDS : NOT COPIED BY CopyMeta
     bool                      allowempty ;
+    bool                      allowonlymeta ;
     bool                      skipdelete ;   // set to true on subfold during trivial concat
     NPFold*                   parent ;      // set by add_subfold
     // ]TRANSIENT FIELDS
@@ -121,6 +122,7 @@ struct NPFold
     static constexpr const int UNDEF = -1 ;
     static constexpr const bool VERBOSE = false ;
     static constexpr const bool ALLOWEMPTY = false ;
+    static constexpr const bool ALLOWONLYMETA = false ;
     static constexpr const bool SKIPDELETE = false ;
     static constexpr NPFold*    PARENT = nullptr ;
 
@@ -174,12 +176,14 @@ struct NPFold
     void set_verbose( bool v=true );
     void set_skipdelete( bool v=true );
     void set_allowempty( bool v=true );
+    void set_allowonlymeta( bool v=true );
 
     void set_verbose_r( bool v=true );
     void set_skipdelete_r( bool v=true );
     void set_allowempty_r( bool v=true );
+    void set_allowonlymeta_r( bool v=true );
 
-    enum { SET_VERBOSE, SET_SKIPDELETE, SET_ALLOWEMPTY } ;
+    enum { SET_VERBOSE, SET_SKIPDELETE, SET_ALLOWEMPTY, SET_ALLOWONLYMETA } ;
     static int SetFlag_r(NPFold* nd, int flag, bool v);
 
 private:
@@ -345,12 +349,14 @@ public:
     template<typename T> void set_meta(const char* key, T value ) ;
 
 
-    void save(const char* base, const char* rel) ;
-    void save(const char* base) ;
-    void save_verbose(const char* base) ;
+    int save(const char* base, const char* rel) ;
+    int save(const char* base) ;
+    int save_verbose(const char* base) ;
 
     int _save_local_item_count() const ;
-    void _save(const char* base) ;
+    int _save_local_meta_count() const ;
+    int _save(const char* base) ;
+
     int  _save_arrays(const char* base);
     void _save_subfold_r(const char* base);
 
@@ -718,6 +724,7 @@ inline NPFold::NPFold()
     nodata(false),
     verbose_(VERBOSE),
     allowempty(ALLOWEMPTY),
+    allowonlymeta(ALLOWONLYMETA),
     skipdelete(SKIPDELETE),
     parent(PARENT)
 {
@@ -737,6 +744,12 @@ inline void NPFold::set_allowempty( bool v )
 {
     allowempty = v ;
 }
+inline void NPFold::set_allowonlymeta( bool v )
+{
+    allowonlymeta = v ;
+}
+
+
 
 inline void NPFold::set_verbose_r( bool v )
 {
@@ -750,6 +763,12 @@ inline void NPFold::set_allowempty_r( bool v )
 {
     SetFlag_r(this, SET_ALLOWEMPTY, v);
 }
+inline void NPFold::set_allowonlymeta_r( bool v )
+{
+    SetFlag_r(this, SET_ALLOWONLYMETA, v);
+}
+
+
 
 inline int NPFold::SetFlag_r(NPFold* nd, int flag, bool v)
 {
@@ -758,6 +777,7 @@ inline int NPFold::SetFlag_r(NPFold* nd, int flag, bool v)
         case SET_VERBOSE   : nd->set_verbose(v)    ; break ;
         case SET_SKIPDELETE: nd->set_skipdelete(v) ; break ;
         case SET_ALLOWEMPTY: nd->set_allowempty(v) ; break ;
+        case SET_ALLOWONLYMETA: nd->set_allowonlymeta(v) ; break ;
     }
 
     int tot_fold = 1 ;
@@ -2132,6 +2152,7 @@ NPFold::CopyMeta
 Some members are not copied, namely::
 
     allowempty
+    allowonlymeta
     skipdelete
     verbose_
     parent
@@ -2416,11 +2437,11 @@ template void     NPFold::set_meta<std::string>(const char*, std::string );
 
 
 
-inline void NPFold::save(const char* base_, const char* rel) // not const as sets savedir
+inline int NPFold::save(const char* base_, const char* rel) // not const as sets savedir
 {
     std::string _base = U::form_path(base_, rel);
     const char* base = _base.c_str();
-    save(base);
+    return save(base);
 }
 
 
@@ -2436,7 +2457,7 @@ SO THE INDEX ALWAYS GETS TRUNCATED
 
 **/
 
-inline void NPFold::save(const char* base_)  // not const as calls _save
+inline int NPFold::save(const char* base_)  // not const as calls _save
 {
     const char* base = U::Resolve(base_);
 
@@ -2445,12 +2466,12 @@ inline void NPFold::save(const char* base_)  // not const as calls _save
         << " did not resolve all tokens in argument "
         << std::endl
         ;
-    if(base == nullptr) return ;
+    if(base == nullptr) return 1 ;
 
-    _save(base) ;
+    return _save(base) ;
 }
 
-inline void NPFold::save_verbose(const char* base_)  // not const as calls _save
+inline int NPFold::save_verbose(const char* base_)  // not const as calls _save
 {
     const char* base = U::Resolve(base_);
     std::cerr
@@ -2459,8 +2480,8 @@ inline void NPFold::save_verbose(const char* base_)  // not const as calls _save
         << " resolved to  [" << ( base ? base : "ERR-FAILED-TO-RESOLVE-TOKENS" ) << "]"
         << std::endl
         ;
-    if(base == nullptr) return ;
-    _save(base) ;
+    if(base == nullptr) return 1 ;
+    return _save(base) ;
 }
 
 
@@ -2478,33 +2499,70 @@ encapsulate this within here
 
 inline int NPFold::_save_local_item_count() const
 {
-    bool with_meta = !meta.empty() ;
-    return kk.size() + ff.size() + names.size() + int(with_meta) ;
+    return kk.size() + ff.size() ;
 }
 
-inline void NPFold::_save(const char* base)  // not const as sets savedir
+inline int NPFold::_save_local_meta_count() const
+{
+    bool with_meta = !meta.empty() ;
+    bool with_names = names.size() > 0 ;
+    return int(with_meta) + int(with_names) ;
+}
+
+
+
+/**
+NPFold::_save
+---------------
+
+allowempty
+    default from ALLOWEMPTY is false
+    when true proceeds with saving even when no arrays
+    [HMM: can probably remove this after adding allowonlymeta?]
+
+allowonlymeta
+    default from ALLOWONLYMETA is false
+    when true proceeds with saving when a folder
+    contains only metadata (ie no arrays or subfold)
+
+
+
+onlymeta_proceed
+    no arrays or subfold but has metadata and allowonlymeta:true
+
+**/
+
+inline int NPFold::_save(const char* base)  // not const as sets savedir
 {
     assert( !nodata );
+
+    int slic = _save_local_item_count();
+    int slmc = _save_local_meta_count();
+
+    bool slic_proceed = slic > 0 || ( slic == 0 && allowempty == true ) ;
+    bool onlymeta_proceed = slic == 0 && slmc > 0 && allowonlymeta == true ;
+    bool proceed = slic_proceed || onlymeta_proceed ;
+
+    if(!proceed) return 1 ;
+
+
     savedir = strdup(base);
 
     _save_arrays(base);
 
-    int slic = _save_local_item_count();
+    NP::WriteNames(base, INDEX, kk );
 
-    if(slic > 0 || ( slic == 0 && allowempty == true ))
-    {
-        NP::WriteNames(base, INDEX, kk );
+    NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX
 
-        NP::WriteNames(base, INDEX, ff, 0, true  ); // append:true : write subfold keys (without .npy ext) to INDEX
+    _save_subfold_r(base);
 
-        _save_subfold_r(base);
+    bool with_meta = !meta.empty() ;
 
-        bool with_meta = !meta.empty() ;
+    if(with_meta) U::WriteString(base, META, meta.c_str() );
 
-        if(with_meta) U::WriteString(base, META, meta.c_str() );
+    NP::WriteNames_Simple(base, NAMES, names) ;
 
-        NP::WriteNames_Simple(base, NAMES, names) ;
-    }
+    return 0 ;
 }
 
 
