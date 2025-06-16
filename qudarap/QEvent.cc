@@ -851,7 +851,7 @@ NP* QEvent::gatherHit() const
          << " evt.num_hit " << evt->num_hit
          << " selector.hitmask " << selector->hitmask
          << " SEventConfig::HitMask " << SEventConfig::HitMask()
-         << " SEventConfig::DescHitMask " << SEventConfig::DescHitMask()
+         << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
          ;
 
     NP* hit = evt->num_hit > 0 ? gatherHit_() : nullptr ;

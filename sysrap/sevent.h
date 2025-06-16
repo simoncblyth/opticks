@@ -224,10 +224,10 @@ SEVENT_METHOD void sevent::init()
 
     zero();  // pointers and counts
 
-    float extent = SEventConfig::MaxExtent() ;
-    float time_max = SEventConfig::MaxTime() ;
+    float max_extent_domain = SEventConfig::MaxExtentDomain() ;
+    float max_time_domain = SEventConfig::MaxTimeDomain() ;
 
-    init_domain( extent, time_max );
+    init_domain( max_extent_domain, max_time_domain );
 }
 
 /**
@@ -239,15 +239,15 @@ but now are making more use of the full photon "record"
 as thats considerably simpler that "rec".
 
 **/
-SEVENT_METHOD void sevent::init_domain(float extent, float time_max)
+SEVENT_METHOD void sevent::init_domain(float max_extent_domain, float max_time_domain)
 {
     center_extent.x = 0.f ;
     center_extent.y = 0.f ;
     center_extent.z = 0.f ;
-    center_extent.w = extent ;
+    center_extent.w = max_extent_domain ;
 
     time_domain.x = 0.f ;
-    time_domain.y = time_max ;
+    time_domain.y = max_time_domain ;
 
     wavelength_domain.x = w_center ;  // TODO: try to make this constexpr
     wavelength_domain.y = w_extent ;

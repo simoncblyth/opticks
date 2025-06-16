@@ -41,8 +41,8 @@ int test_FlagMask_0()
         std::cout
                   << " ( 0x1 << " << std::setw(2) << i << " ) "
                   << " (i+1) " << std::setw(2) << std::hex << (i + 1) << std::dec
-                  << " " << std::setw(2)  << OpticksPhoton::FlagMask(msk, true)
-                  << " " << std::setw(20) << OpticksPhoton::FlagMask(msk, false)
+                  << " " << std::setw(2)  << OpticksPhoton::FlagMaskLabel(msk, true)
+                  << " " << std::setw(20) << OpticksPhoton::FlagMaskLabel(msk, false)
                   << " " << std::setw(6) << std::hex << msk << std::dec
                   << " " << std::setw(6) << std::dec << msk << std::dec
                   << std::endl
@@ -62,17 +62,17 @@ int test_FlagMask_1()
         unsigned msk = vmsk[i] ;
         std::cout
             << std::setw(10) << std::hex << msk << std::dec
-            << " flagmask(abbrev) " << std::setw(20) << OpticksPhoton::FlagMask(msk, true)
-            << " flagmask " << OpticksPhoton::FlagMask(msk, false)
+            << " flagmask(abbrev) " << std::setw(20) << OpticksPhoton::FlagMaskLabel(msk, true)
+            << " flagmask " << OpticksPhoton::FlagMaskLabel(msk, false)
             << std::endl
             ;
     }
     return 0 ;
 }
 
-int test_GetHitMask()
+int test_GetFlagMask()
 {
-    std::cout << "[GetHitMask\n" ;
+    std::cout << "[GetFlagMask\n" ;
 
     char delim = ',' ;
     std::vector<std::string> msks = { "SD", "EC", "EX", "EC,SD", "EX,SD", "EC,SA" } ;
@@ -81,17 +81,17 @@ int test_GetHitMask()
     for(int i=0 ; i < num_msk ; i++)
     {
         const char* _msk = msks[i].c_str();
-        unsigned msk = OpticksPhoton::GetHitMask(_msk, delim);
+        unsigned msk = OpticksPhoton::GetFlagMask(_msk, delim);
 
         std::cout
             << " _msk " << std::setw(10) << _msk
             << " msk  " << std::setw(10) << std::hex << msk << std::dec
-            << " " << OpticksPhoton::FlagMask(msk, true )
-            << " " << OpticksPhoton::FlagMask(msk, false )
+            << " " << OpticksPhoton::FlagMaskLabel(msk, true )
+            << " " << OpticksPhoton::FlagMaskLabel(msk, false )
             << "\n"
             ;
     }
-    std::cout << "]GetHitMask\n" ;
+    std::cout << "]GetFlagMask\n" ;
     return 0 ;
 }
 
@@ -311,7 +311,7 @@ int main(int argc, char** argv)
     if(ALL||0==strcmp(TEST, "FlagAbbrevPairs"))         rc += test_FlagAbbrevPairs() ;
     if(ALL||0==strcmp(TEST, "FlagMask_0"))              rc += test_FlagMask_0() ;
     if(ALL||0==strcmp(TEST, "FlagMask_1"))              rc += test_FlagMask_1() ;
-    if(ALL||0==strcmp(TEST, "GetHitMask"))              rc += test_GetHitMask() ;
+    if(ALL||0==strcmp(TEST, "GetFlagMask"))             rc += test_GetFlagMask() ;
     if(ALL||0==strcmp(TEST, "AbbrevToFlag"))            rc += test_AbbrevToFlag() ;
     if(ALL||0==strcmp(TEST, "AbbrevToFlagSequence"))    rc += test_AbbrevToFlagSequence() ;
     if(ALL||0==strcmp(TEST, "AbbrevToFlagValSequence")) rc += test_AbbrevToFlagValSequence() ;

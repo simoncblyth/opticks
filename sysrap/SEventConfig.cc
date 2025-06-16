@@ -41,11 +41,15 @@ int         SEventConfig::_EventSkipaheadDefault = 100000 ;  // APPROPRIATE SKIP
 const char* SEventConfig::_G4StateSpecDefault = "1000:38" ;
 const char* SEventConfig::_G4StateSpecNotes   = "38=2*17+4 is appropriate for MixMaxRng" ;
 int         SEventConfig::_G4StateRerunDefault = -1 ;
-const char* SEventConfig::_MaxBounceNotes = "WIP: remove bounce limit, record limit is inherent from sseq.h sseq::SLOTS " ;
 
-int SEventConfig::_MaxBounceDefault = 31 ;  // was previously too small at 9
+const char* SEventConfig::_MaxBounceNotes = "NB bounce limit is now separate from the non-PRODUCTION record limit which is inherent from sseq.h sseq::SLOTS " ;
+const char* SEventConfig::_MaxTimeNotes = "NB time limit(ns) can truncate simulation together with bounce limit, default timer limit is so high to be unlimited " ;
+
+
+int   SEventConfig::_MaxBounceDefault = 31 ;  // was previously too small at 9
+float SEventConfig::_MaxTimeDefault = 1.e27f ; // crazy high default (ns) effectively meaning no limit
+
 int SEventConfig::_MaxRecordDefault = 0 ;
-
 int SEventConfig::_MaxRecDefault = 0 ;
 int SEventConfig::_MaxAuxDefault = 0 ;
 int SEventConfig::_MaxSupDefault = 0 ;
@@ -53,8 +57,10 @@ int SEventConfig::_MaxSeqDefault = 0 ;
 int SEventConfig::_MaxPrdDefault = 0 ;
 int SEventConfig::_MaxTagDefault = 0 ;
 int SEventConfig::_MaxFlatDefault = 0 ;
-float SEventConfig::_MaxExtentDefault = 1000.f ;  // mm  : domain compression used by *rec*
-float SEventConfig::_MaxTimeDefault = 10.f ; // ns
+
+float SEventConfig::_MaxExtentDomainDefault = 1000.f ;  // mm  : domain compression used by *rec*
+float SEventConfig::_MaxTimeDomainDefault = 10.f ; // ns
+
 const char* SEventConfig::_OutFoldDefault = "$DefaultOutputDir" ;
 const char* SEventConfig::_OutNameDefault = nullptr ;
 const char* SEventConfig::_EventReldirDefault = "ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-no_opticks_event_name}" ; // coordinate with kEventName
@@ -83,6 +89,8 @@ const char* SEventConfig::_GatherCompDefault = SComp::ALL_ ;
 const char* SEventConfig::_SaveCompDefault = SComp::ALL_ ;
 
 float SEventConfig::_PropagateEpsilonDefault = 0.05f ;
+float SEventConfig::_PropagateEpsilon0Default = 0.05f ;
+const char* SEventConfig::_PropagateEpsilon0MaskDefault = "TO,CK,SI,SC,RE" ;
 
 const char* SEventConfig::_InputGenstepDefault = nullptr ;
 const char* SEventConfig::_InputGenstepSelectionDefault = nullptr ;
@@ -238,7 +246,9 @@ int SEventConfig::_MaxGenstep   = ssys::getenv_ParseInt(kMaxGenstep,  _MaxGenste
 int SEventConfig::_MaxPhoton    = ssys::getenv_ParseInt(kMaxPhoton,   _MaxPhotonDefault ) ;
 int SEventConfig::_MaxSimtrace  = ssys::getenv_ParseInt(kMaxSimtrace, _MaxSimtraceDefault ) ;
 
-int SEventConfig::_MaxBounce    = ssys::getenvint(kMaxBounce, _MaxBounceDefault ) ;
+int   SEventConfig::_MaxBounce    = ssys::getenvint(kMaxBounce, _MaxBounceDefault ) ;
+float SEventConfig::_MaxTime    = ssys::getenvfloat(kMaxTime, _MaxTimeDefault );    // ns
+
 int SEventConfig::_MaxRecord    = ssys::getenvint(kMaxRecord, _MaxRecordDefault ) ;
 int SEventConfig::_MaxRec       = ssys::getenvint(kMaxRec, _MaxRecDefault ) ;
 int SEventConfig::_MaxAux       = ssys::getenvint(kMaxAux, _MaxAuxDefault ) ;
@@ -247,19 +257,24 @@ int SEventConfig::_MaxSeq       = ssys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;
 int SEventConfig::_MaxPrd       = ssys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;
 int SEventConfig::_MaxTag       = ssys::getenvint(kMaxTag,  _MaxTagDefault ) ;
 int SEventConfig::_MaxFlat      = ssys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;
-float SEventConfig::_MaxExtent  = ssys::getenvfloat(kMaxExtent, _MaxExtentDefault );
-float SEventConfig::_MaxTime    = ssys::getenvfloat(kMaxTime,   _MaxTimeDefault );    // ns
+
+float SEventConfig::_MaxExtentDomain  = ssys::getenvfloat(kMaxExtentDomain, _MaxExtentDomainDefault );
+float SEventConfig::_MaxTimeDomain    = ssys::getenvfloat(kMaxTimeDomain,   _MaxTimeDomainDefault );    // ns
+
 const char* SEventConfig::_OutFold = ssys::getenvvar(kOutFold, _OutFoldDefault );
 const char* SEventConfig::_OutName = ssys::getenvvar(kOutName, _OutNameDefault );
 const char* SEventConfig::_EventReldir = ssys::getenvvar(kEventReldir, _EventReldirDefault );
 int SEventConfig::_RGMode = SRG::Type(ssys::getenvvar(kRGMode, _RGModeDefault)) ;
-unsigned SEventConfig::_HitMask  = OpticksPhoton::GetHitMask(ssys::getenvvar(kHitMask, _HitMaskDefault )) ;
+unsigned SEventConfig::_HitMask  = OpticksPhoton::GetFlagMask(ssys::getenvvar(kHitMask, _HitMaskDefault )) ;
 
 unsigned SEventConfig::_GatherComp  = SComp::Mask(ssys::getenvvar(kGatherComp, _GatherCompDefault )) ;
 unsigned SEventConfig::_SaveComp    = SComp::Mask(ssys::getenvvar(kSaveComp,   _SaveCompDefault )) ;
 
 
 float SEventConfig::_PropagateEpsilon = ssys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ;
+float SEventConfig::_PropagateEpsilon0 = ssys::getenvfloat(kPropagateEpsilon0, _PropagateEpsilon0Default ) ;
+unsigned SEventConfig::_PropagateEpsilon0Mask  = OpticksPhoton::GetFlagMask(ssys::getenvvar(kPropagateEpsilon0Mask, _PropagateEpsilon0MaskDefault )) ;
+std::string SEventConfig::PropagateEpsilon0MaskLabel(){  return OpticksPhoton::FlagMaskLabel( _PropagateEpsilon0Mask ) ; }
 
 const char* SEventConfig::_InputGenstep = ssys::getenvvar(kInputGenstep, _InputGenstepDefault );
 const char* SEventConfig::_InputGenstepSelection = ssys::getenvvar(kInputGenstepSelection, _InputGenstepSelectionDefault );
@@ -334,6 +349,8 @@ int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
 
 
 int SEventConfig::MaxBounce(){   return _MaxBounce ; }
+float SEventConfig::MaxTime(){   return _MaxTime ; }
+
 int SEventConfig::MaxRecord(){   return _MaxRecord ; }
 int SEventConfig::MaxRec(){      return _MaxRec ; }
 int SEventConfig::MaxAux(){      return _MaxAux ; }
@@ -342,8 +359,10 @@ int SEventConfig::MaxSeq(){      return _MaxSeq ; }
 int SEventConfig::MaxPrd(){      return _MaxPrd ; }
 int SEventConfig::MaxTag(){      return _MaxTag ; }
 int SEventConfig::MaxFlat(){      return _MaxFlat ; }
-float SEventConfig::MaxExtent(){ return _MaxExtent ; }
-float SEventConfig::MaxTime(){   return _MaxTime ; }
+
+float SEventConfig::MaxExtentDomain(){ return _MaxExtentDomain ; }
+float SEventConfig::MaxTimeDomain(){   return _MaxTimeDomain ; }
+
 const char* SEventConfig::OutFold(){   return _OutFold ; }
 const char* SEventConfig::OutName(){   return _OutName ; }
 
@@ -368,6 +387,8 @@ unsigned SEventConfig::SaveComp(){    return _SaveComp ; }
 
 
 float SEventConfig::PropagateEpsilon(){ return _PropagateEpsilon ; }
+float SEventConfig::PropagateEpsilon0(){ return _PropagateEpsilon0 ; }
+unsigned SEventConfig::PropagateEpsilon0Mask(){ return _PropagateEpsilon0Mask ; }
 
 
 /**
@@ -519,7 +540,10 @@ void SEventConfig::SetMaxSlot(int max_slot){     _MaxSlot    = max_slot  ; LIMIT
 void SEventConfig::SetMaxGenstep(int max_genstep){ _MaxGenstep = max_genstep ; LIMIT_Check() ; }
 void SEventConfig::SetMaxPhoton( int max_photon){  _MaxPhoton  = max_photon  ; LIMIT_Check() ; }
 void SEventConfig::SetMaxSimtrace( int max_simtrace){  _MaxSimtrace  = max_simtrace  ; LIMIT_Check() ; }
+
 void SEventConfig::SetMaxBounce( int max_bounce){  _MaxBounce  = max_bounce  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxTime(   float max_time){   _MaxTime   = max_time  ; LIMIT_Check() ; }
+
 void SEventConfig::SetMaxRecord( int max_record){  _MaxRecord  = max_record  ; LIMIT_Check() ; }
 void SEventConfig::SetMaxRec(    int max_rec){     _MaxRec     = max_rec     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxAux(    int max_aux){     _MaxAux     = max_aux     ; LIMIT_Check() ; }
@@ -528,12 +552,15 @@ void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; L
 void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat     = max_flat     ; LIMIT_Check() ; }
-void SEventConfig::SetMaxExtent( float max_extent){ _MaxExtent = max_extent  ; LIMIT_Check() ; }
-void SEventConfig::SetMaxTime(   float max_time){   _MaxTime = max_time  ; LIMIT_Check() ; }
+
+void SEventConfig::SetMaxExtentDomain( float max_extent){ _MaxExtentDomain = max_extent  ; LIMIT_Check() ; }
+void SEventConfig::SetMaxTimeDomain(   float max_time){   _MaxTimeDomain = max_time  ; LIMIT_Check() ; }
+
+
 void SEventConfig::SetOutFold(   const char* outfold){   _OutFold = outfold ? strdup(outfold) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetOutName(   const char* outname){   _OutName = outname ? strdup(outname) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetEventReldir(   const char* v){   _EventReldir = v ? strdup(v) : nullptr ; LIMIT_Check() ; }
-void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetHitMask(abrseq,delim) ; }
+void SEventConfig::SetHitMask(   const char* abrseq, char delim){  _HitMask = OpticksPhoton::GetFlagMask(abrseq,delim) ; }
 
 void SEventConfig::SetRGModeSimulate(){  SetRGMode( SRG::SIMULATE_ ); }
 void SEventConfig::SetRGModeSimtrace(){  SetRGMode( SRG::SIMTRACE_ ); }
@@ -560,6 +587,8 @@ void SEventConfig::SetRGMode( const char* mode)
 
 
 void SEventConfig::SetPropagateEpsilon(float eps){ _PropagateEpsilon = eps ; LIMIT_Check() ; }
+void SEventConfig::SetPropagateEpsilon0(float eps){ _PropagateEpsilon0 = eps ; LIMIT_Check() ; }
+void SEventConfig::SetPropagateEpsilon0Mask(const char* abrseq, char delim){ _PropagateEpsilon0Mask = OpticksPhoton::GetFlagMask(abrseq,delim) ; }
 
 void SEventConfig::SetInputGenstep(const char* ig){   _InputGenstep = ig ? strdup(ig) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputGenstepSelection(const char* igsel){   _InputGenstepSelection = igsel ? strdup(igsel) : nullptr ; LIMIT_Check() ; }
@@ -574,8 +603,8 @@ void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
 
 
-std::string SEventConfig::DescHitMask(){   return OpticksPhoton::FlagMask( _HitMask ) ; }
-std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMask( _HitMask ) ; }
+//std::string SEventConfig::DescHitMask(){   return OpticksPhoton::FlagMaskLabel( _HitMask ) ; }
+std::string SEventConfig::HitMaskLabel(){  return OpticksPhoton::FlagMaskLabel( _HitMask ) ; }
 
 std::string SEventConfig::DescGatherComp(){ return SComp::Desc( _GatherComp ) ; }
 std::string SEventConfig::DescSaveComp(){   return SComp::Desc( _SaveComp ) ; } // used from SEvt::save
@@ -713,6 +742,12 @@ std::string SEventConfig::Desc()
        << std::setw(25) << ""
        << std::setw(20) << " MaxBounceNotes " << " : " << _MaxBounceNotes
        << std::endl
+       << std::setw(25) << kMaxTime
+       << std::setw(20) << " MaxTime " << " : " << MaxTime()
+       << std::endl
+       << std::setw(25) << ""
+       << std::setw(20) << " MaxTimeNotes " << " : " << _MaxTimeNotes
+       << std::endl
        << std::setw(25) << kMaxRecord
        << std::setw(20) << " MaxRecord " << " : " << MaxRecord()
        << std::endl
@@ -741,13 +776,13 @@ std::string SEventConfig::Desc()
        << std::setw(20) << " HitMask " << " : " << HitMask()
        << std::endl
        << std::setw(25) << ""
-       << std::setw(20) << " DescHitMask " << " : " << DescHitMask()
+       << std::setw(20) << " HitMaskLabel " << " : " << HitMaskLabel()
        << std::endl
-       << std::setw(25) << kMaxExtent
-       << std::setw(20) << " MaxExtent " << " : " << MaxExtent()
+       << std::setw(25) << kMaxExtentDomain
+       << std::setw(20) << " MaxExtentDomain " << " : " << MaxExtentDomain()
        << std::endl
-       << std::setw(25) << kMaxTime
-       << std::setw(20) << " MaxTime " << " : " << MaxTime()
+       << std::setw(25) << kMaxTimeDomain
+       << std::setw(20) << " MaxTimeDomain " << " : " << MaxTimeDomain()
        << std::endl
        << std::setw(25) << kRGMode
        << std::setw(20) << " RGMode " << " : " << RGMode()
@@ -755,13 +790,6 @@ std::string SEventConfig::Desc()
        << std::setw(25) << ""
        << std::setw(20) << " RGModeLabel " << " : " << RGModeLabel()
        << std::endl
-       /*
-       << std::setw(25) << kCompMask
-       << std::setw(20) << " CompMask " << " : " << CompMask()
-       << std::endl
-       << std::setw(25) << ""
-       << std::setw(20) << " CompMaskLabel " << " : " << CompMaskLabel()
-       */
        << std::setw(25) << kGatherComp
        << std::setw(20) << " GatherComp " << " : " << GatherComp()
        << std::endl
@@ -785,6 +813,15 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kPropagateEpsilon
        << std::setw(20) << " PropagateEpsilon " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon()
+       << std::endl
+       << std::setw(25) << kPropagateEpsilon0
+       << std::setw(20) << " PropagateEpsilon0 " << " : " << std::fixed << std::setw(10) << std::setprecision(4) << PropagateEpsilon0()
+       << std::endl
+       << std::setw(25) << kPropagateEpsilon0Mask
+       << std::setw(20) << " PropagateEpsilon0Mask " << " : " << PropagateEpsilon0Mask()
+       << std::endl
+       << std::setw(25) << ""
+       << std::setw(20) << " PropagateEpsilon0MaskLabel " << " : " << PropagateEpsilon0MaskLabel()
        << std::endl
        << std::setw(25) << kInputGenstep
        << std::setw(20) << " InputGenstep " << " : " << ( InputGenstep() ? InputGenstep() : "-" )
@@ -1231,6 +1268,8 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<int>("MaxSimtrace", MaxSimtrace() );
 
     meta->set_meta<int>("MaxBounce", MaxBounce() );
+    meta->set_meta<float>("MaxTime", MaxTime() );
+
     meta->set_meta<int>("MaxRecord", MaxRecord() );
     meta->set_meta<int>("MaxRec", MaxRec() );
     meta->set_meta<int>("MaxAux", MaxAux() );
@@ -1239,8 +1278,9 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<int>("MaxPrd", MaxPrd() );
     meta->set_meta<int>("MaxTag", MaxTag() );
     meta->set_meta<int>("MaxFlat", MaxFlat() );
-    meta->set_meta<float>("MaxExtent", MaxExtent() );
-    meta->set_meta<float>("MaxTime", MaxTime() );
+
+    meta->set_meta<float>("MaxExtentDomain", MaxExtentDomain() );
+    meta->set_meta<float>("MaxTimeDomain", MaxTimeDomain() );
 
     const char* of = OutFold() ;
     if(of) meta->set_meta<std::string>("OutFold", of );
@@ -1258,6 +1298,7 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<std::string>("DescSaveComp", DescSaveComp());
 
     meta->set_meta<float>("PropagateEpsilon", PropagateEpsilon() );
+    meta->set_meta<float>("PropagateEpsilon0", PropagateEpsilon0() );
 
 
     const char* ig  = InputGenstep() ;

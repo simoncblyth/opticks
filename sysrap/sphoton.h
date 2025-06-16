@@ -345,7 +345,7 @@ SPHOTON_METHOD const char* sphoton::abbrev_() const
 }
 SPHOTON_METHOD std::string sphoton::flagmask_() const
 {
-    return OpticksPhoton::FlagMask(flagmask) ;
+    return OpticksPhoton::FlagMaskLabel(flagmask) ;
 }
 
 SPHOTON_METHOD std::string sphoton::descFlag() const
