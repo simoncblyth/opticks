@@ -44,6 +44,20 @@ struct SRecordInfo
 SRecordInfo::Load
 ------------------
 
+Two forms of slice selection are handled.
+
+1. "where" selection, eg::
+
+     "[:,0,0,1] < -1.0"
+
+2. "indexSlice" selection, eg::
+
+     "[::1000]"
+     "[:10]"
+
+
+The _slice can be specified via envvar with eg "$AFOLD_RECORD_SLICE"
+
 **/
 
 inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
@@ -64,7 +78,15 @@ inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
         return nullptr ;
     }
 
-    NP* a = NP::LoadThenSlice<float>(path, _slice);
+    NP* a = nullptr ;
+    if(NP::LooksLikeWhereSelection(_slice))
+    {
+        a = NP::LoadThenSlice<float>(path, _slice);
+    }
+    else
+    {
+        a = NP::LoadSlice(path, _slice);
+    }
     return new SRecordInfo(a);
 }
 

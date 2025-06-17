@@ -52,6 +52,32 @@ but the headers are also copied into opticks/sysrap.
 #include "NPU.hh"
 
 
+
+struct NP_slice
+{
+    int start ;
+    int stop ;
+    int step ;
+
+    bool is_match(const NP_slice& other) const ;
+    std::string desc() const ;
+};
+
+inline bool NP_slice::is_match(const NP_slice& other) const
+{
+    return start == other.start && stop == other.stop && step == other.step ;
+}
+
+inline std::string NP_slice::desc() const
+{
+    std::stringstream ss ;
+    ss << "NP_slice(" <<  start << "," << stop << "," << step << ")" ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
 struct NP
 {
     typedef std::int64_t INT ;
@@ -134,7 +160,7 @@ struct NP
     std::string make_prefix() const ;
     std::string make_jsonhdr() const ;
 
-    bool        decode_header() ; // sets shape based on arr header
+    bool        decode_header(bool data_resize) ; // sets shape based on arr header
     bool        decode_prefix() ; // also resizes buffers ready for reading in
     unsigned    prefix_size(unsigned index) const ;
 
@@ -150,6 +176,8 @@ struct NP
     // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape*
     bool has_shape(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) const ;
     void change_shape(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) ;   // one dimension entry left at -1 can be auto-set
+    void _change_shape_ni(INT ni, bool data_resize);
+
     void change_shape_to_3D() ;
     void reshape( const std::vector<INT>& new_shape ); // product of shape before and after must be the same
 
@@ -272,8 +300,13 @@ struct NP
     static NP* MakeSelection( const NP* src, const NP* sel );  // sel expected to contain integer indices selecting items in src
 
     static int ParseSliceString(std::vector<INT>& idxx, const char* _sli );
+    static int ParseSliceIndexString(int& start, int& stop, int& step, const char* _sli );
+    void parse_slice( NP_slice& sli, const char* _sli) const ;
+
+
     template<typename T> static NP* MakeSliceSelection( const NP* src, const char* sel );
     template<typename T> NP* makeWhereSelection( const char* _sel ) const ;
+    static bool LooksLikeWhereSelection(const char* _sel );
 
 
     static NP* MakeItemCopy(  const NP* src, INT i,INT j=-1,INT k=-1,INT l=-1,INT m=-1, INT o=-1 );
@@ -297,12 +330,16 @@ struct NP
     // load array asis
     static NP* LoadIfExists(const char* path);
     static NP* Load(const char* path);
+    static NP* LoadSlice(const char* _path, const char* _sli);
+
 
     template<typename T> static NP* LoadThenSlice( const char* path, const char* _sel );
 
     static bool ExistsArrayFolder(const char* path );
 
     static NP* Load_(const char* path);
+    static NP* LoadSlice_(const char* path, const char* sli);
+
     static NP* Load(const char* dir, const char* name);
     static NP* Load(const char* dir, const char* reldir, const char* name);
 
@@ -496,8 +533,11 @@ struct NP
     static const char* PathWithNoDataPrefix(const char* path);
 
 
-    int load(const char* dir, const char* name);
-    int load(const char* path);
+    int load(const char* path, const char* sli );
+    std::ifstream* load_header(const char* _path, const char* _sli);
+    void load_data( std::ifstream* fp, const char* sli );
+    void load_data_sliced( std::ifstream* fp, const char* sli );
+
 
     int load_string_(  const char* path, const char* ext, std::string& str );
     int load_strings_( const char* path, const char* ext, std::vector<std::string>* vstr );
@@ -1270,14 +1310,14 @@ following the header.
 
 **/
 
-inline bool NP::decode_header()
+inline bool NP::decode_header(bool data_resize)
 {
     shape.clear();
     std::string descr ;
     NPU::parse_header( shape, descr, uifc, ebyte, _hdr ) ;
     dtype = strdup(descr.c_str());
     size = NPS::size(shape);    // product of shape dimensions
-    if(!nodata) data.resize(size*ebyte) ;   // data is now just char
+    if(data_resize) data.resize(size*ebyte) ;   // data is now just char
     return true  ;
 }
 
@@ -1418,6 +1458,30 @@ inline void NP::change_shape(INT ni, INT nj, INT nk, INT nl, INT nm, INT no)
     if(!expect) std::raise(SIGINT) ;
     assert( size == size2 );
 }
+
+/**
+NP::_change_shape_ni
+-----------------------
+
+This is used during sliced loading
+to reduce the num_items to conform
+to the slicing.
+
+**/
+
+inline void NP::_change_shape_ni(INT ni, bool data_resize)
+{
+    unsigned ndim = shape.size() ;
+    assert( ndim > 0 );
+    assert( ni <= shape[0] );
+
+    shape[0] = ni ;
+    size = NPS::size(shape);    // product of shape dimensions
+    if(data_resize) data.resize(size*ebyte) ;   // data is now just char
+}
+
+
+
 inline void NP::change_shape_to_3D()
 {
     unsigned ndim = shape.size() ;
@@ -2498,6 +2562,8 @@ inline NP* NP::MakeSelection( const NP* src, const NP* sel )
 }
 
 
+
+
 /**
 NP::ParseSliceString
 ------------------------
@@ -2508,6 +2574,7 @@ is special cased to become -1::
      [:,0,0,0]
      [:,0,0,1]
      [:,0,0,2]
+
 
 **/
 
@@ -2548,6 +2615,116 @@ inline int NP::ParseSliceString(std::vector<INT>& idxx, const char* _sli )
     }
     return 0 ;
 }
+
+
+
+
+/**
+NP::ParseSliceIndexString
+------------------------
+
+Index slice (start,stop,step) strings of form::
+
+    [:5]       # start:0 stop:5 step:1
+    [::2]      # start:0 stop:- step:2
+    [1:10]     # start:1 stop:10 step:1
+    [1:10:2]   # start:1 stop:10 step:2
+
+Usage::
+
+    struct slice { int start, stop, step ; }
+    slice sli = {} ;
+
+    sli.start = 0 ;
+    sli.stop = num_items ;
+    sli.step = 1 ;
+
+    int rc = NP::ParseSliceIndexString(sli.start, sli.stop, sli.step, _sli );
+
+
+**/
+
+inline int NP::ParseSliceIndexString(int& start, int& stop, int& step, const char* _sli )
+{
+    size_t len = _sli ? strlen(_sli) : 0 ;
+    if(len < 2) return 1 ;
+
+    const char* o = strstr(_sli, "[");
+    const char* c = strstr(_sli, "]");
+
+    if(o == nullptr) return 2 ;
+    if(c == nullptr) return 3 ;
+    if(c - o <= 0 ) return 4 ;
+
+    // copy starting from the char after the "[" up to the char before the "]"
+    char* sli = strndup(o+1, c - o - 1 );
+    //std::cout << "NP::ParseSliceIndexString {" << sli << "}\n" ;
+
+    if(strlen(sli)>2 && sli[0] == ':' && sli[1] == ':' )  // eg "::2"
+    {
+        std::string s(sli+2);
+        std::istringstream iss(s);
+        INT t ;
+        iss >> t ;
+
+        step = t ;
+    }
+    else if(strlen(sli)>2 && sli[0] == ':' && sli[1] != ':' ) // eg ":5"
+    {
+        std::string s(sli+1);
+        std::istringstream iss(s);
+        INT t ;
+        iss >> t ;
+
+        stop = t ;
+    }
+    else  // eg 1:10 1:10:2
+    {
+        char delim = ':' ;
+
+        std::stringstream ss;
+        ss.str(sli);
+        std::string s;
+        int count = 0 ;
+
+        while (std::getline(ss, s, delim))
+        {
+            std::istringstream iss(s);
+            INT t ;
+            iss >> t ;
+
+            if(count == 0) start = t ;
+            else if(count == 1) stop = t ;
+            else if(count == 2) step = t ;
+
+            count++ ;
+        }
+    }
+    return 0 ;
+}
+
+
+inline void NP::parse_slice( NP_slice& sli, const char* _sli) const
+{
+    sli.start = 0 ;
+    sli.stop = num_items() ;
+    sli.step = 1 ;
+    int rc = ParseSliceIndexString(sli.start, sli.stop, sli.step, _sli );
+    if( rc != 0 ) std::cerr
+        << "NP::parse_slice "
+        << " ParseSliceIndexString FAILED "
+        << " _sli [" << ( _sli ? _sli : "-" ) << "]"
+        << " rc " << rc
+        << "\n"
+        ;
+    assert( rc == 0 );
+    if( rc != 0 ) std::raise(SIGINT);
+}
+
+
+
+
+
 
 
 
@@ -2617,7 +2794,21 @@ inline NP* NP::makeWhereSelection( const char* _sel ) const
     return MakeFromValues<INT>(where.data(), where.size() ) ;
 }
 
+inline bool NP::LooksLikeWhereSelection(const char* _sel ) // static
+{
+    bool candidate = _sel && strlen(_sel ) > 1 ;
+    if(!candidate) return false ;
+    bool starts_with_dollar = _sel[0] == '$' ;
 
+    const char* sel = starts_with_dollar ? U::GetEnv(_sel+1, nullptr) : _sel ;
+    if( sel == nullptr ) return false ;
+
+    const char* gt = strstr(sel, ">");
+    const char* lt = strstr(sel, "<");
+    if( gt && lt ) return false ;
+    if( gt || lt ) return true ;
+    return false ;
+}
 
 
 
@@ -3242,6 +3433,53 @@ inline NP* NP::Load(const char* path_)
     return a ;
 }
 
+/**
+NP::LoadSlice
+---------------
+
+_path
+    can start with envvar token
+_sli
+    slice string as shown below OR
+    can envvar token that resolves to the slice string
+
+
+Reads from file into memory only the specified slices using
+NP::load_data_sliced which is based on std::ifstream::seekg
+
+Slice (start,stop,step) examples following Python slice indexing::
+
+    [::2]
+    [::100]
+    [:10]
+    [5:10]
+
+* -ve step not implemented
+
+**/
+
+inline NP* NP::LoadSlice(const char* _path, const char* _sli)
+{
+    const char* path = U::Resolve(_path);
+    if(path == nullptr) return nullptr ; // eg when _path starts with unsetenvvar "$TOKEN"
+    bool npy_ext = U::EndsWith(path, EXT) ;
+    if(!npy_ext) return nullptr ;
+
+
+    NP* a = nullptr ;
+    if( _sli && strlen(_sli) > 1 )
+    {
+        bool starts_with_dollar = _sli[0] == '$' ;
+        const char* sli = starts_with_dollar ? U::GetEnv(_sli+1, nullptr) : _sli ;
+        a = NP::LoadSlice_(path, sli);
+    }
+    else
+    {
+        a = NP::Load_(path);
+    }
+    return a ;
+}
+
 
 template<typename T>
 inline NP* NP::LoadThenSlice( const char* _path, const char* _sel )
@@ -3258,7 +3496,7 @@ inline NP* NP::LoadThenSlice( const char* _path, const char* _sel )
         bool starts_with_dollar = _sel[0] == '$' ;
         sel = starts_with_dollar ? U::GetEnv(_sel+1, nullptr) : _sel ;
         if(VERBOSE) std::cout
-            << "NP::LoadSlice"
+            << "NP::LoadThenSlice"
             << " starts_with_dollar " << ( starts_with_dollar ? "YES" : "NO " )
             << " _sel [" << ( _sel ? _sel : "-" ) << "]"
             << " sel ["  << ( sel ? sel : "-" ) << "]"
@@ -3298,9 +3536,19 @@ inline NP* NP::Load_(const char* path)
 {
     if(!path) return nullptr ;
     NP* a = new NP() ;
-    INT rc = a->load(path) ;
+    INT rc = a->load(path, nullptr) ;
     return rc == 0 ? a  : nullptr ;
 }
+
+inline NP* NP::LoadSlice_(const char* path, const char* sli)
+{
+    if(!path) return nullptr ;
+    NP* a = new NP() ;
+    INT rc = a->load(path, sli) ;
+    return rc == 0 ? a  : nullptr ;
+}
+
+
 
 inline NP* NP::Load(const char* dir, const char* name)
 {
@@ -6687,17 +6935,14 @@ inline const char* NP::PathWithNoDataPrefix(const char* path) // static
 }
 
 
-inline int NP::load(const char* dir, const char* name)
-{
-    std::string path = U::form_path(dir, name);
-    return load(path.c_str());
-}
-
 
 
 /**
-NP::load
-----------
+NP::load(const char*, const char*)
+-------------------------------------
+
+Formerly used this signature for dir/name loading but as that now done
+at static level are repurposing to do both ordinary and slice loading.
 
 Formerly read an arbitrary initial buffer size,
 now reading up to first newline, which marks the
@@ -6707,44 +6952,129 @@ newline from the stream without returning it.
 
 **/
 
-inline int NP::load(const char* _path)
+inline int NP::load(const char* _path, const char* _sli )
 {
-    nodata = IsNoData(_path) ;  // _path starting with NODATA_PREFIX currently '@'
-    const char* path = nodata ? _path + 1 : _path ;
+    if(VERBOSE) std::cerr << "[ NP::load [" << ( _path ? _path : "-" ) << "]\n" ;
 
-    if(VERBOSE) std::cerr << "[ NP::load " << path << std::endl ;
-
-    lpath = path ;  // loadpath
-    lfold = U::DirName(path);
-
-    std::ifstream fp(path, std::ios::in|std::ios::binary);
-    if(fp.fail())
+    std::ifstream* fp = load_header(_path, _sli);
+    if( fp == nullptr )
     {
-        std::cerr << "NP::load Failed to load from path " << path << std::endl ;
+        std::cerr << "NP::load Failed to load from path [" << ( _path ? _path : "-" ) << "]\n" ;
         std::raise(SIGINT);
-        return 1 ;
     }
+    load_data( fp, _sli );
+    delete fp ;
 
-    std::getline(fp, _hdr );
-    _hdr += '\n' ;
-
-    decode_header();
-
-    if(nodata)
-    {
-        if(VERBOSE) std::cerr << "NP::load SKIP reading data as nodata:true : data.size() " << data.size() << std::endl ;
-    }
-    else
-    {
-        fp.read(bytes(), arr_bytes() );
-    }
-
+    const char* path = lpath.c_str();
     load_meta( path );
     load_names( path );
     load_labels( path );
 
-    if(VERBOSE) std::cerr << "] NP::load " << path << std::endl ;
+    if(VERBOSE) std::cerr << "] NP::load [" << ( _path ? _path : "-" ) << "]\n" ;
     return 0 ;
+}
+
+
+
+inline std::ifstream* NP::load_header(const char* _path, const char* _sli)
+{
+    nodata = IsNoData(_path) ;  // _path starting with NODATA_PREFIX currently '@'
+    const char* path = nodata ? _path + 1 : _path ;
+
+    lpath = path ;  // loadpath
+    lfold = U::DirName(path);
+
+    std::ifstream* fp = new std::ifstream(path, std::ios::in|std::ios::binary);
+    if(fp->fail())
+    {
+        std::cerr << "NP::load_header std::ifstream FAIL for path [" << ( path ? path : "-" ) << "]\n" ;
+        delete fp ;
+        return nullptr ;
+    }
+
+    std::getline(*fp, _hdr );
+    _hdr += '\n' ;
+
+    bool data_resize = !nodata && _sli == nullptr ; // DEFER data resize when active slice
+    decode_header(data_resize);
+
+    return fp ;
+}
+
+inline void NP::load_data( std::ifstream* fp, const char* _sli )
+{
+    if(nodata && VERBOSE) std::cerr << "NP::load_data SKIP reading data as nodata:true : data.size() " << data.size() << "\n" ;
+    if(nodata) return ;
+
+    if( _sli == nullptr )
+    {
+        fp->read(bytes(), arr_bytes() );
+    }
+    else
+    {
+        load_data_sliced( fp, _sli );
+    }
+}
+
+
+/**
+NP::load_data_sliced
+----------------------
+
+1. parse *_sli* into NP_slice : (start,stop,step)
+2. determine number of array items that will be present after slicing
+3. change array shape to conform to slicing
+4. read only the slice specified items into the data vector
+
+**/
+
+inline void NP::load_data_sliced( std::ifstream* fp, const char* _sli )
+{
+    NP_slice sli = {} ;
+    parse_slice(sli, _sli);
+
+    INT count0 = 0 ;
+    for(INT idx=sli.start ; idx < sli.stop ; idx += sli.step ) count0 += 1 ;
+    INT sliced_ni = count0 ;
+
+    std::string sstr_0 = sstr();
+    bool data_resize = true ;
+    _change_shape_ni(sliced_ni, data_resize);
+    std::string sstr_1 = sstr();
+
+    // read only the slice specified items
+
+    INT hdrsize = hdr_bytes() ;  // NB not same as  strlen(_hdr.c_str())
+    INT itemsize = item_bytes();
+
+    if(VERBOSE)
+    std::cout
+        << "NP::load_data_sliced"
+        << " hdrsize " << hdrsize
+        << " strlen(_hdr.c_str() " << strlen(_hdr.c_str())
+        << " itemsize " << itemsize
+        << "\n"
+        ;
+
+    INT count = 0 ;
+    for(INT idx=sli.start ; idx < sli.stop ; idx += sli.step )
+    {
+        fp->seekg( hdrsize + idx*itemsize );  // move file pointer to *idx* item
+        fp->read( bytes() + count*itemsize, itemsize );
+        count += 1 ;
+    }
+    assert( count == sliced_ni );
+
+    if(VERBOSE)
+    std::cout
+        << "NP::load_data_sliced\n"
+        << " _sli " << _sli << "\n"
+        << " sli " << sli.desc() << "\n"
+        << " sstr_0 " << sstr_0 << "\n"
+        << " sstr_1 " << sstr_1 << "\n"
+        << " sliced_ni  " << sliced_ni << "\n"
+        << "\n"
+        ;
 }
 
 
@@ -7735,7 +8065,8 @@ inline std::istream& operator>>(std::istream& is, NP& a)
     a._hdr += '\n' ;     // getline consumes newline ending header but does not return it
     assert( hdr_bytes_nh == a._hdr.length() );
 
-    a.decode_header();   // resizes data array
+    bool data_resize = true ;
+    a.decode_header(data_resize);
 
     assert( a.arr_bytes() == arr_bytes_nh );
     is.read(a.bytes(), a.arr_bytes() );
