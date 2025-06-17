@@ -64,7 +64,7 @@ inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
         return nullptr ;
     }
 
-    NP* a = NP::LoadSlice<float>(path, _slice);
+    NP* a = NP::LoadThenSlice<float>(path, _slice);
     return new SRecordInfo(a);
 }
 

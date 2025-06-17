@@ -298,7 +298,7 @@ struct NP
     static NP* LoadIfExists(const char* path);
     static NP* Load(const char* path);
 
-    template<typename T> static NP* LoadSlice( const char* path, const char* _sel );
+    template<typename T> static NP* LoadThenSlice( const char* path, const char* _sel );
 
     static bool ExistsArrayFolder(const char* path );
 
@@ -3244,7 +3244,7 @@ inline NP* NP::Load(const char* path_)
 
 
 template<typename T>
-inline NP* NP::LoadSlice( const char* _path, const char* _sel )
+inline NP* NP::LoadThenSlice( const char* _path, const char* _sel )
 {
     const char* path = U::Resolve(_path);
     if(!Exists(path)) return nullptr ;
