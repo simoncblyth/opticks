@@ -52,7 +52,7 @@ struct SPMTAccessor
 
 inline SPMTAccessor* SPMTAccessor::Load(const char* path)
 {
-    SPMT* pmt = SPMT::Load(path);
+    SPMT* pmt = SPMT::CreateFromJPMT(path);
     //if(pmt == nullptr) return nullptr ;
 
     SPMTAccessor* accessor = new SPMTAccessor(pmt);
@@ -69,17 +69,18 @@ inline SPMTAccessor::SPMTAccessor( const SPMT* _pmt )
 
 inline int SPMTAccessor::get_num_lpmt() const
 {
-    return SPMT::NUM_LPMT ;
+    assert(0);  // use s_pmt.h directly
+    return s_pmt::NUM_CD_LPMT ;
 }
 
 inline double SPMTAccessor::get_qescale( int pmtid ) const
 {
-    float qs = pmt->get_qescale(pmtid);
+    float qs = pmt->get_qescale_from_lpmtid(pmtid);
     return qs ;
 }
 inline int SPMTAccessor::get_pmtcat( int pmtid ) const
 {
-    int cat = pmt->get_lpmtcat(pmtid) ;   // assumes pmtid is for LPMT
+    int cat = pmt->get_lpmtcat_from_lpmtid(pmtid) ;
 
     if(VERBOSE) std::cout
         << "SPMTAccessor::get_pmtcat"
@@ -111,14 +112,17 @@ without j/PMTSim is inconsistent in its energy units.
 
 **/
 
-inline double SPMTAccessor::get_pmtid_qe( int pmtid, double energy_MeV ) const
+inline double SPMTAccessor::get_pmtid_qe( int lpmtid, double energy_MeV ) const
 {
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+
     float energy_eV = energy_MeV*1e6 ;
-    float qe = pmt->get_pmtid_qe(pmtid, energy_eV) ;
+    float qe = pmt->get_lpmtidx_qe(lpmtidx, energy_eV) ;
 
     if(VERBOSE) std::cout
         << "SPMTAccessor::get_pmtid_qe"
-        << " pmtid " << pmtid
+        << " lpmtid " << lpmtid
+        << " lpmtidx " << lpmtidx
         << " energy_MeV " << std::scientific << energy_MeV
         << " energy_eV " << std::scientific << energy_eV
         << " qe " << std::scientific << qe

@@ -140,6 +140,7 @@ private:
 
     void init();
 
+    void initSid();
     static U4PhysicsTable<G4OpRayleigh>* CreateRayleighTable();
     void initRayleigh();
     void initMaterials();
@@ -275,6 +276,8 @@ inline void U4Tree::init()
 {
     if(top == nullptr) return ;
 
+    LOG(LEVEL) << "-initSid" ;
+    initSid();
     LOG(LEVEL) << "-initRayleigh" ;
     initRayleigh();
     LOG(LEVEL) << "-initMaterials" ;
@@ -302,6 +305,10 @@ inline void U4Tree::init()
 
 }
 
+inline void U4Tree::initSid()
+{
+    sid->setLevel(st->level);
+}
 
 /**
 U4Tree::initMaterials

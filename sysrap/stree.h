@@ -1323,6 +1323,13 @@ inline void stree::get_sensor_nidx( std::vector<int>& sensor_nidx ) const
             sensor_nidx.push_back(nidx) ;
 }
 
+/**
+stree::desc_sensor_nd
+-----------------------
+
+
+**/
+
 
 inline std::string stree::desc_sensor_nd(int edge) const
 {

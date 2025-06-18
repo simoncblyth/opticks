@@ -375,6 +375,7 @@ set(HEADERS
     SCSGOptiX.h
 
     SPMT.h
+    s_pmt.h
     SPMTAccessor.h
 
     storchtype.h

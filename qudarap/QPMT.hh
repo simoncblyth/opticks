@@ -20,6 +20,7 @@ QPMT.hh : projecting PMT properties onto device using qpmt.h
 #include "sproc.h"
 #include "qpmt_enum.h"
 #include "qpmt.h"
+#include "s_pmt.h"
 #include "QProp.hh"
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
@@ -82,8 +83,9 @@ struct QUDARAP_API QPMT
     std::string desc() const ;
 
     // .h : CPU side lpmtcat lookups
-    int  get_lpmtcat( int lpmtid ) const ;
-    int  get_lpmtcat( int* lpmtcat, const int* lpmtid , int num ) const ;
+    int  get_lpmtcat_from_lpmtidx( int lpmtidx ) const ;
+    int  get_lpmtcat_from_lpmtid(  int lpmtid  ) const ;
+    int  get_lpmtcat_from_lpmtid(  int* lpmtcat, const int* lpmtid , int num ) const ;
 
     static NP* MakeArray_lpmtcat(int etype, unsigned num_domain );
     static NP* MakeArray_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid );
@@ -113,7 +115,7 @@ QPMT::QPMT
 5. narrows src_thickness into thickness
 6. narrows src_lcqs into lcqs
 
-NB jpmt is the fold from SPMT::serialize not the raw fold from _PMTSimParamData
+NB jpmt is the NPFold provided by SPMT::serialize not the raw fold from _PMTSimParamData
 
 **/
 
@@ -126,7 +128,7 @@ inline QPMT<T>::QPMT(const NPFold* jpmt )
     src_qeshape(  jpmt->get("qeshape")),
     src_cetheta(  jpmt->get("cetheta")),
     src_cecosth(  jpmt->get("cecosth")),
-    src_lcqs(     jpmt->get_optional("lcqs")),
+    src_lcqs(     jpmt->get("lcqs")),
     rindex3(  NP::MakeCopy3D(src_rindex)),   // make copy and change shape to 3D
     rindex(   NP::MakeWithType<T>(rindex3)), // adopt template type, potentially narrowing
     rindex_prop(new QProp<T>(rindex)),
@@ -138,7 +140,7 @@ inline QPMT<T>::QPMT(const NPFold* jpmt )
     cecosth_prop(new QProp<T>(cecosth)),
     thickness(NP::MakeWithType<T>(src_thickness)),
     lcqs(src_lcqs ? NP::MakeWithType<T>(src_lcqs) : nullptr),
-    i_lcqs( lcqs ? (int*)lcqs->cvalues<T>() : nullptr ),    // CPU side lookup lpmtid->lpmtcat 0/1/2
+    i_lcqs( lcqs ? (int*)lcqs->cvalues<T>() : nullptr ),    // CPU side lookup lpmtidx->lpmtcat 0/1/2
     pmt(new qpmt<T>()),                    // host-side qpmt.h instance
     d_pmt(nullptr)                         // device-side pointer set at upload in init
 {
@@ -200,27 +202,36 @@ inline std::string QPMT<T>::desc() const
 }
 
 /**
-QPMT::get_lpmtcat
-------------------
+QPMT::get_lpmtcat_from_lpmtidx
+--------------------------------
 
-CPU side lookup of lpmtcat from lpmtid using i_lcqs array.
+CPU side lookup of lpmtcat from lpmtidx using i_lcqs array.
 
 **/
 
 template<typename T>
-inline int QPMT<T>::get_lpmtcat( int lpmtid ) const
+inline int QPMT<T>::get_lpmtcat_from_lpmtidx( int lpmtidx ) const
 {
-    assert( lpmtid > -1 && lpmtid < qpmt_NUM_LPMT );
-    const int& lpmtcat = i_lcqs[lpmtid*2+0] ;
+    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP );
+    const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
     return lpmtcat ;
 }
+
 template<typename T>
-inline int QPMT<T>::get_lpmtcat( int* lpmtcat_, const int* lpmtid_, int num_lpmtid ) const
+inline int QPMT<T>::get_lpmtcat_from_lpmtid( int lpmtid ) const
+{
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    return get_lpmtcat_from_lpmtidx(lpmtidx);
+}
+
+
+template<typename T>
+inline int QPMT<T>::get_lpmtcat_from_lpmtid( int* lpmtcat_, const int* lpmtid_, int num_lpmtid ) const
 {
     for(int i=0 ; i < num_lpmtid ; i++)
     {
         int lpmtid = lpmtid_[i] ;
-        int lpmtcat = get_lpmtcat(lpmtid) ;
+        int lpmtcat = get_lpmtcat_from_lpmtid(lpmtid) ;
         lpmtcat_[i] = lpmtcat ;
     }
     return num_lpmtid ;
@@ -238,9 +249,9 @@ HMM: this is mainly for testing, perhaps put in QPMTTest ?
 template<typename T>
 inline NP* QPMT<T>::MakeArray_lpmtcat(int etype, unsigned num_domain )   // static
 {
-    const int& ni = qpmt_NUM_CAT ;
-    const int& nj = qpmt_NUM_LAYR ;
-    const int& nk = qpmt_NUM_PROP ;
+    const int& ni = s_pmt::NUM_CAT ;
+    const int& nj = s_pmt::NUM_LAYR ;
+    const int& nk = s_pmt::NUM_PROP ;
     NP* lookup = nullptr ;
     switch(etype)
     {

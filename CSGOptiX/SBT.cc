@@ -499,7 +499,9 @@ void SBT::collectInstances( const std::vector<qat4>& ias_inst )
         const qat4& q = ias_inst[i] ;
         int ins_idx,  gasIdx, sensor_identifier, sensor_index ;
         q.getIdentity(ins_idx, gasIdx, sensor_identifier, sensor_index );
+
         unsigned instanceId = q.get_IAS_OptixInstance_instanceId() ;
+        assert( int(instanceId) == sensor_identifier );
 
         bool instanceId_is_allowed = instanceId < properties->limitMaxInstanceId ;
         LOG_IF(fatal, !instanceId_is_allowed)

@@ -33,6 +33,12 @@ Example commandlines using installed script::
     EMM=2,3,4 EYE=3,3,0 cxr_min.sh
 
 
+Animation, lowering T1 from default of full range slows down the animation::
+ 
+    EYE=0,2,0 T1=10 cxr_min.sh
+
+
+
 Use ELV to exclude virtual PMT wrapper volumes::
 
     ELV=t:HamamatsuR12860sMask_virtual,NNVTMCPPMTsMask_virtual,mask_PMT_20inch_vetosMask_virtual cxr_min.sh

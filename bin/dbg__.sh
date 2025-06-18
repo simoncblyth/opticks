@@ -33,7 +33,7 @@ dbg__()
     if [ -z "$BP" ]; then
         H="";
         B="";
-        T="-ex r";
+        T="-ex \"catch throw\" -ex r";
     else
         H="-ex \"set breakpoint pending on\"";
         B="";
@@ -43,7 +43,7 @@ dbg__()
         do
             B="$B -ex \"break $bp\" ";
         done;
-        T="-ex \"info break\" -ex r";
+        T="-ex \"info break\" -ex \"catch throw\" -ex r";
     fi;
     local runline="gdb $H $B $T --args $* ";
     echo $runline;

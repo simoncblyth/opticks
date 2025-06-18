@@ -186,12 +186,12 @@ vars="$vars version VERSION"
 #test=ref10
 #test=ref10_multilaunch
 #test=input_genstep
-test=input_genstep_muon
+#test=input_genstep_muon
 
 #test=input_photon_chimney
 #test=input_photon_nnvt
 #test=input_photon_target
-#test=input_photon_wp_pmt
+test=input_photon_wp_pmt
 
 #test=large_evt
 #test=vlarge_evt

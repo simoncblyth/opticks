@@ -82,9 +82,9 @@ inline void QPMT<T>::init()
 
     INSTANCE = this ;
 
-    const int ni = qpmt_NUM_CAT ;   // 3:NNVT/HAMA/NNVT_HiQE
-    const int nj = qpmt_NUM_LAYR ;  // 4:Pyrex/ARC/PHC/Vacuum
-    const int nk = qpmt_NUM_PROP ;  // 2:RINDEX/KINDEX
+    const int ni = s_pmt::NUM_CAT ;   // 3:NNVT/HAMA/NNVT_HiQE
+    const int nj = s_pmt::NUM_LAYR ;  // 4:Pyrex/ARC/PHC/Vacuum
+    const int nk = s_pmt::NUM_PROP ;  // 2:RINDEX/KINDEX
                                     // -----------------
                                     // 3*4*2 = 24
 

@@ -33,12 +33,7 @@ template <typename T> struct qprop ;
 #endif
 
 
-enum {
-  qpmt_NUM_CAT = 3,
-  qpmt_NUM_LAYR = 4,
-  qpmt_NUM_PROP = 2,
-  qpmt_NUM_LPMT = 17612
-} ;
+#include "s_pmt.h"
 
 
 template<typename F>
@@ -62,8 +57,11 @@ struct qpmt
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     // loosely follow SPMT.h
-    QPMT_METHOD int  get_lpmtcat(  int pmtid ) const  ;
-    QPMT_METHOD F    get_qescale( int pmtid ) const  ;
+    QPMT_METHOD int  get_lpmtcat_from_lpmtid(  int lpmtid  ) const  ;
+    QPMT_METHOD int  get_lpmtcat_from_lpmtidx( int lpmtidx ) const  ;
+    QPMT_METHOD F    get_qescale_from_lpmtid(  int lpmtid  ) const  ;
+    QPMT_METHOD F    get_qescale_from_lpmtidx( int lpmtidx ) const  ;
+
     QPMT_METHOD F    get_lpmtcat_qe( int pmtcat, F energy_eV ) const ;
     QPMT_METHOD F    get_lpmtcat_ce( int pmtcat, F theta ) const ;
 
@@ -72,15 +70,15 @@ struct qpmt
 
 
     QPMT_METHOD void get_lpmtcat_stackspec( F* spec16, int pmtcat, F energy_eV ) const ;
-    QPMT_METHOD void get_lpmtid_stackspec(  F* spec16, int pmtid,  F energy_eV ) const ;
 
-    QPMT_METHOD void get_lpmtid_stackspec_ce_acosf( F* spec, int lpmtid, F energy_eV, F lposcost ) const ;
-    QPMT_METHOD void get_lpmtid_stackspec_ce(       F* spec, int lpmtid, F energy_eV, F lposcost ) const ;
+    QPMT_METHOD void get_lpmtid_stackspec(          F* spec16, int lpmtid, F energy_eV ) const ;
+    QPMT_METHOD void get_lpmtid_stackspec_ce_acosf( F* spec16, int lpmtid, F energy_eV, F lposcost ) const ;
+    QPMT_METHOD void get_lpmtid_stackspec_ce(       F* spec15, int lpmtid, F energy_eV, F lposcost ) const ;
 
 
 #ifdef WITH_CUSTOM4
-    QPMT_METHOD void get_lpmtid_SPEC(   F* spec_16 , int lpmtid, F wavelength_nm ) const ;
-    QPMT_METHOD void get_lpmtid_SPEC_ce(F* spec_16 , int lpmtid, F wavelength_nm, F lposcost ) const ;
+    QPMT_METHOD void get_lpmtid_SPEC(   F* spec16 , int lpmtid, F wavelength_nm ) const ;
+    QPMT_METHOD void get_lpmtid_SPEC_ce(F* spec16 , int lpmtid, F wavelength_nm, F lposcost ) const ;
     QPMT_METHOD void get_lpmtid_LL(  F* ll_128  , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ;
     QPMT_METHOD void get_lpmtid_COMP(F* comp_32 , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ;
     QPMT_METHOD void get_lpmtid_ART( F* art_16  , int lpmtid, F wavelength_nm, F minus_cos_theta, F dot_pol_cross_mom_nrm ) const ;
@@ -94,19 +92,35 @@ struct qpmt
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
 
 template<typename F>
-inline QPMT_METHOD int qpmt<F>::get_lpmtcat( int pmtid ) const
+inline QPMT_METHOD int qpmt<F>::get_lpmtcat_from_lpmtid( int lpmtid ) const
 {
-    return pmtid < qpmt_NUM_LPMT && pmtid > -1 ? i_lcqs[pmtid*2+0] : -2 ;
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
+}
+
+template<typename F>
+inline QPMT_METHOD int qpmt<F>::get_lpmtcat_from_lpmtidx( int lpmtidx ) const
+{
+    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
+}
+
+template<typename F>
+inline QPMT_METHOD F qpmt<F>::get_qescale_from_lpmtid( int lpmtid ) const
+{
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
 }
 template<typename F>
-inline QPMT_METHOD F qpmt<F>::get_qescale( int pmtid ) const
+inline QPMT_METHOD F qpmt<F>::get_qescale_from_lpmtidx( int lpmtidx ) const
 {
-    return pmtid < qpmt_NUM_LPMT && pmtid > -1 ? lcqs[pmtid*2+1] : -2.f ;
+    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
 }
+
+
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_lpmtcat_qe( int lpmtcat, F energy_eV ) const
 {
-    return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? qeshape_prop->interpolate( lpmtcat, energy_eV ) : -1.f ;
+    return lpmtcat > -1 && lpmtcat < s_pmt::NUM_CAT ? qeshape_prop->interpolate( lpmtcat, energy_eV ) : -1.f ;
 }
 
 /**
@@ -132,12 +146,14 @@ theta_radians range 0->pi/2
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_lpmtcat_ce( int lpmtcat, F theta_radians ) const
 {
-    return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? cetheta_prop->interpolate( lpmtcat, theta_radians ) : -1.f ;
+    //return lpmtcat > -1 && lpmtcat < qpmt_NUM_CAT ? cetheta_prop->interpolate( lpmtcat, theta_radians ) : -1.f ;
+    return lpmtcat > -1 && lpmtcat < s_pmt::NUM_CAT ? cetheta_prop->interpolate( lpmtcat, theta_radians ) : -1.f ;
 }
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_lpmtcat_rindex( int lpmtcat, int layer, int prop, F energy_eV ) const
 {
-    const unsigned idx = lpmtcat*qpmt_NUM_LAYR*qpmt_NUM_PROP + layer*qpmt_NUM_PROP + prop ;
+    //const unsigned idx = lpmtcat*qpmt_NUM_LAYR*qpmt_NUM_PROP + layer*qpmt_NUM_PROP + prop ;
+    const unsigned idx = lpmtcat*s_pmt::NUM_LAYR*s_pmt::NUM_PROP + layer*s_pmt::NUM_PROP + prop ;
     return rindex_prop->interpolate( idx, energy_eV ) ;
 }
 template<typename F>
@@ -152,10 +168,16 @@ inline QPMT_METHOD F qpmt<F>::get_lpmtcat_rindex_wl( int lpmtcat, int layer, int
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F energy_eV ) const
 {
-    const unsigned idx = lpmtcat*qpmt_NUM_LAYR*qpmt_NUM_PROP ;
-    const unsigned idx0 = idx + L0*qpmt_NUM_PROP ;
-    const unsigned idx1 = idx + L1*qpmt_NUM_PROP ;
-    const unsigned idx2 = idx + L2*qpmt_NUM_PROP ;
+    //const unsigned idx = lpmtcat*qpmt_NUM_LAYR*qpmt_NUM_PROP ;
+    //const unsigned idx0 = idx + L0*qpmt_NUM_PROP ;
+    //const unsigned idx1 = idx + L1*qpmt_NUM_PROP ;
+    //const unsigned idx2 = idx + L2*qpmt_NUM_PROP ;
+
+    const unsigned idx = lpmtcat*s_pmt::NUM_LAYR*s_pmt::NUM_PROP ;
+    const unsigned idx0 = idx + L0*s_pmt::NUM_PROP ;
+    const unsigned idx1 = idx + L1*s_pmt::NUM_PROP ;
+    const unsigned idx2 = idx + L2*s_pmt::NUM_PROP ;
+
 
     spec[0*4+0] = rindex_prop->interpolate( idx0+0u, energy_eV );
     spec[0*4+1] = zero ;
@@ -163,11 +185,13 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F 
 
     spec[1*4+0] = rindex_prop->interpolate( idx1+0u, energy_eV );
     spec[1*4+1] = rindex_prop->interpolate( idx1+1u, energy_eV );
-    spec[1*4+2] = thickness[lpmtcat*qpmt_NUM_LAYR+L1] ;
+    //spec[1*4+2] = thickness[lpmtcat*qpmt_NUM_LAYR+L1] ;
+    spec[1*4+2] = thickness[lpmtcat*s_pmt::NUM_LAYR+L1] ;
 
     spec[2*4+0] = rindex_prop->interpolate( idx2+0u, energy_eV );
     spec[2*4+1] = rindex_prop->interpolate( idx2+1u, energy_eV );
-    spec[2*4+2] = thickness[lpmtcat*qpmt_NUM_LAYR+L2] ;
+    //spec[2*4+2] = thickness[lpmtcat*qpmt_NUM_LAYR+L2] ;
+    spec[2*4+2] = thickness[lpmtcat*s_pmt::NUM_LAYR+L2] ;
 
     spec[3*4+0] = one ;  // Vacuum RINDEX
     spec[3*4+1] = zero ;
@@ -177,13 +201,15 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F 
 }
 
 
+
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F energy_eV ) const
 {
-    const int& lpmtcat = i_lcqs[lpmtid*2+0] ;
-    // printf("//qpmt::get_lpmtid_stackspec lpmtid %d lpmtcat %d \n", lpmtid, lpmtcat );
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
+    // printf("//qpmt::get_lpmtidx_stackspec lpmtid %d lpmtcat %d \n", lpmtid, lpmtcat );
 
-    const F& qe_scale = lcqs[lpmtid*2+1] ;
+    const F& qe_scale = lcqs[lpmtidx*2+1] ;
     const F qe_shape = qeshape_prop->interpolate( lpmtcat, energy_eV ) ;
     const F qe = qe_scale*qe_shape ;
 
@@ -197,8 +223,8 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F en
 
 
 /**
-get_lpmtid_stackspec_ce_acosf (see alternative get_lpmtid_stackspec_ce_acosf)
--------------------------------------------------------------------------------
+get_lpmtid_stackspec_ce_acosf (see alternative get_lpmtid_stackspec_ce)
+-------------------------------------------------------------------------
 
 This uses cetheta_prop interpolation forcing use of acosf to get theta
 
@@ -215,9 +241,10 @@ Currently called by qpmt::get_lpmtid_ATQC
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce_acosf( F* spec, int lpmtid, F energy_eV, F lposcost ) const
 {
-    const int& lpmtcat = i_lcqs[lpmtid*2+0] ;
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
 
-    const F& qe_scale = lcqs[lpmtid*2+1] ;
+    const F& qe_scale = lcqs[lpmtidx*2+1] ;
     const F qe_shape = qeshape_prop->interpolate( lpmtcat, energy_eV ) ;
     const F qe = qe_scale*qe_shape ;
 
@@ -231,7 +258,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce_acosf( F* spec, int lpm
 
     get_lpmtcat_stackspec( spec, lpmtcat, energy_eV );
 
-    //printf("//qpmt::get_lpmtid_stackspec lpmtid %d lpmtcat %d lposcost %7.3f acosf_lposcost %7.3f ce %7.3f spec[7] %7.3f \n", lpmtid, lpmtcat, lposcost, acosf_lposcost, ce, spec[7] );
+    //printf("//qpmt::get_lpmtidx_stackspec lpmtid %d lpmtidx %d lpmtcat %d lposcost %7.3f acosf_lposcost %7.3f ce %7.3f spec[7] %7.3f \n", lpmtid, lpmtidx, lpmtcat, lposcost, acosf_lposcost, ce, spec[7] );
 }
 
 
@@ -256,9 +283,10 @@ Potentially called by qpmt::get_lpmtid_ATQC
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce( F* spec, int lpmtid, F energy_eV, F lposcost ) const
 {
-    const int& lpmtcat = i_lcqs[lpmtid*2+0] ;
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
+    const F& qe_scale = lcqs[lpmtidx*2+1] ;
 
-    const F& qe_scale = lcqs[lpmtid*2+1] ;
     const F qe_shape = qeshape_prop->interpolate( lpmtcat, energy_eV ) ;
     const F qe = qe_scale*qe_shape ;
 
@@ -271,7 +299,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce( F* spec, int lpmtid, F
 
     get_lpmtcat_stackspec( spec, lpmtcat, energy_eV );
 
-    //printf("//qpmt::get_lpmtid_stackspec_ce lpmtid %d lpmtcat %d lposcost %7.3f  ce %7.3f spec[7] %7.3f \n", lpmtid, lpmtcat, lposcost, ce, spec[7] );
+    //printf("//qpmt::get_lpmtid_stackspec_ce lpmtid %d lpmtidx %d lpmtcat %d lposcost %7.3f  ce %7.3f spec[7] %7.3f \n", lpmtid, lpmtidx, lpmtcat, lposcost, ce, spec[7] );
 }
 
 

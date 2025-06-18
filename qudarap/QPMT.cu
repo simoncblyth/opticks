@@ -62,9 +62,9 @@ __global__ void _QPMT_lpmtcat_rindex( int etype, qpmt<F>* pmt, F* lookup , const
     // wierd unsigned/int diff between qpmt.h and here ? to get it to compile for device
     // switching to enum rather than constexpr const avoids the wierdness
 
-    const int& ni = qpmt_NUM_CAT ;
-    const int& nj = qpmt_NUM_LAYR ;
-    const int& nk = qpmt_NUM_PROP ;
+    const int& ni = s_pmt::NUM_CAT ;
+    const int& nj = s_pmt::NUM_LAYR ;
+    const int& nk = s_pmt::NUM_PROP ;
 
     //printf("//_QPMT_lpmtcat_rindex ni %d nj %d nk %d \n", ni, nj, nk );
     // cf the CPU equivalent NP::combined_interp_5
@@ -95,7 +95,7 @@ __global__ void _QPMT_lpmtcat_stackspec( int etype, qpmt<F>* pmt, F* lookup , co
 
     //printf("//_QPMT_lpmtcat_stackspec domain_width %d ix %d domain_value %10.4f \n", domain_width, ix, domain_value );
 
-    const int& ni = qpmt_NUM_CAT ;
+    const int& ni = s_pmt::NUM_CAT ;
     const int& nj = domain_width ;
     const int  nk = 16 ;
     const int&  j = ix ;
@@ -121,7 +121,7 @@ __global__ void _QPMT_lpmtcat_launch( int etype, qpmt<F>* pmt, F* lookup , const
 
     //printf("//_QPMT_lpmtcat_launch etype %d domain_width %d ix %d theta_radians %10.4f \n", etype, domain_width, ix, theta_radians );
 
-    const int& ni = qpmt_NUM_CAT ;
+    const int& ni = s_pmt::NUM_CAT ;
 
     for(int i=0 ; i < ni ; i++)
     {
