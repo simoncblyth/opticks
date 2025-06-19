@@ -83,7 +83,14 @@ Canonically used from U4Tree::identifySensitiveInstances
 
 The argument *instance_outer_pv* is recursively traversed
 
-Returns -1 to signify "not-a-sensor"
+Returns -1 to signify "not-a-sensor" otherwise returns
+the copyno (aka "lpmtid") from the JUNO Geant4 PV of PMTs can be zero and
+is used for identification of sensors with (unfortunately)
+a non-contiguous set of values with some very large gaps.
+
+HMM: if were to switch to using the contiguous "lpmtidx"
+rather than the non-contiguous "lpmtid" this would likely
+be the place to do it.  HMM: but its too JUNO specific for here ?
 
 **/
 

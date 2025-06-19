@@ -1734,8 +1734,21 @@ qsim::propagate_at_surface_CustomART
 -------------------------------------
 
 lpmtid:-1
-   indicates "not-a-sensor" and a sensor_identity issue, as CustomART
-   special surfaces are expected to always have sensor identities
+   indicates "not-a-sensor", that occurring at this juncture would
+   indicate a sensor_identity issue as CustomART special surfaces
+   are expected to always have sensor identities
+
+
+Where ctx.prd->identity() comes from ? Where is the "+ 1" done ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. SBT::collectInstances sets OptixInstance::instanceId from sqat4::get_IAS_OptixInstance_instanceId
+   aka "sensor_identifier"
+
+2. CSGFoundry::addInstance for firstcall:true does the "+1" as done by CSGFoundry::addInstanceVector
+
+3. original access to the copyno from Geant4 in U4SensorIdentifierDefault::getInstanceIdentity
+   which is used from U4Tree::identifySensitiveInstances to populate the stree.h snode::sensor_id
 
 **/
 

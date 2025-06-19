@@ -2113,6 +2113,15 @@ void CSGFoundry::addInstance(const float* tr16, int gas_idx, int sensor_identifi
 CSGFoundry::addInstanceVector
 ------------------------------
 
+Canonical stack::
+
+    CSGFoundry::addInstanceVector
+    CSGImport::importInst     (with argument stree::inst_f4 populated by stree::add_inst from snode::sensor_id)
+    CSGImport::import
+    CSGFoundry::importSim
+    CSGFoundry::CreateFromSim  (after U4Tree::Create within G4CXOpticks::setGeometry)
+    G4CXOpticks::setGeometry
+
 stree.h/snode.h uses sensor_identifier -1 to indicate not-a-sensor, but
 that is not convenient on GPU due to OptixInstance.instanceId limits.
 Hence here make transition by adding 1 and treating 0 as not-a-sensor,
