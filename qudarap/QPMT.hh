@@ -82,10 +82,14 @@ struct QUDARAP_API QPMT
     NPFold* serialize() const ;  // formerly get_fold
     std::string desc() const ;
 
-    // .h : CPU side lpmtcat lookups
+    // .h : CPU side lookups
+
+
     int  get_lpmtcat_from_lpmtidx( int lpmtidx ) const ;
     int  get_lpmtcat_from_lpmtid(  int lpmtid  ) const ;
     int  get_lpmtcat_from_lpmtid(  int* lpmtcat, const int* lpmtid , int num ) const ;
+
+    int  get_lpmtidx_from_lpmtid(  int* lpmtidx, const int* lpmtid , int num ) const ;
 
     static NP* MakeArray_lpmtcat(int etype, unsigned num_domain );
     static NP* MakeArray_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid );
@@ -115,7 +119,8 @@ QPMT::QPMT
 5. narrows src_thickness into thickness
 6. narrows src_lcqs into lcqs
 
-NB jpmt is the NPFold provided by SPMT::serialize not the raw fold from _PMTSimParamData
+NB the jpmt argument is the NPFold provided by SPMT::CreateFromJPMTAndSerialize
+ not the raw fold from _PMTSimParamData
 
 **/
 
@@ -236,6 +241,22 @@ inline int QPMT<T>::get_lpmtcat_from_lpmtid( int* lpmtcat_, const int* lpmtid_, 
     }
     return num_lpmtid ;
 }
+
+template<typename T>
+inline int QPMT<T>::get_lpmtidx_from_lpmtid( int* lpmtidx_, const int* lpmtid_, int num_lpmtid ) const
+{
+    for(int i=0 ; i < num_lpmtid ; i++)
+    {
+        int lpmtid = lpmtid_[i] ;
+        int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+        lpmtidx_[i] = lpmtidx ;
+    }
+    return num_lpmtid ;
+}
+
+
+
+
 
 
 /**

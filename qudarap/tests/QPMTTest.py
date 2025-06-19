@@ -26,10 +26,6 @@ class QPMTTest(object):
         self.init_costh_domain()
         self.title_prefix = "%s : %s " % ( SCRIPT, t.base )
 
-    def init_mct_domain(self):
-        mct = self.t.qscan.mct_domain
-        self.mct = mct
-
     def init_energy_eV_domain(self):
         e = self.t.qscan.energy_eV_domain
         #e0,e1 = 2.3, 3.3
@@ -52,6 +48,10 @@ class QPMTTest(object):
         self.h0 = h0
         self.h1 = h1
         self.hse = hse
+
+    def init_mct_domain(self):
+        mct = self.t.qscan.mct_domain
+        self.mct = mct
 
     def init_costh_domain(self):
         c = self.t.qscan.costh_domain
@@ -187,9 +187,6 @@ class QPMTTest(object):
         fig.show()
 
 
-
-
-
     def present_rindex(self):
         t = self.t
 
@@ -259,10 +256,10 @@ class QPMTTest(object):
         t.qscan.mct_domain.shape
         Out[8]: (900,)
 
-        900 is scan over mct : minus_cos_theta of angle of incidence   (NOT landing position) 
+        900 is scan over mct : minus_cos_theta of angle of incidence   (NOT landing position)
 
         atqc[:,:,3]
-              behaves as expected, fixed across the scan at high values ~0.91 - 0.97 depending on pmtid 
+              behaves as expected, fixed across the scan at high values ~0.91 - 0.97 depending on pmtid
 
         """
         pass
@@ -352,16 +349,21 @@ class QPMTTest(object):
 
     def check_lpmtcat(self):
         t = self.t
+        p = t.qpmt  # QPMT members
+        s = t.qscan # QPMTTest scan results
 
-        expect_lpmtcat = t.src_lcqs[t.lpmtid,0]
-        lpmtcat = t.lpmtid_stackspec[:,:,0,3].view(np.int32)
+        expect_lpmtcat = p.src_lcqs[s.lpmtidx,0]
+        lpmtcat = s.spec[:,:,0,3].astype(np.int32)
         assert( np.all( lpmtcat[:,0] == expect_lpmtcat ) )
 
-        lpmtid = t.lpmtid
-        lpmtid_lpmtcat = np.max(t.lpmtid_stackspec[:,:,0,3].view(np.int32), axis=1)
-        lpmtid_qe_scale = np.max(t.lpmtid_stackspec[:,:,1,3], axis=1)
-        lpmtid_qe_shape = np.max(t.lpmtid_stackspec[:,:,2,3], axis=1)
-        lpmtid_qe = np.max(t.lpmtid_stackspec[:,:,3,3], axis=1)
+        lpmtid = s.lpmtid
+
+        ## across the mct scan the identity values all the same, so use np.max
+        lpmtid_lpmtcat  = np.max(s.spec[:,:,0,3].astype(np.int32), axis=1)
+        lpmtid_qe_scale = np.max(s.spec[:,:,1,3], axis=1)
+        lpmtid_qe_shape = np.max(s.spec[:,:,2,3], axis=1)
+        lpmtid_qe       = np.max(s.spec[:,:,3,3], axis=1)
+        ## these were formerly lpmtid_stackspec now just spec
 
         expr = "np.c_[lpmtid,lpmtid_lpmtcat,lpmtid_qe_scale,lpmtid_qe_shape,lpmtid_qe]"
         lpmtid_tab = eval(expr)
@@ -375,6 +377,12 @@ if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
     pt = QPMTTest(t)
+
+    pt.check_lpmtcat()
+
+    p = t.qpmt
+    s = t.qscan
+
 
     #plot = "rindex"
     #plot = "qeshape"

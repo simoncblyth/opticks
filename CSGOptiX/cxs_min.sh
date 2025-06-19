@@ -475,8 +475,8 @@ opticks_integration_mode=1
 
 
 #opticks_hit_mask=SD
-#opticks_hit_mask=EC
-#export OPTICKS_HIT_MASK=${OPTICKS_HIT_MASK:-$opticks_hit_mask}
+opticks_hit_mask=EC
+export OPTICKS_HIT_MASK=${OPTICKS_HIT_MASK:-$opticks_hit_mask}
 
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep}

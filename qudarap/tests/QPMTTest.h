@@ -19,13 +19,18 @@ struct NPFold ;
 template<typename T>
 struct QPMTTest
 {
-    static constexpr const char* LPMTID_LIST = "0,10,55,98,100,137,1000,10000,17611" ;
+    static constexpr const char* LPMTID_LIST = "0,10,55,98,100,137,1000,10000,17611,50000,51000,52000,52399" ;
+    // HMM: duplicates SPMT::LPMTID_LIST
 
     const QPMT<T>* qpmt ;
 
     const char* lpmtid_list ;  // comma delimited string of ints from LPMTID_LIST envvar or default
+
     NP*         lpmtid ;       // array created from the string
     int         num_lpmtid ;
+
+    NP*         lpmtidx ;
+    int         num_lpmtidx ;
 
     NP*         lpmtcat ;      // array of cpu side category lookups using QPMT::get_lpmtcat
     int         num_lpmtcat ;
@@ -65,9 +70,11 @@ template<typename T>
 inline QPMTTest<T>::QPMTTest(const NPFold* jpmt  )
     :
     qpmt(new QPMT<T>(jpmt)),
-    lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (<17612+2400=20012) in envvar
+    lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (0:52400) in envvar
     lpmtid(NPX::FromString<int>(lpmtid_list,',')),            // create array from string
     num_lpmtid(lpmtid->shape[0]),
+    lpmtidx(NP::Make<int>(num_lpmtid)),
+    num_lpmtidx(qpmt->get_lpmtidx_from_lpmtid(lpmtidx->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)), // CPU side lookups
     lpmtcat(NP::Make<int>(num_lpmtid)),
     num_lpmtcat(qpmt->get_lpmtcat_from_lpmtid(lpmtcat->values<int>(),lpmtid->cvalues<int>(),num_lpmtid)), // CPU side lookups
     energy_eV_domain(NP::Linspace<T>(1.55,15.50,1550-155+1)),
@@ -87,7 +94,9 @@ inline NPFold* QPMTTest<T>::make_qscan() const
     qscan->add("theta_radians_domain", theta_radians_domain ) ;
     qscan->add("costh_domain", costh_domain ) ;
     qscan->add("mct_domain", mct_domain ) ;
+
     qscan->add("lpmtid",  lpmtid ) ;
+    qscan->add("lpmtidx", lpmtidx ) ;
     qscan->add("lpmtcat", lpmtcat ) ;
 
     qscan->add("lpmtcat_rindex",    qpmt->lpmtcat_scan(qpmt_RINDEX,  energy_eV_domain) ) ;

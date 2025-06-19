@@ -213,7 +213,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F en
     const F qe_shape = qeshape_prop->interpolate( lpmtcat, energy_eV ) ;
     const F qe = qe_scale*qe_shape ;
 
-    spec[0*4+3] = lpmtcat ;
+    spec[0*4+3] = lpmtcat ;  // profligate int to float, s.spec[:,:,0,3].astype(np.int32)
     spec[1*4+3] = qe_scale ;
     spec[2*4+3] = qe_shape ;
     spec[3*4+3] = qe ;
@@ -241,7 +241,7 @@ Currently called by qpmt::get_lpmtid_ATQC
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce_acosf( F* spec, int lpmtid, F energy_eV, F lposcost ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);  // lpmtidx:-1 FOR SPMT, BUT THAT SHOULD NEVER HAPPEN
     const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
 
     const F& qe_scale = lcqs[lpmtidx*2+1] ;

@@ -3,6 +3,13 @@ usage(){ cat << EOU
 QPMTTest
 ==========
 
+::
+
+   ~/o/qudarap/tests/QPMTTest.sh
+   ~/o/qudarap/tests/QPMTTest.sh info_run_pdb
+
+
+
 NB : standard qudarap/om builds the QPMTTest binary, not this script
 
 ::

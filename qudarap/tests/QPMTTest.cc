@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
     std::cout << "QPMTTest.main.Before:" << QPMT<float>::Desc() << std::endl ;
 
-    const NPFold* jpmt_f = SPMT::Serialize();  // this the SPMT processed and serialized info, not the raw one
+    const NPFold* jpmt_f = SPMT::CreateFromJPMTAndSerialize();
 
     LOG_IF(fatal, jpmt_f==nullptr) << " jpmt_f==nullptr : probably GEOM,${GEOM}_CFBaseFromGEOM envvars not setup ?" ;
     if(jpmt_f==nullptr) return 0 ;
@@ -73,5 +73,4 @@ int main(int argc, char** argv)
 
     return 0 ;
 }
-
 
