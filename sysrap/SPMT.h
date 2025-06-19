@@ -179,7 +179,7 @@ struct SPMT
     static constexpr const char* CE_costh_PMTCAT_NAMES = "CECOS_NNVTMCP.npy,CECOS_R12860.npy,CECOS_NNVTMCP_HiQE.npy" ;
 
 
-    static const NPFold* Serialize(const char* path=nullptr);
+    static const NPFold* CreateFromJPMTAndSerialize(const char* path=nullptr);
     static SPMT* CreateFromJPMT(const char* path=nullptr);
     SPMT(const NPFold* jpmt);
 
@@ -334,7 +334,7 @@ const int SPMT::N_LPMT = ssys::getenvint("N_LPMT", 1 ); // 10 LPMT default for f
 const int SPMT::N_MCT  = ssys::getenvint("N_MCT",  180 );  // "AOI" (actually mct) scan points from -1. to 1.
 const int SPMT::N_SPOL = ssys::getenvint("N_SPOL", 1 ); // polarization scan points from S-pol to P-pol
 
-inline const NPFold* SPMT::Serialize(const char* path) // static
+inline const NPFold* SPMT::CreateFromJPMTAndSerialize(const char* path) // static
 {
     SPMT* spmt = SPMT::CreateFromJPMT(path);
     const NPFold* fold = spmt ? spmt->serialize() : nullptr ;

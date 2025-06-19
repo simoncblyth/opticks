@@ -320,7 +320,6 @@ from NPFold::add_subfold. But causes other problems.
 
 const NPFold* SSim::get_jpmt_nocopy() const
 {
-
     NPFold* f = top ? top->find_subfold_(JPMT_RELP) : nullptr ;
     //if(f) f->set_verbose_r();
     LOG(LEVEL)
@@ -362,8 +361,10 @@ SSim::get_spmt_f
 This is invoked from QSim::UploadComponents and
 used to instanciate QPMT for GPU uploading.
 
-**/
+TODO: tidy up this chain of four methods by
+moving the details into statics within SPMT.h
 
+**/
 
 const NPFold* SSim::get_spmt_f() const
 {
