@@ -30,22 +30,26 @@ dbg__()
     : opticks/bin/dbg__.sh
     : eg BP="junoHit_PMT::operator delete" ipc
 
+    local H=""
+    local B=""
+    local T=""
+    local X=""
+
+    [ -n "$CATCH_THROW" ] && X="-ex \"catch throw\""
+
     if [ -z "$BP" ]; then
-        H="";
-        B="";
-        T="-ex \"catch throw\" -ex r";
+        T="-ex r";
     else
         H="-ex \"set breakpoint pending on\"";
-        B="";
         : split BP on comma delimiter preserving spaces within fields
         readarray -td, bps <<<"$BP"
         for bp in "${bps[@]}"
         do
             B="$B -ex \"break $bp\" ";
         done;
-        T="-ex \"info break\" -ex \"catch throw\" -ex r";
+        T="-ex \"info break\" -ex r";
     fi;
-    local runline="gdb $H $B $T --args $* ";
+    local runline="gdb $H $B $T $X --args $* ";
     echo $runline;
     date;
     eval $runline;

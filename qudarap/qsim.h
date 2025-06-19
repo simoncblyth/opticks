@@ -1830,21 +1830,18 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
         float u_theEfficiency = curand_uniform(&rng) ;
         float u_collectionEfficiency = curand_uniform(&rng);
 
-        flag = u_theEfficiency < theEfficiency ? SURFACE_DETECT : SURFACE_ABSORB ;
+        flag = u_theEfficiency < theEfficiency ?
+                                                    (  u_collectionEfficiency < collectionEfficiency ? EFFICIENCY_COLLECT : EFFICIENCY_CULL )
+                                               :
+                                                    SURFACE_ABSORB
+                                               ;
 
-        unsigned ce_flag = flag == SURFACE_DETECT
-                                 ?
-                                     (  u_collectionEfficiency < collectionEfficiency ? EFFICIENCY_COLLECT : EFFICIENCY_CULL )
-                                 :
-                                     0u
-                                 ;
-
-        p.flagmask |= ce_flag ;  // sneak into flagmask without changing flag
+        // former SD:SURFACE_DETECT, now becomes EC:EFFICIENCY_COLLECT or EX:EFFICIENCY_CULL depending on collectionEfficiency and random throw
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
         if( ctx.pidx == base->pidx )
-            printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA EC/EX pidx %7d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) u_theEfficiency  %7.3f theEfficiency %7.3f flag %d ce_flag %d\n",
-                                                                    ctx.pidx, lpmtid, ATQC[0],ATQC[1], ATQC[2],ATQC[3],  u_theEfficiency,  theEfficiency, flag, ce_flag  );
+            printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA EC/EX pidx %7d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) u_theEfficiency  %7.3f theEfficiency %7.3f flag %d \n",
+                                                                    ctx.pidx, lpmtid, ATQC[0],ATQC[1], ATQC[2],ATQC[3],  u_theEfficiency,  theEfficiency, flag );
 #endif
 
     }

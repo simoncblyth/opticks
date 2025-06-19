@@ -78,6 +78,7 @@ struct SYSRAP_API OpticksPhoton
     static bool IsTransmitFlag(const unsigned flag);
     static bool IsSurfaceDetectOrAbsorbFlag(const unsigned flag);
     static bool IsSurfaceDetectFlag(const unsigned flag);
+    static bool IsDetectFlag(const unsigned flag);
 
     static bool HasCerenkovFlag(const unsigned flagmask);
     static bool HasScintillationFlag(const unsigned flagmask);
@@ -117,11 +118,11 @@ struct SYSRAP_API OpticksPhoton
 
 inline bool OpticksPhoton::IsTerminalFlag(const unsigned flag) // static : AB SA SD MI
 {
-    return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
+    return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS | EFFICIENCY_COLLECT | EFFICIENCY_CULL )) != 0 ;
 }
 inline bool OpticksPhoton::IsBoundaryFlag(const unsigned flag) // static :  SD SA DR SR BR BT
 {
-    return (flag & (SURFACE_DETECT | SURFACE_ABSORB | SURFACE_DREFLECT | SURFACE_SREFLECT | BOUNDARY_REFLECT | BOUNDARY_TRANSMIT )) != 0 ;
+    return (flag & (SURFACE_DETECT | SURFACE_ABSORB | SURFACE_DREFLECT | SURFACE_SREFLECT | BOUNDARY_REFLECT | BOUNDARY_TRANSMIT | EFFICIENCY_COLLECT | EFFICIENCY_CULL )) != 0 ;
 }
 inline bool OpticksPhoton::IsBulkFlag(const unsigned flag) // static : AB SC RE TO CK SI
 {
@@ -147,6 +148,11 @@ inline bool OpticksPhoton::IsSurfaceDetectFlag(const unsigned flag) // static : 
 {
     return flag == SURFACE_DETECT ;
 }
+inline bool OpticksPhoton::IsDetectFlag(const unsigned flag) // static : SD EC EX
+{
+    return (flag & (SURFACE_DETECT | EFFICIENCY_COLLECT | EFFICIENCY_CULL )) != 0 ;
+}
+
 
 
 

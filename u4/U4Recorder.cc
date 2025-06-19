@@ -1044,7 +1044,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool is_fastsim_flag = flag == DEFER_FSTRACKINFO ;
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT
     bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(flag) ;  // SD SA
-    bool is_detect_flag = OpticksPhoton::IsSurfaceDetectFlag(flag) ;  // SD
+    bool is_detect_flag = OpticksPhoton::IsDetectFlag(flag) ;  // SD
 
 #ifndef PRODUCTION
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;
@@ -1199,6 +1199,9 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
         Check_TrackStatus_Flag(tstat, flag, "UserSteppingAction_Optical" );
 
         U4StepPoint::Update(current_photon, post);
+
+
+
 
         current_photon.set_flag( flag );
 
