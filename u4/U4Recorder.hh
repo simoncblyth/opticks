@@ -142,6 +142,9 @@ public:
     template<typename T>
     void UserSteppingAction_Optical(const G4Step*);
 
+    static unsigned EPH_EFFICIENCY_COLLECT_OR_CULL(unsigned eph);
+    static void     EPH_FlagCheck(unsigned original_flag, unsigned eph);
+
 
     /**
     export U4Recorder__UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft=1

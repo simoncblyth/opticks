@@ -579,9 +579,6 @@ public:
 #endif
 
     void     finalPhoton(const spho& sp);
-    static unsigned FinalPhoton_eph_efficiency_collect_or_cull( unsigned eph ) ;
-    static void     FinalPhoton_eph_flag_check(unsigned original_flag, unsigned eph) ;
-
 
     static void AddProcessHitsStamp(int idx, int p);
     void addProcessHitsStamp(int p) ;

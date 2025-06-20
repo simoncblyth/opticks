@@ -17,6 +17,7 @@ Boundary class changes need to match in all the below::
 #include "sphoton.h"
 
 #include "STrackInfo.h"
+#include "SProcessHits_EPH.h"
 #include "spho.h"
 #include "srec.h"
 #include "ssys.h"
@@ -1202,6 +1203,17 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
 
 
+        unsigned eph = ulabel.eph();  // SProcessHits_EPH.h
+        if( flag == SURFACE_DETECT || flag == SURFACE_ABSORB || flag == BULK_ABSORB )
+        {
+            EPH_FlagCheck(flag,eph);
+        }
+        if( flag == SURFACE_DETECT )
+        {
+            flag = EPH_EFFICIENCY_COLLECT_OR_CULL( eph );
+            LOG_IF(info, SEvt::EPH_) << "changed SD flag to " << OpticksPhoton::Abbrev(flag) << " due to eph " << EPH::Name(eph) ;
+        }
+
 
         current_photon.set_flag( flag );
 
@@ -1219,12 +1231,97 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 }
 
 
+/**
+U4Recorder::EFFICIENCY_COLLECT_OR_CULL
+---------------------------------------
+
+Distinguish original flag of SURFACE_DETECT into EFFICIENCY_COLLECT OR EFFICIENCY_CULL
+depending on eph enum communicated from Geant4 ProcessHits.
+
++--------------------+----------------------------------------------+-----------------------+
+|  original_flag     |  EPH:: flags                                 |  returned flag        |
++====================+==============================================+=======================+
+|  SURFACE_DETECT    |  SAVENORM YMERGE                             |  EFFICIENCY_COLLECT   |
++--------------------+----------------------------------------------+-----------------------+
+|  SURFACE_DETECT    |   NDECULL                                    |  EFFICIENCY_CULL      |
++--------------------+----------------------------------------------+-----------------------+
+
+**/
+
+unsigned U4Recorder::EPH_EFFICIENCY_COLLECT_OR_CULL(unsigned eph)  // static
+{
+    bool eph_collect = eph == EPH::SAVENORM || eph == EPH::YMERGE ;
+    bool eph_cull    = eph == EPH::NDECULL  ;
+    assert( eph_collect ^ eph_cull ) ;
+    return eph_collect ? EFFICIENCY_COLLECT : EFFICIENCY_CULL ;
+}
+
+
+/**
+U4Recorder::EPH_FlagCheck
+--------------------------
+
+See SProcessHits_EPH.h
+
+Arrive at RIP final flag based on the eph enum from ProcessHits, that
+got here via the track info label plus U4RecorderAnaMgr/U4Recorder
+
+see "jcv junoSD_PMT_v2"
+
+
+Observed correspondence between flags
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++--------------------+----------------------------------------------+-----------------------+
+|  original_flag     |  EPH:: flags                                 |  returned flag        |
++====================+==============================================+=======================+
+|  SURFACE_ABSORB    |  UNSET NEDEP                                 |  SURFACE_ABSORB       |
++--------------------+----------------------------------------------+-----------------------+
+|  SURFACE_DETECT    |  SAVENORM YMERGE                             |  EFFICIENCY_COLLECT   |
++--------------------+----------------------------------------------+-----------------------+
+|  SURFACE_DETECT    |   NDECULL                                    |  EFFICIENCY_CULL      |
++--------------------+----------------------------------------------+-----------------------+
+|  BULK_ABSORB       |  UNSET NEDEP NBOUND                          |  BULK_ABSORB          |
++--------------------+----------------------------------------------+-----------------------+
+
+**/
+void U4Recorder::EPH_FlagCheck(unsigned original_flag, unsigned eph)  // static
+{
+    bool expected_original_flag = original_flag == SURFACE_DETECT || original_flag == SURFACE_ABSORB || original_flag == BULK_ABSORB ;
+
+    bool is_eph_surface_absorb = eph == EPH::NEDEP || eph == EPH::UNSET ;
+    bool is_eph_bulk_absorb    = eph == EPH::NEDEP || eph == EPH::UNSET || eph == EPH::NBOUND ;
+    bool is_eph_collect        = eph == EPH::SAVENORM || eph == EPH::YMERGE ;
+    bool is_eph_cull           = eph == EPH::NDECULL  ;
+    bool is_eph_detect         = eph == EPH::SAVENORM || eph == EPH::YMERGE || eph == EPH::NDECULL  ;
+
+    bool consistent_flag = (  original_flag == SURFACE_DETECT && is_eph_detect ) ||
+                           (  original_flag == SURFACE_ABSORB && is_eph_surface_absorb ) ||
+                           (  original_flag == BULK_ABSORB    && is_eph_bulk_absorb ) ;
+
+
+    LOG_IF(info, !consistent_flag || !expected_original_flag )
+         << " original_flag " << OpticksPhoton::Flag(original_flag)
+         << " expected_original_flag " << ( expected_original_flag ? "YES" : "NO " )
+         << " eph " << std::setw(2) << eph
+         << " eph_ " << EPH::Name(eph)
+         << " is_eph_collect " << ( is_eph_collect ? "YES" : "NO " )
+         << " is_eph_cull " << ( is_eph_cull ? "YES" : "NO " )
+         << " consistent_flag " << ( consistent_flag ? "YES" : "NO " )
+         ;
+
+    assert( consistent_flag );
+    assert( expected_original_flag );
+}
+
+
+
+
+
+
+
 const double U4Recorder::SLOW_FAKE = ssys::getenvdouble("U4Recorder__SLOW_FAKE", 1e-2) ;
 const bool U4Recorder::UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft = ssys::getenvbool(UserSteppingAction_Optical_ClearNumberOfInteractionLengthLeft_) ;
-
-
-
-
 
 
 

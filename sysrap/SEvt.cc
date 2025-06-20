@@ -43,7 +43,6 @@
 #include "SComp.h"
 #include "SProf.hh"
 
-#include "SProcessHits_EPH.h"
 
 
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
@@ -3013,25 +3012,6 @@ void SEvt::finalPhoton(const spho& label)
     sctx& ctx = current_ctx ;
     assert( ctx.idx == idx );
 
-    unsigned original_flag = ctx.p.flag();
-    int eph = label.eph();
-    FinalPhoton_eph_flag_check(original_flag,eph);
-
-    if(original_flag == SURFACE_DETECT)
-    {
-         unsigned ec_or_ex = FinalPhoton_eph_efficiency_collect_or_cull( eph );
-         ctx.p.scrub_flagmask(SURFACE_DETECT);
-         ctx.p.set_flag(ec_or_ex);  // sets both flag and flagmask
-    }
-    unsigned final_flag = ctx.p.flag();
-
-    LOG_IF(info, EPH_)
-        << " original_flag [" << OpticksPhoton::Abbrev(original_flag) << "]"
-        << " eph " << std::setw(15) << EPH::Name(eph)
-        << " final_flag  [" << OpticksPhoton::Abbrev(final_flag) << "]"
-        ;
-
-
 #ifndef PRODUCTION
 #ifdef WITH_SUP
     quadx6& xsup = (quadx6&)ctx.sup ;
@@ -3043,91 +3023,6 @@ void SEvt::finalPhoton(const spho& label)
 #endif
 
     evt->photon[idx] = ctx.p ;   // HUH: why not do this in ctx.end ?
-}
-
-/**
-SEvt::FinalPhoton_eph_efficiency_collect_or_cull
----------------------------------------------------
-
-Distinguish original flag of SURFACE_DETECT into EFFICIENCY_COLLECT OR EFFICIENCY_CULL
-
-+--------------------+----------------------------------------------+-----------------------+
-|  original_flag     |  EPH:: flags                                 |  returned flag        |
-+====================+==============================================+=======================+
-|  SURFACE_DETECT    |  SAVENORM YMERGE                             |  EFFICIENCY_COLLECT   |
-+--------------------+----------------------------------------------+-----------------------+
-|  SURFACE_DETECT    |   NDECULL                                    |  EFFICIENCY_CULL      |
-+--------------------+----------------------------------------------+-----------------------+
-
-**/
-
-unsigned SEvt::FinalPhoton_eph_efficiency_collect_or_cull(unsigned eph) // static
-{
-    bool is_collect = eph == EPH::SAVENORM || eph == EPH::YMERGE ;
-    bool is_cull    = eph == EPH::NDECULL  ;
-    assert( is_collect ^ is_cull ) ;
-    return is_collect ? EFFICIENCY_COLLECT : EFFICIENCY_CULL ;
-}
-
-
-/**
-SEvt::FinalPhoton_eph_flag_check
-------------------------------------
-
-See SProcessHits_EPH.h
-
-Arrive at RIP final flag based on the eph enum from ProcessHits, that
-got here via the track info label plus U4RecorderAnaMgr/U4Recorder
-
-see "jcv junoSD_PMT_v2"
-
-Expect original_flag will be SURFACE_DETECT or SURFACE_ABSORB
-
-
-Observed correspondence between flags
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-+--------------------+----------------------------------------------+-----------------------+
-|  original_flag     |  EPH:: flags                                 |  returned flag        |
-+====================+==============================================+=======================+
-|  SURFACE_ABSORB    |  UNSET NEDEP                                 |  SURFACE_ABSORB       |
-+--------------------+----------------------------------------------+-----------------------+
-|  SURFACE_DETECT    |  SAVENORM YMERGE                             |  EFFICIENCY_COLLECT   |
-+--------------------+----------------------------------------------+-----------------------+
-|  SURFACE_DETECT    |   NDECULL                                    |  EFFICIENCY_CULL      |
-+--------------------+----------------------------------------------+-----------------------+
-|  BULK_ABSORB       |  UNSET NEDEP NBOUND                          |  BULK_ABSORB          |
-+--------------------+----------------------------------------------+-----------------------+
-
-**/
-
-
-void SEvt::FinalPhoton_eph_flag_check(unsigned original_flag, unsigned eph)  // static
-{
-    bool expected_original_flag = original_flag == SURFACE_DETECT || original_flag == SURFACE_ABSORB || original_flag == BULK_ABSORB ;
-
-    bool is_eph_surface_absorb = eph == EPH::NEDEP || eph == EPH::UNSET ;
-    bool is_eph_bulk_absorb    = eph == EPH::NEDEP || eph == EPH::UNSET || eph == EPH::NBOUND ;
-    bool is_eph_collect        = eph == EPH::SAVENORM || eph == EPH::YMERGE ;
-    bool is_eph_cull           = eph == EPH::NDECULL  ;
-    bool is_eph_detect         = eph == EPH::SAVENORM || eph == EPH::YMERGE || eph == EPH::NDECULL  ;
-
-    bool consistent_flag = (  original_flag == SURFACE_DETECT && is_eph_detect ) ||
-                           (  original_flag == SURFACE_ABSORB && is_eph_surface_absorb ) ||
-                           (  original_flag == BULK_ABSORB    && is_eph_bulk_absorb ) ;
-
-    LOG_IF(info, !consistent_flag || !expected_original_flag )
-         << " original_flag " << OpticksPhoton::Flag(original_flag)
-         << " expected_original_flag " << ( expected_original_flag ? "YES" : "NO " )
-         << " eph " << std::setw(2) << eph
-         << " eph_ " << EPH::Name(eph)
-         << " is_eph_collect " << ( is_eph_collect ? "YES" : "NO " )
-         << " is_eph_cull " << ( is_eph_cull ? "YES" : "NO " )
-         << " consistent_flag " << ( consistent_flag ? "YES" : "NO " )
-         ;
-
-    assert( consistent_flag );
-    assert( expected_original_flag );
 }
 
 
