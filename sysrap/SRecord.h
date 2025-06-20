@@ -7,10 +7,13 @@ Used from SGLFW_Event.h
 
 **/
 
+#include "NP.hh"
 
 #include "spath.h"
+#include "sseq_record.h"
+#include "sstr.h"
 #include "scuda.h"
-#include "NP.hh"
+
 
 
 struct SRecord
@@ -26,7 +29,9 @@ struct SRecord
     float4 mx = {} ;
     float4 ce = {} ;
 
-    static SRecord* Load(const char* fold, const char* _slice=nullptr );
+    static NP*      LoadArray( const char* _fold, const char* _slice );
+    static SRecord* Load(      const char* _fold, const char* _slice=nullptr );
+
     SRecord(NP* record);
     void init() ;
 
@@ -41,10 +46,17 @@ struct SRecord
 };
 
 /**
-SRecord::Load
-------------------
+SRecord::LoadArray
+-------------------
 
-Two forms of slice selection are handled.
+Several forms of slice selection are handled.
+
+The slice argument supports envvar tokens like "$AFOLD_RECORD_SLICE"
+that yield a selection string or direct such strings.
+
+0. seqhis history string, eg::
+
+    TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT SD
 
 1. "where" selection, eg pick photon records with y coordinate
    of the first step point less than a value::
@@ -60,19 +72,18 @@ Two forms of slice selection are handled.
 The indexSlice form uses partial loading of items from files
 to enable working with very large record files, eg 66GB.
 
-The _slice can be specified via envvar with eg "$AFOLD_RECORD_SLICE"
 
 **/
 
-inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
+inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
 {
     const char* path = spath::Resolve(_fold, NAME);
-    bool looks_unresolved = spath::LooksUnresolved(path, _fold);
 
+    bool looks_unresolved = spath::LooksUnresolved(path, _fold);
     if(looks_unresolved)
     {
         std::cout
-            << "SRecord::Load"
+            << "SRecord::LoadArray"
             << " FAILED : DUE TO MISSING ENVVAR\n"
             << " _fold [" << ( _fold ? _fold : "-" ) << "]\n"
             << " path ["  << (  path ?  path : "-" ) << "]\n"
@@ -82,8 +93,18 @@ inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
         return nullptr ;
     }
 
+
     NP* a = nullptr ;
-    if(NP::LooksLikeWhereSelection(_slice))
+
+    if( _slice == nullptr )
+    {
+        a = NP::Load(path);
+    }
+    else if(sseq_record::LooksLikeRecordSeqSelection(_slice))
+    {
+        a = sseq_record::LoadRecordSeqSelection(_fold, _slice);
+    }
+    else if(NP::LooksLikeWhereSelection(_slice))
     {
         a = NP::LoadThenSlice<float>(path, _slice);
     }
@@ -91,8 +112,17 @@ inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
     {
         a = NP::LoadSlice(path, _slice);
     }
-    return new SRecord(a);
+    return a ;
 }
+
+
+inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
+{
+    NP* _record = LoadArray(_fold, _slice);
+    return new SRecord(_record);
+}
+
+
 
 
 inline SRecord::SRecord(NP* _record)

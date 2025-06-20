@@ -59,11 +59,11 @@ public:
     template<typename ... Args>
     static const char* Resolve(Args ... args );
 
-    static bool StartsWith( const char* s, const char* q);
 
     static bool LooksUnresolved(  const char* path , const char* _path );
     static bool LooksUnresolved0( const char* path , const char* _path );
 
+    static bool StartsWith( const char* s, const char* q);
     static bool EndsWith( const char* path, const char* q);
     static int SplitExt0(std::string& dir, std::string& stem, std::string& ext, const char* path );
     static int SplitExt(std::string& dir, std::string& stem, std::string& ext, const char* path );
@@ -549,25 +549,6 @@ template const char* spath::Resolve( const char*, const char*, const char* );
 template const char* spath::Resolve( const char*, const char*, const char*, const char* );
 
 
-/**
-spath::StartsWith
---------------------
-
-Returns true when the test string *s* starts with the
-same chars as the query string *q*, eg::
-
-    s : abcdefg
-    q : abcd
-
-**/
-
-
-inline bool spath::StartsWith( const char* s, const char* q)
-{
-    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
-}
-
-
 
 /**
 spath::LooksUnresolved
@@ -601,6 +582,29 @@ inline bool spath::LooksUnresolved0( const char* path , const char* _path )
     bool path_is_same_without_dollar = path && strlen(path) > 1 && strcmp(_path+1, path) == 0  ;
     return _path_starts_with_dollar && path_is_same_without_dollar ;
 }
+
+
+
+
+/**
+spath::StartsWith
+--------------------
+
+Returns true when the test string *s* starts with the
+same chars as the query string *q*, eg::
+
+    s : abcdefg
+    q : abcd
+
+**/
+
+
+inline bool spath::StartsWith( const char* s, const char* q)
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
+
+
 
 
 inline bool spath::EndsWith( const char* path, const char* q)

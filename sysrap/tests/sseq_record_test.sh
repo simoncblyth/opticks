@@ -11,7 +11,7 @@ sseq_record_test.sh
 EOU
 }
 
-SDIR=$(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath $BASH_SOURCE))
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
@@ -32,7 +32,7 @@ defarg="info_build_run"
 arg=${1:-$defarg}
 
 vars=""
-vars="$vars BASH_SOURCE SDIR GEOM AFOLD BFOLD name bin"
+vars="$vars BASH_SOURCE GEOM AFOLD AFOLD_RECORD_SLICE BFOLD BFOLD_RECORD_SLICE name bin"
 
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -40,13 +40,13 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
-   gcc $SDIR/$name.cc -std=c++11 -lstdc++ -I$SDIR/.. -I$CUDA_PREFIX/include -o $bin
+   gcc $name.cc -std=c++11 -lstdc++ -I.. -I$CUDA_PREFIX/include -o $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-    $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
+   $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi
 
 

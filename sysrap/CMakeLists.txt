@@ -368,6 +368,8 @@ set(HEADERS
     srec.h
     sseq.h
     sseq_index.h
+    sseq_record.h
+    sseq_array.h
 
     sframe.h
     sfr.h

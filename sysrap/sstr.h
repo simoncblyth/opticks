@@ -25,9 +25,12 @@ struct sstr
     static bool MatchEnd(   const char* s, const char* q);
     static bool EndsWith(   const char* s, const char* q);
 
+    static bool StartsWithElem(const char* s, const char* qq,  char delim=',' );
+    static bool StartsWithElem(const char* s, std::vector<std::string>& qq );
+
+
     static constexpr const char* AZaz = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ;
     static bool StartsWithLetterAZaz(const char* q );
-
     static bool Contains(   const char* s_ , const char* q_);
 
     static const char* TrimLeading(const char* s);
@@ -189,6 +192,20 @@ inline bool sstr::MatchStart( const char* s, const char* q)
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
 }
+
+
+/**
+sstr::StartsWith
+--------------------
+
+Returns true when the test string *s* starts with the
+same chars as the query string *q*, eg::
+
+    s : abcdefg
+    q : abcd
+
+**/
+
 inline bool sstr::StartsWith( const char* s, const char* q)  // synonym for sstr::MatchStart
 {
     return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
@@ -205,6 +222,29 @@ inline bool sstr::EndsWith( const char* s, const char* q)
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
+
+
+inline bool sstr::StartsWithElem(const char* s, const char* _qq, char delim )
+{
+    std::vector<std::string> qq ;
+    Split(_qq, delim, qq );
+    return StartsWithElem(s, qq);
+}
+
+inline bool sstr::StartsWithElem(const char* s, std::vector<std::string>& qq )
+{
+    for(int i=0 ; i < int(qq.size()) ; i++)
+    {
+        const char* q = qq[i].c_str();
+        if(StartsWith(s,q)) return true ;
+    }
+    return false ;
+}
+
+
+
+
+
 inline bool sstr::StartsWithLetterAZaz(const char* q )
 {
     const char* p = q != nullptr && strlen(q) > 0 ? strchr(AZaz, q[0]) : nullptr ;
