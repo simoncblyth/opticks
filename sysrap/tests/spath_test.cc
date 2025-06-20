@@ -51,7 +51,8 @@ struct spath_test
    static int Resolve1();
    static int Resolve3();
    static int Resolve();
-   static int LooksUnresolved();
+   static int LooksUnresolved_0();
+   static int LooksUnresolved_1();
    static int Resolve_setenvvar();
    static int Resolve_setenvmap();
 
@@ -354,11 +355,11 @@ int spath_test::Resolve()
     return 0 ;
 }
 
-int spath_test::LooksUnresolved()
+int spath_test::LooksUnresolved_0()
 {
     const char* _path = "$SOME_NON_EXISTING_TOKEN/And/Something/More" ;
     const char* path = spath::Resolve(_path);
-    std::cout << "LooksUnresolved[" << ( path ? path : "-" ) << "]\n" ;
+    std::cout << "LooksUnresolved_0[" << ( path ? path : "-" ) << "]\n" ;
 
     const char* xpath = "SOME_NON_EXISTING_TOKEN/And/Something/More" ;
     assert( strcmp( path, xpath) == 0 );
@@ -367,6 +368,23 @@ int spath_test::LooksUnresolved()
     assert( unresolved == true );
     return 0 ;
 }
+
+int spath_test::LooksUnresolved_1()
+{
+    const char* _path = "$SOME_NON_EXISTING_TOKEN/And/Something/More" ;
+    const char* path = spath::Resolve(_path, "record.npy");
+    std::cout << "LooksUnresolved_1[" << ( path ? path : "-" ) << "]\n" ;
+
+    const char* xpath = "SOME_NON_EXISTING_TOKEN/And/Something/More/record.npy" ;
+    assert( strcmp( path, xpath) == 0 );
+
+    bool unresolved = spath::LooksUnresolved(path, _path);
+    assert( unresolved == true );
+    return 0 ;
+}
+
+
+
 
 
 
@@ -736,7 +754,8 @@ int spath_test::Main()
     if(ALL||strcmp(TEST, "ResolveTokenWithFallback")==0) rc += ResolveTokenWithFallback();
     if(ALL||strcmp(TEST, "_ResolveToken")==0) rc += _ResolveToken();
     if(ALL||strcmp(TEST, "Resolve")==0) rc += Resolve();
-    if(ALL||strcmp(TEST, "LooksUnresolved")==0) rc += LooksUnresolved();
+    if(ALL||strcmp(TEST, "LooksUnresolved_0")==0) rc += LooksUnresolved_0();
+    if(ALL||strcmp(TEST, "LooksUnresolved_1")==0) rc += LooksUnresolved_1();
     if(ALL||strcmp(TEST, "Resolve_setenvvar")==0) rc += Resolve_setenvvar();
     if(ALL||strcmp(TEST, "Resolve_setenvmap")==0) rc += Resolve_setenvmap();
     if(ALL||strcmp(TEST, "ResolveToken1")==0) rc += ResolveToken1();

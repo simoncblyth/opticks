@@ -21,7 +21,7 @@ struct SRecord_test
 inline int SRecord_test::Load()
 {
     std::cout << "[SRecord_test::Load" << std::endl ;
-    SRecord* sr= SRecord::Load("$SRECORD_PATH") ;
+    SRecord* sr= SRecord::Load("$SRECORD_FOLD") ;
     sr->desc() ;
     std::cout << "]SRecord_test::Load" << std::endl ;
     return 0 ;
@@ -30,8 +30,8 @@ inline int SRecord_test::Load()
 inline int SRecord_test::LoadNonExisting()
 {
     std::cout << "[SRecord_test::LoadNonExisting" << std::endl ;
-    SRecord* sr= SRecord::Load("$SRECORD_PATH_NON_EXISTING") ;
-    assert( sr == nullptr ); 
+    SRecord* sr= SRecord::Load("$SRECORD_FOLD_NON_EXISTING") ;
+    assert( sr == nullptr );
     std::cout << "]SRecord_test::LoadNonExisting" << std::endl ;
     return 0 ;
 }

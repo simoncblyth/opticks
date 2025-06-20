@@ -59,7 +59,10 @@ public:
     template<typename ... Args>
     static const char* Resolve(Args ... args );
 
-    static bool LooksUnresolved( const char* path , const char* _path );
+    static bool StartsWith( const char* s, const char* q);
+
+    static bool LooksUnresolved(  const char* path , const char* _path );
+    static bool LooksUnresolved0( const char* path , const char* _path );
 
     static bool EndsWith( const char* path, const char* q);
     static int SplitExt0(std::string& dir, std::string& stem, std::string& ext, const char* path );
@@ -546,7 +549,53 @@ template const char* spath::Resolve( const char*, const char*, const char* );
 template const char* spath::Resolve( const char*, const char*, const char*, const char* );
 
 
+/**
+spath::StartsWith
+--------------------
+
+Returns true when the test string *s* starts with the
+same chars as the query string *q*, eg::
+
+    s : abcdefg
+    q : abcd
+
+**/
+
+
+inline bool spath::StartsWith( const char* s, const char* q)
+{
+    return s && q && strlen(q) <= strlen(s) && strncmp(s, q, strlen(q)) == 0 ;
+}
+
+
+
+/**
+spath::LooksUnresolved
+------------------------
+
+An example of a path that starts with a TOKEN
+and the unresolved version of that::
+
+    $TOKEN/rest/of/the/path
+    TOKEN/rest/of/the/path
+
+Another example where the first path is a folder and the
+second an absolute path::
+
+    $TOKEN/rest/of/the/path
+    TOKEN/rest/of/the/path/record.npy
+
+**/
+
 inline bool spath::LooksUnresolved( const char* path , const char* _path )
+{
+    bool _path_starts_with_dollar = _path && strlen(_path) > 1 && _path[0] == '$'  ;
+    if(!_path_starts_with_dollar) return false ;
+    return StartsWith( path, _path + 1 );
+}
+
+
+inline bool spath::LooksUnresolved0( const char* path , const char* _path )
 {
     bool _path_starts_with_dollar = _path && strlen(_path) > 1 && _path[0] == '$'  ;
     bool path_is_same_without_dollar = path && strlen(path) > 1 && strcmp(_path+1, path) == 0  ;

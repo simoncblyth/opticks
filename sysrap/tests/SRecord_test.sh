@@ -12,15 +12,15 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 
 name=SRecord_test
-export SRECORDER_FOLD=/tmp/$name
-mkdir -p $SRECORDER_FOLD
-bin=$SRECORDER_FOLD/$name
+export SFOLD=/tmp/$name
+mkdir -p $FOLD
+bin=$FOLD/$name
 
-export SRECORD_PATH=/tmp/sphoton_test/record.npy
+export SRECORD_FOLD=/tmp/sphoton_test/record.npy
 
 
 
-vars="BASH_SOURCE PWD SRECORDER_FOLD bin "
+vars="BASH_SOURCE PWD FOLD SRECORD_FOLD bin "
 
 defarg=info_build_run
 arg=${1:-$defarg}

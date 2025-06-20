@@ -38,8 +38,8 @@ int main()
     stree* tree = stree::Load(ss);
     if(DUMP) std::cout << scene->desc() ;
 
-    SRecord* ar = SRecord::Load("$AFOLD/record.npy") ;
-    SRecord* br = SRecord::Load("$BFOLD/record.npy") ;
+    SRecord* ar = SRecord::Load("$AFOLD") ;
+    SRecord* br = SRecord::Load("$BFOLD") ;
 
     if(DUMP) std::cout
          << " ar " << ( ar ? ar->desc() : "-" ) << "\n"

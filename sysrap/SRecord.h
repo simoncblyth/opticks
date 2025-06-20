@@ -15,6 +15,7 @@ Used from SGLFW_Event.h
 
 struct SRecord
 {
+    static constexpr const char* NAME = "record.npy" ;
     static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";
 
     NP* record;
@@ -25,7 +26,7 @@ struct SRecord
     float4 mx = {} ;
     float4 ce = {} ;
 
-    static SRecord* Load(const char* path, const char* _slice=nullptr );
+    static SRecord* Load(const char* fold, const char* _slice=nullptr );
     SRecord(NP* record);
     void init() ;
 
@@ -63,17 +64,17 @@ The _slice can be specified via envvar with eg "$AFOLD_RECORD_SLICE"
 
 **/
 
-inline SRecord* SRecord::Load(const char* _path, const char* _slice )
+inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
 {
-    const char* path = spath::Resolve(_path);
-    bool looks_unresolved = spath::LooksUnresolved(path, _path);
+    const char* path = spath::Resolve(_fold, NAME);
+    bool looks_unresolved = spath::LooksUnresolved(path, _fold);
 
     if(looks_unresolved)
     {
         std::cout
             << "SRecord::Load"
             << " FAILED : DUE TO MISSING ENVVAR\n"
-            << " _path [" << ( _path ? _path : "-" ) << "]\n"
+            << " _fold [" << ( _fold ? _fold : "-" ) << "]\n"
             << " path ["  << (  path ?  path : "-" ) << "]\n"
             << " looks_unresolved " << ( looks_unresolved ? "YES" : "NO " )
             << "\n"

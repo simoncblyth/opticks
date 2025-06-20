@@ -2535,6 +2535,8 @@ NP::MakeSelection
 --------------------
 
 *sel* is an array of indices into the *src* array
+which is used to create a new *dst* array with just the
+*sel* selected items from *src*.
 
 **/
 
