@@ -114,7 +114,7 @@ without j/PMTSim is inconsistent in its energy units.
 
 inline double SPMTAccessor::get_pmtid_qe( int lpmtid, double energy_MeV ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
 
     float energy_eV = energy_MeV*1e6 ;
     float qe = pmt->get_lpmtidx_qe(lpmtidx, energy_eV) ;

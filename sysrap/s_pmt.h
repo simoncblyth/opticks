@@ -62,11 +62,11 @@ namespace s_pmt
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    SPMT_FUNCTION void check_lpmtid( int lpmtid )
+    SPMT_FUNCTION void check_pmtid( int pmtid )
     {
-        assert(  lpmtid >= 0 && lpmtid < OFFSET_WP_PMT_END );
-        assert(!(lpmtid >= OFFSET_CD_LPMT_END && lpmtid < OFFSET_CD_SPMT ));
-        assert(!(lpmtid >= OFFSET_CD_SPMT_END && lpmtid < OFFSET_WP_PMT ));
+        assert(  pmtid >= 0 && pmtid < OFFSET_WP_PMT_END );
+        assert(!(pmtid >= OFFSET_CD_LPMT_END && pmtid < OFFSET_CD_SPMT ));
+        assert(!(pmtid >= OFFSET_CD_SPMT_END && pmtid < OFFSET_WP_PMT ));
 
         assert( OFFSET_CD_LPMT_END - OFFSET_CD_LPMT == NUM_CD_LPMT );
         assert( OFFSET_CD_SPMT_END - OFFSET_CD_SPMT == NUM_SPMT );
@@ -122,32 +122,32 @@ namespace s_pmt
 
 
     **/
-    SPMT_FUNCTION int contiguousidx_from_lpmtid( int lpmtid )
+    SPMT_FUNCTION int contiguousidx_from_pmtid( int pmtid )
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-        check_lpmtid(lpmtid);
+        check_pmtid(pmtid);
 #endif
-        int contiguousidx = lpmtid < OFFSET_CD_LPMT_END ?
-                                                              lpmtid
+        int contiguousidx = pmtid < OFFSET_CD_LPMT_END ?
+                                                              pmtid
                                                         :
-                                                            ( lpmtid < OFFSET_CD_SPMT_END ?
-                                                                                             lpmtid - OFFSET_CD_SPMT + OFFSET_CD_LPMT_END
+                                                            ( pmtid < OFFSET_CD_SPMT_END ?
+                                                                                             pmtid - OFFSET_CD_SPMT + OFFSET_CD_LPMT_END
                                                                                           :
-                                                                                             lpmtid - OFFSET_WP_PMT + NUM_CD_LPMT + NUM_SPMT
+                                                                                             pmtid - OFFSET_WP_PMT + NUM_CD_LPMT + NUM_SPMT
                                                             )
                                                         ;
 
         return contiguousidx ;
     }
 
-    SPMT_FUNCTION int lpmtid_from_contiguousidx( int contiguousidx )
+    SPMT_FUNCTION int pmtid_from_contiguousidx( int contiguousidx )
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
         assert( contiguousidx >= 0 && contiguousidx < NUM_ALL );
 #endif
-        int lpmtid = contiguousidx < NUM_CD_LPMT ?
+        int pmtid = contiguousidx < NUM_CD_LPMT ?
                                                     contiguousidx
                                                  :
                                                     ( contiguousidx < NUM_CD_LPMT + NUM_SPMT ?
@@ -157,7 +157,7 @@ namespace s_pmt
                                                     )
                                                  ;
 
-         return lpmtid ;
+         return pmtid ;
     }
 
 
@@ -202,23 +202,23 @@ namespace s_pmt
 
     **/
 
-    SPMT_FUNCTION int lpmtidx_from_lpmtid( int lpmtid )
+    SPMT_FUNCTION int lpmtidx_from_pmtid( int pmtid )
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-        check_lpmtid(lpmtid);
+        check_pmtid(pmtid);
 #endif
-        int lpmtidx = lpmtid < OFFSET_CD_LPMT_END ?
-                                            lpmtid
+        int lpmtidx = pmtid < OFFSET_CD_LPMT_END ?
+                                            pmtid
                                       :
-                                           ( lpmtid >= OFFSET_WP_PMT ? lpmtid - OFFSET_WP_PMT + NUM_CD_LPMT : -1 )
+                                           ( pmtid >= OFFSET_WP_PMT ? pmtid - OFFSET_WP_PMT + NUM_CD_LPMT : -1 )
                                       ;
 
         return lpmtidx ;
     }
 
     /**
-    s_pmt::lpmtid_from_lpmtidx
+    s_pmt::pmtid_from_lpmtidx
     ----------------------------
 
     Convert a contiguous 0-based index lpmtidx with SPMT excluded::
@@ -248,19 +248,40 @@ namespace s_pmt
 
     **/
 
-    SPMT_FUNCTION int lpmtid_from_lpmtidx( int lpmtidx )
+    SPMT_FUNCTION int pmtid_from_lpmtidx( int lpmtidx )
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
         assert( lpmtidx >= 0 && lpmtidx < NUM_CD_LPMT_AND_WP );
 #endif
-        int lpmtid = lpmtidx < NUM_CD_LPMT ?
+        int pmtid = lpmtidx < NUM_CD_LPMT ?
                                           lpmtidx
                                      :
                                           lpmtidx - NUM_CD_LPMT + OFFSET_WP_PMT
                                      ;
 
-        return lpmtid ;
+        return pmtid ;
+    }
+
+
+    SPMT_FUNCTION int pmtid_from_spmtidx( int spmtidx )
+    {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+        assert( spmtidx >= 0 && spmtidx < NUM_SPMT );
+#endif
+        int pmtid = spmtidx + OFFSET_CD_SPMT ;
+        return pmtid ;
+    }
+
+    SPMT_FUNCTION int spmtidx_from_pmtid( int pmtid )
+    {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+        assert( pmtid >= OFFSET_CD_SPMT && pmtid < OFFSET_CD_SPMT + NUM_SPMT );
+#endif
+        int spmtidx = pmtid - OFFSET_CD_SPMT ;
+        return spmtidx ;
     }
 
 

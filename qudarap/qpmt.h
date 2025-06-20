@@ -94,7 +94,7 @@ struct qpmt
 template<typename F>
 inline QPMT_METHOD int qpmt<F>::get_lpmtcat_from_lpmtid( int lpmtid ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
 }
 
@@ -107,7 +107,7 @@ inline QPMT_METHOD int qpmt<F>::get_lpmtcat_from_lpmtidx( int lpmtidx ) const
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_qescale_from_lpmtid( int lpmtid ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
 }
 template<typename F>
@@ -205,7 +205,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtcat_stackspec( F* spec, int lpmtcat, F 
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F energy_eV ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
     // printf("//qpmt::get_lpmtidx_stackspec lpmtid %d lpmtcat %d \n", lpmtid, lpmtcat );
 
@@ -241,7 +241,7 @@ Currently called by qpmt::get_lpmtid_ATQC
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce_acosf( F* spec, int lpmtid, F energy_eV, F lposcost ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);  // lpmtidx:-1 FOR SPMT, BUT THAT SHOULD NEVER HAPPEN
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);  // lpmtidx:-1 FOR SPMT, BUT THAT SHOULD NEVER HAPPEN
     const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
 
     const F& qe_scale = lcqs[lpmtidx*2+1] ;
@@ -283,7 +283,7 @@ Potentially called by qpmt::get_lpmtid_ATQC
 template<typename F>
 inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec_ce( F* spec, int lpmtid, F energy_eV, F lposcost ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
     const F& qe_scale = lcqs[lpmtidx*2+1] ;
 

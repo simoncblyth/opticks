@@ -119,7 +119,7 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
 inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
 {
     NP* _record = LoadArray(_fold, _slice);
-    return new SRecord(_record);
+    return _record ? new SRecord(_record) : nullptr ;
 }
 
 

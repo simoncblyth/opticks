@@ -21,8 +21,8 @@ int s_pmt_test::lpmtidx()
     for(int i=0 ; i < s_pmt::NUM_CD_LPMT_AND_WP ; i++)
     {
         int lpmtidx = i ;
-        int lpmtid = s_pmt::lpmtid_from_lpmtidx(lpmtidx);
-        int lpmtidx_1 = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+        int lpmtid = s_pmt::pmtid_from_lpmtidx(lpmtidx);
+        int lpmtidx_1 = s_pmt::lpmtidx_from_pmtid(lpmtid);
         assert( lpmtidx_1 == lpmtidx );
     }
     return 0;
@@ -37,8 +37,8 @@ NP* s_pmt_test::lpmtidx_array()
     for(int i=0 ; i < ni ; i++)
     {
         int lpmtidx = i ;
-        int lpmtid = s_pmt::lpmtid_from_lpmtidx(lpmtidx);
-        int contiguousidx = s_pmt::contiguousidx_from_lpmtid(lpmtid);
+        int lpmtid = s_pmt::pmtid_from_lpmtidx(lpmtidx);
+        int contiguousidx = s_pmt::contiguousidx_from_pmtid(lpmtid);
 
         aa[i*nj+0] = lpmtidx ;
         aa[i*nj+1] = lpmtid ;
@@ -54,8 +54,8 @@ int s_pmt_test::contiguousidx()
     for(int i=0 ; i < s_pmt::NUM_ALL ; i++)
     {
         int contiguousidx = i ;
-        int lpmtid = s_pmt::lpmtid_from_contiguousidx(contiguousidx);
-        int contiguousidx_1 = s_pmt::contiguousidx_from_lpmtid(lpmtid);
+        int pmtid = s_pmt::pmtid_from_contiguousidx(contiguousidx);
+        int contiguousidx_1 = s_pmt::contiguousidx_from_pmtid(pmtid);
         assert( contiguousidx_1 == contiguousidx );
     }
     return 0;
@@ -70,15 +70,15 @@ NP* s_pmt_test::contiguousidx_array()
     for(int i=0 ; i < ni ; i++)
     {
         int contiguousidx = i ;
-        int lpmtid = s_pmt::lpmtid_from_contiguousidx(contiguousidx);
-        int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+        int pmtid = s_pmt::pmtid_from_contiguousidx(contiguousidx);
+        int lpmtidx = s_pmt::lpmtidx_from_pmtid(pmtid);
 
         aa[i*nj+0] = contiguousidx ;
-        aa[i*nj+1] = lpmtid ;
+        aa[i*nj+1] = pmtid ;
         aa[i*nj+2] = lpmtidx ;
     }
 
-    a->labels = new std::vector<std::string> { "contiguousidx", "lpmtid", "lpmtidx" };
+    a->labels = new std::vector<std::string> { "contiguousidx", "pmtid", "lpmtidx" };
 
     return a ;
 }

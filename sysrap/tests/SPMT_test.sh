@@ -34,11 +34,10 @@ name=SPMT_test
 script=$name.py
 
 export TMP=${TMP:-/tmp/$USER/opticks}
-export SFOLD=$TMP/$name
-export JFOLD=$TMP/JPMTTest
+export FOLD=$TMP/$name
 
-mkdir -p $SFOLD
-bin=$SFOLD/$name
+mkdir -p $FOLD
+bin=$FOLD/$name
 
 #test=ART
 test=testfold
@@ -48,7 +47,7 @@ export TEST=${TEST:-$test}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="arg name REALDIR GEOM TMP FOLD SFOLD JFOLD CUDA_PREFIX bin script TEST"
+vars="arg name REALDIR GEOM TMP FOLD CUDA_PREFIX bin script TEST"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done

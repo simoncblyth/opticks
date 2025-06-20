@@ -130,15 +130,17 @@ struct SPMT
 
     struct LCQS { int lc ; float qs ; } ;
 
-    /*
+    
     static constexpr const float EN0 = 1.55f ;
     static constexpr const float EN1 = 4.20f ;  // 15.5
     static constexpr const int   N_EN = 420 - 155 + 1 ;
-    */
+    
 
+    /*
     static constexpr const float EN0 = 2.81f ;
     static constexpr const float EN1 = 2.81f ;
     static constexpr const int   N_EN = 1 ;
+    */
 
     static constexpr const float WL0 = 440.f ;
     static constexpr const float WL1 = 440.f ;
@@ -175,6 +177,9 @@ struct SPMT
     // follows PMTCategory kPMT enum order but using QEshape array naming convention
     // because there is no consistently used naming convention have to do these dirty things
 
+    static constexpr const char* QE_shape_S_PMTCAT_NAMES = "QEshape_HZC.npy" ;
+
+
     static constexpr const char* CE_theta_PMTCAT_NAMES = "CE_NNVTMCP.npy,CE_R12860.npy,CE_NNVTMCP_HiQE.npy" ;
     static constexpr const char* CE_costh_PMTCAT_NAMES = "CECOS_NNVTMCP.npy,CECOS_R12860.npy,CECOS_NNVTMCP_HiQE.npy" ;
 
@@ -185,14 +190,22 @@ struct SPMT
 
     void init();
 
+    void init_total();
+    void init_pmtCat();
+    void init_lpmtCat();
+    void init_qeScale();
+
     void init_rindex_thickness();
     static NP* MakeCatPropArrayFromFold( const NPFold* fold, const char* _names, std::vector<const NP*>& v_prop, double domain_scale );
     void init_qeshape();
+    void init_s_qeshape();
     void init_cetheta();
     void init_cecosth();
 
-    void init_total();
+
+
     void init_lcqs();
+    void init_spmt();
     static int TranslateCat(int lpmtcat);
 
     std::string descDetail() const ;
@@ -219,7 +232,9 @@ struct SPMT
     NP* get_rindex() const ;
 
     float get_qeshape(int cat, float energy_eV) const ;
+    float get_s_qeshape(int cat, float energy_eV) const ;
     NP* get_qeshape() const ;
+    NP* get_s_qeshape() const ;
 
     float get_thickness_nm(int cat, int layr) const ;
     NP* get_thickness_nm() const ;
@@ -317,6 +332,9 @@ struct SPMT
     std::vector<const NP*> v_cetheta ;
     std::vector<const NP*> v_cecosth ;
 
+    std::vector<const NP*> v_s_qeshape ;
+
+
     std::vector<LCQS>      v_lcqs ;    // NUM_CD_LPMT + NUM_WP
 
     NP* rindex ;    // (NUM_PMTCAT, NUM_LAYER, NUM_PROP, N_EN, 2:[energy,value] )
@@ -326,7 +344,21 @@ struct SPMT
     NP* lcqs ;      // (NUM_CD_LPMT + NUM_WP, 2)
     NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )
 
+    NP* s_qeshape ;  // (NUM_PMTCAT:1, NUM_SAMPLES~60, 2:[energy,value] )
+
+
     float* tt ;
+
+    const NP* pmtCat ;
+    const int* pmtCat_v ;
+
+    const NP* lpmtCat ;
+    const int* lpmtCat_v ;
+
+    const NP* qeScale ;
+    const double* qeScale_v ;
+
+
 };
 
 
@@ -390,10 +422,19 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     cecosth(nullptr),
     lcqs(nullptr),
     thickness(NP::Make<float>(NUM_PMTCAT, NUM_LAYER, 1)),
-    tt(thickness->values<float>())
+    tt(thickness->values<float>()),
+    pmtCat( PMTParamData ? PMTParamData->get("pmtCat") : nullptr ),
+    pmtCat_v( pmtCat ? pmtCat->cvalues<int>() : nullptr ),
+    lpmtCat( PMTSimParamData ? PMTSimParamData->get("lpmtCat")  : nullptr ),
+    lpmtCat_v( lpmtCat ? lpmtCat->cvalues<int>() : nullptr ),
+    qeScale( PMTSimParamData ? PMTSimParamData->get("qeScale")  : nullptr ),
+    qeScale_v( qeScale ? qeScale->cvalues<double>() : nullptr )
 {
     init();
 }
+
+
+
 
 
 /**
@@ -412,14 +453,95 @@ for upload to GPU (by QPMT) with various changes:
 
 inline void SPMT::init()
 {
+    init_total();
+    init_pmtCat();
+    init_lpmtCat();
+    init_qeScale();
+
     init_rindex_thickness();
     init_qeshape();
+    init_s_qeshape();
     init_cetheta();
     init_cecosth();
 
-    init_total();
     init_lcqs();
+    init_spmt();
 }
+
+
+
+/**
+SPMT::init_total
+-----------------
+
+SPMT::init_total SPMT_Total CD_LPMT: 17612 SPMT: 25600 WP:  2400 ALL: 45612
+
+**/
+
+inline void SPMT::init_total()
+{
+    if( PMTSimParamData == nullptr )
+    {
+        std::cout << "SPMT::init_total exit as PMTSimParamData is NULL\n" ;
+        return ;
+    }
+    assert( PMTSimParamData );
+    const NP* pmtTotal_ = PMTSimParamData->get("pmtTotal") ; // (4,)
+
+    assert( pmtTotal_ && pmtTotal_->uifc == 'i' && pmtTotal_->ebyte == 4 );
+    assert( pmtTotal_->shape.size() == 1 && pmtTotal_->shape[0] == SPMT_Total::FIELDS );
+    assert( pmtTotal_->names.size() == SPMT_Total::FIELDS );
+
+    const int* pmtTotal_v = pmtTotal_->cvalues<int>();
+
+    std::vector<std::string> xnames = {"PmtTotal", "PmtTotal_SPMT", "PmtTotal_WP", "PmtTotal_ALL" };
+    assert( pmtTotal_->names == xnames );
+
+    total.CD_LPMT = pmtTotal_v[0] ;
+    total.SPMT = pmtTotal_v[1] ;
+    total.WP = pmtTotal_v[2] ;
+    total.ALL = pmtTotal_v[3] ;
+
+    int ALL = total.CD_LPMT + total.SPMT + total.WP ;
+    assert( total.ALL == ALL );
+
+    std::cout << "SPMT::init_total " << total.desc() << "\n" ;
+
+
+    assert( total.CD_LPMT == 17612 );
+    assert( total.SPMT == 25600 ) ;
+    assert( total.WP == 2400 ) ;
+
+    assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
+    assert( s_pmt::NUM_SPMT == total.SPMT );
+    assert( s_pmt::NUM_WP == total.WP );
+    assert( s_pmt::NUM_CD_LPMT_AND_WP == total.CD_LPMT + total.WP );
+}
+
+
+void SPMT::init_pmtCat()
+{
+    assert( pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 );
+    assert( pmtCat->shape[0] == total.ALL );
+    assert( pmtCat->shape[1] == 2 );
+    assert( pmtCat_v );
+}
+
+void SPMT::init_lpmtCat()
+{
+    assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 );
+    assert( lpmtCat->shape[0] == s_pmt::NUM_CD_LPMT );
+    assert( lpmtCat_v );
+}
+
+void SPMT::init_qeScale()
+{
+    assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
+    assert( qeScale->shape[0] == s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP  );
+    assert( qeScale_v );
+}
+
+
 
 /**
 SPMT::init_rindex_thickness
@@ -559,6 +681,15 @@ inline void SPMT::init_qeshape()
     double domain_scale = 1e6 ; // MeV to eV
     qeshape = MakeCatPropArrayFromFold( QE_shape, QE_shape_PMTCAT_NAMES, v_qeshape, domain_scale );
 }
+inline void SPMT::init_s_qeshape()
+{
+    double domain_scale = 1e6 ; // MeV to eV
+    s_qeshape = MakeCatPropArrayFromFold( QE_shape, QE_shape_S_PMTCAT_NAMES, v_s_qeshape, domain_scale );
+}
+
+
+
+
 inline void SPMT::init_cetheta()
 {
     double domain_scale = 1. ;
@@ -572,55 +703,6 @@ inline void SPMT::init_cecosth()
 
 
 
-/**
-SPMT::init_total
------------------
-
-SPMT::init_total SPMT_Total CD_LPMT: 17612 SPMT: 25600 WP:  2400 ALL: 45612
-
-**/
-
-inline void SPMT::init_total()
-{
-    if( PMTSimParamData == nullptr )
-    {
-        std::cout << "SPMT::init_total exit as PMTSimParamData is NULL\n" ;
-        return ;
-    }
-    assert( PMTSimParamData );
-    const NP* pmtTotal_ = PMTSimParamData->get("pmtTotal") ; // (4,)
-
-    assert( pmtTotal_ && pmtTotal_->uifc == 'i' && pmtTotal_->ebyte == 4 );
-    assert( pmtTotal_->shape.size() == 1 && pmtTotal_->shape[0] == SPMT_Total::FIELDS );
-    assert( pmtTotal_->names.size() == SPMT_Total::FIELDS );
-
-    const int* pmtTotal_v = pmtTotal_->cvalues<int>();
-
-    std::vector<std::string> xnames = {"PmtTotal", "PmtTotal_SPMT", "PmtTotal_WP", "PmtTotal_ALL" };
-    assert( pmtTotal_->names == xnames );
-
-    total.CD_LPMT = pmtTotal_v[0] ;
-    total.SPMT = pmtTotal_v[1] ;
-    total.WP = pmtTotal_v[2] ;
-    total.ALL = pmtTotal_v[3] ;
-
-    int ALL = total.CD_LPMT + total.SPMT + total.WP ;
-    assert( total.ALL == ALL );
-
-    std::cout << "SPMT::init_total " << total.desc() << "\n" ;
-
-
-    assert( total.CD_LPMT == 17612 );
-    assert( total.SPMT == 25600 ) ;
-    assert( total.WP == 2400 ) ;
-
-    assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
-    assert( s_pmt::NUM_SPMT == total.SPMT );
-    assert( s_pmt::NUM_WP == total.WP );
-    assert( s_pmt::NUM_CD_LPMT_AND_WP == total.CD_LPMT + total.WP );
-
-
-}
 
 
 
@@ -652,18 +734,26 @@ inline void SPMT::init_lcqs()
     }
 
     assert( PMTParamData );
+
+    /*
+    // moved to ctor and init_pmtCat
     const NP* pmtCat = PMTParamData->get("pmtCat") ;  // (45612, 2)  (copyno,cat)
     assert( pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 );
     const int* pmtCat_v = pmtCat->cvalues<int>();
     assert( pmtCat->shape[0] == total.ALL );
     assert( pmtCat->shape[1] == 2 );
+    */
 
 
+    /**
+    // moved to ctor and init_lpmtCat
     assert( PMTSimParamData );
     const NP* lpmtCat = PMTSimParamData->get("lpmtCat") ; // (17612, 1) (cat,)
     assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 );
     assert( lpmtCat->shape[0] == s_pmt::NUM_CD_LPMT );
     const int* lpmtCat_v = lpmtCat->cvalues<int>();
+    **/
+
 
     assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
     assert( s_pmt::NUM_WP   == total.WP );
@@ -673,10 +763,15 @@ inline void SPMT::init_lcqs()
         assert( pmtCat_v[2*i+1] == lpmtCat_v[i] ) ;
     }
 
+    /**
+    // moved to ctor abnd init_qeScale
+
     const NP* qeScale = PMTSimParamData->get("qeScale") ;  // (45612, 1)
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
     assert( qeScale->shape[0] == s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP  );
     const double* qeScale_v = qeScale->cvalues<double>();
+    **/
+
 
     v_lcqs.resize(s_pmt::NUM_CD_LPMT_AND_WP);
 
@@ -684,16 +779,16 @@ inline void SPMT::init_lcqs()
     {
         int lpmtidx = i ;
 
-        int lpmtid = s_pmt::lpmtid_from_lpmtidx( lpmtidx );
-        int lpmtidx2 = s_pmt::lpmtidx_from_lpmtid( lpmtid );
+        int pmtid = s_pmt::pmtid_from_lpmtidx( lpmtidx );
+        int lpmtidx2 = s_pmt::lpmtidx_from_pmtid( pmtid );
         assert( lpmtidx == lpmtidx2 );
 
-        int contiguousidx = s_pmt::contiguousidx_from_lpmtid( lpmtid );
+        int contiguousidx = s_pmt::contiguousidx_from_pmtid( pmtid );
         assert( contiguousidx < s_pmt::NUM_ALL );
 
         int copyno = pmtCat_v[2*contiguousidx+0] ;
         int cat = pmtCat_v[2*contiguousidx+1] ;
-        assert( copyno == lpmtid );
+        assert( copyno == pmtid );
 
         float qesc = qeScale_v[contiguousidx] ;
 
@@ -715,6 +810,26 @@ inline void SPMT::init_lcqs()
     assert( s_pmt::NUM_WP == 2400 );
 }
 
+inline void SPMT::init_spmt()
+{
+    for(int i=0 ; i < s_pmt::NUM_SPMT ; i++ )
+    {
+        int spmtidx = i ;
+        int pmtid = s_pmt::pmtid_from_spmtidx( spmtidx );
+        int contiguousidx = s_pmt::contiguousidx_from_pmtid( pmtid );
+
+        int copyno = pmtCat_v[2*contiguousidx+0] ;
+        assert( copyno == pmtid );
+
+        int cat = pmtCat_v[2*contiguousidx+1] ;
+        assert( cat == 2 );
+
+        //float qesc = qeScale_v[contiguousidx] ;
+
+        // TODO: DECIDE WHATS NEEDED GPU SIDE
+    }
+
+}
 
 
 /**
@@ -789,6 +904,7 @@ inline std::string SPMT::desc() const
     ss << "rindex " << ( rindex ? rindex->sstr() : "-" ) << std::endl ;
     ss << "thickness " << ( thickness ? thickness->sstr() : "-" ) << std::endl ;
     ss << "qeshape " << ( qeshape ? qeshape->sstr() : "-" ) << std::endl ;
+    ss << "s_qeshape " << ( s_qeshape ? s_qeshape->sstr() : "-" ) << std::endl ;
     ss << "cetheta " << ( cetheta ? cetheta->sstr() : "-" ) << std::endl ;
     ss << "cecosth " << ( cecosth ? cecosth->sstr() : "-" ) << std::endl ;
     ss << "lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl ;
@@ -803,6 +919,7 @@ inline bool SPMT::is_complete() const
        rindex != nullptr &&
        thickness != nullptr &&
        qeshape != nullptr &&
+       s_qeshape != nullptr &&
        cetheta != nullptr &&
        cecosth != nullptr &&
        lcqs != nullptr
@@ -823,6 +940,7 @@ inline NPFold* SPMT::serialize_() const   // formerly get_fold
     if(rindex) fold->add("rindex", rindex) ;
     if(thickness) fold->add("thickness", thickness) ;
     if(qeshape) fold->add("qeshape", qeshape) ;
+    if(s_qeshape) fold->add("s_qeshape", s_qeshape) ;
     if(cetheta) fold->add("cetheta", cetheta) ;
     if(cecosth) fold->add("cecosth", cecosth) ;
     if(lcqs) fold->add("lcqs", lcqs) ;
@@ -917,6 +1035,16 @@ inline float SPMT::get_qeshape(int cat, float energy_eV) const
     return qeshape->combined_interp_3( cat, energy_eV ) ;
 }
 
+inline float SPMT::get_s_qeshape(int cat, float energy_eV) const
+{
+    assert( cat == 0  );
+    return s_qeshape->combined_interp_3( cat, energy_eV ) ;
+}
+
+
+
+
+
 inline NP* SPMT::get_qeshape() const
 {
     std::cout << "SPMT::get_qeshape " << std::endl ;
@@ -940,6 +1068,28 @@ inline NP* SPMT::get_qeshape() const
     return a ;
 }
 
+inline NP* SPMT::get_s_qeshape() const
+{
+    std::cout << "SPMT::get_s_qeshape " << std::endl ;
+
+    int ni = 1 ;   // only cat 0 for small PMT
+    int nj = N_EN ; 
+    int nk = 2 ;   // payload [energy_eV,qeshape_value]
+
+    NP* a = NP::Make<float>(ni,nj,nk) ;
+    float* aa = a->values<float>();
+
+    for(int i=0 ; i < ni ; i++)
+    for(int j=0 ; j < nj ; j++)
+    {
+        float en = get_energy(j, nj );
+        float qe = get_s_qeshape(i, en) ;
+        int idx = i*nj*nk+j*nk ;
+        aa[idx+0] = en ;
+        aa[idx+1] = qe ;
+    }
+    return a ;
+}
 
 
 
@@ -998,7 +1148,7 @@ However the fourth column qe related values do depend on pmtid with
 differences coming in via the qe_scale.
 
 **/
-void SPMT::get_lpmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
+void SPMT::get_lpmtid_stackspec( quad4& spec, int lpmtid, float energy_eV) const
 {
     spec.zero();
 
@@ -1008,7 +1158,7 @@ void SPMT::get_lpmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
     float& _qe = spec.q3.f.w ;
     // above are refs to locations currently all holding zero
 
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid( pmtid );
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid( lpmtid );
     get_lcqs_from_lpmtidx(cat, qe_scale, lpmtidx);
 
     assert( cat > -1 && cat < NUM_PMTCAT );
@@ -1022,7 +1172,7 @@ void SPMT::get_lpmtid_stackspec( quad4& spec, int pmtid, float energy_eV) const
     if(!expected_range) std::cout
         << "SPMT::get_pmtid_stackspec"
         << " expected_range " << ( expected_range ? "YES" : "NO " )
-        << " pmtid " << pmtid
+        << " lpmtid " << lpmtid
         << " energy_eV " << energy_eV
         << " qe " << qe
         << " qe_scale " << qe_scale
@@ -1419,7 +1569,7 @@ inline int SPMT::get_lpmtcat_from_lpmtidx(int lpmtidx) const
 }
 inline int SPMT::get_lpmtcat_from_lpmtid(int lpmtid) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     return get_lpmtcat_from_lpmtidx(lpmtidx);
 }
 
@@ -1428,7 +1578,7 @@ inline int SPMT::get_lpmtcat_from_lpmtid( int* lpmtcat_ , const int* lpmtid_ , i
     for(int i=0 ; i < num ; i++)
     {
         int lpmtid = lpmtid_[i] ;
-        int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+        int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
         int lpmtcat = get_lpmtcat_from_lpmtidx(lpmtidx) ;
         lpmtcat_[i] = lpmtcat ;
     }
@@ -1462,12 +1612,12 @@ inline NP* SPMT::get_lpmtcat_from_lpmtidx() const
 
 inline float SPMT::get_qescale_from_lpmtid(int lpmtid) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     return get_qescale_from_lpmtidx(lpmtidx);
 }
 inline int SPMT::get_copyno_from_lpmtid(int lpmtid) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     int copyno = get_copyno_from_lpmtidx(lpmtidx);
     assert( copyno == lpmtid );
     return copyno ;
@@ -1536,7 +1686,7 @@ Accesses the lcqs array returning:
 **/
 inline void SPMT::get_lcqs_from_lpmtid( int& lc, float& qs, int lpmtid) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     return get_lcqs_from_lpmtidx(lc, qs, lpmtidx);
 }
 inline void SPMT::get_lcqs_from_lpmtidx(int& lc, float& qs, int lpmtidx) const
@@ -1669,6 +1819,7 @@ inline NPFold* SPMT::make_testfold() const
 
     f->add("get_rindex", get_rindex() );
     f->add("get_qeshape", get_qeshape() );
+    f->add("get_s_qeshape", get_s_qeshape() );
     f->add("get_thickness_nm", get_thickness_nm() );
     f->add("get_stackspec", get_stackspec() );
 

@@ -7,13 +7,10 @@ int main(int argc, char** argv)
 
     std::cout << pmt->desc() << std::endl ;
     NPFold* spmt_f = pmt->serialize();
-    spmt_f->save("$SFOLD/spmt");
-
-    //NPFold* c4scan = pmt->make_c4scan();
-    //c4scan->save("$SFOLD/c4scan") ;
+    spmt_f->save("$FOLD/spmt");
 
     NPFold* testfold = pmt->make_testfold();
-    testfold->save("$SFOLD/testfold") ;
+    testfold->save("$FOLD/testfold") ;
 
 
     return 0 ;

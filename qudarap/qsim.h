@@ -1696,7 +1696,19 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, RNG& rng, sctx
 
     if( action == BREAK )
     {
+
+#if defined(WITH_CUSTOM4)
+        int pmtid = ctx.prd->identity() - 1 ;     // identity comes from optixInstance.instanceId where 0 means not-a-sensor
+        // here need a new qpmt call to get the needed efficiency
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+        if(ctx.pidx == base->pidx)
+        printf("//qsim.propagate_at_surface.BREAK pidx %7d : pmtid %d \n" , ctx.pidx, pmtid );
+#endif
+#endif
+
         flag = u_surface < absorb ? SURFACE_ABSORB : SURFACE_DETECT  ;
+
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
         if(ctx.pidx == base->pidx)
         printf("//qsim.propagate_at_surface.SA/SD.BREAK pidx %7d : flag %d \n" , ctx.pidx, flag );

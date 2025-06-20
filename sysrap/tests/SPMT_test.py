@@ -203,9 +203,19 @@ class TESTFOLD(object):
         return "\n".join(lines)
 
 
+class QESHAPE(object):
+    def __init__(self, t, title="QESHAPE" ):
+        self.t = t
+        qesh = t.get_s_qeshape
 
-
-
+        fig, ax = plt.subplots(1, figsize=SIZE/100.)
+        fig.suptitle(title)
+ 
+        for i in range(qesh.shape[0]):
+            ax.plot( qesh[i,:,0], qesh[i,:,1], label="qesh[%d]"%i )
+        pass
+        ax.legend()
+        fig.show()
 
 
 if __name__ == '__main__':
@@ -213,16 +223,18 @@ if __name__ == '__main__':
     TEST = os.environ.get("TEST","testfold")
 
     if TEST == "c4scan":
-        f = Fold.Load("$SFOLD/base/c4scan", symbol="f")
+        f = Fold.Load("$FOLD/testfold/c4scan", symbol="f")
         print(repr(f))
         a = ART(f)
     elif TEST == "testfold":
-        t = Fold.Load("$SFOLD/testfold", symbol="t")
+        t = Fold.Load("$FOLD/testfold", symbol="t")
         print(repr(t))
         tf = TESTFOLD(t)
         print(repr(tf))
+        QESHAPE(t)
+
     elif TEST == "spmt":
-        s = Fold.Load("$SFOLD/spmt", symbol="s")
+        s = Fold.Load("$FOLD/spmt", symbol="s")
         print(repr(s))
     pass
 

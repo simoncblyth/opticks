@@ -225,7 +225,7 @@ inline int QPMT<T>::get_lpmtcat_from_lpmtidx( int lpmtidx ) const
 template<typename T>
 inline int QPMT<T>::get_lpmtcat_from_lpmtid( int lpmtid ) const
 {
-    int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+    int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     return get_lpmtcat_from_lpmtidx(lpmtidx);
 }
 
@@ -248,7 +248,7 @@ inline int QPMT<T>::get_lpmtidx_from_lpmtid( int* lpmtidx_, const int* lpmtid_, 
     for(int i=0 ; i < num_lpmtid ; i++)
     {
         int lpmtid = lpmtid_[i] ;
-        int lpmtidx = s_pmt::lpmtidx_from_lpmtid(lpmtid);
+        int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
         lpmtidx_[i] = lpmtidx ;
     }
     return num_lpmtid ;
