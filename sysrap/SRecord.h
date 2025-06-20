@@ -1,10 +1,9 @@
 #pragma once
 /**
-SRecordInfo.h
+SRecord.h
 ==============
 
 Used from SGLFW_Event.h
-
 
 **/
 
@@ -14,7 +13,7 @@ Used from SGLFW_Event.h
 #include "NP.hh"
 
 
-struct SRecordInfo
+struct SRecord
 {
     static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";
 
@@ -26,8 +25,8 @@ struct SRecordInfo
     float4 mx = {} ;
     float4 ce = {} ;
 
-    static SRecordInfo* Load(const char* path, const char* _slice=nullptr );
-    SRecordInfo(NP* record);
+    static SRecord* Load(const char* path, const char* _slice=nullptr );
+    SRecord(NP* record);
     void init() ;
 
     const float* get_mn() const ;
@@ -41,26 +40,30 @@ struct SRecordInfo
 };
 
 /**
-SRecordInfo::Load
+SRecord::Load
 ------------------
 
 Two forms of slice selection are handled.
 
-1. "where" selection, eg::
+1. "where" selection, eg pick photon records with y coordinate
+   of the first step point less than a value::
 
      "[:,0,0,1] < -1.0"
 
-2. "indexSlice" selection, eg::
+2. "indexSlice" selection, eg every 1000th or the first 10::
 
      "[::1000]"
      "[:10]"
 
 
+The indexSlice form uses partial loading of items from files
+to enable working with very large record files, eg 66GB.
+
 The _slice can be specified via envvar with eg "$AFOLD_RECORD_SLICE"
 
 **/
 
-inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
+inline SRecord* SRecord::Load(const char* _path, const char* _slice )
 {
     const char* path = spath::Resolve(_path);
     bool looks_unresolved = spath::LooksUnresolved(path, _path);
@@ -68,7 +71,7 @@ inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
     if(looks_unresolved)
     {
         std::cout
-            << "SRecordInfo::Load"
+            << "SRecord::Load"
             << " FAILED : DUE TO MISSING ENVVAR\n"
             << " _path [" << ( _path ? _path : "-" ) << "]\n"
             << " path ["  << (  path ?  path : "-" ) << "]\n"
@@ -87,11 +90,11 @@ inline SRecordInfo* SRecordInfo::Load(const char* _path, const char* _slice )
     {
         a = NP::LoadSlice(path, _slice);
     }
-    return new SRecordInfo(a);
+    return new SRecord(a);
 }
 
 
-inline SRecordInfo::SRecordInfo(NP* _record)
+inline SRecord::SRecord(NP* _record)
     :
     record(_record),
     record_first(0),
@@ -101,7 +104,7 @@ inline SRecordInfo::SRecordInfo(NP* _record)
 }
 
 /**
-SRecordInfo::init
+SRecord::init
 -------------------
 
 Expected shape of record array like (10000, 10, 4, 4)
@@ -109,7 +112,7 @@ Expected shape of record array like (10000, 10, 4, 4)
 **/
 
 
-inline void SRecordInfo::init()
+inline void SRecord::init()
 {
     assert(record->shape.size() == 4);
     bool is_compressed = record->ebyte == 2 ;
@@ -134,36 +137,36 @@ inline void SRecordInfo::init()
 
 
 
-inline const float* SRecordInfo::get_mn() const
+inline const float* SRecord::get_mn() const
 {
     return &mn.x ;
 }
-inline const float* SRecordInfo::get_mx() const
+inline const float* SRecord::get_mx() const
 {
     return &mx.x ;
 }
-inline const float* SRecordInfo::get_ce() const
+inline const float* SRecord::get_ce() const
 {
     return &ce.x ;
 }
 
-inline const float SRecordInfo::get_t0() const
+inline const float SRecord::get_t0() const
 {
     return mn.w ;
 }
-inline const float SRecordInfo::get_t1() const
+inline const float SRecord::get_t1() const
 {
     return mx.w ;
 }
 
 
-inline std::string SRecordInfo::desc() const
+inline std::string SRecord::desc() const
 {
     const char* lpath = record ? record->lpath.c_str() : nullptr ;
 
     std::stringstream ss ;
     ss
-        << "[SRecordInfo.desc\n"
+        << "[SRecord.desc\n"
         << " lpath [" << ( lpath ? lpath : "-" ) << "]\n"
         << std::setw(20) << " mn " << mn
         << std::endl
@@ -177,7 +180,7 @@ inline std::string SRecordInfo::desc() const
         << std::endl
         << std::setw(20) << " record_count " << record_count
         << std::endl
-        << "]SRecordInfo.desc\n"
+        << "]SRecord.desc\n"
         ;
     std::string str = ss.str() ;
     return str ;

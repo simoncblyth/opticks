@@ -139,12 +139,11 @@ Screen
 
 #include "SYSRAP_API_EXPORT.hh"
 
-#include "SRecordInfo.h"
+#include "SRecord.h"
 #include "SCMD.h"
 #include "SGLM_Modifiers.h"
 #include "SGLM_Parse.h"
 
-struct SRecordInfo ;
 
 
 
@@ -613,9 +612,9 @@ struct SYSRAP_API SGLM : public SCMD
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale);
 
 
-    SRecordInfo* ar ;
-    SRecordInfo* br ;
-    void setRecordInfo( SRecordInfo* ar, SRecordInfo* br );
+    SRecord* ar ;
+    SRecord* br ;
+    void setRecord( SRecord* ar, SRecord* br );
 
     bool enabled_time_bump = true ;
     bool enabled_time_halt = false ;
@@ -2826,7 +2825,7 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
 
 
 /**
-SGLM::setRecordInfo
+SGLM::setRecord
 --------------------
 
 Invoked for example from SGLFW_Event_test.cc to enable
@@ -2835,7 +2834,7 @@ rendering of record step points together with geometry.
 **/
 
 
-inline void SGLM::setRecordInfo( SRecordInfo* _ar, SRecordInfo* _br )
+inline void SGLM::setRecord( SRecord* _ar, SRecord* _br )
 {
     ar = _ar ;
     br = _br ;

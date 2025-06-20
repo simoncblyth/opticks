@@ -125,14 +125,14 @@ A
    (WASDQE) hold to change eyeshift, translate left
 
 alt+A
-   toggle gm.option.A controlling rendering of SRecordInfo A
+   toggle gm.option.A controlling rendering of SRecord A
    (use T0 T1 and TN to control time range and animation speed)
 
 B
    -
 
 alt+B
-   toggle gm.option.B controlling rendering of SRecordInfo B
+   toggle gm.option.B controlling rendering of SRecord B
    (use T0 T1 and TN to control time range and animation speed)
 
 C

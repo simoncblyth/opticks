@@ -425,7 +425,7 @@ set(HEADERS
 
     SCMD.h
 
-    SRecordInfo.h
+    SRecord.h
     SGLM.h
     SGLM_Parse.h
     SGLM_Modifiers.h

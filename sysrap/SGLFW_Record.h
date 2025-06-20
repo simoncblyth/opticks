@@ -8,33 +8,33 @@ SGLFW_Record.h
 
 
 struct SGLFW_Program ;
-struct SRecordInfo ;
+struct SRecord ;
 
 struct SGLFW_Record
 {
-    static SGLFW_Record* Create(const SRecordInfo* _record, const float* _timeparam_ptr  );
+    static SGLFW_Record* Create(const SRecord* _record, const float* _timeparam_ptr  );
 
-    const SRecordInfo*  record ;
+    const SRecord*      record ;
     const float*        timeparam_ptr ;
 
     SGLFW_Buffer*       rpos ;
     SGLFW_VAO*          vao ;
     GLint               param_location;
 
-    SGLFW_Record(const SRecordInfo* _record, const float* _timeparam_ptr  ) ;
+    SGLFW_Record(const SRecord* _record, const float* _timeparam_ptr  ) ;
     void init();
 
     void render(const SGLFW_Program* prog);
 };
 
 
-inline SGLFW_Record* SGLFW_Record::Create(const SRecordInfo* _record, const float* _timeparam_ptr )
+inline SGLFW_Record* SGLFW_Record::Create(const SRecord* _record, const float* _timeparam_ptr )
 {
     return _record ? new SGLFW_Record(_record, _timeparam_ptr) : nullptr ;
 }
 
 
-inline SGLFW_Record::SGLFW_Record(const SRecordInfo* _record, const float* _timeparam_ptr )
+inline SGLFW_Record::SGLFW_Record(const SRecord* _record, const float* _timeparam_ptr )
     :
     record(_record),
     timeparam_ptr(_timeparam_ptr),
@@ -79,7 +79,7 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     vao->bind();
 
     rpos->bind();
-    prog->enableVertexAttribArray("rpos", SRecordInfo::RPOS_SPEC );
+    prog->enableVertexAttribArray("rpos", SRecord::RPOS_SPEC );
 
     if(param_location > -1 ) prog->Uniform4fv(param_location, timeparam_ptr, false );
     prog->updateMVP();  // ?

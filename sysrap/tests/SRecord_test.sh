@@ -1,9 +1,9 @@
 #!/bin/bash
 usage(){ cat << EOU
-SRecordInfo_test.sh
+SRecord_test.sh
 ======================
 
-~/o/sysrap/tests/SRecordInfo_test.sh
+~/o/sysrap/tests/SRecord_test.sh
 
 
 EOU
@@ -11,7 +11,7 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=SRecordInfo_test
+name=SRecord_test
 export SRECORDER_FOLD=/tmp/$name
 mkdir -p $SRECORDER_FOLD
 bin=$SRECORDER_FOLD/$name

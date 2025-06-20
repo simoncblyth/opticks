@@ -42,7 +42,7 @@ inorm
 #include "SScene.h"
 #include "SGLFW.h"
 
-#include "SRecordInfo.h"
+#include "SRecord.h"
 #include "SGLFW_Record.h"
 
 struct SGLFW_Event

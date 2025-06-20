@@ -24,7 +24,7 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "SGLM.h"
 #include "stree.h"
 #include "SScene.h"
-#include "SRecordInfo.h"
+#include "SRecord.h"
 #include "SGLFW.h"
 #include "SGLFW_Scene.h"
 #include "SGLFW_Evt.h"
@@ -38,8 +38,8 @@ int main()
     stree* tree = stree::Load(ss);
     if(DUMP) std::cout << scene->desc() ;
 
-    SRecordInfo* ar = SRecordInfo::Load("$AFOLD/record.npy") ;
-    SRecordInfo* br = SRecordInfo::Load("$BFOLD/record.npy") ;
+    SRecord* ar = SRecord::Load("$AFOLD/record.npy") ;
+    SRecord* br = SRecord::Load("$BFOLD/record.npy") ;
 
     if(DUMP) std::cout
          << " ar " << ( ar ? ar->desc() : "-" ) << "\n"
@@ -49,7 +49,7 @@ int main()
 
     SGLM gm ;
     gm.setTreeScene(tree, scene);
-    gm.setRecordInfo( ar, br );
+    gm.setRecord( ar, br );
 
     SGLFW gl(gm);
     SGLFW_Evt   ev(gl);

@@ -138,7 +138,7 @@ spath_test.sh
 #squad_test.sh
 #squadTest.sh
 #squadx_test.sh
-#SRecordInfo_test.sh
+#SRecord_test.sh
 #sreport_ab.sh
 #sreport.sh
 #SSceneLoad_test.sh

@@ -59,8 +59,8 @@ struct CSGOptiXRenderInteractiveTest
     bool ALLOW_REMOTE ;
     int irc ;
 
-    SRecordInfo* ar ;
-    SRecordInfo* br ;
+    SRecord*    ar ;
+    SRecord*    br ;
 
     CSGFoundry* fd ;
     SGLM*       gm ;
@@ -101,8 +101,8 @@ inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
     :
     ALLOW_REMOTE(ssys::getenvbool(_ALLOW_REMOTE)),
     irc(Initialize(ALLOW_REMOTE)),
-    ar(SRecordInfo::Load("$AFOLD/record.npy", "$AFOLD_RECORD_SLICE")),
-    br(SRecordInfo::Load("$BFOLD/record.npy", "$BFOLD_RECORD_SLICE")),
+    ar(SRecord::Load("$AFOLD/record.npy", "$AFOLD_RECORD_SLICE")),
+    br(SRecord::Load("$BFOLD/record.npy", "$BFOLD_RECORD_SLICE")),
     fd(CSGFoundry::Load()),
     gm(new SGLM),
     cx(nullptr),
@@ -122,7 +122,7 @@ inline void CSGOptiXRenderInteractiveTest::init()
     SScene* scene = fd->getScene() ;
     assert(scene);
     gm->setTreeScene(tree, scene);
-    gm->setRecordInfo(ar, br);
+    gm->setRecord(ar, br);
 
     cx = CSGOptiX::Create(fd) ;
     gl = new SGLFW(*gm);
