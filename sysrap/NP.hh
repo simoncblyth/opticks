@@ -61,13 +61,13 @@ struct NP_slice
 
     bool is_match(const NP_slice& other) const ;
     std::string desc() const ;
+    int count() const ;
 };
 
 inline bool NP_slice::is_match(const NP_slice& other) const
 {
     return start == other.start && stop == other.stop && step == other.step ;
 }
-
 inline std::string NP_slice::desc() const
 {
     std::stringstream ss ;
@@ -75,7 +75,12 @@ inline std::string NP_slice::desc() const
     std::string str = ss.str();
     return str ;
 }
-
+inline int NP_slice::count() const
+{
+    int _count = 0 ;
+    for(int i=start ; i < stop ; i += step ) _count++ ;
+    return _count ;
+}
 
 
 struct NP
@@ -121,6 +126,11 @@ struct NP
     template<typename T> static NP* MakeFromValues( const T* vals, INT num_vals );
     template<typename T> static INT ALength(  T x0, T x1, T st );
     template<typename T> static NP* ARange(   T x0, T x1, T st );
+
+    template<typename T> static NP* ARange_FromString( const char* spec );
+    template<typename T> static NP* ARange_(int start, int stop, int step);
+
+
     template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, INT npayload=-1 );
     template<typename T> static NP* DeltaColumn(const NP* a, INT jcol=0 ) ;
 
@@ -823,6 +833,62 @@ inline NP* NP::ARange( T x0, T x1, T dx ) // static
     NP* a = NP::Make<T>(ni) ;
     T* aa = a->values<T>() ;
     for(INT i=0 ; i < ni ; i++ ) aa[i] = x0 + T(i)*dx ;
+    return a ;
+}
+
+/**
+NP::ARange_FromString
+----------------------
+
+Spec examples::
+
+   [20000:45600]
+   [20000:45600:10]
+
+**/
+
+
+template<typename T>
+inline NP* NP::ARange_FromString( const char* spec ) // static
+{
+    NP_slice sli = {} ;
+    sli.start = 0 ;
+    sli.stop  = 0 ;
+    sli.step  = 1 ;
+
+    int rc = ParseSliceIndexString( sli.start, sli.stop, sli.step, spec );
+    bool valid = rc == 0 && sli.stop > 0 ;
+
+    if(!valid) std::cerr
+        << "NP::ARange_FromString spec{" << ( spec ? spec : "-" ) << "}\n"
+        << " valid " << ( valid ? "YES" : "NO " )
+        << " ParseSliceIndexString.rc [" << rc << "]\n"
+        << " sli.desc  " << sli.desc() << "\n"
+        << " sli.stop == 0 " << ( sli.stop == 0 ? "YES" : "NO " ) << "\n"
+        << " ERROR FAILED TO PARSE OR SLICE HAS ZERO STOP\n"
+        ;
+
+    if(!valid) return nullptr ;
+    return ARange_<T>(sli.start, sli.stop, sli.step);
+}
+
+
+
+template<typename T>
+inline NP* NP::ARange_(int start, int stop, int step) // static
+{
+    NP_slice sli = { start, stop, step };
+    INT num = sli.count();
+
+    NP* a = NP::Make<T>(num);
+    T* aa = a->values<T>();
+
+    INT count = 0 ;
+    for(INT i=start ; i < stop ; i += step )
+    {
+        aa[count] = T(i);
+        count += 1;
+    }
     return a ;
 }
 
@@ -4755,8 +4821,8 @@ template<typename T> inline T NP::interp(INT i, T x) const
 }
 
 /**
-NP::combined_interp_3
-------------------------
+NP::combined_interp_3  (better name _3D ?)
+---------------------------------------------------------------
 
 Assuming a convention of combined property array layout
 this provides interpolation of multiple properties with
@@ -4831,8 +4897,8 @@ template<typename T> inline T NP::combined_interp_3(INT i, T x) const
 
 
 /**
-NP::combined_interp_5
---------------------------
+NP::combined_interp_5 (better name _5D?)
+-----------------------------------------
 
 Example array layout for complex refractive index::
 

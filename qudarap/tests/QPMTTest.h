@@ -29,6 +29,7 @@ struct QPMTTest
     NP*         lpmtid ;       // array created from the string
     int         num_lpmtid ;
 
+
     NP*         lpmtidx ;
     int         num_lpmtidx ;
 
@@ -41,6 +42,18 @@ struct QPMTTest
 
     int         num_mct ;            // input from NUM_MCT envvar or default
     NP*         mct_domain ;         // from NP::MinusCosThetaLinearAngle
+
+    // small PMT info
+    static NP* GetSPMTID(const char* spec);
+    //static constexpr const char* SPMTID_SPEC = "20000,30000,40000,45599" ; // 45599 + 1 - 20000 = 25600
+    static constexpr const char* SPMTID_SPEC = "[20000:45600]" ; // 45599 + 1 - 20000 = 25600
+
+    const char* spmtid_spec ;
+    NP*         spmtid ;       // array created from the string
+    int         num_spmtid ;
+    NP*         spmtidx ;
+    int         num_spmtidx ;
+
 
     QPMTTest(const NPFold* jpmt );
 
@@ -56,6 +69,10 @@ struct QPMTTest
 #include "NPFold.h"
 
 #include "QPMT.hh"
+
+
+
+
 
 
 /**
@@ -81,9 +98,35 @@ inline QPMTTest<T>::QPMTTest(const NPFold* jpmt  )
     theta_radians_domain(NP::ThetaRadians<T>(91,0.5)),
     costh_domain(NP::Cos(theta_radians_domain)),
     num_mct(ssys::getenvint("NUM_MCT",900)),   // 181
-    mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct)))
+    mct_domain(NP::MakeWithType<T>(NP::MinusCosThetaLinearAngle<double>(num_mct))),
+    spmtid_spec(ssys::getenvvar("SPMTID_SPEC", SPMTID_SPEC)),
+    spmtid(GetSPMTID(spmtid_spec)),            // create array from string
+    num_spmtid(spmtid->shape[0]),
+    spmtidx(NP::Make<int>(num_spmtid)),
+    num_spmtidx(qpmt->get_spmtidx_from_spmtid(spmtidx->values<int>(),spmtid->cvalues<int>(),num_spmtid)) // CPU side lookups
 {
 }
+
+/**
+QPMTTest::GetSPMTID
+--------------------
+
+Either comma delimited lists OR slice ARange_FromString spec are handled, eg::
+
+    "20000,30000,40000,45599"   # 4 listed values
+    "[20000:45600]"             # 25600 values using python slice spec (start,stop,step)
+
+**/
+
+
+template<typename T>
+inline NP* QPMTTest<T>::GetSPMTID(const char* spec) // static
+{
+    if(!spec) return nullptr ;
+    bool is_comma_delimited_list = strstr(spec,",");
+    return  is_comma_delimited_list ? NPX::FromString<int>(spec,',') : NP::ARange_FromString<int>(spec) ;
+}
+
 
 template<typename T>
 inline NPFold* QPMTTest<T>::make_qscan() const
@@ -99,22 +142,28 @@ inline NPFold* QPMTTest<T>::make_qscan() const
     qscan->add("lpmtidx", lpmtidx ) ;
     qscan->add("lpmtcat", lpmtcat ) ;
 
-    qscan->add("lpmtcat_rindex",    qpmt->lpmtcat_scan(qpmt_RINDEX,  energy_eV_domain) ) ;
-    qscan->add("lpmtcat_stackspec", qpmt->lpmtcat_scan(qpmt_CATSPEC, energy_eV_domain) ) ;
-    qscan->add("lpmtcat_qeshape",   qpmt->lpmtcat_scan(qpmt_QESHAPE, energy_eV_domain) ) ;
+    qscan->add("spmtid",  spmtid ) ;
+    qscan->add("spmtidx", spmtidx ) ;
 
-    qscan->add("lpmtcat_cetheta",   qpmt->lpmtcat_scan(qpmt_CETHETA, theta_radians_domain) ) ;
-    qscan->add("lpmtcat_cecosth",   qpmt->lpmtcat_scan(qpmt_CECOSTH, costh_domain ) ) ;
 
+    qscan->add("pmtcat_rindex",    qpmt->pmtcat_scan(qpmt_RINDEX,    energy_eV_domain) ) ;
+    qscan->add("pmtcat_stackspec", qpmt->pmtcat_scan(qpmt_CATSPEC,   energy_eV_domain) ) ;
+    qscan->add("pmtcat_qeshape",   qpmt->pmtcat_scan(qpmt_QESHAPE,   energy_eV_domain) ) ;
+    qscan->add("pmtcat_s_qeshape", qpmt->pmtcat_scan(qpmt_S_QESHAPE, energy_eV_domain) ) ;
+    qscan->add("pmtcat_cetheta",   qpmt->pmtcat_scan(qpmt_CETHETA,   theta_radians_domain) ) ;
+    qscan->add("pmtcat_cecosth",   qpmt->pmtcat_scan(qpmt_CECOSTH,   costh_domain ) ) ;
 
     qscan->add("spec",    qpmt->mct_lpmtid_scan(qpmt_SPEC,    mct_domain, lpmtid) ) ;
     qscan->add("spec_ce", qpmt->mct_lpmtid_scan(qpmt_SPEC_ce, mct_domain, lpmtid) ) ;
 
-    qscan->add("art" , qpmt->mct_lpmtid_scan(qpmt_ART , mct_domain, lpmtid) ) ;
-    qscan->add("arte", qpmt->mct_lpmtid_scan(qpmt_ARTE, mct_domain, lpmtid) ) ;
-    qscan->add("atqc", qpmt->mct_lpmtid_scan(qpmt_ATQC, mct_domain, lpmtid) ) ;
-    qscan->add("comp", qpmt->mct_lpmtid_scan(qpmt_COMP, mct_domain, lpmtid) ) ;
-    qscan->add("ll",   qpmt->mct_lpmtid_scan(qpmt_LL  , mct_domain, lpmtid) ) ;
+    qscan->add("art" ,    qpmt->mct_lpmtid_scan(qpmt_ART , mct_domain, lpmtid) ) ;
+    qscan->add("arte",    qpmt->mct_lpmtid_scan(qpmt_ARTE, mct_domain, lpmtid) ) ;
+    qscan->add("atqc",    qpmt->mct_lpmtid_scan(qpmt_ATQC, mct_domain, lpmtid) ) ;
+    qscan->add("comp",    qpmt->mct_lpmtid_scan(qpmt_COMP, mct_domain, lpmtid) ) ;
+    qscan->add("ll",      qpmt->mct_lpmtid_scan(qpmt_LL  , mct_domain, lpmtid) ) ;
+
+
+    qscan->add("s_qescale",   qpmt->spmtid_scan(qpmt_S_QESCALE, spmtid ) ) ;
 
 
     return qscan ;

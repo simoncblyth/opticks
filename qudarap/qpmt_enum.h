@@ -19,7 +19,9 @@ enum {
   qpmt_COMP,
   qpmt_LL,
   qpmt_ARTE,
-  qpmt_ATQC
+  qpmt_ATQC,
+  qpmt_S_QESHAPE,
+  qpmt_S_QESCALE
 };
 
 
@@ -41,6 +43,8 @@ struct qpmt_enum
     static constexpr const char* _qpmt_LL      = "qpmt_LL" ;
     static constexpr const char* _qpmt_ARTE    = "qpmt_ARTE" ;
     static constexpr const char* _qpmt_ATQC    = "qpmt_ATQC" ;
+    static constexpr const char* _qpmt_S_QESHAPE = "qpmt_S_QESHAPE" ;
+    static constexpr const char* _qpmt_S_QESCALE = "qpmt_S_QESCALE" ;
 
     static const char* Label( int e );
 };
@@ -63,6 +67,8 @@ inline const char* qpmt_enum::Label(int e)
         case qpmt_LL:      s = _qpmt_LL      ; break ;
         case qpmt_ARTE:    s = _qpmt_ARTE    ; break ;
         case qpmt_ATQC:    s = _qpmt_ATQC    ; break ;
+        case qpmt_S_QESHAPE: s = _qpmt_S_QESHAPE ; break ;
+        case qpmt_S_QESCALE: s = _qpmt_S_QESCALE ; break ;
     }
     return s ;
 }

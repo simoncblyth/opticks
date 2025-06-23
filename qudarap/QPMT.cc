@@ -7,11 +7,11 @@ QPMT::init_thickness
 QPMT::init_lcqs
     prep hostside qpmt.h instance and upload to device at d_pmt
 
-QPMT::lpmtcat_check
+QPMT::pmtcat_check
     check domain and lookup shape consistency
 
-QPMT::lpmtcat_scan
-   interface in .cc to kernel launcher QPMT_lpmtcat_scan in .cu
+QPMT::pmtcat_scan
+   interface in .cc to kernel launcher QPMT_pmtcat_scan in .cu
 
 QPMT::mct_lpmtid_
    interface in .cc to kernel launcher QPMT_mct_lpmtid in .cu
@@ -100,6 +100,7 @@ inline void QPMT<T>::init()
     init_prop();
     init_thickness();
     init_lcqs();
+    init_s_qescale();
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
     d_pmt = pmt ;
@@ -117,6 +118,9 @@ inline void QPMT<T>::init_prop()
     pmt->qeshape_prop = qeshape_prop->getDevicePtr() ;
     pmt->cetheta_prop = cetheta_prop->getDevicePtr() ;
     pmt->cecosth_prop = cecosth_prop->getDevicePtr() ;
+
+    pmt->s_qeshape_prop = s_qeshape_prop->getDevicePtr() ;
+
 }
 
 
@@ -155,6 +159,30 @@ inline void QPMT<T>::init_lcqs()
 }
 
 
+template<typename T>
+inline void QPMT<T>::init_s_qescale()
+{
+    LOG(LEVEL)
+       << " src_s_qescale " << ( src_s_qescale ? src_s_qescale->sstr() : "-" )
+       << " s_qescale " << ( s_qescale ? s_qescale->sstr() : "-" )
+       ;
+
+    const char* label = "QPMT::init_s_qescale/d_s_qescale" ;
+
+#if defined(MOCK_CURAND) || defined(MOCK_CUDA)
+    T* d_s_qescale = s_qescale ? const_cast<T*>(s_qescale->cvalues<T>()) : nullptr ;
+#else
+    T* d_s_qescale = s_qescale ? QU::UploadArray<T>(s_qescale->cvalues<T>(), s_qescale->num_values(), label) : nullptr ;
+#endif
+
+    pmt->s_qescale = d_s_qescale ;
+}
+
+
+
+
+
+
 
 /**
 NB these decls cannot be extern "C" as need C++ name mangling for template types
@@ -163,7 +191,7 @@ NB these decls cannot be extern "C" as need C++ name mangling for template types
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
 
 template <typename F>
-extern void QPMT_lpmtcat_MOCK(
+extern void QPMT_pmtcat_MOCK(
     qpmt<F>* pmt,
     int etype,
     F* lookup,
@@ -185,7 +213,7 @@ extern void QPMT_mct_lpmtid_MOCK(
 
 #else
 template <typename T>
-extern void QPMT_lpmtcat_scan(
+extern void QPMT_pmtcat_scan(
     dim3 numBlocks,
     dim3 threadsPerBlock,
     qpmt<T>* pmt,
@@ -207,13 +235,25 @@ extern void QPMT_mct_lpmtid_scan(
     const int* lpmtid,
     unsigned num_lpmtid
 );
+
+template <typename T>
+extern void QPMT_spmtid_scan(
+    dim3 numBlocks,
+    dim3 threadsPerBlock,
+    qpmt<T>* pmt,
+    int etype,
+    T* lookup,
+    const int* spmtid,
+    unsigned num_spmtid
+);
+
 #endif
 
 
 
 
 template<typename T>
-void QPMT<T>::lpmtcat_check_domain_lookup_shape( int etype, const NP* domain, const NP* lookup) const
+void QPMT<T>::pmtcat_check_domain_lookup_shape( int etype, const NP* domain, const NP* lookup) const
 {
     const char* elabel = qpmt_enum::Label(etype) ;
     bool domain_expect = domain->shape.size() == 1 && domain->shape[0] > 0 ;
@@ -235,6 +275,7 @@ void QPMT<T>::lpmtcat_check_domain_lookup_shape( int etype, const NP* domain, co
     {
         case qpmt_RINDEX : num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_QESHAPE: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
+        case qpmt_S_QESHAPE: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_CETHETA: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_CECOSTH: num_domain_1 = lookup->shape[lookup->shape.size()-1] ; break ;
         case qpmt_CATSPEC: num_domain_1 = lookup->shape[lookup->shape.size()-3] ; break ; // (4,4) payload
@@ -283,8 +324,8 @@ T* QPMT<T>::Alloc(NP* out, const char* label)
 
 
 /**
-QPMT::lpmtcat_scan
---------------------
+QPMT::pmtcat_scan
+-------------------
 
 Canonical usage from QPMTTest.h make_qscan
 
@@ -305,16 +346,16 @@ with the energy domain passed in as input. Parallelism is over the energy.
 **/
 
 template<typename T>
-NP* QPMT<T>::lpmtcat_scan(int etype, const NP* domain ) const
+NP* QPMT<T>::pmtcat_scan(int etype, const NP* domain ) const
 {
     const char* elabel = qpmt_enum::Label(etype) ;
 
     unsigned num_domain = domain->shape[0] ;
-    NP* lookup = MakeArray_lpmtcat(etype, num_domain );
-    lpmtcat_check_domain_lookup_shape(etype, domain, lookup) ;
+    NP* lookup = MakeArray_pmtcat(etype, num_domain );
+    pmtcat_check_domain_lookup_shape(etype, domain, lookup) ;
     unsigned lookup_num_values = lookup->num_values() ;
 
-    const T* d_domain = Upload(domain, "QPMT::lpmtcat_scan/d_domain" );
+    const T* d_domain = Upload(domain, "QPMT::pmtcat_scan/d_domain" );
 
     LOG(LEVEL)
         << " etype " << etype
@@ -327,24 +368,28 @@ NP* QPMT<T>::lpmtcat_scan(int etype, const NP* domain ) const
 
     T* h_lookup = lookup->values<T>() ;
 
-    T* d_lookup = Alloc(lookup, "QPMT<T>::lpmtcat_scan/d_lookup" );
+    T* d_lookup = Alloc(lookup, "QPMT<T>::pmtcat_scan/d_lookup" );
 
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
-    QPMT_lpmtcat_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain );
+    QPMT_pmtcat_MOCK( d_pmt, etype, d_lookup, d_domain, num_domain );
 #else
     dim3 numBlocks ;
     dim3 threadsPerBlock ;
     QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_domain, 512u );
 
-    QPMT_lpmtcat_scan(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain );
+    QPMT_pmtcat_scan(numBlocks, threadsPerBlock, d_pmt, etype, d_lookup, d_domain, num_domain );
 
-    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, lookup_num_values, "QPMT::lpmtcat_scan/cd2haf" );
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, lookup_num_values, "QPMT::pmtcat_scan/cd2haf" );
     cudaDeviceSynchronize();
 #endif
 
     return lookup ;
 }
+
+
+
+
 
 
 /**
@@ -378,7 +423,7 @@ NP* QPMT<T>::mct_lpmtid_scan(int etype, const NP* domain, const NP* lpmtid ) con
     unsigned num_domain = domain->shape[0] ;
     unsigned num_lpmtid = lpmtid->shape[0] ;
 
-    NP* lookup = MakeArray_lpmtid(etype, num_domain, num_lpmtid );
+    NP* lookup = MakeArray_pmtid(etype, num_domain, num_lpmtid );
     LOG_IF(fatal, lookup == nullptr)
           << " etype " << etype
           << " elabel " << elabel
@@ -475,6 +520,64 @@ NP* QPMT<T>::mct_lpmtid_scan(int etype, const NP* domain, const NP* lpmtid ) con
 
     return lookup ;
 }
+
+
+
+/**
+QPMT::spmtid_scan
+----------------------
+
+Canonical usage from QPMTTest.h make_qscan
+
+**/
+
+
+template<typename T>
+NP* QPMT<T>::spmtid_scan(int etype, const NP* spmtid ) const
+{
+    const char* elabel = qpmt_enum::Label(etype) ;
+    unsigned num_spmtid = spmtid->shape[0] ;
+    const int* d_spmtid = QU::UploadArray<int>( spmtid->cvalues<int>(), num_spmtid, "QPMT::spmtid_scan/d_spmtid") ;
+
+    unsigned num_domain = -1 ; // not used
+    NP* lookup = MakeArray_pmtid(etype, num_domain, num_spmtid );
+    LOG_IF(fatal, lookup == nullptr)
+          << " etype " << etype
+          << " elabel " << elabel
+          << " FATAL no lookup "
+          ;
+
+    assert(lookup);
+    if(!lookup) std::raise(SIGINT);
+
+    unsigned num_lookup = lookup->num_values() ;
+    T* h_lookup = lookup->values<T>() ;
+    T* d_lookup = QU::device_alloc<T>(num_lookup,"QPMT::spmtid_scan/d_lookup") ;
+
+    dim3 numBlocks ;
+    dim3 threadsPerBlock ;
+    QU::ConfigureLaunch1D( numBlocks, threadsPerBlock, num_spmtid, 512u );
+
+    QPMT_spmtid_scan(
+        numBlocks,
+        threadsPerBlock,
+        d_pmt,
+        etype,
+        d_lookup,
+        d_spmtid,
+        num_spmtid );
+
+    cudaDeviceSynchronize();
+
+    QU::copy_device_to_host_and_free<T>( h_lookup, d_lookup, num_lookup, "QPMT::spmtid_scan/cdthaf" );
+    cudaDeviceSynchronize();
+
+    return lookup ;
+}
+
+
+
+
 
 // found the below can live in header, when headeronly
 //#pragma GCC diagnostic push

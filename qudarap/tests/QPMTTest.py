@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os, numpy as np, matplotlib as mp
+import os, numpy as np, matplotlib as mp, textwrap
 from opticks.ana.fold import Fold
 import matplotlib.pyplot as plt
 SIZE = np.array([1280, 720])
@@ -17,6 +17,7 @@ SCRIPT = os.environ.get("SCRIPT", "unknown-SCRIPT")
 class QPMTTest(object):
 
     NAMES = "NNVT HAMA NNVTHiQE".split()
+    S_NAMES = "SPMT".split()
 
     def __init__(self, t):
         self.t = t
@@ -69,7 +70,7 @@ class QPMTTest(object):
         t = self.t
         se = self.ese
         d = t.qscan.energy_eV_domain
-        a = t.qscan.lpmtcat_qeshape
+        a = t.qscan.pmtcat_qeshape
         if a is None: return
 
         prop_ni = t.qpmt.qeshape[:,-1,-1].view(np.int32)  ## last values from input prop arrays
@@ -105,11 +106,57 @@ class QPMTTest(object):
         fig.show()
 
 
+    def present_s_qeshape(self):
+        t = self.t
+        se = self.ese
+        d = t.qscan.energy_eV_domain
+        a = t.qscan.pmtcat_s_qeshape
+        if a is None: return
+
+        prop_ni = t.qpmt.s_qeshape[:,-1,-1].view(np.int32)  ## last values from input prop arrays
+
+        v0,v1 = 0.0,0.30
+
+        assert len(a.shape) == 2, interp.shape
+
+        ni = a.shape[0]  # pmtcat
+        nj = a.shape[1]  # energy
+
+        assert(ni == 1)
+
+        title = "%s : s_qeshape GPU interpolation lines and values " % self.title_prefix
+
+        fig, axs = mp.pyplot.subplots(1, ni, figsize=SIZE/100.)
+        fig.suptitle(title)
+
+        for i in range(ni):
+            ax = axs[i] if ni > 1 else axs
+            ax.set_ylim( v0, v1 )
+            v = a[i]
+            name = self.S_NAMES[i]
+            label = "%s s_qeshape" % name
+            ax.set_xlabel("energy [eV]")
+            ax.plot( d[se], v[se], label=label )
+            ax.legend(loc=os.environ.get("LOC", "upper left")) # upper/center/lower right/left
+
+            p_e = t.qpmt.s_qeshape[i,:prop_ni[i],0]
+            p_v = t.qpmt.s_qeshape[i,:prop_ni[i],1]
+            p_s = np.logical_and( p_e >= self.e0, p_e <= self.e1 )
+
+            ax.scatter( p_e[p_s], p_v[p_s] )
+        pass
+        fig.show()
+
+
+
+
+
+
     def present_cetheta(self):
         t = self.t
         se = self.hse
         d = t.qscan.theta_radians_domain
-        a = t.qscan.lpmtcat_cetheta
+        a = t.qscan.pmtcat_cetheta
         if a is None: return
 
         prop_ni = t.qpmt.cetheta[:,-1,-1].view(np.int32)  ## last values from input prop arrays
@@ -150,7 +197,7 @@ class QPMTTest(object):
         t = self.t
         se = self.cse
         d = t.qscan.costh_domain
-        a = t.qscan.lpmtcat_cecosth
+        a = t.qscan.pmtcat_cecosth
         if a is None: return
 
         prop_ni = t.qpmt.cecosth[:,-1,-1].view(np.int32)  ## last values from input prop arrays
@@ -190,7 +237,7 @@ class QPMTTest(object):
     def present_rindex(self):
         t = self.t
 
-        a = t.qscan.lpmtcat_rindex
+        a = t.qscan.pmtcat_rindex
         if a is None: return
         assert len(a.shape) == 4, a.shape
 
@@ -372,6 +419,43 @@ class QPMTTest(object):
         print(" also note the qe_shape factor for lpmtcat 0:NNVT and 2:NNVT_HiQE are the same, diff from 1:HAMA  ")
 
 
+class SPMTID(object):
+    """
+    t.qscan.s_qescale.shape
+    t.qscan.s_qescale
+
+    p.s_qescale[:,0].shape
+    p.s_qescale[:,0]
+
+    t.qscan.spmtid.shape
+    t.qscan.spmtid
+
+    np.all( t.qscan.s_qescale == p.s_qescale[:,0][t.qscan.spmtid - 20000] )
+
+    """
+    @classmethod
+    def EXPR(cls):
+        return list(map(str.strip,textwrap.dedent(cls.__doc__).split("\n")))
+
+    def __init__(self, t, symbol="sp"):
+        self.t = t
+        self.symbol = symbol
+
+    def __repr__(self):
+        t = self.t
+        p = t.qpmt  # QPMT members
+        s = t.qscan # QPMTTest scan results
+
+        lines = []
+        lines.append("[%s" % self.symbol)
+        for expr in self.EXPR():
+            lines.append(expr)
+            if expr == "" or expr[0] == "#": continue
+            lines.append(repr(eval(expr)))
+        pass
+        lines.append("]%s" % self.symbol)
+        return "\n".join(lines)
+
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
@@ -380,21 +464,26 @@ if __name__ == '__main__':
 
     pt.check_lpmtcat()
 
+    sp = SPMTID(t, symbol="sp")
+    print(repr(sp))
+
     p = t.qpmt
     s = t.qscan
-
 
     #plot = "rindex"
     #plot = "qeshape"
     #plot = "cetheta"
-    plot = "cecosth"
+    #plot = "cecosth"
     #plot = "art"
+    plot = "s_qeshape"
 
     PLOT = os.environ.get("PLOT", plot )
     if PLOT == "rindex":
         pt.present_rindex()
     elif PLOT == "qeshape":
         pt.present_qeshape()
+    elif PLOT == "s_qeshape":
+        pt.present_s_qeshape()
     elif PLOT == "cetheta":
         pt.present_cetheta()
     elif PLOT == "cecosth":

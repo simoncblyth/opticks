@@ -66,6 +66,16 @@ struct QUDARAP_API QPMT
     const NP* lcqs ;
     const int* i_lcqs ;  // CPU side lpmtid -> lpmtcat 0/1/2
 
+
+    const NP* src_s_qeshape ;
+    const NP* src_s_qescale ;
+
+    const NP* s_qeshape ;
+    const QProp<T>* s_qeshape_prop ;
+
+    const NP* s_qescale ;
+
+
     qpmt<T>* pmt ;
     qpmt<T>* d_pmt ;
 
@@ -77,6 +87,7 @@ struct QUDARAP_API QPMT
     void init_prop();
     void init_thickness();
     void init_lcqs();
+    void init_s_qescale();
 
     // .h
     NPFold* serialize() const ;  // formerly get_fold
@@ -90,18 +101,22 @@ struct QUDARAP_API QPMT
     int  get_lpmtcat_from_lpmtid(  int* lpmtcat, const int* lpmtid , int num ) const ;
 
     int  get_lpmtidx_from_lpmtid(  int* lpmtidx, const int* lpmtid , int num ) const ;
+    int  get_spmtidx_from_spmtid(  int* spmtidx, const int* spmtid , int num ) const ;
 
-    static NP* MakeArray_lpmtcat(int etype, unsigned num_domain );
-    static NP* MakeArray_lpmtid( int etype, unsigned num_domain, unsigned num_lpmtid );
+    static NP* MakeArray_pmtcat(int etype, unsigned num_domain );
+    static NP* MakeArray_pmtid( int etype, unsigned num_domain, unsigned num_pmtid );
 
     // .cc
-    void lpmtcat_check_domain_lookup_shape( int etype, const NP* domain, const NP* lookup) const ;
+    void pmtcat_check_domain_lookup_shape( int etype, const NP* domain, const NP* lookup) const ;
 
     static const T* Upload(const NP* arr, const char* label);
     static T* Alloc(NP* out, const char* label);
 
-    NP*  lpmtcat_scan(     int etype, const NP* domain) const ;
+    NP*  pmtcat_scan(     int etype, const NP* domain) const ;
     NP*  mct_lpmtid_scan(  int etype, const NP* domain, const NP* lpmtid) const ;
+
+    NP*  spmtid_scan(int etype, const NP* spmtid ) const ;
+
 
 };
 
@@ -120,7 +135,8 @@ QPMT::QPMT
 6. narrows src_lcqs into lcqs
 
 NB the jpmt argument is the NPFold provided by SPMT::CreateFromJPMTAndSerialize
- not the raw fold from _PMTSimParamData
+not the raw fold from _PMTSimParamData. So all the data preparation done
+in SPMT.h is accessible from here.
 
 **/
 
@@ -146,6 +162,11 @@ inline QPMT<T>::QPMT(const NPFold* jpmt )
     thickness(NP::MakeWithType<T>(src_thickness)),
     lcqs(src_lcqs ? NP::MakeWithType<T>(src_lcqs) : nullptr),
     i_lcqs( lcqs ? (int*)lcqs->cvalues<T>() : nullptr ),    // CPU side lookup lpmtidx->lpmtcat 0/1/2
+    src_s_qeshape(  jpmt->get("s_qeshape")),
+    src_s_qescale(  jpmt->get("s_qescale")),
+    s_qeshape(   NP::MakeWithType<T>(src_s_qeshape)), // adopt template type, potentially narrowing
+    s_qeshape_prop(new QProp<T>(s_qeshape)),
+    s_qescale(src_s_qescale ? NP::MakeWithType<T>(src_s_qescale) : nullptr),
     pmt(new qpmt<T>()),                    // host-side qpmt.h instance
     d_pmt(nullptr)                         // device-side pointer set at upload in init
 {
@@ -177,6 +198,10 @@ inline NPFold* QPMT<T>::serialize() const  // formerly get_fold
     fold->add("cetheta_prop_a", cetheta_prop->a );
     fold->add("cecosth_prop_a", cecosth_prop->a );
 
+    fold->add("s_qeshape", s_qeshape );
+    fold->add("s_qeshape_prop_a", s_qeshape_prop->a );
+    fold->add("s_qescale", s_qescale );
+
     return fold ;
 }
 
@@ -194,6 +219,8 @@ inline std::string QPMT<T>::desc() const
        << std::setw(w) << "cecosth " << cecosth->sstr() << std::endl
        << std::setw(w) << "thickness " << thickness->sstr() << std::endl
        << std::setw(w) << "lcqs " << lcqs->sstr() << std::endl
+       << std::setw(w) << "s_qeshape " << s_qeshape->sstr() << std::endl
+       << std::setw(w) << "s_qescale " << s_qescale->sstr() << std::endl
        << std::setw(w) << " pmt.rindex_prop " << pmt->rindex_prop  << std::endl
        << std::setw(w) << " pmt.qeshape_prop " << pmt->qeshape_prop  << std::endl
        << std::setw(w) << " pmt.cetheta_prop " << pmt->cetheta_prop  << std::endl
@@ -254,13 +281,25 @@ inline int QPMT<T>::get_lpmtidx_from_lpmtid( int* lpmtidx_, const int* lpmtid_, 
     return num_lpmtid ;
 }
 
+template<typename T>
+inline int QPMT<T>::get_spmtidx_from_spmtid( int* spmtidx_, const int* spmtid_, int num_spmtid ) const
+{
+    for(int i=0 ; i < num_spmtid ; i++)
+    {
+        int spmtid = spmtid_[i] ;
+        int spmtidx = s_pmt::spmtidx_from_pmtid(spmtid);
+        spmtidx_[i] = spmtidx ;
+    }
+    return num_spmtid ;
+}
+
 
 
 
 
 
 /**
-QPMT::MakeArray_lpmtcat
+QPMT::MakeArray_pmtcat
 -------------------------
 
 HMM: this is mainly for testing, perhaps put in QPMTTest ?
@@ -268,7 +307,7 @@ HMM: this is mainly for testing, perhaps put in QPMTTest ?
 **/
 
 template<typename T>
-inline NP* QPMT<T>::MakeArray_lpmtcat(int etype, unsigned num_domain )   // static
+inline NP* QPMT<T>::MakeArray_pmtcat(int etype, unsigned num_domain )   // static
 {
     const int& ni = s_pmt::NUM_CAT ;
     const int& nj = s_pmt::NUM_LAYR ;
@@ -281,15 +320,16 @@ inline NP* QPMT<T>::MakeArray_lpmtcat(int etype, unsigned num_domain )   // stat
        case qpmt_QESHAPE: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
        case qpmt_CETHETA: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
        case qpmt_CECOSTH: lookup = NP::Make<T>( ni,         num_domain ) ; break ;
+       case qpmt_S_QESHAPE: lookup = NP::Make<T>( 1,        num_domain ) ; break ;
     }
     return lookup ;
 }
 
 
 template<typename T>
-inline NP* QPMT<T>::MakeArray_lpmtid(int etype, unsigned num_domain, unsigned num_lpmtid )   // static
+inline NP* QPMT<T>::MakeArray_pmtid(int etype, unsigned num_domain, unsigned num_pmtid )   // static
 {
-    const int ni = num_lpmtid ;
+    const int ni = num_pmtid ;
     const int nj = num_domain ;
 
     NP* lookup = nullptr ;
@@ -302,9 +342,9 @@ inline NP* QPMT<T>::MakeArray_lpmtid(int etype, unsigned num_domain, unsigned nu
        case qpmt_LL:      lookup = NP::Make<T>( ni, nj, 4, 4, 4, 2 )  ; break ;
        case qpmt_ARTE:    lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
        case qpmt_ATQC:    lookup = NP::Make<T>( ni, nj, 4  )          ; break ;
+       case qpmt_S_QESCALE:  lookup = NP::Make<T>( num_pmtid )        ; break ;
     }
     return lookup ;
 }
-
 
 

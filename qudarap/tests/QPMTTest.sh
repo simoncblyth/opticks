@@ -35,7 +35,8 @@ script=$name.py
 
 source $HOME/.opticks/GEOM/GEOM.sh # define GEOM envvar
 
-defarg="info_run_ana"
+#defarg="info_run_ana"
+defarg="info_run_pdb"
 arg=${1:-$defarg}
 
 logging(){

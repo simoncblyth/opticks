@@ -55,12 +55,19 @@ struct qpmt
     F*        lcqs ;
     int*      i_lcqs ;  // int* "view" of lcqs memory
 
+    qprop<F>* s_qeshape_prop ;
+    F*        s_qescale ;
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_CURAND ) || defined(MOCK_CUDA)
     // loosely follow SPMT.h
     QPMT_METHOD int  get_lpmtcat_from_lpmtid(  int lpmtid  ) const  ;
     QPMT_METHOD int  get_lpmtcat_from_lpmtidx( int lpmtidx ) const  ;
     QPMT_METHOD F    get_qescale_from_lpmtid(  int lpmtid  ) const  ;
     QPMT_METHOD F    get_qescale_from_lpmtidx( int lpmtidx ) const  ;
+
+    QPMT_METHOD F    get_s_qescale_from_spmtid(  int spmtid  ) const  ;
+
 
     QPMT_METHOD F    get_lpmtcat_qe( int pmtcat, F energy_eV ) const ;
     QPMT_METHOD F    get_lpmtcat_ce( int pmtcat, F theta ) const ;
@@ -115,6 +122,19 @@ inline QPMT_METHOD F qpmt<F>::get_qescale_from_lpmtidx( int lpmtidx ) const
 {
     return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
 }
+
+
+template<typename F>
+inline QPMT_METHOD F qpmt<F>::get_s_qescale_from_spmtid( int spmtid ) const
+{
+    int spmtidx = s_pmt::spmtidx_from_pmtid(spmtid);
+    return spmtidx < s_pmt::NUM_SPMT && spmtidx > -1 ? s_qescale[spmtidx] : -2.f ;
+}
+
+
+
+
+
 
 
 template<typename F>

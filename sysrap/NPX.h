@@ -549,6 +549,7 @@ Populate vector using unordered_map values using key_order vector ordering.
 When the key_order argument is not nullptr it must point to
 a vector that contains all the keys that are present in the
 unordered map in the desired order.
+
 When the key_order argument is nullptr the keys are assumed to
 be contiguous integers starting from the minimum key that
 is present in the unordered_map.
@@ -556,16 +557,16 @@ is present in the unordered_map.
 1. clear vector and resize vector to the size of the map
 2. when key_order points to a vector iterate over keys, for each key:
 
-   * count if the key is a contiguous offset from the firsy key, k0
+   * count if the key is a contiguous offset from the first key, k0
    * use the key to lookup a value from the map and place that value into the idx vector position
-   * NB all keys in the unorderd_map must be present in the key_order vector,
+   * NB all keys in the unordered_map must be present in the key_order vector,
      otherwise an unordedmap::at failure will occur
 
 3. when key_order is nullptr determine the range of keys and use the smallest key *_k0
-   as the base for all keys, that are assumed to be contiguous.  If the unorderd_map keys
+   as the base for all keys, that are assumed to be contiguous.  If the unordered_map keys
    are not within a contiguous range of integers then this method
-   will fail with an unordedmap::at failure. In this situation it is necesssary
-   to provide a pointer to a key_order vector contaning all the keys in the unordered_map.
+   will fail with an unorderedmap::at failure. In this situation it is necesssary
+   to provide a pointer to a key_order vector containing all the keys in the unordered_map.
 
 **/
 
@@ -765,6 +766,15 @@ inline NP* NPX::ArrayFromMapUnordered( const std::unordered_map<int, S>& m, cons
     return a ;
 }
 
+
+/**
+NPX::KeyRangeMapUnordered
+--------------------------
+
+Iterate over the int keys of the unordered_map to determine
+the smallest *_k0* and largest *_k1* int keys.
+
+**/
 
 
 template<typename S>
