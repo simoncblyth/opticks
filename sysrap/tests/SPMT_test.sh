@@ -17,7 +17,7 @@ That does something like::
     N_MCT=900 N_SPOL=1  ./SPMT_test.sh
 
 Note dependency on GEOM envvar, which is used
-to SPMT::Load the PMT info NPFold from::
+to SPMT::CreateFromJPMT the PMT info NPFold from::
 
     $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extras/jpmt
 
@@ -27,13 +27,15 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 source $HOME/.opticks/GEOM/GEOM.sh
 
-defarg="info_build_run_ana"
+#defarg="info_build_run_ana"
+defarg="info_build_run_pdb"
 arg=${1:-$defarg}
 
 name=SPMT_test
 script=$name.py
 
-export TMP=${TMP:-/tmp/$USER/opticks}
+tmp=/tmp/$USER/opticks
+export TMP=${TMP:-$tmp}
 export FOLD=$TMP/$name
 
 mkdir -p $FOLD
@@ -47,7 +49,7 @@ export TEST=${TEST:-$test}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="arg name REALDIR GEOM TMP FOLD CUDA_PREFIX bin script TEST"
+vars="BASH_SOURCE BASH_VERSION defarg arg name GEOM TMP FOLD CUDA_PREFIX bin script TEST"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
@@ -71,6 +73,7 @@ if [ "${arg/run}" != "$arg" ]; then
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
+    source dbg__.sh
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi

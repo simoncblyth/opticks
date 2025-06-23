@@ -130,11 +130,11 @@ struct SPMT
 
     struct LCQS { int lc ; float qs ; } ;
 
-    
+
     static constexpr const float EN0 = 1.55f ;
     static constexpr const float EN1 = 4.20f ;  // 15.5
     static constexpr const int   N_EN = 420 - 155 + 1 ;
-    
+
 
     /*
     static constexpr const float EN0 = 2.81f ;
@@ -205,7 +205,8 @@ struct SPMT
 
 
     void init_lcqs();
-    void init_spmt();
+    void init_s_qescale();
+
     static int TranslateCat(int lpmtcat);
 
     std::string descDetail() const ;
@@ -302,6 +303,10 @@ struct SPMT
     void  get_lcqs_from_lpmtidx( int& lc, float& qs, int lpmtidx ) const ;
     NP*   get_lcqs_from_lpmtidx() const ;
 
+    float get_s_qescale_from_spmtid( int pmtid ) const ;
+    NP*   get_s_qescale_from_spmtid() const ;
+
+
     float get_pmtcat_qe(int cat, float energy_eV) const ;
     NP*   get_pmtcat_qe() const ;
 
@@ -342,11 +347,8 @@ struct SPMT
     NP* cetheta ;   // (NUM_PMTCAT, NUM_SAMPLES~9, 2:[angle_radians,value] )
     NP* cecosth ;   // (NUM_PMTCAT, NUM_SAMPLES~9, 2:[cosine_angle,value] )
     NP* lcqs ;      // (NUM_CD_LPMT + NUM_WP, 2)
+
     NP* thickness ; // (NUM_PMTCAT, NUM_LAYER, 1:value )
-
-    NP* s_qeshape ;  // (NUM_PMTCAT:1, NUM_SAMPLES~60, 2:[energy,value] )
-
-
     float* tt ;
 
     const NP* pmtCat ;
@@ -358,6 +360,9 @@ struct SPMT
     const NP* qeScale ;
     const double* qeScale_v ;
 
+    NP* s_qeshape ;  // (NUM_PMTCAT:1, NUM_SAMPLES~60, 2:[energy,value] )
+    NP* s_qescale ;  // (NUM_SPMT, 1)
+    float* s_qescale_v ;
 
 };
 
@@ -428,7 +433,10 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     lpmtCat( PMTSimParamData ? PMTSimParamData->get("lpmtCat")  : nullptr ),
     lpmtCat_v( lpmtCat ? lpmtCat->cvalues<int>() : nullptr ),
     qeScale( PMTSimParamData ? PMTSimParamData->get("qeScale")  : nullptr ),
-    qeScale_v( qeScale ? qeScale->cvalues<double>() : nullptr )
+    qeScale_v( qeScale ? qeScale->cvalues<double>() : nullptr ),
+    s_qeshape(nullptr),
+    s_qescale(NP::Make<float>(s_pmt::NUM_SPMT,1)),
+    s_qescale_v( s_qescale ? s_qescale->values<float>() : nullptr )
 {
     init();
 }
@@ -465,7 +473,7 @@ inline void SPMT::init()
     init_cecosth();
 
     init_lcqs();
-    init_spmt();
+    init_s_qescale();
 }
 
 
@@ -722,39 +730,8 @@ NB EVEN WHEN TESTING WITH REDUCED N_LPMT STILL NEED TO INCLUDE INFO FOR ALL 1761
 
 inline void SPMT::init_lcqs()
 {
-    if( PMTSimParamData == nullptr )
-    {
-        std::cout << "SPMT::init_lcqs exit as PMTSimParamData is NULL\n" ;
-        return ;
-    }
-    if( PMTParamData == nullptr )
-    {
-        std::cout << "SPMT::init_lcqs exit as PMTParamData is NULL\n" ;
-        return ;
-    }
-
-    assert( PMTParamData );
-
-    /*
-    // moved to ctor and init_pmtCat
-    const NP* pmtCat = PMTParamData->get("pmtCat") ;  // (45612, 2)  (copyno,cat)
-    assert( pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 );
-    const int* pmtCat_v = pmtCat->cvalues<int>();
-    assert( pmtCat->shape[0] == total.ALL );
-    assert( pmtCat->shape[1] == 2 );
-    */
-
-
-    /**
-    // moved to ctor and init_lpmtCat
     assert( PMTSimParamData );
-    const NP* lpmtCat = PMTSimParamData->get("lpmtCat") ; // (17612, 1) (cat,)
-    assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 );
-    assert( lpmtCat->shape[0] == s_pmt::NUM_CD_LPMT );
-    const int* lpmtCat_v = lpmtCat->cvalues<int>();
-    **/
-
-
+    assert( PMTParamData );
     assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
     assert( s_pmt::NUM_WP   == total.WP );
 
@@ -762,15 +739,6 @@ inline void SPMT::init_lcqs()
     {
         assert( pmtCat_v[2*i+1] == lpmtCat_v[i] ) ;
     }
-
-    /**
-    // moved to ctor abnd init_qeScale
-
-    const NP* qeScale = PMTSimParamData->get("qeScale") ;  // (45612, 1)
-    assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
-    assert( qeScale->shape[0] == s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP  );
-    const double* qeScale_v = qeScale->cvalues<double>();
-    **/
 
 
     v_lcqs.resize(s_pmt::NUM_CD_LPMT_AND_WP);
@@ -810,9 +778,15 @@ inline void SPMT::init_lcqs()
     assert( s_pmt::NUM_WP == 2400 );
 }
 
-inline void SPMT::init_spmt()
+inline void SPMT::init_s_qescale()
 {
-    for(int i=0 ; i < s_pmt::NUM_SPMT ; i++ )
+    int ni = s_qescale ? s_qescale->shape[0] : 0 ;
+    int nj = s_qescale ? s_qescale->shape[1] : 0 ;
+    assert( ni == s_pmt::NUM_SPMT );
+    assert( nj == 1 );
+    assert( s_qescale_v );
+
+    for(int i=0 ; i < ni ; i++ )
     {
         int spmtidx = i ;
         int pmtid = s_pmt::pmtid_from_spmtidx( spmtidx );
@@ -824,11 +798,8 @@ inline void SPMT::init_spmt()
         int cat = pmtCat_v[2*contiguousidx+1] ;
         assert( cat == 2 );
 
-        //float qesc = qeScale_v[contiguousidx] ;
-
-        // TODO: DECIDE WHATS NEEDED GPU SIDE
+        s_qescale_v[spmtidx*nj + 0] = qeScale_v[contiguousidx]  ;
     }
-
 }
 
 
@@ -905,6 +876,7 @@ inline std::string SPMT::desc() const
     ss << "thickness " << ( thickness ? thickness->sstr() : "-" ) << std::endl ;
     ss << "qeshape " << ( qeshape ? qeshape->sstr() : "-" ) << std::endl ;
     ss << "s_qeshape " << ( s_qeshape ? s_qeshape->sstr() : "-" ) << std::endl ;
+    ss << "s_qescale " << ( s_qescale ? s_qescale->sstr() : "-" ) << std::endl ;
     ss << "cetheta " << ( cetheta ? cetheta->sstr() : "-" ) << std::endl ;
     ss << "cecosth " << ( cecosth ? cecosth->sstr() : "-" ) << std::endl ;
     ss << "lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl ;
@@ -920,6 +892,7 @@ inline bool SPMT::is_complete() const
        thickness != nullptr &&
        qeshape != nullptr &&
        s_qeshape != nullptr &&
+       s_qescale != nullptr &&
        cetheta != nullptr &&
        cecosth != nullptr &&
        lcqs != nullptr
@@ -941,6 +914,7 @@ inline NPFold* SPMT::serialize_() const   // formerly get_fold
     if(thickness) fold->add("thickness", thickness) ;
     if(qeshape) fold->add("qeshape", qeshape) ;
     if(s_qeshape) fold->add("s_qeshape", s_qeshape) ;
+    if(s_qescale) fold->add("s_qescale", s_qescale) ;
     if(cetheta) fold->add("cetheta", cetheta) ;
     if(cecosth) fold->add("cecosth", cecosth) ;
     if(lcqs) fold->add("lcqs", lcqs) ;
@@ -1073,7 +1047,7 @@ inline NP* SPMT::get_s_qeshape() const
     std::cout << "SPMT::get_s_qeshape " << std::endl ;
 
     int ni = 1 ;   // only cat 0 for small PMT
-    int nj = N_EN ; 
+    int nj = N_EN ;
     int nk = 2 ;   // payload [energy_eV,qeshape_value]
 
     NP* a = NP::Make<float>(ni,nj,nk) ;
@@ -1698,7 +1672,8 @@ inline void SPMT::get_lcqs_from_lpmtidx(int& lc, float& qs, int lpmtidx) const
     qs = lcqs_f[lpmtidx*2+1] ;
 }
 /**
-HUH: doesnt this just duplicate lcqs ?
+Q: Does not this just duplicate lcqs ?
+A: YES, that is the point : to check that it does.
 **/
 inline NP* SPMT::get_lcqs_from_lpmtidx() const
 {
@@ -1711,6 +1686,32 @@ inline NP* SPMT::get_lcqs_from_lpmtidx() const
     for(int i=0 ; i < ni ; i++) get_lcqs_from_lpmtidx( ii[i*nj+0], ff[i*nj+1], i );
     return a ;
 }
+
+
+inline float SPMT::get_s_qescale_from_spmtid( int pmtid ) const
+{
+    assert( s_pmt::is_spmtid( pmtid ));
+    int spmtidx = s_pmt::spmtidx_from_pmtid(pmtid);
+    assert( s_pmt::is_spmtidx( spmtidx ));
+    float s_qs = s_qescale_v[spmtidx] ;
+    return s_qs ;
+}
+
+inline NP* SPMT::get_s_qescale_from_spmtid() const
+{
+    int ni = s_pmt::NUM_SPMT;
+    int nj = 1 ;
+    NP* a = NP::Make<float>(ni, nj) ;
+    float* aa = a->values<float>() ;
+    for(int i=0 ; i < ni ; i++)
+    {
+        int spmtidx = i ;
+        int spmtid = s_pmt::pmtid_from_spmtidx(spmtidx);
+        aa[nj*i+0] = get_s_qescale_from_spmtid( spmtid );
+    }
+    return a ;
+}
+
 
 
 
@@ -1820,6 +1821,7 @@ inline NPFold* SPMT::make_testfold() const
     f->add("get_rindex", get_rindex() );
     f->add("get_qeshape", get_qeshape() );
     f->add("get_s_qeshape", get_s_qeshape() );
+    f->add("get_s_qescale_from_spmtid", get_s_qescale_from_spmtid() );
     f->add("get_thickness_nm", get_thickness_nm() );
     f->add("get_stackspec", get_stackspec() );
 

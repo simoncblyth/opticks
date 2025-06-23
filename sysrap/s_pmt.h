@@ -264,11 +264,22 @@ namespace s_pmt
     }
 
 
+
+    SPMT_FUNCTION bool is_spmtid( int pmtid )
+    {
+        return pmtid >= OFFSET_CD_SPMT && pmtid < OFFSET_CD_SPMT + NUM_SPMT ;
+    }
+    SPMT_FUNCTION bool is_spmtidx( int pmtidx )
+    {
+        return pmtidx >= 0 && pmtidx < NUM_SPMT ;
+    }
+
+
     SPMT_FUNCTION int pmtid_from_spmtidx( int spmtidx )
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-        assert( spmtidx >= 0 && spmtidx < NUM_SPMT );
+        assert( is_spmtidx(spmtidx) );
 #endif
         int pmtid = spmtidx + OFFSET_CD_SPMT ;
         return pmtid ;
@@ -278,11 +289,15 @@ namespace s_pmt
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-        assert( pmtid >= OFFSET_CD_SPMT && pmtid < OFFSET_CD_SPMT + NUM_SPMT );
+        assert( is_spmtid(pmtid) );
 #endif
         int spmtidx = pmtid - OFFSET_CD_SPMT ;
         return spmtidx ;
     }
+
+
+
+
 
 
 }

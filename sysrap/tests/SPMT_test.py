@@ -174,9 +174,7 @@ class ART(object):
 
 
 class TESTFOLD(object):
-
-    EXPR = list(map(str.strip,textwrap.dedent(r"""
-
+    """
     np.c_[np.unique(t.get_lpmtcat_from_lpmtidx, return_counts=True)]
     np.c_[np.unique(t.get_lpmtcat_from_lpmtidx, return_counts=True)][:,1].sum()
 
@@ -187,15 +185,31 @@ class TESTFOLD(object):
     np.all( t.get_lcqs_from_lpmtidx[:,0] == t.get_lpmtcat_from_lpmtidx )
     np.all( t.get_lcqs_from_lpmtidx[:,1].view(np.float32) == t.get_qescale_from_lpmtidx )
 
-    """).split("\n")))
 
+    # S_PMT
 
-    def __init__(self, t ):
+    np.all( s.s_qescale == t.get_s_qescale_from_spmtid )  # consistency check between SPMT.h input and output
+
+    t.get_s_qeshape.shape
+    t.get_s_qeshape
+
+    """
+
+    @classmethod
+    def EXPR(cls):
+        return list(map(str.strip,textwrap.dedent(cls.__doc__).split("\n")))
+
+    def __init__(self, t, s ):
         self.t = t
+        self.s = s
 
     def __repr__(self):
         lines = []
-        for expr in self.EXPR:
+
+        t = self.t
+        s = self.s
+
+        for expr in self.EXPR():
             lines.append(expr)
             if expr == "" or expr[0] == "#": continue
             lines.append(repr(eval(expr)))
@@ -203,17 +217,23 @@ class TESTFOLD(object):
         return "\n".join(lines)
 
 
-class QESHAPE(object):
-    def __init__(self, t, title="QESHAPE" ):
+class QESHAPEPLOT(object):
+    def __init__(self, t, s, title="QESHAPEPLOT" ):
         self.t = t
-        qesh = t.get_s_qeshape
+        self.s = s
+
+        qesh = t.get_s_qeshape[0]    # interpolated values
+        s_qesh = s.s_qeshape[0,:-1]  # prop values, excluding special last value
 
         fig, ax = plt.subplots(1, figsize=SIZE/100.)
         fig.suptitle(title)
- 
-        for i in range(qesh.shape[0]):
-            ax.plot( qesh[i,:,0], qesh[i,:,1], label="qesh[%d]"%i )
-        pass
+
+        ax.plot( qesh[:,0], qesh[:,1], label="qesh" )
+
+        sel = np.logical_and( s_qesh[:,0] >= qesh[:,0].min(), s_qesh[:,0] < qesh[:,0].max() )
+        # select the prop values within the interpolated range
+        ax.scatter( s_qesh[sel,0], s_qesh[sel,1], label="s_qesh" )
+
         ax.legend()
         fig.show()
 
@@ -222,20 +242,27 @@ if __name__ == '__main__':
 
     TEST = os.environ.get("TEST","testfold")
 
+    s = Fold.Load("$FOLD/spmt", symbol="s")
+    print(repr(s))
+
     if TEST == "c4scan":
         f = Fold.Load("$FOLD/testfold/c4scan", symbol="f")
         print(repr(f))
         a = ART(f)
     elif TEST == "testfold":
+
         t = Fold.Load("$FOLD/testfold", symbol="t")
         print(repr(t))
-        tf = TESTFOLD(t)
+
+        tf = TESTFOLD(t, s)
         print(repr(tf))
-        QESHAPE(t)
+
+
+        QESHAPEPLOT(t, s)
+
 
     elif TEST == "spmt":
-        s = Fold.Load("$FOLD/spmt", symbol="s")
-        print(repr(s))
+        pass
     pass
 
 
