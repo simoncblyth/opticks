@@ -47,6 +47,7 @@ set(SH_SCRIPTS
    BASE_grab.sh
    ctest.sh
    cat.py
+   opticks-ctest.sh
 )
 
 

@@ -22,11 +22,13 @@ Note that strings like "1e-9" parse ok into float/double.
 #include "sstr.h"
 #include "spath.h"
 
+extern char **environ;
 
 struct ssys
 {
     static constexpr const bool VERBOSE = false ;
     static constexpr const char* GETENVVAR_PATH_PREFIX = "filepath:" ;
+
 
     static std::string popen(const char* cmd, bool chomp=true, int* rc=nullptr);
     static std::string popen(const char* cmda, const char* cmdb, bool chomp=true, int* rc=nullptr);
@@ -36,6 +38,9 @@ struct ssys
 
     static bool value_is_path_prefixed(const char* val );
     static const char* get_replacement_path(const char* val );
+
+    static std::string getenviron(const char* q=nullptr);
+    static bool is_under_ctest();
 
     static const char* getenvvar(const char* ekey );
     static const char* getenvvar(const char* ekey, const char* fallback);
@@ -58,7 +63,7 @@ struct ssys
     static bool     getenvbool(const char* ekey);
 
 
-
+    static int countenv(const char* ekey, char delim=',');
 
     static bool hasenv_(const char* ekey);
     static bool hastoken_(const char* ekey);
@@ -198,6 +203,26 @@ inline const char* ssys::get_replacement_path(const char* val )
 {
     assert(value_is_path_prefixed(val)) ;
     return val ? strdup(val + strlen(GETENVVAR_PATH_PREFIX)) : nullptr ;
+}
+
+
+
+inline std::string ssys::getenviron(const char* q)
+{
+    char** e = environ ;
+    std::stringstream ss ;
+    while(*e)
+    {
+        if( q == nullptr || strstr(*e, q)) ss << *e << "\n" ;
+        e++ ;
+    }
+    std::string str = ss.str();
+    return str;
+}
+
+inline bool ssys::is_under_ctest()
+{
+    return countenv("DASHBOARD_TEST_FROM_CTEST,DART_TEST_FROM_DART", ',') > 0 ;
 }
 
 
@@ -400,6 +425,28 @@ inline bool ssys::getenvbool( const char* ekey )
 inline float  ssys::getenvfloat( const char* ekey, float  fallback){ return getenv_<float>(ekey,  fallback) ; }
 inline double ssys::getenvdouble(const char* ekey, double fallback){ return getenv_<double>(ekey, fallback) ; }
 
+
+/**
+ssys::countenv
+---------------
+
+**/
+
+inline int ssys::countenv(const char* ekey, char delim)
+{
+    std::vector<std::string> keys ;
+    sstr::Split(ekey, delim, keys) ;
+
+    int count = 0 ;
+    char* val = nullptr ;
+    for(unsigned i=0 ; i < keys.size() ; i++)
+    {
+        const char* key = keys[i].c_str();
+        val = getenv(key) ;
+        if( val != nullptr ) count += 1 ;
+    }
+    return count ;
+}
 
 
 inline bool ssys::hasenv_(const char* ekey)

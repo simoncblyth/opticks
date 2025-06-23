@@ -5,6 +5,44 @@
 #include <iomanip>
 #include "ssys.h"
 
+
+struct ssys_test
+{
+    static constexpr const char* getenviron_SIGINT = "ssys_test__getenviron_SIGINT" ;
+    static int getenviron();
+};
+
+
+/**
+ssys_test::getenviron
+-----------------------
+
+Use this to check for envvars that identify running under ctest.
+
+**/
+
+int ssys_test::getenviron()
+{
+    bool _SIGINT = ssys::hasenv_(getenviron_SIGINT);
+    std::cout
+        << "[ssys_test::getenviron"
+        << " [" << getenviron_SIGINT << "] " << ( _SIGINT ? "YES" : "NO " ) << "\n"
+        << "-ssys_test::getenviron.CTEST\n"
+        << ssys::getenviron("CTEST")
+        << "-ssys_test::getenviron.DART\n"
+        << ssys::getenviron("DART")
+        << "-ssys_test::getenviron.ALL\n"
+        << ssys::getenviron()
+        << "]ssys_test::getenviron\n"
+        ;
+
+    if(_SIGINT) std::raise(SIGINT);
+    return 0 ;
+}
+
+
+
+
 int test_popen_0()
 {
     const char* cmd = "md5 -q -s hello" ;
@@ -494,6 +532,15 @@ int test_getenvintspec()
 }
 
 
+
+
+
+
+
+
+
+
+
 void test_getenvintpick()
 {
     std::vector<std::string> colors = {{"red", "green", "blue", "cyan", "yellow", "magenta" }} ;
@@ -512,7 +559,8 @@ void test_getenvintpick()
 
 int main(int argc, char** argv)
 {
-    const char* DEFT = "getenvintspec" ;
+    //const char* DEFT = "getenvintspec" ;
+    const char* DEFT = "getenviron" ;
     const char* TEST = ssys::getenvvar("TEST", DEFT );
     bool ALL = strcmp("ALL", TEST) == 0 ;
 
@@ -522,6 +570,7 @@ int main(int argc, char** argv)
     if(ALL||0==strcmp(TEST,"username")) rc += test_username() ;
     if(ALL||0==strcmp(TEST,"is_remote_session")) rc += test_is_remote_session() ;
     if(ALL||0==strcmp(TEST,"getenvintspec"))  rc += test_getenvintspec() ;
+    if(ALL||0==strcmp(TEST,"getenviron"))  rc += ssys_test::getenviron() ;
 
     /*
     test_getenv_vec();

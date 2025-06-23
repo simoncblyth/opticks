@@ -29,7 +29,7 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "SGLFW_SOPTIX.h"
 
 
-int main()
+int main(int argc, char** argv)
 {
     bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP");
 
@@ -66,6 +66,12 @@ int main()
     SGLFW_Scene  sc(gl);
     SGLFW_Evt    ev(gl);
     SGLFW_SOPTIX ox(gl);
+
+    if(ssys::is_under_ctest())
+    {
+        std::cout << argv[0] << " detected ssys::is_under_ctest so skip interactive renderloop popping up a window\n" ;
+        return 0;
+    }
 
     while(gl.renderloop_proceed())
     {
