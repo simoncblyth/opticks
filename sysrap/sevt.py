@@ -370,6 +370,37 @@ class SEvt(object):
         self.ipf = ipf
         self.ipc = ipc
 
+
+    def q_find(self, txt="EC", encoding="utf-8"):
+        """
+        :param txt:
+        :return a: array of indices of self.q array elements that contain *txt*
+
+        np.char.find returns -1 when the txt is not found in array elements
+        so adding one makes that zero which is excluded with np.flatnonzero
+
+        Note that because the self.q array elements typically end with blanks
+        it is not useful to implement q_endswith, instead use this q_find
+        to find array indices with elements containing the txt.
+        """
+        return np.flatnonzero(1+np.char.find(self.q, txt.encode(encoding) ))
+
+    def q_find_or(self, txt1="EC", txt2="EX", encoding="utf-8"):
+        return np.flatnonzero(np.logical_or(
+                  1+np.char.find(self.q,txt1.encode(encoding)),
+                  1+np.char.find(self.q,txt2.encode(encoding))
+               ))
+
+    def q_find_or_(self, txts_="EC,EX", delim=",", encoding="utf-8"):
+        txts= txts_.split(delim)
+        aa = []
+        for txt in txts:
+            aa.append( 1+np.char.find(self.q, txt.encode(encoding)))
+        pass
+        return np.flatnonzero(np.logical_or.reduce(aa))
+
+
+
     def q_startswith(self, prefix="TO BT SD", encoding="utf-8"):
         return np.flatnonzero(np.char.startswith(self.q, prefix.encode(encoding) ))
 

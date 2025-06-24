@@ -76,10 +76,10 @@ namespace s_pmt
 
 
     /**
-    s_pmt::contiguousidx_from_lpmtid
+    s_pmt::oldcontiguousidx_from_pmtid
     ----------------------------------
 
-    Transform non-contiguous lpmtid::
+    Transform non-contiguous pmtid::
 
           +------------------+      +-----------------------------+       +--------+
           |     CD_LPMT      |      |     SPMT                    |       |  WP    |
@@ -98,8 +98,8 @@ namespace s_pmt
           OFFSET_CD_LPMT
 
 
-          lpmtid >= OFFSET_CD_LPMT_END && lpmtid < OFFSET_CD_SPMT    # 1st gap
-          lpmtid >= OFFSET_CD_SPMT_END && lpmtid < OFFSET_WP_PMT     # 2nd gap
+          pmtid >= OFFSET_CD_LPMT_END && pmtid < OFFSET_CD_SPMT    # 1st gap
+          pmtid >= OFFSET_CD_SPMT_END && pmtid < OFFSET_WP_PMT     # 2nd gap
 
           17612+25600+2400 = 45612
 
@@ -109,7 +109,7 @@ namespace s_pmt
           52400 - 45612 = 6788   # diff between max pmtid kOFFSET_WP_PMT_END and NUM_ALL
 
 
-    Into contiguousidx::
+    Into oldcontiguousidx::
 
           +------------------+-----------------------------+--------+
           |     CD_LPMT      |     SPMT                    |  WP    |
@@ -122,6 +122,98 @@ namespace s_pmt
 
 
     **/
+    SPMT_FUNCTION int oldcontiguousidx_from_pmtid( int pmtid )
+    {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+        check_pmtid(pmtid);
+#endif
+        int oldcontiguousidx = pmtid < OFFSET_CD_LPMT_END ?
+                                                              pmtid
+                                                        :
+                                                            ( pmtid < OFFSET_CD_SPMT_END ?
+                                                                                             pmtid - OFFSET_CD_SPMT + OFFSET_CD_LPMT_END
+                                                                                          :
+                                                                                             pmtid - OFFSET_WP_PMT + NUM_CD_LPMT + NUM_SPMT
+                                                            )
+                                                        ;
+
+        return oldcontiguousidx ;
+    }
+
+    SPMT_FUNCTION int pmtid_from_oldcontiguousidx( int oldcontiguousidx )
+    {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+        assert( oldcontiguousidx >= 0 && oldcontiguousidx < NUM_ALL );
+#endif
+        int pmtid = oldcontiguousidx < NUM_CD_LPMT ?
+                                                    oldcontiguousidx
+                                                 :
+                                                    ( oldcontiguousidx < NUM_CD_LPMT + NUM_SPMT ?
+                                                                                                 oldcontiguousidx - NUM_CD_LPMT + OFFSET_CD_SPMT
+                                                                                             :
+                                                                                                 oldcontiguousidx - NUM_CD_LPMT - NUM_SPMT + OFFSET_WP_PMT
+                                                    )
+                                                 ;
+
+         return pmtid ;
+    }
+
+    /**
+    s_pmt::contiguousidx_from_pmtid( int pmtid )
+    ---------------------------------------------
+
+    Transform non-contiguous pmtid::
+
+          +------------------+      +-----------------------------+       +--------+
+          |     CD_LPMT      |      |     SPMT                    |       |  WP    |
+          |     17612        |      |     25600                   |       |  2400  |
+          +------------------+      +-----------------------------+       +--------+
+          ^                  ^      ^                             ^       ^        ^
+          0                  17612  20000                         45600   50000    52400
+          |                  |      |                             |       |        |
+          |                  |      |                             |       |        OFFSET_WP_PMT_END
+          |                  |      |                             |       OFFSET_WP_PMT
+          |                  |      |                             |
+          |                  |      |                             OFFSET_CD_SPMT_END
+          |                  |      OFFSET_CD_SPMT
+          |                  |
+          |                  OFFSET_CD_LPMT_END
+          OFFSET_CD_LPMT
+
+
+          pmtid >= OFFSET_CD_LPMT_END && pmtid < OFFSET_CD_SPMT    # 1st gap
+          pmtid >= OFFSET_CD_SPMT_END && pmtid < OFFSET_WP_PMT     # 2nd gap
+
+          17612+25600+2400 = 45612
+
+          20000 - 17612 = 2388   # first gap
+          50000 - 45600 = 4400   # second gap
+          2388 + 4400   = 6788   # total gap
+          52400 - 45612 = 6788   # diff between max pmtid kOFFSET_WP_PMT_END and NUM_ALL
+
+
+    Into contiguousidx::
+
+          +------------------+---------+----------------------------+
+          |     CD_LPMT      |   WP    |    SPMT                    |
+          |     17612        |   2400  |    25600                   |
+          +------------------+---------+----------------------------+
+          ^                  ^         ^                            ^
+          0                17612     20012                        45612
+
+         17612 + 2400 = 20012
+         17612 + 2400 + 25600 = 45612
+
+
+     The ordering CD_LPMT, WP, SPMT must match that used in::
+
+         PMTSimParamSvc::init_all_pmtID_qe_scale
+
+    **/
+
+
     SPMT_FUNCTION int contiguousidx_from_pmtid( int pmtid )
     {
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -132,14 +224,17 @@ namespace s_pmt
                                                               pmtid
                                                         :
                                                             ( pmtid < OFFSET_CD_SPMT_END ?
-                                                                                             pmtid - OFFSET_CD_SPMT + OFFSET_CD_LPMT_END
+                                                                                             pmtid - OFFSET_CD_SPMT + NUM_CD_LPMT_AND_WP
                                                                                           :
-                                                                                             pmtid - OFFSET_WP_PMT + NUM_CD_LPMT + NUM_SPMT
+                                                                                             pmtid - OFFSET_WP_PMT + NUM_CD_LPMT
                                                             )
                                                         ;
 
         return contiguousidx ;
     }
+
+
+
 
     SPMT_FUNCTION int pmtid_from_contiguousidx( int contiguousidx )
     {
@@ -150,10 +245,10 @@ namespace s_pmt
         int pmtid = contiguousidx < NUM_CD_LPMT ?
                                                     contiguousidx
                                                  :
-                                                    ( contiguousidx < NUM_CD_LPMT + NUM_SPMT ?
-                                                                                                 contiguousidx - NUM_CD_LPMT + OFFSET_CD_SPMT
+                                                    ( contiguousidx < NUM_CD_LPMT_AND_WP ?
+                                                                                                 contiguousidx - NUM_CD_LPMT + OFFSET_WP_PMT
                                                                                              :
-                                                                                                 contiguousidx - NUM_CD_LPMT - NUM_SPMT + OFFSET_WP_PMT
+                                                                                                 contiguousidx - NUM_CD_LPMT_AND_WP + OFFSET_CD_SPMT
                                                     )
                                                  ;
 

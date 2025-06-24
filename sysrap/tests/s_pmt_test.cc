@@ -6,6 +6,9 @@ struct s_pmt_test
      static int lpmtidx();
      static NP* lpmtidx_array();
 
+     static int oldcontiguousidx();
+     static NP* oldcontiguousidx_array();
+
      static int contiguousidx();
      static NP* contiguousidx_array();
 
@@ -49,6 +52,46 @@ NP* s_pmt_test::lpmtidx_array()
 }
 
 
+int s_pmt_test::oldcontiguousidx()
+{
+    for(int i=0 ; i < s_pmt::NUM_ALL ; i++)
+    {
+        int oldcontiguousidx = i ;
+        int pmtid = s_pmt::pmtid_from_oldcontiguousidx(oldcontiguousidx);
+        int oldcontiguousidx_1 = s_pmt::oldcontiguousidx_from_pmtid(pmtid);
+        assert( oldcontiguousidx_1 == oldcontiguousidx );
+    }
+    return 0;
+}
+
+NP* s_pmt_test::oldcontiguousidx_array()
+{
+    int ni = s_pmt::NUM_ALL ;
+    int nj = 3 ;
+    NP* a = NP::Make<int>( ni, nj );
+    int* aa = a->values<int>();
+    for(int i=0 ; i < ni ; i++)
+    {
+        int oldcontiguousidx = i ;
+        int pmtid = s_pmt::pmtid_from_oldcontiguousidx(oldcontiguousidx);
+        int lpmtidx = s_pmt::lpmtidx_from_pmtid(pmtid);
+
+        aa[i*nj+0] = oldcontiguousidx ;
+        aa[i*nj+1] = pmtid ;
+        aa[i*nj+2] = lpmtidx ;
+    }
+
+    a->labels = new std::vector<std::string> { "oldcontiguousidx", "pmtid", "lpmtidx" };
+
+    return a ;
+}
+
+
+
+
+
+
+
 int s_pmt_test::contiguousidx()
 {
     for(int i=0 ; i < s_pmt::NUM_ALL ; i++)
@@ -83,10 +126,16 @@ NP* s_pmt_test::contiguousidx_array()
     return a ;
 }
 
+
+
+
+
+
 NPFold* s_pmt_test::makefold_()
 {
     NPFold* f = new NPFold ;
     f->add( "lpmtidx" , lpmtidx_array() );
+    f->add( "oldcontiguousidx" , oldcontiguousidx_array() );
     f->add( "contiguousidx" , contiguousidx_array() );
     return f ;
 }
@@ -103,6 +152,7 @@ int s_pmt_test::main()
 {
     int rc = 0 ;
     rc += lpmtidx();
+    rc += oldcontiguousidx();
     rc += contiguousidx();
     rc += makefold();
     return rc ;
