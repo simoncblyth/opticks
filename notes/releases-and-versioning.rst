@@ -61,6 +61,38 @@ Release Notes
 
 * start from "git lg -n20" and summarize useful commit messages worthy of mention
 
+
+v0.4.6 2025/06/24 : within WITH_CUSTOM4 working on WP PMT and SPMT hit matching, plus add EPSILON0
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* within WITH_CUSTOM4 try using SPMT qe to replace SD:SURFACE_DETECT with EC:EFFICIENCY_COLLECT/EX:EFFICIENCY_CULL, but currently getting 25% more EC than B side
+* bring s_qeshape and s_qescale to GPU with QPMTTest checks
+* add ssys::getenviron ssys::countenv ssys::is_under_ctest and use ssys::is_under_ctest detection from SGLFW_SOPTIX_Scene_test to avoid popping up interactive window during ctest running
+* add s_qescale for the 25600 S_PMT to SPMT.h
+* add X25 to RainXZ input photons to better target S_PMT, add cxs_min.sh input_photon_s_pmt for faster A dev cycle than ipc InputPhotonCheck A:B testing
+* adjust s_pmt function names to use pmtid for CD_LPMT+WP_PMT+SPMT and lpmtid used for CD_LPMT + WP_PMT
+* add seqhis history slice selection to SRecord::Load used from cxr_min.sh via AFOLD_RECORD_SLICE
+* change SRecord::Load to take folder argument rather than path to facilitate seq.npy loading to allow seqhis selection
+* moving the ProcessHits EPH flag change from SD to EC/EX into U4Recorder::UserSteppingAction_Optical gets EC/EX into both sides
+* switch flag to EC/EX from former SD on A side, requiring OpticksPhoton.h enum reordering to avoid FFS(flag) exceeding 4 bits for EC
+* update QPMTTest.sh for WP PMT, enable hits onto WP PMT by allowing qsim::propagate_at_surface_CustomART to proceed with such lpmtid
+* rework pmt indexing distinguishing lpmtid and lpmtidx to support WP PMT info together with CD_LPMT, add s_pmt.h to reduce duplication
+* add NP::LoadSlice for handling very large arrays by loading only slice specified items using std::ifstream::seekg
+* new name NP::LoadThenSlice instead of NP::LoadSlice to make it clear that a full load is done before doing the slicing
+* fix sctx.h qsim.h reversion effecting debug arrays from a few days ago : sctx.h needs ctx.idx to be the zero based index but ctx.pidx needs to be absolute
+* add SEventConfig::AllocEstimate using salloc.h, aiming to get auto-max-slot-sizing based on VRAM to account for debug arrays
+* add SEvt__SAVE_NOTHING control that in OPTICKS_EVENT_MODE of Minimal or Nothing disables SEvt directory creation and saving of run metadata
+
+
+* use OPTICKS_PROPAGATE_EPSILON0 after OPTICKS_PROPAGATE_EPSILON0_MASK default TO,CK,SI,SC,RE plus use OPTICKS_MAX_TIME truncation together with OPTICKS_MAX_BOUNC
+
+  *  setting OPTICKS_PROPAGATE_EPSILON0 to a smaller value (eg zero) than OPTICKS_PROPAGATE_EPSILON can potentially avoid geometry leaks
+     when scatter/generation/reemission happens within OPTICKS_PROPAGATE_EPSILON of boundaries
+
+* add SEventConfig controls OPTICKS_PROPAGATE_EPSILON0 OPTICKS_PROPAGATE_EPSILON0_MASK to enable different epsilon after eg scattering, also add OPTICKS_MAX_TIME renaming old domain settings
+* suppress NPFold saving when the fold only contains metadata unless NPFold::set_allowonlymeta_r is used
+
+
 v0.4.5 2025/06/13 : Theta dependent CE culling on GPU working with qpmt::get_lpmtid_ATQC
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -117,6 +149,8 @@ Snapshot Tags History
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                                                               |
 +============+=========+=========================+=====================================================================================================================+
+| 2025/06/24 | v0.4.6  | 46                      | Within WITH_CUSTOM4 working on WP PMT and SPMT hit matching, plus add EPSILON0                                      |
++------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/13 | v0.4.5  | 45                      | Theta dependent CE culling with qpmt::get_lpmtid_ATQC becoming usable                                               |
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/08 | v0.4.4  | 44                      | add collection efficiency scaling from qpmt::get_lpmtid_ARTE_ce, add separate label U4Recorder API                  |
