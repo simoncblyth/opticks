@@ -1696,18 +1696,34 @@ inline QSIM_METHOD int qsim::propagate_at_surface(unsigned& flag, RNG& rng, sctx
 
     if( action == BREAK )
     {
-
 #if defined(WITH_CUSTOM4)
         int pmtid = ctx.prd->identity() - 1 ;     // identity comes from optixInstance.instanceId where 0 means not-a-sensor
-        // here need a new qpmt call to get the needed efficiency
-
+        float qe = 1.f ;
+        float u_qe = curand_uniform(&rng);
+        if( s_pmt::is_spmtid(pmtid) )
+        {
+            const float energy_eV = qpmt<float>::hc_eVnm/ctx.p.wavelength ;
+            float qe_shape = pmt->s_qeshape_prop->interpolate( 0, energy_eV );
+            float qe_scale = pmt->get_s_qescale_from_spmtid(pmtid);
+            qe = qe_shape*qe_scale ;
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-        if(ctx.pidx == base->pidx)
-        printf("//qsim.propagate_at_surface.BREAK pidx %7d : pmtid %d \n" , ctx.pidx, pmtid );
+            if(ctx.pidx == base->pidx)
+            printf("//qsim.propagate_at_surface.BREAK.is_spmtid pidx %7d : pmtid %d energy_eV %7.3f qe_shape %7.3f qe_scale %7.3f qe %7.3f detect %7.3f absorb %7.3f reflect_specular %7.3f reflect_diffuse %7.3f \n" ,
+                ctx.pidx, pmtid, energy_eV, qe_shape, qe_scale, qe, detect, absorb, s.surface.z, reflect_diffuse_ );
 #endif
+        }
+        flag = u_surface < absorb ?
+                                      SURFACE_ABSORB
+                                  :
+                                      ( u_qe < qe  ? EFFICIENCY_COLLECT : EFFICIENCY_CULL  )
+                                  ;
+#else
+        flag = u_surface < absorb ?
+                                      SURFACE_ABSORB
+                                  :
+                                      SURFACE_DETECT
+                                  ;
 #endif
-
-        flag = u_surface < absorb ? SURFACE_ABSORB : SURFACE_DETECT  ;
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
         if(ctx.pidx == base->pidx)
