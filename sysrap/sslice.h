@@ -55,13 +55,15 @@ inline std::string sslice::Label()
     std::stringstream ss ;
     ss << "       "
        << " "
-       << std::setw(6) << "start"
+       << std::setw(8) << "start"
        << " "
-       << std::setw(6) << "stop "
+       << std::setw(8) << "stop "
        << " "
-       << std::setw(8) << "offset "
+       << std::setw(10) << "offset "
        << " "
-       << std::setw(8) << "count "
+       << std::setw(10) << "count "
+       << " "
+       << std::setw(10) << "count/M "
        ;
     std::string str = ss.str() ;
     return str ;
@@ -71,14 +73,15 @@ inline std::string sslice::desc() const
     std::stringstream ss ;
     ss << "sslice "
        << "{"
-       << std::setw(6) << gs_start
+       << std::setw(8) << gs_start
        << ","
-       << std::setw(6) << gs_stop
+       << std::setw(8) << gs_stop
        << ","
-       << std::setw(8) << ph_offset
+       << std::setw(10) << ph_offset
        << ","
-       << std::setw(8) << ph_count
+       << std::setw(10) << ph_count
        << "}"
+       << std::setw(10) << std::fixed << std::setprecision(6) << double(ph_count)/1.e6
        ;
     std::string str = ss.str() ;
     return str ;
@@ -97,7 +100,12 @@ inline std::string sslice::Desc(const std::vector<sslice>& sl)
 {
     int tot_photon = TotalPhoton(sl) ;
     std::stringstream ss ;
-    ss << "sslice::Desc num_slice " << sl.size() << " TotalPhoton " << tot_photon << "\n" ;
+    ss << "sslice::Desc"
+       << " num_slice " << sl.size()
+       << " TotalPhoton " << std::setw(10) << tot_photon
+       << " TotalPhoton/M " << std::setw(10) << std::fixed << std::setprecision(6) << double(tot_photon)/1.e6
+       << "\n"
+        ;
     ss << std::setw(4) << "" << "   " << Label() << "\n" ;
     for(int i=0 ; i < int(sl.size()) ; i++ ) ss << sl[i].idx_desc(i) << "\n" ;
     ss << std::setw(4) << "" << "   " << Label() << "\n" ;
