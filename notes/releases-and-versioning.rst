@@ -63,6 +63,13 @@ Release Notes
 
 
 
+v0.4.8 2025/06/25 SProcessHits_EPH.h improve handling of large values and legibility of desc  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* confirmed fix for muon crash issue in OJ Opticks+JUNOSW, was caused by non-optical particles 
+  crossing sensitive detectors 
+
+
 v0.4.7 2025/06/25 : fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -157,6 +164,8 @@ Snapshot Tags History
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                                                               |
 +============+=========+=========================+=====================================================================================================================+
+| 2025/06/25 | v0.4.8  | 48                      | SProcessHits_EPH.h improve handling of large values and legibility of desc                                          |  
++------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/25 | v0.4.7  | 47                      | fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match                                        |  
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/24 | v0.4.6  | 46                      | Within WITH_CUSTOM4 working on WP PMT and SPMT hit matching, plus add EPSILON0                                      |
