@@ -87,7 +87,7 @@ controlled via envvar::
 #include "U4PhysicsTable.h"
 #include "U4MaterialTable.h"
 #include "U4TreeBorder.h"
-
+#include "U4Recorder.hh"
 
 #include <plog/Log.h>
 
@@ -173,6 +173,7 @@ private:
 
     void initSurfaces_Serialize();
     void initStandard();
+    void initRecorder();
 
 public:   //  accessors
     const G4Material*       getMaterial(int idx) const ;
@@ -300,6 +301,9 @@ inline void U4Tree::init()
 
     LOG(LEVEL) << "-initStandard" ;
     initStandard();
+
+    LOG(LEVEL) << "-initRecorder" ;
+    initRecorder();
 
     std::cout << "U4Tree::init " <<  desc() << std::endl;
 
@@ -913,6 +917,24 @@ inline void U4Tree::initStandard()
 }
 
 
+/**
+U4Tree::initRecorder
+--------------------
+
+Recorder needs the U4Tree for the connection
+between Geant4 volumes and Opticks nidx (node indices)
+etc..  This is used by U4Simtrace.h to give Opticks
+geometry model identity info for U4Navigator.h intersects.
+
+**/
+
+
+inline void U4Tree::initRecorder()
+{
+    U4Recorder* recorder = U4Recorder::Get();
+    if(recorder) recorder->setU4Tree(this);
+    if(!recorder) std::cerr << "U4Tree::initRecorder FAIL no U4Recorder\n" ;
+}
 
 
 

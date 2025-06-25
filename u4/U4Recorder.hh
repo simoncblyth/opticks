@@ -100,6 +100,7 @@ public:
     const U4Tree* tree ;
 
     void setU4Tree(const U4Tree* _tree);
+    const U4Tree* getU4Tree() const ;
 
     void BeginOfRunAction(const G4Run*);
     void EndOfRunAction(const G4Run*);

@@ -186,7 +186,8 @@ G4VPhysicalVolume* G4CXApp::Construct()
     {
         G4CXOpticks::SetGeometry(pv_) ;
         G4CXOpticks::SaveGeometry() ;
-        fRecorder->setU4Tree(G4CXOpticks::GetU4Tree());
+        //fRecorder->setU4Tree(G4CXOpticks::GetU4Tree());
+        assert( fRecorder->getU4Tree() ); // U4Tree should be set within fRecorder by U4Tree::initRecorder
     }
     else
     {

@@ -311,6 +311,11 @@ void U4Recorder::setU4Tree(const U4Tree* _tree)
 {
     tree = _tree ;
 }
+const U4Tree* U4Recorder::getU4Tree() const
+{
+    return tree ;
+}
+
 
 
 

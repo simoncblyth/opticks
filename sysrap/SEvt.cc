@@ -266,6 +266,9 @@ void SEvt::init()
     LOG(LEVEL) << descComp() ;
 
     //initInputGenstep();   // for per-event genstep moved to SEvt::beginOfEvent/SEvt::addInputGenstep
+
+
+
     initInputPhoton();
 
     initG4State();        // HMM: G4State not an every-event thing ? first event only ?
@@ -488,6 +491,7 @@ by SEvt::LoadInputPhoton
 
 void SEvt::initInputPhoton()
 {
+    if(SEventConfig::IsRGModeSimtrace()) return ;  // skip input photon setup when in simtrace mode
     NP* ip = LoadInputPhoton() ;
     setInputPhoton(ip);
 }
@@ -959,9 +963,10 @@ Experimental creation of a new SEvt
 that adopts the sframe of the prior SEvt
 and is configured for hostside Simtrace running.
 
-The appropriate place use this method is from EndOfRunAction
-after standard (non-simtrace) usage of SEvt
-such as saving simulation SEvt is completed.
+The appropriate place to use this method from
+is EndOfRunAction after standard (non-simtrace)
+usage of SEvt such as saving simulation SEvt
+is completed.
 
 **/
 
