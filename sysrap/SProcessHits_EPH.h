@@ -291,6 +291,11 @@ inline std::string SProcessHits_EPH::desc() const
          const char* key = kvs[i].first.c_str();
          int64_t value = kvs[i].second ;
 
+         if(strcmp(key,Initialize_G4HCofThisEvent_opticksMode_)==0) ss << "\n" ;
+         if(strcmp(key,EndOfEvent_Simulate_EGPU_hit_)==0)           ss << "\n" ;
+         if(strcmp(key,EndOfEvent_Simulate_merged_count_)==0)       ss << "\n" ;
+         if(strcmp(key,EndOfEvent_Simulate_merged_total_)==0)       ss << "\n" ;
+
          ss << desc_kv( key, value ) << "\n" ; 
 
          if(strcmp(key,EndOfEvent_Simulate_savehit_count_)==0)
