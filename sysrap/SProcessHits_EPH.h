@@ -4,6 +4,8 @@
 SProcessHits_EPH.h
 ====================
 
+~/o/sysrap/tests/SProcessHits_EPH_test.sh
+
 **/
 
 
@@ -201,8 +203,7 @@ EndOfEvent_hitCollectionAlt_entries1
 
     int64_t SUM_merged_count_savehit_count() const ;
     int64_t SUM_merged_total_savehit_total() const ;
-
-
+    std::string desc_kv(const char* key, int64_t value) const ;
     std::string desc() const ;
     void add(int eph, bool processHits);
     void get_kvs( std::vector<std::pair<std::string, int64_t>>& kv ) const ;
@@ -262,8 +263,20 @@ inline int64_t SProcessHits_EPH::SUM_merged_total_savehit_total() const
     return EndOfEvent_Simulate_merged_total + EndOfEvent_Simulate_savehit_total ;
 }
 
-
-
+inline std::string SProcessHits_EPH::desc_kv(const char* key, int64_t value) const
+{
+    int wk = 50 ;
+    int wv = 15 ;
+    std::stringstream ss ;
+    ss << std::setw(wk) << key 
+       << std::setw(wv) << value 
+       << "       "
+       << std::setw(wv) << std::fixed << std::setprecision(6) << double(value)/1.e6   
+       << "    /M "
+       ;
+    std::string str = ss.str();
+    return str ;
+}
 
 inline std::string SProcessHits_EPH::desc() const
 {
@@ -271,20 +284,20 @@ inline std::string SProcessHits_EPH::desc() const
     typedef std::vector<SI> VSI ;
     VSI kvs ;
     get_kvs(kvs);
-    int w = 50 ;
     std::stringstream ss ;
     ss << "[SProcessHits_EPH::desc\n" ;
     for(int i=0 ; i < int(kvs.size()) ; i++)
     {
          const char* key = kvs[i].first.c_str();
          int64_t value = kvs[i].second ;
-         ss << std::setw(w) << key << std::setw(12) << value << "\n" ;
+
+         ss << desc_kv( key, value ) << "\n" ; 
 
          if(strcmp(key,EndOfEvent_Simulate_savehit_count_)==0)
-             ss << std::setw(w) << SUM_merged_count_savehit_count_ << std::setw(12) << SUM_merged_count_savehit_count() << "\n" ;
+             ss << desc_kv( SUM_merged_count_savehit_count_, SUM_merged_count_savehit_count()) << "\n" ;
 
          if(strcmp(key,EndOfEvent_Simulate_savehit_total_)==0)
-             ss << std::setw(w) << SUM_merged_total_savehit_total_ << std::setw(12) << SUM_merged_total_savehit_total() << "\n" ;
+             ss << desc_kv( SUM_merged_total_savehit_total_, SUM_merged_total_savehit_total()) << "\n" ;
     }
     ss << NOTES ;
     ss << "]SProcessHits_EPH::desc\n" ;
