@@ -11,6 +11,7 @@ SProcessHits_EPH.h
 #include <sstream>
 #include <iomanip>
 #include <vector>
+#include <cstdint>
 #include "NP.hh"
 
 namespace EPH
@@ -108,47 +109,103 @@ struct SProcessHits_EPH
     static constexpr const char* EndOfEvent_Simulate_merged_total_   = "EndOfEvent_Simulate_merged_total" ;
     static constexpr const char* EndOfEvent_Simulate_savehit_total_   = "EndOfEvent_Simulate_savehit_total" ;
 
-
-    int ProcessHits_count ;
-    int ProcessHits_true  ;
-    int ProcessHits_false ;
-    int SaveNormHit_count ;
-    int SaveMuonHit_count ;
-
-    int UNSET ;         // 0
-    int NDIS ;          // 1
-    int NOPT ;          // 2
-    int NEDEP ;         // 3
-    int NBOUND ;        // 4
-    int NPROC ;         // 5
-    int NDETECT ;       // 6
-    int NDECULL ;       // 7
-    int YMERGE ;        // 8
-    int YSAVE ;         // 9
-    int SAVENORM ;       // 10
-    int SAVEMUON ;       // 11
+    static constexpr const char* SUM_merged_count_savehit_count_   = "SUM_merged_count_savehit_count" ;
+    static constexpr const char* SUM_merged_total_savehit_total_   = "SUM_merged_total_savehit_total" ;
 
 
-    int Initialize_G4HCofThisEvent_opticksMode ;
-    int Initialize_G4HCofThisEvent_count ;
+    static constexpr const char* NOTES = R"LITERAL(
+SProcessHits_EPH::NOTES
+------------------------
 
-    int EndOfEvent_Simulate_eventID ;
-    int EndOfEvent_Simulate_count ;
-    int EndOfEvent_Simulate_EGPU_hit ;
-    int EndOfEvent_hitCollection_entries0 ;
-    int EndOfEvent_hitCollection_entries1 ;
-    int EndOfEvent_hitCollectionAlt_entries0 ;
-    int EndOfEvent_hitCollectionAlt_entries1 ;
-    int EndOfEvent_Simulate_merged_count ;
-    int EndOfEvent_Simulate_savehit_count ;
-    int EndOfEvent_Simulate_merged_total ;
-    int EndOfEvent_Simulate_savehit_total ;
+ProcessHits_count
+ProcessHits_true
+ProcessHits_false
+    number of calls to *SProcessHits_EPH::add* and sub-counts where is_hit is true/false,
+    done from junoSD_PMT_v2::ProcessHits
+
+SaveNormHit_count
+SaveMuonHit_count
+    counts collected from junoSD_PMT_v2::SaveNormHit junoSD_PMT_v2::SaveMuonHit
+
+All 7 EndOfEvent_Simulate values are collected from junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
+
+EndOfEvent_Simulate_EGPU_hit
+    Opticks GPU num_hit returned from SEvt::GetNumHit_EGPU() immediately following G4CXOpticks::simulate call
+
+EndOfEvent_Simulate_merged_count
+EndOfEvent_Simulate_savehit_count
+    The sum of merged_count and savehit_count should sum to EGPU_hit in opticksMode:1
+
+EndOfEvent_Simulate_merged_total
+EndOfEvent_Simulate_savehit_total
+    The totals sum over all events
+
+EndOfEvent_hitCollection_entries0
+EndOfEvent_hitCollection_entries1
+EndOfEvent_hitCollectionAlt_entries0
+EndOfEvent_hitCollectionAlt_entries1
+    entries into hitCollection and hitCollectionAlt before and after the
+    call to junoSD_PMT_v2_Opticks::EndOfEvent.
+    This is recorded from junoSD_PMT_v2::EndOfEvent.
+
+    In all cases entries0 are expected to be zero with entries1
+    for the active collection matching the savehit_count
+
+    For opticksMode:1 only hitCollection should be active,
+    it contains the GPU originated hits.
+
+    For opticksMode:3 both hitCollection and hitCollectionAlt should
+    be active with hitCollection containing CPU hits and
+    hitCollectionAlt containing GPU hits.
+
+)LITERAL" ;
+
+
+    int64_t ProcessHits_count ;
+    int64_t ProcessHits_true  ;
+    int64_t ProcessHits_false ;
+    int64_t SaveNormHit_count ;
+    int64_t SaveMuonHit_count ;
+
+    int64_t UNSET ;         // 0
+    int64_t NDIS ;          // 1
+    int64_t NOPT ;          // 2
+    int64_t NEDEP ;         // 3
+    int64_t NBOUND ;        // 4
+    int64_t NPROC ;         // 5
+    int64_t NDETECT ;       // 6
+    int64_t NDECULL ;       // 7
+    int64_t YMERGE ;        // 8
+    int64_t YSAVE ;         // 9
+    int64_t SAVENORM ;       // 10
+    int64_t SAVEMUON ;       // 11
+
+
+    int64_t Initialize_G4HCofThisEvent_opticksMode ;
+    int64_t Initialize_G4HCofThisEvent_count ;
+
+    int64_t EndOfEvent_Simulate_eventID ;
+    int64_t EndOfEvent_Simulate_count ;
+    int64_t EndOfEvent_Simulate_EGPU_hit ;
+    int64_t EndOfEvent_hitCollection_entries0 ;
+    int64_t EndOfEvent_hitCollection_entries1 ;
+    int64_t EndOfEvent_hitCollectionAlt_entries0 ;
+    int64_t EndOfEvent_hitCollectionAlt_entries1 ;
+    int64_t EndOfEvent_Simulate_merged_count ;
+    int64_t EndOfEvent_Simulate_savehit_count ;
+    int64_t EndOfEvent_Simulate_merged_total ;
+    int64_t EndOfEvent_Simulate_savehit_total ;
 
     SProcessHits_EPH();
     void zero() ;
+
+    int64_t SUM_merged_count_savehit_count() const ;
+    int64_t SUM_merged_total_savehit_total() const ;
+
+
     std::string desc() const ;
     void add(int eph, bool processHits);
-    void get_kvs( std::vector<std::pair<std::string, int>>& kv ) const ;
+    void get_kvs( std::vector<std::pair<std::string, int64_t>>& kv ) const ;
 
     NP* get_meta_array() const ;  // dummy array that carries metadata
 
@@ -196,16 +253,40 @@ inline void SProcessHits_EPH::zero()
     EndOfEvent_Simulate_savehit_total = 0 ;
 }
 
+inline int64_t SProcessHits_EPH::SUM_merged_count_savehit_count() const
+{
+    return EndOfEvent_Simulate_merged_count + EndOfEvent_Simulate_savehit_count ;
+}
+inline int64_t SProcessHits_EPH::SUM_merged_total_savehit_total() const
+{
+    return EndOfEvent_Simulate_merged_total + EndOfEvent_Simulate_savehit_total ;
+}
+
+
+
+
 inline std::string SProcessHits_EPH::desc() const
 {
-    typedef std::pair<std::string, int> SI ;
+    typedef std::pair<std::string, int64_t> SI ;
     typedef std::vector<SI> VSI ;
     VSI kvs ;
     get_kvs(kvs);
     int w = 50 ;
     std::stringstream ss ;
     ss << "[SProcessHits_EPH::desc\n" ;
-    for(int i=0 ; i < int(kvs.size()) ; i++) ss << std::setw(w) << kvs[i].first << std::setw(12) << kvs[i].second << "\n" ;
+    for(int i=0 ; i < int(kvs.size()) ; i++)
+    {
+         const char* key = kvs[i].first.c_str();
+         int64_t value = kvs[i].second ;
+         ss << std::setw(w) << key << std::setw(12) << value << "\n" ;
+
+         if(strcmp(key,EndOfEvent_Simulate_savehit_count_)==0)
+             ss << std::setw(w) << SUM_merged_count_savehit_count_ << std::setw(12) << SUM_merged_count_savehit_count() << "\n" ;
+
+         if(strcmp(key,EndOfEvent_Simulate_savehit_total_)==0)
+             ss << std::setw(w) << SUM_merged_total_savehit_total_ << std::setw(12) << SUM_merged_total_savehit_total() << "\n" ;
+    }
+    ss << NOTES ;
     ss << "]SProcessHits_EPH::desc\n" ;
     std::string str = ss.str();
     return str ;
@@ -238,9 +319,9 @@ inline void SProcessHits_EPH::add(int eph, bool is_hit )
 
 
 
-inline void SProcessHits_EPH::get_kvs( std::vector<std::pair<std::string, int>>& kvs ) const
+inline void SProcessHits_EPH::get_kvs( std::vector<std::pair<std::string, int64_t>>& kvs ) const
 {
-    typedef std::pair<std::string, int> KV ;
+    typedef std::pair<std::string, int64_t> KV ;
     kvs.push_back(KV(ProcessHits_count_, ProcessHits_count));
     kvs.push_back(KV(ProcessHits_true_, ProcessHits_true));
     kvs.push_back(KV(ProcessHits_false_, ProcessHits_false));
@@ -282,7 +363,7 @@ inline NP* SProcessHits_EPH::get_meta_array() const
     NP* meta = NP::Make<int>(1) ;
     EPH::GetNames(meta->names) ;
 
-    std::vector<std::pair<std::string, int>> kvs ;
+    std::vector<std::pair<std::string, int64_t>> kvs ;
     get_kvs(kvs);
     meta->set_meta_kv(kvs);
     return meta ;
