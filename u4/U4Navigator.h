@@ -226,6 +226,8 @@ Assuming standard simtrace layout (see sevent::add_simtrace and below)
 this uses U4Navigator::Distance to populate the intersect position.
 HMM: how to get the surface normal at the intersect position ?
 
+* will need to get the G4VSolid ?
+
 * q0.f.xyz normal at intersect (not implemented) q0.f.z distance to intersect
 * q1.f.xyz intersect position    q1.f.w tmin
 * q2.f.xyz trace origin

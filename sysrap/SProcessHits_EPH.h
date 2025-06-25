@@ -205,18 +205,18 @@ inline std::string SProcessHits_EPH::desc() const
     int w = 50 ;
     std::stringstream ss ;
     ss << "[SProcessHits_EPH::desc\n" ;
-    for(int i=0 ; i < int(kvs.size()) ; i++) ss << std::setw(w) << kvs[i].first << std::setw(8) << kvs[i].second << "\n" ;
+    for(int i=0 ; i < int(kvs.size()) ; i++) ss << std::setw(w) << kvs[i].first << std::setw(12) << kvs[i].second << "\n" ;
     ss << "]SProcessHits_EPH::desc\n" ;
     std::string str = ss.str();
     return str ;
 }
 
 
-inline void SProcessHits_EPH::add(int eph, bool processHits)
+inline void SProcessHits_EPH::add(int eph, bool is_hit )
 {
     ProcessHits_count  += 1 ;
-    ProcessHits_true   += int(processHits) ;
-    ProcessHits_false  += int(!processHits) ;
+    ProcessHits_true   += int(is_hit) ;
+    ProcessHits_false  += int(!is_hit) ;
 
     switch(eph)
     {
