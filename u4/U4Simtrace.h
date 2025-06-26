@@ -31,7 +31,7 @@ Invoked from U4Recorder::EndOfRunAction when configured by envvar
 
 inline void U4Simtrace::EndOfRunAction(const U4Tree* tree)
 {
-    int level = ssys::getenvint(U4Simtrace__level, 0); 
+    int level = ssys::getenvint(U4Simtrace__level, 0);
     if(level > 0) std::cout << "[U4Simtrace::EndOfRunAction\n" ;
     Scan(tree);
     if(level > 0) std::cout << "]U4Simtrace::EndOfRunAction\n" ;
@@ -39,7 +39,7 @@ inline void U4Simtrace::EndOfRunAction(const U4Tree* tree)
 
 inline void U4Simtrace::Scan(const U4Tree* tree)
 {
-    int level = ssys::getenvint(U4Simtrace__level, 0); 
+    int level = ssys::getenvint(U4Simtrace__level, 0);
 
     int eventID = 998 ;
 
@@ -55,7 +55,12 @@ inline void U4Simtrace::Scan(const U4Tree* tree)
     {
         quad4& p = evt->simtrace[i] ;
         nav.simtrace(p);
-        if( level > 1 && i % 1000 == 0 ) std::cout << "-U4Simtrace::Scan " << nav.isect.desc() << "\n" ;
+        if( level > 1 && i % 1000 == 0 ) std::cout
+           << "-U4Simtrace::Scan "
+           << " i " << std::setw(10) << i
+           << " : " << nav.isect.desc()
+           << "\n"
+           ;
     }
     if(level > 0) std::cout << "-U4Simtrace::Scan nav.stats.desc\n" << nav.stats.desc() << "\n" ;
 

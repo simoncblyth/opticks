@@ -173,19 +173,40 @@ def mpplt_focus(xlim, ylim):
 
     return xlim, ylim
 
-def pvplt_viewpoint(pl, reset=False, verbose=False):
+def pvplt_viewpoint(pl, reset=False, verbose=False, m2w=None ):
     """
+
+
     https://github.com/pyvista/pyvista-support/issues/40
 
     """
-    eye = eary_("EYE",  "1,1,1.")
-    look = eary_("LOOK", "0,0,0")
-    up = eary_("UP", "0,0,1")
+
+    m2w = np.eye(4) if m2w is None else m2w
+    assert m2w.shape == (4,4)
+
+    _eye = np.ones(4)
+    _eye[:3] = eary_("EYE",  "1,1,1")
+
+    _look = np.ones(4)
+    _look[:3] = eary_("LOOK",  "0,0,0")
+
+    _up = np.zeros(4)
+    _up[:3] = eary_("UP",  "0,0,1")
+
     zoom = efloat_("ZOOM", "1")
+
+    eye  = np.dot( _eye,  m2w )
+    look = np.dot( _look, m2w )
+    up   = np.dot( _up,   m2w )
+
 
     PARA = "PARA" in os.environ
     if verbose:
         print("pvplt_viewpoint reset:%d PARA:%d " % (reset, PARA))
+        print(" m2w\n%s " % str(m2w) )
+        print(" _eye  : %s " % str(_eye) )
+        print(" _look  : %s " % str(_look) )
+        print(" _up  : %s " % str(_up) )
         print(" eye  : %s " % str(eye) )
         print(" look : %s " % str(look) )
         print(" up   : %s " % str(up) )
@@ -194,9 +215,9 @@ def pvplt_viewpoint(pl, reset=False, verbose=False):
     if PARA:
         pl.camera.ParallelProjectionOn()
     pass
-    pl.set_focus(    look )
-    pl.set_viewup(   up )
-    pl.set_position( eye, reset=reset )
+    pl.set_focus(    look[:3] )
+    pl.set_viewup(   up[:3] )
+    pl.set_position( eye[:3], reset=reset )
     pl.camera.Zoom(zoom)
 
 
@@ -234,7 +255,7 @@ def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
     pl.add_lines( lpol, color=polcol )
 
 
-def pvplt_plotter(label="pvplt_plotter", verbose=False):
+def pvplt_plotter(label="pvplt_plotter", verbose=False, m2w=None):
     if verbose:
         print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
     pass
@@ -243,7 +264,7 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False):
     print("pvplt_plotter WSIZE:%s" % repr(WSIZE))
 
     pl = pv.Plotter(window_size=WSIZE)
-    pvplt_viewpoint(pl, reset=False, verbose=verbose)
+    pvplt_viewpoint(pl, reset=False, verbose=verbose, m2w=m2w)
 
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
@@ -270,8 +291,8 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     if GRID:
         bounds = efloatarray_("BOUNDS", "0,0,0,0,0,0" ) if "BOUNDS" in os.environ else None
         axes_ranges = efloatarray_("AXES_RANGES", "0,0,0,0,0,0" ) if "AXES_RANGES" in os.environ else None
-        print("pvplt_show bounds [%s] " % str(bounds)) 
-        print("pvplt_show axes_ranges [%s] " % str(axes_ranges)) 
+        print("pvplt_show bounds [%s] " % str(bounds))
+        print("pvplt_show axes_ranges [%s] " % str(axes_ranges))
         pl.show_grid(bounds=bounds, axes_ranges=axes_ranges )
     else:
         if VERBOSE: print("pvplt_show !(GRID==1) ")
@@ -279,7 +300,7 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
 
     if "LINE" in os.environ:
         line = efloatarray_("LINE", "0,0,17000,0,0,22000")
-        a = line[:3] 
+        a = line[:3]
         b = line[3:]
         pvplt_add_line_a2b(pl, a, b)
     pass
@@ -1110,7 +1131,7 @@ def pvplt_add_lines( pl, pos, lines, **kwa ):
     """
     :param pos: float array of shape (n,3)
     :param lines: int array of form np.array([[2,0,1],[2,1,2]]).ravel()
-  
+
     Used for adding intersect normals
     """
     if len(pos) == 0:
