@@ -40,7 +40,7 @@
 const plog::Severity QU::LEVEL = SLOG::EnvLevel("QU", "DEBUG") ;
 bool QU::MEMCHECK = ssys::getenvbool(_MEMCHECK);
 
-salloc* QU::alloc = nullptr ;   // used to monitor allocations, instanciated in CSGOptiX::Create
+salloc* QU::alloc = nullptr ;
 
 
 void QU::alloc_add(const char* label, uint64_t num_items, uint64_t sizeof_item ) // static

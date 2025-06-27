@@ -5,21 +5,25 @@ salloc.h : debug out of memory errors on device
 
 This is used to debug out of memory errors on device.
 
+Canonical instance SEventConfig::ALLOC is
+instanciated at the first call of QU::alloc_add
+
+Another instance is created by SEventConfig::AllocEstimate
+
 Some device allocations such as those by QU::device_alloc
 are monitored when the *QU:alloc* *salloc* instance
 has been instanciated.
 
-WIP: replace glm::tvec4 with struct
-
 ::
 
-    epsilon:opticks blyth$ opticks-fl salloc.h
-    ./CSGOptiX/CSGOptiX.cc
+    (ok) A[blyth@localhost CSGOptiX]$ opticks-fl salloc.h
+    ./qudarap/QEvent.cc
+    ./qudarap/QU.cc
     ./sysrap/CMakeLists.txt
     ./sysrap/SEventConfig.cc
+    ./sysrap/salloc.h
     ./sysrap/tests/SEventConfigTest.cc
     ./sysrap/tests/salloc_test.cc
-    ./qudarap/QU.cc
 
 
 **/
@@ -50,7 +54,6 @@ struct salloc
     std::string meta ;
     std::vector<std::string> label ;
     std::vector<salloc_item> alloc ;
-    //void add(const char* label, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare);
     void add(const char* label, uint64_t num_items, uint64_t sizeof_item );
     uint64_t get_total() const ;
 
@@ -64,6 +67,10 @@ struct salloc
     std::string desc() const ;
 
     template<typename T> void set_meta(const char* key, T value);
+    template<typename T> T    get_meta(const char* key, T fallback) const ;
+
+
+
 };
 
 /**
@@ -88,13 +95,6 @@ inline void salloc::add( const char* label_, uint64_t num_items, uint64_t sizeof
     label.push_back(label_ );
     alloc.push_back( {size, num_items, sizeof_item, spare } );
 }
-
-//inline void salloc::add( const char* label_, uint64_t size, uint64_t num_items, uint64_t sizeof_item, uint64_t spare )
-//{
-//    assert( size == num_items*sizeof_item );
-//    label.push_back(label_ );
-//    alloc.push_back( {size, num_items, sizeof_item, spare } );
-//}
 
 inline uint64_t salloc::get_total() const
 {
@@ -155,6 +155,12 @@ inline std::string salloc::desc() const
        << "[salloc.meta\n"
        << ( meta.empty() ? "-" : meta )
        << "]salloc.meta\n"
+       ;
+
+   ss
+       << "[salloc.DescMetaKVS\n"
+       << NP::DescMetaKVS(meta, nullptr, nullptr)
+       << "]salloc.DescMetaKVS\n"
        ;
 
     const char* spacer = "     " ;
@@ -227,8 +233,17 @@ inline std::string salloc::desc() const
 template<typename T>
 inline void salloc::set_meta(const char* key, T value)
 {
-    NP::SetMeta(meta, key, value );
+    NP::SetMeta<T>(meta, key, value );
 }
 
-template void salloc::set_meta<uint64_t>(const char*, uint64_t );
+template<typename T>
+inline T salloc::get_meta(const char* key, T fallback) const
+{
+    return NP::GetMeta<T>(meta, key, fallback );
+}
+
+
+template void     salloc::set_meta<uint64_t>(const char*, uint64_t );
+template uint64_t salloc::get_meta<uint64_t>(const char*, uint64_t ) const;
+
 

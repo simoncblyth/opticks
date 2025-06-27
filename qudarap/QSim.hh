@@ -107,6 +107,10 @@ private:
     static constexpr const char* _QSim__CONCAT    = "QSim__CONCAT" ;
     static const bool CONCAT ;
 
+    static constexpr const char* _QSim__ALLOC    = "QSim__ALLOC" ;
+    static const bool ALLOC ;
+
+
 public:
     void setLauncher(SCSGOptiX* cx_ );
 

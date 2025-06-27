@@ -446,7 +446,11 @@ SEVENT_METHOD void sevent::get_meta(std::string& meta) const
     NP::SetMeta<uint64_t>(meta,"evt.max_photon/M", max_photon/M);
     NP::SetMeta<uint64_t>(meta,"evt.num_photon/M", num_photon/M);
 
+    NP::SetMeta<uint64_t>(meta,"evt.max_slot*evt.max_record", max_slot*max_record);
+    NP::SetMeta<uint64_t>(meta,"evt.max_slot*evt.max_record/M", max_slot*max_record/M);
+
     NP::SetMeta<uint64_t>(meta,"evt.max_record", max_record);
+    NP::SetMeta<uint64_t>(meta,"evt.max_record/M", max_record/M);
     NP::SetMeta<uint64_t>(meta,"evt.max_rec", max_rec);
     NP::SetMeta<uint64_t>(meta,"evt.max_seq", max_seq);
     NP::SetMeta<uint64_t>(meta,"evt.max_prd", max_prd);
@@ -573,7 +577,7 @@ a.q3
 
 NB : simtrace has almost totally different content and layout compared with photon and record
 
-SEE qsim::generate_photon_simtrace 
+SEE qsim::generate_photon_simtrace
 
 
 **/

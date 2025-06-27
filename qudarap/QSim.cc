@@ -12,6 +12,7 @@
 #include "SSim.hh"
 #include "scuda.h"
 #include "squad.h"
+#include "salloc.h"
 #include "SEvent.hh"
 #include "SEventConfig.hh"
 #include "SCSGOptiX.h"
@@ -50,6 +51,7 @@ const bool  QSim::REQUIRE_PMT = ssys::getenvbool(_QSim__REQUIRE_PMT);
 const int   QSim::SAVE_IGS_EVENTID = ssys::getenvint(_QSim__SAVE_IGS_EVENTID,-1) ;
 const char* QSim::SAVE_IGS_PATH = ssys::getenvvar(_QSim__SAVE_IGS_PATH, "$TMP/.opticks/igs.npy");
 const bool  QSim::CONCAT = ssys::getenvbool(_QSim__CONCAT);
+const bool  QSim::ALLOC  = ssys::getenvbool(_QSim__ALLOC);
 
 
 
@@ -449,6 +451,13 @@ double QSim::simulate(int eventID, bool reset_)
 
         int rc = event->setGenstepUpload_NP(igs, &sl ) ;
         LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ;
+
+        LOG_IF(info, ALLOC)
+            << " [" << _QSim__ALLOC << "] "
+            << " i " << std::setw(5) << i
+            << " SEventConfig::ALLOC " << ( SEventConfig::ALLOC  ? "YES" : "NO " )
+            << ( SEventConfig::ALLOC ? SEventConfig::ALLOC->desc() : "-" )
+            ;
 
 
         SProf::Add("QSim__simulate_PREL");

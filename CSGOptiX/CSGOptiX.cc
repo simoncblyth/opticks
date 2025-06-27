@@ -65,7 +65,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "scuda.h"
 #include "squad.h"
 #include "sframe.h"
-#include "salloc.h"
 
 // csg
 #include "CSGPrim.h"
@@ -706,7 +705,7 @@ CSGOptiX::simulate_launch via the SCSGOptiX.h protocol
 
 The QSim::simulate argument reset:true is used in order
 to invoke SEvt::endOfEvent after the save, this is because
-at CSGOptiX level there us no need to allow the user to
+at CSGOptiX level there is no need to allow the user to
 copy hits or other content from SEvt elsewhere.
 
 

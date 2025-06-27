@@ -1026,6 +1026,7 @@ void QEvent::device_alloc_photon()
 
     LOG(LEVEL)
         << " evt.max_slot   " << evt->max_slot
+        << " evt.max_record " << evt->max_record
         << " evt.max_photon " << evt->max_photon
         << " evt.num_photon " << evt->num_photon
 #ifndef PRODUCTION
@@ -1055,6 +1056,13 @@ void QEvent::device_alloc_photon()
 
 
 
+/**
+QEvent::SetAllocMeta
+---------------------
+
+Collect metadata from sevent.h into salloc.h
+
+**/
 
 
 void QEvent::SetAllocMeta(salloc* alloc, const sevent* evt)  // static
