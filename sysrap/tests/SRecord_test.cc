@@ -13,6 +13,7 @@ SRecord_test.cc
 struct SRecord_test
 {
     static int Load();
+    static int LoadSlice();
     static int LoadNonExisting();
     static int Main();
 };
@@ -22,8 +23,17 @@ inline int SRecord_test::Load()
 {
     std::cout << "[SRecord_test::Load" << std::endl ;
     SRecord* sr= SRecord::Load("$SRECORD_FOLD") ;
-    sr->desc() ;
+    std::cout << sr->desc() ;
     std::cout << "]SRecord_test::Load" << std::endl ;
+    return 0 ;
+}
+
+inline int SRecord_test::LoadSlice()
+{
+    std::cout << "[SRecord_test::LoadSlice" << std::endl ;
+    SRecord* ar = SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE" ) ;
+    std::cout << ar->desc();
+    std::cout << "]SRecord_test::LoadSlice" << std::endl ;
     return 0 ;
 }
 
@@ -40,10 +50,12 @@ inline int SRecord_test::LoadNonExisting()
 inline int SRecord_test::Main()
 {
     int rc(0) ;
-    const char* TEST = ssys::getenvvar("TEST", "LoadNonExisting");
+    const char* TEST = ssys::getenvvar("TEST", "LoadSlice");
+    bool ALL = strcmp(TEST, "ALL") == 0 ;
 
-    if ( strcmp(TEST,"Load") == 0 )              rc += Load() ;
-    if ( strcmp(TEST,"LoadNonExisting") == 0 )   rc += LoadNonExisting() ;
+    if (ALL||strcmp(TEST,"Load") == 0 )              rc += Load() ;
+    if (ALL||strcmp(TEST,"LoadSlice") == 0 )         rc += LoadSlice() ;
+    if (ALL||strcmp(TEST,"LoadNonExisting") == 0 )   rc += LoadNonExisting() ;
 
     return rc ;
 }

@@ -3,13 +3,14 @@
 SRecord.h
 ==============
 
-Used from SGLFW_Event.h
+Used from SGLFW_Evt.h
 
 **/
 
 #include "NP.hh"
 
 #include "spath.h"
+#include "sphoton.h"
 #include "sseq_record.h"
 #include "sstr.h"
 #include "scuda.h"
@@ -99,18 +100,25 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
     if( _slice == nullptr )
     {
         a = NP::Load(path);
+        a->set_meta<std::string>("SRecord__LoadArray", "NP::Load");
     }
     else if(sseq_record::LooksLikeRecordSeqSelection(_slice))
     {
         a = sseq_record::LoadRecordSeqSelection(_fold, _slice);
+        a->set_meta<std::string>("SRecord__LoadArray_METHOD", "sseq_record::LoadRecordSeqSelection");
+        a->set_meta<std::string>("SRecord__LoadArray_SLICE", _slice );
     }
     else if(NP::LooksLikeWhereSelection(_slice))
     {
         a = NP::LoadThenSlice<float>(path, _slice);
+        a->set_meta<std::string>("SRecord__LoadArray_METHOD", "NP::LoadThenSlice");
+        a->set_meta<std::string>("SRecord__LoadArray_SLICE", _slice );
     }
     else
     {
         a = NP::LoadSlice(path, _slice);
+        a->set_meta<std::string>("SRecord__LoadArray_METHOD", "NP::LoadSlice");
+        a->set_meta<std::string>("SRecord__LoadArray_SLICE", _slice );
     }
     return a ;
 }
@@ -152,19 +160,26 @@ inline void SRecord::init()
     record_first = 0 ;
     record_count = record->shape[0]*record->shape[1] ;   // all step points across all photon
 
-    int item_stride = 4 ;
-    int item_offset = 0 ;
-
-    record->minmax2D_reshaped<4,float>(&mn.x, &mx.x, item_stride, item_offset );
-    // temporarily 2D array with item: 4-element space-time points
-    // HMM: with sparse "post" cloud this might miss the action
-    // by trying to see everything ?
-
+    sphoton::MinMaxPost(&mn.x, &mx.x, record );
     ce = scuda::center_extent( mn, mx );
+
+    record->set_meta<float>("x0", mn.x );
+    record->set_meta<float>("x1", mx.x );
+
+    record->set_meta<float>("y0", mn.y );
+    record->set_meta<float>("y1", mx.y );
+
+    record->set_meta<float>("z0", mn.z );
+    record->set_meta<float>("z1", mx.z );
+
+    record->set_meta<float>("t0", mn.w );
+    record->set_meta<float>("t1", mx.w );
+
+    record->set_meta<float>("cx", ce.x );
+    record->set_meta<float>("cy", ce.y );
+    record->set_meta<float>("cz", ce.z );
+    record->set_meta<float>("ce", ce.w );
 }
-
-
-
 
 
 
@@ -210,6 +225,8 @@ inline std::string SRecord::desc() const
         << std::setw(20) << " record_first " << record_first
         << std::endl
         << std::setw(20) << " record_count " << record_count
+        << std::endl
+        << ( record ? record->descMeta() : "-" )
         << std::endl
         << "]SRecord.desc\n"
         ;

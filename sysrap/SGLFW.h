@@ -161,7 +161,7 @@ M
    hop to the MOI envvar configured frame [not supported by all renderers]
 
 alt+M
-   toggle gm.option.M controlling rendering of mesh geometry by SGLFW_Event.h
+   toggle gm.option.M controlling rendering of mesh geometry
 
 N
    gm.toggle.tmin : then change near by moving cursor vertically

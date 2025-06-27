@@ -4172,6 +4172,15 @@ BUT only every fourth 4-plet is (position, time)
 So (item_stride, item_offset) needs to be (4,0) where the
 item is the 4-plet chosen with the N template parameter.
 
+Usage example::
+
+    int item_stride = 4 ;
+    int item_offset = 0 ;
+    record->minmax2D_reshaped<4,float>(&mn.x, &mx.x, item_stride, item_offset );
+    // actually better to use sphoton::MinMaxPost in this case to avoid unfilled zeros
+    // impacting the ranges
+
+
 **/
 template<int N, typename T> inline void NP::minmax2D_reshaped(T* mn, T* mx, INT item_stride, INT item_offset )
 {
@@ -5534,6 +5543,7 @@ template<typename T> inline T NP::GetMeta(const std::string& mt, const char* key
 }
 
 
+template uint64_t    NP::GetMeta<uint64_t>(   const std::string& , const char*, uint64_t ) ;
 template int64_t     NP::GetMeta<int64_t>(    const std::string& , const char*, int64_t ) ;
 template int         NP::GetMeta<int>(        const std::string& , const char*, int ) ;
 template unsigned    NP::GetMeta<unsigned>(   const std::string& , const char*, unsigned ) ;
@@ -5551,6 +5561,7 @@ template<typename T> inline T NP::get_meta(const char* key, T fallback) const
     return GetMeta<T>( meta.c_str(), key, fallback );
 }
 
+template uint64_t NP::get_meta<uint64_t>(const char*, uint64_t ) const ;
 template int64_t  NP::get_meta<int64_t>(const char*, int64_t ) const ;
 template int      NP::get_meta<int>(const char*, int ) const ;
 template unsigned NP::get_meta<unsigned>(const char*, unsigned ) const  ;
@@ -5684,16 +5695,13 @@ inline void NP::setMetaKV_( const std::vector<std::string>& keys,  const std::ve
 
 
 
-
-
-
 inline std::string NP::descMeta() const
 {
     std::stringstream ss ;
-    ss << "NP::descMeta"
-       << std::endl
-       << meta
-       << std::endl
+    ss
+       << "[NP::descMeta\n"
+       << DescMetaKVS(meta, nullptr, nullptr)
+       << "]NP::descMeta\n"
        ;
     std::string str = ss.str();
     return str ;

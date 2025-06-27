@@ -4,7 +4,7 @@ SGLFW_Evt.h : manage event data and corresponding OpenGL progs
 ===============================================================
 
 Started from the old SGLFW_Event.h and removed the geometry rendering,
-as prefer modular arrangement with geometry rendering in SGLFW_Scene.h 
+as prefer modular arrangement with geometry rendering in SGLFW_Scene.h
 and event rendering here.
 
 ::
@@ -23,12 +23,16 @@ and event rendering here.
 
 **/
 
+#include "ssys.h"
 #include "spath.h"
 #include "SGLFW.h"
 #include "SGLFW_Record.h"
 
 struct SGLFW_Evt
 {
+    static constexpr const char* _SGLFW_Evt__level = "SGLFW_Evt__level" ;
+    int           level ;
+
     SGLFW&        gl ;
     SGLM&         gm ;
 
@@ -42,6 +46,7 @@ struct SGLFW_Evt
     SGLFW_Program*  rec_prog;
 
     SGLFW_Evt(SGLFW& _gl );
+    void init();
 
     void render();
     std::string desc() const ;
@@ -50,17 +55,28 @@ struct SGLFW_Evt
 
 inline SGLFW_Evt::SGLFW_Evt(SGLFW& _gl )
     :
+    level(ssys::getenvint(_SGLFW_Evt__level,0)),
     gl(_gl),
     gm(gl.gm),
     ar(SGLFW_Record::Create(gm.ar, gm.timeparam_ptr)),
     br(SGLFW_Record::Create(gm.br, gm.timeparam_ptr)),
-    shader_fold("${SGLFW_Evt__shader_fold:-$OPTICKS_PREFIX/gl}"),
-    shader_name("${SGLFW_Evt__shader_name:rec_flying_point_persist}"),
-    shader_dir(spath::Resolve(shader_fold,shader_name)),
-    rec_prog(new SGLFW_Program(shader_dir, nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr ))
+    shader_fold(nullptr),
+    shader_name(nullptr),
+    shader_dir(nullptr),
+    rec_prog(nullptr)
 {
+    init();
 }
 
+inline void SGLFW_Evt::init()
+{
+    shader_fold = spath::Resolve("${SGLFW_Evt__shader_fold:-$OPTICKS_PREFIX/gl}") ;
+    shader_name = spath::Resolve("${SGLFW_Evt__shader_name:-rec_flying_point_persist}") ;
+    shader_dir = spath::Resolve(shader_fold, shader_name);
+    rec_prog = new SGLFW_Program(shader_dir, nullptr, nullptr, nullptr, "ModelViewProjection", gm.MVP_ptr );
+
+    if(level>0) std::cout << desc();
+}
 
 /**
 SGLFW_Evt::render
@@ -80,9 +96,11 @@ inline std::string  SGLFW_Evt::desc() const
     std::stringstream ss;
     ss
         << "[SGLFW_Evt::desc\n"
+        << "  level " << level << "\n"
         << "  shader_fold [" << ( shader_fold ? shader_fold : "-" ) << "]\n"
         << "  shader_name [" << ( shader_name ? shader_name : "-" ) << "]\n"
         << "  shader_dir  [" << ( shader_dir  ? shader_dir  : "-" ) << "]\n"
+        << "  rec_prog    [" << ( rec_prog ? "YES" : "NO ") << "]\n"
         << "]SGLFW_Evt::desc\n"
         ;
     std::string str = ss.str();

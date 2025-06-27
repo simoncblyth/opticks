@@ -98,7 +98,10 @@ anim()
 [ -n "$ANIM" ] && anim
 
 
-export SGLFW_Evt__shader_name=rec_flying_point
+#shader_name=rec_flying_point
+shader_name=rec_flying_point_persist
+export SGLFW_Evt__shader_name=$shader_name
+export SGLFW_Evt__level=1
 
 
 #wh=1024,768

@@ -12,15 +12,18 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 
 name=SRecord_test
-export SFOLD=/tmp/$name
+tmp=/tmp/$USER/opticks
+export TMP=${TMP:-$tmp}
+export FOLD=$TMP/$name
 mkdir -p $FOLD
 bin=$FOLD/$name
 
+source $HOME/.opticks/GEOM/GEOM.sh
+source $HOME/.opticks/GEOM/EVT.sh
+
 export SRECORD_FOLD=/tmp/sphoton_test/record.npy
 
-
-
-vars="BASH_SOURCE PWD FOLD SRECORD_FOLD bin "
+vars="BASH_SOURCE PWD FOLD SRECORD_FOLD bin AFOLD AFOLD_RECORD_SLICE"
 
 defarg=info_build_run
 arg=${1:-$defarg}
@@ -53,15 +56,9 @@ if [ "${arg/build}" != "$arg" ]; then
          -I${CUDA_PREFIX}/include \
          -o $bin
 
-    cat << EOX > /dev/null
-         -L$OPTICKS_PREFIX/externals/lib -lGLEW \
-         -L$OPTICKS_PREFIX/externals/lib64 -lglfw \
-
-EOX
-
-
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
     echo $BASH_SOURCE ] building
+
 fi
 
 if [ "${arg/run}" != "$arg" ]; then

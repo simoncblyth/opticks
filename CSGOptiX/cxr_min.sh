@@ -104,6 +104,16 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
+anim()
+{
+   type $FUNCNAME
+   export SGLM__init_time_DUMP=1
+}
+[ -n "$ANIM" ] && anim
+
+
+
+
 #eye=1000,1000,1000
 #eye=3.7878,3.7878,3.7878
 #eye=-1,-1,0

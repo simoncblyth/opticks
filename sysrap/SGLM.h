@@ -2828,7 +2828,7 @@ inline glm::tmat4x4<T> SGLM::DemoMatrix(T scale)  // static
 SGLM::setRecord
 --------------------
 
-Invoked for example from SGLFW_Event_test.cc to enable
+Invoked for example from renderers like cxr_min.sh to enable
 rendering of record step points together with geometry.
 
 **/
@@ -2878,8 +2878,21 @@ inline void SGLM::init_time()
     bool t_noenv = t0 == 0.f && t1 == 0.f ;  // envvars T0 and T1 unset or non-sensical
     if(t_noenv)
     {
-        t0 = std::min( ar ? ar->get_t0() : 0.f   ,  br ? br->get_t0() :   0.f );
-        t1 = std::max( ar ? ar->get_t1() : 100.f ,  br ? br->get_t1() : 100.f );
+        if( ar && br )
+        {
+            t0 = std::min( ar->get_t0(), br->get_t0() );
+            t1 = std::max( ar->get_t1(), br->get_t1() );
+        }
+        else if( ar )
+        {
+            t0 = ar->get_t0();
+            t1 = ar->get_t1();
+        }
+        else if( br )
+        {
+            t0 = br->get_t0();
+            t1 = br->get_t1();
+        }
     }
 
     assert( tn > 1 );
@@ -2889,14 +2902,23 @@ inline void SGLM::init_time()
     timeparam.z = (t1-t0)/float(tn) ;
     timeparam.w = t0 ;
 
-    bool DUMP = ssys::getenvbool(__init_time_DUMP) ;
+    bool init_time_DUMP = ssys::getenvbool(__init_time_DUMP) ;
 
-    if(DUMP) std::cout
+    if(init_time_DUMP) std::cout
          << "SGLM::init_time"
          << " [" << __init_time_DUMP << "] "
-         << " " << ( DUMP ? "YES" : "NO " )
+         << " " << ( init_time_DUMP ? "YES" : "NO " )
+         << "\n"
+         << " t_noenv " << ( t_noenv ? "YES" : "NO " )
+         << "\n"
+         << " ar\n "
+         << ( ar ? ar->desc() : "-" )
+         << "\n"
+         << " br\n "
+         << ( br ? br->desc() : "-" )
          << "\n"
          << desc_time()
+         << "\n"
          ;
 
 }

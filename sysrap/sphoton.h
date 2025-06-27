@@ -212,6 +212,7 @@ struct sphoton
 
     SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx );
     SPHOTON_METHOD static void Get( std::vector<sphoton>& pp, const NP* a );
+    SPHOTON_METHOD static void MinMaxPost( float* mn, float* mx, const NP* a );
 
     SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>&  tr, bool normalize=true );  // widens transform and uses below
     SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
@@ -543,6 +544,51 @@ SPHOTON_METHOD void sphoton::Get( std::vector<sphoton>& pp, const NP* a )
     unsigned num = a->shape[0] ;
     pp.resize(num);
     memcpy( pp.data(), a->cvalues<float>(), sizeof(sphoton)*num );
+}
+
+/**
+sphoton::MinMaxPost
+--------------------
+
+Find minimum and maximum position and time over all
+filled sphoton entries in the array.  This works with
+record arrays by temporarily reshaping to be photon array
+shaped and then reshaping back again.
+
+**/
+
+SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a )
+{
+    NP* a = const_cast<NP*>(_a);
+
+    std::vector<NP::INT> sh = a->shape ;
+    a->change_shape(-1,4,4);
+
+    std::vector<sphoton> pp ;
+    Get(pp, a);
+
+    int ni = pp.size() ;
+    int nj = 4 ;
+
+    for(int j=0 ; j < nj ; j++)
+    {
+        mn[j] = std::numeric_limits<float>::max() ;
+        mx[j] = std::numeric_limits<float>::min() ;
+    }
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const sphoton& p = pp[i];
+        if(p.flagmask == 0u) continue ;
+        const float* xyzt = p.cdata();
+        for(int j=0 ; j < nj ; j++)
+        {
+            float vj = xyzt[j] ;
+            if( vj < mn[j] ) mn[j] = vj ;
+            if( vj > mx[j] ) mx[j] = vj ;
+        }
+    }
+    a->reshape(sh);
 }
 
 
