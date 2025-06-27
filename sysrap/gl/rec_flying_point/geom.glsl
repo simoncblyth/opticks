@@ -8,7 +8,7 @@ layout (points, max_vertices = 1) out;
 
 out vec4 fcolor ;
 
-#define PERSIST 1
+//#define PERSIST 1
 // * With PERSIST defined the old rings remain visible after time has gone by
 // * Without PERSIST get the traditional flying point visualization
 
@@ -20,7 +20,7 @@ void main ()
 
     float tc = Param.w  ;
 
-    uint valid  = (uint(p0.w >= 0.) << 0) + (uint(p1.w >= 0.) << 1) + (uint(p1.w > p0.w) << 2) ;
+    uint valid  = (uint(p0.w > 0.) << 0) + (uint(p1.w > 0.) << 1) + (uint(p1.w > p0.w) << 2) ;
     // valid : times >= 0. and ordered correctly (no consideration of tc, input time Param.w)
 
     uint select = (uint(tc > p0.w ) << 0) + (uint(tc < p1.w) << 1) + (0x1 << 2 )  ;
