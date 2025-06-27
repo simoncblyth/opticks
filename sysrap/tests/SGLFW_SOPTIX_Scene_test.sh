@@ -90,7 +90,15 @@ logging()
 }
 [ -n "$LOG" ] && logging
 
+anim()
+{
+   type $FUNCNAME
+   export SGLM__init_time_DUMP=1
+}
+[ -n "$ANIM" ] && anim
 
+
+export SGLFW_Evt__shader_name=rec_flying_point
 
 
 #wh=1024,768

@@ -88,7 +88,7 @@ scerenkov_test.sh
 #SGeoConfigTest.sh
 #sgeomtools_test.sh
 #SGLFW__DEPTH.sh
-#SGLFW_Event_test.sh
+#SGLFW_Evt_test.sh
 #SGLFW_SOPTIX_Scene_test.sh
 #SGLM_frame_targetting_test.sh
 #SGLM_set_frame_test.sh

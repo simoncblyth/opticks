@@ -1,15 +1,25 @@
 #pragma once
 /**
-SGLFW_Event.h : manage scene data and OpenGL render pipelines
-===============================================================
+SGLFW_Event_TO_BE_REMOVED.h : manage scene data and OpenGL render pipelines
+=============================================================================
+
+REPLACED BY SGLFW_Evt.h
 
 Yuxiang started from SGLFW_Scene and added rendering of record arrays
 together with the OpenGL mesh based render.
 The changes between SGLFW_Scene.h and SGLFW_Event.h
 are not big enough to merit the duplication in the longterm.
 
-Hence have extracted the non-duplicated into SGLGW_Evt.h
+Hence have extracted the non-duplicated parts into SGLGW_Evt.h
 making it likely that can remove this.
+
+
+::
+
+    (ok) A[blyth@localhost opticks]$ opticks-fl SGLFW_Event
+    ./sysrap/SGLFW_Event_TO_BE_REMOVED.h
+    ./sysrap/SGLFW_Evt.h
+
 
 
 Primary members

@@ -1,5 +1,5 @@
 /**
-SGLFW_Event_test.cc
+SGLFW_Evt_test.cc
 ============================
 
 Started from SOPTIX_Scene_test.cc, a pure CUDA ppm render of optix triangles,
@@ -7,8 +7,8 @@ added OpenGL interop viz for interactive view and parameter changing.
 
 Usage and impl::
 
-    ~/o/sysrap/tests/SGLFW_Event_test.sh
-    ~/o/sysrap/tests/SGLFW_Event_test.cc
+    ~/o/sysrap/tests/SGLFW_Evt_test.sh
+    ~/o/sysrap/tests/SGLFW_Evt_test.cc
 
 For a simpler non-encapsulated non-interactive OptiX only ppm render test, see::
 
@@ -31,7 +31,7 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 
 int main()
 {
-    bool DUMP = ssys::getenvbool("SGLFW_Event_test_DUMP");
+    bool DUMP = ssys::getenvbool("SGLFW_Evt_test_DUMP");
 
     const char* ss = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim") ;
     SScene* scene = SScene::Load(ss) ;

@@ -1,22 +1,22 @@
 #!/bin/bash
 usage(){ cat << EOU
-SGLFW_Event_test.sh : triangulated raytrace and rasterized visualization
+SGLFW_Evt_test.sh : triangulated raytrace and rasterized visualization
 =================================================================================
 
-~/o/sysrap/tests/SGLFW_Event_test.sh
+~/o/sysrap/tests/SGLFW_Evt_test.sh
 
-MOI=sChimneyAcrylic:0:-1 EYE=0,10000,0 T0=100 ~/o/sysrap/tests/SGLFW_Event_test.sh run
+MOI=sChimneyAcrylic:0:-1 EYE=0,10000,0 T0=100 ~/o/sysrap/tests/SGLFW_Evt_test.sh run
 
-MOI=sChimneyLS:0:-1 T1=10 NT=1000 ~/o/sysrap/tests/SGLFW_Event_test.sh run
+MOI=sChimneyLS:0:-1 T1=10 NT=1000 ~/o/sysrap/tests/SGLFW_Evt_test.sh run
 
-MOI=sChimneyLS:0:-1 T1=30 NT=1000 TIMESCALE=10 ~/o/sysrap/tests/SGLFW_Event_test.sh run
+MOI=sChimneyLS:0:-1 T1=30 NT=1000 TIMESCALE=10 ~/o/sysrap/tests/SGLFW_Evt_test.sh run
 
 
 EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-name=SGLFW_Event_test
+name=SGLFW_Evt_test
 
 
 source $HOME/.opticks/GEOM/GEOM.sh
@@ -46,7 +46,7 @@ logging(){
     type $FUNCNAME
     export SGLM__set_frame_DUMP=1
     export SGLM__setTreeScene_DUMP=1
-    export SGLFW_Event_test_DUMP=1
+    export SGLFW_Evt_test_DUMP=1
 }
 [ -n "$LOG" ] && logging
 
@@ -166,11 +166,6 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-
-    echo $BASH_SOURCE : Linux running $bin : with some manual LD_LIBRARY_PATH config
-    LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$OPTICKS_PREFIX/externals/lib:$OPTICKS_PREFIX/externals/lib64:$OPTICKS_PREFIX/lib64
-    echo $LD_LIBRARY_PATH | tr ":" "\n"
-
     [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
