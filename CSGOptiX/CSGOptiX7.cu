@@ -325,6 +325,9 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     ctx.idx = idx ;
     ctx.pidx = photon_idx ;
 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    ctx.pidx_debug = sim->base->pidx == photon_idx ;
+#endif
 
     sim->generate_photon(ctx.p, rng, gs, photon_idx, genstep_idx );
 
@@ -335,7 +338,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
     while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
     {
-        float tmin = ctx.p.boundary_flag & params.PropagateEpsilon0Mask ? params.tmin0 : params.tmin ;
+        float tmin = ( ctx.p.boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
 
         trace( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask );  // geo query filling prd
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD

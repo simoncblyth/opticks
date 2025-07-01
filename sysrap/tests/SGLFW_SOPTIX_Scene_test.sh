@@ -116,7 +116,7 @@ fullscreen=1
 #eye=-10,0,0
 #eye=0,-10,0
 #eye=-1,-1,0
-eye=1,0,0
+eye=0,1,0
 
 look=0,0,0
 up=0,0,1

@@ -97,6 +97,7 @@ inline void QPMT<T>::init()
     if(!src_rindex_expect) std::raise(SIGINT);
     if(!src_thickness_expect) std::raise(SIGINT);
 
+    // NB everything here valid across all photons : nothing needs to be per photon idx
     init_prop();
     init_thickness();
     init_lcqs();
@@ -111,6 +112,8 @@ inline void QPMT<T>::init()
     LOG(LEVEL) << "]" ;
 }
 
+
+
 template<typename T>
 inline void QPMT<T>::init_prop()
 {
@@ -120,7 +123,6 @@ inline void QPMT<T>::init_prop()
     pmt->cecosth_prop = cecosth_prop->getDevicePtr() ;
 
     pmt->s_qeshape_prop = s_qeshape_prop->getDevicePtr() ;
-
 }
 
 

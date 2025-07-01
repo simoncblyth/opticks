@@ -79,6 +79,7 @@ if __name__ == '__main__':
         label = "%s : " % ( e.f.base.replace("/data/blyth/opticks/","") )
         label +=  " : %s " % PLOT
 
+        expl = ""
         if PLOT.startswith("seqnib") and hasattr(e.f, "seqnib"):
             expl = "Photon History Step Counts Occurrence in single 1M photon event"
         elif PLOT.startswith("thit") and hasattr(e.f, "hit"):

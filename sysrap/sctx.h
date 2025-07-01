@@ -71,6 +71,10 @@ struct sctx
     unsigned idx ;    // local launch index : always zero based
     unsigned pidx ;   // absolute photon index : offset from zero for launches other than first
 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    bool pidx_debug ;
+#endif
+
     sphoton p ;
     sstate  s ;
 

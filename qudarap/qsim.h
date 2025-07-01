@@ -1793,7 +1793,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     float dot_pol_cross_mom_nrm = dot(p.pol,cross(p.mom,*normal)) ;
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    if( ctx.pidx == base->pidx )
+    if( ctx.pidx_debug )
     {
     float3 cross_mom_nrm = cross(p.mom, *normal) ;
     printf("//qsim::propagate_at_surface_CustomART pidx %7d : mom = np.array([%10.8f,%10.8f,%10.8f]) ; lmom = %10.8f \n",
@@ -1821,19 +1821,24 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     }
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    if( ctx.pidx == base->pidx )
-    printf("//qsim::propagate_at_surface_CustomART pidx %7d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f pmt %p pre-ATQC \n",
+    if( ctx.pidx_debug )
+    printf("//qsim::propagate_at_surface_CustomART pidx %7d lpmtid %d wl %8.4f mct %8.4f dpcmn %8.4f pmt %p pre-ATQC \n",
            ctx.pidx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, pmt );
 #endif
 
     float ATQC[4] = {} ;
 
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ATQC(ATQC, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost, ctx.pidx, ctx.pidx_debug );
+#else
     if(lpmtid > -1 && pmt != nullptr) pmt->get_lpmtid_ATQC(ATQC, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
+#endif
+
 
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    if( ctx.pidx == base->pidx )
-    printf("//qsim::propagate_at_surface_CustomART pidx %7d lpmtid %d wl %7.3f mct %7.3f dpcmn %7.3f lpc %7.3f ATQC ( %7.3f %7.3f %7.3f %7.3f  ) \n",
+    if( ctx.pidx_debug )
+    printf("//qsim::propagate_at_surface_CustomART pidx %7d lpmtid %d wl %8.4f mct %8.4f dpcmn %8.4f lpc %8.4f ATQC ( %8.4f %8.4f %8.4f %8.4f  ) \n",
            ctx.pidx, lpmtid, p.wavelength, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost, ATQC[0], ATQC[1], ATQC[2], ATQC[3] );
 #endif
 
@@ -1848,8 +1853,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
 
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-    if( ctx.pidx == base->pidx )
-        printf("//qsim.propagate_at_surface_CustomART pidx %7d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) u_theAbsorption  %7.3f action %d \n",
+    if( ctx.pidx_debug )
+        printf("//qsim.propagate_at_surface_CustomART pidx %7d lpmtid %d ATQC ( %8.4f %8.4f %8.4f %8.4f ) u_theAbsorption  %7.3f action %d \n",
         ctx.pidx, lpmtid, ATQC[0], ATQC[1], ATQC[2], ATQC[3], u_theAbsorption, action  );
 #endif
 
@@ -1867,8 +1872,8 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
         // former SD:SURFACE_DETECT, now becomes EC:EFFICIENCY_COLLECT or EX:EFFICIENCY_CULL depending on collectionEfficiency and random throw
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-        if( ctx.pidx == base->pidx )
-            printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA EC/EX pidx %7d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) u_theEfficiency  %7.3f theEfficiency %7.3f flag %d \n",
+        if( ctx.pidx_debug )
+            printf("//qsim.propagate_at_surface_CustomART.BREAK.SD/SA EC/EX pidx %7d lpmtid %d ATQC ( %8.4f %8.4f %8.4f %8.4f ) u_theEfficiency  %8.4f theEfficiency %8.4f flag %d \n",
                                                                     ctx.pidx, lpmtid, ATQC[0],ATQC[1], ATQC[2],ATQC[3],  u_theEfficiency,  theEfficiency, flag );
 #endif
 
@@ -1877,7 +1882,7 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     {
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
-        if( ctx.pidx == base->pidx )
+        if( ctx.pidx_debug )
             printf("//qsim.propagate_at_surface_CustomART.CONTINUE pidx %7d lpmtid %d ATQC ( %7.3f %7.3f %7.3f %7.3f ) theTransmittance %7.3f  \n",
             ctx.pidx, lpmtid, ATQC[0], ATQC[1], ATQC[2], ATQC[3], theTransmittance  );
 #endif
@@ -2416,6 +2421,8 @@ inline QSIM_METHOD void qsim::hemisphere_polarized( unsigned polz, bool inwards,
 /**
 qsim::generate_photon_simtrace
 --------------------------------
+
+Canonical invokation from CSGOptiX7.cu:simtrace
 
 * NB simtrace cxs center-extent-genstep are very different to standard Cerenkov/Scintillation gensteps
 

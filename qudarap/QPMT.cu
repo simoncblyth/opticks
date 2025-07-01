@@ -279,6 +279,12 @@ __global__ void _QPMT_mct_lpmtid(
     const int& nj = domain_width ;   // minus_cos_theta values "AOI"
     const int&  j = ix ;
 
+
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+    unsigned pidx = 0u ;
+    bool pidx_debug = false ;
+#endif
+
     F payload[P] ;
 
     for(int i=0 ; i < ni ; i++)  // over num_lpmtid
@@ -291,7 +297,11 @@ __global__ void _QPMT_mct_lpmtid(
         }
         else if( etype == qpmt_SPEC_ce )
         {
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+            pmt->get_lpmtid_SPEC_ce(payload, pmtid, wavelength_nm, lposcost, pidx, pidx_debug );
+#else
             pmt->get_lpmtid_SPEC_ce(payload, pmtid, wavelength_nm, lposcost );
+#endif
         }
         else if( etype == qpmt_LL )
         {
@@ -311,7 +321,11 @@ __global__ void _QPMT_mct_lpmtid(
         }
         else if( etype == qpmt_ATQC )
         {
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+            pmt->get_lpmtid_ATQC(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost, pidx, pidx_debug );
+#else
             pmt->get_lpmtid_ATQC(payload, pmtid, wavelength_nm, minus_cos_theta, dot_pol_cross_mom_nrm, lposcost );
+#endif
         }
 
 

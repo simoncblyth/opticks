@@ -60,6 +60,8 @@ namespace s_pmt
 
 
 
+
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     SPMT_FUNCTION void check_pmtid( int pmtid )
@@ -360,6 +362,11 @@ namespace s_pmt
 
 
 
+
+    SPMT_FUNCTION bool is_WP_( int pmtid )
+    {
+        return pmtid >= OFFSET_WP_PMT && pmtid < OFFSET_WP_PMT_END ;
+    }
     SPMT_FUNCTION bool is_spmtid( int pmtid )
     {
         return pmtid >= OFFSET_CD_SPMT && pmtid < OFFSET_CD_SPMT + NUM_SPMT ;

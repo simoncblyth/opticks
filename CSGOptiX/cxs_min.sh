@@ -191,8 +191,8 @@ vars="$vars version VERSION"
 #test=input_photon_chimney
 #test=input_photon_nnvt
 #test=input_photon_target
-#test=input_photon_wp_pmt
-test=input_photon_s_pmt
+test=input_photon_wp_pmt
+#test=input_photon_s_pmt
 
 #test=large_evt
 #test=vlarge_evt
@@ -439,6 +439,9 @@ elif [ "${TEST:0:12}" == "input_photon" ]; then
       opticks_input_photon=RainXZ_Z230_100k_f8.npy
       opticks_input_photon_frame=PMT_20inch_veto:0:1000
 
+      #export PIDX=99999
+
+
    elif [ "${TEST:12}" == "_s_pmt" ]; then
 
       sevt__input_photon_dir=$HOME/.opticks/InputPhotons
@@ -676,11 +679,11 @@ if [ "${arg/du}" != "$arg" ]; then
 fi
 
 
-if [ "${arg/pdb1}" != "$arg" ]; then
+if [ "${arg/pdb}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
 fi
 
-if [ "${arg/pdb0}" != "$arg" ]; then
+if [ "${arg/pdz}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script
 fi
 
