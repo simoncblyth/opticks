@@ -3553,17 +3553,23 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
     bool VERBOSE = ssys::getenvbool(getFrame_VERBOSE) ;
     LOG(LEVEL) << "[" << getFrame_VERBOSE << "] " << VERBOSE ;
 
-
     int rc = 0 ;
+
+    bool looks_like_raw = strstr(frs,",") ;
     bool looks_like_moi = sstr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ;
 
     LOG_IF(info, VERBOSE)
         << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
         << " frs " << ( frs ? frs : "-" )
         << " looks_like_moi " << ( looks_like_moi ? "YES" : "NO " )
+        << " looks_like_raw " << ( looks_like_raw ? "YES" : "NO " )
         ;
 
-    if(looks_like_moi)
+    if(looks_like_raw)
+    {
+        rc = sframe::PopulateFromRaw(fr, frs, ',' );
+    }
+    else if(looks_like_moi)
     {
         int midx, mord, gord ;  // mesh-index, mesh-ordinal, gas-ordinal
         parseMOI(midx, mord, gord,  frs );

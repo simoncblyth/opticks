@@ -71,8 +71,13 @@ struct sstr
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str );
     static void chop( char** head, char** tail, const char* delim, const char* str );
 
+
     template<typename T>
     static void split(std::vector<T>& elem, const char* str, char delim  );
+
+    template<typename T>
+    static std::string desc( const std::vector<T>& elem );
+
 
     template<typename ... Args>
     static std::string Format_( const char* fmt, Args ... args );
@@ -609,6 +614,23 @@ inline void sstr::split( std::vector<T>& elem, const char* str, char delim )
         elem.push_back(v) ;
     }
 }
+
+template<typename T>
+inline std::string sstr::desc( const std::vector<T>& elem )
+{
+    std::stringstream ss ;
+    for(int i=0 ; i < int(elem.size()); i++)
+    {
+        if(i % 4 == 0) ss << "\n" ;
+        ss << " " << std::fixed << std::setw(10) << std::setprecision(4) << elem[i]  ;
+    }
+    ss << "\n" ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
 
 
 

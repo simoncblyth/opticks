@@ -597,6 +597,7 @@ void test_IsInteger()
 struct sstr_test
 {
     static int StartsWithElem();
+    static int split();
     static int Main();
 };
 
@@ -615,14 +616,24 @@ int sstr_test::StartsWithElem()
 
     return 0;
 }
+int sstr_test::split()
+{
+     const char* spec = "1.1,0,0,0,0,1.2,0,0,0,0,1.3,0,0,0,0,1.4" ;
+     std::vector<double> elem ;
+     sstr::split<double>( elem, spec, ',' );
 
+     std::cout << sstr::desc<double>(elem) ;
+
+     return 0;
+}
 
 int sstr_test::Main()
 {
     //const char* test = "TrimString" ;
     //const char* test = "StripComment" ;
     //const char* test = "IsInteger" ;
-    const char* test = "StartsWithElem" ;
+    //const char* test = "StartsWithElem" ;
+    const char* test = "split" ;
 
     const char* TEST = ssys::getenvvar("TEST", test );
     bool ALL = strcmp(TEST, "ALL") == 0 ;
@@ -650,6 +661,7 @@ int sstr_test::Main()
 
     int rc = 0 ;
     if(ALL||0==strcmp(TEST,"StartsWithElem")) rc += StartsWithElem();
+    if(ALL||0==strcmp(TEST,"split"))          rc += split();
 
     return rc ;
 }
