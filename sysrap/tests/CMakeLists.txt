@@ -9,6 +9,7 @@ set(INSTALLED_SCRIPTS
    sseq_index_test.py
 
    SGLFW_SOPTIX_Scene_test.sh
+   ssst.sh
 )
 
 install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)

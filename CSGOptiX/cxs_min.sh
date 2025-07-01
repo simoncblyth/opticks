@@ -191,8 +191,9 @@ vars="$vars version VERSION"
 #test=input_photon_chimney
 #test=input_photon_nnvt
 #test=input_photon_target
-test=input_photon_wp_pmt
+#test=input_photon_wp_pmt
 #test=input_photon_s_pmt
+test=input_photon_poolcover
 
 #test=large_evt
 #test=vlarge_evt
@@ -441,6 +442,16 @@ elif [ "${TEST:0:12}" == "input_photon" ]; then
 
       #export PIDX=99999
 
+   elif [ "${TEST:12}" == "_poolcover" ]; then
+
+      sevt__input_photon_dir=$HOME/.opticks/InputPhotons
+      opticks_input_photon=UpXZ1000_f8.npy
+      opticks_input_photon_frame=3345.569,20623.73,21500
+      #export PIDX=99999
+
+      export SEvt__transformInputPhoton_VERBOSE=1
+      export CSGFoundry__getFrame_VERBOSE=1
+      export CSGFoundry__getFrameE_VERBOSE=1
 
    elif [ "${TEST:12}" == "_s_pmt" ]; then
 

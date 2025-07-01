@@ -27,6 +27,9 @@ Example commandlines using installed script::
 
     ELV=t:Water_solid,Rock_solid  cxr_min.sh
 
+    ELV=t:sWorld,sBottomRock,sTopRock,sExpHall,sExpRockBox,sDomeRockBox  EYE=0,5,0  cxr_min.sh
+       ## excluding large volumes can be illustrative
+
     MOI=PMT_20inch_veto:0:1000 cxr_min.sh
 
 
@@ -34,7 +37,7 @@ Example commandlines using installed script::
 
 
 Animation, lowering T1 from default of full range slows down the animation::
- 
+
     EYE=0,2,0 T1=10 cxr_min.sh
 
 
