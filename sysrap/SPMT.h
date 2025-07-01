@@ -187,6 +187,7 @@ struct SPMT
     static const NPFold* CreateFromJPMTAndSerialize(const char* path=nullptr);
     static SPMT* CreateFromJPMT(const char* path=nullptr);
     SPMT(const NPFold* jpmt);
+    double get_pmtid_qescale( int pmtid ) const ;
 
     void init();
 
@@ -442,6 +443,21 @@ inline SPMT::SPMT(const NPFold* jpmt_)
 }
 
 
+/**
+SPMT::get_pmtid_qescale
+------------------------
+
+qeScale from  _PMTSimParamData::serialize uses s_pmt.h contiguousidx order : CD_LPMT, WP, SPMT
+
+**/
+
+inline double SPMT::get_pmtid_qescale( int pmtid ) const
+{
+    int contiguousidx = s_pmt::contiguousidx_from_pmtid( pmtid );
+    float qesc = qeScale_v[contiguousidx] ;
+    return qesc ;
+}
+
 
 
 
@@ -579,14 +595,34 @@ Comes from _PMTParamData::serialize::
            [52398,     3],
            [52399,     0]], shape=(2400, 2), dtype=int32)
 
+
+
+2025/06 WP_ATM and WP_WAL have been added to pmtCat
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PMTParamSvc::init_IDService_WP_ATM_LPMT
+PMTParamSvc::init_IDService_WP_WAL_PMT
+
+
 **/
 
 
 void SPMT::init_pmtCat()
 {
-    assert( pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 );
-    assert( pmtCat->shape[0] == total.ALL );
-    assert( pmtCat->shape[1] == 2 );
+    bool expected_type = pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 ;
+    bool expected_shape =  pmtCat && pmtCat->shape.size() == 2 && pmtCat->shape[0] == total.ALL && pmtCat->shape[1] == 2 ;
+
+    if(!expected_shape || !expected_type) std::cerr
+       << "SPMT::init_pmtCat"
+       << " expected_type " << ( expected_type ? "YES" : "NO " )
+       << " expected_shape " << ( expected_shape ? "YES" : "NO " )
+       << " pmtCat " << ( pmtCat ? pmtCat->sstr() : "-" )
+       << " total " << total.desc()
+       << "\n"
+       ;
+
+    assert( expected_type );
+    //assert( expected_shape );
     assert( pmtCat_v );
 }
 
@@ -769,6 +805,8 @@ inline void SPMT::init_cecosth()
 
 
 
+
+
 /**
 SPMT::init_lcqs
 -----------------
@@ -814,8 +852,7 @@ inline void SPMT::init_lcqs()
         int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
         assert( copyno == pmtid );
 
-        float qesc = qeScale_v[oldcontiguousidx] ;
-
+        float qesc = get_pmtid_qescale( pmtid );
         v_lcqs[lpmtidx] = { TranslateCat(cat), qesc } ;
     }
     lcqs = NPX::ArrayFromVec<int,LCQS>( v_lcqs ) ;
@@ -833,6 +870,10 @@ inline void SPMT::init_lcqs()
     assert( s_pmt::NUM_CD_LPMT == 17612 );
     assert( s_pmt::NUM_WP == 2400 );
 }
+
+
+
+
 
 
 /**
@@ -872,11 +913,21 @@ inline void SPMT::init_s_qescale()
         assert( copyno == pmtid );
         assert( cat == 2 );
 
-        // BUT qeScale from  _PMTSimParamData::serialize uses s_pmt.h "contiguous" order : CD_LPMT, WP, SPMT
-        int contiguousidx = s_pmt::contiguousidx_from_pmtid( pmtid );
-        s_qescale_v[spmtidx*nj + 0] = qeScale_v[contiguousidx]  ;
+        double qesc = get_pmtid_qescale( pmtid );
+
+        s_qescale_v[spmtidx*nj + 0] = qesc  ;
     }
 }
+
+
+
+
+
+
+
+
+
+
 
 
 /**
