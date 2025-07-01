@@ -578,10 +578,10 @@ void SEventConfig::SetRGMode( const char* mode)
     bool changed_mode = prior_RGMode != _RGMode ;
     if(changed_mode)
     {
-        std::cout << "SEventConfig::SetRGMode mode changed calling Initialize_Comp \n" ;
+        LOG(LEVEL) << " mode changed calling Initialize_Comp " ;
         Initialize_Comp();
-        std::cout << " DescGatherComp " << DescGatherComp() << "\n" ;
-        std::cout << " DescSaveComp   " << DescSaveComp() << "\n" ;
+        LOG(LEVEL) << " DescGatherComp " << DescGatherComp() ;
+        LOG(LEVEL) << " DescSaveComp   " << DescSaveComp() ;
     }
     LIMIT_Check() ;
 }

@@ -1,1 +1,0 @@
-SGLFW_SOPTIX_Scene_test.sh

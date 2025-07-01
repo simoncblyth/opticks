@@ -53,9 +53,11 @@ TODO:
 
 struct CSGOptiXRenderInteractiveTest
 {
+    static constexpr const char* _level = "CSGOptiXRenderInteractiveTest__level" ;
     static constexpr const char* _ALLOW_REMOTE = "CSGOptiXRenderInteractiveTest__ALLOW_REMOTE" ;
     static int Initialize(bool allow_remote);
 
+    int level ;
     bool ALLOW_REMOTE ;
     int irc ;
 
@@ -99,6 +101,7 @@ inline int CSGOptiXRenderInteractiveTest::Initialize(bool allow_remote)
 
 inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
     :
+    level(ssys::getenvint(_level,0)),
     ALLOW_REMOTE(ssys::getenvbool(_ALLOW_REMOTE)),
     irc(Initialize(ALLOW_REMOTE)),
     ar(SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE")),
@@ -130,6 +133,8 @@ inline void CSGOptiXRenderInteractiveTest::init()
     glev    = new SGLFW_Evt(*gl);
 
     if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
+    if(level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init [" << _level << "][" << level << "]\n" << desc() ;
+
 }
 
 
@@ -202,7 +207,6 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
 
     CSGOptiXRenderInteractiveTest t ;
-    std::cout << t.desc() ;
 
     SGLFW* gl = t.gl ;
 
