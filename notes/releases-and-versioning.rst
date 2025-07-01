@@ -63,6 +63,19 @@ Release Notes
 
 
 
+v0.4.9 2025/07/01 : fix muon render kink animation artifact, fix WP PMT qescale giving WP_PMT A:B match
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* fix another SPMT.h qescale contiguousidx/oldcontiguousidx bug for WP PMT using SPMT::get_pmtid_qescale that A:B matches WP PMT hits
+* expand DEBUG_PIDX dumping into qpmt.h
+* fix SRecord.h time and position ranges with sphoton::MinMaxPost by excluding unfilled zeros from mn/mx
+* fix future kinked muon render bug by excluding zero as a valid time in the rec_flying_point shader
+* eliminate the old mixed geom+event sysrap/SGLFW_Event.h in favor of event only sysrap/SGLFW_Evt.h 
+* add QSim__ALLOC control to dump VRAM allocation salloc.h table before launch
+* make pvplt_viewpoint EYE LOOK UP use m2w target transform such that the inputs can remain local with GLOBAL=1 global frame plotting
+* move setting of U4Tree into U4Recorder to lower level from U4Tree::initRecorder : this needed for U4Simtrace.h identity of intersects 
+
+
 v0.4.8 2025/06/25 SProcessHits_EPH.h improve handling of large values and legibility of desc  
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -164,6 +177,8 @@ Snapshot Tags History
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | date       | tag     | OPTICKS_VERSION_NUMBER  | Notes                                                                                                               |
 +============+=========+=========================+=====================================================================================================================+
+| 2025/07/01 | v0.4.9  | 49                      | fix muon render kink animation artifact, fix WP PMT qescale giving WP_PMT A:B match                                 |
++------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/25 | v0.4.8  | 48                      | SProcessHits_EPH.h improve handling of large values and legibility of desc                                          |  
 +------------+---------+-------------------------+---------------------------------------------------------------------------------------------------------------------+
 | 2025/06/25 | v0.4.7  | 47                      | fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match                                        |  

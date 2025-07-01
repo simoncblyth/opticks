@@ -18,6 +18,7 @@ Workflow for adding Opticks tags:
    to notes/releases-and-versioning.rst::
 
        cd ~/opticks
+       git lg -n10
        vi okconf/OpticksVersionNumber.hh notes/releases-and-versioning.rst
 
    For example when starting from "#define OPTICKS_VERSION_NUMBER 16" 
@@ -28,8 +29,9 @@ Workflow for adding Opticks tags:
 
 2. commit changes including okconf/OpticksVersionNumber.hh::
 
-       git commit -m "Prepare to resume tagging with addtag.sh v0.2.0 OPTICKS_VERSION_NUMBER 20" 
-       git commit -m "Prepare to addtag.sh v0.3.0 OPTICKS_VERSION_NUMBER 30" 
+       git status 
+       git add okconf/OpticksVersionNumber.hh notes/releases-and-versioning.rst
+       git commit -m "Prepare to ./addtag.sh $vntag OPTICKS_VERSION_NUMBER $opticks_version_number " 
 
 3. push code changes to BOTH bitbucket and github::
       
@@ -78,7 +80,6 @@ NB this simple script assumes single digit 0-9 major/minor/patch version integer
 
 EOU
 }
-usage
 
 sdir=$(cd $(dirname $BASH_SOURCE) && pwd)
 vctag=$(git tag | sed -n '$p') # same a tail -1 : pick the last listed tag
@@ -113,6 +114,9 @@ fi
 ntag=${ntag_major}.${ntag_minor}.${ntag_patch}
 vntag=v$ntag
 
+usage
+
+
 ntag_note="ntag : next tag obtained from okconf/OpticksVersionNumber.hh" 
 
 vars="BASH_SOURCE sdir" 
@@ -123,6 +127,9 @@ vars="$vars statline"
 
 for var in $vars ; do printf "# %25s : %s\n" "$var" "${!var}" ; done 
 echo "#" 
+
+
+
 
 err="# $BASH_SOURCE : ERROR "
 st=0
