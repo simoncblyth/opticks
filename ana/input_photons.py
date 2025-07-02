@@ -12,6 +12,8 @@ import numpy as np
 np.set_printoptions(linewidth=200, suppress=True, precision=3)
 from opticks.ana.sample import sample_trig, sample_normals, sample_reject, sample_linear, sample_linspace, sample_disc
 from opticks.ana.sample import xy_grid_coordinates
+from opticks.sysrap.smath import rotateUz, rotateUz_
+
 
 def vnorm(v):
     norm = np.sqrt((v*v).sum(axis=1))
@@ -315,6 +317,50 @@ class InputPhotons(object):
         return p
 
     @classmethod
+    def GenerateXZ_Circle(cls, num, radius):
+        """
+        :param num: number of photons to generate
+        :param radius: radius of the starting positions
+
+        This is similar to sysrap/storch.h for T_CIRCLE
+
+        As np.linspace includes the end, will have repeated
+        angle at zero and 360 degrees.
+
+        """
+        frac = np.linspace(0., 1., num)
+        phi = 2.*np.pi*frac
+        cosphi = np.cos(phi)
+        sinphi = np.sin(phi)
+
+        position = np.zeros( (num, 3), dtype=cls.DTYPE )
+        position[:,0] = cosphi
+        position[:,1] = 0.
+        position[:,2] = sinphi
+        position *= radius
+
+        direction = np.zeros( (num, 3), dtype=cls.DTYPE )
+        direction[:,0] = cosphi
+        direction[:,1] = 0.
+        direction[:,2] = sinphi
+
+        polarization = rotateUz_( cls.Y, direction )
+        #polarization = vnorm(np.cross(direction,cls.Y))
+
+        p = np.zeros( (num, 4, 4), dtype=cls.DTYPE )
+
+        p[:,0,:3] = cls.POSITION + position
+        p[:,0,3] = cls.TIME
+
+        p[:,1,:3] = direction
+        p[:,1,3] = cls.WEIGHT
+
+        p[:,2,:3] = polarization
+        p[:,2, 3] = cls.WAVELENGTH
+        return p
+
+
+    @classmethod
     def GenerateRandomDisc(cls, n):
         spherical = sample_trig(n).T
         disc_offset = spherical.copy()
@@ -378,6 +424,7 @@ class InputPhotons(object):
     CC = "CubeCorners"
     ICC = "InwardsCubeCorners"
     RS = "RandomSpherical"
+    CIXZ = "CircleXZ"
     RD = "RandomDisc"
     UD = "UniformDisc"
     UXZ = "UpXZ"
@@ -391,6 +438,7 @@ class InputPhotons(object):
     X25 = "_X25"
     X1000 = "_X1000"
     R500 = "_R500"
+    R10 = "_R10"
 
 
     NAMES = [CC, CC+"10x10", CC+"100", CC+"100x100", RS+"10", RS+"100", RS+"1M", ICC+"17699", ICC+"1", RD+"10", RD+"100", UXZ+"1000", DXZ+"1000" ]
@@ -401,6 +449,7 @@ class InputPhotons(object):
     NAMES += [RAINXZ+Z230+X25+"_100k"]
     NAMES += [UD+R500+"_10k"]
     NAMES += [GRIDXY+X700+Z230+"_10k", GRIDXY+X1000+Z1000+"_40k"    ]
+    NAMES += [CIXZ+R500+"_100k", CIXZ+R10+"_361"]
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -432,6 +481,11 @@ class InputPhotons(object):
                 pass
             pass
             p = self.GenerateXZ(num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )
+        elif name.startswith(self.CIXZ):
+            d = parsetail(name, prefix=self.CIXZ)
+            radius = d.get("R",100.)
+            num = d.get("N",1000)
+            p = self.GenerateXZ_Circle(num, radius)
         elif name.startswith(self.RAINXZ):
             d = parsetail(name, prefix=self.RAINXZ)
             z0 = 1000. if d['Z'] is None else d['Z']
