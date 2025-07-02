@@ -190,7 +190,26 @@ EPY
 }
 
 
-om-prefix-clean-dirs-(){ cat << EOD
+om-prefix-all-dirs-(){ sed 's/#.*//' << EOD
+#bashrc
+bin
+build
+cmake
+#el9_amd64_gcc11
+externals
+gl
+include
+lib
+lib64
+metadata
+optix
+py
+tests
+EOD
+}
+
+
+om-prefix-few-dirs-(){ cat << EOD
 lib
 lib64
 build
@@ -214,11 +233,11 @@ om-prefix-clean(){
    local msg="=== $FUNCNAME :"
    cd $(om-prefix)
    pwd
-   local dirs=$(om-prefix-clean-dirs-)
+   local dirs=$(om-prefix-all-dirs-)
    echo $msg om-prefix : $(om-prefix)
    echo $msg pwd       : $(pwd)
-   echo $msg om-prefix-clean-dirs- : $dirs
-
+   echo $msg om-prefix-all-dirs- : $dirs
+   echo $msg CAUTION - AFTER THIS YOU WILL NEED TO USE opticks-full FOR REINSTALLATION
    local ans
    read -p "$msg enter YES to proceed with deletion of prefix dirs : " ans
 
