@@ -2518,17 +2518,24 @@ opticks-git-clone(){
    local url=$1
    local repo=$(basename $url)
    local stem=${repo/.git}
+   local cmd="echo -n"
+   local safe="echo -n"
 
    if [ -z "$url" -o -z "$repo" ]; then
        cmd="echo $msg BAD url $url repo $repo"
    elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -d "$OPTICKS_DOWNLOAD_CACHE/$stem" ]; then
+       safe="git config --global --add safe.directory $OPTICKS_DOWNLOAD_CACHE/$stem/.git"
        cmd="git clone $OPTICKS_DOWNLOAD_CACHE/$stem"
    elif [ -n "$OPTICKS_DOWNLOAD_CACHE" -a -d "$OPTICKS_DOWNLOAD_CACHE/$repo" ]; then
+       safe="git config --global --add safe.directory $OPTICKS_DOWNLOAD_CACHE/$repo"
        cmd="git clone $OPTICKS_DOWNLOAD_CACHE/$repo"
    else
        cmd="git clone $url"
    fi
+
    echo $msg dir $dir url $url stem $stem OPTICKS_DOWNLOAD_CACHE $OPTICKS_DOWNLOAD_CACHE cmd $cmd
+   echo $msg safe $safe
+   eval $safe
    eval $cmd
 }
 
