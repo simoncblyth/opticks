@@ -890,6 +890,7 @@ set( PY_SCRIPTS
     __init__.py
     sframe.py
     sevt.py
+    smath.py
     OpticksCSG.py
 )
 
