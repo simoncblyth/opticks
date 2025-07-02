@@ -5,7 +5,7 @@ include(OpticksBuildOptions)
 
 get_filename_component(PARENT_DIR ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 
-# order of increasing dependency 
+# order of increasing dependency
 set(OLD_SCRIPTS
 
    __init__.py
@@ -13,7 +13,6 @@ set(OLD_SCRIPTS
    enum_.py
    base.py
    debug.py
-   num.py
    log.py
    level.py
    qdv.py
@@ -27,9 +26,7 @@ set(OLD_SCRIPTS
    env.py
    OpticksQuery.py
    main.py
-   nload.py
    proplib.py
-   seq.py
    decompression.py
    histype.py
    mattype.py
@@ -47,21 +44,24 @@ set(OLD_SCRIPTS
 
 
 set(SCRIPTS
-    __init__.py
-    nbase.py
-    base.py
-    npmeta.py
-    axes.py
-    enum_.py
-    qcf.py
-    fold.py
-    eget.py
-    pvplt.py
+   __init__.py
+   nbase.py
+   base.py
+   npmeta.py
+   axes.py
+   enum_.py
+   qcf.py
+   fold.py
+   eget.py
+   pvplt.py
 
-    histype.py
-    hismask.py
-    nibble.py
-    p.py
+   histype.py
+   hismask.py
+   nibble.py
+   p.py
+   seq.py
+   nload.py
+   num.py
 )
 
 

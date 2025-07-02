@@ -5,16 +5,16 @@
 # This file is part of Opticks
 # (see https://bitbucket.org/simoncblyth/opticks).
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -27,14 +27,14 @@ Strictly Non-numpy basics
 import os, logging, json, ctypes, subprocess, datetime, re
 log = logging.getLogger(__name__)
 
-from collections import OrderedDict as odict 
+from collections import OrderedDict as odict
 import numpy as np
-from opticks.ana.enum_ import Enum 
+from opticks.ana.enum_ import Enum
 
-#from opticks.ana.key import keydir 
+#from opticks.ana.key import keydir
 #KEYDIR = keydir()
 
-log = logging.getLogger(__name__) 
+log = logging.getLogger(__name__)
 
 
 try:
@@ -44,40 +44,40 @@ except OSError:
     pass
 
 
-#idp_ = lambda _:"%s/%s" % (os.environ["IDPATH"],_) 
+#idp_ = lambda _:"%s/%s" % (os.environ["IDPATH"],_)
 #uidp_ = lambda _:_.replace(os.environ["IDPATH"],"$IDPATH")
 #
-#idp_ = lambda _:"%s/%s" % (KEYDIR,_) 
+#idp_ = lambda _:"%s/%s" % (KEYDIR,_)
 #uidp_ = lambda _:_.replace(KEYDIR,"$KEYDIR")
 
-gcp_ = lambda _:"%s/%s" % (os.environ["GEOCACHE"],_) 
+gcp_ = lambda _:"%s/%s" % (os.environ["GEOCACHE"],_)
 
 
 import sys, codecs
 if sys.version_info.major > 2:
-    u_ = lambda _:_                            # py3 strings are unicode already 
+    u_ = lambda _:_                            # py3 strings are unicode already
     b_ = lambda _:codecs.latin_1_encode(_)[0]  # from py3 unicode string to bytes
     d_ = lambda _:codecs.latin_1_decode(_)[0]  # from bytes to py3 unicode string
 else:
     u_ = lambda _:unicode(_, "utf-8")          # py2 strings are bytes
-    b_ = lambda _:_ 
-    d_ = lambda _:_ 
+    b_ = lambda _:_
+    d_ = lambda _:_
 pass
 
 
 def findfile(base, name, relative=True):
     paths = []
     for root, dirs, files in os.walk(base):
-        if name in files: 
+        if name in files:
             path = os.path.join(root,name)
             paths.append(path[len(base)+1:] if relative else path)
         pass
-    pass 
+    pass
     return paths
 
 
 def translate_xml_identifier_(name):
-    return name.replace("__","/").replace("--","#").replace("..",":") 
+    return name.replace("__","/").replace("--","#").replace("..",":")
 
 
 splitlines_ = lambda txtpath:open(txtpath).read().splitlines()
@@ -85,7 +85,7 @@ splitlines_ = lambda txtpath:open(txtpath).read().splitlines()
 def now_(fmt="%Y%m%d-%H%M"):
     return datetime.datetime.now().strftime(fmt)
 
-def stamp_(path, fmt="%Y%m%d-%H%M"): 
+def stamp_(path, fmt="%Y%m%d-%H%M"):
    if path is None:
        return None
    elif not os.path.exists(path):
@@ -106,7 +106,7 @@ def is_integer_string(s):
 
 def list_integer_subdirs(base):
     """
-    return list of subdirs beneath base with names that are lexically integers, sorted as integers  
+    return list of subdirs beneath base with names that are lexically integers, sorted as integers
     """
     return list(sorted(map(int,filter(is_integer_string,os.listdir(os.path.expandvars(base))))))
 
@@ -119,7 +119,7 @@ def dump_extras_meta(base, name="meta.json", fmt=" %(idx)5s : %(height)6s : %(lv
 
     log.info("dump_extras_meta base:%s xbase:%s " % (base,expand_(base)))
 
-    keys = re.compile("\((\w*)\)").findall(fmt)
+    keys = re.compile(r"\((\w*)\)").findall(fmt)
     print(fmt % dict(zip(keys,keys)))
 
     for idx in idxs:
@@ -135,7 +135,7 @@ def makedirs_(path):
     if not os.path.exists(pdir):
         os.makedirs(pdir)
     pass
-    return path 
+    return path
 
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
 json_load_ = lambda path:json.load(open(expand_(path)))
@@ -143,9 +143,9 @@ json_save_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"), cls
 json_save_pretty_ = lambda path, d:json.dump(d, open(makedirs_(expand_(path)),"w"),cls=NPEncoder, sort_keys=True, indent=4, separators=(',', ': '))
 
 class NPEncoder(json.JSONEncoder):
-    """ 
-    Custom encoder for numpy data types 
-    https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable/50916741 
+    """
+    Custom encoder for numpy data types
+    https://stackoverflow.com/questions/50916422/python-typeerror-object-of-type-int64-is-not-json-serializable/50916741
     """
     def default(self, obj):
         if isinstance(obj, (np.int_, np.intc, np.intp, np.int8,
@@ -166,7 +166,7 @@ class NPEncoder(json.JSONEncoder):
         elif isinstance(obj, (np.bool_)):
             return bool(obj)
 
-        elif isinstance(obj, (np.void)): 
+        elif isinstance(obj, (np.void)):
             return None
 
         return json.JSONEncoder.default(self, obj)
@@ -175,7 +175,7 @@ class NPEncoder(json.JSONEncoder):
 
 
 def manual_mixin( dst, src ):
-    """ 
+    """
     Add all methods from the src class to the destination class
 
     :param dst: destination class
@@ -183,7 +183,7 @@ def manual_mixin( dst, src ):
     """
     for k,fn in src.__dict__.items():
         if k.startswith("_"): continue
-        setattr(dst, k, fn ) 
+        setattr(dst, k, fn )
     pass
 
 def _subprocess_output(args):
@@ -192,18 +192,18 @@ def _subprocess_output(args):
 
 def _opticks_default_idpath_from_exe(exe="OpticksIDPATH"):
     """
-    This provides a way to discern the IDPATH by running an 
-    Opticks executable.  This works fine for the default geometry with 
-    no arguments picking alternate geometries.  
-    
-    To make this work for non default geometries would have to 
-    somehow save the opticks geometry selection arguments, given 
-    this might as way stay simple and require the IDPATH envvar 
+    This provides a way to discern the IDPATH by running an
+    Opticks executable.  This works fine for the default geometry with
+    no arguments picking alternate geometries.
+
+    To make this work for non default geometries would have to
+    somehow save the opticks geometry selection arguments, given
+    this might as way stay simple and require the IDPATH envvar
     as an input to analysis.
-    """ 
-    stdout, stderr = _subprocess_output([exe]) 
+    """
+    stdout, stderr = _subprocess_output([exe])
     idpath = stderr.strip()
-    return idpath  
+    return idpath
 
 def _opticks_env(st="OPTICKS_ IDPATH"):
     return filter(lambda _:_[0].startswith(st.split()), os.environ.items())
@@ -213,22 +213,22 @@ def ihex_(i):
     """
     Trim the 0x and any L from a hex string::
 
-        assert ihex_(0xccd) == 'ccd' 
+        assert ihex_(0xccd) == 'ccd'
         assert ihex_(0xccdL) == 'ccd'    # assumed
 
     """
     xs = hex(i)[2:]
-    xs = xs[:-1] if xs[-1] == 'L' else xs 
-    return xs 
+    xs = xs[:-1] if xs[-1] == 'L' else xs
+    return xs
 
 
 _ini = {}
 def ini_(path):
-    global _ini 
+    global _ini
     if _ini.get(path,None):
         log.debug("return cached ini for key %s" % path)
-        return _ini[path] 
-    try: 
+        return _ini[path]
+    try:
         log.debug("parsing ini for key %s" % path)
         xpath = os.path.expandvars(os.path.expanduser(path))
         txt = open(xpath,"r").read()
@@ -240,29 +240,29 @@ def ini_(path):
         assert 0, ( path )
         _ini[path] = {}
     pass
-    return _ini[path] 
+    return _ini[path]
 
 
 _json = {}
 def json_(path):
-    global _json 
+    global _json
     if _json.get(path,None):
         log.debug("return cached json for key %s" % path)
         return _json[path]
         return js
-    try: 
+    try:
         log.debug("parsing json for key %s" % path)
         xpath = os.path.expandvars(os.path.expanduser(path))
         #log.info("xpath:%s"%xpath)
         js = json.load(open(xpath,"r"))
-        #js[u"jsonLoadPath"] = unicode(xpath) 
-        _json[path] = js 
+        #js[u"jsonLoadPath"] = unicode(xpath)
+        _json[path] = js
     except IOError:
         log.warning("failed to load json from %s : %s " % (path,xpath))
         assert 0
         _json[path] = {}
     pass
-    return _json[path] 
+    return _json[path]
 
 
 _enum = {}
@@ -270,16 +270,16 @@ def enum_(path):
     global _enum
     if _enum.get(path, None):
         log.debug("return cached enum for key %s" % path)
-        return _enum[path] 
+        return _enum[path]
     try:
         log.debug("parsing enum for key %s" % path)
         d = Enum(path)
-        _enum[path] = d 
+        _enum[path] = d
     except IOError:
         log.fatal("failed to load enum from %s" % path)
         _enum[path] = {}
     pass
-    return _enum[path] 
+    return _enum[path]
 
 
 class Abbrev(object):
@@ -287,13 +287,13 @@ class Abbrev(object):
     simon:opticksdata blyth$ find . -name abbrev.json
     ./export/DayaBay/GMaterialLib/abbrev.json
     ./resource/GFlags/abbrev.json
-    simon:opticksdata blyth$ 
+    simon:opticksdata blyth$
 
     $OPTICKS_DATA_DIR/resource/GFlags/abbrev.json
     """
     def __init__(self, path):
         js = json_(path)
-    
+
         if "abbrev" in js:
             js = js["abbrev"]
         pass
@@ -318,7 +318,7 @@ class Abbrev(object):
 
 
 class ItemList(object): # formerly ListFlags
-    @classmethod 
+    @classmethod
     def Path(cls, txt, reldir=None):
         """
         :param txt: eg GMaterialLib
@@ -327,9 +327,9 @@ class ItemList(object): # formerly ListFlags
         if reldir is not None and reldir.startswith("/"):
             npath = os.path.join(reldir, txt+".txt" )
         else:
-            if reldir is None: 
-                reldir = "GItemList"  
-            pass 
+            if reldir is None:
+                reldir = "GItemList"
+            pass
             npath=idp_("%(reldir)s/%(txt)s.txt" % locals())
         pass
         return npath
@@ -343,15 +343,15 @@ class ItemList(object): # formerly ListFlags
         names = list(map(lambda _:_[:-1],open(npath,"r").readlines()))
         if translate_ is not None:
             log.info("translating")
-            names = list(map(translate_, names)) 
+            names = list(map(translate_, names))
         pass
         codes = list(map(lambda _:_ + offset, range(len(names))))
 
         self.npath = npath
-        self.offset = offset 
+        self.offset = offset
         self.names = names
         self.codes = codes
-        self.name2code = dict(zip(names, codes)) 
+        self.name2code = dict(zip(names, codes))
         self.code2name = dict(zip(codes, names))
 
     def find_index(self, name):
@@ -370,33 +370,33 @@ class IniFlags(object):
     """
     def __init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Enum.ini"):
         ini = ini_(path)
-        assert len(ini) > 0, "IniFlags bad path/flags %s " % path 
+        assert len(ini) > 0, "IniFlags bad path/flags %s " % path
 
-        #assert 0, "who uses this ?" 
+        #assert 0, "who uses this ?"
 
-        ini = dict(zip(ini.keys(),map(int,ini.values())))  # convert values to int 
+        ini = dict(zip(ini.keys(),map(int,ini.values())))  # convert values to int
         names = map(str,ini.keys())
         codes = map(int,ini.values())
 
         self.names = names
         self.codes = codes
-        self.name2code = dict(zip(names, codes)) 
+        self.name2code = dict(zip(names, codes))
         self.code2name = dict(zip(codes, names))
 
 class EnumFlags(object):
     """
     With the default of mask2int False the values are::
-    
+
         1 << 0, 1 << 1, 1 << 2, ...
 
     Otherwise with mask2int True they are::
 
         1,2,3,...
- 
+
     """
-    def __init__(self, path, mask2int=False): 
-        d = enum_(path) 
-        ini = dict(zip(d.keys(),list(map(int,d.values()))))  
+    def __init__(self, path, mask2int=False):
+        d = enum_(path)
+        ini = dict(zip(d.keys(),list(map(int,d.values()))))
 
         names = list(map(str,ini.keys()))
         codes = list(map(int,ini.values()))
@@ -404,30 +404,30 @@ class EnumFlags(object):
         if mask2int:
             mask2int = {}
             for i in range(32):
-                mask2int[1 << i] = i + 1 
-            pass 
+                mask2int[1 << i] = i + 1
+            pass
             codes = list(map(lambda _:mask2int.get(_,-1), codes))
         pass
 
         self.names = names
         self.codes = codes
-        self.name2code = dict(zip(names, codes)) 
+        self.name2code = dict(zip(names, codes))
         self.code2name = dict(zip(codes, names))
 
     def __repr__(self):
-        return "\n".join([self.__class__.__name__, "names", str(self.names), "codes", str(self.codes), "name2code", str(self.name2code), "code2name", str(self.code2name) ]) 
-   
+        return "\n".join([self.__class__.__name__, "names", str(self.names), "codes", str(self.codes), "name2code", str(self.name2code), "code2name", str(self.code2name) ])
+
 class PhotonMaskFlags(EnumFlags):
     """
     This is used by hismask.py for pflags_ana
 
-    Note this is partially duplicating optickscore/OpticksFlags.cc 
+    Note this is partially duplicating optickscore/OpticksFlags.cc
     Former positions of Abbrev : $OPTICKS_INSTALL_CACHE/OKC/OpticksFlagsAbbrevMeta.json
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=False) 
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=False)
         self.abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
-        ## looks like SysRap suffers case inconsistency 
+        ## looks like SysRap suffers case inconsistency
 
 
 
@@ -436,25 +436,25 @@ class PhotonCodeFlags(EnumFlags):
     This is used by histype.py for seqhis_ana
     """
     def __init__(self):
-        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=True) 
+        EnumFlags.__init__(self, path="$OPTICKS_PREFIX/include/SysRap/OpticksPhoton.h", mask2int=True)
 
         abbrev = Abbrev("$OPTICKS_PREFIX/include/SysRap/OpticksPhoton_Abbrev.json")
         name2abbr = abbrev.name2abbr
         names = self.names
 
-        abbr2code = {} 
+        abbr2code = {}
         abbr = []
         for code, name in enumerate(names):
             abr = name2abbr.get(name, "??")
             abbr.append(abr)
-            abbr2code[abr] = code + 1 
+            abbr2code[abr] = code + 1
         pass
 
-        fln = np.array(["~~"]+names) 
-        fla = np.array(["~~"]+abbr) 
+        fln = np.array(["~~"]+names)
+        fla = np.array(["~~"]+abbr)
         ftab = np.c_[np.arange(len(fla)),fla,fln]
 
-        self.abbrev = abbrev   
+        self.abbrev = abbrev
         self.abbr = abbr      # these abbr follow same order as names unlike abbrev.names
         self.fln = fln
         self.fla = fla
@@ -469,7 +469,7 @@ class PhotonCodeFlags(EnumFlags):
 
 def test_basics():
     from opticks.ana.main import opticks_main
-    ok = opticks_main() 
+    ok = opticks_main()
 
     lf = ItemList("GMaterialLib")
     print("lf:ItemList(GMaterialLib).name2code")
@@ -491,7 +491,7 @@ def test_basics():
 
 if __name__ == '__main__':
 
-    pcf = PhotonCodeFlags() 
+    pcf = PhotonCodeFlags()
     print(pcf.ftab)
 
 

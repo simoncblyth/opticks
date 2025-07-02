@@ -5,16 +5,16 @@
 # This file is part of Opticks
 # (see https://bitbucket.org/simoncblyth/opticks).
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -23,9 +23,9 @@
 
 import numpy as np
 import os, logging, re
-from collections import OrderedDict as odict 
+from collections import OrderedDict as odict
 
-log = logging.getLogger(__name__) 
+log = logging.getLogger(__name__)
 
 class Num(object):
     """
@@ -38,10 +38,10 @@ class Num(object):
         Out[69]: ['1', '10', '100', '1k', '10k', '100k', '1M', '10M', '100M', '1B']
 
     """
-    Ptn0 = re.compile("^(?P<nz>[\d]+?)(?P<zz>[0]*)$")   # less greedy frount ints, before contiguous zeros
-    Ptn = re.compile("^(?P<num>\d+)(?P<unit>[kM]*)$")
-    Units = { "":1, "k":1000, "M":1000000 } 
-    Pow10 = None    
+    Ptn0 = re.compile(r"^(?P<nz>[\d]+?)(?P<zz>[0]*)$")   # less greedy frount ints, before contiguous zeros
+    Ptn = re.compile(r"^(?P<num>\d+)(?P<unit>[kM]*)$")
+    Units = { "":1, "k":1000, "M":1000000 }
+    Pow10 = None
 
     @classmethod
     def OrigShape(cls, a):
@@ -50,8 +50,8 @@ class Num(object):
     @classmethod
     def Init(cls):
         r = odict()
-        r[            "0"] = (0,"")  
-        r[            "1"] = (1,"")  
+        r[            "0"] = (0,"")
+        r[            "1"] = (1,"")
         r[           "10"] = (10,"")
         r[          "100"] = (100,"")
         r[        "1,000"] = (1,"k")
@@ -66,7 +66,7 @@ class Num(object):
         for k,v in r.items():
             d[int(k.replace(",",""))] = v
         pass
-        return d 
+        return d
 
     @classmethod
     def Int(cls, s):
@@ -76,54 +76,54 @@ class Num(object):
         """
         if s.find(",") > -1:
             ret = tuple(map(cls.Int, s.split(",")))
-        else: 
+        else:
             m = cls.Ptn.match(s)
             if m is None:
                 return int(s)
             pass
-            d = m.groupdict() 
-            n = int(d["num"])      
-            u = cls.Units[d["unit"]]      
-            i = n*u  
+            d = m.groupdict()
+            n = int(d["num"])
+            u = cls.Units[d["unit"]]
+            i = n*u
             ret = i
         pass
-        return ret         
-     
+        return ret
+
 
     @classmethod
     def String(cls, i):
         """
         :param i: integer or tuple of integers
-        :return s: summary string 
+        :return s: summary string
 
-        Summarize large power of 10 numbers to make them easy to read without counting zeros 
-        """ 
+        Summarize large power of 10 numbers to make them easy to read without counting zeros
+        """
         if cls.Pow10 is None: cls.Pow10 = cls.Init()
 
         if type(i) in [ int, np.int64, np.int32 ]:
 
             m0 = cls.Ptn0.match(str(i))
             d0 = m0.groupdict() if m0 else None
-            if d0: 
+            if d0:
                 nz = int(d0["nz"])      # integers at front of contiguous zeros
-                zz = int("1"+d0["zz"])  # pull out contiguous zeros to the right 
-                n,u = cls.Pow10[zz] 
-                nnz = n*nz 
+                zz = int("1"+d0["zz"])  # pull out contiguous zeros to the right
+                n,u = cls.Pow10[zz]
+                nnz = n*nz
                 ret = "%d%s" % (nnz, u)
             else:
                 ret = str(i)
             pass
-            return ret   
+            return ret
 
         elif type(i) is tuple:
             ret =  ",".join( map(lambda _:cls.String(_), list(i) ))
         elif type(i) is type(None):
-            ret = "-" 
-        else:
-            assert 0, (i, type(i)) 
             ret = "-"
-        pass    
-        return ret 
+        else:
+            assert 0, (i, type(i))
+            ret = "-"
+        pass
+        return ret
 
 
 
@@ -135,7 +135,7 @@ def test_roundtrip():
     for i in [(20000000, 4, 4), 200000000, 2, 20, 30,300,3000,30000,100000,1000000,10000000,101000]:
         s = Num.String(i)
         i2 = Num.Int(s)
-        print(" i %20r Num.String %20r Num.Int %10r   " % ( i, s, i2 )) 
+        print(" i %20r Num.String %20r Num.Int %10r   " % ( i, s, i2 ))
         assert i == i2, ( i, s, i2)
     pass
 

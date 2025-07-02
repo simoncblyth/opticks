@@ -884,13 +884,13 @@ install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 set( OLD_SCRIPTS
     __init__.py
-    OpticksCSG.py
 )
 
 set( PY_SCRIPTS
     __init__.py
     sframe.py
     sevt.py
+    OpticksCSG.py
 )
 
 set( SH_SCRIPTS
