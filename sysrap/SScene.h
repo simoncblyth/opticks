@@ -173,6 +173,13 @@ HMM cf CSGFoundry::Load which uses SSim::set_override_scene
 inline SScene* SScene::Load(const char* _base)
 {
     SScene* src = Load_( _base );
+    if(src == nullptr) std::cerr
+        << "SScene::Load_ FAILED "
+        << " _base[" << ( _base ? _base : "-" ) << "]"
+        << "\n"
+        ;
+    return nullptr ;
+
     const SBitSet* elv = SGeoConfig::ELV(src->id);
     SScene* dst = src->copy(elv);
     return dst ;

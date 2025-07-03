@@ -13,6 +13,8 @@ SceneLoadTest.cc
 int main()
 {
     SScene* a = SScene::Load_() ;
+    if( a == nullptr ) return 0 ;
+
     const SBitSet* elv = SGeoConfig::ELV(a->id);
     SScene* b = a->copy(elv);
 

@@ -119,7 +119,6 @@ set(TEST_SOURCES
    SFrameConfigTest.cc
    SGeoConfigTest.cc
 
-   SSceneLoadTest.cc
 
 
    SEvtTest.cc
@@ -172,12 +171,13 @@ set(REPORT_SOURCES
 
 
 
-#SEnvTest_FAIL.cc
 set(BASH_RUN_TEST_SOURCES
     SOpticksResourceTest.cc
     SEnvTest_PASS.cc
     SSimTest.cc
     SBndTest.cc
+
+    SSceneLoadTest.cc
 )
 
 if(NLJSON_FOUND)
@@ -264,7 +264,11 @@ foreach(SRC ${OPTIX_TEST_SOURCES})
     )
 
     install(TARGETS ${TGT} DESTINATION lib)
-    add_test(${name}.${TGT} ${TGT})
+    #add_test(${name}.${TGT} ${TGT})
+    add_test(
+       NAME ${name}.${TGT}
+       COMMAND bash STestRunner.sh ${TGT}
+    )
 endforeach()
 
 
