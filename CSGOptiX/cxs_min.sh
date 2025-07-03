@@ -445,8 +445,11 @@ elif [ "${TEST:0:12}" == "input_photon" ]; then
    elif [ "${TEST:12}" == "_poolcover" ]; then
 
       sevt__input_photon_dir=$HOME/.opticks/InputPhotons
-      opticks_input_photon=UpXZ1000_f8.npy
-      opticks_input_photon_frame=3345.569,20623.73,21500
+      #opticks_input_photon=UpXZ1000_f8.npy
+      opticks_input_photon=CircleXZ_R500_100k_f8.npy
+      #opticks_input_photon=CircleXZ_R10_361_f8.npy
+      #opticks_input_photon_frame=3345.569,20623.73,21500
+      opticks_input_photon_frame=3345.569,20623.73,21000
       #export PIDX=99999
 
       export SEvt__transformInputPhoton_VERBOSE=1

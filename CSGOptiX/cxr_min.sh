@@ -27,11 +27,11 @@ Example commandlines using installed script::
 
     ELV=t:Water_solid,Rock_solid  cxr_min.sh
 
-    ELV=t:sWorld,sBottomRock,sTopRock,sExpHall,sExpRockBox,sDomeRockBox  EYE=0,5,0  cxr_min.sh
-       ## excluding large volumes can be illustrative
+    ELV=t:sWorld,sBottomRock,sTopRock,sExpHall,sExpRockBox,sDomeRockBox,sAirGap,sDeadWater_shell,sTyvek_shell,sOuterWaterPool,sPoolLining MOI=sTarget EYE=0,-2,0  cxr_min.sh
+       ## excluding large volumes can be illustrative, however must not remove the MOI volume
+
 
     MOI=PMT_20inch_veto:0:1000 cxr_min.sh
-
 
     EMM=2,3,4 EYE=3,3,0 cxr_min.sh
 

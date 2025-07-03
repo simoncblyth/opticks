@@ -492,7 +492,7 @@ struct stree
     void get_sub_sonames( std::vector<std::string>& sonames ) const ;
     const char* get_sub_soname(const char* sub) const ;
 
-    static std::string Name( const std::string& name, bool strip );
+    static std::string Name( const std::string& name, bool strip_tail );
     std::string get_lvid_soname(int lvid, bool strip ) const ;
     const std::string& get_lvid_soname_(int lvid) const ;
 
@@ -877,6 +877,7 @@ inline std::string stree::desc() const
     std::string str = ss.str();
     return str ;
 }
+
 
 
 inline std::string stree::desc_soname() const
@@ -2374,9 +2375,9 @@ stree::Name
 HMM: tail stripping now done at collection with sstr::StripTail_Unique
 
 **/
-inline std::string stree::Name( const std::string& name, bool strip ) // static
+inline std::string stree::Name( const std::string& name, bool strip_tail ) // static
 {
-    return strip ? sstr::StripTail(name, "0x") : name ;
+    return strip_tail ? sstr::StripTail(name, "0x") : name ;
 }
 inline std::string stree::get_lvid_soname(int lvid, bool strip) const
 {
@@ -2391,11 +2392,21 @@ inline const std::string& stree::get_lvid_soname_(int lvid) const
 }
 
 
+/**
+stree::get_meshname
+---------------------
+
+::
+
+     (ok) A[blyth@localhost CSGFoundry]$ diff meshname.txt SSim/stree/soname_names.txt
+
+**/
 
 inline void stree::get_meshname( std::vector<std::string>& names) const
 {
+    bool strip_tail = true ;    // suspect does nothing, as already done when this called
     assert( names.size() == 0 );
-    for(unsigned i=0 ; i < soname.size() ; i++) names.push_back( Name(soname[i],true) );
+    for(unsigned i=0 ; i < soname.size() ; i++) names.push_back( Name(soname[i],strip_tail) );
 }
 
 inline void stree::get_mmlabel( std::vector<std::string>& names) const
@@ -3361,7 +3372,7 @@ inline void stree::ImportNames( std::vector<std::string>& names, const NP* a, co
     if( a == nullptr )
     {
         std::cerr << "stree::ImportNames array is null, label[" << ( label ? label : "-" ) << "]\n" ;
-        std::cerr << "(typically means the stree.h serialization code has changed compared to the version used for saving the tree)\n" ;
+        std::cerr << "(typically this means the stree.h serialization code has changed compared to the version used for saving the tree)\n" ;
         return ;
     }
     a->get_names(names);

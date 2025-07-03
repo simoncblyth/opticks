@@ -119,6 +119,8 @@ set(TEST_SOURCES
    SFrameConfigTest.cc
    SGeoConfigTest.cc
 
+   SSceneLoadTest.cc
+
 
    SEvtTest.cc
    SEvtLoadTest.cc

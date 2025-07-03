@@ -161,6 +161,28 @@ fi
 EOT
 }
 
+ELV_TEMPLATE(){ cat << EOT
+#!/bin/bash
+usage(){ cat << EON
+~/.opticks/GEOM/ELV.sh
+========================
+
+Export ELV envvar configuring vizualized inclusions/exclusions.
+These are clearly tied to a particular GEOM.
+
+EON
+}
+
+if [ "\$GEOM" == "J25_4_0_opticks_Debug" ]; then
+
+    export ELV=t:sWorld,sBottomRock,sTopRock,sExpHall,sExpRockBox,sDomeRockBox,sAirGap,sDeadWater_shell,sTyvek_shell,sOuterWaterPool,sPoolLining
+    ## CAUTION THAT MOI is not excluded 
+
+fi
+
+EOT
+}
+
 
 
 GEOM_help(){ cat << EOH
@@ -277,6 +299,22 @@ EVT(){
   eval $cmd
 }
 
+ELV(){
+  : opticks/opticks.bash
+
+  local script=.opticks/GEOM/ELV.sh
+  if [ ! -f "$HOME/$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $HOME/$script
+     ELV_TEMPLATE > $HOME/$script
+  fi
+  local defarg="vi"
+  local arg=${1:-$defarg}
+  if [ "$arg" == "vi" ]; then
+     cmd="vi $HOME/$script"
+  fi
+  echo $cmd
+  eval $cmd
+}
 
 
 
