@@ -4,7 +4,12 @@
 SName.h  : formerly CSG/CSGName.h
 =====================================
 
-Identity machinery using the foundry vector of meshnames (aka solid names)
+Identity machinery based around a referenced vector of string names.
+Canonical usage is with the meshnames.txt, aka the lv solid names.
+
+An important user of this is::
+
+    SGeoConfig::ELVSelection
 
 **/
 
@@ -35,7 +40,7 @@ struct SName
     static bool Match( const char* n, const char* q, unsigned qtype );
 
     static SName* Load(const char* path);
-    static constexpr const char* GEOMLoadPath = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/meshname.txt" ;
+    static constexpr const char* GEOMLoadPath = "$CFBaseFromGEOM/CSGFoundry/meshname.txt" ;
     static SName* GEOMLoad();
 
     static constexpr const char* parseArg_ALL = "ALL" ;
@@ -89,7 +94,7 @@ inline SName* SName::Load(const char* path_)
     if(path == nullptr)
     {
         std::cerr
-            << "SName::Load FAILED to ResolvePath ["
+            << "SName::Load FAILED to Resolve["
             << ( path_ ? path_ : "-" )
             << std::endl
             ;
@@ -243,8 +248,8 @@ inline int SName::getIndex(const char* query, unsigned& count) const
     count = 0 ;
     for(unsigned i=0 ; i < name.size() ; i++)
     {
-        const std::string& k = name[i] ;
-        if(strcmp(k.c_str(), query) == 0 )
+        const char* k = name[i].c_str() ;
+        if(strcmp(k, query) == 0 )
         {
             if(count == 0) result = i ;
             count += 1 ;
@@ -457,12 +462,19 @@ inline void SName::findIndices(std::vector<unsigned>& idxs, const char* q, char 
     }
 }
 
+/**
+SName::getIDXListFromNames
+---------------------------
+
+Returns a comma delimited string list of indices prefixed with the input prefix when provided.
+
+**/
 
 inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix, bool starting ) const
 {
     const char* unames = prefix == nullptr ?  names_ : names_ + strlen(prefix ) ;
     std::vector<std::string> names ;
-    sstr::SplitTrimSuppress(unames, delim, names);  // handles names_ with newlines
+    sstr::SplitTrimSuppress(unames, delim, names);  // handles unames with newlines
     return getIDXListFromNames( names, prefix, starting );
 }
 inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix, bool starting ) const

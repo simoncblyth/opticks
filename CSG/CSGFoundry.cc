@@ -2975,59 +2975,6 @@ const char* CSGFoundry::descELV() const
 
 
 /**
-CSGFoundry::ELVString
------------------------
-
-This is used from CSGFoundry::ELV to create the SBitSet of included/excluded LV.
-
-
-String configuring dynamic shape selection of form : t110,117,134 or null when
-there is no selection.  The value is obtained from:
-
-* SGeoConfig::ELVSelection() which defaults to the OPTICKS_ELV_SELECTION envvar value
-  and can be changed by the SGeoConfig::SetELVSelection static, a comma delimited list of
-  mesh names is expected, for example:
-  "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x"
-
-  If any of the names are not found in the geometry the selection request is ignored.
-
-**/
-
-const char* CSGFoundry::ELVString(const SName* id)
-{
-    const char* elv = SGeoConfig::ELVSelection(id) ;
-    LOG(LEVEL)
-        << " elv " << elv
-        ;
-
-    return elv ;
-}
-
-/**
-CSGFoundry::ELV
-----------------
-
-Sensitive to OPTICKS_ELV_SELECTION
-
-**/
-
-const SBitSet* CSGFoundry::ELV(const SName* id)
-{
-    unsigned num_meshname = id->getNumName();
-    const char* elv_ = ELVString(id);
-    SBitSet* elv = elv_ ? SBitSet::Create(num_meshname, elv_ ) : nullptr ;
-
-    LOG(LEVEL)
-       << " num_meshname " << num_meshname
-       << " elv_ " << ( elv_ ? elv_ : "-" )
-       << " elv " << ( elv ? elv->desc() : "-" )
-       ;
-
-    return elv ;
-}
-
-
-/**
 CSGFoundry::CreateFromSim
 ---------------------------
 
@@ -3084,7 +3031,7 @@ CSGFoundry* CSGFoundry::Load() // static
 
     SGeoConfig::GeometrySpecificSetup(src->id);
 
-    const SBitSet* elv = ELV(src->id);
+    const SBitSet* elv = SGeoConfig::ELV(src->id);
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ;
 
 

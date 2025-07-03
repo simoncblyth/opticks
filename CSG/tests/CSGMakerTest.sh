@@ -1,11 +1,20 @@
-#!/bin/bash -l 
+#!/bin/bash
+usage(){ cat << EOU
+
+~/o/CSG/tests/CSGMakerTest.sh
+
+EOU
+}
+
+cd $(dirname $(realpath $BASH_SOURCE))
 
 bin=CSGMakerTest
 
 logging(){
+   type $FUNCNAME
    export CSGFoundry=INFO
 }
-logging
+[ -n "$LOG" ] && logging
 
 
 #geom=JustOrb
@@ -13,23 +22,27 @@ logging
 #export CSGMakerTest_GEOM=$geom
 
 
-arg=${1:-run}
+defarg=info_dbg
+arg=${1:-$defarg}
 
-if [ "$arg" == "run" ]; then 
+vv="BASH_SOURCE PWD bin defarg arg geom CSGMakerTest_GEOM"
+
+if [ "${arg/info}" != "$arg" ]; then
+   for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
+fi
+
+if [ "${arg/run}" != "$arg" ]; then
    $bin
-   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
-fi 
+   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
+fi
 
-if [ "$arg" == "dbg" ]; then 
+if [ "${arg/dbg}" != "$arg" ]; then
+   source dbg__.sh
+   dbg__ $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
+fi
 
-   case $(uname) in 
-      Darwin) lldb__ $bin ;;
-      Linux)  gdb__ $bin ;;
-   esac 
-   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
-fi 
-
-exit 0 
+exit 0
 
 
 

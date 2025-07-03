@@ -101,8 +101,11 @@ struct CSG_API CSGFoundry : public SGeo
 
 
     const char* descELV() const ;
-    static const char* ELVString(const SName* id);
-    static const SBitSet* ELV(const SName* id);
+
+    // moved down to SGeoConfig
+    //static const char* ELVString(const SName* id);
+    //static const SBitSet* ELV(const SName* id);
+
 
     static bool Load_saveAlt ;
     static CSGFoundry* CreateFromSim();
