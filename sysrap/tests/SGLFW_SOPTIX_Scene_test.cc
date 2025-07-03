@@ -43,6 +43,13 @@ int main(int argc, char** argv)
     // HMM: ELV selection can now reduce what is loaded into SScene
     // BUT there is no such functionality for stree ?
     // There is potential for the inconsistency to cause issues ?
+    if( tree == nullptr || scene == nullptr ) std::cerr
+         << "SGLFW_SOPTIX_Scene_test.main"
+         << " LOAD FAIL "
+         << " tree " << ( tree ? "YES" : "NO " )
+         << " scene " << ( scene ? "YES" : "NO " )
+         << "\n"
+         ;
 
     if( tree == nullptr || scene == nullptr ) return 0;
 
