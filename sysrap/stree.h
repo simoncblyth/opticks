@@ -2396,9 +2396,10 @@ inline const std::string& stree::get_lvid_soname_(int lvid) const
 stree::get_meshname
 ---------------------
 
-::
+Same names everywhere::
 
      (ok) A[blyth@localhost CSGFoundry]$ diff meshname.txt SSim/stree/soname_names.txt
+     (ok) A[blyth@localhost CSGFoundry]$ diff meshname.txt SSim/scene/soname_names.txt
 
 **/
 

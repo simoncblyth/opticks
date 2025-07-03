@@ -17,6 +17,8 @@ bin=$name
 
 source $HOME/.opticks/GEOM/GEOM.sh
 source $HOME/.opticks/GEOM/ELV.sh
+#unset ELV
+
 vars="BASH_SOURCE PWD GEOM ELV name bin"
 
 defarg=info_run

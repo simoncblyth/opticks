@@ -90,7 +90,7 @@ fi
 
 source $HOME/.opticks/GEOM/EVT.sh   ## optionally sets AFOLD BFOLD where event info is loaded from
 source $HOME/.opticks/GEOM/MOI.sh   ## sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
-
+source $HOME/.opticks/GEOM/ELV.sh   ## optionally set ELV envvar controlling included/excluded LV by name
 
 
 logging(){

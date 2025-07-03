@@ -10,6 +10,11 @@ Usage and impl::
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
 
+As this and alias are now installed can just use::
+
+    SGLFW_SOPTIX_Scene_test.sh
+    ssst.sh
+
 For a simpler non-encapsulated non-interactive OptiX only ppm render test, see::
 
     ~/o/sysrap/tests/SOPTIX_Scene_test.sh
@@ -35,6 +40,10 @@ int main(int argc, char** argv)
 
     stree* tree = stree::Load();
     SScene* scene = SScene::Load() ;
+    // HMM: ELV selection can now reduce what is loaded into SScene
+    // BUT there is no such functionality for stree ?
+    // There is potential for the inconsistency to cause issues ?
+
     if( tree == nullptr || scene == nullptr ) return 0;
 
     if(DUMP) std::cout << scene->desc() ;

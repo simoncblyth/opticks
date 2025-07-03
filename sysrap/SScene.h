@@ -1103,6 +1103,16 @@ inline SScene* SScene::copy(const SBitSet* elv) const
     return CopySelect(this, elv);
 }
 
+/**
+SScene::Compare
+---------------
+
+Observed that this comparison does not notice
+exclusions of global LV, see tests/SSceneLoadTest.sh
+
+**/
+
+
 inline int SScene::Compare(const SScene* a, const SScene* b) // static
 {
     bool dump = false ;
