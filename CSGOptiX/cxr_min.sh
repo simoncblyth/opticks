@@ -93,6 +93,22 @@ source $HOME/.opticks/GEOM/MOI.sh   ## sets MOI envvar, controlling initial view
 source $HOME/.opticks/GEOM/ELV.sh   ## optionally set ELV envvar controlling included/excluded LV by name
 
 
+
+#shader_name=rec_flying_point
+#shader_name=rec_flying_point_persist
+shader_name=rec_line_strip
+export SGLFW_Evt__shader_name=${SGLFW_Evt__shader_name:-$shader_name}
+
+evt_level=2
+export SGLFW_Evt__level=${SGLFW_Evt__level:-$evt_level}
+
+
+
+
+
+
+
+
 logging(){
    type $FUNCNAME
    #export CSGFoundry__Load_DUMP=1   # report the directory loaded

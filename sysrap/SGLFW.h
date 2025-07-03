@@ -148,7 +148,10 @@ G
    -
 H
    invokes SGLM::home returning to initial position with no lookrotation or eyeshift [--home]
-   and dumps this help string [--help]
+
+alt+H
+   dumps this help string [--help]
+
 I
    --snap-local
 J
@@ -540,16 +543,16 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_U:      gm.toggle.norm = !gm.toggle.norm            ; break ;
             case GLFW_KEY_T:      gm.toggle.time = !gm.toggle.time            ; break ;
             case GLFW_KEY_SPACE:  gm.toggle.stop = !gm.toggle.stop            ; break ;
-            case GLFW_KEY_P:      command("--desc")                     ; break ;
-            case GLFW_KEY_H:      command("--home") ; command("--help") ; break ;
-            case GLFW_KEY_O:      command("--tcam")                     ; break ;
-            case GLFW_KEY_I:      command("--snap-local")               ; break ;
-            case GLFW_KEY_J:      command("--snap-local-inverted")      ; break ;
-            case GLFW_KEY_K:      command("--snap")                     ; break ;
-            case GLFW_KEY_L:      command("--snap-inverted")            ; break ;
-            case GLFW_KEY_V:      command("--traceyflip")               ; break ;
-            case GLFW_KEY_X:      command("--rendertype")               ; break ;   // HMM: also in SGLM_Modnav
-            case GLFW_KEY_ESCAPE: command("--exit")                     ; break ;
+            case GLFW_KEY_P:      command("--desc")                           ; break ;
+            case GLFW_KEY_H:      command("--home")                           ; break ;
+            case GLFW_KEY_O:      command("--tcam")                           ; break ;
+            case GLFW_KEY_I:      command("--snap-local")                     ; break ;
+            case GLFW_KEY_J:      command("--snap-local-inverted")            ; break ;
+            case GLFW_KEY_K:      command("--snap")                           ; break ;
+            case GLFW_KEY_L:      command("--snap-inverted")                  ; break ;
+            case GLFW_KEY_V:      command("--traceyflip")                     ; break ;
+            case GLFW_KEY_X:      command("--rendertype")                     ; break ;   // HMM: also in SGLM_Modnav
+            case GLFW_KEY_ESCAPE: command("--exit")                           ; break ;
 
 
             case GLFW_KEY_W:   // WASDQE keys control navigation via SGLM_Modnav
@@ -571,6 +574,7 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_M:   gm.option.M = !gm.option.M     ; break ;
             case GLFW_KEY_O:   gm.option.O = !gm.option.O     ; break ;
             case GLFW_KEY_T:   gm.reset_time()                ; break ;
+            case GLFW_KEY_H:   command("--help")              ; break ;
         }
     }
     else if( SGLM_Modifiers::IsShift(modifiers))

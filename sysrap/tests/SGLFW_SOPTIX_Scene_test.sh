@@ -101,8 +101,12 @@ anim()
 
 #shader_name=rec_flying_point
 shader_name=rec_flying_point_persist
-export SGLFW_Evt__shader_name=$shader_name
-export SGLFW_Evt__level=1
+#shader_name=rec_line_strip
+export SGLFW_Evt__shader_name=${SGLFW_Evt__shader_name:-$shader_name}
+
+evt_level=2
+export SGLFW_Evt__level=${SGLFW_Evt__level:-$evt_level}
+
 
 
 #wh=1024,768

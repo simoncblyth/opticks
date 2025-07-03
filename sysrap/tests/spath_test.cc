@@ -34,6 +34,7 @@ spath_test.cc
 
 struct spath_test
 {
+   static int Resolve_name();
    static int Resolve_inline();
    static int Resolve_defaultOutputPath();
    static int DefaultOutputPath();
@@ -78,6 +79,16 @@ struct spath_test
    static int Main();
 };
 
+int spath_test::Resolve_name()
+{
+    const char* name_ = "${SGLFW_Evt__shader_name:-rec_flying_point_persist}" ;
+    const char* name = spath::Resolve(name_);
+    std::cout
+        << " name_ [" << name_ << "]" << std::endl
+        << " name  [" << name  << "]" << std::endl
+        ;
+    return 0 ;
+}
 
 
 int spath_test::Resolve_inline()
@@ -742,6 +753,7 @@ int spath_test::Main()
     if(ALL||strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc += Resolve_defaultOutputPath();
     if(ALL||strcmp(TEST, "Resolve_with_undefined_token")==0) rc += Resolve_with_undefined_token();
     if(ALL||strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc += Resolve_with_undefined_TMP();
+    if(ALL||strcmp(TEST, "Resolve_name")==0) rc += Resolve_name();
     if(ALL||strcmp(TEST, "Resolve_inline")==0) rc += Resolve_inline();
     if(ALL||strcmp(TEST, "ResolveToken")==0) rc += ResolveToken();
     if(ALL||strcmp(TEST, "Resolve")==0) rc += Resolve();

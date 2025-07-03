@@ -28,7 +28,8 @@ mkdir -p $FOLD
 #test=ALL
 #test=last_write_time
 #test=last_write_time
-test=LooksUnresolved_0
+#test=LooksUnresolved_0
+test=Resolve_name
 
 export TEST=${TEST:-$test}
 
