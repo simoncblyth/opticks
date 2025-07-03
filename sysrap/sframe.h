@@ -4,6 +4,8 @@
 sframe.h
 ===========
 
+TODO: see if this can be replaced with sfr.h ?
+
 TODO: once bring in U4Tree.h/stree.h translation up this to double precision
 
 
@@ -380,6 +382,14 @@ inline sframe sframe::Fabricate(float tx, float ty, float tz) // static
     return fr ;
 }
 
+/**
+sframe::PopulateFromRaw
+-------------------------
+
+NOTE NEAR DUPLICATION WITH stree::get_frame_from_raw
+
+**/
+
 
 inline int sframe::PopulateFromRaw(sframe& fr, const char* raw, char delim ) // static
 {
@@ -394,12 +404,15 @@ inline int sframe::PopulateFromRaw(sframe& fr, const char* raw, char delim ) // 
         << "\n"
         ;
 
-    if( num_elem == 3 || num_elem == 2 || num_elem == 1  )
+    if( num_elem == 4 || num_elem == 3 || num_elem == 2 || num_elem == 1  )
     {
          float tx = num_elem > 0 ? elem[0] : 0.f ;
          float ty = num_elem > 1 ? elem[1] : 0.f ;
          float tz = num_elem > 2 ? elem[2] : 0.f ;
+         float extent = num_elem > 3 ? elem[3] : 1000.f ;
+
          fr.setTranslate( tx, ty, tz );
+         fr.ce.w = extent ;   // HMM: maybe not equivalent to sfr.h ?
     }
     else
     {
@@ -690,6 +703,7 @@ inline void sframe::setTranslate(float x, float y, float z)  // UNTESTED
     qat4 m2w(x,y,z);
     setTransform(&m2w);
 }
+
 inline void sframe::setTransform(const qat4* m2w_ )  // UNTESTED
 {
     const qat4* w2m_ = Tran<double>::Invert(m2w_);

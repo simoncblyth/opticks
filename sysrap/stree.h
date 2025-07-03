@@ -475,11 +475,13 @@ struct stree
 
     sfr  get_frame_moi() const ;
     sfr  get_frame(const char* q_spec) const ;
+    int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
+    int  get_frame_from_coords( sfr& f, const char* q_spec ) const ;
+
     bool has_frame(const char* q_spec) const ;
 
 
     int get_frame_instanced(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
-
     int get_frame_remainder(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
@@ -1937,9 +1939,39 @@ Q: An instance may encompasses multiple lv (and multiple snode)
 
 A: By observation the outer instance node is collected into inst_nidx
 
+TODO: AVOID DUPLICATION BETWEEN THIS AND CSGFoundry::getFrame
+
 **/
 
 inline sfr stree::get_frame(const char* q_spec ) const
+{
+    sfr f ;
+    f.set_name(q_spec);
+
+    bool looks_like_triplet = sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 ;
+    bool looks_like_coords  = !looks_like_triplet && strstr(q_spec,",") ;
+
+    int rc = 0 ;
+    if( looks_like_triplet )
+    {
+        rc = get_frame_from_triplet(f, q_spec);
+    }
+    else if (looks_like_coords)
+    {
+        rc = get_frame_from_coords(f, q_spec);
+    }
+    if(rc != 0) std::cerr
+        << "stree::get_frame FAIL "
+        << " q_spec[" << ( q_spec ? q_spec : "-" ) << "]"
+        << " rc " << rc
+        << "\n"
+        ;
+
+    return f ;
+}
+
+
+inline int stree::get_frame_from_triplet(sfr& f, const char* q_spec ) const
 {
     int lvid ;
     int lvid_ordinal ;
@@ -1954,9 +1986,6 @@ inline sfr stree::get_frame(const char* q_spec ) const
         << "\n"
         ;
     assert( parse_rc == 0 );
-
-    sfr f ;
-    f.set_name(q_spec);
 
 
     [[maybe_unused]] int get_rc = 0 ;
@@ -1976,8 +2005,56 @@ inline sfr stree::get_frame(const char* q_spec ) const
         ;
 
     assert( get_rc == 0 );
-    return f ;
+    return get_rc ;
 }
+
+/**
+stree::get_frame_from_coords
+------------------------------
+
+HMM: perhaps move into sfr.h
+
+This enables manual targetting some position::
+
+     MOI=3345.569,20623.73,21000,1000 ssst.sh
+
+**/
+
+
+inline int stree::get_frame_from_coords(sfr& f, const char* q_spec ) const
+{
+    char delim = ',' ;
+    std::vector<double> elem ;
+    sstr::split<double>( elem, q_spec, delim );
+    int num_elem = elem.size();
+    bool expect_elem = num_elem == 4 || num_elem == 3 || num_elem == 2 || num_elem == 1 ;
+    std::cout
+        << "stree::get_frame_from_coords"
+        << " num_elem " << num_elem
+        << " expect_elem " << ( expect_elem ? "YES" : "NO " )
+        << " elem " << sstr::desc<double>(elem)
+        << "\n"
+        ;
+    if(!expect_elem) return 1 ;
+
+    std::array<double,4> ce = {} ;
+    ce[0] = num_elem > 0 ? elem[0] : 0. ;
+    ce[1] = num_elem > 1 ? elem[1] : 0. ;
+    ce[2] = num_elem > 2 ? elem[2] : 0. ;
+    ce[3] = num_elem > 3 ? elem[3] : 1000. ;
+
+    f.set_ce(ce.data() );
+
+    bool rtp_tangential = false ;
+    bool extent_scale = false ;
+    SCenterExtentFrame<double> cef(ce[0], ce[1], ce[2], ce[3], rtp_tangential, extent_scale ) ;
+    f.m2w = cef.model2world ;
+    f.w2m = cef.world2model ;
+
+    return 0;
+}
+
+
 
 
 /**

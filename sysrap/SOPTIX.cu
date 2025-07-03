@@ -153,6 +153,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     const float& B = params.ZPROJ.w ;
     float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1
 
+    if( prd->is_boundary_miss() ) zdepth = 0.999f ;
+
     uchar4 pixel = make_normal_pixel( diddled_normal, zdepth );
 
 #ifdef DBG_PIDX

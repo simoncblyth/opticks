@@ -62,17 +62,19 @@ int main(int argc, char** argv)
     gm.setTreeScene(tree, scene);
     gm.setRecord( ar, br );
 
-    SGLFW gl(gm);
-
-    SGLFW_Scene  sc(gl);
-    SGLFW_Evt    ev(gl);
-    SGLFW_SOPTIX ox(gl);
 
     if(ssys::is_under_ctest())
     {
         std::cout << argv[0] << " detected ssys::is_under_ctest so skip interactive renderloop popping up a window\n" ;
         return 0;
     }
+
+
+    SGLFW gl(gm);
+
+    SGLFW_Scene  sc(gl);
+    SGLFW_Evt    ev(gl);
+    SGLFW_SOPTIX ox(gl);
 
     while(gl.renderloop_proceed())
     {

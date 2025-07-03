@@ -3490,6 +3490,8 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 * BUT for the outer prim of an instance a correspondence is possible
 
+TODO : AVOID DUPLICATION BETWEEN THIS AND stree::get_frame
+
 **/
 
 
