@@ -26,7 +26,12 @@ with OptiX ray trace and OpenGL rasterized.
 
 * OpenGL/CUDA interop-ing the triangle data is possible (but not straight off)
 
-* TODO: solid selection eg skipping virtuals so can see PMT shapes
+* TODO: solid selection via ELV envvar eg skipping virtuals so can see PMT shapes
+
+  * some work on that already in SScene::CopySelect using name info within SScene
+  * an alternative approach would be to combine the initFromTree
+    with applying the selection as all the identity info needed is
+    available within the tree
 
 * WIP: incorporate into standard workflow
 
@@ -46,7 +51,10 @@ with OptiX ray trace and OpenGL rasterized.
 struct SScene
 {
     static constexpr const char* __level = "SScene__level" ;
+
+    static constexpr const char* BASE = "$CFBaseFromGEOM/CSGFoundry/SSim" ;
     static constexpr const char* RELDIR = "scene" ;
+
     static constexpr const char* MESHGROUP = "meshgroup" ;
     static constexpr const char* MESHMERGE = "meshmerge" ;
     static constexpr const char* FRAME = "frame" ;
@@ -66,7 +74,7 @@ struct SScene
 
 
 
-    static SScene* Load(const char* dir);
+    static SScene* Load(const char* dir=BASE);
     SScene();
     void check() const ;
 
@@ -110,7 +118,7 @@ struct SScene
     void import_frame(const NPFold* _frame ) ;
 
     NPFold* serialize() const ;
-    void import(const NPFold* fold);
+    void import_(const NPFold* fold);
 
     void save(const char* dir) const ;
     void load(const char* dir);
@@ -129,15 +137,20 @@ struct SScene
 
 
 
-inline SScene* SScene::Load(const char* dir)
+inline SScene* SScene::Load(const char* _base)
 {
     int level = ssys::getenvint(__level, 0);
-    if(level > 0) std::cout << "[SScene::Load dir " << ( dir ? dir : "-" ) << "\n" ;
-    SScene* s = new SScene ;
-    s->load(dir);
-    s->check();
-    if(level > 0) std::cout << "]SScene::Load dir " << ( dir ? dir : "-" ) << "\n" ;
-    return s ;
+    const char* base = spath::ResolveTopLevel(_base) ;
+    if(level > 0) std::cout << "[SScene::Load _base[" << ( _base ? _base : "-" ) << "]\n" ;
+    SScene* sc = nullptr ;
+    if(base)
+    {
+        sc = new SScene ;
+        sc->load(base);
+        sc->check();
+    }
+    if(level > 0) std::cout << "]SScene::Load base[" << ( base ? base : "-" ) << "]\n" ;
+    return sc ;
 }
 
 inline SScene::SScene()
@@ -706,7 +719,7 @@ inline NPFold* SScene::serialize() const
 
     return fold ;
 }
-inline void SScene::import(const NPFold* fold)
+inline void SScene::import_(const NPFold* fold)
 {
     if(level>0) std::cout << "[SScene::import \n" ;
     if(fold == nullptr) std::cerr << "SScene::import called with NULL fold argument\n" ;
@@ -738,7 +751,7 @@ inline void SScene::load(const char* dir)
 {
     if(level>0) std::cout << "SScene::load dir " << ( dir ? dir : "-" ) << "\n" ;
     NPFold* fold = NPFold::Load(dir, RELDIR);
-    import(fold);
+    import_(fold);
 }
 
 

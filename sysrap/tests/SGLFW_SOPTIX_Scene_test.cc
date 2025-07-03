@@ -33,25 +33,10 @@ int main(int argc, char** argv)
 {
     bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP");
 
-    const char* _ss = "$CFBaseFromGEOM/CSGFoundry/SSim" ;
-    const char* ss = spath::Resolve(_ss) ;
-    bool ss_unresolved = spath::LooksUnresolved(ss,_ss);
-    if(ss_unresolved)
-    {
-        std::cout
-            << "SGLFW_SOPTIX_Scene_test"
-            << " ABORT as missing envvars configuring geometry, see spath::CFBaseFromGEOM \n"
-            << " _ss [" << ( _ss ? _ss : "-" ) << "]\n"
-            << " ss [" << ( ss ? ss : "-" ) << "]\n"
-            ;
+    stree* tree = stree::Load();
+    SScene* scene = SScene::Load() ;
+    if( tree == nullptr || scene == nullptr ) return 0;
 
-        return 0 ;
-    }
-
-
-
-    SScene* scene = SScene::Load(ss) ;
-    stree* tree = stree::Load(ss);
     if(DUMP) std::cout << scene->desc() ;
 
     SRecord* ar = SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE" ) ;

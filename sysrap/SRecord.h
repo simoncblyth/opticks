@@ -5,6 +5,12 @@ SRecord.h
 
 Used from SGLFW_Evt.h
 
+TODO: add API to provide photons corresponding to an input simulation time
+by interpolation between positions in the record array. Momentum and
+polarization can be taken from the first of the straddling step points.
+When not straddling need to skip that photon, corresponding
+to it not being alive at the simulation time provided.
+
 **/
 
 #include "NP.hh"

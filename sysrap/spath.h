@@ -62,6 +62,8 @@ public:
 
     static bool LooksUnresolved(  const char* path , const char* _path );
     static bool LooksUnresolved0( const char* path , const char* _path );
+    static const char* ResolveTopLevel( const char* spec );
+
 
     static bool StartsWith( const char* s, const char* q);
     static bool EndsWith( const char* path, const char* q);
@@ -582,6 +584,36 @@ inline bool spath::LooksUnresolved0( const char* path , const char* _path )
     bool path_is_same_without_dollar = path && strlen(path) > 1 && strcmp(_path+1, path) == 0  ;
     return _path_starts_with_dollar && path_is_same_without_dollar ;
 }
+
+
+
+/**
+spath::ResolveTopLevel
+-----------------------
+
+spath::ResolveTopLevel checks the path returned by spath::Resolve for
+tokens that failed to resolve and returns nullptr and emits error messages
+in that case. This is typically appropriate for resolution of top level
+directories that must be resolved.
+
+**/
+
+inline const char* spath::ResolveTopLevel( const char* spec )
+{
+    const char* path = spath::Resolve(spec) ;
+    bool path_unresolved = spath::LooksUnresolved(path, spec);
+    if(path_unresolved)
+    {
+        std::cout
+            << "spath::ResolveTopLevel"
+            << " ABORT as missing envvars path, see for example spath::CFBaseFromGEOM \n"
+            << " spec [" << ( spec ? spec : "-" ) << "]\n"
+            << " path [" << ( path ? path : "-" ) << "]\n"
+            ;
+    }
+    return path_unresolved ? nullptr : path ;
+}
+
 
 
 

@@ -465,10 +465,10 @@ void SSim::load_(const char* dir)
     LOG(LEVEL) << "] top.load [" << dir << "] toploadtime/1e6 " << std::fixed << std::setw(9) << std::setprecision(6) << toploadtime/1e6 ;
 
     NPFold* f_tree = top->get_subfold( stree::RELDIR ) ;
-    tree->import( f_tree );
+    tree->import_( f_tree );
 
     NPFold* f_scene = top->get_subfold( SScene::RELDIR ) ;
-    scene->import( f_scene );
+    scene->import_( f_scene );
 
     LOG(LEVEL) << "]" ;
 }

@@ -268,7 +268,7 @@ struct stree
     // subtree digests with less repeats than FREQ_CUT within the entire geometry
     // are not regarded as repeats for instancing factorization purposes
 
-    static constexpr const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ;  // default
+    static constexpr const char* BASE = "$CFBaseFromGEOM/CSGFoundry/SSim" ;
     static constexpr const char* RELDIR = "stree" ;
 
     static constexpr const char* NDS = "nds.npy" ;
@@ -594,7 +594,7 @@ struct stree
 
     int load( const char* base, const char* reldir=RELDIR );
     int load_( const char* fold );
-    void import(const NPFold* fold);
+    void import_(const NPFold* fold);
 
 
     static int Compare( const std::vector<int>& a, const std::vector<int>& b ) ;
@@ -3368,13 +3368,15 @@ inline void stree::ImportNames( std::vector<std::string>& names, const NP* a, co
 }
 
 
-
-
-
-inline stree* stree::Load(const char* base, const char* reldir ) // static
+inline stree* stree::Load(const char* _base, const char* reldir ) // static
 {
-    stree* st = new stree ;
-    st->load(base, reldir);
+    const char* base = spath::ResolveTopLevel(_base) ;
+    stree* st = nullptr ;
+    if(base)
+    {
+        st = new stree ;
+        st->load(base, reldir);
+    }
     return st ;
 }
 inline int stree::load( const char* base, const char* reldir )
@@ -3388,19 +3390,19 @@ inline int stree::load_( const char* dir )
 {
     if(level > 0) std::cerr << "stree::load_ " << ( dir ? dir : "-" ) << std::endl ;
     NPFold* fold = NPFold::Load(dir) ;
-    import(fold);
+    import_(fold);
     return 0 ;
 }
 
 
 
 
-inline void stree::import(const NPFold* fold)
+inline void stree::import_(const NPFold* fold)
 {
     if( fold == nullptr )
     {
         std::cerr
-            << "stree::import"
+            << "stree::import_"
             << " : ERROR : null fold "
             << std::endl ;
         return ;
@@ -3431,7 +3433,7 @@ inline void stree::import(const NPFold* fold)
     if(f_standard->is_empty())
     {
         std::cerr
-            << "stree::import skip asserts for empty f_standard : assuming trivial test geometry "
+            << "stree::import_ skip asserts for empty f_standard : assuming trivial test geometry "
             << std::endl
             ;
     }
