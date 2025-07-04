@@ -379,7 +379,7 @@ inline bool SGLFW::renderloop_proceed()
 }
 inline void SGLFW::renderloop_exit()
 {
-    std::cout << "SGLFW::renderloop_exit" << std::endl;
+    if(level > 0) std::cout << "SGLFW::renderloop_exit" << std::endl;
     glfwSetWindowShouldClose(window, true);
 }
 
@@ -395,7 +395,7 @@ HMM: perhaps handle_frame_hop from here ?
 
 inline void SGLFW::renderloop_head()
 {
-    dump = count % 100000 == 0 ;
+    dump = level > 0 && count % 100000 == 0 ;
 
     getWindowSize();
     glViewport(0, 0, _width, _height);

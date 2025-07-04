@@ -74,7 +74,10 @@ int main(int argc, char** argv)
 
     SGLFW_Scene  sc(gl);
     SGLFW_Evt    ev(gl);
+
+    std::cout << "[SGLFW_SOPTIX \n" ;
     SGLFW_SOPTIX ox(gl);
+    std::cout << "]SGLFW_SOPTIX \n" ;
 
     while(gl.renderloop_proceed())
     {

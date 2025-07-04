@@ -61,7 +61,6 @@ name=SGLFW_SOPTIX_Scene_test
 bin=$name
 
 
-
 source $HOME/.opticks/GEOM/GEOM.sh
 [ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
 
@@ -70,6 +69,8 @@ if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
    echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB}
    exit 1
 fi
+
+export SCRIPT=$name
 
 source $HOME/.opticks/GEOM/EVT.sh   ## optionally sets AFOLD BFOLD where event info is loaded from
 source $HOME/.opticks/GEOM/MOI.sh   ## optionally sets MOI envvar controlling initial viewpoint
@@ -104,8 +105,11 @@ shader_name=rec_flying_point_persist
 #shader_name=rec_line_strip
 export SGLFW_Evt__shader_name=${SGLFW_Evt__shader_name:-$shader_name}
 
-evt_level=2
-export SGLFW_Evt__level=${SGLFW_Evt__level:-$evt_level}
+#evt_level=2
+#export SGLFW_Evt__level=${SGLFW_Evt__level:-$evt_level}
+
+
+
 
 
 
@@ -150,8 +154,6 @@ export VIZMASK=${VIZMASK:-$vizmask}
 
 
 
-
-
 sglfw__depth=1
 export SGLFW__DEPTH=$sglfw_depth
 
@@ -160,6 +162,11 @@ soptix__handle=-1  # default, full geometry
 #soptix__handle=1  #  single CSGSolid
 #soptix__handle=2  #
 export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
+
+#export SOPTIX_Options__LEVEL=1
+
+
+
 
 
 
@@ -171,12 +178,13 @@ vars="BASH_SOURCE defarg arg name bin GEOM SGLFW__DEPTH SOPTIX__HANDLE VIZMASK"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
+    printf "\n"
 fi
 
-if [ "${arg/dbg}" != "$arg" -o -n "$GDB" ]; then
+if [ "${arg/dbg}" != "$arg" ]; then
     source dbg__.sh
     dbg__ $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
+    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
