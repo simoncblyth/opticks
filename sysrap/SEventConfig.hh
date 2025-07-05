@@ -203,6 +203,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputGenstepSelection  = "OPTICKS_INPUT_GENSTEP_SELECTION" ;
     static constexpr const char* kInputPhoton      = "OPTICKS_INPUT_PHOTON" ;
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ;
+    static constexpr const char* kInputPhotonChangeTime = "OPTICKS_INPUT_PHOTON_CHANGE_TIME" ;
 
 
     static int         IntegrationMode();
@@ -273,6 +274,7 @@ struct SYSRAP_API SEventConfig
 
     static const char* InputPhoton();
     static const char* InputPhotonFrame();
+    static float       InputPhotonChangeTime();
 
     static int RGMode();
     static bool IsRGModeRender();
@@ -383,6 +385,7 @@ struct SYSRAP_API SEventConfig
     static void SetInputGenstepSelection(const char* input_genstep_selection);
     static void SetInputPhoton(const char* input_photon);
     static void SetInputPhotonFrame(const char* input_photon_frame);
+    static void SetInputPhotonChangeTime( float t0 ) ;
 
     static void SetGatherComp_(unsigned mask);
     static void SetGatherComp(const char* names, char delim=',') ;
@@ -451,7 +454,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputGenstepSelectionDefault ;
     static const char* _InputPhotonDefault ;
     static const char* _InputPhotonFrameDefault ;
-
+    static float       _InputPhotonChangeTimeDefault ;
 
     static int         _IntegrationMode ;
     static const char* _EventMode ;
@@ -523,8 +526,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputGenstepSelection ;
     static const char* _InputPhoton ;
     static const char* _InputPhotonFrame ;
-
-
+    static float       _InputPhotonChangeTime ;
 
     static scontext* CONTEXT ;
     static salloc*   ALLOC ;

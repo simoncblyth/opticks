@@ -97,7 +97,7 @@ const char* SEventConfig::_InputGenstepDefault = nullptr ;
 const char* SEventConfig::_InputGenstepSelectionDefault = nullptr ;
 const char* SEventConfig::_InputPhotonDefault = nullptr ;
 const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
-
+float       SEventConfig::_InputPhotonChangeTimeDefault = -1.f ;   // -ve time means leave ASIS
 
 int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault );
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault );
@@ -281,6 +281,7 @@ const char* SEventConfig::_InputGenstep = ssys::getenvvar(kInputGenstep, _InputG
 const char* SEventConfig::_InputGenstepSelection = ssys::getenvvar(kInputGenstepSelection, _InputGenstepSelectionDefault );
 const char* SEventConfig::_InputPhoton = ssys::getenvvar(kInputPhoton, _InputPhotonDefault );
 const char* SEventConfig::_InputPhotonFrame = ssys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault );
+float SEventConfig::_InputPhotonChangeTime = ssys::getenvfloat(kInputPhotonChangeTime, _InputPhotonChangeTimeDefault ) ;
 
 
 int         SEventConfig::IntegrationMode(){ return _IntegrationMode ; }
@@ -467,7 +468,8 @@ using MOI style specification eg "NNVT:0:1000"
 
 
 **/
-const char* SEventConfig::InputPhotonFrame(){   return _InputPhotonFrame ; }
+const char* SEventConfig::InputPhotonFrame(){       return _InputPhotonFrame ; }
+float       SEventConfig::InputPhotonChangeTime(){  return _InputPhotonChangeTime ; }
 
 
 int SEventConfig::RGMode(){  return _RGMode ; }
@@ -598,6 +600,7 @@ void SEventConfig::SetInputGenstep(const char* ig){   _InputGenstep = ig ? strdu
 void SEventConfig::SetInputGenstepSelection(const char* igsel){   _InputGenstepSelection = igsel ? strdup(igsel) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
+void SEventConfig::SetInputPhotonChangeTime(float t0){    _InputPhotonChangeTime = t0 ; LIMIT_Check() ; }
 
 void SEventConfig::SetGatherComp_(unsigned mask){ _GatherComp = mask ; }
 void SEventConfig::SetGatherComp(const char* names, char delim){  SetGatherComp_( SComp::Mask(names,delim)) ; }
@@ -835,6 +838,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kInputPhoton
        << std::setw(20) << " InputPhoton " << " : " << ( InputPhoton() ? InputPhoton() : "-" )
+       << std::endl
+       << std::setw(25) << kInputPhotonChangeTime
+       << std::setw(20) << " InputPhotonChangeTime " << " : " << InputPhotonChangeTime()
        << std::endl
        << std::setw(25) << "RecordLimit() "
        << std::setw(20) << " (sseq::SLOTS) " << " : " << RecordLimit()
@@ -1317,6 +1323,9 @@ NP* SEventConfig::Serialize() // static
 
     const char* ipf = InputPhotonFrame() ;
     if(ipf) meta->set_meta<std::string>("InputPhotonFrame", ipf );
+
+    meta->set_meta<float>("InputPhotonChangeTime", InputPhotonChangeTime() );
+
 
     meta->set_meta<int>("RGMode", RGMode() );
 

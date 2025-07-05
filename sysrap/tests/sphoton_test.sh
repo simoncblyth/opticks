@@ -15,7 +15,8 @@ cd $(dirname $(realpath $BASH_SOURCE))
 
 name=sphoton_test
 
-defarg="info_build_run_ana"
+#defarg="info_build_run_ana"
+defarg="info_build_run_pdb"
 arg=${1:-$defarg}
 
 export FOLD=/tmp/$name
@@ -30,7 +31,8 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 #test=make_record_array
 #test=set_flag
-test=add_flagmask
+#test=add_flagmask
+test=ChangeTimeInsitu
 
 TEST=${TEST:-$test}
 export TEST

@@ -433,6 +433,18 @@ NP* SEvt::LoadInputPhoton(const char* spec)
     const char* path = ResolveInputArray( spec, INPUT_PHOTON_DIR );
     NP* a = LoadInputArray(path);
     assert( a->has_shape(-1,4,4) );
+
+
+    float t0 = SEventConfig::InputPhotonChangeTime();
+    bool change_time = t0 >= 0.f ;
+
+    LOG(info)
+        << " SEventConfig::InputPhotonChangeTime " << t0
+        << " change_time " << ( change_time ? "YES" : "NO " )
+        ;
+
+    if(change_time) sphoton::ChangeTimeInsitu(a, t0);
+
     return a ;
 }
 

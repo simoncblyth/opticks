@@ -213,6 +213,7 @@ struct sphoton
     SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx );
     SPHOTON_METHOD static void Get( std::vector<sphoton>& pp, const NP* a );
     SPHOTON_METHOD static void MinMaxPost( float* mn, float* mx, const NP* a );
+    SPHOTON_METHOD static void ChangeTimeInsitu( NP* a, float t0 );
 
     SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>&  tr, bool normalize=true );  // widens transform and uses below
     SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
@@ -591,6 +592,26 @@ SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a )
     a->reshape(sh);
 }
 
+/**
+sphoton::ChangeTimeInsitu
+--------------------------
+
+Casts the bytes of each item of the array to an sphoton pointer
+and uses that to inplace change all the times.  This lowlevel
+kinda thing only works because the sphoton struct is and
+will remain very simple.
+
+**/
+
+SPHOTON_METHOD void sphoton::ChangeTimeInsitu( NP* a, float t0 )
+{
+    assert( a->has_shape(-1,4,4) );
+    for(NP::INT i=0 ; i < a->num_items() ; i++)
+    {
+        sphoton* p = reinterpret_cast<sphoton*>(a->bytes() + i*a->item_bytes());
+        p->time = t0 ;
+    }
+}
 
 
 

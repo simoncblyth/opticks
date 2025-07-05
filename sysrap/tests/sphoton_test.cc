@@ -19,6 +19,8 @@ sphoton_test.cc
 #include "squad.h"
 #include "sphoton.h"
 #include "ssys.h"
+#include "NPX.h"
+#include "NPFold.h"
 
 #include "OpticksPhoton.h"
 
@@ -33,7 +35,7 @@ struct sphoton_test
     static int make_ephoton_array();
     static int sphoton_selector_();
     static int set_flag();
-    static int add_flagmask();
+    static int addto_flagmask();
     static int change_flagmask();
     static int digest();
     static int sphotond_();
@@ -42,6 +44,7 @@ struct sphoton_test
     static int set_polarization();
     static int dot_pol_cross_mom_nrm();
     static int make_record_array();
+    static int ChangeTimeInsitu();
 
     static int main();
 };
@@ -127,19 +130,19 @@ int sphoton_test::set_flag()
     return 0 ;
 }
 
-int sphoton_test::add_flagmask()
+int sphoton_test::addto_flagmask()
 {
     sphoton p = {} ;
-    std::cout << "add_flagmask.0 : " << p.descFlag() << "\n" ;
+    std::cout << "addto_flagmask.0 : " << p.descFlag() << "\n" ;
 
-    p.add_flagmask( SURFACE_DETECT );
-    std::cout << "add_flagmask.1 SURFACE_DETECT : " << p.descFlag() << "\n" ;
+    p.addto_flagmask( SURFACE_DETECT );
+    std::cout << "addto_flagmask.1 SURFACE_DETECT : " << p.descFlag() << "\n" ;
 
-    p.add_flagmask( EFFICIENCY_COLLECT );
-    std::cout << "add_flagmask.2 EFFICIENCY_COLLECT : " << p.descFlag() << "\n" ;
+    p.addto_flagmask( EFFICIENCY_COLLECT );
+    std::cout << "addto_flagmask.2 EFFICIENCY_COLLECT : " << p.descFlag() << "\n" ;
 
-    p.add_flagmask( EFFICIENCY_CULL );
-    std::cout << "add_flagmask.3 EFFICIENCY_CULL : " << p.descFlag() << "\n" ;
+    p.addto_flagmask( EFFICIENCY_CULL );
+    std::cout << "addto_flagmask.3 EFFICIENCY_CULL : " << p.descFlag() << "\n" ;
 
 
 
@@ -540,6 +543,31 @@ int sphoton_test::make_record_array()
     return 0;
 }
 
+
+int sphoton_test::ChangeTimeInsitu()
+{
+    std::vector<sphoton> pp(3) ;
+    pp[0] = {} ;
+    pp[1] = {} ;
+    pp[2] = {} ;
+
+    pp[0].time = 0.1f ;
+    pp[1].time = 0.2f ;
+    pp[2].time = 0.3f ;
+
+    NP* a = NPX::ArrayFromVec<float, sphoton>(pp, 4, 4);
+    sphoton::ChangeTimeInsitu(a, 100.f);
+
+    NPFold* f = new NPFold ;
+    f->add("a", a );
+    f->save("$FOLD/ChangeTimeInsitu");
+
+    return 0 ;
+}
+
+
+
+
 int sphoton_test::main()
 {
     const char* TEST = ssys::getenvvar("TEST","make_record_array") ;
@@ -553,7 +581,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "make_ephoton_array"))    rc += make_ephoton_array();
     if(ALL||0==strcmp(TEST, "sphoton_selector_"))     rc += sphoton_selector_();
     if(ALL||0==strcmp(TEST, "set_flag"))              rc += set_flag();
-    if(ALL||0==strcmp(TEST, "add_flagmask"))          rc += add_flagmask();
+    if(ALL||0==strcmp(TEST, "addto_flagmask"))        rc += addto_flagmask();
     if(ALL||0==strcmp(TEST, "change_flagmask"))       rc += change_flagmask();
     if(ALL||0==strcmp(TEST, "digest"))                rc += digest();
     if(ALL||0==strcmp(TEST, "sphotond_"))             rc += sphotond_();
@@ -562,6 +590,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "set_polarization"))      rc += set_polarization();
     if(ALL||0==strcmp(TEST, "dot_pol_cross_mom_nrm")) rc += dot_pol_cross_mom_nrm();
     if(ALL||0==strcmp(TEST, "make_record_array"))     rc += make_record_array();
+    if(ALL||0==strcmp(TEST, "ChangeTimeInsitu"))      rc += ChangeTimeInsitu();
 
     return rc ;
 }
