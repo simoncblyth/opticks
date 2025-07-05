@@ -3,6 +3,31 @@ usage(){ cat << EOU
 cxr_min.sh : Ray trace geometry rendering script
 ====================================================
 
+
+Bash args
+------------
+
+info
+   dump vars
+
+open
+   write context file, use this to control where screenshots are copied to
+
+run
+   run executable
+
+dbg
+   run under gdb
+
+close
+   delete context file
+
+
+
+Notes
+------
+
+
 Formerly described as "minimal script for shakedown"
 but has become the first visualization script to use.
 This uses one of two executables:
@@ -69,15 +94,21 @@ NB presence of comma in EMM switches to bit position input, not binary value
 EOU
 }
 
-SDIR=$(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath $BASH_SOURCE))
+export SCRIPT=cxr_min
 
-defarg=run_info
+defarg=open_run_info
 [ -n "$BP" ] && defarg=dbg_info
 arg=${1:-$defarg}
+
+
 
 bin=CSGOptiXRenderInteractiveTest
 [ -n "$SNAP" ] && bin=CSGOptiXRMTest
 which_bin=$(which $bin)
+
+
+
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
 if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
@@ -88,23 +119,11 @@ else
     source ~/.opticks/GEOM/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
 fi
 
-source $HOME/.opticks/GEOM/EVT.sh   ## optionally sets AFOLD BFOLD where event info is loaded from
-source $HOME/.opticks/GEOM/MOI.sh   ## sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
-source $HOME/.opticks/GEOM/ELV.sh   ## optionally set ELV envvar controlling included/excluded LV by name
-
-
-
-#shader_name=rec_flying_point
-#shader_name=rec_flying_point_persist
-shader_name=rec_line_strip
-export SGLFW_Evt__shader_name=${SGLFW_Evt__shader_name:-$shader_name}
-
-evt_level=2
-export SGLFW_Evt__level=${SGLFW_Evt__level:-$evt_level}
-
-
-
-
+source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets AFOLD BFOLD where event info is loaded from
+source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
+source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
+source $HOME/.opticks/GEOM/SDR.sh 2>/dev/null  ## optionally configure OpenGL shader
+source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally configure current context file writing
 
 
 
@@ -215,8 +234,8 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vars="bin which_bin GEOM MOI EMM ELV TMIN EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CUDA_VISIBLE_DEVICES"
-vars="$vars AFOLD AFOLD_RECORD_SLICE BFOLD BFOLD_RECORD_SLICE"
+vv="bin which_bin GEOM MOI EMM ELV TMIN EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CUDA_VISIBLE_DEVICES"
+vv="$vv AFOLD AFOLD_RECORD_SLICE BFOLD BFOLD_RECORD_SLICE _CUR"
 
 Resolve_CFBaseFromGEOM()
 {
@@ -261,10 +280,16 @@ Resolve_CFBaseFromGEOM
 
 
 
-
+_CUR=GEOM/$GEOM/$SCRIPT/$EVT_CHECK
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+   for v in $vv ; do printf "%20s : %s \n" "$v" "${!v}" ; done
+fi
+
+
+if [ "${arg/open}" != "$arg" ]; then
+    # open to define current context string which controls where screenshots are copied to by ~/j/bin/pic.sh
+    CUR_open ${_CUR}
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
@@ -287,12 +312,17 @@ if [ "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1
 fi
 
-if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
+if [ "${arg/close}" != "$arg" ]; then
+    # close to invalidate the context
+    CUR_close
 fi
 
-if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
-    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
-fi
 
+#if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
+#    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
+#fi
+#
+#if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
+#    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
+#fi
 

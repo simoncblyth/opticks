@@ -12,6 +12,25 @@ As this uses GL interop it may be necessary to select the display GPU, eg with::
     export CUDA_VISIBLE_DEVICES=1
 
 
+Bash args
+------------
+
+info
+   dump vars
+
+open
+   write context file, use this to control where screenshots are copied to
+
+run
+   run executable
+
+dbg
+   run under gdb
+
+close
+   delete context file
+
+
 ENVVAR notes
 --------------
 
@@ -72,11 +91,11 @@ fi
 
 export SCRIPT=$name
 
-source $HOME/.opticks/GEOM/EVT.sh   ## optionally sets AFOLD BFOLD where event info is loaded from
-source $HOME/.opticks/GEOM/MOI.sh   ## optionally sets MOI envvar controlling initial viewpoint
-source $HOME/.opticks/GEOM/ELV.sh   ## optionally set ELV envvar controlling included/excluded LV by name
-
-
+source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets AFOLD BFOLD where event info is loaded from
+source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar controlling initial viewpoint
+source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
+source $HOME/.opticks/GEOM/SDR.sh 2>/dev/null  ## optionally configure OpenGL shader
+source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally define CUR_ bash function
 
 logging()
 {
@@ -98,17 +117,6 @@ anim()
    export SGLM__init_time_DUMP=1
 }
 [ -n "$ANIM" ] && anim
-
-
-#shader_name=rec_flying_point
-shader_name=rec_flying_point_persist
-#shader_name=rec_line_strip
-export SGLFW_Evt__shader_name=${SGLFW_Evt__shader_name:-$shader_name}
-
-#evt_level=2
-#export SGLFW_Evt__level=${SGLFW_Evt__level:-$evt_level}
-
-
 
 
 
@@ -158,7 +166,7 @@ sglfw__depth=1
 export SGLFW__DEPTH=$sglfw_depth
 
 soptix__handle=-1  # default, full geometry
-#soptix__handle=0  #  only non-instanced global geometry
+#soptix__handle`=0  #  only non-instanced global geometry
 #soptix__handle=1  #  single CSGSolid
 #soptix__handle=2  #
 export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
@@ -168,13 +176,14 @@ export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
 
 
 
+_CUR=GEOM/$GEOM/$SCRIPT/$EVT_CHECK
 
 
-
-defarg="info_run"
+allarg="info_open_dbg_run_close"
+defarg="info_open_run"
 arg=${1:-$defarg}
 
-vars="BASH_SOURCE defarg arg name bin GEOM SGLFW__DEPTH SOPTIX__HANDLE VIZMASK"
+vars="BASH_SOURCE allarg defarg arg name bin GEOM SGLFW__DEPTH SOPTIX__HANDLE VIZMASK _CUR"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -187,10 +196,23 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi
 
+
+if [ "${arg/open}" != "$arg" ]; then
+    # open to define current context string which controls where screenshots are copied to
+    CUR_open ${_CUR}
+    ## IF FORGET TO OPEN AND WANT TO USE SOME Screenshots from past : CUR_touch 21:54
+fi
+
 if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
+
+if [ "${arg/close}" != "$arg" ]; then
+    # close to invalidate the context
+    CUR_close
+fi
+
 
 exit 0
 
