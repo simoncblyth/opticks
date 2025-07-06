@@ -66,10 +66,8 @@ int main()
         std::cout << "B" << std::endl << b.desc(1000) << std::endl ;
     }
 
-    std::cout << "AB" << std::endl << ab.desc("BRIEF") << std::endl ;
-    std::cout << "AB" << std::endl << ab.desc("AZERO") << std::endl ;
-    std::cout << "AB" << std::endl << ab.desc("BZERO") << std::endl ;
-    std::cout << "AB" << std::endl << ab.desc("DEVIANT") << std::endl ;
+    std::cout << ab.desc() ;
+
 
     if(DEBUG > 0)
     {

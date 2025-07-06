@@ -274,6 +274,8 @@ struct sseq_index_ab_chi2
 
     void init();
     std::string desc() const ;
+    std::string desc_rst() const ;
+    std::string desc_html() const ;
 };
 
 
@@ -305,6 +307,10 @@ inline void sseq_index_ab_chi2::init()
 
 std::string sseq_index_ab_chi2::desc() const
 {
+    return desc_rst();
+}
+std::string sseq_index_ab_chi2::desc_rst() const
+{
     std::stringstream ss ;
     ss << "sseq_index_ab_chi2::desc"
        << " sum " << std::fixed << std::setw(10) << std::setprecision(4) << sum
@@ -318,6 +324,25 @@ std::string sseq_index_ab_chi2::desc() const
     return str ;
 }
 
+std::string sseq_index_ab_chi2::desc_html() const
+{
+    std::stringstream ss ;
+    ss
+       << "[CHI2"
+       << " <span class=\"r\"> "
+       << " sum " << std::fixed << std::setw(10) << std::setprecision(4) << sum
+       << " ndf " << std::setw(7) << ndf
+       << " sum/ndf " << std::fixed << std::setw(10) << std::setprecision(4) << sum/ndf
+       << " </span> "
+       << "]"
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
 
 /**
 sseq_index_ab
@@ -329,8 +354,16 @@ struct sseq_index_ab
 {
     static constexpr const char* NAME = "sseq_index_ab.npy" ;
     static constexpr const char* _sseq_index_ab__desc_NUM_MAX = "sseq_index_ab__desc_NUM_MAX" ;
+    static constexpr const char* _sseq_index_ab__desc_STYLE   = "sseq_index_ab__desc_STYLE" ;
+
+    enum { STYLE_NONE, STYLE_RST, STYLE_HTML } ;
+    static int STYLE();
+    bool isRST()  const { return style == STYLE_RST ; }
+    bool isHTML() const { return style == STYLE_HTML ; }
+
     const sseq_index& a ;
     const sseq_index& b ;
+    int style ;
 
     std::map<sseq, sseq_index_count_ab> m ;
     std::vector<sseq_qab> u ;
@@ -346,13 +379,26 @@ struct sseq_index_ab
     void save(const char* dir) const ;
 
     std::string desc(const char* opt) const ;
+    std::string desc() const ;
 
 };
+
+int sseq_index_ab::STYLE() // static
+{
+    const char* _STYLE = ssys::getenvvar(_sseq_index_ab__desc_STYLE, "rst") ;
+    int _style = STYLE_NONE ;
+    if(0==strcmp(_STYLE, "rst" ))  _style = STYLE_RST ;
+    if(0==strcmp(_STYLE, "html" )) _style= STYLE_HTML ;
+    assert( _style == STYLE_RST || _style == STYLE_HTML );
+    return _style ;
+}
+
 
 inline sseq_index_ab::sseq_index_ab( const sseq_index& a_, const sseq_index& b_ )
     :
     a(a_),
-    b(b_)
+    b(b_),
+    style(STYLE())
 {
     init();
 }
@@ -498,11 +544,12 @@ inline std::string sseq_index_ab::desc(const char* opt) const
     int u_size = u.size();
     int NUM_MAX = ssys::getenvint(_sseq_index_ab__desc_NUM_MAX, 40) ;
 
-    int num = 0 ; 
+
+    int num = 0 ;
     if( mode == AZERO || mode == BZERO || mode == DEVIANT)
     {
         // dont obey NUM_MAX for these problem finding modes as would miss issues
-        num = u_size ; 
+        num = u_size ;
     }
     else
     {
@@ -510,24 +557,40 @@ inline std::string sseq_index_ab::desc(const char* opt) const
     }
 
 
+    const char* itab = "    " ;
+
     std::stringstream ss ;
-    ss
+
+    if(isRST())
+    {
+        ss
         << "[sseq_index_ab::desc"
         << " u_size " << u_size
         << " NUM_MAX " << NUM_MAX
         << " num " << num
         << " opt " << opt
         << " mode " << mode
-        << ( mode == BRIEF ? chi2.desc()  : "" )
-        << std::endl
+        << ( mode == BRIEF ? chi2.desc_rst()  : "" )
+        << "\n"
         ;
+    }
+    else if(isHTML())
+    {
+        ss
+        << ".. raw:: html\n"
+        << "\n"
+        << itab << "<pre class=\"mypretiny\">\n"
+        << itab << "[sseq_index_ab::desc"
+        << " " << ( mode == BRIEF ? "" : opt )
+        << " " << ( mode == BRIEF ? chi2.desc_html()  : "" )
+        << "\n"
+        ;
+    }
+
+
     for(int i=0 ; i < num ; i++)
     {
         const sseq_qab& qab = u[i] ;
-
-        // hmm : inclusion based on max count OR sum of counts ?
-        //int abx = std::max( qab.a.count, qab.b.count ) ;
-        //if( abx < min_abx ) continue ;
 
         bool c2_inc(false);
         double c2 = qab.c2(c2_inc, chi2.absum_min);
@@ -548,8 +611,22 @@ inline std::string sseq_index_ab::desc(const char* opt) const
             case DEVIANT: selected = deviant ; break ;
         }
 
-        const char* head = deviant ? ":r:`" : "    " ;
-        const char* tail = deviant ? "`" : " " ;
+        const char* head ;
+        const char* tail ;
+        const char* pdev ;
+
+        if(isRST())
+        {
+            head = deviant ? ":r:`" : "    " ;
+            tail = deviant ? "`" : " " ;
+            pdev = "DEVIANT " ;
+        }
+        else if(isHTML())
+        {
+            head = "    " ;
+            tail = " " ;
+            pdev = "<span class=\"r\">DEVIANT</span> " ;
+        }
 
 
         if(selected) ss
@@ -568,18 +645,51 @@ inline std::string sseq_index_ab::desc(const char* opt) const
            << " : "
            << ( a_zero ? "AZERO " : "" )
            << ( b_zero ? "BZERO " : "" )
-           << ( deviant ? "DEVIANT " : "" )
+           << ( deviant ? pdev : "" )
            << ( c2_inc ? " " : "C2EXC " )   // SUPPRESS C2INC AS ITS NORMAL
            << tail
-           << std::endl
+           << "\n"
            ;
     }
     ss
-        << "]sseq_index_ab::desc" << std::endl
+        << ( isHTML() ? itab : "" )
+        << "]sseq_index_ab::desc\n"
+        << ( isHTML() ? itab : "" )
+        << ( isHTML() ? "</pre>\n" : "" )
+        ;
+
+
+    std::string str = ss.str();
+    return str ;
+}
+
+
+inline std::string sseq_index_ab::desc() const
+{
+    std::stringstream ss ;
+    bool html = isHTML();
+    ss
+        << ( html ? "" : "AB" )
+        << "\n"
+        << desc("BRIEF")
+        << "\n"
+        << ( html ? "" : "AB" )
+        << "\n"
+        << desc("AZERO")
+        << "\n"
+        << ( html ? "" : "AB" )
+        << "\n"
+        << desc("BZERO")
+        << "\n"
+        << ( html ? "" : "AB" )
+        << "\n"
+        << desc("DEVIANT")
+        << "\n"
         ;
 
     std::string str = ss.str();
     return str ;
 }
+
 
 

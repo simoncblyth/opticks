@@ -41,7 +41,7 @@ if [ -n "$GEOM" ]; then
     echo $BASH_SOURCE - using externally configured GEOM $GEOM
 else
     source $HOME/.opticks/GEOM/GEOM.sh
-fi 
+fi
 
 TMP=${TMP:-/tmp/$USER/opticks}
 
@@ -76,7 +76,7 @@ script=$SDIR/sseq_index_test.py
 c2cut=40
 export C2CUT=${C2CUT:-$c2cut}
 export sseq_index_ab_chi2_ABSUM_MIN=$C2CUT
-
+export sseq_index_ab__desc_STYLE=html   # html OR rst
 
 vars="$vars BASH_SOURCE SDIR name C2CUT"
 
@@ -119,7 +119,7 @@ if [ "${arg/build}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-    : needs AFOLD and BFOLD to configure where to load seq.npy from 
+    : needs AFOLD and BFOLD to configure where to load seq.npy from
     : needs FOLD to config where to write chi2 info
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
