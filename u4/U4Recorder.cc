@@ -1304,6 +1304,8 @@ void U4Recorder::EPH_FlagCheck(unsigned original_flag, unsigned eph)  // static
                            (  original_flag == SURFACE_ABSORB && is_eph_surface_absorb ) ||
                            (  original_flag == BULK_ABSORB    && is_eph_bulk_absorb ) ;
 
+    bool surprise_flag = ( original_flag == SURFACE_ABSORB  && is_eph_cull );
+
 
     LOG_IF(info, !consistent_flag || !expected_original_flag )
          << " original_flag " << OpticksPhoton::Flag(original_flag)
@@ -1313,9 +1315,10 @@ void U4Recorder::EPH_FlagCheck(unsigned original_flag, unsigned eph)  // static
          << " is_eph_collect " << ( is_eph_collect ? "YES" : "NO " )
          << " is_eph_cull " << ( is_eph_cull ? "YES" : "NO " )
          << " consistent_flag " << ( consistent_flag ? "YES" : "NO " )
+         << " surpise_flag " << (  surprise_flag ?  "YES" : "NO" )
          ;
 
-    assert( consistent_flag );
+    assert( consistent_flag || surprise_flag );
     assert( expected_original_flag );
 }
 

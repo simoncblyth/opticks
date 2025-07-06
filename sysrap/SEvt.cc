@@ -438,7 +438,7 @@ NP* SEvt::LoadInputPhoton(const char* spec)
     float t0 = SEventConfig::InputPhotonChangeTime();
     bool change_time = t0 >= 0.f ;
 
-    LOG(info)
+    LOG(fatal)
         << " SEventConfig::InputPhotonChangeTime " << t0
         << " change_time " << ( change_time ? "YES" : "NO " )
         ;

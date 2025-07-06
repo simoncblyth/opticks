@@ -166,7 +166,8 @@ inline void SRecord::init()
     record_first = 0 ;
     record_count = record->shape[0]*record->shape[1] ;   // all step points across all photon
 
-    sphoton::MinMaxPost(&mn.x, &mx.x, record );
+    bool skip_flagmask_zero = true ;
+    sphoton::MinMaxPost(&mn.x, &mx.x, record, skip_flagmask_zero );
     ce = scuda::center_extent( mn, mx );
 
     record->set_meta<float>("x0", mn.x );

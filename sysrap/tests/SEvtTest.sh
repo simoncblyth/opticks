@@ -18,6 +18,9 @@ name=SEvtTest
 
 
 export GEOM=SEVT_TEST
+
+
+
 export OPTICKS_INPUT_PHOTON_FRAME=0
 export CFBASE
 
@@ -30,10 +33,20 @@ TMP=${TMP:-$tmp}
 
 #test=CountNibbles
 #test=makeGenstepArrayFromVector
-test=saveExtra
+#test=saveExtra
+test=InputPhoton
 
 export TEST=${TEST:-$test}
 export FOLD=$TMP/$name/$TEST
+
+if [ "$TEST" == "InputPhoton" ]; then
+    export SEvt__INPUT_PHOTON_DIR=$HOME/.opticks/InputPhotons
+    export OPTICKS_INPUT_PHOTON_CHANGE_TIME=0.5
+    #export OPTICKS_INPUT_PHOTON=RandomSpherical1M_f8.npy
+    export OPTICKS_INPUT_PHOTON=RandomSpherical1M_f4.npy
+fi
+
+
 
 case $TEST in
    InputPhoton) script=SEvtTestIP.py ;;

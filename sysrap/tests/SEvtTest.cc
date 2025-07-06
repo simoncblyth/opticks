@@ -24,6 +24,7 @@ struct SEvtTest
 
     static int AddGenstep();
     static int LifeCycle();
+    static int InputPhoton0();
     static int InputPhoton();
     static int getSaveDir();
     static int getDir();
@@ -147,7 +148,7 @@ int SEvtTest::LifeCycle()
     return 0 ;
 }
 
-int SEvtTest::InputPhoton()
+int SEvtTest::InputPhoton0()
 {
     const char* ipf = SEventConfig::InputPhotonFrame();
     if( ipf == nullptr) return 1 ;
@@ -176,6 +177,18 @@ int SEvtTest::InputPhoton()
     tr->save( FOLD, SStr::Name("tr",ipf, ".npy" )) ;
 
     */
+    return 0 ;
+}
+
+int SEvtTest::InputPhoton()
+{
+    SEvt* evt = SEvt::Create_EGPU() ;
+    NP* ip = evt->getInputPhoton();
+    std::cout << "SEvtTest::InputPhoton " << ( ip ? ip->sstr() : "-" ) << "\n" ;
+
+    bool skip_flagmask_zero = false ;
+    std::cout << "SEvtTest::InputPhoton " << sphoton::DescMinMaxPost(ip, skip_flagmask_zero) << "\n" ;
+
     return 0 ;
 }
 
@@ -386,6 +399,7 @@ int SEvtTest::Main(int argc, char** argv)
 
     if(ALL||strcmp(TEST, "AddGenstep") == 0 )   rc += AddGenstep();
     if(ALL||strcmp(TEST, "LifeCycle") == 0 )    rc += LifeCycle();
+    if(ALL||strcmp(TEST, "InputPhoton0") == 0 ) rc += InputPhoton0();
     if(ALL||strcmp(TEST, "InputPhoton") == 0 )  rc += InputPhoton();
     if(ALL||strcmp(TEST, "getSaveDir") == 0 )   rc += getSaveDir();
     if(ALL||strcmp(TEST, "getDir") == 0 )       rc += getDir();

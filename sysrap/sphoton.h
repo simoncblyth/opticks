@@ -117,6 +117,7 @@ JUNO max prim_idx ~3245 : so thats OK
    #include <sstream>
    #include <vector>
    #include <cstring>
+   #include <csignal>
    #include <cassert>
    #include <glm/glm.hpp>
 
@@ -212,7 +213,13 @@ struct sphoton
 
     SPHOTON_METHOD static void Get( sphoton& p, const NP* a, unsigned idx );
     SPHOTON_METHOD static void Get( std::vector<sphoton>& pp, const NP* a );
-    SPHOTON_METHOD static void MinMaxPost( float* mn, float* mx, const NP* a );
+
+    SPHOTON_METHOD static void MinMaxPost( float* mn, float* mx, const NP* a, bool skip_flagmask_zero );
+    SPHOTON_METHOD static std::string DescMinMaxPost( const NP* _a, bool skip_flagmask_zero );
+
+    template<typename T>
+    SPHOTON_METHOD static bool IsPhotonArray( const NP* a );
+
     SPHOTON_METHOD static void ChangeTimeInsitu( NP* a, float t0 );
 
     SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>&  tr, bool normalize=true );  // widens transform and uses below
@@ -220,6 +227,97 @@ struct sphoton
 #endif
 
 };
+
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+
+struct sphotond
+{
+    double3 pos ;
+    double  time ;
+
+    double3 mom ;
+    unsigned long long iindex ;  // formerly float weight, but have never used that
+
+    double3 pol ;
+    double  wavelength ;
+
+    unsigned long long boundary_flag ;
+    unsigned long long identity ;
+    unsigned long long orient_idx ;
+    unsigned long long flagmask ;
+
+
+   SPHOTON_METHOD static void FromFloat( sphotond& d, const sphoton& s );
+   SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx );
+   SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>& tr,  bool normalize=true );
+   SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
+   SPHOTON_METHOD const double* cdata() const {  return &pos.x ; }
+
+
+};
+
+
+SPHOTON_METHOD void sphotond::FromFloat( sphotond& d, const sphoton& s )
+{
+    typedef unsigned long long ull ;
+
+    d.pos.x = double(s.pos.x) ;
+    d.pos.y = double(s.pos.y) ;
+    d.pos.z = double(s.pos.z) ;
+    d.time  = double(s.time) ;
+
+    d.mom.x = double(s.mom.x) ;
+    d.mom.y = double(s.mom.y) ;
+    d.mom.z = double(s.mom.z) ;
+    d.iindex = ull(s.iindex) ;
+
+    d.pol.x = double(s.pol.x) ;
+    d.pol.y = double(s.pol.y) ;
+    d.pol.z = double(s.pol.z) ;
+    d.wavelength  = double(s.wavelength) ;
+
+    d.boundary_flag = ull(s.boundary_flag) ;
+    d.identity      = ull(s.identity) ;
+    d.orient_idx    = ull(s.orient_idx) ;
+    d.flagmask      = ull(s.flagmask) ;
+}
+
+SPHOTON_METHOD void sphotond::Get( sphotond& p, const NP* a, unsigned idx )
+{
+    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(double) && idx < unsigned(a->shape[0]) );
+    assert( sizeof(sphotond) == sizeof(double)*16 );
+    memcpy( &p, a->cvalues<double>() + idx*16, sizeof(sphotond) );
+}
+
+SPHOTON_METHOD void sphotond::transform_float( const glm::tmat4x4<float>& tr, bool normalize )
+{
+    glm::tmat4x4<double> trd ;
+    TranConvert(trd, tr);
+    transform(trd, normalize );
+}
+
+SPHOTON_METHOD void sphotond::transform( const glm::tmat4x4<double>& tr, bool normalize )
+{
+    double one(1.);
+    double zero(0.);
+
+    unsigned count = 1 ;
+    unsigned stride = 4*4 ; // effectively not used as count is 1
+
+    assert( sizeof(*this) == sizeof(double)*16 );
+    double* p0 = (double*)this ;
+
+    Tran<double>::Apply( tr, p0, one,  count, stride, 0, false );      // transform pos as position
+    Tran<double>::Apply( tr, p0, zero, count, stride, 4, normalize );  // transform mom as direction
+    Tran<double>::Apply( tr, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+}
+
+#endif
+
+
 
 
 /**
@@ -540,8 +638,8 @@ SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
 
 SPHOTON_METHOD void sphoton::Get( std::vector<sphoton>& pp, const NP* a )
 {
-    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(float) );
-    assert( sizeof(sphoton) == sizeof(float)*16 );
+    bool is_f = IsPhotonArray<float>(a);
+    assert( is_f );
     unsigned num = a->shape[0] ;
     pp.resize(num);
     memcpy( pp.data(), a->cvalues<float>(), sizeof(sphoton)*num );
@@ -558,39 +656,97 @@ shaped and then reshaping back again.
 
 **/
 
-SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a )
+SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a, bool skip_flagmask_zero  )
 {
     NP* a = const_cast<NP*>(_a);
 
     std::vector<NP::INT> sh = a->shape ;
     a->change_shape(-1,4,4);
 
-    std::vector<sphoton> pp ;
-    Get(pp, a);
+    bool is_f = IsPhotonArray<float>(a);
+    bool is_d = IsPhotonArray<double>(a);
+    bool is_f_xor_d = is_f ^ is_d ;
 
-    int ni = pp.size() ;
+    if(!is_f_xor_d) std::cerr
+        << "sphoton::MinMaxPost FATAL UNEXPECTED ARRAY "
+        << " is_f " << ( is_f ? "YES" : "NO " )
+        << " is_d " << ( is_d ? "YES" : "NO " )
+        << "\n"
+        ;
+
+    bool expect = is_f_xor_d ;
+    assert(expect);
+    if(!expect) std::raise(SIGINT);
+
+    int ni = a->num_items() ;
     int nj = 4 ;
-
     for(int j=0 ; j < nj ; j++)
     {
         mn[j] = std::numeric_limits<float>::max() ;
         mx[j] = std::numeric_limits<float>::min() ;
     }
+    // float limits are big enough as output is in float anyhow
+
 
     for(int i=0 ; i < ni ; i++)
     {
-        const sphoton& p = pp[i];
-        if(p.flagmask == 0u) continue ;
-        const float* xyzt = p.cdata();
-        for(int j=0 ; j < nj ; j++)
+        if( is_f )
         {
-            float vj = xyzt[j] ;
-            if( vj < mn[j] ) mn[j] = vj ;
-            if( vj > mx[j] ) mx[j] = vj ;
+            sphoton* p = reinterpret_cast<sphoton*>(a->bytes() + i*a->item_bytes());
+            if(skip_flagmask_zero && p->flagmask == 0u) continue ;
+            const float* xyzt = p->cdata();
+            for(int j=0 ; j < nj ; j++)
+            {
+                float vj = xyzt[j] ;
+                if( vj < mn[j] ) mn[j] = vj ;
+                if( vj > mx[j] ) mx[j] = vj ;
+            }
+        }
+        else if( is_d )
+        {
+            sphotond* p = reinterpret_cast<sphotond*>(a->bytes() + i*a->item_bytes());
+            if(skip_flagmask_zero && p->flagmask == 0u) continue ;
+            const double* xyzt = p->cdata();
+
+            for(int j=0 ; j < nj ; j++)
+            {
+                double vj = xyzt[j] ;
+                if( vj < double(mn[j]) ) mn[j] = vj ;
+                if( vj > double(mx[j]) ) mx[j] = vj ;
+            }
         }
     }
     a->reshape(sh);
 }
+
+SPHOTON_METHOD std::string sphoton::DescMinMaxPost( const NP* _a, bool skip_flagmask_zero )
+{
+    float4 mn = {} ;
+    float4 mx = {} ;
+    MinMaxPost( &mn.x , &mx.x, _a, skip_flagmask_zero );
+
+    std::stringstream ss ;
+    ss
+        << "[sphoton::DescMinMaxPost\n"
+        << " a " << ( _a ? _a->sstr() : "-" ) << "\n"
+        << " mn " << mn << "\n"
+        << " mx " << mx << "\n"
+        << "]sphoton::DescMinMaxPost\n"
+        ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+template<typename T>
+SPHOTON_METHOD bool sphoton::IsPhotonArray( const NP* a )
+{
+    assert( sizeof(sphoton) == sizeof(float)*16 );
+    assert( sizeof(sphotond) == sizeof(double)*16 );
+    return a && a->has_shape(-1,4,4) && a->ebyte == sizeof(T) ;
+}
+
 
 /**
 sphoton::ChangeTimeInsitu
@@ -605,11 +761,33 @@ will remain very simple.
 
 SPHOTON_METHOD void sphoton::ChangeTimeInsitu( NP* a, float t0 )
 {
-    assert( a->has_shape(-1,4,4) );
+    bool is_f = IsPhotonArray<float>(a);
+    bool is_d = IsPhotonArray<double>(a);
+    bool is_f_xor_d = is_f ^ is_d ;
+
+    if(!is_f_xor_d) std::cerr
+        << "sphoton::ChangeTimeInsitu FATAL "
+        << " is_f " << ( is_f ? "YES" : "NO " )
+        << " is_d " << ( is_d ? "YES" : "NO " )
+        << "\n"
+        ;
+
+    bool expect = is_f_xor_d ;
+    assert(expect);
+    if(!expect) std::raise(SIGINT);
+
     for(NP::INT i=0 ; i < a->num_items() ; i++)
     {
-        sphoton* p = reinterpret_cast<sphoton*>(a->bytes() + i*a->item_bytes());
-        p->time = t0 ;
+        if( is_f )
+        {
+            sphoton* p = reinterpret_cast<sphoton*>(a->bytes() + i*a->item_bytes());
+            p->time = t0 ;
+        }
+        else if( is_d )
+        {
+            sphotond* p = reinterpret_cast<sphotond*>(a->bytes() + i*a->item_bytes());
+            p->time = t0 ;
+        }
     }
 }
 
@@ -697,93 +875,6 @@ struct sphoton_selector
     SPHOTON_METHOD bool operator() (const sphoton* p) const { return ( p->flagmask & hitmask ) == hitmask  ; }   // require all bits of the mask to be set
 };
 
-
-
-#if defined(__CUDACC__) || defined(__CUDABE__)
-#else
-
-struct sphotond
-{
-    double3 pos ;
-    double  time ;
-
-    double3 mom ;
-    unsigned long long iindex ;  // formerly float weight, but have never used that
-
-    double3 pol ;
-    double  wavelength ;
-
-    unsigned long long boundary_flag ;
-    unsigned long long identity ;
-    unsigned long long orient_idx ;
-    unsigned long long flagmask ;
-
-
-   SPHOTON_METHOD static void FromFloat( sphotond& d, const sphoton& s );
-   SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx );
-   SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>& tr,  bool normalize=true );
-   SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
-
-
-};
-
-
-SPHOTON_METHOD void sphotond::FromFloat( sphotond& d, const sphoton& s )
-{
-    typedef unsigned long long ull ;
-
-    d.pos.x = double(s.pos.x) ;
-    d.pos.y = double(s.pos.y) ;
-    d.pos.z = double(s.pos.z) ;
-    d.time  = double(s.time) ;
-
-    d.mom.x = double(s.mom.x) ;
-    d.mom.y = double(s.mom.y) ;
-    d.mom.z = double(s.mom.z) ;
-    d.iindex = ull(s.iindex) ;
-
-    d.pol.x = double(s.pol.x) ;
-    d.pol.y = double(s.pol.y) ;
-    d.pol.z = double(s.pol.z) ;
-    d.wavelength  = double(s.wavelength) ;
-
-    d.boundary_flag = ull(s.boundary_flag) ;
-    d.identity      = ull(s.identity) ;
-    d.orient_idx    = ull(s.orient_idx) ;
-    d.flagmask      = ull(s.flagmask) ;
-}
-
-SPHOTON_METHOD void sphotond::Get( sphotond& p, const NP* a, unsigned idx )
-{
-    assert(a && a->has_shape(-1,4,4) && a->ebyte == sizeof(double) && idx < unsigned(a->shape[0]) );
-    assert( sizeof(sphotond) == sizeof(double)*16 );
-    memcpy( &p, a->cvalues<double>() + idx*16, sizeof(sphotond) );
-}
-
-SPHOTON_METHOD void sphotond::transform_float( const glm::tmat4x4<float>& tr, bool normalize )
-{
-    glm::tmat4x4<double> trd ;
-    TranConvert(trd, tr);
-    transform(trd, normalize );
-}
-
-SPHOTON_METHOD void sphotond::transform( const glm::tmat4x4<double>& tr, bool normalize )
-{
-    double one(1.);
-    double zero(0.);
-
-    unsigned count = 1 ;
-    unsigned stride = 4*4 ; // effectively not used as count is 1
-
-    assert( sizeof(*this) == sizeof(double)*16 );
-    double* p0 = (double*)this ;
-
-    Tran<double>::Apply( tr, p0, one,  count, stride, 0, false );      // transform pos as position
-    Tran<double>::Apply( tr, p0, zero, count, stride, 4, normalize );  // transform mom as direction
-    Tran<double>::Apply( tr, p0, zero, count, stride, 8, normalize );  // transform pol as direction
-}
-
-#endif
 
 
 
