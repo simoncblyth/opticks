@@ -184,6 +184,92 @@ fi
 EOT
 }
 
+VUE_TEMPLATE(){ cat << "EOT"
+#!/bin/bash
+usage(){ cat << EON
+~/.opticks/GEOM/VUE.sh
+========================
+
+Configure SGLM.h viewpoint
+
+EON
+}
+
+#eye=1000,1000,1000
+#eye=3.7878,3.7878,3.7878
+#eye=-1,-1,0
+#eye=-1,0,0
+#eye=1,0,0
+eye=0,1,0
+#eye=3,0,0
+#eye=3,0,-1.5
+#eye=0,3,-1.5
+#eye=0,-1,0
+#eye=-1,-1,3
+#eye=-1,-1,3
+
+look=0,0,0
+
+up=0,0,1
+#up=0,0,-1
+
+wh=2560,1440
+fullscreen=1
+
+zoom=1
+tmin=0.5
+cam=perspective
+#cam=orthographic   # needs work to set param to make view start closer to perspective
+
+#escale=asis
+escale=extent
+
+traceyflip=0
+
+
+export WH=${WH:-$wh}
+export FULLSCREEN=${FULLSCREEN:-$fullscreen}
+
+export ESCALE=${ESCALE:-$escale}
+export EYE=${EYE:-$eye}
+export LOOK=${LOOK:-$look}
+export UP=${UP:-$up}
+export ZOOM=${ZOOM:-$zoom}
+export TMIN=${TMIN:-$tmin}
+export CAM=${CAM:-$cam}
+
+nameprefix=${SCRIPT}_
+nameprefix=${nameprefix}_eye_${EYE}_
+nameprefix=${nameprefix}_zoom_${ZOOM}_
+nameprefix=${nameprefix}_tmin_${TMIN}_
+
+# moi appended within CSGOptiX::render_snap ?
+export NAMEPREFIX=$nameprefix
+## NAMEPREFIX used in CSGOptiX::getRenderStemDefault
+
+topline="ESCALE=$ESCALE EYE=$EYE TMIN=$TMIN MOI=$MOI ZOOM=$ZOOM CAM=$CAM $SCRIPT.sh "
+botline="$(date)"
+export TOPLINE=${TOPLINE:-$topline}
+export BOTLINE=${BOTLINE:-$botline}
+
+#export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
+#export SGLFW__DEPTH=1   # dump _depth.jpg together with screenshots
+
+
+soptix__handle=-1  # default, full geometry
+#soptix__handle`=0  #  only non-instanced global geometry
+#soptix__handle=1  #  single CSGSolid
+#soptix__handle=2  #
+export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
+
+#export SOPTIX_Options__LEVEL=1
+
+
+EOT
+}
+
+
+
 SDR_TEMPLATE(){ cat << EOT
 #!/bin/bash
 usage(){ cat << EON
@@ -412,6 +498,26 @@ ELV(){
   eval $cmd
 }
 
+
+VUE(){
+  : opticks/opticks.bash
+
+  local script=.opticks/GEOM/VUE.sh
+  if [ ! -f "$HOME/$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $HOME/$script
+     VUE_TEMPLATE > $HOME/$script
+  fi
+  local defarg="vi"
+  local arg=${1:-$defarg}
+  if [ "$arg" == "vi" ]; then
+     cmd="vi $HOME/$script"
+  fi
+  echo $cmd
+  eval $cmd
+}
+
+
+
 SDR(){
   : opticks/opticks.bash
 
@@ -448,6 +554,11 @@ CUR(){
 }
 
 
+ALL(){
+   vi $HOME/.opticks/GEOM/*.sh
+}
+
+
 
 
 CTX(){
@@ -478,6 +589,15 @@ CTX(){
   echo $cmd
   eval $cmd
 }
+
+
+
+
+
+
+
+
+
 
 
 

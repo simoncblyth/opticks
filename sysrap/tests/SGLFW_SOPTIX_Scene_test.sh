@@ -120,59 +120,62 @@ anim()
 
 
 
+if [ -f "$HOME/.opticks/GEOM/VUE.sh" ]; then
+    source $HOME/.opticks/GEOM/VUE.sh
+else
 
-#wh=1024,768
-wh=2560,1440
+    #wh=1024,768
+    wh=2560,1440
 
-#fullscreen=0
-fullscreen=1
+    #fullscreen=0
+    fullscreen=1
 
-#eye=0.1,0,-10
-#eye=-1,-1,0
-#eye=-10,-10,0
-#eye=-10,0,0
-#eye=0,-10,0
-#eye=-1,-1,0
-eye=0,1,0
+    #eye=0.1,0,-10
+    #eye=-1,-1,0
+    #eye=-10,-10,0
+    #eye=-10,0,0
+    #eye=0,-10,0
+    #eye=-1,-1,0
+    eye=0,1,0
 
-look=0,0,0
-up=0,0,1
+    look=0,0,0
+    up=0,0,1
 
-tmin=0.1
+    tmin=0.1
 
-#escale=asis
-escale=extent
+    #escale=asis
+    escale=extent
 
-cam=perspective
-#cam=orthographic
+    cam=perspective
+    #cam=orthographic
 
-vizmask=t    # 0xff default, no masking
-#vizmask=t0  # 0xfe mask global, only instanced geometry in both OpenGL and OptiX renders
+    vizmask=t    # 0xff default, no masking
+    #vizmask=t0  # 0xfe mask global, only instanced geometry in both OpenGL and OptiX renders
 
-export WH=${WH:-$wh}
-export FULLSCREEN=${FULLSCREEN:-$fullscreen}
-export EYE=${EYE:-$eye}
-export LOOK=${LOOK:-$look}
-export UP=${UP:-$up}
-export TMIN=${TMIN:-$tmin}
-export ESCALE=${ESCALE:-$escale}
-export CAM=${CAM:-$cam}
-export VIZMASK=${VIZMASK:-$vizmask}
+    export WH=${WH:-$wh}
+    export FULLSCREEN=${FULLSCREEN:-$fullscreen}
+    export EYE=${EYE:-$eye}
+    export LOOK=${LOOK:-$look}
+    export UP=${UP:-$up}
+    export TMIN=${TMIN:-$tmin}
+    export ESCALE=${ESCALE:-$escale}
+    export CAM=${CAM:-$cam}
 
+    ## VIZMASK may be ssst.sh ONLY ?
+    export VIZMASK=${VIZMASK:-$vizmask}
 
+    #export CSGOptiXRenderInteractiveTest__SGLM_DESC=1
+    #export SGLFW__DEPTH=1   # dump _depth.jpg together with screenshots
 
+    soptix__handle=-1  # default, full geometry
+    #soptix__handle`=0  #  only non-instanced global geometry
+    #soptix__handle=1  #  single CSGSolid
+    #soptix__handle=2  #
+    export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
 
-sglfw__depth=1
-export SGLFW__DEPTH=$sglfw_depth
+    #export SOPTIX_Options__LEVEL=1
 
-soptix__handle=-1  # default, full geometry
-#soptix__handle`=0  #  only non-instanced global geometry
-#soptix__handle=1  #  single CSGSolid
-#soptix__handle=2  #
-export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
-
-#export SOPTIX_Options__LEVEL=1
-
+fi
 
 
 
