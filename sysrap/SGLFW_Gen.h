@@ -55,10 +55,10 @@ SGLFW_Gen::init
 
 inline void SGLFW_Gen::init()
 {
-    vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not GL_ARRAY_BUFFER)
+    vao = new SGLFW_VAO("SGLFW_Gen.vao") ;  // vao: establishes context for OpenGL attrib state and element array (not GL_ARRAY_BUFFER)
     vao->bind();
 
-    buf = new SGLFW_Buffer( genstep->genstep->arr_bytes(), genstep->genstep->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW );
+    buf = new SGLFW_Buffer("SGLFW_Gen.buf", genstep->genstep->arr_bytes(), genstep->genstep->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW );
     buf->bind();
     buf->upload();
 }
@@ -80,6 +80,8 @@ inline void SGLFW_Gen::render(const SGLFW_Program* prog)
 
     buf->bind();
     prog->enableVertexAttribArray("rpos", SGen::RPOS_SPEC );
+
+    buf->bind();
     prog->enableVertexAttribArray("rdel", SGen::RDEL_SPEC );
 
 

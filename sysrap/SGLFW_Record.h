@@ -17,7 +17,7 @@ struct SGLFW_Record
     const SRecord*      record ;
     const float*        timeparam_ptr ;
 
-    SGLFW_Buffer*       rpos ;
+    SGLFW_Buffer*       buf ;
     SGLFW_VAO*          vao ;
     GLint               param_location;
 
@@ -38,7 +38,7 @@ inline SGLFW_Record::SGLFW_Record(const SRecord* _record, const float* _timepara
     :
     record(_record),
     timeparam_ptr(_timeparam_ptr),
-    rpos(nullptr),
+    buf(nullptr),
     vao(nullptr),
     param_location(0)
 {
@@ -55,12 +55,12 @@ SGLFW_Record::init
 
 inline void SGLFW_Record::init()
 {
-    vao = new SGLFW_VAO ;  // vao: establishes context for OpenGL attrib state and element array (not GL_ARRAY_BUFFER)
+    vao = new SGLFW_VAO("SGLFW_Record.vao") ;  // vao: establishes context for OpenGL attrib state and element array (not GL_ARRAY_BUFFER)
     vao->bind();
 
-    rpos = new SGLFW_Buffer( record->record->arr_bytes(), record->record->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW );
-    rpos->bind();
-    rpos->upload();
+    buf = new SGLFW_Buffer("SGLFW_Record.buf", record->record->arr_bytes(), record->record->cvalues<float>(), GL_ARRAY_BUFFER,  GL_STATIC_DRAW );
+    buf->bind();
+    buf->upload();
 }
 
 
@@ -78,7 +78,7 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     prog->use();
     vao->bind();
 
-    rpos->bind();
+    buf->bind();
     prog->enableVertexAttribArray("rpos", SRecord::RPOS_SPEC );
 
     if(param_location > -1 ) prog->Uniform4fv(param_location, timeparam_ptr, false );

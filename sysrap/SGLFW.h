@@ -84,7 +84,9 @@ envvars
 #include "SMesh.h"
 #include "SGLM.h"
 
-#include "SGLFW_Extras.h"
+#include "SGLFW_check.h"
+#include "SGLFW_Buffer.h"
+#include "SGLFW_VAO.h"
 #include "SGLFW_Attrib.h"
 #include "SGLFW_Program.h"
 #include "SGLFW_Mesh.h"

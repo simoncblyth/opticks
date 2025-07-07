@@ -173,8 +173,6 @@ struct SYSRAP_API lrbtnf
 SGLM_Toggle
 -------------
 
-Formerly SGLFW_Toggle from SGLFW_Extras.h
-
 **/
 
 struct SYSRAP_API SGLM_Toggle

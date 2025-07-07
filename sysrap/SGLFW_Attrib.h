@@ -1,7 +1,7 @@
 #pragma once
 /**
-SGLFW_Attrib.h (formerly housed in SGLFW_Extras.h)
-====================================================
+SGLFW_Attrib.h
+=================
 
 SGLFW_GLboolean
    string parse

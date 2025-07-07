@@ -255,7 +255,14 @@ inline void SGLFW_Program::use() const
 }
 
 
+/**
+SGLFW_Program::getUniformLocation
+----------------------------------
 
+Caution OpenGL compilation will optimize away Uniforms
+that are not used.
+
+**/
 
 inline GLint SGLFW_Program::getUniformLocation(const char* name) const
 {

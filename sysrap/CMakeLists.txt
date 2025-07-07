@@ -443,7 +443,9 @@ set(HEADERS
 
     SGLFW.h
     SGLFW_Keys.h
-    SGLFW_Extras.h
+    SGLFW_check.h
+    SGLFW_Buffer.h
+    SGLFW_VAO.h
     SGLFW_Attrib.h
     SGLFW_Program.h
     SGLFW_Mesh.h
