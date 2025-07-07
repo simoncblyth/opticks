@@ -120,6 +120,8 @@ anim()
 
 
 
+
+
 if [ -f "$HOME/.opticks/GEOM/VUE.sh" ]; then
     source $HOME/.opticks/GEOM/VUE.sh
 else

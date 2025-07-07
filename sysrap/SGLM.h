@@ -140,6 +140,7 @@ Screen
 #include "SYSRAP_API_EXPORT.hh"
 
 #include "SRecord.h"
+#include "SGen.h"
 #include "SCMD.h"
 #include "SGLM_Modifiers.h"
 #include "SGLM_Parse.h"
@@ -211,6 +212,7 @@ struct SYSRAP_API SGLM_Option
 {
     bool A = false ;
     bool B = false ;
+    bool G = false ;
     bool M = true ;
     bool O = true ;
     std::string desc() const ;
@@ -222,6 +224,7 @@ inline std::string SGLM_Option::desc() const
     ss << "SGLM_Option::desc"
        << " A:" << ( A ? "Y" : "N" )
        << " B:" << ( B ? "Y" : "N" )
+       << " G:" << ( G ? "Y" : "N" )
        << " M:" << ( M ? "Y" : "N" )
        << " O:" << ( O ? "Y" : "N" )
        ;
@@ -614,7 +617,10 @@ struct SYSRAP_API SGLM : public SCMD
 
     SRecord* ar ;
     SRecord* br ;
+    SGen*    gs ;
+
     void setRecord( SRecord* ar, SRecord* br );
+    void setGenstep( SGen* gs );
 
     bool enabled_time_bump = true ;
     bool enabled_time_halt = false ;
@@ -791,6 +797,7 @@ inline SGLM::SGLM()
     title("SGLM"),
     ar(nullptr),
     br(nullptr),
+    gs(nullptr),
     enabled_time_bump(true),
     enabled_time_halt(false),
     timeparam_ptr(glm::value_ptr(timeparam))
@@ -2841,6 +2848,12 @@ inline void SGLM::setRecord( SRecord* _ar, SRecord* _br )
 
     init_time();
 }
+
+inline void SGLM::setGenstep( SGen* _gs )
+{
+    gs = _gs ;
+}
+
 
 
 /**

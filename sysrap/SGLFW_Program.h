@@ -10,6 +10,7 @@ SGLFW_Program.h : compile and link OpenGL pipeline using shader sources loaded f
 
 struct SGLFW_Program
 {
+    static constexpr const char* _LEVEL = "SGLFW_Program__LEVEL" ;
     static constexpr const char* MVP_KEYS = "ModelViewProjection,MVP" ;
 
     int level ;
@@ -71,7 +72,7 @@ inline SGLFW_Program::SGLFW_Program(
     const float* _mvp
     )
     :
-    level(ssys::getenvint("SGLFW_Program_LEVEL", 0)),
+    level(ssys::getenvint(_LEVEL, 0)),
     dir( _dir ? strdup(_dir) : nullptr ),
     vtx_attname( _vtx_attname ? strdup(_vtx_attname) : nullptr ),
     nrm_attname( _nrm_attname ? strdup(_nrm_attname) : nullptr ),
@@ -156,6 +157,14 @@ inline void SGLFW_Program::createFromDir(const char* _dir)
 {
     const char* dir = U::Resolve(_dir);
 
+    if(level > 0) std::cout
+        << "SGLFW_Program::createFromDir"
+        << " _dir " << ( _dir ? _dir : "-" )
+        << " dir "  << (  dir ?  dir : "-" )
+        << "\n"
+        ;
+
+
     vertex_shader_text = U::ReadString(dir, "vert.glsl");
     geometry_shader_text = U::ReadString(dir, "geom.glsl");
     fragment_shader_text = U::ReadString(dir, "frag.glsl");
@@ -196,9 +205,14 @@ that did not see on Linux with "#version 460 core"
 inline void SGLFW_Program::createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text )
 {
     if(level > 0) std::cout << "[SGLFW_Program::createFromText level " << level << std::endl ;
-    if(level > 1) std::cout << " vertex_shader_text " << std::endl << vertex_shader_text << std::endl ;
+    if(level > 1) std::cout << " vertex_shader_text " << std::endl << ( vertex_shader_text ? vertex_shader_text : "-" ) << std::endl ;
     if(level > 1) std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ;
-    if(level > 1) std::cout << " fragment_shader_text " << std::endl << fragment_shader_text << std::endl ;
+    if(level > 1) std::cout << " fragment_shader_text " << std::endl << ( fragment_shader_text ? fragment_shader_text : "-" ) << std::endl ;
+
+    bool expect = vertex_shader_text && fragment_shader_text ;
+    assert( expect );
+    if(!expect) std::raise(SIGINT);
+
 
     int params = -1;
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW__check(__FILE__, __LINE__);
@@ -245,7 +259,7 @@ inline void SGLFW_Program::use() const
 
 inline GLint SGLFW_Program::getUniformLocation(const char* name) const
 {
-    GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
+    GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__, name);
     return loc ;
 }
 
@@ -343,7 +357,10 @@ SGLFW_Program::enableVertexAttribArray
 
 Array attribute : connecting values from the array with attribute symbol in the shader program
 
-Example rpos spec "4,GL_FLOAT,GL_FALSE,64,0,false"
+Example::
+
+    name:"rpos"
+    spec:"4,GL_FLOAT,GL_FALSE,64,0,false"
 
 NB when handling multiple buffers note that glVertexAttribPointer
 binds to the buffer object bound to GL_ARRAY_BUFFER when called.

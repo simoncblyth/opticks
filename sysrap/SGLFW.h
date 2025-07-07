@@ -85,6 +85,7 @@ envvars
 #include "SGLM.h"
 
 #include "SGLFW_Extras.h"
+#include "SGLFW_Attrib.h"
 #include "SGLFW_Program.h"
 #include "SGLFW_Mesh.h"
 #include "SGLFW_GLEQ.h"
@@ -146,6 +147,9 @@ F
    gm.toggle.tmax : then change far by moving cursor vertically
 G
    -
+alt+G
+   toggle gm.option.G controlling rendering of SGen
+
 H
    invokes SGLM::home returning to initial position with no lookrotation or eyeshift [--home]
 
@@ -571,6 +575,7 @@ inline void SGLFW::key_pressed(unsigned key)
         {
             case GLFW_KEY_A:   gm.option.A = !gm.option.A     ; break ;
             case GLFW_KEY_B:   gm.option.B = !gm.option.B     ; break ;
+            case GLFW_KEY_G:   gm.option.G = !gm.option.G     ; break ;
             case GLFW_KEY_M:   gm.option.M = !gm.option.M     ; break ;
             case GLFW_KEY_O:   gm.option.O = !gm.option.O     ; break ;
             case GLFW_KEY_T:   gm.reset_time()                ; break ;

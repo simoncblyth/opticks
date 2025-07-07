@@ -57,10 +57,12 @@ int main(int argc, char** argv)
 
     SRecord* ar = SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE" ) ;
     SRecord* br = SRecord::Load("$BFOLD", "$BFOLD_RECORD_SLICE" ) ;
+    SGen* gs = SGen::Load("$AFOLD", "$AFOLD_GENSTEP_SLICE" );
 
     SGLM gm ;
     gm.setTreeScene(tree, scene);
     gm.setRecord( ar, br );
+    gm.setGenstep( gs );
 
 
     if(ssys::is_under_ctest())
