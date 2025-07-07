@@ -680,10 +680,12 @@ SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a, boo
 
     int ni = a->num_items() ;
     int nj = 4 ;
+    float MAX = std::numeric_limits<float>::max() ;
+
     for(int j=0 ; j < nj ; j++)
     {
-        mn[j] = std::numeric_limits<float>::max() ;
-        mx[j] = std::numeric_limits<float>::min() ;
+        mn[j] = MAX ;
+        mx[j] = -MAX ;
     }
     // float limits are big enough as output is in float anyhow
 
