@@ -187,6 +187,7 @@ _CUR=GEOM/$GEOM/$SCRIPT/$EVT_CHECK
 allarg="info_open_dbg_run_close"
 defarg="info_open_run"
 arg=${1:-$defarg}
+arg2=$2
 
 vars="BASH_SOURCE allarg defarg arg name bin GEOM SGLFW__DEPTH SOPTIX__HANDLE VIZMASK _CUR"
 
@@ -217,6 +218,21 @@ if [ "${arg/close}" != "$arg" ]; then
     # close to invalidate the context
     CUR_close
 fi
+
+if [ "${arg/close}" != "$arg" ]; then
+    # close to invalidate the context
+    CUR_close
+fi
+
+
+f [ "$arg" == "touch"  ]; then
+    if [ -n "$arg2" ]; then
+        CUR_touch "$arg2"
+    else
+        echo $BASH_SOURCE:touch needs arg2 datetime accepted by CUR_touch eg "ssst.sh touch 11:00"
+    fi
+fi
+
 
 
 exit 0

@@ -100,7 +100,7 @@ export SCRIPT=cxr_min
 defarg=open_run_info
 [ -n "$BP" ] && defarg=dbg_info
 arg=${1:-$defarg}
-
+arg2=$2
 
 
 bin=CSGOptiXRenderInteractiveTest
@@ -336,12 +336,13 @@ if [ "${arg/close}" != "$arg" ]; then
     CUR_close
 fi
 
+if [ "$arg" == "touch"  ]; then
+    if [ -n "$arg2" ]; then
+        CUR_touch "$arg2"
+    else
+        echo $BASH_SOURCE arg2 needs to be a datetime accepted by CUR_touch eg "cxr_min.sh touch 11:00"
+    fi
 
-#if [ "$arg" == "grab" -o "$arg" == "open" -o "$arg" == "clean" -o "$arg" == "grab_open" ]; then
-#    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
-#fi
-#
-#if [ "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
-#    source $OPTICKS_HOME/bin/BASE_grab.sh $arg
-#fi
+fi
+
 
