@@ -428,6 +428,8 @@ set(HEADERS
     SCMD.h
 
     SRecord.h
+    SGen.h
+
     SGLM.h
     SGLM_Parse.h
     SGLM_Modifiers.h

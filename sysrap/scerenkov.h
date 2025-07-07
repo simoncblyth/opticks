@@ -21,6 +21,10 @@ scerenkov.h : replace (but stay similar to) : npy/NStep.hpp optixrap/cu/cerenkov
 #include "scuda.h"
 #include "squad.h"
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+#include "NP.hh"
+#endif
 
 struct scerenkov
 {

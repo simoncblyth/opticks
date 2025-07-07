@@ -144,7 +144,7 @@ void U4Material::GetMinMaxValue( double& mn , double& mx, const G4MaterialProper
 {
     size_t len = prop->GetVectorLength() ;
     double MAX = std::numeric_limits<double>::max();
-    mn = MAX
+    mn = MAX ;
     mx = -MAX ;
     for(unsigned i=0 ; i < len ; i++)
     {
