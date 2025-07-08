@@ -1,25 +1,31 @@
 #pragma once
 
+/**
+sf4.h (formerly s4.h, renamed to avoid clash with S4.h on case compromised macOS)
+===================================================================================
+
+**/
+
 #include <iostream>
 #include <iomanip>
 
-struct s4
+struct sf4
 {
     float x,y,z,w ;
     float* data() ;
     std::string desc() const ;
 };
 
-inline float* s4::data()
+inline float* sf4::data()
 {
     return &x ;
 }
 
-inline std::string s4::desc() const
+inline std::string sf4::desc() const
 {
     std::stringstream ss ;
     ss
-      << "[s4"
+      << "[sf4"
       << " " << std::setw(10) << std::fixed << std::setprecision(3) << x
       << " " << std::setw(10) << std::fixed << std::setprecision(3) << y
       << " " << std::setw(10) << std::fixed << std::setprecision(3) << z

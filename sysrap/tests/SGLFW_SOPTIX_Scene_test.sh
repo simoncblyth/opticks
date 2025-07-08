@@ -76,9 +76,10 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
+
 name=SGLFW_SOPTIX_Scene_test
 bin=$name
-
+export SCRIPT=$name
 
 source $HOME/.opticks/GEOM/GEOM.sh
 [ -z "$GEOM" ] && echo $BASH_SOURCE FATAL GEOM $GEOM IS REQUIRTED && exit 1
@@ -88,8 +89,6 @@ if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
    echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB}
    exit 1
 fi
-
-export SCRIPT=$name
 
 source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets AFOLD BFOLD where event info is loaded from
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar controlling initial viewpoint
@@ -170,7 +169,7 @@ else
     #export SGLFW__DEPTH=1   # dump _depth.jpg together with screenshots
 
     soptix__handle=-1  # default, full geometry
-    #soptix__handle`=0  #  only non-instanced global geometry
+    #soptix__handle=0  #  only non-instanced global geometry
     #soptix__handle=1  #  single CSGSolid
     #soptix__handle=2  #
     export SOPTIX__HANDLE=${SOPTIX__HANDLE:-$soptix__handle}
@@ -184,12 +183,12 @@ fi
 _CUR=GEOM/$GEOM/$SCRIPT/$EVT_CHECK
 
 
-allarg="info_open_dbg_run_close"
+allarg="info_open_dbg_run_close_touch"
 defarg="info_open_run"
 arg=${1:-$defarg}
 arg2=$2
 
-vars="BASH_SOURCE allarg defarg arg name bin GEOM SGLFW__DEPTH SOPTIX__HANDLE VIZMASK _CUR"
+vars="BASH_SOURCE allarg defarg arg name bin GEOM _CUR"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -202,11 +201,9 @@ if [ "${arg/dbg}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi
 
-
 if [ "${arg/open}" != "$arg" ]; then
     # open to define current context string which controls where screenshots are copied to
     CUR_open ${_CUR}
-    ## IF FORGET TO OPEN AND WANT TO USE SOME Screenshots from past : CUR_touch 21:54
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
@@ -219,21 +216,13 @@ if [ "${arg/close}" != "$arg" ]; then
     CUR_close
 fi
 
-if [ "${arg/close}" != "$arg" ]; then
-    # close to invalidate the context
-    CUR_close
-fi
-
-
-f [ "$arg" == "touch"  ]; then
+if [ "$arg" == "touch"  ]; then
     if [ -n "$arg2" ]; then
         CUR_touch "$arg2"
     else
         echo $BASH_SOURCE:touch needs arg2 datetime accepted by CUR_touch eg "ssst.sh touch 11:00"
     fi
 fi
-
-
 
 exit 0
 
