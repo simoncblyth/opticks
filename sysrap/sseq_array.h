@@ -13,6 +13,7 @@ This is used from::
 
 #include "NPX.h"
 #include "sseq.h"
+#include "sstr.h"
 
 struct sseq_array
 {
@@ -35,20 +36,35 @@ Create array of int64_t indices into the source seq array
 with histories that match the argument, eg::
 
    "TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT SD"
+   "TO BT BT BT SA,TO BT BT BT EC"
+
+A comma can be used to delimit multiple histories that are
+individually used with the OR over all histories selection
+being returned.
 
 **/
 
 
 inline NP* sseq_array::create_selection(const char* q_startswith)
 {
+    std::vector<std::string> q_sws ;
+    sstr::Split(q_startswith, ',', q_sws );
+
     std::vector<int64_t> vv ;
     int nqq = int(qq.size());
     for(int i=0 ; i < nqq ; i++)
     {
         const sseq& q = qq[i] ;
         std::string his = q.seqhis_();
-        bool startswith = 0==strncmp(his.c_str(), q_startswith, strlen(q_startswith));
-        if(startswith) vv.push_back(i);
+
+        int match = 0 ;
+        for(int j=0 ; j < int(q_sws.size()) ; j++)
+        {
+            const char* q_sw = q_sws[j].c_str();
+            bool startswith = 0==strncmp(his.c_str(), q_sw, strlen(q_sw));
+            if(startswith) match += 1;
+        }
+        if(match > 0) vv.push_back(i);
     }
     NP* sel = NPX::Make<int64_t>(vv);
     return sel ;

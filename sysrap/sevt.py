@@ -412,6 +412,9 @@ class SEvt(object):
 
     def q_startswith_or_(self, pfxs_="TO BT BT BT SA,TO BT BT BT SD", delim=",", encoding="utf-8"):
         """
+        :param pfxs_: delimited string list with potentially multiple history strings
+        :param delim:
+
         Another way to implement this is with np.any
         """
         pfxs = pfxs_.split(delim)

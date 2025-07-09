@@ -4,10 +4,10 @@ sseq_record.h
 ===============
 
 Enable selection of photon records with particular histories such as "TO BT AB"
-Currently only used from::
+Used from::
 
-    ./sysrap/tests/sseq_record_test.cc
-
+    sysrap/tests/sseq_record_test.cc
+    sysrap/SRecord.h
 
 **/
 
