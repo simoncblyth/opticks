@@ -28,7 +28,8 @@ script=input_photons_plt.py
 #stem=RainXZ_Z230_1000
 
 #stem=CircleXZ_R500_100k
-stem=CircleXZ_R10_361
+#stem=CircleXZ_R10_361
+stem=SemiCircleXZ_R-500_100k
 
 #sufx=_f4
 sufx=_f8

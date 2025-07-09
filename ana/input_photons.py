@@ -370,35 +370,40 @@ class InputPhotons(object):
         return p
 
     @classmethod
-    def GenerateXZ_Circle(cls, num, radius):
+    def GenerateXZ_Circle(cls, num, _radius, _frac=(0.,1.)):
         """
         :param num: number of photons to generate
-        :param radius: radius of the starting positions
+        :param _radius: radius of the starting positions, -ve for inwards direction
+        :param _frac: tuple with fraction of 2pi range, eg
+
+           (0.,1.) circle
+           (0.,0.5) semi-circle
 
         This is similar to sysrap/storch.h for T_CIRCLE
 
         As np.linspace includes the end, will have repeated
         angle at zero and 360 degrees.
-
         """
-        frac = np.linspace(0., 1., num)
+        frac = np.linspace(_frac[0], _frac[1], num)
         phi = 2.*np.pi*frac
         cosphi = np.cos(phi)
         sinphi = np.sin(phi)
+
+        inwards = _radius < 0.
 
         position = np.zeros( (num, 3), dtype=cls.DTYPE )
         position[:,0] = cosphi
         position[:,1] = 0.
         position[:,2] = sinphi
-        position *= radius
+        position *= np.abs(_radius)
 
         direction = np.zeros( (num, 3), dtype=cls.DTYPE )
         direction[:,0] = cosphi
         direction[:,1] = 0.
         direction[:,2] = sinphi
+        if inwards: direction = -direction
 
         polarization = rotateUz_( cls.Y, direction )
-        #polarization = vnorm(np.cross(direction,cls.Y))
 
         p = np.zeros( (num, 4, 4), dtype=cls.DTYPE )
 
@@ -478,6 +483,7 @@ class InputPhotons(object):
     ICC = "InwardsCubeCorners"
     RS = "RandomSpherical"
     CIXZ = "CircleXZ"
+    SCIXZ = "SemiCircleXZ"
     RD = "RandomDisc"
     UD = "UniformDisc"
     UXZ = "UpXZ"
@@ -505,6 +511,7 @@ class InputPhotons(object):
     NAMES += [UD+R500+"_10k"]
     NAMES += [GRIDXY+X700+Z230+"_10k", GRIDXY+X1000+Z1000+"_40k"    ]
     NAMES += [CIXZ+R500+"_100k", CIXZ+R10+"_361"]
+    NAMES += [SCIXZ+"_R-500"+"_100k"]
     NAMES += [SIDEZX+X300+"_100k",]
 
 
@@ -543,6 +550,13 @@ class InputPhotons(object):
             radius = d.get("R",100.)
             num = d.get("N",1000)
             p = self.GenerateXZ_Circle(num, radius)
+
+        elif name.startswith(self.SCIXZ):
+            d = parsetail(name, prefix=self.SCIXZ)
+            radius = d.get("R",100.)
+            num = d.get("N",1000)
+            p = self.GenerateXZ_Circle(num, radius, _frac=(0.,0.5))
+
         elif name.startswith(self.RAINXZ):
             d = parsetail(name, prefix=self.RAINXZ)
             z0 = 1000. if d['Z'] is None else d['Z']

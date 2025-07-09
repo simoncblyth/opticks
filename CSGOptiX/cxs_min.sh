@@ -192,7 +192,8 @@ vars="$vars version VERSION"
 #test=input_photon_nnvt
 #test=input_photon_target
 #test=input_photon_wp_pmt
-test=input_photon_wp_pmt_side
+#test=input_photon_wp_pmt_side
+test=input_photon_wp_pmt_semi
 #test=input_photon_s_pmt
 #test=input_photon_poolcover
 
@@ -447,6 +448,12 @@ elif [ "${TEST:0:12}" == "input_photon" ]; then
 
       sevt__input_photon_dir=$HOME/.opticks/InputPhotons
       opticks_input_photon=SideZX_X300_100k_f8.npy
+      opticks_input_photon_frame=PMT_20inch_veto:0:1000
+
+   elif [ "${TEST:12}" == "_wp_pmt_semi" ]; then
+
+      sevt__input_photon_dir=$HOME/.opticks/InputPhotons
+      opticks_input_photon=SemiCircleXZ_R-500_100k_f8.npy
       opticks_input_photon_frame=PMT_20inch_veto:0:1000
 
    elif [ "${TEST:12}" == "_poolcover" ]; then
