@@ -192,8 +192,9 @@ vars="$vars version VERSION"
 #test=input_photon_nnvt
 #test=input_photon_target
 #test=input_photon_wp_pmt
+test=input_photon_wp_pmt_side
 #test=input_photon_s_pmt
-test=input_photon_poolcover
+#test=input_photon_poolcover
 
 #test=large_evt
 #test=vlarge_evt
@@ -441,6 +442,12 @@ elif [ "${TEST:0:12}" == "input_photon" ]; then
       opticks_input_photon_frame=PMT_20inch_veto:0:1000
 
       #export PIDX=99999
+
+   elif [ "${TEST:12}" == "_wp_pmt_side" ]; then
+
+      sevt__input_photon_dir=$HOME/.opticks/InputPhotons
+      opticks_input_photon=SideZX_X300_100k_f8.npy
+      opticks_input_photon_frame=PMT_20inch_veto:0:1000
 
    elif [ "${TEST:12}" == "_poolcover" ]; then
 

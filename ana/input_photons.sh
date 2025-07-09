@@ -20,6 +20,8 @@ cd $(dirname $(realpath $BASH_SOURCE))
 script=input_photons.py
 
 defarg="info_numpy_run_ls"
+[ "$OPT" == "-i" ] && defarg="info_numpy_dbg_ls"
+
 arg=${1:-$defarg}
 
 dtypes="np.float32 np.float64"
@@ -28,7 +30,6 @@ vars="PWD script defarg arg dtypes"
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
 fi
-
 
 if [ "${arg/numpy}" != "$arg" ]; then
     python -c "import numpy as np" 2>/dev/null

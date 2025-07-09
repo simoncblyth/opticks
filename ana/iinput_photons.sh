@@ -1,3 +1,7 @@
-#!/bin/bash -l 
-OPT=-i $(dirname $BASH_SOURCE)/input_photons.sh
+#!/bin/bash
+
+cd $(dirname $(realpath $BASH_SOURCE))
+OPT=-i ./input_photons.sh
+
+
 

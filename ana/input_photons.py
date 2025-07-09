@@ -241,8 +241,61 @@ class InputPhotons(object):
         pass
         return pp.reshape(-1,4,4)
 
+
+
     @classmethod
-    def GenerateXZ(cls, n, mom, x0lim=[-49.,49.],y0=0.,z0=-99.  ):
+    def GenerateZX(cls, n, mom, x0=0., y0=0., z0lim=[-49.,49.]):
+        """
+        :param n: abs(n) is number of z samples, negated n indicates non-random linspace z positions
+
+
+           100 +-----------------------------------+
+               |                                   |
+               |                                   |
+               |                                   |
+               |                                   |
+               +=>                                 |
+               +=>                                 |
+               +=>                                 |
+             0 +=>              +                  |
+               +=>                                 |
+               +=>                                 |
+               +=>                                 |         Z
+               |                                   |         |  Y
+               |                                   |         | /
+               |                                   |         |/
+          -100 +-----------------------------------+         +---> X
+             -100        -49    0     49          100
+
+
+        """
+        assert len(z0lim) == 2
+        if n < 0:
+            n = -n
+            zz = sample_linspace(n, z0lim[0], z0lim[1] )
+        else:
+            zz = sample_linear(n, z0lim[0], z0lim[1] )
+        pass
+
+        pos = np.zeros((n,3), dtype=cls.DTYPE )
+        pos[:,0] = x0
+        pos[:,1] = y0
+        pos[:,2] = zz
+
+        p = np.zeros( (n, 4, 4), dtype=cls.DTYPE )
+        p[:,0,:3] = pos
+        p[:,0, 3] = cls.TIME
+        p[:,1,:3] = mom
+        p[:,1, 3] = cls.WEIGHT
+        p[:,2,:3] = cls.Y         # pol
+        p[:,2, 3] = cls.WAVELENGTH
+        return p
+
+
+
+
+    @classmethod
+    def GenerateXZ(cls, n, mom, x0lim=[-49.,49.],y0=0.,z0=-99.):
         """
         :param n: abs(n) is number of x samples, negated n indicates non-random linspace x positions
 
@@ -430,11 +483,13 @@ class InputPhotons(object):
     UXZ = "UpXZ"
     DXZ = "DownXZ"
     RAINXZ = "RainXZ"
+    SIDEZX = "SideZX"
     GRIDXY = "GridXY"
     Z230 = "_Z230"
     Z195 = "_Z195"
     Z1000 = "_Z1000"
     X700 = "_X700"
+    X300 = "_X300"
     X25 = "_X25"
     X1000 = "_X1000"
     R500 = "_R500"
@@ -450,6 +505,8 @@ class InputPhotons(object):
     NAMES += [UD+R500+"_10k"]
     NAMES += [GRIDXY+X700+Z230+"_10k", GRIDXY+X1000+Z1000+"_40k"    ]
     NAMES += [CIXZ+R500+"_100k", CIXZ+R10+"_361"]
+    NAMES += [SIDEZX+X300+"_100k",]
+
 
     def generate(self, name, args):
         if args.seed > -1:
@@ -493,6 +550,13 @@ class InputPhotons(object):
             num = d['N']
             mom = -self.Z
             p = self.GenerateXZ(-num, mom, x0lim=[-xl,xl],y0=0,z0=z0 )
+        elif name.startswith(self.SIDEZX):
+            d = parsetail(name, prefix=self.SIDEZX)
+            x0 = 1000. if d['X'] is None else d['X']
+            zl = 250. if d['Z'] is None else d['Z']
+            num = d['N']
+            mom = -self.X
+            p = self.GenerateZX(-num, mom, x0=x0, y0=0., z0lim=[0,zl] )
         elif name.startswith(self.UD):
             d = parsetail(name, prefix=self.UD)
             p = self.GenerateUniformDisc(d["N"], radius=d["R"])
