@@ -5,7 +5,18 @@ SGLFW_check.h
 
 **/
 
-inline void SGLFW__check(const char* path, int line, const char* ctx=nullptr, int id=-99 ) // static
+#include "ssys.h"
+
+struct SGLFW_check
+{
+    static constexpr const char* _level = "SGLFW_check__level" ;
+    static int level ;
+};
+
+int SGLFW_check::level = ssys::getenvint(_level,0);
+
+
+inline void SGLFW__check(const char* path, int line, const char* ctx=nullptr, int id=-99, const char* act=nullptr ) // static
 {
     GLenum err = glGetError() ;
     bool ok = err == GL_NO_ERROR ;
@@ -23,13 +34,20 @@ inline void SGLFW__check(const char* path, int line, const char* ctx=nullptr, in
 #endif
         case GL_INVALID_FRAMEBUFFER_OPERATION: s = "GL_INVALID_FRAMEBUFFER_OPERATION" ; break ;
     }
-    if(!ok) std::cerr
-         << "SGLFW__check OpenGL ERROR " << "\n"
-         << "(vi path +line) : ( vi " << path << " +" << line << " ) " << "\n"
-         << " ctx " << ( ctx ? ctx : "-" ) << "\n"
-         << " id " << id << "\n"
-         << " err "  << std::hex << err << std::dec << "\n"
-         << " errstr " << " : " << ( s ? s : "-" ) << "\n"
+
+    const char* delim = ok ? "" : "\n" ;
+
+    if(!ok || SGLFW_check::level  > 0) std::cerr
+         << "SGLFW__check " << delim
+         //<< "(vi path +line) : "
+         << "( vi " << std::setw(55) << path << " " << std::showpos << std::setw(4) << line << std::noshowpos << " ) " << delim
+         << " ctx " << std::setw(20) << ( ctx ? ctx : "-" ) << delim
+         << " id " << std::setw(4) << id << delim
+         << " act " << std::setw(30) << ( act ? act : "-" ) << delim
+         << " err "  << std::hex << err << std::dec << delim
+         << " errstr " << " : " << ( s ? s : "-" ) << delim
+         << " [" <<  SGLFW_check::_level << "] " << SGLFW_check::level << delim
+         << "\n"
          ;
 
     assert( ok );

@@ -80,8 +80,6 @@ inline void SGLFW_Gen::render(const SGLFW_Program* prog)
 
     buf->bind();
     prog->enableVertexAttribArray("rpos", SGen::RPOS_SPEC );
-
-    buf->bind();
     prog->enableVertexAttribArray("rdel", SGen::RDEL_SPEC );
 
 

@@ -27,18 +27,16 @@ inline SGLFW_VAO::SGLFW_VAO(const char* _name)
 
 inline void SGLFW_VAO::init()
 {
-    glGenVertexArrays (1, &id);  SGLFW__check(__FILE__, __LINE__, name, id );
-    //printf("SGLFW_VAO::init id[%d]\n", id );
+    glGenVertexArrays (1, &id);  SGLFW__check(__FILE__, __LINE__, name, id, "glGenVertexArrays/init" );
 }
 
 inline void SGLFW_VAO::bind()
 {
-    //printf("SGLFW_VAO::bind id [%d] \n", id ); 
-    glBindVertexArray(id);        SGLFW__check(__FILE__, __LINE__, name, id );
+    glBindVertexArray(id);        SGLFW__check(__FILE__, __LINE__, name, id, "glBindVertexArray/bind" );
 }
 inline void SGLFW_VAO::unbind()
 {
-    glBindVertexArray(0);        SGLFW__check(__FILE__, __LINE__, name, id );
+    glBindVertexArray(0);        SGLFW__check(__FILE__, __LINE__, name, id, "glBindVertexArray/unbi" );
 }
 
 

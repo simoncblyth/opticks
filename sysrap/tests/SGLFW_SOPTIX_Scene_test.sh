@@ -117,7 +117,7 @@ anim()
 }
 [ -n "$ANIM" ] && anim
 
-
+[ -n "$OPENGL" ] && export SGLFW_check__level=1
 
 
 

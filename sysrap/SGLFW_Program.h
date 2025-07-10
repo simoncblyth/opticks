@@ -266,13 +266,13 @@ that are not used.
 
 inline GLint SGLFW_Program::getUniformLocation(const char* name) const
 {
-    GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__, name);
+    GLint loc = glGetUniformLocation(program, name);   SGLFW__check(__FILE__, __LINE__, name, loc, "glGetUniformLocation/m" );
     return loc ;
 }
 
 inline GLint SGLFW_Program::getAttribLocation(const char* name) const
 {
-    GLint loc = glGetAttribLocation(program, name);   SGLFW__check(__FILE__, __LINE__);
+    GLint loc = glGetAttribLocation(program, name);   SGLFW__check(__FILE__, __LINE__, name, loc, "glGetAttribLocation/m" );
     return loc ;
 }
 
@@ -387,15 +387,15 @@ inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char
 
     SGLFW_Attrib att(name, spec);
 
-    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
+    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__, name, att.index, "getAttribLocation" );
 
     if(dump) std::cout << "SGLFW_Program::enableVertexAttribArray att.desc [" << att.desc() << "]" <<  std::endl ;
 
-    glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__, name, att.index, "glEnableVertexAttribArray" );
 
     assert( att.integer_attribute == false );
 
-    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__);
+    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__, name, att.index, "glVertexAttribPointer" );
 }
 
 
@@ -405,7 +405,7 @@ inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* nam
 
     SGLFW_Attrib att(name, SMesh::MATROW_SPEC );
 
-    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__);
+    att.index = getAttribLocation( name );     SGLFW__check(__FILE__, __LINE__,name, att.index, "getAttribLocation");
 
     size_t qsize = att.stride/4 ;
     GLuint divisor = 1 ;
@@ -416,21 +416,21 @@ inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* nam
     const void* offset2 = (void*)(qsize*2) ;
     const void* offset3 = (void*)(qsize*3) ;
 
-    glEnableVertexAttribArray(att.index+0);                                                       SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribPointer(att.index+0, att.size, att.type, att.normalized, att.stride, offset0 ); SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribDivisor(att.index+0, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(att.index+0);                                                       SGLFW__check(__FILE__, __LINE__,name,att.index+0, "glEnableVertexAttribArray");
+    glVertexAttribPointer(att.index+0, att.size, att.type, att.normalized, att.stride, offset0 ); SGLFW__check(__FILE__, __LINE__,name,att.index+0, "glVertexAttribPointer");
+    glVertexAttribDivisor(att.index+0, divisor);                                                  SGLFW__check(__FILE__, __LINE__,name,att.index+0, "glVertexAttribDivisor");
 
-    glEnableVertexAttribArray(att.index+1);                                                       SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribPointer(att.index+1, att.size, att.type, att.normalized, att.stride, offset1 ); SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribDivisor(att.index+1, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(att.index+1);                                                       SGLFW__check(__FILE__, __LINE__,name,att.index+1, "glEnableVertexAttribArray");
+    glVertexAttribPointer(att.index+1, att.size, att.type, att.normalized, att.stride, offset1 ); SGLFW__check(__FILE__, __LINE__,name,att.index+1, "glVertexAttribPointer");
+    glVertexAttribDivisor(att.index+1, divisor);                                                  SGLFW__check(__FILE__, __LINE__,name,att.index+1, "glVertexAttribDivisor");
 
-    glEnableVertexAttribArray(att.index+2);                                                       SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribPointer(att.index+2, att.size, att.type, att.normalized, att.stride, offset2 ); SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribDivisor(att.index+2, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(att.index+2);                                                       SGLFW__check(__FILE__, __LINE__,name,att.index+2, "glEnableVertexAttribArray");
+    glVertexAttribPointer(att.index+2, att.size, att.type, att.normalized, att.stride, offset2 ); SGLFW__check(__FILE__, __LINE__,name,att.index+2, "glVertexAttribPointer");
+    glVertexAttribDivisor(att.index+2, divisor);                                                  SGLFW__check(__FILE__, __LINE__,name,att.index+2, "glVertexAttribDivisor");
 
-    glEnableVertexAttribArray(att.index+3);                                                       SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribPointer(att.index+3, att.size, att.type, att.normalized, att.stride, offset3 ); SGLFW__check(__FILE__, __LINE__);
-    glVertexAttribDivisor(att.index+3, divisor);                                                  SGLFW__check(__FILE__, __LINE__);
+    glEnableVertexAttribArray(att.index+3);                                                       SGLFW__check(__FILE__, __LINE__,name,att.index+3, "glEnableVertexAttribArray");
+    glVertexAttribPointer(att.index+3, att.size, att.type, att.normalized, att.stride, offset3 ); SGLFW__check(__FILE__, __LINE__,name,att.index+3, "glVertexAttribPointer");
+    glVertexAttribDivisor(att.index+3, divisor);                                                  SGLFW__check(__FILE__, __LINE__,name,att.index+3, "glVertexAttribDivisor");
 }
 
 inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static

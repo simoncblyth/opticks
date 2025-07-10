@@ -36,22 +36,22 @@ inline SGLFW_Buffer::SGLFW_Buffer( const char* _name, int num_bytes_, const void
     usage(usage_),
     id(0)
 {
-    glGenBuffers(1, &id );                         SGLFW__check(__FILE__, __LINE__, name, id);
+    glGenBuffers(1, &id );                         SGLFW__check(__FILE__, __LINE__, name, id, "glGenBuffers/ctor");
 }
 
 inline void SGLFW_Buffer::bind()
 {
-    glBindBuffer(target, id);                      SGLFW__check(__FILE__, __LINE__, name, id);
+    glBindBuffer(target, id);                      SGLFW__check(__FILE__, __LINE__, name, id, "glBindBuffer/bind");
 }
 
 inline void SGLFW_Buffer::upload()
 {
-    glBufferData(target, num_bytes, data, usage ); SGLFW__check(__FILE__, __LINE__, name, id);
+    glBufferData(target, num_bytes, data, usage ); SGLFW__check(__FILE__, __LINE__, name, id, "glBufferData/uplo");
 }
 
 inline void SGLFW_Buffer::unbind()
 {
-    glBindBuffer(target, 0);                      SGLFW__check(__FILE__, __LINE__, name, id);
+    glBindBuffer(target, 0);                      SGLFW__check(__FILE__, __LINE__, name, id, "glBindBuffer/unbi");
 }
 
 
