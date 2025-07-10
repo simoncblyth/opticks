@@ -207,6 +207,7 @@ UseGeometryShader
 
 UseShaderSGLFW
     single triangle
+    (refreshed July 2025)
 
 UseShaderSGLFW_Mesh
     single mesh 
@@ -219,9 +220,11 @@ UseShaderSGLFW_MeshMesh_Instanced
 
 UseShaderSGLFW_SScene
     get SMesh and instance transforms from SScene
+    (refreshed July 2025)
 
 UseShaderSGLFW_SScene_encapsulated
     moving impl into SGLFW_Scene.h
+    (refreshed July 2025)
 
 
 .. comment OPTIX_START

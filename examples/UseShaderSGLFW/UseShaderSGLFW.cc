@@ -90,17 +90,17 @@ int main(void)
     SGLFW gl(gm);
     GLFWwindow* window = gl.window ;
 
-    SGLFW_VAO vao ;
+    SGLFW_VAO vao("vao") ;
     vao.bind();
 
 #ifdef WITH_INDICES
-    SGLFW_Buffer ibuf( sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW );
+    SGLFW_Buffer ibuf("ibuf", sizeof(indices), indices, GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW );
     ibuf.bind();
     ibuf.upload();
 #endif
 
     assert( sizeof(vertices) == sizeof(float)*5*3 );
-    SGLFW_Buffer vbuf( sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW );
+    SGLFW_Buffer vbuf("vbuf", sizeof(vertices), vertices, GL_ARRAY_BUFFER, GL_STATIC_DRAW );
     vbuf.bind();
     vbuf.upload();
 

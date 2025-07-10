@@ -147,7 +147,7 @@ As the above ELVSelection has a problem for solids
 with names starting with "t" are starting to transition
 to separate the modifier from the list of ints or solid names.
 
-TODO: adopt "t:" prefix for the tilde modifier.
+DONE : adopt "t:" prefix for the tilde modifier.
 
 */
 

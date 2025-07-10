@@ -168,6 +168,10 @@ SScene::Load
 
 HMM cf CSGFoundry::Load which uses SSim::set_override_scene
 
+Dependency on SGeoConfig.cc (ie library functionality, not just header only)
+is inconvenient for examples/UseShaderSGLFW_SScene. Workaraound is to
+use lowerlevel SScene::Load_ without the ELV functionality.
+
 **/
 
 inline SScene* SScene::Load(const char* base)
