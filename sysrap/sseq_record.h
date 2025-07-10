@@ -98,7 +98,7 @@ inline sseq_record::sseq_record(const NP* _seq, const NP* _record )
 sseq_record::create_record_selection
 -------------------------------------
 
-1. uses sseq_array to create array of sseq photon indices indices
+1. uses sseq_array to create array of sseq photon indices
    with histories matching q_startswith
 
 2. applies the seq selection to the record array creating a new

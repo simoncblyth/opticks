@@ -4,7 +4,7 @@ cxt_min.py
 ===========
 
 1. loads simtrace SEvt from $MFOLD
-2. check validity with asserts on the simtrace gensteps
+2. checks validity with asserts on the simtrace gensteps
 3. prepare genstep ugrid positions and upos simtrace intersect positions
    depending on GLOBAL envvar
 4. plot the ugrid and upos points
@@ -103,6 +103,11 @@ B = int(os.environ.get("B","0"))
 GLOBAL = 1 == int(os.environ.get("GLOBAL","0"))
 GSGRID = 1 == int(os.environ.get("GSGRID","0"))
 FRAME = 1 == int(os.environ.get("FRAME","0"))
+POINT = np.fromstring(os.environ["POINT"],sep=",").reshape(-1,3) if "POINT" in os.environ else None
+POINTSIZE = float(os.environ.get("POINTSIZE",1.))
+APOINTSIZE = float(os.environ.get("APOINTSIZE",10.))
+BPOINTSIZE = float(os.environ.get("BPOINTSIZE",10.))
+
 
 if MODE in [2,3]:
     import opticks.ana.pvplt as pvp
@@ -301,11 +306,19 @@ if __name__ == '__main__':
     unrm = gnrm if GLOBAL else lnrm
     upos = gpos if GLOBAL else lpos
 
-
-
+    ASLICE = None
+    AIDX = int(os.environ.get("AIDX","0"))
     if not a is None:
-        afm = np.where( a.f.record[:,:,3,3].view(np.int32) > 0 )   ## flagmask selection to skip ufilled step point records
-        g_apos = a.f.record[afm][:,0].copy()   ## BUT fm selection looses separation between photon records
+        if "AFOLD_RECORD_SLICE" in os.environ:
+            ASLICE = os.environ["AFOLD_RECORD_SLICE"]
+            ase = a.q_startswith(ASLICE)
+            g_apos = a.f.record[ase][:,:,0].copy()
+        else:
+            ase = np.where( a.f.record[:,:,3,3].view(np.int32) > 0 )   ## flagmask selection to skip ufilled step point records
+            g_apos = a.f.record[ase][:,0].copy()
+            ## HMM: how to avoid loosing separation between photon records
+        pass
+
         g_apos[...,3] = 1.  # transform as position
         l_apos = np.dot( g_apos, w2m )
         u_apos = g_apos if GLOBAL else l_apos
@@ -316,8 +329,13 @@ if __name__ == '__main__':
     pass
 
     if not b is None:
-        bfm = np.where( b.f.record[:,:,3,3].view(np.int32) > 0 )   ## flagmask selection to skip ufilled step point records
-        g_bpos = b.f.record[bfm][:,0].copy()   ## BUT fm selection looses separation between photon records
+        if "BFOLD_RECORD_SLICE" in os.environ:
+            bse = b.q_startswith(os.environ["BFOLD_RECORD_SLICE"])
+            g_bpos = b.f.record[bse][:,:,0].copy()
+        else:
+            bse = np.where( b.f.record[:,:,3,3].view(np.int32) > 0 )   ## flagmask selection to skip ufilled step point records
+            g_bpos = b.f.record[bse][:,0].copy()
+        pass
         g_bpos[...,3] = 1.  # transform as position
         l_bpos = np.dot( g_bpos, w2m )
         u_bpos = g_bpos if GLOBAL else l_bpos
@@ -424,9 +442,19 @@ if __name__ == '__main__':
 
         if GSGRID: pl.add_points(ugrid[:,:3], color="r", pickable=False )
 
-        if not u_apos is None: pvp.pvplt_add_points(pl, u_apos[:,:3], color="red",  label="u_apos" )
-        if not u_bpos is None: pvp.pvplt_add_points(pl, u_bpos[:,:3], color="blue", label="u_bpos" )
+        if not u_apos is None: pvp.pvplt_add_points_adaptive(pl, u_apos, color="red",  label="u_apos" ) # point_size=APOINTSIZE )
+        if not u_bpos is None: pvp.pvplt_add_points_adaptive(pl, u_bpos, color="blue", label="u_bpos" ) # point_size=BPOINTSIZE )
 
+        if not u_apos is None and u_apos.ndim == 3 and not ASLICE is None:
+            num_step_point = len(ASLICE.split())
+            pvp.pvplt_add_contiguous_line_segments( pl, u_apos[AIDX,:num_step_point,:3], point_size=4 )
+        pass
+
+        def callback_click_position(xy):
+            print("callback_click_position xy : %s " % str(xy))
+        pass
+        pl.track_click_position(callback_click_position)
+        if not POINT is None: pl.add_points(POINT, color="r", label="POINT") # point_size=POINTSIZE, render_points_as_spheres=True)
 
         cp = pvp.pvplt_show(pl, incpoi=-5, legend=True, title=None )
     else:

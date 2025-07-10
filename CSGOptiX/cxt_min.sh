@@ -14,13 +14,24 @@ cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
      GSGRID=0 GRID=0 GLOBAL=0 KEY=blue,lightblue,cornflowerblue,orange,magenta,tomato cxt_min.sh pdb
          ## illuminating re the Tyvek:magenta,tomato L shape at top of LowerChimney
 
-     PRIMTAB=1 NORMAL=1 cxt_min.sh pdb 
+     PRIMTAB=1 NORMAL=1 cxt_min.sh pdb
 
      PRIMTAB=1 NORMAL=1 NORMAL_FILTER=100 KEY=~yellow,green ./cxt_min.sh pdb
            ## inverted key selection
 
 
 TODO: add option to draw a spinkle of intersect normal direction arrows
+
+
+
+Issue
+------
+
+LOG=1 shows are writing to different dir from MFOLD where python looks::
+
+    /data1/blyth/tmp/GEOM/J25_4_0_opticks_Debug/CSGOptiXTMTest/ALL0_no_opticks_event_name/A000
+    /data1/blyth/tmp/GEOM/J25_4_0_opticks_Debug/CSGOptiXTMTest/PMT_20inch_veto:0:1000/A000
+
 
 
 Coincident surface checking
@@ -120,7 +131,7 @@ allarg="info_fold_run_dbg_brab_grab_ana"
 defarg=info_run_info_pdb
 [ -n "$BP" ] && defarg="info_dbg"
 arg=${1:-$defarg}
-
+arg2=$2
 
 bin=CSGOptiXTMTest
 which_bin=$(which $bin)
@@ -134,13 +145,14 @@ if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFro
 else
     ## development source tree usage : where need to often switch between geometries
     source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
-    source ~/.opticks/GEOM/MOI.sh   # sets MOI envvar, use MOI bash function to setup/edit
 fi
 
+source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, use MOI bash function to setup/edit
+source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally define CUR_ bash function, for controlling directory for screenshots
+source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally define AFOLD and/or BFOLD for adding event tracks to simtrace plots
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
-
 
 mode=3
 eye=0,10000,0
@@ -153,8 +165,14 @@ export EVT=${EVT:-A000}
 export BASE=$TMP/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
-export FOLD=$TMP/GEOM/$GEOM/$bin/${MOI:-0}/$EVT
+
+#rel=${MOI:-0}
+rel=ALL0_no_opticks_event_name   ## SOMEHOW THE DIRECTORY WRITTEN TO HAS CHANGED ?
+export MFOLD=$TMP/GEOM/$GEOM/$bin/$rel/$EVT
+
+
 export SCRIPT=$(basename $BASH_SOURCE)
+SCRIPT=${SCRIPT/.sh}
 
 version=1
 VERSION=${VERSION:-$version}
@@ -174,10 +192,14 @@ export CEGS=16:0:9:2000   # [4] XZ default
 #export CEGS=16:0:9:100   # [4] XZ reduce rays for faster rsync
 #export CEGS=16:9:0:1000  # [4] try XY
 
+export CEHIGH_0=-16:16:0:0:-4:4:2000:4
+export CEHIGH_1=-16:16:0:0:4:8:2000:4
 
-export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
-export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
-export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
+#export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
+#export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
+#export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
+
+
 
 ## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000
 #export CE_OFFSET=CE    ## offsets the grid by the CE
@@ -200,17 +222,19 @@ debug()
     export SEvt__FRAME=1
 }
 
-[ -n "$LOG" ] && logging
-[ -n "$DBG" ] && debug
+[ "$LOG" == "1" ] && logging
+[ "$DBG" == "1" ] && debug
 
 
-vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM FOLD MOI LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS TITLE"
+_CUR=GEOM/$GEOM/$SCRIPT/${MOI//:/_}
+
+vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS TITLE"
 
 ## define TITLE based on ana/pdb control envvars
 title="cxt_min.sh pdb"
 ee="LINE GLOBAL PRESEL KEY NORMAL NORMAL_FILTER GRID GSGRID PRIMTAB"
 for e in $ee ; do
-   printf "%20s : %s \n" "$e" "${!e}" 
+   #printf "%20s : %s \n" "$e" "${!e}"
    [ -n "${!e}" ] && title="$e=${!e} $title"
 done
 export TITLE="$title"
@@ -225,7 +249,7 @@ if [ "${arg/fold}" != "$arg" ]; then
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
-    ff="FOLD"
+    ff="MFOLD"
     for f in $ff ; do printf "%20s : ls -alst %s \n" "$f" "${!f}"  && ls -alst ${!f} ; done
 fi
 
@@ -253,7 +277,14 @@ if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg
 fi
 
 if [ "${arg/grab}" != "$arg" ]; then
-    source rsync.sh $FOLD
+    source rsync.sh $MFOLD
+fi
+
+
+
+if [ "${arg/open}" != "$arg" ]; then
+    # open to define current context string which controls where screenshots are copied to
+    CUR_open ${_CUR}
 fi
 
 if [ "${arg/pdb}" != "$arg" ]; then
@@ -262,6 +293,19 @@ fi
 
 if [ "${arg/ana}" != "$arg" ]; then
     ${PYTHON:-python} $script
+fi
+
+if [ "${arg/close}" != "$arg" ]; then
+    # close to invalidate the context
+    CUR_close
+fi
+
+if [ "$arg" == "touch"  ]; then
+    if [ -n "$arg2" ]; then
+        CUR_touch "$arg2"
+    else
+        echo $BASH_SOURCE:touch needs arg2 datetime accepted by CUR_touch eg "cxt_min.sh touch 11:00"
+    fi
 fi
 
 if [ "${arg/cfg}" != "$arg" ]; then

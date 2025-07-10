@@ -533,7 +533,7 @@ def pvplt_add_line_a2b(pl, a, b, color="white", width=1):
 
 
 
-def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="white", line_color="white", m2w=None ):
+def pvplt_add_contiguous_line_segments( pl, xpos, point_size=1, point_color="white", line_color="white", m2w=None, render_points_as_spheres=False,  ):
     """
     :param pl: pyvista plotter
     :param xpos: (n,3) array of positions
@@ -545,7 +545,7 @@ def pvplt_add_contiguous_line_segments( pl, xpos, point_size=25, point_color="wh
     """
     upos = xpos if m2w is None else transform_points( xpos, m2w )
 
-    pl.add_points( upos, color=point_color, render_points_as_spheres=True, point_size=point_size )
+    pl.add_points( upos, color=point_color, render_points_as_spheres=render_points_as_spheres, point_size=point_size )
     xseg = contiguous_line_segments(upos)
     pl.add_lines( xseg, color=line_color )
 
@@ -1072,9 +1072,20 @@ def pvplt_polarized( pl, pos, mom, pol, factor=0.15, assert_transverse=True ):
     pass
     return cp
 
+def pvplt_add_points_adaptive( pl, pos, **kwa ):
+    p3 = None
+    if pos.ndim == 2:
+        p3 = pos[:,:3]
+    elif pos.ndim == 3:
+        p3 = pos[:,:,:3].reshape(-1,3)
+    else:
+        print("pvplt_add_points_adaptive UNEXPECTED pos.ndim : %d " % pos.ndim )
+    pass
+    return pvplt_add_points(pl, p3, **kwa )
+
 
 def pvplt_add_points( pl, pos, **kwa ):
-    if len(pos) == 0:
+    if pos is None or len(pos) == 0:
         if VERBOSE: print("pvplt_add_points len(pos) ZERO   %s " % repr(kwa))
         return None
     pass
