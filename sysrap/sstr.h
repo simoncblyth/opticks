@@ -70,6 +70,7 @@ struct sstr
 
     static void Chop( std::pair<std::string, std::string>& head__tail, const char* delim, const char* str );
     static void chop( char** head, char** tail, const char* delim, const char* str );
+    static bool prefix_suffix( char** pfx, char** sfx, const char* start_sfx, const char* str );
 
 
     template<typename T>
@@ -646,6 +647,16 @@ inline void sstr::Chop( std::pair<std::string, std::string>& head__tail, const c
     head__tail.second = tail ? tail : ""  ;
 }
 
+/**
+sstr::chop
+-----------
+
+Chop *str* into *head* and *tail* strings at first occurence of *delim*.
+Note that *delim* is not included with either *head* or *tail*.
+
+**/
+
+
 inline void sstr::chop( char** head, char** tail, const char* delim, const char* str )
 {
     *head = strdup(str);
@@ -653,6 +664,42 @@ inline void sstr::chop( char** head, char** tail, const char* delim, const char*
     if(p) p[0] = '\0' ;
     *tail = p ? p + strlen(delim) : nullptr ;
 }
+
+/**
+sstr::prefix_suffix
+---------------------
+
+Splits *str* into *pfx* and *sfx* where *sfx* begins with the *start_sfx* argument
+returning true when the suffix is found. For example with *start_sfx* "["::
+
+    str: /tmp/w54.npy[0:1]
+    pfx: /tmp/w54.npy
+    sfx: [0:1]
+
+A string starting with *start_sfx* is not regarded as a suffix, causing false
+to be returned.
+
+**/
+
+inline bool sstr::prefix_suffix( char** pfx, char** sfx, const char* start_sfx, const char* str )
+{
+    if(!str || !start_sfx) return false ;
+
+    *pfx = strdup(str);
+    char* p = strstr(*pfx, start_sfx);
+
+    bool has_suffix = p && (p > *pfx) ;
+    if(has_suffix)
+    {
+        *sfx = strdup(p);
+        p[0] = '\0' ; // terminate pfx at position of start_sfx
+    }
+   return has_suffix ;
+}
+
+
+
+
 
 /**
 sstr::Format_

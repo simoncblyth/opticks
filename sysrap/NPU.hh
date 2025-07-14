@@ -545,6 +545,8 @@ struct U
                 const char* ext=nullptr, bool exclude=false, bool allow_nonexisting=false );
     static void Trim(std::vector<std::string>& names, const char* ext);
     static void Split(const char* str, char delim,   std::vector<std::string>& elem);
+    static bool prefix_suffix( char** pfx, char** sfx, const char* start_sfx, const char* str );
+
     static int FindIndex(const std::vector<std::string>& names, const char* name);
 
     static std::string Desc(const std::vector<std::string>& names);
@@ -1569,6 +1571,44 @@ inline void U::Split(const char* str, char delim,   std::vector<std::string>& el
     std::string s;
     while (std::getline(ss, s, delim)) elem.push_back(s) ;
 }
+
+
+
+
+
+/**
+U::prefix_suffix (after sstr::prefix_suffix)
+---------------------------------------------
+
+Splits *str* into *pfx* and *sfx* where *sfx* begins with the *start_sfx* argument
+returning true when the suffix is found. For example with *start_sfx* "["::
+
+    str: /tmp/w54.npy[0:1]
+    pfx: /tmp/w54.npy
+    sfx: [0:1]
+
+A string starting with *start_sfx* is not regarded as a suffix, causing false
+to be returned.
+
+**/
+
+inline bool U::prefix_suffix( char** pfx, char** sfx, const char* start_sfx, const char* str )
+{
+    if(!str || !start_sfx) return false ;
+
+    *pfx = strdup(str);
+    char* p = strstr(*pfx, start_sfx);
+
+    bool has_suffix = p && (p > *pfx) ;
+    if(has_suffix)
+    {
+        *sfx = strdup(p);
+        p[0] = '\0' ; // terminate pfx at position of start_sfx
+    }
+   return has_suffix ;
+}
+
+
 
 inline int U::FindIndex(const std::vector<std::string>& names, const char* name) // static
 {

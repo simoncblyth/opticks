@@ -17,41 +17,8 @@ TEST=ParseIntSpecListDemo ~/opticks/sysrap/tests/sstr_test.sh
 #include "sstr.h"
 #include "ssys.h"
 
-std::vector<std::string> STRS = {{ "Hello__World", "Hello" , "Hello__" , "__World" }} ;
-const char* BLANK = "" ;
 
-void test_Chop()
-{
-    const char* str = "Hello__World" ;
-    std::pair<std::string, std::string> head_tail ;
-    sstr::Chop(head_tail, "__", str );
 
-    std::cout << " head " << head_tail.first << std::endl ;
-    std::cout << " tail " << head_tail.second << std::endl ;
-}
-
-void test_chop()
-{
-    for(unsigned i=0 ; i < STRS.size() ; i++ )
-    {
-        const char* str = STRS[i].c_str() ;
-
-        char* head ;
-        char* tail ;
-        sstr::chop(&head, &tail, "__", str );
-
-        bool head_blank = head && strcmp( head, BLANK ) == 0 ;
-        bool tail_blank = tail && strcmp( tail, BLANK ) == 0 ;
-
-        std::cout
-            << " i " << std::setw(3) << i
-            << " str " << std::setw(30) << str
-            << " head [" << ( head ? head : "-" ) << "]" << " head_blank " << head_blank
-            << " tail [" << ( tail ? tail : "-" ) << "]" << " tail_blank " << tail_blank
-            << std::endl
-            ;
-    }
-}
 
 
 void test_HasTail_0()
@@ -596,10 +563,83 @@ void test_IsInteger()
 
 struct sstr_test
 {
+    static constexpr const char* BLANK = "" ;
+    static std::vector<std::string> STRS ;
+    static std::vector<std::string> STRS2 ;
+
+    static int Chop();
+    static int chop();
+    static int prefix_suffix();
+
     static int StartsWithElem();
     static int split();
+
+
     static int Main();
 };
+
+
+std::vector<std::string> sstr_test::STRS = {{ "Hello__World", "Hello" , "Hello__" , "__World" }} ;
+std::vector<std::string> sstr_test::STRS2 = {{ "/tmp/w54.npy[0:1]", "/tmp/w54.npy[0:2]", "[0:1]" }} ;
+
+
+int sstr_test::Chop()
+{
+    const char* str = "Hello__World" ;
+    std::pair<std::string, std::string> head_tail ;
+    sstr::Chop(head_tail, "__", str );
+
+    std::cout << " head " << head_tail.first << std::endl ;
+    std::cout << " tail " << head_tail.second << std::endl ;
+
+    return 0;
+}
+
+int sstr_test::chop()
+{
+    for(unsigned i=0 ; i < STRS.size() ; i++ )
+    {
+        const char* str = STRS[i].c_str() ;
+
+        char* head ;
+        char* tail ;
+        sstr::chop(&head, &tail, "__", str );
+
+        bool head_blank = head && strcmp( head, BLANK ) == 0 ;
+        bool tail_blank = tail && strcmp( tail, BLANK ) == 0 ;
+
+        std::cout
+            << " i " << std::setw(3) << i
+            << " str " << std::setw(30) << str
+            << " head [" << ( head ? head : "-" ) << "]" << " head_blank " << head_blank
+            << " tail [" << ( tail ? tail : "-" ) << "]" << " tail_blank " << tail_blank
+            << std::endl
+            ;
+    }
+    return 0;
+}
+
+
+
+int sstr_test::prefix_suffix()
+{
+
+    for(unsigned i=0 ; i < STRS2.size() ; i++ )
+    {
+        const char* str = STRS2[i].c_str() ;
+        char* pfx = nullptr ;
+        char* sfx = nullptr ;
+        bool has_suffix = sstr::prefix_suffix(&pfx, &sfx, "[", str );
+        std::cout
+            << "sstr_test::prefix_suffix\n"
+            << " str [" << ( str ? str : "-" ) << "]\n"
+            << " pfx [" << ( pfx ? pfx : "-" ) << "]\n"
+            << " sfx [" << ( sfx ? sfx : "-" ) << "]\n"
+            << " has_suffix " << ( has_suffix ? "YES" : "NO " ) << "\n"
+            ;
+    }
+    return 0 ;
+}
 
 
 int sstr_test::StartsWithElem()
@@ -640,7 +680,6 @@ int sstr_test::Main()
 
 
     if(     strcmp(TEST, "HasTail")==0 )    test_HasTail();
-    else if(strcmp(TEST, "chop")==0 )       test_chop();
     else if(strcmp(TEST, "StripTail")==0 )  test_StripTail();
     else if(strcmp(TEST, "StripComment")==0 )  test_StripComment();
     else if(strcmp(TEST, "TrimString")==0 )  test_TrimString();
@@ -660,6 +699,9 @@ int sstr_test::Main()
 
 
     int rc = 0 ;
+    if(ALL||0==strcmp(TEST,"Chop"))           rc += Chop();
+    if(ALL||0==strcmp(TEST,"chop"))           rc += chop();
+    if(ALL||0==strcmp(TEST,"prefix_suffix"))  rc += prefix_suffix();
     if(ALL||0==strcmp(TEST,"StartsWithElem")) rc += StartsWithElem();
     if(ALL||0==strcmp(TEST,"split"))          rc += split();
 
