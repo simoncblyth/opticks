@@ -15,6 +15,8 @@ to it not being alive at the simulation time provided.
 
 #include "NP.hh"
 
+
+#include "ssys.h"
 #include "spath.h"
 #include "sphoton.h"
 #include "sseq_record.h"
@@ -27,6 +29,8 @@ struct SRecord
 {
     static constexpr const char* NAME = "record.npy" ;
     static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";
+    static constexpr const char* _level = "SRecord__level" ;
+    static int level ;
 
     NP* record;
     int record_first ;
@@ -52,6 +56,10 @@ struct SRecord
     std::string desc() const ;
 };
 
+
+int SRecord::level = ssys::getenvint(_level,0) ;
+
+
 /**
 SRecord::LoadArray
 -------------------
@@ -70,14 +78,18 @@ that yield a selection string or direct such strings.
 
      "[:,0,0,1] < -1.0"
 
-2. "indexSlice" selection, eg every 1000th or the first 10::
+2. "indexSlice" selection, eg every 1000th or the first 10.
+   This uses partial loading of items from files which enables working
+   with very large record files, eg 66GB. Example slices::
 
      "[::1000]"
      "[:10]"
 
+3. path to index array eg "/tmp/w54.npy" : create that file from ipython with::
 
-The indexSlice form uses partial loading of items from files
-to enable working with very large record files, eg 66GB.
+    In [39]: w54
+    Out[39]: array([71464, 71485, 71663, 71678, 71690, 71780, 71782, 71798, 71799, 71803, 71810, 71914, 71918, 71919, 71975, 71978, 72019, 72026, 72032, 73149, 73212, 73344, 73372])
+    In [40]: np.save("/tmp/w54.npy", w54)
 
 
 **/
@@ -101,6 +113,13 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
     }
 
 
+    if(level > 0) std::cout
+        << "SRecord::LoadArray \n"
+        << " [" << _level << "] " << level << "\n"
+        << " _fold [" << ( _fold ? _fold : "-" ) << "]\n"
+        << " _slice [" << ( _slice ? _slice : "-" ) << "]\n"
+        ;
+
     NP* a = nullptr ;
 
     if( _slice == nullptr )
@@ -108,19 +127,19 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
         a = NP::Load(path);
         a->set_meta<std::string>("SRecord__LoadArray", "NP::Load");
     }
-    else if(sseq_record::LooksLikeRecordSeqSelection(_slice))
+    else if(sseq_record::LooksLikeRecordSeqSelection(_slice)) // can be indirect via envvar, once resolved look for starting with "CK/SI/TO"
     {
         a = sseq_record::LoadRecordSeqSelection(_fold, _slice);
         a->set_meta<std::string>("SRecord__LoadArray_METHOD", "sseq_record::LoadRecordSeqSelection");
         a->set_meta<std::string>("SRecord__LoadArray_SLICE", _slice );
     }
-    else if(NP::LooksLikeWhereSelection(_slice))
+    else if(NP::LooksLikeWhereSelection(_slice)) // can be indirect via envvar, once resolved look for "<" or ">"
     {
         a = NP::LoadThenSlice<float>(path, _slice);
         a->set_meta<std::string>("SRecord__LoadArray_METHOD", "NP::LoadThenSlice");
         a->set_meta<std::string>("SRecord__LoadArray_SLICE", _slice );
     }
-    else
+    else    // eg "[0:100]" OR "/tmp/w54.npy" OR "/tmp/w54.npy[0:10]"
     {
         a = NP::LoadSlice(path, _slice);
         a->set_meta<std::string>("SRecord__LoadArray_METHOD", "NP::LoadSlice");

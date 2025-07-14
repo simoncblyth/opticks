@@ -19,7 +19,9 @@ struct SGen
     static constexpr const char* NAME = "genstep.npy" ;
     static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,96,16,false";   // 6*4*4 = 96, 1*4*4 = 16
     static constexpr const char* RDEL_SPEC = "4,GL_FLOAT,GL_FALSE,96,32,false";   // 6*4*4 = 96, 2*4*4 = 32
+    static constexpr const char* _level = "SGen__level" ;
 
+    int level ;
     NP* genstep ;
     int genstep_first ;
     int genstep_count ;
@@ -102,6 +104,7 @@ inline SGen* SGen::Load(const char* _fold, const char* _slice )
 
 inline SGen::SGen(NP* _genstep)
     :
+    level(ssys::getenvint(_level,0)),
     genstep(_genstep),
     genstep_first(0),
     genstep_count(0)
@@ -145,7 +148,7 @@ inline void SGen::init()
     genstep->set_meta<float>("cz", ce.z );
     genstep->set_meta<float>("ce", ce.w );
 
-    std::cout
+    if(level > 0 ) std::cout
         << "[SGen::init\n"
         << desc()
         << "]SGen::init\n"
@@ -184,6 +187,7 @@ inline std::string SGen::desc() const
     std::stringstream ss ;
     ss
         << "[SGen.desc\n"
+        << " [" << _level << "] level " << level << "\n"
         << " lpath [" << ( lpath ? lpath : "-" ) << "]\n"
         << std::setw(20) << " mn " << mn
         << std::endl
