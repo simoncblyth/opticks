@@ -159,9 +159,9 @@ alt+H
    dumps this help string [--help]
 
 I
-   --snap-local
+   --snap-local : taking a screenshot
 J
-   --snap-local-inverted
+   --snap-local-inverted : taking a y-inverted screenshot
 K
    save screen shot [--snap]
 L

@@ -37,7 +37,7 @@ flag (16 bit)
     OpticksPhoton.h history flag enum eg: TO CK SI BT BR SR AB RE ...
 
 identity (32 bit)
-    currently sensor_identifier (see squad.h:quad2 for details)
+    currently sensor_identifier+1 (see squad.h:quad2 for details)
     Formerly was combination of primIdx and instanceId of intersected geometry.
 
 orient (1 bit)

@@ -878,6 +878,20 @@ class SAB(object):
         self.meta = meta
         log.info("]")
 
+
+    def q_and(self, a_prefix, b_prefix):
+        """
+        :param a_prefix: eg TO BT BT BT BT BT SA
+        :param b_prefix: eg TO BT BT BT BT SA
+        :return wab: indices where self.a.q startswith a_prefix and self.b.q startswith b_prefix
+
+        For example with input photons which start exactly the same this
+        provides a way to look at history migration, eg an extra BT on one side
+        compared to the other
+        """
+        return np.flatnonzero( np.logical_and( np.char.startswith(self.a.q, a_prefix.encode("utf-8")), np.char.startswith(self.b.q, b_prefix.encode("utf-8")) ))
+
+
     def q_startswith(self, prefix="TO BT BT SA"):
         """
         This is a cheating way to find accidentally random aligned photons

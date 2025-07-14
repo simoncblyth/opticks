@@ -185,6 +185,8 @@ _CUR=GEOM/$GEOM/$SCRIPT/$EVT_CHECK
 
 allarg="info_open_dbg_run_close_touch"
 defarg="info_open_run"
+[ -n "$BP" ] && defarg="info_dbg"
+
 arg=${1:-$defarg}
 arg2=$2
 
