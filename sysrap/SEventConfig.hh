@@ -198,6 +198,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kPropagateEpsilon = "OPTICKS_PROPAGATE_EPSILON" ;
     static constexpr const char* kPropagateEpsilon0 = "OPTICKS_PROPAGATE_EPSILON0" ;
     static constexpr const char* kPropagateEpsilon0Mask = "OPTICKS_PROPAGATE_EPSILON0_MASK" ;
+    static constexpr const char* kPropagateRefineDistance = "OPTICKS_PROPAGATE_REFINE_DISTANCE" ;
 
     static constexpr const char* kInputGenstep     = "OPTICKS_INPUT_GENSTEP" ;
     static constexpr const char* kInputGenstepSelection  = "OPTICKS_INPUT_GENSTEP_SELECTION" ;
@@ -265,6 +266,7 @@ struct SYSRAP_API SEventConfig
     static float PropagateEpsilon0();
     static unsigned PropagateEpsilon0Mask();
     static std::string PropagateEpsilon0MaskLabel();
+    static float PropagateRefineDistance();
 
     static const char* _InputGenstepPath(int idx=-1);
     static const char* InputGenstep(int idx=-1);
@@ -380,6 +382,7 @@ struct SYSRAP_API SEventConfig
     static void SetPropagateEpsilon( float eps) ;
     static void SetPropagateEpsilon0( float eps) ;
     static void SetPropagateEpsilon0Mask( const char* abrseq, char delim=',' ) ;
+    static void SetPropagateRefineDistance( float refine_distance ) ;
 
     static void SetInputGenstep(const char* input_genstep);
     static void SetInputGenstepSelection(const char* input_genstep_selection);
@@ -449,6 +452,7 @@ struct SYSRAP_API SEventConfig
     static float       _PropagateEpsilonDefault  ;
     static float       _PropagateEpsilon0Default  ;
     static const char* _PropagateEpsilon0MaskDefault ;
+    static float       _PropagateRefineDistanceDefault  ;
 
     static const char* _InputGenstepDefault ;
     static const char* _InputGenstepSelectionDefault ;
@@ -521,6 +525,7 @@ struct SYSRAP_API SEventConfig
     static float _PropagateEpsilon ;
     static float _PropagateEpsilon0 ;
     static unsigned _PropagateEpsilon0Mask ;
+    static float _PropagateRefineDistance ;
 
     static const char* _InputGenstep ;
     static const char* _InputGenstepSelection ;

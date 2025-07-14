@@ -154,6 +154,7 @@ struct quad2
     SQUAD_METHOD float3* normal() ;
     SQUAD_METHOD const float3* normal() const ;
     SQUAD_METHOD float    distance() const ;
+    SQUAD_METHOD void     distance_add(float delta);
 
     SQUAD_METHOD float lposcost() const ;
     SQUAD_METHOD unsigned iindex() const ;
@@ -193,6 +194,8 @@ SQUAD_METHOD const float*   quad2::cdata() const  {   return &q0.f.x ; }
 SQUAD_METHOD float3*        quad2::normal() {           return (float3*)&q0.f.x ; }
 SQUAD_METHOD const float3*  quad2::normal() const {     return (float3*)&q0.f.x ; }
 SQUAD_METHOD float          quad2::distance() const {   return q0.f.w ; }
+SQUAD_METHOD void           quad2::distance_add( float delta ){ q0.f.w += delta ; }
+
 
 SQUAD_METHOD float          quad2::lposcost() const {   return q1.f.x ; }
 SQUAD_METHOD unsigned       quad2::iindex() const {     return q1.u.y ; }

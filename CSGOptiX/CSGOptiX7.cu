@@ -88,6 +88,16 @@ extern "C" { __constant__ Params params ;  }
 trace : pure function, with no use of params, everything via args
 -------------------------------------------------------------------
 
+refine:false
+    does single optixTrace
+
+refine:true
+    does a second optixTrace if 99 percent of the distance returned by the
+    first optixTrace exceeds the refine_distance argument.
+    This attempts to improve the precision of long distance intersects
+    by doing a 2nd closer intersect.
+
+
 Outcome of trace is to populate *prd* by payload and attribute passing.
 When WITH_PRD macro is defined only 2 32-bit payload values are used to
 pass the 64-bit  pointer, otherwise more payload and attributes values
@@ -96,6 +106,7 @@ are used to pass the contents IS->CH->RG.
 See __closesthit__ch to see where the payload p0-p7 comes from.
 **/
 
+template<bool refine>
 static __forceinline__ __device__ void trace(
         OptixTraversableHandle handle,
         float3                 ray_origin,
@@ -103,7 +114,8 @@ static __forceinline__ __device__ void trace(
         float                  tmin,
         float                  tmax,
         quad2*                 prd,
-        unsigned               visibilityMask
+        unsigned               visibilityMask,
+        float                  refine_distance
         )
 {
     const float rayTime = 0.0f ;
@@ -114,7 +126,10 @@ static __forceinline__ __device__ void trace(
 #ifdef WITH_PRD
     uint32_t p0, p1 ;
     packPointer( prd, p0, p1 ); // scuda_pointer.h : pack prd addr from RG program into two uint32_t passed as payload
-    optixTrace(
+
+    if(!refine)
+    {
+        optixTrace(
             handle,
             ray_origin,
             ray_direction,
@@ -128,6 +143,49 @@ static __forceinline__ __device__ void trace(
             missSBTIndex,
             p0, p1
             );
+    }
+    else
+    {
+        optixTrace(
+            handle,
+            ray_origin,
+            ray_direction,
+            tmin,
+            tmax,
+            rayTime,
+            visibilityMask,
+            rayFlags,
+            SBToffset,
+            SBTstride,
+            missSBTIndex,
+            p0, p1
+            );
+
+        float t_approx = 0.99f*prd->distance() ;
+        // decrease to avoid imprecise first intersect from
+        // leading to giving a miss or other intersect the 2nd time
+        if( t_approx > refine_distance )
+        {
+            float3 closer_ray_origin = ray_origin + t_approx*ray_direction ;
+            optixTrace(
+                handle,
+                closer_ray_origin,
+                ray_direction,
+                tmin,
+                tmax,
+                rayTime,
+                visibilityMask,
+                rayFlags,
+                SBToffset,
+                SBTstride,
+                missSBTIndex,
+                p0, p1
+                );
+
+            prd->distance_add( t_approx );
+        }
+    }
+
 #else
     uint32_t p0, p1, p2, p3, p4, p5, p6, p7  ;
     optixTrace(
@@ -209,14 +267,15 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
     //                           cameratype 0u:perspective,                    1u:orthographic
 
-    trace(
+    trace<false>(
         params.handle,
         origin,
         direction,
         params.tmin,
         params.tmax,
         prd,
-        params.vizmask
+        params.vizmask,
+        params.RefineDistance
     );
 
 #if defined(DEBUG_PIDX)
@@ -340,7 +399,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     {
         float tmin = ( ctx.p.boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
 
-        trace( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask );  // geo query filling prd
+        trace<false>( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.RefineDistance );  // geo query filling prd
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
         // propagate can do nothing meaningful without a boundary
 
@@ -435,14 +494,15 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
 
 
 
-    trace(
+    trace<false>(
         params.handle,
         pos,
         mom,
         params.tmin,
         params.tmax,
         prd,
-        params.vizmask
+        params.vizmask,
+        params.RefineDistance
     );
 
     evt->add_simtrace( idx, p, prd, params.tmin );  // sevent
