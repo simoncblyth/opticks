@@ -1,9 +1,9 @@
-#!/bin/bash -l
+#!/bin/bash
 usage(){ cat << EOU
 go.sh
 =====
 
-See also build.sh which doesnt use cmake 
+See also build.sh which doesnt use cmake
 
 TODO: time scrubbing control
 
@@ -16,7 +16,11 @@ arg=${1:-build_run}
 sdir=$(pwd)
 name=$(basename $sdir)
 
-bin=$OPTICKS_PREFIX/lib/$name
+bdir=/tmp/$USER/opticks/$name/build
+idir=/tmp/$USER/opticks/$name/install
+
+PREFIX=$idir
+bin=$PREFIX/lib/$name
 
 source ~/.opticks_config
 
@@ -30,31 +34,34 @@ export SHADER_FOLD=$sdir/rec_flying_point
 #export RECORD_FOLD=$TMP/GEOM/RaindropRockAirWater/G4CXTest/ALL0/B000
 export RECORD_FOLD=/tmp/sphoton_test
 
-if [ "${arg/build}" != "$arg" ] ; then 
 
-    opticks-
-    oe-
-    om-
-    bdir=/tmp/$USER/opticks/$name/build 
-    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
-    om-cmake $sdir
+if [ "${arg/build}" != "$arg" ] ; then
+
+    rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd
+
+    cmake $sdir \
+         -DCMAKE_BUILD_TYPE=Debug \
+         -DOPTICKS_PREFIX=$OPTICKS_PREFIX \
+         -DCMAKE_INSTALL_PREFIX=$PREFIX \
+         -DCMAKE_MODULE_PATH=$OPTICKS_HOME/cmake/Modules
+
     make
     [ $? -ne 0 ] && exit 1
 
-    make install   
-fi 
+    make install
+fi
 
-if [ "${arg/run}" != "$arg" ] ; then 
-    echo $BASH_SOURCE : run $name
+if [ "${arg/run}" != "$arg" ] ; then
+    echo $BASH_SOURCE : run $bin
     EYE=0,-3,0,1 $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
-fi 
+fi
 
-if [ "${arg/dbg}" != "$arg" ] ; then 
-    echo $BASH_SOURCE : dbg $name
-    dbg__ $name 
+if [ "${arg/dbg}" != "$arg" ] ; then
+    echo $BASH_SOURCE : dbg $bin
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
 fi
 
-exit 0 
+exit 0
 
