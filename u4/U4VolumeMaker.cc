@@ -1093,18 +1093,41 @@ const G4VPhysicalVolume* U4VolumeMaker::BigWaterPool()
     G4Material* vetoWater = U4Material::Get("G4_WATER") ;
     G4VSolid* solidWaterPool = nullptr ;
     G4LogicalVolume* logicWaterPool = nullptr ;
+
     const G4VPhysicalVolume* pTyvekFilm = nullptr ;
+    const G4VPhysicalVolume* pWaterPool = nullptr ;
 
     G4VSolid* solidTyvekFilm = nullptr ;
+    G4LogicalVolume* logicAirGap = nullptr ;
     G4LogicalVolume* logicDeadWater = nullptr ;
     G4LogicalVolume* logicTyvekFilm = nullptr ;
 
-    G4Material* Tyvek = U4Material::Get("G4_Pb") ;
-
-
-
+    G4Material* DeadWater = U4Material::Get("G4_WATER") ;
+    G4Material* Tyvek = U4Material::Get("G4_WATER") ;
     G4Material* BufferMaterials = U4Material::Get("G4_WATER") ;
 
+    std::array<G4Material*,3> mats = {DeadWater, Tyvek, BufferMaterials };
+    // ALL THOSE ARE SAME POINTER
+    for(int i=0 ; i < int(mats.size()) ; i++)
+    {
+        G4Material* mat = mats[i];
+        std::cout
+             << " i " << i
+             << " mat " << std::hex << size_t(mat)  << std::dec
+             << " mpt " << U4Material::HasMPT(mat)
+             << "\n"
+             ;
+
+        if(!U4Material::HasMPT(mat)) U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", 1.333)) ;
+    }
+
+
+
+   // DeadWater:logicDeadWater
+    {
+        G4VSolid* solidDeadWater = new G4Tubs("sDeadWater_shell", 0., m_radWP, m_heightWP/2., 0.*deg, 360*deg);
+        logicDeadWater = new G4LogicalVolume(solidDeadWater, DeadWater, "lDeadWater", 0, 0, 0);
+    }
 
 
    // Tyvek:logicTyvekFilm
@@ -1217,11 +1240,16 @@ const G4VPhysicalVolume* U4VolumeMaker::BigWaterPool()
     }
 
 
+    // place logicDeadWater within logicAirGap
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicDeadWater,"pDeadWater",logicAirGap , false, 0);
+
     // place logicTyvekFilm within logicDeadWater
     pTyvekFilm = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicTyvekFilm,"pTyvekFilm",logicDeadWater , false, 0);
 
     // place logicWaterPool within logicTyvekFilm
-    new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicWaterPool,"pWaterPool",logicTyvekFilm , false, 0);
+    pWaterPool = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicWaterPool,"pWaterPool",logicTyvekFilm , false, 0);
+
+    U4Surface::MakePerfectAbsorberBorderSurface( "WaterPool_Tyvek_bs", pWaterPool, pTyvekFilm );
 
 
     {
