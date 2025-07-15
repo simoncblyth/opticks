@@ -1,4 +1,4 @@
-#!/bin/bash -l
+#!/bin/bash
 usage(){ cat << EOU
 U4VolumeMakerTest.sh
 =====================
@@ -9,56 +9,50 @@ u4t::
 
 HMM when the GEOM has manager prefix hama/nnvt/hmsk/nmsk
 U4VolumeMaker::Make currently assumes the rest of the name
-if of an LV. 
-
-Running without the "-l" on shebang line fails for lack of boost::
-
-    epsilon:tests blyth$ ./U4VolumeMakerTest.sh
-    dyld: Library not loaded: libboost_system.dylib
-      Referenced from: /usr/local/opticks/lib/U4VolumeMakerTest
-      Reason: image not found
-    ./U4VolumeMakerTest.sh: line 20: 51758 Abort trap: 6           U4VolumeMakerTest
+is of an LV.
 
 EOU
 }
 
+cd $(dirname $(realpath $BASH_SOURCE))
+
+bin=U4VolumeMakerTest
+
 arg=${1:-run}
 
-
-#geom=BoxOfScintillator  # default 
+#geom=BoxOfScintillator  # default
 #geom=hama_body_log
 #geom=hamaLogicalPMT
 #geom=hamaBodyLog
 #geom=V1J008
-geom=V1J011
+#geom=V1J011
+geom=BigWaterPool
+
 export GEOM=${GEOM:-$geom}
-
-#source $HOME/.opticks/GEOM/GEOM.sh 
-
+#source $HOME/.opticks/GEOM/GEOM.sh
 
 origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml
 if [ -f "$origin" ]; then
    export ${GEOM}_GDMLPath=$origin
    export U4VolumeMaker=INFO
-fi 
+fi
 
 
+vv="BASH_SOURCE arg geom GEOM bin"
 
+if [ "${arg/info}" != "${arg}" ]; then
+    for v in $vv ; do printf "%20s : %s \n" "$v" "${!v}" ; done
+fi
 
-vars="BASH_SOURCE arg GEOM"
-for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+if [ "${arg/run}" != "${arg}" ]; then
+    $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
+fi
 
-if [ "${arg/run}" != "${arg}" ]; then 
-    U4VolumeMakerTest 
-    [ $? -ne 0 ] && echo $msg run error && exit 1 
-fi 
+if [ "${arg/dbg}" != "${arg}" ]; then
+    source dbg__.sh
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
+fi
 
-if [ "${arg/dbg}" != "${arg}" ]; then 
-    case $(uname) in 
-       Darwin) lldb__ U4VolumeMakerTest ;;
-       Linux)  gdb U4VolumeMakerTest ;;
-    esac  
-    [ $? -ne 0 ] && echo $msg dbg error && exit 2 
-fi 
-
-exit 0 
+exit 0

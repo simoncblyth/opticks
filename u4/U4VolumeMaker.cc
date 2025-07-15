@@ -262,6 +262,7 @@ const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
     if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);
     if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater(false);
     if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWater(true);
+    if(strcmp(name,"BigWaterPool" ) == 0)           pv = BigWaterPool();
     if(sstr::StartsWith(name,"LocalFastenerAcrylicConstruction" )) pv = LocalFastenerAcrylicConstruction(name);
     return pv ;
 }
@@ -1077,6 +1078,90 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
 
     }
     return universe_pv ;
+}
+
+
+
+const G4VPhysicalVolume* U4VolumeMaker::BigWaterPool()
+{
+
+    double m_heightWP = 43500 ;
+    double m_deadWaterThickness = 100 ;
+    double m_tyvekThickness = 2 ;
+    double m_radWP = 21750 ;
+
+    G4Material* vetoWater = U4Material::Get("G4_WATER") ;
+    G4VSolid* solidWaterPool = nullptr ;
+    G4LogicalVolume* logicWaterPool = nullptr ;
+    const G4VPhysicalVolume* pTyvekFilm = nullptr ;
+
+    G4VSolid* solidTyvekFilm = nullptr ;
+    G4LogicalVolume* logicDeadWater = nullptr ;
+    G4LogicalVolume* logicTyvekFilm = nullptr ;
+
+    G4Material* Tyvek = U4Material::Get("G4_Pb") ;
+
+
+   // Tyvek:logicTyvekFilm
+    {
+        double tyvek_btmZ = -m_heightWP/2 + m_deadWaterThickness - m_tyvekThickness;
+        double tyvek_topZ = -tyvek_btmZ;
+        double tyvek_outR = m_radWP - m_deadWaterThickness + m_tyvekThickness;
+        //double tyvek_inR  = m_radWP - m_deadWaterThickness;
+
+        static G4double  zPlane[] = {tyvek_btmZ, tyvek_topZ}; //-21.65m-2mm, -21.65m, 21.65m, 21.65m+2mm
+        static G4double  rInner[] = {0., 0.};
+        static G4double  rOuter[] = {tyvek_outR, tyvek_outR}; //21.65m+2mm
+
+        G4VSolid* solidTyvek_shell = new G4Polycone("sTyvek_shell", //const G4String& pName,
+                                         0, //G4double  phiStart,
+                                         360*deg, //G4double  phiTotal,
+                                         2, //G4int         numZPlanes,
+                                         zPlane, //const G4double  zPlane[],
+                                         rInner, //const G4double  rInner[],
+                                         rOuter //const G4double  rOuter[])
+                                        );
+
+
+         solidTyvekFilm = solidTyvek_shell ;
+         logicTyvekFilm = new G4LogicalVolume(solidTyvekFilm, Tyvek, "lTyvekFilm", 0, 0, 0);
+     }
+
+
+
+    // vetoWater:logicWaterPool
+     {
+        double vetoWater_btmZ = -m_heightWP/2 + m_deadWaterThickness;  // 2025/7/2 added m_deadWaterThickness
+        double vetoWater_topZ =  m_heightWP/2 - m_deadWaterThickness;
+        double vetoWater_outR = m_radWP - m_deadWaterThickness ;
+
+        static G4double  zPlane[] = {vetoWater_btmZ, vetoWater_topZ};
+        static G4double  rInner[] = {0., 0.};
+        static G4double  rOuter[] = {vetoWater_outR, vetoWater_outR};
+        solidWaterPool = new G4Polycone("sOuterWaterPool", //const G4String& pName,
+                                         0, //G4double  phiStart,
+                                         360*deg, //G4double  phiTotal,
+                                         2, //G4int         numZPlanes,
+                                         zPlane, //const G4double  zPlane[],
+                                         rInner, //const G4double  rInner[],
+                                         rOuter //const G4double  rOuter[])
+                                        );
+
+        logicWaterPool = new G4LogicalVolume(solidWaterPool,
+            vetoWater,
+            "lOuterWaterPool",
+            0, 0, 0);
+     }
+
+
+    // place logicTyvekFilm within logicDeadWater
+    pTyvekFilm = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicTyvekFilm,"pTyvekFilm",logicDeadWater , false, 0);
+
+    // place logicWaterPool within logicTyvekFilm
+    new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicWaterPool,"pWaterPool",logicTyvekFilm , false, 0);
+
+    return pTyvekFilm ;
+
 }
 
 
