@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 G4CXOpticks_setGeometry_Default_Test.sh
 ========================================
@@ -13,7 +13,7 @@ defarg=info_dbg_ana
 arg=${1:-$defarg}
 bin=G4CXOpticks_setGeometry_Test
 
-source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar 
+source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar
 
 vars="BASH_SOURCE arg GEOM bin"
 
@@ -31,25 +31,26 @@ logging(){
 [ -n "$LOG" ] && logging && env | grep =INFO
 
 
-if [ "${arg/info}" != "$arg" ]; then 
-    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done 
-fi 
+if [ "${arg/info}" != "$arg" ]; then
+    for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
+fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then
     $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1 
-fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1
+fi
 
-if [ "${arg/dbg}" != "$arg" ]; then 
+if [ "${arg/dbg}" != "$arg" ]; then
     export TAIL="-o run"
-    dbg__ $bin 
+    source dbg__.sh
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
-fi 
+fi
 
-#if [ "${arg/ana}" != "$arg" ]; then 
+#if [ "${arg/ana}" != "$arg" ]; then
 #    ${IPYTHON:-ipython} --pdb -i $script
 #    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
-#fi 
+#fi
 
 exit 0
 

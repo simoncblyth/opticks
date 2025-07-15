@@ -11,11 +11,11 @@ Action depends on envvars such as OpticksGDMLPath, see G4CXOpticks::setGeometry
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
 
-    LOG(info) << "[SetGeometry" ; 
-    G4CXOpticks::SetGeometry();  
-    LOG(info) << "]SetGeometry" ; 
+    LOG(info) << "[SetGeometry" ;
+    G4CXOpticks::SetGeometry();
+    LOG(info) << "]SetGeometry" ;
 
-    return 0 ; 
+    return 0 ;
 }

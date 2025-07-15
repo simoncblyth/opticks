@@ -2,8 +2,8 @@
 G4CX_U4TreeCreateCSGFoundryTest.cc
 ====================================
 
-1. creates Geant4 pv with U4VolumeMaker::PV which is configured via GEOM envvar, 
-   see also U4SolidMaker::Make for implemented names and to add more 
+1. creates Geant4 pv with U4VolumeMaker::PV which is configured via GEOM envvar,
+   see also U4SolidMaker::Make for implemented names and to add more
 2. applies U4Tree::Create populating an stree
 3. invokes CSGFoundry::CreateFromSim which imports the stree
 4. saves the CSGFoundry to $FOLD
@@ -18,11 +18,11 @@ G4CX_U4TreeCreateCSGFoundryTest.cc
 
 struct G4CX_U4TreeCreateCSGFoundryTest
 {
-    const G4VPhysicalVolume* world ; 
-    SSim* sim ; 
-    stree*  st ; 
-    U4Tree* tr ; 
-    CSGFoundry* fd ; 
+    const G4VPhysicalVolume* world ;
+    SSim* sim ;
+    stree*  st ;
+    U4Tree* tr ;
+    CSGFoundry* fd ;
 
     G4CX_U4TreeCreateCSGFoundryTest();
 };
@@ -35,13 +35,13 @@ inline G4CX_U4TreeCreateCSGFoundryTest::G4CX_U4TreeCreateCSGFoundryTest()
     tr(U4Tree::Create(st,world,nullptr)),
     fd(nullptr)
 {
-    sim->initSceneFromTree(); 
-    fd = CSGFoundry::CreateFromSim(); 
-    fd->save("$FOLD"); 
+    sim->initSceneFromTree();
+    fd = CSGFoundry::CreateFromSim();
+    fd->save("$FOLD");
 }
 
 int main()
 {
-    G4CX_U4TreeCreateCSGFoundryTest t ; 
-    return 0 ; 
+    G4CX_U4TreeCreateCSGFoundryTest t ;
+    return 0 ;
 }
