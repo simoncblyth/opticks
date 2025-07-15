@@ -275,7 +275,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
         params.tmax,
         prd,
         params.vizmask,
-        params.RefineDistance
+        params.PropagateRefineDistance
     );
 
 #if defined(DEBUG_PIDX)
@@ -399,7 +399,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     {
         float tmin = ( ctx.p.boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
 
-        trace<false>( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.RefineDistance );  // geo query filling prd
+        // intersect query filling (quad2)prd
+        switch(params.PropagateRefine)
+        {
+            case 0u: trace<false>( params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+            case 1u: trace<true>(  params.handle, ctx.p.pos, ctx.p.mom, tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+        }
+
         if( prd->boundary() == 0xffffu ) break ; // SHOULD ONLY HAPPEN FOR PHOTONS STARTING OUTSIDE WORLD
         // propagate can do nothing meaningful without a boundary
 
@@ -502,7 +508,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
         params.tmax,
         prd,
         params.vizmask,
-        params.RefineDistance
+        params.PropagateRefineDistance
     );
 
     evt->add_simtrace( idx, p, prd, params.tmin );  // sevent

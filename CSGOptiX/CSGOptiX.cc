@@ -583,7 +583,8 @@ void CSGOptiX::initSimulate()
     params->tmin0 = SEventConfig::PropagateEpsilon0() ;  // epsilon used after step points with flags in below mask
     params->PropagateEpsilon0Mask = SEventConfig::PropagateEpsilon0Mask();  // eg from CK|SI|TO|SC|RE
 
-    params->RefineDistance = SEventConfig::PropagateRefineDistance();  // approx distance beyond which to refine intersect with 2nd trace
+    params->PropagateRefine = SEventConfig::PropagateRefine();
+    params->PropagateRefineDistance = SEventConfig::PropagateRefineDistance();  // approx distance beyond which to refine intersect with 2nd trace
 
     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
     params->tmax = 1000000.f ;

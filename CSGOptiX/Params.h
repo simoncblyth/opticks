@@ -69,7 +69,8 @@ struct Params
 
     float      tmin0 ;
     unsigned   PropagateEpsilon0Mask ;
-    float      RefineDistance ;
+    float      PropagateRefineDistance ;
+    bool       PropagateRefine ;
 
     float      tmax ;
     float4     ZPROJ ;
