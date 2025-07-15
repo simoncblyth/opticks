@@ -1102,6 +1102,11 @@ const G4VPhysicalVolume* U4VolumeMaker::BigWaterPool()
     G4Material* Tyvek = U4Material::Get("G4_Pb") ;
 
 
+
+    G4Material* BufferMaterials = U4Material::Get("G4_WATER") ;
+
+
+
    // Tyvek:logicTyvekFilm
     {
         double tyvek_btmZ = -m_heightWP/2 + m_deadWaterThickness - m_tyvekThickness;
@@ -1154,11 +1159,97 @@ const G4VPhysicalVolume* U4VolumeMaker::BigWaterPool()
      }
 
 
+
+
+    G4LogicalVolume* logicMaskVirtual = nullptr ;
+    {
+        // jcv R12860OnlyFrontMaskManager
+
+        G4double htop_thickness=8.*mm ;
+        G4double htop_gap=2.*mm ;
+
+        //G4double MAGIC_virtual_thickness = 0.05*mm;
+        G4double MAGIC_virtual_thickness = 0.10*mm;
+
+        G4double requator_thickness=8.*mm ;
+        G4double requator_gap=2.*mm ;
+
+        G4double mask_radiu_in = 254.*mm + requator_gap;
+        G4double mask_radiu_out = mask_radiu_in + requator_thickness;
+        G4double mask_radiu_virtual = mask_radiu_out + MAGIC_virtual_thickness;
+
+
+        G4double htop_in = 184.*mm + htop_gap;
+        G4double htop_out = htop_in + htop_thickness;
+
+
+
+        G4double height_in = 10*mm + 5.*mm;
+        G4double height_out = height_in + 10*mm;
+        G4double height_virtual = height_out + MAGIC_virtual_thickness;
+
+        G4double zPlane[] = {
+                            -height_virtual,
+                            htop_out + MAGIC_virtual_thickness
+                            };
+        G4double rInner[] = {0.,
+                             0.};
+        G4double rOuter[] = {mask_radiu_virtual,
+                             mask_radiu_virtual};
+
+        G4VSolid* SolidMaskVirtual = new G4Polycone(
+                                    "sMask_virtual",
+                                    0,
+                                    360*deg,
+                                    2,
+                                    zPlane,
+                                    rInner,
+                                    rOuter
+                                    );
+
+        logicMaskVirtual = new G4LogicalVolume(
+            SolidMaskVirtual,
+            BufferMaterials,
+            "lMaskVirtual",
+            0,
+            0,
+            0);
+    }
+
+
     // place logicTyvekFilm within logicDeadWater
     pTyvekFilm = new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicTyvekFilm,"pTyvekFilm",logicDeadWater , false, 0);
 
     // place logicWaterPool within logicTyvekFilm
     new G4PVPlacement(0, G4ThreeVector(0, 0, 0),logicWaterPool,"pWaterPool",logicTyvekFilm , false, 0);
+
+
+    {
+        // grabbed from gdb VetoPmtPosBall::initialize    "b 82 if i == 51006"
+
+        G4double x = -994.96197509765625 ;
+        G4double y = 20447.890625 ;
+        G4double z = 730.7440185546875 ;
+        G4double theta = 1.53511662609056 ;
+        G4double phi = 1.6194159277617648 ;
+
+        G4ThreeVector pos(x, y, z);
+        G4RotationMatrix rot;
+        rot.rotateY(theta);
+        rot.rotateZ(phi);
+        G4Transform3D trans(rot, pos);
+        G4Transform3D& tr = trans ;
+
+        // WaterPoolConstruction::inject
+        auto _rot = tr.getRotation();
+        auto _translation = tr.getTranslation();
+        _translation.setR(20.502*m);
+
+        G4Transform3D tr_ideal(_rot, _translation);
+
+        // place logicMaskVirtual within logicWaterPool
+        new G4PVPlacement(tr_ideal,logicMaskVirtual,"pMask",logicWaterPool , false, 0);
+    }
 
     return pTyvekFilm ;
 
