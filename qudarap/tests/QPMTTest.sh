@@ -42,6 +42,7 @@ arg=${1:-$defarg}
 logging(){
    type $FUNCNAME
    export QPMT=INFO
+   export SPMT__level=1
    #export QU=INFO
 }
 [ -n "$LOG" ] && logging

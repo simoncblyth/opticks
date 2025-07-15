@@ -1,5 +1,5 @@
-#!/bin/bash -l 
+#!/bin/bash
 
-source $HOME/.opticks/GEOM/GEOM.sh 
+source $HOME/.opticks/GEOM/GEOM.sh
 U4TraverseTest
 

@@ -123,6 +123,8 @@ inline std::string SPMT_Total::desc() const
 
 struct SPMT
 {
+    static constexpr const char* _level = "SPMT__level" ;
+    static const int level ;
     static constexpr const float hc_eVnm = 1239.84198433200208455673  ;
 
     enum { L0, L1, L2, L3 } ;
@@ -160,7 +162,6 @@ struct SPMT
     static constexpr const int   N_EN = 1550 - 155 + 1 ;
     */
 
-    static constexpr const bool VERBOSE = false ;
     static constexpr const char* PATH = "$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt" ;
 
     // TODO: get these from s_pmt.h also
@@ -368,6 +369,7 @@ struct SPMT
 };
 
 
+const int SPMT::level  = ssys::getenvint(_level, 0);
 const int SPMT::N_LPMT = ssys::getenvint("N_LPMT", 1 ); // 10 LPMT default for fast scanning
 const int SPMT::N_MCT  = ssys::getenvint("N_MCT",  180 );  // "AOI" (actually mct) scan points from -1. to 1.
 const int SPMT::N_SPOL = ssys::getenvint("N_SPOL", 1 ); // polarization scan points from S-pol to P-pol
@@ -404,9 +406,9 @@ inline SPMT* SPMT::CreateFromJPMT(const char* path_)
     bool unresolved = sstr::StartsWith(path,"CFBaseFromGEOM");
     if(unresolved) printf("SPMT::CreateFromJPMT unresolved path[%s]\n", path) ;
     NPFold* fold = NPFold::LoadIfExists(path) ;
-    if(VERBOSE) printf("SPMT::LoadFromJPMT path %s \n", ( path == nullptr ? "path-null" : path ) );
-    if(VERBOSE) printf("SPMT::LoadFromJPMT fold %s \n", ( fold == nullptr ? "fold-null" : "fold-ok" ) );
-    return new SPMT(fold) ;
+    if(level > 0) printf("SPMT::LoadFromJPMT path %s \n", ( path == nullptr ? "path-null" : path ) );
+    if(level > 0) printf("SPMT::LoadFromJPMT fold %s \n", ( fold == nullptr ? "fold-null" : "fold-ok" ) );
+    return fold ? new SPMT(fold) : nullptr ;
 }
 
 inline SPMT::SPMT(const NPFold* jpmt_)
@@ -621,6 +623,7 @@ void SPMT::init_pmtCat()
        << "\n"
        ;
 
+    if(!pmtCat) return ;
     assert( expected_type );
     //assert( expected_shape );
     assert( pmtCat_v );
@@ -628,6 +631,7 @@ void SPMT::init_pmtCat()
 
 void SPMT::init_lpmtCat()
 {
+    if(!lpmtCat) return ;
     assert( lpmtCat && lpmtCat->uifc == 'i' && lpmtCat->ebyte == 4 );
     assert( lpmtCat->shape[0] == s_pmt::NUM_CD_LPMT );
     assert( lpmtCat_v );
@@ -635,6 +639,7 @@ void SPMT::init_lpmtCat()
 
 void SPMT::init_qeScale()
 {
+    if(!qeScale) return ;
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
     assert( qeScale->shape[0] == s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP  );
     assert( qeScale_v );
@@ -752,7 +757,7 @@ inline NP* SPMT::MakeCatPropArrayFromFold( const NPFold* fold, const char* _name
 {
     if(fold == nullptr) return nullptr ;
     int num_items = fold->num_items();
-    if(VERBOSE) std::cout << "SPMT::MakeCatPropArrayFromFold num_items : " << num_items << "\n" ;
+    if(level > 0) std::cout << "SPMT::MakeCatPropArrayFromFold num_items : " << num_items << "\n" ;
 
     std::vector<std::string> names ;
     U::Split(_names, ',', names );
@@ -761,7 +766,7 @@ inline NP* SPMT::MakeCatPropArrayFromFold( const NPFold* fold, const char* _name
     {
         const char* k = names[i].c_str();
         const NP* v = fold->get(k);
-        if(VERBOSE) std::cout << std::setw(20) << k << " : " << ( v ? v->sstr() : "-" ) << std::endl ;
+        if(level > 0) std::cout << std::setw(20) << k << " : " << ( v ? v->sstr() : "-" ) << std::endl ;
 
         NP* vc = v->copy();
         vc->pscale(domain_scale, 0);
@@ -857,7 +862,7 @@ inline void SPMT::init_lcqs()
     }
     lcqs = NPX::ArrayFromVec<int,LCQS>( v_lcqs ) ;
 
-    if(VERBOSE) std::cout
+    if(level > 0) std::cout
        << "SPMT::init_lcqs" << std::endl
        << " NUM_CD_LPMT " << s_pmt::NUM_CD_LPMT << std::endl
        << " pmtCat " << ( pmtCat ? pmtCat->sstr() : "-" ) << std::endl
@@ -1589,7 +1594,7 @@ inline NPFold* SPMT::make_c4scan() const
                   memcpy( comp_v  + comp_idx,   pd.stack.comp.cdata(),   sizeof(float)*8*4 );
                   memcpy( art_v   + art_idx,    pd.stack.art.cdata(),    sizeof(float)*4*4 );
 
-                  if(VERBOSE) std::cout
+                  if(level > 0) std::cout
                       << "SPMT::get_ARTE"
                       << " i " << std::setw(5) << i
                       << " j " << std::setw(5) << j

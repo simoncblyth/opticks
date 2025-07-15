@@ -5,16 +5,16 @@
 # This file is part of Opticks
 # (see https://bitbucket.org/simoncblyth/opticks).
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -28,13 +28,13 @@ Collective reporting from a bunch of separate ctest.log files::
 
 Or from a single logfile::
 
-    CTestLog.py /tmp/2091440.out 
+    CTestLog.py /tmp/2091440.out
 
 
 Canonical usage from opticks-t/om-test/om-testlog::
 
-    om-testlog () 
-    { 
+    om-testlog ()
+    {
         CTestLog.py $(om-bdir) $*
     }
 
@@ -46,7 +46,7 @@ log = logging.getLogger(__name__)
 
 class Test(dict):
 
-    tmpl = "  %(num)-3s/%(den)-3s Test #%(num2)-3s: %(name)-55s %(result)-30s %(time)-6s "  
+    tmpl = "  %(num)-3s/%(den)-3s Test #%(num2)-3s: %(name)-55s %(result)-30s %(time)-6s "
 
     def __init__(self, *args, **kwa):
         dict.__init__(self, *args, **kwa)
@@ -59,22 +59,22 @@ class CTestLog(object):
     47/49 Test #47: GGeoTest.RecordsNPYTest ..........   Passed    0.03 sec
 
     """
-    NAME = "ctest.log" 
-    TPATN = re.compile("\s*(?P<num>\d*)/(?P<den>\d*)\s*Test\s*#(?P<num2>\d*):\s*(?P<name>\S*)\s*(?P<div>\.*)\s*(?P<result>.*)\s+(?P<time>\d+\.\d+) sec$") 
+    NAME = "ctest.log"
+    TPATN = re.compile(r"\s*(?P<num>\d*)/(?P<den>\d*)\s*Test\s*#(?P<num2>\d*):\s*(?P<name>\S*)\s*(?P<div>\.*)\s*(?P<result>.*)\s+(?P<time>\d+\.\d+) sec$")
     SKIPS = "yoctoglrap openmeshrap".split()
 
     @classmethod
     def examine_logs(cls, args):
         logs = []
-        root = str(args.base) 
+        root = str(args.base)
         for dirpath, dirs, names in os.walk(root):
             if cls.NAME in names:
                 log.debug(dirpath)
                 reldir = dirpath[len(root):]
                 log.debug("reldir:[%s] dirpath:[%s] root:[%s] %d " % (reldir, dirpath, root, len(root)) )
-                if reldir == "" and not args.withtop: 
+                if reldir == "" and not args.withtop:
                     log.debug("skipping toplevel tests, reldir [%s]" % reldir)
-                    continue 
+                    continue
                 pass
                 if reldir in cls.SKIPS:
                     log.info("skipping reldir [%s]" % reldir)
@@ -90,16 +90,16 @@ class CTestLog(object):
     @classmethod
     def calc_totals(cls, logs):
         tot = {}
-        tot["tests"] = 0 
-        tot["fails"] = 0 
+        tot["tests"] = 0
+        tot["fails"] = 0
         for lg in logs:
-            tot["tests"] += len(lg.tests) 
-            tot["fails"] += len(lg.fails) 
+            tot["tests"] += len(lg.tests)
+            tot["fails"] += len(lg.fails)
         pass
         cls.logs = logs
         cls.tot = tot
         cls.dt = max(map(lambda lg:lg.dt, cls.logs ))
- 
+
 
     @classmethod
     def examine_single_logfile(cls, args):
@@ -119,17 +119,17 @@ class CTestLog(object):
         log.debug("reading %s " % path)
         lines = list(map(str.rstrip, open(path,"r").readlines() ))
         lg = cls(lines, path=path, reldir=reldir)
-        return lg 
- 
+        return lg
+
     def __init__(self, lines, path=None, reldir=None):
         self.lines = lines
         self.reldir = reldir
         self.name = os.path.basename(reldir) if not reldir is None else None
-        self.path = path 
+        self.path = path
         self.tests = []
         self.fails = []
         dt = datetime.datetime.fromtimestamp(os.stat(path).st_ctime) if path is not None else None
-        self.dt = dt 
+        self.dt = dt
 
         for line in lines:
             m = self.TPATN.match(line)
@@ -139,12 +139,12 @@ class CTestLog(object):
                 if not tst["result"].strip() == "Passed":
                     self.fails.append(tst)
                 pass
-                #print line  
+                #print line
                 #print tst
             pass
         pass
 
- 
+
     def __repr__(self):
         return "CTestLog : %20s : %6d/%6d : %s : %s " % ( self.reldir, self.num_fails, self.num_tests, self.dt, self.path  )
 
@@ -167,7 +167,7 @@ if __name__ == '__main__':
 
     if len(args.base) == 0:
         args.base = os.getcwd()
-    else: 
+    else:
         args.base = args.base[0]
     pass
 
@@ -175,7 +175,7 @@ if __name__ == '__main__':
         CTestLog.examine_logs(args)
     else:
         CTestLog.examine_single_logfile(args)
-    pass  
+    pass
     lgs = sorted(CTestLog.logs, key=lambda lg:lg.dt)
 
     print("\n\nTESTS:")
@@ -208,6 +208,6 @@ if __name__ == '__main__':
             print(tst)
         pass
     pass
-    print("\n\n") 
+    print("\n\n")
 
 
