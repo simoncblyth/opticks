@@ -273,7 +273,6 @@ inline void SRecord::getPhotonAtTime( std::vector<sphoton>& pp, float t ) const
 {
     int ni = record->shape[0] ;
     int nj = record->shape[1] ;
-    char* data = record->bytes();
     int item_bytes = record->item_bytes() ; // encompasses multiple step point sphoton
 
     bool dump = false ;
