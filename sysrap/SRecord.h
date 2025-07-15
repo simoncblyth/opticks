@@ -5,12 +5,6 @@ SRecord.h
 
 Used from SGLFW_Evt.h
 
-TODO: add API to provide photons corresponding to an input simulation time
-by interpolation between positions in the record array. Momentum and
-polarization can be taken from the first of the straddling step points.
-When not straddling need to skip that photon, corresponding
-to it not being alive at the simulation time provided.
-
 **/
 
 #include "NP.hh"
@@ -52,8 +46,11 @@ struct SRecord
 
     const float get_t0() const ;
     const float get_t1() const ;
-
     std::string desc() const ;
+
+    void getPhotonAtTime( std::vector<sphoton>& photon, float t ) const;
+    NP*  getPhotonAtTime( float t ) const;
+
 };
 
 
@@ -259,4 +256,79 @@ inline std::string SRecord::desc() const
     std::string str = ss.str() ;
     return str ;
 }
+
+/**
+SRecord::getPhotonAtTime
+--------------------------
+
+WIP: add API to provide photons corresponding to an input simulation time
+by interpolation between positions in the record array. Momentum and
+polarization can be taken from the first of the straddling step points.
+When not straddling need to skip that photon, corresponding
+to it not being alive at the simulation time provided.
+
+**/
+
+inline void SRecord::getPhotonAtTime( std::vector<sphoton>& pp, float t ) const
+{
+    int ni = record->shape[0] ;
+    int nj = record->shape[1] ;
+    char* data = record->bytes();
+    int item_bytes = record->item_bytes() ; // encompasses multiple step point sphoton
+
+    bool dump = false ;
+
+    std::vector<sphoton> point(nj) ;
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        if(dump) std::cout
+            << "SRecord::getPhotonAtTime"
+            << " i " << std::setw(6) << i
+            << "\n"
+            ;
+
+        // populate step point vector
+        memcpy( point.data(), record->bytes() + i*item_bytes,  item_bytes );
+
+        sphoton p = {} ;
+
+        for(int j=1 ; j < nj ; j++)
+        {
+            const sphoton& p0 = point[j-1] ;
+            const sphoton& p1 = point[j] ;
+            bool straddle = p0.time <= t  && t < p1.time ;
+            if( straddle )
+            {
+                p = p0 ;  // (pol,mom) from p0
+
+                // interpolated position
+                float frac = (t - p0.time)/(p1.time - p0.time) ;
+                p.pos = lerp( p0.pos, p1.pos, frac ) ;
+                p.time = t ;
+
+                pp.push_back(p);
+
+                if(dump) std::cout
+                    << " j " << std::setw(2) << j
+                    << " p0.time " << std::fixed << std::setw(7) << std::setprecision(3) << p0.time
+                    << " p1.time " << std::fixed << std::setw(7) << std::setprecision(3) << p1.time
+                    << " straddle " << ( straddle ? "YES" : "NO " )
+                    << "\n"
+                    ;
+                break ;
+            }
+        }
+    }
+}
+
+inline NP* SRecord::getPhotonAtTime( float t ) const
+{
+    std::vector<sphoton> vpp ;
+    getPhotonAtTime(vpp, t );
+    int num_pp = vpp.size();
+    NP* pp = num_pp > 0 ?  NPX::ArrayFromVec<float,sphoton>(vpp, 4, 4 ) : nullptr ;
+    return pp ;
+}
+
 
