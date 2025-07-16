@@ -17,6 +17,8 @@ spath_test.cc
      TEST=is_readable ~/opticks/sysrap/tests/spath_test.sh
      TEST=GEOMSub ~/opticks/sysrap/tests/spath_test.sh
      TEST=GDMLPathFromGEOM ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Dirname ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Dirname0 ~/opticks/sysrap/tests/spath_test.sh
 
 **/
 
@@ -59,6 +61,8 @@ struct spath_test
 
    static int Exists();
    static int Exists2();
+   static int Dirname0();
+   static int Dirname();
    static int Basename();
    static int Name();
    static int Remove();
@@ -495,9 +499,46 @@ int spath_test::Exists2()
 }
 
 
+
+int spath_test::Dirname0()
+{
+    const char* path = "record.npy" ;
+    const char* fold = spath::Dirname(path) ;
+    bool expect = strcmp( fold, "") == 0 ;
+
+    std::cout
+        << "spath_test::Dirname0\n"
+        << " path [" << path << "]\n"
+        << " fold [" << ( fold ? fold : "-" ) << "]\n"
+        << " expect [" << (expect ? "YES" : "NO " ) << "]\n"
+        ;
+
+    assert( expect );
+    return 0 ;
+}
+
+
+
+int spath_test::Dirname()
+{
+    const char* path = "/tmp/some/long/path/with/an/interesting/base" ;
+    const char* fold = spath::Dirname(path) ;
+    bool expect = strcmp( fold, "/tmp/some/long/path/with/an/interesting") == 0 ;
+
+    std::cout
+        << "spath_test::Dirname\n"
+        << " path [" << path << "]\n"
+        << " fold [" << ( fold ? fold : "-" ) << "]\n"
+        << " expect [" << (expect ? "YES" : "NO " ) << "]\n"
+        ;
+
+    assert( expect );
+    return 0 ;
+}
+
 int spath_test::Basename()
 {
-    const char* path = "/tmp/some/long/path/with/an/intersesting/base" ;
+    const char* path = "/tmp/some/long/path/with/an/interesting/base" ;
     const char* base = spath::Basename(path) ;
     assert( strcmp( base, "base") == 0 );
     return 0 ;
@@ -759,6 +800,8 @@ int spath_test::Main()
     if(ALL||strcmp(TEST, "Resolve")==0) rc += Resolve();
     if(ALL||strcmp(TEST, "Exists")==0) rc += Exists();
     if(ALL||strcmp(TEST, "Exists2")==0) rc += Exists2();
+    if(ALL||strcmp(TEST, "Dirname0")==0) Dirname0();
+    if(ALL||strcmp(TEST, "Dirname")==0) Dirname();
     if(ALL||strcmp(TEST, "Basename")==0) Basename();
     if(ALL||strcmp(TEST, "Name")==0) rc += Name();
     if(ALL||strcmp(TEST, "Remove")==0) rc += Remove();

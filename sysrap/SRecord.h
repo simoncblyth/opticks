@@ -94,7 +94,6 @@ that yield a selection string or direct such strings.
 inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
 {
     const char* path = spath::Resolve(_fold, NAME);
-
     bool looks_unresolved = spath::LooksUnresolved(path, _fold);
     if(looks_unresolved)
     {
@@ -108,14 +107,6 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
             ;
         return nullptr ;
     }
-
-
-    if(level > 0) std::cout
-        << "SRecord::LoadArray \n"
-        << " [" << _level << "] " << level << "\n"
-        << " _fold [" << ( _fold ? _fold : "-" ) << "]\n"
-        << " _slice [" << ( _slice ? _slice : "-" ) << "]\n"
-        ;
 
     NP* a = nullptr ;
 

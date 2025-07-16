@@ -42,7 +42,7 @@
 #include "OpticksPhoton.hh"
 #include "SComp.h"
 #include "SProf.hh"
-
+#include "SRecord.h"
 
 
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
@@ -360,8 +360,8 @@ NP* SEvt::LoadInputArray(const char* path) // static
     LOG_IF(fatal, a == nullptr) << " FAILED to load input array from path " << path ;
 
     LOG(LEVEL)
-        << " path " << path
-        << " a.sstr " << a->sstr()
+        << " path " << ( path ? path : "-" )
+        << " a.sstr " << ( a ? a->sstr() : "-" )
         ;
 
     assert( a ) ;
@@ -430,10 +430,31 @@ NP* SEvt::LoadInputPhoton() // static
 }
 NP* SEvt::LoadInputPhoton(const char* spec)
 {
+    bool is_ipr = IsInputPhotonRecord(spec);
+    NP* a = nullptr ;
+    if(!is_ipr)
+    {
+        a = LoadInputPhoton_photon(spec);
+    }
+    else
+    {
+        a = LoadInputPhoton_record(spec);
+    }
+    return a ;
+}
+
+bool SEvt::IsInputPhotonRecord( const char* spec )
+{
+    const char* path = spath::Resolve(spec);
+    bool is_record = sstr::EndsWith(path, "record.npy" );
+    return is_record ;
+}
+
+NP* SEvt::LoadInputPhoton_photon(const char* spec)
+{
     const char* path = ResolveInputArray( spec, INPUT_PHOTON_DIR );
     NP* a = LoadInputArray(path);
     assert( a->has_shape(-1,4,4) );
-
 
     float t0 = SEventConfig::InputPhotonChangeTime();
     bool change_time = t0 >= 0.f ;
@@ -444,9 +465,55 @@ NP* SEvt::LoadInputPhoton(const char* spec)
         ;
 
     if(change_time) sphoton::ChangeTimeInsitu(a, t0);
+    return a ;
+}
+
+/**
+SEvt::LoadInputPhoton_record
+------------------------------
+
+This is is invoked when OPTICKS_INPUT_PHOTON
+resolves to a path ending with record.npy
+
+Creates input photon array by interpolation of
+step point positions from record array at
+simulation time given by OPTICKS_INPUT_PHOTON_RECORD_TIME
+(in ns).
+
+**/
+
+
+NP* SEvt::LoadInputPhoton_record(const char* spec)
+{
+    const char* spec2 = SEventConfig::InputPhoton();
+    const char* slice = SEventConfig::InputPhotonRecordSlice();
+    float        iprt = SEventConfig::InputPhotonRecordTime();
+
+    assert( spec && spec2 && strcmp( spec2, spec) == 0 );
+
+    const char* path = spath::Resolve(spec);
+    bool is_record = sstr::EndsWith(path, "record.npy" );
+    assert( is_record );
+
+    const char* fold = spath::Dirname(path);
+
+    SRecord* sr = SRecord::Load(fold, slice );
+    NP* a = sr->getPhotonAtTime(iprt);
+
+    std::cout
+        << "SEvt::LoadInputPhoton_record"
+        << " spec [" << ( spec ? spec : "-" ) << "]\n"
+        << " path [" << ( path ? path : "-" ) << "]\n"
+        << " fold [" << ( fold ? fold : "-" ) << "]\n"
+        << " slice [" << ( slice ? slice : "-" ) << "]\n"
+        << " iprt " << std::setw(10) << std::fixed << std::setprecision(4) << iprt << "\n"
+        << " is_record " << ( is_record ? "YES" : "NO " ) << "\n"
+        << " a " << ( a ? a->sstr() : "-" ) << "\n"
+        ;
 
     return a ;
 }
+
 
 
 /**

@@ -98,6 +98,7 @@ public:
 
 
     static bool LooksLikePath(const char* arg);
+    static const char* Dirname(const char* path);
     static const char* Basename(const char* path);
 
     static int Remove(const char* path_);
@@ -872,6 +873,15 @@ inline bool spath::LooksLikePath(const char* arg)
     if(!arg) return false ;
     if(strlen(arg) < 2) return false ;
     return arg[0] == '/' || arg[0] == '$' ;
+}
+
+
+inline const char* spath::Dirname(const char* path)
+{
+    std::string p = path ;
+    std::size_t pos = p.find_last_of("/");
+    std::string fold = pos == std::string::npos ? "" : p.substr(0, pos) ;  // not pos-1 as counting from zero
+    return strdup( fold.c_str() ) ;
 }
 
 inline const char* spath::Basename(const char* path)

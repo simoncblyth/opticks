@@ -330,6 +330,9 @@ public:
 
     static NP* LoadInputPhoton();
     static NP* LoadInputPhoton(const char* spec);
+    static bool IsInputPhotonRecord(   const char* spec );
+    static NP* LoadInputPhoton_photon( const char* spec);
+    static NP* LoadInputPhoton_record( const char* spec);
 
 
 

@@ -206,6 +206,8 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputPhoton      = "OPTICKS_INPUT_PHOTON" ;
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ;
     static constexpr const char* kInputPhotonChangeTime = "OPTICKS_INPUT_PHOTON_CHANGE_TIME" ;
+    static constexpr const char* kInputPhotonRecordTime = "OPTICKS_INPUT_PHOTON_RECORD_TIME" ;
+    static constexpr const char* kInputPhotonRecordSlice = "OPTICKS_INPUT_PHOTON_RECORD_SLICE" ;
 
 
     static int         IntegrationMode();
@@ -279,6 +281,8 @@ struct SYSRAP_API SEventConfig
     static const char* InputPhoton();
     static const char* InputPhotonFrame();
     static float       InputPhotonChangeTime();
+    static float       InputPhotonRecordTime();
+    static const char* InputPhotonRecordSlice();
 
     static int RGMode();
     static bool IsRGModeRender();
@@ -297,7 +301,6 @@ struct SYSRAP_API SEventConfig
     static void SaveCompList( std::vector<unsigned>& save_comp ) ;
     static int NumSaveComp();
 
-    //static constexpr const char* Default = "Default" ;
     static constexpr const char* DebugHeavy = "DebugHeavy" ;
     static constexpr const char* DebugLite = "DebugLite" ;
     static constexpr const char* Nothing = "Nothing" ;
@@ -307,7 +310,6 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* HitPhotonSeq = "HitPhotonSeq" ;
     static constexpr const char* HitSeq = "HitSeq" ;
 
-    //static void SetDefault();
     static void SetDebugHeavy();
     static void SetDebugLite();
     static void SetNothing();
@@ -317,7 +319,6 @@ struct SYSRAP_API SEventConfig
     static void SetHitPhotonSeq();
     static void SetHitSeq();
 
-    //static bool IsDefault();
     static bool IsDebugHeavy();
     static bool IsDebugLite();
     static bool IsNothing();
@@ -392,6 +393,8 @@ struct SYSRAP_API SEventConfig
     static void SetInputPhoton(const char* input_photon);
     static void SetInputPhotonFrame(const char* input_photon_frame);
     static void SetInputPhotonChangeTime( float t0 ) ;
+    static void SetInputPhotonRecordTime( float t0 ) ;
+    static void SetInputPhotonRecordSlice( const char* iprs ) ;
 
     static void SetGatherComp_(unsigned mask);
     static void SetGatherComp(const char* names, char delim=',') ;
@@ -463,6 +466,8 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonDefault ;
     static const char* _InputPhotonFrameDefault ;
     static float       _InputPhotonChangeTimeDefault ;
+    static float       _InputPhotonRecordTimeDefault ;
+    static const char* _InputPhotonRecordSliceDefault ;
 
     static int         _IntegrationMode ;
     static const char* _EventMode ;
@@ -537,6 +542,8 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhoton ;
     static const char* _InputPhotonFrame ;
     static float       _InputPhotonChangeTime ;
+    static float       _InputPhotonRecordTime ;
+    static const char* _InputPhotonRecordSlice ;
 
     static scontext* CONTEXT ;
     static salloc*   ALLOC ;

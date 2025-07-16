@@ -258,6 +258,13 @@ inline bool sstr::StartsWithLetterAZaz(const char* q )
 }
 
 
+/**
+sstr::Contains
+----------------
+
+Returns true when first arg *s* contains second arg *q*
+
+**/
 
 
 inline bool sstr::Contains( const char* s_ , const char* q_ )

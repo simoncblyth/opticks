@@ -101,6 +101,8 @@ const char* SEventConfig::_InputGenstepSelectionDefault = nullptr ;
 const char* SEventConfig::_InputPhotonDefault = nullptr ;
 const char* SEventConfig::_InputPhotonFrameDefault = nullptr ;
 float       SEventConfig::_InputPhotonChangeTimeDefault = -1.f ;   // -ve time means leave ASIS
+float       SEventConfig::_InputPhotonRecordTimeDefault = 0.1f ;   // ns
+const char* SEventConfig::_InputPhotonRecordSliceDefault = nullptr ;
 
 int         SEventConfig::_IntegrationMode = ssys::getenvint(kIntegrationMode, _IntegrationModeDefault );
 const char* SEventConfig::_EventMode = ssys::getenvvar(kEventMode, _EventModeDefault );
@@ -287,6 +289,8 @@ const char* SEventConfig::_InputGenstepSelection = ssys::getenvvar(kInputGenstep
 const char* SEventConfig::_InputPhoton = ssys::getenvvar(kInputPhoton, _InputPhotonDefault );
 const char* SEventConfig::_InputPhotonFrame = ssys::getenvvar(kInputPhotonFrame, _InputPhotonFrameDefault );
 float SEventConfig::_InputPhotonChangeTime = ssys::getenvfloat(kInputPhotonChangeTime, _InputPhotonChangeTimeDefault ) ;
+float SEventConfig::_InputPhotonRecordTime = ssys::getenvfloat(kInputPhotonRecordTime, _InputPhotonRecordTimeDefault ) ;
+const char* SEventConfig::_InputPhotonRecordSlice = ssys::getenvvar(kInputPhotonRecordSlice, _InputPhotonRecordSliceDefault );
 
 
 int         SEventConfig::IntegrationMode(){ return _IntegrationMode ; }
@@ -477,6 +481,8 @@ using MOI style specification eg "NNVT:0:1000"
 **/
 const char* SEventConfig::InputPhotonFrame(){       return _InputPhotonFrame ; }
 float       SEventConfig::InputPhotonChangeTime(){  return _InputPhotonChangeTime ; }
+float       SEventConfig::InputPhotonRecordTime(){  return _InputPhotonRecordTime ; }
+const char* SEventConfig::InputPhotonRecordSlice(){ return _InputPhotonRecordSlice ; }
 
 
 int SEventConfig::RGMode(){  return _RGMode ; }
@@ -610,6 +616,8 @@ void SEventConfig::SetInputGenstepSelection(const char* igsel){   _InputGenstepS
 void SEventConfig::SetInputPhoton(const char* ip){   _InputPhoton = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputPhotonFrame(const char* ip){   _InputPhotonFrame = ip ? strdup(ip) : nullptr ; LIMIT_Check() ; }
 void SEventConfig::SetInputPhotonChangeTime(float t0){    _InputPhotonChangeTime = t0 ; LIMIT_Check() ; }
+void SEventConfig::SetInputPhotonRecordTime(float t0){    _InputPhotonRecordTime = t0 ; LIMIT_Check() ; }
+void SEventConfig::SetInputPhotonRecordSlice(const char* rs){   _InputPhotonRecordSlice = rs ? strdup(rs) : nullptr ; LIMIT_Check() ; }
 
 void SEventConfig::SetGatherComp_(unsigned mask){ _GatherComp = mask ; }
 void SEventConfig::SetGatherComp(const char* names, char delim){  SetGatherComp_( SComp::Mask(names,delim)) ; }
@@ -856,6 +864,12 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kInputPhotonChangeTime
        << std::setw(20) << " InputPhotonChangeTime " << " : " << InputPhotonChangeTime()
+       << std::endl
+       << std::setw(25) << kInputPhotonRecordTime
+       << std::setw(20) << " InputPhotonRecordTime " << " : " << InputPhotonRecordTime()
+       << std::endl
+       << std::setw(25) << kInputPhotonRecordSlice
+       << std::setw(20) << " InputPhotonRecordSlice " << " : " << ( InputPhotonRecordSlice() ? InputPhotonRecordSlice() : "-" )
        << std::endl
        << std::setw(25) << "RecordLimit() "
        << std::setw(20) << " (sseq::SLOTS) " << " : " << RecordLimit()
@@ -1340,6 +1354,9 @@ NP* SEventConfig::Serialize() // static
     if(ipf) meta->set_meta<std::string>("InputPhotonFrame", ipf );
 
     meta->set_meta<float>("InputPhotonChangeTime", InputPhotonChangeTime() );
+    meta->set_meta<float>("InputPhotonRecordTime", InputPhotonRecordTime() );
+    const char* iprs = InputPhotonRecordSlice() ;
+    if(iprs) meta->set_meta<std::string>("InputPhotonRecordSlice", iprs );
 
 
     meta->set_meta<int>("RGMode", RGMode() );
