@@ -133,7 +133,7 @@ defarg=info_run_info_pdb
 arg=${1:-$defarg}
 arg2=$2
 
-bin=CSGOptiXTMTest
+bin=CSGOptiXTMTest   ## just calls CSGOptiX::SimtraceMain()
 which_bin=$(which $bin)
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM

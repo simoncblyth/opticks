@@ -579,6 +579,8 @@ NB : simtrace has almost totally different content and layout compared with phot
 
 SEE qsim::generate_photon_simtrace
 
+HUH: INPUT SIMTRACE p HAS DIFFERENT LAYOUT FROM THE OUTPUT
+
 
 **/
 

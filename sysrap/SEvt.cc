@@ -452,6 +452,13 @@ bool SEvt::IsInputPhotonRecord( const char* spec )
 
 NP* SEvt::LoadInputPhoton_photon(const char* spec)
 {
+    bool is_simtrace = !SFrameGenstep::HasConfigEnv() && SEventConfig::IsRGModeSimtrace() ;
+    LOG_IF(fatal, is_simtrace)
+        << " simtrace with ordinary input photons is not supported "
+        ;
+    assert(!is_simtrace);
+    if(is_simtrace) std::raise(SIGINT);
+
     const char* path = ResolveInputArray( spec, INPUT_PHOTON_DIR );
     NP* a = LoadInputArray(path);
     assert( a->has_shape(-1,4,4) );
@@ -485,6 +492,8 @@ simulation time given by OPTICKS_INPUT_PHOTON_RECORD_TIME
 
 NP* SEvt::LoadInputPhoton_record(const char* spec)
 {
+    bool is_simtrace = !SFrameGenstep::HasConfigEnv() && SEventConfig::IsRGModeSimtrace() ;
+
     const char* spec2 = SEventConfig::InputPhoton();
     const char* slice = SEventConfig::InputPhotonRecordSlice();
     float        iprt = SEventConfig::InputPhotonRecordTime();
@@ -498,10 +507,11 @@ NP* SEvt::LoadInputPhoton_record(const char* spec)
     const char* fold = spath::Dirname(path);
 
     SRecord* sr = SRecord::Load(fold, slice );
-    NP* a = sr->getPhotonAtTime(iprt);
+    NP* a = is_simtrace ? sr->getSimtraceAtTime(iprt) : sr->getPhotonAtTime(iprt) ;
 
     std::cout
         << "SEvt::LoadInputPhoton_record"
+        << " is_simtrace " << ( is_simtrace ? "YES" : "NO " )
         << " spec [" << ( spec ? spec : "-" ) << "]\n"
         << " path [" << ( path ? path : "-" ) << "]\n"
         << " fold [" << ( fold ? fold : "-" ) << "]\n"
@@ -570,10 +580,13 @@ by SEvt::LoadInputPhoton
 
 void SEvt::initInputPhoton()
 {
-    if(SEventConfig::IsRGModeSimtrace()) return ;  // skip input photon setup when in simtrace mode
+    bool is_CEGS_simtrace = SFrameGenstep::HasConfigEnv() && SEventConfig::IsRGModeSimtrace() ;
+    if(is_CEGS_simtrace) return ;  // skip input photon setup when in simtrace mode with CEGS envvar
+
     NP* ip = LoadInputPhoton() ;
     setInputPhoton(ip);
 }
+
 
 void SEvt::setInputPhoton(NP* p)
 {
@@ -863,25 +876,54 @@ void SEvt::addInputGenstep()
 
     if(SEventConfig::IsRGModeSimtrace())
     {
-        const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
-
-        LOG_IF(info, SIMTRACE )
-            << "[" << SEvt__SIMTRACE << "] "
-            << " frame.get_frs " << ( frs ? frs : "-" ) ;
-            ;
-
-        //if(frs) SEventConfig::SetEventReldir(frs); // dont do that, default is more standard
-        // doing this is hangover from separate simtracing of related volumes presumably
-
-        NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
+        bool with_CEGS = SFrameGenstep::HasConfigEnv();
+        bool with_ip = hasInputPhoton();
         LOG_IF(info, SIMTRACE)
             << "[" << SEvt__SIMTRACE << "] "
-            << " simtrace gs " << ( gs ? gs->sstr() : "-" )
+            << " with_CEGS " << ( with_CEGS ? "YES" : "NO " )
+            << " with_ip " << ( with_ip ? "YES" : "NO " )
             ;
 
-        addGenstep(gs);
 
-        if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
+        if(with_CEGS)
+        {
+            const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
+            LOG_IF(info, SIMTRACE )
+                << "[" << SEvt__SIMTRACE << "] "
+                << " frame.get_frs " << ( frs ? frs : "-" ) ;
+                ;
+
+            //if(frs) SEventConfig::SetEventReldir(frs); // dont do that, default is more standard
+            // doing this is hangover from separate simtracing of related volumes presumably
+
+            NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
+            LOG_IF(info, SIMTRACE)
+                << "[" << SEvt__SIMTRACE << "] "
+                << " simtrace gs " << ( gs ? gs->sstr() : "-" )
+                ;
+
+            addGenstep(gs);
+            if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
+        }
+        else
+        {
+            // simtrace mode without CEGS and with OPTICKS_INPUT_PHOTON that must be via record.npy SRecord::getSimtraceAtTime
+            if( with_ip )
+            {
+                NP* igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON_SIMTRACE, nullptr) ;
+                assert(igs);
+                addGenstep(igs);
+                LOG_IF(info, SIMTRACE)
+                    << "[" << SEvt__SIMTRACE << "] "
+                    << " non-CEGS ip, igs " << ( igs ? igs->sstr() : "-" )
+                    ;
+            }
+            else
+            {
+                // low level CSG/CSGSimtrace does this
+            }
+
+        }
     }
     else if(SEventConfig::IsRGModeSimulate())
     {
@@ -905,7 +947,7 @@ void SEvt::addInputGenstep()
             }
             else if( hasInputPhoton())
             {
-                igs = SEvent::MakeInputPhotonGenstep(input_photon, frame) ;
+                igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &frame) ;
             }
             else if( has_torch )
             {
@@ -2178,11 +2220,11 @@ sgs SEvt::addGenstep(const quad6& q_)
     unsigned gentype = q_.gentype();
     unsigned matline_ = q_.matline();
 
-    bool is_input_photon_gs = OpticksGenstep_::IsInputPhoton(gentype) ;
+    //bool is_input_photon_gs = OpticksGenstep_::IsInputPhoton(gentype) ;
     bool is_cerenkov_gs = OpticksGenstep_::IsCerenkov(gentype);
 
 
-
+    /*
     bool input_photon_with_normal_genstep = input_photon && !is_input_photon_gs  ;
     LOG_IF(fatal, input_photon_with_normal_genstep)
         << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
@@ -2190,6 +2232,8 @@ sgs SEvt::addGenstep(const quad6& q_)
         << " for example avoid defining OPTICKS_INPUT_PHOTON when doing simtrace"
         ;
     assert( input_photon_with_normal_genstep == false );
+    */
+
 
 
     int gidx = int(gs.size())  ;  // 0-based genstep label index
@@ -3264,6 +3308,15 @@ NP* SEvt::makeGenstepArrayFromVector() const
 {
     return NPX::ArrayFromData<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ;
 }
+
+std::string SEvt::descGenstepArrayFromVector() const
+{
+    std::stringstream ss ;
+    ss << "SEvt::descGenstepArrayFromVector genstep.size " << genstep.size() << "\n" ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
 
 
 

@@ -91,20 +91,24 @@ NP* SEvent::MakeDemoGenstep(const char* config, int idx)
 
 
 
-NP* SEvent::MakeInputPhotonGenstep(const NP* input_photon, const sframe& fr )
+NP* SEvent::MakeInputPhotonGenstep(const NP* input_photon, int gentype, const sframe* fr )
 {
+    assert( gentype == OpticksGenstep_INPUT_PHOTON || gentype == OpticksGenstep_INPUT_PHOTON_SIMTRACE );
+
     std::vector<quad6> qgs(1) ;
     qgs[0].zero() ;
-    qgs[0] = MakeInputPhotonGenstep_(input_photon, fr );
+    qgs[0] = MakeInputPhotonGenstep_(input_photon, gentype, fr );
     NP* ipgs = NPX::ArrayFromVec<float,quad6>( qgs, 6, 4) ;
     return ipgs ;
 }
+
+
 
 /**
 SEvent::MakeInputPhotonGenstep_
 ---------------------------------
 
-Now called from SEvt::addFrameGenstep (formerly from SEvt::setFrame)
+Now called from SEvt::addInputGenstep (formerly from SEvt::addFrameGenstep and before that SEvt::setFrame)
 Note that the only thing taken from the *input_photon* is the
 number of photons so this can work with either local or
 transformed *input_photon*.
@@ -114,15 +118,17 @@ HMM: is that actually used ? Because the frame is also persisted.
 
 **/
 
-quad6 SEvent::MakeInputPhotonGenstep_(const NP* input_photon, const sframe& fr )
+quad6 SEvent::MakeInputPhotonGenstep_(const NP* input_photon, int gentype, const sframe* fr )
 {
     LOG(LEVEL) << " input_photon " << NP::Brief(input_photon) ;
 
     quad6 ipgs ;
     ipgs.zero();
-    ipgs.set_gentype( OpticksGenstep_INPUT_PHOTON );
+    ipgs.set_gentype( gentype );
     ipgs.set_numphoton(  input_photon->shape[0]  );
-    fr.m2w.write(ipgs); // copy fr.m2w into ipgs.q2,q3,q4,q5
+
+    if(fr) fr->m2w.write(ipgs); // copy fr->m2w into ipgs.q2,q3,q4,q5
+
     return ipgs ;
 }
 

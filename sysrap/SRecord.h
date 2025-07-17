@@ -48,8 +48,9 @@ struct SRecord
     const float get_t1() const ;
     std::string desc() const ;
 
-    void getPhotonAtTime( std::vector<sphoton>& photon, float t ) const;
-    NP*  getPhotonAtTime( float t ) const;
+    void getPhotonAtTime( std::vector<sphoton>* pp, std::vector<quad4>* qq, float t ) const ;
+    NP*  getPhotonAtTime(   float t ) const;
+    NP*  getSimtraceAtTime( float t ) const;
 
 };
 
@@ -260,7 +261,7 @@ to it not being alive at the simulation time provided.
 
 **/
 
-inline void SRecord::getPhotonAtTime( std::vector<sphoton>& pp, float t ) const
+inline void SRecord::getPhotonAtTime( std::vector<sphoton>* pp, std::vector<quad4>* qq, float t ) const
 {
     int ni = record->shape[0] ;
     int nj = record->shape[1] ;
@@ -297,7 +298,38 @@ inline void SRecord::getPhotonAtTime( std::vector<sphoton>& pp, float t ) const
                 p.pos = lerp( p0.pos, p1.pos, frac ) ;
                 p.time = t ;
 
-                pp.push_back(p);
+                if(pp)
+                {
+                    pp->push_back(p);
+                }
+
+                if(qq)
+                {
+                    quad4 q = {} ;
+
+                    // HMM : why is input simtrace layout different from output ?
+                    // That is demonstrated in sevent::add_simtrace
+                    q.q0.f.x = p.pos.x ;
+                    q.q0.f.y = p.pos.y ;
+                    q.q0.f.z = p.pos.z ;
+
+                    q.q1.f.x = p.mom.x ;
+                    q.q1.f.y = p.mom.y ;
+                    q.q1.f.z = p.mom.z ;
+
+                    /*
+                    q.q2.f.x = p.pos.x ;
+                    q.q2.f.y = p.pos.y ;
+                    q.q2.f.z = p.pos.z ;
+
+                    q.q3.f.x = p.mom.x ;
+                    q.q3.f.y = p.mom.y ;
+                    q.q3.f.z = p.mom.z ;
+                    */
+
+                    qq->push_back(q);
+                }
+
 
                 if(dump) std::cout
                     << " j " << std::setw(2) << j
@@ -312,13 +344,28 @@ inline void SRecord::getPhotonAtTime( std::vector<sphoton>& pp, float t ) const
     }
 }
 
+
+
+
 inline NP* SRecord::getPhotonAtTime( float t ) const
 {
     std::vector<sphoton> vpp ;
-    getPhotonAtTime(vpp, t );
+    getPhotonAtTime(&vpp, nullptr, t );
     int num_pp = vpp.size();
     NP* pp = num_pp > 0 ?  NPX::ArrayFromVec<float,sphoton>(vpp, 4, 4 ) : nullptr ;
     return pp ;
 }
+
+inline NP* SRecord::getSimtraceAtTime( float t ) const
+{
+    std::vector<quad4> vqq ;
+    getPhotonAtTime(nullptr, &vqq, t );
+    int num_qq = vqq.size();
+    NP* qq = num_qq > 0 ?  NPX::ArrayFromVec<float,quad4>(vqq, 4, 4 ) : nullptr ;
+    return qq ;
+}
+
+
+
 
 

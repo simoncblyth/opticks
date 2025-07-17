@@ -1,4 +1,3 @@
-#pragma once
 /**
 qsim.h : GPU side struct prepared CPU side by QSim.hh
 ========================================================
@@ -131,8 +130,9 @@ struct qsim
     QSIM_METHOD int     propagate(const int bounce, RNG& rng, sctx& ctx );
 
     QSIM_METHOD void    hemisphere_polarized( unsigned polz, bool inwards, RNG& rng, sctx& ctx );
-    QSIM_METHOD void    generate_photon_simtrace(   quad4&   p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
-    QSIM_METHOD void    generate_photon(            sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon_simtrace(         quad4&   p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon_simtrace_frame(   quad4&   p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon(                  sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
 #endif
 };
 
@@ -2446,6 +2446,16 @@ SEE : sevent::add_simtrace
 
 inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
 {
+    const int& gencode = gs.q0.i.x ;
+    switch(gencode)
+    {
+        case OpticksGenstep_FRAME:                   generate_photon_simtrace_frame(p, rng, gs, photon_id, genstep_id ); break ;
+        case OpticksGenstep_INPUT_PHOTON_SIMTRACE:   { p = (quad4&)evt->simtrace[photon_id] ; }                          ; break ;
+    }
+}
+
+inline QSIM_METHOD void qsim::generate_photon_simtrace_frame(quad4& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+{
     C4U gsid ;
 
     //int gencode          = gs.q0.i.x ;
@@ -2458,7 +2468,7 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const
     p.q0.f.z = gs.q1.f.z ;
     p.q0.f.w = 1.f ;
 
-    //printf("//qsim.generate_photon_simtrace gridaxes %d gs.q1 (%10.4f %10.4f %10.4f %10.4f) \n", gridaxes, gs.q1.f.x, gs.q1.f.y, gs.q1.f.z, gs.q1.f.w );
+    //printf("//qsim.generate_photon_simtrace_frame gridaxes %d gs.q1 (%10.4f %10.4f %10.4f %10.4f) \n", gridaxes, gs.q1.f.x, gs.q1.f.y, gs.q1.f.z, gs.q1.f.w );
 
     float u0 = curand_uniform(&rng);
     float sinPhi, cosPhi;
@@ -2472,9 +2482,9 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const
     float cosTheta = 2.f*u1 - 1.f ;
     float sinTheta = sqrtf(1.f-cosTheta*cosTheta) ;
 
-    //printf("//qsim.generate_photon_simtrace u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f \n", u0, sinPhi, cosPhi );
-    //printf("//qsim.generate_photon_simtrace u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n", u1, sinTheta, cosTheta );
-    //printf("//qsim.generate_photon_simtrace  u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n",  u0, sinPhi, cosPhi, u1, sinTheta, cosTheta );
+    //printf("//qsim.generate_photon_simtrace_frame u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f \n", u0, sinPhi, cosPhi );
+    //printf("//qsim.generate_photon_simtrace_frame u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n", u1, sinTheta, cosTheta );
+    //printf("//qsim.generate_photon_simtrace_frame  u0 %10.4f sinPhi   %10.4f cosPhi   %10.4f u1 %10.4f sinTheta %10.4f cosTheta %10.4f \n",  u0, sinPhi, cosPhi, u1, sinTheta, cosTheta );
 
     switch( gridaxes )
     {

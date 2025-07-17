@@ -489,6 +489,8 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     quad4 p ;
     sim->generate_photon_simtrace(p, rng, gs, photon_idx, genstep_idx );
 
+
+    // HUH: this is not the layout of sevent::add_simtrace
     const float3& pos = (const float3&)p.q0.f  ;
     const float3& mom = (const float3&)p.q1.f ;
 

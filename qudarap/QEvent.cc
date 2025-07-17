@@ -402,6 +402,10 @@ int QEvent::setGenstepUpload(const quad6* qq0, int gs_start, int gs_stop )
     {
         setInputPhotonAndUpload();
     }
+    else if(OpticksGenstep_::IsInputPhotonSimtrace(gencode0)) // OpticksGenstep_INPUT_PHOTON_SIMTRACE
+    {
+        setInputPhotonSimtraceAndUpload();
+    }
     else
     {
         setNumPhoton( evt->num_seed );  // *HEAVY* : photon, rec, record may be allocated here depending on SEventConfig
@@ -505,6 +509,21 @@ void QEvent::setInputPhotonAndUpload()
     setNumPhoton( numph );
     QU::copy_host_to_device<sphoton>( evt->photon, (sphoton*)input_photon->bytes(), numph );
 }
+
+
+void QEvent::setInputPhotonSimtraceAndUpload()
+{
+    LOG_IF(info, LIFECYCLE) ;
+    LOG(LEVEL);
+    input_photon = sev->gatherInputPhoton();
+    checkInputPhoton();
+
+    int numph = input_photon->shape[0] ;
+    setNumSimtrace( numph );
+    QU::copy_host_to_device<quad4>( evt->simtrace, (quad4*)input_photon->bytes(), numph );
+}
+
+
 
 void QEvent::checkInputPhoton() const
 {

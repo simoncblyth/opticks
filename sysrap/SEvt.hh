@@ -602,6 +602,7 @@ public:
     quad6* getGenstepVecData() const ;
     int    getGenstepVecSize() const ;
     NP*    makeGenstepArrayFromVector() const ;   // formerly misnamed getGenstepArray
+    std::string descGenstepArrayFromVector() const;
 
 
     bool haveGenstepVec() const ;

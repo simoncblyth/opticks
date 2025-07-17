@@ -666,6 +666,13 @@ double QSim::simtrace(int eventID)
     sev->beginOfEvent(eventID);
 
     NP* igs = sev->makeGenstepArrayFromVector();
+
+    LOG_IF(fatal, igs==nullptr)
+         << " igs NULL "
+         << " sev.descGenstepArrayFromVector " << sev->descGenstepArrayFromVector()
+         ;
+
+    assert(igs);
     int rc = event->setGenstepUpload_NP(igs) ;
 
     LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ;
