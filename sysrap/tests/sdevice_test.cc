@@ -2,7 +2,7 @@
 sdevice_test.cc
 ==================
 
-See notes in sdevice_test.sh 
+See notes in sdevice_test.sh
 
 **/
 
@@ -10,11 +10,18 @@ See notes in sdevice_test.sh
 #include "sdevice.h"
 
 int main(int argc, char** argv)
-{  
-    std::vector<sdevice> devs ; 
-    sdevice::Visible(devs, "$HOME/.opticks/runcache", false );  
-    std::cout << sdevice::Desc( devs ) ; 
-    //std::cout << sdevice::Brief( devs ) ; 
+{
+    std::vector<sdevice> visible ;
+    sdevice::Visible(visible );
 
-    return 0 ; 
+    std::cout
+       << "[sdevice::Desc(visible)\n"
+       << sdevice::Desc( visible )
+       << "]sdevice::Desc(visible)\n"
+       << "[sdevice::Brief(visible)\n"
+       << sdevice::Brief( visible )  << "\n"
+       << "]sdevice::Brief(visible)\n"
+       ;
+
+    return 0 ;
 }

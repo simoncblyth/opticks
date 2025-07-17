@@ -26,11 +26,13 @@ This Initialize happens on instanciation of the first SEvt.
 #include <cstdlib>
 #include <csignal>
 #include "sdevice.h"
+#include "ssys.h"
 #include "SEventConfig.hh"
 
 struct scontext
 {
-    static constexpr const bool VERBOSE = false ;
+    static constexpr const char* _level = "scontext__level" ;
+    static int level ;
 
     scontext();
     void init();
@@ -44,12 +46,17 @@ struct scontext
     std::string brief() const ;
     std::string vram() const ;
 
+    // query visible_devices[idx]
     std::string device_name(int idx) const ;
     size_t totalGlobalMem_bytes(int idx) const ;
     size_t totalGlobalMem_GB(int idx) const ;
 
     std::string main(int arg, char** argv) const ;
 };
+
+
+inline int scontext::level = ssys::getenvint(_level, 0 );
+
 
 
 
@@ -63,25 +70,41 @@ inline void scontext::init()
     initConfig();
 }
 
+
+/**
+scontext::initPersist
+-----------------------
+
+HMM: in workstation context it makes sense to persist
+info on all GPUs into $HOME/.opticks/scontext as that
+does not change much.
+
+BUT in batch submission context on a GPU cluster
+the number and identity of GPUs can depend on the
+job submission so using a fixed place makes no
+sense.  In that situation a more appropriate
+location is the invoking directory.
+
+Original motivation for persisting GPU info for all GPUs
+(ie all those detected by CUDA API when CUDA_VISIBLE_DEVICES is not defined)
+was for making sense of which GPU is in use in a changing environment
+of CUDA_VISIBLE_DEVICES values and hence indices.
+
+Using the record for all GPUs enabled associating an absolute ordinal
+(identity based on uuid and name of the GPU) to GPUs even when
+CUDA_VISIBLE_DEVICES means that not all GPUs are are visible.
+
+**/
+
+
 inline void scontext::initPersist()
 {
-    if(VERBOSE) std::cout << "[scontext::initPersist" << std::endl ;
+    if(level > 0) std::cout << "[scontext::initPersist" << std::endl ;
 
-    const char* dirpath = spath::Resolve("$HOME/.opticks/scontext") ;
+    sdevice::Visible(visible_devices);
+    sdevice::Load(   all_devices );   // seems all_devices not used much from here
 
-    if(VERBOSE) std::cout << " scontext::scontext dirpath " << ( dirpath ? dirpath : "-" )  << std::endl ;
-
-    int rc = sdirectory::MakeDirs(dirpath, 0);
-    if(rc!=0) std::raise(SIGINT);
-    assert(rc == 0);
-
-    // the below only saves when CUDA_VISIBLE_DEVICES envvar is not defined, so all dev visible
-    bool nosave = false ;
-    sdevice::Visible(visible_devices, dirpath, nosave );
-
-    sdevice::Load(   all_devices, dirpath);
-
-    if(VERBOSE) std::cout << "]scontext::initPersist" << std::endl ;
+    if(level > 0) std::cout << "]scontext::initPersist" << std::endl ;
 }
 
 inline void scontext::initConfig()
@@ -166,8 +189,6 @@ inline size_t scontext::totalGlobalMem_GB(int idx) const
 {
     return idx < int(visible_devices.size()) ? visible_devices[idx].totalGlobalMem_GB() : 0 ;
 }
-
-
 
 
 

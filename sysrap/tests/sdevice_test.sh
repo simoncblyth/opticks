@@ -1,23 +1,23 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 sdevice_test.sh
 =================
 
-This assumes that the ordinal is the index when all GPUs are visible 
-and it finds this by arranging to persist the query when 
-CUDA_VISIBLE_DEVICES is not defined and use that to provide something 
+This assumes that the ordinal is the index when all GPUs are visible
+and it finds this by arranging to persist the query when
+CUDA_VISIBLE_DEVICES is not defined and use that to provide something
 to match against when the envvar is defined.
 
 The purpose is for reference running, especially performance
 scanning : so its acceptable to require running a metadata
 capturing executable prior to scanning.
-That initial executable can be this one and the 
+That initial executable can be this one and the
 ones with CUDA_VISIBLE_DEVICES can be embedded opticks
-running. 
+running.
 
 The typical usage would be to write GPU description
-into run/event metadata. Or could access the sdevice.h struct 
-to put more details such as the VRAM into run/event metadata.  
+into run/event metadata. Or could access the sdevice.h struct
+to put more details such as the VRAM into run/event metadata.
 
 
 Initial run without CUDA_VISIBLE_DEVICES envvar defined
@@ -25,24 +25,24 @@ writes info about all connected GPUs to "$HOME/.opticks/runcache"::
 
     ~/opticks/sysrap/tests/sdevice_test.sh build_run
 
-Subsequent runs with CUDA_VISIBLE_DEVICES match the currently 
-visible GPUs against all of them without restriction, so 
-original ordinal can be discerned even when running with 
+Subsequent runs with CUDA_VISIBLE_DEVICES match the currently
+visible GPUs against all of them without restriction, so
+original ordinal can be discerned even when running with
 a subset of the GPUs::
 
-    CUDA_VISIBLE_DEVICES=1   ~/opticks/sysrap/tests/sdevice_test.sh run 
-    CUDA_VISIBLE_DEVICES=0   ~/opticks/sysrap/tests/sdevice_test.sh run 
-    CUDA_VISIBLE_DEVICES=0,1 ~/opticks/sysrap/tests/sdevice_test.sh run 
-    CUDA_VISIBLE_DEVICES=1,0 ~/opticks/sysrap/tests/sdevice_test.sh run 
+    CUDA_VISIBLE_DEVICES=1   ~/opticks/sysrap/tests/sdevice_test.sh run
+    CUDA_VISIBLE_DEVICES=0   ~/opticks/sysrap/tests/sdevice_test.sh run
+    CUDA_VISIBLE_DEVICES=0,1 ~/opticks/sysrap/tests/sdevice_test.sh run
+    CUDA_VISIBLE_DEVICES=1,0 ~/opticks/sysrap/tests/sdevice_test.sh run
 
 
 HMM : WHAT ABOUT IDENTICAL GPUs ?
-a hidden uuid is used in the matching so should work. 
+a hidden uuid is used in the matching so should work.
 
 
 Examples::
 
-    [blyth@localhost ~]$ ~/opticks/sysrap/tests/sdevice_test.sh 
+    [blyth@localhost ~]$ ~/opticks/sysrap/tests/sdevice_test.sh
     [0:NVIDIA_RTX_5000_Ada_Generation]
     idx/ord/mpc/cc:0/0/100/89  31.592 GB  NVIDIA RTX 5000 Ada Generation
 
@@ -73,36 +73,53 @@ Examples::
 EOU
 }
 
-cd $(dirname $BASH_SOURCE)
+cd $(dirname $(realpath $BASH_SOURCE))
 name=sdevice_test
-bin=/tmp/$name
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+mkdir -p $TMP
+
+bin=$TMP/$name
 
 defarg="build_run"
 arg=${1:-$defarg}
 
-CUDA_PREFIX=${CUDA_PREFIX:-/usr/local/cuda}
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 CUDA_LIBDIR=$CUDA_PREFIX/lib
 [ ! -d "$CUDA_LIBDIR" ] && CUDA_LIBDIR=$CUDA_PREFIX/lib64
 
 
-if [ "${arg/build}" != "$arg" ]; then 
+vv="BASH_SOURCE PWD name tmp TMP bin defarg arg cuda_prefix CUDA_PREFIX CUDA_LIBDIR"
+
+if [ "${arg/info}" != "$arg" ]; then
+   for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
+fi
+
+if [ "${arg/build}" != "$arg" ]; then
    gcc $name.cc  \
-       -std=c++11 -lstdc++ \
+       -std=c++17 -lstdc++ \
        -I.. \
        -I$CUDA_PREFIX/include \
        -L$CUDA_LIBDIR \
        -lcudart \
        -o $bin
 
-   [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
-fi 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
+fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then
    $bin
-   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2 
-fi 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
+fi
 
-exit 0 
+if [ "${arg/dbg}" != "$arg" ]; then
+   source dbg__.sh
+   dbg__ $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 3
+fi
 
+exit 0
 
