@@ -499,19 +499,11 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d pos.xyz %7.3f,%7.3f,%7.3f mom.xyz %7.3f,%7.3f,%7.3f  \n", idx, pos.x, pos.y, pos.z, mom.x, mom.y, mom.z );
 #endif
 
-
-
-
-    trace<false>(
-        params.handle,
-        pos,
-        mom,
-        params.tmin,
-        params.tmax,
-        prd,
-        params.vizmask,
-        params.PropagateRefineDistance
-    );
+    switch(params.PropagateRefine)
+    {
+        case 0u: trace<false>( params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+        case 1u: trace<true>(  params.handle, pos, mom, params.tmin, params.tmax, prd, params.vizmask, params.PropagateRefineDistance );  break ;
+    }
 
     evt->add_simtrace( idx, p, prd, params.tmin );  // sevent
     // not photon_idx, needs to go from zero for photons from a slice of genstep array

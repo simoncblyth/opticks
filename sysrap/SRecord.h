@@ -48,9 +48,12 @@ struct SRecord
     const float get_t1() const ;
     std::string desc() const ;
 
-    void getPhotonAtTime( std::vector<sphoton>* pp, std::vector<quad4>* qq, float t ) const ;
-    NP*  getPhotonAtTime(   float t ) const;
-    NP*  getSimtraceAtTime( float t ) const;
+    void getPhotonAtTime( std::vector<sphoton>* pp, std::vector<quad4>* qq, const char* iprt ) const ;
+    static bool FindInterpolatedPhotonFromRecordAtTime( sphoton& p, const std::vector<sphoton>& point,  float t);
+
+    NP*  getPhotonAtTime(   const char* iprt ) const;
+    NP*  getSimtraceAtTime( const char* iprt ) const;
+
 
 };
 
@@ -253,119 +256,168 @@ inline std::string SRecord::desc() const
 SRecord::getPhotonAtTime
 --------------------------
 
-WIP: add API to provide photons corresponding to an input simulation time
+Provide photons corresponding to input simulation time(s)
 by interpolation between positions in the record array. Momentum and
-polarization can be taken from the first of the straddling step points.
-When not straddling need to skip that photon, corresponding
+polarization are taken from the first of the straddling step points.
+When not straddling the photon is skipped, corresponding
 to it not being alive at the simulation time provided.
+
+Config example from ~/o/CSGOptiX/cxt_precision.sh with multiple times::
+
+     export OPTICKS_INPUT_PHOTON=$AFOLD/record.npy
+     export OPTICKS_INPUT_PHOTON_RECORD_SLICE="TO BT BT BT SA"
+     export OPTICKS_INPUT_PHOTON_RECORD_TIME=[10:80:10]  # ns
+
+Python analysis is simplified by arranging RECORD_SLICE
+and RECORD_TIME such that all photons result in the same number of
+staddles by ensuring that the lowest and highest times are
+during the lifetime of the photon. Going further, arranging times
+to all be inbetween two step points eg "TO->BT" makes the analysis
+of intersects from different distances as simple as possible.
+
+
+Q : Simtrace input uses q0.f and q1.f for pos and mom, like sphoton.h
+    Simtrace output uses q2.f and q3.f for origin pos and mom.
+    Why different layout from input and output, as
+    demonstrated here and in sevent::add_simtrace ?
+
+A : Perhaps to match sphoton for input. When get chance rationalize to use one layout.
+    This is not urgent, and will require widespread changes across cpp and py.
 
 **/
 
-inline void SRecord::getPhotonAtTime( std::vector<sphoton>* pp, std::vector<quad4>* qq, float t ) const
+inline void SRecord::getPhotonAtTime( std::vector<sphoton>* pp, std::vector<quad4>* qq, const char* _iprt ) const
 {
+    NP* iprt = NP::ARange_FromString<float>(_iprt);
+    const float* tt = iprt ? iprt->cvalues<float>() : nullptr ;
+
     int ni = record->shape[0] ;
-    int nj = record->shape[1] ;
+    int nj = iprt ? iprt->num_items() : 0 ;
+    int nl = record->shape[1] ;
     int item_bytes = record->item_bytes() ; // encompasses multiple step point sphoton
 
-    bool dump = false ;
-
-    std::vector<sphoton> point(nj) ;
+    assert( nj > 0 && tt );
+    int count0 = -1 ;
 
     for(int i=0 ; i < ni ; i++)
     {
-        if(dump) std::cout
-            << "SRecord::getPhotonAtTime"
-            << " i " << std::setw(6) << i
-            << "\n"
-            ;
-
         // populate step point vector
+        std::vector<sphoton> point(nl) ;
         memcpy( point.data(), record->bytes() + i*item_bytes,  item_bytes );
 
-        sphoton p = {} ;
-
-        for(int j=1 ; j < nj ; j++)
+        int count = 0 ;
+        for(int j=0 ; j < nj ; j++) // time loop
         {
-            const sphoton& p0 = point[j-1] ;
-            const sphoton& p1 = point[j] ;
-            bool straddle = p0.time <= t  && t < p1.time ;
-            if( straddle )
-            {
-                p = p0 ;  // (pol,mom) from p0
+            float t = tt[j] ;
+            sphoton p = {} ;
+            bool found = FindInterpolatedPhotonFromRecordAtTime( p, point, t);
+            if(!found) continue ;
 
-                // interpolated position
-                float frac = (t - p0.time)/(p1.time - p0.time) ;
-                p.pos = lerp( p0.pos, p1.pos, frac ) ;
-                p.time = t ;
+            count += 1 ;   // count times at which an interpolated photon was found
 
-                if(pp)
-                {
-                    pp->push_back(p);
-                }
+            quad4 q = {} ;
+            p.populate_simtrace_input(q);
 
-                if(qq)
-                {
-                    quad4 q = {} ;
-
-                    // HMM : why is input simtrace layout different from output ?
-                    // That is demonstrated in sevent::add_simtrace
-                    q.q0.f.x = p.pos.x ;
-                    q.q0.f.y = p.pos.y ;
-                    q.q0.f.z = p.pos.z ;
-
-                    q.q1.f.x = p.mom.x ;
-                    q.q1.f.y = p.mom.y ;
-                    q.q1.f.z = p.mom.z ;
-
-                    /*
-                    q.q2.f.x = p.pos.x ;
-                    q.q2.f.y = p.pos.y ;
-                    q.q2.f.z = p.pos.z ;
-
-                    q.q3.f.x = p.mom.x ;
-                    q.q3.f.y = p.mom.y ;
-                    q.q3.f.z = p.mom.z ;
-                    */
-
-                    qq->push_back(q);
-                }
-
-
-                if(dump) std::cout
-                    << " j " << std::setw(2) << j
-                    << " p0.time " << std::fixed << std::setw(7) << std::setprecision(3) << p0.time
-                    << " p1.time " << std::fixed << std::setw(7) << std::setprecision(3) << p1.time
-                    << " straddle " << ( straddle ? "YES" : "NO " )
-                    << "\n"
-                    ;
-                break ;
-            }
+            if(pp) pp->push_back(p);
+            if(qq) qq->push_back(q);
         }
-    }
+
+        bool consistent_count = count0 == -1 || count0 == count ;
+        if( count0 == -1 ) count0 = count ;
+
+        if(!consistent_count || level > 0) std::cout
+            << "SRecord::getPhotonAtTime"
+            << " i " << std::setw(6) << i
+            << " count0 " << count0
+            << " count " << count
+            << " consistent_count " << ( consistent_count ? "YES" : "NO " )
+            << ( consistent_count ? "" : "(adjust time range to achieve consistency)" )
+            << " level " << level
+            << "\n"
+            ;
+    }   // i: photon loop
+
+
+    if(level > 0) std::cout
+         << "SRecord::getPhotonAtTime"
+         << " [" << _level << "] " << level
+         << " _iprt " << ( _iprt ? _iprt : "-" )
+         << " iprt " << ( iprt ? iprt->sstr() : "-" )
+         << " ni " << ni
+         << " nj " << nj
+         << " nl " << nl
+         << " tt " << ( tt ? "YES" : "NO " )
+         << " record " << ( record ? record->sstr() : "-" )
+         << " count0 " << count0
+         << " pp.size " << ( pp ? int(pp->size()) : -1 )
+         << " qq.size " << ( qq ? int(qq->size()) : -1 )
+         << "\n"
+         ;
+
 }
 
 
 
+/**
+SRecord::FindInterpolatedPhotonFromRecordAtTime
+------------------------------------------------
 
-inline NP* SRecord::getPhotonAtTime( float t ) const
+Look for record step points with times that straddle the provided time *t*.
+If found interpolate the straddling step points to populate *p*.
+When a straddle is found returns true.
+
+**/
+
+
+inline bool SRecord::FindInterpolatedPhotonFromRecordAtTime( sphoton& p, const std::vector<sphoton>& point,  float t)
+{
+    int nl = point.size();
+    for(int l=1 ; l < nl ; l++)
+    {
+        const sphoton& p0 = point[l-1] ;
+        const sphoton& p1 = point[l] ;
+        bool straddle = p0.time <= t  && t < p1.time ;
+
+        if(level > 3) std::cout
+            << "SRecord::FindInterpolatedPhotonFromRecordAtTime"
+            << " nl " << nl
+            << " l " << std::setw(3) << l
+            << " t " << std::fixed << std::setw(7) << std::setprecision(3) << t
+            << " p0.time " << std::fixed << std::setw(7) << std::setprecision(3) << p0.time
+            << " p1.time " << std::fixed << std::setw(7) << std::setprecision(3) << p1.time
+            << " straddle " << ( straddle ? "YES" : "NO " )
+            << "\n"
+            ;
+
+        if(straddle)
+        {
+            p = p0 ;  // (pol,mom) from p0
+            float frac = (t - p0.time)/(p1.time - p0.time) ;
+            p.pos = lerp( p0.pos, p1.pos, frac ) ; // interpolated position
+            p.time = t ;
+            return true ;
+        }
+    }
+    return false ;
+}
+
+
+inline NP* SRecord::getPhotonAtTime( const char* iprt ) const
 {
     std::vector<sphoton> vpp ;
-    getPhotonAtTime(&vpp, nullptr, t );
+    getPhotonAtTime(&vpp, nullptr, iprt);
     int num_pp = vpp.size();
     NP* pp = num_pp > 0 ?  NPX::ArrayFromVec<float,sphoton>(vpp, 4, 4 ) : nullptr ;
     return pp ;
 }
 
-inline NP* SRecord::getSimtraceAtTime( float t ) const
+inline NP* SRecord::getSimtraceAtTime( const char* iprt ) const
 {
     std::vector<quad4> vqq ;
-    getPhotonAtTime(nullptr, &vqq, t );
+    getPhotonAtTime(nullptr, &vqq, iprt);
     int num_qq = vqq.size();
     NP* qq = num_qq > 0 ?  NPX::ArrayFromVec<float,quad4>(vqq, 4, 4 ) : nullptr ;
     return qq ;
 }
-
-
-
 
 

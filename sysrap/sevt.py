@@ -400,7 +400,7 @@ class SEvt(object):
         return np.flatnonzero(np.logical_or.reduce(aa))
 
     def q__(self, prefix="TO BT SD", encoding="utf-8"):
-        return self.q_startswith(prefix=prefix)
+        return self.q_startswith_or_(prefix) if "," in prefix else self.q_startswith(prefix=prefix)
 
     def q_startswith(self, prefix="TO BT SD", encoding="utf-8"):
         return np.flatnonzero(np.char.startswith(self.q, prefix.encode(encoding) ))

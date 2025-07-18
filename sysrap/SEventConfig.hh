@@ -281,7 +281,7 @@ struct SYSRAP_API SEventConfig
     static const char* InputPhoton();
     static const char* InputPhotonFrame();
     static float       InputPhotonChangeTime();
-    static float       InputPhotonRecordTime();
+    static const char* InputPhotonRecordTime();
     static const char* InputPhotonRecordSlice();
 
     static int RGMode();
@@ -393,7 +393,7 @@ struct SYSRAP_API SEventConfig
     static void SetInputPhoton(const char* input_photon);
     static void SetInputPhotonFrame(const char* input_photon_frame);
     static void SetInputPhotonChangeTime( float t0 ) ;
-    static void SetInputPhotonRecordTime( float t0 ) ;
+    static void SetInputPhotonRecordTime( const char* record_time ) ;
     static void SetInputPhotonRecordSlice( const char* iprs ) ;
 
     static void SetGatherComp_(unsigned mask);
@@ -466,7 +466,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonDefault ;
     static const char* _InputPhotonFrameDefault ;
     static float       _InputPhotonChangeTimeDefault ;
-    static float       _InputPhotonRecordTimeDefault ;
+    static const char* _InputPhotonRecordTimeDefault ;
     static const char* _InputPhotonRecordSliceDefault ;
 
     static int         _IntegrationMode ;
@@ -542,7 +542,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhoton ;
     static const char* _InputPhotonFrame ;
     static float       _InputPhotonChangeTime ;
-    static float       _InputPhotonRecordTime ;
+    static const char* _InputPhotonRecordTime ;
     static const char* _InputPhotonRecordSlice ;
 
     static scontext* CONTEXT ;

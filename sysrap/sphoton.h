@@ -224,6 +224,8 @@ struct sphoton
 
     SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>&  tr, bool normalize=true );  // widens transform and uses below
     SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
+
+    SPHOTON_METHOD void populate_simtrace_input( quad4& q ) const ;
 #endif
 
 };
@@ -840,6 +842,26 @@ SPHOTON_METHOD void sphoton::transform( const glm::tmat4x4<double>& tr, bool nor
     Tran<double>::ApplyToFloat( tr, p0, one,  count, stride, 0, false );      // transform pos as position
     Tran<double>::ApplyToFloat( tr, p0, zero, count, stride, 4, normalize );  // transform mom as direction
     Tran<double>::ApplyToFloat( tr, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+}
+
+
+
+/**
+sphoton::populate_simtrace_input
+---------------------------------
+
+**/
+
+
+SPHOTON_METHOD void sphoton::populate_simtrace_input( quad4& q ) const
+{
+    q.q0.f.x = pos.x ;
+    q.q0.f.y = pos.y ;
+    q.q0.f.z = pos.z ;
+
+    q.q1.f.x = mom.x ;
+    q.q1.f.y = mom.y ;
+    q.q1.f.z = mom.z ;
 }
 
 

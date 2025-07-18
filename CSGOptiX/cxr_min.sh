@@ -307,7 +307,7 @@ fi
 
 if [ "${arg/open}" != "$arg" ]; then
     # open to define current context string which controls where screenshots are copied to by ~/j/bin/pic.sh
-    ## HMM : maybe should not overwrite when prefixing ? 
+    ## HMM : maybe should not overwrite when prefixing ?
     CUR_open ${_CUR}
 fi
 
@@ -342,7 +342,6 @@ if [ "$arg" == "touch"  ]; then
     else
         echo $BASH_SOURCE arg2 needs to be a datetime accepted by CUR_touch eg "cxr_min.sh touch 11:00"
     fi
-
 fi
 
 

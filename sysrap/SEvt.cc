@@ -496,7 +496,7 @@ NP* SEvt::LoadInputPhoton_record(const char* spec)
 
     const char* spec2 = SEventConfig::InputPhoton();
     const char* slice = SEventConfig::InputPhotonRecordSlice();
-    float        iprt = SEventConfig::InputPhotonRecordTime();
+    const char* iprt = SEventConfig::InputPhotonRecordTime();
 
     assert( spec && spec2 && strcmp( spec2, spec) == 0 );
 
@@ -516,7 +516,7 @@ NP* SEvt::LoadInputPhoton_record(const char* spec)
         << " path [" << ( path ? path : "-" ) << "]\n"
         << " fold [" << ( fold ? fold : "-" ) << "]\n"
         << " slice [" << ( slice ? slice : "-" ) << "]\n"
-        << " iprt " << std::setw(10) << std::fixed << std::setprecision(4) << iprt << "\n"
+        << " iprt [" << ( iprt ? iprt : "-" ) << "]\n"
         << " is_record " << ( is_record ? "YES" : "NO " ) << "\n"
         << " a " << ( a ? a->sstr() : "-" ) << "\n"
         ;

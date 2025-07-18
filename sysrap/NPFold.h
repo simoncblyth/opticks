@@ -286,6 +286,7 @@ public:
     // ]subfold handling
 
 
+    void add(int ikey, const NP* a, char prefix, int wid=3);
     void add( const char* k, const NP* a);
     void add_(const char* k, const NP* a);
     void set( const char* k, const NP* a);
@@ -1715,6 +1716,13 @@ inline int NPFold::total_items() const
 
 
 // ] subfold handling
+
+
+inline void NPFold::add(int ikey, const NP* a, char prefix, int wid)
+{
+    std::string skey = U::FormNameWithPrefix(prefix, ikey, wid);
+    add(skey.c_str(), a );
+}
 
 
 /**

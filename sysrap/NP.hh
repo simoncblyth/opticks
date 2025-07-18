@@ -52,33 +52,57 @@ but the headers are also copied into opticks/sysrap.
 #include "NPU.hh"
 
 
-
+template<typename T>
 struct NP_slice
 {
-    int start ;
-    int stop ;
-    int step ;
+    T start ;
+    T stop ;
+    T step ;
 
-    bool is_match(const NP_slice& other) const ;
+    bool is_arange() const ;
+    bool is_linspace() const ;
+    bool is_match(const NP_slice<T>& other) const ;
     std::string desc() const ;
     int count() const ;
 };
 
-inline bool NP_slice::is_match(const NP_slice& other) const
+template<typename T>
+inline bool NP_slice<T>::is_arange() const
+{
+   return step > 0 ;
+}
+template<typename T>
+inline bool NP_slice<T>::is_linspace() const
+{
+   return step < 0 ;
+}
+template<typename T>
+inline bool NP_slice<T>::is_match(const NP_slice& other) const
 {
     return start == other.start && stop == other.stop && step == other.step ;
 }
-inline std::string NP_slice::desc() const
+template<typename T>
+inline std::string NP_slice<T>::desc() const
 {
     std::stringstream ss ;
     ss << "NP_slice(" <<  start << "," << stop << "," << step << ")" ;
     std::string str = ss.str();
     return str ;
 }
-inline int NP_slice::count() const
+
+
+template<typename T>
+inline int NP_slice<T>::count() const
 {
     int _count = 0 ;
-    for(int i=start ; i < stop ; i += step ) _count++ ;
+    if( step < 0 )
+    {
+        _count = int(-step) ;  // linspace
+    }
+    else
+    {
+        for(T v=start ; v < stop ; v += step ) _count++ ;
+    }
     return _count ;
 }
 
@@ -128,7 +152,7 @@ struct NP
     template<typename T> static NP* ARange(   T x0, T x1, T st );
 
     template<typename T> static NP* ARange_FromString( const char* spec );
-    template<typename T> static NP* ARange_(int start, int stop, int step);
+    template<typename T> static NP* ARange_(T start, T stop, T step);
 
 
     template<typename T> static NP* Linspace( T x0, T x1, unsigned nx, INT npayload=-1 );
@@ -310,12 +334,15 @@ struct NP
     static NP* MakeSelection( const NP* src, const NP* sel );  // sel expected to contain integer indices selecting items in src
 
     static int ParseSliceString(std::vector<INT>& idxx, const char* _sli );
-    static int ParseSliceIndexString(int& start, int& stop, int& step, const char* _sli );
+
+    template<typename T>
+    static int ParseSliceIndexString(T& start, T& stop, T& step, const char* _sli, bool dump=false );
     static bool LooksLikeSliceIndexString(const char* _sli );
     static bool LooksLikeSliceIndexStringSuffix(const char* _sli, char** body, char** suffix );
 
 
-    void parse_slice( NP_slice& sli, const char* _sli) const ;
+    template<typename T>
+    void parse_slice( NP_slice<T>& sli, const char* _sli) const ;
 
 
     template<typename T> static NP* MakeSliceSelection( const NP* src, const char* sel );
@@ -856,12 +883,12 @@ Spec examples::
 template<typename T>
 inline NP* NP::ARange_FromString( const char* spec ) // static
 {
-    NP_slice sli = {} ;
+    NP_slice<T> sli = {} ;
     sli.start = 0 ;
     sli.stop  = 0 ;
     sli.step  = 1 ;
 
-    int rc = ParseSliceIndexString( sli.start, sli.stop, sli.step, spec );
+    int rc = ParseSliceIndexString<T>( sli.start, sli.stop, sli.step, spec );
     bool valid = rc == 0 && sli.stop > 0 ;
 
     if(!valid) std::cerr
@@ -878,21 +905,43 @@ inline NP* NP::ARange_FromString( const char* spec ) // static
 }
 
 
+/**
+NP::ARange_
+--------------
+
+step>0
+   like np.arange with step increment
+
+step<0
+   like np.linspace with int(-step) values between start and stop inclusive
+
+**/
 
 template<typename T>
-inline NP* NP::ARange_(int start, int stop, int step) // static
+inline NP* NP::ARange_(T start, T stop, T step) // static
 {
-    NP_slice sli = { start, stop, step };
+    NP_slice<T> sli = { start, stop, step };
     INT num = sli.count();
 
     NP* a = NP::Make<T>(num);
     T* aa = a->values<T>();
 
-    INT count = 0 ;
-    for(INT i=start ; i < stop ; i += step )
+    if( step > 0 )
     {
-        aa[count] = T(i);
-        count += 1;
+        // arange
+        INT count = 0 ;
+        for(T v=start ; v < stop ; v += step )
+        {
+            aa[count] = v ;
+            count += 1;
+        }
+        assert( count == num );
+    }
+    else
+    {
+        // linspace
+        INT ni = -step ;
+        for(INT i=0 ; i < ni ; i++) aa[i] = start + (stop-start)*T(i)/T(ni-1) ;
     }
     return a ;
 }
@@ -2705,6 +2754,8 @@ Index slice (start,stop,step) strings of form::
     [1:10]     # start:1 stop:10 step:1
     [1:10:2]   # start:1 stop:10 step:2
 
+    [100]      # start:100 stop:101 step:1  special cased to allow single value
+
 Usage::
 
     struct slice { int start, stop, step ; }
@@ -2714,12 +2765,13 @@ Usage::
     sli.stop = num_items ;
     sli.step = 1 ;
 
-    int rc = NP::ParseSliceIndexString(sli.start, sli.stop, sli.step, _sli );
+    int rc = NP::ParseSliceIndexString<int>(sli.start, sli.stop, sli.step, _sli );
 
 
 **/
 
-inline int NP::ParseSliceIndexString(int& start, int& stop, int& step, const char* _sli )
+template<typename T>
+inline int NP::ParseSliceIndexString(T& start, T& stop, T& step, const char* _sli, bool dump )
 {
     size_t len = _sli ? strlen(_sli) : 0 ;
     if(len < 2) return 1 ;
@@ -2733,13 +2785,13 @@ inline int NP::ParseSliceIndexString(int& start, int& stop, int& step, const cha
 
     // copy starting from the char after the "[" up to the char before the "]"
     char* sli = strndup(o+1, c - o - 1 );
-    //std::cout << "NP::ParseSliceIndexString {" << sli << "}\n" ;
+    if(dump) std::cout << "NP::ParseSliceIndexString {" << sli << "}\n" ;
 
     if(strlen(sli)>2 && sli[0] == ':' && sli[1] == ':' )  // eg "::2"
     {
         std::string s(sli+2);
         std::istringstream iss(s);
-        INT t ;
+        T t ;
         iss >> t ;
 
         step = t ;
@@ -2748,10 +2800,34 @@ inline int NP::ParseSliceIndexString(int& start, int& stop, int& step, const cha
     {
         std::string s(sli+1);
         std::istringstream iss(s);
-        INT t ;
+        T t ;
         iss >> t ;
 
         stop = t ;
+    }
+    else if(strlen(sli)>0 && strstr(sli,":") == nullptr ) // eg "5" "50.5"
+    {
+        std::string s(sli);
+        std::istringstream iss(s);
+        T t ;
+        iss >> t ;
+
+        start = t ;
+        stop = t + T(1) ;
+        step = T(1) ;
+
+        // kludge to simplify giving single value within range/sli spec
+        // np.arange(100,101,1) == np.array([100])
+
+        if(dump) std::cout
+           << "NP::ParseSliceIndexString.here"
+           << " sli {" << sli << "}"
+           << " start " << start
+           << " stop " << stop
+           << " step " << step
+           << "\n"
+           ;
+
     }
     else  // eg 1:10 1:10:2
     {
@@ -2765,13 +2841,15 @@ inline int NP::ParseSliceIndexString(int& start, int& stop, int& step, const cha
         while (std::getline(ss, s, delim))
         {
             std::istringstream iss(s);
-            INT t ;
+            T t ;
             iss >> t ;
 
-            if(count == 0) start = t ;
-            else if(count == 1) stop = t ;
-            else if(count == 2) step = t ;
-
+            switch(count)
+            {
+               case 0: start = t ; break ;
+               case 1: stop  = t ; break ;
+               case 2: step  = t ; break ;
+            }
             count++ ;
         }
     }
@@ -2814,12 +2892,16 @@ inline bool NP::LooksLikeSliceIndexStringSuffix(const char* _sli, char** body, c
 }
 
 
-inline void NP::parse_slice( NP_slice& sli, const char* _sli) const
+template<typename T>
+inline void NP::parse_slice( NP_slice<T>& sli, const char* _sli) const
 {
-    sli.start = 0 ;
-    sli.stop = num_items() ;
-    sli.step = 1 ;
-    int rc = ParseSliceIndexString(sli.start, sli.stop, sli.step, _sli );
+    INT ni = num_items();
+
+    sli.start = T(0) ;
+    sli.stop = T(ni) ;
+    sli.step = T(1) ;
+
+    int rc = ParseSliceIndexString<T>(sli.start, sli.stop, sli.step, _sli );
     if( rc != 0 ) std::cerr
         << "NP::parse_slice "
         << " ParseSliceIndexString FAILED "
@@ -7187,8 +7269,8 @@ NP::load_data_sliced
 
 inline void NP::load_data_sliced( std::ifstream* fp, const char* _sli )
 {
-    NP_slice sli = {} ;
-    parse_slice(sli, _sli);
+    NP_slice<INT> sli = {} ;
+    parse_slice<INT>(sli, _sli);
 
     INT count0 = 0 ;
     for(INT idx=sli.start ; idx < sli.stop ; idx += sli.step ) count0 += 1 ;
