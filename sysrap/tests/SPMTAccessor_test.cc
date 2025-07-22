@@ -1,6 +1,7 @@
 #include "SPMT.h"
 #include "SPMTAccessor.h"
 #include <map>
+#include <unordered_map>
 
 struct SPMTAccessor_test
 {
@@ -13,6 +14,13 @@ struct SPMTAccessor_test
     NP*  get_stackspec() const ;
 
     void get_stackspec_one() const ;
+
+
+    static void CategoriesPopulate( std::unordered_map<int, int>& pmt_categories );
+    static void CategoriesCount( std::map<int, int>& cat_count, std::unordered_map<int, int>& pmt_categories );
+    static std::string CategoriesDesc( std::map<int, int>& cat_count );
+    static int Categories();
+
 };
 
 
@@ -133,8 +141,67 @@ void SPMTAccessor_test::get_stackspec_one() const
 }
 
 
+
+void SPMTAccessor_test::CategoriesPopulate( std::unordered_map<int, int>& pmt_categories )
+{
+    pmt_categories[0] = 0 ;
+    pmt_categories[1] = 0 ;
+    pmt_categories[2] = 0 ;
+    pmt_categories[3] = 0 ;
+
+    pmt_categories[10] = 1 ;
+    pmt_categories[11] = 1 ;
+    pmt_categories[12] = 1 ;
+    pmt_categories[13] = 1 ;
+    pmt_categories[14] = 1 ;
+
+    pmt_categories[100] = 2 ;
+    pmt_categories[110] = 2 ;
+    pmt_categories[120] = 2 ;
+    pmt_categories[130] = 2 ;
+    pmt_categories[140] = 2 ;
+    pmt_categories[150] = 2 ;
+}
+
+
+void SPMTAccessor_test::CategoriesCount( std::map<int, int>& cat_count, std::unordered_map<int, int>& pmt_categories )
+{
+    for( auto it : pmt_categories ) cat_count[it.second]++ ;
+}
+
+
+std::string SPMTAccessor_test::CategoriesDesc( std::map<int, int>& cat_count )
+{
+    std::stringstream ss ;
+    for( auto it : cat_count ) ss
+          << std::setw(3) << it.first
+          << " : "
+          << std::setw(6) << it.second
+          << std::endl
+          ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+int SPMTAccessor_test::Categories()
+{
+    std::unordered_map<int,int> pmt_categories ;
+    CategoriesPopulate( pmt_categories );
+
+    std::map<int,int> catmap ;
+    CategoriesCount( catmap, pmt_categories );
+
+    std::cout << CategoriesDesc( catmap );
+
+    return 0;
+}
+
+
 int main(int argc, char** argv)
 {
+    SPMTAccessor_test::Categories();
+
     SPMT* pmt = SPMT::CreateFromJPMT();
     if(pmt == nullptr) return 1 ;
 

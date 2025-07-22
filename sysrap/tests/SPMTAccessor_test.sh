@@ -41,7 +41,7 @@ if [ "${arg/build}" != "$arg" ]; then
            -I$CUDA_PREFIX/include \
            -I$HOME/customgeant4 \
            -DWITH_CUSTOM4 \
-           -g -std=c++11 -lstdc++ \
+           -g -std=c++17 -lstdc++ \
            -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
     echo $BASH_SOURCE : build OK

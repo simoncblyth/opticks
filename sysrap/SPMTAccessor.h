@@ -69,7 +69,6 @@ inline SPMTAccessor::SPMTAccessor( const SPMT* _pmt )
 
 inline int SPMTAccessor::get_num_lpmt() const
 {
-    assert(0);  // use s_pmt.h directly
     return s_pmt::NUM_CD_LPMT ;
 }
 
