@@ -38,6 +38,7 @@ struct scontext
     void init();
     void initPersist();
     void initConfig();
+    void initConfig_SetDevice(int idev);
 
     std::vector<sdevice> visible_devices ;
     std::vector<sdevice> all_devices ;
@@ -92,7 +93,7 @@ of CUDA_VISIBLE_DEVICES values and hence indices.
 
 Using the record for all GPUs enabled associating an absolute ordinal
 (identity based on uuid and name of the GPU) to GPUs even when
-CUDA_VISIBLE_DEVICES means that not all GPUs are are visible.
+CUDA_VISIBLE_DEVICES means that not all GPUs are visible.
 
 **/
 
@@ -110,23 +111,47 @@ inline void scontext::initPersist()
 inline void scontext::initConfig()
 {
     int numdev = visible_devices.size();
+    int idev = -1 ;
 
     if(numdev == 0)
     {
         std::cerr << "scontext::initConfig : ZERO VISIBLE DEVICES - CHECK CUDA_VISIBLE_DEVICES envvar \n" ;
     }
-    else if(numdev > 1)
-    {
-        std::cerr << "scontext::initConfig : MORE THAN ONE VISIBLE DEVICES - CHECK CUDA_VISIBLE_DEVICES envvar \n" ;
-    }
     else if(numdev == 1)
     {
-        int idev = 0 ;
-        std::string name = device_name(idev);
-        size_t vram = totalGlobalMem_bytes(idev);
-        // HMM: could just handover the sdevice struct ?
-        SEventConfig::SetDevice(vram, name);
+        idev = 0 ;
     }
+    else if(numdev > 1)
+    {
+        idev = 0 ;
+        std::cerr
+            << "scontext::initConfig : WARNING - MORE THAN ONE VISIBLE DEVICES - DEFAULTING TO USE idev:[" << idev << "]\n"
+            << "scontext::initConfig : QUELL THIS WARNING BY SETTING/CHANGING CUDA_VISIBLE_DEVICES envvar TO SELECT ONE DEVICE\n"
+            ;
+    }
+
+    initConfig_SetDevice(idev);
+}
+
+inline void scontext::initConfig_SetDevice(int idev)
+{
+    int numdev = visible_devices.size();
+    bool idev_valid = idev >=0 && idev < numdev ;
+
+    if( !idev_valid || level > 0 ) std::cerr
+        << "scontext::initConfig_SetDevice "
+        << " numdev " << numdev
+        << " idev " << idev
+        << " level " << level
+        << " idev_valid " << ( idev_valid ? "YES" : "NO " )
+        << "\n"
+        ;
+
+    if(!idev_valid) return ;
+
+    std::string name = device_name(idev);
+    size_t vram = totalGlobalMem_bytes(idev);
+    SEventConfig::SetDevice(vram, name);
 }
 
 
