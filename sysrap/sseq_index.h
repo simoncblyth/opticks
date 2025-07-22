@@ -354,6 +354,7 @@ struct sseq_index_ab
 {
     static constexpr const char* NAME = "sseq_index_ab.npy" ;
     static constexpr const char* _sseq_index_ab__desc_NUM_MAX = "sseq_index_ab__desc_NUM_MAX" ;
+    static constexpr const char* _sseq_index_ab__desc_HISWID  = "sseq_index_ab__desc_HISWID" ;
     static constexpr const char* _sseq_index_ab__desc_STYLE   = "sseq_index_ab__desc_STYLE" ;
 
     enum { STYLE_NONE, STYLE_RST, STYLE_HTML } ;
@@ -543,6 +544,7 @@ inline std::string sseq_index_ab::desc(const char* opt) const
 
     int u_size = u.size();
     int NUM_MAX = ssys::getenvint(_sseq_index_ab__desc_NUM_MAX, 40) ;
+    int HISWID = ssys::getenvint( _sseq_index_ab__desc_HISWID, 0) ;
 
 
     int num = 0 ;
@@ -628,10 +630,13 @@ inline std::string sseq_index_ab::desc(const char* opt) const
             pdev = "<span class=\"r\">DEVIANT</span> " ;
         }
 
+        std::string seqhis = qab.q.seqhis_();
+        std::string u_seqhis = HISWID == 0 ? seqhis : seqhis.substr(0,HISWID) ;
+
 
         if(selected) ss
            << head
-           << qab.q.seqhis_()
+           << u_seqhis
            << " : "
            << std::setw(7) << qab.a.count
            << std::setw(7) << qab.b.count

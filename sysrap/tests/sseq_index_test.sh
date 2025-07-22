@@ -50,9 +50,15 @@ export FOLD=$TMP/$name
 mkdir -p $FOLD
 
 
-#unset sseq_index_ab__desc_NUM_MAX
-#export sseq_index_ab__desc_NUM_MAX=40
+if [ -n "$NUM_MAX" ]; then
+   unset sseq_index_ab__desc_NUM_MAX
+   export sseq_index_ab__desc_NUM_MAX=$NUM_MAX
+fi
 
+if [ -n "$HISWID" ]; then
+   unset sseq_index_ab__desc_HISWID
+   export sseq_index_ab__desc_HISWID=$HISWID
+fi
 
 if [ -n "$DEV" ]; then
     bin=$FOLD/$name
@@ -67,7 +73,7 @@ fi
 arg=${1:-$defarg}
 
 vars=""
-vars="$vars BASH_SOURCE SDIR FOLD name bin DEV bin_note"
+vars="$vars BASH_SOURCE SDIR FOLD name bin DEV bin_note sseq_index_ab__desc_NUM_MAX sseq_index_ab__desc_HISWID"
 
 
 script=$SDIR/sseq_index_test.py
