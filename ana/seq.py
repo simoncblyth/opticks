@@ -5,16 +5,16 @@
 # This file is part of Opticks
 # (see https://bitbucket.org/simoncblyth/opticks).
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -34,11 +34,11 @@ pass
 About using IPython debugger
 ------------------------------
 
-Plant an ipython debugger breakpoint inside some python module by 
+Plant an ipython debugger breakpoint inside some python module by
 duplicating the below code block into the head and entering
 the below at the critical code point::
 
-   ipdb.set_trace()   
+   ipdb.set_trace()
 
 1. previously thought this was not working in py3, but it seems OK now
 2. attempting to import code doing the below doesnt work, have to include the code
@@ -47,14 +47,14 @@ the below at the critical code point::
 
 Commands available from the ipdb prompt::
 
-1. "bt" : show the stack backtrace 
+1. "bt" : show the stack backtrace
 2. "c"  : continue from the breakpoint
 
-Observed that even when using python this can magically 
-jump into ipython when a breakpoint is reached. However 
+Observed that even when using python this can magically
+jump into ipython when a breakpoint is reached. However
 see notes/issues/ipython-ipdb-issue.rst which made
 me add the check for an ipython invokation to prevent
-such fragile magic. 
+such fragile magic.
 """
 #if sys.argv[0].find("ipython") > -1:
 if True:
@@ -64,7 +64,7 @@ if True:
         class MyPdb(object):
             def set_trace(self):
                 log.error("IPython is required for ipdb.set_trace() " )
-            pass  
+            pass
         pass
     pass
     ipdb = MyPdb()
@@ -100,14 +100,14 @@ class BaseType(object):
 
         abbr2code = dict(zip(abbrs, flags.codes))
         code2abbr = dict(zip(flags.codes, abbrs))
-        aflags = np.array( ['   '] + list(map(lambda _:"%s " % _  ,abbrs )), dtype="|S3" )  
+        aflags = np.array( ['   '] + list(map(lambda _:"%s " % _  ,abbrs )), dtype="|S3" )
 
         self.abbr2code = abbr2code
         self.code2abbr = code2abbr
         self.flags = flags
         self.abbrev = abbrev
         self.delim = delim
-        self.aflags = aflags 
+        self.aflags = aflags
 
     def __call__(self, args):
         for a in args:
@@ -115,25 +115,25 @@ class BaseType(object):
 
     def check(self, s):
         f = self.abbr2code
-        bad = 0 
+        bad = 0
         for n in s.strip().split(self.delim):
             if f.get(n,0) == 0:
-               #log.warn("code bad abbr [%s] s [%s] " % (n, s) ) 
+               #log.warn("code bad abbr [%s] s [%s] " % (n, s) )
                bad += 1
 
         #if bad>0:
-        #   log.warn("code sees %s bad abbr in [%s] " % (bad, s )) 
+        #   log.warn("code sees %s bad abbr in [%s] " % (bad, s ))
         return bad
 
 
 def seq2msk_procedural(isq):
-    ifl = 0 
+    ifl = 0
     for n in range(16):
         msk = 0xf << (4*n)
         nib = ( isq & msk ) >> (4*n)
         if nib == 0:continue   ## cannot vectorize with such procedural approach
-        flg = 1 << (nib - 1) 
-        ifl |= flg   
+        flg = 1 << (nib - 1)
+        ifl |= flg
     pass
     return ifl
 
@@ -157,10 +157,10 @@ def seq2msk(isq):
     for n in range(16):
         msk = 0xf << (4*n)               ## nibble mask
         nib = ( isq & msk ) >> (4*n)     ## pick the nibble and shift to pole position
-        flg = 1 << ( nib[nib>0] - 1 )    ## convert flag bit index into flag mask 
+        flg = 1 << ( nib[nib>0] - 1 )    ## convert flag bit index into flag mask
         ifl[nib>0] |= flg
     pass
-    return ifl 
+    return ifl
 
 
 class MaskType(BaseType):
@@ -173,29 +173,29 @@ class MaskType(BaseType):
     def code(self, s):
         """
         :param s: abbreviation string eg "TO|BT|SD"  or hexstring 8ccccd (without 0x prefix)
-        :return: integer bitmask 
+        :return: integer bitmask
         """
 
         #log.debug(" s [%s] " % s)
         if self.hexstr.match(s):
-            c = int(s,16) 
-            cs = "%x" % c 
-            log.debug("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
+            c = int(s,16)
+            cs = "%x" % c
+            log.debug("converted hexstr %s to hexint %x and back %s " % (s,c,cs))
             assert s == cs
         else:
             f = self.abbr2code
-            bad = self.check(s) 
+            bad = self.check(s)
             c = reduce(lambda a,b:a|b,list(map(lambda n:f.get(n,0), s.split(self.delim))))
         pass
-        return c 
+        return c
 
 
     def label(self, arg):
         """
         :param i: integer bitmask
-        :return: abbreviation mask string 
+        :return: abbreviation mask string
         """
-        if type(arg) is list or issubclass( arg.__class__, np.ndarray ): 
+        if type(arg) is list or issubclass( arg.__class__, np.ndarray ):
             return list(map(lambda _:self.label(_), arg))
         pass
 
@@ -210,7 +210,7 @@ class MaskType(BaseType):
                 return arg
             pass
         else:
-            log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))        
+            log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))
             assert 0
         pass
 
@@ -218,7 +218,7 @@ class MaskType(BaseType):
         codes = filter(lambda c:int(i) & c, self.flags.codes)
         codes = sorted(codes,reverse=True)
         d = self.code2abbr
-        return self.delim.join(map(lambda _:d.get(_,'?%s?' % _ ), codes )) 
+        return self.delim.join(map(lambda _:d.get(_,'?%s?' % _ ), codes ))
 
 
 class SeqType(BaseType):
@@ -231,19 +231,19 @@ class SeqType(BaseType):
         :param s: abbreviation sequence string eg "TO BT BR BR BR BT SA"
         :return: integer code eg 0x8cbbbcd
         """
-        if type(s) is list or issubclass( s.__class__, np.ndarray ): 
+        if type(s) is list or issubclass( s.__class__, np.ndarray ):
             return list(map(lambda _:self.code(_), s))
         pass
 
 
         if self.hexstr.match(s):
-            c = int(s,16) 
-            cs = "%x" % c 
-            log.debug("converted hexstr %s to hexint %x and back %s " % (s,c,cs)) 
+            c = int(s,16)
+            cs = "%x" % c
+            log.debug("converted hexstr %s to hexint %x and back %s " % (s,c,cs))
             assert s == cs
         else:
             f = self.abbr2code
-            bad = self.check(s) 
+            bad = self.check(s)
 
             if bad>0:
                #assert 0
@@ -252,22 +252,22 @@ class SeqType(BaseType):
             c = reduce(lambda a,b:a|b,map(lambda ib:ib[1] << 4*ib[0],enumerate(map(lambda n:f.get(n,0), s.split(self.delim)))))
         pass
         return c
-   
+
 
     def label(self, arg):
         """
         :param i: integer code
-        :return: abbreviation sequence string 
+        :return: abbreviation sequence string
 
         ::
 
             In [6]: from opticks.ana.histype import HisType
             In [7]: af = HisType()
 
-            In [4]: af.label(0xccd)        # hexint 
+            In [4]: af.label(0xccd)        # hexint
             Out[4]: 'TO BT BT'
 
-            In [5]: af.label("TO BT BT")   # already a label 
+            In [5]: af.label("TO BT BT")   # already a label
             Out[5]: 'TO BT BT'
 
             In [6]: af.label("ccd")        # hexstring  (NB without 0x)
@@ -277,12 +277,12 @@ class SeqType(BaseType):
             Out[7]: 'TO BT BT ..'
 
         """
-        if type(arg) is list or issubclass( arg.__class__, np.ndarray ): 
+        if type(arg) is list or issubclass( arg.__class__, np.ndarray ):
             return list(map(lambda _:self.label(_), arg))
         pass
 
         i = None
-        wildcard = type(arg) == str and arg[0] == "." 
+        wildcard = type(arg) == str and arg[0] == "."
         if wildcard:
             arg = arg[1:]
 
@@ -297,19 +297,19 @@ class SeqType(BaseType):
                 return arg
             pass
         else:
-            log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))        
+            log.fatal("unexpected argtype %s %s " % (arg, repr(type(arg))))
             assert 0
         pass
 
-        xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order 
-        seq = list(map(lambda _:int(_,16), xs )) 
+        xs = ihex_(i)[::-1]  # top and tailed hex string in reverse order
+        seq = list(map(lambda _:int(_,16), xs ))
         #log.debug("label xs %s seq %s " % (xs, repr(seq)) )
         d = self.code2abbr
-        elem = list(map(lambda _:d.get(_,'?%s?' % _ ), seq )) 
+        elem = list(map(lambda _:d.get(_,'?%s?' % _ ), seq ))
         if wildcard:
-            elem += [".."] 
+            elem += [".."]
 
-        return self.delim.join(elem) 
+        return self.delim.join(elem)
 
 
 
@@ -317,7 +317,7 @@ class SeqList(object):
     def __init__(self, ls, af, sli ):
         """
         :param ls: seqhis or seqmat array of integers
-        :param af: histype or mattype able to decode integers into labels 
+        :param af: histype or mattype able to decode integers into labels
         """
         self.ls = ls
         self.afl = af.label
@@ -332,16 +332,16 @@ class SeqList(object):
 
 
 
- 
+
 class SeqTable(object):
     """
     Based on count_unique_sorted applied to a photon length array of sequence history codes
 
     """
-    ptn_ = "^(?P<idx>\d{4})\s*(?P<code>[0-9a-f]+)\s*(?P<a>\d+)\s*(?P<b>\d+)\s*(?P<cf>\S*).*$" 
+    ptn_ = r"^(?P<idx>\d{4})\s*(?P<code>[0-9a-f]+)\s*(?P<a>\d+)\s*(?P<b>\d+)\s*(?P<cf>\S*).*$"
     ptn = re.compile(ptn_)
 
-    @classmethod 
+    @classmethod
     def FromTxt(cls, txt, af, **kwa):
         """
         Hmm this assumes a comparison table with cu(count-unique) array of shape (n,3)
@@ -352,28 +352,28 @@ class SeqTable(object):
             if not m: continue
             dd.append(m.groupdict())
         pass
-        cu = np.zeros( (len(dd),3), dtype=np.uint64 )  
+        cu = np.zeros( (len(dd),3), dtype=np.uint64 )
         for i,d in enumerate(dd):
             cu[i] = ( int("0x%s"%d["code"],16), int(d["a"]), int(d["b"]) )
         pass
         return cls(cu, af, **kwa)
 
 
-    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, shortname="noshortname"): 
+    def __init__(self, cu, af, cnames=[], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, c2cut=30, shortname="noshortname"):
         """
         :param cu: count unique array, typically shaped (n, 2) or (n,3) for comparisons
         :param af: instance of SeqType subclass such as HisType
-        :param cnames: column names 
+        :param cnames: column names
 
         """
         log.debug("cnames %s " % repr(cnames))
 
-        assert len(cu.shape) == 2 and cu.shape[1] >= 2 
-        ncol = cu.shape[1] - 1    # excluding column 0 which is the seq code  
+        assert len(cu.shape) == 2 and cu.shape[1] >= 2
+        ncol = cu.shape[1] - 1    # excluding column 0 which is the seq code
 
         log.debug("SeqTable.__init__ dbgseq %x" % dbgseq)
         log.debug("shortname %s cu.shape %s ncol: %s" % (shortname,repr(cu.shape), ncol))
-        assert shortname != "noshortname"  
+        assert shortname != "noshortname"
 
         if sys.version_info.major in (2,3):
             pass
@@ -381,9 +381,9 @@ class SeqTable(object):
         pass
 
 
-        # self.smry = smry     ## more convenient as method argument, not ctor argument 
+        # self.smry = smry     ## more convenient as method argument, not ctor argument
         self.dirty = False
-        self.cu = cu 
+        self.cu = cu
 
         self.ncol = ncol
         self.dbgseq = dbgseq
@@ -403,7 +403,7 @@ class SeqTable(object):
 
             ia = cu[:,1].astype(np.int64)
             ib = cu[:,2].astype(np.int64)
-            idif = ia-ib    
+            idif = ia-ib
 
             c2, c2n, c2c = chi2(a, b, cut=c2cut)
 
@@ -423,7 +423,7 @@ class SeqTable(object):
             #cnames += ["c2"]
             #tots += ["%10.2f" % c2sum ]
 
-            stats = "%.2f/%d = %5.2f   pvalue:P[C2>]:%0.3f  1-pvalue:P[C2<]:%0.3f " % (c2sum,ndf,c2p,c2_pval,1-c2_pval) 
+            stats = "%.2f/%d = %5.2f   pvalue:P[C2>]:%0.3f  1-pvalue:P[C2<]:%0.3f " % (c2sum,ndf,c2p,c2_pval,1-c2_pval)
 
             cfcount = cu[:,1:]
 
@@ -450,18 +450,18 @@ class SeqTable(object):
 
 
         if len(tots) == 1:
-            total = tots[0]           
+            total = tots[0]
             tots += ["%10.2f" % 1.0 ]
         else:
-            total = None 
+            total = None
         pass
 
         self.total = total
         self.c2 = c2
         #self.c2s = c2s
         self.c2p = c2p
-        self.ab = ab  
-        self.ba = ba  
+        self.ab = ab
+        self.ba = ba
 
         self.stats = stats
         self.seqs = seqs
@@ -478,7 +478,7 @@ class SeqTable(object):
 
         self.label2nstep = dict(zip(labels, nstep))
         self.labels = labels
-        self.codes = codes  
+        self.codes = codes
         self.counts = counts
 
         k_line = self.line(0, key=True, smry=False) if len(cu) > 0 else ""
@@ -507,8 +507,8 @@ class SeqTable(object):
         self.af = af
         self.sli = slice(None)
 
-        ## hmm applying numpy psel style selection on the table eg c2>10 
-        ## would be much more flexible than simple python slicing 
+        ## hmm applying numpy psel style selection on the table eg c2>10
+        ## would be much more flexible than simple python slicing
 
     def cfo_line(self, n):
         if self.ncol == 2:
@@ -516,12 +516,12 @@ class SeqTable(object):
             if len(cfo_key) > 0:
                 cfo_debug = " %10.5f " % self.cfordering_key[n]
             else:
-                #log.debug("no cfo_key ") 
+                #log.debug("no cfo_key ")
                 cfo_debug = " no cfo_key"
             pass
         else:
             cfo_debug = ""
-        pass 
+        pass
         return cfo_debug
 
 
@@ -535,49 +535,49 @@ class SeqTable(object):
     idif_fmt = " %4d "
     k_idif_fmt = " %4s "
 
-    sc2_fmt = "  %10.2f  " 
-    k_sc2_fmt = "%14s" 
+    sc2_fmt = "  %10.2f  "
+    k_sc2_fmt = "%14s"
     div1 = "   "
     div2 = "   "
     div3 = "   "
 
-    k_label_fmt = "%s" 
+    k_label_fmt = "%s"
 
 
     def line(self, n, key=False, smry=False):
         """
         :param n: 0-based line number
         :param key: when True returns column labels, ignoring n
-        :param smry: when True presents less columns 
-        :return str: formatted line of sequence table 
+        :param smry: when True presents less columns
+        :return str: formatted line of sequence table
         """
-        iseq = int(self.cu[n,0]) 
+        iseq = int(self.cu[n,0])
         imsk = int(self.msks[n])
 
         if self.dbgseq > 0 and ( self.dbgseq & iseq ) != self.dbgseq:
-            return None 
+            return None
         pass
-    
+
         if self.dbgmsk > 0:
-            pick = (self.dbgmsk & imsk) == self.dbgmsk   # 
-            if not pick: 
-                return None 
+            pick = (self.dbgmsk & imsk) == self.dbgmsk   #
+            if not pick:
+                return None
             pass
         pass
 
         if smry == False:
-            xn = self.xn_fmt % (n)        
+            xn = self.xn_fmt % (n)
             k_xn = self.k_xn_fmt  % ("n")
         else:
-            xn = self.xn_fmt % (n)        
+            xn = self.xn_fmt % (n)
             k_xn = self.k_xn_fmt  % ("n")
         pass
 
         if smry == False:
-            xs = self.k_xs_fmt % (ihex_(iseq))        
+            xs = self.k_xs_fmt % (ihex_(iseq))
             k_xs = self.k_xs_fmt % ("iseq")
         else:
-            xs = self.k_xs_fmt % (ihex_(iseq))        
+            xs = self.k_xs_fmt % (ihex_(iseq))
             k_xs = self.k_xs_fmt % ("iseq")
         pass
 
@@ -586,11 +586,11 @@ class SeqTable(object):
         k_cfo_debug = ""
 
         vals = list(map(lambda _:self.k_xv_fmt  % _, self.cu[n,1:] ))
-        keys = "abcdefghijklmnopqrstuvwxyz" 
+        keys = "abcdefghijklmnopqrstuvwxyz"
         k_vals = list(map(lambda _:self.k_xv_fmt % keys[_], range(len(self.cu[n,1:])) ))
 
         idif = self.idif[n] if len(vals) == 2 else None
-        idif = self.idif_fmt % idif if idif is not None else " " 
+        idif = self.idif_fmt % idif if idif is not None else " "
         k_idif = self.k_idif_fmt % "a-b" if idif is not None else " "
 
         label = self.k_label_fmt % self.labels[n]
@@ -600,7 +600,7 @@ class SeqTable(object):
             nstep = "[%-2d]" % self.label2nstep[label]
             k_nstep = "[ns]"
         else:
-            nstep = "" 
+            nstep = ""
             k_nstep = ""
         pass
 
@@ -620,7 +620,7 @@ class SeqTable(object):
 
         if self.c2 is not None:
             sc2 = self.sc2_fmt % (self.c2[n])
-            k_sc2 = self.k_sc2_fmt % "(a-b)^2/(a+b)" 
+            k_sc2 = self.k_sc2_fmt % "(a-b)^2/(a+b)"
         else:
             sc2 = ""
             k_sc2 = ""
@@ -645,7 +645,7 @@ class SeqTable(object):
         if self.total is not None:
              frac = float(self.cu[n,1])/float(self.total)
              frac = " %10.3f   " % frac
-             k_frac = " %10s   " % "frac" 
+             k_frac = " %10s   " % "frac"
         else:
              frac = ""
              k_frac = ""
@@ -654,8 +654,8 @@ class SeqTable(object):
         cols =   [  cfo_debug,   xn,  xs,   frac] + vals +   [self.div1,  idif  , self.div2,   sc2,   sab,   sba,   nstep, self.div3,   label]
         k_cols = [k_cfo_debug, k_xn,k_xs, k_frac] + k_vals + [self.div1, k_idif , self.div2, k_sc2, k_sab, k_sba, k_nstep, self.div3, k_label]
 
-        u_cols = k_cols if key==True else cols  
-        return "".join(filter(lambda _:_ != "", u_cols)) 
+        u_cols = k_cols if key==True else cols
+        return "".join(filter(lambda _:_ != "", u_cols))
 
     def present(self, smry=False):
         """
@@ -664,7 +664,7 @@ class SeqTable(object):
         spacer_ = lambda _:"%1s%3s %22s " % (".","",_)
         space = spacer_("")
 
-        lhs_fmt = self.k_xn_dot + self.k_xs_fmt  
+        lhs_fmt = self.k_xn_dot + self.k_xs_fmt
         lhs_key = lhs_fmt % ("","TOTALS:")
 
         rhs_fmt = self.div1 + self.k_idif_fmt + self.div2 + self.k_sc2_fmt + self.div3 + self.k_label_fmt
@@ -672,20 +672,20 @@ class SeqTable(object):
         if self.c2sum is None or self.stats is None:
             rhs_key = ""
         else:
-            rhs_key = rhs_fmt % ( "", self.sc2_fmt % self.c2sum, self.stats ) 
+            rhs_key = rhs_fmt % ( "", self.sc2_fmt % self.c2sum, self.stats )
         pass
 
         title = spacer_(getattr(self,'title',"")+"  cfo:"+getattr(self,'cfordering',"-"))
         body_ = lambda _:" %7s " % _
 
         head = title + " ".join(map(body_, self.cnames ))
-        #head = title 
+        #head = title
 
-        tots = lhs_key + "".join(map(body_, self.tots)) + rhs_key 
+        tots = lhs_key + "".join(map(body_, self.tots)) + rhs_key
 
         if smry:
             return "\n".join([tots] + lfilter(None,self.sines[self.sli]) + [tots])
-        else:  
+        else:
             return "\n".join([self.shortname,head,tots]+ lfilter(None,self.lines[self.sli]) + [tots])
         pass
 
@@ -696,8 +696,8 @@ class SeqTable(object):
         return self.present(smry=True)
 
     def __call__(self, labels):
-        ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None)) 
-        return "\n".join(map(lambda _:self.label2line.get(_,None), ll )) 
+        ll = sorted(list(labels), key=lambda _:self.label2count.get(_, None))
+        return "\n".join(map(lambda _:self.label2line.get(_,None), ll ))
 
     def _get_ll(self):
         return np.array(self.lines[1:-1])  # skip the label lines
@@ -714,12 +714,12 @@ class SeqTable(object):
     def compare(self, other, ordering="self", shortname="noshortname?"):
         """
         :param other: SeqTable instance
-        :param ordering: string "self", "other", "max"  control descending count row ordering  
+        :param ordering: string "self", "other", "max"  control descending count row ordering
         """
         log.debug("SeqTable.compare START")
         l = set(self.labels)
         o = set(other.labels)
-        lo = list(l | o)   
+        lo = list(l | o)
         # union of labels in self or other
 
         if ordering == "max":
@@ -747,18 +747,18 @@ class SeqTable(object):
         cf[:,2] = list(map(lambda _:other.label2count.get(_,0), u ))
         # form comparison table
 
-        cnames = self.cnames + other.cnames 
+        cnames = self.cnames + other.cnames
 
         log.debug("compare dbgseq %x dbgmsk %x " % (self.dbgseq, self.dbgmsk))
 
-        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, shortname=shortname)    
-        cftab.cfordering = ordering 
+        cftab = SeqTable(cf, self.af, cnames=cnames, dbgseq=self.dbgseq, dbgmsk=self.dbgmsk, dbgzero=self.dbgzero, cmx=self.cmx, shortname=shortname)
+        cftab.cfordering = ordering
 
-        cfordering_key = list(map(ordering_, u)) 
+        cfordering_key = list(map(ordering_, u))
         log.debug("cfordering_key for %s" % shortname)
         #log.debug(cfordering_key)
-  
-        cftab.cfordering_key = cfordering_key 
+
+        cftab.cfordering_key = cfordering_key
         log.debug("SeqTable.compare DONE")
         return cftab
 
@@ -767,29 +767,29 @@ class SeqAna(object):
     """
     Canonical usage is from evt with::
 
-        self.seqhis_ana = SeqAna(self.seqhis, self.histype) 
-        self.seqmat_ana = SeqAna(self.seqmat, self.mattype)   
+        self.seqhis_ana = SeqAna(self.seqhis, self.histype)
+        self.seqmat_ana = SeqAna(self.seqmat, self.mattype)
 
     In addition to holding the SeqTable instance SeqAna provides
     methods to make boolean array selections using the aseq and
-    form labels. 
+    form labels.
 
-    SeqAna and its contained SeqTable exist within a particular selection, 
+    SeqAna and its contained SeqTable exist within a particular selection,
     ie changing selection entails recreation of SeqAna and its contained SeqTable
 
-    Hmm: when searching for nibbles (eg RE) it would be convenient to view seqhis as an 
+    Hmm: when searching for nibbles (eg RE) it would be convenient to view seqhis as an
     np.int4/np.uint4 dtype, but there is no such thing.
     """
-    @classmethod 
+    @classmethod
     def for_evt(cls, af, tag="1", src="torch", det="dayabay", pfx="source", offset=0):
         ph = A.load_("ph",src,tag,det, pfx=pfx)
         aseq = ph[:,0,offset]
         return cls(aseq, af, cnames=[tag])
-    
+
     def __init__(self, aseq, af, cnames=["noname"], dbgseq=0, dbgmsk=0, dbgzero=False, cmx=0, table_shortname="no_table_shortname"):
         """
-        :param aseq: photon length sequence array, eg a.seqhis or a.seqmat 
-        :param af: instance of SeqType subclass, which knows what the nibble codes mean 
+        :param aseq: photon length sequence array, eg a.seqhis or a.seqmat
+        :param af: instance of SeqType subclass, which knows what the nibble codes mean
 
         ::
 
@@ -815,12 +815,12 @@ class SeqAna(object):
     def labels(self, prefix=None):
         """
         :param prefix: string sequence label eg "TO BT BT SC"
-        :return labels: list of string labels that start with the prefix   
+        :return labels: list of string labels that start with the prefix
         """
-        codes = self.cu[:,0] 
+        codes = self.cu[:,0]
         if not prefix is None:
             pfx = self.af.code(prefix)
-            codes = codes[np.where( codes & pfx == pfx )]   
+            codes = codes[np.where( codes & pfx == pfx )]
         pass
         labels =  map( lambda _:self.af.label(_), codes )
         return labels
@@ -832,11 +832,11 @@ class SeqAna(object):
 
         Selection of photons with any of the sequence arguments
         """
-        #af = self.table.af 
-        af = self.af 
+        #af = self.table.af
+        af = self.af
         bseq = list(map(lambda _:self.aseq == af.code(_), sseq))  # full length boolean array
-        psel = np.logical_or.reduce(bseq)      
-        return psel 
+        psel = np.logical_or.reduce(bseq)
+        return psel
 
     def seq_or_count(self, sseq):
         psel = self.seq_or(sseq)
@@ -849,10 +849,10 @@ class SeqAna(object):
 
         Selection of all photons starting with prefix sequence
         """
-        af = self.table.af 
+        af = self.table.af
         pfx = af.code(prefix)
-        psel = self.aseq & pfx == pfx 
-        return psel 
+        psel = self.aseq & pfx == pfx
+        return psel
 
     def seq_startswith_count(self, prefix):
         psel = self.seq_startswith(prefix)
@@ -863,23 +863,23 @@ class SeqAna(object):
         aseq = self.aseq
         wk = np.zeros( (len(aseq), 16), dtype=np.bool )
         for n in range(16): wk[:, n] = ( aseq & ( 0xf << (n*4) ) == ( code << (n*4) ))
-        return wk 
+        return wk
 
     def seq_any(self, co="RE" ):
         """
         :param co: string label for seqhis nibble
-        :return psel: selection boolean array of photon length 
- 
-        Selects photons with the co nibble in any of the 16 slots 
+        :return psel: selection boolean array of photon length
+
+        Selects photons with the co nibble in any of the 16 slots
         """
         wk = self.seq_any_(co)
         psel = np.any(wk, axis=1)
-        return psel 
+        return psel
 
     def seq_any_count(self, co="RE" ):
         """
         :param co: string label for seqhis nibble
-        :return count: count_nonzero of psel result of seq_any 
+        :return count: count_nonzero of psel result of seq_any
 
         The count is of photons with the co in any slot (this is not the count of nibbles)
         """
@@ -897,25 +897,25 @@ class SeqAna(object):
 def test_simple_table():
     log.info("test_simple_table")
     from opticks.ana.histype import HisType
-    af = HisType() 
-    cu = np.zeros( (5,2), dtype=np.uint64 )  # mock up a count unique array 
+    af = HisType()
+    cu = np.zeros( (5,2), dtype=np.uint64 )  # mock up a count unique array
     cu[0] = (af.code("TO BT AB"), 100)
     cu[1] = (af.code("TO BT AB SD"),200)
     cu[2] = (af.code("TO BT BR BT AB"),300)
     cu[3] = (af.code("TO BT BT BT AB SD"),400)
     cu[4] = (af.code("TO BT AB MI"),500)
 
-    table = SeqTable(cu, af) 
+    table = SeqTable(cu, af)
     print(table)
 
 def test_comparison_table():
     log.info("test_comparison_table")
     from opticks.ana.histype import HisType
-    af = HisType() 
-    cu = np.zeros( (8,3), dtype=np.uint64 )  # mock up a count unique array 
+    af = HisType()
+    cu = np.zeros( (8,3), dtype=np.uint64 )  # mock up a count unique array
 
-    a = 0 
-    b = 0 
+    a = 0
+    b = 0
 
     cu[0] = (af.code("TO"), a,b)
     cu[1] = (af.code("TO BT"), a,b)
@@ -926,15 +926,15 @@ def test_comparison_table():
     cu[6] = (af.code("TO BT BT BT BT BT BT"),a,b)
     cu[7] = (af.code("TO BT BT BT BT BT BT BT"),a,b)
 
-    table = SeqTable(cu, af) 
+    table = SeqTable(cu, af)
     print(table)
 
 
 def test_comparison_table_2():
     txt = r"""
 ab.ahis
-.            all_seqhis_ana  1:tboolean-box:tboolean-box   -1:tboolean-box:tboolean-box        c2        ab        ba  
-.                              10000     10000      2285.00/5 = 457.00  (pval:1.000 prob:0.000)  
+.            all_seqhis_ana  1:tboolean-box:tboolean-box   -1:tboolean-box:tboolean-box        c2        ab        ba
+.                              10000     10000      2285.00/5 = 457.00  (pval:1.000 prob:0.000)
 0000             8ccd      8805      8807     -2             0.00        1.000 +- 0.011        1.000 +- 0.011  [4 ] TO BT BT SA
 0001              3bd       580         0    580           580.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO BR MI
 0002            3cbcd       563         0    563           563.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO BT BR BT MI
@@ -955,19 +955,19 @@ ab.ahis
 0017              86d         0         5     -5             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO SC SA
 0018        8cbbc6ccd         0         1     -1             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT BT SC BT BR BR BT SA
 0019        8cbbbb6cd         0         1     -1             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO BT SC BR BR BR BR BT SA
-.                              10000     10000      2285.00/5 = 457.00  (pval:1.000 prob:0.000)  
+.                              10000     10000      2285.00/5 = 457.00  (pval:1.000 prob:0.000)
     """
     log.info("test_comparison_table_2")
     from opticks.ana.histype import HisType
-    af = HisType() 
-    table = SeqTable.FromTxt(txt, af) 
+    af = HisType()
+    table = SeqTable.FromTxt(txt, af)
     print(table)
 
 
 if __name__ == '__main__':
-    pass 
+    pass
     ## see histype.py and mattype.py for other testing of this
-    logging.basicConfig(level=logging.INFO) 
+    logging.basicConfig(level=logging.INFO)
     #test_simple_table()
     #test_comparison_table()
     test_comparison_table_2()
