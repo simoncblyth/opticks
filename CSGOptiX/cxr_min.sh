@@ -142,7 +142,7 @@ else
     source ~/.opticks/GEOM/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
 fi
 
-source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets AFOLD BFOLD where event info is loaded from
+source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets EVT name and corresponding AFOLD BFOLD where event arrays are loaded from
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
 source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
 source $HOME/.opticks/GEOM/SDR.sh 2>/dev/null  ## optionally configure OpenGL shader
@@ -298,7 +298,7 @@ Resolve_CFBaseFromGEOM
 
 
 
-_CUR=GEOM/$GEOM/$SCRIPT/$EVT_CHECK
+_CUR=GEOM/$GEOM/$SCRIPT/$EVT
 
 if [ "${arg/info}" != "$arg" ]; then
    for v in $vv ; do printf "%20s : %s \n" "$v" "${!v}" ; done
