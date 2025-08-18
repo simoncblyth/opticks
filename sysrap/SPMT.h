@@ -94,24 +94,40 @@ Related developments
 
 struct SPMT_Total
 {
-    static constexpr const int FIELDS = 4 ;
+    static constexpr const int FIELDS = 7 ;
 
     int CD_LPMT ;
     int SPMT ;
     int WP ;
+    int WP_ATM_LPMT ;
+    int WP_ATM_MPMT ;
+    int WP_WAL_PMT ;
+
     int ALL ;
 
+    int SUM() const ;
     std::string desc() const ;
 };
 
+inline int SPMT_Total::SUM() const
+{
+    return CD_LPMT + SPMT + WP + WP_ATM_LPMT + WP_ATM_MPMT + WP_WAL_PMT ;
+}
 inline std::string SPMT_Total::desc() const
 {
     std::stringstream ss ;
-    ss << "SPMT_Total"
-       << " CD_LPMT:" << std::setw(6) << CD_LPMT
-       << " SPMT:" << std::setw(6) << SPMT
-       << " WP:" << std::setw(6) << WP
-       << " ALL:" << std::setw(6) << ALL
+    ss
+       << "[SPMT_Total\n"
+       << std::setw(16) << "CD_LPMT"     << std::setw(7) << CD_LPMT << "\n"
+       << std::setw(16) << "SPMT"        << std::setw(7) << SPMT << "\n"
+       << std::setw(16) << "WP"          << std::setw(7) << WP << "\n"
+       << std::setw(16) << "WP_ATM_LPMT" << std::setw(7) << WP_ATM_LPMT << "\n"
+       << std::setw(16) << "WP_ATM_MPMT" << std::setw(7) << WP_ATM_MPMT << "\n"
+       << std::setw(16) << "WP_WAL_PMT"  << std::setw(7) << WP_WAL_PMT << "\n"
+       << std::setw(16) << "ALL"         << std::setw(7) << ALL << "\n"
+       << std::setw(16) << "SUM:"        << std::setw(7) << SUM() << "\n"
+       << std::setw(16) << "SUM==ALL"    << std::setw(7) << ( SUM() == ALL ? "YES" : "NO " ) << "\n"
+       << "]SPMT_Total\n"
        ;
     std::string str = ss.str() ;
     return str ;
@@ -512,28 +528,43 @@ inline void SPMT::init_total()
         return ;
     }
     assert( PMTSimParamData );
-    const NP* pmtTotal_ = PMTSimParamData->get("pmtTotal") ; // (4,)
+    const NP* pmtTotal = PMTSimParamData->get("pmtTotal") ; // (7,)   formerly (4,)
 
-    assert( pmtTotal_ && pmtTotal_->uifc == 'i' && pmtTotal_->ebyte == 4 );
-    assert( pmtTotal_->shape.size() == 1 && pmtTotal_->shape[0] == SPMT_Total::FIELDS );
-    assert( pmtTotal_->names.size() == SPMT_Total::FIELDS );
+    std::cout 
+       << "SPMT::init_total"
+       << " pmtTotal.sstr " << ( pmtTotal ? pmtTotal->sstr() : "-" ) 
+       << "\n"     
+       ;
 
-    const int* pmtTotal_v = pmtTotal_->cvalues<int>();
+    assert( pmtTotal && pmtTotal->uifc == 'i' && pmtTotal->ebyte == 4 );
+    assert( pmtTotal->shape.size() == 1 && pmtTotal->shape[0] == SPMT_Total::FIELDS );
+    assert( pmtTotal->names.size() == SPMT_Total::FIELDS );
+    [[maybe_unused]] const int* pmtTotal_v = pmtTotal->cvalues<int>();
 
-    std::vector<std::string> xnames = {"PmtTotal", "PmtTotal_SPMT", "PmtTotal_WP", "PmtTotal_ALL" };
-    assert( pmtTotal_->names == xnames );
+    std::vector<std::string> xnames = {
+         "PmtTotal",
+         "PmtTotal_SPMT",
+         "PmtTotal_WP",
+         "PmtTotal_WP_ATM_LPMT",
+         "PmtTotal_WP_ATM_MPMT",
+         "PmtTotal_WP_WAL_PMT",
+         "PmtTotal_ALL"
+       };
+    assert( pmtTotal->names == xnames );
 
-    total.CD_LPMT = pmtTotal_v[0] ;
-    total.SPMT = pmtTotal_v[1] ;
-    total.WP = pmtTotal_v[2] ;
-    total.ALL = pmtTotal_v[3] ;
 
-    int ALL = total.CD_LPMT + total.SPMT + total.WP ;
-    assert( total.ALL == ALL );
+    total.CD_LPMT     = pmtTotal->get_named_value<int>("PmtTotal",      -1) ;
+    total.SPMT        = pmtTotal->get_named_value<int>("PmtTotal_SPMT", -1) ;
+    total.WP          = pmtTotal->get_named_value<int>("PmtTotal_WP",   -1) ;
+    total.WP_ATM_LPMT = pmtTotal->get_named_value<int>("PmtTotal_WP_ATM_LPMT",   -1) ;
+    total.WP_ATM_MPMT = pmtTotal->get_named_value<int>("PmtTotal_WP_ATM_MPMT",   -1) ;
+    total.WP_WAL_PMT  = pmtTotal->get_named_value<int>("PmtTotal_WP_WAL_PMT",   -1) ;
+    total.ALL         = pmtTotal->get_named_value<int>("PmtTotal_ALL",  -1) ;
 
     std::cout << "SPMT::init_total " << total.desc() << "\n" ;
 
-
+    assert( pmtTotal_v[0] == total.CD_LPMT );
+    assert( total.ALL == total.SUM() );
     assert( total.CD_LPMT == 17612 );
     assert( total.SPMT == 25600 ) ;
     assert( total.WP == 2400 ) ;
@@ -641,8 +672,22 @@ void SPMT::init_qeScale()
 {
     if(!qeScale) return ;
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
-    assert( qeScale->shape[0] == s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP  );
     assert( qeScale_v );
+
+    int expect_qeScale_items = s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP + s_pmt::NUM_WP_ATM_LPMT + s_pmt::NUM_WP_WAL_PMT ;
+    bool qeScale_shape_expect = qeScale->shape[0] == expect_qeScale_items ;
+
+    //if(!qeScale_shape_expect)
+    std::cerr
+        << "SPMT::init_qeScale"
+        << " qeScale.sstr " << ( qeScale ? qeScale->sstr() : "-" )
+        << " qeScale_shape_expect " << ( qeScale_shape_expect ? "YES" : "NO " )
+        << " expect_qeScale_items " << expect_qeScale_items
+        << "\n"
+        << s_pmt::desc()
+        ;
+
+   assert( qeScale_shape_expect  );
 }
 
 

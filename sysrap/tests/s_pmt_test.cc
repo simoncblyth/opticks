@@ -3,6 +3,7 @@
 
 struct s_pmt_test
 {
+     static int desc();
      static int lpmtidx();
      static NP* lpmtidx_array();
 
@@ -18,6 +19,11 @@ struct s_pmt_test
      static int main();
 };
 
+int s_pmt_test::desc()
+{
+    std::cout << s_pmt::desc() ;
+    return 0;
+}
 
 int s_pmt_test::lpmtidx()
 {
@@ -151,6 +157,7 @@ int s_pmt_test::makefold()
 int s_pmt_test::main()
 {
     int rc = 0 ;
+    rc += desc();
     rc += lpmtidx();
     rc += oldcontiguousidx();
     rc += contiguousidx();
