@@ -62,6 +62,16 @@ Release Notes
 * start from "git lg -n20" and summarize useful commit messages worthy of mention
 
 
+v0.5.2 2025/08/19 : intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* start adding support for three more PMT types WP_ATM_LPMT WP_ATM_MPMT WP_WAL_PMT
+* fixed updating of https://simoncblyth.github.io
+* follow suggestion of plexoos to use first device when multiple devices are visible with warning to use CUDA_VISIBLE_DEVICES envvar to quell the warning
+* add example of counting pmt categories to SPMTAccessor_test.cc
+* add sseq_index_ab__desc_HISWID envvar control for seqhis history width used by sseq_index_test.sh, tidy trailing whitespace in addtag.sh
+* expand SRecord::getSimtraceAtTime to working with multiple arange/linspace times specified in OPTICKS_INPUT_PHOTON_RECORD_TIME eg [0.1:88.8:-444], 
+  use that from CSGOptiX/cxt_precision.sh to estimate intersect precision as function of ray trace distance
 
 
 v0.5.1 2025/07/17 : record animation as debug tool, add OPTICKS_PROPAGATE_REFINE improving precision of intersect, make sdevice.bin persisting no longer default
@@ -229,6 +239,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                               |
 +=========+=====+============+=====================================================================================================================+
+| v0.5.2  | 52  | 2025/08/19 | intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h             |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.5.1  | 51  | 2025/07/17 | record animation as debug, OPTICKS_PROPAGATE_REFINE intersect precision, sdevice.bin persisting no longer default   |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.5.0  | 50  | 2025/07/02 | improved install cleanliness, add missing gl shaders and python modules to install                                  | 
