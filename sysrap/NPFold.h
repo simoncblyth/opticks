@@ -2827,7 +2827,7 @@ inline int NPFold::load(const char* _base)
     const char* base = nodata ? _base + 1 : _base ;
 
     int _DUMP = U::GetEnvInt(load_DUMP, 0);
-    if(_DUMP>0) std::cout << "[" << load_DUMP << " : [" << ( base ? base : "-" )  << "]\n" ;
+    if(_DUMP>0) std::cout << "[" << load_DUMP << " " << U::FormatLog() << " : [" << ( base ? base : "-" )  << "]\n" ;
 
 
     bool exists = NP::Exists(base);
@@ -2844,7 +2844,7 @@ inline int NPFold::load(const char* _base)
     bool has_index = NP::Exists(base, INDEX) ;
     int rc = has_index ? load_index(_base) : load_dir(_base) ;
 
-    if(_DUMP>0) std::cout << "]" << load_DUMP << " : [" << ( base ? base : "-" ) << " rc " << rc << "]\n" ;
+    if(_DUMP>0) std::cout << "]" << load_DUMP << " " << U::FormatLog() << " : [" << ( base ? base : "-" ) << " rc " << rc << "]\n" ;
     return rc ;
 }
 inline int NPFold::load(const char* base_, const char* rel0, const char* rel1)

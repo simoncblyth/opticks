@@ -574,7 +574,11 @@ struct U
 
     static bool LooksLikeProfileTriplet(const char* str);
 
-    static std::string Format(uint64_t t=0, const char* fmt="%FT%T.");
+    static std::string Format(uint64_t t=0, const char* fmt="%FT%T.", int _wsubsec=3 );
+
+    static constexpr const char* LOG_FMT = "%Y-%m-%d %H:%M:%S" ;
+    static std::string FormatLog();
+
     static std::string FormatInt(int64_t t, int wid );
 
     static char* LastDigit(const char* str);
@@ -1889,8 +1893,12 @@ inline bool U::LooksLikeProfileTriplet(const char* str) // static
 }
 
 
+inline std::string U::FormatLog() // static
+{
+    return U::Format(0, LOG_FMT, 3);
+}
 
-inline std::string U::Format(uint64_t t, const char* fmt) // static
+inline std::string U::Format(uint64_t t, const char* fmt, int _wsubsec) // static
 {
     // from opticks/sysrap/sstamp.h
     if(t == 0) t = Now() ;
@@ -1900,15 +1908,17 @@ inline std::string U::Format(uint64_t t, const char* fmt) // static
 
     std::time_t tt = Clock::to_time_t(tp);
 
-    // extract the sub second part from the duration since epoch
-    auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
-
     std::stringstream ss ;
-    ss
-       << std::put_time(std::localtime(&tt), fmt )
-       << std::setfill('0')
-       << std::setw(6) << subsec.count()
-       ;
+    ss << std::put_time(std::localtime(&tt), fmt ) ;
+
+    if(_wsubsec == 3 || _wsubsec == 6)
+    {
+        // extract the sub second part from the duration since epoch
+        auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
+        auto count = subsec.count() ;
+        if( _wsubsec == 3 ) count /= 1000 ;
+        ss << "." << std::setfill('0') << std::setw(_wsubsec) << count ;
+    }
 
     std::string str = ss.str();
     return str ;

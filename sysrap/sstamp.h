@@ -10,10 +10,13 @@
 struct sstamp
 {
     static int64_t Now();
-    static std::string Format(int64_t t=0, const char* fmt="%FT%T.", bool _subsec=true);
 
+    static std::string FormatLog();  // plog style timestamp
+    static std::string Format(int64_t t=0, const char* fmt="%FT%T.", int wsubsec=3);
+
+    static constexpr const char* LOG_FMT = "%Y-%m-%d %H:%M:%S" ;
     static constexpr const char* DEFAULT_TIME_FMT = "%Y%m%d_%H%M%S_" ;
-    static std::string FormatTimeStem(const char* _stem=nullptr, int64_t t=0, bool _subsec=false);
+    static std::string FormatTimeStem(const char* _stem=nullptr, int64_t t=0, int wsubsec=0);
 
     static std::string FormatInt(int64_t t, int wid );
     static bool LooksLikeStampInt(const char* str);
@@ -31,6 +34,14 @@ inline int64_t sstamp::Now()
     std::chrono::time_point<Clock> t0 = Clock::now();
     return std::chrono::duration_cast<Unit>(t0.time_since_epoch()).count() ;
 }
+
+
+inline std::string sstamp::FormatLog() // static
+{
+    return Format(0, LOG_FMT, 3);
+}
+
+
 /**
 stamp::Format
 --------------
@@ -38,9 +49,14 @@ stamp::Format
 Time string from uint64_t with the microseconds since UTC epoch,
 t=0 is special cased to give the current time
 
+wsubsec
+    when 3 OR 6 enables subsec output of
+    the corresponding width
+
+
 **/
 
-inline std::string sstamp::Format(int64_t t, const char* fmt, bool _subsec)
+inline std::string sstamp::Format(int64_t t, const char* fmt, int wsubsec)
 {
     if(t == 0) t = Now() ;
     using Clock = std::chrono::system_clock;
@@ -51,11 +67,14 @@ inline std::string sstamp::Format(int64_t t, const char* fmt, bool _subsec)
     std::stringstream ss ;
     ss << std::put_time(std::localtime(&tt), fmt ) ;
 
-    if(_subsec)
+    if(wsubsec == 3 || wsubsec == 6)
     {
         // extract the sub second part from the duration since epoch
         auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
-        ss << std::setfill('0') << std::setw(6) << subsec.count() ;
+        auto count = subsec.count() ;
+        if( wsubsec == 3 ) count /= 1000 ;
+
+        ss << "." << std::setfill('0') << std::setw(wsubsec) << count ;
     }
     std::string str = ss.str();
     return str ;
@@ -79,16 +98,16 @@ sstamp::FormatTimeStem
 **/
 
 
-inline std::string sstamp::FormatTimeStem(const char* _stem, int64_t t, bool _subsec)
+inline std::string sstamp::FormatTimeStem(const char* _stem, int64_t t, int wsubsec)
 {
     std::string stem ;
     if(_stem == nullptr)
     {
-        stem = Format(t, DEFAULT_TIME_FMT, _subsec );
+        stem = Format(t, DEFAULT_TIME_FMT, wsubsec );
     }
     else if( strstr(_stem,"%") )
     {
-        stem = Format(t, _stem, _subsec );
+        stem = Format(t, _stem, wsubsec );
     }
     else
     {

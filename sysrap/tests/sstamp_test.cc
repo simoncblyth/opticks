@@ -1,5 +1,5 @@
 /**
-~/o/sysrap/tests/sstamp_test.sh 
+~/o/sysrap/tests/sstamp_test.sh
 **/
 
 #include <iostream>
@@ -11,15 +11,16 @@
 
 void test_Format()
 {
-    int64_t t = 0 ; 
+    int64_t t = 0 ;
+
+    // 2025-08-20 14:11:59.684
 
     std::vector<std::string> fmts = {
-           "%FT%T.",
+           "%FT%T",
            "%F",
            "%FT",
-           "%T", 
-           "%T.", 
-           "%FT%T.",
+           "%T",
+           "%FT%T",
            "%Y",
            "%M",
            "%m",
@@ -29,73 +30,77 @@ void test_Format()
            "%S",
            "%Y%m%d",
            "%Y%m%d_%H%M%S",
-          } ; 
+           "%Y-%m-%d %H:%M:%S"
+          } ;
 
     for(unsigned i=0 ; i < fmts.size() ; i++)
     {
-        const char* fmt = fmts[i].c_str(); 
-        for(unsigned j=0 ; j < 2 ; j++)
-        { 
-
-            bool sub = j == 0 ; 
-            std::string tf = sstamp::Format(t,fmt,sub); 
-            std::cout 
-                << std::setw(15) << fmt 
-                << " sub " << ( sub ? "Y" : "N" ) 
+        const char* fmt = fmts[i].c_str();
+        for(unsigned j=0 ; j < 3 ; j++)
+        {
+            int wsubsec = j*3 ; // 0,3,6
+            std::string tf = sstamp::Format(t,fmt,wsubsec);
+            std::cout
+                << std::setw(15) << fmt
+                << " wsubsec " << wsubsec 
                 << " : "
-                <<  tf 
+                <<  tf
                 << "\n"
                 ;
-        } 
-        std::cout << "\n" ; 
- 
+        }
+        std::cout << "\n" ;
+
     }
 }
 
+void test_FormatLog()
+{
+    for(int i=0 ; i < 100 ; i++) std::cout << sstamp::FormatLog() << "\n" ;
+}
 
 void test_FormatTimeStem()
 {
-    std::cout 
-        << std::setw(40) 
-        << " sstamp::FormatTimeStem() " 
+    std::cout
+        << std::setw(40)
+        << " sstamp::FormatTimeStem() "
         << " : "
-        << sstamp::FormatTimeStem() 
-        << "\n" 
-        ; 
+        << sstamp::FormatTimeStem()
+        << "\n"
+        ;
 
-    std::cout 
-        << std::setw(40) 
-        << " sstamp::FormatTimeStem(nullptr) " 
+    std::cout
+        << std::setw(40)
+        << " sstamp::FormatTimeStem(nullptr) "
         << " : "
-        << sstamp::FormatTimeStem(nullptr) 
-        << "\n" 
-        ; 
+        << sstamp::FormatTimeStem(nullptr)
+        << "\n"
+        ;
 
-    std::cout 
-        << std::setw(40) 
-        << " sstamp::FormatTimeStem(\"%Y%m%d\") " 
+    std::cout
+        << std::setw(40)
+        << " sstamp::FormatTimeStem(\"%Y%m%d\") "
         << " : "
-        << sstamp::FormatTimeStem("%Y%m%d") 
-        << "\n" 
-        ; 
+        << sstamp::FormatTimeStem("%Y%m%d")
+        << "\n"
+        ;
 
 
-    std::cout 
-        << std::setw(40) 
-        << " sstamp::FormatTimeStem(\"before_%Y%m%d_after\") " 
+    std::cout
+        << std::setw(40)
+        << " sstamp::FormatTimeStem(\"before_%Y%m%d_after\") "
         << " : "
-        << sstamp::FormatTimeStem("before_%Y%m%d_after") 
-        << "\n" 
-        ; 
+        << sstamp::FormatTimeStem("before_%Y%m%d_after")
+        << "\n"
+        ;
 
 
-    std::cout 
-        << std::setw(40) 
-        << " sstamp::FormatTimeStem(\"before_without_percent_after\") " 
+    std::cout
+        << std::setw(40)
+        << " sstamp::FormatTimeStem(\"before_without_percent_after\") "
         << " : "
-        << sstamp::FormatTimeStem("before_without_percent_after") 
-        << "\n" 
-        ; 
+        << sstamp::FormatTimeStem("before_without_percent_after")
+        << "\n"
+        ;
 
 
 }
@@ -104,7 +109,9 @@ void test_FormatTimeStem()
 
 int main()
 {
-    test_FormatTimeStem(); 
+    test_Format();
+    //test_FormatLog();
+    //test_FormatTimeStem();
 
-    return 0 ; 
+    return 0 ;
 }
