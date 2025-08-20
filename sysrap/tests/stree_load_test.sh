@@ -1,6 +1,6 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
-stree_load_test.sh 
+stree_load_test.sh
 =====================
 
 CAUTION the "ana" python script is independent from the C++ side
@@ -16,7 +16,7 @@ Python
 
 Comparing with CSG/tests::
 
-   RIDX=1 ./CSGFoundryLoadTest.sh ana     
+   RIDX=1 ./CSGFoundryLoadTest.sh ana
 
 
 C++
@@ -24,8 +24,8 @@ C++
 
 ::
 
-    ~/o/sysrap/tests/stree_load_test.sh 
-    TEST=desc ~/o/sysrap/tests/stree_load_test.sh 
+    ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc ~/o/sysrap/tests/stree_load_test.sh
 
 
 To update the input tree::
@@ -40,9 +40,9 @@ To update the input tree::
 
     epsilon:~ blyth$ st
     /Users/blyth/opticks/sysrap/tests
-    epsilon:tests blyth$ 
-    epsilon:tests blyth$ LVID=112 ./stree_load_test.sh 
-    stree::init 
+    epsilon:tests blyth$
+    epsilon:tests blyth$ LVID=112 ./stree_load_test.sh
+    stree::init
     stree::load_ /tmp/blyth/opticks/U4TreeCreateTest/stree
      LVID 112 num_nds 11
      ix:  531 dp:    3 sx:    0 pt:  533     nc:    0 fc:   -1 ns:  532 lv:  112     tc:  103 pa:  319 bb:  319 xf:  208    zs
@@ -67,27 +67,22 @@ EOU
 }
 
 
-SDIR=$(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath $BASH_SOURCE))
 
 #defarg="info_build_run_ana"
 defarg="info_build_run"
-[ -n "$LVID" ] && defarg="build_run" 
+[ -n "$LVID" ] && defarg="build_run"
 
 arg=${1:-$defarg}
 
-name=stree_load_test 
-bin=/tmp/$name/$name 
+name=stree_load_test
+bin=/tmp/$name/$name
+script=$name.py
+csgscript=${name}_csg.py
 
-source $HOME/.opticks/GEOM/GEOM.sh 
-source $HOME/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit 
+source $HOME/.opticks/GEOM/GEOM.sh
+source $HOME/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit
 
-
-
-base=$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim
-#base=/tmp/$USER/opticks/U4TreeCreateTest 
-#base=/data/blyth/opticks/U4TreeCreateTest
-
-export BASE=${BASE:-$base}
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
@@ -96,74 +91,85 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 opt="-DWITH_PLACEHOLDER"
 opt="$opt -DWITH_CHILD"
 
-export stree_level=1 
-export FOLD=$BASE/stree
+export stree_level=1
 #export stree__get_frame_dump=1
 
-#test=get_factor_nodes
-test=get_repeat_node
+#test=desc_factor_nodes
+#test=desc_repeat_node
 #test=desc_node_solids
-#test=desc_solids
+test=desc_solids
 #test=desc_solid
 
 export TEST=${TEST:-$test}
 
+CFB=${GEOM}_CFBaseFromGEOM
+export FOLD=${!CFB}/CSGFoundry/SSim/stree
 
-vars="BASH_SOURCE BASE FOLD opt GEOM MOI TEST"
+vars="BASH_SOURCE opt GEOM CFB FOLD MOI TEST"
 
 
-if [ ! -d "$BASE/stree" ]; then
-    echo $BASH_SOURCE : BASE $BASE GEOM $GEOM
-    echo $BASH_SOURCE : BASE directory MUST contain an stree directory : THIS DOES NOT 
+logging(){
+    type $FUNCNAME
+    export NPFold__load_DUMP=1
+}
+[ -n "$LOG" ] && logging
+
+
+if [ ! -f "$FOLD/nds.npy" ]; then
+    echo $BASH_SOURCE : GEOM $GEOM ${GEOM}_CFBaseFromGEOM ${!CFB}  FOLD $FOLD
+    echo $BASH_SOURCE : CFBaseFromGEOM directory MUST contain CSGFoundry/SSim/stree/nds.npy : THIS DOES NOT
     exit 1
-fi 
+fi
 
-if [ "${arg/info}" != "$arg" ]; then 
+if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done
-fi 
+fi
 
-if [ "${arg/build}" != "$arg" ]; then 
+if [ "${arg/build}" != "$arg" ]; then
     mkdir -p $(dirname $bin)
 
     gcc \
       $opt \
-      $SDIR/$name.cc \
-      $SDIR/../s_tv.cc \
-      $SDIR/../s_bb.cc \
-      $SDIR/../s_pa.cc \
-      $SDIR/../sn.cc \
-      $SDIR/../s_csg.cc  \
+      $name.cc \
+      ../s_tv.cc \
+      ../s_bb.cc \
+      ../s_pa.cc \
+      ../sn.cc \
+      ../s_csg.cc  \
       -g -std=c++17 -lstdc++ -lm \
-      -I$SDIR/.. \
+      -I.. \
       -I$CUDA_PREFIX/include \
       -I$OPTICKS_PREFIX/externals/glm/glm \
       -o $bin
 
-    [ $? -ne 0 ] && echo $BASH_SOURCE build error with opt $opt && exit 1 
-fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE build error with opt $opt && exit 1
+fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then
     $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2 
-fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
+fi
 
-if [ "${arg/dbg}" != "$arg" ]; then 
-    case $(uname) in
-       Darwin) lldb__ $bin ;;
-       Linux)  gdb__  $bin ;;
-    esac
-    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3 
-fi 
+if [ "${arg/dbg}" != "$arg" ]; then
+    source dbg__.sh
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
+fi
 
-if [ "${arg/ana}" != "$arg" ]; then 
-    ${IPYTHON:-ipython} --pdb -i $SDIR/$name.py 
+if [ "${arg/pdb}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
-fi 
+fi
 
-if [ "${arg/csg}" != "$arg" ]; then 
-    FOLD=$FOLD/csg ${IPYTHON:-ipython} --pdb -i $SDIR/${name}_csg.py 
+if [ "${arg/ana}" != "$arg" ]; then
+    ${PYTHON:-python} $script
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
-fi 
+fi
 
-exit 0 
+if [ "${arg/csg}" != "$arg" ]; then
+    FOLD=$FOLD/csg ${IPYTHON:-ipython} --pdb -i $csgscript
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
+fi
+
+exit 0
 

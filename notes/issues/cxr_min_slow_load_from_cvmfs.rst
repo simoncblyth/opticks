@@ -333,3 +333,52 @@ large numbers of repeats.  TODO: When have performance machinery operational aga
 
 
 
+HMM : 5028:sWorld globals is about twice what it used to be : what new volumes are not being instanced ? 
+-------------------------------------------------------------------------------------------------------------
+
+::
+
+    5028:sWorld
+    5:PMT_3inch_pmt_solid
+    9:NNVTMCPPMTsMask_virtual
+    12:HamamatsuR12860sMask_virtual
+    4:mask_PMT_20inch_vetosMask_virtual
+    1:sStrutBallhead
+    1:base_steel
+    3:uni_acrylic1
+    130:sPanel
+    322:solidSJCLSanchor
+
+
+
+Need to find some stree methods to dump the globals
+-----------------------------------------------------
+
+::
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=0 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 0 num_nodes 25600
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=1 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 1 num_nodes 12657
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=2 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 2 num_nodes 4955
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=3 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 3 num_nodes 2400
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=4 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 4 num_nodes 590
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=5 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 5 num_nodes 590
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=6 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 6 num_nodes 590
+
+    (ok) A[blyth@localhost tests]$ TEST=desc_factor_nodes FIDX=7 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_factor_nodes idx 7 num_nodes 504
+
+
+
