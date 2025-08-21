@@ -124,17 +124,17 @@ inline std::string s_unique_desc(
      bool check=false
 )
 {
-    int num_uvals = uvals.size() ;
-    int num_unams = unams ? unams->size() : -1 ;
-    int num_count = count ? count->size() : -1 ;
-    int num_order = order ? order->size() : -1 ;
-    int num_index = index ? index->size() : -1 ;
-    int num_inverse = inverse ? inverse->size() : -1  ;
-    int num_original = original ? original->size() : -1  ;
+    std::size_t num_uvals = uvals.size() ;
+    std::size_t num_unams = unams ? unams->size() : 0 ;
+    std::size_t num_count = count ? count->size() : 0 ;
+    std::size_t num_order = order ? order->size() : 0 ;
+    std::size_t num_index = index ? index->size() : 0 ;
+    std::size_t num_inverse = inverse ? inverse->size() : 0  ;
+    std::size_t num_original = original ? original->size() : 0  ;
 
-    if(num_count > -1) assert( num_uvals == num_count ) ;
-    if(num_order > -1) assert( num_uvals == num_order ) ;
-    if(num_index > -1) assert( num_uvals == num_index ) ;
+    if(num_count > 0) assert( num_uvals == num_count ) ;
+    if(num_order > 0) assert( num_uvals == num_order ) ;
+    if(num_index > 0) assert( num_uvals == num_index ) ;
 
     std::stringstream ss ;
     ss << "[s_unique_desc\n" ;
@@ -167,7 +167,7 @@ inline std::string s_unique_desc(
     if(count)     ss << " TOT" << std::setw(w) << cn_total << "\n" ;
 
     ss << "\n" ;
-    if( check && num_inverse > -1 && num_original > -1)
+    if( check && num_inverse > 0 && num_original > 0)
     {
         assert( num_inverse == num_original ) ;
         for(std::size_t i=0 ; i < num_original ; i++ )
