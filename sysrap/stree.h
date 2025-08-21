@@ -230,6 +230,7 @@ When SSim not in use can also use::
 
 #include "s_csg.h"
 #include "sn.h"
+#include "s_unique.h"
 
 #include "stra.h"
 #include "sstandard.h"
@@ -267,7 +268,7 @@ struct stree
     static constexpr const int FREQ_CUT = 500 ;   // HMM GInstancer using 400
     // subtree digests with less repeats than FREQ_CUT within the entire geometry
     // are not regarded as repeats for instancing factorization purposes
-
+    //
     static constexpr const char* BASE = "$CFBaseFromGEOM/CSGFoundry/SSim" ;
     static constexpr const char* RELDIR = "stree" ;
 
@@ -401,6 +402,8 @@ struct stree
     std::string desc() const ;
     std::string desc_soname() const ;
     std::string desc_lvid() const ;
+    std::string desc_lvid_unique(const std::vector<int>& some_lvid) const ;
+
     std::string desc_size(char div='\n') const ;
     std::string desc_vec() const ;
     std::string desc_sub(bool all=false) const ;
@@ -450,7 +453,9 @@ struct stree
 
     int  find_lvid(const char* soname_, bool starting=true  ) const ;
 
-    const std::vector<snode>* get_node_vector( char _src ) const ; // 'N':nds 'R':rem 'T':tri
+    const std::vector<snode>* get_node_vector(      char _src ) const ; // 'N':nds 'R':rem 'T':tri
+    const char*               get_node_vector_name( char _src ) const ;
+
     void find_lvid_nodes_( std::vector<snode>& nodes, int lvid, char _src ) const ;
     void find_lvid_nodes(  std::vector<int>& nodes, int lvid, char _src ) const ;
     int count_lvid_nodes( int lvid, char _src='N' ) const ;
@@ -659,6 +664,12 @@ struct stree
     std::string desc_repeat_node(int q_repeat_index, int q_repeat_ordinal) const ;
 
     std::string desc_repeat_nodes() const ;
+
+    std::string desc_NRT() const ;
+    std::string desc_nds() const ;
+    std::string desc_rem() const ;
+    std::string desc_tri() const ;
+    std::string desc_NRT(char NRT) const ;
 
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx );
@@ -946,6 +957,45 @@ inline std::string stree::desc_lvid() const
     std::string str = ss.str();
     return str ;
 }
+
+/**
+stree::desc_lvid_unique
+------------------------
+
+Counts unique lvid from some_lvid and presents unique table
+with occurence counts and solid names from soname. The table
+is ordered by descending occurence counts.
+
+**/
+
+
+inline std::string stree::desc_lvid_unique(const std::vector<int>& some_lvid) const
+{
+    // count unique lvid
+    std::vector<int>           u_lvid ;
+    std::vector<std::size_t>   c_lvid ;  // count
+    std::vector<std::size_t>   o_lvid ;  // order
+    std::vector<std::size_t>   x_lvid ;  // first index
+
+    s_unique( u_lvid, some_lvid.begin(), some_lvid.end(), &c_lvid, &o_lvid, &x_lvid );
+
+    std::stringstream ss ;
+    ss
+        << "[stree::desc_unique_lvid\n"
+        << " some_lvid.size " << some_lvid.size() << "\n"
+        << " u_lvid.size " << u_lvid.size() << "\n"
+        << " c_lvid.size " << c_lvid.size() << "\n"
+        << " o_lvid.size " << o_lvid.size() << "\n"
+        << " x_lvid.size " << x_lvid.size() << "\n"
+        << s_unique_desc( u_lvid, &soname, &c_lvid, &o_lvid, &x_lvid ) << "\n"
+        << "]stree::desc_unique_lvid\n"
+        ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 
 
@@ -1607,6 +1657,21 @@ inline const std::vector<snode>* stree::get_node_vector( char _src ) const
     }
     return src ;
 }
+
+inline const char* stree::get_node_vector_name( char _src ) const
+{
+    const char* name = nullptr ;
+    switch( _src )
+    {
+        case 'N': name = NDS ; break ;
+        case 'R': name = REM ; break ;
+        case 'T': name = TRI ; break ;
+    }
+    return name ;
+}
+
+
+
 
 
 /**
@@ -4644,7 +4709,7 @@ inline std::string stree::desc_repeat_node(int q_repeat_index, int q_repeat_ordi
     int num_node = nodes.size() ;
 
     std::stringstream ss ;
-    ss << "stree::desc_repeat_nodes"
+    ss << "stree::desc_repeat_node"
        << " q_repeat_index " << q_repeat_index
        << " q_repeat_ordinal " << q_repeat_ordinal
        << " num_node " << num_node
@@ -4676,7 +4741,6 @@ inline std::string stree::desc_repeat_node(int q_repeat_index, int q_repeat_ordi
     std::string str = ss.str();
     return str ;
 }
-
 
 
 inline std::string stree::desc_repeat_nodes() const
@@ -4723,6 +4787,52 @@ inline std::string stree::desc_repeat_nodes() const
     std::string str = ss.str();
     return str ;
 }
+
+
+/**
+desc_NRT
+---------
+
+Provides intelligible dumping of the lvid solids from nds/rem/tri snode vectors
+in a way that is useful even with many thousands of nodes. This works by
+creating a presenting a unique lvid table using s_unique.h functionality.
+
+**/
+
+inline std::string stree::desc_NRT() const
+{
+    std::stringstream ss ;
+    ss << desc_nds();
+    ss << desc_rem();
+    ss << desc_tri();
+    std::string str = ss.str();
+    return str ;
+}
+
+inline std::string stree::desc_nds() const { return desc_NRT('N'); }
+inline std::string stree::desc_rem() const { return desc_NRT('R'); }
+inline std::string stree::desc_tri() const { return desc_NRT('T'); }
+
+inline std::string stree::desc_NRT(char NRT) const
+{
+    const std::vector<snode>* vec = get_node_vector(NRT);
+    const char* nam               = get_node_vector_name(NRT);
+
+    // collect lvid from the snode
+    std::vector<int> vec_lvid ;
+    for(int i=0 ; i < int(vec->size()) ; i++) vec_lvid.push_back( (*vec)[i].lvid );
+
+    std::stringstream ss ;
+    ss
+        << "[stree::desc_NRT." << NRT << " " << ( nam ? nam : "-" ) << "\n"
+        << " vec.size " << vec->size() << "\n"
+        << desc_lvid_unique(vec_lvid)
+        << "]stree::desc_NRT." << NRT << " " << ( nam ? nam : "-" ) << "\n"
+        ;
+    std::string str = ss.str();
+    return str ;
+}
+
 
 
 

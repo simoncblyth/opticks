@@ -3,6 +3,9 @@ usage(){ cat << EOU
 stree_load_test.sh
 =====================
 
+~/o/sysrap/tests/stree_load_test.sh
+
+
 CAUTION the "ana" python script is independent from the C++ side
 with some different envvar controls.
 
@@ -94,10 +97,17 @@ opt="$opt -DWITH_CHILD"
 export stree_level=1
 #export stree__get_frame_dump=1
 
-#test=desc_factor_nodes
 #test=desc_repeat_node
+#test=desc_repeat_nodes
+
+#test=desc_nds
+#test=desc_rem
+#test=desc_tri
+test=desc_NRT
+
+#test=desc_factor_nodes
 #test=desc_node_solids
-test=desc_solids
+#test=desc_solids
 #test=desc_solid
 
 export TEST=${TEST:-$test}

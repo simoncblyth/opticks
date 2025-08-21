@@ -243,6 +243,7 @@ set(HEADERS
     sfreq.h
     snode.h
     stree.h
+    s_unique.h
     suniquename.h
 
     sstandard.h

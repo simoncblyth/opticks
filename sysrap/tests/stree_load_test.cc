@@ -45,6 +45,13 @@ struct stree_load_test
     int get_prim_aabb() const ;
     int desc_factor_nodes(int fidx) const ;
     int desc_repeat_node(int ridx, int rord) const ;
+    int desc_repeat_nodes() const ;
+
+    int desc_nds() const ;
+    int desc_rem() const ;
+    int desc_tri() const ;
+    int desc_NRT() const ;
+
     int desc_node_solids() const ;
     int desc_solids() const ;
     int desc_solid(int lvid) const ;
@@ -448,6 +455,36 @@ inline int stree_load_test::desc_repeat_node(int ridx, int rord) const
     std::cout << st->desc_repeat_node(ridx, rord) << "\n" ;
     return 0 ;
 }
+inline int stree_load_test::desc_repeat_nodes() const
+{
+    std::cout << st->desc_repeat_nodes() << "\n" ;
+    return 0 ;
+}
+
+
+inline int stree_load_test::desc_nds() const
+{
+    std::cout << st->desc_nds() << "\n" ;
+    return 0 ;
+}
+inline int stree_load_test::desc_rem() const
+{
+    std::cout << st->desc_rem() << "\n" ;
+    return 0 ;
+}
+inline int stree_load_test::desc_tri() const
+{
+    std::cout << st->desc_tri() << "\n" ;
+    return 0 ;
+}
+inline int stree_load_test::desc_NRT() const
+{
+    std::cout << st->desc_NRT() << "\n" ;
+    return 0 ;
+}
+
+
+
 
 inline int stree_load_test::desc_node_solids() const
 {
@@ -515,6 +552,11 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "get_prim_aabb") == 0)                          rc += get_prim_aabb();
     if(ALL||strcmp(TEST, "desc_factor_nodes") == 0)                      rc += desc_factor_nodes(FIDX);
     if(ALL||strcmp(TEST, "desc_repeat_node") == 0)                       rc += desc_repeat_node(RIDX, RORD);
+    if(ALL||strcmp(TEST, "desc_repeat_nodes") == 0)                      rc += desc_repeat_nodes();
+    if(ALL||strcmp(TEST, "desc_nds") == 0)                               rc += desc_nds();
+    if(ALL||strcmp(TEST, "desc_rem") == 0)                               rc += desc_rem();
+    if(ALL||strcmp(TEST, "desc_tri") == 0)                               rc += desc_tri();
+    if(ALL||strcmp(TEST, "desc_NRT") == 0)                               rc += desc_NRT();
     if(ALL||strcmp(TEST, "desc_node_solids") == 0)                       rc += desc_node_solids() ;
     if(ALL||strcmp(TEST, "desc_solids") == 0)                            rc += desc_solids() ;
     if(ALL||strcmp(TEST, "desc_solid") == 0)                             rc += desc_solid(LVID) ;
