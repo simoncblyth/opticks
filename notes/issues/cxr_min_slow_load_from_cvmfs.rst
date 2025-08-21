@@ -576,6 +576,164 @@ DONE : added stree::desc_NRT
 
 
 
+
+
+bbox of new WP PMT solids
+-----------------------------
+
+::
+
+
+     uv    105 :  cn    370  ix   2346  un sStrut_0
+     uv     46 :  cn    353  ix    994  un PMT_20inch_mcp_solid
+     uv     45 :  cn    353  ix    993  un PMT_20inch_tube_solid
+     uv     48 :  cn    353  ix    989  un PMT_20inch_pmt_solid_head
+     uv     47 :  cn    353  ix    990  un PMT_20inch_inner_solid_head
+     uv     43 :  cn    353  ix    991  un PMT_20inch_edge_solid
+     uv     44 :  cn    353  ix    992  un PMT_20inch_plate_solid
+     uv    106 :  cn    220  ix   2716  un sStrut_1
+
+
+::
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=43 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 43 lvn PMT_20inch_edge_solid root Y sn::rbrief
+      0 : sn::brief tc    2 cm  0 lv  43 xf Y pa Y bb Y pt N nc  2 dp  0 tg in bb.desc [-60000.000,-60000.000,-60000.000,60000.000,60000.000,60000.000]
+      1 : sn::brief tc  105 cm  0 lv  43 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-47.900,-47.900,-10.000, 47.900, 47.900, 10.000]
+      1 : sn::brief tc  105 cm  1 lv  43 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-46.900,-46.900,-10.100, 46.900, 46.900, 10.100]
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=44 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 44 lvn PMT_20inch_plate_solid root Y sn::rbrief
+      0 : sn::brief tc    2 cm  0 lv  44 xf Y pa Y bb Y pt N nc  2 dp  0 tg in bb.desc [-60000.000,-60000.000,-60000.000,60000.000,60000.000,60000.000]
+      1 : sn::brief tc  105 cm  0 lv  44 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-47.900,-47.900, -5.000, 47.900, 47.900,  5.000]
+      1 : sn::brief tc  105 cm  1 lv  44 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-20.000,-20.000, -5.050, 20.000, 20.000,  5.050]
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=45 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 45 lvn PMT_20inch_tube_solid root Y sn::rbrief
+      0 : sn::brief tc    2 cm  0 lv  45 xf Y pa Y bb Y pt N nc  2 dp  0 tg in bb.desc [-60000.000,-60000.000,-60000.000,60000.000,60000.000,60000.000]
+      1 : sn::brief tc  105 cm  0 lv  45 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-42.900,-42.900,-21.112, 42.900, 42.900, 21.112]
+      1 : sn::brief tc  105 cm  1 lv  45 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-41.900,-41.900,-21.323, 41.900, 41.900, 21.323]
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=46 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 46 lvn PMT_20inch_mcp_solid root Y sn::rbrief
+      0 : sn::brief tc  105 cm  0 lv  46 xf Y pa Y bb Y pt N nc  0 dp  0 tg cy bb.desc [-20.000,-20.000, -1.000, 20.000, 20.000,  1.000]
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=47 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 47 lvn PMT_20inch_inner_solid_head root Y sn::rbrief
+      0 : sn::brief tc  103 cm  0 lv  47 xf Y pa Y bb Y pt N nc  0 dp  0 tg zs bb.desc [-179.000,-179.000,-168.225,179.000,179.000,179.100]
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=48 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 48 lvn PMT_20inch_pmt_solid_head root Y sn::rbrief
+      0 : sn::brief tc  103 cm  0 lv  48 xf Y pa Y bb Y pt N nc  0 dp  0 tg zs bb.desc [-184.001,-184.001,-173.226,184.001,184.001,184.101]
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_solid LVID=49 ~/o/sysrap/tests/stree_load_test.sh run
+    stree::desc_solid lvid 49 lvn sWaterAttLenMesaureEquipinner root Y sn::rbrief
+      0 : sn::brief tc    1 cm  0 lv  49 xf Y pa Y bb Y pt N nc  2 dp  0 tg un bb.desc [-60000.000,-60000.000,-60000.000,60000.000,60000.000,60000.000]
+      1 : sn::brief tc    1 cm  0 lv  49 xf Y pa Y bb Y pt Y nc  2 dp  0 tg un bb.desc [-60000.000,-60000.000,-60000.000,60000.000,60000.000,60000.000]
+      2 : sn::brief tc  105 cm  0 lv  49 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-152.500,-152.500,-1740.000,152.500,152.500,-1399.000]
+      2 : sn::brief tc  105 cm  0 lv  49 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-310.000,-310.000,-1400.000,310.000,310.000,-1000.000]
+      1 : sn::brief tc  105 cm  0 lv  49 xf Y pa Y bb Y pt Y nc  0 dp  0 tg cy bb.desc [-190.000,-190.000,-1001.000,190.000,190.000,  0.000]
+    (ok) A[blyth@localhost opticks]$ 
+
+
+ELVID Node dumping
+-----------------------
+
+::
+
+    (ok) A[blyth@localhost opticks]$ TEST=desc_node_elvid ELVID=43,44,45,46,47,48 ~/o/sysrap/tests/stree_load_test.sh
+                       BASH_SOURCE : /home/blyth/o/sysrap/tests/stree_load_test.sh 
+                               opt : -DWITH_PLACEHOLDER -DWITH_CHILD 
+                              GEOM : J25_4_0_opticks_Debug 
+                               CFB : J25_4_0_opticks_Debug_CFBaseFromGEOM 
+                              FOLD : /home/blyth/junosw/InstallArea/.opticks/GEOM/J25_4_0_opticks_Debug/CSGFoundry/SSim/stree 
+                               MOI : EXTENT:10000 
+                              TEST : desc_node_elvid 
+    [stree::desc_node_elvid
+     nam rem.npy
+     elvid YES
+        989 : snode ix:  66509 dh: 9 sx:    0 pt:  66508 nc:    1 fc:  66510 ns:     -1 lv: 48 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 54 sn:-1 elvid YES
+        990 : snode ix:  66510 dh:10 sx:    0 pt:  66509 nc:    4 fc:  66511 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+        991 : snode ix:  66511 dh:11 sx:    0 pt:  66510 nc:    0 fc:     -1 ns:  66512 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+        992 : snode ix:  66512 dh:11 sx:    1 pt:  66510 nc:    0 fc:     -1 ns:  66513 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+        993 : snode ix:  66513 dh:11 sx:    2 pt:  66510 nc:    0 fc:     -1 ns:  66514 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+        994 : snode ix:  66514 dh:11 sx:    3 pt:  66510 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+        997 : snode ix:  66517 dh: 9 sx:    0 pt:  66516 nc:    1 fc:  66518 ns:     -1 lv: 48 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 54 sn:-1 elvid YES
+        998 : snode ix:  66518 dh:10 sx:    0 pt:  66517 nc:    4 fc:  66519 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+        999 : snode ix:  66519 dh:11 sx:    0 pt:  66518 nc:    0 fc:     -1 ns:  66520 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       1000 : snode ix:  66520 dh:11 sx:    1 pt:  66518 nc:    0 fc:     -1 ns:  66521 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       1001 : snode ix:  66521 dh:11 sx:    2 pt:  66518 nc:    0 fc:     -1 ns:  66522 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       1002 : snode ix:  66522 dh:11 sx:    3 pt:  66518 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+       1005 : snode ix:  66525 dh: 9 sx:    0 pt:  66524 nc:    1 fc:  66526 ns:     -1 lv: 48 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 54 sn:-1 elvid YES
+       1006 : snode ix:  66526 dh:10 sx:    0 pt:  66525 nc:    4 fc:  66527 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       1007 : snode ix:  66527 dh:11 sx:    0 pt:  66526 nc:    0 fc:     -1 ns:  66528 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       1008 : snode ix:  66528 dh:11 sx:    1 pt:  66526 nc:    0 fc:     -1 ns:  66529 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       1009 : snode ix:  66529 dh:11 sx:    2 pt:  66526 nc:    0 fc:     -1 ns:  66530 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       1010 : snode ix:  66530 dh:11 sx:    3 pt:  66526 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+       1013 : snode ix:  66533 dh: 9 sx:    0 pt:  66532 nc:    1 fc:  66534 ns:     -1 lv: 48 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 54 sn:-1 elvid YES
+       1014 : snode ix:  66534 dh:10 sx:    0 pt:  66533 nc:    4 fc:  66535 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       1015 : snode ix:  66535 dh:11 sx:    0 pt:  66534 nc:    0 fc:     -1 ns:  66536 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       1016 : snode ix:  66536 dh:11 sx:    1 pt:  66534 nc:    0 fc:     -1 ns:  66537 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       1017 : snode ix:  66537 dh:11 sx:    2 pt:  66534 nc:    0 fc:     -1 ns:  66538 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       1018 : snode ix:  66538 dh:11 sx:    3 pt:  66534 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+       1021 : snode ix:  66541 dh: 9 sx:    0 pt:  66540 nc:    1 fc:  66542 ns:     -1 lv: 48 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 54 sn:-1 elvid YES
+       1022 : snode ix:  66542 dh:10 sx:    0 pt:  66541 nc:    4 fc:  66543 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       1023 : snode ix:  66543 dh:11 sx:    0 pt:  66542 nc:    0 fc:     -1 ns:  66544 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       1024 : snode ix:  66544 dh:11 sx:    1 pt:  66542 nc:    0 fc:     -1 ns:  66545 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       1025 : snode ix:  66545 dh:11 sx:    2 pt:  66542 nc:    0 fc:     -1 ns:  66546 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       1026 : snode ix:  66546 dh:11 sx:    3 pt:  66542 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2940 : snode ix: 382705 dh: 4 sx:    1 pt:  65723 nc:    1 fc: 382706 ns: 382711 lv: 48 cp:  52400 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2941 : snode ix: 382706 dh: 5 sx:    0 pt: 382705 nc:    4 fc: 382707 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2942 : snode ix: 382707 dh: 6 sx:    0 pt: 382706 nc:    0 fc:     -1 ns: 382708 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2943 : snode ix: 382708 dh: 6 sx:    1 pt: 382706 nc:    0 fc:     -1 ns: 382709 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2944 : snode ix: 382709 dh: 6 sx:    2 pt: 382706 nc:    0 fc:     -1 ns: 382710 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2945 : snode ix: 382710 dh: 6 sx:    3 pt: 382706 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2946 : snode ix: 382711 dh: 4 sx:    2 pt:  65723 nc:    1 fc: 382712 ns: 382717 lv: 48 cp:  52401 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2947 : snode ix: 382712 dh: 5 sx:    0 pt: 382711 nc:    4 fc: 382713 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2948 : snode ix: 382713 dh: 6 sx:    0 pt: 382712 nc:    0 fc:     -1 ns: 382714 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2949 : snode ix: 382714 dh: 6 sx:    1 pt: 382712 nc:    0 fc:     -1 ns: 382715 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2950 : snode ix: 382715 dh: 6 sx:    2 pt: 382712 nc:    0 fc:     -1 ns: 382716 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2951 : snode ix: 382716 dh: 6 sx:    3 pt: 382712 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2952 : snode ix: 382717 dh: 4 sx:    3 pt:  65723 nc:    1 fc: 382718 ns: 382723 lv: 48 cp:  52402 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2953 : snode ix: 382718 dh: 5 sx:    0 pt: 382717 nc:    4 fc: 382719 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2954 : snode ix: 382719 dh: 6 sx:    0 pt: 382718 nc:    0 fc:     -1 ns: 382720 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2955 : snode ix: 382720 dh: 6 sx:    1 pt: 382718 nc:    0 fc:     -1 ns: 382721 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2956 : snode ix: 382721 dh: 6 sx:    2 pt: 382718 nc:    0 fc:     -1 ns: 382722 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2957 : snode ix: 382722 dh: 6 sx:    3 pt: 382718 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2958 : snode ix: 382723 dh: 4 sx:    4 pt:  65723 nc:    1 fc: 382724 ns: 382729 lv: 48 cp:  52403 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2959 : snode ix: 382724 dh: 5 sx:    0 pt: 382723 nc:    4 fc: 382725 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2960 : snode ix: 382725 dh: 6 sx:    0 pt: 382724 nc:    0 fc:     -1 ns: 382726 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2961 : snode ix: 382726 dh: 6 sx:    1 pt: 382724 nc:    0 fc:     -1 ns: 382727 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2962 : snode ix: 382727 dh: 6 sx:    2 pt: 382724 nc:    0 fc:     -1 ns: 382728 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2963 : snode ix: 382728 dh: 6 sx:    3 pt: 382724 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2964 : snode ix: 382729 dh: 4 sx:    5 pt:  65723 nc:    1 fc: 382730 ns: 382735 lv: 48 cp:  52404 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2965 : snode ix: 382730 dh: 5 sx:    0 pt: 382729 nc:    4 fc: 382731 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2966 : snode ix: 382731 dh: 6 sx:    0 pt: 382730 nc:    0 fc:     -1 ns: 382732 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2967 : snode ix: 382732 dh: 6 sx:    1 pt: 382730 nc:    0 fc:     -1 ns: 382733 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2968 : snode ix: 382733 dh: 6 sx:    2 pt: 382730 nc:    0 fc:     -1 ns: 382734 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2969 : snode ix: 382734 dh: 6 sx:    3 pt: 382730 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2970 : snode ix: 382735 dh: 4 sx:    6 pt:  65723 nc:    1 fc: 382736 ns: 382741 lv: 48 cp:  52405 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2971 : snode ix: 382736 dh: 5 sx:    0 pt: 382735 nc:    4 fc: 382737 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2972 : snode ix: 382737 dh: 6 sx:    0 pt: 382736 nc:    0 fc:     -1 ns: 382738 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2973 : snode ix: 382738 dh: 6 sx:    1 pt: 382736 nc:    0 fc:     -1 ns: 382739 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2974 : snode ix: 382739 dh: 6 sx:    2 pt: 382736 nc:    0 fc:     -1 ns: 382740 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2975 : snode ix: 382740 dh: 6 sx:    3 pt: 382736 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+       2976 : snode ix: 382741 dh: 4 sx:    7 pt:  65723 nc:    1 fc: 382742 ns: 382747 lv: 48 cp:  52406 se:     -1 se:     -1 ri: 0 ro:   -1 bd:303 sn:-1 elvid YES
+       2977 : snode ix: 382742 dh: 5 sx:    0 pt: 382741 nc:    4 fc: 382743 ns:     -1 lv: 47 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 55 sn:-1 elvid YES
+       2978 : snode ix: 382743 dh: 6 sx:    0 pt: 382742 nc:    0 fc:     -1 ns: 382744 lv: 43 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 56 sn:-1 elvid YES
+       2979 : snode ix: 382744 dh: 6 sx:    1 pt: 382742 nc:    0 fc:     -1 ns: 382745 lv: 44 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 57 sn:-1 elvid YES
+       2980 : snode ix: 382745 dh: 6 sx:    2 pt: 382742 nc:    0 fc:     -1 ns: 382746 lv: 45 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 58 sn:-1 elvid YES
+       2981 : snode ix: 382746 dh: 6 sx:    3 pt: 382742 nc:    0 fc:     -1 ns:     -1 lv: 46 cp:      0 se:     -1 se:     -1 ri: 0 ro:   -1 bd: 59 sn:-1 elvid YES
+
+
+
 TODO : performance scan changing instancing cut from ~25 up to 500
 ---------------------------------------------------------------------
 

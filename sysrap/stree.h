@@ -671,6 +671,8 @@ struct stree
     std::string desc_tri() const ;
     std::string desc_NRT(char NRT) const ;
 
+    std::string desc_node_elvid() const ;
+
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx );
     void add_inst_identity( int gas_idx, int nidx );
@@ -4818,7 +4820,7 @@ inline std::string stree::desc_NRT(char NRT) const
     const std::vector<snode>* vec = get_node_vector(NRT);
     const char* nam               = get_node_vector_name(NRT);
 
-    // collect lvid from the snode
+    // collect lvid from the snode vector
     std::vector<int> vec_lvid ;
     for(int i=0 ; i < int(vec->size()) ; i++) vec_lvid.push_back( (*vec)[i].lvid );
 
@@ -4832,6 +4834,47 @@ inline std::string stree::desc_NRT(char NRT) const
     std::string str = ss.str();
     return str ;
 }
+
+/**
+stree::desc_node_elvid
+------------------------
+
+Dump snode that have lvid solids with index listed in the ELVID comma delimited envvar, eg::
+
+    TEST=desc_node_elvid ELVID=43,44,45,46,47,48 ~/o/sysrap/tests/stree_load_test.sh
+
+**/
+
+
+inline std::string stree::desc_node_elvid() const
+{
+    char NRT = 'R' ;
+    const std::vector<snode>* vec = get_node_vector(NRT);
+    const char* nam               = get_node_vector_name(NRT);
+
+    std::vector<int>* elvid = ssys::getenv_ParseIntSpecList("ELVID", nullptr) ;
+    std::stringstream ss ;
+
+    ss << "[stree::desc_node_elvid\n" ;
+    ss << " nam " << ( nam ? nam : "-" ) << "\n" ;
+    ss << " elvid " << ( elvid ? "YES" : "NO " ) << "\n" ;
+
+    if(elvid)
+    {
+        for(int i=0 ; i < int(vec->size()) ; i++)
+        {
+            const snode& n = (*vec)[i] ;
+            bool listed = std::find(elvid->begin(), elvid->end(), n.lvid) != elvid->end() ;
+            if(!listed) continue ;
+            ss << std::setw(7) << i << " : " << n.desc() << " elvid " << ( listed ? "YES" : "NO " ) << "\n" ;
+        }
+    }
+    ss << "]stree::desc_node_elvid " << ( nam ? nam : "-" ) << "\n" ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
 
 
 

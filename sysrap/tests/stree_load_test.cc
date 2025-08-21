@@ -52,6 +52,8 @@ struct stree_load_test
     int desc_tri() const ;
     int desc_NRT() const ;
 
+    int desc_node_elvid() const ;
+
     int desc_node_solids() const ;
     int desc_solids() const ;
     int desc_solid(int lvid) const ;
@@ -483,6 +485,11 @@ inline int stree_load_test::desc_NRT() const
     return 0 ;
 }
 
+inline int stree_load_test::desc_node_elvid() const
+{
+    std::cout << st->desc_node_elvid() << "\n" ;
+    return 0 ;
+}
 
 
 
@@ -557,6 +564,7 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "desc_rem") == 0)                               rc += desc_rem();
     if(ALL||strcmp(TEST, "desc_tri") == 0)                               rc += desc_tri();
     if(ALL||strcmp(TEST, "desc_NRT") == 0)                               rc += desc_NRT();
+    if(ALL||strcmp(TEST, "desc_node_elvid") == 0)                        rc += desc_node_elvid();
     if(ALL||strcmp(TEST, "desc_node_solids") == 0)                       rc += desc_node_solids() ;
     if(ALL||strcmp(TEST, "desc_solids") == 0)                            rc += desc_solids() ;
     if(ALL||strcmp(TEST, "desc_solid") == 0)                             rc += desc_solid(LVID) ;
@@ -575,3 +583,9 @@ int main(int argc, char** argv)
     stree_load_test test(st);
     return test.main();
 }
+
+/**
+    TEST=desc_solid LVID=43 ~/o/sysrap/tests/stree_load_test.sh  run
+    TEST=desc_node_elvid ELVID=43,44,45,46 ~/o/sysrap/tests/stree_load_test.sh
+**/
+
