@@ -253,6 +253,8 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kFOCAL = "FOCAL" ;
     static constexpr const char* kFULLSCREEN = "FULLSCREEN" ;
     static constexpr const char* kESCALE = "ESCALE" ;
+    static constexpr const char* kEXTENT_FUDGE = "EXTENT_FUDGE" ;
+
     static constexpr const char* kVIZMASK = "VIZMASK" ;
     static constexpr const char* kTRACEYFLIP = "TRACEYFLIP" ;
     static constexpr const char* kLEVEL = "SGLM_LEVEL" ;
@@ -288,6 +290,7 @@ struct SYSRAP_API SGLM : public SCMD
     static int   FOCAL ;
     static int   FULLSCREEN ;
     static int   ESCALE ;
+    static float EXTENT_FUDGE ;
     static uint32_t VIZMASK ;
     static int   TRACEYFLIP ;
     static int   LEVEL ;
@@ -669,6 +672,7 @@ int        SGLM::NEARFAR = SBAS::EGet(kNEARFAR, "gazelength") ;
 int        SGLM::FOCAL   = SBAS::EGet(kFOCAL,   "gazelength") ;
 int        SGLM::FULLSCREEN  = EValue<int>(kFULLSCREEN,   "0") ;
 int        SGLM::ESCALE  = SBAS::EGet(kESCALE,  "extent") ;  // "asis"
+float      SGLM::EXTENT_FUDGE = EValue<float>(kEXTENT_FUDGE, "1");
 uint32_t   SGLM::VIZMASK = SBitSet::Value<uint32_t>(32, kVIZMASK, "t" );
 int        SGLM::TRACEYFLIP  = ssys::getenvint(kTRACEYFLIP,  0 ) ;
 int        SGLM::LEVEL  = ssys::getenvint(kLEVEL,  0 ) ;
@@ -1126,6 +1130,7 @@ std::string SGLM::DescInput() // static
     ss << std::setw(15) << kNEARFAR << " " << NEARFAR_Label() << std::endl ;
     ss << std::setw(15) << kFOCAL   << " " << FOCAL_Label() << std::endl ;
     ss << std::setw(15) << kESCALE  << " " << ESCALE_Label() << std::endl ;
+    ss << std::setw(15) << kEXTENT_FUDGE  << " " << EXTENT_FUDGE << std::endl ;
     ss << std::setw(15) << kWH    << Present( WH )   << " Aspect " << Aspect() << std::endl ;
     ss << std::setw(15) << kCE    << Present( CE )   << std::endl ;
     ss << std::setw(15) << kEYE   << Present( EYE )  << std::endl ;
@@ -1175,7 +1180,17 @@ inline bool SGLM::has_frame_idx(int q_idx) const
 }
 inline const std::string& SGLM::get_frame_name() const { return fr.get_name(); }
 
-inline float SGLM::extent() const {   return fr.ce.w > 0 ? fr.ce.w : CE.w ; }
+/**
+SGLM::extent
+-------------
+
+When looking at small objects a fudged increase in the extent with EXTENT_FUDGE improves
+the viz interface by avoiding overly tight near,far and also avoiding overly slow
+WASDQE navigation.
+
+**/
+
+inline float SGLM::extent() const {   return EXTENT_FUDGE*(fr.ce.w > 0 ? fr.ce.w : CE.w) ; }
 inline float SGLM::tmin_abs() const { return extent()*TMIN ; }  // HUH:extent might not be the basis ?
 inline float SGLM::tmax_abs() const { return extent()*TMAX ; }  // HUH:extent might not be the basis ?
 
