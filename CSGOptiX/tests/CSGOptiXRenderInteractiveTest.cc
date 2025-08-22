@@ -31,9 +31,6 @@ TODO:
 
 * imgui reincarnation
 
-* WIP: moved some common CSGOptiX stuff down to sysrap header-only such as jpg/png writing and image annotation
-
-* TODO: composite OpenGL event representation pixels together with OptiX ray traced renders
 
 **/
 

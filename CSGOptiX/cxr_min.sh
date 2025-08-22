@@ -252,7 +252,7 @@ cd $LOGDIR
 
 LOG=$bin.log
 
-vv="bin which_bin GEOM MOI EMM ELV TMIN EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CUDA_VISIBLE_DEVICES"
+vv="bin which_bin GEOM MOI EMM ELV TMIN VUE EYE LOOK UP ZOOM LOGDIR BASE PBAS NAMEPREFIX OPTICKS_HASH TOPLINE BOTLINE CUDA_VISIBLE_DEVICES"
 vv="$vv AFOLD AFOLD_RECORD_SLICE BFOLD BFOLD_RECORD_SLICE _CUR"
 
 Resolve_CFBaseFromGEOM()
@@ -330,6 +330,16 @@ if [ "${arg/dbg}" != "$arg" ]; then
    dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1
 fi
+
+if [ "${arg/gdb}" != "$arg" ]; then
+   if [ -f "$LOG" ]; then
+       echo $BASH_SOURCE : gdb : delete prior LOG $LOG
+       rm "$LOG"
+   fi
+   gdb -ex "watch SGLM::UP.w" -ex r  $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE gdb error && exit 1
+fi
+
 
 if [ "${arg/close}" != "$arg" ]; then
     # close to invalidate the context

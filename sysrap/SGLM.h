@@ -19,6 +19,12 @@ as the static initialization would have happened already
 * TODO: provide persistency into ~16 quad4 for debugging view/cam/projection state
 
 
+SGLM::desc
+-------------
+
+NB : to dump view param from interactive viz use "P" key invoking SGLM::desc
+
+
 DONE : rasterized and raytrace render consistency
 -------------------------------------------------
 
@@ -582,6 +588,9 @@ struct SYSRAP_API SGLM : public SCMD
 
     void dump() const ;
     void update();
+    void constrain() const ;
+
+
     void addlog( const char* label, float value       ) ;
     void addlog( const char* label, const char* value ) ;
     std::string descLog() const ;
@@ -609,9 +618,9 @@ struct SYSRAP_API SGLM : public SCMD
     template <typename T> static T EValue(const char* key, const char* fallback );
     static glm::ivec2 EVec2i(const char* key, const char* fallback);
     static glm::vec3 EVec3(const char* key, const char* fallback);
-    static glm::vec4 EVec4(const char* key, const char* fallback, float missing=1.f );
-    static glm::vec4 SVec4(const char* str, float missing=1.f );
-    static glm::vec3 SVec3(const char* str, float missing=1.f );
+    static glm::vec4 EVec4(const char* key, const char* fallback, float missing );
+    static glm::vec4 SVec4(const char* str, float missing );
+    static glm::vec3 SVec3(const char* str, float missing );
 
     template<typename T> static glm::tmat4x4<T> DemoMatrix(T scale);
 
@@ -660,10 +669,13 @@ SGLM* SGLM::INSTANCE = nullptr ;
 SGLM* SGLM::Get(){  return INSTANCE ? INSTANCE : new SGLM  ; }
 
 glm::ivec2 SGLM::WH = EVec2i(kWH,"1920,1080") ;
-glm::vec4  SGLM::CE = EVec4(kCE,"0,0,0,100") ;
-glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1") ;
-glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1") ;
-glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0") ;
+
+glm::vec4  SGLM::CE = EVec4(kCE,"0,0,0,100", 100.f) ;
+
+glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1", 1.f) ;
+glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1" , 1.f) ;
+glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0" , 0.f) ;
+
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1");
 float      SGLM::TMIN = EValue<float>(kTMIN, "0.1");
 float      SGLM::TMAX = EValue<float>(kTMAX, "100.0");
@@ -690,7 +702,7 @@ inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y =
 
 inline void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z = z  ;  EYE.w = 1.f ; }
 inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
-inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 1.f ; }
+inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 0.f ; }  // 0.f as treat as direction
 
 inline void SGLM::SetZOOM( float v ){ ZOOM = v ; if(LEVEL>0) std::cout << "SGLM::SetZOOM " << ZOOM << std::endl ; }
 inline void SGLM::SetTMIN( float v ){ TMIN = v ; if(LEVEL>0) std::cout << "SGLM::SetTMIN " << TMIN << std::endl ; }
@@ -815,6 +827,8 @@ inline void SGLM::init()
     axes.push_back( {1.f,0.f,0.f} );
     axes.push_back( {0.f,1.f,0.f} );
     axes.push_back( {0.f,0.f,1.f} );
+
+    constrain();
 }
 
 
@@ -1095,6 +1109,15 @@ void SGLM::writeDesc(const char* dir, const char* name_ , const char* ext_ ) con
     NP::WriteString(dir, name, ext,  ds );
 }
 
+
+/**
+SGLM::desc
+------------
+
+Invoke this from interactive viz using "P" key
+
+**/
+
 std::string SGLM::desc() const
 {
     std::stringstream ss ;
@@ -1244,6 +1267,8 @@ inline void SGLM::update()
 {
     addlog("SGLM::update", "[");
 
+    constrain();
+
     initModelMatrix();  //  fr.ce(center)->model2world translation
     initELU();          //  EYE,LOOK,UP,model2world,extent->eye,look,up
 
@@ -1258,8 +1283,24 @@ inline void SGLM::update()
 
     updateTitle();
 
+    constrain();
     addlog("SGLM::update", "]");
 }
+
+inline void SGLM::constrain() const
+{
+    bool expect_UP_w = UP.w == 0.f ;
+    if(!expect_UP_w) std::cerr
+        << "SGLM::constrain"
+        << " expect_UP_w " << ( expect_UP_w ? "YES" : "NO " )
+        << " UP " << Present(UP)
+        << descELU()
+        << "\n"
+        ;
+
+    assert( expect_UP_w );
+}
+
 
 inline void SGLM::set_rtp_tangential(bool rtp_tangential_ )
 {
@@ -1430,11 +1471,16 @@ A: This is for consistency with sframe.h transforms which are used when
 void SGLM::initELU()
 {
     glm::mat4 escale = get_escale();
-    // std::cout << "SGLM::initELU escale " << glm::to_string(escale) << "\n" ;
 
     eye  = glm::vec3( model2world * escale * EYE ) ;
     look = glm::vec3( model2world * escale * LOOK ) ;
     up   = glm::vec3( model2world * escale * UP ) ;
+
+    if(LEVEL > 0) std::cout
+        << "[ SGLM::initELU\n"
+        << descELU()
+        << "] SGLM::initELU\n"
+        ;
 }
 
 /**
@@ -1518,25 +1564,31 @@ std::string SGLM::descELU() const
     float escale_ = get_escale_();
     glm::mat4 escale = get_escale();
     std::stringstream ss ;
-    ss << "SGLM::descELU" << std::endl ;
-    ss << std::setw(15) << " sglm.EYE "  << Present( EYE )  << std::endl ;
-    ss << std::setw(15) << " sglm.LOOK " << Present( LOOK ) << std::endl ;
-    ss << std::setw(15) << " sglm.UP "   << Present( UP )   << std::endl ;
-    ss << std::setw(15) << " sglm.GAZE " << Present( LOOK-EYE ) << std::endl ;
-    ss << std::endl ;
-    ss << std::setw(15) << " escale_ "           << Present( escale_ ) << std::endl ;
-    ss << std::setw(15) << " sglm.EYE*escale  "  << Present( EYE*escale )  << std::endl ;
-    ss << std::setw(15) << " sglm.LOOK*escale " << Present( LOOK*escale ) << std::endl ;
-    ss << std::setw(15) << " sglm.UP*escale   "   << Present( UP*escale )   << std::endl ;
-    ss << std::setw(15) << " sglm.GAZE*escale " << Present( (LOOK-EYE)*escale ) << std::endl ;
-    ss << std::endl ;
-    ss << std::setw(15) << " sglm.eye "  << Present( eye )  << std::endl ;
-    ss << std::setw(15) << " sglm.look " << Present( look ) << std::endl ;
-    ss << std::setw(15) << " sglm.up "   << Present( up )   << std::endl ;
-    ss << std::setw(15) << " sglm.gaze " << Present( gaze ) << std::endl ;
-    ss << std::endl ;
-    std::string s = ss.str();
-    return s ;
+    ss << "[SGLM::descELU\n"
+       << " [" << kLEVEL << "] " << LEVEL   << "\n"
+       << " EYE  "  << Present( EYE )       << "\n"
+       << " LOOK "  << Present( LOOK )      << "\n"
+       << " UP   "  << Present( UP )        << "\n"
+       << " GAZE "  << Present( LOOK-EYE )  << "\n"
+       << "\n"
+       << " escale_ " << Present( escale_ ) << "\n"
+       << " escale\n" << Present( escale )  << "\n"
+       << " model2world\n" << Present( model2world ) << "\n"
+       << " (model2world * escale)\n"   << Present( model2world * escale ) << "\n"
+       << "\n"
+       << " EYE*escale  "  << Present( EYE*escale )  << "\n"
+       << " LOOK*escale "  << Present( LOOK*escale ) << "\n"
+       << " UP*escale   "  << Present( UP*escale )   << "\n"
+       << " GAZE*escale "  << Present( (LOOK-EYE)*escale ) << "\n"
+       << "\n"
+       << " eye  = (model2world * escale * EYE  ) "  << Present( model2world * escale * EYE ) << "\n"
+       << " look = (model2world * escale * LOOK ) "  << Present( model2world * escale * LOOK ) << "\n"
+       << " up   = (model2world * escale * UP   ) "  << Present( model2world * escale * UP  ) << "\n"
+       << " gaze                                  "  << Present( gaze ) << "\n"
+       << "]SGLM::descELU\n"
+       ;
+    std::string str = ss.str();
+    return str ;
 }
 
 

@@ -3535,6 +3535,14 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
             << " gord " << gord
             << " rc " << rc
             ;
+
+        LOG_IF(info, VERBOSE)
+            << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
+            << "[fr.desc\n"
+            << fr.desc()
+            << "]fr.desc\n"
+            ;
+
     }
     else
     {
