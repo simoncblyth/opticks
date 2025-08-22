@@ -22,9 +22,53 @@ For traversal examples see *stree::get_children*
 **/
 
 #include <string>
+#include <cstring>
 #include <sstream>
 #include <iomanip>
 #include <vector>
+
+struct snode_field
+{
+    static constexpr const char* INDEX          = "INDEX" ;
+    static constexpr const char* DEPTH          = "DEPTH" ;
+    static constexpr const char* SIBDEX         = "SIBDEX" ;
+    static constexpr const char* PARENT         = "PARENT" ;
+    static constexpr const char* NUM_CHILD      = "NUM_CHILD" ;
+    static constexpr const char* FIRST_CHILD    = "FIRST_CHILD" ;
+    static constexpr const char* NEXT_SIBLING   = "NEXT_SIBLING" ;
+    static constexpr const char* LVID           = "LVID" ;
+    static constexpr const char* COPYNO         = "COPYNO" ;
+    static constexpr const char* SENSOR_ID      = "SENSOR_ID" ;
+    static constexpr const char* SENSOR_INDEX   = "SENSOR_INDEX" ;
+    static constexpr const char* REPEAT_INDEX   = "REPEAT_INDEX" ;
+    static constexpr const char* REPEAT_ORDINAL = "REPEAT_ORDINAL" ;
+    static constexpr const char* BOUNDARY       = "BOUNDARY" ;
+    static constexpr const char* SENSOR_NAME    = "SENSOR_NAME" ;
+
+    static int Idx(const char* attrib);
+};
+
+inline int snode_field::Idx(const char* attrib)
+{
+    int idx = -1 ;
+    if(     0==strcmp(attrib,INDEX))          idx = 0 ;
+    else if(0==strcmp(attrib,DEPTH))          idx = 1 ;
+    else if(0==strcmp(attrib,SIBDEX))         idx = 2 ;
+    else if(0==strcmp(attrib,PARENT))         idx = 3 ;
+    else if(0==strcmp(attrib,NUM_CHILD))      idx = 4 ;
+    else if(0==strcmp(attrib,FIRST_CHILD))    idx = 5 ;
+    else if(0==strcmp(attrib,NEXT_SIBLING))   idx = 6 ;
+    else if(0==strcmp(attrib,LVID))           idx = 7 ;
+    else if(0==strcmp(attrib,COPYNO))         idx = 8 ;
+    else if(0==strcmp(attrib,SENSOR_ID))      idx = 9 ;
+    else if(0==strcmp(attrib,SENSOR_INDEX))   idx = 10 ;
+    else if(0==strcmp(attrib,REPEAT_INDEX))   idx = 11 ;
+    else if(0==strcmp(attrib,REPEAT_ORDINAL)) idx = 12 ;
+    else if(0==strcmp(attrib,BOUNDARY))       idx = 13 ;
+    else if(0==strcmp(attrib,SENSOR_NAME))    idx = 14 ;
+    return idx ;
+}
+
 
 struct snode
 {
@@ -50,6 +94,7 @@ struct snode
     int sensor_name ;    // 14
 
     std::string desc() const ;
+    int    get_attrib(int idx) const ;
     static std::string Brief_(const std::vector<snode>& nodes );
 };
 
@@ -76,6 +121,11 @@ inline std::string snode::desc() const
        ;
     std::string str = ss.str();
     return str ;
+}
+inline int snode::get_attrib(int idx) const
+{
+    const int* aa = reinterpret_cast<const int*>(this) ;
+    return idx > -1 && idx < NV ? aa[idx] : -1 ;
 }
 
 inline std::string snode::Brief_(const std::vector<snode>& nodes )

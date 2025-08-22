@@ -52,7 +52,9 @@ struct stree_load_test
     int desc_tri() const ;
     int desc_NRT() const ;
 
-    int desc_node_elvid() const ;
+    int desc_node_ELVID() const ;
+    int desc_node_ECOPYNO() const ;
+    int desc_node_EBOUNDARY() const ;
 
     int desc_node_solids() const ;
     int desc_solids() const ;
@@ -485,11 +487,23 @@ inline int stree_load_test::desc_NRT() const
     return 0 ;
 }
 
-inline int stree_load_test::desc_node_elvid() const
+inline int stree_load_test::desc_node_ELVID() const
 {
-    std::cout << st->desc_node_elvid() << "\n" ;
+    std::cout << st->desc_node_ELVID() << "\n" ;
     return 0 ;
 }
+
+inline int stree_load_test::desc_node_ECOPYNO() const
+{
+    std::cout << st->desc_node_ECOPYNO() << "\n" ;
+    return 0 ;
+}
+inline int stree_load_test::desc_node_EBOUNDARY() const
+{
+    std::cout << st->desc_node_EBOUNDARY() << "\n" ;
+    return 0 ;
+}
+
 
 
 
@@ -564,7 +578,9 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "desc_rem") == 0)                               rc += desc_rem();
     if(ALL||strcmp(TEST, "desc_tri") == 0)                               rc += desc_tri();
     if(ALL||strcmp(TEST, "desc_NRT") == 0)                               rc += desc_NRT();
-    if(ALL||strcmp(TEST, "desc_node_elvid") == 0)                        rc += desc_node_elvid();
+    if(ALL||strcmp(TEST, "desc_node_ELVID") == 0)                        rc += desc_node_ELVID();
+    if(ALL||strcmp(TEST, "desc_node_ECOPYNO") == 0)                      rc += desc_node_ECOPYNO();
+    if(ALL||strcmp(TEST, "desc_node_EBOUNDARY") == 0)                    rc += desc_node_EBOUNDARY();
     if(ALL||strcmp(TEST, "desc_node_solids") == 0)                       rc += desc_node_solids() ;
     if(ALL||strcmp(TEST, "desc_solids") == 0)                            rc += desc_solids() ;
     if(ALL||strcmp(TEST, "desc_solid") == 0)                             rc += desc_solid(LVID) ;
@@ -586,6 +602,8 @@ int main(int argc, char** argv)
 
 /**
     TEST=desc_solid LVID=43 ~/o/sysrap/tests/stree_load_test.sh  run
-    TEST=desc_node_elvid ELVID=43,44,45,46 ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc_node_ELVID ELVID=43,44,45,46 ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc_node_ECOPYNO ECOPYNO=52400   ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc_node_EBOUNDARY EBOUNDARY=303   ~/o/sysrap/tests/stree_load_test.sh
 **/
 

@@ -671,7 +671,10 @@ struct stree
     std::string desc_tri() const ;
     std::string desc_NRT(char NRT) const ;
 
-    std::string desc_node_elvid() const ;
+    std::string desc_node_ELVID() const ;
+    std::string desc_node_ECOPYNO() const ;
+    std::string desc_node_EBOUNDARY() const ;
+    std::string desc_node_elist(const char* etag, const char* fallback) const ;
 
 
     void add_inst( glm::tmat4x4<double>& m2w, glm::tmat4x4<double>& w2m, int gas_idx, int nidx );
@@ -4836,7 +4839,7 @@ inline std::string stree::desc_NRT(char NRT) const
 }
 
 /**
-stree::desc_node_elvid
+stree::desc_node_ELVID
 ------------------------
 
 Dump snode that have lvid solids with index listed in the ELVID comma delimited envvar, eg::
@@ -4845,31 +4848,46 @@ Dump snode that have lvid solids with index listed in the ELVID comma delimited 
 
 **/
 
+inline std::string stree::desc_node_ELVID() const {   return desc_node_elist("ELVID", nullptr); }
+inline std::string stree::desc_node_ECOPYNO() const { return desc_node_elist("ECOPYNO", nullptr); }
+inline std::string stree::desc_node_EBOUNDARY() const { return desc_node_elist("EBOUNDARY", nullptr); }
 
-inline std::string stree::desc_node_elvid() const
+inline std::string stree::desc_node_elist(const char* etag, const char* fallback) const
 {
-    char NRT = 'R' ;
+    std::vector<int>* elist = ssys::getenv_ParseIntSpecList(etag, fallback) ;
+
+    char NRT = 'N' ;
     const std::vector<snode>* vec = get_node_vector(NRT);
     const char* nam               = get_node_vector_name(NRT);
 
-    std::vector<int>* elvid = ssys::getenv_ParseIntSpecList("ELVID", nullptr) ;
+    const char* tag = etag && etag[0] == 'E' ? etag + 1 : nullptr ; // eg ELVID -> LVID
+    int field_idx = snode_field::Idx(tag) ;
+
     std::stringstream ss ;
 
-    ss << "[stree::desc_node_elvid\n" ;
+    ss << "[stree::desc_node_elist\n" ;
+    ss << " etag " << ( etag ? etag : "-" ) << "\n" ;
+    ss << " tag " << ( tag ? tag : "-" ) << "\n" ;
+    ss << " field_idx " << field_idx << "\n" ;
     ss << " nam " << ( nam ? nam : "-" ) << "\n" ;
-    ss << " elvid " << ( elvid ? "YES" : "NO " ) << "\n" ;
+    ss << " elist " << ( elist ? "YES" : "NO " ) << "\n" ;
 
-    if(elvid)
+    int count = 0 ;
+    if(elist && field_idx > -1)
     {
+
         for(int i=0 ; i < int(vec->size()) ; i++)
         {
             const snode& n = (*vec)[i] ;
-            bool listed = std::find(elvid->begin(), elvid->end(), n.lvid) != elvid->end() ;
+            int attrib = n.get_attrib(field_idx);
+            bool listed = std::find(elist->begin(), elist->end(), attrib ) != elist->end() ;
             if(!listed) continue ;
-            ss << std::setw(7) << i << " : " << n.desc() << " elvid " << ( listed ? "YES" : "NO " ) << "\n" ;
+            count += 1 ;
+            ss << std::setw(7) << i << " : " << n.desc() << " tag " << ( tag ? tag : "-" ) << " listed " << ( listed ? "YES" : "NO " ) << "\n" ;
         }
     }
-    ss << "]stree::desc_node_elvid " << ( nam ? nam : "-" ) << "\n" ;
+    ss << " count " << count << "\n" ;
+    ss << "]stree::desc_node_elist\n" ;
 
     std::string str = ss.str();
     return str ;
