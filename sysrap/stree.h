@@ -265,8 +265,10 @@ struct stree
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
 
     static constexpr const int MAXDEPTH = 15 ; // presentational limit only
-    static constexpr const int FREQ_CUT = 500 ;   // HMM GInstancer using 400
-    // subtree digests with less repeats than FREQ_CUT within the entire geometry
+
+    static constexpr const char* _FREQ_CUT = "stree__FREQ_CUT" ; // only active at geometry translation
+    static constexpr const int    FREQ_CUT_DEFAULT = 500 ;   // HMM GInstancer using 400
+    // subtree digests with less repeats than the FREQ_CUT within the entire geometry
     // are not regarded as repeats for instancing factorization purposes
     //
     static constexpr const char* BASE = "$CFBaseFromGEOM/CSGFoundry/SSim" ;
@@ -296,7 +298,6 @@ struct stree
 #endif
 
 
-    //static constexpr const char* SUINDEX = "suindex.npy" ;
 
     static constexpr const char* SONAME = "soname.txt" ;
     static constexpr const char* CSG = "csg" ;
@@ -330,6 +331,7 @@ struct stree
 
 
     int level ;                            // verbosity
+    int FREQ_CUT ;
     const char*      force_triangulate_solid ;
     std::vector<int> force_triangulate_lvid ;
     bool get_frame_dump ;
@@ -400,6 +402,7 @@ struct stree
     void set_level(int level_);
 
     std::string desc() const ;
+    std::string desc_meta() const ;
     std::string desc_soname() const ;
     std::string desc_lvid() const ;
     std::string desc_lvid_unique(const std::vector<int>& some_lvid) const ;
@@ -775,6 +778,7 @@ HMM the force_triangulate_solid envvar only relevant for stree creation, not wit
 inline stree::stree()
     :
     level(ssys::getenvint("stree__level", 0)),
+    FREQ_CUT(ssys::getenvint(_FREQ_CUT, FREQ_CUT_DEFAULT)),
     force_triangulate_solid(ssys::getenvvar(stree__force_triangulate_solid,nullptr)),
     get_frame_dump(ssys::getenvbool(stree__get_frame_dump)),
     sensor_count(0),
@@ -857,7 +861,7 @@ inline std::string stree::desc() const
     ss
        << std::endl
        << "[stree::desc"
-       << " level " << level
+       << desc_meta()
        << desc_size()
        << " stree.desc.subs_freq "
        << std::endl
@@ -896,7 +900,17 @@ inline std::string stree::desc() const
     return str ;
 }
 
-
+inline std::string stree::desc_meta() const
+{
+    std::stringstream ss ;
+    ss << "[stree::desc_meta\n" ;
+    ss << "level:" << level << "\n" ;
+    ss << "FREQ_CUT:" << FREQ_CUT << "\n" ;
+    ss << "FREQ_CUT_DEFAULT:" << FREQ_CUT_DEFAULT << "\n" ;
+    ss << "]stree::desc_meta\n" ;
+    std::string str = ss.str();
+    return str ;
+}
 
 inline std::string stree::desc_soname() const
 {
@@ -1071,8 +1085,8 @@ inline std::string stree::desc_sub(bool all) const
         if(all == false && freq < FREQ_CUT) continue ;
         ss << desc_sub(sub) << std::endl ;
     }
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
 
 inline std::string stree::desc_sub(const char* sub) const
@@ -1091,8 +1105,8 @@ inline std::string stree::desc_sub(const char* sub) const
        << " 1st:" << std::setw(6) << first_nidx
        << " " <<  get_soname(first_nidx)
        ;
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -3434,6 +3448,10 @@ inline NPFold* stree::serialize() const
     NPFold* f_subs_freq = subs_freq->serialize() ;
     fold->add_subfold( SUBS_FREQ, f_subs_freq );
 
+    fold->set_meta<int>("FREQ_CUT", FREQ_CUT);
+    fold->set_meta<int>("FREQ_CUT_DEFAULT", FREQ_CUT_DEFAULT);
+
+
     NP* _factor = NPX::ArrayFromVec<int,sfactor>( factor, sfactor::NV );
 
     NP* _inst = NPX::ArrayFromVec<double, glm::tmat4x4<double>>( inst, 4, 4) ;
@@ -3548,8 +3566,8 @@ inline int stree::load( const char* base, const char* reldir )
 inline int stree::load_( const char* dir )
 {
     if(level > 0) std::cerr << "stree::load_ " << ( dir ? dir : "-" ) << std::endl ;
-    NPFold* fold = NPFold::Load(dir) ;
-    import_(fold);
+    NPFold* top = NPFold::Load(dir) ;
+    import_(top);
     return 0 ;
 }
 
@@ -3625,6 +3643,9 @@ inline void stree::import_(const NPFold* fold)
 
     NPFold* f_subs_freq = fold->get_subfold(SUBS_FREQ) ;
     subs_freq->import(f_subs_freq);
+
+    FREQ_CUT = fold->get_meta<int>("FREQ_CUT");
+
 
     ImportArray<sfactor, int>( factor, fold->get(FACTOR), FACTOR );
 
