@@ -285,10 +285,12 @@ TODO: automated view rotation around an axis, eg +Z
     // getStartPos
     double _start_x ;
     double _start_y ;
+    int cursor_moved_count ;
 
     glm::vec2 start_ndc ;  // from key_pressed
     glm::vec2 move_ndc ;   // from cursor_moved
     glm::vec4 drag ;
+
 
     //SGLFW_Toggle toggle = {} ; // moved to SGLM
     SGLFW_Keys keys = {} ;
@@ -304,6 +306,7 @@ TODO: automated view rotation around an axis, eg +Z
     void post_handle_key();
 
 
+    void framebuffer_resized();
     void window_refresh();
     void key_pressed(unsigned key);
     void numkey_pressed(unsigned num, unsigned modifiers);
@@ -348,6 +351,7 @@ TODO: automated view rotation around an axis, eg +Z
     std::string descWindowSize() const;
 
     void setCursorPos(float ndc_x, float ndc_y);
+    void setCursorPos_home();
     void getStartPos();
     std::string descDrag() const;
     std::string descStartPos() const;
@@ -447,9 +451,10 @@ See oglrap/Frame::handle_event
 
 inline void SGLFW::handle_event(GLEQevent& event)
 {
-    //std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl;
+    if(level > 1) std::cout << "SGLFW::handle_event " << SGLFW_GLEQ::Name(event.type) << std::endl;
     switch(event.type)
     {
+        case GLEQ_FRAMEBUFFER_RESIZED: framebuffer_resized()            ; break ;
         case GLEQ_KEY_PRESSED:   key_pressed( event.keyboard.key)       ; break ;
         case GLEQ_KEY_REPEATED:  key_repeated(event.keyboard.key)       ; break ;
         case GLEQ_KEY_RELEASED:  key_released(event.keyboard.key)       ; break ;
@@ -472,6 +477,17 @@ inline void SGLFW::post_handle_key()
 }
 
 
+/**
+SGLFW::framebuffer_resized
+---------------------------
+
+Observed to be the first GLEQ event to arrive
+
+**/
+
+inline void SGLFW::framebuffer_resized()
+{
+}
 
 
 /**
@@ -484,7 +500,6 @@ By observation this event fires only in initialization
 
 inline void SGLFW::window_refresh()
 {
-    home();
 }
 
 
@@ -658,6 +673,7 @@ for the MOI starting frame.
 
 inline void SGLFW::handle_frame_hop()
 {
+    if(level > 0) std::cout << "SGLFW::handle_frame_hop\n" ;
     int _wanted_frame_idx = get_wanted_frame_idx() ;
     gm.handle_frame_hop(_wanted_frame_idx);
 }
@@ -911,7 +927,8 @@ WIP: doing this from ctor at tail of SGLFW::init flaky
 
 inline void SGLFW::home()
 {
-    setCursorPos(0.f,0.f);
+    if(level > 0) std::cout << "SGLFW::home\n" ;
+    setCursorPos_home();
     gm.command("--home");
 }
 inline void SGLFW::_desc()
@@ -978,11 +995,22 @@ inline std::string SGLFW::descWindowSize() const
 }
 
 
+/**
+SGLFW::setCursorPos
+--------------------
+
+**/
+
 inline void SGLFW::setCursorPos(float ndc_x, float ndc_y )
 {
     float x = (1.f + ndc_x)*width/2.f ;
     float y = (1.f - ndc_y)*height/2.f ;
     glfwSetCursorPos(window, x, y );
+}
+
+inline void SGLFW::setCursorPos_home()
+{
+    setCursorPos(0.f,0.f);
 }
 
 
@@ -1029,9 +1057,38 @@ To combat this for local rotation control via quaternion
 use the abolute start position (from key_pressed)
 and current position from cursor_moved.
 
+
+
+WORKAROUND NON-REPRODUCIBLE START VIEWPOINT (depends on prior cursor position)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At startup observe that SGLFW::cursor_moved is called before any intentional
+cursor movement causing SGLM::setEyeRotation to set a whacky unpredictable
+initial view orientation until press the H key which resets q_eyerot.
+Placing the cursor position in the center of the screen prior to launching
+the application leads to the initial position being close to the home position.
+So the problem can be restated as an unintended dependency of the the 
+initial view on the position the cursor was left at prior to launching the app.
+
+Attempts to fix the cursor position to the center of the screen/window before
+there is any interpretation of cursor position failed to fix the issue
+of non-reproducible initial view. Maybe because are trying to change
+cursor position prior to that being possible.
+
+Find that ignoring the first few SGLFW::cursor_moved using
+simple *cursor_moved_count* avoids the issue of non-reproducible start
+viewpoint.
+
 **/
 inline void SGLFW::cursor_moved(int ix, int iy)
 {
+    cursor_moved_count += 1 ;
+    if(cursor_moved_count < 3) 
+    {
+         // ad-hoc ignore first few cursor moves
+         return ; 
+    }
+
     move_ndc.x  = 2.f*float(ix)/width - 1.f ;
     move_ndc.y  = 1.f - 2.f*float(iy)/height ;
 
@@ -1042,6 +1099,16 @@ inline void SGLFW::cursor_moved(int ix, int iy)
     drag.y = move_ndc.y ;
     drag.z = dx ;
     drag.w = dy ;
+
+    if(level > 1) std::cout
+       << "SGLFW::cursor_moved (ix,iy)(" << ix << "," << iy << ")"
+       << " cursor_moved_count " << cursor_moved_count
+       << " start_ndc " << SGLM::Present(start_ndc)
+       << " move_ndc " << SGLM::Present(move_ndc)
+       << " drag " << SGLM::Present(drag)
+       << "\n"
+       ;
+
 
     cursor_moved_action();
 }
@@ -1165,6 +1232,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     sid(nullptr),
     _start_x(0.),
     _start_y(0.),
+    cursor_moved_count(0),
     start_ndc(0.f,0.f),
     move_ndc(0.f,0.f),
     drag(0.f,0.f,0.f,0.f)
@@ -1249,6 +1317,7 @@ inline void SGLFW::init()
     }
     //glfwSetKeyCallback(window, SGLFW::key_callback);  // using gleq event for key callbacks not this manual approach
     glfwMakeContextCurrent(window);
+
 
     gleqTrackWindow(window);  // replaces callbacks, see https://github.com/glfw/gleq
 

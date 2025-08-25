@@ -99,6 +99,7 @@ source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally define CUR_ bash fu
 logging()
 {
    type $FUNCNAME
+   #export SGLM_LEVEL=4
 
    #export SScene__level=1
    #export SGLFW_Scene__DUMP=1

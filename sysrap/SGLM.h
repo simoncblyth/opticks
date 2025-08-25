@@ -380,6 +380,10 @@ struct SYSRAP_API SGLM : public SCMD
     void key_pressed_action( unsigned modifiers );
 
     void home();
+    std::string descEyeShift() const ;
+    static std::string DescQuat( const glm::quat& q );
+
+
     void tcam();
     void toggle_traceyflip();
     void toggle_rendertype();
@@ -438,7 +442,7 @@ struct SYSRAP_API SGLM : public SCMD
     glm::vec3 eyeshift  ;
 
     int       depth_test ;
-
+    int       home_count ;
 
     float     get_escale_() const ;
     glm::mat4 get_escale() const ;
@@ -604,6 +608,7 @@ struct SYSRAP_API SGLM : public SCMD
 
     static std::string Present(const glm::ivec2& v, int wid=6 );
     static std::string Present(const float v, int wid=10, int prec=3);
+    static std::string Present(const glm::vec2& v, int wid=10, int prec=3);
     static std::string Present(const glm::vec3& v, int wid=10, int prec=3);
     static std::string Present(const glm::vec4& v, int wid=10, int prec=3);
     static std::string Present(const float4& v,    int wid=10, int prec=3);
@@ -772,9 +777,10 @@ inline SGLM::SGLM()
     eye2look(1.f),
     look2eye(1.f),
     q_lookrot(1.f,0.f,0.f,0.f),   // identity quaternion
-    q_eyerot(1.f,0.f,0.f,0.f),   // identity quaternion
+    q_eyerot( 1.f,0.f,0.f,0.f),   // identity quaternion
     eyeshift(0.f,0.f,0.f),
     depth_test(1),
+    home_count(0),
     forward_ax(0.f,0.f,0.f),
     right_ax(0.f,0.f,0.f),
     top_ax(0.f,0.f,0.f),
@@ -919,6 +925,7 @@ void SGLM::setLookRotation( const glm::vec2& a, const glm::vec2& b )
 }
 void SGLM::setEyeRotation( const glm::vec2& a, const glm::vec2& b )
 {
+    //std::cout << "SGLM::setEyeRotation " << glm::to_string(a) << " " << glm::to_string(b) << std::endl ;
     q_eyerot = SGLM_Arcball::A2B_Screen( a, b );
 }
 
@@ -968,13 +975,55 @@ void SGLM::key_pressed_action( unsigned modifiers )
 
 void SGLM::home()
 {
+    if(LEVEL > 3) std::cout << "SGLM::home [" << home_count << "]" << descEyeShift();
+    home_count += 1 ;
+
     eyeshift.x = 0.f ;
     eyeshift.y = 0.f ;
     eyeshift.z = 0.f ;
     q_lookrot = SGLM_Arcball::Identity();
     q_eyerot = SGLM_Arcball::Identity();
+
     SetZOOM(1.f);
 }
+
+std::string SGLM::descEyeShift() const
+{
+    std::stringstream ss ;
+    ss
+       << "[SGLM::descEyeShift\n"
+       << " eyeshift " << Present(eyeshift) << "\n"
+       << " q_lookrot " << DescQuat(q_lookrot) << "\n"
+       << " q_eyerot " << DescQuat(q_eyerot) << "\n"
+       << "]SGLM::descEyeShift\n"
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+std::string SGLM::DescQuat( const glm::quat& q ) // static
+{
+    glm::mat4 m = glm::mat4_cast(q);
+    std::stringstream ss ;
+
+    ss << "q_wxyz{"
+       << " " << std::setw(10) << std::fixed << std::setprecision(3) << q.w
+       << "," << std::setw(10) << std::fixed << std::setprecision(3) << q.x
+       << "," << std::setw(10) << std::fixed << std::setprecision(3) << q.y
+       << "," << std::setw(10) << std::fixed << std::setprecision(3) << q.z
+       << "}\n"
+       << m
+       << "\n"
+       ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
 void SGLM::tcam()
 {
     cam = SCAM::Next(cam);
@@ -2817,6 +2866,16 @@ inline std::string SGLM::Present(const float v, int wid, int prec)
 {
     std::stringstream ss ;
     ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v ;
+    std::string s = ss.str();
+    return s;
+}
+
+
+inline std::string SGLM::Present(const glm::vec2& v, int wid, int prec)
+{
+    std::stringstream ss ;
+    ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v.x << " " ;
+    ss << std::fixed << std::setw(wid) << std::setprecision(prec) << v.y << " " ;
     std::string s = ss.str();
     return s;
 }

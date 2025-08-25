@@ -11,7 +11,12 @@ info
    dump vars
 
 open
-   write context file, use this to control where screenshots are copied to
+   write context file, use this to control where screenshots are copied to, accepts 2nd
+   argument to backdate the context opening, eg::
+
+        cxr_min.sh open "09:00"
+        cxr_min.sh open "Fri Aug 22 09:00"
+        pic   # lists screenshots within the context
 
 run
    run executable
@@ -97,7 +102,7 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 export SCRIPT=cxr_min
 
-defarg=open_run_info
+defarg=run_info
 [ -n "$BP" ] && defarg=dbg_info
 arg=${1:-$defarg}
 arg2=$2
@@ -308,7 +313,16 @@ fi
 if [ "${arg/open}" != "$arg" ]; then
     # open to define current context string which controls where screenshots are copied to by ~/j/bin/pic.sh
     ## HMM : maybe should not overwrite when prefixing ?
+    echo $BASH_SOURCE CUR_open ${_CUR}
     CUR_open ${_CUR}
+
+    # second time argument like 11:00 to back date the context to include earlier snaps
+    if [ -n "$arg2" ]; then
+        echo $BASH_SOURCE CUR_touch "$arg2" \# use pic to see which snaps are included in the contect
+        CUR_touch "$arg2"
+    else
+        echo $BASH_SOURCE arg2 needs to be a datetime accepted by CUR_touch eg "cxr_min.sh open 11:00" OR "cxr_min.sh open \"Fri Aug 22 11:00\" "
+    fi
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
@@ -344,14 +358,6 @@ fi
 if [ "${arg/close}" != "$arg" ]; then
     # close to invalidate the context
     CUR_close
-fi
-
-if [ "$arg" == "touch"  ]; then
-    if [ -n "$arg2" ]; then
-        CUR_touch "$arg2"
-    else
-        echo $BASH_SOURCE arg2 needs to be a datetime accepted by CUR_touch eg "cxr_min.sh touch 11:00"
-    fi
 fi
 
 

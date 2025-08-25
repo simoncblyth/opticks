@@ -1,5 +1,5 @@
-MOI_targetting_globals_gives_unexpected_whacky_viewpoints
-=============================================================
+FIXED MOI_targetting_globals_gives_unexpected_whacky_viewpoints
+=====================================================================
 
 
 FIXED : problem due to incorrect missing default of 1.f in SGLM::EVec4 for the UP vector
