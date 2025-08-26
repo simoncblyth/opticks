@@ -17,9 +17,9 @@ That does something like::
     N_MCT=900 N_SPOL=1  ./SPMT_test.sh
 
 Note dependency on GEOM envvar, which is used
-to SPMT::CreateFromJPMT the PMT info NPFold from::
+to SPMT::CreateFromJPMT the PMT info NPFold from SPMT::PATH::
 
-    $HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/extras/jpmt
+    $CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt
 
 EOU
 }

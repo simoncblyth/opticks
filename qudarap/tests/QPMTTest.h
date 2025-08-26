@@ -19,7 +19,7 @@ struct NPFold ;
 template<typename T>
 struct QPMTTest
 {
-    static constexpr const char* LPMTID_LIST = "0,10,55,98,100,137,1000,10000,17611,50000,51000,52000,52399" ;
+    static constexpr const char* LPMTID_LIST = "0,10,55,98,100,137,1000,10000,17611,50000,51000,52000,52399,52400,52747,54000,54004" ;
     // HMM: duplicates SPMT::LPMTID_LIST
 
     const QPMT<T>* qpmt ;
@@ -87,7 +87,7 @@ template<typename T>
 inline QPMTTest<T>::QPMTTest(const NPFold* jpmt  )
     :
     qpmt(new QPMT<T>(jpmt)),
-    lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid (0:52400) in envvar
+    lpmtid_list(ssys::getenvvar("LPMTID_LIST", LPMTID_LIST)), // pick some lpmtid
     lpmtid(NPX::FromString<int>(lpmtid_list,',')),            // create array from string
     num_lpmtid(lpmtid->shape[0]),
     lpmtidx(NP::Make<int>(num_lpmtid)),

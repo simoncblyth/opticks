@@ -299,12 +299,12 @@ struct SPMT
     // lpmtid : non-contiguous CD_LPMT, SPMT, WP
 
     int  get_lpmtcat_from_lpmtidx( int lpmtidx ) const ;
-    int  get_lpmtcat_from_lpmtid(  int lpmtid  ) const ;
+    NP*  get_lpmtcat_from_lpmtidx() const ;
 
+    int  get_lpmtcat_from_lpmtid(  int lpmtid  ) const ;
     int  get_lpmtcat_from_lpmtid(  int* lpmtcat, const int* lpmtid , int num ) const ;
     NP*  get_lpmtcat_from_lpmtid(const NP* lpmtid) const ;
 
-    NP*  get_lpmtcat_from_lpmtidx() const ;
 
 
 
@@ -516,7 +516,22 @@ inline void SPMT::init()
 SPMT::init_total
 -----------------
 
-SPMT::init_total SPMT_Total CD_LPMT: 17612 SPMT: 25600 WP:  2400 ALL: 45612
+OLD::
+
+    SPMT::init_total SPMT_Total CD_LPMT: 17612 SPMT: 25600 WP:  2400 ALL: 45612
+
+
+SPMT_test.sh::
+
+    In [21]: s.jpmt.PMTSimParamData.pmtTotal
+    Out[21]: array([17612, 25600,  2400,   348,     0,     5, 45965], dtype=int32)
+
+    In [22]: s.jpmt.PMTSimParamData.pmtTotal_names
+    Out[22]: array(['PmtTotal', 'PmtTotal_SPMT', 'PmtTotal_WP', 'PmtTotal_WP_ATM_LPMT', 'PmtTotal_WP_ATM_MPMT', 'PmtTotal_WP_WAL_PMT', 'PmtTotal_ALL'], dtype='<U20')
+
+
+    In [8]: 17612 + 25600 + 2400 + 348 + 5
+    Out[8]: 45965
 
 **/
 
@@ -530,10 +545,10 @@ inline void SPMT::init_total()
     assert( PMTSimParamData );
     const NP* pmtTotal = PMTSimParamData->get("pmtTotal") ; // (7,)   formerly (4,)
 
-    std::cout 
+    std::cout
        << "SPMT::init_total"
-       << " pmtTotal.sstr " << ( pmtTotal ? pmtTotal->sstr() : "-" ) 
-       << "\n"     
+       << " pmtTotal.sstr " << ( pmtTotal ? pmtTotal->sstr() : "-" )
+       << "\n"
        ;
 
     assert( pmtTotal && pmtTotal->uifc == 'i' && pmtTotal->ebyte == 4 );
@@ -568,6 +583,9 @@ inline void SPMT::init_total()
     assert( total.CD_LPMT == 17612 );
     assert( total.SPMT == 25600 ) ;
     assert( total.WP == 2400 ) ;
+    assert( total.WP_ATM_LPMT == 348 ) ;
+    assert( total.WP_ATM_MPMT == 0 ) ;
+    assert( total.WP_WAL_PMT == 5 ) ;
 
     assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
     assert( s_pmt::NUM_SPMT == total.SPMT );
@@ -637,13 +655,38 @@ PMTParamSvc::init_IDService_WP_ATM_LPMT
 PMTParamSvc::init_IDService_WP_WAL_PMT
 
 
+From SPMT_test.sh::
+
+    In [16]: s.jpmt.PMTParamData.pmtCat[17612+25600+2400:17612+25600+2400+348]   ## WP_ATM_LPMT
+    Out[16]:
+    array([[52400,     3],
+           [52401,     0],
+           [52402,     0],
+           [52403,     3],
+           [52404,     3],
+           ...
+           [52744,     0],
+           [52745,     3],
+           [52746,     0],
+           [52747,     0]], dtype=int32)
+
+
+    In [18]: s.jpmt.PMTParamData.pmtCat[17612+25600+2400+348:17612+25600+2400+348+5]   ## WP_WAL_PMT
+    Out[18]:
+    array([[54000,     3],
+           [54001,     0],
+           [54002,     0],
+           [54003,     0],
+           [54004,     0]], dtype=int32)
+
+
 **/
 
 
 void SPMT::init_pmtCat()
 {
     bool expected_type = pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 ;
-    bool expected_shape =  pmtCat && pmtCat->shape.size() == 2 && pmtCat->shape[0] == total.ALL && pmtCat->shape[1] == 2 ;
+    bool expected_shape = pmtCat && pmtCat->shape.size() == 2 && pmtCat->shape[0] == total.ALL && pmtCat->shape[1] == 2 ;
 
     if(!expected_shape || !expected_type) std::cerr
        << "SPMT::init_pmtCat"
@@ -867,36 +910,39 @@ SPMT::init_lcqs
    "local 0/1/2 pmtcat" and float:qeScale
 4. convert the vector of LCQS struct into lcqs array
 
-NB EVEN WHEN TESTING WITH REDUCED N_LPMT STILL NEED TO INCLUDE INFO FOR ALL 17612 LPMT
-
 **/
 
 inline void SPMT::init_lcqs()
 {
+
+    // 0. assert on inputs
+
     assert( PMTSimParamData );
     assert( PMTParamData );
     assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
     assert( s_pmt::NUM_WP   == total.WP );
 
+    // 1. check consistency between start of pmtCat_v and lpmtCat_v
     for(int i=0 ; i < s_pmt::NUM_CD_LPMT ; i++)  // only to 17612
     {
         assert( pmtCat_v[2*i+1] == lpmtCat_v[i] ) ;
     }
 
+    // 2. populate v_lcqs array excluding SPMT
 
-    v_lcqs.resize(s_pmt::NUM_CD_LPMT_AND_WP);
+    v_lcqs.resize(s_pmt::NUM_LPMTIDX);
 
-    for(int i=0 ; i < s_pmt::NUM_CD_LPMT_AND_WP ; i++ )
+    for(int i=0 ; i < s_pmt::NUM_LPMTIDX ; i++ )
     {
+        // outcome depends crucially on the implicit order of lpmtidx from s_pmt.h
         int lpmtidx = i ;
-
         int pmtid = s_pmt::pmtid_from_lpmtidx( lpmtidx );
         int lpmtidx2 = s_pmt::lpmtidx_from_pmtid( pmtid );
         assert( lpmtidx == lpmtidx2 );
 
-        // pmtCat from _PMTParamData uses oldcontiguous order : CD_LPMT, SPMT, WP
+        // pmtCat from _PMTParamData uses oldcontiguous order : CD_LPMT, SPMT, WP, WP_ATM_LPMT, WP_WAL_PMT
         int oldcontiguousidx = s_pmt::oldcontiguousidx_from_pmtid( pmtid );
-        assert( oldcontiguousidx < s_pmt::NUM_ALL );
+        assert( oldcontiguousidx < s_pmt::NUM_OLDCONTIGUOUSIDX );
 
         int copyno = pmtCat_v[2*oldcontiguousidx+0] ;
         int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
@@ -916,9 +962,13 @@ inline void SPMT::init_lcqs()
        << " lcqs " << ( lcqs ? lcqs->sstr() : "-" ) << std::endl
        ;
 
-    assert( lcqs->shape[0] == s_pmt::NUM_CD_LPMT_AND_WP );
+    assert( lcqs->shape[0] == s_pmt::NUM_LPMTIDX );
+
     assert( s_pmt::NUM_CD_LPMT == 17612 );
     assert( s_pmt::NUM_WP == 2400 );
+    assert( s_pmt::NUM_WP_ATM_LPMT == 348 );
+    assert( s_pmt::NUM_WP_WAL_PMT == 5 );
+
 }
 
 
@@ -1714,10 +1764,25 @@ For lpmtidx(0->17612+2400-1 ) returns 0, 1 or 2 corresponding to NNVT, HAMA, NNV
 
 inline int SPMT::get_lpmtcat_from_lpmtidx(int lpmtidx) const
 {
-    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP );
+    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_LPMTIDX );
     const int* lcqs_i = lcqs->cvalues<int>() ;
     return lcqs_i[lpmtidx*2+0] ;
 }
+
+inline NP* SPMT::get_lpmtcat_from_lpmtidx() const
+{
+    std::cout << "SPMT::get_lpmtcat_from_lpmtidx " << std::endl ;
+    NP* a = NP::Make<int>( s_pmt::NUM_LPMTIDX ) ;
+    int* aa = a->values<int>();
+    for(int i=0 ; i < a->shape[0] ; i++) aa[i] = get_lpmtcat_from_lpmtidx(i) ;
+    return a ;
+}
+
+
+
+
+
+
 inline int SPMT::get_lpmtcat_from_lpmtid(int lpmtid) const
 {
     int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
@@ -1751,15 +1816,6 @@ inline NP* SPMT::get_lpmtcat_from_lpmtid(const NP* lpmtid ) const
     return lpmtcat ;
 }
 
-inline NP* SPMT::get_lpmtcat_from_lpmtidx() const
-{
-    std::cout << "SPMT::get_lpmtcat_from_lpmtidx " << std::endl ;
-    NP* a = NP::Make<int>( s_pmt::NUM_CD_LPMT_AND_WP ) ;
-    int* aa = a->values<int>();
-    for(int i=0 ; i < a->shape[0] ; i++) aa[i] = get_lpmtcat_from_lpmtidx(i) ;
-    return a ;
-}
-
 
 inline float SPMT::get_qescale_from_lpmtid(int lpmtid) const
 {
@@ -1779,13 +1835,13 @@ inline int SPMT::get_copyno_from_lpmtid(int lpmtid) const
 
 inline float SPMT::get_qescale_from_lpmtidx(int lpmtidx) const
 {
-    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP );
+    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_LPMTIDX );
     const float* lcqs_f = lcqs->cvalues<float>() ;
     return lcqs_f[lpmtidx*2+1] ;
 }
 inline int SPMT::get_copyno_from_lpmtidx(int lpmtidx) const
 {
-    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP );
+    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_LPMTIDX );
     const int* lcqs_i = lcqs->cvalues<int>() ;
     return lcqs_i[lpmtidx*2+0] ;
 }
@@ -1796,7 +1852,7 @@ inline int SPMT::get_copyno_from_lpmtidx(int lpmtidx) const
 inline NP* SPMT::get_qescale_from_lpmtidx() const
 {
     std::cout << "SPMT::get_qescale_from_lpmtidx " << std::endl ;
-    NP* a = NP::Make<float>( s_pmt::NUM_CD_LPMT_AND_WP) ;
+    NP* a = NP::Make<float>( s_pmt::NUM_LPMTIDX ) ;
     float* aa = a->values<float>();
     for(int i=0 ; i < a->shape[0] ; i++) aa[i] = get_qescale_from_lpmtidx(i) ;
     return a ;
@@ -1804,7 +1860,7 @@ inline NP* SPMT::get_qescale_from_lpmtidx() const
 inline NP* SPMT::get_copyno_from_lpmtidx() const
 {
     std::cout << "SPMT::get_copyno_from_lpmtidx " << std::endl ;
-    NP* a = NP::Make<int>( s_pmt::NUM_CD_LPMT_AND_WP) ;
+    NP* a = NP::Make<int>( s_pmt::NUM_LPMTIDX ) ;
     int* aa = a->values<int>();
     for(int i=0 ; i < a->shape[0] ; i++) aa[i] = get_copyno_from_lpmtidx(i) ;
     return a ;
@@ -1842,7 +1898,7 @@ inline void SPMT::get_lcqs_from_lpmtid( int& lc, float& qs, int lpmtid) const
 }
 inline void SPMT::get_lcqs_from_lpmtidx(int& lc, float& qs, int lpmtidx) const
 {
-    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP );
+    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_LPMTIDX );
     const int*   lcqs_i = lcqs->cvalues<int>() ;
     const float* lcqs_f = lcqs->cvalues<float>() ;
     lc = lcqs_i[lpmtidx*2+0] ;
@@ -1855,7 +1911,7 @@ A: YES, that is the point : to check that it does.
 inline NP* SPMT::get_lcqs_from_lpmtidx() const
 {
     std::cout << "SPMT::get_lcqs_from_lpmtidx " << std::endl ;
-    int ni = s_pmt::NUM_CD_LPMT_AND_WP;
+    int ni = s_pmt::NUM_LPMTIDX;
     int nj = 2 ;
     NP* a = NP::Make<int>(ni, nj) ;
     int* ii   = a->values<int>() ;
@@ -1981,6 +2037,15 @@ inline NP* SPMT::get_lpmtidx_qe() const
     }
     return a ;
 }
+
+
+/**
+SPMT::make_testfold
+---------------------
+
+Invoked from main of sysrap/tests/SPMT_test.cc
+
+**/
 
 
 inline NPFold* SPMT::make_testfold() const

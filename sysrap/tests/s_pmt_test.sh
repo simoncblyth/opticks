@@ -8,12 +8,14 @@ EOU
 
 
 cd $(dirname $(realpath $BASH_SOURCE))
+
 name=s_pmt_test
 script=$name.py
 
 tmp=/tmp/$USER/opticks
 export TMP=${TMP:-$tmp}
 export FOLD=$TMP/$name
+
 mkdir -p $FOLD
 bin=$FOLD/$name
 

@@ -244,7 +244,7 @@ CPU side lookup of lpmtcat from lpmtidx using i_lcqs array.
 template<typename T>
 inline int QPMT<T>::get_lpmtcat_from_lpmtidx( int lpmtidx ) const
 {
-    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP );
+    assert( lpmtidx >= 0 && lpmtidx < s_pmt::NUM_LPMTIDX );  // extended from NUM_CD_LPMT_AND_WP
     const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
     return lpmtcat ;
 }

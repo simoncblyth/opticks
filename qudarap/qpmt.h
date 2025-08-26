@@ -124,25 +124,26 @@ template<typename F>
 inline QPMT_METHOD int qpmt<F>::get_lpmtcat_from_lpmtid( int lpmtid ) const
 {
     int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
-    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
+    return lpmtidx < s_pmt::NUM_LPMTIDX && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
+    // extended from former NUM_CD_LPMT_AND_WP after s_pmt.h overhaul for WP_ATM_LPMT WP_WAL_PMT
 }
 
 template<typename F>
 inline QPMT_METHOD int qpmt<F>::get_lpmtcat_from_lpmtidx( int lpmtidx ) const
 {
-    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
+    return lpmtidx < s_pmt::NUM_LPMTIDX && lpmtidx > -1 ? i_lcqs[lpmtidx*2+0] : -2 ;
 }
 
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_qescale_from_lpmtid( int lpmtid ) const
 {
     int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
-    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
+    return lpmtidx < s_pmt::NUM_LPMTIDX && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
 }
 template<typename F>
 inline QPMT_METHOD F qpmt<F>::get_qescale_from_lpmtidx( int lpmtidx ) const
 {
-    return lpmtidx < s_pmt::NUM_CD_LPMT_AND_WP && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
+    return lpmtidx < s_pmt::NUM_LPMTIDX && lpmtidx > -1 ? lcqs[lpmtidx*2+1] : -2.f ;
 }
 
 

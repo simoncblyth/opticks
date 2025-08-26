@@ -182,6 +182,19 @@ class TESTFOLD(object):
     t.get_qescale_from_lpmtidx.min()
     t.get_qescale_from_lpmtidx.max()
 
+    t.get_qescale_from_lpmtidx[:17612].min()         ## CD_LPMT
+    t.get_qescale_from_lpmtidx[:17612].max()
+
+    t.get_qescale_from_lpmtidx[17612:17612+2400].min()       ## WP_PMT
+    t.get_qescale_from_lpmtidx[17612:17612+2400].max()
+
+    t.get_qescale_from_lpmtidx[17612+2400:17612+2400+324].min()   ## WP_ATM_LPMT
+    t.get_qescale_from_lpmtidx[17612+2400:17612+2400+324].max()
+
+    t.get_qescale_from_lpmtidx[17612+2400+324:17612+2400+324+5].min()  ## WP_WAL_PMT
+    t.get_qescale_from_lpmtidx[17612+2400+324:17612+2400+324+5].max()
+
+
     np.all( t.get_lcqs_from_lpmtidx[:,0] == t.get_lpmtcat_from_lpmtidx )
     np.all( t.get_lcqs_from_lpmtidx[:,1].view(np.float32) == t.get_qescale_from_lpmtidx )
 
