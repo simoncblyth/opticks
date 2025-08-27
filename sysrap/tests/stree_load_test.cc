@@ -60,6 +60,7 @@ struct stree_load_test
     int desc_solids() const ;
     int desc_solid(int lvid) const ;
     int desc() const ;
+    int save_desc(const char* fold) const ;
 
     int main();
 };
@@ -535,8 +536,18 @@ inline int stree_load_test::desc() const
     std::cout << st->desc() << "\n" ;
     return 0 ;
 }
+inline int stree_load_test::save_desc(const char* fold) const
+{
+    std::cout
+        << "stree_load_test::save_desc"
+        << " fold " << ( fold ? fold : "-" )
+        << "\n"
+        ;
+    if(fold==nullptr) return 0;
 
-
+    st->save_desc(fold);
+    return 0 ;
+}
 
 
 
@@ -549,6 +560,7 @@ inline int stree_load_test::main()
     // THIS DEFAULT TRUMPED BY SETTING IN SCRIPT
 
     const char* TEST = ssys::getenvvar("TEST", test);
+    const char* TMPFOLD = ssys::getenvvar("TMPFOLD", nullptr);
 
     int LVID = ssys::getenvint("LVID",  0);
     int NDID = ssys::getenvint("NDID",  0);
@@ -585,6 +597,7 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "desc_solids") == 0)                            rc += desc_solids() ;
     if(ALL||strcmp(TEST, "desc_solid") == 0)                             rc += desc_solid(LVID) ;
     if(ALL||strcmp(TEST, "desc") == 0)                                   rc += desc();
+    if(ALL||strcmp(TEST, "save_desc") == 0)                              rc += save_desc(TMPFOLD);
 
     return rc ;
 }

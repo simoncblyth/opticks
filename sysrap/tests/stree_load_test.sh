@@ -103,7 +103,9 @@ export stree_level=1
 #test=desc_nds
 #test=desc_rem
 #test=desc_tri
-test=desc_NRT
+#test=desc_NRT
+#test=desc
+test=save_desc
 
 #test=desc_factor_nodes
 #test=desc_node_solids
@@ -115,7 +117,10 @@ export TEST=${TEST:-$test}
 CFB=${GEOM}_CFBaseFromGEOM
 export FOLD=${!CFB}/CSGFoundry/SSim/stree
 
-vars="BASH_SOURCE opt GEOM CFB FOLD MOI TEST"
+export TMPFOLD=$TMP/stree_load_test
+mkdir -p $TMPFOLD
+
+vars="BASH_SOURCE opt GEOM CFB FOLD MOI TEST TMPFOLD"
 
 
 logging(){

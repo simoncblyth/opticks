@@ -206,6 +206,7 @@ When SSim not in use can also use::
 #include <vector>
 #include <string>
 #include <map>
+#include <functional>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -273,6 +274,7 @@ struct stree
     //
     static constexpr const char* BASE = "$CFBaseFromGEOM/CSGFoundry/SSim" ;
     static constexpr const char* RELDIR = "stree" ;
+    static constexpr const char* DESC = "desc" ;
 
     static constexpr const char* NDS = "nds.npy" ;
     static constexpr const char* NDS_NOTE = "snode.h structural volume nodes" ;
@@ -401,6 +403,11 @@ struct stree
     void init();
     void set_level(int level_);
 
+    void save_desc(const char* base, const char* reldir=DESC) const ;
+    void save_desc_(const char* fold) const ;
+    void populate_descMap( std::map<std::string, std::function<std::string()>>& m ) const ;
+
+
     std::string desc() const ;
     std::string desc_meta() const ;
     std::string desc_soname() const ;
@@ -424,7 +431,7 @@ struct stree
 
     void get_children(std::vector<int>& children, int nidx) const ;   // immediate children
     void get_progeny( std::vector<int>& progeny, int nidx ) const ;   // recursively get children and all their children and so on...
-    std::string desc_progeny(int nidx) const ;
+    std::string desc_progeny(int nidx, int edge=1000) const ;  // edge=0 disables summarization
 
     void traverse(int nidx=0) const ;
     void traverse_r(int nidx, int depth, int sibdex) const ;
@@ -855,6 +862,81 @@ inline std::string stree::desc_size(char div) const
 }
 
 
+
+/**
+stree::save_desc
+------------------
+
+Save .txt files for each of the listed desc methods
+within a *reldir* which defaults to "desc" which is
+created within the *base* directory.
+
+**/
+
+inline void stree::save_desc(const char* base, const char* reldir) const
+{
+    const char* fold = U::Resolve(base, reldir);
+    save_desc_(fold);
+}
+
+inline void stree::save_desc_(const char* fold) const
+{
+    std::map<std::string, std::function<std::string()>> descMap ;
+    populate_descMap(descMap);
+
+    for (auto const& [k, fn] : descMap)
+    {
+        std::string name = k + ".txt" ;
+        std::string desc = fn();
+
+        U::WriteString( fold, name.c_str(), desc.c_str() );
+    }
+}
+
+inline void stree::populate_descMap( std::map<std::string, std::function<std::string()>>& m ) const
+{
+    int NIDX = ssys::getenvint("NIDX", 0);
+    int EDGE = ssys::getenvint("EDGE", 10);
+    int PROGENY_EDGE = ssys::getenvint("PROGENY_EDGE", 1000);
+
+    m["meta"] = [this](){ return this->desc_meta(); };
+    m["soname"] = [this](){ return this->desc_soname(); };
+    m["lvid"] = [this](){ return this->desc_lvid(); };
+
+    m["size"] = [this](){ return this->desc_size(); };
+    m["vec"] = [this](){ return this->desc_vec(); };
+    m["sub"] = [this](){ return this->desc_sub(); };
+    m["progeny"] = [this,NIDX,PROGENY_EDGE](){ return this->desc_progeny(NIDX,PROGENY_EDGE); };
+
+    m["sensor"] = [this](){ return this->desc_sensor(); };
+    m["sensor_nd"] = [this,EDGE](){ return this->desc_sensor_nd(EDGE); };
+    m["sensor_id"] = [this,EDGE](){ return this->desc_sensor_id(EDGE); };
+    m["node_solids"] = [this](){ return this->desc_node_solids(); };
+    m["nodes"] = [this](){ return this->descNodes(); };
+    m["solids"] = [this](){ return this->desc_solids(); };
+    m["factor"] = [this](){ return this->desc_factor(); };
+    m["repeat_nodes"] = [this](){ return this->desc_repeat_nodes(); };
+
+    m["NRT"] = [this](){ return this->desc_NRT(); };
+    m["nds"] = [this](){ return this->desc_nds(); };
+    m["rem"] = [this](){ return this->desc_rem(); };
+    m["tri"] = [this](){ return this->desc_tri(); };
+    m["node_ELVID"] = [this](){ return this->desc_node_ELVID(); };
+    m["node_ECOPYNO"] = [this](){ return this->desc_node_ECOPYNO(); };
+    m["node_EBOUNDARY"] = [this](){ return this->desc_node_EBOUNDARY(); };
+    m["inst"] = [this](){ return this->desc_inst(); };
+    m["inst_info"] = [this](){ return this->desc_inst_info(); };
+    m["inst_info_check"] = [this](){ return this->desc_inst_info_check(); };
+    m["mt"] = [this](){ return this->desc_mt(); };
+    m["bd"] = [this](){ return this->desc_bd(); };
+
+    m["subs_freq"] = [this](){ return this->subs_freq ? this->subs_freq->desc() : "-" ; };
+    m["material"] = [this](){ return this->material ? this->material->desc() : "-" ; };
+    m["surface"] = [this](){ return this->surface ? this->surface->desc() : "-" ; };
+    m["mesh"] = [this](){ return this->mesh ? this->mesh->desc() : "-" ; };
+    m["_csg"] = [this](){ return this->_csg ? this->_csg->desc() : "-" ; };
+}
+
 inline std::string stree::desc() const
 {
     std::stringstream ss ;
@@ -1177,36 +1259,55 @@ inline void stree::get_progeny( std::vector<int>& progeny , int nidx ) const
 }
 
 
-inline std::string stree::desc_progeny(int nidx) const
+inline std::string stree::desc_progeny(int nidx, int edge) const
 {
     std::vector<int> progeny ;
     get_progeny(progeny, nidx );
     sfreq* sf = make_freq(progeny);
     sf->sort();
+    int num_progeny = progeny.size() ;
 
     std::stringstream ss ;
-    ss << "stree::desc_progeny nidx " << nidx << " progeny.size " << progeny.size() << std::endl ;
-    ss << "sf.desc" << std::endl << sf->desc() << std::endl ;
-    ss
+    ss << "stree::desc_progeny\n"
+       << " nidx " << nidx << "\n"
+       << " num_progeny " << num_progeny << "\n"
+       << " edge " << edge << "\n"
+       << "[sf.desc\n"
+       << sf->desc()
+       << "]sf.desc\n"
        << " i " << std::setw(6) << -1
        << desc_node(nidx, true )
-       << std::endl
+       << "\n"
        ;
 
-    for(unsigned i=0 ; i < progeny.size() ; i++)
+
+    for(int i=0 ; i < num_progeny ; i++)
     {
         int nix = progeny[i] ;
         int depth = get_depth(nix);
-        ss
-            << " i " << std::setw(6) << i
-            << " depth " << std::setw(2) << depth
-            << desc_node_(nix, sf )
-            << std::endl
-            ;
+
+        if( edge == 0 || i < edge || i > num_progeny - edge )
+        {
+            ss
+                << " i " << std::setw(6) << i
+                << " depth " << std::setw(2) << depth
+                << desc_node_(nix, sf )
+                << "\n"
+                ;
+        }
+        else if( i == edge )
+        {
+            ss
+                << " i " << std::setw(6) << i
+                << " depth " << std::setw(2) << depth
+                << " ... "
+                << "\n"
+                ;
+        }
     }
 
-    std::string s = ss.str();
-    return s;
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -3394,6 +3495,7 @@ inline void stree::save_( const char* dir ) const
 {
     NPFold* fold = serialize() ;
     fold->save(dir) ;
+    save_desc(dir);   // saves .txt for most desc methods into <base>/stree/desc
 }
 
 inline NPFold* stree::serialize() const

@@ -1768,6 +1768,9 @@ inline void U::WriteString( const char* dir, const char* name, const char* str )
 inline void U::WriteString( const char* path, const char* str )  // static
 {
     if(str == nullptr) return ;
+
+    MakeDirsForFile(path);
+
     std::ofstream fp(path, std::ios::out);
     fp << str ;
     fp.close();
