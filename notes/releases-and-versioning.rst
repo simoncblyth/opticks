@@ -62,6 +62,20 @@ Release Notes
 * start from "git lg -n20" and summarize useful commit messages worthy of mention
 
 
+v0.5.3 2025/08/27 : shakedown new PMT types WP_ATM_LPMT WP_WAL_PMT, fixes for two longstanding viz issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* add stree::save_desc which writes .txt files for listed desc methods to stree/desc directory which is created when stree::save is invoked
+* overhaul extending to PMT types WP_ATM_LPMT WP_WAL_PMT
+* add stree__FREQ_CUT envvar control of the instancing criteria
+* adhoc workaround longstanding issue of non-reproducible initial viewpoint by ignoring the first few GLFW cursor_moved events
+* fix longstanding issue of whacky up direction in vizualization, caused by SGLM::UP.w being incorrectly defaulted to 1.f when should be 0.f for a direction, not a position
+* add EXTENT_FUDGE control that when set to 10 for example improves the viz interface when targetting volumes with small extent
+* add stree::desc_node_elvid that dumps all snode which have lvid listed within comma delimited ELVID envvar
+* add stree::desc_rem/tri/nds using stree::desc_lvid_unique to provide intelligible dumping even with many thousands of snode
+* sstamp::FormatLog aka U:FormatLog for NPFold::load lite timestamp logging
+
+
 v0.5.2 2025/08/19 : intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -70,40 +84,40 @@ v0.5.2 2025/08/19 : intersect precision refinement option plus add handling for 
 * follow suggestion of plexoos to use first device when multiple devices are visible with warning to use CUDA_VISIBLE_DEVICES envvar to quell the warning
 * add example of counting pmt categories to SPMTAccessor_test.cc
 * add sseq_index_ab__desc_HISWID envvar control for seqhis history width used by sseq_index_test.sh, tidy trailing whitespace in addtag.sh
-* expand SRecord::getSimtraceAtTime to working with multiple arange/linspace times specified in OPTICKS_INPUT_PHOTON_RECORD_TIME eg [0.1:88.8:-444], 
+* expand SRecord::getSimtraceAtTime to working with multiple arange/linspace times specified in OPTICKS_INPUT_PHOTON_RECORD_TIME eg [0.1:88.8:-444],
   use that from CSGOptiX/cxt_precision.sh to estimate intersect precision as function of ray trace distance
 
 
 v0.5.1 2025/07/17 : record animation as debug tool, add OPTICKS_PROPAGATE_REFINE improving precision of intersect, make sdevice.bin persisting no longer default
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* rationalize scontext.h sdevice.h moving all file specifics into sdevice.h and making the sdevice.bin persisting no longer the default 
-* untested integrate SRecord::getPhotonAtTime by step point interpolation for input time with input photon running, used by providing OPTICKS_INPUT_PHOTON ending with record.npy 
-* add SRecord::getPhotonAtTime providing photons interpolated from the record array step points 
-* add small cylinder within the big one for long ray intersect precision test 
-* add U4VolumeMaker::BigWaterPool as test geometry for long range intersection, kick U4VolumeMakerTest.sh into shape 
-* add OPTICKS_PROPAGATE_REFINE control to optionally enable refinement of the optixTrace calls when the intersect distance exceeds 99 percent of OPTICKS_PROPAGATE_REFINE_DISTANCE 
-* add simple, and so far untested, refined trace technique that repeats optixTrace from closer_ray_origin following Ingo Wald, Ch34 of Ray Tracing Gems II 
-* logging level control SRecord__level SGen__level 
-* add sevt.py SAB.q_and selecting photon indices based on provided histories in A and B, for example allowing selection of input photons with histories differing in the number of BT between A and B 
-* add NP::load_data_where used from NP::LoadSlice using a where array eg /tmp/w54.npy that is optionally sliced itself eg /tmp/w54.npy[0:10] 
-* enhance AFOLD/BFOLD evt plotting on top of the cxt_min simtrace geometry, to see more clearly the WP_PMT BZERO 
-* extend sseq_array::create_selection to handling a comma delimited string to select the OR of multiple photon histories 
-* add SemiCircle input photons 
-* add SideZX input photons to check WP_PMT from side, shows no problem with ipc chi2 
-* touch control that accepts date-time string to reset CUR backwards to accept earlier screenshots 
-* add SGen.h SGLFW_Gen.h and shader gl/gen_line_strip for rendering gensteps, not yet working 
-* fix numeric_limits min is zero ranging bug 
-* scerenkov::MinMaxPost for genstep extent and time range 
-* move view config into VUE.sh with VUE bash function to avoid duplication between the renderers 
-* generalize sphoton::ChangeTimeInsitu to handling float and double photon arrays fixing OPTICKS_INPUT_PHOTON_CHANGE_TIME 
-* add OPTICKS_INPUT_PHOTON_CHANGE_TIME to change time of all input photons 
-* use EVT MOI ELV SDR CUR bash functions and optional .sh scripts to reduce duplication between the renderer scripts cxr_min.sh SGLFW_SOPTIX_Scene_test.sh 
-* add rec_line_strip shader 
-* add stree::get_frame_from_coords for a frame targetting a global position, change miss zdepth for SOPTIX.cu in order to see event records in front of the miss bkg 
-* switch to controlling enabled LV via file /home/blyth/.opticks/GEOM/ELV.sh 
-* add soname to SScene to allow ELV selection within SScene::Load 
-* move ELV mechanics down to SGeoConfig from CSGFoundry so can use from SScene 
+* rationalize scontext.h sdevice.h moving all file specifics into sdevice.h and making the sdevice.bin persisting no longer the default
+* untested integrate SRecord::getPhotonAtTime by step point interpolation for input time with input photon running, used by providing OPTICKS_INPUT_PHOTON ending with record.npy
+* add SRecord::getPhotonAtTime providing photons interpolated from the record array step points
+* add small cylinder within the big one for long ray intersect precision test
+* add U4VolumeMaker::BigWaterPool as test geometry for long range intersection, kick U4VolumeMakerTest.sh into shape
+* add OPTICKS_PROPAGATE_REFINE control to optionally enable refinement of the optixTrace calls when the intersect distance exceeds 99 percent of OPTICKS_PROPAGATE_REFINE_DISTANCE
+* add simple, and so far untested, refined trace technique that repeats optixTrace from closer_ray_origin following Ingo Wald, Ch34 of Ray Tracing Gems II
+* logging level control SRecord__level SGen__level
+* add sevt.py SAB.q_and selecting photon indices based on provided histories in A and B, for example allowing selection of input photons with histories differing in the number of BT between A and B
+* add NP::load_data_where used from NP::LoadSlice using a where array eg /tmp/w54.npy that is optionally sliced itself eg /tmp/w54.npy[0:10]
+* enhance AFOLD/BFOLD evt plotting on top of the cxt_min simtrace geometry, to see more clearly the WP_PMT BZERO
+* extend sseq_array::create_selection to handling a comma delimited string to select the OR of multiple photon histories
+* add SemiCircle input photons
+* add SideZX input photons to check WP_PMT from side, shows no problem with ipc chi2
+* touch control that accepts date-time string to reset CUR backwards to accept earlier screenshots
+* add SGen.h SGLFW_Gen.h and shader gl/gen_line_strip for rendering gensteps, not yet working
+* fix numeric_limits min is zero ranging bug
+* scerenkov::MinMaxPost for genstep extent and time range
+* move view config into VUE.sh with VUE bash function to avoid duplication between the renderers
+* generalize sphoton::ChangeTimeInsitu to handling float and double photon arrays fixing OPTICKS_INPUT_PHOTON_CHANGE_TIME
+* add OPTICKS_INPUT_PHOTON_CHANGE_TIME to change time of all input photons
+* use EVT MOI ELV SDR CUR bash functions and optional .sh scripts to reduce duplication between the renderer scripts cxr_min.sh SGLFW_SOPTIX_Scene_test.sh
+* add rec_line_strip shader
+* add stree::get_frame_from_coords for a frame targetting a global position, change miss zdepth for SOPTIX.cu in order to see event records in front of the miss bkg
+* switch to controlling enabled LV via file /home/blyth/.opticks/GEOM/ELV.sh
+* add soname to SScene to allow ELV selection within SScene::Load
+* move ELV mechanics down to SGeoConfig from CSGFoundry so can use from SScene
 * add smath.py with rotateUz impl used to add CircleXZ input photons
 
 
@@ -123,7 +137,7 @@ v0.5.0 2025/07/02 : improved install cleanliness, add missing gl shaders and pyt
 v0.4.9 2025/07/01 : fix muon render kink animation artifact, fix WP PMT qescale giving WP_PMT A:B match
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* RELEASE WAS BUILT AGAINST NON STANDARD DEBUG CUSTOM4 PREFIX WHICH CAUSED CI CMAKE BUILD ERROR 
+* RELEASE WAS BUILT AGAINST NON STANDARD DEBUG CUSTOM4 PREFIX WHICH CAUSED CI CMAKE BUILD ERROR
 
   * NON STANDARD PREFIX : /data1/blyth/local/custom4_Debug/0.1.8/include/Custom4
   * ~/j/oj_cmake_error/oj_cmake_error.rst
@@ -132,17 +146,17 @@ v0.4.9 2025/07/01 : fix muon render kink animation artifact, fix WP PMT qescale 
 * expand DEBUG_PIDX dumping into qpmt.h
 * fix SRecord.h time and position ranges with sphoton::MinMaxPost by excluding unfilled zeros from mn/mx
 * fix future kinked muon render bug by excluding zero as a valid time in the rec_flying_point shader
-* eliminate the old mixed geom+event sysrap/SGLFW_Event.h in favor of event only sysrap/SGLFW_Evt.h 
+* eliminate the old mixed geom+event sysrap/SGLFW_Event.h in favor of event only sysrap/SGLFW_Evt.h
 * add QSim__ALLOC control to dump VRAM allocation salloc.h table before launch
 * make pvplt_viewpoint EYE LOOK UP use m2w target transform such that the inputs can remain local with GLOBAL=1 global frame plotting
-* move setting of U4Tree into U4Recorder to lower level from U4Tree::initRecorder : this needed for U4Simtrace.h identity of intersects 
+* move setting of U4Tree into U4Recorder to lower level from U4Tree::initRecorder : this needed for U4Simtrace.h identity of intersects
 
 
-v0.4.8 2025/06/25 SProcessHits_EPH.h improve handling of large values and legibility of desc  
+v0.4.8 2025/06/25 SProcessHits_EPH.h improve handling of large values and legibility of desc
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* confirmed fix for muon crash issue in OJ Opticks+JUNOSW, was caused by non-optical particles 
-  crossing sensitive detectors 
+* confirmed fix for muon crash issue in OJ Opticks+JUNOSW, was caused by non-optical particles
+  crossing sensitive detectors
 
 
 v0.4.7 2025/06/25 : fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match
@@ -239,17 +253,19 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                               |
 +=========+=====+============+=====================================================================================================================+
+| v0.5.3  | 53  | 2025/08/27 | shakedown new PMT types WP_ATM_LPMT WP_WAL_PMT, fixes for two longstanding viz issues                               |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.5.2  | 52  | 2025/08/19 | intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h             |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.5.1  | 51  | 2025/07/17 | record animation as debug, OPTICKS_PROPAGATE_REFINE intersect precision, sdevice.bin persisting no longer default   |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.5.0  | 50  | 2025/07/02 | improved install cleanliness, add missing gl shaders and python modules to install                                  | 
+| v0.5.0  | 50  | 2025/07/02 | improved install cleanliness, add missing gl shaders and python modules to install                                  |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.4.9  | 49  | 2025/07/01 | fix muon render kink animation artifact, fix WP PMT qescale giving WP_PMT A:B match                                 |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.8  | 48  | 2025/06/25 | SProcessHits_EPH.h improve handling of large values and legibility of desc                                          |  
+| v0.4.8  | 48  | 2025/06/25 | SProcessHits_EPH.h improve handling of large values and legibility of desc                                          |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.7  | 47  | 2025/06/25 | fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match                                        |  
+| v0.4.7  | 47  | 2025/06/25 | fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match                                        |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.4.6  | 46  | 2025/06/24 | Within WITH_CUSTOM4 working on WP PMT and SPMT hit matching, plus add EPSILON0                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
