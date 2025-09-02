@@ -118,12 +118,20 @@ const char* SGeoConfig::ELVSelection(const SName* id )
             << std::endl
             ;
 
-        bool has_names = id->hasNames(elv_selection_, delim, prefix, starting );
 
-        if(VERBOSE) std::cerr
+
+        std::stringstream ss ;
+        bool has_names = id->hasNames(elv_selection_, delim, prefix, starting, &ss );
+
+        if(!has_names) std::cout
             << "SGeoConfig::ELVSelection"
-            << " after has_names " << ( has_names ? "Y" : "N" )
-            << std::endl
+            << " has_names " << ( has_names ? "YES" : "NO " ) << "\n"
+            << "[haslog[\n"
+            << ss.str()
+            << "]haslog[\n"
+            << "[id.detail\n"
+            << id->detail()
+            << "]id.detail\n"
             ;
 
         if(has_names)

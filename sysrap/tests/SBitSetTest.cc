@@ -20,6 +20,8 @@ void test_0()
 {
 
     unsigned num_bits = 128 ; 
+    bool dump = true ;
+
     bool* bits = new bool[num_bits] ; 
 
     std::stringstream ss(SPECS) ;    
@@ -27,7 +29,7 @@ void test_0()
     while (std::getline(ss, line))  
     {   
         const char* spec = line.c_str(); 
-        SBitSet::ParseSpec( num_bits, bits, spec ); 
+        SBitSet::ParseSpec( num_bits, bits, spec, dump ); 
         std::cout 
             << std::setw(20) << spec 
             << " : "
