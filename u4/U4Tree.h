@@ -117,9 +117,11 @@ struct U4Tree
     static constexpr const char* __DISABLE_OSUR_IMPLICIT = "U4Tree__DISABLE_OSUR_IMPLICIT" ;
     static constexpr const char* __DISABLE_ISUR_IMPLICIT = "U4Tree__DISABLE_ISUR_IMPLICIT" ;
     static constexpr const char* __MATERIAL_DEBUG = "U4Tree__MATERIAL_DEBUG" ;
+    static constexpr const char* __SOLID_DEBUG = "U4Tree__SOLID_DEBUG" ;
     bool                                        enable_osur ;
     bool                                        enable_isur ;
     int                                         material_debug ;
+    int                                         solid_debug ;
 
     static U4Tree* Create(
         stree* st,
@@ -262,7 +264,8 @@ inline U4Tree::U4Tree(
     scint(nullptr),
     enable_osur(!ssys::getenvbool(__DISABLE_OSUR_IMPLICIT)),
     enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT)),
-    material_debug(ssys::getenvint(__MATERIAL_DEBUG,0))
+    material_debug(ssys::getenvint(__MATERIAL_DEBUG,0)),
+    solid_debug(ssys::getenvint(__SOLID_DEBUG,0))
 {
     init();
 }
@@ -606,13 +609,20 @@ cf X4PhysicalVolume::convertSolids
 
 inline void U4Tree::initSolids()
 {
-    std::cout << "[U4Tree::initSolids" << std::endl ;
+    if(solid_debug > -1) std::cout << "[U4Tree::initSolids" << std::endl ;
 
     initSolids_r(top);
     initSolids_Keys();
     initSolids_Mesh();
 
-    std::cout << "]U4Tree::initSolids" << std::endl ;
+    if(solid_debug > 0) std::cout
+          << "-U4Tree::initSolids\n"
+          << " [" << __SOLID_DEBUG << "] " << solid_debug << "\n"
+          << st->desc_solids()
+          << "\n"
+          ;
+
+    if(solid_debug> -1) std::cout << "]U4Tree::initSolids" << std::endl ;
 }
 
 /**

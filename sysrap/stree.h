@@ -881,6 +881,8 @@ inline void stree::save_desc(const char* base, const char* reldir) const
 
 inline void stree::save_desc_(const char* fold) const
 {
+    std::cout << "[stree::save_desc_ fold [" << ( fold ? fold : "-" ) << "]\n" ;
+
     std::map<std::string, std::function<std::string()>> descMap ;
     populate_descMap(descMap);
 
@@ -888,9 +890,11 @@ inline void stree::save_desc_(const char* fold) const
     {
         std::string name = k + ".txt" ;
         std::string desc = fn();
+        std::cout << "-stree::save_desc_ name [" << name.c_str() << "]\n" ;
 
         U::WriteString( fold, name.c_str(), desc.c_str() );
     }
+    std::cout << "]stree::save_desc_ fold [" << ( fold ? fold : "-" ) << "]\n" ;
 }
 
 inline void stree::populate_descMap( std::map<std::string, std::function<std::string()>>& m ) const
@@ -3396,27 +3400,44 @@ inline std::string stree::desc_node_solids() const
 stree::desc_solids
 -------------------
 
-OBSERVE THAT THE stree::solids ARE NOT PERSISTED, INSTEAD USE sn::Get methods
-to access the s_csg.h persisted sn.h
+OBSERVE THAT THE stree::solids ARE NOT PERSISTED,
+SO THIS IS ONLY USEFUL DURING TRANSLATION AFTER U4Tree::initSolids
 
+TODO : FIND WAY TO RECOVER THE stree::solids vector using sn::Get
+methods to access the s_csg.h persisted sn.h
 **/
 
 inline std::string stree::desc_solids() const
 {
     int num_solids = solids.size() ;
     std::stringstream ss ;
-    ss << "stree::desc_solids num_solids " << num_solids  << std::endl ;
+    ss << "[stree::desc_solids num_solids " << num_solids  << "\n" ;
     for(int i=0 ; i < num_solids ; i++)
     {
+        const char* srn = soname_raw[i].c_str();
+        const char* son = soname[i].c_str();
+
         const sn* root = solids[i] ;
+
+        int lvid = i ;
+        const sn* root2 = sn::GetLVRoot(lvid);
+        bool root2_match = root == root2 ;
+
         ss
+            << " i " << std::setw(3) << i
             << " (sn)root.lvid " << std::setw(3) << root->lvid
-            << std::endl
+            << " root2_match " << ( root2_match ? "YES" : "NO " )
+            << " soname_raw[i] " << std::setw(60) << ( srn ? srn : "-" )
+            << " soname[i] " << std::setw(60) << ( son ? son : "-" )
+            << "\n"
             ;
     }
+    ss << "]stree::desc_solids num_solids " << num_solids  << "\n" ;
     std::string str = ss.str();
     return str ;
 }
+
+
 
 
 inline std::string stree::desc_solid(int lvid) const

@@ -258,6 +258,10 @@ struct SYSRAP_API sn
     int num_node() const ;
     int num_node_r(int d) const ;
 
+    int num_notsupported_node() const ;
+    int num_notsupported_node_r(int d) const ;
+
+
     int num_leaf() const ;
     int num_leaf_r(int d) const ;
 
@@ -412,22 +416,38 @@ struct SYSRAP_API sn
     void combineXF( const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ;
     std::string descXF() const ;
 
-
-
-
-    /**
-    considered returing (int)nd::index here to match snd.hh
-    but that would not be workable once deleting
-    any sn nodes as the indices would change
-    **/
-
     static sn* Cylinder(double radius, double z1, double z2) ;
+    static sn* CutCylinder(
+        double R,
+        double dz,
+        double _pz_nrm_x,
+        double _pz_nrm_y,
+        double _pz_nrm_z,
+        double _nz_nrm_x,
+        double _nz_nrm_y,
+        double _nz_nrm_z
+    );
+
+    static void CutCylinderZRange(
+        double& zmin,
+        double& zmax,
+        double R,
+        double dz,
+        double pz_nrm_x,
+        double pz_nrm_y,
+        double pz_nrm_z,
+        double nz_nrm_x,
+        double nz_nrm_y,
+        double nz_nrm_z
+    );
+
     static sn* Cone(double r1, double z1, double r2, double z2);
     static sn* Sphere(double radius);
     static sn* ZSphere(double radius, double z1, double z2);
     static sn* Box3(double fullside);
     static sn* Box3(double fx, double fy, double fz );
     static sn* Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg );
+    static sn* Notsupported();
 
     static sn* Zero(double  x,  double y,  double z,  double w,  double z1, double z2);
     static sn* Zero();
@@ -1001,8 +1021,14 @@ inline sn* sn::Import_r(const _sn* _n,  const std::vector<_sn>& buf, int d)
 
 
 
+/**
+sn::sn ctor
+-------------
 
-// ctor
+note that sn::pid cannot be relied upon for indexing into the pool
+as other ctor/dtor can change the pool while this holds on to the old stale pid
+
+**/
 
 inline sn::sn(int typecode_, sn* left_, sn* right_)
     :
@@ -1024,9 +1050,6 @@ inline sn::sn(int typecode_, sn* left_, sn* right_)
     pid(pool ? pool->add(this) : -1),
     subdepth(0)
 {
-    // note that the pid cannot be relied upon for indexing into the pool
-    // as other ctor/dtor can change the pool while this holds on to the old stale pid
-
     if(level() > 1) std::cout << "[ sn::sn " << id() << "\n" ;
     zero_label();
 
@@ -1424,6 +1447,26 @@ inline int sn::num_node_r(int d) const
 #endif
     return nn ;
 }
+
+
+inline int sn::num_notsupported_node() const 
+{
+    return num_notsupported_node_r(0);
+}
+
+inline int sn::num_notsupported_node_r(int d) const
+{
+    int nn = typecode == CSG_NOTSUPPORTED ? 1 : 0 ;
+#ifdef WITH_CHILD
+    for(int i=0 ; i < int(child.size()) ; i++) nn += child[i]->num_notsupported_node_r(d+1) ;
+#else
+    nn += left ? left->num_notsupported_node_r(d+1) : 0 ;
+    nn += right ? right->num_notsupported_node_r(d+1) : 0 ;
+#endif
+    return nn ;
+}
+
+
 
 
 inline int sn::num_leaf() const
@@ -2803,6 +2846,160 @@ inline sn* sn::Cylinder(double radius, double z1, double z2) // static
     nd->setBB( -radius, -radius, z1, +radius, +radius, z2 );
     return nd ;
 }
+
+/**
+sn::CutCylinder
+----------------
+
+HMM asis s_pa.h restricts to 6 param so:
+
+1. require endnormals to have Y component of zero, bringing down to 4 param
+2. symmetric +dz -dz height : 1 param
+3. just radius (not inner) : 1 param
+
+**/
+
+inline sn* sn::CutCylinder(
+    double R,
+    double dz,
+    double _pz_nrm_x,
+    double _pz_nrm_y,
+    double _pz_nrm_z,
+    double _nz_nrm_x,
+    double _nz_nrm_y,
+    double _nz_nrm_z ) // static
+{
+    assert( _pz_nrm_z > 0. );  // expect outwards normal away from +DZ top edge
+    assert( _nz_nrm_z < 0. );  // expect outwards normal away from -DZ bot edge
+
+    assert( _pz_nrm_y == 0. ); // simplifying assumptions for initial impl
+    assert( _nz_nrm_y == 0. );
+
+    double pz_nrm = std::sqrt( _pz_nrm_x*_pz_nrm_x + _pz_nrm_y*_pz_nrm_y +  _pz_nrm_z*_pz_nrm_z );
+    double pz_nrm_x = _pz_nrm_x/pz_nrm ;
+    double pz_nrm_y = _pz_nrm_y/pz_nrm ;
+    double pz_nrm_z = _pz_nrm_z/pz_nrm ;
+
+    double nz_nrm = std::sqrt( _nz_nrm_x*_nz_nrm_x + _nz_nrm_y*_nz_nrm_y + _nz_nrm_z*_nz_nrm_z );
+    double nz_nrm_x = _nz_nrm_x/nz_nrm ;
+    double nz_nrm_y = _nz_nrm_y/nz_nrm ;
+    double nz_nrm_z = _nz_nrm_z/nz_nrm ;
+
+
+    double zmin, zmax ;
+    CutCylinderZRange(zmin, zmax, R, dz, pz_nrm_x, pz_nrm_y, pz_nrm_z, nz_nrm_x, nz_nrm_y, nz_nrm_z );
+
+
+    bool dump = false ;
+    if(dump) std::cout
+       << "sn::CutCylinder\n"
+       << " R " << std::setw(10) << std::fixed << std::setprecision(6) << R << "\n"
+       << " dz " << std::setw(10) << std::fixed << std::setprecision(6) << dz << "\n"
+       << " _pz_nrm_x " << std::setw(10) << std::fixed << std::setprecision(6) << _pz_nrm_x << "\n"
+       << " _pz_nrm_y " << std::setw(10) << std::fixed << std::setprecision(6) << _pz_nrm_y << "\n"
+       << " _pz_nrm_z " << std::setw(10) << std::fixed << std::setprecision(6) << _pz_nrm_z << "\n"
+       << "\n"
+       << " pz_nrm_x " << std::setw(10) << std::fixed << std::setprecision(6) << pz_nrm_x << "\n"
+       << " pz_nrm_y " << std::setw(10) << std::fixed << std::setprecision(6) << pz_nrm_y << "\n"
+       << " pz_nrm_z " << std::setw(10) << std::fixed << std::setprecision(6) << pz_nrm_z << "\n"
+       << "\n"
+       << " _nz_nrm_x " << std::setw(10) << std::fixed << std::setprecision(6) << _nz_nrm_x << "\n"
+       << " _nz_nrm_y " << std::setw(10) << std::fixed << std::setprecision(6) << _nz_nrm_y << "\n"
+       << " _nz_nrm_z " << std::setw(10) << std::fixed << std::setprecision(6) << _nz_nrm_z << "\n"
+       << "\n"
+       << " nz_nrm_x " << std::setw(10) << std::fixed << std::setprecision(6) << nz_nrm_x << "\n"
+       << " nz_nrm_y " << std::setw(10) << std::fixed << std::setprecision(6) << nz_nrm_y << "\n"
+       << " nz_nrm_z " << std::setw(10) << std::fixed << std::setprecision(6) << nz_nrm_z << "\n"
+       << "\n"
+       << " zmax " << std::setw(10) << std::fixed << std::setprecision(6) << zmax << "\n"
+       << " zmin " << std::setw(10) << std::fixed << std::setprecision(6) << zmin << "\n"
+       << "\n"
+       ;
+
+    sn* nd = Create(CSG_CUTCYLINDER);
+    nd->setPA( R, dz, pz_nrm_x, pz_nrm_z, nz_nrm_x, nz_nrm_z)  ;
+    nd->setBB( -R, -R, zmin, +R, +R, zmax );
+
+    return nd ;
+}
+
+
+/**
+sn::CutCylinderZRange
+-----------------------
+
+::
+
+     (pz_nrm_x,0,pz_nrm_z) "highNormal"
+       \
+        \
+         \     A              +dz+pdz
+          P    | - - - - - -  +dz
+     B    |    |
+     |    |    |
+     |    |    +
+     |    C    |
+     +    |    |
+     |    |    |
+     |    |    D
+     |    N       - - - - -  -dz
+     C     \                 -dz-ndz
+            \
+             \
+           (nz_nrm_x,0,nz_nrm_z) "lowNormal"
+
+
+          |    |
+          0   radius
+
+
+Vectors PA and PB are perpendicular to the normal and in opposite directions::
+
+    ( pz_nrm_z, 0, -pz_nrm_x)   # PA as pz_nrm_z > 0
+    (-pz_nrm_z, 0,  pz_nrm_x)   # PB
+
+Similar triangles "Z"/"X" (equivalent to equating tangents)::
+
+    pdz/R = (-pz_nrm_x)/(pz_nrm_z)
+    pdz   = R*std::abs(-pz_nrm_x)/(pz_nrm_z)    # pz_nrm_z>0.  R > 0. => pdz > 0.
+    ## do not known the sign of pz_nrm_x : the cut could be either way, but want maximum z so take std::abs to pick extreme
+
+Vectors ND and NC are perpendicular to normal and in opposite directions::
+
+    ( nz_nrm_z, 0, -nz_nrm_x )   ##  NC   as nz_nrm_z < 0.
+    (-nz_nrm_z, 0,  nz_nrm_x )   ##  ND
+
+Similar triangles "Z"/"X"::
+
+     ndz/R = (nz_nrm_x/-nz_nrm_z)
+     ndz = R*std::abs(nz_nrm_x)/(-nz_nrm_z)      # nz_nrm_z < 0.  R > 0. => ndz > 0.
+     ## again do not known the sign of nz_nrm_x : the cut could be either way, but want minimum z so take std::abs to pick extreme
+
+**/
+
+inline void sn::CutCylinderZRange(
+    double& zmin,
+    double& zmax,
+    double R,
+    double dz,
+    double pz_nrm_x,
+    double pz_nrm_y,
+    double pz_nrm_z,
+    double nz_nrm_x,
+    double nz_nrm_y,
+    double nz_nrm_z ) // static
+{
+    double pdz = R*std::abs(-pz_nrm_x)/(pz_nrm_z) ;
+    assert( pdz > 0. );
+    zmax = dz + pdz ;
+
+    double ndz = R*std::abs(nz_nrm_x)/(-nz_nrm_z) ;
+    assert( ndz > 0. );
+    zmin = -dz -ndz ;
+}
+
+
+
 inline sn* sn::Cone(double r1, double z1, double r2, double z2)  // static
 {
     assert( z2 > z1 );
@@ -2900,6 +3097,12 @@ inline sn* sn::Torus(double rmin, double rmax, double rtor, double startPhi_deg,
     nd->setPA( rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, 0.  );
     nd->setBB( pmin.x, pmin.y, -rmax, pmax.x, pmax.y, +rmax );
 
+    return nd ;
+}
+
+inline sn* sn::Notsupported() // static
+{
+    sn* nd = Create(CSG_NOTSUPPORTED);
     return nd ;
 }
 
@@ -4890,6 +5093,20 @@ inline void sn::setAABB_LeafFrame()
         assert( px == 0. && py == 0. && a == 0. );
         setBB( px-radius, py-radius, z1, px+radius, py+radius, z2 );
     }
+    else if( typecode == CSG_CUTCYLINDER  )
+    {
+        double R, dz, pz_nrm_x, pz_nrm_z, nz_nrm_x, nz_nrm_z ;
+        getParam_( R, dz, pz_nrm_x, pz_nrm_z, nz_nrm_x, nz_nrm_z );
+
+        double pz_nrm_y = 0. ;
+        double nz_nrm_y = 0. ;
+
+        double zmin = 0. ;
+        double zmax = 0. ;
+        CutCylinderZRange(zmin, zmax, R, dz, pz_nrm_x, pz_nrm_y, pz_nrm_z, nz_nrm_x, nz_nrm_y, nz_nrm_z );
+
+        setBB( -R, -R, zmin, +R, +R, zmax );
+    }
     else if( typecode == CSG_DISC )
     {
         double px, py, ir, r, z1, z2 ;
@@ -4937,6 +5154,10 @@ inline void sn::setAABB_LeafFrame()
     {
         // cannot define bbox of list header nodes without combining bbox of all the subs
         // so have to defer setting the bbox until all the subs are converted
+        setBB( 0. );
+    }
+    else if( typecode == CSG_NOTSUPPORTED )
+    {
         setBB( 0. );
     }
     else if( typecode == CSG_ZERO )

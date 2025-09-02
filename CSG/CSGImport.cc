@@ -316,8 +316,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
     int num_sub_total = sn::GetChildTotal( lns );
 
     int ln = lns.size();
-    assert( ln == 0 || ln == 1 ); // simplify initial impl
-
+    bool ln_expect = ln == 0 || ln == 1 ;
 
 
     bool dump_LVID = node.lvid == LVID || ln > 0 || idx_rc > 0 ;
@@ -331,6 +330,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         << " primIdx " << primIdx
         << " bn " << bn << "(binary nodes)"
         << " ln(subset of bn) " << ln
+        << " ln_expect " << ( ln_expect ? "YES" : "NO " )
         << " num_sub_total " << num_sub_total
         << "\n"
         << "[rt.render\n"
@@ -342,6 +342,8 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         << ".CSGImport::importPrim dumping as ln > 0 : solid contains listnode"
         << std::endl
         ;
+
+    assert( ln_expect ); // simplify initial impl
 
 
     // 3. addPrim to foundry with space for binary nodes and all subs

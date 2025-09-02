@@ -4,10 +4,10 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 U4
 ===
 
-Geant4 should have found CLHEP already, but when using Randomize get 
+Geant4 should have found CLHEP already, but when using Randomize get
 undefined symbols CLHEP::HepRandom::getTheEngine() so also find CLHEP.
 
-Note there there is no find_package Custom4 as that is found when 
+Note there there is no find_package Custom4 as that is found when
 finding PMTSim
 
 #]=]
@@ -25,7 +25,7 @@ find_package(G4 REQUIRED MODULE)
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 1 ======= find GDXML CLHEP OpticksXercesC ")
 
 find_package(GDXML REQUIRED CONFIG)
-find_package(CLHEP  REQUIRED CONFIG) 
+find_package(CLHEP  REQUIRED CONFIG)
 find_package(OpticksXercesC REQUIRED MODULE)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 2 =======  find Custom4 PMTSim  ")
@@ -52,7 +52,7 @@ message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 3 ======= completed finds " 
 
 
 set(SOURCES
-    U4_LOG.cc 
+    U4_LOG.cc
     U4.cc
     U4SolidMaker.cc
     U4SolidTree.cc
@@ -74,7 +74,7 @@ set(SOURCES
     Local_DsG4Scintillation.cc
 
     U4Physics.cc
-) 
+)
 
 set(OTHER_SOURCES
     InstrumentedG4OpBoundaryProcess.cc
@@ -86,8 +86,8 @@ set(HEADERS
     U4_API_EXPORT.hh
     U4.hh
     U4ThreeVector.h
-    U4Hit.h 
-    U4HitGet.h 
+    U4Hit.h
+    U4HitGet.h
     U4Track.h
     U4Stack.h
     Deprecated_U4PhotonInfo.h
@@ -98,8 +98,8 @@ set(HEADERS
     U4Boundary.h
     U4NistManager.h
 
-    U4App.h 
-    U4VPrimaryGenerator.h 
+    U4App.h
+    U4VPrimaryGenerator.h
 
     U4SensorIdentifier.h
     U4SensorIdentifierDefault.h
@@ -109,13 +109,14 @@ set(HEADERS
     U4SolidTree.hh
 
     U4Material.hh
-    U4Mat.h 
+    U4Mat.h
     U4Scint.h
 
     U4Volume.h
     U4Surface.h
     U4Solid.h
     U4Polycone.h
+    U4MultiUnion.h
     U4MaterialPropertiesTable.h
     U4MaterialPropertyVector.h
 
@@ -129,7 +130,7 @@ set(HEADERS
     U4Touchable.h
 
     U4Navigator.h
-    U4Simtrace.h 
+    U4Simtrace.h
 
     U4Debug.hh
     U4Scintillation_Debug.hh
@@ -143,20 +144,20 @@ set(HEADERS
     Local_DsG4Scintillation.hh
     U4Physics.hh
 
-    U4PMTAccessor.h 
+    U4PMTAccessor.h
 
     U4Process.h
     U4PhysicsTable.h
     U4PhysicsVector.h
     U4MaterialTable.h
     U4OpticalSurfaceFinish.h
-    U4OpticalSurfaceModel.h 
-    U4SurfaceType.h 
+    U4OpticalSurfaceModel.h
+    U4SurfaceType.h
     U4SurfacePerfect.h
-    U4SurfaceArray.h 
+    U4SurfaceArray.h
 
     U4Mesh.h
-    U4Version.h 
+    U4Version.h
 )
 
 set(OTHER_HEADERS
@@ -170,20 +171,20 @@ add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_link_libraries( ${name} PUBLIC
     Opticks::G4
-    Opticks::SysRap 
+    Opticks::SysRap
     CLHEP::CLHEP
     Opticks::OpticksXercesC
     Opticks::GDXML
 )
 
-target_include_directories( ${name} PUBLIC 
-   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
+target_include_directories( ${name} PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )
 
-target_compile_definitions( ${name} PUBLIC OPTICKS_U4 ) # THIS MUST BE PUBLIC FOR SLOG-ING TO WORK FULLY 
+target_compile_definitions( ${name} PUBLIC OPTICKS_U4 ) # THIS MUST BE PUBLIC FOR SLOG-ING TO WORK FULLY
 
-target_compile_definitions( ${name} PRIVATE G4USE_STD11 ) 
-target_compile_definitions( ${name} PRIVATE STANDALONE ) 
+target_compile_definitions( ${name} PRIVATE G4USE_STD11 )
+target_compile_definitions( ${name} PRIVATE STANDALONE )
 
 
 if(Custom4_FOUND)
