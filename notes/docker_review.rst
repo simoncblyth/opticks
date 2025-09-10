@@ -2,11 +2,55 @@ docker_review
 ======================
 
 
+Tree
+-----
+
+.. toctree::
+
+    docker
+    docker-cuda
+    docker-cvmfs
+    docker_junosw_opticks_container_build_shakedown
+    docker_push
+
+
+Other docker notes
+---------------------
+
+
+docker.rst
+    examining CUDA Dockerfile from NVIDIA, installing docker on A,  working out how to use docker, 
+    docker via socks proxy issue, workaround using GitHub Actions "GHA"
+
+docker-cuda.rst
+    closer look at the official nvidia/cuda images for rockylinux9 as no almalinux9 released
+
+docker-cvmfs.rst
+    working out how to get CVMFS access from inside the container
+
+docker_junosw_opticks_container_build_shakedown.rst
+    shakedown the docker container required to get Opticks+JUNOSW to build
+
+docker_push.rst
+    notes on pushing the image to docker hub
+
+
+hub.docker.com image used for Opticks + JUNOSW gitlab CI/CD 
+--------------------------------------------------------------
+
+* https://hub.docker.com/r/simoncblyth/cuda/tags
+* https://hub.docker.com/layers/simoncblyth/cuda/12.4.1-runtimeplus-rockylinux9/images/sha256-f3209ee05a2e128302f039bcbb4189a1fcc8bfc94d24763b40d39260756fa59a
+
+
 Preparation of CI/CD docker image for JUNOSW+Opticks done in github "sandbox" and gitlab "sandlab" repos 
 -------------------------------------------------------------------------------------------------------------
 
 * https://github.com/simoncblyth/sandbox/
 * https://github.com/simoncblyth/sandbox/blob/master/docker-mock-gitlab-ci.sh
+* https://github.com/simoncblyth/sandbox/blob/master/junosw/Dockerfile-junosw-cuda-runtimeplus-el9
+
+  * developing Dockerfile used for Opticks+JUNOSW CI/CD with JUNO private gitlab 
+
 
 * https://gitlab.com/simoncblyth/sandlab
 * https://gitlab.com/simoncblyth/sandlab/-/blob/main/.gitlab-ci.yml
