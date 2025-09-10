@@ -219,6 +219,9 @@ struct NP
 
 
     void set_dtype(const char* dtype_); // *set_dtype* may change shape and size of array while retaining the same underlying bytes
+    std::string dtype_name() const ;   // eg float32 uint8
+
+
 
 
     INT index(  INT i,  INT j=0,  INT k=0,  INT l=0, INT m=0, INT o=0) const ;
@@ -612,6 +615,7 @@ struct NP
 
     template<typename T> void read(const T* src);
     template<typename T> void read2(const T* src);
+    void read_bytes(char* src);
     template<typename T> void write(T* dst) const ;
 
 
@@ -1725,6 +1729,21 @@ inline void NP::set_dtype(const char* dtype_)
     size = size_ ;
 
     std::cout << desc() << std::endl ;
+}
+
+std::string NP::dtype_name() const
+{
+    std::stringstream ss ;
+    switch(uifc)
+    {
+        case 'u': ss << "uint"    ; break ;
+        case 'i': ss << "int"     ; break ;
+        case 'f': ss << "float"   ; break ;
+        case 'c': ss << "complex" ; break ;
+    }
+    ss << ebyte*8 ;
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -7707,6 +7726,15 @@ template <typename T> void NP::read2(const T* src)
     assert( consistent );
     memcpy( bytes(), src, arr_bytes() );
 }
+
+void NP::read_bytes(char* src)
+{
+    memcpy( bytes(), src, arr_bytes() );
+}
+
+
+
+
 
 template <typename T>
 inline void NP::write(T* dst) const

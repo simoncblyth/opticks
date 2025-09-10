@@ -77,10 +77,23 @@ struct endian
 template<typename T>
 struct descr_
 {
-    static std::string dtype()
+    static std::string dtype()  // eg "<f4"
     {
         std::stringstream ss ;
         ss << endian::detect() << desc<T>::code << desc<T>::size ;
+        return ss.str();
+    }
+    static std::string dtype_name() // eg "float32"
+    {
+        std::stringstream ss ;
+        switch(desc<T>::code)
+        {
+           case 'f': ss << "float"   ; break ;
+           case 'i': ss << "int"     ; break ;
+           case 'u': ss << "uint"    ; break ;
+           case 'c': ss << "complex" ; break ;
+        }
+        ss << desc<T>::size*8 ;
         return ss.str();
     }
 };
@@ -104,9 +117,28 @@ template struct descr_<std::complex<float> > ;
 template struct descr_<std::complex<double> > ;
 
 
+struct dtype_convert
+{
+    static std::string from_name(const char* name)
+    {
+        std::stringstream ss ;
+        ss << endian::detect() ;
+        if(     strstr(name,"float"))   ss << 'f' ;
+        else if(strstr(name,"uint"))    ss << 'u' ;
+        else if(strstr(name,"int"))     ss << 'i' ;
+        else if(strstr(name,"complex")) ss << 'c' ;
 
+        std::stringstream ii;
+        for (int i=0 ; i < int(strlen(name)) ; i++) ii << (std::isdigit(name[i]) ? name[i] : ' ' ) ; // replace non-digits with spaces
+        int nbit(0);
+        ii >> nbit ;
 
+        bool expect = nbit % 8 == 0 ;
+        ss << ( expect ? nbit/8 : 0 ) ;
 
+        return ss.str();
+    }
+};
 
 /**
 net_hdr
