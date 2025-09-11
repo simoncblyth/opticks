@@ -110,6 +110,7 @@ inline int NP_slice<T>::count() const
 struct NP
 {
     typedef std::int64_t INT ;
+    typedef std::uint64_t UINT ;
     static constexpr const INT TEN = 10 ;
 
     static constexpr const char* EXT = ".npy" ;
@@ -182,6 +183,7 @@ struct NP
     INT num_values() const ;      // all values, product of shape[0]*shape[1]*...
     INT num_itemvalues() const ;  // values after first dimension
     INT arr_bytes() const ;       // formerly num_bytes
+    UINT uarr_bytes() const ;
     INT item_bytes() const ;      // *item* comprises all dimensions beyond the first
     INT meta_bytes() const ;
 
@@ -1338,7 +1340,9 @@ inline NP::INT NP::hdr_bytes() const { return _hdr.length() ; }
 inline NP::INT NP::num_items() const { return shape[0] ;  }
 inline NP::INT NP::num_values() const { return NPS::size(shape) ;  }
 inline NP::INT NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
-inline NP::INT NP::arr_bytes()  const { return NPS::size(shape)*ebyte ; }
+inline NP::INT  NP::arr_bytes()  const {  return NPS::size(shape)*ebyte ; }
+inline NP::UINT NP::uarr_bytes()  const { return NPS::size(shape)*ebyte ; }
+
 inline NP::INT NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
 inline NP::INT NP::meta_bytes() const { return meta.length() ; }
 

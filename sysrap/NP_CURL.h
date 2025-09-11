@@ -3,19 +3,17 @@
 NP_CURL.h : Remote array transformation over HTTP using libcurl
 ==================================================================
 
-libcurl based upload/download of NP.hh arrays to a remote API service such
-as the FastAPI implemented endpoint started by::
+libcurl based upload/download of NP.hh arrays to a remote HTTP API service.
 
-   cd /usr/local/env/fastapi_check
-   ./dev.sh   # symbolic link to ~/env/tools/fastapi_check/dev.sh
 
-Usage::
+Start FastAPI endpoint::
 
-    NP* b = NP_CURL::TransformRemote(a);
+   /usr/local/env/fastapi_check/dev.sh
 
-See::
+Make requests::
 
     ~/np/tests/np_curl_test/np_curl_test.sh
+    LEVEL=1 ~/np/tests/np_curl_test/np_curl_test.sh    ## more verbosity
 
 TODO
 ----
@@ -60,7 +58,14 @@ struct NP_CURL
     int               level ;
 
     CURL*              session;
-    NP_CURL_Upload*    upload ;
+    curl_mime*         mime ;
+
+#ifdef WITH_MULTIPART
+    NP_CURL_Upload_1*  upload ;
+#else
+    NP_CURL_Upload_0*  upload ;
+#endif
+
     NP_CURL_Download*  download ;
     NP_CURL_Header     uhdr ;
     NP_CURL_Header     dhdr ;
@@ -79,7 +84,7 @@ struct NP_CURL
 
     NP* transformRemote( const NP* a );
 
-    void prepare_upload( const NP* a );
+    void prepare_upload(      const NP* a );
     void prepare_download();
     void perform();
     NP*  collect_download();
@@ -98,6 +103,7 @@ inline NP_CURL* NP_CURL::Get()
 
 inline NP* NP_CURL::TransformRemote( const NP* a ) // static
 {
+    if(!a) return nullptr ;
     NP_CURL* nc = Get();
     return nc->transformRemote( a )  ;
 }
@@ -115,7 +121,12 @@ inline NP_CURL::NP_CURL()
     token(U::GetEnv(NP_CURL_API_TOKEN, NP_CURL_API_TOKEN_DEFAULT )),
     level(U::GetEnvInt(NP_CURL_API_LEVEL, NP_CURL_API_LEVEL_DEFAULT)),
     session(nullptr),
-    upload(new NP_CURL_Upload),
+    mime(nullptr),
+#ifdef WITH_MULTIPART
+    upload(new NP_CURL_Upload_1),
+#else
+    upload(new NP_CURL_Upload_0),
+#endif
     download(new NP_CURL_Download),
     uhdr("uhdr"),
     dhdr("dhdr"),
@@ -145,6 +156,7 @@ inline NP_CURL::~NP_CURL()
 
 inline NP* NP_CURL::transformRemote( const NP* a )
 {
+    if(!a) return nullptr ;
     prepare_upload( a );
     prepare_download();
     perform();
@@ -157,12 +169,36 @@ inline NP* NP_CURL::transformRemote( const NP* a )
     return b ;
 }
 
+/**
+NP_CURL::prepare_upload
+-----------------------
+
+
+* https://curl.se/libcurl/c/CURLOPT_MIMEPOST.html
+
+The content-type observed within the FastAPI endpoint is "application/x-www-form-urlencoded"
+is that appropriate for binary data of the array ?
+
+* https://stackoverflow.com/questions/4007969/application-x-www-form-urlencoded-or-multipart-form-data
+
+The above claims "multipart/form-data" is better for binary data, as otherwise the data
+is being url escaped and sent as a big query string.
+
+"That means that for each non-alphanumeric byte that exists in one of our values,
+it's going to take three bytes to represent it."
+
+
+**/
+
+
 inline void NP_CURL::prepare_upload( const NP* a )
 {
     if(level > 0) std::cout << "[NP_CURL::prepare_upload\n" ;
 
     upload->size = a->arr_bytes();
-    upload->data = a->bytes();
+    upload->buffer = (char*)a->bytes();
+    upload->position = 0 ;
+
     std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
     std::string shape = a->sstr();        // eg "(10, 4, 4, )"
 
@@ -171,15 +207,33 @@ inline void NP_CURL::prepare_upload( const NP* a )
     if(level > 0) std::cout << "-NP_CURL::prepare_upload shape[" << shape << "]\n" ;
 
     curl_easy_setopt(session, CURLOPT_URL, url );
-    curl_easy_setopt(session, CURLOPT_POST, 1L);
     curl_easy_setopt(session, CURLOPT_HTTPHEADER, uhdr.headerlist);
 
-    curl_easy_setopt(session, CURLOPT_READFUNCTION, NP_CURL_Upload::read_callback);
+#ifdef WITH_MULTIPART
+    mime = curl_mime_init(session);
+    curl_mimepart* part = curl_mime_addpart(mime);
+    curl_mime_name(part, "upload");
+    curl_mime_filename(part, "array_data" );
+    curl_mime_data_cb(part, (long)upload->size, NP_CURL_Upload_1::read_callback, nullptr, nullptr, upload );
+    // seek and cleanup callbacks missing
+
+    curl_easy_setopt(session, CURLOPT_MIMEPOST, mime);
+    curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, (long)upload->size);
+
+    // "multipart/form-data" which should be much more efficient for large arrays
+#else
+    // urlencoded
+    curl_easy_setopt(session, CURLOPT_POST, 1L);
+    curl_easy_setopt(session, CURLOPT_READFUNCTION, NP_CURL_Upload_0::read_callback);
     curl_easy_setopt(session, CURLOPT_READDATA, upload );
     curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, (long)upload->size);
 
+    // "application/x-www-form-urlencoded" which is only suitable for small arrays
+#endif
+
     if(level > 0) std::cout << "]NP_CURL::prepare_upload\n" ;
 }
+
 
 
 inline void NP_CURL::prepare_download()
@@ -206,6 +260,13 @@ inline void NP_CURL::perform()
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_code));
         rc = 1 ;
     }
+
+    if(mime)
+    {
+        curl_mime_free(mime);
+        mime = nullptr ;
+    }
+
 
     curl_easy_getinfo(session, CURLINFO_RESPONSE_CODE, &http_code);
     if(level > 0) std::cout << "-NP_CURL::perform http_code[" << http_code << "]\n" ;
@@ -260,7 +321,7 @@ inline NP* NP_CURL::collect_download()
     if(level > 0) std::cout << "-NP_CURL::collect_download      dtype[" << dtype << "]\n" ;
 
     NP* b = new NP( dtype.c_str(), dhdr.sh );
-    bool expect = b->arr_bytes() == download->size ;
+    bool expect = b->uarr_bytes() == download->size ;
 
     if( !expect ) std::cerr
         << "-NP_CURL::collect_download "
