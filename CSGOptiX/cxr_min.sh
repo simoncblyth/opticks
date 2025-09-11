@@ -16,6 +16,10 @@ open
 
         cxr_min.sh open "09:00"
         cxr_min.sh open "Fri Aug 22 09:00"
+
+        EVT # set EVT envvar to identify AFOLD/BFOLD or just to identify some snapshots
+        cxr_min.sh open "yesterday 09:00"
+
         pic   # lists screenshots within the context
 
 run
@@ -302,7 +306,7 @@ Resolve_CFBaseFromGEOM()
 Resolve_CFBaseFromGEOM
 
 
-
+# NB EVT is not necessaryily used to pick between SEvt AFOLD/BFOLD it can just be a name to identify context of some snapshots
 _CUR=GEOM/$GEOM/$SCRIPT/$EVT
 
 if [ "${arg/info}" != "$arg" ]; then

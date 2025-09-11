@@ -1,7 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 
-bin=CSGOptiXRenderTest 
+bin=CSGOptiXServiceTest
 source $HOME/.opticks/GEOM/GEOM.sh
 
 vars="BASH_SOURCE bin GEOM"
@@ -11,8 +11,8 @@ arg=${1:-$defarg}
 
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
-fi 
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+fi
 
 if [ "${arg/run}" != "$arg" ]; then
    $bin
@@ -26,5 +26,5 @@ if [ "${arg/dbg}" != "$arg" ]; then
 fi
 
 
-exit 0 
+exit 0
 
