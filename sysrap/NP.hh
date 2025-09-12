@@ -209,6 +209,7 @@ struct NP
     void init();
     void set_shape( INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1);
     void set_shape( const std::vector<INT>& src_shape );
+    void get_shape( std::vector<size_t>& sh ) const ;
     // CAUTION: DO NOT USE *set_shape* TO CHANGE SHAPE (as it calls *init*) INSTEAD USE *change_shape*
     bool has_shape(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) const ;
     void change_shape(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 ) ;   // one dimension entry left at -1 can be auto-set
@@ -216,6 +217,7 @@ struct NP
 
     void change_shape_to_3D() ;
     void reshape( const std::vector<INT>& new_shape ); // product of shape before and after must be the same
+
 
     template<int P> void size_2D( INT& width, INT& height ) const ;
 
@@ -1555,6 +1557,11 @@ inline void NP::set_shape(const std::vector<INT>& src_shape)
     size = NPS::copy_shape(shape, src_shape);
     init();
 }
+inline void NP::get_shape( std::vector<size_t>& sh ) const
+{
+    size_t sz = NPS::copy_shape(sh, shape);
+    assert( sz == size_t(size) );
+}
 
 inline bool NP::has_shape(INT ni, INT nj, INT nk, INT nl, INT nm, INT no) const
 {
@@ -1735,7 +1742,7 @@ inline void NP::set_dtype(const char* dtype_)
     std::cout << desc() << std::endl ;
 }
 
-std::string NP::dtype_name() const
+inline std::string NP::dtype_name() const
 {
     std::stringstream ss ;
     switch(uifc)
@@ -7706,7 +7713,7 @@ template <typename T> inline void NP::_dump(INT i0_, INT i1_, INT j0_, INT j1_ )
 }
 
 
-template <typename T> void NP::read(const T* src)
+template <typename T> inline void NP::read(const T* src)
 {
     T* v = values<T>();
 
@@ -7723,7 +7730,7 @@ template <typename T> void NP::read(const T* src)
     }
 }
 
-template <typename T> void NP::read2(const T* src)
+template <typename T> inline void NP::read2(const T* src)
 {
     bool consistent = sizeof(T) == ebyte ;
     if(!consistent) std::cout << "NP::read2 FAIL not consistent sizeof(T): " << sizeof(T) << " and ebyte: " << ebyte << std::endl ;
@@ -7731,7 +7738,7 @@ template <typename T> void NP::read2(const T* src)
     memcpy( bytes(), src, arr_bytes() );
 }
 
-void NP::read_bytes(char* src)
+inline void NP::read_bytes(char* src)
 {
     memcpy( bytes(), src, arr_bytes() );
 }
@@ -7750,19 +7757,19 @@ inline void NP::write(T* dst) const
 
 
 
-template <typename T> void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
+template <typename T> inline void NP::Write(const char* dir, const char* reldir, const char* name, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string path = U::form_path(dir, reldir, name);
     Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_, no_ );
 }
 
-template <typename T> void NP::Write(const char* dir, const char* name, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
+template <typename T> inline void NP::Write(const char* dir, const char* name, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string path = U::form_path(dir, name);
     Write( path.c_str(), data, ni_, nj_, nk_, nl_, nm_, no_ );
 }
 
-template <typename T> void NP::Write(const char* path, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
+template <typename T> inline void NP::Write(const char* path, const T* data, INT ni_, INT nj_, INT nk_, INT nl_, INT nm_, INT no_ ) // static
 {
     std::string dtype = descr_<T>::dtype() ;
     if(VERBOSE) std::cout

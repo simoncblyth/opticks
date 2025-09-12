@@ -237,6 +237,13 @@ struct NPS
         return size(dst);
     }
 
+    static size_t copy_shape(std::vector<size_t>& dst, const std::vector<INT>& src)
+    {
+        for(size_t i=0 ; i < src.size() ; i++) dst.push_back(src[i]);
+        return size(dst);
+    }
+
+
     static NPS::INT copy_shape(std::vector<INT>& dst, INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1)
     {
         if(ni >= 0) dst.push_back(ni);   // experimental allow zero items
@@ -353,6 +360,15 @@ struct NPS
         for(INT i=0; i<ndim; ++i) sz *= shape[i] ;
         return ndim == 0 ? 0 : sz ;
     }
+
+    static size_t size(const std::vector<size_t>& shape)
+    {
+        size_t ndim = shape.size();
+        size_t sz = 1;
+        for(size_t i=0; i<ndim; ++i) sz *= shape[i] ;
+        return ndim == 0 ? 0 : sz ;
+    }
+
 
     static NPS::INT itemsize(const std::vector<INT>& shape)
     {
