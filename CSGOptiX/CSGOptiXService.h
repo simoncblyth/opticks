@@ -4,29 +4,28 @@
 CSGOptiXService.h
 ==================
 
-Thinking about a very high level API to expose to python with nanobind.
+The CSGOptiXService.h struct provides a very high level C++ API to CSGOptiX
+functionality that is exposed to python within the "opticks_CSGOptiX" extension module.
+This is implemented using nanobind and NP_nanobind.h which does NP <-> numpy conversions.
+
+Use from python with::
+
+    import opticks_CSGOptiX as cx
+
+    svc = cx.CSGOptiXService()
+
+    gs = ... # access gensteps
+
+    ht = svc.simulate(gs)
+
+    ## do something with hits
 
 **/
-
-#include <string>
-
-struct Dog
-{
-    std::string name;
-    std::string bark() const ;
-};
-inline std::string Dog::bark() const
-{
-    return name + ": woof!" ;
-}
-
-
 
 #include "SEvt.hh"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
 #include "NP.hh"
-
 
 struct CSGOptiXService
 {
@@ -35,7 +34,7 @@ struct CSGOptiXService
     CSGOptiX*   cx ;
 
     CSGOptiXService();
-    NP* simulate(const NP* gs);
+    NP* simulate(const NP* gs) const ;
     std::string desc() const ;
 };
 
@@ -49,8 +48,7 @@ inline CSGOptiXService::CSGOptiXService()
 }
 
 
-
-inline NP* CSGOptiXService::simulate( const NP* gs )
+inline NP* CSGOptiXService::simulate( const NP* gs ) const
 {
     std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
 
@@ -73,7 +71,5 @@ inline std::string CSGOptiXService::desc() const
     std::string str = ss.str() ;
     return str ;
 }
-
-
 
 

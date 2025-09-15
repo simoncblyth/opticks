@@ -538,6 +538,8 @@ set(HEADERS
 
     np.h
     NP.hh
+    NP_nanobind.h
+
     NPU.hh
     NPX.h
     NPFold.h
