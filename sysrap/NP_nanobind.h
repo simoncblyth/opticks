@@ -1,21 +1,22 @@
 #pragma once
 
-
 #include "NP.hh"
 #include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
 #include <nanobind/ndarray.h>
+#include <nanobind/stl/string.h>
 
 struct NP_nanobind
 {
-    static NP*  NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy>& a) ;
+    static NP*  NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy> a) ;
 
     static nanobind::dlpack::dtype      dtype_for_NP(char uifc, size_t ebyte);
-    static nanobind::capsule*           owner_for_NP(void* data, char uifc, size_t ebyte);
+    static nanobind::capsule*           owner_for_NP(char uifc, size_t ebyte, void* data);
+
+
     static nanobind::ndarray<nanobind::numpy> numpy_array_view_of_NP(const NP* a);
     static nanobind::ndarray<nanobind::numpy> example_numpy_array_view_of_NP(int code);
 
-    static nanobind::ndarray<nanobind::numpy> roundtrip_numpy_array_via_NP(nanobind::ndarray<nanobind::numpy>& src);
+    static nanobind::ndarray<nanobind::numpy> roundtrip_numpy_array_via_NP(nanobind::ndarray<nanobind::numpy> src);
 };
 
 
@@ -27,7 +28,7 @@ Currently just copying. Can that be avoided ?
 
 **/
 
-inline NP* NP_nanobind::NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy>& a) // static
+inline NP* NP_nanobind::NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy> a) // static
 {
     void* data = a.data();
     size_t ndim = a.ndim();
@@ -65,7 +66,7 @@ inline nanobind::dlpack::dtype NP_nanobind::dtype_for_NP(char uifc, size_t ebyte
    return dtype ;
 }
 
-inline nanobind::capsule* NP_nanobind::owner_for_NP(void* data, char uifc, size_t ebyte) // static
+inline nanobind::capsule* NP_nanobind::owner_for_NP(char uifc, size_t ebyte, void* data) // static
 {
     nanobind::capsule* owner = nullptr ;
     if(      uifc == 'f' && ebyte == 4 ) owner = new nanobind::capsule(data, [](void *p) noexcept { delete[] (float *)p ; });
@@ -93,7 +94,7 @@ inline nanobind::ndarray<nanobind::numpy> NP_nanobind::numpy_array_view_of_NP(co
     a->get_shape(sh);
     size_t ndim = sh.size();
     const size_t* shape = sh.data();
-    nanobind::capsule* owner = owner_for_NP(data, a->uifc, a->ebyte);
+    nanobind::capsule* owner = owner_for_NP(a->uifc, a->ebyte, data);
     const int64_t* strides = nullptr ;
     nanobind::dlpack::dtype dtype = dtype_for_NP(a->uifc, a->ebyte);
     int device_type = nanobind::device::cpu::value ;
@@ -119,14 +120,12 @@ inline nanobind::ndarray<nanobind::numpy> NP_nanobind::example_numpy_array_view_
 }
 
 
-inline nanobind::ndarray<nanobind::numpy> NP_nanobind::roundtrip_numpy_array_via_NP(nanobind::ndarray<nanobind::numpy>& src) // static
+inline nanobind::ndarray<nanobind::numpy> NP_nanobind::roundtrip_numpy_array_via_NP(nanobind::ndarray<nanobind::numpy> src) // static
 {
     NP* a_src = NP_copy_of_numpy_array(src);
     nanobind::ndarray<nanobind::numpy> a_dst = numpy_array_view_of_NP(a_src) ;
     return a_dst ;
 }
-
-
 
 
 

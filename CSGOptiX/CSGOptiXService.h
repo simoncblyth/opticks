@@ -29,14 +29,35 @@ Use from python with::
 
 struct CSGOptiXService
 {
+    static CSGOptiXService* INSTANCE ;
+    static CSGOptiXService* Get();
+    static NP* Simulate(NP* gs);
+
     SEvt*       evt ;
     CSGFoundry* fd ;
     CSGOptiX*   cx ;
 
     CSGOptiXService();
-    NP* simulate(const NP* gs) const ;
+    NP* simulate(NP* gs);
     std::string desc() const ;
 };
+
+
+CSGOptiXService* CSGOptiXService::INSTANCE = nullptr ;
+
+CSGOptiXService* CSGOptiXService::Get()
+{
+    if(!INSTANCE) new CSGOptiXService ;
+    assert(INSTANCE);
+    return INSTANCE ;
+}
+
+NP* CSGOptiXService::Simulate( NP* gs)
+{
+    CSGOptiXService* svc = Get();
+    return svc->simulate(gs);
+}
+
 
 inline CSGOptiXService::CSGOptiXService()
     :
@@ -44,11 +65,12 @@ inline CSGOptiXService::CSGOptiXService()
     fd(CSGFoundry::Load()),
     cx(CSGOptiX::Create(fd))
 {
+    INSTANCE = this ;
     std::cout << desc() ;
 }
 
 
-inline NP* CSGOptiXService::simulate( const NP* gs ) const
+inline NP* CSGOptiXService::simulate( NP* gs )
 {
     std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
 

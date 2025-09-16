@@ -8,7 +8,8 @@ include(OpticksBuildOptions)
 #[=[
 For nanobind check
 #]=]
-find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+#find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
+find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
 execute_process(
   COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
   OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE nanobind_ROOT)
@@ -223,14 +224,12 @@ target_link_libraries(${name}
 
 set(py_ext opticks_${name})
 if(nanobind_FOUND)
-   nanobind_add_module(${py_ext} ${py_ext}.cc)
+   nanobind_add_module(${py_ext} NB_STATIC ${py_ext}.cc)
+   target_link_libraries(${py_ext} PUBLIC ${name})
 
-    target_link_libraries(${py_ext}
-         PUBLIC
-             ${name}
-    )
-
+   nanobind_add_stub(${py_ext}_stub MODULE ${py_ext} OUTPUT ${py_ext}.pyi PYTHON_PATH ${CMAKE_CURRENT_BINARY_DIR})
    install(TARGETS ${py_ext} LIBRARY DESTINATION py)
+   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${py_ext}.pyi DESTINATION py)
 endif()
 
 #[=[
