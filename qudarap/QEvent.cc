@@ -182,6 +182,15 @@ int QEvent::setGenstepUpload_NP(const NP* gs_ )
     return rc ;
 }
 
+/**
+QEvent::setGenstepUpload_NP
+-----------------------------
+
+Uploads all OR a slice of the gensteps
+
+**/
+
+
 int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
 {
     LOG_IF( fatal, gs_ == nullptr ) << " gs_ null " ;

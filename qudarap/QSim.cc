@@ -401,6 +401,10 @@ the launch.
        EGPU.SEvt::endOfEvent
 
 
+
+This expects gensteps to have been collected into SEvt vectors of quad6
+prior to being called.
+
 **/
 
 bool QSim::KEEP_SUBFOLD = ssys::getenvbool(QSim__simulate_KEEP_SUBFOLD);
@@ -542,6 +546,50 @@ double QSim::simulate(int eventID, bool reset_)
 
     return tot_dt ;
 }
+
+
+/**
+QSim::simulate
+----------------
+
+High level API intending to be used from CSGOptiXService
+
+1. access eventID from genstep metadata
+2. add the genstep to the EGPU SEvt
+3. invoke simulate doing the kernel launch and pullback
+4. copy global hits array (current thinking that localization
+   should happen within the client to avoid ~doubling hits transfer size)
+5. reset the SEvt doing dealloc
+
+**/
+
+
+NP* QSim::simulate(const NP* gs)
+{
+    int eventID = gs ? gs->get_meta<int>("eventID", -1) : -2 ;
+    bool expect = eventID > -1;
+    if(!expect) std::cerr << "QSim::simulate gs lacks needed eventID metadata [" << eventID << "]\n" ;
+    assert(expect);
+
+    assert( sev == SEvt::Get_EGPU() );
+    sev->addGenstep(gs);
+
+    bool reset_ = false ;
+    double tot_dt = simulate(eventID, reset_);
+
+    NP* ht = sev->getHit()->copy() ;  // copy global hits from SEvt before reset
+    reset(eventID);
+
+    LOG(info)
+        << " eventID " << std::setw(6) << eventID
+        << " gs " << ( gs ? gs->sstr() : "-" )
+        << " ht " << ( ht ? ht->sstr() : "-" )
+        << " tot_dt " << std::fixed << std::setw(10) << std::setprecision(6) << tot_dt
+        ;
+
+    return ht ;
+}
+
 
 
 /**
