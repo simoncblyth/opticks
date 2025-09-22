@@ -219,7 +219,8 @@ SEvt::SEvt()
     gather_total(0),
     genstep_total(0),
     photon_total(0),
-    hit_total(0)
+    hit_total(0),
+    addGenstep_array(0)
 {
     init();
 }
@@ -848,6 +849,139 @@ void SEvt::transformInputPhoton()
 
 
 
+
+NP* SEvt::getInputGenstep_simtrace()
+{
+    NP* igs = nullptr ;
+
+    assert(SEventConfig::IsRGModeSimtrace());
+    bool with_CEGS = SFrameGenstep::HasConfigEnv();
+    bool with_ip = hasInputPhoton();
+    LOG_IF(info, SIMTRACE)
+        << "[" << SEvt__SIMTRACE << "] "
+        << " with_CEGS " << ( with_CEGS ? "YES" : "NO " )
+        << " with_ip " << ( with_ip ? "YES" : "NO " )
+        ;
+
+
+    if(with_CEGS)
+    {
+        const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
+        LOG_IF(info, SIMTRACE )
+            << "[" << SEvt__SIMTRACE << "] "
+            << " frame.get_frs " << ( frs ? frs : "-" ) ;
+            ;
+
+        //if(frs) SEventConfig::SetEventReldir(frs); // dont do that, default is more standard
+        // doing this is hangover from separate simtracing of related volumes presumably
+
+        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
+        LOG_IF(info, SIMTRACE)
+            << "[" << SEvt__SIMTRACE << "] "
+            << " simtrace igs " << ( igs ? igs->sstr() : "-" )
+            ;
+
+    }
+    else
+    {
+        // simtrace mode without CEGS and with OPTICKS_INPUT_PHOTON that must be via record.npy SRecord::getSimtraceAtTime
+        if( with_ip )
+        {
+            igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON_SIMTRACE, nullptr) ;
+            assert(igs);
+        }
+        else
+        {
+            // low level CSG/CSGSimtrace does this
+        }
+    }
+    return igs ;
+}
+
+
+/**
+SEvt::getInputGenstep_simulate
+--------------------------------
+
+This branches between ECPU and EGPU because
+U4VPrimaryGenerator::GeneratePrimaries needs
+torch gensteps before U4Recorder::BeginOfEventAction
+So have to skip the genstep setup for ECPU as it should
+have been done already.
+
+**/
+
+
+
+NP* SEvt::getInputGenstep_simulate()
+{
+    NP* igs = nullptr ;
+
+    bool has_torch = SEventConfig::IsRunningModeTorch() ; // TODO: rename to InputTorch
+    int inputs = int(hasInputGenstepPath()) + int(hasInputPhoton()) + int(has_torch) ;
+
+    LOG_IF(info, LIFECYCLE) << " inputs " << inputs  ;
+    LOG_IF(fatal, inputs > 1 )
+        << " CANNOT COMBINE INPUTS : input_photon/input_genstep/torch "
+        << " index " << index
+        ;
+    assert( inputs == 0 || inputs == 1);
+    if( inputs == 1 )
+    {
+        assertZeroGenstep();
+        if( hasInputGenstepPath() )
+        {
+            initInputGenstep();
+            igs = getInputGenstep() ;
+        }
+        else if( hasInputPhoton())
+        {
+            igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &frame) ;
+        }
+        else if( has_torch )
+        {
+            if( SEvent::HasGENSTEP() )
+            {
+                // expected with G4CXApp.h U4Recorder running : see G4CXApp::GeneratePrimaries
+                // this is because the gensteps are needed really early with Geant4 running
+                igs = SEvent::GetGENSTEP() ;
+            }
+            else
+            {
+                int index_arg = getIndexArg();
+                igs = SEvent::MakeTorchGenstep(index_arg);  // pass index to allow changing num photons per event
+            }
+        }
+    }
+    return igs ;
+}
+
+
+
+/**
+SEvt::getInputGenstep
+-------------------------
+
+**/
+
+
+NP* SEvt::getInputGenstep()
+{
+    NP* igs = nullptr ;
+    if(SEventConfig::IsRGModeSimtrace())
+    {
+        igs = getInputGenstep_simtrace();
+    }
+    else if(SEventConfig::IsRGModeSimulate())
+    {
+        igs = getInputGenstep_simulate();
+    }
+    return igs ;
+}
+
+
+
+
 /**
 SEvt::addInputGenstep  (formerly addFrameGenstep)
 --------------------------------------------------
@@ -859,14 +993,6 @@ at the start of every event cycle to add the gensteps which trigger
 the allocations for result vectors.
 
 
-TODO : FIND WAY TO AVOID THE KLUDGY FEATURES OF THIS
-
-This branches between ECPU and EGPU because
-U4VPrimaryGenerator::GeneratePrimaries needs
-torch gensteps before U4Recorder::BeginOfEventAction
-So have to skip the genstep setup for ECPU as it should
-have been done already.
-
 **/
 
 void SEvt::addInputGenstep()
@@ -874,99 +1000,8 @@ void SEvt::addInputGenstep()
     LOG_IF(info, LIFECYCLE) << id() ;
     LOG(LEVEL);
 
-    if(SEventConfig::IsRGModeSimtrace())
-    {
-        bool with_CEGS = SFrameGenstep::HasConfigEnv();
-        bool with_ip = hasInputPhoton();
-        LOG_IF(info, SIMTRACE)
-            << "[" << SEvt__SIMTRACE << "] "
-            << " with_CEGS " << ( with_CEGS ? "YES" : "NO " )
-            << " with_ip " << ( with_ip ? "YES" : "NO " )
-            ;
-
-
-        if(with_CEGS)
-        {
-            const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
-            LOG_IF(info, SIMTRACE )
-                << "[" << SEvt__SIMTRACE << "] "
-                << " frame.get_frs " << ( frs ? frs : "-" ) ;
-                ;
-
-            //if(frs) SEventConfig::SetEventReldir(frs); // dont do that, default is more standard
-            // doing this is hangover from separate simtracing of related volumes presumably
-
-            NP* gs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
-            LOG_IF(info, SIMTRACE)
-                << "[" << SEvt__SIMTRACE << "] "
-                << " simtrace gs " << ( gs ? gs->sstr() : "-" )
-                ;
-
-            addGenstep(gs);
-            if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
-        }
-        else
-        {
-            // simtrace mode without CEGS and with OPTICKS_INPUT_PHOTON that must be via record.npy SRecord::getSimtraceAtTime
-            if( with_ip )
-            {
-                NP* igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON_SIMTRACE, nullptr) ;
-                assert(igs);
-                addGenstep(igs);
-                LOG_IF(info, SIMTRACE)
-                    << "[" << SEvt__SIMTRACE << "] "
-                    << " non-CEGS ip, igs " << ( igs ? igs->sstr() : "-" )
-                    ;
-            }
-            else
-            {
-                // low level CSG/CSGSimtrace does this
-            }
-
-        }
-    }
-    else if(SEventConfig::IsRGModeSimulate())
-    {
-        bool has_torch = SEventConfig::IsRunningModeTorch() ; // TODO: rename to InputTorch
-        int inputs = int(hasInputGenstepPath()) + int(hasInputPhoton()) + int(has_torch) ;
-
-        LOG_IF(info, LIFECYCLE) << " inputs " << inputs  ;
-        LOG_IF(fatal, inputs > 1 )
-            << " CANNOT COMBINE INPUTS : input_photon/input_genstep/torch "
-            << " index " << index
-            ;
-        assert( inputs == 0 || inputs == 1);
-        if( inputs == 1 )
-        {
-            assertZeroGenstep();
-            NP* igs = nullptr ;
-            if( hasInputGenstepPath() )
-            {
-                initInputGenstep();
-                igs = getInputGenstep() ;
-            }
-            else if( hasInputPhoton())
-            {
-                igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &frame) ;
-            }
-            else if( has_torch )
-            {
-                if( SEvent::HasGENSTEP() )
-                {
-                    // expected with G4CXApp.h U4Recorder running : see G4CXApp::GeneratePrimaries
-                    // this is because the gensteps are needed really early with Geant4 running
-                    igs = SEvent::GetGENSTEP() ;
-                }
-                else
-                {
-                    int index_arg = getIndexArg();
-                    igs = SEvent::MakeTorchGenstep(index_arg);  // pass index to allow changing num photons per event
-                }
-            }
-            assert(igs);
-            addGenstep(igs);
-        }
-    }
+    NP* igs = getInputGenstep();
+    addGenstep(igs);
 }
 
 void SEvt::assertZeroGenstep()
@@ -1728,12 +1763,10 @@ void SEvt::beginOfEvent(int eventID)
     LOG(LEVEL) << " eventID " << eventID ;   // 0-based
     setIndex(eventID);
 
-
     LOG_IF(info, LIFECYCLE) << id() ;
 
     clear_output();   // output vectors and fold : excluding gensteps as thats input
-
-    addInputGenstep();  // does genstep setup for simtrace, input photon and torch running
+    if( addGenstep_array == 0 ) addInputGenstep();  // does genstep setup for simtrace, input photon and torch running
 
     setMeta<int>("NumPhotonCollected", numphoton_collected );
     setMeta<int>("NumGenstepCollected", numgenstep_collected );
@@ -1779,7 +1812,7 @@ void SEvt::endOfEvent(int eventID)
     clear_output();
     clear_genstep();
     clear_extra();
-
+    reset_counter();
 
     SaveRunMeta(); // saving run_meta.txt at end of every event incase of crashes
 
@@ -1801,7 +1834,10 @@ void SEvt::endOfEvent(int eventID)
 
 }
 
-
+void SEvt::reset_counter()
+{
+    addGenstep_array = 0  ;
+}
 
 
 void SEvt::endMeta()
@@ -2190,11 +2226,22 @@ The sgs summary struct of the last genstep added is returned.
 
 sgs SEvt::addGenstep(const NP* a)
 {
+    assert( addGenstep_array == 0 );
+    addGenstep_array++ ;
+
     int num_gs = a ? a->shape[0] : -1 ;
     assert( num_gs > 0 );
     quad6* qq = (quad6*)a->bytes();
     sgs s = {} ;
     for(int i=0 ; i < num_gs ; i++) s = addGenstep(qq[i]) ;
+
+
+    if(SEventConfig::IsRGModeSimtrace() && SFrameGenstep::HasConfigEnv()) // CEGS running
+    {
+        if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
+    }
+
+
     return s ;
 }
 
@@ -2207,6 +2254,15 @@ The GIDX envvar is used whilst debugging to restrict to collecting
 a single genstep chosen by its index.  This is implemented by
 always collecting all genstep labels, but only collecting
 actual gensteps for the enabled index.
+
+In addition to appending the quad6 to the genstep vector this also
+does some bookkeeping, updating::
+
+1. numphoton_collected
+2. numgenstep_collected
+
+Also SEvt::setNumPhoton called, configuring the sizes which
+get allocated later.
 
 **/
 
@@ -2325,6 +2381,10 @@ sgs SEvt::addGenstep(const quad6& q_)
 /**
 SEvt::setNumPhoton
 ----------------------
+
+NB no allocations are done here, in part because this is called on adding every genstep.
+This is just preparing array sizes for future array allocations.
+
 
 This is called from SEvt::addGenstep, updating evt.num_photon
 according to the additional genstep collected and evt.num_seq/tag/flat/record/rec/prd
@@ -4706,11 +4766,19 @@ done in the below geometry preparation methods::
    CSGFoundry::addInstanceVector
 
 
+With Opticks-as-a-service doing localization server side would double hits transfer size
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This suggests should do the localization in the client ? But that means the client
+needs to have the Opticks geometry (specifically stree) to access the transforms. 
+Actually a robust client needs to form a geometry digest to ensure that its
+using the same geometry as the server anyhow.
+
 **/
 
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 {
-    getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct
+    getHit(lp, idx);   // copy *idx* hit from NP array (starts global frame) into sphoton& lp struct of caller
     int iindex = lp.iindex ;
 
     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
@@ -4724,7 +4792,7 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     assert( tr );
 
     bool normalize = true ;
-    lp.transform( *tr, normalize );
+    lp.transform( *tr, normalize );   // inplace transforms lp (pos, mom, pol) into local frame 
 
     glm::tvec4<int64_t> col3 = {} ;
     strid::Decode( *tr, col3 );

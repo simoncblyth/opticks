@@ -244,6 +244,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     unsigned genstep_total ;
     unsigned photon_total ;
     unsigned hit_total ;
+    unsigned addGenstep_array ;
 
 
     // [--- these vectors are cleared by SEvt::clear_genstep_vector
@@ -376,7 +377,12 @@ public:
     static const bool transformInputPhoton_WIDE ;
     void transformInputPhoton();
 
+
+    NP* getInputGenstep_simtrace();
+    NP* getInputGenstep_simulate();
+    NP* getInputGenstep();
     void addInputGenstep();
+
     void assertZeroGenstep();
 
 
@@ -485,6 +491,8 @@ public:
 
     void beginOfEvent(int eventID);
     void endOfEvent(int eventID);
+    void reset_counter();
+
     void endMeta();
 
 
