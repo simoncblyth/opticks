@@ -23,11 +23,16 @@ export storch_FillGenstep_radius=100    # +ve for outwards
 export storch_FillGenstep_pos=0,0,0
 export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
 
-export OPTICKS_EVENT_MODE=Hit
-export OPTICKS_HIT_MASK=EC
 export OPTICKS_NUM_PHOTON=M1   ## HUH : NO EFFECT : GETTING 100 photons only
 export OPTICKS_NUM_EVENT=1
 export OPTICKS_NUM_GENSTEP=1
+
+
+#
+export OPTICKS_EVENT_MODE=Hit
+export OPTICKS_HIT_MASK=EC
+
+
 
 
 vars="BASH_SOURCE PWD bin GEOM defarg arg"

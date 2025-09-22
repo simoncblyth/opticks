@@ -31,14 +31,14 @@ struct CSGOptiXService
 {
     static CSGOptiXService* INSTANCE ;
     static CSGOptiXService* Get();
-    static NP* Simulate(NP* gs);
+    static NP* Simulate(NP* gs, int eventID );
 
     SEvt*       evt ;
     CSGFoundry* fd ;
     CSGOptiX*   cx ;
 
     CSGOptiXService();
-    NP* simulate(NP* gs);
+    NP* simulate(NP* gs, int eventID );
     std::string desc() const ;
 };
 
@@ -52,10 +52,10 @@ CSGOptiXService* CSGOptiXService::Get()
     return INSTANCE ;
 }
 
-NP* CSGOptiXService::Simulate( NP* gs)
+NP* CSGOptiXService::Simulate( NP* gs, int eventID )
 {
     CSGOptiXService* svc = Get();
-    return svc->simulate(gs);
+    return svc->simulate(gs, eventID );
 }
 
 
@@ -70,11 +70,11 @@ inline CSGOptiXService::CSGOptiXService()
 }
 
 
-inline NP* CSGOptiXService::simulate( NP* gs )
+inline NP* CSGOptiXService::simulate( NP* gs, int eventID )
 {
     std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
 
-    NP* ht = cx->simulate(gs);
+    NP* ht = cx->simulate(gs, eventID );
 
     std::cout << "]CSGOptiXService::simulate ht " << ( ht ? ht->sstr() : "-" ) << "\n" ;
     return ht ;

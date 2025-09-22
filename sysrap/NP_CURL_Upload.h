@@ -65,7 +65,7 @@ inline size_t NP_CURL_Upload_1::read_callback(char* buffer, size_t size, size_t 
 
     if (sz > copy_sz) sz = copy_sz ; // for buffered read make sure to stay in range
 
-    std::cout
+    if(false) std::cout
         << "[NP_CURL_Upload_1::read_callback"
         << " size " << size
         << " nitems " << nitems
@@ -81,7 +81,7 @@ inline size_t NP_CURL_Upload_1::read_callback(char* buffer, size_t size, size_t 
     p->position += sz ;
     // not moving the buffer pointer unlike above
 
-    std::cout
+    if(false) std::cout
         << "]NP_CURL_Upload_1::read_callback"
         << " size " << size
         << " nitems " << nitems

@@ -12,6 +12,7 @@ int main()
     std::cout << "gs.repr<int>\n"   << ( gs ? gs->repr<int>()   : "-" ) << "\n" ;
     std::cout << "gs.repr<float>\n" << ( gs ? gs->repr<float>() : "-" ) << "\n" ;
 
+    gs->save("$FOLD/gs.npy");
 
     return 0;
 }

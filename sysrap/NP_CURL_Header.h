@@ -10,6 +10,8 @@ struct NP_CURL_Header
 
     std::string token ;
     int         level ;
+    int         index ;
+
     std::string dtype ;
     std::string shape ;
     std::vector<INT> sh ;
@@ -25,7 +27,7 @@ struct NP_CURL_Header
 
     NP_CURL_Header(const char* name);
 
-    void prepare_upload(const char* dtype_, const char* shape_,  const char* token_, int level_ );
+    void prepare_upload(const char* dtype_, const char* shape_,  const char* token_, int level_, int index_ );
     void clear();
     void collect( const char* name, const char* value );
     void collect_json_content( char* buffer, size_t size );
@@ -33,17 +35,18 @@ struct NP_CURL_Header
     std::string desc() const ;
 
 
-
-    static constexpr const char* x_numpy_token = "x-numpy-token" ;
-    static constexpr const char* x_numpy_level = "x-numpy-level" ; // debug level integer
-    static constexpr const char* x_numpy_dtype = "x-numpy-dtype" ;
-    static constexpr const char* x_numpy_shape = "x-numpy-shape" ;
+    static constexpr const char* x_opticks_index = "x-opticks-index" ;
+    static constexpr const char* x_opticks_token = "x-opticks-token" ;
+    static constexpr const char* x_opticks_level = "x-opticks-level" ; // debug level integer
+    static constexpr const char* x_opticks_dtype = "x-opticks-dtype" ;
+    static constexpr const char* x_opticks_shape = "x-opticks-shape" ;
 
     static constexpr const char* content_length = "content-length" ;
     static constexpr const char* content_type   = "content-type" ;
 
     static  std::string Format(const char* prefix, int value);
     static  std::string Format_LEVEL(int level);
+    static  std::string Format_INDEX(int index);
 
     static  std::string Format(const char* prefix, const char* value);
     static  std::string Format_TOKEN(const char* token);
@@ -58,11 +61,12 @@ inline NP_CURL_Header::NP_CURL_Header( const char* name_ )
     :
     name(name_),
     level(0),
+    index(0),
     headerlist(nullptr)
 {
 }
 
-inline void NP_CURL_Header::prepare_upload(const char* dtype_, const char* shape_,  const char* token_, int level_ )
+inline void NP_CURL_Header::prepare_upload(const char* dtype_, const char* shape_,  const char* token_, int level_, int index_ )
 {
     bool expected_dtype = Expected_DTYPE(dtype_);
     assert( expected_dtype );
@@ -71,10 +75,12 @@ inline void NP_CURL_Header::prepare_upload(const char* dtype_, const char* shape
     std::string x_shape = Format_SHAPE(shape_) ;
     std::string x_token = Format_TOKEN(token_) ;
     std::string x_level = Format_LEVEL(level_) ;
+    std::string x_index = Format_INDEX(index_) ;
 
     assert( headerlist == nullptr );  // should have been cleared
     headerlist = curl_slist_append(headerlist, x_token.c_str() );
     headerlist = curl_slist_append(headerlist, x_level.c_str() );
+    headerlist = curl_slist_append(headerlist, x_index.c_str() );
     headerlist = curl_slist_append(headerlist, x_dtype.c_str() );
     headerlist = curl_slist_append(headerlist, x_shape.c_str() );
 }
@@ -83,6 +89,7 @@ inline void NP_CURL_Header::clear()  // clears everything other than name
 {
     token.clear();
     level = 0 ;
+    index = 0 ;
     dtype.clear();
     shape.clear();
     sh.clear();
@@ -96,20 +103,25 @@ inline void NP_CURL_Header::clear()  // clears everything other than name
 
 inline void NP_CURL_Header::collect( const char* name, const char* value )
 {
-    if( 0==strcmp(name,x_numpy_level))
+    if( 0==strcmp(name,x_opticks_level))
     {
         std::stringstream ss(value);
         ss >> level ;
     }
-    else if( 0==strcmp(name,x_numpy_token))
+    else if( 0==strcmp(name,x_opticks_index))
+    {
+        std::stringstream ss(value);
+        ss >> index ;
+    }
+    else if( 0==strcmp(name,x_opticks_token))
     {
         token = value ;
     }
-    else if( 0==strcmp(name,x_numpy_dtype))
+    else if( 0==strcmp(name,x_opticks_dtype))
     {
         dtype = value ;
     }
-    else if( 0==strcmp(name,x_numpy_shape))
+    else if( 0==strcmp(name,x_opticks_shape))
     {
         shape = value ;
         Parse_SHAPE(sh, shape.c_str());
@@ -150,10 +162,11 @@ inline std::string NP_CURL_Header::desc() const
 {
     std::stringstream ss ;
     ss << "[NP_CURL_Header::desc [" << name << "]\n" ;
-    ss << std::setw(20) << x_numpy_token << " : " << token << "\n" ;
-    ss << std::setw(20) << x_numpy_level << " : " << level << "\n" ;
-    ss << std::setw(20) << x_numpy_dtype << " : " << dtype << "\n" ;
-    ss << std::setw(20) << x_numpy_shape << " : " << shape << "\n" ;
+    ss << std::setw(20) << x_opticks_token << " : " << token << "\n" ;
+    ss << std::setw(20) << x_opticks_level << " : " << level << "\n" ;
+    ss << std::setw(20) << x_opticks_index << " : " << index << "\n" ;
+    ss << std::setw(20) << x_opticks_dtype << " : " << dtype << "\n" ;
+    ss << std::setw(20) << x_opticks_shape << " : " << shape << "\n" ;
     ss << std::setw(20) << "sh.size"     << " : " << sh.size() << "\n" ;
     ss << std::setw(20) << "sstr"        << " : " << sstr() << "\n" ;
     ss << std::setw(20) << content_length << " : " << c_length << "\n" ;
@@ -174,7 +187,8 @@ inline std::string NP_CURL_Header::Format( const char* prefix, int value )
     std::string str = ss.str();
     return str ;
 }
-inline std::string NP_CURL_Header::Format_LEVEL( int level ){  return Format(x_numpy_level, level ); }
+inline std::string NP_CURL_Header::Format_LEVEL( int level ){  return Format(x_opticks_level, level ); }
+inline std::string NP_CURL_Header::Format_INDEX( int index ){  return Format(x_opticks_index, index ); }
 
 
 inline std::string NP_CURL_Header::Format( const char* prefix, const char* value )
@@ -185,9 +199,9 @@ inline std::string NP_CURL_Header::Format( const char* prefix, const char* value
     return str ;
 }
 
-inline std::string NP_CURL_Header::Format_TOKEN( const char* token ){ return Format(x_numpy_token, token ); }
-inline std::string NP_CURL_Header::Format_DTYPE( const char* dtype ){ return Format(x_numpy_dtype, dtype ); }
-inline std::string NP_CURL_Header::Format_SHAPE( const char* shape ){ return Format(x_numpy_shape, shape ); }
+inline std::string NP_CURL_Header::Format_TOKEN( const char* token ){ return Format(x_opticks_token, token ); }
+inline std::string NP_CURL_Header::Format_DTYPE( const char* dtype ){ return Format(x_opticks_dtype, dtype ); }
+inline std::string NP_CURL_Header::Format_SHAPE( const char* shape ){ return Format(x_opticks_shape, shape ); }
 
 inline void NP_CURL_Header::Parse_SHAPE( std::vector<INT>& sh, const char* shape )
 {

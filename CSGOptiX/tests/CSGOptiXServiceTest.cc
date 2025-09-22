@@ -24,25 +24,27 @@ int main(int argc, char** argv)
 
     CSGOptiXService cxs ;
 
-    // WIP: use input genstep machinery for this test
-    SEvt* sev = SEvt::Get_EGPU();
 
+    NP* gs = nullptr ;
+    int eventID = 0 ;
 
     // in server-client situation the gensteps and eventID
     // will arrive in HTTP request body and headers
-    int eventID = 0 ;
-    sev->setIndex(eventID);
-    // need to set index before creating input genstep
-    // for the number of photons config to work
+    {
+        SEvt* sev = SEvt::Get_EGPU();
+        sev->setIndex(eventID);
+        // need to set index before creating input genstep
+        // for the number of photons config to work
+        gs = sev->createInputGenstep_configured();
+    }
 
-    NP* gs = sev->createInputGenstep_configured();
     assert( gs );
     gs->set_meta<int>("eventID", eventID );  // required by QSim::simulate
 
 
     std::cout << "gs: " << ( gs ? gs->sstr() : "-" ) << "\n" ;
 
-    NP* ht = cxs.simulate(gs);
+    NP* ht = cxs.simulate(gs, eventID );
 
     std::cout << "ht: " << ( ht ? ht->sstr() : "-" ) << "\n" ;
 

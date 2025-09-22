@@ -18,31 +18,25 @@ from fastapi import FastAPI, Request, Response, Header, Depends, HTTPException
 
 import opticks_CSGOptiX as cx
 
-
 _svc = cx._CSGOptiXService()
-
-#def do_simulation( gs ):
-#    global _svc
-#    print("repr(_svc)\n", repr(_svc))
-#    print("_svc\n", _svc)
-#    ht = _svc.simulate(gs)   ## NB this is wrapper which handles numpy arrays
-#    return ht
 
 app = FastAPI()
 
 
-
-def make_numpy_ndarray_response( a: np.ndarray, level : int = 0, media_type : str = "application/octet-stream" ):
+def make_numpy_ndarray_response( arr: np.ndarray, index : int = -1, level : int = 0):
     """
     https://stackoverflow.com/questions/15879315/what-is-the-difference-between-ndarray-and-array-in-numpy
 
     numpy.array is just a convenience function to create an ndarray; it is not a class itself.
     """
     headers = {}
-    headers["x-numpy-level"] = str(level)
-    headers["x-numpy-dtype"] = a.dtype.name
-    headers["x-numpy-shape"] = str(a.shape)
-    return Response(a.tobytes('C'), headers=headers, media_type=media_type )
+    headers["x-opticks-index"] = str(index)
+    headers["x-opticks-level"] = str(level)
+    headers["x-opticks-dtype"] = arr.dtype.name
+    headers["x-opticks-shape"] = str(arr.shape)
+    media_type = "application/octet-stream"
+
+    return Response(arr.tobytes('C'), headers=headers, media_type=media_type )
 
 
 async def parse_request_to_numpy_ndarray(request: Request):
@@ -52,13 +46,15 @@ async def parse_request_to_numpy_ndarray(request: Request):
 
     Uses request body and headers with array dtype and shape to reconstruct the uploaded NumPy array
     """
-    token_ = request.headers.get('x-numpy-token')
+    token_ = request.headers.get('x-opticks-token')
     if token_ != "secret":
-        raise HTTPException(status_code=401, detail="x-numpy-token invalid")
+        raise HTTPException(status_code=401, detail="x-opticks-token invalid")
     pass
 
-    level_ = request.headers.get('x-numpy-level','0')
+    level_ = request.headers.get('x-opticks-level','0')
     level = int(level_)
+    index_ = request.headers.get('x-opticks-index','0')
+    index = int(index_)
 
     if level > 0:
         print("[parse_request_to_numpy_ndarray")
@@ -67,8 +63,8 @@ async def parse_request_to_numpy_ndarray(request: Request):
         print("request.headers\n",request.headers)
     pass
 
-    dtype_ = request.headers.get('x-numpy-dtype')
-    shape_ = request.headers.get('x-numpy-shape')
+    dtype_ = request.headers.get('x-opticks-dtype')
+    shape_ = request.headers.get('x-opticks-shape')
     type_ = request.headers.get('content-type')
 
     dtype = getattr(np, dtype_, None)
@@ -102,6 +98,7 @@ async def parse_request_to_numpy_ndarray(request: Request):
         print("filename:%s" % filename )
         print("token_[%s]" % token_ )
         print("level[%d]" % level )
+        print("index[%d]" % index )
         print("dtype_[%s]" % str(dtype) )
         print("shape_[%s]" % str(shape_) )
         print("shape[%s]"  % str(shape) )
@@ -110,8 +107,9 @@ async def parse_request_to_numpy_ndarray(request: Request):
         print("a[%s]" % a )
         print("]parse_request_to_numpy_ndarray")
     pass
-    return a
-
+    request.state.a = a
+    request.state.index = index
+    request.state.level = level
 
 
 # HMM should that have a trailing slash ?
@@ -131,41 +129,34 @@ async def array_transform(a: np.ndarray = Depends(parse_request_to_numpy_ndarray
 
     b = a + 1
 
-    return make_numpy_ndarray_response(b)
+    return make_numpy_ndarray_response(b, -1)
 
 
 
-
-@app.post('/simulate', response_class=Response)
-async def simulate(gs: np.ndarray = Depends(parse_request_to_numpy_ndarray)):
+@app.post('/simulate', response_class=Response, dependencies=[Depends(parse_request_to_numpy_ndarray)])
+async def simulate(request: Request):
     """
     :param gs:
     :return response: Response
 
-    1. parse_request_as_array providing the uploaded NumPy *gs*
+    1. parse_request_as_array dependency sets request.state values
     2. operate on *gs* giving *ht*
     3. return *ht* as FastAPI Response
 
     Test this with ~/np/tests/np_curl_test/call.sh
     """
 
-    #ht = cx._CSGOptiXService_Simulate(gs)
+    gs = request.state.a
+    index = request.state.index
+    level = request.state.level
 
-    ht = _svc.simulate(gs)   ## NB this is wrapper which handles numpy arrays
+    if level > 0: print("main.py:simulate index %d gs %s " % ( index, repr(gs) ))
 
-    return make_numpy_ndarray_response(ht)
+    ht = _svc.simulate(gs, index)   ## NB this wrapper from CSGOptiX/opticks_CSGOptiX handles numpy<=>NP conversion
 
+    response = make_numpy_ndarray_response(ht, index)
 
-
-
-
-
-
-
-
-
-
-
+    return response
 
 
 
@@ -176,9 +167,9 @@ def array_create():
     HTTP/1.1 200 OK
     date: Tue, 09 Sep 2025 03:08:11 GMT
     server: uvicorn
-    x-numpy-level: 0
-    x-numpy-dtype: uint8
-    x-numpy-shape: 512,512,3
+    x-opticks-level: 0
+    x-opticks-dtype: uint8
+    x-opticks-shape: 512,512,3
     content-length: 786432
     content-type: application/octet-stream
 

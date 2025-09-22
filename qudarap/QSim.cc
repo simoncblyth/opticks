@@ -564,10 +564,8 @@ High level API intending to be used from CSGOptiXService
 **/
 
 
-NP* QSim::simulate(const NP* gs)
+NP* QSim::simulate(const NP* gs, int eventID )
 {
-    int eventID = gs ? gs->get_meta<int>("eventID", -1) : -2 ;
-
     bool eventID_expected = eventID > -1;
     if(!eventID_expected) std::cerr << "QSim::simulate gs lacks needed eventID metadata [" << eventID << "]\n" ;
     assert(eventID_expected);

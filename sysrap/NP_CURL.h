@@ -76,15 +76,15 @@ struct NP_CURL
 
 
     static  NP_CURL* Get();
-    static  NP* TransformRemote( const NP* a );
+    static  NP* TransformRemote( const NP* a, int index );
     static void Clear();
 
     NP_CURL();
     virtual ~NP_CURL();
 
-    NP* transformRemote( const NP* a );
+    NP* transformRemote( const NP* a, int index );
 
-    void prepare_upload(      const NP* a );
+    void prepare_upload( const NP* a, int index );
     void prepare_download();
     void perform();
     NP*  collect_download();
@@ -101,11 +101,11 @@ inline NP_CURL* NP_CURL::Get()
 }
 
 
-inline NP* NP_CURL::TransformRemote( const NP* a ) // static
+inline NP* NP_CURL::TransformRemote( const NP* a, int index ) // static
 {
     if(!a) return nullptr ;
     NP_CURL* nc = Get();
-    return nc->transformRemote( a )  ;
+    return nc->transformRemote( a, index )  ;
 }
 
 inline void NP_CURL::Clear()
@@ -154,10 +154,10 @@ inline NP_CURL::~NP_CURL()
 }
 
 
-inline NP* NP_CURL::transformRemote( const NP* a )
+inline NP* NP_CURL::transformRemote( const NP* a, int index )
 {
     if(!a) return nullptr ;
-    prepare_upload( a );
+    prepare_upload( a, index );
     prepare_download();
     perform();
 
@@ -191,7 +191,7 @@ it's going to take three bytes to represent it."
 **/
 
 
-inline void NP_CURL::prepare_upload( const NP* a )
+inline void NP_CURL::prepare_upload( const NP* a, int index )
 {
     if(level > 0) std::cout << "[NP_CURL::prepare_upload\n" ;
 
@@ -202,7 +202,7 @@ inline void NP_CURL::prepare_upload( const NP* a )
     std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
     std::string shape = a->sstr();        // eg "(10, 4, 4, )"
 
-    uhdr.prepare_upload( dtype.c_str(), shape.c_str(), token, level );
+    uhdr.prepare_upload( dtype.c_str(), shape.c_str(), token, level, index );
 
     if(level > 0) std::cout << "-NP_CURL::prepare_upload shape[" << shape << "]\n" ;
 

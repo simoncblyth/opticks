@@ -11,10 +11,10 @@ cd $(dirname $(realpath $BASH_SOURCE))
 name=SEvt__createInputGenstep_configuredTest
 which $name
 
-defarg="info_run"
+defarg="info_run_ls"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE PWD defarg arg"
+vv="BASH_SOURCE PWD defarg arg FOLD"
 
 
 # see cxs_min.sh for source to config examples
@@ -32,7 +32,9 @@ export OPTICKS_NUM_EVENT=1
 export OPTICKS_NUM_GENSTEP=1
 
 
-
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+export FOLD=$TMP/SEvt__createInputGenstep_configuredTest
 
 
 if [ "${arg/info}" != "$arg" ]; then
@@ -48,6 +50,10 @@ if [ "${arg/dbg}" != "$arg" ]; then
    source dbg__.sh
    dbg__ $name
    [ $? -ne 0 ] && echo $BASH_SOURCE - dbg ERROR && exit 2
+fi
+
+if [ "${arg/ls}" != "$arg" ]; then
+   ls -alst $FOLD
 fi
 
 exit 0

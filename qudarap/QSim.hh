@@ -118,7 +118,7 @@ public:
     static bool KEEP_SUBFOLD ;
 
     double simulate(int eventID, bool reset_ );      // via cx launch
-    NP*    simulate(const NP* gs);                   // higher level API for use from CSGOptiXService.h
+    NP*    simulate(const NP* gs, int eventID );     // higher level API for use from CSGOptiXService.h
 
     static void MaybeSaveIGS(int eventID, NP* igs);
 

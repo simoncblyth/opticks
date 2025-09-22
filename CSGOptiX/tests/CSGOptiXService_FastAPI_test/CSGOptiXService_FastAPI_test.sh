@@ -8,7 +8,7 @@ This requires the *uv* python package+venv tool::
 
     https://github.com/astral-sh/uv
 
-Build and start the FastAPI HTTP server, on first run dependencies 
+Build and start the FastAPI HTTP server, on first run dependencies
 are downloaded from pypi into the virtual env .venv directory::
 
     ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
@@ -26,6 +26,12 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 
 source $HOME/.opticks/GEOM/GEOM.sh
+
+
+## TODO: MOVE THIS CONFIG INTO CODE ?
+export OPTICKS_EVENT_MODE=Hit
+export OPTICKS_HIT_MASK=EC
+
 
 
 defarg="info_venv_run"

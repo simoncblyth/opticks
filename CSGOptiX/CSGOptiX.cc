@@ -731,9 +731,9 @@ High level interface used by CSGOptiXService.h
 
 **/
 
-NP* CSGOptiX::simulate(const NP* gs)
+NP* CSGOptiX::simulate(const NP* gs, int eventID)
 {
-    return sim->simulate(gs);
+    return sim->simulate(gs, eventID);
 }
 
 
