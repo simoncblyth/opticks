@@ -722,6 +722,22 @@ double CSGOptiX::simulate(int eventID)
     return dt ;
 }
 
+
+/**
+CSGOptiX::simulate
+-------------------
+
+High level interface used by CSGOptiXService.h
+
+**/
+
+NP* CSGOptiX::simulate(const NP* gs)
+{
+    return sim->simulate(gs);
+}
+
+
+
 /**
 CSGOptiX::simtrace
 --------------------

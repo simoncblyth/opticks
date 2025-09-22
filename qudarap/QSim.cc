@@ -567,9 +567,10 @@ High level API intending to be used from CSGOptiXService
 NP* QSim::simulate(const NP* gs)
 {
     int eventID = gs ? gs->get_meta<int>("eventID", -1) : -2 ;
-    bool expect = eventID > -1;
-    if(!expect) std::cerr << "QSim::simulate gs lacks needed eventID metadata [" << eventID << "]\n" ;
-    assert(expect);
+
+    bool eventID_expected = eventID > -1;
+    if(!eventID_expected) std::cerr << "QSim::simulate gs lacks needed eventID metadata [" << eventID << "]\n" ;
+    assert(eventID_expected);
 
     assert( sev == SEvt::Get_EGPU() );
     sev->addGenstep(gs);
@@ -577,15 +578,17 @@ NP* QSim::simulate(const NP* gs)
     bool reset_ = false ;
     double tot_dt = simulate(eventID, reset_);
 
-    NP* ht = sev->getHit()->copy() ;  // copy global hits from SEvt before reset
-    reset(eventID);
+    const NP* _ht = sev->getHit();
+    NP* ht = _ht ? _ht->copy() : nullptr ;  // copy global hits from SEvt before reset
 
     LOG(info)
         << " eventID " << std::setw(6) << eventID
         << " gs " << ( gs ? gs->sstr() : "-" )
         << " ht " << ( ht ? ht->sstr() : "-" )
+        << " _ht " << ( _ht ? _ht->sstr() : "-" )
         << " tot_dt " << std::fixed << std::setw(10) << std::setprecision(6) << tot_dt
         ;
+    reset(eventID);
 
     return ht ;
 }

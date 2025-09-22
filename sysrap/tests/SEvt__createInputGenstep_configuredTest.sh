@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 usage(){ cat << EOU
 
-
-~/o/CSGOptiX/tests/CSGOptiXServiceTest.sh
-
-BP=SEvent::MakeTorchGenstep CSGOptiX/tests/CSGOptiXServiceTest.sh dbg
-
+~/o/sysrap/tests/SEvt__createInputGenstep_configuredTest.sh
 
 EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-bin=CSGOptiXServiceTest
-source $HOME/.opticks/GEOM/GEOM.sh
+name=SEvt__createInputGenstep_configuredTest
+which $name
+
+defarg="info_run"
+arg=${1:-$defarg}
+
+vv="BASH_SOURCE PWD defarg arg"
 
 
-# see cxs_min.sh for source of config examples
+# see cxs_min.sh for source to config examples
 export OPTICKS_RUNNING_MODE=SRM_TORCH
 export storch_FillGenstep_type=sphere
 export storch_FillGenstep_radius=100    # +ve for outwards
 export storch_FillGenstep_pos=0,0,0
 export storch_FillGenstep_distance=1.00 # frac_twopi control of polarization phase(tangent direction)
+
 
 export OPTICKS_EVENT_MODE=Hit
 export OPTICKS_HIT_MASK=EC
@@ -30,26 +32,24 @@ export OPTICKS_NUM_EVENT=1
 export OPTICKS_NUM_GENSTEP=1
 
 
-vars="BASH_SOURCE PWD bin GEOM defarg arg"
 
-defarg="info_run"
-arg=${1:-$defarg}
+
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+   for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-   $bin
-   [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1
+   $name
+   [ $? -ne 0 ] && echo $BASH_SOURCE - run ERROR && exit 1
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
    source dbg__.sh
-   dbg__ $bin
-   [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
+   dbg__ $name
+   [ $? -ne 0 ] && echo $BASH_SOURCE - dbg ERROR && exit 2
 fi
 
-
 exit 0
+
 

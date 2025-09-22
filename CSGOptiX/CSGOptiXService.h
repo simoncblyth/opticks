@@ -74,7 +74,7 @@ inline NP* CSGOptiXService::simulate( NP* gs )
 {
     std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
 
-    NP* ht = gs->copy();
+    NP* ht = cx->simulate(gs);
 
     std::cout << "]CSGOptiXService::simulate ht " << ( ht ? ht->sstr() : "-" ) << "\n" ;
     return ht ;

@@ -169,6 +169,8 @@ private:
 
     double simtrace(int eventID);
     double simulate(int eventID);
+    NP* simulate(const NP* gs);
+
     double proceed();
 
 

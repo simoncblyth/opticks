@@ -142,6 +142,8 @@ set(TEST_SOURCES
 
    SCurandStateMonolithicTest.cc
 
+   SEvt__createInputGenstep_configuredTest.cc
+
 )
 
 

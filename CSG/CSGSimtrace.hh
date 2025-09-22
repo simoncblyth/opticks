@@ -8,6 +8,11 @@ Canonical usage from tests/CSGSimtraceTest.cc
 The heart of this is CSGQuery on CPU intersect functionality using the csg headers
 
 
+This is a very low level simtrace test that does not use
+gensteps, which causes SEvt to issue ignorable warnings.
+TODO: avoid the runtime warning from SEvt::addGenstep
+
+
 **/
 
 #include "plog/Severity.h"
