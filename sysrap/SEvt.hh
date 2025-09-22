@@ -326,8 +326,8 @@ public:
     static const char* ResolveInputArray(const char* spec, const char* dir) ;
     static NP* LoadInputArray(const char* path) ;
 
-    static NP* LoadInputGenstep(int idx);
-    static NP* LoadInputGenstep(const char* spec);
+    static NP* LoadInputGenstep_array(int idx);
+    static NP* LoadInputGenstep_array(const char* spec);
 
     static NP* LoadInputPhoton();
     static NP* LoadInputPhoton(const char* spec);
@@ -336,12 +336,12 @@ public:
     static NP* LoadInputPhoton_record( const char* spec);
 
 
-
-    void initInputGenstep();
-    void setInputGenstep(NP* g);
-    NP* getInputGenstep() const ;
-    bool hasInputGenstep() const ;
-    bool hasInputGenstepPath() const ;
+    // NB these _array methods are lower level than createInputGenstep_configured
+    void initInputGenstep_array();
+    void setInputGenstep_array(NP* g);
+    NP* getInputGenstep_array() const ;
+    bool hasInputGenstep_array() const ;
+    bool hasInputGenstep_arrayPath() const ;
 
 
     void initInputPhoton();
@@ -378,9 +378,9 @@ public:
     void transformInputPhoton();
 
 
-    NP* getInputGenstep_simtrace();
-    NP* getInputGenstep_simulate();
-    NP* getInputGenstep();
+    NP* createInputGenstep_simtrace();
+    NP* createInputGenstep_simulate();
+    NP* createInputGenstep_configured();
     void addInputGenstep();
 
     void assertZeroGenstep();

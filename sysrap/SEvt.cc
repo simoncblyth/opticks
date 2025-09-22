@@ -375,8 +375,8 @@ NP* SEvt::LoadInputArray(const char* path) // static
 
 
 /**
-SEvt::LoadInputGenstep
-------------------------
+SEvt::LoadInputGenstep_array
+-----------------------------
 
 ::
 
@@ -391,12 +391,12 @@ so this cannot be static
 **/
 
 
-NP* SEvt::LoadInputGenstep(int idx) // static
+NP* SEvt::LoadInputGenstep_array(int idx) // static
 {
     const char* spec = SEventConfig::InputGenstep(idx);
-    return spec ? LoadInputGenstep(spec) : nullptr ;
+    return spec ? LoadInputGenstep_array(spec) : nullptr ;
 }
-NP* SEvt::LoadInputGenstep(const char* spec) // static
+NP* SEvt::LoadInputGenstep_array(const char* spec) // static
 {
     const char* path = ResolveInputArray( spec, INPUT_GENSTEP_DIR );
     NP* a = LoadInputArray(path);
@@ -528,20 +528,20 @@ NP* SEvt::LoadInputPhoton_record(const char* spec)
 
 
 /**
-SEvt::initInputGenstep
------------------------
+SEvt::initInputGenstep_array
+-----------------------------
 
 Invoked from SEvt::beginOfEvent after SEvt::setIndex
 Formerly invoked once only from SEvt::init
 
 **/
 
-void SEvt::initInputGenstep()
+void SEvt::initInputGenstep_array()
 {
-    NP* ig = LoadInputGenstep(index) ;
-    setInputGenstep(ig);
+    NP* ig = LoadInputGenstep_array(index) ;
+    setInputGenstep_array(ig);
 }
-void SEvt::setInputGenstep(NP* ig)
+void SEvt::setInputGenstep_array(NP* ig)
 {
     if(ig == nullptr) return ;
     input_genstep = ig ;
@@ -551,9 +551,11 @@ void SEvt::setInputGenstep(NP* ig)
     if(!numgenstep_expect) std::raise(SIGINT) ;
     assert( numgenstep_expect );
 }
-NP* SEvt::getInputGenstep() const { return input_genstep ; }
-bool SEvt::hasInputGenstep() const { return input_genstep != nullptr ; }
-bool SEvt::hasInputGenstepPath() const { return SEventConfig::InputGenstepPathExists(index) ; }
+
+
+NP* SEvt::getInputGenstep_array() const { return input_genstep ; }
+bool SEvt::hasInputGenstep_array() const { return input_genstep != nullptr ; }
+bool SEvt::hasInputGenstep_arrayPath() const { return SEventConfig::InputGenstepPathExists(index) ; }
 
 
 
@@ -650,7 +652,7 @@ bool SEvt::hasInputPhotonTransformed() const { return input_photon_transformed !
 
 NP* SEvt::gatherInputGenstep() const
 {
-    NP* ig = getInputGenstep();
+    NP* ig = getInputGenstep_array();
     NP* ign = nullptr ;
     if(ig)
     {
@@ -850,7 +852,7 @@ void SEvt::transformInputPhoton()
 
 
 
-NP* SEvt::getInputGenstep_simtrace()
+NP* SEvt::createInputGenstep_simtrace()
 {
     NP* igs = nullptr ;
 
@@ -900,7 +902,7 @@ NP* SEvt::getInputGenstep_simtrace()
 
 
 /**
-SEvt::getInputGenstep_simulate
+SEvt::createInputGenstep_simulate
 --------------------------------
 
 This branches between ECPU and EGPU because
@@ -913,12 +915,12 @@ have been done already.
 
 
 
-NP* SEvt::getInputGenstep_simulate()
+NP* SEvt::createInputGenstep_simulate()
 {
     NP* igs = nullptr ;
 
     bool has_torch = SEventConfig::IsRunningModeTorch() ; // TODO: rename to InputTorch
-    int inputs = int(hasInputGenstepPath()) + int(hasInputPhoton()) + int(has_torch) ;
+    int inputs = int(hasInputGenstep_arrayPath()) + int(hasInputPhoton()) + int(has_torch) ;
 
     LOG_IF(info, LIFECYCLE) << " inputs " << inputs  ;
     LOG_IF(fatal, inputs > 1 )
@@ -929,10 +931,10 @@ NP* SEvt::getInputGenstep_simulate()
     if( inputs == 1 )
     {
         assertZeroGenstep();
-        if( hasInputGenstepPath() )
+        if( hasInputGenstep_arrayPath() )
         {
-            initInputGenstep();
-            igs = getInputGenstep() ;
+            initInputGenstep_array();
+            igs = getInputGenstep_array() ;
         }
         else if( hasInputPhoton())
         {
@@ -959,22 +961,22 @@ NP* SEvt::getInputGenstep_simulate()
 
 
 /**
-SEvt::getInputGenstep
--------------------------
+SEvt::createInputGenstep_configured
+----------------------------------
 
 **/
 
 
-NP* SEvt::getInputGenstep()
+NP* SEvt::createInputGenstep_configured()
 {
     NP* igs = nullptr ;
     if(SEventConfig::IsRGModeSimtrace())
     {
-        igs = getInputGenstep_simtrace();
+        igs = createInputGenstep_simtrace();
     }
     else if(SEventConfig::IsRGModeSimulate())
     {
-        igs = getInputGenstep_simulate();
+        igs = createInputGenstep_simulate();
     }
     return igs ;
 }
@@ -1000,7 +1002,7 @@ void SEvt::addInputGenstep()
     LOG_IF(info, LIFECYCLE) << id() ;
     LOG(LEVEL);
 
-    NP* igs = getInputGenstep();
+    NP* igs = createInputGenstep_configured();
     addGenstep(igs);
 }
 
@@ -1766,7 +1768,15 @@ void SEvt::beginOfEvent(int eventID)
     LOG_IF(info, LIFECYCLE) << id() ;
 
     clear_output();   // output vectors and fold : excluding gensteps as thats input
-    if( addGenstep_array == 0 ) addInputGenstep();  // does genstep setup for simtrace, input photon and torch running
+    if( addGenstep_array == 0 )
+    {
+        addInputGenstep();  // does genstep setup for simtrace, input photon and torch running
+    }
+    else
+    {
+        LOG(info) << "skip addInputGenstep as addGenstep_array " << addGenstep_array ;
+    }
+
 
     setMeta<int>("NumPhotonCollected", numphoton_collected );
     setMeta<int>("NumGenstepCollected", numgenstep_collected );
@@ -2226,21 +2236,26 @@ The sgs summary struct of the last genstep added is returned.
 
 sgs SEvt::addGenstep(const NP* a)
 {
+    sgs s = {} ;
+
+    if( a == nullptr )
+    {
+        LOG(error) << " a null : low level simtrace tests like CSGSimtraceTest.sh can do this  " ;
+        return s ;
+    }
+
     assert( addGenstep_array == 0 );
     addGenstep_array++ ;
 
     int num_gs = a ? a->shape[0] : -1 ;
     assert( num_gs > 0 );
     quad6* qq = (quad6*)a->bytes();
-    sgs s = {} ;
     for(int i=0 ; i < num_gs ; i++) s = addGenstep(qq[i]) ;
-
 
     if(SEventConfig::IsRGModeSimtrace() && SFrameGenstep::HasConfigEnv()) // CEGS running
     {
         if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
     }
-
 
     return s ;
 }
@@ -4770,7 +4785,7 @@ With Opticks-as-a-service doing localization server side would double hits trans
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This suggests should do the localization in the client ? But that means the client
-needs to have the Opticks geometry (specifically stree) to access the transforms. 
+needs to have the Opticks geometry (specifically stree) to access the transforms.
 Actually a robust client needs to form a geometry digest to ensure that its
 using the same geometry as the server anyhow.
 
@@ -4792,7 +4807,7 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     assert( tr );
 
     bool normalize = true ;
-    lp.transform( *tr, normalize );   // inplace transforms lp (pos, mom, pol) into local frame 
+    lp.transform( *tr, normalize );   // inplace transforms lp (pos, mom, pol) into local frame
 
     glm::tvec4<int64_t> col3 = {} ;
     strid::Decode( *tr, col3 );
