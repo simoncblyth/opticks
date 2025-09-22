@@ -143,6 +143,19 @@ static quad6 MakeGenstep_DsG4Scintillation_r4695(
 const char* U4::CollectGenstep_DsG4Scintillation_r4695_DISABLE = "U4__CollectGenstep_DsG4Scintillation_r4695_DISABLE" ;
 const char* U4::CollectGenstep_DsG4Scintillation_r4695_ZEROPHO = "U4__CollectGenstep_DsG4Scintillation_r4695_ZEROPHO" ;
 
+
+/**
+
+U4::CollectGenstep_DsG4Scintillation_r4695
+-------------------------------------------
+
+1. makes quad6 gs_ collecting parameters needed to generate photons on GPU
+2. adds gs_ to SEvt using SEvt::AddGenstep which collects into a vectors of quad6 for each SEvt
+   instance. For standard GPU running there is just one GPU instance, for GPU CPU comparison
+   running that there will be two SEvt instances.
+
+**/
+
 void U4::CollectGenstep_DsG4Scintillation_r4695(
          const G4Track* aTrack,
          const G4Step* aStep,
@@ -248,6 +261,19 @@ static quad6 MakeGenstep_G4Cerenkov_modified(
 
 const char* U4::CollectGenstep_G4Cerenkov_modified_DISABLE = "U4__CollectGenstep_G4Cerenkov_modified_DISABLE" ;
 const char* U4::CollectGenstep_G4Cerenkov_modified_ZEROPHO = "U4__CollectGenstep_G4Cerenkov_modified_ZEROPHO" ;
+
+/**
+U4::CollectGenstep_G4Cerenkov_modified
+---------------------------------------
+
+1. makes quad6 gs_ collecting parameters needed to generate photons on GPU
+2. adds gs_ to SEvt using SEvt::AddGenstep which collects into a vectors of quad6 for each SEvt
+   instance. For standard GPU running there is just one GPU instance, for GPU CPU comparison
+   running that there will be two SEvt instances.
+
+
+**/
+
 
 void U4::CollectGenstep_G4Cerenkov_modified(
     const G4Track* aTrack,
