@@ -27,17 +27,17 @@ struct NP_CURL_Header
 
     NP_CURL_Header(const char* name);
 
-    void prepare_upload(const char* dtype_, const char* shape_,  const char* token_, int level_, int index_ );
+    void prepare_upload(const char* token_, int index_, int level_=0, const char* dtype_=nullptr, const char* shape_=nullptr );
     void clear();
     void collect( const char* name, const char* value );
     void collect_json_content( char* buffer, size_t size );
     std::string sstr() const ;
     std::string desc() const ;
 
-
-    static constexpr const char* x_opticks_index = "x-opticks-index" ;
     static constexpr const char* x_opticks_token = "x-opticks-token" ;
     static constexpr const char* x_opticks_level = "x-opticks-level" ; // debug level integer
+    static constexpr const char* x_opticks_index = "x-opticks-index" ;
+
     static constexpr const char* x_opticks_dtype = "x-opticks-dtype" ;
     static constexpr const char* x_opticks_shape = "x-opticks-shape" ;
 
@@ -66,23 +66,35 @@ inline NP_CURL_Header::NP_CURL_Header( const char* name_ )
 {
 }
 
-inline void NP_CURL_Header::prepare_upload(const char* dtype_, const char* shape_,  const char* token_, int level_, int index_ )
+inline void NP_CURL_Header::prepare_upload(const char* token_, int index_, int level_, const char* dtype_, const char* shape_ )
 {
-    bool expected_dtype = Expected_DTYPE(dtype_);
-    assert( expected_dtype );
-
-    std::string x_dtype = Format_DTYPE(dtype_) ;
-    std::string x_shape = Format_SHAPE(shape_) ;
-    std::string x_token = Format_TOKEN(token_) ;
-    std::string x_level = Format_LEVEL(level_) ;
     std::string x_index = Format_INDEX(index_) ;
+    std::string x_level = Format_LEVEL(level_) ;
 
     assert( headerlist == nullptr );  // should have been cleared
-    headerlist = curl_slist_append(headerlist, x_token.c_str() );
-    headerlist = curl_slist_append(headerlist, x_level.c_str() );
     headerlist = curl_slist_append(headerlist, x_index.c_str() );
-    headerlist = curl_slist_append(headerlist, x_dtype.c_str() );
-    headerlist = curl_slist_append(headerlist, x_shape.c_str() );
+    headerlist = curl_slist_append(headerlist, x_level.c_str() );
+
+
+    if( token_ )
+    {
+        std::string x_token = Format_TOKEN(token_) ;
+        headerlist = curl_slist_append(headerlist, x_token.c_str() );
+    }
+
+    if( dtype_ )
+    {
+        bool expected_dtype = Expected_DTYPE(dtype_);
+        assert( expected_dtype );
+        std::string x_dtype = Format_DTYPE(dtype_) ;
+        headerlist = curl_slist_append(headerlist, x_dtype.c_str() );
+    }
+
+    if( shape_ )
+    {
+        std::string x_shape = Format_SHAPE(shape_) ;
+        headerlist = curl_slist_append(headerlist, x_shape.c_str() );
+    }
 }
 
 inline void NP_CURL_Header::clear()  // clears everything other than name

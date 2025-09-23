@@ -60,10 +60,8 @@ struct NP_CURL
     CURL*              session;
     curl_mime*         mime ;
 
-#ifdef WITH_MULTIPART
+#ifdef WITHOUT_MAGIC
     NP_CURL_Upload_1*  upload ;
-#else
-    NP_CURL_Upload_0*  upload ;
 #endif
 
     NP_CURL_Download*  download ;
@@ -84,7 +82,7 @@ struct NP_CURL
 
     NP* transformRemote( const NP* a, int index );
 
-    void prepare_upload( const NP* a, int index );
+    void prepare_upload(   const NP* a, int index );
     void prepare_download();
     void perform();
     NP*  collect_download();
@@ -122,10 +120,8 @@ inline NP_CURL::NP_CURL()
     level(U::GetEnvInt(NP_CURL_API_LEVEL, NP_CURL_API_LEVEL_DEFAULT)),
     session(nullptr),
     mime(nullptr),
-#ifdef WITH_MULTIPART
+#ifdef WITHOUT_MAGIC
     upload(new NP_CURL_Upload_1),
-#else
-    upload(new NP_CURL_Upload_0),
 #endif
     download(new NP_CURL_Download),
     uhdr("uhdr"),
@@ -173,63 +169,61 @@ inline NP* NP_CURL::transformRemote( const NP* a, int index )
 NP_CURL::prepare_upload
 -----------------------
 
-
 * https://curl.se/libcurl/c/CURLOPT_MIMEPOST.html
-
-The content-type observed within the FastAPI endpoint is "application/x-www-form-urlencoded"
-is that appropriate for binary data of the array ?
-
 * https://stackoverflow.com/questions/4007969/application-x-www-form-urlencoded-or-multipart-form-data
 
-The above claims "multipart/form-data" is better for binary data, as otherwise the data
-is being url escaped and sent as a big query string.
+There are two types of HTTP POST content::
 
-"That means that for each non-alphanumeric byte that exists in one of our values,
-it's going to take three bytes to represent it."
+1. "application/x-www-form-urlencoded" which is only suitable for small arrays
+   as the data is url escaped as effectively a giant query string
+2. "multipart/form-data" more flexible and efficient for large arrays
 
+
+TODO:
+
+1. compare performance for large uploads with different options, eg::
+
+   curl_easy_setopt(session, CURLOPT_INFILESIZE_LARGE, (curl_off_t)upload_size );
+
+2. implement seek and cleanup callbacks and test for memory leaks
 
 **/
-
 
 inline void NP_CURL::prepare_upload( const NP* a, int index )
 {
     if(level > 0) std::cout << "[NP_CURL::prepare_upload\n" ;
 
+#ifdef WITHOUT_MAGIC
     upload->size = a->arr_bytes();
     upload->buffer = (char*)a->bytes();
     upload->position = 0 ;
-
+    long upload_size = upload->size ;     // just arr data in old approach
     std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
     std::string shape = a->sstr();        // eg "(10, 4, 4, )"
+    uhdr.prepare_upload( token, index, level, dtype.c_str(), shape.c_str() );
+#else
+    long upload_size = a->uhdr_uarr_bytes() ;  // both hdr and arr data
+    uhdr.prepare_upload( token, index, level );
+#endif
 
-    uhdr.prepare_upload( dtype.c_str(), shape.c_str(), token, level, index );
-
-    if(level > 0) std::cout << "-NP_CURL::prepare_upload shape[" << shape << "]\n" ;
+    if(level > 0) std::cout << "-NP_CURL::prepare_upload\n" ;
 
     curl_easy_setopt(session, CURLOPT_URL, url );
     curl_easy_setopt(session, CURLOPT_HTTPHEADER, uhdr.headerlist);
 
-#ifdef WITH_MULTIPART
     mime = curl_mime_init(session);
     curl_mimepart* part = curl_mime_addpart(mime);
     curl_mime_name(part, "upload");
     curl_mime_filename(part, "array_data" );
-    curl_mime_data_cb(part, (long)upload->size, NP_CURL_Upload_1::read_callback, nullptr, nullptr, upload );
-    // seek and cleanup callbacks missing
+
+#ifdef WITHOUT_MAGIC
+    curl_mime_data_cb(part, upload_size, NP_CURL_Upload_1::read_callback, nullptr, nullptr, upload );
+#else
+    curl_mime_data_cb(part, upload_size, NP::ReadToBufferCallback, nullptr, nullptr, (void*)a );
+#endif
 
     curl_easy_setopt(session, CURLOPT_MIMEPOST, mime);
-    curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, (long)upload->size);
-
-    // "multipart/form-data" which should be much more efficient for large arrays
-#else
-    // urlencoded
-    curl_easy_setopt(session, CURLOPT_POST, 1L);
-    curl_easy_setopt(session, CURLOPT_READFUNCTION, NP_CURL_Upload_0::read_callback);
-    curl_easy_setopt(session, CURLOPT_READDATA, upload );
-    curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, (long)upload->size);
-
-    // "application/x-www-form-urlencoded" which is only suitable for small arrays
-#endif
+    curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, (long)upload_size);
 
     if(level > 0) std::cout << "]NP_CURL::prepare_upload\n" ;
 }

@@ -1,4 +1,16 @@
 #pragma once
+/**
+NP_CURL_Upload.h
+==================
+
+NP_CURL_Upload_0
+
+NP_CURL_Upload_1
+
+
+https://curl.se/libcurl/c/curl_mime_data_cb.html
+
+**/
 
 
 
@@ -8,12 +20,12 @@ struct NP_CURL_Upload_0
     size_t size;
     size_t position ; // transitional to match _1
 
-    static size_t read_callback(void *buffer, size_t size, size_t nitems, void *userdata) ;
+    static size_t read_callback(void *buffer, size_t size, size_t nitems, void *arg) ;
 };
 
-inline size_t NP_CURL_Upload_0::read_callback(void *buffer, size_t size, size_t nitems, void *userdata)
+inline size_t NP_CURL_Upload_0::read_callback(void *buffer, size_t size, size_t nitems, void *arg)
 {
-    struct NP_CURL_Upload_0* upload = (struct NP_CURL_Upload_0 *)userdata;
+    struct NP_CURL_Upload_0* upload = (struct NP_CURL_Upload_0 *)arg;
     size_t copy_size = size * nitems;
 
     if (copy_size > upload->size) copy_size = upload->size; // for buffered read make sure to stay in range
@@ -26,12 +38,6 @@ inline size_t NP_CURL_Upload_0::read_callback(void *buffer, size_t size, size_t 
     return copy_size;
 }
 
-
-/**
-
-https://curl.se/libcurl/c/curl_mime_data_cb.html
-
-**/
 
 
 struct NP_CURL_Upload_1

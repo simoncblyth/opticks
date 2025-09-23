@@ -25,6 +25,21 @@ inline std::string NP_CURL_Download::desc() const
     return str ;
 }
 
+/**
+NP_CURL_Download::write_callback
+-----------------------------------
+
+This is used from NP_CURL::prepare_download
+which starts from size zero and one bytes buffer.
+
+This callback is called multiple times with non-zero size*nmemb
+data from the ptr is copied to the download->buffer
+
+HMM is content length always available
+
+**/
+
+
 inline size_t NP_CURL_Download::write_callback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
     struct NP_CURL_Download* download = (struct NP_CURL_Download *)userdata;

@@ -172,6 +172,16 @@ struct NP
     template<typename T, typename ... Args> static NP*  Make_( Args ... shape ) ;  // Make_shape
     template<typename T> static NP* MakeFlat(INT ni=-1, INT nj=-1, INT nk=-1, INT nl=-1, INT nm=-1, INT no=-1 );
 
+    static std::string HexDump(const std::string& str );
+    static std::string HexDump(const char* buffer, size_t size);
+
+    static size_t ReadToBufferCallback(char* buffer, size_t size, size_t nitems, void* arr);
+    static size_t WriteToArrayCallback(char* buffer, size_t size, size_t nitems, void* arg);
+
+
+    void serializeHeaderAndDataToBuffer( std::vector<char>& buf, size_t size=16, size_t nitems=1 ) const ;
+    static void SaveBufferToFile(const std::vector<char>& buf, const char* path_ );
+
 
     //  MEMBER FUNCTIONS
 
@@ -179,11 +189,14 @@ struct NP
     const char* bytes() const ;
 
     INT hdr_bytes() const ;
+    UINT uhdr_bytes() const ;
     INT num_items() const ;       // shape[0]
     INT num_values() const ;      // all values, product of shape[0]*shape[1]*...
     INT num_itemvalues() const ;  // values after first dimension
     INT arr_bytes() const ;       // formerly num_bytes
     UINT uarr_bytes() const ;
+    UINT uhdr_uarr_bytes() const ;  // total of hdr and array (meta excluded)
+
     INT item_bytes() const ;      // *item* comprises all dimensions beyond the first
     INT meta_bytes() const ;
 
@@ -199,7 +212,6 @@ struct NP
     bool        decode_header(bool data_resize) ; // sets shape based on arr header
     bool        decode_prefix() ; // also resizes buffers ready for reading in
     unsigned    prefix_size(unsigned index) const ;
-
 
 
     // CTOR
@@ -386,6 +398,9 @@ struct NP
     static bool ExistsArrayFolder(const char* path );
 
     static NP* Load_(const char* path);
+    static NP* LoadFromBuffer_(const char* buffer, size_t size );
+
+
     static NP* LoadSlice_(const char* path, const char* sli);
 
     static NP* Load(const char* dir, const char* name);
@@ -582,8 +597,17 @@ struct NP
 
 
     int load(const char* path, const char* sli );
+    int load_from_buffer(const char* buffer, size_t size);
+
     std::ifstream* load_header(const char* _path, const char* _sli);
+    size_t         load_header_from_buffer(const char* buffer, size_t size);
+    static size_t FindChar(const char* buffer, size_t size, char q);
+
+
     void load_data( std::ifstream* fp, const char* sli );
+    void load_data_from_buffer( const char* buffer, size_t size, size_t pos );
+
+
     void load_data_sliced( std::ifstream* fp, const char* sli );
     void load_data_where(  std::ifstream* fp, const char* _sli );
 
@@ -711,6 +735,8 @@ struct NP
     char        uifc ;    // element type code
     INT         ebyte ;   // element bytes
     INT         size ;    // number of elements from shape
+    size_t      position ;
+
 
     // nodata:true used for lightweight access to metadata from many arrays
     bool        nodata ;
@@ -1329,6 +1355,190 @@ template<typename T> NP* NP::MakeFlat(INT ni, INT nj, INT nk, INT nl, INT nm, IN
     return a ;
 }
 
+std::string NP::HexDump(const std::string& str)  // static
+{
+    return HexDump(str.data(), str.size());
+}
+
+std::string NP::HexDump(const char* buffer, size_t size)  // static
+{
+    std::stringstream ss ;
+    for (size_t i = 0; i < size; i += 16)
+    {
+        ss << std::hex << std::setfill('0') << std::setw(8) << i << ": ";
+
+        for (size_t j = 0; j < 16; ++j)
+        {
+            if (i + j < size)
+            {
+                ss << std::hex << std::setw(2) << (unsigned int)(unsigned char)buffer[i + j] ;
+                if( (j + 1) % 2 == 0 ) ss << " " ;
+            }
+            else
+            {
+                ss << "   "; // Pad for alignment
+            }
+        }
+
+        ss << " ";
+        for (size_t j = 0; j < 16 && i + j < size; ++j)
+        {
+            char c = buffer[i + j];
+            ss << (std::isprint(c) ? c : '.');
+        }
+        ss << std::endl;
+    }
+    return ss.str();
+}
+
+
+
+/**
+NP::ReadToBufferCallback
+--------------------------
+
+Need to handle any size and nitems the
+caller throws at us. That means the
+number of bytes read could be as small
+as 1 byte requiring multiple calls to
+read even the header.
+
+Note it is not appropriate to while loop
+in the callback, as need to read precisely
+the number of bytes instructed until run out
+of header+data to provide at which point must
+return zero.
+
+So are relying on the caller to invoke this
+repeatedly until this returns zero.
+
+CAUTION : SOME OF THE READS WILL CROSS BETWEEN
+HEADER AND DATA
+
+Prior to calling this, do::
+
+    arr->update_headers();  // in addition to updating headers this zeros position
+
+**/
+
+
+size_t NP::ReadToBufferCallback(char* buffer, size_t size, size_t nitems, void* arg ) // static
+{
+    size_t max_read = size*nitems ;
+
+    NP* arr = (NP*)arg ;
+    size_t hdr_size = arr->_hdr.length() ;
+    size_t data_size = arr->uarr_bytes();
+
+#ifdef DEBUG_ReadToBufferCallback
+    std::cout
+         << "NP::ReadToBufferCallback"
+         << " arr.sstr " << ( arr ? arr->sstr() : "-" )
+         << " arr.position " << ( arr ? arr->position : -1 )
+         << " hdr_size " << hdr_size
+         << " data_size " << data_size
+         << " max_read " << max_read
+         << "\n"
+         ;
+#endif
+
+
+    size_t total_copy = 0 ;
+    char* dest = buffer ;
+
+    if( arr->position < hdr_size )
+    {
+        size_t header_left = hdr_size - arr->position ;
+        size_t header_copy = header_left < max_read ? header_left : max_read ;
+
+        memcpy( dest, arr->_hdr.data() + arr->position, header_copy );
+
+        arr->position    += header_copy ;
+        total_copy       += header_copy ;
+        dest             += header_copy ;  // move target
+
+        if( total_copy == max_read ) return total_copy ;
+    }
+
+    size_t data_offset = arr->position > hdr_size ? arr->position - hdr_size : 0 ;
+    if( data_offset < data_size )
+    {
+        size_t data_left = data_size - data_offset ;
+        size_t remaining_space = max_read - total_copy ;
+        size_t data_copy = data_left < remaining_space ? data_left : remaining_space ;
+
+        memcpy( dest, arr->bytes() + data_offset, data_copy );
+
+        arr->position += data_copy ;
+        total_copy += data_copy ;
+    }
+    return total_copy == 0 ? 0 : total_copy ;
+}
+
+/**
+NP::WriteToArrayCallback
+-------------------------
+
+This is used from NP_CURL::prepare_download
+which starts from size zero and one bytes buffer.
+
+This callback is called multiple times with non-zero size*nitems
+bytes must be copied from the buffer into the array.
+
+As cannot rely on having content length need to dynamically resize
+array vector to fit the bytes read.
+
+Before calling this set::
+
+    arr->position = 0 ;
+
+
+This needs to do something similar to NP::load_from_buffer
+but potentially operate byte-by-byte as the callback is
+repeatedly called.
+
+**/
+
+
+inline size_t NP::WriteToArrayCallback(char* buffer, size_t size, size_t nitems, void* arg)
+{
+    /*
+    size_t max_write = size*nitems ;
+    NP* arr = (NP*)arg ;
+    if( arr->position < max_write )
+    */
+
+    return 0;
+}
+
+
+
+/**
+NP::serializeHeaderAndDataToBuffer
+-----------------------------------
+
+The bytes written to buf should be exactly the same for
+any non-zero values of size and nitems.
+
+**/
+
+void NP::serializeHeaderAndDataToBuffer( std::vector<char>& buf, size_t size, size_t nitems ) const
+{
+    size_t hdr_arr_bytes = uhdr_uarr_bytes() ;
+    buf.resize(hdr_arr_bytes);
+    char* buffer = buf.data();
+    size_t read = 0 ;
+    while(( read = ReadToBufferCallback(buffer, size, nitems, (void*)this )) > 0 ) buffer += read ;
+    size_t bytes_read = buffer - buf.data() ;
+    assert( bytes_read == hdr_arr_bytes );
+}
+
+void NP::SaveBufferToFile(const std::vector<char>& buf, const char* path_ ) // static
+{
+    const char* path = U::Resolve(path_);
+    std::ofstream fp(path, std::ios::out|std::ios::binary);
+    std::copy(buf.cbegin(), buf.cend(), std::ostreambuf_iterator<char>(fp));
+}
 
 
 
@@ -1338,12 +1548,15 @@ template<typename T> NP* NP::MakeFlat(INT ni, INT nj, INT nk, INT nl, INT nm, IN
 inline char*        NP::bytes() { return (char*)data.data() ;  }
 inline const char*  NP::bytes() const { return (char*)data.data() ;  }
 
-inline NP::INT NP::hdr_bytes() const { return _hdr.length() ; }
+inline NP::INT  NP::hdr_bytes() const { return _hdr.length() ; }
+inline NP::UINT NP::uhdr_bytes() const { return _hdr.length() ; }
+
 inline NP::INT NP::num_items() const { return shape[0] ;  }
 inline NP::INT NP::num_values() const { return NPS::size(shape) ;  }
 inline NP::INT NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
 inline NP::INT  NP::arr_bytes()  const {  return NPS::size(shape)*ebyte ; }
 inline NP::UINT NP::uarr_bytes()  const { return NPS::size(shape)*ebyte ; }
+inline NP::UINT NP::uhdr_uarr_bytes()  const { return uhdr_bytes() + uarr_bytes() ; }
 
 inline NP::INT NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
 inline NP::INT NP::meta_bytes() const { return meta.length() ; }
@@ -1394,6 +1607,8 @@ inline void NP::update_headers()
     std::string hdr =  make_header();
     _hdr.resize(hdr.length());
     _hdr.assign(hdr.data(), hdr.length());
+
+    position = 0 ;  // used by streaming static  : ReadToBufferCallback
 }
 
 inline std::string NP::make_header() const
@@ -1506,6 +1721,7 @@ inline NP::NP(const char* dtype_, const std::vector<INT>& shape_ )
     uifc(NPU::_dtype_uifc(dtype)),
     ebyte(NPU::_dtype_ebyte(dtype)),
     size(NPS::size(shape)),
+    position(0),
     nodata(false)
 {
     init();
@@ -1519,6 +1735,7 @@ inline NP::NP(const char* dtype_, INT ni, INT nj, INT nk, INT nl, INT nm, INT no
     uifc(NPU::_dtype_uifc(dtype)),
     ebyte(NPU::_dtype_ebyte(dtype)),
     size(NPS::set_shape(shape, ni,nj,nk,nl,nm,no )),
+    position(0),
     nodata(false)
 {
     init();
@@ -3760,13 +3977,23 @@ inline bool NP::ExistsArrayFolder(const char* path )
 
 
 
-inline NP* NP::Load_(const char* path)
+inline NP* NP::Load_(const char* path) // static
 {
     if(!path) return nullptr ;
     NP* a = new NP() ;
     INT rc = a->load(path, nullptr) ;
     return rc == 0 ? a  : nullptr ;
 }
+
+inline NP* NP::LoadFromBuffer_(const char* buffer, size_t size ) // static
+{
+    if(!buffer || size < 128) return nullptr ;
+    NP* a = new NP() ;
+    INT rc = a->load_from_buffer(buffer, size) ;
+    return rc == 0 ? a  : nullptr ;
+}
+
+
 
 /**
 NP::LoadSlice_
@@ -7227,6 +7454,15 @@ inline int NP::load(const char* _path, const char* _sli )
     return 0 ;
 }
 
+inline int NP::load_from_buffer(const char* buffer, size_t size)
+{
+    size_t pos = load_header_from_buffer(buffer, size);
+    load_data_from_buffer( buffer, size, pos );
+    return 0 ;
+}
+
+
+
 
 
 inline std::ifstream* NP::load_header(const char* _path, const char* _sli)
@@ -7253,6 +7489,36 @@ inline std::ifstream* NP::load_header(const char* _path, const char* _sli)
 
     return fp ;
 }
+
+inline size_t NP::load_header_from_buffer(const char* buffer, size_t size)
+{
+    char q = '\n' ;
+    size_t pos = FindChar(buffer, size, q);
+    if( pos == 0 || pos + 1 == size ) return 0 ;
+
+    nodata = false ;
+    lpath = "load_from_buffer" ;
+    lfold = "" ;
+
+    _hdr.resize( pos + 1 ); // include '\n' in the hdr
+    _hdr.assign( buffer, pos+1 );
+
+    std::cout << "NP::load_from_buffer _hdr[\n" << HexDump(_hdr) << "]\n" ;
+
+    bool data_resize = true ;
+    decode_header( data_resize );
+
+    return pos + 1 ;
+}
+size_t NP::FindChar(const char* buffer, size_t size, char q)  // static
+{
+    const char* qptr = (const char*)memchr(buffer, q, size);
+    return qptr ? (size_t)(qptr - buffer) : -1;
+}
+
+
+
+
 
 /**
 NP::load_data
@@ -7283,6 +7549,13 @@ inline void NP::load_data( std::ifstream* fp, const char* _sli )
             load_data_where( fp, _sli );
         }
     }
+}
+
+inline void NP::load_data_from_buffer( const char* buffer, size_t size, size_t pos )
+{
+     size_t hdr_arr_bytes = uhdr_uarr_bytes();
+     assert( hdr_arr_bytes == size );
+     memcpy( bytes(),  buffer + pos, arr_bytes() );
 }
 
 
