@@ -1360,12 +1360,12 @@ template<typename T> NP* NP::MakeFlat(INT ni, INT nj, INT nk, INT nl, INT nm, IN
     return a ;
 }
 
-std::string NP::HexDump(const std::string& str)  // static
+inline std::string NP::HexDump(const std::string& str)  // static
 {
     return HexDump(str.data(), str.size());
 }
 
-std::string NP::HexDump(const char* buffer, size_t size)  // static
+inline std::string NP::HexDump(const char* buffer, size_t size)  // static
 {
     std::stringstream ss ;
     for (size_t i = 0; i < size; i += 16)
@@ -1426,7 +1426,7 @@ Prior to calling this, do::
 
 **/
 
-size_t NP::ReadToBufferCallback(char* buffer, size_t size, size_t nitems, void* arg ) // static
+inline size_t NP::ReadToBufferCallback(char* buffer, size_t size, size_t nitems, void* arg ) // static
 {
     char* dest = buffer ;
     size_t max_read = size*nitems ;
@@ -1497,7 +1497,7 @@ any non-zero values of size and nitems.
 
 **/
 
-void NP::serializeToBuffer( std::vector<char>& buf, size_t size, size_t nitems )
+inline void NP::serializeToBuffer( std::vector<char>& buf, size_t size, size_t nitems )
 {
     update_headers();
 
@@ -1524,7 +1524,7 @@ void NP::serializeToBuffer( std::vector<char>& buf, size_t size, size_t nitems )
     assert( expect_read );
 }
 
-void NP::SaveBufferToFile(const std::vector<char>& buf, const char* path_ ) // static
+inline void NP::SaveBufferToFile(const std::vector<char>& buf, const char* path_ ) // static
 {
     const char* path = U::Resolve(path_);
     std::ofstream fp(path, std::ios::out|std::ios::binary);
@@ -1533,7 +1533,7 @@ void NP::SaveBufferToFile(const std::vector<char>& buf, const char* path_ ) // s
 
 
 
-void NP::prepareForStreamIn()
+inline void NP::prepareForStreamIn()
 {
     _hdr = "" ; // scrub the placeholder default header, as use completed hdr for stream state transition
     position = 0 ;
@@ -1550,7 +1550,7 @@ The array created should be exactly the same for any non-zero values of size and
 
 **/
 
-NP* NP::CreateFromBuffer( const std::vector<char>& buf, size_t size, size_t nitems )
+inline NP* NP::CreateFromBuffer( const std::vector<char>& buf, size_t size, size_t nitems )
 {
     NP* arr = new NP ;
     arr->prepareForStreamIn();
@@ -7674,12 +7674,12 @@ inline size_t NP::load_header_from_buffer(const char* buffer, size_t size)
     return pos + 1 ;
 }
 
-bool NP::HasChar(const char* buffer, size_t size, char q)  // static
+inline bool NP::HasChar(const char* buffer, size_t size, char q)  // static
 {
     const char* qptr = (const char*)memchr(buffer, q, size);
     return qptr != nullptr ;
 }
-size_t NP::FindChar(const char* buffer, size_t size, char q)  // static
+inline size_t NP::FindChar(const char* buffer, size_t size, char q)  // static
 {
     const char* qptr = (const char*)memchr(buffer, q, size);
     return qptr ? (size_t)(qptr - buffer) : -1;
