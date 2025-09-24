@@ -32,8 +32,11 @@ TODO
 #include <curl/curl.h>
 
 #include "NP_CURL_Header.h"
+
+#ifdef WITHOUT_MAGIC
 #include "NP_CURL_Upload.h"
 #include "NP_CURL_Download.h"
+#endif
 
 struct U ;
 struct NP ;
@@ -62,9 +65,11 @@ struct NP_CURL
 
 #ifdef WITHOUT_MAGIC
     NP_CURL_Upload_1*  upload ;
+    NP_CURL_Download*  download ;
+#else
+    NP*                download ;
 #endif
 
-    NP_CURL_Download*  download ;
     NP_CURL_Header     uhdr ;
     NP_CURL_Header     dhdr ;
 
@@ -74,15 +79,15 @@ struct NP_CURL
 
 
     static  NP_CURL* Get();
-    static  NP* TransformRemote( const NP* a, int index );
+    static  NP* TransformRemote( NP* a, int index );
     static void Clear();
 
     NP_CURL();
     virtual ~NP_CURL();
 
-    NP* transformRemote( const NP* a, int index );
+    NP* transformRemote( NP* a, int index );
 
-    void prepare_upload(   const NP* a, int index );
+    void prepare_upload(   NP* a, int index );
     void prepare_download();
     void perform();
     NP*  collect_download();
@@ -99,7 +104,7 @@ inline NP_CURL* NP_CURL::Get()
 }
 
 
-inline NP* NP_CURL::TransformRemote( const NP* a, int index ) // static
+inline NP* NP_CURL::TransformRemote( NP* a, int index ) // static
 {
     if(!a) return nullptr ;
     NP_CURL* nc = Get();
@@ -122,8 +127,10 @@ inline NP_CURL::NP_CURL()
     mime(nullptr),
 #ifdef WITHOUT_MAGIC
     upload(new NP_CURL_Upload_1),
-#endif
     download(new NP_CURL_Download),
+#else
+    download(nullptr),
+#endif
     uhdr("uhdr"),
     dhdr("dhdr"),
     curl_code((CURLcode)0),
@@ -150,9 +157,10 @@ inline NP_CURL::~NP_CURL()
 }
 
 
-inline NP* NP_CURL::transformRemote( const NP* a, int index )
+inline NP* NP_CURL::transformRemote( NP* a, int index )
 {
     if(!a) return nullptr ;
+
     prepare_upload( a, index );
     prepare_download();
     perform();
@@ -189,20 +197,24 @@ TODO:
 
 **/
 
-inline void NP_CURL::prepare_upload( const NP* a, int index )
+inline void NP_CURL::prepare_upload( NP* a, int index )
 {
     if(level > 0) std::cout << "[NP_CURL::prepare_upload\n" ;
+
+    long upload_size = 0 ;
 
 #ifdef WITHOUT_MAGIC
     upload->size = a->arr_bytes();
     upload->buffer = (char*)a->bytes();
     upload->position = 0 ;
-    long upload_size = upload->size ;     // just arr data in old approach
+    upload_size = upload->size ;     // just arr data in old approach
     std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
     std::string shape = a->sstr();        // eg "(10, 4, 4, )"
     uhdr.prepare_upload( token, index, level, dtype.c_str(), shape.c_str() );
 #else
-    long upload_size = a->uhdr_uarr_bytes() ;  // both hdr and arr data
+    a->update_headers();
+
+    upload_size = a->uhdr_uarr_bytes() ;  // both hdr and arr data
     uhdr.prepare_upload( token, index, level );
 #endif
 
@@ -223,7 +235,7 @@ inline void NP_CURL::prepare_upload( const NP* a, int index )
 #endif
 
     curl_easy_setopt(session, CURLOPT_MIMEPOST, mime);
-    curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, (long)upload_size);
+    curl_easy_setopt(session, CURLOPT_POSTFIELDSIZE, upload_size);
 
     if(level > 0) std::cout << "]NP_CURL::prepare_upload\n" ;
 }
@@ -234,12 +246,21 @@ inline void NP_CURL::prepare_download()
 {
     if(level > 0) std::cout << "[NP_CURL::prepare_download\n" ;
 
+#ifdef WITHOUT_MAGIC
     download->buffer = (char*)malloc(1); // Start with a 1-byte buffer
     download->size = 0 ;
     download->buffer[0] = '\0';
 
     curl_easy_setopt(session, CURLOPT_WRITEFUNCTION, NP_CURL_Download::write_callback);
     curl_easy_setopt(session, CURLOPT_WRITEDATA, download );
+#else
+
+    download = new NP ;
+    download->prepareForStreamIn();
+
+    curl_easy_setopt(session, CURLOPT_WRITEFUNCTION, NP::WriteToArrayCallback );
+    curl_easy_setopt(session, CURLOPT_WRITEDATA, download );
+#endif
 
     if(level > 0) std::cout << "]NP_CURL::prepare_download\n" ;
 }
@@ -266,9 +287,7 @@ inline void NP_CURL::perform()
     if(level > 0) std::cout << "-NP_CURL::perform http_code[" << http_code << "]\n" ;
 
     if( http_code >= 400 ) std::cout
-        << "-NP_CURL::perform download.buffer[\n"
-        << download->buffer
-        << "\n]\n"
+        << "-NP_CURL::perform\n"
         ;
 
     struct curl_header* h;
@@ -281,7 +300,9 @@ inline void NP_CURL::perform()
     }
     while(h);
 
+#ifdef WITHOUT_MAGIC
     dhdr.collect_json_content(download->buffer, download->size );
+#endif
 
     if(level > 0) std::cout << "]NP_CURL::perform\n" ;
 }
@@ -309,12 +330,14 @@ inline NP* NP_CURL::collect_download()
         return nullptr ;
     }
 
+    NP* b = nullptr ;
 
+#ifdef WITHOUT_MAGIC
     std::string dtype = dtype_convert::from_name(dhdr.dtype.c_str()) ;
     if(level > 0) std::cout << "-NP_CURL::collect_download dhdr.dtype[" << dhdr.dtype << "]\n" ;
     if(level > 0) std::cout << "-NP_CURL::collect_download      dtype[" << dtype << "]\n" ;
 
-    NP* b = new NP( dtype.c_str(), dhdr.sh );
+    b = new NP( dtype.c_str(), dhdr.sh );
     bool expect = b->uarr_bytes() == download->size ;
 
     if( !expect ) std::cerr
@@ -330,6 +353,10 @@ inline NP* NP_CURL::collect_download()
     assert( expect );
     b->read_bytes( download->buffer );
 
+#else
+    b = download ;
+#endif
+
     if(level > 1) std::cout << desc();
     if(level > 0) std::cout << "]NP_CURL::collect_download\n" ;
 
@@ -342,7 +369,11 @@ inline std::string NP_CURL::desc() const
     std::stringstream ss ;
     ss
        << "[NP_CURL::desc\n"
-       << download->desc() << "\n"
+#ifdef WITHOUT_MAGIC
+       << " download " << download->desc() << "\n"
+#else
+       << " download " << ( download ? download->sstr() : "-" ) << "\n"
+#endif
        << dhdr.desc() << "\n"
        << "]NP_CURL::desc\n"
        ;
