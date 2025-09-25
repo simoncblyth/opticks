@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from np.fold import Fold
-import numpy as np
+import os, numpy as np
 
 try:
     import pyvista as pv
@@ -15,9 +15,9 @@ if __name__ == '__main__':
     print(repr(f))
     title = os.environ.get("TITLE", "U4Mesh_test.sh")
 
-    if pv == None: 
+    if pv == None:
         print("SKIP plotting as no pyvista")
-    else:    
+    else:
         #pd = pv.PolyData(f.vtx, f.fpd)   # tri and/or quad
         pd = pv.PolyData(f.vtx, f.tpd)   # tri and/or quad
 
