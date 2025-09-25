@@ -214,7 +214,7 @@ inline void NP_CURL::prepare_upload( NP* a, int index )
 #else
     a->update_headers();
 
-    upload_size = a->uhdr_uarr_bytes() ;  // both hdr and arr data
+    upload_size = a->serialize_bytes() ;  // both hdr and arr data
     uhdr.prepare_upload( token, index, level );
 #endif
 

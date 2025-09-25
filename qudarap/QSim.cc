@@ -561,6 +561,13 @@ High level API intending to be used from CSGOptiXService
    should happen within the client to avoid ~doubling hits transfer size)
 5. reset the SEvt doing dealloc
 
+Thus is used from language crossing stack::
+
+    async def simulate(request: Request)  [CSGOptiX/tests/CSGOptiXService_FastAPI_test/main.py]
+    inline nb::ndarray<nb::numpy> _CSGOptiXService::simulate( nb::ndarray<nb::numpy> _gs, int eventID )
+    inline NP* CSGOptiXService::simulate( NP* gs, int eventID )
+    NP* CSGOptiX::simulate(const NP* gs, int eventID)
+
 **/
 
 
@@ -578,6 +585,7 @@ NP* QSim::simulate(const NP* gs, int eventID )
 
     const NP* _ht = sev->getHit();
     NP* ht = _ht ? _ht->copy() : nullptr ;  // copy global hits from SEvt before reset
+    ht->set_meta<double>("QSim__simulate_tot_dt", tot_dt);
 
     LOG(info)
         << " eventID " << std::setw(6) << eventID

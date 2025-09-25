@@ -1,4 +1,10 @@
 #pragma once
+/**
+NP_nanobind.h
+==============
+
+
+**/
 
 #include "NP.hh"
 #include <nanobind/nanobind.h>
@@ -12,8 +18,9 @@ struct NP_nanobind
     static nanobind::dlpack::dtype      dtype_for_NP(char uifc, size_t ebyte);
     static nanobind::capsule*           owner_for_NP(char uifc, size_t ebyte, void* data);
 
-
     static nanobind::ndarray<nanobind::numpy> numpy_array_view_of_NP(const NP* a);
+    static nanobind::tuple                    numpy_array_view_of_NP_with_meta(const NP* a );
+
     static nanobind::ndarray<nanobind::numpy> example_numpy_array_view_of_NP(int code);
 
     static nanobind::ndarray<nanobind::numpy> roundtrip_numpy_array_via_NP(nanobind::ndarray<nanobind::numpy> src);
@@ -85,6 +92,9 @@ numpy_array_view_of_NP : C++ -> python
 
 No copying, just adopts the same data pointer.
 
+
+
+
 **/
 
 inline nanobind::ndarray<nanobind::numpy> NP_nanobind::numpy_array_view_of_NP(const NP* a) // static
@@ -102,6 +112,13 @@ inline nanobind::ndarray<nanobind::numpy> NP_nanobind::numpy_array_view_of_NP(co
     char order = 'C' ;
     return nanobind::ndarray<nanobind::numpy>(data, ndim, shape, *owner, strides, dtype, device_type, device_id, order);
 }
+
+inline nanobind::tuple NP_nanobind::numpy_array_view_of_NP_with_meta(const NP* a )
+{
+    nanobind::ndarray<nanobind::numpy> arr = numpy_array_view_of_NP(a);
+    return nanobind::make_tuple(arr, a->meta );
+}
+
 
 inline nanobind::ndarray<nanobind::numpy> NP_nanobind::example_numpy_array_view_of_NP(int code) // static
 {
