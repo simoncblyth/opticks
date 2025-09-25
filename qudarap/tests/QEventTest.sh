@@ -26,10 +26,15 @@ EOU
 cd $(dirname $(realpath $BASH_SOURCE))
 source dbg__.sh 
 
+
+export GEOM=DummyGEOMForQEventTest
+
 name=QEventTest 
 
 #test=many
-test=ALL
+#test=ALL
+test=loaded
+
 export TEST=${TEST:-$test}
 script0=$name.py 
 script1=${name}_${TEST}.py 

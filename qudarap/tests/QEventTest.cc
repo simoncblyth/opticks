@@ -313,9 +313,8 @@ QEventTest::setGenstep_loaded
 
 int QEventTest::setGenstep_loaded(NP* gs)
 {
-
     std::cout
-        << "QEventTest::setGenstep_loaded"
+        << "[QEventTest::setGenstep_loaded"
         << " gs " << ( gs ? gs->sstr() : "-" )
         << "\n"
         ;
@@ -342,6 +341,13 @@ int QEventTest::setGenstep_loaded(NP* gs)
     LOG(info) << event->desc() ;
     //event->seed->download_dump("event->seed", 10);
     event->checkEvt();
+
+    std::cout
+        << "]QEventTest::setGenstep_loaded"
+        << " gs " << ( gs ? gs->sstr() : "-" )
+        << "\n"
+        ;
+
     return 0 ;
 }
 
@@ -428,6 +434,7 @@ int QEventTest::main()
 {
     bool ALL = strcmp(TEST, "ALL") == 0 ;
     int rc = 0 ;
+    std::cout << "[QEventTest::main ALL " << ( ALL ? "YES" : "NO " ) << "\n" ;
 
     if(ALL||0==strcmp(TEST,"one"))      rc += setGenstep_one();
     if(ALL||0==strcmp(TEST,"sliced"))   rc += setGenstep_sliced();
@@ -436,6 +443,7 @@ int QEventTest::main()
     if(ALL||0==strcmp(TEST,"checkEvt")) rc += setGenstep_checkEvt();
     if(ALL||0==strcmp(TEST,"quad6"))    rc += setGenstep_quad6();
 
+    std::cout << "]QEventTest::main rc [" << rc << "]\n" ;
     return rc  ;
 }
 
