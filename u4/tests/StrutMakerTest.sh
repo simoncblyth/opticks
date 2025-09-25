@@ -9,6 +9,7 @@ EOU
 
 name=StrutMakerTest
 script=U4Mesh_test.py
+script1=$name.py
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
@@ -87,6 +88,28 @@ if [ "${arg/pdb}" != "$arg" ]; then
         done
     done
 fi
+
+if [ "${arg/ana}" != "$arg" ]; then
+     export SOLID=StrutAcrylicConstruction_Complex
+     export TITLE="$BASH_SOURCE : $script : $SOLID"
+
+     ${IPYTHON:-ipython} --pdb -i $script
+     [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 4
+
+fi
+
+if [ "${arg/one}" != "$arg" ]; then
+     export SOLID=StrutAcrylicConstruction_Complex
+     export TITLE="$BASH_SOURCE : $script : $SOLID"
+
+     ${IPYTHON:-ipython} --pdb -i $script1
+     [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 4
+
+fi
+
+
+
+
 
 exit 0
 
