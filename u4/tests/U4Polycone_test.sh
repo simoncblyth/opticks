@@ -1,20 +1,20 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 U4Polycone_test.sh
 ===================
 
-This compiles the needed parts of sysrap from source (not using libSysRap) 
-in order to facilitate quick changes of compilation options. 
+This compiles the needed parts of sysrap from source (not using libSysRap)
+in order to facilitate quick changes of compilation options.
 
 Compilation options:
 
 former -DWITH..SND
      reverted to the old inflexible snd.hh CSG node impl
-     instead of the default more flexible sn.h impl 
+     instead of the default more flexible sn.h impl
 
 -DWITH_CHILD
-     switches sn.h node impl to use child vector instead of left right nodes, 
-     this generalizes the node impl to n-ary instead of binary 
+     switches sn.h node impl to use child vector instead of left right nodes,
+     this generalizes the node impl to n-ary instead of binary
 
 EOU
 }
@@ -26,24 +26,25 @@ SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
 
 name=U4Polycone_test
 
-export FOLD=/tmp/$name
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+export FOLD=$TMP/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
-script=$SDIR/$name.py 
+script=$SDIR/$name.py
 
 CUDA_PREFIX=/usr/local/cuda
 
-clhep-
-g4-
-
-defarg="info_build_run_ana"
+defarg="info_build_run_pdb"
 arg=${1:-$defarg}
-
 
 export sn__level=2
 export s_pool_level=2
 
+get-cmake-prefix(){ echo $CMAKE_PREFIX_PATH | tr ":" "\n" | grep $1 ; }
+CLHEP_PREFIX=$(get-cmake-prefix CLHEP)
+GEANT4_PREFIX=$(get-cmake-prefix Geant4)
 
 vars="BASH_SOURCE arg SDIR FOLD bin script opt"
 
@@ -52,7 +53,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
-         
+
     gcc \
          $opt \
          $SDIR/$name.cc \
@@ -65,30 +66,43 @@ if [ "${arg/build}" != "$arg" ]; then
          $SDIR/../../sysrap/snd.cc \
          $SDIR/../../sysrap/scsg.cc \
          -I$SDIR/.. \
-         -std=c++11 -lstdc++ \
+         -std=c++17 -lstdc++ -g \
          -I$HOME/opticks/sysrap \
          -I$CUDA_PREFIX/include \
          -I$OPTICKS_PREFIX/externals/glm/glm \
-         -I$(clhep-prefix)/include \
-         -I$(g4-prefix)/include/Geant4  \
-         -L$(g4-prefix)/lib \
-         -L$(clhep-prefix)/lib \
+         -I$CLHEP_PREFIX/include \
+         -I$GEANT4_PREFIX/include/Geant4  \
+         -L$GEANT4_PREFIX/lib64 \
+         -L$CLHEP_PREFIX/lib \
          -lG4global \
          -lG4geometry \
+         -lG4graphics_reps \
          -lCLHEP \
+         -lm \
          -o $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
-fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
+fi
 
 if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
-fi 
+fi
+
+if [ "${arg/dbg}" != "$arg" ]; then
+    source dbg__.sh
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
+fi
+
+if [ "${arg/pdb}" != "$arg" ]; then
+    ${IPYTHON:-ipython} --pdb -i $script
+    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 3
+fi
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $script
-    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
-fi 
+    ${PYTHON:-python} $script
+    [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
+fi
 
 exit 0
 
