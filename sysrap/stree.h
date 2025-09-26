@@ -589,6 +589,7 @@ struct stree
     std::string desc_nodes( const std::vector<int>&   nn, int edgeitems=10) const ;
     std::string desc_nodes_(const std::vector<snode>& nn, int edgeitems=10) const ;
     std::string desc_node_solids() const ;
+    std::string desc_solids_0() const ;
     std::string desc_solids() const ;
     std::string desc_solid(int lvid) const ;
 
@@ -3403,8 +3404,8 @@ inline std::string stree::desc_node_solids() const
 
 
 /**
-stree::desc_solids
--------------------
+stree::desc_solids_0
+---------------------
 
 OBSERVE THAT THE stree::solids ARE NOT PERSISTED,
 SO THIS IS ONLY USEFUL DURING TRANSLATION AFTER U4Tree::initSolids
@@ -3413,11 +3414,11 @@ TODO : FIND WAY TO RECOVER THE stree::solids vector using sn::Get
 methods to access the s_csg.h persisted sn.h
 **/
 
-inline std::string stree::desc_solids() const
+inline std::string stree::desc_solids_0() const
 {
     int num_solids = solids.size() ;
     std::stringstream ss ;
-    ss << "[stree::desc_solids num_solids " << num_solids  << "\n" ;
+    ss << "[stree::desc_solids_0 num_solids " << num_solids  << "\n" ;
     for(int i=0 ; i < num_solids ; i++)
     {
         const char* srn = soname_raw[i].c_str();
@@ -3438,11 +3439,37 @@ inline std::string stree::desc_solids() const
             << "\n"
             ;
     }
-    ss << "]stree::desc_solids num_solids " << num_solids  << "\n" ;
+    ss << "]stree::desc_solids_0 num_solids " << num_solids  << "\n" ;
     std::string str = ss.str();
     return str ;
 }
 
+inline std::string stree::desc_solids() const
+{
+    int num_soname = soname.size() ;
+    std::stringstream ss ;
+    ss << "[stree::desc_solids num_soname " << num_soname  << "\n" ;
+    for(int i=0 ; i < num_soname ; i++)
+    {
+        int lvid = i ;
+        bool ift = is_force_triangulate(lvid) ;
+
+        const char* son = lvid < int(soname.size())     ? soname[lvid].c_str() : nullptr ;
+        const sn* root = sn::GetLVRoot(lvid);
+        assert(root);
+        assert( root->lvid == lvid );
+        ss
+            << " lvid " << std::setw(3) << lvid
+            << " is_force_triangulate " << ( ift ? "YES" : "NO " )
+            << " soname[lvid] " << std::setw(60) << ( son ? son : "-" )
+            << " " << ( root ? root->rbrief() : "" )
+            << "\n"
+            ;
+    }
+    ss << "]stree::desc_solids num_soname " << num_soname  << "\n" ;
+    std::string str = ss.str();
+    return str ;
+}
 
 
 

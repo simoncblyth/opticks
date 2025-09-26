@@ -3,6 +3,8 @@ usage(){ cat << EOU
 stree_desc_test.sh 
 =====================
 
+~/o/sysrap/tests/stree_desc_test.sh
+
 EOU
 }
 
@@ -66,7 +68,6 @@ if [ "${arg/ana}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
 fi 
-
 
 exit 0 
 
