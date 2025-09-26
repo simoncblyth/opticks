@@ -350,6 +350,7 @@ public:
     template<typename T> void set_meta(const char* key, T value ) ;
 
 
+    int save(const char* base, const char* rel, const char* name) ;
     int save(const char* base, const char* rel) ;
     int save(const char* base) ;
     int save_verbose(const char* base) ;
@@ -2451,6 +2452,17 @@ inline int NPFold::save(const char* base_, const char* rel) // not const as sets
     const char* base = _base.c_str();
     return save(base);
 }
+
+inline int NPFold::save(const char* base_, const char* rel, const char* name) // not const as sets savedir
+{
+    std::string _base = U::form_path(base_, rel, name);
+    const char* base = _base.c_str();
+    return save(base);
+}
+
+
+
+
 
 
 /**

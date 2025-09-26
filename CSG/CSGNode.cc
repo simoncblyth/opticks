@@ -479,6 +479,10 @@ void CSGNode::setAABBLocal()
         setAABB( 0.f );
         // HMM: NEED TO USE THE TRIANGLES TO SET THE AABB ?
     }
+    else if( tc == CSG_CUTCYLINDER )
+    {
+        setAABB( UNBOUNDED_DEFAULT_EXTENT );
+    }
     else if( tc == CSG_ZERO )
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT );

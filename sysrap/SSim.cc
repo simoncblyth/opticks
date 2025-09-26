@@ -432,8 +432,10 @@ void SSim::save(const char* base, const char* reldir)
     LOG_IF(fatal, top == nullptr) << " top null : MUST serialize before save, serialize failed ? " ;
     assert( top != nullptr ) ;
 
-    const char* dir = spath::Resolve(base, reldir) ;
+    const char* dir = spath::Resolve(base, reldir) ;   // default reldir "SSim"
     top->save(dir);
+
+    tree->save_desc(dir, stree::RELDIR );  // implicit "desc" last element
 }
 
 

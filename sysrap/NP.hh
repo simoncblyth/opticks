@@ -1754,13 +1754,17 @@ inline size_t NP::WriteToArrayCallback(char* src, size_t size, size_t nitems, vo
     if(!hdr_complete)  // _hdr does not end with '\n' yet
     {
         char q = '\n' ;
-        size_t len0 = _hdr.length();
 
         bool has_newline = HasChar(src, max_write, q) ;
         hdr_copy = has_newline ? 1 + FindChar(src, max_write, q) : max_write ;  // 1 + includes '\n' into _hdr
-        _hdr.resize(len0 + hdr_copy );
 
-        memcpy( _hdr.data() + len0,  src, hdr_copy );
+        /*
+        size_t len0 = _hdr.length();
+        _hdr.resize(len0 + hdr_copy );
+        char* dst = (char*)_hdr.data() ;
+        memcpy( dst + len0,  src, hdr_copy );
+        */
+        _hdr.append(src + total_copy, hdr_copy);
 
         arr->position += hdr_copy ;
         total_copy    += hdr_copy ;
@@ -1820,10 +1824,17 @@ inline size_t NP::WriteToArrayCallback(char* src, size_t size, size_t nitems, vo
 
         if( meta_copy > 0)
         {
+
+            /*
             size_t len0 = meta.length();
             meta.resize( len0 + meta_copy );
 
-            memcpy( meta.data() + len0, src + total_copy, meta_copy );
+            char* dst = (char*)meta.data();
+            memcpy( dst + len0, src + total_copy, meta_copy );
+            */
+            meta.append(src + total_copy, meta_copy);
+
+
             arr->position += meta_copy ;
             total_copy    += meta_copy ;
             remaining     -= meta_copy ;
@@ -7844,8 +7855,15 @@ inline size_t NP::load_data_from_buffer( const char* buffer, size_t size, size_t
 inline size_t NP::load_meta_from_buffer( const char* buffer, size_t size, size_t pos )
 {
      size_t meta_size = size - uhdr_bytes() - arr_bytes() ; // available after parsing header
+     if(pos > size )             throw std::out_of_range("Invalid buffer pos");
+     if(meta_size + pos > size ) throw std::out_of_range("Invalid meta_size");
+     /*
      meta.resize( meta_size );
      memcpy( meta.data(),  buffer + pos, meta_size );
+     */
+
+     meta.assign(buffer+pos, meta_size);
+
      return pos + meta_size ;
 }
 

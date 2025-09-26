@@ -403,7 +403,8 @@ struct stree
     void init();
     void set_level(int level_);
 
-    void save_desc(const char* base, const char* reldir=DESC) const ;
+    void save_desc(const char* base, const char* midl) const ;
+    void save_desc(const char* base) const ;
     void save_desc_(const char* fold) const ;
     void populate_descMap( std::map<std::string, std::function<std::string()>>& m ) const ;
 
@@ -597,7 +598,7 @@ struct stree
 
 
     void save_( const char* fold ) const ;
-    void save( const char* base, const char* reldir=RELDIR ) const ;
+    void save( const char* base ) const ;
     NPFold* serialize() const ;
 
 
@@ -873,9 +874,14 @@ created within the *base* directory.
 
 **/
 
-inline void stree::save_desc(const char* base, const char* reldir) const
+inline void stree::save_desc(const char* base, const char* midl) const
 {
-    const char* fold = U::Resolve(base, reldir);
+    const char* fold = U::Resolve(base, midl, DESC);
+    save_desc_(fold);
+}
+inline void stree::save_desc(const char* base) const
+{
+    const char* fold = U::Resolve(base, DESC);
     save_desc_(fold);
 }
 
@@ -3507,9 +3513,9 @@ inline void stree::save_trs(const char* fold) const
 
 
 
-inline void stree::save( const char* base, const char* reldir ) const
+inline void stree::save( const char* base) const
 {
-    const char* dir = U::Resolve(base, reldir);
+    const char* dir = U::Resolve(base, RELDIR );
     save_(dir);
 }
 inline void stree::save_( const char* dir ) const
