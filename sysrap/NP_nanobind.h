@@ -13,7 +13,8 @@ NP_nanobind.h
 
 struct NP_nanobind
 {
-    static NP*  NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy> a) ;
+    static NP*  NP_copy_of_numpy_array(          nanobind::ndarray<nanobind::numpy> a) ;
+    static NP*  NP_copy_of_numpy_array_with_meta(nanobind::ndarray<nanobind::numpy> a, nanobind::str meta) ;
 
     static nanobind::dlpack::dtype      dtype_for_NP(char uifc, size_t ebyte);
     static nanobind::capsule*           owner_for_NP(char uifc, size_t ebyte, void* data);
@@ -35,30 +36,38 @@ Currently just copying. Can that be avoided ?
 
 **/
 
-inline NP* NP_nanobind::NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy> a) // static
+inline NP* NP_nanobind::NP_copy_of_numpy_array(nanobind::ndarray<nanobind::numpy> _a) // static
 {
-    void* data = a.data();
-    size_t ndim = a.ndim();
-    nanobind::dlpack::dtype a_dtype = a.dtype();
+    void* data = _a.data();
+    size_t ndim = _a.ndim();
+    nanobind::dlpack::dtype _dtype = _a.dtype();
 
     std::string dtype ;
-    if(      a_dtype == nanobind::dtype<float>() )        dtype = descr_<float>::dtype()    ;
-    else if( a_dtype == nanobind::dtype<double>())        dtype = descr_<double>::dtype()   ;
-    else if( a_dtype == nanobind::dtype<double>())        dtype = descr_<double>::dtype()   ;
-    else if( a_dtype == nanobind::dtype<int>())           dtype = descr_<int>::dtype()      ;
-    else if( a_dtype == nanobind::dtype<long>())          dtype = descr_<long>::dtype()     ;
-    else if( a_dtype == nanobind::dtype<unsigned>())      dtype = descr_<unsigned>::dtype() ;
-    else if( a_dtype == nanobind::dtype<unsigned long>()) dtype = descr_<unsigned long>::dtype() ;
+    if(      _dtype == nanobind::dtype<float>() )        dtype = descr_<float>::dtype()    ;
+    else if( _dtype == nanobind::dtype<double>())        dtype = descr_<double>::dtype()   ;
+    else if( _dtype == nanobind::dtype<double>())        dtype = descr_<double>::dtype()   ;
+    else if( _dtype == nanobind::dtype<int>())           dtype = descr_<int>::dtype()      ;
+    else if( _dtype == nanobind::dtype<long>())          dtype = descr_<long>::dtype()     ;
+    else if( _dtype == nanobind::dtype<unsigned>())      dtype = descr_<unsigned>::dtype() ;
+    else if( _dtype == nanobind::dtype<unsigned long>()) dtype = descr_<unsigned long>::dtype() ;
 
     std::vector<NP::INT> shape(ndim);
-    for(size_t i=0 ; i < ndim ; i++ ) shape[i] = a.shape(i) ;
+    for(size_t i=0 ; i < ndim ; i++ ) shape[i] = _a.shape(i) ;
 
-    NP* n = new NP(dtype.c_str(), shape );
-    assert( n->uarr_bytes() == a.nbytes() );
-    n->read_bytes( (char*)data );
+    NP* a = new NP(dtype.c_str(), shape );
+    assert( a->uarr_bytes() == _a.nbytes() );
+    a->read_bytes( (char*)data );
 
-    return n ;
+    return a ;
 }
+
+inline NP* NP_nanobind::NP_copy_of_numpy_array_with_meta(nanobind::ndarray<nanobind::numpy> _a, nanobind::str _meta) // static
+{
+    NP* a = NP_copy_of_numpy_array(_a);
+    a->meta = nanobind::cast<std::string>(_meta);
+    return a ;
+}
+
 
 
 inline nanobind::dlpack::dtype NP_nanobind::dtype_for_NP(char uifc, size_t ebyte) // static

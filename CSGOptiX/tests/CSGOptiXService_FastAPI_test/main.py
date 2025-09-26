@@ -24,7 +24,7 @@ array_create
 
 import io
 import numpy as np
-from typing import Annotated
+from typing import Annotated, Optional
 #from pydantic import BaseModel
 from fastapi import FastAPI, Request, Response, Header, Depends, HTTPException
 
@@ -41,7 +41,9 @@ def make_response( arr:np.ndarray, meta:str="", magic:bool=False, index:int=-1, 
 
     numpy.array is just a convenience function to create an ndarray; it is not a class itself.
     """
-    print("make_response arr:%s meta:%s magic:%s index:%s level:%s  " % (arr, meta,magic,index,level))
+    if level > 0:
+        print("make_response arr:%s meta:%s magic:%s index:%s level:%s  " % (arr, meta,magic,index,level))
+    pass
     headers = {}
     headers["x-opticks-index"] = str(index)
     headers["x-opticks-level"] = str(level)
@@ -66,7 +68,7 @@ def make_response( arr:np.ndarray, meta:str="", magic:bool=False, index:int=-1, 
 
 
 
-def make_numpy_array_from_magic_bytes(data:bytes):
+def make_numpy_array_from_magic_bytes(data:bytes, level:int=0):
     """
     :param data: bytes which are assumed to include the numpy magic header
     :return arr: numpy.ndarray constructed from the bytes
@@ -82,7 +84,36 @@ def make_numpy_array_from_magic_bytes(data:bytes):
     arr = np.load(buffer)
     return arr
 
-def make_numpy_array_from_raw_bytes(data:bytes, dtype_:str, shape_:str ):
+def make_numpy_array_from_magic_bytes_with_meta(data:bytes, level:int=0):
+    """
+    Test for this in ~/np/tests/NP_nanobind_test/meta_check.py
+    """
+
+    if level > 0:print(f"[make_numpy_array_from_magic_bytes_with_meta")
+
+    buffer = io.BytesIO(data)
+    buffer.seek(0)
+    arr = np.load(buffer)
+
+    buf_nbytes = len(data) # buffer.getbuffer().nbytes
+    hdr_nbytes = data.find(b'\n') + 1  # 1 + index of first newline, typically 128 but can be more for arrays with many dimensions
+    arr_nbytes = arr.nbytes
+    meta_nbytes = buf_nbytes - hdr_nbytes - arr_nbytes
+
+    buffer.seek( hdr_nbytes + arr_nbytes )
+    _meta:Optional[bytes] = buffer.read(meta_nbytes) if meta_nbytes>0 else None
+    meta = _meta.decode("utf-8")
+
+    if level > 0:print(f"-make_numpy_array_from_magic_bytes_with_meta buf_nbytes:{buf_nbytes} hdr_nbytes:{hdr_nbytes} arr_nbytes:{arr_nbytes} meta_nbytes:{meta_nbytes} meta:{meta} ")
+    if level > 0:print(f"]make_numpy_array_from_magic_bytes_with_meta")
+
+    return arr, meta
+
+
+
+
+
+def make_numpy_array_from_raw_bytes(data:bytes, dtype_:str, shape_:str, level:int=0 ):
     """
     :param data: bytes which are assumed to just carry array data, no header or metadata
     :param dtype_: str
@@ -142,22 +173,24 @@ async def parse_request(request: Request):
     if has_numpy_magic:
         dtype_ = None
         shape_ = None
-        a0 = make_numpy_array_from_magic_bytes(data)
+        #arr0 = make_numpy_array_from_magic_bytes(data, level)
+        arr0, meta = make_numpy_array_from_magic_bytes_with_meta(data, level)
     else:
         dtype_ = request.headers.get('x-opticks-dtype','')
         shape_ = request.headers.get('x-opticks-shape','')
-        a0 = make_numpy_array_from_raw_bytes(data, dtype_, shape_ )
+        arr0 = make_numpy_array_from_raw_bytes(data, dtype_, shape_, level )
+        meta = None
     pass
-    a = a0 if level == 10 else a0.copy()
+    arr = arr0 if level == 10 else arr0.copy()
     ## without the copy get runtime type error in the nanobind call across the C++ python barrier
 
     if level > 0:
         # https://numpy.org/doc/stable/reference/generated/numpy.ndarray.flags.html
         print("has_numpy_magic:%s" % has_numpy_magic )
-        print("a0.data.c_contiguous:%s" % a0.data.c_contiguous )
-        print("a.data.c_contiguous:%s" % a.data.c_contiguous )
-        #print("a0.flags:\n", a0.flags)
-        #print("a.flags:\n", a.flags)
+        print("arr0.data.c_contiguous:%s" % arr0.data.c_contiguous )
+        print("arr.data.c_contiguous:%s" % arr.data.c_contiguous )
+        #print("arr0.flags:\n", arr0.flags)
+        #print("arr.flags:\n", arr.flags)
         print("content-type:%s" % type_ )
         print("filename:%s" % filename )
         print("token_[%s]" % token_ )
@@ -165,12 +198,14 @@ async def parse_request(request: Request):
         print("index[%d]" % index )
         print("dtype_[%s]" % str(dtype_) )
         print("shape_[%s]" % str(shape_) )
-        print("type(a0)\n", type(a0))
-        print("type(a)\n", type(a))
-        print("a[%s]" % a )
+        print("type(arr0)\n", type(arr0))
+        print("type(arr)\n", type(arr))
+        print("arr[%s]" % arr )
+        print("meta[%s]" % meta )
         print("]parse_request")
     pass
-    request.state.a = a
+    request.state.array = arr
+    request.state.meta = meta
     request.state.index = index
     request.state.level = level
     request.state.magic = has_numpy_magic
@@ -190,15 +225,16 @@ async def simulate(request: Request):
 
     Test this with ~/np/tests/np_curl_test/np_curl_test.sh
     """
-    gs = request.state.a
+    gs = request.state.array
+    gs_meta = request.state.meta
     index = request.state.index
     level = request.state.level
     magic = request.state.magic
 
-    if level > 0: print("main.py:simulate index %d gs %s " % ( index, repr(gs) ))
+    if level > 0: print("main.py:simulate index %d gs %s gs_meta[%s] " % ( index, repr(gs), gs_meta ))
 
     #ht = _svc.simulate(gs, index)   ## NB this wrapper from CSGOptiX/opticks_CSGOptiX handles numpy<=>NP conversion
-    ht, ht_meta = _svc.simulate_with_meta(gs, index)
+    ht, ht_meta = _svc.simulate_with_meta(gs, gs_meta, index)
 
     response = make_response(ht, ht_meta, magic, index, level)
 

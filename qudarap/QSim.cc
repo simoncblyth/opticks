@@ -433,7 +433,7 @@ double QSim::simulate(int eventID, bool reset_)
     std::vector<sslice> igs_slice ;
     SGenstep::GetGenstepSlices( igs_slice, igs, SEventConfig::MaxSlot() );
     int num_slice = igs_slice.size();
-    LOG(info)
+    LOG(LEVEL)
         << " eventID " << std::setw(6) << eventID
         << " igs " << ( igs ? igs->sstr() : "-" )
         << " MaxSlot " << SEventConfig::MaxSlot()
@@ -451,7 +451,7 @@ double QSim::simulate(int eventID, bool reset_)
 
         const sslice& sl = igs_slice[i] ;
 
-        LOG(info) << sl.idx_desc(i) ;
+        LOG(LEVEL) << sl.idx_desc(i) ;
 
         int rc = event->setGenstepUpload_NP(igs, &sl ) ;
         LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ;
@@ -591,7 +591,6 @@ NP* QSim::simulate(const NP* gs, int eventID )
         << " eventID " << std::setw(6) << eventID
         << " gs " << ( gs ? gs->sstr() : "-" )
         << " ht " << ( ht ? ht->sstr() : "-" )
-        << " _ht " << ( _ht ? _ht->sstr() : "-" )
         << " tot_dt " << std::fixed << std::setw(10) << std::setprecision(6) << tot_dt
         ;
     reset(eventID);

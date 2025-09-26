@@ -1774,7 +1774,7 @@ void SEvt::beginOfEvent(int eventID)
     }
     else
     {
-        LOG(info) << "skip addInputGenstep as addGenstep_array " << addGenstep_array ;
+        LOG(LEVEL) << "skip addInputGenstep as addGenstep_array " << addGenstep_array ;
     }
 
 

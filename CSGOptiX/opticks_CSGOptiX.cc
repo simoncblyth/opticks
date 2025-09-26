@@ -9,6 +9,7 @@ opticks_CSGOptiX.cc
 #include <nanobind/ndarray.h>
 #include "NP_nanobind.h"
 
+#include "ssys.h"
 #include "OPTICKS_LOG.hh"
 #include "CSGOptiXService.h"
 
@@ -17,28 +18,30 @@ namespace nb = nanobind;
 
 struct _CSGOptiXService
 {
+   int             level ;
    CSGOptiXService svc ;
 
    _CSGOptiXService();
    virtual ~_CSGOptiXService();
 
    nb::ndarray<nb::numpy> simulate( nb::ndarray<nb::numpy> _gs, int eventID ) ;
-   nb::tuple    simulate_with_meta( nb::ndarray<nb::numpy> _gs, int eventID ) ;
+   nb::tuple    simulate_with_meta( nb::ndarray<nb::numpy> _gs, nb::str _gs_meta, int eventID ) ;
 
    std::string desc() const ;
 };
 
 inline _CSGOptiXService::_CSGOptiXService()
     :
+    level(ssys::getenvint("_CSGOptiXService_level",0)),
     svc()
 {
     OPTICKS_ELOG("_CSGOptiXService");
-    std::cout << "-_CSGOptiXService::_CSGOptiXService\n" ;
+    if(level > 0) std::cout << "-_CSGOptiXService::_CSGOptiXService level[" << level << "]\n" ;
 }
 
 inline _CSGOptiXService::~_CSGOptiXService()
 {
-    std::cout << "-_CSGOptiXService::~_CSGOptiXService\n" ;
+    if(level > 0) std::cout << "-_CSGOptiXService::~_CSGOptiXService\n" ;
 }
 
 /**
@@ -57,34 +60,31 @@ Q: how to transmit metadata, eg with the hits ?
 
 inline nb::ndarray<nb::numpy> _CSGOptiXService::simulate( nb::ndarray<nb::numpy> _gs, int eventID )
 {
-    std::cout << "[_CSGOptiXService::simulate eventID " << eventID << "\n" ;
+    if(level > 0) std::cout << "[_CSGOptiXService::simulate eventID " << eventID << "\n" ;
     NP* gs = NP_nanobind::NP_copy_of_numpy_array(_gs);
 
     NP* ht = svc.simulate(gs, eventID );
 
     nb::ndarray<nb::numpy> _ht = NP_nanobind::numpy_array_view_of_NP(ht);
 
-    std::cout << "]_CSGOptiXService::simulate eventID " << eventID << "\n" ;
+    if(level > 0) std::cout << "]_CSGOptiXService::simulate eventID " << eventID << "\n" ;
     return _ht ;
 }
 
-inline nb::tuple _CSGOptiXService::simulate_with_meta( nb::ndarray<nb::numpy> _gs, int eventID )
+inline nb::tuple _CSGOptiXService::simulate_with_meta( nb::ndarray<nb::numpy> _gs, nb::str _gs_meta, int eventID )
 {
-    std::cout << "[_CSGOptiXService::simulate_with_meta eventID " << eventID << "\n" ;
-    NP* gs = NP_nanobind::NP_copy_of_numpy_array(_gs);
+    if(level > 0) std::cout << "[_CSGOptiXService::simulate_with_meta eventID " << eventID << "\n" ;
+    NP* gs = NP_nanobind::NP_copy_of_numpy_array_with_meta(_gs, _gs_meta);
+
+    if(level > 0) std::cout << "-_CSGOptiXService::simulate_with_meta gs.meta[" << gs->meta << "]\n" ;
 
     NP* ht = svc.simulate(gs, eventID );
 
     nb::tuple _ht = NP_nanobind::numpy_array_view_of_NP_with_meta(ht);
 
-    std::cout << "]_CSGOptiXService::simulate_with_meta eventID " << eventID << "\n" ;
+    if(level > 0) std::cout << "]_CSGOptiXService::simulate_with_meta eventID " << eventID << "\n" ;
     return _ht ;
 }
-
-
-
-
-
 
 
 inline std::string _CSGOptiXService::desc() const

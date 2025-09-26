@@ -22,6 +22,7 @@ Use from python with::
 
 **/
 
+#include "ssys.h"
 #include "SEvt.hh"
 #include "CSGFoundry.h"
 #include "CSGOptiX.h"
@@ -33,6 +34,7 @@ struct CSGOptiXService
     static CSGOptiXService* Get();
     static NP* Simulate(NP* gs, int eventID );
 
+    int         level ;
     SEvt*       evt ;
     CSGFoundry* fd ;
     CSGOptiX*   cx ;
@@ -61,6 +63,7 @@ NP* CSGOptiXService::Simulate( NP* gs, int eventID )
 
 inline CSGOptiXService::CSGOptiXService()
     :
+    level(ssys::getenvint("CSGOptiXService_level",0)),
     evt(SEvt::Create(SEvt::EGPU)),
     fd(CSGFoundry::Load()),
     cx(CSGOptiX::Create(fd))
@@ -72,11 +75,11 @@ inline CSGOptiXService::CSGOptiXService()
 
 inline NP* CSGOptiXService::simulate( NP* gs, int eventID )
 {
-    std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
+    if(level > 0) std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
 
     NP* ht = cx->simulate(gs, eventID );
 
-    std::cout << "]CSGOptiXService::simulate ht " << ( ht ? ht->sstr() : "-" ) << "\n" ;
+    if(level > 0) std::cout << "]CSGOptiXService::simulate ht " << ( ht ? ht->sstr() : "-" ) << "\n" ;
     return ht ;
 }
 
