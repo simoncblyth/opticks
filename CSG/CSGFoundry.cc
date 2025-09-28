@@ -279,6 +279,15 @@ bool CSGFoundry::isSolidTrimesh_posthoc_kludge(int gas_idx) const
     return SLabel::IsIdxLabelListed( mmlabel, gas_idx, ls, ',' );
 }
 
+/**
+CSGFoundry::isSolidTrimesh
+---------------------------
+
+Returns true when getSolidIntent yields 'T'
+
+**/
+
+
 bool CSGFoundry::isSolidTrimesh(int gas_idx) const
 {
     char intent = getSolidIntent(gas_idx);

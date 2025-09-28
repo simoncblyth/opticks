@@ -40,6 +40,7 @@ CSG_CONTIGUOUS could keep n-ary CSG trees all the way to the GPU
 **/
 
 #include <map>
+#include <set>
 #include <vector>
 #include <sstream>
 #include <iomanip>
@@ -282,6 +283,14 @@ struct SYSRAP_API sn
     unsigned operators(int minsubdepth) const ;
     void operators_v(unsigned& mask, int minsubdepth) const ;
     void operators_r(unsigned& mask, int minsubdepth) const ;
+
+    void typecodes(std::set<int>& tcs, int minsubdepth=0 ) const ;
+    void typecodes_r(std::set<int>& tcs, int minsubdepth ) const ;
+    std::string desc_typecodes() const ;
+    int  typecodes_count(const std::vector<int>& tcq, int minsubdepth=0 ) const ;
+    std::string desc_typecodes_count() const ;
+
+
     bool is_positive_form() const ;
     bool is_listnode() const ;
     std::string tag() const ;
@@ -1449,7 +1458,7 @@ inline int sn::num_node_r(int d) const
 }
 
 
-inline int sn::num_notsupported_node() const 
+inline int sn::num_notsupported_node() const
 {
     return num_notsupported_node_r(0);
 }
@@ -1670,6 +1679,97 @@ inline void sn::operators_r(unsigned& mask, int minsubdepth) const
 #endif
 
 }
+
+
+
+/**
+sn::typecodes
+-------------
+
+Collect distinct typecode into the set for nodes with subdepth >= minsubdepth,
+minsubdepth=0 corresponds to entire tree.
+
+**/
+
+inline void sn::typecodes(std::set<int>& tcs, int minsubdepth ) const
+{
+    typecodes_r(tcs, minsubdepth);
+}
+
+inline void sn::typecodes_r(std::set<int>& tcs, int minsubdepth ) const
+{
+    if(subdepth >= minsubdepth) tcs.insert(typecode);
+#ifdef WITH_CHILD
+    for(int i=0 ; i < int(child.size()) ; i++) child[i]->typecodes_r(mask, minsubdepth ) ;
+#else
+    if(left && right )
+    {
+        left->typecodes_r( tcs, minsubdepth );
+        right->typecodes_r( tcs, minsubdepth );
+    }
+#endif
+}
+
+
+inline std::string sn::desc_typecodes() const
+{
+    std::stringstream ss ;
+
+    std::set<int> tcs ;
+    int minsubdepth = 0;
+    typecodes(tcs, minsubdepth );
+
+    ss << "[sn::desc_typecodes\n" ;
+    for (int tc : tcs) ss << CSG::Name(tc) << "\n" ;
+    ss << "]sn::desc_typecodes\n" ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
+/**
+sn::typecodes_count
+---------------------
+
+Returns the number of typecodes in the tcq query vector that
+are present in the set of typecodes of the sn node tree.
+
+**/
+
+inline int sn::typecodes_count(const std::vector<int>& tcq, int minsubdepth) const
+{
+    std::set<int> tcs ;
+    typecodes(tcs, minsubdepth );
+
+    int count = 0;
+    for (int value : tcq) if (tcs.count(value)) ++count;
+    return count;
+}
+
+inline std::string sn::desc_typecodes_count() const
+{
+    std::vector<int> tcq = {CSG_TORUS, CSG_NOTSUPPORTED, CSG_CUTCYLINDER } ;
+
+    int minsubdepth = 0;
+    int count = typecodes_count(tcq, minsubdepth );
+
+    std::stringstream ss ;
+    ss << "[sn::desc_typecodes_count [" << count << "]\n" ;
+    for (int tc : tcq) ss << CSG::Name(tc) << "\n" ;
+    ss << "]sn::desc_typecodes_count [" << count << "]\n" ;
+
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
+
+
+
+
+
 
 inline bool sn::is_positive_form() const
 {

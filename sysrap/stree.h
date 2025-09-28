@@ -621,7 +621,9 @@ struct stree
 
     static void FindForceTriangulateLVID(std::vector<int>& lvid, const std::vector<std::string>& _sonames, const char* _force_triangulate_solid, char delim=','  );
     std::string descForceTriangulateLVID() const ;
-    bool        is_force_triangulate( int lvid ) const ;
+    bool        is_force_triangulate( int lvid ) const ; // HMM: is_manual_triangulate would be better name
+    bool        is_auto_triangulate( int lvid ) const ;  // WIP: automate decision, avoiding hassle with geometry updates that change/add solid names
+    bool        is_triangulate(int lvid) const ;  // OR of the above
 
 
     void classifySubtrees();
@@ -3452,7 +3454,10 @@ inline std::string stree::desc_solids() const
     for(int i=0 ; i < num_soname ; i++)
     {
         int lvid = i ;
+
         bool ift = is_force_triangulate(lvid) ;
+        bool iat = is_auto_triangulate(lvid) ;
+        bool it = is_triangulate(lvid) ;
 
         const char* son = lvid < int(soname.size())     ? soname[lvid].c_str() : nullptr ;
         const sn* root = sn::GetLVRoot(lvid);
@@ -3461,6 +3466,8 @@ inline std::string stree::desc_solids() const
         ss
             << " lvid " << std::setw(3) << lvid
             << " is_force_triangulate " << ( ift ? "YES" : "NO " )
+            << " is_auto_triangulate " << ( iat ? "YES" : "NO " )
+            << " is_triangulate " << ( it ? "YES" : "NO " )
             << " soname[lvid] " << std::setw(60) << ( son ? son : "-" )
             << " " << ( root ? root->rbrief() : "" )
             << "\n"
@@ -3915,30 +3922,6 @@ inline std::string stree::descForceTriangulateLVID() const
 /**
 stree::is_force_triangulate
 ----------------------------
-
-How this info gets used is spread over the geometry handling
-of sysrap, CSG and CSGOptiX packages. Relevant methods/fields include::
-
-stree::get_ridx_type
-stree::tri
-stree::rem
-
-CSGSolid::setIntent
-   invoked by the below importers
-
-CSGImport::importSolid
-CSGImport::importSolidGlobal
-CSGImport::importSolidFactor
-
-CSGFoundry::isSolidTrimesh
-   returns depending on the CSGSolid intent
-
-SBT::createGAS
-   depending on CSGFoundry::isSolidTrimesh switches between the mesh and analytic buildInput
-   passed to SOPTIX_Accel::Create
-
-
-In order to dump the triangulation status, best to dump the solids
 **/
 
 
@@ -3947,11 +3930,80 @@ inline bool stree::is_force_triangulate( int lvid ) const
     return slist::Contains( force_triangulate_lvid, lvid );
 }
 
+/**
+stree::is_auto_triangulate
+----------------------------
+
+WIP: to reproduce the manual list of lvid also need to judge
+based on the CSG complexity, depth etc.. even with supported
+nodes
+
+**/
 
 
+inline bool stree::is_auto_triangulate( int lvid ) const
+{
+    const sn* root = sn::GetLVRoot(lvid);
+
+    std::vector<int> tcq = {CSG_TORUS, CSG_NOTSUPPORTED, CSG_CUTCYLINDER } ;
+    int minsubdepth = 0;
+    int count = typecodes_count(tcq, minsubdepth );
+    return count > 0 ;
+}
 
 
+/**
+stree::is_triangulate
+------------------------
 
+How the result of stree::is_triangulate is used is spread over
+the geometry handling of sysrap, CSG and CSGOptiX packages.
+Relevant methods/fields include:
+
+stree::tri
+    vector of snode : subset of nds which are triangulated (currently only global, non-instanced nodes)
+    (tri vector is populated by stree::factorize/stree::collectGlobalNodes, based on stree::is_triangulate)
+
+stree::rem
+    vector of snode : subset of nds which are remainder nodes : left following factorization
+    (rem vector is populated by stree::factorize/stree::collectGlobalNodes, based on stree::is_triangulate)
+
+stree::get_ridx_type
+    returns 'R' 'F' or 'T' (depending on get_num_remainder (always 1), get_num_factor, get_num_triangulated (0 or 1))
+
+    'R' analytic global solid
+    'T' triangulated global solid
+    'F' analytic factor solid
+    ## NB no 'Q' for triangulated factor solid : NOT YET IMPLEMENTED
+
+
+void CSGSolid::setIntent(char _intent)
+   invoked by the below importers, where _intent is one of::
+
+CSGImport::importSolid
+CSGImport::importSolidGlobal
+CSGImport::importSolidFactor
+
+CSGFoundry::isSolidTrimesh
+   returns true when CSGFoundry::getSolidIntent yields 'T' ... this is
+   used extensively by the below CSGOptiX methods to setup the GPU geometry
+
+CSGOptiX/SBT::createGAS
+   depending on CSGFoundry::isSolidTrimesh switches between the mesh and analytic buildInput
+   passed to SOPTIX_Accel::Create
+
+CSGOptiX/SBT::createHitgroup
+
+
+In order to dump the triangulation status, need to dump the compound CSGSolid
+
+**/
+
+
+inline bool stree::is_triangulate( int lvid ) const
+{
+    return is_force_triangulate(lvid) || is_auto_triangulate(lvid);
+}
 
 
 
@@ -3963,7 +4015,7 @@ stree::classifySubtrees
 
 This is invoked by stree::factorize
 
-Traverse all nodes, computing and collecting subtree digests and adding them to subs_freq
+Traverse all nodes, computing and collecting subtree digests and adding them to (sfreq*)subs_freq
 to find the top repeaters.
 
 **/
@@ -3984,6 +4036,12 @@ inline void stree::classifySubtrees()
 /**
 stree::is_contained_repeat
 ----------------------------
+
+The result of this is used to disqualify repeated subtrees
+that are contained within other repeated subtrees in order to find
+the largest subtrees of repeated nodes. In that case the parent node
+would be a candidate to be the outer factor node. But of course the
+parent could itself be a contained repeat.
 
 A contained repeat *sub* digest is defined as one where the subtree
 digest of the parent of the first node with *sub* digest passes "pfreq >= FREQ_CUT"
@@ -4114,6 +4172,8 @@ stree::sortSubtrees
 ---------------------
 
 Order the subs_freq (sub,freq) pairs within the vector
+The subtrees are sorted in order for the order of factors
+to be reproducible between different machines.
 
 **/
 
@@ -4180,9 +4240,9 @@ inline void stree::labelFactorSubtrees()
     int num_factor = factor.size();
     if(level>0) std::cout << "[ stree::labelFactorSubtrees num_factor " << num_factor << std::endl ;
 
-    for(int i=0 ; i < num_factor ; i++)
+    for(int f=0 ; f < num_factor ; f++)
     {
-        int repeat_index = i + 1 ;   // leave repeat_index zero for the global remainder
+        int repeat_index = f + 1 ;   // leave repeat_index zero for the global remainder
         sfactor& fac = factor.at(repeat_index-1) ;  // .at is appropriate for small loops
         std::string sub = fac.get_sub() ;
         assert( fac.index == repeat_index - 1 );
@@ -4193,6 +4253,7 @@ inline void stree::labelFactorSubtrees()
 
         int fac_olvid = -1 ;
         int fac_subtree = -1 ;
+
         for(unsigned i=0 ; i < outer_node.size() ; i++)
         {
             int outer = outer_node[i] ;
@@ -4230,11 +4291,11 @@ inline void stree::labelFactorSubtrees()
                 snode& nd = nds[nidx] ;
                 assert( nd.index == nidx );
                 nd.repeat_index = repeat_index ;
-                nd.repeat_ordinal = i ;
+                nd.repeat_ordinal = i ;  // index over occurence of the subtree digest
             }
         }
-        fac.subtree = fac_subtree ;
-        fac.olvid = fac_olvid ;
+        fac.subtree = fac_subtree ;  // notes on the subtree
+        fac.olvid = fac_olvid ;      // outer node lvid
 
         if(level>0) std::cout
             << "stree::labelFactorSubtrees"
@@ -4330,6 +4391,19 @@ should triangulation action be done post-cache ?
   but for actual use the definiteness of getting same geometry from cache has value
 
 
+
+Q: HOW TO EXTEND TO TRIANGULATED FACTOR NODES ?
+
+A: LOOKS LIKE NO FUNDAMENTAL THING STOPPING TRI FACTOR NODES IN CSGOptiX,
+   PERHAPS JUST BOOKKEEPING CHANGE IN stree.h ?
+
+   * ONE THING TO NOTE IS THAT THE ENTIRE factor subtree that becomes
+     the compound CSGSolid will need to be all triangulated or all analytic
+     ... cannot mix ana and tri in the same CSGSolid
+
+   * HOW TO PROCEED : NEED EXAMPLE TO WORK WITH
+
+
 **/
 
 
@@ -4342,15 +4416,17 @@ inline void stree::collectGlobalNodes()
     {
         const snode& nd = nds[nidx] ;
         assert( nd.index == nidx );
-        bool do_force_triangulate = is_force_triangulate(nd.lvid) ;
+        bool do_triangulate = is_triangulate(nd.lvid) ;
         if( nd.repeat_index == 0 )
         {
-            std::vector<snode>& dst = do_force_triangulate ? tri : rem  ;
+            std::vector<snode>& dst = do_triangulate ? tri : rem  ;
             dst.push_back(nd) ;
         }
         else
         {
-            assert( do_force_triangulate == false && "force triangulate solid is currently only supported for remainder nodes" );
+            assert( do_triangulate == false && "triangulate solid is currently only supported for remainder nodes" );
+            // HMM: FOR TRI FACTOR NODES NEED TO OPERATE WITH THE SUBTREES : AS ALL OF THE FUTURE CSGSolid
+            // HAS TO BE TRI TOGETHER : SO CAN DO NOTHING HERE
         }
     }
     if(level>0) std::cout
@@ -4386,16 +4462,17 @@ stree::factorize
 Canonically invoked from U4Tree::Create
 
 classifySubtrees
-   compute and store stree::subtree_digest for subtrees of all nodes
+   compute and store stree::subtree_digest for subtrees of all nodes using (sfreq*)subs_freq
 
 disqualifyContainedRepeats
-   flip freq sign in subs_freq to disqualify all contained repeats
+   flip freq sign in (sfreq*)subs_freq to disqualify all contained repeats, as want factors
+   to have the largest subtrees
 
 sortSubtrees
-   order the subs_freq (sub,freq) pairs within the vector
+   order the subs_freq (sub,freq) pairs within the vector, for reproducible factors between different machines
 
 enumerateFactors
-   create sfactor and collect into factor vector
+   create sfactor instances and collect into factor vector
 
 labelFactorSubtrees
    label all nodes of subtrees of all repeats with repeat_index,
@@ -4551,12 +4628,12 @@ Also lots of other places assume always have this
 
 **/
 
-inline int stree::get_num_remainder() const
+inline int stree::get_num_remainder() const   // to be more precise analytic_global_remainder
 {
     //return rem.size() > 0 ? 1 : 0 ;
     return 1 ;
 }
-inline int stree::get_num_triangulated() const
+inline int stree::get_num_triangulated() const  // to be more precise global_triangulated
 {
     return tri.size() > 0 ? 1 : 0 ;
 }
@@ -4598,6 +4675,9 @@ Expectation for compound solids:
 +-----+-------------------------------+----------------------------------------------------------------------------+
 |  T  |  triangulated non-instanced   |  0 or 1 solid formed from any *tri* nodes depending on stree envvar config |
 +-----+-------------------------------+----------------------------------------------------------------------------+
+|  Q  |  triangulated instanced       | NOT YET IMPLEMENTED  : MAY NEED FOR COMPLEX STRUTS                         |
++-----+-------------------------------+----------------------------------------------------------------------------+
+
 
 Indices of ranges of the 3 types of compound solids:
 
@@ -4610,6 +4690,7 @@ Indices of ranges of the 3 types of compound solids:
 +---+--------------------------------------------+--------------------------------------------------------+
 | T | num_remainder + num_factor + 0             | num_remainder + num_factor + num_triangulate - 1       |
 +---+--------------------------------------------+--------------------------------------------------------+
+
 
 **/
 

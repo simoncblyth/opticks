@@ -1010,8 +1010,10 @@ void SBT::createHitgroup()
         if(trimesh) assert( num_bi == numPrim );
 
 
-        // ana: outer loop is mute, inner loop over CSGPrim "layers"
-        // tri: inner loop is mute, outer loop is over CSGPrim "layers"
+        // (all CSGPrim "layers" of the compound CSGSolid are ana/tri, with no mixing)
+        //
+        // ana: outer j loop is mute [num_bi=1,num_sbt>=1], inner k loop over CSGPrim "layers"
+        // tri: inner k loop is mute [num_bi>=1,num_sbt=1], outer j loop over CSGPrim "layers"
 
         for(int j=0 ; j < num_bi ; j++)
         {

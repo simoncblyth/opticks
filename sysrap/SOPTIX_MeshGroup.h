@@ -3,7 +3,7 @@
 SOPTIX_MeshGroup.h : create SOPTIX_BuildInput_Mesh for each part of SCUDA_MeshGroup, use those to form SOPTIX_Accel gas  
 ========================================================================================================================
 
-Used from SOPTIX_Scene.h 
+Used from SOPTIX_Scene.h  and  CSGOptiX/SBT::createGAS
 
 From optix7sdk.bash notes::
 
