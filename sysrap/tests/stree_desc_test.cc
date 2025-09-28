@@ -7,7 +7,8 @@ int main(int argc, char** argv)
 
     //std::cout << "t.desc" << std::endl << t->desc() << std::endl ;
 
-    std::cout << t->desc_solids() << "\n" ;
+    //std::cout << t->desc_solids() << "\n" ;
+    std::cout << t->desc_triangulate() << "\n" ;
 
    /*
     std::cout

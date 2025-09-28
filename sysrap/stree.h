@@ -591,6 +591,7 @@ struct stree
     std::string desc_node_solids() const ;
     std::string desc_solids_0() const ;
     std::string desc_solids() const ;
+    std::string desc_triangulate() const ;
     std::string desc_solid(int lvid) const ;
 
 
@@ -927,6 +928,7 @@ inline void stree::populate_descMap( std::map<std::string, std::function<std::st
     m["node_solids"] = [this](){ return this->desc_node_solids(); };
     m["nodes"] = [this](){ return this->descNodes(); };
     m["solids"] = [this](){ return this->desc_solids(); };
+    m["triangulate"] = [this](){ return this->desc_triangulate(); };
     m["factor"] = [this](){ return this->desc_factor(); };
     m["repeat_nodes"] = [this](){ return this->desc_repeat_nodes(); };
 
@@ -3478,6 +3480,87 @@ inline std::string stree::desc_solids() const
     return str ;
 }
 
+inline std::string stree::desc_triangulate() const
+{
+    int num_soname = soname.size() ;
+
+    int count_triangulate = 0 ;
+    int count_force_triangulate = 0 ;
+    int count_auto_triangulate = 0 ;
+    int count_auto_triangulate_only = 0 ;
+    int count_force_triangulate_only = 0 ;
+
+    std::vector<std::string> names_auto_triangulate_only ;
+    std::vector<std::string> names_force_triangulate_only ;
+
+    std::stringstream ss ;
+    ss << "[stree::desc_triangulate num_soname " << num_soname  << "\n" ;
+    for(int i=0 ; i < num_soname ; i++)
+    {
+        int lvid = i ;
+
+        bool ift = is_force_triangulate(lvid) ;
+        bool iat = is_auto_triangulate(lvid) ;
+        bool it = is_triangulate(lvid) ;
+        bool fto = ift == true && iat == false ;
+        bool ato = ift == false && iat == true ;
+
+        if(it)  count_triangulate += 1 ;
+        if(ift) count_force_triangulate += 1 ;
+        if(iat) count_auto_triangulate += 1 ;
+        if(fto) count_force_triangulate_only += 1 ;
+        if(ato) count_auto_triangulate_only += 1 ;
+
+        if(!it) continue ;
+        //if(!fto) continue ;
+
+        const char* son = lvid < int(soname.size())     ? soname[lvid].c_str() : nullptr ;
+        assert(son);
+
+        if(ato) names_auto_triangulate_only.push_back(son);
+        if(fto) names_force_triangulate_only.push_back(son);
+
+        const sn* root = sn::GetLVRoot(lvid);
+        assert(root);
+        assert( root->lvid == lvid );
+        ss
+            << " lvid " << std::setw(3) << lvid
+            << " is_force_triangulate " << ( ift ? "YES" : "NO " )
+            << " is_auto_triangulate " << ( iat ? "YES" : "NO " )
+            << " is_triangulate " << ( it ? "YES" : "NO " )
+            << " force_triangulate_only " << ( fto ? "YES" : "NO " )
+            << " soname[lvid] " << std::setw(60) << ( son ? son : "-" )
+            << " " << ( root ? root->rbrief() : "" )
+            << "\n"
+            ;
+    }
+
+    ss << "-stree::desc_triangulate.[names_auto_triangulate_only\n" ;
+    for(int i=0 ; i < int(names_auto_triangulate_only.size()) ; i++ ) ss << names_auto_triangulate_only[i] << "\n" ;
+    ss << "-stree::desc_triangulate.]names_auto_triangulate_only\n" ;
+
+    ss << "-stree::desc_triangulate.[names_force_triangulate_only\n" ;
+    for(int i=0 ; i < int(names_force_triangulate_only.size()) ; i++ ) ss << names_force_triangulate_only[i] << "\n" ;
+    ss << "-stree::desc_triangulate.]names_force_triangulate_only\n" ;
+
+
+    ss << "]stree::desc_triangulate\n"
+       << " num_soname                   " << num_soname  << "\n"
+       << " count_triangulate            " << count_triangulate << "\n"
+       << " count_auto_triangulate       " << count_auto_triangulate << "\n"
+       << " count_force_triangulate      " << count_force_triangulate << "\n"
+       << " count_auto_triangulate_only  " << count_auto_triangulate_only << "\n"
+       << " count_force_triangulate_only " << count_force_triangulate_only  << "\n"
+       ;
+
+
+    std::string str = ss.str();
+    return str ;
+
+
+}
+
+
 
 
 inline std::string stree::desc_solid(int lvid) const
@@ -3944,10 +4027,11 @@ nodes
 inline bool stree::is_auto_triangulate( int lvid ) const
 {
     const sn* root = sn::GetLVRoot(lvid);
+    assert( root );
 
     std::vector<int> tcq = {CSG_TORUS, CSG_NOTSUPPORTED, CSG_CUTCYLINDER } ;
     int minsubdepth = 0;
-    int count = typecodes_count(tcq, minsubdepth );
+    int count = root->typecodes_count(tcq, minsubdepth );
     return count > 0 ;
 }
 

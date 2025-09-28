@@ -1700,7 +1700,7 @@ inline void sn::typecodes_r(std::set<int>& tcs, int minsubdepth ) const
 {
     if(subdepth >= minsubdepth) tcs.insert(typecode);
 #ifdef WITH_CHILD
-    for(int i=0 ; i < int(child.size()) ; i++) child[i]->typecodes_r(mask, minsubdepth ) ;
+    for(int i=0 ; i < int(child.size()) ; i++) child[i]->typecodes_r(tcs, minsubdepth ) ;
 #else
     if(left && right )
     {
