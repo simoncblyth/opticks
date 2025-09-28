@@ -899,8 +899,9 @@ inline void stree::save_desc_(const char* fold) const
     for (auto const& [k, fn] : descMap)
     {
         std::string name = k + ".txt" ;
-        std::string desc = fn();
         std::cout << "-stree::save_desc_ name [" << name.c_str() << "]\n" ;
+
+        std::string desc = fn(); // move this after output as errors likely here
 
         U::WriteString( fold, name.c_str(), desc.c_str() );
     }
@@ -1251,8 +1252,30 @@ inline int stree::GetValueIndex( const std::vector<T>& vec, const T& obj) // sta
 
 inline void stree::get_children( std::vector<int>& children , int nidx ) const
 {
+    int num_nd = nds.size();
+    bool nidx_expect = nidx < num_nd ;
+    if(!nidx_expect) std::cerr
+        << "stree::get_children"
+        << " nidx_expect " << ( nidx_expect ? "YES" : "NO ")
+        << " num_nd " << num_nd
+        << " nidx " << nidx
+        << "\n"
+        ;
+    if(!nidx_expect) return ;
+
+
     const snode& nd = nds[nidx];
-    assert( nd.index == nidx );
+    bool nd_expect = nd.index == nidx ;
+    if(!nd_expect) std::cerr
+        << "stree::get_children"
+        << " nd.index " << nd.index
+        << " nidx " << nidx
+        << " num_nd " << num_nd
+        << " nidx_expect " << ( nidx_expect ? "YES" : "NO " )
+        << " nd_expect " << ( nd_expect ? "YES" : "NO " )
+        << "\n"
+        ;
+    assert( nd_expect );
 
     int ch = nd.first_child ;
     while( ch > -1 )
@@ -1276,50 +1299,62 @@ inline void stree::get_progeny( std::vector<int>& progeny , int nidx ) const
 
 inline std::string stree::desc_progeny(int nidx, int edge) const
 {
-    std::vector<int> progeny ;
-    get_progeny(progeny, nidx );
-    sfreq* sf = make_freq(progeny);
-    sf->sort();
-    int num_progeny = progeny.size() ;
+    int num_nd = nds.size();
+    bool nidx_valid = nidx < num_nd ;
 
     std::stringstream ss ;
     ss << "stree::desc_progeny\n"
        << " nidx " << nidx << "\n"
-       << " num_progeny " << num_progeny << "\n"
-       << " edge " << edge << "\n"
-       << "[sf.desc\n"
-       << sf->desc()
-       << "]sf.desc\n"
-       << " i " << std::setw(6) << -1
-       << desc_node(nidx, true )
-       << "\n"
+       << " nidx_valid " << ( nidx_valid ? "YES" : "NO " ) << "\n"
        ;
 
 
-    for(int i=0 ; i < num_progeny ; i++)
+    if( nidx_valid )
     {
-        int nix = progeny[i] ;
-        int depth = get_depth(nix);
+        std::vector<int> progeny ;
+        get_progeny(progeny, nidx );
+        sfreq* sf = make_freq(progeny);
+        sf->sort();
+        int num_progeny = progeny.size() ;
 
-        if( edge == 0 || i < edge || i > num_progeny - edge )
+        ss
+           << " num_progeny " << num_progeny << "\n"
+           << " edge " << edge << "\n"
+           << "[sf.desc\n"
+           << sf->desc()
+           << "]sf.desc\n"
+           << " i " << std::setw(6) << -1
+           << desc_node(nidx, true )
+           << "\n"
+           ;
+
+
+        for(int i=0 ; i < num_progeny ; i++)
         {
-            ss
-                << " i " << std::setw(6) << i
-                << " depth " << std::setw(2) << depth
-                << desc_node_(nix, sf )
-                << "\n"
-                ;
-        }
-        else if( i == edge )
-        {
-            ss
-                << " i " << std::setw(6) << i
-                << " depth " << std::setw(2) << depth
-                << " ... "
-                << "\n"
-                ;
+            int nix = progeny[i] ;
+            int depth = get_depth(nix);
+
+            if( edge == 0 || i < edge || i > num_progeny - edge )
+            {
+                ss
+                    << " i " << std::setw(6) << i
+                    << " depth " << std::setw(2) << depth
+                    << desc_node_(nix, sf )
+                    << "\n"
+                    ;
+            }
+            else if( i == edge )
+            {
+                ss
+                    << " i " << std::setw(6) << i
+                    << " depth " << std::setw(2) << depth
+                    << " ... "
+                    << "\n"
+                    ;
+            }
         }
     }
+
 
     std::string str = ss.str();
     return str ;
