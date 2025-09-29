@@ -62,6 +62,27 @@ Release Notes
 * start from "git lg -n20" and summarize useful commit messages worthy of mention
 
 
+v0.5.4 2025/09/29 : some triangulation automation, handling for unsupported cut tubs, U4Polycone some generalization for new JUNO geometry, start impl of service-client with nanobind
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* add stree::desc_triangulate reporting which solids are auto and force triangulated
+* initial impl of stree::is_auto_triangulate aiming to avoid the need to manually maintain a list of solids that must be triangulated, plus review how difficult instanced-triangulated impl will be (28 hours ago) <Simon C Blyth>
+* U4Polycone.h handle polycone with non-zero rInner for some of the sections only, eg Mug shape without handle
+* add u4/tests/StrutMakerTest.sh for testing some new geometry
+* get magic callbacks to work with numpy header travelling in the HTTP POST body, see ~/np/tests/np_curl_test/np_curl_test.sh
+* add eventID index to the high level API, the FastAPI/CSGOptiXService now succeeding to simulate
+* get CSGOptiXServiceTest.sh to start to work - testing the high level NP API needed for service-client running
+* add high level NP-centric QSim::simulate API for use from CSGOptiXService.h
+* review genstep collection and hit handling, conclude that forming sensor frame local hits should happen on client side to avoid doubling hit size
+* rework input genstep handling, adding flexibility to enable testing the high level NP-centric API, see CSGOptiXService.h
+* rework input genstep preparation for flexibility to support higher level NP-centric API testing
+* resolved runtime nanobind type error across python C++ barrier by copying the array frombuffer constructed from the FastAPI request data
+* add multipart/form-data uploading to NP_CURL as thats more efficient than urlencoding for large binary uploads
+* first impl of NP_CURL.h providing libcurl based array upload/download over HTTP PUT request/response enabling remote array transformation, tested with FastAPI ASGI python webserver endpoint
+* initial try at getting complex solid WaterDistributer with MultiUnion within MultiUnion with G4CutTubs that is destined for triangles to convert using CSG_NOTSUPPORTED sn::Notsupported placeholder
+
+
+
 v0.5.3 2025/08/27 : shakedown new PMT types WP_ATM_LPMT WP_WAL_PMT, fixes for two longstanding viz issues
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -253,6 +274,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                               |
 +=========+=====+============+=====================================================================================================================+
+| v0.5.4  | 54  | 2025/09/29 | triangulation automation, handle unsupported, U4Polycone generalization for new JUNO geometry, start service-client |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.5.3  | 53  | 2025/08/27 | shakedown new PMT types WP_ATM_LPMT WP_WAL_PMT, fixes for two longstanding viz issues                               |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
 | v0.5.2  | 52  | 2025/08/19 | intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h             |
