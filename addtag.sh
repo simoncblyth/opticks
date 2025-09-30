@@ -76,6 +76,14 @@ Workflow for adding Opticks tags:
        A> ssh O
        O> ./ok_deploy_to_cvmfs.sh Opticks-v0.3.2.tar   ## cvmfs details in hcvmfs-
 
+
+7. [JUNOSW+Opticks release] After the "day name" automatic ~/.gitlab-ci.yml
+   deployment to CVMFS of the OJ tarball has been checked, add a dated reference release
+   for the exact same OJ tarball by:
+
+   *  SSH into the OJ machine "ssh O" and invoke ./oj_reference_deploy_to_cvmfs.sh
+
+
 NB this simple script assumes single digit 0-9 major/minor/patch version integers
 
 EOU
