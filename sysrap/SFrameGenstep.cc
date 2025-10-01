@@ -140,7 +140,7 @@ void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, cha
 SFrameGenstep::MakeCenterExtentGensteps_FromFrame
 --------------------------------------------------
 
-Canonical usage is from SEvt::setFrame for simtrace running.
+Canonical usage is from SEvt::createInputGenstep_simtrace
 
 Default is to apply extent scaling.
 To switch that off (eg whilse debugging) use::
@@ -240,6 +240,13 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
         }
     }
 
+
+    NP* CEGS_NPY = ssys::hasenv_("CEGS_NPY") ? NP::Load("$CEGS_NPY") : nullptr ;
+    NP* gs_CEGS_NPY = CEGS_NPY ? Make_CEGS_NPY_Genstep(CEGS_NPY, geotran) : nullptr ;
+    if(gs_CEGS_NPY) gsl.push_back(gs_CEGS_NPY);
+
+
+
     LOG(LEVEL) << " gsl.size " << gsl.size() ;
 
     LOG(LEVEL) << "[ NP::Concatenate " ;
@@ -254,6 +261,43 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
 
     return gs ;
 }
+
+
+NP* SFrameGenstep::Make_CEGS_NPY_Genstep( const NP* t, const Tran<double>* geotran ) // static
+{
+    assert( t && t->has_shape(-1,3) && t->uifc == 'f' && t->ebyte == 4 );
+    int ni = t->shape[0] ;
+    int nj = t->shape[1] ;
+    assert( nj == 3 );
+
+    const float* tt = t->cvalues<float>();
+
+    qat4* qc = Tran<double>::ConvertFrom( geotran->t ) ;
+
+    quad6 gs ;
+    gs.zero();
+
+    std::vector<quad6> gensteps ;
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        gs.q1.f.x = tt[nj*i+0] ;
+        gs.q1.f.y = tt[nj*i+1] ;
+        gs.q1.f.z = tt[nj*i+2] ;
+        gs.q1.f.w = 1.f ;
+
+        qc->write(gs);  // copy qc transform into gs.q2,q3,q4,q5
+
+        int gridaxes = 0 ;
+        int gsid = 0 ;
+        int photons_per_genstep = 100 ;
+        SGenstep::ConfigureGenstep(gs, OpticksGenstep_FRAME, gridaxes, gsid, photons_per_genstep );
+
+        gensteps.push_back(gs);
+    }
+    return SGenstep::MakeArray(gensteps);
+}
+
 
 /**
 SFrameGenstep::MakeCenterExtentGenstep

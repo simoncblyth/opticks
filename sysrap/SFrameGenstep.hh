@@ -39,6 +39,9 @@ struct SYSRAP_API SFrameGenstep
 
     static bool HasConfigEnv();
     static NP* MakeCenterExtentGenstep_FromFrame(sframe& fr);
+
+    static NP* Make_CEGS_NPY_Genstep( const NP* CEGS_NPY, const Tran<double>* geotran );
+
     static NP* MakeCenterExtentGenstep(
         const float4& ce,
         const std::vector<int>& cegs,
@@ -46,6 +49,8 @@ struct SYSRAP_API SFrameGenstep
         const Tran<double>* geotran,
         const std::vector<float3>& ce_offset,
         bool ce_scale ) ;
+
+
 
     static void StandardizeCEGS( std::vector<int>& cegs );
     static void GetBoundingBox(
