@@ -3,7 +3,19 @@ usage(){ cat << EOU
 cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 ===============================================================
 
-::
+To make select intersects to show use comma delimted KEY::
+
+     PRIMTAB=1 KEY=hotpink,honeydew,darkmagenta cxt_min.sh pdb
+
+     PRIMTAB=1 KEY=honeydew,deeppink cxt_min.sh pdb     ## WORKS FOR 3D GRID TOO
+
+
+     PRIMTAB=1 KEY=yellow cxt_min.sh pdb             ## looks disjoint, extensive coincidence ?
+     PRIMTAB=1 KEY=green cxt_min.sh pdb              ## neck only goes up a little
+     PRIMTAB=1 KEY=yellow,turquoise cxt_min.sh pdb
+     PRIMTAB=1 GSGRID=1 KEY=yellow,turquoise,green cxt_min.sh pdb
+     PRIMTAB=1 GSGRID=1 KEY=yellow,turquoise,green,darkmagenta cxt_min.sh pdb
+
 
      GSGRID=0 KEY=blue,orange,lightblue cxt_min.sh pdb
      GSGRID=0 GRID=1 GLOBAL=1 XKEY=blue,orange,lightblue cxt_min.sh pdb
@@ -161,7 +173,16 @@ export MODE=${MODE:-$mode}
 export EYE=${EYE:-$eye}
 
 
-export EVT=${EVT:-A000}
+: user can pick EVT but it must be of expected form - otherwise override to A000
+evt=A000
+if ! [[ $EVT =~ ^[AB][0-9]{3}$ ]]; then
+    echo $BASH_SOURCE - WARNING EVT $EVT NOT OF EXPECTED FORM - A000 A001 ... B000 B001 ... - OVERRIDE TO default evt $evt
+    EVT=$evt
+fi
+export EVT=${EVT:-$evt}
+
+
+
 export BASE=$TMP/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
@@ -187,17 +208,23 @@ LOGNAME=$bin.log
 
 ## see SFrameGenstep::StandardizeCEGS for CEGS/CEHIGH [4]/[7]/[8] layouts
 
-export CEGS=16:0:9:2000   # [4] XZ default
+#export CEGS=16:0:9:2000   # [4] XZ default
 #export CEGS=16:0:9:1000  # [4] XZ default
 #export CEGS=16:0:9:100   # [4] XZ reduce rays for faster rsync
 #export CEGS=16:9:0:1000  # [4] try XY
 
-export CEHIGH_0=-16:16:0:0:-4:4:2000:4
-export CEHIGH_1=-16:16:0:0:4:8:2000:4
+#export CEGS=16:9:9:100    # [4] try a 3D grid
+export CEGS=16:9:9:500    # [4] try a 3D grid
+export CEGS_NPY=/tmp/overlap_pt.npy   # see SFrameGenstep::MakeCenterExtentGenstep_FromFrame
 
-#export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
-#export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
-#export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
+
+if [ "$CEGS" == "16:0:9:2000" ]; then
+    export CEHIGH_0=-16:16:0:0:-4:4:2000:4
+    export CEHIGH_1=-16:16:0:0:4:8:2000:4
+    #export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
+    #export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
+    #export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
+fi
 
 
 
@@ -315,6 +342,5 @@ if [ "${arg/cfg}" != "$arg" ]; then
     eval  $cmd
 fi
 
-
-
+exit 0
 
