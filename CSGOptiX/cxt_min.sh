@@ -5,6 +5,7 @@ cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 
 To make select intersects to show use comma delimted KEY::
 
+     PRIMTAB=1 cxt_min.sh pdb
      PRIMTAB=1 KEY=hotpink,honeydew,darkmagenta cxt_min.sh pdb
 
      PRIMTAB=1 KEY=honeydew,deeppink cxt_min.sh pdb     ## WORKS FOR 3D GRID TOO
@@ -33,6 +34,19 @@ To make select intersects to show use comma delimted KEY::
 
 
 TODO: add option to draw a spinkle of intersect normal direction arrows
+
+
+OVERLAP Check
+--------------
+
+::
+
+    PRIMTAB=1 OVERLAP=1 KEY=deeppink,honeydew cxt_min.sh pdb
+    PRIMTAB=1 OVERLAP=1 KEY=deeppink,honeydew HIDE=1 cxt_min.sh pdb
+
+    PRIMTAB=1 OVERLAP=1 BOXSEL=-2000,2000,-2000,2000,-1000,1000 KEY=deeppink,honeydew KEYOFF=honeydew:0,0,-27 cxt_min.sh pdb      ##  overlap_pt 1
+    PRIMTAB=1 OVERLAP=1 BOXSEL=-2000,2000,-2000,2000,-1000,1000 KEY=deeppink,honeydew KEYOFF=honeydew:0,0,-28 cxt_min.sh pdb      ## NO OVERLAP
+
 
 
 

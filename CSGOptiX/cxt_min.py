@@ -116,6 +116,7 @@ APOINTSIZE = float(os.environ.get("APOINTSIZE",10.))
 BPOINTSIZE = float(os.environ.get("BPOINTSIZE",10.))
 
 
+
 if MODE in [2,3]:
     import opticks.ana.pvplt as pvp
 pass
@@ -245,12 +246,47 @@ if __name__ == '__main__':
 
 
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
+    ## for simtrace layout see sysrap/sevent.h
 
-    gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
-    gp = gp_bn >> 16      ## globalPrimIdx
-    bn = gp_bn & 0xffff   ## boundary
+    _ii = ust[:,3,3].view(np.int32)   ## instanceIndex
+    _gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
+    _gp = _gp_bn >> 16      ## globalPrimIdx
+    _bn = _gp_bn & 0xffff   ## boundary
 
-    ii = ust[:,3,3].view(np.int32)   ## instanceIndex
+    gnrm = ust[:,0].copy()
+    gpos = ust[:,1].copy()
+
+    gnrm[...,3] = 0.   ## surface normal transforms as vector
+    gpos[...,3] = 1.   ## intersect position transforms as position
+
+    ## transform from global to local frame
+    lnrm = np.dot( gnrm, w2m )
+    lpos = np.dot( gpos, w2m )
+
+    elu_m2w = m2w if GLOBAL else np.eye(4)   ## try to make EYE,LOOK,UP stay local even in GLOBAL
+    _unrm = gnrm if GLOBAL else lnrm
+    _upos = gpos if GLOBAL else lpos
+
+    if "BOXSEL" in os.environ:
+        BOXSEL = np.fromstring(os.environ.get("BOXSEL","-1000,1000,-1000,1000,-1000,1000"),sep=",").reshape(3,2)
+        boxsel = np.all( (_upos[:,:3] > BOXSEL[:,0]) & (_upos[:,:3] < BOXSEL[:,1]), axis=1)
+        upos = _upos[boxsel]
+        unrm = _unrm[boxsel]
+
+        ii = _ii[boxsel]
+        gp = _gp[boxsel]
+        bn = _bn[boxsel]
+    else:
+        upos = _upos
+        unrm = _unrm
+        ii = _ii
+        gp = _gp
+        bn = _bn
+    pass
+
+
+
+
 
     EXPR = list(map(str.strip,textwrap.dedent(r"""
     st.shape
@@ -265,6 +301,11 @@ if __name__ == '__main__':
         if expr == "" or expr[0] == "#": continue
         print(repr(eval(expr)))
     pass
+
+
+
+
+
 
 
     idtab = UniqueTable("idtab", ii, None)
@@ -299,20 +340,6 @@ if __name__ == '__main__':
     cxtable = cxtp if PRIMTAB==1 else cxtb
 
 
-    ## for simtrace layout see sysrap/sevent.h
-    gnrm = ust[:,0].copy()
-    gpos = ust[:,1].copy()
-
-    gnrm[...,3] = 0.   ## surface normal transforms as vector
-    gpos[...,3] = 1.   ## intersect position transforms as position
-
-    ## transform from global to local frame
-    lnrm = np.dot( gnrm, w2m )
-    lpos = np.dot( gpos, w2m )
-
-    elu_m2w = m2w if GLOBAL else np.eye(4)   ## try to make EYE,LOOK,UP stay local even in GLOBAL
-    unrm = gnrm if GLOBAL else lnrm
-    upos = gpos if GLOBAL else lpos
 
     ASLICE = None
     AIDX = int(os.environ.get("AIDX","0"))
@@ -392,7 +419,14 @@ if __name__ == '__main__':
                     if skip1: continue
                 pass
                 label = self.get_label(k)
-                pts[k] = upos[w,:3]
+
+                # example KEYOFF "honeydew:0,0,-1000"
+                if os.environ.get("KEYOFF","").startswith(k+":"):
+                    KEYOFF = np.fromstring(os.environ["KEYOFF"][len(k+":"):],sep=",").reshape(3)
+                else:
+                    KEYOFF = np.array([0,0,0], dtype=np.float32)
+                pass
+                pts[k] = upos[w,:3] + KEYOFF
                 nrm[k] = unrm[w,:3]
                 if not hide:
                     pcloud[k] = pvp.pvplt_add_points(pl, pts[k], color=k, label=label )
@@ -482,6 +516,7 @@ if __name__ == '__main__':
             nr0 = spl.nrm[k0]    # eg (547840, 3)
             nr1 = spl.nrm[k1]    # eg (259548, 3)
 
+
             print("-OVERLAP-form KDTree kt0")
             kt0 = KDTree(pt0)
             print("-OVERLAP-form KDTree kt1")
@@ -493,15 +528,25 @@ if __name__ == '__main__':
             print("-OVERLAP-kt1.query")
             dist_0to1, idx_0to1 = kt1.query(pt0, k=1) #                  dist_0to1: (547840,)
 
-            close_pt0 = pt0[dist_0to1 < close_tol]
-            close_pt1 = pt1[dist_1to0 < close_tol]
+            close_0 = dist_0to1 < close_tol
+            close_1 = dist_1to0 < close_tol
+
+            close_pt0 = pt0[close_0]
+            close_pt1 = pt1[close_1]
             close_pt = np.unique(np.vstack([close_pt0, close_pt1]), axis=0)
 
             all_sd0 = np.sum( (pt0 - pt1[idx_0to1])*nr1[idx_0to1], axis=1 )
             all_sd1 = np.sum( (pt1 - pt0[idx_1to0])*nr0[idx_1to0], axis=1 )
 
-            overlap_pt0 = pt0[all_sd0 < -overlap_tol]
-            overlap_pt1 = pt1[all_sd1 < -overlap_tol]
+            close_sd0 = np.sum( (pt0 - pt1[idx_0to1])[close_0]*nr1[idx_0to1][close_0], axis=1 )
+            close_sd1 = np.sum( (pt1 - pt0[idx_1to0])[close_1]*nr0[idx_1to0][close_1], axis=1 )
+
+
+            #overlap_pt0 = pt0[all_sd0 < -overlap_tol]
+            #overlap_pt1 = pt1[all_sd1 < -overlap_tol]
+            overlap_pt0 = pt0[close_0][close_sd0 < -overlap_tol]
+            overlap_pt1 = pt1[close_1][close_sd1 < -overlap_tol]
+
 
             overlap_pt = np.unique(np.vstack([overlap_pt0, overlap_pt1]), axis=0)
             np.save("/tmp/overlap_pt.npy", overlap_pt)
