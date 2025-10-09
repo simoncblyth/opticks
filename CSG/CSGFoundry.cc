@@ -20,7 +20,10 @@
 #include "smeta.h"
 #include "SSim.hh"
 #include "SStr.hh"
+
+// TODO: migrate to spath.h
 #include "SPath.hh"
+
 #include "s_time.h"
 #include "SBitSet.h"
 
@@ -2639,20 +2642,26 @@ See notes/issues/primIdx-and-skips.rst
 
 void CSGFoundry::saveAlt() const
 {
-    const char* cfbase_alt = spath::Resolve("CFBASE_ALT");
-    if( cfbase && cfbase_alt && strcmp(cfbase, cfbase_alt) == 0 )
-    {
-        LOG(fatal)
-            << "cannot saveAlt as cfbase_alt directory matched the loaded directory "
-            << " cfbase " << cfbase
-            << " cfbase_alt " << cfbase_alt
-            ;
-    }
-    else
-    {
-        LOG(info) << " cfbase " << cfbase << " cfbase_alt " << cfbase_alt ;
-        save(cfbase_alt, RELDIR);
-    }
+    const char* _path = "$CFBASE_ALT" ;
+    const char* path = spath::Resolve(_path);
+    bool unresolved = spath::LooksUnresolved( path, _path );
+
+    LOG(LEVEL)
+        << " _path[" << ( _path ? _path : "-" )
+        << " path["  << (  path ?  path : "-" )
+        << " unresolved " << ( unresolved ? "YES" : "NO " )
+        ;
+
+    LOG_IF(fatal, unresolved) << "cannot saveAlt as CFBASE_ALT unresolved" ;
+    if(unresolved) return ;
+
+    const char* cfbase_alt = path ;
+    LOG(info)
+        << " cfbase "     << ( cfbase     ? cfbase : "-" )
+        << " cfbase_alt " << ( cfbase_alt ? cfbase_alt : "-" )
+        ;
+
+    save(cfbase_alt, RELDIR);
 }
 
 

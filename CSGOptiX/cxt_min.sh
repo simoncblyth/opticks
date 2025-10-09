@@ -177,6 +177,23 @@ source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, us
 source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally define CUR_ bash function, for controlling directory for screenshots
 source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally define AFOLD and/or BFOLD for adding event tracks to simtrace plots
 
+vars=""
+
+
+if [ -n "$USE_ELV" ]; then
+    ## NOT NORMAL TO EXCLUDE GEOMETRY FOR SIMTRACE : BUT SOMETIMES USEFUL TO DO SO
+    source $HOME/.opticks/GEOM/ELV.sh
+
+    ## USING DYNAMIC ELV SELECTED GEOMETRY COMES WITH COMPLICATIONS - IT FORCES ALT SAVING OF THE NON-STANDARD GEOMETRY
+    cfbase_alt=/tmp/$USER/.opticks/ELV_Dynamic/GEOM/$GEOM
+    mkdir -p $cfbase_alt
+    export CFBASE_ALT=$cfbase_alt
+    export CSGFoundry_Load_saveAlt=1
+
+fi
+vars="$vars USE_ELV CFBASE_ALT CSGFoundry_Load_saveAlt"
+
+
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 
@@ -269,7 +286,7 @@ debug()
 
 _CUR=GEOM/$GEOM/$SCRIPT/${MOI//:/_}
 
-vars="BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS TITLE"
+vars="$vars BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS TITLE"
 
 ## define TITLE based on ana/pdb control envvars
 title="cxt_min.sh pdb"

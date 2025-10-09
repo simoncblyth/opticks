@@ -486,20 +486,25 @@ class CSGFoundry(object):
     @classmethod
     def CFBase(cls):
         """
-        Precedence order for which envvar is used to derive the CFBase folder
-        This allows scripts such as CSGOptiX/cxsim.sh to set envvars to control
-        the geometry arrays loaded. For example this is used such that local
-        analysis on laptop can use the geometry rsynced from remote.
+        Precedence order for which envvars are used to derive the CFBase folder is:
 
         1. CFBASE_LOCAL
-        2. CFBASE
-        3. GEOM
-        4. OPTICKS_KEY
+        2. CFBASE_ALT
+        3. CFBASE
+        4. GEOM
+
+        This allows scripts such as CSGOptiX/cxt_min.sh to set envvars to control
+        the geometry arrays and meshname.txt etc that is loaded.
+        For example this could be used such that local analysis on laptop can use
+        a geometry rsynced from remote.
 
         """
         if "CFBASE_LOCAL" in os.environ:
             cfbase= os.environ["CFBASE_LOCAL"]
             note = "via CFBASE_LOCAL"
+        elif "CFBASE_ALT" in os.environ:
+            cfbase= os.environ["CFBASE_ALT"]
+            note = "via CFBASE_ALT"
         elif "CFBASE" in os.environ:
             cfbase= os.environ["CFBASE"]
             note = "via CFBASE"
