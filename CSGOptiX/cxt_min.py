@@ -154,7 +154,13 @@ class UniqueTable(object):
 
 if __name__ == '__main__':
 
-    print("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
+    logging.basicConfig(
+           level=logging.INFO,
+           format='%(asctime)s - %(message)s',
+           datefmt='%H:%M:%S'   # .%f
+    )
+
+    log.info("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
 
     prn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_prim_regexp")
 
@@ -517,16 +523,18 @@ if __name__ == '__main__':
             nr1 = spl.nrm[k1]    # eg (259548, 3)
 
 
-            print("-OVERLAP-form KDTree kt0")
+            log.info("-OVERLAP-form KDTree kt0 pt0.shape %s" % (str(pt0.shape)))
             kt0 = KDTree(pt0)
-            print("-OVERLAP-form KDTree kt1")
+            log.info("-OVERLAP-form KDTree kt1 pt1.shape %s" % (str(pt1.shape)))
             kt1 = KDTree(pt1)
 
             # query nearest neighbors between two clouds
-            print("-OVERLAP-kt0.query")
+            log.info("-OVERLAP-kt0.query pt1.shape %s " % (str(pt1.shape)))
             dist_1to0, idx_1to0 = kt0.query(pt1, k=1) # pt1: (259548, 3) dist_1to0: (259548,)  idx_1to0:(259548,)
-            print("-OVERLAP-kt1.query")
+            log.info("-OVERLAP-kt0.query.DONE")
+            log.info("-OVERLAP-kt1.query pt0.shape %s " % (str(pt0.shape)))
             dist_0to1, idx_0to1 = kt1.query(pt0, k=1) #                  dist_0to1: (547840,)
+            log.info("-OVERLAP-kt1.query.DONE")
 
             close_0 = dist_0to1 < close_tol
             close_1 = dist_1to0 < close_tol
@@ -549,7 +557,11 @@ if __name__ == '__main__':
 
 
             overlap_pt = np.unique(np.vstack([overlap_pt0, overlap_pt1]), axis=0)
-            np.save("/tmp/overlap_pt.npy", overlap_pt)
+
+            cegs_npy = os.environ.get("CEGS_NPY","")  # eg /tmp/overlap_pt.npy see SFrameGenstep::MakeCenterExtentGenstep_FromFrame
+            if cegs_npy.endswith(".npy"):
+                np.save(cegs_npy, overlap_pt)
+            pass
 
             close_label = "close_pt  %s " % (len(close_pt))
             overlap_label = "overlap_pt  %s " % (len(overlap_pt))

@@ -246,7 +246,9 @@ LOGNAME=$bin.log
 
 #export CEGS=16:9:9:100    # [4] try a 3D grid
 export CEGS=16:9:9:500    # [4] try a 3D grid
-export CEGS_NPY=/tmp/overlap_pt.npy   # see SFrameGenstep::MakeCenterExtentGenstep_FromFrame
+
+# CEGS_NPY adds gensteps at positions obtained from the array of 3D points
+#export CEGS_NPY=/tmp/overlap_pt.npy   # see SFrameGenstep::MakeCenterExtentGenstep_FromFrame
 
 
 if [ "$CEGS" == "16:0:9:2000" ]; then
