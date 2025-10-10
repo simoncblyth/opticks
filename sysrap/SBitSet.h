@@ -79,6 +79,8 @@ struct SBitSet
     void        set(bool all);
     void        parse_spec( const char* spec);
 
+
+
     template<typename T>
     void        parse_value( T value);
 
@@ -97,6 +99,12 @@ struct SBitSet
 
     template<typename T>
     T  value() const ;  // HMM: little or big endian option ?
+
+
+    void serialize(std::vector<unsigned char>& buf) const ;
+    static SBitSet* CreateFromBytes(const std::vector<unsigned char>& bytes);
+    int compare(const SBitSet* other) const ; // zero when same bits
+
 };
 
 
@@ -436,5 +444,34 @@ inline T SBitSet::value() const   // HMM: little or big endian option ?
     return val ;
 }
 
+
+inline void SBitSet::serialize(std::vector<unsigned char>& bytes) const
+{
+    int num_bytes = (num_bits + 7)/8 ;
+    bytes.resize(num_bytes, 0);
+    for (size_t i = 0; i < num_bits; ++i) if(bits[i]) bytes[i/8] |= (1 << (i % 8));
+}
+
+inline SBitSet* SBitSet::CreateFromBytes(const std::vector<unsigned char>& bytes) // static
+{
+    int num_bits = 8*bytes.size() ;
+    SBitSet* bs = new SBitSet(num_bits);
+    for (int i = 0; i < num_bits; ++i)
+    {
+        unsigned mask = 0x1 << (i % 8) ;
+        unsigned char byte = bytes[i/8] ;
+        bs->bits[i] = byte & mask ;
+    }
+    return bs ;
+}
+
+inline int SBitSet::compare(const SBitSet* other) const
+{
+    if(!other) return -1 ;
+    if(num_bits != other->num_bits) return -2 ;
+    int diff = 0 ;
+    for(unsigned i=0 ; i < num_bits ; i++) diff += ( bits[i] == other->bits[i] ? 0 : 1 ) ;
+    return diff ;
+}
 
 

@@ -50,6 +50,8 @@ struct sdigest
     void add( const char* str ); 
     void add( int i ); 
     void add( const char* buffer, int length); 
+    void add( const std::vector<unsigned char>& bytes );
+
     std::string finalize() ; 
 
 
@@ -101,6 +103,8 @@ inline void sdigest::add( const std::string& str){ Update(ctx, str) ; }
 inline void sdigest::add( const char* str ){ Update(ctx, str) ; }
 inline void sdigest::add( int i ){ Update(ctx, i ) ; }
 inline void sdigest::add( const char* str, int length ){ Update(ctx, str, length ) ; }
+inline void sdigest::add( const std::vector<unsigned char>& bytes ){ Update(ctx, (char*)bytes.data(), bytes.size() ); }
+
 inline std::string sdigest::finalize(){ return Finalize(ctx) ; } 
 
 
