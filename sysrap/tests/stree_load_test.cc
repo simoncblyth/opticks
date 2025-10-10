@@ -24,6 +24,7 @@ stree_load_test.cc
 #include "stra.h"
 #include "strid.h"
 #include "sn.h"
+#include "SBitSet.h"
 
 
 struct stree_load_test
@@ -61,6 +62,7 @@ struct stree_load_test
     int desc_solid(int lvid) const ;
     int desc() const ;
     int save_desc(const char* fold) const ;
+    int make_tree_digest() const ;
 
     int main();
 };
@@ -548,6 +550,32 @@ inline int stree_load_test::save_desc(const char* fold) const
     st->save_desc(fold);
     return 0 ;
 }
+inline int stree_load_test::make_tree_digest() const
+{
+    const char* tree_digest = st->get_tree_digest();
+
+    std::vector<unsigned char> extra ;
+    std::string dynamic_0 = st->make_tree_digest(extra);
+
+    uint32_t value = 0xdeadbeef ;
+    SBitSet* bs0 = SBitSet::Create<uint32_t>( value );
+    bs0->serialize(extra);
+
+    std::string dynamic_1 = st->make_tree_digest(extra);
+
+    std::cout
+        << "stree_load_test::make_tree_digest"
+        << "\n"
+        << " tree_digest " << ( tree_digest ? tree_digest : "-" )
+        << "\n"
+        << " dynamic_0   " << dynamic_0
+        << "\n"
+        << " dynamic_1   " << dynamic_1
+        << "\n"
+        ;
+
+    return 0 ;
+}
 
 
 
@@ -598,6 +626,7 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "desc_solid") == 0)                             rc += desc_solid(LVID) ;
     if(ALL||strcmp(TEST, "desc") == 0)                                   rc += desc();
     if(ALL||strcmp(TEST, "save_desc") == 0)                              rc += save_desc(TMPFOLD);
+    if(ALL||strcmp(TEST, "make_tree_digest") == 0)                       rc += make_tree_digest();
 
     return rc ;
 }

@@ -579,8 +579,13 @@ struct stree
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
     int get_first( const char* sub ) const ;
 
+    const char* get_tree_digest() const ;
+    std::string make_tree_digest(const std::vector<unsigned char>& extra) const ;
 
     std::string subtree_digest( int nidx ) const ;
+    std::string subtree_digest_plus(int nidx, const std::vector<unsigned char>& extra) const ;
+
+
     static std::string depth_spacer(int depth);
 
     std::string desc_node_(int nidx, const sfreq* sf ) const ;
@@ -3329,6 +3334,59 @@ inline int stree::get_first( const char* sub ) const
 }
 
 
+/**
+stree::get_tree_digest
+------------------------
+
+Returns subtree digest of *nidx* zero, the root node.
+The string returned can be accessed at bash level from a
+persisted geometry with eg::
+
+    (ok) A[blyth@localhost InstallArea]$ head -1 .opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/subs_names.txt
+    f94d93c709d76d3f6c8cc0ad6c25e61a
+
+**/
+
+inline const char* stree::get_tree_digest() const
+{
+    int num_sub = subs.size() ;
+    return num_sub > 0 ? subs[0].c_str() : nullptr ;
+}
+
+inline std::string stree::make_tree_digest(const std::vector<unsigned char>& extra) const
+{
+    int nidx = 0 ;
+    return subtree_digest_plus(nidx, extra);
+}
+
+/**
+stree::subtree_digest
+-----------------------
+
+Returns digest string of the subtree of *nidx* node.  For root node
+the subtree is expected to cover all other nodes.
+
+Canonical usage from stree::classifySubtrees
+
+0. get progeny indices of *nidx* node
+1. form digest from lvid of *nidx* node and *digs* string from all the progeny nodes
+
+The *nidx* node transform is not included in the subtree digest as wish
+the sameness of subtrees that are placed differently to be reflected by them
+having the same subtree digest.
+
+The basis *digs* of each node are obtained and collected by the
+recursive U4Tree::initNodes_r
+
+
+Q: Is nidx 0 the root node ?
+A: YES, see U4Tree::initNodes, nidx 0 corresponds to the *top*
+   Geant4 volume passed to U4Tree::Create which is typically
+   the outermost "World" volume
+
+**/
+
+
 inline std::string stree::subtree_digest(int nidx) const
 {
     std::vector<int> progeny ;
@@ -3339,6 +3397,22 @@ inline std::string stree::subtree_digest(int nidx) const
     for(unsigned i=0 ; i < progeny.size() ; i++) u.add(digs[progeny[i]]) ;
     return u.finalize() ;
 }
+
+inline std::string stree::subtree_digest_plus(int nidx, const std::vector<unsigned char>& extra) const
+{
+    std::vector<int> progeny ;
+    get_progeny(progeny, nidx);
+
+    sdigest u ;
+    u.add( extra );
+    u.add( nds[nidx].lvid );  // just lvid of subtree top, not the transform
+    for(unsigned i=0 ; i < progeny.size() ; i++) u.add(digs[progeny[i]]) ;
+    return u.finalize() ;
+}
+
+
+
+
 
 inline std::string stree::depth_spacer(int depth) // static
 {

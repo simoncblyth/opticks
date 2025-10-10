@@ -105,7 +105,9 @@ export stree_level=1
 #test=desc_tri
 #test=desc_NRT
 #test=desc
-test=save_desc
+#test=save_desc
+
+test=make_tree_digest
 
 #test=desc_factor_nodes
 #test=desc_node_solids
@@ -151,7 +153,7 @@ if [ "${arg/build}" != "$arg" ]; then
       ../s_pa.cc \
       ../sn.cc \
       ../s_csg.cc  \
-      -g -std=c++17 -lstdc++ -lm \
+      -g -std=c++17 -lstdc++ -lm -lssl -lcrypto \
       -I.. \
       -I$CUDA_PREFIX/include \
       -I$OPTICKS_PREFIX/externals/glm/glm \
