@@ -13,6 +13,7 @@
 #include "spath.h"
 #include "sstamp.h"
 #include "SScene.h"
+#include "SBitSet.h"
 
 #include "SSim.hh"
 #include "SBnd.h"
@@ -168,6 +169,41 @@ void SSim::init()
     INSTANCE = this ;
     tree->set_level(stree_level);
 }
+
+/**
+SSim::AnnotateFrame
+----------------------
+
+
+**/
+
+
+void SSim::AnnotateFrame( sframe& fr, const SBitSet* elv, const char* caller ) // static
+{
+    const stree* tree = INSTANCE ? INSTANCE->tree : nullptr ;
+    const char* tree_digest = tree->get_tree_digest() ;
+
+    std::vector<unsigned char> extra ;
+    std::string _dynamic0 = tree->make_tree_digest( extra );
+    assert( strcmp( _dynamic0.c_str(), tree_digest ) == 0 ); // with empty extra should get same as standard tree digest
+
+    if(elv) elv->serialize(extra);
+    std::string _dynamic1 = tree->make_tree_digest( extra );
+    const char* dynamic = _dynamic1.c_str();
+
+    fr.set_tree( tree_digest );
+    fr.set_dynamic( dynamic );
+
+    LOG(info)
+       << " caller " << ( caller ? caller : "-" )
+       << " tree " << ( tree ? "YES" : "NO " )
+       << " elv " << ( elv ? "YES" : "NO " )
+       << " extra.size " << extra.size()
+       << " tree_digest " << ( tree_digest ? tree_digest : "-" )
+       << " dynamic " << ( dynamic ? dynamic : "-" )
+       ;
+}
+
 
 
 stree* SSim::get_tree() const { return tree ; }

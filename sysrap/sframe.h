@@ -90,6 +90,8 @@ struct sframe
     const char* ek = nullptr ;
     const char* ev = nullptr ;
     const char* ekvid = nullptr ;
+    const char* tree = nullptr ;  // tree digest
+    const char* dynamic = nullptr ;  // dynamic digest
 
     sframe();
     sframe(const sframe& other);
@@ -117,6 +119,9 @@ struct sframe
     int iz1() const ;
     int num_photon() const ;
     float gridscale() const ;
+
+    void set_tree(    const char* _tree );
+    void set_dynamic( const char* _dynamic );
 
     void set_ekv( const char* k ) ;
     void set_ekv( const char* k, const char* v ) ;
@@ -228,6 +233,9 @@ inline sframe::sframe(const sframe& other)
     ek = other.ek ? strdup(other.ek) : nullptr ;
     ev = other.ev ? strdup(other.ev) : nullptr ;
     ekvid = other.ekvid ? strdup(other.ekvid) : nullptr ;
+    tree = other.tree ? strdup(other.tree) : nullptr ;
+    dynamic = other.dynamic ? strdup(other.dynamic) : nullptr ;
+
 
 #ifdef SFRAME_DEBUG
     printf("//sframe.copy.ctor NEW: tr_m2w %p tr_w2m %p \n", tr_m2w, tr_w2m );
@@ -299,6 +307,8 @@ inline void sframe::zero()
     ek = nullptr ;
     ev = nullptr ;
     ekvid = nullptr ;
+    tree = nullptr ;
+    dynamic = nullptr ;
 }
 
 
@@ -316,6 +326,8 @@ inline std::string sframe::desc() const
     ss << "sframe::desc"
        << " inst " << inst()
        << " frs " << ( frs ? frs : "-" ) << std::endl
+       << " tree " << ( tree ? tree : "-" ) << std::endl
+       << " dynamic " << ( dynamic ? dynamic : "-" ) << std::endl
        << " ekvid " << ( ekvid ? ekvid : "-" )
        << " ek " << ( ek ? ek : "-" )
        << " ev " << ( ev ? ev : "-" )
@@ -459,6 +471,18 @@ inline int sframe::num_photon() const { return q2.i.z ; }
 inline float sframe::gridscale() const { return q2.f.w ; }
 
 
+inline void sframe::set_tree( const char* _tree )
+{
+    tree = _tree ? strdup(_tree) :  nullptr ;
+}
+inline void sframe::set_dynamic( const char* _dynamic )
+{
+    dynamic = _dynamic ? strdup(_dynamic) :  nullptr ;
+}
+
+
+
+
 inline void sframe::set_ekv( const char* k )
 {
     char* v = getenv(k) ;
@@ -570,6 +594,8 @@ inline NP* sframe::getFrameArray() const
 
     a->set_meta<std::string>("creator", "sframe::getFrameArray");
     if(frs) a->set_meta<std::string>("frs", frs);
+    if(tree) a->set_meta<std::string>("tree", tree);
+    if(dynamic) a->set_meta<std::string>("dynamic", dynamic);
     if(ek) a->set_meta<std::string>("ek", ek);
     if(ev) a->set_meta<std::string>("ev", ev);
     if(ekvid) a->set_meta<std::string>("ekvid", ekvid);
@@ -625,7 +651,12 @@ inline void sframe::load(const NP* a)
 {
     read( a->cvalues<float>() , NUM_VALUES );
     std::string _frs = a->get_meta<std::string>("frs", "");
+    std::string _tree = a->get_meta<std::string>("tree", "");
+    std::string _dynamic = a->get_meta<std::string>("dynamic", "");
+
     if(!_frs.empty()) frs = strdup(_frs.c_str());
+    if(!_tree.empty()) tree = strdup(_tree.c_str());
+    if(!_dynamic.empty()) dynamic = strdup(_dynamic.c_str());
 }
 
 

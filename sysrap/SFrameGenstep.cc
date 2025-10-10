@@ -262,6 +262,14 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
     return gs ;
 }
 
+/**
+SFrameGenstep::Make_CEGS_NPY_Genstep
+-------------------------------------
+
+Construct gensteps from an array of positions of interest of shape (-1,3)
+
+**/
+
 
 NP* SFrameGenstep::Make_CEGS_NPY_Genstep( const NP* t, const Tran<double>* geotran ) // static
 {

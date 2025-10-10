@@ -28,12 +28,14 @@ struct SPrd ;
 struct stree ;
 struct SScene ;
 struct SPMT ;
+struct SBitSet ;
 
 #include <vector>
 #include <string>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 #include "snam.h"
+#include "sframe.h"
 
 
 struct SYSRAP_API SSim
@@ -71,6 +73,8 @@ private:
     SSim();
     void init();
 public:
+    static void AnnotateFrame( sframe& fr, const SBitSet* elv, const char* caller );
+
     stree* get_tree() const ;
     SScene* get_scene() const ;
     void set_override_scene(SScene* _scene);
