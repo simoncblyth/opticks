@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <cstdint>
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -145,8 +146,13 @@ struct SYSRAP_API SEventConfig
     static std::string DescOutPath(  const char* stem, int index, const char* ext, bool unique ) ;
     // ]TODO
 
-    static constexpr const int M = 1000000 ;
-    static constexpr const int K = 1000 ;
+    static constexpr const int64_t G = 1000000000 ;
+    static constexpr const int64_t M = 1000000 ;
+    static constexpr const int64_t K = 1000 ;
+
+    static constexpr const char* WITH_STATE_LIMIT = "M3" ;
+    static constexpr const char* NO_STATE_LIMIT = "G1000" ;  // 1000 billion
+    static constexpr const char* NO_STATE_LIMIT_GENSTEP = "M10" ; // adhoc
 
     static constexpr const char* kIntegrationMode = "OPTICKS_INTEGRATION_MODE" ;
     static constexpr const char* kEventMode       = "OPTICKS_EVENT_MODE" ;
@@ -235,24 +241,24 @@ struct SYSRAP_API SEventConfig
     static const char* G4StateSpec();
     static int         G4StateRerun();
 
-    static int MaxCurand();
-    static int MaxSlot();
+    static int64_t MaxCurand();
+    static int64_t MaxSlot();
 
-    static int MaxGenstep();
-    static int MaxPhoton();
-    static int MaxSimtrace();
+    static int64_t MaxGenstep();
+    static int64_t MaxPhoton();
+    static int64_t MaxSimtrace();
 
-    static int MaxBounce();
+    static int64_t MaxBounce();
     static float MaxTime();
 
-    static int MaxRecord();  // full photon step record
-    static int MaxRec();     // compressed photon step record
-    static int MaxAux();     // auxiliary photon step record, used for debug
-    static int MaxSup();     // supplementry photon level info
-    static int MaxSeq();     // seqhis slots
-    static int MaxPrd();
-    static int MaxTag();
-    static int MaxFlat();
+    static int64_t MaxRecord();  // full photon step record
+    static int64_t MaxRec();     // compressed photon step record
+    static int64_t MaxAux();     // auxiliary photon step record, used for debug
+    static int64_t MaxSup();     // supplementry photon level info
+    static int64_t MaxSeq();     // seqhis slots
+    static int64_t MaxPrd();
+    static int64_t MaxTag();
+    static int64_t MaxFlat();
 
     static float MaxExtentDomain() ;
     static float MaxTimeDomain() ;
@@ -330,8 +336,8 @@ struct SYSRAP_API SEventConfig
 
     static bool IsMinimalOrNothing();
 
-
     static std::string DescEventMode() ;
+    static std::string DescEventModeCheck() ;
 
     static void SetIntegrationMode(int mode);   // IntegrationMode configures the integration of Opticks and Framework
     static void SetEventMode(const char* mode);   // EventMode configures what will be persisted, ie what is in the SEvt
@@ -430,9 +436,8 @@ struct SYSRAP_API SEventConfig
     static const char* _MaxPhotonDefault ;
     static const char* _MaxSimtraceDefault ;
 
-    static int _MaxBounceDefault ;
     static float _MaxTimeDefault  ;
-
+    static int _MaxBounceDefault ;
     static int _MaxRecordDefault ;
     static int _MaxRecDefault ;
     static int _MaxAuxDefault ;
@@ -477,18 +482,18 @@ struct SYSRAP_API SEventConfig
     static int         _StartIndex ;
     static int         _NumEvent ;
 
-    static std::vector<int>* _GetNumPhotonPerEvent();
-    static std::vector<int>* _NumPhotonPerEvent ;
+    static std::vector<int64_t>* _GetNumPhotonPerEvent();
+    static std::vector<int64_t>* _NumPhotonPerEvent ;
 
     static std::vector<int>* _GetNumGenstepPerEvent();
     static std::vector<int>* _NumGenstepPerEvent ;
 
-    static int               _GetNumPhoton(int idx);
+    static int64_t           _GetNumPhoton(int idx);
     static int               _GetNumGenstep(int idx);
 
 
     static int               _GetNumEvent();
-    static int               NumPhoton(int idx);  // some tests need varying photon count for each event
+    static int64_t           NumPhoton(int idx);  // some tests need varying photon count for each event
     static int               NumGenstep(int idx); // some tests need varying numbers of genstep for each event
     static int               NumEvent();          // some tests use event count and need to detect last event
     static int               EventIndex(int idx) ;
@@ -500,16 +505,15 @@ struct SYSRAP_API SEventConfig
     static const char* _G4StateSpec ;
     static int         _G4StateRerun ;
 
-    static int _MaxCurand ;
-    static int _MaxSlot ;
+    static int64_t _MaxCurand ;
+    static int64_t _MaxSlot ;
 
-    static int _MaxGenstep ;
-    static int _MaxPhoton ;
-    static int _MaxSimtrace ;
+    static int64_t _MaxGenstep ;
+    static int64_t _MaxPhoton ;
+    static int64_t _MaxSimtrace ;
 
-    static int _MaxBounce ;
     static float _MaxTime  ;
-
+    static int _MaxBounce ;
     static int _MaxRecord ;
     static int _MaxRec ;
     static int _MaxAux ;
@@ -554,6 +558,18 @@ struct SYSRAP_API SEventConfig
 
     static void  Initialize_Meta();
     static void  Initialize_EventName();
+
+
+    static const char* DebugHeavy_NOTE    ;
+    static const char* DebugLite_NOTE     ;
+    static const char* Nothing_NOTE       ;
+    static const char* Minimal_NOTE       ;
+    static const char* Hit_NOTE           ;
+    static const char* HitPhoton_NOTE     ;
+    static const char* HitPhotonSeq_NOTE  ;
+    static const char* HitSeq_NOTE        ;
+    static const char* EventMode_NOTE()   ;
+
     static void  Initialize_Comp();
     static void  Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask );
     static void  Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask );

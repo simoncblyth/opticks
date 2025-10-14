@@ -254,37 +254,47 @@ One million is typically reasonable for debugging::
 
 )" ;
 
+
+
+
 void QU::_cudaMalloc( void** p2p, size_t size, const char* label )
 {
     cudaError_t err = cudaMalloc(p2p, size ) ;
     if( err != cudaSuccess )
     {
+        const char* out = spath::Resolve("$DefaultOutputDir") ;
+        salloc* estimate = SEventConfig::AllocEstimate();
+
         std::stringstream ss;
         ss << "CUDA call (" << label << " ) failed with error: '"
            << cudaGetErrorString( err )
-           << "' (" __FILE__ << ":" << __LINE__ << ")\n";
+           << "' (" __FILE__ << ":" << __LINE__ << ")"
+           << "\n\n"
+           << "[SEventConfig::DescEventMode (use of DebugHeavy/DebugLite EventMode with high stats is typical cause of OOM errors)\n"
+           << SEventConfig::DescEventMode()
+           << "]SEventConfig::DescEventMode (use of DebugHeavy/DebugLite EventMode with high stats is typical cause of OOM errors)\n"
+           << "\n\n"
+           << "[alloc.desc\n"
+           << ( alloc ? alloc->desc() : "no-alloc" )
+           << "]alloc.desc\n"
+           << "\n"
+           << "[NOTES\n"
+           << _cudaMalloc_OOM_NOTES
+           << "]NOTES\n"
+           << "\n\n"
+           << "[SEventConfig::AllocEstimate\n"
+           << ( estimate ? estimate->desc() : "no-estimate" )
+           << "]SEventConfig::AllocEstimate\n"
+           << "save salloc record to [" << out << "]\n" ;
+           ;
 
-        if(alloc)
-        {
-            ss << alloc->desc() ;
-            const char* out = spath::Resolve("$DefaultOutputDir") ;
-            sdirectory::MakeDirs(out,0);
-            LOG(error) << "save salloc record to " << out ;
-            alloc->save(out) ;
+        std::string msg = ss.str();
+        LOG(error) << msg ;
 
-            ss << _cudaMalloc_OOM_NOTES  ;
+        sdirectory::MakeDirs(out,0);
+        alloc->save(out) ;
 
-            salloc* estimate = SEventConfig::AllocEstimate();
-            ss << "\n\n" ;
-            ss << "[SEventConfig::AllocEstimate\n" ;
-            ss << estimate->desc() ;
-            ss << "]SEventConfig::AllocEstimate\n" ;
-        }
-        else
-        {
-            ss << "QU::_cudaMalloc NO ALLOC monitor enabled\n" ;
-        }
-        throw QUDA_Exception( ss.str().c_str() );
+        throw QUDA_Exception( msg.c_str() );
     }
 }
 

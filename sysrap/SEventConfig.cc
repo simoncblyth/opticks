@@ -47,9 +47,9 @@ const char* SEventConfig::_MaxBounceNotes = "NB bounce limit is now separate fro
 const char* SEventConfig::_MaxTimeNotes = "NB time limit(ns) can truncate simulation together with bounce limit, default timer limit is so high to be unlimited " ;
 
 
-int   SEventConfig::_MaxBounceDefault = 31 ;  // was previously too small at 9
 float SEventConfig::_MaxTimeDefault = 1.e27f ; // crazy high default (ns) effectively meaning no limit
 
+int SEventConfig::_MaxBounceDefault = 31 ;  // was previously too small at 9
 int SEventConfig::_MaxRecordDefault = 0 ;
 int SEventConfig::_MaxRecDefault = 0 ;
 int SEventConfig::_MaxAuxDefault = 0 ;
@@ -70,18 +70,18 @@ const char* SEventConfig::_HitMaskDefault = "SD" ;
 
 
 #if defined(RNG_XORWOW)
-const char* SEventConfig::_MaxCurandDefault = "M3" ;
-const char* SEventConfig::_MaxSlotDefault = "M3" ;
-const char* SEventConfig::_MaxGenstepDefault = "M3" ;
-const char* SEventConfig::_MaxPhotonDefault = "M3" ;
-const char* SEventConfig::_MaxSimtraceDefault = "M3" ;
+const char* SEventConfig::_MaxSlotDefault =  ;
+const char* SEventConfig::_MaxGenstepDefault = WITH_STATE_LIMIT ;
+const char* SEventConfig::_MaxPhotonDefault = WITH_STATE_LIMIT ;
+const char* SEventConfig::_MaxSimtraceDefault = WITH_STATE_LIMIT ;
+const char* SEventConfig::_MaxCurandDefault = WITH_STATE_LIMIT ;
 
 #elif defined(RNG_PHILOX) || defined(RNG_PHILITEOX)
-const char* SEventConfig::_MaxCurandDefault = "G1" ; // nominal 1-billion states, as Philox has no need for curandState loading
 const char* SEventConfig::_MaxSlotDefault = "0" ;     // see SEventConfig::SetDevice : set according to VRAM
-const char* SEventConfig::_MaxGenstepDefault = "M10" ;  // adhoc
-const char* SEventConfig::_MaxPhotonDefault = "G1" ;
-const char* SEventConfig::_MaxSimtraceDefault = "G1" ;
+const char* SEventConfig::_MaxGenstepDefault = NO_STATE_LIMIT_GENSTEP ;  // adhoc
+const char* SEventConfig::_MaxPhotonDefault = NO_STATE_LIMIT ;  
+const char* SEventConfig::_MaxSimtraceDefault = NO_STATE_LIMIT ; 
+const char* SEventConfig::_MaxCurandDefault = NO_STATE_LIMIT ; // nominal 1-billion states, as Philox has no need for curandState loading
 #endif
 
 
@@ -116,12 +116,12 @@ int         SEventConfig::_RunningMode = SRM::Type(ssys::getenvvar(kRunningMode,
 int         SEventConfig::_StartIndex = ssys::getenvint(kStartIndex, _StartIndexDefault );
 int         SEventConfig::_NumEvent = ssys::getenvint(kNumEvent, _NumEventDefault );
 
-std::vector<int>* SEventConfig::_GetNumPhotonPerEvent()
+std::vector<int64_t>* SEventConfig::_GetNumPhotonPerEvent()
 {
     const char* spec = ssys::getenvvar(kNumPhoton,  _NumPhotonDefault );
-    return sstr::ParseIntSpecList<int>( spec, ',' );
+    return sstr::ParseIntSpecList<int64_t>( spec, ',' );
 }
-std::vector<int>* SEventConfig::_NumPhotonPerEvent = _GetNumPhotonPerEvent() ;
+std::vector<int64_t>* SEventConfig::_NumPhotonPerEvent = _GetNumPhotonPerEvent() ;
 
 
 std::vector<int>* SEventConfig::_GetNumGenstepPerEvent()
@@ -139,6 +139,7 @@ SEventConfig::_GetNumPhoton
 Used by some tests that define a sequence of photon counts as inputs::
 
     OPTICKS_NUM_PHOTON=M1,2,3,4 OPTICKS_NUM_EVENT=4 SEventConfigTest
+    OPTICKS_NUM_PHOTON=G1,2,3,4 OPTICKS_NUM_EVENT=4 SEventConfigTest
 
 
 Expected to define the below of envvars with equal numbers of entries::
@@ -148,7 +149,7 @@ Expected to define the below of envvars with equal numbers of entries::
 
 
 **/
-int SEventConfig::_GetNumPhoton(int idx)
+int64_t SEventConfig::_GetNumPhoton(int idx)
 {
     if(_NumPhotonPerEvent == nullptr) return 0 ;
 
@@ -232,7 +233,8 @@ int SEventConfig::_GetNumEvent()
 }
 
 
-int SEventConfig::NumPhoton( int idx){ return _GetNumPhoton(idx) ; }
+int64_t SEventConfig::NumPhoton( int idx){ return _GetNumPhoton(idx) ; }
+
 int SEventConfig::NumGenstep(int idx){ return _GetNumGenstep(idx) ; }
 int SEventConfig::NumEvent(){         return _GetNumEvent() ; }
 int SEventConfig::EventIndex(int idx){ return _StartIndex + idx ; }
@@ -246,15 +248,14 @@ int         SEventConfig::_EventSkipahead = ssys::getenvint(kEventSkipahead, _Ev
 const char* SEventConfig::_G4StateSpec  = ssys::getenvvar(kG4StateSpec,  _G4StateSpecDefault );
 int         SEventConfig::_G4StateRerun = ssys::getenvint(kG4StateRerun, _G4StateRerunDefault) ;
 
-int SEventConfig::_MaxCurand    = ssys::getenv_ParseInt(kMaxCurand,   _MaxCurandDefault ) ;
-int SEventConfig::_MaxSlot      = ssys::getenv_ParseInt(kMaxSlot,     _MaxSlotDefault ) ;
-int SEventConfig::_MaxGenstep   = ssys::getenv_ParseInt(kMaxGenstep,  _MaxGenstepDefault ) ;
-int SEventConfig::_MaxPhoton    = ssys::getenv_ParseInt(kMaxPhoton,   _MaxPhotonDefault ) ;
-int SEventConfig::_MaxSimtrace  = ssys::getenv_ParseInt(kMaxSimtrace, _MaxSimtraceDefault ) ;
+int64_t SEventConfig::_MaxCurand    = ssys::getenv_ParseInt64(kMaxCurand,   _MaxCurandDefault ) ;
+int64_t SEventConfig::_MaxSlot      = ssys::getenv_ParseInt64(kMaxSlot,     _MaxSlotDefault ) ;
+int64_t SEventConfig::_MaxGenstep   = ssys::getenv_ParseInt64(kMaxGenstep,  _MaxGenstepDefault ) ;
+int64_t SEventConfig::_MaxPhoton    = ssys::getenv_ParseInt64(kMaxPhoton,   _MaxPhotonDefault ) ;
+int64_t SEventConfig::_MaxSimtrace  = ssys::getenv_ParseInt64(kMaxSimtrace, _MaxSimtraceDefault ) ;
 
-int   SEventConfig::_MaxBounce    = ssys::getenvint(kMaxBounce, _MaxBounceDefault ) ;
 float SEventConfig::_MaxTime    = ssys::getenvfloat(kMaxTime, _MaxTimeDefault );    // ns
-
+int SEventConfig::_MaxBounce    = ssys::getenvint(kMaxBounce, _MaxBounceDefault ) ;
 int SEventConfig::_MaxRecord    = ssys::getenvint(kMaxRecord, _MaxRecordDefault ) ;
 int SEventConfig::_MaxRec       = ssys::getenvint(kMaxRec, _MaxRecDefault ) ;
 int SEventConfig::_MaxAux       = ssys::getenvint(kMaxAux, _MaxAuxDefault ) ;
@@ -351,25 +352,25 @@ int SEventConfig::G4StateRerun()
 
 
 
-int SEventConfig::MaxCurand(){ return _MaxCurand ; }
-int SEventConfig::MaxSlot(){   return _MaxSlot ; }
+int64_t SEventConfig::MaxCurand(){ return _MaxCurand ; }
+int64_t SEventConfig::MaxSlot(){   return _MaxSlot ; }
 
-int SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
-int SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
-int SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
+int64_t SEventConfig::MaxGenstep(){  return _MaxGenstep ; }
+int64_t SEventConfig::MaxPhoton(){   return _MaxPhoton ; }
+int64_t SEventConfig::MaxSimtrace(){   return _MaxSimtrace ; }
 
 
-int SEventConfig::MaxBounce(){   return _MaxBounce ; }
+int64_t SEventConfig::MaxBounce(){   return _MaxBounce ; }
 float SEventConfig::MaxTime(){   return _MaxTime ; }
 
-int SEventConfig::MaxRecord(){   return _MaxRecord ; }
-int SEventConfig::MaxRec(){      return _MaxRec ; }
-int SEventConfig::MaxAux(){      return _MaxAux ; }
-int SEventConfig::MaxSup(){      return _MaxSup ; }
-int SEventConfig::MaxSeq(){      return _MaxSeq ; }
-int SEventConfig::MaxPrd(){      return _MaxPrd ; }
-int SEventConfig::MaxTag(){      return _MaxTag ; }
-int SEventConfig::MaxFlat(){      return _MaxFlat ; }
+int64_t SEventConfig::MaxRecord(){   return _MaxRecord ; }
+int64_t SEventConfig::MaxRec(){      return _MaxRec ; }
+int64_t SEventConfig::MaxAux(){      return _MaxAux ; }
+int64_t SEventConfig::MaxSup(){      return _MaxSup ; }
+int64_t SEventConfig::MaxSeq(){      return _MaxSeq ; }
+int64_t SEventConfig::MaxPrd(){      return _MaxPrd ; }
+int64_t SEventConfig::MaxTag(){      return _MaxTag ; }
+int64_t SEventConfig::MaxFlat(){     return _MaxFlat ; }
 
 float SEventConfig::MaxExtentDomain(){ return _MaxExtentDomain ; }
 float SEventConfig::MaxTimeDomain(){   return _MaxTimeDomain ; }
@@ -519,23 +520,39 @@ bool SEventConfig::IsMinimalOrNothing(){ return IsMinimal() ||  IsNothing() ; }
 std::string SEventConfig::DescEventMode()  // static
 {
     std::stringstream ss ;
-    ss << "SEventConfig::DescEventMode" << std::endl
-       << DebugHeavy
-       << std::endl
-       << DebugLite
-       << std::endl
-       << Nothing
-       << std::endl
-       << Minimal
-       << std::endl
-       << Hit
-       << std::endl
-       << HitPhoton
-       << std::endl
-       << HitPhotonSeq
-       << std::endl
-       << HitSeq
-       << std::endl
+    ss 
+       << "[SEventConfig::DescEventMode\n" 
+       << " EventMode[" << EventMode() << "] EventMode_NOTE[" << EventMode_NOTE() << "]"
+       << "\n"
+       << "]SEventConfig::DescEventMode\n" 
+       ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+std::string SEventConfig::DescEventModeCheck()  // static
+{
+    std::stringstream ss ;
+    ss 
+       << "[SEventConfig::DescEventModeCheck\n" 
+       << " IsDebugHeavy   " << ( IsDebugHeavy() ? "YES" : "NO " )  
+       << "\n"
+       << " IsDebugLite    " << ( IsDebugLite() ? "YES" : "NO " )  
+       << "\n"
+       << " IsNothing      " << ( IsNothing() ? "YES" : "NO " ) 
+       << "\n"
+       << " IsMinimal      " << ( IsMinimal() ? "YES" : "NO " ) 
+       << "\n"
+       << " IsHit          " << ( IsHit() ? "YES" : "NO " ) 
+       << "\n"
+       << " IsHitPhoton    " << ( IsHitPhoton() ? "YES" : "NO " ) 
+       << "\n"
+       << " IsHitPhotonSeq " << ( IsHitPhotonSeq() ? "YES" : "NO " ) 
+       << "\n"
+       << " IsHitSeq       " << ( IsHitSeq() ? "YES" : "NO " ) 
+       << "\n"
+       << "]SEventConfig::DescEventModeCheck\n" 
        ;
 
     std::string str = ss.str() ;
@@ -699,7 +716,8 @@ void SEventConfig::LIMIT_Check()
 std::string SEventConfig::Desc()
 {
     std::stringstream ss ;
-    ss << "SEventConfig::Desc" << std::endl
+    ss 
+       << "[SEventConfig::Desc" << std::endl
        << std::setw(25) << kIntegrationMode
        << std::setw(20) << " IntegrationMode " << " : " << IntegrationMode()
        << std::endl
@@ -874,9 +892,29 @@ std::string SEventConfig::Desc()
        << std::setw(25) << "RecordLimit() "
        << std::setw(20) << " (sseq::SLOTS) " << " : " << RecordLimit()
        << std::endl
+      ;
+
+
+    for(int i=0 ; i < NumEvent() ; i++) 
+       ss << std::setw(25) << kNumPhoton 
+          << std::setw(20) << " NumPhoton(" << std::setw(4) << i << ") " 
+          << " : " 
+          << std::setw(10) << NumPhoton(i) 
+          << std::setw(10) << NumPhoton(i)/M << " (M) "
+          << std::setw(10) << NumPhoton(i)/G << " (G) "
+          << "\n" 
+          ;
+
+    ss
+       << DescEventMode() 
+       << std::endl
+       << "]SEventConfig::Desc" 
+       << std::endl
        ;
-    std::string s = ss.str();
-    return s ;
+ 
+
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -1113,6 +1151,36 @@ void SEventConfig::Initialize_EventName()
 
 
 
+const char* SEventConfig::Nothing_NOTE       = "nothing enabled - technical debug : MACHINERY TEST ONLY" ;  
+
+const char* SEventConfig::DebugHeavy_NOTE    = "record/prd/aux/seq/tag/flat/sup all enabled : VERY LOW STATS ONLY : FEW MILLION MAX" ;  
+const char* SEventConfig::DebugLite_NOTE     = "record/seq enabled      : VERY LOW STATS ONLY : FEW MILLION MAX" ;  
+
+const char* SEventConfig::HitPhotonSeq_NOTE  = "HIT/GENSTEP/PHOTON/SEQ  : MODERATE STATS ONLY : TENS OF MILLIONS " ;  
+const char* SEventConfig::HitPhoton_NOTE     = "HIT/GENSTEP/PHOTON      : MODERATE STATS ONLY : TENS OF MILLIONS " ;  
+const char* SEventConfig::HitSeq_NOTE        = "HIT/GENSTEP/SEQ         : MODERATE STATS ONLY : TENS OF MILLIONS " ;  
+
+const char* SEventConfig::Hit_NOTE           = "HIT/GENSTEP ONLY        : HIGHEST STATS : BILLIONS" ;  
+const char* SEventConfig::Minimal_NOTE       = "HIT ONLY                : HIGHEST STATS : BILLIONS" ;  
+
+const char* SEventConfig::EventMode_NOTE()
+{
+    const char* note = nullptr ; 
+    if(     IsNothing())      note = Nothing_NOTE ;
+    else if(IsDebugHeavy())   note = DebugHeavy_NOTE ;
+    else if(IsDebugLite())    note = DebugLite_NOTE ;
+    else if(IsHitPhotonSeq()) note = HitPhotonSeq_NOTE ;
+    else if(IsHitPhoton())    note = HitPhoton_NOTE ;
+    else if(IsHitSeq())       note = HitSeq_NOTE ;
+    else if(IsHit())          note = Hit_NOTE ;
+    else if(IsMinimal())      note = Minimal_NOTE ;
+    return note ;
+}
+
+
+
+
+
 /**
 SEventConfig::Initialize_Comp
 -----------------------------
@@ -1161,27 +1229,6 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
         << " record_limit " << record_limit
         ;
 
-    if(IsDebugHeavy())
-    {
-        SEventConfig::SetMaxRec(0);
-        SEventConfig::SetMaxRecord(record_limit);
-        SEventConfig::SetMaxPrd(record_limit);
-        SEventConfig::SetMaxAux(record_limit);
-
-        SEventConfig::SetMaxSeq(1);
-        // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else
-        SEventConfig::SetMaxTag(1);
-        SEventConfig::SetMaxFlat(1);
-        SEventConfig::SetMaxSup(1);
-
-    }
-    else if(IsDebugLite())
-    {
-        SEventConfig::SetMaxRec(0);
-        SEventConfig::SetMaxRecord(record_limit);
-        SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
-    }
-
 
 
 
@@ -1223,8 +1270,30 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
         save_mask = SCOMP_HIT | SCOMP_SEQ | SCOMP_GENSTEP ;
         SetMaxSeq(1);
     }
-    else
+    else if(IsDebugHeavy() || IsDebugLite())
     {
+        if(IsDebugHeavy())
+        {
+            SEventConfig::SetMaxRec(0);
+            SEventConfig::SetMaxRecord(record_limit);
+            SEventConfig::SetMaxPrd(record_limit);
+            SEventConfig::SetMaxAux(record_limit);
+
+            SEventConfig::SetMaxSeq(1);
+            // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else
+            SEventConfig::SetMaxTag(1);
+            SEventConfig::SetMaxFlat(1);
+            SEventConfig::SetMaxSup(1);
+
+        }
+        else if(IsDebugLite())
+        {
+            SEventConfig::SetMaxRec(0);
+            SEventConfig::SetMaxRecord(record_limit);
+            SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
+        }
+
+
         gather_mask |= SCOMP_DOMAIN ;  save_mask |= SCOMP_DOMAIN ;
 
         if(MaxGenstep()>0){  gather_mask |= SCOMP_GENSTEP ; save_mask |= SCOMP_GENSTEP ; }
@@ -1243,6 +1312,9 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
         if(MaxTag()>0){       gather_mask |= SCOMP_TAG    ;  save_mask |= SCOMP_TAG    ; }
         if(MaxFlat()>0){      gather_mask |= SCOMP_FLAT   ;  save_mask |= SCOMP_FLAT   ; }
     }
+
+
+
 
     if(IsRunningModeG4StateSave() || IsRunningModeG4StateRerun())
     {
