@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 usage(){ cat << EOU
 SGenstep_test.sh
 =================
@@ -28,18 +28,24 @@ export TEST=${TEST:-$test}
 
 vars="BASH_SOURCE name test TEST"
 
-if [ "${arg/info}" != "$arg" ]; then 
+if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/build}" != "$arg" ]; then 
-    gcc $name.cc -std=c++11 -lstdc++ -g -I$CUDA_PREFIX/include -I$OPTICKS_PREFIX/externals/glm/glm -I.. -lm -o $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
+if [ "${arg/build}" != "$arg" ]; then
+    gcc $name.cc -std=c++17 -lstdc++ -g -I$CUDA_PREFIX/include -I$OPTICKS_PREFIX/externals/glm/glm -I.. -lm -o $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
 fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
+fi
+
+if [ "${arg/dbg}" != "$arg" ]; then
+    source dbg__.sh
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi
 
 exit 0

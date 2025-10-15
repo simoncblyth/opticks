@@ -92,7 +92,8 @@ struct stree ;
 struct SYSRAP_API SEvt : public SCompProvider
 {
     friend struct SEvtTest ;
-
+    static constexpr const int64_t M = 1000000 ;
+    static constexpr const int64_t G = 1000000000 ;
 
     static constexpr const char* SEvt__NPFOLD_VERBOSE = "SEvt__NPFOLD_VERBOSE" ;
     static bool NPFOLD_VERBOSE ;
@@ -233,9 +234,10 @@ struct SYSRAP_API SEvt : public SCompProvider
     std::vector<unsigned> gather_comp ;
     std::vector<unsigned> save_comp ;
 
-    unsigned           numgenstep_collected ;   // updated by addGenstep
-    unsigned           numphoton_collected ;    // updated by addGenstep
-    unsigned           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear_genstep_vector
+    int64_t           numgenstep_collected ;   // updated by addGenstep
+    int64_t           numphoton_collected ;    // updated by addGenstep
+    int64_t           numphoton_genstep_max ;  // maximum photons in a genstep since last SEvt::clear_genstep_vector
+
     int                clear_genstep_vector_count ;
     int                clear_output_vector_count ;
 
@@ -274,7 +276,6 @@ struct SYSRAP_API SEvt : public SCompProvider
     sctx    current_ctx = {};
 
 
-    static constexpr const int M = 1000000 ;
     static constexpr const unsigned UNDEF = ~0u ;
     static bool IsDefined(unsigned val);
 
@@ -548,19 +549,18 @@ public:
     int getInstance() const ;
 
 
-    unsigned getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
-    unsigned getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
-
-    unsigned getNumGenstepCollected() const ;   // total collected genstep since last clear
-    unsigned getNumPhotonCollected() const ;    // total collected photons since last clear
-    unsigned getNumPhotonGenstepMax() const ;   // max photon in genstep since last clear
+    int64_t getNumGenstepFromGenstep() const ; // number of collected gensteps from size of collected gensteps vector
+    int64_t getNumPhotonFromGenstep() const ;  // total photons since last clear from looping over collected gensteps
+    int64_t getNumGenstepCollected() const ;   // total collected genstep since last clear
+    int64_t getNumPhotonCollected() const ;    // total collected photons since last clear
+    int64_t getNumPhotonGenstepMax() const ;   // max photon in genstep since last clear
 
     static constexpr const unsigned G4_INDEX_OFFSET = 1000000 ;
     sgs addGenstep(const NP* a) ;
     sgs addGenstep(const quad6& q) ;
 
-    void setNumPhoton(unsigned num_photon);
-    void setNumSimtrace(unsigned num_simtrace);
+    void setNumPhoton(int64_t num_photon);
+    void setNumSimtrace(int64_t num_simtrace);
     void hostside_running_resize();
     void hostside_running_resize_();
 

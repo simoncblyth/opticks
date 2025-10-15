@@ -1,6 +1,6 @@
 #pragma once
 /**
-sgs.h : Aiming to replace cfg4/CGenstep 
+sgs.h : Aiming to replace cfg4/CGenstep
 -----------------------------------------
 **/
 
@@ -8,7 +8,7 @@ sgs.h : Aiming to replace cfg4/CGenstep
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #    define SGS_METHOD __host__ __device__ __forceinline__
 #else
-#    define SGS_METHOD inline 
+#    define SGS_METHOD inline
 #endif
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
@@ -20,17 +20,18 @@ sgs.h : Aiming to replace cfg4/CGenstep
 
 struct sgs
 {
-    int index ;     // 0-based index of genstep in the event 
-    int photons ;   // number of photons in the genstep
-    int offset ;    // photon offset in the sequence of gensteps, ie number of photons in event before this genstep
-    int gentype  ;  // OpticksGenstep_ enum 
-   
+    int64_t index ;     // 0-based index of genstep in the event
+    int64_t photons ;   // number of photons in the genstep
+    int64_t offset ;    // photon offset in the sequence of gensteps, ie number of photons in event before this genstep
+    int64_t gentype  ;  // OpticksGenstep_ enum
+    // HMM: only offset needs to be int64
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
-    spho MakePho(unsigned idx, const spho& ancestor); 
-    std::string desc() const ; 
+    spho MakePho(unsigned idx, const spho& ancestor);
+    std::string desc() const ;
 #endif
-}; 
+};
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -43,8 +44,8 @@ sgs::MakePho
 -------------
 
 ancestor.isDefined:false
-    the more common case, when generating primary optical 
-    photons via the Cerenkov or Scintillation processes 
+    the more common case, when generating primary optical
+    photons via the Cerenkov or Scintillation processes
 
     HMM: "ancestor" should more correctly be called "reemissionAncestorPhoton"
 
@@ -55,20 +56,20 @@ ancestor.isDefined:true
 
 inline spho sgs::MakePho(unsigned idx, const spho& ancestor)
 {
-    return ancestor.isDefined() ? ancestor.make_nextgen() : spho::MakePho(index, idx, offset + idx ) ; 
+    return ancestor.isDefined() ? ancestor.make_nextgen() : spho::MakePho(index, idx, offset + idx ) ;
 }
 
-inline std::string sgs::desc() const 
+inline std::string sgs::desc() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "sgs:"
-       << " idx" << std::setw(4) << index 
-       << " pho" << std::setw(6) << photons 
-       << " off " << std::setw(6) << offset 
+       << " idx" << std::setw(4) << index
+       << " pho" << std::setw(6) << photons
+       << " off " << std::setw(6) << offset
        << " typ " << OpticksGenstep_::Name(gentype)
-       ;   
-    std::string s = ss.str(); 
-    return s ; 
+       ;
+    std::string s = ss.str();
+    return s ;
 }
 #endif
 

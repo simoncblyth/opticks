@@ -21,31 +21,33 @@ ph_count
 #include <sstream>
 #include <string>
 #include <iomanip>
-
-
+#include <cstdint>
 
 
 struct sslice
 {
-    int gs_start ;
-    int gs_stop ;
-    int ph_offset ;
-    int ph_count ;
+    static constexpr const int64_t M = 1000000 ;
+    static constexpr const int64_t G = 1000000000 ;
 
-    bool matches(int start, int stop, int offset, int count ) const ;
+    int64_t gs_start ;
+    int64_t gs_stop ;
+    int64_t ph_offset ;
+    int64_t ph_count ;
+
+    bool matches(int64_t start, int64_t stop, int64_t offset, int64_t count ) const ;
 
     static std::string Label() ;
     std::string desc() const ;
     std::string idx_desc(int idx) const ;
     static std::string Desc(const std::vector<sslice>& sl );
 
-    static int TotalPhoton(const std::vector<sslice>& sl );
-    static int TotalPhoton(const std::vector<sslice>& sl, int i0, int i1);
+    static int64_t TotalPhoton(const std::vector<sslice>& sl );
+    static int64_t TotalPhoton(const std::vector<sslice>& sl, int i0, int i1);
 
     static void SetOffset(std::vector<sslice>& slice);
 };
 
-inline bool sslice::matches(int start, int stop, int offset, int count ) const
+inline bool sslice::matches(int64_t start, int64_t stop, int64_t offset, int64_t count ) const
 {
     return gs_start == start && gs_stop == stop && ph_offset == offset && ph_count == count ;
 }
@@ -81,7 +83,7 @@ inline std::string sslice::desc() const
        << ","
        << std::setw(10) << ph_count
        << "}"
-       << std::setw(10) << std::fixed << std::setprecision(6) << double(ph_count)/1.e6
+       << std::setw(10) << std::fixed << std::setprecision(6) << double(ph_count)/M
        ;
     std::string str = ss.str() ;
     return str ;
@@ -98,12 +100,12 @@ inline std::string sslice::idx_desc(int idx) const
 
 inline std::string sslice::Desc(const std::vector<sslice>& sl)
 {
-    int tot_photon = TotalPhoton(sl) ;
+    int64_t tot_photon = TotalPhoton(sl) ;
     std::stringstream ss ;
     ss << "sslice::Desc"
        << " num_slice " << sl.size()
        << " TotalPhoton " << std::setw(10) << tot_photon
-       << " TotalPhoton/M " << std::setw(10) << std::fixed << std::setprecision(6) << double(tot_photon)/1.e6
+       << " TotalPhoton/M " << std::setw(10) << std::fixed << std::setprecision(6) << double(tot_photon)/M
        << "\n"
         ;
     ss << std::setw(4) << "" << "   " << Label() << "\n" ;
@@ -113,7 +115,7 @@ inline std::string sslice::Desc(const std::vector<sslice>& sl)
     return str ;
 }
 
-inline int sslice::TotalPhoton(const std::vector<sslice>& slice)
+inline int64_t sslice::TotalPhoton(const std::vector<sslice>& slice)
 {
     return TotalPhoton(slice, 0, slice.size() );
 }
@@ -143,10 +145,11 @@ NB i0, i1 use python style slice indexing, ie::
 **/
 
 
-inline int sslice::TotalPhoton(const std::vector<sslice>& slice, int i0, int i1)
+inline int64_t sslice::TotalPhoton(const std::vector<sslice>& slice, int i0, int i1)
 {
+    assert( i0 <= int(slice.size())) ;
     assert( i1 <= int(slice.size())) ;
-    int tot = 0 ;
+    int64_t tot = 0 ;
     for(int i=i0 ; i < i1 ; i++ ) tot += slice[i].ph_count ;
     return tot ;
 }

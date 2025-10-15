@@ -170,8 +170,8 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
     if(with_index) assert( index_arg >= 0 );  // index_arg is 0-based
 
 
-    int num_ph = with_index ? SEventConfig::NumPhoton(index_arg)  : ssys::getenvintspec("SEvent__MakeGenstep_num_ph", "100" ) ;
-    int num_gs = with_index ? SEventConfig::NumGenstep(index_arg) : ssys::getenvintspec("SEvent__MakeGenstep_num_gs", "1"   ) ;
+    int64_t num_ph = with_index ? SEventConfig::NumPhoton(index_arg)  : ssys::getenvint64spec("SEvent__MakeGenstep_num_ph", "100" ) ;
+    int     num_gs = with_index ? SEventConfig::NumGenstep(index_arg) : ssys::getenvintspec("SEvent__MakeGenstep_num_gs", "1"   ) ;
 
     bool dump = ssys::getenvbool("SEvent_MakeGenstep_dump");
     const int M = 1000000 ;
@@ -190,14 +190,16 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
 
     NP* gs = NP::Make<float>(num_gs, 6, 4 );
     gs->set_meta<std::string>("creator", "SEvent::MakeGenstep" );
-    gs->set_meta<int>("num_ph", num_ph );
+    gs->set_meta<int64_t>("num_ph", num_ph );
     gs->set_meta<int>("num_gs", num_gs );
     gs->set_meta<int>("index_arg",  index_arg );
 
 
     int gs_start = 0 ;
     int gs_stop = num_gs ;
-    int gs_ph   = num_ph/num_gs ; // divide the num_ph equally between the num_gs
+    int64_t _gs_ph = num_ph/int64_t(num_gs) ; // divide the num_ph equally between the num_gs
+    assert( _gs_ph <= SGenstep::MAX_SLOT_PER_SLICE );
+    int gs_ph(_gs_ph) ;
 
     switch(gentype)
     {

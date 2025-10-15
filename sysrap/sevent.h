@@ -98,9 +98,10 @@ struct sphoton ;
 
 struct sevent
 {
-    static constexpr unsigned M = 1000000 ;
-    static constexpr unsigned genstep_itemsize = 6*4 ;
-    static constexpr unsigned genstep_numphoton_offset = 3 ;
+    static constexpr int64_t M = 1000000 ;
+    static constexpr int64_t genstep_itemsize = 6*4 ;
+    static constexpr int64_t genstep_numphoton_offset = 3 ;
+
     static constexpr float w_lo = 60.f ;
     static constexpr float w_hi = 820.f ;  // these need to match sdomain.h
     static constexpr float w_center = (w_lo+w_hi)/2.f ; // convert wavelength range into center-extent form
@@ -112,42 +113,42 @@ struct sevent
 
     // TODO: make all these below unsigned
     // sevent::init sets these max using values from SEventConfig
-    int      max_curand ;
-    int      max_slot   ;
-    int      max_genstep ;  // eg:      100,000
-    int      max_photon  ;  // eg:  100,000,000
-    int      max_simtrace ; // eg: 100,000,000
+    int64_t   max_curand ;
+    int64_t   max_slot   ;
+    int64_t   max_genstep ;  // eg:      100,000
+    int64_t   max_photon  ;  // eg:  100,000,000
+    int64_t   max_simtrace ; // eg: 100,000,000
 
-    int      max_bounce  ; // eg: 0:32  (not including 32)
-    int      max_record  ; // eg: 10  full step record
-    int      max_rec     ; // eg: 10  compressed step record
-    int      max_seq     ; // now restricted to 0 or 1 only
-    int      max_prd     ; // eg: 16
-    int      max_tag     ; // 0 or 1 only
-    int      max_flat    ; // 0 or 1 only
-    int      max_aux     ; // eg 0, 16, 32 : when greater than zero typically follows max_record
-    int      max_sup     ;
+    int   max_bounce  ; // eg: 0:32  (not including 32)
+    int   max_record  ; // eg: 10  full step record
+    int   max_rec     ; // eg: 10  compressed step record
+    int   max_seq     ; // now restricted to 0 or 1 only
+    int   max_prd     ; // eg: 16
+    int   max_tag     ; // 0 or 1 only
+    int   max_flat    ; // 0 or 1 only
+    int   max_aux     ; // eg 0, 16, 32 : when greater than zero typically follows max_record
+    int   max_sup     ;
 
-    int      index ;
+    int   index ;
 
     //[ counts and pointers, zeroed by sevent::zero
     //  only first 4 are always in use, the last 7 are only relevant whilst debugging
     //
-    int      num_curand ;
-    int      num_genstep ;
-    int      num_seed ;
-    int      num_hit ;    // set by QEvent::gatherHit using SU::count_if_sphoton
-    int      num_photon ;
+    int64_t      num_curand ;
+    int64_t      num_genstep ;
+    int64_t      num_seed ;
+    int64_t      num_hit ;    // set by QEvent::gatherHit using SU::count_if_sphoton
+    int64_t      num_photon ;
 
-    int      num_record ;
-    int      num_rec ;
-    int      num_seq ;
-    int      num_prd ;
-    int      num_tag ;
-    int      num_flat ;
-    int      num_simtrace ;
-    int      num_aux ;
-    int      num_sup ;
+    int64_t      num_record ;
+    int64_t      num_rec ;
+    int64_t      num_seq ;
+    int64_t      num_prd ;
+    int64_t      num_tag ;
+    int64_t      num_flat ;
+    int64_t      num_simtrace ;
+    int64_t      num_aux ;
+    int64_t      num_sup ;
     // TODO: make all these above unsigned
 
     // With QEvent device running the below are pointers to device buffers.
@@ -206,11 +207,14 @@ struct sevent
 
 SEVENT_METHOD void sevent::init()
 {
+    // int64_t
     max_curand   = SEventConfig::MaxCurand() ;
     max_slot     = SEventConfig::MaxSlot() ;
     max_genstep  = SEventConfig::MaxGenstep() ;
     max_photon   = SEventConfig::MaxPhoton()  ;
     max_simtrace = SEventConfig::MaxSimtrace()  ;
+
+    // int
     max_bounce   = SEventConfig::MaxBounce()  ;
     max_record   = SEventConfig::MaxRecord()  ;  // full step record
     max_rec      = SEventConfig::MaxRec()  ;     // compressed step record
@@ -436,33 +440,33 @@ SEVENT_METHOD void sevent::get_config( quad4& cfg ) const
 
 SEVENT_METHOD void sevent::get_meta(std::string& meta) const
 {
-    NP::SetMeta<uint64_t>(meta,"evt.max_curand", max_curand);
-    NP::SetMeta<uint64_t>(meta,"evt.max_slot", max_slot);
-    NP::SetMeta<uint64_t>(meta,"evt.max_photon", max_photon);
-    NP::SetMeta<uint64_t>(meta,"evt.num_photon", num_photon);
+    NP::SetMeta<int64_t>(meta,"evt.max_curand", max_curand);
+    NP::SetMeta<int64_t>(meta,"evt.max_slot", max_slot);
+    NP::SetMeta<int64_t>(meta,"evt.max_photon", max_photon);
+    NP::SetMeta<int64_t>(meta,"evt.num_photon", num_photon);
 
-    NP::SetMeta<uint64_t>(meta,"evt.max_curand/M", max_curand/M);
-    NP::SetMeta<uint64_t>(meta,"evt.max_slot/M", max_slot/M);
-    NP::SetMeta<uint64_t>(meta,"evt.max_photon/M", max_photon/M);
-    NP::SetMeta<uint64_t>(meta,"evt.num_photon/M", num_photon/M);
+    NP::SetMeta<int64_t>(meta,"evt.max_curand/M", max_curand/M);
+    NP::SetMeta<int64_t>(meta,"evt.max_slot/M", max_slot/M);
+    NP::SetMeta<int64_t>(meta,"evt.max_photon/M", max_photon/M);
+    NP::SetMeta<int64_t>(meta,"evt.num_photon/M", num_photon/M);
 
-    NP::SetMeta<uint64_t>(meta,"evt.max_slot*evt.max_record", max_slot*max_record);
-    NP::SetMeta<uint64_t>(meta,"evt.max_slot*evt.max_record/M", max_slot*max_record/M);
+    NP::SetMeta<int64_t>(meta,"evt.max_slot*evt.max_record", max_slot*max_record);
+    NP::SetMeta<int64_t>(meta,"evt.max_slot*evt.max_record/M", max_slot*max_record/M);
 
-    NP::SetMeta<uint64_t>(meta,"evt.max_record", max_record);
-    NP::SetMeta<uint64_t>(meta,"evt.max_record/M", max_record/M);
-    NP::SetMeta<uint64_t>(meta,"evt.max_rec", max_rec);
-    NP::SetMeta<uint64_t>(meta,"evt.max_seq", max_seq);
-    NP::SetMeta<uint64_t>(meta,"evt.max_prd", max_prd);
-    NP::SetMeta<uint64_t>(meta,"evt.max_tag", max_tag);
-    NP::SetMeta<uint64_t>(meta,"evt.max_flat", max_flat);
+    NP::SetMeta<int64_t>(meta,"evt.max_record", max_record);
+    NP::SetMeta<int64_t>(meta,"evt.max_record/M", max_record/M);
+    NP::SetMeta<int64_t>(meta,"evt.max_rec", max_rec);
+    NP::SetMeta<int64_t>(meta,"evt.max_seq", max_seq);
+    NP::SetMeta<int64_t>(meta,"evt.max_prd", max_prd);
+    NP::SetMeta<int64_t>(meta,"evt.max_tag", max_tag);
+    NP::SetMeta<int64_t>(meta,"evt.max_flat", max_flat);
 
-    NP::SetMeta<uint64_t>(meta,"evt.num_record", num_record);
-    NP::SetMeta<uint64_t>(meta,"evt.num_rec", num_rec);
-    NP::SetMeta<uint64_t>(meta,"evt.num_seq", num_seq);
-    NP::SetMeta<uint64_t>(meta,"evt.num_prd", num_prd);
-    NP::SetMeta<uint64_t>(meta,"evt.num_tag", num_tag);
-    NP::SetMeta<uint64_t>(meta,"evt.num_flat", num_flat);
+    NP::SetMeta<int64_t>(meta,"evt.num_record", num_record);
+    NP::SetMeta<int64_t>(meta,"evt.num_rec", num_rec);
+    NP::SetMeta<int64_t>(meta,"evt.num_seq", num_seq);
+    NP::SetMeta<int64_t>(meta,"evt.num_prd", num_prd);
+    NP::SetMeta<int64_t>(meta,"evt.num_tag", num_tag);
+    NP::SetMeta<int64_t>(meta,"evt.num_flat", num_flat);
 }
 
 

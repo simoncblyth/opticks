@@ -18,6 +18,7 @@ Note that strings like "1e-9" parse ok into float/double.
 #include <iomanip>
 #include <map>
 #include <limits>
+#include <cstdint>
 
 #include "sstr.h"
 #include "spath.h"
@@ -48,11 +49,14 @@ struct ssys
 
 
     static int getenv_ParseInt(const char* ekey, const char* fallback);
+    static int64_t getenv_ParseInt64(const char* ekey, const char* fallback);
     static std::vector<int>* getenv_ParseIntSpecList(const char* ekey, const char* fallback);
 
     static unsigned long long getenvull(const char* ekey, unsigned long long fallback);
     static int getenvint(const char* ekey, int fallback);
+    static int64_t getenvint64(const char* ekey, int64_t fallback);
     static int getenvintspec( const char* ekey, const char* fallback);
+    static int64_t getenvint64spec( const char* ekey, const char* fallback);
     static int getenvintpick( const char* ekey, const std::vector<std::string>& strs, int fallback );
 
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);
@@ -324,6 +328,46 @@ inline int ssys::getenv_ParseInt(const char* ekey, const char* fallback)
     return sstr::ParseInt<int>(spec) ;
 }
 
+
+inline int64_t ssys::getenv_ParseInt64(const char* ekey, const char* fallback)
+{
+    const char* spec = getenvvar(ekey, fallback);
+    bool valid = spec != nullptr && strlen(spec) > 0 ;
+    if(!valid)
+    {
+        std::cerr
+            << "ssys::getenv_ParseInt64"
+            << " ekey " << ( ekey ? ekey : "-" )
+            << " fallback " << ( fallback ? fallback : "-" )
+            << " spec [" << ( spec ? spec :  "-" ) << "]"
+            << " valid " << ( valid ? "YES" : "NO " )
+            << "\n"
+            ;
+
+        return -1 ;
+    }
+    return sstr::ParseInt<int64_t>(spec) ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 inline std::vector<int>* ssys::getenv_ParseIntSpecList(const char* ekey, const char* fallback)
 {
     const char* spec = getenvvar(ekey, fallback);
@@ -347,6 +391,15 @@ inline int ssys::getenvint(const char* ekey, int fallback)
     return val ? std::atoi(val) : fallback ;
 }
 
+inline int64_t ssys::getenvint64(const char* ekey, int64_t fallback)
+{
+    char* val = getenv(ekey);
+    return val ? std::atol(val) : fallback ;
+}
+
+
+
+
 /**
 ssys::getenvintspec
 --------------------
@@ -362,6 +415,19 @@ inline int ssys::getenvintspec(const char* ekey, const char* fallback)
     int ival = sstr::ParseInt<int>( spec ? spec : "0" );
     return ival ;
 }
+
+inline int64_t ssys::getenvint64spec(const char* ekey, const char* fallback)
+{
+    char* val = getenv(ekey);
+    const char* spec = val ? val : fallback ;
+    int64_t ival = sstr::ParseInt<int64_t>( spec ? spec : "0" );
+    return ival ;
+}
+
+
+
+
+
 
 
 

@@ -38,6 +38,9 @@ qudarap/QEvent.cc
 
 #include <string>
 #include <vector>
+#include <limits>
+#include <csignal>
+
 struct quad6 ;
 struct NP ;
 struct sslice ;
@@ -47,6 +50,7 @@ struct sslice ;
 
 struct SYSRAP_API SGenstep
 {
+    static constexpr const int64_t MAX_SLOT_PER_SLICE = std::numeric_limits<int32_t>::max();
     static constexpr const char* XYZ_ = "XYZ" ;
     static constexpr const char* YZ_  = "YZ" ;
     static constexpr const char* XZ_  = "XZ" ;
@@ -58,26 +62,30 @@ struct SYSRAP_API SGenstep
 
     static void ConfigureGenstep( quad6& gs,  int gencode, int gridaxes, int gsid, int photons_per_genstep );
     static int GetGencode( const quad6& gs ) ;
-    static int GetNumPhoton( const quad6& gs ) ;
-    static void SetNumPhoton( quad6& gs, int num );
+    static int64_t GetNumPhoton( const quad6& gs ) ;
+    static void SetNumPhoton( quad6& gs, int64_t num );
 
     static const quad6& GetGenstep(const NP* gs, unsigned gs_idx );
-    static void GetGenstepSlices(std::vector<sslice>& slice, const NP* gs, int max_photon );
-    static void CheckGenstepSlices(const std::vector<sslice>& slice, const NP* gs, int max_photon );
+    static int64_t GetGenstepSlices(std::vector<sslice>& slice, const NP* gs, int64_t max_slot );
+    static void CheckGenstepSlices(const std::vector<sslice>& slice, const NP* gs, int64_t max_slot );
 
     static int GetGencode( const quad6* qq, unsigned gs_idx  );
     static int GetGencode(    const NP* gs, unsigned gs_idx  );
 
-    static int GetNumPhoton( const quad6* qq, unsigned gs_idx  );
-    static int GetNumPhoton( const NP* gs, unsigned gs_idx  );
+    static int64_t GetNumPhoton( const quad6* qq, unsigned gs_idx  );
+    static int64_t GetNumPhoton( const NP* gs, unsigned gs_idx  );
 
-    static int GetPhotonTotal( const NP* gs );
-    static int GetPhotonTotal( const NP* gs, int gs_start, int gs_stop  );
+    static int64_t GetPhotonTotal( const NP* gs );
+    static int64_t GetPhotonTotal( const NP* gs, int gs_start, int gs_stop  );
 
     static void Check(const NP* gs);
     static NP* MakeArray(const std::vector<quad6>& gs );
-    static NP* MakeTestArray(const std::vector<int>& num_ph);
-    static std::string DescNum(const std::vector<int>& num_ph);
+
+    template<typename T>
+    static NP* MakeTestArray(const std::vector<T>& num_ph);
+
+    template<typename T>
+    static std::string DescNum(const std::vector<T>& num_ph);
 
     static std::string Desc(const NP* gs, int edgeitems);
 
@@ -193,7 +201,7 @@ inline int SGenstep::GetGencode( const quad6& gs )
 {
     return gs.q0.i.x ;
 }
-inline int SGenstep::GetNumPhoton( const quad6& gs )
+inline int64_t SGenstep::GetNumPhoton( const quad6& gs )
 {
     return gs.q0.i.w ;
 }
@@ -202,8 +210,12 @@ inline int SGenstep::GetNumPhoton( const quad6& gs )
 
 
 
-inline void SGenstep::SetNumPhoton( quad6& gs, int num )
+inline void SGenstep::SetNumPhoton( quad6& gs, int64_t num )
 {
+    bool num_allowed = num <= MAX_SLOT_PER_SLICE ;
+    assert( num_allowed );
+    if(!num_allowed) std::raise(SIGINT);
+
     gs.q0.i.w = num ;
 }
 
@@ -227,9 +239,14 @@ SGenstep::GetGenstepSlices
 Populates the genstep slice vector with gs[start:stop] slices
 that do not exceed max_photon for the total number of photons.
 
+The third argument *max_slot* was formerly incorrectly named *max_photon*,
+which is wrong because its the VRAM constrained *max_slot* which is relevant
+to how the work needed to be sliced, not the arbitrary and very large
+*max_photon* which is not VRAM constrained.
+
 **/
 
-inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs, int max_photon )
+inline int64_t SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs, int64_t max_slot )
 {
     Check(gs);
     int num_gs = gs ? gs->shape[0] : 0 ;
@@ -242,6 +259,9 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
     sl.ph_offset = 0 ;  // total photons before the start of this slice
     sl.ph_count = 0 ;   // total photons within this slice
 
+
+    int64_t tot_ph = 0 ;
+
     bool extend_slice = false ;
 
     for(int i=0 ; i < num_gs ; i++)
@@ -249,16 +269,32 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
         bool last_gs = i == num_gs - 1;
 
         const quad6& q = qq[i] ;
-        int num_ph = GetNumPhoton(q);
+        int64_t num_ph = GetNumPhoton(q);
 
-        int cand = sl.ph_count + num_ph ;
-        extend_slice = cand <= max_photon ;
+        bool slice_too_big = num_ph > MAX_SLOT_PER_SLICE ;
+        if(slice_too_big ) std::cerr
+            << "SGenstep::GetGenstepSlices FATAL "
+            << " slice_too_big " << ( slice_too_big ? "YES" : "NO " )
+            << " i " << i
+            << " num_gs " << num_gs
+            << " num_ph " << num_ph
+            << " MAX_SLOT_PER_SLICE " << MAX_SLOT_PER_SLICE
+            << "\n"
+            ;
+        assert( !slice_too_big );
+
+
+        tot_ph += num_ph ;
+
+        int64_t cand = sl.ph_count + num_ph ;
+        extend_slice = cand <= max_slot ;
 
         if(0) std::cout
             << "SGenstep::GetGenstepSlices"
             << " i " << std::setw(4) << i
             << " sl.ph_count " << std::setw(7) << sl.ph_count
             << " num_ph " << std::setw(7) << num_ph
+            << " max_slot " << std::setw(7) << max_slot
             << " cand  " << std::setw(7) << num_ph
             << " extend_slice " << ( extend_slice ? "YES" : "NO " )
             << " last_gs " << ( last_gs ? "YES" : "NO " )
@@ -284,13 +320,15 @@ inline void SGenstep::GetGenstepSlices(std::vector<sslice>& slice, const NP* gs,
     }
     sslice::SetOffset(slice);
 
-    CheckGenstepSlices(slice, gs, max_photon);
+    CheckGenstepSlices(slice, gs, max_slot);
+
+    return tot_ph ;
 }
 
-inline void SGenstep::CheckGenstepSlices(const std::vector<sslice>& slice, const NP* gs, int max_photon )
+inline void SGenstep::CheckGenstepSlices(const std::vector<sslice>& slice, const NP* gs, int64_t max_slot )
 {
-    int gs_tot = GetPhotonTotal(gs);
-    int sl_tot = sslice::TotalPhoton(slice);
+    int64_t gs_tot = GetPhotonTotal(gs);
+    int64_t sl_tot = sslice::TotalPhoton(slice);
 
     bool tot_consistent = gs_tot == sl_tot ;
 
@@ -314,7 +352,7 @@ inline void SGenstep::CheckGenstepSlices(const std::vector<sslice>& slice, const
         for(int j=sl.gs_start ; j < sl.gs_stop ; j++ )
         {
             const quad6& q = qq[j] ;
-            int num_ph = GetNumPhoton(q);
+            int64_t num_ph = GetNumPhoton(q);
             ph_count += num_ph ;
         }
         bool ph_count_expected = ph_count == sl.ph_count ;
@@ -328,7 +366,7 @@ inline void SGenstep::CheckGenstepSlices(const std::vector<sslice>& slice, const
             ;
 
         assert( ph_count_expected );
-        assert( ph_count <= max_photon );
+        assert( ph_count <= max_slot );
     }
 }
 
@@ -347,13 +385,13 @@ inline int SGenstep::GetGencode( const NP* gs, unsigned gs_idx  ) // static
 }
 
 
-inline int SGenstep::GetNumPhoton( const quad6* qq, unsigned gs_idx  ) // static
+inline int64_t SGenstep::GetNumPhoton( const quad6* qq, unsigned gs_idx  ) // static
 {
     const quad6& q = qq[gs_idx] ;
     return GetNumPhoton(q) ;
 }
 
-inline int SGenstep::GetNumPhoton( const NP* gs, unsigned gs_idx  ) // static
+inline int64_t SGenstep::GetNumPhoton( const NP* gs, unsigned gs_idx  ) // static
 {
     if( gs == nullptr) return 0 ;
     const quad6& q = GetGenstep(gs, gs_idx);
@@ -361,7 +399,7 @@ inline int SGenstep::GetNumPhoton( const NP* gs, unsigned gs_idx  ) // static
 }
 
 
-inline int SGenstep::GetPhotonTotal( const NP* gs ) // static
+inline int64_t SGenstep::GetPhotonTotal( const NP* gs ) // static
 {
     int num_gs = gs ? gs->shape[0] : 0 ;
     return GetPhotonTotal( gs, 0, num_gs );
@@ -375,12 +413,12 @@ Returns total photon in genstep slice gs[start:stop]
 
 **/
 
-inline int SGenstep::GetPhotonTotal( const NP* gs, int gs_start, int gs_stop ) // static
+inline int64_t SGenstep::GetPhotonTotal( const NP* gs, int gs_start, int gs_stop ) // static
 {
     int num_gs = gs ? gs->shape[0] : 0 ;
     assert( gs_start <= num_gs );
     assert( gs_stop  <= num_gs );
-    int tot = 0 ;
+    int64_t tot = 0 ;
     for(int i=gs_start ; i < gs_stop ; i++ ) tot += GetNumPhoton(gs, i );
     return tot ;
 }
@@ -406,7 +444,8 @@ Make test array filled with gensteps containing only num_photon
 
 **/
 
-inline NP* SGenstep::MakeTestArray(const std::vector<int>& num_ph) // static
+template<typename T>
+inline NP* SGenstep::MakeTestArray(const std::vector<T>& num_ph) // static
 {
     int num_gs = num_ph.size();
     NP* gs = NP::Make<float>(num_gs, 6, 4);
@@ -417,14 +456,15 @@ inline NP* SGenstep::MakeTestArray(const std::vector<int>& num_ph) // static
 }
 
 
-inline std::string SGenstep::DescNum(const std::vector<int>& num_ph)
+template<typename T>
+inline std::string SGenstep::DescNum(const std::vector<T>& num_ph)
 {
-    int tot = 0 ;
+    T tot = 0 ;
     std::stringstream ss ;
     ss << "SGenstep::DescNum\n" ;
     for(int i=0 ; i < int(num_ph.size()) ; i++ )
     {
-        int num = num_ph[i] ;
+        T num = num_ph[i] ;
         ss
             << std::setw(3) << i << " : "
             << " num : " << std::setw(7) << num

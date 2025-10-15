@@ -211,9 +211,9 @@ SEvt::SEvt()
     gather_done(false),
     is_loaded(false),
     is_loadfail(false),
-    numgenstep_collected(0u),   // updated by addGenstep
-    numphoton_collected(0u),   // updated by addGenstep
-    numphoton_genstep_max(0u),
+    numgenstep_collected(0),   // updated by addGenstep
+    numphoton_collected(0),   // updated by addGenstep
+    numphoton_genstep_max(0),
     clear_genstep_vector_count(0),
     clear_output_vector_count(0),
     gather_total(0),
@@ -1778,8 +1778,9 @@ void SEvt::beginOfEvent(int eventID)
     }
 
 
-    setMeta<int>("NumPhotonCollected", numphoton_collected );
-    setMeta<int>("NumGenstepCollected", numgenstep_collected );
+    setMeta<int64_t>("NumPhotonCollected", numphoton_collected );
+    setMeta<int64_t>("NumGenstepCollected", numgenstep_collected );
+
     setMeta<int>("MaxBounce", evt->max_bounce );
 
     LOG_IF(info, LIFECYCLE)
@@ -1970,9 +1971,9 @@ SEvt::clear_genstep_vector
 
 void SEvt::clear_genstep_vector()
 {
-    numgenstep_collected = 0u ;
-    numphoton_collected = 0u ;
-    numphoton_genstep_max = 0u ;
+    numgenstep_collected = 0 ;
+    numphoton_collected = 0 ;
+    numphoton_genstep_max = 0 ;
 
     clear_genstep_vector_count += 1 ;
 
@@ -2188,7 +2189,7 @@ after which must get the count from the genstep array
 
 **/
 
-unsigned SEvt::getNumGenstepFromGenstep() const
+int64_t SEvt::getNumGenstepFromGenstep() const
 {
     assert( genstep.size() == gs.size() );
     return genstep.size() ;
@@ -2204,22 +2205,22 @@ SEvt::getNumPhotonCollected is faster.
 
 **/
 
-unsigned SEvt::getNumPhotonFromGenstep() const
+int64_t SEvt::getNumPhotonFromGenstep() const
 {
-    unsigned tot = 0 ;
+    int64_t tot = 0 ;
     for(unsigned i=0 ; i < genstep.size() ; i++) tot += genstep[i].numphoton() ;
     return tot ;
 }
 
-unsigned SEvt::getNumGenstepCollected() const
+int64_t SEvt::getNumGenstepCollected() const
 {
     return numgenstep_collected ;  // updated by addGenstep
 }
-unsigned SEvt::getNumPhotonCollected() const
+int64_t SEvt::getNumPhotonCollected() const
 {
     return numphoton_collected ;   // updated by addGenstep
 }
-unsigned SEvt::getNumPhotonGenstepMax() const
+int64_t SEvt::getNumPhotonGenstepMax() const
 {
     return numphoton_genstep_max ;
 }
@@ -2343,11 +2344,11 @@ sgs SEvt::addGenstep(const quad6& q_)
 
 
 #ifdef SEVT_NUMPHOTON_FROM_GENSTEP_CHECK
-    unsigned numphoton_from_genstep = getNumPhotonFromGenstep() ; // sum numphotons from all previously collected gensteps (since last clear)
+    int64_t numphoton_from_genstep = getNumPhotonFromGenstep() ; // sum numphotons from all previously collected gensteps (since last clear)
     assert( numphoton_from_genstep == numphoton_collected );
 #endif
 
-    unsigned q_numphoton = q.numphoton() ;          // numphoton in this genstep
+    int64_t q_numphoton = q.numphoton() ;          // numphoton in this genstep
     if(q_numphoton > numphoton_genstep_max) numphoton_genstep_max = q_numphoton ;
 
 
@@ -2365,7 +2366,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear
 
 
-    int tot_photon = s.offset+s.photons ;
+    int64_t tot_photon = s.offset+s.photons ;
 
     LOG_IF(debug, enabled) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ;
 
@@ -2420,11 +2421,10 @@ needed to accommodate the photons from the last genstep collected.
 
 **/
 
-void SEvt::setNumPhoton(unsigned num_photon)
+void SEvt::setNumPhoton(int64_t num_photon)
 {
     //LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ;
-    bool num_photon_allowed = num_photon <= (unsigned)(evt->max_photon) ;   // evt->max_slot ?
-    const int M = 1000000 ;
+    bool num_photon_allowed = num_photon <= evt->max_photon ;  // NOW THIS IS ARBITRARY AND VERY HIGH LIMIT
 
     LOG_IF(fatal, !num_photon_allowed)
         << " num_photon/M " << num_photon/M
@@ -2470,9 +2470,9 @@ SEvt::setNumSimtrace
 
 **/
 
-void SEvt::setNumSimtrace(unsigned num_simtrace)
+void SEvt::setNumSimtrace(int64_t num_simtrace)
 {
-    bool num_simtrace_allowed = int(num_simtrace) <= evt->max_simtrace ;
+    bool num_simtrace_allowed = num_simtrace <= evt->max_simtrace ;
     LOG_IF(fatal, !num_simtrace_allowed) << " num_simtrace " << num_simtrace << " evt.max_simtrace " << evt->max_simtrace ;
     assert( num_simtrace_allowed );
     LOG(LEVEL) << " num_simtrace " << num_simtrace ;
