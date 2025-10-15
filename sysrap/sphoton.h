@@ -46,11 +46,16 @@ orient (1 bit)
 
 idx (31 bit)
     photon index, always exists even before any intersect
+    (0x7fffffff 2.14 billion limitation has been clocked in a 3 billion simulation,
+    TODO: move orient together with iindex? so can push up to 4.29 billion simulation
+    without clocking the idx)
 
 flagmask (32 bit)
     bitwise-OR of step point flag enumeration
     (see sysrap/OpticksPhoton.h sysrap/OpticksPhoton.hh for details)
     Always exists even before any intersect with the generation flag CK/SI/TO.
+
+
 
 
 

@@ -412,4 +412,85 @@ Looks like the hit zeros were caused by truncation in NP::Concatenate
 
      
 
+photon index does not fit in 31 bits
+---------------------------------------
+
+TEST=vvvlarge_evt cxs_min.sh ## opticks_num_genstep=120 ; opticks_num_photon=G3
+
+
+::
+
+
+    In [10]: ix = f.hit[:,3,2].view(np.uint32) & 0x7fffffff
+
+    In [11]: ix
+    Out[11]: array([        5,         9,        16,        21,        27, ..., 852516328, 852516331, 852516332, 852516335, 852516342], shape=(598640516,), dtype=uint32)
+
+    In [12]: ix.min()
+    Out[12]: np.uint32(5)
+
+    In [13]: ix.max()
+    Out[13]: np.uint32(2147483646)
+
+    In [14]: hex(ix.max())
+    Out[14]: '0x7ffffffe'
+
+
+
+::
+
+    In [35]: ix
+    Out[35]: array([        5,         9,        16,        21,        27, ..., 852516328, 852516331, 852516332, 852516335, 852516342], shape=(598640516,), dtype=uint32)
+
+    In [36]: iy = ix.astype(np.int64)
+
+    In [37]: iy
+    Out[37]: array([        5,         9,        16,        21,        27, ..., 852516328, 852516331, 852516332, 852516335, 852516342], shape=(598640516,))
+
+    In [38]: diy = np.diff(iy)
+
+    In [39]: np.where( diy < 0 )
+    Out[39]: (array([428515601]),)
+
+
+
+2.14 billion limit on the photon index
+----------------------------------------
+
+::
+
+    2521 inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+    2522 {
+    2523     const int& gencode = gs.q0.i.x ;
+    2524     switch(gencode)
+    2525     {
+    2526         case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ;
+    2527         case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ;
+    2528 
+    2529         case OpticksGenstep_G4Cerenkov_modified:
+    2530         case OpticksGenstep_CERENKOV:
+    2531                                               cerenkov->generate(    p, rng, gs, photon_id, genstep_id ) ; break ;
+    2532 
+    2533         case OpticksGenstep_DsG4Scintillation_r4695:
+    2534         case OpticksGenstep_SCINTILLATION:
+    2535                                               scint->generate(        p, rng, gs, photon_id, genstep_id ) ; break ;
+    2536 
+    2537         case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;
+    2538         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ;
+    2539     }
+    2540     p.set_idx(photon_id);
+    2541 }
+
+
+
+::
+
+    150     SPHOTON_METHOD unsigned idx() const {      return orient_idx & 0x7fffffffu  ;  }
+    151     SPHOTON_METHOD float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; }
+    152 
+    153     SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it
+    154     SPHOTON_METHOD void set_idx( unsigned idx ){  orient_idx = ( orient_idx & 0x80000000u ) | ( 0x7fffffffu & idx ) ; }   // retain bit 31 asis
+
+
+
 
