@@ -350,6 +350,23 @@ Params
 
 COMPARE WITH qsim::mock_propagate
 
+
+
+Is cycling of the launch_idx.x (unsigned)idx possible here ? NOT YET
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 0xffffffff/1e9 = 4.29 billion photons in one launch would need VRAM of 275 GB::
+
+    In [102]: (0xffffffff*4*4*4)/1e9
+    Out[102]: 274.87790688   # 275 GB of photons in one launch ?
+
+
+* suggests should limit max_slot to 0xffffffff (4.29 billion, on top of VRAM requirements)
+* current heuristic limit of 250M photons when limited by 32 GB VRAM
+
+* NOTE THE ABSOLUTE photon_idx IS LIKELY BEING CYCLED HOWEVER
+
+
 **/
 
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
@@ -477,7 +494,7 @@ static __forceinline__ __device__ void simtrace( const uint3& launch_idx, const 
     // photon_idx same as idx for first launch, offset beyond first for multi-launch
 
 #if defined(DEBUG_PIDX)
-    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d photon_idx %d  genstep_idx %d evt->num_simtrace %d \n", idx, photon_idx, genstep_idx, evt->num_simtrace );
+    if(photon_idx == 0) printf("//CSGOptiX7.cu : simtrace idx %d photon_idx %d  genstep_idx %d evt->num_simtrace %ld \n", idx, photon_idx, genstep_idx, evt->num_simtrace );
 #endif
 
     const quad6& gs = evt->genstep[genstep_idx] ;

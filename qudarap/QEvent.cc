@@ -206,10 +206,10 @@ int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
         << SGenstep::Desc(gs, 10)
         ;
 
-    int num_gs = gs ? gs->shape[0] : 0 ;
+    int64_t num_gs = gs ? gs->shape[0] : 0 ;
 
-    int gs_start = gss ? gss->gs_start : 0 ;
-    int gs_stop  = gss ? gss->gs_stop  : num_gs ;
+    int64_t gs_start = gss ? gss->gs_start : 0 ;
+    int64_t gs_stop  = gss ? gss->gs_stop  : num_gs ;
 
     assert( gs_start >= 0 && gs_start <  num_gs );
     assert( gs_stop  >= 1 && gs_stop  <= num_gs );
@@ -230,7 +230,7 @@ int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
         << " gss_consistent " << ( gss_consistent ? "YES" : "NO " ) << "\n"
         ;
 
-    int last_rng_state_idx = gss->ph_offset + gss->ph_count ;
+    int64_t last_rng_state_idx = gss->ph_offset + gss->ph_count ;
     bool in_range = last_rng_state_idx <= evt->max_curand ;
 
     LOG_IF(fatal, !in_range)

@@ -170,11 +170,23 @@ knobs()
 
 
 #version=0
-#version=1
-version=98   ## set to 98 for low stats debugging
+version=1
+#version=98   ## set to 98 for low stats debugging
 
 export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SELECT OPTICKS_EVENT_MODE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
+
+
+if ! [ $VERSION -eq 0 -o $VERSION -eq 1 ]; then
+
+    cat << EOW
+
+WARNING : DEBUG RUNNING WITH VERSION $VERSION IS APPROPRIATE FOR SMALL STATISTICS ONLY
+
+EOW
+fi
+
+
 
 vars="$vars version VERSION"
 
@@ -196,11 +208,13 @@ vars="$vars version VERSION"
 #test=input_photon_wp_pmt_semi
 #test=input_photon_s_pmt
 #test=input_photon_poolcover
-test=input_photon_poolcover_refine
+#test=input_photon_poolcover_refine
 
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
+test=vvvlarge_evt
+
 #test=medium_scan
 
 export TEST=${TEST:-$test}
@@ -355,32 +369,23 @@ elif [ "$TEST" == "larger_scan" ]; then
 
    #opticks_max_photon=M200
 
+elif [ "$TEST" == "large_evt" -o "$TEST" == "vlarge_evt" -o "$TEST" == "vvlarge_evt" -o "$TEST" == "vvvlarge_evt" ]; then
 
-elif [ "$TEST" == "large_evt" ]; then
-
-   opticks_num_event=1
-   opticks_num_genstep=10
-   opticks_num_photon=M200         ## OOM with TITAN RTX 24G, avoided by multi-launch sliced genstep running
    opticks_running_mode=SRM_TORCH
-
-   #opticks_max_photon=M200
-   #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM
-
-elif [ "$TEST" == "vlarge_evt" ]; then
-
    opticks_num_event=1
-   opticks_num_genstep=20
-   opticks_num_photon=M500
-   opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M200        ## G1 default so no need to set
-   #opticks_max_slot=0              ## zero -> SEventConfig::SetDevice determines MaxSlot based on VRAM
 
-elif [ "$TEST" == "vvlarge_evt" ]; then
+   case $TEST in
+        large_evt) opticks_num_genstep=10  ; opticks_num_photon=M200 ;;
+       vlarge_evt) opticks_num_genstep=20  ; opticks_num_photon=M500 ;;
+      vvlarge_evt) opticks_num_genstep=40  ; opticks_num_photon=G1   ;;
+     vvvlarge_evt) opticks_num_genstep=120 ; opticks_num_photon=G3   ;;
+   esac
 
-   opticks_num_event=1
-   opticks_num_genstep=40
-   opticks_num_photon=G1
-   opticks_running_mode=SRM_TORCH
+   if [ "$TEST" == "vvvlarge_evt" ]; then
+       ## getting unsigned/int clocking - so keep the subfold for now
+       export QSim__simulate_KEEP_SUBFOLD=1
+   fi
+
 
 elif [ "$TEST" == "input_genstep" ]; then
 

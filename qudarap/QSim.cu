@@ -665,7 +665,7 @@ __global__ void _QSim_fake_propagate( qsim* sim, quad2* prd )
 #ifdef DEBUG_PIDX
     qbase* base = sim->base ;
     if( idx == base->pidx )
-    printf("//_QSim_fake_propagate idx %d evt.num_photon %d evt.max_record %d  \n", idx, evt->num_photon, evt->max_record );
+    printf("//_QSim_fake_propagate idx %d evt.num_photon %ld evt.max_record %d  \n", idx, evt->num_photon, evt->max_record );
 #endif
 
 
