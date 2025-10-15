@@ -220,6 +220,7 @@ inline void net_hdr::unpack( char* data, unsigned num_bytes, std::vector<unsigne
 struct NPS
 {
     typedef std::int64_t INT ;
+    typedef std::uint64_t UINT ;
     static constexpr const INT ONE = 1 ;  // -std=c++11 SOMETIMES GIVES LINK ERRORS : but NOT -std=c++17
 
     NPS(std::vector<INT>& shape_ ) : shape(shape_) {}  ;
@@ -360,6 +361,16 @@ struct NPS
         for(INT i=0; i<ndim; ++i) sz *= shape[i] ;
         return ndim == 0 ? 0 : sz ;
     }
+
+    static NPS::UINT usize(const std::vector<INT>& shape)
+    {
+        INT ndim = INT(shape.size());
+        UINT sz = 1;
+        for(INT i=0; i<ndim; ++i) sz *= shape[i] ;
+        return ndim == 0 ? 0 : sz ;
+    }
+
+
 
     static size_t size(const std::vector<size_t>& shape)
     {
@@ -625,7 +636,7 @@ struct U
     static std::string Format(uint64_t t=0, const char* fmt="%FT%T.", int _wsubsec=3 );
 
     static constexpr const char* LOG_FMT = "%Y-%m-%d %H:%M:%S" ;
-    static std::string FormatLog();
+    static std::string FormatLog(const char* msg=nullptr);
 
     static std::string FormatInt(int64_t t, int wid );
 
@@ -1944,9 +1955,15 @@ inline bool U::LooksLikeProfileTriplet(const char* str) // static
 }
 
 
-inline std::string U::FormatLog() // static
+inline std::string U::FormatLog(const char* msg) // static
 {
-    return U::Format(0, LOG_FMT, 3);
+    std::string line = U::Format(0, LOG_FMT, 3);
+    if(msg)
+    {
+        line += " " ;
+        line += msg ;
+    }
+    return line ;
 }
 
 inline std::string U::Format(uint64_t t, const char* fmt, int _wsubsec) // static

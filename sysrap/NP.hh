@@ -1886,7 +1886,7 @@ inline NP::INT NP::num_items() const { return shape[0] ;  }
 inline NP::INT NP::num_values() const { return NPS::size(shape) ;  }
 inline NP::INT NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
 inline NP::INT  NP::arr_bytes()  const {  return NPS::size(shape)*ebyte ; }
-inline NP::UINT NP::uarr_bytes()  const { return NPS::size(shape)*ebyte ; }
+inline NP::UINT NP::uarr_bytes()  const { return NPS::usize(shape)*UINT(ebyte) ; }
 inline NP::UINT NP::serialize_bytes()  const { return uhdr_bytes() + uarr_bytes() + umeta_bytes() ; }
 
 inline NP::INT NP::item_bytes() const { return NPS::itemsize(shape)*ebyte ; }
@@ -7502,7 +7502,7 @@ inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static
     {
         auto a = aa[i] ;
 
-        unsigned nv = a->num_itemvalues() ;
+        unsigned nv = a->num_itemvalues() ;   // values after first dimension, eg 16 for (n,4,4)
         bool compatible = nv == nv0 && strcmp(dtype0, a->dtype) == 0 ;
         if(!compatible)
             std::cout
@@ -7518,7 +7518,7 @@ inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static
         if(VERBOSE) std::cout << "NP::Concatenate " << std::setw(3) << i << " " << a->desc() << " nv " << nv << std::endl ;
     }
 
-    unsigned ni_total = 0 ;
+    UINT ni_total = 0 ;
     for(unsigned i=0 ; i < aa.size() ; i++) ni_total += aa[i]->shape[0] ;
     if(VERBOSE) std::cout << "NP::Concatenate ni_total " << ni_total << std::endl ;
 
@@ -7526,18 +7526,22 @@ inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static
     NPS::copy_shape( comb_shape, a0->shape );
     comb_shape[0] = ni_total ;
 
+    if(VERBOSE) std::cout << "NP::Concatenate c = new NP " << std::endl ;
     NP* c = new NP(a0->dtype);
+    if(VERBOSE) std::cout << "NP::Concatenate c.set_shape " << std::endl ;
     c->set_shape(comb_shape);
     if(VERBOSE) std::cout << "NP::Concatenate c " << c->desc() << std::endl ;
 
-    unsigned offset_bytes = 0 ;
+    UINT offset_bytes = 0 ;   // uint64_t needed here to avoid clocking offset_bytes for large array handling
     for(unsigned i=0 ; i < aa.size() ; i++)
     {
         auto a = aa[i];
-        unsigned a_bytes = a->arr_bytes() ;
+        UINT a_bytes = a->uarr_bytes() ;
         memcpy( c->data.data() + offset_bytes ,  a->data.data(),  a_bytes );
         offset_bytes += a_bytes ;
-        //a->clear(); // HUH: THAT WAS IMPOLITE : ASSUMING CALLER DOESNT WANT TO USE INPUTS
+        // clocking offset_bytes here (when used only 32 bit unsigned) resulted in the tail of the array
+        // being unfilled (left as zero) and the addressed portion of the array being overwritten
+        // potentially multiple times
     }
     return c ;
 }
