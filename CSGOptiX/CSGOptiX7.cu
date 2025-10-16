@@ -736,6 +736,7 @@ extern "C" __global__ void __closesthit__ch()
         // HMM: could use P to give the local position ?
 
         float lposcost = normalize_z(P); // scuda.h  "cosTheta" z/len of local frame position
+        //float lposphi = atan2f( P.y, P.x );
 
 #ifdef WITH_PRD
         quad2* prd = SOPTIX_getPRD<quad2>();
@@ -839,7 +840,10 @@ extern "C" __global__ void __intersection__is()
     bool valid_isect = intersect_prim(isect, node, plan, itra, t_min , ray_origin, ray_direction, dumpxyz );
     if(valid_isect)
     {
-        const float lposcost = normalize_z(ray_origin + isect.w*ray_direction ) ;  // scuda.h cosTheta z/len of local(aka Object) frame position
+        const float3 lpos = ray_origin + isect.w*ray_direction ;
+        const float lposcost = normalize_z(lpos) ;  // scuda.h cosTheta z/len of local(aka Object) frame position
+        //const float lposphi = atan2f( lpos.y, lpos.x );
+
         const unsigned hitKind = 0u ;     // only up to 127:0x7f : could use to customize how attributes interpreted
         const unsigned boundary = node->boundary() ;  // all CSGNode in the tree for one CSGPrim tree have same boundary
         const unsigned globalPrimIdx_boundary = (( globalPrimIdx & 0xffffu ) << 16 ) | ( boundary & 0xffffu ) ;

@@ -95,6 +95,9 @@ quad2
     | f:lposcost | u:iindex   | u:identity | u:boundary    |
     +------------+------------+------------+---------------+
 
+WIP: HMM? pack boundary_iindex to make room for f:lposphi ?
+would avoid awkward transform lookups
+
 
 f:lposcost
     Local position cos(theta) of intersect,
@@ -116,6 +119,9 @@ u:identity
     FROM July 2023
         instance_id which is *sensor_identifier+1* (as need lpmtid for QPMT),
         zero means not-a-sensor GPU side
+
+        [THIS LESS AMENABLE TO PACKING, AS EXPTS MAY USE WHACKY SENSOR_IDENTIFIER RANGES]
+
 
     FORMERLY
         (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff )

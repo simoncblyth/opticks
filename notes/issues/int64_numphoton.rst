@@ -2,32 +2,6 @@ int64_numphoton
 ================
 
 
-HUH expecting 3 billion, not 12.  That must have been some int truncation::
-
-    2025-10-14 16:04:12.303 FATAL [1455407] [SEvt::setNumPhoton@2429]  num_photon/M 12852 evt.max_photon/M 10000 num_photon 12852527706 evt.max_photon 10000000000
-    CSGOptiXSMTest: /home/blyth/opticks/sysrap/SEvt.cc:2435: void SEvt::setNumPhoton(int64_t): Assertion `num_photon_allowed' failed.
-
-    Thread 1 "CSGOptiXSMTest" received signal SIGABRT, Aborted.
-    0x00007ffff4a8bedc in __pthread_kill_implementation () from /lib64/libc.so.6
-    Missing separate debuginfos, use: dnf debuginfo-install glibc-2.34-168.el9_6.23.x86_64 libnvidia-gpucomp-580.82.07-1.el9.x86_64 libnvidia-ml-580.82.07-1.el9.x86_64 nvidia-driver-cuda-libs-580.82.07-1.el9.x86_64 nvidia-driver-libs-580.82.07-1.el9.x86_64
-    (gdb) bt
-    #0  0x00007ffff4a8bedc in __pthread_kill_implementation () from /lib64/libc.so.6
-    #1  0x00007ffff4a3eb46 in raise () from /lib64/libc.so.6
-    #2  0x00007ffff4a28833 in abort () from /lib64/libc.so.6
-    #3  0x00007ffff4a2875b in __assert_fail_base.cold () from /lib64/libc.so.6
-    #4  0x00007ffff4a37886 in __assert_fail () from /lib64/libc.so.6
-    #5  0x00007ffff5953e35 in SEvt::setNumPhoton (this=0x1608f3a0, num_photon=12852527706) at /home/blyth/opticks/sysrap/SEvt.cc:2435
-    #6  0x00007ffff5953afd in SEvt::addGenstep (this=0x1608f3a0, q_=...) at /home/blyth/opticks/sysrap/SEvt.cc:2391
-    #7  0x00007ffff5952d58 in SEvt::addGenstep (this=0x1608f3a0, a=0x1b6a5c30) at /home/blyth/opticks/sysrap/SEvt.cc:2254
-    #8  0x00007ffff594d98d in SEvt::addInputGenstep (this=0x1608f3a0) at /home/blyth/opticks/sysrap/SEvt.cc:1006
-    #9  0x00007ffff5950aaa in SEvt::beginOfEvent (this=0x1608f3a0, eventID=0) at /home/blyth/opticks/sysrap/SEvt.cc:1773
-    #10 0x00007ffff5e70f53 in QSim::simulate (this=0x18638f90, eventID=0, reset_=true) at /home/blyth/opticks/qudarap/QSim.cc:427
-    #11 0x00007ffff7e35b67 in CSGOptiX::simulate (this=0x1864d360, eventID=0) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:721
-    #12 0x00007ffff7e3253b in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:167
-    #13 0x0000000000404a95 in main (argc=1, argv=0x7fffffffb008) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
-    (gdb) 
-
-
 
 3 billion launch split into 12 slices of 250M each, hit max_curand limit of 1 billion::
 

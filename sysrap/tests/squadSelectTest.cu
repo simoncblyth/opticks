@@ -1,5 +1,7 @@
 /**
-name=squadSelectTest ; nvcc $name.cu -I.. -I/usr/local/cuda -o /tmp/$name && /tmp/$name 
+
+~/o/sysrap/tests/squadSelectTest.sh
+
 
 1. setup pp buffer on device
 2. thrust::count_if get the number of hits
@@ -19,6 +21,7 @@ A: Crovella2016:NO https://stackoverflow.com/questions/36877029/thrust-copy-if-d
 
 
 #include <thrust/copy.h>
+#include <thrust/count.h>
 #include <thrust/device_ptr.h>
 
 template<typename T>
@@ -139,6 +142,8 @@ void test_monolithic()
 
 void test_presized()
 {
+    // obtain the hit count, presize host array then copy
+
     std::vector<quad4> pp(10) ; 
     unsigned mask = 0xbeefcafe ; 
     populate(pp.data(), pp.size(), mask); 

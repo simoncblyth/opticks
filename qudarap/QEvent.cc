@@ -852,11 +852,7 @@ QEvent::gatherHit
 ------------------
 
 1. on device count *evt.num_hit* passing the photon *selector*
-2. allocate *evt.hit* GPU buffer
-3. copy_if from *evt.photon* to *evt.hit* using the photon *selector*
-4. host allocate the NP hits array
-5. copy hits from device to the host NP hits array
-6. free *evt.hit* on device
+
 7. return NP hits array to caller, who becomes owner of the array
 
 Note that the device hits array is allocated and freed for each launch.
@@ -904,6 +900,21 @@ NP* QEvent::gatherHit() const
 
     return hit ;
 }
+
+/**
+QEvent::gatherHit_
+--------------------
+
+1. allocate *evt.hit* GPU buffer using *evt.num_hit*
+2. SU::copy_if_device_to_device_presized_sphoton from *evt.photon* to *evt.hit* using the photon *selector*
+3. host allocate the NP hits array using *evt.num_hit*
+4. copy hits from device to the host NP hits array
+5. free *evt.hit* on device
+
+
+**/
+
+
 
 NP* QEvent::gatherHit_() const
 {
