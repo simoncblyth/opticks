@@ -988,10 +988,10 @@ sstr::ParseIntSpec
 | "G1" |  1000000000  | 1000000000  |                         |
 | "G2" |  2000000000  | 1000000000  |                         |
 | "G3" |  3000000000  | 1000000000  |                         |
-| "x1" | (0x1<<1)-1   |    1        | 0x1                     |
-| "x31"| (0x1<<31)-1  |    1        | 0x7fffffff 2.14 billion |
-| "x32"| (0x1<<32)-1  |    1        | 0xffffffff 4.29 billion |
-| "x64"| (0x1<<64)-1  |    1        | zero with uint64_t      |
+| "X1" | (0x1<<1)-1   |    1        | 0x1                     |
+| "X31"| (0x1<<31)-1  |    1        | 0x7fffffff 2.14 billion |
+| "X32"| (0x1<<32)-1  |    1        | 0xffffffff 4.29 billion |
+| "X64"| (0x1<<64)-1  |    1        | zero with uint64_t      |
 +------+--------------+-------------+-------------------------+
 
 * "K","M" and "G" are prefixes to avoid lots of zeros
@@ -1026,7 +1026,7 @@ inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static
 
     T value = 0ull ;
 
-    if( spec[0] == 'x' )
+    if( spec[0] == 'X' )
     {
         T bitshift = std::atol(e);
         value = ( 0x1ull << bitshift ) - 1ull ;

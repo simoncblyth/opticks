@@ -203,7 +203,8 @@ vars="$vars version VERSION"
 #test=large_evt
 #test=vlarge_evt
 #test=vvlarge_evt
-test=vvvlarge_evt
+#test=vvvlarge_evt
+test=vvvvlarge_evt
 
 #test=medium_scan
 
@@ -363,7 +364,7 @@ elif [ "$TEST" == "larger_scan" ]; then
 
    #opticks_max_photon=M200
 
-elif [ "$TEST" == "large_evt" -o "$TEST" == "vlarge_evt" -o "$TEST" == "vvlarge_evt" -o "$TEST" == "vvvlarge_evt" ]; then
+elif [ "$TEST" == "large_evt" -o "$TEST" == "vlarge_evt" -o "$TEST" == "vvlarge_evt" -o "$TEST" == "vvvlarge_evt"  -o "$TEST" == "vvvvlarge_evt" ]; then
 
    opticks_running_mode=SRM_TORCH
    opticks_num_event=1
@@ -373,10 +374,10 @@ elif [ "$TEST" == "large_evt" -o "$TEST" == "vlarge_evt" -o "$TEST" == "vvlarge_
        vlarge_evt) opticks_num_genstep=20  ; opticks_num_photon=M500 ;;
       vvlarge_evt) opticks_num_genstep=40  ; opticks_num_photon=G1   ;;
      vvvlarge_evt) opticks_num_genstep=120 ; opticks_num_photon=G3   ;;
+    vvvvlarge_evt) opticks_num_genstep=256 ; opticks_num_photon=X32  ;;
    esac
 
-   if [ "$TEST" == "vvvlarge_evt" ]; then
-       ## getting unsigned/int clocking - so keep the subfold for now
+   if [ "$TEST" == "vvvlarge_evt" -o "$TEST" == "vvvvlarge_evt" ]; then
        export QSim__simulate_KEEP_SUBFOLD=1
    fi
 
