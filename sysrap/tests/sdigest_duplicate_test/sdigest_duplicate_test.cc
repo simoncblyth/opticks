@@ -4,11 +4,39 @@
 #include <vector>
 #include <thread>
 #include <mutex>
+#include <array>
+#include <functional> // for std::hash
 
 #include "NP.hh"
 #include "ssys.h"
 #include "sdigest.h"
 
+using Digest = std::array<unsigned char, 16>;
+
+
+
+struct DigestHash 
+{
+    std::size_t operator()(const std::array<unsigned char, 16>& digest) const noexcept 
+    {
+        std::size_t seed = 0;
+        // Treat the 16 bytes as four 32-bit chunks for better distribution
+        for (size_t i = 0; i < 16; i += 4) 
+        {
+            // Combine four bytes into a 32-bit integer (little-endian)
+            uint32_t chunk = (static_cast<uint32_t>(digest[i]) << 24) |
+                             (static_cast<uint32_t>(digest[i + 1]) << 16) |
+                             (static_cast<uint32_t>(digest[i + 2]) << 8) |
+                             static_cast<uint32_t>(digest[i + 3]);
+            // Combine into seed using a simple but effective mixing function
+            seed ^= std::hash<uint32_t>{}(chunk) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        }
+        return seed;
+    }
+};
+
+
+using DigestSet = std::unordered_set<Digest,DigestHash> ;
 
 
 
@@ -16,16 +44,16 @@ void process_chunk_0(
     const NP* hit,
     size_t start,
     size_t end,
-    std::unordered_set<std::string>& seen,
-    std::unordered_set<std::string>& duplicates,
+    DigestSet& seen,
+    DigestSet& duplicates,
     std::mutex& mtx)
 {
-    std::unordered_set<std::string> local_seen;
-    std::unordered_set<std::string> local_duplicates;
+    DigestSet local_seen;
+    DigestSet local_duplicates;
 
     for (size_t i = start; i < end; ++i)
     {
-        std::string digest = sdigest::Item(hit, i);
+        Digest digest = sdigest::ItemRaw(hit, i);
         if(local_seen.count(digest))
         {
             local_duplicates.insert(digest);
@@ -56,12 +84,12 @@ void process_chunk_1(
     const NP* hit,
     size_t start,
     size_t end,
-    std::unordered_set<std::string>& local_seen,
-    std::unordered_set<std::string>& local_duplicates)
+    DigestSet& local_seen,
+    DigestSet& local_duplicates)
 {
     for (size_t i = start; i < end; ++i)
     {
-        std::string digest = sdigest::Item(hit, i);
+        Digest digest = sdigest::ItemRaw(hit, i);
         if (local_seen.count(digest)) {
             local_duplicates.insert(digest);
         } else {
@@ -121,15 +149,10 @@ int main()
         ;
 
 
-    /**
-    std::unordered_set<std::string> seen_hashes;
-    std::unordered_set<std::string> duplicate_hashes;
-    std::mutex mtx;
-    **/
 
 
-    std::vector<std::unordered_set<std::string>> all_seen(num_chunks);
-    std::vector<std::unordered_set<std::string>> all_duplicates(num_chunks);
+    std::vector<DigestSet> all_seen(num_chunks);
+    std::vector<DigestSet> all_duplicates(num_chunks);
     std::vector<std::thread> threads;
 
     for (size_t i = 0; i < num_chunks; ++i) {
@@ -163,17 +186,23 @@ int main()
 
     std::cout << U::Log("merge \n") ;
 
-    std::unordered_set<std::string> seen_hashes;
-    std::unordered_set<std::string> duplicate_hashes;
+    DigestSet seen_hashes;
+    DigestSet duplicate_hashes;
+
     for (size_t i = 0; i < num_chunks; ++i)
     {
-        for (const auto& digest : all_duplicates[i]) {
+        for (const auto& digest : all_duplicates[i]) 
+        {
             duplicate_hashes.insert(digest);
         }
-        for (const auto& digest : all_seen[i]) {
-            if (seen_hashes.count(digest)) {
+        for (const auto& digest : all_seen[i]) 
+        {
+            if (seen_hashes.count(digest)) 
+            {
                 duplicate_hashes.insert(digest);
-            } else {
+            } 
+            else 
+            {
                 seen_hashes.insert(digest);
             }
         }
