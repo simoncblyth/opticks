@@ -13,6 +13,7 @@ Example from /usr/include/openssl/opensslv.h::
 
 #include <string>
 #include <vector>
+#include <array>
 #include <sstream>
 
 #if defined __APPLE__

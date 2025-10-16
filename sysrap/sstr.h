@@ -974,20 +974,27 @@ inline bool sstr::islower_(char c ) { return std::islower(static_cast<unsigned c
 sstr::ParseIntSpec
 --------------------
 
-+------+--------------+-------------+
-| spec | value        | scale       |
-| (in) | (out)        | (in/out)    |
-+======+==============+=============+
-|  "1" |  1           |             |
-| "h1" |  100         |    100      |
-| "H1" |  100000      |    100000   |
-| "K1" |  1000        |    1000     |
-| "K2" |  2000        |    1000     |
-| "M1" |  1000000     |   1000000   |
-| "M2" |  2000000     |   1000000   |
-+------+--------------+-------------+
++------+--------------+-------------+-------------------------+
+| spec | value        | scale       | note                    |
+| (in) | (out)        | (in/out)    |                         |
++======+==============+=============+=========================+
+|  "1" |  1           |             |                         |
+| "h1" |  100         |    100      |                         |
+| "H1" |  100000      |    100000   |                         |
+| "K1" |  1000        |    1000     |                         |
+| "K2" |  2000        |    1000     |                         |
+| "M1" |  1000000     |    1000000  |                         |
+| "M2" |  2000000     |    1000000  |                         |
+| "G1" |  1000000000  | 1000000000  |                         |
+| "G2" |  2000000000  | 1000000000  |                         |
+| "G3" |  3000000000  | 1000000000  |                         |
+| "x1" | (0x1<<1)-1   |    1        | 0x1                     |
+| "x31"| (0x1<<31)-1  |    1        | 0x7fffffff 2.14 billion |
+| "x32"| (0x1<<32)-1  |    1        | 0xffffffff 4.29 billion |
+| "x64"| (0x1<<64)-1  |    1        | zero with uint64_t      |
++------+--------------+-------------+-------------------------+
 
-* "K" or "M" are prefixes to avoid lots of zeros
+* "K","M" and "G" are prefixes to avoid lots of zeros
 * spec with prefix both uses the scales to multiply the value and sets the scale for subsequent
 * spec without prefix is multiplied by the current scale
 
@@ -1013,10 +1020,23 @@ inline T sstr::ParseIntSpec( const char* spec, T& scale ) // static
 {
     bool valid = spec != nullptr && strlen(spec) > 0 ;
     if(!valid) return 0 ;
+
     bool is_digit = isdigit_(spec[0]);
     const char* e = is_digit ? spec : spec + 1 ;
-    T value = To<T>( e) ;
-    ParseScale<T>(spec, scale);
+
+    T value = 0ull ;
+
+    if( spec[0] == 'x' )
+    {
+        T bitshift = std::atol(e);
+        value = ( 0x1ull << bitshift ) - 1ull ;
+        scale = 1ull ;
+    }
+    else
+    {
+        value = To<T>( e) ;
+        ParseScale<T>(spec, scale);
+    }
     return value*scale  ;
 }
 

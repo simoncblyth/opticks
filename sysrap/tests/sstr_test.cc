@@ -563,6 +563,9 @@ void test_IsInteger()
 
 struct sstr_test
 {
+    static constexpr const uint64_t M = 1000000 ;
+    static constexpr const uint64_t G = 1000000000 ;
+
     static constexpr const char* BLANK = "" ;
     static std::vector<std::string> STRS ;
     static std::vector<std::string> STRS2 ;
@@ -573,6 +576,7 @@ struct sstr_test
 
     static int StartsWithElem();
     static int split();
+    static int ParseInt();
 
 
     static int Main();
@@ -667,6 +671,43 @@ int sstr_test::split()
      return 0;
 }
 
+
+int sstr_test::ParseInt()
+{
+    std::vector<std::string> src = {{
+        "M1",
+        "G1",
+        "G2",
+        "G3",
+        "x0",
+        "x1",
+        "x2",
+        "x4",
+        "x8",
+        "x16",
+        "x31",
+        "x32",
+        "x63",
+        "x64"
+    }} ;
+
+    for(unsigned i=0 ; i < src.size() ; i++)
+    {
+        const char* st = src[i].c_str();
+        uint64_t value = sstr::ParseInt<uint64_t>(st) ;
+        std::cout
+            << " spec  " << std::setw(5) << st
+            << " value " << std::setw(20) << value
+            << " value/M " << std::setw(20) << value/M
+            << " value/G " << std::setw(20) << value/G
+            << "\n"
+            ;
+    }
+    return 0 ;
+}
+
+
+
 int sstr_test::Main()
 {
     //const char* test = "TrimString" ;
@@ -704,6 +745,7 @@ int sstr_test::Main()
     if(ALL||0==strcmp(TEST,"prefix_suffix"))  rc += prefix_suffix();
     if(ALL||0==strcmp(TEST,"StartsWithElem")) rc += StartsWithElem();
     if(ALL||0==strcmp(TEST,"split"))          rc += split();
+    if(ALL||0==strcmp(TEST,"ParseInt"))       rc += ParseInt();
 
     return rc ;
 }

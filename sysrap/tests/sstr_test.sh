@@ -18,7 +18,8 @@ name=sstr_test
 bin=$TMP/$name
 
 
-test=prefix_suffix
+#test=prefix_suffix
+test=ParseInt
 export TEST=${TEST:-$test}
 
 defarg="info_build_run"
