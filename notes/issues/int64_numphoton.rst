@@ -544,4 +544,93 @@ TEST=vvvlarge_evt cxs_min.sh ## opticks_num_genstep=120 ; opticks_num_photon=G3
     353 
 
 
+From qsim::propagate cosTheta and iindex come along together, so packing them is clean lifecycle wise::
+
+    2218 inline QSIM_METHOD int qsim::propagate(const int bounce, RNG& rng, sctx& ctx )  // ::simulate
+    2219 {
+    2220     const unsigned boundary = ctx.prd->boundary() ;
+    2221     const unsigned identity = ctx.prd->identity() ; // sensor_identifier+1, 0:not-a-sensor
+    2222     const unsigned iindex = ctx.prd->iindex() ;
+    2223     const float lposcost = ctx.prd->lposcost() ;  // local frame intersect position cosine theta
+    2224 
+    ....
+    2247     // copy geometry info into the sphoton struct
+    2248     ctx.p.set_prd(boundary, identity, cosTheta, iindex );  // HMM: lposcost not passed along
+
+
+
+TEST=ref1 cxs_min.sh
+------------------------
+
+::
+
+    In [2]: ii = f.photon[:,1,3].view(np.uint32)
+
+    In [3]: ii.min(),ii.max()
+    Out[3]: (np.uint32(0), np.uint32(48593))
+
+
+    In [4]: np.c_[np.unique(ii, return_counts=True)]
+    Out[4]: 
+    array([[     0, 327770],
+           [     2,      2],
+           [     4,      3],
+           [     5,      1],
+           [    10,      2],
+           ...,
+           [ 48236,     11],
+           [ 48237,     13],
+           [ 48238,     16],
+           [ 48239,     11],
+           [ 48593,  66842]], shape=(36477, 2))
+
+    In [5]: f.photon.shape
+    Out[5]: (1000000, 4, 4)
+
+    In [6]: f.hit.shape
+    Out[6]: (200397, 4, 4)
+
+    In [7]: ii.shape
+    Out[7]: (1000000,)
+
+    In [8]: u_ii, n_ii = np.unique(ii, return_counts=True)
+
+    In [9]: u_ii
+    Out[9]: array([    0,     2,     4,     5,    10, ..., 48236, 48237, 48238, 48239, 48593], shape=(36477,), dtype=uint32)
+
+    In [10]: n_ii
+    Out[10]: array([327770,      2,      3,      1,      2, ...,     11,     13,     16,     11,  66842], shape=(36477,))
+
+    In [11]: np.where(n_ii > 1000)
+    Out[11]: (array([    0, 36476]),)
+
+
+
+
+    In [12]: id = f.photon[:,3,1].view(np.uint32)
+
+    In [13]: id
+    Out[13]: array([    0,  9095,   423, 35514, 34790, ...,    16,  4221, 12249,     0, 12478], shape=(1000000,), dtype=uint32)
+
+    In [14]: u_id, n_id = np.unique(id, return_counts=True)
+
+    In [15]: np.c_[u_id, n_id]
+    Out[15]: 
+    array([[     0, 418619],
+           [     1,     22],
+           [     2,     22],
+           [     3,     20],
+           [     4,     18],
+           ...,
+           [ 45596,      4],
+           [ 45597,      1],
+           [ 45598,      1],
+           [ 45599,      1],
+           [ 45600,      2]], shape=(34580, 2))
+
+    In [16]: np.where( n_id > 1000 )
+    Out[16]: (array([0]),)
+
+
+
 

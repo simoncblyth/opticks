@@ -32,7 +32,9 @@ union spho_uuc4 {
 };
 
 
-struct spho
+
+
+struct spho // WIP: unsigned ?
 {
     static constexpr const int N = 4 ;
 

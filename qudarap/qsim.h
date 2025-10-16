@@ -2537,7 +2537,7 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6&
         case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ;
     }
-    p.set_idx(photon_id);
+    p.index = photon_id ;
 }
 #endif
 

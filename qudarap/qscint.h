@@ -130,8 +130,7 @@ inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, RNG& rng) const
     p.mom.x = sint*cosp;  
     p.mom.y = sint*sinp;
     p.mom.z = cost ;  
-    //p.weight = 1.f ; 
-    p.iindex = 0u ; 
+    p.orient_iindex = 0u ; 
 
     // Determine polarization of new photon 
     p.pol.x = cost*cosp ; 

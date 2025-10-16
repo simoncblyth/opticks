@@ -674,7 +674,7 @@ __global__ void _QSim_fake_propagate( qsim* sim, quad2* prd )
 
 
     sphoton p = evt->photon[idx] ;
-    p.set_idx(idx);
+    p.index = idx;
 
     sim->fake_propagate( p, prd, rng, idx );
 

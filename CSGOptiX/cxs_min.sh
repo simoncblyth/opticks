@@ -177,16 +177,6 @@ export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SE
 ## VERSION CHANGES OUTPUT DIRECTORIES : SO USEFUL TO ARRANGE SEPARATE STUDIES
 
 
-if ! [ $VERSION -eq 0 -o $VERSION -eq 1 ]; then
-
-    cat << EOW
-
-WARNING : DEBUG RUNNING WITH VERSION $VERSION IS APPROPRIATE FOR SMALL STATISTICS ONLY
-
-EOW
-fi
-
-
 
 vars="$vars version VERSION"
 
@@ -275,8 +265,11 @@ case $VERSION in
  4) opticks_event_mode=HitPhotonSeq ;;
  5) opticks_event_mode=HitSeq ;;
 98) opticks_event_mode=DebugLite ;;
-99) opticks_event_mode=DebugHeavy ;;  # formerly StandardFullDebug
+99) opticks_event_mode=DebugHeavy ;;
 esac
+
+# WIP: decouple VERSION from opticks_event_mode, better for event_mode to be controlled via TEST
+# demote use of VERSION to special checks with a separate output folder
 
 vars="$vars opticks_event_mode"
 
@@ -296,6 +289,7 @@ elif [ "$TEST" == "ref1" ]; then
    opticks_num_photon=M1
    opticks_running_mode=SRM_TORCH
    opticks_max_slot=M1
+   opticks_event_mode=HitPhotonSeq
 
 elif [ "$TEST" == "ref5" -o "$TEST" == "ref6" -o "$TEST" == "ref7" -o "$TEST" == "ref8" -o "$TEST" == "ref9" -o "$TEST" == "ref10" ]; then
 
@@ -548,6 +542,31 @@ vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PH
 export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
 export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot
 vars="$vars OPTICKS_MAX_CURAND OPTICKS_MAX_SLOT"
+
+
+
+
+
+if ! [ "$OPTICKS_EVENT_MODE" == "Minimal" -o "OPTICKS_EVENT_MODE" == "Hit" ]; then
+
+    cat << EOW
+
+WARNING : DEBUG RUNNING WITH OPTICKS_EVENT_MODE $OPTICKS_EVENT_MODE IS APPROPRIATE FOR SMALL STATISTICS ONLY
+
+EOW
+fi
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then

@@ -2705,7 +2705,7 @@ void SEvt::beginPhoton(const spho& label)
     LOG(LEVEL) ;
     LOG(LEVEL) << label.desc() ;
 
-    unsigned idx = label.id ;
+    unsigned idx = label.id ;  // WIP: label.id is int, should be unsigned
 
     bool in_range = idx < pho.size() ;
     LOG_IF(error, !in_range)
@@ -2747,7 +2747,7 @@ void SEvt::beginPhoton(const spho& label)
     ctx.evt = evt ;
     ctx.prd = &current_prd ;   // current_prd is populated by InstrumentedG4OpBoundaryProcess::PostStepDoIt
 
-    ctx.p.set_idx(idx);
+    ctx.p.index = idx ;
     ctx.p.set_flag(genflag);
 
     bool flagmask_one_bit = ctx.p.flagmask_count() == 1  ;
@@ -2881,7 +2881,7 @@ void SEvt::rjoinPhoton(const spho& label)
     // NB: within scintillator, photons of any gentype may undergo reemission
 
     const sphoton& parent_photon = photon[idx] ;
-    unsigned parent_idx = parent_photon.idx() ;
+    unsigned parent_idx = parent_photon.index ;
     bool parent_idx_expect = parent_idx == idx  ;
     assert( parent_idx_expect );
     if(!parent_idx_expect) std::raise(SIGINT);
@@ -4794,7 +4794,7 @@ using the same geometry as the server anyhow.
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array (starts global frame) into sphoton& lp struct of caller
-    int iindex = lp.iindex ;
+    int iindex = lp.iindex() ;
 
     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
 
@@ -4839,7 +4839,7 @@ instance
 void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
 {
     assert(cf);
-    cf->getFrame(fr, p.iindex);
+    cf->getFrame(fr, p.iindex() );
     fr.prepare();
 }
 
