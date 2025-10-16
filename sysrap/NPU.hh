@@ -637,6 +637,7 @@ struct U
 
     static constexpr const char* LOG_FMT = "%Y-%m-%d %H:%M:%S" ;
     static std::string FormatLog(const char* msg=nullptr);
+    static std::string Log(const char* msg=nullptr);
 
     static std::string FormatInt(int64_t t, int wid );
 
@@ -1965,6 +1966,19 @@ inline std::string U::FormatLog(const char* msg) // static
     }
     return line ;
 }
+
+inline std::string U::Log(const char* msg) // static
+{
+    std::string line = U::Format(0, LOG_FMT, 3);
+    if(msg)
+    {
+        line += " " ;
+        line += msg ;
+    }
+    return line ;
+}
+
+
 
 inline std::string U::Format(uint64_t t, const char* fmt, int _wsubsec) // static
 {

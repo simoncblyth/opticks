@@ -494,3 +494,54 @@ TEST=vvvlarge_evt cxs_min.sh ## opticks_num_genstep=120 ; opticks_num_photon=G3
 
 
 
+::
+
+    (ok) A[blyth@localhost junosw]$ opticks-f set_orient
+    ./ana/p.py:     72     SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it 
+    ./ana/p.py:    109     set_orient( orient_ );
+    ./sysrap/sphoton.h:    SPHOTON_METHOD void set_orient(float orient){ orient_idx = ( orient_idx & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it
+    ./sysrap/sphoton.h:    set_orient( orient_ );
+    ./sysrap/squad.h:    SQUAD_METHOD void set_orient( float orient );
+    ./sysrap/squad.h:SQUAD_METHOD void quad4::set_orient( float orient )  // not typically used as set_prd more convenient, but useful for debug
+    ./sysrap/tests/squadTest.cc:        p.set_orient( orient[0] ); 
+    ./u4/U4Step.h:    current_photon.set_orient( cosThetaSign );   // sets a bit : would be 0 if not set
+    (ok) A[blyth@localhost opticks]$ 
+
+
+    (ok) A[blyth@localhost A000]$ opticks-f orient\(\)
+    ./sysrap/sphoton.h:    SPHOTON_METHOD float    orient() const {   return ( orient_idx & 0x80000000u ) ? -1.f : 1.f ; }
+    ./sysrap/sphoton.h:        << " or " << orient()
+    ./sysrap/tests/squadTest.cc:void test_quad4_idx_orient()
+    ./sysrap/tests/squadTest.cc:    test_quad4_idx_orient(); 
+    (ok) A[blyth@localhost opticks]$ 
+
+    ## HMM : PROBABLY USING FROM PYTHON
+
+
+    330 /**
+    331 sphoton::set_prd
+    332 -----------------
+    333 
+    334 This is canonically invoked GPU side by qsim::propagate
+    335 copying geometry info from the quad2 PRD struct into the sphoton.
+    336 
+    337 TODO: relocate identity - 1 offsetting into here as this
+    338 marks the transition from geometry to event information
+    339 and would allow the offsetting to be better hidden.
+    340 
+    341 See ~/opticks/notes/issues/sensor_identifier_offset_by_one_wrinkle.rst
+    342 
+    343 **/
+    344 
+    345 
+    346 SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_, unsigned iindex_ )
+    347 {
+    348     set_boundary(boundary_);
+    349     identity = identity_ ;
+    350     set_orient( orient_ );
+    351     iindex = iindex_ ;
+    352 }
+    353 
+
+
+
