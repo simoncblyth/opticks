@@ -5371,7 +5371,7 @@ inline void stree::add_inst(
     assert( nidx > -1 && nidx < int(nds.size()) );
     const snode& nd = nds[nidx];    // structural volume node
 
-    int ins_idx = int(inst.size()); // follow sqat4.h::setIdentity
+    int ins_idx = int(inst.size()); // 0-based index follow sqat4.h::setIdentity
 
     glm::tvec4<int64_t> col3 ;   // formerly uint64_t
 
@@ -5401,6 +5401,9 @@ inline void stree::add_inst_identity( int gas_idx, int nidx )
 /**
 stree::add_inst
 ------------------
+
+Canonically invoked from U4Tree::Create after stree::factorize
+
 
 ::
 
@@ -5525,7 +5528,6 @@ inline void stree::add_inst()
         num_inst = 1 ;
         nidx = tri0.index  ; // ? node index of first of the triangulated volumes
         add_inst_identity( ridx, nidx );
-        // HMM: is identity transform guaranteed ?
 
         inst_info.push_back( {ridx,num_inst,tot_inst,0} );
         tot_inst += num_inst ;

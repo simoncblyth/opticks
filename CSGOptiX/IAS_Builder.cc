@@ -21,14 +21,17 @@
 
 
 /**
-IAS_Builder::Build
--------------------
+IAS_Builder::Build_OLD
+-----------------------
+
+NB this is no longer standardly used, being replaced by WITH_SOPTIX_ACCEL approach, see SBT::createIAS 
 
 Boilerplate turning the vector of OptixInstance into an IAS.
 
+
 **/
 
-void IAS_Builder::Build(IAS& ias, const std::vector<OptixInstance>& instances)
+void IAS_Builder::Build_OLD(IAS& ias, const std::vector<OptixInstance>& instances)
 {
     unsigned numInstances = instances.size() ; 
 

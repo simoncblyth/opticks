@@ -1,6 +1,177 @@
 iindex_making_sense_of_it
 ============================
 
+
+
+iindex review, prior to sphoton.h change packing orient_iindex together
+------------------------------------------------------------------------
+
+TEST=ref1 cxs_min.sh
+~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [2]: ii = f.photon[:,1,3].view(np.uint32)
+
+    In [3]: ii.min(),ii.max()
+    Out[3]: (np.uint32(0), np.uint32(48593))
+
+    In [4]: np.c_[np.unique(ii, return_counts=True)]
+    Out[4]: 
+    array([[     0, 327770],
+           [     2,      2],
+           [     4,      3],
+           [     5,      1],
+           [    10,      2],
+           ...,
+           [ 48236,     11],
+           [ 48237,     13],
+           [ 48238,     16],
+           [ 48239,     11],
+           [ 48593,  66842]], shape=(36477, 2))
+
+    In [5]: f.photon.shape
+    Out[5]: (1000000, 4, 4)
+
+    In [6]: f.hit.shape
+    Out[6]: (200397, 4, 4)
+
+    In [7]: ii.shape
+    Out[7]: (1000000,)
+
+    In [8]: u_ii, n_ii = np.unique(ii, return_counts=True)
+
+    In [9]: u_ii
+    Out[9]: array([    0,     2,     4,     5,    10, ..., 48236, 48237, 48238, 48239, 48593], shape=(36477,), dtype=uint32)
+
+    In [10]: n_ii
+    Out[10]: array([327770,      2,      3,      1,      2, ...,     11,     13,     16,     11,  66842], shape=(36477,))
+
+    In [11]: np.where(n_ii > 1000)
+    Out[11]: (array([    0, 36476]),)
+
+
+
+
+iindex is the index of the OptixInstance in the IAS
+-------------------------------------------------------
+
+::
+
+    693 extern "C" __global__ void __closesthit__ch()
+    694 {
+    695     unsigned iindex = optixGetInstanceIndex() ;
+    696     unsigned identity = optixGetInstanceId() ;
+
+
+So the values of iindex and what the geometry they correspond to depends on the order of the inst qat4 vector::
+
+    0425 void SBT::createIAS(unsigned ias_idx)
+     426 {
+     427     unsigned num_inst = foundry->getNumInst();
+     428     unsigned num_ias_inst = foundry->getNumInstancesIAS(ias_idx, emm);
+     429     LOG(LEVEL)
+     430         << " ias_idx " << ias_idx
+     431         << " num_inst " << num_inst
+     432         << " num_ias_inst(getNumInstancesIAS) " << num_ias_inst
+     433         ;
+     434 
+     435     std::vector<qat4> inst ;
+     436     foundry->getInstanceTransformsIAS(inst, ias_idx, emm );
+     437     assert( num_ias_inst == inst.size() );
+     438 
+     439 
+     440     collectInstances(inst);
+     441 
+
+
+That inst qat4 vector hails from the stree.h inst_f4 vector of transforms that is persisted with the tree::
+
+    In [1]: f.inst_f4.shape
+    Out[1]: (48594, 4, 4)
+
+
+iindex:"-1" must be the triangulated global solid with identity transform::
+
+    In [4]: f.inst_f4[48593]
+    Out[4]: 
+    array([[ 1.,  0.,  0.,  0.],
+           [ 0.,  1.,  0.,  0.],
+           [ 0.,  0.,  1., nan],
+           [ 0.,  0.,  0., nan]], dtype=float32)
+
+    In [5]: f.inst_f4[48593].view(np.uint32)
+    Out[5]: 
+    array([[1065353216,          0,          0,      48593],
+           [         0, 1065353216,          0,         11],
+           [         0,          0, 1065353216, 4294967295],
+           [         0,          0,          0, 4294967295]], dtype=uint32)
+
+
+iindex:0 is the analytic global solid::
+
+    In [6]: 0xffffffff
+    Out[6]: 4294967295
+
+    In [7]: f.inst_f4[0].view(np.uint32)
+    Out[7]: 
+    array([[1065353216,          0,          0,          0],
+           [         0, 1065353216,          0,          0],
+           [         0,          0, 1065353216, 4294967295],
+           [         0,          0,          0, 4294967295]], dtype=uint32)
+
+
+::
+
+    5365 inline void stree::add_inst(
+    5366     glm::tmat4x4<double>& tr_m2w,
+    5367     glm::tmat4x4<double>& tr_w2m,
+    5368     int gas_idx,
+    5369     int nidx )
+    5370 {
+    5371     assert( nidx > -1 && nidx < int(nds.size()) );
+    5372     const snode& nd = nds[nidx];    // structural volume node
+    5373 
+    5374     int ins_idx = int(inst.size()); // 0-based index follow sqat4.h::setIdentity 
+    5375 
+    5376     glm::tvec4<int64_t> col3 ;   // formerly uint64_t
+    5377 
+    5378     col3.x = ins_idx ;            // formerly  +1
+    5379     col3.y = gas_idx ;            // formerly  +1
+    5380     col3.z = nd.sensor_id ;       // formerly ias_idx + 1 (which was always 1)
+    5381     col3.w = nd.sensor_index ;
+    5382 
+    5383     strid::Encode(tr_m2w, col3 );
+    5384     strid::Encode(tr_w2m, col3 );
+    5385 
+    5386     inst.push_back(tr_m2w);
+    5387     iinst.push_back(tr_w2m);
+    5388 
+    5389     inst_nidx.push_back(nidx);
+    5390 }
+
+
+
+That 11 is the gas_idx for the tri global compound solid::
+
+    (ok) A[blyth@localhost CSGFoundry]$ cat.py mmlabel.txt
+    0    2554:sWorld
+    1    5:PMT_3inch_pmt_solid
+    2    9:NNVTMCPPMTsMask_virtual
+    3    12:HamamatsuR12860sMask_virtual
+    4    4:mask_PMT_20inch_vetosMask_virtual
+    5    1:sStrutBallhead
+    6    1:base_steel
+    7    3:uni_acrylic1
+    8    130:sPanel
+    9    1:sStrut_0
+    10   6:PMT_20inch_pmt_solid_head
+    11   338:ConnectingCutTube_0
+    (ok) A[blyth@localhost CSGFoundry]$ 
+
+
+
+
 HMM : how to make sense of the iindex values ?
 -------------------------------------------------
 

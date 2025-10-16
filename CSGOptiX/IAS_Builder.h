@@ -8,7 +8,7 @@ struct SBT ;
 
 struct IAS_Builder
 {
-    static void Build( IAS& ias, const std::vector<OptixInstance>& instances );
+    static void Build_OLD( IAS& ias, const std::vector<OptixInstance>& instances );
 };
 
 

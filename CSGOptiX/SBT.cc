@@ -420,6 +420,8 @@ Hmm: usually only one IAS.
  gas_idx          8 num_ins_idx        504 ins_idx_mn      47383 ins_idx_mx      47886 ins_idx_mx - ins_idx_mx + 1 (num_ins_idx2)        504
 
 
+
+
 **/
 
 void SBT::createIAS(unsigned ias_idx)
@@ -461,14 +463,20 @@ void SBT::createIAS(unsigned ias_idx)
 SBT::collectInstances
 ----------------------
 
-Converts *inst* a vector of geometry identity instrumented transforms into
+Converts *ias_inst* a vector of qat4 geometry identity instrumented transforms into
 a vector of OptixInstance. The instance.sbtOffset are set using SBT::getOffset
 for the gas_idx and with prim_idx:0 indicating the outer prim(aka layer)
 of the GAS.
 
 Canonically invoked during CSGOptiX instanciation, from stack::
 
-    CSGOptiX::CSGOptiX/CSGOptiX::init/CSGOptiX::initGeometry/SBT::setFoundry/SBT::createGeom/SBT::createIAS
+    CSGOptiX::CSGOptiX
+    CSGOptiX::init
+    CSGOptiX::initGeometry
+    SBT::setFoundry
+    SBT::createGeom
+    SBT::createIAS
+    SBT::collectInstances
 
 
 Collecting OptixInstance was taking 0.42s for 48477 inst,

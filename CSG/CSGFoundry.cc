@@ -2127,17 +2127,19 @@ CSGFoundry::addInstanceVector
 
 Canonical stack::
 
-    CSGFoundry::addInstanceVector
-    CSGImport::importInst     (with argument stree::inst_f4 populated by stree::add_inst from snode::sensor_id)
-    CSGImport::import
-    CSGFoundry::importSim
-    CSGFoundry::CreateFromSim  (after U4Tree::Create within G4CXOpticks::setGeometry)
     G4CXOpticks::setGeometry
+    CSGFoundry::CreateFromSim  (after U4Tree::Create within G4CXOpticks::setGeometry)
+    CSGFoundry::importSim
+    CSGImport::import
+    CSGImport::importInst     (with argument stree::inst_f4 populated by stree::add_inst from snode::sensor_id)
+    CSGFoundry::addInstanceVector
 
 stree.h/snode.h uses sensor_identifier -1 to indicate not-a-sensor, but
 that is not convenient on GPU due to OptixInstance.instanceId limits.
 Hence here make transition by adding 1 and treating 0 as not-a-sensor,
 with the sqat4::incrementSensorIdentifier method
+
+The stree::inst_f4 is formed from the stree globals and factors by stree::add_inst
 
 **/
 
@@ -3329,6 +3331,20 @@ unsigned CSGFoundry::getNumInstancesIAS(int ias_idx, unsigned long long emm) con
 {
     return qat4::count_ias(inst, ias_idx, emm );
 }
+
+/**
+CSGFoundry::getInstanceTransformsIAS
+--------------------------------------
+
+Canonical usage from SBT::createIAS with all instances being selected.
+The index of the *select_inst* corresponds to the iindex.
+
+The input *inst* vector is populated by CSGFoundry::addInstanceVector
+directly from the glm::tmat4x4 transforms from stree
+
+**/
+
+
 void CSGFoundry::getInstanceTransformsIAS(std::vector<qat4>& select_inst, int ias_idx, unsigned long long emm ) const
 {
     qat4::select_instances_ias(inst, select_inst, ias_idx, emm ) ;
