@@ -13,7 +13,6 @@ struct SEvt_test
     static int AddGenstep(); 
     static int GetNumHit(); 
     static int RUN_META(); 
-    static int SetRunProf(); 
 
     static int Main();   
 };
@@ -68,16 +67,6 @@ int SEvt_test::RUN_META()
     return 0 ; 
 }
 
-int SEvt_test::SetRunProf()
-{
-    std::cout << "test_SetRunProf" << std::endl ; 
-    SEvt::SetRunProf("test_SetRunProf_0"); 
-    SEvt::SetRunProf("test_SetRunProf_1"); 
-    std::cout << SEvt::RUN_META->meta ; 
-    return 0 ; 
-}
-
-
 int SEvt_test::Main()
 {
     SEvt::Create_EGPU() ; 
@@ -87,7 +76,6 @@ int SEvt_test::Main()
     if(ALL||0==strcmp(TEST,"AddGenstep")) rc+=AddGenstep(); 
     if(ALL||0==strcmp(TEST,"GetNumHit"))  rc+=GetNumHit(); 
     if(ALL||0==strcmp(TEST,"RUN_META"))   rc+=RUN_META(); 
-    if(ALL||0==strcmp(TEST,"SetRunProf")) rc+=SetRunProf(); 
     return rc ; 
 }
 

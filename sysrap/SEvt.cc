@@ -93,13 +93,17 @@ SEvt::Init_RUN_META
 As this is a static it happens just as libSysRap is loaded,
 very soon after starting the executable.
 
+Now using SProf for profile stamps, previously included with run_meta.txt::
+
+   run_meta->set_meta<std::string>("SEvt__Init_RUN_META", sprof::Now() ); 
+
 **/
 
 
 NP* SEvt::Init_RUN_META() // static
 {
     NP* run_meta = NP::Make<float>(1);
-    run_meta->set_meta<std::string>("SEvt__Init_RUN_META", sprof::Now() );
+    SProf::Add("SEvt__Init_RUN_META");
     return run_meta ;
 }
 
@@ -1558,8 +1562,8 @@ void SEvt::SaveGenstepLabels(const char* dir, const char* name)
 
 void SEvt::BeginOfRun()
 {
-    SetRunProf("SEvt__BeginOfRun");
-    SaveRunMeta();  // HMM: for crash debug, RunMeta is saved at BeginOfRun EndOfRun and endOfEvent
+    SProf::Add("SEvt__BeginOfRun");
+    SProf::Write();
 }
 
 
@@ -1567,18 +1571,9 @@ void SEvt::BeginOfRun()
 
 void SEvt::EndOfRun()
 {
-    SetRunProf("SEvt__EndOfRun");
-    SaveRunMeta();
-
-    if(EndOfRun_SProf == 1 )
-    {
-        bool append = false ;
-        SProf::Write("SEvt__EndOfRun_SProf.txt", append ) ;
-    }
+    SProf::Add("SEvt__EndOfRun");
+    SProf::Write();
 }
-
-
-const int SEvt::EndOfRun_SProf = ssys::getenvint("SEvt__EndOfRun_SProf",-1) ;
 
 
 
@@ -1604,7 +1599,7 @@ void SEvt::SetRunMetaString(const char* k, const char* v ) // static
 }
 
 
-
+/*
 void SEvt::SetRunProf(const char* k, const sprof& v) // static
 {
     SetRunMeta<std::string>( k, sprof::Serialize(v) );
@@ -1613,13 +1608,12 @@ void SEvt::SetRunProf(const char* k)   // static
 {
     SetRunMeta<std::string>( k, sprof::Now() );
 }
-
 void SEvt::setRunProf_Annotated(const char* hdr) const
 {
     std::string eid = getIndexString_(hdr) ;
     SetRunMeta<std::string>( eid.c_str(), sprof::Now() );
 }
-
+*/
 
 
 
@@ -1668,6 +1662,9 @@ void SEvt::SaveRunMeta(const char* base)
 
     if(!is_save_nothing) RUN_META->save(dir, "run.npy") ;
 }
+
+
+
 
 void SEvt::setMetaString(const char* k, const char* v)
 {
@@ -1757,7 +1754,7 @@ as still need to collect the gensteps.
 void SEvt::beginOfEvent(int eventID)
 {
     if(isFirstEvtInstance() && eventID == 0) BeginOfRun() ;
-    if(eventID == 0) SetRunProf( isEGPU() ? "SEvt__beginOfEvent_FIRST_EGPU" : "SEvt__beginOfEvent_FIRST_ECPU" ) ;
+    if(eventID == 0) SProf::Add( isEGPU() ? "SEvt__beginOfEvent_FIRST_EGPU" : "SEvt__beginOfEvent_FIRST_ECPU" ) ;
 
     setStage(SEvt__beginOfEvent);
     sprof::Stamp(p_SEvt__beginOfEvent_0);
@@ -1896,13 +1893,13 @@ S4RandomArray* SEvt::GetRandomArray(int idx)
 }
 
 
-int SEvt::GetNumPhotonCollected(int idx){    return Exists(idx) ? Get(idx)->getNumPhotonCollected() : UNDEF ; }
-int SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getNumPhotonGenstepMax() : UNDEF ; }
-int SEvt::GetNumPhotonFromGenstep(int idx){  return Exists(idx) ? Get(idx)->getNumPhotonFromGenstep() : UNDEF ; }
-int SEvt::GetNumGenstepFromGenstep(int idx){ return Exists(idx) ? Get(idx)->getNumGenstepFromGenstep() : UNDEF ; }
-int SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getNumHit() : UNDEF ; }
-int SEvt::GetNumHit_EGPU(){  return GetNumHit(EGPU) ; }
-int SEvt::GetNumHit_ECPU(){  return GetNumHit(ECPU) ; }
+int64_t SEvt::GetNumPhotonCollected(int idx){    return Exists(idx) ? Get(idx)->getNumPhotonCollected() : UNDEF ; }
+int64_t SEvt::GetNumPhotonGenstepMax(int idx){   return Exists(idx) ? Get(idx)->getNumPhotonGenstepMax() : UNDEF ; }
+int64_t SEvt::GetNumPhotonFromGenstep(int idx){  return Exists(idx) ? Get(idx)->getNumPhotonFromGenstep() : UNDEF ; }
+int64_t SEvt::GetNumGenstepFromGenstep(int idx){ return Exists(idx) ? Get(idx)->getNumGenstepFromGenstep() : UNDEF ; }
+int64_t SEvt::GetNumHit(int idx){                return Exists(idx) ? Get(idx)->getNumHit() : UNDEF ; }
+int64_t SEvt::GetNumHit_EGPU(){  return GetNumHit(EGPU) ; }
+int64_t SEvt::GetNumHit_ECPU(){  return GetNumHit(ECPU) ; }
 
 
 
@@ -2103,7 +2100,8 @@ void SEvt::setIndex(int index_arg)
     index = SEventConfig::EventIndex(index_arg) ;
     t_BeginOfEvent = sstamp::Now();                // moved here from the static
 
-    setRunProf_Annotated("SEvt__setIndex_" );
+    //setRunProf_Annotated("SEvt__setIndex_" );
+    SProf::Add("SEvt__setIndex");
 }
 void SEvt::endIndex(int index_arg)
 {
@@ -2118,7 +2116,8 @@ void SEvt::endIndex(int index_arg)
     assert( consistent );
     t_EndOfEvent = sstamp::Now();
 
-    setRunProf_Annotated("SEvt__endIndex_" );
+    //setRunProf_Annotated("SEvt__endIndex_" );
+    SProf::Add("SEvt__endIndex");
 }
 
 /**
@@ -4658,7 +4657,30 @@ std::string SEvt::descSimulate() const
     return str ;
 }
 
+/**
+SEvt::getCounts
+----------------
 
+**/
+
+std::string SEvt::getCounts() const
+{
+    int64_t gs = getNumGenstepCollected();
+    int64_t ph = getNumPhotonCollected();
+    int64_t ht = getNumHit();
+
+    std::stringstream ss ;
+    ss
+      << "numGenstepCollected=" << gs
+      << ","
+      << "numPhotonCollected=" << ph
+      << ","
+      << "numHit=" << ht
+      ;
+
+    std::string str = ss.str();
+    return str ;
+}
 
 
 

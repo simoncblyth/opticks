@@ -622,8 +622,11 @@ struct U
 
     static const char* ReadString( const char* dir, const char* reldir, const char* name);
     static const char* ReadString( const char* dir, const char* name);
+
+    static std::string ReadString_( const char* path_ );
     static const char* ReadString( const char* path );
 
+    static std::string ReadString2_( const char* path_ );
     static const char* ReadString2( const char* path );
 
     static uint64_t Now();
@@ -1849,7 +1852,8 @@ inline const char* U::ReadString( const char* dir, const char* name) // static
     return ReadString(path.c_str());
 }
 
-inline const char* U::ReadString( const char* path_ )  // static
+
+inline std::string U::ReadString_( const char* path_ )  // static
 {
     const char* path = Resolve(path_);
     std::vector<std::string> lines ;
@@ -1864,16 +1868,29 @@ inline const char* U::ReadString( const char* path_ )  // static
         if( i < num_lines - 1 ) ss << std::endl ;
     }
     std::string str = ss.str();
+    return str ;
+}
+
+inline const char* U::ReadString( const char* path_ )  // static
+{
+    std::string str = ReadString_(path_);
     return str.empty() ? nullptr : strdup(str.c_str()) ;
 }
 
-inline const char* U::ReadString2(const char* path_)  // static
+
+inline std::string U::ReadString2_(const char* path_)  // static
 {
     const char* path = Resolve(path_);
     std::ifstream ifs(path);
     std::stringstream ss ;
     ss << ifs.rdbuf();
     std::string str = ss.str();
+    return str ;
+}
+
+inline const char* U::ReadString2(const char* path_)  // static
+{
+    std::string str = ReadString2_(path_);
     return str.empty() ? nullptr : strdup(str.c_str()) ;
 }
 

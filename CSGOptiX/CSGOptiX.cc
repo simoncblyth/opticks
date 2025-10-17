@@ -158,6 +158,14 @@ int CSGOptiX::SimtraceMain()
     delete cx ;
     return 0 ;
 }
+
+
+/**
+CSGOptiX::SimulateMain
+-----------------------
+
+**/
+
 int CSGOptiX::SimulateMain() // static
 {
     SProf::Add("CSGOptiX__SimulateMain_HEAD");
@@ -167,7 +175,7 @@ int CSGOptiX::SimulateMain() // static
     for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i);
     SProf::UnsetTag();
     SProf::Add("CSGOptiX__SimulateMain_TAIL");
-    SProf::Write("run_meta.txt", true ); // append:true
+    SProf::Write();
     cx->write_Ctx_log();
     delete cx ;
     return 0 ;

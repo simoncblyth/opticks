@@ -276,7 +276,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     sctx    current_ctx = {};
 
 
-    static constexpr const unsigned UNDEF = ~0u ;
+    static constexpr const int64_t UNDEF = ~0u ;
     static bool IsDefined(unsigned val);
 
     static stimer* TIMER ;
@@ -466,7 +466,7 @@ public:
 
     static void BeginOfRun();
     static void EndOfRun();
-    static const int EndOfRun_SProf ;
+    //static const int EndOfRun_SProf ;
 
 
     template<typename T>
@@ -474,9 +474,9 @@ public:
 
     static void SetRunMetaString(const char* k, const char* v );
 
-    static void SetRunProf(const char* k, const sprof& v);
-    static void SetRunProf(const char* k);  // NOW
-    void setRunProf_Annotated(const char* hdr) const  ;
+    //static void SetRunProf(const char* k, const sprof& v);
+    //static void SetRunProf(const char* k);  // NOW
+    //void setRunProf_Annotated(const char* hdr) const  ;
 
     static bool IsSaveNothing();
     static void SaveRunMeta(const char* base=nullptr );
@@ -509,13 +509,13 @@ public:
     //static const char* GetReldir();
 
 
-    static int GetNumPhotonCollected(int idx);
-    static int GetNumPhotonGenstepMax(int idx);
-    static int GetNumPhotonFromGenstep(int idx);
-    static int GetNumGenstepFromGenstep(int idx);
-    static int GetNumHit(int idx) ;
-    static int GetNumHit_EGPU() ;
-    static int GetNumHit_ECPU() ;
+    static int64_t GetNumPhotonCollected(int idx);
+    static int64_t GetNumPhotonGenstepMax(int idx);
+    static int64_t GetNumPhotonFromGenstep(int idx);
+    static int64_t GetNumGenstepFromGenstep(int idx);
+    static int64_t GetNumHit(int idx) ;
+    static int64_t GetNumHit_EGPU() ;
+    static int64_t GetNumHit_ECPU() ;
 
 
     static NP* GatherGenstep(int idx);
@@ -729,6 +729,8 @@ public:
     unsigned getNumPhoton() const ;
     unsigned getNumHit() const ;
     std::string descSimulate() const ;
+    std::string getCounts() const ;
+
 
 
     void getPhoton(sphoton& p, unsigned idx) const ;

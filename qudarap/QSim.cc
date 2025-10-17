@@ -519,6 +519,7 @@ double QSim::simulate(int eventID, bool reset_)
     int64_t t_PCAT = SProf::Add("QSim__simulate_PCAT");
 
     int tot_ht = sev->getNumHit() ;  // NB from fold, so requires hits array gathering to be configured to get non-zero
+    std::string counts = sev->getCounts();  // collect counts before reset
 
     LOG_IF(info, SEvt::MINIMAL)
         << " eventID " << eventID
@@ -534,9 +535,12 @@ double QSim::simulate(int eventID, bool reset_)
 
     assert( tot_ph == tot_ph_0 );
 
-    int64_t t_BRES  = SProf::Add("QSim__simulate_BRES");
+    int64_t t_BRES  = SProf::Add("QSim__simulate_BRES", counts.c_str() );
     if(reset_) reset(eventID) ;
+
     int64_t t_TAIL  = SProf::Add("QSim__simulate_TAIL");
+
+    SProf::Write(); // per-event write, so have something in case of crash
 
     LOG_IF(info, SEvt::MINTIME) << "\n"
         << SEvt::SEvt__MINTIME

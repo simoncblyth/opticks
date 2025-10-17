@@ -182,7 +182,7 @@ vars="$vars version VERSION"
 
 
 #test=debug
-#test=ref1
+test=ref1
 #test=ref5
 #test=ref8
 #test=ref10
@@ -204,7 +204,7 @@ vars="$vars version VERSION"
 #test=vlarge_evt
 #test=vvlarge_evt
 #test=vvvlarge_evt
-test=vvvvlarge_evt
+#test=vvvvlarge_evt
 
 #test=medium_scan
 
@@ -251,8 +251,12 @@ export STEM=${opticks_event_reldir}_${PLOT}
 #BFOLD_NOTE="comparison with alt_TEST:$alt_TEST"
 BFOLD_NOTE="defining BFOLD makes python script do SAB comparison"
 
+
 mkdir -p $LOGDIR
 cd $LOGDIR
+export SProf__WRITE=1  ## enable SProf::Write of SProf.txt into LOGDIR
+
+
 LOGFILE=$bin.log
 
 vars="$vars LOGDIR AFOLD BFOLD BFOLD_NOTE STEM LOGFILE"
@@ -562,14 +566,6 @@ fi
 
 
 
-
-
-
-
-
-
-
-
 if [ "$OPTICKS_RUNNING_MODE" == "SRM_INPUT_GENSTEP" ]; then
 
     #igs=$BASE/jok-tds/ALL0/A000/genstep.npy
@@ -718,7 +714,8 @@ fi
 
 
 if [ "${arg/report}" != "$arg" ]; then
-   sreport
+   source dbg__.sh
+   dbg__ sreport
    [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1
 fi
 

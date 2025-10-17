@@ -1,71 +1,93 @@
-// name=SProfTest ; gcc $name.cc ../SProf.cc -std=c++11 -lstdc++ -I.. -o /tmp/$name && /tmp/$name
+// ~/o/sysrap/tests/SProfTest.sh
 
-#include <iostream> 
+#include <iostream>
 #include "SProf.hh"
 
 struct SProfTest
+{ 
+    static int Add_Write_Read();
+    static int Read();
+    static int SetTag();
+    static int Main();
+};
+
+inline int SProfTest::Add_Write_Read()
 {
-    static void Add_Write_Read(); 
-    static void Read(); 
-    static void SetTag(); 
-    static void Main(); 
-}; 
+    std::cout << __FUNCTION__ << std::endl ;
 
-inline void SProfTest::Add_Write_Read()
-{
-    std::cout << __FUNCTION__ << std::endl ; 
+    SProf::Add("start");
+    SProf::Add("red");
 
-    SProf::Add("start"); 
-    SProf::Add("red"); 
-    SProf::SetTag(0, "A%0.3d_" ) ; 
-    SProf::Add("green"); 
-    SProf::SetTag(1, "A%0.3d_" ) ; 
-    SProf::Add("blue"); 
-    SProf::UnsetTag(); 
-    SProf::Add("stop"); 
+    for(int i=0 ; i < 10 ; i++ )
+    {
+        SProf::SetTag(i, "A%0.3d_" ) ;
+        SProf::Add("red");
+        SProf::Add("green");
+        SProf::Add("blue");
+        SProf::Add("cyan","photons=10");
+        SProf::Write();      // frequent write to have something in case of crash
+    }
+    SProf::UnsetTag();
+    SProf::Add("stop");
 
-    std::cout << SProf::Desc() ; 
-    const char* path = "/tmp/SProf.txt" ; 
-    bool append = false ; 
+    std::cout << SProf::Desc() ;
 
-    std::cout << "--------------------------------" << std::endl ; 
+    std::cout << "--------------------------------" << std::endl ;
 
-    SProf::Write(path, append ); 
-    SProf::Read(path);  
-    std::cout << SProf::Desc() ; 
+    SProf::Write();
+    SProf::Read();
+
+    std::cout << SProf::Desc() ;
+    return 0;
 }
 
 
-inline void SProfTest::Read()
+/**
+SProfTest::Read
+-----------------
+
+Note that running "Read" in the same process before "Add_Write_Read"
+without clearing makes it look like the writes are appending
+as the vectors get prepopulated, added to then written.
+
+**/
+
+
+inline int SProfTest::Read()
 {
-    const char* path = "run_meta.txt" ; 
-    SProf::Read(path);  
-    std::cout << SProf::Desc() ; 
+    SProf::Read();
+    std::cout << SProf::Desc() ;
+    SProf::Clear();
+    return 0;
 }
 
-inline void SProfTest::SetTag()
+inline int SProfTest::SetTag()
 {
     for(int i=0 ; i < 100 ; i++)
     {
-        SProf::SetTag(i, "A%0.3d_" ); 
-        if(i % 10 == 0 ) SProf::UnsetTag(); 
-        std::cout << "[" << SProf::TAG << "]" << std::endl ; 
+        SProf::SetTag(i, "A%0.3d_" );
+        if(i % 10 == 0 ) SProf::UnsetTag();
+        std::cout << "[" << SProf::TAG << "]" << std::endl ;
     }
+    SProf::UnsetTag();
+    return 0;
 }
- 
 
 
-inline void SProfTest::Main()
+
+inline int SProfTest::Main()
 {
-    /*
-    Read(); 
-    SetTag(); 
-    */
-    Add_Write_Read() ;
+    const char* TEST = ssys::getenvvar("TEST", "ALL");
+    bool ALL = strcmp(TEST, "ALL") == 0 ;
+    int rc = 0 ;
+    if(ALL||0==strcmp(TEST, "Read"))   rc += Read();
+    if(ALL||0==strcmp(TEST, "SetTag")) rc += SetTag();
+    if(ALL||0==strcmp(TEST, "Add_Write_Read")) rc += Add_Write_Read() ;
+
+    return rc ;
 }
 
 int main()
 {
-    SProfTest::Main(); 
-    return 0 ; 
+    return SProfTest::Main();
 }

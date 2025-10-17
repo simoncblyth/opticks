@@ -505,7 +505,7 @@ struct NP
     typedef std::vector<int64_t> VT ;
 
 
-    NP* makeMetaKVProfileArray(const char* ptn=nullptr) const ;
+    static NP* MakeMetaKVProfileArray(const std::string& meta, const char* ptn=nullptr);
     static void GetMetaKV_( const char* metadata    , VS* keys, VS* vals, bool only_with_profile, const char* ptn=nullptr );
     static void GetMetaKV(  const std::string& meta , VS* keys, VS* vals, bool only_with_profile, const char* ptn=nullptr );
 
@@ -6156,8 +6156,15 @@ inline std::string NP::get_meta_string(const std::string& meta, const char* key)
 }
 
 /**
-NP::makeMetaKVProfileArray
+NP::MakeMetaKVProfileArray
 ----------------------------
+
+::
+
+    (ok) A[blyth@localhost ALL1_Debug_Philox_ref1]$ grep Index SProf.txt
+    A000_SEvt__setIndex:1760707886287057,7316444,1222084
+    A000_SEvt__endIndex:1760707886541457,8373000,1334844
+
 
 1. finds metadata lines looking like profile stamps with keys containing the ptn,
    a nullptr ptn matches all lines
@@ -6165,7 +6172,7 @@ NP::makeMetaKVProfileArray
 
 **/
 
-inline NP* NP::makeMetaKVProfileArray(const char* ptn) const
+inline NP* NP::MakeMetaKVProfileArray(const std::string& meta, const char* ptn)
 {
     std::vector<std::string> keys ;
     std::vector<std::string> vals ;
