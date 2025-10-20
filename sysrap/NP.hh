@@ -1012,6 +1012,10 @@ inline NP* NP::Linspace( T x0, T x1, unsigned nx, INT npayload )  // static
 NP::DeltaColumn
 ------------------
 
+* for input array *a* of shape (ni,nj) returns array *b* of the same shape
+  with all columns subtracted from the *jcol* column which default to zero for first column,
+  this is useful to convert epoch-relative-timestamps to first-timestamp-within-each-event-relative-timestamps
+
 ::
 
     In [6]: ab.a.stamps.shape
@@ -6165,9 +6169,7 @@ NP::MakeMetaKVProfileArray
     A000_SEvt__setIndex:1760707886287057,7316444,1222084
     A000_SEvt__endIndex:1760707886541457,8373000,1334844
 
-
-1. finds metadata lines looking like profile stamps with keys containing the ptn,
-   a nullptr ptn matches all lines
+1. finds metadata lines looking like profile stamps with keys containing the ptn (eg "Index"), nullptr matches all lines
 2. create (N,3) int64_t array filled with the stamps (t[us],vm[kb],rs[kb])
 
 **/

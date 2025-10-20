@@ -2123,6 +2123,8 @@ U::GetMetaKVS_   (formerly NP::GetMetaKVS_)
 Note that for only_with_stamp:false placeholder timestamp values of zero are provided
 for lines without stamps or profile triplets.
 
+Note that when a timestamp is detected both a string and integer version of it are provided.
+
 **/
 
 inline void U::GetMetaKVS_(
