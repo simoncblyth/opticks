@@ -64,11 +64,13 @@ orient (1 bit)
     set according to the sign of cosTheta
     (dot product of surface normal and momentum at last intersect)
 
-idx (31 bit)
+index (32 bit)
     photon index, always exists even before any intersect
-    (0x7fffffff 2.14 billion limitation has been clocked in a 3 billion simulation,
-    TODO: move orient together with iindex? so can push up to 4.29 billion simulation
-    without clocking the idx)
+    (NB this is limited to 32 bits, maximum (unsigned)0xffffffff is 4.29 billion,
+    so it will be clocked when simulating events with more photons than that.
+
+    As such large simulations are rare and the index is informational and can easily
+    be post-corrected using uint64 arrays this clocking of the index will not be fixed.
 
 flagmask (32 bit)
     bitwise-OR of step point flag enumeration

@@ -79,9 +79,9 @@ const char* SEventConfig::_MaxCurandDefault = WITH_STATE_LIMIT ;
 #elif defined(RNG_PHILOX) || defined(RNG_PHILITEOX)
 const char* SEventConfig::_MaxSlotDefault = "0" ;     // see SEventConfig::SetDevice : set according to VRAM
 const char* SEventConfig::_MaxGenstepDefault = NO_STATE_LIMIT_GENSTEP ;  // adhoc
-const char* SEventConfig::_MaxPhotonDefault = NO_STATE_LIMIT ;  
-const char* SEventConfig::_MaxSimtraceDefault = NO_STATE_LIMIT ; 
-const char* SEventConfig::_MaxCurandDefault = NO_STATE_LIMIT ; // nominal 1-billion states, as Philox has no need for curandState loading
+const char* SEventConfig::_MaxPhotonDefault = NO_STATE_LIMIT ;
+const char* SEventConfig::_MaxSimtraceDefault = NO_STATE_LIMIT ;
+const char* SEventConfig::_MaxCurandDefault = NO_STATE_LIMIT ;
 #endif
 
 
@@ -520,11 +520,11 @@ bool SEventConfig::IsMinimalOrNothing(){ return IsMinimal() ||  IsNothing() ; }
 std::string SEventConfig::DescEventMode()  // static
 {
     std::stringstream ss ;
-    ss 
-       << "[SEventConfig::DescEventMode\n" 
+    ss
+       << "[SEventConfig::DescEventMode\n"
        << " EventMode[" << EventMode() << "] EventMode_NOTE[" << EventMode_NOTE() << "]"
        << "\n"
-       << "]SEventConfig::DescEventMode\n" 
+       << "]SEventConfig::DescEventMode\n"
        ;
 
     std::string str = ss.str() ;
@@ -534,25 +534,25 @@ std::string SEventConfig::DescEventMode()  // static
 std::string SEventConfig::DescEventModeCheck()  // static
 {
     std::stringstream ss ;
-    ss 
-       << "[SEventConfig::DescEventModeCheck\n" 
-       << " IsDebugHeavy   " << ( IsDebugHeavy() ? "YES" : "NO " )  
+    ss
+       << "[SEventConfig::DescEventModeCheck\n"
+       << " IsDebugHeavy   " << ( IsDebugHeavy() ? "YES" : "NO " )
        << "\n"
-       << " IsDebugLite    " << ( IsDebugLite() ? "YES" : "NO " )  
+       << " IsDebugLite    " << ( IsDebugLite() ? "YES" : "NO " )
        << "\n"
-       << " IsNothing      " << ( IsNothing() ? "YES" : "NO " ) 
+       << " IsNothing      " << ( IsNothing() ? "YES" : "NO " )
        << "\n"
-       << " IsMinimal      " << ( IsMinimal() ? "YES" : "NO " ) 
+       << " IsMinimal      " << ( IsMinimal() ? "YES" : "NO " )
        << "\n"
-       << " IsHit          " << ( IsHit() ? "YES" : "NO " ) 
+       << " IsHit          " << ( IsHit() ? "YES" : "NO " )
        << "\n"
-       << " IsHitPhoton    " << ( IsHitPhoton() ? "YES" : "NO " ) 
+       << " IsHitPhoton    " << ( IsHitPhoton() ? "YES" : "NO " )
        << "\n"
-       << " IsHitPhotonSeq " << ( IsHitPhotonSeq() ? "YES" : "NO " ) 
+       << " IsHitPhotonSeq " << ( IsHitPhotonSeq() ? "YES" : "NO " )
        << "\n"
-       << " IsHitSeq       " << ( IsHitSeq() ? "YES" : "NO " ) 
+       << " IsHitSeq       " << ( IsHitSeq() ? "YES" : "NO " )
        << "\n"
-       << "]SEventConfig::DescEventModeCheck\n" 
+       << "]SEventConfig::DescEventModeCheck\n"
        ;
 
     std::string str = ss.str() ;
@@ -716,7 +716,7 @@ void SEventConfig::LIMIT_Check()
 std::string SEventConfig::Desc()
 {
     std::stringstream ss ;
-    ss 
+    ss
        << "[SEventConfig::Desc" << std::endl
        << std::setw(25) << kIntegrationMode
        << std::setw(20) << " IntegrationMode " << " : " << IntegrationMode()
@@ -895,23 +895,23 @@ std::string SEventConfig::Desc()
       ;
 
 
-    for(int i=0 ; i < NumEvent() ; i++) 
-       ss << std::setw(25) << kNumPhoton 
-          << std::setw(20) << " NumPhoton(" << std::setw(4) << i << ") " 
-          << " : " 
-          << std::setw(10) << NumPhoton(i) 
+    for(int i=0 ; i < NumEvent() ; i++)
+       ss << std::setw(25) << kNumPhoton
+          << std::setw(20) << " NumPhoton(" << std::setw(4) << i << ") "
+          << " : "
+          << std::setw(10) << NumPhoton(i)
           << std::setw(10) << NumPhoton(i)/M << " (M) "
           << std::setw(10) << NumPhoton(i)/G << " (G) "
-          << "\n" 
+          << "\n"
           ;
 
     ss
-       << DescEventMode() 
+       << DescEventMode()
        << std::endl
-       << "]SEventConfig::Desc" 
+       << "]SEventConfig::Desc"
        << std::endl
        ;
- 
+
 
     std::string str = ss.str();
     return str ;
@@ -1151,21 +1151,21 @@ void SEventConfig::Initialize_EventName()
 
 
 
-const char* SEventConfig::Nothing_NOTE       = "nothing enabled - technical debug : MACHINERY TEST ONLY" ;  
+const char* SEventConfig::Nothing_NOTE       = "nothing enabled - technical debug : MACHINERY TEST ONLY" ;
 
-const char* SEventConfig::DebugHeavy_NOTE    = "record/prd/aux/seq/tag/flat/sup all enabled : VERY LOW STATS ONLY : FEW MILLION MAX" ;  
-const char* SEventConfig::DebugLite_NOTE     = "record/seq enabled      : VERY LOW STATS ONLY : FEW MILLION MAX" ;  
+const char* SEventConfig::DebugHeavy_NOTE    = "record/prd/aux/seq/tag/flat/sup all enabled : VERY LOW STATS ONLY : FEW MILLION MAX" ;
+const char* SEventConfig::DebugLite_NOTE     = "record/seq enabled      : VERY LOW STATS ONLY : FEW MILLION MAX" ;
 
-const char* SEventConfig::HitPhotonSeq_NOTE  = "HIT/GENSTEP/PHOTON/SEQ  : MODERATE STATS ONLY : TENS OF MILLIONS " ;  
-const char* SEventConfig::HitPhoton_NOTE     = "HIT/GENSTEP/PHOTON      : MODERATE STATS ONLY : TENS OF MILLIONS " ;  
-const char* SEventConfig::HitSeq_NOTE        = "HIT/GENSTEP/SEQ         : MODERATE STATS ONLY : TENS OF MILLIONS " ;  
+const char* SEventConfig::HitPhotonSeq_NOTE  = "HIT/GENSTEP/PHOTON/SEQ  : MODERATE STATS ONLY : TENS OF MILLIONS " ;
+const char* SEventConfig::HitPhoton_NOTE     = "HIT/GENSTEP/PHOTON      : MODERATE STATS ONLY : TENS OF MILLIONS " ;
+const char* SEventConfig::HitSeq_NOTE        = "HIT/GENSTEP/SEQ         : MODERATE STATS ONLY : TENS OF MILLIONS " ;
 
-const char* SEventConfig::Hit_NOTE           = "HIT/GENSTEP ONLY        : HIGHEST STATS : BILLIONS" ;  
-const char* SEventConfig::Minimal_NOTE       = "HIT ONLY                : HIGHEST STATS : BILLIONS" ;  
+const char* SEventConfig::Hit_NOTE           = "HIT/GENSTEP ONLY        : HIGHEST STATS : BILLIONS" ;
+const char* SEventConfig::Minimal_NOTE       = "HIT ONLY                : HIGHEST STATS : BILLIONS" ;
 
 const char* SEventConfig::EventMode_NOTE()
 {
-    const char* note = nullptr ; 
+    const char* note = nullptr ;
     if(     IsNothing())      note = Nothing_NOTE ;
     else if(IsDebugHeavy())   note = DebugHeavy_NOTE ;
     else if(IsDebugLite())    note = DebugLite_NOTE ;

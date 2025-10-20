@@ -250,9 +250,10 @@ int QEvent::setGenstepUpload_NP(const NP* gs_, const sslice* gss_ )
 }
 
 
-int QEvent::getPhotonSlotOffset() const
+unsigned long long QEvent::get_photon_slot_offset() const
 {
-    return gss ? gss->ph_offset : 0 ;
+    typedef unsigned long long ULL ;
+    return gss ? ULL(gss->ph_offset) : 0ull ;   // (sslice)gss::ph_offset is int64_t
 }
 
 

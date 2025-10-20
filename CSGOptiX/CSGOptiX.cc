@@ -970,12 +970,14 @@ CSGOptiX::prepareParamSimulate
 
 Per-event simulate setup invoked just prior to optix launch
 
+QSim::get_photon_slot_offset/QEvent::get_photon_slot_offset returns
+
 **/
 
 void CSGOptiX::prepareParamSimulate()
 {
     LOG(LEVEL);
-    params->setPhotonSlotOffset(sim->getPhotonSlotOffset());
+    params->set_photon_slot_offset(sim->get_photon_slot_offset());
 }
 
 

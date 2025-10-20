@@ -126,7 +126,7 @@ public:
 
     static void MaybeSaveIGS(int eventID, NP* igs);
 
-    int    getPhotonSlotOffset() const ;
+    unsigned long long get_photon_slot_offset() const ;
 
     void   reset( int eventID);
 

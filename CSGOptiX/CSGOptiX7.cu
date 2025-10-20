@@ -379,7 +379,9 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     const quad6& gs = evt->genstep[genstep_idx] ;
     // genstep needs the raw index, from zero for each genstep slice sub-launch
 
-    unsigned photon_idx = params.photon_slot_offset + idx ;  // 4.29 billion slots limit
+    unsigned long long photon_idx = params.photon_slot_offset + idx ;
+    // 2025/10/20 change from unsigned to avoid clocking photon_idx and duplicating
+    //
     // rng_state access and array recording needs the absolute photon_idx
     // for multi-launch and single-launch simulation to match.
     // The offset hides the technicality of the multi-launch from output.

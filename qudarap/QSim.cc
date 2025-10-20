@@ -700,9 +700,9 @@ or equal the number of states uploaded.
 
 
 
-int QSim::getPhotonSlotOffset() const
+unsigned long long QSim::get_photon_slot_offset() const
 {
-    return event->getPhotonSlotOffset() ;
+    return event->get_photon_slot_offset() ;
 }
 
 
