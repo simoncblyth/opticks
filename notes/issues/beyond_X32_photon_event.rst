@@ -456,4 +456,12 @@ Photon duplication looks avoided::
 
 
 
+Look for duplicates among the billion hits
+---------------------------------------------
+
+* ~/o/sysrap/tests/sdigest_duplicate_test/sdigest_duplicate_test.sh
+
+
+
+
 

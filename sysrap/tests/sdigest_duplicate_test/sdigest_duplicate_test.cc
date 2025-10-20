@@ -14,14 +14,13 @@
 using Digest = std::array<unsigned char, 16>;
 
 
-
-struct DigestHash 
+struct DigestHash
 {
-    std::size_t operator()(const std::array<unsigned char, 16>& digest) const noexcept 
+    std::size_t operator()(const std::array<unsigned char, 16>& digest) const noexcept
     {
         std::size_t seed = 0;
         // Treat the 16 bytes as four 32-bit chunks for better distribution
-        for (size_t i = 0; i < 16; i += 4) 
+        for (size_t i = 0; i < 16; i += 4)
         {
             // Combine four bytes into a 32-bit integer (little-endian)
             uint32_t chunk = (static_cast<uint32_t>(digest[i]) << 24) |
@@ -39,48 +38,7 @@ struct DigestHash
 using DigestSet = std::unordered_set<Digest,DigestHash> ;
 
 
-
-void process_chunk_0(
-    const NP* hit,
-    size_t start,
-    size_t end,
-    DigestSet& seen,
-    DigestSet& duplicates,
-    std::mutex& mtx)
-{
-    DigestSet local_seen;
-    DigestSet local_duplicates;
-
-    for (size_t i = start; i < end; ++i)
-    {
-        Digest digest = sdigest::ItemRaw(hit, i);
-        if(local_seen.count(digest))
-        {
-            local_duplicates.insert(digest);
-        }
-        else
-        {
-            local_seen.insert(digest);
-        }
-    }
-
-    // Merge with global sets (thread-safe)
-    std::lock_guard<std::mutex> lock(mtx);
-    for (const auto& digest : local_duplicates) {
-        duplicates.insert(digest);
-    }
-    for (const auto& digest : local_seen) {
-        if (seen.count(digest)) {
-            duplicates.insert(digest);
-        } else {
-            seen.insert(digest);
-        }
-    }
-}
-
-
-
-void process_chunk_1(
+void process_chunk(
     const NP* hit,
     size_t start,
     size_t end,
@@ -97,13 +55,6 @@ void process_chunk_1(
         }
     }
 }
-
-
-
-
-
-
-
 
 
 
@@ -167,12 +118,7 @@ int main()
             << "\n"
             ;
 
-        /*
-        threads.emplace_back(process_chunk_0, hit, start, end,
-                            std::ref(seen_hashes), std::ref(duplicate_hashes), std::ref(mtx));
-        */
-
-        threads.emplace_back(process_chunk_1, hit, start, end,
+        threads.emplace_back(process_chunk, hit, start, end,
                             std::ref(all_seen[i]), std::ref(all_duplicates[i]));
     }
 
@@ -191,17 +137,17 @@ int main()
 
     for (size_t i = 0; i < num_chunks; ++i)
     {
-        for (const auto& digest : all_duplicates[i]) 
+        for (const auto& digest : all_duplicates[i])
         {
             duplicate_hashes.insert(digest);
         }
-        for (const auto& digest : all_seen[i]) 
+        for (const auto& digest : all_seen[i])
         {
-            if (seen_hashes.count(digest)) 
+            if (seen_hashes.count(digest))
             {
                 duplicate_hashes.insert(digest);
-            } 
-            else 
+            }
+            else
             {
                 seen_hashes.insert(digest);
             }
