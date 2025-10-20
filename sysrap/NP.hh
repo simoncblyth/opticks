@@ -6189,7 +6189,12 @@ inline NP* NP::MakeMetaKVProfileArray(const std::string& meta, const char* ptn)
 
     NP* prof = ni > 0 ? NP::Make<int64_t>(ni, nj ) : nullptr  ;
     int64_t* pp = prof ? prof->values<int64_t>() : nullptr ;
-    if(prof) prof->labels = new std::vector<std::string> {"st[us]", "vm[kb]", "rs[kb]" } ;
+    if(prof)
+    {
+        prof->labels = new std::vector<std::string> {"st[us]", "vm[kb]", "rs[kb]" } ;
+        prof->meta = meta ;
+    }
+
     for(INT i=0 ; i < ni ; i++)
     {
         const char* k = keys[i].c_str();
@@ -6218,7 +6223,6 @@ inline NP* NP::MakeMetaKVProfileArray(const std::string& meta, const char* ptn)
         pp[nj*i + 2 ] = rs ;
         prof->names.push_back(k) ;
     }
-    prof->meta = meta ;
     return prof ;
 }
 

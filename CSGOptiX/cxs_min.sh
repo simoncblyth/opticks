@@ -713,11 +713,19 @@ if [ "${arg/meta}" != "$arg" ]; then
 fi
 
 
-if [ "${arg/report}" != "$arg" ]; then
+if [ "${arg/deport}" != "$arg" ]; then
    source dbg__.sh
    dbg__ sreport
+   [ $? -ne 0 ] && echo $BASH_SOURCE dreport error && exit 1
+fi
+
+if [ "${arg/report}" != "$arg" ]; then
+   sreport
    [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1
 fi
+
+
+
 
 if [ "${arg/grab}" != "$arg" ]; then
     source $OPTICKS_HOME/bin/rsync.sh $LOGDIR

@@ -95,7 +95,7 @@ very soon after starting the executable.
 
 Now using SProf for profile stamps, previously included with run_meta.txt::
 
-   run_meta->set_meta<std::string>("SEvt__Init_RUN_META", sprof::Now() ); 
+   run_meta->set_meta<std::string>("SEvt__Init_RUN_META", sprof::Now() );
 
 **/
 
@@ -3834,6 +3834,10 @@ Note thet QEvent::setGenstep invoked SEvt::clear so the genstep vectors
 are clear when this gets called. So must rely on the contents of the
 fold to get the stats.
 
+
+Q: Where does the SEvt::meta get passed to the NPFold ?
+
+
 **/
 
 void SEvt::gather_components()   // *GATHER*
@@ -3904,9 +3908,20 @@ void SEvt::gather_components()   // *GATHER*
 SEvt::gather_metadata
 ----------------------
 
-Lots of timing metadata, so try calling from SEvt::endOfEvent not SEvt::gather
+Sets ((NPFold)topfold).meta to SEvt::meta
 
-HMM: replaces fold.meta with metadata from provider : either this SEvt or QEvent ?
+This is invoked from SEvt::endOfEvent (not SEvt::gather) because the metadata
+contains timing information, so gathering immediately prior to
+save allows the metadata to be more complete.
+
+Note that while the SCompProvider is QEvent(GPU) or this SEvt(CPU)
+in both cases the metadata is from SEvt::meta (potentially different
+instances of SEvt when doing both CPU and GPU running).
+This is because QEvent::getMeta returns SEvt::meta for from
+the associated QEvt::sev (SEvt) instance.
+
+Note that because SEvt::save is typically not done in production,
+the SProf.hh metadata data recording is more generally useful.
 
 **/
 

@@ -940,7 +940,7 @@ NP* QEvent::gatherHit_() const
 QEvent::getMeta
 -----------------
 
-SCompProvider method
+SCompProvider method, canonically used from SEvt::endOfEvent/SEvt::gather_metadata
 
 **/
 

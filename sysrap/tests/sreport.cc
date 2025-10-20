@@ -315,6 +315,11 @@ struct sreport_Creator
 
     sreport_Creator(  const char* dirp_ );
     void init();
+    void init_SProf();
+    void init_substamp();
+    void init_subprofile();
+    void init_submeta();
+    void init_subcount();
 
     std::string desc() const ;
     std::string desc_fold() const ;
@@ -341,49 +346,176 @@ inline sreport_Creator::sreport_Creator( const char* dirp_ )
     std::cout << "]sreport_Creator::sreport_Creator" << std::endl ;
 }
 
+
+/**
+sreport_Creator::init
+-----------------------
+
+1. construct SProf derived metadata arrays
+2. construct subfold derived arrays and fold
+
+**/
+
+
 inline void sreport_Creator::init()
 {
-    std::cout << "[sreport_Creator::init" << std::endl ;
+    std::cout << "[sreport_Creator::init\n" ;
+
+    init_SProf();
+
+    init_substamp();
+    init_subprofile();
+    init_submeta();
+    init_subcount();
+
+    std::cout << "]sreport_Creator::init\n" ;
+}
+
+/**
+sreport_Creator::init_SProf
+----------------------------
+
+The SProf has the advantage of almost always being available, as the SProf.txt is small
+unlike the full arrays.
+
+1. read SProf.txt into meta string
+2. create report->runprof array from the "Index" lines, shaped (2,3) for the below example
+3. create report->run (dummy array with run metadata)
+4. create report->ranges. eg shaped (8,5) with the below example : this included time deltas between the keys
+   that match the wildcard resolved sreport::RANGES
+
+Analysis of the SProf.txt written by SProf.hh, eg::
+
+    A[blyth@localhost ALL1_Debug_Philox_ref1]$ cat SProf.txt
+    SEvt__Init_RUN_META:1760707884870593,46464,8064
+    CSGOptiX__SimulateMain_HEAD:1760707884871147,46464,10752
+    CSGFoundry__Load_HEAD:1760707884871171,46464,11200
+    CSGFoundry__Load_TAIL:1760707885851123,5419968,883988
+    CSGOptiX__Create_HEAD:1760707885851159,5419968,883988
+    CSGOptiX__Create_TAIL:1760707886286856,7316444,1222084
+    A000_QSim__simulate_HEAD:1760707886286900,7316444,1222084
+    A000_SEvt__BeginOfRun:1760707886286914,7316444,1222084
+    A000_SEvt__beginOfEvent_FIRST_EGPU:1760707886287034,7316444,1222084
+    A000_SEvt__setIndex:1760707886287057,7316444,1222084
+    A000_QSim__simulate_LBEG:1760707886287202,7316444,1222084
+    A000_QSim__simulate_PRUP:1760707886287207,7316444,1222084
+    A000_QSim__simulate_PREL:1760707886288393,8266716,1222980
+    A000_QSim__simulate_POST:1760707886441594,8266716,1227908
+    A000_QSim__simulate_DOWN:1760707886541324,8373000,1334844
+    A000_QSim__simulate_LEND:1760707886541353,8373000,1334844
+    A000_QSim__simulate_PCAT:1760707886541381,8373000,1334844
+    A000_QSim__simulate_BRES:1760707886541433,8373000,1334844 # numGenstepCollected=10,numPhotonCollected=1000000,numHit=200397
+    A000_QSim__reset_HEAD:1760707886541441,8373000,1334844
+    A000_SEvt__endIndex:1760707886541457,8373000,1334844
+    A000_SEvt__EndOfRun:1760707887055687,8266716,1229000
+    A000_QSim__reset_TAIL:1760707887055757,8266716,1229000
+    A000_QSim__simulate_TAIL:1760707887055768,8266716,1229000
+    CSGOptiX__SimulateMain_TAIL:1760707887056235,8266716,1229000
+    A[blyth@localhost ALL1_Debug_Philox_ref1]$
+
+**/
+
+inline void sreport_Creator::init_SProf()
+{
+    std::cout << "[sreport_Creator::init_SProf\n" ;
 
     std::string meta = U::ReadString2_("SProf.txt");
+
     report->runprof = NP::MakeMetaKVProfileArray(meta, "Index") ;
-    std::cout << "-sreport_Creator::init.1:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << std::endl ;
+    std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << std::endl ;
+    // report->runprof, should now be report->prof
 
     report->run     = run ? run->copy() : nullptr ;
-    std::cout << "-sreport_Creator::init.2.run       :" << ( report->run ? report->run->sstr() : "-" ) << std::endl ;
+    std::cout << "-sreport_Creator::init_SProf.run       :" << ( report->run ? report->run->sstr() : "-" ) << std::endl ;
 
-    report->ranges = run ? NP::MakeMetaKVS_ranges2( run->meta, sreport::RANGES ) : nullptr ;
-    std::cout << "-sreport_Creator::init.3.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) <<  std::endl ;
+    report->ranges = run ? NP::MakeMetaKVS_ranges2( meta, sreport::RANGES ) : nullptr ;
+    std::cout << "-sreport_Creator::init_SProf.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) <<  std::endl ;
+
+    std::cout << "]sreport_Creator::init_SProf\n" ;
+}
+
+/**
+sreport_Creator::init_substamp
+-------------------------------
+
+1. create report->substamp from stamps found in NPFold_meta.txt of the specified subfolders
+
+**/
 
 
-    std::cout << "-sreport_Creator::init.4 fold_valid " << ( fold_valid ? "Y" : "N" ) << std::endl ;
+inline void sreport_Creator::init_substamp()
+{
+    std::cout << "[sreport_Creator::init_substamp\n" ;
+
+    std::cout << "-sreport_Creator::init_substamp fold_valid " << ( fold_valid ? "Y" : "N" ) << std::endl ;
 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init.4.substamp   :[" << ( report->substamp ? report->substamp->stats() : "-" ) << "]\n" ;
+    std::cout << "-sreport_Creator::init_substamp ((NPFold)report.substamp).stats [" << ( report->substamp ? report->substamp->stats() : "-" ) << "]\n" ;
 
+    std::cout << "]sreport_Creator::init_substamp\n" ;
+}
+
+/**
+sreport_Creator::init_subprofile
+----------------------------------
+
+1. create report->subprofile from profile metadata from the subfold
+
+**/
+
+inline void sreport_Creator::init_subprofile()
+{
+    std::cout << "[sreport_Creator::init_subprofile\n" ;
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init.5.subprofile :[" << ( report->subprofile ? report->subprofile->stats() : "-" )  << "]\n" ;
+    std::cout << "-sreport_Creator::init_subprofile :[" << ( report->subprofile ? report->subprofile->stats() : "-" )  << "]\n" ;
+    std::cout << "]sreport_Creator::init_subprofile\n" ;
+}
+
+/**
+sreport_Creator::init_submeta
+-------------------------------
+
+1. create report->submeta from subfold metadata
+2. report->submeta_NumPhotonCollected from subfold metadata
+
+**/
 
 
+inline void sreport_Creator::init_submeta()
+{
+    std::cout << "[sreport_Creator::init_submeta\n" ;
 #ifdef WITH_SUBMETA
-    std::cout << "-sreport_Creator::init.6.WITH_SUBMETA" << std::endl ;
+    std::cout << "-sreport_Creator::init_submeta.WITH_SUBMETA\n" ;
 
     report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init.7.submeta :[" << ( report->submeta ? report->submeta->stats() : "-" )  << "]\n"  ;
+    std::cout << "-sreport_Creator::init_submeta :[" << ( report->submeta ? report->submeta->stats() : "-" )  << "]\n"  ;
 
     report->submeta_NumPhotonCollected = fold_valid ? fold->subfold_summary("submeta:NumPhotonCollected", ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init.8.submeta_NumPhotonCollected :[" << ( report->submeta_NumPhotonCollected ? report->submeta_NumPhotonCollected->stats() : "-" )  << "]\n" ;
+    std::cout << "-sreport_Creator::init_submeta_NumPhotonCollected :[" << ( report->submeta_NumPhotonCollected ? report->submeta_NumPhotonCollected->stats() : "-" )  << "]\n" ;
 
 #else
-    std::cout << "-sreport_Creator::init.6.NOT:WITH_SUBMETA" << std::endl ;
+    std::cout << "-sreport_Creator::init_submeta.NOT:WITH_SUBMETA\n" ;
 
 #endif
-
-    report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init.9.subcount :[" << ( report->subcount ? report->subcount->stats() : "-" ) << "]\n" ;
-
-    std::cout << "]sreport_Creator::init" << std::endl ;
+    std::cout << "]sreport_Creator::init_submeta\n" ;
 }
+
+/**
+sreport_Creator::init_subcount
+--------------------------------
+
+1. create report->subcount from subfold array counts
+
+**/
+
+inline void sreport_Creator::init_subcount()
+{
+    std::cout << "[sreport_Creator::init_subcount\n" ;
+    report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ;
+    std::cout << "-sreport_Creator::init_subcount :[" << ( report->subcount ? report->subcount->stats() : "-" ) << "]\n" ;
+    std::cout << "]sreport_Creator::init_subcount\n" ;
+}
+
 
 inline std::string sreport_Creator::desc() const
 {
