@@ -48,6 +48,7 @@ but the headers are also copied into opticks/sysrap.
 #include <map>
 #include <functional>
 #include <locale>
+#include <optional>
 
 #include "NPU.hh"
 
@@ -606,6 +607,7 @@ struct NP
 
     static bool   HasChar( const char* buffer, size_t size, char q);
     static size_t FindChar(const char* buffer, size_t size, char q);
+    static std::optional<size_t> FindChar_(const char* buffer, size_t size, char q);
 
 
     void load_data( std::ifstream* fp, const char* sli );
@@ -1470,7 +1472,7 @@ inline size_t NP::ReadToBufferCallback(char* buffer, size_t size, size_t nitems,
     if(dump) std::cout
          << "[NP::ReadToBufferCallback"
          << " arr.sstr " << ( arr ? arr->sstr() : "-" )
-         << " arr.position " << ( arr ? arr->position : -1 )
+         << " arr.position " << ( arr ? arr->position : 0 )
          << " hdr_size " << hdr_size
          << " data_size " << data_size
          << " meta_size " << meta_size
@@ -7898,7 +7900,26 @@ inline bool NP::HasChar(const char* buffer, size_t size, char q)  // static
 inline size_t NP::FindChar(const char* buffer, size_t size, char q)  // static
 {
     const char* qptr = (const char*)memchr(buffer, q, size);
-    return qptr ? (size_t)(qptr - buffer) : -1;
+    return qptr ? (size_t)(qptr - buffer) : std::numeric_limits<size_t>::max() ;
+}
+
+/**
+NP::FindChar_
+----------------
+
+Usage::
+
+     auto result = NP::FindChar("hello", 5, 'l')
+     if( result.has_value() ) std::cout << " HAS VALUE : " << result.value()  << "\n";
+     else                     std::cout << "Character not found\n";
+
+
+**/
+
+inline std::optional<size_t> NP::FindChar_(const char* buffer, size_t size, char q)
+{
+    const char* qptr = (const char*)memchr(buffer, q, size);
+    return qptr ? std::optional<size_t>(qptr - buffer) : std::nullopt;
 }
 
 

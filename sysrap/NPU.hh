@@ -587,7 +587,11 @@ struct U
 
     template<typename T>
     static std::vector<T>* GetEnvVec(const char* ekey, const char* fallback, char delim=',');
-    static int         GetEnvInt( const char* envkey, int fallback );
+    static int         GetEnvInt(  const char* envkey, int fallback );
+
+    static size_t StringToSize(const std::string& str);
+    static size_t GetEnvSize(const char* envkey, size_t fallback);
+
     static const char* GetEnv(    const char* envkey, const char* fallback);
     static bool        HasEnv( const char* envkey );
 
@@ -847,6 +851,38 @@ inline int U::GetEnvInt(const char* envkey, int fallback)
     int ival = val ? std::atoi(val) : fallback ;
     return ival ;
 }
+
+
+inline size_t U::StringToSize(const std::string& str)
+{
+    try
+    {
+        size_t pos;
+        size_t result = std::stoul(str, &pos);
+        if (pos != str.length()) throw std::invalid_argument("U::StringToSize - string contains invalid characters");
+        return result;
+    } catch (const std::invalid_argument&) {
+        throw std::invalid_argument("U::StringToSize - Invalid input: not a valid number");
+    } catch (const std::out_of_range&) {
+        throw std::out_of_range("Number out of range for size_t");
+    }
+}
+
+
+inline size_t U::GetEnvSize(const char* envkey, size_t fallback)
+{
+    char* val = std::getenv(envkey);
+    if (!val) return fallback;
+    try
+    {
+        return StringToSize(val);
+    }
+    catch (const std::exception&)
+    {
+        return fallback; // Return fallback on invalid input
+    }
+}
+
 
 inline const char* U::GetEnv(const char* envkey, const char* fallback)
 {

@@ -143,6 +143,12 @@ def np_digest(a):
 
     file digest includes the header, not just the data : so will not match this 
 
+
+
+    In [11]: md5(np.ascontiguousarray(f.hit[928534477].view(np.uint8))).hexdigest()
+    Out[11]: 'ed3169da5f57135e2d1668acf2d0c525'
+
+
     """
     dig = md5()
     data = np.ascontiguousarray(a.view(np.uint8))

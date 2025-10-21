@@ -60,6 +60,30 @@ identity (32 bit)
     Out[10]: (np.uint32(1), np.uint32(45600))
 
 
+    In [3]: id = f.photon.view(np.uint32)[:,3,1]
+
+    In [4]: id.min(), id.max()
+    Out[4]: (np.uint32(0), np.uint32(45600))
+
+    In [5]: np.c_[np.unique(id, return_counts=True)]
+    Out[5]:
+    array([[     0, 418619],    ## zero means did not end on a sensor
+           [     1,     22],
+           [     2,     22],
+           [     3,     20],
+           [     4,     18],
+           ...,
+           [ 45596,      4],
+           [ 45597,      1],
+           [ 45598,      1],
+           [ 45599,      1],
+           [ 45600,      2]], shape=(34580, 2))
+
+
+    In [11]: 0xffff,0xffffff   ## 16/24 bits would be enough for identity, sparing 16/8 bits
+    Out[11]: (65535, 16777215)
+
+
 orient (1 bit)
     set according to the sign of cosTheta
     (dot product of surface normal and momentum at last intersect)
@@ -71,6 +95,13 @@ index (32 bit)
 
     As such large simulations are rare and the index is informational and can easily
     be post-corrected using uint64 arrays this clocking of the index will not be fixed.
+
+    HMM sparing 8 bits from another element would get to more than a trillion::
+
+            In [3]: (0x1 << (32+8))/1e9
+            Out[3]: 1099.511627776
+
+
 
 flagmask (32 bit)
     bitwise-OR of step point flag enumeration
