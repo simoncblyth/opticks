@@ -62,6 +62,7 @@ struct sdigest
 
     static std::string Buf(const char* buffer, int length);
     static std::array<unsigned char,16> BufRaw(const char* buffer, int length);
+    static void BufRaw_(unsigned char* digest_16, const char* buffer, int length);
 
 
     static std::string Int(int i);
@@ -84,6 +85,10 @@ struct sdigest
 
     static std::string Finalize(MD5_CTX& c);
     static std::array<unsigned char,16> FinalizeRaw(MD5_CTX& c);
+
+    static void FinalizeRaw_(unsigned char* digest_16, MD5_CTX& c );
+
+
 
 };
 
@@ -165,6 +170,16 @@ inline std::array<unsigned char,16> sdigest::BufRaw(const char* buffer, int leng
     Update(c, buffer, length);
     return FinalizeRaw(c);
 }
+
+inline void sdigest::BufRaw_(unsigned char* digest_16, const char* buffer, int length) // static
+{
+    MD5_CTX c;
+    MD5_Init(&c);
+    Update(c, buffer, length);
+    FinalizeRaw_(digest_16, c);
+}
+
+
 
 
 inline std::string sdigest::Int(int i) // static
@@ -322,6 +337,11 @@ inline std::array<unsigned char,16> sdigest::FinalizeRaw(MD5_CTX& c) // static
     std::array<unsigned char, 16> result;
     std::copy(digest, digest + 16, result.begin());
     return result;
+}
+
+inline void sdigest::FinalizeRaw_(unsigned char* digest_16, MD5_CTX& c ) // static
+{
+    MD5_Final(digest_16, &c );
 }
 
 
