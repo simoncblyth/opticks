@@ -41,19 +41,19 @@ struct qcerenkov
     qprop<float>*  prop ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-    QCERENKOV_METHOD void generate( sphoton& p,  RNG& rng, const quad6& gs    , int idx, int genstep_id ) const ;
+    QCERENKOV_METHOD void generate( sphoton& p,  RNG& rng, const quad6& gs, unsigned long long idx, int genstep_id ) const ;
 
     template<typename T>
-    QCERENKOV_METHOD void wavelength_sampled_enprop( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int genstep_id ) const ;
-    QCERENKOV_METHOD void wavelength_sampled_bndtex( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int genstep_id ) const ;
+    QCERENKOV_METHOD void wavelength_sampled_enprop( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, unsigned long long idx, int genstep_id ) const ;
+    QCERENKOV_METHOD void wavelength_sampled_bndtex( float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, unsigned long long idx, int genstep_id ) const ;
 
-    QCERENKOV_METHOD void fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const ;
+    QCERENKOV_METHOD void fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, unsigned long long idx, int gsid ) const ;
 #endif
 
 };
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
-inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, RNG& rng, const quad6& _gs, int idx, int gsid ) const
+inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, RNG& rng, const quad6& _gs, unsigned long long idx, int gsid ) const
 {
     //printf("//qcerenkov::generate idx %d \n", idx );
 
@@ -137,7 +137,7 @@ so the loop will only turn once with fraction being random.
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const
+inline QCERENKOV_METHOD void qcerenkov::fraction_sampled(float& fraction, float& delta, RNG& rng, const scerenkov& gs, unsigned long long idx, int gsid ) const
 {
     float NumberOfPhotons ;
     float N ;
@@ -283,7 +283,7 @@ fabricated gensteps that should not be an issue with real gensteps.
 
 **/
 
-inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const
+inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelength, float& cosTheta, float& sin2Theta, RNG& rng, const scerenkov& gs, unsigned long long idx, int gsid ) const
 {
     //printf("//qcerenkov::wavelength_sampled_bndtex bnd %p gs.matline %d \n", bnd, gs.matline );
     float u0 ;
@@ -321,7 +321,7 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if(count > 50)
-    printf("//qcerenkov::wavelength_sampled_bndtex idx %6d sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d matline %d \n",
+    printf("//qcerenkov::wavelength_sampled_bndtex idx %6lld sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d matline %d \n",
               idx , sampledRI, cosTheta, sin2Theta, wavelength, count, gs.matline );
 #endif
 
@@ -337,7 +337,7 @@ template type controls the type used for the rejection sampling, not the return 
 
 **/
 template<typename T>
-inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavelength, float& f_cosTheta, float& f_sin2Theta, RNG& rng, const scerenkov& gs, int idx, int gsid ) const
+inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_enprop(float& f_wavelength, float& f_cosTheta, float& f_sin2Theta, RNG& rng, const scerenkov& gs, unsigned long long idx, int gsid ) const
 {
     T u0 ;
     T u1 ;

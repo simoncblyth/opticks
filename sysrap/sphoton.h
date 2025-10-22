@@ -167,6 +167,7 @@ JUNO max prim_idx ~3245 : so thats OK
 #else
 #    define SPHOTON_METHOD inline
 #endif
+#include <cstdint>
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -205,7 +206,6 @@ struct sphoton
 
     SPHOTON_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient, unsigned iindex );
 
-    SPHOTON_METHOD unsigned idx() const {      return index ;  }
 
     SPHOTON_METHOD unsigned iindex() const {   return ( orient_iindex & 0x7fffffffu ) ;  }
     SPHOTON_METHOD float    orient() const {   return ( orient_iindex & 0x80000000u ) ? -1.f : 1.f ; }
@@ -229,6 +229,23 @@ struct sphoton
 
     SPHOTON_METHOD float* data() {               return &pos.x ; }
     SPHOTON_METHOD const float* cdata() const {  return &pos.x ; }
+
+
+    SPHOTON_METHOD void set_index(uint64_t full_index)
+    {
+        // lower 32 bits of full_index into index
+        index    = ( static_cast<unsigned>((full_index >> 0 ) & 0xffffffffu) <<  0 ) ;
+
+        // upper 8 bits of full_index into upper 8 bits of identity with lower 24 bits of identity preserved
+        identity = ( static_cast<unsigned>((full_index >> 32) & 0xffu      ) << 24 ) | ( identity & 0xffffffu ) ;
+    }
+    SPHOTON_METHOD uint64_t get_index() const {  return (static_cast<uint64_t>(identity >> 24) << 32) | static_cast<uint64_t>(index); }
+    //SPHOTON_METHOD unsigned idx() const {      return index ;  }
+
+
+    SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xff000000u ) | ( id & 0xffffffu ); }   // Preserve upper 8 bits of identity
+    SPHOTON_METHOD unsigned get_identity() const { return identity & 0xffffffu ; }
+
 
 
 

@@ -46,6 +46,8 @@ struct sphoton_test
     static int make_record_array();
     static int ChangeTimeInsitu();
 
+    static int index();
+
     static int main();
 };
 
@@ -565,6 +567,76 @@ int sphoton_test::ChangeTimeInsitu()
     return 0 ;
 }
 
+int sphoton_test::index()
+{
+    sphoton p = {} ;
+    std::vector<uint64_t> xx = {
+         0x0,
+         0x1,
+         0xff,
+         0xffff,
+         0xffffff,
+         0xffffffff,
+         0xffffffffff,
+         0xffffffffffff,
+         0xffffffffffffff
+     };
+
+    std::vector<uint64_t> ii = {
+         0x0,
+         0x1,
+         0xff,
+         0xffff,
+         0xffffff,
+         0xffffffff,
+         0xffffffffff,
+         0xffffffffffff,
+         0xffffffffffffff
+     };
+
+
+    uint64_t INDEX_MAX = 0xffffffffff ;  //  0xffffffffff/1e9 = 1099.511   1.099 trillion
+    unsigned IDENTITY_MAX = 0xffffffu ;  // 0xffffff/1e6 = 16.777215    16.7 million
+
+    for(size_t i=0 ; i < xx.size() ; i++)
+    {
+        uint64_t x0 = xx[i];
+        unsigned i0 = ii[i]; // narrow
+
+        p.set_index(x0);
+        p.set_identity(i0);
+
+        uint64_t x1 = p.get_index();
+        unsigned i1 = p.get_identity();
+
+        std::cout
+           << std::setw(4) << i
+           << " x0 "
+           << std::setw(15) << std::hex << x0 << std::dec
+           << " x1 "
+           << std::setw(15) << std::hex << x1 << std::dec
+           << " ( x0 & INDEX_MAX ) "
+           << std::setw(15) << std::hex << ( x0 & INDEX_MAX ) << std::dec
+           << " ( x1 & INDEX_MAX ) "
+           << std::setw(15) << std::hex << ( x1 & INDEX_MAX ) << std::dec
+           << " i0 "
+           << std::setw(15) << std::hex << i0 << std::dec
+           << " i1 "
+           << std::setw(15) << std::hex << i1 << std::dec
+           << " ( i0 & IDENTITY_MAX ) "
+           << std::setw(15) << std::hex << ( x0 & IDENTITY_MAX ) << std::dec
+           << " ( x1 & IDENTITY_MAX ) "
+           << std::setw(15) << std::hex << ( x1 & IDENTITY_MAX ) << std::dec
+           << "\n"
+           ;
+
+        assert( ( x0 & INDEX_MAX ) == x1 ) ;
+        assert( ( i0 & IDENTITY_MAX ) == i1 ) ;
+    }
+    return 0 ;
+}
+
+
 
 
 
@@ -591,6 +663,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "dot_pol_cross_mom_nrm")) rc += dot_pol_cross_mom_nrm();
     if(ALL||0==strcmp(TEST, "make_record_array"))     rc += make_record_array();
     if(ALL||0==strcmp(TEST, "ChangeTimeInsitu"))      rc += ChangeTimeInsitu();
+    if(ALL||0==strcmp(TEST, "index"))                 rc += index();
 
     return rc ;
 }

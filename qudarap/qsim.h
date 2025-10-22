@@ -84,7 +84,7 @@ struct qsim
     qsim(); // instanciated on CPU (see QSim::init_sim) and copied to device so no ctor in device code
 #endif
 
-    QSIM_METHOD void    generate_photon_dummy( sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon_dummy( sphoton& p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const ;
     QSIM_METHOD static float3 uniform_sphere(const float u0, const float u1);
     QSIM_METHOD static float RandGaussQ_shoot( RNG& rng, float mean, float stdDev );
     QSIM_METHOD static void SmearNormal_SigmaAlpha( RNG& rng, float3* smeared_normal, const float3* direction, const float3* normal, float sigma_alpha, const sctx& ctx );
@@ -130,9 +130,9 @@ struct qsim
     QSIM_METHOD int     propagate(const int bounce, RNG& rng, sctx& ctx );
 
     QSIM_METHOD void    hemisphere_polarized( unsigned polz, bool inwards, RNG& rng, sctx& ctx );
-    QSIM_METHOD void    generate_photon_simtrace(         quad4&   p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
-    QSIM_METHOD void    generate_photon_simtrace_frame(   quad4&   p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
-    QSIM_METHOD void    generate_photon(                  sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon_simtrace(         quad4&   p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon_simtrace_frame(   quad4&   p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const ;
+    QSIM_METHOD void    generate_photon(                  sphoton& p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const ;
 #endif
 };
 
@@ -153,11 +153,11 @@ inline qsim::qsim()    // instanciated on CPU (see QSim::init_sim) and copied to
     }
 #endif
 
-inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim::generate_photon_dummy(sphoton& p_, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const
 {
     quad4& p = (quad4&)p_ ;
 #ifndef PRODUCTION
-    printf("//qsim::generate_photon_dummy  photon_id %3d genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n",
+    printf("//qsim::generate_photon_dummy  photon_id %3lld genstep_id %3d  gs.q0.i ( gencode:%3d %3d %3d %3d ) \n",
        photon_id,
        genstep_id,
        gs.q0.i.x,
@@ -2446,7 +2446,7 @@ SEE : sevent::add_simtrace
 
 **/
 
-inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const
 {
     const int& gencode = gs.q0.i.x ;
     switch(gencode)
@@ -2456,7 +2456,7 @@ inline QSIM_METHOD void qsim::generate_photon_simtrace(quad4& p, RNG& rng, const
     }
 }
 
-inline QSIM_METHOD void qsim::generate_photon_simtrace_frame(quad4& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim::generate_photon_simtrace_frame(quad4& p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const
 {
     C4U gsid ;
 
@@ -2518,7 +2518,7 @@ Moved non-standard center-extent (aka frame) gensteps to use qsim::generate_phot
 
 **/
 
-inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6& gs, unsigned photon_id, unsigned genstep_id ) const
+inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6& gs, unsigned long long photon_id, unsigned genstep_id ) const
 {
     const int& gencode = gs.q0.i.x ;
     switch(gencode)
@@ -2537,7 +2537,7 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6&
         case OpticksGenstep_INPUT_PHOTON:    { p = evt->photon[photon_id] ; p.set_flag(TORCH) ; }        ; break ;
         default:                             generate_photon_dummy(  p, rng, gs, photon_id, genstep_id)  ; break ;
     }
-    p.index = photon_id ;
+    p.set_index(photon_id) ;
 }
 #endif
 

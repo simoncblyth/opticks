@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <sstream>
+#include <cstdint>
 
 #include "G4Types.hh"
 #include "G4ThreeVector.hh"
@@ -43,7 +44,7 @@ struct U4Hit
     G4int         boundary ;
     G4int         sensorIndex ;
     G4int         nodeIndex ;
-    G4int         photonIndex ;
+    uint64_t      photonIndex ;
     G4int         flag_mask ; 
     G4int         sensor_identifier ; 
     G4bool        is_cerenkov ; 

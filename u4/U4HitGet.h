@@ -53,7 +53,7 @@ inline void U4HitGet::ConvertFromPhoton(U4Hit& hit,  const sphoton& global, cons
     hit.nodeIndex = -1 ;
 
     hit.boundary = global.boundary() ;
-    hit.photonIndex = global.idx() ;
+    hit.photonIndex = global.get_index() ;
     hit.flag_mask = global.flagmask ;
     hit.is_cerenkov = global.is_cerenkov() ;
     hit.is_reemission = global.is_reemit() ;

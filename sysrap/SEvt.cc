@@ -2941,8 +2941,8 @@ void SEvt::rjoinPhoton(const spho& label)
 
 void SEvt::rjoinRecordCheck(const sphoton& rj, const sphoton& ph  ) const
 {
-    assert( rj.idx() == ph.idx() );
-    unsigned idx = rj.idx();
+    assert( rj.get_index() == ph.get_index() );
+    uint64_t idx = rj.get_index();
     bool d12match = sphoton::digest_match( rj, ph, 12 );
     if(!d12match) dbg->d12match_fail++ ;
     if(!d12match) ComparePhotonDump(rj, ph) ;
