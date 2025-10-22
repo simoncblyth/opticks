@@ -13,20 +13,19 @@
 #include "qbase.h"
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
-const plog::Severity QBase::LEVEL = plog::info ; 
+const plog::Severity QBase::LEVEL = plog::info ;
 #else
-const plog::Severity QBase::LEVEL = SLOG::EnvLevel("QBase", "DEBUG"); 
+const plog::Severity QBase::LEVEL = SLOG::EnvLevel("QBase", "DEBUG");
 #endif
 
-const QBase* QBase::INSTANCE = nullptr ; 
+const QBase* QBase::INSTANCE = nullptr ;
 const QBase* QBase::Get(){ return INSTANCE ; }
 
-qbase* QBase::MakeInstance() // static 
+qbase* QBase::MakeInstance() // static
 {
-    qbase* base = new qbase ; 
-    base->pidx = ssys::getenvunsigned_fallback_max("PIDX") ; 
-    base->custom_lut = ssys::getenvunsigned("QBase__CUSTOM_LUT", 0u);
-    return base ; 
+    qbase* base = new qbase ;
+    base->pidx = ssys::getenvuint64spec("PIDX", "X40") ;  // X40 sentinel  0xffffffffff  (0x1<<40)-1
+    return base ;
 }
 
 QBase::QBase()
@@ -34,14 +33,14 @@ QBase::QBase()
     base(MakeInstance()),
     d_base(nullptr)
 {
-    init(); 
+    init();
 }
 
 /**
 QBase::init
 ------------
 
-This appears to take ~0.25s because it is usually the first access to the GPU. 
+This appears to take ~0.25s because it is usually the first access to the GPU.
 This is with the nvidia-persistenced running, without it the time is ~1.5s
 
 Tried changing the visible devices but seems to make no difference::
@@ -54,29 +53,29 @@ Tried changing the visible devices but seems to make no difference::
 
 void QBase::init()
 {
-    INSTANCE = this ; 
+    INSTANCE = this ;
 
 #if defined(MOCK_CURAND) || defined(MOCK_CUDA)
-    d_base = base ; 
+    d_base = base ;
 #else
-    LOG(LEVEL) << "[ QU::UploadArray " ; 
-    d_base = QU::UploadArray<qbase>(base,1, "QBase::init/d_base") ; 
-    LOG(LEVEL) << "] QU::UploadArray : takes ~0.25-0.3s : appearing in analog timings as it is first GPU contact " ; 
+    LOG(LEVEL) << "[ QU::UploadArray " ;
+    d_base = QU::UploadArray<qbase>(base,1, "QBase::init/d_base") ;
+    LOG(LEVEL) << "] QU::UploadArray : takes ~0.25-0.3s : appearing in analog timings as it is first GPU contact " ;
 #endif
 
 
 }
 
-std::string QBase::desc() const 
+std::string QBase::desc() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
     ss << "QBase::desc"
-       << " base " << base 
-       << " d_base " << d_base 
+       << " base " << base
+       << " d_base " << d_base
        << " base.desc " << base->desc()
-       ; 
-    std::string s = ss.str(); 
-    return s ; 
+       ;
+    std::string s = ss.str();
+    return s ;
 }
 
 

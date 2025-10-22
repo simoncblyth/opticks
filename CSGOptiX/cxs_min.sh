@@ -205,7 +205,8 @@ vars="$vars version VERSION"
 #test=vvlarge_evt
 #test=vvvlarge_evt
 #test=vvvvlarge_evt
-test=vvvvvlarge_evt
+#test=vvvvvlarge_evt
+test=vvvvvvlarge_evt
 
 #test=medium_scan
 
@@ -379,8 +380,9 @@ elif [[ "$TEST" =~ ^v*large_evt$ ]]; then
        vlarge_evt) opticks_num_genstep=20  ; opticks_num_photon=M500 ;;
       vvlarge_evt) opticks_num_genstep=40  ; opticks_num_photon=G1   ;;
      vvvlarge_evt) opticks_num_genstep=120 ; opticks_num_photon=G3   ;;
-    vvvvlarge_evt) opticks_num_genstep=256 ; opticks_num_photon=X32  ;;   # 4.29 billion
-   vvvvvlarge_evt) opticks_num_genstep=512 ; opticks_num_photon=G5  ;;    #  5 billion
+    vvvvlarge_evt) opticks_num_genstep=256 ; opticks_num_photon=X32  ;;           # 4.29 billion
+   vvvvvlarge_evt) opticks_num_genstep=512 ; opticks_num_photon=G5   ;;           #  5 billion
+  vvvvvvlarge_evt) opticks_num_genstep=512 ; opticks_num_photon=8252787186   ;;   #  8.25 billion  https://www.worldometers.info/world-population/
    esac
 
    # KEEP_SUBFOLD DOUBLES SPACE AND TIME OF HIT SAVING

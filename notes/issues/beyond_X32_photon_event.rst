@@ -24,6 +24,16 @@ But can the smaller launches be combined into larger photon count events ?
 
 
 
+
+TEST=vvvvvvlarge_evt cxs_min.sh  # 8.2 billion photon
+--------------------------------------------------------
+
+
+
+
+
+
+
 TEST=vvvvvlarge_evt cxs_min.sh  # 5 billion photon, almost 1 billion hit
 --------------------------------------------------------------------------
 
@@ -147,6 +157,16 @@ does not do PIDX logging.
     60G	hit.npy
     4.0K	NPFold_index.txt
     A[blyth@localhost A000]$ 
+
+
+
+
+PIDX -1 DUMPING : NEED TO CHANE PIDX TO ULL : AND USE X40 SENTINEL
+-----------------------------------------------------------------------
+
+::
+
+    
 
 
 

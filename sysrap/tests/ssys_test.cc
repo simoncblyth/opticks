@@ -10,6 +10,7 @@ struct ssys_test
 {
     static constexpr const char* getenviron_SIGINT = "ssys_test__getenviron_SIGINT" ;
     static int getenviron();
+    static int getenvuint64spec();
 };
 
 
@@ -39,6 +40,22 @@ int ssys_test::getenviron()
     if(_SIGINT) std::raise(SIGINT);
     return 0 ;
 }
+
+
+int ssys_test::getenvuint64spec()
+{
+    uint64_t pidx = ssys::getenvuint64spec("PIDX", "X40" );
+    std::cout
+         << "ssys_test::getenvuint64spec\n"
+         << " pidx (hex) " << std::setw(15) << std::hex << pidx << std::dec
+         << "\n"
+         << " pidx (dec) " << std::setw(15) << pidx
+         << "\n"
+         ;
+
+    return 0 ;
+}
+
 
 
 
@@ -551,9 +568,8 @@ void test_getenvintpick()
        << " idx " << idx << "\n"
        << " pick " << (( idx < int(colors.size()) && idx > -1 ) ? colors[idx] : "-" ) << "\n"
        ;
-
-
 }
+
 
 
 
@@ -571,6 +587,9 @@ int main(int argc, char** argv)
     if(ALL||0==strcmp(TEST,"is_remote_session")) rc += test_is_remote_session() ;
     if(ALL||0==strcmp(TEST,"getenvintspec"))  rc += test_getenvintspec() ;
     if(ALL||0==strcmp(TEST,"getenviron"))  rc += ssys_test::getenviron() ;
+    if(ALL||0==strcmp(TEST,"getenvuint64spec"))  rc += ssys_test::getenvuint64spec() ;
+
+
 
     /*
     test_getenv_vec();

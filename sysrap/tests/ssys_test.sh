@@ -19,6 +19,8 @@ defarg="build_run"
 arg=${1:-$defarg}
 
 
+export TEST=getenvuint64spec
+
 
 export MULTILINE=$(cat << EOV
 

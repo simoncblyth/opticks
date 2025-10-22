@@ -56,11 +56,15 @@ struct ssys
     static int getenvint(const char* ekey, int fallback);
     static int64_t getenvint64(const char* ekey, int64_t fallback);
     static int getenvintspec( const char* ekey, const char* fallback);
-    static int64_t getenvint64spec( const char* ekey, const char* fallback);
+    static int64_t  getenvint64spec( const char* ekey, const char* fallback);
+    static uint64_t getenvuint64spec(const char* ekey, const char* fallback );
+
     static int getenvintpick( const char* ekey, const std::vector<std::string>& strs, int fallback );
 
     static unsigned getenvunsigned(const char* ekey, unsigned fallback);
     static unsigned getenvunsigned_fallback_max(const char* ekey );
+
+
 
     static double   getenvdouble(const char* ekey, double fallback);
     static float    getenvfloat(const char* ekey, float fallback);
@@ -424,12 +428,13 @@ inline int64_t ssys::getenvint64spec(const char* ekey, const char* fallback)
     return ival ;
 }
 
-
-
-
-
-
-
+inline uint64_t ssys::getenvuint64spec(const char* ekey, const char* fallback)
+{
+    char* val = getenv(ekey);
+    const char* spec = val ? val : fallback ;
+    uint64_t ival = sstr::ParseInt<uint64_t>( spec ? spec : "0" );
+    return ival ;
+}
 
 
 inline int ssys::getenvintpick(const char* ekey, const std::vector<std::string>& strs, int fallback )
