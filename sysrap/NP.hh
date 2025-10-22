@@ -362,6 +362,7 @@ struct NP
     template<typename T>
     static int ParseSliceIndexString(T& start, T& stop, T& step, const char* _sli, bool dump=false );
     static bool LooksLikeSliceIndexString(const char* _sli );
+    static bool LooksLikeSliceIndexStringIsEmpty(const char* _sli );
     static bool LooksLikeSliceIndexStringSuffix(const char* _sli, char** body, char** suffix );
 
 
@@ -2163,10 +2164,14 @@ inline void NP::_change_shape_ni(INT ni, bool data_resize)
 {
     unsigned ndim = shape.size() ;
     assert( ndim > 0 );
-    assert( ni <= shape[0] );
 
-    shape[0] = ni ;
-    size = NPS::size(shape);    // product of shape dimensions
+    if(!data_resize) // eg from NP::LoadSlice when the slice is larger than the array
+    {
+        assert( ni <= shape[0] );
+    }
+
+    shape[0] = std::min( ni, shape[0] ) ;       // slicing can only keep the same or reduce
+    size = NPS::size(shape);                    // product of shape dimensions
     if(data_resize) data.resize(size*ebyte) ;   // data is now just char
 }
 
@@ -3457,6 +3462,17 @@ inline bool NP::LooksLikeSliceIndexString(const char* _sli ) //
     bool end_br = _sli[strlen(_sli)-1] == ']' ;
     return start_br && end_br ;
 }
+
+inline bool NP::LooksLikeSliceIndexStringIsEmpty(const char* _sli ) //
+{
+    if(_sli == nullptr) return true ;
+    if(strcmp(_sli, "") == 0) return true ;
+    if(strcmp(_sli, "[]") == 0) return true ;
+    return false ;
+}
+
+
+
 
 /**
 NP::LooksLikeSliceIndexStringSuffix
@@ -7941,7 +7957,7 @@ inline void NP::load_data( std::ifstream* fp, const char* _sli )
     if(nodata && VERBOSE) std::cerr << "NP::load_data SKIP reading data as nodata:true : data.size() " << data.size() << "\n" ;
     if(nodata) return ;
 
-    if( _sli == nullptr )
+    if(LooksLikeSliceIndexStringIsEmpty(_sli) )  // eg nullptr OR "" OR "[]"
     {
         fp->read(bytes(), arr_bytes() );
     }
