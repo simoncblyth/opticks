@@ -45,18 +45,28 @@
 #include <cmath>
 #include <cstdlib>
 
-
 #if defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ >= 13)
-#define LONGLONG4 longlong4_32a
-#define ULONGLONG4 ulonglong4_32a
-#define DOUBLE4 double4_32a
+#    define LONGLONG4 longlong4_32a
+#    define ULONGLONG4 ulonglong4_32a
+#    define DOUBLE4 double4_32a
+#    define MAKE_LONGLONG4 make_longlong4_32a
+#    define MAKE_ULONGLONG4 make_ulonglong4_32a
 #else
-#define LONGLONG4 longlong4
-#define ULONGLONG4 ulonglong4
-#define DOUBLE4 double4
+#    include <cuda.h>
+#    if (CUDA_VERSION >= 13000)
+#        define LONGLONG4 longlong4_32a
+#        define ULONGLONG4 ulonglong4_32a
+#        define DOUBLE4 double4_32a
+#        define MAKE_LONGLONG4 make_longlong4_32a
+#        define MAKE_ULONGLONG4 make_ulonglong4_32a
+#    else
+#        define LONGLONG4 longlong4
+#        define ULONGLONG4 ulonglong4
+#        define DOUBLE4 double4
+#        define MAKE_LONGLONG4 make_longlong4
+#        define MAKE_ULONGLONG4 make_ulonglong4
+#    endif
 #endif
-
-
 
 
 
@@ -2013,32 +2023,32 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(longlong3& v, int i, int x)
 /** additional constructors
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const long long s)
 {
-    return make_longlong4(s, s, s, s);
+    return MAKE_LONGLONG4(s, s, s, s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const float4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const float4& a)
 {
-    return make_longlong4((long long)a.x, (long long)a.y, (long long)a.z, (long long)a.w);
+    return MAKE_LONGLONG4((long long)a.x, (long long)a.y, (long long)a.z, (long long)a.w);
 }
 /** @} */
 
 /** negate */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator-(const LONGLONG4& a)
 {
-    return make_longlong4(-a.x, -a.y, -a.z, -a.w);
+    return MAKE_LONGLONG4(-a.x, -a.y, -a.z, -a.w);
 }
 
 /** min */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 min(const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w));
+    return MAKE_LONGLONG4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w));
 }
 
 /** max */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 max(const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w));
+    return MAKE_LONGLONG4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w));
 }
 
 /** add
@@ -2046,7 +2056,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 max(const LONGLONG4& a, const LONGLONG4&
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator+(const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return MAKE_LONGLONG4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(LONGLONG4& a, const LONGLONG4& b)
 {
@@ -2059,7 +2069,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(LONGLONG4& a, const LONGLONG4& b)
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator-(const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return MAKE_LONGLONG4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
 
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(LONGLONG4& a, const LONGLONG4& b)
@@ -2073,15 +2083,15 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(LONGLONG4& a, const LONGLONG4& b)
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator*(const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+    return MAKE_LONGLONG4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator*(const LONGLONG4& a, const long long s)
 {
-    return make_longlong4(a.x * s, a.y * s, a.z * s, a.w * s);
+    return MAKE_LONGLONG4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator*(const long long s, const LONGLONG4& a)
 {
-    return make_longlong4(a.x * s, a.y * s, a.z * s, a.w * s);
+    return MAKE_LONGLONG4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(LONGLONG4& a, const long long s)
 {
@@ -2094,15 +2104,15 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(LONGLONG4& a, const long long s)
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator/(const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+    return MAKE_LONGLONG4(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator/(const LONGLONG4& a, const long long s)
 {
-    return make_longlong4(a.x / s, a.y / s, a.z / s, a.w / s);
+    return MAKE_LONGLONG4(a.x / s, a.y / s, a.z / s, a.w / s);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator/(const long long s, const LONGLONG4& a)
 {
-    return make_longlong4(s / a.x, s / a.y, s / a.z, s / a.w);
+    return MAKE_LONGLONG4(s / a.x, s / a.y, s / a.z, s / a.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(LONGLONG4& a, const long long s)
 {
@@ -2115,12 +2125,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(LONGLONG4& a, const long long s)
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 clamp(const LONGLONG4& v, const long long a, const long long b)
 {
-    return make_longlong4(clamp(v.x, a, b), clamp(v.y, a, b), clamp(v.z, a, b), clamp(v.w, a, b));
+    return MAKE_LONGLONG4(clamp(v.x, a, b), clamp(v.y, a, b), clamp(v.z, a, b), clamp(v.w, a, b));
 }
 
 SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 clamp(const LONGLONG4& v, const LONGLONG4& a, const LONGLONG4& b)
 {
-    return make_longlong4(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z), clamp(v.w, a.w, b.w));
+    return MAKE_LONGLONG4(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z), clamp(v.w, a.w, b.w));
 }
 /** @} */
 
@@ -2438,13 +2448,13 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(ulonglong3& v, int i, unsigned lon
 /** additional constructors
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const unsigned long long s)
 {
-    return make_ulonglong4(s, s, s, s);
+    return MAKE_ULONGLONG4(s, s, s, s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const float4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const float4& a)
 {
-    return make_ulonglong4((unsigned long long)a.x, (unsigned long long)a.y, (unsigned long long)a.z, (unsigned long long)a.w);
+    return MAKE_ULONGLONG4((unsigned long long)a.x, (unsigned long long)a.y, (unsigned long long)a.z, (unsigned long long)a.w);
 }
 /** @} */
 
@@ -2453,7 +2463,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const float4& a)
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 min(const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w));
+    return MAKE_ULONGLONG4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w));
 }
 /** @} */
 
@@ -2462,7 +2472,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 min(const ULONGLONG4& a, const ULONGLON
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 max(const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w));
+    return MAKE_ULONGLONG4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w));
 }
 /** @} */
 
@@ -2471,7 +2481,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 max(const ULONGLONG4& a, const ULONGLON
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator+(const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+    return MAKE_ULONGLONG4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(ULONGLONG4& a, const ULONGLONG4& b)
 {
@@ -2484,7 +2494,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(ULONGLONG4& a, const ULONGLONG4& b
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator-(const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+    return MAKE_ULONGLONG4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
 
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(ULONGLONG4& a, const ULONGLONG4& b)
@@ -2498,15 +2508,15 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(ULONGLONG4& a, const ULONGLONG4& b
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator*(const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
+    return MAKE_ULONGLONG4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator*(const ULONGLONG4& a, const unsigned long long s)
 {
-    return make_ulonglong4(a.x * s, a.y * s, a.z * s, a.w * s);
+    return MAKE_ULONGLONG4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator*(const unsigned long long s, const ULONGLONG4& a)
 {
-    return make_ulonglong4(a.x * s, a.y * s, a.z * s, a.w * s);
+    return MAKE_ULONGLONG4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(ULONGLONG4& a, const unsigned long long s)
 {
@@ -2519,15 +2529,15 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(ULONGLONG4& a, const unsigned long
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator/(const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
+    return MAKE_ULONGLONG4(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator/(const ULONGLONG4& a, const unsigned long long s)
 {
-    return make_ulonglong4(a.x / s, a.y / s, a.z / s, a.w / s);
+    return MAKE_ULONGLONG4(a.x / s, a.y / s, a.z / s, a.w / s);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator/(const unsigned long long s, const ULONGLONG4& a)
 {
-    return make_ulonglong4(s / a.x, s / a.y, s / a.z, s / a.w);
+    return MAKE_ULONGLONG4(s / a.x, s / a.y, s / a.z, s / a.w);
 }
 SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(ULONGLONG4& a, const unsigned long long s)
 {
@@ -2540,12 +2550,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(ULONGLONG4& a, const unsigned long
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 clamp(const ULONGLONG4& v, const unsigned long long a, const unsigned long long b)
 {
-    return make_ulonglong4(clamp(v.x, a, b), clamp(v.y, a, b), clamp(v.z, a, b), clamp(v.w, a, b));
+    return MAKE_ULONGLONG4(clamp(v.x, a, b), clamp(v.y, a, b), clamp(v.z, a, b), clamp(v.w, a, b));
 }
 
 SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 clamp(const ULONGLONG4& v, const ULONGLONG4& a, const ULONGLONG4& b)
 {
-    return make_ulonglong4(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z), clamp(v.w, a.w, b.w));
+    return MAKE_ULONGLONG4(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z), clamp(v.w, a.w, b.w));
 }
 /** @} */
 
@@ -2621,20 +2631,20 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint4 make_uint4(const uint3& v0, const unsigned i
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 make_uint4(const uint2& v0, const uint2& v1) { return make_uint4( v0.x, v0.y, v1.x, v1.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE longlong3 make_longlong3(const long long v0, const longlong2& v1) { return make_longlong3(v0, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE longlong3 make_longlong3(const longlong2& v0, const long long v1) { return make_longlong3(v0.x, v0.y, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long v0, const long long v1, const longlong2& v2) { return make_longlong4(v0, v1, v2.x, v2.y); }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long v0, const longlong2& v1, const long long v2) { return make_longlong4(v0, v1.x, v1.y, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const longlong2& v0, const long long v1, const long long v2) { return make_longlong4(v0.x, v0.y, v1, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long v0, const longlong3& v1) { return make_longlong4(v0, v1.x, v1.y, v1.z); }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const longlong3& v0, const long long v1) { return make_longlong4(v0.x, v0.y, v0.z, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const longlong2& v0, const longlong2& v1) { return make_longlong4(v0.x, v0.y, v1.x, v1.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const long long v0, const long long v1, const longlong2& v2) { return MAKE_LONGLONG4(v0, v1, v2.x, v2.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const long long v0, const longlong2& v1, const long long v2) { return MAKE_LONGLONG4(v0, v1.x, v1.y, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const longlong2& v0, const long long v1, const long long v2) { return MAKE_LONGLONG4(v0.x, v0.y, v1, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const long long v0, const longlong3& v1) { return MAKE_LONGLONG4(v0, v1.x, v1.y, v1.z); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const longlong3& v0, const long long v1) { return MAKE_LONGLONG4(v0.x, v0.y, v0.z, v1); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 MAKE_LONGLONG4(const longlong2& v0, const longlong2& v1) { return MAKE_LONGLONG4(v0.x, v0.y, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong3 make_ulonglong3(const unsigned long long v0, const ulonglong2& v1) { return make_ulonglong3(v0, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong3 make_ulonglong3(const ulonglong2& v0, const unsigned long long v1) { return make_ulonglong3(v0.x, v0.y, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long v0, const unsigned long long v1, const ulonglong2& v2) { return make_ulonglong4(v0, v1, v2.x, v2.y); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long v0, const ulonglong2& v1, const unsigned long long v2) { return make_ulonglong4(v0, v1.x, v1.y, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const ulonglong2& v0, const unsigned long long v1, const unsigned long long v2) { return make_ulonglong4(v0.x, v0.y, v1, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long v0, const ulonglong3& v1) { return make_ulonglong4(v0, v1.x, v1.y, v1.z); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const ulonglong3& v0, const unsigned long long v1) { return make_ulonglong4(v0.x, v0.y, v0.z, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const ulonglong2& v0, const ulonglong2& v1) { return make_ulonglong4(v0.x, v0.y, v1.x, v1.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const unsigned long long v0, const unsigned long long v1, const ulonglong2& v2) { return MAKE_ULONGLONG4(v0, v1, v2.x, v2.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const unsigned long long v0, const ulonglong2& v1, const unsigned long long v2) { return MAKE_ULONGLONG4(v0, v1.x, v1.y, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const ulonglong2& v0, const unsigned long long v1, const unsigned long long v2) { return MAKE_ULONGLONG4(v0.x, v0.y, v1, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const unsigned long long v0, const ulonglong3& v1) { return MAKE_ULONGLONG4(v0, v1.x, v1.y, v1.z); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const ulonglong3& v0, const unsigned long long v1) { return MAKE_ULONGLONG4(v0.x, v0.y, v0.z, v1); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 MAKE_ULONGLONG4(const ulonglong2& v0, const ulonglong2& v1) { return MAKE_ULONGLONG4(v0.x, v0.y, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 make_float3(const float2& v0, const float v1) { return make_float3(v0.x, v0.y, v1); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 make_float3(const float v0, const float2& v1) { return make_float3( v0, v1.x, v1.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 make_float4(const float v0, const float v1, const float2& v2) { return make_float4( v0, v1, v2.x, v2.y ); }
