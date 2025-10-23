@@ -62,6 +62,47 @@ Release Notes
 * start from "git lg -n20" and summarize useful commit messages worthy of mention
 
 
+
+v0.5.5 2025/10/23 : removed 32 bit limits on photons per event, improved profiling for production, improved geometry digest, python pointcloud overlap 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* start CUDA 13 following suggestions by new user Nicola
+* removed max photons per event limitation of 4.29 billion, tested with 8.25 billion yielding 1.5 billion hits
+
+  * change pidx to unsigned long long and increase PIDX sentinel from unsigned-1 4.29 billion to X40 (0x1<<40)-1 which is more than a trillion
+  * add sphoton::set_index sphoton::get_index increasing bits from 32 to 32+8=40 for the index, extending maximum from 4.29 billion to more than a trillion
+  * add lower level sdigest::BufRaw_ for faster digest based dupe checking
+  * additions for NP for ~/j/hit_digest/hit_digest.sh checking billion hit array for dupes using CUDA to speed up comparisons
+  * dont find duplicated hits, taking 22 min for a billion hits, 2 min for digests, 20 min for merging
+  * change photon_idx to unsigned long long from unsigned to avoid duplicated photons in simulations exceeding 4.29 billion photons
+  * review CUDA hit handling, while consider how to do hit binning using PMT local theta-phi made more relevant now for checking of event with 800M hit from X32 4.29 billion photon event
+  * move orient bit in sphoton.h from orient_idx to orient_iindex to dedicate full 32 bits to the index
+  * add raw digest API to sdigest.h and check if thats more efficient for dupe finding
+  * basic hit checking able to handle 600M hits in 10mins
+  * avoidance of 32bit clocking as push to simulation beyond 2.14 billion, testing in cxs_min.sh with G3
+  * fix unsigned clocking of offset_bytes in NP::Concatenate causing tail zeros in very large hit arrays of 600M entries
+  * improve VRAM OOM logging, with warning about inappropriate OPTICKS_EVENT_MODE
+
+* profiling in production improvements
+
+  * improve sreport code annotations
+  * rejig the profile timestamp collection to use separate SProf.txt output instead of the kludge of appending to the run_meta.txt, add optional meta field to SProf
+
+* improved geometry digest in preparation for server/client geometry consistency check
+
+  * add SSim::AnnotateFrame which populates two new metadata fields in sframe.h : tree and dynamic, invoke the SSim::AnnotateFrame from CSGFoundry::getFrameE
+  * add stree::get_tree_digest and stree::make_tree_digest which return the standard and dynamic geometry digests of the root node subtree, ie all nodes in the tree
+  * add SBitSet::serialize to allow ELV bitset info to be included with sdigest.h digests
+
+* python overlap checking using raytraced pointclouds with normals and KDTree to speedup closest pairing between clouds
+
+  * configure logging with timestamps to measure the point cloud overlap time in cxt_min.py
+  * improve CFBASE_ALT handling from C++ and python to allow transient usage of a dynamic ELV geometry consisently from C++ creator executable and python analysis of overlaps
+  * cxt_min.sh simtrace plotting : add BOXSEL to restrict extent of point clouds to allow faster proximity/overlap checking
+  * use scipy.spatial.KDTree to find nearest neighbors between point cloud intersects from two solids, then use intersect normals to give signed distance to find points that penetrate into the other cloud of points
+  * add SFrameGenstep::Make_CEGS_NPY_Genstep where NPY array of (n,3) points in CEGS local frame are used to form n-gensteps, useful for investigating suspected overlap geometry positions
+
+
 v0.5.4 2025/09/29 : some triangulation automation, handling for unsupported cut tubs, U4Polycone some generalization for new JUNO geometry, start impl of service-client with nanobind
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -271,75 +312,77 @@ v0.4.2 2025/05/15
 Snapshot Tags History
 ----------------------
 
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| tag     | OVN | date       | Notes                                                                                                               |
-+=========+=====+============+=====================================================================================================================+
-| v0.5.4  | 54  | 2025/09/29 | triangulation automation, handle unsupported, U4Polycone generalization for new JUNO geometry, start service-client |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.5.3  | 53  | 2025/08/27 | shakedown new PMT types WP_ATM_LPMT WP_WAL_PMT, fixes for two longstanding viz issues                               |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.5.2  | 52  | 2025/08/19 | intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h             |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.5.1  | 51  | 2025/07/17 | record animation as debug, OPTICKS_PROPAGATE_REFINE intersect precision, sdevice.bin persisting no longer default   |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.5.0  | 50  | 2025/07/02 | improved install cleanliness, add missing gl shaders and python modules to install                                  |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.9  | 49  | 2025/07/01 | fix muon render kink animation artifact, fix WP PMT qescale giving WP_PMT A:B match                                 |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.8  | 48  | 2025/06/25 | SProcessHits_EPH.h improve handling of large values and legibility of desc                                          |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.7  | 47  | 2025/06/25 | fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match                                        |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.6  | 46  | 2025/06/24 | Within WITH_CUSTOM4 working on WP PMT and SPMT hit matching, plus add EPSILON0                                      |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.5  | 45  | 2025/06/13 | Theta dependent CE culling with qpmt::get_lpmtid_ATQC becoming usable                                               |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.4  | 44  | 2025/06/08 | add collection efficiency scaling from qpmt::get_lpmtid_ARTE_ce, add separate label U4Recorder API                  |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.3  | 43  | 2025/05/30 | integrate OpenGL event record rendering with geometry render, globalPrimIdx added to Binding.h, cxt_min.sh enhance  |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.2  | 42  | 2025/05/15 | remove OPTICKS_MAX_BOUNCE limit, increase default OPTICKS_MAX_BOUNCE from 9 to 31, skip slow find-geant4-prefix     |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.1  | 41  | 2025/04/28 | fix WITH_CUSTOM4 regression and outdated jpmt access in G4CXTest                                                    |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.4.0  | 40  | 2025/04/24 | last failing release test + avoid some slow tests                                                                   |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.9  | 39  | 2025/04/23 | geom access standardization to enable release ctests                                                                |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.8  | 38  | 2025/04/22 | leap to CMake CUDA LANGUAGE for multi CUDA_ARCHITECTURES compilation                                                |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.7  | 37  | 2025/04/21 | change compute capability target of ptx to 70 to support older GPU                                                  |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.6  | 36  | 2025/04/16 | start getting scripts like cxr_min.sh G4CXTest_raindrop.sh to work from release                                     |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.5  | 35  | 2025/04/06 | okdist tarball standardize labelling, some simtrace revival                                                         |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.4  | 34  | 2025/04/02 | wayland viz fix, handle no CUDA device detected with opticksMode 1                                                  |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.3  | 33  | 2025/03/17 | try to hide non-zero rc in bashrc from the set -e used by gitlab-ci                                                 |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.2  | 32  | 2025/03/17 | okdist-- installed tree fixes                                                                                       |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.1  | 31  | 2025/01/11 | fixes BR/BT reversion in v0.3.0                                                                                     |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.3.0  | 30  | 2025/01/08 | many changes, including jump to Philox RNG + addition of out-of-core running                                        |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.7  | 27  | 2024/02/01 | tag requested by Hans, just for some convenience OpticksPhoton methods                                              |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.6  | 26  | 2024/01/25 | fix VRAM leak by using default CUDA stream for every launch                                                         |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.5  | 25  | 2023/12/19 | fix off-by-one sensor identifier bug                                                                                |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.4  | 24  | 2023/12/18 | fix for tests installation                                                                                          |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.3  | 23  | 2023/12/18 | Addition of smonitor GPU memory monitoring, explicit reset API in QSim and G4CX                                     |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.2  | 22  | 2023/12/14 | Addition of profiling machinery, introduce Release build, fix CK generation bug                                     |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.1  | 21  | 2023/10/20 | Fix stale dependencies issue reported by Hans, remove opticksaux from externals                                     |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
-| v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                            |
-+---------+-----+------------+---------------------------------------------------------------------------------------------------------------------+
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| tag     | OVN | date       | Notes                                                                                                                              |
++=========+=====+============+====================================================================================================================================+
+| v0.5.5  | 55  | 2025/10/23 | removed 32 bit limits on photons per event, improved profiling for production, improved geometry digest, python pointcloud overlap |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.5.4  | 54  | 2025/09/29 | triangulation automation, handle unsupported, U4Polycone generalization for new JUNO geometry, start service-client                |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.5.3  | 53  | 2025/08/27 | shakedown new PMT types WP_ATM_LPMT WP_WAL_PMT, fixes for two longstanding viz issues                                              |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.5.2  | 52  | 2025/08/19 | intersect precision refinement option plus add handling for new WP PMT type handling via SPMT.h s_pmt.h                            |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.5.1  | 51  | 2025/07/17 | record animation as debug, OPTICKS_PROPAGATE_REFINE intersect precision, sdevice.bin persisting no longer default                  |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.5.0  | 50  | 2025/07/02 | improved install cleanliness, add missing gl shaders and python modules to install                                                 |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.9  | 49  | 2025/07/01 | fix muon render kink animation artifact, fix WP PMT qescale giving WP_PMT A:B match                                                |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.8  | 48  | 2025/06/25 | SProcessHits_EPH.h improve handling of large values and legibility of desc                                                         |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.7  | 47  | 2025/06/25 | fix qe_scale contiguous/oldcontiguous issue getting S_PMT EC/EX to A:B match                                                       |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.6  | 46  | 2025/06/24 | Within WITH_CUSTOM4 working on WP PMT and SPMT hit matching, plus add EPSILON0                                                     |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.5  | 45  | 2025/06/13 | Theta dependent CE culling with qpmt::get_lpmtid_ATQC becoming usable                                                              |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.4  | 44  | 2025/06/08 | add collection efficiency scaling from qpmt::get_lpmtid_ARTE_ce, add separate label U4Recorder API                                 |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.3  | 43  | 2025/05/30 | integrate OpenGL event record rendering with geometry render, globalPrimIdx added to Binding.h, cxt_min.sh enhance                 |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.2  | 42  | 2025/05/15 | remove OPTICKS_MAX_BOUNCE limit, increase default OPTICKS_MAX_BOUNCE from 9 to 31, skip slow find-geant4-prefix                    |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.1  | 41  | 2025/04/28 | fix WITH_CUSTOM4 regression and outdated jpmt access in G4CXTest                                                                   |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.4.0  | 40  | 2025/04/24 | last failing release test + avoid some slow tests                                                                                  |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.9  | 39  | 2025/04/23 | geom access standardization to enable release ctests                                                                               |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.8  | 38  | 2025/04/22 | leap to CMake CUDA LANGUAGE for multi CUDA_ARCHITECTURES compilation                                                               |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.7  | 37  | 2025/04/21 | change compute capability target of ptx to 70 to support older GPU                                                                 |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.6  | 36  | 2025/04/16 | start getting scripts like cxr_min.sh G4CXTest_raindrop.sh to work from release                                                    |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.5  | 35  | 2025/04/06 | okdist tarball standardize labelling, some simtrace revival                                                                        |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.4  | 34  | 2025/04/02 | wayland viz fix, handle no CUDA device detected with opticksMode 1                                                                 |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.3  | 33  | 2025/03/17 | try to hide non-zero rc in bashrc from the set -e used by gitlab-ci                                                                |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.2  | 32  | 2025/03/17 | okdist-- installed tree fixes                                                                                                      |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.1  | 31  | 2025/01/11 | fixes BR/BT reversion in v0.3.0                                                                                                    |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.3.0  | 30  | 2025/01/08 | many changes, including jump to Philox RNG + addition of out-of-core running                                                       |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.7  | 27  | 2024/02/01 | tag requested by Hans, just for some convenience OpticksPhoton methods                                                             |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.6  | 26  | 2024/01/25 | fix VRAM leak by using default CUDA stream for every launch                                                                        |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.5  | 25  | 2023/12/19 | fix off-by-one sensor identifier bug                                                                                               |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.4  | 24  | 2023/12/18 | fix for tests installation                                                                                                         |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.3  | 23  | 2023/12/18 | Addition of smonitor GPU memory monitoring, explicit reset API in QSim and G4CX                                                    |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.2  | 22  | 2023/12/14 | Addition of profiling machinery, introduce Release build, fix CK generation bug                                                    |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.1  | 21  | 2023/10/20 | Fix stale dependencies issue reported by Hans, remove opticksaux from externals                                                    |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
+| v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                                           |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
 
 OVN: OPTICKS_VERSION_NUMBER
 
