@@ -38,7 +38,7 @@ struct qbnd
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined( MOCK_TEXTURE) || defined(MOCK_CUDA)
     QBND_METHOD float4  boundary_lookup( unsigned ix, unsigned iy );
     QBND_METHOD float4  boundary_lookup( float nm, unsigned line, unsigned k );
-    QBND_METHOD void    fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx, unsigned base_pidx );
+    QBND_METHOD void    fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned long long idx, unsigned long long base_pidx );
 #endif
 
 };
@@ -181,7 +181,7 @@ s.optical.x
 
 **/
 
-inline QBND_METHOD void qbnd::fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned idx, unsigned base_pidx  )
+inline QBND_METHOD void qbnd::fill_state(sstate& s, unsigned boundary, float wavelength, float cosTheta, unsigned long long idx, unsigned long long base_pidx  )
 {
     const int line = boundary*_BOUNDARY_NUM_MATSUR ;      // now that are not signing boundary use 0-based
 
@@ -205,8 +205,8 @@ inline QBND_METHOD void qbnd::fill_state(sstate& s, unsigned boundary, float wav
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if( idx == base_pidx )
     {
-        printf("//qbnd.fill_state idx %d boundary %d line %d wavelength %10.4f m1_line %d m2_line %d su_line %d s.optical.x %d  \n", idx, boundary, line, wavelength, m1_line, m2_line, su_line, s.optical.x );
-        printf("//qbnd.fill_state idx %d boundary %d [s.index.x-1](m1_index) %d [s.index.y-1](m2_index) %d [s.index.z-1](su_index) %d \n", idx, boundary, s.index.x-1u, s.index.y-1u, s.index.z-1u );
+        printf("//qbnd.fill_state idx %7lld boundary %d line %d wavelength %10.4f m1_line %d m2_line %d su_line %d s.optical.x %d  \n", idx, boundary, line, wavelength, m1_line, m2_line, su_line, s.optical.x );
+        printf("//qbnd.fill_state idx %7lld boundary %d [s.index.x-1](m1_index) %d [s.index.y-1](m2_index) %d [s.index.z-1](su_index) %d \n", idx, boundary, s.index.x-1u, s.index.y-1u, s.index.z-1u );
     }
 #endif
 
