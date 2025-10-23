@@ -46,6 +46,20 @@
 #include <cstdlib>
 
 
+#if defined(__CUDACC__) && (__CUDACC_VER_MAJOR__ >= 13)
+#define LONGLONG4 longlong4_32a
+#define ULONGLONG4 ulonglong4_32a
+#define DOUBLE4 double4_32a
+#else
+#define LONGLONG4 longlong4
+#define ULONGLONG4 ulonglong4
+#define DOUBLE4 double4
+#endif
+
+
+
+
+
 /* scalar functions used in vector functions */
 #ifndef M_PIf
 #define M_PIf       3.14159265358979323846f
@@ -54,7 +68,7 @@
 #define M_1_PIf     0.318309886183790671538f
 #endif
 
-#ifndef M_SQRT2f 
+#ifndef M_SQRT2f
 #define M_SQRT2f  1.4142135623730951f
 #endif
 
@@ -136,7 +150,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float clamp(const float f, const float a, const fl
 /* float2 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 make_float2(const float s)
@@ -159,7 +173,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float2 operator-(const float2& a)
   return make_float2(-a.x, -a.y);
 }
 
-/** min 
+/** min
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 fminf(const float2& a, const float2& b)
@@ -172,7 +186,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float fminf(const float2& a)
 }
 /** @} */
 
-/** max 
+/** max
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 fmaxf(const float2& a, const float2& b)
@@ -185,7 +199,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float fmaxf(const float2& a)
 }
 /** @} */
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 operator+(const float2& a, const float2& b)
@@ -206,7 +220,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(float2& a, const float2& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 operator-(const float2& a, const float2& b)
@@ -227,7 +241,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(float2& a, const float2& b)
 }
 /** @} */
 
-/** multiply 
+/** multiply
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 operator*(const float2& a, const float2& b)
@@ -252,7 +266,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(float2& a, const float s)
 }
 /** @} */
 
-/** divide 
+/** divide
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 operator/(const float2& a, const float2& b)
@@ -288,7 +302,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float2 bilerp(const float2& x00, const float2& x10
   return lerp( lerp( x00, x10, u ), lerp( x01, x11, u ), v );
 }
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 clamp(const float2& v, const float a, const float b)
@@ -334,7 +348,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float2 reflect(const float2& i, const float2& n)
 }
 
 /** Faceforward
-* Returns N if dot(i, nref) > 0; else -N; 
+* Returns N if dot(i, nref) > 0; else -N;
 * Typical usage is N = faceforward(N, -ray.dir, N);
 * Note that this is opposite of what faceforward does in Cg and GLSL */
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 faceforward(const float2& n, const float2& i, const float2& nref)
@@ -353,7 +367,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float getByIndex(const float2& v, int i)
 {
   return ((float*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(float2& v, int i, float x)
 {
@@ -364,7 +378,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(float2& v, int i, float x)
 /* float3 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 make_float3(const float s)
@@ -391,7 +405,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float3 operator-(const float3& a)
   return make_float3(-a.x, -a.y, -a.z);
 }
 
-/** min 
+/** min
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 fminf(const float3& a, const float3& b)
@@ -404,7 +418,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float fminf(const float3& a)
 }
 /** @} */
 
-/** max 
+/** max
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 fmaxf(const float3& a, const float3& b)
@@ -417,7 +431,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float fmaxf(const float3& a)
 }
 /** @} */
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 operator+(const float3& a, const float3& b)
@@ -438,7 +452,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(float3& a, const float3& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 operator-(const float3& a, const float3& b)
@@ -459,7 +473,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(float3& a, const float3& b)
 }
 /** @} */
 
-/** multiply 
+/** multiply
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 operator*(const float3& a, const float3& b)
@@ -484,7 +498,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(float3& a, const float s)
 }
 /** @} */
 
-/** divide 
+/** divide
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 operator/(const float3& a, const float3& b)
@@ -520,7 +534,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float3 bilerp(const float3& x00, const float3& x10
   return lerp( lerp( x00, x10, u ), lerp( x01, x11, u ), v );
 }
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 clamp(const float3& v, const float a, const float b)
@@ -559,9 +573,9 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float3 normalize(const float3& v)
   return v * invLen;
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_z(const float3& v)  // CLHEP ThreeVector calls this cosTheta 
+SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_z(const float3& v)  // CLHEP ThreeVector calls this cosTheta
 {
-  return v.z / sqrtf(dot(v, v)); 
+  return v.z / sqrtf(dot(v, v));
 }
 
 
@@ -597,17 +611,17 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float getByIndex(const float3& v, int i)
 {
   return ((float*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(float3& v, int i, float x)
 {
   ((float*)(&v))[i] = x;
 }
-  
+
 /* float4 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 make_float4(const float s)
@@ -634,7 +648,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 operator-(const float4& a)
   return make_float4(-a.x, -a.y, -a.z, -a.w);
 }
 
-/** min 
+/** min
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 fminf(const float4& a, const float4& b)
@@ -647,7 +661,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float fminf(const float4& a)
 }
 /** @} */
 
-/** max 
+/** max
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 fmaxf(const float4& a, const float4& b)
@@ -660,7 +674,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float fmaxf(const float4& a)
 }
 /** @} */
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 operator+(const float4& a, const float4& b)
@@ -681,7 +695,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(float4& a, const float4& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 operator-(const float4& a, const float4& b)
@@ -702,7 +716,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(float4& a, const float4& b)
 }
 /** @} */
 
-/** multiply 
+/** multiply
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 operator*(const float4& a, const float4& s)
@@ -727,7 +741,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(float4& a, const float s)
 }
 /** @} */
 
-/** divide 
+/** divide
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 operator/(const float4& a, const float4& b)
@@ -763,7 +777,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 bilerp(const float4& x00, const float4& x10
   return lerp( lerp( x00, x10, u ), lerp( x01, x11, u ), v );
 }
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 clamp(const float4& v, const float a, const float b)
@@ -808,11 +822,11 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 reflect(const float4& i, const float4& n)
   return i - 2.0f * n * dot(n,i);
 }
 
-/** 
+/**
 * Faceforward
 * Returns N if dot(i, nref) > 0; else -N;
 * Typical usage is N = faceforward(N, -ray.dir, N);
-* Note that this is opposite of what faceforward does in Cg and GLSL 
+* Note that this is opposite of what faceforward does in Cg and GLSL
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 faceforward(const float4& n, const float4& i, const float4& nref)
 {
@@ -836,8 +850,8 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(float4& v, int i, float x)
 {
   ((float*)(&v))[i] = x;
 }
-  
-  
+
+
 /* int functions */
 /******************************************************************************/
 
@@ -852,18 +866,18 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int getByIndex(const int1& v, int i)
 {
   return ((int*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(int1& v, int i, int x)
 {
   ((int*)(&v))[i] = x;
 }
-  
+
 
 /* int2 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int2 make_int2(const int s)
@@ -894,7 +908,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int2 max(const int2& a, const int2& b)
   return make_int2(max(a.x,b.x), max(a.y,b.y));
 }
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int2 operator+(const int2& a, const int2& b)
@@ -907,7 +921,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(int2& a, const int2& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int2 operator-(const int2& a, const int2& b)
@@ -924,7 +938,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(int2& a, const int2& b)
 }
 /** @} */
 
-/** multiply 
+/** multiply
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int2 operator*(const int2& a, const int2& b)
@@ -945,7 +959,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(int2& a, const int s)
 }
 /** @} */
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int2 clamp(const int2& v, const int a, const int b)
@@ -959,7 +973,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int2 clamp(const int2& v, const int2& a, const int
 }
 /** @} */
 
-/** equality 
+/** equality
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const int2& a, const int2& b)
@@ -978,18 +992,18 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int getByIndex(const int2& v, int i)
 {
   return ((int*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(int2& v, int i, int x)
 {
   ((int*)(&v))[i] = x;
 }
-  
+
 
 /* int3 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 make_int3(const int s)
@@ -1020,7 +1034,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int3 max(const int3& a, const int3& b)
   return make_int3(max(a.x,b.x), max(a.y,b.y), max(a.z,b.z));
 }
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 operator+(const int3& a, const int3& b)
@@ -1033,7 +1047,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(int3& a, const int3& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 operator-(const int3& a, const int3& b)
@@ -1047,7 +1061,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(int3& a, const int3& b)
 }
 /** @} */
 
-/** multiply 
+/** multiply
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 operator*(const int3& a, const int3& b)
@@ -1068,7 +1082,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(int3& a, const int s)
 }
 /** @} */
 
-/** divide 
+/** divide
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 operator/(const int3& a, const int3& b)
@@ -1089,7 +1103,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(int3& a, const int s)
 }
 /** @} */
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 clamp(const int3& v, const int a, const int b)
@@ -1103,7 +1117,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int3 clamp(const int3& v, const int3& a, const int
 }
 /** @} */
 
-/** equality 
+/** equality
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const int3& a, const int3& b)
@@ -1122,18 +1136,18 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int getByIndex(const int3& v, int i)
 {
   return ((int*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(int3& v, int i, int x)
 {
   ((int*)(&v))[i] = x;
 }
-  
+
 
 /* int4 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int4 make_int4(const int s)
@@ -1164,7 +1178,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int4 max(const int4& a, const int4& b)
   return make_int4(max(a.x,b.x), max(a.y,b.y), max(a.z,b.z), max(a.w,b.w));
 }
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int4 operator+(const int4& a, const int4& b)
@@ -1177,7 +1191,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(int4& a, const int4& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int4 operator-(const int4& a, const int4& b)
@@ -1191,7 +1205,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(int4& a, const int4& b)
 }
 /** @} */
 
-/** multiply 
+/** multiply
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int4 operator*(const int4& a, const int4& b)
@@ -1212,7 +1226,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(int4& a, const int s)
 }
 /** @} */
 
-/** divide 
+/** divide
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int4 operator/(const int4& a, const int4& b)
@@ -1233,7 +1247,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(int4& a, const int s)
 }
 /** @} */
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int4 clamp(const int4& v, const int a, const int b)
@@ -1247,7 +1261,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int4 clamp(const int4& v, const int4& a, const int
 }
 /** @} */
 
-/** equality 
+/** equality
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const int4& a, const int4& b)
@@ -1266,13 +1280,13 @@ SUTIL_INLINE SUTIL_HOSTDEVICE int getByIndex(const int4& v, int i)
 {
   return ((int*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(int4& v, int i, int x)
 {
   ((int*)(&v))[i] = x;
 }
-  
+
 
 /* uint functions */
 /******************************************************************************/
@@ -1288,18 +1302,18 @@ SUTIL_INLINE SUTIL_HOSTDEVICE unsigned int getByIndex(const uint1& v, unsigned i
 {
   return ((unsigned int*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(uint1& v, int i, unsigned int x)
 {
   ((unsigned int*)(&v))[i] = x;
 }
-  
+
 
 /* uint2 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint2 make_uint2(const unsigned int s)
@@ -1408,18 +1422,18 @@ SUTIL_INLINE SUTIL_HOSTDEVICE unsigned int getByIndex(const uint2& v, unsigned i
 {
   return ((unsigned int*)(&v))[i];
 }
-  
+
 /** If used on the device, this could place the the 'v' in local memory */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(uint2& v, int i, unsigned int x)
 {
   ((unsigned int*)(&v))[i] = x;
 }
-  
+
 
 /* uint3 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint3 make_uint3(const unsigned int s)
@@ -1444,7 +1458,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint3 max(const uint3& a, const uint3& b)
   return make_uint3(max(a.x,b.x), max(a.y,b.y), max(a.z,b.z));
 }
 
-/** add 
+/** add
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint3 operator+(const uint3& a, const uint3& b)
@@ -1513,7 +1527,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(uint3& a, const unsigned int s)
 }
 /** @} */
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint3 clamp(const uint3& v, const unsigned int a, const unsigned int b)
@@ -1527,7 +1541,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint3 clamp(const uint3& v, const uint3& a, const 
 }
 /** @} */
 
-/** equality 
+/** equality
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const uint3& a, const uint3& b)
@@ -1541,25 +1555,25 @@ SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const uint3& a, const uint3& b)
 }
 /** @} */
 
-/** If used on the device, this could place the the 'v' in local memory 
+/** If used on the device, this could place the the 'v' in local memory
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE unsigned int getByIndex(const uint3& v, unsigned int i)
 {
   return ((unsigned int*)(&v))[i];
 }
-  
-/** If used on the device, this could place the the 'v' in local memory 
+
+/** If used on the device, this could place the the 'v' in local memory
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(uint3& v, int i, unsigned int x)
 {
   ((unsigned int*)(&v))[i] = x;
 }
-  
+
 
 /* uint4 functions */
 /******************************************************************************/
 
-/** additional constructors 
+/** additional constructors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 make_uint4(const unsigned int s)
@@ -1581,7 +1595,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint4 min(const uint4& a, const uint4& b)
 }
 /** @} */
 
-/** max 
+/** max
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 max(const uint4& a, const uint4& b)
@@ -1603,7 +1617,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(uint4& a, const uint4& b)
 }
 /** @} */
 
-/** subtract 
+/** subtract
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 operator-(const uint4& a, const uint4& b)
@@ -1638,7 +1652,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(uint4& a, const unsigned int s)
 }
 /** @} */
 
-/** divide 
+/** divide
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 operator/(const uint4& a, const uint4& b)
@@ -1659,7 +1673,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(uint4& a, const unsigned int s)
 }
 /** @} */
 
-/** clamp 
+/** clamp
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 clamp(const uint4& v, const unsigned int a, const unsigned int b)
@@ -1673,7 +1687,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint4 clamp(const uint4& v, const uint4& a, const 
 }
 /** @} */
 
-/** equality 
+/** equality
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const uint4& a, const uint4& b)
@@ -1687,14 +1701,14 @@ SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const uint4& a, const uint4& b)
 }
 /** @} */
 
-/** If used on the device, this could place the the 'v' in local memory 
+/** If used on the device, this could place the the 'v' in local memory
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE unsigned int getByIndex(const uint4& v, unsigned int i)
 {
   return ((unsigned int*)(&v))[i];
 }
-  
-/** If used on the device, this could place the the 'v' in local memory 
+
+/** If used on the device, this could place the the 'v' in local memory
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(uint4& v, int i, unsigned int x)
 {
@@ -1993,36 +2007,36 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(longlong3& v, int i, int x)
 }
 
 
-/* longlong4 functions */
+/* LONGLONG4 functions */
 /******************************************************************************/
 
 /** additional constructors
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long s)
 {
     return make_longlong4(s, s, s, s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const float4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const float4& a)
 {
     return make_longlong4((long long)a.x, (long long)a.y, (long long)a.z, (long long)a.w);
 }
 /** @} */
 
 /** negate */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator-(const longlong4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator-(const LONGLONG4& a)
 {
     return make_longlong4(-a.x, -a.y, -a.z, -a.w);
 }
 
 /** min */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 min(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 min(const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w));
 }
 
 /** max */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 max(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 max(const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w));
 }
@@ -2030,11 +2044,11 @@ SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 max(const longlong4& a, const longlong4&
 /** add
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator+(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator+(const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(LONGLONG4& a, const LONGLONG4& b)
 {
     a.x += b.x; a.y += b.y; a.z += b.z; a.w += b.w;
 }
@@ -2043,12 +2057,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(longlong4& a, const longlong4& b)
 /** subtract
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator-(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator-(const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(LONGLONG4& a, const LONGLONG4& b)
 {
     a.x -= b.x; a.y -= b.y; a.z -= b.z; a.w -= b.w;
 }
@@ -2057,19 +2071,19 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(longlong4& a, const longlong4& b)
 /** multiply
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator*(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator*(const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator*(const longlong4& a, const long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator*(const LONGLONG4& a, const long long s)
 {
     return make_longlong4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator*(const long long s, const longlong4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator*(const long long s, const LONGLONG4& a)
 {
     return make_longlong4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(longlong4& a, const long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(LONGLONG4& a, const long long s)
 {
     a.x *= s; a.y *= s; a.z *= s; a.w *= s;
 }
@@ -2078,19 +2092,19 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(longlong4& a, const long long s)
 /** divide
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator/(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator/(const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator/(const longlong4& a, const long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator/(const LONGLONG4& a, const long long s)
 {
     return make_longlong4(a.x / s, a.y / s, a.z / s, a.w / s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 operator/(const long long s, const longlong4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 operator/(const long long s, const LONGLONG4& a)
 {
     return make_longlong4(s / a.x, s / a.y, s / a.z, s / a.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(longlong4& a, const long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(LONGLONG4& a, const long long s)
 {
     a.x /= s; a.y /= s; a.z /= s; a.w /= s;
 }
@@ -2099,12 +2113,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(longlong4& a, const long long s)
 /** clamp
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 clamp(const longlong4& v, const long long a, const long long b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 clamp(const LONGLONG4& v, const long long a, const long long b)
 {
     return make_longlong4(clamp(v.x, a, b), clamp(v.y, a, b), clamp(v.z, a, b), clamp(v.w, a, b));
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 clamp(const longlong4& v, const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 clamp(const LONGLONG4& v, const LONGLONG4& a, const LONGLONG4& b)
 {
     return make_longlong4(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z), clamp(v.w, a.w, b.w));
 }
@@ -2113,25 +2127,25 @@ SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 clamp(const longlong4& v, const longlong
 /** equality
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const LONGLONG4& a, const LONGLONG4& b)
 {
     return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const longlong4& a, const longlong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const LONGLONG4& a, const LONGLONG4& b)
 {
     return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w;
 }
 /** @} */
 
 /** If used on the device, this could place the the 'v' in local memory */
-SUTIL_INLINE SUTIL_HOSTDEVICE long long getByIndex(const longlong4& v, int i)
+SUTIL_INLINE SUTIL_HOSTDEVICE long long getByIndex(const LONGLONG4& v, int i)
 {
     return ((long long*)(&v))[i];
 }
 
 /** If used on the device, this could place the the 'v' in local memory */
-SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(longlong4& v, int i, long long x)
+SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(LONGLONG4& v, int i, long long x)
 {
     ((long long*)(&v))[i] = x;
 }
@@ -2418,17 +2432,17 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(ulonglong3& v, int i, unsigned lon
 }
 
 
-/* ulonglong4 functions */
+/* ULONGLONG4 functions */
 /******************************************************************************/
 
 /** additional constructors
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const unsigned long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long s)
 {
     return make_ulonglong4(s, s, s, s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const float4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const float4& a)
 {
     return make_ulonglong4((unsigned long long)a.x, (unsigned long long)a.y, (unsigned long long)a.z, (unsigned long long)a.w);
 }
@@ -2437,7 +2451,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const float4& a)
 /** min
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 min(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 min(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z), min(a.w, b.w));
 }
@@ -2446,7 +2460,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 min(const ulonglong4& a, const ulonglon
 /** max
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 max(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 max(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z), max(a.w, b.w));
 }
@@ -2455,11 +2469,11 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 max(const ulonglong4& a, const ulonglon
 /** add
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator+(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator+(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(ULONGLONG4& a, const ULONGLONG4& b)
 {
     a.x += b.x; a.y += b.y; a.z += b.z; a.w += b.w;
 }
@@ -2468,12 +2482,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator+=(ulonglong4& a, const ulonglong4& b
 /** subtract
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator-(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator-(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(ULONGLONG4& a, const ULONGLONG4& b)
 {
     a.x -= b.x; a.y -= b.y; a.z -= b.z; a.w -= b.w;
 }
@@ -2482,19 +2496,19 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator-=(ulonglong4& a, const ulonglong4& b
 /** multiply
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator*(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator*(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(a.x * b.x, a.y * b.y, a.z * b.z, a.w * b.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator*(const ulonglong4& a, const unsigned long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator*(const ULONGLONG4& a, const unsigned long long s)
 {
     return make_ulonglong4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator*(const unsigned long long s, const ulonglong4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator*(const unsigned long long s, const ULONGLONG4& a)
 {
     return make_ulonglong4(a.x * s, a.y * s, a.z * s, a.w * s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(ulonglong4& a, const unsigned long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(ULONGLONG4& a, const unsigned long long s)
 {
     a.x *= s; a.y *= s; a.z *= s; a.w *= s;
 }
@@ -2503,19 +2517,19 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator*=(ulonglong4& a, const unsigned long
 /** divide
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator/(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator/(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(a.x / b.x, a.y / b.y, a.z / b.z, a.w / b.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator/(const ulonglong4& a, const unsigned long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator/(const ULONGLONG4& a, const unsigned long long s)
 {
     return make_ulonglong4(a.x / s, a.y / s, a.z / s, a.w / s);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 operator/(const unsigned long long s, const ulonglong4& a)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 operator/(const unsigned long long s, const ULONGLONG4& a)
 {
     return make_ulonglong4(s / a.x, s / a.y, s / a.z, s / a.w);
 }
-SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(ulonglong4& a, const unsigned long long s)
+SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(ULONGLONG4& a, const unsigned long long s)
 {
     a.x /= s; a.y /= s; a.z /= s; a.w /= s;
 }
@@ -2524,12 +2538,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE void operator/=(ulonglong4& a, const unsigned long
 /** clamp
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 clamp(const ulonglong4& v, const unsigned long long a, const unsigned long long b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 clamp(const ULONGLONG4& v, const unsigned long long a, const unsigned long long b)
 {
     return make_ulonglong4(clamp(v.x, a, b), clamp(v.y, a, b), clamp(v.z, a, b), clamp(v.w, a, b));
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 clamp(const ulonglong4& v, const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 clamp(const ULONGLONG4& v, const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return make_ulonglong4(clamp(v.x, a.x, b.x), clamp(v.y, a.y, b.y), clamp(v.z, a.z, b.z), clamp(v.w, a.w, b.w));
 }
@@ -2538,12 +2552,12 @@ SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 clamp(const ulonglong4& v, const ulongl
 /** equality
 * @{
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE bool operator==(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return a.x == b.x && a.y == b.y && a.z == b.z && a.w == b.w;
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const ulonglong4& a, const ulonglong4& b)
+SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const ULONGLONG4& a, const ULONGLONG4& b)
 {
     return a.x != b.x || a.y != b.y || a.z != b.z || a.w != b.w;
 }
@@ -2551,14 +2565,14 @@ SUTIL_INLINE SUTIL_HOSTDEVICE bool operator!=(const ulonglong4& a, const ulonglo
 
 /** If used on the device, this could place the the 'v' in local memory
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE unsigned long long getByIndex(const ulonglong4& v, unsigned int i)
+SUTIL_INLINE SUTIL_HOSTDEVICE unsigned long long getByIndex(const ULONGLONG4& v, unsigned int i)
 {
     return ((unsigned long long*)(&v))[i];
 }
 
 /** If used on the device, this could place the the 'v' in local memory
 */
-SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(ulonglong4& v, int i, unsigned long long x)
+SUTIL_INLINE SUTIL_HOSTDEVICE void setByIndex(ULONGLONG4& v, int i, unsigned long long x)
 {
     ((unsigned long long*)(&v))[i] = x;
 }
@@ -2576,17 +2590,17 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint2 make_uint2(const uint3& v0) { return make_ui
 SUTIL_INLINE SUTIL_HOSTDEVICE uint2 make_uint2(const uint4& v0) { return make_uint2( v0.x, v0.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE uint3 make_uint3(const uint4& v0) { return make_uint3( v0.x, v0.y, v0.z ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE longlong2 make_longlong2(const longlong3& v0) { return make_longlong2( v0.x, v0.y ); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong2 make_longlong2(const longlong4& v0) { return make_longlong2( v0.x, v0.y ); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong3 make_longlong3(const longlong4& v0) { return make_longlong3( v0.x, v0.y, v0.z ); }
+SUTIL_INLINE SUTIL_HOSTDEVICE longlong2 make_longlong2(const LONGLONG4& v0) { return make_longlong2( v0.x, v0.y ); }
+SUTIL_INLINE SUTIL_HOSTDEVICE longlong3 make_longlong3(const LONGLONG4& v0) { return make_longlong3( v0.x, v0.y, v0.z ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong2 make_ulonglong2(const ulonglong3& v0) { return make_ulonglong2( v0.x, v0.y ); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong2 make_ulonglong2(const ulonglong4& v0) { return make_ulonglong2( v0.x, v0.y ); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong3 make_ulonglong3(const ulonglong4& v0) { return make_ulonglong3( v0.x, v0.y, v0.z ); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong2 make_ulonglong2(const ULONGLONG4& v0) { return make_ulonglong2( v0.x, v0.y ); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong3 make_ulonglong3(const ULONGLONG4& v0) { return make_ulonglong3( v0.x, v0.y, v0.z ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 make_float2(const float3& v0) { return make_float2( v0.x, v0.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float2 make_float2(const float4& v0) { return make_float2( v0.x, v0.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 make_float3(const float4& v0) { return make_float3( v0.x, v0.y, v0.z ); }
 /** @} */
 
-/** Assemble functions from smaller vectors 
+/** Assemble functions from smaller vectors
 * @{
 */
 SUTIL_INLINE SUTIL_HOSTDEVICE int3 make_int3(const int v0, const int2& v1) { return make_int3( v0, v1.x, v1.y ); }
@@ -2607,20 +2621,20 @@ SUTIL_INLINE SUTIL_HOSTDEVICE uint4 make_uint4(const uint3& v0, const unsigned i
 SUTIL_INLINE SUTIL_HOSTDEVICE uint4 make_uint4(const uint2& v0, const uint2& v1) { return make_uint4( v0.x, v0.y, v1.x, v1.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE longlong3 make_longlong3(const long long v0, const longlong2& v1) { return make_longlong3(v0, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE longlong3 make_longlong3(const longlong2& v0, const long long v1) { return make_longlong3(v0.x, v0.y, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const long long v0, const long long v1, const longlong2& v2) { return make_longlong4(v0, v1, v2.x, v2.y); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const long long v0, const longlong2& v1, const long long v2) { return make_longlong4(v0, v1.x, v1.y, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const longlong2& v0, const long long v1, const long long v2) { return make_longlong4(v0.x, v0.y, v1, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const long long v0, const longlong3& v1) { return make_longlong4(v0, v1.x, v1.y, v1.z); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const longlong3& v0, const long long v1) { return make_longlong4(v0.x, v0.y, v0.z, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE longlong4 make_longlong4(const longlong2& v0, const longlong2& v1) { return make_longlong4(v0.x, v0.y, v1.x, v1.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long v0, const long long v1, const longlong2& v2) { return make_longlong4(v0, v1, v2.x, v2.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long v0, const longlong2& v1, const long long v2) { return make_longlong4(v0, v1.x, v1.y, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const longlong2& v0, const long long v1, const long long v2) { return make_longlong4(v0.x, v0.y, v1, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const long long v0, const longlong3& v1) { return make_longlong4(v0, v1.x, v1.y, v1.z); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const longlong3& v0, const long long v1) { return make_longlong4(v0.x, v0.y, v0.z, v1); }
+SUTIL_INLINE SUTIL_HOSTDEVICE LONGLONG4 make_longlong4(const longlong2& v0, const longlong2& v1) { return make_longlong4(v0.x, v0.y, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong3 make_ulonglong3(const unsigned long long v0, const ulonglong2& v1) { return make_ulonglong3(v0, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong3 make_ulonglong3(const ulonglong2& v0, const unsigned long long v1) { return make_ulonglong3(v0.x, v0.y, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const unsigned long long v0, const unsigned long long v1, const ulonglong2& v2) { return make_ulonglong4(v0, v1, v2.x, v2.y); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const unsigned long long v0, const ulonglong2& v1, const unsigned long long v2) { return make_ulonglong4(v0, v1.x, v1.y, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const ulonglong2& v0, const unsigned long long v1, const unsigned long long v2) { return make_ulonglong4(v0.x, v0.y, v1, v2); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const unsigned long long v0, const ulonglong3& v1) { return make_ulonglong4(v0, v1.x, v1.y, v1.z); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const ulonglong3& v0, const unsigned long long v1) { return make_ulonglong4(v0.x, v0.y, v0.z, v1); }
-SUTIL_INLINE SUTIL_HOSTDEVICE ulonglong4 make_ulonglong4(const ulonglong2& v0, const ulonglong2& v1) { return make_ulonglong4(v0.x, v0.y, v1.x, v1.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long v0, const unsigned long long v1, const ulonglong2& v2) { return make_ulonglong4(v0, v1, v2.x, v2.y); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long v0, const ulonglong2& v1, const unsigned long long v2) { return make_ulonglong4(v0, v1.x, v1.y, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const ulonglong2& v0, const unsigned long long v1, const unsigned long long v2) { return make_ulonglong4(v0.x, v0.y, v1, v2); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const unsigned long long v0, const ulonglong3& v1) { return make_ulonglong4(v0, v1.x, v1.y, v1.z); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const ulonglong3& v0, const unsigned long long v1) { return make_ulonglong4(v0.x, v0.y, v0.z, v1); }
+SUTIL_INLINE SUTIL_HOSTDEVICE ULONGLONG4 make_ulonglong4(const ulonglong2& v0, const ulonglong2& v1) { return make_ulonglong4(v0.x, v0.y, v1.x, v1.y); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 make_float3(const float2& v0, const float v1) { return make_float3(v0.x, v0.y, v1); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float3 make_float3(const float v0, const float2& v1) { return make_float3( v0, v1.x, v1.y ); }
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 make_float4(const float v0, const float v1, const float2& v2) { return make_float4( v0, v1, v2.x, v2.y ); }
@@ -2646,27 +2660,27 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 make_float4(const float2& v0, const float2&
 struct scuda
 {
     template<typename T>    // parse string into value
-    static T  sval(const char* str ); 
+    static T  sval(const char* str );
 
     template<typename T>    // parse envvar into value
-    static T  eval(const char* ekey, T fallback ); 
+    static T  eval(const char* ekey, T fallback );
 
-    template<typename T>    // parse string into vector 
-    static void   svec( std::vector<T>& v, const char* str, char delim=',' ); 
+    template<typename T>    // parse string into vector
+    static void   svec( std::vector<T>& v, const char* str, char delim=',' );
 
-    template<typename T>    // parse envvar into vector 
-    static void   evec( std::vector<T>& v, const char* ekey, const char* fallback, char delim=',' ); 
+    template<typename T>    // parse envvar into vector
+    static void   evec( std::vector<T>& v, const char* ekey, const char* fallback, char delim=',' );
 
-    static float  efloat( const char* ekey, float fallback=0.f ); 
-    static float3 efloat3(const char* ekey, const char* fallback="0,0,0",   char delim=',' ); 
-    static float4 efloat4(const char* ekey, const char* fallback="0,0,0,0", char delim=',' ); 
-    static float3 efloat3n(const char* ekey, const char* fallback="0,0,0",   char delim=',' ); 
+    static float  efloat( const char* ekey, float fallback=0.f );
+    static float3 efloat3(const char* ekey, const char* fallback="0,0,0",   char delim=',' );
+    static float4 efloat4(const char* ekey, const char* fallback="0,0,0,0", char delim=',' );
+    static float3 efloat3n(const char* ekey, const char* fallback="0,0,0",   char delim=',' );
 
-    static std::string serialize( const float2& v );  // eg for metadata vector into string 
-    static std::string serialize( const float3& v ); 
-    static std::string serialize( const float4& v ); 
+    static std::string serialize( const float2& v );  // eg for metadata vector into string
+    static std::string serialize( const float3& v );
+    static std::string serialize( const float4& v );
 
-    static float4 center_extent_( const float* mn, const float* mx ); 
+    static float4 center_extent_( const float* mn, const float* mx );
     static float4 center_extent( const float3& mn, const float3& mx );
     static float4 center_extent( const float4& mn, const float4& mx );
 
@@ -2677,16 +2691,16 @@ inline T scuda::sval( const char* str )
 {
     std::string s(str) ;
     std::istringstream iss(s);
-    T t ; 
-    iss >> t ;     
-    return t ; 
+    T t ;
+    iss >> t ;
+    return t ;
 }
 
 template<typename T>
 inline T scuda::eval( const char* ekey, T fallback )
 {
-    const char* str = getenv(ekey) ; 
-    return str ? sval<T>(str) : fallback ; 
+    const char* str = getenv(ekey) ;
+    return str ? sval<T>(str) : fallback ;
 }
 
 template<typename T>
@@ -2695,9 +2709,9 @@ inline void scuda::svec(std::vector<T>& v , const char* str, char delim )
     std::stringstream ss;
     ss.str(str)  ;
     std::string s;
-    while (std::getline(ss, s, delim)) 
+    while (std::getline(ss, s, delim))
     {
-        T t = sval<T>(s.c_str()); 
+        T t = sval<T>(s.c_str());
         v.push_back(t) ;
     }
 }
@@ -2705,13 +2719,13 @@ inline void scuda::svec(std::vector<T>& v , const char* str, char delim )
 template<typename T>
 inline void scuda::evec(std::vector<T>& v , const char* ekey, const char* fallback, char delim )
 {
-    const char* str = getenv(ekey) ; 
-    svec(v, str ? str : fallback, delim ); 
+    const char* str = getenv(ekey) ;
+    svec(v, str ? str : fallback, delim );
 }
 
 inline float scuda::efloat(const char* ekey, float fallback)
 {
-    return eval<float>(ekey, fallback); 
+    return eval<float>(ekey, fallback);
 }
 
 inline float3 scuda::efloat3(const char* ekey, const char* fallback, char delim )
@@ -2739,48 +2753,48 @@ inline float4 scuda::efloat4(const char* ekey, const char* fallback, char delim 
 
 inline float3 scuda::efloat3n(const char* ekey, const char* fallback, char delim )
 {
-   float3 v = efloat3(ekey, fallback, delim); 
-   return normalize(v);  
+   float3 v = efloat3(ekey, fallback, delim);
+   return normalize(v);
 }
 
 
 
 inline std::string scuda::serialize(const float2& v )
 {
-    std::stringstream ss ; 
-    ss << v.x 
-       << "," 
-       << v.y 
+    std::stringstream ss ;
+    ss << v.x
+       << ","
+       << v.y
        ;
-    std::string str = ss.str(); 
-    return str ; 
+    std::string str = ss.str();
+    return str ;
 }
 
 inline std::string scuda::serialize(const float3& v )
 {
-    std::stringstream ss ; 
-    ss << v.x 
-       << "," 
-       << v.y 
+    std::stringstream ss ;
+    ss << v.x
        << ","
-       << v.z 
+       << v.y
+       << ","
+       << v.z
        ;
-    std::string str = ss.str(); 
-    return str ; 
+    std::string str = ss.str();
+    return str ;
 }
 inline std::string scuda::serialize(const float4& v )
 {
-    std::stringstream ss ; 
-    ss << v.x 
-       << "," 
-       << v.y 
+    std::stringstream ss ;
+    ss << v.x
        << ","
-       << v.z 
+       << v.y
        << ","
-       << v.w 
+       << v.z
+       << ","
+       << v.w
        ;
-    std::string str = ss.str(); 
-    return str ; 
+    std::string str = ss.str();
+    return str ;
 }
 
 
@@ -2788,40 +2802,40 @@ inline std::string scuda::serialize(const float4& v )
 scuda::center_extent
 ----------------------
 
-The aim of center_extent "ce" is to define a box 
+The aim of center_extent "ce" is to define a box
 that contains all the points of a point cloud
 here defined by the mn and mx coordinate points.
 
 **/
 inline float4 scuda::center_extent_( const float* mn, const float* mx )
 {
-    float3 center = make_float3( (mn[0]+mx[0])/2.f, (mn[1]+mx[1])/2.f, (mn[2]+mx[2])/2.f ) ;   
-    float3 mx_rel = make_float3( mx[0],mx[1],mx[2] ) - center ; 
-    float3 mn_rel = center - make_float3( mn[0],mn[1],mn[2] ) ; 
-    float extent = fmaxf( fmaxf(mx_rel), fmaxf(mn_rel) ) ; 
-    return make_float4( center, extent ); 
+    float3 center = make_float3( (mn[0]+mx[0])/2.f, (mn[1]+mx[1])/2.f, (mn[2]+mx[2])/2.f ) ;
+    float3 mx_rel = make_float3( mx[0],mx[1],mx[2] ) - center ;
+    float3 mn_rel = center - make_float3( mn[0],mn[1],mn[2] ) ;
+    float extent = fmaxf( fmaxf(mx_rel), fmaxf(mn_rel) ) ;
+    return make_float4( center, extent );
 }
 inline float4 scuda::center_extent( const float3& mn, const float3& mx )
 {
-    return center_extent_(&mn.x, &mx.x); 
+    return center_extent_(&mn.x, &mx.x);
 }
 inline float4 scuda::center_extent( const float4& mn, const float4& mx )
 {
-    return center_extent_(&mn.x, &mx.x); 
+    return center_extent_(&mn.x, &mx.x);
 }
 
 
 inline std::ostream& operator<<(std::ostream& os, const float2& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.x 
-       << "," 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.y 
-       << ") "  
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.x
+       << ","
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.y
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 
@@ -2829,34 +2843,34 @@ inline std::ostream& operator<<(std::ostream& os, const float2& v)
 
 inline std::ostream& operator<<(std::ostream& os, const float3& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.x 
-       << "," 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.y 
-       << "," 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.z 
-       << ") "  
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.x
+       << ","
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.y
+       << ","
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.z
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const float4& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.x 
-       << "," 
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.x
+       << ","
        << std::setw(w) << std::fixed << std::setprecision(3) << v.y
-       << "," 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.z 
-       << "," 
-       << std::setw(w) << std::fixed << std::setprecision(3) << v.w 
-       << ") "  
+       << ","
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.z
+       << ","
+       << std::setw(w) << std::fixed << std::setprecision(3) << v.w
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 
@@ -2869,98 +2883,98 @@ inline std::ostream& operator<<(std::ostream& os, const float4& v)
 
 inline std::ostream& operator<<(std::ostream& os, const int2& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << v.x 
-       << "," 
-       << std::setw(w) << v.y 
-       << ") "  
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << v.x
+       << ","
+       << std::setw(w) << v.y
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const int3& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << v.x 
-       << "," 
-       << std::setw(w) << v.y 
-       << "," 
-       << std::setw(w) << v.z 
-       << ") "  
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << v.x
+       << ","
+       << std::setw(w) << v.y
+       << ","
+       << std::setw(w) << v.z
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const int4& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << v.x 
-       << "," 
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << v.x
+       << ","
        << std::setw(w) << v.y
-       << "," 
-       << std::setw(w) << v.z 
-       << "," 
-       << std::setw(w) << v.w 
-       << ") "  
+       << ","
+       << std::setw(w) << v.z
+       << ","
+       << std::setw(w) << v.w
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const short4& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << v.x 
-       << "," 
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << v.x
+       << ","
        << std::setw(w) << v.y
-       << "," 
-       << std::setw(w) << v.z 
-       << "," 
-       << std::setw(w) << v.w 
-       << ") "  
+       << ","
+       << std::setw(w) << v.z
+       << ","
+       << std::setw(w) << v.w
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const uchar4& v)
 {
-    int w = 4 ; 
-    os 
-       << "(" 
-       << std::setw(w) << int(v.x)     // avoid trying to output char  
-       << "," 
+    int w = 4 ;
+    os
+       << "("
+       << std::setw(w) << int(v.x)     // avoid trying to output char
+       << ","
        << std::setw(w) << int(v.y)
-       << "," 
-       << std::setw(w) << int(v.z) 
-       << "," 
-       << std::setw(w) << int(v.w) 
-       << ") "  
+       << ","
+       << std::setw(w) << int(v.z)
+       << ","
+       << std::setw(w) << int(v.w)
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 inline std::ostream& operator<<(std::ostream& os, const char4& v)
 {
-    int w = 4 ; 
-    os 
-       << "(" 
-       << std::setw(w) << int(v.x)     // avoid trying to output char  
-       << "," 
+    int w = 4 ;
+    os
+       << "("
+       << std::setw(w) << int(v.x)     // avoid trying to output char
+       << ","
        << std::setw(w) << int(v.y)
-       << "," 
-       << std::setw(w) << int(v.z) 
-       << "," 
-       << std::setw(w) << int(v.w) 
-       << ") "  
+       << ","
+       << std::setw(w) << int(v.z)
+       << ","
+       << std::setw(w) << int(v.w)
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 
@@ -2968,17 +2982,17 @@ inline std::ostream& operator<<(std::ostream& os, const char4& v)
 
 inline std::ostream& operator<<(std::ostream& os, const uint3& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << v.x 
-       << "," 
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << v.x
+       << ","
        << std::setw(w) << v.y
-       << "," 
-       << std::setw(w) << v.z 
-       << ") "  
+       << ","
+       << std::setw(w) << v.z
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 
@@ -2986,19 +3000,19 @@ inline std::ostream& operator<<(std::ostream& os, const uint3& v)
 
 inline std::ostream& operator<<(std::ostream& os, const uint4& v)
 {
-    int w = 6 ; 
-    os 
-       << "(" 
-       << std::setw(w) << v.x 
-       << "," 
+    int w = 6 ;
+    os
+       << "("
+       << std::setw(w) << v.x
+       << ","
        << std::setw(w) << v.y
-       << "," 
-       << std::setw(w) << v.z 
-       << "," 
-       << std::setw(w) << v.w 
-       << ") "  
+       << ","
+       << std::setw(w) << v.z
+       << ","
+       << std::setw(w) << v.w
+       << ") "
        ;
-    return os; 
+    return os;
 }
 
 

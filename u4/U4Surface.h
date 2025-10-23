@@ -252,7 +252,7 @@ inline const std::vector<G4LogicalSkinSurface*>* U4Surface::PrepareSkinSurfaceVe
     typedef std::vector<G4LogicalSkinSurface*> VKS ; 
 #if G4VERSION_NUMBER >= 1122
     typedef std::map<const G4LogicalVolume*,G4LogicalSkinSurface*>::const_iterator IT ; 
-    const VKS* vec = new VKS ;   
+    VKS* vec = new VKS ;    // not const as need to push_back
 
     for(IT it=tab->begin() ; it != tab->end() ; it++ )
     {   

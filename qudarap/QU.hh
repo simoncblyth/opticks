@@ -2,6 +2,7 @@
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 #include <vector>
+#include <cstdint>
 
 struct NP ;
 struct dim3 ;

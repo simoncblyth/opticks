@@ -13,6 +13,7 @@ Extract from NP.hh NPU.hh minimal-ish code to write a NumPy file
 #include <sstream>
 #include <fstream>
 #include <vector>
+#include <cstdint>
 
 struct np
 {
