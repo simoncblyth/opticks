@@ -37,9 +37,16 @@ app = FastAPI()
 
 def make_response( arr:np.ndarray, meta:str="", magic:bool=False, index:int=-1, level:int = 0):
     """
-    https://stackoverflow.com/questions/15879315/what-is-the-difference-between-ndarray-and-array-in-numpy
+    :param arr: array to respond with over HTTP
+    :param meta: metadata to append to the transport buffer after the array data
 
-    numpy.array is just a convenience function to create an ndarray; it is not a class itself.
+    :param magic:true
+         NumPy MAGIC+dtype+shape metadata travel within the response data,
+    :param magic:false
+         NumPy dtype+shape metadata travel via the response headers, array data travels in body
+
+    :param index: metadata ? event index ?
+    :param level: logging verbosity
     """
     if level > 0:
         print("make_response arr:%s meta:%s magic:%s index:%s level:%s  " % (arr, meta,magic,index,level))

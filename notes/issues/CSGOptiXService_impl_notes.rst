@@ -1,90 +1,167 @@
 CSGOptiXService_impl_notes
 ============================
 
-Currently just placeholder to check nanobind.
-Now that the binding is working, need to add
-a more realistic test impl.
+Overview
+---------
+
+* nanobind works to interface from FastAPI python thru to Opticks/CSGOptiX 
+  (notice no Geant4 dependency in the service : its not needed as pure optical)
 
 
-Start from cxs_min.sh test which uses::
+TODO : realistic client with local hit formation
+-------------------------------------------------
 
-     161 int CSGOptiX::SimulateMain() // static
-     162 {
-     163     SProf::Add("CSGOptiX__SimulateMain_HEAD");
-     164     SEventConfig::SetRGModeSimulate();
-     165     CSGFoundry* fd = CSGFoundry::Load();
-     166     CSGOptiX* cx = CSGOptiX::Create(fd) ;
-     167     for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i);
-     168     SProf::UnsetTag();
-     169     SProf::Add("CSGOptiX__SimulateMain_TAIL");
-     170     SProf::Write("run_meta.txt", true ); // append:true
-     171     cx->write_Ctx_log();
-     172     delete cx ;
-     173     return 0 ;
-     174 }
+Client needs to:
 
+1. use libcurl to shoot off the gensteps and receive hits 
 
-Need to pull out where the gensteps are coming from and where the hits
-are going and expose those in the API.
+* HMM: maybe rejig G4CXOpticks to use same API for local and remote
+  simulation with compile time switch (very different dependencies)
 
-::
+* [START DEVELOPMENT WITH RUNTIME SWITCH FOR CONVENIENCE OF TESTING, 
+   UNTIL TEST ON NON-GPU MACHINE]
 
-     716 double CSGOptiX::simulate(int eventID)
-     717 {
-     718     SProf::SetTag(eventID, "A%0.3d_" ) ;
-     719     assert(sim);
-     720     bool reset = true ;   // reset:true calls SEvt::endOfEvent for cleanup after simulate
-     721     double dt = sim->simulate(eventID, reset) ; // (QSim)
-     722     return dt ;
-     723 }
-
-
-
-
-::
-
-     408 double QSim::simulate(int eventID, bool reset_)
-     409 {
-     423     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
-     424 
-     425     NP* igs = sev->makeGenstepArrayFromVector();
-     426 
-     427     MaybeSaveIGS(eventID, igs);
-     428 
-     429     std::vector<sslice> igs_slice ;
-     430     SGenstep::GetGenstepSlices( igs_slice, igs, SEventConfig::MaxSlot() );
-     431     int num_slice = igs_slice.size();
-
-     444     for(int i=0 ; i < num_slice ; i++)
-     445     {
-     448         const sslice& sl = igs_slice[i] ;
-     451 
-     452         int rc = event->setGenstepUpload_NP(igs, &sl ) ; // upload gensteps, OR a slice of them if photon total would not fit VRAM
+* monolithic "client" and "service" together (depends on CUDA/OptiX/CSGOptiX)
+* "client" (depends on libcurl)
  
-     466         double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
+  * HMM: maybe arrange G4CXOpticks to work with protocol fulfilled by both:
 
-     477         sev->gather();  // gather into *fold* just added to *topfold*
-
-     482     }
-
-     488     int concat_rc = sev->topfold->concat(out);    // concatenate result arrays from all the slices 
-
-     499     int tot_ht = sev->getNumHit() ;  // NB from fold, so requires hits array gathering to be configured to get non-zero
-
-     513     if(reset_) reset(eventID) ;
+    * CSGOptiX/CSGOptiX (monolithic)
+    * sysrap/s_CURL_CSGOptiX.h (client)
 
 
-     543     return tot_dt ;
-     544 }
+HMM: the client just needs to receive the remotely obtained hits into its SEvt, 
+thence can directly use existing machinery.  The only difference is where the
+simulation is done.::
+
+
+     67 /**
+     68 U4HitGet::FromEvt
+     69 ------------------
+     70  
+     71 HMM: this is awkward for Opticks-as-a-service as do not want to return both global and local ?
+     72 Better to define a composite hit array serialization that can be formed on the server,
+     73 to avoid doubling the size of hit array that needs to be returned.
+     74  
+     75 The Opticks-client will be receiving global hit(sphoton) 
+     76 from which it needs to do something like SEvt::getLocalHit
+     77 to apply the appropriate transforms to get the local hit.
+     78  
+     79 **/
+     80  
+     81 inline void U4HitGet::FromEvt(U4Hit& hit, unsigned idx, int eidx )
+     82 {
+     83     sphoton global ;
+     84     sphoton local ;
+     85     
+     86     SEvt* sev = SEvt::Get(eidx);
+     87     sev->getHit( global, idx);    // gets *idx* item from the hit array
+     88     
+     89     sphit ht ;  // extra hit info, just 3 ints : iindex, sensor_identifier, sensor_index
+     90     sev->getLocalHit( ht, local,  idx);
+     91     
+     92     ConvertFromPhoton(hit, global, local, ht );
+     93 }   
 
 
 
-     643 void QSim::reset(int eventID)
-     644 {
-     646     event->clear();
-     647     sev->endOfEvent(eventID);
-     650 }
+    4831 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
+    4832 {
+    4833     getHit(lp, idx);   // copy *idx* hit from NP array (starts global frame) into sphoton& lp struct of caller
+    4834     int iindex = lp.iindex() ;
+    4835 
+    4836     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
+    4837 
+    4838     LOG_IF(fatal, tr == nullptr)
+    4839          << " FAILED TO GET INSTANCE TRANSFORM : WHEN TESTING NEEDS SSim::Load NOT SSim::Create"
+    4840          << " iindex " << iindex
+    4841          << " tree " << ( tree ? "YES" : "NO " )
+    4842          << " tree.desc_inst " << ( tree ? tree->desc_inst() : "-" )
+    4843          ;
+    4844     assert( tr );
+    4845 
+    4846     bool normalize = true ;
+    4847     lp.transform( *tr, normalize );   // inplace transforms lp (pos, mom, pol) into local frame
+    4848 
+    4849     glm::tvec4<int64_t> col3 = {} ;
+    4850     strid::Decode( *tr, col3 );
+    4851 
+    4852     ht.iindex = col3[0] ;
+    4853     ht.sensor_identifier = col3[2] ;  // NB : NO "-1" HERE : SEE ABOVE COMMENT
+    4854     ht.sensor_index = col3[3] ;
+    4855 }
 
+
+
+
+DONE : test clients using curl commandline or C++ libcurl to use remote API
+-----------------------------------------------------------------------------
+
+* ~/np/tests/np_curl_test/np_curl_test.sh
+
+
+DONE : High Level simulate API to receive gensteps from python and return hits
+-------------------------------------------------------------------------------
+
+CSGOptiX/CSGOptiXService.h::
+
+     76 inline NP* CSGOptiXService::simulate( NP* gs, int eventID )
+     77 {
+     78     if(level > 0) std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;
+     79  
+     80     NP* ht = cx->simulate(gs, eventID );
+     81  
+     82     if(level > 0) std::cout << "]CSGOptiXService::simulate ht " << ( ht ? ht->sstr() : "-" ) << "\n" ;
+     83     return ht ;
+     84 }
+
+
+DONE : Python package nanobind bound to CSGOptiX : using a "shadow" _CSGOptiXService to take care of the nanobind interfacing
+-------------------------------------------------------------------------------------------------------------------------------
+
+CSGOptiX/opticks_CSGOptiX.cc::
+
+     14 #include "CSGOptiXService.h"
+     15  
+     16 namespace nb = nanobind;
+     17  
+     18  
+     19 struct _CSGOptiXService
+     20 {
+     21    int             level ;
+     22    CSGOptiXService svc ;
+     23  
+     24    _CSGOptiXService();
+     25    virtual ~_CSGOptiXService();
+     26  
+     27    nb::ndarray<nb::numpy> simulate( nb::ndarray<nb::numpy> _gs, int eventID ) ;
+     28    nb::tuple    simulate_with_meta( nb::ndarray<nb::numpy> _gs, nb::str _gs_meta, int eventID ) ;
+     29  
+     30    std::string desc() const ;
+     31 };
+     ..
+     96 // First argument is module name which must match the first arg to nanobind_add_module in CMakeLists.txt
+     97 NB_MODULE(opticks_CSGOptiX, m)
+     98 {
+     99     m.doc() = "nanobind _CSGOptiXService ";
+    100  
+    101     nb::class_<_CSGOptiXService>(m, "_CSGOptiXService")
+    102         .def(nb::init<>())
+    103         .def("__repr__", &_CSGOptiXService::desc)
+    104         .def("simulate", &_CSGOptiXService::simulate )
+    105         .def("simulate_with_meta", &_CSGOptiXService::simulate_with_meta )
+    106         ;
+    107 }
+
+
+
+
+CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+CSGOptiX/tests/CSGOptiXService_FastAPI_test/main.py : FastAPI endpoint
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
