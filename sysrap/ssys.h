@@ -48,14 +48,16 @@ struct ssys
     static const char* getenvvar(const char* ekey, const char* fallback, char q, char r );
 
 
-    static int getenv_ParseInt(const char* ekey, const char* fallback);
+    //static int getenv_ParseInt(const char* ekey, const char* fallback);
+    //static std::vector<int>* getenv_ParseIntSpecList(const char* ekey, const char* fallback);
+
     static int64_t getenv_ParseInt64(const char* ekey, const char* fallback);
-    static std::vector<int>* getenv_ParseIntSpecList(const char* ekey, const char* fallback);
+    static std::vector<int64_t>* getenv_ParseInt64SpecList(const char* ekey, const char* fallback);
 
     static unsigned long long getenvull(const char* ekey, unsigned long long fallback);
     static int getenvint(const char* ekey, int fallback);
     static int64_t getenvint64(const char* ekey, int64_t fallback);
-    static int getenvintspec( const char* ekey, const char* fallback);
+    //static int getenvintspec( const char* ekey, const char* fallback);
     static int64_t  getenvint64spec( const char* ekey, const char* fallback);
     static uint64_t getenvuint64spec(const char* ekey, const char* fallback );
 
@@ -312,6 +314,7 @@ inline const char* ssys::getenvvar(const char* ekey, const char* fallback, char 
 }
 
 
+/*
 inline int ssys::getenv_ParseInt(const char* ekey, const char* fallback)
 {
     const char* spec = getenvvar(ekey, fallback);
@@ -331,6 +334,7 @@ inline int ssys::getenv_ParseInt(const char* ekey, const char* fallback)
     }
     return sstr::ParseInt<int>(spec) ;
 }
+*/
 
 
 inline int64_t ssys::getenv_ParseInt64(const char* ekey, const char* fallback)
@@ -372,12 +376,12 @@ inline int64_t ssys::getenv_ParseInt64(const char* ekey, const char* fallback)
 
 
 
-inline std::vector<int>* ssys::getenv_ParseIntSpecList(const char* ekey, const char* fallback)
+inline std::vector<int64_t>* ssys::getenv_ParseInt64SpecList(const char* ekey, const char* fallback)
 {
     const char* spec = getenvvar(ekey, fallback);
     bool valid = spec != nullptr && strlen(spec) > 0 ;
     if(!valid) return nullptr ;
-    return sstr::ParseIntSpecList<int>( spec, ',' );
+    return sstr::ParseIntSpecList<int64_t>( spec, ',' );
 }
 
 
@@ -410,7 +414,6 @@ ssys::getenvintspec
 
 Uses sstr::ParseInt to convert spec like M1 M2 k10 to integers.
 
-**/
 
 inline int ssys::getenvintspec(const char* ekey, const char* fallback)
 {
@@ -419,6 +422,10 @@ inline int ssys::getenvintspec(const char* ekey, const char* fallback)
     int ival = sstr::ParseInt<int>( spec ? spec : "0" );
     return ival ;
 }
+
+**/
+
+
 
 inline int64_t ssys::getenvint64spec(const char* ekey, const char* fallback)
 {

@@ -42,7 +42,7 @@ Some logging slipped thru::
 
 
 
-TEST=vvvvvvlarge_evt cxs_min.sh  # 8.2 billion photon, 1.6 billion hits
+TEST=vvvvvvlarge_evt cxs_min.sh  # 8.25 billion photon, 1.65 billion hits
 ---------------------------------------------------------------------------
 
 

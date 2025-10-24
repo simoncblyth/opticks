@@ -124,12 +124,12 @@ std::vector<int64_t>* SEventConfig::_GetNumPhotonPerEvent()
 std::vector<int64_t>* SEventConfig::_NumPhotonPerEvent = _GetNumPhotonPerEvent() ;
 
 
-std::vector<int>* SEventConfig::_GetNumGenstepPerEvent()
+std::vector<int64_t>* SEventConfig::_GetNumGenstepPerEvent()
 {
     const char* spec = ssys::getenvvar(kNumGenstep,  _NumGenstepDefault );
-    return sstr::ParseIntSpecList<int>( spec, ',' );
+    return sstr::ParseIntSpecList<int64_t>( spec, ',' );
 }
-std::vector<int>* SEventConfig::_NumGenstepPerEvent = _GetNumGenstepPerEvent() ;
+std::vector<int64_t>* SEventConfig::_NumGenstepPerEvent = _GetNumGenstepPerEvent() ;
 
 
 /**
@@ -170,7 +170,7 @@ int64_t SEventConfig::_GetNumPhoton(int idx)
 }
 
 
-int SEventConfig::_GetNumGenstep(int idx)
+int64_t SEventConfig::_GetNumGenstep(int idx)
 {
     if(_NumGenstepPerEvent == nullptr) return 0 ;
 

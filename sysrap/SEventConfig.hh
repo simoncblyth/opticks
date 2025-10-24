@@ -485,11 +485,11 @@ struct SYSRAP_API SEventConfig
     static std::vector<int64_t>* _GetNumPhotonPerEvent();
     static std::vector<int64_t>* _NumPhotonPerEvent ;
 
-    static std::vector<int>* _GetNumGenstepPerEvent();
-    static std::vector<int>* _NumGenstepPerEvent ;
+    static std::vector<int64_t>* _GetNumGenstepPerEvent();
+    static std::vector<int64_t>* _NumGenstepPerEvent ;
 
     static int64_t           _GetNumPhoton(int idx);
-    static int               _GetNumGenstep(int idx);
+    static int64_t           _GetNumGenstep(int idx);
 
 
     static int               _GetNumEvent();

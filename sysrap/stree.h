@@ -5305,7 +5305,7 @@ inline std::string stree::desc_node_EBOUNDARY() const { return desc_node_elist("
 
 inline std::string stree::desc_node_elist(const char* etag, const char* fallback) const
 {
-    std::vector<int>* elist = ssys::getenv_ParseIntSpecList(etag, fallback) ;
+    std::vector<int64_t>* elist = ssys::getenv_ParseInt64SpecList(etag, fallback) ;
 
     char NRT = 'N' ;
     const std::vector<snode>* vec = get_node_vector(NRT);
@@ -5330,7 +5330,7 @@ inline std::string stree::desc_node_elist(const char* etag, const char* fallback
         for(int i=0 ; i < int(vec->size()) ; i++)
         {
             const snode& n = (*vec)[i] ;
-            int attrib = n.get_attrib(field_idx);
+            int64_t attrib = n.get_attrib(field_idx);
             bool listed = std::find(elist->begin(), elist->end(), attrib ) != elist->end() ;
             if(!listed) continue ;
             count += 1 ;

@@ -6,6 +6,7 @@ sstr_test.cc
 
 TEST=Format ~/opticks/sysrap/tests/sstr_test.sh
 TEST=ParseIntSpecList32   ~/opticks/sysrap/tests/sstr_test.sh
+TEST=ParseIntSpecList64   ~/opticks/sysrap/tests/sstr_test.sh
 TEST=ParseIntSpecListDemo ~/opticks/sysrap/tests/sstr_test.sh
 
 **/
@@ -292,9 +293,37 @@ void test_empty()
 template<typename T>
 void test_ParseIntSpecList()
 {
-     const char* _spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2,G2,h1:4" ;
+     const char* _spec = "1,2,3,100,200,h1,h5,6,7,K1,K10,11,12,M1,2,3,K1,2,M1,H1,2,G2,T1,2,h1:4" ;
 
-     std::vector<T> expect = {1,2,3,100,200,100,500,600,700,1000,10000,11000,12000,1000000,2000000,3000000,1000,2000,1000000,100000,200000,2000000000,100,200,300,400 } ;
+     std::vector<T> expect = {                1,
+                                              2,
+                                              3,
+                                            100,
+                                            200,
+                                            100,
+                                            500,
+                                            600,
+                                            700,
+                                          1'000,
+                                         10'000,
+                                         11'000,
+                                         12'000,
+                                      1'000'000,
+                                      2'000'000,
+                                      3'000'000,
+                                          1'000,
+                                          2'000,
+                                      1'000'000,
+                                        100'000,
+                                        200'000,
+                                  2'000'000'000,
+                              1'000'000'000'000,
+                              2'000'000'000'000,
+                                            100,
+                                            200,
+                                            300,
+                                            400
+                                                };
      int num_expect = expect.size();
 
      std::vector<std::string> spec ;
@@ -324,6 +353,17 @@ void test_ParseIntSpecList()
      assert( num_ls == num_expect );
 
      int pass = 0 ;
+
+     std::cout
+          << std::setw(16) << "spec_input"
+          << std::setw(16) << "expected"
+          << std::setw(16) << "parsed"
+          << std::setw(16) << "ls_parsed"
+          << std::setw(20) << "match"
+          << std::endl
+          ;
+
+
      for(int i=0 ; i < num_value ; i++)
      {
          const char* s = i < num_spec ? spec[i].c_str() : nullptr ;
@@ -335,29 +375,17 @@ void test_ParseIntSpecList()
 
          pass += int(match) ;
          std::cout
-              << std::setw(11) << ( s ? s : "-" )
-              << std::setw(11) << e
-              << std::setw(11) << v
-              << std::setw(11) << l
-              << ( match ? " " : " ERROR MISMATCH" )
+              << std::setw(16) << ( s ? s : "-" )
+              << std::setw(16) << e
+              << std::setw(16) << v
+              << std::setw(16) << l
+              << std::setw(20) << ( match ? " YES " : " NO  " )
               << std::endl
               ;
 
      }
      assert( pass == num_value );
 }
-
-/**
-
-epsilon:opticks blyth$ ~/opticks/sysrap/tests/sstr_test.sh
-        M1:5,K1:2 :  [1000000 2000000 3000000 4000000 5000000 1000 2000  ]
-  M1,2,3,4,5,K1,2 :  [1000000 2000000 3000000 4000000 5000000 1000 2000  ]
-            h1:10 :  [100 200 300 400 500 600 700 800 900 1000  ]
-            K1:10 :  [1000 2000 3000 4000 5000 6000 7000 8000 9000 10000  ]
-            H1:10 :  [100000 200000 300000 400000 500000 600000 700000 800000 900000 1000000  ]
-            M1:10 :  [1000000 2000000 3000000 4000000 5000000 6000000 7000000 8000000 9000000 10000000  ]
-
-**/
 
 
 template<typename T>
@@ -728,8 +756,8 @@ int sstr_test::Main()
     else if(strcmp(TEST, "nullchar")==0 )   test_nullchar(true);
     else if(strcmp(TEST, "Write")==0 )      test_Write();
     else if(strcmp(TEST, "ParseIntSpecList64")==0 )   test_ParseIntSpecList<int64_t>();
-    else if(strcmp(TEST, "ParseIntSpecList32")==0 )   test_ParseIntSpecList<int>();
-    else if(strcmp(TEST, "ParseIntSpecListDemo")==0 ) test_ParseIntSpecList_demo<int>();
+    //else if(strcmp(TEST, "ParseIntSpecList32")==0 )   test_ParseIntSpecList<int>();
+    else if(strcmp(TEST, "ParseIntSpecListDemo")==0 ) test_ParseIntSpecList_demo<int64_t>();
     else if(strcmp(TEST, "snprintf")==0 )             test_snprintf();
     else if(strcmp(TEST, "Format") == 0 )             test_Format();
     else if(strcmp(TEST, "TAG")==0 )                  test_TAG();

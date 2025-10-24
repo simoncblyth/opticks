@@ -463,20 +463,20 @@ void test_PWD()
 }
 
 
-void test_getenv_ParseInt()
+void test_getenv_ParseInt64()
 {
     std::vector<std::string> _fallback = { "1", "10", "20", "M1" , "K1", "M2", "M3" } ;
 
     int num_fallback = _fallback.size();
-    const int K = 1000 ;
-    const int M = 1000000 ;
+    const int64_t K = 1000 ;
+    const int64_t M = 1000000 ;
     const char* ekey = "HELLO" ;
     std::cout << "test_getenv_ParseInt ekey " << ekey << std::endl ;
 
     for(int i=0 ; i < num_fallback ; i++)
     {
         const char* fallback = _fallback[i].c_str();
-        int num = ssys::getenv_ParseInt(ekey, fallback );
+        int64_t num = ssys::getenv_ParseInt64(ekey, fallback );
 
         std::cout
             << std::setw(20) << fallback
@@ -527,7 +527,7 @@ void test_getenvintvec()
     assert( cegs.size() == 4 );
 }
 
-int test_getenvintspec()
+int test_getenvint64spec()
 {
     std::vector<std::string> specs = {{"0", "1", "2", "M1", "k1", "K1", "H1", "H10", "G1", "yellow", "magenta", "" }} ;
     const char* ekey = "test_getenvintspec_dummy" ;
@@ -535,11 +535,11 @@ int test_getenvintspec()
     for(int i=0 ; i < int(specs.size()) ; i++)
     {
        const char* fallback = specs[i].c_str();
-       int ival = ssys::getenvintspec(ekey, fallback ) ;
+       int64_t ival = ssys::getenvint64spec(ekey, fallback ) ;
        std::cout
            << std::setw(4) << i
            << " "
-           << " ssys::getenvintspec(\"" << ekey << "\",\"" << std::setw(10) << fallback << "\") "
+           << " ssys::getenvint64spec(\"" << ekey << "\",\"" << std::setw(10) << fallback << "\") "
            << " : "
            << ival
            << "\n"
@@ -585,7 +585,7 @@ int main(int argc, char** argv)
     if(ALL||0==strcmp(TEST,"popen_1")) rc += test_popen_1() ;
     if(ALL||0==strcmp(TEST,"username")) rc += test_username() ;
     if(ALL||0==strcmp(TEST,"is_remote_session")) rc += test_is_remote_session() ;
-    if(ALL||0==strcmp(TEST,"getenvintspec"))  rc += test_getenvintspec() ;
+    if(ALL||0==strcmp(TEST,"getenvint64spec"))  rc += test_getenvint64spec() ;
     if(ALL||0==strcmp(TEST,"getenviron"))  rc += ssys_test::getenviron() ;
     if(ALL||0==strcmp(TEST,"getenvuint64spec"))  rc += ssys_test::getenvuint64spec() ;
 
@@ -620,7 +620,7 @@ int main(int argc, char** argv)
     test_Dump();
     test_Desc();
     test_PWD();
-    test_getenv_ParseInt();
+    test_getenv_ParseInt64();
     test_getenv_with_prefix();
     test_getenvintvec();
     test_getenvfloatvec_fallback();
