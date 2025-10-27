@@ -66,7 +66,6 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
     static int         RenderMain();    // used by tests/CSGOptiXRdrTest.cc
     static int         SimtraceMain();  // used by tests/CSGOptiXTMTest.cc
     static int         SimulateMain();  // used by tests/CSGOptiXSMTest.cc
-    static int         Main();          // NOT USED
 
 
     static const char* Desc();
@@ -168,10 +167,11 @@ private:
     void   render_save_(const char* stem_=nullptr, bool inverted=false);
 
     double simtrace(int eventID);
-    double simulate(int eventID);
+    double simulate(int eventID, bool reset);
+    void   reset(int eventID);
+
     NP* simulate(const NP* gs, int eventID);
 
-    double proceed();
 
 
     // these launch  methods fulfil SCSGOptix protocal base

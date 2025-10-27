@@ -8,6 +8,53 @@ Overview
   (notice no Geant4 dependency in the service : its not needed as pure optical)
 
 
+
+
+
+
+TODO : replace CSGOptiX API used from G4CXOpticks with an equivalent API that is using the remote CSGOptiX via libcurl calls
+------------------------------------------------------------------------------------------------------------------------------
+
+What does CSGOptiX do that needs to be done in the client ?
+Can that functionality be moved to sysrap/CSGFoundry ?
+
+* DONE: hide all QSim usage within G4CXOpticks behind CSGOptiX, motivation
+  is to concentrate GPU usage into the one object making switching that out
+  for the non-GPU client simpler
+
+
+How does G4CXOpticks use CSGOptiX ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* G4CXOpticks::setGeometry_ invokes::
+
+     cx = CSGOptiX::Create(fd)
+
+
+BUT CSGOptiX::Create does some Init needed on client ? WHERE TO DRAW GPU/npGPU line?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* GPU SEvt setup done by CSGOptiX::InitEvt also needed on client::
+
+
+     235 void CSGOptiX::InitEvt( CSGFoundry* fd  )
+     236 {
+     237     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ;
+     238 
+     239     sev->setGeo((SGeo*)fd);
+     240 
+
+
+     241     std::string* rms = SEvt::RunMetaString() ;
+     242     assert(rms);
+     243 
+     244     bool stamp = false ;
+     245     smeta::Collect(*rms, "CSGOptiX__InitEvt", stamp );
+     246 }
+
+
+
+
 TODO : realistic client with local hit formation
 -------------------------------------------------
 
@@ -20,6 +67,9 @@ Client needs to:
 
 * [START DEVELOPMENT WITH RUNTIME SWITCH FOR CONVENIENCE OF TESTING, 
    UNTIL TEST ON NON-GPU MACHINE]
+
+Eventually must use compile time switch, maybe detected by CMake based
+on available packages but need runtime switch to begin with.
 
 * monolithic "client" and "service" together (depends on CUDA/OptiX/CSGOptiX)
 * "client" (depends on libcurl)

@@ -172,7 +172,8 @@ int CSGOptiX::SimulateMain() // static
     SEventConfig::SetRGModeSimulate();
     CSGFoundry* fd = CSGFoundry::Load();
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
-    for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i);
+    bool reset = true ;
+    for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i, reset);
     SProf::UnsetTag();
     SProf::Add("CSGOptiX__SimulateMain_TAIL");
     SProf::Write();
@@ -184,24 +185,6 @@ int CSGOptiX::SimulateMain() // static
 
 
 
-/**
-CSGOptiX::Main
-----------------
-
-This "proceed" approach means that a single executable
-does very different things depending on the RGMode envvar.
-That is not convenient for bookkeeping based on executable names
-so instead use three separate executables that each use the
-corresponding Main static method.
-
-**/
-int CSGOptiX::Main() // static
-{
-    CSGFoundry* fd = CSGFoundry::Load();
-    CSGOptiX* cx = CSGOptiX::Create(fd) ;
-    cx->proceed();
-    return 0 ;
-}
 
 const char* CSGOptiX::Desc()
 {
@@ -235,8 +218,11 @@ const char* CSGOptiX::desc() const
 
 
 /**
-CSGOptiX::InitEvt
--------------------
+CSGOptiX::InitEvt  TODO : THIS DOES NOT USE GPU : SO SHOULD BE ELSEWHERE
+--------------------------------------------------------------------------
+
+Invoked from CSGOptiX::Create
+
 
 Q: Why the SEvt geometry connection ?
 A: Needed for global to local transform conversion
@@ -248,8 +234,6 @@ A: Essential set_matline of Cerenkov Genstep
 
 void CSGOptiX::InitEvt( CSGFoundry* fd  )
 {
-    // sim->serialize() ;  // SSim::serialize stree::serialize into NPFold
-
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ;
 
     sev->setGeo((SGeo*)fd);
@@ -265,6 +249,7 @@ void CSGOptiX::InitEvt( CSGFoundry* fd  )
 CSGOptiX::InitSim
 -------------------
 
+Invoked from CSGOptiX::Create
 Instanciation of QSim/QEvent requires an SEvt instance
 
 **/
@@ -327,6 +312,8 @@ void CSGOptiX::InitMeta()
 CSGOptiX::InitGeo
 -------------------
 
+Invoked from CSGOptiX::Create
+
 CSGFoundry not const as upload sets device pointers
 CSGOptiX::InitGeo currently takes 20s for full JUNO geometry,
 where the total gxs.sh running time for one event is 24s.
@@ -349,6 +336,10 @@ CSGOptiX::Create
 --------------------
 
 Canonical invokation from G4CXOpticks::setGeometry_ when a GPU is detected
+
+
+WIP: static methods cannot be enforced in a protocol, so perhaps just do the below
+within the ctor ?
 
 **/
 
@@ -469,6 +460,14 @@ void CSGOptiX::init()
     LOG(LEVEL) << "]" ;
 }
 
+/**
+CSGOptiX::initMeta
+-------------------
+
+Record metadata regarding the *optixpath* kernel source into RunMeta
+
+**/
+
 
 void CSGOptiX::initMeta()
 {
@@ -484,6 +483,15 @@ void CSGOptiX::initMeta()
     SEvt::SetRunMeta<int64_t>("optixpath_age_days", age_days );
 }
 
+
+/**
+CSGOptiX::initCtx
+-------------------
+
+Instanciate the OptixDeviceContext
+
+**/
+
 void CSGOptiX::initCtx()
 {
     LOG(LEVEL) << "[" ;
@@ -491,6 +499,15 @@ void CSGOptiX::initCtx()
     LOG(LEVEL) << std::endl << ctx->desc() ;
     LOG(LEVEL) << "]" ;
 }
+
+
+/**
+CSGOptiX::initPIP
+-------------------
+
+Instanciate PIP pipeline
+
+**/
 
 void CSGOptiX::initPIP()
 {
@@ -503,6 +520,15 @@ void CSGOptiX::initPIP()
     LOG(LEVEL) << "]" ;
 }
 
+/**
+CSGOptiX::initSBT
+--------------------
+
+Instanciate SBT shader binding table
+
+**/
+
+
 void CSGOptiX::initSBT()
 {
     LOG(LEVEL) << "[" ;
@@ -512,15 +538,21 @@ void CSGOptiX::initSBT()
 
 
 
+/**
+CSGOptiX::initCheckSim
+-----------------------
+
+Check (QSim)sim instance for non-render modes
+
+**/
+
 
 void CSGOptiX::initCheckSim()
 {
+    if(SEventConfig::IsRGModeRender()) return ;
     LOG(LEVEL) << " sim " << sim << " event " << event ;
-    if(SEventConfig::IsRGModeRender() == false)
-    {
-        LOG_IF(fatal, sim == nullptr) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
-        assert(sim);
-    }
+    LOG_IF(fatal, sim == nullptr) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
+    assert(sim);
 }
 
 
@@ -720,15 +752,26 @@ at CSGOptiX level there is no need to allow the user to
 copy hits or other content from SEvt elsewhere.
 
 
+
+
+
 **/
-double CSGOptiX::simulate(int eventID)
+double CSGOptiX::simulate(int eventID, bool reset)
 {
     SProf::SetTag(eventID, "A%0.3d_" ) ;
     assert(sim);
-    bool reset = true ;   // reset:true calls SEvt::endOfEvent for cleanup after simulate
     double dt = sim->simulate(eventID, reset) ; // (QSim)
     return dt ;
 }
+
+
+void CSGOptiX::reset(int eventID)
+{
+    assert(sim);
+    sim->reset(eventID); // (QSim)
+}
+
+
 
 
 /**
@@ -754,6 +797,10 @@ NB the distinction between this and simtrace_launch, this
 uses QSim::simtrace to do genstep setup prior to calling
 CSGOptiX::simtrace_launch via the SCSGOptiX.h protocol
 
+Simtrace effectively always has reset:true because it
+always uses SEvt saving, unlike "simulate" which needs
+to support grabbing of hits into Geant4 collections.
+
 **/
 
 double CSGOptiX::simtrace(int eventID)
@@ -764,21 +811,6 @@ double CSGOptiX::simtrace(int eventID)
     LOG(LEVEL) << "] " << dt  ;
     return dt ;
 }
-
-double CSGOptiX::proceed()
-{
-    double dt = -1. ;
-    switch(SEventConfig::RGMode())
-    {
-        case SRG_SIMULATE: dt = simulate(0) ; break ;
-        case SRG_RENDER:   dt = render()   ; break ;
-        case SRG_SIMTRACE: dt = simtrace(0) ; break ;
-    }
-    return dt ;
-}
-
-
-
 
 
 

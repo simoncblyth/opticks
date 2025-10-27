@@ -411,6 +411,9 @@ bool QSim::KEEP_SUBFOLD = ssys::getenvbool(QSim__simulate_KEEP_SUBFOLD);
 
 double QSim::simulate(int eventID, bool reset_)
 {
+    assert( SEventConfig::IsRGModeSimulate() );
+
+
     int64_t tot_ph = 0 ;
 
     double tot_dt = 0. ;
@@ -744,6 +747,9 @@ Collected genstep are uploaded and the CSGOptiX kernel is launched to generate a
 
 double QSim::simtrace(int eventID)
 {
+    assert( SEventConfig::IsRGModeSimtrace() );
+
+
     sev->beginOfEvent(eventID);
 
     NP* igs = sev->makeGenstepArrayFromVector();

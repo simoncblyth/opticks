@@ -1,3 +1,13 @@
+/**
+G4CXOpticks.cc
+================
+
+Q: Why is QSim exposed here, can that be hidden inside cx(CSGOptiX) ?
+A: WIP: moving the QSim methods to be called via CSGOptiX
+
+**/
+
+
 
 #include <csignal>
 #include "SLOG.hh"
@@ -20,13 +30,13 @@
 #include "CSGFoundry.h"
 
 #include "CSGOptiX.h"
+
+
+#ifdef WITH_QS
 #include "QSim.hh"
+#endif
 
 #include "G4CXOpticks.hh"
-
-#ifdef WITH_CUSTOM4
-//#include "C4Version.h"
-#endif
 
 
 const plog::Severity G4CXOpticks::LEVEL = SLOG::EnvLevel("G4CXOpticks", "DEBUG");
@@ -50,25 +60,25 @@ Called for example from Detector framework LSExpDetectorConstruction_Opticks::Se
 
 G4CXOpticks* G4CXOpticks::SetGeometry()
 {
-    G4CXOpticks* g4cx = new G4CXOpticks ;
-    g4cx->setGeometry();
-    return g4cx ;
+    G4CXOpticks* gx = new G4CXOpticks ;
+    gx->setGeometry();
+    return gx ;
 }
 
 G4CXOpticks* G4CXOpticks::SetGeometryFromGDML()
 {
-    G4CXOpticks* g4cx = new G4CXOpticks ;
-    g4cx->setGeometryFromGDML();
-    return g4cx ;
+    G4CXOpticks* gx = new G4CXOpticks ;
+    gx->setGeometryFromGDML();
+    return gx ;
 }
 
 
 
 G4CXOpticks* G4CXOpticks::SetGeometry(const G4VPhysicalVolume* world)
 {
-    G4CXOpticks* g4cx = new G4CXOpticks ;
-    g4cx->setGeometry(world);
-    return g4cx ;
+    G4CXOpticks* gx = new G4CXOpticks ;
+    gx->setGeometry(world);
+    return gx ;
 }
 
 
@@ -167,7 +177,9 @@ G4CXOpticks::G4CXOpticks()
     wd(nullptr),
     fd(nullptr),
     cx(nullptr),
+#ifdef WITH_QS
     qs(nullptr),
+#endif
     t0(schrono::stamp())
 {
     init();
@@ -201,7 +213,9 @@ std::string G4CXOpticks::desc() const
        << " wd " << ( wd ? "Y" : "N" )
        << " fd " << ( fd ? "Y" : "N" )
        << " cx " << ( cx ? "Y" : "N" )
+#ifdef WITH_QS
        << " qs " << ( qs ? "Y" : "N" )
+#endif
        ;
     std::string s = ss.str();
     return s ;
@@ -386,6 +400,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
             ;
     }
 
+#ifdef WITH_QS
     qs = cx ? cx->sim : nullptr ;   // QSim
 
     QSim* qsg = QSim::Get()  ;
@@ -397,6 +412,8 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         ;
 
     assert( qs == qsg );
+#endif
+
 
     LOG(LEVEL) << "] fd " << fd ;
 
@@ -446,10 +463,14 @@ void G4CXOpticks::simulate(int eventID, bool reset_ )
     LOG(LEVEL) << desc() ;
 
     assert(cx);
-    assert(qs);
-    assert( SEventConfig::IsRGModeSimulate() );
 
+#ifdef WITH_QS
+    assert(qs);
     qs->simulate(eventID, reset_ );
+#else
+    cx->simulate(eventID, reset_);
+#endif
+
 
     LOG(LEVEL) << "] " << eventID ;
 
@@ -472,12 +493,16 @@ void G4CXOpticks::reset(int eventID)
     if(NoGPU) return ;
 
     assert( SEventConfig::IsRGModeSimulate() );
-    assert(qs);
 
     unsigned num_hit_0 = SEvt::GetNumHit_EGPU() ;
     LOG(LEVEL) << "[ " << eventID << " num_hit_0 " << num_hit_0  ;
 
+#ifdef WITH_QS
+    assert(qs);
     qs->reset(eventID);
+#else
+    cx->reset(eventID);
+#endif
 
     unsigned num_hit_1 = SEvt::GetNumHit_EGPU() ;
     LOG(LEVEL) << "] " << eventID << " num_hit_1 " << num_hit_1  ;
@@ -493,11 +518,16 @@ void G4CXOpticks::simtrace(int eventID)
     if(NoGPU) return ;
 
     LOG(LEVEL) << "[" ;
-    assert(cx);
-    assert(qs);
-    assert( SEventConfig::IsRGModeSimtrace() );
 
+#ifdef WITH_QS
+    assert(qs);
     qs->simtrace(eventID);
+#else
+    assert(cx);
+    cx->simtrace(eventID);
+#endif
+
+
     LOG(LEVEL) << "]" ;
 }
 
