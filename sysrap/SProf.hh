@@ -36,13 +36,14 @@ its mixing across structs.
 #include <fstream>
 #include "sprof.h"
 #include "ssys.h"
+#include "sstr.h"
 
 #include "SYSRAP_API_EXPORT.hh"
 
 struct SYSRAP_API SProf
 {
-    static constexpr const char* SProf__WRITE = "SProf__WRITE" ;
-    static constexpr const char* PATH = "SProf.txt" ;
+    static constexpr const char* SProf__WRITE_INDEX = "SProf__WRITE_INDEX" ;  // default -1 inhibits writing
+    static constexpr const char* PATH = "SProf_%0.5d.txt" ;
     static constexpr const char* FMT = "%0.3d" ;
     static constexpr const int N = 10 ;
     static char TAG[N] ;
@@ -66,8 +67,9 @@ struct SYSRAP_API SProf
     static std::string Serialize() ;
     static std::string Desc() ;
 
-    static void Write(const char* path=PATH, bool append=false);
-    static void Read( const char* path=PATH );
+    static const char* Path(const char* _path);
+    static void Write(const char* _path=PATH, bool append=false);
+    static void Read( const char* _path=PATH );
 };
 
 
@@ -193,12 +195,21 @@ inline std::string SProf::Serialize() // static
     return str ;
 }
 
-inline void SProf::Write(const char* path, bool append)
-{
-    bool WRITE = ssys::getenvbool(SProf__WRITE);
-    if(!WRITE) std::cerr << "SProf::Write DISABLED, enable with [export " << SProf__WRITE << "=1]\n" ;
-    if(!WRITE) return ;
 
+inline const char* SProf::Path(const char* _path)  // static
+{
+    int INDEX = ssys::getenvint(SProf__WRITE_INDEX, -1);
+    bool WRITE = INDEX > -1 ;
+    if(!WRITE) std::cerr << "SProf::Write DISABLED, enable with [export " << SProf__WRITE_INDEX << "=0,1,2,3,...]\n" ;
+    if(!WRITE) return nullptr ;
+    const char* path = sstr::Format(PATH, INDEX);
+    return path ;
+}
+
+inline void SProf::Write(const char* _path, bool append)
+{
+    const char* path = Path(_path);
+    if(!path) return ;
     std::ios_base::openmode mode = std::ios::out|std::ios::binary ;
     if(append) mode |= std::ios::app ;
     std::ofstream fp(path, mode );
@@ -214,8 +225,11 @@ A000_QSim__simulate_HEAD:1760593677804471,7316440,1220224   # metadata
 **/
 
 
-inline void SProf::Read(const char* path )
+inline void SProf::Read(const char* _path )
 {
+    const char* path = Path(_path);
+    if(!path) return ;
+
     Clear();
     bool dump = false ;
     std::ifstream fp(path);
