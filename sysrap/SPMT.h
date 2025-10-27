@@ -946,7 +946,22 @@ inline void SPMT::init_lcqs()
 
         int copyno = pmtCat_v[2*oldcontiguousidx+0] ;
         int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
-        assert( copyno == pmtid );
+        bool copyno_pmtid_consistent = copyno == pmtid ;
+
+        if(!copyno_pmtid_consistent) std::cerr
+           << "SPMT::init_lcqs\n"
+           << " i/lpmtidx " << std::setw(6) << lpmtidx << "\n"
+           << " lpmtidx2 " << std::setw(6) << lpmtidx2 << "\n"
+           << " oldcontiguousidx " << std::setw(6) << oldcontiguousidx << "\n"
+           << " s_pmt::NUM_OLDCONTIGUOUSIDX " << std::setw(6) << s_pmt::NUM_OLDCONTIGUOUSIDX << "\n"
+           << " s_pmt::NUM_LPMTIDX " << std::setw(6) << s_pmt::NUM_LPMTIDX << "\n"
+           << " pmtid " << std::setw(6) << pmtid << "\n"
+           << " copyno " << std::setw(6) << copyno << "\n"
+           << " cat " << std::setw(6) << cat << "\n"
+           << " copyno_pmtid_consistent " << ( copyno_pmtid_consistent ? "YES" : "NO " ) << "\n"
+           ;
+
+        assert( copyno_pmtid_consistent );
 
         float qesc = get_pmtid_qescale( pmtid );
         v_lcqs[lpmtidx] = { TranslateCat(cat), qesc } ;
