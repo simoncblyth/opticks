@@ -646,10 +646,20 @@ GEOM(){
   #base=.opticks/GEOM/$GEOM
 
 
+  local _CFB=${GEOM}_CFBaseFromGEOM
+  local CFB=${!_CFB}
+
   local args="vi/grab/get/tmpget/tmp/scp/top/lock/unlock/cf/ss/st/std/info"
-  local geombase=$HOME/.opticks/GEOM
-  local GEOMBASE=${GEOMBASE:-$geombase}
-  local GEOMDIR=$GEOMBASE/$GEOM
+
+  local GEOMDIR
+  if [ -n "$CFB" ]; then
+      GEOMDIR=$CFB
+  else
+      local geombase=$HOME/.opticks/GEOM
+      local GEOMBASE=${GEOMBASE:-$geombase}
+      GEOMDIR=$HOME/.opticks/GEOM/$GEOM
+  fi
+
   local CFDIR=$GEOMDIR/CSGFoundry
   local ggeo=/tmp/$USER/opticks/GGeo
   local tmpbase=${TMP:-/tmp/$USER/opticks}

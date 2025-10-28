@@ -128,8 +128,8 @@ fi
 
 
 #test=small
-#test=ref1
-test=ref5
+test=ref1
+#test=ref5
 #test=large_scan
 TEST=${TEST:-$test}
 
@@ -415,9 +415,9 @@ fi
 if [ "${arg/run}" != "$arg" ]; then
     rm -f $bin.log
     $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
     pwd
     ls -alst $bin.log
-    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
