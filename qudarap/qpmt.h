@@ -249,7 +249,7 @@ inline QPMT_METHOD void qpmt<F>::get_lpmtid_stackspec( F* spec, int lpmtid, F en
 {
     int lpmtidx = s_pmt::lpmtidx_from_pmtid(lpmtid);
     const int& lpmtcat = i_lcqs[lpmtidx*2+0] ;
-    // printf("//qpmt::get_lpmtidx_stackspec lpmtid %d lpmtcat %d \n", lpmtid, lpmtcat );
+    if(lpmtcat < 0) printf("//qpmt::get_lpmtidx_stackspec lpmtid %d lpmtcat %d \n", lpmtid, lpmtcat );
 
     const F& qe_scale = lcqs[lpmtidx*2+1] ;
     const F qe_shape = qeshape_prop->interpolate( lpmtcat, energy_eV ) ;

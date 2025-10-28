@@ -49,7 +49,11 @@ export TEST=${TEST:-$test}
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="BASH_SOURCE BASH_VERSION defarg arg name GEOM TMP FOLD CUDA_PREFIX bin script TEST"
+unset SPMT__level
+#export SPMT__level=1
+
+
+vars="BASH_SOURCE BASH_VERSION defarg arg name GEOM TMP FOLD CUDA_PREFIX bin script TEST SPMT__level"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%30s : %s \n" "$var" "${!var}" ; done

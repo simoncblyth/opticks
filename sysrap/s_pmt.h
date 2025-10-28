@@ -6,6 +6,77 @@ s_pmt.h
 HMM : NOW THAT THE GAPS ARE NOT SO LARGE IS TEMPTING TO DIRECTLY USE PMTID AND HAVE ZEROS IN THE GAPS
 
 
+Methods:
+
+s_pmt::desc
+    dump the basis num and offsets
+
+s_pmt::check_pmtid
+    asserts
+
+s_pmt::in_range
+    internal
+
+s_pmt::id_CD_LPMT
+s_pmt::id_CD_SPMT
+s_pmt::id_WP_PMT
+s_pmt::id_WP_ATM_LPMT
+s_pmt::id_WP_ATM_MPMT
+s_pmt::id_WP_WAL_PMT
+    return true when *id:pmtid* is within corresponding ranges of the six pmt types
+
+s_pmt::ix_CD_LPMT
+s_pmt::ix_CD_SPMT
+s_pmt::ix_WP_PMT
+s_pmt::ix_WP_ATM_LPMT
+s_pmt::ix_WP_ATM_MPMT
+s_pmt::ix_WP_WAL_PMT
+    return true when *ix:oldcontiguousidx* is within corresponding ranges of the six pmt types
+
+s_pmt::oldcontiguousidx_from_pmtid
+    return *ix:oldcontiguousidx* from *id:pmtid*
+
+s_pmt::pmtid_from_oldcontiguousidx
+    return *id:pmtid* from *ix:oldcontiguousidx*
+
+s_pmt::contiguousidx_from_pmtid
+    return *ix:contiguousidx* from *id:pmtid* (DIFFERS IN THE ORDERING OF PMT TYPES, WITH SPMT SHIFTED TO LAST NOT 2ND)
+
+
+s_pmt::lpmtidx_from_pmtid
+    return *iy:lpmtidx* from *pmtid* (-1 for SPMT) [*iy:lpmtidx*-IS-MISNOMER-ACTUALLY-ALL-PMT-EXCLUDING-SPMT]
+
+
+s_pmt::iy_CD_PMT
+s_pmt::iy_WP_PMT
+s_pmt::iy_WP_ATM_LPMT
+s_pmt::iy_WP_ATM_MPMT
+s_pmt::iy_WP_WAL_PMT
+s_pmt::iy_CD_SPMT
+    return true when *iy:contiguousidx* is within corresponding ranges of six pmt types, SPMT last
+
+s_pmt::pmtid_from_contiguousidx
+    uses iy_ methods to find pmt type for *iy:contiguousidx* then uses offset and num of prior pmt types to return absolute pmtid
+
+s_pmt::pmtid_from_lpmtidx (very similar to above, just with SPMT excluded : they yield -1)
+    uses iy_ methods to find pmt type for *iy:lpmtidx* thne uses offfset and num of prior pmt types to return absolute pmtid
+
+
+s_pmt::is_spmtid
+    returns true for absolute *pmtid* within offset range of SPMT
+
+s_pmt::is_spmtidx
+    returns true for *pmtidx* in range 0:NUM_SPMT
+
+s_pmt::pmtid_from_spmtidx
+    returns absolute *pmtid* from *spmtidx*
+
+s_pmt::spmtidx_from_pmtid
+    returns *spmtidx* from absolute *pmtid*
+
+
+
+
 Used from::
 
    qudarap/QPMT.hh
@@ -56,15 +127,8 @@ namespace s_pmt
         NUM_SPMT               = 25600,
         NUM_WP                 = 2400,
         NUM_WP_ATM_LPMT        = 348,
-        NUM_WP_ATM_MPMT        = 0,            // 600 in future
+        NUM_WP_ATM_MPMT        = 600,    // 0-or-600 ? HMM partially added, messing everything
         NUM_WP_WAL_PMT         = 5,
-        NUM_CD_LPMT_AND_WP     = 20012,   // 17612 + 2400 +   0 +   0 + 0 +     0 = 20012
-        NUM_LPMTIDX            = 20365,   // 17612 + 2400 + 348 +   0 + 5  +    0 = 20365
-        OLD_NUM_ALL            = 45612,   // 17612 + 2400 +   0 +   0 + 0 + 25600 = 45612
-        NUM_ALL                = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
-        NUM_CONTIGUOUSIDX      = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
-        NUM_OLDCONTIGUOUSIDX   = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
-        FUTURE_NUM_ALL         = 46565,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
         OFFSET_CD_LPMT         = 0,
         OFFSET_CD_LPMT_END     = 17612,
         OFFSET_CD_SPMT         = 20000,
@@ -78,6 +142,30 @@ namespace s_pmt
         OFFSET_WP_WAL_PMT      = 54000,
         OFFSET_WP_WAL_PMT_END  = 54005
     };
+
+
+
+    //enum
+    // {
+    //NUM_CD_LPMT_AND_WP     = 20012,   // 17612 + 2400 +   0 +   0 + 0 +     0 = 20012
+    //NUM_LPMTIDX            = 20365,   // 17612 + 2400 + 348 +   0 + 5  +    0 = 20365   // excluded MPMT:600
+    //OLD_NUM_ALL            = 45612,   // 17612 + 2400 +   0 +   0 + 0 + 25600 = 45612
+    //NUM_ALL                = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
+    //NUM_CONTIGUOUSIDX      = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
+    //NUM_OLDCONTIGUOUSIDX   = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
+    //FUTURE_NUM_ALL         = 46565,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
+    // };
+
+    enum
+    {
+        NUM_CD_LPMT_AND_WP   = NUM_CD_LPMT + NUM_WP  +               0 +              0  +              0 +        0,   // 17612 + 2400 +   0 +   0 + 0 +     0 = 20012
+        NUM_LPMTIDX          = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT +        0,   // 17612 + 2400 + 348 + 600 + 5  +    0 = 20965
+        NUM_ALL              = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
+        NUM_ALL_EXCEPT_MPMT  = NUM_ALL - NUM_WP_ATM_MPMT,                                                               // 46565 - 600 = 45965
+        NUM_CONTIGUOUSIDX    = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
+        NUM_OLDCONTIGUOUSIDX = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
+    };
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -128,7 +216,12 @@ namespace s_pmt
         assert( OFFSET_CD_LPMT_END - OFFSET_CD_LPMT == NUM_CD_LPMT );
         assert( OFFSET_CD_SPMT_END - OFFSET_CD_SPMT == NUM_SPMT );
         assert( OFFSET_WP_PMT_END  - OFFSET_WP_PMT  == NUM_WP );
-        //assert( OFFSET_WP_ATM_MPMT_END - OFFSET_WP_ATM_MPMT == NUM_WP_ATM_MPMT ) ; // NOT YET
+
+        if(NUM_WP_ATM_MPMT != 0)
+        {
+            assert( OFFSET_WP_ATM_MPMT_END - OFFSET_WP_ATM_MPMT == NUM_WP_ATM_MPMT ) ;
+        }
+
         assert( OFFSET_WP_WAL_PMT_END - OFFSET_WP_WAL_PMT == NUM_WP_WAL_PMT ) ;
 
         assert( NUM_LPMTIDX          == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT );
@@ -165,20 +258,22 @@ namespace s_pmt
     s_pmt::oldcontiguousidx_from_pmtid
     ----------------------------------
 
+    *ix:oldcontiguousidx* follows the numerical ascending order of the absolute pmtid, but without gaps.
+
     Transform non-contiguous pmtid::
 
           +------------------+      +-----------------------------+       +--------+--------------+       +-------------+          +-------------+
           |     CD_LPMT      |      |     SPMT                    |       |  WP    | WP_ATM_LPMT  |       | WP_ATM_MPMT |          | WP_WAL_PMT  |
-          |     17612        |      |     25600                   |       |  2400  |   348        |       |      0      |          |     5       |
+          |     17612        |      |     25600                   |       |  2400  |   348        |       |    600      |          |     5       |
           +------------------+      +-----------------------------+       +--------+--------------+       +-------------+          +-------------+
           ^                  ^      ^                             ^       ^        ^              ^       ^             ^          ^             ^
-          0                  17612  20000                         45600   50000    52400          52748   53000         53000      54000         54005
+          0                  17612  20000                         45600   50000    52400          52748   53000         53600      54000         54005
           |                  |      |                             |       |        |              |       |             |          |             |
           |                  |      |                             |       |        |              |       |             |          |             |
           |                  |      |                             |       |        |              |       |             |          |             OFFSET_WP_WAL_PMT_END
           |                  |      |                             |       |        |              |       |             |          OFFSET_WP_WAL_PMT
           |                  |      |                             |       |        |              |       |             |
-          |                  |      |                             |       |        |              |       |             "OFFSET_WP_ATM_MPMT_END"
+          |                  |      |                             |       |        |              |       |             OFFSET_WP_ATM_MPMT_END
           |                  |      |                             |       |        |              |       OFFSET_WP_ATM_MPMT
           |                  |      |                             |       |        |              |
           |                  |      |                             |       |        |              OFFSET_WP_ATM_LPMT_END
@@ -209,7 +304,7 @@ namespace s_pmt
 
           +------------------+-----------------------------+--------+--------------+---------------+-------------+
           |     CD_LPMT      |     SPMT                    |  WP    | WP_ATM_LPMT  |  WP_ATM_MPMT  |  WP_WAL_PMT |
-          |     17612        |     25600                   |  2400  |   348        |      0        |     5       |
+          |     17612        |     25600                   |  2400  |   348        |     600       |     5       |
           +------------------+-----------------------------+--------+--------------+---------------+-------------+
           ^                  ^                             ^        ^
           0                17612                         43212    45612
@@ -220,7 +315,7 @@ namespace s_pmt
     **/
 
 
-    // returns true when ix argument is within the oldcontinuousidx ranges
+    // returns true when *ix:oldcontiguousidx* argument is within the oldcontinuousidx ranges
     SPMT_FUNCTION bool ix_CD_LPMT(     int ix ){ return in_range(ix, 0                                                                   , NUM_CD_LPMT           ) ; }
     SPMT_FUNCTION bool ix_CD_SPMT(     int ix ){ return in_range(ix, NUM_CD_LPMT                                                         , NUM_CD_LPMT + NUM_SPMT) ; }
     SPMT_FUNCTION bool ix_WP_PMT(      int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT                                              , NUM_CD_LPMT + NUM_SPMT + NUM_WP)  ; }
@@ -228,6 +323,16 @@ namespace s_pmt
     SPMT_FUNCTION bool ix_WP_ATM_MPMT( int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT                   , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT)  ; }
     SPMT_FUNCTION bool ix_WP_WAL_PMT(  int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT ) ; }
 
+
+    /**
+    oldcontiguousidx_from_pmtid
+    -----------------------------
+
+    1. find PMT type from pmtid id_ methods
+    2. subtract the PMT type offset to give local index within the type
+    3. add the NUM of other types below this one in the order of PMT types
+
+    **/
 
 
     SPMT_FUNCTION int oldcontiguousidx_from_pmtid( int id )
@@ -248,6 +353,16 @@ namespace s_pmt
 
         return ix ;
     }
+
+    /**
+    pmtid_from_oldcontiguousidx
+    ----------------------------
+
+    1. find PMT type from *ix:oldcontiguousidx* using ix_ methods
+    2. get local index within the PMT type by subtracting total NUM of PMTs for PMT types prior to this PMT type in the order of PMT types
+    3. add the offset for this PMT type to give the absolute PMT id
+
+    **/
 
     SPMT_FUNCTION int pmtid_from_oldcontiguousidx( int ix )
     {
@@ -318,7 +433,7 @@ namespace s_pmt
 
           +------------------+---------+----------------+----------------+---------------+---------------+
           |     CD_LPMT      |   WP    |  WP_ATM_LPMT   |   WP_ATM_MPMT  |   WP_WAL_PMT  |  SPMT         |
-          |     17612        |   2400  |    348         |        0       |        5      |  25600        |
+          |     17612        |   2400  |    348         |      600       |        5      |  25600        |
           +------------------+---------+----------------+------------------------------------------------+
           ^                  ^         ^
           0                17612     20012
@@ -330,6 +445,7 @@ namespace s_pmt
      The ordering CD_LPMT, WP, SPMT must match that used in::
 
          PMTSimParamSvc::init_all_pmtID_qe_scale
+         [NOTED THAT MPMT ARE NOT INCLUDED IN THAT]
 
     **/
 
@@ -344,11 +460,11 @@ namespace s_pmt
         int iy = -1 ;
 
         if(      id_CD_LPMT(id) )    iy = id ;
-        else if( id_CD_SPMT(id) )    iy = id - OFFSET_CD_SPMT     + NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT ;
         else if( id_WP_PMT(id)  )    iy = id - OFFSET_WP_PMT      + NUM_CD_LPMT ;
         else if( id_WP_ATM_LPMT(id)) iy = id - OFFSET_WP_ATM_LPMT + NUM_CD_LPMT + NUM_WP ;
         else if( id_WP_ATM_MPMT(id)) iy = id - OFFSET_WP_ATM_MPMT + NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT ;
         else if( id_WP_WAL_PMT(id))  iy = id - OFFSET_WP_WAL_PMT  + NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT ;
+        else if( id_CD_SPMT(id) )    iy = id - OFFSET_CD_SPMT     + NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT ;
 
         return iy ;
     }
@@ -360,9 +476,9 @@ namespace s_pmt
 
     Rearrange the non-contiguous pmtid::
 
-          +------------------+      +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+       +--------+--------------+     +--NOT YET----+     +-------------+
+          +------------------+      +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+       +--------+--------------+     +-------------+     +-------------+
           |     CD_LPMT      |      :     SPMT                    :       |  WP    | WP_ATM_LPMT  |     | WP_ATM_MPMT |     | WP_WAL_PMT  |
-          |     17612        |      :     25600                   :       |  2400  |    348       |     |      0      |     |     5       |
+          |     17612        |      :     25600                   :       |  2400  |    348       |     |    600      |     |     5       |
           +------------------+      +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+       +--------+--------------+     +-------------+     +-------------+
           ^                  ^      ^                             ^       ^        ^              ^     ^             ^     ^             ^
           0                17612  20000                         45600     50000    52400        52748  53000        53600  54000        54005
@@ -381,13 +497,13 @@ namespace s_pmt
 
           +------------------+--------+----------------+---------------+-------------+
           |     CD_LPMT      |  WP    |   WP_ATM_LPMT  |  WP_ATM_MPMT  | WP_WAL_PMT  |
-          |     17612        | 2400   |       348      |        0      |     5       |
+          |     17612        | 2400   |       348      |     600       |     5       |
           +------------------+--------+----------------+---------------+-------------+
           ^                  ^        ^                ^               ^             ^
-          0                 17612   20012           20360            20360         20365
+          0                 17612   20012           20360            20960         20965
 
-          np.cumsum([17612, 2400, 348, 0, 5])
-          array([17612, 20012, 20360, 20360, 20365])
+          np.cumsum([17612, 2400, 348, 600, 5])
+          array([17612, 20012, 20360, 20960, 20965])
 
 
      s_pmt::lpmtidx_from_pmtid is used for example from qpmt::get_lpmtid_stackspec_ce_acosf
@@ -410,15 +526,26 @@ namespace s_pmt
 
 
 
+    /**
+    iy_CD_LPMT/iy_WP_PMT/iy_WP_ATM_LPMT/iy_WP_ATM_MPMT/iy_WP_WAL_PMT/iy_CD_SPMT + pmtid_from_contiguousidx
+    --------------------------------------------------------------------------------------------------------
 
-    // returns true when iy argument is within the continuousidx ranges
+    iy_methods returns true when iy "continuousidx" argument is within ranges with ordering and NUM assumptions for the six PMT types:
+
+    * CD_LPMT, WP_PMT, WP_ATM_LPMT, WP_ATM_MPMT, WP_WAL_PMT, CD_SPMT
+
+    *pmtid_from_contiguousidx* converts iy "continuousidx" into non-contiguous absolute standard pmtid
+    using OFFSET for each PMT type and following the PMT type ordering and NUM assumptions
+
+    **/
+
+
     SPMT_FUNCTION bool iy_CD_LPMT(     int iy ){ return in_range(iy, 0                                                                         , NUM_CD_LPMT ) ; }
     SPMT_FUNCTION bool iy_WP_PMT(      int iy ){ return in_range(iy, NUM_CD_LPMT                                                               , NUM_CD_LPMT + NUM_WP ) ; }
     SPMT_FUNCTION bool iy_WP_ATM_LPMT( int iy ){ return in_range(iy, NUM_CD_LPMT + NUM_WP                                                      , NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT) ; }
     SPMT_FUNCTION bool iy_WP_ATM_MPMT( int iy ){ return in_range(iy, NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT                                    , NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT) ; }
     SPMT_FUNCTION bool iy_WP_WAL_PMT(  int iy ){ return in_range(iy, NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT                  , NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT ) ; }
     SPMT_FUNCTION bool iy_CD_SPMT(     int iy ){ return in_range(iy, NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT , NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT) ; }
-
 
     SPMT_FUNCTION int pmtid_from_contiguousidx( int iy )
     {
@@ -447,14 +574,14 @@ namespace s_pmt
     ------------------------------------------------------------------------------------------------------------
 
 
-    Convert a contiguous 0-based index lpmtidx with SPMT excluded (NB currently NUM_WP_ATM_MPMT=0 as not yet in geometry)::
+    Convert a contiguous 0-based index lpmtidx with SPMT excluded::
 
           +------------------+--------+----------------+----------------+--------------+~~~~~~~~~~~~~~~EXCLUDED~~~~~~
           |     CD_LPMT      |  WP    |   WP_ATM_LPMT  |  WP_ATM_MPMT   |   WP_WAL_PMT |      SPMT                  :
-          |     17612        | 2400   |      348       |      0         |      5       |       25600                :
+          |     17612        | 2400   |      348       |    600         |      5       |       25600                :
           +------------------+--------+----------------+----------------+--------------+~~~~~~~~~~~~~~~~~~~~~~~~~~~~+
           ^                  ^        ^                ^                ^              ^                            ^
-          0                 17612   20012            20360             20360         20365                        45965
+          0                 17612   20012            20360             20960         20965                        46565
 
                             |        |                 |                |              |
                             |        |                 |                |              NUM_CD_LPMT+NUM_WP+NUM_WP_ATM_PMT+NUM_WP_ATM_MPMT+NUM_WP_WAL_PMT
@@ -463,15 +590,16 @@ namespace s_pmt
                             |       NUM_CD_LPMT+NUM_WP
                             NUM_CD_LPMT
 
-    In [14]: np.cumsum([17612,2400,348,0,5,25600])
-    Out[14]: array([17612, 20012, 20360, 20360, 20365, 45965])
+    np.cumsum([17612,2400,348,600,5,25600])
+    array([17612, 20012, 20360, 20960, 20965, 46565])
+
 
 
     Into the the non-contiguous lpmtid::
 
-          +------------------+                                            +--------+--------------+     +--NOT YET----+     +-------------+
+          +------------------+                                            +--------+--------------+     +-------------+     +-------------+
           |     CD_LPMT      |                                            |  WP    | WP_ATM_LPMT  |     | WP_ATM_MPMT |     | WP_WAL_PMT  |
-          |     17612        |                                            |  2400  |    348       |     |      0      |     |     5       |
+          |     17612        |                                            |  2400  |    348       |     |    600      |     |     5       |
           +------------------+                                            +--------+--------------+     +-------------+     +-------------+
           ^                  ^      ^                             ^       ^        ^              ^     ^             ^     ^             ^
           0                17612  20000                         45600     50000    52400        52748  53000        53600  54000        54005
@@ -483,11 +611,15 @@ namespace s_pmt
 
           17612+25600+2400 = 45612
 
-
     This is used from SPMT::init_lcqs
 
-    **/
+    The assumptions made are:
 
+    1. iy spans the range of expected PMT types
+    2. ordering of PMT types for the input index is as expected
+
+
+    **/
 
 
     SPMT_FUNCTION int pmtid_from_lpmtidx( int iy )
@@ -513,13 +645,6 @@ namespace s_pmt
 
 
 
-
-    /*
-    SPMT_FUNCTION bool is_WP_( int pmtid )
-    {
-        return pmtid >= OFFSET_WP_PMT && pmtid < OFFSET_WP_PMT_END ;
-    }
-     */
 
     /**
     s_pmt::is_spmtid
@@ -556,11 +681,6 @@ namespace s_pmt
 #endif
         return pmtid - OFFSET_CD_SPMT ;
     }
-
-
-
-
-
 
 }
 

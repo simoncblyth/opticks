@@ -102,12 +102,12 @@ struct SPMT_Total
     int WP_ATM_LPMT ;
     int WP_ATM_MPMT ;
     int WP_WAL_PMT ;
-
     int ALL ;
 
     int SUM() const ;
     std::string desc() const ;
 };
+
 
 inline int SPMT_Total::SUM() const
 {
@@ -117,7 +117,7 @@ inline std::string SPMT_Total::desc() const
 {
     std::stringstream ss ;
     ss
-       << "[SPMT_Total\n"
+       << "[SPMT_Total.desc\n"
        << std::setw(16) << "CD_LPMT"     << std::setw(7) << CD_LPMT << "\n"
        << std::setw(16) << "SPMT"        << std::setw(7) << SPMT << "\n"
        << std::setw(16) << "WP"          << std::setw(7) << WP << "\n"
@@ -127,7 +127,49 @@ inline std::string SPMT_Total::desc() const
        << std::setw(16) << "ALL"         << std::setw(7) << ALL << "\n"
        << std::setw(16) << "SUM:"        << std::setw(7) << SUM() << "\n"
        << std::setw(16) << "SUM==ALL"    << std::setw(7) << ( SUM() == ALL ? "YES" : "NO " ) << "\n"
-       << "]SPMT_Total\n"
+       << "]SPMT_Total.desc\n"
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+struct SPMT_Num
+{
+    static constexpr const int FIELDS = 7 ;
+
+    int m_nums_cd_lpmt ;
+    int m_nums_cd_spmt ;
+    int m_nums_wp_lpmt ;
+    int m_nums_wp_atm_lpmt ;
+    int m_nums_wp_wal_pmt ;
+    int m_nums_wp_atm_mpmt ;
+    int ALL ;
+
+    int SUM() const ;
+    std::string desc() const ;
+};
+
+inline int SPMT_Num::SUM() const
+{
+    return m_nums_cd_lpmt + m_nums_cd_spmt + m_nums_wp_lpmt + m_nums_wp_atm_lpmt + m_nums_wp_wal_pmt + m_nums_wp_atm_mpmt ;
+}
+
+inline std::string SPMT_Num::desc() const
+{
+    std::stringstream ss ;
+    ss
+       << "[SPMT_Num.desc\n"
+       << std::setw(20) << "m_nums_cd_lpmt     :" << std::setw(7) << m_nums_cd_lpmt << "\n"
+       << std::setw(20) << "m_nums_cd_spmt     :" << std::setw(7) << m_nums_cd_spmt << "\n"
+       << std::setw(20) << "m_nums_wp_lpmt     :" << std::setw(7) << m_nums_wp_lpmt << "\n"
+       << std::setw(20) << "m_nums_wp_atm_lpmt :" << std::setw(7) << m_nums_wp_atm_lpmt << "\n"
+       << std::setw(20) << "m_nums_wp_wal_pmt  :" << std::setw(7) << m_nums_wp_wal_pmt << "\n"
+       << std::setw(20) << "m_nums_wp_atm_mpmt :" << std::setw(7) << m_nums_wp_atm_mpmt << "\n"
+       << std::setw(20) << "ALL                :" << std::setw(7) << ALL << "\n"
+       << std::setw(20) << "SUM                :" << std::setw(7) << SUM() << "\n"
+       << std::setw(20) << "SUM==ALL           :" << std::setw(7) << ( SUM() == ALL ? "YES" : "NO " ) << "\n"
+       << "]SPMT_Num.desc\n"
        ;
     std::string str = ss.str() ;
     return str ;
@@ -153,30 +195,10 @@ struct SPMT
     static constexpr const float EN1 = 4.20f ;  // 15.5
     static constexpr const int   N_EN = 420 - 155 + 1 ;
 
-
-    /*
-    static constexpr const float EN0 = 2.81f ;
-    static constexpr const float EN1 = 2.81f ;
-    static constexpr const int   N_EN = 1 ;
-    */
-
     static constexpr const float WL0 = 440.f ;
     static constexpr const float WL1 = 440.f ;
     static constexpr const int   N_WL = 1 ;
 
-
-
-    /*
-    static constexpr const float EN0 = 2.55f ;
-    static constexpr const float EN1 = 3.55f ;
-    static constexpr const int   N_EN = 2 ;
-    */
-
-    /*
-    static constexpr const float EN0 = 1.55f ;
-    static constexpr const float EN1 = 15.5f ;
-    static constexpr const int   N_EN = 1550 - 155 + 1 ;
-    */
 
     static constexpr const char* PATH = "$CFBaseFromGEOM/CSGFoundry/SSim/extra/jpmt" ;
 
@@ -209,7 +231,10 @@ struct SPMT
     void init();
 
     void init_total();
+
+    void init_pmtNum();
     void init_pmtCat();
+
     void init_lpmtCat();
     void init_qeScale();
 
@@ -342,6 +367,7 @@ struct SPMT
     const NPFold* PMTSimParamData ;  // lpmtCat for 17612 and many other arrays
     const NPFold* PMTParamData ;     // only pmtCat for 45612
 
+    SPMT_Num num = {} ;
     SPMT_Total total = {} ;
 
     const NPFold* MPT ;              // ARC_RINDEX, ARC_KINDEX, PHC_RINDEX, PHC_KINDEX
@@ -370,7 +396,9 @@ struct SPMT
     float* tt ;
 
     const NP* pmtCat ;
+    int pmtCat_ni ;
     const int* pmtCat_v ;
+    const NP* pmtNum ;
 
     const NP* lpmtCat ;
     const int* lpmtCat_v ;
@@ -418,13 +446,18 @@ Which is a directory expected to contain sub-dirs::
 
 inline SPMT* SPMT::CreateFromJPMT(const char* path_)
 {
+    if(level > 0) printf("[SPMT::CreateFromJPMT [%s]\n", ( path_ == nullptr ? "path_-null" : path_ ));
+
     const char* path = spath::Resolve( path_ != nullptr ? path_ : PATH ) ;
     bool unresolved = sstr::StartsWith(path,"CFBaseFromGEOM");
-    if(unresolved) printf("SPMT::CreateFromJPMT unresolved path[%s]\n", path) ;
+    if(unresolved) printf("-SPMT::CreateFromJPMT unresolved path[%s]\n", path) ;
     NPFold* fold = NPFold::LoadIfExists(path) ;
-    if(level > 0) printf("SPMT::LoadFromJPMT path %s \n", ( path == nullptr ? "path-null" : path ) );
-    if(level > 0) printf("SPMT::LoadFromJPMT fold %s \n", ( fold == nullptr ? "fold-null" : "fold-ok" ) );
-    return fold ? new SPMT(fold) : nullptr ;
+    if(level > 0) printf("-SPMT::CreateFromJPMT path %s \n", ( path == nullptr ? "path-null" : path ) );
+    if(level > 0) printf("-SPMT::CreateFromJPMT fold %s \n", ( fold == nullptr ? "fold-null" : "fold-ok" ) );
+    SPMT* sp = fold ? new SPMT(fold) : nullptr ;
+
+    if(level > 0) printf("]SPMT::CreateFromJPMT sp[%s]\n", ( sp ? "YES" : "NO " ) );
+    return sp ;
 }
 
 inline SPMT::SPMT(const NPFold* jpmt_)
@@ -448,7 +481,9 @@ inline SPMT::SPMT(const NPFold* jpmt_)
     thickness(NP::Make<float>(NUM_PMTCAT, NUM_LAYER, 1)),
     tt(thickness->values<float>()),
     pmtCat( PMTParamData ? PMTParamData->get("pmtCat") : nullptr ),
+    pmtCat_ni( pmtCat ? pmtCat->shape[0] : 0 ),
     pmtCat_v( pmtCat ? pmtCat->cvalues<int>() : nullptr ),
+    pmtNum( PMTParamData ? PMTParamData->get("pmtNum") : nullptr ),
     lpmtCat( PMTSimParamData ? PMTSimParamData->get("lpmtCat")  : nullptr ),
     lpmtCat_v( lpmtCat ? lpmtCat->cvalues<int>() : nullptr ),
     qeScale( PMTSimParamData ? PMTSimParamData->get("qeScale")  : nullptr ),
@@ -496,7 +531,10 @@ for upload to GPU (by QPMT) with various changes:
 inline void SPMT::init()
 {
     init_total();
+
+    init_pmtNum();
     init_pmtCat();
+
     init_lpmtCat();
     init_qeScale();
 
@@ -520,7 +558,6 @@ OLD::
 
     SPMT::init_total SPMT_Total CD_LPMT: 17612 SPMT: 25600 WP:  2400 ALL: 45612
 
-
 SPMT_test.sh::
 
     In [21]: s.jpmt.PMTSimParamData.pmtTotal
@@ -532,6 +569,9 @@ SPMT_test.sh::
 
     In [8]: 17612 + 25600 + 2400 + 348 + 5
     Out[8]: 45965
+
+
+The pmtTotal do not yet have the 600 MPMT
 
 **/
 
@@ -545,7 +585,7 @@ inline void SPMT::init_total()
     assert( PMTSimParamData );
     const NP* pmtTotal = PMTSimParamData->get("pmtTotal") ; // (7,)   formerly (4,)
 
-    std::cout
+    if(level > 0) std::cout
        << "SPMT::init_total"
        << " pmtTotal.sstr " << ( pmtTotal ? pmtTotal->sstr() : "-" )
        << "\n"
@@ -576,21 +616,67 @@ inline void SPMT::init_total()
     total.WP_WAL_PMT  = pmtTotal->get_named_value<int>("PmtTotal_WP_WAL_PMT",   -1) ;
     total.ALL         = pmtTotal->get_named_value<int>("PmtTotal_ALL",  -1) ;
 
-    std::cout << "SPMT::init_total " << total.desc() << "\n" ;
+    if(level > 0) std::cout << "SPMT::init_total " << total.desc() << "\n" ;
 
-    assert( pmtTotal_v[0] == total.CD_LPMT );
-    assert( total.ALL == total.SUM() );
-    assert( total.CD_LPMT == 17612 );
-    assert( total.SPMT == 25600 ) ;
-    assert( total.WP == 2400 ) ;
-    assert( total.WP_ATM_LPMT == 348 ) ;
+    assert( pmtTotal_v[0]     == total.CD_LPMT );
+    assert( total.ALL         == total.SUM() );
+    assert( total.CD_LPMT     == s_pmt::NUM_CD_LPMT );
+    assert( total.SPMT        == s_pmt::NUM_SPMT ) ;
+    assert( total.WP          == s_pmt::NUM_WP  ) ;
+    assert( total.WP_ATM_LPMT == s_pmt::NUM_WP_ATM_LPMT ) ;
+    assert( total.WP_WAL_PMT  == s_pmt::NUM_WP_WAL_PMT ) ;
+    //assert( total.WP_ATM_MPMT == s_pmt::NUM_WP_ATM_MPMT ) ;  // NOT YET
     assert( total.WP_ATM_MPMT == 0 ) ;
-    assert( total.WP_WAL_PMT == 5 ) ;
 
-    assert( s_pmt::NUM_CD_LPMT == total.CD_LPMT );
-    assert( s_pmt::NUM_SPMT == total.SPMT );
-    assert( s_pmt::NUM_WP == total.WP );
-    assert( s_pmt::NUM_CD_LPMT_AND_WP == total.CD_LPMT + total.WP );
+}
+
+
+/**
+SPMT::init_pmtNum
+------------------
+
+pmtNum and pmtCat info both come from the serialization of PMTParamData
+so they are required to correspond to each other
+
+**/
+
+
+inline void SPMT::init_pmtNum()
+{
+    std::cout << "SPMT::init_pmtNum pmtNum.sstr " <<  (pmtNum ? pmtNum->sstr() : "-"  ) << "\n" ;
+    if(!pmtNum) return ;
+
+    std::vector<std::string> xnames = {
+         "m_nums_cd_lpmt",
+         "m_nums_cd_spmt",
+         "m_nums_wp_lpmt",
+         "m_nums_wp_atm_lpmt",
+         "m_nums_wp_wal_pmt",
+         "m_nums_wp_atm_mpmt"
+       };
+    assert( pmtNum->names == xnames );
+
+    num.m_nums_cd_lpmt      = pmtNum->get_named_value<int>("m_nums_cd_lpmt", -1) ;
+    num.m_nums_cd_spmt      = pmtNum->get_named_value<int>("m_nums_cd_spmt", -1) ;
+    num.m_nums_wp_lpmt      = pmtNum->get_named_value<int>("m_nums_wp_lpmt", -1) ;
+    num.m_nums_wp_atm_lpmt  = pmtNum->get_named_value<int>("m_nums_wp_atm_lpmt", -1) ;
+    num.m_nums_wp_wal_pmt   = pmtNum->get_named_value<int>("m_nums_wp_wal_pmt", -1) ;
+    num.m_nums_wp_atm_mpmt  = pmtNum->get_named_value<int>("m_nums_wp_atm_mpmt", -1) ;
+    num.ALL = num.SUM();
+
+    std::cout
+        << "[SPMT::init_pmtNum\n"
+        << num.desc()
+        << "]SPMT::init_pmtNum\n"
+        ;
+
+    assert( num.m_nums_cd_lpmt     == s_pmt::NUM_CD_LPMT );
+    assert( num.m_nums_cd_spmt     == s_pmt::NUM_SPMT ) ;
+    assert( num.m_nums_wp_lpmt     == s_pmt::NUM_WP ) ;
+    assert( num.m_nums_wp_atm_lpmt == s_pmt::NUM_WP_ATM_LPMT ) ;
+    assert( num.m_nums_wp_atm_mpmt == s_pmt::NUM_WP_ATM_MPMT ) ;
+    assert( num.m_nums_wp_wal_pmt  == s_pmt::NUM_WP_WAL_PMT ) ;
+
 }
 
 
@@ -685,23 +771,30 @@ From SPMT_test.sh::
 
 void SPMT::init_pmtCat()
 {
-    bool expected_type = pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 ;
-    bool expected_shape = pmtCat && pmtCat->shape.size() == 2 && pmtCat->shape[0] == total.ALL && pmtCat->shape[1] == 2 ;
+    bool expected_type  = pmtCat && pmtCat->uifc == 'i' && pmtCat->ebyte == 4 ;
+    bool expected_shape = pmtCat && pmtCat->shape.size() == 2 && pmtCat->shape[0] == num.ALL && pmtCat->shape[1] == 2 ;
 
     if(!expected_shape || !expected_type) std::cerr
        << "SPMT::init_pmtCat"
        << " expected_type " << ( expected_type ? "YES" : "NO " )
-       << " expected_shape " << ( expected_shape ? "YES" : "NO " )
+       << " expected_shape[first-dim-is-num.ALL] " << ( expected_shape ? "YES" : "NO " )
+       << " pmtCat.shape[0] " << pmtCat->shape[0]
+       << " num.ALL " << num.ALL
        << " pmtCat " << ( pmtCat ? pmtCat->sstr() : "-" )
-       << " total " << total.desc()
+       << " num " << num.desc()
        << "\n"
        ;
 
     if(!pmtCat) return ;
     assert( expected_type );
-    //assert( expected_shape );
+    assert( expected_shape );
     assert( pmtCat_v );
 }
+
+
+
+
+
 
 void SPMT::init_lpmtCat()
 {
@@ -716,11 +809,11 @@ void SPMT::init_qeScale()
     if(!qeScale) return ;
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
     assert( qeScale_v );
-
-    int expect_qeScale_items = s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP + s_pmt::NUM_WP_ATM_LPMT + s_pmt::NUM_WP_WAL_PMT ;
+    assert( s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP + s_pmt::NUM_WP_ATM_LPMT + s_pmt::NUM_WP_WAL_PMT  == s_pmt::NUM_ALL_EXCEPT_MPMT );
+    int expect_qeScale_items = s_pmt::NUM_ALL_EXCEPT_MPMT ;
     bool qeScale_shape_expect = qeScale->shape[0] == expect_qeScale_items ;
 
-    //if(!qeScale_shape_expect)
+    if(!qeScale_shape_expect)
     std::cerr
         << "SPMT::init_qeScale"
         << " qeScale.sstr " << ( qeScale ? qeScale->sstr() : "-" )
@@ -910,6 +1003,95 @@ SPMT::init_lcqs
    "local 0/1/2 pmtcat" and float:qeScale
 4. convert the vector of LCQS struct into lcqs array
 
+
+s.lcqs
+~~~~~~~
+
+::
+
+    In [3]: s.lcqs[:,1].view(np.float32)
+    Out[3]:
+    array([1.025, 1.201, 1.238, 1.172, 1.137, 1.177, 1.098, 1.03 , 1.245, 1.026, 1.162, 1.105, 1.046, 1.042, 1.186, 1.059, ..., 0.919, 0.972, 1.005, 0.932, 0.993, 1.011, 1.019, 1.023, 1.026, 1.104,
+           0.991, 1.006, 0.98 , 1.053, 1.003, 1.009], shape=(20965,), dtype=float32)
+
+    In [4]: s.lcqs[:,1].view(np.float32).min()
+    Out[4]: np.float32(0.38050073)
+
+    In [5]: s.lcqs[:,1].view(np.float32).max()
+    Out[5]: np.float32(1.5862682)
+
+    In [6]: s.lcqs[:,0]
+    Out[6]:
+    array([  1,   2,   1,   2,   1,   2,   1,   1,   2,   1,   2,   1,   1,   1,   2,   1, ..., -99, -99, -99, -99, -99, -99, -99, -99, -99, -99, -99,   2,   0,   0,   0,   0],
+          shape=(20965,), dtype=int32)
+
+    In [7]: 17612 + 2400 + 348 + 600 + 5
+    Out[7]: 20965
+
+
+    In [9]: np.c_[np.unique(s.lcqs[0:17612,0],return_counts=True)]
+    Out[9]:
+    array([[   0, 2738],
+           [   1, 4955],
+           [   2, 9919]])
+
+    In [10]: np.c_[np.unique(s.lcqs[17612:17612+2400,0],return_counts=True)]
+    Out[10]:
+    array([[   0, 1836],
+           [   2,  564]])
+
+    In [11]: np.c_[np.unique(s.lcqs[17612+2400:17612+2400+348,0],return_counts=True)]
+    Out[11]:
+    array([[  0, 132],
+           [  2, 216]])
+
+    In [14]: np.c_[np.unique(s.lcqs[17612+2400+348:17612+2400+348+600,0],return_counts=True)]
+    Out[14]: array([[-99, 600]])   ## ALL 600 MPMT with cat -99
+
+    In [15]: np.c_[np.unique(s.lcqs[17612+2400+348+600:17612+2400+348+600+5,0],return_counts=True)]
+    Out[15]:
+    array([[0, 4],
+           [2, 1]])
+
+
+Q: Where is lcqs used ? A: qpmt.h
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    qpmt<F>::get_lpmtcat_from_lpmtid
+    qpmt<F>::get_lpmtcat_from_lpmtidx
+    qpmt<F>::get_qescale_from_lpmtidx
+
+
+pmtCat
+~~~~~~~~
+
+pmtCat_v comes from pmtCat array serialized with PMTParamData
+whereas most everything else comes from PMTSimParamData
+
+pmtCat is a serialization of m_pmt_categories unordered_map done by NPX::ArrayFromDiscoMapUnordered
+which orders the (key,val) array in numerically ascending absolute pmt identifier order.
+
+Ordering is::
+
+    CD_LPMT        17612          OFFSET_CD_LPMT:OFFSET_CD_LPMT_END               0:17612
+    CD_SPMT        25600          OFFSET_CD_SPMT:OFFSET_CD_SPMT_END           20000:45600
+    WP_LPMT         2400          OFFSET_WP_PMT:OFFSET_WP_PMT_END             50000:52400
+    WP_ATM_LPMT      348          OFFSET_WP_ATM_LPMT:OFFSET_WP_ATM_LPMT_END   52400:52748
+    WP_ATM_MPMT      600          OFFSET_WP_ATM_MPMT:OFFSET_WP_ATM_MPMT_END   53000:53600
+    WP_ATM_WAL         5          OFFSET_WP_WAL_PMT:OFFSET_WP_WAL_PMT_END     54000:54005
+
+
+Meanings of quantities used below
+
+lpmtidx
+   index in range 0:s_pmt::NUM_LPMTIDX
+
+pmtid
+   id obtained from s_pmt::pmtid_from_lpmtidx
+
+
 **/
 
 inline void SPMT::init_lcqs()
@@ -932,6 +1114,8 @@ inline void SPMT::init_lcqs()
 
     v_lcqs.resize(s_pmt::NUM_LPMTIDX);
 
+
+
     for(int i=0 ; i < s_pmt::NUM_LPMTIDX ; i++ )
     {
         // outcome depends crucially on the implicit order of lpmtidx from s_pmt.h
@@ -940,25 +1124,31 @@ inline void SPMT::init_lcqs()
         int lpmtidx2 = s_pmt::lpmtidx_from_pmtid( pmtid );
         assert( lpmtidx == lpmtidx2 );
 
-        // pmtCat from _PMTParamData uses oldcontiguous order : CD_LPMT, SPMT, WP, WP_ATM_LPMT, WP_WAL_PMT
-        int oldcontiguousidx = s_pmt::oldcontiguousidx_from_pmtid( pmtid );
+        // *ix:oldcontiguousidx* follows absolute pmtid numerical order but removes the gaps
+        // [making it a well founded ordering that applies to all PMTs]
+        int oldcontiguousidx = s_pmt::oldcontiguousidx_from_pmtid( pmtid ); // offsets and num
         assert( oldcontiguousidx < s_pmt::NUM_OLDCONTIGUOUSIDX );
+        assert( oldcontiguousidx < pmtCat_ni );
 
         int copyno = pmtCat_v[2*oldcontiguousidx+0] ;
         int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
         bool copyno_pmtid_consistent = copyno == pmtid ;
 
-        if(!copyno_pmtid_consistent) std::cerr
-           << "SPMT::init_lcqs\n"
-           << " i/lpmtidx " << std::setw(6) << lpmtidx << "\n"
-           << " lpmtidx2 " << std::setw(6) << lpmtidx2 << "\n"
-           << " oldcontiguousidx " << std::setw(6) << oldcontiguousidx << "\n"
-           << " s_pmt::NUM_OLDCONTIGUOUSIDX " << std::setw(6) << s_pmt::NUM_OLDCONTIGUOUSIDX << "\n"
-           << " s_pmt::NUM_LPMTIDX " << std::setw(6) << s_pmt::NUM_LPMTIDX << "\n"
-           << " pmtid " << std::setw(6) << pmtid << "\n"
-           << " copyno " << std::setw(6) << copyno << "\n"
-           << " cat " << std::setw(6) << cat << "\n"
-           << " copyno_pmtid_consistent " << ( copyno_pmtid_consistent ? "YES" : "NO " ) << "\n"
+        //const char* delim = "\n" ;
+        const char* delim = "" ;
+        if(!copyno_pmtid_consistent)
+        std::cerr
+           << "SPMT::init_lcqs" << delim
+           << " i/lpmtidx "                   << std::setw(6) << lpmtidx << delim
+           << " lpmtidx2 "                    << std::setw(6) << lpmtidx2 << delim
+           << " oldcontiguousidx "            << std::setw(6) << oldcontiguousidx << delim
+           << " s_pmt::NUM_OLDCONTIGUOUSIDX " << std::setw(6) << s_pmt::NUM_OLDCONTIGUOUSIDX << delim
+           << " s_pmt::NUM_LPMTIDX "          << std::setw(6) << s_pmt::NUM_LPMTIDX << delim
+           << " pmtid "                       << std::setw(6) << pmtid << delim
+           << " copyno[pmtCat_v] "            << std::setw(6) << copyno << delim
+           << " cat[pmtCat_v] "               << std::setw(6) << cat << delim
+           << " copyno_pmtid_consistent "     << ( copyno_pmtid_consistent ? "YES" : "NO " ) << delim
+           << "\n"
            ;
 
         assert( copyno_pmtid_consistent );
@@ -1086,9 +1276,10 @@ inline int SPMT::TranslateCat(int lpmtcat) // static
         case  1: lcat =  1   ; break ;   // kPMT_Hamamatsu
         case  2: lcat =  -99 ; break ;   // kPMT_HZC
         case  3: lcat =  2   ; break ;   // kPMT_NNVT_HighQE
+        case  4: lcat = -99  ; break ;   // ?MPMT
         default: lcat = -99  ; break ;
     }
-    assert( lcat >= 0 );
+    //assert( lcat >= 0 );
     return lcat ;
 }
 
@@ -1572,7 +1763,7 @@ only one value when not scanned over.
 
 inline NPFold* SPMT::make_c4scan() const
 {
-    std::cout << "[SPMT::make_c4scan " << std::endl;
+    if(level > 0) std::cout << "[SPMT::make_c4scan level " << level << std::endl;
     NPFold* fold = new NPFold ;
 
     const NP* lpmtid_domain = Make_LPMTID_LIST() ;
@@ -1580,8 +1771,8 @@ inline NPFold* SPMT::make_c4scan() const
     const NP* mct_domain = NP::MinusCosThetaLinearAngle<float>( N_MCT );
     const NP* st_domain = NP::SqrtOneMinusSquare(mct_domain) ;
 
-    std::cout << " N_MCT " << N_MCT << std::endl ;
-    std::cout << " mct_domain.desc " << mct_domain->desc() << std::endl ;
+    if(level > 1) std::cout << " N_MCT " << N_MCT << std::endl ;
+    if(level > 1) std::cout << " mct_domain.desc " << mct_domain->desc() << std::endl ;
 
     fold->add("lpmtid_domain", lpmtid_domain);
     fold->add("lpmtcat_domain", lpmtcat_domain);
@@ -1628,7 +1819,7 @@ inline NPFold* SPMT::make_c4scan() const
     fold->add("comp", comp);
     fold->add("art", art);
 
-    std::cout << "SPMT::get_ARTE args " << args->sstr() << std::endl ;
+    if(level > 1) std::cout << "SPMT::make_c4scan args.sstr " << args->sstr() << std::endl ;
 
     const int* lpmtid_domain_v = lpmtid_domain->cvalues<int>();
     const float* mct_domain_v = mct_domain->cvalues<float>();
@@ -1647,7 +1838,7 @@ inline NPFold* SPMT::make_c4scan() const
     for(int i=0 ; i < ni ; i++)
     {
         int lpmtid = lpmtid_domain_v[i] ;
-        if( i % 100 == 0 ) std::cout << "SPMT::get_ARTE lpmtid " << lpmtid << std::endl ;
+        if( i % 100 == 0 && level > 1) std::cout << "SPMT::make_c4scan lpmtid " << lpmtid << std::endl ;
         for(int j=0 ; j < nj ; j++)
         {
            float wavelength_nm = get_wavelength(j, nj );
@@ -1660,11 +1851,12 @@ inline NPFold* SPMT::make_c4scan() const
                   float minus_cos_theta_diff = std::abs( minus_cos_theta - minus_cos_theta_0 );
                   bool minus_cos_theta_diff_expect = minus_cos_theta_diff < 1e-6 ;
                   assert( minus_cos_theta_diff_expect );
-                  if(!minus_cos_theta_diff_expect) std::cerr << "SPMT::get_ARTE minus_cos_theta_diff_expect " << std::endl ;
+                  if(!minus_cos_theta_diff_expect) std::cerr << "SPMT::make_c4scan minus_cos_theta_diff_expect " << std::endl ;
                   float sin_theta_0 = sqrt( 1.f - minus_cos_theta*minus_cos_theta );
                   float sin_theta_diff = std::abs(sin_theta - sin_theta_0)  ;
                   bool sin_theta_expect = sin_theta_diff < 1e-6 ;
                   if(!sin_theta_expect) std::cout
+                      << "SPMT::make_c4scan"
                       << " k " << k
                       << " minus_cos_theta " << std::setw(10) << std::fixed << std::setprecision(5) << minus_cos_theta
                       << " sin_theta " << std::setw(10) << std::fixed << std::setprecision(5) << sin_theta
@@ -1705,7 +1897,7 @@ inline NPFold* SPMT::make_c4scan() const
                   memcpy( art_v   + art_idx,    pd.stack.art.cdata(),    sizeof(float)*4*4 );
 
                   if(level > 0) std::cout
-                      << "SPMT::get_ARTE"
+                      << "SPMT::make_c4scan"
                       << " i " << std::setw(5) << i
                       << " j " << std::setw(5) << j
                       << " k " << std::setw(5) << k
@@ -1718,7 +1910,7 @@ inline NPFold* SPMT::make_c4scan() const
            }
         }
     }
-    std::cout << "]SPMT::make_sscan " << std::endl;
+    if(level > 0) std::cout << "]SPMT::make_c4scan " << std::endl;
     return fold ;
 }
 #endif

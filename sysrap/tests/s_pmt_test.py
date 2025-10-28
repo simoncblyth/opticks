@@ -6,7 +6,8 @@
 f
 
 f.lpmtidx.shape
-f.lpmtidx.shape[0] == 17612 + 2400 + 348 + 5
+f.lpmtidx.shape[0] == 17612 + 2400 + 348 + 5         # without MPMT
+f.lpmtidx.shape[0] == 17612 + 2400 + 348 + 600 + 5   # with MPMT
 
 np.all( f.lpmtidx[:,0] == np.arange(len(f.lpmtidx)) )  # lpmtidx is contiguous from zero
 
@@ -22,13 +23,14 @@ np.all( f.lpmtidx[17612:17612+2400,1] == np.arange(2400)+50000 )              ##
 
 np.all( f.lpmtidx[17612+2400:17612+2400+348,1] == np.arange(348)+52400 )      ## WP_ATM_LPMT id from 52400
 
-np.all( f.lpmtidx[17612+2400+348:17612+2400+348+5,1] == np.arange(5)+54000 )  ## WP_ARM_WAL id from 54000
+np.all( f.lpmtidx[17612+2400+348+600:17612+2400+348+600+5,1] == np.arange(5)+54000 )  ## WP_ARM_WAL id from 54000
 
 
 ####################################################################
 
 f.oldcontiguousidx.shape
 f.oldcontiguousidx.shape[0] == 17612 + 25600 + 2400 + 348 + 5
+f.oldcontiguousidx.shape[0] == 17612 + 25600 + 2400 + 348 + 600 + 5
 f.oldcontiguousidx_labels   # ['oldcontiguousidx', 'pmtid', 'lpmtidx']
 
 f.oldcontiguousidx[:17612]     # CD LPMT

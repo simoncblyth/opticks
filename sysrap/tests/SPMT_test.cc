@@ -5,7 +5,7 @@ int main(int argc, char** argv)
     SPMT* pmt = SPMT::CreateFromJPMT();
     if(pmt == nullptr) return 1 ;
 
-    std::cout << pmt->desc() << std::endl ;
+    std::cout << "SPMT_test.main " << pmt->desc() << "\n" ;
     NPFold* spmt_f = pmt->serialize();
     spmt_f->save("$FOLD/spmt");
 
