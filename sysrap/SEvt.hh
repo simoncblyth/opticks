@@ -140,6 +140,9 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const char* SEvt__SAVE_NOTHING = "SEvt__SAVE_NOTHING" ;
     static bool SAVE_NOTHING ;
 
+    static constexpr const char* SEvt__SAVE_RUNDIR = "SEvt__SAVE_RUNDIR" ;
+    static bool SAVE_RUNDIR ;
+
 
 
 

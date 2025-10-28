@@ -260,9 +260,9 @@ inline void U4HitTest::convertHits()
 inline void U4HitTest::save() const 
 { 
     bool append = false ; 
-    const char* _path = "$TMP/U4HitTest/U4HitTest.txt" ;  
-    const char* path = spath::Resolve(_path) ; 
-    SProf::Write(path, append); 
+    //const char* _path = "$TMP/U4HitTest/U4HitTest.txt" ;  
+    //const char* path = spath::Resolve(_path) ; 
+    SProf::Write(append); 
 }
 
 int main(int argc, char** argv)

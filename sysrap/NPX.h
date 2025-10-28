@@ -915,26 +915,36 @@ NPX::ArrayFromDiscoMapUnordered
 
 1. collect keys from the unordered_map
 2. sort the keys into ascending order
-3. interate through the sorted keys lookinhg up values from the unordered_map
-   and populating the array
+3. check number of keys matches the size of the map, meaning keys are unique
+4. create empty array of shape (num_keys, 2)
+5. iterate through the sorted keys populating the array with keys and values from unordered_map lookups
+
+The upshot of this is that the array keys follow numerically ascending order
 
 **/
 
 template<>
 inline NP* NPX::ArrayFromDiscoMapUnordered( const std::unordered_map<int,int>& m )
 {
+
+    // 1. collect keys from the unordered_map
     std::vector<int> keys ;
     typedef std::unordered_map<int,int> MII ;
     for(MII::const_iterator it=m.begin() ; it != m.end() ; it++) keys.push_back(it->first);
+
+    // 2. sort the keys into ascending order
     std::sort(keys.begin(), keys.end());
 
+    // 3. check number of keys matches the size of the map, meaning keys are unique
     NP::INT ni = m.size() ;
     assert( NP::INT(keys.size()) == ni );
 
+    // 4. create empty array of shape (num_keys, 2)
     NP::INT nj = 2 ;
     NP* a = NP::Make<int>(ni, nj) ;
     int* aa = a->values<int>();
 
+    // 5. iterate through the sorted keys populating the array with keys and values from unordered_map lookups
     for(NP::INT i=0 ; i < ni ; i++)
     {
         NP::INT key = keys[i] ;

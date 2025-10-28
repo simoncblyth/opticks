@@ -60,6 +60,7 @@ bool SEvt::EPH_ = ssys::getenvbool(SEvt__EPH) ;
 bool SEvt::RUNMETA = ssys::getenvbool(SEvt__RUNMETA) ;
 
 bool SEvt::SAVE_NOTHING = ssys::getenvbool(SEvt__SAVE_NOTHING);
+bool SEvt::SAVE_RUNDIR = ssys::getenvbool(SEvt__SAVE_RUNDIR);
 
 
 const char* SEvt::descStage() const
@@ -1645,11 +1646,24 @@ when jobs are prone to memory failure. So
 better to save at the end of every event, not
 just the last.
 
+The directory to save run.npy and run_meta.txt
+can be controlled by::
+
+    SEvt__SAVE_RUNDIR
+
+When save into the RunDir one level above the event folders A000 etc..
+
+When SEvt__SAVE_RUNDIR is not defined save into the invoking directory
+together with the logfile and SProf.txt
+This simple approach makes more sense in production when event arrays
+are not saved.
+
 **/
 
 void SEvt::SaveRunMeta(const char* base)
 {
     const char* dir = RunDir(base);
+    const char* name = "run.npy" ;
 
     bool is_save_nothing = IsSaveNothing();
 
@@ -1658,9 +1672,20 @@ void SEvt::SaveRunMeta(const char* base)
         << " is_save_nothing " << ( is_save_nothing ? "YES" : "NO " )
         << " base " << ( base ? base : "-" )
         << " dir " << ( dir ? dir : "-" )
+        << " name " << name
+        << " SAVE_RUNDIR " << ( SAVE_RUNDIR ? "YES" : "NO " )
         ;
 
-    if(!is_save_nothing) RUN_META->save(dir, "run.npy") ;
+    if(is_save_nothing) return ;
+
+    if(SAVE_RUNDIR)
+    {
+        RUN_META->save(dir, name) ;
+    }
+    else
+    {
+        RUN_META->save(name) ;
+    }
 }
 
 

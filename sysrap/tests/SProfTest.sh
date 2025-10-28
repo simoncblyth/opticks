@@ -17,8 +17,14 @@ mkdir -p $FOLD
 
 bin=$FOLD/$name
 
-unset SProf__WRITE_INDEX
-#export SProf__WRITE_INDEX=1
+
+unset SProf__WRITE
+unset SProf__PATH
+unset SProf__PATH_INDEX
+
+#export SProf__WRITE=1
+#export SProf__PATH=SProf_%0.5d.txt
+#export SProf__PATH_INDEX=77
 
 #test=Add_Write_Read
 test=ALL
@@ -28,7 +34,7 @@ export TEST=${TEST:-$test}
 defarg="info_build_run_ls"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE PWD name defarg arg tmp TMP FOLD SProf__WRITE_INDEX test TEST"
+vv="BASH_SOURCE PWD name defarg arg tmp TMP FOLD SProf__WRITE SProf__PATH SProf__PATH_INDEX test TEST"
 
 if [ "${arg/info}" != "$arg" ]; then
    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done

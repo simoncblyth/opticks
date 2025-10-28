@@ -649,7 +649,7 @@ GEOM(){
   local _CFB=${GEOM}_CFBaseFromGEOM
   local CFB=${!_CFB}
 
-  local args="vi/grab/get/tmpget/tmp/scp/top/lock/unlock/cf/ss/st/std/info"
+  local args="vi/grab/get/tmpget/tmp/scp/top/lock/unlock/cf/ss/st/std/ppd/psd/origin/source/help/info"
 
   local GEOMDIR
   if [ -n "$CFB" ]; then
@@ -696,6 +696,10 @@ GEOM(){
      cmd="cd $GEOMDIR/CSGFoundry/SSim/stree"
   elif [ "$arg" == "std" ]; then
      cmd="cd $GEOMDIR/CSGFoundry/SSim/stree/standard"
+  elif [ "$arg" == "ppd" ]; then
+     cmd="cd $GEOMDIR/CSGFoundry/SSim/extra/jpmt/PMTParamData"
+  elif [ "$arg" == "psd" ]; then
+     cmd="cd $GEOMDIR/CSGFoundry/SSim/extra/jpmt/PMTSimParamData"
   elif [ "$arg" == "origin" ]; then
      cmd="cd $GEOMDIR ; vim -R origin.gdml"
   elif [ "$arg" == "source" ]; then

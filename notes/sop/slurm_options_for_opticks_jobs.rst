@@ -11,3 +11,25 @@ to control which GPUs each task can use.  Hence when using this option the manua
 approach of setting the envvar should typically not be used.
 
 
+
+Avoid logfile overwriting when using slurm array
+----------------------------------------------------
+
+The below slurm directive configures a job array of 200 total
+tasks indexed from 1 to 200.  The "%20" arranges that only 20 run concurrently.
+
+::
+
+    #SBATCH --array=1-200%20
+
+
+Arrange for a separate directory for each job in job array with::
+
+     LOGDIR=$SLURM_ARRAY_TASK_ID
+     mkdir -p $LOGDIR
+     cd $LOGDIR
+     ... command to invoke executable...
+
+
+
+

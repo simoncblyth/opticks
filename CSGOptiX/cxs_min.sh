@@ -40,6 +40,12 @@ Examples::
          ## for JUNO writes ~12GB of hits
 
 
+Check running from some non-standard directory using LOGOVER::
+
+    mkdir -p /tmp/logover
+    LOGOVER=/tmp/logover cxs_min.sh
+    ls -l /tmp/logover
+
 
 Debug::
 
@@ -183,7 +189,7 @@ vars="$vars version VERSION"
 
 #test=debug
 #test=ref1
-#test=ref5
+test=ref5
 #test=ref8
 #test=ref10
 #test=ref10_multilaunch
@@ -205,7 +211,7 @@ vars="$vars version VERSION"
 #test=vvlarge_evt
 #test=vvvlarge_evt
 #test=vvvvlarge_evt
-test=vvvvvlarge_evt
+#test=vvvvvlarge_evt
 #test=vvvvvvlarge_evt
 
 #test=medium_scan
@@ -245,6 +251,17 @@ export LOGDIR=$BINBASE/$opticks_event_reldir
 export AFOLD=$BINBASE/$opticks_event_reldir/$EVT
 export STEM=${opticks_event_reldir}_${PLOT}
 
+if [ -n "$LOGOVER" ]; then
+    if [ -d "$LOGOVER" ]; then
+        printf "$BASH_SOURCE LOGOVER $LOGOVER - DIRECTORY EXISTS \n" 
+        export LOGDIR0=$LOGDIR
+        LOGDIR=$LOGOVER
+    else
+        printf "$BASH_SOURCE LOGOVER $LOGOVER - IGNORED AS NO SUCH DIRECTORY\n" 
+    fi
+fi
+
+
 #export BFOLD=$BASE/G4CXTest/ALL0/$EVT
 #export BFOLD=$BASE/jok-tds/ALL0/A001
 #BFOLD_NOTE="comparison with A from another executable"
@@ -256,12 +273,16 @@ BFOLD_NOTE="defining BFOLD makes python script do SAB comparison"
 
 mkdir -p $LOGDIR
 cd $LOGDIR
-export SProf__WRITE=1  ## enable SProf::Write of SProf.txt into LOGDIR
+
+export SProf__WRITE=1         ## enable SProf::Write of SProf.txt into invoking dir, which is LOGDIR
+
+#export SProf__PATH=SProf_%0.5d.txt
+#export SProf__PATH_INDEX=101  
 
 
 LOGFILE=$bin.log
 
-vars="$vars LOGDIR AFOLD BFOLD BFOLD_NOTE STEM LOGFILE"
+vars="$vars LOGDIR LOGDIR0 LOGOVER AFOLD BFOLD BFOLD_NOTE STEM LOGFILE"
 
 
 case $VERSION in

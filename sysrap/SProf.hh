@@ -10,25 +10,65 @@ Hence better to write the run meta at the end of every event
 overwriting what was there before. The overwrite duplication is OK
 as the expected number of profile stamps is small
 
-KLUDGE::
+
+Usage
+-------
+
+::
+
+    (ok) A[blyth@localhost CSGOptiX]$ opticks-f SProf::Write
+    ./CSGOptiX/CSGOptiX.cc:    SProf::Write();
+    ./qudarap/QSim.cc:    SProf::Write(); // per-event write, so have something in case of crash
+    ./sysrap/SEvt.cc:    SProf::Write();
+    ./sysrap/SEvt.cc:    SProf::Write();
+    ./sysrap/SProf.hh:    SProf::Write("run_meta.txt", true );
+    ./sysrap/SProf.hh:inline void SProf::Write(bool append)
+    ./sysrap/SProf.hh:    if(!WRITE) std::cerr << "SProf::Write DISABLED, enable[export SProf__WRITE=1] disable[unset SProf__WRITE]\n" ;
+    ./sysrap/tests/SProfTest.cc:        SProf::Write();      // frequent write to have something in case of crash
+    ./sysrap/tests/SProfTest.cc:    SProf::Write();
+    ./u4/tests/U4HitTest.cc:    SProf::Write(append);
+    (ok) A[blyth@localhost opticks]$
+
+
+
+Config via envvars
+-------------------
+
+Enable writing of profile txt file with::
+
+    export SProf__WRITE=1
+
+Default path to write profile info is "SProf.txt", to override that::
+
+    export SProf__PATH=SProf_%0.5d.txt
+    export SProf__PATH_INDEX=0
+
+If the PATH provided contains "%" it is treated as a format string
+which is expected to take one integer index provided from the PATH_INDEX.
+
+
+Slurm array running without overwriting SProf.txt and other logs
+-----------------------------------------------------------------
+
+::
+
+    LOGDIR=$SLURM_ARRAY_TASK_ID
+    mkdir -p $LOGDIR
+    cd $LOGDIR
+    ...invoke executable...
+
+
+Former Kludge, now removed
+---------------------------
+
+Formerly shared output from SProf into the run_meta.txt, using::
 
     SProf::Write("run_meta.txt", true );
     // HMM: this relying on relative path, ie on the invoking directory
 
-
 HMM Combining run metadata in run_meta.txt
 (from SEvt::RUN_META) together with profiling info from here
-is a kludge that is worth removing, because it complicates
-things.
-
-Best to keep things simple by:
-
-1. write profiling info into "SProf.txt"
-2. run meta into run_meta.txt
-
-Actually the problem is not including metadata with profiling
-its mixing across structs.
-
+was a kludge that was removed as it complicates things.
 
 **/
 
@@ -42,8 +82,15 @@ its mixing across structs.
 
 struct SYSRAP_API SProf
 {
-    static constexpr const char* SProf__WRITE_INDEX = "SProf__WRITE_INDEX" ;  // default -1 inhibits writing
-    static constexpr const char* PATH = "SProf_%0.5d.txt" ;
+    static constexpr const char* SProf__WRITE      = "SProf__WRITE" ;
+
+    static constexpr const char* SProf__PATH       = "SProf__PATH" ;
+    static constexpr const char* PATH_DEFAULT      = "SProf.txt" ;
+    //static constexpr const char* PATH_DEFAULT    = "SProf_%0.5d.txt" ;
+
+    static constexpr const char* SProf__PATH_INDEX = "SProf__PATH_INDEX" ;
+    static constexpr const int PATH_INDEX_DEFAULT = 0 ;
+
     static constexpr const char* FMT = "%0.3d" ;
     static constexpr const int N = 10 ;
     static char TAG[N] ;
@@ -67,9 +114,9 @@ struct SYSRAP_API SProf
     static std::string Serialize() ;
     static std::string Desc() ;
 
-    static const char* Path(const char* _path);
-    static void Write(const char* _path=PATH, bool append=false);
-    static void Read( const char* _path=PATH );
+    static const char* Path();
+    static void Write(bool append=false);
+    static void Read();
 };
 
 
@@ -196,19 +243,22 @@ inline std::string SProf::Serialize() // static
 }
 
 
-inline const char* SProf::Path(const char* _path)  // static
+inline const char* SProf::Path()  // static
 {
-    int INDEX = ssys::getenvint(SProf__WRITE_INDEX, -1);
-    bool WRITE = INDEX > -1 ;
-    if(!WRITE) std::cerr << "SProf::Write DISABLED, enable with [export " << SProf__WRITE_INDEX << "=0,1,2,3,...]\n" ;
-    if(!WRITE) return nullptr ;
-    const char* path = sstr::Format(PATH, INDEX);
+    const char* PATH = ssys::getenvvar(SProf__PATH,       PATH_DEFAULT);
+    int INDEX        = ssys::getenvint(SProf__PATH_INDEX, PATH_INDEX_DEFAULT);
+    bool looks_like_fmt = strstr(PATH,"%") != nullptr ;
+    const char* path = looks_like_fmt ? sstr::Format(PATH, INDEX) : PATH ;
     return path ;
 }
 
-inline void SProf::Write(const char* _path, bool append)
+inline void SProf::Write(bool append)
 {
-    const char* path = Path(_path);
+    bool WRITE = ssys::getenvbool(SProf__WRITE) ;
+    if(!WRITE) std::cerr << "SProf::Write DISABLED, enable[export SProf__WRITE=1] disable[unset SProf__WRITE]\n" ;
+    if(!WRITE) return ;
+
+    const char* path = Path();
     if(!path) return ;
     std::ios_base::openmode mode = std::ios::out|std::ios::binary ;
     if(append) mode |= std::ios::app ;
@@ -225,9 +275,9 @@ A000_QSim__simulate_HEAD:1760593677804471,7316440,1220224   # metadata
 **/
 
 
-inline void SProf::Read(const char* _path )
+inline void SProf::Read()
 {
-    const char* path = Path(_path);
+    const char* path = Path();
     if(!path) return ;
 
     Clear();
