@@ -63,6 +63,21 @@ Release Notes
 
 
 
+v0.5.6 2025/10/29 : fix PMT inconsistency bug, file writing changes for production invokation, planning libcurl client 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* add LOGOVER control to cxs_min.sh to test invokation from non-standard LOGDIR, change default directory for run.npy run_meta.txt saving to invoking directory beside log and SProf.txt
+* avoid issue of inconsistent MPMT 0-or-600 using SPMT_Num/pmtNum in SPMT.h from PMTParamData
+* rc check must be immediately after the executable, handle GEOM_CFBaseFromGEOM in GEOM bash function
+* change SProf control envvar to SProf__WRITE_INDEX which when 0/1/2/3/... writes to eg SProf_00000.txt , default of -1 inhibits writing
+* add debug for copyno_pmtid_consistent assert in SPMT::init_lcqs
+* remove direct QSim usage within G4CXOpticks, instead use QSim only via CSGOptiX from high level G4CXOpticks, motive is to simplify swap out of CSGOptiX with non-GPU client
+* add T for tera/trillion to integer spec, change all narrow int spec methods in favor of int64_t ones
+* idea how to proceed with libcurl based client, optionally replace CSGOptiX within G4CXOpticks with something like s_CURL_CSGOptiX.h fulfilling s_CSGOptiX.h protocol that CSGOptiX also fulfils
+* apply cuda13gcc15_2.patch from Nicola fixing ULONGLONG4 LONGLONG4 defines needed for CUDA 13
+
+
+
 v0.5.5 2025/10/23 : removed 32 bit limits on photons per event, improved profiling for production, improved geometry digest, python pointcloud overlap 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -315,6 +330,8 @@ Snapshot Tags History
 +---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                              |
 +=========+=====+============+====================================================================================================================================+
+| v0.5.6  | 56  | 2025/10/29 | fix PMT inconsistency bug, file writing changes for production invokation, planning libcurl client                                 |
++---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
 | v0.5.5  | 55  | 2025/10/23 | removed 32 bit limits on photons per event, improved profiling for production, improved geometry digest, python pointcloud overlap |
 +---------+-----+------------+------------------------------------------------------------------------------------------------------------------------------------+
 | v0.5.4  | 54  | 2025/09/29 | triangulation automation, handle unsupported, U4Polycone generalization for new JUNO geometry, start service-client                |
