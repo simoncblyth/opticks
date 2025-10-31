@@ -363,6 +363,8 @@ set(HEADERS
     squadx.h
 
     sphoton.h
+    sphotonlite.h
+
     sphit.h
     spho.h
     sgs.h

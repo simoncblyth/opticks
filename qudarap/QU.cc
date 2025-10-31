@@ -15,6 +15,8 @@
 #endif
 
 #include "sphoton.h"
+#include "sphotonlite.h"
+
 #include "sevent.h"
 #include "salloc.h"
 #include "SEventConfig.hh"
@@ -347,6 +349,7 @@ template QUDARAP_API sseq*      QU::device_alloc<sseq>(unsigned num_items, const
 #endif
 
 template QUDARAP_API sphoton*   QU::device_alloc<sphoton>(unsigned num_items, const char* label) ;
+template QUDARAP_API sphotonlite*   QU::device_alloc<sphotonlite>(unsigned num_items, const char* label) ;
 
 
 template<typename T>
@@ -381,6 +384,7 @@ T* QU::device_alloc_zero(unsigned num_items, const char* label)
 }
 
 template QUDARAP_API sphoton*   QU::device_alloc_zero<sphoton>(unsigned num_items, const char* label) ;
+template QUDARAP_API sphotonlite*   QU::device_alloc_zero<sphotonlite>(unsigned num_items, const char* label) ;
 template QUDARAP_API quad2*     QU::device_alloc_zero<quad2>(  unsigned num_items, const char* label) ;
 template QUDARAP_API XORWOW*    QU::device_alloc_zero<XORWOW>(  unsigned num_items, const char* label) ;
 template QUDARAP_API Philox*    QU::device_alloc_zero<Philox>(  unsigned num_items, const char* label) ;
@@ -413,6 +417,7 @@ template QUDARAP_API void     QU::device_memset<int>(int*, int, unsigned ) ;
 template QUDARAP_API void     QU::device_memset<quad4>(quad4*, int, unsigned ) ;
 template QUDARAP_API void     QU::device_memset<quad6>(quad6*, int, unsigned ) ;
 template QUDARAP_API void     QU::device_memset<sphoton>(sphoton*, int, unsigned ) ;
+template QUDARAP_API void     QU::device_memset<sphotonlite>(sphotonlite*, int, unsigned ) ;
 
 
 
@@ -438,6 +443,7 @@ template QUDARAP_API void   QU::device_free<unsigned>(unsigned*) ;
 template QUDARAP_API void   QU::device_free<quad2>(quad2*) ;
 template QUDARAP_API void   QU::device_free<quad4>(quad4*) ;
 template QUDARAP_API void   QU::device_free<sphoton>(sphoton*) ;
+template QUDARAP_API void   QU::device_free<sphotonlite>(sphotonlite*) ;
 template QUDARAP_API void   QU::device_free<uchar4>(uchar4*) ;
 template QUDARAP_API void   QU::device_free<XORWOW>(XORWOW*) ;
 template QUDARAP_API void   QU::device_free<Philox>(Philox*) ;
@@ -468,6 +474,7 @@ template int QU::copy_device_to_host<quad>( quad* h, quad* d,  unsigned num_item
 template int QU::copy_device_to_host<quad2>( quad2* h, quad2* d,  unsigned num_items);
 template int QU::copy_device_to_host<quad4>( quad4* h, quad4* d,  unsigned num_items);
 template int QU::copy_device_to_host<sphoton>( sphoton* h, sphoton* d,  unsigned num_items);
+template int QU::copy_device_to_host<sphotonlite>( sphotonlite* h, sphotonlite* d,  unsigned num_items);
 template int QU::copy_device_to_host<quad6>( quad6* h, quad6* d,  unsigned num_items);
 template int QU::copy_device_to_host<sstate>( sstate* h, sstate* d,  unsigned num_items);
 template int QU::copy_device_to_host<XORWOW>( XORWOW* h, XORWOW* d,  unsigned num_items);
@@ -547,6 +554,7 @@ template void QU::copy_device_to_host_and_free<quad>( quad* h, quad* d,  unsigne
 template void QU::copy_device_to_host_and_free<quad2>( quad2* h, quad2* d,  unsigned num_items, const char* label);
 template void QU::copy_device_to_host_and_free<quad4>( quad4* h, quad4* d,  unsigned num_items, const char* label);
 template void QU::copy_device_to_host_and_free<sphoton>( sphoton* h, sphoton* d,  unsigned num_items, const char* label);
+template void QU::copy_device_to_host_and_free<sphotonlite>( sphotonlite* h, sphotonlite* d,  unsigned num_items, const char* label);
 template void QU::copy_device_to_host_and_free<quad6>( quad6* h, quad6* d,  unsigned num_items, const char* label);
 template void QU::copy_device_to_host_and_free<sstate>( sstate* h, sstate* d,  unsigned num_items, const char* label);
 
@@ -574,6 +582,7 @@ template void QU::copy_host_to_device<unsigned>( unsigned* d, const unsigned* h,
 template void QU::copy_host_to_device<sevent>(   sevent* d,   const sevent* h, unsigned num_items);
 template void QU::copy_host_to_device<quad4>(    quad4* d,    const quad4* h, unsigned num_items);
 template void QU::copy_host_to_device<sphoton>(  sphoton* d,  const sphoton* h, unsigned num_items);
+template void QU::copy_host_to_device<sphotonlite>(  sphotonlite* d,  const sphotonlite* h, unsigned num_items);
 template void QU::copy_host_to_device<quad6>(    quad6* d,    const quad6* h, unsigned num_items);
 template void QU::copy_host_to_device<quad2>(    quad2* d,    const quad2* h, unsigned num_items);
 template void QU::copy_host_to_device<XORWOW>(   XORWOW* d,   const XORWOW* h,   unsigned num_items);

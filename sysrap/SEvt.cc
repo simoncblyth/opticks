@@ -3426,6 +3426,8 @@ bool SEvt::haveGenstepVec() const { return genstep.size() > 0 ; }
 SEvt::gatherPhoton
 --------------------
 
+NB these gatherNAME methods are not used for GPU running
+
 1. allocates with NP::Make
 2. populates by reading from photon vector using the sevent.h pointer
    that makes things follow the on device approach
@@ -3551,6 +3553,16 @@ NP* SEvt::makePhoton() const
     NP* p = NP::Make<float>( evt->num_photon, 4, 4 );
     return p ;
 }
+
+NP* SEvt::makePhotonLite() const
+{
+    NP* l = NP::Make<float>( evt->num_photon, 1, 4 );
+    return l ;
+}
+
+
+
+
 
 NP* SEvt::makeRecord() const
 {

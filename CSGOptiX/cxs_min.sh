@@ -187,9 +187,9 @@ export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SE
 vars="$vars version VERSION"
 
 
-#test=debug
+test=debug
 #test=ref1
-test=ref5
+#test=ref5
 #test=ref8
 #test=ref10
 #test=ref10_multilaunch
@@ -295,20 +295,19 @@ case $VERSION in
 98) opticks_event_mode=DebugLite ;;
 99) opticks_event_mode=DebugHeavy ;;
 esac
-
 # WIP: decouple VERSION from opticks_event_mode, better for event_mode to be controlled via TEST
 # demote use of VERSION to special checks with a separate output folder
 
 vars="$vars opticks_event_mode"
 
-
 if [ "$TEST" == "debug" ]; then
 
    opticks_num_event=1
    opticks_num_genstep=1
-   opticks_num_photon=100
+   opticks_num_photon=M1
    opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M1
+   opticks_max_slot=M1
+   opticks_event_mode=DebugLite
 
 elif [ "$TEST" == "ref1" ]; then
 

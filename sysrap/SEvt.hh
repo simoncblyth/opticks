@@ -634,6 +634,8 @@ public:
 
 
     NP* makePhoton() const ;
+    NP* makePhotonLite() const ;
+
     NP* makeRecord() const ;
     NP* makeRec() const ;
     NP* makeAux() const ;

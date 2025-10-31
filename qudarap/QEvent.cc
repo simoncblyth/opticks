@@ -672,11 +672,48 @@ void QEvent::gatherPhoton(NP* p) const
 
 NP* QEvent::gatherPhoton() const
 {
-    //NP* p = NP::Make<float>( evt->num_photon, 4, 4);
     NP* p = sev->makePhoton();
     gatherPhoton(p);
     return p ;
 }
+
+
+
+
+
+
+
+void QEvent::gatherPhotonLite(NP* l) const
+{
+    bool expected_shape =  l->has_shape(evt->num_photon, 1, 4) ;
+    LOG(expected_shape ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " l.sstr " << l->sstr() << " evt.photon " << evt->photon ;
+    LOG(info) << "[ evt.num_photon " << evt->num_photon << " l.sstr " << l->sstr() << " evt.photon " << evt->photon ;
+    assert(expected_shape );
+
+    int rc = QU::copy_device_to_host<sphotonlite>( (sphotonlite*)l->bytes(), evt->photonlite, evt->num_photon );
+
+    LOG_IF(fatal, rc != 0)
+         << " QU::copy_device_to_host photonlite FAILED "
+         << " evt->photonlite " << ( evt->photonlite ? "Y" : "N" )
+         << " evt->num_photon " <<  evt->num_photon
+         ;
+
+    if(rc != 0) std::raise(SIGINT) ;
+
+    LOG(LEVEL) << "] evt.num_photon " << evt->num_photon  ;
+}
+
+
+NP* QEvent::gatherPhotonLite() const
+{
+    NP* l = sev->makePhotonLite();
+    gatherPhotonLite(l);
+    return l ;
+}
+
+
+
+
 
 
 #ifndef PRODUCTION
@@ -987,11 +1024,11 @@ NP* QEvent::gatherComponent_(unsigned cmp) const
     switch(cmp)
     {
         //case SCOMP_GENSTEP:   a = getGenstep()     ; break ;
-        case SCOMP_GENSTEP:   a = gatherGenstepFromDevice() ; break ;
-        case SCOMP_INPHOTON:  a = getInputPhoton() ; break ;
-
-        case SCOMP_PHOTON:    a = gatherPhoton()   ; break ;
-        case SCOMP_HIT:       a = gatherHit()      ; break ;
+        case SCOMP_GENSTEP:     a = gatherGenstepFromDevice() ; break ;
+        case SCOMP_INPHOTON:    a = getInputPhoton() ; break ;
+        case SCOMP_PHOTON:      a = gatherPhoton()      ; break ;
+        case SCOMP_PHOTONLITE:  a = gatherPhotonLite()  ; break ;
+        case SCOMP_HIT:         a = gatherHit()         ; break ;
 #ifndef PRODUCTION
         case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;
@@ -1080,6 +1117,7 @@ void QEvent::device_alloc_photon()
         ;
 
     evt->photon  = evt->max_slot > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot, "QEvent::device_alloc_photon/max_slot*sizeof(sphoton)" ) : nullptr ;
+    evt->photonlite = evt->max_lite == 1 ? QU::device_alloc_zero<sphotonlite>( evt->max_slot, "QEvent::device_alloc_photon/max_slot*sizeof(sphotonlite)" ) : nullptr ;
 
 #ifndef PRODUCTION
     evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot * evt->max_record, "max_slot*max_record*sizeof(sphoton)" ) : nullptr ;

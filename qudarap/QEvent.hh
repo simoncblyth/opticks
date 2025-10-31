@@ -158,6 +158,8 @@ public:
     // ]
 
     NP*      gatherPhoton() const ;
+    NP*      gatherPhotonLite() const ;
+
     NP*      gatherHit() const ;
 
 #ifndef PRODUCTION
@@ -176,8 +178,8 @@ public:
 #endif
 
 public:
-    // mutating interface. TODO: Suspect only the photon mutating API actually needed for some QSimTest, remove the others
     void     gatherPhoton(       NP* p ) const ;
+    void     gatherPhotonLite(   NP* l ) const ;
 
 private:
     NP*      gatherComponent_(unsigned comp) const ;

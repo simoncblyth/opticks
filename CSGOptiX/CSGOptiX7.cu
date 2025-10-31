@@ -52,6 +52,7 @@ __intersection__is
 #include "squad.h"
 #include "sqat4.h"
 #include "sphoton.h"
+#include "sphotonlite.h"
 #include "scerenkov.h"
 #include "sstate.h"
 
@@ -453,15 +454,13 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
     evt->photon[idx] = ctx.p ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
 
 
-/**
     if( evt->photonlite )
     {
         sphotonlite l ;
-        l.init(ctx.p);
+        l.init( ctx.p.identity, ctx.p.time, ctx.p.flagmask );
         l.set_lpos(prd->lposcost(), prd->lposfphi() );
         evt->photonlite[idx] = l ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
     }
-**/
 
 
 

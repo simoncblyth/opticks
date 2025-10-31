@@ -86,6 +86,7 @@ struct sflat ;
 
 
 struct sphoton ;
+struct sphotonlite ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -128,6 +129,7 @@ struct sevent
     int   max_flat    ; // 0 or 1 only
     int   max_aux     ; // eg 0, 16, 32 : when greater than zero typically follows max_record
     int   max_sup     ;
+    int   max_lite    ; // 0 or 1 only
 
     int   index ;
 
@@ -160,8 +162,8 @@ struct sevent
     quad6*   genstep ;    //QEvent::device_alloc_genstep
     int*     seed ;
     sphoton* hit ;        //QEvent::gatherHit_ allocates event by event depending on num_hit
-    sphoton* photon ;     //QEvent::device_alloc_photon
-
+    sphoton*     photon ;     //QEvent::device_alloc_photon
+    sphotonlite* photonlite ; //QEvent::device_alloc_photon
 
     sphoton* record ;
     srec*    rec ;
@@ -224,6 +226,7 @@ SEVENT_METHOD void sevent::init()
     max_flat     = SEventConfig::MaxFlat()  ;
     max_aux      = SEventConfig::MaxAux()  ;
     max_sup      = SEventConfig::MaxSup()  ;
+    max_lite     = SEventConfig::MaxLite() ;
 
 
     zero();  // pointers and counts
@@ -277,6 +280,7 @@ SEVENT_METHOD std::string sevent::descMax() const
         << " evt.max_prd       " << std::setw(w) << max_prd      << std::endl
         << " evt.max_tag       " << std::setw(w) << max_tag      << std::endl
         << " evt.max_flat      " << std::setw(w) << max_flat     << std::endl
+        << " evt.max_lite      " << std::setw(w) << max_lite     << std::endl
         ;
 
     std::string s = ss.str();
@@ -324,6 +328,10 @@ SEVENT_METHOD std::string sevent::descBuf() const
         << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
         << std::endl
         << std::setw(20) << " evt.photon "      << std::setw(w) << ( photon  ? "Y" : "N" ) << " " << std::setw(20) << photon
+        << std::setw(20) << " num_photon "      << std::setw(7) << num_photon
+        << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
+        << std::endl
+        << std::setw(20) << " evt.photonlite "  << std::setw(w) << ( photonlite  ? "Y" : "N" ) << " " << std::setw(20) << photonlite
         << std::setw(20) << " num_photon "      << std::setw(7) << num_photon
         << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
         << std::endl
@@ -506,6 +514,7 @@ SEVENT_METHOD void sevent::zero()
     seed = nullptr ;
     hit = nullptr ;
     photon = nullptr ;
+    photonlite = nullptr ;
 
     record = nullptr ;
     rec = nullptr ;

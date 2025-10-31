@@ -186,6 +186,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxPrd       = "OPTICKS_MAX_PRD" ;
     static constexpr const char* kMaxTag       = "OPTICKS_MAX_TAG" ;
     static constexpr const char* kMaxFlat      = "OPTICKS_MAX_FLAT" ;
+    static constexpr const char* kMaxLite      = "OPTICKS_MAX_LITE" ;  // MAX->ON/ENABLED/YES for many of these
 
     static constexpr const char* kMaxExtentDomain    = "OPTICKS_MAX_EXTENT_DOMAIN" ;
     static constexpr const char* kMaxTimeDomain      = "OPTICKS_MAX_TIME_DOMAIN" ;
@@ -254,11 +255,15 @@ struct SYSRAP_API SEventConfig
     static int64_t MaxRecord();  // full photon step record
     static int64_t MaxRec();     // compressed photon step record
     static int64_t MaxAux();     // auxiliary photon step record, used for debug
+
+
+    // MOST OF THE BELOW MAX ARE ACTUALLY JUST BOOLEAN SWITCHES ...
     static int64_t MaxSup();     // supplementry photon level info
     static int64_t MaxSeq();     // seqhis slots
     static int64_t MaxPrd();
     static int64_t MaxTag();
     static int64_t MaxFlat();
+    static int64_t MaxLite();
 
     static float MaxExtentDomain() ;
     static float MaxTimeDomain() ;
@@ -369,7 +374,8 @@ struct SYSRAP_API SEventConfig
     static void SetMaxSeq(    int max_seq);
     static void SetMaxPrd(    int max_prd);
     static void SetMaxTag(    int max_tag);
-    static void SetMaxFlat(    int max_flat);
+    static void SetMaxFlat(   int max_flat);
+    static void SetMaxLite(   int max_lite);
 
     static void SetMaxExtentDomain( float max_extent);
     static void SetMaxTimeDomain(   float max_time );
@@ -446,6 +452,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxPrdDefault ;
     static int _MaxTagDefault ;
     static int _MaxFlatDefault ;
+    static int _MaxLiteDefault ;
 
     static float _MaxExtentDomainDefault ;
     static float _MaxTimeDomainDefault  ;
@@ -522,6 +529,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxPrd ;
     static int _MaxTag ;
     static int _MaxFlat ;
+    static int _MaxLite ;
 
     static float _MaxExtentDomain ;
     static float _MaxTimeDomain  ;

@@ -200,7 +200,7 @@ struct sphoton
     float  wavelength ;
 
     unsigned boundary_flag ;  // 3
-    unsigned identity ;       // [:,3,1]
+    unsigned identity ;       // [:,3,1] (upper 8 bits used to extend range of index)
     unsigned index ;          // formerly *orient_idx* : changed to *index* when orient moved to (1,3)
     unsigned flagmask ;
 
@@ -309,6 +309,8 @@ struct sphoton
 #endif
 
 };
+
+
 
 
 
@@ -436,6 +438,8 @@ SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, 
 #include "OpticksPhoton.hh"
 #include "NP.hh"
 
+
+
 SPHOTON_METHOD unsigned sphoton::flagmask_count() const
 {
     return std::bitset<32>(flagmask).count() ;   // NB counting bits, not nibbles with bits
@@ -529,6 +533,7 @@ SPHOTON_METHOD std::string sphoton::flagmask_() const
 {
     return OpticksPhoton::FlagMaskLabel(flagmask) ;
 }
+
 
 SPHOTON_METHOD std::string sphoton::descFlag() const
 {

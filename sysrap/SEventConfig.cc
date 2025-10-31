@@ -58,6 +58,7 @@ int SEventConfig::_MaxSeqDefault = 0 ;
 int SEventConfig::_MaxPrdDefault = 0 ;
 int SEventConfig::_MaxTagDefault = 0 ;
 int SEventConfig::_MaxFlatDefault = 0 ;
+int SEventConfig::_MaxLiteDefault = 0 ;
 
 float SEventConfig::_MaxExtentDomainDefault = 1000.f ;  // mm  : domain compression used by *rec*
 float SEventConfig::_MaxTimeDomainDefault = 10.f ; // ns
@@ -264,6 +265,7 @@ int SEventConfig::_MaxSeq       = ssys::getenvint(kMaxSeq,  _MaxSeqDefault ) ;
 int SEventConfig::_MaxPrd       = ssys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;
 int SEventConfig::_MaxTag       = ssys::getenvint(kMaxTag,  _MaxTagDefault ) ;
 int SEventConfig::_MaxFlat      = ssys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;
+int SEventConfig::_MaxLite      = ssys::getenvint(kMaxLite,  _MaxLiteDefault ) ;
 
 float SEventConfig::_MaxExtentDomain  = ssys::getenvfloat(kMaxExtentDomain, _MaxExtentDomainDefault );
 float SEventConfig::_MaxTimeDomain    = ssys::getenvfloat(kMaxTimeDomain,   _MaxTimeDomainDefault );    // ns
@@ -371,6 +373,7 @@ int64_t SEventConfig::MaxSeq(){      return _MaxSeq ; }
 int64_t SEventConfig::MaxPrd(){      return _MaxPrd ; }
 int64_t SEventConfig::MaxTag(){      return _MaxTag ; }
 int64_t SEventConfig::MaxFlat(){     return _MaxFlat ; }
+int64_t SEventConfig::MaxLite(){     return _MaxLite ; }
 
 float SEventConfig::MaxExtentDomain(){ return _MaxExtentDomain ; }
 float SEventConfig::MaxTimeDomain(){   return _MaxTimeDomain ; }
@@ -588,6 +591,7 @@ void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; L
 void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat     = max_flat     ; LIMIT_Check() ; }
+void SEventConfig::SetMaxLite(    int max_lite){     _MaxLite     = max_lite     ; LIMIT_Check() ; }
 
 void SEventConfig::SetMaxExtentDomain( float max_extent){ _MaxExtentDomain = max_extent  ; LIMIT_Check() ; }
 void SEventConfig::SetMaxTimeDomain(   float max_time){   _MaxTimeDomain = max_time  ; LIMIT_Check() ; }
@@ -705,9 +709,10 @@ void SEventConfig::LIMIT_Check()
    assert( _MaxRec    >= 0 && _MaxRec    <= RecordLimit() ) ;
    assert( _MaxPrd    >= 0 && _MaxPrd    <= RecordLimit() ) ;
 
-   assert( _MaxSeq    >= 0 && _MaxSeq    <= 1 ) ;    // formerly incorrectly allowed up to LIMIT
+   assert( _MaxSeq    >= 0 && _MaxSeq    <= 1 ) ;
    assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ;
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ;
+   assert( _MaxLite   >= 0 && _MaxLite   <= 1 ) ;
 
    assert( _StartIndex >= 0 );
 }
@@ -813,6 +818,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kMaxFlat
        << std::setw(20) << " MaxFlat " << " : " << MaxFlat()
+       << std::endl
+       << std::setw(25) << kMaxLite
+       << std::setw(20) << " MaxLite " << " : " << MaxLite()
        << std::endl
        << std::setw(25) << kHitMask
        << std::setw(20) << " HitMask " << " : " << HitMask()
@@ -1280,6 +1288,7 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
             SEventConfig::SetMaxAux(record_limit);
 
             SEventConfig::SetMaxSeq(1);
+            SEventConfig::SetMaxLite(1);
             // since moved to compound sflat/stag so MaxFlat/MaxTag should now either be 0 or 1, nothing else
             SEventConfig::SetMaxTag(1);
             SEventConfig::SetMaxFlat(1);
@@ -1291,6 +1300,7 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
             SEventConfig::SetMaxRec(0);
             SEventConfig::SetMaxRecord(record_limit);
             SEventConfig::SetMaxSeq(1);  // formerly incorrectly set to max_bounce+1
+            SEventConfig::SetMaxLite(1);
         }
 
 
@@ -1302,15 +1312,26 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
             gather_mask |= SCOMP_INPHOTON ;  save_mask |= SCOMP_INPHOTON ;
             gather_mask |= SCOMP_PHOTON   ;  save_mask |= SCOMP_PHOTON   ;
             gather_mask |= SCOMP_HIT      ;  save_mask |= SCOMP_HIT ;
+
+
             //gather_mask |= SCOMP_SEED ;   save_mask |= SCOMP_SEED ;  // only needed for deep debugging
         }
-        if(MaxRecord()>0){    gather_mask |= SCOMP_RECORD ;  save_mask |= SCOMP_RECORD ; }
-        if(MaxAux()>0){       gather_mask |= SCOMP_AUX    ;  save_mask |= SCOMP_AUX    ; }
-        if(MaxSup()>0){       gather_mask |= SCOMP_SUP    ;  save_mask |= SCOMP_SUP    ; }
-        if(MaxSeq()>0){       gather_mask |= SCOMP_SEQ    ;  save_mask |= SCOMP_SEQ    ; }
-        if(MaxPrd()>0){       gather_mask |= SCOMP_PRD    ;  save_mask |= SCOMP_PRD    ; }
-        if(MaxTag()>0){       gather_mask |= SCOMP_TAG    ;  save_mask |= SCOMP_TAG    ; }
-        if(MaxFlat()>0){      gather_mask |= SCOMP_FLAT   ;  save_mask |= SCOMP_FLAT   ; }
+
+
+
+        // HUH: meaning of the below Max very different from above, thats confusing
+        // the below "Max" can be configured via envvar eg OPTICKS_MAX_LITE=1
+        // most of the below "Max" are only allowed to be 0 OR  1
+
+        if(MaxRecord()>0){   gather_mask |= SCOMP_RECORD     ;  save_mask |= SCOMP_RECORD ; }
+        if(MaxAux()>0){      gather_mask |= SCOMP_AUX        ;  save_mask |= SCOMP_AUX    ; }
+        if(MaxSup()>0){      gather_mask |= SCOMP_SUP        ;  save_mask |= SCOMP_SUP    ; }
+        if(MaxPrd()>0){      gather_mask |= SCOMP_PRD        ;  save_mask |= SCOMP_PRD    ; }
+
+        if(MaxSeq()==1){     gather_mask |= SCOMP_SEQ        ;  save_mask |= SCOMP_SEQ    ; }
+        if(MaxTag()==1){     gather_mask |= SCOMP_TAG        ;  save_mask |= SCOMP_TAG    ; }
+        if(MaxFlat()==1){    gather_mask |= SCOMP_FLAT       ;  save_mask |= SCOMP_FLAT   ; }
+        if(MaxLite()==1){    gather_mask |= SCOMP_PHOTONLITE ;  save_mask |= SCOMP_PHOTONLITE ; }
     }
 
 
@@ -1389,6 +1410,7 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<int>("MaxPrd", MaxPrd() );
     meta->set_meta<int>("MaxTag", MaxTag() );
     meta->set_meta<int>("MaxFlat", MaxFlat() );
+    meta->set_meta<int>("MaxLite", MaxLite() );
 
     meta->set_meta<float>("MaxExtentDomain", MaxExtentDomain() );
     meta->set_meta<float>("MaxTimeDomain", MaxTimeDomain() );
