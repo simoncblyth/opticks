@@ -52,10 +52,12 @@ Slurm array running without overwriting SProf.txt and other logs
 
 ::
 
-    LOGDIR=$SLURM_ARRAY_TASK_ID
+    ID=$(printf "J%0.6d" "${SLURM_ARRAY_TASK_ID:-0}")
+    LOGDIR=logs/$ID
     mkdir -p $LOGDIR
-    cd $LOGDIR
+    pushd $LOGDIR
     ...invoke executable...
+    popd
 
 
 Former Kludge, now removed

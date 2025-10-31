@@ -184,6 +184,37 @@ fi
 EOT
 }
 
+
+ENVSET_TEMPLATE(){ cat << EOT
+#!/bin/bash
+usage(){ cat << EON
+~/.opticks/GEOM/ENVSET.sh
+==========================
+
+Export ENVSET envvar configuring path to setup script, use this
+from bash function like::
+
+    oj_envset()
+    {
+       : ~/local.sh
+       source ~/.opticks/GEOM/ENVSET.sh
+       if [ -n "\$ENVSET" -a -f "\$ENVSET" ]; then
+           source \$ENVSET
+       else
+           echo \$BASH_SOURCE - ERROR - MISSING ENVSET \$ENVSET
+       fi
+    }
+
+EON
+}
+
+envset=/cvmfs/opticks.ihep.ac.cn/oj/releases/J25.4.0_Opticks-v0.5.6/el9_amd64_gcc11/2025_10_29/envset.sh
+export ENVSET=\$envset
+
+EOT
+}
+
+
 VUE_TEMPLATE(){ cat << "EOT"
 #!/bin/bash
 usage(){ cat << EON
@@ -497,6 +528,25 @@ ELV(){
   echo $cmd
   eval $cmd
 }
+
+
+ENVSET(){
+  : opticks/opticks.bash
+
+  local script=.opticks/GEOM/ENVSET.sh
+  if [ ! -f "$HOME/$script" ]; then
+     echo $BASH_SOURCE $FUNCNAME : GENERATE $HOME/$script
+     ENVSET_TEMPLATE > $HOME/$script
+  fi
+  local defarg="vi"
+  local arg=${1:-$defarg}
+  if [ "$arg" == "vi" ]; then
+     cmd="vi $HOME/$script"
+  fi
+  echo $cmd
+  eval $cmd
+}
+
 
 
 VUE(){
