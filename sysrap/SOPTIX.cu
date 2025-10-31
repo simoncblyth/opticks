@@ -9,7 +9,7 @@ Functions
 trace
     populate quad2 prd by call to optixTrace
 
-make_color
+make_normal_pixel
     minimal normal "shader"
 
 render
@@ -195,10 +195,10 @@ __miss__ms
 extern "C" __global__ void __miss__ms()
 {
     SOPTIX_MissData* ms = reinterpret_cast<SOPTIX_MissData*>( optixGetSbtDataPointer() );
-    const unsigned identity = 0xffffffffu ;
-    const unsigned globalPrimIdx = 0xffffu ;
-    const unsigned boundary = 0xffffu ;
+    const unsigned ii_id = 0xffffffffu ;
+    const unsigned gp_bd = 0xffffffffu ;
     const float lposcost = 0.f ;
+    const float lposfphi = 0.f ;
 
     // printf("//__miss__ms ms.bg_color (%7.3f %7.3f %7.3f) \n", ms->bg_color.x, ms->bg_color.x, ms->bg_color.z );
 
@@ -214,10 +214,12 @@ extern "C" __global__ void __miss__ms()
     prd->q1.u.z = 0u ;
     prd->q1.u.w = 0u ;
 
-    prd->set_globalPrimIdx_boundary(globalPrimIdx, boundary);
+    prd->set_globalPrimIdx_boundary_(gp_bd);
+    prd->set_iindex_identity_(ii_id);
 
-    prd->set_identity(identity);
-    prd->set_lposcost(lposcost);
+    prd->set_lpos(lposcost, lposfphi);  // __miss__ms.TRIANGLE
+
+
 }
 
 /**
@@ -296,8 +298,8 @@ extern "C" __global__ void __closesthit__ch()
     //const float3 lpos = ray_origin + t*ray_direction  ;
     // HMM: could use P to give the local position ?
 
-    float lposcost = normalize_z(P); // scuda.h
-
+    float lposcost = normalize_cost(P); // scuda.h
+    float lposfphi = normalize_fphi(P);
 
     quad2* prd = SOPTIX_getPRD<quad2>();
 
@@ -306,10 +308,9 @@ extern "C" __global__ void __closesthit__ch()
     prd->q0.f.z = N.z ;
     prd->q0.f.w = t ;
 
-    prd->set_identity( identity ) ;
-    prd->set_iindex(   iindex ) ;
+    prd->set_iindex_identity( iindex, identity ) ;
     prd->set_globalPrimIdx_boundary(globalPrimIdx, boundary) ;
-    prd->set_lposcost(lposcost);
+    prd->set_lpos(lposcost, lposfphi);   // __closesthit__ch.TRIANGLE
 
 }
 
@@ -317,7 +318,8 @@ extern "C" __global__ void __closesthit__ch()
 __intersection__is
 ====================
 
-With inbuilt triangles there is no role for IS
+With inbuilt triangles there is no role for IS, the intersection
+impl is provided by the Driver.
 
 extern "C" __global__ void __intersection__is()
 {

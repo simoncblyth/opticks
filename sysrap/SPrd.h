@@ -179,8 +179,8 @@ inline void SPrd::init_prd()
 
         pr.q0.f = nrmt[i] ;
         pr.set_globalPrimIdx_boundary( 0u, bnd_idx[i] );
-        pr.set_identity( identity[i] );
-        pr.set_lposcost( lposcost[i] );
+        pr.set_iindex_identity( 0, identity[i] );
+        pr.set_lpos( lposcost[i], 0.f );    // SPrd::init_prd testing dummy PRD
     }
 }
 

@@ -583,10 +583,23 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float3 normalize(const float3& v)
   return v * invLen;
 }
 
-SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_z(const float3& v)  // CLHEP ThreeVector calls this cosTheta
+SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_cost(const float3& v)  // formerly normalize_z,  CLHEP ThreeVector calls this cosTheta
 {
   return v.z / sqrtf(dot(v, v));
 }
+SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_fphi(const float3& v)
+{
+  return (atan2f(v.y, v.x) + M_PIf) / (2.0f * M_PIf);
+  // atan2f range is -pi to pi, so add pi, giving range 0 to 2pi
+  // which is then normalized to give fphi in range 0:1
+}
+
+SUTIL_INLINE SUTIL_HOSTDEVICE float phi_from_fphi( float fphi )
+{
+   // recover phi angle in range -pi to pi from fphi in range 0:1
+   return ( fphi * 2.0f - 1.f ) * M_PIf ;
+}
+
 
 
 /** floor */

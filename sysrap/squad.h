@@ -84,30 +84,43 @@ inline int unsigned_as_int( unsigned value )
 
 
 /**
-quad2
--------
+squad.h/quad2
+--------------
 
-::
+Previous::
 
-    +------------+------------+------------+---------------+
-    | f:normal_x | f:normal_y | f:normal_z | f:distance    |
-    +------------+------------+------------+---------------+
-    | f:lposcost | u:iindex   | u:identity | u:boundary    |
-    +------------+------------+------------+---------------+
+    +----------------------+---------------------+------------------------+-----------------------------+
+    | f:normal_x           | f:normal_y          | f:normal_z             | f:distance                  |
+    +----------------------+---------------------+------------------------+-----------------------------+
+    | f:lposcost           | u:iindex            | u:identity             | u:globalPrimIdx_boundary    |
+    +----------------------+---------------------+------------------------+-----------------------------+
 
-WIP: HMM? pack boundary_iindex to make room for f:lposphi ?
-would avoid awkward transform lookups
+Current::
+
+    +----------------------+---------------------+------------------------+-----------------------------+
+    | f:normal_x           | f:normal_y          | f:normal_z             | f:distance                  |
+    +----------------------+---------------------+------------------------+-----------------------------+
+    | f:lposcost           | f:lposfphi          | u:iindex_identity      | u:globalPrimIdx_boundary    |
+    +----------------------+---------------------+------------------------+-----------------------------+
+
+    Rearranged to squeeze in f:lposfphi, as that can avoid transform lookups with future photonlite/hitlite,
+    as no post-sim CPU transforms would then be needed to get "muon" hits.
 
 
 f:lposcost
-    Local position cos(theta) of intersect,
+    Local frame position cos(theta) of intersect,
     canonically calculated in CSGOptiX7.cu:__intersection__is
-    normalize_z(ray_origin + isect.w*ray_direction )
-    where normalize_z is v.z/sqrtf(dot(v, v))
+    scuda.h:normalize_cost(ray_origin + isect.w*ray_direction )
+    where scuda.h:normalize_cost is v.z/sqrtf(dot(v, v))
 
     This is kinda imagining a sphere thru the intersection point
     which is likely onto an ellipsoid or a box or anything
     to provide a standard way of giving a z-polar measure.
+
+f:lposfphi
+    Local frame position normalized phi fraction,
+    obtained from scuda.h:normalize_fphi
+
 
 u:iindex
     see cx:CSGOptiX7.cu:__closesthit__ch
@@ -163,12 +176,14 @@ struct quad2
     SQUAD_METHOD void     distance_add(float delta);
 
     SQUAD_METHOD float lposcost() const ;
+    SQUAD_METHOD float lposfphi() const ;
+    SQUAD_METHOD void  set_lpos(float lposcost, float lposfphi );
+
+    SQUAD_METHOD void set_iindex_identity_(  unsigned ii_id );
+    SQUAD_METHOD void set_iindex_identity(unsigned ii, unsigned id );
+    SQUAD_METHOD unsigned iindex_identity() const ;
     SQUAD_METHOD unsigned iindex() const ;
     SQUAD_METHOD unsigned identity() const ;
-
-    SQUAD_METHOD void set_lposcost(float lpc);
-    SQUAD_METHOD void set_iindex(  unsigned ii);
-    SQUAD_METHOD void set_identity(unsigned id);
 
     SQUAD_METHOD void set_globalPrimIdx_boundary_(unsigned globalPrimIdx_boundary);
     SQUAD_METHOD void set_globalPrimIdx_boundary(unsigned gp, unsigned bn);
@@ -204,14 +219,17 @@ SQUAD_METHOD void           quad2::distance_add( float delta ){ q0.f.w += delta 
 
 
 SQUAD_METHOD float          quad2::lposcost() const {   return q1.f.x ; }
-SQUAD_METHOD unsigned       quad2::iindex() const {     return q1.u.y ; }
-SQUAD_METHOD unsigned       quad2::identity() const {   return q1.u.z ; }
+SQUAD_METHOD float          quad2::lposfphi() const {   return q1.f.y ; }
+SQUAD_METHOD void           quad2::set_lpos(float lposcost, float lposfphi){ q1.f.x = lposcost ; q1.f.y = lposfphi ;   }
 
-SQUAD_METHOD void           quad2::set_lposcost(float lpc)   { q1.f.x = lpc ; }
-SQUAD_METHOD void           quad2::set_iindex(  unsigned ii) { q1.u.y = ii ;  }
-SQUAD_METHOD void           quad2::set_identity(unsigned id) { q1.u.z = id ;  }
+SQUAD_METHOD void           quad2::set_iindex_identity_(unsigned ii_id) {           q1.u.z = ii_id ;  }
+SQUAD_METHOD void           quad2::set_iindex_identity( unsigned ii, unsigned id) { q1.u.z = (( ii & 0xffffu ) << 16 ) | ( id & 0xffffu ) ;  }
+SQUAD_METHOD unsigned       quad2::iindex_identity() const { return q1.u.z ; }
+SQUAD_METHOD unsigned       quad2::iindex() const {          return q1.u.z >> 16 ; }
+SQUAD_METHOD unsigned       quad2::identity() const {        return q1.u.z & 0xffffu ; }
 
-SQUAD_METHOD void           quad2::set_globalPrimIdx_boundary_(unsigned globalPrimIdx_boundary) { q1.u.w = globalPrimIdx_boundary ;  }
+
+SQUAD_METHOD void           quad2::set_globalPrimIdx_boundary_(unsigned globalPrimIdx_boundary) {          q1.u.w = globalPrimIdx_boundary ;  }
 SQUAD_METHOD void           quad2::set_globalPrimIdx_boundary(unsigned globalPrimIdx, unsigned boundary) { q1.u.w = (( globalPrimIdx & 0xffffu ) << 16 ) | ( boundary & 0xffffu ) ; }
 SQUAD_METHOD unsigned       quad2::globalPrimIdx_boundary() const {              return   q1.u.w ; }
 SQUAD_METHOD unsigned       quad2::globalPrimIdx() const {                       return   q1.u.w >> 16 ; }
