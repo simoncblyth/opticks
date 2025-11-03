@@ -21,6 +21,7 @@ sphoton.h
 |    | boundary_flag  |  identity      |  index         |  flagmask      |  (unsigned)                  |
 | q3 |                |                |                |                |                              |
 |    | (3,0)          |  (3,1)         |  (3,2)         |  (3,3)         | (3,2) formerly orient_idx    |
+|    |                | hi8 ext idx    |                |                |                              |
 +----+----------------+----------------+----------------+----------------+------------------------------+
 
 
@@ -221,8 +222,7 @@ struct sphoton
     SPHOTON_METHOD void     set_flag(unsigned flag) {         boundary_flag = ( boundary_flag & 0xffff0000u ) | ( flag & 0xffffu ) ; flagmask |= flag ;  } // clear flag bits then set them
     SPHOTON_METHOD void     set_boundary(unsigned boundary) { boundary_flag = ( boundary_flag & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; }        // clear boundary bits then set them
 
-
-
+    SPHOTON_METHOD void     set_flagmask(unsigned _flagmask) { flagmask = _flagmask ; }
     SPHOTON_METHOD void     addto_flagmask(unsigned flag) { flagmask |=  flag ; }
     SPHOTON_METHOD void     scrub_flagmask(unsigned flag) { flagmask &= ~flag ; }
 
@@ -286,6 +286,7 @@ struct sphoton
     SPHOTON_METHOD static sphoton make_ephoton();
     SPHOTON_METHOD static NP* make_ephoton_array(size_t num_photon);
     SPHOTON_METHOD static NP* zeros(size_t num_photon) ;
+    SPHOTON_METHOD static NP* demoarray(size_t num_photon);
     SPHOTON_METHOD std::string digest(unsigned numval=16) const  ;
     SPHOTON_METHOD static bool digest_match( const sphoton& a, const sphoton& b, unsigned numval=16 ) ;
 
@@ -657,6 +658,42 @@ SPHOTON_METHOD NP* sphoton::zeros(size_t num_photon) // static
     NP* ph = NP::Make<float>(num_photon, 4, 4 );
     return ph ;
 }
+
+SPHOTON_METHOD NP* sphoton::demoarray(size_t num_photon) // static
+{
+    NP* ph = zeros(num_photon);
+    sphoton* pp  = (sphoton*)ph->bytes();
+    for(size_t i=0 ; i < num_photon ; i++)
+    {
+        sphoton& p = pp[i] ;
+
+        p.pos = make_float3( 0.1f + i*0.1f, 0.2f + i*0.1f , 0.3f + i*0.1f );
+        p.time = i*0.1f ;
+
+        p.mom = make_float3( 0.1f + i*0.1f, 0.2f + i*0.1f , 0.3f + i*0.1f );
+        p.set_orient( i % 2 == 0 ? 1.f : -1.f );
+        p.set_iindex( i*1000 );
+
+        p.pol = make_float3( 0.1f + i*0.1f, 0.2f + i*0.1f , 0.3f + i*0.1f );
+        p.wavelength = 400.f + 10.f*i ;
+
+        p.set_boundary( i*10 );
+        p.set_flag( i*100 );
+
+        uint64_t full_index = 0xffffffff + i ;
+        p.set_index( full_index );
+
+        p.set_identity(  i*200 );
+        p.set_flagmask( SURFACE_DETECT | EFFICIENCY_COLLECT );
+
+    }
+    return ph ;
+}
+
+
+
+
+
 
 
 SPHOTON_METHOD std::string sphoton::digest(unsigned numval) const

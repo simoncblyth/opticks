@@ -33,26 +33,26 @@ int sphotonlite_test::ctor()
     unsigned fm = EFFICIENCY_COLLECT ;
     unsigned id = 12345 ;
 
-    float lposcost_0 = 0.5f ; 
-    float lposfphi_0 = 0.6f ; 
+    float lposcost_0 = 0.5f ;
+    float lposfphi_0 = 0.6f ;
 
     sphoton p = {} ;
     p.flagmask = fm ;
     p.identity = id ;
-    p.time = 101.101f ; 
+    p.time = 101.101f ;
 
     sphotonlite l = {} ;
     l.init(p.identity, p.time, p.flagmask );
     l.set_lpos( lposcost_0, lposfphi_0 );
 
-    float lposcost_1(0.f) ; 
-    float lposfphi_1(0.f) ; 
-    l.get_lpos( lposcost_1, lposfphi_1 ); 
+    float lposcost_1(0.f) ;
+    float lposfphi_1(0.f) ;
+    l.get_lpos( lposcost_1, lposfphi_1 );
 
     assert( l.flagmask == fm );
 
-    std::cout << "p\n" << p.desc() << "\n" ; 
-    std::cout << "l\n" << l.desc() << "\n" ; 
+    std::cout << "p\n" << p.desc() << "\n" ;
+    std::cout << "l\n" << l.desc() << "\n" ;
 
     return 0 ;
 }
@@ -60,7 +60,7 @@ int sphotonlite_test::ctor()
 int sphotonlite_test::demoarray()
 {
     NP* l = sphotonlite::demoarray(10);
-    l->save("$FOLD/demoarray.npy"); 
+    l->save("$FOLD/demoarray.npy");
     return 0 ;
 }
 

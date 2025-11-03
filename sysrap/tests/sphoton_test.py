@@ -1,6 +1,16 @@
 #!/usr/bin/env python
-import numpy as np
+"""
+tests/sphoton_test.py
+======================
+
+~/o/sysrap/tests/sphoton_test.sh
+
+
+"""
+
+import numpy as np, os, sys
 from opticks.ana.fold import Fold
+from opticks.sysrap.sphoton import SPhoton
 
 import matplotlib.pyplot as plt
 SIZE = np.array([1280,720])
@@ -36,28 +46,32 @@ def test_make_record_array(a):
     for j in range(10):
         ax.scatter( a[:,j,0,H], a[:,j,0,V], label=str(j) )
     pass
-
-
     ax.legend()
     fig.show()
 
 
-
+def test_demoarray(a):
+    print("[test_demoarray repr(a): ", repr(a))
+    print("]test_demoarray")
 
 
 if __name__ == '__main__':
     t = Fold.Load(symbol="t")
     print(repr(t))
 
+    TEST = os.environ.get("TEST", "demoarray")
+    a = getattr(t,TEST, None)
+    if a is None: sys.exit(0)
 
-    a = getattr(t,"dot_pol_cross_mom_nrm", None)
-    if not a is None:
-       test_dot_pol_cross_mom_nrm(a)
-    pass
-
-    a = getattr(t, "record", None)
-    if not a is None:
+    if TEST == "dot_pol_cross_mom_nrm":
+         test_dot_pol_cross_mom_nrm(a)
+    elif TEST == "record":
         test_make_record_array(a)
+    elif TEST == "demoarray":
+        #test_demoarray(a)
+        p = SPhoton.view(a)
+    else:
+        print("TEST:%s unhandled " % TEST)
     pass
 pass
 

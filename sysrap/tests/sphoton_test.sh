@@ -33,7 +33,8 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 #test=set_flag
 #test=add_flagmask
 #test=ChangeTimeInsitu
-test=index
+#test=index
+test=demoarray
 
 TEST=${TEST:-$test}
 export TEST

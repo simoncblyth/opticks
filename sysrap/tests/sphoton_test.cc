@@ -47,6 +47,7 @@ struct sphoton_test
     static int ChangeTimeInsitu();
 
     static int index();
+    static int demoarray();
 
     static int main();
 };
@@ -636,7 +637,12 @@ int sphoton_test::index()
     return 0 ;
 }
 
-
+int sphoton_test::demoarray()
+{
+    NP* p = sphoton::demoarray(10);
+    p->save("$FOLD/demoarray.npy");
+    return 0 ;
+}
 
 
 
@@ -664,6 +670,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "make_record_array"))     rc += make_record_array();
     if(ALL||0==strcmp(TEST, "ChangeTimeInsitu"))      rc += ChangeTimeInsitu();
     if(ALL||0==strcmp(TEST, "index"))                 rc += index();
+    if(ALL||0==strcmp(TEST, "demoarray"))             rc += demoarray();
 
     return rc ;
 }
