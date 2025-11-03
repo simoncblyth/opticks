@@ -59,7 +59,7 @@ int sphotonlite_test::ctor()
 
 int sphotonlite_test::demoarray()
 {
-    NP* l = sphotonlite::make_demoarray(10);
+    NP* l = sphotonlite::demoarray(10);
     l->save("$FOLD/demoarray.npy"); 
     return 0 ;
 }

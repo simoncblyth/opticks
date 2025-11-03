@@ -58,7 +58,11 @@ struct sphotonlite
     SPHOTONLITE_METHOD std::string lpos_() const ;
     SPHOTONLITE_METHOD std::string flagmask_() const ;
     SPHOTONLITE_METHOD std::string desc() const ;
-    SPHOTONLITE_METHOD static NP* make_demoarray(int num_photon);
+
+    SPHOTONLITE_METHOD static NP* zeros(    size_t num_photon);
+    SPHOTONLITE_METHOD static bool expected( const NP* l );
+
+    SPHOTONLITE_METHOD static NP* demoarray(size_t num_photon);
 #endif
 
 };
@@ -164,29 +168,53 @@ inline std::string sphotonlite::desc() const
 
 /**
 
-In [2]: t.demoarray.view(np.uint32)[:,0,0] >> 16   ## hitcount
-Out[2]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=uint32)
-
-In [3]: t.demoarray.view(np.uint32)[:,0,0] & 0xffff   ## identity
-Out[3]: array([   0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], dtype=uint32)
 
 
-In [7]: (t.demoarray.view(np.uint32)[:,0,2] >> 16)/0xffff
-Out[7]: array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+    In [2]: t.demoarray.view(np.uint32)[:,0] >> 16   ## hitcount
+    Out[2]: array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9], dtype=uint32)
 
-n [6]: (t.demoarray.view(np.uint32)[:,0,2] & 0xffff)/0xffff
-Out[6]: array([0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6])
+    In [3]: t.demoarray.view(np.uint32)[:,0] & 0xffff   ## identity
+    Out[3]: array([   0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000], dtype=uint32)
+
+
+    In [7]: (t.demoarray.view(np.uint32)[:,2] >> 16)/0xffff
+    Out[7]: array([0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5])
+
+    n [6]: (t.demoarray.view(np.uint32)[:,2] & 0xffff)/0xffff
+    Out[6]: array([0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 0.6])
 
 
 **/
 
 
-
-inline NP* sphotonlite::make_demoarray(int num_photon) // static
+inline NP* sphotonlite::zeros(size_t num_photon) // static
 {
-    NP* l = NP::Make<float>(num_photon, 1, 4);
+    NP* l = NP::Make<uint32_t>(num_photon, 4);
+    return l ;
+}
+
+inline bool sphotonlite::expected( const NP* l ) // static
+{
+    bool expected_type = l && l->uifc == 'u' && l->ebyte == 4 ;
+    bool expected_shape =  l && l->has_shape(-1, 4) ;
+    bool expected_arr = expected_type && expected_shape ;
+
+    if(!expected_arr) std::cerr
+        << "sphotonlite::expected"
+        << " expected_arr " << ( expected_arr ? "YES" : "NO " )
+        << " expected_type " << ( expected_type ? "YES" : "NO " )
+        << " expected_shape " << ( expected_shape ? "YES" : "NO " )
+        << " l.sstr " << ( l ? l->sstr() : "-" )
+        ;
+    return expected_arr ;
+}
+
+
+inline NP* sphotonlite::demoarray(size_t num_photon) // static
+{
+    NP* l = zeros(num_photon);
     sphotonlite* ll  = (sphotonlite*)l->bytes();
-    for(int i=0 ; i < num_photon ; i++)
+    for(size_t i=0 ; i < num_photon ; i++)
     {
         ll[i].set_hitcount_identity( i, i*1000 );
         ll[i].flagmask = EFFICIENCY_COLLECT | SURFACE_DETECT ;

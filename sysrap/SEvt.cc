@@ -10,6 +10,8 @@
 #include "sprof.h"
 
 #include "sphoton.h"
+#include "sphotonlite.h"
+
 #include "srec.h"
 #include "sseq.h"
 #include "ssys.h"
@@ -3550,17 +3552,15 @@ This is called by SEvt::gatherPhoton
 
 NP* SEvt::makePhoton() const
 {
-    NP* p = NP::Make<float>( evt->num_photon, 4, 4 );
+    NP* p = sphoton::zeros( evt->num_photon );
     return p ;
 }
 
 NP* SEvt::makePhotonLite() const
 {
-    NP* l = NP::Make<float>( evt->num_photon, 1, 4 );
+    NP* l = sphotonlite::zeros( evt->num_photon );
     return l ;
 }
-
-
 
 
 

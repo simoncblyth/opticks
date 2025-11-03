@@ -4,6 +4,39 @@ import os, sys, logging, textwrap, numpy as np, datetime, builtins
 from opticks.ana.npmeta import NPMeta
 from opticks.sysrap.sframe import sframe
 
+# -----------------------------------------------------------------------
+# Robust import of append_fields across NumPy 2.x versions, from GROK
+# ------------------------------------------------------------------------
+try:
+    from numpy import append_fields
+    #print("append_fields : NumPy ≥ 2.1 (ideal, but not importable in 2.2.4)")
+except ImportError:
+    try:
+        from numpy.lib.rec import append_fields
+        #print("append_fields : NumPy 2.0 – 2.0.x")
+    except ImportError:
+        try:
+            from numpy.lib.rec.functions import append_fields
+            #print("append_fields : NumPy 2.1+ fallback (actually works in 2.2.4)")
+        except ImportError:
+            def append_fields(base, names, data, dtypes=None, usemask=False):
+                if dtypes is None:
+                    dtypes = [d.dtype for d in data]
+                arrays = [base] + [np.asarray(d) for d in data]
+                new_dtype = base.dtype
+                for name, dt in zip(names, dtypes):
+                    new_dtype = np.dtype(new_dtype.descr + [(name, dt)])
+                result = np.zeros(base.shape, dtype=new_dtype)
+                for name in base.dtype.names:
+                    result[name] = base[name]
+                for name, arr in zip(names, data):
+                    result[name] = arr
+                return result
+            pass
+            #print("append_fields : Last resort: manual reimplementation of append_fields")
+
+
+
 CMDLINE = " ".join(sys.argv)
 
 log = logging.getLogger(__name__)
@@ -16,6 +49,13 @@ class STR(str):
     """STR inherits from str and changes the repr to provide the str : useful for interactive ipython"""
     def __repr__(self):
         return str(self)
+
+
+
+
+
+
+
 
 
 def IsEmptyNPY(path):

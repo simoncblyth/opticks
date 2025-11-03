@@ -8,7 +8,10 @@
 
 #include "scuda.h"
 #include "squad.h"
+
 #include "sphoton.h"
+#include "sphotonlite.h"
+
 #include "sslice.h"
 
 #ifndef PRODUCTION
@@ -685,10 +688,10 @@ NP* QEvent::gatherPhoton() const
 
 void QEvent::gatherPhotonLite(NP* l) const
 {
-    bool expected_shape =  l->has_shape(evt->num_photon, 1, 4) ;
-    LOG(expected_shape ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " l.sstr " << l->sstr() << " evt.photon " << evt->photon ;
+    bool expected_arr =  sphotonlite::expected(l);
+    LOG(expected_arr ? LEVEL : fatal) << "[ evt.num_photon " << evt->num_photon << " l.sstr " << l->sstr() << " evt.photon " << evt->photon ;
     LOG(info) << "[ evt.num_photon " << evt->num_photon << " l.sstr " << l->sstr() << " evt.photon " << evt->photon ;
-    assert(expected_shape );
+    assert(expected_arr );
 
     int rc = QU::copy_device_to_host<sphotonlite>( (sphotonlite*)l->bytes(), evt->photonlite, evt->num_photon );
 
