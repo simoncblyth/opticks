@@ -10,7 +10,9 @@ struct quad6 ;
 struct NP ;
 
 struct SEvt ;
+
 struct sphoton_selector ;
+struct sphotonlite_selector ;
 
 
 #include <vector>
@@ -93,7 +95,9 @@ private:
 public:
     SEvt*             sev ;
 private:
-    sphoton_selector* selector ;
+    sphoton_selector*     photon_selector ;
+    sphotonlite_selector* photonlite_selector ;
+
     sevent*           evt ;
     sevent*           d_evt ;
     const NP*         gs ;
@@ -137,6 +141,7 @@ public:
     bool hasGenstep() const ;
     bool hasSeed() const ;
     bool hasPhoton() const ;
+    bool hasPhotonLite() const ;
     bool hasRecord() const ;
     bool hasRec() const ;
     bool hasSeq() const ;
@@ -144,6 +149,7 @@ public:
     bool hasTag() const ;
     bool hasFlat() const ;
     bool hasHit() const ;
+    bool hasHitLite() const ;
     bool hasSimtrace() const ;
 public:
     static constexpr const char* TYPENAME = "QEvent" ;
@@ -161,6 +167,7 @@ public:
     NP*      gatherPhotonLite() const ;
 
     NP*      gatherHit() const ;
+    NP*      gatherHitLite() const ;
 
 #ifndef PRODUCTION
     NP*      gatherSeed() const ;
@@ -184,8 +191,10 @@ public:
 private:
     NP*      gatherComponent_(unsigned comp) const ;
     NP*      gatherHit_() const ;
+    NP*      gatherHitLite_() const ;
 public:
     unsigned getNumHit() const ;
+    unsigned getNumHitLite() const ;
 private:
     void     setNumPhoton(unsigned num_photon) ;
     void     setNumSimtrace(unsigned num_simtrace) ;

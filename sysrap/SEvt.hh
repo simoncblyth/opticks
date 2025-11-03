@@ -79,6 +79,8 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "SRandom.h"
 
 struct sphoton_selector ;
+struct sphotonlite_selector ;
+
 struct sdebug ;
 struct NP ;
 struct NPFold ;
@@ -202,7 +204,9 @@ struct SYSRAP_API SEvt : public SCompProvider
 
     double   t_Launch ;
 
-    sphoton_selector* selector ;
+    sphoton_selector*     photon_selector ;
+    sphotonlite_selector* photonlite_selector ;
+
     sevent* evt ;
     sdebug* dbg ;
     std::string meta ;
@@ -630,6 +634,7 @@ public:
     NP* gatherFlat() const ;
     NP* gatherSeed() const ;
     NP* gatherHit() const ;
+    NP* gatherHitLite() const ;
     NP* gatherSimtrace() const ;
 
 
@@ -744,6 +749,10 @@ public:
     void getLocalPhoton(  sphoton& p, unsigned idx) const ;
     void getLocalHit_LEAKY( sphit& ht, sphoton& p, unsigned idx) const ;
     void getLocalHit(       sphit& ht, sphoton& p, unsigned idx) const ;
+
+    NP*  localize_hit(const NP* hit, bool consistency_check) const ;
+
+
     void getPhotonFrame( sframe& fr, const sphoton& p ) const ;
 
     std::string descNum() const ;

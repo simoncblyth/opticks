@@ -190,18 +190,19 @@ JUNO max prim_idx ~3245 : so thats OK
 
 struct sphoton
 {
-    float3 pos ;        // 0
+    float3 pos ;        // 0th quad
     float  time ;
 
-    float3 mom ;        // 1
-    unsigned orient_iindex ;   //  ii = t.record[:,:,1,3].view(np.uint32) & 0x7fffffff
+    float3 mom ;        // 1st quad
+    unsigned orient_iindex ;   // hi-bit for orientation, lower 31 bits for iindex
 
-    float3 pol ;         // 2
+    float3 pol ;        // 2nd quad
     float  wavelength ;
 
-    unsigned boundary_flag ;  // 3
-    unsigned identity ;       // [:,3,1] (upper 8 bits used to extend range of index)
-    unsigned index ;          // formerly *orient_idx* : changed to *index* when orient moved to (1,3)
+                        // 3rd quad
+    unsigned boundary_flag ;  // boundary in upper 16 bits, flag in lower 16 bits
+    unsigned identity ;       // upper 8 bits used to extend range of index, lower 24 bits for identity
+    unsigned index ;          // lower 32 bits of the full index
     unsigned flagmask ;
 
     SPHOTON_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient, unsigned iindex );
@@ -244,7 +245,7 @@ struct sphoton
 
 
     SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xff000000u ) | ( id & 0xffffffu ); }   // Preserve upper 8 bits of identity
-    SPHOTON_METHOD unsigned get_identity() const { return identity & 0xffffffu ; }
+    SPHOTON_METHOD unsigned get_identity() const { return identity & 0xffffffu ; }  // exclude upper 8 bits
 
 
 
@@ -982,8 +983,8 @@ union qphoton
 
 struct sphoton_selector
 {
-    unsigned hitmask ;
-    sphoton_selector(unsigned hitmask_) : hitmask(hitmask_) {};
+    uint32_t hitmask ;
+    sphoton_selector(uint32_t hitmask_) : hitmask(hitmask_) {};
     SPHOTON_METHOD bool operator() (const sphoton& p) const { return ( p.flagmask  & hitmask ) == hitmask  ; }   // require all bits of the mask to be set
     SPHOTON_METHOD bool operator() (const sphoton* p) const { return ( p->flagmask & hitmask ) == hitmask  ; }   // require all bits of the mask to be set
 };

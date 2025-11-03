@@ -40,7 +40,9 @@ enum {
     SCOMP_PHO          = 0x1 << 20,
     SCOMP_GS           = 0x1 << 21,
     SCOMP_PHOTONLITE   = 0x1 << 22,
-    SCOMP_HITLITE      = 0x1 << 23
+    SCOMP_HITLITE      = 0x1 << 23,
+    SCOMP_HITLOCAL     = 0x1 << 24
+
 };
 
 struct SYSRAP_API SCompProvider
@@ -79,6 +81,7 @@ struct SYSRAP_API SComp
     static constexpr const char* GS_        = "gs" ;
     static constexpr const char* PHOTONLITE_ = "photonlite" ;
     static constexpr const char* HITLITE_    = "hitlite" ;
+    static constexpr const char* HITLOCAL_   = "hitlocal" ;
 
     static bool Match(const char* q, const char* n );
     static unsigned    Comp(const char* name);
@@ -115,6 +118,7 @@ struct SYSRAP_API SComp
     static bool IsGS(      unsigned mask){ return mask & SCOMP_GS ; }
     static bool IsPhotonLite(  unsigned mask){ return mask & SCOMP_PHOTONLITE ; }
     static bool IsHitLite(     unsigned mask){ return mask & SCOMP_HITLITE ; }
+    static bool IsHitLocal(    unsigned mask){ return mask & SCOMP_HITLOCAL ; }
 
 };
 
@@ -149,6 +153,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, GS_))       comp = SCOMP_GS ;
     if(Match(name, PHOTONLITE_)) comp = SCOMP_PHOTONLITE ;
     if(Match(name, HITLITE_))    comp = SCOMP_HITLITE ;
+    if(Match(name, HITLOCAL_))   comp = SCOMP_HITLOCAL ;
     return comp ;
 }
 inline const char* SComp::Name(unsigned comp)
@@ -180,6 +185,7 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_GS:        s = GS_         ; break ;
         case SCOMP_PHOTONLITE:s = PHOTONLITE_ ; break ;
         case SCOMP_HITLITE:   s = HITLITE_    ; break ;
+        case SCOMP_HITLOCAL:  s = HITLOCAL_   ; break ;
     }
     return s ;
 }
@@ -210,6 +216,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_GS )       names.push_back(GS_) ;
     if( mask & SCOMP_PHOTONLITE ) names.push_back(PHOTONLITE_) ;
     if( mask & SCOMP_HITLITE )    names.push_back(HITLITE_) ;   // CAUTION : HITLITE MUST STAY AFTER PHOTONLITE (?)
+    if( mask & SCOMP_HITLOCAL )   names.push_back(HITLOCAL_) ;   // CAUTION : HITLOCAL MUST STAY AFTER HIT
 
     std::stringstream ss ;
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" );
@@ -225,8 +232,18 @@ inline std::string SComp::Desc(const std::vector<unsigned>& comps)
 }
 
 
+/**
+SComp::CompList
+----------------
+
+1. Split *names* using the *delim*
+2. collect into *comps* vector the unsigned int corresponding to each name
+
+**/
+
 inline void SComp::CompList(std::vector<unsigned>& comps, const char* names, char delim )
 {
+    if(!names) return ;
     std::stringstream ss;
     ss.str(names)  ;
     std::string s;
@@ -251,6 +268,14 @@ inline int SComp::CompListCount(unsigned mask )
 }
 
 
+/**
+SComp::Mask
+-------------
+
+1. Use *CompList* to collect into *comps* vector the unsigned int corresponding to each name from *delim* *names*
+2. return the bitwise-OR of all the comp integers
+
+**/
 
 
 inline unsigned SComp::Mask(const char* names, char delim)

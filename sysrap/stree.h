@@ -243,6 +243,9 @@ When SSim not in use can also use::
 // transitional ?
 #include "sframe.h"
 
+#include "sphoton.h"
+#include "sphit.h"
+
 
 
 struct stree_standin
@@ -767,6 +770,8 @@ struct stree
     void populate_nidx_prim();
     void check_nidx_prim() const ;
     int  get_prim_for_nidx(int nidx) const ;
+
+    NP* localize_hit(const NP* hit, bool consistency_check) const ;
 
 };
 
@@ -6417,6 +6422,72 @@ never giving -1 for valid nidx.
 inline int stree::get_prim_for_nidx(int nidx) const
 {
     return nidx < int(nidx_prim.size()) ? nidx_prim[nidx] : -1 ;
+}
+
+
+/**
+stree::localize_hit
+--------------------
+
+Canonically invoked from SEvt::save only when "hitlocal" save component is
+configured via see SEventConfig::HitComp
+
+Using the sphoton::iindex which should always be present for hits
+lookup the transform allowing global coordinate pos, mom, pol
+to be inplace transformed into the local frame of the geometry
+of the hit.
+
+Note that the corresponding strid::Encode into the transform
+is done by the above stree::add_inst
+
+HMM: potentially with very large numbers of hits
+it would be better to group hits by their iindex and
+transform multiple at once ?
+
+**/
+
+
+inline NP* stree::localize_hit(const NP* hit, bool consistency_check ) const
+{
+    if(!hit) return nullptr ;
+    NP* local_hit = hit->copy();
+    assert( hit->shape[0] == local_hit->shape[0] );
+    size_t num = hit->shape[0] ;
+
+    sphoton* ll = (sphoton*)local_hit->bytes() ;
+
+    for(size_t i=0 ; i < num ; i++)
+    {
+        sphoton& l = ll[i] ; // start with global frame fields
+
+        unsigned iindex   = l.iindex() ;
+        unsigned identity = l.get_identity();
+        assert( identity > 0 ); // identity:0 meaning not-a-sensor should never happen for hits
+        unsigned sensor_identifier = identity - 1 ;
+
+        const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
+        assert( tr );
+
+        bool normalize = true ;
+        l.transform( *tr, normalize );   // inplace transforms l (pos, mom, pol) into local frame
+
+
+        if(consistency_check)
+        {
+            glm::tvec4<int64_t> col3 = {} ;
+            strid::Decode( *tr, col3 );
+
+            sphit ht = {} ;
+            ht.iindex            = col3[0] ;
+            ht.sensor_identifier = col3[2] ;
+            ht.sensor_index      = col3[3] ;
+
+            assert( ht.iindex == iindex );
+            assert( ht.sensor_identifier == sensor_identifier );
+        }
+
+    }
+    return local_hit ;
 }
 
 

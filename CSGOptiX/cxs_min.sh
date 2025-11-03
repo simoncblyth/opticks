@@ -300,6 +300,8 @@ esac
 
 vars="$vars opticks_event_mode"
 
+opticks_mode_lite=0
+
 if [ "$TEST" == "debug" ]; then
 
    opticks_num_event=1
@@ -308,6 +310,7 @@ if [ "$TEST" == "debug" ]; then
    opticks_running_mode=SRM_TORCH
    opticks_max_slot=M1
    opticks_event_mode=DebugLite
+   opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
 
 elif [ "$TEST" == "ref1" ]; then
 
@@ -566,8 +569,10 @@ export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 
+export OPTICKS_MODE_LITE=${OPTICKS_MODE_LITE:-$opticks_mode_lite}
 
-vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
+
+vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE OPTICKS_MODE_LITE"
 
 export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
 export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot

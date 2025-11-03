@@ -186,7 +186,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxPrd       = "OPTICKS_MAX_PRD" ;
     static constexpr const char* kMaxTag       = "OPTICKS_MAX_TAG" ;
     static constexpr const char* kMaxFlat      = "OPTICKS_MAX_FLAT" ;
-    static constexpr const char* kMaxLite      = "OPTICKS_MAX_LITE" ;  // MAX->ON/ENABLED/YES for many of these
+    static constexpr const char* kModeLite      = "OPTICKS_MODE_LITE" ;
 
     static constexpr const char* kMaxExtentDomain    = "OPTICKS_MAX_EXTENT_DOMAIN" ;
     static constexpr const char* kMaxTimeDomain      = "OPTICKS_MAX_TIME_DOMAIN" ;
@@ -263,7 +263,8 @@ struct SYSRAP_API SEventConfig
     static int64_t MaxPrd();
     static int64_t MaxTag();
     static int64_t MaxFlat();
-    static int64_t MaxLite();
+
+    static int64_t ModeLite();
 
     static float MaxExtentDomain() ;
     static float MaxTimeDomain() ;
@@ -305,6 +306,13 @@ struct SYSRAP_API SEventConfig
 
     static std::string DescGatherComp();
     static std::string DescSaveComp();
+
+    static bool HasComp_(unsigned comp, const char* q_names, char q_delim=',');
+    static bool HasSaveComp(  const char* q_names, char q_delim=',');
+    static bool HasGatherComp(const char* q_names, char q_delim=',');
+
+
+
 
     static void GatherCompList( std::vector<unsigned>& gather_comp ) ;
     static int NumGatherComp();
@@ -375,7 +383,8 @@ struct SYSRAP_API SEventConfig
     static void SetMaxPrd(    int max_prd);
     static void SetMaxTag(    int max_tag);
     static void SetMaxFlat(   int max_flat);
-    static void SetMaxLite(   int max_lite);
+
+    static void SetModeLite(  int mode_lite);
 
     static void SetMaxExtentDomain( float max_extent);
     static void SetMaxTimeDomain(   float max_time );
@@ -452,7 +461,8 @@ struct SYSRAP_API SEventConfig
     static int _MaxPrdDefault ;
     static int _MaxTagDefault ;
     static int _MaxFlatDefault ;
-    static int _MaxLiteDefault ;
+
+    static int _ModeLiteDefault ;
 
     static float _MaxExtentDomainDefault ;
     static float _MaxTimeDomainDefault  ;
@@ -529,7 +539,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxPrd ;
     static int _MaxTag ;
     static int _MaxFlat ;
-    static int _MaxLite ;
+    static int _ModeLite ;
 
     static float _MaxExtentDomain ;
     static float _MaxTimeDomain  ;
@@ -579,6 +589,10 @@ struct SYSRAP_API SEventConfig
     static const char* EventMode_NOTE()   ;
 
     static void  Initialize_Comp();
+
+    static unsigned PhotonComp();
+    static unsigned HitComp();
+
     static void  Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask );
     static void  Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask );
     static void  Initialize_Comp_Render_(  unsigned& gather_mask, unsigned& save_mask );

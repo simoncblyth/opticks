@@ -4,7 +4,7 @@ opticks/sysrap/sphotonlite.py
 
 ::
 
-    f = Fold.Load(symbol="f")    
+    f = Fold.Load(symbol="f")
     from opticks.sysrap.sphotonlite import SPhotonLite
     p = SPhotonLite.view(f.photonlite)  # photonlite shape (N,4) uint32
 
@@ -14,7 +14,7 @@ opticks/sysrap/sphotonlite.py
 """
 from __future__ import annotations
 import numpy as np
-from opticks.ana.fold import append_fields 
+from opticks.ana.fold import append_fields
 
 
 class SPhotonLite:

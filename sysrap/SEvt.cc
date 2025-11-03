@@ -200,7 +200,8 @@ SEvt::SEvt()
     t_PenultimatePoint(0),
     t_LastPoint(0),
     t_Launch(-2.),
-    selector(new sphoton_selector(SEventConfig::HitMask())),
+    photon_selector(new sphoton_selector(SEventConfig::HitMask())),
+    photonlite_selector(new sphotonlite_selector(SEventConfig::HitMask())),
     evt(new sevent),
     dbg(new sdebug),
     input_genstep(nullptr),
@@ -1878,7 +1879,9 @@ void SEvt::reset_counter()
 void SEvt::endMeta()
 {
     setMeta<std::string>("site", "SEvt::endMeta" );
-    setMeta<int>("hitmask", selector->hitmask );
+    assert( photon_selector->hitmask == photonlite_selector->hitmask );
+    setMeta<int>("hitmask", photon_selector->hitmask );
+
     setMeta<int>("index", index);
     setMeta<int>("instance", instance);
 
@@ -2468,6 +2471,8 @@ void SEvt::setNumPhoton(int64_t num_photon)
     evt->index = index ;
 
     evt->num_photon = num_photon ;
+    evt->num_photonlite = num_photon ;
+
     evt->num_seq    = evt->max_seq  == 1 ? evt->num_photon : 0 ;
     evt->num_tag    = evt->max_tag  == 1 ? evt->num_photon : 0 ;
     evt->num_flat   = evt->max_flat == 1 ? evt->num_photon : 0 ;
@@ -3529,9 +3534,32 @@ NP* SEvt::gatherHit() const
 {
     const NP* p = fold->get(SComp::PHOTON_) ;
     // cannot use getPhoton here as that gets the photons from topfold which is only populated after gather
-    NP* h = p ? p->copy_if<float, sphoton>(*selector) : nullptr ;
+    NP* h = p ? p->copy_if<float, sphoton>(*photon_selector) : nullptr ;
+
     return h ;
 }
+
+
+/**
+SEvt::gatherHitLite
+---------------------
+
+CPU side equivalent of QEvent::gatherHitLite
+
+**/
+
+
+NP* SEvt::gatherHitLite() const
+{
+    const NP* photonlite = fold->get(SComp::PHOTONLITE_) ;
+    NP* hitlite = sphotonlite::select( photonlite, photonlite_selector );
+    return hitlite ;
+}
+
+
+
+
+
 
 NP* SEvt::gatherSimtrace() const
 {
@@ -3694,6 +3722,7 @@ NP* SEvt::gatherComponent_(unsigned cmp) const
 
         case SCOMP_SEED:      a = gatherSeed()     ; break ;
         case SCOMP_HIT:       a = gatherHit()      ; break ;
+        case SCOMP_HITLITE:   a = gatherHitLite()  ; break ;
         case SCOMP_SIMTRACE:  a = gatherSimtrace() ; break ;
         case SCOMP_PHO:       a = gatherPho()      ; break ;
         case SCOMP_GS:        a = gatherGS()       ; break ;
@@ -4400,6 +4429,18 @@ void SEvt::save(const char* dir_)
         // NPFold::add does nothing with nullptr array
     }
 
+
+
+    const NP* hit = save_fold->get(SComp::HIT_);
+    if(hit && SEventConfig::HasSaveComp(SComp::HITLOCAL_))
+    {
+        bool consistency_check = true ;
+        NP* hitlocal = localize_hit(hit, consistency_check);
+        assert(hitlocal);
+        save_fold->add(SComp::HITLOCAL_, hitlocal );
+    }
+
+
     if(extrafold)
     {
         int extra_items = extrafold->num_items();
@@ -4771,6 +4812,13 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
     fr.transform_w2m(lp);
 }
 
+NP* SEvt::localize_hit(const NP* hit, bool consistency_check) const
+{
+    return tree ? tree->localize_hit(hit, consistency_check) : nullptr ;
+}
+
+
+
 /**
 SEvt::getLocalHit_LEAKY
 ------------------------
@@ -4868,7 +4916,7 @@ using the same geometry as the server anyhow.
 void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array (starts global frame) into sphoton& lp struct of caller
-    int iindex = lp.iindex() ;
+    unsigned iindex = lp.iindex() ;
 
     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
 
@@ -4883,13 +4931,26 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     bool normalize = true ;
     lp.transform( *tr, normalize );   // inplace transforms lp (pos, mom, pol) into local frame
 
+
+    // below checking should be optional : likely hot code
+
     glm::tvec4<int64_t> col3 = {} ;
     strid::Decode( *tr, col3 );
 
-    ht.iindex = col3[0] ;
+    ht.iindex            = col3[0] ;
     ht.sensor_identifier = col3[2] ;  // NB : NO "-1" HERE : SEE ABOVE COMMENT
-    ht.sensor_index = col3[3] ;
+    ht.sensor_index      = col3[3] ;
+    // Q: Where is this encoded ?i Whats 1?
+
+    assert( ht.iindex == iindex );
+    assert( ht.iindex == lp.iindex() );
+    assert( ht.sensor_identifier == lp.get_identity() ); // HMM maybe off-by-one
+
+
 }
+
+
+
 
 
 

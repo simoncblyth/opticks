@@ -2663,6 +2663,25 @@ inline NP::INT NP::itemsize_(INT i, INT j, INT k, INT l, INT m, INT o) const
     return NPS::itemsize_(shape, i, j, k, l, m, o) ;
 }
 
+/**
+NP::itembytes_
+----------------
+
+Sets the argument *start* pointer to the address of the (i,j,k,l,m,o) item
+and num_bytes to the number of bytes in the item::
+
+
+    const char* start = nullptr ;
+    NP::INT num_bytes = 0 ;
+    a->itembytes_(&start, num_bytes, i, j, k, l, m, o );
+    assert( start && num_bytes > 0 );
+
+This is used to form digests of item bytes with sdigest::Item
+
+
+**/
+
+
 inline void NP::itembytes_(const char** start,  INT& num_bytes,  INT i,  INT j,  INT k,  INT l, INT m, INT o ) const
 {
     INT idx0 = index0(i,j,k,l,m,o) ;
@@ -4009,7 +4028,12 @@ inline NP* NP::copy() const
 
 
 
+/**
+NP::count_if
+-------------
 
+
+**/
 
 
 template<typename S>
@@ -4054,12 +4078,21 @@ inline NP* NP::simple_copy_if(std::function<bool(const T*)> predicate ) const
 NP::copy_if
 ------------
 
-S: compound type, eg int4, sphoton, etc..
-T: atomic base type use for array, eg int, float, double
+T
+    atomic base type (eg float, double, int, uint32_t) used for the input array
+    which is also used for the sub-array that is created
+S
+    compound type, eg int4, sphoton, sphotonlite etc..
+
+
+sizeof(S)/sizeof(T)
+    compond to atomic type ratio
+
 
 ::
 
-    NP* hit = photon->copy_if<float,sphoton>(predicate) ;
+    NP* hit     = photon    ->copy_if<float,   sphoton>    (predicate) ;
+    NP* hitlite = photonlite->copy_if<uint32_t,sphotonlite>(predicate) ;
 
 **/
 

@@ -129,7 +129,8 @@ struct sevent
     int   max_flat    ; // 0 or 1 only
     int   max_aux     ; // eg 0, 16, 32 : when greater than zero typically follows max_record
     int   max_sup     ;
-    int   max_lite    ; // 0 or 1 only
+
+    int   mode_lite    ; // 0 or 1 (also 2 when debug comparing)
 
     int   index ;
 
@@ -139,8 +140,12 @@ struct sevent
     int64_t      num_curand ;
     int64_t      num_genstep ;
     int64_t      num_seed ;
+
     int64_t      num_hit ;    // set by QEvent::gatherHit using SU::count_if_sphoton
     int64_t      num_photon ;
+
+    int64_t      num_hitlite ;  // set by QEvent::gatherHitLite using SU::count_if_sphotonlite
+    int64_t      num_photonlite ;
 
     int64_t      num_record ;
     int64_t      num_rec ;
@@ -161,9 +166,12 @@ struct sevent
 
     quad6*   genstep ;    //QEvent::device_alloc_genstep
     int*     seed ;
-    sphoton* hit ;        //QEvent::gatherHit_ allocates event by event depending on num_hit
+
     sphoton*     photon ;     //QEvent::device_alloc_photon
+    sphoton*     hit ;        //QEvent::gatherHit_ allocates event by event depending on num_hit
+
     sphotonlite* photonlite ; //QEvent::device_alloc_photon
+    sphotonlite* hitlite ;
 
     sphoton* record ;
     srec*    rec ;
@@ -226,8 +234,8 @@ SEVENT_METHOD void sevent::init()
     max_flat     = SEventConfig::MaxFlat()  ;
     max_aux      = SEventConfig::MaxAux()  ;
     max_sup      = SEventConfig::MaxSup()  ;
-    max_lite     = SEventConfig::MaxLite() ;
 
+    mode_lite     = SEventConfig::ModeLite() ;
 
     zero();  // pointers and counts
 
@@ -280,7 +288,7 @@ SEVENT_METHOD std::string sevent::descMax() const
         << " evt.max_prd       " << std::setw(w) << max_prd      << std::endl
         << " evt.max_tag       " << std::setw(w) << max_tag      << std::endl
         << " evt.max_flat      " << std::setw(w) << max_flat     << std::endl
-        << " evt.max_lite      " << std::setw(w) << max_lite     << std::endl
+        << " evt.mode_lite     " << std::setw(w) << mode_lite    << std::endl
         ;
 
     std::string s = ss.str();
@@ -292,21 +300,23 @@ SEVENT_METHOD std::string sevent::descNum() const
     int w = 5 ;
     std::stringstream ss ;
     ss
-        << " sevent::descNum  "  << std::endl
-        << " evt.num_curand   "  << std::setw(w) << num_curand   << std::endl
-        << " evt.num_genstep  "  << std::setw(w) << num_genstep  << std::endl
-        << " evt.num_seed     "  << std::setw(w) << num_seed     << std::endl
-        << " evt.num_photon   "  << std::setw(w) << num_photon   << std::endl
-        << " evt.num_record   "  << std::setw(w) << num_record   << std::endl
-        << " evt.num_rec      "  << std::setw(w) << num_rec      << std::endl
-        << " evt.num_aux      "  << std::setw(w) << num_aux      << std::endl
-        << " evt.num_sup      "  << std::setw(w) << num_sup      << std::endl
-        << " evt.num_seq      "  << std::setw(w) << num_seq      << std::endl
-        << " evt.num_hit      "  << std::setw(w) << num_hit      << std::endl
-        << " evt.num_simtrace "  << std::setw(w) << num_simtrace << std::endl
-        << " evt.num_prd      "  << std::setw(w) << num_prd      << std::endl
-        << " evt.num_tag      "  << std::setw(w) << num_tag      << std::endl
-        << " evt.num_flat     "  << std::setw(w) << num_flat     << std::endl
+        << " sevent::descNum    "  << std::endl
+        << " evt.num_curand     "  << std::setw(w) << num_curand     << std::endl
+        << " evt.num_genstep    "  << std::setw(w) << num_genstep    << std::endl
+        << " evt.num_seed       "  << std::setw(w) << num_seed       << std::endl
+        << " evt.num_photon     "  << std::setw(w) << num_photon     << std::endl
+        << " evt.num_photonlite "  << std::setw(w) << num_photonlite << std::endl
+        << " evt.num_record     "  << std::setw(w) << num_record     << std::endl
+        << " evt.num_rec        "  << std::setw(w) << num_rec        << std::endl
+        << " evt.num_aux        "  << std::setw(w) << num_aux        << std::endl
+        << " evt.num_sup        "  << std::setw(w) << num_sup        << std::endl
+        << " evt.num_seq        "  << std::setw(w) << num_seq        << std::endl
+        << " evt.num_hit        "  << std::setw(w) << num_hit        << std::endl
+        << " evt.num_hitlite    "  << std::setw(w) << num_hitlite    << std::endl
+        << " evt.num_simtrace   "  << std::setw(w) << num_simtrace   << std::endl
+        << " evt.num_prd        "  << std::setw(w) << num_prd        << std::endl
+        << " evt.num_tag        "  << std::setw(w) << num_tag        << std::endl
+        << " evt.num_flat       "  << std::setw(w) << num_flat       << std::endl
         ;
     std::string s = ss.str();
     return s ;
@@ -332,7 +342,7 @@ SEVENT_METHOD std::string sevent::descBuf() const
         << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
         << std::endl
         << std::setw(20) << " evt.photonlite "  << std::setw(w) << ( photonlite  ? "Y" : "N" ) << " " << std::setw(20) << photonlite
-        << std::setw(20) << " num_photon "      << std::setw(7) << num_photon
+        << std::setw(20) << " num_photonlite "  << std::setw(7) << num_photonlite
         << std::setw(20) << " max_photon "      << std::setw(7) << max_photon
         << std::endl
         << std::setw(20) << " evt.record "      << std::setw(w) << ( record  ? "Y" : "N" ) << " " << std::setw(20) << record
@@ -452,11 +462,13 @@ SEVENT_METHOD void sevent::get_meta(std::string& meta) const
     NP::SetMeta<int64_t>(meta,"evt.max_slot", max_slot);
     NP::SetMeta<int64_t>(meta,"evt.max_photon", max_photon);
     NP::SetMeta<int64_t>(meta,"evt.num_photon", num_photon);
+    NP::SetMeta<int64_t>(meta,"evt.num_photonlite", num_photonlite);
 
     NP::SetMeta<int64_t>(meta,"evt.max_curand/M", max_curand/M);
     NP::SetMeta<int64_t>(meta,"evt.max_slot/M", max_slot/M);
     NP::SetMeta<int64_t>(meta,"evt.max_photon/M", max_photon/M);
     NP::SetMeta<int64_t>(meta,"evt.num_photon/M", num_photon/M);
+    NP::SetMeta<int64_t>(meta,"evt.num_photonlite/M", num_photonlite/M);
 
     NP::SetMeta<int64_t>(meta,"evt.max_slot*evt.max_record", max_slot*max_record);
     NP::SetMeta<int64_t>(meta,"evt.max_slot*evt.max_record/M", max_slot*max_record/M);
@@ -499,6 +511,9 @@ SEVENT_METHOD void sevent::zero()
     num_hit = 0 ;
     num_photon = 0 ;
 
+    num_hitlite = 0 ;
+    num_photonlite = 0 ;
+
     num_record = 0 ;
     num_rec = 0 ;
     num_aux = 0 ;
@@ -513,6 +528,7 @@ SEVENT_METHOD void sevent::zero()
     genstep = nullptr ;
     seed = nullptr ;
     hit = nullptr ;
+    hitlite = nullptr ;
     photon = nullptr ;
     photonlite = nullptr ;
 

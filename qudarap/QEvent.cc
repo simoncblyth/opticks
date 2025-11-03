@@ -80,8 +80,6 @@ QEvent::QEvent
 Canonical QEvent instance resides within QSim and is instanciated by QSim::QSim.
 Instanciation allocates device buffers with sizes configured by SEventConfig
 
-* As selector is only needed CPU side it is not down in sevent.h
-  but it could be in SEvt.hh
 
 Holds:
 
@@ -99,7 +97,8 @@ Q: Where is the SEvt::EGPU instanciated ?
 QEvent::QEvent()
     :
     sev(SEvt::Get_EGPU()),
-    selector(sev ? sev->selector : nullptr),
+    photon_selector(sev ? sev->photon_selector : nullptr),
+    photonlite_selector(sev ? sev->photonlite_selector : nullptr),
     evt(sev ? sev->evt : nullptr),
     d_evt(QU::device_alloc<sevent>(1,"QEvent::QEvent/sevent")),
     gs(nullptr),
@@ -119,7 +118,7 @@ QEvent::init
 
 Only configures limits, no allocation yet. Allocation happens in QEvent::setGenstep QEvent::setNumPhoton
 
-HMM: hostside sevent.h instance could reside in SEvt together with selector then hostside setup
+HMM: hostside sevent.h instance could reside in SEvt together with photon_selector then hostside setup
 can be common between the branches
 
 **/
@@ -130,7 +129,8 @@ void QEvent::init()
 
     assert(sev);
     assert(evt);
-    assert(selector);
+    assert(photon_selector);
+    assert(photonlite_selector);
 
     LOG(LEVEL) << " QEvent::init calling SEvt/setCompProvider " ;
     sev->setCompProvider(this);
@@ -569,6 +569,7 @@ void QEvent::checkInputPhoton() const
 bool QEvent::hasGenstep() const { return evt->genstep != nullptr ; }
 bool QEvent::hasSeed() const {    return evt->seed != nullptr ; }
 bool QEvent::hasPhoton() const {  return evt->photon != nullptr ; }
+bool QEvent::hasPhotonLite() const {  return evt->photonlite != nullptr ; }
 bool QEvent::hasRecord() const { return evt->record != nullptr ; }
 bool QEvent::hasRec() const    { return evt->rec != nullptr ; }
 bool QEvent::hasSeq() const    { return evt->seq != nullptr ; }
@@ -576,6 +577,7 @@ bool QEvent::hasPrd() const    { return evt->prd != nullptr ; }
 bool QEvent::hasTag() const    { return evt->tag != nullptr ; }
 bool QEvent::hasFlat() const   { return evt->flat != nullptr ; }
 bool QEvent::hasHit() const    { return evt->hit != nullptr ; }
+bool QEvent::hasHitLite() const    { return evt->hitlite != nullptr ; }
 bool QEvent::hasSimtrace() const  { return evt->simtrace != nullptr ; }
 
 
@@ -868,7 +870,7 @@ NP* QEvent::gatherRec() const
 QEvent::getNumHit  TODO:rejig
 -----------------------------------
 
-HMM: applies selector to the GPU photon array, thats surprising
+HMM: applies photon_selector to the GPU photon array, thats surprising
 for a "get" method... TODO: maybe rearrange to do that once only
 at the gatherHit stage and subsequently just get the count from
 SEvt::fold
@@ -882,17 +884,44 @@ unsigned QEvent::getNumHit() const
     assert( evt->num_photon );
     LOG_IF(info, LIFECYCLE) ;
 
-    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );
+    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *photon_selector );
 
     LOG(LEVEL) << " evt.photon " << evt->photon << " evt.num_photon " << evt->num_photon << " evt.num_hit " << evt->num_hit ;
     return evt->num_hit ;
 }
 
+
+
+unsigned QEvent::getNumHitLite() const
+{
+    assert( evt->photonlite );
+    assert( evt->num_photonlite );
+    LOG_IF(info, LIFECYCLE) ;
+
+    evt->num_hitlite = SU::count_if_sphotonlite( evt->photonlite, evt->num_photonlite, *photonlite_selector );
+
+    LOG(LEVEL) << " evt.photonlite " << evt->photonlite << " evt.num_photonlite " << evt->num_photonlite << " evt.num_hitlite " << evt->num_hitlite ;
+    return evt->num_hitlite ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
 QEvent::gatherHit
 ------------------
 
-1. on device count *evt.num_hit* passing the photon *selector*
+1. on device count *evt.num_hit* passing the photon *photon_selector*
 
 7. return NP hits array to caller, who becomes owner of the array
 
@@ -926,13 +955,13 @@ NP* QEvent::gatherHit() const
     LOG_IF(fatal, evt->num_photon == 0 ) << " evt->num_photon ZERO " ;
     assert( evt->num_photon );
 
-    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *selector );
+    evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *photon_selector );
 
     LOG(LEVEL)
          << " evt.photon " << evt->photon
          << " evt.num_photon " << evt->num_photon
          << " evt.num_hit " << evt->num_hit
-         << " selector.hitmask " << selector->hitmask
+         << " photon_selector.hitmask " << photon_selector->hitmask
          << " SEventConfig::HitMask " << SEventConfig::HitMask()
          << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
          ;
@@ -942,12 +971,61 @@ NP* QEvent::gatherHit() const
     return hit ;
 }
 
+
+
+
+
+
+
+
+
+
+NP* QEvent::gatherHitLite() const
+{
+    // hasHitLite at this juncture is misleadingly always false,
+    // because the hitlite array is derived by *gatherHitLite_* which  selects from the photonlite
+
+    bool has_photonlite = hasPhotonLite();
+
+    LOG_IF(LEVEL, !has_photonlite) << " gatherHitLite called when there is no photonlite array " ;
+    if(!has_photonlite) return nullptr ;
+
+    assert( evt->photonlite );
+
+    LOG_IF(fatal, evt->num_photonlite == 0 ) << " evt->num_photonlite ZERO " ;
+    assert( evt->num_photonlite );
+
+    evt->num_hitlite = SU::count_if_sphotonlite( evt->photonlite, evt->num_photonlite, *photonlite_selector );
+
+    LOG(LEVEL)
+         << " evt.photonlite " << evt->photonlite
+         << " evt.num_photonlite " << evt->num_photonlite
+         << " evt.num_hitlite " << evt->num_hitlite
+         << " photonlite_selector.hitmask " << photonlite_selector->hitmask
+         << " SEventConfig::HitMask " << SEventConfig::HitMask()
+         << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
+         ;
+
+    NP* hitlite = evt->num_hitlite > 0 ? gatherHitLite_() : nullptr ;
+
+    return hitlite ;
+}
+
+
+
+
+
+
+
+
+
+
 /**
 QEvent::gatherHit_
 --------------------
 
 1. allocate *evt.hit* GPU buffer using *evt.num_hit*
-2. SU::copy_if_device_to_device_presized_sphoton from *evt.photon* to *evt.hit* using the photon *selector*
+2. SU::copy_if_device_to_device_presized_sphoton from *evt.photon* to *evt.hit* using the *photon_selector*
 3. host allocate the NP hits array using *evt.num_hit*
 4. copy hits from device to the host NP hits array
 5. free *evt.hit* on device
@@ -962,9 +1040,9 @@ NP* QEvent::gatherHit_() const
     LOG_IF(info, LIFECYCLE) ;
     evt->hit = QU::device_alloc<sphoton>( evt->num_hit, "QEvent::gatherHit_:sphoton" );
 
-    SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *selector );
+    SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *photon_selector );
 
-    NP* hit = NP::Make<float>( evt->num_hit, 4, 4 );
+    NP* hit = sphoton::zeros( evt->num_hit );
 
     QU::copy_device_to_host<sphoton>( (sphoton*)hit->bytes(), evt->hit, evt->num_hit );
 
@@ -975,6 +1053,28 @@ NP* QEvent::gatherHit_() const
 
     return hit ;
 }
+
+
+NP* QEvent::gatherHitLite_() const
+{
+    LOG_IF(info, LIFECYCLE) ;
+    evt->hitlite = QU::device_alloc<sphotonlite>( evt->num_hitlite, "QEvent::gatherHitLite_:sphotonlite" );
+
+    SU::copy_if_device_to_device_presized_sphotonlite( evt->hitlite, evt->photonlite, evt->num_photonlite,  *photonlite_selector );
+
+    NP* hitlite = sphotonlite::zeros( evt->num_hitlite );
+
+    QU::copy_device_to_host<sphotonlite>( (sphotonlite*)hitlite->bytes(), evt->hitlite, evt->num_hitlite );
+
+    QU::device_free<sphotonlite>( evt->hitlite );
+
+    evt->hitlite = nullptr ;
+    LOG(LEVEL) << " hitlite.sstr " << hitlite->sstr() ;
+
+    return hitlite ;
+}
+
+
 
 
 /**
@@ -1032,6 +1132,7 @@ NP* QEvent::gatherComponent_(unsigned cmp) const
         case SCOMP_PHOTON:      a = gatherPhoton()      ; break ;
         case SCOMP_PHOTONLITE:  a = gatherPhotonLite()  ; break ;
         case SCOMP_HIT:         a = gatherHit()         ; break ;
+        case SCOMP_HITLITE:     a = gatherHitLite()     ; break ;
 #ifndef PRODUCTION
         case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;
@@ -1120,7 +1221,7 @@ void QEvent::device_alloc_photon()
         ;
 
     evt->photon  = evt->max_slot > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot, "QEvent::device_alloc_photon/max_slot*sizeof(sphoton)" ) : nullptr ;
-    evt->photonlite = evt->max_lite == 1 ? QU::device_alloc_zero<sphotonlite>( evt->max_slot, "QEvent::device_alloc_photon/max_slot*sizeof(sphotonlite)" ) : nullptr ;
+    evt->photonlite = evt->mode_lite > 0 ? QU::device_alloc_zero<sphotonlite>( evt->max_slot, "QEvent::device_alloc_photon/max_slot*sizeof(sphotonlite)" ) : nullptr ;
 
 #ifndef PRODUCTION
     evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot * evt->max_record, "max_slot*max_record*sizeof(sphoton)" ) : nullptr ;

@@ -34,6 +34,7 @@ sphotonlite.hh
    #include "OpticksPhoton.h"
    #include "OpticksPhoton.hh"
    #include "NP.hh"
+   struct sphotonlite_selector ;
 #endif
 
 struct sphotonlite
@@ -63,9 +64,38 @@ struct sphotonlite
     SPHOTONLITE_METHOD static bool expected( const NP* l );
 
     SPHOTONLITE_METHOD static NP* demoarray(size_t num_photon);
+    SPHOTONLITE_METHOD static NP* select( const NP* photonlite, const sphotonlite_selector* photonlite_selector );
+
 #endif
 
 };
+
+/**
+sphotonlite_selector
+--------------------
+
+All bits that are set within the *hitmask* are required to be set within the *flagmask* for a match
+This functor binds to the below predicate signature, where S=sphotonlite::
+
+     std::function<bool(const S*)>
+
+Instances of this functor are used on CPU via the below sphotonlite::select
+and on GPU from QEvent::gatherHitLite_
+
+**/
+
+struct sphotonlite_selector
+{
+    uint32_t hitmask ;
+    sphotonlite_selector(uint32_t hitmask_) : hitmask(hitmask_) {};
+    SPHOTONLITE_METHOD bool operator() (const sphotonlite& p) const { return ( p.flagmask  & hitmask ) == hitmask  ; }
+    SPHOTONLITE_METHOD bool operator() (const sphotonlite* p) const { return ( p->flagmask & hitmask ) == hitmask  ; }
+};
+
+
+
+
+
 
 /**
 sphotonlite::init
@@ -227,6 +257,12 @@ inline NP* sphotonlite::demoarray(size_t num_photon) // static
 inline std::string sphotonlite::flagmask_() const
 {
     return OpticksPhoton::FlagMaskLabel(flagmask) ;
+}
+
+inline NP* sphotonlite::select( const NP* photonlite, const sphotonlite_selector* photonlite_selector )
+{
+    NP* hitlite = photonlite ? photonlite->copy_if<uint32_t, sphotonlite>(*photonlite_selector) : nullptr ;
+    return hitlite ;
 }
 
 
