@@ -4734,7 +4734,7 @@ const NP* SEvt::getPho() const {     return topfold->get(SComp::PHO_) ; }
 const NP* SEvt::getGS() const {      return topfold->get(SComp::GS_) ; }
 
 unsigned SEvt::getNumPhoton() const { return topfold->get_num(SEventConfig::PhotonCompNameOne()) ; }
-unsigned SEvt::getNumHit() const
+unsigned SEvt::getNumHit() const // TODO:size_t
 {
     int num = topfold->get_num(SEventConfig::HitCompNameOne()) ;  // number of items in array, HIT/HITLITE depening on SEventConfig::ModeLite()
     return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
