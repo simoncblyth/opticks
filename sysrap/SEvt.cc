@@ -4726,17 +4726,17 @@ std::string SEvt::descVec() const
 
 
 const NP* SEvt::getGenstep() const { return topfold->get(SComp::GENSTEP_) ;}
-const NP* SEvt::getPhoton() const {  return topfold->get(SComp::PHOTON_) ; }
-const NP* SEvt::getHit() const {     return topfold->get(SComp::HIT_) ; }
+const NP* SEvt::getPhoton() const {  return topfold->get(SEventConfig::PhotonCompNameOne()) ; }
+const NP* SEvt::getHit() const {     return topfold->get(SEventConfig::HitCompNameOne()) ; }
 const NP* SEvt::getAux() const {     return topfold->get(SComp::AUX_) ; }
 const NP* SEvt::getSup() const {     return topfold->get(SComp::SUP_) ; }
 const NP* SEvt::getPho() const {     return topfold->get(SComp::PHO_) ; }
 const NP* SEvt::getGS() const {      return topfold->get(SComp::GS_) ; }
 
-unsigned SEvt::getNumPhoton() const { return topfold->get_num(SComp::PHOTON_) ; }
+unsigned SEvt::getNumPhoton() const { return topfold->get_num(SEventConfig::PhotonCompNameOne()) ; }
 unsigned SEvt::getNumHit() const
 {
-    int num = topfold->get_num(SComp::HIT_) ;  // number of items in array
+    int num = topfold->get_num(SEventConfig::HitCompNameOne()) ;  // number of items in array, HIT/HITLITE depening on SEventConfig::ModeLite()
     return num == NPFold::UNDEF ? 0 : num ;   // avoid returning -1 when no hits
 }
 

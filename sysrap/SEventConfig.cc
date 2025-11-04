@@ -1282,6 +1282,14 @@ unsigned SEventConfig::PhotonComp() // static
     return comp ;
 }
 
+const char* SEventConfig::PhotonCompNameOne() // static
+{
+    return SComp::Name(ModeLite() == 0 ? SCOMP_PHOTON : SCOMP_PHOTONLITE );
+}
+
+
+
+
 /**
 SEventConfig::HitComp
 -----------------------
@@ -1304,6 +1312,21 @@ unsigned SEventConfig::HitComp() // static
     }
     return comp ;
 }
+
+
+/**
+SEventConfig::HitCompNameOne
+----------------------------
+
+Used by SEvt::getNumHit
+
+**/
+
+const char* SEventConfig::HitCompNameOne() // static
+{
+    return SComp::Name(ModeLite() == 0 ? SCOMP_HIT : SCOMP_HITLITE );
+}
+
 
 
 

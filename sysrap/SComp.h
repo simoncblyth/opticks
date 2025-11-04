@@ -91,10 +91,10 @@ struct SYSRAP_API SComp
     static std::string Desc(unsigned mask);
     static std::string Desc(const std::vector<unsigned>& comps);
     static void CompList(std::vector<unsigned>& comps, const char* names, char delim=',');
-    static unsigned    Mask(const char* names, char delim=',');
     static void CompListAll( std::vector<unsigned>& comps );
     static void CompListMask(std::vector<unsigned>& comps, unsigned mask );
     static int  CompListCount(unsigned mask );
+    static unsigned    Mask(const char* names, char delim=',');
 
 
     static bool IsGenstep( unsigned mask){ return mask & SCOMP_GENSTEP ; }
@@ -292,4 +292,7 @@ inline unsigned SComp::Mask(const char* names, char delim)
     for(unsigned i=0 ; i < comps.size() ; i++)  mask |= comps[i] ;
     return mask ;
 }
+
+
+
 

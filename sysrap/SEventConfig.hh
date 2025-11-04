@@ -591,7 +591,11 @@ struct SYSRAP_API SEventConfig
     static void  Initialize_Comp();
 
     static unsigned PhotonComp();
-    static unsigned HitComp();
+    static const char* PhotonCompNameOne();
+
+    static unsigned HitComp();             // pontially bitwise combination of multiple comp
+    static const char* HitCompNameOne();
+
 
     static void  Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask );
     static void  Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask );
