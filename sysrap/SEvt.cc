@@ -4435,10 +4435,20 @@ void SEvt::save(const char* dir_)
     if(hit && SEventConfig::HasSaveComp(SComp::HITLOCAL_))
     {
         bool consistency_check = true ;
-        NP* hitlocal = localize_hit(hit, consistency_check);
+        NP* hitlocal = localize_photon(hit, consistency_check);
         assert(hitlocal);
         save_fold->add(SComp::HITLOCAL_, hitlocal );
     }
+
+    const NP* photon = save_fold->get(SComp::PHOTON_);
+    if(photon && SEventConfig::HasSaveComp(SComp::PHOTONLOCAL_))
+    {
+        bool consistency_check = true ;
+        NP* photonlocal = localize_photon(photon, consistency_check);
+        assert(photonlocal);
+        save_fold->add(SComp::PHOTONLOCAL_, photonlocal );
+    }
+
 
 
     if(extrafold)
@@ -4812,9 +4822,20 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
     fr.transform_w2m(lp);
 }
 
-NP* SEvt::localize_hit(const NP* hit, bool consistency_check) const
+
+/**
+SEvt::localize_photon
+----------------------
+
+NB *hit* arrays are subsets of *photon* arrays
+so this works for both *photon* and *hit* arrays.
+
+**/
+
+
+NP* SEvt::localize_photon(const NP* photon, bool consistency_check) const
 {
-    return tree ? tree->localize_hit(hit, consistency_check) : nullptr ;
+    return tree ? tree->localize_photon(photon, consistency_check) : nullptr ;
 }
 
 

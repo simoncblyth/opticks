@@ -107,7 +107,8 @@ vars="$vars defarg arg allarg"
 bin=CSGOptiXSMTest
 script=$SDIR/cxs_min.py
 script_AB=$SDIR/cxs_min_AB.py
-vars="$vars bin script script_AB"
+script_lite=$SDIR/cxs_min_lite.py
+vars="$vars bin script script_AB script_lite"
 
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
@@ -253,11 +254,11 @@ export STEM=${opticks_event_reldir}_${PLOT}
 
 if [ -n "$LOGOVER" ]; then
     if [ -d "$LOGOVER" ]; then
-        printf "$BASH_SOURCE LOGOVER $LOGOVER - DIRECTORY EXISTS \n" 
+        printf "$BASH_SOURCE LOGOVER $LOGOVER - DIRECTORY EXISTS \n"
         export LOGDIR0=$LOGDIR
         LOGDIR=$LOGOVER
     else
-        printf "$BASH_SOURCE LOGOVER $LOGOVER - IGNORED AS NO SUCH DIRECTORY\n" 
+        printf "$BASH_SOURCE LOGOVER $LOGOVER - IGNORED AS NO SUCH DIRECTORY\n"
     fi
 fi
 
@@ -277,7 +278,7 @@ cd $LOGDIR
 export SProf__WRITE=1         ## enable SProf::Write of SProf.txt into invoking dir, which is LOGDIR
 
 #export SProf__PATH=SProf_%0.5d.txt
-#export SProf__PATH_INDEX=101  
+#export SProf__PATH_INDEX=101
 
 
 LOGFILE=$bin.log
@@ -569,16 +570,20 @@ export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 
+vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
+
 export OPTICKS_MODE_LITE=${OPTICKS_MODE_LITE:-$opticks_mode_lite}
 
-
-vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE OPTICKS_MODE_LITE"
+case $OPTICKS_MODE_LITE in
+  0) OPTICKS_MODE_LITE_NOTE="photon/hit will be saved (if they are configured) not the lite variants" ;;
+  1) OPTICKS_MODE_LITE_NOTE="photonlite/hitlite variants will be saved instead of photon/hit (if they are configured)" ;;
+  2) OPTICKS_MODE_LITE_NOTE="photonlite/hitlite will be saved in addition to photon/hit (if they are configured) : validate with lite analysis subcommand" ;;
+esac
+vars="$vars OPTICKS_MODE_LITE OPTICKS_MODE_LITE_NOTE"
 
 export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
 export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot
 vars="$vars OPTICKS_MAX_CURAND OPTICKS_MAX_SLOT"
-
-
 
 
 
@@ -786,6 +791,11 @@ fi
 if [ "${arg/AB}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script_AB
 fi
+
+if [ "${arg/lite}" != "$arg" ]; then
+    MODE=0 ${IPYTHON:-ipython} --pdb -i $script_lite
+fi
+
 
 if [ "${arg/ana}" != "$arg" ]; then
     MODE=0 ${PYTHON:-python} $script

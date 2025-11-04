@@ -750,7 +750,7 @@ public:
     void getLocalHit_LEAKY( sphit& ht, sphoton& p, unsigned idx) const ;
     void getLocalHit(       sphit& ht, sphoton& p, unsigned idx) const ;
 
-    NP*  localize_hit(const NP* hit, bool consistency_check) const ;
+    NP*  localize_photon(const NP* hit, bool consistency_check) const ;
 
 
     void getPhotonFrame( sframe& fr, const sphoton& p ) const ;

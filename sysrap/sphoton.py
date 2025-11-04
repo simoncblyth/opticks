@@ -140,13 +140,14 @@ class SPhoton:
         """
         Like ``view_recarray`` but also appends the unpacked bit-fields:
 
-            orient, 
+            orient,
             iindex,
-            boundary, 
+            boundary,
             bflag,
-            index_ext, 
+            index_ext,
             ident,
-            idx
+            idx,
+            phi     np.atan2( pos.y, pos.x ) : most useful for local frame arrays like "hitlocal"
 
         """
         rec = cls.view_(buf).view(np.recarray)
@@ -155,29 +156,39 @@ class SPhoton:
         boundary, bflag = cls.boundary_flag_split(rec)
         index_ext, ident = cls.identity_split(rec)
 
-        idx = ( index_ext.astype(np.uint64) << 32 ) | rec["index"].astype(np.uint64) 
+        idx = ( index_ext.astype(np.uint64) << 32 ) | rec["index"].astype(np.uint64)
+
+        phi = np.atan2( rec["pos"][:,1], rec["pos"][:,0] )   # Y,X like scuda.h:normalize_fphi
+        posr = np.linalg.norm( rec["pos"], axis=1 )
+        cost = rec["pos"][:,2]/posr
 
         rec = append_fields(
             rec,
             [
-                "orient", 
+                "orient",
                 "iindex",
-                "boundary", 
+                "boundary",
                 "bflag",
-                "index_ext", 
+                "index_ext",
                 "ident",
-                "idx"
+                "idx",
+                "phi",
+                "posr",
+                "cost"
             ],
             [
-                orient, 
+                orient,
                 iindex,
-                boundary, 
+                boundary,
                 bflag,
-                index_ext, 
+                index_ext,
                 ident,
-                idx
+                idx,
+                phi,
+                posr,
+                cost
             ],
-            dtypes=[np.uint32] * 6 + [np.uint64],
+            dtypes=[np.uint32] * 6 + [np.uint64] + [np.float32] * 3,
             usemask=False,
         )
         return rec.view(np.recarray)

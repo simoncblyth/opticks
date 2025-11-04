@@ -84,14 +84,32 @@ class SPhotonLite:
 
         rec = buf.view(cls.DTYPE).reshape(-1)
 
+
+        fphi = cls.unpack_uint16_to_float(rec["lposfphi"])
+        cost = cls.unpack_uint16_to_float(rec["lposcost"])
+        phi = ( fphi * 2.0 - 1. ) * np.pi  # scuda.h:phi_from_fphi
+
         rec = append_fields(
-            rec,
-            ["lposfphi_f", "lposcost_f"],
+            rec
+            ,
             [
-                cls.unpack_uint16_to_float(rec["lposfphi"]),
-                cls.unpack_uint16_to_float(rec["lposcost"]),
-            ],
-            [np.float32, np.float32],
+               "lposfphi_f",
+               "lposcost_f",
+               "phi"
+            ]
+            ,
+            [
+                fphi,
+                cost,
+                phi
+            ]
+            ,
+            [
+            np.float32,
+            np.float32,
+            np.float32,
+            ]
+            ,
             usemask=False,
         )
         return rec

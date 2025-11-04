@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys, logging, textwrap, numpy as np, datetime, builtins
+import ast
 from opticks.ana.npmeta import NPMeta
 from opticks.sysrap.sframe import sframe
 
@@ -52,9 +53,71 @@ class STR(str):
 
 
 
+class AssignVisitor(ast.NodeVisitor):
+    """Detect simple Assign and AugAssign nodes."""
+    def __init__(self):
+        self.is_assign = False          # True for Assign or AugAssign
+        self.target_name = None         # name of the left-hand side
+
+    # ---- regular assignment:  x = expr  -----------------------------
+    def visit_Assign(self, node):
+        if len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
+            self.is_assign = True
+            self.target_name = node.targets[0].id
+        return self
+
+    # ---- augmented assignment:  x += expr  -------------------------
+    def visit_AugAssign(self, node):
+        if isinstance(node.target, ast.Name):
+            self.is_assign = True
+            self.target_name = node.target.id
+        return self
 
 
+def is_simple_assignment(line: str):
+    """Return (is_assign, target_name) or (False, None)."""
+    try:
+        tree = ast.parse(line.strip(), mode="single")
+    except SyntaxError:
+        return False, None
 
+    visitor = AssignVisitor()
+    visitor.visit(tree)
+    return visitor.is_assign, visitor.target_name
+
+
+def EVAL(block: str, ns: dict | None = None):
+    """
+    Execute a block of Python expressions.
+    - Simple assignments (`x = ...`) are stored in `ns`
+    - All expressions are evaluated and printed
+    - `=` in function calls or `==` are ignored
+
+    """
+    ns = ns or {}
+    for raw_line in textwrap.dedent(block).splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            print(line)
+            continue
+
+        is_assign, name = is_simple_assignment(line)
+        try:
+            if is_assign:
+                # Compile and exec the assignment
+                code = compile(line, "<expr_block>", "single")
+                exec(code, globals(), ns)
+                value = ns[name]
+                print(f"{line}   # → {value!r}")
+            else:
+                # Pure expression → eval and print
+                value = eval(line, globals(), ns)
+                print(f"{line}   # → {value!r}")
+        except Exception as e:
+            print(f"{line}   # ERROR: {e}")
+        pass
+    pass
+pass
 
 
 

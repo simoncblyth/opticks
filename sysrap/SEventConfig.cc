@@ -1275,9 +1275,9 @@ unsigned SEventConfig::PhotonComp() // static
     unsigned comp = 0 ;
     switch(ModeLite())
     {
-        case 0: comp = SCOMP_PHOTON                    ; break ;
-        case 1: comp = SCOMP_PHOTONLITE                ; break ;
-        case 2: comp = SCOMP_PHOTON | SCOMP_PHOTONLITE ; break ;
+        case 0: comp = SCOMP_PHOTON                                        ; break ;
+        case 1: comp = SCOMP_PHOTONLITE                                    ; break ;
+        case 2: comp = SCOMP_PHOTON | SCOMP_PHOTONLITE | SCOMP_PHOTONLOCAL ; break ;
     }
     return comp ;
 }
@@ -1298,8 +1298,8 @@ unsigned SEventConfig::HitComp() // static
     unsigned comp = 0 ;
     switch(ModeLite())
     {
-        case 0: comp = SCOMP_HIT                 ; break ;
-        case 1: comp = SCOMP_HITLITE             ; break ;
+        case 0: comp = SCOMP_HIT                                  ; break ;
+        case 1: comp = SCOMP_HITLITE                              ; break ;
         case 2: comp = SCOMP_HIT | SCOMP_HITLITE | SCOMP_HITLOCAL ; break ;
     }
     return comp ;

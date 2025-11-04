@@ -771,7 +771,7 @@ struct stree
     void check_nidx_prim() const ;
     int  get_prim_for_nidx(int nidx) const ;
 
-    NP* localize_hit(const NP* hit, bool consistency_check) const ;
+    NP* localize_photon(const NP* photon, bool consistency_check) const ;
 
 };
 
@@ -6426,16 +6426,17 @@ inline int stree::get_prim_for_nidx(int nidx) const
 
 
 /**
-stree::localize_hit
---------------------
+stree::localize_photon  (formerly localize_hit, but its more general than that)
+---------------------------------------------------------------------------------
 
 Canonically invoked from SEvt::save only when "hitlocal" save component is
 configured via see SEventConfig::HitComp
 
-Using the sphoton::iindex which should always be present for hits
-lookup the transform allowing global coordinate pos, mom, pol
+Using the sphoton::iindex which should always be present for any real
+simulation (missed intersects have no iindex, but that should not happen
+with real geometry) lookup the transform allowing global coordinate pos, mom, pol
 to be inplace transformed into the local frame of the geometry
-of the hit.
+of the part of the gometry that the photon last intersected.
 
 Note that the corresponding strid::Encode into the transform
 is done by the above stree::add_inst
@@ -6447,23 +6448,21 @@ transform multiple at once ?
 **/
 
 
-inline NP* stree::localize_hit(const NP* hit, bool consistency_check ) const
+inline NP* stree::localize_photon(const NP* photon, bool consistency_check ) const
 {
-    if(!hit) return nullptr ;
-    NP* local_hit = hit->copy();
-    assert( hit->shape[0] == local_hit->shape[0] );
-    size_t num = hit->shape[0] ;
+    if(!photon) return nullptr ;
+    assert( photon->has_shape( -1, 4, 4 ) );
+    size_t num = photon->shape[0] ;
 
-    sphoton* ll = (sphoton*)local_hit->bytes() ;
+    NP* local_photon = photon->copy();
+    sphoton* ll = (sphoton*)local_photon->bytes() ;
 
     for(size_t i=0 ; i < num ; i++)
     {
         sphoton& l = ll[i] ; // start with global frame fields
 
         unsigned iindex   = l.iindex() ;
-        unsigned identity = l.get_identity();
-        assert( identity > 0 ); // identity:0 meaning not-a-sensor should never happen for hits
-        unsigned sensor_identifier = identity - 1 ;
+        assert( iindex != 0xffffffffu );
 
         const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
         assert( tr );
@@ -6474,6 +6473,10 @@ inline NP* stree::localize_hit(const NP* hit, bool consistency_check ) const
 
         if(consistency_check)
         {
+            unsigned identity = l.get_identity();
+            bool not_a_sensor = identity == 0 ;
+            unsigned sensor_identifier = identity - 1 ;
+
             glm::tvec4<int64_t> col3 = {} ;
             strid::Decode( *tr, col3 );
 
@@ -6482,12 +6485,33 @@ inline NP* stree::localize_hit(const NP* hit, bool consistency_check ) const
             ht.sensor_identifier = col3[2] ;
             ht.sensor_index      = col3[3] ;
 
-            assert( ht.iindex == iindex );
-            assert( ht.sensor_identifier == sensor_identifier );
+            bool match_iindex = ht.iindex == iindex ;
+            bool match_ident = ht.sensor_identifier == sensor_identifier ;
+
+            if(!match_iindex) std::cerr
+                << "stree::localize_photon"
+                << " ht.iindex " << ht.iindex
+                << " iindex " << iindex
+                << " match_iindex " << ( match_iindex ? "YES" : "NO " )
+                << "\n"
+                ;
+
+            if(!match_ident) std::cerr
+                << "stree::localize_photon"
+                << " ht.sensor_identifier " << ht.sensor_identifier
+                << " sensor_identifier " << sensor_identifier
+                << " match_ident " << ( match_ident ? "YES" : "NO " )
+                << " identity " << identity
+                << " not_a_sensor " << ( not_a_sensor ? "YES" : "NO " )
+                << "\n"
+                ;
+
+            assert( match_iindex );
+            assert( match_ident  );
         }
 
     }
-    return local_hit ;
+    return local_photon ;
 }
 
 

@@ -41,7 +41,8 @@ enum {
     SCOMP_GS           = 0x1 << 21,
     SCOMP_PHOTONLITE   = 0x1 << 22,
     SCOMP_HITLITE      = 0x1 << 23,
-    SCOMP_HITLOCAL     = 0x1 << 24
+    SCOMP_HITLOCAL     = 0x1 << 24,
+    SCOMP_PHOTONLOCAL  = 0x1 << 25
 
 };
 
@@ -82,6 +83,7 @@ struct SYSRAP_API SComp
     static constexpr const char* PHOTONLITE_ = "photonlite" ;
     static constexpr const char* HITLITE_    = "hitlite" ;
     static constexpr const char* HITLOCAL_   = "hitlocal" ;
+    static constexpr const char* PHOTONLOCAL_ = "photonlocal" ;
 
     static bool Match(const char* q, const char* n );
     static unsigned    Comp(const char* name);
@@ -119,6 +121,7 @@ struct SYSRAP_API SComp
     static bool IsPhotonLite(  unsigned mask){ return mask & SCOMP_PHOTONLITE ; }
     static bool IsHitLite(     unsigned mask){ return mask & SCOMP_HITLITE ; }
     static bool IsHitLocal(    unsigned mask){ return mask & SCOMP_HITLOCAL ; }
+    static bool IsPhotonLocal( unsigned mask){ return mask & SCOMP_PHOTONLOCAL ; }
 
 };
 
@@ -154,6 +157,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, PHOTONLITE_)) comp = SCOMP_PHOTONLITE ;
     if(Match(name, HITLITE_))    comp = SCOMP_HITLITE ;
     if(Match(name, HITLOCAL_))   comp = SCOMP_HITLOCAL ;
+    if(Match(name, PHOTONLOCAL_))   comp = SCOMP_PHOTONLOCAL ;
     return comp ;
 }
 inline const char* SComp::Name(unsigned comp)
@@ -186,6 +190,7 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_PHOTONLITE:s = PHOTONLITE_ ; break ;
         case SCOMP_HITLITE:   s = HITLITE_    ; break ;
         case SCOMP_HITLOCAL:  s = HITLOCAL_   ; break ;
+        case SCOMP_PHOTONLOCAL:  s = PHOTONLOCAL_   ; break ;
     }
     return s ;
 }
@@ -217,6 +222,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_PHOTONLITE ) names.push_back(PHOTONLITE_) ;
     if( mask & SCOMP_HITLITE )    names.push_back(HITLITE_) ;   // CAUTION : HITLITE MUST STAY AFTER PHOTONLITE (?)
     if( mask & SCOMP_HITLOCAL )   names.push_back(HITLOCAL_) ;   // CAUTION : HITLOCAL MUST STAY AFTER HIT
+    if( mask & SCOMP_PHOTONLOCAL )   names.push_back(PHOTONLOCAL_) ;   // CAUTION : PHOTONLOCAL MUST STAY AFTER PHOTON
 
     std::stringstream ss ;
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" );

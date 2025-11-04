@@ -247,6 +247,7 @@ set(INSTALLED_SCRIPTS
    cxs_min.sh
    cxs_min.py
    cxs_min_AB.py
+   cxs_min_lite.py
 )
 
 
