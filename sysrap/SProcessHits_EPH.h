@@ -99,17 +99,19 @@ struct SProcessHits_EPH
     static constexpr const char* Initialize_G4HCofThisEvent_opticksMode_ = "Initialize_G4HCofThisEvent_opticksMode" ;
     static constexpr const char* Initialize_G4HCofThisEvent_count_ = "Initialize_G4HCofThisEvent_count" ;
 
-    static constexpr const char* EndOfEvent_Simulate_eventID_ = "EndOfEvent_Simulate_eventID" ;
-    static constexpr const char* EndOfEvent_Simulate_count_   = "EndOfEvent_Simulate_count" ;
-    static constexpr const char* EndOfEvent_Simulate_EGPU_hit_ = "EndOfEvent_Simulate_EGPU_hit" ;
+    static constexpr const char* EndOfEvent_Simulate_eventID_         = "EndOfEvent_Simulate_eventID" ;
+    static constexpr const char* EndOfEvent_Simulate_count_           = "EndOfEvent_Simulate_count" ;
+    static constexpr const char* EndOfEvent_Simulate_EGPU_hit_        = "EndOfEvent_Simulate_EGPU_hit" ;
+    static constexpr const char* EndOfEvent_Simulate_merged_count_    = "EndOfEvent_Simulate_merged_count" ;
+    static constexpr const char* EndOfEvent_Simulate_savehit_count_   = "EndOfEvent_Simulate_savehit_count" ;
+    static constexpr const char* EndOfEvent_Simulate_merged_total_    = "EndOfEvent_Simulate_merged_total" ;
+    static constexpr const char* EndOfEvent_Simulate_savehit_total_   = "EndOfEvent_Simulate_savehit_total" ;
+
+
     static constexpr const char* EndOfEvent_hitCollection_entries0_ = "EndOfEvent_hitCollection_entries0" ;
     static constexpr const char* EndOfEvent_hitCollection_entries1_ = "EndOfEvent_hitCollection_entries1" ;
     static constexpr const char* EndOfEvent_hitCollectionAlt_entries0_ = "EndOfEvent_hitCollectionAlt_entries0" ;
     static constexpr const char* EndOfEvent_hitCollectionAlt_entries1_ = "EndOfEvent_hitCollectionAlt_entries1" ;
-    static constexpr const char* EndOfEvent_Simulate_merged_count_   = "EndOfEvent_Simulate_merged_count" ;
-    static constexpr const char* EndOfEvent_Simulate_savehit_count_   = "EndOfEvent_Simulate_savehit_count" ;
-    static constexpr const char* EndOfEvent_Simulate_merged_total_   = "EndOfEvent_Simulate_merged_total" ;
-    static constexpr const char* EndOfEvent_Simulate_savehit_total_   = "EndOfEvent_Simulate_savehit_total" ;
 
     static constexpr const char* SUM_merged_count_savehit_count_   = "SUM_merged_count_savehit_count" ;
     static constexpr const char* SUM_merged_total_savehit_total_   = "SUM_merged_total_savehit_total" ;

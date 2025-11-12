@@ -44,8 +44,6 @@ struct sphotonlite
     uint32_t  lposcost_lposfphi ;
     uint32_t  flagmask ;
 
-    // HMM: actually 16 bits would be enough, or even 1 bit with fixed hitmask
-
     SPHOTONLITE_METHOD void init(unsigned _identity, float _time, unsigned _flagmask);
     SPHOTONLITE_METHOD void set_lpos(float lposcost, float lposfphi);
     SPHOTONLITE_METHOD void set_hitcount_identity( unsigned hitcount, unsigned identity );
@@ -53,10 +51,15 @@ struct sphotonlite
     SPHOTONLITE_METHOD unsigned hitcount() const { return hitcount_identity >> 16 ; }
     SPHOTONLITE_METHOD unsigned identity() const { return hitcount_identity & 0xffffu ; }
 
+
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     SPHOTONLITE_METHOD void get_lpos(float& lposcost, float& lposfphi) const ;
+    SPHOTONLITE_METHOD void get_lpos_theta_phi(float& lpos_theta, float& lpos_phi) const ;
+
     SPHOTONLITE_METHOD std::string lpos_() const ;
+
+
     SPHOTONLITE_METHOD std::string flagmask_() const ;
     SPHOTONLITE_METHOD std::string desc() const ;
 
@@ -101,10 +104,18 @@ struct sphotonlite_selector
 sphotonlite::init
 -------------------
 
-Example::
+Example, CSGOptiX/CSGOptiX7.cu::
 
-   sphotonlite l ;
-   l.init( p.identity, p.time, p.flagmask );
+
+    457     if( evt->photonlite )
+    458     {
+    459         sphotonlite l ;
+    460         l.init( ctx.p.identity, ctx.p.time, ctx.p.flagmask );
+    461         l.set_lpos(prd->lposcost(), prd->lposfphi() );
+    462         evt->photonlite[idx] = l ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
+    463     }
+
+
 
 **/
 
@@ -163,19 +174,42 @@ inline void sphotonlite::get_lpos(float& lposcost, float& lposfphi) const
     assert( lposfphi >= 0.f && lposfphi <= 1.f );
 }
 
+
+inline void sphotonlite::get_lpos_theta_phi(float& lpos_theta, float& lpos_phi) const
+{
+    float lposcost = float(lposcost_lposfphi >> 16    ) / 0xffffu ;
+    float lposfphi = float(lposcost_lposfphi & 0xffffu) / 0xffffu ;
+
+    lpos_theta = std::acos( lposcost );  // HMM: could store fthe instead of cost ?
+    lpos_phi = phi_from_fphi( lposfphi );
+
+}
+
 inline std::string sphotonlite::lpos_() const
 {
     float lposcost, lposfphi ;
     get_lpos(lposcost, lposfphi);
 
+    float lpos_theta, lpos_phi ;
+    get_lpos_theta_phi(lpos_theta, lpos_phi);
+
+
     std::stringstream ss ;
     ss
         << " cost " << std::setw(7) << std::fixed << std::setprecision(5) << lposcost
+        << " theta " << std::setw(7) << std::fixed << std::setprecision(5) << lpos_theta
         << " fphi " << std::setw(7) << std::fixed << std::setprecision(5) << lposfphi
+        << " phi " << std::setw(7) << std::fixed << std::setprecision(5) << lpos_phi
+
+
         ;
     std::string str = ss.str() ;
     return str ;
 }
+
+
+
+
 
 
 inline std::string sphotonlite::desc() const

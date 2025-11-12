@@ -6,9 +6,25 @@ SProf.hh
 Collecting full process lifecycle into SProf is convenient
 BUT: have to avoid only saving at end of run : as with jobs prone to run out of
 memory want to have at least some of the profile data even when the job fails
-Hence better to write the run meta at the end of every event
-overwriting what was there before. The overwrite duplication is OK
-as the expected number of profile stamps is small
+
+
+Multiple calls to SProf::Write that overwrite and extend
+----------------------------------------------------------
+
+This is done for several reasons:
+
+1. want to have profile info even when job crashes, eg from OOM
+2. number of stamps is intended to be small enough that not a resource issue
+
+
+Ordinarily SProf::Clear is never called
+----------------------------------------
+
+Objective of SProf is to capture profile time stamps and memory usage
+throughout the full lifecycle of a process, so there is no need to
+ever clear. Only in postprocessing where wish to read in profile
+info from some other process is it approriate to SProf::Clear before
+reading.
 
 
 Usage
