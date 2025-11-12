@@ -756,7 +756,6 @@ SPHOTON_METHOD void sphoton::Get( sphoton& p, const NP* a, unsigned idx )
         << " a.ebyte " << ( a ? a->ebyte : -1 )
         << " a.shape[0] " << ( a ? a->shape[0] : -1 )
         << " idx " << idx
-        << " SEventConfig::ModeLite " << SEventConfig::ModeLite()
         << std::endl
         ;
 
