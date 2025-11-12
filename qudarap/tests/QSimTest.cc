@@ -36,7 +36,7 @@ with the actual code being tested.
 #include "QProp.hh"
 #include "QSim.hh"
 #include "QSimLaunch.hh"
-#include "QEvent.hh"
+#include "QEvt.hh"
 
 #include "QDebug.hh"
 #include "qdebug.h"
@@ -402,12 +402,12 @@ void QSimTest::generate_photon()
     assert(evt);
 
     evt->addGenstep(gs);
-    unsigned num_photon_after_SEvt__addGenstep = qs->event->getNumPhoton();
+    unsigned num_photon_after_SEvt__addGenstep = qs->qev->getNumPhoton();
 
 
     NP* igs = evt->makeGenstepArrayFromVector();
-    qs->event->setGenstepUpload_NP(igs);
-    unsigned num_photon_after_QEvent__setGenstep = qs->event->getNumPhoton();
+    qs->qev->setGenstepUpload_NP(igs);
+    unsigned num_photon_after_QEvt__setGenstep = qs->qev->getNumPhoton();
 
 
     LOG(info)
@@ -418,8 +418,8 @@ void QSimTest::generate_photon()
        << " num_photon_after_SEvt__addGenstep "
        <<   num_photon_after_SEvt__addGenstep
        << "\n"
-       << " num_photon_after_QEvent__setGenstep "
-       <<   num_photon_after_QEvent__setGenstep
+       << " num_photon_after_QEvt__setGenstep "
+       <<   num_photon_after_QEvt__setGenstep
        << "\n"
        ;
 
@@ -428,7 +428,7 @@ void QSimTest::generate_photon()
 
 
 
-    NP* p = qs->event->gatherPhoton();
+    NP* p = qs->qev->gatherPhoton();
     p->save("$FOLD/p.npy");
 
     LOG(info) << "]" ;
@@ -516,8 +516,8 @@ This is invoked from the QSimTest main  immediately
 prior to SEvt EGPU instanciation.
 
 For the FAKE_PROPAGATE test the SEventConfig settings
-are adjusted to configure the QEvent GPU buffers.
-This must be done prior to QEvent::init which happens
+are adjusted to configure the QEvt GPU buffers.
+This must be done prior to QEvt::init which happens
 when QSim is instanciated.
 
 **/
@@ -541,7 +541,7 @@ void QSimTest::EventConfig(unsigned type, const SPrd* prd )  // static
         SEventConfig::SetMaxGenstep(1);    // FAKE_PROPAGATE starts from input photons but uses a single placeholder genstep
 
         unsigned mx = 1000000 ;
-        SEventConfig::SetMaxPhoton(mx);   // used for QEvent buffer sizing
+        SEventConfig::SetMaxPhoton(mx);   // used for QEvt buffer sizing
         SEventConfig::SetMaxSlot(mx);
         // greatly reduced MaxSlot as debug arrays in use
 
@@ -583,7 +583,7 @@ void QSimTest::fake_propagate()
         ;
 
     // sev->add_array("prd0", prd );
-    // its too soon to add array here, must be after the QEvent::setGenstep
+    // its too soon to add array here, must be after the QEvt::setGenstep
     // which calls SEvt/clear (done in QSim::fake_propagate)
 
     int eventID = 0 ;
@@ -617,7 +617,7 @@ void QSimTest::quad_launch_generate()
 QSimTest::photon_launch_mutate
 --------------------------------
 
-How should/could this use QEvent/qevent ?
+How should/could this use QEvt/sevent ?
 
 **/
 

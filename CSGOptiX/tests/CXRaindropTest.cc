@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 
     float4 ce = make_float4( 0.f, 0.f, 0.f, 100.f );  // TODO: this should come from the geometry
 
-    SEventConfig::SetMaxExtentDomain( ce.w );  // must do this config before QEvent::init which happens with CSGOptiX instanciation
+    SEventConfig::SetMaxExtentDomain( ce.w );  // must do this config before QEvt::init which happens with CSGOptiX instanciation
     SEventConfig::SetMaxTimeDomain( 10.f );
 
     CSGOptiX* cx = CSGOptiX::Create(fdl); // encumbent SSim used for QSim setup in here

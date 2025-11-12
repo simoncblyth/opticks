@@ -21,8 +21,8 @@ sysrap/SCenterExtentGenstep.cc
 sysrap/SEvent.cc
    ConfigureGenstep, MakeArray used by SEvent::MakeCountGenstep
 
-qudarap/QEvent.cc
-   Check, Desc, GetGencode used by QEvent::setGenstepUpload
+qudarap/QEvt.cc
+   Check, Desc, GetGencode used by QEvt::setGenstepUpload
 
 
 +---------+----------+-------------+

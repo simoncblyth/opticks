@@ -158,7 +158,7 @@ logging(){
    #export G4CXOpticks=INFO
    #export X4PhysicalVolume=INFO   # look into sensor boundary to understand lpmtid -1
    #export QSim=INFO
-   #export QEvent=INFO
+   #export QEvt=INFO
    #export SSim__stree_level=2    # U4Tree/stree level   debugging U4Tree::identifySensitiveGlobals
    #export SEvt=INFO
 

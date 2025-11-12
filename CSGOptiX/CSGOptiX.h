@@ -35,7 +35,7 @@ struct CSGView ;
 
 template <typename T> struct Tran ;
 struct QSim ;
-struct QEvent ;
+struct QEvt ;
 
 struct Params ;
 class Opticks ;
@@ -105,7 +105,7 @@ struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
     scontext*    sctx ;
     QSim*        sim ;
-    QEvent*      event ;
+    QEvt*        qev ;
 
     const char* desc() const ;
 

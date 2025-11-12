@@ -21,7 +21,7 @@ Note the distinction in the names of accessors:
 
 *gather*
    resource intensive action done few times, that likely allocates memory,
-   in the case of sibling class QEvent *gather* mostly includes downloading from device
+   in the case of sibling class QEvt *gather* mostly includes downloading from device
    Care is needed in memory management of returned arrays to avoid leaking.
 
 *get*

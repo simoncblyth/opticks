@@ -37,7 +37,7 @@ TODO:
 #include "SEvt.hh"
 #include "SFrameGenstep.hh"
 #include "SEventConfig.hh"
-#include "QEvent.hh"
+//#include "QEvt.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"

@@ -17,7 +17,7 @@ QSim is mostly constant and needs initializing once only, as
 it corresponds to physics and fixed parameters of the detector,
 making it analogous to the CSGFoundry geometry.
 
-Contrast with the QEvent with a very different event-by-event lifecycle
+Contrast with the QEvt with a very different event-by-event lifecycle
 
 HMM : MOST OF THIS API IS FOR TESTING ONLY  : TODO: Move lots to QSimTest perhaps ?
 
@@ -35,14 +35,14 @@ template <typename T> struct QPMT ;
 struct qsim ;
 
 struct QBase ;
-struct QEvent ;
+struct QEvt ;
 struct QRng ;
 struct QScint ;
 struct QCerenkov ;
 struct QBnd ;
 struct QMultiFilm;
 struct QOptical ;
-struct QEvent ;
+struct QEvt ;
 struct QDebug ;
 
 struct qdebug ;
@@ -69,7 +69,7 @@ struct QUDARAP_API QSim
     static void UploadComponents(const SSim* ssim);
 
     const QBase*     base ;
-    QEvent*          event ;
+    QEvt*            qev ;
     SEvt*            sev ;
 
     const QRng*      rng ;

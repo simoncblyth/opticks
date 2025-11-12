@@ -653,7 +653,7 @@ would initially expect because will always need to know
 and record the num_items in a shared GPU/CPU location like sevent.
 And also will often need to allocate the buffer first too.
 
-Suggesting should generally use this via QEvent.
+Suggesting should generally use this via QEvt.
 
 **/
 

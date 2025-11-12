@@ -34,7 +34,7 @@ SEvt::SEvt
    invokes SEventConfig::Initialize
    (HMM: run twice for for A-B testing when have multiple SEvt)
 
-QEvent::gatherComponent
+QEvt::gatherComponent
    guided by SEventConfig::GatherComp
 
 
@@ -91,11 +91,11 @@ MaxSlot OPTICKS_MAX_SLOT
 
 
 MaxRec
-    normally 0, disabling creation of the QEvent domain compressed step record buffer
+    normally 0, disabling creation of the QEvt domain compressed step record buffer
 
 MaxRecord
-    normally 0, disabling creation of the QEvent full photon step record buffer.
-    When greater than zero causes QEvent::setNumPhoton to allocate the full
+    normally 0, disabling creation of the QEvt full photon step record buffer.
+    When greater than zero causes QEvt::setNumPhoton to allocate the full
     step record buffer, full recording requires a value of one greater
     than the MaxBounce configured  (typically up to 16)
 

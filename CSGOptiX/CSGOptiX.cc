@@ -76,7 +76,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "QU.hh"
 #include "QSim.hh"
 #include "qsim.h"
-#include "QEvent.hh"
+#include "QEvt.hh"
 
 // CSGOptiX
 #include "Frame.h"
@@ -250,7 +250,7 @@ CSGOptiX::InitSim
 -------------------
 
 Invoked from CSGOptiX::Create
-Instanciation of QSim/QEvent requires an SEvt instance
+Instanciation of QSim/QEvt requires an SEvt instance
 
 **/
 
@@ -422,7 +422,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     kernel_dt(0.),
     sctx(nullptr),
     sim(QSim::Get()),
-    event(sim == nullptr  ? nullptr : sim->event)
+    qev(sim == nullptr  ? nullptr : sim->qev)
 {
     init();
 }
@@ -436,7 +436,7 @@ void CSGOptiX::init()
         << " raygenmode " << raygenmode
         << " SRG::Name(raygenmode) " << SRG::Name(raygenmode)
         << " sim " << sim
-        << " event " << event
+        << " qev " << qev
         ;
 
     assert( outdir && "expecting OUTDIR envvar " );
@@ -550,7 +550,7 @@ Check (QSim)sim instance for non-render modes
 void CSGOptiX::initCheckSim()
 {
     if(SEventConfig::IsRGModeRender()) return ;
-    LOG(LEVEL) << " sim " << sim << " event " << event ;
+    LOG(LEVEL) << " sim " << sim << " qev " << qev ;
     LOG_IF(fatal, sim == nullptr) << "simtrace/simulate modes require instanciation of QSim before CSGOptiX " ;
     assert(sim);
 }
@@ -609,7 +609,7 @@ Q: where are sim and evt uploaded ?
 A: QSim::QSim and QSim::init_sim are where sim and evt are populated and uploaded
 
 
-HMM: get d_sim (qsim.h) now holds d_evt (qevent.h) but this is getting evt again rom QEvent ?
+HMM: get d_sim (qsim.h) now holds d_evt (sevent.h) but this is getting evt again rom QEvt ?
 TODO: eliminate params->evt to make more use of the qsim.h encapsulation
 
 **/
@@ -618,7 +618,7 @@ void CSGOptiX::initSimulate()
 {
     LOG(LEVEL) ;
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
-    params->evt = event ? event->getDevicePtr() : nullptr ;  // qevent*
+    params->evt = qev ? qev->getDevicePtr() : nullptr ;  // sevent*
 
     params->tmin0 = SEventConfig::PropagateEpsilon0() ;  // epsilon used after step points with flags in below mask
     params->PropagateEpsilon0Mask = SEventConfig::PropagateEpsilon0Mask();  // eg from CK|SI|TO|SC|RE
@@ -1002,7 +1002,7 @@ CSGOptiX::prepareParamSimulate
 
 Per-event simulate setup invoked just prior to optix launch
 
-QSim::get_photon_slot_offset/QEvent::get_photon_slot_offset returns
+QSim::get_photon_slot_offset/QEvt::get_photon_slot_offset returns
 
 **/
 
@@ -1072,7 +1072,7 @@ double CSGOptiX::launch()
     bool DEBUG_SKIP_LAUNCH = ssys::getenvbool("CSGOptiX__launch_DEBUG_SKIP_LAUNCH") ;
 
     prepareParam();
-    if(raygenmode != SRG_RENDER) assert(event) ;
+    if(raygenmode != SRG_RENDER) assert(qev) ;
 
     unsigned width = 0 ;
     unsigned height = 0 ;
@@ -1080,14 +1080,14 @@ double CSGOptiX::launch()
     switch(raygenmode)
     {
         case SRG_RENDER:    { width = params->width           ; height = params->height ; depth = params->depth ; } ; break ;
-        case SRG_SIMTRACE:  { width = event->getNumSimtrace() ; height = 1              ; depth = 1             ; } ; break ;
-        case SRG_SIMULATE:  { width = event->getNumPhoton()   ; height = 1              ; depth = 1             ; } ; break ;
+        case SRG_SIMTRACE:  { width = qev->getNumSimtrace() ; height = 1              ; depth = 1             ; } ; break ;
+        case SRG_SIMULATE:  { width = qev->getNumPhoton()   ; height = 1              ; depth = 1             ; } ; break ;
     }
 
     bool expect = width > 0 ;
     LOG_IF(fatal, !expect)
-        << " event.getNumSimtrace " << ( event ? event->getNumSimtrace() : -1 )
-        << " event.getNumPhoton   " << ( event ? event->getNumPhoton() : -1 )
+        << " qev.getNumSimtrace " << ( qev ? qev->getNumSimtrace() : -1 )
+        << " qev.getNumPhoton   " << ( qev ? qev->getNumPhoton() : -1 )
         << " width " << width
         << " height " << height
         << " depth " << depth

@@ -683,7 +683,7 @@ Canonical call from SEvt::setFrame for transforming input photons into frame
 When normalize is true the mom and pol are normalized after the transformation.
 
 Note that the transformed photon array is always in double precision.
-That will be narrowed down to float prior to upload by QEvent::setInputPhoton
+That will be narrowed down to float prior to upload by QEvt::setInputPhoton
 
 **/
 

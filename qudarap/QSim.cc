@@ -29,7 +29,7 @@
 #include "qdebug.h"
 
 #include "QBase.hh"
-#include "QEvent.hh"
+#include "QEvt.hh"
 #include "QRng.hh"
 #include "QTex.hh"
 #include "QScint.hh"
@@ -37,7 +37,7 @@
 #include "QBnd.hh"
 #include "QProp.hh"
 #include "QMultiFilm.hh"
-#include "QEvent.hh"
+#include "QEvt.hh"
 #include "QOptical.hh"
 #include "QSimLaunch.hh"
 #include "QDebug.hh"
@@ -260,8 +260,8 @@ singleton components.
 QSim::QSim()
     :
     base(QBase::Get()),
-    event(new QEvent),
-    sev(event->sev),
+    qev(new QEvt),
+    sev(qev->sev),
     rng(QRng::Get()),
     scint(QScint::Get()),
     cerenkov(QCerenkov::Get()),
@@ -305,7 +305,7 @@ void QSim::init()
 {
     sim = new qsim ;
     sim->base = base ? base->d_base : nullptr ;
-    sim->evt = event ? event->getDevicePtr() : nullptr ;
+    sim->evt = qev ? qev->getDevicePtr() : nullptr ;
     //sim->rng_state = rng ? rng->qr->uploaded_states : nullptr ;
     sim->rng = rng ? rng->d_qr : nullptr ;
 
@@ -394,7 +394,7 @@ the launch.
 
        EGPU.SEvt::beginOfEvent
 
-       QEvent::setGenstepUpload(quad6*)
+       QEvt::setGenstepUpload(quad6*)
 
        SCSGOptiX::simulate_launch
 
@@ -424,7 +424,7 @@ double QSim::simulate(int eventID, bool reset_)
     int64_t t_HEAD = SProf::Add("QSim__simulate_HEAD");
 
     LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
-    if( event == nullptr ) return -1. ;
+    if( qev == nullptr ) return -1. ;
 
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
@@ -465,8 +465,8 @@ double QSim::simulate(int eventID, bool reset_)
 
         LOG(LEVEL) << sl.idx_desc(i) ;
 
-        int rc = event->setGenstepUpload_NP(igs, &sl ) ;
-        LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : have event but no gensteps collected : will skip cx.simulate " ;
+        int rc = qev->setGenstepUpload_NP(igs, &sl ) ;
+        LOG_IF(error, rc != 0) << " QEvt::setGenstep ERROR : have qev but no gensteps collected : will skip cx.simulate " ;
 
         LOG_IF(info, ALLOC)
             << " [" << _QSim__ALLOC << "] "
@@ -682,7 +682,7 @@ QSim::getPhotonSlotOffset
 ---------------------------
 
 The photon slot offset is available
-from QEvent after setGenstepUpload_NP
+from QEvt after setGenstepUpload_NP
 
 The first genstep slice yields an offset of zero.
 So this only yields non-zero offsets for multi-launch
@@ -705,7 +705,7 @@ or equal the number of states uploaded.
 
 unsigned long long QSim::get_photon_slot_offset() const
 {
-    return event->get_photon_slot_offset() ;
+    return qev->get_photon_slot_offset() ;
 }
 
 
@@ -727,7 +727,7 @@ to enable copying from the gathered arrays into non-Opticks collections.
 void QSim::reset(int eventID)
 {
     SProf::Add("QSim__reset_HEAD");
-    event->clear();
+    qev->clear();
     sev->endOfEvent(eventID);
     LOG_IF(info, SEvt::LIFECYCLE) << "] eventID " << eventID ;
     SProf::Add("QSim__reset_TAIL");
@@ -760,9 +760,9 @@ double QSim::simtrace(int eventID)
          ;
 
     assert(igs);
-    int rc = event->setGenstepUpload_NP(igs) ;
+    int rc = qev->setGenstepUpload_NP(igs) ;
 
-    LOG_IF(error, rc != 0) << " QEvent::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ;
+    LOG_IF(error, rc != 0) << " QEvt::setGenstep ERROR : no gensteps collected : will skip cx.simtrace " ;
 
     sev->t_PreLaunch = sstamp::Now() ;
     double dt = rc == 0 && cx != nullptr ? cx->simtrace_launch() : -1. ;
@@ -799,7 +799,7 @@ std::string QSim::desc() const
        << std::endl
        << " this 0x"            << std::hex << std::uint64_t(this)     << std::dec
        << " INSTANCE 0x"        << std::hex << std::uint64_t(INSTANCE) << std::dec
-       << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec
+       << " QEvt.hh:qev 0x" << std::hex << std::uint64_t(qev)    << std::dec
        << " qsim.h:sim 0x"      << std::hex << std::uint64_t(sim)      << std::dec
        ;
     std::string s = ss.str();
@@ -815,7 +815,7 @@ std::string QSim::descFull() const
        << std::endl
        << " this 0x"            << std::hex << std::uint64_t(this)     << std::dec
        << " INSTANCE 0x"        << std::hex << std::uint64_t(INSTANCE) << std::dec
-       << " QEvent.hh:event 0x" << std::hex << std::uint64_t(event)    << std::dec
+       << " QEvt.hh:qev 0x" << std::hex << std::uint64_t(qev)    << std::dec
        << " qsim.h:sim 0x"      << std::hex << std::uint64_t(sim)      << std::dec
        << " qsim.h:d_sim 0x"    << std::hex << std::uint64_t(d_sim)    << std::dec
        //<< " sim->rng_state 0x"   << std::hex << std::uint64_t(sim->rng_state) << std::dec  // tending to SEGV on some systems
@@ -835,7 +835,7 @@ std::string QSim::descComponents() const
        << "QSim::descComponents"
        << std::endl
        << " (QBase)base             " << ( base      ? "YES" : "NO " )  << std::endl
-       << " (QEvent)event           " << ( event     ? "YES" : "NO " )  << std::endl
+       << " (QEvt)qev           " << ( qev     ? "YES" : "NO " )  << std::endl
        << " (SEvt)sev               " << ( sev       ? "YES" : "NO " )  << std::endl
        << " (QRng)rng               " << ( rng       ? "YES" : "NO " )  << std::endl
        << " (QScint)scint           " << ( scint     ? "YES" : "NO " )  << std::endl
@@ -1159,11 +1159,11 @@ void QSim::generate_photon()
 {
     LOG(LEVEL) << "[" ;
 
-    unsigned num_photon = event->getNumPhoton() ;
+    unsigned num_photon = qev->getNumPhoton() ;
     LOG(info) << " num_photon " << num_photon ;
 
     LOG_IF(fatal, num_photon == 0 )
-        << " num_photon zero : MUST QEvent::setGenstep before QSim::generate_photon "
+        << " num_photon zero : MUST QEvt::setGenstep before QSim::generate_photon "
         ;
 
     assert( num_photon > 0 );
@@ -1430,7 +1430,7 @@ used to mean without using CUDA.
 * HMM: this is an obtuse way to get bounce_max and record_max
 
 Aiming to replace the above with a simpler and less duplicitous version by
-using common QEvent functionality
+using common QEvt functionality
 
 **/
 
@@ -1444,7 +1444,7 @@ void QSim::fake_propagate( const NP* prd, unsigned type )
 
     NP* igs = sev->makeGenstepArrayFromVector();
 
-    int rc = event->setGenstepUpload_NP(igs);
+    int rc = qev->setGenstepUpload_NP(igs);
     assert( rc == 0 );
     if(rc!=0) std::raise(SIGINT);
 
@@ -1452,19 +1452,19 @@ void QSim::fake_propagate( const NP* prd, unsigned type )
     // NB SEvt::beginOfEvent calls SEvt/clear so this addition
     // must be after that to succeed in being added to SEvt saved arrays
 
-    int num_photon = event->getNumPhoton();
+    int num_photon = qev->getNumPhoton();
     bool consistent_num_photon = num_photon == num_ip ;
 
     LOG_IF(fatal, !consistent_num_photon)
          << "["
          << " num_ip " << num_ip
-         << " QEvent::getNumPhoton " << num_photon
+         << " QEvt::getNumPhoton " << num_photon
          << " consistent_num_photon " << ( consistent_num_photon ? "YES" : "NO " )
          << " prd " << prd->sstr()
          ;
     assert(consistent_num_photon);
 
-    assert( event->upload_count > 0 );
+    assert( qev->upload_count > 0 );
 
     unsigned threads_per_block = 512 ;
     configureLaunch1D( num_photon, threads_per_block );

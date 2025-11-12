@@ -293,7 +293,7 @@ NP* SEvent::MakeCountGenstep(const char* config, int* total ) // static
 SEvent::MakeCountGenstep
 ---------------------------
 
-Used by qudarap/tests/QEventTest.cc
+Used by qudarap/tests/QEvtTest.cc
 
 HMM: MAYBE MOVE THIS TO SGenstep ?
 

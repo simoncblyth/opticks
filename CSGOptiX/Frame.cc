@@ -36,7 +36,7 @@ Instanciated by:
 Accepting device buffer pointer arguments was done to allow this 
 class to be used with OptiX 6 workflow optix::Buffer
 
-HMM: could use QEvent to hold the pixel, isect, photon ?
+HMM: could use QEvt to hold the pixel, isect, photon ?
 **/
 
 

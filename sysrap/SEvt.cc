@@ -210,7 +210,7 @@ SEvt::SEvt()
     g4state(nullptr),
     random(nullptr),
     random_array(nullptr),
-    provider(this),   // overridden with SEvt::setCompProvider for device running from QEvent::init
+    provider(this),   // overridden with SEvt::setCompProvider for device running from QEvt::init
     topfold(new NPFold),
     fold(nullptr),
     extrafold(new NPFold),
@@ -238,14 +238,14 @@ SEvt::init
 -----------
 
 Only configures array maxima, no allocation yet.
-Device side allocation happens in QEvent::setGenstep QEvent::setNumPhoton
+Device side allocation happens in QEvt::setGenstep QEvt::setNumPhoton
 
 Initially SEvt is set as its own SCompProvider,
 allowing U4RecorderTest/SEvt::save to gather the component
 arrays provided from SEvt.
 
 For device running the SCompProvider is overridden to
-become QEvent allowing SEvt::save to persist the
+become QEvt allowing SEvt::save to persist the
 components gatherered from device buffers.
 
 **/
@@ -1179,7 +1179,7 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
 SEvt::setCompProvider
 ----------------------
 
-This is called for device side running only from QEvent::init
+This is called for device side running only from QEvt::init
 
 **/
 
@@ -1214,7 +1214,7 @@ Create (2,4,4) NP array and populate with quad4 from::
 
 
 NB an alternative route for metadata is the
-SEvt::meta OR QEvent::meta that gets adopted as
+SEvt::meta OR QEvt::meta that gets adopted as
 the NPFold meta in SEvt::gather_components
 
 DOMAIN IS INCREASINGLY IRRELEVANT WHEN NOT USING REC
@@ -1757,9 +1757,9 @@ Lifecycle::
 
             EGPU.SEvt::beginOfEvent
 
-            QEvent::setGenstep
+            QEvt::setGenstep
                A:SEvt::clear
-               QEvent::setGenstep(NP*)
+               QEvt::setGenstep(NP*)
 
             SCSGOptiX::simulate_launch
 
@@ -2213,7 +2213,7 @@ SEvt::getNumGenstepFromGenstep
 
 Size of the genstep vector ...
 
-caution this vector is cleared by QEvent::setGenstep
+caution this vector is cleared by QEvt::setGenstep
 after which must get the count from the genstep array
 
 **/
@@ -2435,7 +2435,7 @@ This is called from SEvt::addGenstep, updating evt.num_photon
 according to the additional genstep collected and evt.num_seq/tag/flat/record/rec/prd
 depending on the configured max which when zero will keep the counts zero.
 
-Also called by QEvent::setNumPhoton prior to device side allocations.
+Also called by QEvt::setNumPhoton prior to device side allocations.
 
 *hostside_running_resize_done:false*
     signals the following SEvt::beginPhoton to call SEvt::hostside_running_resize,
@@ -3519,7 +3519,7 @@ NP* SEvt::gatherSeed() const   // COULD BE IMPLEMENTED : IF NEEDED TO DEBUG  SLO
 SEvt::gatherHit
 -------------------------------------------
 
-Does CPU side equivalent of QEvent::gatherHit_
+Does CPU side equivalent of QEvt::gatherHit_
 using the photon array and the sphoton_selector
 
 HMM: notice that this relies on having gathered
@@ -3544,7 +3544,7 @@ NP* SEvt::gatherHit() const
 SEvt::gatherHitLite
 ---------------------
 
-CPU side equivalent of QEvent::gatherHitLite
+CPU side equivalent of QEvt::gatherHitLite
 
 **/
 
@@ -3661,7 +3661,7 @@ SEvt::getMeta (an SCompProvider method)
 
 NB as metadata is collected in SEvt::gather_components
 from the SCompProvider this is NOT the source of metadata
-for GPU running, that comes from QEvent::getMeta.
+for GPU running, that comes from QEvt::getMeta.
 This is only the source for CPU U4Recorder running (aka B evts).
 
 **/
@@ -3689,7 +3689,7 @@ then invoke the corresponding gather... method otherwise
 return nullptr.
 
 NB this is for hostside running only, for device-side running
-the SCompProvider is the QEvent not the SEvt, so this method
+the SCompProvider is the QEvt not the SEvt, so this method
 is not called
 
 **/
@@ -3867,7 +3867,7 @@ SEvt::gather_components is invoked by SEvt::gather from QSim::simulate::
 
 
      +-------------------+                 +-----------------+
-     | QEvent/GPU buf    |                 |  SEvt/NPFold    |
+     | QEvt/GPU buf      |                 |  SEvt/NPFold    |
      |   OR              | === gather ===> |                 |
      | SEvt vecs         |                 |                 |
      +-------------------+                 +-----------------+
@@ -3886,7 +3886,7 @@ as QSim::simulate.
    after the launch loop of QSim::simulate
 
 1. invokes gatherComponent on the SCompProvider instance which is either
-   this SEvt instance for CPU/U4Recorder running OR the QEvent instance
+   this SEvt instance for CPU/U4Recorder running OR the QEvt instance
    for GPU/QSim runnning
 
    * the SCompProvider allocates an NP array and populates it either
@@ -3896,7 +3896,7 @@ as QSim::simulate.
    NB pre-existing keys cause NPFold asserts, so it is essential
    that SEvt::clear is called to clear the fold before gathering
 
-Note thet QEvent::setGenstep invoked SEvt::clear so the genstep vectors
+Note thet QEvt::setGenstep invoked SEvt::clear so the genstep vectors
 are clear when this gets called. So must rely on the contents of the
 fold to get the stats.
 
@@ -3926,7 +3926,7 @@ void SEvt::gather_components()   // *GATHER*
     {
         unsigned cmp = gather_comp[i] ;
         const char* k = SComp::Name(cmp);
-        NP* a = provider->gatherComponent(cmp);  // see QEvent::gatherComponent for GPU running
+        NP* a = provider->gatherComponent(cmp);  // see QEvt::gatherComponent for GPU running
         bool null_component = a == nullptr ;
 
         LOG(LEVEL)
@@ -3980,10 +3980,10 @@ This is invoked from SEvt::endOfEvent (not SEvt::gather) because the metadata
 contains timing information, so gathering immediately prior to
 save allows the metadata to be more complete.
 
-Note that while the SCompProvider is QEvent(GPU) or this SEvt(CPU)
+Note that while the SCompProvider is QEvt(GPU) or this SEvt(CPU)
 in both cases the metadata is from SEvt::meta (potentially different
 instances of SEvt when doing both CPU and GPU running).
-This is because QEvent::getMeta returns SEvt::meta for from
+This is because QEvt::getMeta returns SEvt::meta for from
 the associated QEvt::sev (SEvt) instance.
 
 Note that because SEvt::save is typically not done in production,
@@ -4016,7 +4016,7 @@ Collects the components configured by SEventConfig::CompMask
 into NPFold from the SCompProvider which can either be:
 
 * this SEvt instance for hostside running
-* the qudarap/QEvent instance for deviceside running, eg G4CXSimulateTest
+* the qudarap/QEvt instance for deviceside running, eg G4CXSimulateTest
 
 
 For multi-launch running genstep slices are uploaded
@@ -4302,7 +4302,7 @@ are configured via SEventConfig::GatherComp and SEventConfig::SaveComp
 using the SComp enumeration.
 
 The arrays are gathered from the SCompProvider object, which
-may be QEvent for on device running or SEvt itself for U4Recorder
+may be QEvt for on device running or SEvt itself for U4Recorder
 Geant4 tests.
 
 SEvt::save persists NP arrays into the default directory

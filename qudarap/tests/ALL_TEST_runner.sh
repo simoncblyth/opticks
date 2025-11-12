@@ -5,13 +5,13 @@ ALL_TEST_runner.sh
 
 This is **SOURCED** from::
 
-   QSimTest_ALL.sh 
-   QEventTest_ALL.sh 
+   QSimTest_ALL.sh
+   QEvtTest_ALL.sh
 
 With lines::
 
-   source ALL_TEST_runner.sh QSimTest.sh 
-   source ALL_TEST_runner.sh QEventTest.sh 
+   source ALL_TEST_runner.sh QSimTest.sh
+   source ALL_TEST_runner.sh QEvtTest.sh
 
 EOU
 }
@@ -25,9 +25,9 @@ fail=0
 flog=""
 t0="$(printf "\n$(date)"$'\n')"
 echo "$t0"
-echo 
+echo
 
-for t in $tests ; do 
+for t in $tests ; do
 
     tt="TEST=$t $(realpath $script)"
 
@@ -36,25 +36,25 @@ for t in $tests ; do
     eval "$tt" > /dev/null 2>&1
     rc=$?
 
-    if [ $rc -ne 0 ]; then 
+    if [ $rc -ne 0 ]; then
         msg="***FAIL***"
         fail=$(( $fail + 1 ))
     else
         msg=PASS
         pass=$(( $pass + 1 ))
-    fi   
+    fi
     l1="$(printf " === %0.3d === ] %s "$'\n' "$count" "$msg")"
     echo "$l1"
     echo
- 
+
     if [ $rc -ne 0 ]; then
        flog+="$l0"$'\n'
        flog+="$l1"$'\n'
-    fi 
+    fi
 
    #[ $rc -ne 0 ] && echo non-zero RC && break
     count=$(( $count + 1 ))
-done 
+done
 
 t1="$(printf "\n$(date)"$'\n')"
 

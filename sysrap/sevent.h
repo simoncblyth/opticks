@@ -10,10 +10,10 @@ provides event config and device buffer pointers
 both on device and host.
 
 Note that *num_seed* and *num_photon* will be equal in
-normal operation which uses QEvent::setGensteps.
+normal operation which uses QEvt::setGensteps.
 However for clarity separate fields are used to
 distinguish photon test running that directly uses
-QEvent::setNumPhoton
+QEvt::setNumPhoton
 
 Users of sevent.h
 -------------------
@@ -41,15 +41,15 @@ sysrap/SEvt.hh sysrap/SEvt.cc
     SEvt::addGenstep/SEvt::setNumPhoton
     sets evt.num_photon/seq/tag/flat/record/rec/prd depending on the evt.max
 
-qudarap/QEvent.hh qudarap/QEvent.cc
+qudarap/QEvt.hh qudarap/QEvt.cc
     **fundamentally integrated with sevent.h**
 
-    QEvent::QEvent
+    QEvt::QEvt
 
     * gets sevent:evt pointer from SEvt
     * allocates space on device for d_evt
 
-    QEvent::setNumPhoton/QEvent::uploadEvt
+    QEvt::setNumPhoton/QEvt::uploadEvt
 
     * updates device d_evt by copying from evt
 
@@ -61,7 +61,7 @@ qudarap/qsim.h
 qudarap/QSim.cu
     used from several tests for evt.num, evt.seed, evt.genstep
 
-qudarap/QEvent.cu
+qudarap/QEvt.cu
     sevent.h used for tests of seeding and genstep photon counting
 
 **/
@@ -141,10 +141,10 @@ struct sevent
     int64_t      num_genstep ;
     int64_t      num_seed ;
 
-    int64_t      num_hit ;    // set by QEvent::gatherHit using SU::count_if_sphoton
+    int64_t      num_hit ;    // set by QEvt::gatherHit using SU::count_if_sphoton
     int64_t      num_photon ;
 
-    int64_t      num_hitlite ;  // set by QEvent::gatherHitLite using SU::count_if_sphotonlite
+    int64_t      num_hitlite ;  // set by QEvt::gatherHitLite using SU::count_if_sphotonlite
     int64_t      num_photonlite ;
 
     int64_t      num_record ;
@@ -158,19 +158,19 @@ struct sevent
     int64_t      num_sup ;
     // TODO: make all these above unsigned
 
-    // With QEvent device running the below are pointers to device buffers.
-    // Most are allocated ONCE ONLY by QEvent::device_alloc_genstep/photon/simtrace
+    // With QEvt device running the below are pointers to device buffers.
+    // Most are allocated ONCE ONLY by QEvt::device_alloc_genstep/photon/simtrace
     // sized by configured maxima.
     // Only the hit buffer is allocated more dynamically depending on num_hit.
     // TODO: check for leaking of hit buffers
 
-    quad6*   genstep ;    //QEvent::device_alloc_genstep
+    quad6*   genstep ;    //QEvt::device_alloc_genstep
     int*     seed ;
 
-    sphoton*     photon ;     //QEvent::device_alloc_photon
-    sphoton*     hit ;        //QEvent::gatherHit_ allocates event by event depending on num_hit
+    sphoton*     photon ;     //QEvt::device_alloc_photon
+    sphoton*     hit ;        //QEvt::gatherHit_ allocates event by event depending on num_hit
 
-    sphotonlite* photonlite ; //QEvent::device_alloc_photon
+    sphotonlite* photonlite ; //QEvt::device_alloc_photon
     sphotonlite* hitlite ;
 
     sphoton* record ;
@@ -180,7 +180,7 @@ struct sevent
     quad2*   prd ;
     stag*    tag ;
     sflat*   flat ;
-    quad4*   simtrace ;   //QEvent::device_alloc_simtrace
+    quad4*   simtrace ;   //QEvt::device_alloc_simtrace
     quad4*   aux ;
     quad6*   sup ;
 
@@ -495,7 +495,7 @@ SEVENT_METHOD void sevent::get_meta(std::string& meta) const
 sevent::zero
 --------------
 
-CAUTION with QEvent device side running the pointers
+CAUTION with QEvt device side running the pointers
 are to device buffers that are allocated once based on
 configured maxima and then reused for each launch
 

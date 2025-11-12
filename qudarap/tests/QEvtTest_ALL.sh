@@ -1,7 +1,7 @@
 #!/bin/bash
 usage(){ cat << EOU
 
-~/o/qudarap/tests/QEventTest_ALL.sh 
+~/o/qudarap/tests/QEvtTest_ALL.sh 
 
 EOU
 }
@@ -19,6 +19,6 @@ quad6
 EOT
 )
 
-source ALL_TEST_runner.sh QEventTest.sh 
+source ALL_TEST_runner.sh QEvtTest.sh 
 
 

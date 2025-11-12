@@ -267,7 +267,7 @@ fi
 logging(){
     type $FUNCNAME
     export CSGOptiX=INFO
-    export QEvent=INFO
+    export QEvt=INFO
     #export QSim=INFO
     #export SFrameGenstep=INFO
     #export CSGTarget=INFO

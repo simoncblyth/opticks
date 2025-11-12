@@ -83,7 +83,7 @@ This functor binds to the below predicate signature, where S=sphotonlite::
      std::function<bool(const S*)>
 
 Instances of this functor are used on CPU via the below sphotonlite::select
-and on GPU from QEvent::gatherHitLite_
+and on GPU from QEvt::gatherHitLite_
 
 **/
 

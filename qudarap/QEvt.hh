@@ -22,12 +22,12 @@ struct sphotonlite_selector ;
 #include "QUDARAP_API_EXPORT.hh"
 
 /**
-QEvent
+QEvt.hh
 =======
 
 Canonical *event* instanciated within QSim::QSim
 
-Unlike typical CPU side event classes with many instances the QEvent/sevent is rather "static"
+Unlike typical CPU side event classes with many instances the QEvt/sevent is rather "static"
 and singular with long lived buffers of defined maximum capacity that get reused for each launch.
 
 * Note that CUDA has no realloc the old OContext::resizeBuffer is an OptiX < 7 extension.
@@ -48,11 +48,11 @@ and singular with long lived buffers of defined maximum capacity that get reused
   within some range
 
 
-QEvent::setGenstep is the primary method for lifecycle understanding
+QEvt::setGenstep is the primary method for lifecycle understanding
 -----------------------------------------------------------------------
 
 When Opticks is integrated with a Geant4 based detector simulation framework
-this primary QEvent::setGenstep method is invoked with a stack like the below,
+this primary QEvt::setGenstep method is invoked with a stack like the below,
 where the upper part depends on details of how Opticks is integrated with the simulation framework::
 
     "G4VSensitiveDetector::EndOfEvent(G4HCofThisEvent* HCE)" (stub overridded by the below)
@@ -61,36 +61,36 @@ where the upper part depends on details of how Opticks is integrated with the si
     junoSD_PMT_v2_Opticks::EndOfEvent_Simulate(int eventID )
     G4CXOpticks::simulate(int eventID, bool reset_ )
     QSim::simulate(int eventID, bool reset_)
-    QEvent::setGenstep
+    QEvt::setGenstep
 
 
 **/
 
-struct QUDARAP_API QEvent : public SCompProvider
+struct QUDARAP_API QEvt : public SCompProvider
 {
-    friend struct QEventTest ;
-    friend struct QEvent_setInputPhoton_Test ;
+    friend struct QEvtTest ;
+    friend struct QEvt_setInputPhoton_Test ;
 
-    static constexpr const char* QEvent__LIFECYCLE = "QEvent__LIFECYCLE" ;
+    static constexpr const char* QEvt__LIFECYCLE = "QEvt__LIFECYCLE" ;
     static bool LIFECYCLE ;
 
     static const plog::Severity LEVEL ;
-    static QEvent* INSTANCE ;
-    static QEvent* Get();
+    static QEvt* INSTANCE ;
+    static QEvt* Get();
     static const bool SEvt_NPFold_VERBOSE ;
     static std::string Desc();
 
 
     sevent* getDevicePtr() const ;
 
-    QEvent();
+    QEvt();
 
 private:
     void init();
     void init_SEvt();
 
-    // NB members needed on both CPU+GPU or from the QEvent.cu functions
-    // should reside inside the sevent.h instance not up here in QEvent.hh
+    // NB members needed on both CPU+GPU or from the QEvt.cu functions
+    // should reside inside the sevent.h instance not up here in QEvt.hh
 
 public:
     SEvt*             sev ;
@@ -111,12 +111,12 @@ public:
     std::string       meta ;
     Q: IS THIS meta NEEDED ? SEvt HAS meta TOO ?
     A: YES, for now. The metadata gets collected in SEvt::gather_components
-       via SCompProvider method QEvent::getMeta (OR SEvt::getMeta)
+       via SCompProvider method QEvt::getMeta (OR SEvt::getMeta)
 
     A2: Dont need the meta, need the method that access the underlying SEvt.
     **/
 public:
-    // PRIMARY ACTION OF QEvent : genstep uploading
+    // PRIMARY ACTION OF QEvt : genstep uploading
     //int setGenstep();
     int setGenstepUpload_NP(const NP* gs);
     int setGenstepUpload_NP(const NP* gs,  const sslice* sl );
@@ -152,7 +152,7 @@ public:
     bool hasHitLite() const ;
     bool hasSimtrace() const ;
 public:
-    static constexpr const char* TYPENAME = "QEvent" ;
+    static constexpr const char* TYPENAME = "QEvt" ;
     // SCompProvider methods
     std::string getMeta() const ;  // returns underlying (SEvt)sev->meta
     const char* getTypeName() const ;

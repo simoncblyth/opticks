@@ -20,7 +20,7 @@ set(TEST_SOURCES
    QPolyTest.cc
    QSimDescTest.cc
    QPropTest.cc
-   QEvent_Lifecycle_Test.cc
+   QEvt_Lifecycle_Test.cc
    QSimCreateTest.cc
    QUTest.cc
    QTexMakerTest.cc
@@ -41,7 +41,7 @@ set(CUDART_TEST_SOURCES
    QOpticalTest.cc
    QSimWithEventTest.cc
    QSimTest.cc
-   QEventTest.cc
+   QEvtTest.cc
    QPMTTest.cc
 
 )

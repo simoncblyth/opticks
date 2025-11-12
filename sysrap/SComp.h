@@ -1,6 +1,6 @@
 #pragma once
 /**
-SComp.h : naming array components of QEvent/SEvt
+SComp.h : naming array components of QEvt/SEvt
 =============================================================
 
 NB: the old OpticksEvent analog of this is SComponent.hh

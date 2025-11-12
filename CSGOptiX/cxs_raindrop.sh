@@ -76,7 +76,7 @@ loglevels()
 {
     export Dummy=INFO
     #export SEvt=INFO
-    #export QEvent=INFO
+    #export QEvt=INFO
     #export QSim=INFO
 }
 loglevels

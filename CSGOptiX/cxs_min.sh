@@ -677,7 +677,7 @@ fi
 logging(){
     export CSGFoundry=INFO
     export CSGOptiX=INFO
-    export QEvent=INFO
+    export QEvt=INFO
     export QSim=INFO
     #export SEvt__LIFECYCLE=1
     export SEvt__GATHER=1

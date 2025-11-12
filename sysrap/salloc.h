@@ -17,7 +17,7 @@ has been instanciated.
 ::
 
     (ok) A[blyth@localhost CSGOptiX]$ opticks-fl salloc.h
-    ./qudarap/QEvent.cc
+    ./qudarap/QEvt.cc
     ./qudarap/QU.cc
     ./sysrap/CMakeLists.txt
     ./sysrap/SEventConfig.cc

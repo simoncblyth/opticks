@@ -81,7 +81,7 @@ export OPTICKS_INTEGRATION_MODE=1
 logging(){
     type $FUNCNAME
     #export CSGOptiX=INFO
-    #export QEvent=INFO
+    #export QEvt=INFO
     #export QSim=INFO
     #export SFrameGenstep=INFO
     #export CSGTarget=INFO

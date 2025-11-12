@@ -453,7 +453,7 @@ Pick the array of input_photons to use,
 default none, eg "RainXZ_Z230_10k_f8.npy"
 
 * when configured SEvt::initInputPhoton loads the input photons array
-* within Opticks the photons are uploaded to the GPU with QEvent::setInputPhoton
+* within Opticks the photons are uploaded to the GPU with QEvt::setInputPhoton
 
 Techniques to get the same input photons into Geant4 simulations, eg for A-B comparisons
 between Opticks and Geant4 depend on the level of access to G4Event that is
@@ -1769,10 +1769,10 @@ salloc* SEventConfig::AllocEstimate(int _max_slot)
     uint64_t max_genstep = MaxGenstep();
 
     salloc* estimate = new salloc ;
-    estimate->add("QEvent::setGenstep/device_alloc_genstep_and_seed:quad6/max_genstep", max_genstep, sizeof(quad6) ) ;
-    estimate->add("QEvent::setGenstep/device_alloc_genstep_and_seed:int/max_slot", max_slot, sizeof(int));
-    estimate->add("QEvent::device_alloc_photon/max_slot*sizeof(sphoton)", max_slot, sizeof(sphoton)) ;
-    if(GatherRecord()) estimate->add("QEvent::device_alloc_photon/max_slot*max_record*sizeof(sphoton)", max_slot*max_record, sizeof(sphoton) );
+    estimate->add("QEvt::setGenstep/device_alloc_genstep_and_seed:quad6/max_genstep", max_genstep, sizeof(quad6) ) ;
+    estimate->add("QEvt::setGenstep/device_alloc_genstep_and_seed:int/max_slot", max_slot, sizeof(int));
+    estimate->add("QEvt::device_alloc_photon/max_slot*sizeof(sphoton)", max_slot, sizeof(sphoton)) ;
+    if(GatherRecord()) estimate->add("QEvt::device_alloc_photon/max_slot*max_record*sizeof(sphoton)", max_slot*max_record, sizeof(sphoton) );
 
     return estimate ;
 }
