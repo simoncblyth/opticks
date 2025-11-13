@@ -55,6 +55,7 @@ struct SYSRAP_API SCompProvider
 
 struct SYSRAP_API SComp
 {
+    static constexpr const char* NONE_ = "" ;
     static constexpr const char* ALL_ = "genstep,photon,record,rec,seq,prd,seed,hit,simtrace,domain,inphoton,tag,flat" ;
     static constexpr const char* UNDEFINED_ = "undefined" ;
 

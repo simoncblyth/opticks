@@ -31,7 +31,7 @@
 const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ;
 
 int         SEventConfig::_IntegrationModeDefault = -1 ;
-const char* SEventConfig::_EventModeDefault = Minimal ;  // previously was Default
+const char* SEventConfig::_EventModeDefault = Minimal ;
 const char* SEventConfig::_EventNameDefault = nullptr ;
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;
 int         SEventConfig::_StartIndexDefault = 0 ;
@@ -58,7 +58,9 @@ int SEventConfig::_MaxSeqDefault = 0 ;
 int SEventConfig::_MaxPrdDefault = 0 ;
 int SEventConfig::_MaxTagDefault = 0 ;
 int SEventConfig::_MaxFlatDefault = 0 ;
+
 int SEventConfig::_ModeLiteDefault = 0 ;
+float SEventConfig::_MergeWindowDefault = 0.f ;  // ns
 
 float SEventConfig::_MaxExtentDomainDefault = 1000.f ;  // mm  : domain compression used by *rec*
 float SEventConfig::_MaxTimeDomainDefault = 10.f ; // ns
@@ -86,9 +88,9 @@ const char* SEventConfig::_MaxCurandDefault = NO_STATE_LIMIT ;
 #endif
 
 
-
-const char* SEventConfig::_GatherCompDefault = SComp::ALL_ ;
-const char* SEventConfig::_SaveCompDefault = SComp::ALL_ ;
+// HUH: former default was ALL_
+const char* SEventConfig::_GatherCompDefault = SComp::NONE_ ;
+const char* SEventConfig::_SaveCompDefault = SComp::NONE_ ;
 
 float SEventConfig::_PropagateEpsilonDefault = 0.05f ;
 float SEventConfig::_PropagateEpsilon0Default = 0.05f ;
@@ -266,7 +268,8 @@ int SEventConfig::_MaxPrd       = ssys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;
 int SEventConfig::_MaxTag       = ssys::getenvint(kMaxTag,  _MaxTagDefault ) ;
 int SEventConfig::_MaxFlat      = ssys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;
 
-int SEventConfig::_ModeLite      = ssys::getenvint(kModeLite,  _ModeLiteDefault ) ;
+int SEventConfig::_ModeLite      = ssys::getenvint(  kModeLite,  _ModeLiteDefault ) ;
+float SEventConfig::_MergeWindow = ssys::getenvfloat(kMergeWindow,  _MergeWindowDefault ) ;
 
 float SEventConfig::_MaxExtentDomain  = ssys::getenvfloat(kMaxExtentDomain, _MaxExtentDomainDefault );
 float SEventConfig::_MaxTimeDomain    = ssys::getenvfloat(kMaxTimeDomain,   _MaxTimeDomainDefault );    // ns
@@ -376,6 +379,7 @@ int64_t SEventConfig::MaxTag(){      return _MaxTag ; }
 int64_t SEventConfig::MaxFlat(){     return _MaxFlat ; }
 
 int64_t SEventConfig::ModeLite(){      return _ModeLite ; }
+float   SEventConfig::MergeWindow(){   return _MergeWindow ; }
 
 float SEventConfig::MaxExtentDomain(){ return _MaxExtentDomain ; }
 float SEventConfig::MaxTimeDomain(){   return _MaxTimeDomain ; }
@@ -593,7 +597,9 @@ void SEventConfig::SetMaxSeq(    int max_seq){     _MaxSeq     = max_seq     ; L
 void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat    = max_flat     ; LIMIT_Check() ; }
-void SEventConfig::SetModeLite(   int mode_lite){    _ModeLite   = mode_lite    ; LIMIT_Check() ; }
+
+void SEventConfig::SetModeLite(   int mode_lite){    _ModeLite   = mode_lite    ; LIMIT_Check() ; ORDER_Check() ; }
+void SEventConfig::SetMergeWindow( float merge_window_ns ){  _MergeWindow  = merge_window_ns    ; LIMIT_Check() ; ORDER_Check() ; }
 
 void SEventConfig::SetMaxExtentDomain( float max_extent){ _MaxExtentDomain = max_extent  ; LIMIT_Check() ; }
 void SEventConfig::SetMaxTimeDomain(   float max_time){   _MaxTimeDomain = max_time  ; LIMIT_Check() ; }
@@ -648,6 +654,7 @@ bool SEventConfig::GatherRecord(){  return ( _GatherComp & SCOMP_RECORD ) != 0 ;
 
 void SEventConfig::SetSaveComp_(unsigned mask){ _SaveComp = mask ; }
 void SEventConfig::SetSaveComp(const char* names, char delim){  SetSaveComp_( SComp::Mask(names,delim)) ; }
+bool SEventConfig::IsCompConfigured(){ return _GatherComp != 0 || _SaveComp != 0 ; }
 
 
 //std::string SEventConfig::DescHitMask(){   return OpticksPhoton::FlagMaskLabel( _HitMask ) ; }
@@ -764,9 +771,26 @@ void SEventConfig::LIMIT_Check()
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ;
 
    assert( _ModeLite  == 0 || _ModeLite == 1 || _ModeLite == 2 ) ;   // 2 is for debug, in production only 0 or 1 expected
+   assert( _MergeWindow >= 0.f );
 
    assert( _StartIndex >= 0 );
 }
+
+void SEventConfig::ORDER_Check()
+{
+    bool icc = IsCompConfigured();
+    LOG_IF(fatal, icc)
+       << "ORDER of config failure"
+       << " methods attempting to change config called after SEventConfig::IsCompConfigured"
+       << " [" << (icc ? "YES" : "NO " ) << "] "
+       << " MOVE SEventConfig::Set calls prior to SEvt instanciation, ie very early to avoid this"
+       ;
+
+    assert( icc == false );
+}
+
+
+
 
 
 std::string SEventConfig::Desc()
@@ -872,6 +896,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kModeLite
        << std::setw(20) << " ModeLite " << " : " << ModeLite()
+       << std::endl
+       << std::setw(25) << kMergeWindow
+       << std::setw(20) << " MergeWindow " << " : " << MergeWindow()
        << std::endl
        << std::setw(25) << kHitMask
        << std::setw(20) << " HitMask " << " : " << HitMask()
@@ -1130,6 +1157,26 @@ Canonically invoked from SEvt::SEvt
 * SO: must make any static call adjustments before SEvt instanciation
 
 
+Call stack in OJ running::
+
+    (gdb) bt
+    #0  SEventConfig::Initialize () at /home/blyth/opticks/sysrap/SEventConfig.cc:1166
+    #1  0x00007fffbe757a88 in SEvt::SEvt (this=0xc5c7390) at /home/blyth/opticks/sysrap/SEvt.cc:180
+    #2  0x00007fffbe75c818 in SEvt::Create (ins=0) at /home/blyth/opticks/sysrap/SEvt.cc:1278
+    #3  0x00007fffbe75cb83 in SEvt::CreateOrReuse (idx=0) at /home/blyth/opticks/sysrap/SEvt.cc:1336
+    #4  0x00007fffbe75ce11 in SEvt::CreateOrReuse () at /home/blyth/opticks/sysrap/SEvt.cc:1380
+    #5  0x00007fffc0f99c11 in G4CXOpticks::SetGeometry_JUNO (world=0xa61bd30, sd=0xa230880, jpmt=0xc5933c0, jlut=0xc5c6120) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:106
+    #6  0x00007fffbdd967a4 in LSExpDetectorConstruction_Opticks::Setup (opticksMode=1, world=0xa61bd30, sd=0xa230880, ppd=0x6595290, psd=0x6595e80, pmtscan=0x0)
+        at /home/blyth/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction_Opticks.cc:47
+    #7  0x00007fffbdd5b0e6 in LSExpDetectorConstruction::setupOpticks (this=0xa277810, world=0xa61bd30) at /home/blyth/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:472
+    #8  0x00007fffbdd5a986 in LSExpDetectorConstruction::Construct (this=0xa277810) at /home/blyth/junosw/Simulation/DetSimV2/DetSimOptions/src/LSExpDetectorConstruction.cc:393
+    #9  0x00007fffc67ca92e in G4RunManager::InitializeGeometry() () from /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.4.0/ExternalLibs/Geant4/10.04.p02.juno/lib64/libG4run.so
+
+
+
+
+
+
 DebugHeavy
     far too heavy for most debugging/validation
 DebugLite
@@ -1344,9 +1391,27 @@ Canonically invoked by SEventConfig::Initialize_Comp
 enum values like SCOMP_PHOTON are bitwise-ORed into the
 gather and save masks based on configured MAX values.
 
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+| OPTICKS_EVENT_MODE   |  gather : GPU -> CPU                 |   save : CPU -> file                 |   notes                |
++======================+======================================+======================================+========================+
+|  Nothing             | -                                    | -                                    |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+| *Minimal*            | HitComp()                            | -                                    |  DEFAULT EventMode     |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+|  Hit                 | HitComp(), genstep                   | HitComp(), genstep                   |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+|  HitPhoton           | HitComp(),PhotonComp(),genstep       | HitComp(),PhotonComp(),genstep       |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+|  HitPhotonSeq        | HitComp(),PhotonComp(),genstep,seq   | HitComp(),PhotonComp(),genstep,seq   |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+|  HitSeq              | HitComp(),genstep,seq                | HitComp(),genstep,seq                |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+|  DebugHeavy          |  SEE CODE                            |  SEE CODE                            |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+|  DebugLite           |  SEE CODE                            |  SEE CODE                            |                        |
++----------------------+--------------------------------------+--------------------------------------+------------------------+
+
 **/
-
-
 
 
 void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask )
@@ -1529,6 +1594,7 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<int>("MaxFlat", MaxFlat() );
 
     meta->set_meta<int>("ModeLite", ModeLite() );
+    meta->set_meta<float>("MergeWindow", MergeWindow() );
 
     meta->set_meta<float>("MaxExtentDomain", MaxExtentDomain() );
     meta->set_meta<float>("MaxTimeDomain", MaxTimeDomain() );

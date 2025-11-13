@@ -47,6 +47,15 @@ But getting a bit awkward eg for automating max photon config
 based on available VRAM. Perhaps singleton future.
 
 
+CAUTION that env setup is done prior to the static initialization that happens as libSysRap.so is loaded
+----------------------------------------------------------------------------------------------------------
+
+This means that when using a boost-python "main" must do environ setup prior to libSysRap.so
+being loaded. More specifically the compiler generates a function that sets the statics called::
+
+    _GLOBAL__sub_I_SEventConfig.cc
+
+
 Settings
 ------------
 
@@ -132,6 +141,7 @@ struct SYSRAP_API SEventConfig
 
     static int  RecordLimit(); // sseq::SLOTS typically 32
     static void LIMIT_Check();
+    static void ORDER_Check();
     static std::string Desc();
 
     //static std::string DescHitMask();
@@ -186,7 +196,9 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxPrd       = "OPTICKS_MAX_PRD" ;
     static constexpr const char* kMaxTag       = "OPTICKS_MAX_TAG" ;
     static constexpr const char* kMaxFlat      = "OPTICKS_MAX_FLAT" ;
+
     static constexpr const char* kModeLite      = "OPTICKS_MODE_LITE" ;
+    static constexpr const char* kMergeWindow   = "OPTICKS_MERGE_WINDOW" ; // ns
 
     static constexpr const char* kMaxExtentDomain    = "OPTICKS_MAX_EXTENT_DOMAIN" ;
     static constexpr const char* kMaxTimeDomain      = "OPTICKS_MAX_TIME_DOMAIN" ;
@@ -265,6 +277,7 @@ struct SYSRAP_API SEventConfig
     static int64_t MaxFlat();
 
     static int64_t ModeLite();
+    static float   MergeWindow();
 
     static float MaxExtentDomain() ;
     static float MaxTimeDomain() ;
@@ -385,6 +398,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxFlat(   int max_flat);
 
     static void SetModeLite(  int mode_lite);
+    static void SetMergeWindow( float merge_window_ns );
 
     static void SetMaxExtentDomain( float max_extent);
     static void SetMaxTimeDomain(   float max_time );
@@ -423,7 +437,7 @@ struct SYSRAP_API SEventConfig
 
     static void SetSaveComp_(unsigned mask);
     static void SetSaveComp(const char* names, char delim=',') ;
-
+    static bool IsCompConfigured();
 
     // STATIC VALUES SET EARLY, MANY BASED ON ENVVARS
 
@@ -463,6 +477,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxFlatDefault ;
 
     static int _ModeLiteDefault ;
+    static float _MergeWindowDefault ;
 
     static float _MaxExtentDomainDefault ;
     static float _MaxTimeDomainDefault  ;
@@ -539,7 +554,9 @@ struct SYSRAP_API SEventConfig
     static int _MaxPrd ;
     static int _MaxTag ;
     static int _MaxFlat ;
+
     static int _ModeLite ;
+    static float _MergeWindow ;
 
     static float _MaxExtentDomain ;
     static float _MaxTimeDomain  ;

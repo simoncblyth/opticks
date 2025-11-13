@@ -4395,6 +4395,25 @@ at the tail.
 How to avoid the need for such care ? NPFold has a skipdelete flag,
 but that is at fold level./ Perhaps need each array to have skipdelete ?
 
+
+
+1. shallowcopy from topfold to save_fold components that are configured to save, export SEvt__SAVE=1 for log
+
+2. early exit if nothing configured to save
+
+3. when "seq" history array is configured for save and is present,
+   derive "seqnib" and "seqnib_table" from "seq" and add them to save_fold
+
+4. when "hit" array is configured for save and is present and "hitlocal" is also configured for save,
+   derive "hitlocal" from "hit" and add to save_fold
+
+5. when "photon" array is configured for save and is present and "photonlocal" is also configured for save,
+   derive "photonlocal" from "photon" and add to save_fold
+
+6. when "extrafold" is defined add all extra_items arrays from it into save_fold
+
+7. count *slic* items within save_fold, when more than zero proceed to save to standard dir
+
 **/
 
 void SEvt::save(const char* dir_)
@@ -4406,16 +4425,23 @@ void SEvt::save(const char* dir_)
     LOG(LEVEL) << descComponent() ;
     LOG(LEVEL) << descFold() ;
 
+
+    // 1. shallowcopy from topfold to save_fold components that are configured to save, export SEvt__SAVE=1 for log
     std::string save_comp = SEventConfig::DescSaveComp() ;
     NPFold* save_fold = topfold->shallowcopy(save_comp.c_str());
 
-    LOG_IF(info, SAVE) << " save_comp " << save_comp ;
+    LOG_IF(info, SAVE) << " save_comp[" << save_comp << "]" ;
     //LOG_IF(info, SAVE) << " topfold.desc   " << ( topfold ? topfold->desc() : "-" )  ;
     //LOG_IF(info, SAVE) << " save_fold.desc " << ( save_fold ? save_fold->desc() : "-" ) ;
 
 
+    // 2. early exit if nothing configured to save
+
     LOG_IF(LEVEL, save_fold == nullptr) << " NOTHING TO SAVE SEventConfig::SaveCompLabel/OPTICKS_SAVE_COMP  " << save_comp ;
     if(save_fold == nullptr) return ;
+
+    // 3. when "seq" history array is configured for save and is present,
+    //    derive "seqnib" and "seqnib_table" from "seq" and add them to save_fold
 
     const NP* seq = save_fold->get("seq");
     NP* seqnib = nullptr ;
@@ -4430,6 +4456,8 @@ void SEvt::save(const char* dir_)
     }
 
 
+    // 4. when "hit" array is configured for save and is present and "hitlocal" is also configured for save,
+    //    derive "hitlocal" from "hit" and add to save_fold
 
     const NP* hit = save_fold->get(SComp::HIT_);
     if(hit && SEventConfig::HasSaveComp(SComp::HITLOCAL_))
@@ -4440,6 +4468,9 @@ void SEvt::save(const char* dir_)
         save_fold->add(SComp::HITLOCAL_, hitlocal );
     }
 
+    // 5. when "photon" array is configured for save and is present and "photonlocal" is also configured for save,
+    //    derive "photonlocal" from "photon" and add to save_fold
+
     const NP* photon = save_fold->get(SComp::PHOTON_);
     if(photon && SEventConfig::HasSaveComp(SComp::PHOTONLOCAL_))
     {
@@ -4449,7 +4480,7 @@ void SEvt::save(const char* dir_)
         save_fold->add(SComp::PHOTONLOCAL_, photonlocal );
     }
 
-
+    // 6. when "extrafold" is defined add all extra_items arrays from it into save_fold
 
     if(extrafold)
     {
@@ -4464,6 +4495,8 @@ void SEvt::save(const char* dir_)
         }
     }
 
+
+    // 7. count *slic* items within save_fold, when more than zero proceed to save to standard dir
 
     int slic = save_fold->_save_local_item_count();
     if( slic > 0 )
@@ -4486,9 +4519,13 @@ void SEvt::save(const char* dir_)
         LOG(LEVEL) << "SKIP SAVE AS NPFold::_save_local_item_count zero " ;
     }
 
-    // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS
+
+    // 8. delete adhoc derived arrays after any saves
+
+    // deletions must be after the save
     delete seqnib ;
     delete seqnib_table ;
+    // NB: NOT DELETING save_fold AS IT IS A SHALLOW COPY : IT DOES NOT OWN THE ARRAYS
 }
 
 
@@ -4938,6 +4975,9 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array (starts global frame) into sphoton& lp struct of caller
     unsigned iindex = lp.iindex() ;
+    unsigned identity = lp.get_identity();
+    assert( identity != 0 ); // identity:0 indicates not-a-sensor should never happen for hits
+    unsigned sensor_identifier = identity - 1 ;
 
     const glm::tmat4x4<double>* tr = tree ? tree->get_iinst(iindex) : nullptr ;
 
@@ -4964,8 +5004,7 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
     // Q: Where is this encoded ?i Whats 1?
 
     assert( ht.iindex == iindex );
-    assert( ht.iindex == lp.iindex() );
-    assert( ht.sensor_identifier == lp.get_identity() ); // HMM maybe off-by-one
+    assert( ht.sensor_identifier == sensor_identifier );
 
 
 }

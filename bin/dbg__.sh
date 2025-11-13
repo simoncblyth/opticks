@@ -35,11 +35,8 @@ dbg__()
     local T=""
     local X=""
 
-    [ -n "$CATCH_THROW" ] && X="-ex \"catch throw\""
 
-    if [ -z "$BP" ]; then
-        T="-ex r";
-    else
+    if [ -n "$BP" ]; then
         H="-ex \"set breakpoint pending on\"";
         : split BP on comma delimiter preserving spaces within fields
         readarray -td, bps <<<"$BP"
@@ -47,8 +44,17 @@ dbg__()
         do
             B="$B -ex \"break $bp\" ";
         done;
-        T="-ex \"info break\" -ex r";
+        T="-ex \"info break\" ";
     fi;
+
+    [ -n "$BP_SEventConfig__GLOBAL" ] && B="$B -ex \"break _GLOBAL__sub_I_SEventConfig.cc\" " ;
+    : SEventConfig statics are initialized from envvars by the above compiler generated function
+    : setting the breakpoint allows to workout prior to when the SEventConfig OPTICKS envvars must be defined
+    : inorder that they may take effect in the process of loading libSysRap.so
+
+    [ -n "$CATCH_THROW" ] && X="-ex \"catch throw\""
+    [ -z "$NORUN" ] && X="$X -ex r"
+
     local runline="gdb $H $B $T $X --args $* ";
     echo $runline;
     date;

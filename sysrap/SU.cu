@@ -13,7 +13,7 @@
 
 
 template<typename T>
-T* SU::upload(const T* h, unsigned num_items )
+T* SU::upload(const T* h, size_t num_items )
 {
     T* d ;
     cudaMalloc(&d, num_items*sizeof(T));
@@ -21,7 +21,8 @@ T* SU::upload(const T* h, unsigned num_items )
     return d ;
 }
 
-template SYSRAP_API quad4*   SU::upload(const quad4* , unsigned );
+template SYSRAP_API quad4*       SU::upload(const quad4* , size_t );
+template SYSRAP_API sphotonlite* SU::upload(const sphotonlite* , size_t );
 
 
 /**

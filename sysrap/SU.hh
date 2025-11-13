@@ -1,4 +1,12 @@
 #pragma once
+/**
+SU.hh
+======
+
+NB: no Thrust types used in this interface, Thust is kept entirely in the SU.cu implementation
+that is nvcc compiled
+
+**/
 
 template <typename T> struct qselector ;
 
@@ -15,7 +23,7 @@ struct sphotonlite_selector ;
 struct SYSRAP_API SU
 {
     template<typename T>
-    static T* upload(const T* h, unsigned num_items );
+    static T* upload(const T* h, size_t num_items );
 
     template<typename T>
     static void deprecated_select_copy_device_to_host( T** h, unsigned& num_select,  T* d, unsigned num_d, const qselector<T>& selector  );

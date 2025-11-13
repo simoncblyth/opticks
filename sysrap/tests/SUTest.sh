@@ -1,32 +1,62 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 SUTest.sh
 ===========
 
-
-SU.cu
-SU.hh
-SUTest.cc
-
+~/o/sysrap/tests/SUTest.sh
 
 EOU
 }
 
-msg="=== $BASH_SOURCE :"
+cd $(dirname $(realpath $BASH_SOURCE))
 name=SUTest
-dir=/tmp/$name
-mkdir -p $dir
 
-nvcc -c ../SU.cu -I.. -o $dir/SU.o
-[ $? -ne 0 ] && echo $msg nvcc compile error && exit 1 
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+FOLD=$TMP/$name
+bin=$FOLD/$name
 
-CUDA_PREFIX=/usr/local/cuda
-gcc $name.cc $dir/SU.o -std=c++11 -lstdc++ -I.. -I$CUDA_PREFIX/include -L$CUDA_PREFIX/lib -lcudart -o $dir/$name
-[ $? -ne 0 ] && echo $msg gcc compile error && exit 2
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-$dir/$name
-[ $? -ne 0 ] && echo $msg run error && exit 3
+afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_event_name/A000
+export AFOLD=${AFOLD:-$afold}
 
-exit 0  
+test=hitlite
+export TEST=${TEST:-$test}
 
+
+mkdir -p $FOLD
+
+defarg="info_nvcc_gcc_run"
+arg=${1:-$defarg}
+
+vv="BASH_SOURCE name tmp TMP FOLD bin defarg arg cuda_prefix CUDA_PREFIX test TEST"
+
+if [ "${arg/info}" != "$arg" ]; then
+    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
+fi
+
+if [ "${arg/nvcc}" != "$arg" ]; then
+   nvcc -c ../SU.cu -I.. -o $FOLD/SU.o
+   [ $? -ne 0 ] && echo $FUNCNAME nvcc compile error && exit 1
+fi
+
+if [ "${arg/gcc}" != "$arg" ]; then
+   gcc $name.cc $FOLD/SU.o -std=c++17 -lstdc++ -I.. -I$CUDA_PREFIX/include -L$CUDA_PREFIX/lib64 -lcudart -lm  -o $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE gcc compile error && exit 2
+fi
+
+if [ "${arg/run}" != "$arg" ]; then
+   $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 3
+fi
+
+if [ "${arg/dbg}" != "$arg" ]; then
+   source dbg__.sh
+   dbg__ $bin
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 4
+fi
+
+exit 0
 
