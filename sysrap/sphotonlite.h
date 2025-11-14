@@ -37,6 +37,7 @@ sphotonlite.hh
    struct sphotonlite_selector ;
 #endif
 
+
 struct sphotonlite
 {
     uint32_t  hitcount_identity ;
@@ -54,6 +55,20 @@ struct sphotonlite
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+    bool operator==(const sphotonlite& other) const noexcept
+    {
+        return hitcount_identity  == other.hitcount_identity &&
+               time               == other.time              &&
+               lposcost_lposfphi  == other.lposcost_lposfphi &&
+               flagmask           == other.flagmask ;
+    }
+    bool operator!=(const sphotonlite& other) const noexcept
+    {
+        return !(*this == other);
+    }
+
+
     SPHOTONLITE_METHOD void get_lpos(float& lposcost, float& lposfphi) const ;
     SPHOTONLITE_METHOD void get_lpos_theta_phi(float& lpos_theta, float& lpos_phi) const ;
 
@@ -68,6 +83,8 @@ struct sphotonlite
 
     SPHOTONLITE_METHOD static NP* demoarray(size_t num_photon);
     SPHOTONLITE_METHOD static NP* select( const NP* photonlite, const sphotonlite_selector* photonlite_selector );
+    SPHOTONLITE_METHOD static void loadbin( std::vector<sphotonlite>& photonlite, const char* path );
+    SPHOTONLITE_METHOD static std::string desc_diff( const sphotonlite* a, const sphotonlite* b, size_t ni );
 
 #endif
 
@@ -298,6 +315,70 @@ inline NP* sphotonlite::select( const NP* photonlite, const sphotonlite_selector
     NP* hitlite = photonlite ? photonlite->copy_if<uint32_t, sphotonlite>(*photonlite_selector) : nullptr ;
     return hitlite ;
 }
+
+
+inline void sphotonlite::loadbin( std::vector<sphotonlite>& photonlite, const char* path )
+{
+    // 1. open path with pointer at-end "ate", use tellg to determine number of hits
+
+    std::ifstream f(path, std::ios::binary | std::ios::ate);
+    assert(f && "sphotonlite::loadbin failed to open path");
+    size_t bytes = f.tellg();
+    size_t n = bytes / sizeof(sphotonlite);
+    f.seekg(0);
+
+    // 2. read into photonlite vector
+    photonlite.resize(n);
+    f.read((char*)photonlite.data(), bytes);
+}
+
+
+inline std::string sphotonlite::desc_diff( const sphotonlite* a, const sphotonlite* b, size_t ni )
+{
+    size_t tot_diff = 0 ;
+    size_t tot_same = 0 ;
+
+    std::stringstream ss ;
+    ss << "[sphotonlite::desc_diff\n"
+       << " ni " << ni
+       << " a " << ( a ? "YES" : "NO " )
+       << " b " << ( b ? "YES" : "NO " )
+       << "\n"
+       ;
+
+    if( a != nullptr && b != nullptr )
+    {
+        for(size_t i = 0; i < ni; ++i)
+        {
+            if (a[i] != b[i])
+            {
+                tot_diff +=1 ;
+                ss << "Index " << i << " differs:\n"
+                          << "  a: " << a[i].desc() << "\n"
+                          << "  b: " << b[i].desc() << "\n";
+            }
+            else
+            {
+                tot_same +=1 ;
+            }
+        }
+    }
+
+    ss << "]sphotonlite::desc_diff\n"
+       << " tot_diff " << tot_diff
+       << " tot_same " << tot_same
+       << "\n"
+       ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
+
 
 
 #endif

@@ -56,6 +56,54 @@ being loaded. More specifically the compiler generates a function that sets the 
     _GLOBAL__sub_I_SEventConfig.cc
 
 
+TODO : More dynamic settings ?
+-------------------------------
+
+Many settings (which exactly?) configured from envvars via static initializers
+at loading of libSysRap.so have side effects on other settings which mean that
+post initialization changes to those basis settings although they can be done
+they do not dynamically change the dependent settings. This can result in
+inconsistency, confusion and crashes.
+
+How to improve this:
+
+1. identify dependencies between settings and the initialization code that adds dependency
+2. rejig such that post-initialization setters propagate to dependent settings
+3. document dependency between settings
+
+**Another way is to reduce dependencies between settings,
+instead derive things from basis settings when they are needed.**
+
++-----------------------------+------------------------------------------+
+|  Settings with dependents   |    Notes                                 |
++=============================+==========================================+
+|  OPTICKS_EVENT_MODE         | Configs gather and save component masks  |
++-----------------------------+------------------------------------------+
+|  OPTICKS_MODE_LITE          | Changes some comps to "lite" variants    |
++-----------------------------+------------------------------------------+
+|  ... many more ?...         |                                          |
++-----------------------------+------------------------------------------+
+
+It is possible that some settings have other consequences that mean that they
+cannot be changed. Document those and add asserts when change attempts are made.
+
+
+
+TODO : client->server settings/metadata
+----------------------------------------
+
+1. client needs to pass its settings across to server, either:
+
+   * key:value pairs in HTTP headers
+   * genstep metadata [favor this as its persistable]
+
+2. some settings/metadata that cannot be changed like geometry digest
+   needs to be checked for match between client and server with asserts
+   when it does not match
+
+   * test client/server uses "secret" string
+
+
 Settings
 ------------
 

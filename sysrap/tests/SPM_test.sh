@@ -22,8 +22,8 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_event_name/A000
 export AFOLD=${AFOLD:-$afold}
 
-#test=hitlite
-test=merge_partial_select
+#test=merge_partial_select
+test=dump_partial
 
 export TEST=${TEST:-$test}
 
@@ -40,9 +40,12 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
-   cmd="ls -alst $AFOLD"
-   echo $cmd
-   eval $cmd
+   ff="AFOLD FOLD"
+   for f in $ff ; do
+      cmd="ls -alst ${!f} # $f"
+      echo $cmd
+      eval $cmd
+   done
 fi
 
 
@@ -62,14 +65,18 @@ if [ "${arg/gcc}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
+   pushd $FOLD
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 3
+   popd
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
    source dbg__.sh
+   pushd $FOLD
    dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 4
+   popd
 fi
 
 exit 0
