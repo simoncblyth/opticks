@@ -783,6 +783,8 @@ int main(int argc, char** argv)
 
 
     int type = QSimLaunch::Type(TEST);
+    if(type == UNKNOWN) return 0 ;
+
     unsigned num = QSimTest::Num(argc, argv);
 
     LOG(info) << "[SSim::Load" ;
