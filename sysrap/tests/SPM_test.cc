@@ -102,14 +102,14 @@ inline int SPM_test::test(int argc, char** argv)
 int SPM_test::merge_partial_select()
 {
     cudaStream_t stream = 0 ;
-    sphotonlite* d_mhitlite = nullptr ;
-    int          mhitlite_count = 0 ;
+    sphotonlite* d_hitlitemerged = nullptr ;
+    int          num_hitlitemerged = 0 ;
 
     SPM::merge_partial_select(
             d_photonlite,
             num_photonlite,
-            &d_mhitlite,
-            &mhitlite_count,
+            &d_hitlitemerged,
+            &num_hitlitemerged,
             select_flagmask,
             merge_window_ns,
             stream );
@@ -117,13 +117,13 @@ int SPM_test::merge_partial_select()
     std::cout
         << "SPM_test::merge_partial_select" << "\n"
         << " merge_window_ns " << merge_window_ns << "\n"
-        << " mhitlite_count " << mhitlite_count << "\n"
+        << " num_hitlitemerged " << num_hitlitemerged << "\n"
         << " _hitlite.sstr " << ( _hitlite ? _hitlite->sstr() : "-" ) << "\n"
         ;
 
     std::string path = "partial_0.bin" ;
-    SPM::save_partial(d_mhitlite, mhitlite_count, path, stream);
-    SPM::free(d_mhitlite);
+    SPM::save_partial(d_hitlitemerged, num_hitlitemerged, path, stream);
+    SPM::free(d_hitlitemerged);
 
     return 0 ;
 }

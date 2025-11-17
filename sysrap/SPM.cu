@@ -110,13 +110,16 @@ simultaneously fit into VRAM.
 
 void SPM::merge_partial_select(
     const sphotonlite*  d_in,
-    int               num_in,
+    size_t            num_in,
     sphotonlite**      d_out,
-    int*             num_out,
+    size_t*          num_out,
     unsigned select_flagmask,
     float        time_window,
     cudaStream_t      stream )
 {
+
+    printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f \n", num_in, select_flagmask, time_window );
+
     if (num_in == 0) { *d_out = nullptr; if (num_out) *num_out = 0; return; }
 
     auto policy = thrust::cuda::par_nosync.on(stream);
@@ -181,7 +184,7 @@ void SPM::merge_partial_select(
 
     // 7. get number of merged hits, potentially including a non-hitmask selected sentinel key ~0ull
 
-    int merged = ends.first - thrust::device_ptr<uint64_t>(d_out_key);
+    size_t merged = ends.first - thrust::device_ptr<uint64_t>(d_out_key);
 
 
     // 8. remove trailing sentinel (~0ull) if present
@@ -216,7 +219,8 @@ void SPM::merge_partial_select(
     // 11. set d_out and num_out
 
     *d_out = d_final;
-    if (num_out) *num_out = merged;
+    if(num_out) *num_out = merged;
+    printf("]SPM::merge_partial_select merged %d  \n", merged );
 }
 
 
@@ -235,7 +239,7 @@ struct SavePartialData
     sphotonlite* h_pinned;
     sphotonlite* d_ptr;
     std::string path;
-    int count;
+    size_t count;
 };
 
 
@@ -287,7 +291,7 @@ SPM::save_partial
 
 void SPM::save_partial(
         const sphotonlite* d_partial,
-        int                count,
+        size_t             count,
         const std::string& path,
         cudaStream_t       stream )
 {
@@ -329,7 +333,7 @@ SPM::load_partial
 void SPM::load_partial(
         const std::string& path,
         sphotonlite**      d_out,
-        int*               count,
+        size_t*            count,
         cudaStream_t       stream )
 {
 
@@ -370,7 +374,7 @@ namespace
     {
         uint64_t*     keys;
         sphotonlite*  hits;
-        int           count;
+        size_t        count;
     };
 
     /**
@@ -457,7 +461,7 @@ namespace
 
         // 7. return Partial struct
 
-        return {d_keys, d_hits, (int)n};
+        return {d_keys, d_hits, n};
     }
 }
 
@@ -490,7 +494,7 @@ SPM::merge_incremental
 void SPM::merge_incremental(
         const char** partial_paths,
         sphotonlite** d_final,
-        int*          final_count,
+        size_t*       final_count,
         float         time_window,
         cudaStream_t  stream )
 {
@@ -538,7 +542,7 @@ void SPM::merge_incremental(
 
         uint64_t*     d_reduced_key = nullptr;
         sphotonlite*  d_reduced_val = nullptr;
-        int           reduced_count;
+        size_t        reduced_count;
 
         if (time_window == 0.f)
         {
@@ -599,3 +603,40 @@ void SPM::merge_incremental(
     *d_final     = acc.hits;
     cudaFreeAsync(acc.keys, stream);  // keys no longer needed
 }
+
+
+
+
+
+template<typename T>
+int SPM::copy_device_to_host_async( T* h, T* d,  size_t num_items, cudaStream_t stream )
+{
+    if( d == nullptr ) std::cerr
+        << "SPM::copy_device_to_host_async"
+        << " ERROR : device pointer is null "
+        << std::endl
+        ;
+
+    if( d == nullptr ) return 1 ;
+
+    size_t size = num_items*sizeof(T) ;
+
+    cudaMemcpyAsync(h, d, size, cudaMemcpyDeviceToHost, stream);
+
+    return 0 ;
+}
+
+
+template int SPM::copy_device_to_host_async<sphotonlite>( sphotonlite* h, sphotonlite* d,  size_t num_items, cudaStream_t stream );
+
+void SPM::free( void* d_ptr )   // static
+{
+    cudaFree(d_ptr);
+}
+
+void SPM::free_async(void* d_ptr, cudaStream_t stream)  // static
+{
+    if (d_ptr) cudaFreeAsync(d_ptr, stream);
+}
+
+

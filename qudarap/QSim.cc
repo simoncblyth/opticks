@@ -377,6 +377,9 @@ void QSim::post_launch()
 QSim::simulate
 ---------------
 
+This expects gensteps to have been collected into SEvt vectors of quad6
+prior to being called.
+
 Two canonical invokations:
 
 1. G4CXOpticks::simulate for full dependency running
@@ -394,16 +397,22 @@ the launch.
 
        EGPU.SEvt::beginOfEvent
 
-       QEvt::setGenstepUpload(quad6*)
+       determine slices over gensteps depending on VRAM
 
-       SCSGOptiX::simulate_launch
+       for each slice
 
-       EGPU.SEvt::endOfEvent
+           QEvt::setGenstepUpload_NP
 
+           SCSGOptiX::simulate_launch
 
+           SEvt::gather into *fold* below *topfold*
 
-This expects gensteps to have been collected into SEvt vectors of quad6
-prior to being called.
+       end for each slice
+
+       (NPFold)topfold->concat joining all arrays from the per-launch *fold* into the one *topfold*
+
+       EGPU.SEvt::endOfEvent [only when reset:true, not so in OJ running as need to defer until after hits collected]
+
 
 **/
 

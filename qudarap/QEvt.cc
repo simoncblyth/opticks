@@ -27,7 +27,9 @@
 
 #include "sqat4.h"
 #include "stran.h"
+
 #include "SU.hh"
+#include "SPM.hh"
 
 #include "SComp.h"
 #include "SGenstep.h"
@@ -896,6 +898,8 @@ unsigned QEvt::getNumHitLite() const
 {
     assert( evt->photonlite );
     assert( evt->num_photonlite );
+    assert( 0 && "WHO CALLS THIS : BETTER TO GET FROM ALREADY GATHERED ?");
+
     LOG_IF(info, LIFECYCLE) ;
 
     evt->num_hitlite = SU::count_if_sphotonlite( evt->photonlite, evt->num_photonlite, *photonlite_selector );
@@ -942,8 +946,8 @@ always be present, unlike hits.
 
 NP* QEvt::gatherHit() const
 {
-    // hasHit at this juncture is misleadingly always false,
-    // because the hits array is derived by *gatherHit_* which  selects from the photons
+    // hasHit (more correctly "hasHitArray") at this juncture is misleadingly always false,
+    // because the hits array is derived (selecting from the photons) by *gatherHit_*
 
     bool has_photon = hasPhoton();
 
@@ -956,27 +960,22 @@ NP* QEvt::gatherHit() const
     assert( evt->num_photon );
 
     evt->num_hit = SU::count_if_sphoton( evt->photon, evt->num_photon, *photon_selector );
+    NP* hit = evt->num_hit > 0 ? gatherHit_() : nullptr ;
 
     LOG(LEVEL)
-         << " evt.photon " << evt->photon
-         << " evt.num_photon " << evt->num_photon
-         << " evt.num_hit " << evt->num_hit
-         << " photon_selector.hitmask " << photon_selector->hitmask
-         << " SEventConfig::HitMask " << SEventConfig::HitMask()
-         << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
-         ;
-
-    NP* hit = evt->num_hit > 0 ? gatherHit_() : nullptr ;
+        << " evt.photon " << evt->photon
+        << " evt.num_photon " << evt->num_photon
+        << " evt.num_hit " << evt->num_hit
+        << " hit " << ( hit ? hit->sstr() : "-" )
+        << " photon_selector.hitmask " << photon_selector->hitmask
+        << " SEventConfig::HitMask " << SEventConfig::HitMask()
+        << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
+        << " SEventConfig::ModeLite " << SEventConfig::ModeLite()
+        << " SEventConfig::ModeMerge " << SEventConfig::ModeMerge()
+        ;
 
     return hit ;
 }
-
-
-
-
-
-
-
 
 
 
@@ -996,23 +995,47 @@ NP* QEvt::gatherHitLite() const
     assert( evt->num_photonlite );
 
     evt->num_hitlite = SU::count_if_sphotonlite( evt->photonlite, evt->num_photonlite, *photonlite_selector );
+    NP* hitlite = evt->num_hitlite > 0 ? gatherHitLite_() : nullptr ;
 
     LOG(LEVEL)
-         << " evt.photonlite " << evt->photonlite
-         << " evt.num_photonlite " << evt->num_photonlite
-         << " evt.num_hitlite " << evt->num_hitlite
-         << " photonlite_selector.hitmask " << photonlite_selector->hitmask
-         << " SEventConfig::HitMask " << SEventConfig::HitMask()
-         << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
-         ;
-
-    NP* hitlite = evt->num_hitlite > 0 ? gatherHitLite_() : nullptr ;
+        << " evt.photonlite " << evt->photonlite
+        << " evt.num_photonlite " << evt->num_photonlite
+        << " evt.num_hitlite " << evt->num_hitlite
+        << " hitlite " << ( hitlite ? hitlite->sstr() : "-" )
+        << " photonlite_selector.hitmask " << photonlite_selector->hitmask
+        << " SEventConfig::HitMask " << SEventConfig::HitMask()
+        << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
+        << " SEventConfig::ModeLite " << SEventConfig::ModeLite()
+        << " SEventConfig::ModeMerge " << SEventConfig::ModeMerge()
+        ;
 
     return hitlite ;
 }
 
 
+NP* QEvt::gatherHitLiteMerged() const
+{
+    bool has_photonlite = hasPhotonLite();
+    LOG_IF(LEVEL, !has_photonlite) << " gatherHitLiteMerged called when there is no photonlite array " ;
+    if(!has_photonlite) return nullptr ;
 
+    NP* hitlitemerged = gatherHitLiteMerged_() ;
+
+    LOG(LEVEL)
+        << " evt.photonlite " << evt->photonlite
+        << " evt.num_photonlite " << evt->num_photonlite
+        << " evt.num_hitlitemerged " << evt->num_hitlitemerged
+        << " hitlitemerged " << ( hitlitemerged ? hitlitemerged->sstr() : "-" )
+        << " photonlite_selector.hitmask " << photonlite_selector->hitmask
+        << " SEventConfig::HitMask " << SEventConfig::HitMask()
+        << " SEventConfig::HitMaskLabel " << SEventConfig::HitMaskLabel()
+        << " SEventConfig::ModeLite " << SEventConfig::ModeLite()
+        << " SEventConfig::ModeMerge " << SEventConfig::ModeMerge()
+        << " SEventConfig::MergeWindow " << SEventConfig::MergeWindow()
+        ;
+
+    return hitlitemerged ;
+}
 
 
 
@@ -1074,6 +1097,36 @@ NP* QEvt::gatherHitLite_() const
     return hitlite ;
 }
 
+/**
+QEvt::gatherHitLiteMerged_
+---------------------------
+
+NB with multi-launch a further final merge is required,
+that is invoked from QSim::simulate
+
+**/
+
+
+NP* QEvt::gatherHitLiteMerged_() const
+{
+    cudaStream_t stream = 0 ;
+
+    SPM::merge_partial_select(
+         evt->photonlite,
+         evt->num_photonlite,
+         &evt->hitlitemerged,
+         &evt->num_hitlitemerged,
+         SEventConfig::HitMask(),
+         SEventConfig::MergeWindow(),
+         stream);
+
+    NP* hitlitemerged = sphotonlite::zeros( evt->num_hitlitemerged );
+    SPM::copy_device_to_host_async<sphotonlite>( (sphotonlite*)hitlitemerged->bytes(), evt->hitlitemerged, evt->num_hitlitemerged, stream );
+
+    LOG(LEVEL) << " hitlitemerged.sstr " << hitlitemerged->sstr() ;
+
+    return hitlitemerged ;
+}
 
 
 
@@ -1126,13 +1179,14 @@ NP* QEvt::gatherComponent_(unsigned cmp) const
     NP* a = nullptr ;
     switch(cmp)
     {
-        //case SCOMP_GENSTEP:   a = getGenstep()     ; break ;
-        case SCOMP_GENSTEP:     a = gatherGenstepFromDevice() ; break ;
-        case SCOMP_INPHOTON:    a = getInputPhoton() ; break ;
-        case SCOMP_PHOTON:      a = gatherPhoton()      ; break ;
-        case SCOMP_PHOTONLITE:  a = gatherPhotonLite()  ; break ;
-        case SCOMP_HIT:         a = gatherHit()         ; break ;
-        case SCOMP_HITLITE:     a = gatherHitLite()     ; break ;
+        //case SCOMP_GENSTEP:     a = getGenstep()     ; break ;
+        case SCOMP_GENSTEP:       a = gatherGenstepFromDevice() ; break ;
+        case SCOMP_INPHOTON:      a = getInputPhoton()          ; break ;
+        case SCOMP_PHOTON:        a = gatherPhoton()            ; break ;
+        case SCOMP_PHOTONLITE:    a = gatherPhotonLite()        ; break ;
+        case SCOMP_HIT:           a = gatherHit()               ; break ;
+        case SCOMP_HITLITE:       a = gatherHitLite()           ; break ;
+        case SCOMP_HITLITEMERGED: a = gatherHitLiteMerged()     ; break ;
 #ifndef PRODUCTION
         case SCOMP_DOMAIN:    a = gatherDomain()      ; break ;
         case SCOMP_RECORD:    a = gatherRecord()   ; break ;

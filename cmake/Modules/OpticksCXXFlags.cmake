@@ -51,6 +51,15 @@ okconf/tests/CPPVersionInteger.cc::
 
 #]=]
 
+
+
+if(NOT CMAKE_CUDA_FLAGS MATCHES "--expt-extended-lambda")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-extended-lambda" CACHE STRING "CUDA compiler flags" FORCE)
+endif()
+
+
+
+
 # start from nothing, so repeated inclusion of this into CMake context doesnt repeat the flags 
 set(CMAKE_CXX_FLAGS)
 

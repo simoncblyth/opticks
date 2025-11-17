@@ -302,6 +302,8 @@ esac
 vars="$vars opticks_event_mode"
 
 opticks_mode_lite=0
+opticks_mode_merge=0
+opticks_merge_window=0
 
 if [ "$TEST" == "debug" ]; then
 
@@ -312,6 +314,21 @@ if [ "$TEST" == "debug" ]; then
    opticks_max_slot=M1
    opticks_event_mode=DebugLite
    opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
+
+elif [ "$TEST" == "merge" ]; then
+
+   opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=M1
+   opticks_running_mode=SRM_TORCH
+   opticks_max_slot=M1
+   opticks_event_mode=DebugLite
+   opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
+   opticks_mode_merge=1
+   opticks_merge_window=1
+
+   export QEvt=INFO
+
 
 elif [ "$TEST" == "ref1" ]; then
 
@@ -580,6 +597,19 @@ case $OPTICKS_MODE_LITE in
   2) OPTICKS_MODE_LITE_NOTE="photonlite/hitlite will be saved in addition to photon/hit (if they are configured) : validate with lite analysis subcommand" ;;
 esac
 vars="$vars OPTICKS_MODE_LITE OPTICKS_MODE_LITE_NOTE"
+
+
+export OPTICKS_MODE_MERGE=${OPTICKS_MODE_MERGE:-$opticks_mode_merge}
+
+case $OPTICKS_MODE_MERGE in
+  0) OPTICKS_MODE_MERGE_NOTE="no GPU side merge will be attempted" ;;
+  1) OPTICKS_MODE_MERGE_NOTE="ModeLite is configured then attempt GPU side hitlite merge yielding hitlitemerged array" ;;
+esac
+vars="$vars OPTICKS_MODE_MERGE OPTICKS_MODE_MERGE_NOTE"
+
+export OPTICKS_MERGE_WINDOW=${OPTICKS_MERGE_WINDOW:-$opticks_merge_window}
+vars="$vars opticks_merge_window OPTICKS_MERGE_WINDOW"
+
 
 export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
 export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot

@@ -337,9 +337,9 @@ public:
 
 
     const NP* get_optional(const char* k) const ;
-    int   get_num(const char* k) const ;   // number of items in array
-    void  get_counts( std::vector<std::string>* keys, std::vector<int>* counts ) const ;
-    static std::string DescCounts(const std::vector<std::string>& keys, const std::vector<int>& counts );
+    size_t get_num(const char* k) const ;   // number of items in array
+    void  get_counts( std::vector<std::string>* keys, std::vector<size_t>* counts ) const ;
+    static std::string DescCounts(const std::vector<std::string>& keys, const std::vector<size_t>& counts );
 
 
 
@@ -2353,14 +2353,14 @@ NPFold::get_num
 Number of items in the array with key *k* or -1 if not such key.
 **/
 
-inline int NPFold::get_num(const char* k) const
+inline size_t NPFold::get_num(const char* k) const
 {
     const NP* a = get(k) ;
-    return a == nullptr ? UNDEF : a->shape[0] ;
+    return a == nullptr ? 0 : a->shape[0] ;  // UNDEF->0 when changed to size_t
 }
 
 
-inline void NPFold::get_counts( std::vector<std::string>* keys, std::vector<int>* counts ) const
+inline void NPFold::get_counts( std::vector<std::string>* keys, std::vector<size_t>* counts ) const
 {
     int nkk = kk.size();
     for(int i=0 ; i < nkk ; i++)
@@ -2372,7 +2372,7 @@ inline void NPFold::get_counts( std::vector<std::string>* keys, std::vector<int>
         if(counts) counts->push_back(a->shape[0]);
     }
 }
-inline std::string NPFold::DescCounts(const std::vector<std::string>& keys, const std::vector<int>& counts )
+inline std::string NPFold::DescCounts(const std::vector<std::string>& keys, const std::vector<size_t>& counts )
 {
     assert( keys.size() == counts.size() );
     int num_key = keys.size();
@@ -3183,7 +3183,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
     int nj = num_ukey ;
 
     // 3. create 2d array of shape (num_sub, num_ukey) with array counts for each sub
-    NP* a = NP::Make<int>( ni, nj  );
+    NP* a = NP::Make<int>( ni, nj  );   // TODO: int64
     a->labels = new std::vector<std::string> ;
     a->names = subpaths ;
 
@@ -3205,7 +3205,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
     for(int i=0 ; i < ni ; i++)
     {
         std::vector<std::string> keys ;
-        std::vector<int> counts ;
+        std::vector<size_t> counts ;
         subs[i]->get_counts(&keys, &counts);
         assert( keys.size() == counts.size() );
         int num_key = keys.size();
@@ -3214,7 +3214,7 @@ inline NP* NPFold::subcount( const char* prefix ) const
         {
             const char* uk = ukey[j].c_str();
             int idx = std::distance( keys.begin(), std::find(keys.begin(), keys.end(), uk ) ) ;
-            int count = idx < num_key ? counts[idx] : -1  ;
+            size_t count = idx < num_key ? counts[idx] : -1  ;
             aa[i*nj+j] = count ;
 
             if(_DUMP>0) std::cout

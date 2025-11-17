@@ -17,33 +17,33 @@ NB: the old OpticksEvent analog of this is SComponent.hh
 struct NP ;
 
 enum {
-    SCOMP_UNDEFINED    = 0x1 <<  0,
-    SCOMP_GENSTEP      = 0x1 <<  1,
-    SCOMP_PHOTON       = 0x1 <<  2,
-    SCOMP_RECORD       = 0x1 <<  3,
-    SCOMP_REC          = 0x1 <<  4,
-    SCOMP_SEQ          = 0x1 <<  5,
-    SCOMP_PRD          = 0x1 <<  6,
-    SCOMP_SEED         = 0x1 <<  7,
-    SCOMP_HIT          = 0x1 <<  8,
-    SCOMP_SIMTRACE     = 0x1 <<  9,
-    SCOMP_DOMAIN       = 0x1 << 10,
-    SCOMP_INPHOTON     = 0x1 << 11,
-    SCOMP_TAG          = 0x1 << 12,
-    SCOMP_FLAT         = 0x1 << 13,
-    SCOMP_ISECT        = 0x1 << 14,
-    SCOMP_FPHOTON      = 0x1 << 15,
-    SCOMP_PIXEL        = 0x1 << 16,
-    SCOMP_G4STATE      = 0x1 << 17,
-    SCOMP_AUX          = 0x1 << 18,
-    SCOMP_SUP          = 0x1 << 19,
-    SCOMP_PHO          = 0x1 << 20,
-    SCOMP_GS           = 0x1 << 21,
-    SCOMP_PHOTONLITE   = 0x1 << 22,
-    SCOMP_HITLITE      = 0x1 << 23,
-    SCOMP_HITLOCAL     = 0x1 << 24,
-    SCOMP_PHOTONLOCAL  = 0x1 << 25
-
+    SCOMP_UNDEFINED      = 0x1 <<  0,
+    SCOMP_GENSTEP        = 0x1 <<  1,
+    SCOMP_PHOTON         = 0x1 <<  2,
+    SCOMP_RECORD         = 0x1 <<  3,
+    SCOMP_REC            = 0x1 <<  4,
+    SCOMP_SEQ            = 0x1 <<  5,
+    SCOMP_PRD            = 0x1 <<  6,
+    SCOMP_SEED           = 0x1 <<  7,
+    SCOMP_HIT            = 0x1 <<  8,
+    SCOMP_SIMTRACE       = 0x1 <<  9,
+    SCOMP_DOMAIN         = 0x1 << 10,
+    SCOMP_INPHOTON       = 0x1 << 11,
+    SCOMP_TAG            = 0x1 << 12,
+    SCOMP_FLAT           = 0x1 << 13,
+    SCOMP_ISECT          = 0x1 << 14,
+    SCOMP_FPHOTON        = 0x1 << 15,
+    SCOMP_PIXEL          = 0x1 << 16,
+    SCOMP_G4STATE        = 0x1 << 17,
+    SCOMP_AUX            = 0x1 << 18,
+    SCOMP_SUP            = 0x1 << 19,
+    SCOMP_PHO            = 0x1 << 20,
+    SCOMP_GS             = 0x1 << 21,
+    SCOMP_PHOTONLITE     = 0x1 << 22,
+    SCOMP_HITLITE        = 0x1 << 23,
+    SCOMP_HITLOCAL       = 0x1 << 24,
+    SCOMP_PHOTONLOCAL    = 0x1 << 25,
+    SCOMP_HITLITEMERGED  = 0x1 << 26
 };
 
 struct SYSRAP_API SCompProvider
@@ -85,6 +85,7 @@ struct SYSRAP_API SComp
     static constexpr const char* HITLITE_    = "hitlite" ;
     static constexpr const char* HITLOCAL_   = "hitlocal" ;
     static constexpr const char* PHOTONLOCAL_ = "photonlocal" ;
+    static constexpr const char* HITLITEMERGED_ = "hitlitemerged" ;
 
     static bool Match(const char* q, const char* n );
     static unsigned    Comp(const char* name);
@@ -123,6 +124,7 @@ struct SYSRAP_API SComp
     static bool IsHitLite(     unsigned mask){ return mask & SCOMP_HITLITE ; }
     static bool IsHitLocal(    unsigned mask){ return mask & SCOMP_HITLOCAL ; }
     static bool IsPhotonLocal( unsigned mask){ return mask & SCOMP_PHOTONLOCAL ; }
+    static bool IsHitLiteMerged( unsigned mask){ return mask & SCOMP_HITLITEMERGED ; }
 
 };
 
@@ -159,6 +161,7 @@ inline unsigned SComp::Comp(const char* name)
     if(Match(name, HITLITE_))    comp = SCOMP_HITLITE ;
     if(Match(name, HITLOCAL_))   comp = SCOMP_HITLOCAL ;
     if(Match(name, PHOTONLOCAL_))   comp = SCOMP_PHOTONLOCAL ;
+    if(Match(name, HITLITEMERGED_)) comp = SCOMP_HITLITEMERGED ;
     return comp ;
 }
 inline const char* SComp::Name(unsigned comp)
@@ -192,6 +195,7 @@ inline const char* SComp::Name(unsigned comp)
         case SCOMP_HITLITE:   s = HITLITE_    ; break ;
         case SCOMP_HITLOCAL:  s = HITLOCAL_   ; break ;
         case SCOMP_PHOTONLOCAL:  s = PHOTONLOCAL_   ; break ;
+        case SCOMP_HITLITEMERGED:   s = HITLITEMERGED_    ; break ;
     }
     return s ;
 }
@@ -224,6 +228,7 @@ inline std::string SComp::Desc(unsigned mask)
     if( mask & SCOMP_HITLITE )    names.push_back(HITLITE_) ;   // CAUTION : HITLITE MUST STAY AFTER PHOTONLITE (?)
     if( mask & SCOMP_HITLOCAL )   names.push_back(HITLOCAL_) ;   // CAUTION : HITLOCAL MUST STAY AFTER HIT
     if( mask & SCOMP_PHOTONLOCAL )   names.push_back(PHOTONLOCAL_) ;   // CAUTION : PHOTONLOCAL MUST STAY AFTER PHOTON
+    if( mask & SCOMP_HITLITEMERGED ) names.push_back(HITLITEMERGED_) ;
 
     std::stringstream ss ;
     for(unsigned i=0 ; i < names.size() ; i++) ss << names[i] << ( i < names.size() - 1 ? "," : "" );

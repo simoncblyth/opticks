@@ -246,6 +246,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxFlat      = "OPTICKS_MAX_FLAT" ;
 
     static constexpr const char* kModeLite      = "OPTICKS_MODE_LITE" ;
+    static constexpr const char* kModeMerge     = "OPTICKS_MODE_MERGE" ;
     static constexpr const char* kMergeWindow   = "OPTICKS_MERGE_WINDOW" ; // ns
 
     static constexpr const char* kMaxExtentDomain    = "OPTICKS_MAX_EXTENT_DOMAIN" ;
@@ -325,6 +326,7 @@ struct SYSRAP_API SEventConfig
     static int64_t MaxFlat();
 
     static int64_t ModeLite();
+    static int64_t ModeMerge();
     static float   MergeWindow();
 
     static float MaxExtentDomain() ;
@@ -446,6 +448,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxFlat(   int max_flat);
 
     static void SetModeLite(  int mode_lite);
+    static void SetModeMerge( int mode_merge);
     static void SetMergeWindow( float merge_window_ns );
 
     static void SetMaxExtentDomain( float max_extent);
@@ -525,6 +528,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxFlatDefault ;
 
     static int _ModeLiteDefault ;
+    static int _ModeMergeDefault ;
     static float _MergeWindowDefault ;
 
     static float _MaxExtentDomainDefault ;
@@ -604,6 +608,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxFlat ;
 
     static int _ModeLite ;
+    static int _ModeMerge ;
     static float _MergeWindow ;
 
     static float _MaxExtentDomain ;
@@ -656,10 +661,12 @@ struct SYSRAP_API SEventConfig
     static void  Initialize_Comp();
 
     static unsigned PhotonComp();
-    static const char* PhotonCompNameOne();
+    static unsigned PhotonCompOne();
+    static const char* PhotonCompOneName();
 
-    static unsigned HitComp();             // pontially bitwise combination of multiple comp
-    static const char* HitCompNameOne();
+    static unsigned HitComp();             // potentially bitwise combination of multiple comp
+    static unsigned HitCompOne();          // single bit hit comp : the canonical one decided by ModeLite ModeMerge
+    static const char* HitCompOneName();
 
 
     static void  Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask );

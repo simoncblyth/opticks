@@ -736,8 +736,8 @@ public:
     const NP* getPho() const ;
     const NP* getGS() const ;
 
-    unsigned getNumPhoton() const ;
-    unsigned getNumHit() const ;
+    size_t getNumPhoton() const ;
+    size_t getNumHit() const ;
     std::string descSimulate() const ;
     std::string getCounts() const ;
 

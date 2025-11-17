@@ -144,8 +144,9 @@ struct sevent
     int64_t      num_hit ;    // set by QEvt::gatherHit using SU::count_if_sphoton
     int64_t      num_photon ;
 
-    int64_t      num_hitlite ;  // set by QEvt::gatherHitLite using SU::count_if_sphotonlite
-    int64_t      num_photonlite ;
+    size_t       num_hitlite ;  // set by QEvt::gatherHitLite using SU::count_if_sphotonlite
+    size_t       num_hitlitemerged ;  // set by QEvt::gatherHitLite using SU::count_if_sphotonlite
+    size_t       num_photonlite ;
 
     int64_t      num_record ;
     int64_t      num_rec ;
@@ -172,6 +173,7 @@ struct sevent
 
     sphotonlite* photonlite ; //QEvt::device_alloc_photon
     sphotonlite* hitlite ;
+    sphotonlite* hitlitemerged ;
 
     sphoton* record ;
     srec*    rec ;
@@ -300,23 +302,24 @@ SEVENT_METHOD std::string sevent::descNum() const
     int w = 5 ;
     std::stringstream ss ;
     ss
-        << " sevent::descNum    "  << std::endl
-        << " evt.num_curand     "  << std::setw(w) << num_curand     << std::endl
-        << " evt.num_genstep    "  << std::setw(w) << num_genstep    << std::endl
-        << " evt.num_seed       "  << std::setw(w) << num_seed       << std::endl
-        << " evt.num_photon     "  << std::setw(w) << num_photon     << std::endl
-        << " evt.num_photonlite "  << std::setw(w) << num_photonlite << std::endl
-        << " evt.num_record     "  << std::setw(w) << num_record     << std::endl
-        << " evt.num_rec        "  << std::setw(w) << num_rec        << std::endl
-        << " evt.num_aux        "  << std::setw(w) << num_aux        << std::endl
-        << " evt.num_sup        "  << std::setw(w) << num_sup        << std::endl
-        << " evt.num_seq        "  << std::setw(w) << num_seq        << std::endl
-        << " evt.num_hit        "  << std::setw(w) << num_hit        << std::endl
-        << " evt.num_hitlite    "  << std::setw(w) << num_hitlite    << std::endl
-        << " evt.num_simtrace   "  << std::setw(w) << num_simtrace   << std::endl
-        << " evt.num_prd        "  << std::setw(w) << num_prd        << std::endl
-        << " evt.num_tag        "  << std::setw(w) << num_tag        << std::endl
-        << " evt.num_flat       "  << std::setw(w) << num_flat       << std::endl
+        << " sevent::descNum          "  << std::endl
+        << " evt.num_curand           "  << std::setw(w) << num_curand         << std::endl
+        << " evt.num_genstep          "  << std::setw(w) << num_genstep        << std::endl
+        << " evt.num_seed             "  << std::setw(w) << num_seed           << std::endl
+        << " evt.num_photon           "  << std::setw(w) << num_photon         << std::endl
+        << " evt.num_photonlite       "  << std::setw(w) << num_photonlite     << std::endl
+        << " evt.num_record           "  << std::setw(w) << num_record         << std::endl
+        << " evt.num_rec              "  << std::setw(w) << num_rec            << std::endl
+        << " evt.num_aux              "  << std::setw(w) << num_aux            << std::endl
+        << " evt.num_sup              "  << std::setw(w) << num_sup            << std::endl
+        << " evt.num_seq              "  << std::setw(w) << num_seq            << std::endl
+        << " evt.num_hit              "  << std::setw(w) << num_hit            << std::endl
+        << " evt.num_hitlite          "  << std::setw(w) << num_hitlite        << std::endl
+        << " evt.num_hitlitemerged    "  << std::setw(w) << num_hitlitemerged  << std::endl
+        << " evt.num_simtrace         "  << std::setw(w) << num_simtrace       << std::endl
+        << " evt.num_prd              "  << std::setw(w) << num_prd            << std::endl
+        << " evt.num_tag              "  << std::setw(w) << num_tag            << std::endl
+        << " evt.num_flat             "  << std::setw(w) << num_flat           << std::endl
         ;
     std::string s = ss.str();
     return s ;
@@ -512,6 +515,7 @@ SEVENT_METHOD void sevent::zero()
     num_photon = 0 ;
 
     num_hitlite = 0 ;
+    num_hitlitemerged = 0 ;
     num_photonlite = 0 ;
 
     num_record = 0 ;
@@ -529,6 +533,7 @@ SEVENT_METHOD void sevent::zero()
     seed = nullptr ;
     hit = nullptr ;
     hitlite = nullptr ;
+    hitlitemerged = nullptr ;
     photon = nullptr ;
     photonlite = nullptr ;
 

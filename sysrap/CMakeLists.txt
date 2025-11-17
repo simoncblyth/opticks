@@ -150,6 +150,7 @@ set(SOURCES
     OpticksPhoton.cc
 
     SU.cu
+    SPM.cu
 
     SEventConfig.cc
     SFrameConfig.cc
@@ -530,6 +531,7 @@ set(HEADERS
 
 
     SU.hh
+    SPM.hh
     SComponent_OLD.hh
     SComp.h
 

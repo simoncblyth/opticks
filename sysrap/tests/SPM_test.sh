@@ -10,6 +10,7 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 name=SPM_test
+script=$name.py
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
@@ -77,6 +78,12 @@ if [ "${arg/dbg}" != "$arg" ]; then
    dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 4
    popd
+fi
+
+if [ "${arg/pdb}" != "$arg" ]; then
+   export AFOLD=/data1/blyth/tmp/GEOM/J25_4_0_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_merge/A000
+   ${IPYTHON:-ipython} --pdb -i $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 5
 fi
 
 exit 0

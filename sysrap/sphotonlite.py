@@ -16,6 +16,8 @@ from __future__ import annotations
 import numpy as np
 from opticks.ana.fold import append_fields
 
+EFFICIENCY_COLLECT = 0x1 << 13
+
 
 class SPhotonLite:
     """
@@ -89,6 +91,8 @@ class SPhotonLite:
         cost = cls.unpack_uint16_to_float(rec["lposcost"])
         phi = ( fphi * 2.0 - 1. ) * np.pi  # scuda.h:phi_from_fphi
 
+
+
         rec = append_fields(
             rec
             ,
@@ -136,3 +140,94 @@ class SPhotonLite:
     def empty(cls, size: int) -> np.ndarray:
         """Return a zero-filled structured array of length *size*."""
         return np.zeros(size, dtype=cls.DTYPE)
+
+
+
+
+
+
+class SPhotonLite_Merge:
+    """
+    Select hits and merge them using a NumPy implementation
+    that follows the thrust::reduce_by_key based approach
+    of sysrap/SPM.cu SPM::merge_partial_select
+
+    For a small number of photons (eg M1)
+    this precisely duplicates in python the hit selection and merging
+    done with the CUDA impl
+    """
+
+    def __init__(self, tw=1.0, select_mask = EFFICIENCY_COLLECT ):
+        self.tw = tw
+        self.select_mask = select_mask
+
+    def __call__(self, _pl):
+        tw = self.tw
+        select_mask = self.select_mask
+
+        # Step 1: Filter hits (same as (p.flagmask & select_mask) == 0)
+        flagmask = _pl[:,3]
+
+        select = (flagmask & select_mask) != 0
+        if not np.any(select): return np.zeros(0, dtype=_pl.dtype )
+
+        _hl = _pl[select]
+        # _hl = _pl[ np.where( _pl[:,3] & (0x1 << 13) )]
+
+        # Step 2: Build 64-bit key: (pmt_id << 48) | bucket
+        identity = _hl[:,0] & 0xFFFF                    # lower 16 bits = PMT ID
+        time = _hl[:,1].view(np.float32)
+        bucket = np.floor(time / tw).astype(np.uint64)
+        key = (identity.astype(np.uint64) << 48) | bucket
+
+        # key = ( ( _hl[:,0] & 0xFFFF ).astype(np.uint64) << 48 ) | np.floor( _hl[:,1].view(np.float32)/1. ).astype(np.uint64)
+
+        # Step 3: Sort by key (exactly what Thrust does internally)
+        sort_idx = np.argsort(key, kind='stable')  # stable = same as thrust::stable_sort_by_key
+        key_sorted = key[sort_idx]
+        _hl_sorted = _hl[sort_idx]
+
+
+        # Step 4: Find group boundaries
+        key_diff = np.diff(key_sorted, prepend=key_sorted[0]-1)     # force first group start
+        group_start = np.where(key_diff != 0)[0]
+
+        # Number of output groups
+        n_groups = len(group_start)
+
+        # Step 5: Reduce each group (vectorized version of sphotonlite_reduce_op)
+        out = np.zeros( (n_groups,4), dtype=_pl.dtype )
+
+        # Take first hit in group as base (like your CUDA reduce does with 'a')
+        first_in_group = group_start
+
+        out[:] = _hl_sorted[first_in_group]
+
+        # Now reduce the rest of each group
+        for i in range(n_groups):
+            start = group_start[i]
+            end = group_start[i+1] if i+1 < n_groups else len(key)
+
+            if end - start == 1:
+                continue
+
+            group_slice = slice(start, end)
+
+            # min time
+            out[i,1] = np.min(_hl_sorted[group_slice,1].view(np.float32)).view(np.uint32)
+
+            # OR all flagmasks
+            out[i,3] |= np.bitwise_or.reduce(_hl_sorted[group_slice,3])
+
+            all_identity = _hl_sorted[group_slice,0] & 0xffff
+
+            # sum hitcounts
+            sum_hitcount = np.sum(_hl_sorted[group_slice,0] >> 16, dtype=np.uint32)
+            out[i,0] = sum_hitcount << 16 | all_identity[0]
+        pass
+        return out
+    pass
+pass
+
+
+

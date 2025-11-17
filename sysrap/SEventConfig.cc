@@ -60,6 +60,7 @@ int SEventConfig::_MaxTagDefault = 0 ;
 int SEventConfig::_MaxFlatDefault = 0 ;
 
 int SEventConfig::_ModeLiteDefault = 0 ;
+int SEventConfig::_ModeMergeDefault = 0 ;
 float SEventConfig::_MergeWindowDefault = 0.f ;  // ns
 
 float SEventConfig::_MaxExtentDomainDefault = 1000.f ;  // mm  : domain compression used by *rec*
@@ -269,6 +270,7 @@ int SEventConfig::_MaxTag       = ssys::getenvint(kMaxTag,  _MaxTagDefault ) ;
 int SEventConfig::_MaxFlat      = ssys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;
 
 int SEventConfig::_ModeLite      = ssys::getenvint(  kModeLite,  _ModeLiteDefault ) ;
+int SEventConfig::_ModeMerge     = ssys::getenvint(  kModeMerge, _ModeMergeDefault ) ;
 float SEventConfig::_MergeWindow = ssys::getenvfloat(kMergeWindow,  _MergeWindowDefault ) ;
 
 float SEventConfig::_MaxExtentDomain  = ssys::getenvfloat(kMaxExtentDomain, _MaxExtentDomainDefault );
@@ -379,6 +381,7 @@ int64_t SEventConfig::MaxTag(){      return _MaxTag ; }
 int64_t SEventConfig::MaxFlat(){     return _MaxFlat ; }
 
 int64_t SEventConfig::ModeLite(){      return _ModeLite ; }
+int64_t SEventConfig::ModeMerge(){     return _ModeMerge ; }
 float   SEventConfig::MergeWindow(){   return _MergeWindow ; }
 
 float SEventConfig::MaxExtentDomain(){ return _MaxExtentDomain ; }
@@ -598,7 +601,8 @@ void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; L
 void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat    = max_flat     ; LIMIT_Check() ; }
 
-void SEventConfig::SetModeLite(   int mode_lite){    _ModeLite   = mode_lite    ; LIMIT_Check() ; ORDER_Check() ; }
+void SEventConfig::SetModeLite(   int mode ){    _ModeLite   = mode  ; LIMIT_Check() ; ORDER_Check() ; }
+void SEventConfig::SetModeMerge(  int mode ){    _ModeMerge  = mode  ; LIMIT_Check() ; ORDER_Check() ; }
 void SEventConfig::SetMergeWindow( float merge_window_ns ){  _MergeWindow  = merge_window_ns    ; LIMIT_Check() ; ORDER_Check() ; }
 
 void SEventConfig::SetMaxExtentDomain( float max_extent){ _MaxExtentDomain = max_extent  ; LIMIT_Check() ; }
@@ -771,6 +775,7 @@ void SEventConfig::LIMIT_Check()
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ;
 
    assert( _ModeLite  == 0 || _ModeLite == 1 || _ModeLite == 2 ) ;   // 2 is for debug, in production only 0 or 1 expected
+   assert( _ModeMerge == 0 || _ModeMerge == 1 );
    assert( _MergeWindow >= 0.f );
 
    assert( _StartIndex >= 0 );
@@ -896,6 +901,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kModeLite
        << std::setw(20) << " ModeLite " << " : " << ModeLite()
+       << std::endl
+       << std::setw(25) << kModeMerge
+       << std::setw(20) << " ModeMerge " << " : " << ModeMerge()
        << std::endl
        << std::setw(25) << kMergeWindow
        << std::setw(20) << " MergeWindow " << " : " << MergeWindow()
@@ -1329,9 +1337,21 @@ unsigned SEventConfig::PhotonComp() // static
     return comp ;
 }
 
-const char* SEventConfig::PhotonCompNameOne() // static
+unsigned SEventConfig::PhotonCompOne() // static
 {
-    return SComp::Name(ModeLite() == 0 ? SCOMP_PHOTON : SCOMP_PHOTONLITE );
+    unsigned comp = 0 ;
+    switch(ModeLite())
+    {
+        case 0: comp = SCOMP_PHOTON     ; break ;
+        case 1: comp = SCOMP_PHOTONLITE ; break ;
+        case 2: comp = SCOMP_PHOTONLITE ; break ;
+    }
+    return comp ;
+}
+
+const char* SEventConfig::PhotonCompOneName() // static
+{
+    return SComp::Name(PhotonCompOne());
 }
 
 
@@ -1350,28 +1370,63 @@ Use::
 
 unsigned SEventConfig::HitComp() // static
 {
+    int64_t lite = ModeLite();
+    int64_t merge = ModeMerge();
+
     unsigned comp = 0 ;
-    switch(ModeLite())
+    switch(lite)
     {
-        case 0: comp = SCOMP_HIT                                  ; break ;
-        case 1: comp = SCOMP_HITLITE                              ; break ;
-        case 2: comp = SCOMP_HIT | SCOMP_HITLITE | SCOMP_HITLOCAL ; break ;
+        case 0: comp = SCOMP_HIT                                             ; break ;
+        case 1: comp = ( merge == 1 ? SCOMP_HITLITEMERGED : SCOMP_HITLITE  ) ; break ;
+        case 2: comp = SCOMP_HIT | SCOMP_HITLITE | SCOMP_HITLOCAL | ( merge == 1 ? SCOMP_HITLITEMERGED : 0 ) ; break ;
+    }
+    return comp ;
+}
+
+/**
+SEventConfig::HitCompOne
+-------------------------
+
++-----------------------------------------------+--------------------------+
+|   Mode                                        |   HitCompOne             |
++===============================================+==========================+
+|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=0   |  SCOMP_HIT               |
++-----------------------------------------------+--------------------------+
+|    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=0   |  SCOMP_HITLITE           |
++-----------------------------------------------+--------------------------+
+|    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=1   |  SCOMP_HITLITEMERGED     |
++-----------------------------------------------+--------------------------+
+
+**/
+
+unsigned SEventConfig::HitCompOne() // static
+{
+    int64_t lite = ModeLite();
+    int64_t merge = ModeMerge();
+
+    unsigned comp = 0 ;
+    switch(lite)
+    {
+        case 0: comp = SCOMP_HIT                                             ; break ;
+        case 1: comp = ( merge == 1 ? SCOMP_HITLITEMERGED : SCOMP_HITLITE )  ; break ;
+        case 2: comp = ( merge == 1 ? SCOMP_HITLITEMERGED : SCOMP_HITLITE )  ; break ;
     }
     return comp ;
 }
 
 
+
 /**
-SEventConfig::HitCompNameOne
+SEventConfig::HitCompOneName
 ----------------------------
 
 Used by SEvt::getNumHit
 
 **/
 
-const char* SEventConfig::HitCompNameOne() // static
+const char* SEventConfig::HitCompOneName() // static
 {
-    return SComp::Name(ModeLite() == 0 ? SCOMP_HIT : SCOMP_HITLITE );
+    return SComp::Name( HitCompOne() );
 }
 
 
@@ -1594,6 +1649,7 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<int>("MaxFlat", MaxFlat() );
 
     meta->set_meta<int>("ModeLite", ModeLite() );
+    meta->set_meta<int>("ModeMerge", ModeMerge() );
     meta->set_meta<float>("MergeWindow", MergeWindow() );
 
     meta->set_meta<float>("MaxExtentDomain", MaxExtentDomain() );

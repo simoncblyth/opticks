@@ -168,6 +168,7 @@ public:
 
     NP*      gatherHit() const ;
     NP*      gatherHitLite() const ;
+    NP*      gatherHitLiteMerged() const ;
 
 #ifndef PRODUCTION
     NP*      gatherSeed() const ;
@@ -192,6 +193,7 @@ private:
     NP*      gatherComponent_(unsigned comp) const ;
     NP*      gatherHit_() const ;
     NP*      gatherHitLite_() const ;
+    NP*      gatherHitLiteMerged_() const ;
 public:
     unsigned getNumHit() const ;
     unsigned getNumHitLite() const ;
