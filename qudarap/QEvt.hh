@@ -170,6 +170,7 @@ public:
     NP*      gatherHitLite() const ;
     NP*      gatherHitLiteMerged() const ;
 
+
 #ifndef PRODUCTION
     NP*      gatherSeed() const ;
     NP*      gatherDomain() const ;
@@ -194,6 +195,8 @@ private:
     NP*      gatherHit_() const ;
     NP*      gatherHitLite_() const ;
     NP*      gatherHitLiteMerged_() const ;
+public:
+    static NP* FinalMerge(const NP* hitlitemerged, cudaStream_t stream );
 public:
     unsigned getNumHit() const ;
     unsigned getNumHitLite() const ;

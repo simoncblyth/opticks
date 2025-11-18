@@ -15,6 +15,11 @@ However for clarity separate fields are used to
 distinguish photon test running that directly uses
 QEvt::setNumPhoton
 
+QEvt::getDevicePtr returns an instance of sevent.h : as such
+sevent.h can be regarded as the GPU side summary of QEvt
+related info.
+
+
 Users of sevent.h
 -------------------
 

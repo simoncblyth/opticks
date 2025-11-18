@@ -329,6 +329,21 @@ elif [ "$TEST" == "merge" ]; then
 
    export QEvt=INFO
 
+elif [ "$TEST" == "merge10" ]; then
+
+   opticks_num_event=1
+   opticks_num_genstep=1
+   opticks_num_photon=M10
+   opticks_running_mode=SRM_TORCH
+   opticks_max_slot=M10
+   opticks_event_mode=DebugLite
+   opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
+   opticks_mode_merge=1
+   opticks_merge_window=1
+
+   #export QEvt=INFO
+   export QSim=INFO
+
 
 elif [ "$TEST" == "ref1" ]; then
 

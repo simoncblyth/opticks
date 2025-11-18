@@ -122,6 +122,8 @@ public:
     static bool KEEP_SUBFOLD ;
 
     double simulate(int eventID, bool reset_ );      // via cx launch
+    void   simulate_final_merge();
+
     NP*    simulate(const NP* gs, int eventID );     // higher level API for use from CSGOptiXService.h
 
     static void MaybeSaveIGS(int eventID, NP* igs);

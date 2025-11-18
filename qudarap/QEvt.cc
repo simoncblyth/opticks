@@ -1111,6 +1111,8 @@ NP* QEvt::gatherHitLiteMerged_() const
 {
     cudaStream_t stream = 0 ;
 
+    // TODO: adopt merge_partial_select_async and return NP_Future, avoiding the sync ?
+
     SPM::merge_partial_select(
          evt->photonlite,
          evt->num_photonlite,
@@ -1120,12 +1122,57 @@ NP* QEvt::gatherHitLiteMerged_() const
          SEventConfig::MergeWindow(),
          stream);
 
+    cudaStreamSynchronize(stream); // blocks until all preceeding operations in stream complete
+
     NP* hitlitemerged = sphotonlite::zeros( evt->num_hitlitemerged );
     SPM::copy_device_to_host_async<sphotonlite>( (sphotonlite*)hitlitemerged->bytes(), evt->hitlitemerged, evt->num_hitlitemerged, stream );
+
+    cudaStreamSynchronize(stream); // blocks until all preceeding operations in stream complete
 
     LOG(LEVEL) << " hitlitemerged.sstr " << hitlitemerged->sstr() ;
 
     return hitlitemerged ;
+}
+
+
+NP* QEvt::FinalMerge(const NP* concat_hitlitemerged, cudaStream_t stream ) // static
+{
+    const NP* all = concat_hitlitemerged ;
+    size_t num_all = all->num_items();
+
+    // 1. alloc and upload concatenation of partially merged hits
+
+    sphotonlite* d_all = nullptr;
+    cudaMallocAsync(&d_all, num_all * sizeof(sphotonlite), stream);
+    cudaMemcpyAsync(d_all, (sphotonlite*)all->bytes(), num_all * sizeof(sphotonlite), cudaMemcpyHostToDevice, stream);
+
+    // 2. invoke final merge
+
+    SPM_MergeResult result = SPM::merge_partial_select_async(
+         d_all,
+         num_all,
+         SEventConfig::HitMask(),
+         SEventConfig::MergeWindow(),
+         stream);
+
+    cudaFreeAsync(d_all, stream);
+
+    // 3. wait on merge completion
+    cudaStream_t download_stream ;
+    cudaStreamCreate(&download_stream);
+
+    result.wait( download_stream );
+
+    // 4. use merge result to host alloc and download
+
+    NP* final_hitlitemerged = sphotonlite::zeros( result.count );
+    SPM::copy_device_to_host_async<sphotonlite>( (sphotonlite*)final_hitlitemerged->bytes(), result.ptr, result.count, download_stream );
+    cudaFreeAsync(result.ptr, download_stream);
+
+    cudaStreamSynchronize(download_stream);
+    // TODO: return NP_Future to avoid sync in the tail
+
+    return final_hitlitemerged ;
 }
 
 

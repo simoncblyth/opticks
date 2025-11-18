@@ -10,9 +10,41 @@ Grok generated code under test
 #include "sphotonlite.h"
 #include <string>
 
+
+
+struct SPM_MergeResult
+{
+    sphotonlite* ptr = nullptr;
+    size_t       count = 0;
+    cudaStream_t stream = nullptr;
+    cudaEvent_t  ready_event = nullptr;   // caller must destroy with clean
+
+    void wait( cudaStream_t other_stream );
+};
+
+inline void SPM_MergeResult::wait( cudaStream_t other_stream )
+{
+    if (!ready_event) return ;
+    if(other_stream) cudaStreamWaitEvent(other_stream, ready_event,0);
+    cudaEventDestroy(ready_event);
+    ready_event=nullptr;
+}
+
+
+
+
+
 struct SPM
 {
     static constexpr float DEFAULT_TIME_WINDOW = 1.0f ;   // ns
+
+    static SPM_MergeResult merge_partial_select_async(
+           const sphotonlite*  d_photonlite,
+           size_t            num_photonlite,
+           unsigned         select_flagmask,
+           float                time_window,
+           cudaStream_t              stream );
+
 
     // time_window == 0.f  →  only selection (two-pass, exact size)
     static void merge_partial_select(

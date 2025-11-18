@@ -21,8 +21,26 @@ SPM::merge_partial_select
 SavePartialData
    struct used to communicate into callback
 
-save_partial_callback
+save_partial_callback_async
 
+
+SPM::save_partial
+
+SPM::load_partial
+
+{
+    Partial
+
+    load_partial_for_merge
+}
+
+SPM::merge_incremental
+
+SPM::copy_device_to_host_async
+
+SPM::free
+
+SPM::free_async
 
 
 **/
@@ -42,9 +60,11 @@ save_partial_callback
 
 using namespace thrust::placeholders;
 
+
+
 /**
-sphotonlite_key_functor
--------------------------
+sphotonlite_key_functor_with_select_mask
+-----------------------------------------
 
 Returns sentinel ~0ull if not selected, otherwise bitwise combination
 of id(16bits) and bucket(48bits)
@@ -53,7 +73,7 @@ HMM: I expect 16 bits for the  bucket would be enough
 **/
 
 
-struct sphotonlite_key_functor
+struct sphotonlite_key_functor_with_select_mask
 {
     float    tw;
     unsigned select_mask;
@@ -66,6 +86,19 @@ struct sphotonlite_key_functor
         return (uint64_t(id) << 48) | uint64_t(bucket);
     }
 };
+
+struct sphotonlite_key_functor
+{
+    float    tw;
+    __device__ uint64_t operator()(const sphotonlite& p) const
+    {
+        unsigned id = p.identity() & 0xFFFFu;
+        unsigned bucket = static_cast<unsigned>(p.time / tw);
+        return (uint64_t(id) << 48) | uint64_t(bucket);
+    }
+};
+
+
 
 struct sphotonlite_reduce_op
 {
@@ -85,6 +118,36 @@ struct sphotonlite_select_pred
     __device__ bool operator()(const sphotonlite& p) const { return (p.flagmask & mask) != 0; }
 };
 
+
+
+SPM_MergeResult SPM::merge_partial_select_async(
+    const sphotonlite*  d_in,
+    size_t            num_in,
+    unsigned select_flagmask,
+    float        time_window,
+    cudaStream_t      stream )
+{
+    SPM_MergeResult result  ;
+    result.stream = stream;
+
+    // This call is already fully async on 'stream'
+    merge_partial_select(
+            d_in,
+            num_in,
+            &result.ptr,
+            &result.count,
+            select_flagmask,
+            time_window,
+            stream );
+
+    cudaEventCreateWithFlags(&result.ready_event, cudaEventDisableTiming);
+    cudaEventRecord(result.ready_event, stream);
+    // Record event immediately after last operation
+
+    return result ;
+}
+
+
 /**
 SPM::merge_partial_select
 -------------------------
@@ -93,17 +156,19 @@ Flagmask select hits from input photons and merge the hits by (id,timebucket)
 with incremented counts. Obviously this requires the photons and hits to
 simultaneously fit into VRAM.
 
-1. special case time_window:0.f to just select without merging, using count_if, allocate, copy_if
+0. apply selection using count_if, allocate, copy_if
+1. special case time_window:0.f to just return selected without merging
 2. allocate `(uint64_t*)d_keys` and `(sphotonlite*)d_vals`
 3. populate d_keys using sphotonlite_key_functor and d_vals using copy_n
 4. sort_by_key arranging hits with same (id, timebucket) together
 5. allocate d_out_key d_out_val with space for num_in [HMM, COULD DOUBLE PASS TO REDUCE MEMORY PERHAPS?]
 6. reduce_by_key merging contiguous equal (id,timebucket) hits
-7. get number of merged hits, potentially including a non-hitmask selected sentinel key ~0ull
-8. remove trailing sentinel (~0ull) if present
-9. allocate d_final to fit merged hits, d2d copy d_final from d_out_val
-10. free temporary buffers
-11. set d_out and num_out
+7. get number of merged hits
+8. allocate d_final to fit merged hits, d2d copy d_final from d_out_val
+9. free temporary buffers
+10. set d_out and num_out
+
+sed -n '121,266p' SPM.cu | pbcopy
 
 **/
 
@@ -125,20 +190,28 @@ void SPM::merge_partial_select(
     auto policy = thrust::cuda::par_nosync.on(stream);
     auto in = thrust::device_ptr<const sphotonlite>(d_in);
 
-    // 1. special case time_window:0.f to just select without merging, using count_if, allocate, copy_if
 
+    // 0. apply selection using count_if, allocate, copy_if
+
+    sphotonlite_select_pred selector{select_flagmask};
+    size_t num_selected = thrust::count_if(policy, in, in + num_in, selector);
+
+    if (num_selected == 0)
+    {
+        *d_out = nullptr;
+        if (num_out) *num_out = 0;
+        return;
+    }
+
+    sphotonlite* d_selected = nullptr;
+    cudaMallocAsync(&d_selected, num_selected * sizeof(sphotonlite), stream);
+    thrust::copy_if(policy, in, in + num_in, thrust::device_ptr<sphotonlite>(d_selected), selector);
+
+    // 1. special case time_window:0.f to just return selected without merging
     if (time_window == 0.f)
     {
-        sphotonlite_select_pred pred{select_flagmask};
-        int kept = thrust::count_if(policy, in, in + num_in, pred);
-        sphotonlite* d_filtered = nullptr;
-        if (kept > 0) {
-            cudaMallocAsync(&d_filtered, kept * sizeof(sphotonlite), stream);
-            thrust::copy_if(policy, in, in + num_in,
-                            thrust::device_ptr<sphotonlite>(d_filtered), pred);
-        }
-        *d_out = d_filtered;
-        if (num_out) *num_out = kept;
+        *d_out = d_selected;
+        if (num_out) *num_out = num_selected ;
         return;
     }
 
@@ -147,59 +220,55 @@ void SPM::merge_partial_select(
 
     uint64_t* d_keys = nullptr;
     sphotonlite* d_vals = nullptr;
-    cudaMallocAsync(&d_keys, num_in * sizeof(uint64_t),   stream);
-    cudaMallocAsync(&d_vals, num_in * sizeof(sphotonlite), stream);
+    cudaMallocAsync(&d_keys, num_selected * sizeof(uint64_t),    stream);
+    cudaMallocAsync(&d_vals, num_selected * sizeof(sphotonlite), stream);
 
 
     // 3. populate d_keys using key_functor and d_vals using copy_n
+    auto selected = thrust::device_ptr<const sphotonlite>(d_selected);
 
-    auto keys_it = thrust::make_transform_iterator(in, sphotonlite_key_functor{time_window, select_flagmask});
-    thrust::copy(  policy, keys_it, keys_it + num_in, thrust::device_ptr<uint64_t>(d_keys));
-    thrust::copy_n(policy, in     , num_in          , thrust::device_ptr<sphotonlite>(d_vals));
+    auto keys_it = thrust::make_transform_iterator(selected, sphotonlite_key_functor{time_window});
+
+    thrust::copy(  policy, keys_it , keys_it + num_selected, thrust::device_ptr<uint64_t>(d_keys));
+    thrust::copy_n(policy, selected, num_selected          , thrust::device_ptr<sphotonlite>(d_vals));
 
 
     // 4. sort_by_key arranging hits with same (id, timebucket) to be contiguous
 
     thrust::sort_by_key(policy,
                         thrust::device_ptr<uint64_t>(d_keys),
-                        thrust::device_ptr<uint64_t>(d_keys + num_in),
+                        thrust::device_ptr<uint64_t>(d_keys + num_selected),
                         thrust::device_ptr<sphotonlite>(d_vals));
 
     // 5. allocate d_out_key d_out_val with space for num_in
 
-    uint64_t* d_out_key = nullptr; sphotonlite* d_out_val = nullptr;
-    cudaMallocAsync(&d_out_key, num_in * sizeof(uint64_t),   stream);
-    cudaMallocAsync(&d_out_val, num_in * sizeof(sphotonlite), stream);
+    uint64_t*    d_out_key = nullptr;
+    sphotonlite* d_out_val = nullptr;
+    cudaMallocAsync(&d_out_key, num_selected * sizeof(uint64_t),   stream);
+    cudaMallocAsync(&d_out_val, num_selected * sizeof(sphotonlite), stream);
 
     // 6. reduce_by_key merging contiguous equal (id,timebucket) hits
 
+    auto d_out_key_begin = thrust::device_ptr<uint64_t>(d_out_key);
+
     auto ends = thrust::reduce_by_key(policy,
                 thrust::device_ptr<uint64_t>(d_keys),
-                thrust::device_ptr<uint64_t>(d_keys + num_in),
+                thrust::device_ptr<uint64_t>(d_keys + num_selected),
                 thrust::device_ptr<sphotonlite>(d_vals),
-                thrust::device_ptr<uint64_t>(d_out_key),
+                d_out_key_begin,                      // output keys
                 thrust::device_ptr<sphotonlite>(d_out_val),
-                thrust::equal_to<uint64_t>(),
+                thrust::equal_to<uint64_t>{},
                 sphotonlite_reduce_op());
 
-    // 7. get number of merged hits, potentially including a non-hitmask selected sentinel key ~0ull
-
-    size_t merged = ends.first - thrust::device_ptr<uint64_t>(d_out_key);
 
 
-    // 8. remove trailing sentinel (~0ull) if present
-
-    if (merged > 0) {
-        uint64_t last_key;
-        cudaMemcpyAsync(&last_key, d_out_key + merged - 1, sizeof(uint64_t),
-                        cudaMemcpyDeviceToHost, stream);
-        cudaStreamSynchronize(stream);
-        if (last_key == ~0ull) --merged;
-    }
+    // 7. get number of merged hits
+    size_t merged = ends.first.get() - d_out_key ;
+    // THE ABOVE LOOKS A BIT DODGY AS USING DEVICE POINTER ARITHMETIC ON HOST WITH PTR THAT
+    // MIGHT NOT BE SET YET : BUT DOCS APPARENTLY SAY ITS OK, AND THERE IS NO thrust::distance(policy...)
 
 
-
-    // 9. allocate d_final to fit merged hits, d2d copy d_final from d_out_val
+    // 8. allocate d_final to fit merged hits, d2d copy d_final from d_out_val
     sphotonlite* d_final = nullptr;
     if (merged > 0) {
         cudaMallocAsync(&d_final, merged * sizeof(sphotonlite), stream);
@@ -208,7 +277,7 @@ void SPM::merge_partial_select(
     }
 
 
-    // 10. free temporary buffers
+    // 9. free temporary buffers
 
     cudaFreeAsync(d_keys, stream);
     cudaFreeAsync(d_vals, stream);
@@ -216,12 +285,32 @@ void SPM::merge_partial_select(
     cudaFreeAsync(d_out_val, stream);
 
 
-    // 11. set d_out and num_out
+    // 10. set d_out and num_out
 
     *d_out = d_final;
     if(num_out) *num_out = merged;
     printf("]SPM::merge_partial_select merged %d  \n", merged );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -253,7 +342,7 @@ save_partial_callback
 **/
 
 
-extern "C" void CUDART_CB save_partial_callback(cudaStream_t stream, cudaError_t status, void* userData)
+extern "C" void CUDART_CB save_partial_callback_async(cudaStream_t stream, cudaError_t status, void* userData)
 {
     (void)stream;
     SavePartialData* data = static_cast<SavePartialData*>(userData);
@@ -261,7 +350,7 @@ extern "C" void CUDART_CB save_partial_callback(cudaStream_t stream, cudaError_t
         fprintf(stderr, "save_partial_callback: CUDA error %d\n", status);
     }
 
-    // 1. open path and write h_pinned to it
+    // 1. open path and write h_pinned to it   (HMM: could instead save to .npy)
 
     std::ofstream f(data->path, std::ios::binary);
     if (f) {
@@ -272,8 +361,8 @@ extern "C" void CUDART_CB save_partial_callback(cudaStream_t stream, cudaError_t
 
     // 2. free d_ptr and h_pinned
 
+    cudaFreeAsync(data->h_pinned, stream);
     cudaFree(data->d_ptr);
-    cudaFreeHost(data->h_pinned);
     delete data;
 }
 
@@ -286,34 +375,32 @@ SPM::save_partial
 2. async copy count hits to h_pinned from d_partial
 3. setup callback that saves to file after copy completes then cleans up
 
+Replaced ancient cudaMallocHost with cudaMallocAsync as the later is
+memlock limited by "ulimit -l"  (default 8MB).
+
 **/
+
 
 
 void SPM::save_partial(
         const sphotonlite* d_partial,
-        size_t             count,
+        size_t count,
         const std::string& path,
-        cudaStream_t       stream )
+        cudaStream_t stream )
 {
     if (count == 0 || !d_partial) {
         cudaFree(const_cast<sphotonlite*>(d_partial));
         return;
     }
 
-    // 1. host allocate *h_pinned* space for *count* hits
-
-    sphotonlite* h_pinned = nullptr;
-    cudaMallocHost(&h_pinned, count * sizeof(sphotonlite));
-
-    // 2. async copy count hits to h_pinned from d_partial
+    sphotonlite* h_pinned;
+    cudaMallocAsync(&h_pinned, count * sizeof(sphotonlite), stream);
 
     cudaMemcpyAsync(h_pinned, d_partial, count * sizeof(sphotonlite),
                     cudaMemcpyDeviceToHost, stream);
 
-    // 3. setup callback that saves to file after copy completes then cleans up
-
     SavePartialData* cb_data = new SavePartialData{h_pinned, const_cast<sphotonlite*>(d_partial), path, count};
-    cudaStreamAddCallback(stream, save_partial_callback, cb_data, 0);
+    cudaStreamAddCallback(stream, save_partial_callback_async, cb_data, 0);
 }
 
 

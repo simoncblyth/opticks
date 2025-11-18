@@ -24,9 +24,13 @@ afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_e
 export AFOLD=${AFOLD:-$afold}
 
 #test=merge_partial_select
-test=dump_partial
+test=merge_partial_select_async
+#test=dump_partial
 
 export TEST=${TEST:-$test}
+
+#export OPTICKS_MERGE_WINDOW=50
+export OPTICKS_MERGE_WINDOW=1
 
 
 mkdir -p $FOLD
@@ -34,7 +38,7 @@ mkdir -p $FOLD
 defarg="info_nvcc_gcc_run"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE name tmp TMP FOLD bin defarg arg cuda_prefix CUDA_PREFIX test TEST AFOLD"
+vv="BASH_SOURCE name tmp TMP FOLD bin defarg arg cuda_prefix CUDA_PREFIX test TEST AFOLD OPTICKS_MERGE_WINDOW"
 
 if [ "${arg/info}" != "$arg" ]; then
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done

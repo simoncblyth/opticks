@@ -171,6 +171,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     int  getStage() const ;
 
 
+    void* async_handle = nullptr;
+
     int cfgrc ;
 
     int index ;

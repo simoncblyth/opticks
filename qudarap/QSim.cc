@@ -8,6 +8,7 @@
 #include "spath.h"
 #include "SProf.hh"
 
+#include "SComp.h"
 #include "SEvt.hh"
 #include "SSim.hh"
 #include "scuda.h"
@@ -525,6 +526,16 @@ double QSim::simulate(int eventID, bool reset_)
     LOG_IF(fatal, concat_rc != 0) << " sev->topfold->concat FAILED " ;
     assert(concat_rc == 0);
 
+    bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
+    //bool need_final_merge = num_slice > 1 && has_hlm ;
+    bool need_final_merge = num_slice > 0 && has_hlm ;   // always when has_hlm for small scale debug
+    LOG(LEVEL)
+         << " num_slice " << num_slice
+         << " has_hlm " << ( has_hlm ? "YES" : "NO " )
+         << " need_final_merge " << ( need_final_merge ? "YES" : "NO " )
+         ;
+    if(need_final_merge) simulate_final_merge();
+
 
     if(!KEEP_SUBFOLD) sev->topfold->clear_subfold();
 
@@ -582,6 +593,17 @@ double QSim::simulate(int eventID, bool reset_)
         ;
 
     return tot_dt ;
+}
+
+
+void QSim::simulate_final_merge()
+{
+    const NP* hlm = sev->topfold->get(SComp::HITLITEMERGED_);
+    LOG(info) << " hlm " << ( hlm ? hlm->sstr() : "-" );
+
+
+
+
 }
 
 

@@ -48,6 +48,7 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "spath.h"
 #include "smeta.h"
 #include "SProf.hh"
+//#include "SMgr.h"
 
 #include "SGLM.h"
 #include "NP.hh"
@@ -392,7 +393,20 @@ CSGOptiX::~CSGOptiX()
 }
 
 /**
-TODO: generalize for ptx or optixir
+CSGOptiX::CSGOptiX
+--------------------
+
+Instanciated at near to main level in both running modes:
+
+* pure-Opticks running (no Geant4) eg via cxs_min.sh uses CSGOptiX::SimulateMain
+  that instanciates via CSGOptiX::Create with event processing CSGOptiX::simulate
+  called directly from CSGOptiX::SimulateMain
+
+* Geant4 integrated running eg from OJ python "main", instanciation again uses
+  CSGOptiX::Create that is invoked from G4CXOpticks::setGeometry_
+  with event processing CSGOptiX::simulate called from
+  junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
+
 **/
 
 
@@ -422,7 +436,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     kernel_dt(0.),
     sctx(nullptr),
     sim(QSim::Get()),
-    qev(sim == nullptr  ? nullptr : sim->qev)
+    qev(sim == nullptr  ? nullptr : sim->qev)   // QEvt
 {
     init();
 }
@@ -1079,7 +1093,7 @@ double CSGOptiX::launch()
     unsigned depth  = 0 ;
     switch(raygenmode)
     {
-        case SRG_RENDER:    { width = params->width           ; height = params->height ; depth = params->depth ; } ; break ;
+        case SRG_RENDER:    { width = params->width         ; height = params->height ; depth = params->depth ; } ; break ;
         case SRG_SIMTRACE:  { width = qev->getNumSimtrace() ; height = 1              ; depth = 1             ; } ; break ;
         case SRG_SIMULATE:  { width = qev->getNumPhoton()   ; height = 1              ; depth = 1             ; } ; break ;
     }
@@ -1110,24 +1124,20 @@ double CSGOptiX::launch()
          << " DEBUG_SKIP_LAUNCH " << ( DEBUG_SKIP_LAUNCH ? "YES" : "NO " )
          ;
 
-#if OPTIX_VERSION < 70000
-    assert( width <= 1000000 );
-    six->launch(width, height, depth );
-#else
     if(DEBUG_SKIP_LAUNCH == false)
     {
         CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
         assert( d_param && "must alloc and upload params before launch");
 
-        CUstream stream = 0 ;  // default stream
-        OPTIX_CHECK( optixLaunch( pip->pipeline, stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+        //cudaStream_t stream = SMgr::Stream();
+        cudaStream_t stream = 0 ; // default stream
+        OPTIX_CHECK( optixLaunch( pip->pipeline, (CUstream)stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
 
         CUDA_SYNC_CHECK();
         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize
         // THIS LIKELY HAS LARGE PERFORMANCE IMPLICATIONS : BUT NOT EASY TO AVOID (MULTI-BUFFERING ETC..)
         kernel_count += 1 ;
     }
-#endif
 
 
     TP _t1 = std::chrono::high_resolution_clock::now();

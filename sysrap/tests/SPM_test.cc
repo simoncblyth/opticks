@@ -37,6 +37,7 @@ struct SPM_test
     void init();
 
     int merge_partial_select();
+    int merge_partial_select_async();
 
     int dump();
     int dump_hitlite();
@@ -89,6 +90,7 @@ inline int SPM_test::test(int argc, char** argv)
 
     int rc = 0 ;
     if(ALL||0==strcmp(TEST,"merge_partial_select")) rc += merge_partial_select() ;
+    if(ALL||0==strcmp(TEST,"merge_partial_select_async")) rc += merge_partial_select_async() ;
     if(ALL||0==strcmp(TEST,"dump"))                 rc += dump() ;
     if(ALL||0==strcmp(TEST,"dump_partial"))         rc += dump_partial() ;
     if(ALL||0==strcmp(TEST,"dump_hitlite"))         rc += dump_hitlite() ;
@@ -103,7 +105,7 @@ int SPM_test::merge_partial_select()
 {
     cudaStream_t stream = 0 ;
     sphotonlite* d_hitlitemerged = nullptr ;
-    int          num_hitlitemerged = 0 ;
+    size_t       num_hitlitemerged = 0 ;
 
     SPM::merge_partial_select(
             d_photonlite,
@@ -127,6 +129,44 @@ int SPM_test::merge_partial_select()
 
     return 0 ;
 }
+
+
+int SPM_test::merge_partial_select_async()
+{
+    cudaStream_t merge_stream ;
+    cudaStreamCreate(&merge_stream);
+
+    SPM_MergeResult result = SPM::merge_partial_select_async(
+           d_photonlite,
+           num_photonlite,
+           select_flagmask,
+           merge_window_ns,
+           merge_stream );
+    // merge_stream does all then ready_event recorded on stream once all done
+
+    cudaStream_t download_stream ;
+    cudaStreamCreate(&download_stream);
+
+    // make download_stream wait for merge_stream ready_event
+    result.wait(download_stream);
+
+    // Now safe to use result.count and result.ptr from completed so far download_stream
+    NP* hitlitemerged = sphotonlite::zeros( result.count );
+    cudaMemcpyAsync(hitlitemerged->bytes(), result.ptr, result.count * sizeof(sphotonlite), cudaMemcpyDeviceToHost, download_stream);
+
+    std::cout
+        << "SPM_test::merge_partial_select_async"
+        << " hitlitemerged " << ( hitlitemerged ? hitlitemerged->sstr() : "-" )
+        << " result.count " << result.count
+        << "\n"
+        ;
+
+
+    return 0 ;
+}
+
+
+
 
 int SPM_test::dump()
 {
@@ -193,7 +233,7 @@ int SPM_test::merge_incremental()
     };
 
     sphotonlite* d_final = nullptr;
-    int          final_n = 0;
+    size_t       final_n = 0;
     cudaStream_t stream = 0 ;
 
     SPM::merge_incremental( paths, &d_final, &final_n, merge_window_ns, stream );
@@ -211,7 +251,7 @@ int SPM_test::merge_partial_select_merge_incremental()
     cudaStream_t stream;
     cudaStreamCreate(&stream);
     sphotonlite* d_partial = nullptr ;
-    int          n_partial = 0 ;
+    size_t       n_partial = 0 ;
 
     SPM::merge_partial_select(d_photonlite, num_photonlite, &d_partial, &n_partial,
                               select_flagmask, merge_window_ns, stream);
@@ -224,7 +264,7 @@ int SPM_test::merge_partial_select_merge_incremental()
     // ... later
     const char* paths[] = { "partial_0.bin", "partial_1.bin", nullptr };
     sphotonlite* d_final = nullptr;
-    int          n_final = 0;
+    size_t       n_final = 0;
 
     SPM::merge_incremental(paths, &d_final, &n_final, merge_window_ns, stream);
 
