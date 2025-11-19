@@ -908,19 +908,6 @@ unsigned QEvt::getNumHitLite() const
     return evt->num_hitlite ;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
 QEvt::gatherHit
 ------------------
@@ -1013,13 +1000,24 @@ NP* QEvt::gatherHitLite() const
 }
 
 
+
+/**
+QEvt::gatherHitLiteMerged
+---------------------------
+
+NB with multi-launch a further final merge is required,
+that is invoked from QSim::simulate
+
+**/
+
 NP* QEvt::gatherHitLiteMerged() const
 {
     bool has_photonlite = hasPhotonLite();
     LOG_IF(LEVEL, !has_photonlite) << " gatherHitLiteMerged called when there is no photonlite array " ;
     if(!has_photonlite) return nullptr ;
 
-    NP* hitlitemerged = gatherHitLiteMerged_() ;
+    cudaStream_t stream = 0 ;
+    NP* hitlitemerged = PerLaunchMerge(evt, stream);
 
     LOG(LEVEL)
         << " evt.photonlite " << evt->photonlite
@@ -1036,9 +1034,6 @@ NP* QEvt::gatherHitLiteMerged() const
 
     return hitlitemerged ;
 }
-
-
-
 
 
 
@@ -1061,6 +1056,7 @@ QEvt::gatherHit_
 NP* QEvt::gatherHit_() const
 {
     LOG_IF(info, LIFECYCLE) ;
+
     evt->hit = QU::device_alloc<sphoton>( evt->num_hit, "QEvt::gatherHit_:sphoton" );
 
     SU::copy_if_device_to_device_presized_sphoton( evt->hit, evt->photon, evt->num_photon,  *photon_selector );
@@ -1072,6 +1068,7 @@ NP* QEvt::gatherHit_() const
     QU::device_free<sphoton>( evt->hit );
 
     evt->hit = nullptr ;
+
     LOG(LEVEL) << " hit.sstr " << hit->sstr() ;
 
     return hit ;
@@ -1081,6 +1078,7 @@ NP* QEvt::gatherHit_() const
 NP* QEvt::gatherHitLite_() const
 {
     LOG_IF(info, LIFECYCLE) ;
+
     evt->hitlite = QU::device_alloc<sphotonlite>( evt->num_hitlite, "QEvt::gatherHitLite_:sphotonlite" );
 
     SU::copy_if_device_to_device_presized_sphotonlite( evt->hitlite, evt->photonlite, evt->num_photonlite,  *photonlite_selector );
@@ -1092,27 +1090,16 @@ NP* QEvt::gatherHitLite_() const
     QU::device_free<sphotonlite>( evt->hitlite );
 
     evt->hitlite = nullptr ;
+
     LOG(LEVEL) << " hitlite.sstr " << hitlite->sstr() ;
 
     return hitlite ;
 }
 
-/**
-QEvt::gatherHitLiteMerged_
----------------------------
-
-NB with multi-launch a further final merge is required,
-that is invoked from QSim::simulate
-
-**/
 
 
-NP* QEvt::gatherHitLiteMerged_() const
+NP* QEvt::PerLaunchMerge(sevent* evt, cudaStream_t stream ) // static
 {
-    cudaStream_t stream = 0 ;
-
-    // TODO: adopt merge_partial_select_async and return NP_Future, avoiding the sync ?
-
     SPM::merge_partial_select(
          evt->photonlite,
          evt->num_photonlite,
@@ -1125,7 +1112,11 @@ NP* QEvt::gatherHitLiteMerged_() const
     cudaStreamSynchronize(stream); // blocks until all preceeding operations in stream complete
 
     NP* hitlitemerged = sphotonlite::zeros( evt->num_hitlitemerged );
+
     SPM::copy_device_to_host_async<sphotonlite>( (sphotonlite*)hitlitemerged->bytes(), evt->hitlitemerged, evt->num_hitlitemerged, stream );
+
+    cudaFreeAsync(evt->hitlitemerged, stream);
+    evt->hitlitemerged = nullptr ;
 
     cudaStreamSynchronize(stream); // blocks until all preceeding operations in stream complete
 
@@ -1134,6 +1125,28 @@ NP* QEvt::gatherHitLiteMerged_() const
     return hitlitemerged ;
 }
 
+
+
+/**
+QEvt::FinalMerge
+----------------
+
+Canonical argument array this is used with is concat_hitlitemerged
+
+Conceptually the FinalMerge and PerLaunchMerge use the same processing
+with both flagmask selection and hit merging using (identity,timebucket) key
+with typical OPTICKS_MERGE_WINDOW of 1 (ns).  However the two cases differ
+in their inputs:
+
++----------------+---------------------------------------+----------------------------------+
+| Method         |  Input                                |   Output                         |
++================+=======================================+==================================+
+| PerLaunchMerge |  photonlite device array              |  hitlitemerged NP array on host  |
++----------------+---------------------------------------+----------------------------------+
+| FinalMerge     |  concat hitlitemerge NP array on host |  ditto                           |
++----------------+---------------------------------------+----------------------------------+
+
+**/
 
 NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
 {
@@ -1145,8 +1158,9 @@ NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
     // make consumer wait for producer_result.ready event
     producer_result.wait(consumer);
 
-    NP* hit = producer_result.arr ;
-    return hit ;
+    NP* hlm = producer_result.arr ;
+
+    return hlm ;
 }
 
 
@@ -1154,10 +1168,6 @@ NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
 QEvt::FinalMerge_async
 -----------------------
 
-Canonical argument array this is used with is concat_hitlitemerged
-
-
-    //cudaStreamSynchronize(stream); // DEBUG SYNC
 
 **/
 
@@ -1319,7 +1329,10 @@ void QEvt::setNumPhoton(unsigned num_photon )
     LOG(LEVEL);
 
     sev->setNumPhoton(num_photon);
-    if( evt->photon == nullptr ) device_alloc_photon();
+
+    bool noalloc = evt->no_photon_or_photonlite_alloc();
+    if(noalloc) device_alloc_photon();
+
     uploadEvt();
 }
 
@@ -1334,8 +1347,6 @@ void QEvt::setNumSimtrace(unsigned num_simtrace)
 
 
 
-
-
 /**
 QEvt::device_alloc_photon
 ----------------------------
@@ -1343,12 +1354,44 @@ QEvt::device_alloc_photon
 Buffers are allocated on device and the device pointers are collected
 into hostside sevent.h "evt"
 
+Q: With multi-launch within an event running, is this called for every launch ?
+A: NO IT SHOULD NOT (WOULD BE A LEAK IF IT DID)
+   Although QEvt::setNumPhoton is necessarily called for every launch by QEvt::setGenstepUpload
+   the noalloc check means that this only gets called the first time which allocs with
+   the size of arrays based on max_slot (the maximum possible number of photons in one launch)
+   allowing reuse of the same buffers.
+
+::
+
+    BP=QEvt::device_alloc_photon cxs_min.sh
+
+    (gdb) bt
+    #0  QEvt::device_alloc_photon (this=0x186569c0) at /home/blyth/opticks/qudarap/QEvt.cc:1370
+    #1  0x00007ffff5ec1a37 in QEvt::setNumPhoton (this=0x186569c0, num_photon=257899584) at /home/blyth/opticks/qudarap/QEvt.cc:1337
+    #2  0x00007ffff5ebb428 in QEvt::setGenstepUpload (this=0x186569c0, qq0=0x1dba8700, gs_start=0, gs_stop=16) at /home/blyth/opticks/qudarap/QEvt.cc:426
+    #3  0x00007ffff5eb9efa in QEvt::setGenstepUpload_NP (this=0x186569c0, gs_=0x1e6a8780, gss_=0x1e6262e0) at /home/blyth/opticks/qudarap/QEvt.cc:225
+    #4  0x00007ffff5e716c9 in QSim::simulate (this=0x18656a20, eventID=0, reset_=true) at /home/blyth/opticks/qudarap/QSim.cc:481
+    #5  0x00007ffff7e35b54 in CSGOptiX::simulate (this=0x1866b3e0, eventID=0, reset=true) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:777
+    #6  0x00007ffff7e3255c in CSGOptiX::SimulateMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:177
+    #7  0x0000000000404a95 in main (argc=1, argv=0x7fffffffaf28) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXSMTest.cc:13
+    (gdb)
+
+
+Q: Are these buffers ever dealloc ?
+A: NO, dont think so : same buffers reused for all launches of all events so
+   they get "cleaned up" when the CUDA context is reclaimed
+
 **/
 
 void QEvt::device_alloc_photon()
 {
     LOG_IF(info, LIFECYCLE) ;
     SetAllocMeta( QU::alloc, evt );   // do this first as memory errors likely to happen in following lines
+
+    bool with_photon     = evt->with_photon();
+    bool with_photonlite = evt->with_photonlite();
+    bool noalloc = evt->no_photon_or_photonlite_alloc();
+
 
     LOG(LEVEL)
         << " evt.max_slot   " << evt->max_slot
@@ -1362,11 +1405,16 @@ void QEvt::device_alloc_photon()
         << " evt.num_prd    " << evt->num_prd
         << " evt.num_tag    " << evt->num_tag
         << " evt.num_flat   " << evt->num_flat
+        << " evt.with_photon " << evt->with_photon()
+        << " evt.with_photonlite " << evt->with_photonlite()
+        << " evt.noalloc " << noalloc
 #endif
         ;
 
-    evt->photon  = evt->max_slot > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot, "QEvt::device_alloc_photon/max_slot*sizeof(sphoton)" ) : nullptr ;
-    evt->photonlite = evt->mode_lite > 0 ? QU::device_alloc_zero<sphotonlite>( evt->max_slot, "QEvt::device_alloc_photon/max_slot*sizeof(sphotonlite)" ) : nullptr ;
+    assert( noalloc );
+
+    evt->photon     = with_photon     ? QU::device_alloc_zero<sphoton>(     evt->max_slot, "QEvt::device_alloc_photon/max_slot*sizeof(sphoton)"     ) : nullptr ;
+    evt->photonlite = with_photonlite ? QU::device_alloc_zero<sphotonlite>( evt->max_slot, "QEvt::device_alloc_photon/max_slot*sizeof(sphotonlite)" ) : nullptr ;
 
 #ifndef PRODUCTION
     evt->record  = evt->max_record > 0 ? QU::device_alloc_zero<sphoton>( evt->max_slot * evt->max_record, "max_slot*max_record*sizeof(sphoton)" ) : nullptr ;

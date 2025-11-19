@@ -197,6 +197,10 @@ struct sevent
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     SEVENT_METHOD void init();
+    SEVENT_METHOD bool with_photon() const ;
+    SEVENT_METHOD bool with_photonlite() const ;
+    SEVENT_METHOD bool no_photon_or_photonlite_alloc() const ;
+
     SEVENT_METHOD void init_domain(float extent, float time_max);
 
     SEVENT_METHOD std::string descMax() const ;
@@ -251,6 +255,13 @@ SEVENT_METHOD void sevent::init()
 
     init_domain( max_extent_domain, max_time_domain );
 }
+
+
+// these used from QEvt::device_alloc_photon
+SEVENT_METHOD bool sevent::with_photon() const {     return max_slot > 0 && ( mode_lite == 0 || mode_lite == 2 ) ; }
+SEVENT_METHOD bool sevent::with_photonlite() const { return max_slot > 0 && ( mode_lite == 1 || mode_lite == 2 ) ; }
+SEVENT_METHOD bool sevent::no_photon_or_photonlite_alloc() const { return photon == nullptr && photonlite == nullptr ; }
+
 
 /**
 sevent::init_domain

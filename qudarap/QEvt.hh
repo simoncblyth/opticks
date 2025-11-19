@@ -197,8 +197,8 @@ private:
     NP*      gatherComponent_(unsigned comp) const ;
     NP*      gatherHit_() const ;
     NP*      gatherHitLite_() const ;
-    NP*      gatherHitLiteMerged_() const ;
 public:
+    static NP*       PerLaunchMerge(sevent* evt, cudaStream_t stream );
     static NP*       FinalMerge(      const NP* hitlitemerged, cudaStream_t stream);
     static NP_future FinalMerge_async(const NP* hitlitemerged, cudaStream_t stream);
 

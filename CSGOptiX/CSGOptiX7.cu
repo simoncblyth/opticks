@@ -451,8 +451,12 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #ifndef PRODUCTION
     ctx.end();  // write seq, tag, flat
 #endif
-    evt->photon[idx] = ctx.p ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
 
+
+    if( evt->photon )
+    {
+        evt->photon[idx] = ctx.p ;  // *idx* (not *photon_idx*) as needs to go from zero for photons from a slice of genstep array
+    }
 
     if( evt->photonlite )
     {

@@ -164,6 +164,7 @@ int SPM_test::merge_partial_select_async()
     NP* hitlitemerged = sphotonlite::zeros( merge_result.count );
     cudaMemcpyAsync(hitlitemerged->bytes(), merge_result.ptr, merge_result.count * sizeof(sphotonlite), cudaMemcpyDeviceToHost, download_stream);
 
+
     std::cout
         << "SPM_test::merge_partial_select_async"
         << " num_photonlite " << num_photonlite

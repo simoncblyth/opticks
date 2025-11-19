@@ -188,7 +188,11 @@ export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SE
 vars="$vars version VERSION"
 
 
-test=debug
+#test=debug
+
+#test=merge_M1
+#test=merge_M10
+
 #test=ref1
 #test=ref5
 #test=ref8
@@ -214,6 +218,11 @@ test=debug
 #test=vvvvlarge_evt
 #test=vvvvvlarge_evt
 #test=vvvvvvlarge_evt
+
+#test=large_evt_merge
+#test=vvvvvvlarge_evt
+test=vvvvvvlarge_evt_merge
+
 
 #test=medium_scan
 
@@ -315,29 +324,19 @@ if [ "$TEST" == "debug" ]; then
    opticks_event_mode=DebugLite
    opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
 
-elif [ "$TEST" == "merge" ]; then
+elif [ "${TEST:0:6}" == "merge_" ]; then
 
    opticks_num_event=1
-   opticks_num_genstep=1
-   opticks_num_photon=M1
+   opticks_num_genstep=10     # cannot be 1 for multilaunch genstep slicing to work
+
    opticks_running_mode=SRM_TORCH
-   opticks_max_slot=M1
-   opticks_event_mode=DebugLite
-   opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
-   opticks_mode_merge=1
-   opticks_merge_window=1
+   opticks_num_photon=${TEST/merge_}
 
-   export QEvt=INFO
+   #opticks_max_slot=$opticks_num_photon
+   opticks_max_slot=M1          # less than num_photon to force multi-launch
 
-elif [ "$TEST" == "merge10" ]; then
-
-   opticks_num_event=1
-   opticks_num_genstep=1
-   opticks_num_photon=M10
-   opticks_running_mode=SRM_TORCH
-   opticks_max_slot=M10
-   opticks_event_mode=DebugLite
-   opticks_mode_lite=2   # 0:Photon+Hit 1:PhotonLite+HitLite, 2:both (NB only controls Hit/Photon variants Lite-OR-not-OR-both, does not enable component)
+   opticks_event_mode=Hit       # formerly DebugLite
+   opticks_mode_lite=1          # 0:non-Lite 1:photon/hit -Lite variant  2:both non-Lite and Lite variants for debug
    opticks_mode_merge=1
    opticks_merge_window=1
 
@@ -426,12 +425,12 @@ elif [ "$TEST" == "larger_scan" ]; then
 
    #opticks_max_photon=M200
 
-elif [[ "$TEST" =~ ^v*large_evt$ ]]; then
+elif [[ "$TEST" =~ ^v*large_evt(_merge)?$ ]]; then
 
    opticks_running_mode=SRM_TORCH
    opticks_num_event=1
 
-   case $TEST in
+   case ${TEST/_merge} in
         large_evt) opticks_num_genstep=10  ; opticks_num_photon=M200 ;;
        vlarge_evt) opticks_num_genstep=20  ; opticks_num_photon=M500 ;;
       vvlarge_evt) opticks_num_genstep=40  ; opticks_num_photon=G1   ;;
@@ -441,11 +440,21 @@ elif [[ "$TEST" =~ ^v*large_evt$ ]]; then
   vvvvvvlarge_evt) opticks_num_genstep=512 ; opticks_num_photon=8252787186   ;;   #  8.25 billion  https://www.worldometers.info/world-population/
    esac
 
+   if [[ $TEST == *_merge ]]; then
+       opticks_event_mode=Hit       # formerly DebugLite
+       opticks_mode_lite=1          # 0:non-Lite 1:photon/hit -Lite variant  2:both non-Lite and Lite variants for debug
+       opticks_mode_merge=1
+       opticks_merge_window=1
+
+       #export QEvt=INFO
+       export QSim=INFO
+   fi
+
+
    # KEEP_SUBFOLD DOUBLES SPACE AND TIME OF HIT SAVING
    #if [[ "$TEST" =~ ^v{4,}large_evt$ ]]; then
    #    export QSim__simulate_KEEP_SUBFOLD=1
    #fi
-
 
 elif [ "$TEST" == "input_genstep" ]; then
 
@@ -632,7 +641,7 @@ vars="$vars OPTICKS_MAX_CURAND OPTICKS_MAX_SLOT"
 
 
 
-if ! [ "$OPTICKS_EVENT_MODE" == "Minimal" -o "OPTICKS_EVENT_MODE" == "Hit" ]; then
+if ! [ "$OPTICKS_EVENT_MODE" == "Minimal" -o "$OPTICKS_EVENT_MODE" == "Hit" ]; then
 
     cat << EOW
 

@@ -348,25 +348,25 @@ inline void SGenstep::CheckGenstepSlices(const std::vector<sslice>& slice, const
     {
         const sslice& sl = slice[i];
 
-        int ph_count = 0 ;
+        int sl_ph_count = 0 ;
         for(int j=sl.gs_start ; j < sl.gs_stop ; j++ )
         {
             const quad6& q = qq[j] ;
             int64_t num_ph = GetNumPhoton(q);
-            ph_count += num_ph ;
+            sl_ph_count += num_ph ;
         }
-        bool ph_count_expected = ph_count == sl.ph_count ;
+        bool ph_count_expected = sl_ph_count == sl.ph_count ;
 
         if(!ph_count_expected) std::cerr
             << "SGenstep::CheckGenstepSlices"
             << " i " << i
             << " sl.ph_count " << sl.ph_count
-            << " ph_count " << ph_count
+            << " sl_ph_count " << sl_ph_count
             << "\n"
             ;
 
         assert( ph_count_expected );
-        assert( ph_count <= max_slot );
+        assert( sl_ph_count <= max_slot ); // total for slice should never exceed max_slot
     }
 }
 

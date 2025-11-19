@@ -681,8 +681,8 @@ struct SYSRAP_API SEventConfig
     static void SetDevice( size_t totalGlobalMem_bytes, std::string name );
     static void SetDeviceName( const char* name );
 
-    static size_t HeuristicMaxSlot(         size_t totalGlobalMem_bytes );
-    static size_t HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes );
+    static size_t HeuristicMaxSlot(         size_t totalGlobalMem_bytes, int lite, int merge );
+    static size_t HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes, int lite, int merge );
     static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name );
 
     static salloc*   AllocEstimate(int _max_slot=0);

@@ -1784,8 +1784,11 @@ void SEventConfig::SetDevice( size_t totalGlobalMem_bytes, std::string name )
     SetDeviceName( name.empty() ? nullptr : name.c_str() ) ;
     LOG(info) << DescDevice(totalGlobalMem_bytes, name) ;
 
-    size_t mxs0  = MaxSlot();
-    size_t hmxr = HeuristicMaxSlot_Rounded(totalGlobalMem_bytes);
+    size_t mxs0 = MaxSlot();
+    int lite = ModeLite();
+    int merge = ModeMerge();
+
+    size_t hmxr = HeuristicMaxSlot_Rounded(totalGlobalMem_bytes, lite, merge );
 
     bool MaxSlot_is_zero = mxs0 == 0 ;
     if(MaxSlot_is_zero) SetMaxSlot(hmxr)
@@ -1832,8 +1835,10 @@ to stay within VRAM.  See::
     QSimTest::EventConfig
 
 **/
-size_t SEventConfig::HeuristicMaxSlot( size_t totalGlobalMem_bytes )
+size_t SEventConfig::HeuristicMaxSlot( size_t totalGlobalMem_bytes, int lite, int merge  )
 {
+    // TODO: update the heuristic for lite running 
+    //       (and merge? actually merge effects hits array which is more dynamic than photon/photonlite)
     return size_t(float(totalGlobalMem_bytes)*0.87f/112.f) ;
 }
 
@@ -1845,18 +1850,21 @@ Rounded down to nearest million.
 
 **/
 
-size_t SEventConfig::HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes )
+size_t SEventConfig::HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes, int lite, int merge  )
 {
-    size_t hmx = HeuristicMaxSlot(totalGlobalMem_bytes);
+    size_t hmx = HeuristicMaxSlot(totalGlobalMem_bytes, lite, merge );
     size_t hmx_M = hmx/M ;
     return hmx_M*M ;
 }
 
 std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string name )  // static
 {
-    size_t hmx = HeuristicMaxSlot(totalGlobalMem_bytes);
+    int lite = ModeLite();
+    int merge = ModeMerge();
+
+    size_t hmx = HeuristicMaxSlot(totalGlobalMem_bytes, lite, merge );
     size_t hmx_M = hmx/M ;
-    size_t hmxr = HeuristicMaxSlot_Rounded(totalGlobalMem_bytes);
+    size_t hmxr = HeuristicMaxSlot_Rounded(totalGlobalMem_bytes, lite, merge);
     size_t mxs  = MaxSlot();
 
     int wid = 35 ;
@@ -1876,6 +1884,10 @@ std::string SEventConfig::DescDevice(size_t totalGlobalMem_bytes, std::string na
        << std::setw(wid) << "HeuristicMaxSlot_Rounded(VRAM)   : " << hmxr
        << "\n"
        << std::setw(wid) << "MaxSlot/M                        : " << mxs/M
+       << "\n"
+       << std::setw(wid) << "ModeLite                         : " << lite
+       << "\n"
+       << std::setw(wid) << "ModeMerge                        : " << merge
        << "\n"
        ;
 

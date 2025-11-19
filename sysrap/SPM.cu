@@ -182,6 +182,22 @@ simultaneously fit into VRAM.
     https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
 
 
+par_nosync is quite recent (Feb 9, 2022)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+https://github.com/NVIDIA/thrust/blob/main/examples/cuda/explicit_cuda_stream.cu
+    par_nosync does not stop sync when that is needed for correctness,
+    ie to return num_selected to the host.
+
+https://github.com/NVIDIA/thrust/issues/1515
+https://github.com/petsc/petsc/commit/0fa675732414ab06118e41f905207ba3ccea9c4e
+
+
+https://github.com/NVIDIA/thrust/discussions/1616
+    Feb 9, 2022
+    Thrust 1.16.0 provides a new “nosync” hint
+
+
 **/
 
 void SPM::merge_partial_select(
@@ -194,25 +210,11 @@ void SPM::merge_partial_select(
     cudaStream_t      stream )
 {
 
-    printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f \n", num_in, select_flagmask, time_window );
+    //printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f \n", num_in, select_flagmask, time_window );
 
     if (num_in == 0) { *d_out = nullptr; if (num_out) *num_out = 0; return; }
 
     auto policy = thrust::cuda::par_nosync.on(stream);
-    /**
-    https://github.com/NVIDIA/thrust/issues/1515
-    https://github.com/petsc/petsc/commit/0fa675732414ab06118e41f905207ba3ccea9c4e
-
-    par_nosync is quite recent
-
-    https://github.com/NVIDIA/thrust/discussions/1616
-        Feb 9, 2022
-        Thrust 1.16.0 provides a new “nosync” hint
-
-
-    **/
-
-
     auto in = thrust::device_ptr<const sphotonlite>(d_in);
 
 
@@ -220,13 +222,6 @@ void SPM::merge_partial_select(
 
     sphotonlite_select_pred selector{select_flagmask};
     size_t num_selected = thrust::count_if(policy, in, in + num_in, selector);
-
-    /**
-    https://github.com/NVIDIA/thrust/blob/main/examples/cuda/explicit_cuda_stream.cu
-    The par_nosync does not stop sync when that is needed for correctness, ie to return
-    the num_selected to the host.
-    **/
-
 
     if (num_selected == 0)
     {
@@ -251,18 +246,15 @@ void SPM::merge_partial_select(
     // 2. allocate `(uint64_t*)d_keys` and `(sphotonlite*)d_vals`
 
     uint64_t* d_keys = nullptr;
-    sphotonlite* d_vals = nullptr;
     cudaMallocAsync(&d_keys, num_selected * sizeof(uint64_t),    stream);
-    cudaMallocAsync(&d_vals, num_selected * sizeof(sphotonlite), stream);
+
 
 
     // 3. populate d_keys using key_functor and d_vals using copy_n
     auto selected = thrust::device_ptr<const sphotonlite>(d_selected);
-
     auto keys_it = thrust::make_transform_iterator(selected, sphotonlite_key_functor{time_window});
-
     thrust::copy(  policy, keys_it , keys_it + num_selected, thrust::device_ptr<uint64_t>(d_keys));
-    thrust::copy_n(policy, selected, num_selected          , thrust::device_ptr<sphotonlite>(d_vals));
+
 
 
     // 4. sort_by_key arranging hits with same (id, timebucket) to be contiguous
@@ -270,9 +262,9 @@ void SPM::merge_partial_select(
     thrust::sort_by_key(policy,
                         thrust::device_ptr<uint64_t>(d_keys),
                         thrust::device_ptr<uint64_t>(d_keys + num_selected),
-                        thrust::device_ptr<sphotonlite>(d_vals));
+                        thrust::device_ptr<sphotonlite>(d_selected));
 
-    // 5. allocate d_out_key d_out_val with space for num_in
+    // 5. allocate d_out_key d_out_val with space for num_selected
 
     uint64_t*    d_out_key = nullptr;
     sphotonlite* d_out_val = nullptr;
@@ -286,7 +278,7 @@ void SPM::merge_partial_select(
     auto ends = thrust::reduce_by_key(policy,
                 thrust::device_ptr<uint64_t>(d_keys),
                 thrust::device_ptr<uint64_t>(d_keys + num_selected),
-                thrust::device_ptr<sphotonlite>(d_vals),
+                thrust::device_ptr<sphotonlite>(d_selected),
                 d_out_key_begin,                      // output keys
                 thrust::device_ptr<sphotonlite>(d_out_val),
                 thrust::equal_to<uint64_t>{},
@@ -312,11 +304,10 @@ void SPM::merge_partial_select(
                         cudaMemcpyDeviceToDevice, stream);
     }
 
-
     // 9. free temporary buffers
 
+    cudaFreeAsync(d_selected, stream);   // omitting this caused leak steps of 0.9GB in the whopper 8.25 billion test
     cudaFreeAsync(d_keys, stream);
-    cudaFreeAsync(d_vals, stream);
     cudaFreeAsync(d_out_key, stream);
     cudaFreeAsync(d_out_val, stream);
 
@@ -327,7 +318,11 @@ void SPM::merge_partial_select(
     if(num_out) *num_out = merged;
 
     //printf("]SPM::merge_partial_select merged %d  \n", merged );
-    //printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f merged %d \n", num_in, select_flagmask, time_window, merged );
+
+    float select_frac = float(num_selected)/float(num_in);
+    float merge_frac = float(merged)/float(num_selected) ;
+    printf("]SPM::merge_partial_select select_flagmask %d time_window %7.3f in %d selected %d merged %d selected/in %7.3f merged/selected %7.3f \n",
+                select_flagmask, time_window, num_in, num_selected, merged, select_frac, merge_frac );
 
 }
 // sed -n '/^void SPM::merge_partial_select/,/^}/p' ~/o/sysrap/SPM.cu | pbcopy
