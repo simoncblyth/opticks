@@ -20,6 +20,7 @@ struct sphotonlite_selector ;
 #include "plog/Severity.h"
 #include "SComp.h"
 #include "QUDARAP_API_EXPORT.hh"
+#include "NP_future.h"
 
 /**
 QEvt.hh
@@ -65,6 +66,8 @@ where the upper part depends on details of how Opticks is integrated with the si
 
 
 **/
+
+
 
 struct QUDARAP_API QEvt : public SCompProvider
 {
@@ -196,7 +199,9 @@ private:
     NP*      gatherHitLite_() const ;
     NP*      gatherHitLiteMerged_() const ;
 public:
-    static NP* FinalMerge(const NP* hitlitemerged, cudaStream_t stream );
+    static NP*       FinalMerge(      const NP* hitlitemerged, cudaStream_t stream);
+    static NP_future FinalMerge_async(const NP* hitlitemerged, cudaStream_t stream);
+
 public:
     unsigned getNumHit() const ;
     unsigned getNumHitLite() const ;

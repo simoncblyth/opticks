@@ -423,6 +423,9 @@ double QSim::simulate(int eventID, bool reset_)
 {
     assert( SEventConfig::IsRGModeSimulate() );
 
+    //cudaStream_t stream ;  cudaStreamCreate(&stream);
+    cudaStream_t stream = 0 ;
+
 
     int64_t tot_ph = 0 ;
 
@@ -527,14 +530,14 @@ double QSim::simulate(int eventID, bool reset_)
     assert(concat_rc == 0);
 
     bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
-    //bool need_final_merge = num_slice > 1 && has_hlm ;
-    bool need_final_merge = num_slice > 0 && has_hlm ;   // always when has_hlm for small scale debug
+    bool needs_final_merge = num_slice > 1 && has_hlm ;
+    //bool needs_final_merge = num_slice > 0 && has_hlm ;   // always when has_hlm for small scale debug
     LOG(LEVEL)
          << " num_slice " << num_slice
          << " has_hlm " << ( has_hlm ? "YES" : "NO " )
-         << " need_final_merge " << ( need_final_merge ? "YES" : "NO " )
+         << " needs_final_merge " << ( needs_final_merge ? "YES" : "NO " )
          ;
-    if(need_final_merge) simulate_final_merge();
+    if(needs_final_merge) simulate_final_merge(stream);
 
 
     if(!KEEP_SUBFOLD) sev->topfold->clear_subfold();
@@ -596,14 +599,45 @@ double QSim::simulate(int eventID, bool reset_)
 }
 
 
-void QSim::simulate_final_merge()
+/**
+QSim::simulate_final_merge
+---------------------------
+
+* NB this normally only runs for large events with more
+  photons than fit in VRAM that cause multiple launches
+  to be done
+
+* requires topfold to have "hitlitemerged" array,
+  expected to be the result of simple concatenation
+  of individual launch "hitlitemerged" arrays
+
+* does CUDA thrust implemented hitlitemerged final merging
+
+
+TODO: use QEvt::FinalMerge_async once that makes sense
+
+**/
+
+void QSim::simulate_final_merge(cudaStream_t stream)
 {
+    bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
+    assert( has_hlm );
+
     const NP* hlm = sev->topfold->get(SComp::HITLITEMERGED_);
-    LOG(info) << " hlm " << ( hlm ? hlm->sstr() : "-" );
+    NP*       fin = QEvt::FinalMerge(hlm, stream);
 
+    std::stringstream ss ;
+    ss
+        << " hlm " << ( hlm ? hlm->sstr() : "-" )
+        << " fin " << ( fin ? fin->sstr() : "-" )
+        ;
 
+    std::string note = ss.str();
+    fin->set_meta<std::string>("QSim__simulate_final_merge", note );
 
+    sev->topfold->set(SComp::HITLITEMERGED_, fin );
 
+    LOG(info) << note ;
 }
 
 

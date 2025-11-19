@@ -37,6 +37,7 @@ TEST=ALL       ~/o/qudarap/tests/QEvtTest.sh
 #include "squad.h"
 #include "sstamp.h"
 #include "SGenstep.h"
+#include "sphotonlite.h"
 
 #include "SEvt.hh"
 #include "SEvent.hh"
@@ -57,6 +58,9 @@ struct QEvtTest
     static int setGenstep_loaded();
     static int setGenstep_checkEvt();
     static int setGenstep_quad6();
+
+    static int FinalMerge();
+    static int FinalMerge_async();
 
     static int main();
 };
@@ -429,12 +433,67 @@ int QEvtTest::setGenstep_quad6()
     return 0 ;
 }
 
+int QEvtTest::FinalMerge()
+{
+    const NP* all = NP::Load("$AFOLD/photonlite.npy") ; // placeholder for concat_hitlitemerged
+    std::cout << "[QEvtTest::FinalMerge all " << ( all ? all->sstr() : "-" ) << "\n" ;
+    std::cout << " all\n" << sphotonlite::Desc(all, 10) ;
+
+    cudaStream_t producer ;
+    cudaStreamCreate(&producer);
+
+    NP* hit = QEvt::FinalMerge(all, producer );
+    std::cout
+        << "QEvtTest::FinalMerge_async"
+        << " all " << ( all ? all->sstr() : "-" )
+        << " hit " << ( hit ? hit->sstr() : "-" )
+        << "\n"
+        ;
+
+    std::cout << " hit\n" << sphotonlite::Desc(hit, 10) ;
+    return 0 ;
+}
+
+
+int QEvtTest::FinalMerge_async()
+{
+    const NP* all = NP::Load("$AFOLD/photonlite.npy") ; // placeholder for concat_hitlitemerged
+    std::cout << "[QEvtTest::FinalMerge_async all " << ( all ? all->sstr() : "-" ) << "\n" ;
+
+    std::cout << " all\n" << sphotonlite::Desc(all, 10) ;
+
+    cudaStream_t producer ;
+    cudaStreamCreate(&producer);
+
+    NP_future producer_result = QEvt::FinalMerge_async(all, producer );
+
+    cudaStream_t consumer ;
+    cudaStreamCreate(&consumer);
+
+    // make consumer wait for producer_result.ready event
+    producer_result.wait(consumer);
+
+    NP* hit = producer_result.arr ;
+
+    std::cout
+        << "QEvtTest::FinalMerge_async"
+        << " all " << ( all ? all->sstr() : "-" )
+        << " hit " << ( hit ? hit->sstr() : "-" )
+        << "\n"
+        ;
+
+    std::cout << " hit\n" << sphotonlite::Desc(hit, 10) ;
+
+
+    return 0 ;
+}
+
 
 int QEvtTest::main()
 {
     bool ALL = strcmp(TEST, "ALL") == 0 ;
     int rc = 0 ;
-    std::cout << "[QEvtTest::main ALL " << ( ALL ? "YES" : "NO " ) << "\n" ;
+    std::cout << "[QEvtTest::main ALL " << ( ALL ? "YES" : "NO " ) << " TEST [" << ( TEST ? TEST : "-" ) << "]\n" ;
 
     if(ALL||0==strcmp(TEST,"one"))      rc += setGenstep_one();
     if(ALL||0==strcmp(TEST,"sliced"))   rc += setGenstep_sliced();
@@ -442,6 +501,9 @@ int QEvtTest::main()
     if(ALL||0==strcmp(TEST,"loaded"))   rc += setGenstep_loaded();
     if(ALL||0==strcmp(TEST,"checkEvt")) rc += setGenstep_checkEvt();
     if(ALL||0==strcmp(TEST,"quad6"))    rc += setGenstep_quad6();
+
+    if(ALL||0==strcmp(TEST,"FinalMerge"))          rc += FinalMerge();
+    if(ALL||0==strcmp(TEST,"FinalMerge_async"))    rc += FinalMerge_async();
 
     std::cout << "]QEvtTest::main rc [" << rc << "]\n" ;
     return rc  ;

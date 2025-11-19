@@ -1135,45 +1135,89 @@ NP* QEvt::gatherHitLiteMerged_() const
 }
 
 
-NP* QEvt::FinalMerge(const NP* concat_hitlitemerged, cudaStream_t stream ) // static
+NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
 {
-    const NP* all = concat_hitlitemerged ;
+    NP_future producer_result = FinalMerge_async(all, stream );
+
+    cudaStream_t consumer ;
+    cudaStreamCreate(&consumer);
+
+    // make consumer wait for producer_result.ready event
+    producer_result.wait(consumer);
+
+    NP* hit = producer_result.arr ;
+    return hit ;
+}
+
+
+/**
+QEvt::FinalMerge_async
+-----------------------
+
+Canonical argument array this is used with is concat_hitlitemerged
+
+
+    //cudaStreamSynchronize(stream); // DEBUG SYNC
+
+**/
+
+
+NP_future QEvt::FinalMerge_async(const NP* all, cudaStream_t stream ) // static
+{
     size_t num_all = all->num_items();
 
     // 1. alloc and upload concatenation of partially merged hits
 
     sphotonlite* d_all = nullptr;
-    cudaMallocAsync(&d_all, num_all * sizeof(sphotonlite), stream);
-    cudaMemcpyAsync(d_all, (sphotonlite*)all->bytes(), num_all * sizeof(sphotonlite), cudaMemcpyHostToDevice, stream);
+    if(num_all > 0)
+    {
+        cudaMallocAsync(&d_all, num_all * sizeof(sphotonlite), stream);
+        cudaMemcpyAsync(d_all, (sphotonlite*)all->bytes(), num_all * sizeof(sphotonlite), cudaMemcpyHostToDevice, stream);
+    }
 
     // 2. invoke final merge
+    SPM_future merge_result = SPM::merge_partial_select_async(
+        d_all ? d_all : nullptr,
+        num_all,
+        SEventConfig::HitMask(),
+        SEventConfig::MergeWindow(),
+        stream);
 
-    SPM_MergeResult result = SPM::merge_partial_select_async(
-         d_all,
-         num_all,
-         SEventConfig::HitMask(),
-         SEventConfig::MergeWindow(),
-         stream);
+    if(d_all) cudaFreeAsync(d_all, stream);
 
-    cudaFreeAsync(d_all, stream);
 
-    // 3. wait on merge completion
-    cudaStream_t download_stream ;
-    cudaStreamCreate(&download_stream);
-
-    result.wait( download_stream );
+    //printf("QEvt::FinalMerge_async after wait on merge_result.count %ld \n", merge_result.count);
 
     // 4. use merge result to host alloc and download
 
-    NP* final_hitlitemerged = sphotonlite::zeros( result.count );
-    SPM::copy_device_to_host_async<sphotonlite>( (sphotonlite*)final_hitlitemerged->bytes(), result.ptr, result.count, download_stream );
-    cudaFreeAsync(result.ptr, download_stream);
+    static cudaStream_t dl_stream = []{ cudaStream_t s; cudaStreamCreate(&s); return s; }();
 
-    cudaStreamSynchronize(download_stream);
-    // TODO: return NP_Future to avoid sync in the tail
+    NP_future result;
+    result.arr = sphotonlite::zeros( merge_result.count );
+    cudaEventCreateWithFlags(&result.ready, cudaEventDisableTiming);
 
-    return final_hitlitemerged ;
+    if( merge_result.count > 0 && merge_result.ptr )
+    {
+        // normal path : work to do
+        cudaStreamWaitEvent(dl_stream, merge_result.ready, 0);
+
+        SPM::copy_device_to_host_async<sphotonlite>( (sphotonlite*)result.arr->bytes(), merge_result.ptr, merge_result.count, dl_stream );
+
+        cudaFreeAsync(merge_result.ptr, dl_stream);
+
+        cudaEventRecord(result.ready, dl_stream);
+    }
+    else
+    {
+        cudaEventRecord(result.ready, stream);
+    }
+
+    if (merge_result.ready) cudaEventDestroy(merge_result.ready);
+
+    return result ;
 }
+// sed -n '/^NP_future QEvt::FinalMerge_async/,/^}/p' ~/o/qudarap/QEvt.cc | pbcopy
+
 
 
 

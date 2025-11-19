@@ -1,3 +1,13 @@
+/**
+SPM_test.cc
+============
+
+~/o/sysrap/tests/SPM_test.sh
+
+
+**/
+
+
 #include <iostream>
 #include <vector>
 #include <csignal>
@@ -77,7 +87,7 @@ inline SPM_test::SPM_test()
 
 inline void SPM_test::init()
 {
-    std::cout << " photonlite " << ( _photonlite ? _photonlite->sstr() : "-" ) << "\n" ;
+    //std::cout << "SPM_test::init photonlite " << ( _photonlite ? _photonlite->sstr() : "-" ) << "\n" ;
 }
 
 inline int SPM_test::test(int argc, char** argv)
@@ -86,7 +96,7 @@ inline int SPM_test::test(int argc, char** argv)
     const char* TEST = ssys::getenvvar("TEST", test );
     bool ALL = 0 == strcmp(TEST, "ALL") ;
 
-    std::cout << argv[0] << " TEST[" << TEST << "]\n" ;
+    //std::cout << "SPM_test::test" << " TEST[" << TEST << "]\n" ;
 
     int rc = 0 ;
     if(ALL||0==strcmp(TEST,"merge_partial_select")) rc += merge_partial_select() ;
@@ -136,7 +146,7 @@ int SPM_test::merge_partial_select_async()
     cudaStream_t merge_stream ;
     cudaStreamCreate(&merge_stream);
 
-    SPM_MergeResult result = SPM::merge_partial_select_async(
+    SPM_future merge_result = SPM::merge_partial_select_async(
            d_photonlite,
            num_photonlite,
            select_flagmask,
@@ -148,16 +158,19 @@ int SPM_test::merge_partial_select_async()
     cudaStreamCreate(&download_stream);
 
     // make download_stream wait for merge_stream ready_event
-    result.wait(download_stream);
+    merge_result.wait(download_stream);
 
     // Now safe to use result.count and result.ptr from completed so far download_stream
-    NP* hitlitemerged = sphotonlite::zeros( result.count );
-    cudaMemcpyAsync(hitlitemerged->bytes(), result.ptr, result.count * sizeof(sphotonlite), cudaMemcpyDeviceToHost, download_stream);
+    NP* hitlitemerged = sphotonlite::zeros( merge_result.count );
+    cudaMemcpyAsync(hitlitemerged->bytes(), merge_result.ptr, merge_result.count * sizeof(sphotonlite), cudaMemcpyDeviceToHost, download_stream);
 
     std::cout
         << "SPM_test::merge_partial_select_async"
+        << " num_photonlite " << num_photonlite
+        << " select_flagmask " << select_flagmask
+        << " merge_window_ns " << std::setw(5) << merge_window_ns
         << " hitlitemerged " << ( hitlitemerged ? hitlitemerged->sstr() : "-" )
-        << " result.count " << result.count
+        << " merge_result.count " << merge_result.count
         << "\n"
         ;
 

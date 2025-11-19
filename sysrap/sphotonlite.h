@@ -84,6 +84,8 @@ struct sphotonlite
     SPHOTONLITE_METHOD static NP* demoarray(size_t num_photon);
     SPHOTONLITE_METHOD static NP* select( const NP* photonlite, const sphotonlite_selector* photonlite_selector );
     SPHOTONLITE_METHOD static void loadbin( std::vector<sphotonlite>& photonlite, const char* path );
+
+    SPHOTONLITE_METHOD static std::string Desc(const NP* a, size_t edge=20);
     SPHOTONLITE_METHOD static std::string desc_diff( const sphotonlite* a, const sphotonlite* b, size_t ni );
 
 #endif
@@ -331,6 +333,24 @@ inline void sphotonlite::loadbin( std::vector<sphotonlite>& photonlite, const ch
     photonlite.resize(n);
     f.read((char*)photonlite.data(), bytes);
 }
+
+
+inline std::string sphotonlite::Desc(const NP* a, size_t edge) // static
+{
+    std::stringstream ss ;
+    ss << "[sphotonlite::Desc a.sstr " << ( a ? a->sstr() : "-" ) << "\n" ;
+    size_t ni = a->num_items();
+    sphotonlite* ll = (sphotonlite*)a->bytes();
+    for(size_t i=0 ; i < ni ; i++)
+    {
+        if(i < edge || i > (ni - edge)) ss << std::setw(6) << i << " : " << ll[i].desc() << "\n" ;
+        else if( i == edge )  ss << std::setw(6) << "" << " : " << "..." << "\n" ;
+    }
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
 
 
 inline std::string sphotonlite::desc_diff( const sphotonlite* a, const sphotonlite* b, size_t ni )

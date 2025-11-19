@@ -532,6 +532,7 @@ set(HEADERS
 
     SU.hh
     SPM.hh
+    SPM_future.h
     SComponent_OLD.hh
     SComp.h
 
@@ -542,6 +543,7 @@ set(HEADERS
 
     np.h
     NP.hh
+    NP_future.h
     NP_nanobind.h
 
     NPU.hh

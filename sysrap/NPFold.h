@@ -1797,8 +1797,19 @@ inline void NPFold::add_(const char* k, const NP* a)
 }
 
 
+/**
+NPFold::set
+-----------
 
+Is an array corresponding to key *k* is not present
+then the array is added.
 
+If an array correspondiong to key *k* is already present
+then that array is deleted with the argument array replacing it.
+
+Attempting to set the same array twice silently does nothing.
+
+**/
 
 inline void NPFold::set(const char* k, const NP* a)
 {
@@ -1810,6 +1821,7 @@ inline void NPFold::set(const char* k, const NP* a)
     else
     {
         const NP* old_a = aa[idx] ;
+        if( old_a == a ) return ;
         delete old_a ;
         aa[idx] = a ;
     }

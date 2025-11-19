@@ -33,7 +33,9 @@ name=QEvtTest
 
 #test=many
 #test=ALL
-test=loaded
+#test=loaded
+test=FinalMerge
+#test=FinalMerge_async
 
 export TEST=${TEST:-$test}
 script0=$name.py
@@ -42,6 +44,15 @@ script1=${name}_${TEST}.py
 #export OPTICKS_NUM_EVENT=1000
 #export OPTICKS_NUM_EVENT=100
 export OPTICKS_NUM_EVENT=10
+
+if [ "$TEST" == "FinalMerge_async" -o "$TEST" == "FinalMerge" ]; then
+
+    unset OPTICKS_HIT_MASK   # default of SD will nowadays yield no hits
+    export OPTICKS_HIT_MASK=EC
+    export OPTICKS_MERGE_WINDOW=1
+fi
+
+
 
 logging(){
    type $FUNCNAME
@@ -55,7 +66,12 @@ defarg="info_run"
 arg=${1:-$defarg}
 
 
-vars="BASH_SOURCE 0 PWD name test TEST defarg arg BP OPTICKS_NUM_EVENT LOG"
+
+afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_event_name/A000
+export AFOLD=${AFOLD:-$afold}
+
+
+vars="BASH_SOURCE 0 PWD name test TEST defarg arg BP OPTICKS_NUM_EVENT LOG AFOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
@@ -80,7 +96,6 @@ if [ "${arg/pdb1}" != "$arg" ]; then
    ${IPYTHON:-ipython} --pdb -i  $script1
    [ $? -ne 0 ] && echo $BASH_SOURCE pdb1 error && exit 2
 fi
-
 
 
 

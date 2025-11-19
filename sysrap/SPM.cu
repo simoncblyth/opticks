@@ -120,28 +120,34 @@ struct sphotonlite_select_pred
 
 
 
-SPM_MergeResult SPM::merge_partial_select_async(
+SPM_future SPM::merge_partial_select_async(
     const sphotonlite*  d_in,
     size_t            num_in,
     unsigned select_flagmask,
     float        time_window,
     cudaStream_t      stream )
 {
-    SPM_MergeResult result  ;
-    result.stream = stream;
+    SPM_future result  ;
 
-    // This call is already fully async on 'stream'
-    merge_partial_select(
-            d_in,
-            num_in,
-            &result.ptr,
-            &result.count,
-            select_flagmask,
-            time_window,
-            stream );
+    if (num_in == 0 )
+    {
+        result.count = 0;
+        result.ptr   = nullptr;
+    }
+    else
+    {
+        merge_partial_select(
+                d_in,
+                num_in,
+                &result.ptr,
+                &result.count,
+                select_flagmask,
+                time_window,
+                stream );
+    }
 
-    cudaEventCreateWithFlags(&result.ready_event, cudaEventDisableTiming);
-    cudaEventRecord(result.ready_event, stream);
+    cudaEventCreateWithFlags(&result.ready, cudaEventDisableTiming);
+    cudaEventRecord(result.ready, stream);
     // Record event immediately after last operation
 
     return result ;
@@ -168,10 +174,15 @@ simultaneously fit into VRAM.
 9. free temporary buffers
 10. set d_out and num_out
 
-sed -n '121,266p' SPM.cu | pbcopy
+
+"Safe, Seamless, And Scalable Integration Of Asynchronous GPU Streams In PETSc"
+    https://arxiv.org/pdf/2306.17801
+
+"CUDA C/C++ Streams and Concurrency, Steve Rennich, NVIDIA"
+    https://developer.download.nvidia.com/CUDA/training/StreamsAndConcurrencyWebinar.pdf
+
 
 **/
-
 
 void SPM::merge_partial_select(
     const sphotonlite*  d_in,
@@ -188,6 +199,20 @@ void SPM::merge_partial_select(
     if (num_in == 0) { *d_out = nullptr; if (num_out) *num_out = 0; return; }
 
     auto policy = thrust::cuda::par_nosync.on(stream);
+    /**
+    https://github.com/NVIDIA/thrust/issues/1515
+    https://github.com/petsc/petsc/commit/0fa675732414ab06118e41f905207ba3ccea9c4e
+
+    par_nosync is quite recent
+
+    https://github.com/NVIDIA/thrust/discussions/1616
+        Feb 9, 2022
+        Thrust 1.16.0 provides a new “nosync” hint
+
+
+    **/
+
+
     auto in = thrust::device_ptr<const sphotonlite>(d_in);
 
 
@@ -195,6 +220,13 @@ void SPM::merge_partial_select(
 
     sphotonlite_select_pred selector{select_flagmask};
     size_t num_selected = thrust::count_if(policy, in, in + num_in, selector);
+
+    /**
+    https://github.com/NVIDIA/thrust/blob/main/examples/cuda/explicit_cuda_stream.cu
+    The par_nosync does not stop sync when that is needed for correctness, ie to return
+    the num_selected to the host.
+    **/
+
 
     if (num_selected == 0)
     {
@@ -260,12 +292,16 @@ void SPM::merge_partial_select(
                 thrust::equal_to<uint64_t>{},
                 sphotonlite_reduce_op());
 
-
+    // Synchronize the stream here to ensure reduce_by_key results are ready for host access
+    cudaError_t sync_err = cudaStreamSynchronize(stream);
+    if (sync_err != cudaSuccess) {
+        fprintf(stderr, "cudaStreamSynchronize failed: %s\n", cudaGetErrorString(sync_err));
+        return ;
+    }
 
     // 7. get number of merged hits
     size_t merged = ends.first.get() - d_out_key ;
-    // THE ABOVE LOOKS A BIT DODGY AS USING DEVICE POINTER ARITHMETIC ON HOST WITH PTR THAT
-    // MIGHT NOT BE SET YET : BUT DOCS APPARENTLY SAY ITS OK, AND THERE IS NO thrust::distance(policy...)
+    // (Proceed to step 8 as-is; the sync ensures d_out_val is also ready for the subsequent cudaMemcpyAsync)
 
 
     // 8. allocate d_final to fit merged hits, d2d copy d_final from d_out_val
@@ -289,30 +325,12 @@ void SPM::merge_partial_select(
 
     *d_out = d_final;
     if(num_out) *num_out = merged;
-    printf("]SPM::merge_partial_select merged %d  \n", merged );
+
+    //printf("]SPM::merge_partial_select merged %d  \n", merged );
+    //printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f merged %d \n", num_in, select_flagmask, time_window, merged );
+
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// sed -n '/^void SPM::merge_partial_select/,/^}/p' ~/o/sysrap/SPM.cu | pbcopy
 
 
 /**
