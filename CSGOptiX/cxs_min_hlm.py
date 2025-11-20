@@ -32,7 +32,9 @@ def plot_hcb(hcb, max_to_plot=3000):
 
 
 
-def check_submerge(f):
+def check_subfold_remerge_is_same(f):
+    """
+    """
     for fsub_name in f.ff:
         fsub = getattr(f,fsub_name)
         _hlm = getattr(fsub, "hitlitemerged")
@@ -57,9 +59,9 @@ if __name__ == '__main__':
 
     hlm = f.hitlitemerged
 
-    aa = f.allsub("hitlitemerged")
-    c_hlm = np.concat(aa)
-    hlm2 = MERGER(c_hlm)
+    sub_hlm = f.allsub("hitlitemerged")       # tuple of the subfold hitlitemerged arrays
+    concat_hlm = np.concat(sub_hlm)           # concat all subfold hitlitemerged arrays
+    hlm2 = MERGER(concat_hlm)
 
 
     if 1:EVAL(r"""
@@ -67,8 +69,8 @@ if __name__ == '__main__':
     TEST
     f.hitlitemerged_meta
 
-    len(aa)
-    c_hlm.shape
+    len(sub_hlm)
+    concat_hlm.shape
     hlm2.shape
 
     np.all( hlm == hlm2 )
@@ -113,7 +115,6 @@ if 0:
 
     #plot_hcb(hcb)
 
-    
 
 
 

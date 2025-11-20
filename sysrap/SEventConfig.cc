@@ -1834,23 +1834,16 @@ to stay within VRAM.  See::
     QSimTest::fake_propagate
     QSimTest::EventConfig
 
-TODO: maybe merge should be reflected too
 
 **/
 size_t SEventConfig::HeuristicMaxSlot( size_t totalGlobalMem_bytes, int lite, int merge  )
 {
-    float vram_ceiling_bytes = float(totalGlobalMem_bytes)*0.87f ; // AIM not to exceed 87% of total VRAM
-    float element_bytes = 4 ;
-
-    //float element_per_slot = 4*4 ;
-    float element_per_slot = lite == 0 ? 4*4 : 4 ;
-
-    float bytes_per_slot = element_bytes*element_per_slot ;
-    float headroom = 1.75f ;   //  Experience from nvtop while running cxs_min.sh
-    float heuristic_max_slot = vram_ceiling_bytes/(bytes_per_slot*headroom) ;
-
-    return size_t(heuristic_max_slot);
+    float vram_ceiling = float(totalGlobalMem_bytes)*0.87f ; // AIM not to exceed 87% (Grok:80%) of total VRAM
+    float bytes_per_photon = (lite == 0) ? 64.f : 16.f;
+    float headroom = (merge == 0) ? 1.75f : 3.3f;  // 1.75 was OK before adding GPU hit merging and lite mode
+    return size_t(vram_ceiling / (bytes_per_photon * headroom) * 0.98f);
 }
+
 
 /**
 SEventConfig::HeuristicMaxSlot_Rounded

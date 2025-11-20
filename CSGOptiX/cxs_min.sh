@@ -338,7 +338,7 @@ elif [ "${TEST:0:6}" == "merge_" ]; then
    opticks_event_mode=Hit       # formerly DebugLite
    opticks_mode_lite=1          # 0:non-Lite 1:photon/hit -Lite variant  2:both non-Lite and Lite variants for debug
    opticks_mode_merge=1
-   opticks_merge_window=1
+   opticks_merge_window=1    # ns
 
    #export QEvt=INFO
    export QSim=INFO
@@ -444,12 +444,12 @@ elif [[ "$TEST" =~ ^v*large_evt(_merge)?$ ]]; then
        opticks_event_mode=Hit       # formerly DebugLite
        opticks_mode_lite=1          # 0:non-Lite 1:photon/hit -Lite variant  2:both non-Lite and Lite variants for debug
        opticks_mode_merge=1
-       opticks_merge_window=1
+       opticks_merge_window=1       # ns
 
        #export QEvt=INFO
        export QSim=INFO
 
-       export QSim__simulate_KEEP_SUBFOLD=1
+       #export QSim__simulate_KEEP_SUBFOLD=1
        # CAUTION : keeping subfold doubles disk usage
        # Usage allows validation of NPFold::concat and QEvt::simulate_final_merge see cxs_min_hlm.py
    fi

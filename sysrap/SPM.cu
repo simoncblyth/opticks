@@ -166,7 +166,7 @@ simultaneously fit into VRAM.
 1. special case time_window:0.f to just return selected without merging
 2. allocate `(uint64_t*)d_keys` and `(sphotonlite*)d_vals`
 3. populate d_keys using sphotonlite_key_functor and d_vals using copy_n
-4. sort_by_key arranging hits with same (id, timebucket) together
+4. sort_by_key arranging d_selected hits with same (id, timebucket) together
 5. allocate d_out_key d_out_val with space for num_in [HMM, COULD DOUBLE PASS TO REDUCE MEMORY PERHAPS?]
 6. reduce_by_key merging contiguous equal (id,timebucket) hits
 7. get number of merged hits
@@ -257,12 +257,16 @@ void SPM::merge_partial_select(
 
 
 
-    // 4. sort_by_key arranging hits with same (id, timebucket) to be contiguous
+    // 4. sort_by_key arranging d_selected hits with same (id, timebucket) to be contiguous
 
     thrust::sort_by_key(policy,
                         thrust::device_ptr<uint64_t>(d_keys),
                         thrust::device_ptr<uint64_t>(d_keys + num_selected),
                         thrust::device_ptr<sphotonlite>(d_selected));
+
+    cudaFreeAsync(d_keys, stream);
+
+
 
     // 5. allocate d_out_key d_out_val with space for num_selected
 
@@ -284,6 +288,9 @@ void SPM::merge_partial_select(
                 thrust::equal_to<uint64_t>{},
                 sphotonlite_reduce_op());
 
+    cudaFreeAsync(d_selected, stream);   // omitting this caused leak steps of 0.9GB in the whopper 8.25 billion test
+
+
     // Synchronize the stream here to ensure reduce_by_key results are ready for host access
     cudaError_t sync_err = cudaStreamSynchronize(stream);
     if (sync_err != cudaSuccess) {
@@ -295,6 +302,7 @@ void SPM::merge_partial_select(
     size_t merged = ends.first.get() - d_out_key ;
     // (Proceed to step 8 as-is; the sync ensures d_out_val is also ready for the subsequent cudaMemcpyAsync)
 
+    cudaFreeAsync(d_out_key, stream);
 
     // 8. allocate d_final to fit merged hits, d2d copy d_final from d_out_val
     sphotonlite* d_final = nullptr;
@@ -306,9 +314,6 @@ void SPM::merge_partial_select(
 
     // 9. free temporary buffers
 
-    cudaFreeAsync(d_selected, stream);   // omitting this caused leak steps of 0.9GB in the whopper 8.25 billion test
-    cudaFreeAsync(d_keys, stream);
-    cudaFreeAsync(d_out_key, stream);
     cudaFreeAsync(d_out_val, stream);
 
 
