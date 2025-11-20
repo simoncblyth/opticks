@@ -122,7 +122,7 @@ public:
     static bool KEEP_SUBFOLD ;
 
     double simulate(int eventID, bool reset_ );      // via cx launch
-    void   simulate_final_merge(cudaStream_t stream);
+    void   simulate_final_merge(int64_t tot_ph, cudaStream_t stream);
 
 
 

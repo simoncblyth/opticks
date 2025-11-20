@@ -86,6 +86,46 @@ pdb0
 EOU
 }
 
+#test=debug
+
+#test=merge_M1
+#test=merge_M10
+
+#test=ref1
+#test=ref5
+#test=ref8
+#test=ref10
+#test=ref10_multilaunch
+#test=input_genstep
+#test=input_genstep_muon
+
+#test=input_photon_chimney
+#test=input_photon_nnvt
+#test=input_photon_target
+#test=input_photon_wp_pmt
+#test=input_photon_wp_pmt_side
+#test=input_photon_wp_pmt_semi
+#test=input_photon_s_pmt
+#test=input_photon_poolcover
+#test=input_photon_poolcover_refine
+
+#test=large_evt
+#test=vlarge_evt
+#test=vvlarge_evt
+#test=vvvlarge_evt
+#test=vvvvlarge_evt
+#test=vvvvvlarge_evt
+#test=vvvvvvlarge_evt
+
+#test=large_evt_merge
+#test=vvvvvvlarge_evt
+test=vvvvvvlarge_evt_merge
+
+#test=medium_scan
+
+export TEST=${TEST:-$test}
+
+
 vars=""
 SDIR=$(dirname $(realpath $BASH_SOURCE))
 
@@ -108,7 +148,8 @@ bin=CSGOptiXSMTest
 script=$SDIR/cxs_min.py
 script_AB=$SDIR/cxs_min_AB.py
 script_lite=$SDIR/cxs_min_lite.py
-vars="$vars bin script script_AB script_lite"
+script_hlm=$SDIR/cxs_min_hlm.py
+vars="$vars bin script script_AB script_lite script_hlm"
 
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
@@ -186,47 +227,6 @@ export VERSION=${VERSION:-$version}   ## see below currently using VERSION TO SE
 
 
 vars="$vars version VERSION"
-
-
-#test=debug
-
-#test=merge_M1
-#test=merge_M10
-
-#test=ref1
-#test=ref5
-#test=ref8
-#test=ref10
-#test=ref10_multilaunch
-#test=input_genstep
-#test=input_genstep_muon
-
-#test=input_photon_chimney
-#test=input_photon_nnvt
-#test=input_photon_target
-#test=input_photon_wp_pmt
-#test=input_photon_wp_pmt_side
-#test=input_photon_wp_pmt_semi
-#test=input_photon_s_pmt
-#test=input_photon_poolcover
-#test=input_photon_poolcover_refine
-
-#test=large_evt
-#test=vlarge_evt
-#test=vvlarge_evt
-#test=vvvlarge_evt
-#test=vvvvlarge_evt
-#test=vvvvvlarge_evt
-#test=vvvvvvlarge_evt
-
-#test=large_evt_merge
-#test=vvvvvvlarge_evt
-test=vvvvvvlarge_evt_merge
-
-
-#test=medium_scan
-
-export TEST=${TEST:-$test}
 
 
 #ctx=Debug_XORWOW
@@ -448,7 +448,12 @@ elif [[ "$TEST" =~ ^v*large_evt(_merge)?$ ]]; then
 
        #export QEvt=INFO
        export QSim=INFO
+
+       export QSim__simulate_KEEP_SUBFOLD=1
+       # CAUTION : keeping subfold doubles disk usage
+       # Usage allows validation of NPFold::concat and QEvt::simulate_final_merge see cxs_min_hlm.py
    fi
+
 
 
    # KEEP_SUBFOLD DOUBLES SPACE AND TIME OF HIT SAVING
@@ -849,6 +854,12 @@ fi
 if [ "${arg/lite}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script_lite
 fi
+
+if [ "${arg/hlm}" != "$arg" ]; then
+    MODE=0 ${IPYTHON:-ipython} --pdb -i $script_hlm
+fi
+
+
 
 
 if [ "${arg/ana}" != "$arg" ]; then

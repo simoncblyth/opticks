@@ -387,6 +387,8 @@ class Fold(object):
 
         enough_symbols = len(self.names) <= len(symbols)
 
+        ff = []
+
         for i, name in enumerate(self.names):
             path = os.path.join(base, name)
             symbol = symbols[i] if enough_symbols else "sym%d" % i
@@ -419,7 +421,7 @@ class Fold(object):
                 self.txts[name] = a
             elif self.IsFold(base, name):
                 a = Fold(path, symbol=name)
-                self.ff.append(name)
+                ff.append(name)
             pass
             setattr(self, stem, a )
 
@@ -429,6 +431,7 @@ class Fold(object):
                 setattr( builtins, symbol, a )
                 print("setting builtins symbol:%s gstem:%s" % (symbol, gstem) )
             pass
+            self.ff = sorted(ff)
         pass
 
     @classmethod
@@ -528,6 +531,21 @@ class Fold(object):
         return self.BaseLabel(self.base, shorten=True)
 
     baselabel = property(_get_baselabel)
+
+
+    def allsub(self, stem):
+        """
+        :param stem: of an array eg "hitlitemerged" without ".npy" suffix
+        :return aa: tuple of arrays found within immediate subfolders of this folder in f.ff order
+        """
+        aa = []
+        for fsub_name in self.ff:
+            fsub = getattr(self,fsub_name)
+            a = getattr(fsub,stem)
+            aa.append(a)
+        pass
+        return tuple(aa)
+
 
     def desc(self):
         """

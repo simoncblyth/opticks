@@ -530,14 +530,13 @@ double QSim::simulate(int eventID, bool reset_)
     assert(concat_rc == 0);
 
     bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
-    bool needs_final_merge = num_slice > 1 && has_hlm ;
-    //bool needs_final_merge = num_slice > 0 && has_hlm ;   // always when has_hlm for small scale debug
+    bool hlm_final_merge = num_slice > 1 && has_hlm ;
     LOG(LEVEL)
          << " num_slice " << num_slice
          << " has_hlm " << ( has_hlm ? "YES" : "NO " )
-         << " needs_final_merge " << ( needs_final_merge ? "YES" : "NO " )
+         << " hlm_final_merge " << ( hlm_final_merge ? "YES" : "NO " )
          ;
-    if(needs_final_merge) simulate_final_merge(stream);
+    if(hlm_final_merge) simulate_final_merge(tot_ph, stream);
 
 
     if(!KEEP_SUBFOLD) sev->topfold->clear_subfold();
@@ -618,7 +617,7 @@ TODO: use QEvt::FinalMerge_async once that makes sense
 
 **/
 
-void QSim::simulate_final_merge(cudaStream_t stream)
+void QSim::simulate_final_merge(int64_t tot_ph, cudaStream_t stream)
 {
     bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
     assert( has_hlm );
@@ -626,10 +625,16 @@ void QSim::simulate_final_merge(cudaStream_t stream)
     const NP* hlm = sev->topfold->get(SComp::HITLITEMERGED_);
     NP*       fin = QEvt::FinalMerge(hlm, stream);
 
+    float     hlm_frac = float(hlm->num_items())/float(tot_ph) ;
+    float     fin_frac = float(fin->num_items())/float(hlm->num_items()) ;
+
     std::stringstream ss ;
     ss
+        << " tot_ph " << tot_ph
         << " hlm " << ( hlm ? hlm->sstr() : "-" )
         << " fin " << ( fin ? fin->sstr() : "-" )
+        << " hlm/tot " << std::setw(7) << std::fixed << std::setprecision(4) << hlm_frac
+        << " fin/hlm " << std::setw(7) << std::fixed << std::setprecision(4) << fin_frac
         ;
 
     std::string note = ss.str();

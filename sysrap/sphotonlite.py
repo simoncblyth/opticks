@@ -8,11 +8,11 @@ opticks/sysrap/sphotonlite.py
     from opticks.sysrap.sphotonlite import SPhotonLite
     p = SPhotonLite.view(f.photonlite)  # photonlite shape (N,4) uint32
 
-
-
-
 """
 from __future__ import annotations
+import logging
+log = logging.getLogger(__name__)
+
 import numpy as np
 from opticks.ana.fold import append_fields
 
@@ -89,9 +89,9 @@ class SPhotonLite:
 
         fphi = cls.unpack_uint16_to_float(rec["lposfphi"])
         cost = cls.unpack_uint16_to_float(rec["lposcost"])
+
         phi = ( fphi * 2.0 - 1. ) * np.pi  # scuda.h:phi_from_fphi
-
-
+        cos = np.arccos(cost)
 
         rec = append_fields(
             rec
@@ -99,16 +99,22 @@ class SPhotonLite:
             [
                "lposfphi_f",
                "lposcost_f",
-               "phi"
+               "phi",
+               "cost",
+               "cos"
             ]
             ,
             [
                 fphi,
                 cost,
-                phi
+                phi,
+                cost,
+                cos
             ]
             ,
             [
+            np.float32,
+            np.float32,
             np.float32,
             np.float32,
             np.float32,
@@ -155,6 +161,7 @@ class SPhotonLite_Merge:
     For a small number of photons (eg M1)
     this precisely duplicates in python the hit selection and merging
     done with the CUDA impl
+
     """
 
     def __init__(self, tw=1.0, select_mask = EFFICIENCY_COLLECT ):
@@ -162,10 +169,19 @@ class SPhotonLite_Merge:
         self.select_mask = select_mask
 
     def __call__(self, _pl):
+        """
+        :param _pl: raw photonlite input array
+        :return hlm: raw hitlitemerged array
+
+        Q: If this is applied twice or more, does the hlm array stay the same ?
+        A: It should do. YES IT DOES STAY THE SAME
+        """
+        log.info("[ photonlite.shape %s " % (repr(_pl.shape),) )
+
         tw = self.tw
         select_mask = self.select_mask
 
-        # Step 1: Filter hits (same as (p.flagmask & select_mask) == 0)
+        # Step 1: Filter hits
         flagmask = _pl[:,3]
 
         select = (flagmask & select_mask) != 0
@@ -183,27 +199,34 @@ class SPhotonLite_Merge:
         # key = ( ( _hl[:,0] & 0xFFFF ).astype(np.uint64) << 48 ) | np.floor( _hl[:,1].view(np.float32)/1. ).astype(np.uint64)
 
         # Step 3: Sort by key (exactly what Thrust does internally)
+
+        log.info("-argsort[")
         sort_idx = np.argsort(key, kind='stable')  # stable = same as thrust::stable_sort_by_key
+        log.info("-argsort]")
         key_sorted = key[sort_idx]
         _hl_sorted = _hl[sort_idx]
 
 
         # Step 4: Find group boundaries
+        log.info("-diff[")
         key_diff = np.diff(key_sorted, prepend=key_sorted[0]-1)     # force first group start
+        log.info("-diff]")
         group_start = np.where(key_diff != 0)[0]
 
         # Number of output groups
         n_groups = len(group_start)
 
         # Step 5: Reduce each group (vectorized version of sphotonlite_reduce_op)
-        out = np.zeros( (n_groups,4), dtype=_pl.dtype )
+        hlm = np.zeros( (n_groups,4), dtype=_pl.dtype )
 
         # Take first hit in group as base (like your CUDA reduce does with 'a')
         first_in_group = group_start
 
-        out[:] = _hl_sorted[first_in_group]
+        hlm[:] = _hl_sorted[first_in_group]
 
         # Now reduce the rest of each group
+
+        log.info("-reducing n_groups %d [" % (n_groups,) )
         for i in range(n_groups):
             start = group_start[i]
             end = group_start[i+1] if i+1 < n_groups else len(key)
@@ -214,18 +237,20 @@ class SPhotonLite_Merge:
             group_slice = slice(start, end)
 
             # min time
-            out[i,1] = np.min(_hl_sorted[group_slice,1].view(np.float32)).view(np.uint32)
+            hlm[i,1] = np.min(_hl_sorted[group_slice,1].view(np.float32)).view(np.uint32)
 
             # OR all flagmasks
-            out[i,3] |= np.bitwise_or.reduce(_hl_sorted[group_slice,3])
+            hlm[i,3] |= np.bitwise_or.reduce(_hl_sorted[group_slice,3])
 
             all_identity = _hl_sorted[group_slice,0] & 0xffff
 
             # sum hitcounts
             sum_hitcount = np.sum(_hl_sorted[group_slice,0] >> 16, dtype=np.uint32)
-            out[i,0] = sum_hitcount << 16 | all_identity[0]
+            hlm[i,0] = sum_hitcount << 16 | all_identity[0]
         pass
-        return out
+        log.info("-reducing n_groups %d ]" % (n_groups,) )
+        log.info("] hlm.shape %s " % ( repr(hlm.shape), ))
+        return hlm
     pass
 pass
 
