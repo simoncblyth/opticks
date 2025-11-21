@@ -1387,15 +1387,17 @@ unsigned SEventConfig::HitComp() // static
 SEventConfig::HitCompOne
 -------------------------
 
-+-----------------------------------------------+--------------------------+
-|   Mode                                        |   HitCompOne             |
-+===============================================+==========================+
-|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=0   |  SCOMP_HIT               |
-+-----------------------------------------------+--------------------------+
-|    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=0   |  SCOMP_HITLITE           |
-+-----------------------------------------------+--------------------------+
-|    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=1   |  SCOMP_HITLITEMERGED     |
-+-----------------------------------------------+--------------------------+
++-----------------------------------------------+--------------------------+---------------------+------------------+
+|   Mode                                        |   HitCompOne             |   HitCompOneName    |  Note            |
++===============================================+==========================+=====================+==================+
+|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=0   |  SCOMP_HIT               |   hit               |                  |
++-----------------------------------------------+--------------------------+---------------------+------------------+
+|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=1   |  SCOMP_HIT               |   hit               |  NOT IMPL YET    |
++-----------------------------------------------+--------------------------+---------------------+------------------+
+|    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=0   |  SCOMP_HITLITE           |   hitlite           |                  |
++-----------------------------------------------+--------------------------+---------------------+------------------+
+|    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=1   |  SCOMP_HITLITEMERGED     |   hitlitemerged     |                  |
++-----------------------------------------------+--------------------------+---------------------+------------------+
 
 **/
 
@@ -1420,7 +1422,7 @@ unsigned SEventConfig::HitCompOne() // static
 SEventConfig::HitCompOneName
 ----------------------------
 
-Used by SEvt::getNumHit
+This returns the component name that is used by SEvt::getNumHit SEvt::getHit
 
 **/
 

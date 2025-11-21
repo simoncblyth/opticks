@@ -198,6 +198,15 @@ https://github.com/NVIDIA/thrust/discussions/1616
     Thrust 1.16.0 provides a new “nosync” hint
 
 
+final merge special case
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the final merge of the concatenated per-launch select+merge results
+the selection has been done already and hence does not need to be repeated.
+As d_selected is then the same as d_in the free is skipped as d_in belongs
+to the caller.
+
+
 **/
 
 void SPM::merge_partial_select(
@@ -210,6 +219,7 @@ void SPM::merge_partial_select(
     cudaStream_t      stream )
 {
 
+
     //printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f \n", num_in, select_flagmask, time_window );
 
     if (num_in == 0) { *d_out = nullptr; if (num_out) *num_out = 0; return; }
@@ -220,19 +230,31 @@ void SPM::merge_partial_select(
 
     // 0. apply selection using count_if, allocate, copy_if
 
-    sphotonlite_select_pred selector{select_flagmask};
-    size_t num_selected = thrust::count_if(policy, in, in + num_in, selector);
+    sphotonlite* d_selected = nullptr;
+    size_t num_selected = 0 ;
 
-    if (num_selected == 0)
+    bool apply_selection = select_flagmask != ALREADY_HITMASK_SELECTED ;
+    if( apply_selection )
     {
-        *d_out = nullptr;
-        if (num_out) *num_out = 0;
-        return;
+        sphotonlite_select_pred selector{select_flagmask};
+        num_selected = thrust::count_if(policy, in, in + num_in, selector);
+
+        if (num_selected == 0)
+        {
+            *d_out = nullptr;
+            if (num_out) *num_out = 0;
+            return;
+        }
+
+        cudaMallocAsync(&d_selected, num_selected * sizeof(sphotonlite), stream);
+        thrust::copy_if(policy, in, in + num_in, thrust::device_ptr<sphotonlite>(d_selected), selector);
+    }
+    else
+    {
+         d_selected = (sphotonlite*)d_in ;
+         num_selected = num_in ;
     }
 
-    sphotonlite* d_selected = nullptr;
-    cudaMallocAsync(&d_selected, num_selected * sizeof(sphotonlite), stream);
-    thrust::copy_if(policy, in, in + num_in, thrust::device_ptr<sphotonlite>(d_selected), selector);
 
     // 1. special case time_window:0.f to just return selected without merging
     if (time_window == 0.f)
@@ -288,7 +310,17 @@ void SPM::merge_partial_select(
                 thrust::equal_to<uint64_t>{},
                 sphotonlite_reduce_op());
 
-    cudaFreeAsync(d_selected, stream);   // omitting this caused leak steps of 0.9GB in the whopper 8.25 billion test
+
+    if(apply_selection )
+    {
+        cudaFreeAsync(d_selected, stream);
+        // omitting this caused leak steps of 0.9GB in the whopper 8.25 billion test
+    }
+    else
+    {
+        assert( d_selected == d_in && num_selected == num_in );
+        // for apply_selection:false d_selected is same as d_in which belongs to caller
+    }
 
 
     // Synchronize the stream here to ensure reduce_by_key results are ready for host access

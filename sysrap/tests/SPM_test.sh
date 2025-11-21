@@ -55,6 +55,7 @@ export AFOLD=${AFOLD:-$afold}
 test=merge_partial_select_async
 #test=dump_partial
 
+unset TEST
 export TEST=${TEST:-$test}
 
 opticks_merge_window=1

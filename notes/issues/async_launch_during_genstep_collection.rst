@@ -95,3 +95,14 @@ Grok-pseudo-code (std::move to avoid copies)::
         }
     };
 
+
+
+Look for high level discussion : async CUDA with future objects that must be waited on
+----------------------------------------------------------------------------------------
+
+
+* https://events.prace-ri.eu/event/989/sessions/3096/attachments/1196/2029/cuda-multiple-gpus.pdf
+* https://medium.com/gpgpu/multi-gpu-programming-6768eeb42e2c
+* https://www.sintef.no/contentassets/3eb4691190f2451fb21349eb24cb9e8e/part-3-multi-gpu-programming.pdf
+
+

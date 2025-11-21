@@ -4763,15 +4763,17 @@ std::string SEvt::descVec() const
 
 
 const NP* SEvt::getGenstep() const { return topfold->get(SComp::GENSTEP_) ;}
-const NP* SEvt::getPhoton() const {  return topfold->get(SEventConfig::PhotonCompOneName()) ; }
-const NP* SEvt::getHit() const {     return topfold->get(SEventConfig::HitCompOneName()) ; }
+
+const NP* SEvt::getPhoton() const {    return topfold->get(    SEventConfig::PhotonCompOneName()) ; }
+size_t    SEvt::getNumPhoton() const { return topfold->get_num(SEventConfig::PhotonCompOneName()) ; }
+const NP* SEvt::getHit() const {       return topfold->get(    SEventConfig::HitCompOneName()) ; }
+size_t    SEvt::getNumHit() const {    return topfold->get_num(SEventConfig::HitCompOneName()) ; }
+
 const NP* SEvt::getAux() const {     return topfold->get(SComp::AUX_) ; }
 const NP* SEvt::getSup() const {     return topfold->get(SComp::SUP_) ; }
 const NP* SEvt::getPho() const {     return topfold->get(SComp::PHO_) ; }
 const NP* SEvt::getGS() const {      return topfold->get(SComp::GS_) ; }
 
-size_t SEvt::getNumPhoton() const { return topfold->get_num(SEventConfig::PhotonCompOneName()) ; }
-size_t SEvt::getNumHit() const {    return topfold->get_num(SEventConfig::HitCompOneName()) ; }  // number of HIT/HITLITE/HITLITEMERGED depening on ModeLite ModeMerge
 
 std::string SEvt::descSimulate() const
 {

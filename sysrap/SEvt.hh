@@ -731,15 +731,18 @@ public:
     std::string descVec() const ;
 
     const NP* getGenstep() const ;
-    const NP* getPhoton() const ;
-    const NP* getHit() const ;
+
+    const NP* getPhoton() const ; // uses SEventConfig::PhotonCompOneName depending on ModeLite ModeMerge
+    size_t    getNumPhoton() const ;
+    const NP* getHit() const ;    // uses SEventConfig::HitCompOneName    depending on ModeLite ModeMerge
+    size_t    getNumHit() const ;
+
+
     const NP* getAux() const ;
     const NP* getSup() const ;
     const NP* getPho() const ;
     const NP* getGS() const ;
 
-    size_t getNumPhoton() const ;
-    size_t getNumHit() const ;
     std::string descSimulate() const ;
     std::string getCounts() const ;
 

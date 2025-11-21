@@ -1150,15 +1150,14 @@ in their inputs:
 
 NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
 {
-    NP_future producer_result = FinalMerge_async(all, stream );
+    NP_future merge_result = FinalMerge_async(all, stream );
 
     cudaStream_t consumer ;
     cudaStreamCreate(&consumer);
 
-    // make consumer wait for producer_result.ready event
-    producer_result.wait(consumer);
+    merge_result.wait(consumer);
 
-    NP* hlm = producer_result.arr ;
+    NP* hlm = merge_result.arr ;
 
     return hlm ;
 }
@@ -1168,7 +1167,6 @@ NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
 QEvt::FinalMerge_async
 -----------------------
 
-
 **/
 
 
@@ -1176,7 +1174,7 @@ NP_future QEvt::FinalMerge_async(const NP* all, cudaStream_t stream ) // static
 {
     size_t num_all = all->num_items();
 
-    // 1. alloc and upload concatenation of partially merged hits
+    // 1. alloc and upload concatenation of the per-launch merged hits
 
     sphotonlite* d_all = nullptr;
     if(num_all > 0)
@@ -1186,10 +1184,11 @@ NP_future QEvt::FinalMerge_async(const NP* all, cudaStream_t stream ) // static
     }
 
     // 2. invoke final merge
+
     SPM_future merge_result = SPM::merge_partial_select_async(
         d_all ? d_all : nullptr,
         num_all,
-        SEventConfig::HitMask(),
+        SPM::ALREADY_HITMASK_SELECTED,
         SEventConfig::MergeWindow(),
         stream);
 

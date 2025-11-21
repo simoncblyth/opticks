@@ -14,6 +14,7 @@ Grok generated code under test
 
 struct SPM
 {
+    static constexpr unsigned ALREADY_HITMASK_SELECTED = 0xffffffffu ;
     static constexpr float DEFAULT_TIME_WINDOW = 1.0f ;   // ns
 
     static SPM_future merge_partial_select_async(
