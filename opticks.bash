@@ -191,8 +191,9 @@ usage(){ cat << EON
 ~/.opticks/GEOM/ENVSET.sh
 ==========================
 
-Export ENVSET envvar configuring path to setup script, use this
-from bash function like::
+Export ENVSET envvar configuring path to setup script, and ENVSET_NAME that
+provides a short identifier string without spaces. 
+Use this from bash function like::
 
     oj_envset()
     {
@@ -208,8 +209,17 @@ from bash function like::
 EON
 }
 
-envset=/cvmfs/opticks.ihep.ac.cn/oj/releases/J25.4.0_Opticks-v0.5.6/el9_amd64_gcc11/2025_10_29/envset.sh
+#envset_name=OJ_56
+envset_name=OJ_NOW
+
+case \$envset_name in
+  OJ_56)   envset=/cvmfs/opticks.ihep.ac.cn/oj/releases/J25.4.0_Opticks-v0.5.6/el9_amd64_gcc11/2025_10_29/envset.sh ;;
+  OJ_NOW)  envset=\$HOME/junosw/InstallArea/envset.sh ; envset_name=OJ_\$(date +%b%d) ;;
+esac
+
 export ENVSET=\$envset
+export ENVSET_NAME=\$envset_name
+
 
 EOT
 }

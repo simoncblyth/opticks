@@ -4,7 +4,7 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 #[=[
-TODO: review the scripts : many are no longer relevant 
+TODO: review the scripts : many are no longer relevant
 #]=]
 
 set(SCRIPTS
@@ -26,8 +26,8 @@ set(SCRIPTS
    pc.py
 
    ptx.py
-   strace.py 
-   js.py 
+   strace.py
+   js.py
 )
 
 set(FORMER_INSTALLED_SCRIPTS
@@ -38,21 +38,22 @@ set(FORMER_INSTALLED_SCRIPTS
 
 set(SH_SCRIPTS
 
-   CTestTestfile.py 
-   CTestLog.py  
-   CMakeModules.py 
+   CTestTestfile.py
+   CTestLog.py
+   CMakeModules.py
    oktar.py
    dbg__.sh
    rsync.sh
    BASE_grab.sh
    ctest.sh
    cat.py
+   SProf.py
    opticks-ctest.sh
 )
 
 
 
-# top level python needs to go in bin, 
+# top level python needs to go in bin,
 # but modules that need to be imported must go to py/opticks/bin
 
 macro(install_bin_symlink filepath sympath)
@@ -74,7 +75,7 @@ install(PROGRAMS ${SH_SCRIPTS}   DESTINATION bin)
 
 
 set(PY_SCRIPTS
-   __init__.py 
+   __init__.py
    CMakeLists.py
 )
 
