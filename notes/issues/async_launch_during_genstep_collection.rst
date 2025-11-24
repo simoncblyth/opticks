@@ -38,6 +38,33 @@ Whats missing:
     thoughts on what is optimum ?
 
 
+
+Can some analogy be drawn between async libcurl and async cuda ?
+-----------------------------------------------------------------
+
+
+libcurl multi
+---------------
+
+* https://curl.se/libcurl/c/libcurl-multi.html
+
+Manage many transfers efficiently from one thread managed
+from a single libcurl multi handle.
+
+
+std::promise std::future
+----------------------------
+
+Future and Promise are the two separate sides of an asynchronous operation.
+
+std::promise is used by the "producer/writer" of the asynchronous operation.
+std::future is used by the "consumer/reader" of the asynchronous operation.
+
+The reason it is separated into these two separate "interfaces" is to hide the
+"write/set" functionality from the "consumer/reader".
+
+
+
 Single threaded incremental launches
 -------------------------------------
 

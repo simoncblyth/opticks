@@ -24,10 +24,6 @@ struct CSGFoundry ;
 struct CSGOptiX ;
 struct SSim ;
 
-#ifdef WITH_QS
-struct QSim ;
-#endif
-
 #include "schrono.h"
 #include "plog/Severity.h"
 #include "G4CX_API_EXPORT.hh"
@@ -61,11 +57,6 @@ struct G4CX_API G4CXOpticks
     const G4VPhysicalVolume* wd ;
     CSGFoundry*              fd ;
     CSGOptiX*                cx ;
-
-#ifdef WITH_QS
-    QSim*                    qs ;
-#endif
-
     schrono::TP              t0 ;
 
 
