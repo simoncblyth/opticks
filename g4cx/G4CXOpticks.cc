@@ -2,9 +2,6 @@
 G4CXOpticks.cc
 ================
 
-Q: Why is QSim exposed here, can that be hidden inside cx(CSGOptiX) ?
-A: WIP: moving the QSim methods to be called via CSGOptiX
-
 **/
 
 
@@ -181,7 +178,7 @@ G4CXOpticks::G4CXOpticks()
 void G4CXOpticks::init()
 {
     INSTANCE = this ;
-    LOG(LEVEL) << Desc() << std::endl << desc();
+    LOG(LEVEL) << std::endl << desc();
 }
 
 G4CXOpticks::~G4CXOpticks()
@@ -192,11 +189,6 @@ G4CXOpticks::~G4CXOpticks()
 }
 
 
-std::string G4CXOpticks::Desc()
-{
-    return CSGOptiX::Desc() ;
-}
-
 std::string G4CXOpticks::desc() const
 {
     std::stringstream ss ;
@@ -206,6 +198,7 @@ std::string G4CXOpticks::desc() const
        << " wd " << ( wd ? "Y" : "N" )
        << " fd " << ( fd ? "Y" : "N" )
        << " cx " << ( cx ? "Y" : "N" )
+       << " cx.desc " << ( cx ? cx->desc() : "-" )
        ;
     std::string s = ss.str();
     return s ;
@@ -321,7 +314,7 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     setGeometry(fd_);
     LOG(LEVEL) << "]setGeometry(fd_)" ;
 
-    LOG(info) << Desc() ;
+    LOG(info) << desc() ;
 
     LOG(LEVEL) << "] G4VPhysicalVolume world " << world ;
 }
@@ -377,9 +370,9 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 
     if(NoGPU == false && hasDevice == true)
     {
-        LOG(LEVEL) << "[ CSGOptiX::Create " ;
-        cx = CSGOptiX::Create(fd);   // uploads geometry to GPU
-        LOG(LEVEL) << "] CSGOptiX::Create " ;
+        LOG(LEVEL) << "[ CreateSimulator " ;
+        cx = CreateSimulator(fd);
+        LOG(LEVEL) << "] CreateSimulator " ;
     }
     else
     {
@@ -400,6 +393,23 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
         saveGeometry(setGeometry_saveGeometry);
         LOG(info) << "] G4CXOpticks__setGeometry_saveGeometry " ;
     }
+}
+
+
+/**
+G4CXOpticks::CreateSimulator
+----------------------------
+
+TODO: branching to different impl here
+
+**/
+
+
+SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
+{
+    //int mode_client = SEventConfig::ModeClient();
+    SSimulator* cx = CSGOptiX::Create(fd);
+    return cx ;
 }
 
 

@@ -379,7 +379,9 @@ set(HEADERS
     sframe.h
     sfr.h
     SCE.h
+
     SCSGOptiX.h
+    SSimulator.h
 
     SPMT.h
     s_pmt.h

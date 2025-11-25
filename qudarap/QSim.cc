@@ -16,7 +16,9 @@
 #include "salloc.h"
 #include "SEvent.hh"
 #include "SEventConfig.hh"
-#include "SCSGOptiX.h"
+
+//#include "SCSGOptiX.h"
+#include "SSimulator.h"
 
 #include "SGenstep.h"
 #include "sslice.h"
@@ -350,9 +352,12 @@ void QSim::init()
 
 /**
 QSim::setLauncher
+------------------
+
+Formerly used SCSGOptiX
 
 **/
-void QSim::setLauncher(SCSGOptiX* cx_ )
+void QSim::setLauncher(SSimulator* cx_ )
 {
     cx = cx_ ;
 }
@@ -405,7 +410,7 @@ the launch.
 
            QEvt::setGenstepUpload_NP
 
-           SCSGOptiX::simulate_launch
+           SSimulator::simulate_launch
 
            SEvt::gather into *fold* below *topfold*
 
@@ -496,7 +501,7 @@ double QSim::simulate(int eventID, bool reset_)
 
         sev->t_PreLaunch = sstamp::Now() ;
 
-        double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SCSGOptiX protocol
+        double dt = rc == 0 && cx != nullptr ? cx->simulate_launch() : -1. ;  //SSimulator protocol
 
         sev->t_PostLaunch = sstamp::Now() ;
         sev->t_Launch = dt ;

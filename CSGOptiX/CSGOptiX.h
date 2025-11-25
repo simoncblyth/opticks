@@ -51,9 +51,12 @@ struct SBT ;
 #endif
 struct Frame ;
 
-#include "SCSGOptiX.h"
+//#include "SCSGOptiX.h"
+//struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
 
-struct CSGOPTIX_API CSGOptiX : public SCSGOptiX
+#include "SSimulator.h"
+
+struct CSGOPTIX_API CSGOptiX : public SSimulator
 {
     friend struct QSim ;
 

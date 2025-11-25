@@ -21,7 +21,7 @@ struct U4SensorIdentifier ;
 class G4VSensitiveDetector ;
 class G4VPhysicalVolume ;
 struct CSGFoundry ;
-struct CSGOptiX ;
+struct SSimulator ;
 struct SSim ;
 
 #include "schrono.h"
@@ -56,7 +56,7 @@ struct G4CX_API G4CXOpticks
     const U4Tree*            tr ;
     const G4VPhysicalVolume* wd ;
     CSGFoundry*              fd ;
-    CSGOptiX*                cx ;
+    SSimulator*              cx ;
     schrono::TP              t0 ;
 
 
@@ -66,7 +66,6 @@ private:
 public:
     virtual ~G4CXOpticks();
 
-    static std::string Desc();
     std::string desc() const ;
 
 private:
@@ -77,6 +76,7 @@ private:
     static const char* setGeometry_saveGeometry ;
     void setGeometry(CSGFoundry* fd);
     void setGeometry_(CSGFoundry* fd);
+    static SSimulator* CreateSimulator(CSGFoundry* fd);
 public:
     std::string descSimulate() const ;
 

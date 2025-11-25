@@ -53,7 +53,7 @@ struct quad2 ;
 struct sphoton ;
 union  quad ;
 
-struct SCSGOptiX ;
+struct SSimulator ;
 
 struct QUDARAP_API QSim
 {
@@ -89,7 +89,7 @@ struct QUDARAP_API QSim
     qdebug*           dbg ;
     qdebug*           d_dbg ;
 
-    SCSGOptiX*        cx ;
+    SSimulator*        cx ;
 
 
     dim3 numBlocks ;
@@ -116,7 +116,7 @@ private:
 
 
 public:
-    void setLauncher(SCSGOptiX* cx_ );
+    void setLauncher(SSimulator* cx_ );
 
     static constexpr const char* QSim__simulate_KEEP_SUBFOLD = "QSim__simulate_KEEP_SUBFOLD" ;
     static bool KEEP_SUBFOLD ;
