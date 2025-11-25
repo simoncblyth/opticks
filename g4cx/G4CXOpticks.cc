@@ -393,7 +393,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     LOG(LEVEL) << "] fd " << fd ;
 
 
-    // try moving this later, so can save things from cx and qs for debug purposes
+    // try moving this later, so can save things from cx for debug purposes
     if( setGeometry_saveGeometry != nullptr )
     {
         LOG(info) << "[ G4CXOpticks__setGeometry_saveGeometry " ;
@@ -425,6 +425,8 @@ G4CXOpticks::simulate
 -----------------------
 
 GPU launch doing generation and simulation done here
+using the gensteps that have been collected so far
+into the SEvt.
 
 **/
 

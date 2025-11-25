@@ -59,6 +59,7 @@ int SEventConfig::_MaxPrdDefault = 0 ;
 int SEventConfig::_MaxTagDefault = 0 ;
 int SEventConfig::_MaxFlatDefault = 0 ;
 
+int SEventConfig::_ModeClientDefault = 0 ;
 int SEventConfig::_ModeLiteDefault = 0 ;
 int SEventConfig::_ModeMergeDefault = 0 ;
 float SEventConfig::_MergeWindowDefault = 0.f ;  // ns
@@ -269,6 +270,7 @@ int SEventConfig::_MaxPrd       = ssys::getenvint(kMaxPrd,  _MaxPrdDefault ) ;
 int SEventConfig::_MaxTag       = ssys::getenvint(kMaxTag,  _MaxTagDefault ) ;
 int SEventConfig::_MaxFlat      = ssys::getenvint(kMaxFlat,  _MaxFlatDefault ) ;
 
+int SEventConfig::_ModeClient     = ssys::getenvint(  kModeClient, _ModeClientDefault ) ;
 int SEventConfig::_ModeLite      = ssys::getenvint(  kModeLite,  _ModeLiteDefault ) ;
 int SEventConfig::_ModeMerge     = ssys::getenvint(  kModeMerge, _ModeMergeDefault ) ;
 float SEventConfig::_MergeWindow = ssys::getenvfloat(kMergeWindow,  _MergeWindowDefault ) ;
@@ -380,6 +382,7 @@ int64_t SEventConfig::MaxPrd(){      return _MaxPrd ; }
 int64_t SEventConfig::MaxTag(){      return _MaxTag ; }
 int64_t SEventConfig::MaxFlat(){     return _MaxFlat ; }
 
+int64_t SEventConfig::ModeClient(){    return _ModeClient ; }
 int64_t SEventConfig::ModeLite(){      return _ModeLite ; }
 int64_t SEventConfig::ModeMerge(){     return _ModeMerge ; }
 float   SEventConfig::MergeWindow(){   return _MergeWindow ; }
@@ -601,6 +604,7 @@ void SEventConfig::SetMaxPrd(    int max_prd){     _MaxPrd     = max_prd     ; L
 void SEventConfig::SetMaxTag(    int max_tag){     _MaxTag     = max_tag     ; LIMIT_Check() ; }
 void SEventConfig::SetMaxFlat(    int max_flat){     _MaxFlat    = max_flat     ; LIMIT_Check() ; }
 
+void SEventConfig::SetModeClient(  int mode ){    _ModeClient  = mode  ; LIMIT_Check() ; ORDER_Check() ; }
 void SEventConfig::SetModeLite(   int mode ){    _ModeLite   = mode  ; LIMIT_Check() ; ORDER_Check() ; }
 void SEventConfig::SetModeMerge(  int mode ){    _ModeMerge  = mode  ; LIMIT_Check() ; ORDER_Check() ; }
 void SEventConfig::SetMergeWindow( float merge_window_ns ){  _MergeWindow  = merge_window_ns    ; LIMIT_Check() ; ORDER_Check() ; }
@@ -774,6 +778,7 @@ void SEventConfig::LIMIT_Check()
    assert( _MaxTag    >= 0 && _MaxTag    <= 1 ) ;
    assert( _MaxFlat   >= 0 && _MaxFlat   <= 1 ) ;
 
+   assert( _ModeClient == 0 || _ModeClient == 1 );
    assert( _ModeLite  == 0 || _ModeLite == 1 || _ModeLite == 2 ) ;   // 2 is for debug, in production only 0 or 1 expected
    assert( _ModeMerge == 0 || _ModeMerge == 1 );
    assert( _MergeWindow >= 0.f );
@@ -898,6 +903,9 @@ std::string SEventConfig::Desc()
        << std::endl
        << std::setw(25) << kMaxFlat
        << std::setw(20) << " MaxFlat " << " : " << MaxFlat()
+       << std::endl
+       << std::setw(25) << kModeClient
+       << std::setw(20) << " ModeClient " << " : " << ModeClient()
        << std::endl
        << std::setw(25) << kModeLite
        << std::setw(20) << " ModeLite " << " : " << ModeLite()
@@ -1650,6 +1658,7 @@ NP* SEventConfig::Serialize() // static
     meta->set_meta<int>("MaxTag", MaxTag() );
     meta->set_meta<int>("MaxFlat", MaxFlat() );
 
+    meta->set_meta<int>("ModeClient", ModeClient() );
     meta->set_meta<int>("ModeLite", ModeLite() );
     meta->set_meta<int>("ModeMerge", ModeMerge() );
     meta->set_meta<float>("MergeWindow", MergeWindow() );

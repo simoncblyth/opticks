@@ -48,7 +48,6 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #include "spath.h"
 #include "smeta.h"
 #include "SProf.hh"
-//#include "SMgr.h"
 
 #include "SGLM.h"
 #include "NP.hh"
@@ -772,7 +771,6 @@ copy hits or other content from SEvt elsewhere.
 **/
 double CSGOptiX::simulate(int eventID, bool reset)
 {
-    SProf::SetTag(eventID, "A%0.3d_" ) ;
     assert(sim);
     double dt = sim->simulate(eventID, reset) ; // (QSim)
     return dt ;

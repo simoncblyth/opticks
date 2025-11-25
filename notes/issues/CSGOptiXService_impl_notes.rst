@@ -10,8 +10,6 @@ Overview
 
 
 
-
-
 TODO : replace CSGOptiX API used from G4CXOpticks with an equivalent API that is using the remote CSGOptiX via libcurl calls
 ------------------------------------------------------------------------------------------------------------------------------
 
@@ -21,6 +19,9 @@ Can that functionality be moved to sysrap/CSGFoundry ?
 * DONE: hide all QSim usage within G4CXOpticks behind CSGOptiX, motivation
   is to concentrate GPU usage into the one object making switching that out
   for the non-GPU client simpler
+
+
+
 
 
 How does G4CXOpticks use CSGOptiX ?
@@ -74,7 +75,7 @@ on available packages but need runtime switch to begin with.
 * monolithic "client" and "service" together (depends on CUDA/OptiX/CSGOptiX)
 * "client" (depends on libcurl)
  
-  * HMM: maybe arrange G4CXOpticks to work with protocol fulfilled by both:
+  * HMM: maybe arrange G4CXOpticks to work with "SPropagator" protocol fulfilled by both:
 
     * CSGOptiX/CSGOptiX (monolithic)
     * sysrap/s_CURL_CSGOptiX.h (client)

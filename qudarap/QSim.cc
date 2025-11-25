@@ -381,10 +381,11 @@ QSim::simulate
 This expects gensteps to have been collected into SEvt vectors of quad6
 prior to being called.
 
-Two canonical invokations:
+Now only one canonical invokations, the higher level G4CXOpticks no longer
+directly uses QSim:
 
-1. G4CXOpticks::simulate for full dependency running
-2. CSGOptiX::simulate for pure CSGOptiX level testing such as by ~/o/cxs_min.sh
+1. CSGOptiX::simulate for pure CSGOptiX level testing such as by ~/o/cxs_min.sh
+
 
 Collected genstep are uploaded and the CSGOptiX kernel is launched to generate and propagate.
 
@@ -421,6 +422,8 @@ bool QSim::KEEP_SUBFOLD = ssys::getenvbool(QSim__simulate_KEEP_SUBFOLD);
 
 double QSim::simulate(int eventID, bool reset_)
 {
+    SProf::SetTag(eventID, "A%0.3d_" ) ;
+
     assert( SEventConfig::IsRGModeSimulate() );
 
     //cudaStream_t stream ;  cudaStreamCreate(&stream);
