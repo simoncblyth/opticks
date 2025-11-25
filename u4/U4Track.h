@@ -23,12 +23,7 @@ struct U4Track
     static bool IsOptical(const G4Track* track);
     static void SetStopAndKill(const G4Track* track);
 
-    template<typename T>
     static std::string Desc(const G4Track* track);
-
-    // pass-thru to STrackInfo methods Label and LabelRef removed
-
-    template<typename T>
     static void SetFabricatedLabel(const G4Track* track);
 
 };
@@ -91,33 +86,33 @@ inline void U4Track::SetStopAndKill(const G4Track* track)
 
 
 #ifdef WITH_CUSTOM4
+#include "C4Pho.h"
 #include "C4TrackInfo.h"
 #else
 #include "STrackInfo.h"
 #endif
 
-template<typename T>
 inline void U4Track::SetFabricatedLabel(const G4Track* track)
 {
     int trackID = Id(track) ;
     assert( trackID >= 0 );
-    T fab = T::Fabricate(trackID);
     G4Track* _track = const_cast<G4Track*>(track);
 
 #ifdef WITH_CUSTOM4
-    C4TrackInfo<T>::Set(_track, fab );
+    C4Pho fab = C4Pho::Fabricate(trackID);
+    C4TrackInfo::Set(_track, fab );
 #else
-    STrackInfo<T>::Set(_track, fab );
+    spho fab = spho::Fabricate(trackID);
+    STrackInfo::Set(_track, fab );
 #endif
 }
 
-template<typename T>
 inline std::string U4Track::Desc(const G4Track* track)
 {
 #ifdef WITH_CUSTOM4
-    T* label = C4TrackInfo<T>::GetRef(track);
+    C4Pho* label = C4TrackInfo::GetRef(track);
 #else
-    T* label = STrackInfo<T>::GetRef(track);
+    spho* label = STrackInfo::GetRef(track);
 #endif
 
     std::stringstream ss ;

@@ -571,18 +571,18 @@ not torch ones so needs some experimentation to see what approach to take.
 void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track )
 {
 #ifdef WITH_CUSTOM4
-    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+    C4Pho* label = C4TrackInfo::GetRef(track);
 #else
-    spho* label = STrackInfo<spho>::GetRef(track);
+    spho* label = STrackInfo::GetRef(track);
 #endif
 
     if( label == nullptr ) // happens with torch gensteps and input photons
     {
         PreUserTrackingAction_Optical_FabricateLabel(track) ;
 #ifdef WITH_CUSTOM4
-        label = C4TrackInfo<C4Pho>::GetRef(track);
+        label = C4TrackInfo::GetRef(track);
 #else
-        label = STrackInfo<spho>::GetRef(track);
+        label = STrackInfo::GetRef(track);
 #endif
     }
     assert( label && label->isDefined() );
@@ -610,15 +610,15 @@ void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel( const G4Track* tr
     }
 
 #ifdef WITH_CUSTOM4
-    U4Track::SetFabricatedLabel<C4Pho>(track);
+    U4Track::SetFabricatedLabel(track);
 #else
-    U4Track::SetFabricatedLabel<spho>(track);
+    U4Track::SetFabricatedLabel(track);
 #endif
 
 #ifdef WITH_CUSTOM4
-    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+    C4Pho* label = C4TrackInfo::GetRef(track);
 #else
-    spho* label = STrackInfo<spho>::GetRef(track);
+    spho* label = STrackInfo::GetRef(track);
 #endif
     assert(label) ;
 
@@ -656,9 +656,9 @@ this does not handle the case of the track not being labelled.
 void U4Recorder::GetLabel( spho& ulabel, const G4Track* track )
 {
 #ifdef WITH_CUSTOM4
-    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+    C4Pho* label = C4TrackInfo::GetRef(track);
 #else
-    spho* label = STrackInfo<spho>::GetRef(track);
+    spho* label = STrackInfo::GetRef(track);
 #endif
     assert( label && label->isDefined() && "all photons are expected to be labelled" );
 

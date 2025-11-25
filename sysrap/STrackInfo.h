@@ -3,16 +3,21 @@
 STrackInfo.h (formerly U4TrackInfo.h)
 ========================================
 
-Required methods for T::
+Formerly uses templated STrackInfo but as
+doing dynamic cast on such a type is not possible
+that is dangerous as must rely on no other track
+info subclasses being in use.
 
-   std::string desc() const ;  
-   T T::Placeholder() ; 
-   T T::Fabricate(int id) ; 
+Required methods for spho::
+
+   std::string desc() const ;
+   spho spho::Placeholder() ;
+   spho spho::Fabricate(int id) ;
 
 
 Users::
 
-    epsilon:opticks blyth$ opticks-fl STrackInfo 
+    epsilon:opticks blyth$ opticks-fl STrackInfo
     ./sysrap/CMakeLists.txt
     ./sysrap/STrackInfo.h
     ./sysrap/SFastSimOpticalModel.hh
@@ -29,16 +34,16 @@ Users::
          not fully impl, seems informational only
 
     ./u4/U4.cc
-         setting photon labels at generation 
+         setting photon labels at generation
 
 
 ::
 
     epsilon:PMTFastSim blyth$ grep STrackInfo.h *.*
     junoPMTOpticalModel.cc:#include "STrackInfo.h"
-    junoPMTOpticalModel.rst:* instead replaced with passing the FastSim status via trackinfo with sysrap/STrackInfo.h  
+    junoPMTOpticalModel.rst:* instead replaced with passing the FastSim status via trackinfo with sysrap/STrackInfo.h
     junoPMTOpticalModelSimple.cc:#include "STrackInfo.h"
-    epsilon:PMTFastSim blyth$ 
+    epsilon:PMTFastSim blyth$
 
 
 **/
@@ -47,128 +52,120 @@ Users::
 #include "G4Track.hh"
 #include "G4VUserTrackInformation.hh"
 
-template<typename T>
+#include "spho.h"
+
 struct STrackInfo : public G4VUserTrackInformation
 {
-    T label  ; 
+    spho label  ;
 
-    STrackInfo(const T& label); 
-    std::string desc() const ; 
+    STrackInfo(const spho& label);
+    std::string desc() const ;
 
-    static STrackInfo<T>* GetTrackInfo(const G4Track* track); 
-    static STrackInfo<T>* GetTrackInfo_dynamic(const G4Track* track); 
-    static bool Exists(const G4Track* track); 
-    static T  Get(   const G4Track* track);   // by value 
-    static T* GetRef(const G4Track* track);   // by reference, allowing inplace changes
-    static std::string Desc(const G4Track* track); 
+    static STrackInfo* GetTrackInfo_UNDEFINED(const G4Track* track);
+    static STrackInfo* GetTrackInfo(          const G4Track* track);
+    static bool Exists(const G4Track* track);
+    static spho  Get(   const G4Track* track);   // by value
+    static spho* GetRef(const G4Track* track);   // by reference, allowing inplace changes
+    static std::string Desc(const G4Track* track);
 
-    static void Set(G4Track* track, const T& label ); 
+    static void Set(G4Track* track, const spho& label );
 };
 
-template<typename T>
-inline STrackInfo<T>::STrackInfo(const T& _label )
-    :   
+inline STrackInfo::STrackInfo(const spho& _label )
+    :
     G4VUserTrackInformation("STrackInfo"),
     label(_label)
 {
 }
- 
-template<typename T>
-inline std::string STrackInfo<T>::desc() const 
+
+inline std::string STrackInfo::desc() const
 {
-    std::stringstream ss ; 
-    ss << *pType << " " << label.desc() ; 
-    std::string s = ss.str(); 
-    return s ; 
+    std::stringstream ss ;
+    ss << *pType << " " << label.desc() ;
+    std::string s = ss.str();
+    return s ;
 }
 
 /**
-STrackInfo::GetTrackInfo
---------------------------
+STrackInfo::GetTrackInfo_UNDEFINED
+-----------------------------------
 
-With U4PhotonInfo the ancestor of STrackInfo was using dynamic_cast 
-without issue. After moving to the templated STrackInfo the 
-dynamic cast always giving nullptr. So switched to static_cast. 
+With U4PhotonInfo the ancestor of STrackInfo was using dynamic_cast
+without issue. After moving to the templated STrackInfo the
+dynamic cast always giving nullptr. So switched to static_cast.
 
 **/
 
-template<typename T>
-inline STrackInfo<T>* STrackInfo<T>::GetTrackInfo(const G4Track* track) // static, label by value 
+inline STrackInfo* STrackInfo::GetTrackInfo_UNDEFINED(const G4Track* track) // static, label by value
 {
     G4VUserTrackInformation* ui = track->GetUserInformation() ;
-    STrackInfo<T>* trackinfo = ui ? static_cast<STrackInfo<T>*>(ui) : nullptr ;
-    return trackinfo ; 
+    STrackInfo* trackinfo = ui ? static_cast<STrackInfo*>(ui) : nullptr ;
+    return trackinfo ;
 }
 
-template<typename T>
-inline STrackInfo<T>* STrackInfo<T>::GetTrackInfo_dynamic(const G4Track* track) // static, label by value 
+inline STrackInfo* STrackInfo::GetTrackInfo(const G4Track* track) // static, label by value
 {
     G4VUserTrackInformation* ui = track->GetUserInformation() ;
-    STrackInfo<T>* trackinfo = ui ? dynamic_cast<STrackInfo<T>*>(ui) : nullptr ;
-    return trackinfo ; 
+    STrackInfo* trackinfo = ui ? dynamic_cast<STrackInfo*>(ui) : nullptr ;
+    return trackinfo ;
 }
 
 
 
 
-template<typename T>
-inline bool STrackInfo<T>::Exists(const G4Track* track) // static
+inline bool STrackInfo::Exists(const G4Track* track) // static
 {
-    STrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    return trackinfo != nullptr ; 
+    STrackInfo* trackinfo = GetTrackInfo(track);
+    return trackinfo != nullptr ;
 }
 
-template<typename T>
-inline T STrackInfo<T>::Get(const G4Track* track) // static, label by value 
+inline spho STrackInfo::Get(const G4Track* track) // static, label by value
 {
-    STrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    return trackinfo ? trackinfo->label : T::Placeholder() ; 
+    STrackInfo* trackinfo = GetTrackInfo(track);
+    return trackinfo ? trackinfo->label : spho::Placeholder() ;
 }
 
-template<typename T>
-inline T* STrackInfo<T>::GetRef(const G4Track* track) // static, label reference 
+inline spho* STrackInfo::GetRef(const G4Track* track) // static, label reference
 {
-    STrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    return trackinfo ? &(trackinfo->label) : nullptr ; 
+    STrackInfo* trackinfo = GetTrackInfo(track);
+    return trackinfo ? &(trackinfo->label) : nullptr ;
 }
 
-template<typename T>
-inline std::string STrackInfo<T>::Desc(const G4Track* track)
+inline std::string STrackInfo::Desc(const G4Track* track)
 {
     G4VUserTrackInformation* ui = track->GetUserInformation() ;
 
-    STrackInfo<T>* trackinfo = GetTrackInfo(track); 
-    STrackInfo<T>* trackinfo_dyn = GetTrackInfo_dynamic(track); 
+    STrackInfo* trackinfo = GetTrackInfo(track);
+    STrackInfo* trackinfo_static = GetTrackInfo_UNDEFINED(track);
 
-    std::stringstream ss ; 
-    ss << "STrackInfo::Desc" 
-       << std::endl 
-       << " track " << track 
+    std::stringstream ss ;
+    ss << "STrackInfo::Desc"
+       << std::endl
+       << " track " << track
        << " track.GetUserInformation " << ui
-       << std::endl 
-       << " trackinfo " << trackinfo 
-       << " trackinfo_dyn " << trackinfo_dyn 
-       << std::endl 
+       << std::endl
+       << " trackinfo " << trackinfo
+       << " trackinfo_static " << trackinfo_static
+       << std::endl
        << " trackinfo.desc " << ( trackinfo ? trackinfo->desc() : "-" )
-       << std::endl 
-       << " trackinfo_dyn.desc " << ( trackinfo_dyn ? trackinfo_dyn->desc() : "-" )
-       ; 
-    std::string s = ss.str(); 
-    return s ; 
-}  
+       << std::endl
+       << " trackinfo_static.desc " << ( trackinfo_static ? trackinfo_static->desc() : "-" )
+       ;
+    std::string s = ss.str();
+    return s ;
+}
 
 
-template<typename T>
-inline void STrackInfo<T>::Set(G4Track* track, const T& _label )  // static 
+inline void STrackInfo::Set(G4Track* track, const spho& _label )  // static
 {
-    T* label = GetRef(track); 
+    spho* label = GetRef(track);
     if(label == nullptr)
     {
-        track->SetUserInformation(new STrackInfo<T>(_label)); 
+        track->SetUserInformation(new STrackInfo(_label));
     }
     else
     {
-        *label = _label ; 
+        *label = _label ;
     }
 }
 
