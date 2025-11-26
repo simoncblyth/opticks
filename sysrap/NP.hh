@@ -6690,6 +6690,7 @@ NP::TimeOrder_ranges
 
 inline void NP::TimeOrder_ranges( std::vector<int>& spec_order, const std::vector<std::string>& specs, const std::vector<std::string>& keys, const std::vector<int64_t>& tt, std::ostream* ss )
 {
+    if(ss) *ss << "NP::TimeOrder_ranges\n" ;
     assert( spec_order.size() == specs.size() ) ;
     int num_specs = specs.size();
 
@@ -7423,7 +7424,7 @@ inline std::string NP::DescMetaKV(const std::string& meta, const char* juncture_
              if( t > 0 ) tp = t ;
         }
     }
-
+    ss << " ranges_[" << ( ranges_ ? ranges_ : "-" ) << "]\n";
     std::string str = ss.str();
     return str ;
 }
@@ -7913,7 +7914,7 @@ inline size_t NP::load_header_from_buffer(const char* buffer, size_t size)
     return pos + 1 ;
 }
 
-inline size_t NP::load_data_from_buffer( const char* buffer, size_t size, size_t pos )
+inline size_t NP::load_data_from_buffer( const char* buffer, size_t /*size*/, size_t pos )
 {
      size_t data_size = arr_bytes() ; // available after parsing header
      memcpy( bytes(),  buffer + pos, data_size );

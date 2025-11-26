@@ -56,7 +56,7 @@ struct G4CX_API G4CXOpticks
     const U4Tree*            tr ;
     const G4VPhysicalVolume* wd ;
     CSGFoundry*              fd ;
-    SSimulator*              cx ;
+    SSimulator*              cx ; // formerly CSGOptiX, now try to generalize
     schrono::TP              t0 ;
 
 

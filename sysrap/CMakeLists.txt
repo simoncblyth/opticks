@@ -382,6 +382,7 @@ set(HEADERS
 
     SCSGOptiX.h
     SSimulator.h
+    SClientSimulator.h
 
     SPMT.h
     s_pmt.h
@@ -545,6 +546,11 @@ set(HEADERS
 
     np.h
     NP.hh
+    NP_CURL.h
+    NP_CURL_Download.h
+    NP_CURL_Upload.h
+    NP_CURL_Header.h
+
     NP_future.h
     NP_nanobind.h
 

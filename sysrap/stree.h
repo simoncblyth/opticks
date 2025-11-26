@@ -218,7 +218,9 @@ When SSim not in use can also use::
 
 #include "ssys.h"
 #include "sstr.h"
-#include "scuda.h"
+
+#include "scuda.h"   // HMM: needs vector_functions from CUDA
+
 #include "snode.h"
 #include "sdigest.h"
 #include "sfreq.h"

@@ -28,6 +28,9 @@ G4CXOpticks.cc
 
 #include "CSGOptiX.h"
 
+#ifdef WITH_CURL
+#include "SClientSimulator.h"
+#endif
 
 #include "G4CXOpticks.hh"
 
@@ -400,15 +403,27 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 G4CXOpticks::CreateSimulator
 ----------------------------
 
-TODO: branching to different impl here
-
 **/
 
 
 SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
 {
-    //int mode_client = SEventConfig::ModeClient();
-    SSimulator* cx = CSGOptiX::Create(fd);
+    int64_t mode_client = SEventConfig::ModeClient();
+    SSimulator* cx = nullptr ;
+    if( mode_client == 0 )
+    {
+        cx = CSGOptiX::Create(fd);
+    }
+    else if (mode_client == 1 )
+    {
+#ifdef WITH_CURL
+         stree* tr = fd->getTree();
+         cx = new SClientSimulator(tr);
+#else
+         LOG(fatal) << "ModeClient requires compilation WITH_CURL of at least 8.12" ;
+#endif
+    }
+    assert(cx);
     return cx ;
 }
 

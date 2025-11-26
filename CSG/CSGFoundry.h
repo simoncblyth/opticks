@@ -411,7 +411,7 @@ struct CSG_API CSGFoundry : public SGeo
     int lookup_mtline(int mtindex) const ;
     std::string desc_mt() const ;
 
-    stree* getTree() const ;
+    stree* getTree() const ;  // from contained (const SSim*)sim
     SScene* getScene() const ;
     void setOverrideScene(SScene* _scene);
 
