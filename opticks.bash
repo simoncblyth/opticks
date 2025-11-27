@@ -1226,6 +1226,7 @@ opticks-build-with-cuda-notes(){ cat << EON
 How to build Opticks packages without CUDA, in fresh tab::
 
      lo ## env setup
+     o
      export OPTICKS_BUILD_WITH_CUDA=OFF
      om-cleaninstall
      opticks-t        ## expect 0/~149 FAILs
@@ -1233,8 +1234,22 @@ How to build Opticks packages without CUDA, in fresh tab::
 Return to default build with CUDA, in fresh tab::
 
      lo ## env setup
+     o
      om-cleaninstall
      opticks-t        ## expect 0/~221 FAILs
+
+
+NB because of the dependencies between packages,
+trying to flip a single package will typically
+fail with linker errors as it is necessary for
+all the optional CUDA packages (sy, c, u4, gx)
+to consistently have BUILD_WITH_CUDA ON or OFF.
+Thus other than during development rebuild all
+at once as shown above.
+
+TODO: refuse to build CUDA essential packages
+(cx, qu) when OPTICKS_BUILD_WITH_CUDA=OFF
+
 
 EON
 }
