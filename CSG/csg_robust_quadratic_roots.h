@@ -19,6 +19,9 @@
 
 #pragma once
 
+
+#include "csg.h"
+
 /*
 
 Robust Quadratic Roots : Numerically Stable Method for Solving Quadratic Equations
@@ -88,7 +91,7 @@ Alternative quadratic in 1/t
 
 */
 
-static __device__
+static csg_D
 void robust_quadratic_roots(float& t1, float &t2, float& disc, float& sdisc, const float d, const float b, const float c)
 {
     disc = b*b-d*c;
@@ -118,7 +121,7 @@ to t_min when disc < 0.f
 
 **/
 
-static __device__
+static csg_D
 void robust_quadratic_roots_disqualifying(const float t_min, float& t1, float &t2, float& disc, float& sdisc, const float d, const float b, const float c)
 {
     disc = b*b-d*c;

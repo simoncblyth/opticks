@@ -2,19 +2,21 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSGTest)
 project(${name} VERSION 0.1.0)
 
-#find_package(OpticksCore REQUIRED CONFIG)
-
 set(INSTALLED_SCRIPTS
-    CSGTestRunner.sh 
+    CSGTestRunner.sh
 )
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
+set(_TEST_SOURCES
 
+)
 
 set(TEST_SOURCES
+
     CSGNodeTest.cc
     CSGNodeImpTest.cc
     CSGIntersectSolidTest.cc
+
     CSGPrimImpTest.cc
     CSGPrimSpecTest.cc
     CSGPrimTest.cc
@@ -33,15 +35,14 @@ set(TEST_SOURCES
     CSGTargetGlobalTest.cc
     CSGFoundry_MakeCenterExtentGensteps_Test.cc
     CSGFoundry_getFrame_Test.cc
-    CSGFoundry_getFrameE_Test.cc 
+    CSGFoundry_getFrameE_Test.cc
     CSGFoundry_getMeshName_Test.cc
     CSGFoundry_SGeo_SEvt_Test.cc
 
     CSGFoundry_ResolveCFBase_Test.cc
-    CSGFoundryLoadTest.cc 
+    CSGFoundryLoadTest.cc
 
     CSGScanTest.cc
-    CUTest.cc
     CSGLogTest.cc
     CSGMakerTest.cc
     CSGQueryTest.cc
@@ -52,12 +53,12 @@ set(TEST_SOURCES
 
     CSGCopyTest.cc
 
-    intersect_leaf_phicut_test.cc 
+    intersect_leaf_phicut_test.cc
     intersect_leaf_thetacut_test.cc
-    intersect_leaf_box3_test.cc 
-    intersect_leaf_cylinder_test.cc 
+    intersect_leaf_box3_test.cc
+    intersect_leaf_cylinder_test.cc
     intersect_leaf_cylinder_vs_oldcylinder_test.cc
-    CSGIntersectComparisonTest.cc 
+    CSGIntersectComparisonTest.cc
 
     distance_leaf_slab_test.cc
 
@@ -68,6 +69,12 @@ set(TEST_SOURCES
     CSGClassifyTest.cc
 )
 
+set(CUDA_TEST_SOURCES
+
+    CUTest.cc
+)
+
+
 set( DEFERRED_TEST_SOURCES
     CSGGeometryFromGeocacheTest.cc
 )
@@ -75,25 +82,38 @@ set( DEFERRED_TEST_SOURCES
 find_program(BASH_EXECUTABLE NAMES bash REQUIRED)
 message(STATUS "BASH_EXECUTABLE : ${BASH_EXECUTABLE}")
 
+
+
 foreach(SRC ${TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} Opticks::CSG)
+    install(TARGETS ${TGT} DESTINATION lib)
+
+    add_test(
+       NAME ${name}.${TGT}
+       COMMAND bash CSGTestRunner.sh ${TGT}
+    )
+endforeach()
+
+
+if(BUILD_WITH_CUDA)
+foreach(SRC ${CUDA_TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} Opticks::CSG CUDA::cudart)
     install(TARGETS ${TGT} DESTINATION lib)
 
-    #add_test(${name}.${TGT} ${TGT})
     add_test(
-       NAME ${name}.${TGT} 
+       NAME ${name}.${TGT}
        COMMAND bash CSGTestRunner.sh ${TGT}
-       #COMMAND ${BASH_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/CSGTestRunner.sh ${TGT}
     )
 endforeach()
+endif()
 
-
-
+if(BUILD_WITH_CUDA) # TMP
 set(TGT CSGDemoTest)
 add_executable(${TGT} CSGDemoTest.cc DemoGeo.cc DemoGrid.cc)
-target_link_libraries(${TGT} Opticks::CSG CUDA::cudart)
+target_link_libraries(${TGT} Opticks::CSG)     # CUDA::cudart
 install(TARGETS ${TGT} DESTINATION lib)
-
-
+endif()

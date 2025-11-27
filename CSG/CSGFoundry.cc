@@ -44,7 +44,11 @@
 
 #include "OpticksCSG.h"
 #include "CSGSolid.h"
+
+#ifdef WITH_CUDA
 #include "CU.h"
+#endif
+
 #include "CSGFoundry.h"
 #include "SName.h"
 #include "CSGTarget.h"
@@ -3282,6 +3286,8 @@ void CSGFoundry::upload()
 
     assert( tran.size() == itra.size() );
 
+
+#ifdef WITH_CUDA
     bool is_uploaded_0 = isUploaded();
     LOG_IF(fatal, is_uploaded_0) << "HAVE ALREADY UPLOADED : THIS CANNOT BE DONE MORE THAN ONCE " ;
     assert(is_uploaded_0 == false);
@@ -3295,6 +3301,11 @@ void CSGFoundry::upload()
     bool is_uploaded_1 = isUploaded();
     LOG_IF(fatal, !is_uploaded_1) << "FAILED TO UPLOAD" ;
     assert(is_uploaded_1 == true);
+#else
+    LOG(fatal) << " COMPILATION WITH_CUDA required to upload " ;
+    std::exit(1);
+#endif
+
 }
 
 bool CSGFoundry::isUploaded() const

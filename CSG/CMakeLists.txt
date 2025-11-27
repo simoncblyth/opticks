@@ -1,12 +1,37 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CSG)
-#project(${name} VERSION 0.1.0)
-project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
+
+option(BUILD_WITH_CUDA "${name} Build with CUDA support" OFF)  # default:ON/OFF
+#[=[
+After changing CUDA ON->OFF or OFF->ON need to reconf::
+
+    om-clean
+    om-conf
+    om
+
+#]=]
+
+set(LANGUAGES CXX)
+if(BUILD_WITH_CUDA)
+    list(APPEND LANGUAGES CUDA)
+endif()
+
+project(${name} VERSION 0.1.0 LANGUAGES ${LANGUAGES})
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
-#find_package(CUDA REQUIRED)
-find_package(CUDAToolkit)
+if(BUILD_WITH_CUDA)
+    find_package(CUDAToolkit REQUIRED)  ## for CUDA::cudart
+
+    message(STATUS "${name}.CUDAToolkit_FOUND           = ${CUDAToolkit_FOUND}")
+    message(STATUS "${name}.CUDAToolkit_INCLUDE_DIRS    = ${CUDAToolkit_INCLUDE_DIRS}")
+    message(STATUS "${name}.CUDAToolkit_LIBRARY_DIR     = ${CUDAToolkit_LIBRARY_DIR}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER         = ${CMAKE_CUDA_COMPILER}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_ID      = ${CMAKE_CUDA_COMPILER_ID}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_VERSION = ${CMAKE_CUDA_COMPILER_VERSION}")
+else()
+    message(STATUS "${name} CUDA disabled by user → CPU-only build")
+endif()
+
 
 find_package(SysRap REQUIRED)
 
@@ -19,7 +44,6 @@ set(INTERSECT_HEADERS)
 
 list(APPEND SOURCES
     CSGNode.cc
-    CU.cc
     CSGPrim.cc
     CSGSolid.cc
     CSGFoundry.cc
@@ -28,9 +52,7 @@ list(APPEND SOURCES
     CSGImport.cc
     CSGTarget.cc
 
-
     CSGScan.cc
-    CSGScan.cu
 
     CSGView.cc
     CSGGrid.cc
@@ -47,13 +69,10 @@ list(APPEND SOURCES
     CSG_LOG.cc
 )
 
-#    CSGGenstep.cc
-#    CSG_stree_Convert.h
 
 list(APPEND CSG_HEADERS
     CSGNode.h
 
-    CU.h
     CSGPrim.h
     CSGSolid.h
 
@@ -84,7 +103,16 @@ list(APPEND CSG_HEADERS
 )
 
 
-#    CSGGenstep.h
+
+if(BUILD_WITH_CUDA)
+   list(APPEND SOURCES
+      CU.cc
+      CSGScan.cu
+   )
+   list(APPEND CSG_HEADERS
+      CU.h
+   )
+endif()
 
 
 
@@ -111,6 +139,7 @@ list(APPEND INTERSECT_HEADERS
     csg_intersect_leaf_thetacut.h
     csg_intersect_leaf_zsphere.h
 
+    csg.h
     csg_robust_quadratic_roots.h
     csg_classify.h
     csg_pack.h
@@ -134,16 +163,17 @@ message(STATUS "CMAKE_INSTALL_INCLUDEDIR : ${CMAKE_INSTALL_INCLUDEDIR}")
 message(STATUS "CMAKE_INSTALL_LIBDIR     : ${CMAKE_INSTALL_LIBDIR}")
 message(STATUS "CMAKE_BINARY_DIR         : ${CMAKE_BINARY_DIR}")
 
-
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
-
-#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
-
-string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
-set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_CSG )
 target_compile_definitions( ${name} PUBLIC WITH_CONTIGUOUS )
+
+if(BUILD_WITH_CUDA)
+   target_compile_definitions( ${name} PUBLIC WITH_CUDA )
+   string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
+   set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
+endif()
+
 
 
 #[=[
@@ -170,23 +200,20 @@ DEBUG,DEBUG_RECORD,DEBUG_CYLINDER,DEBUG_CONE preprocessor macros
 target_compile_definitions( ${name} PUBLIC WITH_S_BB )
 
 
-# ${CUDA_INCLUDE_DIRS}
-
 target_include_directories(${name}
      PUBLIC
-        ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
         $<BUILD_INTERFACE:${OPTICKS_PREFIX}/externals/glm/glm>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         $<INSTALL_INTERFACE:externals/glm/glm>
 )
 
+target_link_libraries(${name} Opticks::SysRap)
 
-
-
-#target_link_libraries(${name} PUBLIC ${CUDA_LIBRARIES} Opticks::SysRap)
-target_link_libraries(${name} ${CUDA_LIBRARIES} Opticks::SysRap)
-
+if(BUILD_WITH_CUDA)
+   target_include_directories(${name} PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+   target_link_libraries(${name} ${CUDA_LIBRARIES} )
+endif()
 
 
 set( SCRIPTS
@@ -195,12 +222,10 @@ set( SCRIPTS
 )
 
 
-
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(PROGRAMS ${SCRIPTS}  DESTINATION py/opticks/CSG)
-
 
 add_subdirectory(tests)
 

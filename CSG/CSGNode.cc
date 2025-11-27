@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include <vector_types.h>
 
 #include "scuda.h"
 #include "sgeomtools.h"
