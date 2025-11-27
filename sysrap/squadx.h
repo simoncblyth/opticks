@@ -8,7 +8,6 @@ This is used for storing uint64_t timestmaps into the sctx.sup from SEvt::addPro
 
 **/
 
-#include <vector_types.h>
 #include <cstdint>
 
 struct wuint2 {  uint64_t x, y ; };

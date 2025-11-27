@@ -78,7 +78,6 @@ struct SPrd
 
 
 
-#include "vector_functions.h"
 #include "ssys.h"
 #include "scuda.h"
 #include "squad.h"

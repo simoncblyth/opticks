@@ -2,6 +2,7 @@
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+#include <cstdlib>
 #include <vector>
 #include <string>
 #endif
@@ -58,8 +59,10 @@ struct SCSGPrimSpec
 #include <cstring>
 
 #include "scuda.h"
-#include "SCU.h"
 
+#ifdef WITH_CUDA
+#include "SCU.h"
+#endif
 
 /**
 SCSGPrimSpec::gather
@@ -152,6 +155,7 @@ need to trim offsets to avoid reading beyond the array.
 
 inline void SCSGPrimSpec::downloadDump(const char* msg) const 
 {
+#ifdef WITH_CUDA
     assert( device == true ); 
     unsigned stride_in_values = stride_in_bytes/sizeof(float) ; 
     unsigned numValues = stride_in_values*num_prim ;   
@@ -191,6 +195,10 @@ inline void SCSGPrimSpec::downloadDump(const char* msg) const
         std::cout << std::endl ; 
     }
     std::cout << "] " << msg << std::endl ; 
+#else
+    std::cout << "SCSGPrimSpec::downloadDump FATAL requires compilation WITH_CUDA \n" ;
+    std::exit(1);
+#endif
 }
 
 

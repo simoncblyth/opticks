@@ -114,7 +114,6 @@ set(TEST_SOURCES
    scanvasTest.cc
 
    OpticksPhotonTest.cc
-   SUTest.cc
    SEventConfigTest.cc
    SFrameConfigTest.cc
    SGeoConfigTest.cc
@@ -137,19 +136,28 @@ set(TEST_SOURCES
    sseq_index_test.cc
 
    ssys_test.cc
-   srng_test.cc
    sbuild_test.cc
 
-   SCurandStateMonolithicTest.cc
 
    SEvt__createInputGenstep_configuredTest.cc
 
 )
 
 
+
+
+
 set( OPTIX_TEST_SOURCES
 
    SGLFW_SOPTIX_Scene_test.cc
+
+)
+
+set(CUDA_TEST_SOURCES
+
+   SUTest.cc
+   srng_test.cc
+   SCurandStateMonolithicTest.cc
 
 )
 
@@ -228,6 +236,25 @@ foreach(SRC ${TEST_SOURCES})
     add_test(${name}.${TGT} ${TGT})
 endforeach()
 
+
+if(BUILD_WITH_CUDA)
+foreach(SRC ${CUDA_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} SysRap)
+
+    target_include_directories( ${TGT} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
+    )
+
+    install(TARGETS ${TGT} DESTINATION lib)
+    add_test(${name}.${TGT} ${TGT})
+endforeach()
+endif()
+
+
+if(BUILD_WITH_CUDA)
 foreach(SRC ${CUDART_TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
@@ -242,13 +269,13 @@ foreach(SRC ${CUDART_TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
 endforeach()
-
+endif()
 
 
 find_package(OpticksGLEW REQUIRED MODULE)
 find_package(OpticksGLFW REQUIRED MODULE)
 
-
+if(BUILD_WITH_CUDA)
 foreach(SRC ${OPTIX_TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
@@ -272,7 +299,7 @@ foreach(SRC ${OPTIX_TEST_SOURCES})
        COMMAND bash STestRunner.sh ${TGT}
     )
 endforeach()
-
+endif()
 
 
 

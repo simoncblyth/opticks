@@ -39,8 +39,19 @@
 #    define CONST_STATIC_INIT( ... ) = __VA_ARGS__
 #endif
 
+
+#ifdef WITH_CUDA
 #include <vector_functions.h>
 #include <vector_types.h>
+#else
+
+#if defined(__CUDACC__)
+#else
+#include "snocuda_vector_functions.h"
+#endif
+
+#endif
+
 
 #include <cmath>
 #include <cstdlib>
@@ -52,13 +63,21 @@
 #    define MAKE_LONGLONG4 make_longlong4_32a
 #    define MAKE_ULONGLONG4 make_ulonglong4_32a
 #else
-#    include <cuda.h>
-#    if (CUDA_VERSION >= 13000)
-#        define LONGLONG4 longlong4_32a
-#        define ULONGLONG4 ulonglong4_32a
-#        define DOUBLE4 double4_32a
-#        define MAKE_LONGLONG4 make_longlong4_32a
-#        define MAKE_ULONGLONG4 make_ulonglong4_32a
+#    ifdef WITH_CUDA
+#        include <cuda.h>
+#        if (CUDA_VERSION >= 13000)
+#            define LONGLONG4 longlong4_32a
+#            define ULONGLONG4 ulonglong4_32a
+#            define DOUBLE4 double4_32a
+#            define MAKE_LONGLONG4 make_longlong4_32a
+#            define MAKE_ULONGLONG4 make_ulonglong4_32a
+#        else
+#            define LONGLONG4 longlong4
+#            define ULONGLONG4 ulonglong4
+#            define DOUBLE4 double4
+#            define MAKE_LONGLONG4 make_longlong4
+#            define MAKE_ULONGLONG4 make_ulonglong4
+#        endif
 #    else
 #        define LONGLONG4 longlong4
 #        define ULONGLONG4 ulonglong4

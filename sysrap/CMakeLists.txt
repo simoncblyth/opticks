@@ -1,8 +1,41 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(name SysRap)
 set(desc "System Level Utilities depending")
-project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
+option(BUILD_WITH_CUDA "${name} Build with CUDA support" OFF)  # default:ON/OFF
+#[=[
+After changing CUDA ON->OFF or OFF->ON need to reconf::
+
+    om-clean
+    om-conf
+    om
+
+#]=]
+
+set(LANGUAGES CXX)
+if(BUILD_WITH_CUDA)
+    list(APPEND LANGUAGES CUDA)
+endif()
+
+project(${name} VERSION 0.1.0 LANGUAGES ${LANGUAGES})
+
+if(BUILD_WITH_CUDA)
+    find_package(CUDAToolkit REQUIRED)  ## for CUDA::cudart
+
+
+    message(STATUS "${name}.CUDAToolkit_FOUND           = ${CUDAToolkit_FOUND}")
+    message(STATUS "${name}.CUDAToolkit_INCLUDE_DIRS    = ${CUDAToolkit_INCLUDE_DIRS}")
+    message(STATUS "${name}.CUDAToolkit_LIBRARY_DIR     = ${CUDAToolkit_LIBRARY_DIR}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER         = ${CMAKE_CUDA_COMPILER}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_ID      = ${CMAKE_CUDA_COMPILER_ID}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_VERSION = ${CMAKE_CUDA_COMPILER_VERSION}")
+
+else()
+    message(STATUS "${name} CUDA disabled by user → CPU-only build")
+endif()
+
+
 include(OpticksBuildOptions NO_POLICY_SCOPE)
+
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir
 
@@ -42,22 +75,17 @@ But as OpticksCSG.h updates are rare, For now just need to remember to generate 
 
 #]=]
 
+
+
 find_package(OKConf REQUIRED CONFIG)
 find_package(NLJSON REQUIRED MODULE)
 find_package(PLog   REQUIRED MODULE)
 
-find_package(CUDAToolkit)   ## for CUDA::cudart
-
-
 set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
-
 message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
 
-
 set(WITH_SLOG YES)
-
-
 
 set(SYSRAP_GENERATED_HEADER  "sconfig.h")
 set(SYSRAP_OPTICKS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
@@ -473,6 +501,7 @@ set(HEADERS
     SCSGPrimSpec.h
 
     scuda.h
+    snocuda_vector_functions.h
     scuda_pointer.h
 
     SOPTIX.h
@@ -698,6 +727,17 @@ set(WITH_NP YES)
 
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
+
+
+if(BUILD_WITH_CUDA)
+    target_compile_definitions(${name} PUBLIC WITH_CUDA)
+endif()
+
+
+
+
+
+
 
 
 string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")

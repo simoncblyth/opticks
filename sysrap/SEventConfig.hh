@@ -7,8 +7,11 @@
 #include "SYSRAP_API_EXPORT.hh"
 
 struct NP ;
+
+#ifdef WITH_CUDA
 struct scontext ;
 struct salloc ;
+#endif
 
 /**
 SEventConfig
@@ -642,14 +645,16 @@ struct SYSRAP_API SEventConfig
     static const char* _InputPhotonRecordTime ;
     static const char* _InputPhotonRecordSlice ;
 
+#ifdef WITH_CUDA
     static scontext* CONTEXT ;
     static salloc*   ALLOC ;
     static std::string GetGPUMeta();
+#endif
 
     static int   Initialize_COUNT ;
+    static void  Initialize_Meta();
     static int   Initialize();
 
-    static void  Initialize_Meta();
     static void  Initialize_EventName();
 
 
@@ -690,8 +695,12 @@ struct SYSRAP_API SEventConfig
     static size_t HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes, int lite, int merge );
     static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name );
 
+#ifdef WITH_CUDA
     static salloc*   AllocEstimate(int _max_slot=0);
     static uint64_t  AllocEstimateTotal(int _max_slot=0);
+#endif
+
+
 
 };
 
