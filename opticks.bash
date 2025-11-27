@@ -779,8 +779,6 @@ GEOM(){
 
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  }
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
-oono(){ OM_SUBS=nocuda oo ; }
-
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 
 on(){ cd $(opticks-home)/notes  ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/$(ls -t | head -1) ;  }
@@ -1222,6 +1220,7 @@ opticks-acd(){  cd $(opticks-adir)/$1 ; }
 
 opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
 opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
+opticks-build-with-cuda(){ echo ${OPTICKS_BUILD_WITH_CUDA:-ON}  ; }  # ON or OFF
 
 opticks-prefix(){ echo ${OPTICKS_PREFIX:-/usr/local/opticks}  ; }
 opticks-dir(){    echo $(opticks-prefix) ; }

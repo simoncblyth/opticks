@@ -479,12 +479,20 @@ EOS
 
 om-subs--()
 {
-   case ${OM_SUBS:-all} in
-     all)     om-subs--all ;;
-     nocuda)  om-subs--nocuda ;;
-     minimal) om-subs--minimal ;;
-     alt)     om-subs--alt ;;
-   esac
+   if [ -n "$OM_SUBS" ]; then
+       case ${OM_SUBS} in
+         all)     om-subs--all ;;
+         nocuda)  om-subs--nocuda ;;
+         minimal) om-subs--minimal ;;
+         alt)     om-subs--alt ;;
+       esac
+   else
+       if [ "$(opticks-build-with-cuda)" == "ON" ]; then
+            om-subs--all
+       elif [ "$(opticks-build-with-cuda)" == "OFF" ]; then
+            om-subs--nocuda
+       fi
+   fi
 }
 
 om-subs-(){ om-subs-- | grep -v ^\# ; }
@@ -851,7 +859,26 @@ om-cleaninstall-one()
     om-make-one $*
 }
 
+om-pkg-opt()
+{
+    : om.bash
+    : packages with optional building with or without CUDA need the -DBUILD_WITH_CUDA=ON/OFF
+    : eg locate them with:
+    :
+    :    find . -name CMakeLists.txt -exec grep -H option\(BUILD_WITH_CUDA {} \;
+    :
+    : Other packages like QUDARap and CSGOptiX can only be built with CUDA so they have no such option
+    :
 
+    local name=$1
+    local opt=""
+    case $name in
+       sysrap) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
+          CSG) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
+         g4cx) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
+    esac
+    echo $opt
+}
 
 
 om-visit-one()
@@ -861,13 +888,14 @@ om-visit-one()
     local name=$(basename $iwd)
     local sdir=$(om-sdir $name)
     local bdir=$(om-bdir $name)
+    local opt=$(om-pkg-opt $name)
 
     if [ ! -d "$bdir" ]; then
          echo $msg bdir $bdir does not exist : creating it
          mkdir -p $bdir
     fi
     cd $bdir
-    printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
+    printf "%s %-15s %-60s %-60s [%s]\n"  "$msg" $name $sdir $bdir $opt
 }
 
 om-conf-one()
@@ -929,11 +957,16 @@ om-cmake-okconf()
 }
 
 
+
 om-cmake()
 {
     local sdir=$1
+    local name=$(basename $sdir)
     local bdir=$PWD
     [ "$sdir" == "$bdir" ] && echo ERROR sdir and bdir are the same $sdir && return 1000
+
+    local opt=$(om-pkg-opt $name)
+    #echo $BASH_SOURCE [ name $name opt $opt
 
     local rc
     cmake $sdir \
@@ -941,10 +974,10 @@ om-cmake()
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
        -DOPTICKS_PREFIX=$(om-prefix) \
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
-       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
+       $opt
 
-    #  -DCMAKE_FIND_DEBUG_MODE=1 \
-    # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
+    #echo $BASH_SOURCE ] name $name
 
     rc=$?
     return $rc
@@ -957,7 +990,8 @@ om-cmake-dump(){ local sdir=${1:-sdir} ; cat << EOD
        -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \\
        -DOPTICKS_PREFIX=$(om-prefix) \\
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \\
-       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules
+       -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \\
+       -DBUILD_WITH_CUDA=$(opticks-build-with-cuda)
 
     om-cmake-generator : $(om-cmake-generator)
     opticks-buildtype  : $(opticks-buildtype)
@@ -985,6 +1019,8 @@ $FUNCNAME
    OPTICKS_OPTIX_PREFIX       : $OPTICKS_OPTIX_PREFIX
    opticks-optix-prefix       : $(opticks-optix-prefix)
 
+   opticks-build-with-cuda    : $(opticks-build-with-cuda)
+   OPTICKS_BUILK_WITH_CUDA    : $OPTICKS_BUILD_WITH_CUDA
 
    opticks-compute-capability : $(opticks-compute-capability)
    OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY

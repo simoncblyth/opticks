@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "scuda.h"    
+#include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
 
@@ -20,7 +20,7 @@
 #include "CU.h"
 
 #ifdef WITH_SLOG
-const plog::Severity CU::LEVEL = SLOG::EnvLevel("CU","DEBUG"); 
+const plog::Severity CU::LEVEL = SLOG::EnvLevel("CU","DEBUG");
 #endif
 
 
@@ -30,11 +30,11 @@ template <typename T>
 T* CU::AllocArray(unsigned num_items ) // static
 {
 #ifdef WITH_SLOG
-    LOG(LEVEL) << " num_items " << num_items  ; 
+    LOG(LEVEL) << " num_items " << num_items  ;
 #endif
-    T* d_array = nullptr ; 
+    T* d_array = nullptr ;
     CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_items*sizeof(T) ));
-    return d_array ; 
+    return d_array ;
 }
 
 
@@ -50,20 +50,20 @@ template <typename T>
 T* CU::UploadArray(const T* array, unsigned num_items ) // static
 {
 #ifdef WITH_SLOG
-    LOG(LEVEL) << " num_items " << num_items  ; 
+    LOG(LEVEL) << " num_items " << num_items  ;
 #endif
-    T* d_array = nullptr ; 
+    T* d_array = nullptr ;
     CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_items*sizeof(T) ));
     CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), array, sizeof(T)*num_items, cudaMemcpyHostToDevice ));
-    return d_array ; 
+    return d_array ;
 }
 
 
 /**
-CU::UploadArray  
+CU::UploadArray
 ----------------
 
-Allocate on host and copy from device to host 
+Allocate on host and copy from device to host
 
 **/
 
@@ -71,11 +71,11 @@ template <typename T>
 T* CU::DownloadArray(const T* d_array, unsigned num_items ) // static
 {
 #ifdef WITH_SLOG
-    LOG(LEVEL) << " num_items " << num_items  ; 
+    LOG(LEVEL) << " num_items " << num_items  ;
 #endif
-    T* array = new T[num_items] ;  
+    T* array = new T[num_items] ;
     CUDA_CHECK( cudaMemcpy( array, d_array, sizeof(T)*num_items, cudaMemcpyDeviceToHost ));
-    return array ; 
+    return array ;
 }
 
 
@@ -112,15 +112,15 @@ template CSG_API CSGSolid* CU::DownloadArray<CSGSolid>(const CSGSolid* d_array, 
 template <typename T>
 T* CU::UploadVec(const std::vector<T>& vec)
 {
-    unsigned num_items = vec.size() ; 
-    unsigned num_bytes = num_items*sizeof(T) ; 
+    unsigned num_items = vec.size() ;
+    unsigned num_bytes = num_items*sizeof(T) ;
 #ifdef WITH_SLOG
-    LOG(LEVEL) << " num_items " << num_items  ; 
+    LOG(LEVEL) << " num_items " << num_items  ;
 #endif
-    T* d_array = nullptr ; 
+    T* d_array = nullptr ;
     CUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_array ), num_bytes ));
     CUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_array ), vec.data(), num_bytes, cudaMemcpyHostToDevice ));
-    return d_array ; 
+    return d_array ;
 }
 
 template CSG_API CSGPrim* CU::UploadVec<CSGPrim>(const std::vector<CSGPrim>& vec ) ;
@@ -132,13 +132,13 @@ template <typename T>
 void CU::DownloadVec(std::vector<T>& vec, const T* d_array, unsigned num_items)  // static
 {
 #ifdef WITH_SLOG
-    LOG(LEVEL) << " num_items " << num_items ; 
+    LOG(LEVEL) << " num_items " << num_items ;
 #endif
-    unsigned num_bytes = num_items*sizeof(T) ; 
-    vec.clear(); 
-    vec.resize(num_items); 
+    unsigned num_bytes = num_items*sizeof(T) ;
+    vec.clear();
+    vec.resize(num_items);
     CUDA_CHECK( cudaMemcpy( vec.data(), d_array, num_bytes, cudaMemcpyDeviceToHost ));
-} 
+}
 
 template CSG_API void CU::DownloadVec<CSGPrim>(std::vector<CSGPrim>& vec,  const CSGPrim* d_array, unsigned num_items) ;
 template CSG_API void CU::DownloadVec<float>(std::vector<float>& vec,  const float* d_array, unsigned num_items) ;

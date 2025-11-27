@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(name CSG)
 
-option(BUILD_WITH_CUDA "${name} Build with CUDA support" OFF)  # default:ON/OFF
+option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
 #[=[
 After changing CUDA ON->OFF or OFF->ON need to reconf::
 

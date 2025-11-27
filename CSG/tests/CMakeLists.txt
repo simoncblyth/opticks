@@ -8,41 +8,60 @@ set(INSTALLED_SCRIPTS
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
 set(_TEST_SOURCES
-
 )
 
 set(TEST_SOURCES
+)
+
+#[=[
+Almost all tests need CUDA::cudart because of CSGFoundry::upload
+#]=]
+
+set(CUDA_TEST_SOURCES
+
+    CUTest.cc
 
     CSGNodeTest.cc
-    CSGNodeImpTest.cc
-    CSGIntersectSolidTest.cc
-
-    CSGPrimImpTest.cc
-    CSGPrimSpecTest.cc
     CSGPrimTest.cc
-    CSGSolidTest.cc
-    CSGFoundryTest.cc
-
+    CSGPrimSpecTest.cc
+    CSGPrimImpTest.cc
+    CSGNodeImpTest.cc
+    CSGFoundry_IntersectPrimTest.cc
+    CSGFoundry_SGeo_SEvt_Test.cc
+    CSGTargetGlobalTest.cc
     CSGFoundry_addPrimNodes_Test.cc
-    CSGFoundry_getCenterExtent_Test.cc
+
+
+    intersect_leaf_phicut_test.cc
+    intersect_leaf_thetacut_test.cc
+    intersect_leaf_box3_test.cc
+    intersect_leaf_cylinder_test.cc
+    intersect_leaf_cylinder_vs_oldcylinder_test.cc
+
+    CSGNodeScanTest.cc
     CSGFoundry_findSolidIdx_Test.cc
 
-    CSGFoundry_CreateFromSimTest.cc
-    CSGFoundry_IntersectPrimTest.cc
+    CSGFoundryTest.cc
 
-    CSGNameTest.cc
-    CSGTargetTest.cc
-    CSGTargetGlobalTest.cc
+    CSGFoundry_getCenterExtent_Test.cc
+
+    CSGFoundry_CreateFromSimTest.cc
+
     CSGFoundry_MakeCenterExtentGensteps_Test.cc
     CSGFoundry_getFrame_Test.cc
     CSGFoundry_getFrameE_Test.cc
     CSGFoundry_getMeshName_Test.cc
-    CSGFoundry_SGeo_SEvt_Test.cc
 
     CSGFoundry_ResolveCFBase_Test.cc
     CSGFoundryLoadTest.cc
 
     CSGScanTest.cc
+
+    CSGSolidTest.cc
+
+    CSGNameTest.cc
+    CSGTargetTest.cc
+
     CSGLogTest.cc
     CSGMakerTest.cc
     CSGQueryTest.cc
@@ -53,25 +72,21 @@ set(TEST_SOURCES
 
     CSGCopyTest.cc
 
-    intersect_leaf_phicut_test.cc
-    intersect_leaf_thetacut_test.cc
-    intersect_leaf_box3_test.cc
-    intersect_leaf_cylinder_test.cc
-    intersect_leaf_cylinder_vs_oldcylinder_test.cc
+
     CSGIntersectComparisonTest.cc
 
     distance_leaf_slab_test.cc
 
-    CSGNodeScanTest.cc
     CSGSignedDistanceFieldTest.cc
 
     CSGGeometryTest.cc
     CSGClassifyTest.cc
-)
+    CSGIntersectSolidTest.cc
 
-set(CUDA_TEST_SOURCES
 
-    CUTest.cc
+
+
+
 )
 
 
@@ -114,6 +129,6 @@ endif()
 if(BUILD_WITH_CUDA) # TMP
 set(TGT CSGDemoTest)
 add_executable(${TGT} CSGDemoTest.cc DemoGeo.cc DemoGrid.cc)
-target_link_libraries(${TGT} Opticks::CSG)     # CUDA::cudart
+target_link_libraries(${TGT} Opticks::CSG CUDA::cudart)
 install(TARGETS ${TGT} DESTINATION lib)
 endif()
