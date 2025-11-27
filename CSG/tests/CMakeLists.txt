@@ -11,6 +11,9 @@ set(_TEST_SOURCES
 )
 
 set(TEST_SOURCES
+
+    CSGSolidTest.cc
+    CSGNameTest.cc
 )
 
 #[=[
@@ -57,9 +60,7 @@ set(CUDA_TEST_SOURCES
 
     CSGScanTest.cc
 
-    CSGSolidTest.cc
 
-    CSGNameTest.cc
     CSGTargetTest.cc
 
     CSGLogTest.cc
@@ -82,8 +83,6 @@ set(CUDA_TEST_SOURCES
     CSGGeometryTest.cc
     CSGClassifyTest.cc
     CSGIntersectSolidTest.cc
-
-
 
 
 

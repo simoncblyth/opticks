@@ -619,7 +619,7 @@ om-geom(){
    echo $geom
 }
 
-om-testlog(){ GEOM=$(om-geom) CTestLog.py $(om-bdir) $* ; }
+om-testlog(){ GEOM=$(om-geom) SUBS=$(om-subs) CTestLog.py $(om-bdir) $* ; }
 
 
 om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
@@ -875,6 +875,7 @@ om-pkg-opt()
     case $name in
        sysrap) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
           CSG) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
+           u4) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
          g4cx) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
     esac
     echo $opt
@@ -1140,8 +1141,14 @@ om-test-one()
     cd $iwd
 }
 
+
+
 om-clean-one()
 {
+    : note that this still does not clean all package build and installed products,  what is left includes:
+    :    installed headers
+    :    installed binaries
+
     local iwd=$(pwd)
     local name=$(basename $iwd)
 
@@ -1149,8 +1156,14 @@ om-clean-one()
     local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
     local sdir=$(om-sdir $name)
     local bdir=$(om-bdir $name)
+    local lib=$(om-libfile $name)
+    local cmakedir=$(om-cmakedir $name)
+
     cd $sdir
     local cmd="rm -rf $bdir && mkdir -p $bdir"
+    [ -f "$lib" ] && cmd="$cmd && rm -f $lib"
+    [ -d "$cmakedir" ] && cmd="$cmd && rm -rf $cmakedir"
+
     echo $cmd
     eval $cmd
 
@@ -1410,6 +1423,51 @@ om-libpath(){
       Linux) echo $libprefix/lib64:$libprefix/externals/lib:/lib64 ;;
    esac
 }
+
+
+om-libstem()
+{
+    local lib
+    case $1 in
+       CSGOptiX) lib=libCSGOptiX ;;
+       CSG)      lib=libCSG ;;
+       g4cx)     lib=libG4CX ;;
+       gdxml)    lib=libGDXML ;;
+       okconf)   lib=libOKConf ;;
+       qudarap)  lib=libQUDARap ;;
+       sysrap)   lib=libSysRap ;;
+       u4)       lib=libU4 ;;
+   esac
+   echo $lib
+}
+
+om-cmakedirname()
+{
+    local dirname
+    case $1 in
+       CSGOptiX) dirname=csgoptix ;;
+       CSG)      dirname=csg ;;
+       g4cx)     dirname=g4cx ;;
+       gdxml)    dirname=gdxml ;;
+       okconf)   dirname=okconf ;;
+       qudarap)  dirname=qudarap ;;
+       sysrap)   dirname=sysrap ;;
+       u4)       dirname=u4 ;;
+   esac
+   echo $dirname
+}
+
+om-cmakedir()
+{
+   local name=$(om-cmakedirname $1)
+   local dir=""
+   [ -n "$name" ] && dir=$(opticks-prefix)/lib64/cmake/$name
+   echo $dir
+}
+
+om-libfile(){ echo $(opticks-prefix)/lib64/$(om-libstem $1).so ; }
+
+
 
 om-run()
 {

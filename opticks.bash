@@ -192,7 +192,7 @@ usage(){ cat << EON
 ==========================
 
 Export ENVSET envvar configuring path to setup script, and ENVSET_NAME that
-provides a short identifier string without spaces. 
+provides a short identifier string without spaces.
 Use this from bash function like::
 
     oj_envset()
@@ -1221,6 +1221,25 @@ opticks-acd(){  cd $(opticks-adir)/$1 ; }
 opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
 opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
 opticks-build-with-cuda(){ echo ${OPTICKS_BUILD_WITH_CUDA:-ON}  ; }  # ON or OFF
+
+opticks-build-with-cuda-notes(){ cat << EON
+How to build Opticks packages without CUDA, in fresh tab::
+
+     lo ## env setup
+     export OPTICKS_BUILD_WITH_CUDA=OFF
+     om-cleaninstall
+     opticks-t        ## expect 0/~149 FAILs
+
+Return to default build with CUDA, in fresh tab::
+
+     lo ## env setup
+     om-cleaninstall
+     opticks-t        ## expect 0/~221 FAILs
+
+EON
+}
+
+
 
 opticks-prefix(){ echo ${OPTICKS_PREFIX:-/usr/local/opticks}  ; }
 opticks-dir(){    echo $(opticks-prefix) ; }

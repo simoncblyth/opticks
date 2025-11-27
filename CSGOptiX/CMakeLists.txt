@@ -4,21 +4,6 @@ project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions)
 
 
-
-#[=[
-For nanobind check
-#]=]
-#find_package(Python 3.8 COMPONENTS Interpreter Development.Module REQUIRED)
-find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
-execute_process(
-  COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
-  OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE nanobind_ROOT)
-
-find_package(nanobind CONFIG)
-message(STATUS "${name} nanobind_ROOT  : ${nanobind_ROOT} ")
-message(STATUS "${name} nanobind_FOUND : ${nanobind_FOUND} ")
-
-
 set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
 
@@ -222,15 +207,37 @@ target_link_libraries(${name}
 )
 
 
-set(py_ext opticks_${name})
-if(nanobind_FOUND)
-   nanobind_add_module(${py_ext} NB_STATIC ${py_ext}.cc)
-   target_link_libraries(${py_ext} PUBLIC ${name})
 
-   nanobind_add_stub(${py_ext}_stub MODULE ${py_ext} OUTPUT ${py_ext}.pyi PYTHON_PATH ${CMAKE_CURRENT_BINARY_DIR})
-   install(TARGETS ${py_ext} LIBRARY DESTINATION py)
-   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${py_ext}.pyi DESTINATION py)
+
+
+
+
+
+set(BUILD_WITH_NANOBIND OFF)
+
+if(BUILD_WITH_NANOBIND)
+
+    find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
+    execute_process(
+      COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
+      OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE nanobind_ROOT)
+
+    find_package(nanobind CONFIG)
+    message(STATUS "${name} nanobind_ROOT  : ${nanobind_ROOT} ")
+    message(STATUS "${name} nanobind_FOUND : ${nanobind_FOUND} ")
+
+    set(py_ext opticks_${name})
+    if(nanobind_FOUND)
+       nanobind_add_module(${py_ext} NB_STATIC ${py_ext}.cc)
+       target_link_libraries(${py_ext} PUBLIC ${name})
+
+       nanobind_add_stub(${py_ext}_stub MODULE ${py_ext} OUTPUT ${py_ext}.pyi PYTHON_PATH ${CMAKE_CURRENT_BINARY_DIR})
+       install(TARGETS ${py_ext} LIBRARY DESTINATION py)
+       install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${py_ext}.pyi DESTINATION py)
+    endif()
+
 endif()
+
 
 #[=[
 Use from python with: "import opticks_CSGOptiX as cx"
@@ -260,8 +267,6 @@ install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 add_subdirectory(tests)
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
-
-
 
 
 

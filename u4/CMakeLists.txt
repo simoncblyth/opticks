@@ -13,7 +13,38 @@ finding PMTSim
 
 set(name U4)
 set(desc "Geant4 Low Level Utilities")
-project(${name} VERSION 0.1.0 LANGUAGES CXX)
+
+option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
+#[=[
+After changing CUDA ON->OFF or OFF->ON need to reconf::
+
+    om-clean
+    om-conf
+    om
+
+#]=]
+
+set(LANGUAGES CXX)
+if(BUILD_WITH_CUDA)
+    list(APPEND LANGUAGES CUDA)
+endif()
+
+project(${name} VERSION 0.1.0 LANGUAGES ${LANGUAGES})
+
+if(BUILD_WITH_CUDA)
+    find_package(CUDAToolkit REQUIRED)  ## for CUDA::cudart
+
+    message(STATUS "${name}.CUDAToolkit_FOUND           = ${CUDAToolkit_FOUND}")
+    message(STATUS "${name}.CUDAToolkit_INCLUDE_DIRS    = ${CUDAToolkit_INCLUDE_DIRS}")
+    message(STATUS "${name}.CUDAToolkit_LIBRARY_DIR     = ${CUDAToolkit_LIBRARY_DIR}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER         = ${CMAKE_CUDA_COMPILER}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_ID      = ${CMAKE_CUDA_COMPILER_ID}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_VERSION = ${CMAKE_CUDA_COMPILER_VERSION}")
+
+else()
+    message(STATUS "${name} CUDA disabled by user → CPU-only build")
+endif()
+
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 0 ======= find SysRap, G4  ")

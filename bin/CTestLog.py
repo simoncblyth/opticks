@@ -39,6 +39,9 @@ Canonical usage from opticks-t/om-test/om-testlog::
     }
 
 
+
+
+
 """
 import sys, re, os, logging, argparse, datetime
 log = logging.getLogger(__name__)
@@ -62,6 +65,8 @@ class CTestLog(object):
     NAME = "ctest.log"
     TPATN = re.compile(r"\s*(?P<num>\d*)/(?P<den>\d*)\s*Test\s*#(?P<num2>\d*):\s*(?P<name>\S*)\s*(?P<div>\.*)\s*(?P<result>.*)\s+(?P<time>\d+\.\d+) sec$")
     SKIPS = "yoctoglrap openmeshrap".split()
+    SUBS = list(filter(None,os.environ.get("SUBS","").split("\n")))  # eg ['okconf', 'sysrap', 'ana', 'analytic', 'bin', 'CSG', 'gdxml', 'u4', 'g4cx']
+
 
     @classmethod
     def examine_logs(cls, args):
@@ -78,6 +83,9 @@ class CTestLog(object):
                 pass
                 if reldir in cls.SKIPS:
                     log.info("skipping reldir [%s]" % reldir)
+                    continue
+                if not reldir in cls.SUBS:
+                    log.info("skipping reldir [%s] THAT IS NOT IN SUBS" % reldir)
                     continue
                 pass
                 path = os.path.join(dirpath, cls.NAME)

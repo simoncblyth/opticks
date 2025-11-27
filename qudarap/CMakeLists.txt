@@ -1,18 +1,29 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name QUDARap)
-#project(${name} VERSION 0.1.0)
 project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
-include(OpticksBuildOptions NO_POLICY_SCOPE)      
 
+set(BUILD_WITH_CUDA ON)
+if(BUILD_WITH_CUDA)
+    find_package(CUDAToolkit REQUIRED)  ## for CUDA::cudart
+
+    message(STATUS "${name}.CUDAToolkit_FOUND           = ${CUDAToolkit_FOUND}")
+    message(STATUS "${name}.CUDAToolkit_INCLUDE_DIRS    = ${CUDAToolkit_INCLUDE_DIRS}")
+    message(STATUS "${name}.CUDAToolkit_LIBRARY_DIR     = ${CUDAToolkit_LIBRARY_DIR}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER         = ${CMAKE_CUDA_COMPILER}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_ID      = ${CMAKE_CUDA_COMPILER_ID}")
+    message(STATUS "${name}.CMAKE_CUDA_COMPILER_VERSION = ${CMAKE_CUDA_COMPILER_VERSION}")
+
+else()
+    message(STATUS "${name} HUH : ${name} MAKES NO SENSE WITHOUT CUDA")
+endif()
+
+include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 set(FLAGS_VERBOSE ON)
-
 set(LIBS  )
 
-
 find_package(SysRap REQUIRED CONFIG)
-set(LIBS ${LIBS} Opticks::SysRap)  
+set(LIBS ${LIBS} Opticks::SysRap)
 
 
 set(Custom4_VERBOSE ON)
@@ -29,12 +40,6 @@ A successful find of Custom4 runs some CMake config, see::
 
 #]=]
 
-
-
-
-#set(OpticksCUDA_VERBOSE ON)
-#find_package(OpticksCUDA REQUIRED MODULE)
-find_package(CUDAToolkit)
 
 
 set(DEV_SOURCES
@@ -54,7 +59,7 @@ set(SOURCES
 
 
     QPMT.cc
-    QPMT.cu 
+    QPMT.cu
 
     QEvt.cc
     QEvt.cu
@@ -64,7 +69,7 @@ set(SOURCES
 
     QU.cc
 
-    QRng.cc  
+    QRng.cc
     QRng.cu
 
     QTex.cc
@@ -80,14 +85,14 @@ set(SOURCES
 
 
     QOptical.cc
-    QOptical.cu 
+    QOptical.cu
 
     QScint.cc
     QScint.cu
 
     QCerenkovIntegral.cc
     QCerenkov.cc
-    QCerenkov.cu 
+    QCerenkov.cu
 
     QCK.cc
     QCK.hh
@@ -125,7 +130,7 @@ SET(HEADERS
 
     qgs.h
     qprop.h
- 
+
     QEvt.hh
 
     QDebug.hh
@@ -142,10 +147,10 @@ SET(HEADERS
 
     QState.hh
 
-    qmultifilm.h 
+    qmultifilm.h
 
     QBase.hh
-    qbase.h 
+    qbase.h
 
     QBnd.hh
     qbnd.h
@@ -164,7 +169,7 @@ SET(HEADERS
     QPoly.hh
 
     QProp.hh
-    
+
     QMultiFilm.hh
 
     QBuf.hh
@@ -173,17 +178,10 @@ SET(HEADERS
 
 
 if(UNIX AND NOT APPLE)
-  set(LIBS ${LIBS} ssl )  
+  set(LIBS ${LIBS} ssl )
 endif()
 
 
-
-
-
-#set(CUDA_NVCC_FLAGS)
-
-
-#CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 add_library( ${name} SHARED ${SOURCES} ${HEADERS} )
 
 string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
@@ -197,13 +195,13 @@ message(STATUS "${name} INTERFACE_LINK_LIBRARIES:${ILL} " )
 
 #[=[
 As QUDARap only requires a single header-only header from Custom4,
-not the library it is unnecessarily adding dependency on the lib and 
+not the library it is unnecessarily adding dependency on the lib and
 all the Geant4 libs when hooking up the full target with::
 
-   # set(LIBS ${LIBS} Custom4::Custom4) 
+   # set(LIBS ${LIBS} Custom4::Custom4)
 
-So instead just hookup the include_directories and 
-compile_definitions not the full target. 
+So instead just hookup the include_directories and
+compile_definitions not the full target.
 #]=]
 
 if(Custom4_FOUND)
@@ -212,69 +210,57 @@ if(Custom4_FOUND)
 endif()
 
 
-
-
 target_link_libraries( ${name} ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 
+if(BUILD_WITH_CUDA)
+   target_include_directories(${name} PUBLIC ${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+   target_link_libraries(${name} ${CUDA_LIBRARIES} )
+   target_compile_definitions( ${name} PRIVATE WITH_THRUST )
+   target_compile_definitions( ${name} PRIVATE WITH_CUDA )
+endif()
 
 
-
-
-
-
-#[=[
-
-https://stackoverflow.com/questions/34490294/what-does-configdebugrelease-mean-in-cmake
-
-   $<CONFIG:Debug>   1 for Debug, 0 otherwise
-   $<1:X>            X 
-   $<0:X>            Empty 
-
-#]=]
-
-target_compile_definitions( ${name}
-    PUBLIC
-      OPTICKS_QUDARAP 
-)
-#[=[
-
-Global compile definitions such as DEBUG_TAG and DEBUG_PIDX are defined in sysrap/CMakeLists.txt 
-and should be flipped there, NOT HERE. 
-
-For local debugging do flips within files, and do not commit like that 
-as they may cause difficult to debug build inconsistencies. 
-
-#]=]
-
-
-#[=[
-
-WITH_THRUST compile definition
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* WITH_THRUST is needed for the Custom4 GPU complex math functions used by qpmt.h 
-
-* However Custom4 also used on CPU without WITH_THRUST (eg by junosw), so 
-  the WITH_THRUST definition must be PRIVATE to avoid interference with other
-  Custom4 usage
-
-#]=]
-
-target_compile_definitions( ${name} PRIVATE WITH_THRUST )
-
-#target_compile_definitions( ${name} PRIVATE DEBUG_TIME )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-# see notes/issues/QUDARap_symbol_visibility_warnings.rst 
+# see notes/issues/QUDARap_symbol_visibility_warnings.rst
 #set_target_properties( ${name} PROPERTIES CXX_VISIBILITY_PRESET hidden )
-
-
 
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 add_subdirectory(tests)
+
+
+
+#[=[
+https://stackoverflow.com/questions/34490294/what-does-configdebugrelease-mean-in-cmake
+
+   $<CONFIG:Debug>   1 for Debug, 0 otherwise
+   $<1:X>            X
+   $<0:X>            Empty
+
+#]=]
+
+#[=[
+Global compile definitions such as DEBUG_TAG and DEBUG_PIDX are defined in sysrap/CMakeLists.txt
+and should be flipped there, NOT HERE.
+For local debugging do flips within files, and do not commit like that
+as they may cause difficult to debug build inconsistencies.
+#]=]
+
+
+#[=[
+WITH_THRUST compile definition
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* WITH_THRUST is needed for the Custom4 GPU complex math functions used by qpmt.h
+
+* However Custom4 also used on CPU without WITH_THRUST (eg by junosw), so
+  the WITH_THRUST definition must be PRIVATE to avoid interference with other
+  Custom4 usage
+
+#]=]
 
 

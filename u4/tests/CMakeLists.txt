@@ -77,6 +77,8 @@ set(TEST_SOURCES
    U4PhysicsTableTest.cc
 )
 
+
+
 set(EXPECTED_TO_FAIL_SOURCES
    U4NavigatorTest.cc
 )
@@ -142,13 +144,21 @@ set(U4HitTest_SOURCES
     U4HitTest.cc
 )
 
-find_package(CUDAToolkit)
+
+
+#[=[
+TODO: Consider moving U4HitTest up to g4cx as it is the only use of CUDA in U4
+#]=]
+if(BUILD_WITH_CUDA)
 
 find_package(CSG REQUIRED)
 set(TGT U4HitTest)
 add_executable(${TGT} ${U4HitTest_SOURCES})
 target_link_libraries(${TGT} U4 Opticks::CSG CUDA::cudart)  ## unexpected CUDA dependency via SCU.h
 install(TARGETS ${TGT} DESTINATION lib)
+
+endif()
+
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_standalone_FOUND     : ${PMTSim_standalone_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND    : ${Custom4_FOUND}")

@@ -3,12 +3,7 @@ set(name CSG)
 
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
 #[=[
-After changing CUDA ON->OFF or OFF->ON need to reconf::
-
-    om-clean
-    om-conf
-    om
-
+See opticks-build-with-cuda-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
 #]=]
 
 set(LANGUAGES CXX)
