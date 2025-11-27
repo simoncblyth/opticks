@@ -779,6 +779,8 @@ GEOM(){
 
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  }
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
+oono(){ OM_SUBS=nocuda oo ; }
+
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 
 on(){ cd $(opticks-home)/notes  ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/$(ls -t | head -1) ;  }

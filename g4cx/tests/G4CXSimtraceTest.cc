@@ -6,7 +6,9 @@ Canonically used from g4cx/gxt.sh
 
 **/
 
+#ifdef WITH_CUDA
 #include <cuda_runtime.h>
+#endif
 
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
@@ -16,9 +18,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef WITH_CUDA
     //LOG(info) << "[ cu first " ; 
     cudaDeviceSynchronize(); 
     //LOG(info) << "] cu first " ; 
+#endif
 
     SEventConfig::SetRGModeSimtrace();   
 

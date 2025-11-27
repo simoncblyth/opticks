@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 #[=[
 U4
 ===
@@ -14,7 +13,7 @@ finding PMTSim
 
 set(name U4)
 set(desc "Geant4 Low Level Utilities")
-project(${name} VERSION 0.1.0)
+project(${name} VERSION 0.1.0 LANGUAGES CXX)
 include(OpticksBuildOptions NO_POLICY_SCOPE)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 0 ======= find SysRap, G4  ")

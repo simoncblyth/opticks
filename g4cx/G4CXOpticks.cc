@@ -26,7 +26,10 @@ G4CXOpticks.cc
 
 #include "CSGFoundry.h"
 
+#include "SSimulator.h"
+#ifdef WITH_CUDA
 #include "CSGOptiX.h"
+#endif
 
 #ifdef WITH_CURL
 #include "SClientSimulator.h"
@@ -412,7 +415,9 @@ SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
     SSimulator* cx = nullptr ;
     if( mode_client == 0 )
     {
+#ifdef WITH_CUDA
         cx = CSGOptiX::Create(fd);
+#endif
     }
     else if (mode_client == 1 )
     {
@@ -520,9 +525,12 @@ void G4CXOpticks::render()
     LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ;
     if(NoGPU) return ;
 
-    LOG(LEVEL) << "[" ;
-    assert( cx );
+    bool nocx = cx == nullptr ;
+    LOG_IF(fatal, nocx ) << "NOCX cannot render" ;
+    if(nocx) return ;
     assert( SEventConfig::IsRGModeRender() );
+
+    LOG(LEVEL) << "[" ;
     cx->render() ;
     LOG(LEVEL) << "]" ;
 }

@@ -19,7 +19,10 @@ and get the bnd.npy arrays that way.
 
 **/
 
+#ifdef WITH_CUDA
 #include <cuda_runtime.h>
+#endif
+
 #include "OPTICKS_LOG.hh"
 #include "SEventConfig.hh"
 #include "G4CXOpticks.hh"
@@ -28,9 +31,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv); 
 
+#ifdef WITH_CUDA
     LOG(info) << "[ cu first " ; 
     cudaDeviceSynchronize(); 
     LOG(info) << "] cu first " ; 
+#endif
 
     SEventConfig::SetDebugLite(); // controls which and dimensions of SEvt arrays 
 

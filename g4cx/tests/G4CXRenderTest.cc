@@ -10,7 +10,11 @@ The SEventConfig::Initialize is needed to SetDevice
 otherwise CSGOptiX instanciation is skipped.
 
 **/
+
+#ifdef WITH_CUDA
 #include <cuda_runtime.h>
+#endif
+
 #include "SEventConfig.hh"
 #include "OPTICKS_LOG.hh"
 #include "G4CXOpticks.hh"
@@ -19,9 +23,11 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
+#ifdef WITH_CUDA
     LOG(info) << "[ cu first " ;
     cudaDeviceSynchronize();
     LOG(info) << "] cu first " ;
+#endif
 
     SEventConfig::SetRGModeRender();
     SEventConfig::Initialize();   // for simulation this auto-called from SEvt::SEvt

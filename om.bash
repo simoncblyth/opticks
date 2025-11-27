@@ -339,17 +339,10 @@ om-subs--all(){ cat << EOS
 # the names must be the case correct directory names
 okconf
 sysrap
-#boostrap
-#npy
-#optickscore
-#ggeo
-#extg4
 ana
 analytic
 bin
 CSG
-#CSG_GGeo
-#GeoChain
 qudarap
 gdxml
 u4
@@ -357,6 +350,24 @@ CSGOptiX
 g4cx
 EOS
 }
+
+om-subs--nocuda(){ cat << EOS
+# to update this list : opticks-deps --subdirs
+# the names must be the case correct directory names
+okconf
+sysrap
+ana
+analytic
+bin
+CSG
+gdxml
+u4
+g4cx
+EOS
+}
+
+
+
 
 om-subs-minimal-notes(){ cat << EON
 om-subs-minimal
@@ -470,6 +481,7 @@ om-subs--()
 {
    case ${OM_SUBS:-all} in
      all)     om-subs--all ;;
+     nocuda)  om-subs--nocuda ;;
      minimal) om-subs--minimal ;;
      alt)     om-subs--alt ;;
    esac
