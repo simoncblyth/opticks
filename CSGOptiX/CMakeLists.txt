@@ -3,12 +3,10 @@ set(name CSGOptiX)
 project(${name} VERSION 0.1.0 LANGUAGES CXX CUDA)
 include(OpticksBuildOptions)
 
-
 set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
 
-find_package(CUDAToolkit)
-
+find_package(CUDAToolkit REQUIRED)
 find_package(SysRap REQUIRED)
 find_package(QUDARap REQUIRED)
 find_package(CSG REQUIRED)
@@ -66,7 +64,6 @@ list(APPEND OPTIX_SOURCES
 message(STATUS "OPTIX_SOURCES : ${OPTIX_SOURCES} ")
 
 
-
 add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
 
 set_target_properties( ${name}_OPTIX
@@ -104,7 +101,6 @@ set(CSGOptiX_COMPILE_DEFINITIONS_PRIVATE
     WITH_PRD
     WITH_THRUST
 )
-
 
 
 
@@ -196,8 +192,6 @@ if(Custom4_FOUND)
 endif()
 
 
-
-
 target_link_libraries(${name}
      PUBLIC
          CUDA::cudart
@@ -207,14 +201,8 @@ target_link_libraries(${name}
 )
 
 
-
-
-
-
-
-
-set(BUILD_WITH_NANOBIND OFF)
-
+#set(BUILD_WITH_NANOBIND OFF)
+set(BUILD_WITH_NANOBIND ON)
 if(BUILD_WITH_NANOBIND)
 
     find_package(Python 3.8 COMPONENTS Interpreter Development REQUIRED)
@@ -238,12 +226,9 @@ if(BUILD_WITH_NANOBIND)
 
 endif()
 
-
 #[=[
 Use from python with: "import opticks_CSGOptiX as cx"
 #]=]
-
-
 
 set(INSTALLED_SCRIPTS
    cxr_min.sh
@@ -257,18 +242,12 @@ set(INSTALLED_SCRIPTS
    cxs_min_lite.py
 )
 
-
 install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )
-
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
-
 
 add_subdirectory(tests)
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
-
-
-
 
 

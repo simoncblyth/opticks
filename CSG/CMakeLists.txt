@@ -4,6 +4,9 @@ set(name CSG)
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
 #[=[
 See opticks-build-with-cuda-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
+
+TODO: currently CSGFoundry::upload is the primary user of CUDA in this package, can that
+be placed elsewhere to avoid this dependency ?
 #]=]
 
 set(LANGUAGES CXX)

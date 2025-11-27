@@ -13,7 +13,6 @@ set(_TEST_SOURCES
 set(TEST_SOURCES
 
     CSGSolidTest.cc
-    CSGNameTest.cc
 )
 
 #[=[
@@ -24,6 +23,7 @@ set(CUDA_TEST_SOURCES
 
     CUTest.cc
 
+    CSGNameTest.cc
     CSGNodeTest.cc
     CSGPrimTest.cc
     CSGPrimSpecTest.cc
