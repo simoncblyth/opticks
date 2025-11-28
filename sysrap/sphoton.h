@@ -3,26 +3,27 @@
 sphoton.h
 ============
 
-+----+----------------+----------------+----------------+----------------+------------------------------+
-| q  |      x         |      y         |     z          |      w         |  notes                       |
-+====+================+================+================+================+==============================+
-|    |  pos.x         |  pos.y         |  pos.z         |  time          |                              |
-| q0 |                |                |                |                |                              |
-|    |                |                |                |                |                              |
-+----+----------------+----------------+----------------+----------------+------------------------------+
-|    |  mom.x         |  mom.y         | mom.z          |  orient_iindex | orient:1bit iindex:31 bit    |
-| q1 |                |                |                | (unsigned)     |                              |
-|    |                |                |                | (1,3)          | (1,3) formerly iindex        |
-+----+----------------+----------------+----------------+----------------+------------------------------+
-|    |  pol.x         |  pol.y         |  pol.z         |  wavelength    |                              |
-| q2 |                |                |                |                |                              |
-|    |                |                |                |                |                              |
-+----+----------------+----------------+----------------+----------------+------------------------------+
-|    | boundary_flag  |  identity      |  index         |  flagmask      |  (unsigned)                  |
-| q3 |                |                |                |                |                              |
-|    | (3,0)          |  (3,1)         |  (3,2)         |  (3,3)         | (3,2) formerly orient_idx    |
-|    |                | hi8 ext idx    |                |                |                              |
-+----+----------------+----------------+----------------+----------------+------------------------------+
++----+-------------------------+------------------+-----------------+---------------------+------------------------------+
+| q  |               x         |        y         |      z          |           w         |  notes                       |
++====+=========================+==================+=================+=====================+==============================+
+|    |           pos.x         |    pos.y         |   pos.z         |       time          |                              |
+| q0 |                         |                  |                 |                     |                              |
+|    |                         |                  |                 |                     |                              |
++----+-------------------------+------------------+-----------------+---------------------+------------------------------+
+|    |           mom.x         |    mom.y         |  mom.z          |   u:hitcount_iindex |                              |
+| q1 |                         |                  |                 |      16b       16b  |                              |
+|    |                         |                  |                 | (1,3)               |                              |
++----+-------------------------+------------------+-----------------+---------------------+------------------------------+
+|    |           pol.x         |    pol.y         |   pol.z         |       wavelength    |                              |
+| q2 |                         |                  |                 |                     |                              |
+|    |                         |                  |                 |                     |                              |
++----+-------------------------+------------------+-----------------+---------------------+------------------------------+
+|    | u:orient_boundary_flag  |  u:identity      | u:index         |     u:flagmask      |                              |
+| q3 |    1b     15b      16b  |    8b 24b        |                 |                     |                              |
+|    |                         |  8b:extend index |                 |                     |                              |
+|    | (3,0)                   | (3,1)            | (3,2)           | (3,3)               |                              |
++----+-------------------------+------------------+-----------------+---------------------+------------------------------+
+
 
 
 iindex
@@ -40,6 +41,8 @@ iindex
 
 
 
+hitcount (16 bit)
+    WIP:use for thrust based hit merging, unclear where best to set it
 
 boundary (16 bit)
     boundary index of intersected geometry
@@ -132,33 +135,6 @@ See ana/p.py for python accessors such as::
 
 
 
-POSSIBLE FLAGS REARRANGEMENT
-------------------------------
-
-::
-
-    unsigned idx ;
-    unsigned orient_identity ;
-    unsigned boundary_flag ;
-    unsigned flagmask ;
-
-idx always exists for a photon,
-BUT: orient is only set on intersects together with boundary and identity
-(plus flag but that is also be set when no intersect)
-
-SO IT WOULD BE BETTER TO HAVE orient_identity and idx alone if identity can spare one bit ?
-
-    identity = (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff ) ;
-
-JUNO max prim_idx ~3245 : so thats OK
-
-    In [1]: 0xffff
-    Out[1]: 65535
-
-    In [2]: 0x7fff
-    Out[2]: 32767
-
-
 **/
 
 
@@ -189,44 +165,51 @@ JUNO max prim_idx ~3245 : so thats OK
    struct NP ;
 #endif
 
+
+// set_orient_iindex removed
+
 struct sphoton
 {
     float3 pos ;        // 0th quad
     float  time ;
 
     float3 mom ;        // 1st quad
-    unsigned orient_iindex ;   // hi-bit for orientation, lower 31 bits for iindex
+    unsigned hitcount_iindex ;   // hi16:hitcount, lo16:iindex
 
     float3 pol ;        // 2nd quad
     float  wavelength ;
 
                         // 3rd quad
-    unsigned boundary_flag ;  // boundary in upper 16 bits, flag in lower 16 bits
-    unsigned identity ;       // upper 8 bits used to extend range of index, lower 24 bits for identity
-    unsigned index ;          // lower 32 bits of the full index
-    unsigned flagmask ;
+    unsigned orient_boundary_flag ;  // hi(1,15):(orient,boundary), lo16:flag
+    unsigned identity ;              // hi8  extend range of index, lo24:identity
+    unsigned index ;                 // lower 32 bits of the full index (extended into identity)
+    unsigned flagmask ;              // full32 for flagmask
 
     SPHOTON_METHOD void set_prd( unsigned  boundary, unsigned  identity, float  orient, unsigned iindex );
 
+    // hitcount starts as 1, hmm when to do that ?
+    SPHOTON_METHOD void set_hitcount_one_iindex( unsigned ii ){ hitcount_iindex = (                   0x00010000u ) | (( 0x0000ffffu & ii ) << 0 ); }
+    SPHOTON_METHOD void set_iindex__( unsigned ii ){            hitcount_iindex = ( hitcount_iindex & 0xffff0000u ) | (( 0x0000ffffu & ii ) << 0 ); }
+    SPHOTON_METHOD void set_hitcount( unsigned hc ){            hitcount_iindex = ( hitcount_iindex & 0x0000ffffu ) | (( 0x0000ffffu & hc ) << 16); }
 
-    SPHOTON_METHOD unsigned iindex() const {   return ( orient_iindex & 0x7fffffffu ) ;  }
-    SPHOTON_METHOD float    orient() const {   return ( orient_iindex & 0x80000000u ) ? -1.f : 1.f ; }
+    SPHOTON_METHOD unsigned iindex()   const {                 return ( hitcount_iindex & 0x0000ffffu ) >> 0  ; }
+    SPHOTON_METHOD unsigned hitcount() const {                 return ( hitcount_iindex & 0xffff0000u ) >> 16 ; }
 
-    SPHOTON_METHOD void set_orient(float orient){ orient_iindex = ( orient_iindex & 0x7fffffffu ) | (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) ; } // clear orient bit and then set it
-    SPHOTON_METHOD void set_iindex(unsigned ii ){ orient_iindex = ( orient_iindex & 0x80000000u ) | ( 0x7fffffffu & ii ) ; }   // retain bit 31 asis
-    SPHOTON_METHOD void set_orient_iindex( float orient, unsigned ii ){ orient_iindex = (( orient < 0.f ? 0x1 : 0x0 ) << 31 ) | ( 0x7fffffffu & ii ) ; }
+    SPHOTON_METHOD unsigned flag() const {     return (orient_boundary_flag & 0x0000ffffu) >>  0 ; } // flag___     = lambda p:(p.view(np.uint32)[...,3,0] & 0xffff)
+    SPHOTON_METHOD unsigned boundary() const { return (orient_boundary_flag & 0x7fff0000u) >> 16 ; } // boundary___ = lambda p:(p.view(np.uint32)[...,3,0] & 0x7fff0000) >> 16
+    SPHOTON_METHOD float    orient() const {   return (orient_boundary_flag & 0x80000000u) ? -1.f : 1.f ; }
 
-    SPHOTON_METHOD unsigned flag() const {     return boundary_flag & 0xffffu ; } // flag___     = lambda p:p.view(np.uint32)[...,3,0] & 0xffff
-    SPHOTON_METHOD unsigned boundary() const { return boundary_flag >> 16 ; }     // boundary___ = lambda p:p.view(np.uint32)[...,3,0] >> 16
+    // bit manipulation approach of setters: clear bit(s) for flag/boundary/orient and then set them
+    SPHOTON_METHOD void     set_flag(unsigned flag) {         orient_boundary_flag = ( orient_boundary_flag & 0xffff0000u ) | (( flag     & 0xffffu         ) <<  0 ) ; flagmask |= flag ; }
+    SPHOTON_METHOD void     set_boundary(unsigned boundary) { orient_boundary_flag = ( orient_boundary_flag & 0x8000ffffu ) | (( boundary & 0x7fffu         ) << 16 ) ; }
+    SPHOTON_METHOD void     set_orient(float orient){         orient_boundary_flag = ( orient_boundary_flag & 0x7fffffffu ) | (( orient < 0.f ? 0x1u : 0x0u ) << 31 ) ; }
 
-    SPHOTON_METHOD void     set_flag(unsigned flag) {         boundary_flag = ( boundary_flag & 0xffff0000u ) | ( flag & 0xffffu ) ; flagmask |= flag ;  } // clear flag bits then set them
-    SPHOTON_METHOD void     set_boundary(unsigned boundary) { boundary_flag = ( boundary_flag & 0x0000ffffu ) | (( boundary & 0xffffu ) << 16 ) ; }        // clear boundary bits then set them
 
     SPHOTON_METHOD void     set_flagmask(unsigned _flagmask) { flagmask = _flagmask ; }
     SPHOTON_METHOD void     addto_flagmask(unsigned flag) { flagmask |=  flag ; }
     SPHOTON_METHOD void     scrub_flagmask(unsigned flag) { flagmask &= ~flag ; }
 
-    SPHOTON_METHOD void zero_flags() { boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ; orient_iindex = 0u ; }
+    SPHOTON_METHOD void zero_flags() { orient_boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ; hitcount_iindex = 0u ; }
 
     SPHOTON_METHOD float* data() {               return &pos.x ; }
     SPHOTON_METHOD const float* cdata() const {  return &pos.x ; }
@@ -241,23 +224,53 @@ struct sphoton
         identity = ( static_cast<unsigned>((full_index >> 32) & 0xffu      ) << 24 ) | ( identity & 0xffffffu ) ;
     }
     SPHOTON_METHOD uint64_t get_index() const {  return (static_cast<uint64_t>(identity >> 24) << 32) | static_cast<uint64_t>(index); }
-    //SPHOTON_METHOD unsigned idx() const {      return index ;  }
 
 
-    SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xff000000u ) | ( id & 0xffffffu ); }   // Preserve upper 8 bits of identity
-    SPHOTON_METHOD unsigned get_identity() const { return identity & 0xffffffu ; }  // exclude upper 8 bits
-
-
-
+    // upper 8 bits of identity field used to extend range of index beyond 4.29 billion
+    SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xff000000u ) | ( id & 0x00ffffffu ); }
+    SPHOTON_METHOD unsigned get_identity() const {            return identity & 0x00ffffffu ; }
 
 
     SPHOTON_METHOD void zero()
     {
        pos.x = 0.f ; pos.y = 0.f ; pos.z = 0.f ; time = 0.f ;
-       mom.x = 0.f ; mom.y = 0.f ; mom.z = 0.f ; orient_iindex = 0u ;
+       mom.x = 0.f ; mom.y = 0.f ; mom.z = 0.f ; hitcount_iindex = 0u ;
        pol.x = 0.f ; pol.y = 0.f ; pol.z = 0.f ; wavelength = 0.f ;
-       boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ;
+       orient_boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ;
     }
+
+
+    struct key_functor
+    {
+        float    tw;
+        SPHOTON_METHOD uint64_t operator()(const sphoton& p) const
+        {
+            unsigned id = p.get_identity() ;
+            unsigned bucket = static_cast<unsigned>(p.time / tw);
+            return (uint64_t(id) << 48) | uint64_t(bucket);
+        }
+    };
+
+    struct reduce_op
+    {
+        SPHOTON_METHOD sphoton operator()(const sphoton& a, const sphoton& b) const
+        {
+            bool a_first = fminf(a.time, b.time) == a.time ;
+            sphoton r   = a_first ? a : b ;
+            r.flagmask  = a.flagmask | b.flagmask ;     // combined flagmask OR first flagmask ?
+            r.set_hitcount( a.hitcount() + b.hitcount() );
+            return r;
+        }
+    };
+
+    struct select_pred
+    {
+        unsigned mask;
+        SPHOTON_METHOD bool operator()(const sphoton& p) const { return (p.flagmask & mask) != 0; }
+    };
+
+
+
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -326,12 +339,12 @@ struct sphotond
     double  time ;
 
     double3 mom ;
-    unsigned long long orient_iindex ;  // formerly float weight, but have never used that
+    unsigned long long hitcount_iindex ;
 
     double3 pol ;
     double  wavelength ;
 
-    unsigned long long boundary_flag ;
+    unsigned long long orient_boundary_flag ;
     unsigned long long identity ;
     unsigned long long index ;
     unsigned long long flagmask ;
@@ -359,14 +372,14 @@ SPHOTON_METHOD void sphotond::FromFloat( sphotond& d, const sphoton& s )
     d.mom.x = double(s.mom.x) ;
     d.mom.y = double(s.mom.y) ;
     d.mom.z = double(s.mom.z) ;
-    d.orient_iindex = ull(s.orient_iindex) ;
+    d.hitcount_iindex = ull(s.hitcount_iindex) ;
 
     d.pol.x = double(s.pol.x) ;
     d.pol.y = double(s.pol.y) ;
     d.pol.z = double(s.pol.z) ;
     d.wavelength  = double(s.wavelength) ;
 
-    d.boundary_flag = ull(s.boundary_flag) ;
+    d.orient_boundary_flag = ull(s.orient_boundary_flag) ;
     d.identity      = ull(s.identity) ;
     d.index         = ull(s.index) ;
     d.flagmask      = ull(s.flagmask) ;
@@ -426,8 +439,9 @@ See ~/opticks/notes/issues/sensor_identifier_offset_by_one_wrinkle.rst
 SPHOTON_METHOD void sphoton::set_prd( unsigned  boundary_, unsigned  identity_, float  orient_, unsigned iindex_ )
 {
     set_boundary(boundary_);
-    identity = identity_ ;
-    set_orient_iindex( orient_, iindex_ );
+    set_identity(identity_);  // formerly did identity = identity_ which scrubs hi index bits for huge simulations > 4.29 billion
+    set_orient( orient_ );
+    set_hitcount_one_iindex( iindex_ );
 }
 
 
@@ -672,7 +686,7 @@ SPHOTON_METHOD NP* sphoton::demoarray(size_t num_photon) // static
 
         p.mom = make_float3( 0.1f + i*0.1f, 0.2f + i*0.1f , 0.3f + i*0.1f );
         p.set_orient( i % 2 == 0 ? 1.f : -1.f );
-        p.set_iindex( i*1000 );
+        p.set_hitcount_one_iindex( i*1000 );
 
         p.pol = make_float3( 0.1f + i*0.1f, 0.2f + i*0.1f , 0.3f + i*0.1f );
         p.wavelength = 400.f + 10.f*i ;
@@ -735,8 +749,8 @@ SPHOTON_METHOD float4 sphoton::DeltaMax( const sphoton& a, const sphoton& b )  /
 
 SPHOTON_METHOD bool sphoton::EqualFlags( const sphoton& a, const sphoton& b) // static
 {
-    return a.orient_iindex == b.orient_iindex &&
-           a.boundary_flag == b.boundary_flag &&
+    return a.hitcount_iindex == b.hitcount_iindex &&
+           a.orient_boundary_flag == b.orient_boundary_flag &&
            a.identity == b.identity &&
            a.index == b.index &&
            a.flagmask == b.flagmask
@@ -1009,12 +1023,13 @@ inline std::ostream& operator<<(std::ostream& os, const sphoton& p )
 #endif
 
 
-
+/*
 union qphoton
 {
     quad4   q ;
     sphoton p ;
 };
+*/
 
 
 struct sphoton_selector
@@ -1024,8 +1039,5 @@ struct sphoton_selector
     SPHOTON_METHOD bool operator() (const sphoton& p) const { return ( p.flagmask  & hitmask ) == hitmask  ; }   // require all bits of the mask to be set
     SPHOTON_METHOD bool operator() (const sphoton* p) const { return ( p->flagmask & hitmask ) == hitmask  ; }   // require all bits of the mask to be set
 };
-
-
-
 
 

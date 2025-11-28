@@ -777,6 +777,9 @@ GEOM(){
 
 }
 
+
+f(){ f.sh $* ; : opticks.bash load .npy from PWD or argument fold ; }
+
 o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  }
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
@@ -1248,8 +1251,14 @@ Thus other than during development rebuild all
 at once as shown above.
 
 TODO: refuse to build CUDA essential packages
-(cx, qu) when OPTICKS_BUILD_WITH_CUDA=OFF
+(cx, qu) when OPTICKS_BUILD_WITH_CUDA=OFF ?
 
+HMM: adhoc setting of config envvars is not
+a recommended thing to do, need to formalize
+by incorporation into opticks setup such that
+can detect the type of build from env ?
+Could change prefix name based on this just
+like Debug/Release ?
 
 EON
 }

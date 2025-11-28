@@ -1,17 +1,18 @@
 #pragma once
 
-struct sphotonlite ;
 
+template<typename T>
 struct SPM_future
 {
-    sphotonlite* ptr = nullptr;
+    T* ptr = nullptr;
     size_t       count = 0;
     cudaEvent_t  ready = nullptr;   // caller must destroy
 
     void wait( cudaStream_t stream ) const ;
 };
 
-inline void SPM_future::wait(cudaStream_t stream = 0) const
+template<typename T>
+inline void SPM_future<T>::wait(cudaStream_t stream ) const
 {
     if (ready && stream) {
         cudaStreamWaitEvent(stream, ready, 0);

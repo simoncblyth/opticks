@@ -1051,6 +1051,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
     bool is_boundary_flag = OpticksPhoton::IsBoundaryFlag(flag) ;  // SD SA DR SR BR BT
     bool is_surface_flag = OpticksPhoton::IsSurfaceDetectOrAbsorbFlag(flag) ;  // SD SA
     bool is_detect_flag = OpticksPhoton::IsDetectFlag(flag) ;  // SD
+    // TODO: GPU side now using EC for the flagmask
 
 #ifndef PRODUCTION
     if(is_boundary_flag) CollectBoundaryAux<T>(&current_aux) ;
@@ -1072,7 +1073,7 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
               U4Touchable::AncestorReplicaNumber(touch)
               ;
 
-    current_photon.set_iindex( iindex );
+    current_photon.set_iindex__( iindex );  // WHAT ABOUT HITCOUNT ?
 
 
     LOG(LEVEL)

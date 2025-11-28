@@ -368,6 +368,38 @@ Is cycling of the launch_idx.x (unsigned)idx possible here ? NOT YET
 * NOTE THE ABSOLUTE photon_idx IS LIKELY BEING CYCLED HOWEVER
 
 
+tmin/tmin0 avoiding light leakage "tunnelling"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ray trace tmin is used to prevent rays with origin "on" a surface (ie very close to it)
+from intersecting with the surface when trying to escape from it.
+For example on reflecting from a surface multiple intersects can be avoided
+with a suitably chosed tmin. Using the same tmin for all steps of the photon is simple
+but can have undesirable consequences. For example when generation by scintillation/cerenkov/torch
+or scatter/reemission happens within tmin of a surface the photon might "tunnel"
+through the surface. Globally reducing tmin would reduce the probability of tunneling but
+would cause repeated intersection issues for rays starting "on" surfaces.
+
+To avoid this dilemma a second tmin0 and the photon step flags that cause
+tmin0 to be used for the next ray trace can be configured.
+As shown in the below table the default photon step flags that cause tmin0
+to be used for the next ray trace are TO,CK,SI,SC,RE which
+are all things (generation, scattering, reemission) that mostly happen
+in the bulk away from boundaries where there is less concern regarding
+self intersection. As self-intersection is not so much of a concern tmin0
+might be set to zero. However, there could then be a problem with self intersection
+in cases where these things happen within close to surfaces.
+
++----------------------------------+-----------------------------------------+-------------------+
+|  envvar                          |  method                                 | default           |
++==================================+=========================================+===================+
+| OPTICKS_PROPAGATE_EPSILON        |  SEventConfig::PropagateEpsilon()       |  0.05f            |
++----------------------------------+-----------------------------------------+-------------------+
+| OPTICKS_PROPAGATE_EPSILON0       |  SEventConfig::PropagateEpsilon0()      |  0.05f            |
++----------------------------------+-----------------------------------------+-------------------+
+| OPTICKS_PROPAGATE_EPSILON0_MASK  |  SEventConfig::PropagateEpsilon0Mask()  |  TO,CK,SI,SC,RE   |
++----------------------------------+-----------------------------------------+-------------------+
+
 **/
 
 static __forceinline__ __device__ void simulate( const uint3& launch_idx, const uint3& dim, quad2* prd )
@@ -417,7 +449,7 @@ static __forceinline__ __device__ void simulate( const uint3& launch_idx, const 
 #endif
     while( bounce < evt->max_bounce && ctx.p.time < params.max_time )
     {
-        float tmin = ( ctx.p.boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
+        float tmin = ( ctx.p.orient_boundary_flag & params.PropagateEpsilon0Mask ) ? params.tmin0 : params.tmin ;
 
         // intersect query filling (quad2)prd
         switch(params.PropagateRefine)

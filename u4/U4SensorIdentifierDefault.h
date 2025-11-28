@@ -1,4 +1,14 @@
 #pragma once
+/**
+u4/U4SensorIdentifierDefault.h
+================================
+
+This fulfils U4SensorIdentifier protocol, it is used
+to identify sensors in the geometry.  To override this
+implementation use G4CXOpticks::SetSensorIdentifier.
+
+
+**/
 
 #include <vector>
 #include <iostream>

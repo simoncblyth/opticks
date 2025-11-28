@@ -40,9 +40,9 @@ sphotonlite.hh
 
 struct sphotonlite
 {
-    uint32_t  hitcount_identity ;
+    uint32_t  hitcount_identity ; // hi16:hitcount, lo16:identity
     float     time ;
-    uint32_t  lposcost_lposfphi ;
+    uint32_t  lposcost_lposfphi ; // hi16:lposcost, lo16:lposfphi
     uint32_t  flagmask ;
 
     SPHOTONLITE_METHOD void init(unsigned _identity, float _time, unsigned _flagmask);
@@ -51,6 +51,40 @@ struct sphotonlite
 
     SPHOTONLITE_METHOD unsigned hitcount() const { return hitcount_identity >> 16 ; }
     SPHOTONLITE_METHOD unsigned identity() const { return hitcount_identity & 0xffffu ; }
+
+    struct key_functor
+    {
+        float    tw;
+        SPHOTONLITE_METHOD uint64_t operator()(const sphotonlite& p) const
+        {
+            unsigned id = p.identity() ;
+            unsigned bucket = static_cast<unsigned>(p.time / tw);
+            return (uint64_t(id) << 48) | uint64_t(bucket);
+        }
+    };
+
+    struct reduce_op
+    {
+        SPHOTONLITE_METHOD sphotonlite operator()(const sphotonlite& a, const sphotonlite& b) const
+        {
+            sphotonlite r = a;
+            r.time = fminf(a.time, b.time);
+            r.flagmask |= b.flagmask;
+            unsigned hc = a.hitcount() + b.hitcount();
+            r.set_hitcount_identity(hc, a.identity());
+            return r;
+        }
+    };
+
+    // this requires any bit match, not all bit like the below sphotonlite_selector
+    struct select_pred
+    {
+        unsigned mask;
+        SPHOTONLITE_METHOD bool operator()(const sphotonlite& p) const { return (p.flagmask & mask) != 0; }
+    };
+
+
+
 
 
 #if defined(__CUDACC__) || defined(__CUDABE__)

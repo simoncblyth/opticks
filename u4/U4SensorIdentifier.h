@@ -28,7 +28,7 @@ getInstanceIdentity
     G4LogicalVolume::SetSensitiveDetector associated.
 
 U4SensorIdentifierDefault.h provided the default implementation.
-To override this default use U4Tree::SetSensorIdentifier
+To override this default use G4CXOpticks::SetSensorIdentifier
 
 **/
 class G4VPhysicalVolume ;

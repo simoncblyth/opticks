@@ -1,6 +1,6 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
-~/opticks/bin/f.sh 
+~/opticks/bin/f.sh
 ===================
 
 Opens invoking directory into ipython with opticks.ana.fold:Fold
@@ -12,10 +12,10 @@ Usage example::
 
 Note a very similar script from np repo::
 
-    ~/np/f.sh  
+    ~/np/f.sh
 
 EOU
 }
 DIR=$(cd $(dirname $BASH_SOURCE) && pwd)
-${IPYTHON:-ipython} --pdb -i $DIR/f.py 
+${IPYTHON:-ipython} --pdb -i $DIR/f.py
 

@@ -100,7 +100,7 @@ const char* SEventConfig::_SaveCompDefault = SComp::NONE_ ;
 
 float SEventConfig::_PropagateEpsilonDefault = 0.05f ;
 float SEventConfig::_PropagateEpsilon0Default = 0.05f ;
-const char* SEventConfig::_PropagateEpsilon0MaskDefault = "TO,CK,SI,SC,RE" ;
+const char* SEventConfig::_PropagateEpsilon0MaskDefault = "TO,CK,SI,SC,RE" ; // THESE MOSTLY HAPPEN AWAY FROM BOUNDARIES
 unsigned SEventConfig::_PropagateRefineDefault = 0u ;
 float SEventConfig::_PropagateRefineDistanceDefault = 5000.f ;
 

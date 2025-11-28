@@ -29,7 +29,7 @@ struct qscint
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QSCINT_METHOD void    generate( sphoton& p, RNG& rng, const quad6& gs, unsigned long long photon_id, int genstep_id ) const ;
     QSCINT_METHOD void    reemit(   sphoton& p, RNG& rng, float scintillationTime) const ;
-    QSCINT_METHOD void    momw_polw(sphoton& p, RNG& rng) const ;
+    QSCINT_METHOD void    mom_pol_wavelength(sphoton& p, RNG& rng) const ;
     // sets direction, polarization and wavelength as needed by both generate and reemit
 
     QSCINT_METHOD float   wavelength(     const float& u0) const ;
@@ -59,7 +59,7 @@ inline QSCINT_METHOD void qscint::generate(
     unsigned long long photon_id,
     int genstep_id ) const
 {
-    momw_polw(p, rng );
+    mom_pol_wavelength(p, rng );
 
     const sscint& gs = (const sscint&)_gs ;
 
@@ -100,21 +100,21 @@ the Geant4 properties directly.  What about geocache ? Can hold/persist with GSc
 
 inline QSCINT_METHOD void qscint::reemit(sphoton& p, RNG& rng, float scintillationTime) const
 {
-    momw_polw(p, rng);
+    mom_pol_wavelength(p, rng);
     float u3 = curand_uniform(&rng) ;
     p.time += -scintillationTime*logf(u3) ;
 }
 
 
 /**
-qscint::momw_polw : dir,pol and wavelength do not depend on genstep param
+qscint::mom_pol_wavelength : dir,pol and wavelength do not depend on genstep param
 --------------------------------------------------------------------------------
 
-Translation of "jcv DsG4Scintillation"
+Called from qscint::generate, a translation of "jcv DsG4Scintillation"
 
 **/
 
-inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, RNG& rng) const
+inline QSCINT_METHOD void qscint::mom_pol_wavelength(sphoton& p, RNG& rng) const
 {
     float u0 = curand_uniform(&rng);
     float u1 = curand_uniform(&rng);
@@ -130,7 +130,6 @@ inline QSCINT_METHOD void qscint::momw_polw(sphoton& p, RNG& rng) const
     p.mom.x = sint*cosp;
     p.mom.y = sint*sinp;
     p.mom.z = cost ;
-    p.orient_iindex = 0u ;
 
     // Determine polarization of new photon
     p.pol.x = cost*cosp ;

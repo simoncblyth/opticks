@@ -33,6 +33,25 @@ Trend correct, but not monotonically downwards, "window edge" precision effect p
     (ok) A[blyth@localhost sysrap]$
 
 
+info
+    dump vars
+ls
+    list folders : AFOLD, FOLD
+nvcc
+    compile .cu into .o
+gcc
+    compile .cc and link with the nvcc .o to make executable
+run
+    run the executable invoking test controlled by TEST envvar
+scan
+    run executable many times changing OPTICKS_MERGE_WINDOW
+dbg
+    run executable under gdb debugger, again controlled by TEST envvar
+
+pdb
+    run python script with input array folder configured with AFOLD envvar
+
+
 EOU
 }
 
@@ -82,23 +101,37 @@ if [ "${arg/ls}" != "$arg" ]; then
    done
 fi
 
+log(){ [ -n "$VERBOSE" ] && echo $BASH_SOURCE $(date +%H:%M:%S) $* ; }
+
 
 if [ "${arg/nvcc}" != "$arg" ]; then
+   log nvcc SU.cu
    nvcc -c ../SU.cu -I.. -std=c++17 --extended-lambda  -o $FOLD/SU.o
    [ $? -ne 0 ] && echo $FUNCNAME nvcc compile error && exit 1
 fi
 
 if [ "${arg/nvcc}" != "$arg" ]; then
+   log nvcc SPM.cu
    nvcc -c ../SPM.cu -I.. -std=c++17 --extended-lambda  -o $FOLD/SPM.o
    [ $? -ne 0 ] && echo $FUNCNAME nvcc compile error && exit 1
 fi
 
+if [ "${arg/nvcc}" != "$arg" -o "${arg/dev}" != "$arg" ]; then
+   log nvcc SPM_dev.cu
+   nvcc -c ../SPM_dev.cu -I.. -std=c++17 --extended-lambda  -o $FOLD/SPM_dev.o
+   [ $? -ne 0 ] && echo $FUNCNAME nvcc compile error && exit 1
+fi
+
+
+
 if [ "${arg/gcc}" != "$arg" ]; then
-   gcc $name.cc $FOLD/SU.o $FOLD/SPM.o -std=c++17 -lstdc++ -I.. -I$CUDA_PREFIX/include -L$CUDA_PREFIX/lib64 -lcudart -lm  -o $bin
+   log gcc
+   gcc $name.cc $FOLD/SU.o $FOLD/SPM.o $FOLD/SPM_dev.o -std=c++17 -lstdc++ -DWITH_CUDA -I.. -I$CUDA_PREFIX/include -L$CUDA_PREFIX/lib64 -lcudart -lm  -o $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE gcc compile error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
+   log run
    pushd $FOLD > /dev/null
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 3

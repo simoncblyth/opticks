@@ -1131,7 +1131,7 @@ NP* QEvt::PerLaunchMerge(sevent* evt, cudaStream_t stream ) // static
 QEvt::FinalMerge
 ----------------
 
-Canonical argument array this is used with is concat_hitlitemerged
+The canonical argument array this is used with is concat_hitlitemerged
 
 Conceptually the FinalMerge and PerLaunchMerge use the same processing
 with both flagmask selection and hit merging using (identity,timebucket) key
@@ -1185,7 +1185,7 @@ NP_future QEvt::FinalMerge_async(const NP* all, cudaStream_t stream ) // static
 
     // 2. invoke final merge
 
-    SPM_future merge_result = SPM::merge_partial_select_async(
+    SPM_future<sphotonlite> merge_result = SPM::merge_partial_select_async<sphotonlite>(
         d_all ? d_all : nullptr,
         num_all,
         SPM::ALREADY_HITMASK_SELECTED,

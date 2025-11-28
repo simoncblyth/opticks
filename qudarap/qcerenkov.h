@@ -102,7 +102,6 @@ inline QCERENKOV_METHOD void qcerenkov::generate( sphoton& p, RNG& rng, const qu
     smath::rotateUz(p.pol, p0 );
 
     p.wavelength = wavelength ;
-    p.orient_iindex = 0u ;
 
     float fraction ;
     float delta ;

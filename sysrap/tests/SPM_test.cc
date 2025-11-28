@@ -4,7 +4,6 @@ SPM_test.cc
 
 ~/o/sysrap/tests/SPM_test.sh
 
-
 **/
 
 
@@ -19,11 +18,15 @@ SPM_test.cc
 #include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
+
+#include "sphoton.h"
 #include "sphotonlite.h"
+
 #include "OpticksPhoton.h"
 
 #include "SU.hh"
 #include "SPM.hh"
+#include "SPM_dev.hh"
 
 struct SPM_test
 {
@@ -46,16 +49,18 @@ struct SPM_test
     SPM_test();
     void init();
 
+    // SPM
     int merge_partial_select();
     int merge_partial_select_async();
-
-    int dump();
     int dump_hitlite();
-    int dump_partial();
-    int desc_diff();
 
+    // SPM_dev
+    int dump();
+    int desc_diff();
+    int dump_partial();
     int merge_incremental();
     int merge_partial_select_merge_incremental();
+
 
     int test(int argc, char** argv);
 };
@@ -101,12 +106,17 @@ inline int SPM_test::test(int argc, char** argv)
     int rc = 0 ;
     if(ALL||0==strcmp(TEST,"merge_partial_select")) rc += merge_partial_select() ;
     if(ALL||0==strcmp(TEST,"merge_partial_select_async")) rc += merge_partial_select_async() ;
+    if(ALL||0==strcmp(TEST,"dump_hitlite"))         rc += dump_hitlite() ;
+
+
+
     if(ALL||0==strcmp(TEST,"dump"))                 rc += dump() ;
     if(ALL||0==strcmp(TEST,"dump_partial"))         rc += dump_partial() ;
     if(ALL||0==strcmp(TEST,"dump_hitlite"))         rc += dump_hitlite() ;
     if(ALL||0==strcmp(TEST,"desc_diff"))            rc += desc_diff() ;
     if(ALL||0==strcmp(TEST,"merge_incremental"))    rc += merge_incremental() ;
     if(ALL||0==strcmp(TEST,"merge_partial_select_merge_incremental")) rc += merge_partial_select_merge_incremental() ;
+
 
     return rc ;
 }
@@ -134,8 +144,11 @@ int SPM_test::merge_partial_select()
         ;
 
     std::string path = "partial_0.bin" ;
-    SPM::save_partial(d_hitlitemerged, num_hitlitemerged, path, stream);
+
+    SPM_dev::save_partial(d_hitlitemerged, num_hitlitemerged, path, stream);
+
     SPM::free(d_hitlitemerged);
+
 
     return 0 ;
 }
@@ -180,15 +193,6 @@ int SPM_test::merge_partial_select_async()
 }
 
 
-
-
-int SPM_test::dump()
-{
-    dump_hitlite();
-    dump_partial();
-    desc_diff();
-    return 0 ;
-}
 int SPM_test::dump_hitlite()
 {
     std::cout
@@ -202,6 +206,17 @@ int SPM_test::dump_hitlite()
         if( i < EDGE || i > (num_hitlite - EDGE) )
         std::cout << std::setw(9) << i << " : " << hitlite[i].desc() << "\n" ;
     }
+    return 0 ;
+}
+
+
+
+
+int SPM_test::dump()
+{
+    dump_hitlite();
+    dump_partial();
+    desc_diff();
     return 0 ;
 }
 int SPM_test::dump_partial()
@@ -236,9 +251,6 @@ int SPM_test::desc_diff()
     return 0 ;
 }
 
-
-
-
 int SPM_test::merge_incremental()
 {
     const char* paths[] = {
@@ -250,7 +262,7 @@ int SPM_test::merge_incremental()
     size_t       final_n = 0;
     cudaStream_t stream = 0 ;
 
-    SPM::merge_incremental( paths, &d_final, &final_n, merge_window_ns, stream );
+    SPM_dev::merge_incremental( paths, &d_final, &final_n, merge_window_ns, stream );
 
     std::vector<sphotonlite> h_final(final_n);
     cudaMemcpy(h_final.data(), d_final, final_n*sizeof(sphotonlite), cudaMemcpyDeviceToHost);
@@ -270,7 +282,7 @@ int SPM_test::merge_partial_select_merge_incremental()
     SPM::merge_partial_select(d_photonlite, num_photonlite, &d_partial, &n_partial,
                               select_flagmask, merge_window_ns, stream);
 
-    SPM::save_partial(d_partial, n_partial, "partial_0.bin", stream);
+    SPM_dev::save_partial(d_partial, n_partial, "partial_0.bin", stream);
 
 
     // TODO : a second one
@@ -280,7 +292,7 @@ int SPM_test::merge_partial_select_merge_incremental()
     sphotonlite* d_final = nullptr;
     size_t       n_final = 0;
 
-    SPM::merge_incremental(paths, &d_final, &n_final, merge_window_ns, stream);
+    SPM_dev::merge_incremental(paths, &d_final, &n_final, merge_window_ns, stream);
 
     // Use d_final...
 
@@ -288,8 +300,6 @@ int SPM_test::merge_partial_select_merge_incremental()
 
     return 0 ;
 }
-
-
 
 
 

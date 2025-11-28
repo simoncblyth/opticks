@@ -68,7 +68,7 @@ struct Params
     float      tmin ;
 
     float      tmin0 ;
-    unsigned   PropagateEpsilon0Mask ;
+    unsigned   PropagateEpsilon0Mask ;   // default from SEventConfig TO,CK,SI,SC,RE
     float      PropagateRefineDistance ;
     bool       PropagateRefine ;
 

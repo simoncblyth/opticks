@@ -49,6 +49,8 @@ set(SH_SCRIPTS
    cat.py
    SProf.py
    opticks-ctest.sh
+   f.sh
+   f.py
 )
 
 
