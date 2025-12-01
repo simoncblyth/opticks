@@ -115,6 +115,11 @@ jcv CopyNumber::
 #include <iomanip>
 #endif
 
+/**
+NB for backward compat with an old branch, had to revert NUM_WP_ATM_MPMT to 0 from 600
+https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/1061
+**/
+
 
 namespace s_pmt
 {
@@ -127,7 +132,7 @@ namespace s_pmt
         NUM_SPMT               = 25600,
         NUM_WP                 = 2400,
         NUM_WP_ATM_LPMT        = 348,
-        NUM_WP_ATM_MPMT        = 600,    // 0-or-600 ? HMM partially added, messing everything
+        NUM_WP_ATM_MPMT        = 0,    // 0-or-600 ? HMM partially added, messing everything
         NUM_WP_WAL_PMT         = 5,
         OFFSET_CD_LPMT         = 0,
         OFFSET_CD_LPMT_END     = 17612,

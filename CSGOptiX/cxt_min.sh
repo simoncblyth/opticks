@@ -36,18 +36,20 @@ To make select intersects to show use comma delimted KEY::
 TODO: add option to draw a spinkle of intersect normal direction arrows
 
 
-OVERLAP Check
---------------
+OVERLAP Check Using scipy.spatial KDTree to compare two intersect point clouds with surface normals
+-----------------------------------------------------------------------------------------------------
 
-::
+0. switch to the J branch to check
+1. clean build OJ and convert geometry with "ljbbc"
+2. target suspect geometry by setting  MOI (using MOI bash function)
+3. run this cxt_min.sh script with CEGS configured for a 3D grid
+4. pdb this cxt_min.sh script with PRIMTAB and KEY envvar selecting two pointclouds and have OVERLAP defined::
 
     PRIMTAB=1 OVERLAP=1 KEY=deeppink,honeydew cxt_min.sh pdb
     PRIMTAB=1 OVERLAP=1 KEY=deeppink,honeydew HIDE=1 cxt_min.sh pdb
 
     PRIMTAB=1 OVERLAP=1 BOXSEL=-2000,2000,-2000,2000,-1000,1000 KEY=deeppink,honeydew KEYOFF=honeydew:0,0,-27 cxt_min.sh pdb      ##  overlap_pt 1
     PRIMTAB=1 OVERLAP=1 BOXSEL=-2000,2000,-2000,2000,-1000,1000 KEY=deeppink,honeydew KEYOFF=honeydew:0,0,-28 cxt_min.sh pdb      ## NO OVERLAP
-
-
 
 
 Issue

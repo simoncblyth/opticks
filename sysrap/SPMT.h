@@ -80,6 +80,7 @@ Related developments
 #include <csignal>
 
 #include "NPFold.h"
+#include "NPX.h"
 #include "scuda.h"
 #include "squad.h"
 #include "ssys.h"
@@ -232,7 +233,11 @@ struct SPMT
 
     void init_total();
 
+    static NP* FAKE_WHEN_MISSING_PMTParamData_serialize_pmtNum();
+    static constexpr const char* SPMT__init_pmtNum_FAKE_WHEN_MISSING = "SPMT__init_pmtNum_FAKE_WHEN_MISSING" ;
+    static int init_pmtNum_FAKE_WHEN_MISSING ;
     void init_pmtNum();
+
     void init_pmtCat();
 
     void init_lpmtCat();
@@ -631,6 +636,29 @@ inline void SPMT::init_total()
 }
 
 
+
+/**
+SPMT::FAKE_WHEN_MISSING_PMTParamData_serialize_pmtNum
+-------------------------------------------------------
+
+Attempt to give backward compatibility for older junosw branch
+that lacks the pmtNum by faking it.
+
+**/
+
+inline NP* SPMT::FAKE_WHEN_MISSING_PMTParamData_serialize_pmtNum() // static
+{
+    NPX::KV<int> kv ;
+    kv.add("m_nums_cd_lpmt", s_pmt::NUM_CD_LPMT );
+    kv.add("m_nums_cd_spmt", s_pmt::NUM_SPMT );
+    kv.add("m_nums_wp_lpmt", s_pmt::NUM_WP );
+    kv.add("m_nums_wp_atm_lpmt", s_pmt::NUM_WP_ATM_LPMT );
+    kv.add("m_nums_wp_wal_pmt", s_pmt::NUM_WP_WAL_PMT );
+    kv.add("m_nums_wp_atm_mpmt",  s_pmt::NUM_WP_ATM_MPMT );
+    return kv.values() ;
+}
+
+
 /**
 SPMT::init_pmtNum
 ------------------
@@ -640,11 +668,27 @@ so they are required to correspond to each other
 
 **/
 
+inline int SPMT::init_pmtNum_FAKE_WHEN_MISSING = ssys::getenvint(SPMT__init_pmtNum_FAKE_WHEN_MISSING, 1 );  // default to doing this
 
 inline void SPMT::init_pmtNum()
 {
-    std::cout << "SPMT::init_pmtNum pmtNum.sstr " <<  (pmtNum ? pmtNum->sstr() : "-"  ) << "\n" ;
-    if(!pmtNum) return ;
+    std::cout
+       << "SPMT::init_pmtNum"
+       << " pmtNum.sstr " <<  (pmtNum ? pmtNum->sstr() : "-"  )
+       << " init_pmtNum_FAKE_WHEN_MISSING " << init_pmtNum_FAKE_WHEN_MISSING
+       << "\n"
+       ;
+    if(!pmtNum)
+    {
+        if( init_pmtNum_FAKE_WHEN_MISSING == 0 )
+        {
+            return ;
+        }
+        else
+        {
+            pmtNum = FAKE_WHEN_MISSING_PMTParamData_serialize_pmtNum();
+        }
+    }
 
     std::vector<std::string> xnames = {
          "m_nums_cd_lpmt",
