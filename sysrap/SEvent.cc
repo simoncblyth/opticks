@@ -197,7 +197,7 @@ NP* SEvent::MakeGenstep( int gentype, int index_arg )
 
     int gs_start = 0 ;
     int gs_stop = num_gs ;
-    int64_t _gs_ph = num_ph/num_gs ; // divide the num_ph equally between the num_gs
+    size_t _gs_ph = num_ph/num_gs ; // divide the num_ph equally between the num_gs
     assert( _gs_ph <= SGenstep::MAX_SLOT_PER_SLICE );   // fits in int32_t : so can narrow
     int gs_ph(_gs_ph) ;
 

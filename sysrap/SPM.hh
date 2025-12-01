@@ -3,6 +3,12 @@
 sysrap/SPM.hh
 ===============
 
+This CUDA hit merging functionality is used from::
+
+   QEvt::PerLaunchMerge
+   QEvt::FinalMerge
+   QEvt::FinalMerge_async
+
 **/
 
 #include <string>

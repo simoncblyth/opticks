@@ -145,7 +145,7 @@ int SPM_test::merge_partial_select()
 
     std::string path = "partial_0.bin" ;
 
-    SPM_dev::save_partial(d_hitlitemerged, num_hitlitemerged, path, stream);
+    SPM_dev::save_partial_sphotonlite(d_hitlitemerged, num_hitlitemerged, path, stream);
 
     SPM::free(d_hitlitemerged);
 
@@ -262,7 +262,7 @@ int SPM_test::merge_incremental()
     size_t       final_n = 0;
     cudaStream_t stream = 0 ;
 
-    SPM_dev::merge_incremental( paths, &d_final, &final_n, merge_window_ns, stream );
+    SPM_dev::merge_incremental_sphotonlite( paths, &d_final, &final_n, merge_window_ns, stream );
 
     std::vector<sphotonlite> h_final(final_n);
     cudaMemcpy(h_final.data(), d_final, final_n*sizeof(sphotonlite), cudaMemcpyDeviceToHost);
@@ -282,7 +282,7 @@ int SPM_test::merge_partial_select_merge_incremental()
     SPM::merge_partial_select(d_photonlite, num_photonlite, &d_partial, &n_partial,
                               select_flagmask, merge_window_ns, stream);
 
-    SPM_dev::save_partial(d_partial, n_partial, "partial_0.bin", stream);
+    SPM_dev::save_partial_sphotonlite(d_partial, n_partial, "partial_0.bin", stream);
 
 
     // TODO : a second one
@@ -292,7 +292,7 @@ int SPM_test::merge_partial_select_merge_incremental()
     sphotonlite* d_final = nullptr;
     size_t       n_final = 0;
 
-    SPM_dev::merge_incremental(paths, &d_final, &n_final, merge_window_ns, stream);
+    SPM_dev::merge_incremental_sphotonlite(paths, &d_final, &n_final, merge_window_ns, stream);
 
     // Use d_final...
 

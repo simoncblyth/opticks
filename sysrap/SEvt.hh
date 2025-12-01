@@ -568,8 +568,8 @@ public:
     sgs addGenstep(const NP* a) ;
     sgs addGenstep(const quad6& q) ;
 
-    void setNumPhoton(int64_t num_photon);
-    void setNumSimtrace(int64_t num_simtrace);
+    void setNumPhoton(size_t num_photon);
+    void setNumSimtrace(size_t num_simtrace);
     void hostside_running_resize();
     void hostside_running_resize_();
 

@@ -89,7 +89,7 @@ EOU
 #test=debug
 
 #test=merge_M1
-#test=merge_M10
+test=merge_M10
 
 #test=ref1
 #test=ref5
@@ -119,7 +119,7 @@ EOU
 
 #test=large_evt_merge
 #test=vvvvvvlarge_evt
-test=vvvvvvlarge_evt_merge
+#test=vvvvvvlarge_evt_merge
 
 #test=medium_scan
 
@@ -335,8 +335,8 @@ elif [ "${TEST:0:6}" == "merge_" ]; then
    #opticks_max_slot=$opticks_num_photon
    opticks_max_slot=M1          # less than num_photon to force multi-launch
 
-   opticks_event_mode=Hit       # formerly DebugLite
-   opticks_mode_lite=1          # 0:non-Lite 1:photon/hit -Lite variant  2:both non-Lite and Lite variants for debug
+   opticks_event_mode=HitPhotonSeq  # formerly DebugLite but record quickly gets too big, do changed to Hit, but need Photon
+   opticks_mode_lite=2          # 0:non-Lite 1:photon/hit -Lite variant  2:both non-Lite and Lite variants for debug
    opticks_mode_merge=1
    opticks_merge_window=1    # ns
 

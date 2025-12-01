@@ -90,7 +90,6 @@ extern "C" void CUDART_CB save_partial_callback_async(cudaStream_t stream, cudaE
 }
 
 
-/**
 extern "C" void CUDART_CB save_partial_callback_templated(cudaStream_t stream, cudaError_t status, void* userData)
 {
     auto* payload = static_cast<std::function<void(cudaStream_t,cudaError_t)>*>(userData);
@@ -127,13 +126,12 @@ void launch_save_async(cudaStream_t stream, const T* d_ptr, size_t count, const 
     cudaStreamAddCallback(stream, save_partial_callback_templated, boxed, 0);
 }
 
-**/
 
 
 
 /**
-SPM_dev::save_partial
-----------------------
+SPM_dev::save_partial_sphotonlite
+------------------------------------
 
 1. host allocate *h_pinned* space for *count* hits
 2. async copy count hits to h_pinned from d_partial
@@ -144,7 +142,7 @@ memlock limited by "ulimit -l"  (default 8MB).
 
 **/
 
-void SPM_dev::save_partial(
+void SPM_dev::save_partial_sphotonlite(
         const sphotonlite* d_partial,
         size_t count,
         const std::string& path,
@@ -166,6 +164,23 @@ void SPM_dev::save_partial(
 }
 
 
+template<typename T>
+void SPM_dev::save_partial(
+        const T* d_partial,
+        size_t count,
+        const std::string& path,
+        cudaStream_t stream )
+{
+    if (count == 0 || !d_partial) {
+        cudaFree(const_cast<T*>(d_partial));
+        return;
+    }
+    launch_save_async<T>(stream, d_partial, count, path);
+}
+
+
+
+
 
 /**
 SPM_dev::load_partial
@@ -178,7 +193,7 @@ SPM_dev::load_partial
 
 **/
 
-void SPM_dev::load_partial(
+void SPM_dev::load_partial_sphotonlite(
         const std::string& path,
         sphotonlite**      d_out,
         size_t*            count,
@@ -337,7 +352,7 @@ SPM_dev::merge_incremental
 
 **/
 
-void SPM_dev::merge_incremental(
+void SPM_dev::merge_incremental_sphotonlite(
         const char** partial_paths,
         sphotonlite** d_final,
         size_t*       final_count,

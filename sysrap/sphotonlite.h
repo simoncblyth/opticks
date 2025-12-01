@@ -40,6 +40,11 @@ sphotonlite.hh
 
 struct sphotonlite
 {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    static constexpr const char* NAME = "sphotonlite" ;
+#endif
+
     uint32_t  hitcount_identity ; // hi16:hitcount, lo16:identity
     float     time ;
     uint32_t  lposcost_lposfphi ; // hi16:lposcost, lo16:lposfphi
@@ -120,6 +125,9 @@ struct sphotonlite
     SPHOTONLITE_METHOD static void loadbin( std::vector<sphotonlite>& photonlite, const char* path );
 
     SPHOTONLITE_METHOD static std::string Desc(const NP* a, size_t edge=20);
+    SPHOTONLITE_METHOD static NP*         MockupForMergeTest(size_t ni);
+
+
     SPHOTONLITE_METHOD static std::string desc_diff( const sphotonlite* a, const sphotonlite* b, size_t ni );
 
 #endif
@@ -385,6 +393,19 @@ inline std::string sphotonlite::Desc(const NP* a, size_t edge) // static
     return str ;
 }
 
+SPHOTONLITE_METHOD NP* sphotonlite::MockupForMergeTest(size_t ni) // static
+{
+    NP* a = NP::Make<unsigned>(ni, 4);
+    sphotonlite* aa = (sphotonlite*)a->bytes();
+    for(size_t i=0 ; i < ni ; i++)
+    {
+        sphotonlite& p = aa[i];
+        p.time = float( i % 100 )*0.1f ;
+        p.set_hitcount_identity( 1, i % 100 );
+        p.flagmask = i % 5 == 0 ? EFFICIENCY_COLLECT : EFFICIENCY_CULL ;
+    }
+    return a ;
+}
 
 
 inline std::string sphotonlite::desc_diff( const sphotonlite* a, const sphotonlite* b, size_t ni )

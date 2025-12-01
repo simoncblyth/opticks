@@ -28,8 +28,10 @@ TEST=ALL       ~/o/qudarap/tests/QEvtTest.sh
 #include "OpticksGenstep.h"
 #include "NP.hh"
 #include "NPX.h"
+#include "NPFold.h"
 
 #include "QBuf.hh"
+#include "QU.hh"
 
 #include "ssys.h"
 #include "spath.h"
@@ -59,7 +61,20 @@ struct QEvtTest
     static int setGenstep_checkEvt();
     static int setGenstep_quad6();
 
+
+
+
+    static sevent* MockEventForMergeTest(const NP* p, const NP* l);
+    static int PerLaunchMerge() ;
+
+
+    template<typename T>
+    static std::string GetPhotonSource();
+
+    template<typename T>
     static int FinalMerge();
+
+    template<typename T>
     static int FinalMerge_async();
 
     static int main();
@@ -161,7 +176,7 @@ int QEvtTest::setGenstep_sliced()
 
         event->setGenstepUpload_NP(gs, &sl );
 
-        int num_photon = event->getNumPhoton();
+        size_t num_photon = event->getNumPhoton();
         bool num_photon_expect = sl.ph_count == num_photon ;
 
         std::cout
@@ -178,7 +193,7 @@ int QEvtTest::setGenstep_sliced()
 
         NP* seed_ = event->gatherSeed();
         const int* seed_v = seed_->values<int>();
-        int num_seed = seed_->shape[0] ;
+        size_t num_seed = seed_->shape[0] ;
 
         assert( num_seed  == num_photon );
         int edgeitems = 100 ;
@@ -433,16 +448,113 @@ int QEvtTest::setGenstep_quad6()
     return 0 ;
 }
 
+
+/**
+QEvtTest::GetPhotonSource
+--------------------------
+
+To create source folder try::
+
+    TEST=merge_M10 cxs_min.sh
+    TEST=hitlitemerged ojt
+
+**/
+
+
+
+template<typename T>
+std::string QEvtTest::GetPhotonSource()
+{
+    bool is_sphoton     = strcmp( T::NAME, "sphoton" ) == 0 ;
+    bool is_sphotonlite = strcmp( T::NAME, "sphotonlite" ) == 0 ;
+    assert( is_sphoton ^ is_sphotonlite );
+    const char* src = is_sphotonlite ? "$AFOLD/photonlite.npy" : "$AFOLD/photon.npy" ;
+    // these are placeholders for concat_hitlitemerged concat_hitmerged
+    return src ;
+}
+
+
+sevent* QEvtTest::MockEventForMergeTest(const NP* p, const NP* l)
+{
+    sevent* evt = new sevent {} ;
+
+    evt->photon = QU::UploadArray<sphoton>((sphoton*)p->bytes(), p->num_items(), "sphoton::MockupForMergeTest" ) ;
+    evt->num_photon = p->num_items() ;
+
+    evt->photonlite = QU::UploadArray<sphotonlite>((sphotonlite*)l->bytes(), l->num_items(), "sphotonlite::MockupForMergeTest" ) ;
+    evt->num_photonlite = l->num_items() ;
+
+    evt->hitmerged = nullptr ;
+    evt->num_hitmerged = 0 ;
+
+    evt->hitlitemerged = nullptr ;
+    evt->num_hitlitemerged = 0 ;
+
+    return evt ;
+}
+
+
+int QEvtTest::PerLaunchMerge()
+{
+    std::cout
+        << "[QEvtTest::PerLaunchMerge\n"
+        ;
+
+    size_t ni = 1'000'000 ;
+
+    NP* photon = sphoton::MockupForMergeTest(ni);
+    NP* photonlite = sphotonlite::MockupForMergeTest(ni);
+
+    sevent* evt = MockEventForMergeTest(photon, photonlite);
+
+    cudaStream_t stream = 0 ;
+    NP* hitmerged = QEvt::PerLaunchMerge<sphoton>(evt, stream );
+    NP* hitlitemerged = QEvt::PerLaunchMerge<sphotonlite>(evt, stream );
+
+    std::cout
+        << " evt.num_photon     " << evt->num_photon << "\n"
+        << " evt.num_photonlite " << evt->num_photonlite << "\n"
+        << " evt.num_hitmerged  " << evt->num_hitmerged << "\n"
+        << " evt.num_hitlitemerged  " << evt->num_hitlitemerged << "\n"
+        << " evt.hitmerged " << ( evt->hitmerged ? "YES" : "NO " ) << "\n"
+        << " evt.hitlitemerged " << ( evt->hitlitemerged ? "YES" : "NO " ) << "\n"
+        << " hitmerged " << ( hitmerged ? hitmerged->sstr() : "-" ) << "\n"
+        << " hitlitemerged " << ( hitlitemerged ? hitlitemerged->sstr() : "-" ) << "\n"
+        ;
+
+
+    NPFold* f = new NPFold ;
+    f->add("photon", photon);
+    f->add("photonlite", photonlite);
+    f->add("hitmerged", hitmerged );
+    f->add("hitlitemerged", hitlitemerged );
+    f->save("$FOLD"); // includes TEST in last elem
+
+    std::cout
+       << "]QEvtTest::PerLaunchMerge"
+       << "\n"
+       ;
+
+    return 0 ;
+}
+
+
+
+
+template<typename T>
 int QEvtTest::FinalMerge()
 {
-    const NP* all = NP::Load("$AFOLD/photonlite.npy") ; // placeholder for concat_hitlitemerged
+    std::string src_ = GetPhotonSource<T>();
+    const char* src = src_.c_str();
+
+    const NP* all = NP::Load(src) ;
     std::cout << "[QEvtTest::FinalMerge all " << ( all ? all->sstr() : "-" ) << "\n" ;
-    std::cout << " all\n" << sphotonlite::Desc(all, 10) ;
+    std::cout << " all\n" << T::Desc(all, 10) ;
 
     cudaStream_t producer ;
     cudaStreamCreate(&producer);
 
-    NP* hit = QEvt::FinalMerge(all, producer );
+    NP* hit = QEvt::FinalMerge<T>(all, producer );
     std::cout
         << "QEvtTest::FinalMerge_async"
         << " all " << ( all ? all->sstr() : "-" )
@@ -450,22 +562,26 @@ int QEvtTest::FinalMerge()
         << "\n"
         ;
 
-    std::cout << " hit\n" << sphotonlite::Desc(hit, 10) ;
+    std::cout << " hit\n" << T::Desc(hit, 10) ;
     return 0 ;
 }
 
 
+template<typename T>
 int QEvtTest::FinalMerge_async()
 {
-    const NP* all = NP::Load("$AFOLD/photonlite.npy") ; // placeholder for concat_hitlitemerged
+    std::string src_ = GetPhotonSource<T>();
+    const char* src = src_.c_str();
+
+    const NP* all = NP::Load(src) ;
     std::cout << "[QEvtTest::FinalMerge_async all " << ( all ? all->sstr() : "-" ) << "\n" ;
 
-    std::cout << " all\n" << sphotonlite::Desc(all, 10) ;
+    std::cout << " all\n" << T::Desc(all, 10) ;
 
     cudaStream_t producer ;
     cudaStreamCreate(&producer);
 
-    NP_future producer_result = QEvt::FinalMerge_async(all, producer );
+    NP_future producer_result = QEvt::FinalMerge_async<T>(all, producer );
 
     cudaStream_t consumer ;
     cudaStreamCreate(&consumer);
@@ -477,13 +593,14 @@ int QEvtTest::FinalMerge_async()
 
     std::cout
         << "QEvtTest::FinalMerge_async"
+        << " T::NAME " << T::NAME
+        << " src " << ( src ? src : "-" )
         << " all " << ( all ? all->sstr() : "-" )
         << " hit " << ( hit ? hit->sstr() : "-" )
         << "\n"
         ;
 
-    std::cout << " hit\n" << sphotonlite::Desc(hit, 10) ;
-
+    std::cout << " hit\n" << T::Desc(hit, 10) ;
 
     return 0 ;
 }
@@ -502,8 +619,13 @@ int QEvtTest::main()
     if(ALL||0==strcmp(TEST,"checkEvt")) rc += setGenstep_checkEvt();
     if(ALL||0==strcmp(TEST,"quad6"))    rc += setGenstep_quad6();
 
-    if(ALL||0==strcmp(TEST,"FinalMerge"))          rc += FinalMerge();
-    if(ALL||0==strcmp(TEST,"FinalMerge_async"))    rc += FinalMerge_async();
+    if(ALL||0==strcmp(TEST,"PerLaunchMerge")) rc += PerLaunchMerge();
+
+    if(ALL||0==strcmp(TEST,"LiteFinalMerge"))          rc += FinalMerge<sphotonlite>();
+    if(ALL||0==strcmp(TEST,"LiteFinalMerge_async"))    rc += FinalMerge_async<sphotonlite>();
+    if(ALL||0==strcmp(TEST,"FullFinalMerge"))          rc += FinalMerge<sphoton>();
+    if(ALL||0==strcmp(TEST,"FullFinalMerge_async"))    rc += FinalMerge_async<sphoton>();
+
 
     std::cout << "]QEvtTest::main rc [" << rc << "]\n" ;
     return rc  ;

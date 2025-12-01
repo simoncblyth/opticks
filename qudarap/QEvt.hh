@@ -172,6 +172,7 @@ public:
     NP*      gatherHit() const ;
     NP*      gatherHitLite() const ;
     NP*      gatherHitLiteMerged() const ;
+    NP*      gatherHitMerged() const ;
 
 
 #ifndef PRODUCTION
@@ -198,23 +199,29 @@ private:
     NP*      gatherHit_() const ;
     NP*      gatherHitLite_() const ;
 public:
+
+    template<typename T>
     static NP*       PerLaunchMerge(sevent* evt, cudaStream_t stream );
-    static NP*       FinalMerge(      const NP* hitlitemerged, cudaStream_t stream);
-    static NP_future FinalMerge_async(const NP* hitlitemerged, cudaStream_t stream);
+
+    template<typename T>
+    static NP*       FinalMerge(      const NP* hitmerged_or_hitlitemerged, cudaStream_t stream);
+
+    template<typename T>
+    static NP_future FinalMerge_async(const NP* hitmerged_or_hitlitemerged, cudaStream_t stream);
 
 public:
-    unsigned getNumHit() const ;
-    unsigned getNumHitLite() const ;
+    size_t   getNumHit() const ;
+    size_t   getNumHitLite() const ;
 private:
-    void     setNumPhoton(unsigned num_photon) ;
-    void     setNumSimtrace(unsigned num_simtrace) ;
+    void     setNumPhoton(size_t num_photon) ;
+    void     setNumSimtrace(size_t num_simtrace) ;
     void     device_alloc_photon();
     void     device_alloc_simtrace();
     static void SetAllocMeta(salloc* alloc, const sevent* evt);
     void     uploadEvt();
 public:
-    unsigned getNumPhoton() const ;
-    unsigned getNumSimtrace() const ;
+    size_t getNumPhoton() const ;
+    size_t getNumSimtrace() const ;
 public:
     std::string desc() const ;
     std::string desc_alloc() const ;

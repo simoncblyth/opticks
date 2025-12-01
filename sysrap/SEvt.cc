@@ -2395,7 +2395,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     numphoton_collected += q_numphoton ;  // keep running total for all gensteps collected, since last clear
 
 
-    int64_t tot_photon = s.offset+s.photons ;
+    size_t tot_photon = s.offset+s.photons ;
 
     LOG_IF(debug, enabled) << " s.desc " << s.desc() << " gidx " << gidx << " enabled " << enabled << " tot_photon " << tot_photon ;
 
@@ -2450,7 +2450,7 @@ needed to accommodate the photons from the last genstep collected.
 
 **/
 
-void SEvt::setNumPhoton(int64_t num_photon)
+void SEvt::setNumPhoton(size_t num_photon)
 {
     //LOG_IF(info, LIFECYCLE) << id() << " num_photon " << num_photon ;
     bool num_photon_allowed = num_photon <= evt->max_photon ;  // NOW THIS IS ARBITRARY AND VERY HIGH LIMIT
@@ -2501,7 +2501,7 @@ SEvt::setNumSimtrace
 
 **/
 
-void SEvt::setNumSimtrace(int64_t num_simtrace)
+void SEvt::setNumSimtrace(size_t num_simtrace)
 {
     bool num_simtrace_allowed = num_simtrace <= evt->max_simtrace ;
     LOG_IF(fatal, !num_simtrace_allowed) << " num_simtrace " << num_simtrace << " evt.max_simtrace " << evt->max_simtrace ;

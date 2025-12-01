@@ -170,6 +170,12 @@ See ana/p.py for python accessors such as::
 
 struct sphoton
 {
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+    static constexpr const char* NAME = "sphoton" ;
+#endif
+
+
     float3 pos ;        // 0th quad
     float  time ;
 
@@ -312,6 +318,8 @@ struct sphoton
 
     SPHOTON_METHOD static void MinMaxPost( float* mn, float* mx, const NP* a, bool skip_flagmask_zero );
     SPHOTON_METHOD static std::string DescMinMaxPost( const NP* _a, bool skip_flagmask_zero );
+    SPHOTON_METHOD static std::string Desc(const NP* a, size_t edge=20);
+    SPHOTON_METHOD static NP* MockupForMergeTest(size_t ni);
 
     template<typename T>
     SPHOTON_METHOD static bool IsPhotonArray( const NP* a );
@@ -880,6 +888,49 @@ SPHOTON_METHOD std::string sphoton::DescMinMaxPost( const NP* _a, bool skip_flag
     std::string str = ss.str();
     return str ;
 }
+
+SPHOTON_METHOD std::string sphoton::Desc(const NP* a, size_t edge) // static
+{
+    std::stringstream ss ;
+    ss << "[sphoton::Desc a.sstr " << ( a ? a->sstr() : "-" ) << "\n" ;
+    size_t ni = a->num_items();
+    sphoton* pp = (sphoton*)a->bytes();
+    for(size_t i=0 ; i < ni ; i++)
+    {
+        if(i < edge || i > (ni - edge)) ss << std::setw(6) << i << " : " << pp[i].desc() << "\n" ;
+        else if( i == edge )  ss << std::setw(6) << "" << " : " << "..." << "\n" ;
+    }
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+SPHOTON_METHOD NP* sphoton::MockupForMergeTest(size_t ni) // static
+{
+    NP* a = NP::Make<float>(ni, 4, 4);
+    sphoton* aa = (sphoton*)a->bytes();
+    for(size_t i=0 ; i < ni ; i++)
+    {
+        sphoton& p = aa[i];
+        p.time = float( i % 100 )*0.1f ;
+        p.set_index(i);
+        p.set_identity( i % 100 );
+        p.set_hitcount( 1 );
+        p.flagmask = i % 5 == 0 ? EFFICIENCY_COLLECT : EFFICIENCY_CULL ;
+    }
+    return a ;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

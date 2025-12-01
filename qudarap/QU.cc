@@ -154,6 +154,7 @@ template unsigned*      QU::UploadArray<unsigned>(const unsigned* array, unsigne
 template int*           QU::UploadArray<int>(const int* array, unsigned num_items, const char* label) ;
 template quad4*         QU::UploadArray<quad4>(const quad4* array, unsigned num_items, const char* label) ;
 template sphoton*       QU::UploadArray<sphoton>(const sphoton* array, unsigned num_items, const char* label) ;
+template sphotonlite*   QU::UploadArray<sphotonlite>(const sphotonlite* array, unsigned num_items, const char* label) ;
 template quad2*         QU::UploadArray<quad2>(const quad2* array, unsigned num_items, const char* label) ;
 template XORWOW*        QU::UploadArray<XORWOW>(const XORWOW* array, unsigned num_items, const char* label) ;
 template Philox*        QU::UploadArray<Philox>(const Philox* array, unsigned num_items, const char* label) ;

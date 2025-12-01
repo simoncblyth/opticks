@@ -1390,16 +1390,22 @@ unsigned SEventConfig::HitComp() // static
 {
     int64_t lite = ModeLite();
     int64_t merge = ModeMerge();
+    int64_t lite_merge =  lite*1000 + merge ;
 
     unsigned comp = 0 ;
-    switch(lite)
+    switch( lite_merge )
     {
-        case 0: comp = SCOMP_HIT                                             ; break ;
-        case 1: comp = ( merge == 1 ? SCOMP_HITLITEMERGED : SCOMP_HITLITE  ) ; break ;
-        case 2: comp = SCOMP_HIT | SCOMP_HITLITE | SCOMP_HITLOCAL | ( merge == 1 ? SCOMP_HITLITEMERGED : 0 ) ; break ;
+       case    0: comp = SCOMP_HIT                                                                          ; break ;
+       case    1: comp = SCOMP_HITMERGED                                                                    ; break ;
+       case 1000: comp = SCOMP_HITLITE                                                                      ; break ;
+       case 1001: comp = SCOMP_HITLITEMERGED                                                                ; break ;
+       case 2000: comp = SCOMP_HIT | SCOMP_HITLITE | SCOMP_HITLOCAL                                         ; break ;
+       case 2001: comp = SCOMP_HIT | SCOMP_HITLITE | SCOMP_HITLOCAL | SCOMP_HITLITEMERGED | SCOMP_HITMERGED ; break ;
     }
     return comp ;
 }
+
+
 
 /**
 SEventConfig::HitCompOne

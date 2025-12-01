@@ -119,11 +119,11 @@ struct sevent
 
     // TODO: make all these below unsigned
     // sevent::init sets these max using values from SEventConfig
-    int64_t   max_curand ;
-    int64_t   max_slot   ;
-    int64_t   max_genstep ;  // eg:      100,000
-    int64_t   max_photon  ;  // eg:  100,000,000
-    int64_t   max_simtrace ; // eg: 100,000,000
+    size_t   max_curand ;
+    size_t   max_slot   ;
+    size_t   max_genstep ;  // eg:      100,000
+    size_t   max_photon  ;  // eg:  100,000,000
+    size_t   max_simtrace ; // eg: 100,000,000
 
     int   max_bounce  ; // eg: 0:32  (not including 32)
     int   max_record  ; // eg: 10  full step record
@@ -142,27 +142,27 @@ struct sevent
     //[ counts and pointers, zeroed by sevent::zero
     //  only first 4 are always in use, the last 7 are only relevant whilst debugging
     //
-    int64_t      num_curand ;
-    int64_t      num_genstep ;
-    int64_t      num_seed ;
+    size_t      num_curand ;
+    size_t      num_genstep ;
+    size_t      num_seed ;
 
-    int64_t      num_hit ;    // set by QEvt::gatherHit using SU::count_if_sphoton
-    int64_t      num_photon ;
+    size_t       num_hit ;    // set by QEvt::gatherHit using SU::count_if_sphoton
+    size_t       num_hitmerged ;
+    size_t       num_photon ;
 
     size_t       num_hitlite ;  // set by QEvt::gatherHitLite using SU::count_if_sphotonlite
     size_t       num_hitlitemerged ;  // set by QEvt::gatherHitLite using SU::count_if_sphotonlite
     size_t       num_photonlite ;
 
-    int64_t      num_record ;
-    int64_t      num_rec ;
-    int64_t      num_seq ;
-    int64_t      num_prd ;
-    int64_t      num_tag ;
-    int64_t      num_flat ;
-    int64_t      num_simtrace ;
-    int64_t      num_aux ;
-    int64_t      num_sup ;
-    // TODO: make all these above unsigned
+    size_t      num_record ;
+    size_t      num_rec ;
+    size_t      num_seq ;
+    size_t      num_prd ;
+    size_t      num_tag ;
+    size_t      num_flat ;
+    size_t      num_simtrace ;
+    size_t      num_aux ;
+    size_t      num_sup ;
 
     // With QEvt device running the below are pointers to device buffers.
     // Most are allocated ONCE ONLY by QEvt::device_alloc_genstep/photon/simtrace
@@ -175,6 +175,7 @@ struct sevent
 
     sphoton*     photon ;     //QEvt::device_alloc_photon
     sphoton*     hit ;        //QEvt::gatherHit_ allocates event by event depending on num_hit
+    sphoton*     hitmerged ;
 
     sphotonlite* photonlite ; //QEvt::device_alloc_photon
     sphotonlite* hitlite ;
@@ -213,6 +214,15 @@ struct sevent
     SEVENT_METHOD void get_meta(std::string& meta) const ;
 
     SEVENT_METHOD void zero();
+
+    template<typename T> SEVENT_METHOD T* get_photon_ptr() const ;
+    template<typename T> SEVENT_METHOD size_t get_photon_num() const ;
+
+    template<typename T> SEVENT_METHOD T**     get_hitmerged_ptr_ref(); // returning refs so non-const
+    template<typename T> SEVENT_METHOD size_t* get_hitmerged_num_ref();
+
+
+
 #endif
 
 #ifndef PRODUCTION
@@ -563,6 +573,29 @@ SEVENT_METHOD void sevent::zero()
     flat = nullptr ;
     simtrace = nullptr ;
 }
+
+
+
+
+
+template<typename T> SEVENT_METHOD T*           sevent::get_photon_ptr() const { return nullptr; }
+template<>           SEVENT_METHOD sphoton*     sevent::get_photon_ptr<sphoton>() const { return photon; }
+template<>           SEVENT_METHOD sphotonlite* sevent::get_photon_ptr<sphotonlite>() const { return photonlite; }
+
+template<typename T> SEVENT_METHOD size_t sevent::get_photon_num() const { return 0; }
+template<>           SEVENT_METHOD size_t sevent::get_photon_num<sphoton>() const { return num_photon; }
+template<>           SEVENT_METHOD size_t sevent::get_photon_num<sphotonlite>() const { return num_photonlite; }
+
+template<typename T> SEVENT_METHOD T**           sevent::get_hitmerged_ptr_ref() {              return nullptr; }
+template<>           SEVENT_METHOD sphoton**     sevent::get_hitmerged_ptr_ref<sphoton>() {     return &hitmerged; }
+template<>           SEVENT_METHOD sphotonlite** sevent::get_hitmerged_ptr_ref<sphotonlite>() { return &hitlitemerged; }
+
+template<typename T> SEVENT_METHOD size_t* sevent::get_hitmerged_num_ref() {              return nullptr ; }
+template<>           SEVENT_METHOD size_t* sevent::get_hitmerged_num_ref<sphoton>() {     return &num_hitmerged; }
+template<>           SEVENT_METHOD size_t* sevent::get_hitmerged_num_ref<sphotonlite>() { return &num_hitlitemerged; }
+
+
+
 #endif     // ends host only block
 
 

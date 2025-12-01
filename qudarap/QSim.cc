@@ -628,29 +628,55 @@ TODO: use QEvt::FinalMerge_async once that makes sense
 void QSim::simulate_final_merge(int64_t tot_ph, cudaStream_t stream)
 {
     bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
-    assert( has_hlm );
+    bool has_hm  = sev->topfold->has_key(SComp::HITMERGED_);
 
-    const NP* hlm = sev->topfold->get(SComp::HITLITEMERGED_);
-    NP*       fin = QEvt::FinalMerge(hlm, stream);
+    if( has_hlm )
+    {
+        const NP* hlm = sev->topfold->get(SComp::HITLITEMERGED_);
+        NP*       fin = QEvt::FinalMerge<sphotonlite>(hlm, stream);
 
-    float     hlm_frac = float(hlm->num_items())/float(tot_ph) ;
-    float     fin_frac = float(fin->num_items())/float(hlm->num_items()) ;
+        float     hlm_frac = float(hlm->num_items())/float(tot_ph) ;
+        float     fin_frac = float(fin->num_items())/float(hlm->num_items()) ;
 
-    std::stringstream ss ;
-    ss
-        << " tot_ph " << tot_ph
-        << " hlm " << ( hlm ? hlm->sstr() : "-" )
-        << " fin " << ( fin ? fin->sstr() : "-" )
-        << " hlm/tot " << std::setw(7) << std::fixed << std::setprecision(4) << hlm_frac
-        << " fin/hlm " << std::setw(7) << std::fixed << std::setprecision(4) << fin_frac
-        ;
+        std::stringstream ss ;
+        ss
+            << " tot_ph " << tot_ph
+            << " hlm " << ( hlm ? hlm->sstr() : "-" )
+            << " fin " << ( fin ? fin->sstr() : "-" )
+            << " hlm/tot " << std::setw(7) << std::fixed << std::setprecision(4) << hlm_frac
+            << " fin/hlm " << std::setw(7) << std::fixed << std::setprecision(4) << fin_frac
+            ;
 
-    std::string note = ss.str();
-    fin->set_meta<std::string>("QSim__simulate_final_merge", note );
+        std::string note = ss.str();
+        fin->set_meta<std::string>("QSim__simulate_final_merge", note );
 
-    sev->topfold->set(SComp::HITLITEMERGED_, fin );
+        sev->topfold->set(SComp::HITLITEMERGED_, fin );
 
-    LOG(info) << note ;
+        LOG(info) << note ;
+    }
+    if( has_hm )
+    {
+        const NP* hm = sev->topfold->get(SComp::HITMERGED_);
+        NP*       fi = QEvt::FinalMerge<sphoton>(hm, stream);
+
+        float     hm_frac = float(hm->num_items())/float(tot_ph) ;
+        float     fi_frac = float(fi->num_items())/float(hm->num_items()) ;
+
+        std::stringstream ss ;
+        ss
+            << " tot_ph " << tot_ph
+            << " hm " << ( hm ? hm->sstr() : "-" )
+            << " fi " << ( fi ? fi->sstr() : "-" )
+            << " hm/tot " << std::setw(7) << std::fixed << std::setprecision(4) << hm_frac
+            << " fi/hm "  << std::setw(7) << std::fixed << std::setprecision(4) << fi_frac
+            ;
+
+        std::string note = ss.str();
+        fi->set_meta<std::string>("QSim__simulate_final_merge", note );
+
+        sev->topfold->set(SComp::HITMERGED_, fi );
+        LOG(info) << note ;
+    }
 }
 
 

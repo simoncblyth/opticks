@@ -31,26 +31,45 @@ export GEOM=DummyGEOMForQEvtTest
 
 name=QEvtTest
 
+
+
 #test=many
 #test=ALL
 #test=loaded
-test=FinalMerge
-#test=FinalMerge_async
+
+
+test=PerLaunchMerge
+
+
+#test=LiteFinalMerge
+#test=LiteFinalMerge_async
+#test=FullFinalMerge
+#test=FullFinalMerge_async
 
 export TEST=${TEST:-$test}
 script0=$name.py
 script1=${name}_${TEST}.py
 
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+export FOLD=$TMP/$name/$TEST
+mkdir -p $FOLD
+
+
 #export OPTICKS_NUM_EVENT=1000
 #export OPTICKS_NUM_EVENT=100
 export OPTICKS_NUM_EVENT=10
 
-if [ "$TEST" == "FinalMerge_async" -o "$TEST" == "FinalMerge" ]; then
+case $TEST in
+    LiteFinalMerge|LiteFinalMerge_async|FullFinalMerge|FullFinalMerge_async|PerLaunchMerge)
+        unset OPTICKS_HIT_MASK
+        export OPTICKS_HIT_MASK=EC
+        export OPTICKS_MERGE_WINDOW=1
+        ;;
+esac
 
-    unset OPTICKS_HIT_MASK   # default of SD will nowadays yield no hits
-    export OPTICKS_HIT_MASK=EC
-    export OPTICKS_MERGE_WINDOW=1
-fi
+
 
 
 
@@ -67,11 +86,14 @@ arg=${1:-$defarg}
 
 
 
-afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_event_name/A000
+# TEST=merge_M10 cxs_min.sh
+afold=/data1/blyth/tmp/GEOM/J25_4_0_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_merge_M10/A000
+# OJ running ?  TEST=hitlite/hitlitemerged ojt
+#afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_event_name/A000
 export AFOLD=${AFOLD:-$afold}
 
 
-vars="BASH_SOURCE 0 PWD name test TEST defarg arg BP OPTICKS_NUM_EVENT LOG AFOLD"
+vars="BASH_SOURCE 0 PWD name test TEST FOLD defarg arg BP OPTICKS_NUM_EVENT LOG AFOLD"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done

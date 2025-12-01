@@ -26,28 +26,28 @@ ph_count
 
 struct sslice
 {
-    static constexpr const int64_t M = 1000000 ;
-    static constexpr const int64_t G = 1000000000 ;
+    static constexpr const size_t M = 1000000 ;
+    static constexpr const size_t G = 1000000000 ;
 
-    int64_t gs_start ;
-    int64_t gs_stop ;
-    int64_t ph_offset ;
-    int64_t ph_count ;
+    size_t gs_start ;
+    size_t gs_stop ;
+    size_t ph_offset ;
+    size_t ph_count ;
 
-    bool matches(int64_t start, int64_t stop, int64_t offset, int64_t count ) const ;
+    bool matches(size_t start, size_t stop, size_t offset, size_t count ) const ;
 
     static std::string Label() ;
     std::string desc() const ;
     std::string idx_desc(int idx) const ;
     static std::string Desc(const std::vector<sslice>& sl );
 
-    static int64_t TotalPhoton(const std::vector<sslice>& sl );
-    static int64_t TotalPhoton(const std::vector<sslice>& sl, int i0, int i1);
+    static size_t TotalPhoton(const std::vector<sslice>& sl );
+    static size_t TotalPhoton(const std::vector<sslice>& sl, int i0, int i1);
 
     static void SetOffset(std::vector<sslice>& slice);
 };
 
-inline bool sslice::matches(int64_t start, int64_t stop, int64_t offset, int64_t count ) const
+inline bool sslice::matches(size_t start, size_t stop, size_t offset, size_t count ) const
 {
     return gs_start == start && gs_stop == stop && ph_offset == offset && ph_count == count ;
 }
@@ -115,7 +115,7 @@ inline std::string sslice::Desc(const std::vector<sslice>& sl)
     return str ;
 }
 
-inline int64_t sslice::TotalPhoton(const std::vector<sslice>& slice)
+inline size_t sslice::TotalPhoton(const std::vector<sslice>& slice)
 {
     return TotalPhoton(slice, 0, slice.size() );
 }
@@ -145,11 +145,11 @@ NB i0, i1 use python style slice indexing, ie::
 **/
 
 
-inline int64_t sslice::TotalPhoton(const std::vector<sslice>& slice, int i0, int i1)
+inline size_t sslice::TotalPhoton(const std::vector<sslice>& slice, int i0, int i1)
 {
     assert( i0 <= int(slice.size())) ;
     assert( i1 <= int(slice.size())) ;
-    int64_t tot = 0 ;
+    size_t tot = 0 ;
     for(int i=i0 ; i < i1 ; i++ ) tot += slice[i].ph_count ;
     return tot ;
 }
