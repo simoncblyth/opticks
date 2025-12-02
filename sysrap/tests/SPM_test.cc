@@ -15,12 +15,16 @@ SPM_test.cc
 
 
 #include "NP.hh"
+#include "NPFold.h"
+
 #include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
 
 #include "sphoton.h"
 #include "sphotonlite.h"
+#include "sutil.h"
+
 
 #include "OpticksPhoton.h"
 
@@ -32,6 +36,7 @@ struct SPM_test
 {
     static constexpr size_t EDGE = 20 ;
     NP*    _photonlite ;
+
     size_t num_photonlite ;
     sphotonlite* photonlite ;
     sphotonlite* d_photonlite ;
@@ -60,6 +65,11 @@ struct SPM_test
     int dump_partial();
     int merge_incremental();
     int merge_partial_select_merge_incremental();
+
+    template<typename T>
+    int merge_with_expectation_(NPFold* f);
+
+    int merge_with_expectation();
 
 
     int test(int argc, char** argv);
@@ -117,6 +127,7 @@ inline int SPM_test::test(int argc, char** argv)
     if(ALL||0==strcmp(TEST,"merge_incremental"))    rc += merge_incremental() ;
     if(ALL||0==strcmp(TEST,"merge_partial_select_merge_incremental")) rc += merge_partial_select_merge_incremental() ;
 
+    if(ALL||0==strcmp(TEST,"merge_with_expectation")) rc += merge_with_expectation() ;
 
     return rc ;
 }
@@ -301,6 +312,75 @@ int SPM_test::merge_partial_select_merge_incremental()
     return 0 ;
 }
 
+
+template<typename T>
+int SPM_test::merge_with_expectation_(NPFold* f)
+{
+    float merge_window_ns = 1.f ;
+    NP* x_merged = sutil::mock_merged<T>(1000, merge_window_ns);
+    NP* photon0  = sutil::unmerge<T>(x_merged);
+    NP* photon   = sutil::shuffle<T>(photon0, 42);
+
+    size_t num_pp = photon->num_items();
+    T* pp = (T*)photon->bytes();
+    T* d_pp = SU::upload<T>( pp, num_pp );
+
+    cudaStream_t stream = 0 ;
+    T*       d_merged = nullptr ;
+    size_t   num_merged = 0 ;
+
+    unsigned select_flagmask = EFFICIENCY_COLLECT ;
+
+    SPM::merge_partial_select<T>(
+            d_pp,
+            num_pp,
+            &d_merged,
+            &num_merged,
+            select_flagmask,
+            merge_window_ns,
+            stream );
+
+    std::cout
+        << "SPM_test::merge_with_expectation_" << "\n"
+        << " merge_window_ns " << merge_window_ns << "\n"
+        << " num_merged " << num_merged << "\n"
+        ;
+
+    NP* merged = T::zeros(num_merged);
+    SU::copy_device_to_host_presized<T>( (T*)merged->bytes(), d_merged, num_merged );
+
+    std::string _photon0  = sutil::photon_name<T>(nullptr, "0");
+    std::string _photon   = sutil::photon_name<T>(nullptr, nullptr);
+    std::string _x_merged = sutil::hit_name<T>("x_",   nullptr, true );
+    std::string _merged   = sutil::hit_name<T>(nullptr,nullptr,true );
+
+    f->add(_x_merged.c_str(), x_merged);
+    f->add(_photon0.c_str(), photon0 );
+    f->add(_photon.c_str(), photon );
+    f->add(_merged.c_str(), merged );
+
+
+
+    return 0 ;
+}
+
+
+int SPM_test::merge_with_expectation()
+{
+    NPFold* f = new NPFold ;
+
+    int rc = 0 ;
+    rc += merge_with_expectation_<sphoton>(f);
+    rc += merge_with_expectation_<sphotonlite>(f);
+
+    const NP* hitmerged = f->get("hitmerged");
+    std::string _c_hitlitemerged = sutil::hit_name<sphotonlite>("c_", nullptr, true );
+    NP* c_hitlitemerged = sutil::create_photonlite_from_photon( hitmerged );
+    f->add(_c_hitlitemerged.c_str(), c_hitlitemerged);
+
+    f->save("$TFOLD");
+    return rc ;
+}
 
 
 int main(int argc, char** argv)

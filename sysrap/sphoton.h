@@ -330,6 +330,9 @@ struct sphoton
     SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
 
     SPHOTON_METHOD void populate_simtrace_input( quad4& q ) const ;
+
+    SPHOTON_METHOD float get_cost() const ;
+    SPHOTON_METHOD float get_fphi() const ;
 #endif
 
 };
@@ -988,6 +991,7 @@ SPHOTON_METHOD void sphoton::ChangeTimeInsitu( NP* a, float t0 )
 
 
 
+
 /**
 sphoton::transform_float
 --------------------------------
@@ -1054,6 +1058,19 @@ SPHOTON_METHOD void sphoton::populate_simtrace_input( quad4& q ) const
     q.q1.f.y = mom.y ;
     q.q1.f.z = mom.z ;
 }
+
+
+
+
+SPHOTON_METHOD float sphoton::get_cost() const
+{
+    return normalize_cost(pos);  // scuda.h
+}
+SPHOTON_METHOD float sphoton::get_fphi() const
+{
+    return normalize_fphi(pos);  // scuda.h
+}
+
 
 
 

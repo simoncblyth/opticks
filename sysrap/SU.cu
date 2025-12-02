@@ -22,6 +22,7 @@ T* SU::upload(const T* h, size_t num_items )
 }
 
 template SYSRAP_API quad4*       SU::upload(const quad4* , size_t );
+template SYSRAP_API sphoton*     SU::upload(const sphoton* , size_t );
 template SYSRAP_API sphotonlite* SU::upload(const sphotonlite* , size_t );
 
 
@@ -172,7 +173,9 @@ void SU::copy_device_to_host_presized( T* h, const T* d, unsigned num  )
 {
     cudaMemcpy(h, d, num*sizeof(T), cudaMemcpyDeviceToHost);
 }
-template SYSRAP_API void SU::copy_device_to_host_presized( quad4*, const quad4*, unsigned );
+template SYSRAP_API void SU::copy_device_to_host_presized( quad4*,   const quad4*,   unsigned );
+template SYSRAP_API void SU::copy_device_to_host_presized( sphoton*, const sphoton*, unsigned );
+template SYSRAP_API void SU::copy_device_to_host_presized( sphotonlite*, const sphotonlite*, unsigned );
 
 
 

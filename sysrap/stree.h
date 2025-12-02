@@ -246,6 +246,7 @@ When SSim not in use can also use::
 #include "sframe.h"
 
 #include "sphoton.h"
+#include "sphotonlite.h"
 #include "sphit.h"
 
 
@@ -773,7 +774,11 @@ struct stree
     void check_nidx_prim() const ;
     int  get_prim_for_nidx(int nidx) const ;
 
+    void localize_photon_inplace( sphoton& p ) const ;
     NP* localize_photon(const NP* photon, bool consistency_check) const ;
+
+    NP* create_photonlite_from_photon( const NP* photon ) const ;
+    void create_photonlite_from_photon( sphotonlite& l, const sphoton& p ) const ;
 
 };
 
@@ -6428,6 +6433,29 @@ inline int stree::get_prim_for_nidx(int nidx) const
 
 
 /**
+stree::localize_photon_inplace
+--------------------------------
+
+Argument photon is assumed to be a copy of a global frame photon.
+This method transforms pos, mom, pol according to the transform
+looked up from the iindex.
+
+**/
+
+
+inline void stree::localize_photon_inplace( sphoton& p ) const
+{
+    unsigned iindex   = p.iindex() ;
+    assert( iindex != 0xffffffffu );
+    const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
+    assert( tr );
+
+    bool normalize = true ;
+    p.transform( *tr, normalize );   // inplace transforms l (pos, mom, pol) into local frame
+}
+
+
+/**
 stree::localize_photon  (formerly localize_hit, but its more general than that)
 ---------------------------------------------------------------------------------
 
@@ -6462,19 +6490,11 @@ inline NP* stree::localize_photon(const NP* photon, bool consistency_check ) con
     for(size_t i=0 ; i < num ; i++)
     {
         sphoton& l = ll[i] ; // start with global frame fields
-
-        unsigned iindex   = l.iindex() ;
-        assert( iindex != 0xffffffffu );
-
-        const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
-        assert( tr );
-
-        bool normalize = true ;
-        l.transform( *tr, normalize );   // inplace transforms l (pos, mom, pol) into local frame
-
+        localize_photon_inplace(l);
 
         if(consistency_check)
         {
+            unsigned iindex   = l.iindex() ;
             unsigned identity = l.get_identity();
             bool not_a_sensor = identity == 0 ;
             unsigned sensor_identifier = identity - 1 ;
@@ -6515,5 +6535,40 @@ inline NP* stree::localize_photon(const NP* photon, bool consistency_check ) con
     }
     return local_photon ;
 }
+
+
+
+inline void stree::create_photonlite_from_photon( sphotonlite& lite, const sphoton& p ) const
+{
+    sphoton locp = p ;             // copy global frame input photon
+    localize_photon_inplace(locp); // transform it to local frame using iindex
+
+    lite.set_lpos( locp.get_cost(), locp.get_fphi() );
+    lite.time = p.time ;
+    lite.flagmask = p.flagmask ;
+    lite.set_hitcount_identity( p.hitcount(), p.get_identity() );
+}
+
+inline NP* stree::create_photonlite_from_photon( const NP* photon ) const
+{
+    if(photon == nullptr) return nullptr ;
+
+    size_t ni = photon->num_items();
+    assert( photon->has_shape( ni, 4, 4));
+    sphoton* pp = (sphoton*)photon->bytes();
+
+    NP* photonlite = sphotonlite::zeros(ni);
+    assert( photonlite->has_shape(ni, 4) );
+    sphotonlite* ll = (sphotonlite*)photonlite->bytes();
+
+    for(size_t i=0 ; i < ni ; i++)
+    {
+       const sphoton& p = pp[i];
+       sphotonlite& l = ll[i];
+       create_photonlite_from_photon( l, p );
+    }
+    return photonlite ;
+}
+
 
 

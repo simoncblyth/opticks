@@ -36,14 +36,14 @@ class SPhoton:
 
             # ---- quad 1 -------------------------------------------------
             ("mom", "<f4", (3,)),          # 16-27
-            ("orient_iindex", "<u4"),      # 28-31
+            ("hitcount_iindex", "<u4"),      # 28-31
 
             # ---- quad 2 -------------------------------------------------
             ("pol", "<f4", (3,)),          # 32-43
             ("wavelength", "<f4"),         # 44-47
 
             # ---- quad 3 -------------------------------------------------
-            ("boundary_flag", "<u4"),      # 48-51
+            ("orient_boundary_flag", "<u4"),      # 48-51
             ("identity", "<u4"),           # 52-55
             ("index", "<u4"),              # 56-59
             ("flagmask", "<u4"),           # 60-63
@@ -102,25 +102,55 @@ class SPhoton:
         hi = u >> (32 - hi_bits)
         return hi.astype(np.uint32), lo.astype(np.uint32)
 
-    @classmethod
-    def orient_iindex_split(cls, arr: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    @staticmethod
+    def split_uint32(u: np.ndarray, bit_widths: tuple[int, ...]) -> tuple[np.ndarray, ...]:
         """
-        orient_iindex:
-            bit 31 : orientation flag
-            bits 0-30 : iindex
+        Split a uint32 array into multiple fields according to bit_widths.
+
+        Parameters
+        ----------
+        u : np.ndarray, dtype=uint32
+            Input array of 32-bit unsigned integers.
+        bit_widths : tuple[int, ...]
+            Tuple of bit counts for each output field, from MSB to LSB.
+            Must sum to exactly 32.
+
+        Returns
+        -------
+        tuple[np.ndarray, ...]
+            One uint32 array per field, in the order given (MSB-first by default).
+
+        Example
+        -------
+        >>> a = np.array([0b_1111_0000_1010_1100_0011_0011_0101_0110], dtype=np.uint32)
+        >>> hi, mid1, mid2, lo = split_uint32(a, (4, 12, 8, 8))
+        # splits into: bits 31-28, 27-16, 15-8, 7-0
         """
-        hi, lo = cls._hi_lo(arr["orient_iindex"], hi_bits=1)
-        return hi, lo                     # orient, iindex
+        if sum(bit_widths) != 32:
+            raise ValueError(f"bit_widths must sum to 32, got sum={sum(bit_widths)}")
+
+        u = np.asarray(u, dtype=np.uint32)
+        results = []
+        remaining = u
+        shift = 32
+
+        for bits in bit_widths:
+            shift -= bits
+            mask = (1 << bits) - 1
+            field = (remaining >> shift) & mask
+            results.append(field.astype(np.uint32))
+
+        return tuple(results)
+
+
 
     @classmethod
-    def boundary_flag_split(cls, arr: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        """
-        boundary_flag:
-            upper 16 bits : boundary
-            lower 16 bits : flag
-        """
-        hi, lo = cls._hi_lo(arr["boundary_flag"], hi_bits=16)
-        return hi, lo                     # boundary, flag
+    def hitcount_iindex_split(cls, arr: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        return cls.split_uint32(arr["hitcount_iindex"], bit_widths=(16,16))
+
+    @classmethod
+    def orient_boundary_flag_split(cls, arr: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        return cls.split_uint32(arr["orient_boundary_flag"], bit_widths=(1,15,16))
 
     @classmethod
     def identity_split(cls, arr: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -152,8 +182,8 @@ class SPhoton:
         """
         rec = cls.view_(buf).view(np.recarray)
 
-        orient, iindex = cls.orient_iindex_split(rec)
-        boundary, bflag = cls.boundary_flag_split(rec)
+        hitcount, iindex = cls.hitcount_iindex_split(rec)
+        orient, boundary, bflag = cls.orient_boundary_flag_split(rec)
         index_ext, ident = cls.identity_split(rec)
 
         idx = ( index_ext.astype(np.uint64) << 32 ) | rec["index"].astype(np.uint64)
@@ -171,6 +201,7 @@ class SPhoton:
                 "bflag",
                 "index_ext",
                 "ident",
+                "hitcount",
                 "idx",
                 "phi",
                 "posr",
@@ -183,12 +214,13 @@ class SPhoton:
                 bflag,
                 index_ext,
                 ident,
+                hitcount,
                 idx,
                 phi,
                 posr,
                 cost
             ],
-            dtypes=[np.uint32] * 6 + [np.uint64] + [np.float32] * 3,
+            dtypes=[np.uint32] * 7 + [np.uint64] + [np.float32] * 3,
             usemask=False,
         )
         return rec.view(np.recarray)

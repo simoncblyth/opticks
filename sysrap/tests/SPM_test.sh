@@ -64,6 +64,8 @@ TMP=${TMP:-$tmp}
 FOLD=$TMP/$name
 bin=$FOLD/$name
 
+
+
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
@@ -71,7 +73,8 @@ afold=/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_e
 export AFOLD=${AFOLD:-$afold}
 
 #test=merge_partial_select
-test=merge_partial_select_async
+#test=merge_partial_select_async
+test=merge_with_expectation
 #test=dump_partial
 
 unset TEST
@@ -83,10 +86,15 @@ export OPTICKS_MERGE_WINDOW=${OPTICKS_MERGE_WINDOW:-$opticks_merge_window}
 
 mkdir -p $FOLD
 
+export TFOLD=$FOLD/$TEST
+mkdir -p $TFOLD
+tscript=${name}_${TEST}.py
+
+
 defarg="info_nvcc_gcc_run"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE name tmp TMP FOLD bin defarg arg cuda_prefix CUDA_PREFIX test TEST AFOLD OPTICKS_MERGE_WINDOW"
+vv="BASH_SOURCE name tmp TMP FOLD bin defarg arg cuda_prefix CUDA_PREFIX test TEST AFOLD OPTICKS_MERGE_WINDOW TFOLD tscript"
 
 if [ "${arg/info}" != "$arg" ]; then
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
@@ -167,6 +175,15 @@ if [ "${arg/pdb}" != "$arg" ]; then
    ${IPYTHON:-ipython} --pdb -i $script
    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 5
 fi
+
+if [ "${arg/tdb}" != "$arg" ]; then
+   ${IPYTHON:-ipython} --pdb -i $tscript
+   [ $? -ne 0 ] && echo $BASH_SOURCE tdb error && exit 5
+fi
+
+
+
+
 
 exit 0
 

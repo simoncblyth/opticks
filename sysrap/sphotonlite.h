@@ -52,7 +52,10 @@ struct sphotonlite
 
     SPHOTONLITE_METHOD void init(unsigned _identity, float _time, unsigned _flagmask);
     SPHOTONLITE_METHOD void set_lpos(float lposcost, float lposfphi);
+
     SPHOTONLITE_METHOD void set_hitcount_identity( unsigned hitcount, unsigned identity );
+    SPHOTONLITE_METHOD void set_hitcount( unsigned hitcount );
+    SPHOTONLITE_METHOD void set_identity( unsigned identity );
 
     SPHOTONLITE_METHOD unsigned hitcount() const { return hitcount_identity >> 16 ; }
     SPHOTONLITE_METHOD unsigned identity() const { return hitcount_identity & 0xffffu ; }
@@ -192,8 +195,21 @@ inline void sphotonlite::init(unsigned _identity, float _time, unsigned _flagmas
 
 inline void sphotonlite::set_hitcount_identity( unsigned hitcount, unsigned identity )
 {
-    hitcount_identity = (( hitcount & 0xFFFFu ) << 16 ) | ( identity & 0xFFFFu ) ; // hitcount starts as one
+    hitcount_identity = (( hitcount & 0xFFFFu ) << 16 ) | ( identity & 0xFFFFu ) ;
 }
+inline void sphotonlite::set_hitcount( unsigned hc )
+{
+    hitcount_identity = ( hitcount_identity & 0x0000ffffu ) | (( 0x0000ffffu & hc ) << 16);
+}
+inline void sphotonlite::set_identity( unsigned id )
+{
+    hitcount_identity = ( hitcount_identity & 0xffff0000u ) | (( 0x0000ffffu & id ) <<  0);
+}
+
+
+
+
+
 
 /**
 sphotonlite::set_lpos
