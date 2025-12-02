@@ -6440,6 +6440,8 @@ Argument photon is assumed to be a copy of a global frame photon.
 This method transforms pos, mom, pol according to the transform
 looked up from the iindex.
 
+similar to SEvt::getLocalHit
+
 **/
 
 
@@ -6452,7 +6454,26 @@ inline void stree::localize_photon_inplace( sphoton& p ) const
 
     bool normalize = true ;
     p.transform( *tr, normalize );   // inplace transforms l (pos, mom, pol) into local frame
+
+#ifdef NDEBUG
+#else
+    glm::tvec4<int64_t> col3 = {} ;
+    strid::Decode( *tr, col3 );
+
+    sphit ht = {};
+
+    ht.iindex            = col3[0] ;
+    ht.sensor_identifier = col3[2] ;
+    ht.sensor_index      = col3[3] ;
+
+    assert( ht.iindex == iindex );
+    assert( ht.sensor_identifier == sensor_identifier );
+#endif
+
 }
+
+
+
 
 
 /**

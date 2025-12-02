@@ -538,13 +538,15 @@ double QSim::simulate(int eventID, bool reset_)
     assert(concat_rc == 0);
 
     bool has_hlm = sev->topfold->has_key(SComp::HITLITEMERGED_);
-    bool hlm_final_merge = num_slice > 1 && has_hlm ;
+    bool has_hm  = sev->topfold->has_key(SComp::HITMERGED_);
+    bool do_final_merge = num_slice > 1 && ( has_hlm || has_hm ) ;
     LOG(LEVEL)
          << " num_slice " << num_slice
+         << " has_hm " << ( has_hm ? "YES" : "NO " )
          << " has_hlm " << ( has_hlm ? "YES" : "NO " )
-         << " hlm_final_merge " << ( hlm_final_merge ? "YES" : "NO " )
+         << " do_final_merge " << ( do_final_merge ? "YES" : "NO " )
          ;
-    if(hlm_final_merge) simulate_final_merge(tot_ph, stream);
+    if(do_final_merge) simulate_final_merge(tot_ph, stream);
 
 
     if(!KEEP_SUBFOLD) sev->topfold->clear_subfold();

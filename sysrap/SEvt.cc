@@ -5003,8 +5003,13 @@ void SEvt::getLocalHit(sphit& ht, sphoton& lp, unsigned idx) const
 
     assert( ht.iindex == iindex );
     assert( ht.sensor_identifier == sensor_identifier );
+}
 
 
+void SEvt::localize_photon_inplace( sphoton& p ) const
+{
+    assert(tree);
+    tree->localize_photon_inplace(p);
 }
 
 

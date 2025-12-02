@@ -754,6 +754,8 @@ public:
     void getLocalPhoton(  sphoton& p, unsigned idx) const ;
     void getLocalHit_LEAKY( sphit& ht, sphoton& p, unsigned idx) const ;
     void getLocalHit(       sphit& ht, sphoton& p, unsigned idx) const ;
+    void localize_photon_inplace( sphoton& p ) const ;
+
 
     NP*  localize_photon(const NP* hit, bool consistency_check) const ;
 

@@ -1021,8 +1021,13 @@ NP* QEvt::gatherHitLite() const
 QEvt::gatherHitLiteMerged
 ---------------------------
 
+This selects from photonlite and then merges that
+both on GPU before gathering back the merged hits to CPU
+
 NB with multi-launch a further final merge is required,
 that is invoked from QSim::simulate
+
+
 
 **/
 
