@@ -5,6 +5,8 @@ sphoton_test.cc
 ::
 
      ~/o/sysrap/tests/sphoton_test.sh
+     TEST=set_lpos ~/o/sysrap/tests/sphoton_test.sh
+
      OFFSET=100,100,100 ~/o/sysrap/tests/sphoton_test.sh
      OFFSET=1000,1000,1000 ~/o/sysrap/tests/sphoton_test.sh
 
@@ -48,6 +50,7 @@ struct sphoton_test
 
     static int index();
     static int demoarray();
+    static int set_lpos();
 
     static int main();
 };
@@ -68,11 +71,16 @@ void sphoton_test::dump( const char* label, unsigned mask)
 
 int sphoton_test::qphoton_()
 {
+#ifdef WITH_QPHOTON
     qphoton qp ;
     qp.q.zero();
     std::cout << qp.q.desc() << std::endl ;
+#else
+    assert(0);
+#endif
     return 0;
 }
+
 int sphoton_test::cast()
 {
     sphoton p ;
@@ -644,6 +652,66 @@ int sphoton_test::demoarray()
     return 0 ;
 }
 
+int sphoton_test::set_lpos()
+{
+     sphoton p = {};
+
+     float eps = 1e-6 ;  // 1e-7 has one fphi deviant
+     int ni = 1000 ;
+
+     std::cout
+         << "[sphoton_test::set_lpos"
+         << " eps "  << std::setw(10) << std::setprecision(8) << std::fixed << eps
+         << " ni " << ni
+         << "\n"
+         ;
+
+     int deviant = 0 ;
+     for(int i=0 ; i < ni ; i++)
+     {
+         //float f = float(i)/float(ni) ;
+         float f = float(i+1)/float(ni+1) ;  // avoid zero and one
+
+         float cost_0 = f;
+         float fphi_0 = f;
+         p.set_lpos(cost_0, fphi_0);
+         float cost_1 = p.get_cost();
+         float fphi_1 = p.get_fphi();
+
+         float cost_01 = ( cost_0 - cost_1 );
+         float fphi_01 = ( fphi_0 - fphi_1 ) ;
+
+         bool select = std::abs(cost_01) > eps || std::abs(fphi_01) > eps ;
+         if(select)
+         {
+             deviant += 1 ;
+             std::cout
+                 << std::setw(5) << i
+                 << " cost_0 "  << std::setw(10) << std::setprecision(6) << std::fixed << cost_0
+                 << " cost_1 "  << std::setw(10) << std::setprecision(6) << std::fixed << cost_1
+                 << " cost_01*1e6 " << std::setw(10) << std::setprecision(6) << std::fixed << cost_01*1e6
+                 << " fphi_0 "  << std::setw(10) << std::setprecision(6) << std::fixed << fphi_0
+                 << " fphi_1 "  << std::setw(10) << std::setprecision(6) << std::fixed << fphi_1
+                 << " fphi_01*1e6 " << std::setw(10) << std::setprecision(6) << std::fixed << fphi_01*1e6
+                 << " p.pos.x " << std::setw(10) << std::setprecision(6) << std::fixed << p.pos.x
+                 << " p.pos.y " << std::setw(10) << std::setprecision(6) << std::fixed << p.pos.y
+                 << " p.pos.z " << std::setw(10) << std::setprecision(6) << std::fixed << p.pos.z
+                 << "\n"
+                 ;
+
+         }
+    }
+
+     std::cout
+         << "]sphoton_test::set_lpos deviant " << deviant << "\n" ;
+
+
+
+    return 0 ;
+}
+
+
+
 
 
 int sphoton_test::main()
@@ -671,6 +739,7 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "ChangeTimeInsitu"))      rc += ChangeTimeInsitu();
     if(ALL||0==strcmp(TEST, "index"))                 rc += index();
     if(ALL||0==strcmp(TEST, "demoarray"))             rc += demoarray();
+    if(ALL||0==strcmp(TEST, "set_lpos"))              rc += set_lpos();
 
     return rc ;
 }

@@ -388,6 +388,7 @@ set(HEADERS
 
     sphoton.h
     sphotonlite.h
+    sutil.h
 
     sphit.h
     spho.h

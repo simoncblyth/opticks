@@ -4,6 +4,8 @@ QEvtTest.cc
 
 ~/o/qudarap/tests/QEvtTest.sh
 
+~/o/qudarap/tests/QEvtTest.sh info_run_pdb1
+
 TEST=one       ~/o/qudarap/tests/QEvtTest.sh
 TEST=one VERBOSE=1  ~/o/qudarap/tests/QEvtTest.sh
 
@@ -39,7 +41,10 @@ TEST=ALL       ~/o/qudarap/tests/QEvtTest.sh
 #include "squad.h"
 #include "sstamp.h"
 #include "SGenstep.h"
+
+#include "sphoton.h"
 #include "sphotonlite.h"
+#include "sutil.h"
 
 #include "SEvt.hh"
 #include "SEvent.hh"
@@ -64,7 +69,7 @@ struct QEvtTest
 
 
 
-    static sevent* MockEventForMergeTest(const NP* p, const NP* l);
+    static sevent* MockEventForMergeTest(size_t merged_ni, NPFold* f);
     static int PerLaunchMerge() ;
 
 
@@ -474,15 +479,79 @@ std::string QEvtTest::GetPhotonSource()
 }
 
 
-sevent* QEvtTest::MockEventForMergeTest(const NP* p, const NP* l)
+sevent* QEvtTest::MockEventForMergeTest(size_t merged_ni, NPFold* f)
 {
+    std::cout
+        << "QEvtTest::MockEventForMergeTest"
+        << " merged_ni " << merged_ni
+        << "\n"
+        ;
+
+    float merge_window_ns = 1.f ;
+    uint64_t seed = 42 ;
+
+
+    std::cout << U::Log("[sutil::mock_merged<sphoton>\n");
+    NP* x_hitmerged = sutil::mock_merged<sphoton>(merged_ni, merge_window_ns);
+    std::cout << U::Log("]sutil::mock_merged<sphoton>\n");
+
+    std::cout << U::Log("[sutil::unmerge<sphoton>\n");
+    NP* photon0  = sutil::unmerge<sphoton>(x_hitmerged);
+    std::cout << U::Log("]sutil::unmerge<sphoton>\n");
+
+    std::cout << U::Log("[sutil::shuffle<sphoton>\n");
+    NP* photon   = sutil::shuffle<sphoton>(photon0, seed);
+    std::cout << U::Log("]sutil::shuffle<sphoton>\n");
+
+    f->add("x_hitmerged", x_hitmerged );
+    f->add("photon0", photon0 );
+    f->add("photon",  photon  );
+
+    std::cout
+        << "QEvtTest::MockEventForMergeTest"
+        << " x_hitmerged " << x_hitmerged->sstr()
+        << " photon0 " << photon0->sstr()
+        << " photon " << photon->sstr()
+        << "\n"
+        ;
+
+
+    std::cout << U::Log("[sutil::mock_merged<sphotonlite>\n");
+    NP* x_hitlitemerged = sutil::mock_merged<sphotonlite>(merged_ni, merge_window_ns);
+    std::cout << U::Log("]sutil::mock_merged<sphotonlite>\n");
+
+    std::cout << U::Log("[sutil::unmerge<sphotonlite>\n");
+    NP* photonlite0  = sutil::unmerge<sphotonlite>(x_hitlitemerged);
+    std::cout << U::Log("]sutil::unmerge<sphotonlite>\n");
+
+    std::cout << U::Log("[sutil::shuffle<sphotonlite>\n");
+    NP* photonlite   = sutil::shuffle<sphotonlite>(photonlite0, seed);
+    std::cout << U::Log("]sutil::shuffle<sphotonlite>\n");
+
+
+    f->add("x_hitlitemerged", x_hitlitemerged );
+    f->add("photonlite0", photonlite0 );
+    f->add("photonlite",  photonlite  );
+
+    std::cout
+        << "QEvtTest::MockEventForMergeTest"
+        << " x_hitlitemerged " << x_hitlitemerged->sstr()
+        << " photonlite0 " << photonlite0->sstr()
+        << " photonlite " << photonlite->sstr()
+        << "\n"
+        ;
+
     sevent* evt = new sevent {} ;
 
-    evt->photon = QU::UploadArray<sphoton>((sphoton*)p->bytes(), p->num_items(), "sphoton::MockupForMergeTest" ) ;
-    evt->num_photon = p->num_items() ;
+    evt->num_photon = photon->num_items() ;
+    std::cout << U::Log("[QU::UploadArray<sphoton>\n");
+    evt->photon = QU::UploadArray<sphoton>((sphoton*)photon->bytes(), photon->num_items(), "QEvtTest::MockEventForMergeTest/sphoton" ) ;
+    std::cout << U::Log("]QU::UploadArray<sphoton>\n");
 
-    evt->photonlite = QU::UploadArray<sphotonlite>((sphotonlite*)l->bytes(), l->num_items(), "sphotonlite::MockupForMergeTest" ) ;
-    evt->num_photonlite = l->num_items() ;
+    evt->num_photonlite = photonlite->num_items() ;
+    std::cout << U::Log("[QU::UploadArray<sphotonlite>\n");
+    evt->photonlite = QU::UploadArray<sphotonlite>((sphotonlite*)photonlite->bytes(), photonlite->num_items(), "QEvtTest::MockEventForMergeTest/sphotonlite" ) ;
+    std::cout << U::Log("]QU::UploadArray<sphotonlite>\n");
 
     evt->hitmerged = nullptr ;
     evt->num_hitmerged = 0 ;
@@ -494,22 +563,37 @@ sevent* QEvtTest::MockEventForMergeTest(const NP* p, const NP* l)
 }
 
 
+
 int QEvtTest::PerLaunchMerge()
 {
     std::cout
         << "[QEvtTest::PerLaunchMerge\n"
         ;
 
-    size_t ni = 1'000'000 ;
 
-    NP* photon = sphoton::MockupForMergeTest(ni);
-    NP* photonlite = sphotonlite::MockupForMergeTest(ni);
+    //
+    //size_t merged_ni = 1000 ;
+    size_t merged_ni = 10000 ;
+    //size_t merged_ni = 1'000'000 ; // 1M unmerges to ~5 billion, far too big for quick test
 
-    sevent* evt = MockEventForMergeTest(photon, photonlite);
+
+    NPFold* f = new NPFold ;
+    std::cout << U::Log("[MockEventForMergeTest") << "\n" ;
+    sevent* evt = MockEventForMergeTest(merged_ni, f);
+    std::cout << U::Log("]MockEventForMergeTest") << "\n" ;
 
     cudaStream_t stream = 0 ;
+
+    std::cout << U::Log("[QEvt::PerLaunchMerge<sphoton>") << "\n" ;
     NP* hitmerged = QEvt::PerLaunchMerge<sphoton>(evt, stream );
+    std::cout << U::Log("]QEvt::PerLaunchMerge<sphoton>") << "\n" ;
+
+    std::cout << U::Log("[QEvt::PerLaunchMerge<sphotonlite>") << "\n" ;
     NP* hitlitemerged = QEvt::PerLaunchMerge<sphotonlite>(evt, stream );
+    std::cout << U::Log("]QEvt::PerLaunchMerge<sphotonlite>") << "\n" ;
+
+    f->add("hitmerged", hitmerged );
+    f->add("hitlitemerged", hitlitemerged );
 
     std::cout
         << " evt.num_photon     " << evt->num_photon << "\n"
@@ -522,12 +606,6 @@ int QEvtTest::PerLaunchMerge()
         << " hitlitemerged " << ( hitlitemerged ? hitlitemerged->sstr() : "-" ) << "\n"
         ;
 
-
-    NPFold* f = new NPFold ;
-    f->add("photon", photon);
-    f->add("photonlite", photonlite);
-    f->add("hitmerged", hitmerged );
-    f->add("hitlitemerged", hitlitemerged );
     f->save("$FOLD"); // includes TEST in last elem
 
     std::cout

@@ -6495,6 +6495,7 @@ inline NP* stree::localize_photon(const NP* photon, bool consistency_check ) con
         if(consistency_check)
         {
             unsigned iindex   = l.iindex() ;
+            const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
             unsigned identity = l.get_identity();
             bool not_a_sensor = identity == 0 ;
             unsigned sensor_identifier = identity - 1 ;

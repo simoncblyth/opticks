@@ -146,7 +146,7 @@ template<typename T> void SPM::merge_partial_select(
     using key_functor   = typename T::key_functor;
 
 
-    //printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f \n", num_in, select_flagmask, time_window );
+    printf("[SPM::merge_partial_select num_in %d select_flagmask %d time_window %7.3f \n", num_in, select_flagmask, time_window );
 
     if (num_in == 0) { *d_out = nullptr; if (num_out) *num_out = 0; return; }
 

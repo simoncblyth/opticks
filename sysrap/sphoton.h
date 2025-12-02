@@ -333,6 +333,8 @@ struct sphoton
 
     SPHOTON_METHOD float get_cost() const ;
     SPHOTON_METHOD float get_fphi() const ;
+    SPHOTON_METHOD void set_lpos(float lposcost, float lposfphi); // FOR TEMPLATE COMPATIBILITY WITH sphotonlite used only in tests
+
 #endif
 
 };
@@ -908,6 +910,15 @@ SPHOTON_METHOD std::string sphoton::Desc(const NP* a, size_t edge) // static
     return str ;
 }
 
+/**
+sphoton::MockupForMergeTest
+----------------------------
+
+See sutil::unmerge and SPM_test::merge_with_expectation
+for a better way to test merging with known expected result.
+
+**/
+
 
 SPHOTON_METHOD NP* sphoton::MockupForMergeTest(size_t ni) // static
 {
@@ -1070,6 +1081,32 @@ SPHOTON_METHOD float sphoton::get_fphi() const
 {
     return normalize_fphi(pos);  // scuda.h
 }
+/**
+sphoton::set_lpos USED ONLY IN TESTS [ASSUMES UNIT RADIUS]
+-----------------------------------------------------------
+
+ONLY FOR TEMPLATE COMPATIBILITY WITH sphotonlite::set_lpos
+
+pos [-1,0,0] is problematic
+
+**/
+
+SPHOTON_METHOD void sphoton::set_lpos(float lposcost, float lposfphi)
+{
+    float cost = lposcost < -1.f ? -1.f : (lposcost > 1.f ? 1.f : lposcost);
+    float fphi = lposfphi < 0.f ? 0.f : (lposfphi >= 1.f ? 0.999999f : lposfphi);  // avoid exactly 1.0
+
+    float theta = acosf(cost);
+
+    float phi = (fphi * 2.0f - 1.0f) * M_PIf; // Recover original signed phi in [-π, π)
+
+    float sin_theta = sinf(theta);
+
+    pos.x = sin_theta * cosf(phi);
+    pos.y = sin_theta * sinf(phi);
+    pos.z = cost;
+}
+
 
 
 

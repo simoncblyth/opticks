@@ -606,11 +606,46 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_cost(const float3& v)  // formerly
 {
   return v.z / sqrtf(dot(v, v));
 }
+
+
+/**
+normalize_fphi
+--------------
+
+atan2f range is -pi to pi, so add pi, giving range 0 to 2pi
+which is then normalized to give fphi in range 0:1
+
+Note discontinuity of phi close to [-1,0,0] flipping between pi and -pi,
+
+    In [4]: np.arctan2(+0.00000001, -1)
+    Out[4]: np.float64(3.141592643589793)
+
+    In [5]: np.arctan2(-0.00000001, -1)
+    Out[5]: np.float64(-3.141592643589793)
+
+Which corresponds to fphi flipping between 0 and 1::
+
+    In [6]: (np.arctan2(-0.00000001, -1) + np.pi)/(2*np.pi)
+    Out[6]: np.float64(1.591549421246358e-09)
+
+    In [7]: (np.arctan2(+0.00000001, -1) + np.pi)/(2*np.pi)
+    Out[7]: np.float64(0.9999999984084506)
+
+No such issue at [1,0,0] where fphi close to 0.5::
+
+    In [8]: (np.arctan2(+0.00000001, 1) + np.pi)/(2*np.pi)
+    Out[8]: np.float64(0.5000000015915494)
+
+    In [9]: (np.arctan2(-0.00000001, 1) + np.pi)/(2*np.pi)
+    Out[9]: np.float64(0.49999999840845055)
+
+
+**/
+
+
 SUTIL_INLINE SUTIL_HOSTDEVICE float normalize_fphi(const float3& v)
 {
   return (atan2f(v.y, v.x) + M_PIf) / (2.0f * M_PIf);
-  // atan2f range is -pi to pi, so add pi, giving range 0 to 2pi
-  // which is then normalized to give fphi in range 0:1
 }
 
 SUTIL_INLINE SUTIL_HOSTDEVICE float phi_from_fphi( float fphi )

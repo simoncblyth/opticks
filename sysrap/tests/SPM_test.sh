@@ -6,6 +6,7 @@ SPM_test.sh
 ::
 
     ~/o/sysrap/tests/SPM_test.sh
+    ~/o/sysrap/tests/SPM_test.sh gcc_run_tdb
 
     OPTICKS_MERGE_WINDOW=50    ~/o/sysrap/tests/SPM_test.sh info_run
     OPTICKS_MERGE_WINDOW=10000 ~/o/sysrap/tests/SPM_test.sh info_run

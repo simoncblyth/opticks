@@ -8,6 +8,8 @@ sphoton_test.sh
    ~/o/sysrap/tests/sphoton_test.sh
    TEST=make_record_array ~/o/sysrap/tests/sphoton_test.sh
 
+   TEST=set_lpos ~/o/sysrap/tests/sphoton_test.sh
+
 EOU
 }
 

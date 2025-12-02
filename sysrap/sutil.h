@@ -173,15 +173,18 @@ inline NP* sutil::mock_merged(size_t ni, float time_window)
     {
         T& m = mm[i];
 
-        unsigned dummy = 1 + ( i % 10000 ) ;
-        unsigned id = dummy ;
-        unsigned hc = dummy ;
-        float time = 100.f + float(dummy)*0.01f ;
+        unsigned u_dummy = 1 + ( i % 10000 ) ;         // range 1, 10000 inclusive
+        float f_dummy = float(u_dummy)/float(10001);   // avoids 0. and 1.
+
+        unsigned id = u_dummy ;
+        unsigned hc = u_dummy ;
+        float time = 100.f + f_dummy*100.f ;
 
         m.time = time ;
         m.flagmask = EFFICIENCY_COLLECT ;
         m.set_identity(id);
         m.set_hitcount(hc);
+        m.set_lpos(f_dummy, f_dummy);
     }
 
     NP* merged_sorted = sort_photon_by_key<T>(merged, time_window );
@@ -279,8 +282,7 @@ held by the stree
 
 inline void sutil::create_photonlite_from_photon( sphotonlite& lite, const sphoton& p )
 {
-    //lite.set_lpos( p.get_cost(), p.get_fphi() );  // NB THIS IS NOT LOCALIZED
-    lite.set_lpos( 0.f, 0.f );  // NB THIS IS NOT LOCALIZED
+    lite.set_lpos( p.get_cost(), p.get_fphi() );  // NB THIS IS NOT LOCALIZED
     lite.time = p.time ;
     lite.flagmask = p.flagmask ;
     lite.set_hitcount_identity( p.hitcount(), p.get_identity() );

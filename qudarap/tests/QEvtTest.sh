@@ -8,6 +8,10 @@ QEvtTest.sh
    ~/o/qudarap/tests/QEvtTest.sh
    ~/o/qudarap/tests/QEvtTest.sh dbg
 
+   ~/o/qudarap/tests/QEvtTest.sh info_run_pdb1
+
+
+
    TEST=one ~/o/qudarap/tests/QEvtTest.sh
    BP=cudaMalloc ~/o/qudarap/tests/QEvtTest.sh
 
