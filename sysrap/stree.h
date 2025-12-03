@@ -776,6 +776,7 @@ struct stree
 
     void localize_photon_inplace( sphoton& p ) const ;
     NP* localize_photon(const NP* photon, bool consistency_check) const ;
+    void transform_consistency_check( const sphoton& l ) const;
 
     NP* create_photonlite_from_photon( const NP* photon ) const ;
     void create_photonlite_from_photon( sphotonlite& l, const sphoton& p ) const ;
@@ -6457,11 +6458,12 @@ inline void stree::localize_photon_inplace( sphoton& p ) const
 
 #ifdef NDEBUG
 #else
+    unsigned sensor_identifier = p.pmtid() ;
+
     glm::tvec4<int64_t> col3 = {} ;
     strid::Decode( *tr, col3 );
 
     sphit ht = {};
-
     ht.iindex            = col3[0] ;
     ht.sensor_identifier = col3[2] ;
     ht.sensor_index      = col3[3] ;
@@ -6492,12 +6494,19 @@ of the part of the gometry that the photon last intersected.
 Note that the corresponding strid::Encode into the transform
 is done by the above stree::add_inst
 
-HMM: potentially with very large numbers of hits
-it would be better to group hits by their iindex and
-transform multiple at once ?
+
+TODO : multiple-photon localization optimization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GPU hit merging increases the usefulness of grouped localization
+as the hits will arrive sorted by (pmtid, timebucket) so in big events
+there will be many contiguous hits that all need the same transform
+
+sphoton::transform uses  Tran<double>::ApplyToFloat with count = 1, stride = 4*4
+arguments suggesting it may be quite straightforward to implement more efficient
+transformation just by finding the indices of transitions between pmtid
 
 **/
-
 
 inline NP* stree::localize_photon(const NP* photon, bool consistency_check ) const
 {
@@ -6512,50 +6521,53 @@ inline NP* stree::localize_photon(const NP* photon, bool consistency_check ) con
     {
         sphoton& l = ll[i] ; // start with global frame fields
         localize_photon_inplace(l);
-
-        if(consistency_check)
-        {
-            unsigned iindex   = l.iindex() ;
-            const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
-            unsigned identity = l.get_identity();
-            bool not_a_sensor = identity == 0 ;
-            unsigned sensor_identifier = identity - 1 ;
-
-            glm::tvec4<int64_t> col3 = {} ;
-            strid::Decode( *tr, col3 );
-
-            sphit ht = {} ;
-            ht.iindex            = col3[0] ;
-            ht.sensor_identifier = col3[2] ;
-            ht.sensor_index      = col3[3] ;
-
-            bool match_iindex = ht.iindex == iindex ;
-            bool match_ident = ht.sensor_identifier == sensor_identifier ;
-
-            if(!match_iindex) std::cerr
-                << "stree::localize_photon"
-                << " ht.iindex " << ht.iindex
-                << " iindex " << iindex
-                << " match_iindex " << ( match_iindex ? "YES" : "NO " )
-                << "\n"
-                ;
-
-            if(!match_ident) std::cerr
-                << "stree::localize_photon"
-                << " ht.sensor_identifier " << ht.sensor_identifier
-                << " sensor_identifier " << sensor_identifier
-                << " match_ident " << ( match_ident ? "YES" : "NO " )
-                << " identity " << identity
-                << " not_a_sensor " << ( not_a_sensor ? "YES" : "NO " )
-                << "\n"
-                ;
-
-            assert( match_iindex );
-            assert( match_ident  );
-        }
-
+#ifdef NDEBUG
+#else
+        if(consistency_check) transform_consistency_check(l);
+#endif
     }
     return local_photon ;
+}
+
+inline void stree::transform_consistency_check( const sphoton& l ) const
+{
+    unsigned iindex   = l.iindex() ;
+    const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
+    unsigned identity = l.get_identity();
+    bool not_a_sensor = identity == 0 ;
+    unsigned sensor_identifier = identity - 1 ;
+
+    glm::tvec4<int64_t> col3 = {} ;
+    strid::Decode( *tr, col3 );
+
+    sphit ht = {} ;
+    ht.iindex            = col3[0] ;
+    ht.sensor_identifier = col3[2] ;
+    ht.sensor_index      = col3[3] ;
+
+    bool match_iindex = ht.iindex == iindex ;
+    bool match_ident = ht.sensor_identifier == sensor_identifier ;
+
+    if(!match_iindex) std::cerr
+        << "stree::transform_consistency_check"
+        << " ht.iindex " << ht.iindex
+        << " iindex " << iindex
+        << " match_iindex " << ( match_iindex ? "YES" : "NO " )
+        << "\n"
+        ;
+
+    if(!match_ident) std::cerr
+        << "stree::transform_consistency_check"
+        << " ht.sensor_identifier " << ht.sensor_identifier
+        << " sensor_identifier " << sensor_identifier
+        << " match_ident " << ( match_ident ? "YES" : "NO " )
+        << " identity " << identity
+        << " not_a_sensor " << ( not_a_sensor ? "YES" : "NO " )
+        << "\n"
+        ;
+
+    assert( match_iindex );
+    assert( match_ident  );
 }
 
 

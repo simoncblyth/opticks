@@ -340,19 +340,99 @@ usage(){ cat << EON
 ~/.opticks/GEOM/CUR.sh
 ========================
 
-Define CUR_ bash functions for context control
+CUR.sh controls a context string that
+is used to automate management of dated .png
+screenshots. For example the pic bash function
+uses the CUR context timestamp and string to
+control which images to copy where under::
 
-CUR_path
-    emits path of context file ~/.opticks/CUR.sh
-CUR_open
-    writes current context file with info exports
-CUR_close
-    deletes current context file
 
+   /usr/local/simoncblyth.github.io/env/presentation/CUR_CONTEXT_STRING
+
+
+How to update
+---------------
+
+Dont edit ~/.opticks/GEOM/CUR.sh directly.
+Instead use opticks-vi and edit the CUR_TEMPLATE.
+Hence update with::
+
+   rm ~/.opticks/GEOM/CUR.sh
+   lo   # opticks environment
+   CUR  # generate new ~/.opticks/GEOM/CUR.sh from CUR_TEMPLATE
+
+
+How to use
+------------
 ::
 
-   local t=\$(date +"%s")
-   local d=\$(date -d @\$t +"%Y%m%d_%H%M%S")
+    source ~/.opticks/GEOM/CUR.sh
+    CUR_info  # dump info
+
+    CUR_open GEOM/J25_4_0_opticks_Debug/cxr_min_cxt_min/WaterDistributor
+    CUR_info
+
+    CUR_touch 20250929 21:47:00   # back date as above line would set to now
+    CUR_info
+
+    pic        # emits the copy commands
+    pic | sh   # invoke them
+
+    cd ~/simoncblyth.github.io/
+    git status
+    git add / git commit / git push etc...
+
+
+
+How to choose context strings
+------------------------------
+
+Needs to be valid repo, file system and html path so avoid
+spaces and other special chars. Best practice is to use strings like::
+
+   GEOM/J25_4_0_opticks_Debug/SGLFW_SOPTIX_Scene_test/WaterDistributer
+
+That incorporate:
+
+* geometry identifier
+* executable/script name
+* name of part of geometry
+* what the image shows, eg overlap check
+
+Also reuse earlier contexts and conventions where appropriate, check with::
+
+   cd ~/simoncblyth.github.io
+   git lg -n10
+
+
+Bash functions for context control
+----------------------------------
+
+CUR_ arg
+    emit to stdout contents for CUR file containing just export CUR=\$arg
+CUR_source
+    source the CUR_path defining the CUR envvar
+CUR_path
+    emits path of context file ~/.opticks/CUR.sh
+CUR_cat
+    cats the CUR_path file
+CUR_open arg
+    writes arg to the CUR_path context file, hencing "opening" the context with the arg string
+CUR_close
+    deletes current context file
+CUR_t
+    emit timestamp of the last modification of the context file
+CUR_d
+    formatted timestamp of the last modification of the context file
+CUR_touch [dateArgs]
+    when dateArgs are provided the CUR_path is touched with that date,
+    if the arguments are a valid date string (eg "20250702 17:56:20 09:30")
+CUR_info
+    emit to stdout information on the state of CUR
+
+
+
+
 
 EON
 }
@@ -371,6 +451,7 @@ EOC
 
 CUR_source(){ [ -f \$(CUR_path) ] && source \$(CUR_path) ; }
 CUR_path(){   echo ~/.opticks/CUR.sh ; }
+CUR_cat(){    cat \$(CUR_path) ; }
 CUR_open(){   CUR_ \$* > \$(CUR_path) ; }
 CUR_close(){  rm \$(CUR_path) ; }
 CUR_t(){      [ -f \$(CUR_path) ] && stat --format=%Y \$(CUR_path) ; }
@@ -394,6 +475,11 @@ CUR_info(){  cat <<EOI
     CUR       : \$CUR
 
 EOI
+    local cmd="cat \$(CUR_path)"
+    echo \$cmd
+    eval \$cmd
+
+
 }
 
 EOT

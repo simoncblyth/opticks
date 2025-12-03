@@ -235,6 +235,11 @@ struct sphoton
     // upper 8 bits of identity field used to extend range of index beyond 4.29 billion
     SPHOTON_METHOD void     set_identity(unsigned id) { identity = ( identity & 0xff000000u ) | ( id & 0x00ffffffu ); }
     SPHOTON_METHOD unsigned get_identity() const {            return identity & 0x00ffffffu ; }
+    SPHOTON_METHOD unsigned pmtid() const
+    {
+        unsigned id = get_identity() ;
+        return id == 0 ? 0xffffffffu : id - 1 ;    // id:0 means not-a-sensor
+    }
 
 
     SPHOTON_METHOD void zero()
@@ -335,6 +340,8 @@ struct sphoton
     SPHOTON_METHOD float get_fphi() const ;
     SPHOTON_METHOD void set_lpos(float lposcost, float lposfphi); // FOR TEMPLATE COMPATIBILITY WITH sphotonlite used only in tests
 
+    SPHOTON_METHOD static size_t GetIndexBeyondCursorContiguousIdentity( const sphoton* pp, size_t num, size_t cursor=0 );
+    SPHOTON_METHOD static void   GetContiguousIdentityStartIndices( std::vector<size_t>& starts, const sphoton* pp, size_t num );
 #endif
 
 };
@@ -1105,6 +1112,51 @@ SPHOTON_METHOD void sphoton::set_lpos(float lposcost, float lposfphi)
     pos.x = sin_theta * cosf(phi);
     pos.y = sin_theta * sinf(phi);
     pos.z = cost;
+}
+
+/**
+sphoton::GetIndexBeyondCursorContiguousIdentity
+--------------------------------------------------
+
+1. get *id0* identity at starting *cursor* index
+2. iterate ahead thru photon array until a different identity is found
+   at which point the index of the new start is returned
+3. if no different identity is found return num, which is one beyond
+   the highest valid index
+
+**/
+
+
+SPHOTON_METHOD size_t sphoton::GetIndexBeyondCursorContiguousIdentity( const sphoton* pp, size_t num, size_t cursor ) // static
+{
+    assert( cursor < num );
+    unsigned id0 = pp[cursor].get_identity();
+    for(size_t i=cursor+1 ; i < num ; i++)
+    {
+        unsigned id = pp[i].get_identity();
+        if( id != id0 ) return i ;
+    }
+    return num ;
+}
+
+/**
+sphoton::GetContiguousIdentityStartIndices
+-------------------------------------------
+
+The starts vector ends with num
+
+**/
+
+SPHOTON_METHOD void sphoton::GetContiguousIdentityStartIndices( std::vector<size_t>& starts, const sphoton* pp, size_t num )
+{
+    size_t cursor = 0 ;
+    starts.push_back(cursor);
+    do
+    {
+        cursor = sphoton::GetIndexBeyondCursorContiguousIdentity(pp, num, cursor );
+        starts.push_back(cursor);
+    }
+    while( cursor < num );
 }
 
 

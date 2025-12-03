@@ -59,6 +59,11 @@ struct sphotonlite
 
     SPHOTONLITE_METHOD unsigned hitcount() const { return hitcount_identity >> 16 ; }
     SPHOTONLITE_METHOD unsigned identity() const { return hitcount_identity & 0xffffu ; }
+    SPHOTONLITE_METHOD unsigned pmtid() const
+    {
+        unsigned id = identity() ;
+        return id == 0 ? 0xffffffffu : id - 1 ;    // id:0 means not-a-sensor
+    }
 
     struct key_functor
     {

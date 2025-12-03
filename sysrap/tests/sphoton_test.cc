@@ -52,6 +52,10 @@ struct sphoton_test
     static int demoarray();
     static int set_lpos();
 
+    static NP* MockupPhotonsWithContiguousIdentities(const std::vector<size_t>& starts);
+    static int GetIndexBeyondCursorContiguousIdentity();
+    static int GetContiguousIdentityStartIndices();
+
     static int main();
 };
 
@@ -712,6 +716,75 @@ int sphoton_test::set_lpos()
 
 
 
+NP* sphoton_test::MockupPhotonsWithContiguousIdentities(const std::vector<size_t>& starts) // static
+{
+    size_t nj = starts.size();
+    size_t ni = starts[nj-1] ;
+
+    NP* photons = sphoton::zeros(ni);
+    sphoton* pp = (sphoton*)photons->bytes();
+    for(size_t i=0 ; i < ni ; i++ )
+    {
+        unsigned id = 0 ;
+        for(size_t j=1 ; j < nj ; j++)
+        {
+            bool j_range = i >= starts[j-1] && i < starts[j] ;
+            if( j_range )
+            {
+                id = j*100 ;
+                break ;
+            }
+        }
+        pp[i].set_identity( id );
+    }
+    return photons ;
+}
+
+int sphoton_test::GetIndexBeyondCursorContiguousIdentity()
+{
+    std::vector<size_t> starts = { 0, 100, 200, 400, 600, 800, 1000 };
+    NP* photons = MockupPhotonsWithContiguousIdentities(starts);
+
+    sphoton* pp = (sphoton*)photons->bytes();
+    size_t num = photons->num_items();
+
+    std::cout
+        << "sphoton_test::GetIndexBeyondCursorContiguousIdentity"
+        << "\n"
+        ;
+
+
+    std::vector<size_t> recover ;
+
+    size_t cursor = 0 ;
+    recover.push_back(cursor);
+    do
+    {
+        cursor = sphoton::GetIndexBeyondCursorContiguousIdentity(pp, num, cursor );
+        recover.push_back(cursor);
+        std::cout << " cursor " << cursor << "\n" ;
+    }
+    while( cursor < num );
+    assert( recover == starts );
+
+    return 0 ;
+}
+
+int sphoton_test::GetContiguousIdentityStartIndices()
+{
+    std::vector<size_t> starts = { 0, 100, 200, 400, 600, 800, 1000 };
+    NP* photons = MockupPhotonsWithContiguousIdentities(starts);
+    sphoton* pp = (sphoton*)photons->bytes();
+    size_t num = photons->num_items();
+
+    std::vector<size_t> recover ;
+    sphoton::GetContiguousIdentityStartIndices(recover, pp, num );
+    assert( recover == starts );
+
+    return 0 ;
+}
+
+
 
 
 int sphoton_test::main()
@@ -740,6 +813,9 @@ int sphoton_test::main()
     if(ALL||0==strcmp(TEST, "index"))                 rc += index();
     if(ALL||0==strcmp(TEST, "demoarray"))             rc += demoarray();
     if(ALL||0==strcmp(TEST, "set_lpos"))              rc += set_lpos();
+
+    if(ALL||0==strcmp(TEST, "GetIndexBeyondCursorContiguousIdentity")) rc += GetIndexBeyondCursorContiguousIdentity();
+    if(ALL||0==strcmp(TEST, "GetContiguousIdentityStartIndices"))       rc += GetContiguousIdentityStartIndices();
 
     return rc ;
 }
