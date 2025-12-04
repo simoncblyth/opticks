@@ -248,6 +248,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kMaxTag       = "OPTICKS_MAX_TAG" ;
     static constexpr const char* kMaxFlat      = "OPTICKS_MAX_FLAT" ;
 
+    static constexpr const char* kModeSave      = "OPTICKS_MODE_SAVE" ;
     static constexpr const char* kModeClient    = "OPTICKS_MODE_CLIENT" ;
     static constexpr const char* kModeLite      = "OPTICKS_MODE_LITE" ;
     static constexpr const char* kModeMerge     = "OPTICKS_MODE_MERGE" ;
@@ -329,6 +330,7 @@ struct SYSRAP_API SEventConfig
     static int64_t MaxTag();
     static int64_t MaxFlat();
 
+    static int64_t ModeSave();
     static int64_t ModeClient();
     static int64_t ModeLite();
     static int64_t ModeMerge();
@@ -452,6 +454,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxTag(    int max_tag);
     static void SetMaxFlat(   int max_flat);
 
+    static void SetModeSave( int mode );
     static void SetModeClient( int mode );
     static void SetModeLite(  int mode );
     static void SetModeMerge( int mode );
@@ -533,6 +536,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxTagDefault ;
     static int _MaxFlatDefault ;
 
+    static int _ModeSaveDefault ;
     static int _ModeClientDefault ;
     static int _ModeLiteDefault ;
     static int _ModeMergeDefault ;
@@ -614,6 +618,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxTag ;
     static int _MaxFlat ;
 
+    static int _ModeSave ;
     static int _ModeClient ;
     static int _ModeLite ;
     static int _ModeMerge ;

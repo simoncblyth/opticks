@@ -4113,7 +4113,26 @@ ExecutableName of "python3.11" or whatever.
 
 const char* SEvt::DefaultBase(const char* base_) // static
 {
-    const char* base = base_ ? base_ : spath::DefaultOutputDir() ;
+    const char* base = nullptr ;
+    int64_t mode_save = SEventConfig::ModeSave();
+    if( mode_save == 0 )
+    {
+        // controlled dir approach : good for campaigns
+        base = base_ ? base_ : spath::DefaultOutputDir() ;
+    }
+    else if( mode_save == 1 )
+    {
+        // relative to invoking directory approach : good for quick tests
+        base = BLANK ;
+    }
+
+    LOG_IF(info, DIRECTORY)
+        << "\n"
+        << " base_ [" << ( base_ ? base_ : "-" ) << "]\n"
+        << " base  [" << ( base  ? base  : "-" ) << "]\n"
+        << " mode_save " << mode_save << "\n"
+        ;
+
     return base ;
 }
 
@@ -4149,15 +4168,20 @@ high level control here in one place.
 HMM: could expand on that approach exposing ALL$VERSION
 here too instead of hiding in Reldir
 
-Example with::
 
-    TMP               /data/blyth/opticks
-    GEOM              J_2024nov27
-    ExecutableName    CSGOptiXSMTest
-    VERSION           1
-    Reldir            ALL1
-    sidx:IndexString  A000
-    OutputDir         /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1/A000/
++---------+----------------------------------------------------------------------------------------------+
+|  qwn    |  typical/default value                                                                       |
++=========+==============================================================================================+
+| base_   |  "$TMP/GEOM/$GEOM/$ExecutableName"                                                           |
++---------+----------------------------------------------------------------------------------------------+
+| base    |  "$TMP/GEOM/$GEOM/$ExecutableName"                                                           |
++---------+----------------------------------------------------------------------------------------------+
+| reldir  |  "ALL${VERSION:-0}_${OPTICKS_EVENT_NAME:-no_opticks_event_name}"                             |
++---------+----------------------------------------------------------------------------------------------+
+| sidx    |  "A000"                                                                                      |
++---------+----------------------------------------------------------------------------------------------+
+| path    |  "/tmp/blyth/opticks/GEOM/J25_4_0_opticks_Debug/python3.11/ALL0_no_opticks_event_name/A000"  |
++---------+----------------------------------------------------------------------------------------------+
 
 **/
 
@@ -4355,7 +4379,7 @@ Only when more control of the output is needed is it appropriate to use OPTICKS_
 
 void SEvt::save()
 {
-    const char* base = DefaultBase();
+    const char* base = DefaultBase(); // eg "$TMP/GEOM/$GEOM/$ExecutableName"
     LOG_IF(info, LIFECYCLE || SIMTRACE) << " base [" << ( base ? base : "-" ) << "]" ;
     save(base);
 }

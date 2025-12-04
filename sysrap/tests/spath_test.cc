@@ -6,6 +6,7 @@ spath_test.cc
 
      ~/opticks/sysrap/tests/spath_test.sh
      TEST=ResolveToken ~/opticks/sysrap/tests/spath_test.sh
+     TEST=Resolve_null ~/opticks/sysrap/tests/spath_test.sh
      TEST=Resolve      ~/opticks/sysrap/tests/spath_test.sh
      TEST=Resolve3     ~/opticks/sysrap/tests/spath_test.sh
      TEST=Resolve_setenvvar ~/opticks/sysrap/tests/spath_test.sh
@@ -36,6 +37,7 @@ spath_test.cc
 
 struct spath_test
 {
+   static int Resolve_null();
    static int Resolve_name();
    static int Resolve_inline();
    static int Resolve_defaultOutputPath();
@@ -82,6 +84,18 @@ struct spath_test
 
    static int Main();
 };
+
+
+
+int spath_test::Resolve_null()
+{
+    //const char* path = spath::Resolve(nullptr,"reldir", "sidx");  // spath::_Join doesnt like nullptr
+    const char* path = spath::Resolve("","reldir", "sidx");  // spath::_Join handles blanks OK
+    std::cout
+        << " path [" << path << "]" << std::endl
+        ;
+    return 0 ;
+}
 
 int spath_test::Resolve_name()
 {
@@ -794,6 +808,7 @@ int spath_test::Main()
     if(ALL||strcmp(TEST, "Resolve_defaultOutputPath")==0 )   rc += Resolve_defaultOutputPath();
     if(ALL||strcmp(TEST, "Resolve_with_undefined_token")==0) rc += Resolve_with_undefined_token();
     if(ALL||strcmp(TEST, "Resolve_with_undefined_TMP")==0) rc += Resolve_with_undefined_TMP();
+    if(ALL||strcmp(TEST, "Resolve_null")==0) rc += Resolve_null();
     if(ALL||strcmp(TEST, "Resolve_name")==0) rc += Resolve_name();
     if(ALL||strcmp(TEST, "Resolve_inline")==0) rc += Resolve_inline();
     if(ALL||strcmp(TEST, "ResolveToken")==0) rc += ResolveToken();
