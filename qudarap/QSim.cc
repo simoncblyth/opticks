@@ -527,7 +527,10 @@ double QSim::simulate(int eventID, bool reset_)
         tot_gdt += ( t_DOWN - t_POST ) ;
     }
 
-    int64_t t_LEND = SProf::Add("QSim__simulate_LEND");
+
+    size_t max_slot_M = SEventConfig::MaxSlot()/M;
+    std::string anno = SProf::Annotation("slice",num_slice, "max_slot_M", max_slot_M);
+    int64_t t_LEND = SProf::Add("QSim__simulate_LEND", anno.c_str());
 
     std::stringstream ss ;
     std::ostream* out = CONCAT ? &ss : nullptr ;

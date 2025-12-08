@@ -92,6 +92,7 @@ was a kludge that was removed as it complicates things.
 
 #include <vector>
 #include <fstream>
+#include <sstream>
 #include "sprof.h"
 #include "ssys.h"
 #include "sstr.h"
@@ -135,6 +136,8 @@ struct SYSRAP_API SProf
     static const char* Path();
     static void Write(bool append=false);
     static void Read();
+
+    static std::string Annotation(const char* l0, size_t n0, const char* l1=nullptr, size_t n1=0, const char* l2=nullptr, size_t n2=0);
 };
 
 
@@ -335,5 +338,15 @@ inline void SProf::Read()
     fp.close();
 }
 
+
+inline std::string SProf::Annotation(const char* l0, size_t n0, const char* l1, size_t n1, const char* l2, size_t n2) // static
+{
+    std::stringstream ss ;
+    if(l0) ss << l0 << "=" << n0 ;
+    if(l1) ss << "," << l1 << "=" << n1 ;
+    if(l2) ss << "," << l2 << "=" << n2 ;
+    std::string str = ss.str();
+    return str ;
+}
 
 
