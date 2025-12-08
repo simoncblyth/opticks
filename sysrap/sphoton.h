@@ -340,8 +340,8 @@ struct sphoton
     SPHOTON_METHOD float get_fphi() const ;
     SPHOTON_METHOD void set_lpos(float lposcost, float lposfphi); // FOR TEMPLATE COMPATIBILITY WITH sphotonlite used only in tests
 
-    SPHOTON_METHOD static size_t GetIndexBeyondCursorContiguousIdentity( const sphoton* pp, size_t num, size_t cursor=0 );
-    SPHOTON_METHOD static void   GetContiguousIdentityStartIndices( std::vector<size_t>& starts, const sphoton* pp, size_t num );
+    SPHOTON_METHOD static size_t GetIndexBeyondCursorContiguousIIndex( const sphoton* pp, size_t num, size_t cursor=0 );
+    SPHOTON_METHOD static void   GetContiguousIIndexStartIndices( std::vector<size_t>& starts, const sphoton* pp, size_t num );
 #endif
 
 };
@@ -1115,45 +1115,49 @@ SPHOTON_METHOD void sphoton::set_lpos(float lposcost, float lposfphi)
 }
 
 /**
-sphoton::GetIndexBeyondCursorContiguousIdentity
+sphoton::GetIndexBeyondCursorContiguousIIndex
 --------------------------------------------------
 
-1. get *id0* identity at starting *cursor* index
-2. iterate ahead thru photon array until a different identity is found
+The "IIndex" is the instance-index that can be used to
+access a transform for the geometry.
+
+1. get *ii0* iindex at starting *cursor* index
+2. iterate ahead thru photon array until a different iindex is found
    at which point the index of the new start is returned
-3. if no different identity is found return num, which is one beyond
+3. if no different iindex is found return num, which is one beyond
    the highest valid index
 
 **/
 
 
-SPHOTON_METHOD size_t sphoton::GetIndexBeyondCursorContiguousIdentity( const sphoton* pp, size_t num, size_t cursor ) // static
+SPHOTON_METHOD size_t sphoton::GetIndexBeyondCursorContiguousIIndex( const sphoton* pp, size_t num, size_t cursor ) // static
 {
     assert( cursor < num );
-    unsigned id0 = pp[cursor].get_identity();
+    unsigned ii0 = pp[cursor].iindex();
     for(size_t i=cursor+1 ; i < num ; i++)
     {
-        unsigned id = pp[i].get_identity();
-        if( id != id0 ) return i ;
+        unsigned ii = pp[i].iindex();
+        if( ii != ii0 ) return i ;
     }
     return num ;
 }
 
 /**
-sphoton::GetContiguousIdentityStartIndices
+sphoton::GetContiguousIIndexStartIndices
 -------------------------------------------
 
-The starts vector ends with num
+Note that there is no need an equivalent sphotonlite implementation 
+because the localization for sphotonlite is done directly.
 
 **/
 
-SPHOTON_METHOD void sphoton::GetContiguousIdentityStartIndices( std::vector<size_t>& starts, const sphoton* pp, size_t num )
+SPHOTON_METHOD void sphoton::GetContiguousIIndexStartIndices( std::vector<size_t>& starts, const sphoton* pp, size_t num )
 {
     size_t cursor = 0 ;
     starts.push_back(cursor);
     do
     {
-        cursor = sphoton::GetIndexBeyondCursorContiguousIdentity(pp, num, cursor );
+        cursor = sphoton::GetIndexBeyondCursorContiguousIIndex(pp, num, cursor );
         starts.push_back(cursor);
     }
     while( cursor < num );
