@@ -1424,7 +1424,7 @@ SEventConfig::HitCompOne
 +===============================================+==========================+=====================+==================+
 |    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=0   |  SCOMP_HIT               |   hit               |                  |
 +-----------------------------------------------+--------------------------+---------------------+------------------+
-|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=1   |  SCOMP_HIT               |   hit               |  NOT IMPL YET    |
+|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=1   |  SCOMP_HITMERGED         |   hitmerged         |  JUST NOW IMPL   |
 +-----------------------------------------------+--------------------------+---------------------+------------------+
 |    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=0   |  SCOMP_HITLITE           |   hitlite           |                  |
 +-----------------------------------------------+--------------------------+---------------------+------------------+
@@ -1435,16 +1435,30 @@ SEventConfig::HitCompOne
 
 unsigned SEventConfig::HitCompOne() // static
 {
+    unsigned comp = 0 ;
     int64_t lite = ModeLite();
     int64_t merge = ModeMerge();
+    int64_t lite_merge = lite*10 + merge ;
 
-    unsigned comp = 0 ;
-    switch(lite)
+    if( lite == 0 || lite == 1 )
     {
-        case 0: comp = SCOMP_HIT                                             ; break ;
-        case 1: comp = ( merge == 1 ? SCOMP_HITLITEMERGED : SCOMP_HITLITE )  ; break ;
-        case 2: comp = ( merge == 1 ? SCOMP_HITLITEMERGED : SCOMP_HITLITE )  ; break ;
+        switch(lite_merge)
+        {
+            case   0: comp = SCOMP_HIT            ; break ;
+            case   1: comp = SCOMP_HITMERGED      ; break ;
+            case  10: comp = SCOMP_HITLITE        ; break ;
+            case  11: comp = SCOMP_HITLITEMERGED  ; break ;
+        }
     }
+    else if( lite == 2 )  // debug only
+    {
+        switch(lite_merge)
+        {
+            case  20: comp = SCOMP_HITLITE        ; break ;
+            case  21: comp = SCOMP_HITLITEMERGED  ; break ;
+        }
+    }
+
     return comp ;
 }
 
