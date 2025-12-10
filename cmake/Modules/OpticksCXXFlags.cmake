@@ -2,12 +2,12 @@
 cmake/Modules/OpticksCXXFlags.cmake
 =====================================
 
-Geant4 1100 uses std::string_view in G4String.hh forcing 
-all code that includes that header to use at least c++17 
-For some years Opticks on Linux has been using c++14 
-configured in cmake/Modules/OpticksCXXFlags.cmake 
+Geant4 1100 uses std::string_view in G4String.hh forcing
+all code that includes that header to use at least c++17
+For some years Opticks on Linux has been using c++14
+configured in cmake/Modules/OpticksCXXFlags.cmake
 
-Bumping to c++17 restricts the supported compilers to gcc 5+ 
+Bumping to c++17 restricts the supported compilers to gcc 5+
 which is not available by default on older redhat/centos/sl nodes.
 Older compilers will give om-conf/om-cleaninstall errors like::
 
@@ -16,7 +16,7 @@ Older compilers will give om-conf/om-cleaninstall errors like::
       know the compile flags to use to enable it.
 
 The redhat/centos/sl workaround allowing use of a newer gcc than the OS default
-is to use devtoolset and add the below in eg .bashrc/.local:: 
+is to use devtoolset and add the below in eg .bashrc/.local::
 
     devtoolset-notes(){ cat << EON
     When enabling/disabling/changing devtoolset
@@ -31,18 +31,18 @@ is to use devtoolset and add the below in eg .bashrc/.local::
     EON
     }
 
-    # default gcc is 4.8.5 
+    # default gcc is 4.8.5
     #source /opt/rh/devtoolset-9/enable    ## gcc 9.3.1 : cannot be used with CUDA 10.1
     source /opt/rh/devtoolset-8/enable    ## gcc 8.3.1  : works with CUDA 10.1
-    #source /opt/rh/devtoolset-7/enable    ## gcc 7.3.1 
+    #source /opt/rh/devtoolset-7/enable    ## gcc 7.3.1
 
 
-Note that using a non-default compiler for your OS is a dangerous situation 
+Note that using a non-default compiler for your OS is a dangerous situation
 as vendors such as NVIDIA typically only develop packages such as CUDA/nvcc
 against the default compiler for the OS.
 
 After changing the standard or the compiler it is necessary to om-cleaninstall
-and possibly do a deeper clean with  om-prefix-clean.  
+and possibly do a deeper clean with  om-prefix-clean.
 
 okconf/tests/CPPVersionInteger.cc::
 
@@ -60,8 +60,14 @@ endif()
 
 
 
-# start from nothing, so repeated inclusion of this into CMake context doesnt repeat the flags 
+# start from nothing, so repeated inclusion of this into CMake context doesnt repeat the flags
 set(CMAKE_CXX_FLAGS)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)  # Use -std=c++17, not -std=gnu++17
+
+
 
 if(WIN32)
 
@@ -74,39 +80,43 @@ if(WIN32)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USE_MATH_DEFINES")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_ITERATOR_DEBUG_LEVEL=0")
 
-else()
+elseif(APPLE)
 
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-     set(CMAKE_CXX_STANDARD 14)
-     set(CMAKE_CXX_STANDARD_REQUIRED on)
-  else ()
-     set(CMAKE_CXX_STANDARD 17)   ## Geant4 1100 forcing c++17 : BUT that restricts to gcc 5+ requiring 
-     set(CMAKE_CXX_STANDARD_REQUIRED on)
-  endif ()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")  # workaround GLM vsprintf deprecation
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")  # workaround for stb_image.h unused
 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden") ## avoid boostrap visibility warning at link 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-show-option") 
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
+
+elseif(UNIX)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmax-errors=1")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-
-
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
-  else()
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-private-field")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
-     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")  # trying to align warnings between gcc.Linux and clang.Darwin  
-  endif()
-
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
-
 
 endif()
+
+
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-comment")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
+else()
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-private-field")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-shadow")
+ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")  # trying to align warnings between gcc.Linux and clang.Darwin
+endif()
+
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+
+
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden") ## avoid boostrap visibility warning at link
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-show-option")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
+
+
+
+
+
 
 
 if(FLAGS_VERBOSE)
