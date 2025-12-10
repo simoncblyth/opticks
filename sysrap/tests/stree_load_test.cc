@@ -531,6 +531,27 @@ inline int stree_load_test::desc_solids() const
 inline int stree_load_test::desc_solid(int lvid) const
 {
     std::cout << st->desc_solid(lvid) ;
+
+    std::vector<int> nodes ;
+    char src = 'N' ;
+    st->find_lvid_nodes(nodes, lvid, src );
+
+    std::cout
+        << "st.find_lvid_nodes "
+        << " lvid " << lvid
+        << " src " << src
+        << " nodes.size " << nodes.size()
+        << "\n"
+        ;
+
+    for(size_t i=0 ; i < nodes.size() ; i++ )
+    {
+        int nidx = nodes[i];
+        std::cout << " nidx " << nidx << "\n" ;
+        const glm::tmat4x4<double>& m2w = st->m2w[nidx] ;
+        std::cout << stra<double>::Desc(m2w) << "\n" ;
+    }
+
     return 0 ;
 }
 inline int stree_load_test::desc() const
@@ -644,6 +665,7 @@ int main(int argc, char** argv)
 
 /**
     TEST=desc_solid LVID=43 ~/o/sysrap/tests/stree_load_test.sh  run
+    TEST=desc_solid LVID=124 ~/o/sysrap/tests/stree_load_test.sh  run
     TEST=desc_node_ELVID ELVID=43,44,45,46 ~/o/sysrap/tests/stree_load_test.sh
     TEST=desc_node_ECOPYNO ECOPYNO=52400   ~/o/sysrap/tests/stree_load_test.sh
     TEST=desc_node_EBOUNDARY EBOUNDARY=303   ~/o/sysrap/tests/stree_load_test.sh

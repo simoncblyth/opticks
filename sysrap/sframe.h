@@ -405,6 +405,9 @@ NOTE NEAR DUPLICATION WITH stree::get_frame_from_raw
 
 inline int sframe::PopulateFromRaw(sframe& fr, const char* raw, char delim ) // static
 {
+
+    // 1. split *raw* into elem values using delim
+
     std::vector<double> elem ;
     sstr::split<double>( elem, raw, delim );
     int num_elem = elem.size();

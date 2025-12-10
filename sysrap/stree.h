@@ -512,9 +512,11 @@ struct stree
     static constexpr const char* stree__get_frame_global_LVID = "stree__get_frame_global_LVID" ;
     typedef std::array<double,6> BB ;
     typedef std::vector<BB> VBB ;
+    typedef glm::tmat4x4<double> TR ;
+    typedef std::vector<TR> VTR ;
 
-    int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node, VBB* contrib_bb = nullptr ) const ;
-    int get_node_bb(     std::array<double,6>& bb ,                           const snode& node, VBB* contrib_bb = nullptr ) const ;
+    int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node, VBB* contrib_bb = nullptr, VTR* contrib_tr = nullptr ) const ;
+    int get_node_bb(     std::array<double,6>& bb ,                           const snode& node, VBB* contrib_bb = nullptr, VTR* contrib_tr = nullptr ) const ;
 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ;
@@ -2573,8 +2575,16 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
 
 
     int LVID = ssys::getenvint(stree__get_frame_global_LVID,-1);
-    VBB* contrib_bb = node.lvid == LVID ? new VBB : nullptr ;
-    int rc = get_node_ce_bb( ce, bb, node, contrib_bb );
+
+    VBB* contrib_bb = nullptr ;
+    VTR* contrib_tr = nullptr ;
+    if( node.lvid == LVID )
+    {
+        contrib_bb = new VBB ;
+        contrib_tr = new VTR ;
+    }
+
+    int rc = get_node_ce_bb( ce, bb, node, contrib_bb, contrib_tr );
     f.set_ce(ce.data() );
 
     if(contrib_bb)
@@ -2587,11 +2597,28 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
             for(size_t j=0 ; j < 6 ; j++) aa[i*6+j] = cbb[j] ;
         }
         std::stringstream ss ;
-        ss << stree__get_frame_global_LVID << "_" << LVID << ".npy" ;
+        ss << stree__get_frame_global_LVID << "_" << LVID << "_contrib_bb.npy" ;
         std::string name = ss.str();
         std::cout << "stree::_get_frame_global saving [" << name << "]\n" ;
         a->save( name.c_str() );
     }
+
+    if(contrib_tr)
+    {
+        NP* a = NP::Make<double>( contrib_tr->size(), 4, 4 );
+        double* aa = a->values<double>();
+        for(size_t i=0 ; i < contrib_tr->size() ; i++)
+        {
+            const TR& ctr = (*contrib_tr)[i] ;
+            for(size_t j=0 ; j < 16 ; j++) aa[i*16+j] = glm::value_ptr(ctr)[j] ; ;
+        }
+        std::stringstream ss ;
+        ss << stree__get_frame_global_LVID << "_" << LVID << "_contrib_tr.npy" ;
+        std::string name = ss.str();
+        std::cout << "stree::_get_frame_global saving [" << name << "]\n" ;
+        a->save( name.c_str() );
+    }
+
 
 
 
@@ -2635,9 +2662,9 @@ stree::get_node_ce_bb
 **/
 
 
-inline int stree::get_node_ce_bb(    std::array<double,4>& ce , std::array<double,6>& bb,  const snode& node, VBB* contrib_bb ) const
+inline int stree::get_node_ce_bb(    std::array<double,4>& ce , std::array<double,6>& bb,  const snode& node, VBB* contrib_bb, VTR* contrib_tr ) const
 {
-    int rc = get_node_bb(bb, node, contrib_bb );
+    int rc = get_node_bb(bb, node, contrib_bb, contrib_tr );
     s_bb::CenterExtent( ce.data(), bb.data() );
     return rc ;
 }
@@ -2658,7 +2685,7 @@ stree::get_node_bb
 
 **/
 
-inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, std::vector<std::array<double,6>>* contrib_bb ) const
+inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VBB* contrib_bb, VTR* contrib_tr ) const
 {
     int lvid = node.lvid ;
 
@@ -2705,20 +2732,38 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, st
             bool leaf = CSG::IsLeaf(typecode) ;
 
             if(0) std::cout
-                << "stree::get_frame_remainder"
+                << "stree::get_node_bb"
                 << " i " << std::setw(2) << i
                 << " typecode " << typecode
                 << " leaf " << ( leaf ? "Y" : "N" )
                 << "\n"
                 ;
 
-            std::array<double,6> n_bb ;
+            if(!leaf) continue ;
+
+            std::array<double,6> n_bb0 = {} ;
+            n->copyBB_data(n_bb0.data()) ; // without transform
+
+            std::array<double,6> n_bb = {} ;
             double* n_aabb = leaf ? n_bb.data() : nullptr ;
             const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
+            bool is_degenerate = s_bb::Degenerate<double>( n_aabb );
 
-            if(tv && leaf && n_aabb && !n->is_complement_primitive())
+            if(is_degenerate) std::cerr
+                << "stree::get_node_bb.tree"
+                << " i " << std::setw(2) << i
+                << " SKIP DEGENERATE bb "
+                << " typecode " << typecode
+                << " "
+                << s_bb::Desc(n_aabb)
+                << "\n"
+                ;
+
+            if(tv && leaf && n_aabb && !is_degenerate && !n->is_complement_primitive())
             {
+                if(contrib_bb) contrib_bb->push_back(n_bb0);
                 if(contrib_bb) contrib_bb->push_back(n_bb);
+                if(contrib_tr) contrib_tr->push_back(tv->t);
                 s_bb::IncludeAABB( bb.data(), n_aabb, out );
             }
         }
@@ -2735,14 +2780,31 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, st
         const sn* n = subs[i];
         bool leaf = CSG::IsLeaf(n->typecode) ;
         assert(leaf);
+        if(!leaf) continue ;
+
+        std::array<double,6> n_bb0 = {} ;
+        n->copyBB_data(n_bb0.data()) ; // without transform
 
         std::array<double,6> n_bb ;
-        double* n_aabb = leaf ? n_bb.data() : nullptr ;
-        const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
+        double* n_aabb = n_bb.data() ;
+        const Tran<double>* tv = get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) ;
+        bool is_degenerate = s_bb::Degenerate<double>( n_aabb );
 
-        if(tv && leaf && n_aabb && !n->is_complement_primitive())
+        if(is_degenerate) std::cerr
+            << "stree::get_node_bb.subs"
+            << " i " << std::setw(2) << i
+            << " SKIP DEGENERATE bb "
+            << " typecode " << n->typecode
+            << " "
+            << s_bb::Desc(n_aabb)
+            << "\n"
+            ;
+
+        if(tv && leaf && n_aabb && !is_degenerate && !n->is_complement_primitive())
         {
+            if(contrib_bb) contrib_bb->push_back(n_bb0);
             if(contrib_bb) contrib_bb->push_back(n_bb);
+            if(contrib_tr) contrib_tr->push_back(tv->t);
             s_bb::IncludeAABB( bb.data(), n_aabb, out );
         }
         // HMM does the complement message get thru to listnode subs ?

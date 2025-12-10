@@ -440,8 +440,9 @@ inline void SGLFW::renderloop_tail()
 
     const char* gm_title = gm.title.c_str();
     setWindowTitle(gm_title);
-    if(renderloop_tail_LEVEL > 0) std::cout
+    if(renderloop_tail_LEVEL > 0 && count < 2) std::cout
         << "SGLFW::renderloop_tail "
+        << " count " << count
         << " gm.title [" << gm_title << "]"
         << " " << gm.descModelMatrix()
         << "\n"

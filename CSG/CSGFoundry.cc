@@ -3544,6 +3544,13 @@ Q: is indexing by MOI and inst_idx equivalent ? OR: Can a MOI be converted into 
 
 TODO : AVOID DUPLICATION BETWEEN THIS AND stree::get_frame
 
+
+looks_like_raw:true
+    frs contains "," delimiting center_extent CE values eg::
+
+         MOI=0.000,0.000,18935.000,1435.000 FULLSCREEN=0 cxr_min.sh
+
+
 **/
 
 
@@ -3588,13 +3595,6 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
             << " rc " << rc
             ;
 
-        LOG_IF(info, VERBOSE)
-            << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
-            << "[fr.desc\n"
-            << fr.desc()
-            << "]fr.desc\n"
-            ;
-
     }
     else
     {
@@ -3613,7 +3613,13 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
     fr.set_propagate_epsilon( SEventConfig::PropagateEpsilon() );
     fr.frs = strdup(frs);
     fr.prepare();  // needed for spawn_lite to work
-    // LOG(LEVEL) << " fr " << fr ;    // no grid has been set at this stage, just ce,m2w,w2m
+
+    LOG_IF(info, VERBOSE)
+        << "[" << getFrame_VERBOSE << "] " << ( VERBOSE ? "YES" : "NO " )
+        << "[fr.desc\n"
+        << fr.desc()
+        << "]fr.desc\n"
+        ;
 
     LOG_IF(error, rc != 0) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;
     return rc ;
