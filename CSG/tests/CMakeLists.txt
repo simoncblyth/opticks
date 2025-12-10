@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(name CSGTest)
 project(${name} VERSION 0.1.0)
 
@@ -15,8 +15,15 @@ set(TEST_SOURCES
     CSGSolidTest.cc
 )
 
+
+
+
 #[=[
 Almost all tests need CUDA::cudart because of CSGFoundry::upload
+TODO: rearrange to avoid this unless absolutely required
+
+HMM: MANY OF THESE JUST LOAD A PERSISTED GEOM, THAT DOES NOT NEED CUDA
+
 #]=]
 
 set(CUDA_TEST_SOURCES
