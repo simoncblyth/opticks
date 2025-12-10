@@ -128,6 +128,8 @@ void test_PhotonTransform()
      const char* path = SPath::Resolve("$HOME/.opticks/InputPhotons" , name, NOOP ); 
 
      NP* a = NP::Load(path); 
+     if(!a) return ;
+
      NP* b0 = Tran<T>::PhotonTransform(a, false, t); 
      NP* b1 = Tran<T>::PhotonTransform(a, true, t); 
  

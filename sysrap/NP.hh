@@ -7840,7 +7840,7 @@ inline int NP::load(const char* _path, const char* _sli )
     if( fp == nullptr )
     {
         std::cerr << "NP::load Failed to load from path [" << ( _path ? _path : "-" ) << "]\n" ;
-        std::raise(SIGINT);
+        //std::raise(SIGINT);
         return 1 ; // SIGINT might have a handler
     }
     load_data( fp, _sli );

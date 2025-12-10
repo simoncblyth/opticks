@@ -873,6 +873,7 @@ om-pkg-opt()
     local name=$1
     local opt=""
     case $name in
+       okconf) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
        sysrap) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
           CSG) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
            u4) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
@@ -939,6 +940,7 @@ om-cmake-okconf()
     local bdir=$PWD
     [ "$sdir" == "$bdir" ] && echo ERROR sdir and bdir are the same $sdir && return 1000
 
+    local opt=$(om-pkg-opt $name)
     local rc
     cmake $sdir \
        -G "$(om-cmake-generator)" \
@@ -948,7 +950,8 @@ om-cmake-okconf()
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
        -DOptiX_INSTALL_DIR=$(opticks-optix-prefix) \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
-       -DCOMPUTE_ARCHITECTURES=$(opticks-compute-architectures)
+       -DCOMPUTE_ARCHITECTURES=$(opticks-compute-architectures) \
+        $opt
 
     # TODO: arrange for this and om-cmake to merge
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
@@ -1081,7 +1084,7 @@ om-make-one()
     [ "$rc" != "0" ] && cd $iwd && return $rc
 
     #echo d1 $d1
-    [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2
+    #[ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2
 
     if [ $pr -gt 1 ]; then
         make install -j$pr

@@ -17,6 +17,8 @@ A: ResolvePath accepts only a single string element whereas Resolve accepts
 #include <fstream>
 #include <vector>
 #include <iostream>
+#include <unistd.h>
+
 
 #include "sproc.h"
 #include "sdirectory.h"

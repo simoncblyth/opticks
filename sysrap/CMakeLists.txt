@@ -172,9 +172,6 @@ set(SOURCES
 
     OpticksPhoton.cc
 
-    SU.cu
-    SPM.cu
-
     SEventConfig.cc
     SFrameConfig.cc
     SGeoConfig.cc
@@ -500,26 +497,6 @@ set(HEADERS
     snocuda_vector_functions.h
     scuda_pointer.h
 
-    SOPTIX.h
-    SOPTIX_Context.h
-    SOPTIX_Properties.h
-    SOPTIX_Options.h
-    SOPTIX_getPRD.h
-    SOPTIX_Desc.h
-    SOPTIX_Accel.h
-    SOPTIX_Binding.h
-    SOPTIX_MeshGroup.h
-    SOPTIX_Module.h
-    SOPTIX_OPT.h
-    SOPTIX_Pipeline.h
-    SOPTIX_SBT.h
-    SOPTIX_Scene.h
-
-    SOPTIX_BuildInput.h
-    SOPTIX_BuildInput_Mesh.h
-    SOPTIX_BuildInput_CPA.h
-    SOPTIX_BuildInput_IA.h
-
     gleq.h
 
     SDir.h
@@ -552,15 +529,7 @@ set(HEADERS
     OpticksPhoton.h
     OpticksPhoton.hh
 
-    CUDA_CHECK.h
-    SCU.h
-    SCU_.h
-    OPTIX_CHECK.h
 
-
-    SU.hh
-    SPM.hh
-    SPM_future.h
     SComponent_OLD.hh
     SComp.h
 
@@ -622,6 +591,61 @@ set(RETIRED_HEADERS
     SProc.hh
 )
 
+
+
+
+
+
+if(BUILD_WITH_CUDA)
+
+    list(APPEND SOURCES
+
+    SU.cu
+    SPM.cu
+
+
+
+    )
+    list(APPEND HEADERS
+
+
+    CUDA_CHECK.h
+    SCU.h
+    SCU_.h
+    OPTIX_CHECK.h
+
+    SU.hh
+    SPM.hh
+    SPM_future.h
+
+
+    SOPTIX.h
+    SOPTIX_Context.h
+    SOPTIX_Properties.h
+    SOPTIX_Options.h
+    SOPTIX_getPRD.h
+    SOPTIX_Desc.h
+    SOPTIX_Accel.h
+    SOPTIX_Binding.h
+    SOPTIX_MeshGroup.h
+    SOPTIX_Module.h
+    SOPTIX_OPT.h
+    SOPTIX_Pipeline.h
+    SOPTIX_SBT.h
+    SOPTIX_Scene.h
+
+    SOPTIX_BuildInput.h
+    SOPTIX_BuildInput_Mesh.h
+    SOPTIX_BuildInput_CPA.h
+    SOPTIX_BuildInput_IA.h
+
+
+
+    )
+
+
+
+endif()
 
 
 
@@ -867,50 +891,48 @@ endif()
 
 
 
+if(BUILD_WITH_CUDA)
+
+    set(OPTIX_SOURCES)
+    list(APPEND OPTIX_SOURCES
+        SOPTIX.cu
+    )
+
+    set(OpticksOptiX_VERBOSE ON)
+    find_package(OpticksOptiX REQUIRED MODULE)
+
+    message(STATUS "${name} OPTIX_SOURCES        : ${OPTIX_SOURCES} ")
+    message(STATUS "${name} OpticksOptiX_VERSION : ${OpticksOptiX_VERSION} ")
+    message(STATUS "${name} OpticksOptiX_INCLUDE : ${OpticksOptiX_INCLUDE} ")
+    message(STATUS "${name} COMPUTE_CAPABILITY   : ${COMPUTE_CAPABILITY} ")
+
+    add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
+    add_dependencies( ${name} ${name}_OPTIX )
 
 
+    set_target_properties( ${name}_OPTIX
+        PROPERTIES
+             CUDA_PTX_COMPILATION ON
+             POSITION_INDEPENDENT_CODE ON
+             CUDA_SEPARABLE_COMPILATION ON
+             CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}"    ## single integer CC of oldest GPU
+    )
 
-set(OPTIX_SOURCES)
-list(APPEND OPTIX_SOURCES
-    SOPTIX.cu
-)
+    target_include_directories(${name}_OPTIX
+       PUBLIC
+          ${OpticksOptiX_INCLUDE}
+          $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
+          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    )
 
-set(OpticksOptiX_VERBOSE ON)
-find_package(OpticksOptiX REQUIRED MODULE)
+    target_compile_options( ${name}_OPTIX
+       PRIVATE
+            $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
+    )
 
-message(STATUS "${name} OPTIX_SOURCES        : ${OPTIX_SOURCES} ")
-message(STATUS "${name} OpticksOptiX_VERSION : ${OpticksOptiX_VERSION} ")
-message(STATUS "${name} OpticksOptiX_INCLUDE : ${OpticksOptiX_INCLUDE} ")
-message(STATUS "${name} COMPUTE_CAPABILITY   : ${COMPUTE_CAPABILITY} ")
+    install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )
 
-add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
-add_dependencies( ${name} ${name}_OPTIX )
-
-
-set_target_properties( ${name}_OPTIX
-    PROPERTIES
-         CUDA_PTX_COMPILATION ON
-         POSITION_INDEPENDENT_CODE ON
-         CUDA_SEPARABLE_COMPILATION ON
-         CUDA_ARCHITECTURES "${COMPUTE_CAPABILITY}"    ## single integer CC of oldest GPU
-)
-
-target_include_directories(${name}_OPTIX
-   PUBLIC
-      ${OpticksOptiX_INCLUDE}
-      $<BUILD_INTERFACE:${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES}>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-)
-
-target_compile_options( ${name}_OPTIX
-   PRIVATE
-        $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
-)
-
-install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )
-
-
-
+endif()
 
 
 

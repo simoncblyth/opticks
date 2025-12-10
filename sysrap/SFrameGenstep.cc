@@ -426,7 +426,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     // extent is already handled within the transform so must not apply extent scaling
     // THIS IS CONFUSING : TODO FIND WAY TO AVOID THE CONFUSION BY MAKING THE DIFFERENT TYPES OF TRANSFORM MORE CONSISTENT
 
-    unsigned photon_offset = 0 ;
+    [[maybe_unused]] unsigned photon_offset = 0 ;
     std::vector<quad6> gensteps ;
 
     for(int ip=0 ; ip < num_offset ; ip++)   // planes
