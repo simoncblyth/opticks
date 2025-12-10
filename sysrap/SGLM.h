@@ -1336,6 +1336,14 @@ inline void SGLM::update()
     addlog("SGLM::update", "]");
 }
 
+/**
+SGLM::constrain
+----------------
+
+UP is a direction vector, not a position, so non-zero UP.w would be a bug
+
+**/
+
 inline void SGLM::constrain() const
 {
     bool expect_UP_w = UP.w == 0.f ;
@@ -1407,7 +1415,9 @@ inline void SGLM::initModelMatrix()
 
     //bool m2w_not_identity = fr.m2w.is_identity(sframe::EPSILON) == false ;
     //bool w2m_not_identity = fr.w2m.is_identity(sframe::EPSILON) == false ;
-    if( !fr.is_identity() )
+
+    bool fr_has_transform = !fr.is_identity() ;
+    if( fr_has_transform )
     {
         initModelMatrix_branch = 1 ;
         //model2world = glm::make_mat4x4<float>(fr.m2w.cdata());
@@ -1814,11 +1824,24 @@ std::string SGLM::descNearFar() const
 }
 
 
+/**
+SGLM::updateTitle
+------------------
+
+The *title* is set as the cxr_min.sh OpenGL window title by SGLFW::renderloop_tail
+
+**/
+
+
 void SGLM::updateTitle()
 {
     std::stringstream ss ;
-    ss << fr.get_name() ;
-    ss << " sglm.e(c2w*ori) [" << Present(e) << "]" ;
+    ss
+       << fr.get_name()
+       << " "
+       << fr.desc_ce()
+       << " sglm.e(c2w*ori) [" << Present(e) << "] SGLM::updateTitle"
+       ;
     title = ss.str();
 }
 
@@ -2157,7 +2180,7 @@ void SGLM::updateComposite()
 {
     //std::cout << "SGLM::updateComposite" << std::endl ;
 
-    glm::mat4 _eyeshift = glm::translate(glm::mat4(1.0), eyeshift ) ;
+    glm::mat4 _eyeshift = glm::translate(glm::mat4(1.0), eyeshift ) ;    // eyeshift starts (0,0,0) changed by WASDQE keys
     glm::mat4 _ieyeshift = glm::translate(glm::mat4(1.0), -eyeshift ) ;
 
     glm::mat4 _lookrot = glm::mat4_cast(q_lookrot) ;
@@ -2167,7 +2190,7 @@ void SGLM::updateComposite()
     glm::mat4 _ieyerot = glm::mat4_cast( glm::conjugate( q_eyerot )) ;
 
 
-    MV = _eyeshift * _eyerot * look2eye * _lookrot * eye2look * world2camera ;
+    MV = _eyeshift * _eyerot * look2eye * _lookrot * eye2look * world2camera ;  // just world2camera before shifts, rotations
 
     IMV = camera2world * look2eye * _ilookrot * eye2look * _ieyerot  * _ieyeshift  ;
     //IMV = glm::inverse( MV );
