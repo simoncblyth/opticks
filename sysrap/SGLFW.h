@@ -274,6 +274,7 @@ TODO: automated view rotation around an axis, eg +Z
 
     int count ;
     int renderlooplimit ;
+    int renderloop_tail_LEVEL ;
     bool exitloop ;
 
     bool dump ;
@@ -300,6 +301,8 @@ TODO: automated view rotation around an axis, eg +Z
     bool renderloop_proceed();
     void renderloop_exit();
     void renderloop_head();
+
+    static constexpr const char* SGLFW__renderloop_tail_LEVEL = "SGLFW__renderloop_tail_LEVEL" ;
     void renderloop_tail();
 
     void handle_event(GLEQevent& event);
@@ -434,7 +437,15 @@ inline void SGLFW::renderloop_tail()
     exitloop = renderlooplimit > 0 && count++ > renderlooplimit ;
 
     gm.renderloop_tail();
-    setWindowTitle(gm.title.c_str());
+
+    const char* gm_title = gm.title.c_str();
+    setWindowTitle(gm_title);
+    if(renderloop_tail_LEVEL > 0) std::cout
+        << "SGLFW::renderloop_tail "
+        << " gm.title [" << gm_title << "]"
+        << " " << gm.descModelMatrix()
+        << "\n"
+        ;
 }
 
 
@@ -1067,7 +1078,7 @@ cursor movement causing SGLM::setEyeRotation to set a whacky unpredictable
 initial view orientation until press the H key which resets q_eyerot.
 Placing the cursor position in the center of the screen prior to launching
 the application leads to the initial position being close to the home position.
-So the problem can be restated as an unintended dependency of the the 
+So the problem can be restated as an unintended dependency of the the
 initial view on the position the cursor was left at prior to launching the app.
 
 Attempts to fix the cursor position to the center of the screen/window before
@@ -1083,10 +1094,10 @@ viewpoint.
 inline void SGLFW::cursor_moved(int ix, int iy)
 {
     cursor_moved_count += 1 ;
-    if(cursor_moved_count < 3) 
+    if(cursor_moved_count < 3)
     {
          // ad-hoc ignore first few cursor moves
-         return ; 
+         return ;
     }
 
     move_ndc.x  = 2.f*float(ix)/width - 1.f ;
@@ -1224,6 +1235,7 @@ inline SGLFW::SGLFW(SGLM& _gm )
     window(nullptr),
     count(0),
     renderlooplimit(ssys::getenvint("SGLFW__renderlooplimit",1000000)),
+    renderloop_tail_LEVEL(ssys::getenvint(SGLFW__renderloop_tail_LEVEL, 0)),
     exitloop(false),
     dump(false),
     _width(0),
