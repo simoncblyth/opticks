@@ -509,8 +509,12 @@ struct stree
     int get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int _get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, char ridx_type ) const ;
 
-    int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node ) const ;
-    int get_node_bb(     std::array<double,6>& bb , const snode& node ) const ;
+    static constexpr const char* stree__get_frame_global_LVID = "stree__get_frame_global_LVID" ;
+    typedef std::array<double,6> BB ;
+    typedef std::vector<BB> VBB ;
+
+    int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node, VBB* contrib_bb = nullptr ) const ;
+    int get_node_bb(     std::array<double,6>& bb ,                           const snode& node, VBB* contrib_bb = nullptr ) const ;
 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ;
@@ -2184,7 +2188,6 @@ inline sfr stree::get_frame_moi() const
 stree::get_frame
 ------------------
 
-1. parse_spec from q_spec get (lvid, lvid_ordinal, repeat_ordinal)
 
 Q: An instance may encompasses multiple lv (and multiple snode)
    so which nidx is collected together with the inst
@@ -2222,6 +2225,22 @@ inline sfr stree::get_frame(const char* q_spec ) const
 
     return f ;
 }
+
+/**
+stree::get_frame_from_triplet
+-----------------------------
+
+1. parse_spec from q_spec get (lvid, lvid_ordinal, repeat_ordinal)
+
+
+repeat_ordinal:-1/-2/-3
+   get_frame_global
+
+repeat_ordinal:0,...
+   get_frame_instanced
+
+
+**/
 
 
 inline int stree::get_frame_from_triplet(sfr& f, const char* q_spec ) const
@@ -2506,7 +2525,7 @@ stree::_get_frame_global
 This is called for special cased -ve repeat_ordinal, which
 is only appropriate for global non-instanced volumes.
 
-1. find the snode using (lvid, lvid_ordinal, ridx_type)
+1. find the snode using (lvid, lvid_ordinal, ridx_type['R','T','?'])
 2. compute bounding box and hence center_extent for the snode
 3. form frame transforms m2w/w2m using SCenterExtentFrame or not
    depending on repeat_ordinal -1/-2/-3
@@ -2551,8 +2570,30 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
 
     std::array<double,4> ce = {} ;
     std::array<double,6> bb = {} ;
-    int rc = get_node_ce_bb( ce, bb, node );
+
+
+    int LVID = ssys::getenvint(stree__get_frame_global_LVID,-1);
+    VBB* contrib_bb = node.lvid == LVID ? new VBB : nullptr ;
+    int rc = get_node_ce_bb( ce, bb, node, contrib_bb );
     f.set_ce(ce.data() );
+
+    if(contrib_bb)
+    {
+        NP* a = NP::Make<double>( contrib_bb->size(), 6 );
+        double* aa = a->values<double>();
+        for(size_t i=0 ; i < contrib_bb->size() ; i++)
+        {
+            const BB& cbb = (*contrib_bb)[i] ;
+            for(size_t j=0 ; j < 6 ; j++) aa[i*6+j] = cbb[j] ;
+        }
+        std::stringstream ss ;
+        ss << stree__get_frame_global_LVID << "_" << LVID << ".npy" ;
+        std::string name = ss.str();
+        std::cout << "stree::_get_frame_global saving [" << name << "]\n" ;
+        a->save( name.c_str() );
+    }
+
+
 
     if( repeat_ordinal == -2 || repeat_ordinal == -3 )
     {
@@ -2583,20 +2624,52 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
     return rc ;
 }
 
-inline int stree::get_node_ce_bb(    std::array<double,4>& ce , std::array<double,6>& bb,  const snode& node ) const
+
+/**
+stree::get_node_ce_bb
+------------------------
+
+1. get bbox for the snode with stree::get_node_bb
+2. derive CenterExtent ce from the bbox bb
+
+**/
+
+
+inline int stree::get_node_ce_bb(    std::array<double,4>& ce , std::array<double,6>& bb,  const snode& node, VBB* contrib_bb ) const
 {
-    int rc = get_node_bb(bb, node);
+    int rc = get_node_bb(bb, node, contrib_bb );
     s_bb::CenterExtent( ce.data(), bb.data() );
     return rc ;
 }
 
-inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) const
+/**
+stree::get_node_bb
+-------------------
+
+1. get bds binary tree nodes
+2. get lns list nodes
+3. iterate over binary tree nodes
+
+4. A: when a listnode is encountered collect the immediate child nodes into subs
+4. B: when a non-listnode leaf is encountered obtain n_bb bounding box and include that into bb
+
+5. iterate over the subs, which are required to all be leaf nodes, getting their n_bb and including it into bb
+
+
+**/
+
+inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, std::vector<std::array<double,6>>* contrib_bb ) const
 {
     int lvid = node.lvid ;
+
+    // 1. get bds binary tree nodes
 
     std::vector<const sn*> bds ;         // binary tree nodes
     sn::GetLVNodesComplete(bds, lvid);   // many nullptr in unbalanced deep complete binary trees
     int bn = bds.size();                 // number of binary tree nodes
+
+
+   // 2. get lns list nodes
 
     std::vector<const sn*> lns ;
     sn::GetLVListnodes( lns, lvid );
@@ -2607,6 +2680,8 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) c
 
     std::ostream* out = nullptr ;
 
+
+    // 3. iterate over binary tree nodes
     std::vector<const sn*> subs ;
 
     for(int i=0 ; i < bn ; i++)
@@ -2616,7 +2691,7 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) c
 
         if(n && n->is_listnode())
         {
-            // hmm subtracted holes will no contribute to bbox
+            // 4. A: when a listnode is encountered collect the immediate child nodes into subs
             int num_sub = n->child.size() ;
             for(int j=0 ; j < num_sub ; j++)
             {
@@ -2626,6 +2701,7 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) c
         }
         else
         {
+            // 4. B: when a non-listnode leaf  is encountered obtain n_bb bounding box and include that into bb
             bool leaf = CSG::IsLeaf(typecode) ;
 
             if(0) std::cout
@@ -2640,12 +2716,19 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) c
             double* n_aabb = leaf ? n_bb.data() : nullptr ;
             const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
 
-            if(tv && leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
+            if(tv && leaf && n_aabb && !n->is_complement_primitive())
+            {
+                if(contrib_bb) contrib_bb->push_back(n_bb);
+                s_bb::IncludeAABB( bb.data(), n_aabb, out );
+            }
         }
     }
 
 
     // NOT FULLY TESTED : but it succeeds to do nothing with subtracted multiunion of holes (that becomes listnode)
+
+    // 5. iterate over the subs, which are required to all be leaf nodes, getting their n_bb and including it into bb
+
     int num_sub_total = subs.size();
     for( int i=0 ; i < num_sub_total ; i++ )
     {
@@ -2657,7 +2740,11 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node ) c
         double* n_aabb = leaf ? n_bb.data() : nullptr ;
         const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
 
-        if(tv && leaf && n_aabb && !n->is_complement_primitive()) s_bb::IncludeAABB( bb.data(), n_aabb, out );
+        if(tv && leaf && n_aabb && !n->is_complement_primitive())
+        {
+            if(contrib_bb) contrib_bb->push_back(n_bb);
+            s_bb::IncludeAABB( bb.data(), n_aabb, out );
+        }
         // HMM does the complement message get thru to listnode subs ?
     }
     return 0 ;
