@@ -4,16 +4,16 @@
  * This file is part of Opticks
  * (see https://bitbucket.org/simoncblyth/opticks).
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License.  
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software 
- * distributed under the License is distributed on an "AS IS" BASIS, 
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
- * See the License for the specific language governing permissions and 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
  * limitations under the License.
  */
 
@@ -22,8 +22,8 @@
 OKConf
 =======
 
-Static methods providing installation constants and 
-version number integers of externals. 
+Static methods providing installation constants and
+version number integers of externals.
 
 
 **/
@@ -32,6 +32,8 @@ version number integers of externals.
 
 #include "OKConf_Config.hh"
 
+
+#ifdef WITH_CUDA
 #ifdef OKCONF_OPTIX_VERSION_INTEGER
 
 #define OKCONF_OPTIX_VERSION_MAJOR (OKCONF_OPTIX_VERSION_INTEGER / 10000)
@@ -46,42 +48,38 @@ version number integers of externals.
 #define OKCONF_OPTIX_VERSION_MICRO 0
 
 #endif
+#endif
 
 
-class OKCONF_API OKConf 
+class OKCONF_API OKConf
 {
     public:
-       static int Check(); 
-       static void Dump(const char* msg="OKConf::Dump"); 
+       static int Check();
+       static void Dump(const char* msg="OKConf::Dump");
     public:
        static const char* OpticksInstallPrefix();
-       static const char* OptiXInstallDir();
-       //static const char* CUDA_NVCC_FLAGS();
        static const char* CMAKE_CXX_FLAGS();
 
-       static unsigned ComputeCapabilityInteger();
 
-       static int OptiXVersionInteger() ; 
-       static int OptiXVersionMajor() ; 
-       static int OptiXVersionMinor() ; 
-       static int OptiXVersionMicro() ; 
+#ifdef WITH_CUDA
+       static const char* OptiXInstallDir();
+       //static const char* CUDA_NVCC_FLAGS();
+       static unsigned ComputeCapabilityInteger();
+       static int OptiXVersionInteger() ;
+       static int OptiXVersionMajor() ;
+       static int OptiXVersionMinor() ;
+       static int OptiXVersionMicro() ;
+       static unsigned CUDAVersionInteger() ;
+       static const char* PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel=nullptr );
+#endif
 
        // static unsigned CLHEPVersionInteger();    see x4/tests/CLHEPVersionInteger.cc
-       static unsigned Geant4VersionInteger() ; 
-       static unsigned CUDAVersionInteger() ; 
-       static unsigned OpticksVersionInteger(); 
+       static unsigned Geant4VersionInteger() ;
+       static unsigned OpticksVersionInteger();
 
-       static const char* PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel=nullptr );
        static const char* ShaderDir();
-       static const char* DefaultSTTFPath();  
+       static const char* DefaultSTTFPath();
 
 };
-
-
-
-
-
-
-
 
 

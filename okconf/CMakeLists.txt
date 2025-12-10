@@ -1,12 +1,18 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 #cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 set(name OKConf)
+
+option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
+#[=[
+See opticks-build-with-cuda-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
+#]=]
+
 project(${name} VERSION 0.1.0)
 set(FLAGS_VERBOSE ON)
 include(OpticksBuildOptions)
 set(FLAGS_VERBOSE OFF)
 
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})  
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 
 #[=[
 OKConf
@@ -14,16 +20,16 @@ OKConf
 
 OKConf is unusual : it find_packages OptiX and G4, see::
 
-    cmake/Modules/FindOptiX.cmake 
-    cmake/Modules/FindG4.cmake 
+    cmake/Modules/FindOptiX.cmake
+    cmake/Modules/FindG4.cmake
 
-Within those the location of the INCLUDE_DIR is used 
-to access headers which are parsed to extract version integers. 
+Within those the location of the INCLUDE_DIR is used
+to access headers which are parsed to extract version integers.
 But the OptiX and G4 targets are not linked against.
 The below default RPATH setup from OpticksBuildOptions of
 does not work for OKConfTest ? But the above does::
 
-   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE) 
+   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 
 On Linux could extract driver version
@@ -31,42 +37,48 @@ On Linux could extract driver version
     nvidia-smi --query-gpu=driver_version --format=csv,noheader
     418.56
 
-BUT the assumption that the build machine is the same as the 
+BUT the assumption that the build machine is the same as the
 running one is a bad one.  So paths need to be overridden.
 
 
 #]=]
 
+
+if(BUILD_WITH_CUDA)
+
 set(OpticksCUDA_VERBOSE YES)
 
-#find_package(OpticksCUDA MODULE QUIET)    ## eg 12040
-find_package(CUDAToolkit)
+    find_package(CUDAToolkit)
 
-# https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html
-message( STATUS "CUDAToolkit_VERSION         : ${CUDAToolkit_VERSION} " )
-message( STATUS "CUDAToolkit_VERSION_MAJOR   : ${CUDAToolkit_VERSION_MAJOR} " )
-message( STATUS "CUDAToolkit_VERSION_MINOR   : ${CUDAToolkit_VERSION_MINOR} " )
-message( STATUS "CUDAToolkit_VERSION_PATCH   : ${CUDAToolkit_VERSION_PATCH} " )
+    # https://cmake.org/cmake/help/latest/module/FindCUDAToolkit.html
+    message( STATUS "CUDAToolkit_VERSION         : ${CUDAToolkit_VERSION} " )
+    message( STATUS "CUDAToolkit_VERSION_MAJOR   : ${CUDAToolkit_VERSION_MAJOR} " )
+    message( STATUS "CUDAToolkit_VERSION_MINOR   : ${CUDAToolkit_VERSION_MINOR} " )
+    message( STATUS "CUDAToolkit_VERSION_PATCH   : ${CUDAToolkit_VERSION_PATCH} " )
 
-math(EXPR CUDAToolkit_VERSION_INTEGER "${CUDAToolkit_VERSION_MAJOR}*1000 + ${CUDAToolkit_VERSION_MINOR}*10" )
-message( STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER} " )
+    #math(EXPR CUDAToolkit_VERSION_INTEGER "${CUDAToolkit_VERSION_MAJOR}*1000 + ${CUDAToolkit_VERSION_MINOR}*10" )
+    message( STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER} " )
 
 
-set(OptiX_VERBOSE ON)
-find_package(OptiX       MODULE QUIET) 
-find_package(G4          MODULE QUIET) 
-#find_package(Custom4     MODULE QUIET) 
+    set(OptiX_VERBOSE ON)
+    find_package(OptiX       MODULE QUIET)
+
+endif()
+
+
+
+find_package(G4          MODULE QUIET)
+#find_package(Custom4     MODULE QUIET)
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
 message(STATUS "OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
-#message(STATUS "OpticksCUDA_API_VERSION : ${OpticksCUDA_API_VERSION}")
 message(STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER}")
 message(STATUS "G4_VERSION_INTEGER      : ${G4_VERSION_INTEGER}")
 message(STATUS "COMPUTE_CAPABILITY      : ${COMPUTE_CAPABILITY}")
 message(STATUS "COMPUTE_ARCHITECTURES   : ${COMPUTE_ARCHITECTURES}")
 
 
-# generate define header for hardcoding in the library 
+# generate define header for hardcoding in the library
 
 set(OKCONF_CUDA_API_VERSION_INTEGER "${CUDAToolkit_VERSION_INTEGER}")
 set(OKCONF_OPTIX_VERSION_INTEGER  "${OptiX_VERSION_INTEGER}")
@@ -104,7 +116,7 @@ set(HEADERS
 
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
-# hmm reluctant to make PUBLIC as just want to communicate to the tests 
+# hmm reluctant to make PUBLIC as just want to communicate to the tests
 # but for integrated it seems need to, unless just use ".." from the tests
 
 
@@ -116,6 +128,12 @@ target_include_directories( ${name} PRIVATE
 )
 
 target_compile_definitions( ${name} PUBLIC OPTICKS_OKCONF )
+
+if(BUILD_WITH_CUDA)
+    target_compile_definitions(${name} PUBLIC WITH_CUDA)
+endif()
+
+
 add_subdirectory(tests)
 
 
