@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
-#cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
 set(name OKConf)
 
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
@@ -46,7 +45,7 @@ running one is a bad one.  So paths need to be overridden.
 
 if(BUILD_WITH_CUDA)
 
-set(OpticksCUDA_VERBOSE YES)
+    set(OpticksCUDA_VERBOSE YES)
 
     find_package(CUDAToolkit)
 
@@ -56,9 +55,11 @@ set(OpticksCUDA_VERBOSE YES)
     message( STATUS "CUDAToolkit_VERSION_MINOR   : ${CUDAToolkit_VERSION_MINOR} " )
     message( STATUS "CUDAToolkit_VERSION_PATCH   : ${CUDAToolkit_VERSION_PATCH} " )
 
-    #math(EXPR CUDAToolkit_VERSION_INTEGER "${CUDAToolkit_VERSION_MAJOR}*1000 + ${CUDAToolkit_VERSION_MINOR}*10" )
+    #math(EXPR CUDAToolkit_VERSION_INTEGER "${CUDAToolkit_VERSION_MAJOR}*1000 + ${CUDAToolkit_VERSION_MINOR}*10" ) # fails with newer CMake
+    math(EXPR major_part "${CUDAToolkit_VERSION_MAJOR} * 1000")
+    math(EXPR minor_part "${CUDAToolkit_VERSION_MINOR} * 10")
+    math(EXPR CUDAToolkit_VERSION_INTEGER "${major_part} + ${minor_part}")
     message( STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER} " )
-
 
     set(OptiX_VERBOSE ON)
     find_package(OptiX       MODULE QUIET)

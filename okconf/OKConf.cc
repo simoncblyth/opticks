@@ -35,6 +35,8 @@ int OKConf::Check()
 {
    int rc = 0 ;
 
+   std::stringstream ss ;
+
    if(OpticksVersionInteger() == 0)
    {
        rc += 1 ;
@@ -43,6 +45,7 @@ int OKConf::Check()
 #ifdef WITH_CUDA
    if(CUDAVersionInteger() == 0)
    {
+       ss << "unexpected CUDAVersionInteger\n" ;
        rc += 1 ;
    }
 
@@ -80,6 +83,13 @@ int OKConf::Check()
    {
        rc += 1 ;
    }
+
+   if( rc != 0 )
+   {
+       std::string str = ss.str();
+       std::cerr << str ;
+   }
+
    return rc ;
 }
 
