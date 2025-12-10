@@ -303,11 +303,15 @@ void intersect_tree( bool& valid_isect, float4& isect, const CSGNode* node, cons
 
     CSG_Stack csg ;  
     csg.curr = -1 ;
+#ifdef DEBUG_RECORD
     int tloop = -1 ; 
+#endif
 
     while (tr.curr > -1)
     {
+#ifdef DEBUG_RECORD
         tloop++ ; 
+#endif
         unsigned slice ; 
         float tmin ;    // NB different from t_min when looping 
 
