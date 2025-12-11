@@ -5053,11 +5053,22 @@ inline std::string sn::DescNodeTransformProduct(
     return str ;
 }
 
+/**
+sn::getNodeTransformProduct
+-----------------------------
+
+HMM: does ancestors work with subs of a listnode ?
+
+**/
+
+
 inline void sn::getNodeTransformProduct(
     glm::tmat4x4<double>& t,
     glm::tmat4x4<double>& v,
     bool reverse, std::ostream* out) const
 {
+    if(out) *out << "\nsn::getNodeTransformProduct.HEAD\n" ;
+
     std::vector<const sn*> nds ;
     ancestors(nds);
     nds.push_back(this);
@@ -5066,6 +5077,7 @@ inline void sn::getNodeTransformProduct(
 
     if(out)
     {
+        for(int i=0 ; i < num_nds ; i++) *out << "sn::getNodeTransformProduct.nd[" << i << "] " << nds[i]->desc() << "\n" ;
         *out
              << std::endl
              << "sn::getNodeTransformProduct"
@@ -5112,6 +5124,7 @@ inline void sn::getNodeTransformProduct(
     memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
 
     if(out) *out << stra<double>::Desc( tp, vp , "tp", "vp" ) << std::endl ;
+    if(out) *out << "\nsn::getNodeTransformProduct.TAIL\n" ;
 }
 
 inline std::string sn::desc_getNodeTransformProduct(

@@ -205,6 +205,7 @@ When SSim not in use can also use::
 #include <csignal>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <map>
 #include <functional>
 
@@ -2705,7 +2706,8 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
     int ln = lns.size();
     assert( ln == 0 || ln == 1 ); // simplify initial impl  : see CSGImport::importPrim
 
-    std::ostream* out = nullptr ;
+    std::ostream* out = contrib_bb ? new std::stringstream : nullptr ;
+    if(out) *out << "stree::get_node_bb bn " << bn << "\n" ;
 
 
     // 3. iterate over binary tree nodes
@@ -2713,6 +2715,7 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
 
     for(int i=0 ; i < bn ; i++)
     {
+        if(out) *out << "stree::get_node_bb.bn_loop.HEAD i[" << i << "/" << bn << "]\n" ;
         const sn* n = bds[i];
         int  typecode = n ? n->typecode : CSG_ZERO ;
 
@@ -2746,7 +2749,11 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
 
             std::array<double,6> n_bb = {} ;
             double* n_aabb = leaf ? n_bb.data() : nullptr ;
-            const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) : nullptr ;
+
+
+            if(out) *out << "stree::get_node_bb.bn_loop.GET_COMBINED_TRAN_AND_AABB i[" << i << "]\n" ;
+
+            const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, out ) : nullptr ;
             bool is_degenerate = s_bb::Degenerate<double>( n_aabb );
 
             if(is_degenerate) std::cerr
@@ -2764,9 +2771,12 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
                 if(contrib_bb) contrib_bb->push_back(n_bb0);
                 if(contrib_bb) contrib_bb->push_back(n_bb);
                 if(contrib_tr) contrib_tr->push_back(tv->t);
+                if(out) *out << "stree::get_node_bb.bn_loop.IncludeAABB i[" << i << "]\n" ;
                 s_bb::IncludeAABB( bb.data(), n_aabb, out );
             }
+
         }
+        if(out) *out << "stree::get_node_bb.bn_loop.TAIL i[" << i << "/" << bn << "]\n" ;
     }
 
 
@@ -2777,6 +2787,7 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
     int num_sub_total = subs.size();
     for( int i=0 ; i < num_sub_total ; i++ )
     {
+        if(out) *out << "stree::get_node_bb.sub_loop.HEAD i[" << i << "/" << num_sub_total <<  "]\n" ;
         const sn* n = subs[i];
         bool leaf = CSG::IsLeaf(n->typecode) ;
         assert(leaf);
@@ -2787,7 +2798,9 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
 
         std::array<double,6> n_bb ;
         double* n_aabb = n_bb.data() ;
-        const Tran<double>* tv = get_combined_tran_and_aabb( n_aabb, node, n, nullptr ) ;
+
+        if(out) *out << "stree::get_node_bb.sub_loop.GET_COMBINED_TRAN_AND_AABB i[" << i << "]\n" ;
+        const Tran<double>* tv = get_combined_tran_and_aabb( n_aabb, node, n, out ) ;
         bool is_degenerate = s_bb::Degenerate<double>( n_aabb );
 
         if(is_degenerate) std::cerr
@@ -2805,10 +2818,27 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
             if(contrib_bb) contrib_bb->push_back(n_bb0);
             if(contrib_bb) contrib_bb->push_back(n_bb);
             if(contrib_tr) contrib_tr->push_back(tv->t);
+
+            if(out) *out << "stree::get_node_bb.sub_loop.i[" << i << "].n_bb0 " << s_bb::Desc(n_bb0.data()) << "\n" ;
+            if(out) *out << "stree::get_node_bb.sub_loop.i[" << i << "].n_bb  " << s_bb::Desc(n_bb.data())  << "\n" ;
             s_bb::IncludeAABB( bb.data(), n_aabb, out );
         }
         // HMM does the complement message get thru to listnode subs ?
+        if(out) *out << "stree::get_node_bb.sub_loop.TAIL i[" << i << "/" << num_sub_total <<  "]\n" ;
     }
+
+    if(out)
+    {
+        std::stringstream* ss = dynamic_cast<std::stringstream*>(out) ;
+        std::string msg = ss ? ss->str() : "-" ;
+        std::cout
+            << "stree::get_node_bb out\n[\n"
+            << msg
+            << "\n]\n"
+            ;
+    }
+
+
     return 0 ;
 }
 
@@ -3137,6 +3167,9 @@ inline void stree::get_node_product(
                       bool reverse,
                       std::ostream* out ) const
 {
+
+    if(out) *out << "stree::get_node_product.HEAD nidx " << nidx << " local " << local << " reverse " << reverse << "\n" ;
+
     std::vector<int> nodes ;
     get_ancestors(nodes, nidx, local, out);  // root-first-order (from collecting parent links then reversing the vector)
 
@@ -3190,12 +3223,12 @@ inline void stree::get_node_product(
 
         glm::tmat4x4<double> it(1.);
         glm::tmat4x4<double> iv(1.);
-        get_node_transform( it, iv, ii );
+        get_node_transform( it, iv, ii );   // m2w and w2m for nidx:ii
         if(out) *out << stra<double>::Desc(it, iv, "it", "iv" );
 
         glm::tmat4x4<double> jt(1.);
         glm::tmat4x4<double> jv(1.);
-        get_node_transform( jt, jv, jj );
+        get_node_transform( jt, jv, jj );  // m2w and w2m for nidx:jj
         if(out) *out << stra<double>::Desc(jt, jv, "jt", "jv" );
 
         tp *= it ;
@@ -3204,10 +3237,15 @@ inline void stree::get_node_product(
         //if(out) *out << stra<double>::Desc(tp, vp, "tp", "vp" );   // product not always identity
     }
 
-    if(out) *out << stra<double>::Desc(tp, vp, "tp", "vp" );
+    if(out) *out
+         << "stree::get_node_product tp:product.it, vp:product.jv in opposite order\n"
+         << stra<double>::Desc(tp, vp, "tp", "vp" )
+         ;
 
     memcpy( glm::value_ptr(m2w_), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
     memcpy( glm::value_ptr(w2m_), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );
+
+    if(out) *out << "stree::get_node_product.TAIL nidx " << nidx << " local " << local << " reverse " << reverse << "\n" ;
 }
 
 
@@ -3291,9 +3329,13 @@ inline void stree::get_combined_transform(
     std::ostream* out ) const
 {
     bool local = node.repeat_index > 0 ;   // for instanced nodes restrict to same repeat_index excluding outer
+    if(out) *out << "stree::get_combined_transform.HEAD local " << local << "\n" ;
+
     glm::tmat4x4<double> tt(1.) ;
     glm::tmat4x4<double> vv(1.) ;
     get_node_product( tt, vv, node.index, local, false, out ); // reverse:false
+    if(out) *out << "stree::get_combined_transform.nd (tt,vv)\n" << stra<double>::Desc( tt, vv, "(tt)", "(vv)" ) << "\n\n" ;
+
 
     glm::tmat4x4<double> tc(1.) ;
     glm::tmat4x4<double> vc(1.) ;
@@ -3302,13 +3344,15 @@ inline void stree::get_combined_transform(
     {
         assert( node.lvid == nd->lvid );
         sn::NodeTransformProduct(nd->idx(), tc, vc, false, out );  // reverse:false
+        if(out) *out << "stree::get_combined_transform.nd (tc,vc)\n" << stra<double>::Desc( tc, vc, "(tc)", "(vc)" ) << "\n\n" ;
     }
 
     // combine structural (volume level) and CSG (solid level) transforms
     t = tt * tc ;
     v = vc * vv ;
 
-    if(out) *out << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << std::endl << std::endl ;
+    if(out) *out << "stree::get_combined_transform.product (t,v)\n" << stra<double>::Desc( t, v, "(tt*tc)", "(vc*vv)" ) << "\n\n" ;
+    if(out) *out << "stree::get_combined_transform.TAIL local " << local << "\n" ;
 }
 
 inline std::string stree::desc_combined_transform(

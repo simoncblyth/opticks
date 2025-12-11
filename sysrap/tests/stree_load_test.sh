@@ -30,6 +30,9 @@ C++
     ~/o/sysrap/tests/stree_load_test.sh
     TEST=desc ~/o/sysrap/tests/stree_load_test.sh
 
+    LVID=124 TEST=desc_solid ~/o/sysrap/tests/stree_load_test.sh
+
+
 
 To update the input tree::
 
@@ -107,12 +110,12 @@ export stree_level=1
 #test=desc
 #test=save_desc
 
-test=make_tree_digest
+#test=make_tree_digest
 
 #test=desc_factor_nodes
 #test=desc_node_solids
 #test=desc_solids
-#test=desc_solid
+test=desc_solid
 
 export TEST=${TEST:-$test}
 

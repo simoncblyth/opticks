@@ -548,8 +548,12 @@ inline int stree_load_test::desc_solid(int lvid) const
     {
         int nidx = nodes[i];
         std::cout << " nidx " << nidx << "\n" ;
+
         const glm::tmat4x4<double>& m2w = st->m2w[nidx] ;
-        std::cout << stra<double>::Desc(m2w) << "\n" ;
+        std::cout << "m2w\n" << stra<double>::Desc(m2w) << "\n" ;
+
+        const glm::tmat4x4<double>& gtd = st->gtd[nidx] ;
+        std::cout << "gtd\n" << stra<double>::Desc(m2w) << "\n" ;
     }
 
     return 0 ;
