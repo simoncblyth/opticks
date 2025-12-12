@@ -22,10 +22,10 @@ name=U4SolidMakerTest
 cd $(dirname $(realpath $BASH_SOURCE))
 
 
-geom=WaterDistributer
-#geom=AltWaterDistributer
+solid=WaterDistributer
+#solid=AltWaterDistributer
 
-export GEOM=$geom
+export SOLID=$solid
 export FOLD=/tmp/$USER/opticks/$name
 mkdir -p $FOLD
 

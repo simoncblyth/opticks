@@ -185,6 +185,8 @@ struct SYSRAP_API sn
     static void SetPOOL( POOL* pool_ );
     static int level();
     static std::string Desc();
+    static void PrepareToSerialize();
+    void prepare_to_serialize();
 
     // templating allows to work with both "sn*" and "const sn*"
     template<typename N> static std::string Desc(N* n);
@@ -427,7 +429,8 @@ struct SYSRAP_API sn
 
 
 
-
+    bool hasXF() const ;
+    void setXF();  // set identity transform
     void setXF(     const glm::tmat4x4<double>& t );
     void setXF(     const glm::tmat4x4<double>& t, const glm::tmat4x4<double>& v ) ;
     void combineXF( const glm::tmat4x4<double>& t );
@@ -626,7 +629,6 @@ struct SYSRAP_API sn
         glm::tmat4x4<double>& v,
         bool reverse );
 
-    static constexpr const char* sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS = "sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS" ;
     void getNodeTransformProduct(
         glm::tmat4x4<double>& t,
         glm::tmat4x4<double>& v,
@@ -709,7 +711,24 @@ inline int sn::Check_LEAK(const char* msg, int i)  // static
 
 inline void        sn::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
 inline int         sn::level() {  return ssys::getenvint("sn__level",-1) ; } // static
+
+
+inline void sn::PrepareToSerialize()  // static
+{
+    pool->prepare_to_serialize();
+}
+
+inline void sn::prepare_to_serialize()
+{
+    if(!hasXF()) setXF();  // ensure all node have a transform before serialization
+}
+
+
 inline std::string sn::Desc(){    return pool ? pool->desc() : "-" ; } // static
+
+
+
+
 
 template<typename N>
 inline std::string sn::Desc(N* n) // static
@@ -2945,6 +2964,15 @@ inline double sn::AABB_YAvg( const sn* n ){ return n ? n->getBB_yavg() : 0. ; }
 inline double sn::AABB_ZAvg( const sn* n ){ return n ? n->getBB_zavg() : 0. ; }
 
 
+inline bool sn::hasXF() const
+{
+    return xform != nullptr ;
+}
+inline void sn::setXF()
+{
+    glm::tmat4x4<double> id(1.);
+    setXF(id,id);
+}
 inline void sn::setXF( const glm::tmat4x4<double>& t )
 {
     glm::tmat4x4<double> v = glm::inverse(t) ;
@@ -5110,13 +5138,15 @@ sn::getNodeTransformProduct
 
 HMM: does ancestors work with subs of a listnode ?
 
-sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS
-    prevents inclusion of transforms from CSG_CONTIGUOUS (aka listnode)
-    as have observed some issue with extraneous transforms being set on those
+Former sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS
+    prevented inclusion of transforms from CSG_CONTIGUOUS (aka listnode)
+    as observed some issue with extraneous transforms being set on those.
 
-    TODO: trace down where the extraneous transform is coming from and remove
-    this kludge envvar
-
+    The cause was found to be a bug in s_pool whereby sn csg nodes
+    without transforms magically acquired them on being imported.
+    The erroreous transform being the last one in the s_tv pool.
+    Cause of this was a -1 meaning not-set being misinterpreted
+    to mean the one before the last.
 
 **/
 
@@ -5129,7 +5159,6 @@ inline void sn::getNodeTransformProduct(
     std::ostream* out,
     VTR* t_stack ) const
 {
-    int KLUDGE_SKIP_CONTIGUOUS = ssys::getenvint(sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS,0) ;
     if(out) *out << "\nsn::getNodeTransformProduct.HEAD\n" ;
 
     std::vector<const sn*> nds ;
@@ -5163,9 +5192,6 @@ inline void sn::getNodeTransformProduct(
         int   itc = ii->typecode ;
         int   jtc = jj->typecode ;
 
-        bool iskip = KLUDGE_SKIP_CONTIGUOUS == 1 && itc == CSG_CONTIGUOUS ;
-        bool jskip = KLUDGE_SKIP_CONTIGUOUS == 1 && jtc == CSG_CONTIGUOUS ;
-
         const s_tv* ixf = ii->xform ;
         const s_tv* jxf = jj->xform ;
 
@@ -5180,9 +5206,6 @@ inline void sn::getNodeTransformProduct(
                 << " jxf " << ( jxf ? "Y" : "N" )
                 << " itc " << itc
                 << " jtc " << jtc
-                << " iskip " << ( iskip ? "Y" : "N" )
-                << " jskip " << ( jskip ? "Y" : "N" )
-                << " KLUDGE_SKIP_CONTIGUOUS " << KLUDGE_SKIP_CONTIGUOUS
                 << std::endl
                 ;
 
@@ -5190,10 +5213,10 @@ inline void sn::getNodeTransformProduct(
            if(jxf) *out << stra<double>::Desc( jxf->t, jxf->v, "(jxf.t)", "(jxf.v)" ) << std::endl ;
         }
 
-        if(t_stack && iskip == false) t_stack->push_back(ixf->t);
+        if(t_stack) t_stack->push_back(ixf->t);
+        if(ixf) tp *= ixf->t ;
+        if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
 
-        if(ixf && iskip == false) tp *= ixf->t ;
-        if(jxf && jskip == false) vp *= jxf->v ;  // // inverse-transform product in opposite order
     }
     memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
     memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );

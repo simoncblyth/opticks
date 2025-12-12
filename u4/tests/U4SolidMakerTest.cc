@@ -16,7 +16,7 @@
 
 struct U4SolidMakerTest
 {
-    static const char* GEOM ;
+    static const char* SOLID ;
     static const char* TEST ;
     static const int   LEVEL ;
 
@@ -27,7 +27,7 @@ struct U4SolidMakerTest
     static int Main();
 };
 
-const char* U4SolidMakerTest::GEOM = ssys::getenvvar("GEOM", "WaterDistributer");
+const char* U4SolidMakerTest::SOLID = ssys::getenvvar("SOLID", "WaterDistributer");
 const char* U4SolidMakerTest::TEST = ssys::getenvvar("TEST", "Convert");
 const int  U4SolidMakerTest::LEVEL = ssys::getenvint("LEVEL", 4 );
 
@@ -42,9 +42,10 @@ inline int U4SolidMakerTest::Main()
 
 inline const G4VSolid* U4SolidMakerTest::MakeSolid()
 {
-    bool can_make = U4SolidMaker::CanMake(GEOM);
+    bool can_make = U4SolidMaker::CanMake(SOLID);
+    if(!can_make)  std::cerr << "U4SolidMakerTest::MakeSolid SOLID[" << ( SOLID ? SOLID : "-" ) << "] can_make[" << ( can_make ? "Y" : "N" ) << "]\n" ;
     if(!can_make) return 0 ;
-    const G4VSolid* solid = U4SolidMaker::Make(GEOM);
+    const G4VSolid* solid = U4SolidMaker::Make(SOLID);
     return solid ;
 }
 
@@ -61,9 +62,9 @@ inline int U4SolidMakerTest::Convert()
 {
     const G4VSolid* solid = MakeSolid();
     NPFold* fold = U4Mesh::Serialize(solid) ;
-    fold->set_meta<std::string>("GEOM",GEOM);
+    fold->set_meta<std::string>("SOLID",SOLID);
     fold->set_meta<std::string>("desc","placeholder-desc");
-    fold->save("$FOLD", GEOM );
+    fold->save("$FOLD", SOLID );
 
     sn* nd = Convert_(solid);
 
