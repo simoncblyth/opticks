@@ -188,8 +188,11 @@ struct SYSRAP_API sn
 
     // templating allows to work with both "sn*" and "const sn*"
     template<typename N> static std::string Desc(N* n);
+    template<typename N> static std::string DescXform(N* n);
     template<typename N> static std::string DescPrim(N* n);
+
     template<typename N> static std::string Desc(const std::vector<N*>& nds, bool reverse=false);
+    template<typename N> static std::string DescXform(const std::vector<N*>& nds, bool reverse=false);
     template<typename N> static std::string DescPrim(const std::vector<N*>& nds, bool reverse=false);
 
     template<typename N> static std::string Brief(const std::vector<N*>& nds, bool reverse=false);
@@ -316,6 +319,7 @@ struct SYSRAP_API sn
 
     std::string desc_order(const std::vector<const sn*>& order ) const ;
     std::string desc() const ;
+    std::string desc_xform() const ;
     std::string desc_prim() const ;
     std::string desc_prim_all(bool reverse) const ;
 
@@ -622,6 +626,7 @@ struct SYSRAP_API sn
         glm::tmat4x4<double>& v,
         bool reverse );
 
+    static constexpr const char* sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS = "sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS" ;
     void getNodeTransformProduct(
         glm::tmat4x4<double>& t,
         glm::tmat4x4<double>& v,
@@ -713,6 +718,12 @@ inline std::string sn::Desc(N* n) // static
 }
 
 template<typename N>
+inline std::string sn::DescXform(N* n) // static
+{
+    return n ? n->desc_xform() : "(null)" ;
+}
+
+template<typename N>
 inline std::string sn::DescPrim(N* n) // static
 {
     return n ? n->desc_prim() : "(null)" ;
@@ -729,6 +740,20 @@ inline std::string sn::Desc(const std::vector<N*>& nds, bool reverse) // static
     std::string str = ss.str();
     return str ;
 }
+
+template<typename N>
+inline std::string sn::DescXform(const std::vector<N*>& nds, bool reverse) // static
+{
+    int num_nd = nds.size() ;
+    std::stringstream ss ;
+    ss << "sn::DescXform num_nd " << num_nd << ( reverse ? " DESC ORDER REVERSED " : "-" ) << std::endl ;
+    for(int i=0 ; i < num_nd ; i++) ss << DescXform(nds[reverse ? num_nd - 1 - i : i]) << std::endl ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
 
 template<typename N>
 inline std::string sn::DescPrim(const std::vector<N*>& nds, bool reverse) // static
@@ -1907,11 +1932,29 @@ inline std::string sn::desc() const
        << " maxdepth " << std::setw(2) << maxdepth()
        << " is_positive_form " << ( is_positive_form() ? "Y" : "N" )
        << " lvid " << std::setw(3) << lvid
+       << " xform " << ( xform ? "Y" : "N" )
        << " tag " << tag()
        ;
     std::string str = ss.str();
     return str ;
 }
+
+inline std::string sn::desc_xform() const
+{
+    std::stringstream ss ;
+    ss << "sn::desc_xform"
+       << " pid " << std::setw(4) << pid
+       << " idx " << std::setw(4) << index()
+       << " lvid " << std::setw(3) << lvid
+       << " xform " << ( xform ? "Y" : "N" )
+       << " " << ( xform ? xform->desc() : "-" )
+       << " tag " << tag()
+       ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 inline std::string sn::desc_prim() const
 {
@@ -5067,7 +5110,16 @@ sn::getNodeTransformProduct
 
 HMM: does ancestors work with subs of a listnode ?
 
+sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS
+    prevents inclusion of transforms from CSG_CONTIGUOUS (aka listnode)
+    as have observed some issue with extraneous transforms being set on those
+
+    TODO: trace down where the extraneous transform is coming from and remove
+    this kludge envvar
+
+
 **/
+
 
 
 inline void sn::getNodeTransformProduct(
@@ -5077,6 +5129,7 @@ inline void sn::getNodeTransformProduct(
     std::ostream* out,
     VTR* t_stack ) const
 {
+    int KLUDGE_SKIP_CONTIGUOUS = ssys::getenvint(sn__getNodeTransformProduct_KLUDGE_SKIP_CONTIGUOUS,0) ;
     if(out) *out << "\nsn::getNodeTransformProduct.HEAD\n" ;
 
     std::vector<const sn*> nds ;
@@ -5107,6 +5160,12 @@ inline void sn::getNodeTransformProduct(
         const sn* ii = nds[reverse ? j : i] ;
         const sn* jj = nds[reverse ? i : j] ;
 
+        int   itc = ii->typecode ;
+        int   jtc = jj->typecode ;
+
+        bool iskip = KLUDGE_SKIP_CONTIGUOUS == 1 && itc == CSG_CONTIGUOUS ;
+        bool jskip = KLUDGE_SKIP_CONTIGUOUS == 1 && jtc == CSG_CONTIGUOUS ;
+
         const s_tv* ixf = ii->xform ;
         const s_tv* jxf = jj->xform ;
 
@@ -5119,6 +5178,11 @@ inline void sn::getNodeTransformProduct(
                 << " jj.idx " << jj->idx()
                 << " ixf " << ( ixf ? "Y" : "N" )
                 << " jxf " << ( jxf ? "Y" : "N" )
+                << " itc " << itc
+                << " jtc " << jtc
+                << " iskip " << ( iskip ? "Y" : "N" )
+                << " jskip " << ( jskip ? "Y" : "N" )
+                << " KLUDGE_SKIP_CONTIGUOUS " << KLUDGE_SKIP_CONTIGUOUS
                 << std::endl
                 ;
 
@@ -5126,10 +5190,10 @@ inline void sn::getNodeTransformProduct(
            if(jxf) *out << stra<double>::Desc( jxf->t, jxf->v, "(jxf.t)", "(jxf.v)" ) << std::endl ;
         }
 
-        if(t_stack) t_stack->push_back(ixf->t);
+        if(t_stack && iskip == false) t_stack->push_back(ixf->t);
 
-        if(ixf) tp *= ixf->t ;
-        if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
+        if(ixf && iskip == false) tp *= ixf->t ;
+        if(jxf && jskip == false) vp *= jxf->v ;  // // inverse-transform product in opposite order
     }
     memcpy( glm::value_ptr(t), glm::value_ptr(tp), sizeof(glm::tmat4x4<double>) );
     memcpy( glm::value_ptr(v), glm::value_ptr(vp), sizeof(glm::tmat4x4<double>) );

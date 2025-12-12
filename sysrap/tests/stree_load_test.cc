@@ -111,8 +111,9 @@ inline int stree_load_test::get_combined_transform( int LVID, int NDID )
         glm::tmat4x4<double> v(1.) ;
 
         std::stringstream* out = dump_NDID ? new std::stringstream : nullptr ;
+        stree::VTR* t_stack = nullptr ;
 
-        st->get_combined_transform(t, v, node, nd, out );
+        st->get_combined_transform(t, v, node, nd, out, t_stack );
 
         tvs.push_back(t);
         tvs.push_back(v);
@@ -436,7 +437,10 @@ inline int stree_load_test::get_prim_aabb() const
                 if(      i == 0 ) node = &st->nds[k] ;
                 else if( i == 1 ) node = &st->rem[k] ;
                 else if( i == 2 ) node = &st->nds[st->inst_nidx[k]] ;
-                st->get_prim_aabb( pbb.data(), *node, nullptr );
+
+                std::ostream* out = nullptr ;
+                stree::VTR* t_stack = nullptr ;
+                st->get_prim_aabb( pbb.data(), *node, out, t_stack );
                 std::cout
                     << " [" << std::setw(5) << k << "]"
                     << " : "
@@ -537,7 +541,7 @@ inline int stree_load_test::desc_solid(int lvid) const
     st->find_lvid_nodes(nodes, lvid, src );
 
     std::cout
-        << "st.find_lvid_nodes "
+        << "st.find_lvid_nodes (structural nodes) "
         << " lvid " << lvid
         << " src " << src
         << " nodes.size " << nodes.size()
@@ -555,6 +559,22 @@ inline int stree_load_test::desc_solid(int lvid) const
         const glm::tmat4x4<double>& gtd = st->gtd[nidx] ;
         std::cout << "gtd\n" << stra<double>::Desc(m2w) << "\n" ;
     }
+
+
+
+
+    std::vector<sn*> nds ;    // CSG constituent nodes of the LV
+    sn::GetLVNodes(nds, lvid );
+    int num_nds = nds.size();
+    std::cout
+        << " sn::Desc(nds) (csg nodes) lvid " << lvid << " num_nds " << num_nds
+        << "\n"
+        << sn::Desc(nds)
+        << "\n"
+        << " sn::DescXform(nds) (csg nodes) lvid " << lvid << " num_nds " << num_nds
+        << sn::DescXform(nds)
+        << "\n"
+        ;
 
     return 0 ;
 }
