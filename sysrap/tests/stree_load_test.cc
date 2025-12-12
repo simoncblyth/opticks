@@ -574,6 +574,9 @@ inline int stree_load_test::desc_solid(int lvid) const
         << " sn::DescXform(nds) (csg nodes) lvid " << lvid << " num_nds " << num_nds
         << sn::DescXform(nds)
         << "\n"
+        << " sn::DescXformFull(nds) (csg nodes) lvid " << lvid << " num_nds " << num_nds
+        << sn::DescXformFull(nds)
+        << "\n"
         ;
 
     return 0 ;
@@ -690,6 +693,9 @@ int main(int argc, char** argv)
 /**
     TEST=desc_solid LVID=43 ~/o/sysrap/tests/stree_load_test.sh  run
     TEST=desc_solid LVID=124 ~/o/sysrap/tests/stree_load_test.sh  run
+    TEST=desc_solid LVID=32 ~/o/sysrap/tests/stree_load_test.sh
+
+
     TEST=desc_node_ELVID ELVID=43,44,45,46 ~/o/sysrap/tests/stree_load_test.sh
     TEST=desc_node_ECOPYNO ECOPYNO=52400   ~/o/sysrap/tests/stree_load_test.sh
     TEST=desc_node_EBOUNDARY EBOUNDARY=303   ~/o/sysrap/tests/stree_load_test.sh

@@ -191,10 +191,12 @@ struct SYSRAP_API sn
     // templating allows to work with both "sn*" and "const sn*"
     template<typename N> static std::string Desc(N* n);
     template<typename N> static std::string DescXform(N* n);
+    template<typename N> static std::string DescXformFull(N* n);
     template<typename N> static std::string DescPrim(N* n);
 
     template<typename N> static std::string Desc(const std::vector<N*>& nds, bool reverse=false);
     template<typename N> static std::string DescXform(const std::vector<N*>& nds, bool reverse=false);
+    template<typename N> static std::string DescXformFull(const std::vector<N*>& nds, bool reverse=false);
     template<typename N> static std::string DescPrim(const std::vector<N*>& nds, bool reverse=false);
 
     template<typename N> static std::string Brief(const std::vector<N*>& nds, bool reverse=false);
@@ -322,6 +324,7 @@ struct SYSRAP_API sn
     std::string desc_order(const std::vector<const sn*>& order ) const ;
     std::string desc() const ;
     std::string desc_xform() const ;
+    std::string desc_xform_full() const ;
     std::string desc_prim() const ;
     std::string desc_prim_all(bool reverse) const ;
 
@@ -743,6 +746,12 @@ inline std::string sn::DescXform(N* n) // static
 }
 
 template<typename N>
+inline std::string sn::DescXformFull(N* n) // static
+{
+    return n ? n->desc_xform_full() : "(null)" ;
+}
+
+template<typename N>
 inline std::string sn::DescPrim(N* n) // static
 {
     return n ? n->desc_prim() : "(null)" ;
@@ -771,7 +780,16 @@ inline std::string sn::DescXform(const std::vector<N*>& nds, bool reverse) // st
     return str ;
 }
 
-
+template<typename N>
+inline std::string sn::DescXformFull(const std::vector<N*>& nds, bool reverse) // static
+{
+    int num_nd = nds.size() ;
+    std::stringstream ss ;
+    ss << "sn::DescXformFull num_nd " << num_nd << ( reverse ? " DESC ORDER REVERSED " : "-" ) << std::endl ;
+    for(int i=0 ; i < num_nd ; i++) ss << DescXformFull(nds[reverse ? num_nd - 1 - i : i]) << std::endl ;
+    std::string str = ss.str();
+    return str ;
+}
 
 
 template<typename N>
@@ -1965,9 +1983,25 @@ inline std::string sn::desc_xform() const
        << " pid " << std::setw(4) << pid
        << " idx " << std::setw(4) << index()
        << " lvid " << std::setw(3) << lvid
+       << " tag " << tag()
        << " xform " << ( xform ? "Y" : "N" )
        << " " << ( xform ? xform->desc() : "-" )
+       ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+inline std::string sn::desc_xform_full() const
+{
+    std::stringstream ss ;
+    ss << "sn::desc_xform_full"
+       << " pid " << std::setw(4) << pid
+       << " idx " << std::setw(4) << index()
+       << " lvid " << std::setw(3) << lvid
        << " tag " << tag()
+       << " xform " << ( xform ? "Y" : "N" )
+       << " " << ( xform ? xform->desc_full() : "-" )
        ;
     std::string str = ss.str();
     return str ;
