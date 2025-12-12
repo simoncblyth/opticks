@@ -5213,7 +5213,7 @@ inline void sn::getNodeTransformProduct(
            if(jxf) *out << stra<double>::Desc( jxf->t, jxf->v, "(jxf.t)", "(jxf.v)" ) << std::endl ;
         }
 
-        if(t_stack) t_stack->push_back(ixf->t);
+        if(t_stack && ixf) t_stack->push_back(ixf->t);
         if(ixf) tp *= ixf->t ;
         if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
 
