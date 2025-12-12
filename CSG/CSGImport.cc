@@ -549,7 +549,11 @@ CSGNode* CSGImport::importNode(int nodeOffset, int partIdx, const snode& node, c
 
     std::array<double,6> bb ;
     double* aabb = leaf ? bb.data() : nullptr ;
-    const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, nullptr ) : nullptr ;
+
+    std::ostream* out = nullptr ;
+    stree::VTR* t_stack = nullptr ;
+
+    const Tran<double>* tv = leaf ? st->get_combined_tran_and_aabb( aabb, node, nd, out, t_stack ) : nullptr ;
     unsigned tranIdx = tv ?  1 + fd->addTran(tv) : 0 ;   // 1-based index referencing foundry transforms
 
     CSGNode* n = fd->addNode();

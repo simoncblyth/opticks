@@ -262,6 +262,11 @@ struct stree_standin
 
 struct stree
 {
+    typedef std::array<double,6> BB ;
+    typedef std::vector<BB> VBB ;
+    typedef glm::tmat4x4<double> TR ;
+    typedef std::vector<TR> VTR ;
+
 
 #ifdef STREE_CAREFUL
     static constexpr const char* stree__populate_prim_nidx = "stree__populate_prim_nidx" ;
@@ -504,17 +509,15 @@ struct stree
     bool has_frame(const char* q_spec) const ;
 
 
-    int get_frame_instanced(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
+    int get_frame_instanced(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, std::ostream* out = nullptr, VTR* t_stack = nullptr ) const ;
     int get_frame_remainder(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int _get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, char ridx_type ) const ;
 
     static constexpr const char* stree__get_frame_global_LVID = "stree__get_frame_global_LVID" ;
-    typedef std::array<double,6> BB ;
-    typedef std::vector<BB> VBB ;
-    typedef glm::tmat4x4<double> TR ;
-    typedef std::vector<TR> VTR ;
+    static constexpr const char* stree__get_node_bb_LVID      = "stree__get_node_bb_LVID" ;
+    static constexpr const char* stree__get_node_bb_CONSTITUENT = "stree__get_node_bb_CONSTITUENT" ;
 
     int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node, VBB* contrib_bb = nullptr, VTR* contrib_tr = nullptr ) const ;
     int get_node_bb(     std::array<double,6>& bb ,                           const snode& node, VBB* contrib_bb = nullptr, VTR* contrib_tr = nullptr ) const ;
@@ -550,7 +553,7 @@ struct stree
     void get_node_transform( glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx ) const ;
     void get_node_product(
            glm::tmat4x4<double>& m2w_,
-           glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse, std::ostream* out ) const ;
+           glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse, std::ostream* out, VTR* t_stack ) const ;
 
     std::string desc_node_product(   glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse ) const ;
 
@@ -562,7 +565,8 @@ struct stree
              glm::tmat4x4<double>& v,
              const snode& node,
              const sn* nd,
-             std::ostream* out
+             std::ostream* out,
+             VTR* t_stack
              ) const ;
 
     std::string desc_combined_transform(
@@ -576,17 +580,19 @@ struct stree
              double* aabb,
              const snode& node,
              const sn* nd,
-             std::ostream* out
+             std::ostream* out,
+             VTR* t_stack
              ) const ;
 
     void get_transformed_aabb(
              double* aabb,
              const snode& node,
              const sn* nd,
-             std::ostream* out
+             std::ostream* out,
+             VTR* t_stack
              ) const ;
 
-    void get_prim_aabb( double* aabb, const snode& node, std::ostream* out ) const ;
+    void get_prim_aabb( double* aabb, const snode& node, std::ostream* out, VTR* t_stack ) const ;
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -2419,7 +2425,7 @@ stree::get_frame_instanced
 
 **/
 
-inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const
+inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, std::ostream* out, VTR* t_stack ) const
 {
     int ii = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal );
 
@@ -2446,8 +2452,9 @@ inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int re
     int nidx = inst_nidx[ii] ;
     const snode& nd = nds[nidx] ;
 
+
     std::array<double,6> bb ;
-    get_prim_aabb( bb.data(), nd, nullptr );
+    get_prim_aabb( bb.data(), nd, out, t_stack );
 
     if(get_frame_dump) std::cout
         << "stree::get_frame_instanced"
@@ -2689,6 +2696,9 @@ stree::get_node_bb
 inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VBB* contrib_bb, VTR* contrib_tr ) const
 {
     int lvid = node.lvid ;
+    int LVID = ssys::getenvint(stree__get_node_bb_LVID,-1);
+    int CONSTITUENT = ssys::getenvint(stree__get_node_bb_CONSTITUENT,-1);
+
 
     // 1. get bds binary tree nodes
 
@@ -2750,10 +2760,9 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
             std::array<double,6> n_bb = {} ;
             double* n_aabb = leaf ? n_bb.data() : nullptr ;
 
-
             if(out) *out << "stree::get_node_bb.bn_loop.GET_COMBINED_TRAN_AND_AABB i[" << i << "]\n" ;
 
-            const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, out ) : nullptr ;
+            const Tran<double>* tv = leaf ? get_combined_tran_and_aabb( n_aabb, node, n, out, nullptr ) : nullptr ;
             bool is_degenerate = s_bb::Degenerate<double>( n_aabb );
 
             if(is_degenerate) std::cerr
@@ -2799,8 +2808,12 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
         std::array<double,6> n_bb ;
         double* n_aabb = n_bb.data() ;
 
+
         if(out) *out << "stree::get_node_bb.sub_loop.GET_COMBINED_TRAN_AND_AABB i[" << i << "]\n" ;
-        const Tran<double>* tv = get_combined_tran_and_aabb( n_aabb, node, n, out ) ;
+
+        VTR* isub_t_stack = lvid == LVID && ( CONSTITUENT == -1 || CONSTITUENT == i ) ? new VTR : nullptr ;
+
+        const Tran<double>* tv = get_combined_tran_and_aabb( n_aabb, node, n, out, isub_t_stack  ) ;
         bool is_degenerate = s_bb::Degenerate<double>( n_aabb );
 
         if(is_degenerate) std::cerr
@@ -2825,6 +2838,24 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
         }
         // HMM does the complement message get thru to listnode subs ?
         if(out) *out << "stree::get_node_bb.sub_loop.TAIL i[" << i << "/" << num_sub_total <<  "]\n" ;
+
+        if(isub_t_stack)
+        {
+            NP* a = NP::Make<double>( isub_t_stack->size(), 4, 4 );
+            double* aa = a->values<double>();
+            for(size_t i=0 ; i < isub_t_stack->size() ; i++)
+            {
+                const TR& ctr = (*isub_t_stack)[i] ;
+                for(size_t j=0 ; j < 16 ; j++) aa[i*16+j] = glm::value_ptr(ctr)[j] ; ;
+            }
+            std::stringstream ss ;
+            ss << stree__get_node_bb_LVID << "_" << lvid << "_" << i << "_isub_t_stack.npy" ;
+            std::string name = ss.str();
+            std::cout << "stree::_get_frame_global saving [" << name << "]\n" ;
+            a->save( name.c_str() );
+            delete isub_t_stack ;
+        }
+
     }
 
     if(out)
@@ -3165,7 +3196,8 @@ inline void stree::get_node_product(
                       int nidx,
                       bool local,
                       bool reverse,
-                      std::ostream* out ) const
+                      std::ostream* out,
+                      VTR* t_stack ) const
 {
 
     if(out) *out << "stree::get_node_product.HEAD nidx " << nidx << " local " << local << " reverse " << reverse << "\n" ;
@@ -3225,6 +3257,7 @@ inline void stree::get_node_product(
         glm::tmat4x4<double> iv(1.);
         get_node_transform( it, iv, ii );   // m2w and w2m for nidx:ii
         if(out) *out << stra<double>::Desc(it, iv, "it", "iv" );
+        if(t_stack) t_stack->push_back(it);
 
         glm::tmat4x4<double> jt(1.);
         glm::tmat4x4<double> jv(1.);
@@ -3251,9 +3284,10 @@ inline void stree::get_node_product(
 
 inline std::string stree::desc_node_product( glm::tmat4x4<double>& m2w_, glm::tmat4x4<double>& w2m_, int nidx, bool local, bool reverse ) const
 {
+    VTR* t_stack = nullptr ;
     std::stringstream ss ;
     ss << "stree::desc_node_product" ;
-    get_node_product( m2w_, w2m_, nidx, local, reverse, &ss );
+    get_node_product( m2w_, w2m_, nidx, local, reverse, &ss, t_stack );
     std::string s = ss.str();
     return s ;
 }
@@ -3326,14 +3360,15 @@ inline void stree::get_combined_transform(
     glm::tmat4x4<double>& v,
     const snode& node,
     const sn* nd,
-    std::ostream* out ) const
+    std::ostream* out,
+    VTR* t_stack ) const
 {
     bool local = node.repeat_index > 0 ;   // for instanced nodes restrict to same repeat_index excluding outer
     if(out) *out << "stree::get_combined_transform.HEAD local " << local << "\n" ;
 
     glm::tmat4x4<double> tt(1.) ;
     glm::tmat4x4<double> vv(1.) ;
-    get_node_product( tt, vv, node.index, local, false, out ); // reverse:false
+    get_node_product( tt, vv, node.index, local, false, out, t_stack ); // reverse:false
     if(out) *out << "stree::get_combined_transform.nd (tt,vv)\n" << stra<double>::Desc( tt, vv, "(tt)", "(vv)" ) << "\n\n" ;
 
 
@@ -3343,7 +3378,7 @@ inline void stree::get_combined_transform(
     if(nd)
     {
         assert( node.lvid == nd->lvid );
-        sn::NodeTransformProduct(nd->idx(), tc, vc, false, out );  // reverse:false
+        sn::NodeTransformProduct(nd->idx(), tc, vc, false, out, t_stack );  // reverse:false
         if(out) *out << "stree::get_combined_transform.nd (tc,vc)\n" << stra<double>::Desc( tc, vc, "(tc)", "(vc)" ) << "\n\n" ;
     }
 
@@ -3361,9 +3396,10 @@ inline std::string stree::desc_combined_transform(
     const snode& node,
     const sn* nd ) const
 {
+    VTR* t_stack = nullptr ;
     std::stringstream ss ;
     ss << "stree::desc_combined_transform" << std::endl;
-    get_combined_transform(t, v, node, nd, &ss );
+    get_combined_transform(t, v, node, nd, &ss, t_stack );
     std::string str = ss.str();
     return str ;
 }
@@ -3392,15 +3428,17 @@ inline const Tran<double>* stree::get_combined_tran_and_aabb(
     double* aabb,
     const snode& node,
     const sn* nd,
-    std::ostream* out
+    std::ostream* out,
+    VTR* t_stack
     ) const
 {
     assert( nd );
     if(!CSG::IsLeaf(nd->typecode)) return nullptr ;
 
+
     glm::tmat4x4<double> t(1.) ;
     glm::tmat4x4<double> v(1.) ;
-    get_combined_transform(t, v, node, nd, out );
+    get_combined_transform(t, v, node, nd, out, t_stack );
 
     // NB ridx:0 full stack of transforms from root down to CSG constituent nodes
     //    ridx>0 only within the instance and within constituent CSG tree
@@ -3429,7 +3467,8 @@ inline void stree::get_transformed_aabb(
     double* aabb,
     const snode& node,
     const sn* nd,
-    std::ostream* out
+    std::ostream* out,
+    VTR* t_stack
     ) const
 {
     assert( nd );
@@ -3437,7 +3476,7 @@ inline void stree::get_transformed_aabb(
 
     glm::tmat4x4<double> t(1.) ;
     glm::tmat4x4<double> v(1.) ;
-    get_combined_transform(t, v, node, nd, out );
+    get_combined_transform(t, v, node, nd, out, t_stack );
 
     nd->copyBB_data( aabb );
     stra<double>::Transform_AABB_Inplace(aabb, t);
@@ -3459,7 +3498,7 @@ Follow pattern of::
 HMM: THIS DOES NOT CONSIDER LISTNODE
 
 **/
-inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream* out ) const
+inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream* out, VTR* t_stack ) const
 {
     std::vector<const sn*> nds ;
     sn::GetLVNodesComplete(nds, node.lvid); // many nullptr in unbalanced deep complete binary trees
@@ -3486,7 +3525,7 @@ inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream*
         if(!expect) std::raise(SIGINT);
 
         std::array<double,6> nbb ;
-        get_transformed_aabb( nbb.data(), node, nd, out );
+        get_transformed_aabb( nbb.data(), node, nd, out, t_stack );
         s_bb::IncludeAABB( pbb.data(), nbb.data(), out );
     }
     for(int i=0 ; i < 6 ; i++) aabb[i] = pbb[i] ;
@@ -5709,7 +5748,10 @@ inline void stree::add_inst()
 
             bool local = false ;
             bool reverse = false ;
-            get_node_product( tr_m2w, tr_w2m, nidx, local, reverse, nullptr  );
+            std::ostream* out = nullptr ;
+            VTR* t_stack = nullptr ;
+
+            get_node_product( tr_m2w, tr_w2m, nidx, local, reverse, out, t_stack  );
 
             add_inst(tr_m2w, tr_w2m, ridx, nidx );
         }

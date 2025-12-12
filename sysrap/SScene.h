@@ -426,7 +426,10 @@ inline void SScene::initFromTree_Node(SMeshGroup* mg, int ridx, const snode& nod
     glm::tmat4x4<double> w2m(1.);
     bool local = true ;        // WHAT ABOUT FOR REMAINDER NODES ?
     bool reverse = false ;     // ?
-    st->get_node_product(m2w, w2m, node.index, local, reverse, nullptr );
+    std::ostream* out = nullptr ;
+    stree::VTR* t_stack = nullptr ;
+
+    st->get_node_product(m2w, w2m, node.index, local, reverse, out, t_stack );
     bool is_identity_m2w = stra<double>::IsIdentity(m2w) ;
 
     const char* so = st->soname[node.lvid].c_str();

@@ -878,7 +878,10 @@ inline int U4Tree::initNodes_r(
 
     bool local = false ;
     bool reverse = false ;
-    st->get_node_product( tt_gtd, vv_gtd, nidx, local, reverse, nullptr );
+    std::ostream* out = nullptr ;
+    stree::VTR* t_stack = nullptr ;
+
+    st->get_node_product( tt_gtd, vv_gtd, nidx, local, reverse, out, t_stack );
     // product of m2w transforms from root down to nidx,
     // must be after push_backs of nd and tr_m2w
 

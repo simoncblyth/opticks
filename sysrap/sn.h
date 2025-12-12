@@ -142,6 +142,11 @@ inline bool _sn::is_root() const
 #include "SYSRAP_API_EXPORT.hh"
 struct SYSRAP_API sn
 {
+    typedef std::array<double,6> BB ;
+    typedef std::vector<BB> VBB ;
+    typedef glm::tmat4x4<double> TR ;
+    typedef std::vector<TR> VTR ;
+
     static int Check_LEAK(const char* msg, int i=-1);
 
     // persisted
@@ -608,7 +613,8 @@ struct SYSRAP_API sn
         glm::tmat4x4<double>& t,
         glm::tmat4x4<double>& v,
         bool reverse,
-        std::ostream* out);
+        std::ostream* out,
+        VTR* t_stack );
 
     static std::string DescNodeTransformProduct(
         int idx,
@@ -620,7 +626,8 @@ struct SYSRAP_API sn
         glm::tmat4x4<double>& t,
         glm::tmat4x4<double>& v,
         bool reverse,
-        std::ostream* out) const ;
+        std::ostream* out,
+        VTR* t_stack ) const ;
 
     std::string desc_getNodeTransformProduct(
         glm::tmat4x4<double>& t,
@@ -5033,11 +5040,12 @@ inline void sn::NodeTransformProduct(
     glm::tmat4x4<double>& t,
     glm::tmat4x4<double>& v,
     bool reverse,
-    std::ostream* out)  // static
+    std::ostream* out,
+    VTR* t_stack)  // static
 {
     sn* nd = Get(idx);
     assert(nd);
-    nd->getNodeTransformProduct(t,v,reverse,out) ;
+    nd->getNodeTransformProduct(t,v,reverse,out,t_stack) ;
 }
 
 inline std::string sn::DescNodeTransformProduct(
@@ -5048,7 +5056,7 @@ inline std::string sn::DescNodeTransformProduct(
 {
     std::stringstream ss ;
     ss << "sn::DescNodeTransformProduct" << std::endl ;
-    NodeTransformProduct( idx, t, v, reverse, &ss );
+    NodeTransformProduct( idx, t, v, reverse, &ss, nullptr );
     std::string str = ss.str();
     return str ;
 }
@@ -5065,7 +5073,9 @@ HMM: does ancestors work with subs of a listnode ?
 inline void sn::getNodeTransformProduct(
     glm::tmat4x4<double>& t,
     glm::tmat4x4<double>& v,
-    bool reverse, std::ostream* out) const
+    bool reverse,
+    std::ostream* out,
+    VTR* t_stack ) const
 {
     if(out) *out << "\nsn::getNodeTransformProduct.HEAD\n" ;
 
@@ -5116,6 +5126,7 @@ inline void sn::getNodeTransformProduct(
            if(jxf) *out << stra<double>::Desc( jxf->t, jxf->v, "(jxf.t)", "(jxf.v)" ) << std::endl ;
         }
 
+        if(t_stack) t_stack->push_back(ixf->t);
 
         if(ixf) tp *= ixf->t ;
         if(jxf) vp *= jxf->v ;  // // inverse-transform product in opposite order
@@ -5134,7 +5145,7 @@ inline std::string sn::desc_getNodeTransformProduct(
 {
     std::stringstream ss ;
     ss << "sn::desc_getNodeTransformProduct" << std::endl ;
-    getNodeTransformProduct( t, v, reverse, &ss );
+    getNodeTransformProduct( t, v, reverse, &ss, nullptr );
     std::string str = ss.str();
     return str ;
 }
@@ -5353,7 +5364,8 @@ inline void sn::setAABB_TreeFrame_All()
 
         bool reverse = false ;
         std::ostream* out = nullptr ;
-        p->getNodeTransformProduct(t, v, reverse, out );
+        VTR* t_stack = nullptr ;
+        p->getNodeTransformProduct(t, v, reverse, out, t_stack );
 
         const double* pbb = _p->getBB_data() ;
         stra<double>::Transform_AABB_Inplace( const_cast<double*>(pbb),  t );
@@ -5440,7 +5452,8 @@ inline void sn::Transform_Leaf2Tree( glm::tvec3<double>& xyz,  const sn* leaf, s
     glm::tmat4x4<double> t(1.) ;
     glm::tmat4x4<double> v(1.) ;
     bool reverse = false ;
-    leaf->getNodeTransformProduct(t, v, reverse, nullptr );
+    VTR* t_stack = nullptr ;
+    leaf->getNodeTransformProduct(t, v, reverse, nullptr, t_stack );
 
     glm::tvec4<double> pos = t * pos0 ;
 
