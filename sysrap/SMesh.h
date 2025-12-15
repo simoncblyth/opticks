@@ -109,6 +109,7 @@ struct SMesh
     std::string descVtx() const ;
     std::string descTriVtx() const ;
     std::string descVtxNrm() const ;
+    std::string descName() const ;
     std::string descShape() const ;
     std::string descRange() const ;
 
@@ -632,6 +633,7 @@ inline std::string SMesh::desc() const
     ss
        << "[SMesh::desc"
        << std::endl
+       << descName()
        << descShape()
        << std::endl
        << descRange()
@@ -652,6 +654,16 @@ inline std::string SMesh::desc() const
     return str ;
 }
 
+inline std::string SMesh::descName() const
+{
+    std::stringstream ss ;
+    ss
+       << " name["  << ( name ? name : "-" ) << "] "
+       << " lvid " << std::setw(3) << lvid
+       ;
+    std::string str = ss.str();
+    return str ;
+}
 
 inline std::string SMesh::descShape() const
 {
@@ -669,18 +681,22 @@ inline std::string SMesh::descShape() const
 
 inline std::string SMesh::descRange() const
 {
+    int w = 10 ;
+    int p = 3 ;
+
     std::stringstream ss ;
-    ss << "SMesh::descRange" << std::endl ;
+    ss << "SMesh::descRange" ;
+    ss << descName() ;
     ss << " mn [" ;
-    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(7) << std::setprecision(3) << mn[i] << " " ;
+    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << mn[i] << " " ;
     ss << "]" ;
 
     ss << " mx [" ;
-    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(7) << std::setprecision(3) << mx[i] << " " ;
+    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << mx[i] << " " ;
     ss << "]" ;
 
     ss << " ce [" ;
-    for(int i=0 ; i < 4 ; i++ ) ss << std::fixed << std::setw(7) << std::setprecision(3) << ce[i] << " " ;
+    for(int i=0 ; i < 4 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << ce[i] << " " ;
     ss << "]" ;
 
     std::string str = ss.str();

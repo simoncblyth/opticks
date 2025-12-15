@@ -114,7 +114,12 @@ struct SScene
     std::string descCol3() const ;
     std::string descFrame() const ;
     std::string descRange() const ;
+
+    void findSubMesh(std::vector<const SMesh*>& subs, int lvid) const ;
+    std::string descSubMesh(const std::vector<const SMesh*>& subs) const ;
+
     static std::string DescCompare(const SScene* a, const SScene* b);
+
 
     NPFold* serialize_meshmerge() const ;
     void import_meshmerge(const NPFold* _meshmerge ) ;
@@ -140,6 +145,7 @@ struct SScene
     SScene* copy(const SBitSet* elv=nullptr) const ;
 
     static int Compare(const SScene* a, const SScene* b);
+
 };
 
 
@@ -639,13 +645,32 @@ inline std::string SScene::descRange() const
     {
         const SMeshGroup* mg = meshgroup[i] ;
         const SMesh* mm = meshmerge[i] ;
-        ss << "mg[" << i << "]\n" << mg->descRange() << "\n" ;
+        ss << "mg[" << i << "]\n" << mg->descRange(&soname) << "\n" ;
         ss << "mm[" << i << "]\n" << mm->descRange() << "\n" ;
     }
     ss << "]SScene::descRange num " << num << std::endl ;
     std::string str = ss.str();
     return str ;
 }
+
+
+inline void SScene::findSubMesh(std::vector<const SMesh*>& subs, int lvid) const
+{
+    size_t num_mg = meshgroup.size();
+    std::cout << "SScene::findSubMesh lvid " << lvid << " num_mg " << num_mg << "\n" ;
+    for(size_t i=0 ; i < num_mg ; i++)
+    {
+        const SMeshGroup* mg = meshgroup[i] ;
+        mg->findSubMesh(subs, lvid);
+    }
+}
+
+inline std::string SScene::descSubMesh(const std::vector<const SMesh*>& subs) const
+{
+    return SMeshGroup::DescSubMesh(subs, &soname);
+}
+
+
 
 
 inline std::string SScene::DescCompare(const SScene* a, const SScene* b) // static
@@ -1007,6 +1032,7 @@ and need something like CSGCopy::copySolidInstances to populate d_inst_tran
 inline SScene* SScene::CopySelect( const SScene* src, const SBitSet* elv ) // static
 {
     SScene* dst = new SScene ;
+    dst->soname = src->soname ; // despite selection copy all names
     int s_num_mg = src->meshgroup.size() ;
 
     int* solidMap = new int[s_num_mg];

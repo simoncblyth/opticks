@@ -4999,7 +4999,7 @@ template<typename T> inline void NP::minmax2D(T* mn, T* mx, INT item_stride, INT
     INT nj = shape[1] ;
 
     for(INT j=0 ; j < nj ; j++) mn[j] = std::numeric_limits<T>::max() ;
-    for(INT j=0 ; j < nj ; j++) mx[j] = std::numeric_limits<T>::min() ;
+    for(INT j=0 ; j < nj ; j++) mx[j] = std::numeric_limits<T>::lowest() ; // largest negative
 
     const T* vv = cvalues<T>() ;
     for(INT i=0 ; i < ni ; i++)

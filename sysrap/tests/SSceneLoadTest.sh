@@ -12,6 +12,12 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
+#test=desc
+#test=descDetail
+test=findSubMesh
+
+export TEST=${TEST:-$test}
+
 name=SSceneLoadTest
 bin=$name
 
@@ -19,9 +25,10 @@ source $HOME/.opticks/GEOM/GEOM.sh
 source $HOME/.opticks/GEOM/ELV.sh
 #unset ELV
 
-vars="BASH_SOURCE PWD GEOM ELV name bin"
+vars="BASH_SOURCE PWD GEOM ELV name bin TEST"
 
 defarg=info_run
+[ -n "$BP" ] && defarg="dbg"
 arg=${1:-$defarg}
 
 if [ "${arg/info}" != "$arg" ]; then
