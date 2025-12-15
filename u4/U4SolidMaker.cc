@@ -18,6 +18,7 @@
 #include "G4Ellipsoid.hh"
 #include "G4MultiUnion.hh"
 #include "G4CutTubs.hh"
+#include "G4Torus.hh"
 
 using CLHEP::pi ;
 using CLHEP::mm ;
@@ -71,6 +72,7 @@ AltLocalFastenerAcrylicConstruction
 AnotherLocalFastenerAcrylicConstruction
 WaterDistributer
 AltWaterDistributer
+WaterDistributorPartIIIUnion
 )LITERAL";
 
 
@@ -171,6 +173,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("BltLocalFastenerAcrylicConstruction", qname)) solid = BltLocalFastenerAcrylicConstruction(qname) ;
     else if(StartsWith("WaterDistributer", qname))                    solid = WaterDistributer(qname) ;
     else if(StartsWith("AltWaterDistributer", qname))                 solid = AltWaterDistributer(qname) ;
+    else if(StartsWith("WaterDistributorPartIIIUnion", qname))        solid = WaterDistributorPartIIIUnion(qname);
 
     LOG(LEVEL) << " qname " << qname << " solid " << solid ;
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname << " CHECK U4SolidMaker::Make " ;
@@ -2410,6 +2413,106 @@ void U4SolidMaker::AltWaterDistributerHelper(G4MultiUnion* multiUnion, double di
         multiUnion->AddNode(*cutTube, tr);
     }
 }
+
+
+/**
+U4SolidMaker::Snake
+--------------------
+
+WaterdistributorpipeMaker::MakeWaterDistributorPartIIIUnion
+
+**/
+
+
+const G4VSolid* U4SolidMaker::WaterDistributorPartIIIUnion(const char* name_) // static
+{
+    //double m_lowerchimney_rotangle = 0. ;
+
+    // Create individual solid components first
+    double flange_r_inner = 66.5*mm;
+    double flange_r_outer = 125.*mm;
+    int numZplanes_flange = 4;
+    G4double zPlane_flange[] = {-50 *mm, -25 *mm , -25 *mm, 0 *mm};
+    G4double rInner_flange[] = {0 , 0, 0, 0};
+    G4double rOuter_flange[] = {flange_r_inner, flange_r_inner, flange_r_outer , flange_r_outer};
+    auto solidFlange = new G4Polycone("sBotChimneySSEnclosure_Flange",
+                                    0, 360*deg,
+                                    numZplanes_flange, zPlane_flange, rInner_flange, rOuter_flange);
+
+    double dz1 = 529/2 * mm;
+    double theta1 = 27*deg;
+    G4ThreeVector pLowNorm1( sin(theta1), 0, -cos(theta1) );
+    G4ThreeVector pHighNorm1( -sin(theta1), 0, cos(theta1) );
+    auto cutTube1 = new G4CutTubs("CutTube1", 0, 66.5 * cos(theta1), dz1, 0, 360*deg, pLowNorm1, pHighNorm1);
+
+    double dz2 = 1125.25/2 * mm;
+    double theta2 = -16*deg;
+    G4ThreeVector pLowNorm2( sin(theta2), 0, -cos(theta2) );
+    G4ThreeVector pHighNorm2( -sin(theta2), 0, cos(theta2) );
+    auto cutTube2 = new G4CutTubs("CutTube2", 0, 66.5 * cos(theta2), dz2, 0, 360*deg, pLowNorm2, pHighNorm2);
+
+    double r_tube = 66.5 * mm;
+    double r_main1 = 283 * mm;
+    double phi_start1 = 180 * deg;
+    double phi_delta1 = 135 * deg;
+    auto torus1 = new G4Torus("torus1", 0, r_tube, r_main1, phi_start1, phi_delta1);
+
+    double r_main2 = 352 * mm;
+    double phi_start2 = 45 * deg;
+    double phi_delta2 = 45 * deg;
+    auto torus2 = new G4Torus("torus2", 0, r_tube, r_main2, phi_start2, phi_delta2);
+
+    // Component definition arrays
+    G4VSolid* solids[] = {solidFlange, cutTube1, cutTube2, torus1, torus2};
+
+    // Rotation angles around X and Y axes
+    double rotX_angles[] = {0*deg, 0*deg, 0*deg, -90*deg, 90*deg};
+    double rotY_angles[] = {0*deg, 27*deg, -16*deg, 180*deg, 0*deg};
+
+    // Pre-calculate offsets for CutTubes
+    double offset1 = dz1 * cos(27*deg);
+    double offset2 = dz2 * cos(-16*deg);
+
+    // Position vectors
+    G4ThreeVector positions[] = {
+        G4ThreeVector(0, 0, -19120),                                                          // Flange
+        G4ThreeVector(-120, 0, -19120 - 50*mm - offset1),                                    // CutTube1
+        G4ThreeVector(-240 + dz2 * sin(16*deg), 0, -19120 - 50*mm - offset1 * 2 - offset2), // CutTube2
+        G4ThreeVector(70 - r_main1, 0, -20724),                                             // Torus1
+        G4ThreeVector(70 - 449 - 283, 0, -21181)                                            // Torus2
+    };
+
+    // Component names for debugging
+    //const char* component_names[] = {"Flange", "CutTube1", "CutTube2", "Torus1", "Torus2"};
+
+    // Create MultiUnion and add all components in a loop
+    G4MultiUnion* unionSolid = new G4MultiUnion("WaterDistributorPartIIIUnion");
+
+    for (int i = 0; i < 5; ++i) {
+        // Create rotation matrix for this component
+        G4RotationMatrix rotation;
+        if (rotX_angles[i] != 0) {
+            rotation.rotateX(rotX_angles[i]);
+        }
+        if (rotY_angles[i] != 0) {
+            rotation.rotateY(rotY_angles[i]);
+        }
+
+        // Create transform and add node
+        G4Transform3D transform(rotation, positions[i]);
+        unionSolid->AddNode(*solids[i], transform);
+    }
+
+    unionSolid->Voxelize();
+
+    // Apply final rotation for the entire assembly
+    //G4RotationMatrix finalRotation;
+    //finalRotation.rotateZ(-m_lowerchimney_rotangle);
+
+    return unionSolid ;
+}
+
+
 
 
 

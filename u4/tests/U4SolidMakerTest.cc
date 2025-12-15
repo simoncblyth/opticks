@@ -11,6 +11,7 @@
 #include "U4Solid.h"
 #include "U4SolidMaker.hh"
 
+#include "s_csg.h"
 #include "sn.h"
 
 
@@ -23,6 +24,7 @@ struct U4SolidMakerTest
     static const G4VSolid* MakeSolid();
     static sn* Convert_(const G4VSolid* solid);
 
+    static void get_node_bb(int lvid);
     static int Convert();
     static int Main();
 };
@@ -58,6 +60,122 @@ inline sn* U4SolidMakerTest::Convert_(const G4VSolid* solid )
 }
 
 
+/**
+U4SolidMakerTest::get_node_bb
+------------------------------
+
+See stree::get_node_bb
+
+**/
+
+
+inline void U4SolidMakerTest::get_node_bb(int lvid)
+{
+    typedef std::array<double,6> BB ;
+    typedef std::array<double,4> CE ;
+    BB bb = {} ;
+
+    typedef std::vector<BB> VBB ;
+
+
+
+    std::vector<const sn*> bds ;
+    sn::GetLVNodesComplete(bds, lvid);
+    int bn = bds.size();
+
+    std::vector<const sn*> lns ;
+    sn::GetLVListnodes( lns, lvid );
+    int ln = lns.size();
+
+    std::vector<const sn*> subs ;
+
+    for(int i=0 ; i < bn ; i++)
+    {
+        const sn* n = bds[i];
+        //int  typecode = n ? n->typecode : CSG_ZERO ;
+
+        if(n && n->is_listnode())
+        {
+            int num_sub = n->child.size() ;
+            for(int j=0 ; j < num_sub ; j++)
+            {
+                const sn* c = n->child[j];
+                subs.push_back(c);
+            }
+        }
+    }
+
+    int ns = subs.size();
+
+
+    std::cout << "[U4SolidMakerTest::get_node_bb lvid " << lvid << "\n" ;
+    std::cout << " bn " << bn << "\n" ;
+    std::cout << " ln " << ln << "\n" ;
+    std::cout << " ns " << ns << "\n" ;
+
+    std::ostream* out = nullptr ;
+
+    VBB vbb0 = {} ;
+    VBB vbb  = {} ;
+    VBB vbb1 = {} ;
+
+    for( int i=0 ; i < ns ; i++ )
+    {
+        const sn* n = subs[i];
+        bool leaf = CSG::IsLeaf(n->typecode) ;
+        assert(leaf);
+        if(!leaf) continue ;
+
+        BB n_bb0 = {} ;
+        n->copyBB_data(n_bb0.data()) ; // without transform
+        vbb0.push_back(n_bb0);
+
+        BB n_bb = {} ;
+        n->copyBB_data( n_bb.data() );
+
+        glm::tmat4x4<double> tc(1.) ;
+        glm::tmat4x4<double> vc(1.) ;
+        sn::NodeTransformProduct(n->idx(), tc, vc, false, out, nullptr );  // reverse:false
+
+        stra<double>::Transform_AABB_Inplace(n_bb.data(), tc);
+        vbb.push_back(n_bb);
+
+        s_bb::IncludeAABB( bb.data(), n_bb.data(), out );
+        vbb1.push_back(bb);
+    }
+
+    assert( vbb0.size() == vbb.size() );
+    assert( vbb0.size() == vbb1.size() );
+
+    size_t num = vbb0.size();
+    for(size_t i=0 ; i < num ; i++ )
+    {
+        std::cout
+           << std::setw(2) << i
+           << " "
+           << s_bb::Desc(vbb0[i].data())
+           << " "
+           << s_bb::Desc(vbb[i].data())
+           << " "
+           << s_bb::Desc(vbb1[i].data())
+           << " "
+           << "\n"
+           ;
+    }
+
+
+
+    CE ce = {};
+    s_bb::CenterExtent( ce.data(), bb.data() );
+
+    std::cout << " bb " << s_bb::Desc(bb.data()) << "\n" ;
+    std::cout << " ce " << s_bb::Desc_<double,4>(ce.data()) << "\n" ;
+
+
+    std::cout << "]U4SolidMakerTest::get_node_bb lvid " << lvid << "\n" ;
+}
+
+
 inline int U4SolidMakerTest::Convert()
 {
     const G4VSolid* solid = MakeSolid();
@@ -65,6 +183,9 @@ inline int U4SolidMakerTest::Convert()
     fold->set_meta<std::string>("SOLID",SOLID);
     fold->set_meta<std::string>("desc","placeholder-desc");
     fold->save("$FOLD", SOLID );
+
+    s_csg* _csg = new s_csg ;  // hold pools (normally stree holds _csg)
+    assert( _csg );
 
     sn* nd = Convert_(solid);
 
@@ -91,6 +212,10 @@ inline int U4SolidMakerTest::Convert()
         << nd->desc_prim_all(false)
         << "\n]U4SolidMakerTest  nd->desc_prim_all() \n"
         ;
+
+
+    int lvid = 0 ;
+    get_node_bb(lvid);
 
 
 

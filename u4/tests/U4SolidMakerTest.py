@@ -9,10 +9,10 @@ from opticks.ana.fold import Fold
 SIZE = np.array([1280, 720])
 
 if __name__ == '__main__':
-    f = Fold.Load("$FOLD/$GEOM",symbol="f")
+    f = Fold.Load("$FOLD/$SOLID",symbol="f")
     print(repr(f))
 
-    label = "U4SolidMakerTest.py GEOM %s : %s " % (f.NPFold_meta.GEOM[0], f.NPFold_meta.desc[0])
+    label = "U4SolidMakerTest.py SOLID %s : %s " % (f.NPFold_meta.SOLID, f.NPFold_meta.desc)
     pd = pv.PolyData(f.vtx, f.fpd)
 
     pl = pv.Plotter(window_size=SIZE*2)

@@ -658,6 +658,14 @@ inline void U4Solid::init_Hype()
 }
 
 
+/**
+U4Solid::init_MultiUnion
+--------------------------
+
+* non-sn-primitive subs like polycone get placeholdered
+
+
+**/
 
 
 
@@ -710,8 +718,8 @@ inline void U4Solid::init_MultiUnion()
             ;
 
         //assert( p_expect );
-        if(!p_expect) p = sn::Notsupported(); 
-        // sn::Notsupported is a placeholder "prim" signalling that the geometry cannot 
+        if(!p_expect) p = sn::Notsupported();
+        // sn::Notsupported is a placeholder "prim" signalling that the geometry cannot
         // be analytically intersected and needs to be triangulated
 
         prims.push_back(p) ;

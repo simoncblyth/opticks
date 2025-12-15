@@ -3,6 +3,8 @@
 s_csg.h : Manage persisting of CSG constituent nodes
 ======================================================
 
+Canonical instance stree::_csg is instanciated with the stree
+
 Holds node tree info, param, bbox, transforms of CSG constituent nodes.
 
 NB: Restrict this to handling persisting only.

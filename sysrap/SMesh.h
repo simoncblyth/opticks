@@ -41,7 +41,10 @@ struct SMesh
     // 3:vec3, 12:byte_stride 0:byte_offet
 
     const char* name    ;            // metadata : loaddir or manually set name
+    const char* loaddir ;
     glm::tmat4x4<double> tr0 = {} ;  // informational for debug only, as gets applied by init
+    int nidx = -1 ;
+
     std::vector<std::string> names ; // used to hold subnames in concat SMesh
     int   lvid = -1 ;      // set by Import from NPFold metadata for originals
 
@@ -59,12 +62,12 @@ struct SMesh
     static SMesh* LoadTransformed(const char* dir, const char* rel,  const glm::tmat4x4<double>* tr );
     static SMesh* LoadTransformed(const char* dir,                   const glm::tmat4x4<double>* tr );
 
-    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr );
+    static SMesh* Import(const NPFold* fold, const glm::tmat4x4<double>* tr=nullptr, int nidx=-1 );
     static SMesh* MakeCopy( const SMesh* src );
     SMesh* copy() const ;
 
     static bool IsConcat( const NPFold* fold );
-    void import(          const NPFold* fold, const glm::tmat4x4<double>* tr );
+    void import_(         const NPFold* fold, const glm::tmat4x4<double>* tr );
     void import_concat(   const NPFold* fold, const glm::tmat4x4<double>* tr );
     void import_original( const NPFold* fold, const glm::tmat4x4<double>* tr );
 
@@ -207,10 +210,14 @@ inline SMesh* SMesh::LoadTransformed(const char* dir, const glm::tmat4x4<double>
 }
 
 
-inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr)
+inline SMesh* SMesh::Import(const NPFold* fold, const glm::tmat4x4<double>* tr, int nidx)
 {
+    //std::cout << "SMesh::Import fold.loaddir " << ( fold->loaddir ? fold->loaddir : "-" ) << "\n" ;
+
     SMesh* mesh = new SMesh ;
-    mesh->import(fold, tr);
+    mesh->import_(fold, tr);
+    mesh->nidx = nidx ;
+    mesh->loaddir = fold->loaddir ? strdup(fold->loaddir) : nullptr ;
     return mesh ;
 }
 
@@ -220,6 +227,8 @@ inline SMesh* SMesh::MakeCopy( const SMesh* src ) // static
 
     dst->name = src->name ? strdup(src->name) : nullptr ;
     dst->tr0  = src->tr0 ;
+    dst->nidx = src->nidx ;
+    dst->loaddir = src->loaddir ? strdup(src->loaddir) : nullptr ;
     dst->names = src->names ;
     dst->lvid = src->lvid ;
 
@@ -260,7 +269,7 @@ inline bool SMesh::IsConcat( const NPFold* fold ) // static
     return vertices && vertices->ebyte == 4 && normals ;
 }
 
-inline void SMesh::import(const NPFold* fold, const glm::tmat4x4<double>* tr )
+inline void SMesh::import_(const NPFold* fold, const glm::tmat4x4<double>* tr )
 {
     lvid = fold->get_meta<int>("lvid", -1);
     bool is_concat = IsConcat( fold );
@@ -274,6 +283,8 @@ inline void SMesh::import(const NPFold* fold, const glm::tmat4x4<double>* tr )
     {
         import_original( fold, tr );
     }
+
+
 }
 
 inline void SMesh::import_concat(const NPFold* fold, const glm::tmat4x4<double>* tr )

@@ -22,7 +22,8 @@ name=U4SolidMakerTest
 cd $(dirname $(realpath $BASH_SOURCE))
 
 
-solid=WaterDistributer
+#solid=WaterDistributer
+solid=WaterDistributorPartIIIUnion
 #solid=AltWaterDistributer
 
 export SOLID=$solid
@@ -32,7 +33,7 @@ mkdir -p $FOLD
 bin=$name
 script=$name.py
 
-vv="BASH_SOURCE name PWD bin script FOLD arg defarg"
+vv="BASH_SOURCE name PWD bin script FOLD SOLID arg defarg"
 
 defarg="info_run_pdb"
 arg=${1:-$defarg}

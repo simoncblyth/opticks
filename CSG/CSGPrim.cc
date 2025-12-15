@@ -99,8 +99,11 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
 
         assert( sub->lvid == int(lvid) );
 
-        const glm::tvec4<float>* sub_ce = sub ? &(sub->ce) : nullptr ;
         float4 pr_ce = pr.ce();
+        const glm::tvec4<float>* sub_ce = sub ? &(sub->ce) : nullptr ;
+        const glm::tmat4x4<double>* sub_tr0 = sub ? &(sub->tr0) : nullptr ;
+        const char* sub_loaddir = sub ? sub->loaddir : nullptr ;
+
         float extent_diff = sub_ce ? (*sub_ce).w - pr_ce.w : 0. ;
 
         const char* so = lvid < num_so ? (*soname)[lvid].c_str() : nullptr ;
@@ -122,6 +125,12 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
             << "\n"
             ;
 
+        if( std::abs(extent_diff) > 100.f )
+        {
+            ss << " LARGE extent_diff " << std::setw(10) << std::fixed << std::setprecision(3) << extent_diff << "\n" ;
+            if(sub_tr0) ss << " sub_tr0\n" << stra<double>::Desc(*sub_tr0) << "\n"  ;
+            if(sub_loaddir) ss << " sub_loaddir [" << sub_loaddir << "]\n" ;
+        }
     }
     ss << "]CSGPrim::Desc numPrim " << numPrim << "\n" ;
     std::string str = ss.str() ;

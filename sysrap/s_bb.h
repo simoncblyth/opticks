@@ -174,7 +174,7 @@ inline std::string s_bb::Desc( const T* aabb ) // static
 template<typename T, int N>
 inline std::string s_bb::Desc_( const T* v ) // static
 {
-    int w = 7 ;
+    int w = 10 ;
     int p = 3 ;
     bool all_zero = AllZero_<T,N>(v);
     bool degenerate = Degenerate_<T,N>(v);

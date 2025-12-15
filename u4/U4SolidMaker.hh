@@ -106,6 +106,7 @@ struct U4_API U4SolidMaker
     static const G4VSolid* AltWaterDistributer(const char* name);
     static       G4VSolid* WaterDistributerHelper(const char* name, double distance, double TubeR);
     static void            AltWaterDistributerHelper(G4MultiUnion* multiUnion, double distance, double TubeR, double yoffset );
+    static const G4VSolid* WaterDistributorPartIIIUnion(const char* name);
 
 };
 
