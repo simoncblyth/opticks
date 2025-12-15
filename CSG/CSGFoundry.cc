@@ -2423,6 +2423,79 @@ std::string CSGFoundry::descMeshPrim() const
     return ss.str();
 }
 
+std::string CSGFoundry::descPrimRange() const
+{
+    int num_solid = solid.size();
+    std::stringstream ss ;
+    ss << "[CSGFoundry::descPrimRange" << " num_solid " << std::setw(2) << num_solid << "\n" ;
+    for(int i=0 ; i < num_solid ; i++ ) ss << descPrimRange(i) ;
+    ss << "[CSGFoundry::descPrimRange" << " num_solid " << std::setw(2) << num_solid << "\n" ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+std::string CSGFoundry::descPrimRange(int solidIdx) const
+{
+    const CSGSolid& so = solid[solidIdx];
+    std::stringstream ss ;
+    ss
+       << "[CSGFoundry::descPrimRange" << " solidIdx " << std::setw(2) << solidIdx
+       << " so.primOffset " << std::setw(5) << so.primOffset
+       << " so.numPrim " << std::setw(5) << so.numPrim
+       << "\n"
+       ;
+
+    ss << CSGPrim::DescRange(prim.data(), so.primOffset, so.numPrim, &meshname);
+
+    ss << "]CSGFoundry::descPrimRange" << " solidIdx " << std::setw(2) << solidIdx
+       << "\n"
+       ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+std::string CSGFoundry::comparePrimRange(int solidIdx, const SMeshGroup* mg) const
+{
+    const CSGSolid& so = solid[solidIdx];
+    std::stringstream ss ;
+    ss
+       << "[CSGFoundry::comparePrimRange" << " solidIdx " << std::setw(2) << solidIdx
+       << " so.primOffset " << std::setw(5) << so.primOffset
+       << " so.numPrim " << std::setw(5) << so.numPrim
+       << " mg " << ( mg ? "YES" : "NO " )
+       << "\n"
+       ;
+
+    ss << CSGPrim::DescRange(prim.data(), so.primOffset, so.numPrim, &meshname, mg );
+
+    ss << "]CSGFoundry::comparePrimRange" << " solidIdx " << std::setw(2) << solidIdx
+       << "\n"
+       ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

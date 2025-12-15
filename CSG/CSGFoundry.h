@@ -10,6 +10,7 @@ struct NP ;
 struct SSim ;
 struct stree ;
 struct SScene ;
+struct SMeshGroup ;
 
 #include "scuda.h"
 #include "squad.h"
@@ -94,17 +95,7 @@ struct CSG_API CSGFoundry : public SGeo
     static const char* RELDIR ;
     static const constexpr unsigned UNDEFINED = ~0u ;
 
-    // MOVED TO CSGMaker
-    //static CSGFoundry* MakeGeom(const char* geom);
-    //static CSGFoundry* MakeDemo();
-    //static CSGFoundry* LoadGeom(const char* geom=nullptr);
-
-
     const char* descELV() const ;
-
-    // moved down to SGeoConfig
-    //static const char* ELVString(const SName* id);
-    //static const SBitSet* ELV(const SName* id);
 
 
     static bool Load_saveAlt ;
@@ -178,6 +169,8 @@ struct CSG_API CSGFoundry : public SGeo
 
     void dumpPrim() const ;
     void dumpPrim(unsigned solidIdx ) const ;
+
+
     std::string descPrim() const ;
     std::string descPrim(unsigned solidIdx) const  ;
 
@@ -258,6 +251,12 @@ struct CSG_API CSGFoundry : public SGeo
 
     unsigned getNumMeshPrim(unsigned mesh_idx ) const ;
     std::string descMeshPrim() const ;
+    std::string descPrimRange() const ;
+    std::string descPrimRange(int solidIdx) const ;
+    std::string comparePrimRange(int solidIdx, const SMeshGroup* mg) const ;
+
+
+
 
     unsigned getNumSelectedPrimInSolid(const CSGSolid* solid, const SBitSet* elv ) const ;
 

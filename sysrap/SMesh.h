@@ -685,8 +685,7 @@ inline std::string SMesh::descRange() const
     int p = 3 ;
 
     std::stringstream ss ;
-    ss << "SMesh::descRange" ;
-    ss << descName() ;
+    ss << "SMesh::descRange  " ;
     ss << " mn [" ;
     for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << mn[i] << " " ;
     ss << "]" ;
@@ -698,7 +697,7 @@ inline std::string SMesh::descRange() const
     ss << " ce [" ;
     for(int i=0 ; i < 4 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << ce[i] << " " ;
     ss << "]" ;
-
+    ss << " " <<  descName() ;
     std::string str = ss.str();
     return str ;
 }

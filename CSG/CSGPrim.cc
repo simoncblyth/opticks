@@ -5,6 +5,9 @@
 #include "scuda.h"
 #include "sqat4.h"
 
+#include "SMesh.h"
+#include "SMeshGroup.h"
+
 #include "CSGPrim.h"
 
 #include <vector>
@@ -15,31 +18,131 @@
 #include <cstring>
 
 
-std::string CSGPrim::desc() const 
-{  
-    std::stringstream ss ; 
-    ss 
+std::string CSGPrim::desc() const
+{
+    std::stringstream ss ;
+    ss
       << "CSGPrim"
-      << " numNode/node/tran/plan" 
-      << std::setw(4) << numNode() << " "  
+      << " numNode/node/tran/plan"
+      << std::setw(4) << numNode() << " "
       << std::setw(4) << nodeOffset() << " "
       << std::setw(4) << tranOffset() << " "
-      << std::setw(4) << planOffset() << " " 
-      << "sbtOffset/meshIdx/repeatIdx/primIdx " 
+      << std::setw(4) << planOffset() << " "
+      << "sbtOffset/meshIdx/repeatIdx/primIdx "
       << std::setw(4) << sbtIndexOffset() << " "
       << std::setw(4) << meshIdx() << " "
-      << std::setw(4) << repeatIdx() << " " 
-      << std::setw(4) << primIdx()  
-      << " mn " << mn() 
-      << " mx " << mx() 
+      << std::setw(4) << repeatIdx() << " "
+      << std::setw(4) << primIdx()
+      << " mn " << mn()
+      << " mx " << mx()
       ;
-    std::string s = ss.str(); 
-    return s ; 
+    std::string str = ss.str();
+    return str ;
 }
+
+std::string CSGPrim::descRange() const
+{
+    int w = 10 ;
+    int p = 3 ;
+
+    float3 mn3 = mn();
+    float3 mx3 = mx();
+    float4 ce4 = ce();
+
+    std::array<float,3> _mn = {mn3.x, mn3.y, mn3.z};
+    std::array<float,3> _mx = {mx3.x, mx3.y, mx3.z};
+    std::array<float,4> _ce = {ce4.x, ce4.y, ce4.z,ce4.w};
+
+    std::stringstream ss ;
+    ss << "CSGPrim::descRange" ;
+    ss << " mn [" ;
+    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << _mn[i] << " " ;
+    ss << "]" ;
+
+    ss << " mx [" ;
+    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << _mx[i] << " " ;
+    ss << "]" ;
+
+    ss << " ce [" ;
+    for(int i=0 ; i < 4 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << _ce[i] << " " ;
+    ss << "]" ;
+    ss << " lvid " << std::setw(3) << meshIdx() ;
+    ss << " ridx " << std::setw(4) << repeatIdx() ;
+    ss << " pidx " << std::setw(5) << primIdx() ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+/**
+CSGPrim::DescRange
+-------------------
+
+Displays coordinate ranges and extent of the analytic CSGPrim and triangulated SMesh.
+
+**/
+
+
+std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname, const SMeshGroup* mg ) // static
+{
+    size_t num_so = soname ? soname->size() : 0 ;
+
+    int mg_subs = mg ? mg->subs.size() : 0 ;
+
+    std::stringstream ss ;
+    ss << "[CSGPrim::Desc numPrim " << numPrim << " mg_subs " << mg_subs << "\n" ;
+    for(int i=0 ; i < numPrim ; i++ )
+    {
+        const SMesh* sub = mg ? mg->subs[i] : nullptr ;
+        const CSGPrim& pr = prim[primOffset + i];
+        unsigned lvid = pr.meshIdx();
+
+        assert( sub->lvid == int(lvid) );
+
+        const glm::tvec4<float>* sub_ce = sub ? &(sub->ce) : nullptr ;
+        float4 pr_ce = pr.ce();
+        float extent_diff = sub_ce ? (*sub_ce).w - pr_ce.w : 0. ;
+
+        const char* so = lvid < num_so ? (*soname)[lvid].c_str() : nullptr ;
+
+        ss
+            << std::setw(4) << i
+            << " : "
+            << pr.descRange()
+            << " so[" << ( so ? so : "-" ) << "]"
+            << "\n"
+            ;
+
+        if(sub) ss
+            << std::setw(4) << i
+            << " : "
+            << sub->descRange()
+            << " so[" << ( so ? so : "-" ) << "]"
+            << " extent_diff " << std::setw(10) << std::fixed << std::setprecision(3) << extent_diff
+            << "\n"
+            ;
+
+    }
+    ss << "]CSGPrim::Desc numPrim " << numPrim << "\n" ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 bool CSGPrim::IsDiff( const CSGPrim& a , const CSGPrim& b )
 {
-    return false ; 
+    return false ;
 }
 
 
@@ -49,43 +152,43 @@ bool CSGPrim::IsDiff( const CSGPrim& a , const CSGPrim& b )
 CSGPrim::MakeSpec
 -------------------
 
-Specification providing pointers to access all the AABB of *numPrim* CSGPrim, 
+Specification providing pointers to access all the AABB of *numPrim* CSGPrim,
 canonically invoked by CSGFoundry::getPrimSpecHost and CSGFoundry::getPrimSpecDevice
 which provide the CSGPrim bbox pointers for all CSGPrim within a CSGSolid.::
 
     1075     const CSGSolid* so = solid.data() + solidIdx ;  // get the primOffset from CPU side solid
     1076     SCSGPrimSpec ps = CSGPrim::MakeSpec( d_prim,  so->primOffset, so->numPrim ); ;
-    
-This can be done very simply for both host and device due to the contiguous storage 
-of the CSGPrim in the foundry and fixed strides. 
+
+This can be done very simply for both host and device due to the contiguous storage
+of the CSGPrim in the foundry and fixed strides.
 
 SCSGPrimSpec::primitiveIndexOffset
-    Primitive index bias, applied in optixGetPrimitiveIndex() so the primIdx 
-    obtained in closesthit__ch__ is absolute to the entire geometry 
-    instead of the default of being local to the compound solid. 
+    Primitive index bias, applied in optixGetPrimitiveIndex() so the primIdx
+    obtained in closesthit__ch__ is absolute to the entire geometry
+    instead of the default of being local to the compound solid.
     (see GAS_Builder::MakeCustomPrimitivesBI_11N)
 
-    This primIdx obtained for each intersect is combined with the 
+    This primIdx obtained for each intersect is combined with the
     optixGetInstanceId() to give the intersect identity.
- 
+
 
 How to implement Prim selection ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Applying Prim selection based on meshIdx/lvIdx of each 
+Applying Prim selection based on meshIdx/lvIdx of each
 Prim still requires to iterate over them all.
-Better to apply selection in one place only. 
+Better to apply selection in one place only.
 So where to apply prim selection ?
 
 SCSGPrimSpec is too late as the prim array handled
-there needs to be memory contiguous.   
+there needs to be memory contiguous.
 This suggests addition of selected_prim to CSGFoundry::
 
     std::vector<CSGPrim>  prim ;
     std::vector<CSGPrim>  selected_prim ;
 
-Must also ensure no blind passing of primOffsets as they 
-will be invalid. 
+Must also ensure no blind passing of primOffsets as they
+will be invalid.
 
 
 
@@ -93,18 +196,18 @@ will be invalid.
 
 **/
 
-SCSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static 
+SCSGPrimSpec CSGPrim::MakeSpec( const CSGPrim* prim0,  unsigned primIdx, unsigned numPrim ) // static
 {
-    const CSGPrim* prim = prim0 + primIdx ; 
+    const CSGPrim* prim = prim0 + primIdx ;
 
-    SCSGPrimSpec ps ; 
-    ps.aabb = prim->AABB() ; 
-    ps.sbtIndexOffset = prim->sbtIndexOffsetPtr() ;  
-    ps.num_prim = numPrim ; 
-    ps.stride_in_bytes = sizeof(CSGPrim); 
-    ps.primitiveIndexOffset = primIdx ;   
+    SCSGPrimSpec ps ;
+    ps.aabb = prim->AABB() ;
+    ps.sbtIndexOffset = prim->sbtIndexOffsetPtr() ;
+    ps.num_prim = numPrim ;
+    ps.stride_in_bytes = sizeof(CSGPrim);
+    ps.primitiveIndexOffset = primIdx ;
 
-    return ps ; 
+    return ps ;
 }
 
 #endif

@@ -11,6 +11,7 @@
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 #include "SCSGPrimSpec.h"
+struct SMeshGroup ;
 #endif
 
 #include "CSG_API_EXPORT.hh"
@@ -145,77 +146,105 @@ struct CSG_API CSGPrim
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
 
-
-
-
-    void scaleAABB_( float scale )
-    {
-        float* aabb = AABB_();
-        for(int i=0 ; i < 6 ; i++ ) *(aabb+i) = *(aabb+i) * scale ;
-    }
-
-    static void Copy(CSGPrim& b, const CSGPrim& a)
-    {
-        b.q0.f.x = a.q0.f.x ; b.q0.f.y = a.q0.f.y ; b.q0.f.z = a.q0.f.z ; b.q0.f.w = a.q0.f.w ;
-        b.q1.f.x = a.q1.f.x ; b.q1.f.y = a.q1.f.y ; b.q1.f.z = a.q1.f.z ; b.q1.f.w = a.q1.f.w ;
-        b.q2.f.x = a.q2.f.x ; b.q2.f.y = a.q2.f.y ; b.q2.f.z = a.q2.f.z ; b.q2.f.w = a.q2.f.w ;
-        b.q3.f.x = a.q3.f.x ; b.q3.f.y = a.q3.f.y ; b.q3.f.z = a.q3.f.z ; b.q3.f.w = a.q3.f.w ;
-    }
-
+    void scaleAABB_( float scale );
+    static void Copy(CSGPrim& b, const CSGPrim& a);
     static int value_offsetof_sbtIndexOffset(){ return offsetof(CSGPrim, q1.u.x)/4 ; }   // 4
     static int value_offsetof_AABB(){           return offsetof(CSGPrim, q2.f.x)/4 ; }   // 8
 
-    static PRIM_METHOD void select_prim_mesh(const std::vector<CSGPrim>& prims, std::vector<CSGPrim>& select_prims, unsigned mesh_idx_ )
-    {
-        for(unsigned i=0 ; i < prims.size() ; i++)
-        {
-            const CSGPrim& pr = prims[i] ;
-            unsigned mesh_idx = pr.meshIdx();
-            if( mesh_idx_ == mesh_idx ) select_prims.push_back(pr) ;
-        }
-    }
-
-    /**
-    CSGPrim::select_prim_pointers_mesh
-    -----------------------------------
-
-    From the *prims* vector reference find prim with mesh_idx and collect the CSGPrim pointers into *select_prims*
-    **/
-    static PRIM_METHOD void select_prim_pointers_mesh(const std::vector<CSGPrim>& prims, std::vector<const CSGPrim*>& select_prims, unsigned mesh_idx_ )
-    {
-        for(unsigned i=0 ; i < prims.size() ; i++)
-        {
-            const CSGPrim* pr = prims.data() + i ;
-            unsigned mesh_idx = pr->meshIdx();
-            if( mesh_idx_ == mesh_idx ) select_prims.push_back(pr) ;
-        }
-    }
-
-    /**
-    CSGPrim::count_prim_mesh
-    --------------------------
-
-    Count the number of prims with meshIdx equal to the queried mesh_idx_
-
-    **/
-    static PRIM_METHOD unsigned count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ )
-    {
-        unsigned count = 0u ;
-        for(unsigned i=0 ; i < prims.size() ; i++)
-        {
-            const CSGPrim& pr = prims[i] ;
-            unsigned mesh_idx = pr.meshIdx();
-            if( mesh_idx_ == mesh_idx ) count += 1 ;
-        }
-        return count ;
-    }
-
+    static void select_prim_mesh(const std::vector<CSGPrim>& prims, std::vector<CSGPrim>& select_prims, unsigned mesh_idx_ );
+    static void select_prim_pointers_mesh(const std::vector<CSGPrim>& prims, std::vector<const CSGPrim*>& select_prims, unsigned mesh_idx_ );
+    static unsigned count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ );
+    static std::string Desc(     std::vector<const CSGPrim*>& prim );
+    static std::string DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname=nullptr, const SMeshGroup* mg = nullptr );
 
     std::string desc() const ;
+    std::string descRange() const ;
     static bool IsDiff( const CSGPrim& a , const CSGPrim& b );
     static SCSGPrimSpec MakeSpec( const CSGPrim* prim0, unsigned primIdx, unsigned numPrim ) ;
 #endif
 
 };
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+
+
+inline void CSGPrim::scaleAABB_( float scale )
+{
+    float* aabb = AABB_();
+    for(int i=0 ; i < 6 ; i++ ) *(aabb+i) = *(aabb+i) * scale ;
+}
+
+inline void CSGPrim::Copy(CSGPrim& b, const CSGPrim& a)  // static
+{
+    b.q0.f.x = a.q0.f.x ; b.q0.f.y = a.q0.f.y ; b.q0.f.z = a.q0.f.z ; b.q0.f.w = a.q0.f.w ;
+    b.q1.f.x = a.q1.f.x ; b.q1.f.y = a.q1.f.y ; b.q1.f.z = a.q1.f.z ; b.q1.f.w = a.q1.f.w ;
+    b.q2.f.x = a.q2.f.x ; b.q2.f.y = a.q2.f.y ; b.q2.f.z = a.q2.f.z ; b.q2.f.w = a.q2.f.w ;
+    b.q3.f.x = a.q3.f.x ; b.q3.f.y = a.q3.f.y ; b.q3.f.z = a.q3.f.z ; b.q3.f.w = a.q3.f.w ;
+}
+
+
+inline void CSGPrim::select_prim_mesh(const std::vector<CSGPrim>& prims, std::vector<CSGPrim>& select_prims, unsigned mesh_idx_ )
+{
+    for(unsigned i=0 ; i < prims.size() ; i++)
+    {
+        const CSGPrim& pr = prims[i] ;
+        unsigned mesh_idx = pr.meshIdx();
+        if( mesh_idx_ == mesh_idx ) select_prims.push_back(pr) ;
+    }
+}
+
+/**
+CSGPrim::select_prim_pointers_mesh
+-----------------------------------
+
+From the *prims* vector reference find prim with mesh_idx and collect the CSGPrim pointers into *select_prims*
+**/
+
+inline void CSGPrim::select_prim_pointers_mesh(const std::vector<CSGPrim>& prims, std::vector<const CSGPrim*>& select_prims, unsigned mesh_idx_ )
+{
+    for(unsigned i=0 ; i < prims.size() ; i++)
+    {
+        const CSGPrim* pr = prims.data() + i ;
+        unsigned mesh_idx = pr->meshIdx();
+        if( mesh_idx_ == mesh_idx ) select_prims.push_back(pr) ;
+    }
+}
+
+/**
+CSGPrim::count_prim_mesh
+---------------------------
+
+Count the number of prims with meshIdx equal to the queried mesh_idx_
+
+**/
+
+inline unsigned CSGPrim::count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ )  // static
+{
+    unsigned count = 0u ;
+    for(unsigned i=0 ; i < prims.size() ; i++)
+    {
+        const CSGPrim& pr = prims[i] ;
+        unsigned mesh_idx = pr.meshIdx();
+        if( mesh_idx_ == mesh_idx ) count += 1 ;
+    }
+    return count ;
+}
+
+inline std::string CSGPrim::Desc(std::vector<const CSGPrim*>& prim ) // static
+{
+    std::stringstream ss ;
+    ss << "[CSGPrim::Desc num_prim " << prim.size() << "\n" ;
+    for(size_t i=0 ; i < prim.size() ; i++ ) ss << std::setw(4) << i << " : " << prim[i]->desc() << "\n" ;
+    ss << "]CSGPrim::Desc num_prim " << prim.size() << "\n" ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
+
+#endif
 

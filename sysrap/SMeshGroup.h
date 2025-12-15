@@ -8,6 +8,8 @@ Persists as folder with int keys.
 
 **/
 struct SMesh ;
+struct NPFold ;
+
 #include "SBitSet.h"
 #include <string>
 #include <vector>
