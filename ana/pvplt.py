@@ -280,11 +280,35 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
         LEGEND=1
         TITLE="The PyVista Window Title"
 
+
+    This needs newer pyvista::
+
+        x_pos_norm = 0.5
+        y_pos_norm = 0.5
+        text_scale = 20 # Adjust the text size to cover the area
+        if LEGEND: pl.add_text(
+               ' ' * 40, # Padding for width
+                position=(x_pos_norm, y_pos_norm),
+                font_size=text_scale,
+                color='white',
+                background='black',
+                background_opacity=0.6,
+                font_family='courier', # Monospace font helps keep the size consistent
+                name='legend_background_box', # Give it a unique name
+                viewport=True # Crucial: makes it relative to the screen, not 3D space
+         )
+
     """
     TITLE = os.environ.get("TITLE", title)
-
     LEGEND = bool(os.environ.get("LEGEND", legend))
-    if LEGEND: pl.add_legend(font_family="courier", size=(0.3,0.3))
+    if LEGEND:
+        vtk_actor = pl.add_legend(font_family="courier", size=(0.3,0.3))
+        for i in range(vtk_actor.GetNumberOfEntries()):
+            print(vtk_actor.GetEntryString(i))
+        pass
+    else:
+        vtk_actor = None
+    pass
     print("pvplt_show title:%s TITLE:%s " % (title, TITLE))
 
     GRID = 1 == int(os.environ.get("GRID","0"))

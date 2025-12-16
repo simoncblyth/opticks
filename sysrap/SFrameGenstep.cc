@@ -388,7 +388,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     assert( cegs.size() == 8 );
 
     int high = cegs[7] ;  // > 1 scales grid resolution
-    assert( high == 1 || high == 2 || high == 3 || high == 4 || high == 5);
+    assert( high >= 1 && high <= 8);
     double scale = double(gridscale)/double(high) ;
 
     int ix0 = cegs[0]*high ;
@@ -510,6 +510,52 @@ Examples of CEHIGH envvars using the third standardized form::
     export CEHIGH_0=-11:-9:0:0:-2:0:1000:4
     export CEHIGH_1=9:11:0:0:-2:0:1000:4
     export CEHIGH_2=-1:1:0:0:-2:0:1000:4
+
+
+
+For example a portrait base CEGS of 9:0:16:1000 means,
+becomes -9:9:0:0:-16:16:1000:1
+
+
+                               16
+                               15
+                               14
+                               13
+                               12
+                               11
+                               10
+                                9
+                                8
+                                7
+                                6
+                                5
+                                4
+                                3
+                                2
+                                1
+     9  8  7  6  5  4  3  2  1  0  1  2  3  4  5  6  7  8  9
+                                1
+                                2
+                                3
+                    +           4           +
+                                5
+                                6
+                                7
+                                8
+                                9
+                               10
+                               11
+                    +          12           +
+                               13
+                               14
+                               15
+                               16
+
+
+
+To quadruple grid resolution in the above square::
+
+      -4:4:0:0:-12:-4:1000:4
 
 
 **/

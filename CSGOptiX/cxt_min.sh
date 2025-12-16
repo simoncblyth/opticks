@@ -176,6 +176,7 @@ else
 fi
 
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, use MOI bash function to setup/edit
+source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
 source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally define CUR_ bash function, for controlling directory for screenshots
 source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally define AFOLD and/or BFOLD for adding event tracks to simtrace plots
 
@@ -220,8 +221,56 @@ export BASE=$TMP/GEOM/$GEOM
 export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
 
-#rel=${MOI:-0}
-rel=ALL0_no_opticks_event_name   ## SOMEHOW THE DIRECTORY WRITTEN TO HAS CHANGED ?
+
+opticks_event_name=2d
+export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
+
+cegs=""
+## see SFrameGenstep::StandardizeCEGS for CEGS/CEHIGH [4]/[7]/[8] layouts
+
+if [ "$OPTICKS_EVENT_NAME" == "2d" ]; then
+
+   #cegs=16:0:9:2000   # [4] XZ default
+   #cegs=16:0:9:1000  # [4] XZ default
+   #cegs=16:0:9:100   # [4] XZ reduce rays for faster rsync
+   #cegs=16:9:0:1000  # [4] try XY
+   cegs=9:0:14:1000   # 2D for making sense
+
+elif [ "$OPTICKS_EVENT_NAME" == "3d" ]; then
+
+   #cegs=16:9:9:100    # [4] try a 3D grid
+   #cegs=16:9:9:500    # [4] try a 3D grid
+   cegs=9:9:16:500    # [4] try a 3D grid, elongate Z for better coverage
+
+fi
+
+export CEGS=$cegs
+
+if [ "$CEGS" == "16:0:9:2000" ]; then
+    export CEHIGH_0=-16:16:0:0:-4:4:2000:4
+    export CEHIGH_1=-16:16:0:0:4:8:2000:4
+    #export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
+    #export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
+    #export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
+
+
+elif [ "$CEGS" == "9:0:14:1000" ]; then
+
+    export CEHIGH_0=-2:2:0:0:-11:-7:1000:8
+    export CEHIGH_1=-2:2:0:0:7:15:1000:8
+
+fi
+
+# CEGS_NPY adds gensteps at positions obtained from the array of 3D points
+#export CEGS_NPY=/tmp/overlap_pt.npy   # see SFrameGenstep::MakeCenterExtentGenstep_FromFrame
+
+## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000
+#export CE_OFFSET=CE    ## offsets the grid by the CE
+
+
+
+
+rel=ALL0_${OPTICKS_EVENT_NAME}
 export MFOLD=$TMP/GEOM/$GEOM/$bin/$rel/$EVT
 
 
@@ -238,33 +287,6 @@ mkdir -p $LOGDIR
 cd $LOGDIR
 LOGNAME=$bin.log
 
-
-## see SFrameGenstep::StandardizeCEGS for CEGS/CEHIGH [4]/[7]/[8] layouts
-
-#export CEGS=16:0:9:2000   # [4] XZ default
-#export CEGS=16:0:9:1000  # [4] XZ default
-#export CEGS=16:0:9:100   # [4] XZ reduce rays for faster rsync
-#export CEGS=16:9:0:1000  # [4] try XY
-
-#export CEGS=16:9:9:100    # [4] try a 3D grid
-export CEGS=16:9:9:500    # [4] try a 3D grid
-
-# CEGS_NPY adds gensteps at positions obtained from the array of 3D points
-#export CEGS_NPY=/tmp/overlap_pt.npy   # see SFrameGenstep::MakeCenterExtentGenstep_FromFrame
-
-
-if [ "$CEGS" == "16:0:9:2000" ]; then
-    export CEHIGH_0=-16:16:0:0:-4:4:2000:4
-    export CEHIGH_1=-16:16:0:0:4:8:2000:4
-    #export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
-    #export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
-    #export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
-fi
-
-
-
-## base photon count without any CEHIGH for 16:0:9:2000 is (2*16+1)*(2*9+1)*2000 = 1,254,000
-#export CE_OFFSET=CE    ## offsets the grid by the CE
 
 logging(){
     type $FUNCNAME
@@ -290,7 +312,7 @@ debug()
 
 _CUR=GEOM/$GEOM/$SCRIPT/${MOI//:/_}
 
-vars="$vars BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES CEGS TITLE"
+vars="$vars BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES OPTICKS_EVENT_NAME CEGS TITLE"
 
 ## define TITLE based on ana/pdb control envvars
 title="cxt_min.sh pdb"

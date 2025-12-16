@@ -1265,6 +1265,8 @@ Examples that would match some builds::
 void SEventConfig::Initialize_EventName()
 {
     if(EventName()==nullptr) return ;
+    bool require_match = false ;
+    if(!require_match) return ;
 
     bool build_matches_EventName = sbuild::Matches(EventName()) ;
 

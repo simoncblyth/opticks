@@ -184,7 +184,7 @@ else
 
 
     wh=2560,1440
-    fullscreen=1
+    fullscreen=0
 
     zoom=1
     tmin=0.5

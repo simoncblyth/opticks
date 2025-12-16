@@ -66,6 +66,8 @@ TODO: cherry pick from tests/CSGOptiXSimtraceTest.py and simplify
 for minimal simtrace plotting
 
 
+KeyNameConfig eg $HOME/.opticks/GEOM/cxt_min.ini
+
 
 
 This python script is also used from ipc InputPhotonCheck, eg::
@@ -162,7 +164,7 @@ if __name__ == '__main__':
 
     log.info("GLOBAL:%d MODE:%d" % (GLOBAL,MODE))
 
-    prn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_prim_regexp")
+    #prn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_prim_regexp")
 
 
     if not "MFOLD" in os.environ:
@@ -335,6 +337,10 @@ if __name__ == '__main__':
     pass
 
     ## analyse frequencies of occurence of the label integers
+
+    #bn0 = bn
+    #bn = bn[bn != 0xffff]
+
     cxtb, btab = cf.simtrace_boundary_analysis(bn, KEY)
     print(repr(cxtb))
     print(repr(btab))
@@ -592,6 +598,7 @@ if __name__ == '__main__':
 
         #pl.reset_camera() # avoids blank start screen, but resets view to include all points - not what want
 
+        ## THIS legend default can be overridden with LEGEND=0/1 envvar
         cp = pvp.pvplt_show(pl, incpoi=-5, legend=True, title=None )
     else:
         pass
