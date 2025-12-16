@@ -7,6 +7,7 @@
 
 #include "SMesh.h"
 #include "SMeshGroup.h"
+#include "ssys.h"
 
 #include "CSGPrim.h"
 
@@ -16,6 +17,7 @@
 #include <sstream>
 #include <cassert>
 #include <cstring>
+#include <algorithm>
 
 
 std::string CSGPrim::desc() const
@@ -86,13 +88,33 @@ Displays coordinate ranges and extent of the analytic CSGPrim and triangulated S
 std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname, const SMeshGroup* mg ) // static
 {
     size_t num_so = soname ? soname->size() : 0 ;
-
     int mg_subs = mg ? mg->subs.size() : 0 ;
+    float EXTENT_DIFF = ssys::getenvfloat(CSGPrim__DescRange_EXTENT_DIFF, 200.f );
 
     std::stringstream ss ;
-    ss << "[CSGPrim::Desc numPrim " << numPrim << " mg_subs " << mg_subs << "\n" ;
-    for(int i=0 ; i < numPrim ; i++ )
+    ss << "[CSGPrim::Desc"
+       << " numPrim " << numPrim
+       << " mg_subs " << mg_subs
+       << " EXTENT_DIFF : " << std::setw(10) << std::fixed << std::setprecision(3) << EXTENT_DIFF
+       << " [" << CSGPrim__DescRange_EXTENT_DIFF << "]"
+       << "\n"
+       ;
+
+
+    // order the prim SMesh by maximum z
+    std::vector<unsigned> idx(numPrim);
+    std::iota(idx.begin(), idx.end(), 0u);  // fill 0,1,2,...,numPrim-1
+    using zmax_functor = SMesh::zmax_functor ;
+    zmax_functor zmax_fn {} ;
+    std::stable_sort(idx.begin(), idx.end(),
+        [&](unsigned a, unsigned b) -> bool {
+            return zmax_fn(*mg->subs[a]) > zmax_fn(*mg->subs[b]);
+        });
+
+
+    for(int j=0 ; j < numPrim ; j++ )
     {
+        unsigned i = idx[j] ;
         const SMesh* sub = mg ? mg->subs[i] : nullptr ;
         const CSGPrim& pr = prim[primOffset + i];
         unsigned lvid = pr.meshIdx();
@@ -125,9 +147,13 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
             << "\n"
             ;
 
-        if( std::abs(extent_diff) > 100.f )
+        if( std::abs(extent_diff) > EXTENT_DIFF )
         {
-            ss << " LARGE extent_diff " << std::setw(10) << std::fixed << std::setprecision(3) << extent_diff << "\n" ;
+            ss
+               << " extent_diff > EXTENT_DIFF : "
+               << " extent_diff : " << std::setw(10) << std::fixed << std::setprecision(3) << extent_diff
+               << "\n"
+               ;
             if(sub_tr0) ss << " sub_tr0\n" << stra<double>::Desc(*sub_tr0) << "\n"  ;
             if(sub_loaddir) ss << " sub_loaddir [" << sub_loaddir << "]\n" ;
         }

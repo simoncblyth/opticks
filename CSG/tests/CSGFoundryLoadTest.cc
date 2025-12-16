@@ -80,9 +80,12 @@ inline int CSGFoundryLoadTest::descPrimRange()
 
 inline int CSGFoundryLoadTest::CompareRanges()
 {
+    int SID = ssys::getenvint("SID", -1);
+
     CSGFoundry* fd = CSGFoundry::Load() ;
     size_t num_solid = fd->solid.size() ;
-    int solidIdx = num_solid - 1 ;
+
+    int solidIdx = SID >= 0 ? SID : num_solid + SID ;
     stree* tr = fd->sim->tree ;
     SScene* sc = fd->sim->scene ;
 
@@ -92,6 +95,7 @@ inline int CSGFoundryLoadTest::CompareRanges()
 
     std::cout
         << "[CSGFoundryLoadTest::CompareRanges \n"
+        << " SID " << SID
         << " num_solid " << num_solid
         << " solidIdx " << solidIdx
         << " tr " << ( tr ? "YES" : "NO " )
