@@ -9,6 +9,7 @@ from opticks.ana.fold import Fold, STR
 from opticks.sysrap.OpticksCSG import CSG_
 
 
+
 class KeyNameConfig(object):
     """
     Parses ini file of the below form::
@@ -27,35 +28,43 @@ class KeyNameConfig(object):
     Defaults path is $HOME/.opticks/GEOM/cxt_min.ini
     """
 
-    @classmethod
-    def Parse(cls, _path, _section ):
-        cp = cls(_path, _section)
-        return cp.bdict
+    #@classmethod
+    #def Parse(cls, _path, _section ):
+    #    cp = cls(_path, _section)
+    #    return cp.bdict
 
-    def __init__(self, _path, _section ):
+    def __init__(self, _path ):
         path = os.path.expandvars(_path)
         cfg = ConfigParser()
         cfg.read(path)
-        sect = cfg[_section]
-        bdict = OrderedDict(sect)
 
         self._path = _path
         self.path = path
-        self._section = _section
         self.cfg = cfg
-        self.bdict = bdict
+
+        #self._section = _section
+        #self.bdict = bdict
+
+    def __call__(self, _section):
+        sect = self.cfg[_section]
+        bdict = OrderedDict(sect)
+        return bdict
+
+
 
 
 
 class NameTable(object):
     def __init__(self, symbol, ix, ixn, d_qix={}, KEY=None):
         """
-        :param symbol:
+        :param symbol: eg btab or ptab
         :param ix: large array of indices (eg boundaries or globalPrimIdx)
         :param ixn: smallish array of names
         :param d_qix: dict keyed on colors with arrays of ixn indices as values
         """
         u, x, c = np.unique(ix, return_index=True, return_counts=True)
+
+        #u[u==0xffff] = 0  # KLUDGE MISSES
 
         # form array with the keys that each boundary index is grouped into
         akk = np.repeat("????????????????", len(u))
@@ -615,8 +624,15 @@ class CSGFoundry(object):
         if bdn is None: log.fatal("CSGFoundry fail to access sim.stree.standard.bnd_names : geometry incomplete" )
         if type(bdn) is np.ndarray: sim.bndnamedict = self.namelist_to_namedict(bdn)
         pass
-        self.bdn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_boundary_regexp")
-        self.prn_config = KeyNameConfig.Parse("$HOME/.opticks/GEOM/cxt_min.ini", "key_prim_regexp")
+
+        self.kncfg = KeyNameConfig("$HOME/.opticks/GEOM/cxt_min.ini")
+
+        self.bdn_config = self.kncfg("key_boundary_regexp")
+        self.bdn_config_note = self.kncfg("key_boundary_regexp_note")
+
+        self.prn_config = self.kncfg("key_prim_regexp")
+        self.prn_config_note = self.kncfg("key_prim_regexp_note")
+
         self.bdn = bdn
         self.sim = sim
 
@@ -668,7 +684,7 @@ class CSGFoundry(object):
         :param KEY: color key OR None
         :return cxtb,btab:
         """
-        d_qbn, d_anno = self.Dict_find_name_indices_re_match(self.bdn, self.bdn_config)
+        d_qbn, d_anno = self.Dict_find_name_indices_re_match(self.bdn, self.bdn_config, self.bdn_config_note )
         btab = NameTable("btab", bn, self.bdn, d_qbn, KEY)
         cxtb = GroupedNameTable("cxtb", bn, d_qbn, d_anno, self.bdn, lwid=100)
         self.btab = btab
@@ -676,7 +692,7 @@ class CSGFoundry(object):
         return cxtb, btab
 
     def simtrace_prim_analysis(self, pr, KEY=os.environ.get("KEY", None) ):
-        d_qpr, d_anno = self.Dict_find_name_indices_re_match(self.primname, self.prn_config)
+        d_qpr, d_anno = self.Dict_find_name_indices_re_match(self.primname, self.prn_config, self.prn_config_note )
         ptab = NameTable("ptab", pr, self.primname, d_qpr, KEY)
         cxtp = GroupedNameTable("cxtp", pr, d_qpr, d_anno, self.primname, lwid=50)
         self.ptab = ptab
@@ -684,7 +700,7 @@ class CSGFoundry(object):
         return cxtp, ptab
 
     @classmethod
-    def Dict_find_name_indices_re_match(cls, names, _nameptn_dict):
+    def Dict_find_name_indices_re_match(cls, names, _nameptn_dict, _namenote_dict ):
         """
         :param names: array of names
         :param _nameptn_dict: label keys, regexp pattern string values
@@ -699,11 +715,13 @@ class CSGFoundry(object):
         unmatched_k = None
         for k, v in _nameptn_dict.items():
             if v == '':
-                unmatched_k = k
+                unmatched_k = k  # usaully grey
                 continue
             pass
             qnm, nn, label = cls.Find_name_indices_re_match(names, v)
             matched = np.concatenate( (matched, qnm) )
+            k_note = _namenote_dict.get(k,"")
+            if len(k_note) > 0: label += " ## " + k_note
             d[k] = qnm
             anno[k] = label
         pass
