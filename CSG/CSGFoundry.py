@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os, sys, re,  numpy as np, logging, datetime
 from configparser import ConfigParser
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 log = logging.getLogger(__name__)
 
 #from opticks.ana.key import keydir
@@ -28,10 +28,6 @@ class KeyNameConfig(object):
     Defaults path is $HOME/.opticks/GEOM/cxt_min.ini
     """
 
-    #@classmethod
-    #def Parse(cls, _path, _section ):
-    #    cp = cls(_path, _section)
-    #    return cp.bdict
 
     def __init__(self, _path ):
         path = os.path.expandvars(_path)
@@ -42,12 +38,19 @@ class KeyNameConfig(object):
         self.path = path
         self.cfg = cfg
 
-        #self._section = _section
-        #self.bdict = bdict
 
     def __call__(self, _section):
         sect = self.cfg[_section]
         bdict = OrderedDict(sect)
+
+        counts = Counter(bdict.values())
+        duplicates = [val for val, count in counts.items() if count > 1]
+
+        if duplicates:
+            log.fatal(f"CSGFoundry.py/KeyNameConfig : Found duplicated values: {duplicates}")
+            sys.exit(1)
+        pass
+
         return bdict
 
 
@@ -721,9 +724,9 @@ class CSGFoundry(object):
             qnm, nn, label = cls.Find_name_indices_re_match(names, v)
             matched = np.concatenate( (matched, qnm) )
             k_note = _namenote_dict.get(k,"")
-            if len(k_note) > 0: label += " ## " + k_note
+            lab = "%100s ## %s" % ( label, k_note )
             d[k] = qnm
-            anno[k] = label
+            anno[k] = lab
         pass
 
         c = dict(matched=matched, all=np.arange(len(names)))

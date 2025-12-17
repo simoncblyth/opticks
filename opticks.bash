@@ -19,6 +19,9 @@
 
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 
+
+INI(){ vi ~/.opticks/GEOM/cxt_min.ini ; : ~/opticks/opticks.bash ; }
+
 GEOM_TEMPLATE(){ cat << EOT
 #!/bin/bash
 notes(){ cat << EON

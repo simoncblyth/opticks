@@ -3,6 +3,15 @@ usage(){ cat << EOU
 cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 ===============================================================
 
+CAUTION WITH ELV PARTIAL GEOMETRIES. While partial geometries can be
+simtraced the meaning of the boundary and prim indices does not match
+the full geometry indices so the key labels will usually be incorrect.
+The point of ELV geometry is for quick checks without persisting the
+geometry. So have to live with this limitation ?
+Use full geometry when want the key labels to be meaningful.
+
+
+
 To make select intersects to show use comma delimted KEY::
 
      PRIMTAB=1 cxt_min.sh pdb
