@@ -14,6 +14,12 @@ AltWaterDistributer
    but it takes forever to polgonize, so unworkable
 
 
+To see this solid within container universe box
+converted into CSGFoundry geometry use::
+
+   ~/o/g4cx/tests/G4CX_U4TreeCreateCSGFoundryTest.sh
+
+
 EOU
 }
 
@@ -23,12 +29,22 @@ cd $(dirname $(realpath $BASH_SOURCE))
 
 
 #solid=WaterDistributer
-solid=WaterDistributorPartIIIUnion
 #solid=AltWaterDistributer
+#solid=WaterDistributorPartIIIUnion
+solid=OuterReflectorOrbSubtraction
+
+
+
+
 
 export SOLID=$solid
 export FOLD=/tmp/$USER/opticks/$name
 mkdir -p $FOLD
+
+
+if [ "$SOLID" == "OuterReflectorOrbSubtraction" ]; then
+   export U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector=20722.1
+fi
 
 bin=$name
 script=$name.py

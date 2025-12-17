@@ -2,6 +2,7 @@
 #include <csignal>
 #include "sstr.h"
 #include "ssys.h"
+#include "s_bb.h"
 #include "NP.hh"
 
 #include "G4SystemOfUnits.hh"
@@ -73,6 +74,7 @@ AnotherLocalFastenerAcrylicConstruction
 WaterDistributer
 AltWaterDistributer
 WaterDistributorPartIIIUnion
+OuterReflectorOrbSubtraction
 )LITERAL";
 
 
@@ -174,7 +176,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("WaterDistributer", qname))                    solid = WaterDistributer(qname) ;
     else if(StartsWith("AltWaterDistributer", qname))                 solid = AltWaterDistributer(qname) ;
     else if(StartsWith("WaterDistributorPartIIIUnion", qname))        solid = WaterDistributorPartIIIUnion(qname);
-
+    else if(StartsWith("OuterReflectorOrbSubtraction", qname))        solid = OuterReflectorOrbSubtraction(qname);
     LOG(LEVEL) << " qname " << qname << " solid " << solid ;
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname << " CHECK U4SolidMaker::Make " ;
     return solid ;
@@ -2514,6 +2516,253 @@ const G4VSolid* U4SolidMaker::WaterDistributorPartIIIUnion(const char* name_) //
 
 
 
+/**
+U4SolidMaker::MakeLowerWaterDistributorCurvedCutTubes
+-------------------------------------------------------
+
+After WaterdistributorpipeMaker::MakeLowerWaterDistributorCurvedCutTubes
+
+
+2025-12-17 14:14:52.868 INFO  [2884720] [U4SolidMaker::OuterReflectorOrbSubtraction@2690] m_radOuterReflector 20476
+2025-12-17 14:14:52.868 INFO  [2884720] [U4SolidMaker::MakeLowerWaterDistributorCurvedCutTubes@2653]
+                                                    offset1    235.226
+                                                    offset2    540.830
+                                        offset1*2 + offset2   1011.281
+                                      offset1*2 + offset2*2   1552.111
+ trans_cutTube1 [  -120.000,     0.000,-19405.226]
+ trans_cutTube2 [   -84.920,     0.000,-20181.281]
+
+
+
+::
+
+
+    In [4]: z = np.array( [-20476, -20181, -19405, -19170] )
+
+    In [5]: z - z[0]
+    Out[5]: array([   0,  295, 1071, 1306])
+
+    In [6]: z - z[-1]
+    Out[6]: array([-1306, -1011,  -235,     0])
+
+
+    20476 - 1552 = 18924
+
+    20476 - 235 - 541 = 19700
+
+
+
+Start centered::
+
+
+                +-----+  -
+               /     /
+              /     /    offset1
+             /     /
+            /  +  /     -                   z = 0
+           /     /
+          /     /       offset1
+         /     /
+        +-----+         -
+
+
+Offset by  -19120 - 50*mm = -19170 puts middle at -19170::
+
+
+                +-----+  -
+               /     /
+              /     /    offset1
+             /     /
+            /  +  /     - -  - - - - - -    z = -19170
+           /     /
+          /     /       offset1
+         /     /
+        +-----+         -
+
+
+Then offset more, -19170 - offset1 puts top at -19170::
+
+
+
+                            +-----+  -   - - - - - - - - - -   z = -19170
+                           /     /
+                          /     /    offset1
+                         /     /
+                        /  +  /     - -  - - - - - -    z = -19170 - offset1              = -19170 - 235.22              = -19405.22
+                       /     /
+                      /     /       offset1
+                     /     /
+                    +-----+         -                   z =  -19170 - 2*offset1          = -19170 - 2*235.22             = -19640.44
+                     \     \
+                      \     \
+                       \     \
+                        \     \
+                         \     \
+                          \  +  \                       z = -19170 - 2*offset1 - offset2 = -19170 - 2*235.22 - 540.830  =  -20181.27
+                           \     \
+                            \     \
+                             \     \                                                                                -------- -20476 --
+                              \     \
+                               \     \
+                                \     \
+                                 +-----+                z = -19170 - 2*offset2 - 2*offset2 = -19170 - 2*235.22 - 2*540.830 = -20722.1
+
+
+**/
+
+
+
+std::vector<PlacedSolid> U4SolidMaker::MakeLowerWaterDistributorCurvedCutTubes(double m_lowerchimney_rotangle) {
+    std::vector<PlacedSolid> cutTubes;
+
+    double UNCOINCIDE_MM = ssys::getenvdouble(U4SolidMaker__MakeLowerWaterDistributorCurvedCutTubes_UNCOINCIDE_MM, 0 );
+
+    double rMin = 0;
+    //double rMax = 50*mm;
+    double sPhi = 0;
+    double dPhi = 360*deg;
+
+
+    // First section parameters
+    double dz1 = 529/2 * mm;
+    double theta1 = 27*deg;
+    G4ThreeVector pLowNorm1( sin(theta1), 0, -cos(theta1) );
+    G4ThreeVector pHighNorm1( -sin(theta1), 0, cos(theta1) );
+    auto cutTube1 = new G4CutTubs("CutTube1", rMin, 66.5 * cos(theta1), dz1, sPhi, dPhi, pLowNorm1, pHighNorm1);
+
+    // Second section parameters
+    double dz2 = 1125.25/2 * mm;
+    double theta2 = -16*deg;
+    G4ThreeVector pLowNorm2( sin(theta2), 0, -cos(theta2) );
+    G4ThreeVector pHighNorm2( -sin(theta2), 0, cos(theta2) );
+    auto cutTube2 = new G4CutTubs("CutTube2", rMin, 66.5 * cos(theta2), dz2, sPhi, dPhi, pLowNorm2, pHighNorm2);
+
+    double offset1 = dz1 * cos(27*deg);
+    double offset2 = dz2 * cos(-16*deg);
+
+    double cos_rot = cos(m_lowerchimney_rotangle);
+    double sin_rot = sin(m_lowerchimney_rotangle);
+    double sin_theta2 = sin(16*deg);
+
+    // Rotation and translation for cutTube1
+    G4RotationMatrix rot_cutTube1;
+    rot_cutTube1.rotateY(27*deg);
+    rot_cutTube1.rotateZ(-m_lowerchimney_rotangle);
+
+    G4ThreeVector trans_cutTube1(-120 * cos_rot, 120 * sin_rot, -19120 - 50*mm - offset1);
+
+    cutTubes.push_back({
+        cutTube1,
+        trans_cutTube1,
+        rot_cutTube1,
+        0,
+        "lCutTube1",
+        "pCutTube1"
+    });
+
+    // Rotation and translation for cutTube2
+    G4RotationMatrix rot_cutTube2;
+    rot_cutTube2.rotateY(-16*deg);
+    rot_cutTube2.rotateZ(-m_lowerchimney_rotangle);
+
+    G4ThreeVector trans_cutTube2(
+        2 * (-120 * cos_rot) + dz2 * sin_theta2 * cos_rot,
+        2 * (120 * sin_rot) - dz2 * sin_theta2 * sin_rot,
+        -19120 - 50*mm - offset1 * 2 - offset2 + UNCOINCIDE_MM*mm
+    );
+
+
+    cutTubes.push_back({
+        cutTube2,
+        trans_cutTube2,
+        rot_cutTube2,
+        1,
+        "lCutTube2",
+        "pCutTube2"
+    });
+
+
+    std::array<double,3> tr1 = {trans_cutTube1.x(), trans_cutTube1.y(), trans_cutTube1.z() };
+    std::array<double,3> tr2 = {trans_cutTube2.x(), trans_cutTube2.y(), trans_cutTube2.z() };
+
+    LOG(info)
+       << "\n"
+       << "[" << U4SolidMaker__MakeLowerWaterDistributorCurvedCutTubes_UNCOINCIDE_MM << "]"
+       << "\n"
+       << std::setw(60) << " UNCOINCIDE_MM " << std::fixed << std::setw(10) << std::setprecision(3) << UNCOINCIDE_MM
+       << "\n"
+       << std::setw(60) << " offset1 " << std::fixed << std::setw(10) << std::setprecision(3) << offset1
+       << "\n"
+       << std::setw(60) << " offset2 "  << std::fixed << std::setw(10) << std::setprecision(3) << offset2
+       << "\n"
+       << std::setw(60) <<  " offset1*2 + offset2 " << std::fixed << std::setw(10) << std::setprecision(3) << (offset1*2.+offset2)
+       << "\n"
+       << std::setw(60) <<  " offset1*2 + offset2*2 " << std::fixed << std::setw(10) << std::setprecision(3) << (offset1*2.+offset2*2.)
+       << "\n"
+       << " trans_cutTube1 " << s_bb::Desc_<double,3>(tr1.data())
+       << "\n"
+       << " trans_cutTube2 " << s_bb::Desc_<double,3>(tr2.data())
+       ;
+
+    return cutTubes;
+}
+
+
+/**
+U4SolidMaker::OuterReflectorOrbSubtraction
+--------------------------------------------
+
+Checking::
+
+    DetSim1Construction::helper_subtract_water_distributor
+
+**/
+
+const G4VSolid* U4SolidMaker::OuterReflectorOrbSubtraction(const char* name_) // static
+{
+    G4String name = name_ ;
+
+    double m_radOuterWater = 20.50*m - 26*mm; // due to back of veto pmt mask is -25.05 mm (See R12860OnlyFrontMaskManager).
+    double m_thicknessReflector = 2*mm;
+    double m_radOuterReflector = m_radOuterWater + m_thicknessReflector;
+
+
+    double radOuterReflector = ssys::getenvfloat(U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector, m_radOuterReflector );
+    G4VSolid* solid_output = new G4Orb(name_,  radOuterReflector );
+
+
+    double m_lowerchimney_rotangle = 0. ;
+
+  // ==== New: Subtract two inclined cutTubes of lower water distributor ====
+    auto cutTubes = MakeLowerWaterDistributorCurvedCutTubes(m_lowerchimney_rotangle);
+
+    for (size_t i = 0; i < cutTubes.size(); ++i) {
+        const auto& tube = cutTubes[i];
+        G4Transform3D transform(tube.rot, tube.pos);
+
+        solid_output = new G4SubtractionSolid(
+            name + "_cutTube" + std::to_string(i+1),
+            solid_output,
+            tube.solid,
+            transform
+        );
+    }
+
+    G4String solid_output_name = solid_output->GetName();
+
+    LOG(info)
+         << "\n"
+         << "m_radOuterReflector " << m_radOuterReflector     // 20476 mm
+         << "\n"
+         << " [" << U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector << "]"
+         << "\n"
+         << " radOuterReflector " << radOuterReflector
+         << "\n"
+         << " solid_output_name " << solid_output_name
+         ;
+
+    return solid_output ;
+}
 
 
 

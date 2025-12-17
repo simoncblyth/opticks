@@ -3,12 +3,25 @@
 #include <string>
 #include <vector>
 #include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
 class G4VSolid ;
 class G4MultiUnion ;
 class G4Box ;
 
 #include "U4_API_EXPORT.hh"
 #include "plog/Severity.h"
+
+
+struct U4_API PlacedSolid
+{
+    G4VSolid *solid;
+    G4ThreeVector pos;
+    G4RotationMatrix rot;
+    int copy_no;
+    std::string log_name;
+    std::string phy_name;
+};
+
 
 struct U4_API U4SolidMaker
 {
@@ -107,6 +120,13 @@ struct U4_API U4SolidMaker
     static       G4VSolid* WaterDistributerHelper(const char* name, double distance, double TubeR);
     static void            AltWaterDistributerHelper(G4MultiUnion* multiUnion, double distance, double TubeR, double yoffset );
     static const G4VSolid* WaterDistributorPartIIIUnion(const char* name);
+
+    static constexpr const char* U4SolidMaker__MakeLowerWaterDistributorCurvedCutTubes_UNCOINCIDE_MM = "U4SolidMaker__MakeLowerWaterDistributorCurvedCutTubes_UNCOINCIDE_MM" ;
+    static std::vector<PlacedSolid> MakeLowerWaterDistributorCurvedCutTubes(double m_lowerchimney_rotangle);
+
+    static constexpr const char* U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector = "U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector" ;
+    static const G4VSolid* OuterReflectorOrbSubtraction(const char* name_);
+
 
 };
 

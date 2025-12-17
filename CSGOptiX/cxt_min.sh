@@ -226,40 +226,52 @@ opticks_event_name=2d
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
-## see SFrameGenstep::StandardizeCEGS for CEGS/CEHIGH [4]/[7]/[8] layouts
 
-if [ "$OPTICKS_EVENT_NAME" == "2d" ]; then
+echo " GEOM $GEOM "
+echo " OPTICKS_EVENT_NAME $OPTICKS_EVENT_NAME "
 
-   #cegs=16:0:9:2000   # [4] XZ default
-   #cegs=16:0:9:1000  # [4] XZ default
-   #cegs=16:0:9:100   # [4] XZ reduce rays for faster rsync
-   #cegs=16:9:0:1000  # [4] try XY
-   cegs=9:0:14:1000   # 2D for making sense
+if [ "$GEOM" == "LocalOuterReflectorOrbSubtraction" ]; then
 
-elif [ "$OPTICKS_EVENT_NAME" == "3d" ]; then
+    if [ "$OPTICKS_EVENT_NAME" == "2d" ]; then
 
-   #cegs=16:9:9:100    # [4] try a 3D grid
-   #cegs=16:9:9:500    # [4] try a 3D grid
-   cegs=9:9:16:500    # [4] try a 3D grid, elongate Z for better coverage
+       cegs=9:0:14:1000   # 2D for making sense
+       export CEGS=$cegs
+       export CEHIGH_0=-2:2:0:0:-4:4:1000:8
+       vv="$vv CEHIGH_0"
+    fi
 
+else
+
+    if [ "$OPTICKS_EVENT_NAME" == "2d" ]; then
+
+       #cegs=16:0:9:2000   # [4] XZ default
+       #export CEHIGH_0=-16:16:0:0:-4:4:2000:4
+       #export CEHIGH_1=-16:16:0:0:4:8:2000:4
+
+       #cegs=16:0:9:1000  # [4] XZ default
+       #cegs=16:0:9:100   # [4] XZ reduce rays for faster rsync
+       #cegs=16:9:0:1000  # [4] try XY
+       cegs=9:0:14:1000   # 2D for making sense
+
+       export CEGS=$cegs
+       export CEHIGH_0=-2:2:0:0:-11:-7:1000:8
+       export CEHIGH_1=-2:2:0:0:7:15:1000:8
+       vv="$vv CEHIGH_0 CEHIGH_1"
+
+
+    elif [ "$OPTICKS_EVENT_NAME" == "3d" ]; then
+
+       #cegs=16:9:9:100    # [4] try a 3D grid
+       #cegs=16:9:9:500    # [4] try a 3D grid
+       cegs=9:9:16:500    # [4] try a 3D grid, elongate Z for better coverage
+
+       export CEGS=$cegs
+
+       ## see SFrameGenstep::StandardizeCEGS for CEGS/CEHIGH [4]/[7]/[8] layouts
+    fi
 fi
 
-export CEGS=$cegs
 
-if [ "$CEGS" == "16:0:9:2000" ]; then
-    export CEHIGH_0=-16:16:0:0:-4:4:2000:4
-    export CEHIGH_1=-16:16:0:0:4:8:2000:4
-    #export CEHIGH_0=16:0:9:0:0:10:2000     ## [7] dz:10 aim to land another XZ grid above in Z 16:0:9:2000
-    #export CEHIGH_1=-4:4:0:0:-9:9:2000:5   ## [8]
-    #export CEHIGH_2=-4:4:0:0:10:28:2000:5  ## [8]
-
-
-elif [ "$CEGS" == "9:0:14:1000" ]; then
-
-    export CEHIGH_0=-2:2:0:0:-11:-7:1000:8
-    export CEHIGH_1=-2:2:0:0:7:15:1000:8
-
-fi
 
 # CEGS_NPY adds gensteps at positions obtained from the array of 3D points
 #export CEGS_NPY=/tmp/overlap_pt.npy   # see SFrameGenstep::MakeCenterExtentGenstep_FromFrame

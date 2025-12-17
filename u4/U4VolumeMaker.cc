@@ -12,6 +12,8 @@
 #include "spath.h"
 #include "sstr.h"
 #include "ssys.h"
+#include "s_bb.h"
+
 #include "SPlace.h"
 
 #include "SLOG.hh"
@@ -259,11 +261,12 @@ const G4VPhysicalVolume* U4VolumeMaker::PVS_(const char* name)
 {
     METH = "PVS_" ;
     const G4VPhysicalVolume* pv = nullptr ;
-    if(strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);
-    if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater(false);
-    if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWater(true);
-    if(strcmp(name,"BigWaterPool" ) == 0)           pv = BigWaterPool();
-    if(sstr::StartsWith(name,"LocalFastenerAcrylicConstruction" )) pv = LocalFastenerAcrylicConstruction(name);
+    if(     strcmp(name,"BoxOfScintillator" ) == 0)      pv = BoxOfScintillator(1000.);
+    else if(strcmp(name,"RaindropRockAirWater" ) == 0)   pv = RaindropRockAirWater(false);
+    else if(strcmp(name,"RaindropRockAirWaterSD" ) == 0) pv = RaindropRockAirWater(true);
+    else if(strcmp(name,"BigWaterPool" ) == 0)           pv = BigWaterPool();
+    else if(sstr::StartsWith(name,"LocalFastenerAcrylicConstruction" )) pv = LocalFastenerAcrylicConstruction(name);
+    else if(sstr::StartsWith(name,"Local" ))                            pv = Local(name);
     return pv ;
 }
 const G4VPhysicalVolume* U4VolumeMaker::PVL_(const char* name)
@@ -886,6 +889,64 @@ const G4VPhysicalVolume* U4VolumeMaker::LocalFastenerAcrylicConstruction(const c
 
     return universe_pv ;
 }
+
+
+/**
+U4VolumeMaker::Local
+----------------------
+
+Local prefixed names like "LocalOuterReflectorOrbSubtraction" are passed to U4SolidMaker
+to construct solids without the prefix eg: "OuterReflectorOrbSubtraction".
+Then the bounding limits are used to get the extent of the solid which is used to
+configure the size of the universe volume. Note that this functionality can
+be used from the below script that creates the Geant4 geometry and then translates
+into an Opticks one which is persisted.
+
+    ~/o/g4cx/tests/G4CX_U4TreeCreateCSGFoundryTest.sh
+
+Thence can use the below tools to visualize in various ways::
+
+    cxr_min.sh  # ray trace render
+    cxt_min.sh  # simtrace cross sections
+    ssst.sh     # triangulated SScene viz
+
+**/
+
+const G4VPhysicalVolume* U4VolumeMaker::Local(const char* name)
+{
+    const char* PREFIX = "Local" ;
+    assert( sstr::StartsWith(name,PREFIX ));
+    const char* name_after_PREFIX = name + strlen(PREFIX);
+
+    G4LogicalVolume* object_lv = LV(name_after_PREFIX, "G4_Pb" ) ;
+    const G4VSolid* const solid = object_lv->GetSolid();
+
+    G4ThreeVector pMin ;
+    G4ThreeVector pMax ;
+    solid->BoundingLimits(pMin, pMax);
+
+    std::array<double,6> bb = {pMin.x(), pMin.y(), pMin.z(), pMax.x(), pMax.y(), pMax.z() };
+    double extent = s_bb::Extent<double>(bb.data());
+    LOG(info)
+        << " name " <<  ( name ? name : "-" )
+        << " name_after_PREFIX " <<  ( name_after_PREFIX ? name_after_PREFIX : "-" )
+        << " bb " << s_bb::Desc<double>(bb.data())
+        << " extent " << extent
+        ;
+
+
+    G4double universe_halfside = 1.5*extent*mm ;
+    const char* universe_material = "G4_AIR" ;
+
+    G4LogicalVolume* universe_lv  = Box_(universe_halfside, universe_material );
+
+    const G4VPhysicalVolume* universe_pv = new G4PVPlacement(0,G4ThreeVector(),  universe_lv ,  "universe_pv", nullptr,false,0);
+    [[maybe_unused]] const G4VPhysicalVolume* object_pv = new G4PVPlacement(0,G4ThreeVector(), object_lv ,"object_pv", universe_lv,false,0);
+    assert( object_pv );
+
+    return universe_pv ;
+}
+
 
 
 

@@ -2,6 +2,8 @@
 G4CX_U4TreeCreateCSGFoundryTest.cc
 ====================================
 
+~/o/g4cx/tests/G4CX_U4TreeCreateCSGFoundryTest.sh
+
 1. creates Geant4 pv with U4VolumeMaker::PV which is configured via GEOM envvar,
    see also U4SolidMaker::Make for implemented names and to add more
 2. applies U4Tree::Create populating an stree
@@ -10,6 +12,7 @@ G4CX_U4TreeCreateCSGFoundryTest.cc
 
 **/
 
+#include "OPTICKS_LOG.hh"
 #include "SLOG.hh"
 #include "SSim.hh"
 #include "U4Tree.h"
@@ -40,8 +43,9 @@ inline G4CX_U4TreeCreateCSGFoundryTest::G4CX_U4TreeCreateCSGFoundryTest()
     fd->save("$FOLD");
 }
 
-int main()
+int main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv); //TODO: turn this macro into function returning int
     G4CX_U4TreeCreateCSGFoundryTest t ;
     return 0 ;
 }

@@ -92,6 +92,7 @@ struct U4_API U4VolumeMaker
 
     // specialist pv creators
     static const G4VPhysicalVolume* LocalFastenerAcrylicConstruction(const char* name);
+    static const G4VPhysicalVolume* Local(const char* name);
 
 
     static constexpr const char* U4VolumeMaker_RaindropRockAirWater_MATS = "U4VolumeMaker_RaindropRockAirWater_MATS" ;

@@ -309,7 +309,6 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     else:
         vtk_actor = None
     pass
-    print("pvplt_show title:%s TITLE:%s " % (title, TITLE))
 
     GRID = 1 == int(os.environ.get("GRID","0"))
     if GRID:
@@ -333,6 +332,12 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     pl.increment_point_size_and_line_width(INCPOI)
 
     #pl.enable_point_picking(callback=pvplt_picked_point, use_picker=True)
+
+    UL = os.environ.get("UL", "")
+    if not UL is "": pl.add_text( UL, position="upper_left")
+    LL = os.environ.get("LL", "")
+    if not LL is "": pl.add_text( LL, position="lower_left")
+    print("pvplt_show title:[%s] TITLE:[%s] UL:[%s] LL:[%s] " % (title, TITLE, UL, LL))
 
     return pl.show(title=TITLE)
 

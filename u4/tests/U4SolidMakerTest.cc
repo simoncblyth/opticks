@@ -5,6 +5,7 @@
 **/
 
 
+#include "OPTICKS_LOG.hh"
 #include "ssys.h"
 #include "G4VSolid.hh"
 #include "U4Mesh.h"
@@ -26,15 +27,16 @@ struct U4SolidMakerTest
 
     static void get_node_bb(int lvid);
     static int Convert();
-    static int Main();
+    static int Main(int argc, char** argv);
 };
 
 const char* U4SolidMakerTest::SOLID = ssys::getenvvar("SOLID", "WaterDistributer");
 const char* U4SolidMakerTest::TEST = ssys::getenvvar("TEST", "Convert");
 const int  U4SolidMakerTest::LEVEL = ssys::getenvint("LEVEL", 4 );
 
-inline int U4SolidMakerTest::Main()
+inline int U4SolidMakerTest::Main(int argc, char** argv)
 {
+    OPTICKS_LOG(argc, argv);
     bool ALL = strcmp(TEST, "ALL") == 0 ;
 
     int rc = 0 ;
@@ -227,7 +229,7 @@ inline int U4SolidMakerTest::Convert()
 }
 
 
-int main()
+int main(int argc, char** argv)
 {
-    return U4SolidMakerTest::Main();
+    return U4SolidMakerTest::Main(argc, argv);
 }
