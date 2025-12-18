@@ -17,6 +17,9 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
+
+
+
 name=CSGFoundryLoadTest
 bin=$name
 script=$name.py
@@ -33,6 +36,8 @@ source $HOME/.opticks/GEOM/GEOM.sh
 vv="BASH_SOURCE name bin script PWD GEOM TEST LVID"
 
 export SSim__load_tree_load=1
+export CSGPrim__DescRange_NUMPY=1
+
 
 logging()
 {

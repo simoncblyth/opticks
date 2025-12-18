@@ -67,6 +67,7 @@ struct SYSRAP_API s_bb
     template<typename T> static bool Degenerate( const T* aabb );
 
     template<typename T, int N> static std::string Desc_( const T* v );
+    template<typename T, int N> static std::string DescNumPy_( const T* v, const char* symbol = "bb", bool imp = false );
     template<typename T, int N> static bool AllZero_( const T* v );
     template<typename T, int N> static bool Degenerate_( const T* v );
 
@@ -189,6 +190,26 @@ inline std::string s_bb::Desc_( const T* v ) // static
     std::string str = ss.str();
     return str ;
 }
+
+template<typename T, int N>
+inline std::string s_bb::DescNumPy_( const T* v, const char* symbol, bool imp ) // static
+{
+    int w = 10 ;
+    int p = 3 ;
+
+    std::stringstream ss ;
+    if(imp) ss << "import numpy as np " ;
+    ss << " ; " << symbol << " = np.array([" ;
+    for(int i=0 ; i < N ; i++)
+        ss << std::fixed << std::setw(w) << std::setprecision(p) << v[i] << ( i < N - 1 ? "," : "" )  ;
+    ss << "]) " ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
 
 template<typename T>
 inline bool s_bb::AllZero( const T* v ) // static

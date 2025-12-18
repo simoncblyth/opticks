@@ -44,36 +44,46 @@ std::string CSGPrim::desc() const
 
 std::string CSGPrim::descRange() const
 {
-    int w = 10 ;
-    int p = 3 ;
-
     float3 mn3 = mn();
     float3 mx3 = mx();
     float4 ce4 = ce();
 
-    std::array<float,3> _mn = {mn3.x, mn3.y, mn3.z};
-    std::array<float,3> _mx = {mx3.x, mx3.y, mx3.z};
     std::array<float,4> _ce = {ce4.x, ce4.y, ce4.z,ce4.w};
+    std::array<float,6> _bb = {mn3.x, mn3.y, mn3.z, mx3.x, mx3.y, mx3.z};
 
     std::stringstream ss ;
     ss << "CSGPrim::descRange" ;
-    ss << " mn [" ;
-    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << _mn[i] << " " ;
-    ss << "]" ;
-
-    ss << " mx [" ;
-    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << _mx[i] << " " ;
-    ss << "]" ;
-
-    ss << " ce [" ;
-    for(int i=0 ; i < 4 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << _ce[i] << " " ;
-    ss << "]" ;
+    ss << " ce " << s_bb::Desc_<float,4>( _ce.data() ) ;
+    ss << " bb " << s_bb::Desc_<float,6>( _bb.data()) ;
     ss << " lvid " << std::setw(3) << meshIdx() ;
     ss << " ridx " << std::setw(4) << repeatIdx() ;
     ss << " pidx " << std::setw(5) << primIdx() ;
     std::string str = ss.str();
     return str ;
 }
+
+
+std::string CSGPrim::descRangeNumPy() const
+{
+    float3 mn3 = mn();
+    float3 mx3 = mx();
+    float4 ce4 = ce();
+
+    std::array<float,4> _ce = {ce4.x, ce4.y, ce4.z,ce4.w};
+    std::array<float,6> _bb = {mn3.x, mn3.y, mn3.z, mx3.x, mx3.y, mx3.z};
+
+    std::stringstream ss ;
+    ss << s_bb::DescNumPy_<float,4>( _ce.data(), "ce", false ) ;
+    ss << s_bb::DescNumPy_<float,6>( _bb.data(), "bb", false ) ;
+    ss << " # CSGPrim::descRangeNumPy " ;
+    ss << " lvid " << std::setw(3) << meshIdx() ;
+    ss << " ridx " << std::setw(4) << repeatIdx() ;
+    ss << " pidx " << std::setw(5) << primIdx() ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 
 /**
@@ -87,6 +97,8 @@ Displays coordinate ranges and extent of the analytic CSGPrim and triangulated S
 
 std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname, const SMeshGroup* mg ) // static
 {
+    int NUMPY = ssys::getenvint(CSGPrim__DescRange_NUMPY,0);
+
     size_t num_so = soname ? soname->size() : 0 ;
     int mg_subs = mg ? mg->subs.size() : 0 ;
     float EXTENT_DIFF = ssys::getenvfloat(CSGPrim__DescRange_EXTENT_DIFF, 200.f );
@@ -133,7 +145,7 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
         ss
             << std::setw(4) << i
             << " : "
-            << pr.descRange()
+            << ( NUMPY ? pr.descRangeNumPy() : pr.descRange() )
             << " so[" << ( so ? so : "-" ) << "]"
             << "\n"
             ;
@@ -141,7 +153,7 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
         if(sub) ss
             << std::setw(4) << i
             << " : "
-            << sub->descRange()
+            << ( NUMPY ? sub->descRangeNumPy() : sub->descRange() )
             << " so[" << ( so ? so : "-" ) << "]"
             << " extent_diff " << std::setw(10) << std::fixed << std::setprecision(3) << extent_diff
             << "\n"

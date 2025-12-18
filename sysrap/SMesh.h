@@ -24,6 +24,7 @@ NB SMesh.h is used in two situtions
 #include <glm/gtx/string_cast.hpp>
 
 #include "stra.h"
+#include "s_bb.h"
 #include "NPFold.h"
 
 struct SMesh
@@ -124,6 +125,7 @@ struct SMesh
     std::string descName() const ;
     std::string descShape() const ;
     std::string descRange() const ;
+    std::string descRangeNumPy() const ;
 
 
     static std::string Desc2D_Ref_2D_int_float(const NP* a, const NP* b,  int limit, const char* label);
@@ -676,10 +678,12 @@ inline std::string SMesh::desc() const
 
 inline std::string SMesh::descName() const
 {
+    static const char * SPACER = "ridx    0 pidx    36 " ;
+
     std::stringstream ss ;
     ss
-       << " name["  << ( name ? name : "-" ) << "] "
        << " lvid " << std::setw(3) << lvid
+       << std::setw(strlen(SPACER)) << " "
        ;
     std::string str = ss.str();
     return str ;
@@ -701,26 +705,37 @@ inline std::string SMesh::descShape() const
 
 inline std::string SMesh::descRange() const
 {
-    int w = 10 ;
-    int p = 3 ;
+    std::array<float,6> bb = {mn[0],mn[1],mn[2],mx[0],mx[1],mx[2]} ;
+
+    const float* _bb = bb.data();
+    const float* _ce = glm::value_ptr(ce);
 
     std::stringstream ss ;
     ss << "SMesh::descRange  " ;
-    ss << " mn [" ;
-    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << mn[i] << " " ;
-    ss << "]" ;
-
-    ss << " mx [" ;
-    for(int i=0 ; i < 3 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << mx[i] << " " ;
-    ss << "]" ;
-
-    ss << " ce [" ;
-    for(int i=0 ; i < 4 ; i++ ) ss << std::fixed << std::setw(w) << std::setprecision(p) << ce[i] << " " ;
-    ss << "]" ;
-    ss << " " <<  descName() ;
+    ss << " ce " << s_bb::Desc_<float,4>( _ce ) ;
+    ss << " bb " << s_bb::Desc_<float,6>( _bb) ;
+    ss <<  descName() ;
     std::string str = ss.str();
     return str ;
 }
+
+inline std::string SMesh::descRangeNumPy() const
+{
+    std::array<float,6> bb = {mn[0],mn[1],mn[2],mx[0],mx[1],mx[2]} ;
+    const float* _ce = glm::value_ptr(ce);
+    const float* _bb = bb.data();
+
+    std::stringstream ss ;
+    ss << s_bb::DescNumPy_<float,4>( _ce, "ce", false ) ;
+    ss << s_bb::DescNumPy_<float,6>( _bb, "bb", false ) ;
+    ss << " # SMesh::descRangeNumPy " <<  descName() ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
 
 
 

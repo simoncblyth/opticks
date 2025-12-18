@@ -231,10 +231,14 @@ export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
 
 
-opticks_event_name=2d
+opticks_event_name=2dxz
+#opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
+
+vv="$vv CEHIGH_0 CEHIGH_1"
+
 
 echo " GEOM $GEOM "
 echo " OPTICKS_EVENT_NAME $OPTICKS_EVENT_NAME "
@@ -246,7 +250,6 @@ if [ "$GEOM" == "LocalOuterReflectorOrbSubtraction" ]; then
        cegs=9:0:14:1000   # 2D for making sense
        export CEGS=$cegs
        export CEHIGH_0=-2:2:0:0:-4:4:1000:8
-       vv="$vv CEHIGH_0"
     fi
 
 else
@@ -265,8 +268,16 @@ else
        export CEGS=$cegs
        export CEHIGH_0=-2:2:0:0:-11:-7:1000:8
        export CEHIGH_1=-2:2:0:0:7:15:1000:8
-       vv="$vv CEHIGH_0 CEHIGH_1"
 
+    elif [ "$OPTICKS_EVENT_NAME" == "2dxz" ]; then
+
+       cegs=9:0:14:1000   # 2D for making sense
+       export CEGS=$cegs
+
+    elif [ "$OPTICKS_EVENT_NAME" == "2dxy" ]; then
+
+       cegs=9:9:0:1000
+       export CEGS=$cegs
 
     elif [ "$OPTICKS_EVENT_NAME" == "3d" ]; then
 

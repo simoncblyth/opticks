@@ -700,6 +700,10 @@ CUR(){
   fi
   echo $cmd
   eval $cmd
+
+  source $HOME/$script
+  CUR_info
+
 }
 
 

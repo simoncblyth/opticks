@@ -156,11 +156,13 @@ struct CSG_API CSGPrim
     static unsigned count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ );
     static std::string Desc(     std::vector<const CSGPrim*>& prim );
 
+    static constexpr const char* CSGPrim__DescRange_NUMPY = "CSGPrim__DescRange_NUMPY" ;
     static constexpr const char* CSGPrim__DescRange_EXTENT_DIFF = "CSGPrim__DescRange_EXTENT_DIFF" ;
     static std::string DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname=nullptr, const SMeshGroup* mg = nullptr );
 
     std::string desc() const ;
     std::string descRange() const ;
+    std::string descRangeNumPy() const ;
     static bool IsDiff( const CSGPrim& a , const CSGPrim& b );
     static SCSGPrimSpec MakeSpec( const CSGPrim* prim0, unsigned primIdx, unsigned numPrim ) ;
 #endif
