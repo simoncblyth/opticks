@@ -18,6 +18,7 @@ struct SYSRAP_API SGeoConfig
 {
     static const plog::Severity LEVEL ;
     static constexpr const char* ELVSelection_VERBOSE = "SGeoConfig__ELVSelection_VERBOSE";
+    static constexpr const char* ELVSelection_STARTING = "SGeoConfig__ELVSelection_STARTING";
     static std::string Desc();
     std::string desc() const ;
 
