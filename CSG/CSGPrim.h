@@ -125,6 +125,7 @@ struct CSG_API CSGPrim
     PRIM_METHOD void setAABB(  float x0, float  y0, float z0, float x1, float y1, float z1){      q2.f.x = x0    ; q2.f.y = y0   ; q2.f.z = z0   ; q2.f.w = x1   ; q3.f.x = y1   ; q3.f.y = z1 ; }
     PRIM_METHOD void getAABB( float& x0, float& y0, float& z0, float& x1, float& y1, float& z1) const { x0 = q2.f.x ; y0 = q2.f.y   ; z0 = q2.f.z   ; x1 = q2.f.w   ; y1 = q3.f.x   ; z1 = q3.f.y ; }
     PRIM_METHOD void setAABB( const float* a){                                               q2.f.x = a[0] ; q2.f.y = a[1] ; q2.f.z = a[2] ; q2.f.w = a[3] ; q3.f.x = a[4] ; q3.f.y = a[5] ; }
+    PRIM_METHOD float zmax() const { return q3.f.y ; }
     PRIM_METHOD const float* AABB() const {  return &q2.f.x ; }
     PRIM_METHOD       float* AABB_()      {  return &q2.f.x ; }
     PRIM_METHOD const float3 mn() const {    return make_float3(q2.f.x, q2.f.y, q2.f.z) ; }
@@ -145,6 +146,16 @@ struct CSG_API CSGPrim
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
+
+
+    struct zmax_functor {
+        float operator()(const CSGPrim& pr) const { return pr.zmax() ; }
+    };
+
+    struct extent_functor {
+        float operator()(const CSGPrim& pr) const { return pr.extent() ; }
+    };
+
 
     void scaleAABB_( float scale );
     static void Copy(CSGPrim& b, const CSGPrim& a);

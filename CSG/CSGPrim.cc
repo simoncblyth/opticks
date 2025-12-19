@@ -113,14 +113,30 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
        ;
 
 
+
+
     // order the prim SMesh by maximum z
     std::vector<unsigned> idx(numPrim);
+
     std::iota(idx.begin(), idx.end(), 0u);  // fill 0,1,2,...,numPrim-1
-    using zmax_functor = SMesh::zmax_functor ;
-    zmax_functor zmax_fn {} ;
+    //using order_functor = SMesh::zmax_functor ;
+    //using order_functor = SMesh::extent_functor ;
+
+    //using order_functor = CSGPrim::zmax_functor ;
+    using order_functor = CSGPrim::extent_functor ;
+    order_functor order_fn {} ;
+
+    /*
     std::stable_sort(idx.begin(), idx.end(),
         [&](unsigned a, unsigned b) -> bool {
-            return zmax_fn(*mg->subs[a]) > zmax_fn(*mg->subs[b]);
+            return order_fn(*mg->subs[a]) > order_fn(*mg->subs[b]);
+        });
+
+    */
+
+    std::stable_sort(idx.begin(), idx.end(),
+        [&](unsigned a, unsigned b) -> bool {
+            return order_fn(prim[primOffset+a]) > order_fn(prim[primOffset+b]);
         });
 
 
@@ -131,7 +147,10 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
         const CSGPrim& pr = prim[primOffset + i];
         unsigned lvid = pr.meshIdx();
 
-        assert( sub->lvid == int(lvid) );
+        if(sub)
+        {
+            assert( sub->lvid == int(lvid) );
+        }
 
         float4 pr_ce = pr.ce();
         const glm::tvec4<float>* sub_ce = sub ? &(sub->ce) : nullptr ;
@@ -174,10 +193,6 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
     std::string str = ss.str() ;
     return str ;
 }
-
-
-
-
 
 
 
