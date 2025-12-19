@@ -231,8 +231,8 @@ export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
 
 
-opticks_event_name=2dxz
-#opticks_event_name=2dxy
+#opticks_event_name=2dxz
+opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -283,7 +283,8 @@ else
 
        #cegs=16:9:9:100    # [4] try a 3D grid
        #cegs=16:9:9:500    # [4] try a 3D grid
-       cegs=9:9:16:500    # [4] try a 3D grid, elongate Z for better coverage
+       #cegs=9:9:16:500    # [4] try a 3D grid, elongate Z for better coverage
+       cegs=9:9:16:2000    # [4] try a 3D grid, elongate Z for better coverage
 
        export CEGS=$cegs
 

@@ -67,7 +67,12 @@ class NameTable(object):
         """
         u, x, c = np.unique(ix, return_index=True, return_counts=True)
 
-        #u[u==0xffff] = 0  # KLUDGE MISSES
+        if "KLUDGE" in os.environ:
+            kludge = u != 0xffff
+            u = u[kludge]
+            x = x[kludge]
+            c = c[kludge]
+        pass
 
         # form array with the keys that each boundary index is grouped into
         akk = np.repeat("????????????????", len(u))
@@ -80,7 +85,7 @@ class NameTable(object):
             pass
             akk[i] = ",".join(kk)
         pass
-        n = ixn[u]
+        n = ixn[u] # IF THIS FAILS FROM 0xffff TRY KLUDGE=1
         o = np.argsort(c)[::-1]
 
         _tab = "np.c_[akk, u, c, x, n][o]"
