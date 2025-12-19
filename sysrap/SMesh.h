@@ -57,14 +57,13 @@ struct SMesh
     glm::tvec3<float> mx = {} ;
     glm::tvec4<float> ce = {} ;
 
-    struct zmax_functor
-    {
-        float operator()(const SMesh& mesh) const
-        {
-            return mesh.mx.z ;
-        }
+    struct zmax_functor {
+        float operator()(const SMesh& mesh) const { return mesh.mx.z ; }
     };
 
+    struct extent_functor {
+        float operator()(const SMesh& mesh) const { return mesh.ce.w ; }
+    };
 
 
     static SMesh* Load(const char* dir, const char* rel );

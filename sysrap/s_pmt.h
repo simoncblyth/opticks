@@ -132,7 +132,7 @@ namespace s_pmt
         NUM_SPMT               = 25600,
         NUM_WP                 = 2400,
         NUM_WP_ATM_LPMT        = 348,
-        NUM_WP_ATM_MPMT        = 0,      // 0:with older branches, 600 with newer ones
+        NUM_WP_ATM_MPMT        = 600,      // 0:with older branches, 600 with newer ones
         NUM_WP_WAL_PMT         = 5,
         OFFSET_CD_LPMT         = 0,
         OFFSET_CD_LPMT_END     = 17612,

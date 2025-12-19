@@ -503,8 +503,10 @@ struct stree
 
     sfr  get_frame_moi() const ;
     sfr  get_frame(const char* q_spec) const ;
+    int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_coords( sfr& f, const char* q_spec ) const ;
+    int  get_frame_from_transform( sfr& f, const char* q_spec ) const ;
 
     bool has_frame(const char* q_spec) const ;
 
@@ -2213,27 +2215,88 @@ inline sfr stree::get_frame(const char* q_spec ) const
     sfr f ;
     f.set_name(q_spec);
 
-    bool looks_like_triplet = sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 ;
-    bool looks_like_coords  = !looks_like_triplet && strstr(q_spec,",") ;
+    char delim = ',' ;
+
+    enum { NONE, NPYFILE, TRIPLET, COORDS, TRANSFORM };
+
+    int q_form = NONE;
+
+    if( sstr::EndsWith(q_spec, ".npy") )
+    {
+        q_form = NPYFILE ;
+    }
+    else if( sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 )
+    {
+        q_form = TRIPLET ;
+    }
+    else if( sstr::looks_like_list(q_spec, delim, 1, 4) )
+    {
+        q_form = COORDS ;
+    }
+    else if( sstr::looks_like_list(q_spec, delim, 16, 16) )
+    {
+        q_form = TRANSFORM ;
+    }
 
     int rc = 0 ;
-    if( looks_like_triplet )
+    switch( q_form )
     {
-        rc = get_frame_from_triplet(f, q_spec);
+        case NPYFILE:    rc = get_frame_from_npyfile(f, q_spec)   ; break ;
+        case TRIPLET:    rc = get_frame_from_triplet(f, q_spec)   ; break ;
+        case COORDS:     rc = get_frame_from_coords(f, q_spec)    ; break ;
+        case TRANSFORM:  rc = get_frame_from_transform(f, q_spec) ; break ;
+        case NONE:       rc = 1                                   ; break ;
     }
-    else if (looks_like_coords)
-    {
-        rc = get_frame_from_coords(f, q_spec);
-    }
+
     if(rc != 0) std::cerr
         << "stree::get_frame FAIL "
         << " q_spec[" << ( q_spec ? q_spec : "-" ) << "]"
+        << " q_form " << q_form
         << " rc " << rc
         << "\n"
         ;
 
     return f ;
 }
+
+
+inline int stree::get_frame_from_npyfile(sfr& f, const char* q_spec ) const
+{
+    NP* a = NP::Load(q_spec);
+    if(!a) return 1 ;
+    if(a->uifc != 'f') return 2 ;
+    if(!a->has_shape(4,4)) return 3 ;
+
+
+    if(a->ebyte == 8)
+    {
+        const double* aa = a->values<double>();
+        f.set_m2w(aa);
+
+        double extent = a->get_meta<double>("extent", 1000.);
+        f.set_extent(extent);
+    }
+    else if(a->ebyte == 4)
+    {
+        const float* aa = a->values<float>();
+        f.set_m2w(aa);
+
+        float extent = a->get_meta<float>("extent", 1000.f);
+        f.set_extent(extent);
+    }
+    else
+    {
+        return 4;
+    }
+
+
+    std::cout << "stree::get_frame_from_npyfile\n" << f.desc() << "\n" ;
+
+    return 0 ;
+}
+
+
+
 
 /**
 stree::get_frame_from_triplet
@@ -2289,6 +2352,9 @@ inline int stree::get_frame_from_triplet(sfr& f, const char* q_spec ) const
     return get_rc ;
 }
 
+
+
+
 /**
 stree::get_frame_from_coords
 ------------------------------
@@ -2334,6 +2400,41 @@ inline int stree::get_frame_from_coords(sfr& f, const char* q_spec ) const
 
     return 0;
 }
+
+
+inline int stree::get_frame_from_transform(sfr& f, const char* q_spec ) const
+{
+    char delim = ',' ;
+    std::vector<double> elem ;
+    sstr::split<double>( elem, q_spec, delim );
+    int num_elem = elem.size();
+    bool expect_elem = num_elem == 16  ;
+    std::cout
+        << "stree::get_frame_from_transform"
+        << " num_elem " << num_elem
+        << " expect_elem " << ( expect_elem ? "YES" : "NO " )
+        << " elem " << sstr::desc<double>(elem)
+        << "\n"
+        ;
+    if(!expect_elem) return 1 ;
+
+    f.set_m2w(elem.data() );
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

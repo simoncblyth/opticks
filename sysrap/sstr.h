@@ -73,8 +73,14 @@ struct sstr
     static bool prefix_suffix( char** pfx, char** sfx, const char* start_sfx, const char* str );
 
 
+
     template<typename T>
-    static void split(std::vector<T>& elem, const char* str, char delim  );
+    static int split(std::vector<T>& elem, const char* str, char delim  );
+
+    static int split_count(const char* str, char delim  );
+    static bool looks_like_list(const char* str, char delim, int len_min=1, int len_max=4 );
+
+
 
     template<typename T>
     static std::string desc( const std::vector<T>& elem );
@@ -223,6 +229,15 @@ inline bool sstr::MatchEnd( const char* s, const char* q)
     int pos = strlen(s) - strlen(q) ;
     return pos > 0 && strncmp(s + pos, q, strlen(q)) == 0 ;
 }
+
+/**
+sstr::EndsWith
+----------------
+
+sstr::EndsWith("file.npy", ".npy") == true
+
+**/
+
 inline bool sstr::EndsWith( const char* s, const char* q)
 {
     int pos = strlen(s) - strlen(q) ;
@@ -605,11 +620,8 @@ inline int sstr::ekv_split( std::vector<std::pair<std::string, std::string> > & 
 
 
 
-
-
-
 template<typename T>
-inline void sstr::split( std::vector<T>& elem, const char* str, char delim )
+inline int sstr::split( std::vector<T>& elem, const char* str, char delim )
 {
     std::stringstream ss;
     ss.str(str)  ;
@@ -621,7 +633,28 @@ inline void sstr::split( std::vector<T>& elem, const char* str, char delim )
         iss >> v ;
         elem.push_back(v) ;
     }
+    int count = elem.size();
+    return count ;
 }
+
+inline int sstr::split_count( const char* str, char delim )
+{
+    std::stringstream ss;
+    ss.str(str)  ;
+    std::string s;
+    int count(0);
+    while (std::getline(ss, s, delim)) count += 1 ;
+    return count ;
+}
+
+inline bool sstr::looks_like_list(const char* str, char delim, int len_min, int len_max )
+{
+    int len = split_count(str, delim);
+    return len >= len_min && len <= len_max ;
+}
+
+
+
 
 template<typename T>
 inline std::string sstr::desc( const std::vector<T>& elem )
@@ -1064,7 +1097,7 @@ inline void sstr::ParseScale( const char* spec, T& scale )
             case 'H': scale = 100'000           ; break ;
             case 'M': scale = 1'000'000         ; break ;
             case 'G': scale = 1'000'000'000     ; break ;  // maximum 32 bit int 2,147,483,647 , uint 4.29 billion
-            case 'T': scale = 1'000'000'000'000 ; break ;  // 40 bits of integer needed to hold a trillion 
+            case 'T': scale = 1'000'000'000'000 ; break ;  // 40 bits of integer needed to hold a trillion
         }
     }
 }
