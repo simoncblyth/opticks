@@ -185,7 +185,7 @@ _CUR=GEOM/$GEOM/$SCRIPT/$EVT
 
 
 allarg="info_open_dbg_run_close_touch"
-defarg="info_open_run"
+defarg="info_run"   # do not open context by default
 [ -n "$BP" ] && defarg="info_dbg"
 
 arg=${1:-$defarg}
