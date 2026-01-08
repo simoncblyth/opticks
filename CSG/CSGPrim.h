@@ -169,6 +169,8 @@ struct CSG_API CSGPrim
 
     static constexpr const char* CSGPrim__DescRange_NUMPY = "CSGPrim__DescRange_NUMPY" ;
     static constexpr const char* CSGPrim__DescRange_EXTENT_DIFF = "CSGPrim__DescRange_EXTENT_DIFF" ;
+    static constexpr const char* CSGPrim__DescRange_CE_ZMIN_ZMAX = "CSGPrim__DescRange_CE_ZMIN_ZMAX" ;
+
     static std::string DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname=nullptr, const SMeshGroup* mg = nullptr );
 
     std::string desc() const ;

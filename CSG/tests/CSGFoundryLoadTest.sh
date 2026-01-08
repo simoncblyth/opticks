@@ -27,8 +27,8 @@ script=$name.py
 
 #test=Load
 #test=getMeshPrim
-#test=descPrimRange
-test=CompareRanges
+test=descPrimRange
+#test=CompareRanges
 
 export TEST=${TEST:-$test}
 source $HOME/.opticks/GEOM/GEOM.sh

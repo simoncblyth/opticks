@@ -2867,6 +2867,18 @@ Relevant envvars : CFBASE and GEOM
 )" ;
 const char* CSGFoundry::LoadFailNotes(){ return load_FAIL_base_null_NOTES ; } // static
 
+/**
+CSGFoundry::load
+------------------
+
+1. requires non-null base_ directory
+2. asserts that conventional rel directory of CSGFoundry is used
+3. records the resolved cfbase
+4. invokes load of "<cfbase>/CSGFoundry" directory
+
+**/
+
+
 void CSGFoundry::load(const char* base_, const char* rel)
 {
     LOG_IF(error, base_ == nullptr) << load_FAIL_base_null_NOTES ;
@@ -2910,9 +2922,10 @@ std::string CSGFoundry::descBase() const
     const char* cfb = getCFBase();
     const char* ocfb = getOriginCFBase();
     std::stringstream ss ;
-    ss << "CSGFoundry.descBase " << std::endl
-       << " CFBase       " << ( cfb ? cfb : "-" ) << std::endl
-       << " OriginCFBase " << ( ocfb ? ocfb : "-" ) << std::endl
+    ss << "[CSGFoundry.descBase \n"
+       << " CFBase       " << ( cfb ? cfb : "-" ) << "\n"
+       << " OriginCFBase " << ( ocfb ? ocfb : "-" ) << "\n"
+       << "]CSGFoundry.descBase \n"
        ;
     return ss.str();
 }

@@ -39,15 +39,15 @@ inline int CSGFoundryLoadTest::Main(int argc, char** argv)
 
 inline int CSGFoundryLoadTest::Load()
 {
-    //SSim::Create() ; // SEEMS NO LONGER NEEDED ?
-    CSGFoundry* cf = CSGFoundry::Load() ;
+    CSGFoundry* fd = CSGFoundry::Load() ;
 
     LOG(info) << " -------------------- After CSGFoundry::Load " ;
 
-    LOG(info) << cf->desc() ;
+    LOG(info) << fd->descBase() ;
+    LOG(info) << fd->desc() ;
     LOG(info) << " -------------------- After CSGFoundry::desc " ;
 
-    stree* st = cf->sim->tree ;
+    stree* st = fd->sim->tree ;
     LOG(info) << st->desc() ;
     LOG(info) << " -------------------- After stree::desc " ;
 
@@ -59,6 +59,7 @@ inline int CSGFoundryLoadTest::getMeshPrim()
     int LVID = ssys::getenvint("LVID", 0);
     std::cout << "[CSGFoundryLoadTest::getMeshPrim LVID " << LVID << "\n" ;
     CSGFoundry* fd = CSGFoundry::Load() ;
+    std::cout << fd->descBase() ;
 
     unsigned mesh_idx = LVID ;
     std::vector<const CSGPrim*> prim ;
@@ -73,7 +74,9 @@ inline int CSGFoundryLoadTest::descPrimRange()
 {
     std::cout << "[CSGFoundryLoadTest::descPrimRange \n" ;
     CSGFoundry* fd = CSGFoundry::Load() ;
+    std::cout << fd->descBase() ;
     std::cout << fd->descPrimRange() ;
+    std::cout << fd->descBase() ;
     std::cout << "]CSGFoundryLoadTest::descPrimRange\n" ;
     return 0 ;
 }
@@ -95,6 +98,7 @@ inline int CSGFoundryLoadTest::CompareRanges()
 
     std::cout
         << "[CSGFoundryLoadTest::CompareRanges \n"
+        << fd->descBase()
         << " SID " << SID
         << " num_solid " << num_solid
         << " solidIdx " << solidIdx
@@ -106,7 +110,10 @@ inline int CSGFoundryLoadTest::CompareRanges()
 
     std::cout << fd->comparePrimRange(solidIdx, mg) ;
 
-    std::cout << "]CSGFoundryLoadTest::CompareRanges\n" ;
+    std::cout
+        << fd->descBase()
+        << "]CSGFoundryLoadTest::CompareRanges\n"
+        ;
     return 0 ;
 }
 

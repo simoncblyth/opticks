@@ -103,16 +103,32 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
     int mg_subs = mg ? mg->subs.size() : 0 ;
     float EXTENT_DIFF = ssys::getenvfloat(CSGPrim__DescRange_EXTENT_DIFF, 200.f );
 
-    std::stringstream ss ;
-    ss << "[CSGPrim::Desc"
+    std::vector<float>* CE_ZMIN_ZMAX = ssys::getenvfloatvec(CSGPrim__DescRange_CE_ZMIN_ZMAX, nullptr ); // nullptr when no envvar
+    float CE_ZMIN = CE_ZMIN_ZMAX ? (*CE_ZMIN_ZMAX)[0] : 0.f ;
+    float CE_ZMAX = CE_ZMIN_ZMAX ? (*CE_ZMIN_ZMAX)[1] : 0.f ;
+
+
+
+    std::stringstream tt ;
+    tt
        << " numPrim " << numPrim
        << " mg_subs " << mg_subs
        << " EXTENT_DIFF : " << std::setw(10) << std::fixed << std::setprecision(3) << EXTENT_DIFF
        << " [" << CSGPrim__DescRange_EXTENT_DIFF << "]"
        << "\n"
+       << " [" << CSGPrim__DescRange_CE_ZMIN_ZMAX << "]"
+       << " CE_ZMIN : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_ZMIN
+       << " CE_ZMAX : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_ZMAX
+       << "\n"
        ;
 
+    std::string ctx = tt.str();
 
+
+    std::stringstream ss ;
+    ss << "[CSGPrim::Desc"
+       << ctx
+       ;
 
 
     // order the prim SMesh by maximum z
@@ -125,14 +141,6 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
     //using order_functor = CSGPrim::zmax_functor ;
     using order_functor = CSGPrim::extent_functor ;
     order_functor order_fn {} ;
-
-    /*
-    std::stable_sort(idx.begin(), idx.end(),
-        [&](unsigned a, unsigned b) -> bool {
-            return order_fn(*mg->subs[a]) > order_fn(*mg->subs[b]);
-        });
-
-    */
 
     std::stable_sort(idx.begin(), idx.end(),
         [&](unsigned a, unsigned b) -> bool {
@@ -153,6 +161,11 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
         }
 
         float4 pr_ce = pr.ce();
+
+        bool cez_in_range =  CE_ZMIN_ZMAX ? ( pr_ce.z > CE_ZMIN && pr_ce.z < CE_ZMAX ) : true ;
+        if(!cez_in_range) continue ;
+
+
         const glm::tvec4<float>* sub_ce = sub ? &(sub->ce) : nullptr ;
         const glm::tmat4x4<double>* sub_tr0 = sub ? &(sub->tr0) : nullptr ;
         const char* sub_loaddir = sub ? sub->loaddir : nullptr ;
@@ -189,7 +202,12 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
             if(sub_loaddir) ss << " sub_loaddir [" << sub_loaddir << "]\n" ;
         }
     }
-    ss << "]CSGPrim::Desc numPrim " << numPrim << "\n" ;
+
+    ss
+        << ctx
+        << "]CSGPrim::Desc\n"
+        ;
+
     std::string str = ss.str() ;
     return str ;
 }
