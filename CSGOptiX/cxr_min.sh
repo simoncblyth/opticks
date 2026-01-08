@@ -144,12 +144,13 @@ anim()
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
 if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
-    echo $BASH_SOURCE - External GEOM setup detected
-    vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
-    for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
+    GEOM_METHOD="External GEOM setup"
 else
     source ~/.opticks/GEOM/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
+    GEOM_METHOD="local sourcing of ~/.opticks/GEOM/GEOM.sh"
 fi
+vv="GEOM_METHOD GEOM External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
+for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 
 source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets EVT name and corresponding AFOLD BFOLD where event arrays are loaded from
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, controlling initial view, use MOI bash function to setup/edit

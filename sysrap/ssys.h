@@ -749,7 +749,13 @@ inline std::vector<T>* ssys::make_vec(const char* line, char delim )
 
 
 
+/**
+ssys::getenv_vec
+-----------------
 
+With fallback:nullptr lack of the envvar yields a nullptr
+
+**/
 
 
 template<typename T>

@@ -563,7 +563,7 @@ To quadruple grid resolution in the above square::
 void SFrameGenstep::StandardizeCEGS( std::vector<int>& cegs ) // static
 {
     if( cegs.size() == 0 ) return ;
-    if( cegs.size() == 8 ) return ;  // when start with 8, just exit
+    if( cegs.size() == 8 ) return ;  // when start with 8, just exit assuming already standardized
 
     bool expect = cegs.size() == 4 || cegs.size() == 7 ;
     LOG_IF(error, !expect) << " unexpected cegs.size " << cegs.size() ;

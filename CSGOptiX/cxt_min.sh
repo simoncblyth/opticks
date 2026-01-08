@@ -3,7 +3,7 @@ usage(){ cat << EOU
 cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 ===============================================================
 
-CAUTION WITH ELV PARTIAL GEOMETRIES. While partial geometries can be
+CAUTION WITH LABELLING OF ELV PARTIAL GEOMETRIES. While partial geometries can be
 simtraced the meaning of the boundary and prim indices does not match
 the full geometry indices so the key labels will usually be incorrect.
 The point of ELV geometry is for quick checks without persisting the
@@ -231,8 +231,9 @@ export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
 
 
-#opticks_event_name=2dxz
-opticks_event_name=2dxy
+opticks_event_name=2dxz
+#opticks_event_name=2dxz_tall_wide
+#opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -272,6 +273,16 @@ else
     elif [ "$OPTICKS_EVENT_NAME" == "2dxz" ]; then
 
        cegs=9:0:14:1000   # 2D for making sense
+       export CEGS=$cegs
+
+    elif [ "$OPTICKS_EVENT_NAME" == "2dxz_tall_wide" ]; then
+
+       #cegs=-9:9:0:0:-14:14:1000:1    ## 8-element equivalent of 4-element 9:0:14:1000
+       #cegs=-9:9:0:0:-14:24:1000:1     ## 14->24 in Z
+       #cegs=-19:15:0:0:-14:24:1000:1   ## 14->24 in Z, plus widen to better see context
+       #cegs=-25:15:0:0:-14:24:1000:1    ## 14->24 in Z, even widen
+       cegs=-25:25:0:0:-14:24:1000:1    ## 14->24 in Z, even widen
+       # note when targetting the view could be flipped in X/Y
        export CEGS=$cegs
 
     elif [ "$OPTICKS_EVENT_NAME" == "2dxy" ]; then
