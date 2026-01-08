@@ -4956,6 +4956,19 @@ inline void stree::collectGlobalNodes()
         const snode& nd = nds[nidx] ;
         assert( nd.index == nidx );
         bool do_triangulate = is_triangulate(nd.lvid) ;
+        bool do_triangulate_non_global = nd.repeat_index > 0 && do_triangulate ;
+
+        if( do_triangulate_non_global ) std::cerr
+            << "stree::collectGlobalNodes"
+            << " nidx " << nidx
+            << " nd.lvid " << nd.lvid
+            << " soname[nd.lvid] " << soname[nd.lvid]
+            << " do_triangulate " << ( do_triangulate ? "YES" : "NO " )
+            << " do_triangulate_non_global " << ( do_triangulate_non_global ? "YES" : "NO " )
+            << "\n"
+            ;
+
+
         if( nd.repeat_index == 0 )
         {
             std::vector<snode>& dst = do_triangulate ? tri : rem  ;
@@ -4963,6 +4976,7 @@ inline void stree::collectGlobalNodes()
         }
         else
         {
+
             assert( do_triangulate == false && "triangulate solid is currently only supported for remainder nodes" );
             // HMM: FOR TRI FACTOR NODES NEED TO OPERATE WITH THE SUBTREES : AS ALL OF THE FUTURE CSGSolid
             // HAS TO BE TRI TOGETHER : SO CAN DO NOTHING HERE
