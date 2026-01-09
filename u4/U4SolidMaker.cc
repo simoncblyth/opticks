@@ -2798,11 +2798,10 @@ struct R12860_PMTSolid_Maker
 
     double m_H3;
 
-    static double delta_torlerance;
+    double m_delta_torlerance;
 
 };
 
-double R12860_PMTSolid_Maker::delta_torlerance = 1E-2*mm;
 
 
 
@@ -2826,6 +2825,9 @@ R12860_PMTSolid_Maker::R12860_PMTSolid_Maker(
     m_theta = atan((m_R2+m_R3)/(m_H_1_2));     //    23+42.5 = 65.5   65.6/82.5 = 0.7951 atan(0.7951)
     m_hypotenuse = sqrt(pow(m_H_1_2,2)+pow(m_R2+m_R3,2)) ;
     m_R1p = m_hypotenuse - m_R2;  // hypot distance from ellipse center to torus circle
+
+    m_delta_torlerance = 1E-2*mm;
+
 
 }
 
@@ -2907,16 +2909,16 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
     double h3t = m_H3 + thickness;
 
 
-    double scarf_radius = r4t+delta_torlerance ;
-    double scarf_halfheight = h2t/2+delta_torlerance ;
+    double scarf_radius = r4t+m_delta_torlerance ;
+    double scarf_halfheight = h2t/2+m_delta_torlerance ;
 
-    double endtube_radius = r3t+delta_torlerance ;
-    double endtube_halfheight = h3t/2+delta_torlerance ;
+    double endtube_radius = r3t+m_delta_torlerance ;
+    double endtube_halfheight = h3t/2+m_delta_torlerance ;
 
 
     std::cout
         << " thickness           : " << std::setw(10) << thickness          << "\n"
-        << " delta_torlerance    : " << std::setw(10) << delta_torlerance   << "\n"
+        << " m_delta_torlerance    : " << std::setw(10) << m_delta_torlerance   << "\n"
         << " m_R1                : " << std::setw(10) << m_R1               << " (input ellipse width)"                  << "\n"
         << " r1t                 : " << std::setw(10) << r1t                << " (m_R1 + thickness)"                     << "\n"
         << " m_R1z               : " << std::setw(10) << m_R1z              << " (input ellipse height)"                 << "\n"
@@ -2931,14 +2933,14 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
         << " m_R1p               : " << std::setw(10) << m_R1p              << " (m_hypotenuse - m_R2)"                  << "\n"
         << " r1zp                : " << std::setw(10) << r1zp               << " (m_R1p + thickness)"                    << "\n"
         << " r4t                 : " << std::setw(10) << r4t                << " (r1zp*sin(m_theta))"                    << "\n"
-        << " scarf_radius        : " << std::setw(10) << scarf_radius       << " (r4t+delta_torlerance)"                 << "\n"
+        << " scarf_radius        : " << std::setw(10) << scarf_radius       << " (r4t+m_delta_torlerance)"                 << "\n"
         << " r2t                 : " << std::setw(10) << r2t                << " (m_R2 - thickness)"                     << "\n"
         << " h1t                 : " << std::setw(10) << h1t                << " (r1zp*cos(m_theta)) above neck height " << "\n"
         << " h2t                 : " << std::setw(10) << h2t                << " (r2t*cos(m_theta))  neck h"             << "\n"
-        << " scarf_halfheight    : " << std::setw(10) << scarf_halfheight   << " (h2t/2+delta_torlerance)"               << "\n"
-        << " endtube_radius      : " << std::setw(10) << endtube_radius     << " (r3t+delta_torlerance)"                 << "\n"
+        << " scarf_halfheight    : " << std::setw(10) << scarf_halfheight   << " (h2t/2+m_delta_torlerance)"               << "\n"
+        << " endtube_radius      : " << std::setw(10) << endtube_radius     << " (r3t+m_delta_torlerance)"                 << "\n"
         << " h3t                 : " << std::setw(10) << h3t                << " (m_H3 + thickness)"                     << "\n"
-        << " endtube_halfheight  : " << std::setw(10) << endtube_halfheight << " (h3t/2+delta_torlerance)"               << "\n"
+        << " endtube_halfheight  : " << std::setw(10) << endtube_halfheight << " (h3t/2+m_delta_torlerance)"               << "\n"
         ;
 
 
@@ -2990,7 +2992,7 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
     G4Torus* pmttube_solid_torus = new G4Torus(
                                         solidname+"_2_Torus",
                                         0*mm,  // R min
-                                        r2t+delta_torlerance, // R max
+                                        r2t+m_delta_torlerance, // R max
                                         (r2t+r3t), // Swept Radius
                                         -0.01*deg,
                                         360.01*deg);
