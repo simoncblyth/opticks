@@ -126,7 +126,7 @@ The below WITH_MPMT line needs to be commented for use with older branches
 to avoid runtime translation asserts
 **/
 
-//#define WITH_MPMT 1
+#define WITH_MPMT 1
 
 namespace s_pmt
 {
