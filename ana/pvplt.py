@@ -325,6 +325,15 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
         pvplt_add_line_a2b(pl, a, b)
     pass
 
+    if "LINE3" in os.environ:
+        lines = np.fromstring(os.environ["LINE3"],sep=",").reshape(-1,6)
+        for line in lines:
+            a = line[:3]
+            b = line[3:]
+            pvplt_add_line_a2b(pl, a, b)
+        pass
+    pass
+
 
     def callback_click_position(xy):
         print("callback_click_position xy : %s " % str(xy))
@@ -336,10 +345,17 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     POINTSIZE = float(os.environ.get("POINTSIZE",1.))
 
     BBOX = np.fromstring(os.environ["BBOX"],sep=",").reshape(-1,3) if "BBOX" in os.environ else None
+    CIRCLE = np.fromstring(os.environ["CIRCLE"],sep=",").reshape(-1,4) if "CIRCLE" in os.environ else None
 
     if not POINT is None: pl.add_points(POINT, color="r", label="POINT", point_size=POINTSIZE) # point_size=POINTSIZE, render_points_as_spheres=True)
     if not BBOX is None: pl.add_points(BBOX, color="r", label="BBOX" )
 
+    if not CIRCLE is None:
+        for pcircle in CIRCLE:
+            circle = pv.Disc(center=pcircle[:3], outer=pcircle[3], inner=0, normal=(0, 1, 0), c_res=360)
+            pl.add_mesh(circle, color='red', line_width=5, style='wireframe')
+        pass
+    pass
 
     INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
     pl.increment_point_size_and_line_width(INCPOI)

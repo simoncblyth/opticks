@@ -2792,6 +2792,7 @@ struct R12860_PMTSolid_Maker
     double m_R2;
     double m_R3;
     double m_theta;
+    double m_hypotenuse ;
     double m_H;
     double m_H_1_2;
 
@@ -2823,19 +2824,8 @@ R12860_PMTSolid_Maker::R12860_PMTSolid_Maker(
 {
     m_H_1_2 = m_H - m_R1z - m_H3;              //    220 - 75.5 - 62 =  82.5
     m_theta = atan((m_R2+m_R3)/(m_H_1_2));     //    23+42.5 = 65.5   65.6/82.5 = 0.7951 atan(0.7951)
-    m_R1p = sqrt(pow(m_H_1_2,2)+pow(m_R2+m_R3,2)) - m_R2;
-
-    std::cout
-        << " m_R1      : " << m_R1 << "\n"
-        << " m_R1z     : " << m_R1z << "\n"
-        << " m_R2      : " << m_R2 << "\n"
-        << " m_R3      : " << m_R3 << "\n"
-        << " m_H       : " << m_H << "\n"
-        << " m_H3      : " << m_H3 << "\n"
-        << " m_H_1_2   : " << m_H_1_2 << "\n"
-        << " m_theta   : " << m_theta << "\n"
-        << " m_R1p     : " << m_R1p   << "\n"
-        ;
+    m_hypotenuse = sqrt(pow(m_H_1_2,2)+pow(m_R2+m_R3,2)) ;
+    m_R1p = m_hypotenuse - m_R2;  // hypot distance from ellipse center to torus circle
 
 }
 
@@ -2867,20 +2857,7 @@ R12860_PMTSolid_Maker::R12860_PMTSolid_Maker(
                     |           |
                     |           |
                     |           |
-
-
-
-                          :             .
-                   + r3t  +  r3t  +  r2  +  r2  +             +
-                   |      |       |
-                   |     h3t/2    |
-                   |      |       |
-                   |      +       |    EndTube               m_H3
-                   |      |       |
-                   |     h3t/2    |
-                   |      |       |
-                   +--r3t-+--r3t--+                           +                 +
-
+                    +-----------+
      Z
      |
      +--X
@@ -2923,9 +2900,48 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
     double r3t = m_R3 + thickness;
     double r1zp = (m_R1p+thickness);
     double r4t = r1zp * sin(m_theta);
-    double h1t = r1zp * cos(m_theta);
-    double h2t = r2t * cos(m_theta);
+
+    double h1t = r1zp * cos(m_theta);   // above necktop height (up to ellipse equator)
+    double h2t = r2t * cos(m_theta);    // below necktop height (down to torus plane line)
+
     double h3t = m_H3 + thickness;
+
+
+    double scarf_radius = r4t+delta_torlerance ;
+    double scarf_halfheight = h2t/2+delta_torlerance ;
+
+    double endtube_radius = r3t+delta_torlerance ;
+    double endtube_halfheight = h3t/2+delta_torlerance ;
+
+
+    std::cout
+        << " thickness           : " << std::setw(10) << thickness          << "\n"
+        << " delta_torlerance    : " << std::setw(10) << delta_torlerance   << "\n"
+        << " m_R1                : " << std::setw(10) << m_R1               << " (input ellipse width)"                  << "\n"
+        << " r1t                 : " << std::setw(10) << r1t                << " (m_R1 + thickness)"                     << "\n"
+        << " m_R1z               : " << std::setw(10) << m_R1z              << " (input ellipse height)"                 << "\n"
+        << " r1zt                : " << std::setw(10) << r1zt               << " (m_R1z + thickness)"                    << "\n"
+        << " m_R2                : " << std::setw(10) << m_R2               << " (input torus circle radius)"            << "\n"
+        << " m_R3                : " << std::setw(10) << m_R3               << " (input endtube radius)"                 << "\n"
+        << " m_H                 : " << std::setw(10) << m_H                << " (input total height)"                   << "\n"
+        << " m_H3                : " << std::setw(10) << m_H3               << " (input endtube height)"                 << "\n"
+        << " m_H_1_2             : " << std::setw(10) << m_H_1_2            << " (m_H - m_R1z - m_H3)"                   << "\n"
+        << " m_theta             : " << std::setw(10) << m_theta            << " (ellipse ^ torus centers)"              << "\n"
+        << " m_hypotenuse        : " << std::setw(10) << m_hypotenuse       << " (dist from ellipse to torus center)"    << "\n"
+        << " m_R1p               : " << std::setw(10) << m_R1p              << " (m_hypotenuse - m_R2)"                  << "\n"
+        << " r1zp                : " << std::setw(10) << r1zp               << " (m_R1p + thickness)"                    << "\n"
+        << " r4t                 : " << std::setw(10) << r4t                << " (r1zp*sin(m_theta))"                    << "\n"
+        << " scarf_radius        : " << std::setw(10) << scarf_radius       << " (r4t+delta_torlerance)"                 << "\n"
+        << " r2t                 : " << std::setw(10) << r2t                << " (m_R2 - thickness)"                     << "\n"
+        << " h1t                 : " << std::setw(10) << h1t                << " (r1zp*cos(m_theta)) above neck height " << "\n"
+        << " h2t                 : " << std::setw(10) << h2t                << " (r2t*cos(m_theta))  neck h"             << "\n"
+        << " scarf_halfheight    : " << std::setw(10) << scarf_halfheight   << " (h2t/2+delta_torlerance)"               << "\n"
+        << " endtube_radius      : " << std::setw(10) << endtube_radius     << " (r3t+delta_torlerance)"                 << "\n"
+        << " h3t                 : " << std::setw(10) << h3t                << " (m_H3 + thickness)"                     << "\n"
+        << " endtube_halfheight  : " << std::setw(10) << endtube_halfheight << " (h3t/2+delta_torlerance)"               << "\n"
+        ;
+
+
 
     // Show variables
     G4cout << "r1t: " << r1t/mm << " mm" << G4endl;
@@ -2935,6 +2951,7 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
     G4cout << "h1t: " << h1t/mm << " mm" << G4endl;
     G4cout << "h2t: " << h2t/mm << " mm" << G4endl;
     G4cout << "h3t: " << h3t/mm << " mm" << G4endl;
+
     // Construct the PMT Solid
     // * PART 1
     // G4Sphere* pmttube_solid_sphere = new G4Sphere(
@@ -2953,11 +2970,13 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
                                             r1zt // pzSemiAxis
                                             );
     // * PART 2  : neck
+
+
     G4Tubs* pmttube_solid_tube = new G4Tubs(
                                     solidname+"_2_Tube",
                                     0*mm,  /* inner */
-                                    r4t+delta_torlerance, /* pmt_r */
-                                    h2t/2+delta_torlerance, /* part 2 h */
+                                    scarf_radius, /* pmt_r */
+                                    scarf_halfheight, /* part 2 h */
                                     0*deg,
                                     360*deg);
 
@@ -3007,6 +3026,27 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
     {
         neck = pmttube_solid_tube ;  // KLUDGE : DONT SUBTRACT TORUS
     }
+    else if( X == 'P' )
+    {
+        G4double phiStart = 0.00*deg ;
+        G4double phiTotal = 360.00*deg ;
+        G4int numZPlanes = 2 ;
+        G4double zPlane[] = { -scarf_halfheight, scarf_halfheight  } ;
+        G4double rInner[] = {  0.0             , 0.0   } ;
+        G4double rOuter[] = {  endtube_radius  , scarf_radius } ;
+
+        G4Polycone* polycone_neck = new G4Polycone(
+                                   solidname+"_part2",
+                                   phiStart,
+                                   phiTotal,
+                                   numZPlanes,
+                                   zPlane,
+                                   rInner,
+                                   rOuter
+                                   );
+
+        neck = polycone_neck ;
+    }
     else
     {
         pmttube_solid_part2 = new G4SubtractionSolid(
@@ -3027,11 +3067,14 @@ G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, 
 
 
     // * PART 3  : EndTube
+
+
+
     G4Tubs* pmttube_solid_end_tube = new G4Tubs(
                                     solidname+"_3_EndTube",
                                     0*mm,  /* inner */
-                                    r3t+delta_torlerance, //21*cm/2, /* pmt_r */
-                                    h3t/2+delta_torlerance, //30*cm/2, /* pmt_h */
+                                    endtube_radius, //21*cm/2, /* pmt_r */
+                                    endtube_halfheight, //30*cm/2, /* pmt_h */
                                     0*deg,
                                     360*deg);
 
@@ -3104,7 +3147,7 @@ const G4VSolid* U4SolidMaker::R12860_PMTSolid(const char* name_) // static
 
     double thickness = 1E-3*mm ;
 
-    bool with_suffix = suffix && ( suffix[0] == 'U' || suffix[0] == 'K' ) ;
+    bool with_suffix = suffix && ( suffix[0] == 'U' || suffix[0] == 'K' || suffix[0] == 'P' ) ;
 
     return m_pmtsolid_maker->GetSolid(solidname + "_pmt_solid", thickness, ( with_suffix ? suffix[0] : '\0' ) );
 }

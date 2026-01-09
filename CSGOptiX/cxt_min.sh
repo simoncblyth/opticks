@@ -173,8 +173,9 @@ arg2=$2
 bin=CSGOptiXTMTest   ## just calls CSGOptiX::SimtraceMain()
 which_bin=$(which $bin)
 
+# defining NOXGEOM prevents use of external GEOM
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
-if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
+if [ -z "$NOXGEOM" -a -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
     ## distributed usage : where have one fixed geometry for each distribution
     echo $BASH_SOURCE - External GEOM setup detected
     vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
