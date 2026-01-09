@@ -88,6 +88,7 @@ Related developments
 #include "spath.h"
 #include "s_pmt.h"
 
+
 #ifdef WITH_CUSTOM4
 #include "C4MultiLayrStack.h"
 #endif
@@ -119,6 +120,11 @@ inline std::string SPMT_Total::desc() const
     std::stringstream ss ;
     ss
        << "[SPMT_Total.desc\n"
+#ifdef WITH_MPMT
+       << " WITH_MPMT : YES\n"
+#else
+       << " WITH_MPMT : NO\n"
+#endif
        << std::setw(16) << "CD_LPMT"     << std::setw(7) << CD_LPMT << "\n"
        << std::setw(16) << "SPMT"        << std::setw(7) << SPMT << "\n"
        << std::setw(16) << "WP"          << std::setw(7) << WP << "\n"
@@ -127,7 +133,8 @@ inline std::string SPMT_Total::desc() const
        << std::setw(16) << "WP_WAL_PMT"  << std::setw(7) << WP_WAL_PMT << "\n"
        << std::setw(16) << "ALL"         << std::setw(7) << ALL << "\n"
        << std::setw(16) << "SUM:"        << std::setw(7) << SUM() << "\n"
-       << std::setw(16) << "SUM==ALL"    << std::setw(7) << ( SUM() == ALL ? "YES" : "NO " ) << "\n"
+       << std::setw(16) << "SUM()==ALL"  << std::setw(7) << ( SUM() == ALL ? "YES" : "NO " ) << "\n"
+       << std::setw(16) << "SUM()-ALL"   << std::setw(7) << ( SUM() - ALL ) << "\n"
        << "]SPMT_Total.desc\n"
        ;
     std::string str = ss.str() ;
@@ -161,6 +168,11 @@ inline std::string SPMT_Num::desc() const
     std::stringstream ss ;
     ss
        << "[SPMT_Num.desc\n"
+#ifdef WITH_MPMT
+       << " WITH_MPMT : YES\n"
+#else
+       << " WITH_MPMT : NO\n"
+#endif
        << std::setw(20) << "m_nums_cd_lpmt     :" << std::setw(7) << m_nums_cd_lpmt << "\n"
        << std::setw(20) << "m_nums_cd_spmt     :" << std::setw(7) << m_nums_cd_spmt << "\n"
        << std::setw(20) << "m_nums_wp_lpmt     :" << std::setw(7) << m_nums_wp_lpmt << "\n"
@@ -578,6 +590,13 @@ SPMT_test.sh::
 
 The pmtTotal do not yet have the 600 MPMT
 
+Provenance of the pmtTotal::
+
+    jcv PMTSimParamData
+    jcv _PMTSimParamData
+    jcv PMTSimParamSvc
+
+
 **/
 
 inline void SPMT::init_total()
@@ -623,15 +642,41 @@ inline void SPMT::init_total()
 
     if(level > 0) std::cout << "SPMT::init_total " << total.desc() << "\n" ;
 
+    bool x_total_ALL = total.ALL == total.SUM() ;
+    if(!x_total_ALL) std::cerr
+        << "SPMT::init_total"
+        << " x_total_ALL " << ( x_total_ALL ? "YES" : "NO " )
+        << total.desc()
+        << "\n"
+        ;
+
+    assert( x_total_ALL );
+
     assert( pmtTotal_v[0]     == total.CD_LPMT );
-    assert( total.ALL         == total.SUM() );
     assert( total.CD_LPMT     == s_pmt::NUM_CD_LPMT );
     assert( total.SPMT        == s_pmt::NUM_SPMT ) ;
     assert( total.WP          == s_pmt::NUM_WP  ) ;
     assert( total.WP_ATM_LPMT == s_pmt::NUM_WP_ATM_LPMT ) ;
     assert( total.WP_WAL_PMT  == s_pmt::NUM_WP_WAL_PMT ) ;
-    //assert( total.WP_ATM_MPMT == s_pmt::NUM_WP_ATM_MPMT ) ;  // NOT YET
-    assert( total.WP_ATM_MPMT == 0 ) ;
+
+#ifdef WITH_MPMT
+    bool x_MPMT = total.WP_ATM_MPMT == s_pmt::NUM_WP_ATM_MPMT ;
+#else
+    bool x_MPMT = total.WP_ATM_MPMT == 0 ;
+#endif
+    if(!x_MPMT) std::cerr
+        << "SPMT::init_total"
+#ifdef WITH_MPMT
+        << " WITH_MPMT "
+#else
+        << " NOT:WITH_MPMT "
+#endif
+        << " x_MPMT " << ( x_MPMT ? "YES" : "NO " )
+        << " total.WP_ATM_MPMT " << total.WP_ATM_MPMT
+        << " s_pmt::NUM_WP_ATM_MPMT " << s_pmt::NUM_WP_ATM_MPMT
+        << total.desc()
+        ;
+    assert( x_MPMT ) ;
 
 }
 
@@ -654,7 +699,7 @@ inline NP* SPMT::FAKE_WHEN_MISSING_PMTParamData_serialize_pmtNum() // static
     kv.add("m_nums_wp_lpmt", s_pmt::NUM_WP );
     kv.add("m_nums_wp_atm_lpmt", s_pmt::NUM_WP_ATM_LPMT );
     kv.add("m_nums_wp_wal_pmt", s_pmt::NUM_WP_WAL_PMT );
-    kv.add("m_nums_wp_atm_mpmt",  s_pmt::NUM_WP_ATM_MPMT );
+    kv.add("m_nums_wp_atm_mpmt",  s_pmt::NUM_WP_ATM_MPMT ); // HMM _ALREADY ?
     return kv.values() ;
 }
 
@@ -718,8 +763,8 @@ inline void SPMT::init_pmtNum()
     assert( num.m_nums_cd_spmt     == s_pmt::NUM_SPMT ) ;
     assert( num.m_nums_wp_lpmt     == s_pmt::NUM_WP ) ;
     assert( num.m_nums_wp_atm_lpmt == s_pmt::NUM_WP_ATM_LPMT ) ;
-    assert( num.m_nums_wp_atm_mpmt == s_pmt::NUM_WP_ATM_MPMT ) ;
     assert( num.m_nums_wp_wal_pmt  == s_pmt::NUM_WP_WAL_PMT ) ;
+    //assert( num.m_nums_wp_atm_mpmt == s_pmt::NUM_WP_ATM_MPMT_ALREADY ) ;
 
 }
 
@@ -810,6 +855,33 @@ From SPMT_test.sh::
            [54004,     0]], dtype=int32)
 
 
+
+2026/01 yupd_bottompipe_adjust
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In older branch without MPMT fully impl they are already in pmtCat::
+
+    In [27]: np.all( f.pmtCat[17612+25600+2400+348:17612+25600+2400+348+600][:,1] == 4 )
+    Out[27]: np.True_
+
+    In [28]: f.pmtCat[17612+25600+2400+348+600:17612+25600+2400+348+600+5]
+    Out[28]:
+    array([[54000,     3],
+           [54001,     0],
+           [54002,     0],
+           [54003,     0],
+           [54004,     0]], dtype=int32)
+
+So the implicit contiguous index of pmtCat follows the order, and included MPMT::
+
+    CD-LPMT:17612
+    CD-SPMT:25600
+    WP-LPMT:2400
+    WP-Atmosphere-LPMT:348
+    WP-Atmosphere-MPMT:600
+    WP-Water-attenuation-length:5
+
+
 **/
 
 
@@ -853,8 +925,13 @@ void SPMT::init_qeScale()
     if(!qeScale) return ;
     assert( qeScale && qeScale->uifc == 'f' && qeScale->ebyte == 8 );
     assert( qeScale_v );
+
+#ifdef WITH_MPMT
+    int expect_qeScale_items = s_pmt::NUM_ALL  ;
+#else
     assert( s_pmt::NUM_CD_LPMT + s_pmt::NUM_SPMT + s_pmt::NUM_WP + s_pmt::NUM_WP_ATM_LPMT + s_pmt::NUM_WP_WAL_PMT  == s_pmt::NUM_ALL_EXCEPT_MPMT );
     int expect_qeScale_items = s_pmt::NUM_ALL_EXCEPT_MPMT ;
+#endif
     bool qeScale_shape_expect = qeScale->shape[0] == expect_qeScale_items ;
 
     if(!qeScale_shape_expect)
@@ -1111,7 +1188,7 @@ Q: Where is lcqs used ? A: qpmt.h
 pmtCat
 ~~~~~~~~
 
-pmtCat_v comes from pmtCat array serialized with PMTParamData
+pmtCat_v comes from pmtCat array serialized from PMTParamData::m_pmt_categories
 whereas most everything else comes from PMTSimParamData
 
 pmtCat is a serialization of m_pmt_categories unordered_map done by NPX::ArrayFromDiscoMapUnordered
@@ -1126,6 +1203,7 @@ Ordering is::
     WP_ATM_MPMT      600          OFFSET_WP_ATM_MPMT:OFFSET_WP_ATM_MPMT_END   53000:53600
     WP_ATM_WAL         5          OFFSET_WP_WAL_PMT:OFFSET_WP_WAL_PMT_END     54000:54005
 
+Note that MPMT is included even prior to MPMT being fully implemented.
 
 Meanings of quantities used below
 
@@ -1157,8 +1235,7 @@ inline void SPMT::init_lcqs()
     // 2. populate v_lcqs array excluding SPMT
 
     v_lcqs.resize(s_pmt::NUM_LPMTIDX);
-
-
+    assert( pmtCat_ni == s_pmt::NUM_OLDCONTIGUOUSIDX ); // MPMT:600 included in pmtCat even prior to full impl
 
     for(int i=0 ; i < s_pmt::NUM_LPMTIDX ; i++ )
     {
@@ -1173,6 +1250,7 @@ inline void SPMT::init_lcqs()
         int oldcontiguousidx = s_pmt::oldcontiguousidx_from_pmtid( pmtid ); // offsets and num
         assert( oldcontiguousidx < s_pmt::NUM_OLDCONTIGUOUSIDX );
         assert( oldcontiguousidx < pmtCat_ni );
+
 
         int copyno = pmtCat_v[2*oldcontiguousidx+0] ;
         int cat    = pmtCat_v[2*oldcontiguousidx+1] ;
@@ -1320,7 +1398,7 @@ inline int SPMT::TranslateCat(int lpmtcat) // static
         case  1: lcat =  1   ; break ;   // kPMT_Hamamatsu
         case  2: lcat =  -99 ; break ;   // kPMT_HZC
         case  3: lcat =  2   ; break ;   // kPMT_NNVT_HighQE
-        case  4: lcat = -99  ; break ;   // ?MPMT
+        case  4: lcat = -99  ; break ;   // ?MPMT:3?
         default: lcat = -99  ; break ;
     }
     //assert( lcat >= 0 );

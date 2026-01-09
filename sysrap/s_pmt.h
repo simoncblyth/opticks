@@ -121,6 +121,13 @@ https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/1061
 **/
 
 
+/**
+The below WITH_MPMT line needs to be commented for use with older branches
+to avoid runtime translation asserts
+**/
+
+//#define WITH_MPMT 1
+
 namespace s_pmt
 {
     enum
@@ -132,7 +139,12 @@ namespace s_pmt
         NUM_SPMT               = 25600,
         NUM_WP                 = 2400,
         NUM_WP_ATM_LPMT        = 348,
-        NUM_WP_ATM_MPMT        = 600,      // 0:with older branches, 600 with newer ones
+        NUM_WP_ATM_MPMT_ALREADY = 600,      // unfortunately some branches partially have the MPMT
+#ifdef WITH_MPMT
+        NUM_WP_ATM_MPMT        = 600,      // 0:newer ones have MPMT
+#else
+        NUM_WP_ATM_MPMT        = 0,        // 0:older branches lack MPMT
+#endif
         NUM_WP_WAL_PMT         = 5,
         OFFSET_CD_LPMT         = 0,
         OFFSET_CD_LPMT_END     = 17612,
@@ -149,26 +161,14 @@ namespace s_pmt
     };
 
 
-
-    //enum
-    // {
-    //NUM_CD_LPMT_AND_WP     = 20012,   // 17612 + 2400 +   0 +   0 + 0 +     0 = 20012
-    //NUM_LPMTIDX            = 20365,   // 17612 + 2400 + 348 +   0 + 5  +    0 = 20365   // excluded MPMT:600
-    //OLD_NUM_ALL            = 45612,   // 17612 + 2400 +   0 +   0 + 0 + 25600 = 45612
-    //NUM_ALL                = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
-    //NUM_CONTIGUOUSIDX      = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
-    //NUM_OLDCONTIGUOUSIDX   = 45965,   // 17612 + 2400 + 348 +   0 + 5 + 25600 = 45965
-    //FUTURE_NUM_ALL         = 46565,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
-    // };
-
     enum
     {
-        NUM_CD_LPMT_AND_WP   = NUM_CD_LPMT + NUM_WP  +               0 +              0  +              0 +        0,   // 17612 + 2400 +   0 +   0 + 0 +     0 = 20012
-        NUM_LPMTIDX          = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT +        0,   // 17612 + 2400 + 348 + 600 + 5  +    0 = 20965
-        NUM_ALL              = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
+        NUM_CD_LPMT_AND_WP   = NUM_CD_LPMT + NUM_WP  +               0 +              0  +              0 +        0,   // 17612 + 2400 +   0 +      0  + 0  +    0 = 20012
+        NUM_LPMTIDX          = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT +        0,   // 17612 + 2400 + 348 + {0,600} + 5  +    0 = {20365,20965}
+        NUM_ALL              = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + {0,600} + 5 + 25600 = {45965,46565}
         NUM_ALL_EXCEPT_MPMT  = NUM_ALL - NUM_WP_ATM_MPMT,                                                               // 46565 - 600 = 45965
-        NUM_CONTIGUOUSIDX    = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
-        NUM_OLDCONTIGUOUSIDX = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600 + 5 + 25600 = 46565
+        NUM_CONTIGUOUSIDX    = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT         + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + {0,600} + 5 + 25600 = {45965,46565}
+        NUM_OLDCONTIGUOUSIDX = NUM_CD_LPMT + NUM_WP  + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY + NUM_WP_WAL_PMT + NUM_SPMT,   // 17612 + 2400 + 348 + 600     + 5 + 25600 =        46565
     };
 
 
@@ -179,32 +179,38 @@ namespace s_pmt
        std::stringstream ss ;
        ss
           << "[s_pmt::desc\n"
-          << std::setw(25) << "NUM_CAT"                << std::setw(7) << NUM_CAT                << "\n"
-          << std::setw(25) << "NUM_LAYR"               << std::setw(7) << NUM_LAYR               << "\n"
-          << std::setw(25) << "NUM_PROP"               << std::setw(7) << NUM_PROP               << "\n"
-          << std::setw(25) << "NUM_CD_LPMT"            << std::setw(7) << NUM_CD_LPMT            << "\n"
-          << std::setw(25) << "NUM_SPMT"               << std::setw(7) << NUM_SPMT               << "\n"
-          << std::setw(25) << "NUM_WP"                 << std::setw(7) << NUM_WP                 << "\n"
-          << std::setw(25) << "NUM_WP_ATM_LPMT"        << std::setw(7) << NUM_WP_ATM_LPMT        << "\n"
-          << std::setw(25) << "NUM_WP_ATM_MPMT"        << std::setw(7) << NUM_WP_ATM_MPMT        << "\n"
-          << std::setw(25) << "NUM_WP_WAL_PMT"         << std::setw(7) << NUM_WP_WAL_PMT         << "\n"
-          << std::setw(25) << "NUM_CD_LPMT_AND_WP"     << std::setw(7) << NUM_CD_LPMT_AND_WP     << "\n"
-          << std::setw(25) << "NUM_ALL"                << std::setw(7) << NUM_ALL                << "\n"
-          << std::setw(25) << "NUM_LPMTIDX"            << std::setw(7) << NUM_LPMTIDX            << "\n"
-          << std::setw(25) << "NUM_CONTIGUOUSIDX"      << std::setw(7) << NUM_CONTIGUOUSIDX      << "\n"
-          << std::setw(25) << "NUM_OLDCONTIGUOUSIDX"   << std::setw(7) << NUM_OLDCONTIGUOUSIDX   << "\n"
-          << std::setw(25) << "OFFSET_CD_LPMT"         << std::setw(7) << OFFSET_CD_LPMT         << "\n"
-          << std::setw(25) << "OFFSET_CD_LPMT_END"     << std::setw(7) << OFFSET_CD_LPMT_END     << "\n"
-          << std::setw(25) << "OFFSET_CD_SPMT"         << std::setw(7) << OFFSET_CD_SPMT         << "\n"
-          << std::setw(25) << "OFFSET_CD_SPMT_END"     << std::setw(7) << OFFSET_CD_SPMT_END     << "\n"
-          << std::setw(25) << "OFFSET_WP_PMT"          << std::setw(7) << OFFSET_WP_PMT          << "\n"
-          << std::setw(25) << "OFFSET_WP_PMT_END"      << std::setw(7) << OFFSET_WP_PMT_END      << "\n"
-          << std::setw(25) << "OFFSET_WP_ATM_LPMT"     << std::setw(7) << OFFSET_WP_ATM_LPMT     << "\n"
-          << std::setw(25) << "OFFSET_WP_ATM_LPMT_END" << std::setw(7) << OFFSET_WP_ATM_LPMT_END << "\n"
-          << std::setw(25) << "OFFSET_WP_ATM_MPMT"     << std::setw(7) << OFFSET_WP_ATM_MPMT     << "\n"
-          << std::setw(25) << "OFFSET_WP_ATM_MPMT_END" << std::setw(7) << OFFSET_WP_ATM_MPMT_END << "\n"
-          << std::setw(25) << "OFFSET_WP_WAL_PMT"      << std::setw(7) << OFFSET_WP_WAL_PMT      << "\n"
-          << std::setw(25) << "OFFSET_WP_WAL_PMT_END"  << std::setw(7) << OFFSET_WP_WAL_PMT_END  << "\n"
+#ifdef WITH_MPMT
+          << " WITH_MPMT\n"
+#else
+          << " NOT:WITH_MPMT\n"
+#endif
+          << std::setw(25) << "NUM_CAT"                   << std::setw(7) << NUM_CAT                  << "\n"
+          << std::setw(25) << "NUM_LAYR"                  << std::setw(7) << NUM_LAYR                 << "\n"
+          << std::setw(25) << "NUM_PROP"                  << std::setw(7) << NUM_PROP                 << "\n"
+          << std::setw(25) << "NUM_CD_LPMT"               << std::setw(7) << NUM_CD_LPMT              << "\n"
+          << std::setw(25) << "NUM_SPMT"                  << std::setw(7) << NUM_SPMT                 << "\n"
+          << std::setw(25) << "NUM_WP"                    << std::setw(7) << NUM_WP                   << "\n"
+          << std::setw(25) << "NUM_WP_ATM_LPMT"           << std::setw(7) << NUM_WP_ATM_LPMT          << "\n"
+          << std::setw(25) << "NUM_WP_ATM_MPMT_ALREADY"   << std::setw(7) << NUM_WP_ATM_MPMT_ALREADY  << "\n"
+          << std::setw(25) << "NUM_WP_ATM_MPMT"           << std::setw(7) << NUM_WP_ATM_MPMT          << "\n"
+          << std::setw(25) << "NUM_WP_WAL_PMT"            << std::setw(7) << NUM_WP_WAL_PMT           << "\n"
+          << std::setw(25) << "NUM_CD_LPMT_AND_WP"        << std::setw(7) << NUM_CD_LPMT_AND_WP       << "\n"
+          << std::setw(25) << "NUM_ALL"                   << std::setw(7) << NUM_ALL                  << "\n"
+          << std::setw(25) << "NUM_LPMTIDX"               << std::setw(7) << NUM_LPMTIDX              << "\n"
+          << std::setw(25) << "NUM_CONTIGUOUSIDX"         << std::setw(7) << NUM_CONTIGUOUSIDX        << "\n"
+          << std::setw(25) << "NUM_OLDCONTIGUOUSIDX"      << std::setw(7) << NUM_OLDCONTIGUOUSIDX     << "\n"
+          << std::setw(25) << "OFFSET_CD_LPMT"            << std::setw(7) << OFFSET_CD_LPMT           << "\n"
+          << std::setw(25) << "OFFSET_CD_LPMT_END"        << std::setw(7) << OFFSET_CD_LPMT_END       << "\n"
+          << std::setw(25) << "OFFSET_CD_SPMT"            << std::setw(7) << OFFSET_CD_SPMT           << "\n"
+          << std::setw(25) << "OFFSET_CD_SPMT_END"        << std::setw(7) << OFFSET_CD_SPMT_END       << "\n"
+          << std::setw(25) << "OFFSET_WP_PMT"             << std::setw(7) << OFFSET_WP_PMT            << "\n"
+          << std::setw(25) << "OFFSET_WP_PMT_END"         << std::setw(7) << OFFSET_WP_PMT_END        << "\n"
+          << std::setw(25) << "OFFSET_WP_ATM_LPMT"        << std::setw(7) << OFFSET_WP_ATM_LPMT       << "\n"
+          << std::setw(25) << "OFFSET_WP_ATM_LPMT_END"    << std::setw(7) << OFFSET_WP_ATM_LPMT_END   << "\n"
+          << std::setw(25) << "OFFSET_WP_ATM_MPMT"        << std::setw(7) << OFFSET_WP_ATM_MPMT       << "\n"
+          << std::setw(25) << "OFFSET_WP_ATM_MPMT_END"    << std::setw(7) << OFFSET_WP_ATM_MPMT_END   << "\n"
+          << std::setw(25) << "OFFSET_WP_WAL_PMT"         << std::setw(7) << OFFSET_WP_WAL_PMT        << "\n"
+          << std::setw(25) << "OFFSET_WP_WAL_PMT_END"     << std::setw(7) << OFFSET_WP_WAL_PMT_END    << "\n"
           << "]s_pmt::desc\n"
           ;
 
@@ -222,17 +228,19 @@ namespace s_pmt
         assert( OFFSET_CD_SPMT_END - OFFSET_CD_SPMT == NUM_SPMT );
         assert( OFFSET_WP_PMT_END  - OFFSET_WP_PMT  == NUM_WP );
 
-        if(NUM_WP_ATM_MPMT != 0)
-        {
-            assert( OFFSET_WP_ATM_MPMT_END - OFFSET_WP_ATM_MPMT == NUM_WP_ATM_MPMT ) ;
-        }
+#ifdef WITH_MPMT
+        assert( OFFSET_WP_ATM_MPMT_END - OFFSET_WP_ATM_MPMT == NUM_WP_ATM_MPMT ) ;
+#endif
 
         assert( OFFSET_WP_WAL_PMT_END - OFFSET_WP_WAL_PMT == NUM_WP_WAL_PMT ) ;
 
-        assert( NUM_LPMTIDX          == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT );
-        assert( NUM_CONTIGUOUSIDX    == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT ) ;
-        assert( NUM_OLDCONTIGUOUSIDX == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT ) ;
-        assert( NUM_ALL              == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT + NUM_SPMT ) ;
+        assert( NUM_LPMTIDX          == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT         + NUM_WP_WAL_PMT );
+        assert( NUM_CONTIGUOUSIDX    == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT         + NUM_WP_WAL_PMT + NUM_SPMT ) ;
+        assert( NUM_ALL              == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT         + NUM_WP_WAL_PMT + NUM_SPMT ) ;
+
+        assert( NUM_OLDCONTIGUOUSIDX == NUM_CD_LPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY + NUM_WP_WAL_PMT + NUM_SPMT ) ;
+        // oldcontiguousidx matches implicit pmtCat index, which includes the MPMT:600 even before fully impl 
+
 
     }
 
@@ -317,16 +325,40 @@ namespace s_pmt
          17612 + 25600 = 43212
 
 
+    NB the oldcontiguousidx corresponds to the ordering using by pmtCat (from _PMTParamData/m_pmt_categories),
+    even in an older branch without MPMT fully impl they are already present in the pmtCat::
+
+
+        In [27]: np.all( f.pmtCat[17612+25600+2400+348:17612+25600+2400+348+600][:,1] == 4 )  ## MPMT all 600 are cat:4
+        Out[27]: np.True_
+
+        In [28]: f.pmtCat[17612+25600+2400+348+600:17612+25600+2400+348+600+5]
+        Out[28]:
+        array([[54000,     3],
+               [54001,     0],
+               [54002,     0],
+               [54003,     0],
+               [54004,     0]], dtype=int32)
+
+    So the implicit contiguous index of pmtCat follows the order, and included MPMT::
+
+        CD-LPMT:17612
+        CD-SPMT:25600
+        WP-LPMT:2400
+        WP-Atmosphere-LPMT:348
+        WP-Atmosphere-MPMT:600
+        WP-Water-attenuation-length:5
+
     **/
 
 
     // returns true when *ix:oldcontiguousidx* argument is within the oldcontinuousidx ranges
-    SPMT_FUNCTION bool ix_CD_LPMT(     int ix ){ return in_range(ix, 0                                                                   , NUM_CD_LPMT           ) ; }
-    SPMT_FUNCTION bool ix_CD_SPMT(     int ix ){ return in_range(ix, NUM_CD_LPMT                                                         , NUM_CD_LPMT + NUM_SPMT) ; }
-    SPMT_FUNCTION bool ix_WP_PMT(      int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT                                              , NUM_CD_LPMT + NUM_SPMT + NUM_WP)  ; }
-    SPMT_FUNCTION bool ix_WP_ATM_LPMT( int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP                                     , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT)  ; }
-    SPMT_FUNCTION bool ix_WP_ATM_MPMT( int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT                   , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT)  ; }
-    SPMT_FUNCTION bool ix_WP_WAL_PMT(  int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT + NUM_WP_WAL_PMT ) ; }
+    SPMT_FUNCTION bool ix_CD_LPMT(     int ix ){ return in_range(ix, 0                                                                           , NUM_CD_LPMT           ) ; }
+    SPMT_FUNCTION bool ix_CD_SPMT(     int ix ){ return in_range(ix, NUM_CD_LPMT                                                                 , NUM_CD_LPMT + NUM_SPMT) ; }
+    SPMT_FUNCTION bool ix_WP_PMT(      int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT                                                      , NUM_CD_LPMT + NUM_SPMT + NUM_WP)  ; }
+    SPMT_FUNCTION bool ix_WP_ATM_LPMT( int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP                                             , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT)  ; }
+    SPMT_FUNCTION bool ix_WP_ATM_MPMT( int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT                           , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY)  ; }
+    SPMT_FUNCTION bool ix_WP_WAL_PMT(  int ix ){ return in_range(ix, NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY , NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY + NUM_WP_WAL_PMT ) ; }
 
 
     /**
@@ -354,7 +386,7 @@ namespace s_pmt
         else if( id_WP_PMT(id)  )    ix = id - OFFSET_WP_PMT      + NUM_CD_LPMT + NUM_SPMT ;
         else if( id_WP_ATM_LPMT(id)) ix = id - OFFSET_WP_ATM_LPMT + NUM_CD_LPMT + NUM_SPMT + NUM_WP ;
         else if( id_WP_ATM_MPMT(id)) ix = id - OFFSET_WP_ATM_MPMT + NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT ;
-        else if( id_WP_WAL_PMT(id))  ix = id - OFFSET_WP_WAL_PMT  + NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT ;
+        else if( id_WP_WAL_PMT(id))  ix = id - OFFSET_WP_WAL_PMT  + NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY ;
 
         return ix ;
     }
@@ -383,7 +415,7 @@ namespace s_pmt
         else if( ix_WP_PMT(ix) )      id = OFFSET_WP_PMT      + ix - ( NUM_CD_LPMT + NUM_SPMT ) ;
         else if( ix_WP_ATM_LPMT(ix) ) id = OFFSET_WP_ATM_LPMT + ix - ( NUM_CD_LPMT + NUM_SPMT + NUM_WP ) ;
         else if( ix_WP_ATM_MPMT(ix) ) id = OFFSET_WP_ATM_MPMT + ix - ( NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT )  ;
-        else if( ix_WP_WAL_PMT(ix) )  id = OFFSET_WP_WAL_PMT  + ix - ( NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT ) ;
+        else if( ix_WP_WAL_PMT(ix) )  id = OFFSET_WP_WAL_PMT  + ix - ( NUM_CD_LPMT + NUM_SPMT + NUM_WP + NUM_WP_ATM_LPMT + NUM_WP_ATM_MPMT_ALREADY ) ;
 
         return id ;
     }
@@ -449,8 +481,8 @@ namespace s_pmt
 
      The ordering CD_LPMT, WP, SPMT must match that used in::
 
-         PMTSimParamSvc::init_all_pmtID_qe_scale
-         [NOTED THAT MPMT ARE NOT INCLUDED IN THAT]
+         PMTSimParamSvc::init_all_pmtID_qe_scale "jcv PMTSimParamSvc"
+         [MPMT ARE NOT INCLUDED IN THAT IN OLDER BRANCHES EG yupd_bottompipe_adjust]
 
     **/
 
