@@ -25,6 +25,21 @@ SGLM::desc
 NB : to dump view param from interactive viz use "P" key invoking SGLM::desc
 
 
+Controlling orthographic views
+---------------------------------
+
+When using orthographic projection usual position movement navigation
+does not change the view like it perspective projection.
+Changing EYE actually does have the effect of changing
+the side and hence the coloring from the normal direction
+but it does not change the apparent size of the render.
+Instead EXTENT_FUDGE can be used to do that.
+
+::
+
+   CAM=orthographic EXTENT_FUDGE=1.5 EYE=0,1,-0.1 LOOK=0,0,-0.1 cxr_min.sh
+
+
 DONE : rasterized and raytrace render consistency
 -------------------------------------------------
 
