@@ -43,6 +43,10 @@ if [ "$GEOM" == "LocalOuterReflectorOrbSubtraction" ]; then
     #export U4SolidMaker__MakeLowerWaterDistributorCurvedCutTubes_UNCOINCIDE_MM=1    # 1 : succeeds to uncoincide
     export U4SolidMaker__MakeLowerWaterDistributorCurvedCutTubes_UNCOINCIDE_MM=0    # 0 : default coincident face
 
+elif [[ "$GEOM" =~ ^LocalR12860_PMTSolid[UK]?$ ]]; then
+
+    export U4Mesh__NumberOfRotationSteps_solidName_${GEOM/Local}_pmt_solid=480
+
 fi
 
 

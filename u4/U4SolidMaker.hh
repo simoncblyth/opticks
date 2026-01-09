@@ -127,6 +127,7 @@ struct U4_API U4SolidMaker
     static constexpr const char* U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector = "U4SolidMaker__OuterReflectorOrbSubtraction_radOuterReflector" ;
     static const G4VSolid* OuterReflectorOrbSubtraction(const char* name_);
 
+    static const G4VSolid* R12860_PMTSolid(const char* name_);
 
 };
 

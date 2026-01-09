@@ -112,8 +112,7 @@ B = int(os.environ.get("B","0"))
 GLOBAL = 1 == int(os.environ.get("GLOBAL","0"))
 GSGRID = 1 == int(os.environ.get("GSGRID","0"))
 FRAME = 1 == int(os.environ.get("FRAME","0"))
-POINT = np.fromstring(os.environ["POINT"],sep=",").reshape(-1,3) if "POINT" in os.environ else None
-POINTSIZE = float(os.environ.get("POINTSIZE",1.))
+
 APOINTSIZE = float(os.environ.get("APOINTSIZE",10.))
 BPOINTSIZE = float(os.environ.get("BPOINTSIZE",10.))
 
@@ -589,12 +588,6 @@ if __name__ == '__main__':
             num_step_point = len(ASLICE.split())
             pvp.pvplt_add_contiguous_line_segments( pl, u_apos[AIDX,:num_step_point,:3], point_size=4 )
         pass
-
-        def callback_click_position(xy):
-            print("callback_click_position xy : %s " % str(xy))
-        pass
-        pl.track_click_position(callback_click_position)
-        if not POINT is None: pl.add_points(POINT, color="r", label="POINT") # point_size=POINTSIZE, render_points_as_spheres=True)
 
         #pl.reset_camera() # avoids blank start screen, but resets view to include all points - not what want
 

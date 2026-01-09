@@ -300,16 +300,6 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
 
     """
     TITLE = os.environ.get("TITLE", title)
-    LEGEND = bool(os.environ.get("LEGEND", legend))
-    if LEGEND:
-        vtk_actor = pl.add_legend(font_family="courier", size=(0.3,0.3))
-        for i in range(vtk_actor.GetNumberOfEntries()):
-            print(vtk_actor.GetEntryString(i))
-        pass
-    else:
-        vtk_actor = None
-    pass
-
     GRID = 1 == int(os.environ.get("GRID","0"))
     if GRID:
         bounds = efloatarray_("BOUNDS", "0,0,0,0,0,0" ) if "BOUNDS" in os.environ else None
@@ -328,6 +318,29 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
         pvplt_add_line_a2b(pl, a, b)
     pass
 
+    if "LINE2" in os.environ:
+        line2 = efloatarray_("LINE2", "0,0,17000,0,0,22000")
+        a = line2[:3]
+        b = line2[3:]
+        pvplt_add_line_a2b(pl, a, b)
+    pass
+
+
+    def callback_click_position(xy):
+        print("callback_click_position xy : %s " % str(xy))
+    pass
+    pl.track_click_position(callback_click_position)
+
+
+    POINT = np.fromstring(os.environ["POINT"],sep=",").reshape(-1,3) if "POINT" in os.environ else None
+    POINTSIZE = float(os.environ.get("POINTSIZE",1.))
+
+    BBOX = np.fromstring(os.environ["BBOX"],sep=",").reshape(-1,3) if "BBOX" in os.environ else None
+
+    if not POINT is None: pl.add_points(POINT, color="r", label="POINT", point_size=POINTSIZE) # point_size=POINTSIZE, render_points_as_spheres=True)
+    if not BBOX is None: pl.add_points(BBOX, color="r", label="BBOX" )
+
+
     INCPOI = float(os.environ.get("INCPOI",str(incpoi)))
     pl.increment_point_size_and_line_width(INCPOI)
 
@@ -338,6 +351,18 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
     LL = os.environ.get("LL", "")
     if not LL is "": pl.add_text( LL, position="lower_left")
     print("pvplt_show title:[%s] TITLE:[%s] UL:[%s] LL:[%s] " % (title, TITLE, UL, LL))
+
+
+    LEGEND = bool(os.environ.get("LEGEND", legend))
+    if LEGEND:
+        vtk_actor = pl.add_legend(font_family="courier", size=(0.3,0.3))
+        for i in range(vtk_actor.GetNumberOfEntries()):
+            print(vtk_actor.GetEntryString(i))
+        pass
+    else:
+        vtk_actor = None
+    pass
+
 
     return pl.show(title=TITLE)
 

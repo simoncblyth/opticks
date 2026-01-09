@@ -75,6 +75,7 @@ WaterDistributer
 AltWaterDistributer
 WaterDistributorPartIIIUnion
 OuterReflectorOrbSubtraction
+R12860_PMTSolid
 )LITERAL";
 
 
@@ -177,6 +178,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("AltWaterDistributer", qname))                 solid = AltWaterDistributer(qname) ;
     else if(StartsWith("WaterDistributorPartIIIUnion", qname))        solid = WaterDistributorPartIIIUnion(qname);
     else if(StartsWith("OuterReflectorOrbSubtraction", qname))        solid = OuterReflectorOrbSubtraction(qname);
+    else if(StartsWith("R12860_PMTSolid", qname))                     solid = R12860_PMTSolid(qname);
     LOG(LEVEL) << " qname " << qname << " solid " << solid ;
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname << " CHECK U4SolidMaker::Make " ;
     return solid ;
@@ -2765,4 +2767,345 @@ const G4VSolid* U4SolidMaker::OuterReflectorOrbSubtraction(const char* name_) //
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+struct R12860_PMTSolid_Maker
+{
+    R12860_PMTSolid_Maker(double R1, double R1z, double R2, double R3, double H, double H3);
+
+    G4VSolid* GetSolid(G4String solidname, double thickness=0.0, char X='\0' );
+
+    double m_R1;
+    double m_R1z;
+    double m_R1p;
+    double m_R2;
+    double m_R3;
+    double m_theta;
+    double m_H;
+    double m_H_1_2;
+
+    double m_H3;
+
+    static double delta_torlerance;
+
+};
+
+double R12860_PMTSolid_Maker::delta_torlerance = 1E-2*mm;
+
+
+
+R12860_PMTSolid_Maker::R12860_PMTSolid_Maker(
+    double R1,
+    double R1z,
+    double R2,
+    double R3,
+    double H,
+    double H3
+    )
+    :
+    m_R1(R1),    // 101.0
+    m_R1z(R1z),  //  75.5
+    m_R2(R2),    //  23.0   radius of torus circle
+    m_R3(R3),    //  42.5
+    m_H(H),      // 220.0
+    m_H3(H3)     //  62.0
+{
+    m_H_1_2 = m_H - m_R1z - m_H3;              //    220 - 75.5 - 62 =  82.5
+    m_theta = atan((m_R2+m_R3)/(m_H_1_2));     //    23+42.5 = 65.5   65.6/82.5 = 0.7951 atan(0.7951)
+    m_R1p = sqrt(pow(m_H_1_2,2)+pow(m_R2+m_R3,2)) - m_R2;
+
+    std::cout
+        << " m_R1      : " << m_R1 << "\n"
+        << " m_R1z     : " << m_R1z << "\n"
+        << " m_R2      : " << m_R2 << "\n"
+        << " m_R3      : " << m_R3 << "\n"
+        << " m_H       : " << m_H << "\n"
+        << " m_H3      : " << m_H3 << "\n"
+        << " m_H_1_2   : " << m_H_1_2 << "\n"
+        << " m_theta   : " << m_theta << "\n"
+        << " m_R1p     : " << m_R1p   << "\n"
+        ;
+
+}
+
+
+/**
+                  ........+.........                          +                +
+            ..''''        |         ''''..
+        ..''              |               ''..
+      .'                  |                   '.            m_R1z
+    .'                   r1zt                   '.
+   '                      |                       '
+  '                       |                        '
+ '                        +----------r1t----------- +         +
+  '                      /:\                       '
+   '                    / : \                     '
+    '.                 /  :  \                  .'
+      '.              /   :   \               .'             m_H_1_2           m_H
+        ''..         /    :    \          ..''
+            ''''.   /     :     \    .''''
+                  ./      :      \  .   .
+                  /               \
+                 /                 \
+                /                   \
+               +    +     +     +    +
+                    |           |
+                    |           |
+                    |           |
+                    |           |
+                    |           |
+                    |           |
+                    |           |
+
+
+
+                          :             .
+                   + r3t  +  r3t  +  r2  +  r2  +             +
+                   |      |       |
+                   |     h3t/2    |
+                   |      |       |
+                   |      +       |    EndTube               m_H3
+                   |      |       |
+                   |     h3t/2    |
+                   |      |       |
+                   +--r3t-+--r3t--+                           +                 +
+
+     Z
+     |
+     +--X
+
+
+ symbol : pmttube_solid_tube(scarf)
+ name   : R12860_PMTSolidU_pmt_solid_2_Tube
+ r4t    : 51.1993
+ h2t/2  : 9.00616
+ symbol  : pmttube_solid_torus(scarfSub)
+ name    : R12860_PMTSolidU_pmt_solid_2_Torus
+ r2t     : 22.999
+ r2t+r3t : 65.5
+ symbol  : pmttube_solid_part2
+ name    : R12860_PMTSolidU_pmt_solid_part2
+ -h2t/2  : -9.00616(neck-torus-dz)
+ symbol  : pmttube_solid_1_2(bulb+neck)
+ name    : R12860_PMTSolidU_pmt_solid_1_2
+ neck_dz : -73.4938
+ total_torus_dz : -82.5
+ symbol  : pmttube_solid_1_2_3((bulb+neck)+endtube)
+ name    : R12860_PMTSolidU_pmt_solid
+ endtube_dz : -113.501
+
+
+POINT=-65.5,0,-82.5,65.5,0,-82.5 BBOX=-51.19,0,-82.4999,51.19,0,-64.48764,-51.19,0,-64.48764,51.19,0,-82.4999   KLUDGE=1 cxt_min.sh pdb
+
+
+**/
+
+
+
+
+G4VSolid* R12860_PMTSolid_Maker::GetSolid(G4String solidname, double thickness, char X)
+{
+    // Calculate Parameter first
+    double r1t = m_R1 + thickness;
+    double r1zt = m_R1z + thickness;
+    double r2t = m_R2 - thickness;
+    double r3t = m_R3 + thickness;
+    double r1zp = (m_R1p+thickness);
+    double r4t = r1zp * sin(m_theta);
+    double h1t = r1zp * cos(m_theta);
+    double h2t = r2t * cos(m_theta);
+    double h3t = m_H3 + thickness;
+
+    // Show variables
+    G4cout << "r1t: " << r1t/mm << " mm" << G4endl;
+    G4cout << "r4t: " << r4t/mm << " mm" << G4endl;
+    G4cout << "r2t: " << r2t/mm << " mm" << G4endl;
+    G4cout << "r3t: " << r3t/mm << " mm" << G4endl;
+    G4cout << "h1t: " << h1t/mm << " mm" << G4endl;
+    G4cout << "h2t: " << h2t/mm << " mm" << G4endl;
+    G4cout << "h3t: " << h3t/mm << " mm" << G4endl;
+    // Construct the PMT Solid
+    // * PART 1
+    // G4Sphere* pmttube_solid_sphere = new G4Sphere(
+    //                                         solidname+"_1_Sphere",
+    //                                         0*mm, // R min
+    //                                         r1t, // R max
+    //                                         0*deg, // Start Phi
+    //                                         360*deg, // Delta Phi
+    //                                         0*deg, // Start Theta
+    //                                         180*deg  // Delta Theta
+    //                                         );
+    G4Ellipsoid* pmttube_solid_sphere = new G4Ellipsoid(
+                                            solidname+"_1_Ellipsoid",
+                                            r1t, // pxSemiAxis
+                                            r1t, // pySemiAxis
+                                            r1zt // pzSemiAxis
+                                            );
+    // * PART 2  : neck
+    G4Tubs* pmttube_solid_tube = new G4Tubs(
+                                    solidname+"_2_Tube",
+                                    0*mm,  /* inner */
+                                    r4t+delta_torlerance, /* pmt_r */
+                                    h2t/2+delta_torlerance, /* part 2 h */
+                                    0*deg,
+                                    360*deg);
+
+    std::cout
+         << " symbol : pmttube_solid_tube(scarf)" << "\n"
+         << " name   : " << pmttube_solid_tube->GetName() << "\n"
+         << " r4t    : " << r4t << "\n"
+         << " h2t/2  : " << h2t/2 << "\n"
+         ;
+
+    G4Torus* pmttube_solid_torus = new G4Torus(
+                                        solidname+"_2_Torus",
+                                        0*mm,  // R min
+                                        r2t+delta_torlerance, // R max
+                                        (r2t+r3t), // Swept Radius
+                                        -0.01*deg,
+                                        360.01*deg);
+
+    std::cout
+         << " symbol  : pmttube_solid_torus(scarfSub) " << "\n"
+         << " name    : " << pmttube_solid_torus->GetName() << "\n"
+         << " r2t     : " << r2t << "\n"
+         << " r2t+r3t : " << r2t+r3t << "\n"
+         ;
+
+
+
+
+
+    [[maybe_unused]] G4VSolid* pmttube_solid_part2 = nullptr ;
+
+    G4VSolid* neck = nullptr ;
+
+    if( X == 'U' )
+    {
+        pmttube_solid_part2 = new G4UnionSolid(
+                                            solidname+"_part2",
+                                            pmttube_solid_tube,
+                                            pmttube_solid_torus,
+                                            0,
+                                            G4ThreeVector(0,0,-h2t/2)
+                                            );
+
+        neck = pmttube_solid_part2 ;   // debug union : allows to see the position of the torus relative to the rest
+    }
+    else if( X == 'K' )
+    {
+        neck = pmttube_solid_tube ;  // KLUDGE : DONT SUBTRACT TORUS
+    }
+    else
+    {
+        pmttube_solid_part2 = new G4SubtractionSolid(
+                                            solidname+"_part2",
+                                            pmttube_solid_tube,
+                                            pmttube_solid_torus,
+                                            0,
+                                            G4ThreeVector(0,0,-h2t/2)
+                                            );
+        neck = pmttube_solid_part2 ;   // original monstrosity
+    }
+
+    std::cout
+         << " symbol  : pmttube_solid_part2 " << "\n"
+         << " name    : " << ( pmttube_solid_part2 ? pmttube_solid_part2->GetName() : "-" ) << "\n"
+         << " -h2t/2  : " << -h2t/2 << "(neck-torus-dz)\n"
+         ;
+
+
+    // * PART 3  : EndTube
+    G4Tubs* pmttube_solid_end_tube = new G4Tubs(
+                                    solidname+"_3_EndTube",
+                                    0*mm,  /* inner */
+                                    r3t+delta_torlerance, //21*cm/2, /* pmt_r */
+                                    h3t/2+delta_torlerance, //30*cm/2, /* pmt_h */
+                                    0*deg,
+                                    360*deg);
+
+
+
+    // * PART 1 + 2   : bulb + neck
+    G4UnionSolid* pmttube_solid_1_2 = new G4UnionSolid(
+                                            solidname+"_1_2",
+                                            pmttube_solid_sphere,
+                                            neck,
+                                            0,
+                                            G4ThreeVector(0, 0, -(h1t+h2t/2))
+                                            );
+
+     std::cout
+          << " symbol  : pmttube_solid_1_2(bulb+neck) \n"
+          << " name    : " << pmttube_solid_1_2->GetName() << "\n"
+          << " neck_dz : " << -(h1t+h2t/2) << "\n"
+          << " total_torus_dz : " << -h2t/2 + -(h1t+h2t/2) << "\n"
+          ;
+
+    // * PART 1+2 + 3
+    [[maybe_unused]] G4UnionSolid* pmttube_solid_1_2_3 = new G4UnionSolid(
+                                            solidname,
+                                            pmttube_solid_1_2,
+                                            pmttube_solid_end_tube,
+                                            0,
+                                            G4ThreeVector(0,0,
+                                                -(m_H_1_2+h3t*0.50))
+                                            );
+
+     std::cout
+          << " symbol  : pmttube_solid_1_2_3((bulb+neck)+endtube) \n"
+          << " name    : " << pmttube_solid_1_2_3->GetName() << "\n"
+          << " endtube_dz : " << -(m_H_1_2+h3t*0.50) << "\n"
+          ;
+
+
+    return pmttube_solid_1_2_3;
+}
+
+
+
+const G4VSolid* U4SolidMaker::R12860_PMTSolid(const char* name_) // static
+{
+    const char* PREFIX = "R12860_PMTSolid" ;
+    assert( sstr::StartsWith(name_,PREFIX ));
+    const char* suffix = name_ + strlen(PREFIX);
+    G4String solidname = name_ ;
+
+    // Ham8inchPMTManager::init_variables
+
+    double m_pmt_r, m_pmt_h, m_z_equator ;
+
+    m_pmt_r = 101.*mm;
+    m_pmt_h = 220.*mm;
+    m_z_equator = 75.5*mm; // From top to equator
+
+    R12860_PMTSolid_Maker* m_pmtsolid_maker = new R12860_PMTSolid_Maker(
+                            m_pmt_r,       // m_R1     101.0
+                            m_z_equator,   // m_R1z     75.5
+                            23*mm,         // m_R2      23.0
+                            42.5*mm,       // m_R3      42.5
+                            m_pmt_h,       // m_H       220.0
+                            62.*mm         // m_H3      62.0
+                            );
+
+
+
+
+    double thickness = 1E-3*mm ;
+
+    bool with_suffix = suffix && ( suffix[0] == 'U' || suffix[0] == 'K' ) ;
+
+    return m_pmtsolid_maker->GetSolid(solidname + "_pmt_solid", thickness, ( with_suffix ? suffix[0] : '\0' ) );
+}
 
