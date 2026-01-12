@@ -52,6 +52,7 @@ BoxMinusTubs1
 BoxMinusOrb
 UnionOfHemiEllipsoids
 PolyconeWithMultipleRmin
+PolyconeWithPhiCut
 AnnulusBoxUnion
 AnnulusTwoBoxUnion
 AnnulusTwoBoxUnionContiguous
@@ -76,6 +77,7 @@ AltWaterDistributer
 WaterDistributorPartIIIUnion
 OuterReflectorOrbSubtraction
 R12860_PMTSolid
+LProfileSectorPolycone
 )LITERAL";
 
 
@@ -155,6 +157,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("BoxMinusOrb",qname))                  solid = BoxMinusOrb(qname);
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = UnionOfHemiEllipsoids(qname);
     else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = PolyconeWithMultipleRmin(qname) ;
+    else if(StartsWith("PolyconeWithPhiCut", qname))          solid = PolyconeWithPhiCut(qname) ;
     else if(StartsWith("AnnulusBoxUnion", qname))             solid = AnnulusBoxUnion(qname) ;
     else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = AnnulusTwoBoxUnion(qname) ;
     else if(StartsWith("AnnulusOtherTwoBoxUnion", qname))     solid = AnnulusOtherTwoBoxUnion(qname) ;
@@ -179,6 +182,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("WaterDistributorPartIIIUnion", qname))        solid = WaterDistributorPartIIIUnion(qname);
     else if(StartsWith("OuterReflectorOrbSubtraction", qname))        solid = OuterReflectorOrbSubtraction(qname);
     else if(StartsWith("R12860_PMTSolid", qname))                     solid = R12860_PMTSolid(qname);
+    else if(StartsWith("LProfileSectorPolycone",qname))               solid = LProfileSectorPolycone(qname);
     LOG(LEVEL) << " qname " << qname << " solid " << solid ;
     LOG_IF(error, solid==nullptr) << " Failed to create solid for qname " << qname << " CHECK U4SolidMaker::Make " ;
     return solid ;
@@ -1421,6 +1425,24 @@ const G4VSolid* U4SolidMaker::PolyconeWithMultipleRmin(const char* name)
     G4VSolid* base_steel = new G4Polycone("base_steel",0.0*deg,360.0*deg,4,ZUpper4,RminUpper4,RmaxUpper4);
     return base_steel ;
 }
+
+const G4VSolid* U4SolidMaker::PolyconeWithPhiCut(const char* name)
+{
+    const int N = 2 ;
+
+    double ZPlane[N] = {  -50*mm ,  50*mm } ;
+    double Rmin[N]   = {    0*mm ,   0*mm } ;
+    double Rmax[N]   = {  200*mm , 200*mm } ;
+
+    double phiStart = 30.0*deg ;
+    double phiDelta = 30.0*deg ;
+    G4VSolid* polycone = new G4Polycone(name,phiStart,phiDelta,Z,ZPlane,Rmin,Rmax);
+    return polycone ;
+}
+
+
+
+
 
 
 const G4VSolid* U4SolidMaker::UnionOfHemiEllipsoids(const char* name )
@@ -3153,4 +3175,141 @@ const G4VSolid* U4SolidMaker::R12860_PMTSolid(const char* name_) // static
 
     return m_pmtsolid_maker->GetSolid(solidname + "_pmt_solid", thickness, ( with_suffix ? suffix[0] : '\0' ) );
 }
+
+
+
+
+
+
+
+
+
+
+struct EMFCoil
+{
+    static const double EMF_RC_32[32] ;
+    static G4Polycone* BuildLProfileSectorPolycone( const std::string& solidName, double Rout_mm, double L_mm, double t_mm, double phiStart, double phiTotal, bool flangeUp = false );
+    static const G4VSolid* Example(int i);
+};
+
+const double EMFCoil::EMF_RC_32[32] = {
+        3.843,   6.509,   9.185,  11.029,
+       13.210,  14.924,  16.325,  17.495,
+       18.465,  19.284,  19.953,  20.502,
+       20.931,  21.241,  21.450,  21.559,
+       21.559,  21.450,  21.240,  20.930,
+       20.501,  19.951,  19.282,  18.463,
+       17.495,  16.325,  14.924,  13.210,
+       11.053,   9.185,   6.509,   3.843
+    };
+
+
+
+G4Polycone* EMFCoil::BuildLProfileSectorPolycone(
+    const std::string& solidName,
+    double Rout_mm,
+    double L_mm,
+    double t_mm,
+    double phiStart,
+    double phiTotal,
+    bool flangeUp
+){
+
+    const double H     = L_mm;
+
+    const int    NZ    = 4;
+
+    double zPlane[NZ];
+    double rMin[NZ];
+    double rMax[NZ];
+
+    if (!flangeUp) {
+
+        zPlane[0] = -H*0.5;
+        zPlane[1] = -H*0.5 + t_mm;
+        zPlane[2] = -H*0.5 + t_mm;
+        zPlane[3] = +H*0.5;
+
+        // flange：r ∈ [Rout - L, Rout]
+        rMin[0] = Rout_mm - L_mm;
+        rMin[1] = Rout_mm - L_mm;
+
+        // web：r ∈ [Rout - t, Rout]
+        rMin[2] = Rout_mm - t_mm;
+        rMin[3] = Rout_mm - t_mm;
+    } else {
+
+        zPlane[0] = -H*0.5;
+        zPlane[1] = -H*0.5 + (H - t_mm);
+        zPlane[2] = -H*0.5 + (H - t_mm);
+        zPlane[3] = +H*0.5;
+
+        rMin[0] = Rout_mm - t_mm;
+        rMin[1] = Rout_mm - t_mm;
+        rMin[2] = Rout_mm - L_mm;
+        rMin[3] = Rout_mm - L_mm;
+    }
+
+
+    for (int i = 0; i < NZ; ++i) rMax[i] = Rout_mm;
+
+
+    for (int i = 0; i < NZ; ++i)
+    {
+        std::cout
+           << "EMFCoil::BuildLProfileSectorPolycone"
+           << " i " << std::setw(2) << i
+           << " z    " << std::setw(10) << zPlane[i]
+           << " rMin " << std::setw(10) << rMin[i]
+           << " rMax " << std::setw(10) << rMax[i]
+           << "\n"
+           ;
+    }
+
+    return new G4Polycone(
+        solidName.c_str(),
+        phiStart * rad,
+        phiTotal * rad,
+        NZ, zPlane, rMin, rMax
+    );
+}
+
+
+
+
+
+const G4VSolid* EMFCoil::Example(int i) // static
+{
+    // WaterPoolConstruction::makeEMFCoilHolders_Polycone
+    const double L_leg_mm  = 56.0;
+    const double t_mm      = 4.0;
+    const double eps_r_mm  = 2.0;
+
+    const double R0_m = EMF_RC_32[i] + eps_r_mm * 1e-3;
+
+    double phiS = 89.60*deg ;
+    double phiE = 134.72*deg ;
+
+    const double PHI_EPS = 0.01 * deg;
+    const double s = phiS + PHI_EPS;
+    const double e = phiE - PHI_EPS;
+    const double dphi = e - s;
+
+    std::string solidName = "example" ;
+    double Rout_mm = R0_m * 1000.0 ;
+    double L_mm = L_leg_mm ;
+    double phiStart = s ;
+    double phiTotal = dphi ;
+    bool flangeUp = false ;
+
+    return BuildLProfileSectorPolycone(solidName, Rout_mm, L_mm, t_mm, phiStart, phiTotal, flangeUp );
+}
+
+
+const G4VSolid* U4SolidMaker::LProfileSectorPolycone( const char* )
+{
+    return EMFCoil::Example(16);
+}
+
+
 

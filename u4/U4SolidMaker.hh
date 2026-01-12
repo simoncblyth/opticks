@@ -106,6 +106,7 @@ struct U4_API U4SolidMaker
     static const G4VSolid* BoxMinusOrb(const char* name);
     static const G4VSolid* UnionOfHemiEllipsoids(const char* name);
     static const G4VSolid* PolyconeWithMultipleRmin(const char* name);
+    static const G4VSolid* PolyconeWithPhiCut(const char* name);
 
     static void Extract( std::vector<long>& vals, const char* s );
     static bool StartsWith( const char* n, const char* q );
@@ -128,6 +129,7 @@ struct U4_API U4SolidMaker
     static const G4VSolid* OuterReflectorOrbSubtraction(const char* name_);
 
     static const G4VSolid* R12860_PMTSolid(const char* name_);
+    static const G4VSolid* LProfileSectorPolycone( const char* );
 
 };
 

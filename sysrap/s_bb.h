@@ -78,6 +78,7 @@ struct SYSRAP_API s_bb
     static void IncludeAABB(  T* aabb,  const S* other_aabb , std::ostream* out=nullptr  );
 
     template<typename T> static T    Extent( const T* aabb ) ;
+    template<typename T> static T    AbsMax( const T* aabb ) ;
     template<typename T> static void CenterExtent( T* ce,  const T* aabb ) ;
 
     void include_point(      const double* point );
@@ -323,6 +324,21 @@ inline T s_bb::Extent( const T* aabb )  // static
 {
     return std::max(std::max(aabb[3+0]-aabb[0],aabb[3+1]-aabb[1]),aabb[3+2]-aabb[2])/T(2.) ;
 }
+
+template<typename T>
+inline T s_bb::AbsMax( const T* aabb )  // static
+{
+    T mx = 0. ;
+    for(int i=0 ; i < 6 ; i++)
+    {
+        T amx = std::abs(aabb[i]);
+        if( amx > mx ) mx = amx ;
+    }
+    return mx ;
+}
+
+
+
 template<typename T>
 inline void s_bb::CenterExtent( T* ce,  const T* aabb )  // static
 {

@@ -98,6 +98,7 @@ private:
     bool checkZOrder( bool z_ascending );
     void init();
     void init_RZ();
+    void init_phicut();
     void init_outer();
     void init_inner();
 
@@ -116,6 +117,13 @@ private:
 
     int num ;
     std::vector<RZ> rz ;
+
+
+    static constexpr const char* U4Polycone__ENABLE_PHICUT = "U4Polycone__ENABLE_PHICUT" ;
+    bool   ENABLE_PHICUT ;
+    double phi_start ;
+    double phi_end ;
+    sn*    phicut ;
 
     std::set<double> R_inner ;
     std::set<double> R_outer ;
@@ -170,6 +178,10 @@ inline std::string U4Polycone::desc() const
        << " level " << level
        << " enable_nudge " << ( enable_nudge ? "YES" : "NO " )
        << " num " << num
+       << " ENABLE_PHICUT " << std::setw(10) << ( ENABLE_PHICUT ? "YES" : "NO " )
+       << " phi_start " << std::setw(10) << phi_start
+       << " phi_end " << std::setw(10) << phi_end
+       << " phicut " << std::setw(10) << ( phicut ? "YES" : "NO " )
        << " rz " << rz.size()
        << std::endl
        << " num_R_inner " << std::setw(3) << num_R_inner
@@ -218,6 +230,10 @@ inline U4Polycone::U4Polycone(const G4Polycone* polycone_, int lvid_, int depth_
     polycone(polycone_),
     ph(polycone->GetOriginalParameters()),
     num(ph->Num_z_planes),
+    ENABLE_PHICUT(ssys::getenvbool(U4Polycone__ENABLE_PHICUT)),
+    phi_start(0.),
+    phi_end(2.*M_PI),
+    phicut(nullptr),
     num_R_inner(0),
     R_inner_min(0),
     R_inner_max(0),
@@ -256,21 +272,80 @@ inline bool U4Polycone::checkZOrder( bool z_ascending )
     return all_z_order ;
 }
 
+
+/**
+U4Polycone::init
+-----------------
+
+inner and outer can be sn::Cylinder OR sn::Collection (eg sn::UnionTree)
+and root can be those also OR sn::Boolean difference of them.
+So the technique used to support phi range needs to be applicable
+to many types of node including trees and singles.
+
+Ideas how to do that:
+
+1. extend s_pa from 6 to 8 elem and include phi range there,
+   this has disadvantage of adding empty params to almost all s_pa
+   that are only used for those with phi segment (and a subsequent
+   theta segment would push from 8 to 10)
+
+2. add s_au for auxiliary params analogous to how s_pa is related to sn,
+   that is quite a lot of code change
+
+3. HMM: use boolean intersection with a special segment (CSG_PHICUT)
+   type that the phi (and in future theta perhaps) range in its param
+
+   * THIS IS ADVANTAGEOUS FROM POINT OF VIEW OF EXPRESSING THE INFO
+     WITHOUT MUCH CHANGE TO EXISTING CODE
+
+**/
+
+
 inline void U4Polycone::init()
 {
     init_RZ();
+    init_phicut();
     init_outer();
 
-    if(has_inner == false)
+    sn* _root = nullptr ;
     {
-        root = outer ;
+        if(has_inner == false)
+        {
+            _root = outer ;
+        }
+        else
+        {
+            init_inner();
+            assert( inner );
+            _root = sn::Boolean(CSG_DIFFERENCE, outer, inner );
+        }
+    }
+
+
+    if(phicut == nullptr)
+    {
+        root = _root ;
     }
     else
     {
-        init_inner();
-        assert( inner );
-        root = sn::Boolean(CSG_DIFFERENCE, outer, inner );
+        if(ENABLE_PHICUT)
+        {
+            root = sn::Boolean(CSG_INTERSECTION, phicut, _root );
+        }
+        else
+        {
+            std::cerr
+               << "U4Polycone::init FATAL geometry with unsupported phicut : "
+               << " enable experimental support with envvar "
+               << " [" <<  U4Polycone__ENABLE_PHICUT << "]"
+               << "\n"
+               ;
+
+            assert(0);
+            std::raise(SIGINT);
+        }
     }
+
 }
 
 /**
@@ -285,7 +360,6 @@ U4Polycone::init_RZ
 3. get the min/max ranges of rmin, rmax, z and determine if there
    is an inner based on the rmin range
 
-4. assert that there is no phi segment
 
 **/
 
@@ -332,14 +406,39 @@ inline void U4Polycone::init_RZ()
     assert( Z_max > Z_min );
     bool no_inner = R_inner_min == 0. && R_inner_max == 0. ;
     has_inner = !no_inner ;
+}
 
 
-    double startPhi = ph->Start_angle/CLHEP::radian ;
-    double deltaPhi = ph->Opening_angle/CLHEP::radian ;
-    bool has_phi_segment = startPhi > 0. || deltaPhi < 2.0*CLHEP::pi  ;
-    bool has_phi_segment_expect = has_phi_segment == false ;
-    assert( has_phi_segment_expect );
-    if(!has_phi_segment_expect) std::raise(SIGINT);
+/**
+U4Polycone::init_phicut
+-------------------------
+
+
+**/
+
+inline void U4Polycone::init_phicut()
+{
+    double phi_delta = ph->Opening_angle/CLHEP::radian ;
+    phi_start = ph->Start_angle/CLHEP::radian ;
+    phi_end   = phi_start + phi_delta ;
+
+    bool has_phicut = phi_start > 0. || phi_end < 2.0*CLHEP::pi  ;
+
+    if( has_phicut )
+    {
+        phicut = sn::PhiCut( phi_start, phi_end );
+    }
+
+    if(has_phicut) std::cerr
+       << "U4Polycone::init_phicut"
+       << " phi_start   " << std::setw(10) << std::fixed << std::setprecision(4) << phi_start
+       << " phi_end     " << std::setw(10) << std::fixed << std::setprecision(4) << phi_end
+       << " phi_delta   " << std::setw(10) << std::fixed << std::setprecision(4) << phi_delta
+       << " has_phicut " << ( has_phicut ? "YES" : "NO " )
+       << " ENABLE_PHICUT " << ( ENABLE_PHICUT ? "YES" : "NO " )
+       << "\n"
+       ;
+
 }
 
 /**

@@ -910,6 +910,26 @@ Thence can use the below tools to visualize in various ways::
     cxt_min.sh  # simtrace cross sections
     ssst.sh     # triangulated SScene viz
 
+
+Consider phicut applied to a shape, which results in
+geometry offset from the origin::
+
+
+            +
+           /   +
+          /   /
+         /   /
+        +   /
+           +
+
+
+                       +
+
+
+Using s_bb::Extent to define the universe size can result
+in too small a universe, so use s_bb::AbsMax
+
+
 **/
 
 const G4VPhysicalVolume* U4VolumeMaker::Local(const char* name)
@@ -925,17 +945,19 @@ const G4VPhysicalVolume* U4VolumeMaker::Local(const char* name)
     G4ThreeVector pMax ;
     solid->BoundingLimits(pMin, pMax);
 
+
     std::array<double,6> bb = {pMin.x(), pMin.y(), pMin.z(), pMax.x(), pMax.y(), pMax.z() };
     double extent = s_bb::Extent<double>(bb.data());
+    double absmax = s_bb::AbsMax<double>(bb.data());
     LOG(info)
         << " name " <<  ( name ? name : "-" )
         << " name_after_PREFIX " <<  ( name_after_PREFIX ? name_after_PREFIX : "-" )
         << " bb " << s_bb::Desc<double>(bb.data())
         << " extent " << extent
+        << " absmax " << absmax
         ;
 
-
-    G4double universe_halfside = 1.5*extent*mm ;
+    G4double universe_halfside = 1.5*absmax*mm ;  // extent not appropriate for geometry offset from origin
     const char* universe_material = "G4_AIR" ;
 
     G4LogicalVolume* universe_lv  = Box_(universe_halfside, universe_material );

@@ -36,9 +36,14 @@ cd $(dirname $(realpath $BASH_SOURCE))
 #solid=R12860_PMTSolid
 #solid=R12860_PMTSolidU   # Union with torus, instead of Subtraction, to see the position
 #solid=R12860_PMTSolidK    # KLUDGE : dont subtract torus to see the tube "scarf"
-solid=R12860_PMTSolidP    # polycone neck
+#solid=R12860_PMTSolidP    # polycone neck
+
+#solid=LProfileSectorPolycone
+solid=PolyconeWithPhiCut
 
 
+export U4Polycone__ENABLE_PHICUT=1
+export U4Mesh__NumberOfRotationSteps_entityType_G4Polycone=480
 
 
 

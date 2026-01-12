@@ -471,6 +471,7 @@ struct SYSRAP_API sn
     static sn* Box3(double fullside);
     static sn* Box3(double fx, double fy, double fz );
     static sn* Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg );
+    static sn* PhiCut(double phi0, double phi1);
     static sn* Notsupported();
 
     static sn* Zero(double  x,  double y,  double z,  double w,  double z1, double z2);
@@ -3255,6 +3256,9 @@ inline sn* sn::Box3(double fx, double fy, double fz )  // static
 }
 
 
+
+
+
 /**
 sn::Torus
 ----------
@@ -3309,6 +3313,61 @@ inline sn* sn::Torus(double rmin, double rmax, double rtor, double startPhi_deg,
     nd->setPA( rmin, rmax, rtor, startPhi_deg, deltaPhi_deg, 0.  );
     nd->setBB( pmin.x, pmin.y, -rmax, pmax.x, pmax.y, +rmax );
 
+    return nd ;
+}
+
+/**
+sn::PhiCut
+-----------
+
+      [cosPhi1, sinPhi1]
+         phi1
+          |
+          |
+          |
+          +--------- phi0  [cosPhi0, sinPhi0]
+
+
+::
+
+   cross_product = cosPhi0 * sinPhi1 - cosPhi1 * sinPhi0
+
+   cross_product > 0.
+        sweep from phi0 to phi1 is in the positive direction
+        and the interior angle is less than 180 deg making
+        a wedge shape
+
+   cross_product < 0.
+        sweep covers more than half the circle. The interior angle is greater than 180 deg.
+        This creates a "concave" or "reflex" wedge (like a Pac-Man with his mouth open).
+
+
+**/
+
+inline sn* sn::PhiCut(double phi0, double phi1)  // static
+{
+    sn* nd = Create(CSG_PHICUT) ;
+
+    double cos_phi0 = cos(phi0);
+    double sin_phi0 = sin(phi0);
+    double cos_phi1 = cos(phi1);
+    double sin_phi1 = sin(phi1);
+
+    const double cross_product = cos_phi0*sin_phi1 - cos_phi1*sin_phi0 ;
+    bool expect = phi1 > phi0 && cross_product > 0. ;
+
+    if(!expect) std::cerr
+       << "sn::PhiCut"
+       << " phi0 " << phi0
+       << " phi1 " << phi1
+       << " cross_product " << cross_product
+       << " expect " << ( expect ? "YES" : "NO " )
+       << "\n"
+       ;
+
+    assert(expect);
+
+    nd->setPA( cos_phi0, sin_phi0, cos_phi1, sin_phi1, zero, zero );
     return nd ;
 }
 
@@ -5411,11 +5470,18 @@ inline void sn::setAABB_LeafFrame()
     }
     else if( typecode == CSG_PHICUT )
     {
-        setBB( UNBOUNDED_DEFAULT_EXTENT );
+        //setBB( UNBOUNDED_DEFAULT_EXTENT );
+        setBB( 0. );
     }
     else if( typecode == CSG_THETACUT )
     {
         setBB( UNBOUNDED_DEFAULT_EXTENT );
+    }
+    else if( typecode == CSG_SEGMENT )
+    {
+        setBB( 0. );
+        // segment is a special type of "leaf" where the bbox
+        // can only be defined in combination with other nodes
     }
     else
     {
