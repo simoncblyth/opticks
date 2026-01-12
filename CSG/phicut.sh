@@ -1,3 +1,15 @@
-#!/bin/bash -l 
+#!/bin/bash
 
-${IPYTHON:-ipython} -i phicut.py 
+usage(){ cat << EOU
+
+~/o/CSG/phicut.sh
+
+EOU
+}
+
+cd $(dirname $(realpath $BASH_SOURCE))
+
+name=phicut
+script=$name.py
+${IPYTHON:-ipython} -i --pdb $script
+

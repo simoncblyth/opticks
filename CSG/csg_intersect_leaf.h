@@ -94,10 +94,11 @@ Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 #include "csg_intersect_leaf_convexpolyhedron.h"
 #include "csg_intersect_leaf_hyperboloid.h"
 
+#include "csg_intersect_leaf_phicut.h"
+
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
 #include "csg_intersect_leaf_plane.h"
 #include "csg_intersect_leaf_slab.h"
-#include "csg_intersect_leaf_phicut.h"
 #include "csg_intersect_leaf_thetacut.h"
 #include "csg_intersect_leaf_oldcone.h"
 #include "csg_intersect_leaf_oldcylinder.h"
@@ -138,11 +139,11 @@ float distance_leaf( const float3& global_position, const CSGNode* node, const f
         case CSG_CONE:             distance = 0.f                                                                   ; break ; 
         case CSG_CONVEXPOLYHEDRON: distance = distance_leaf_convexpolyhedron(  local_position, node, plan )         ; break ;
         case CSG_HYPERBOLOID:      distance = 0.f                                                                   ; break ; 
+        case CSG_PHICUT:           distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
         case CSG_PLANE:            distance = distance_leaf_plane(             local_position, node->q0 )           ; break ;
         case CSG_SLAB:             distance = distance_leaf_slab(              local_position, node->q0, node->q1 ) ; break ;
         case CSG_OLDCYLINDER:      distance = distance_leaf_cylinder(          local_position, node->q0, node->q1 ) ; break ;
-        case CSG_PHICUT:           distance = distance_leaf_phicut(            local_position, node->q0 )           ; break ;
 #endif
     }
 
@@ -217,11 +218,11 @@ void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const
         case CSG_CONE:             intersect_leaf_newcone(          valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_CONVEXPOLYHEDRON: intersect_leaf_convexpolyhedron( valid_isect, isect, node, plan,             t_min, origin, direction ) ; break ;
         case CSG_HYPERBOLOID:      intersect_leaf_hyperboloid(      valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_PHICUT:           intersect_leaf_phicut_simple(    valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
         case CSG_PLANE:            intersect_leaf_plane(            valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_SLAB:             intersect_leaf_slab(             valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_OLDCYLINDER:      intersect_leaf_oldcylinder(      valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
-        case CSG_PHICUT:           intersect_leaf_phicut(           valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_THETACUT:         intersect_leaf_thetacut(         valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
         case CSG_OLDCONE:          intersect_leaf_oldcone(          valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_INFCYLINDER:      intersect_leaf_infcylinder(      valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;
