@@ -406,6 +406,12 @@ struct CSG_API CSGNode
     static CSGNode Box3(float fullside);
     static CSGNode Plane(float nx, float ny, float nz, float d);
     static CSGNode Slab(float nx, float ny, float nz, float d1, float d2 ) ;
+    static CSGNode HalfSpace(float nx, float ny, float nz, float nw );
+
+    static CSGNode* HalfCylinder(float nx, float ny, float nz, float nw, float radius, float z0, float z1 );
+    static CSGNode* HalfCylinder();
+
+
     static CSGNode Cylinder(   float radius, float z1, float z2) ;
     static CSGNode OldCylinder(float radius, float z1, float z2);
 

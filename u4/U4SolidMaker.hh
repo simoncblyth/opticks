@@ -107,6 +107,7 @@ struct U4_API U4SolidMaker
     static const G4VSolid* UnionOfHemiEllipsoids(const char* name);
     static const G4VSolid* PolyconeWithMultipleRmin(const char* name);
     static const G4VSolid* PolyconeWithPhiCut(const char* name);
+    static const G4VSolid* PolyconeWithPhiCutHalf(const char* name);
 
     static void Extract( std::vector<long>& vals, const char* s );
     static bool StartsWith( const char* n, const char* q );

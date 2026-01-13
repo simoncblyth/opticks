@@ -94,6 +94,7 @@ Bringing over functions from  ~/opticks/optixrap/cu/csg_intersect_primitive.h
 #include "csg_intersect_leaf_convexpolyhedron.h"
 #include "csg_intersect_leaf_hyperboloid.h"
 
+#include "csg_intersect_leaf_halfspace.h"
 #include "csg_intersect_leaf_phicut.h"
 
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
@@ -219,6 +220,7 @@ void intersect_leaf(bool& valid_isect, float4& isect, const CSGNode* node, const
         case CSG_CONVEXPOLYHEDRON: intersect_leaf_convexpolyhedron( valid_isect, isect, node, plan,             t_min, origin, direction ) ; break ;
         case CSG_HYPERBOLOID:      intersect_leaf_hyperboloid(      valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_PHICUT:           intersect_leaf_phicut_simple(    valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
+        case CSG_HALFSPACE:        intersect_leaf_halfspace(        valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
 #if !defined(PRODUCTION) && defined(CSG_EXTRA)
         case CSG_PLANE:            intersect_leaf_plane(            valid_isect, isect, node->q0,               t_min, origin, direction ) ; break ;
         case CSG_SLAB:             intersect_leaf_slab(             valid_isect, isect, node->q0, node->q1,     t_min, origin, direction ) ; break ;

@@ -478,6 +478,10 @@ void CSGNode::setAABBLocal()
         setAABB( 0.f );
         // HMM: NEED TO USE THE TRIANGLES TO SET THE AABB ?
     }
+    else if( tc == CSG_HALFSPACE )
+    {
+        setAABB( 0.f );
+    }
     else if( tc == CSG_CUTCYLINDER )
     {
         setAABB( UNBOUNDED_DEFAULT_EXTENT );
@@ -662,6 +666,30 @@ CSGNode CSGNode::Slab(float nx, float ny, float nz, float d1, float d2 )
     return nd ;
 }
 
+CSGNode CSGNode::HalfSpace(float nx, float ny, float nz, float nw )
+{
+    CSGNode nd = {} ;
+    nd.setParam( nx, ny, nz, nw, 0, 0 );
+    nd.setTypecode(CSG_HALFSPACE ) ;
+    nd.setAABB( 0.f );
+    return nd ;
+}
+
+CSGNode* CSGNode::HalfCylinder(float nx, float ny, float nz, float nw, float radius, float z0, float z1 )
+{
+    int subNum = 3 ;
+    CSGNode* nd = new CSGNode[subNum] ;
+    nd[0] = CSGNode::Intersection() ;
+    nd[1] = CSGNode::HalfSpace(nx,ny,nz,nw);
+    nd[2] = CSGNode::Cylinder(radius,z0,z1);
+    nd[0].setSubNum(subNum);
+    return nd ;
+}
+CSGNode* CSGNode::HalfCylinder()
+{
+    float v = 1.f/sqrtf(2.f);
+    return HalfCylinder(v,v,0.f,0.f,  100.f, -50.f, 50.f);
+}
 
 
 /**

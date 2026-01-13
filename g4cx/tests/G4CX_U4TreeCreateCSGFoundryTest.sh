@@ -52,7 +52,7 @@ elif [[ "$GEOM" =~ ^LocalLProfileSectorPolycone$ ]]; then
     export U4Polycone__ENABLE_PHICUT=1
     export U4Mesh__NumberOfRotationSteps_entityType_G4Polycone=480
 
-elif [[ "$GEOM" =~ ^LocalPolyconeWithPhiCut$ ]]; then
+elif [[ "$GEOM" =~ ^LocalPolyconeWithPhiCut(Half)?$ ]]; then
 
     export U4Polycone__ENABLE_PHICUT=1
     export U4Mesh__NumberOfRotationSteps_entityType_G4Polycone=480

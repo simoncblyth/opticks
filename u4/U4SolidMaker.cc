@@ -53,6 +53,7 @@ BoxMinusOrb
 UnionOfHemiEllipsoids
 PolyconeWithMultipleRmin
 PolyconeWithPhiCut
+PolyconeWithPhiCutHalf
 AnnulusBoxUnion
 AnnulusTwoBoxUnion
 AnnulusTwoBoxUnionContiguous
@@ -157,6 +158,7 @@ const G4VSolid* U4SolidMaker::Make(const char* qname, std::string& meta )  // st
     else if(StartsWith("BoxMinusOrb",qname))                  solid = BoxMinusOrb(qname);
     else if(StartsWith("UnionOfHemiEllipsoids", qname))       solid = UnionOfHemiEllipsoids(qname);
     else if(StartsWith("PolyconeWithMultipleRmin", qname))    solid = PolyconeWithMultipleRmin(qname) ;
+    else if(StartsWith("PolyconeWithPhiCutHalf", qname))      solid = PolyconeWithPhiCutHalf(qname) ;
     else if(StartsWith("PolyconeWithPhiCut", qname))          solid = PolyconeWithPhiCut(qname) ;
     else if(StartsWith("AnnulusBoxUnion", qname))             solid = AnnulusBoxUnion(qname) ;
     else if(StartsWith("AnnulusTwoBoxUnion", qname))          solid = AnnulusTwoBoxUnion(qname) ;
@@ -1426,6 +1428,26 @@ const G4VSolid* U4SolidMaker::PolyconeWithMultipleRmin(const char* name)
     return base_steel ;
 }
 
+/**
+PolyconeWithPhiCut
+------------------
+
+phiStart=30 phiDelta=30 selects wedge in middle of +X+Y quadrant::
+
+   SOLID=PolyconeWithPhiCut EYE=0,0,1000  UP=0,1,0 ~/o/u4/tests/U4SolidMakerTest.sh
+
+
+          Y 30. + +
+          |  . 30+ .
+          | .+  .
+          |.+.   30
+          +-------X
+         /
+        /
+       Z
+
+**/
+
 const G4VSolid* U4SolidMaker::PolyconeWithPhiCut(const char* name)
 {
     const int N = 2 ;
@@ -1439,6 +1461,49 @@ const G4VSolid* U4SolidMaker::PolyconeWithPhiCut(const char* name)
     G4VSolid* polycone = new G4Polycone(name,phiStart,phiDelta,Z,ZPlane,Rmin,Rmax);
     return polycone ;
 }
+
+/**
+U4SolidMaker::PolyconeWithPhiCutHalf
+--------------------------------------
+
+Confirmed that 0->pi selects +Y hemi with::
+
+    SOLID=PolyconeWithPhiCutHalf EYE=0,0,1000  UP=0,1,0 ~/o/u4/tests/U4SolidMakerTest.sh
+
+Convert this with::
+
+    GEOM # set GEOM to LocalPolyconeWithPhiCutHalf
+    ~/o/g4cx/tests/G4CX_U4TreeCreateCSGFoundryTest.sh
+
+Viz with::
+
+     cxr_min.sh
+        # from axial viewpoint get full circle of cylinder,
+        # from less axial get changing geom with a crevasse forming
+        # in the middle and getting larger as change angle until
+        # get expected half circle
+
+        # Cannot pin down any halfspace bug, so suspect its coming from
+        # the CSG unbounded handling
+        #
+        # WIP: try to reproduce issue on CPU with CSG/tests/csg_intersect_prim_test.sh
+
+**/
+
+const G4VSolid* U4SolidMaker::PolyconeWithPhiCutHalf(const char* name)
+{
+    const int N = 2 ;
+    double ZPlane[N] = {  -50*mm ,  50*mm } ;
+    double Rmin[N]   = {    0*mm ,   0*mm } ;
+    double Rmax[N]   = {  200*mm , 200*mm } ;
+
+    double phiStart = 0.0*deg ;
+    double phiDelta = 180.0*deg ;
+    G4VSolid* polycone = new G4Polycone(name,phiStart,phiDelta,Z,ZPlane,Rmin,Rmax);
+    return polycone ;
+}
+
+
 
 
 
@@ -3273,8 +3338,6 @@ G4Polycone* EMFCoil::BuildLProfileSectorPolycone(
         NZ, zPlane, rMin, rMax
     );
 }
-
-
 
 
 

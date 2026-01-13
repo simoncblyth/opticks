@@ -346,13 +346,14 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
 
     BBOX = np.fromstring(os.environ["BBOX"],sep=",").reshape(-1,3) if "BBOX" in os.environ else None
     CIRCLE = np.fromstring(os.environ["CIRCLE"],sep=",").reshape(-1,4) if "CIRCLE" in os.environ else None
+    NCIRCLE = np.fromstring(os.environ["NCIRCLE"],sep=",").reshape(-1,3) if "NCIRCLE" in os.environ else (0,1,0)
 
     if not POINT is None: pl.add_points(POINT, color="r", label="POINT", point_size=POINTSIZE) # point_size=POINTSIZE, render_points_as_spheres=True)
     if not BBOX is None: pl.add_points(BBOX, color="r", label="BBOX" )
 
     if not CIRCLE is None:
         for pcircle in CIRCLE:
-            circle = pv.Disc(center=pcircle[:3], outer=pcircle[3], inner=0, normal=(0, 1, 0), c_res=360)
+            circle = pv.Disc(center=pcircle[:3], outer=pcircle[3], inner=0, normal=NCIRCLE, c_res=360)
             pl.add_mesh(circle, color='red', line_width=5, style='wireframe')
         pass
     pass

@@ -39,15 +39,15 @@ cd $(dirname $(realpath $BASH_SOURCE))
 #solid=R12860_PMTSolidP    # polycone neck
 
 #solid=LProfileSectorPolycone
-solid=PolyconeWithPhiCut
+#solid=PolyconeWithPhiCut
+solid=PolyconeWithPhiCutHalf
 
 
 export U4Polycone__ENABLE_PHICUT=1
 export U4Mesh__NumberOfRotationSteps_entityType_G4Polycone=480
 
 
-
-export SOLID=$solid
+export SOLID=${SOLID:-$solid}
 export FOLD=/tmp/$USER/opticks/$name
 mkdir -p $FOLD
 

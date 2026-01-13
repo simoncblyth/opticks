@@ -472,6 +472,7 @@ struct SYSRAP_API sn
     static sn* Box3(double fx, double fy, double fz );
     static sn* Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg );
     static sn* PhiCut(double phi0, double phi1);
+    static sn* HalfSpace(double x, double y, double z, double w);
     static sn* Notsupported();
 
     static sn* Zero(double  x,  double y,  double z,  double w,  double z1, double z2);
@@ -3371,6 +3372,45 @@ inline sn* sn::PhiCut(double phi0, double phi1)  // static
     return nd ;
 }
 
+
+/**
+sn::HalfSpace
+--------------
+
+Define CSG_HALFSPACE with a unit normal *n* and a distance *w* from the origin
+in the normal direction. Hence points *p* that are within the plane fulfil::
+
+      p.n = w
+
+                            n
+                         .
+           \  *       .
+            \  *   .
+             \  .
+              O  *
+               \  *
+                \  *
+                 \
+
+
+
+See CSG/csg_intersect_leaf_halfspace.h
+
+**/
+
+
+inline sn* sn::HalfSpace(double x, double y, double z, double w)  // static
+{
+    glm::tvec3<double> _normal(x,y,z);
+    glm::tvec3<double> normal = glm::normalize(_normal);
+    double plane_distance = w ;
+
+    sn* nd = Create(CSG_HALFSPACE) ;
+    nd->setPA( normal.x, normal.y, normal.z,  plane_distance, zero, zero );
+    return nd ;
+}
+
+
 inline sn* sn::Notsupported() // static
 {
     sn* nd = Create(CSG_NOTSUPPORTED);
@@ -5468,7 +5508,7 @@ inline void sn::setAABB_LeafFrame()
     {
         setBB( UNBOUNDED_DEFAULT_EXTENT );
     }
-    else if( typecode == CSG_PHICUT )
+    else if( typecode == CSG_PHICUT || typecode == CSG_HALFSPACE )
     {
         //setBB( UNBOUNDED_DEFAULT_EXTENT );
         setBB( 0. );

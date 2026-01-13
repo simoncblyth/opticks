@@ -414,19 +414,59 @@ U4Polycone::init_phicut
 -------------------------
 
 
+
+           Y
+     .     |      n
+       .   |    .
+         . | .
+           +------X
+            .
+              .
+
+
+Special cased "hemi" for simpler testing::
+
+                             +Y
+                              .
+                    + + + + + . + + + + +
+                    + + + + + . + + + + +
+                    + + + + + . + + + + +
+                    + + + + + . + + + + +
+                    + + + + + . + + + + +
+  phi_end = pi  -X +----------+---------+ +X phi_start = 0.
+                              :
+                              :
+                              :
+                              n [0,-1,0]
+                             -Y
+
+Normal in -Y direction corresponds to the halfspace Y>0
+
+TODO: handle all half-space situations not just one
+
+
 **/
 
 inline void U4Polycone::init_phicut()
 {
+    double eps = 1e-6 ;
     double phi_delta = ph->Opening_angle/CLHEP::radian ;
     phi_start = ph->Start_angle/CLHEP::radian ;
     phi_end   = phi_start + phi_delta ;
 
     bool has_phicut = phi_start > 0. || phi_end < 2.0*CLHEP::pi  ;
+    bool has_half = std::abs( phi_start - 0.f ) < eps  && std::abs(phi_end-CLHEP::pi) < eps ;
 
     if( has_phicut )
     {
-        phicut = sn::PhiCut( phi_start, phi_end );
+        if( has_half )
+        {
+            phicut = sn::HalfSpace( 0., -1., 0., 0. );
+        }
+        else
+        {
+            phicut = sn::PhiCut( phi_start, phi_end );
+        }
     }
 
     if(has_phicut) std::cerr
@@ -435,6 +475,7 @@ inline void U4Polycone::init_phicut()
        << " phi_end     " << std::setw(10) << std::fixed << std::setprecision(4) << phi_end
        << " phi_delta   " << std::setw(10) << std::fixed << std::setprecision(4) << phi_delta
        << " has_phicut " << ( has_phicut ? "YES" : "NO " )
+       << " has_half " << ( has_half ? "YES" : "NO " )
        << " ENABLE_PHICUT " << ( ENABLE_PHICUT ? "YES" : "NO " )
        << "\n"
        ;

@@ -129,6 +129,7 @@ list(APPEND INTERSECT_HEADERS
     csg_intersect_leaf_newcone.h
     csg_intersect_leaf_oldcone.h
     csg_intersect_leaf_oldcylinder.h
+    csg_intersect_leaf_halfspace.h
     csg_intersect_leaf_phicut.h
     csg_intersect_leaf_plane.h
     csg_intersect_leaf_slab.h

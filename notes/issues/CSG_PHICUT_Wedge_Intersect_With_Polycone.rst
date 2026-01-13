@@ -2,6 +2,30 @@ CSG_PHICUT_Wedge_Intersect_With_Polycone.rst
 ===============================================
 
 
+
+Tools::
+
+    u4/tests/U4SolidMakerTest.sh
+
+    g4cx/tests/G4CX_U4TreeCreateCSGFoundryTest.sh    ## convert Geant4 geom to Opticks depending on GEOM envvar
+
+    NOXGEOM=1 cxr_min.sh
+
+    NOXGEOM=1 ssst.sh
+
+    NOXGEOM=1 EYE=0,0,1 UP=0,1,0 cxr_min.sh
+
+
+
+
+
+* FIXED : ssst.sh example solid appears outside world box
+* ISSUE : whacky view dependent geometry with cxr_min.sh
+
+
+
+
+
 ::
 
     (ok) A[blyth@localhost sysrap]$ opticks-f CSG_SEGMENT

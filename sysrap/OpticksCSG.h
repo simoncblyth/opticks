@@ -60,8 +60,9 @@ typedef enum {
         CSG_THETACUT=122,
         CSG_OLDCONE=123,
         CSG_CUTCYLINDER=124,
-        CSG_NOTSUPPORTED=125,
-        CSG_UNDEFINED=126,
+        CSG_HALFSPACE=125,
+        CSG_NOTSUPPORTED=126,
+        CSG_UNDEFINED=127,
 
     CSG_OBSOLETE=1000,
         CSG_PARTLIST=1001,
@@ -146,6 +147,7 @@ static const char* CSG_INFCYLINDER_   = "infcylinder" ;
 static const char* CSG_OLDCYLINDER_   = "oldcylinder" ;
 static const char* CSG_PHICUT_        = "phicut" ;
 static const char* CSG_THETACUT_      = "thetacut" ;
+static const char* CSG_HALFSPACE_     = "halfspace" ;
 static const char* CSG_NOTSUPPORTED_  = "notsupported" ;
 static const char* CSG_UNDEFINED_     = "ERROR_undefined" ;
 static const char* CSG_EXBB_          = "externalbb" ;
@@ -207,6 +209,7 @@ struct CSG
         else if(strcmp(nodename, CSG_SEGMENT_) == 0)        tc = CSG_SEGMENT ;
         else if(strcmp(nodename, CSG_PHICUT_) == 0)         tc = CSG_PHICUT ;
         else if(strcmp(nodename, CSG_THETACUT_) == 0)       tc = CSG_THETACUT ;
+        else if(strcmp(nodename, CSG_HALFSPACE_) == 0)      tc = CSG_HALFSPACE ;
         else if(strcmp(nodename, CSG_NOTSUPPORTED_) == 0)    tc = CSG_NOTSUPPORTED ;
         else if(strcmp(nodename, CSG_DISCONTIGUOUS_) == 0)   tc = CSG_DISCONTIGUOUS ;
         else if(strcmp(nodename, CSG_CONTIGUOUS_) == 0)      tc = CSG_CONTIGUOUS ;
@@ -276,6 +279,7 @@ struct CSG
             case CSG_OLDCYLINDER:   s = CSG_OLDCYLINDER_   ; break ;
             case CSG_PHICUT:        s = CSG_PHICUT_        ; break ;
             case CSG_THETACUT:      s = CSG_THETACUT_      ; break ;
+            case CSG_HALFSPACE:     s = CSG_HALFSPACE_     ; break ;
             case CSG_NOTSUPPORTED:  s = CSG_NOTSUPPORTED_  ; break ;
             case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ;
 
@@ -337,7 +341,7 @@ struct CSG
 
     static bool IsUnbounded(int type)
     {
-        return  type == CSG_PHICUT || type == CSG_THETACUT || type == CSG_INFCYLINDER  || type == CSG_PLANE || type == CSG_SLAB ;
+        return  type == CSG_PHICUT || type == CSG_THETACUT || type == CSG_INFCYLINDER  || type == CSG_PLANE || type == CSG_SLAB || type == CSG_HALFSPACE ;
     }
     static bool CanZNudge(int type)
     {
@@ -447,7 +451,7 @@ struct CSG
     }
 
 
-    static bool HasPlanes(int type)
+    static bool HasPlanes(int type) // huh ? what happened to the planes array ?
     {
         return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON || type == CSG_SEGMENT ) ;
     }

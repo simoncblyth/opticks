@@ -6,6 +6,7 @@ U4SolidMakerTest.py
 """
 import numpy as np, pyvista as pv
 from opticks.ana.fold import Fold
+from opticks.ana.pvplt import pvplt_show, pvplt_viewpoint
 SIZE = np.array([1280, 720])
 
 if __name__ == '__main__':
@@ -16,10 +17,13 @@ if __name__ == '__main__':
     pd = pv.PolyData(f.vtx, f.fpd)
 
     pl = pv.Plotter(window_size=SIZE*2)
+    pvplt_viewpoint(pl)
+
     pl.add_text("%s" % label, position="upper_left")
     pl.add_mesh(pd, opacity=1.0, show_edges=True, lighting=True )
     pl.show_grid()
-    pl.show()
+
+    pvplt_show(pl)
 pass
 
 
