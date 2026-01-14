@@ -471,6 +471,8 @@ struct SYSRAP_API sn
     static sn* Box3(double fullside);
     static sn* Box3(double fx, double fy, double fz );
     static sn* Torus(double rmin, double rmax, double rtor, double startPhi_deg, double deltaPhi_deg );
+
+    static constexpr const char* sn__PhiCut_PACMAN_ALLOWED = "sn__PhiCut_PACMAN_ALLOWED" ;
     static sn* PhiCut(double phi0, double phi1);
     static sn* HalfSpace(double x, double y, double z, double w);
     static sn* Notsupported();
@@ -3348,25 +3350,38 @@ sn::PhiCut
 inline sn* sn::PhiCut(double phi0, double phi1)  // static
 {
     sn* nd = Create(CSG_PHICUT) ;
+    bool expect_phi = phi1 > phi0 ;
 
     double cos_phi0 = cos(phi0);
     double sin_phi0 = sin(phi0);
     double cos_phi1 = cos(phi1);
     double sin_phi1 = sin(phi1);
 
-    const double cross_product = cos_phi0*sin_phi1 - cos_phi1*sin_phi0 ;
-    bool expect = phi1 > phi0 && cross_product > 0. ;
+    double cross_product = cos_phi0*sin_phi1 - cos_phi1*sin_phi0 ;
+    bool is_wedge = cross_product > 0. ;
+    bool is_pacman = cross_product < 0. ;
+
+    int PACMAN_ALLOWED = ssys::getenvint(sn__PhiCut_PACMAN_ALLOWED, 0) ;
+    bool expect_cross_product = PACMAN_ALLOWED ? true  : is_wedge ;
+    bool expect = expect_phi && expect_cross_product ;
 
     if(!expect) std::cerr
        << "sn::PhiCut"
        << " phi0 " << phi0
        << " phi1 " << phi1
+       << " expect " << ( expect ?  "YES" : "NO " )
+       << " expect_phi " << ( expect_phi ?  "YES" : "NO " )
+       << " expect_cross_product " << ( expect_cross_product ? "YES" : "NO " )
        << " cross_product " << cross_product
-       << " expect " << ( expect ? "YES" : "NO " )
+       << " is_wedge " << ( is_wedge ? "YES" : "NO " )
+       << " is_pacman " << ( is_pacman ? "YES" : "NO " )
+       << " PACMAN_ALLOWED [" <<  sn__PhiCut_PACMAN_ALLOWED << "] " << PACMAN_ALLOWED
        << "\n"
        ;
 
-    assert(expect);
+    assert( expect_phi );
+    assert( expect_cross_product );
+    assert( expect );
 
     nd->setPA( cos_phi0, sin_phi0, cos_phi1, sin_phi1, zero, zero );
     return nd ;

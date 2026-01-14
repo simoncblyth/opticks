@@ -649,6 +649,8 @@ struct stree
     static void FindForceTriangulateLVID(std::vector<int>& lvid, const std::vector<std::string>& _sonames, const char* _force_triangulate_solid, char delim=','  );
     std::string descForceTriangulateLVID() const ;
     bool        is_force_triangulate( int lvid ) const ; // HMM: is_manual_triangulate would be better name
+
+    static constexpr const char* stree__is_auto_triangulate_NAMES = "stree__is_auto_triangulate_NAMES" ;
     bool        is_auto_triangulate( int lvid ) const ;  // WIP: automate decision, avoiding hassle with geometry updates that change/add solid names
     bool        is_triangulate(int lvid) const ;  // OR of the above
 
@@ -4484,7 +4486,10 @@ inline bool stree::is_auto_triangulate( int lvid ) const
     const sn* root = sn::GetLVRoot(lvid);
     assert( root );
 
-    std::vector<int> tcq = {CSG_TORUS, CSG_NOTSUPPORTED, CSG_CUTCYLINDER } ;
+    const char* names = "torus,notsupported,cutcylinder,phicut,halfspace" ;
+    const char* NAMES = ssys::getenvvar(stree__is_auto_triangulate_NAMES, names);
+    std::vector<int> tcq ;
+    CSG::TypeCodeVec(tcq, NAMES, ',');
     int minsubdepth = 0;
     int count = root->typecodes_count(tcq, minsubdepth );
     return count > 0 ;

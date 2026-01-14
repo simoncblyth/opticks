@@ -99,9 +99,8 @@ TODO: stick these in a struct
 #include <cstring>
 #include <cassert>
 
-
-
-
+#include <vector>
+#include <sstream>
 
 
 static const char* CSG_ZERO_          = "zero" ;
@@ -223,6 +222,19 @@ struct CSG
         else if(strcmp(nodename, CSG_FLAGNODETREE_) == 0)   tc = CSG_FLAGNODETREE ;
         else if(strcmp(nodename, CSG_FLAGINVISIBLE_) == 0)  tc = CSG_FLAGINVISIBLE ;
         return tc ;
+    }
+
+    static void TypeCodeVec(std::vector<int>& typecode, const char* names, char delim=',' )
+    {
+        std::stringstream nn;
+        nn.str(names)  ;
+        std::string n ;
+        while (std::getline(nn, n, delim))
+        {
+            int tc = TypeCode(n.c_str());
+            if( tc == CSG_UNDEFINED ) continue ;
+            typecode.push_back( tc );
+        }
     }
 
     static int DeMorganSwap( int type )
