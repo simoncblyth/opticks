@@ -123,12 +123,12 @@ const char* SGeoConfig::ELVSelection(const SName* id )
 
         if( SName::Has_STARTING( elv_selection_))  // skip the hasNames check when using STARTING_
         {
-            elv = id->getIDXListFromNames(elv_selection_, delim, prefix, false );
+            elv = id->getIDXListFromNames(elv_selection_, delim, prefix );
         }
         else
         {
             std::stringstream ss ;
-            bool has_names = id->hasNames(elv_selection_, delim, prefix, false, &ss );
+            bool has_names = id->hasNames(elv_selection_, delim, prefix, &ss );
 
             if(VERBOSE) std::cerr
                 << "SGeoConfig::ELVSelection.2."
@@ -150,7 +150,7 @@ const char* SGeoConfig::ELVSelection(const SName* id )
 
             if(has_names)
             {
-                elv = id->getIDXListFromNames(elv_selection_, delim, prefix, false );
+                elv = id->getIDXListFromNames(elv_selection_, delim, prefix );
             }
             else
             {

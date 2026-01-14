@@ -3,7 +3,7 @@ SNameTest
 ===========
 
 Names within a geometry tend to change often
-so for maintainability (and because they are geometry specific) 
+so for maintainability (and because they are geometry specific)
 cannot assert when the names do not match expectations::
 
     CFBase=~/.opticks/GEOM/J004 SNameTest
@@ -18,17 +18,17 @@ cannot assert when the names do not match expectations::
 
 struct SNameTest
 {
-    SName* id ; 
-    char qt ; 
+    SName* id ;
+    char qt ;
 
-    SNameTest(int argc, char** argv); 
-    void test_desc(); 
-    void test_detail(); 
-    void test_findIndex(int argc, char** argv); 
-    void test_findIndices(int argc, char** argv); 
-    void test_getIDXListFromSearch(); 
-    void test_getIDXListFromNames(); 
-    void test_hasNames(); 
+    SNameTest(int argc, char** argv);
+    void desc();
+    void detail();
+    void findIndex(int argc, char** argv);
+    void findIndices(int argc, char** argv);
+    void getIDXListFromContaining();
+    void getIDXListFromNames();
+    void hasNames();
 };
 
 
@@ -37,115 +37,115 @@ SNameTest::SNameTest(int argc, char** argv)
     id(SName::Load("$CFBase/CSGFoundry/meshname.txt")),
     qt(SSys::getenvchar("QTYPE", 'S'))
 {
-    assert( qt == 'S' || qt == 'E' || qt == 'C' ); 
-    test_desc(); 
-    //test_detail(); 
-    test_findIndex(argc, argv); 
-    test_findIndices(argc, argv); 
-    test_getIDXListFromSearch();
-    test_getIDXListFromNames();
-    test_hasNames(); 
-} 
-
-void SNameTest::test_desc()
-{
-    std::cout << "id.desc()" << std::endl << id->desc() << std::endl ; 
-}
-void SNameTest::test_detail()
-{
-    std::cout << "id.detail()" << std::endl << id->detail() << std::endl ; 
+    assert( qt == 'S' || qt == 'E' || qt == 'C' );
+    desc();
+    //test_detail();
+    findIndex(argc, argv);
+    findIndices(argc, argv);
+    getIDXListFromContaining();
+    //getIDXListFromNames();
+    hasNames();
 }
 
-void SNameTest::test_findIndex( int argc, char** argv )
+void SNameTest::desc()
+{
+    std::cout << "id.desc()" << std::endl << id->desc() << std::endl ;
+}
+void SNameTest::detail()
+{
+    std::cout << "id.detail()" << std::endl << id->detail() << std::endl ;
+}
+
+void SNameTest::findIndex( int argc, char** argv )
 {
     for(int i=1 ; i < argc ; i++)
     {
-         const char* arg = argv[i] ; 
-         unsigned count = 0 ; 
-         int max_count = -1 ; 
-         int idx = id->findIndex(arg, count, max_count); 
-         std::cout 
-             << " findIndex " << std::setw(80) << arg 
-             << " count " << std::setw(3) << count 
+         const char* arg = argv[i] ;
+         unsigned count = 0 ;
+         int max_count = -1 ;
+         int idx = id->findIndex(arg, count, max_count);
+         std::cout
+             << " findIndex " << std::setw(80) << arg
+             << " count " << std::setw(3) << count
              << " idx " << std::setw(3) << idx
-             << std::endl 
+             << std::endl
              ;
     }
 }
 
-void SNameTest::test_findIndices( int argc, char** argv )
+void SNameTest::findIndices( int argc, char** argv )
 {
     for(int i=1 ; i < argc ; i++)
     {
-         const char* arg = argv[i] ; 
+         const char* arg = argv[i] ;
 
-         std::vector<unsigned> idxs ;   
-         id->findIndices(idxs, arg, qt); 
+         std::vector<unsigned> idxs ;
+         id->findIndicesMatch(idxs, arg, qt);
 
-         const char* elv = SName::IDXList(idxs); 
-         std::cout 
-             << " findIndices " << std::setw(80) << arg 
-             << " idxs.size " << std::setw(3) << idxs.size() 
+         const char* elv = SName::IDXList(idxs);
+         std::cout
+             << " findIndices " << std::setw(80) << arg
+             << " idxs.size " << std::setw(3) << idxs.size()
              << " SName::QTypeLabel " << SName::QTypeLabel(qt)
-             << std::endl 
+             << std::endl
              << "descIndices"
-             << std::endl 
+             << std::endl
              << id->descIndices(idxs)
              << std::endl
              << "SName::ELVString:[" << elv << "]"
-             << std::endl 
+             << std::endl
              ;
     }
 }
 
-void SNameTest::test_getIDXListFromSearch()
+void SNameTest::getIDXListFromContaining()
 {
-     const char* contain = "_virtual0x" ; 
-     const char* elv = id->getIDXListFromSearch(contain); 
-     std::cout 
-         << "test_getIDXListFromSearch" 
+     const char* contain = "_virtual" ;
+     const char* elv = id->getIDXListFromContaining(contain);
+     std::cout
+         << "getIDXListFromContaining"
          << " contain [" << contain << "]"
          << " elv [" << elv << "]"
-         << std::endl 
+         << std::endl
          ;
 }
 
 
-void SNameTest::test_getIDXListFromNames()
+void SNameTest::getIDXListFromNames()
 {
-     const char* x_elv = "t110,117,134" ; 
-     const char* names = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ; 
-     char delim = ',' ; 
-     const char* prefix = "t" ; 
-     const char* elv = id->getIDXListFromNames(names, delim, prefix); 
-     bool match = strcmp( elv, x_elv) == 0 ; 
+     const char* x_elv = "t110,117,134" ;
+     const char* names = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ;
+     char delim = ',' ;
+     const char* prefix = "t" ;
+     const char* elv = id->getIDXListFromNames(names, delim, prefix);
+     bool match = strcmp( elv, x_elv) == 0 ;
 
-     std::cout 
-         << "test_getIDXListFromNames" 
+     std::cout
+         << "test_getIDXListFromNames"
          << " names [" << names << "]"
          << " elv [" << elv << "]"
          << " x_elv [" << x_elv << "]"
-         << " match " << match 
-         << std::endl 
+         << " match " << match
+         << std::endl
          ;
 
-     //assert( match ); 
+     //assert( match );
 }
 
-void SNameTest::test_hasNames()
+void SNameTest::hasNames()
 {
-     const char* names = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ; 
-     bool has = id->hasNames(names); 
-     std::cout 
+     const char* names = "NNVTMCPPMTsMask_virtual0x,HamamatsuR12860sMask_virtual0x,mask_PMT_20inch_vetosMask_virtual0x" ;
+     bool has = id->hasNames(names);
+     std::cout
          << "test_hasNames"
          << " names [" << names << "]"
          << " has " << has
-         << std::endl 
+         << std::endl
          ;
 }
 
 int main(int argc, char** argv)
 {
-    SNameTest t(argc, argv); 
-    return 0 ; 
+    SNameTest t(argc, argv);
+    return 0 ;
 }

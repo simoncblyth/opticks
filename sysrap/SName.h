@@ -37,7 +37,7 @@ struct SName
 
     static constexpr const char* STARTING_ = "STARTING_" ;
     static bool Has_STARTING(const char* str);
-
+    static bool Has_STARTING(const std::vector<std::string>& qq);
 
     static unsigned QType(char qt);
     static const char* QLabel(unsigned qtype);
@@ -73,22 +73,22 @@ struct SName
     int findIndex(const char* q, bool starting, std::ostream* out  ) const ;
 
     void findIndicesStarting(std::vector<unsigned>& idxs, const char* name_start ) const ;
-    void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, bool OLD_starting, std::ostream* out ) const ;
+    void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, std::ostream* out ) const ;
     static void SortUnique( std::vector<unsigned>& v );
 
 
     bool hasName(  const char* q, bool starting, std::ostream* out=nullptr ) const ;
-    bool hasNames( const char* qq, char delim=',', const char* prefix=nullptr, bool OLD_starting=false, std::ostream* out=nullptr ) const ;
-    bool hasNames( const std::vector<std::string>& qq,                         bool OLD_starting=false, std::ostream* out=nullptr ) const ;
+    bool hasNames( const char* qq, char delim=',', const char* prefix=nullptr,  std::ostream* out=nullptr ) const ;
+    bool hasNames( const std::vector<std::string>& qq,                          std::ostream* out=nullptr ) const ;
 
 
-    void findIndices(std::vector<unsigned>& idxs, const char* query, char qt='S' ) const ;
+    void findIndicesMatch(std::vector<unsigned>& idxs, const char* query, char qt='S' ) const ;
     std::string descIndices(const std::vector<unsigned>& idxs) const ;
 
 
-    const char* getIDXListFromNames( const char* names, char delim=',', const char* prefix=nullptr, bool starting=false, std::ostream* out=nullptr ) const ;
-    const char* getIDXListFromNames( const std::vector<std::string>& names, const char* prefix=nullptr, bool starting=false, std::ostream* out=nullptr, bool require_all_names = false ) const ;
-    const char* getIDXListFromSearch( const char* names_containing="_virtual0x", const char* prefix=nullptr ) const;
+    const char* getIDXListFromNames( const char* names, char delim=','    , const char* prefix=nullptr, std::ostream* out=nullptr ) const ;
+    const char* getIDXListFromNames( const std::vector<std::string>& names, const char* prefix=nullptr, std::ostream* out=nullptr ) const ;
+    const char* getIDXListFromContaining( const char* names_containing="_virtual0x", const char* prefix=nullptr ) const;
     static const char* IDXList(const std::vector<unsigned>& idxs, const char* prefix=nullptr );
 
 
@@ -101,6 +101,12 @@ struct SName
 inline bool SName::Has_STARTING(const char* str)
 {
     return nullptr != strstr( str, STARTING_ );
+}
+inline bool SName::Has_STARTING(const std::vector<std::string>& qq)
+{
+    int count = 0 ;
+    for(size_t i=0 ; i < qq.size() ; i++ ) if(Has_STARTING(qq[i].c_str())) count += 1 ;
+    return count > 0 ;
 }
 
 
@@ -391,10 +397,8 @@ the names to be found, as they will often not be there.
 
 **/
 
-inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, bool old_starting, std::ostream* out ) const
+inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, std::ostream* out ) const
 {
-    assert( old_starting == false ); // NO DO THIS VIA STRING PREFIXES FOR FLEXIBIULITY
-
     unsigned nqq = qq.size();
 
     if(out) *out
@@ -461,9 +465,8 @@ inline bool SName::hasName(  const char* q, bool starting, std::ostream* out ) c
 
 
 
-inline bool SName::hasNames( const char* qq_, char delim, const char* prefix, bool OLD_starting, std::ostream* out ) const
+inline bool SName::hasNames( const char* qq_, char delim, const char* prefix, std::ostream* out ) const
 {
-    assert( OLD_starting == false );
     const char* uqq = qq_ + ( prefix ? strlen(prefix) : 0 ) ;
     if(out) *out
         << "SName::hasNames.qq.d.p "
@@ -474,22 +477,20 @@ inline bool SName::hasNames( const char* qq_, char delim, const char* prefix, bo
 
     std::vector<std::string> qq;
     sstr::SplitTrimSuppress( uqq, delim, qq );   // handles filepath: ELV
-    return hasNames(qq, OLD_starting, out );
+    return hasNames(qq, out );
 }
 
 
-inline bool SName::hasNames( const std::vector<std::string>& qq, bool OLD_starting, std::ostream* out) const
+inline bool SName::hasNames( const std::vector<std::string>& qq, std::ostream* out) const
 {
-    assert( OLD_starting == false );
     std::vector<unsigned> idxs ;
-    findIndicesFromNames(idxs, qq, OLD_starting, out );
+    findIndicesFromNames(idxs, qq, out );
     bool has_all = qq.size() == idxs.size() ;
     if(out) *out
         << "SName::hasNames.qq "
         << " qq.size " << qq.size()
         << " idxs.size " << idxs.size()
         << " has_all " << has_all
-        << " OLD_starting " << OLD_starting
         << std::endl
         ;
     return has_all ;
@@ -543,7 +544,7 @@ inline bool SName::Match( const char* n, const char* q, unsigned qtype ) // stat
     return match ;
 }
 
-inline void SName::findIndices(std::vector<unsigned>& idxs, const char* q, char qt ) const
+inline void SName::findIndicesMatch(std::vector<unsigned>& idxs, const char* q, char qt ) const
 {
     unsigned qtype = QType(qt);
     for(unsigned i=0 ; i < name.size() ; i++)
@@ -561,22 +562,21 @@ Returns a comma delimited string list of indices prefixed with the input prefix 
 
 **/
 
-inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix, bool OLD_starting, std::ostream* out ) const
+inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix, std::ostream* out ) const
 {
-    assert( OLD_starting == false );
     const char* unames = prefix == nullptr ?  names_ : names_ + strlen(prefix ) ;
     std::vector<std::string> names ;
     sstr::SplitTrimSuppress(unames, delim, names);  // handles unames with newlines
 
-    bool require_all_names = !Has_STARTING(names_);
 
-    return getIDXListFromNames( names, prefix, OLD_starting, out, require_all_names );
+    return getIDXListFromNames( names, prefix, out );
 }
-inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix, bool OLD_starting, std::ostream* out, bool require_all_names ) const
+inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix, std::ostream* out ) const
 {
-    assert( OLD_starting == false );
+    bool require_all_names = !Has_STARTING(qq);
+
     std::vector<unsigned> idxs ;
-    findIndicesFromNames(idxs, qq, OLD_starting, out );
+    findIndicesFromNames(idxs, qq, out );
 
     if(require_all_names)
     {
@@ -585,7 +585,6 @@ inline const char* SName::getIDXListFromNames( const std::vector<std::string>& q
             << "SName::getIDXListFromNames !found_all_names "
             << " qq.size " << qq.size()
             << " idxs.size " << idxs.size()
-            << " OLD_starting " << OLD_starting
             << " require_all_names " << ( require_all_names ? "YES" : "NO " )
             << std::endl
             ;
@@ -594,10 +593,10 @@ inline const char* SName::getIDXListFromNames( const std::vector<std::string>& q
 
     return IDXList(idxs, prefix);
 }
-inline const char* SName::getIDXListFromSearch( const char* names_containing, const char* prefix) const
+inline const char* SName::getIDXListFromContaining( const char* names_containing, const char* prefix) const
 {
     std::vector<unsigned> idxs ;
-    findIndices(idxs, names_containing, 'C' );
+    findIndicesMatch(idxs, names_containing, 'C' );
     return IDXList(idxs, prefix);
 }
 inline const char* SName::IDXList(const std::vector<unsigned>& idxs, const char* prefix ) // static
