@@ -140,31 +140,37 @@ anim()
 
 
 
-
+srcd=$HOME/.opticks/GEOM
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
-# NOXGEOM=1 to disable use of externally configured GEOM
 if [ -z "$NOXGEOM" -a -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
-    GEOM_METHOD="External GEOM setup"
+    GEOM_METHOD="External GEOM setup : use NOXGEOM=1 to disable externally configured GEOM"
 else
-    source ~/.opticks/GEOM/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
+    source $srcd/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
     GEOM_METHOD="local sourcing of ~/.opticks/GEOM/GEOM.sh"
 fi
+
 vv="GEOM_METHOD GEOM NOXGEOM External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
 for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 
-source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets EVT name and corresponding AFOLD BFOLD where event arrays are loaded from
-source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
-source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
-source $HOME/.opticks/GEOM/SDR.sh 2>/dev/null  ## optionally configure OpenGL shader
-source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally configure current context file writing
 
+srcs="EVT.sh MOI.sh ELV.sh SDR.sh CUR.sh VUE.sh"
+for src in $srcs ; do
+   script=$srcd/$src #2>/dev/null
+   [ -f "$script" ] && source $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE ERROR SOURCING $script && exit 1
+done
 
+# EVT.sh : optionally sets EVT name and corresponding AFOLD BFOLD where event arrays are loaded from
+# MOI.sh : optionally sets MOI envvar, controlling initial view, use MOI bash function to setup/edit
+# ELV.sh : optionally set ELV envvar controlling included/excluded LV by name
+# SDR.sh : optionally configure OpenGL shader
+# CUR.sh : optionally configure current context file writing
+# VUE.sh : optionally sets view param EYE, LOOK, UP etc..
 
+if [ ! -f "$srcd/VUE.sh" ]; then
 
-if [ -f "$HOME/.opticks/GEOM/VUE.sh" ]; then
-    source $HOME/.opticks/GEOM/VUE.sh
-else
+    printf "$BASH_SOURCE : setting VUE param \n"
 
     #eye=1000,1000,1000
     #eye=3.7878,3.7878,3.7878

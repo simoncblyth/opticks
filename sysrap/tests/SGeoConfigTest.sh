@@ -33,7 +33,7 @@ export SGeoConfig__ELVSelection_VERBOSE=1
 #test=ELVString
 test=ELVSelection
 
-export TEST=$test
+export TEST=${TEST:-$test}
 
 SGeoConfigTest
 

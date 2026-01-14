@@ -3141,7 +3141,10 @@ CSGFoundry* CSGFoundry::Load() // static
 
     SGeoConfig::GeometrySpecificSetup(src->id);
 
+    // convert ELV envvar with include/exclude names into bitset indicating selected lvid using the list of names
     const SBitSet* elv = SGeoConfig::ELV(src->id);
+
+    // use the bitset to partially copy geometry
     CSGFoundry* dst = elv ? CSGFoundry::CopySelect(src, elv) : src  ;
 
 

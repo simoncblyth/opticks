@@ -73,6 +73,8 @@ stree.h::
      653     bool        is_triangulate(int lvid) const ;  // OR of the above
 
 
+Added "phicut,halfspace" to the auto triangulate default::
+
     inline bool stree::is_auto_triangulate( int lvid ) const
     {
         const sn* root = sn::GetLVRoot(lvid);

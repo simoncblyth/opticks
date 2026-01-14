@@ -90,6 +90,7 @@ Examples using "t:" prefix to exclude volumes::
    DISPLAY=:1 ELV=t:HamamatsuR12860sMask_virtual,NNVTMCPPMTsMask_virtual MOI=NNVTMCPPMTsMask:0:-2  ~/o/cx.sh
 
 
+
 **/
 
 const char* SGeoConfig::ELVSelection(const SName* id )
@@ -98,51 +99,64 @@ const char* SGeoConfig::ELVSelection(const SName* id )
     const char* elv = nullptr ;
     char delim = ',' ;
     bool VERBOSE = ssys::getenvbool(ELVSelection_VERBOSE);
-    bool STARTING = ssys::getenvbool(ELVSelection_STARTING) ;  // NOW REQUIRE EXACT NAMES FOR ELV SELECTION
 
     if(VERBOSE) std::cerr
-        << "SGeoConfig::ELVSelection"
+        << "SGeoConfig::ELVSelection.0."
         << " [" << ELVSelection_VERBOSE << "] "
-        << " [" << ELVSelection_STARTING << "] "
         << " elv_selection_ " << ( elv_selection_ ? elv_selection_ : "-" )
         << std::endl
         ;
+
+
 
     if( elv_selection_ )
     {
         const char* prefix = ELVPrefix(elv_selection_);
 
         if(VERBOSE) std::cerr
-            << "SGeoConfig::ELVSelection"
+            << "SGeoConfig::ELVSelection.1."
             << " prefix " << ( prefix ? prefix : "-" )
             << " strlen(prefix) " << ( prefix ? strlen(prefix) : 0 )
-            << std::endl
+            << "\n"
             ;
 
 
-
-        std::stringstream ss ;
-        bool has_names = id->hasNames(elv_selection_, delim, prefix, STARTING, &ss );
-
-        if(!has_names) std::cout
-            << "SGeoConfig::ELVSelection"
-            << " has_names " << ( has_names ? "YES" : "NO " ) << "\n"
-            << "[haslog[\n"
-            << ss.str()
-            << "]haslog[\n"
-            << "[id.detail\n"
-            << id->detail()
-            << "]id.detail\n"
-            ;
-
-        if(has_names)
+        if( SName::Has_STARTING( elv_selection_))  // skip the hasNames check when using STARTING_
         {
-            elv = id->getIDXListFromNames(elv_selection_, delim, prefix, STARTING );
+            elv = id->getIDXListFromNames(elv_selection_, delim, prefix, false );
         }
         else
         {
-            elv = elv_selection_ ;  // eg when just numbers
-        }
+            std::stringstream ss ;
+            bool has_names = id->hasNames(elv_selection_, delim, prefix, false, &ss );
+
+            if(VERBOSE) std::cerr
+                << "SGeoConfig::ELVSelection.2."
+                << " elv_selection_[" << elv_selection_ << "]"
+                << " has_names " << ( has_names ? "YES" : "NO " )
+                << "\n"
+                ;
+
+            if(!has_names) std::cout
+                << "SGeoConfig::ELVSelection.3."
+                << " has_names " << ( has_names ? "YES" : "NO " ) << "\n"
+                << "[haslog[\n"
+                << ss.str()
+                << "]haslog[\n"
+                << "[id.detail\n"
+                << id->detail()
+                << "]id.detail\n"
+                ;
+
+            if(has_names)
+            {
+                elv = id->getIDXListFromNames(elv_selection_, delim, prefix, false );
+            }
+            else
+            {
+                elv = elv_selection_ ;  // eg when just numbers
+            }
+       }
     }
     return elv ;
 }

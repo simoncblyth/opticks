@@ -4,6 +4,8 @@
 
     EMM=0,63 SGeoConfigTest
 
+    TEST=ELVSelection ~/o/sysrap/tests/SGeoConfigTest.sh
+
 **/
 
 
@@ -82,7 +84,7 @@ inline int SGeoConfigTest::ELVSelection()
     const char* elv = SGeoConfig::ELVSelection(id) ;
     std::cout
         << "[SGeoConfigTest:ELVSelection\n"
-        << " elv " << ( elv ? elv : "-" )
+        << " elv [" << ( elv ? elv : "-" ) << "] "
         << "]SGeoConfigTest:ELVSelection\n"
         ;
 
