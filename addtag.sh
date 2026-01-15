@@ -15,11 +15,11 @@ Workflow for adding Opticks tags:
 
 1. edit okconf/OpticksVersionNumber.hh increasing OPTICKS_VERSION_NUMBER
    to correspond to the next intended tag string and add table entry for the next tag
-   to notes/releases-and-versioning.rst::
+   to release_notes.rst::
 
        cd ~/opticks
        git lg -n10
-       vi okconf/OpticksVersionNumber.hh notes/releases-and-versioning.rst
+       vi okconf/OpticksVersionNumber.hh release_notes.rst
 
    For example when starting from "#define OPTICKS_VERSION_NUMBER 16"
    with last "git tag" v0.1.6 and intended next tag v0.1.7 the OPTICKS_VERSION_NUMBER
@@ -30,7 +30,7 @@ Workflow for adding Opticks tags:
 2. commit changes including okconf/OpticksVersionNumber.hh::
 
        git status
-       git add okconf/OpticksVersionNumber.hh notes/releases-and-versioning.rst
+       git add okconf/OpticksVersionNumber.hh release_notes.rst
        git commit -m "Prepare to ./addtag.sh $vntag OPTICKS_VERSION_NUMBER $opticks_version_number "
 
 3. push code changes to BOTH bitbucket and github::
