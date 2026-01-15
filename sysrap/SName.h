@@ -35,7 +35,8 @@ struct SName
     static constexpr const char* START = "START" ;
     static constexpr const char* CONTAIN = "CONTAIN" ;
 
-    static constexpr const char* STARTING_ = "STARTING_" ;
+    //static constexpr const char* STARTING_ = "STARTING_" ;
+    static constexpr const char* STARTING_ = "^" ;
     static bool Has_STARTING(const char* str);
     static bool Has_STARTING(const std::vector<std::string>& qq);
 
@@ -100,7 +101,10 @@ struct SName
 
 inline bool SName::Has_STARTING(const char* str)
 {
-    return nullptr != strstr( str, STARTING_ );
+    if(!str) return false ;
+    if(!STARTING_) return false ;
+    bool one = strlen(STARTING_) == 1 ;
+    return one ? str[0] == STARTING_[0] :  ( nullptr != strstr( str, STARTING_ )) ;
 }
 inline bool SName::Has_STARTING(const std::vector<std::string>& qq)
 {
