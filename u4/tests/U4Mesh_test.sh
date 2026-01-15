@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 usage(){ cat << EOU
 U4Mesh_test.sh
 ================
@@ -22,7 +22,9 @@ mkdir -p $FOLD
 bin=$FOLD/$name
 
 
-solid=Torus
+#solid=Torus
+solid=Torus_s_EMFcoil_holder_ring_mod26_seg1
+
 #solid=Orb
 #solid=Box
 #solid=Tet
@@ -30,13 +32,42 @@ solid=Torus
 #solid=Cons
 
 
-export U4Mesh__NumberOfRotationSteps_entityType_G4Torus=48
-export TITLE="U4Mesh_test.sh U4Mesh__NumberOfRotationSteps_entityType_G4Torus $U4Mesh__NumberOfRotationSteps_entityType_G4Torus "
+export U4Mesh__NumberOfRotationSteps_DUMP=1
+
+method=2
+title="U4Mesh_test.sh method:$method"
+
+if [ "$method" == "0" ]; then
+
+    key=U4Mesh__NumberOfRotationSteps_entityType_G4Torus
+    export $key=480
+    title="$title key:$key:${!key} "
+
+elif [ "$method" == "1" ]; then
+
+    key=U4Mesh__NumberOfRotationSteps_solidName_$solid
+    export $key=480
+    title="$title key:$key:${!key} "
+
+elif [ "$method" == "2" ]; then
+
+    pfx=U4Mesh__NumberOfRotationSteps_solidName_STARTING_pfx_1
+    val=U4Mesh__NumberOfRotationSteps_solidName_STARTING_val_1
+
+    export $pfx=Torus_s_EMFcoil_holder_ring
+    export $val=240
+    title="$title  pfx:$pfx:${!pfx} val:$val:${!val} "
+fi
 
 
-# moving away from these 
-#clhep-
-#g4-
+export TITLE="$title"
+
+vv="title TITLE method"
+for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
+
+
+
+
 
 get-cmake-prefix(){ echo $CMAKE_PREFIX_PATH | tr ":" "\n" | grep $1 ; }
 
@@ -48,15 +79,15 @@ else
     g4-prefix(){    get-cmake-prefix Geant4 ; }
     g4-libdir(){    echo $(g4-prefix)/lib64 ; }
     clhep-prefix(){ get-cmake-prefix CLHEP ; }
-fi 
+fi
 
 CLHEP_PREFIX=$(clhep-prefix)
 G4_PREFIX=$(g4-prefix)
 G4_LIBDIR=$(g4-libdir)
 
 if [ "$(uname)" == "Darwin" ]; then
-    export DYLD_LIBRARY_PATH=$CLHEP_PREFIX/lib:$G4_LIBDIR 
-fi 
+    export DYLD_LIBRARY_PATH=$CLHEP_PREFIX/lib:$G4_LIBDIR
+fi
 
 
 allsolid="Orb Box Tet Tubs Cons Torus"
@@ -70,13 +101,13 @@ defarg="info_build_run_ana"
 arg=${1:-$defarg}
 
 
-[ "${arg/info}" != "$arg" ] && for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
+[ "${arg/info}" != "$arg" ] && for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 
 
 if [ "${arg/build}" != "$arg" ]; then
     gcc $name.cc \
          -I.. \
-         -std=c++11 -lstdc++ \
+         -std=c++17 -lstdc++ \
          -I$HOME/opticks/sysrap \
          -I$CLHEP_PREFIX/include \
          -I$G4_PREFIX/include/Geant4  \
@@ -87,34 +118,34 @@ if [ "${arg/build}" != "$arg" ]; then
          -lG4graphics_reps \
          -lCLHEP \
          -o $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
-fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1
+fi
 
 if [ "${arg/run}" != "$arg" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
-fi 
+fi
 
 if [ "${arg/all}" != "$arg" ]; then
-    for solid in $allsolid ; do echo $BASH_SOURCE : $solid && SOLID=$solid $bin ; done  
+    for solid in $allsolid ; do echo $BASH_SOURCE : $solid && SOLID=$solid $bin ; done
     [ $? -ne 0 ] && echo $BASH_SOURCE all error && exit 2
-fi 
+fi
 
 if [ "${arg/ana}" != "$arg" ]; then
-    ${IPYTHON:-ipython} --pdb -i $name.py 
+    ${IPYTHON:-ipython} --pdb -i $name.py
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
-fi 
+fi
 
 if [ "${arg/view}" != "$arg" ]; then
 
     export FOLD=/data/blyth/opticks/U4TreeCreateTest/stree/mesh
     export SOLID=HamamatsuR12860sMask_virtual0xa0b8450
 
-    ${IPYTHON:-ipython} --pdb -i $name.py 
+    ${IPYTHON:-ipython} --pdb -i $name.py
     [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
-fi 
+fi
 
 
 
-exit 0 
+exit 0
 

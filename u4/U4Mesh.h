@@ -34,7 +34,9 @@ For use with OpenGL rendering its natural to use "vtx" and "tri".
 
 struct U4Mesh
 {
+    static constexpr const char* U4Mesh__NumberOfRotationSteps = "U4Mesh__NumberOfRotationSteps" ;
     static constexpr const char* _NumberOfRotationSteps_DUMP = "U4Mesh__NumberOfRotationSteps_DUMP" ;
+
 
     const G4VSolid* solid ;
     const char* entityType ;
@@ -68,8 +70,10 @@ struct U4Mesh
     static const char* EType(const G4VSolid* solid);
     static const char* SolidName(const G4VSolid* solid);
 
-    static std::string FormEKey( const char* prefix, const char* key, const char* val  );
+    static std::string FormEKey( const char* prefix, const char* key, const char* val, int idx=-1 );
     static int NumberOfRotationSteps(const char* entityType, const char* solidname );
+    static int NumberOfRotationSteps_solidName_STARTING( const char* _solidName );
+
 
     static G4Polyhedron* CreatePolyhedron(const G4VSolid* solid, int num);
 
@@ -157,7 +161,7 @@ inline const char* U4Mesh::SolidName(const G4VSolid* solid) // static
     return strdup(name.c_str());
 }
 
-inline std::string U4Mesh::FormEKey( const char* prefix, const char* key, const char* val  ) // static
+inline std::string U4Mesh::FormEKey( const char* prefix, const char* key, const char* val, int idx  ) // static
 {
     std::stringstream ss ;
     ss << prefix
@@ -166,13 +170,23 @@ inline std::string U4Mesh::FormEKey( const char* prefix, const char* key, const 
        << "_"
        << ( val ? val : "-" )
        ;
+
+    if( idx > -1 ) ss << "_" << idx ;
     std::string str = ss.str();
     return str ;
 }
 
 /**
 U4Mesh::NumberOfRotationSteps
-----------------------------------
+--------------------------------
+
+This static method is invoked by the U4Mesh ctor for every solid
+in the geometry with (entityType, solidName) arguments such as
+("G4Torus", "s_EMFcoil_holder_ring26_seg8"). Based on the existence
+of envvar keys derived from these inputs values for the number of
+rotation steps are obtained or zero if no such keys exist.
+
+
 
 Returns envvar configured value if entityType or solidName envvars
 are defined, otherwise returns zero.
@@ -205,14 +219,36 @@ Check which solids RotationSteps were customized from the persisted mesh fold::
 
 **/
 
+
+
+
 inline int U4Mesh::NumberOfRotationSteps(const char* _entityType, const char* _solidName )
 {
-    const char* prefix = "U4Mesh__NumberOfRotationSteps" ;
-    std::string entityType_ekey = FormEKey(prefix, "entityType" , _entityType );
-    std::string solidName_ekey = FormEKey(prefix, "solidName" , _solidName );
+    std::string entityType_ekey = FormEKey(U4Mesh__NumberOfRotationSteps, "entityType" , _entityType );
+    std::string solidName_ekey = FormEKey(U4Mesh__NumberOfRotationSteps, "solidName" , _solidName );
     int num_entityType = ssys::getenvint( entityType_ekey.c_str(), 0 );
     int num_solidName  = ssys::getenvint( solidName_ekey.c_str(), 0 );
-    int num = num_solidName > 0 ? num_solidName : num_entityType  ;
+    int num_solidName_STARTING = NumberOfRotationSteps_solidName_STARTING( _solidName );
+
+    enum { UNRESOLVED, SOLIDNAME, SOLIDNAME_STARTING, ENTITY_TYPE } ;
+    int resolve = UNRESOLVED ;
+
+    int num = 0 ;    // resolution order from most to least specific
+    if( num_solidName > 0 )
+    {
+        num = num_solidName ;
+        resolve = SOLIDNAME ;
+    }
+    else if( num_solidName_STARTING > 0 )
+    {
+        num = num_solidName_STARTING ;
+        resolve = SOLIDNAME_STARTING ;
+    }
+    else if( num_entityType > 0 )
+    {
+        num = num_entityType ;
+        resolve = ENTITY_TYPE ;
+    }
 
     bool DUMP = ssys::getenvbool(_NumberOfRotationSteps_DUMP);
 
@@ -222,12 +258,61 @@ inline int U4Mesh::NumberOfRotationSteps(const char* _entityType, const char* _s
          << " solidName_ekey[" << solidName_ekey << "]"
          << " num_entityType " << num_entityType
          << " num_solidName " << num_solidName
+         << " num_solidName_STARTING " << num_solidName_STARTING
          << " num " << num
+         << " resolve " << resolve
          << "\n"
          ;
 
     return num  ;
 }
+
+/**
+U4Mesh::NumberOfRotationSteps_solidName_STARTING
+--------------------------------------------------
+
+Returns non-zero value when the solidName matches the value of
+several pfx envvars which are paired with corresponding val
+envvars that provide the integer value. The first matching
+envvar pair provides the value.
+
+Example of the envvar pairs with idx 0 and 1::
+
+    export U4Mesh__NumberOfRotationSteps_solidName_STARTING_pfx_0=s_EMFcoil_holder_ring
+    export U4Mesh__NumberOfRotationSteps_solidName_STARTING_val_0=480
+
+    export U4Mesh__NumberOfRotationSteps_solidName_STARTING_pfx_1=s_EMFcoil_holder_ring
+    export U4Mesh__NumberOfRotationSteps_solidName_STARTING_val_1=16
+
+The value from the first match is used
+
+MAYBE: use sregex.h to generalize this if the need arises
+**/
+
+inline int U4Mesh::NumberOfRotationSteps_solidName_STARTING( const char* _solidName )
+{
+    int num = 0 ;
+    for(int idx=0 ; idx < 3 ; idx++)
+    {
+        std::string pfx_ekey = FormEKey(U4Mesh__NumberOfRotationSteps, "solidName", "STARTING_pfx", idx );
+        std::string val_ekey = FormEKey(U4Mesh__NumberOfRotationSteps, "solidName", "STARTING_val", idx );
+        bool has_pfx = ssys::hasenv_(pfx_ekey.c_str()) ;
+        bool has_val = ssys::hasenv_(val_ekey.c_str()) ;
+        bool has_both = has_pfx && has_val ;
+        if(!has_both) continue ;
+        std::string pfx = ssys::getenvvar( pfx_ekey.c_str(), "" );\
+        const char* q = pfx.c_str();
+        bool match = sstr::StartsWith(_solidName,q);
+        if(match)
+        {
+            num  = ssys::getenvint( val_ekey.c_str(), 0 );
+            break ;
+        }
+    }
+    return num ;
+}
+
+
 
 inline G4Polyhedron* U4Mesh::CreatePolyhedron(const G4VSolid* solid, int numberOfRotationSteps )  // static
 {

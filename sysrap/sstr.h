@@ -216,6 +216,8 @@ same chars as the query string *q*, eg::
     s : abcdefg
     q : abcd
 
+    ssstr::StartsWith("abcdefg", "abcd" ) == true
+
 **/
 
 inline bool sstr::StartsWith( const char* s, const char* q)  // synonym for sstr::MatchStart

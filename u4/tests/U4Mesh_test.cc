@@ -21,29 +21,29 @@ U4Mesh_test.cc
 #include "G4Cons.hh"
 #include "G4Tubs.hh"
 
+#include "sstr.h"
 #include "U4Mesh.h"
 
 
-int main()
+G4VSolid* MakeSolid(const char* ekey)
 {
-    char* SOLID = getenv("SOLID");
+    char* SOLID = getenv(ekey);
     if(!SOLID) return 0 ;
 
     double extent = 100. ;
-    //double extent = 1. ;
 
     //G4Polyhedron::SetNumberOfRotationSteps(24);
 
     G4VSolid* solid = nullptr ;
-    if(     strcmp(SOLID,"Orb")==0)
+    if(sstr::StartsWith(SOLID,"Orb"))
     {
         solid = new G4Orb(SOLID, extent) ;
     }
-    else if(strcmp(SOLID,"Box")==0)
+    else if(sstr::StartsWith(SOLID,"Box"))
     {
         solid = new G4Box(SOLID, extent, extent, extent ) ;
     }
-    else if(strcmp(SOLID,"Cons")==0)
+    else if(sstr::StartsWith(SOLID,"Cons"))
     {
         double rmin1 = 0. ;
         double rmax1 = extent*0.5 ;
@@ -55,7 +55,7 @@ int main()
 
         solid = new G4Cons(SOLID,rmin1, rmax1, rmin2, rmax2, dz, sphi, dphi );
     }
-    else if(strcmp(SOLID,"Tubs")==0)
+    else if(sstr::StartsWith(SOLID,"Tubs"))
     {
         double rmin = 0. ;
         double rmax = extent ;
@@ -65,7 +65,7 @@ int main()
 
         solid = new G4Tubs(SOLID,rmin, rmax, dz, sphi, dphi );
     }
-    else if(strcmp(SOLID,"Torus")==0)
+    else if(sstr::StartsWith(SOLID,"Torus"))
     {
         double rmin = 0. ;
         double rmax = extent/2. ;
@@ -74,7 +74,7 @@ int main()
         double dphi = 2.*M_PI ;
         solid = new G4Torus(SOLID, rmin, rmax, rtor, sphi, dphi) ;
     }
-    else if(strcmp(SOLID,"Tet")==0)
+    else if(sstr::StartsWith(SOLID,"Tet"))
     {
         double e = extent ;
         G4ThreeVector p1(e,  e,  e);
@@ -85,7 +85,14 @@ int main()
         solid = new G4Tet(SOLID, p1, p2, p3, p4, &degenerate ) ;
         assert( !degenerate );
     }
+    return solid ;
+}
 
+
+
+int main()
+{
+    G4VSolid* solid = MakeSolid("SOLID");
 
     if(!solid) return 0 ;
 
