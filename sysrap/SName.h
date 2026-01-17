@@ -74,21 +74,22 @@ struct SName
     int findIndex(const char* q, bool starting, std::ostream* out  ) const ;
 
     void findIndicesStarting(std::vector<unsigned>& idxs, const char* name_start ) const ;
-    void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, std::ostream* out ) const ;
+    void findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, std::vector<std::string>* qq_missing, std::ostream* out ) const ;
+
     static void SortUnique( std::vector<unsigned>& v );
 
 
     bool hasName(  const char* q, bool starting, std::ostream* out=nullptr ) const ;
-    bool hasNames( const char* qq, char delim=',', const char* prefix=nullptr,  std::ostream* out=nullptr ) const ;
-    bool hasNames( const std::vector<std::string>& qq,                          std::ostream* out=nullptr ) const ;
+    bool hasNames( const char* qq, char delim=',', const char* prefix=nullptr,  std::vector<std::string>* qq_missing=nullptr, std::ostream* out=nullptr ) const ;
+    bool hasNames( const std::vector<std::string>& qq, std::vector<std::string>* qq_missing=nullptr,  std::ostream* out=nullptr ) const ;
 
 
     void findIndicesMatch(std::vector<unsigned>& idxs, const char* query, char qt='S' ) const ;
     std::string descIndices(const std::vector<unsigned>& idxs) const ;
 
 
-    const char* getIDXListFromNames( const char* names, char delim=','    , const char* prefix=nullptr, std::ostream* out=nullptr ) const ;
-    const char* getIDXListFromNames( const std::vector<std::string>& names, const char* prefix=nullptr, std::ostream* out=nullptr ) const ;
+    const char* getIDXListFromNames( const char* qq,  char delim=','   , const char* prefix=nullptr, std::vector<std::string>* qq_missing=nullptr, std::ostream* out=nullptr ) const ;
+    const char* getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix=nullptr, std::vector<std::string>* qq_missing=nullptr, std::ostream* out=nullptr ) const ;
     const char* getIDXListFromContaining( const char* names_containing="_virtual0x", const char* prefix=nullptr ) const;
     static const char* IDXList(const std::vector<unsigned>& idxs, const char* prefix=nullptr );
 
@@ -401,7 +402,7 @@ the names to be found, as they will often not be there.
 
 **/
 
-inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, std::ostream* out ) const
+inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::vector<std::string>& qq, std::vector<std::string>* qq_missing, std::ostream* out ) const
 {
     unsigned nqq = qq.size();
 
@@ -424,7 +425,14 @@ inline void SName::findIndicesFromNames(std::vector<unsigned>& idxs, const std::
         {
             int idx = findIndex(q, false, out ) ;
             bool found = idx > -1 ;
-            if(found) idxs.push_back(idx) ;
+            if(found)
+            {
+                idxs.push_back(idx) ;
+            }
+            else
+            {
+                if(qq_missing) qq_missing->push_back(q);
+            }
         }
         else
         {
@@ -469,7 +477,7 @@ inline bool SName::hasName(  const char* q, bool starting, std::ostream* out ) c
 
 
 
-inline bool SName::hasNames( const char* qq_, char delim, const char* prefix, std::ostream* out ) const
+inline bool SName::hasNames( const char* qq_, char delim, const char* prefix, std::vector<std::string>* qq_missing, std::ostream* out ) const
 {
     const char* uqq = qq_ + ( prefix ? strlen(prefix) : 0 ) ;
     if(out) *out
@@ -481,19 +489,21 @@ inline bool SName::hasNames( const char* qq_, char delim, const char* prefix, st
 
     std::vector<std::string> qq;
     sstr::SplitTrimSuppress( uqq, delim, qq );   // handles filepath: ELV
-    return hasNames(qq, out );
+    return hasNames(qq, qq_missing, out );
 }
 
 
-inline bool SName::hasNames( const std::vector<std::string>& qq, std::ostream* out) const
+inline bool SName::hasNames( const std::vector<std::string>& qq, std::vector<std::string>* qq_missing, std::ostream* out) const
 {
     std::vector<unsigned> idxs ;
-    findIndicesFromNames(idxs, qq, out );
+    findIndicesFromNames(idxs, qq, qq_missing, out );
     bool has_all = qq.size() == idxs.size() ;
     if(out) *out
         << "SName::hasNames.qq "
         << " qq.size " << qq.size()
         << " idxs.size " << idxs.size()
+        << " qq_missing " << ( qq_missing ? "YES" : "NO" )
+        << " qq_missing.size " << ( qq_missing ? qq_missing->size() : -1 )
         << " has_all " << has_all
         << std::endl
         ;
@@ -566,21 +576,33 @@ Returns a comma delimited string list of indices prefixed with the input prefix 
 
 **/
 
-inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix, std::ostream* out ) const
+inline const char* SName::getIDXListFromNames( const char* names_, char delim, const char* prefix, std::vector<std::string>* qq_missing, std::ostream* out ) const
 {
     const char* unames = prefix == nullptr ?  names_ : names_ + strlen(prefix ) ;
     std::vector<std::string> names ;
     sstr::SplitTrimSuppress(unames, delim, names);  // handles unames with newlines
 
 
-    return getIDXListFromNames( names, prefix, out );
+    return getIDXListFromNames( names, prefix, qq_missing, out );
 }
-inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix, std::ostream* out ) const
+
+/**
+SName::getIDXListFromNames
+----------------------------
+
+Ordinarily when the *qq* strings do not contain the STARTING_ token eg "^"
+then an assert insists all names must be found.
+However when a pointer to a vector of missing names is provided *qq_missing*
+this requirement is lifted.
+**/
+
+
+inline const char* SName::getIDXListFromNames( const std::vector<std::string>& qq, const char* prefix, std::vector<std::string>* qq_missing, std::ostream* out ) const
 {
-    bool require_all_names = !Has_STARTING(qq);
+    bool require_all_names = !Has_STARTING(qq) && qq_missing == nullptr ;
 
     std::vector<unsigned> idxs ;
-    findIndicesFromNames(idxs, qq, out );
+    findIndicesFromNames(idxs, qq, qq_missing, out );
 
     if(require_all_names)
     {
