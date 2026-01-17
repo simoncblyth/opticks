@@ -570,7 +570,9 @@ not torch ones so needs some experimentation to see what approach to take.
 
 void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4Track* track )
 {
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+#elif WITH_CUSTOM4
     C4Pho* label = C4TrackInfo::GetRef(track);
 #else
     spho* label = STrackInfo::GetRef(track);
@@ -579,7 +581,9 @@ void U4Recorder::PreUserTrackingAction_Optical_GetLabel( spho& ulabel, const G4T
     if( label == nullptr ) // happens with torch gensteps and input photons
     {
         PreUserTrackingAction_Optical_FabricateLabel(track) ;
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+        label = C4TrackInfo<C4Pho>::GetRef(track);
+#elif WITH_CUSTOM4
         label = C4TrackInfo::GetRef(track);
 #else
         label = STrackInfo::GetRef(track);
@@ -615,7 +619,9 @@ void U4Recorder::PreUserTrackingAction_Optical_FabricateLabel( const G4Track* tr
     U4Track::SetFabricatedLabel(track);
 #endif
 
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+#elif WITH_CUSTOM4
     C4Pho* label = C4TrackInfo::GetRef(track);
 #else
     spho* label = STrackInfo::GetRef(track);
@@ -655,7 +661,9 @@ this does not handle the case of the track not being labelled.
 
 void U4Recorder::GetLabel( spho& ulabel, const G4Track* track )
 {
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+#elif WITH_CUSTOM4
     C4Pho* label = C4TrackInfo::GetRef(track);
 #else
     spho* label = STrackInfo::GetRef(track);

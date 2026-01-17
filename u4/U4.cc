@@ -342,7 +342,9 @@ unexpected labels.
 
 void U4::GenPhotonAncestor( const G4Track* aTrack )
 {
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    ancestor = C4TrackInfo<C4Pho>::Get(aTrack) ;
+#elif WITH_CUSTOM4
     ancestor = C4TrackInfo::Get(aTrack) ;
 #else
     ancestor = STrackInfo::Get(aTrack) ;
@@ -404,7 +406,9 @@ void U4::GenPhotonEnd( int genloop_idx, G4Track* aSecondaryTrack )
     if(dump) std::cout << "U4::GenPhotonEnd " << secondary.desc() << std::endl ;
 #endif
 
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    C4TrackInfo<C4Pho>::Set(aSecondaryTrack, secondary );
+#elif WITH_CUSTOM4
     C4TrackInfo::Set(aSecondaryTrack, secondary );
 #else
     STrackInfo::Set(aSecondaryTrack, secondary );

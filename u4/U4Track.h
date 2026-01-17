@@ -98,7 +98,10 @@ inline void U4Track::SetFabricatedLabel(const G4Track* track)
     assert( trackID >= 0 );
     G4Track* _track = const_cast<G4Track*>(track);
 
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    C4Pho fab = C4Pho::Fabricate(trackID);
+    C4TrackInfo<C4Pho>::Set(_track, fab );
+#elif WITH_CUSTOM4
     C4Pho fab = C4Pho::Fabricate(trackID);
     C4TrackInfo::Set(_track, fab );
 #else
@@ -109,7 +112,9 @@ inline void U4Track::SetFabricatedLabel(const G4Track* track)
 
 inline std::string U4Track::Desc(const G4Track* track)
 {
-#ifdef WITH_CUSTOM4
+#ifdef WITH_CUSTOM4_OLD
+    C4Pho* label = C4TrackInfo<C4Pho>::GetRef(track);
+#elif WITH_CUSTOM4
     C4Pho* label = C4TrackInfo::GetRef(track);
 #else
     spho* label = STrackInfo::GetRef(track);

@@ -34,14 +34,25 @@ target_compile_definitions( ${TGT} PRIVATE MOCK_CURAND )
 target_link_libraries(${TGT} U4)
 install(TARGETS ${TGT} DESTINATION lib)
 
+# Get the private definitions from the main U4 library target
+get_target_property(MAIN_DEFS U4 COMPILE_DEFINITIONS)
+
+
+set(TEST_SOURCES_USING_TRACKINFO
+
+   Deprecated_U4PhotonInfoTest.cc
+   U4TrackInfoTest.cc
+   U4TrackTest.cc
+
+)
+
+
 set(TEST_SOURCES
+
    U4Custom4Test.cc
    U4NistManagerTest.cc
    U4MaterialTest.cc
    U4MaterialPropertyVectorTest.cc
-   Deprecated_U4PhotonInfoTest.cc
-   U4TrackInfoTest.cc
-   U4TrackTest.cc
    U4GDMLTest.cc
    U4GDMLReadTest.cc
    U4PhysicalConstantsTest.cc
@@ -91,10 +102,28 @@ set(SLOW_SOURCES
    U4SimtraceSimpleTest.cc
 )
 
+
+foreach(SRC ${TEST_SOURCES_USING_TRACKINFO})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} U4)
+
+    target_compile_definitions(${TGT} PRIVATE ${MAIN_DEFS})
+
+    install(TARGETS ${TGT} DESTINATION lib)
+
+    add_test(
+       NAME ${name}.${TGT}
+       COMMAND bash U4TestRunner.sh ${TGT}
+    )
+endforeach()
+
+
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} U4)
+    target_compile_definitions(${TGT} PRIVATE ${MAIN_DEFS})
     install(TARGETS ${TGT} DESTINATION lib)
 
     add_test(

@@ -60,13 +60,19 @@ find_package(PMTSim_standalone CONFIG)
 
 
 
+if(Custom4_FOUND)
+   set(CUSTOM4_VERSION_CODE ${Custom4_FIND_VERSION_MAJOR}${Custom4_FIND_VERSION_MINOR}${Custom4_FIND_VERSION_PATCH})
+endif()
+
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_standalone_FOUND       : ${PMTSim_standalone_FOUND}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_VERSION     : ${PMTSim_VERSION}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND      : ${Custom4_FOUND}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION    : ${Custom4_VERSION}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_LIBRARY_DIR    : ${Custom4_LIBRARY_DIR}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : GDXML_FOUND      : ${GDXML_FOUND}")
-message(STATUS "${CMAKE_CURRENT_LIST_FILE} : GDXML_VERSION    : ${GDXML_VERSION}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : PMTSim_VERSION       : ${PMTSim_VERSION}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND        : ${Custom4_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION      : ${Custom4_VERSION}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FIND_VERSION_MAJOR      : ${Custom4_FIND_VERSION_MAJOR}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION_CODE : ${Custom4_VERSION_CODE}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_LIBRARY_DIR  : ${Custom4_LIBRARY_DIR}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : GDXML_FOUND          : ${GDXML_FOUND}")
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : GDXML_VERSION        : ${GDXML_VERSION}")
 
 
 
@@ -212,10 +218,23 @@ target_compile_definitions( ${name} PRIVATE G4USE_STD11 )
 target_compile_definitions( ${name} PRIVATE STANDALONE )
 
 
+
+
 if(Custom4_FOUND)
-    target_link_libraries( ${name} PUBLIC Custom4::Custom4 )
-    target_compile_definitions( ${name} PRIVATE WITH_CUSTOM4 )  # MINTING A DEF ? MAYBE COMES WITH THE TARGET ANYHOW
+    target_link_libraries(${name} PUBLIC Custom4::Custom4)
+    target_compile_definitions(${name} PRIVATE WITH_CUSTOM4)
+
+    set(Custom4_VERSION_TRANSITION "0.1.8")
+    if(Custom4_VERSION VERSION_LESS_EQUAL ${Custom4_VERSION_TRANSITION})
+        target_compile_definitions(${name} PRIVATE WITH_CUSTOM4_OLD)
+        message(STATUS "${name}: Custom4 version ${Custom4_VERSION} <= ${Custom4_VERSION_TRANSITION}, adding WITH_CUSTOM4_OLD")
+    else()
+        message(STATUS "${name}: Custom4 version NOT: ${Custom4_VERSION} <= ${Custom4_VERSION_TRANSITION}, NOT:adding WITH_CUSTOM4_OLD")
+    endif()
 endif()
+
+
+
 
 if(PMTSim_standalone_FOUND)
     target_link_libraries( ${name} PUBLIC Opticks::PMTSim_standalone )
