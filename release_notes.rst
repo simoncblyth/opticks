@@ -8,6 +8,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.5.8  | 58  | 2026/01/17 | add WITH_CUSTOM4_OLD to get u4 to work with default Custom4 v0.1.8 prior to removing C4TrackInfo template                                                     |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.5.7  | 57  | 2026/01/15 | added "lite" photon and hit, implement GPU hit merging with thrust::sort_by_key and thrust::reduce_by_key, network client prep, multiunion transform bug fix  |
 |         |     |            | DO NOT USE : TARBALL REFERENCES NON-DISTRIBUTED CUSTOM4 EXTERNAL PATH                                                                                         |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -82,6 +84,13 @@ Snapshot Tags History
 | v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                                                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
+
+v0.5.8 2026/01/17 : add WITH_CUSTOM4_OLD to get u4 to work with default Custom4 v0.1.8 prior to removing C4TrackInfo template
+------------------------------------------------------------------------------------------------------------------------------
+
+* 2026-01-17 a678c41c2 - add to u4 WITH_CUSTOM4_OLD that is defined for version less that or equal to 0.1.8 ie with the templated C4TrackInfo, this allows Opticks to again work with the 0.1.8 prior to the move to non-templated C4TrackInfo
+* 2026-01-17 9bc1aca64 - add om-cmake-prefix-path-check used from okdist-- to prevent creating distrib tarballs that reference non-distributed external paths
+* 2026-01-17 b30484da7 - loosen requirement that all ELV names are found, instead just warn of the missing names
 
 
 v0.5.7 2026/01/15 : added "lite" photon and hit, implement GPU hit merging with thrust::sort_by_key and thrust::reduce_by_key, network client prep, multiunion transform bug fix
