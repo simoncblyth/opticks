@@ -157,8 +157,8 @@ under the installation prefix::
     ctest --output-on-failure  ## run them all
 
 
-Unfortunately running ctest from readonly directory 
-like cvmfs does not work, see 
+Unfortunately running ctest from readonly directory
+like cvmfs does not work, see
 
 * https://gitlab.kitware.com/cmake/cmake/-/issues/23231
 
@@ -376,7 +376,13 @@ okdist-lst(){
     esac
 }
 
+
 okdist--(){
+
+   if ! ( om- ; om-cmake-prefix-path-check ) ; then
+       echo "$BASH_SOURCE : ABORT AS om-cmake-prefix-path-check SHOWS THAT CMAKE_PREFIX_PATH CONTAINS NON-DISTRIBUTABLE PATHS"
+       return 1
+   fi
 
    okdist-install-update
    okdist-install-extras

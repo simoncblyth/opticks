@@ -9,6 +9,7 @@ Snapshot Tags History
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
 | v0.5.7  | 57  | 2026/01/15 | added "lite" photon and hit, implement GPU hit merging with thrust::sort_by_key and thrust::reduce_by_key, network client prep, multiunion transform bug fix  |
+|         |     |            | DO NOT USE : TARBALL REFERENCES NON-DISTRIBUTED CUSTOM4 EXTERNAL PATH                                                                                         |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.5.6  | 56  | 2025/10/29 | fix PMT inconsistency bug, file writing changes for production invokation, planning libcurl client                                                            |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+

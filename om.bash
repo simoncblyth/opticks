@@ -29,6 +29,54 @@ om-env(){  olocal- ; opticks- ;
      oe- ;
   fi
 }
+
+
+
+om-cmake-prefix-path-check(){
+   : when making a distribution this should not list any paths
+   : as they will not work remotely
+   local paths=$(echo $CMAKE_PREFIX_PATH | tr ":" "\n" )
+   local path
+   local prefix=$OPTICKS_PREFIX
+   local cvmfs=/cvmfs
+
+   for path in $paths ; do
+      # Logic: Path does not start with prefix AND does not start with cvmfs
+      if [[ "$path" != "$prefix"* ]] && [[ "$path" != "$cvmfs"* ]]; then
+         printf "NON-STANDARD: %s\n" "$path"
+      fi
+   done
+}
+
+
+om-cmake-prefix-path-check(){
+   : when making a distribution this should not list any paths
+   : as they will not work remotely
+   local paths=$(echo $CMAKE_PREFIX_PATH | tr ":" "\n" )
+   local path
+   local prefix=$OPTICKS_PREFIX
+   local cvmfs=/cvmfs
+   local count=0
+
+   for path in $paths ; do
+      [[ -z "$path" ]] && continue
+
+      # If path is NOT prefix AND NOT cvmfs
+      if [[ "$path" != "$prefix"* ]] && [[ "$path" != "$cvmfs"* ]]; then
+         printf "NON-STANDARD: %s\n" "$path"
+         ((count++))
+      fi
+   done
+
+   [[ $count -eq 0 ]] && return 0 || return 1
+}
+
+
+
+
+
+
+
 om-usage(){ cat << EOU
 
 OM : Opticks Minimal Approach to Configuring and Building
