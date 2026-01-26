@@ -250,6 +250,7 @@ struct sphoton
        orient_boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ;
     }
 
+#ifdef WITH_LOCALIZE
     template<typename T>
     SPHOTON_METHOD void localize(sphoton& l, const glm::tmat4x4<T>& tr, bool normalize) const
     {
@@ -270,7 +271,7 @@ struct sphoton
         if(normalize) l_pol = glm::normalize(l_pol);
         l.pol = make_float3(l_pol.x, l_pol.y, l_pol.z);
     }
-
+#endif
 
 
     struct key_functor

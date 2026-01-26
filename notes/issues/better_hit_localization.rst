@@ -53,6 +53,83 @@ HMM: need to merge this branch to make sense of localization::
 
 
 
+From blyth-OJ-pmt-hit-type-2-for-muon-hits
+----------------------------------------------
+
+::
+
+    438 void junoSD_PMT_v2_Opticks::EndOfEvent_CollectFullHits_premerged(int eventID, const SEvt* sev, const sphoton* hit, size_t num_hit )
+    439 {
+    440     SProf::Add("junoSD_PMT_v2_Opticks__EndOfEvent_CollectFullHits_premerged_HEAD");
+    441     junoHit_PMT_Collection* hitCollection = m_jpmt->getHitCollection() ;
+    442     assert( hitCollection );
+    443 
+    444     for(size_t i=0 ; i < num_hit ; i++)
+    445     {
+    446         const sphoton& p = hit[i];
+    447         sphoton l = p ;
+    448         sev->localize_photon_inplace(l);
+    449 
+    450         junoHit_PMT* hit = new junoHit_PMT();
+    451         PopulateFullHit(hit, l, p );
+    452         hitCollection->insert(hit);
+    453     }
+    454     std::string anno = SProf::Annotation("hit",num_hit);
+    455     SProf::Add("junoSD_PMT_v2_Opticks__EndOfEvent_CollectFullHits_premerged_TAIL", anno.c_str());
+    456 }
+
+
+    5033 void SEvt::localize_photon_inplace( sphoton& p ) const
+    5034 {
+    5035     assert(tree);
+    5036     tree->localize_photon_inplace(p);
+    5037 }
+
+
+    6791 /**
+    6792 stree::localize_photon_inplace
+    6793 --------------------------------
+    6794 
+    6795 Argument photon is assumed to be a copy of a global frame photon.
+    6796 This method transforms pos, mom, pol according to the transform
+    6797 looked up from the iindex.
+    6798 
+    6799 similar to SEvt::getLocalHit
+    6800 
+    6801 **/
+    6802 
+    6803 
+    6804 inline void stree::localize_photon_inplace( sphoton& p ) const
+    6805 {
+    6806     unsigned iindex   = p.iindex() ;
+    6807     assert( iindex != 0xffffffffu );
+    6808     const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
+    6809     assert( tr );
+    6810 
+    6811     bool normalize = true ;
+    6812     p.transform( *tr, normalize );   // inplace transforms l (pos, mom, pol) into local frame
+    6813 
+    6814 #ifdef NDEBUG
+    6815 #else
+    6816     unsigned sensor_identifier = p.pmtid() ;
+    6817 
+    6818     glm::tvec4<int64_t> col3 = {} ;
+    6819     strid::Decode( *tr, col3 );
+    6820 
+    6821     sphit ht = {};
+    6822     ht.iindex            = col3[0] ;
+    6823     ht.sensor_identifier = col3[2] ;
+    6824     ht.sensor_index      = col3[3] ;
+    6825 
+    6826     assert( ht.iindex == iindex );
+    6827     assert( ht.sensor_identifier == sensor_identifier );
+    6828 #endif
+    6829 
+    6830 }
+
+
+
+
 
 
 OPTICKS_MODE_MERGE OPTICKS_MODE_LITE
