@@ -714,6 +714,16 @@ int sphoton_test::set_lpos()
     return 0 ;
 }
 
+/**
+sphoton_test::MockupPhotonsWithContiguousIIndex
+-------------------------------------------------
+
+Creates an array of *ni* "starts[-1]" photons.
+For the i-th photon the index of the *starts* ranges
+that *i* is part of gives a *j* index that yields 
+an *ii* result.
+
+**/
 
 
 NP* sphoton_test::MockupPhotonsWithContiguousIIndex(const std::vector<size_t>& starts) // static
@@ -735,6 +745,8 @@ NP* sphoton_test::MockupPhotonsWithContiguousIIndex(const std::vector<size_t>& s
                 break ;
             }
         }
+        
+
         pp[i].set_iindex__( ii );
     }
     return photons ;
