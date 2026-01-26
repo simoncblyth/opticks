@@ -124,9 +124,13 @@ https://code.ihep.ac.cn/JUNO/offline/junosw/-/merge_requests/1061
 /**
 The below WITH_MPMT line needs to be commented for use with older branches
 to avoid runtime translation asserts
+
+Now that MPMT has been merged, WITH_MPMT should normally be defined, but
+still older branches from before MPMT was merged may need to comment it
+
 **/
 
-//#define WITH_MPMT 1
+#define WITH_MPMT 1
 
 namespace s_pmt
 {
