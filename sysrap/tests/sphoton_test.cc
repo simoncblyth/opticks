@@ -56,6 +56,9 @@ struct sphoton_test
     static int GetIndexBeyondCursorContiguousIIndex();
     static int GetContiguousIIndexStartIndices();
 
+    template<typename T> static int localize_(sphoton& l, const sphoton& p, bool normalize );
+    static int localize();
+
     static int main();
 };
 
@@ -720,7 +723,7 @@ sphoton_test::MockupPhotonsWithContiguousIIndex
 
 Creates an array of *ni* "starts[-1]" photons.
 For the i-th photon the index of the *starts* ranges
-that *i* is part of gives a *j* index that yields 
+that *i* is part of gives a *j* index that yields
 an *ii* result.
 
 **/
@@ -745,7 +748,7 @@ NP* sphoton_test::MockupPhotonsWithContiguousIIndex(const std::vector<size_t>& s
                 break ;
             }
         }
-        
+
 
         pp[i].set_iindex__( ii );
     }
@@ -796,6 +799,45 @@ int sphoton_test::GetContiguousIIndexStartIndices()
     return 0 ;
 }
 
+template<typename T>
+int sphoton_test::localize_(sphoton& l, const sphoton& p, bool normalize )
+{
+    std::array<T, 16> src = {{
+         1.,     0.,     0.,     0.,
+         0.,     1.,     0.,     0.,
+         0.,     0.,     1.,     0.,
+         100., 200.,   300.,     1.  }} ;
+
+    glm::tmat4x4<T> tr(1.) ;
+    memcpy( glm::value_ptr(tr), src.data(), sizeof(T)*16 );
+    p.localize( l, tr, normalize );
+
+    return 0 ;
+}
+
+int sphoton_test::localize()
+{
+    sphoton p = {} ;
+    p.pos = { 0.f, 0.f, 0.f } ;
+    p.mom = { 0.f, 0.f, 1.f } ;
+    p.pol = { 0.f, 1.f, 0.f } ;
+
+    sphoton l = {} ;
+
+    int rc = localize_<double>(l,p, false);
+
+    std::cout
+        << "localize"
+        << "\n"
+        << "p " << p.desc()
+        << "\n"
+        << "l " << l.desc()
+        << "\n"
+        ;
+
+    return rc ;
+}
+
 
 
 
@@ -828,6 +870,7 @@ int sphoton_test::main()
 
     if(ALL||0==strcmp(TEST, "GetIndexBeyondCursorContiguousIIndex")) rc += GetIndexBeyondCursorContiguousIIndex();
     if(ALL||0==strcmp(TEST, "GetContiguousIIndexStartIndices"))      rc += GetContiguousIIndexStartIndices();
+    if(ALL||0==strcmp(TEST, "localize"))                             rc += localize();
 
     return rc ;
 }

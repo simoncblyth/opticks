@@ -83,6 +83,12 @@ Workflow for adding Opticks tags:
 
    *  SSH into the OJ machine "ssh O" and invoke ./oj_reference_deploy_to_cvmfs.sh
 
+   * sheduled OJ build kicks off at 17:00 each day, so do the OK release
+     before 16:50 to be sure of the scheduled OJ build picking up the latest release
+
+   * follow in gitlab "Pipeline schedules" by clicking on "Last Pipeline" icon to get
+     to the builds page where can see the logs
+
 
 NB this simple script assumes single digit 0-9 major/minor/patch version integers
 

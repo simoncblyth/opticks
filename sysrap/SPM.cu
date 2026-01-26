@@ -112,8 +112,8 @@ simultaneously fit into VRAM.
 
 0. apply selection using count_if, allocate, copy_if
 1. special case time_window:0.f to just return selected without merging
-2. allocate `(uint64_t*)d_keys` and `(sphotonlite*)d_vals`
-3. populate d_keys using sphotonlite_key_functor and d_vals using copy_n
+2. allocate `(uint64_t*)d_keys`
+3. populate d_keys using T::key_functor and d_selected using copy_n
 4. sort_by_key arranging d_selected hits with same (id, timebucket) together
 5. allocate d_out_key d_out_val with space for num_in [HMM, COULD DOUBLE PASS TO REDUCE MEMORY PERHAPS?]
 6. reduce_by_key merging contiguous equal (id,timebucket) hits
@@ -191,7 +191,7 @@ template<typename T> void SPM::merge_partial_select(
     }
 
 
-    // 2. allocate `(uint64_t*)d_keys` and `(T*)d_vals`
+    // 2. allocate `(uint64_t*)d_keys`
 
     uint64_t* d_keys = nullptr;
     cudaMallocAsync(&d_keys, num_selected * sizeof(uint64_t),    stream);

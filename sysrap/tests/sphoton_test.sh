@@ -51,7 +51,8 @@ CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 #test=index
 #test=demoarray
 #test=GetIndexBeyondCursorContiguousIdentity
-test=GetContiguousIIndexStartIndices
+#test=GetContiguousIIndexStartIndices
+test=localize
 
 TEST=${TEST:-$test}
 export TEST

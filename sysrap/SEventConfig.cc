@@ -1421,12 +1421,18 @@ unsigned SEventConfig::HitComp() // static
 SEventConfig::HitCompOne
 -------------------------
 
+Canonical usage from::
+
+    SEvt::getHit
+    SEvt::getNumHit
+
+
 +-----------------------------------------------+--------------------------+---------------------+------------------+
 |   Mode                                        |   HitCompOne             |   HitCompOneName    |  Note            |
 +===============================================+==========================+=====================+==================+
 |    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=0   |  SCOMP_HIT               |   hit               |                  |
 +-----------------------------------------------+--------------------------+---------------------+------------------+
-|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=1   |  SCOMP_HITMERGED         |   hitmerged         |  JUST NOW IMPL   |
+|    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=1   |  SCOMP_HITMERGED         |   hitmerged         |                  |
 +-----------------------------------------------+--------------------------+---------------------+------------------+
 |    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=0   |  SCOMP_HITLITE           |   hitlite           |                  |
 +-----------------------------------------------+--------------------------+---------------------+------------------+

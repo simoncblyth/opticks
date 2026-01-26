@@ -250,6 +250,28 @@ struct sphoton
        orient_boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ;
     }
 
+    template<typename T>
+    SPHOTON_METHOD void localize(sphoton& l, const glm::tmat4x4<T>& tr, bool normalize) const
+    {
+        // promote float->T for transform then T->float for storage
+        glm::tvec4<T> p_pos(pos.x, pos.y, pos.z, T(1.f));
+        glm::tvec4<T> l_pos = tr * p_pos;
+        l.pos = make_float3(l_pos.x, l_pos.y, l_pos.z);
+
+        glm::tvec4<T> p_mom(mom.x, mom.y, mom.z, T(0.f));
+        glm::tvec4<T> l_mom_ = tr * p_mom;
+        glm::tvec3<T> l_mom(l_mom_);
+        if(normalize) l_mom = glm::normalize(l_mom);
+        l.mom = make_float3(l_mom.x, l_mom.y, l_mom.z);
+
+        glm::tvec4<T> p_pol(pol.x, pol.y, pol.z, T(0.f));
+        glm::tvec4<T> l_pol_ = tr * p_pol;
+        glm::tvec3<T> l_pol(l_pol_);
+        if(normalize) l_pol = glm::normalize(l_pol);
+        l.pol = make_float3(l_pol.x, l_pol.y, l_pol.z);
+    }
+
+
 
     struct key_functor
     {
@@ -1146,7 +1168,7 @@ SPHOTON_METHOD size_t sphoton::GetIndexBeyondCursorContiguousIIndex( const sphot
 sphoton::GetContiguousIIndexStartIndices
 -------------------------------------------
 
-Note that there is no need an equivalent sphotonlite implementation 
+Note that there is no need an equivalent sphotonlite implementation
 because the localization for sphotonlite is done directly.
 
 **/
