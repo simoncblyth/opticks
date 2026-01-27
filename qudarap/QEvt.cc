@@ -1155,6 +1155,19 @@ NP* QEvt::gatherHitLite_() const
 
 
 
+/**
+QEvt::PerLaunchMerge
+----------------------
+
+Canonical usage from::
+
+    QEvt::gatherHitMerged
+    QEvt::gatherHitLiteMerged
+
+Where those get invoked from SEvt::gather called from QSim::simulate
+
+**/
+
 template<typename T>
 NP* QEvt::PerLaunchMerge(sevent* evt, cudaStream_t stream ) // static
 {
