@@ -145,12 +145,28 @@ SUTIL_INLINE SUTIL_HOSTDEVICE unsigned long long min(unsigned long long a, unsig
 }
 
 
-/** lerp */
+
+
+
+/**
+lerp
+----
+
+For C++20 compilation have adopted the suggestion from Nicola Mori, although
+I did not succeed to reproduce the issue.
+
+notes/issues/cpp20_nicolamori_scuda_curand_math_lerp_conflict.rst
+
+**/
+
+#if __cplusplus <= 201703L
 SUTIL_INLINE SUTIL_HOSTDEVICE float lerp(const float a, const float b, const float t)
 {
   return a + t*(b-a);
 }
-
+#else
+using std::lerp;
+#endif
 
 
 
