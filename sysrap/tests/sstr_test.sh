@@ -19,7 +19,9 @@ bin=$TMP/$name
 
 
 #test=prefix_suffix
-test=ParseInt
+#test=ParseInt
+test=ExtractSize
+
 export TEST=${TEST:-$test}
 
 defarg="info_build_run"

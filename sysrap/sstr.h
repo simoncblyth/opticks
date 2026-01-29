@@ -11,6 +11,10 @@
 #include <algorithm>
 #include <csignal>
 
+#include <charconv> // std::from_chars
+#include <type_traits>
+
+
 struct sstr
 {
     enum { MATCH_ALL, MATCH_START, MATCH_END } ;
@@ -151,7 +155,13 @@ struct sstr
 
     static void truncated_copy( char* dst, const char* src, int dst_size );
     static void Extract( std::vector<long>& vals, const char* s );
-    static long ExtractLong( const char* s, long fallback );
+
+    template <typename T>
+    static void Extract_(std::vector<T>& vals, const char* s);
+
+
+    static long   ExtractLong( const char* s, long fallback );
+    static size_t ExtractSize( const char* s, size_t fallback );
 
 
     static bool LooksLikePath(const char* arg);
@@ -1196,20 +1206,106 @@ The 2nd strtol endptr arg increments p beyond each group of integer digits
 
 inline void sstr::Extract( std::vector<long>& vals, const char* s )  // static
 {
+    bool invalid = strlen(s) == 1 && ( s[0] == '+' || s[0] == '-' ) ;
+    if(invalid) return ;
+
     char* s0 = strdup(s);
     char* p = s0 ;
+
     while (*p)
     {
-        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-') vals.push_back(strtol(p, &p, 10)) ;
-        else p++ ;
+        if( (*p >= '0' && *p <= '9') || *p == '+' || *p == '-')
+        {
+            // EDGE CASE PROTECTION:
+            // If it's a sign, make sure the NEXT char is a digit.
+            // If it's just a sign followed by space or another sign, skip it.
+            if ((*p == '+' || *p == '-') && !(p[1] >= '0' && p[1] <= '9'))
+            {
+                p++;
+                continue;
+            }
+
+            char* endptr;
+            long val = strtol(p, &endptr, 10);
+
+            // Ensure we actually consumed characters
+            if (p != endptr)
+            {
+                vals.push_back(val);
+                p = endptr;
+            }
+            else
+            {
+                p++;
+            }
+        }
+        else
+        {
+            p++ ;
+        }
     }
     free(s0);
 }
+
+
+/**
+sstr::Extract_
+---------------
+
+When T is unsigned/size_t skip signs in the string but still parse digits.
+
+**/
+
+template <typename T>
+inline void sstr::Extract_(std::vector<T>& vals, const char* s)
+{
+    if (!s) return;
+    const char* p = s;
+    const char* end = s + std::strlen(s);
+
+    while (p < end)
+    {
+        if ((*p >= '0' && *p <= '9') || *p == '+' || *p == '-')
+        {
+            const char* parse_start = p;
+            if constexpr (std::is_unsigned_v<T>)  // compile time variation
+            {
+                if (*p == '+' || *p == '-') parse_start++; // Skip sign for unsigned parsing
+            }
+
+            T val;
+            auto [ptr, ec] = std::from_chars(parse_start, end, val);
+
+            if (ec == std::errc()) {
+                vals.push_back(val);
+                p = ptr; // Advance to where the number ended
+            } else {
+                p++; // It was just a lone '+' or '-' without digits
+            }
+        }
+        else
+        {
+            p++;
+        }
+    }
+}
+
+
+
 
 inline long sstr::ExtractLong( const char* s, long fallback ) // static
 {
     std::vector<long> vals;
     Extract(vals, s);
+    return vals.size() == 1 ? vals[0] : fallback ;
+}
+
+
+
+inline size_t sstr::ExtractSize( const char* s, size_t fallback ) // static
+{
+    std::vector<size_t> vals;
+    Extract_(vals, s);
     return vals.size() == 1 ? vals[0] : fallback ;
 }
 

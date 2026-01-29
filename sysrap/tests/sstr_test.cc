@@ -605,6 +605,7 @@ struct sstr_test
     static int StartsWithElem();
     static int split();
     static int ParseInt();
+    static int ExtractSize();
 
 
     static int Main();
@@ -734,6 +735,44 @@ int sstr_test::ParseInt()
     return 0 ;
 }
 
+int sstr_test::ExtractSize()
+{
+    std::vector<std::string> src = {{
+        "hello1",
+        "hello2",
+        "hello-1",
+        "hello10world",
+        "hello0world",
+        "hello0world1",
+        "helloworld",
+        "0",
+        "-1",
+        "+1",
+        "1",
+        "-",
+        "+",
+        "----",
+        "++++",
+        "-+-+-+",
+        "",
+    }} ;
+
+    for(unsigned i=0 ; i < src.size() ; i++)
+    {
+        const char* st = src[i].c_str();
+        size_t zval = sstr::ExtractSize(st, 0) ;
+        long   lval = sstr::ExtractLong(st, 0) ;
+        std::cout
+            << " st  " << std::setw(40) << st
+            << " zval " << std::setw(20) << zval
+            << " lval " << std::setw(20) << lval
+            << "\n"
+            ;
+    }
+    return 0 ;
+
+
+}
 
 
 int sstr_test::Main()
@@ -774,6 +813,8 @@ int sstr_test::Main()
     if(ALL||0==strcmp(TEST,"StartsWithElem")) rc += StartsWithElem();
     if(ALL||0==strcmp(TEST,"split"))          rc += split();
     if(ALL||0==strcmp(TEST,"ParseInt"))       rc += ParseInt();
+    if(ALL||0==strcmp(TEST,"ExtractSize"))    rc += ExtractSize();
+
 
     return rc ;
 }
