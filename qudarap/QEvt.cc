@@ -1372,8 +1372,6 @@ NP* QEvt::gatherComponent_(unsigned cmp) const
     NP* a = nullptr ;
     switch(cmp)
     {
-        //case SCOMP_GENSTEP:     a = getGenstep()     ; break ;
-        case SCOMP_GENSTEP:       a = gatherGenstepFromDevice() ; break ;
         case SCOMP_INPHOTON:      a = getInputPhoton()          ; break ;
         case SCOMP_PHOTON:        a = gatherPhoton()            ; break ;
         case SCOMP_PHOTONLITE:    a = gatherPhotonLite()        ; break ;
@@ -1391,6 +1389,9 @@ NP* QEvt::gatherComponent_(unsigned cmp) const
         case SCOMP_SIMTRACE:  a = gatherSimtrace() ; break ;
         case SCOMP_TAG:       a = gatherTag()      ; break ;
         case SCOMP_FLAT:      a = gatherFlat()     ; break ;
+        case SCOMP_GENSTEP:   a = gatherGenstepFromDevice() ; break ;
+#else
+        case SCOMP_GENSTEP:   a = getGenstep()     ; break ;
 #endif
     }
     return a ;
