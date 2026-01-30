@@ -1,8 +1,8 @@
 #pragma once
 
 /**
-sframe.h
-===========
+sframe.h : NEW CODE SHOULD NOT USE sframe.h : INSTEAD USE sfr.h
+==================================================================
 
 TODO: see if this can be replaced with sfr.h ?
 
@@ -109,6 +109,8 @@ struct sframe
     static sframe Load_(const char* path );
     static sframe Fabricate(float tx=0.f, float ty=0.f, float tz=0.f);
     static int PopulateFromRaw(sframe& fr, const char* raw, char delim);
+
+    // DO NOT ADD METHODS TO THIS : INSTEAD USE sfr.h
 
     void set_grid(const std::vector<int>& cegs, float gridscale);
     int ix0() const ;
@@ -414,6 +416,7 @@ inline int sframe::PopulateFromRaw(sframe& fr, const char* raw, char delim ) // 
 
     std::cout
         << "sframe::PopulateFromRaw"
+        << " raw [" << ( raw ? raw : "-" ) << "]"
         << " num_elem " << num_elem
         << " elem " << sstr::desc<double>(elem)
         << "\n"

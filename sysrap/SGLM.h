@@ -261,6 +261,7 @@ struct SYSRAP_API SGLM : public SCMD
     static SGLM* INSTANCE ;
     static SGLM* Get();
 
+    static constexpr const char* kTITLE = "TITLE" ;
     static constexpr const char* kWH = "WH" ;
     static constexpr const char* kCE = "CE" ;
     static constexpr const char* kEYE = "EYE" ;
@@ -295,6 +296,7 @@ struct SYSRAP_API SGLM : public SCMD
 
 
     // static defaults, some can be overridden in the instance
+    static const char* TITLE ;
     static glm::ivec2 WH ;
 
     static glm::vec4 CE ; // CE IS GEOMETRY NOT VIEW RELATED BUT ITS EXPEDIENT TO BE HERE
@@ -688,6 +690,7 @@ struct SYSRAP_API SGLM : public SCMD
 SGLM* SGLM::INSTANCE = nullptr ;
 SGLM* SGLM::Get(){  return INSTANCE ? INSTANCE : new SGLM  ; }
 
+const char* SGLM::TITLE = ssys::getenvvar(kTITLE, "TITLE") ;
 glm::ivec2 SGLM::WH = EVec2i(kWH,"1920,1080") ;
 
 glm::vec4  SGLM::CE = EVec4(kCE,"0,0,0,100", 100.f) ;
@@ -695,6 +698,7 @@ glm::vec4  SGLM::CE = EVec4(kCE,"0,0,0,100", 100.f) ;
 glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1", 1.f) ;
 glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1" , 1.f) ;
 glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0" , 0.f) ;
+
 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1");
 float      SGLM::TMIN = EValue<float>(kTMIN, "0.1");
@@ -851,6 +855,18 @@ inline void SGLM::init()
 
     constrain();
 }
+
+/**
+SGLM::setTreeScene
+-------------------
+
+This is invoked during initialization of some test executables,
+such as from::
+
+   CSGOptiXRenderInteractiveTest::init
+   sysrap/tests/SGLFW_SOPTIX_Scene_test.cc:main
+
+**/
 
 
 inline void SGLM::setTreeScene( stree* _tree, SScene* _scene )
@@ -1848,6 +1864,7 @@ The *title* is set as the cxr_min.sh OpenGL window title by SGLFW::renderloop_ta
 **/
 
 
+
 void SGLM::updateTitle()
 {
     std::stringstream ss ;
@@ -1855,7 +1872,8 @@ void SGLM::updateTitle()
        << fr.get_name()
        << " "
        << fr.desc_ce()
-       << " sglm.e(c2w*ori) [" << Present(e) << "] SGLM::updateTitle"
+       << " sglm.e(c2w*ori) [" << Present(e) << "]"
+       << " " << TITLE
        ;
     title = ss.str();
 }

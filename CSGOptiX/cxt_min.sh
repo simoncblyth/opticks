@@ -3,12 +3,18 @@ usage(){ cat << EOU
 cxt_min.sh : Simtrace Geometry Intersect Creation and Plotting
 ===============================================================
 
-CAUTION WITH LABELLING OF ELV PARTIAL GEOMETRIES. While partial geometries can be
-simtraced the meaning of the boundary and prim indices does not match
-the full geometry indices so the key labels will usually be incorrect.
+CAUTION WITH LABELLING OF ELV PARTIAL GEOMETRIES.
+While partial geometries can technically be simtraced the meaning of the boundary
+and prim indices does not match the full geometry indices so the key labels
+will often be incorrect but dangerously they will often not be entirely wrong.
+The sometimes subtle "corruption" of labelling can cause great confusion.
+
 The point of ELV geometry is for quick checks without persisting the
 geometry. So have to live with this limitation ?
 Use full geometry when want the key labels to be meaningful.
+
+TODO: store the active ELV with the simtrace metadata and check that no ELV was
+set from that metadata (not the envvar, as that can be changed anytime)
 
 
 
@@ -232,9 +238,9 @@ export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
 
 
-opticks_event_name=2dxz
+#opticks_event_name=2dxz
 #opticks_event_name=2dxz_tall_wide
-#opticks_event_name=2dxy
+opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -288,6 +294,7 @@ else
 
     elif [ "$OPTICKS_EVENT_NAME" == "2dxy" ]; then
 
+       #cegs=9:9:1:1000  ## a few in z for range finding
        cegs=9:9:0:1000
        export CEGS=$cegs
 

@@ -274,6 +274,7 @@ struct stree
 #endif
 
     static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
+    static constexpr const char* _AXIS_PFX = "AXIS:" ;
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
 
@@ -2182,6 +2183,11 @@ inline void stree::get_frame_f4( sframe& fr, int idx ) const
 stree::get_frame_moi
 ---------------------
 
+This is invoked from high level initialization stacks such as::
+
+    CSGOptiXRenderInteractiveTest::init
+    SGLM::setTreeScene
+
 Special cased MOI envvar starting "EXTENT:" normally MOI is of the below form::
 
     sWaterTube:0:-1
@@ -2191,10 +2197,27 @@ Special cased MOI envvar starting "EXTENT:" normally MOI is of the below form::
 
 inline sfr stree::get_frame_moi() const
 {
-    float _extent = sstr::StartsWith(MOI, _EXTENT_PFX) ? sstr::To<float>( MOI + strlen(_EXTENT_PFX) ) : 0.f ;
-    sfr mf =  _extent > 0.f ? sfr::MakeFromExtent<float>(_extent) : get_frame(MOI) ;
+    bool is_EXTENT = sstr::StartsWith(MOI, _EXTENT_PFX) ;
+    bool is_AXIS = sstr::StartsWith(MOI, _AXIS_PFX) ;
+
+    sfr mf = {} ;
+    if( is_EXTENT )
+    {
+        mf = sfr::MakeFromExtent<float>(  MOI + strlen(_EXTENT_PFX) );
+    }
+    else if( is_AXIS )
+    {
+        mf = sfr::MakeFromAxis<float>(MOI + strlen(_AXIS_PFX), ',');
+    }
+    else
+    {
+        mf = get_frame(MOI) ;  // normal form eg sWaterTube:0:-2
+    }
     return mf ;
 }
+
+
+
 
 
 /**
