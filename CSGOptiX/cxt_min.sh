@@ -192,7 +192,11 @@ else
 fi
 
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, use MOI bash function to setup/edit
-source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
+
+if [ -n "$USE_ELV" ]; then
+    source $HOME/.opticks/GEOM/ELV.sh 2>/dev/null  ## optionally set ELV envvar controlling included/excluded LV by name
+fi
+
 source $HOME/.opticks/GEOM/CUR.sh 2>/dev/null  ## optionally define CUR_ bash function, for controlling directory for screenshots
 source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally define AFOLD and/or BFOLD for adding event tracks to simtrace plots
 

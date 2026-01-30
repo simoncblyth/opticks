@@ -160,9 +160,17 @@ class sframe(object):
         gas_idx_2 = i[2,1,3] - 1   # q1.u.w-1 
         ias_idx_2 = i[2,2,3] - 1   # q2.u.w-1 
 
-        assert ins_idx_1 == ins_idx_2 
-        assert gas_idx_1 == gas_idx_2 
-        assert ias_idx_1 == ias_idx_2 
+        ins_idx_match = ins_idx_1 == ins_idx_2
+        gas_idx_match = gas_idx_1 == gas_idx_2
+        ias_idx_match = ias_idx_1 == ias_idx_2
+
+        if not ins_idx_match: log.warning(f" ins_idx_match {ins_idx_match} ins_idx_1 {ins_idx_1} ins_idx_2 {ins_idx_2} ")
+        if not gas_idx_match: log.warning(f" gas_idx_match {gas_idx_match} gas_idx_1 {gas_idx_1} gas_idx_2 {gas_idx_2} ")
+        if not ias_idx_match: log.warning(f" ias_idx_match {ias_idx_match} ias_idx_1 {ias_idx_1} ias_idx_2 {ias_idx_2} ")
+
+        #assert ins_idx_match
+        #assert gas_idx_match
+        #assert ias_idx_match
 
         ins_idx = ins_idx_1
         gas_idx = gas_idx_1

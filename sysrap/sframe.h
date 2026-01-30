@@ -99,6 +99,7 @@ struct sframe
     void cleanup();
 
     sfr spawn_lite() const ;
+    void populate( const sfr& l );
 
     void zero() ;
     bool is_zero() const ;
@@ -190,6 +191,9 @@ struct sframe
     void setTranslate(float x, float y, float z);
     void setTransform(const qat4* m2w_ );
 
+    void set_m2w(const glm::tmat4x4<double>& g_m2w);
+    void set_w2m(const glm::tmat4x4<double>& g_w2m);
+
 };
 
 
@@ -265,6 +269,18 @@ inline sfr sframe::spawn_lite() const
 
     return l ;
 }
+
+inline void sframe::populate( const sfr& l )
+{
+    set_m2w(l.m2w);
+    set_w2m(l.w2m);
+
+    ce.x = l.ce.x ;
+    ce.y = l.ce.y ;
+    ce.z = l.ce.z ;
+    ce.w = l.ce.w ;
+}
+
 
 
 
@@ -747,6 +763,30 @@ inline void sframe::setTransform(const qat4* m2w_ )  // UNTESTED
     qat4::copy(m2w, *m2w_ );
     qat4::copy(w2m, *w2m_ );
 }
+
+
+inline void sframe::set_m2w(const glm::tmat4x4<double>& g_m2w)
+{
+    const qat4* q_m2w = Tran<double>::ConvertFrom(g_m2w);
+    qat4::copy(m2w, *q_m2w);
+}
+inline void sframe::set_w2m(const glm::tmat4x4<double>& g_w2m)
+{
+    const qat4* q_w2m = Tran<double>::ConvertFrom(g_w2m);
+    qat4::copy(w2m, *q_w2m);
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 inline std::ostream& operator<<(std::ostream& os, const sframe& fr)
 {

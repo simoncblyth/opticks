@@ -33,7 +33,7 @@ struct sfr
     template<typename T>
     static sfr MakeFromAxis(const char* tpde, char delim=',');
     template<typename T>
-    static sfr MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm);
+    static sfr MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, T delta_ax_distance_mm );
 
 
     glm::tvec4<double>  ce  ;    //  4*8 = 32       0
@@ -167,6 +167,7 @@ inline sfr sfr::MakeFromAxis(const char* tpde, char delim)
     T phi_deg   = num_elem > 1 ? elem[1] : 0. ;
     T dist_mm   = num_elem > 2 ? elem[2] : 0. ;
     T extent_mm = num_elem > 3 ? elem[3] : 1000. ;
+    T delta_dist_mm   = num_elem > 4 ? elem[4] : 0. ;
 
     std::cout
         << "sfr::MakeFromAxis"
@@ -176,13 +177,13 @@ inline sfr sfr::MakeFromAxis(const char* tpde, char delim)
         << "\n"
         ;
 
-    return MakeFromAxis<T>( theta_deg, phi_deg, dist_mm, extent_mm );
+    return MakeFromAxis<T>( theta_deg, phi_deg, dist_mm, extent_mm, delta_dist_mm );
 }
 
 
 
 template<typename T>
-inline sfr sfr::MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm)
+inline sfr sfr::MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, T delta_ax_dist_mm )
 {
     std::cout
         << "sfr::MakeFromAxis"
@@ -190,6 +191,7 @@ inline sfr sfr::MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm)
         << " phi_deg " << phi_deg
         << " ax_dist_mm " << ax_dist_mm
         << " extent_mm " << extent_mm
+        << " delta_ax_dist_mm " << delta_ax_dist_mm
         << "\n"
         ;
 
@@ -202,7 +204,7 @@ inline sfr sfr::MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm)
     T cp = glm::cos(phi);
 
     glm::tvec3<T> ax = glm::vec3(st * cp, st * sp, ct);
-    glm::tvec3<T> translation = ax * ax_dist_mm ;
+    glm::tvec3<T> translation = ax * ( ax_dist_mm + delta_ax_dist_mm ) ;
 
     glm::tvec3<T> world_z = glm::tvec3<T>(0.0f, 0.0f, 1.0f);
     glm::tvec3<T> up = world_z - glm::dot(world_z, ax) * ax;

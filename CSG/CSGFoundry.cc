@@ -3591,12 +3591,12 @@ Grab these from remote with::
 )" ;
 
 
-sframe CSGFoundry::getFrame() const
+sframe CSGFoundry::getFrame() const // TODO: MIGRATE TO sfr.h
 {
     const char* moi_or_iidx = ssys::getenvvar("MOI",sframe::DEFAULT_FRS); // DEFAULT_FRS "-1"
     return getFrame(moi_or_iidx);
 }
-sframe CSGFoundry::getFrame(const char* frs) const
+sframe CSGFoundry::getFrame(const char* frs) const //  TODO: MIGRATE TO sfr.h
 {
     sframe fr = {} ;
     int rc = getFrame(fr, frs ? frs : sframe::DEFAULT_FRS );
@@ -3646,7 +3646,7 @@ looks_like_raw:true
 
 
 
-int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
+int CSGFoundry::getFrame(sframe& fr, const char* frs ) const  //  TODO: MIGRATE TO sfr.h
 {
 
     bool VERBOSE = ssys::getenvbool(getFrame_VERBOSE) ;
@@ -3654,6 +3654,7 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
 
     int rc = 0 ;
 
+    bool looks_like_axis = sstr::StartsWith(frs,stree::AXIS_PFX) ;
     bool looks_like_raw = strstr(frs,",") ;
     bool looks_like_moi = sstr::StartsWithLetterAZaz(frs) || strstr(frs, ":") || strcmp(frs,"-1") == 0 ;
 
@@ -3664,7 +3665,14 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const
         << " looks_like_raw " << ( looks_like_raw ? "YES" : "NO " )
         ;
 
-    if(looks_like_raw)
+    if(looks_like_axis)
+    {
+        // ASSERTS WITHOUT THIS FROM TOO MANY ELEM IN PopulateFromRaw
+        // BUT SUSPECT THE sframe NOT REALLY USED : NEEDS RATIONALIZATION
+        sfr lf = sfr::MakeFromAxis<float>(frs + strlen(stree::AXIS_PFX), ',');
+        fr.populate(lf);
+    }
+    else if(looks_like_raw)
     {
         rc = sframe::PopulateFromRaw(fr, frs, ',' );
     }

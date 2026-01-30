@@ -273,8 +273,8 @@ struct stree
     static constexpr const char* stree__populate_nidx_prim = "stree__populate_nidx_prim" ;
 #endif
 
-    static constexpr const char* _EXTENT_PFX = "EXTENT:" ;
-    static constexpr const char* _AXIS_PFX = "AXIS:" ;
+    static constexpr const char* EXTENT_PFX = "EXTENT:" ;
+    static constexpr const char* AXIS_PFX = "AXIS:" ;
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
 
@@ -2197,17 +2197,17 @@ Special cased MOI envvar starting "EXTENT:" normally MOI is of the below form::
 
 inline sfr stree::get_frame_moi() const
 {
-    bool is_EXTENT = sstr::StartsWith(MOI, _EXTENT_PFX) ;
-    bool is_AXIS = sstr::StartsWith(MOI, _AXIS_PFX) ;
+    bool is_EXTENT = sstr::StartsWith(MOI, EXTENT_PFX) ;
+    bool is_AXIS = sstr::StartsWith(MOI,  AXIS_PFX) ;
 
     sfr mf = {} ;
     if( is_EXTENT )
     {
-        mf = sfr::MakeFromExtent<float>(  MOI + strlen(_EXTENT_PFX) );
+        mf = sfr::MakeFromExtent<float>(  MOI + strlen(EXTENT_PFX) );
     }
     else if( is_AXIS )
     {
-        mf = sfr::MakeFromAxis<float>(MOI + strlen(_AXIS_PFX), ',');
+        mf = sfr::MakeFromAxis<float>(MOI + strlen(AXIS_PFX), ',');
     }
     else
     {
