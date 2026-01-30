@@ -33,7 +33,21 @@ test=descPrimRange
 export TEST=${TEST:-$test}
 source $HOME/.opticks/GEOM/GEOM.sh
 
-vv="BASH_SOURCE name bin script PWD GEOM TEST LVID"
+
+
+srcd=$HOME/.opticks/GEOM
+
+External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
+if [ -z "$NOXGEOM" -a -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
+    GEOM_METHOD="External GEOM setup : use NOXGEOM=1 to disable externally configured GEOM"
+else
+    source $srcd/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
+    GEOM_METHOD="local sourcing of ~/.opticks/GEOM/GEOM.sh"
+fi
+
+
+
+vv="BASH_SOURCE name bin script PWD GEOM GEOM_METHOD TEST LVID"
 
 export SSim__load_tree_load=1
 export CSGPrim__DescRange_NUMPY=1

@@ -167,8 +167,10 @@ struct CSG_API CSGPrim
     static unsigned count_prim_mesh(const std::vector<CSGPrim>& prims, unsigned mesh_idx_ );
     static std::string Desc(     std::vector<const CSGPrim*>& prim );
 
+    static constexpr const char* CSGPrim__DescRange_NAMEONLY = "CSGPrim__DescRange_NAMEONLY" ;
     static constexpr const char* CSGPrim__DescRange_NUMPY = "CSGPrim__DescRange_NUMPY" ;
     static constexpr const char* CSGPrim__DescRange_EXTENT_DIFF = "CSGPrim__DescRange_EXTENT_DIFF" ;
+    static constexpr const char* CSGPrim__DescRange_EXTENT_MINI = "CSGPrim__DescRange_EXTENT_MINI" ;
     static constexpr const char* CSGPrim__DescRange_CE_ZMIN_ZMAX = "CSGPrim__DescRange_CE_ZMIN_ZMAX" ;
 
     static std::string DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname=nullptr, const SMeshGroup* mg = nullptr );

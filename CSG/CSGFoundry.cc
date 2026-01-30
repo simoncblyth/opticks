@@ -2440,17 +2440,18 @@ std::string CSGFoundry::descPrimRange() const
 std::string CSGFoundry::descPrimRange(int solidIdx) const
 {
     const CSGSolid& so = solid[solidIdx];
+    std::string dr = CSGPrim::DescRange(prim.data(), so.primOffset, so.numPrim, &meshname) ;
+    if(strlen(dr.c_str()) == 0) return "" ;
+
     std::stringstream ss ;
     ss
        << "[CSGFoundry::descPrimRange" << " solidIdx " << std::setw(2) << solidIdx
        << " so.primOffset " << std::setw(5) << so.primOffset
        << " so.numPrim " << std::setw(5) << so.numPrim
        << "\n"
-       ;
-
-    ss << CSGPrim::DescRange(prim.data(), so.primOffset, so.numPrim, &meshname);
-
-    ss << "]CSGFoundry::descPrimRange" << " solidIdx " << std::setw(2) << solidIdx
+       << dr
+       << "\n"
+       << "]CSGFoundry::descPrimRange" << " solidIdx " << std::setw(2) << solidIdx
        << "\n"
        ;
 
@@ -3641,6 +3642,7 @@ looks_like_raw:true
 
 
 **/
+
 
 
 

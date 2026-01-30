@@ -98,10 +98,12 @@ Displays coordinate ranges and extent of the analytic CSGPrim and triangulated S
 std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname, const SMeshGroup* mg ) // static
 {
     int NUMPY = ssys::getenvint(CSGPrim__DescRange_NUMPY,0);
+    bool NAMEONLY = ssys::getenvint(CSGPrim__DescRange_NAMEONLY,0) > 0;
 
     size_t num_so = soname ? soname->size() : 0 ;
     int mg_subs = mg ? mg->subs.size() : 0 ;
     float EXTENT_DIFF = ssys::getenvfloat(CSGPrim__DescRange_EXTENT_DIFF, 200.f );
+    float EXTENT_MINI = ssys::getenvfloat(CSGPrim__DescRange_EXTENT_MINI,   0.f );
 
     std::vector<float>* CE_ZMIN_ZMAX = ssys::getenvfloatvec(CSGPrim__DescRange_CE_ZMIN_ZMAX, nullptr ); // nullptr when no envvar
     float CE_ZMIN = CE_ZMIN_ZMAX ? (*CE_ZMIN_ZMAX)[0] : 0.f ;
@@ -113,6 +115,10 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
     tt
        << " numPrim " << numPrim
        << " mg_subs " << mg_subs
+       << "\n"
+       << " EXTENT_MINI : " << std::setw(10) << std::fixed << std::setprecision(3) << EXTENT_MINI
+       << " [" << CSGPrim__DescRange_EXTENT_MINI << "]"
+       << "\n"
        << " EXTENT_DIFF : " << std::setw(10) << std::fixed << std::setprecision(3) << EXTENT_DIFF
        << " [" << CSGPrim__DescRange_EXTENT_DIFF << "]"
        << "\n"
@@ -124,12 +130,13 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
 
     std::string ctx = tt.str();
 
-
     std::stringstream ss ;
-    ss << "[CSGPrim::Desc"
+    if(!NAMEONLY) ss << "[CSGPrim::Desc"
        << ctx
        ;
 
+
+    // TODO: make the order controllable by envvar
 
     // order the prim SMesh by maximum z
     std::vector<unsigned> idx(numPrim);
@@ -147,6 +154,7 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
             return order_fn(prim[primOffset+a]) > order_fn(prim[primOffset+b]);
         });
 
+    int count = 0 ;
 
     for(int j=0 ; j < numPrim ; j++ )
     {
@@ -162,9 +170,12 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
 
         float4 pr_ce = pr.ce();
 
+        bool extent_in_range = EXTENT_MINI == 0.f ? true : pr_ce.w >= EXTENT_MINI ;
         bool cez_in_range =  CE_ZMIN_ZMAX ? ( pr_ce.z > CE_ZMIN && pr_ce.z < CE_ZMAX ) : true ;
         if(!cez_in_range) continue ;
+        if(!extent_in_range) continue ;
 
+        count += 1 ;
 
         const glm::tvec4<float>* sub_ce = sub ? &(sub->ce) : nullptr ;
         const glm::tmat4x4<double>* sub_tr0 = sub ? &(sub->tr0) : nullptr ;
@@ -174,13 +185,22 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
 
         const char* so = lvid < num_so ? (*soname)[lvid].c_str() : nullptr ;
 
-        ss
-            << std::setw(4) << i
-            << " : "
-            << ( NUMPY ? pr.descRangeNumPy() : pr.descRange() )
-            << " so[" << ( so ? so : "-" ) << "]"
-            << "\n"
-            ;
+        if(NAMEONLY)
+        {
+            ss << ( so ? so : "-" ) << "\n" ;
+        }
+        else
+        {
+
+            ss
+                << std::setw(4) << i
+                << " : "
+                << ( NUMPY ? pr.descRangeNumPy() : pr.descRange() )
+                << " so[" << ( so ? so : "-" ) << "]"
+                << "\n"
+                ;
+
+        }
 
         if(sub) ss
             << std::setw(4) << i
@@ -203,13 +223,13 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
         }
     }
 
-    ss
+    if(!NAMEONLY) ss
         << ctx
         << "]CSGPrim::Desc\n"
         ;
 
     std::string str = ss.str() ;
-    return str ;
+    return count == 0 ? "" : str ;
 }
 
 
