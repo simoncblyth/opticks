@@ -7,7 +7,9 @@ include(OpticksBuildOptions)
 TODO: review the scripts : many are no longer relevant
 #]=]
 
-set(SCRIPTS
+
+
+set(OLD_SCRIPTS
    o.sh
    tboolean.sh
    env.sh
@@ -37,6 +39,8 @@ set(FORMER_INSTALLED_SCRIPTS
 )
 
 set(SH_SCRIPTS
+
+   orun.sh
 
    CTestTestfile.py
    CTestLog.py

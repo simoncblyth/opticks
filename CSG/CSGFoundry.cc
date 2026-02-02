@@ -3668,7 +3668,10 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const  //  TODO: MIGRATE 
     if(looks_like_axis)
     {
         // ASSERTS WITHOUT THIS FROM TOO MANY ELEM IN PopulateFromRaw
-        // BUT SUSPECT THE sframe NOT REALLY USED : NEEDS RATIONALIZATION
+        // BUT SUSPECT THE sframe NOT REALLY USED
+        //
+        // ABOVE IS NOT TRUE, THE PERSISTED sframe STILL USED FROM CSGOptiX/cxt_min.py for simtrace plotting
+        // SO STILL MUST DO THINGS IN DUPLICATE
         sfr lf = sfr::MakeFromAxis<float>(frs + strlen(stree::AXIS_PFX), ',');
         fr.populate(lf);
     }

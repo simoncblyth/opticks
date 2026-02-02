@@ -700,6 +700,14 @@ class CSGFoundry(object):
         return cxtb, btab
 
     def simtrace_prim_analysis(self, pr, KEY=os.environ.get("KEY", None) ):
+        """
+        Group simtrace intersects according to their primitive indices
+        using groups specified by regexp matching solid names of the prim.
+
+        :param pr: large array of primitive indices
+        :param KEY:
+        :return cxtp, ptab: GroupedNameTable, NameTable
+        """
         d_qpr, d_anno = self.Dict_find_name_indices_re_match(self.primname, self.prn_config, self.prn_config_note )
         ptab = NameTable("ptab", pr, self.primname, d_qpr, KEY)
         cxtp = GroupedNameTable("cxtp", pr, d_qpr, d_anno, self.primname, lwid=50)
