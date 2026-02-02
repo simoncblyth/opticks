@@ -479,7 +479,7 @@ inline void sframe::set_grid(const std::vector<int>& cegs, float gridscale)
     q2.i.z = cegs[6] ;  // num_photon
     q2.f.w = gridscale ;
 
-    assert( cegs[7] == 1 ); // expecting 1 for cegs[7] other than fine regions where 2 (or 4) might be used
+    //assert( cegs[7] == 1 ); // expecting 1 for cegs[7] other than fine regions where 2 (or 4) might be used
 
 }
 

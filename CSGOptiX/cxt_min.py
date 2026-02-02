@@ -10,6 +10,11 @@ cxt_min.py
 4. plot the ugrid and upos points
 
 
+Unexpected EYE,UP::
+
+   PRIMTAB=1 RADIAL=2 KEY=yellowgreen,grey,wheat EYE=0,0,100000 UP=1,0,0  ./cxt_min.sh pdb
+
+
 MODE=2
    use matplotlib 2D plotting, little used now : as lacks flexibility and performance
    but does have advantage of labelled axes
@@ -284,6 +289,7 @@ if __name__ == '__main__':
     lnrm = np.dot( gnrm, w2m )
     lpos = np.dot( gpos, w2m )
 
+    ## GLOBAL is not default, so normally elu_m2w is identity
     elu_m2w = m2w if GLOBAL else np.eye(4)   ## try to make EYE,LOOK,UP stay local even in GLOBAL
     _unrm = gnrm if GLOBAL else lnrm
     _upos = gpos if GLOBAL else lpos
@@ -681,7 +687,7 @@ if __name__ == '__main__':
 
         if GSGRID: ax.scatter( ugrid[:,H], ugrid[:,V], s=0.1, color="r" )
 
-        ax.set_ylim(20000,25000)
+        #ax.set_ylim(20000,25000)
         ax.set_xlim(-180, 180)
 
 

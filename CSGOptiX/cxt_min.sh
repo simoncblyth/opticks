@@ -242,9 +242,11 @@ export BINBASE=$BASE/$bin
 export LOGDIR=$BINBASE/$MOI
 
 
-#opticks_event_name=2dxz
+#opticks_event_name=3d
 #opticks_event_name=2dxz_tall_wide
-opticks_event_name=2dxy
+opticks_event_name=2dxz_tall_wide_radial_range
+#opticks_event_name=2dxz
+#opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -295,6 +297,17 @@ else
        cegs=-25:25:0:0:-14:24:1000:1    ## 14->24 in Z, even widen
        # note when targetting the view could be flipped in X/Y
        export CEGS=$cegs
+
+
+    elif [ "$OPTICKS_EVENT_NAME" == "2dxz_tall_wide_radial_range" ]; then
+
+       cegs=-25:25:0:0:-25:25:1000:8    ## 14->24 in Z, even widen
+       #cegs_radial_range=5000:10000
+       cegs_radial_range=17000:23000
+
+       export CEGS=$cegs
+       export CEGS_RADIAL_RANGE=$cegs_radial_range
+       # TO AVOID OFFSETS IN Z USE MOI such as "0,0,0,20000" instead of "sTarget_T"
 
     elif [ "$OPTICKS_EVENT_NAME" == "2dxy" ]; then
 

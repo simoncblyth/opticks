@@ -23,6 +23,9 @@ template <typename T> struct Tran ;
 
 struct SYSRAP_API SFrameGenstep
 {
+    static constexpr const char* CEGS              = "CEGS" ;
+    static constexpr const char* CEGS_RADIAL_RANGE = "CEGS_RADIAL_RANGE" ;
+
     static const plog::Severity LEVEL ;
     static void CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce ) ;
     static std::string Desc(const std::vector<float3>& ce_offset );
@@ -48,7 +51,8 @@ struct SYSRAP_API SFrameGenstep
         float gridscale,
         const Tran<double>* geotran,
         const std::vector<float3>& ce_offset,
-        bool ce_scale ) ;
+        bool ce_scale,
+        std::vector<float>* cegs_radial_range ) ;
 
 
 

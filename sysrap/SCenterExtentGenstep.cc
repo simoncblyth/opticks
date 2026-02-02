@@ -141,7 +141,7 @@ void SCenterExtentGenstep::init()
     std::vector<float3> ce_offset ; 
     ce_offset.push_back(offset);   
 
-    gs = SFrameGenstep::MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, ce_scale );
+    gs = SFrameGenstep::MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, ce_scale, nullptr );
 
     const char* topline = SSys::getenvvar("TOPLINE", "SCenterExtentGenstep.topline") ; 
     const char* botline = SSys::getenvvar("BOTLINE", "SCenterExtentGenstep.botline" ) ; 

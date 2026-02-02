@@ -1,3 +1,5 @@
+#include <limits>
+
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
@@ -177,7 +179,10 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
     std::vector<int> cegs ;
     char CEGS_delim = ':' ;
     const char* CEGS_fallback = CEGS_XZ ;
-    GetGridConfig(cegs, "CEGS", CEGS_delim, CEGS_fallback );
+    GetGridConfig(cegs, CEGS, CEGS_delim, CEGS_fallback );
+
+
+    std::vector<float>* cegs_radial_range = ssys::getenv_vec<float>(CEGS_RADIAL_RANGE, nullptr, CEGS_delim );
 
     LOG(LEVEL)
        << " cegs.size " << cegs.size()
@@ -208,7 +213,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
 
 
     std::vector<NP*> gsl ;
-    NP* gs_base = MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, !ce_scale_off );
+    NP* gs_base = MakeCenterExtentGenstep(ce, cegs, gridscale, geotran, ce_offset, !ce_scale_off, cegs_radial_range );
     gsl.push_back(gs_base) ;
 
     std::vector<std::string> keys = {{
@@ -235,7 +240,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
         LOG(LEVEL) << " key " << key << " cehigh.size " << cehigh.size() ;
         if(cehigh.size() == 8)
         {
-            NP* gs_cehigh = MakeCenterExtentGenstep(ce, cehigh, gridscale, geotran, ce_offset, !ce_scale_off );
+            NP* gs_cehigh = MakeCenterExtentGenstep(ce, cehigh, gridscale, geotran, ce_offset, !ce_scale_off, cegs_radial_range );
             gsl.push_back(gs_cehigh) ;
         }
     }
@@ -379,7 +384,8 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     float gridscale,
     const Tran<double>* geotran,
     const std::vector<float3>& ce_offset,
-    bool ce_scale ) // static
+    bool ce_scale,
+    std::vector<float>* cegs_radial_range) // static
 {
 
     quad6 gs ;
@@ -429,6 +435,28 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
     [[maybe_unused]] unsigned photon_offset = 0 ;
     std::vector<quad6> gensteps ;
 
+    float rmin = 0. ;
+    float rmax = std::numeric_limits<float>::max();
+    if(cegs_radial_range)
+    {
+        size_t crr = cegs_radial_range->size();
+        if(crr > 0) rmin = (*cegs_radial_range)[0] ;
+        if(crr > 1) rmax = (*cegs_radial_range)[1] ;
+
+        LOG(info)
+            << " [" << CEGS_RADIAL_RANGE << "] "
+            << " crr " << crr
+            << " rmin " << std::fixed << std::setw(10) << std::setprecision(2) << rmin
+            << " rmax " << std::fixed << std::setw(10) << std::setprecision(2) << rmax
+            << " ce.w " << std::fixed << std::setw(10) << std::setprecision(2) << ce.w
+            << " scale " << std::fixed << std::setw(10) << std::setprecision(2) << scale
+            << " local_scale " << std::fixed << std::setw(10) << std::setprecision(2) << local_scale
+            << "\n"
+            ;
+    }
+
+
+
     for(int ip=0 ; ip < num_offset ; ip++)   // planes
     {
         const float3& offset = ce_offset[ip] ;
@@ -445,6 +473,12 @@ NP* SFrameGenstep::MakeCenterExtentGenstep(
             double tx = double(ix)*local_scale ;
             double ty = double(iy)*local_scale ;
             double tz = double(iz)*local_scale ;
+
+            double radius = std::sqrt(tx*tx + ty*ty + tz*tz);
+            bool in_radial_range = cegs_radial_range ?  ( radius >= rmin && radius <= rmax ) : true ;
+            if(!in_radial_range) continue ;
+
+
 
             const Tran<double>* grid_shift = Tran<double>::make_translate( tx, ty, tz );
 

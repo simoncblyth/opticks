@@ -132,6 +132,13 @@ XDIST = efloat_("XDIST", "200")
 FOCUS = eary_("FOCUS", "0,0,0")
 SCALE = efloat_("SCALE", "1")
 
+
+
+
+
+
+
+
 def pvplt_simple(pl, xyz, label):
     """
     :param pl: pyvista plotter
@@ -222,6 +229,48 @@ def pvplt_viewpoint(pl, reset=False, verbose=False, m2w=None ):
     pl.camera.Zoom(zoom)
 
 
+
+class pvplt_ViewManager:
+    """
+    t
+       restore initial viewpoint
+    r
+       reset viewpoint to make everything visible
+    c
+       print current viewpoint
+
+    """
+    def __init__(self, pl ):
+        self.pl = pl
+        self.init_elu = pl.camera_position # (eye,look,up) 3-tup
+        self.pl.add_key_event('t', self.restore_initial)
+        self.pl.add_key_event('r', self.reset_and_capture)
+        self.pl.add_key_event('c', self.print)
+
+    def restore_initial(self):
+        """Go back to the view defined by your environment variables."""
+        print("Restoring Command Line Viewpoint...")
+        self.pl.camera_position = self.init_elu
+        self.pl.render()
+
+    def reset_and_capture(self):
+        """
+        Standard 'r' behavior, but we force a render to avoid blank initial screen
+        """
+        self.pl.reset_camera()
+        self.pl.render()
+
+    def print(self):
+        pos, focal, up = self.pl.camera_position # (eye,look,up) 3-tup
+        print(f"\npvplt_ViewManager.print: pos, focal, up = pl.camera_position ")
+        print(f"pos {pos[0]:.2f},{pos[1]:.2f},{pos[2]:.2f} "
+              f"focal {focal[0]:.2f},{focal[1]:.2f},{focal[2]:.2f} "
+              f"up {up[0]:.2f},{up[1]:.2f},{up[2]:.2f}")
+
+
+
+
+
 def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
     """
     :param p: array of shape (1,4,4)
@@ -256,6 +305,7 @@ def pvplt_photon( pl, p, polcol="blue", polscale=1, wscale=False, wcut=True  ):
     pl.add_lines( lpol, color=polcol )
 
 
+
 def pvplt_plotter(label="pvplt_plotter", verbose=False, m2w=None):
     if verbose:
         print("STARTING PVPLT_PLOTTER ... THERE COULD BE A WINDOW WAITING FOR YOU TO CLOSE")
@@ -266,6 +316,10 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False, m2w=None):
 
     pl = pv.Plotter(window_size=WSIZE)
     pvplt_viewpoint(pl, reset=False, verbose=verbose, m2w=m2w)
+    vmg = pvplt_ViewManager(pl)
+
+
+
 
     TEST = os.environ.get("TEST","")
     pl.add_text( "%s %s " % (label,TEST), position="upper_left")
@@ -381,6 +435,10 @@ def pvplt_show(pl, incpoi=0., legend=False, title=None):
         vtk_actor = None
     pass
 
+    # these from gemini to fix the startup invisible issue
+    #pl.camera.ResetClippingRange()
+    pl.render()
+    pl.show(interactive_update=True)
 
     return pl.show(title=TITLE)
 
