@@ -12,6 +12,7 @@ cxt_min.py
 
 MODE=2
    use matplotlib 2D plotting, little used now : as lacks flexibility and performance
+   but does have advantage of labelled axes
 
 MODE=3
    use pyvista 3D plotting.
@@ -62,6 +63,11 @@ MODE=3 EYE=0,10000,0
    of the target geometry
 
 
+RADIAL>0
+   radial overlap checking using 2D matplotlib plot done after the
+   normal 3D pyvista plot
+
+
 TODO: cherry pick from tests/CSGOptiXSimtraceTest.py and simplify
 for minimal simtrace plotting
 
@@ -103,6 +109,9 @@ NORMAL = int(os.environ.get("NORMAL","0"))
 NORMAL_FILTER = int(os.environ.get("NORMAL_FILTER","10000")) # modulo scaledown for normal presentation
 PRIMTAB = int(os.environ.get("PRIMTAB","0"))
 assert PRIMTAB in [0,1]
+
+RADIAL = int(os.environ.get("RADIAL","0"))
+
 
 
 A = int(os.environ.get("A","0"))
@@ -182,7 +191,12 @@ if __name__ == '__main__':
     pass
 
     label = e.f.base
-    sf = e.f.sframe
+    sf = e.f.sframe    ## CAUTION THIS IS FROM sframe.h NOT sfr.h SO STILL DOING THINGS IN DUPLICATE
+    sfm = e.f.sframe_meta
+    e_sfm_label = f"{sfm.ek}={sfm.ev}"
+
+
+
     w2m = sf.w2m
     m2w = sf.m2w
 
@@ -394,7 +408,8 @@ if __name__ == '__main__':
 
 
     X,Y,Z = 0,1,2
-    H,V = X,Z
+    #H,V = X,Z
+    H,V = X,Y
 
 
 
@@ -407,16 +422,50 @@ if __name__ == '__main__':
              unrm
              NORMAL_FILTER
 
+
         """
         def __init__(self, pl, cxtable, hide=False):
             """
             :param pl: pyvista plotter
             :param cxtable: analysis of simtrace integer such as boundary or globalPrimIdx
+
+
+            cxtable.wdict holds (k,w) items eg::
+
+                'green': array([ 28000,  28003,  28006,  28008,  28012, ..., 332988, 332990, 332991, 332993, 332999], shape=(194910,)),
+                 'yellow': array([ 25001,  25006,  25008,  25009,  25010, ..., 335982, 335987, 335995, 335998, 335999], shape=(19352,)),
+                 'red': array([], dtype=int64),
+
+            The *w* array indices select original intersects onto the correspondingly keyed part of the geometry.
+
+            Instanciation:
+
+            1. iterate over cxtable.wdict (k,w)
+
+               * keys k may be included/excluded via KK (KEY envvar with comma delimited key names)
+               * pts[k] = upos[w,:3] selecting upos intersects onto the keyed geometry
+
+
+            upos looks to be in xy plane::
+
+                In [10]: upos[:,0].max()
+                Out[10]: np.float32(31749.988)
+
+                In [11]: upos[:,1].max()
+                Out[11]: np.float32(22283.396)
+
+                In [12]: upos[:,2].max()
+                Out[12]: np.float32(0.0043945312)
+
+                In [13]: upos[:,2].min()
+                Out[13]: np.float32(-0.0029296875)
+
             """
             self.cxtable = cxtable
             pl.enable_point_picking(callback=self, use_picker=True, show_message=False)
             pcloud = {}
             pts = {}
+            gpts = {}
             nrm = {}
             pcinfo = np.zeros( (len(cxtable.wdict),3), dtype=np.int64 )
             i = 0
@@ -438,6 +487,7 @@ if __name__ == '__main__':
                     KEYOFF = np.array([0,0,0], dtype=np.float32)
                 pass
                 pts[k] = upos[w,:3] + KEYOFF
+                gpts[k] = gpos[w,:3]
                 nrm[k] = unrm[w,:3]
                 if not hide:
                     pcloud[k] = pvp.pvplt_add_points(pl, pts[k], color=k, label=label )
@@ -455,12 +505,19 @@ if __name__ == '__main__':
             self.pcinfo = pcinfo
             self.keys = keys
             self.pts = pts
+            self.gpts = gpts
             self.nrm = nrm
 
-        def get_label(self, k):
+        def get_label(self, k, tight=False):
             cxtable = self.cxtable
             w = cxtable.wdict[k]
-            label = "%15s %8d %s" % (k,len(w),cxtable.d_anno[k])
+            nam = cxtable.d_anno[k]
+            fmt = "%15s %8d %s"
+            if tight:
+                nam = nam.lstrip().rstrip()
+                fmt = "%15s %8d %20s"
+            pass
+            label = fmt % (k,len(w),nam)
             return label
 
         def __call__(self, picked_point, picker):
@@ -595,6 +652,58 @@ if __name__ == '__main__':
         cp = pvp.pvplt_show(pl, incpoi=-5, legend=True, title=None )
     else:
         pass
+    pass
+
+    if RADIAL > 0:
+        log.info(f"RADIAL:{RADIAL} plot  H:{H} V:{V} ")
+        equal = RADIAL == 1
+        radial_title = "RADIAL"
+        if RADIAL == 2:
+            radial_title = " -- ".join(["cxt_min.sh Simtrace RADIAL","global radius vs local phi", e_sfm_label])
+        pass
+
+        rl = pvp.mpplt_plotter(label=radial_title, equal=equal)
+        fig, axs = rl
+        ax = axs[0]
+
+        for k, w in cxtable.wdict.items():
+            if not KEY is None and not k in KK: continue
+            label = spl.get_label(k, tight=True)
+            if RADIAL == 1:
+                ax.scatter( upos[w,H], upos[w,V], s=0.1, color=k, label=label )
+            elif RADIAL == 2:
+                pass
+                l_phi = 180*np.arctan2( spl.pts[k][:,1], spl.pts[k][:,0] )/np.pi       # local 2D "xy" phi
+                g_rad = np.sqrt(np.sum( spl.gpts[k]*spl.gpts[k], axis=1 ))   # global 3D radius
+                ax.scatter(l_phi, g_rad, s=0.1, color=k, label=label )
+            pass
+        pass
+
+        if GSGRID: ax.scatter( ugrid[:,H], ugrid[:,V], s=0.1, color="r" )
+
+        ax.set_ylim(20000,25000)
+        ax.set_xlim(-180, 180)
+
+
+        # loc='lower center' defines WHICH part of the legend box is anchored
+        # bbox_to_anchor=(0.5, 1.02) defines WHERE on the plot it is anchored (x=0.5, y=1.02)
+        ax.legend(loc='lower center',
+                  bbox_to_anchor=(0.5, 1.02),
+                  ncol=1,
+                  frameon=False,
+                  markerscale=20.0 )
+
+
+        botline = "run under orun.sh wrapper to replace this text with the captured COMMANDLINE"
+        BOTLINE = os.environ.get("COMMANDLINE", botline)
+        fig.text(0.5, 0.01, BOTLINE, ha='center', fontsize=10, color='gray')
+
+        pvp.mpp.tight_layout(rect=[0, 0.05, 1, 1])
+        # Adjust layout so the text doesn't get clipped
+
+        fig.show()
+    else:
+        log.info("no doing RADIAL plot")
     pass
 pass
 

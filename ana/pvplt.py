@@ -71,6 +71,7 @@ VERBOSE = int(os.environ.get("VERBOSE", "0")) == 1
 print("pvplt MODE:%d " % (MODE))
 
 mp = None
+mpp = None
 pv = None
 
 if MODE in [2,3,-2,-3]:

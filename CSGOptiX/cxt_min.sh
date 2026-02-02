@@ -176,7 +176,7 @@ defarg=info_run_info_pdb
 arg=${1:-$defarg}
 arg2=$2
 
-bin=CSGOptiXTMTest   ## just calls CSGOptiX::SimtraceMain()
+bin=CSGOptiXTMTest   ## just calls CSGOptiX::SimtraceMain() which loads geom, uploads with CSGOptiX and invokes CSGOptiX::simtrace
 which_bin=$(which $bin)
 
 # defining NOXGEOM prevents use of external GEOM
@@ -368,7 +368,7 @@ debug()
 
 _CUR=GEOM/$GEOM/$SCRIPT/${MOI//:/_}
 
-vars="$vars BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES OPTICKS_EVENT_NAME CEGS TITLE"
+vars="$vars BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI MOI_NOTE SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES OPTICKS_EVENT_NAME CEGS TITLE"
 
 ## define TITLE based on ana/pdb control envvars
 title="cxt_min.sh pdb"
@@ -454,6 +454,12 @@ if [ "${arg/cfg}" != "$arg" ]; then
     echo $cmd
     eval  $cmd
 fi
+
+
+if [[ "$arg" =~ checkscreenshot ]]; then
+    echo $BASH_SOURCE - TODO: CHECK FOR NEW SCREENSHOT AT SCRIPT EXIT - IF FOUND WRITE COMMANDLINE METADATA INTO IMAGE SIDECAR
+fi
+
 
 exit 0
 
