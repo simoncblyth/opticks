@@ -89,6 +89,9 @@ struct SYSRAP_API s_bb
     template<typename T>
     void center_extent( T* ce ) const ;
 
+    template<typename T>
+    static bool HasOverlap( const T* a,  const T* b ) ;
+
 };
 
 inline void s_bb::SetPOOL( POOL* pool_ ){ pool = pool_ ; }
@@ -244,7 +247,6 @@ inline bool s_bb::Degenerate_( const T* v ) // static
 
 
 
-
 /**
 s_bb::IncludePoint
 -------------------
@@ -385,7 +387,17 @@ inline void s_bb::center_extent( T* ce ) const
     ce[0] = ( x0 + x1 )/2. ;
     ce[1] = ( y0 + y1 )/2. ;
     ce[2] = ( z0 + z1 )/2. ;
-    ce[3] = std::max(std::max(x1-x0,y1-y0),z1-z0) ;
+    ce[3] = std::max(std::max(x1-x0,y1-y0),z1-z0)/2. ;  // 2026-2-3 fix omitted /2.
+    assert(0); // checking users
+}
+
+
+template<typename T>
+inline bool s_bb::HasOverlap( const T* a,  const T* b )
+{
+    return (a[0] <= b[3] && a[3] >= b[0]) && // X overlap
+           (a[1] <= b[4] && a[4] >= b[1]) && // Y overlap
+           (a[2] <= b[5] && a[5] >= b[2]);   // Z overlap
 }
 
 

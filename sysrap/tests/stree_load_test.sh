@@ -4,6 +4,7 @@ stree_load_test.sh
 =====================
 
 ~/o/sysrap/tests/stree_load_test.sh
+~/o/sysrap/tests/stree_load_test.sh pdb
 
 
 CAUTION the "ana" python script is independent from the C++ side
@@ -85,6 +86,7 @@ name=stree_load_test
 bin=/tmp/$name/$name
 script=$name.py
 csgscript=${name}_csg.py
+tmpfold_script=${name}_tmpfold.py
 
 source $HOME/.opticks/GEOM/GEOM.sh
 source $HOME/.opticks/GEOM/MOI.sh    # sets MOI envvar, use MOI bash function to setup/edit
@@ -115,15 +117,32 @@ export stree_level=1
 #test=desc_factor_nodes
 #test=desc_node_solids
 #test=desc_solids
-test=desc_solid
+#test=desc_solid
+
+#test=get_prim_aabb
+#test=get_global_aabb
+#test=get_global_aabb_check
+test=get_global_aabb_sibling_overlaps
+#test=desc_repeat_index
 
 export TEST=${TEST:-$test}
+
+
+
 
 CFB=${GEOM}_CFBaseFromGEOM
 export FOLD=${!CFB}/CSGFoundry/SSim/stree
 
 export TMPFOLD=$TMP/stree_load_test
 mkdir -p $TMPFOLD
+
+
+if [[ "$TEST" =~ ^get_global_aabb$ ]]; then
+    script=$tmpfold_script
+elif [[ "$TEST" =~ ^get_global_aabb_sibling_overlaps$ ]]; then
+    script=${name}_${TEST}.py
+fi
+
 
 vars="BASH_SOURCE opt GEOM CFB FOLD MOI TEST TMPFOLD"
 
@@ -164,6 +183,9 @@ if [ "${arg/build}" != "$arg" ]; then
 
     [ $? -ne 0 ] && echo $BASH_SOURCE build error with opt $opt && exit 1
 fi
+
+
+
 
 if [ "${arg/run}" != "$arg" ]; then
     $bin

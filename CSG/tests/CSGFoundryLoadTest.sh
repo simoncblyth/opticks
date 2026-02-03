@@ -29,11 +29,10 @@ script=$name.py
 #test=getMeshPrim
 test=descPrimRange
 #test=CompareRanges
+#test=CSGPrim_AABB_Overlap
 
 export TEST=${TEST:-$test}
-source $HOME/.opticks/GEOM/GEOM.sh
-
-
+#source $HOME/.opticks/GEOM/GEOM.sh
 
 srcd=$HOME/.opticks/GEOM
 

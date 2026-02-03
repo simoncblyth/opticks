@@ -266,6 +266,7 @@ struct stree
     typedef std::vector<BB> VBB ;
     typedef glm::tmat4x4<double> TR ;
     typedef std::vector<TR> VTR ;
+    typedef std::vector<snode> VND ;
 
 
 #ifdef STREE_CAREFUL
@@ -275,6 +276,9 @@ struct stree
 
     static constexpr const char* EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* AXIS_PFX = "AXIS:" ;
+    static constexpr const char* NIDX_PFX = "NIDX:" ;
+    static constexpr const char* GPID_PFX = "GPID:" ;
+
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
 
@@ -410,6 +414,7 @@ struct stree
     std::vector<int>                  prim_nidx ; // experimental: see populate_prim_nidx
     std::vector<int>                  nidx_prim ; // experimental: see populate_nidx_prim
     std::vector<std::string>          prname ;    // prim names from faux_importPrim
+    const char*                       loaddir ;
 
     stree();
 
@@ -423,6 +428,7 @@ struct stree
 
 
     std::string desc() const ;
+    std::string desc_id() const ;
     std::string desc_meta() const ;
     std::string desc_soname() const ;
     std::string desc_lvid() const ;
@@ -503,6 +509,8 @@ struct stree
 
 
     sfr  get_frame_moi() const ;
+    sfr  get_frame_nidx(const char* s_nidx ) const ;
+
     sfr  get_frame(const char* q_spec) const ;
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
@@ -691,6 +699,7 @@ struct stree
     int      get_num_triangulated() const ;
     char     get_ridx_type(int ridx) const ;
 
+    void get_global_nodes(std::vector<snode>& nodes ) const ;
     void get_factor_nodes(std::vector<int>& nodes, unsigned idx) const ;
     std::string desc_factor_nodes(unsigned idx) const ;
     std::string desc_factor() const ;
@@ -714,6 +723,14 @@ struct stree
     std::string desc_rem() const ;
     std::string desc_tri() const ;
     std::string desc_NRT(char NRT) const ;
+
+    size_t get_repeat_index_zero_count() const ;
+    void count_repeat_index( std::map<size_t,size_t>& m, char NRT ) const ;
+    std::string desc_repeat_index() const ;
+    std::string desc_repeat_index(char NRT, size_t* _tot, size_t* _num0 ) const ;
+
+    NPFold* get_global_aabb() const;
+    NPFold* get_global_aabb_sibling_overlaps() const;
 
     std::string desc_node_ELVID() const ;
     std::string desc_node_ECOPYNO() const ;
@@ -836,7 +853,8 @@ inline stree::stree()
     material(new NPFold),
     surface(new NPFold),
     mesh(new NPFold),
-    MOI(ssys::getenvvar("MOI", "0:0:-1"))
+    MOI(ssys::getenvvar("MOI", "0:0:-1")),
+    loaddir(nullptr)
 {
     init();
 }
@@ -950,6 +968,7 @@ inline void stree::populate_descMap( std::map<std::string, std::function<std::st
     int EDGE = ssys::getenvint("EDGE", 10);
     int PROGENY_EDGE = ssys::getenvint("PROGENY_EDGE", 1000);
 
+    m["id"] = [this](){ return this->desc_id(); };
     m["meta"] = [this](){ return this->desc_meta(); };
     m["soname"] = [this](){ return this->desc_soname(); };
     m["lvid"] = [this](){ return this->desc_lvid(); };
@@ -995,6 +1014,7 @@ inline std::string stree::desc() const
     ss
        << std::endl
        << "[stree::desc"
+       << desc_id()
        << desc_meta()
        << desc_size()
        << " stree.desc.subs_freq "
@@ -1034,6 +1054,15 @@ inline std::string stree::desc() const
     return str ;
 }
 
+inline std::string stree::desc_id() const
+{
+    std::stringstream ss ;
+    ss << "[stree::desc_id\n" ;
+    ss << " loaddir " << ( loaddir ? loaddir : "-" ) << "\n" ;
+    ss << "]stree::desc_id\n" ;
+    std::string str = ss.str();
+    return str ;
+}
 inline std::string stree::desc_meta() const
 {
     std::stringstream ss ;
@@ -2199,6 +2228,7 @@ inline sfr stree::get_frame_moi() const
 {
     bool is_EXTENT = sstr::StartsWith(MOI, EXTENT_PFX) ;
     bool is_AXIS = sstr::StartsWith(MOI,  AXIS_PFX) ;
+    bool is_NIDX = sstr::StartsWith(MOI,  NIDX_PFX) ;
 
     sfr mf = {} ;
     if( is_EXTENT )
@@ -2209,6 +2239,10 @@ inline sfr stree::get_frame_moi() const
     {
         mf = sfr::MakeFromAxis<float>(MOI + strlen(AXIS_PFX), ',');
     }
+    else if( is_NIDX )
+    {
+        mf = get_frame_nidx( MOI + strlen(NIDX_PFX) );
+    }
     else
     {
         mf = get_frame(MOI) ;  // normal form eg sWaterTube:0:-2
@@ -2217,7 +2251,24 @@ inline sfr stree::get_frame_moi() const
 }
 
 
+inline sfr stree::get_frame_nidx(const char* s_nidx ) const
+{
+    int nidx = sstr::AsInt(s_nidx, -1);
+    assert( nidx > -1 );
 
+    const snode& node = nds[nidx];
+    BB bb ;
+    get_prim_aabb( bb.data(), node, nullptr, nullptr );
+
+    sfr f ;
+    f.set_name(s_nidx);
+    f.m2w = m2w[nidx] ;
+    f.w2m = w2m[nidx] ;
+
+    s_bb::CenterExtent<double>( f.ce_data(), bb.data() );
+
+    return f ;
+}
 
 
 /**
@@ -4291,6 +4342,7 @@ inline int stree::load( const char* base, const char* reldir )
 
 inline int stree::load_( const char* dir )
 {
+    loaddir = dir ? strdup(dir) : nullptr ;
     if(level > 0) std::cerr << "stree::load_ " << ( dir ? dir : "-" ) << std::endl ;
     NPFold* top = NPFold::Load(dir) ;
     import_(top);
@@ -5298,6 +5350,19 @@ inline char stree::get_ridx_type(int ridx) const
 }
 
 
+inline void stree::get_global_nodes(std::vector<snode>& gn) const
+{
+    size_t num_nd = nds.size();
+    for(size_t i=0 ; i < num_nd ; i++)
+    {
+        const snode& node = nds[i];
+        if(node.repeat_index == 0) gn.push_back(node);
+    }
+}
+
+
+
+
 /**
 stree::get_factor_nodes : collect outer volume node indices of *idx* factor (0-based)
 --------------------------------------------------------------------------------------
@@ -5676,6 +5741,204 @@ inline std::string stree::desc_NRT(char NRT) const
     std::string str = ss.str();
     return str ;
 }
+
+
+
+
+
+inline void stree::count_repeat_index( std::map<size_t,size_t>& m, char NRT ) const
+{
+    const std::vector<snode>* vec = get_node_vector(NRT);
+    for(size_t i=0 ; i < vec->size() ; i++)
+    {
+        const snode& node = (*vec)[i];
+        m[node.repeat_index] += 1 ;
+    }
+}
+
+inline std::string stree::desc_repeat_index() const
+{
+    size_t N0_0 = get_repeat_index_zero_count();
+
+    size_t N_tot(0);
+    size_t R_tot(0);
+    size_t T_tot(0);
+
+    size_t N0(0);
+    size_t R0(0);
+    size_t T0(0);
+
+    std::stringstream ss ;
+    ss << "[stree::desc_repeat_index (NB total snode counts, often more than instance counts for each ridx)\n" ;
+    ss << desc_repeat_index('N', &N_tot, &N0) ;
+    ss << desc_repeat_index('R', &R_tot, &R0) ;
+    ss << desc_repeat_index('T', &T_tot, &T0) ;
+
+    bool R0_expect = R_tot == R0 ;
+    bool T0_expect = T_tot == T0 ;
+    bool N0_expect = R_tot + T_tot == N0 ;
+    bool N0_0_expect = N0 == N0_0 ;
+
+    ss
+       << " N_tot " << std::setw(10) << N_tot
+       << " N0 " << std::setw(10) << N0
+       << " N0_0 " << std::setw(10) << N0_0
+       << " (R_tot + T_tot) " << std::setw(10) << (R_tot + T_tot)
+       << " N0_expect " << ( N0_expect ? "YES" : "NO " )
+       << " N0_0_expect " << ( N0_0_expect ? "YES" : "NO " )
+       << "\n"
+       << " R_tot " << std::setw(10) << R_tot
+       << " R0 " << std::setw(10) << R0
+       << " R0_expect " << ( R0_expect ? "YES" : "NO " )
+       << "\n"
+       << " T_tot " << std::setw(10) << T_tot
+       << " T0 " << std::setw(10) << T0
+       << " T0_expect " << ( T0_expect ? "YES" : "NO " )
+       << "\n"
+       ;
+
+    ss << "]stree::desc_repeat_index\n" ;
+    std::string str = ss.str();
+    return str ;
+}
+inline std::string stree::desc_repeat_index(char NRT, size_t* _tot, size_t* _num0 ) const
+{
+    std::map<size_t,size_t> m = {} ;
+    count_repeat_index(m, NRT);
+    const char* nam  = get_node_vector_name(NRT);
+
+    std::stringstream ss ;
+    ss << "[stree::desc_repeat_index " << NRT << "[" << nam << "]\n" ;
+    size_t tot = 0 ;
+    for (auto const& [key, val] : m)
+    {
+        ss << std::setw(4) << key << " : "  << std::setw(10) << val << "\n" ;
+        tot += val ;
+        if(key == 0 && _num0 ) *_num0 = val ;
+    }
+    ss << std::setw(4) << "TOT:" << " : " << std::setw(10) <<  tot << "\n" ;
+    ss << "]stree::desc_repeat_index " << NRT << "[" << nam << "]\n" ;
+    std::string str = ss.str();
+
+    if(_tot) *_tot = tot ;
+    return str ;
+}
+
+
+inline size_t stree::get_repeat_index_zero_count() const
+{
+    size_t count = 0 ;
+    for(size_t i=0 ; i < nds.size() ; i++) if(nds[i].repeat_index == 0) count += 1 ;
+    return count ;
+}
+
+inline NPFold* stree::get_global_aabb() const
+{
+    std::vector<snode> gn ;
+    get_global_nodes(gn);
+
+    size_t num_gn = gn.size();
+
+    enum { bb_nj = 6 };
+    NP* bb = NP::Make<double>(num_gn,bb_nj) ;
+    NP* ii = NP::Make<int>(   num_gn,snode::NV ) ;
+
+    double* bb0 = bb->values<double>();
+    int*    ii0 = ii->values<int>();
+
+    for(size_t i=0 ; i < num_gn ; i++)
+    {
+        const snode& node = gn[i];
+        const int* nn = node.cdata();
+        get_prim_aabb( &bb0[bb_nj*i] , node, nullptr, nullptr );
+        for(int k=0 ; k < snode::NV ; k++ ) ii0[snode::NV*i + k ] = nn[k] ;
+    }
+
+    NPFold* f = new NPFold ;
+    f->add("bb", bb);
+    f->add("ii", ii);
+    return f ;
+}
+
+
+inline NPFold* stree::get_global_aabb_sibling_overlaps() const
+{
+    VND gnd ;
+    get_global_nodes(gnd);
+    size_t num_gnd = gnd.size();
+
+
+    std::cout << "[stree::get_global_aabb_sibling_overlaps num_gnd " << num_gnd << "\n" ;
+
+
+    VBB gbb ;
+    for( size_t i = 0 ; i < num_gnd ; i++ )
+    {
+        const snode& a = gnd[i];
+        BB _a ;
+        get_prim_aabb( _a.data(), a, nullptr, nullptr );
+        gbb.push_back(_a);
+    }
+
+
+
+    VBB vbb ;
+    VND vnd ;
+
+    size_t check = 0 ;
+
+    for( size_t i = 0 ; i < num_gnd ; i++ )
+    {
+        const snode& a = gnd[i];
+        BB& _a = gbb[i] ;
+
+        for( size_t j = 0 ; j < num_gnd ; j++ )
+        {
+            if( j >= i ) continue ;
+
+            const snode& b = gnd[j];
+
+            bool same_parent = a.parent == b.parent ;
+            if(!same_parent) continue ;
+
+            bool same_depth = a.depth == b.depth ;
+            assert(same_depth);
+
+            check += 1 ;
+
+            BB& _b = gbb[j] ;
+
+            bool has_overlap = s_bb::HasOverlap<double>( _a.data(), _b.data() );
+
+            if(has_overlap)
+            {
+                vnd.push_back(a);
+                vnd.push_back(b);
+
+                vbb.push_back(_a);
+                vbb.push_back(_b);
+            }
+        }
+    }
+
+    std::cout << " check " << check << "\n" ;
+    std::cout << " vnd " << vnd.size() << "\n" ;
+    std::cout << " vbb " << vbb.size() << "\n" ;
+
+    NPFold* f = new NPFold ;
+
+    f->add("bb", NPX::ArrayFromVec<double,BB>(vbb, 6 ) );
+    f->add("nn", NPX::ArrayFromVec<int,snode>(vnd, snode::NV) );
+
+    f->add("gbb", NPX::ArrayFromVec<double,BB>(gbb, 6 ) );
+    f->add("gnd", NPX::ArrayFromVec<int,snode>(gnd, snode::NV) );
+
+    std::cout << "]stree::get_global_aabb_sibling_overlaps num_gnd " << num_gnd << "\n" ;
+
+    return f ;
+}
+
+
 
 /**
 stree::desc_node_ELVID
@@ -6563,6 +6826,50 @@ but not the general case of the reverse for instanced nodes.
 That might not matter as the main usefulness of globalPrimIdx
 is for the global geometry. Instanced geometry is best
 identified with the instance index.
+
+
+globalPrimIdx
+~~~~~~~~~~~~~~~
+
+cx/cxt_min.py simtrace intersect point clouds are labelled with globalPrimIdx::
+
+    277     _ii = ust[:,3,3].view(np.int32)   ## instanceIndex
+    278     _gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
+    279     _gp = _gp_bn >> 16      ## globalPrimIdx
+    280     _bn = _gp_bn & 0xffff   ## boundary
+
+that ust[:,2,3] is written GPU side by sevent::add_simtrace pulling from (quad2)prd::
+
+     a.q2.u.w = prd->globalPrimIdx_boundary() ;
+
+The globalPrimIdx is pulled from the geometry on intersection CSGOptiX7.cu::
+
+    882     HitGroupData* hg  = (HitGroupData*)optixGetSbtDataPointer();
+    883     int nodeOffset = hg->prim.nodeOffset ;
+    884     int globalPrimIdx = hg->prim.globalPrimIdx ;
+
+Geometry is labelled with the globalPrimIdx by SBT from the CSGPrim::
+
+    1198 void SBT::setPrimData( CustomPrim& cp, const CSGPrim* prim )
+    1199 {
+    1200     cp.numNode = prim->numNode();
+    1201     cp.nodeOffset = prim->nodeOffset();
+    1202     cp.globalPrimIdx = prim->globalPrimIdx();
+    1203 }
+
+The globalPrimIdx is minted by the addition of CSGPrim to the geometry with the below making it a
+0-based idx of CSGPrim creation done compound-solid by compound solid::
+
+    2220 CSGPrim* CSGFoundry::addPrim(int num_node, int nodeOffset_ )
+    2221 {
+    2222     LOG_IF(fatal, !last_added_solid) << "must addSolid prior to addPrim" ;
+    2223     assert( last_added_solid );
+    2224
+    2225     unsigned primOffset = last_added_solid->primOffset ;
+    2226     unsigned numPrim    = last_added_solid->numPrim ;
+    2227
+    2228     unsigned globalPrimIdx = prim.size();
+
 
 **/
 

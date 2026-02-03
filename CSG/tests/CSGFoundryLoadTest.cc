@@ -18,6 +18,7 @@ struct CSGFoundryLoadTest
     static int getMeshPrim();
     static int descPrimRange();
     static int CompareRanges();
+    static int CSGPrim_AABB_Overlap();
 
     static int Main(int argc, char** argv);
 };
@@ -34,6 +35,7 @@ inline int CSGFoundryLoadTest::Main(int argc, char** argv)
     if(ALL||0==strcmp(TEST,"getMeshPrim")) rc += getMeshPrim();
     if(ALL||0==strcmp(TEST,"descPrimRange")) rc += descPrimRange();
     if(ALL||0==strcmp(TEST,"CompareRanges")) rc += CompareRanges();
+    if(ALL||0==strcmp(TEST,"CSGPrim_AABB_Overlap")) rc += CSGPrim_AABB_Overlap();
     return rc ;
 }
 
@@ -116,6 +118,40 @@ inline int CSGFoundryLoadTest::CompareRanges()
         ;
     return 0 ;
 }
+
+
+/**
+CSGFoundryLoadTest::CSGPrim_AABB_Overlap
+------------------------------------------
+
+Better to do this at stree level, see stree::get_global_aabb_sibling_overlaps
+
+**/
+
+inline int CSGFoundryLoadTest::CSGPrim_AABB_Overlap()
+{
+    CSGFoundry* fd = CSGFoundry::Load() ;
+
+    stree* tree = fd->getTree();
+    size_t num_solid = fd->solid.size() ;
+
+    std::cout
+        << "[CSGFoundryLoadTest::CSGPrim_AABB_Overlap \n"
+        << " tree " << ( tree ? "YES" : "NO " )
+        << "\n"
+        << fd->descBase()
+        << "\n"
+        << " num_solid " << num_solid
+        << "\n"
+        << fd->desc()
+        << "\n"
+        ;
+
+
+    return 0 ;
+}
+
+
 
 
 int main(int argc, char** argv)

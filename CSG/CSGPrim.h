@@ -21,7 +21,7 @@ struct SMeshGroup ;
 CSGPrim : references contiguous sequence of *numNode* CSGNode starting from *nodeOffset* : complete binary tree of 1,3,7,15,... CSGNode
 =========================================================================================================================================
 
-* although CSGPrim is uploaded to GPU by CSGFoundry::upload, instances of CSGPrim at first glance
+* although CSGPrim are uploaded to GPU by CSGFoundry::upload, instances of CSGPrim at first glance
   appear not to be needed GPU side because the Binding.h HitGroupData carries the same information.
 
 * But that is disceptive as the uploaded CSGPrim AABB are essential for GAS construction
@@ -130,6 +130,17 @@ struct CSG_API CSGPrim
     PRIM_METHOD       float* AABB_()      {  return &q2.f.x ; }
     PRIM_METHOD const float3 mn() const {    return make_float3(q2.f.x, q2.f.y, q2.f.z) ; }
     PRIM_METHOD const float3 mx() const {    return make_float3(q2.f.w, q3.f.x, q3.f.y) ; }
+
+    PRIM_METHOD static bool AABB_Overlap( const CSGPrim* _a, const CSGPrim* _b )
+    {
+        const float* a = _a->AABB();
+        const float* b = _b->AABB();
+
+        return (a[0] <= b[3] && a[3] >= b[0]) && // X overlap
+               (a[1] <= b[4] && a[4] >= b[1]) && // Y overlap
+               (a[2] <= b[5] && a[5] >= b[2]);   // Z overlap
+    }
+
 
     PRIM_METHOD const float4 ce() const
     {

@@ -19,6 +19,15 @@ index also corresponds to the other indices::
 
 For traversal examples see *stree::get_children*
 
+Q: Is repeat_index always zero for global nodes, including triangulated ones ?
+A: Yes, see stree::desc_repeat_index() as shown by::
+
+   TEST=desc_repeat_index ~/o/sysrap/tests/stree_load_test.sh
+
+   The artificial "triangulated" solid that is tacked on last,  has ridx 0
+   as does the first global analytic solid.
+
+
 **/
 
 #include <string>
@@ -94,6 +103,8 @@ struct snode
     int sensor_name ;    // 14
 
     std::string desc() const ;
+    int*        data();
+    const int*  cdata() const ;
     int    get_attrib(int idx) const ;
     static std::string Brief_(const std::vector<snode>& nodes );
 };
@@ -122,6 +133,10 @@ inline std::string snode::desc() const
     std::string str = ss.str();
     return str ;
 }
+
+inline int*       snode::data(){ return &index ; }
+inline const int* snode::cdata() const { return &index ; }
+
 inline int snode::get_attrib(int idx) const
 {
     const int* aa = reinterpret_cast<const int*>(this) ;
