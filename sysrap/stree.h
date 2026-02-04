@@ -278,6 +278,7 @@ struct stree
     static constexpr const char* AXIS_PFX = "AXIS:" ;
     static constexpr const char* NIDX_PFX = "NIDX:" ;
     static constexpr const char* PRIM_PFX = "PRIM:" ;
+    static constexpr const char* INST_PFX = "INST:" ;
 
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
@@ -514,8 +515,11 @@ struct stree
     sfr  get_frame_axis(const char* s_axis ) const ;
     sfr  get_frame_prim(const char* s_prim ) const ;
     sfr  get_frame_nidx(const char* s_nidx ) const ;
+    sfr  get_frame_inst(const char* s_inst ) const ;
+
     sfr  get_frame_prim(int prim ) const ;
     sfr  get_frame_nidx(int nidx ) const ;
+    sfr  get_frame_inst(int inst ) const ;
 
     sfr  get_frame(const char* q_spec) const ;
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
@@ -527,6 +531,9 @@ struct stree
 
 
     int get_frame_instanced(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, std::ostream* out = nullptr, VTR* t_stack = nullptr ) const ;
+    int get_frame_inst(sfr& f, int ii, std::ostream* out = nullptr, VTR* t_stack = nullptr ) const ;
+
+
     int get_frame_remainder(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
     int get_frame_global(     sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
@@ -2240,6 +2247,7 @@ inline sfr stree::get_frame_moi() const
     bool is_AXIS = sstr::StartsWith(MOI,  AXIS_PFX) ;
     bool is_NIDX = sstr::StartsWith(MOI,  NIDX_PFX) ;
     bool is_PRIM = sstr::StartsWith(MOI,  PRIM_PFX) ;
+    bool is_INST = sstr::StartsWith(MOI,  INST_PFX) ;
 
     sfr mf = {} ;
     if( is_EXTENT )
@@ -2257,6 +2265,10 @@ inline sfr stree::get_frame_moi() const
     else if( is_PRIM )
     {
         mf = get_frame_prim( MOI + strlen(PRIM_PFX) );
+    }
+    else if( is_INST )
+    {
+        mf = get_frame_inst( MOI + strlen(INST_PFX) );
     }
     else
     {
@@ -2310,6 +2322,20 @@ inline sfr stree::get_frame_nidx(const char* s_nidx ) const
     fr.set_name(name.c_str());
     return fr ;
 }
+
+inline sfr stree::get_frame_inst(const char* s_inst ) const
+{
+    std::string name = INST_PFX ;
+    name += s_inst ;
+    int ii = sstr::AsInt(s_inst, -1);
+    sfr fr = get_frame_inst( ii );
+    fr.set_name(name.c_str());
+    return fr ;
+}
+
+
+
+
 inline sfr stree::get_frame_prim(int prim) const
 {
     int nidx = get_nidx_for_prim(prim);
@@ -2322,13 +2348,36 @@ inline sfr stree::get_frame_nidx(int nidx) const
     BB bb ;
     get_prim_aabb( bb.data(), node, nullptr, nullptr );
 
-    sfr f ;
+    sfr f = {} ;
     f.m2w = m2w[nidx] ;
     f.w2m = w2m[nidx] ;
     s_bb::CenterExtent<double>( f.ce_data(), bb.data() );
 
     return f ;
 }
+
+
+/**
+stree::get_frame_inst
+----------------------
+
+THIS NEEDS TO MATCH : CSGTarget::getFrame(sframe& fr, int inst_idx )
+CSGImport::importInst uses inst_f4 so can do it with better precision here
+
+**/
+
+inline sfr stree::get_frame_inst(int ii) const
+{
+    sfr f = {} ;
+
+    std::ostream* out = nullptr ;
+    VTR* t_stack = nullptr ;
+
+    get_frame_inst(f, ii, out, t_stack );
+
+    return f ;
+}
+
 
 
 /**
@@ -2665,33 +2714,17 @@ stree::get_frame_instanced
 inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, std::ostream* out, VTR* t_stack ) const
 {
     int ii = pick_lvid_ordinal_repeat_ordinal_inst_( lvid, lvid_ordinal, repeat_ordinal );
-
-    const glm::tmat4x4<double>* m2w = get_inst(ii);
-    const glm::tmat4x4<double>* w2m = get_iinst(ii);
-
-    bool missing_transform = !m2w || !w2m ;
-
-    if(missing_transform) std::cerr
-        << "stree::get_frame_instanced FAIL missing_transform "
-        << " lvid " << lvid
-        << " lvid_ordinal " << lvid_ordinal
-        << " repeat_ordinal " << repeat_ordinal
-        << " w2m " << ( w2m ? "YES" : "NO " )
-        << " m2w " << ( m2w ? "YES" : "NO " )
-        << " ii " << ii
-        << "\n"
-        ;
-
-    if(missing_transform) return 1 ;
-    assert( m2w );
-    assert( w2m );
-
     int nidx = inst_nidx[ii] ;
     const snode& nd = nds[nidx] ;
 
+    //assert( nd.lvid == lvid );
+    //    lvid will not in general match nd.lvid
+    //    because there are multiple lv within the instance
+    //    (would only work for the outer CSGPrim of the CSGSolid presumably)
 
-    std::array<double,6> bb ;
-    get_prim_aabb( bb.data(), nd, out, t_stack );
+    //assert( nd.repeat_ordinal == repeat_ordinal );
+    //    not so for globals
+
 
     if(get_frame_dump) std::cout
         << "stree::get_frame_instanced"
@@ -2707,20 +2740,33 @@ inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int re
         << "\n"
         << " nd.desc " << nd.desc()
         << "\n"
-        << " bb \n"
-        << s_bb::Desc( bb.data() )
+        ;
+    return get_frame_inst(f, ii, out, t_stack );
+}
+
+
+inline int stree::get_frame_inst(sfr& f, int ii, std::ostream* out, VTR* t_stack) const
+{
+    const glm::tmat4x4<double>* m2w = get_inst(ii);
+    const glm::tmat4x4<double>* w2m = get_iinst(ii);
+    bool missing_transform = !m2w || !w2m ;
+
+    if(missing_transform) std::cerr
+        << "stree::get_frame_inst FAIL missing_transform "
+        << " w2m " << ( w2m ? "YES" : "NO " )
+        << " m2w " << ( m2w ? "YES" : "NO " )
+        << " ii " << ii
         << "\n"
         ;
 
-    //assert( nd.lvid == lvid );
-    // lvid will not in general match
-    // because there are multiple lv within the instance
-    // and the access technique goes via the gas_idx ?
+    assert( m2w );
+    assert( w2m );
 
-    //assert( nd.repeat_ordinal == repeat_ordinal );
-    // not so for globals
+    int nidx = inst_nidx[ii] ;
+    const snode& nd = nds[nidx] ;
 
-    // TODO: aux0/1/2 arrange layout of integers
+    std::array<double,6> bb ;
+    get_prim_aabb( bb.data(), nd, out, t_stack );
 
     s_bb::CenterExtent( f.ce_data(), bb.data() );
 
@@ -2729,6 +2775,7 @@ inline int stree::get_frame_instanced(sfr& f, int lvid, int lvid_ordinal, int re
 
     return 0 ;
 }
+
 
 
 

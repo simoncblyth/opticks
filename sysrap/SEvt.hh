@@ -73,6 +73,9 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 
 #include "squad.h"
 
+
+#include "sfr.h"
+
 #define WITH_FRAME 1
 #include "sframe.h"
 
@@ -90,6 +93,7 @@ struct SGeo ;
 struct S4RandomArray ;
 struct stimer ;
 struct stree ;
+struct SSim ;
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -233,6 +237,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     NPFold*               extrafold ;
 
     const SGeo*           cf ;
+    const SSim*           sim ;
     const stree*          tree ;
 
     bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running
@@ -240,6 +245,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     bool              is_loaded ;
     bool              is_loadfail ;
 
+    sfr               fr ;
 #ifdef WITH_FRAME
     sframe            frame ;
 #endif
@@ -384,6 +390,9 @@ public:
     NP* gatherG4State() const ;
     const NP* getG4State() const ;
 
+
+
+    void setFr(const sfr& _fr );
 #ifdef WITH_FRAME
     void setFrame(const sframe& fr );
     void setFramePlaceholder();
@@ -409,6 +418,7 @@ public:
 
     void setFrame_HostsideSimtrace() ;
     void setGeo(const SGeo* cf);
+    void setSim(const SSim* sim);
     void setFrame(unsigned ins_idx);  // requires setGeo to access the frame from SGeo
 
     //// below decl order matches impl order : KEEP IT THAT WAY

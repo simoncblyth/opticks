@@ -11,7 +11,7 @@ Motivation
 Issue
 -------
 
-* sframe sfr duplication 
+* sframe sfr duplication
 
 
 Where the sframe::save happens
@@ -32,7 +32,7 @@ Where the sframe::save happens
     #7  0x00007ffff7e32d9f in CSGOptiX::simtrace (this=0x18079ca0, eventID=0) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:822
     #8  0x00007ffff7e2f53e in CSGOptiX::SimtraceMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:157
     #9  0x0000000000404a95 in main (argc=1, argv=0x7fffffffb248) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXTMTest.cc:13
-    (gdb) 
+    (gdb)
 
 
 ::
@@ -59,7 +59,7 @@ Where SEvt::setFrame comes from
     #3  0x00007ffff7682dff in CSGFoundry::Load () at /home/blyth/opticks/CSG/CSGFoundry.cc:3168
     #4  0x00007ffff7e2f50e in CSGOptiX::SimtraceMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:155
     #5  0x0000000000404a95 in main (argc=1, argv=0x7fffffffb258) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXTMTest.cc:13
-    (gdb) 
+    (gdb)
 
 
 ::
@@ -67,17 +67,17 @@ Where SEvt::setFrame comes from
     3856 void CSGFoundry::AfterLoadOrCreate() // static
     3857 {
     3858     CSGFoundry* fd = CSGFoundry::Get();
-    3859 
+    3859
     3860     SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
-    3861 
+    3861
     3862     if(!fd) return ;
-    3863 
+    3863
     3864     sframe fr = fd->getFrameE() ;
-    3865 
+    3865
     3866     LOG(LEVEL) << fr ;
     3867     SEvt::SetFrame(fr); // now only needs to be done once to transform input photons
     3868 }
-    3869 
+    3869
 
 
 
@@ -89,27 +89,27 @@ SGeo base for CSGFoundry
      220 /**
      221 CSGOptiX::InitEvt  TODO : THIS DOES NOT USE GPU : SO SHOULD BE ELSEWHERE
      222 --------------------------------------------------------------------------
-     223 
+     223
      224 Invoked from CSGOptiX::Create
-     225 
-     226 
+     225
+     226
      227 Q: Why the SEvt geometry connection ?
      228 A: Needed for global to local transform conversion
-     229 
+     229
      230 Q: What uses SEVt::setGeo (SGeo) ?
      231 A: Essential set_matline of Cerenkov Genstep
-     232 
+     232
      233 **/
-     234 
+     234
      235 void CSGOptiX::InitEvt( CSGFoundry* fd  )
      236 {
      237     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ;
-     238 
+     238
      239     sev->setGeo((SGeo*)fd);
-     240 
+     240
      241     std::string* rms = SEvt::RunMetaString() ;
      242     assert(rms);
-     243 
+     243
      244     bool stamp = false ;
      245     smeta::Collect(*rms, "CSGOptiX__InitEvt", stamp );
      246 }
@@ -123,26 +123,26 @@ stree::get_frame methods mostly use sfr::
 
      507    // transitional method for matching with CSGFoundry::getFrame
      508     void get_frame_f4( sframe& fr, int idx ) const ;
-     509 
-     510 
+     509
+     510
      511     sfr  get_frame_moi() const ;
-     512 
+     512
      513     sfr  get_frame_extent(const char* s_extent ) const ;
      514     sfr  get_frame_axis(const char* s_axis ) const ;
      515     sfr  get_frame_prim(const char* s_prim ) const ;
      516     sfr  get_frame_nidx(const char* s_nidx ) const ;
      517     sfr  get_frame_prim(int prim ) const ;
      518     sfr  get_frame_nidx(int nidx ) const ;
-     519 
+     519
      520     sfr  get_frame(const char* q_spec) const ;
      521     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
      522     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
      523     int  get_frame_from_coords( sfr& f, const char* q_spec ) const ;
      524     int  get_frame_from_transform( sfr& f, const char* q_spec ) const ;
-     525 
+     525
      526     bool has_frame(const char* q_spec) const ;
-     527 
-     528 
+     527
+     528
      529     int get_frame_instanced(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal, std::ostream* out = nullptr, VTR* t_stack = nullptr ) const ;
      530     int get_frame_remainder(  sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
      531     int get_frame_triangulate(sfr& f, int lvid, int lvid_ordinal, int repeat_ordinal ) const ;
@@ -169,7 +169,7 @@ cxr_min.sh does call stree::get_frame_moi
     #2  0x0000000000495ea5 in CSGOptiXRenderInteractiveTest::init (this=0x7fffffffad50) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:124
     #3  0x0000000000495d94 in CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest (this=0x7fffffffad50) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:113
     #4  0x00000000004465cf in main (argc=1, argv=0x7fffffffaef8) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:206
-    (gdb) 
+    (gdb)
 
 ::
 
@@ -183,17 +183,49 @@ cxr_min.sh does call stree::get_frame_moi
     123     assert(scene);
     124     gm->setTreeScene(tree, scene);
     125     gm->setRecord(ar, br);
-    126 
+    126
     127     cx = CSGOptiX::Create(fd) ;
     128     gl = new SGLFW(*gm);
     129     interop = new SGLFW_CUDA(*gm);
     130     glev    = new SGLFW_Evt(*gl);
-    131 
+    131
     132     if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
     133     if(level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init [" << _level << "][" << level << "]\n" << desc() ;
-    134 
+    134
     135 }
 
+
+    0872 inline void SGLM::setTreeScene( stree* _tree, SScene* _scene )
+     873 {
+     874     tree = _tree ;
+     875     scene = _scene ;
+     876
+     877     moi_fr = tree->get_frame_moi();
+     878
+     879     bool DUMP = ssys::getenvbool(__setTreeScene_DUMP) ;
+     880     if(DUMP) std::cout
+     881         << "SGLM::setTreeScene "
+     882         << __setTreeScene_DUMP
+     883         << " DUMP " << ( DUMP ? "YES" : "NO " )
+     884         << " moi_fr \n"
+     885         << moi_fr.desc()
+     886         << "\n"
+     887         ;
+     888
+     889 }
+
+
+
+
+::
+
+    (gdb) bt
+    #0  0x00007ffff762dbf0 in CSGFoundry::getFrameE() const@plt () from /data1/blyth/local/opticks_Debug/lib/../lib64/libCSG.so
+    #1  0x00007ffff7685a55 in CSGFoundry::AfterLoadOrCreate () at /home/blyth/opticks/CSG/CSGFoundry.cc:3876
+    #2  0x00007ffff7682dff in CSGFoundry::Load () at /home/blyth/opticks/CSG/CSGFoundry.cc:3170
+    #3  0x0000000000495e77 in CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest (this=0x7fffffffad70) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:106
+    #4  0x00000000004465cf in main (argc=1, argv=0x7fffffffaf18) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:206
+    (gdb)
 
 
 

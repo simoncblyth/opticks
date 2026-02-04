@@ -770,6 +770,13 @@ NP* SEvt::gatherG4State() const {  return g4state ; } // gather is used prior to
 const NP* SEvt::getG4State() const {  return topfold->get(SComp::Name(SCOMP_G4STATE)) ; }
 
 
+void SEvt::setFr(const sfr& _fr )
+{
+    fr = _fr ;
+    //TODO: transformInputPhoton
+}
+
+
 /**
 SEvt::setFrame
 ------------------
@@ -790,6 +797,9 @@ but now that the genstep setup is moved to SEvt::beginOfEvent it is only needed
 to call this for each frame, usually once only.
 
 **/
+
+
+
 
 #ifdef WITH_FRAME
 void SEvt::setFrame(const sframe& fr )
@@ -1096,16 +1106,31 @@ Invoked with stack::
     main
 
 
-
-
-
 **/
 
 void SEvt::setGeo(const SGeo* cf_)
 {
+    assert(cf_);
     cf = cf_ ;
     tree = cf->getTree();
 }
+
+/**
+SEvt::setSim
+-------------
+
+This aims to remove SEvt::setGeo and CSGFoundry SGeo base
+**/
+
+void SEvt::setSim(const SSim* sim_)
+{
+    assert(sim_);
+    sim = sim_ ;
+    tree = sim->get_tree();
+}
+
+
+
 
 /**
 SEvt::setFrame
@@ -1127,8 +1152,11 @@ void SEvt::setFrame(unsigned ins_idx)
     if(rc!=0) std::raise(SIGINT);
     assert( rc == 0 );
     fr.prepare();
-
     setFrame(fr);
+
+    // TREE APPROACH AIMING TO REPLACE THE CF ONE ABOVE
+    sfr f = tree->get_frame_inst( ins_idx );
+    setFr(f);
 }
 
 
@@ -2362,7 +2390,10 @@ sgs SEvt::addGenstep(const quad6& q_)
     if(matline_ >= G4_INDEX_OFFSET  )
     {
         unsigned mtindex = matline_ - G4_INDEX_OFFSET ;
-        int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;    // cf(SGeo) used for lookup
+        int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
+        // cf(SGeo) used for lookup
+        // BUT: that just uses SSim::lookup_mtline
+        // so SEvt should hold sim(SSim) ?
 
         bool bad_ck = is_cerenkov_gs && matline == -1 ;
 
@@ -5070,6 +5101,9 @@ The use of geometry information from this low level
 struct is accomplished using the SGeo(cf) instance
 that is fullfilled from higher level CSGFoundry
 instance
+
+TODO: move to getting frame from stree
+
 
 **/
 
