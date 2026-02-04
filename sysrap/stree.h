@@ -277,7 +277,7 @@ struct stree
     static constexpr const char* EXTENT_PFX = "EXTENT:" ;
     static constexpr const char* AXIS_PFX = "AXIS:" ;
     static constexpr const char* NIDX_PFX = "NIDX:" ;
-    static constexpr const char* GPID_PFX = "GPID:" ;
+    static constexpr const char* PRIM_PFX = "PRIM:" ;
 
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
@@ -509,7 +509,13 @@ struct stree
 
 
     sfr  get_frame_moi() const ;
+
+    sfr  get_frame_extent(const char* s_extent ) const ;
+    sfr  get_frame_axis(const char* s_axis ) const ;
+    sfr  get_frame_prim(const char* s_prim ) const ;
     sfr  get_frame_nidx(const char* s_nidx ) const ;
+    sfr  get_frame_prim(int prim ) const ;
+    sfr  get_frame_nidx(int nidx ) const ;
 
     sfr  get_frame(const char* q_spec) const ;
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
@@ -604,6 +610,8 @@ struct stree
              ) const ;
 
     void get_prim_aabb( double* aabb, const snode& node, std::ostream* out, VTR* t_stack ) const ;
+    void get_prim_aabb( std::vector<std::array<double,6>>& vbb, const std::vector<snode>& nodes) const ;
+
 
     void get_nodes(std::vector<int>& nodes, const char* sub) const ;
     void get_depth_range(unsigned& mn, unsigned& mx, const char* sub) const ;
@@ -808,6 +816,8 @@ struct stree
     void populate_nidx_prim();
     void check_nidx_prim() const ;
     int  get_prim_for_nidx(int nidx) const ;
+    int  get_nidx_for_prim(int prim) const ;
+
 
     void localize_photon_inplace( sphoton& p ) const ;
     NP* localize_photon(const NP* photon, bool consistency_check) const ;
@@ -2229,19 +2239,24 @@ inline sfr stree::get_frame_moi() const
     bool is_EXTENT = sstr::StartsWith(MOI, EXTENT_PFX) ;
     bool is_AXIS = sstr::StartsWith(MOI,  AXIS_PFX) ;
     bool is_NIDX = sstr::StartsWith(MOI,  NIDX_PFX) ;
+    bool is_PRIM = sstr::StartsWith(MOI,  PRIM_PFX) ;
 
     sfr mf = {} ;
     if( is_EXTENT )
     {
-        mf = sfr::MakeFromExtent<float>(  MOI + strlen(EXTENT_PFX) );
+        mf = get_frame_extent( MOI + strlen(EXTENT_PFX) );
     }
     else if( is_AXIS )
     {
-        mf = sfr::MakeFromAxis<float>(MOI + strlen(AXIS_PFX), ',');
+        mf = get_frame_axis( MOI + strlen(AXIS_PFX) );
     }
     else if( is_NIDX )
     {
         mf = get_frame_nidx( MOI + strlen(NIDX_PFX) );
+    }
+    else if( is_PRIM )
+    {
+        mf = get_frame_prim( MOI + strlen(PRIM_PFX) );
     }
     else
     {
@@ -2250,21 +2265,66 @@ inline sfr stree::get_frame_moi() const
     return mf ;
 }
 
+inline sfr stree::get_frame_extent(const char* s_extent ) const
+{
+    std::string name = EXTENT_PFX ;
+    name += s_extent ;
+    sfr fr = sfr::MakeFromExtent<float>( s_extent );
+    fr.set_name(name.c_str());
+    return fr ;
+}
+inline sfr stree::get_frame_axis(const char* s_axis ) const
+{
+    std::string name = AXIS_PFX ;
+    name += s_axis ;
+    sfr fr = sfr::MakeFromAxis<float>(s_axis, ',');
+    fr.set_name(name.c_str());
+    return fr ;
+}
 
+/**
+stree::get_frame_prim
+-----------------------
+
+::
+
+     MOI=PRIM:691 cxr_min.sh
+
+**/
+
+inline sfr stree::get_frame_prim(const char* s_prim ) const
+{
+    std::string name = PRIM_PFX ;
+    name += s_prim ;
+    int prim = sstr::AsInt(s_prim, -1);
+    sfr fr = get_frame_prim( prim );
+    fr.set_name(name.c_str());
+    return fr ;
+}
 inline sfr stree::get_frame_nidx(const char* s_nidx ) const
 {
+    std::string name = NIDX_PFX ;
+    name += s_nidx ;
     int nidx = sstr::AsInt(s_nidx, -1);
+    sfr fr = get_frame_nidx( nidx );
+    fr.set_name(name.c_str());
+    return fr ;
+}
+inline sfr stree::get_frame_prim(int prim) const
+{
+    int nidx = get_nidx_for_prim(prim);
+    return get_frame_nidx(nidx);
+}
+inline sfr stree::get_frame_nidx(int nidx) const
+{
     assert( nidx > -1 );
-
     const snode& node = nds[nidx];
     BB bb ;
     get_prim_aabb( bb.data(), node, nullptr, nullptr );
 
     sfr f ;
-    f.set_name(s_nidx);
     f.m2w = m2w[nidx] ;
     f.w2m = w2m[nidx] ;
-
     s_bb::CenterExtent<double>( f.ce_data(), bb.data() );
 
     return f ;
@@ -3709,6 +3769,16 @@ inline void stree::get_prim_aabb( double* aabb, const snode& node, std::ostream*
 }
 
 
+inline void stree::get_prim_aabb( std::vector<std::array<double,6>>& vbb, const std::vector<snode>& nodes) const
+{
+    for( size_t i = 0 ; i < nodes.size() ; i++ )
+    {
+        const snode& node = nodes[i];
+        BB bb ;
+        get_prim_aabb( bb.data(), node, nullptr, nullptr );
+        vbb.push_back(bb);
+    }
+}
 
 
 
@@ -5860,6 +5930,15 @@ inline NPFold* stree::get_global_aabb() const
     return f ;
 }
 
+/**
+stree::get_global_aabb_sibling_overlaps
+-----------------------------------------
+
+TEST=get_global_aabb_sibling_overlaps ~/o/sysrap/tests/stree_load_test.sh
+TEST=get_global_aabb_sibling_overlaps ~/o/sysrap/tests/stree_load_test.sh pdb
+
+**/
+
 
 inline NPFold* stree::get_global_aabb_sibling_overlaps() const
 {
@@ -5867,20 +5946,12 @@ inline NPFold* stree::get_global_aabb_sibling_overlaps() const
     get_global_nodes(gnd);
     size_t num_gnd = gnd.size();
 
+    VBB gbb ;
+    get_prim_aabb(gbb, gnd);
+    size_t num_gbb = gbb.size();
+    assert( num_gbb == num_gnd );
 
     std::cout << "[stree::get_global_aabb_sibling_overlaps num_gnd " << num_gnd << "\n" ;
-
-
-    VBB gbb ;
-    for( size_t i = 0 ; i < num_gnd ; i++ )
-    {
-        const snode& a = gnd[i];
-        BB _a ;
-        get_prim_aabb( _a.data(), a, nullptr, nullptr );
-        gbb.push_back(_a);
-    }
-
-
 
     VBB vbb ;
     VND vnd ;
@@ -6814,11 +6885,28 @@ inline int stree::lookup_mtline( int mtindex ) const
 stree::populate_prim_nidx
 ----------------------------
 
-mapping stree.h/nidx to CSGFoundry/globalPrimIdx
+nidx
+   index into the full flattened tree of volumes, for JUNO 0->~400k
 
-Need to "faux_import" ie a stripped down form of CSGImport::importSolid
-within stree to establish the correspondence between nidx and globalPrimIdx
-Every nidx will have a single globalPrimIdx but its not 1:1
+prim
+   index into CSGPrim array (aka globalPrimIdx), for JUNO 0->~4k
+   which is greatly reduced compared to the full tree due to the factorization
+   that avoids repetition of same shape volumes
+
+prim_nidx
+   array of *nidx* indices for each implicit *prim* index of that array.
+   This *prim* indices to be converted into *nidx*.
+   For instanced volumes the first *nidx* is returned, for global volumes
+   the relationship is 1:1 making prim_nidx more useful
+
+
+How are stree.h/nidx related to CSGFoundry/globalPrimIdx
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This method used a "faux_import" technique to arrive at the "globalPrimIdx" using
+a stripped down form of CSGImport::importSolid within stree that establish
+the correspondence between nidx and globalPrimIdx
+Every nidx will have a single globalPrimIdx but the relationship is not 1:1
 multiple nidx will have the same globalPrimIdx due to instancing.
 
 HMM this approach provides way to go from globalPrimIdx to nidx,
@@ -7116,6 +7204,25 @@ inline int stree::get_prim_for_nidx(int nidx) const
 {
     return nidx < int(nidx_prim.size()) ? nidx_prim[nidx] : -1 ;
 }
+
+/**
+stree::get_nidx_for_prim
+-------------------------
+
+Expected to give nidx for all prim (aka globalPrimIdx)
+never giving -1 for valid prim.
+
+**/
+
+inline int stree::get_nidx_for_prim(int prim) const
+{
+    return prim < int(prim_nidx.size()) ? prim_nidx[prim] : -1 ;
+}
+
+
+
+
+
 
 
 /**

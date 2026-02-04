@@ -37,6 +37,7 @@ The vector types include::
    #include <array>
    #include <cstring>
    #include <cassert>
+   #include "NP.hh"
 #endif
 
 
@@ -274,10 +275,12 @@ struct quad4
 
     SQUAD_METHOD void set_wavelength( float wl );
     SQUAD_METHOD float wavelength() const ;
+    SQUAD_METHOD unsigned simtrace_globalPrimIdx() const ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     std::string desc() const ;
+    static NP* zeros(size_t num);
     static quad4 make_ephoton();
     void ephoton() ;
     void normalize_mom_pol();
@@ -360,6 +363,8 @@ SQUAD_METHOD unsigned quad4::flagmask() const
     return q3.u.w ;
 }
 
+
+
 SQUAD_METHOD void quad4::set_wavelength( float wl ){ q2.f.w = wl ; }
 SQUAD_METHOD float quad4::wavelength() const { return q2.f.w ; }
 
@@ -381,6 +386,36 @@ SQUAD_METHOD void quad4::get_flags(unsigned& boundary, unsigned& identity, unsig
     idx = ( q3.u.z & 0x7fffffffu ) ;
     orient = ( q3.u.z & 0x80000000u ) ? -1.f : 1.f ;
 }
+
+
+/**
+quad4::simtrace_globalPrimIdx
+------------------------------
+
+NB simtrace layout is different from standard, see sevent::add_simtrace
+
+**/
+
+SQUAD_METHOD unsigned quad4::simtrace_globalPrimIdx() const
+{
+    return q2.u.w >> 16 ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct quad4_selector
 {
@@ -800,6 +835,15 @@ inline std::string quad4::desc() const
     std::string s = ss.str();
     return s ;
 }
+
+inline NP* quad4::zeros(size_t num) // static
+{
+    NP* qq = NP::Make<float>(num, 4, 4 );
+    return qq ;
+}
+
+
+
 
 /**
 quad4::ephoton

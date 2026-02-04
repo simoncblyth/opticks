@@ -381,14 +381,25 @@ inline void s_bb::include_aabb_widen(  const float* aabb  )
     IncludeAABB<float,double>( data(), aabb );
 }
 
+
+/**
+s_bb::center_extent
+--------------------
+
+Prior to 2026/02/03 the division by 2. was omitted giving double the extent.
+However bbox not effected, so probably limited effect.
+
+Used by CSGCopy::copy
+
+**/
+
 template<typename T>
 inline void s_bb::center_extent( T* ce ) const
 {
     ce[0] = ( x0 + x1 )/2. ;
     ce[1] = ( y0 + y1 )/2. ;
     ce[2] = ( z0 + z1 )/2. ;
-    ce[3] = std::max(std::max(x1-x0,y1-y0),z1-z0)/2. ;  // 2026-2-3 fix omitted /2.
-    assert(0); // checking users
+    ce[3] = std::max(std::max(x1-x0,y1-y0),z1-z0)/2. ;
 }
 
 
