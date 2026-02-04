@@ -791,7 +791,7 @@ to call this for each frame, usually once only.
 
 **/
 
-
+#ifdef WITH_FRAME
 void SEvt::setFrame(const sframe& fr )
 {
     const char* name = fr.get_name() ;
@@ -810,7 +810,7 @@ void SEvt::setFramePlaceholder()
     sframe fr = sframe::Fabricate(0.f,0.f,0.f);
     setFrame(fr);
 }
-
+#endif
 
 
 const bool SEvt::transformInputPhoton_VERBOSE = ssys::getenvbool("SEvt__transformInputPhoton_VERBOSE") ;
@@ -834,8 +834,10 @@ void SEvt::transformInputPhoton()
         << " hasInputPhoton " <<  hasInputPhoton()
         << " proceed " << ( proceed ? "YES" : "NO " )
         << "\n"
+#ifdef WITH_FRAME
         << frame.desc()
         << "\n"
+#endif
         ;
 
     if(!proceed) return ;
@@ -1078,12 +1080,24 @@ SEvt::setGeo
 
 SGeo is a protocol for geometry access fulfilled by CSGFoundry (and formerly by GGeo)
 
-Canonical invokation is from G4CXOpticks::setGeometry
 This connection between the SGeo geometry and SEvt is what allows
 the appropriate instance frame to be accessed. That is vital for
 looking up the sensor_identifier and sensor_index.
 
 TODO: replace this with stree.h based approach
+
+
+Invoked with stack::
+
+    SEvt::setGeo
+    CSGOptiX::InitEvt
+    CSGOptiX::Create
+    CSGOptiX::SimtraceMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:156
+    main
+
+
+
+
 
 **/
 
@@ -4633,13 +4647,14 @@ void SEvt::saveExtra(const char* base, const char* name, const NP* a ) const
     a->save(dir, name );
 }
 
-
+#ifdef WITH_FRAME
 void SEvt::saveFrame(const char* dir) const
 {
     LOG(LEVEL) << "[ dir " << dir ;
     frame.save(dir);
     LOG(LEVEL) << "] dir " << dir ;
 }
+#endif
 
 
 std::string SEvt::descComponent() const

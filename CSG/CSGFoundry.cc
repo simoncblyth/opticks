@@ -109,7 +109,9 @@ CSGFoundry::CSGFoundry()
     sim(SSim::Get()),
     import(new CSGImport(this)),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings
+#ifdef WITH_CF_FRAME
     target(new CSGTarget(this)),
+#endif
     maker(new CSGMaker(this)),
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
@@ -3519,6 +3521,8 @@ std::string CSGFoundry::descGAS() const
 
 
 
+#ifdef WITH_CF_FRAME
+
 /**
 CSGFoundry::parseMOI
 -------------------------
@@ -3544,6 +3548,8 @@ const char* CSGFoundry::getName(unsigned midx) const
 {
     return id->getName(midx);
 }
+
+
 
 
 /**
@@ -3851,15 +3857,21 @@ from the geometry.
 
 HMM: not called after Create, see CSGOptiX::initFrame
 
+
+Formerly frame mechanics had to be done up here at CSGFoundry level
+due to the need for geometry info to form the frame from envvar config.
+But after stree.h improvements there is no reason not to do within SSim+stree
+
+TODO: reposition SEvt prep into SSim::AfterLoadOrCreate and sframe/sfr prep into stree::AfterLoadOrCreate ?
+
 **/
 
 void CSGFoundry::AfterLoadOrCreate() // static
 {
     CSGFoundry* fd = CSGFoundry::Get();
+    if(!fd) return ;
 
     SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
-
-    if(!fd) return ;
 
     sframe fr = fd->getFrameE() ;
 
@@ -3867,17 +3879,6 @@ void CSGFoundry::AfterLoadOrCreate() // static
     SEvt::SetFrame(fr); // now only needs to be done once to transform input photons
 }
 
-
-/**
-TODO CSGFoundry::flatIdxToMOI ?
----------------------------------
-
-Method to convert the flat global inst_idx into a more informative MOI mname:mord:gas_iidx
-that is likely to last longer before changing its meaning
-(although there can be several CSGPrim within the GAS inst_idx could simply use the first
-which should be the outer one)
-
-**/
 
 
 /**
@@ -3932,7 +3933,7 @@ int CSGFoundry::getTransform(qat4& q, int midx, int mord, int gord) const
     return target->getTransform(q, midx, mord, gord);
 }
 
-
+#endif
 
 /**
 CSGFoundry::kludgeScalePrimBBox

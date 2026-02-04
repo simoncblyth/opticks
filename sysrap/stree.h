@@ -4419,8 +4419,22 @@ inline int stree::load_( const char* dir )
     return 0 ;
 }
 
+/**
+stree::import_
+----------------
 
+The stree is imported by SSim::load_ before CSGFoundry instanciation, example call stack::
 
+    stree::import_
+    SSim::load_
+    SSim::load
+    SSim::Load
+    CSGFoundry::Load_   ## static loader invoked before CSGFoundry::CSGFoundry ctor which uses SSim::Get
+    CSGFoundry::Load
+    CSGOptiX::SimtraceMain
+    main
+
+**/
 
 inline void stree::import_(const NPFold* fold)
 {

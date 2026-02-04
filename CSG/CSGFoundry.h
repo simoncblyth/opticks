@@ -19,9 +19,15 @@ struct SMeshGroup ;
 #include "stran.h"
 #include "SGeo.hh"
 
+// TODO : ELIMINATE THE WITH_CF_FRAME block, moving to stree+SSim
+// stymied by SGeo
+#define WITH_CF_FRAME 1
+#ifdef WITH_CF_FRAME
 struct sframe ;
-struct SName ;
 struct CSGTarget ;
+#endif
+
+struct SName ;
 struct CSGMaker ;
 struct CSGImport ;
 
@@ -36,6 +42,10 @@ struct CSGImport ;
 /**
 CSGFoundry
 ============
+
+The purpose of CSGFoundry is to hold the subset of geometry info that is
+needed on GPU in a form suitable for giving to OptiX.
+
 
 ::
 
@@ -83,10 +93,24 @@ plan
     array of float4 planes
 
 
+
+TODO: Remove WITH_SGEO SGeo pure virtual base struct
+-----------------------------------------------------
+
+The SGeo base enables holding pointer to CSGFoundry within SEvt
+using SEvt::setGeo. But now that all geometry info is better accessed
+from stree this complication can be removed ?
+
 **/
 
 
+#define WITH_SGEO 1
+
+#ifdef WITH_SGEO
 struct CSG_API CSGFoundry : public SGeo
+#else
+struct CSG_API CSGFoundry
+#endif
 {
     static const plog::Severity LEVEL ;
     static const int  VERBOSE ;
@@ -362,6 +386,7 @@ struct CSG_API CSGFoundry : public SGeo
     int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ;
     const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
 
+#ifdef WITH_CF_FRAME
     // id
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
     const char* getName(unsigned midx) const ;
@@ -379,10 +404,11 @@ struct CSG_API CSGFoundry : public SGeo
     sframe getFrameE() const ;
     static void AfterLoadOrCreate();
 
-
     // target
     int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
+#endif
+
 
     template <typename T> void setMeta( const char* key, T value );
     template <typename T> T    getMeta( const char* key, T fallback);
@@ -453,7 +479,9 @@ struct CSG_API CSGFoundry : public SGeo
     CSGImport*  import ;
     SName*    id ;   // holds the meshname vector of G4VSolid names
 
+#ifdef WITH_CF_FRAME
     CSGTarget*  target ;
+#endif
     CSGMaker*   maker ;
     bool        deepcopy_everynode_transform ;
 
