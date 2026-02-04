@@ -206,7 +206,28 @@ if __name__ == '__main__':
     m2w = sf.m2w
 
     gs = e.f.genstep
-    st = e.f.simtrace
+
+    st_a = e.f.simtrace
+
+    try:
+        st_o = e.f.simtrace_overlap
+    except AttributeError:
+        st_o = None
+    pass
+
+    OVERLAP_SWITCH = "OVERLAP_SWITCH" in os.environ
+
+    if not OVERLAP_SWITCH:
+        st = st_a
+    else:
+        if st_o is None:
+            print("OVERLAP_SWITCH : BUT NO e.f.simtrace_overlap : create with ./cxt_min.sh scan")
+            sys.exit(1)
+        else:
+            print("OVERLAP_SWITCH : now using e.f.simtrace_overlap instead of e.f.simtrace")
+            st = st_o
+        pass
+    pass
 
     gs_pos = gs[:,1]
     all_one = np.all( gs_pos[:,3] == 1. )    ## W
@@ -281,13 +302,29 @@ if __name__ == '__main__':
 
     gnrm = ust[:,0].copy()
     gpos = ust[:,1].copy()
-
     gnrm[...,3] = 0.   ## surface normal transforms as vector
     gpos[...,3] = 1.   ## intersect position transforms as position
 
     ## transform from global to local frame
     lnrm = np.dot( gnrm, w2m )
     lpos = np.dot( gpos, w2m )
+
+    if not st_o is None:
+        _ii_o = st_o[:,3,3].view(np.int32)
+        _gp_bn_o = st_o[:,2,3].view(np.int32)
+        _gp_o = _gp_bn_o >> 16
+        _bn_o = _gp_bn_o & 0xffff
+
+        gnrm_o = st_o[:,0].copy()
+        gpos_o = st_o[:,1].copy()
+        gnrm_o[...,3] = 0.   ## surface normal transforms as vector
+        gpos_o[...,3] = 1.   ## intersect position transforms as position
+
+        lnrm_o = np.dot( gnrm_o, w2m )
+        lpos_o = np.dot( gpos_o, w2m )
+        _unrm_o = gnrm_o if GLOBAL else lnrm_o
+        _upos_o = gpos_o if GLOBAL else lpos_o
+    pass
 
     ## GLOBAL is not default, so normally elu_m2w is identity
     elu_m2w = m2w if GLOBAL else np.eye(4)   ## try to make EYE,LOOK,UP stay local even in GLOBAL
@@ -303,16 +340,30 @@ if __name__ == '__main__':
         ii = _ii[boxsel]
         gp = _gp[boxsel]
         bn = _bn[boxsel]
+
+        if not st_o is None:
+            boxsel_o = np.all( (_upos_o[:,:3] > BOXSEL[:,0]) & (_upos_o[:,:3] < BOXSEL[:,1]), axis=1)
+            upos_o = _upos_o[boxsel_o]
+            unrm_o = _unrm_o[boxsel_o]
+            ii_o = _ii_o[boxsel_o]
+            gp_o = _gp_o[boxsel_o]
+            bn_o = _bn_o[boxsel_o]
+        pass
     else:
         upos = _upos
         unrm = _unrm
         ii = _ii
         gp = _gp
         bn = _bn
+
+        if not st_o is None:
+            upos_o = _upos_o
+            unrm_o = _unrm_o
+            ii_o = _ii_o
+            gp_o = _gp_o
+            bn_o = _bn_o
+        pass
     pass
-
-
-
 
 
     EXPR = list(map(str.strip,textwrap.dedent(r"""
@@ -328,11 +379,6 @@ if __name__ == '__main__':
         if expr == "" or expr[0] == "#": continue
         print(repr(eval(expr)))
     pass
-
-
-
-
-
 
 
     idtab = UniqueTable("idtab", ii, None)

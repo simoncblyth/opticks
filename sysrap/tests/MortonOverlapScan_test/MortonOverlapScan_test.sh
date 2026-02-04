@@ -35,15 +35,10 @@ if [ ! -f "$simtrace" ]; then
     exit 1
 fi
 
-test=overlap
-unset TEST
-export TEST=${TEST:-$test}
-
-
 defarg="info_nvcc_gcc_run"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE name tmp TMP FOLD bin script defarg arg cuda_prefix CUDA_PREFIX test TEST mfold MFOLD"
+vv="BASH_SOURCE name tmp TMP FOLD bin script defarg arg cuda_prefix CUDA_PREFIX mfold MFOLD"
 
 log(){ echo $BASH_SOURCE $(date +%H:%M:%S) $* ; }
 

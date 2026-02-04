@@ -244,9 +244,9 @@ export LOGDIR=$BINBASE/$MOI
 
 #opticks_event_name=3d
 #opticks_event_name=2dxz_tall_wide
-opticks_event_name=2dxz_tall_wide_radial_range
+#opticks_event_name=2dxz_tall_wide_radial_range
 #opticks_event_name=2dxz
-#opticks_event_name=2dxy
+opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -346,6 +346,9 @@ export MFOLD=$TMP/GEOM/$GEOM/$bin/$rel/$EVT
 export SCRIPT=$(basename $BASH_SOURCE)
 SCRIPT=${SCRIPT/.sh}
 
+scan_sh=$(realpath ../sysrap/tests/MortonOverlapScan_test/MortonOverlapScan_test.sh)
+
+
 version=1
 VERSION=${VERSION:-$version}
 
@@ -423,6 +426,17 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE run/dbg error && exit 1
 fi
 
+if [ "${arg/scan}" != "$arg" ]; then
+    echo $BASH_SOURCE - morton overlap scan reading $MFOLD/simtrace.npy writing $MFOLD/simtrace_overlap.npy
+    if [ -f "$scan_sh" ]; then
+        $scan_sh run
+        ## HMM: CURRENTLY USING DEFAULT BBOX
+    else
+        echo $BASH_SOURCE missing scan_sh $scan_sh pwd $PWD
+        exit 1
+    fi
+    [ $? -ne 0 ] && echo $BASH_SOURCE scan fail try nvcc_gcc_run arg && exit 1
+fi
 
 if [ "${arg/brab}" != "$arg" -o "${arg/list}" != "$arg" -o "${arg/pub}" != "$arg" ]; then
     ## THIS OLD BASE_grab.sh SYNCS TOO MUCH : BUT IT DOES OTHER THINGS LIKE list and pub
