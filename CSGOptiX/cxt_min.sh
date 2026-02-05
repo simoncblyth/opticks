@@ -244,9 +244,9 @@ export LOGDIR=$BINBASE/$MOI
 
 #opticks_event_name=3d
 #opticks_event_name=2dxz_tall_wide
-#opticks_event_name=2dxz_tall_wide_radial_range
+opticks_event_name=2dxz_tall_wide_radial_range
 #opticks_event_name=2dxz
-opticks_event_name=2dxy
+#opticks_event_name=2dxy
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -429,7 +429,13 @@ fi
 if [ "${arg/scan}" != "$arg" ]; then
     echo $BASH_SOURCE - morton overlap scan reading $MFOLD/simtrace.npy writing $MFOLD/simtrace_overlap.npy
     if [ -f "$scan_sh" ]; then
-        $scan_sh run
+
+        if [ -n "$SCAN_BUILD" ]; then
+            scan_arg=info_nvcc_gcc_run
+        else
+            scan_arg=run
+        fi
+        $scan_sh $scan_arg
         ## HMM: CURRENTLY USING DEFAULT BBOX
     else
         echo $BASH_SOURCE missing scan_sh $scan_sh pwd $PWD

@@ -13,17 +13,18 @@ struct sfr_test
 {
     static int main();
     static int MakeFromAxis();
-    static int hello();
+    static int roundtrip();
 };
 
 int sfr_test::main()
 {
     //const char* test = "ALL" ;
-    const char* test = "MakeFromAxis" ;
+    //const char* test = "MakeFromAxis" ;
+    const char* test = "roundtrip" ;
     const char* TEST = ssys::getenvvar("TEST", test);
     bool ALL = strcmp(TEST, "ALL") == 0 ;
     int rc = 0 ;
-    if(ALL||0==strcmp(TEST,"hello")) rc += hello();
+    if(ALL||0==strcmp(TEST,"roundtrip")) rc += roundtrip();
     if(ALL||0==strcmp(TEST,"MakeFromAxis")) rc += MakeFromAxis();
     return rc ;
 }
@@ -43,10 +44,10 @@ int sfr_test::MakeFromAxis()
     return 0 ;
 }
 
-int sfr_test::hello()
+int sfr_test::roundtrip()
 {
     sfr a ;
-    a.set_name("hello a");
+    a.set_name("sfr_test::roundtrip");
 
     a.aux0.x = 1 ;
     a.aux0.y = 2 ;
@@ -62,6 +63,9 @@ int sfr_test::hello()
     a.aux2.y = 200 ;
     a.aux2.z = 300 ;
     a.aux2.w = 400 ;
+
+    std::array<double,6> bb = {-300., -200., -100., +100., +200., +300. } ;
+    a.set_bb(bb.data());
 
     std::cout << "A\n" << a.desc() << std::endl;
     a.save("$FOLD");

@@ -167,7 +167,41 @@ bool SFrameGenstep::HasConfigEnv()
 }
 
 
-NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)
+/**
+SFrameGenstep::MakeCenterExtentGenstep_FromFrame
+--------------------------------------------------
+
+This uses config obtained from envvars such as CEGS to
+create an array of gensteps. sframe::set_grid is
+invoked to pass config details into the frame for
+persisting and use from python such as simtrace
+plotter cxt_min.py. Those details are also
+written into metadata of the gensteps.
+
+HMM: could avoid changing the frame by instead
+relying on the genstep metadata which might
+simplify FRAME_TRANSITION
+
+Q: What does simtrace cxt_min.py actually need from the frame ?
+
+
+simtrace stack::
+
+    SFrameGenstep::MakeCenterExtentGenstep_FromFrame
+    SEvt::createInputGenstep_simtrace
+    SEvt::createInputGenstep_configured
+    SEvt::addInputGenstep
+    SEvt::beginOfEvent
+    QSim::simtrace
+    CSGOptiX::simtrace
+    CSGOptiX::SimtraceMain
+    main
+
+
+**/
+
+
+NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
 {
     const float4& ce = fr.ce ;
 

@@ -109,9 +109,7 @@ CSGFoundry::CSGFoundry()
     sim(SSim::Get()),
     import(new CSGImport(this)),
     id(new SName(meshname)),   // SName takes a reference of the meshname vector of strings
-#ifdef WITH_CF_FRAME
     target(new CSGTarget(this)),
-#endif
     maker(new CSGMaker(this)),
     deepcopy_everynode_transform(true),
     last_added_solid(nullptr),
@@ -1045,7 +1043,13 @@ void CSGFoundry::gasCE(float4& ce, const std::vector<unsigned>& gas_idxs ) const
 
 
 
+/**
+CSGFoundry::iasCE
+------------------
 
+Finds BB of the IAS and uses that to fill in ce (CenterExtent).
+
+**/
 
 
 void CSGFoundry::iasCE(float4& ce, unsigned ias_idx_, unsigned long long emm ) const
@@ -3521,7 +3525,6 @@ std::string CSGFoundry::descGAS() const
 
 
 
-#ifdef WITH_CF_FRAME
 
 /**
 CSGFoundry::parseMOI
@@ -3602,22 +3605,56 @@ sframe CSGFoundry::getFrame() const // TODO: MIGRATE TO sfr.h
     const char* moi_or_iidx = ssys::getenvvar("MOI",sframe::DEFAULT_FRS); // DEFAULT_FRS "-1"
     return getFrame(moi_or_iidx);
 }
-sframe CSGFoundry::getFrame(const char* frs) const //  TODO: MIGRATE TO sfr.h
+
+/**
+CSGFoundry::getFrame
+--------------------
+
+The FRAME_TRANSITION starts moving away from sframe by
+switching to stree::getFrame to provide sfr which is used to
+populate the sframe
+
+Currently sframe::populate lacks handling of the grid metadata
+needed for simtrace. Actually seems that metadata not much used and
+anyhow if it was needed could include into the genstep metadata.
+
+**/
+
+
+sframe CSGFoundry::getFrame(const char* q_spec) const //  TODO: MIGRATE TO sfr.h
 {
     sframe fr = {} ;
-    int rc = getFrame(fr, frs ? frs : sframe::DEFAULT_FRS );
-    LOG_IF(error, rc != 0) << " frs " << frs << std::endl << getFrame_NOTES ;
-    if(rc != 0) std::raise(SIGINT);
 
+#ifdef FRAME_TRANSITION
+    stree* tree = getTree();
+    assert(tree);
+    sfr f = tree->get_frame(q_spec);
+    fr.populate(f);
+#else
+    const char* arg = frs ? frs : sframe::DEFAULT_FRS ;
+    int rc = getFrame(fr, arg );
+    LOG_IF(error, rc != 0) << " arg" << arg << std::endl << getFrame_NOTES ;
+    if(rc != 0) std::raise(SIGINT);
+#endif
     fr.prepare();  // creates Tran<double>
+
     return fr ;
 }
 
 
 
+#ifndef FRAME_TRANSITION
+
 /**
 CSGFoundry::getFrame
 ---------------------
+
+
+FRAME_TRANSITION SEEKS TO ELIMINATE THIS
+
+
+
+
 
 frs
     frame specification string is regarded to "looks_like_moi" when
@@ -3732,6 +3769,8 @@ int CSGFoundry::getFrame(sframe& fr, const char* frs ) const  //  TODO: MIGRATE 
     LOG_IF(error, rc != 0) << "Failed to lookup frame with frs [" << frs << "] looks_like_moi " << looks_like_moi  ;
     return rc ;
 }
+#endif
+
 
 int CSGFoundry::getFrame(sframe& fr, int inst_idx) const
 {
@@ -3760,8 +3799,9 @@ int CSGFoundry::getFrame(sframe& fr, int midx, int mord, int gord) const
     int rc = 0 ;
     if( midx == -1 )
     {
+        unsigned ias_idx = 0 ; // only one IAS
         unsigned long long emm = 0ull ;   // hmm instance var ?
-        iasCE(fr.ce, emm);
+        iasCE(fr.ce, ias_idx, emm);
     }
     else
     {
@@ -3933,7 +3973,6 @@ int CSGFoundry::getTransform(qat4& q, int midx, int mord, int gord) const
     return target->getTransform(q, midx, mord, gord);
 }
 
-#endif
 
 /**
 CSGFoundry::kludgeScalePrimBBox

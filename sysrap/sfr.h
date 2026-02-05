@@ -16,8 +16,8 @@ Unionized glm::tvec4 see examples/UseGLMSimple (too complex, keep it simple).
 struct sfr
 {
     static constexpr const char* NAME = "sfr" ;
-    static constexpr const unsigned NUM_4x4 = 3 ;
-    static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ;
+    static constexpr const unsigned NUM_4x4 = 4 ;
+    static constexpr const unsigned NUM_VALUES = NUM_4x4*4*4 ;  // 64
     static constexpr const double   EPSILON = 1e-5 ;
     static constexpr const char* DEFAULT_NAME = "ALL" ;
 
@@ -35,19 +35,25 @@ struct sfr
     template<typename T>
     static sfr MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, T delta_ax_distance_mm );
 
+                                 //  nv   nv_offset
+    glm::tvec4<double>  ce  ;    //  4       0
+    glm::tvec4<int64_t> aux0 ;   //  4       4
+    glm::tvec4<int64_t> aux1 ;   //  4       8
+    glm::tvec4<int64_t> aux2 ;   //  4      12       1st 4x4
 
-    glm::tvec4<double>  ce  ;    //  4*8 = 32       0
-    glm::tvec4<int64_t> aux0 ;   //  4*8 = 32      32
-    glm::tvec4<int64_t> aux1 ;   //  4*8 = 32      64
-    glm::tvec4<int64_t> aux2 ;   //  4*8 = 32      96
+    glm::tmat4x4<double>  m2w ;  //  16     16       2nd 4x4
+    glm::tmat4x4<double>  w2m ;  //  16     32       3rd 4x4
 
-    glm::tmat4x4<double>  m2w ;  // 4*4*8 = 128   128
-    glm::tmat4x4<double>  w2m ;  // 4*4*8 = 128   256
-
-    std::string name ;           //               384
+    glm::tvec3<double>  bbmn ;   //   3     48
+    glm::tvec3<double>  bbmx ;   //   3     51
+    glm::tvec2<double>  padd ;   //   2     54
+    glm::tvec4<double>  ext0 ;   //   4     56
+    glm::tvec4<double>  ext1 ;   //   4     60       4th 4x4
+                                 //   -     64
+    std::string name ;
 
     // bytewise comparison of sfr instances fails
-    // for 4 bytes at offset 384 corresponding to the std::string name reference
+    // for 4 bytes at offset corresponding to the std::string name reference
 
     sfr();
 
@@ -55,6 +61,8 @@ struct sfr
     template<typename T> void set_ce( const T* _ce );
     template<typename T> void set_extent( T _w );
     template<typename T> void set_m2w( const T* _v16, size_t nv=16 );
+    template<typename T> void set_bb(  const T* _bb6 );
+
 
     void set_idx(int idx) ;
     int  get_idx() const ;
@@ -122,36 +130,6 @@ sfr::MakeFromAxis
     MOI=AXIS:56,-54,-21271,5000 cxr_min.sh
 
     ELV=^s_EMF EYE=0,0,-2 UP=0,1,0 MOI=AXIS:56,-54,-21271,3843 cxr_min.sh
-
-
-    // EMF_ZC_32 / EMF_RC_32:
-    //   32 tilted rings (holders) defined in cylindrical coordinates around
-    //   the tilted axis a (θ = 56°, φ = −54°).
-    //   - Zc : coordinate along axis a, measured from the world origin (m).
-    //   - Rc : radial distance from axis a to the “neutral layer” of the ring (m).
-    const double WaterPoolConstructionEMF::EMF_ZC_32[WaterPoolConstructionEMF::kHolderRingCount] = {
-        21.271,  20.602,  19.554,  18.555,
-        17.077,  15.600,  14.122,  12.644,
-        11.166,   9.685,   8.207,   6.729,
-         5.251,   3.773,   2.295,   0.817,
-        -0.821,  -2.299,  -3.777,  -5.255,
-        -6.733,  -8.210,  -9.688, -11.166,
-       -12.644, -14.122, -15.600, -17.077,
-       -18.555, -19.554, -20.602, -21.271
-    };
-
-    const double WaterPoolConstructionEMF::EMF_RC_32[WaterPoolConstructionEMF::kHolderRingCount] = {
-        3.843,   6.509,   9.185,  11.053,
-       13.210,  14.924,  16.325,  17.495,
-       18.465,  19.282,  19.951,  20.502,
-       20.930,  21.240,  21.450,  21.559,
-       21.559,  21.450,  21.240,  20.930,
-       20.502,  19.951,  19.282,  18.465,
-       17.495,  16.325,  14.924,  13.210,
-       11.053,   9.185,   6.509,   3.843
-    };
-
-
 
 **/
 
@@ -230,6 +208,11 @@ inline sfr::sfr()
     aux2(0),
     m2w(1.),
     w2m(1.),
+    bbmn(0.,0.,0.),
+    bbmx(0.,0.,0.),
+    padd(0.,0.),
+    ext0(0.,0.,0.,0.),
+    ext1(0.,0.,0.,0.),
     name(DEFAULT_NAME)
 {
 }
@@ -264,7 +247,16 @@ inline void sfr::set_m2w( const T* vv, size_t nv )
 }
 
 
-
+template<typename T>
+inline void sfr::set_bb( const T* bb )
+{
+    bbmn.x = bb[0] ;
+    bbmn.y = bb[1] ;
+    bbmn.z = bb[2] ;
+    bbmx.x = bb[3] ;
+    bbmx.y = bb[4] ;
+    bbmx.z = bb[5] ;
+}
 
 
 
@@ -317,6 +309,15 @@ inline std::string sfr::desc() const
        << "\n"
        << "w2m\n"
        << stra<double>::Desc(w2m)
+       << "\n"
+       << "bbmn\n"
+       << stra<double>::Desc(bbmn)
+       << "\n"
+       << "bbmx\n"
+       << stra<double>::Desc(bbmx)
+       << "\n"
+       << "padd\n"
+       << stra<double>::Desc(padd)
        << "\n"
        << "is_identity " << ( is_identity() ? "YES" : "NO " ) << "\n"
        << "]sfr::desc\n"

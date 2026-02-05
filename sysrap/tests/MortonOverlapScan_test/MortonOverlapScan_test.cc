@@ -42,7 +42,7 @@ inline MortonOverlapScan_test::MortonOverlapScan_test()
     x1(bbox->size() > 3 ? (*bbox)[3] : 0.f ),
     y1(bbox->size() > 4 ? (*bbox)[4] : 0.f ),
     z1(bbox->size() > 5 ? (*bbox)[5] : 0.f ),
-    window(ssys::getenvint(WINDOW,2)),
+    window(ssys::getenvint(WINDOW,4)),
     _simtrace(NP::Load("$MFOLD/simtrace.npy")),
     num_simtrace(_simtrace ? _simtrace->shape[0] : 0),
     simtrace(_simtrace ? (quad4*)_simtrace->bytes() : nullptr),

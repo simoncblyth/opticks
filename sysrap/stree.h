@@ -496,7 +496,6 @@ struct stree
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
 
 
-
     const snode* pick_lvid_ordinal_node( int lvid, int ordinal, char ridx_type ) const ;
     const snode* _pick_lvid_ordinal_node( int lvid, int ordinal, char ridx_type ) const ;
 
@@ -510,7 +509,9 @@ struct stree
 
 
     sfr  get_frame_moi() const ;
+    sfr  get_frame(const char* q_spec ) const ;
 
+    sfr  get_frame_top() const ;
     sfr  get_frame_extent(const char* s_extent ) const ;
     sfr  get_frame_axis(const char* s_axis ) const ;
     sfr  get_frame_prim(const char* s_prim ) const ;
@@ -521,7 +522,6 @@ struct stree
     sfr  get_frame_nidx(int nidx ) const ;
     sfr  get_frame_inst(int inst ) const ;
 
-    sfr  get_frame(const char* q_spec) const ;
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_coords( sfr& f, const char* q_spec ) const ;
@@ -566,6 +566,7 @@ struct stree
     int         get_lvid(  int nidx) const ;
     int         get_copyno(int nidx) const ;
 
+    const snode* get_top() const ;
     const snode* get_node(int nidx) const ;
     const snode* get_parent_node(int nidx) const ;
     bool         is_outer_node(int nidx) const ;
@@ -2202,6 +2203,8 @@ inline int stree::pick_lvid_ordinal_repeat_ordinal_inst( const char* q_spec ) co
     return inst_idx ;
 }
 
+
+
 /**
 stree::get_frame_f4
 --------------------
@@ -2243,40 +2246,111 @@ Special cased MOI envvar starting "EXTENT:" normally MOI is of the below form::
 
 inline sfr stree::get_frame_moi() const
 {
-    bool is_EXTENT = sstr::StartsWith(MOI, EXTENT_PFX) ;
-    bool is_AXIS = sstr::StartsWith(MOI,  AXIS_PFX) ;
-    bool is_NIDX = sstr::StartsWith(MOI,  NIDX_PFX) ;
-    bool is_PRIM = sstr::StartsWith(MOI,  PRIM_PFX) ;
-    bool is_INST = sstr::StartsWith(MOI,  INST_PFX) ;
+    return get_frame(MOI);
+}
 
-    sfr mf = {} ;
-    if( is_EXTENT )
+
+/**
+stree::get_frame
+-----------------
+
+
+Q: An instance may encompasses multiple lv (and multiple snode)
+   so which nidx is collected together with the inst
+   transforms into inst_nidx ? The outer one would be most useful.
+
+A: By observation the outer instance node is collected into inst_nidx
+
+TODO: AVOID DUPLICATION BETWEEN THIS AND CSGFoundry::getFrame
+
+**/
+
+inline sfr stree::get_frame(const char* q_spec ) const
+{
+    char delim = ',' ;
+
+    bool is_TOP = q_spec == nullptr || strcmp(q_spec, "-1") == 0 || strcmp(q_spec, "") == 0 ;
+    bool is_EXTENT = sstr::StartsWith(q_spec, EXTENT_PFX) ;
+    bool is_AXIS = sstr::StartsWith(q_spec,  AXIS_PFX) ;
+    bool is_NIDX = sstr::StartsWith(q_spec,  NIDX_PFX) ;
+    bool is_PRIM = sstr::StartsWith(q_spec,  PRIM_PFX) ;
+    bool is_INST = sstr::StartsWith(q_spec,  INST_PFX) ;
+    bool is_NPYFILE =  sstr::EndsWith(q_spec, ".npy");
+    bool is_TRIPLET = sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 ;
+    bool is_COORDS = sstr::looks_like_list(q_spec, delim, 1, 4) ;
+    bool is_TRANSFORM = sstr::looks_like_list(q_spec, delim, 16, 16) ;
+
+    sfr f = {} ;
+    f.set_name(q_spec);
+
+    int rc = 0 ;
+
+    if( is_TOP )
     {
-        mf = get_frame_extent( MOI + strlen(EXTENT_PFX) );
+        f = get_frame_top() ;
+    }
+    else if( is_EXTENT )
+    {
+        f = get_frame_extent( q_spec + strlen(EXTENT_PFX) );
     }
     else if( is_AXIS )
     {
-        mf = get_frame_axis( MOI + strlen(AXIS_PFX) );
+        f = get_frame_axis( q_spec + strlen(AXIS_PFX) );
     }
     else if( is_NIDX )
     {
-        mf = get_frame_nidx( MOI + strlen(NIDX_PFX) );
+        f = get_frame_nidx( q_spec + strlen(NIDX_PFX) );
     }
     else if( is_PRIM )
     {
-        mf = get_frame_prim( MOI + strlen(PRIM_PFX) );
+        f = get_frame_prim( q_spec + strlen(PRIM_PFX) );
     }
     else if( is_INST )
     {
-        mf = get_frame_inst( MOI + strlen(INST_PFX) );
+        f = get_frame_inst( q_spec + strlen(INST_PFX) );
+    }
+    else if( is_NPYFILE )
+    {
+        rc = get_frame_from_npyfile(f, q_spec);
+    }
+    else if( is_TRIPLET )
+    {
+        rc = get_frame_from_triplet(f, q_spec);
+    }
+    else if( is_COORDS )
+    {
+        rc = get_frame_from_coords(f, q_spec);
+    }
+    else if( is_TRANSFORM )
+    {
+        rc = get_frame_from_transform(f, q_spec);
     }
     else
     {
-        mf = get_frame(MOI) ;  // normal form eg sWaterTube:0:-2
+        rc = 1 ;
     }
-    return mf ;
+
+    if(rc != 0) std::cerr
+        << "stree::get_frame FAIL "
+        << " q_spec[" << ( q_spec ? q_spec : "-" ) << "]"
+        << " rc " << rc
+        << "\n"
+        ;
+
+    return f ;
 }
 
+/**
+stree::get_frame_top
+---------------------
+
+Contrast the simplicity of this with the contortions done in CSGFoundry::iasBB
+**/
+
+inline sfr stree::get_frame_top() const
+{
+    return get_frame_nidx(0);
+}
 inline sfr stree::get_frame_extent(const char* s_extent ) const
 {
     std::string name = EXTENT_PFX ;
@@ -2333,9 +2407,6 @@ inline sfr stree::get_frame_inst(const char* s_inst ) const
     return fr ;
 }
 
-
-
-
 inline sfr stree::get_frame_prim(int prim) const
 {
     int nidx = get_nidx_for_prim(prim);
@@ -2352,6 +2423,7 @@ inline sfr stree::get_frame_nidx(int nidx) const
     f.m2w = m2w[nidx] ;
     f.w2m = w2m[nidx] ;
     s_bb::CenterExtent<double>( f.ce_data(), bb.data() );
+    f.set_bb(bb.data());
 
     return f ;
 }
@@ -2379,70 +2451,6 @@ inline sfr stree::get_frame_inst(int ii) const
 }
 
 
-
-/**
-stree::get_frame
-------------------
-
-
-Q: An instance may encompasses multiple lv (and multiple snode)
-   so which nidx is collected together with the inst
-   transforms into inst_nidx ? The outer one would be most useful.
-
-A: By observation the outer instance node is collected into inst_nidx
-
-TODO: AVOID DUPLICATION BETWEEN THIS AND CSGFoundry::getFrame
-
-**/
-
-inline sfr stree::get_frame(const char* q_spec ) const
-{
-    sfr f ;
-    f.set_name(q_spec);
-
-    char delim = ',' ;
-
-    enum { NONE, NPYFILE, TRIPLET, COORDS, TRANSFORM };
-
-    int q_form = NONE;
-
-    if( sstr::EndsWith(q_spec, ".npy") )
-    {
-        q_form = NPYFILE ;
-    }
-    else if( sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 )
-    {
-        q_form = TRIPLET ;
-    }
-    else if( sstr::looks_like_list(q_spec, delim, 1, 4) )
-    {
-        q_form = COORDS ;
-    }
-    else if( sstr::looks_like_list(q_spec, delim, 16, 16) )
-    {
-        q_form = TRANSFORM ;
-    }
-
-    int rc = 0 ;
-    switch( q_form )
-    {
-        case NPYFILE:    rc = get_frame_from_npyfile(f, q_spec)   ; break ;
-        case TRIPLET:    rc = get_frame_from_triplet(f, q_spec)   ; break ;
-        case COORDS:     rc = get_frame_from_coords(f, q_spec)    ; break ;
-        case TRANSFORM:  rc = get_frame_from_transform(f, q_spec) ; break ;
-        case NONE:       rc = 1                                   ; break ;
-    }
-
-    if(rc != 0) std::cerr
-        << "stree::get_frame FAIL "
-        << " q_spec[" << ( q_spec ? q_spec : "-" ) << "]"
-        << " q_form " << q_form
-        << " rc " << rc
-        << "\n"
-        ;
-
-    return f ;
-}
 
 
 inline int stree::get_frame_from_npyfile(sfr& f, const char* q_spec ) const
@@ -2611,19 +2619,6 @@ inline int stree::get_frame_from_transform(sfr& f, const char* q_spec ) const
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
 stree::has_frame
 ------------------
@@ -2773,6 +2768,8 @@ inline int stree::get_frame_inst(sfr& f, int ii, std::ostream* out, VTR* t_stack
     f.m2w = *m2w ;
     f.w2m = *w2m ;
 
+    f.set_bb(bb.data());
+
     return 0 ;
 }
 
@@ -2878,6 +2875,7 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
 
     int rc = get_node_ce_bb( ce, bb, node, contrib_bb, contrib_tr );
     f.set_ce(ce.data() );
+    f.set_bb(bb.data() );
 
     if(contrib_bb)
     {
@@ -3301,9 +3299,22 @@ inline int stree::get_copyno(int nidx) const
     return nidx > -1 ? nds[nidx].copyno : -1 ;
 }
 
+/**
+stree::get_top
+---------------
+
+Returns root node, the first "World" node which has no parent node.
+
+**/
+
+inline const snode* stree::get_top() const
+{
+    return get_node(0);
+}
 inline const snode* stree::get_node(int nidx) const
 {
-    return &nds[nidx] ;
+    int num_nd = nds.size();
+    return nidx > -1 && nidx < num_nd ? &nds[nidx] : nullptr ;
 }
 inline const snode* stree::get_parent_node(int nidx) const
 {

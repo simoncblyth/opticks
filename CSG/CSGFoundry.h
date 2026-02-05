@@ -19,13 +19,8 @@ struct SMeshGroup ;
 #include "stran.h"
 #include "SGeo.hh"
 
-// TODO : ELIMINATE THE WITH_CF_FRAME block, moving to stree+SSim
-// stymied by SGeo
-#define WITH_CF_FRAME 1
-#ifdef WITH_CF_FRAME
 struct sframe ;
 struct CSGTarget ;
-#endif
 
 struct SName ;
 struct CSGMaker ;
@@ -103,6 +98,8 @@ from stree this complication can be removed ?
 
 **/
 
+
+#define FRAME_TRANSITION 1
 
 #define WITH_SGEO 1
 
@@ -386,7 +383,6 @@ struct CSG_API CSGFoundry
     int       getInstanceIndex(int gas_idx_ , unsigned ordinal) const ;
     const qat4* getInstance_with_GAS_ordinal(int gas_idx_ , unsigned ordinal=0) const  ;
 
-#ifdef WITH_CF_FRAME
     // id
     void parseMOI(int& midx, int& mord, int& iidx, const char* moi) const ;
     const char* getName(unsigned midx) const ;
@@ -396,6 +392,7 @@ struct CSG_API CSGFoundry
     sframe getFrame(const char* moi_or_iidx) const ;
 
     static constexpr const char* getFrame_VERBOSE = "CSGFoundry__getFrame_VERBOSE" ;
+
     int getFrame(sframe& fr, const char* frs ) const ;
     int getFrame(sframe& fr, int midx, int mord, int gord) const ;
     int getFrame(sframe& fr, int ins_idx ) const ;
@@ -407,7 +404,6 @@ struct CSG_API CSGFoundry
     // target
     int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;
     int getTransform(   qat4& q   , int midx, int mord, int gord=-1) const ;
-#endif
 
 
     template <typename T> void setMeta( const char* key, T value );
@@ -479,9 +475,7 @@ struct CSG_API CSGFoundry
     CSGImport*  import ;
     SName*    id ;   // holds the meshname vector of G4VSolid names
 
-#ifdef WITH_CF_FRAME
     CSGTarget*  target ;
-#endif
     CSGMaker*   maker ;
     bool        deepcopy_everynode_transform ;
 

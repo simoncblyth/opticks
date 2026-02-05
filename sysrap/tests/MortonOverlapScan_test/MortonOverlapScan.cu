@@ -23,34 +23,57 @@ __device__ uint64_t expandBits(uint32_t v)
     return x;
 }
 
+
+
+/**
+
+             |
+     prev_id |  self_id  off_id[0] off_id[1] ...
+             |
+
+**/
+
 struct OverlapPredicate
 {
     const quad4* data;
     int n;
     int window;
-    __device__ bool operator()(int i) const
-    {
+
+    __device__ bool operator()(int i) const {
         if (i < window || i >= n - window) return false;
 
-        // Extract identity from quad4 (q3.w bit-cast)
+        int prev_id = data[i-1].simtrace_globalPrimIdx();
         int self_id = data[i].simtrace_globalPrimIdx();
+        if (self_id == prev_id) return false;
 
-        // Check local neighborhood for "Identity Flicker"
-        // In a clean geometry, neighbors in Morton space should share IDs.
-        // If IDs interleave (A-B-A), it's a high-probability overlap region.
+        float3 n_self = make_float3(data[i].q0.f.x, data[i].q0.f.y, data[i].q0.f.z);
 
-        bool flicker = false;
-        for(int off = 1; off <= window; ++off) {
-            int prev_id = data[i-off].simtrace_globalPrimIdx();
-            int next_id = data[i+off].simtrace_globalPrimIdx();
-            if (self_id != prev_id && prev_id == next_id) {
-                flicker = true;
-                break;
+        for (int off = 1; off <= window; ++off)
+        {
+            int off_id = data[i + off].simtrace_globalPrimIdx();
+
+            // If the identity we just came from (prev_id) reappears ahead,
+            // the current point (self_id) is an 'intruder' sandwiched between points of prev_id.
+            if (off_id == prev_id)
+            {
+                float3 n_off = make_float3(data[i + off].q0.f.x, data[i + off].q0.f.y, data[i + off].q0.f.z);
+
+                // Normal Check: Compare 'self' (intruder) vs 'lookahead' (host volume)
+                float dot = n_self.x * n_off.x +
+                            n_self.y * n_off.y +
+                            n_self.z * n_off.z;
+
+                // Touching: dot ~ -1.0 (Normals point away from each other)
+                // Overlap: dot > -0.9 (Surface orientations are not perfectly back-to-back)
+                if (dot > -0.98f) {
+                    return true;
+                }
             }
         }
-        return flicker;
+        return false;
     }
 };
+
 
 void MortonOverlapScan::Scan(
     const quad4* d_intersect,
@@ -103,7 +126,8 @@ void MortonOverlapScan::Scan(
     // 4. Stencil copy_if to find identity "flicker"
     thrust::device_vector<quad4> results(n_subset);
     thrust::counting_iterator<int> idx_first(0);
-    OverlapPredicate pred{ thrust::raw_pointer_cast(subset.data()), (int)n_subset, window };
+
+    OverlapPredicate  pred{ thrust::raw_pointer_cast(subset.data()), (int)n_subset, window };
 
     auto results_end = thrust::copy_if(policy, subset.begin(), subset.end(), idx_first, results.begin(), pred);
     *num_overlap = thrust::distance(results.begin(), results_end);

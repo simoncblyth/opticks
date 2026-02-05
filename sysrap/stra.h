@@ -45,6 +45,7 @@ struct stra
     static std::string Desc(const glm::tmat4x4<T>& tr);
     static std::string Desc(const glm::tvec4<T>& t);
     static std::string Desc(const glm::tvec3<T>& t);
+    static std::string Desc(const glm::tvec2<T>& t);
     static std::string Desc(const T* tt, int num);
     static std::string Desc(const T& t);
 
@@ -174,6 +175,13 @@ std::string stra<T>::Desc(const glm::tvec3<T>& t)
     const T* tt = glm::value_ptr(t);
     return Desc(tt, 3 );
 }
+template<typename T>
+std::string stra<T>::Desc(const glm::tvec2<T>& t)
+{
+    const T* tt = glm::value_ptr(t);
+    return Desc(tt, 2 );
+}
+
 
 
 template<typename T>

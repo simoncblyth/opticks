@@ -796,9 +796,17 @@ it was necessary to call this for every event due to the former call to addInput
 but now that the genstep setup is moved to SEvt::beginOfEvent it is only needed
 to call this for each frame, usually once only.
 
+
+simtrace stack::
+
+    SEvt::setFrame
+    SEvt::SetFrame
+    CSGFoundry::AfterLoadOrCreate
+    CSGFoundry::Load
+    CSGOptiX::SimtraceMain
+    main
+
 **/
-
-
 
 
 #ifdef WITH_FRAME
@@ -871,6 +879,21 @@ void SEvt::transformInputPhoton()
 
 
 
+/**
+SEvt::createInputGenstep_simtrace
+----------------------------------
+
+Two modes:
+
+with_CEGS
+     normal way with envvars configuring a grid of gensteps
+     and the (sframe)frame
+
+!with_CEGS
+     little used simtrace mode without CEGS and with OPTICKS_INPUT_PHOTON
+     that must be via record.npy SRecord::getSimtraceAtTime
+
+**/
 
 NP* SEvt::createInputGenstep_simtrace()
 {
