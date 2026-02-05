@@ -110,6 +110,7 @@ public:
     void save(const char* base, const char* reldir=RELDIR) ;  // not const as may serialize
     void load(const char* base, const char* reldir=RELDIR) ;
     void load_(const char* dir);
+    void afterLoadOrCreate();
     void serialize();
     bool hasTop() const ;
 

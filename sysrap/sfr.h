@@ -5,13 +5,55 @@ sfr.h
 
 Unionized glm::tvec4 see examples/UseGLMSimple (too complex, keep it simple).
 
+
+     +------------+-------------+-------------+-----------+
+     |   ce.x     |    ce.y     |    ce.z     |   ce.w    |
+     |            |             |             |           |
+     +------------+-------------+-------------+-----------+
+     |   aux0.x   |   aux0.y    |   aux0.z    |  aux0.w   |
+     |            |             |             |           |
+     +------------+-------------+-------------+-----------+
+     |   aux1.x   |   aux1.y    |   aux1.z    |  aux1.w   |
+     |            |             |             |           |
+     +------------+-------------+-------------+-----------+
+     |   aux2.x   |   aux2.y    |   aux2.z    |  aux2.w   |
+     |            |             |             |           |
+     +------------+-------------+-------------+-----------+
+
+     +------------+-------------+-------------+-----------+
+     |  m2w                                               |
+     |                                                    |
+     |                                                    |
+     |                                                    |
+     +------------+-------------+-------------+-----------+
+
+     +------------+-------------+-------------+-----------+
+     |  w2m                                               |
+     |                                                    |
+     |                                                    |
+     |                                                    |
+     +------------+-------------+-------------+-----------+
+
+     +----------------------------------------------------+
+     |   bbmn.x   |   bbmn.y    |   bbmn.z    |  bbmx.x   |
+     |            |             |             |           |
+     +------------+-------------+-------------+-----------+
+     |   bbmx.y   |   bbmx.z    |   padd.x    |  padd.y   |
+     |            |             |             |           |
+     +------------+-------------+-------------+-----------+
+     |  ext0                                              |
+     |                                                    |
+     +------------+-------------+-------------+-----------+
+     |  ext1                                              |
+     |                                                    |
+     +------------+-------------+-------------+-----------+
+
 **/
 
 #include "NP.hh"
 #include "sstr.h"
 #include "stra.h"
-
-
+#include "stran.h"
 
 struct sfr
 {
@@ -62,6 +104,11 @@ struct sfr
     template<typename T> void set_extent( T _w );
     template<typename T> void set_m2w( const T* _v16, size_t nv=16 );
     template<typename T> void set_bb(  const T* _bb6 );
+
+
+    Tran<double>* getTransform() const;
+
+
 
 
     void set_idx(int idx) ;
@@ -258,7 +305,11 @@ inline void sfr::set_bb( const T* bb )
     bbmx.z = bb[5] ;
 }
 
-
+inline Tran<double>* sfr::getTransform() const
+{
+    Tran<double>* geotran = new Tran<double>( m2w, w2m );   // ORDER ?
+    return geotran ;
+}
 
 inline void sfr::set_idx(int idx) { aux2.w = idx ; }
 inline int  sfr::get_idx() const  { return aux2.w ; }

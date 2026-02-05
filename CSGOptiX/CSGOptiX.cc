@@ -149,6 +149,21 @@ int CSGOptiX::RenderMain() // static
     delete cx ;
     return 0 ;
 }
+
+/**
+CSGOptiX::SimtraceMain
+-------------------------
+
+Q: Where is the frame needed when simtracing ?
+A: Its needed for genstep preparation with SEvt
+   so the setup by SSim::afterLoadOrCreate giving it to SEvt
+   should be OK if that happens before gensteps are prepared
+
+
+
+**/
+
+
 int CSGOptiX::SimtraceMain()
 {
     SEventConfig::SetRGModeSimtrace();
@@ -466,7 +481,7 @@ void CSGOptiX::init()
     initParams();
     initGeometry();
     initSimulate();
-    initFrame();
+    //initFrame();
     initRender();
     initPIDXYZ();
 
@@ -675,6 +690,7 @@ TODO: see CSGFoundry::AfterLoadOrCreate for maybe auto frame hookup
 
 void CSGOptiX::initFrame()
 {
+    assert(0);
     sframe _fr = foundry->getFrameE() ;   // TODO: migrate to lighweight sfr from stree level
     LOG(LEVEL) << _fr ;
     SEvt::SetFrame(_fr) ;
@@ -705,8 +721,8 @@ void CSGOptiX::initRender()
 
     if(SEventConfig::IsRGModeRender())
     {
-        setFrame(); // MOI
-        // HMM: done twice ?
+        LOG(LEVEL) << "FORMERLY CALLED CSGOptiX::setFrame FROM HERE" ;
+        //setFrame(); // MOI
     }
 
     params->pixels = framebuf->d_pixel ;
@@ -858,11 +874,13 @@ A: Currently think that it is just a bookkeeping convenience for simtrace and no
 
 void CSGOptiX::setFrame()
 {
+    assert(0);
     setFrame(ssys::getenvvar("MOI", "-1"));  // TODO: generalize to FRS
 }
 
 void CSGOptiX::setFrame(const char* frs)
 {
+    assert(0);
     LOG(LEVEL) << " frs " << frs ;
     sframe fr = foundry->getFrame(frs) ;
     sfr lfr = fr.spawn_lite();
@@ -871,6 +889,7 @@ void CSGOptiX::setFrame(const char* frs)
 }
 void CSGOptiX::setFrame(const float4& ce )
 {
+    assert(0);
     sfr lfr ;   // m2w w2m default to identity
 
     lfr.ce.x = ce.x ;
@@ -894,6 +913,7 @@ and rendering ?
 
 void CSGOptiX::setFrame(const sfr& lfr )
 {
+    assert(0);
     sglm->set_frame(lfr);   // TODO: aim to remove sframe from sglm ? instead operate at ce (or sometimes m2w w2m level)
 
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ;

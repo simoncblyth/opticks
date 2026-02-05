@@ -196,14 +196,20 @@ if __name__ == '__main__':
     pass
 
     label = e.f.base
-    sf = e.f.sframe    ## CAUTION THIS IS FROM sframe.h NOT sfr.h SO STILL DOING THINGS IN DUPLICATE
-    sfm = e.f.sframe_meta
-    e_sfm_label = f"{sfm.ek}={sfm.ev}"
 
+    #old_sf = e.f.sframe    ## CAUTION THIS IS FROM sframe.h NOT sfr.h SO STILL DOING THINGS IN DUPLICATE
+    #old_sfm = e.f.sframe_meta
+    #old_sfm_label = f"{old_sfm.ek}={old_sfm.ev}"
+
+    sf = e.f.sfr
+    sfm = e.f.sfr_meta
+    sfm_name = sfm.name   # MOI string from sfr.h name
 
 
     w2m = sf.w2m
     m2w = sf.m2w
+
+
 
     gs = e.f.genstep
 
@@ -711,7 +717,7 @@ if __name__ == '__main__':
         equal = RADIAL == 1
         radial_title = "RADIAL"
         if RADIAL == 2:
-            radial_title = " -- ".join(["cxt_min.sh Simtrace RADIAL","global radius vs local phi", e_sfm_label])
+            radial_title = " -- ".join(["cxt_min.sh Simtrace RADIAL","global radius vs local phi", sfm_name])
         pass
 
         rl = pvp.mpplt_plotter(label=radial_title, equal=equal)

@@ -15,6 +15,7 @@
 #include "SScene.h"
 #include "SBitSet.h"
 
+#include "SEvt.hh"
 #include "SSim.hh"
 #include "SBnd.h"
 #include "SPrd.h"
@@ -508,7 +509,27 @@ void SSim::load_(const char* dir)
     NPFold* f_scene = top->get_subfold( SScene::RELDIR ) ;
     scene->import_( f_scene );
 
+    afterLoadOrCreate();
+
     LOG(LEVEL) << "]" ;
+}
+
+
+/**
+SSim::afterLoadOrCreate
+------------------------
+
+Trying to progress with FRAME_TRANSITION by replacing the old
+CSGFoundry::AfterLoadOrCreate with SSim::afterLoadOrCreate
+
+**/
+
+void SSim::afterLoadOrCreate()
+{
+    SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
+    assert(tree);
+    sfr fr = tree->get_frame_moi() ;
+    SEvt::SetFr(fr);
 }
 
 

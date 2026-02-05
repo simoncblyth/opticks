@@ -22,6 +22,7 @@ which inevitably risks numerical issues.
 #include <csignal>
 #include <cstdlib>
 
+#include "scuda.h"
 #include "sqat4.h"
 #include "stra.h"
 #include "NP.hh"

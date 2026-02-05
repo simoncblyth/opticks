@@ -199,11 +199,33 @@ simtrace stack::
 
 
 **/
-
-
 NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
 {
     const float4& ce = fr.ce ;
+    Tran<double>* geotran = fr.getTransform();
+
+    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, geotran );
+
+    gs->set_meta<int>("midx", fr.midx() );
+    gs->set_meta<int>("mord", fr.mord() );
+    gs->set_meta<int>("gord", fr.gord() );
+    gs->set_meta<float>("gridscale", fr.gridscale() );
+
+    return gs ;
+}
+
+NP* SFrameGenstep::MakeCenterExtentGenstep_FromFr(sfr& fr)  // static
+{
+    float4 ce = make_float4( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w );
+    Tran<double>* geotran = fr.getTransform();
+
+    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, geotran );
+
+    return gs ;
+}
+
+NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const Tran<double>* geotran)  // static
+{
 
     char* _GRIDSCALE = getenv("GRIDSCALE") ;
 
@@ -215,6 +237,11 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
     const char* CEGS_fallback = CEGS_XZ ;
     GetGridConfig(cegs, CEGS, CEGS_delim, CEGS_fallback );
 
+    std::stringstream ss ;
+    assert( cegs.size() == 8 );
+    for(int i=0 ; i < 8 ; i++ ) ss << cegs[i] << ( i < 8 - 1 ? "," : "" ) ;
+    std::string str_cegs = ss.str();
+
 
     std::vector<float>* cegs_radial_range = ssys::getenv_vec<float>(CEGS_RADIAL_RANGE, nullptr, CEGS_delim );
 
@@ -224,7 +251,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
        << " GRIDSCALE " << gridscale
        ;
 
-    fr.set_grid(cegs, gridscale);
+    //  fr.set_grid(cegs, gridscale);  IS THIS USED FOR ANYTHIN
 
     std::vector<float3> ce_offset ;
     CE_OFFSET(ce_offset, ce);
@@ -242,8 +269,6 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
 
     bool ce_scale_off = ssys::getenvbool("CE_SCALE_OFF") ;
 
-    //Tran<double>* geotran = Tran<double>::FromPair( &fr.m2w, &fr.w2m, 1e-6 );
-    Tran<double>* geotran = fr.getTransform();
 
 
     std::vector<NP*> gsl ;
@@ -285,18 +310,14 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
     if(gs_CEGS_NPY) gsl.push_back(gs_CEGS_NPY);
 
 
-
     LOG(LEVEL) << " gsl.size " << gsl.size() ;
 
     LOG(LEVEL) << "[ NP::Concatenate " ;
     NP* gs = NP::Concatenate(gsl) ;
     LOG(LEVEL) << "] NP::Concatenate " ;
 
-    gs->set_meta<int>("midx", fr.midx() );
-    gs->set_meta<int>("mord", fr.mord() );
-    gs->set_meta<int>("gord", fr.gord() );
-    gs->set_meta<float>("gridscale", fr.gridscale() );
     gs->set_meta<int>("ce_scale", int(!ce_scale_off) );
+    gs->set_meta<std::string>("cegs", str_cegs);
 
     return gs ;
 }

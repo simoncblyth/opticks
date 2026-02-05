@@ -967,6 +967,7 @@ set( OLD_SCRIPTS
 set( PY_SCRIPTS
     __init__.py
     sframe.py
+    sfr.py
     sevt.py
     smath.py
     OpticksCSG.py

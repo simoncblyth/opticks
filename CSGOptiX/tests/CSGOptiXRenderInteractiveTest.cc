@@ -124,6 +124,11 @@ inline void CSGOptiXRenderInteractiveTest::init()
     gm->setTreeScene(tree, scene);
     gm->setRecord(ar, br);
 
+    // place frame setup here rather than CSGOptiX::initFrame
+    sfr fr = tree->get_frame_moi();
+    gm->set_frame(fr);
+
+
     cx = CSGOptiX::Create(fd) ;
     gl = new SGLFW(*gm);
     interop = new SGLFW_CUDA(*gm);

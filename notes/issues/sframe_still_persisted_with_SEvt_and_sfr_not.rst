@@ -7,11 +7,31 @@ Motivation
 
 * MortonOverlapScan_test.sh needs to know the MOI frame bbox used by simtrace creation of point clouds
 * currently SEvt still saving the old sframe
-
-Issue
--------
-
 * sframe sfr duplication
+
+
+Issue with the FRAME_TRANSITION
+-----------------------------------
+
+* simtrace runs but not getting the expected CEGS gensteps generated,
+  seems all gs at origin giving intersects only onto sTarget_T
+
+::
+
+   PRIMTAB=1 GSGRID=1 cxt_min.sh pdb
+
+
+
+
+
+
+Where is the frame used with CEGS config to prep the gensteps ?
+------------------------------------------------------------------
+
+
+
+
+
 
 
 Where the sframe::save happens

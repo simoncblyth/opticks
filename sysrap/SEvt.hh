@@ -74,10 +74,10 @@ index and photon offset in addition to  gentype/trackid/matline/numphotons
 #include "squad.h"
 
 
-#include "sfr.h"
 
 #define WITH_FRAME 1
 #include "sframe.h"
+#include "sfr.h"
 
 #include "sgs.h"
 #include "SComp.h"
@@ -245,10 +245,11 @@ struct SYSRAP_API SEvt : public SCompProvider
     bool              is_loaded ;
     bool              is_loadfail ;
 
-    sfr               fr ;
 #ifdef WITH_FRAME
-    sframe            frame ;
+    sframe            frame = {};
 #endif
+    sfr               fr = {} ;
+
 
     // comp vectors are populated from SEventConfig in SEvt::init
     std::vector<unsigned> gather_comp ;
@@ -392,11 +393,11 @@ public:
 
 
 
-    void setFr(const sfr& _fr );
 #ifdef WITH_FRAME
     void setFrame(const sframe& fr );
     void setFramePlaceholder();
 #endif
+    void setFr(const sfr& _fr );
 
     static const bool transformInputPhoton_VERBOSE ;
     static const bool transformInputPhoton_WIDE ;
@@ -451,6 +452,8 @@ public:
 #ifdef WITH_FRAME
     static void SetFrame(const sframe& fr );
 #endif
+    static void SetFr(   const sfr& fr );
+
 
     bool isEGPU() const ;
     bool isECPU() const ;

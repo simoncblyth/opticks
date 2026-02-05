@@ -4,6 +4,7 @@ import os, sys, logging, textwrap, numpy as np, datetime, builtins
 import ast
 from opticks.ana.npmeta import NPMeta
 from opticks.sysrap.sframe import sframe
+from opticks.sysrap.sfr import sfr
 
 # -----------------------------------------------------------------------
 # Robust import of append_fields across NumPy 2.x versions, from GROK
@@ -300,6 +301,7 @@ class Fold(object):
 
 
     SFRAME = "sframe.npy"
+    SFR = "sfr.npy"
     INDEX = "NPFold_index.txt"
 
     def brief(self):
@@ -398,7 +400,9 @@ class Fold(object):
             self.stems.append(stem)
             self.abbrev.append(symbol)
 
-            if name == self.SFRAME:
+            if name == self.SFR:
+                a = sfr.Load(path)
+            elif name == self.SFRAME:
                 a = sframe.Load(path)
             elif name.endswith(".npy"):
                 is_empty_npy = IsEmptyNPY(path)

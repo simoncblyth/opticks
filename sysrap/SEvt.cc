@@ -911,16 +911,10 @@ NP* SEvt::createInputGenstep_simtrace()
 
     if(with_CEGS)
     {
-        const char* frs = frame.get_frs() ; // nullptr when default -1 : meaning all geometry
-        LOG_IF(info, SIMTRACE )
-            << "[" << SEvt__SIMTRACE << "] "
-            << " frame.get_frs " << ( frs ? frs : "-" ) ;
-            ;
 
-        //if(frs) SEventConfig::SetEventReldir(frs); // dont do that, default is more standard
-        // doing this is hangover from separate simtracing of related volumes presumably
+        //igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
+        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFr(fr);
 
-        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
         LOG_IF(info, SIMTRACE)
             << "[" << SEvt__SIMTRACE << "] "
             << " simtrace igs " << ( igs ? igs->sstr() : "-" )
@@ -1466,9 +1460,18 @@ void SEvt::CreateOrReuse()
 
 void SEvt::SetFrame(const sframe& fr )
 {
+    assert(0 && "DONT USE THIS - USE SEvt::SetFr");
     if(Exists(0)) Get(0)->setFrame(fr);
     if(Exists(1)) Get(1)->setFrame(fr);
 }
+void SEvt::SetFr(const sfr& fr )
+{
+    if(Exists(0)) Get(0)->setFr(fr);
+    if(Exists(1)) Get(1)->setFr(fr);
+}
+
+
+
 
 
 void SEvt::Check(int idx)
@@ -4701,14 +4704,15 @@ void SEvt::saveExtra(const char* base, const char* name, const NP* a ) const
     a->save(dir, name );
 }
 
-#ifdef WITH_FRAME
 void SEvt::saveFrame(const char* dir) const
 {
     LOG(LEVEL) << "[ dir " << dir ;
-    frame.save(dir);
+#ifdef WITH_FRAME
+    //frame.save(dir);
+#endif
+    fr.save(dir);
     LOG(LEVEL) << "] dir " << dir ;
 }
-#endif
 
 
 std::string SEvt::descComponent() const

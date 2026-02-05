@@ -3171,7 +3171,7 @@ CSGFoundry* CSGFoundry::Load() // static
     }
 
 
-    AfterLoadOrCreate();
+    //AfterLoadOrCreate();  // TRY TO REPLACE WITH SSim::afterLoadOrCreate
 
     LOG(LEVEL) << "] argumentless " ;
     SProf::Add("CSGFoundry__Load_TAIL");
@@ -3890,7 +3890,7 @@ sframe CSGFoundry::getFrameE() const
 CSGFoundry::AfterLoadOrCreate
 -------------------------------
 
-Called from some high level methods eg: CSGFoundry::Load
+Called from CSGFoundry::Load
 
 The idea behind this is to auto connect SEvt with the frame
 from the geometry.
@@ -3904,10 +3904,18 @@ But after stree.h improvements there is no reason not to do within SSim+stree
 
 TODO: reposition SEvt prep into SSim::AfterLoadOrCreate and sframe/sfr prep into stree::AfterLoadOrCreate ?
 
+
+
+Trying to progress with FRAME_TRANSITION by replacing the old
+CSGFoundry::AfterLoadOrCreate with SSim::afterLoadOrCreate
+
+
 **/
 
 void CSGFoundry::AfterLoadOrCreate() // static
 {
+    assert(0 && "DONT USE THIS : THIS PREP DONE BY SSim::afterLoadOrCreate " );
+
     CSGFoundry* fd = CSGFoundry::Get();
     if(!fd) return ;
 
@@ -3917,6 +3925,7 @@ void CSGFoundry::AfterLoadOrCreate() // static
 
     LOG(LEVEL) << fr ;
     SEvt::SetFrame(fr); // now only needs to be done once to transform input photons
+
 }
 
 
