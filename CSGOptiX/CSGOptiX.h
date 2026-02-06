@@ -137,7 +137,9 @@ private:
     void initParams();
     void initGeometry();
     void initSimulate();
+#ifdef WITH_OLD_FRAME
     void initFrame();
+#endif
     void initRender();
     void initPIDXYZ();
  public:

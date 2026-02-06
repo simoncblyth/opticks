@@ -12,7 +12,6 @@ QEvt_Lifecycle_Test.sh
 EON
 }
 cd $(dirname $(realpath $BASH_SOURCE))
-source dbg__.sh
 
 
 name=QEvt_Lifecycle_Test
@@ -44,6 +43,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
+   source dbg__.sh
    dbg__ $name
    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 1
 fi

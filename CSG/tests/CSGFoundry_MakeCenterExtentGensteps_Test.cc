@@ -2,7 +2,15 @@
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
+
+
+#ifdef WITH_OLD_FRAME
 #include "sframe.h"
+#else
+#include "sfr.h"
+#include "stree.h"
+#endif
+
 #include "spath.h"
 
 #include "SSim.hh"
@@ -14,30 +22,41 @@
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
 
     SEvt::Create_ECPU() ;
 
-    SSim::Create();   
-
-
-
     CSGFoundry* fd = CSGFoundry::Load();
+    const stree* tree = fd->getTree();
 
-    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame 
+#ifdef WITH_OLD_FRAME
+    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame
+    NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ;
+#else
+    sfr fr = tree->get_frame_moi();
+    NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ;
+#endif
 
-    NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ; 
-    SEvt::AddGenstep(gs0); 
+    SEvt::AddGenstep(gs0);
 
-    NP* gs = SEvt::GatherGenstep(SEvt::ECPU); 
-    NP* pp = SFrameGenstep::GenerateCenterExtentGenstepPhotons_( gs, fr.gridscale() );  
+    NP* gs = SEvt::GatherGenstep(SEvt::ECPU);
 
-    std::cout << " fr " << std::endl << fr << std::endl ; 
+#ifdef WITH_OLD_FRAME
+    NP* pp = SFrameGenstep::GenerateCenterExtentGenstepPhotons_( gs, fr.gridscale() );
+#else
+    NP* pp = SFrameGenstep::GenerateCenterExtentGenstepPhotons_( gs, fr.get_gridscale() );
+    assert(  fr.get_gridscale()  > 0.f );
+    //assert(0 && "NEED TO SET GRIDSCALE SOMEWHERE"); //
+#endif
 
-    gs->save("$FOLD/genstep.npy"); 
-    pp->save("$FOLD/photon.npy"); 
-    fr.save("$FOLD") ; 
 
-    return 0 ; 
+
+    std::cout << " fr " << std::endl << fr << std::endl ;
+
+    gs->save("$FOLD/genstep.npy");
+    pp->save("$FOLD/photon.npy");
+    fr.save("$FOLD") ;
+
+    return 0 ;
 }
 

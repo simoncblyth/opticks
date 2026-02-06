@@ -15,8 +15,15 @@ int main(int argc, char** argv)
 
 
     bool ip = SEvt::HasInputPhoton(SEvt::EGPU) ;
+
+#ifdef WITH_OLD_FRAME
     sframe fr = sframe::Fabricate(0.f,0.f,1000.f) ;
     evt->setFrame(fr);
+#else
+    sfr fr = sfr::MakeFromTranslateExtent<float>(0.f,0.f,1000.f,2000.f);
+    evt->setFr(fr);
+#endif
+
 
     for(int i=0 ; i < 3 ; i++)
     {

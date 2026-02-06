@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 CSGFoundry_MakeCenterExtentGensteps_Test.sh
 ===============================================
@@ -8,21 +8,21 @@ CSGFoundry_MakeCenterExtentGensteps_Test.sh
    ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
    LOG=1 ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh
 
-This checks the center-extent-gensteps used in CSGOptiX/cxs.sh 
-by generating some photons on CPU from them and loading into python. 
+This checks the center-extent-gensteps used in CSGOptiX/cxs.sh
+by generating some photons on CPU from them and loading into python.
 
 EOU
 }
 
 
-SDIR=$(dirname $(realpath $BASH_SOURCE))
+cd $(dirname $(realpath $BASH_SOURCE))
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
 
 name="CSGFoundry_MakeCenterExtentGensteps_Test"
-script=$SDIR/$name.py 
+script=$name.py
 
-export PYVISTA_KILL_DISPLAY=1
+#export PYVISTA_KILL_DISPLAY=1
 export FOLD=$TMP/$name
 
 
@@ -35,13 +35,13 @@ customgeom()
 
     export GEOM=${GEOM:-$geom}
     ce_offset=0,0,0
-    #ce_scale=1   
+    #ce_scale=1
     gridscale=0.10
 
     if [ "$GEOM" == "sWorld_XZ" ]; then
 
         moi=sWorld
-        cegs=16:0:9:-24   
+        cegs=16:0:9:-24
 
     elif [ "$GEOM" == "HamaXZ_0" ]; then
 
@@ -51,7 +51,7 @@ customgeom()
     elif [ "$GEOM" == "HamaXZ_1000" ]; then
 
         moi=Hama:0:1000
-        cegs=16:0:9:-24   
+        cegs=16:0:9:-24
         #gridscale=0.10
         ce_offset=0,-666.6,0
 
@@ -60,25 +60,25 @@ customgeom()
 
         ## see CSGTarget::getCenterExtent
 
-        #gord=0       # default 
+        #gord=0       # default
         #gord=-1
         #gord=-2
-        gord=-3       # model2world_rtpw = translate * scale * rotate 
+        gord=-3       # model2world_rtpw = translate * scale * rotate
         #gord=-4
         #gord=-5
 
         moi="solidXJfixture:10:$gord"
 
-        #cegs=16:0:9:100                # XZ/RP     (XYZ)->(RTP) 
+        #cegs=16:0:9:100                # XZ/RP     (XYZ)->(RTP)
         cegs=0:16:9:-24                 # YZ/TP
         #gridscale=0.05
-    fi 
+    fi
 }
 
-source $HOME/.opticks/GEOM/GEOM.sh 
+source $HOME/.opticks/GEOM/GEOM.sh
 
 
-moi=sChimneyAcrylic:0:0
+moi=sChimneySteel:0:0
 cegs=16:0:9:100
 #ce_offset=CE
 
@@ -99,7 +99,7 @@ export GRIDSCALE=${GRIDSCALE:-$gridscale}
 logging(){
    export SFrameGenstep=INFO
 }
-[ -n "$LOG" ] && logging 
+[ -n "$LOG" ] && logging
 
 
 
@@ -108,24 +108,30 @@ arg=${1:-$defarg}
 
 vars="BASH_SOURCE SDIR MOI CEGS CE_OFFSET CE_SCALE GRIDSCALE"
 
-if [ "${arg/info}" != "$arg" ]; then  
-   for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done 
+if [ "${arg/info}" != "$arg" ]; then
+   for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/run}" != "$arg" ]; then  
+if [ "${arg/run}" != "$arg" ]; then
    $name
-   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1 
+   [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 1
 fi
 
-if [ "${arg/dbg}" != "$arg" ]; then  
+if [ "${arg/dbg}" != "$arg" ]; then
+   source dbg__.sh
    dbg__ $name
-   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2 
+   [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 2
 fi
 
-if [ "${arg/ana}" != "$arg" ]; then  
+if [ "${arg/pdb}" != "$arg" ]; then
    ${IPYTHON:-ipython} --pdb -i $script
-   [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 3
+   [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 3
 fi
 
-exit 0 
+if [ "${arg/ana}" != "$arg" ]; then
+   ${PYTHON:-python} $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 4
+fi
+
+exit 0
 

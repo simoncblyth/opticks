@@ -413,7 +413,11 @@ struct SYSRAP_API SGLM : public SCMD
     sfr fr = {} ;  // CAUTION: SEvt also holds an sframe used for input photon targetting
 
     static constexpr const char* _DUMP = "SGLM__set_frame_DUMP" ;
+    void set_frame();
+    void set_frame( const char* q_spec );
+    void set_frame( const float4& ce );
     void set_frame( const sfr& fr );
+
     int get_frame_idx() const ;
     bool has_frame_idx(int idx) const ;
     const std::string& get_frame_name() const ;
@@ -1261,6 +1265,27 @@ SGLM::set_frame
 -----------------
 
 **/
+
+inline void SGLM::set_frame()
+{
+    assert(tree && "MUST CALL SGLM::setTreeScene BEFORE SGLM::set_frame");
+    sfr f = tree->get_frame_moi();
+    set_frame(f);
+}
+
+inline void SGLM::set_frame( const char* q_spec )
+{
+    assert(tree && "MUST CALL SGLM::setTreeScene BEFORE SGLM::set_frame");
+    sfr f = tree->get_frame(q_spec);
+    set_frame(f);
+}
+
+inline void SGLM::set_frame( const float4& ce )
+{
+    assert(tree && "MUST CALL SGLM::setTreeScene BEFORE SGLM::set_frame");
+    sfr f = sfr::MakeFromCE<float>(&ce.x);
+    set_frame(f);
+}
 
 
 inline void SGLM::set_frame( const sfr& fr_ )

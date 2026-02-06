@@ -484,6 +484,9 @@ struct quad6
     SQUAD_METHOD void set_matline(  unsigned ml) { q0.u.z = ml ; }
     SQUAD_METHOD void set_numphoton(unsigned np) { q0.u.w = np ; }
 
+    template<typename T>
+    SQUAD_METHOD void read_transform( const T* v16, bool skip_col3 );
+
 #endif
 
 };
@@ -536,6 +539,23 @@ inline std::string quad6::desc() const
     return str ;
 }
 
+
+template<typename T>
+inline void quad6::read_transform( const T* v, bool skip_col3  )
+{
+    T zero(0);
+    T one(1);
+
+    T xx =  v[0] ; T xy =  v[1] ; T xz =  v[2] ; T xw = skip_col3 ? zero :  v[3] ;
+    T yx =  v[4] ; T yy =  v[5] ; T yz =  v[6] ; T yw = skip_col3 ? zero :  v[7] ;
+    T zx =  v[8] ; T zy =  v[9] ; T zz = v[10] ; T zw = skip_col3 ? zero : v[11] ;
+    T wx = v[12] ; T wy = v[13] ; T wz = v[14] ; T ww = skip_col3 ?  one : v[15] ;
+
+    q2.f.x = xx ; q2.f.y = xy ; q2.f.z = xz ; q2.f.w = xw ;
+    q3.f.x = yx ; q3.f.y = yy ; q3.f.z = yz ; q3.f.w = yw ;
+    q4.f.x = zx ; q4.f.y = zy ; q4.f.z = zz ; q4.f.w = zw ;
+    q5.f.x = wx ; q5.f.y = wy ; q5.f.z = wz ; q5.f.w = ww ;
+}
 
 
 #endif

@@ -72,6 +72,9 @@ struct CSGOptiXRenderInteractiveTest
     CSGOptiXRenderInteractiveTest();
 
     void init();
+    void initGeom();
+    void initRecord();
+    void initRender();
 
     void handle_snap_cx();
     void optix_render_to_buffer();
@@ -115,6 +118,13 @@ inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
 
 inline void CSGOptiXRenderInteractiveTest::init()
 {
+    initGeom();
+    initRecord();
+    initRender();
+}
+
+inline void CSGOptiXRenderInteractiveTest::initGeom()
+{
     assert( irc == 0 );
     assert(fd);
     stree* tree = fd->getTree();
@@ -122,22 +132,27 @@ inline void CSGOptiXRenderInteractiveTest::init()
     SScene* scene = fd->getScene() ;
     assert(scene);
     gm->setTreeScene(tree, scene);
+    gm->set_frame();   // MOI frame initially
+}
+
+inline void CSGOptiXRenderInteractiveTest::initRecord()
+{
     gm->setRecord(ar, br);
+}
 
-    // place frame setup here rather than CSGOptiX::initFrame
-    sfr fr = tree->get_frame_moi();
-    gm->set_frame(fr);
-
-
+inline void CSGOptiXRenderInteractiveTest::initRender()
+{
     cx = CSGOptiX::Create(fd) ;
     gl = new SGLFW(*gm);
     interop = new SGLFW_CUDA(*gm);
     glev    = new SGLFW_Evt(*gl);
 
-    if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
-    if(level > 0) std::cout << "CSGOptiXRenderInteractiveTest::init [" << _level << "][" << level << "]\n" << desc() ;
-
+    if(gl->level > 0) std::cout << "CSGOptiXRenderInteractiveTest::initRender before render loop  gl.get_wanted_frame_idx " <<  gl->get_wanted_frame_idx() << "\n" ;
+    if(level > 0) std::cout << "CSGOptiXRenderInteractiveTest::initRender [" << _level << "][" << level << "]\n" << desc() ;
 }
+
+
+
 
 
 /**

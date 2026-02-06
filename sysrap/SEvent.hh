@@ -16,7 +16,12 @@ struct quad4 ;
 struct quad6 ;
 struct storch ;
 struct uint4 ;
-struct sframe ;
+
+#ifdef WITH_OLD_FRAME
+#include "sframe.h"
+#else
+#include "sfr.h"
+#endif
 
 template <typename T> struct Tran ;
 
@@ -24,7 +29,6 @@ template <typename T> struct Tran ;
 #include "plog/Severity.h"
 #include "SYSRAP_API_EXPORT.hh"
 
-#include "sframe.h"
 
 struct SYSRAP_API SEvent
 {
@@ -41,9 +45,15 @@ struct SYSRAP_API SEvent
     static bool HasHIT();
 
 
-
+#ifdef WITH_OLD_FRAME
     static NP*   MakeInputPhotonGenstep( const NP* input_photon, int gentype, const sframe* fr );
     static quad6 MakeInputPhotonGenstep_(const NP* input_photon, int gentype, const sframe* fr );
+#else
+    static NP*   MakeInputPhotonGenstep( const NP* input_photon, int gentype, const sfr* fr );
+    static quad6 MakeInputPhotonGenstep_(const NP* input_photon, int gentype, const sfr* fr );
+#endif
+
+
 
     static NP* MakeDemoGenstep(const char* config=nullptr, int idx_arg=-1);
     static NP* MakeTorchGenstep(int idx_arg=-1);

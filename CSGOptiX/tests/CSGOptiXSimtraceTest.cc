@@ -2,12 +2,12 @@
 CSGOptiXSimtraceTest : used from cxs.sh
 ===========================================
 
-Using as much as possible the CSGOptiX rendering machinery 
-to do simulation. Using CSGOptiX raygen mode 1 which flips the case statement 
-in the __raygen__rg program. 
+Using as much as possible the CSGOptiX rendering machinery
+to do simulation. Using CSGOptiX raygen mode 1 which flips the case statement
+in the __raygen__rg program.
 
-The idea is to minimize code divergence between ray trace rendering and 
-ray trace enabled simulation. Because after all the point of the rendering 
+The idea is to minimize code divergence between ray trace rendering and
+ray trace enabled simulation. Because after all the point of the rendering
 is to be able to see the exact same geometry that the simulation is using.
 
 ::
@@ -15,11 +15,11 @@ is to be able to see the exact same geometry that the simulation is using.
      MOI=Hama CEGS=5:0:5:1000   CSGOptiXSimtraceTest
      MOI=Hama CEGS=10:0:10:1000 CSGOptiXSimtraceTest
 
-TODO: 
-    find way to get sdf distances for all intersects GPU side 
-    using GPU side buffer of positions 
+TODO:
+    find way to get sdf distances for all intersects GPU side
+    using GPU side buffer of positions
 
-    just need to run the distance function for all points and with 
+    just need to run the distance function for all points and with
     the appropriate CSGNode root and num_node
 
     does not need OptiX, just CUDA (or it can be done CPU side also)
@@ -30,14 +30,20 @@ TODO:
 
 #include "scuda.h"
 #include "sqat4.h"
+
+#ifdef WITH_OLD_FRAME
 #include "sframe.h"
+#else
+#include "sfr.h"
+#include "stree.h"
+#endif
+
 
 #include "SSim.hh"
 #include "SOpticks.hh"
 #include "SEvt.hh"
 #include "SFrameGenstep.hh"
 #include "SEventConfig.hh"
-//#include "QEvt.hh"
 
 #include "OPTICKS_LOG.hh"
 #include "CSGFoundry.h"
@@ -46,42 +52,47 @@ TODO:
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
-    SEventConfig::SetRGModeSimtrace(); 
+    OPTICKS_LOG(argc, argv);
+    SEventConfig::SetRGModeSimtrace();
 
-    const char* comp = "genstep,simtrace" ;  
-    SEventConfig::SetGatherComp(comp); 
-    SEventConfig::SetSaveComp(comp); 
+    const char* comp = "genstep,simtrace" ;
+    SEventConfig::SetGatherComp(comp);
+    SEventConfig::SetSaveComp(comp);
     // TODO: this config is automated now,  check that and remove
 
-    SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD 
-   
-    SEvt* evt = SEvt::Create(SEvt::EGPU) ; 
- 
-    CSGFoundry* fd = CSGFoundry::Load(); 
+    SOpticks::WriteOutputDirScript() ; // writes CSGOptiXSimtraceTest_OUTPUT_DIR.sh in PWD
 
-    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame 
+    SEvt* evt = SEvt::Create(SEvt::EGPU) ;
 
-    std::cout << "[ main fr" << std::endl << fr << std::endl << "] main fr" << std::endl  ; 
+    CSGFoundry* fd = CSGFoundry::Load();
+    stree* tree = fd->getTree();
 
+#ifdef WITH_OLD_FRAME
+    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame
+    std::cout << "[ main fr" << std::endl << fr << std::endl << "] main fr" << std::endl  ;
     evt->setFrame(fr);   // formerly this added CE gensteps, now need to SEvt::BeginOfEvent ?
+#else
+    sfr fr = tree->get_frame_moi();
+    evt->setFr(fr);
+#endif
 
- 
-    CSGOptiX* cx = CSGOptiX::Create(fd); 
 
-    sfr lfr = fr.spawn_lite(); 
-    cx->setFrame(lfr);    
+    CSGOptiX* cx = CSGOptiX::Create(fd);
 
-    // This seems funny as cx has fd which is the source of the fr : so could be automatic ?  
-    // Not so easy as which frame to use depends on running mode and user input 
-    // so best to not hide it. 
+    //sfr lfr = fr.spawn_lite();
+    //cx->setFrame(lfr);
 
-    cx->simtrace(0);  
 
-    cudaDeviceSynchronize(); 
+    // This seems funny as cx has fd which is the source of the fr : so could be automatic ?
+    // Not so easy as which frame to use depends on running mode and user input
+    // so best to not hide it.
 
-    evt->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry   
+    cx->simtrace(0);
 
- 
-    return 0 ; 
+    cudaDeviceSynchronize();
+
+    evt->save(); // uses SGeo::LastUploadCFBase_OutDir to place outputs into CFBase/ExecutableName folder sibling to CSGFoundry
+
+
+    return 0 ;
 }

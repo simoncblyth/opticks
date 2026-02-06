@@ -275,6 +275,8 @@ struct stree
 #endif
 
     static constexpr const char* EXTENT_PFX = "EXTENT:" ;
+    static constexpr const char* CE_PFX = "CE:" ;
+    static constexpr const char* TE_PFX = "TE:" ;
     static constexpr const char* AXIS_PFX = "AXIS:" ;
     static constexpr const char* NIDX_PFX = "NIDX:" ;
     static constexpr const char* PRIM_PFX = "PRIM:" ;
@@ -513,6 +515,12 @@ struct stree
 
     sfr  get_frame_top() const ;
     sfr  get_frame_extent(const char* s_extent ) const ;
+    sfr  get_frame_ce(const char* s_ce ) const ;
+    sfr  get_frame_ce(const float*  ce ) const ;
+    sfr  get_frame_te(const char* s_te ) const ;
+    sfr  get_frame_te(const float*  te ) const ;
+
+
     sfr  get_frame_axis(const char* s_axis ) const ;
     sfr  get_frame_prim(const char* s_prim ) const ;
     sfr  get_frame_nidx(const char* s_nidx ) const ;
@@ -769,10 +777,18 @@ struct stree
     void find_inst_gas_slowly_( std::vector<int>& v_inst_idx , int q_gas_idx ) const ;
 
 
+
+    int get_inst_identity( glm::tvec4<int64_t>& col3, int ii ) const ;
+    int get_inst_identity( int& inst_idx, int& gas_idx, int& sensor_identifier, int& sensor_index, int ii ) const ;
+
+    // these DO have identity info in forth column
     const glm::tmat4x4<double>* get_inst(int idx) const ;
     const glm::tmat4x4<double>* get_iinst(int idx) const ;
     const glm::tmat4x4<float>*  get_inst_f4(int idx) const ;
     const glm::tmat4x4<float>*  get_iinst_f4(int idx) const ;
+
+
+
 
 
     void get_mtindex_range(int& mn, int& mx ) const ;
@@ -2271,6 +2287,8 @@ inline sfr stree::get_frame(const char* q_spec ) const
 
     bool is_TOP = q_spec == nullptr || strcmp(q_spec, "-1") == 0 || strcmp(q_spec, "") == 0 ;
     bool is_EXTENT = sstr::StartsWith(q_spec, EXTENT_PFX) ;
+    bool is_CE = sstr::StartsWith(q_spec, CE_PFX) ;
+    bool is_TE = sstr::StartsWith(q_spec, TE_PFX) ;
     bool is_AXIS = sstr::StartsWith(q_spec,  AXIS_PFX) ;
     bool is_NIDX = sstr::StartsWith(q_spec,  NIDX_PFX) ;
     bool is_PRIM = sstr::StartsWith(q_spec,  PRIM_PFX) ;
@@ -2292,6 +2310,14 @@ inline sfr stree::get_frame(const char* q_spec ) const
     else if( is_EXTENT )
     {
         f = get_frame_extent( q_spec + strlen(EXTENT_PFX) );
+    }
+    else if( is_CE )
+    {
+        f = get_frame_ce( q_spec + strlen(CE_PFX) );
+    }
+    else if( is_TE )
+    {
+        f = get_frame_te( q_spec + strlen(TE_PFX) );
     }
     else if( is_AXIS )
     {
@@ -2351,21 +2377,36 @@ inline sfr stree::get_frame_top() const
 {
     return get_frame_nidx(0);
 }
+
+
 inline sfr stree::get_frame_extent(const char* s_extent ) const
 {
-    std::string name = EXTENT_PFX ;
-    name += s_extent ;
-    sfr fr = sfr::MakeFromExtent<float>( s_extent );
-    fr.set_name(name.c_str());
-    return fr ;
+    return sfr::MakeFromExtent<float>( s_extent );
 }
+
+inline sfr stree::get_frame_ce(const char* s_ce ) const
+{
+    return sfr::MakeFromCE<float>( s_ce, ',' );
+}
+inline sfr stree::get_frame_ce(const float* _ce ) const
+{
+    return sfr::MakeFromCE<float>( _ce );
+}
+
+inline sfr stree::get_frame_te(const char* s_te ) const
+{
+    return sfr::MakeFromTranslateExtent<float>( s_te, ',' );
+}
+inline sfr stree::get_frame_te(const float* _te ) const
+{
+    return sfr::MakeFromTranslateExtent<float>( _te );
+}
+
+
+
 inline sfr stree::get_frame_axis(const char* s_axis ) const
 {
-    std::string name = AXIS_PFX ;
-    name += s_axis ;
-    sfr fr = sfr::MakeFromAxis<float>(s_axis, ',');
-    fr.set_name(name.c_str());
-    return fr ;
+    return sfr::MakeFromAxis<float>(s_axis, ',');
 }
 
 /**
@@ -2410,7 +2451,9 @@ inline sfr stree::get_frame_inst(const char* s_inst ) const
 inline sfr stree::get_frame_prim(int prim) const
 {
     int nidx = get_nidx_for_prim(prim);
-    return get_frame_nidx(nidx);
+    sfr fr = get_frame_nidx(nidx);
+    fr.set_prim(prim);
+    return fr ;
 }
 inline sfr stree::get_frame_nidx(int nidx) const
 {
@@ -2424,6 +2467,7 @@ inline sfr stree::get_frame_nidx(int nidx) const
     f.w2m = w2m[nidx] ;
     s_bb::CenterExtent<double>( f.ce_data(), bb.data() );
     f.set_bb(bb.data());
+    f.set_nidx(nidx);
 
     return f ;
 }
@@ -2769,6 +2813,20 @@ inline int stree::get_frame_inst(sfr& f, int ii, std::ostream* out, VTR* t_stack
     f.w2m = *w2m ;
 
     f.set_bb(bb.data());
+    f.set_inst(ii);
+    f.set_nidx(nidx);
+
+
+    int inst_idx = -1 ;
+    int gas_idx = -1 ;
+    int sensor_identifier = -1 ;
+    int sensor_index = -1 ;
+
+    int rc = get_inst_identity( inst_idx, gas_idx, sensor_identifier, sensor_index, ii );
+    assert( rc == 0 );
+    assert( inst_idx == ii );
+    f.set_identity( inst_idx, gas_idx, sensor_identifier, sensor_index );
+    // cf CSGTarget::getFrame
 
     return 0 ;
 }
@@ -6497,6 +6555,26 @@ inline void stree::find_inst_gas_slowly_( std::vector<int>& v_inst_idx , int q_g
 
 
 
+
+inline int stree::get_inst_identity( glm::tvec4<int64_t>& col3, int ii ) const
+{
+    const glm::tmat4x4<double>* tr = get_inst(ii) ;
+    if(!tr) return 1 ;
+    strid::Decode( *tr, col3 );
+    return 0 ;
+}
+inline int stree::get_inst_identity( int& inst_idx, int& gas_idx, int& sensor_identifier, int& sensor_index, int ii ) const
+{
+    glm::tvec4<int64_t> col3 = {} ;
+    int rc = get_inst_identity( col3, ii );
+    inst_idx = col3.x ;
+    gas_idx = col3.y ;
+    sensor_identifier = col3.z ;
+    sensor_index = col3.w ;
+    return rc ;
+}
+
+
 inline const glm::tmat4x4<double>* stree::get_inst(int idx) const
 {
     return idx > -1 && idx < int(inst.size()) ? &inst[idx] : nullptr ;
@@ -7337,6 +7415,7 @@ inline void stree::localize_photon_inplace( sphoton& p ) const
 #endif
 
 }
+
 
 
 

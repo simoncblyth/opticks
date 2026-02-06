@@ -25,25 +25,30 @@ struct SYSRAP_API SFrameGenstep
 {
     static constexpr const char* CEGS              = "CEGS" ;
     static constexpr const char* CEGS_RADIAL_RANGE = "CEGS_RADIAL_RANGE" ;
+    static constexpr char CEGS_delim = ':' ;
+
 
     static const plog::Severity LEVEL ;
     static void CE_OFFSET(std::vector<float3>& ce_offset, const float4& ce ) ;
     static std::string Desc(const std::vector<float3>& ce_offset );
     static std::string Desc(const std::vector<int>& cegs );
 
-    static void GetGridConfig(
-        std::vector<int>& cegs,
-        const char* ekey,
-        char delim,
-        const char* fallback );
+    static void GetGridConfig_(std::vector<int>& cegs, const char* ekey, char delim, const char* fallback );
+    static std::string GetGridConfig(std::vector<int>& cegs);
+
 
     static const char* CEGS_XY ;
     static const char* CEGS_XZ ;  // default
 
     static bool HasConfigEnv();
+
+#ifdef WITH_OLD_FRAME
     static NP* MakeCenterExtentGenstep_FromFrame(sframe& fr);
-    static NP* MakeCenterExtentGenstep_FromFr(   sfr& fr);
-    static NP* MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const Tran<double>* geotran);
+#else
+    static NP* MakeCenterExtentGenstep_FromFrame(sfr& fr);
+#endif
+    static NP* MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran);
+
 
     static NP* Make_CEGS_NPY_Genstep( const NP* CEGS_NPY, const Tran<double>* geotran );
 

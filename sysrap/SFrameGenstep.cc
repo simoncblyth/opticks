@@ -4,7 +4,12 @@
 #include "squad.h"
 #include "sqat4.h"
 #include "stran.h"
+
+#ifdef WITH_OLD_FRAME
 #include "sframe.h"
+#else
+#include "sfr.h"
+#endif
 
 #include "sc4u.h"
 #include "ssincos.h"
@@ -120,7 +125,7 @@ std::string SFrameGenstep::Desc(const std::vector<int>& cegs )
 
 
 
-void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback )
+void SFrameGenstep::GetGridConfig_(std::vector<int>& cegs,  const char* ekey, char delim, const char* fallback )
 {
     ssys::getenvintvec(ekey, cegs, delim, fallback );
     LOG(LEVEL)
@@ -135,6 +140,20 @@ void SFrameGenstep::GetGridConfig(std::vector<int>& cegs,  const char* ekey, cha
     assert( cegs.size() == 0 || cegs.size() == 8 );
     LOG(LEVEL) << " ekey " << ekey << " Desc " << Desc(cegs)  ;
 }
+
+std::string SFrameGenstep::GetGridConfig(std::vector<int>& cegs)
+{
+    const char* CEGS_fallback = CEGS_XZ ;
+    GetGridConfig_(cegs, CEGS, CEGS_delim, CEGS_fallback );
+
+    std::stringstream ss ;
+    assert( cegs.size() == 8 );
+    for(int i=0 ; i < 8 ; i++ ) ss << cegs[i] << ( i < 8 - 1 ? "," : "" ) ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
 
 
 
@@ -165,6 +184,7 @@ bool SFrameGenstep::HasConfigEnv()
 {
     return ssys::hasenv_("CEGS");
 }
+
 
 
 /**
@@ -199,59 +219,68 @@ simtrace stack::
 
 
 **/
+#ifdef WITH_OLD_FRAME
 NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
 {
     const float4& ce = fr.ce ;
     Tran<double>* geotran = fr.getTransform();
+    char* _GRIDSCALE = getenv("GRIDSCALE") ;
+    float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1f ) ;
 
-    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, geotran );
+    LOG(LEVEL)
+       << " _GRIDSCALE [" << ( _GRIDSCALE ? _GRIDSCALE : "-" ) << "]"
+       << " GRIDSCALE " << gridscale
+       ;
+
+    std::vector<int> cegs ;
+    std::string str_cegs = GetGridConfig(cegs);
+    fr.set_grid(cegs, gridscale);
+
+    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, cegs, gridscale, geotran );
 
     gs->set_meta<int>("midx", fr.midx() );
     gs->set_meta<int>("mord", fr.mord() );
     gs->set_meta<int>("gord", fr.gord() );
     gs->set_meta<float>("gridscale", fr.gridscale() );
+    gs->set_meta<std::string>("cegs", str_cegs );
 
     return gs ;
 }
-
-NP* SFrameGenstep::MakeCenterExtentGenstep_FromFr(sfr& fr)  // static
+#else
+NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sfr& fr)  // static
 {
     float4 ce = make_float4( fr.ce.x, fr.ce.y, fr.ce.z, fr.ce.w );
     Tran<double>* geotran = fr.getTransform();
-
-    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, geotran );
-
-    return gs ;
-}
-
-NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const Tran<double>* geotran)  // static
-{
-
     char* _GRIDSCALE = getenv("GRIDSCALE") ;
-
     float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1f ) ;
 
-    // CSGGenstep::init
-    std::vector<int> cegs ;
-    char CEGS_delim = ':' ;
-    const char* CEGS_fallback = CEGS_XZ ;
-    GetGridConfig(cegs, CEGS, CEGS_delim, CEGS_fallback );
-
-    std::stringstream ss ;
-    assert( cegs.size() == 8 );
-    for(int i=0 ; i < 8 ; i++ ) ss << cegs[i] << ( i < 8 - 1 ? "," : "" ) ;
-    std::string str_cegs = ss.str();
-
-
-    std::vector<float>* cegs_radial_range = ssys::getenv_vec<float>(CEGS_RADIAL_RANGE, nullptr, CEGS_delim );
-
     LOG(LEVEL)
-       << " cegs.size " << cegs.size()
        << " _GRIDSCALE [" << ( _GRIDSCALE ? _GRIDSCALE : "-" ) << "]"
        << " GRIDSCALE " << gridscale
        ;
 
-    //  fr.set_grid(cegs, gridscale);  IS THIS USED FOR ANYTHIN
+
+    std::vector<int> cegs ;
+    std::string str_cegs = GetGridConfig(cegs);
+    fr.set_gridscale(gridscale);
+
+    LOG(LEVEL)
+       << " cegs.size " << cegs.size()
+       ;
+
+
+    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, cegs, gridscale, geotran );
+
+    gs->set_meta<float>("gridscale", fr.get_gridscale() );
+    gs->set_meta<std::string>("cegs", str_cegs );
+
+    return gs ;
+}
+#endif
+
+NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran)  // static
+{
+    std::vector<float>* cegs_radial_range = ssys::getenv_vec<float>(CEGS_RADIAL_RANGE, nullptr, CEGS_delim );
 
     std::vector<float3> ce_offset ;
     CE_OFFSET(ce_offset, ce);
@@ -295,7 +324,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, con
     {
         const char* key = keys[i].c_str() ;
         std::vector<int> cehigh ;
-        GetGridConfig(cehigh, key, CEGS_delim, CEHIGH_fallback );
+        GetGridConfig_(cehigh, key, CEGS_delim, CEHIGH_fallback );
         LOG(LEVEL) << " key " << key << " cehigh.size " << cehigh.size() ;
         if(cehigh.size() == 8)
         {
@@ -317,7 +346,6 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, con
     LOG(LEVEL) << "] NP::Concatenate " ;
 
     gs->set_meta<int>("ce_scale", int(!ce_scale_off) );
-    gs->set_meta<std::string>("cegs", str_cegs);
 
     return gs ;
 }

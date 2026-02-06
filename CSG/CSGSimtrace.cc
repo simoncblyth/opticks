@@ -41,11 +41,20 @@ void CSGSimtrace::init()
 {
     LOG(LEVEL) << d->desc();
 
-    frame.set_hostside_simtrace();
-    frame.ce = q->select_prim_ce ;
-    LOG(LEVEL) << " frame.ce " << frame.ce << " SELECTION " << SELECTION << " num_selection " << num_selection << " outdir " << outdir ;
-    sev->setFrame(frame);
+    float4 ce = q->select_prim_ce ;
+    LOG(LEVEL) << " ce " << ce  ;
 
+#ifdef WITH_OLD_FRAME
+    frame.set_hostside_simtrace();
+    frame.ce = ce ;
+    sev->setFrame(frame);
+#else
+    fr.set_hostside_simtrace();
+    fr.set_ce( &ce.x );
+    sev->setFr(fr);
+#endif
+
+    LOG(LEVEL) << " SELECTION " << SELECTION << " num_selection " << num_selection << " outdir " << outdir ;
     if(selection_simtrace)
     {
         selection_simtrace->set_meta<std::string>("SELECTION", SELECTION) ;

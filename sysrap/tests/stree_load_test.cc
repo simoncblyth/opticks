@@ -6,6 +6,7 @@ stree_load_test.cc
 
     ~/o/sysrap/tests/stree_load_test.sh
 
+    TEST=get_inst IIDX=100                      ~/o/sysrap/tests/stree_load_test.sh
     TEST=pick_lvid_ordinal_node                 ~/o/sysrap/tests/stree_load_test.sh
     TEST=find_inst_gas                          ~/o/sysrap/tests/stree_load_test.sh
 

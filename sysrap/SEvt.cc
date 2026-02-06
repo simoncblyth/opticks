@@ -770,12 +770,6 @@ NP* SEvt::gatherG4State() const {  return g4state ; } // gather is used prior to
 const NP* SEvt::getG4State() const {  return topfold->get(SComp::Name(SCOMP_G4STATE)) ; }
 
 
-void SEvt::setFr(const sfr& _fr )
-{
-    fr = _fr ;
-    //TODO: transformInputPhoton
-}
-
 
 /**
 SEvt::setFrame
@@ -809,7 +803,7 @@ simtrace stack::
 **/
 
 
-#ifdef WITH_FRAME
+#ifdef WITH_OLD_FRAME
 void SEvt::setFrame(const sframe& fr )
 {
     const char* name = fr.get_name() ;
@@ -822,13 +816,27 @@ void SEvt::setFrame(const sframe& fr )
     frame = fr ;
     transformInputPhoton();
 }
+#else
+void SEvt::setFr(const sfr& _fr )
+{
+    fr = _fr ;
+    transformInputPhoton();
+}
+#endif
+
 
 void SEvt::setFramePlaceholder()
 {
+#ifdef WITH_OLD_FRAME
     sframe fr = sframe::Fabricate(0.f,0.f,0.f);
     setFrame(fr);
-}
+#else
+    sfr fr = sfr::MakeFromTranslateExtent<float>(0.f,0.f,0.f,1000.f);
+    setFr(fr);
 #endif
+}
+
+
 
 
 const bool SEvt::transformInputPhoton_VERBOSE = ssys::getenvbool("SEvt__transformInputPhoton_VERBOSE") ;
@@ -852,17 +860,23 @@ void SEvt::transformInputPhoton()
         << " hasInputPhoton " <<  hasInputPhoton()
         << " proceed " << ( proceed ? "YES" : "NO " )
         << "\n"
-#ifdef WITH_FRAME
+#ifdef WITH_OLD_FRAME
         << frame.desc()
-        << "\n"
+#else
+        << fr.desc()
 #endif
+        << "\n"
         ;
 
     if(!proceed) return ;
 
     bool normalize = true ;  // normalize mom and pol after doing the transform
 
+#ifdef WITH_OLD_FRAME
     NP* ipt = frame.transform_photon_m2w( input_photon, normalize );
+#else
+    NP* ipt = fr.transform_photon_m2w( input_photon, normalize );
+#endif
 
     if(transformInputPhoton_WIDE)  // see notes/issues/G4ParticleChange_CheckIt_warnings.rst
     {
@@ -911,9 +925,11 @@ NP* SEvt::createInputGenstep_simtrace()
 
     if(with_CEGS)
     {
-
-        //igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
-        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFr(fr);
+#ifdef WITH_OLD_FRAME
+        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
+#else
+        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr);
+#endif
 
         LOG_IF(info, SIMTRACE)
             << "[" << SEvt__SIMTRACE << "] "
@@ -975,7 +991,11 @@ NP* SEvt::createInputGenstep_simulate()
         }
         else if( hasInputPhoton())
         {
+#ifdef WITH_OLD_FRAME
             igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &frame) ;
+#else
+            igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &fr) ;
+#endif
         }
         else if( has_torch )
         {
@@ -1062,8 +1082,22 @@ void SEvt::assertZeroGenstep()
 
 
 
-const char* SEvt::getFrameId()    const { return frame.getFrameId() ; }
-const NP*   SEvt::getFrameArray() const { return frame.getFrameArray() ; }
+const char* SEvt::getFrameId() const
+{
+#ifdef WITH_OLD_FRAME
+    return frame.getFrameId() ;
+#else
+    return fr.get_id();
+#endif
+}
+const NP*   SEvt::getFrameArray() const
+{
+#ifdef WITH_OLD_FRAME
+    return frame.getFrameArray() ;
+#else
+    return fr.serialize();
+#endif
+}
 
 const char* SEvt::GetFrameId(int idx){    return Exists(idx) ? Get(idx)->getFrameId() : nullptr ; }
 const NP*   SEvt::GetFrameArray(int idx){ return Exists(idx) ? Get(idx)->getFrameArray() : nullptr ; }
@@ -1101,6 +1135,7 @@ void SEvt::setFrame_HostsideSimtrace()
 
 
 
+#ifdef WITH_OLD_FRAME
 /**
 SEvt::setGeo
 -------------
@@ -1132,6 +1167,7 @@ void SEvt::setGeo(const SGeo* cf_)
     tree = cf->getTree();
 }
 
+#else
 /**
 SEvt::setSim
 -------------
@@ -1146,7 +1182,7 @@ void SEvt::setSim(const SSim* sim_)
     tree = sim->get_tree();
 }
 
-
+#endif
 
 
 /**
@@ -1162,6 +1198,7 @@ TODO: replace this with stree.h based approach
 **/
 void SEvt::setFrame(unsigned ins_idx)
 {
+#ifdef WITH_OLD_FRAME
     LOG_IF(fatal, cf == nullptr) << "must SEvt::setGeo before being can access frames " ;
     assert(cf);
     sframe fr ;
@@ -1170,10 +1207,11 @@ void SEvt::setFrame(unsigned ins_idx)
     assert( rc == 0 );
     fr.prepare();
     setFrame(fr);
-
-    // TREE APPROACH AIMING TO REPLACE THE CF ONE ABOVE
+#else
+    assert(tree);
     sfr f = tree->get_frame_inst( ins_idx );
     setFr(f);
+#endif
 }
 
 
@@ -1203,8 +1241,14 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     assert(prior);
     if(prior == nullptr ) return nullptr ;
 
+#ifdef WITH_OLD_FRAME
     sframe& pfr = prior->frame ;
     pfr.set_hostside_simtrace();
+#else
+    sfr& pfr = prior->fr ;
+    pfr.set_hostside_simtrace();
+#endif
+
 
     if( pfr.ce.w == 0.f )
     {
@@ -1225,7 +1269,12 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
 
     LOG_IF(info, SIMTRACE) << " SWITCH : SEventConfig::SetRGModeSimtrace " ;
     SEvt* ste = new SEvt ;
+
+#ifdef WITH_OLD_FRAME
     ste->setFrame(pfr);
+#else
+    ste->setFr(pfr);
+#endif
 
     LOG_IF(info, SIMTRACE) << "] ste.simtrace.size " << ste->simtrace.size() ;
 
@@ -1458,17 +1507,20 @@ void SEvt::CreateOrReuse()
 
 
 
+#ifdef WITH_OLD_FRAME
 void SEvt::SetFrame(const sframe& fr )
 {
     assert(0 && "DONT USE THIS - USE SEvt::SetFr");
     if(Exists(0)) Get(0)->setFrame(fr);
     if(Exists(1)) Get(1)->setFrame(fr);
 }
+#else
 void SEvt::SetFr(const sfr& fr )
 {
     if(Exists(0)) Get(0)->setFr(fr);
     if(Exists(1)) Get(1)->setFr(fr);
 }
+#endif
 
 
 
@@ -2352,7 +2404,12 @@ sgs SEvt::addGenstep(const NP* a)
 
     if(SEventConfig::IsRGModeSimtrace() && SFrameGenstep::HasConfigEnv()) // CEGS running
     {
+#ifdef WITH_OLD_FRAME
         if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
+#else
+        if(fr.is_hostside_simtrace()) setFrame_HostsideSimtrace();
+#endif
+
     }
 
     return s ;
@@ -4707,10 +4764,11 @@ void SEvt::saveExtra(const char* base, const char* name, const NP* a ) const
 void SEvt::saveFrame(const char* dir) const
 {
     LOG(LEVEL) << "[ dir " << dir ;
-#ifdef WITH_FRAME
-    //frame.save(dir);
-#endif
+#ifdef WITH_OLD_FRAME
+    frame.save(dir);
+#else
     fr.save(dir);
+#endif
     LOG(LEVEL) << "] dir " << dir ;
 }
 
@@ -4949,9 +5007,16 @@ void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
 {
     getPhoton(lp, idx);
 
+#ifdef WITH_OLD_FRAME
     sframe fr ;
     getPhotonFrame(fr, lp);   // HMM: this is just using lp.iindex
     fr.transform_w2m(lp);
+#else
+    sfr fr ;
+    getPhotonFrame(fr, lp);   // HMM: this is just using lp.iindex
+    fr.transform_w2m(lp);
+#endif
+
 }
 
 
@@ -5011,14 +5076,22 @@ void SEvt::getLocalHit_LEAKY(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct
 
+#ifdef WITH_OLD_FRAME
     sframe fr = {} ;
-
     getPhotonFrame(fr, lp);
     fr.transform_w2m(lp);
-
     ht.iindex = fr.inst() ;
-    ht.sensor_identifier = fr.sensor_identifier() - 1 ;
+    ht.sensor_identifier = fr.sensor_identifier() - 1 ;  // THIS IS OLD, UNUSED AND NOW WRONG
     ht.sensor_index = fr.sensor_index();
+#else
+    sfr fr = {} ;
+    getPhotonFrame(fr, lp);
+    fr.transform_w2m(lp);
+    ht.iindex = fr.get_inst() ;
+    ht.sensor_identifier = fr.get_sensorid() ; // NO -1 BUT UNUSED ANYHOW
+    ht.sensor_index = fr.get_sensorix();
+#endif
+
 }
 
 /**
@@ -5134,12 +5207,22 @@ TODO: move to getting frame from stree
 
 **/
 
+#ifdef WITH_OLD_FRAME
 void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
 {
     assert(cf);
     cf->getFrame(fr, p.iindex() );
     fr.prepare();
 }
+#else
+void SEvt::getPhotonFrame( sfr& fr, const sphoton& p ) const
+{
+    assert(tree);
+    fr = tree->get_frame_inst( p.iindex() );
+}
+#endif
+
+
 
 std::string SEvt::descNum() const
 {
@@ -5225,7 +5308,12 @@ std::string SEvt::descFramePhoton(unsigned max_print) const
 {
     unsigned num_photon = getNumPhoton();
     unsigned num_print = std::min(max_print, num_photon) ;
+
+#ifdef WITH_OLD_FRAME
     bool zero_frame = frame.is_zero() ;
+#else
+    bool zero_frame = fr.is_zero() ;
+#endif
 
     std::stringstream ss ;
     ss << "SEvt::descFramePhoton"
@@ -5345,10 +5433,24 @@ void SEvt::getFrameHit(sphoton& lp, unsigned idx) const
 }
 void SEvt::applyFrameTransform(sphoton& lp) const
 {
+#ifdef WITH_OLD_FRAME
     bool zero_frame = frame.is_zero() ;
+#else
+    bool zero_frame = fr.is_zero() ;
+#endif
+
     LOG_IF(fatal, zero_frame) << " must setFrame before can applyFrameTransform " ;
     assert(!zero_frame);
+
+#ifdef WITH_OLD_FRAME
     frame.transform_w2m(lp);
+#else
+    bool normalize = true ;
+    bool inverse = true ; // w2m ? IS THAT CORRECT
+    fr.transform(lp, normalize, inverse);
+#endif
+
+
 }
 
 /**

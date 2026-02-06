@@ -180,6 +180,8 @@ struct sframe
 
     NP* transform_photon_m2w( const NP* ph, bool normalize=true ) const ; // hit OR photon (hmm could do record too)
     NP* transform_photon_w2m( const NP* ph, bool normalize=true ) const ;
+    NP* transform_photon( const NP* ph, bool normalize, bool inverse  ) const ;
+
 
     void transform_m2w( sphoton& p, bool normalize=true ) const ;
     void transform_w2m( sphoton& p, bool normalize=true ) const ;
@@ -711,20 +713,22 @@ That will be narrowed down to float prior to upload by QEvt::setInputPhoton
 
 inline NP* sframe::transform_photon_m2w( const NP* ph, bool normalize ) const
 {
-    if( ph == nullptr ) return nullptr ;
-    if(!tr_m2w) std::cerr << "sframe::transform_photon_m2w MUST sframe::prepare before calling this " << std::endl;
-    assert( tr_m2w) ;
-    NP* pht = Tran<double>::PhotonTransform(ph, normalize,  tr_m2w );
-    assert( pht->ebyte == 8 );
-    return pht ;
+    bool inverse = false ;
+    return transform_photon(ph, normalize, inverse);
+}
+inline NP* sframe::transform_photon_w2m( const NP* ph, bool normalize ) const
+{
+    bool inverse = true ;
+    return transform_photon(ph, normalize, inverse);
 }
 
-inline NP* sframe::transform_photon_w2m( const NP* ph, bool normalize  ) const
+inline NP* sframe::transform_photon( const NP* ph, bool normalize, bool inverse  ) const
 {
     if( ph == nullptr ) return nullptr ;
-    if(!tr_w2m) std::cerr << "sframe::transform_photon_w2m MUST sframe::prepare before calling this " << std::endl;
-    assert( tr_w2m ) ;
-    NP* pht = Tran<double>::PhotonTransform(ph, normalize, tr_w2m );
+    Tran<double>* tr = inverse ? tr_w2m : tr_m2w ;
+    if(!tr) std::cerr << "sframe::transform_photon MUST sframe::prepare before calling sframe::transform_photon " << std::endl;
+    assert( tr ) ;
+    NP* pht = Tran<double>::PhotonTransform(ph, normalize, tr, false );
     assert( pht->ebyte == 8 );
     return pht ;
 }

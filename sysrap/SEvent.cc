@@ -91,16 +91,27 @@ NP* SEvent::MakeDemoGenstep(const char* config, int idx)
 
 
 
+#ifdef WITH_OLD_FRAME
 NP* SEvent::MakeInputPhotonGenstep(const NP* input_photon, int gentype, const sframe* fr )
 {
     assert( gentype == OpticksGenstep_INPUT_PHOTON || gentype == OpticksGenstep_INPUT_PHOTON_SIMTRACE );
-
     std::vector<quad6> qgs(1) ;
     qgs[0].zero() ;
     qgs[0] = MakeInputPhotonGenstep_(input_photon, gentype, fr );
     NP* ipgs = NPX::ArrayFromVec<float,quad6>( qgs, 6, 4) ;
     return ipgs ;
 }
+#else
+NP* SEvent::MakeInputPhotonGenstep(const NP* input_photon, int gentype, const sfr* fr )
+{
+    assert( gentype == OpticksGenstep_INPUT_PHOTON || gentype == OpticksGenstep_INPUT_PHOTON_SIMTRACE );
+    std::vector<quad6> qgs(1) ;
+    qgs[0].zero() ;
+    qgs[0] = MakeInputPhotonGenstep_(input_photon, gentype, fr );
+    NP* ipgs = NPX::ArrayFromVec<float,quad6>( qgs, 6, 4) ;
+    return ipgs ;
+}
+#endif
 
 
 
@@ -118,6 +129,7 @@ HMM: is that actually used ? Because the frame is also persisted.
 
 **/
 
+#ifdef WITH_OLD_FRAME
 quad6 SEvent::MakeInputPhotonGenstep_(const NP* input_photon, int gentype, const sframe* fr )
 {
     LOG(LEVEL) << " input_photon " << NP::Brief(input_photon) ;
@@ -131,6 +143,23 @@ quad6 SEvent::MakeInputPhotonGenstep_(const NP* input_photon, int gentype, const
 
     return ipgs ;
 }
+#else
+quad6 SEvent::MakeInputPhotonGenstep_(const NP* input_photon, int gentype, const sfr* fr )
+{
+    LOG(LEVEL) << " input_photon " << NP::Brief(input_photon) ;
+
+    quad6 ipgs ;
+    ipgs.zero();
+    ipgs.set_gentype( gentype );
+    ipgs.set_numphoton(  input_photon->shape[0]  );
+
+    assert(fr);
+    bool skip_col3 = true ;
+    ipgs.read_transform( glm::value_ptr(fr->m2w), skip_col3 );
+
+    return ipgs ;
+}
+#endif
 
 
 

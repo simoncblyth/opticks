@@ -251,7 +251,12 @@ void CSGOptiX::InitEvt( CSGFoundry* fd  )
 {
     SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ;
 
+#ifdef WITH_OLD_FRAME
     sev->setGeo((SGeo*)fd);
+#else
+    const SSim* ssim = fd->getSim();
+    sev->setSim(ssim);
+#endif
 
     std::string* rms = SEvt::RunMetaString() ;
     assert(rms);
@@ -363,11 +368,13 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     SProf::Add("CSGOptiX__Create_HEAD");
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ;
 
+    SSim* ssim = const_cast<SSim*>(fd->sim) ;
+
 
     InitEvt(fd);
-    InitSim( const_cast<SSim*>(fd->sim) ); // QSim instanciation after uploading SSim arrays
-    InitMeta();                            // recording GPU, switches etc.. into run metadata
-    InitGeo(fd);                           // uploads geometry
+    InitSim(ssim);    // QSim instanciation after uploading SSim arrays
+    InitMeta();       // recording GPU, switches etc.. into run metadata
+    InitGeo(fd);      // uploads geometry
 
     CSGOptiX* cx = new CSGOptiX(fd) ;
 
@@ -481,7 +488,11 @@ void CSGOptiX::init()
     initParams();
     initGeometry();
     initSimulate();
-    //initFrame();
+
+#ifdef WITH_OLD_FRAME
+    initFrame();
+#endif
+
     initRender();
     initPIDXYZ();
 
@@ -668,6 +679,7 @@ void CSGOptiX::initSimulate()
 
 
 
+#ifdef WITH_OLD_FRAME
 
 /**
 CSGOptiX::initFrame (formerly G4CXOpticks::setupFrame)
@@ -691,14 +703,17 @@ TODO: see CSGFoundry::AfterLoadOrCreate for maybe auto frame hookup
 void CSGOptiX::initFrame()
 {
     assert(0);
+
     sframe _fr = foundry->getFrameE() ;   // TODO: migrate to lighweight sfr from stree level
     LOG(LEVEL) << _fr ;
+
     SEvt::SetFrame(_fr) ;
 
     sfr _lfr = _fr.spawn_lite();
     setFrame(_lfr);
 }
 
+#endif
 
 
 
@@ -874,13 +889,13 @@ A: Currently think that it is just a bookkeeping convenience for simtrace and no
 
 void CSGOptiX::setFrame()
 {
-    assert(0);
+    assert(0 && " DONT USE THIS - DIRECTLY USE sglm INSTEAD"  );
     setFrame(ssys::getenvvar("MOI", "-1"));  // TODO: generalize to FRS
 }
 
 void CSGOptiX::setFrame(const char* frs)
 {
-    assert(0);
+    assert(0 && " DONT USE THIS - DIRECTLY USE sglm INSTEAD"  );
     LOG(LEVEL) << " frs " << frs ;
     sframe fr = foundry->getFrame(frs) ;
     sfr lfr = fr.spawn_lite();
@@ -889,7 +904,7 @@ void CSGOptiX::setFrame(const char* frs)
 }
 void CSGOptiX::setFrame(const float4& ce )
 {
-    assert(0);
+    assert(0 && " DONT USE THIS - DIRECTLY USE sglm INSTEAD"  );
     sfr lfr ;   // m2w w2m default to identity
 
     lfr.ce.x = ce.x ;
@@ -907,13 +922,23 @@ CSGOptiX::setFrame into the SGLM.h instance
 Note that SEvt already holds an sframe used for input photon transformation,
 the sframe here is used for raytrace rendering.  Could perhaps rehome sglm
 into SEvt and use a single sframe for both input photon transformation
-and rendering ?
+and rendering ? But SGLM is for viz, so that is out of place.
+
+Where to keep the frame?
+
+* for simulation the obvious location is SEvt
+* for simtrace it needs to be in SEvt for genstep preparation
+* for rendering the obvious location is SGLM
+
+Currently reluctant to depend on SEvt for rendering, because it
+brings complexity without much utility. So live with two locations
+for the frame.
 
 **/
 
 void CSGOptiX::setFrame(const sfr& lfr )
 {
-    assert(0);
+    assert(0 && " DONT USE THIS - DIRECTLY USE sglm INSTEAD"  );
     sglm->set_frame(lfr);   // TODO: aim to remove sframe from sglm ? instead operate at ce (or sometimes m2w w2m level)
 
     LOG(LEVEL) << "sglm.desc:" << std::endl << sglm->desc() ;

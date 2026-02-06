@@ -32,6 +32,7 @@ struct U4HitTest
     unsigned num_hit ;
     const char* cfbase ;
     const CSGFoundry* fd ;
+    const SSim* sim ;
 
     sphoton global = {} ;
     sphit ht = {}  ;
@@ -87,6 +88,7 @@ inline U4HitTest::U4HitTest()
     num_hit(sev ? sev->getNumHit() : 0),
     cfbase(sev ? sev->getSearchCFBase() : nullptr),
     fd(cfbase ? CSGFoundry::Load(cfbase) : nullptr ),
+    sim(fd ? fd->getSim() : nullptr ),
     delta_rs(0),
     range_rs(0),
     hit_idx(0)
@@ -96,7 +98,11 @@ inline U4HitTest::U4HitTest()
 
 inline void U4HitTest::init()
 {
+#ifdef WITH_OLD_FRAME
     sev->setGeo(fd);
+#else
+    sev->setSim(sim);
+#endif
 
     assert( sev->hasInstance() );  // check that the instance is persisted and retrieved (via domain metadata)
     assert( sev == SEvt::Get(sev->instance) );  // check the loaded SEvt got slotted in expected slot

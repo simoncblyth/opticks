@@ -101,9 +101,9 @@ struct Tran
     static void Apply(        const glm::tmat4x4<T>& tr, T* p0    , T w    , unsigned count, unsigned stride, unsigned offset, bool normalize );
     static void ApplyToFloat( const glm::tmat4x4<T>& tr, float* p0, float w, unsigned count, unsigned stride, unsigned offset, bool normalize );
 
-    void photon_transform( NP* ph, bool normalize ) const ;
+    void photon_transform( NP* ph, bool normalize, bool inverse ) const ;
 
-    static NP* PhotonTransform( const NP* ph, bool normalize, const Tran<T>* tr );
+    static NP* PhotonTransform( const NP* ph, bool normalize, const Tran<T>* tr, bool inverse );
     static void AddTransform( T* ttk, const char* opt, const glm::tvec3<T>& a, const glm::tvec3<T>& b, const glm::tvec3<T>& c );
 
     const T* tdata() const ;
@@ -652,28 +652,30 @@ void Tran<T>::ApplyToFloat( const glm::tmat4x4<T>& tr, float* p0, float w, unsig
 
 
 template<typename T>
-void Tran<T>::photon_transform( NP* ph, bool normalize ) const
+void Tran<T>::photon_transform( NP* ph, bool normalize, bool inverse ) const
 {
     T one(1.);
     T zero(0.);
 
+    const glm::tmat4x4<T>& tv = inverse ? v : t ;  // transform
+
     assert( ph->has_shape(-1,4,4) );
-    unsigned count  = ph->shape[0] ;
-    unsigned stride = 4*4 ;
+    size_t count  = ph->shape[0] ;
+    size_t stride = 4*4 ;
 
     if( ph->ebyte == sizeof(T) )
     {
         T* p0 = ph->values<T>();
-        Apply( t, p0, one,  count, stride, 0, false );  // transform pos as position
-        Apply( t, p0, zero, count, stride, 4, normalize );  // transform mom as direction
-        Apply( t, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+        Apply( tv, p0, one,  count, stride, 0, false );  // transform pos as position
+        Apply( tv, p0, zero, count, stride, 4, normalize );  // transform mom as direction
+        Apply( tv, p0, zero, count, stride, 8, normalize );  // transform pol as direction
     }
     else if( ph->ebyte == 4 && sizeof(T) == 8 )
     {
         float* p0 = ph->values<float>();
-        ApplyToFloat( t, p0, one,  count, stride, 0, false );  // transform pos as position
-        ApplyToFloat( t, p0, zero, count, stride, 4, normalize );  // transform mom as direction
-        ApplyToFloat( t, p0, zero, count, stride, 8, normalize );  // transform pol as direction
+        ApplyToFloat( tv, p0, one,  count, stride, 0, false );  // transform pos as position
+        ApplyToFloat( tv, p0, zero, count, stride, 4, normalize );  // transform mom as direction
+        ApplyToFloat( tv, p0, zero, count, stride, 8, normalize );  // transform pol as direction
     }
 }
 
@@ -691,10 +693,10 @@ Note that the returned transformed photon array is always in double precision.
 **/
 
 template<typename T>
-NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* t ) // static
+NP* Tran<T>::PhotonTransform( const NP* ph, bool normalize, const Tran<T>* tr, bool inverse ) // static
 {
     NP* b = NP::MakeWideIfNarrow(ph) ;
-    t->photon_transform(b, normalize);
+    tr->photon_transform(b, normalize, inverse );
     assert( b->ebyte == 8 );
     return b ;
 }
