@@ -37,7 +37,7 @@ GLOBAL=1
    even when using GLOBAL frame ?
 
 GLOBAL=0
-   apply the e.f.sframe.w2m (world2model) 4x4 transform to
+   apply the e.f.sfr.w2m (world2model) 4x4 transform to
    the global positions converting them into the model frame
 
 

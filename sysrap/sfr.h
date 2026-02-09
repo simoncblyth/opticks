@@ -172,6 +172,8 @@ struct sfr
     template<typename T> void set_extent( T _w );
     template<typename T> void set_m2w( const T* _v16, size_t nv=16 );
     template<typename T> void set_bb(  const T* _bb6 );
+    template<typename T> int  write_bb( T* bb ) const ;
+
 
     const glm::tmat4x4<double>& get_transform(bool inverse) const ;
 
@@ -514,6 +516,18 @@ inline void sfr::set_bb( const T* bb )
     bbmx.x = bb[3] ;
     bbmx.y = bb[4] ;
     bbmx.z = bb[5] ;
+}
+
+template<typename T>
+inline int sfr::write_bb( T* bb ) const
+{
+    bb[0] = bbmn.x ;
+    bb[1] = bbmn.y ;
+    bb[2] = bbmn.z ;
+    bb[3] = bbmx.x ;
+    bb[4] = bbmx.y ;
+    bb[5] = bbmx.z ;
+    return 0 ;
 }
 
 

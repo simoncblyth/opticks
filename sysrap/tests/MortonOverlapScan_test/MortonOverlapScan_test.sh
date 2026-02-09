@@ -8,6 +8,10 @@ MortonOverlapScan_test.sh
 
     ~/o/sysrap/tests/MortonOverlapScan_test/MortonOverlapScan_test.sh
 
+This is often run from cx::
+
+    cx ; ./cxt_min.sh scan
+
 
 EOU
 }
@@ -26,16 +30,25 @@ bin=$FOLD/$name
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxz_tall_wide_radial_range/A000
+#mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxz_tall_wide_radial_range/A000
+mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxy/A000
+
 export MFOLD=${MFOLD:-$mfold}
 simtrace="$MFOLD/simtrace.npy"
+sfr="$MFOLD/sfr.npy"
 
 if [ ! -f "$simtrace" ]; then
     echo $BASH_SOURCE - FATAL - simtrace $simtrace DOES NOT EXIST - use cx:cxt_min.sh to create simtrace.npy
     exit 1
 fi
+if [ ! -f "$sfr" ]; then
+    echo $BASH_SOURCE - FATAL - sfr $sfr DOES NOT EXIST - use cx:cxt_min.sh to create sfr.npy
+    exit 1
+fi
 
-defarg="info_nvcc_gcc_run"
+
+
+defarg="info_nvcc_gcc_run_ls"
 arg=${1:-$defarg}
 
 vv="BASH_SOURCE name tmp TMP FOLD bin script defarg arg cuda_prefix CUDA_PREFIX mfold MFOLD"
@@ -90,6 +103,13 @@ if [ "${arg/pdb}" != "$arg" ]; then
    ${IPYTHON:-ipython} --pdb -i $script
    [ $? -ne 0 ] && echo $BASH_SOURCE pdb error && exit 5
 fi
+
+if [ "${arg/ana}" != "$arg" ]; then
+   ${PYTHON:-python} $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE ana error && exit 6
+fi
+
+
 
 
 exit 0

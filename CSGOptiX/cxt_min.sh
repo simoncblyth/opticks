@@ -181,15 +181,21 @@ which_bin=$(which $bin)
 
 # defining NOXGEOM prevents use of external GEOM
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
+vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
+
 if [ -z "$NOXGEOM" -a -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
     ## distributed usage : where have one fixed geometry for each distribution
     echo $BASH_SOURCE - External GEOM setup detected
-    vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
     for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 else
     ## development source tree usage : where need to often switch between geometries
     source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
+    Local_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
+    vv="Local_CFBaseFromGEOM ${Local_CFBaseFromGEOM}"
 fi
+
+
+
 
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar, use MOI bash function to setup/edit
 
@@ -347,7 +353,7 @@ export SCRIPT=$(basename $BASH_SOURCE)
 SCRIPT=${SCRIPT/.sh}
 
 scan_sh=$(realpath ../sysrap/tests/MortonOverlapScan_test/MortonOverlapScan_test.sh)
-
+vv="$vv scan_sh"
 
 version=1
 VERSION=${VERSION:-$version}
@@ -384,7 +390,7 @@ debug()
 
 _CUR=GEOM/$GEOM/$SCRIPT/${MOI//:/_}
 
-vars="$vars BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI MOI_NOTE SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES OPTICKS_EVENT_NAME CEGS TITLE"
+vv="$vv BASH_SOURCE script bin which_bin allarg defarg arg GEOM ${GEOM}_CFBaseFromGEOM MFOLD MOI MOI_NOTE SCRIPT _CUR LOG LOGDIR BASE CUDA_VISIBLE_DEVICES OPTICKS_EVENT_NAME CEGS TITLE"
 
 ## define TITLE based on ana/pdb control envvars
 title="cxt_min.sh pdb"
@@ -397,7 +403,7 @@ export TITLE="$title"
 
 
 if [ "${arg/info}" != "$arg" ]; then
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+   for v in $vv ; do printf "%20s : %s \n" "$v" "${!v}" ; done
 fi
 
 if [ "${arg/fold}" != "$arg" ]; then
