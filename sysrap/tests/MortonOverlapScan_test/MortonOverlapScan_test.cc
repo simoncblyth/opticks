@@ -10,9 +10,12 @@
 struct MortonOverlapScan_test
 {
     static constexpr const char* WINDOW = "WINDOW" ;
+    static constexpr const char* FOCUS = "FOCUS" ;
     int      window ;
+    int      _focus ;
 
     sfr      fr ;
+    int      focus ;
     float    x0, y0, z0, x1, y1, z1 ;
     int      bbrc ;
     float    dx ;
@@ -43,7 +46,9 @@ struct MortonOverlapScan_test
 inline MortonOverlapScan_test::MortonOverlapScan_test()
     :
     window(ssys::getenvint(WINDOW,4)),
+    _focus(ssys::getenvint(FOCUS,-1)),
     fr(sfr::Load_("$MFOLD/sfr.npy")),
+    focus(fr.get_prim()),
     bbrc(fr.write_bb(&x0)),
     dx(x1-x0),
     dy(y1-y0),
@@ -68,6 +73,8 @@ inline std::string MortonOverlapScan_test::desc() const
     std::stringstream ss ;
     ss
         << "[MortonOverlapScan_test::desc\n"
+        << " fr.name [" << fr.get_name() << "]\n"
+        << " fr.treedir [" << fr.get_treedir() << "]\n"
         << " x0 " << std::setw(10) << std::fixed << std::setprecision(3) << x0
         << " y0 " << std::setw(10) << std::fixed << std::setprecision(3) << y0
         << " z0 " << std::setw(10) << std::fixed << std::setprecision(3) << z0
@@ -85,6 +92,8 @@ inline std::string MortonOverlapScan_test::desc() const
         << " cz " << std::setw(10) << std::fixed << std::setprecision(3) << cz
         << "\n"
         << " window " << window
+        << " _focus " << _focus
+        << " focus " << focus
         << " _simtrace " << ( _simtrace ? _simtrace->sstr() : "-" ) << "\n"
         << " num_simtrace " << num_simtrace << "\n"
         << " d_simtrace " << ( d_simtrace ? "YES" : "NO " )  << "\n"
@@ -119,6 +128,7 @@ inline int MortonOverlapScan_test::scan()
         x0, y0, z0,
         x1, y1, z1,
         window,
+        focus,
         stream
     );
 

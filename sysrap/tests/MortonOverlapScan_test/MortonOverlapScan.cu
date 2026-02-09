@@ -38,6 +38,7 @@ struct OverlapPredicate
     const quad4* data;
     int n;
     int window;
+    int focus ;
 
     __device__ bool operator()(int i) const {
         if (i < window || i >= n - window) return false;
@@ -45,6 +46,9 @@ struct OverlapPredicate
         int prev_id = data[i-1].simtrace_globalPrimIdx();
         int self_id = data[i].simtrace_globalPrimIdx();
         if (self_id == prev_id) return false;
+
+        // for non-negative focus disqualify overlaps which do not involve the focus
+        if( focus > -1 && !( focus == self_id || focus == prev_id )) return false ;
 
         float3 n_self = make_float3(data[i].q0.f.x, data[i].q0.f.y, data[i].q0.f.z);
 
@@ -75,6 +79,28 @@ struct OverlapPredicate
 };
 
 
+/**
+MortonOverlapScan::Scan
+-------------------------
+
+1. Copy subset of intersect points within the input BBox
+2. Compute Morton Codes normalized to the BBox of the subset points
+3. Sort subset by Morton Code (brings spatially close points together in 1D)
+4. Stencil copy_if to find identity "flicker"
+5. Output Allocation
+
+
+* currently no direct recording of the intruder identity
+* could also have parameter to restrict overlap selection
+  to those where the self id is the query identity, to
+  reduce sprinkle noise from the touchers
+
+HMM: most interest in intruder intersects where the self intersect is
+the target prim
+
+**/
+
+
 void MortonOverlapScan::Scan(
     const quad4* d_intersect,
     size_t num_intersect,
@@ -83,12 +109,13 @@ void MortonOverlapScan::Scan(
     float x0, float y0, float z0,
     float x1, float y1, float z1,
     int window,
+    int focus,
     cudaStream_t stream
 ) {
     auto policy = thrust::cuda::par.on(stream);
     thrust::device_ptr<const quad4> i_ptr(d_intersect);
 
-    // 1. Subset points within the input BBox
+    // 1. Copy subset of intersect points within the input BBox
     thrust::device_vector<quad4> subset(num_intersect);
     auto subset_end = thrust::copy_if(policy, i_ptr, i_ptr + num_intersect, subset.begin(),
         [=] __device__ (const quad4& q) {
@@ -105,7 +132,7 @@ void MortonOverlapScan::Scan(
         return;
     }
 
-    // 2. Compute Morton Codes normalized to the BBox
+    // 2. Compute Morton Codes normalized to the BBox of the subset points
     thrust::device_vector<uint64_t> morton(n_subset);
 
     // 64 = 21*3 + 1, so 21 bits for x,y,z with one bit spare
@@ -127,7 +154,7 @@ void MortonOverlapScan::Scan(
     thrust::device_vector<quad4> results(n_subset);
     thrust::counting_iterator<int> idx_first(0);
 
-    OverlapPredicate  pred{ thrust::raw_pointer_cast(subset.data()), (int)n_subset, window };
+    OverlapPredicate  pred{ thrust::raw_pointer_cast(subset.data()), (int)n_subset, window, focus };
 
     auto results_end = thrust::copy_if(policy, subset.begin(), subset.end(), idx_first, results.begin(), pred);
     *num_overlap = thrust::distance(results.begin(), results_end);

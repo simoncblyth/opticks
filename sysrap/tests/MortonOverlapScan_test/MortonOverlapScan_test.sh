@@ -13,6 +13,7 @@ This is often run from cx::
     cx ; ./cxt_min.sh scan
 
 
+
 EOU
 }
 
@@ -31,7 +32,9 @@ cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
 #mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxz_tall_wide_radial_range/A000
-mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxy/A000
+#mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxy/A000
+mfold=/data1/blyth/tmp/GEOM/J25_7_2_opticks_Debug/CSGOptiXTMTest/ALL0_2dxy_more/A000
+
 
 export MFOLD=${MFOLD:-$mfold}
 simtrace="$MFOLD/simtrace.npy"
@@ -48,7 +51,7 @@ fi
 
 
 
-defarg="info_nvcc_gcc_run_ls"
+defarg="info_nvcc_gcc_run_ls_pdb"
 arg=${1:-$defarg}
 
 vv="BASH_SOURCE name tmp TMP FOLD bin script defarg arg cuda_prefix CUDA_PREFIX mfold MFOLD"
@@ -68,6 +71,12 @@ if [ "${arg/ls}" != "$arg" ]; then
       eval $cmd
    done
 fi
+
+if [ "${arg/meta}" != "$arg" ]; then
+   echo cat $MFOLD/sfr_meta.txt
+   cat $MFOLD/sfr_meta.txt
+fi
+
 
 if [ "${arg/nvcc}" != "$arg" ]; then
    log nvcc ../../SU.cu

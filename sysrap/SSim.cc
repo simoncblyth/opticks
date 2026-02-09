@@ -506,8 +506,17 @@ void SSim::load_(const char* dir)
     NPFold* f_tree = top->get_subfold( stree::RELDIR ) ;
     tree->import_( f_tree );
 
+
+
     NPFold* f_scene = top->get_subfold( SScene::RELDIR ) ;
     scene->import_( f_scene );
+
+
+    std::stringstream ss ;
+    ss << dir << "/" << stree::RELDIR ;
+    std::string treedir = ss.str();
+    tree->loaddir = strdup(treedir.c_str());
+
 
     afterLoadOrCreate();
 
@@ -528,6 +537,8 @@ void SSim::afterLoadOrCreate()
 {
     SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
     assert(tree);
+
+
     sfr fr = tree->get_frame_moi() ;
     SEvt::SetFr(fr);
 }

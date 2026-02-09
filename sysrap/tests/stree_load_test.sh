@@ -122,8 +122,9 @@ export stree_level=1
 #test=get_prim_aabb
 #test=get_global_aabb
 #test=get_global_aabb_check
-test=get_global_aabb_sibling_overlaps
+#test=get_global_aabb_sibling_overlaps
 #test=desc_repeat_index
+test=desc_nodes_with_center_within_ce
 
 export TEST=${TEST:-$test}
 

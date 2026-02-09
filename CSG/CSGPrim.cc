@@ -109,6 +109,15 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
     float CE_ZMIN = CE_ZMIN_ZMAX ? (*CE_ZMIN_ZMAX)[0] : 0.f ;
     float CE_ZMAX = CE_ZMIN_ZMAX ? (*CE_ZMIN_ZMAX)[1] : 0.f ;
 
+    std::vector<float>* CE_YMIN_YMAX = ssys::getenvfloatvec(CSGPrim__DescRange_CE_YMIN_YMAX, nullptr ); // nullptr when no envvar
+    float CE_YMIN = CE_YMIN_YMAX ? (*CE_YMIN_YMAX)[0] : 0.f ;
+    float CE_YMAX = CE_YMIN_YMAX ? (*CE_YMIN_YMAX)[1] : 0.f ;
+
+    std::vector<float>* CE_XMIN_XMAX = ssys::getenvfloatvec(CSGPrim__DescRange_CE_XMIN_XMAX, nullptr ); // nullptr when no envvar
+    float CE_XMIN = CE_XMIN_XMAX ? (*CE_XMIN_XMAX)[0] : 0.f ;
+    float CE_XMAX = CE_XMIN_XMAX ? (*CE_XMIN_XMAX)[1] : 0.f ;
+
+
 
 
     std::stringstream tt ;
@@ -125,6 +134,14 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
        << " [" << CSGPrim__DescRange_CE_ZMIN_ZMAX << "]"
        << " CE_ZMIN : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_ZMIN
        << " CE_ZMAX : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_ZMAX
+       << "\n"
+       << " [" << CSGPrim__DescRange_CE_YMIN_YMAX << "]"
+       << " CE_YMIN : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_YMIN
+       << " CE_YMAX : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_YMAX
+       << "\n"
+       << " [" << CSGPrim__DescRange_CE_XMIN_XMAX << "]"
+       << " CE_XMIN : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_XMIN
+       << " CE_XMAX : " << std::setw(10) << std::fixed << std::setprecision(3) << CE_XMAX
        << "\n"
        ;
 
@@ -172,8 +189,14 @@ std::string CSGPrim::DescRange(const CSGPrim* prim, int primOffset, int numPrim,
 
         bool extent_in_range = EXTENT_MINI == 0.f ? true : pr_ce.w >= EXTENT_MINI ;
         bool cez_in_range =  CE_ZMIN_ZMAX ? ( pr_ce.z > CE_ZMIN && pr_ce.z < CE_ZMAX ) : true ;
-        if(!cez_in_range) continue ;
+        bool cey_in_range =  CE_YMIN_YMAX ? ( pr_ce.y > CE_YMIN && pr_ce.y < CE_YMAX ) : true ;
+        bool cex_in_range =  CE_XMIN_XMAX ? ( pr_ce.x > CE_XMIN && pr_ce.x < CE_XMAX ) : true ;
+
         if(!extent_in_range) continue ;
+        if(!cez_in_range) continue ;
+        if(!cey_in_range) continue ;
+        if(!cex_in_range) continue ;
+
 
         count += 1 ;
 

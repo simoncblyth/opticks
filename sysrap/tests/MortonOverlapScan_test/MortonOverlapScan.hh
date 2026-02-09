@@ -22,7 +22,8 @@ struct MortonOverlapScan
         size_t* num_overlap,
         float x0, float y0, float z0,
         float x1, float y1, float z1,
-        int           window = 2,
+        int           window = 4,
+        int           focus = -1,
         cudaStream_t  stream = 0
     );
 };

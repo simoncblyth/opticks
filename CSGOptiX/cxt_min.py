@@ -301,7 +301,11 @@ if __name__ == '__main__':
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
     ## for simtrace layout see sysrap/sevent.h
 
-    _ii = ust[:,3,3].view(np.int32)   ## instanceIndex
+    _ii_id = ust[:,3,3].view(np.int32)   ## sevent::add_simtrace fromerly quad2::identity NOW quad2::iindex_identity
+    _ii = _ii_id >> 16       ## iindex
+    _id = _ii_id & 0xffff    ## identity
+
+
     _gp_bn = ust[:,2,3].view(np.int32)    ## simtrace intersect boundary indices
     _gp = _gp_bn >> 16      ## globalPrimIdx
     _bn = _gp_bn & 0xffff   ## boundary
@@ -344,6 +348,7 @@ if __name__ == '__main__':
         unrm = _unrm[boxsel]
 
         ii = _ii[boxsel]
+        id = _id[boxsel]
         gp = _gp[boxsel]
         bn = _bn[boxsel]
 
@@ -359,6 +364,7 @@ if __name__ == '__main__':
         upos = _upos
         unrm = _unrm
         ii = _ii
+        id = _id
         gp = _gp
         bn = _bn
 
@@ -378,6 +384,7 @@ if __name__ == '__main__':
     np.c_[np.unique(gp,return_counts=True)]
     np.c_[np.unique(bn,return_counts=True)]
     np.c_[np.unique(ii,return_counts=True)]
+    np.c_[np.unique(id,return_counts=True)]
     """).split("\n")))
 
     for expr in EXPR:
@@ -387,7 +394,10 @@ if __name__ == '__main__':
     pass
 
 
-    idtab = UniqueTable("idtab", ii, None)
+    iitab = UniqueTable("iitab", ii, None)
+    print(repr(iitab))
+
+    idtab = UniqueTable("idtab", id, None)
     print(repr(idtab))
 
     gptab = UniqueTable("gptab", gp, cf.primname)

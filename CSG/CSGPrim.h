@@ -182,7 +182,10 @@ struct CSG_API CSGPrim
     static constexpr const char* CSGPrim__DescRange_NUMPY = "CSGPrim__DescRange_NUMPY" ;
     static constexpr const char* CSGPrim__DescRange_EXTENT_DIFF = "CSGPrim__DescRange_EXTENT_DIFF" ;
     static constexpr const char* CSGPrim__DescRange_EXTENT_MINI = "CSGPrim__DescRange_EXTENT_MINI" ;
+
     static constexpr const char* CSGPrim__DescRange_CE_ZMIN_ZMAX = "CSGPrim__DescRange_CE_ZMIN_ZMAX" ;
+    static constexpr const char* CSGPrim__DescRange_CE_YMIN_YMAX = "CSGPrim__DescRange_CE_YMIN_YMAX" ;
+    static constexpr const char* CSGPrim__DescRange_CE_XMIN_XMAX = "CSGPrim__DescRange_CE_XMIN_XMAX" ;
 
     static std::string DescRange(const CSGPrim* prim, int primOffset, int numPrim, const std::vector<std::string>* soname=nullptr, const SMeshGroup* mg = nullptr );
 

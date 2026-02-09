@@ -281,6 +281,7 @@ struct stree
     static constexpr const char* NIDX_PFX = "NIDX:" ;
     static constexpr const char* PRIM_PFX = "PRIM:" ;
     static constexpr const char* INST_PFX = "INST:" ;
+    static constexpr const char* SID_PFX = "SID:" ;
 
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
@@ -463,6 +464,11 @@ struct stree
     void reorderSensors_r(int nidx);
     void get_sensor_id( std::vector<int>& arg_sensor_id ) const ;
 
+    void find_nodes_with_sensor_id( std::vector<snode>& nodes, int q_sensor_id ) const ;
+    int  ordinal_node_with_sensor_id( int q_sensor_id, int ordinal ) const ;
+
+
+
     void postcreate() const ;
 
     std::string desc_sensor() const ;
@@ -525,10 +531,12 @@ struct stree
     sfr  get_frame_prim(const char* s_prim ) const ;
     sfr  get_frame_nidx(const char* s_nidx ) const ;
     sfr  get_frame_inst(const char* s_inst ) const ;
+    sfr  get_frame_sid( const char* s_sid ) const ;
 
     sfr  get_frame_prim(int prim ) const ;
     sfr  get_frame_nidx(int nidx ) const ;
     sfr  get_frame_inst(int inst ) const ;
+    sfr  get_frame_sid( int sid  ) const ;
 
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
@@ -553,6 +561,18 @@ struct stree
 
     int get_node_ce_bb(  std::array<double,4>& ce , std::array<double,6>& bb, const snode& node, VBB* contrib_bb = nullptr, VTR* contrib_tr = nullptr ) const ;
     int get_node_bb(     std::array<double,6>& bb ,                           const snode& node, VBB* contrib_bb = nullptr, VTR* contrib_tr = nullptr ) const ;
+
+    template<typename T>
+    void find_nodes_containing_point(std::vector<snode>& nodes, const T* xyz ) const ;
+
+    template<typename T>
+    void        find_nodes_with_center_within_bb(std::vector<snode>& nodes, const T* qbb ) const ;
+
+    template<typename T>
+    void        find_nodes_with_center_within_ce(std::vector<snode>& nodes, const T* qce ) const ;
+
+    template<typename T>
+    std::string desc_nodes_with_center_within_ce( const T* qce ) const ;
 
 
     void get_sub_sonames( std::vector<std::string>& sonames ) const ;
@@ -1581,6 +1601,42 @@ inline void stree::get_sensor_id( std::vector<int>& arg_sensor_id ) const
     }
 }
 
+
+/**
+stree::find_nodes_with_sensor_id
+---------------------------------
+
+off-by-one suspicion::
+
+    MOI=SID:50055 cxr_min.sh  # staked PMT
+
+But the identity from cxt_min.sh is 50056
+
+**/
+
+
+inline void stree::find_nodes_with_sensor_id( std::vector<snode>& nodes, int q_sensor_id ) const
+{
+    unsigned num_nd = nds.size();
+    for(unsigned nidx=0 ; nidx < num_nd ; nidx++)
+    {
+        const snode& nd = nds[nidx] ;
+        if( nd.sensor_id == q_sensor_id ) nodes.push_back(nd);
+    }
+}
+
+inline int stree::ordinal_node_with_sensor_id( int q_sensor_id, int ordinal ) const
+{
+    std::vector<snode> nodes ;
+    find_nodes_with_sensor_id( nodes, q_sensor_id );
+    int num = nodes.size() ;
+    return ordinal > -1 && ordinal < num ? nodes[ordinal].index : -1 ;
+}
+
+
+
+
+
 /**
 stree::postcreate
 ------------------
@@ -2293,6 +2349,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
     bool is_NIDX = sstr::StartsWith(q_spec,  NIDX_PFX) ;
     bool is_PRIM = sstr::StartsWith(q_spec,  PRIM_PFX) ;
     bool is_INST = sstr::StartsWith(q_spec,  INST_PFX) ;
+    bool is_SID = sstr::StartsWith(q_spec,  SID_PFX) ;
     bool is_NPYFILE =  sstr::EndsWith(q_spec, ".npy");
     bool is_TRIPLET = sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 ;
     bool is_COORDS = sstr::looks_like_list(q_spec, delim, 1, 4) ;
@@ -2300,6 +2357,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
 
     sfr f = {} ;
     f.set_name(q_spec);
+    f.set_treedir(loaddir);
 
     int rc = 0 ;
 
@@ -2334,6 +2392,10 @@ inline sfr stree::get_frame(const char* q_spec ) const
     else if( is_INST )
     {
         f = get_frame_inst( q_spec + strlen(INST_PFX) );
+    }
+    else if( is_SID )
+    {
+        f = get_frame_sid( q_spec + strlen(SID_PFX) );
     }
     else if( is_NPYFILE )
     {
@@ -2448,9 +2510,32 @@ inline sfr stree::get_frame_inst(const char* s_inst ) const
     return fr ;
 }
 
+inline sfr stree::get_frame_sid(const char* s_sid ) const
+{
+    std::string name = SID_PFX ;
+    name += s_sid ;
+    int sid = sstr::AsInt(s_sid, -1);
+    sfr fr = get_frame_sid( sid );
+    fr.set_name(name.c_str());
+    return fr ;
+}
+
+
+/**
+stree::get_frame_prim
+----------------------
+
+For instanced prim this will give the frame of the
+first nidx node. To access the frame of a specific node of
+the tree rather than just an example first node
+use stree::get_frame_nidx
+
+**/
+
+
 inline sfr stree::get_frame_prim(int prim) const
 {
-    int nidx = get_nidx_for_prim(prim);
+    int nidx = get_nidx_for_prim(prim); // many nidx will havse same prim
     sfr fr = get_frame_nidx(nidx);
     fr.set_prim(prim);
     return fr ;
@@ -2468,6 +2553,9 @@ inline sfr stree::get_frame_nidx(int nidx) const
     s_bb::CenterExtent<double>( f.ce_data(), bb.data() );
     f.set_bb(bb.data());
     f.set_nidx(nidx);
+
+    int prim = get_prim_for_nidx(nidx);
+    f.set_prim(prim);
 
     return f ;
 }
@@ -2493,6 +2581,33 @@ inline sfr stree::get_frame_inst(int ii) const
 
     return f ;
 }
+
+
+inline sfr stree::get_frame_sid(int sid) const
+{
+    std::vector<snode> nodes ;
+    find_nodes_with_sensor_id( nodes, sid );
+    int num = nodes.size();
+    int nidx = num > 0 ? nodes[0].index : -1 ;
+    if( nidx == -1 )
+    {
+        std::cerr
+           << "stree::get_frame_sid"
+           << " sid " << sid
+           << " num " << num
+           << " nidx " << nidx
+           << " FAILED TO FIND NODES FOR SID - FALLBACK TO nidx 0 "
+           << "\n"
+           ;
+        nidx = 0 ;
+    }
+    sfr f = get_frame_nidx( nidx );
+    return f ;
+}
+
+
+
+
 
 
 
@@ -2628,6 +2743,17 @@ inline int stree::get_frame_from_coords(sfr& f, const char* q_spec ) const
     ce[3] = num_elem > 3 ? elem[3] : 1000. ;
 
     f.set_ce(ce.data() );
+
+    std::array<double,6> bb = {};
+    bb[0] = ce[0] - ce[3] ;
+    bb[1] = ce[1] - ce[3] ;
+    bb[2] = ce[2] - ce[3] ;
+    bb[3] = ce[0] + ce[3] ;
+    bb[4] = ce[1] + ce[3] ;
+    bb[5] = ce[2] + ce[3] ;
+    f.set_bb( bb.data() );
+    f.set_prim(-1);
+
 
     bool rtp_tangential = false ;
     bool extent_scale = false ;
@@ -2935,6 +3061,15 @@ inline int stree::_get_frame_global(sfr& f, int lvid, int lvid_ordinal, int repe
     f.set_ce(ce.data() );
     f.set_bb(bb.data() );
 
+    f.set_nidx( node.index );
+
+    int prim = get_prim_for_nidx( node.index );
+    f.set_prim( prim );
+
+    f.set_lvid(lvid);
+    f.set_lvid_ordinal(lvid_ordinal);
+
+
     if(contrib_bb)
     {
         NP* a = NP::Make<double>( contrib_bb->size(), 6 );
@@ -3215,8 +3350,91 @@ inline int stree::get_node_bb(  std::array<double,6>& bb , const snode& node, VB
 
 
 
+template<typename T>
+inline void stree::find_nodes_containing_point(std::vector<snode>& nodes, const T* xyz ) const
+{
+    T x = xyz[0] ;
+    T y = xyz[1] ;
+    T z = xyz[2] ;
+
+    int num_nd = nds.size();
+    BB bb ;
+    for(int i=0 ; i < num_nd ; i++)
+    {
+        int nidx = i ;
+        const snode& node = nds[nidx];
+        get_prim_aabb( bb.data(), node, nullptr, nullptr );
+        bool in_bb = x >= bb[0] && x <= bb[3]  && y >= bb[1] && y <= bb[4] && z >= bb[2] && z <= bb[5] ;
+        if( in_bb ) nodes.push_back(node);
+    }
+}
 
 
+template<typename T>
+inline void stree::find_nodes_with_center_within_bb(std::vector<snode>& nodes, const T* qbb ) const
+{
+    int num_nd = nds.size();
+    std::array<double,4> ce = {} ;
+    std::array<double,6> bb = {} ;
+
+    for(int i=0 ; i < num_nd ; i++)
+    {
+        int nidx = i ;
+        const snode& node = nds[nidx];
+        get_node_ce_bb( ce , bb, node, nullptr, nullptr );
+
+        bool in_bb = ce[0] >= qbb[0] && ce[0] <= qbb[3] &&
+                     ce[1] >= qbb[1] && ce[1] <= qbb[4] &&
+                     ce[2] >= qbb[2] && ce[2] <= qbb[5] ;
+
+        if(in_bb) nodes.push_back(node);
+    }
+}
+
+
+
+template<typename T>
+inline void stree::find_nodes_with_center_within_ce(std::vector<snode>& nodes, const T* ce ) const
+{
+     std::array<T,6> bb ;
+     bb[0] = ce[0] - ce[3] ;
+     bb[1] = ce[1] - ce[3] ;
+     bb[2] = ce[2] - ce[3] ;
+     bb[3] = ce[0] + ce[3] ;
+     bb[4] = ce[1] + ce[3] ;
+     bb[5] = ce[2] + ce[3] ;
+
+     find_nodes_with_center_within_bb<T>( nodes, bb.data() );
+}
+
+template<typename T>
+inline std::string stree::desc_nodes_with_center_within_ce( const T* qce ) const
+{
+    std::vector<snode> nodes ;
+    find_nodes_with_center_within_ce<T>( nodes, qce );
+    int num_nodes = nodes.size();
+
+    std::stringstream ss ;
+    ss << "[stree::desc_nodes_with_center_within_ce\n"
+       << " qce ["
+       << std::setw(10) << std::fixed << std::setprecision(3) << qce[0]
+       << std::setw(10) << std::fixed << std::setprecision(3) << qce[1]
+       << std::setw(10) << std::fixed << std::setprecision(3) << qce[2]
+       << std::setw(10) << std::fixed << std::setprecision(3) << qce[3]
+       << "]\n"
+       << " num_nodes " << num_nodes
+       << "\n"
+       ;
+
+    for(int i=0 ; i < num_nodes ; i++)
+    {
+        const snode& nd = nodes[i];
+        ss << nd.desc() << "\n" ;
+    }
+
+    std::string str = ss.str() ;
+    return str ;
+}
 
 
 
@@ -7242,6 +7460,47 @@ stree::populate_nidx_prim  WIP : needs shakedown on full geometry
 
 Needs to be called after populate_prim_nidx
 
+* For every tree node *nidx* find the prim idx
+* implicit assumption that the same prim type does not
+  occur across multiple ridx : that allows simple modulo approach
+
+
+For each ridx:
+
+1. get first nodes with q_repeat_index
+2. get all nodes with q_repeat_index
+
+
+::
+
+    In [4]: np.where( f.nidx_prim == -1 )
+    Out[4]: (array([], dtype=int64), array([], dtype=int64))
+
+    In [5]: f.nidx_prim
+    Out[5]:
+    array([[   0],
+           [   1],
+           [   2],
+           [   3],
+           [   4],
+           ...,
+           [3103],
+           [3100],
+           [3101],
+           [3102],
+           [3103]], shape=(386577, 1), dtype=int32)
+
+    In [7]: tab = np.c_[np.unique(f.nidx_prim, return_counts=True)]
+
+    In [9]: tab[tab[:,1]>500]
+    Out[9]:
+    array([[ 3070, 25600],
+           [ 3071, 25600],
+           [ 3072, 25600],
+           [ 3073, 25600],
+           [ 3074, 25600],
+           [ 3075, 12657],
+
 **/
 
 
@@ -7361,6 +7620,13 @@ stree::get_nidx_for_prim
 
 Expected to give nidx for all prim (aka globalPrimIdx)
 never giving -1 for valid prim.
+
+BUT: for nodes that are instanced many nidx share the same prim
+so this will provide the first nidx with the query prim.
+
+For global volumes the relationship between nidx and prim is 1:1
+for some prim and not for others.
+
 
 **/
 

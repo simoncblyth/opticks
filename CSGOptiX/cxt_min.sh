@@ -236,8 +236,9 @@ export EYE=${EYE:-$eye}
 : user can pick EVT but it must be of expected form - otherwise override to A000
 evt=A000
 if ! [[ $EVT =~ ^[AB][0-9]{3}$ ]]; then
-    echo $BASH_SOURCE - WARNING EVT $EVT NOT OF EXPECTED FORM - A000 A001 ... B000 B001 ... - OVERRIDE TO default evt $evt
+    MSG="WARNING EVT [$EVT] NOT OF EXPECTED FORM - A000 A001 ... B000 B001 ... - OVERRIDE TO default evt $evt"
     EVT=$evt
+    vv="$vv MSG evt EVT"
 fi
 export EVT=${EVT:-$evt}
 
@@ -251,8 +252,9 @@ export LOGDIR=$BINBASE/$MOI
 #opticks_event_name=3d
 #opticks_event_name=2dxz_tall_wide
 #opticks_event_name=2dxz_tall_wide_radial_range
-#opticks_event_name=2dxz
-opticks_event_name=2dxy
+opticks_event_name=2dxz
+#opticks_event_name=2dxy
+#opticks_event_name=2dxy_more
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
 
 cegs=""
@@ -321,6 +323,12 @@ else
        cegs=9:9:0:1000
        export CEGS=$cegs
 
+    elif [ "$OPTICKS_EVENT_NAME" == "2dxy_more" ]; then
+
+       #cegs=9:9:1:1000  ## a few in z for range finding
+       cegs=11:11:0:1000
+       export CEGS=$cegs
+
     elif [ "$OPTICKS_EVENT_NAME" == "3d" ]; then
 
        #cegs=16:9:9:100    # [4] try a 3D grid
@@ -347,6 +355,24 @@ fi
 
 rel=ALL0_${OPTICKS_EVENT_NAME}
 export MFOLD=$TMP/GEOM/$GEOM/$bin/$rel/$EVT
+
+
+vv="$vv PRIOR_SIMTRACE PRIOR_SIMTRACE_PRIM PRIOR_SIMTRACE_NOTE PRIOR PRIOR_OVERLAP"
+unset PRIOR_SIMTRACE
+unset PRIOR_SIMTRACE_PRIM
+unset PRIOR_SIMTRACE_NOTE
+if [ -n "$PRIOR" ]; then
+    export PRIOR_SIMTRACE=$MFOLD/simtrace.npy
+    export PRIOR_SIMTRACE_PRIM=-2
+    export PRIOR_SIMTRACE_NOTE="use target prim from the frame to select from prior simtrace intersects"
+elif [ -n "$PRIOR_OVERLAP" ]; then
+    export PRIOR_SIMTRACE=$MFOLD/simtrace_overlap.npy
+    export PRIOR_SIMTRACE_PRIM=-1
+    export PRIOR_SIMTRACE_NOTE="use all prior simtrace intersects without selection"
+else
+    export PRIOR_SIMTRACE_NOTE="DO NOT add gensteps derived from prior simtrace intersect arrays"
+fi
+
 
 
 export SCRIPT=$(basename $BASH_SOURCE)
@@ -437,9 +463,9 @@ if [ "${arg/scan}" != "$arg" ]; then
     if [ -f "$scan_sh" ]; then
 
         if [ -n "$SCAN_BUILD" ]; then
-            scan_arg=info_nvcc_gcc_run
+            scan_arg=info_nvcc_gcc_run_meta_pdb
         else
-            scan_arg=run
+            scan_arg=run_meta_pdb
         fi
         $scan_sh $scan_arg
         ## HMM: CURRENTLY USING DEFAULT BBOX

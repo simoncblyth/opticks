@@ -687,7 +687,8 @@ SEVENT_METHOD void sevent::add_simtrace( unsigned idx, const quad4& p, const qua
     a.q3.f.x = p.q1.f.x ;                // initial dir
     a.q3.f.y = p.q1.f.y ;
     a.q3.f.z = p.q1.f.z ;
-    a.q3.u.w = prd->identity() ;  // identity from __closesthit__ch (( prim_idx & 0xffff ) << 16 ) | ( instance_id & 0xffff )
+    //a.q3.u.w = prd->identity() ;
+    a.q3.u.w = prd->iindex_identity() ;
 
     simtrace[idx] = a ;
     // NB this is the from zero slot idx not the offset "photon_idx"

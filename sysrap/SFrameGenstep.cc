@@ -226,6 +226,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
     Tran<double>* geotran = fr.getTransform();
     char* _GRIDSCALE = getenv("GRIDSCALE") ;
     float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1f ) ;
+    int prim = -1 ;
 
     LOG(LEVEL)
        << " _GRIDSCALE [" << ( _GRIDSCALE ? _GRIDSCALE : "-" ) << "]"
@@ -236,7 +237,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sframe& fr)  // static
     std::string str_cegs = GetGridConfig(cegs);
     fr.set_grid(cegs, gridscale);
 
-    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, cegs, gridscale, geotran );
+    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, cegs, gridscale, geotran, prim );
 
     gs->set_meta<int>("midx", fr.midx() );
     gs->set_meta<int>("mord", fr.mord() );
@@ -253,6 +254,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sfr& fr)  // static
     Tran<double>* geotran = fr.getTransform();
     char* _GRIDSCALE = getenv("GRIDSCALE") ;
     float gridscale = ssys::getenvfloat("GRIDSCALE", 0.1f ) ;
+    int prim = fr.get_prim() ;
 
     LOG(LEVEL)
        << " _GRIDSCALE [" << ( _GRIDSCALE ? _GRIDSCALE : "-" ) << "]"
@@ -269,7 +271,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sfr& fr)  // static
        ;
 
 
-    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, cegs, gridscale, geotran );
+    NP* gs = MakeCenterExtentGenstep_From_CE_geotran( ce, cegs, gridscale, geotran, prim );
 
     gs->set_meta<float>("gridscale", fr.get_gridscale() );
     gs->set_meta<std::string>("cegs", str_cegs );
@@ -278,7 +280,7 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_FromFrame(sfr& fr)  // static
 }
 #endif
 
-NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran)  // static
+NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, const std::vector<int>& cegs, float gridscale, const Tran<double>* geotran, int prim)  // static
 {
     std::vector<float>* cegs_radial_range = ssys::getenv_vec<float>(CEGS_RADIAL_RANGE, nullptr, CEGS_delim );
 
@@ -339,6 +341,8 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, con
     if(gs_CEGS_NPY) gsl.push_back(gs_CEGS_NPY);
 
 
+    Maybe_Add_PRIOR_SIMTRACE_Genstep( gsl, prim );
+
     LOG(LEVEL) << " gsl.size " << gsl.size() ;
 
     LOG(LEVEL) << "[ NP::Concatenate " ;
@@ -349,6 +353,139 @@ NP* SFrameGenstep::MakeCenterExtentGenstep_From_CE_geotran(const float4& ce, con
 
     return gs ;
 }
+
+
+/**
+SFrameGenstep::Maybe_Add_PRIOR_SIMTRACE_Genstep
+------------------------------------------------
+
+PRIOR_SIMTRACE
+    envvar which when defined causes loading of the array
+    the intersect positions from which are used to define
+    genstep positions
+
+
+PRIOR_SIMTRACE_PRIM:-2
+    default, use target prim from frame to select the
+    intersects with which to base the new gensteps
+
+PRIOR_SIMTRACE_PRIM:-1
+    do not select from the prior simtrace, use them all
+    without checking the prim. This is appropriate when
+    PRIOR_SIMTRACE is $MFOLD/simtrace_overlap.npy
+
+PRIOR_SIMTRACE_PRIM:0,1,2,3,
+    use the provided prim index (not typically used)
+
+
+Examples::
+
+    export PRIOR_SIMTRACE=$MFOLD/simtrace.npy
+    export PRIOR_SIMTRACE_PRIM=-2  # default
+
+    export PRIOR_SIMTRACE=$MFOLD/simtrace_overlap.npy
+    export PRIOR_SIMTRACE_PRIM=-1  # use all without selection
+
+**/
+
+
+void SFrameGenstep::Maybe_Add_PRIOR_SIMTRACE_Genstep( std::vector<NP*>& gsl, int prim )
+{
+    bool with_PRIOR_SIMTRACE = ssys::hasenv_("PRIOR_SIMTRACE") ;
+    NP* PRIOR_SIMTRACE = with_PRIOR_SIMTRACE ? NP::Load("$PRIOR_SIMTRACE") : nullptr ;
+
+    int PRIOR_SIMTRACE_PRIM = ssys::getenvint("PRIOR_SIMTRACE_PRIM", -2 );
+    int uprim = prim ;
+    if( PRIOR_SIMTRACE_PRIM == -2 )
+    {
+        uprim = prim ;  // select prior intersects onto target prim
+    }
+    else if( PRIOR_SIMTRACE_PRIM == -1 )
+    {
+        uprim = -1 ;    // use all prior intersects without prim selection
+    }
+    else if( PRIOR_SIMTRACE_PRIM > -1 )
+    {
+        uprim = PRIOR_SIMTRACE_PRIM ;
+    }
+
+    NP* gs_PRIOR_SIMTRACE = PRIOR_SIMTRACE  ?  Make_PRIOR_SIMTRACE_Genstep( PRIOR_SIMTRACE, uprim ) : nullptr ;
+    if(gs_PRIOR_SIMTRACE) gsl.push_back(gs_PRIOR_SIMTRACE);
+    LOG(info)
+         << "with_PRIOR_SIMTRACE " << ( with_PRIOR_SIMTRACE ? "YES" : "NO " )
+         << " prim " << prim
+         << " uprim " << uprim
+         << " PRIOR_SIMTRACE_PRIM " << PRIOR_SIMTRACE_PRIM
+         << " PRIOR_SIMTRACE " << ( PRIOR_SIMTRACE ? PRIOR_SIMTRACE->sstr() : "-" )
+         << " gs_PRIOR_SIMTRACE " << ( gs_PRIOR_SIMTRACE ? gs_PRIOR_SIMTRACE->sstr() : "-" )
+         ;
+}
+
+/**
+SFrameGenstep::Make_PRIOR_SIMTRACE_Genstep
+-------------------------------------------
+
+**/
+
+
+NP* SFrameGenstep::Make_PRIOR_SIMTRACE_Genstep( const NP* _simtrace, int prim ) // static
+{
+    const NP* _ontoprim = prim > -1 ? quad4::select_prim( _simtrace, prim ) : _simtrace ;
+    int ni = _ontoprim->shape[0] ;
+    const quad4* ontoprim = (const quad4*)(_ontoprim->bytes());
+
+    quad6 gs ;
+    gs.zero();
+
+    glm::tmat4x4<double> identity(1.);
+    qat4* qc = Tran<double>::ConvertFrom( identity ) ;
+
+    std::vector<quad6> gensteps ;
+
+    float dx = 0.f;
+    float dy = 0.f;
+    float dz = 0.f;
+
+    float s = 1.f ;
+
+    for(int i=0 ; i < ni ; i++)
+    {
+        const quad4& q = ontoprim[i];
+        float x = q.q1.f.x ;
+        float y = q.q1.f.y ;
+        float z = q.q1.f.z ;
+
+        for(int j=0 ; j < 6 ; j++)
+        {
+            switch(j)
+            {
+               case 0: dx = -s  ; dy = 0.f ; dz = 0.f ; break ;
+               case 1: dx = +s  ; dy = 0.f ; dz = 0.f ; break ;
+               case 2: dx = 0.f ; dy = -s  ; dz = 0.f ; break ;
+               case 3: dx = 0.f ; dy = +s  ; dz = 0.f ; break ;
+               case 4: dx = 0.f ; dy = 0.f ; dz = -s  ; break ;
+               case 5: dx = 0.f ; dy = 0.f ; dz =  s  ; break ;
+            }
+
+            gs.q1.f.x = x + dx ;
+            gs.q1.f.y = y + dy ;
+            gs.q1.f.z = z + dz ;
+            gs.q1.f.w = 1.f ;
+
+            qc->write(gs);  // copy qc transform into gs.q2,q3,q4,q5
+
+            int gridaxes = 0 ;
+            int gsid = 0 ;
+            int photons_per_genstep = 100 ;
+            SGenstep::ConfigureGenstep(gs, OpticksGenstep_FRAME, gridaxes, gsid, photons_per_genstep );
+
+            gensteps.push_back(gs);
+        }
+    }
+
+    return SGenstep::MakeArray(gensteps);
+}
+
 
 /**
 SFrameGenstep::Make_CEGS_NPY_Genstep
@@ -393,6 +530,9 @@ NP* SFrameGenstep::Make_CEGS_NPY_Genstep( const NP* t, const Tran<double>* geotr
     }
     return SGenstep::MakeArray(gensteps);
 }
+
+
+
 
 
 /**

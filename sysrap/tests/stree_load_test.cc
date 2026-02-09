@@ -76,6 +76,9 @@ struct stree_load_test
     int save_desc(const char* fold) const ;
     int make_tree_digest() const ;
 
+    int desc_nodes_with_center_within_ce() const ;
+
+
     int main();
 };
 
@@ -807,6 +810,13 @@ inline int stree_load_test::make_tree_digest() const
     return 0 ;
 }
 
+inline int stree_load_test::desc_nodes_with_center_within_ce() const
+{
+     std::vector<double>* ce = ssys::getenv_vec<double>("CE", "-6000,0,20000,1000");
+     assert(ce);
+     std::cout << st->desc_nodes_with_center_within_ce( ce->data() );
+     return 0 ;
+}
 
 
 inline int stree_load_test::main()
@@ -856,6 +866,7 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "desc") == 0)                                   rc += desc();
     if(ALL||strcmp(TEST, "save_desc") == 0)                              rc += save_desc(TMPFOLD);
     if(ALL||strcmp(TEST, "make_tree_digest") == 0)                       rc += make_tree_digest();
+    if(ALL||strcmp(TEST, "desc_nodes_with_center_within_ce") == 0)       rc += desc_nodes_with_center_within_ce();
 
     return rc ;
 }

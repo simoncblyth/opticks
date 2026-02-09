@@ -130,6 +130,22 @@ u:iindex
 u:identity
     see cx:CSGOptiX7.cu:__closesthit__ch
 
+    749 extern "C" __global__ void __closesthit__ch()
+    750 {
+    751     unsigned iindex = optixGetInstanceIndex() ;
+    752     unsigned identity = optixGetInstanceId() ;
+    753     unsigned iindex_identity = (( iindex & 0xffffu ) << 16 ) | ( identity & 0xffffu ) ;
+    754
+
+    808         prd->set_iindex_identity_( iindex_identity ) ;
+    809         prd->set_globalPrimIdx_boundary_(  globalPrimIdx_boundary ) ;
+    810         prd->set_lpos(lposcost, lposfphi);   // __closesthit__ch.WITH_PRD.TRIANGLE
+    811
+
+
+
+
+
     FROM July 2023
         instance_id which is *sensor_identifier+1* (as need lpmtid for QPMT),
         zero means not-a-sensor GPU side
@@ -281,6 +297,8 @@ struct quad4
 #else
     std::string desc() const ;
     static NP* zeros(size_t num);
+    static NP* select_prim( const NP* simtrace, unsigned globalPrimIdx );
+
     static quad4 make_ephoton();
     void ephoton() ;
     void normalize_mom_pol();
@@ -861,6 +879,40 @@ inline NP* quad4::zeros(size_t num) // static
     NP* qq = NP::Make<float>(num, 4, 4 );
     return qq ;
 }
+
+/**
+quad4::select_prim
+-------------------
+
+Select subset of the input simtrace array
+
+**/
+
+inline NP* quad4::select_prim( const NP* _simtrace, unsigned q_globalPrimIdx ) // static
+{
+    quad4* simtrace = (quad4*)(_simtrace->bytes()) ;
+    size_t num_simtrace = _simtrace->shape[0] ;
+
+    size_t count0 = 0 ;
+    for(size_t i=0 ; i < num_simtrace ; i++) if( simtrace[i].simtrace_globalPrimIdx() == q_globalPrimIdx ) count0 += 1 ;
+
+    NP* _qq = zeros(count0);
+    quad4* qq = (quad4*)(_qq->bytes());
+
+    size_t count1 = 0 ;
+    for(size_t i=0 ; i < num_simtrace ; i++)
+    {
+        const quad4& q = simtrace[i];
+        if( q.simtrace_globalPrimIdx() != q_globalPrimIdx ) continue ;
+        qq[count1] = q ;
+        count1 += 1 ;
+    }
+    assert( count0 == count1 );
+    return _qq ;
+}
+
+
+
 
 
 

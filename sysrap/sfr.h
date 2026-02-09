@@ -32,7 +32,7 @@ sfr Layout
      |            |             |             |                |
      +------------+-------------+-------------+----------------+
      |   aux0.x   |   aux0.y    |   aux0.z    |  aux0.w        |
-     |            |             |             |                |
+     |   lvid     |   lvid_ord  |             |                |
      +------------+-------------+-------------+----------------+
      |   aux1.x   |   aux1.y    |   aux1.z    |  aux1.w        |
      |   hss      |   gas       |   sensorid  |  sensoridx     |
@@ -127,6 +127,7 @@ struct sfr
     glm::tvec4<double>  ext1 ;   //   4     60       4th 4x4
                                  //   -     64
     std::string name ;
+    std::string treedir ;
 
     // bytewise comparison of sfr instances fails
     // for 4 bytes at offset corresponding to the std::string name reference
@@ -151,6 +152,12 @@ struct sfr
     int get_sensorix() const ;
 
     void  set_identity( int inst, int gasix, int sensorid, int sensorix );
+
+    void set_lvid(int lvid) ;
+    void set_lvid_ordinal(int lvid_ordinal ) ;
+
+    int  get_lvid() const ;
+    int  get_lvid_ordinal() const ;
 
     void set_inst(int idx) ;
     void set_nidx(int nidx) ;
@@ -191,6 +198,11 @@ struct sfr
     void set_name( const char* _name );
     const std::string& get_name() const ;
     const char* get_id() const ;
+
+    void set_treedir( const char* _treedir );
+    const std::string& get_treedir() const ;
+
+
 
     std::string get_key() const ;
 
@@ -446,6 +458,15 @@ inline void   sfr::set_identity( int inst, int gasix, int sensorid, int sensorix
     set_sensorix( sensorix );
 }
 
+
+inline void sfr::set_lvid(int lvid){                  aux0.x = lvid ;   }
+inline void sfr::set_lvid_ordinal(int lvid_ordinal){  aux0.y = lvid_ordinal ;   }
+
+inline int  sfr::get_lvid() const  {         return aux0.x ; }
+inline int  sfr::get_lvid_ordinal() const  { return aux0.y ; }
+
+
+
 inline void sfr::set_inst(int ii){     aux2.x = ii ;   }
 inline void sfr::set_nidx(int nidx){   aux2.y = nidx ; }
 inline void sfr::set_prim(int prim){   aux2.z = prim ; }
@@ -621,6 +642,7 @@ inline const std::string& sfr::get_name() const
 {
     return name ;
 }
+
 inline const char* sfr::get_id() const
 {
     return name.c_str() ;
@@ -638,6 +660,17 @@ inline void sfr::set_name(const char* _n)
 {
     if(_n) name = _n ;
 }
+
+
+inline void sfr::set_treedir(const char* _t)
+{
+    if(_t) treedir = _t ;
+}
+inline const std::string& sfr::get_treedir() const
+{
+    return treedir ;
+}
+
 
 
 inline std::string sfr::desc_ce() const
@@ -705,6 +738,7 @@ inline NP* sfr::serialize() const
     write( a->values<double>(), NUM_4x4*4*4 ) ;
     a->set_meta<std::string>("creator", "sfr::serialize");
     if(!name.empty()) a->set_meta<std::string>("name",    name );
+    if(!treedir.empty()) a->set_meta<std::string>("treedir",  treedir );
     return a ;
 }
 
@@ -763,7 +797,9 @@ inline void sfr::load(const NP* a)
 {
     read( a->cvalues<double>() , NUM_VALUES );
     std::string _name = a->get_meta<std::string>("name", "");
+    std::string _treedir = a->get_meta<std::string>("treedir", "");
     if(!_name.empty()) name = _name ;
+    if(!_treedir.empty()) treedir = _treedir ;
 }
 
 inline const double* sfr::cdata() const
