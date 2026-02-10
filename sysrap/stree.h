@@ -283,6 +283,7 @@ struct stree
     static constexpr const char* INST_PFX = "INST:" ;
     static constexpr const char* SID_PFX = "SID:" ;
     static constexpr const char* SIDX_PFX = "SIDX:" ;
+    static constexpr const char* LVID_COPYNO_PFX = "LVID_COPYNO:" ;
 
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
@@ -503,11 +504,18 @@ struct stree
 
     void find_lvid_nodes_( std::vector<snode>& nodes, int lvid, char _src ) const ;
     void find_lvid_nodes(  std::vector<int>& nodes, int lvid, char _src ) const ;
+
+    void find_lvid_copyno_nodes( std::vector<int>& nodes, int q_lvid, int q_copyno, char _src ) const ;
+
     int count_lvid_nodes( int lvid, char _src='N' ) const ;
+
+
 
     void find_lvid_nodes( std::vector<int>& nodes, const char* soname_, bool starting ) const ;
     int  find_lvid_node( const char* q_soname, int ordinal ) const ;
     int  find_lvid_node( const char* q_spec ) const ; // eg HamamatsuR12860sMask_virtual:0:1000
+
+
 
 
     const snode* pick_lvid_ordinal_node( int lvid, int ordinal, char ridx_type ) const ;
@@ -539,12 +547,15 @@ struct stree
     sfr  get_frame_inst(const char* s_inst ) const ;
     sfr  get_frame_sid( const char* s_sid ) const ;
     sfr  get_frame_sidx( const char* s_sidx ) const ;
+    sfr  get_frame_lvid_copyno( const char* s_lvid_copyno ) const ;
 
     sfr  get_frame_prim(int prim ) const ;
     sfr  get_frame_nidx(int nidx ) const ;
     sfr  get_frame_inst(int inst ) const ;
     sfr  get_frame_sid( int sid  ) const ;
     sfr  get_frame_sidx( int sidx  ) const ;
+    sfr  get_frame_lvid_copyno(int q_lvid, int q_copyno, char q_src ) const ;
+
 
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
@@ -869,6 +880,8 @@ struct stree
     void check_nidx_prim() const ;
     int  get_prim_for_nidx(int nidx) const ;
     int  get_nidx_for_prim(int prim) const ;
+    std::string desc_prim() const ;
+    std::string desc_prim(int prim) const ;
 
 
     void localize_photon_inplace( sphoton& p ) const ;
@@ -1046,6 +1059,7 @@ inline void stree::populate_descMap( std::map<std::string, std::function<std::st
     m["node_solids"] = [this](){ return this->desc_node_solids(); };
     m["nodes"] = [this](){ return this->descNodes(); };
     m["solids"] = [this](){ return this->desc_solids(); };
+    m["prim"] = [this](){ return this->desc_prim(); };
     m["triangulate"] = [this](){ return this->desc_triangulate(); };
     m["factor"] = [this](){ return this->desc_factor(); };
     m["repeat_nodes"] = [this](){ return this->desc_repeat_nodes(); };
@@ -1054,6 +1068,7 @@ inline void stree::populate_descMap( std::map<std::string, std::function<std::st
     m["nds"] = [this](){ return this->desc_nds(); };
     m["rem"] = [this](){ return this->desc_rem(); };
     m["tri"] = [this](){ return this->desc_tri(); };
+
     m["node_ELVID"] = [this](){ return this->desc_node_ELVID(); };
     m["node_ECOPYNO"] = [this](){ return this->desc_node_ECOPYNO(); };
     m["node_EBOUNDARY"] = [this](){ return this->desc_node_EBOUNDARY(); };
@@ -1068,6 +1083,7 @@ inline void stree::populate_descMap( std::map<std::string, std::function<std::st
     m["surface"] = [this](){ return this->surface ? this->surface->desc() : "-" ; };
     m["mesh"] = [this](){ return this->mesh ? this->mesh->desc() : "-" ; };
     m["_csg"] = [this](){ return this->_csg ? this->_csg->desc() : "-" ; };
+
 }
 
 inline std::string stree::desc() const
@@ -2059,7 +2075,7 @@ src is nds which corresponds to all nodes)
 
 **/
 
-inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid, char _src ) const
+inline void stree::find_lvid_nodes( std::vector<int>& nodes, int q_lvid, char _src ) const
 {
     const std::vector<snode>* src = get_node_vector(_src);
     for(unsigned i=0 ; i < src->size() ; i++)
@@ -2069,9 +2085,34 @@ inline void stree::find_lvid_nodes( std::vector<int>& nodes, int lvid, char _src
         {
             assert( int(i) == sn.index );
         }
-        if(sn.lvid == lvid) nodes.push_back(sn.index) ;
+        if(sn.lvid == q_lvid) nodes.push_back(sn.index) ;
     }
 }
+
+inline void stree::find_lvid_copyno_nodes( std::vector<int>& nodes, int q_lvid, int q_copyno, char _src ) const
+{
+    const std::vector<snode>* src = get_node_vector(_src);
+    for(unsigned i=0 ; i < src->size() ; i++)
+    {
+        const snode& sn = (*src)[i] ;
+        if( _src == 'N' )
+        {
+            assert( int(i) == sn.index );
+        }
+        if(sn.lvid == q_lvid && sn.copyno == q_copyno) nodes.push_back(sn.index) ;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
 
 /**
 stree::find_lvid_nodes
@@ -2148,6 +2189,16 @@ inline int stree::find_lvid_node( const char* q_spec ) const
     int nidx = find_lvid_node(q_soname, ordinal);
     return nidx ;
 }
+
+
+
+
+
+
+
+
+
+
 
 /**
 stree::pick_lvid_ordinal_node
@@ -2379,6 +2430,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
     bool is_INST = sstr::StartsWith(q_spec,  INST_PFX) ;
     bool is_SID = sstr::StartsWith(q_spec,  SID_PFX) ;
     bool is_SIDX = sstr::StartsWith(q_spec,  SIDX_PFX) ;
+    bool is_LVID_COPYNO = sstr::StartsWith(q_spec,  LVID_COPYNO_PFX) ;
     bool is_NPYFILE =  sstr::EndsWith(q_spec, ".npy");
     bool is_TRIPLET = sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 ;
     bool is_COORDS = sstr::looks_like_list(q_spec, delim, 1, 4) ;
@@ -2429,6 +2481,10 @@ inline sfr stree::get_frame(const char* q_spec ) const
     else if( is_SIDX )
     {
         f = get_frame_sidx( q_spec + strlen(SIDX_PFX) );
+    }
+    else if( is_LVID_COPYNO )
+    {
+        f = get_frame_lvid_copyno( q_spec + strlen(LVID_COPYNO_PFX) );
     }
     else if( is_NPYFILE )
     {
@@ -2563,6 +2619,59 @@ inline sfr stree::get_frame_sidx(const char* s_sidx ) const
     return fr ;
 }
 
+/**
+stree::get_frame_lvid_copyno
+-----------------------------
+
+::
+
+    MOI=LVID_COPYNO:66/3305 cxr_min.sh
+    MOI=LVID_COPYNO:s_EMF_bar_box_810mm/3305 cxr_min.sh
+
+**/
+
+
+inline sfr stree::get_frame_lvid_copyno(const char* s_lvid_copyno ) const
+{
+    std::string name = LVID_COPYNO_PFX ;
+    name += s_lvid_copyno ;
+
+    std::vector<std::string> elem ;
+    sstr::Split(s_lvid_copyno, '/', elem );
+
+    const char* s_lvid  = elem.size() > 0 ? elem[0].c_str() : nullptr ;
+    const char* s_copyno  = elem.size() > 1 ? elem[1].c_str() : nullptr ;
+    const char* s_src = elem.size() > 2 ? elem[2].c_str() : nullptr ;
+
+    int lvid = -1 ;
+    if(s_lvid && sstr::StartsWithLetterAZaz(s_lvid))
+    {
+        const char* soname = s_lvid ;
+        bool starting = false ; // require exact match
+        lvid = find_lvid(soname, starting);
+        if( lvid < 0 ) std::cerr
+            << "stree::get_frame_lvid_copyno"
+            << " find_lvid FAILED "
+            << " soname[" << ( soname ? soname : "-" ) << "]"
+            << " lvid " << lvid
+            << "\n"
+            ;
+    }
+    else
+    {
+        lvid = s_lvid ? std::atoi(s_lvid) : 0 ;
+    }
+
+
+    int copyno = s_copyno ? std::atoi(s_copyno) : 0 ;
+    char src = s_src ? s_src[0] : 'N' ;
+    assert( src == 'N' || src == 'R' || src == 'T' );
+
+    sfr fr = get_frame_lvid_copyno( lvid, copyno, src );
+    fr.set_name(name.c_str());
+    return fr ;
+}
+
 
 
 
@@ -2665,7 +2774,7 @@ inline sfr stree::get_frame_sidx(int sidx) const
            << " sidx " << sidx
            << " num " << num
            << " nidx " << nidx
-           << " FAILED TO FIND NODES FOR SIDX - FALLBACK TO nidx 0 "
+           << " failed to find nodes for sidx - fallback to nidx 0 "
            << "\n"
            ;
         nidx = 0 ;
@@ -2674,6 +2783,31 @@ inline sfr stree::get_frame_sidx(int sidx) const
     return f ;
 }
 
+inline sfr stree::get_frame_lvid_copyno(int q_lvid, int q_copyno, char q_src) const
+{
+    std::vector<int> nodes ;
+    find_lvid_copyno_nodes( nodes, q_lvid, q_copyno, q_src );
+
+    int num = nodes.size();
+    int nidx = num > 0 ? nodes[0] : -1 ;
+
+    if( nidx == -1 )
+    {
+        std::cerr
+           << "stree::get_frame_lvid_copyno"
+           << " q_lvid " << q_lvid
+           << " q_copyno " << q_copyno
+           << " q_src " << q_src
+           << " num " << num
+           << " nidx " << nidx
+           << " failed to find nodes for lvid_copyno - fallback to nidx 0 "
+           << "\n"
+           ;
+        nidx = 0 ;
+    }
+    sfr f = get_frame_nidx( nidx );
+    return f ;
+}
 
 
 
@@ -7706,6 +7840,36 @@ inline int stree::get_nidx_for_prim(int prim) const
 
 
 
+
+
+
+inline std::string stree::desc_prim() const
+{
+    int num_pr = prim_nidx.size();
+    std::stringstream ss ;
+    ss << "[stree::desc_prim num_pr " << num_pr << "\n" ;
+    for(int prim=0 ; prim < num_pr ; prim++) ss << desc_prim(prim) << "\n" ;
+    ss << "]stree::desc_prim num_pr " << num_pr << "\n" ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+inline std::string stree::desc_prim(int prim) const
+{
+    int nidx = get_nidx_for_prim(prim);
+    const snode* nd = get_node( nidx );
+    assert( nd );
+
+    std::stringstream ss ;
+    ss
+         << " pr " << std::setw(5) << prim
+         << " nx " << std::setw(7) << nidx
+         << " nd [" << nd->desc() << "]"
+         ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
 
 
 

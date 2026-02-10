@@ -77,6 +77,7 @@ struct stree_load_test
     int make_tree_digest() const ;
 
     int desc_nodes_with_center_within_ce() const ;
+    int desc_prim() const ;
 
 
     int main();
@@ -819,6 +820,15 @@ inline int stree_load_test::desc_nodes_with_center_within_ce() const
 }
 
 
+inline int stree_load_test::desc_prim() const
+{
+     std::cout << st->desc_prim();
+     return 0 ;
+}
+
+
+
+
 inline int stree_load_test::main()
 {
     const char* TMPFOLD = ssys::getenvvar("TMPFOLD", nullptr);
@@ -867,6 +877,7 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "save_desc") == 0)                              rc += save_desc(TMPFOLD);
     if(ALL||strcmp(TEST, "make_tree_digest") == 0)                       rc += make_tree_digest();
     if(ALL||strcmp(TEST, "desc_nodes_with_center_within_ce") == 0)       rc += desc_nodes_with_center_within_ce();
+    if(ALL||strcmp(TEST, "desc_prim") == 0)                              rc += desc_prim();
 
     return rc ;
 }
