@@ -112,7 +112,7 @@ pass
 MODE = int(os.environ.get("MODE","2"))
 NORMAL = int(os.environ.get("NORMAL","0"))
 NORMAL_FILTER = int(os.environ.get("NORMAL_FILTER","10000")) # modulo scaledown for normal presentation
-PRIMTAB = int(os.environ.get("PRIMTAB","0"))
+PRIMTAB = int(os.environ.get("PRIMTAB","1"))
 assert PRIMTAB in [0,1]
 
 RADIAL = int(os.environ.get("RADIAL","0"))
@@ -139,7 +139,7 @@ pass
 
 
 class UniqueTable(object):
-    def __init__(self, symbol, ii, names=None ):
+    def __init__(self, symbol, ii, names=None, title="" ):
         u, x, c = np.unique(ii, return_index=True, return_counts=True )
         o = np.argsort(c)[::-1] ## descending count order
         nn = names[u] if not names is None else None
@@ -148,6 +148,7 @@ class UniqueTable(object):
         tab = eval(_tab)
 
         self.symbol = symbol
+        self.title = title
         self._tab = _tab
         self.tab = tab
 
@@ -159,9 +160,9 @@ class UniqueTable(object):
 
     def __repr__(self):
        lines =  []
-       lines.append("[%s" % self.symbol)
+       lines.append(f"[{self.symbol} {self.title}")
        lines.append(repr(self.tab))
-       lines.append("]%s" % self.symbol)
+       lines.append(f"]{self.symbol} {self.title}")
        return "\n".join(lines)
 
 
@@ -301,7 +302,7 @@ if __name__ == '__main__':
     ust = st[presel]   ## example ust shape (13812151, 4, 4)
     ## for simtrace layout see sysrap/sevent.h
 
-    _ii_id = ust[:,3,3].view(np.int32)   ## sevent::add_simtrace fromerly quad2::identity NOW quad2::iindex_identity
+    _ii_id = ust[:,3,3].view(np.uint32)   ## sevent::add_simtrace fromerly quad2::identity NOW quad2::iindex_identity
     _ii = _ii_id >> 16       ## iindex
     _id = _ii_id & 0xffff    ## identity
 
@@ -394,13 +395,13 @@ if __name__ == '__main__':
     pass
 
 
-    iitab = UniqueTable("iitab", ii, None)
+    iitab = UniqueTable("iitab", ii, None, title="instanceIndex - MOI=INST:nnn to access frames")
     print(repr(iitab))
 
-    idtab = UniqueTable("idtab", id, None)
+    idtab = UniqueTable("idtab", id, None, title="instanceId - MOI=SID:$(( nnn-1 )) to access frames")
     print(repr(idtab))
 
-    gptab = UniqueTable("gptab", gp, cf.primname)
+    gptab = UniqueTable("gptab", gp, cf.primname, title="globalPrimIdx - MOI=PRIM:nnn to access frames")
     print(repr(gptab))
 
     ## would be good to see the globalPrimIdx that correspond to a boundary

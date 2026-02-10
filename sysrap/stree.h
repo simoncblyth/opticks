@@ -282,6 +282,7 @@ struct stree
     static constexpr const char* PRIM_PFX = "PRIM:" ;
     static constexpr const char* INST_PFX = "INST:" ;
     static constexpr const char* SID_PFX = "SID:" ;
+    static constexpr const char* SIDX_PFX = "SIDX:" ;
 
     static constexpr const char* stree__force_triangulate_solid = "stree__force_triangulate_solid" ;
     static constexpr const char* stree__get_frame_dump = "stree__get_frame_dump" ;
@@ -465,7 +466,12 @@ struct stree
     void get_sensor_id( std::vector<int>& arg_sensor_id ) const ;
 
     void find_nodes_with_sensor_id( std::vector<snode>& nodes, int q_sensor_id ) const ;
-    int  ordinal_node_with_sensor_id( int q_sensor_id, int ordinal ) const ;
+    int  get_ordinal_nidx_with_sensor_id( int q_sensor_id, int ordinal ) const ;
+
+    void find_nodes_with_sensor_index( std::vector<snode>& nodes, int q_sensor_index ) const ;
+    int  get_ordinal_nidx_with_sensor_index( int q_sensor_index, int ordinal ) const ;
+
+
 
 
 
@@ -532,11 +538,13 @@ struct stree
     sfr  get_frame_nidx(const char* s_nidx ) const ;
     sfr  get_frame_inst(const char* s_inst ) const ;
     sfr  get_frame_sid( const char* s_sid ) const ;
+    sfr  get_frame_sidx( const char* s_sidx ) const ;
 
     sfr  get_frame_prim(int prim ) const ;
     sfr  get_frame_nidx(int nidx ) const ;
     sfr  get_frame_inst(int inst ) const ;
     sfr  get_frame_sid( int sid  ) const ;
+    sfr  get_frame_sidx( int sidx  ) const ;
 
     int  get_frame_from_npyfile(sfr& f, const char* q_spec ) const ;
     int  get_frame_from_triplet(sfr& f, const char* q_spec ) const ;
@@ -1624,14 +1632,34 @@ inline void stree::find_nodes_with_sensor_id( std::vector<snode>& nodes, int q_s
         if( nd.sensor_id == q_sensor_id ) nodes.push_back(nd);
     }
 }
-
-inline int stree::ordinal_node_with_sensor_id( int q_sensor_id, int ordinal ) const
+inline int stree::get_ordinal_nidx_with_sensor_id( int q_sensor_id, int ordinal ) const
 {
     std::vector<snode> nodes ;
     find_nodes_with_sensor_id( nodes, q_sensor_id );
     int num = nodes.size() ;
     return ordinal > -1 && ordinal < num ? nodes[ordinal].index : -1 ;
 }
+
+
+
+inline void stree::find_nodes_with_sensor_index( std::vector<snode>& nodes, int q_sensor_index ) const
+{
+    unsigned num_nd = nds.size();
+    for(unsigned nidx=0 ; nidx < num_nd ; nidx++)
+    {
+        const snode& nd = nds[nidx] ;
+        if( nd.sensor_index == q_sensor_index ) nodes.push_back(nd);
+    }
+}
+inline int stree::get_ordinal_nidx_with_sensor_index( int q_sensor_index, int ordinal ) const
+{
+    std::vector<snode> nodes ;
+    find_nodes_with_sensor_index( nodes, q_sensor_index );
+    int num = nodes.size() ;
+    return ordinal > -1 && ordinal < num ? nodes[ordinal].index : -1 ;
+}
+
+
 
 
 
@@ -2350,6 +2378,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
     bool is_PRIM = sstr::StartsWith(q_spec,  PRIM_PFX) ;
     bool is_INST = sstr::StartsWith(q_spec,  INST_PFX) ;
     bool is_SID = sstr::StartsWith(q_spec,  SID_PFX) ;
+    bool is_SIDX = sstr::StartsWith(q_spec,  SIDX_PFX) ;
     bool is_NPYFILE =  sstr::EndsWith(q_spec, ".npy");
     bool is_TRIPLET = sstr::StartsWithLetterAZaz(q_spec) || strstr(q_spec, ":") || strcmp(q_spec,"-1") == 0 ;
     bool is_COORDS = sstr::looks_like_list(q_spec, delim, 1, 4) ;
@@ -2396,6 +2425,10 @@ inline sfr stree::get_frame(const char* q_spec ) const
     else if( is_SID )
     {
         f = get_frame_sid( q_spec + strlen(SID_PFX) );
+    }
+    else if( is_SIDX )
+    {
+        f = get_frame_sidx( q_spec + strlen(SIDX_PFX) );
     }
     else if( is_NPYFILE )
     {
@@ -2520,6 +2553,19 @@ inline sfr stree::get_frame_sid(const char* s_sid ) const
     return fr ;
 }
 
+inline sfr stree::get_frame_sidx(const char* s_sidx ) const
+{
+    std::string name = SIDX_PFX ;
+    name += s_sidx ;
+    int sidx = sstr::AsInt(s_sidx, -1);
+    sfr fr = get_frame_sidx( sidx );
+    fr.set_name(name.c_str());
+    return fr ;
+}
+
+
+
+
 
 /**
 stree::get_frame_prim
@@ -2597,6 +2643,29 @@ inline sfr stree::get_frame_sid(int sid) const
            << " num " << num
            << " nidx " << nidx
            << " FAILED TO FIND NODES FOR SID - FALLBACK TO nidx 0 "
+           << "\n"
+           ;
+        nidx = 0 ;
+    }
+    sfr f = get_frame_nidx( nidx );
+    return f ;
+}
+
+
+inline sfr stree::get_frame_sidx(int sidx) const
+{
+    std::vector<snode> nodes ;
+    find_nodes_with_sensor_index( nodes, sidx );
+    int num = nodes.size();
+    int nidx = num > 0 ? nodes[0].index : -1 ;
+    if( nidx == -1 )
+    {
+        std::cerr
+           << "stree::get_frame_sidx"
+           << " sidx " << sidx
+           << " num " << num
+           << " nidx " << nidx
+           << " FAILED TO FIND NODES FOR SIDX - FALLBACK TO nidx 0 "
            << "\n"
            ;
         nidx = 0 ;

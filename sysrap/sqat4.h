@@ -366,9 +366,9 @@ struct qat4
 
     QAT4_METHOD int get_IAS_OptixInstance_instanceId() const
     {
-        const int& sensor_identifier = q2.i.w ;
-        assert( sensor_identifier >= 0 );  // 0 means not a sensor GPU side, so subtract 1 to get actual sensorId
-        return sensor_identifier ;
+        const int& sensor_identifier_1 = q2.i.w ;
+        assert( sensor_identifier_1 >= 0 );  // 0 means not a sensor GPU side
+        return sensor_identifier_1 ;    // NB this is +1,  subtract 1 to get original sensorId of sensors
     }
 
     /**
