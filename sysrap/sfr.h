@@ -110,6 +110,9 @@ struct sfr
     static sfr MakeFromAxis(const char* tpde, char delim=',');
     template<typename T>
     static sfr MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, T delta_ax_distance_mm );
+    template<typename T>
+    static sfr MakeFromAxisQuat(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, T delta_ax_distance_mm );
+
 
                                  //  nv   nv_offset
     glm::tvec4<double>  ce  ;    //  4       0
@@ -372,8 +375,17 @@ inline sfr sfr::MakeFromAxis(const char* tpde, char delim)
         << "\n"
         ;
 
-    return MakeFromAxis<T>( theta_deg, phi_deg, dist_mm, extent_mm, delta_dist_mm );
+    return MakeFromAxisQuat<T>( theta_deg, phi_deg, dist_mm, extent_mm, delta_dist_mm );
 }
+
+/**
+sfr::MakeFromAxis
+------------------
+
+Suspect this doesnt handle theta_deg = 0 when want to just move the
+plane around in phi_deg.
+
+**/
 
 
 
@@ -414,6 +426,68 @@ inline sfr sfr::MakeFromAxis(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, 
 
     return fr ;
 }
+
+
+/**
+sfr::MakeFromAxisQuat
+----------------------
+
+Quaternion version avoids having to deal the degeneracies::
+
+    MOI=AXIS:0,90,0,20000 EYE=2,0,0 cxr_min.sh
+    MOI=AXIS:0,-90,0,20000 EYE=2,0,0 cxr_min.sh
+
+**/
+
+
+
+template<typename T>
+inline sfr sfr::MakeFromAxisQuat(T theta_deg, T phi_deg, T ax_dist_mm, T extent_mm, T delta_ax_dist_mm )
+{
+    T theta = glm::radians(theta_deg);
+    T phi = glm::radians(phi_deg);
+
+    // 1. Create rotations as quaternions
+    // We rotate around Y by theta, then around Z by phi
+    glm::tquat<T> qPhi = glm::angleAxis(phi, glm::tvec3<T>(0, 0, 1));
+    glm::tquat<T> qTheta = glm::angleAxis(theta, glm::tvec3<T>(0, 1, 0));
+
+    // Combine them: Phi is the "outer" rotation, Theta is "inner"
+    glm::tquat<T> orientation = qPhi * qTheta;
+
+    // 2. Derive our coordinate system vectors from the quaternion
+    // The "ax" (forward) is the local Z-axis transformed by the orientation
+    glm::tvec3<T> ax = orientation * glm::tvec3<T>(0, 0, 1);
+
+    // The "up" vector is the local Y-axis transformed by the orientation
+    // This will be perfectly valid even when theta is 0!
+    glm::tvec3<T> up = orientation * glm::tvec3<T>(0, 1, 0);
+
+    // 3. Translation remains the same
+    glm::tvec3<T> translation = ax * (ax_dist_mm + delta_ax_dist_mm);
+
+    // 4. Build the matrix
+    // If stra::Model2World takes (z, y, pos), we pass (ax, up, translation)
+    glm::tmat4x4<T> model2world = stra<T>::Model2World(ax, up, translation);
+
+    sfr fr;
+    fr.set_m2w(glm::value_ptr(model2world));
+    fr.set_extent(extent_mm);
+    fr.set_name("MakeFromAxisQuat");
+
+    return fr;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 inline sfr::sfr()

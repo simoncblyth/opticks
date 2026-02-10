@@ -485,7 +485,8 @@ inline void SGLFW::handle_event(GLEQevent& event)
 
 inline void SGLFW::post_handle_key()
 {
-    gm.enabled_time_bump = !gm.toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
+    //gm.enabled_time_bump = !gm.toggle.time ;   // prevent auto time increments when are doing that with manual time scrubbing
+    gm.enabled_time_bump = gm.toggle.time.value == 0 ;
 }
 
 
@@ -566,26 +567,25 @@ inline void SGLFW::key_pressed(unsigned key)
     {
         switch(key)
         {
-            case GLFW_KEY_M:
-                                  set_wanted_frame_idx(-2)              ; break ;   // MOI target
-            case GLFW_KEY_Z:      gm.toggle.zoom = !gm.toggle.zoom            ; break ;   // HMM: also in SGLM_Modnav
-            case GLFW_KEY_N:      gm.toggle.tmin = !gm.toggle.tmin            ; break ;
-            case GLFW_KEY_F:      gm.toggle.tmax = !gm.toggle.tmax            ; break ;
-            case GLFW_KEY_R:      gm.toggle.lrot = !gm.toggle.lrot            ; break ;    // HMM: also in SGLM_Modnav
-            case GLFW_KEY_C:      gm.toggle.cuda = !gm.toggle.cuda            ; break ;
-            case GLFW_KEY_U:      gm.toggle.norm = !gm.toggle.norm            ; break ;
-            case GLFW_KEY_T:      gm.toggle.time = !gm.toggle.time            ; break ;
-            case GLFW_KEY_SPACE:  gm.toggle.stop = !gm.toggle.stop            ; break ;
-            case GLFW_KEY_P:      command("--desc")                           ; break ;
-            case GLFW_KEY_H:      command("--home")                           ; break ;
-            case GLFW_KEY_O:      command("--tcam")                           ; break ;
-            case GLFW_KEY_I:      command("--snap-local")                     ; break ;
-            case GLFW_KEY_J:      command("--snap-local-inverted")            ; break ;
-            case GLFW_KEY_K:      command("--snap")                           ; break ;
-            case GLFW_KEY_L:      command("--snap-inverted")                  ; break ;
-            case GLFW_KEY_V:      command("--traceyflip")                     ; break ;
-            case GLFW_KEY_X:      command("--rendertype")                     ; break ;   // HMM: also in SGLM_Modnav
-            case GLFW_KEY_ESCAPE: command("--exit")                           ; break ;
+            case GLFW_KEY_M:      set_wanted_frame_idx(-2)           ; break ;   // MOI target
+            case GLFW_KEY_Z:      gm.toggle.zoom.next()              ; break ;   // HMM: also in SGLM_Modnav
+            case GLFW_KEY_N:      gm.toggle.tmin.next()              ; break ;
+            case GLFW_KEY_F:      gm.toggle.tmax.next()              ; break ;
+            case GLFW_KEY_R:      gm.toggle.lrot.next()              ; break ;    // HMM: also in SGLM_Modnav
+            case GLFW_KEY_C:      gm.toggle.cuda.next()              ; break ;
+            case GLFW_KEY_U:      gm.toggle.norm.next()              ; break ;
+            case GLFW_KEY_T:      gm.toggle.time.next()              ; break ;
+            case GLFW_KEY_SPACE:  gm.toggle.stop.next()              ; break ;
+            case GLFW_KEY_P:      command("--desc")                  ; break ;
+            case GLFW_KEY_H:      command("--home")                  ; break ;
+            case GLFW_KEY_O:      command("--tcam")                  ; break ;
+            case GLFW_KEY_I:      command("--snap-local")            ; break ;
+            case GLFW_KEY_J:      command("--snap-local-inverted")   ; break ;
+            case GLFW_KEY_K:      command("--snap")                  ; break ;
+            case GLFW_KEY_L:      command("--snap-inverted")         ; break ;
+            case GLFW_KEY_V:      command("--traceyflip")            ; break ;
+            case GLFW_KEY_X:      command("--rendertype")            ; break ;   // HMM: also in SGLM_Modnav
+            case GLFW_KEY_ESCAPE: command("--exit")                  ; break ;
 
 
             case GLFW_KEY_W:   // WASDQE keys control navigation via SGLM_Modnav

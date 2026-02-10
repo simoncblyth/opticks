@@ -369,8 +369,8 @@ export LOGDIR=$BINBASE/$MOI
 
 #opticks_event_name=3d
 #opticks_event_name=2dxz_tall_wide
-#opticks_event_name=2dxz_tall_wide_radial_range
-opticks_event_name=2dxz
+opticks_event_name=2dxz_tall_wide_radial_range
+#opticks_event_name=2dxz
 #opticks_event_name=2dxy
 #opticks_event_name=2dxy_more
 export OPTICKS_EVENT_NAME=${OPTICKS_EVENT_NAME:-$opticks_event_name}
@@ -543,7 +543,8 @@ for e in $ee ; do
    #printf "%20s : %s \n" "$e" "${!e}"
    [ -n "${!e}" ] && title="$e=${!e} $title"
 done
-export TITLE="$title"
+
+[ -z "$TITLE" ] && export TITLE="$title"
 
 
 if [ "${arg/info}" != "$arg" ]; then

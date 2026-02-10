@@ -190,6 +190,25 @@ struct SYSRAP_API lrbtnf
 
 
 
+
+
+
+
+struct SGLM_Setting
+{
+    int value = 0;
+    int num_modes = 2; // Default for boolean-like toggles
+
+    void next() { value = (value + 1) % num_modes; }
+
+    // Helper to keep existing bool logic working where needed
+    bool operator!() const { return value == 0; }
+    explicit operator bool() const { return value != 0; }
+};
+
+
+
+
 /**
 SGLM_Toggle
 -------------
@@ -198,29 +217,30 @@ SGLM_Toggle
 
 struct SYSRAP_API SGLM_Toggle
 {
-    bool zoom = false ;
-    bool tmin = false ;
-    bool tmax = false ;
-    bool lrot = false ;
-    bool cuda = false ;
-    bool norm = false ;
-    bool time = false ;
-    bool stop = false ;
-    std::string desc() const ;
+    SGLM_Setting zoom{0, 2}; // Z
+    SGLM_Setting tmin{0, 2}; // N
+    SGLM_Setting tmax{0, 2}; // F
+    SGLM_Setting lrot{0, 2}; // R
+    SGLM_Setting cuda{0, 2}; // C
+    SGLM_Setting norm{0, 2}; // U
+    SGLM_Setting time{0, 5}; // T
+    SGLM_Setting stop{0, 2}; // SPACE
+
+    std::string desc() const;
 };
 
 inline std::string SGLM_Toggle::desc() const
 {
-    std::stringstream ss ;
+    std::stringstream ss;
     ss << "SGLM_Toggle::desc"
-       << " zoom:" << ( zoom ? "Y" : "N" )
-       << " tmin:" << ( tmin ? "Y" : "N" )
-       << " tmax:" << ( tmax ? "Y" : "N" )
-       << " lrot:" << ( lrot ? "Y" : "N" )
-       << " cuda:" << ( cuda ? "Y" : "N" )
-       << " norm:" << ( norm ? "Y" : "N" )
-       << " time:" << ( time ? "Y" : "N" )
-       << " stop:" << ( stop ? "Y" : "N" )
+       << " zoom: " << zoom.value
+       << " tmin: " << tmin.value
+       << " tmax: " << tmax.value
+       << " lrot: " << lrot.value
+       << " cuda: " << cuda.value
+       << " norm: " << norm.value
+       << " time: " << time.value
+       << " stop: " << stop.value
        ;
     std::string str = ss.str();
     return str ;
@@ -458,6 +478,10 @@ struct SYSRAP_API SGLM : public SCMD
     glm::mat4 eye2look ;
     glm::mat4 look2eye ;
 
+    float rotor_degrees_per_frame = 0.25f;
+    glm::vec3 q_rotor_axis {0,0,1};
+
+    glm::quat q_rotor ;
     glm::quat q_lookrot ;
     glm::quat q_eyerot ;
     glm::vec3 eyeshift  ;
@@ -571,6 +595,7 @@ struct SYSRAP_API SGLM : public SCMD
 
 
 
+    void bumpRotor();
 
     void updateComposite();
 
@@ -799,6 +824,7 @@ inline SGLM::SGLM()
     gaze(  0.f,0.f,0.f),
     eye2look(1.f),
     look2eye(1.f),
+    q_rotor(1.f,0.f,0.f,0.f),     // identity quaternion
     q_lookrot(1.f,0.f,0.f,0.f),   // identity quaternion
     q_eyerot( 1.f,0.f,0.f,0.f),   // identity quaternion
     eyeshift(0.f,0.f,0.f),
@@ -2222,6 +2248,20 @@ float SGLM::get_transverse_scale() const
 }
 
 
+
+void SGLM::bumpRotor()
+{
+    if(toggle.time.value == 0 ) return ;
+
+    float rotor_speed = rotor_degrees_per_frame*float(toggle.time.value) ;
+
+    glm::quat step_rotor = glm::angleAxis(glm::radians(rotor_speed), q_rotor_axis );
+
+    q_rotor = step_rotor * q_rotor ;      // Global spin
+    //q_rotor = q_rotor * step_rotor ;    // Local spin (relative to current view)
+}
+
+
 /**
 SGLM::updateComposite
 ----------------------
@@ -2238,23 +2278,25 @@ void SGLM::updateComposite()
 {
     //std::cout << "SGLM::updateComposite" << std::endl ;
 
+    glm::mat4 _worldspin = glm::mat4_cast(q_rotor);
     glm::mat4 _eyeshift = glm::translate(glm::mat4(1.0), eyeshift ) ;    // eyeshift starts (0,0,0) changed by WASDQE keys
-    glm::mat4 _ieyeshift = glm::translate(glm::mat4(1.0), -eyeshift ) ;
-
     glm::mat4 _lookrot = glm::mat4_cast(q_lookrot) ;
-    glm::mat4 _ilookrot = glm::mat4_cast( glm::conjugate(q_lookrot) ) ;
-
     glm::mat4 _eyerot = glm::mat4_cast(q_eyerot) ;
-    glm::mat4 _ieyerot = glm::mat4_cast( glm::conjugate( q_eyerot )) ;
 
+    glm::mat4 _iworldspin = glm::mat4_cast(glm::conjugate(q_rotor));
+    glm::mat4 _ilookrot   = glm::mat4_cast(glm::conjugate(q_lookrot) ) ;
+    glm::mat4 _ieyerot    = glm::mat4_cast(glm::conjugate(q_eyerot )) ;
+    glm::mat4 _ieyeshift  = glm::translate(glm::mat4(1.0), -eyeshift ) ;
 
-    MV = _eyeshift * _eyerot * look2eye * _lookrot * eye2look * world2camera ;  // just world2camera before shifts, rotations
+    MV = _eyeshift * _eyerot * look2eye * _lookrot * eye2look * world2camera * _worldspin ;  // just world2camera before shifts, rotations
 
-    IMV = camera2world * look2eye * _ilookrot * eye2look * _ieyerot  * _ieyeshift  ;
+    IMV = _iworldspin * camera2world * look2eye * _ilookrot * eye2look * _ieyerot  * _ieyeshift  ;
     //IMV = glm::inverse( MV );
 
     MVP = projection * MV ;    // MVP aka world2clip (needed by OpenGL shader pipeline)
 }
+
+
 
 
 
@@ -3250,6 +3292,7 @@ inline void SGLM::time_bump()
 {
     if(!enabled_time_bump || enabled_time_halt) return ;
     set_time( get_time() + get_ts() );
+
 }
 
 inline void SGLM::inc_time(float dy)
@@ -3269,8 +3312,7 @@ inline void SGLM::inc_time(float dy)
 
 inline void SGLM::renderloop_head()
 {
-
-
+    bumpRotor();
 }
 
 

@@ -721,6 +721,7 @@ if __name__ == '__main__':
 
         ## THIS legend default can be overridden with LEGEND=0/1 envvar
         cp = pvp.pvplt_show(pl, incpoi=-5, legend=True, title=None )
+        print(f"label {label}")
     else:
         pass
     pass

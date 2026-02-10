@@ -314,7 +314,7 @@ def pvplt_plotter(label="pvplt_plotter", verbose=False, m2w=None):
     WSIZE = SIZE*2
     print("pvplt_plotter WSIZE:%s" % repr(WSIZE))
 
-    pl = pv.Plotter(window_size=WSIZE)
+    pl = pv.Plotter(window_size=WSIZE, title=label)
     pvplt_viewpoint(pl, reset=False, verbose=verbose, m2w=m2w)
     vmg = pvplt_ViewManager(pl)
 
