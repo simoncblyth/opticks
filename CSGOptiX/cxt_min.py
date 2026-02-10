@@ -100,6 +100,8 @@ from collections import OrderedDict
 from opticks.ana.fold import Fold
 from opticks.sysrap.sevt import SEvt
 from opticks.ana.p import cf    # load CSGFoundry geometry info
+# cf.sim.stree for the tree
+
 from opticks.CSG.CSGFoundry import KeyNameConfig
 
 try:

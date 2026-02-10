@@ -51,6 +51,124 @@ To make select intersects to show use comma delimted KEY::
 TODO: add option to draw a spinkle of intersect normal direction arrows
 
 
+HOW TO FIND IDENTITY INTS FOR GEOMETRY OF INTEREST
+----------------------------------------------------
+
+* with a wide MOI view configured do a simtrace and look at the intersects
+* find some geometry of interest in pyvista interface and right click on an
+  intersect point to yield a 3D position::
+
+    SimtracePlot.__call__ picked_point [-10887.64       0.     17761.287] pointId 1235397 idx 54 k grey label            grey  4019027 OTHER
+
+* configure a MOI frame in the viscinity of intersest choosing extent size, eg 500 mm::
+
+    #moi=0,0,0,20000 ; moi_note="$LINENO zero center is good for the wide view radial range plot"
+    #moi=-6000,0,19700,500 ; moi_note="$LINENO close to where the stake goes thru mask_PMT_20inch_vetosMask_virtual"
+    moi=-10887.64,0.,17761.287,500  ; moi_note="$LINENO viscinity of bar_box that pokes into Tyvek"
+
+* a ray trace render with cxr_min.sh can confim got the correct place
+
+* redoing simtrace in the region of interest, note may need to change OPTICKS_EVENT_NAME to avoid radial range
+  which often prevents getting any gensteps (HMM, radial gensteps seems to need centered frame, TODO:generalize)
+
+* there should be more intersects onto the targetted geometry so the identity tables should yield identity ints::
+
+    In [1]: iitab
+    Out[1]:
+    [iitab instanceIndex - MOI=INST:nnn to access frames
+    array([[     0, 477168,      2],
+           [ 43343,  41380,  26017],
+           [ 43402,  14169,      0],
+           [ 49185,   7006,   1389],
+           [ 43342,   6190,  25372],
+           [ 43283,   2372,  25073],
+           [ 43403,   2267,   6039],
+           [ 43282,    375,  25280],
+           [ 43252,     73,  26333]])
+    ]iitab instanceIndex - MOI=INST:nnn to access frames
+
+    In [2]: gptab
+    Out[2]:
+    [gptab globalPrimIdx - MOI=PRIM:nnn to access frames
+    array([['301', '136345', '10', 's_EMF_bar_box_930mm'],
+           ['209', '98064', '18', 'sAirGap'],
+           ['1518', '76619', '2', 'sOuterReflectorInCD_T'],
+           ['3096', '63450', '0', 'mask_PMT_20inch_vetosMask_virtual'],
+           ['1519', '47072', '29000', 'sOuterWaterInCD_T'],
+           ['2281', '30204', '29015', 'GLb2.up07_FlangeI_Web_FlangeII'],
+           ['2836', '29994', '29003', 'sInnerReflectorInCD_T'],
+           ['213', '28355', '2101', 'sTyvek_shell'],
+           ['227', '12313', '8', 's_EMFsupport_ring5'],
+           ['331', '6580', '4164', 's_EMF_bar_box_930mm'],
+           ['266', '4096', '25015', 's_EMF_bar_box_810mm'],
+           ['3275', '3729', '24032', 's_EMFcoil_holder_ring13_seg1'],
+           ['2251', '2716', '29179', 'GLb2.up08_FlangeI_Web_FlangeII'],
+
+
+Use the PRIM index 301 for a ray trace, to check have the intended prim::
+
+   MOI=PRIM:301 cxr_min.sh
+
+Use the tree to look up the nidx for the prim::
+
+    In [9]: cf.sim.stree.prim_nidx[301]
+    Out[9]: array([64789], dtype=int32)
+
+    In [10]: nidx = cf.sim.stree.prim_nidx[301][0]
+
+Check can find the same geom with that nidx::
+
+    MOI=NIDX:64789 cxr_min.sh
+
+With the nidx can find the lvid and copyno::
+
+    In [11]: cf.sim.stree.nds[nidx]
+    Out[11]: array([64789,     4,    95, 64688,     0,    -1, 64790,    68,  3515,    -1,    -1,     0,    -1,    71,    -1], dtype=int32)
+
+Check can find the same geom with lv name and copyno::
+
+    MOI=LVID_COPYNO:s_EMF_bar_box_930mm/3515 cxr_min.sh
+    MOI=LVID_COPYNO:s_EMF_bar_box_930mm/3515 EYE=2,0,0 UP=0,1,0 cxr_min.sh
+
+Find good viewpoint to take screenshot from, run under orun.sh to record the commandline::
+
+    orun.sh FULLSCREEN=0 MOI=LVID_COPYNO:s_EMF_bar_box_930mm/3515 EYE=2,0,0 UP=0,1,0 cxr_min.sh
+
+In case of overlap note the name of the geometry are overlapping with, eg::
+
+    sOuterReflectorInCD_T
+
+Improve usefullness of simtrace by adding the name of volumes of interest to the key with::
+
+    ./cxt_min.sh cfg
+
+Then for example can access the positions of intersects with::
+
+    In [2]: spl.gpts['aliceblue']
+    Out[2]:
+    array([[-11316.611,      0.   ,  17064.607],
+           [-11327.599,      0.   ,  17057.316],
+           [-11327.19 ,      0.   ,  17057.588],
+           [-11334.96 ,      0.   ,  17052.426],
+           [-11333.812,      0.   ,  17053.19 ],
+           ...,
+           [ -8286.742,      0.   ,  18724.22 ],
+           [ -9499.347,      0.   ,  18139.156],
+           [ -9491.66 ,      0.   ,  18143.178],
+           [ -9867.844,      0.   ,  17941.354],
+           [-10586.345,      0.   ,  17527.004]], shape=(76619, 3), dtype=float32)
+
+And work out radii::
+
+    In [6]: np.c_[np.unique(np.sqrt(np.sum(spl.gpts['aliceblue']*spl.gpts['aliceblue'], axis=1)), return_counts=True)]
+    Out[6]:
+    array([[20475.998, 16248.   ],
+           [20476.   , 57608.   ],
+           [20476.002,  2763.   ]])
+
+
+
+
 OVERLAP Check Using scipy.spatial KDTree to compare two intersect point clouds with surface normals
 -----------------------------------------------------------------------------------------------------
 

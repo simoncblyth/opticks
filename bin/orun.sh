@@ -33,6 +33,7 @@ EOU
 if [ -z "$1" ]; then
     usage;
     [ -f "$logpath" ] && cat $logpath
+    echo $logpath
     exit 1;
 fi
 
