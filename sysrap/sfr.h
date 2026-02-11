@@ -367,7 +367,7 @@ inline sfr sfr::MakeFromAxis(const char* tpde, char delim)
     T extent_mm = num_elem > 3 ? elem[3] : 1000. ;
     T delta_dist_mm   = num_elem > 4 ? elem[4] : 0. ;
 
-    std::cout
+    if(0) std::cout
         << "sfr::MakeFromAxis"
         << " tpde [" << ( tpde ? tpde : "-" ) << "]"
         << " num_elem " << num_elem

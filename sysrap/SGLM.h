@@ -223,7 +223,8 @@ struct SYSRAP_API SGLM_Toggle
     SGLM_Setting lrot{0, 2}; // R
     SGLM_Setting cuda{0, 2}; // C
     SGLM_Setting norm{0, 2}; // U
-    SGLM_Setting time{0, 5}; // T
+    SGLM_Setting time{0, 2}; // T
+    SGLM_Setting spin{0, 5}; // L
     SGLM_Setting stop{0, 2}; // SPACE
 
     std::string desc() const;
@@ -240,6 +241,7 @@ inline std::string SGLM_Toggle::desc() const
        << " cuda: " << cuda.value
        << " norm: " << norm.value
        << " time: " << time.value
+       << " spin: " << spin.value
        << " stop: " << stop.value
        ;
     std::string str = ss.str();
@@ -478,10 +480,10 @@ struct SYSRAP_API SGLM : public SCMD
     glm::mat4 eye2look ;
     glm::mat4 look2eye ;
 
-    float rotor_degrees_per_frame = 0.25f;
-    glm::vec3 q_rotor_axis {0,0,1};
+    float spin_degrees_per_frame ;
+    glm::vec3 q_spin_axis ;
+    glm::quat q_spin;
 
-    glm::quat q_rotor ;
     glm::quat q_lookrot ;
     glm::quat q_eyerot ;
     glm::vec3 eyeshift  ;
@@ -595,7 +597,7 @@ struct SYSRAP_API SGLM : public SCMD
 
 
 
-    void bumpRotor();
+    void increment_spin();
 
     void updateComposite();
 
@@ -824,7 +826,9 @@ inline SGLM::SGLM()
     gaze(  0.f,0.f,0.f),
     eye2look(1.f),
     look2eye(1.f),
-    q_rotor(1.f,0.f,0.f,0.f),     // identity quaternion
+    spin_degrees_per_frame(0.15f),
+    q_spin_axis(0.f,0.f,1.f),
+    q_spin(1.f,0.f,0.f,0.f),     // identity quaternion
     q_lookrot(1.f,0.f,0.f,0.f),   // identity quaternion
     q_eyerot( 1.f,0.f,0.f,0.f),   // identity quaternion
     eyeshift(0.f,0.f,0.f),
@@ -2249,16 +2253,16 @@ float SGLM::get_transverse_scale() const
 
 
 
-void SGLM::bumpRotor()
+void SGLM::increment_spin()
 {
-    if(toggle.time.value == 0 ) return ;
+    if(toggle.spin.value == 0 ) return ;
 
-    float rotor_speed = rotor_degrees_per_frame*float(toggle.time.value) ;
+    float spin_speed = spin_degrees_per_frame*float(toggle.spin.value) ;
 
-    glm::quat step_rotor = glm::angleAxis(glm::radians(rotor_speed), q_rotor_axis );
+    glm::quat step_spin = glm::angleAxis(glm::radians(spin_speed), q_spin_axis );
 
-    q_rotor = step_rotor * q_rotor ;      // Global spin
-    //q_rotor = q_rotor * step_rotor ;    // Local spin (relative to current view)
+    q_spin = step_spin * q_spin ;      // Global spin
+    //q_spin = q_spin * step_spin ;      // Local spin (relative to current view)
 }
 
 
@@ -2278,12 +2282,12 @@ void SGLM::updateComposite()
 {
     //std::cout << "SGLM::updateComposite" << std::endl ;
 
-    glm::mat4 _worldspin = glm::mat4_cast(q_rotor);
+    glm::mat4 _worldspin = glm::mat4_cast(q_spin);
     glm::mat4 _eyeshift = glm::translate(glm::mat4(1.0), eyeshift ) ;    // eyeshift starts (0,0,0) changed by WASDQE keys
     glm::mat4 _lookrot = glm::mat4_cast(q_lookrot) ;
     glm::mat4 _eyerot = glm::mat4_cast(q_eyerot) ;
 
-    glm::mat4 _iworldspin = glm::mat4_cast(glm::conjugate(q_rotor));
+    glm::mat4 _iworldspin = glm::mat4_cast(glm::conjugate(q_spin));
     glm::mat4 _ilookrot   = glm::mat4_cast(glm::conjugate(q_lookrot) ) ;
     glm::mat4 _ieyerot    = glm::mat4_cast(glm::conjugate(q_eyerot )) ;
     glm::mat4 _ieyeshift  = glm::translate(glm::mat4(1.0), -eyeshift ) ;
@@ -3312,7 +3316,7 @@ inline void SGLM::inc_time(float dy)
 
 inline void SGLM::renderloop_head()
 {
-    bumpRotor();
+    increment_spin();
 }
 
 
