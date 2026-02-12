@@ -463,6 +463,7 @@ set(HEADERS
     SGLM_Parse.h
     SGLM_Modifiers.h
     SGLM_Arcball.h
+    SGLM_View.h
 
     GL_CHECK.h
 

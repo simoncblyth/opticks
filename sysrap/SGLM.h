@@ -149,6 +149,7 @@ Screen
 #include "SScene.h"
 #include "stree.h"
 
+#include "SGLM_View.h"
 #include "SGLM_Arcball.h"
 
 #include "sfr.h"     // formerly sframe.h
@@ -465,11 +466,16 @@ struct SYSRAP_API SGLM : public SCMD
     // world frame View converted from static model frame
     // initELU
 
+    void  initView();
+    SGLM_View view = {} ;
+
+
     void  initELU();   // depends on CE and EYE, LOOK, UP
     void updateGaze();
     std::string descELU() const ;
 
     std::vector<glm::vec3> axes ;
+
 
     glm::vec3 eye ;
     glm::vec3 look ;
@@ -755,6 +761,7 @@ int        SGLM::TN = ssys::getenvint(kTN, 5000 );
 inline void SGLM::SetWH( int width, int height ){ WH.x = width ; WH.y = height ; }
 inline void SGLM::SetCE(  float x, float y, float z, float w){ CE.x = x ; CE.y = y ; CE.z = z ;  CE.w = w ; }
 
+// HMM: these are setting the statics
 inline void SGLM::SetEYE( float x, float y, float z){ EYE.x = x  ; EYE.y = y  ; EYE.z = z  ;  EYE.w = 1.f ; }
 inline void SGLM::SetLOOK(float x, float y, float z){ LOOK.x = x ; LOOK.y = y ; LOOK.z = z ;  LOOK.w = 1.f ; }
 inline void SGLM::SetUP(  float x, float y, float z){ UP.x = x   ; UP.y = y   ; UP.z = z   ;  UP.w = 0.f ; }  // 0.f as treat as direction
@@ -1360,6 +1367,10 @@ initModelMatrix
     model2world, world2model from frame or ce (translation only, not including extent scale)
     [note the only? use of these is from initELU]
 
+
+initView
+
+
 initELU
     eye,look,up in world frame from EYE,LOOK,UP in "ce" frame by using model2world
     and doing extent scaling
@@ -1405,7 +1416,9 @@ inline void SGLM::update()
     constrain();
 
     initModelMatrix();  //  fr.ce(center)->model2world translation
-    initELU();          //  EYE,LOOK,UP,model2world,extent->eye,look,up
+
+    initView();         // EYE,LOOK,UP -> view.EYE, view.LOOK, view.UP
+    initELU();          //  view.EYE,view.LOOK,view.UP,model2world,extent->eye,look,up
 
     updateGaze();       //  eye,look,up->gaze,eye2look,look2eye
     updateEyeSpace();   //  gaze,up,eye->world2camera,camera2world
@@ -1584,6 +1597,25 @@ glm::mat4 SGLM::get_escale() const
 }
 
 /**
+SGLM::initView
+----------------
+
+For standard non interpolated view animation mode the view is populated
+from the EYE, LOOK,UP statics that are populated at lib load time from envvars.
+
+**/
+
+
+void SGLM::initView()
+{
+    view.EYE = EYE ;
+    view.LOOK = LOOK ;
+    view.UP = UP ;
+}
+
+
+
+/**
 SGLM::initELU
 -----------------
 
@@ -1617,9 +1649,11 @@ void SGLM::initELU()
 {
     glm::mat4 escale = get_escale();
 
-    eye  = glm::vec3( model2world * escale * EYE ) ;
-    look = glm::vec3( model2world * escale * LOOK ) ;
-    up   = glm::vec3( model2world * escale * UP ) ;
+    eye  = glm::vec3( model2world * escale * view.EYE ) ;
+    look = glm::vec3( model2world * escale * view.LOOK ) ;
+    up   = glm::vec3( model2world * escale * view.UP ) ;
+
+
 
     if(LEVEL > 0) std::cout
         << "[ SGLM::initELU\n"

@@ -12,23 +12,27 @@ struct SGLM_InterpolatedView
     void import_( const NP* views );
 
 
+    SGLM_View* m_view ;
     int   m_i ;
     int   m_j ;
     float m_f ;
     float m_df ;
 
-    SGLM_View view = {} ;
     std::vector<SGLM_View> vv = {} ;
 
 
     SGLM_InterpolatedView();
+    void setControlledView( SGLM_View* view );
+
     std::string desc() const ;
     std::string desc_vv() const ;
 
+
+    void tick();  // primary method, invoking the below
+
     void setPair(int i, int j);
     void nextPair();
-    void tick();
-    void updateView();
+    void updateControlledView();
 
 };
 
@@ -64,6 +68,7 @@ inline void SGLM_InterpolatedView::import_(const NP* _views)
 
 inline SGLM_InterpolatedView::SGLM_InterpolatedView()
     :
+    m_view(nullptr),
     m_i(0),
     m_j(1),
     m_f(0.f),
@@ -71,12 +76,17 @@ inline SGLM_InterpolatedView::SGLM_InterpolatedView()
 {
 }
 
+inline void SGLM_InterpolatedView::setControlledView( SGLM_View* view )
+{
+    m_view = view ;
+}
+
 
 inline std::string SGLM_InterpolatedView::desc() const
 {
     size_t num_v = vv.size();
     std::stringstream ss ;
-    ss << "IV[" << num_v << "] " << view.desc() ;
+    ss << "IV[" << num_v << "] " << ( m_view ? m_view->desc() : "no-controlled-view" ) ;
     std::string str = ss.str() ;
     return str ;
 }
@@ -94,19 +104,6 @@ inline std::string SGLM_InterpolatedView::desc_vv() const
 
 
 
-void SGLM_InterpolatedView::setPair(int i, int j)
-{
-    m_i = i ;
-    m_j = j ;
-}
-
-void SGLM_InterpolatedView::nextPair()
-{
-    int n = vv.size();
-    int i = (m_i + 1) % n ;
-    int j = (m_j + 1) % n ;
-    setPair(i,j);
-}
 
 void SGLM_InterpolatedView::tick()
 {
@@ -119,13 +116,30 @@ void SGLM_InterpolatedView::tick()
     {
         m_f += m_df ;
     }
-    updateView();
+    updateControlledView();
+}
+
+void SGLM_InterpolatedView::nextPair()
+{
+    int n = vv.size();
+    int i = (m_i + 1) % n ;
+    int j = (m_j + 1) % n ;
+    setPair(i,j);
+}
+
+void SGLM_InterpolatedView::setPair(int i, int j)
+{
+    m_i = i ;
+    m_j = j ;
 }
 
 
 
-void SGLM_InterpolatedView::updateView()
+
+
+void SGLM_InterpolatedView::updateControlledView()
 {
+    assert(m_view);
     unsigned num = vv.size();
     if(num < 2) return;
 
@@ -150,9 +164,9 @@ void SGLM_InterpolatedView::updateView()
     glm::vec3 _UP      =  glm::vec3(QRot[0][1], QRot[1][1], QRot[2][1]);
     glm::vec3 _LOOK    = E + _LOOKDIR ;
 
-    view.EYE  = glm::vec4(E,     1.f);
-    view.LOOK = glm::vec4(_LOOK, 1.f);
-    view.UP   = glm::vec4(_UP,   0.f);
+    m_view->EYE  = glm::vec4(E,     1.f);
+    m_view->LOOK = glm::vec4(_LOOK, 1.f);
+    m_view->UP   = glm::vec4(_UP,   0.f);
 }
 
 
