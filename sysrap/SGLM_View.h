@@ -12,9 +12,14 @@ struct SGLM_View
 
     glm::quat getQuat() const ;
     std::string desc() const ;
+    bool is_zero() const ;
+    void set_zero();
 
     template<typename T>
     static std::string FormatArray(const T* tt, int num, int precision );
+
+    template<typename T>
+    static bool IsZero(const T* tt, int num);
 };
 
 inline glm::quat SGLM_View::getQuat() const
@@ -31,9 +36,46 @@ inline std::string SGLM_View::desc() const
         << " LOOK " << FormatArray<float>( glm::value_ptr(LOOK),    4, 3 )
         << " UP   " << FormatArray<float>( glm::value_ptr(UP),      4, 3 )
         << " CTRL " << FormatArray<unsigned>( glm::value_ptr(CTRL), 4, -1 )
+        << " is_zero " << ( is_zero() ? "YES" : "NO " )
         ;
     std::string str = ss.str();
     return str ;
+}
+
+
+
+bool SGLM_View::is_zero() const
+{
+    return
+        IsZero<float>( glm::value_ptr(EYE), 4 ) &&
+        IsZero<float>( glm::value_ptr(LOOK), 4 ) &&
+        IsZero<float>( glm::value_ptr(UP), 4 ) &&
+        IsZero<unsigned>( glm::value_ptr(CTRL), 4 ) &&
+        true ;
+
+}
+
+void SGLM_View::set_zero()
+{
+    EYE.x = 0 ;
+    EYE.y = 0 ;
+    EYE.z = 0 ;
+    EYE.w = 0 ;
+
+    LOOK.x = 0 ;
+    LOOK.y = 0 ;
+    LOOK.z = 0 ;
+    LOOK.w = 0 ;
+
+    UP.x = 0 ;
+    UP.y = 0 ;
+    UP.z = 0 ;
+    UP.w = 0 ;
+
+    CTRL.x = 0 ;
+    CTRL.y = 0 ;
+    CTRL.z = 0 ;
+    CTRL.w = 0 ;
 }
 
 
@@ -48,5 +90,15 @@ std::string SGLM_View::FormatArray(const T* tt, int num, int precision )
     }
     return ss.str();
 }
+
+template<typename T>
+bool SGLM_View::IsZero(const T* tt, int num )
+{
+    const T zero(0) ;
+    int count = 0 ;
+    for(int i=0; i < num; i++) if( tt[i] == zero ) count += 1 ;
+    return count == num ;
+}
+
 
 

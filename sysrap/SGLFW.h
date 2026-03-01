@@ -161,13 +161,13 @@ alt+H
 I
    --snap-local : taking a screenshot
 J
-   --snap-local-inverted : taking a y-inverted screenshot
+   toggle between ifly animation modes
+   (formerly --snap-local-inverted : taking a y-inverted screenshot)
 K
    save screen shot [--snap]
 L
    toggle between world spin modes
-L(formerly)
-   save Y inverted screen shot [--snap-inverted]
+   (formerly saved Y inverted screen shot [--snap-inverted])
 
 M
    hop to the MOI envvar configured frame [not supported by all renderers]
@@ -583,7 +583,8 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_H:      command("--home")                  ; break ;
             case GLFW_KEY_O:      command("--tcam")                  ; break ;
             case GLFW_KEY_I:      command("--snap-local")            ; break ;
-            case GLFW_KEY_J:      command("--snap-local-inverted")   ; break ;
+            //case GLFW_KEY_J:      command("--snap-local-inverted")   ; break ;
+            case GLFW_KEY_J:      gm.toggle.ifly.next()              ; break ;
             case GLFW_KEY_K:      command("--snap")                  ; break ;
             //case GLFW_KEY_L:      command("--snap-inverted")         ; break ;
             case GLFW_KEY_L:      gm.toggle.spin.next()              ; break ;

@@ -24,6 +24,7 @@ struct SGLM_InterpolatedView
     SGLM_InterpolatedView();
     void setControlledView( SGLM_View* view );
 
+    std::string brief() const ;
     std::string desc() const ;
     std::string desc_vv() const ;
 
@@ -81,6 +82,14 @@ inline void SGLM_InterpolatedView::setControlledView( SGLM_View* view )
     m_view = view ;
 }
 
+inline std::string SGLM_InterpolatedView::brief() const
+{
+    size_t num_v = vv.size();
+    std::stringstream ss ;
+    ss << "IV[" << num_v << "] " << ( m_view ? m_view->desc() : "no-controlled-view" ) ;
+    std::string str = ss.str() ;
+    return str ;
+}
 
 inline std::string SGLM_InterpolatedView::desc() const
 {
@@ -140,7 +149,7 @@ void SGLM_InterpolatedView::setPair(int i, int j)
 void SGLM_InterpolatedView::updateControlledView()
 {
     assert(m_view);
-    unsigned num = vv.size();
+    int num = vv.size();
     if(num < 2) return;
 
     unsigned h = (m_i > 0) ? m_i - 1 : m_i;

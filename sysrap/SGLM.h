@@ -150,6 +150,7 @@ Screen
 #include "stree.h"
 
 #include "SGLM_View.h"
+#include "SGLM_InterpolatedView.h"
 #include "SGLM_Arcball.h"
 
 #include "sfr.h"     // formerly sframe.h
@@ -226,6 +227,7 @@ struct SYSRAP_API SGLM_Toggle
     SGLM_Setting norm{0, 2}; // U
     SGLM_Setting time{0, 2}; // T
     SGLM_Setting spin{0, 5}; // L
+    SGLM_Setting ifly{0, 2}; // ?
     SGLM_Setting stop{0, 2}; // SPACE
 
     std::string desc() const;
@@ -243,6 +245,7 @@ inline std::string SGLM_Toggle::desc() const
        << " norm: " << norm.value
        << " time: " << time.value
        << " spin: " << spin.value
+       << " ifly: " << ifly.value
        << " stop: " << stop.value
        ;
     std::string str = ss.str();
@@ -289,6 +292,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kCE = "CE" ;
     static constexpr const char* kEYE = "EYE" ;
     static constexpr const char* kLOOK = "LOOK" ;
+    static constexpr const char* kVIEW = "VIEW" ;
     static constexpr const char* kUP = "UP" ;
     static constexpr const char* kZOOM = "ZOOM" ;
     static constexpr const char* kTMIN = "TMIN" ;
@@ -326,6 +330,9 @@ struct SYSRAP_API SGLM : public SCMD
     static glm::vec4 EYE ;
     static glm::vec4 LOOK ;
     static glm::vec4 UP ;
+
+    static const char* VIEW ;
+
 
 
     static float ZOOM ;
@@ -463,14 +470,13 @@ struct SYSRAP_API SGLM : public SCMD
     void initModelMatrix();  // depends on ce, unless non-identity m2w and w2m matrices provided in frame
     std::string descModelMatrix() const ;
 
-    // world frame View converted from static model frame
-    // initELU
-
     void  initView();
     SGLM_View view = {} ;
+    SGLM_InterpolatedView* interpolated_view = nullptr ;
 
 
-    void  initELU();   // depends on CE and EYE, LOOK, UP
+    void updateView();
+    void updateELU();
     void updateGaze();
     std::string descELU() const ;
 
@@ -604,6 +610,7 @@ struct SYSRAP_API SGLM : public SCMD
 
 
     void increment_spin();
+    void increment_ifly();
 
     void updateComposite();
 
@@ -735,6 +742,8 @@ glm::vec4  SGLM::CE = EVec4(kCE,"0,0,0,100", 100.f) ;
 glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1", 1.f) ;
 glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1" , 1.f) ;
 glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0" , 0.f) ;
+
+const char* SGLM::VIEW = ssys::getenvvar(kVIEW, nullptr);
 
 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1");
@@ -1363,18 +1372,24 @@ inline float SGLM::tmax_abs() const { return extent()*TMAX ; }  // HUH:extent mi
 SGLM::update
 --------------
 
+This was formerly invoked from SGLFW only directly as a result of user navigation key presses etc..
+For ifly interpolated view fly-around this is now also invoked from SGLM::increment_ifly
+
+
 initModelMatrix
     model2world, world2model from frame or ce (translation only, not including extent scale)
     [note the only? use of these is from initELU]
 
 
 initView
+    initial setting of the view
+
+updateView
 
 
-initELU
+updateELU
     eye,look,up in world frame from EYE,LOOK,UP in "ce" frame by using model2world
     and doing extent scaling
-
 
 updateGaze
     eye,look -> gaze (world frame)
@@ -1417,8 +1432,8 @@ inline void SGLM::update()
 
     initModelMatrix();  //  fr.ce(center)->model2world translation
 
-    initView();         // EYE,LOOK,UP -> view.EYE, view.LOOK, view.UP
-    initELU();          //  view.EYE,view.LOOK,view.UP,model2world,extent->eye,look,up
+    updateView();         // EYE,LOOK,UP -> view.EYE, view.LOOK, view.UP
+    updateELU();          //  view.EYE,view.LOOK,view.UP,model2world,extent->eye,look,up
 
     updateGaze();       //  eye,look,up->gaze,eye2look,look2eye
     updateEyeSpace();   //  gaze,up,eye->world2camera,camera2world
@@ -1603,20 +1618,44 @@ SGLM::initView
 For standard non interpolated view animation mode the view is populated
 from the EYE, LOOK,UP statics that are populated at lib load time from envvars.
 
-**/
+Note that still require the initial from static EYE,LOOK,UP view even when using
+interpolated view as that sequence of views does not kick in until the user toggles
+the ifly mode on with the "J" key.
 
+**/
 
 void SGLM::initView()
 {
     view.EYE = EYE ;
     view.LOOK = LOOK ;
     view.UP = UP ;
+
+
+    bool load_interpolated_view = VIEW && sstr::EndsWith(VIEW,".npy") ;
+    if(load_interpolated_view)
+    {
+        interpolated_view = SGLM_InterpolatedView::Load(VIEW) ;
+        interpolated_view->setControlledView(&view);
+    }
+
+    std::cout
+       << "SGLM::initView"
+       << " VIEW [" << ( VIEW ? VIEW : "-" ) << "]"
+       << " load_interpolated_view " << ( load_interpolated_view ? "YES" : "NO " )
+       << " interpolated_view.brief " << ( interpolated_view ? interpolated_view->brief() : "-" )
+       << "\n"
+       ;
+
+}
+
+void SGLM::updateView()
+{
+    if(view.is_zero()) initView();
 }
 
 
-
 /**
-SGLM::initELU
+SGLM::updateELU
 -----------------
 
 Uses escale matrix (which typically comes from extent fr.ce.w), eg with extent of 9.0
@@ -1645,7 +1684,7 @@ A: This is for consistency with sframe.h transforms which are used when
 
 **/
 
-void SGLM::initELU()
+void SGLM::updateELU()
 {
     glm::mat4 escale = get_escale();
 
@@ -1732,7 +1771,19 @@ void SGLM::avoidDegenerateBasisByChangingUp()
             return ;
         }
     }
-    assert( gcu > eps );
+
+    bool gcu_ok = gcu > eps ;
+    if(!gcu_ok) std::cerr
+        << "SGLM::avoidDegenerateBasisByChangingUp"
+        << " gaze " << glm::to_string(gaze)
+        << " up " << glm::to_string(up)
+        << " GazeCrossUp " << gcu
+        << " eps " << eps
+        << " gcu_ok " << ( gcu_ok ? "YES" : "NO " )
+        << "\n"
+        ;
+
+    assert( gcu_ok );
 }
 
 
@@ -2286,6 +2337,13 @@ float SGLM::get_transverse_scale() const
 }
 
 
+/**
+SGLM::increment_spin
+---------------------
+
+This is invoked from SGLM::renderloop_head, use SGLFW.h "L" key to toggle between spin speeds
+
+**/
 
 void SGLM::increment_spin()
 {
@@ -2298,6 +2356,38 @@ void SGLM::increment_spin()
     q_spin = step_spin * q_spin ;      // Global spin
     //q_spin = q_spin * step_spin ;      // Local spin (relative to current view)
 }
+
+
+/**
+SGLM::increment_ifly
+---------------------
+
+This is invoked from SGLM::renderloop_head, use SGLFW.h "J" key to toggle between ifly speeds.
+The VIEW envvar pointing to a .npy array with EYE,LOOK,UP vectors is required to
+configure the flight path within the MOI selected frame. For example after running
+the below test to prepare a demo ELU flightpath::
+
+    ~/o/sysrap/tests/SGLM_View_test.sh
+
+Configure the renderer to load that flight path with::
+
+    VIEW=/data1/blyth/tmp/SGLM_View_test/SGLM_View_test.npy cxr_min.sh
+
+Then kick off the ifly animation by pressing the "J" key.
+
+**/
+
+
+void SGLM::increment_ifly()
+{
+    if(toggle.ifly.value == 0 ) return ;
+    if(interpolated_view == nullptr) return ;
+
+    interpolated_view->tick();
+    update();
+}
+
+
 
 
 /**
@@ -3351,6 +3441,7 @@ inline void SGLM::inc_time(float dy)
 inline void SGLM::renderloop_head()
 {
     increment_spin();
+    increment_ifly();
 }
 
 

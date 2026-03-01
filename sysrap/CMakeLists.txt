@@ -464,6 +464,7 @@ set(HEADERS
     SGLM_Modifiers.h
     SGLM_Arcball.h
     SGLM_View.h
+    SGLM_InterpolatedView.h
 
     GL_CHECK.h
 
