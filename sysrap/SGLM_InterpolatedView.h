@@ -12,11 +12,14 @@ struct SGLM_InterpolatedView
     void import_( const NP* views );
 
 
+
     SGLM_View* m_view ;
     int   m_i ;
     int   m_j ;
     float m_f ;
+    float m_df0 ;
     float m_df ;
+    int   m_ifly_value ;
 
     std::vector<SGLM_View> vv = {} ;
 
@@ -26,14 +29,16 @@ struct SGLM_InterpolatedView
 
     std::string brief() const ;
     std::string desc() const ;
-    std::string desc_vv() const ;
+    std::string detail() const ;
 
 
-    void tick();  // primary method, invoking the below
+    void tick(int ifly_value, bool ifly_flip);  // primary method, invoking the below
 
     void setPair(int i, int j);
+    static int Modulus_Positive(int a, int b);
     void nextPair();
     void updateControlledView();
+
 
 };
 
@@ -73,7 +78,9 @@ inline SGLM_InterpolatedView::SGLM_InterpolatedView()
     m_i(0),
     m_j(1),
     m_f(0.f),
-    m_df(0.01)
+    m_df0(0.01),
+    m_df(0.01),
+    m_ifly_value(0)
 {
 }
 
@@ -100,7 +107,7 @@ inline std::string SGLM_InterpolatedView::desc() const
     return str ;
 }
 
-inline std::string SGLM_InterpolatedView::desc_vv() const
+inline std::string SGLM_InterpolatedView::detail() const
 {
     std::stringstream ss ;
     size_t num_v = vv.size();
@@ -112,13 +119,28 @@ inline std::string SGLM_InterpolatedView::desc_vv() const
 }
 
 
+/**
+SGLM_InterpolatedView::tick
+----------------------------
 
+TODO: direction+speed control
 
-void SGLM_InterpolatedView::tick()
+**/
+
+void SGLM_InterpolatedView::tick(int ifly_value, bool ifly_flip)
 {
+    m_ifly_value = ifly_value ;
+    assert( m_ifly_value != 0 );
+    m_df = ( ifly_flip ? -1.f : 1.f )*m_df0*float(m_ifly_value) ;
+
     if(m_f + m_df > 1.f )
     {
         m_f = 0.f ;
+        nextPair();
+    }
+    else if(m_f + m_df < 0.f )
+    {
+        m_f = 1.f ;
         nextPair();
     }
     else
@@ -128,11 +150,29 @@ void SGLM_InterpolatedView::tick()
     updateControlledView();
 }
 
+
+/**
+SGLM_InterpolatedView::Modulus_Positive
+----------------------------------------
+
+Handle -ve a like python does::
+
+    Modulus_Positive( -2, 10 ) == 8
+
+**/
+
+int SGLM_InterpolatedView::Modulus_Positive(int a, int b)
+{
+    int r = a % b;
+    return r >= 0 ? r : r + b;
+}
+
 void SGLM_InterpolatedView::nextPair()
 {
+    int delta = m_df > 0.f ? 1 : -1 ;
     int n = vv.size();
-    int i = (m_i + 1) % n ;
-    int j = (m_j + 1) % n ;
+    int i = Modulus_Positive( m_i + delta, n );
+    int j = Modulus_Positive( m_j + delta, n );
     setPair(i,j);
 }
 

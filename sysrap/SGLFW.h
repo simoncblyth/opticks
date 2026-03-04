@@ -160,14 +160,24 @@ alt+H
 
 I
    --snap-local : taking a screenshot
+
 J
-   toggle between ifly animation modes
-   (formerly --snap-local-inverted : taking a y-inverted screenshot)
+   toggle between ifly animation modes changing speed and switching off animation
+alt+J
+   reverses ifly animation direction
+ctrl+J
+   pause/resume ifly animation, eg to take a screenshot or log a viewpoint
+
 K
    save screen shot [--snap]
+
 L
    toggle between world spin modes
    (formerly saved Y inverted screen shot [--snap-inverted])
+alt+L
+   reverse spin rotation animation direction
+ctrl+L
+   pause/resume spin rotation, eg to take a screenshot or log a viewpoint
 
 M
    hop to the MOI envvar configured frame [not supported by all renderers]
@@ -215,7 +225,8 @@ ctrl+T
 U:gm.toggle.norm
    for rasterized render toggle between wireframe and normal shading
 V
-   [--traceyflip] invert vertical of the raytrace render, via Param.h signal to kernel
+   log current ELU viewpoint to logfile SGLM_elu.log in invoking directory
+   (formerly --traceyflip inverted vertical raytrace render, via Param.h signal to kernel)
 W
    (WASDQE) hold to change eyeshift, translate forwards
 X
@@ -540,6 +551,11 @@ inline void SGLFW::key_pressed(unsigned key)
     keys.key_pressed(key);
     unsigned modifiers = keys.modifiers() ;
 
+    bool modifiers_none  = SGLM_Modifiers::IsNone(modifiers);
+    bool modifiers_alt   = SGLM_Modifiers::IsAlt(modifiers);
+    bool modifiers_shift = SGLM_Modifiers::IsShift(modifiers);
+    bool modifiers_ctrl  = SGLM_Modifiers::IsControl(modifiers);
+
     getStartPos();
     if(level > 1) std::cout
         << descStartPos()
@@ -566,7 +582,22 @@ inline void SGLFW::key_pressed(unsigned key)
                               numkey_pressed(key - GLFW_KEY_0, modifiers) ; break ;
     }
 
-    if(SGLM_Modifiers::IsNone(modifiers))
+    // keys that may meaningfully be pressed together with modifiers
+    if( key == GLFW_KEY_J )
+    {
+        gm.toggle.ifly.next();
+        if(modifiers_alt)  gm.toggle.ifly.flip = !gm.toggle.ifly.flip ;  // pressing alt+J reverses interpolated animation direction
+        if(modifiers_ctrl) gm.toggle.ifly.stop = !gm.toggle.ifly.stop ;  // pressing ctrl+J pauses/resumes interpolation animation
+    }
+    else if( key == GLFW_KEY_L )
+    {
+        gm.toggle.spin.next();
+        if(modifiers_alt)  gm.toggle.spin.flip = !gm.toggle.spin.flip ;  // pressing alt+L reverses spin rotation animation direction
+        if(modifiers_ctrl) gm.toggle.spin.stop = !gm.toggle.spin.stop ;  // pressing ctrl+L pauses/resumes spin rotation animation
+    }
+
+
+    if(modifiers_none)
     {
         switch(key)
         {
@@ -583,12 +614,9 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_H:      command("--home")                  ; break ;
             case GLFW_KEY_O:      command("--tcam")                  ; break ;
             case GLFW_KEY_I:      command("--snap-local")            ; break ;
-            //case GLFW_KEY_J:      command("--snap-local-inverted")   ; break ;
-            case GLFW_KEY_J:      gm.toggle.ifly.next()              ; break ;
             case GLFW_KEY_K:      command("--snap")                  ; break ;
-            //case GLFW_KEY_L:      command("--snap-inverted")         ; break ;
-            case GLFW_KEY_L:      gm.toggle.spin.next()              ; break ;
-            case GLFW_KEY_V:      command("--traceyflip")            ; break ;
+            //case GLFW_KEY_V:      command("--traceyflip")            ; break ;
+            case GLFW_KEY_V:      gm.command("--log-elu")            ; break ;
             case GLFW_KEY_X:      command("--rendertype")            ; break ;   // HMM: also in SGLM_Modnav
             case GLFW_KEY_ESCAPE: command("--exit")                  ; break ;
 
@@ -603,7 +631,7 @@ inline void SGLFW::key_pressed(unsigned key)
                                  ; break ;
         }
     }
-    else if( SGLM_Modifiers::IsAlt(modifiers))
+    else if( modifiers_alt )
     {
         switch(key)
         {
@@ -616,14 +644,14 @@ inline void SGLFW::key_pressed(unsigned key)
             case GLFW_KEY_H:   command("--help")              ; break ;
         }
     }
-    else if( SGLM_Modifiers::IsShift(modifiers))
+    else if( modifiers_shift )
     {
         switch(key)
         {
             case GLFW_KEY_T:   gm.reset_time_TT()             ; break ;
         }
     }
-    else if( SGLM_Modifiers::IsControl(modifiers))
+    else if( modifiers_ctrl )
     {
         switch(key)
         {
@@ -964,6 +992,7 @@ inline void SGLFW::rendertype()
 {
     gm.command("--rendertype");
 }
+
 
 
 

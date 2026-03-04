@@ -11,15 +11,20 @@ struct SGLM_View
     glm::tvec4<unsigned> CTRL ;
 
     glm::quat getQuat() const ;
+    std::string getELU() const ;
+    std::string brief() const ;
     std::string desc() const ;
     bool is_zero() const ;
     void set_zero();
 
+
     template<typename T>
-    static std::string FormatArray(const T* tt, int num, int precision );
+    static std::string FormatArray(const T* tt, int num, int precision, int width, char delim );
 
     template<typename T>
     static bool IsZero(const T* tt, int num);
+
+
 };
 
 inline glm::quat SGLM_View::getQuat() const
@@ -27,15 +32,39 @@ inline glm::quat SGLM_View::getQuat() const
     return glm::quat_cast(glm::lookAt(glm::vec3(EYE), glm::vec3(LOOK), glm::vec3(UP)));
 }
 
+inline std::string SGLM_View::getELU() const
+{
+    int num = 3 ;
+    int precision = 3 ;
+    int width = 0 ;
+    char delim = ',' ;
+
+    std::stringstream ss ;
+    ss
+       << "ELU="
+       << FormatArray<float>( glm::value_ptr(EYE), num, precision, width, delim )
+       << ','
+       << FormatArray<float>( glm::value_ptr(LOOK), num, precision, width, delim )
+       << ','
+       << FormatArray<float>( glm::value_ptr(UP), num, precision, width, delim )
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+inline std::string SGLM_View::brief() const
+{
+    return getELU();
+}
 
 inline std::string SGLM_View::desc() const
 {
     std::stringstream ss ;
     ss
-        << " EYE  " << FormatArray<float>( glm::value_ptr(EYE),     4, 3 )
-        << " LOOK " << FormatArray<float>( glm::value_ptr(LOOK),    4, 3 )
-        << " UP   " << FormatArray<float>( glm::value_ptr(UP),      4, 3 )
-        << " CTRL " << FormatArray<unsigned>( glm::value_ptr(CTRL), 4, -1 )
+        << " EYE  " << FormatArray<float>( glm::value_ptr(EYE),     4, 3, 10, '\0' )
+        << " LOOK " << FormatArray<float>( glm::value_ptr(LOOK),    4, 3, 10, '\0' )
+        << " UP   " << FormatArray<float>( glm::value_ptr(UP),      4, 3, 10, '\0' )
+        << " CTRL " << FormatArray<unsigned>( glm::value_ptr(CTRL), 4, -1, 10, '\0' )
         << " is_zero " << ( is_zero() ? "YES" : "NO " )
         ;
     std::string str = ss.str();
@@ -80,13 +109,14 @@ void SGLM_View::set_zero()
 
 
 template<typename T>
-std::string SGLM_View::FormatArray(const T* tt, int num, int precision )
+std::string SGLM_View::FormatArray(const T* tt, int num, int precision, int width, char delim )
 {
     std::stringstream ss;
     for(int i=0; i < num; i++) {
-        ss << " " << std::setw(10);
+        if(width > 0) ss << " " << std::setw(width);
         if(precision >= 0) ss << std::fixed << std::setprecision(precision);
         ss << tt[i];
+        if(delim != '\0' && i < num - 1 ) ss << delim ;
     }
     return ss.str();
 }

@@ -132,6 +132,8 @@ Screen
 #include <sstream>
 #include <string>
 #include <array>
+#include <fstream>
+
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -200,14 +202,26 @@ struct SGLM_Setting
 {
     int value = 0;
     int num_modes = 2; // Default for boolean-like toggles
+    bool flip = false ;
+    bool stop = false ;
 
     void next() { value = (value + 1) % num_modes; }
+    std::string desc() const ;
+
 
     // Helper to keep existing bool logic working where needed
     bool operator!() const { return value == 0; }
     explicit operator bool() const { return value != 0; }
 };
 
+
+inline std::string SGLM_Setting::desc() const
+{
+    std::stringstream ss;
+    ss << std::setw(2) << value << " " << ( flip ? "FLIP" : "-" ) ;
+    std::string str = ss.str();
+    return str ;
+}
 
 
 
@@ -219,16 +233,16 @@ SGLM_Toggle
 
 struct SYSRAP_API SGLM_Toggle
 {
-    SGLM_Setting zoom{0, 2}; // Z
-    SGLM_Setting tmin{0, 2}; // N
-    SGLM_Setting tmax{0, 2}; // F
-    SGLM_Setting lrot{0, 2}; // R
-    SGLM_Setting cuda{0, 2}; // C
-    SGLM_Setting norm{0, 2}; // U
-    SGLM_Setting time{0, 2}; // T
-    SGLM_Setting spin{0, 5}; // L
-    SGLM_Setting ifly{0, 2}; // ?
-    SGLM_Setting stop{0, 2}; // SPACE
+    SGLM_Setting zoom{0, 2, false, false}; // Z
+    SGLM_Setting tmin{0, 2, false, false}; // N
+    SGLM_Setting tmax{0, 2, false, false}; // F
+    SGLM_Setting lrot{0, 2, false, false}; // R
+    SGLM_Setting cuda{0, 2, false, false}; // C
+    SGLM_Setting norm{0, 2, false, false}; // U
+    SGLM_Setting time{0, 2, false, false}; // T
+    SGLM_Setting spin{0, 5, false, false}; // L
+    SGLM_Setting ifly{0, 5, false, false}; // J
+    SGLM_Setting stop{0, 2, false, false}; // SPACE
 
     std::string desc() const;
 };
@@ -237,16 +251,16 @@ inline std::string SGLM_Toggle::desc() const
 {
     std::stringstream ss;
     ss << "SGLM_Toggle::desc"
-       << " zoom: " << zoom.value
-       << " tmin: " << tmin.value
-       << " tmax: " << tmax.value
-       << " lrot: " << lrot.value
-       << " cuda: " << cuda.value
-       << " norm: " << norm.value
-       << " time: " << time.value
-       << " spin: " << spin.value
-       << " ifly: " << ifly.value
-       << " stop: " << stop.value
+       << " zoom: " << zoom.desc()
+       << " tmin: " << tmin.desc()
+       << " tmax: " << tmax.desc()
+       << " lrot: " << lrot.desc()
+       << " cuda: " << cuda.desc()
+       << " norm: " << norm.desc()
+       << " time: " << time.desc()
+       << " spin: " << spin.desc()
+       << " ifly: " << ifly.desc()
+       << " stop: " << stop.desc()
        ;
     std::string str = ss.str();
     return str ;
@@ -290,10 +304,13 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kTITLE = "TITLE" ;
     static constexpr const char* kWH = "WH" ;
     static constexpr const char* kCE = "CE" ;
+
+    static constexpr const char* kELU = "ELU" ;
     static constexpr const char* kEYE = "EYE" ;
     static constexpr const char* kLOOK = "LOOK" ;
-    static constexpr const char* kVIEW = "VIEW" ;
     static constexpr const char* kUP = "UP" ;
+
+    static constexpr const char* kVIEW = "VIEW" ;
     static constexpr const char* kZOOM = "ZOOM" ;
     static constexpr const char* kTMIN = "TMIN" ;
     static constexpr const char* kTMAX = "TMAX" ;
@@ -434,6 +451,9 @@ struct SYSRAP_API SGLM : public SCMD
     void tcam();
     void toggle_traceyflip();
     void toggle_rendertype();
+    static constexpr const char* LOG_ELU = "SGLM_elu.log" ;
+    static bool Append(const char* path, const char* txt);
+    void log_elu();
 
     static void Command(const SGLM_Parse& parse, SGLM* gm, bool dump);
     int command(const char* cmd);
@@ -663,7 +683,7 @@ struct SYSRAP_API SGLM : public SCMD
 
     template <typename T> static T ato_( const char* a );
     template <typename T> static void Str2Vector( std::vector<T>& vec, const char* uval );
-    template <typename T> static void GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
+    template <typename T> static bool GetEVector(std::vector<T>& vec, const char* key, const char* fallback );
     template <typename T> static std::string Present(std::vector<T>& vec);
     template <typename T> static std::string Present(const T* tt, int num);
 
@@ -685,6 +705,8 @@ struct SYSRAP_API SGLM : public SCMD
     static glm::ivec2 EVec2i(const char* key, const char* fallback);
     static glm::vec3 EVec3(const char* key, const char* fallback);
     static glm::vec4 EVec4(const char* key, const char* fallback, float missing );
+    static glm::vec4 ELU_EVec4(const char* elu_key, const char* vec_key, const char* fallback, float missing);
+
     static glm::vec4 SVec4(const char* str, float missing );
     static glm::vec3 SVec3(const char* str, float missing );
 
@@ -739,9 +761,10 @@ glm::ivec2 SGLM::WH = EVec2i(kWH,"1920,1080") ;
 
 glm::vec4  SGLM::CE = EVec4(kCE,"0,0,0,100", 100.f) ;
 
-glm::vec4  SGLM::EYE  = EVec4(kEYE, "-1,-1,0,1", 1.f) ;
-glm::vec4  SGLM::LOOK = EVec4(kLOOK, "0,0,0,1" , 1.f) ;
-glm::vec4  SGLM::UP  =  EVec4(kUP,   "0,0,1,0" , 0.f) ;
+// 9 element ELU trumps separate EYE, LOOK, UP
+glm::vec4  SGLM::EYE  = ELU_EVec4(kELU, kEYE, "-1,-1,0,1", 1.f) ;
+glm::vec4  SGLM::LOOK = ELU_EVec4(kELU, kLOOK, "0,0,0,1" , 1.f) ;
+glm::vec4  SGLM::UP  =  ELU_EVec4(kELU, kUP,   "0,0,1,0" , 0.f) ;
 
 const char* SGLM::VIEW = ssys::getenvvar(kVIEW, nullptr);
 
@@ -1036,11 +1059,31 @@ SGLM::key_pressed_action
 
 Currently only from SGLFW::key_repeated
 
+
+Navigation speed can be controlled by pressing the below modifier keys while
+pressing navigation keys WASDQE.
+
++-----------------+--------------+
+| modifier keys   |  factor      |
++=================+==============+
+| alt+shift       |  10          |
++-----------------+--------------+
+| shift           |   7          |
++-----------------+--------------+
+| alt             |   5          |
++-----------------+--------------+
+| no modifiers    |   1          |
++-----------------+--------------+
+
 **/
 
 void SGLM::key_pressed_action( unsigned modifiers )
 {
-    float factor = SGLM_Modifiers::IsShift(modifiers) ? 5.f : 1.f ;
+    bool alt_shift = SGLM_Modifiers::IsAltShift(modifiers) ;
+    bool alt       = SGLM_Modifiers::IsAlt(modifiers) ;
+    bool shift     = SGLM_Modifiers::IsShift(modifiers) ;
+
+    float factor = alt_shift ? 10.f : ( shift ? 7.f : ( alt ? 5.f :  1.f )) ;
     float speed = factor*extent()/100. ;
 
     if(SGLM_Modnav::IsW(modifiers)) eyeshift.z += speed ;
@@ -1119,6 +1162,44 @@ void SGLM::toggle_rendertype()
     rendertype = !rendertype ;
 }
 
+
+bool SGLM::Append(const char* path, const char* txt)  // static
+{
+    std::ofstream fp(path, std::ios::app);
+    if(!fp.is_open())
+    {
+        std::cerr << "SGLM::Append Error: Could not open file " << ( path ? path : "-" ) << "\n" ;
+        return false;
+    }
+
+    fp << txt << "\n" ;
+
+    if (fp.fail())
+    {
+        std::cerr << "SGLM::Append : Error: Failed to write to " << ( path ? path : "-" ) << "\n" ;
+        return false;
+    }
+
+    fp.close();
+    return true;
+}
+
+
+/**
+SGLM::log_elu
+---------------
+
+Invoked from SGLFW.h interface on pressing the "V" key
+
+**/
+
+void SGLM::log_elu()
+{
+    std::string elu = view.getELU();
+    if(!Append( LOG_ELU, elu.c_str() )) std::cerr << "SGLM::log_elu FAIL \n" ;
+}
+
+
 /**
 SGLM::Command
 --------------
@@ -1184,6 +1265,7 @@ void SGLM::Command(const SGLM_Parse& parse, SGLM* gm, bool dump)  // static
         else if(strcmp(op,"tcam")==0) gm->tcam();
         else if(strcmp(op,"traceyflip")==0) gm->toggle_traceyflip();
         else if(strcmp(op,"rendertype")==0) gm->toggle_rendertype();
+        else if(strcmp(op,"log-elu")==0) gm->log_elu();
         else
         {
             std::cout << "SGLM::Command IGNORING op [" << ( op ? op : "-" ) << "]" << std::endl;
@@ -1636,6 +1718,11 @@ void SGLM::initView()
     {
         interpolated_view = SGLM_InterpolatedView::Load(VIEW) ;
         interpolated_view->setControlledView(&view);
+        std::cout
+            << "SGLM::initView interpolated_view.detail[\n"
+            << interpolated_view->detail()
+            << "SGLM::initView interpolated_view.detail]\n"
+            ;
     }
 
     std::cout
@@ -1762,6 +1849,8 @@ void SGLM::avoidDegenerateBasisByChangingUp()
         {
             std::cout
                 << "SGLM::avoidDegenerateBasisByChangingUp"
+                << " eye " << glm::to_string(eye)
+                << " look " << glm::to_string(look)
                 << " gaze " << glm::to_string(gaze)
                 << " up " << glm::to_string(up)
                 << " GazeCrossUp " << gcu
@@ -1775,6 +1864,8 @@ void SGLM::avoidDegenerateBasisByChangingUp()
     bool gcu_ok = gcu > eps ;
     if(!gcu_ok) std::cerr
         << "SGLM::avoidDegenerateBasisByChangingUp"
+        << " eye " << glm::to_string(eye)
+        << " look " << glm::to_string(look)
         << " gaze " << glm::to_string(gaze)
         << " up " << glm::to_string(up)
         << " GazeCrossUp " << gcu
@@ -2347,9 +2438,10 @@ This is invoked from SGLM::renderloop_head, use SGLFW.h "L" key to toggle betwee
 
 void SGLM::increment_spin()
 {
-    if(toggle.spin.value == 0 ) return ;
+    if(toggle.spin.value == 0 || toggle.spin.stop ) return ;
 
-    float spin_speed = spin_degrees_per_frame*float(toggle.spin.value) ;
+    float spin_flip  = toggle.spin.flip ? -1.f : 1.f ;
+    float spin_speed = spin_flip*spin_degrees_per_frame*float(toggle.spin.value) ;
 
     glm::quat step_spin = glm::angleAxis(glm::radians(spin_speed), q_spin_axis );
 
@@ -2375,15 +2467,22 @@ Configure the renderer to load that flight path with::
 
 Then kick off the ifly animation by pressing the "J" key.
 
+
+* TODO: animation speed and direction control, slicing elu arrays
+
+  * direction best controlled with modifier key for orthogonality
+
+* TODO: key that writes ELU commandlines to a logfile for lite-weight viewpoint bookmarking
+
 **/
 
 
 void SGLM::increment_ifly()
 {
-    if(toggle.ifly.value == 0 ) return ;
+    if(toggle.ifly.value == 0 || toggle.ifly.stop ) return ;
     if(interpolated_view == nullptr) return ;
 
-    interpolated_view->tick();
+    interpolated_view->tick(toggle.ifly.value, toggle.ifly.flip );
     update();
 }
 
@@ -2981,17 +3080,34 @@ template void SGLM::Str2Vector(std::vector<int>& vec,      const char* uval );
 template void SGLM::Str2Vector(std::vector<unsigned>& vec, const char* uval );
 
 
+/**
+SGLM::GetEVector
+-----------------
+
+When the *key* envvar does not exist and fallback is nullptr this
+exits early returning false.
+
+**/
+
 template <typename T>
-inline void SGLM::GetEVector(std::vector<T>& vec, const char* key, const char* fallback )  // static
+inline bool SGLM::GetEVector(std::vector<T>& vec, const char* key, const char* fallback )  // static
 {
     const char* sval = getenv(key);
+    if(sval == nullptr && fallback == nullptr) return false ;
+
     const char* uval = sval ? sval : fallback ;
     Str2Vector(vec, uval);
+    return true ;
 }
 
-template void SGLM::GetEVector(std::vector<float>& vec, const char* key, const char* fallback ) ;
-template void SGLM::GetEVector(std::vector<int>& vec, const char* key, const char* fallback ) ;
-template void SGLM::GetEVector(std::vector<unsigned>& vec, const char* key, const char* fallback ) ;
+template bool SGLM::GetEVector(std::vector<float>& vec, const char* key, const char* fallback ) ;
+template bool SGLM::GetEVector(std::vector<int>& vec, const char* key, const char* fallback ) ;
+template bool SGLM::GetEVector(std::vector<unsigned>& vec, const char* key, const char* fallback ) ;
+
+
+
+
+
 
 
 
@@ -3049,6 +3165,98 @@ inline glm::vec4 SGLM::EVec4(const char* key, const char* fallback, float missin
     for(int i=0 ; i < 4 ; i++) v[i] = i < int(vec.size()) ? vec[i] : missing   ;
     return v ;
 }
+
+
+/**
+SGLM::ELU_EVec4
+----------------
+
+This is invoked by the three EYE, LOOK and UP statics that set the initial
+viewpoint. When the ELU envvar is present it must contains 9 elements
+that override any EYE, LOOK, UP envvars, eg::
+
+   EYE=0,-1,0 LOOK=0,0,0 UP=0,0,1 cxr_min.sh   # standard commandline
+   ELU=0,-1,0,0,0,0,0,0,1         cxr_min.sh   # shortform
+
+
+elu_key:kELU
+    envvar key, typically "ELU"
+
+vec_key:kEYE,kLOOK,kUP
+    envvar key, typically either "EYE", "LOOK" or "UP"
+
+fallback
+    default values when the vec_key envvar is not provided
+
+missing
+    value used when comma delimited vec string has missing elements
+
+**/
+
+
+inline glm::vec4 SGLM::ELU_EVec4(const char* elu_key, const char* vec_key, const char* fallback, float missing) // static
+{
+    glm::vec4 ret = {} ;
+
+    std::vector<float> elu ;
+    bool have_elu = SGLM::GetEVector<float>(elu, elu_key, nullptr);
+
+    std::vector<float> vec ;
+    bool have_vec = SGLM::GetEVector<float>(vec,  vec_key, fallback );
+
+    int elu_offset = -1 ;
+    float elu_missing = -1.f ;
+    if(     strcmp(vec_key,kEYE)==0)
+    {
+        elu_offset = 0 ;
+        elu_missing = 1.f ;  // position
+    }
+    else if(strcmp(vec_key,kLOOK)==0)
+    {
+        elu_offset = 3 ;
+        elu_missing = 1.f ;  // position
+    }
+    else if(strcmp(vec_key,kUP)==0)
+    {
+        elu_offset = 6 ;
+        elu_missing = 0.f ; // direction
+    }
+
+
+    if(have_elu)
+    {
+        bool have_elu_9 = elu.size() == 9 ;
+        if(!have_elu_9) std::cerr
+          << "SGLM::ELU_EVec4"
+          << " have_elu_9 " << ( have_elu_9 ? "YES" : "NO " )
+          << " elu.size " << elu.size()
+          << " elu_key " << ( elu_key ? elu_key : "-" )
+          << " WHEN elu is provided 9 elements are required for eye,look,up "
+          << "\n"
+          ;
+        assert(have_elu_9);
+        assert(elu_offset == 0 || elu_offset == 3 || elu_offset == 6);
+        assert(elu_missing == 0.f || elu_missing == 1.f );
+        for(int i=0 ; i < 3 ; i++) ret[i] = elu[elu_offset+i] ;
+        ret[3] = elu_missing ;
+    }
+    else if( have_vec )
+    {
+        for(int i=0 ; i < 4 ; i++) ret[i] = i < int(vec.size()) ? vec[i] : missing   ;
+    }
+
+    return ret ;
+}
+
+
+
+
+
+
+
+
+
+
 inline glm::vec4 SGLM::SVec4(const char* str, float missing) // static
 {
     std::vector<float> vec ;

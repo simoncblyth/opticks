@@ -22,6 +22,8 @@ struct SGLM_Modifiers
     static bool IsAlt(unsigned modifiers);
     static bool IsSuper(unsigned modifiers);
 
+    static bool IsAltShift(unsigned modifiers);
+
     static std::string Desc(unsigned modifiers);
 };
 
@@ -31,6 +33,9 @@ inline bool SGLM_Modifiers::IsShift(  unsigned modifiers) { return 0 != (modifie
 inline bool SGLM_Modifiers::IsControl(unsigned modifiers) { return 0 != (modifiers & MOD_CONTROL) ; }
 inline bool SGLM_Modifiers::IsAlt(    unsigned modifiers) { return 0 != (modifiers & MOD_ALT) ; }
 inline bool SGLM_Modifiers::IsSuper(  unsigned modifiers) { return 0 != (modifiers & MOD_SUPER) ; }
+
+inline bool SGLM_Modifiers::IsAltShift( unsigned modifiers) { return IsAlt(modifiers) && IsShift(modifiers) ; }
+
 
 inline std::string SGLM_Modifiers::Desc(unsigned modifiers)
 {
