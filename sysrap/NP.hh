@@ -3487,6 +3487,7 @@ inline bool NP::LooksLikeSliceIndexStringIsEmpty(const char* _sli ) //
     if(_sli == nullptr) return true ;
     if(strcmp(_sli, "") == 0) return true ;
     if(strcmp(_sli, "[]") == 0) return true ;
+    if(strcmp(_sli, "[:]") == 0) return true ;
     return false ;
 }
 
@@ -7887,8 +7888,10 @@ inline std::ifstream* NP::load_header(const char* _path, const char* _sli)
     std::getline(*fp, _hdr );
     _hdr += '\n' ;
 
-    bool data_resize = !nodata && _sli == nullptr ; // DEFER data resize when active slice
-    decode_header(data_resize);
+    bool no_slice = LooksLikeSliceIndexStringIsEmpty( _sli );
+    bool do_data_resize = !nodata && no_slice ; 
+    // when there is an active slice the data resize is deferred
+    decode_header(do_data_resize);
 
     return fp ;
 }

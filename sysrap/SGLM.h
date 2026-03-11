@@ -205,7 +205,16 @@ struct SGLM_Setting
     bool flip = false ;
     bool stop = false ;
 
-    void next() { value = (value + 1) % num_modes; }
+    static int Modulus(int a, int b)
+    {
+        // treat -ve *a* as wraparound, like python does
+        int r = a % b;
+        return r >= 0 ? r : r + b;
+    }
+
+    void next() { value = Modulus( value + 1, num_modes); }
+    void prev() { value = Modulus( value - 1, num_modes); }
+
     std::string desc() const ;
 
 
@@ -311,6 +320,8 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kUP = "UP" ;
 
     static constexpr const char* kVIEW = "VIEW" ;
+    static constexpr const char* kVIEWSLICE = "VIEWSLICE" ;
+
     static constexpr const char* kZOOM = "ZOOM" ;
     static constexpr const char* kTMIN = "TMIN" ;
     static constexpr const char* kTMAX = "TMAX" ;
@@ -349,6 +360,7 @@ struct SYSRAP_API SGLM : public SCMD
     static glm::vec4 UP ;
 
     static const char* VIEW ;
+    static const char* VIEWSLICE ;
 
 
 
@@ -493,6 +505,7 @@ struct SYSRAP_API SGLM : public SCMD
     void  initView();
     SGLM_View view = {} ;
     SGLM_InterpolatedView* interpolated_view = nullptr ;
+    int interpolated_view_idx = -1 ;
 
 
     void updateView();
@@ -767,6 +780,7 @@ glm::vec4  SGLM::LOOK = ELU_EVec4(kELU, kLOOK, "0,0,0,1" , 1.f) ;
 glm::vec4  SGLM::UP  =  ELU_EVec4(kELU, kUP,   "0,0,1,0" , 0.f) ;
 
 const char* SGLM::VIEW = ssys::getenvvar(kVIEW, nullptr);
+const char* SGLM::VIEWSLICE = ssys::getenvvar(kVIEWSLICE, nullptr);
 
 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1");
@@ -1712,11 +1726,10 @@ void SGLM::initView()
     view.LOOK = LOOK ;
     view.UP = UP ;
 
-
     bool load_interpolated_view = VIEW && sstr::EndsWith(VIEW,".npy") ;
     if(load_interpolated_view)
     {
-        interpolated_view = SGLM_InterpolatedView::Load(VIEW) ;
+        interpolated_view = SGLM_InterpolatedView::Load(VIEW, VIEWSLICE) ;
         interpolated_view->setControlledView(&view);
         std::cout
             << "SGLM::initView interpolated_view.detail[\n"
@@ -2106,6 +2119,9 @@ void SGLM::updateTitle()
        << " sglm.e(c2w*ori) [" << Present(e) << "]"
        << " " << TITLE
        ;
+
+    if(interpolated_view_idx > -1) ss << " ifly_idx " << interpolated_view_idx ;
+
     title = ss.str();
 }
 
@@ -2482,7 +2498,7 @@ void SGLM::increment_ifly()
     if(toggle.ifly.value == 0 || toggle.ifly.stop ) return ;
     if(interpolated_view == nullptr) return ;
 
-    interpolated_view->tick(toggle.ifly.value, toggle.ifly.flip );
+    interpolated_view_idx = interpolated_view->tick(toggle.ifly.value, toggle.ifly.flip );
     update();
 }
 

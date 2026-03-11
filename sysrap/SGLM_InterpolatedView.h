@@ -1,14 +1,31 @@
 #pragma once
+/**
+SGLM_InterpolatedView.h
+========================
+
+To slow down the animation use higher values of STEPS,
+the default of 100 corresponds to a fractional increnment of 0.01::
+
+    export SGLM_InterpolatedView__STEPS=300
+
+Example commandline::
+
+     FULLSCREEN=0 VIEW=/tmp/tilted_rings_2.npy VIEWSLICE=[180:] SGLM_InterpolatedView__STEPS=1000 cxr_min.sh
+
+
+**/
 
 #include <vector>
 #include "SGLM_View.h"
+#include "ssys.h"
+
 #include <glm/gtx/spline.hpp>
 
 
 struct SGLM_InterpolatedView
 {
-    static SGLM_InterpolatedView* Load(const char* path);
-    void load( const char* path );
+    static SGLM_InterpolatedView* Load(const char* path, const char* sli=nullptr);
+    void load( const char* path, const char* sli );
     void import_( const NP* views );
 
 
@@ -24,6 +41,7 @@ struct SGLM_InterpolatedView
     std::vector<SGLM_View> vv = {} ;
 
 
+    static constexpr const char* SGLM_InterpolatedView__STEPS = "SGLM_InterpolatedView__STEPS" ;
     SGLM_InterpolatedView();
     void setControlledView( SGLM_View* view );
 
@@ -32,7 +50,7 @@ struct SGLM_InterpolatedView
     std::string detail() const ;
 
 
-    void tick(int ifly_value, bool ifly_flip);  // primary method, invoking the below
+    int tick(int ifly_value, bool ifly_flip);  // primary method, invoking the below
 
     void setPair(int i, int j);
     static int Modulus_Positive(int a, int b);
@@ -43,16 +61,25 @@ struct SGLM_InterpolatedView
 };
 
 
-inline SGLM_InterpolatedView* SGLM_InterpolatedView::Load(const char* path)
+inline SGLM_InterpolatedView* SGLM_InterpolatedView::Load(const char* path, const char* sli )
 {
     SGLM_InterpolatedView* iv = new SGLM_InterpolatedView ;
-    iv->load(path);
+    iv->load(path, sli);
     return iv ;
 }
 
-inline void SGLM_InterpolatedView::load(const char* path)
+inline void SGLM_InterpolatedView::load(const char* path, const char* sli)
 {
-    const NP* views = NP::Load(path);
+    const NP* views = sli == nullptr ? NP::Load(path) : NP::LoadSlice(path, sli) ;
+    std::cout
+        << "SGLM_InterpolatedView::load"
+        << " path[" << ( path ? path : "-" ) << "] "
+        << " sli[" << ( sli ? sli : "-" ) << "] "
+        << " views[" << ( views ? views->sstr() : "-" ) << "] "
+        << "\n"
+        ;
+
+
     import_(views);
 }
 
@@ -68,18 +95,14 @@ inline void SGLM_InterpolatedView::import_(const NP* _views)
 }
 
 
-
-
-
-
 inline SGLM_InterpolatedView::SGLM_InterpolatedView()
     :
     m_view(nullptr),
     m_i(0),
     m_j(1),
     m_f(0.f),
-    m_df0(0.01),
-    m_df(0.01),
+    m_df0(1.f/ssys::getenvint(SGLM_InterpolatedView__STEPS, 100)),
+    m_df(m_df0),
     m_ifly_value(0)
 {
 }
@@ -103,6 +126,7 @@ inline std::string SGLM_InterpolatedView::desc() const
     size_t num_v = vv.size();
     std::stringstream ss ;
     ss << "IV[" << num_v << "] " << ( m_view ? m_view->desc() : "no-controlled-view" ) ;
+    ss << " df0 " << m_df0 ;
     std::string str = ss.str() ;
     return str ;
 }
@@ -123,11 +147,10 @@ inline std::string SGLM_InterpolatedView::detail() const
 SGLM_InterpolatedView::tick
 ----------------------------
 
-TODO: direction+speed control
 
 **/
 
-void SGLM_InterpolatedView::tick(int ifly_value, bool ifly_flip)
+int SGLM_InterpolatedView::tick(int ifly_value, bool ifly_flip)
 {
     m_ifly_value = ifly_value ;
     assert( m_ifly_value != 0 );
@@ -148,6 +171,7 @@ void SGLM_InterpolatedView::tick(int ifly_value, bool ifly_flip)
         m_f += m_df ;
     }
     updateControlledView();
+    return m_i ;
 }
 
 

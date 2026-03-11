@@ -162,7 +162,9 @@ I
    --snap-local : taking a screenshot
 
 J
-   toggle between ifly animation modes changing speed and switching off animation
+   increment ifly animation mode value increasing speed until wraparound to zero value with no animation
+shift+J
+   decrement ifly animation mode value decreasing speed until reach zero value with no animation
 alt+J
    reverses ifly animation direction
 ctrl+J
@@ -172,8 +174,9 @@ K
    save screen shot [--snap]
 
 L
-   toggle between world spin modes
-   (formerly saved Y inverted screen shot [--snap-inverted])
+   increment spin animation mode value increasing speed until wraparound to zero value with no animation
+shift+L
+   decrement spin animation mode value decreasing speed until reach zero value with no animation
 alt+L
    reverse spin rotation animation direction
 ctrl+L
@@ -585,15 +588,19 @@ inline void SGLFW::key_pressed(unsigned key)
     // keys that may meaningfully be pressed together with modifiers
     if( key == GLFW_KEY_J )
     {
-        gm.toggle.ifly.next();
-        if(modifiers_alt)  gm.toggle.ifly.flip = !gm.toggle.ifly.flip ;  // pressing alt+J reverses interpolated animation direction
-        if(modifiers_ctrl) gm.toggle.ifly.stop = !gm.toggle.ifly.stop ;  // pressing ctrl+J pauses/resumes interpolation animation
+        if(modifiers_none)  gm.toggle.ifly.next();
+        if(modifiers_shift) gm.toggle.ifly.prev();
+        if(modifiers_alt)   gm.toggle.ifly.flip = !gm.toggle.ifly.flip ;  // pressing alt+J reverses interpolated animation direction
+        if(modifiers_ctrl)  gm.toggle.ifly.stop = !gm.toggle.ifly.stop ;  // pressing ctrl+J pauses/resumes interpolation animation
+        if(modifiers_alt || modifiers_ctrl) gm.toggle.ifly.value = 1 ;   // following use of a modifier, change to lowest animation speed
     }
     else if( key == GLFW_KEY_L )
     {
-        gm.toggle.spin.next();
+        if(modifiers_none)  gm.toggle.spin.next();
+        if(modifiers_shift) gm.toggle.spin.prev();
         if(modifiers_alt)  gm.toggle.spin.flip = !gm.toggle.spin.flip ;  // pressing alt+L reverses spin rotation animation direction
         if(modifiers_ctrl) gm.toggle.spin.stop = !gm.toggle.spin.stop ;  // pressing ctrl+L pauses/resumes spin rotation animation
+        if(modifiers_alt || modifiers_ctrl) gm.toggle.spin.value = 1 ;   // following use of a modifier, change to lowest animation speed
     }
 
 
