@@ -3,15 +3,24 @@
 SGLM_InterpolatedView.h
 ========================
 
+When configured SGLM::initView populates an SGLM_InterpolatedView instance
+from a array of EYE,LOOK,UP vectors. The SGLM_InterpolatedView::tick method
+does a fractional interpolation between the views that progresses from view
+to view. This provides a fly around the geometry animation that is precisely
+controlled. For a real world example of creating the ELU flightpath
+array see::
+
+    ~/o/sysrap/tests/tilted_rings_2.py
+
+
 To slow down the animation use higher values of STEPS,
-the default of 100 corresponds to a fractional increnment of 0.01::
+the default of 100 corresponds to a fractional increment of 0.01::
 
     export SGLM_InterpolatedView__STEPS=300
 
 Example commandline::
 
      FULLSCREEN=0 VIEW=/tmp/tilted_rings_2.npy VIEWSLICE=[180:] SGLM_InterpolatedView__STEPS=1000 cxr_min.sh
-
 
 **/
 
@@ -207,8 +216,20 @@ void SGLM_InterpolatedView::setPair(int i, int j)
 }
 
 
+/**
+SGLM_InterpolatedView::updateControlledView
+----------------------------------------------
 
+* Catmull-Rom spline interpolation between EYE points gives a smoother ride than linear interpolation
+  and has the advantage of passing exactly through the provided points
 
+* Quaternion SLERP interpolates along great-arc paths on rotation sphere
+  yielding more natural constant angular velocity transitions
+
+* In practice this means that even without carefully picking input EYE, LOOK, UP
+  viewpoints you can get quite natural looking viewpoint animation.
+
+**/
 
 void SGLM_InterpolatedView::updateControlledView()
 {

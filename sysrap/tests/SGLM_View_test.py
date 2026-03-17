@@ -3,6 +3,11 @@
 
 ~/o/sysrap/tests/SGLM_View_test.sh prep
 
+See also:
+
+~/o/sysrap/tests/tilted_rings_2.py
+
+
 """
 import os
 import numpy as np

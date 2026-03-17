@@ -1,4 +1,12 @@
 #pragma once
+/**
+SGLM_View.h
+============
+
+This is used from SGLM.h and SGLM_InterpolatedView.h
+
+
+**/
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include "NP.hh"
