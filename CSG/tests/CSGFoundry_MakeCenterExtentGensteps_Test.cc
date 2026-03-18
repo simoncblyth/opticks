@@ -24,15 +24,19 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    SEvt::Create_ECPU() ;
+    SEvt* sev = SEvt::Create_ECPU() ;
 
     CSGFoundry* fd = CSGFoundry::Load();
     const stree* tree = fd->getTree();
+
+
 
 #ifdef WITH_OLD_FRAME
     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame
     NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ;
 #else
+    const SSim*  sim = fd->getSim();
+    sev->setSim(sim);   // THIS IS REQUIRED BEFORE SEvt::AddGenstep
     sfr fr = tree->get_frame_moi();
     NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ;
 #endif

@@ -271,6 +271,16 @@ This and the following accessors require serialization to populate top
 std::string SSim::desc() const { return top ? top->desc() : "-" ; }
 std::string SSim::brief() const { return top ? top->brief() : "-" ; }
 
+
+/**
+SSim::get
+----------
+
+*relp* (default "stree/standard") is used to pick the NPFold from which the *k* array is accessed.
+
+**/
+
+
 const NP* SSim::get(const char* k) const
 {
     assert( top );
@@ -293,7 +303,10 @@ void SSim::set(const char* k, const NP* a)
 }
 
 
-const NP* SSim::get_bnd() const {  return get(snam::BND);  }
+const NP* SSim::get_bnd() const {      return get(snam::BND);  }
+const NP* SSim::get_optical() const {  return get(snam::OPTICAL);  }
+const NP* SSim::get_propcom() const {  return get(snam::PROPCOM);  }
+const NP* SSim::get_icdf() const {     return get(snam::ICDF);  }
 
 /**
 SSim::getBndName

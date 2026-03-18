@@ -320,8 +320,9 @@ inline QCERENKOV_METHOD void qcerenkov::wavelength_sampled_bndtex(float& wavelen
 
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)
     if(count > 50)
-    printf("//qcerenkov::wavelength_sampled_bndtex idx %6lld sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d matline %d \n",
-              idx , sampledRI, cosTheta, sin2Theta, wavelength, count, gs.matline );
+    printf("//qcerenkov::wavelength_sampled_bndtex idx %6lld sampledRI %7.3f cosTheta %7.3f sin2Theta %7.3f wavelength %7.3f count %d gs.matline %d gs.pos (%7.3f,%7.3f,%7.3f)\n",
+              idx , sampledRI, cosTheta, sin2Theta, wavelength, count, gs.matline, gs.pos.x, gs.pos.y, gs.pos.z );
+
 #endif
 
 }

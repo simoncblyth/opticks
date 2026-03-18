@@ -133,8 +133,8 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     LOG(LEVEL) << rng->desc();
 
-    const NP* optical = ssim->get(snam::OPTICAL);
-    const NP* bnd = ssim->get(snam::BND);
+    const NP* optical = ssim->get_optical();
+    const NP* bnd     = ssim->get_bnd();
 
     if( optical == nullptr && bnd == nullptr )
     {
@@ -153,7 +153,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     QDebug* debug_ = new QDebug ;
     LOG(LEVEL) << debug_->desc() ;
 
-    const NP* propcom = ssim->get(snam::PROPCOM);
+    const NP* propcom = ssim->get_propcom();
     if( propcom )
     {
         LOG(LEVEL) << "[ QProp " ;
@@ -168,7 +168,7 @@ void QSim::UploadComponents( const SSim* ssim  )
     }
 
 
-    const NP* icdf = ssim->get(snam::ICDF);
+    const NP* icdf = ssim->get_icdf();
     if( icdf == nullptr )
     {
         LOG(error) << " icdf null, snam::ICDF " << snam::ICDF ;

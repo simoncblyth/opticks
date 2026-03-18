@@ -93,6 +93,10 @@ public:
     void      set(const char* k, const NP* a) ;
 
     const NP* get_bnd() const ;
+    const NP* get_optical() const ;
+    const NP* get_propcom() const ;
+    const NP* get_icdf() const ;
+
     const char* getBndName(unsigned bidx) const ;
     int getBndIndex(const char* bname) const ;
     const SBnd* get_sbnd() const ;

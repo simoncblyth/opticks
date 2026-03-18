@@ -1172,7 +1172,11 @@ void SEvt::setGeo(const SGeo* cf_)
 SEvt::setSim
 -------------
 
-This aims to remove SEvt::setGeo and CSGFoundry SGeo base
+Invoked from::
+
+    CSGOptiX::Create
+    CSGOptiX::InitEvt
+
 **/
 
 void SEvt::setSim(const SSim* sim_)
@@ -2416,6 +2420,7 @@ sgs SEvt::addGenstep(const NP* a)
 }
 
 
+
 /**
 SEvt::addGenstep
 ------------------
@@ -2436,7 +2441,6 @@ get allocated later.
 
 **/
 
-
 sgs SEvt::addGenstep(const quad6& q_)
 {
     LOG_IF(info, LIFECYCLE) << id() ;
@@ -2446,21 +2450,7 @@ sgs SEvt::addGenstep(const quad6& q_)
     unsigned gentype = q_.gentype();
     unsigned matline_ = q_.matline();
 
-    //bool is_input_photon_gs = OpticksGenstep_::IsInputPhoton(gentype) ;
     bool is_cerenkov_gs = OpticksGenstep_::IsCerenkov(gentype);
-
-
-    /*
-    bool input_photon_with_normal_genstep = input_photon && !is_input_photon_gs  ;
-    LOG_IF(fatal, input_photon_with_normal_genstep)
-        << "input_photon_with_normal_genstep " << input_photon_with_normal_genstep
-        << " MIXING input photons with other gensteps is not allowed "
-        << " for example avoid defining OPTICKS_INPUT_PHOTON when doing simtrace"
-        ;
-    assert( input_photon_with_normal_genstep == false );
-    */
-
-
 
     int gidx = int(gs.size())  ;  // 0-based genstep label index
     bool enabled = GIDX == -1 || GIDX == gidx ;
@@ -2469,14 +2459,18 @@ sgs SEvt::addGenstep(const quad6& q_)
     if(!enabled) q.set_numphoton(0);
     // simplify handling of disabled gensteps by simply setting numphoton to zero for them
 
-
+    int matline = -1 ;
     if(matline_ >= G4_INDEX_OFFSET  )
     {
         unsigned mtindex = matline_ - G4_INDEX_OFFSET ;
-        int matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
-        // cf(SGeo) used for lookup
-        // BUT: that just uses SSim::lookup_mtline
-        // so SEvt should hold sim(SSim) ?
+#ifdef WITH_OLD_FRAME
+        assert(cf);
+        matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
+#else
+        // omitting this caused ~/o/notes/issues/qcerenkov_dumping_following_WITH_OLD_FRAME_due_to_matline_0.rst
+        assert(sim);
+        matline = sim ? sim->lookup_mtline(mtindex) : 0 ;
+#endif
 
         bool bad_ck = is_cerenkov_gs && matline == -1 ;
 
@@ -2496,7 +2490,6 @@ sgs SEvt::addGenstep(const quad6& q_)
             ;
 
         q.set_matline(matline);  // <=== THIS IS CHANGING GS BACK IN CALLERS SCOPE
-
     }
 
 
@@ -2543,6 +2536,7 @@ sgs SEvt::addGenstep(const quad6& q_)
         << " s.offset " << s.offset
         << " s.gentype " << s.gentype
         << " s.desc " << s.desc()
+        << " matline " << matline
         ;
 
     setNumPhoton(tot_photon); // still call when no change for reset hostside_running_resize_done:false
