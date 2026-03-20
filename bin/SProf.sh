@@ -24,9 +24,6 @@ Usage example::
 
 
 
-
-
-
 Workflow:
 
 0. cd to a logroot directory or set LOGROOT envvar
@@ -38,6 +35,28 @@ Workflow:
 
 
 The functionality of this script formerly part of ~/j/zhenning_double_muon/detsim.sh
+
+
+
+
+Examples::
+
+    A[blyth@localhost detsim]$ pwd   # LOGROOT defaults to invoking directory
+    /data1/blyth/tmp/j/zhenning_double_muon/detsim
+
+    A[blyth@localhost detsim]$ T0="2025-12-04 16:00" T1="2025-12-04 18:00" ~/o/bin/SProf.sh proi
+    Identity                                             Start(s)  Duration(s)     Sub PREL→POST(s)     Sub POST→DOWN(s)    Sub TAIL→RESET(s)    VM(MB)  RSS(MB)  Comment
+    ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    hit/A000_QSim                                         106.466   215.560469            22.996241             1.949322           190.446287   32168.83  7971.96  # numGenstepCollected=583922,numPhotonCollected=148793197,numHit=27471928
+    hitlite/A000_QSim                                     106.462   170.226838            23.108319             0.484299           146.471936   32499.61  5361.86  # numGenstepCollected=583922,numPhotonCollected=148793197,numHit=27471928
+    hitlitemerged/A000_QSim                               107.263    23.835564            23.097717             0.181023             0.404235   87284.29  4988.84  # numGenstepCollected=583922,numPhotonCollected=148793197,numHit=6409029
+    hitmerged/A000_QSim                                   106.770    30.400825            22.988498             0.543559             6.713401   88292.85  6634.07  # numGenstepCollected=583922,numPhotonCollected=148793197,numHit=6409029  # slice=1,max_slot_M=150
+
+
+
+
+
+
 
 EOU
 }
