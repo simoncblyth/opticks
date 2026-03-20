@@ -27,12 +27,13 @@ class Amdahl(object):
 if __name__ == '__main__':
 
      fig, ax = plt.subplots(1, figsize=SIZE/100. )
-     fig.suptitle("~/opticks/ana/amdahl.sh : Overall Speedup for Parallel Fractions, p ")
+     fig.suptitle("Amdahl 'Law' : Overall Speedup S(p,n) for Parallel Fraction p and Parallelized Speedup n")
 
      F = np.linspace( 1, 10000 , 10000 )  
-     PARALLEL_FRACTION = np.array([0.99, 0.985, 0.98, 0.97, 0.95, 0.90])
+     PARALLEL_FRACTION = np.array([0.995, 0.985, 0.975, 0.965, 0.955 ])
 
-     COLORS = ["red","green","blue", "cyan", "magenta", "black", "yellow" ]
+     #COLORS = ["red","green","blue", "cyan", "magenta", "black", "yellow", "pink" ]
+     COLORS = ["red","green","blue", "cyan", "magenta", "black", "yellow", "pink" ]
 
      for i, p in enumerate(PARALLEL_FRACTION): 
          color = COLORS[i%len(COLORS)]
@@ -42,11 +43,21 @@ if __name__ == '__main__':
 
      ax.axvspan(100, 1000, alpha=0.1, color='blue')
      ax.set_xscale('log') 
-     ax.set_ylabel("Overall Speedup (para frac. 0.90 -> 0.99)", fontsize=20 )
+     ax.set_ylabel(f"Overall Speedup (para frac. {PARALLEL_FRACTION[-1]} -> {PARALLEL_FRACTION[0]})", fontsize=20 )
      ax.set_xlabel("Parallelized Speedup", fontsize=20 )
-     ax.legend()
 
+
+     formula = r'$S(p,n) = \frac{1}{(1-p) + \frac{p}{n}}$'
+     plt.figtext(0.34, 0.55, formula, ha='center', fontsize=36, bbox=dict(boxstyle='round', facecolor='lightblue', alpha=0.5))
+
+
+     ax.legend()
      fig.show()
+
+     path = os.path.expandvars("$HOME/simoncblyth.github.io/env/presentation/figs/amdahl/amdahl.png")
+     print(f"save fig to {path}")
+     plt.savefig(path)
+
     
 
 
