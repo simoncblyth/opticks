@@ -8,7 +8,9 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
-| v0.5.9  |  59 | 2026/01/26 | now that MPMT is merged into JUNOSW, can ordinarilly set WITH_MPMT                                                                                            |
+| v0.6.0  | 60  | 2026/03/20 | migrate to sfr.h from old sframe.h, add many alternative stree::get_frame prefixes, interpolated view animation motivated by JUNO EMF debug                   |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| v0.5.9  | 59  | 2026/01/26 | now that MPMT is merged into JUNOSW, can ordinarilly set WITH_MPMT                                                                                            |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.5.8  | 58  | 2026/01/17 | add WITH_CUSTOM4_OLD to get u4 to work with default Custom4 v0.1.8 prior to removing C4TrackInfo template                                                     |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -86,10 +88,34 @@ Snapshot Tags History
 | v0.2.0  | 20  | 2023/10/12 | Resume tagging after 2 years of changes : huge change from prior release                                                                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
+
+v0.6.0 2026/03/20 : migrate to sfr.h from old sframe.h, add many alternative stree::get_frame prefixes, interpolated view animation motivated by JUNO EMF debug
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* 2026-03-20 37cf654bd - include SProf.sh and logparse.py into the release for use from the installed tree
+* 2026-03-20 53ab33cc5 - move SProf.txt profile and log parsing into opticks for easier reuse, reduce some initialization logging
+* 2026-03-18 d292d8bf0 - fix omission that failed to set genstep matline since WITH_OLD_FRAME change on 2026-02-06 : the effect is verbose qcerenkov kernel logging and flat cerenkov wavelength
+* 2026-03-01 e7ac3269a - add SGLM_InterpolatedView.h usage to SGLM.h configured via VIEW .npy array and controlled with J key
+* 2026-02-11 0c6d2f965 - start revival of interpolated views using Catmull-rom splines and quaternion slerp
+* 2026-02-10 6328f6a8c - add sfr::MakeFromAxisQuat using quaternions to avoid degeneracy handling eg theta=0, revive animated world rotation
+* 2026-02-10 363c83733 - add lvid_copyno addressing to stree::get_frame as that is easier to relate to Geant4 geometry code eg MOI=LVID_COPYNO:s_EMF_bar_box_810mm/3305 cxr_min.sh
+* 2026-02-09 10b575c5f - in MortonOverlapScan_test.sh use bbox from the persisted sfr frame rather than the default large placeholder bbox - thrust based sorting of morton codes to find overlaps
+* 2026-02-06 c9cfeaab6 - extend sfr.h to replace sframe.h and hide all use of the old sframe.h behind WITH_OLD_FRAME, all tests passing but strong potential for lurking issues from widespread change eg when return to cxs_min.sh
+* 2026-02-05 2cb9a4d16 - progress on frame transition, migrating to sfr.h from the old sframe.h
+* 2026-02-05 0871afc87 - rationalize stree::get_frame, do some FRAME_TRANSITION in CSGFoundry, add bbox to sfr.h needed for MortonOverlapScan inputs
+* 2026-02-04 7933f8f3c - add stree::get_frame_inst as part of migration from sframe to sfr
+* 2026-02-04 87f76f79a - add bash level integration of MortonOverlapScan with cxt_min.sh : lacks communication of the actual bbox
+* 2026-02-04 e1a7acc92 - experiment with MortonOverlapScan using CUDA Thrust operating on simtrace.npy intersect point clouds to yield suspected overlaps in simtrace_overlap.npy
+* 2026-02-03 c20fb24a9 - add stree::get_global_aabb_sibling_overlaps to narrow the field for simtrace point cloud overlap finding, add MOI=NIDX:NNNN handling via stree::get_frame_nidx
+* 2026-02-02 a9fe43b44 - add CEGS_RADIAL_RANGE to SFrameGenstep that allows increasing genstep grid resolution within selected radial range without exploding genstep count
+* 2026-01-30 62680d77c - add MOI=AXIS:theta_deg,phi_deg,axdist_mm,extent_mm support with sfr::MakeFromAxis enabling definition of global frames positioned axdist_mm along a theta,phi defined axis
+* 2026-01-27 59dfd98e5 - notes on how to implement GPU side localization  notes/issues/better_hit_localization.rst
+
+
 v0.5.9 2026/01/26 : now that MPMT is merged into JUNOSW, can ordinarilly set WITH_MPMT
 ----------------------------------------------------------------------------------------
 
-* * 2026-01-26 09756b2e3 - switch on WITH_MPMT in s_pmt.h now that MPMT has been merged in JUNOSW 
+* 2026-01-26 09756b2e3 - switch on WITH_MPMT in s_pmt.h now that MPMT has been merged in JUNOSW 
 
 v0.5.8 2026/01/17 : add WITH_CUSTOM4_OLD to get u4 to work with default Custom4 v0.1.8 prior to removing C4TrackInfo template
 ------------------------------------------------------------------------------------------------------------------------------
