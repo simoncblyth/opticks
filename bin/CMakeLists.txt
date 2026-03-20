@@ -52,6 +52,8 @@ set(SH_SCRIPTS
    ctest.sh
    cat.py
    SProf.py
+   SProf.sh
+   logparse.py
    opticks-ctest.sh
    f.sh
    f.py
