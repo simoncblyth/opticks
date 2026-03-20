@@ -15,7 +15,7 @@ Deprecation Warning with newer python
 --------------------------------------
 
 == okdist-tarball-extract
-[2025-05-30 17:39:40,429] p1880701 {/home/blyth/opticks/bin/oktar.py:251} INFO - extracting tarball with common prefix el9_amd64_gcc11/Opticks-v0.4.3 into base /data1/blyth/local/opticks_Debug 
+[2025-05-30 17:39:40,429] p1880701 {/home/blyth/opticks/bin/oktar.py:251} INFO - extracting tarball with common prefix el9_amd64_gcc11/Opticks-v0.4.3 into base /data1/blyth/local/opticks_Debug
 /home/blyth/opticks/bin/oktar.py:252: DeprecationWarning: Python 3.14 will, by default, filter extracted tar archives and reject files or modify their metadata. Use the filter argument to control this behavior.
   self.t.extractall(base)
 /data1/blyth/local/opticks_Debug/el9_amd64_gcc11
@@ -263,7 +263,7 @@ okdist-install-metadata()
 
 okdist-install-update()
 {
-   : rerun some things that might have changed since opticks-full 
+   : rerun some things that might have changed since opticks-full
 
    opticks-setup-generate   ## include identifier envvars
 
@@ -377,12 +377,54 @@ okdist-lst(){
 }
 
 
+okdist-stamp-git(){     git -C $(opticks-home) log -1 --format=%ct ; }
+okdist-stamp-source(){  find $(opticks-home)   -type f -printf '%T@\n' | sort -n | tail -1 ; }
+okdist-stamp-prefix(){  find $(opticks-prefix) -type f -printf '%T@\n' | sort -n | tail -1 ; }
+okdist-stamp-delta(){
+    local tsrc=$(okdist-stamp-source)
+    local tpfx=$(okdist-stamp-prefix)
+    local tpfx_tsrc=$(echo $tpfx - $tsrc | bc -l )
+    echo $tpfx_tsrc
+}
+
+okdist-stamp(){
+    local tgit=$(okdist-stamp-git)
+    local tsrc=$(okdist-stamp-source)
+    local tpfx=$(okdist-stamp-prefix)
+    local tdel=$(okdist-stamp-delta)
+
+    local tdel_note=""
+    if [ "${tdel:0:1}" == "-" ]; then
+        tdel_note="-ve tdel (tpfx - tsrc) indicates last build is outdated - MUST REBUILD BEFORE RELEASE"
+    else
+        tdel_note="+ve tdel (tpfx - tsrc) indicates last build still valid - CAN PROCEED TO MAKE RELEASE"
+    fi
+
+    local dgit=$(date -d @$tgit +%c)
+    local dsrc=$(date -d @$tsrc +%c)
+    local dpfx=$(date -d @$tpfx +%c)
+
+    local vv="tgit tsrc tpfx tdel tdel_note dgit dsrc dpfx"
+    local v
+    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
+}
+
+
+
 okdist--(){
 
    if ! ( om- ; om-cmake-prefix-path-check ) ; then
        echo "$BASH_SOURCE : ABORT AS om-cmake-prefix-path-check SHOWS THAT CMAKE_PREFIX_PATH CONTAINS NON-DISTRIBUTABLE PATHS"
        return 1
    fi
+
+   local tdel=$(okdist-stamp-delta)
+   if [ "${tdel:0:1}" == "-" ]; then
+       echo "$BASH_SOURCE : ABORT AS tdel $tdel IS NEGATIVE : SHOWS THE BUILD IS STALE RELATIVE TO SOURCE"
+       okdist-stamp
+       return 1
+   fi
+
 
    okdist-install-update
    okdist-install-extras
