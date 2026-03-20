@@ -2,6 +2,24 @@ CSGFoundry_MakeCenterExtentGensteps_Test
 ==========================================
 
 
+FIXED with lines 38+39 to avoid sim assert when SEvt::AddGenstep
+------------------------------------------------------------------
+
+::
+
+     34 #ifdef WITH_OLD_FRAME
+     35     sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m are set by CSGTarget::getFrame
+     36     NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ;
+     37 #else
+     38     const SSim*  sim = fd->getSim();
+     39     sev->setSim(sim);   // THIS IS REQUIRED BEFORE SEvt::AddGenstep
+     40     sfr fr = tree->get_frame_moi();
+     41     NP* gs0 = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr) ;
+     42 #endif
+     43
+
+
+
 SEvt::addGenstep sim assert
 ----------------------------
 
@@ -14,7 +32,7 @@ SEvt::addGenstep sim assert
                     GEOM : J25_7_2_opticks_Debug
              BASH_SOURCE : /data1/blyth/local/opticks_Debug/bin/CSGTestRunner.sh
               EXECUTABLE : CSGFoundry_MakeCenterExtentGensteps_Test
-                    ARGS : 
+                    ARGS :
     2026-03-18 20:24:51.903 INFO  [4083914] [SEventConfig::SetDevice@1843] SEventConfig::DescDevice
     name                             : NVIDIA RTX 5000 Ada Generation
     totalGlobalMem_bytes             : 33770766336
@@ -27,7 +45,7 @@ SEvt::addGenstep sim assert
     ModeMerge                        : 0
 
     2026-03-18 20:24:51.903 INFO  [4083914] [SEventConfig::SetDevice@1858]  Configured_MaxSlot/M 0 Final_MaxSlot/M 257 HeuristicMaxSlot_Rounded/M 257 changed YES DeviceName NVIDIA RTX 5000 Ada Generation HasDevice YES
-    (export OPTICKS_MAX_SLOT=0 # to use VRAM based HeuristicMaxPhoton) 
+    (export OPTICKS_MAX_SLOT=0 # to use VRAM based HeuristicMaxPhoton)
     2026-03-18 20:24:53.046 INFO  [4083914] [SFrameGenstep::Maybe_Add_PRIOR_SIMTRACE_Genstep@414] with_PRIOR_SIMTRACE NO  prim 4 uprim 4 PRIOR_SIMTRACE_PRIM -2 PRIOR_SIMTRACE - gs_PRIOR_SIMTRACE -
     CSGFoundry_MakeCenterExtentGensteps_Test: /home/blyth/opticks/sysrap/SEvt.cc:2471: sgs SEvt::addGenstep(const quad6&): Assertion `sim' failed.
     /data1/blyth/local/opticks_Debug/bin/CSGTestRunner.sh: line 58: 4083914 Aborted                 (core dumped) $EXECUTABLE $@
@@ -43,7 +61,7 @@ Reproduce
     ok) A[blyth@localhost CSG]$ ~/o/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.sh dbg
     ...
     Reading symbols from CSGFoundry_MakeCenterExtentGensteps_Test...
-    Starting program: /data1/blyth/local/opticks_Debug/lib/CSGFoundry_MakeCenterExtentGensteps_Test 
+    Starting program: /data1/blyth/local/opticks_Debug/lib/CSGFoundry_MakeCenterExtentGensteps_Test
     [Thread debugging using libthread_db enabled]
     Using host libthread_db library "/lib64/libthread_db.so.1".
     [New Thread 0x7ffff01ff000 (LWP 4084373)]
@@ -59,7 +77,7 @@ Reproduce
     ModeMerge                        : 0
 
     2026-03-18 20:28:18.597 INFO  [4084370] [SEventConfig::SetDevice@1858]  Configured_MaxSlot/M 0 Final_MaxSlot/M 257 HeuristicMaxSlot_Rounded/M 257 changed YES DeviceName NVIDIA RTX 5000 Ada Generation HasDevice YES
-    (export OPTICKS_MAX_SLOT=0 # to use VRAM based HeuristicMaxPhoton) 
+    (export OPTICKS_MAX_SLOT=0 # to use VRAM based HeuristicMaxPhoton)
     [Detaching after vfork from child process 4084378]
     2026-03-18 20:28:19.760 INFO  [4084370] [SFrameGenstep::Maybe_Add_PRIOR_SIMTRACE_Genstep@414] with_PRIOR_SIMTRACE NO  prim 0 uprim 0 PRIOR_SIMTRACE_PRIM -2 PRIOR_SIMTRACE - gs_PRIOR_SIMTRACE -
     CSGFoundry_MakeCenterExtentGensteps_Test: /home/blyth/opticks/sysrap/SEvt.cc:2471: sgs SEvt::addGenstep(const quad6&): Assertion `sim' failed.
@@ -77,7 +95,7 @@ Reproduce
     #6  0x00007ffff6f6dbbc in SEvt::addGenstep (this=0x4bc410, a=0x1318a400) at /home/blyth/opticks/sysrap/SEvt.cc:2407
     #7  0x00007ffff6f6a9c9 in SEvt::AddGenstep (a=0x1318a400) at /home/blyth/opticks/sysrap/SEvt.cc:1574
     #8  0x000000000040a024 in main (argc=1, argv=0x7fffffffb418) at /home/blyth/opticks/CSG/tests/CSGFoundry_MakeCenterExtentGensteps_Test.cc:40
-    (gdb) 
+    (gdb)
 
 
 

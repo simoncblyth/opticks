@@ -21,6 +21,7 @@ const plog::Severity CSGImport::LEVEL = SLOG::EnvLevel("CSGImport", "DEBUG" );
 
 const int CSGImport::LVID = ssys::getenvint("LVID", -1);
 const int CSGImport::NDID = ssys::getenvint("NDID", -1);
+bool CSGImport::DUMP_LISTNODE = ssys::getenvbool(CSGImport__DUMP_LISTNODE) ;
 
 
 CSGImport::CSGImport( CSGFoundry* fd_ )
@@ -317,11 +318,12 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
 
     int ln = lns.size();
     bool ln_expect = ln == 0 || ln == 1 ;
+    bool dump_LN = DUMP_LISTNODE && ln > 0 ;
 
-
-    bool dump_LVID = node.lvid == LVID || ln > 0 || idx_rc > 0 ;
+    bool dump_LVID = node.lvid == LVID || dump_LN || idx_rc > 0 ;
     if(dump_LVID) std::cout
         << "[CSGImport::importPrim.dump_LVID:" << dump_LVID
+        << " dump_LN " << dump_LN
         << " node.lvid " << node.lvid
         << " idx_rc " << idx_rc
         << " LVID " << LVID
@@ -338,7 +340,7 @@ CSGPrim* CSGImport::importPrim(int primIdx, const snode& node )
         << "]rt.render\n"
         ;
 
-    if(dump_LVID && ln > 0 ) std::cout
+    if(dump_LVID && dump_LN ) std::cout
         << ".CSGImport::importPrim dumping as ln > 0 : solid contains listnode"
         << std::endl
         ;

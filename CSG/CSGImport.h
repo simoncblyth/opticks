@@ -39,6 +39,10 @@ struct CSG_API CSGImport  // HMM: maybe CSGCreate is a better name ?
     static const int LVID ; 
     static const int NDID ; 
 
+    static constexpr const char* CSGImport__DUMP_LISTNODE = "CSGImport__DUMP_LISTNODE" ;
+    static bool DUMP_LISTNODE ;
+
+
     CSGFoundry*  fd ; 
     const stree* st ; 
 
