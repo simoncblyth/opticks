@@ -389,6 +389,12 @@ struct SYSRAP_API sn
 
     void zero_label();
     void set_label( const char* label_ );
+
+    static constexpr const char* _sn__IsFlaggedLVID = "sn__IsFlaggedLVID" ;
+    static const int IsFlaggedLVID_ ;
+    static bool      IsFlaggedLVID(int q_lvid);
+    bool             isFlaggedLVID() const ;
+
     void set_lvid(int lvid_);
     void set_lvid_r(int lvid_, int d);
     int  check_idx(const char* msg) const ;
@@ -2786,6 +2792,19 @@ inline void sn::set_label( const char* label_ )
     strncpy( &label[0], label_, sizeof(label) );
 }
 
+inline const int sn::IsFlaggedLVID_ = ssys::getenvint(_sn__IsFlaggedLVID, -1) ;
+inline bool sn::IsFlaggedLVID(int q_lvid) // static
+{
+    return IsFlaggedLVID_ == q_lvid ;
+}
+inline bool sn::isFlaggedLVID() const
+{
+    return IsFlaggedLVID(lvid);
+}
+
+
+
+
 /**
 sn::set_lvid
 -------------
@@ -3793,9 +3812,10 @@ inline void sn::increase_zmax_( double dz )
     double _zmax = zmax();
     double new_zmax = _zmax + dz ;
 
-    std::cout
+    if(isFlaggedLVID() || level() > 0) std::cout
         << "sn::increase_zmax_"
         << " lvid " << lvid
+        << " isFlaggedLVID " << isFlaggedLVID()
         << " _zmax "    << std::fixed << std::setw(7) << std::setprecision(2) << _zmax
         << " dz "       << std::fixed << std::setw(7) << std::setprecision(2) << dz
         << " new_zmax " << std::fixed << std::setw(7) << std::setprecision(2) << new_zmax
@@ -3828,9 +3848,11 @@ inline void sn::decrease_zmin_( double dz )
     double _zmin = zmin();
     double new_zmin = _zmin - dz ;
 
-    std::cout
+
+    if(isFlaggedLVID() || level() > 0) std::cout
         << "sn::decrease_zmin_"
         << " lvid " << lvid
+        << " isFlaggedLVID " << isFlaggedLVID()
         << " _zmin "    << std::fixed << std::setw(7) << std::setprecision(2) << _zmin
         << " dz "       << std::fixed << std::setw(7) << std::setprecision(2) << dz
         << " new_zmin " << std::fixed << std::setw(7) << std::setprecision(2) << new_zmin
@@ -3916,9 +3938,10 @@ inline void sn::increase_zmax_cone( double dz )
     double new_z2 = z2 + dz ;
     double new_r2 = r1 +  (r2 - r1)*( new_z2 - z1 )/(z2 - z1)  ;
 
-    std::cout
+    if(isFlaggedLVID() || level() > 0) std::cout
         << "sn::increase_zmax_cone"
         << " lvid " << lvid
+        << " isFlaggedLVID " << isFlaggedLVID()
         << " z2 " << z2
         << " r2 " << r2
         << " dz " << dz

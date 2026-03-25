@@ -9,6 +9,15 @@ CSGFoundryLoadTest.sh
 LVID=32 TEST=getMeshPrim ~/o/CSG/tests/CSGFoundryLoadTest.sh
 
 
+Using this script to refine ELV "skip_big" selected volumes
+------------------------------------------------------------
+
+As the test uses the argumentless CSGFoundry::Load it
+automatically honours ELV selections. Hence sourcing the
+ELV.sh is particularly useful when updating the skip_big
+list of volumes as exclusions are already applied making
+it easy to find large volumes that additionally
+need to be skipped.
 
 
 EOU
@@ -42,6 +51,12 @@ if [ -z "$NOXGEOM" -a -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!E
 else
     source $srcd/GEOM.sh  ## sets GEOM envvar, use GEOM bash function to setup/edit
     GEOM_METHOD="local sourcing of ~/.opticks/GEOM/GEOM.sh"
+fi
+
+
+if [ -f "$srcd/ELV.sh" ]; then
+    source $srcd/ELV.sh
+    GEOM_METHOD="$GEOM_METHOD - WITH ELV.sh VOLUME SELECTION"
 fi
 
 

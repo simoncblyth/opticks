@@ -113,7 +113,7 @@ struct U4Solid
     static const char*  Name( const G4VSolid* solid) ;
     static unsigned     Hint( const char* name );
     static const char*  EType(const G4VSolid* solid) ;
-    static int          Level(int level_, const char* name, const char* entityType );
+    static int          Level(int level_, const char* name, const char* entityType, int lvid_ );
 
     static int          Type(const char* entityType ) ;
     static const char*  Tag( int type ) ;
@@ -254,24 +254,39 @@ inline const char* U4Solid::EType(const G4VSolid* solid)  // static
 U4Solid::Level
 ----------------
 
+This is invoked by the U4Solid ctor with the returned level member variable controlling logging
+for the U4Solid instance.
+
+
+* *level_* argument greater than zero (default -1) is returned, overriding below envvar controls
+*  IsFlaggedName(name)||IsFlaggedType(entityType) -> returns 1
+
+
 IsFlaggedName
-   returns true for solid name strings that are present within the U4Solid__IsFlaggedName envvar value
+   returns true for solid name strings that are present within the U4Solid__IsFlaggedName envvar value, eg::
+
+       export U4Solid__IsFlaggedName=s_EMF
 
 IsFlaggedType
    returns true for solid entityType strings that are present within the U4Solid__IsFlaggedType envvar value
    for example::
 
         export U4Solid__IsFlaggedType=G4MultiUnion
+        export U4Solid__IsFlaggedType=G4Torus
 
+IsFlaggedLVID
+    returns true when the *lvid_* argument matches the LVID set by envvar, eg::
+
+        export U4Solid__IsFlaggedLVID=87
 
 
 **/
 
 
-inline int U4Solid::Level(int level_, const char* name, const char* entityType )   // static
+inline int U4Solid::Level(int level_, const char* name, const char* entityType, int lvid_ )   // static
 {
     if(level_ > 0 ) return level_ ;
-    if(IsFlaggedName(name) || IsFlaggedType(entityType)) return 1 ;
+    if(IsFlaggedName(name) || IsFlaggedType(entityType) || IsFlaggedLVID(lvid_)) return 1 ;
     return -1 ;
 }
 
@@ -359,7 +374,7 @@ inline U4Solid::U4Solid(const G4VSolid* solid_, int lvid_, int depth_, int level
     name(Name(solid_)),
     hint(Hint(name)),
     entityType(EType(solid)),
-    level(Level(level_,name,entityType)),
+    level(Level(level_,name,entityType,lvid_)),
     type(Type(entityType)),
     lvid(lvid_),
     depth(depth_),
@@ -662,11 +677,10 @@ inline void U4Solid::init_Hype()
 U4Solid::init_MultiUnion
 --------------------------
 
-* non-sn-primitive subs like polycone get placeholdered
-
+* non-sn-primitive MultiUnion subs like polycone get placeholdered, which means the solid must be triangulated
+  for a successful conversion
 
 **/
-
 
 
 inline void U4Solid::init_MultiUnion()
@@ -707,7 +721,7 @@ inline void U4Solid::init_MultiUnion()
         p->combineXF(xf);
         bool p_expect = p->is_primitive();
 
-        if(level > 0 || !p_expect ) std::cout
+        if(level > 0) std::cout
             << "-U4Solid::init_MultiUnion"
             << " i " << std::setw(5) << i
             << " sub_name " << sub_name

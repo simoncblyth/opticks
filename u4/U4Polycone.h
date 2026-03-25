@@ -113,6 +113,7 @@ private:
 
     bool enable_nudge ;
     const G4Polycone* polycone ;
+    G4String pn ;
     const G4PolyconeHistorical* ph ;
 
     int num ;
@@ -228,6 +229,7 @@ inline U4Polycone::U4Polycone(const G4Polycone* polycone_, int lvid_, int depth_
     level(level_),
     enable_nudge(!ssys::getenvbool("U4Polycone__DISABLE_NUDGE")),
     polycone(polycone_),
+    pn(polycone ? polycone->GetName() : "err-no-name"),
     ph(polycone->GetOriginalParameters()),
     num(ph->Num_z_planes),
     ENABLE_PHICUT(ssys::getenvbool(U4Polycone__ENABLE_PHICUT)),
@@ -338,6 +340,7 @@ inline void U4Polycone::init()
                << "U4Polycone::init FATAL geometry with unsupported phicut : "
                << " enable experimental support with envvar "
                << " [" <<  U4Polycone__ENABLE_PHICUT << "]"
+               << " G4Polycone.GetName [" << pn << "]"
                << "\n"
                ;
 
@@ -471,6 +474,7 @@ inline void U4Polycone::init_phicut()
 
     if(has_phicut) std::cerr
        << "U4Polycone::init_phicut"
+       << " level " << level
        << " phi_start   " << std::setw(10) << std::fixed << std::setprecision(4) << phi_start
        << " phi_end     " << std::setw(10) << std::fixed << std::setprecision(4) << phi_end
        << " phi_delta   " << std::setw(10) << std::fixed << std::setprecision(4) << phi_delta

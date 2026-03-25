@@ -66,7 +66,7 @@ cd $(dirname $(realpath $BASH_SOURCE))
 
 
 defarg=info
-allarg=info_prof0_prof_grep_logp
+allarg=info_prof0_prof_grep_logp_help
 arg=${1:-$defarg}
 
 vvp(){ local v ; for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done ; }
@@ -78,6 +78,11 @@ vv="$vv BASH_SOURCE defarg arg allarg LOGROOT PWD"
 
 if [[ "$arg" =~ info ]]; then
     vvp
+fi
+
+if [[ "$arg" =~ help ]]; then
+    usage
+    exit 0
 fi
 
 
