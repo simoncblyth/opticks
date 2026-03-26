@@ -116,5 +116,37 @@ CONFIRMED CAUSE : FORGOTTEN local_envset.sh FOR EMF THAT ALLOWS PHICUT
 
 
 
-Is the triangulation now automatic ?
+Is the triangulation now automatic ? YES for classes of solids that obviously need triangles.
+
+
+
+
+
+::
+
+    2026-03-26 10:07:43.437 INFO  [4062361] [U4Tree::init@292] -initScint
+    2026-03-26 10:07:43.437 INFO  [4062361] [U4Tree::init@295] -initSurfaces
+    2026-03-26 10:07:43.442 INFO  [4062361] [U4Tree::init@298] -initSolids
+    [U4Tree::initSolids
+    U4Solid::Convert solid.GetName[s_EMFcoil_holder_ring8_seg1] lvid 87 U4Solid__IsFlaggedLVID : YES depth 0 level -1
+
+    [U4Solid::init  87/0/Pol/ -1/1 lvid/depth/tag/root/level s_EMFcoil_holder_ring8_seg1
+    U4Polycone::init_phicut level 1 phi_start       0.0873 phi_end         1.7628 phi_delta       1.6755 has_phicut YES has_half NO  ENABLE_PHICUT NO
+    U4Polycone::init_inner
+    U4Polycone::collectPrims outside NO  idx 316 is_cylinder YES
+    U4Polycone::collectPrims skipping prim as z2 == z1
+    U4Polycone::collectPrims outside NO  idx 317 is_cylinder YES
+    U4Polycone::init.NOT-WITH-SND num_inner_prim 2
+    U4Polycone::init FATAL geometry with unsupported phicut :  enable experimental support with envvar  [U4Polycone__ENABLE_PHICUT] G4Polycone.GetName [s_EMFcoil_holder_ring8_seg1]
+    python: /data1/blyth/local/opticks_Debug/include/U4/U4Polycone.h:347: void U4Polycone::init(): Assertion `0' failed.
+     *** Break *** abort
+
+
+Unfortunately the merge changing opticks_juno.sh in main happened at 17:35 yesterday,
+after the scheduled build at about 17:15 so the change missed the boat.
+
+
+
+
+
 

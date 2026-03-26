@@ -2792,7 +2792,7 @@ inline void sn::set_label( const char* label_ )
     strncpy( &label[0], label_, sizeof(label) );
 }
 
-inline const int sn::IsFlaggedLVID_ = ssys::getenvint(_sn__IsFlaggedLVID, -1) ;
+inline const int sn::IsFlaggedLVID_ = ssys::getenvint(_sn__IsFlaggedLVID, -99) ;
 inline bool sn::IsFlaggedLVID(int q_lvid) // static
 {
     return IsFlaggedLVID_ == q_lvid ;
@@ -3965,7 +3965,7 @@ inline void sn::decrease_zmin_cone( double dz )
     double new_z1 = z1 - dz ;
     double new_r1 = r2 + (r2 - r1)*(new_z1 - z2) /(z2 - z1 ) ;
 
-    std::cout
+    if(isFlaggedLVID() || level() > 0) std::cout
         << "sn::decrease_zmin_cone"
         << " lvid " << lvid
         << " z1 " << z1
@@ -5151,7 +5151,13 @@ NB : this depends a lot on deepcopy
 
 inline sn* sn::CreateSmallerTreeWithListNode(sn* root0, int q_note ) // static
 {
-    std::cerr << "[sn::CreateSmallerTreeWithListNode\n" ;
+    bool dump = root0->isFlaggedLVID() || level() > 0 ;
+    if(dump) std::cout
+         << "[sn::CreateSmallerTreeWithListNode"
+         << " root0.lvid " << root0->lvid
+         << " root0.isFlaggedLVID " << root0->isFlaggedLVID()
+         << "\n"
+         ;
 
     std::vector<sn*> prim0 ;  // populated with the hinted listnode prim
     sn* j0 = root0->find_joint_to_candidate_listnode(prim0, q_note);
@@ -5170,7 +5176,14 @@ inline sn* sn::CreateSmallerTreeWithListNode(sn* root0, int q_note ) // static
 
     // ordering may be critical here as nodes get created and deleted by the above
 
-    std::cerr << "]sn::CreateSmallerTreeWithListNode\n" ;
+
+    if(dump) std::cout
+         << "]sn::CreateSmallerTreeWithListNode"
+         << " root0.lvid " << root0->lvid
+         << " root0.isFlaggedLVID " << root0->isFlaggedLVID()
+         << "\n"
+         ;
+
     return j1 ;
 }
 
@@ -5739,7 +5752,8 @@ inline void sn::Transform_Leaf2Tree( glm::tvec3<double>& xyz,  const sn* leaf, s
 
 inline void sn::uncoincide()
 {
-    int uncoincide_dump_lvid = ssys::getenvint("sn__uncoincide_dump_lvid", 107) ;
+    int unreasonably_large_default = 10000 ;
+    int uncoincide_dump_lvid = ssys::getenvint("sn__uncoincide_dump_lvid", unreasonably_large_default) ;
     bool dump = lvid == std::abs(uncoincide_dump_lvid) ;
     bool enable = true ;
 

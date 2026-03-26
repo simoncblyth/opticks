@@ -265,7 +265,7 @@ inline U4Tree::U4Tree(
     enable_osur(!ssys::getenvbool(__DISABLE_OSUR_IMPLICIT)),
     enable_isur(!ssys::getenvbool(__DISABLE_ISUR_IMPLICIT)),
     material_debug(ssys::getenvint(__MATERIAL_DEBUG,0)),
-    solid_debug(ssys::getenvint(__SOLID_DEBUG,0))
+    solid_debug(ssys::getenvint(__SOLID_DEBUG,-1))
 {
     init();
 }

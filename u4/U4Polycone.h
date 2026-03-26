@@ -472,7 +472,7 @@ inline void U4Polycone::init_phicut()
         }
     }
 
-    if(has_phicut) std::cerr
+    if(level > 0) std::cerr
        << "U4Polycone::init_phicut"
        << " level " << level
        << " phi_start   " << std::setw(10) << std::fixed << std::setprecision(4) << phi_start

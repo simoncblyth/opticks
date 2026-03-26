@@ -103,6 +103,7 @@ struct U4Solid
     static const char* IsFlaggedName_ ;
     static const char* IsFlaggedType_ ;
 
+    bool isFlaggedLVID() const ;
     static bool IsFlaggedLVID(int q_lvid);
     static bool IsFlaggedName(const char* name);
     static bool IsFlaggedType(const char* type);
@@ -182,7 +183,11 @@ private:
 
 };
 
-inline const int U4Solid::IsFlaggedLVID_ = ssys::getenvint(_U4Solid__IsFlaggedLVID, -1) ;
+inline const int U4Solid::IsFlaggedLVID_ = ssys::getenvint(_U4Solid__IsFlaggedLVID, -99) ;
+inline bool U4Solid::isFlaggedLVID() const
+{
+    return IsFlaggedLVID(lvid);
+}
 inline bool U4Solid::IsFlaggedLVID(int q_lvid)
 {
     return IsFlaggedLVID_ == q_lvid ;
@@ -462,6 +467,13 @@ U4Solid::init_Tree_Shrink
 
 try to shrink tree if prim are listnode hinted
 
+This happens in JUNO geometry with the "uni1" solid::
+
+    U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous name uni1 root0.lvid -1 root.lvid -1
+    root0.desc sn::desc pid 1419 idx 1399 typecode   1 num_node  19 num_leaf  10 maxdepth  9 is_positive_form N lvid  -1 xform N tag un
+    root.desc  sn::desc pid 1429 idx 1409 typecode   1 num_node  13 num_leaf  10 maxdepth  2 is_positive_form N lvid  -1 xform N tag un
+
+
 **/
 
 inline void U4Solid::init_Tree_Shrink()
@@ -481,11 +493,22 @@ inline void U4Solid::init_Tree_Shrink()
         root->check_idx("U4Solid::init_Tree_Shrink.contiguous");
     }
 
-    if(root != root0)
+    bool shrink = root != root0 ;
+    if(shrink )
     {
-
-        std::cerr << "U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous\n" ;
-        //std::cerr << "U4Solid::init_Tree_Shrink NOT DELETING \n" ;
+        if( level > 0 ) std::cerr
+            << "U4Solid::init_Tree_Shrink CHANGED root with sn::CreateSmallerTreeWithListNode_discontiguous/contiguous"
+            << " name [" << ( name ? name : "-" ) << "] "
+            << " level " << level
+            << " lvid " << lvid
+            << " root0.lvid " << root0->lvid
+            << " root.lvid " << root->lvid
+            << "\n"
+            << " root0.desc " << root0->desc()
+            << "\n"
+            << " root.desc  " << root->desc()
+            << "\n"
+            ;
         delete root0 ;
     }
 }
