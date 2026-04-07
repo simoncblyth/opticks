@@ -363,14 +363,31 @@ const char* SEvt::ResolveInputArray(const char* spec, const char* dir) // static
     return path ;
 }
 
-NP* SEvt::LoadInputArray(const char* path) // static
+NP* SEvt::LoadInputArray(const char* path, const char* slice) // static
 {
-    NP* a = NP::Load(path);
-    LOG_IF(fatal, a == nullptr) << " FAILED to load input array from path " << path ;
+    NP* a = nullptr ;
+    if( slice == nullptr )
+    {
+        a = NP::Load(path);
+        a->set_meta<std::string>("SEvt__LoadInputArray", "NP::Load");
+    }
+    else    // eg "[0:100]" OR "/tmp/w54.npy" OR "/tmp/w54.npy[0:10]"
+    {
+        a = NP::LoadSlice(path, slice);
+        a->set_meta<std::string>("SEvt__LoadInputArray_METHOD", "NP::LoadSlice");
+        a->set_meta<std::string>("SEvt__LoadInputArray_SLICE", slice );
+    }
+
+    LOG_IF(fatal, a == nullptr)
+        << " FAILED to load input array"
+        << " path{" << ( path ? path : "-" ) << "}"
+        << " slice{" << ( slice ? slice : "-" ) << "}"
+        ;
 
     LOG(LEVEL)
-        << " path " << ( path ? path : "-" )
-        << " a.sstr " << ( a ? a->sstr() : "-" )
+        << " path{" << ( path ? path : "-" ) << "}"
+        << " slice{" << ( slice ? slice : "-" ) << "}"
+        << " a.sstr{" << ( a ? a->sstr() : "-" ) << "}"
         ;
 
     assert( a ) ;
@@ -407,7 +424,8 @@ NP* SEvt::LoadInputGenstep_array(int idx) // static
 NP* SEvt::LoadInputGenstep_array(const char* spec) // static
 {
     const char* path = ResolveInputArray( spec, INPUT_GENSTEP_DIR );
-    NP* a = LoadInputArray(path);
+    const char* slice = nullptr ;
+    NP* a = LoadInputArray(path, slice );
     assert( a->has_shape(-1,6,4) );
     return a ;
 }
@@ -469,7 +487,9 @@ NP* SEvt::LoadInputPhoton_photon(const char* spec)
     if(is_simtrace) std::raise(SIGINT);
 
     const char* path = ResolveInputArray( spec, INPUT_PHOTON_DIR );
-    NP* a = LoadInputArray(path);
+    const char* slice = SEventConfig::InputPhotonSlice();
+
+    NP* a = LoadInputArray(path, slice);
     assert( a->has_shape(-1,4,4) );
 
     float t0 = SEventConfig::InputPhotonChangeTime();

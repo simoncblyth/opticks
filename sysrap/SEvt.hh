@@ -351,7 +351,7 @@ public:
     static const char* INPUT_GENSTEP_DIR ;
     static const char* INPUT_PHOTON_DIR ;
     static const char* ResolveInputArray(const char* spec, const char* dir) ;
-    static NP* LoadInputArray(const char* path) ;
+    static NP* LoadInputArray(const char* path, const char* slice) ;
 
     static NP* LoadInputGenstep_array(int idx);
     static NP* LoadInputGenstep_array(const char* spec);

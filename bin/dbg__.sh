@@ -52,7 +52,9 @@ dbg__()
     : setting the breakpoint allows to workout prior to when the SEventConfig OPTICKS envvars must be defined
     : inorder that they may take effect in the process of loading libSysRap.so
 
-    [ -n "$CATCH_THROW" ] && X="-ex \"catch throw\""
+    X=""
+    [ -n "$CATCH_THROW" ] && X="$X -ex \"catch throw\""
+    [ -n "$CATCH_SIGABRT" ] && X="$X -ex \"catch signal SIGABRT\""
     [ -z "$NORUN" ] && X="$X -ex r"
 
     local runline="gdb $H $B $T $X --args $* ";

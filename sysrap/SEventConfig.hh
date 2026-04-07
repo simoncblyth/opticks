@@ -278,6 +278,7 @@ struct SYSRAP_API SEventConfig
     static constexpr const char* kInputGenstepSelection  = "OPTICKS_INPUT_GENSTEP_SELECTION" ;
     static constexpr const char* kInputPhoton      = "OPTICKS_INPUT_PHOTON" ;
     static constexpr const char* kInputPhotonFrame = "OPTICKS_INPUT_PHOTON_FRAME" ;
+    static constexpr const char* kInputPhotonSlice = "OPTICKS_INPUT_PHOTON_SLICE" ;
     static constexpr const char* kInputPhotonChangeTime = "OPTICKS_INPUT_PHOTON_CHANGE_TIME" ;
     static constexpr const char* kInputPhotonRecordTime = "OPTICKS_INPUT_PHOTON_RECORD_TIME" ;
     static constexpr const char* kInputPhotonRecordSlice = "OPTICKS_INPUT_PHOTON_RECORD_SLICE" ;
@@ -331,6 +332,8 @@ struct SYSRAP_API SEventConfig
     static int64_t MaxFlat();
 
     static int64_t ModeSave();
+    static const char* ModeSaveLabel();
+
     static int64_t ModeClient();
     static int64_t ModeLite();
     static int64_t ModeMerge();
@@ -362,6 +365,7 @@ struct SYSRAP_API SEventConfig
 
     static const char* InputPhoton();
     static const char* InputPhotonFrame();
+    static const char* InputPhotonSlice();
     static float       InputPhotonChangeTime();
     static const char* InputPhotonRecordTime();
     static const char* InputPhotonRecordSlice();
@@ -454,7 +458,7 @@ struct SYSRAP_API SEventConfig
     static void SetMaxTag(    int max_tag);
     static void SetMaxFlat(   int max_flat);
 
-    static void SetModeSave( int mode );
+    static void SetModeSave( const char* mode );
     static void SetModeClient( int mode );
     static void SetModeLite(  int mode );
     static void SetModeMerge( int mode );
@@ -487,6 +491,7 @@ struct SYSRAP_API SEventConfig
     static void SetInputGenstepSelection(const char* input_genstep_selection);
     static void SetInputPhoton(const char* input_photon);
     static void SetInputPhotonFrame(const char* input_photon_frame);
+    static void SetInputPhotonSlice( const char* input_photon_slice ) ;
     static void SetInputPhotonChangeTime( float t0 ) ;
     static void SetInputPhotonRecordTime( const char* record_time ) ;
     static void SetInputPhotonRecordSlice( const char* iprs ) ;
@@ -536,7 +541,7 @@ struct SYSRAP_API SEventConfig
     static int _MaxTagDefault ;
     static int _MaxFlatDefault ;
 
-    static int _ModeSaveDefault ;
+    static const char* _ModeSaveDefault ;
     static int _ModeClientDefault ;
     static int _ModeLiteDefault ;
     static int _ModeMergeDefault ;
@@ -565,6 +570,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputGenstepSelectionDefault ;
     static const char* _InputPhotonDefault ;
     static const char* _InputPhotonFrameDefault ;
+    static const char* _InputPhotonSliceDefault ;
     static float       _InputPhotonChangeTimeDefault ;
     static const char* _InputPhotonRecordTimeDefault ;
     static const char* _InputPhotonRecordSliceDefault ;
@@ -646,6 +652,7 @@ struct SYSRAP_API SEventConfig
     static const char* _InputGenstepSelection ;
     static const char* _InputPhoton ;
     static const char* _InputPhotonFrame ;
+    static const char* _InputPhotonSlice ;
     static float       _InputPhotonChangeTime ;
     static const char* _InputPhotonRecordTime ;
     static const char* _InputPhotonRecordSlice ;

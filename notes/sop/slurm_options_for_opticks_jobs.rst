@@ -32,4 +32,26 @@ Arrange for a separate directory for each job in job array with::
 
 
 
+slurm options
+-----------------
+
+When you do not care about the GPU type and just want the shortest waiting time in the queue::
+
+    --gres=gpu:1
+
+When you want reproducibility or are doing benchmarking you need to control the gpu used, eg::
+
+    --gres=gpu:a100:1
+    --gres=gpu:l20:1
+    --gpus=v100:1
+
+To see available GPUs::
+
+    sinfo -o "%G"                 # list categories of GPU nodes
+    sinfo -o "%20N %10D %G"       # see node codes
+
+
+
+
+
 

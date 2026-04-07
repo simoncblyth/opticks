@@ -407,6 +407,7 @@ struct stree
     NPFold* surface ;    // surface properties from G4 MPTs, includes OpticalSurfaceName osn in metadata
     NPFold* mesh ; // triangulation of all solids
     const char* MOI ;
+    const char* IPF ;
 
 
     std::vector<glm::tmat4x4<double>> inst ;
@@ -531,6 +532,8 @@ struct stree
 
 
     sfr  get_frame_moi() const ;
+    sfr  get_frame_moi_or_ipf() const ;
+
     sfr  get_frame(const char* q_spec ) const ;
 
     sfr  get_frame_top() const ;
@@ -928,7 +931,8 @@ inline stree::stree()
     material(new NPFold),
     surface(new NPFold),
     mesh(new NPFold),
-    MOI(ssys::getenvvar("MOI", "0:0:-1")),
+    MOI(ssys::getenvvar("MOI", nullptr)),
+    IPF(ssys::getenvvar("OPTICKS_INPUT_PHOTON_FRAME", nullptr)),
     loaddir(nullptr)
 {
     init();
@@ -2379,6 +2383,12 @@ inline void stree::get_frame_f4( sframe& fr, int idx ) const
 }
 
 
+
+
+
+
+
+
 /**
 stree::get_frame_moi
 ---------------------
@@ -2399,6 +2409,33 @@ inline sfr stree::get_frame_moi() const
 {
     return get_frame(MOI);
 }
+
+
+/**
+stree::get_frame_moi_or_ipf
+---------------------------
+
+Returns the frame specified by the "MOI" envvar or if that is
+not defined by the "OPTICKS_INPUT_PHOTON_FRAME" envvar.
+Note the envvar name is duplicated here, as do not want stree.h
+to depend on SEventConfig.cc.
+Suggests some of SEventConfig needs to be split off.
+
+Principal caller of this method is SSim::afterLoadOrCreate
+which lodges the resulting sfr into SEvt via SEvt::SetFr
+
+**/
+
+
+inline sfr stree::get_frame_moi_or_ipf() const
+{
+    const char* q_spec = MOI ? MOI : IPF ;
+    return get_frame(q_spec);
+}
+
+
+
+
 
 
 /**
