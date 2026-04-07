@@ -38,7 +38,7 @@ inline G4CX_U4TreeCreateCSGFoundryTest::G4CX_U4TreeCreateCSGFoundryTest()
     tr(U4Tree::Create(st,world,nullptr)),
     fd(nullptr)
 {
-    sim->initSceneFromTree();
+    sim->afterPopulated();
     fd = CSGFoundry::CreateFromSim();
     fd->save("$FOLD");
 }

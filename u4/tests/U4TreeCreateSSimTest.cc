@@ -79,7 +79,7 @@ U4TreeCreateSSimTest::U4TreeCreateSSimTest(const G4VPhysicalVolume* world )
 void U4TreeCreateSSimTest::init()
 {
     assert(tr);
-    sim->initSceneFromTree();
+    sim->afterPopulated();
     std::cerr << " save SSim to $FOLD " << std::endl ;
     sim->save("$FOLD");  // "SSim" reldir added by the save
     LOG(info) << " sim.tree.desc " << std::endl << st->desc() ;

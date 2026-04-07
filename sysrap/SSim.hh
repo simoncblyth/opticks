@@ -19,6 +19,7 @@ SSim must be instanciated with SSim::Create prior to CSGFoundry::CSGFoundry
 Currently that is done from G4CXOpticks::G4CXOpticks
 
 
+
 **/
 
 struct NP ;
@@ -78,7 +79,6 @@ public:
     stree* get_tree() const ;
     SScene* get_scene() const ;
     void set_override_scene(SScene* _scene);
-    void initSceneFromTree();
 
 public:
     int lookup_mtline( int mtindex ) const ;
@@ -114,7 +114,10 @@ public:
     void save(const char* base, const char* reldir=RELDIR) ;  // not const as may serialize
     void load(const char* base, const char* reldir=RELDIR) ;
     void load_(const char* dir);
-    void afterLoadOrCreate();
+
+    void afterImported();
+    void afterPopulated();
+
     void serialize();
     bool hasTop() const ;
 

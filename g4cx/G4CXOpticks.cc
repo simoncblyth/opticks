@@ -90,6 +90,11 @@ Invoked from JUNOSW LSExpDetectorConstruction_Opticks::Setup
 
 * Moved high level JUNO setup from there to here for faster update cycle.
 
+
+Note that for JUNO SSim::CreateOrReuse is done earlier that the ordinary case as part
+of G4CXOpticks instanciation. This earlier SSim::CreateOrReuse is done to conveniently
+add the jpmt subfold in the G4CXOpticks::SetGeometry_JUNO method.
+
 **/
 
 
@@ -97,8 +102,7 @@ G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const
 {
     LOG(LEVEL) << "[" ;
 
-    // boot SSim adding extra juno PMT info
-    SSim::CreateOrReuse();   // done previously by G4CXOpticks::G4CXOpticks in opticksMode > 0 or here in opticksMode:0
+    SSim::CreateOrReuse();
     SSim::AddExtraSubfold("jpmt", jpmt );
     SSim::AddMultiFilm(snam::MULTIFILM, jlut);
 
@@ -108,7 +112,7 @@ G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const
     int opticksMode = SEventConfig::IntegrationMode();
     if(opticksMode == 0 || opticksMode == 2) SetNoGPU() ;
 
-    LOG(info) << "[ WITH_G4CXOPTICKS opticksMode " << opticksMode << " sd " << sd  ;
+    LOG(info) << " opticksMode " << opticksMode << " sd " << sd  ;
 
     G4CXOpticks* gx = nullptr ;
 
@@ -306,9 +310,9 @@ void G4CXOpticks::setGeometry(const G4VPhysicalVolume* world )
     LOG(LEVEL) << "]U4Tree::Create " ;
 
 
-    LOG(LEVEL) << "[SSim::initSceneFromTree" ;
-    sim->initSceneFromTree(); // not so easy to do at lower level as do not want to change to SSim arg to U4Tree::Create for headeronly testing
-    LOG(LEVEL) << "]SSim::initSceneFromTree" ;
+    LOG(LEVEL) << "[SSim::afterPopulated" ;
+    sim->afterPopulated(); // not so easy to do at lower level as do not want to change to SSim arg to U4Tree::Create for headeronly testing
+    LOG(LEVEL) << "]SSim::afterPopulated" ;
 
 
     LOG(LEVEL) << "[CSGFoundry::CreateFromSim" ;

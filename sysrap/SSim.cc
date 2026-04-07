@@ -29,6 +29,15 @@ SSim* SSim::INSTANCE = nullptr ;
 SSim* SSim::Get(){ return INSTANCE ; }
 
 
+/**
+SSim::CreateOrReuse
+--------------------
+
+Invoked from G4CXOpticks::SetGeometry_JUNO
+
+**/
+
+
 SSim* SSim::CreateOrReuse()
 {
     return INSTANCE ? INSTANCE : Create() ;
@@ -214,19 +223,6 @@ SScene* SSim::get_scene() const { return scene ; }
 void SSim::set_override_scene(SScene* _scene){ scene = _scene ; }
 
 
-
-/**
-SSim::initSceneFromTree
-------------------------
-
-This needs to be invoked after the tree has been populated by U4Tree
-
-**/
-
-void SSim::initSceneFromTree()
-{
-    scene->initFromTree(tree);
-}
 
 
 
@@ -531,30 +527,67 @@ void SSim::load_(const char* dir)
     tree->loaddir = strdup(treedir.c_str());
 
 
-    afterLoadOrCreate();
+    afterImported();
 
     LOG(LEVEL) << "]" ;
 }
 
 
 /**
-SSim::afterLoadOrCreate
-------------------------
+SSim::afterImported
+--------------------
 
-Trying to progress with FRAME_TRANSITION by replacing the old
-CSGFoundry::AfterLoadOrCreate with SSim::afterLoadOrCreate
+Invoked from SSim::load_ after tree and scene are imported
+
+This was formerly called "SSim::afterLoadOrCreate" but that was
+misleading as this is only called after loaded.
 
 **/
 
-void SSim::afterLoadOrCreate()
+void SSim::afterImported()
 {
     SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
+
     assert(tree);
-
-
-    sfr fr = tree->get_frame_moi() ;
+    sfr fr = tree->get_frame_moi_or_ipf() ;
     SEvt::SetFr(fr);
 }
+
+
+
+/**
+SSim::afterPopulated
+----------------------
+
+Called from G4CXOpticks::setGeometry after the (stree)tree is populated by U4Tree
+
+This was formerly called "SSim::initSceneFromTree" and omitted frame preparation,
+causing ~/o/notes/issues/OPTICKS_INPUT_PHOTON_FRAME_suspect_not_working.rst
+
+**/
+
+void SSim::afterPopulated()
+{
+    assert(tree);
+    scene->initFromTree(tree);
+
+    sfr fr = tree->get_frame_moi_or_ipf() ;
+    SEvt::SetFr(fr);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
