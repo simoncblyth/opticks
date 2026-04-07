@@ -197,6 +197,12 @@ set(CURANDLITE_HEADERS
 )
 
 
+
+set(DEAD_HEADERS
+    SCF.h
+)
+
+
 set(HEADERS
     OPTICKS_LOG.hh
 
@@ -315,7 +321,6 @@ set(HEADERS
     s_seq.h
     S4Random.h
 
-    SCF.h
 
     SCtrl.hh
     SGeo.hh
@@ -537,6 +542,7 @@ set(HEADERS
 
     SEventConfig.hh
     SRM.h
+    SMS.h
     SFrameConfig.hh
     SGeoConfig.hh
 

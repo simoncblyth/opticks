@@ -1,7 +1,21 @@
 #pragma once
 /**
-SCF.h : Lightweight access to CSGFoundry geometry loaded from CFBASE directory
-================================================================================
+DO NOT USE : BEING REMOVED : SCF.h : Lightweight access to CSGFoundry geometry loaded from CFBASE directory
+============================================================================================================
+
+* SUSPECT THIS CAN BE REMOVED : IT WAS CREATED PRIOR TO stree.h
+* WIP: REMOVAL OF THIS
+
+
+    (ok) A[blyth@localhost opticks]$ opticks-f SCF.h
+    ./sysrap/SCF.h:SCF.h : Lightweight access to CSGFoundry geometry loaded from CFBASE directory
+    ./sysrap/CMakeLists.txt:    SCF.h
+    ./sysrap/tests/SCFTest.cc:#include "SCF.h"
+    ./u4/U4Recorder.cc:#include "SCF.h"
+
+    ## REMOVED THIS ONE
+
+
 
 Using this from the A side is distinctly dodgy as it relies on the CFBASE 
 directory geometry matching the current geometry.

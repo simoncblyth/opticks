@@ -14,6 +14,10 @@ set(INSTALLED_SCRIPTS
 
 install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
 
+set(DEAD_TEST_SOURCES
+   SCFTest.cc
+)
+
 set(TEST_SOURCES
 
    PythonImportTest.cc
@@ -40,7 +44,6 @@ set(TEST_SOURCES
    SDigestTest.cc
    SDigestNPTest.cc
 
-   SCFTest.cc
 
 
    PLogTest.cc

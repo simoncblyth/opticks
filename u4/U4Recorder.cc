@@ -58,7 +58,6 @@ NP* U4UniformRand::UU = nullptr ; // HMM: misplaced n InstrumentedG4OpBoundaryPr
 #include "U4Simtrace.h"
 #include "U4Version.h"
 
-#include "SCF.h"
 #include "U4Step.h"
 
 #ifdef WITH_PMTSIM
@@ -1235,7 +1234,10 @@ void U4Recorder::UserSteppingAction_Optical(const G4Step* step)
 
         current_photon.set_flag( flag );
 
+#ifdef U4Step_WITH_SCF
         if(U4Step::CF) U4Step::MockOpticksBoundaryIdentity(current_photon, step, ulabel.id );
+#endif
+
 
         sev->pointPhoton(ulabel);     // save SEvt::current_photon/rec/seq/prd into sevent
     }
