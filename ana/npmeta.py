@@ -120,14 +120,17 @@ class NPMeta(object):
     @classmethod
     def Load(cls, path):
         name = os.path.basename(path)
-        lines = open(path, "r").read().splitlines()
+        with open(path, "r") as f:
+            lines = f.read().splitlines()
+        pass
         return cls(lines) 
 
     @classmethod
     def LoadAsArray(cls, path):
-        name = os.path.basename(path)
-        lines = open(path, "r").read().splitlines()
-        return np.array(lines) 
+        with open(path, "r") as f:
+            lines = f.read().splitlines()
+        pass
+        return np.array(lines)
 
     def __init__(self, lines):
         self.lines = lines  

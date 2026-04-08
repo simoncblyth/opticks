@@ -236,13 +236,27 @@ class CSGObject(object):
         print("%s.Label() : " % cls.Label() )
 
     @classmethod
-    def RecordsFromArrays(cls, a):
+    def RecordsFromArrays_deprecated(cls, a):
         """
         :param a: ndarray
         :return: np.recarray
         """
         ra = np.core.records.fromarrays(a.T, dtype=cls.DTYPE )
         return ra
+
+
+    @classmethod
+    def RecordsFromArrays(cls, a):
+        """
+        :param a: ndarray
+        :return: np.recarray
+        """
+        ra = np.rec.fromarrays(a.T, dtype=cls.DTYPE )
+        return ra
+
+
+
+
 
 
 
@@ -309,7 +323,13 @@ class MM(object):
     PTN = re.compile("\\d+")
     def __init__(self, path ):
         mm = os.path.expandvars(path)
-        mm = open(mm, "r").read().splitlines() if os.path.exists(mm) else None
+        if os.path.exists(mm):
+            with open(mm,"r") as fp:
+                mm = fp.read().splitlines()
+            pass
+        else:
+             mm = None
+        pass
         self.mm = mm
         if mm is None:
             log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  )
@@ -345,7 +365,11 @@ class LV(object):
     PTN = re.compile("\\d+")
     def __init__(self, path):
         lv = os.path.expandvars(path)
-        lv = open(lv, "r").read().splitlines() if os.path.exists(lv) else None
+        try:
+            with open(lv, "r") as fp:
+                lv = fp.read().splitlines()
+        except (FileNotFoundError, PermissionError):
+            lv = None
         self.lv = lv
         if lv is None:
             log.fatal("missing %s, which is now a standard part of CSGFoundry " % path  )
@@ -410,7 +434,9 @@ class Deprecated_NPFold(object):
         assert 0
 
     def load_idx(self, fold):
-        keys = open(self.IndexPath(fold),"r").read().splitlines()
+        with open(self.IndexPath(fold),"r") as fp:
+            keys = fp.read().splitlines()
+        pass
         aa = []
         kk = []
         ff = []
@@ -893,7 +919,9 @@ class CSGFoundry(object):
         #a_txt = np.loadtxt(path, dtype=np.object)   # yields single object
         #a_txt = np.loadtxt(path, dtype="|S100")
 
-        txt = open(path).read().splitlines()
+        with open(path,"r") as fp:
+            txt = fp.read().splitlines()
+        pass
         a_txt = np.array(txt, dtype=np.str_ )   # formerly np.object
         return a_txt
 

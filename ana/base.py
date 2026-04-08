@@ -254,7 +254,9 @@ def json_(path):
         log.debug("parsing json for key %s" % path)
         xpath = os.path.expandvars(os.path.expanduser(path))
         #log.info("xpath:%s"%xpath)
-        js = json.load(open(xpath,"r"))
+        with open(xpath,"r") as fp:
+            js = json.load(fp)
+        pass
         #js[u"jsonLoadPath"] = unicode(xpath)
         _json[path] = js
     except IOError:

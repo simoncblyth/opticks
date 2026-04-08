@@ -73,7 +73,8 @@ class Enum(dict):
     def parse_simple(self, path):
         """
         """
-        lines = list(map(str.strip,open(path,"r").readlines()))
+        with open(path,"r") as fp:
+            lines = list(map(str.strip,fp.readlines()))
         for line in lines:
             if self.end and line.startswith(self.END): break
             lm = self.lptn.match(line)
@@ -90,7 +91,9 @@ class Enum(dict):
         :param path:
         :param mskval:
         """
-        lines = list(map(str.strip,open(path,"r").readlines()))
+
+        with open(path,"r") as fp:
+             lines = list(map(str.strip,fp.readlines()))
         for line in lines:
             if self.end and line.startswith(self.END): break
             lm = self.lptn.match(line)
@@ -149,7 +152,9 @@ if __name__ == '__main__':
     pass
     if not args.inipath is None:
         log.info("writing ini to inipath %s " % args.inipath)
-        open(args.inipath, "w").write(d.ini)
+        with open(args.inipath, "w") as fp:
+            fp.write(d.ini)
+        pass
     pass
 
 

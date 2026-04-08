@@ -16,13 +16,13 @@ level (normally 5%)
 
 """
 
-import numpy as np
+import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.nbase import chi2_pvalue
 
 
 if __name__ == '__main__':
-    print("[sseq_index_test.py\n")
+    print("[sseq_index_test.p FOLD[%s]\n" % os.environ.get("FOLD","?"))
 
     f = Fold.Load(symbol="f")  ## default arg is $FOLD
     print(repr(f))
