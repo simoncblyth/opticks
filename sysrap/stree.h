@@ -2453,8 +2453,9 @@ TODO: AVOID DUPLICATION BETWEEN THIS AND CSGFoundry::getFrame
 
 **/
 
-inline sfr stree::get_frame(const char* q_spec ) const
+inline sfr stree::get_frame(const char* q_spec_ ) const
 {
+    const char* q_spec = q_spec_ ? q_spec_ : "" ;
     char delim = ',' ;
 
     bool is_TOP = q_spec == nullptr || strcmp(q_spec, "-1") == 0 || strcmp(q_spec, "") == 0 ;
@@ -2546,6 +2547,7 @@ inline sfr stree::get_frame(const char* q_spec ) const
 
     if(rc != 0) std::cerr
         << "stree::get_frame FAIL "
+        << " q_spec_[" << ( q_spec_ ? q_spec_ : "-" ) << "]"
         << " q_spec[" << ( q_spec ? q_spec : "-" ) << "]"
         << " rc " << rc
         << "\n"
