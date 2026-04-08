@@ -309,7 +309,7 @@ inline void sdigest::add_( T* vv, size_t count ){ Update_<T>(ctx, vv, count  ); 
 inline std::string sdigest::DescRaw( unsigned char* digest16 )
 {
     char buf[32+1] ;
-    for (int n = 0; n < 16; ++n) std::snprintf( &buf[2*n], 32+1, "%02x", (unsigned int)digest16[n]) ;
+    for (int n = 0; n < 16; ++n) std::snprintf( &buf[2*n], 3, "%02x", (unsigned int)digest16[n]) ;
     buf[32] = '\0' ;
     return std::string(buf, buf + 32);
 }
@@ -323,7 +323,7 @@ inline std::string sdigest::Finalize(MD5_CTX& c) // static
     // 16 binary bytes, into 32 char hex string
 
     char buf[32+1] ;
-    for (int n = 0; n < 16; ++n) std::snprintf( &buf[2*n], 32+1, "%02x", (unsigned int)digest[n]) ;
+    for (int n = 0; n < 16; ++n) std::snprintf( &buf[2*n], 3, "%02x", (unsigned int)digest[n]) ;
     buf[32] = '\0' ;
 
     return std::string(buf, buf + 32);
