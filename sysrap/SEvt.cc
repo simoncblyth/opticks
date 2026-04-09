@@ -1795,39 +1795,42 @@ better to save at the end of every event, not
 just the last.
 
 The directory to save run.npy and run_meta.txt
-can be controlled by::
+can be controlled by the below envvar.
 
-    SEvt__SAVE_RUNDIR
+SEvt__SAVE_RUNDIR:defined
+    save into the RunDir one level above the event folders A000 etc..
 
-When save into the RunDir one level above the event folders A000 etc..
+SEvt__SAVE_RUNDIR:not-defined
+    save into the invoking directory together with the logfile and SProf.txt
+    This simple approach makes more sense in production when event arrays
+    are not saved.
 
-When SEvt__SAVE_RUNDIR is not defined save into the invoking directory
-together with the logfile and SProf.txt
-This simple approach makes more sense in production when event arrays
-are not saved.
+
+A former impl that always called SEvt::RunDir was responsible
+for inadvertant creation of empty directories, as described in:
+
+*  ~/opticks/notes/issues/fix_unexpected_empty_SEvt_dir_creation.rst
 
 **/
 
 void SEvt::SaveRunMeta(const char* base)
 {
-    const char* dir = RunDir(base);
     const char* name = "run.npy" ;
-
     bool is_save_nothing = IsSaveNothing();
 
     LOG_IF(info, RUNMETA)
         << " [" << SEvt__RUNMETA << "]"
         << " is_save_nothing " << ( is_save_nothing ? "YES" : "NO " )
         << " base " << ( base ? base : "-" )
-        << " dir " << ( dir ? dir : "-" )
         << " name " << name
         << " SAVE_RUNDIR " << ( SAVE_RUNDIR ? "YES" : "NO " )
         ;
 
     if(is_save_nothing) return ;
 
-    if(SAVE_RUNDIR)
+    if(SAVE_RUNDIR) // not default
     {
+        const char* dir = RunDir(base); // CREATES THE DIR
         RUN_META->save(dir, name) ;
     }
     else
@@ -4670,6 +4673,7 @@ void SEvt::save(const char* dir_)
 
     int slic = save_fold->_save_local_item_count();
     std::string slicd = save_fold->_save_local_item_count_desc();
+    LOG(LEVEL) << " slic " << slic << " slicd " << slicd ;
 
     if( slic > 0 )
     {

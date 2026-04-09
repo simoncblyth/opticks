@@ -55,6 +55,8 @@ dbg__()
     X=""
     [ -n "$CATCH_THROW" ] && X="$X -ex \"catch throw\""
     [ -n "$CATCH_SIGABRT" ] && X="$X -ex \"catch signal SIGABRT\""
+    [ -n "$CATCH_MKDIR" ] && X="$X -ex \"catch syscall mkdir\""
+
     [ -z "$NORUN" ] && X="$X -ex r"
 
     local runline="gdb $H $B $T $X --args $* ";
