@@ -16,10 +16,10 @@ level (normally 5%)
 
 """
 
-import os, numpy as np
+import os, sys, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.nbase import chi2_pvalue
-
+C2PER_ERROR_CUT = float(os.environ.get("C2PER_ERROR_CUT","2.0"))
 
 if __name__ == '__main__':
     print("[sseq_index_test.p FOLD[%s]\n" % os.environ.get("FOLD","?"))
@@ -45,5 +45,8 @@ if __name__ == '__main__':
 
     print(c2desc)
     print(c2label)
-    print("]sseq_index_test.py\n")
+
+    rc = 10 if c2per > C2PER_ERROR_CUT else 0
+    print(f"]sseq_index_test.py  C2PER_ERROR_CUT {C2PER_ERROR_CUT} rc {rc} \n")
+    sys.exit(rc)
 pass

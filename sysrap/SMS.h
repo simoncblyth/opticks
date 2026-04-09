@@ -41,7 +41,7 @@ inline int32_t SMS::Type(const char* name)
     if(strcmp(name,SMS_UNKNOWN_) == 0 )  type = SMS_UNKNOWN  ;
     if(strcmp(name,SMS_ABSOLUTE_) == 0 ) type = SMS_ABSOLUTE ;
     if(strcmp(name,SMS_RELATIVE_) == 0 ) type = SMS_RELATIVE ;
-    assert( type != SRM_UNKNOWN );
+    assert( type != SMS_UNKNOWN );
     return type ;
 }
 

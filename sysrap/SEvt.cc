@@ -45,6 +45,7 @@
 #include "SComp.h"
 #include "SProf.hh"
 #include "SRecord.h"
+#include "SMS.h"
 
 
 bool SEvt::NPFOLD_VERBOSE = ssys::getenvbool(SEvt__NPFOLD_VERBOSE) ;
@@ -4257,12 +4258,14 @@ const char* SEvt::DefaultBase(const char* base_) // static
 {
     const char* base = nullptr ;
     int64_t mode_save = SEventConfig::ModeSave();
-    if( mode_save == 0 )
+    const char* mode_save_label = SEventConfig::ModeSaveLabel();
+
+    if( mode_save == SMS_ABSOLUTE )
     {
         // controlled dir approach : good for campaigns
         base = base_ ? base_ : spath::DefaultOutputDir() ;
     }
-    else if( mode_save == 1 )
+    else if( mode_save == SMS_RELATIVE )
     {
         // relative to invoking directory approach : good for quick tests
         base = BLANK ;
@@ -4273,6 +4276,7 @@ const char* SEvt::DefaultBase(const char* base_) // static
         << " base_ [" << ( base_ ? base_ : "-" ) << "]\n"
         << " base  [" << ( base  ? base  : "-" ) << "]\n"
         << " mode_save " << mode_save << "\n"
+        << " mode_save_label [" << ( mode_save_label ? mode_save_label : "-" ) << "]\n"
         ;
 
     return base ;
@@ -4665,11 +4669,14 @@ void SEvt::save(const char* dir_)
     // 7. count *slic* items within save_fold, when more than zero proceed to save to standard dir
 
     int slic = save_fold->_save_local_item_count();
+    std::string slicd = save_fold->_save_local_item_count_desc();
+
     if( slic > 0 )
     {
         const char* dir = getDir(dir_);   // THIS CREATES DIRECTORY
         LOG_IF(info, MINIMAL||SIMTRACE) << dir << " [" << save_comp << "]"  ;
         LOG(LEVEL) << descSaveDir(dir_) ;
+        LOG_IF(info, MINIMAL) << "slicd\n" << slicd ;
 
         LOG(LEVEL) << "[ save_fold.save " << dir ;
         save_fold->save(dir);

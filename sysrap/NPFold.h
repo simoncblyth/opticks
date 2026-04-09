@@ -355,7 +355,9 @@ public:
     int save(const char* base) ;
     int save_verbose(const char* base) ;
 
-    int _save_local_item_count() const ;
+    int         _save_local_item_count() const ;
+    std::string _save_local_item_count_desc() const ;
+
     int _save_local_meta_count() const ;
     int _save(const char* base) ;
 
@@ -2533,6 +2535,37 @@ inline int NPFold::_save_local_item_count() const
 {
     return kk.size() + ff.size() ;
 }
+
+inline std::string NPFold::_save_local_item_count_desc() const
+{
+    std::stringstream ss ;
+    ss
+       << "[NPFold::_save_local_item_count_desc\n"
+       << " slic " << _save_local_item_count()
+       << " kk.size " << kk.size()
+       << " ff.size " << ff.size()
+       ;
+
+    for(unsigned i=0 ; i < kk.size() ; i++)
+    {
+        const char* k = kk[i].c_str() ;
+        ss << "kk[" << i << "]{" << k << "}\n" ;
+    }
+    for(unsigned i=0 ; i < ff.size() ; i++)
+    {
+        const char* f = ff[i].c_str() ;
+        ss << "ff[" << i << "]{" << f << "}\n" ;
+    }
+
+    ss
+       << "]NPFold::_save_local_item_count_desc\n"
+       ;
+
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
 
 inline int NPFold::_save_local_meta_count() const
 {
