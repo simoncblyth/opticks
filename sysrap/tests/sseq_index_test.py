@@ -16,10 +16,14 @@ level (normally 5%)
 
 """
 
-import os, sys, numpy as np
+import os, textwrap, sys, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.nbase import chi2_pvalue
+from opticks.ana.metrics import metrics_append_gauge
+
+
 C2PER_ERROR_CUT = float(os.environ.get("C2PER_ERROR_CUT","2.0"))
+
 
 if __name__ == '__main__':
     print("[sseq_index_test.p FOLD[%s]\n" % os.environ.get("FOLD","?"))
@@ -48,5 +52,9 @@ if __name__ == '__main__':
 
     rc = 10 if c2per > C2PER_ERROR_CUT else 0
     print(f"]sseq_index_test.py  C2PER_ERROR_CUT {C2PER_ERROR_CUT} rc {rc} \n")
+
+    metrics_append_gauge(gauge="sseq_index_test_py_c2per", value=c2per, desc=f"chi2/ndf C2PER_ERROR_CUT {C2PER_ERROR_CUT}" )
+
+
     sys.exit(rc)
 pass

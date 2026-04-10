@@ -62,6 +62,7 @@ set(SCRIPTS
    seq.py
    nload.py
    num.py
+   metrics.py
 )
 
 
