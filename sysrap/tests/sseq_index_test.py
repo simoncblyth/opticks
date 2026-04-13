@@ -19,7 +19,7 @@ level (normally 5%)
 import os, textwrap, sys, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.nbase import chi2_pvalue
-from opticks.ana.metrics import metrics_append_gauge
+from opticks.ana.metrics import metrics_append_gauge, junit_write_report
 
 
 C2PER_ERROR_CUT = float(os.environ.get("C2PER_ERROR_CUT","2.0"))
@@ -49,12 +49,22 @@ if __name__ == '__main__':
 
     print(c2desc)
     print(c2label)
+    success = c2per <= C2PER_ERROR_CUT
 
-    rc = 10 if c2per > C2PER_ERROR_CUT else 0
+    if success:
+        rc = 0
+        error = ""
+    else:
+        rc = 10
+        error = f"c2per {c2per} exceeds C2PER_ERROR_CUT {C2PER_ERROR_CUT}"
+    pass
     print(f"]sseq_index_test.py  C2PER_ERROR_CUT {C2PER_ERROR_CUT} rc {rc} \n")
 
     metrics_append_gauge(gauge="sseq_index_test_py_c2per", value=c2per, desc=f"chi2/ndf C2PER_ERROR_CUT {C2PER_ERROR_CUT}" )
 
+    #log_snippet = "red\ngreen\nblue\ncyan\n"
+    log_snippet = "log_snippet"
+    junit_write_report(duration=c2per, success=success, error=error, log_snippet=log_snippet )
 
     sys.exit(rc)
 pass
