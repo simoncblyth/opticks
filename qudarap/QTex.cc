@@ -13,7 +13,7 @@
 #else
 #include <cuda_runtime.h>
 #include "cudaCheckErrors.h"
-#include "QU.hh"
+#include "QUDA_CHECK.h"
 #endif
 
 #include "QTex.hh"
@@ -21,12 +21,12 @@
 
 template<typename T>
 QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_, bool normalizedCoords_, const NP* a_  )
-    :   
+    :
     width(width_),
     height(height_),
     src(src_),
     filterMode(filterMode_),
-    normalizedCoords(normalizedCoords_), 
+    normalizedCoords(normalizedCoords_),
     origin(nullptr),
     a(a_),
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
@@ -38,42 +38,42 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     meta(new quad4),
     d_meta(nullptr)
 {
-    init(); 
+    init();
 }
 
 template<typename T>
-void QTex<T>::setOrigin(const void* origin_) 
+void QTex<T>::setOrigin(const void* origin_)
 {
-    origin = origin_  ; 
+    origin = origin_  ;
 }
 template<typename T>
-const void* QTex<T>::getOrigin() const  
+const void* QTex<T>::getOrigin() const
 {
-    return origin ; 
-}
-
-template<typename T>
-void QTex<T>::setHDFactor(unsigned hd_factor) 
-{
-    meta->q0.u.w = hd_factor ; 
+    return origin ;
 }
 
 template<typename T>
-unsigned QTex<T>::getHDFactor() const 
+void QTex<T>::setHDFactor(unsigned hd_factor)
 {
-    return meta->q0.u.w ; 
+    meta->q0.u.w = hd_factor ;
 }
 
 template<typename T>
-char QTex<T>::getFilterMode() const 
+unsigned QTex<T>::getHDFactor() const
 {
-    return filterMode ; 
+    return meta->q0.u.w ;
 }
 
 template<typename T>
-bool QTex<T>::getNormalizedCoords() const 
+char QTex<T>::getFilterMode() const
 {
-    return normalizedCoords ; 
+    return filterMode ;
+}
+
+template<typename T>
+bool QTex<T>::getNormalizedCoords() const
+{
+    return normalizedCoords ;
 }
 
 
@@ -91,37 +91,37 @@ template<typename T>
 void QTex<T>::init()
 {
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
-    assert(a); 
-    MockTextureManager::Add(a) ; 
+    assert(a);
+    MockTextureManager::Add(a) ;
 #else
-    createArray();   // cudaMallocArray using channelDesc for T 
+    createArray();   // cudaMallocArray using channelDesc for T
     uploadToArray();
     createTextureObject();
 #endif
 
-    meta->q0.u.x = width ; 
-    meta->q0.u.y = height ; 
-    meta->q0.u.z = 0 ; 
-    meta->q0.u.w = 0 ; 
+    meta->q0.u.x = width ;
+    meta->q0.u.y = height ;
+    meta->q0.u.z = 0 ;
+    meta->q0.u.w = 0 ;
 }
 
 
 template<typename T>
 void QTex<T>::setMetaDomainX( const quad* domx )
 {
-    meta->q1.f.x = domx->f.x ; 
-    meta->q1.f.y = domx->f.y ; 
-    meta->q1.f.z = domx->f.z ; 
-    meta->q1.f.w = domx->f.w ; 
+    meta->q1.f.x = domx->f.x ;
+    meta->q1.f.y = domx->f.y ;
+    meta->q1.f.z = domx->f.z ;
+    meta->q1.f.w = domx->f.w ;
 }
 
 template<typename T>
 void QTex<T>::setMetaDomainY( const quad* domy )
 {
-    meta->q2.f.x = domy->f.x ; 
-    meta->q2.f.y = domy->f.y ; 
-    meta->q2.f.z = domy->f.z ; 
-    meta->q2.f.w = domy->f.w ; 
+    meta->q2.f.x = domy->f.x ;
+    meta->q2.f.y = domy->f.y ;
+    meta->q2.f.z = domy->f.z ;
+    meta->q2.f.w = domy->f.w ;
 }
 
 
@@ -129,7 +129,7 @@ void QTex<T>::setMetaDomainY( const quad* domy )
 QTex:uploadMeta
 ------------------
 
-Not doing this automatically as will need to add some more meta 
+Not doing this automatically as will need to add some more meta
 
 **/
 
@@ -137,9 +137,12 @@ template<typename T>
 void QTex<T>::uploadMeta()
 {
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
-    d_meta = meta ; 
+    d_meta = meta ;
 #else
-    d_meta = QU::UploadArray<quad4>(meta, 1, "QTex::uploadMeta" );  
+    size_t size = sizeof(quad);
+    d_meta = nullptr ;
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_meta ), size ));
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_meta ), meta, size, cudaMemcpyHostToDevice ));
 #endif
 }
 
@@ -150,18 +153,18 @@ void QTex<T>::uploadMeta()
 template<typename T>
 std::string QTex<T>::desc() const
 {
-    std::stringstream ss ; 
+    std::stringstream ss ;
 
     ss << "QTex"
-       << " width " << width 
-       << " height " << height 
+       << " width " << width
+       << " height " << height
        << " texObj " << texObj
        << " meta " << meta
        << " d_meta " << d_meta
        ;
 
-    std::string s = ss.str(); 
-    return s ; 
+    std::string s = ss.str();
+    return s ;
 }
 
 
@@ -181,34 +184,34 @@ QTex::uploadToArray
 
 ::
 
-    cudaError_t 
+    cudaError_t
     cudaMemcpy2DToArray(
-       struct cudaArray* dst, 
-       size_t wOffset, 
-       size_t hOffset, 
-       const void* src, 
-       size_t spitch, 
-       size_t width, 
-       size_t height, 
-       enum cudaMemcpyKind kind) 
+       struct cudaArray* dst,
+       size_t wOffset,
+       size_t hOffset,
+       const void* src,
+       size_t spitch,
+       size_t width,
+       size_t height,
+       enum cudaMemcpyKind kind)
 
-Copies a matrix (height rows of width bytes each) from the memory area pointed to by src 
-to the CUDA array dst starting at the upper left corner (wOffset, hOffset) where kind is one of 
+Copies a matrix (height rows of width bytes each) from the memory area pointed to by src
+to the CUDA array dst starting at the upper left corner (wOffset, hOffset) where kind is one of
 cudaMemcpyHostToHost, cudaMemcpyHostToDevice, cudaMemcpyDeviceToHost, or cudaMemcpyDeviceToDevice,
-and specifies the direction of the copy. 
-spitch is the width in memory in bytes of the 2D array pointed to by src, 
-including any padding added to the end of each row. 
-wOffset + width must not exceed the width of the CUDA array dst. 
-width must not exceed spitch. 
+and specifies the direction of the copy.
+spitch is the width in memory in bytes of the 2D array pointed to by src,
+including any padding added to the end of each row.
+wOffset + width must not exceed the width of the CUDA array dst.
+width must not exceed spitch.
 
 cudaMemcpy2DToArray() returns an error if spitch exceeds the maximum allowed.
 
-dst - Destination memory address 
+dst - Destination memory address
 wOffset - Destination starting X offset
 hOffset - Destination starting Y offset
 src - Source memory address
 spitch - Pitch of source memory
-width - Width of matrix transfer (columns in bytes) 
+width - Width of matrix transfer (columns in bytes)
 height - Height of matrix transfer (rows)
 kind - Type of transfer
 
@@ -225,9 +228,9 @@ void QTex<T>::uploadToArray()
     size_t hOffset = 0 ;
     cudaMemcpyKind kind = cudaMemcpyHostToDevice ;
 
-    size_t spitch = width*sizeof(T);  
-    size_t width_bytes = width*sizeof(T); 
-    size_t height_rows = height ; 
+    size_t spitch = width*sizeof(T);
+    size_t width_bytes = width*sizeof(T);
+    size_t height_rows = height ;
 
     cudaMemcpy2DToArray(dst, wOffset, hOffset, src, spitch, width_bytes, height_rows, kind );
 
@@ -239,7 +242,7 @@ void QTex<T>::uploadToArray()
 /**
 
 normalized:false
-   means texel coordinate addressing 
+   means texel coordinate addressing
 
 normalized:true
    eg reemission generation need normalized
@@ -260,12 +263,12 @@ void QTex<T>::createTextureObject()
     texDesc.addressMode[0] = cudaAddressModeWrap;
     texDesc.addressMode[1] = cudaAddressModeWrap;
 
-    assert( filterMode == 'P' || filterMode == 'L' ); 
+    assert( filterMode == 'P' || filterMode == 'L' );
     switch(filterMode)
     {
-        case 'L': texDesc.filterMode = cudaFilterModeLinear ; break ; 
-        case 'P': texDesc.filterMode = cudaFilterModePoint  ; break ;  
-        // cudaFilterModePoint: switches off interpolation, necessary with char texture  
+        case 'L': texDesc.filterMode = cudaFilterModeLinear ; break ;
+        case 'P': texDesc.filterMode = cudaFilterModePoint  ; break ;
+        // cudaFilterModePoint: switches off interpolation, necessary with char texture
     }
 
     texDesc.readMode = cudaReadModeElementType;  // return data of the type of the underlying buffer
@@ -285,22 +288,22 @@ void QTex<T>::createTextureObject()
 /**
 https://developer.nvidia.com/blog/cuda-refresher-cuda-programming-model/
 
-A group of threads is called a CUDA block. 
+A group of threads is called a CUDA block.
 Each CUDA block is executed by one streaming multiprocessor.
 CUDA architecture limits the numbers of threads per block (1024 threads per block limit).
 
-CUDA blocks are grouped into a grid. 
+CUDA blocks are grouped into a grid.
 A kernel is executed as a grid of blocks of threads::
 
     unsigned x = blockIdx.x * blockDim.x + threadIdx.x;
     unsigned y = blockIdx.y * blockDim.y + threadIdx.y;
 
-The below *numBlocks* divides by the *threadsPerBlock* to give sufficient threads to cover the workspace, 
+The below *numBlocks* divides by the *threadsPerBlock* to give sufficient threads to cover the workspace,
 potentially with some spare threads at edge when workspace is not an exact multiple of threadsPerBlock size.
 
 **/
 
-// API export is essential on this template struct, otherwise get all symbols missing 
+// API export is essential on this template struct, otherwise get all symbols missing
 template struct QUDARAP_API QTex<uchar4>;
 
 #pragma GCC diagnostic push

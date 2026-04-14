@@ -2,37 +2,26 @@
 """
 ::
 
-    ipython -i tests/QTexLookupTest.py 
+    ~/o/qudarap/tests/QTexLookupTest.sh
+    ~/o/qudarap/tests/QTexLookupTest.sh pdb
+    ~/o/qudarap/tests/QTexLookupTest.sh ana
 
 """
-import os, logging, numpy as np
+import os, sys, logging, numpy as np
+from opticks.ana.fold import Fold
+
 log = logging.getLogger(__name__)
-
-
-class QTexLookupTest(object):
-    FOLD = os.path.expandvars("/tmp/$USER/opticks/QTexLookupTest") 
-
-    def __init__(self, fold=None):
-        if fold is None:
-            fold = self.FOLD
-        pass        
-        names = os.listdir(fold)
-        log.info("loading from fold %s " % fold)
-        for name in filter(lambda _:_.endswith(".npy"), names):
-            path = os.path.join(fold, name)
-            stem = name[:-4]
-            a = np.load(path) 
-            print( " t.%5s  %s " % (stem, str(a.shape))) 
-            setattr(self, stem, a )
-            globals()[stem] = a 
-        pass
-        self.fold = fold
-    pass
 
 if __name__ == '__main__':
      logging.basicConfig(level=logging.INFO)
-     t = QTexLookupTest()
 
-     np.all( t.lookup == t.origin )  
+     f = Fold.Load(symbol="f")
+     print(repr(f))
 
+     print("f.origin\n", f.origin )
+     print("f.lookup\n", f.lookup )
 
+     match = np.all( f.lookup == f.origin )
+     rc = 0 if match else 1
+     print(f" match {match} rc {rc} \n")
+     sys.exit( rc )
