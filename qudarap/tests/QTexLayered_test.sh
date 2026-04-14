@@ -1,25 +1,24 @@
 #!/bin/bash
 
 usage(){ cat << EOU
+QTexLayered_test.sh
+=====================
 
+Test creation of layered texture from NP.hh array.
 
-~/o/qudarap/tests/QTex_test.sh
+~/o/qudarap/tests/QTexLayered_test.sh
+
 
 EOU
 }
 
+name=QTexLayered_test
+
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=QTex_test
-
-defarg="info_build_run"
+defarg="info_gcc_run"
 arg=${1:-$defarg}
-
-
-tmp=/tmp/$USER/opticks
-export TMP=${TMP:-$tmp}
-
-export FOLD=$TMP/$name
+export FOLD=/tmp/$name
 mkdir -p $FOLD
 
 bin=$FOLD/$name
@@ -27,20 +26,18 @@ bin=$FOLD/$name
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-vars="BASH_SOURCE arg name tmp TMP FOLD CUDA_PREFIX OPTICKS_PREFIX"
+vars="BASH_SOURCE arg name FOLD CUDA_PREFIX OPTICKS_PREFIX"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 fi
 
-if [ "${arg/build}" != "$arg" ]; then
-
-    #-DMOCK_TEXTURE \
-    gcc $name.cc ../QTex.cc \
+if [ "${arg/gcc}" != "$arg" ]; then
+    gcc $name.cc \
          -g -std=c++17 -lstdc++ -lcudart \
-         -DWITH_CUDA \
          -I.. \
-         -I$OPTICKS_PREFIX/include/SysRap \
+         -DWITH_CUDA \
+         -I../../sysrap \
          -I$CUDA_PREFIX/include \
          -L$CUDA_PREFIX/lib64 \
          -o $bin
@@ -53,6 +50,5 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : eun error && exit 2
 fi
 
-
-
 exit 0
+

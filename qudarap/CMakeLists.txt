@@ -79,6 +79,8 @@ set(SOURCES
     QTexLookup.cc
     QTexLookup.cu
 
+    QTexLayeredLookup.cu
+
     QBase.cc
     QBnd.cc
     QBnd.cu
@@ -144,6 +146,7 @@ SET(HEADERS
     QTexRotate.hh
     QTexMaker.hh
     QTexLookup.hh
+    QTexLayeredLookup.h
 
     QState.hh
 
