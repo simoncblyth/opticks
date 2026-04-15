@@ -141,7 +141,10 @@ set(HEADERS
 
     U4Material.hh
     U4Mat.h
+
     U4Scint.h
+    U4ScintThree.h
+    U4ScintCommon.h
 
     U4Volume.h
     U4Surface.h

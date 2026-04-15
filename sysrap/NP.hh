@@ -584,8 +584,19 @@ struct NP
 
     static NP* Concatenate(const char* dir, const std::vector<std::string>& names);
 
+    template<typename... Args>
+    static NP* Concatenate_(Args ... args);  // Concatenate_ellipsis
+
     template<typename T>
     static NP* Concatenate(const std::vector<T*>& aa );  // template allows use with "NP" and "const NP"
+
+
+    template<typename... Args>
+    static NP* Stack_(Args ... args);
+    template<typename T>
+    static NP* Stack(const std::vector<T*>& aa);
+
+
 
     static NP* Combine(const std::vector<const NP*>& aa, bool annotate=true, const NP* parasite=nullptr );
     template<typename... Args> static NP* Combine_(Args ... aa);  // Combine_ellipsis
@@ -7544,6 +7555,15 @@ inline NP* NP::Concatenate(const char* dir, const std::vector<std::string>& name
     return concat ;
 }
 
+
+
+template<typename... Args> inline NP* NP::Concatenate_(Args ... args)  // Concatenate_ellipsis
+{
+    std::vector<const NP*> aa = {args...};
+    return Concatenate(aa);
+}
+
+
 /**
 NP::Concatenate
 ----------------
@@ -7611,6 +7631,75 @@ inline NP* NP::Concatenate(const std::vector<T*>& aa )  // static
     }
     return c ;
 }
+
+
+
+template<typename... Args> inline NP* NP::Stack_(Args ... args)  // Concatenate_ellipsis
+{
+    std::vector<const NP*> aa = {args...};
+    return Stack(aa);
+}
+
+
+/**
+NP::Stack
+----------
+
+Stack arrays of the same shape adding a first dimension
+corresponding to the number of arrays in the input vector.
+
+**/
+
+template<typename T>
+inline NP* NP::Stack(const std::vector<T*>& aa)  // static
+{
+    assert( aa.size() > 0 );
+    const NP* a0 = aa[0] ;
+
+    for(unsigned i=1 ; i < aa.size() ; i++)
+    {
+        auto a = aa[i];
+        bool dtype_expect = strcmp( a->dtype, a0->dtype ) == 0  ;
+        if(!dtype_expect) std::cerr << "NP::Stack : input arrays must all have same dtype " << std::endl;
+        assert( dtype_expect );
+
+        bool shape_expect = a->shape == a0->shape  ;
+        if(!shape_expect) std::cerr << "NP::Stack : input arrays must all have same shape " << std::endl;
+        assert( shape_expect );
+    }
+
+    std::vector<INT> c_shape ;
+    c_shape.push_back( aa.size() );
+    for(INT i=0 ; i < a0->shape.size() ; i++ ) c_shape.push_back( a0->shape[i] );
+
+    NP* c = new NP(a0->dtype, c_shape );
+
+    UINT offset_bytes = 0 ;   // uint64_t needed here to avoid clocking offset_bytes for large array handling
+    for(unsigned i=0 ; i < aa.size() ; i++)
+    {
+        auto a = aa[i];
+        UINT a_bytes = a->uarr_bytes() ;
+        memcpy( c->data.data() + offset_bytes ,  a->data.data(),  a_bytes );
+        offset_bytes += a_bytes ;
+    }
+
+    return c ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
 NP::Combine
@@ -7773,6 +7862,15 @@ template<typename... Args> inline NP* NP::Combine_(Args ... args)  // Combine_el
 }
 
 
+
+
+
+
+
+
+
+
+
 inline bool NP::Exists(const char* base, const char* rel,  const char* name) // static
 {
     std::string path = U::form_path(base, rel, name);
@@ -7889,7 +7987,7 @@ inline std::ifstream* NP::load_header(const char* _path, const char* _sli)
     _hdr += '\n' ;
 
     bool no_slice = LooksLikeSliceIndexStringIsEmpty( _sli );
-    bool do_data_resize = !nodata && no_slice ; 
+    bool do_data_resize = !nodata && no_slice ;
     // when there is an active slice the data resize is deferred
     decode_header(do_data_resize);
 
