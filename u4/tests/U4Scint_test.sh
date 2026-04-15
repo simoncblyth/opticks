@@ -1,68 +1,83 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 U4Scint_test.sh
 ================
 
+~/o/u4/tests/U4Scint_test.sh
+
 EOU
 }
 
-SDIR=$(cd $(dirname $BASH_SOURCE) && pwd)
+cd $(dirname $(realpath $BASH_SOURCE))
 name=U4Scint_test
+script=$name.py
 
-defarg="info_build_run_ana"
+defarg="info_gcc_run_ana"
 arg=${1:-$defarg}
 
 source $HOME/.opticks/GEOM/GEOM.sh
 
-export FOLD=/tmp/$name 
-bin=$FOLD/$name 
-mkdir -p $FOLD 
+tmp=/tmp/$USER/opticks
+export TMP=${TMP:-$tmp}
+export FOLD=$TMP/$name
+mkdir -p $FOLD
 
-clhep-
-g4-
+bin=$FOLD/$name
 
-vars="BASH_SOURCE SDIR name defarg arg FOLD GEOM"
 
-if [ "${arg/info}" != "$arg" ]; then 
-   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done 
-fi 
+cuda_prefix=/usr/local/cuda
+CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
 
-if [ "${arg/build}" != "$arg" ]; then 
+# ordinary "lo" environment is sufficient
+get-cmake-prefix(){ echo $CMAKE_PREFIX_PATH | tr ":" "\n" | grep $1 ; }
+CLHEP_PREFIX=$(get-cmake-prefix CLHEP)
+GEANT4_PREFIX=$(get-cmake-prefix Geant4)
+
+
+vars="BASH_SOURCE PWD name defarg arg FOLD GEOM CUDA_PREFIX CLHEP_PREFIX GEANT4_PREFIX"
+
+if [ "${arg/info}" != "$arg" ]; then
+   for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
+fi
+
+if [ "${arg/gcc}" != "$arg" ]; then
    gcc \
-       $SDIR/$name.cc \
-       -std=c++11 -lstdc++ \
-       -I$HOME/opticks/sysrap \
-       -I$(clhep-prefix)/include \
-       -I$(g4-prefix)/include/Geant4  \
+       $name.cc \
+       -std=c++17 -lstdc++ -g \
+       -I../../sysrap \
+       -I$CLHEP_PREFIX/include \
+       -I$GEANT4_PREFIX/include/Geant4  \
        -I.. \
-       -L$(g4-prefix)/lib \
-       -L$(clhep-prefix)/lib \
+       -L$GEANT4_PREFIX/lib64 \
+       -L$CLHEP_PREFIX/lib \
        -lG4global \
        -lG4geometry \
        -lCLHEP \
        -o $bin
 
-   [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
-fi 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : gcc error && exit 1
+fi
 
-if [ "${arg/run}" != "$arg" ]; then 
+if [ "${arg/run}" != "$arg" ]; then
    $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
-fi 
+fi
 
-if [ "${arg/dbg}" != "$arg" ]; then 
-   case $(uname) in 
-      Darwin) lldb__ $bin ;;
-      Linux)  gdb__ $bin ;;
-   esac
+if [ "${arg/dbg}" != "$arg" ]; then
+   source dbg__.sh
+   dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
-fi 
+fi
 
-if [ "${arg/ana}" != "$arg" ]; then 
-   ${IPYTHON:-ipython} --pdb -i $SDIR/$name.py  
+if [ "${arg/pdb}" != "$arg" ]; then
+   ${IPYTHON:-ipython} --pdb -i $script
+   [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error && exit 3
+fi
+
+if [ "${arg/ana}" != "$arg" ]; then
+   ${PYTHON:-python} $script
    [ $? -ne 0 ] && echo $BASH_SOURCE : ana error && exit 3
-fi 
+fi
 
-
-exit 0 
+exit 0
 

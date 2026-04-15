@@ -1,17 +1,18 @@
-// ./U4Scint_test.sh 
+// ~/o/u4/tests/U4Scint_test.sh
 
+#include "spath.h"
 #include "U4Scint.h"
 
 int main()
 {
-    const char* BASE = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry" ;    
-    const char* name = "LS" ; 
-    NPFold* fold = NPFold::Load(BASE,"SSim/stree/material",name) ;  
+    const char* material_dir = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/stree/material");
+    std::cout << " material_dir [" << ( material_dir ? material_dir : "-" ) << "]\n" ;
+    NPFold* fold = NPFold::Load(material_dir) ;
 
-    U4Scint scint(fold, name ); 
-    std::cout << scint.desc() ; 
+    U4Scint* scint = U4Scint::Create(fold);
+    std::cout << ( scint ? scint->desc() : "no-scint" ) << "\n"  ;
+    if(!scint) return 0 ;
+    scint->save("$FOLD");
 
-    scint.save("$FOLD"); 
-
-    return 0 ; 
+    return 0 ;
 }
