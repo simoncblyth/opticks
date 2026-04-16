@@ -4,40 +4,61 @@
 #include "spath.h"
 #include "scuda.h"
 #include "NP.hh"
+#include "NPFold.h"
+
 #include "QScint.hh"
 
-void test_check(QScint& sc)
+struct QScintTest
 {
-    sc.check(); 
+    const QScint* scint ;
+    const NP*     src ;
+    const NP*     dst ;
+
+    QScintTest( const QScint* scint );
+    void save(const char* base);
+};
+
+
+inline QScintTest::QScintTest( const QScint* scint_ )
+    :
+    scint(scint_),
+    src(scint->src),
+    dst(scint->lookup())
+{
 }
 
-void test_lookup(QScint& sc)
+inline void QScintTest::save(const char* base)
 {
-    NP* dst = sc.lookup(); 
-    dst->save("$TMP/QScintTest/dst.npy"); 
-    sc.src->save("$TMP/QScintTest/src.npy") ; 
+    NPFold* fold = new NPFold ;
+    fold->add("src", src);
+    fold->add("dst", dst);
+    fold->save(base);
 }
+
+
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv); 
+    OPTICKS_LOG(argc, argv);
 
-    const char* path = spath::Resolve("$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim/stree/standard/icdf.npy" ); 
-    NP* icdf = NP::LoadIfExists(path); 
+    const char* path = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/stree/standard/icdf.npy");
+    NP* icdf = NP::LoadIfExists(path);
 
-    LOG(info) 
-        << " path " << path 
+    LOG(info)
+        << " path " << path
         << " icdf " << ( icdf ? icdf->sstr() : "-" )
-        ; 
+        ;
 
-    if(icdf == nullptr) return 0 ; 
+    if(icdf == nullptr) return 0 ;
 
-    unsigned hd_factor = 0u ; 
-    QScint sc(icdf, hd_factor);     // uploads reemission texture  
+    unsigned hd_factor = 0u ;
+    QScint sc(icdf, hd_factor);     // uploads reemission texture
 
-    test_lookup(sc); 
-    //test_check(sc); 
+    //sc.check();
+    QScintTest t(&sc);
+    t.save("$FOLD");
 
-    return 0 ; 
+
+    return 0 ;
 }
 

@@ -1,29 +1,26 @@
 #!/usr/bin/env python
 """
-QScintTest.py
-================
 
-::
- 
-   ipython -i tests/QScintTest.py
- 
+~/o/qudarap/tests/QScintTest.sh pdb
+~/o/qudarap/tests/QScintTest.sh ana
+
 
 """
-import os 
+import sys, os
 import numpy as np
-fold="$TMP/QScintTest"
-load_ = lambda name:np.load(os.path.expandvars("%s/%s" % (fold,name)))
+from opticks.ana.fold import Fold
+
 
 if __name__ == '__main__':
-    src = load_("src.npy")
-    dst = load_("dst.npy")
+    f = Fold.Load(symbol="f")
+    print(repr(f))
 
-    s = src
-    d = dst.reshape(src.shape)
-    assert np.allclose( s, d )
+    src = f.src
+    dst = f.dst
 
-    ss = src.reshape(dst.shape)
-    dd = dst
-    assert np.allclose( ss, dd )
+    src_dst_equal = np.all( src == dst )
+    src_dst_close = np.allclose( src, dst )
+    rc = 0 if src_dst_equal else 1
+    print(f" src_dst_equal {src_dst_equal} src_dst_close {src_dst_close} rc {rc} ")
 
-
+    sys.exit(rc)
