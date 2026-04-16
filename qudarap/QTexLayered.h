@@ -7,7 +7,7 @@ Creates a CUDA layered texture from a NP.hh array of shape::
 
     (layers, height, width, payload )
 
-Currently tested only with payload = 1 and float.
+Currently tested only with payload = 1 and T=float.
 
 **/
 #include <string>
@@ -27,17 +27,20 @@ struct QTexLayered
 {
     const NP*    a ;
     char         filterMode ;
+    bool         scrunch_height ;
 
     size_t       layers ;
     size_t       height ;
     size_t       width ;
     size_t       payload ;
 
-    quad4*              meta ;
-    quad4*              d_meta ;
+    int          hd_factor ;
+
+    quad4*       meta ;
+    quad4*       d_meta ;
 
     std::string desc() const ;
-    QTexLayered(const NP* a, char filterMode );
+    QTexLayered(const NP* a, char filterMode, bool scrunch );
     ~QTexLayered();
 
     cudaChannelFormatDesc  channelDesc ;
@@ -59,10 +62,12 @@ std::string QTexLayered<T>::desc() const
    std::stringstream ss ;
    ss << "QTexLayered"
       << "  a "  << ( a ? a->sstr() : "-" )
+      << "  scrunch_height " << ( scrunch_height ? "YES" : "NO " )
       << "  layers " << layers
       << "  height " << height
       << "  width  " << width
       << "  payload " << payload
+      << "  hd_factor " << hd_factor
       << "\n"
       ;
 
@@ -73,14 +78,16 @@ std::string QTexLayered<T>::desc() const
 
 
 template<typename T>
-QTexLayered<T>::QTexLayered(const NP* a_, char filterMode_ )
+QTexLayered<T>::QTexLayered(const NP* a_, char filterMode_, bool scrunch_height_ )
     :
     a(a_),
     filterMode(filterMode_),
+    scrunch_height(scrunch_height_),
     layers(0),
     height(0),
     width(0),
     payload(0),
+    hd_factor(a ? a->get_meta<int>("hd_factor",0) : -1 ),
     channelDesc(cudaCreateChannelDesc<T>()),
     layeredArray(nullptr),
     tex(0),
@@ -112,21 +119,28 @@ void QTexLayered<T>::init()
     assert(a->shape.size() == 4 );
     assert( filterMode == 'P' || filterMode == 'L' );
 
-    layers = a->shape[0];
-    height = a->shape[1];
+    if(scrunch_height)
+    {
+        layers = a->shape[0]*a->shape[1];
+        height = 1 ;
+    }
+    else
+    {
+        layers = a->shape[0];
+        height = a->shape[1];
+    }
     width  = a->shape[2];
     payload = a->shape[3] ;
+
 
     size_t payload_check = GetPayloadSize();
     assert( payload_check == payload );
     assert( payload == 1 || payload == 2 || payload == 3 || payload == 4 );
 
-    //hd_factor = a->get_meta<int>("hd_factor",0);
-
     meta->q0.u.x = width ;
     meta->q0.u.y = height ;
     meta->q0.u.z = layers ;   // HMM: payload can be determined from template type
-    //meta->q0.u.w = hd_factor ;
+    meta->q0.u.w = hd_factor ;
 
     init_createArray();
     init_createTextureObject();

@@ -1,0 +1,101 @@
+#pragma once
+
+#include <string>
+struct NP ;
+template <typename T> struct QTexLayered ;
+struct qscint_three ;
+
+struct QScintThree
+{
+    static QTexLayered<float>* MakeScintTex(const NP* layered_icdf );
+    static qscint_three* MakeDevInstance(const QTexLayered<float>* tex);
+    template<typename T> static T* UploadInstance(T* ptr);
+
+    QTexLayered<float>* tex ;
+    qscint_three*       scint ;
+    qscint_three*       d_scint ;
+
+    QScintThree(const NP* layered_icdf );
+    std::string desc() const ;
+};
+
+#include "QTexLayered.h"
+#include "qscint_three.h"
+
+inline QScintThree::QScintThree(const NP* layered_icdf )
+    :
+    tex(MakeScintTex(layered_icdf)),
+    scint(MakeDevInstance(tex)),
+    d_scint(UploadInstance<qscint_three>(scint))
+{
+}
+
+inline std::string QScintThree::desc() const
+{
+    std::stringstream ss ;
+    ss << "[QScintThree.desc\n" ;
+    ss << "tex.desc :" << ( tex ? tex->desc() : "-" ) << "\n" ;
+    ss << "scint    :" << scint << "\n" ;
+    ss << "d_scint  :" << d_scint << "\n" ;
+    ss << "]QScintThree.desc\n" ;
+    std::string str = ss.str() ;
+    return str;
+}
+
+
+/**
+QScintThree::MakeScintTex
+--------------------------
+
+Convert layered_icdf array of shape (3, 3, 4096, 1) into a 9 layered texture
+
+**/
+
+inline QTexLayered<float>* QScintThree::MakeScintTex(const NP* layered_icdf )  // static
+{
+    const NP* src = layered_icdf->ebyte == 4 ? layered_icdf : NP::MakeNarrow(layered_icdf) ;
+
+
+    bool expected_shape = src->has_shape(3, 3, 4096, 1) ;
+    if(!expected_shape) std::cerr << "QScintThree::MakeScintTex unexpected shape of src " << ( src ? src->sstr() : "-" ) << "\n" ;
+    assert( expected_shape );
+    if(!expected_shape) std::raise(SIGINT);
+
+    bool src_expect = src->uifc == 'f' && src->ebyte == 4 ;
+    if(!src_expect) std::cerr << "QScintThree::MakeScintTex unexpected src.uifc{" << src->uifc << "}" << " or src.ebyte{" << src->ebyte << "}\n" ;
+    assert( src_expect );
+    if(!src_expect) std::raise(SIGINT);
+
+    bool disable_interpolation = ssys::getenvbool("QSCINTTHREE_DISABLE_INTERPOLATION");
+    char filterMode = disable_interpolation ? 'P' : 'L' ;
+    if(disable_interpolation) std::cerr << "QScintThree::MakeScintTex QSCINTTHREE_DISABLE_INTERPOLATION active using filterMode " << filterMode << "\n" ;
+
+
+    bool scrunch_height = true ;  // (3, 3, 4096, 1) ->  (9, 1, 4096, 1)  giving 9 layer tex
+    QTexLayered<float>* tex = new QTexLayered<float>(src, filterMode, scrunch_height );
+    tex->uploadMeta();
+
+    std::cout << "QScintThree::MakeScintTex tex.desc " << ( tex ? tex->desc() : "-" ) << "\n" ;
+
+    return tex ;
+}
+
+inline qscint_three* QScintThree::MakeDevInstance(const QTexLayered<float>* tex) // static
+{
+    qscint_three* scint = new qscint_three ;
+    scint->scint_tex_layered = tex->tex ;
+    return scint ;
+}
+
+template<typename T>
+inline T* QScintThree::UploadInstance(T* ptr)  // static
+{
+    size_t size = sizeof(T);
+    T* d_ptr = nullptr ;
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_ptr ), size ));
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_ptr ), ptr, size, cudaMemcpyHostToDevice ));
+    return d_ptr ;
+}
+
+
+
