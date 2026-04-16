@@ -1,7 +1,12 @@
 #pragma once
 /**
 qscint.h
-==================
+==========
+
+Instanciation and uploading of qscint.h is orchestrated within
+the QScint::QScint ctor which prepares with QScint::MakeInstance
+and uploads.
+
 
 **/
 
@@ -28,14 +33,20 @@ struct qscint
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QSCINT_METHOD void    generate( sphoton& p, RNG& rng, const quad6& gs, unsigned long long photon_id, int genstep_id ) const ;
-    QSCINT_METHOD void    reemit(   sphoton& p, RNG& rng, float scintillationTime) const ;
+    QSCINT_METHOD void    reemit(   sphoton& p, RNG& rng, float scintillationTime) const ; // huh: not used
     QSCINT_METHOD void    mom_pol_wavelength(sphoton& p, RNG& rng) const ;
     // sets direction, polarization and wavelength as needed by both generate and reemit
 
     QSCINT_METHOD float   wavelength(     const float& u0) const ;
     QSCINT_METHOD float   wavelength_hd0( const float& u0) const ;
+
+#ifdef WITH_QSCINT_BRANCHED_IMPL
+    QSCINT_METHOD float   wavelength_hd10_branched(const float& u0) const ;
+    QSCINT_METHOD float   wavelength_hd20_branched(const float& u0) const ;
+#endif
     QSCINT_METHOD float   wavelength_hd10(const float& u0) const ;
     QSCINT_METHOD float   wavelength_hd20(const float& u0) const ;
+
 
 #endif
 
@@ -76,8 +87,8 @@ inline QSCINT_METHOD void qscint::generate(
 
 
 /**
-qscint::reemit_photon
-------------------------
+qscint::reemit
+----------------
 
 OLD NOTES IN NEED OF REVIST : HOW TO HANDLE REEMISSION scintillationTime ?
 
@@ -169,17 +180,18 @@ inline QSCINT_METHOD float qscint::wavelength_hd0(const float& u0) const
 
 /**
 qscint::wavelength_hd10
---------------------------------------------------
+-------------------------
 
 Idea is to improve handling of extremes by throwing ten times the bins
 at those regions, using simple and cheap linear mappings.
 
-TODO: move hd "layers" into float4 payload so the 2d cerenkov and 1d scint
-icdf texture can share some of teh implementation
+A possible alternative would be to put the three HD "layers" into
+the payload with a float4.
 
 **/
 
-inline QSCINT_METHOD float qscint::wavelength_hd10(const float& u0) const
+#ifdef WITH_QSCINT_BRANCHED_IMPL
+inline QSCINT_METHOD float qscint::wavelength_hd10_branched(const float& u0) const
 {
     float wl ;
 
@@ -201,10 +213,19 @@ inline QSCINT_METHOD float qscint::wavelength_hd10(const float& u0) const
     }
     return wl ;
 }
+#endif
+inline QSCINT_METHOD float qscint::wavelength_hd10(const float& u0) const
+{
+    const bool is_lhs = (u0 < 0.1f);
+    const bool is_rhs = (u0 > 0.9f);
+    const float x = is_lhs ? (u0 * 10.f) : (is_rhs ? (u0 - 0.9f) * 10.f : u0);
+    const float y = is_lhs ? 1.5f/3.f : (is_rhs ? 2.5f/3.f : 0.5f/3.f) ;
+    return tex2D<float>(scint_tex, x, y );
+}
 
 
-
-inline QSCINT_METHOD float qscint::wavelength_hd20(const float& u0) const
+#ifdef WITH_QSCINT_BRANCHED_IMPL
+inline QSCINT_METHOD float qscint::wavelength_hd20_branched(const float& u0) const
 {
     float wl ;
 
@@ -226,6 +247,39 @@ inline QSCINT_METHOD float qscint::wavelength_hd20(const float& u0) const
     }
     return wl ;
 }
+#endif
+inline QSCINT_METHOD float qscint::wavelength_hd20(const float& u0) const
+{
+    const bool is_lhs = (u0 < 0.05f);
+    const bool is_rhs = (u0 > 0.95f);
+    const float x = is_lhs ? (u0 * 20.f) : (is_rhs ? (u0 - 0.95f) * 20.f : u0);
+    const float y = is_lhs ? 1.5f/3.f : (is_rhs ? 2.5f/3.f : 0.5f/3.f) ;
+    return tex2D<float>(scint_tex, x, y );
+}
+
+
+
+
+/**
+qscint::wavelength_hd20_layered
+--------------------------------
+
+Gemini suggestion to avoid the branching assuming
+layered texture created from array of shape::
+
+     (3:full/lhs/rhs, 1:height,  4096:bins, 1:payload )
+
+
+inline QSCINT_METHOD float qscint::wavelength_hd20_layered(const float& u0) const
+{
+    const bool is_lhs = (u0 < 0.05f);
+    const bool is_rhs = (u0 > 0.95f);
+    const int layer = is_lhs ? 1 : (is_rhs ? 2 : 0);
+    const float x = is_lhs ? (u0 * 20.f) : (is_rhs ? (u0 - 0.95f) * 20.f : u0);
+    return tex2DLayered<float>(scint_tex_layered, x, 0.5f, layer);
+}
+**/
+
 
 
 #endif
