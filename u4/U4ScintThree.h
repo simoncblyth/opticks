@@ -95,7 +95,7 @@ struct U4ScintThree
     const NP* lab_wls ;
     const NP* ppo_wls ;
     const NP* bis_wls ;
-    const NP* u4wls ;
+    const NP* wls ;
 
     static U4ScintThree* Create(const NPFold* materials );
     U4ScintThree(const NPFold* fold, const char* name);
@@ -160,7 +160,7 @@ inline U4ScintThree::U4ScintThree(const NPFold* scint_, const char* name_)
     lab_wls(U4ScintCommon::CreateWavelengthSamples<float>(lab_cmp_cdf, num_wlsamp )),
     ppo_wls(U4ScintCommon::CreateWavelengthSamples<float>(ppo_cmp_cdf, num_wlsamp )),
     bis_wls(U4ScintCommon::CreateWavelengthSamples<float>(bis_cmp_cdf, num_wlsamp )),
-    u4wls(NP::Stack_(lab_wls,ppo_wls,bis_wls))
+    wls(NP::Stack_(lab_wls,ppo_wls,bis_wls))
 {
 }
 
@@ -186,7 +186,7 @@ inline std::string U4ScintThree::desc() const
        << " lab_wls " << ( lab_wls ? lab_wls->sstr() : "-" )
        << " ppo_wls " << ( ppo_wls ? ppo_wls->sstr() : "-" )
        << " bis_wls " << ( bis_wls ? bis_wls->sstr() : "-" )
-       << " u4wls "   << ( u4wls ? u4wls->sstr() : "-" )
+       << " wls "   << ( wls ? wls->sstr() : "-" )
        << std::endl
        ;
 
@@ -220,7 +220,7 @@ inline NPFold* U4ScintThree::make_fold() const
     fold->add("lab_wls", lab_wls );
     fold->add("ppo_wls", ppo_wls );
     fold->add("bis_wls", bis_wls );
-    fold->add("u4wls", u4wls );
+    fold->add("wls", wls );
 
     return fold ;
 }

@@ -13,6 +13,7 @@ QScintThree_test.sh
 
 struct QScintThree_test
 {
+    bool               hd ;
     size_t             num_wlsamp ;
     const QScintThree* qs ;
     const NP*          wl ;
@@ -23,15 +24,17 @@ struct QScintThree_test
 
 inline QScintThree_test::QScintThree_test(const QScintThree* qs_)
     :
+    hd(ssys::getenvbool("Q4ScintThree__SD") == false),
     num_wlsamp(ssys::getenvsizespec("Q4ScintThree__num_wlsamp", "M100")),
     qs(qs_),
-    wl(qs ? qs->wavelength_hd20(3, num_wlsamp) : nullptr)
+    wl(qs ? qs->wavelength(3, num_wlsamp, hd) : nullptr)
 {
 }
 
 inline void QScintThree_test::save(const char* base) const
 {
     NPFold* f = new NPFold ;
+    f->set_meta<int>("HD", int(hd));
     f->add("wl", wl);
     f->save(base);
 }
@@ -45,7 +48,7 @@ int main()
     U4ScintThree* scint = U4ScintThree::Create(fold);
     std::cout << ( scint ? scint->desc() : "no-scint3" ) << "\n"  ;
     if(!scint) return 0 ;
-    scint->save("$FOLD");
+    scint->save("$FOLD/U4ScintThree");
     const NP* icdf_three = scint->icdf ;
 
     QScintThree* qs = new QScintThree( icdf_three );
@@ -53,9 +56,6 @@ int main()
 
     QScintThree_test* ts = new QScintThree_test(qs);
     ts->save("$FOLD");
-
-    // HMM: saving both U4ScintThree and QScintThree_test to the same FOLD is kinda messy,
-    // but also kinda convenient
 
     return 0 ;
 }

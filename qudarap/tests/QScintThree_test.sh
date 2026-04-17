@@ -43,6 +43,12 @@ spec=M100
 export U4ScintThree__num_wlsamp=$spec
 export Q4ScintThree__num_wlsamp=$spec
 
+unset Q4ScintThree__SD
+export Q4ScintThree__SD=1   
+if [ -n "$Q4ScintThree__SD" ]; then
+   printf " ===== WARNING HD20 HAS BEEN DISABLED VIA Q4ScintThree__SD \n"
+fi
+
 
 
 

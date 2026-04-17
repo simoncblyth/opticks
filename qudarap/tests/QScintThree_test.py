@@ -24,10 +24,9 @@ def chi2(obs, ref, threshold=10):
     # Calculate Chi-squared components
     chi2_val = np.sum((q - u)**2 / (q + u))
     ndf = len(q) - 1  # Degrees of freedom
-
     chi2_per = chi2_val / ndf
-    return chi2_val, ndf, chi2_per
 
+    return chi2_val, ndf, chi2_per
 
 
 if MODE in [-2,2,3]:
@@ -42,7 +41,8 @@ if __name__ == '__main__':
 
     wl = f.wl
     print("wl\n",wl)
-    u4wl = f.u4wls
+    u4wl = f.U4ScintThree.wls
+
     print("u4wl\n",u4wl)
 
     COMP = os.environ.get("COMP","ABC")
@@ -52,7 +52,8 @@ if __name__ == '__main__':
 
 
     #bins = np.arange(80, 800, 4)
-    bins = np.arange(300, 600, 1)
+    #bins = np.arange(300, 600, 1)
+    bins = np.arange(300, 540, 1)    # avoid cut at 550
 
     q0 = np.histogram( wl[0] , bins )
     q1 = np.histogram( wl[1] , bins )
@@ -76,12 +77,12 @@ if __name__ == '__main__':
 
 
     # Usage
-    c2_0, ndf_0, c2p_0 = chi2(q0[0], u0[0])
-    c2_1, ndf_1, c2p_1 = chi2(q1[0], u1[0])
-    c2_2, ndf_2, c2p_2 = chi2(q2[0], u2[0])
+    c2_0, ndf_0, c2p_0 = chi2(q0[0], u0[0], threshold=threshold)
+    c2_1, ndf_1, c2p_1 = chi2(q1[0], u1[0], threshold=threshold)
+    c2_2, ndf_2, c2p_2 = chi2(q2[0], u2[0], threshold=threshold)
     print(f"Chi2/NDF: {c2_0:.4f} (NDF: {ndf_0})  {c2p_0} ")
-    print(f"Chi2/NDF: {c2_1:.4f} (NDF: {ndf_0})  {c2p_1} ")
-    print(f"Chi2/NDF: {c2_2:.4f} (NDF: {ndf_0})  {c2p_2} ")
+    print(f"Chi2/NDF: {c2_1:.4f} (NDF: {ndf_1})  {c2p_1} ")
+    print(f"Chi2/NDF: {c2_2:.4f} (NDF: {ndf_2})  {c2p_2} ")
 
 
     if MODE == 2:

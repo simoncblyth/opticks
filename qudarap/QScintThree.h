@@ -20,7 +20,7 @@ struct QScintThree
     QScintThree(const NP* layered_icdf );
     std::string desc() const ;
 
-    NP* wavelength_hd20(size_t num_species, size_t num_wavelength) const ;
+    NP* wavelength(size_t num_species, size_t num_wavelength, bool hd ) const ;
 
 };
 
@@ -135,10 +135,9 @@ void QScintThree::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, size_
 }
 
 
+extern "C" void QScintThree_wavelength(  dim3 numBlocks, dim3 threadsPerBlock, qscint_three* scint, float* wavelength, size_t width, size_t height, bool hd );
 
-extern "C" void QScintThree_wavelength_hd20(dim3 numBlocks, dim3 threadsPerBlock, qscint_three* scint, float* wavelength, size_t width, size_t height );
-
-inline NP* QScintThree::wavelength_hd20(size_t num_species, size_t num_wavelength) const
+inline NP* QScintThree::wavelength(size_t num_species, size_t num_wavelength, bool hd ) const
 {
     size_t height = num_species ;
     size_t width = num_wavelength ;
@@ -150,7 +149,7 @@ inline NP* QScintThree::wavelength_hd20(size_t num_species, size_t num_wavelengt
     dim3 numBlocks, threadsPerBlock ;
     ConfigureLaunch(numBlocks, threadsPerBlock, width, height);
 
-    QScintThree_wavelength_hd20(numBlocks, threadsPerBlock, d_scint, d_wavelength, width, height );
+    QScintThree_wavelength(numBlocks, threadsPerBlock, d_scint, d_wavelength, width, height, hd ) ;
 
     NP* wl = NP::Make<float>(num_species, num_wavelength) ;
 
@@ -159,6 +158,5 @@ inline NP* QScintThree::wavelength_hd20(size_t num_species, size_t num_wavelengt
 
     return wl ;
 }
-
 
 
