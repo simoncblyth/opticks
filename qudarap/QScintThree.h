@@ -4,12 +4,14 @@
 struct NP ;
 template <typename T> struct QTexLayered ;
 struct qscint_three ;
+struct dim3 ;
 
 struct QScintThree
 {
     static QTexLayered<float>* MakeScintTex(const NP* layered_icdf );
     static qscint_three* MakeDevInstance(const QTexLayered<float>* tex);
     template<typename T> static T* UploadInstance(T* ptr);
+    static void ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, size_t width, size_t height );
 
     QTexLayered<float>* tex ;
     qscint_three*       scint ;
@@ -17,6 +19,9 @@ struct QScintThree
 
     QScintThree(const NP* layered_icdf );
     std::string desc() const ;
+
+    NP* wavelength_hd20(size_t num_species, size_t num_wavelength) const ;
+
 };
 
 #include "QTexLayered.h"
@@ -95,6 +100,64 @@ inline T* QScintThree::UploadInstance(T* ptr)  // static
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_ptr ), size ));
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_ptr ), ptr, size, cudaMemcpyHostToDevice ));
     return d_ptr ;
+}
+
+
+void QScintThree::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, size_t width, size_t height )  // static
+{
+    threadsPerBlock.x = 512 ;
+    threadsPerBlock.y = 1 ;
+    threadsPerBlock.z = 1 ;
+
+    numBlocks.x = (width + threadsPerBlock.x - 1) / threadsPerBlock.x ;
+    numBlocks.y = (height + threadsPerBlock.y - 1) / threadsPerBlock.y ;
+    numBlocks.z = 1 ;
+
+    std::cerr
+        << "QScintThree::ConfigureLaunch"
+        << " width " << std::setw(7) << width
+        << " height " << std::setw(7) << height
+        << " width*height " << std::setw(7) << width*height
+        << " threadsPerBlock"
+        << "("
+        << std::setw(3) << threadsPerBlock.x << " "
+        << std::setw(3) << threadsPerBlock.y << " "
+        << std::setw(3) << threadsPerBlock.z << " "
+        << ")"
+        << " numBlocks "
+        << "("
+        << std::setw(3) << numBlocks.x << " "
+        << std::setw(3) << numBlocks.y << " "
+        << std::setw(3) << numBlocks.z << " "
+        << ")"
+        << "\n"
+        ;
+}
+
+
+
+extern "C" void QScintThree_wavelength_hd20(dim3 numBlocks, dim3 threadsPerBlock, qscint_three* scint, float* wavelength, size_t width, size_t height );
+
+inline NP* QScintThree::wavelength_hd20(size_t num_species, size_t num_wavelength) const
+{
+    size_t height = num_species ;
+    size_t width = num_wavelength ;
+    size_t size = width*height*sizeof(float) ;
+
+    float* d_wavelength = nullptr ;
+    QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_wavelength ), size ));
+
+    dim3 numBlocks, threadsPerBlock ;
+    ConfigureLaunch(numBlocks, threadsPerBlock, width, height);
+
+    QScintThree_wavelength_hd20(numBlocks, threadsPerBlock, d_scint, d_wavelength, width, height );
+
+    NP* wl = NP::Make<float>(num_species, num_wavelength) ;
+
+    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wl->bytes() ), d_wavelength , size, cudaMemcpyDeviceToHost ));
+    QUDA_CHECK( cudaFree(d_wavelength) );
+
+    return wl ;
 }
 
 

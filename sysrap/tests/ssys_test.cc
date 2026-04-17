@@ -8,9 +8,14 @@
 
 struct ssys_test
 {
+    static constexpr const size_t K = 1'000 ;
+    static constexpr const size_t M = 1'000'000 ;
+    static constexpr const size_t G = 1'000'000'000 ;
+
     static constexpr const char* getenviron_SIGINT = "ssys_test__getenviron_SIGINT" ;
     static int getenviron();
     static int getenvuint64spec();
+    static int getenvsizespec();
 };
 
 
@@ -51,6 +56,20 @@ int ssys_test::getenvuint64spec()
          << "\n"
          << " pidx (dec) " << std::setw(15) << pidx
          << "\n"
+         ;
+
+    return 0 ;
+}
+
+int ssys_test::getenvsizespec()
+{
+    size_t num = ssys::getenvsizespec("NUM", "M100" );
+    std::cout
+         << "ssys_test::getenvsizespec\n"
+         << " num   " << std::setw(15) << num << "\n"
+         << " num/K " << std::setw(15) << num/K << "\n"
+         << " num/M " << std::setw(15) << num/M << "\n"
+         << " num/G " << std::setw(15) << num/G << "\n"
          ;
 
     return 0 ;
@@ -576,7 +595,8 @@ void test_getenvintpick()
 int main(int argc, char** argv)
 {
     //const char* DEFT = "getenvintspec" ;
-    const char* DEFT = "getenviron" ;
+    const char* DEFT = "getenvsizespec" ;
+    //const char* DEFT = "getenviron" ;
     const char* TEST = ssys::getenvvar("TEST", DEFT );
     bool ALL = strcmp("ALL", TEST) == 0 ;
 
@@ -588,6 +608,7 @@ int main(int argc, char** argv)
     if(ALL||0==strcmp(TEST,"getenvint64spec"))  rc += test_getenvint64spec() ;
     if(ALL||0==strcmp(TEST,"getenviron"))  rc += ssys_test::getenviron() ;
     if(ALL||0==strcmp(TEST,"getenvuint64spec"))  rc += ssys_test::getenvuint64spec() ;
+    if(ALL||0==strcmp(TEST,"getenvsizespec"))  rc += ssys_test::getenvsizespec() ;
 
 
 

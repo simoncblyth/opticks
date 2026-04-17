@@ -13,9 +13,10 @@ struct U4ScintCommon
 
     static G4MaterialPropertyVector* Integral( const G4MaterialPropertyVector* theFastLightVector ) ;
 
+    template<typename T>
     static NP* CreateWavelengthSamples(
         const G4MaterialPropertyVector* ScintillatorIntegral,
-        int num_samples
+        size_t num_samples
         );
 
     static NP* CreateGeant4InterpolatedInverseCDF(
@@ -105,11 +106,10 @@ U4ScintCommon::CreateWavelengthSamples
 
 **/
 
-
-
+template<typename T>
 inline NP* U4ScintCommon::CreateWavelengthSamples(
     const G4MaterialPropertyVector* ScintillatorIntegral_cdf_,
-    int num_samples )
+    size_t num_samples )
 {
     if(num_samples == 0) return nullptr ;
 
@@ -125,9 +125,9 @@ inline NP* U4ScintCommon::CreateWavelengthSamples(
         << std::fixed << std::setw(10) << std::setprecision(4) << mn*1e9
         ;
 
-    NP* w = NP::Make<double>(num_samples);
-    w->fill<double>(0.);
-    double* ww = w->values<double>() ;
+    NP* w = NP::Make<T>(num_samples);
+    w->fill<T>(0.);
+    T* ww = w->values<T>() ;
 
 
 

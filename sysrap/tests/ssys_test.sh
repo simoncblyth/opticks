@@ -19,7 +19,8 @@ defarg="build_run"
 arg=${1:-$defarg}
 
 
-export TEST=getenvuint64spec
+#export TEST=getenvuint64spec
+export TEST=getenvsizespec
 
 
 export MULTILINE=$(cat << EOV
@@ -62,7 +63,7 @@ export ssys_test__getenviron_SIGINT=1
 
 if [ "${arg/build}" != "$arg" ]; then
     echo [ $BASH_SOURCE build
-    gcc $name.cc -g -std=c++11 -lstdc++ -I.. -o $bin
+    gcc $name.cc -g -std=c++17 -lstdc++ -I.. -o $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE compile error && exit 1
     echo ] $BASH_SOURCE build
 fi

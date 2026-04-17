@@ -95,6 +95,7 @@ struct U4ScintThree
     const NP* lab_wls ;
     const NP* ppo_wls ;
     const NP* bis_wls ;
+    const NP* u4wls ;
 
     static U4ScintThree* Create(const NPFold* materials );
     U4ScintThree(const NPFold* fold, const char* name);
@@ -133,7 +134,7 @@ inline U4ScintThree* U4ScintThree::Create(const NPFold* materials ) // static
 
 inline U4ScintThree::U4ScintThree(const NPFold* scint_, const char* name_)
     :
-    num_wlsamp(ssys::getenvint("U4ScintThree__num_wlsamp", 1000)),
+    num_wlsamp(ssys::getenvsizespec("U4ScintThree__num_wlsamp", "M1")),
     scint(scint_),
     name(strdup(name_)),
     lab_abs(scint->get("ABSLENGTH")),
@@ -156,9 +157,10 @@ inline U4ScintThree::U4ScintThree(const NPFold* scint_, const char* name_)
     ppo_cmp_icdf(U4ScintCommon::CreateGeant4InterpolatedInverseCDF(ppo_cmp_cdf,num_bins,hd_factor,name,energy_not_wavelength)),
     bis_cmp_icdf(U4ScintCommon::CreateGeant4InterpolatedInverseCDF(bis_cmp_cdf,num_bins,hd_factor,name,energy_not_wavelength)),
     icdf(NP::Stack_(lab_cmp_icdf,ppo_cmp_icdf,bis_cmp_icdf)),
-    lab_wls(U4ScintCommon::CreateWavelengthSamples(lab_cmp_cdf, num_wlsamp )),
-    ppo_wls(U4ScintCommon::CreateWavelengthSamples(ppo_cmp_cdf, num_wlsamp )),
-    bis_wls(U4ScintCommon::CreateWavelengthSamples(bis_cmp_cdf, num_wlsamp ))
+    lab_wls(U4ScintCommon::CreateWavelengthSamples<float>(lab_cmp_cdf, num_wlsamp )),
+    ppo_wls(U4ScintCommon::CreateWavelengthSamples<float>(ppo_cmp_cdf, num_wlsamp )),
+    bis_wls(U4ScintCommon::CreateWavelengthSamples<float>(bis_cmp_cdf, num_wlsamp )),
+    u4wls(NP::Stack_(lab_wls,ppo_wls,bis_wls))
 {
 }
 
@@ -184,6 +186,7 @@ inline std::string U4ScintThree::desc() const
        << " lab_wls " << ( lab_wls ? lab_wls->sstr() : "-" )
        << " ppo_wls " << ( ppo_wls ? ppo_wls->sstr() : "-" )
        << " bis_wls " << ( bis_wls ? bis_wls->sstr() : "-" )
+       << " u4wls "   << ( u4wls ? u4wls->sstr() : "-" )
        << std::endl
        ;
 
@@ -217,6 +220,7 @@ inline NPFold* U4ScintThree::make_fold() const
     fold->add("lab_wls", lab_wls );
     fold->add("ppo_wls", ppo_wls );
     fold->add("bis_wls", bis_wls );
+    fold->add("u4wls", u4wls );
 
     return fold ;
 }

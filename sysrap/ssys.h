@@ -60,6 +60,9 @@ struct ssys
     //static int getenvintspec( const char* ekey, const char* fallback);
     static int64_t  getenvint64spec( const char* ekey, const char* fallback);
     static uint64_t getenvuint64spec(const char* ekey, const char* fallback );
+    static size_t   getenvsizespec(const char* ekey, const char* fallback);
+
+
 
     static int getenvintpick( const char* ekey, const std::vector<std::string>& strs, int fallback );
 
@@ -442,6 +445,17 @@ inline uint64_t ssys::getenvuint64spec(const char* ekey, const char* fallback)
     uint64_t ival = sstr::ParseInt<uint64_t>( spec ? spec : "0" );
     return ival ;
 }
+
+inline size_t ssys::getenvsizespec(const char* ekey, const char* fallback)
+{
+    char* val = getenv(ekey);
+    const char* spec = val ? val : fallback ;
+    size_t ival = sstr::ParseInt<size_t>( spec ? spec : "0" );
+    return ival ;
+}
+
+
+
 
 
 inline int ssys::getenvintpick(const char* ekey, const std::vector<std::string>& strs, int fallback )
