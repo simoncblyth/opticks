@@ -62,7 +62,7 @@ struct U4Scint
 
     const NP* icdf ;
 
-    const int num_wlsamp ;
+    const size_t num_wlsamp ;
     const NP* wlsamp ;
 
 
@@ -123,8 +123,8 @@ inline U4Scint::U4Scint(const NPFold* scint_, const char* name_)
     theSlowLightVector(U4MaterialPropertyVector::FromArray(slow)),
     ScintillationIntegral(U4ScintCommon::Integral(theFastLightVector)),
     icdf(U4ScintCommon::CreateGeant4InterpolatedInverseCDF(ScintillationIntegral,num_bins,hd_factor,name,energy_not_wavelength)),
-    num_wlsamp(ssys::getenvint("U4Scint__num_wlsamp", 0)),
-    wlsamp(U4ScintCommon::CreateWavelengthSamples(ScintillationIntegral, num_wlsamp ))
+    num_wlsamp(ssys::getenvsizespec("U4Scint__num_wlsamp", "0")),
+    wlsamp(U4ScintCommon::CreateWavelengthSamples<float>(ScintillationIntegral, num_wlsamp ))
 {
     init();
 }

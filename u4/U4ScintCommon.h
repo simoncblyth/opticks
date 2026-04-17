@@ -131,7 +131,7 @@ inline NP* U4ScintCommon::CreateWavelengthSamples(
 
 
 
-    for(int i=0 ; i < num_samples ; i++)
+    for(size_t i=0 ; i < num_samples ; i++)
     {
         G4double u = G4UniformRand() ;
         //G4double CIIvalue = u*(mx-mn);  // as its a CDF mn will be zero
