@@ -314,18 +314,19 @@ inline NP* U4ScintCommon::CreateGeant4InterpolatedInverseCDF(
     for(int j=0 ; j < nj ; j++)
     {
         double frac = double(j)/double(nj-1);
-        double u_all, u_lhs, u_mid, u_rhs ;
+        //double u_all ;
+        double u_lhs, u_mid, u_rhs ;
 
         if( margin == 0. )
         {
-            u_all = frac ;
+            //u_all = frac ;
             u_lhs = frac*edge ;
             u_mid = edge + frac*(1.0-2.0*edge) ;
             u_rhs = 1. - edge + frac*edge ;
         }
         else if( margin > 0. )
         {
-             u_all = frac ;                                                   // ALL : 0->1
+             //u_all = frac ;                                                   // ALL : 0->1
              u_lhs = frac*(edge + margin) ;                                   // LHS : Map   0 -> e+m
              u_mid = (edge - margin) + frac*(1.0 - 2.0*edge + 2.0*margin ) ;  // MID : Map (e-m) -> (1-e+m)
              u_rhs = (1. - edge - margin) + frac*(edge + margin) ;            // RHS : Map  ( 1.0 - edge - margin)  -> 1
