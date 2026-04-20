@@ -242,6 +242,12 @@ in the form of G4MaterialPropertyVector::GetEnergy
                    xv  =    x0  +   (yv - y0) *  --------------
                                                    y1 - y0
 
+
+
+
+
+
+
 **/
 
 inline NP* U4ScintCommon::CreateGeant4InterpolatedInverseCDF(
@@ -277,6 +283,9 @@ inline NP* U4ScintCommon::CreateGeant4InterpolatedInverseCDF(
 
     assert( hd_factor == 10 || hd_factor == 20 );
     double edge = 1./double(hd_factor) ;
+    double margin = edge/10. ;
+    //  HD20 edge 0.05 margin 0.005
+
 
     icdf->names.push_back(material_name) ;  // match X4/GGeo
     icdf->set_meta<std::string>("name", material_name );
@@ -285,6 +294,7 @@ inline NP* U4ScintCommon::CreateGeant4InterpolatedInverseCDF(
     icdf->set_meta<int>("hd_factor", hd_factor );
     icdf->set_meta<int>("num_bins", num_bins );
     icdf->set_meta<double>("edge", edge );
+    icdf->set_meta<double>("margin", margin );
 
 
     if(VERBOSE) std::cerr
@@ -294,30 +304,86 @@ inline NP* U4ScintCommon::CreateGeant4InterpolatedInverseCDF(
         << " mx " << std::fixed << std::setw(10) << std::setprecision(4) << mx
         << " mx*1e9 " << std::fixed << std::setw(10) << std::setprecision(4) << mx*1e9
         << " edge " << std::fixed << std::setw(10) << std::setprecision(4) << edge
+        << " margin " << std::fixed << std::setw(10) << std::setprecision(4) << margin
         << " icdf " << icdf->sstr()
         << std::endl
         ;
 
+
+
     for(int j=0 ; j < nj ; j++)
     {
-        double u_all = double(j)/double(nj) ;                         // 0 -> (nj-1)/nj = 1-1/nj
-        double u_lhs = double(j)/double(hd_factor*nj) ;               // hd_factor=10(20) u_lhs=0.0->0.1  (0.0  ->~0.05)
-        double u_rhs = 1. - edge + double(j)/double(hd_factor*nj) ;   // hd_factor=10(20) u_rhs=0.9->~1.0 (0.95 ->~1.0)
-        // u_lhs and u_rhs mean there are hd_factor more lookups at the extremes
+        double frac = double(j)/double(nj-1);
+        double u_all, u_lhs, u_mid, u_rhs ;
 
-        double energy_all = ScintillatorIntegral->GetEnergy( u_all*mx );
+        if( margin == 0. )
+        {
+            u_all = frac ;
+            u_lhs = frac*edge ;
+            u_mid = edge + frac*(1.0-2.0*edge) ;
+            u_rhs = 1. - edge + frac*edge ;
+        }
+        else if( margin > 0. )
+        {
+             u_all = frac ;                                                   // ALL : 0->1
+             u_lhs = frac*(edge + margin) ;                                   // LHS : Map   0 -> e+m
+             u_mid = (edge - margin) + frac*(1.0 - 2.0*edge + 2.0*margin ) ;  // MID : Map (e-m) -> (1-e+m)
+             u_rhs = (1. - edge - margin) + frac*(edge + margin) ;            // RHS : Map  ( 1.0 - edge - margin)  -> 1
+        }
+
+/**
+
+HD20  e = 0.05
+     2e = 0.1
+      m = 0.005
+     2m = 0.01
+
+
+
+         0               e-m   e   e+m                                  1-e-m 1-e 1-e+m                    1
+         |                |    |    |                                     |    |    |                      |
+
+         +-------LHS----------------+                                     +----------RHS-------------------+
+                          +---------------------MID---------------------------------+
+
+
+
+                          |    1 - e + m - (e - m)  = 1 - 2*e + 2m                  |
+                                                      1 - 0.1 + 0.01 = 0.91         |
+                          |   edges trimmed with margins added                      |
+
+
+
+    u0 < e-m : LHS-only region
+       x = u0 / (e+m )     ## NB using actual range of the LHS texture for the mapping
+
+    u0 [e-m -> e+m] : LHS+MID overlap region
+
+       x =
+
+
+
+
+**/
+
+
+        //double energy_all = ScintillatorIntegral->GetEnergy( u_all*mx );
+        double energy_mid = ScintillatorIntegral->GetEnergy( u_mid*mx );
         double energy_lhs = ScintillatorIntegral->GetEnergy( u_lhs*mx );
         double energy_rhs = ScintillatorIntegral->GetEnergy( u_rhs*mx );
 
-        double wavelength_all = h_Planck*c_light/energy_all/nm ;
+        //double wavelength_all = h_Planck*c_light/energy_all/nm ;
+        double wavelength_mid = h_Planck*c_light/energy_mid/nm ;
         double wavelength_lhs = h_Planck*c_light/energy_lhs/nm ;
         double wavelength_rhs = h_Planck*c_light/energy_rhs/nm ;
 
-        double v_all = energy_not_wavelength ? energy_all :  wavelength_all ;
+        //double v_all = energy_not_wavelength ? energy_all :  wavelength_all ;
+        double v_mid = energy_not_wavelength ? energy_mid :  wavelength_mid ;
         double v_lhs = energy_not_wavelength ? energy_lhs :  wavelength_lhs ;
         double v_rhs = energy_not_wavelength ? energy_rhs :  wavelength_rhs ;
 
-        icdf->set<double>(v_all, 0, j, k );
+        //icdf->set<double>(v_all, 0, j, k );
+        icdf->set<double>(v_mid, 0, j, k );
         icdf->set<double>(v_lhs, 1, j, k );
         icdf->set<double>(v_rhs, 2, j, k );
     }

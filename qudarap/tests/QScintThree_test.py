@@ -3,6 +3,69 @@
 
 ~/o/qudarap/tests/QScintThree_test.sh pdb
 
+
+Observe Chi2 spikes at the edges of the HD zoom regions.
+
+
+COMP=012 BINS=200:800:1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+    QScintThree_test.sh HD:1 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.4733 (NDF: 598) ) (PPO  3.6821 (NDF: 242) ) (bisMSB  1.6205 (NDF: 598) )
+
+
+With HD:0 LAB has big chi2 deviation at about 330 nm close to a step in the distribution.
+
+
+
+COMP=0 BINS=201:800:1 LOGY=1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+COMP=1 BINS=310:545:1 LOGY=1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+
+
+
+Issue : LAB small number of unexpected ICDF wavelengths in 80->200
+----------------------------------------------------------------------
+
+Are generating wavelengths in range 80->200 in the GPU icdf lookups
+which do not happen in the Geant4 GetEnergy generation.
+
+HMM, the problem may be the stray 79.99 in the icdf::
+
+    In [7]: icdf[0].reshape(3,4096)
+    Out[7]: 
+    array([[487.695, 487.568, 487.441, 487.314, 487.188, ..., 390.932, 390.899, 390.865, 390.832, 390.799],
+           [799.898, 799.115, 798.333, 797.553, 796.775, ..., 482.605, 482.599, 482.592, 482.586, 482.58 ],
+           [392.081, 392.08 , 392.078, 392.077, 392.075, ..., 200.607, 200.448, 200.29 , 200.132,  79.99 ]], shape=(3, 4096))
+
+
+That 79.99 looks like a placeholder "energy" edge. Not a real measurement ?
+Actually, I vaguely recall smth similar before, where have to squeeze past
+outer placeholders ?
+
+BINGO, confirmed arbitrary edge sneaking into ICDF::
+
+    In [17]: np.c_[hc_eVnm/(1e6*f.U4ScintThree.lab_cmp[:,0]),f.U4ScintThree.lab_cmp[:,1]*1e6]
+    Out[17]: 
+    array([[    799.898,       0.   ],
+           [    600.001,    7298.   ],
+           [    599.001,    7011.   ],
+           [    598.001,    7932.   ],
+           [    596.999,    8065.   ],
+           [    596.   ,    7699.   ],
+           [    594.999,    6620.   ],
+           [    593.999,    7727.   ],
+           [    592.999,    7464.   ],
+           [    592.   ,    7931.   ],
+           [    591.001,    6825.   ],
+           [    589.999,    7623.   ],
+           [    589.001,    6487.   ],
+           ...
+           [    334.   ,    2218.   ],
+           [    333.   ,    1887.   ],
+           [    332.001,    1981.   ],
+           [    331.   ,    2153.   ],
+           [    330.   ,    2269.   ],
+           [    199.975,       0.   ],
+           [    120.023,       0.   ],
+           [     79.99 ,       0.   ]])
+
 """
 
 import os, sys, numpy as np
@@ -10,23 +73,17 @@ from opticks.ana.fold import Fold
 MODE = int(os.environ.get("MODE","0"))
 
 
-def chi2(obs, ref, threshold=10):
-    """
-    obs: Opticks bin counts (q0[0])
-    ref: Geant4 bin counts (u0[0])
-    threshold: Min counts to include a bin
-    """
-    # Apply the same count cut you used for the ratio plot
-    mask = (ref > threshold) & (obs > threshold)
-    q = obs[mask]
-    u = ref[mask]
+class Chi2:
+    def __init__(self, obs, ref, mask):
+        q = obs[mask]
+        u = ref[mask]
+        a = (q - u)*(q - u)/(q + u)
+        self.a = a
 
-    # Calculate Chi-squared components
-    chi2_val = np.sum((q - u)**2 / (q + u))
-    ndf = len(q) - 1  # Degrees of freedom
-    chi2_per = chi2_val / ndf
-
-    return chi2_val, ndf, chi2_per
+    def __str__(self):
+        ndf = len(self.a) - 1
+        chi2_per = np.sum(self.a) / ndf
+        return f" {chi2_per:.4f} (NDF: {ndf}) "
 
 
 if MODE in [-2,2,3]:
@@ -39,50 +96,69 @@ if __name__ == '__main__':
     f = Fold.Load(symbol="f")
     print(repr(f))
 
-    wl = f.wl
-    print("wl\n",wl)
-    u4wl = f.U4ScintThree.wls
-
-    print("u4wl\n",u4wl)
-
-    COMP = os.environ.get("COMP","ABC")
-    A = "A" in COMP
-    B = "B" in COMP
-    C = "C" in COMP
+    HD = int(f.NPFold_meta.HD)
+    a_wl = f.wl
+    b_wl = f.U4ScintThree.wls
+    icdf = f.U4ScintThree.icdf
 
 
-    #bins = np.arange(80, 800, 4)
-    #bins = np.arange(300, 600, 1)
-    bins = np.arange(300, 540, 1)    # avoid cut at 550
+    print(f"HD {HD}")
+    print("a_wl\n",a_wl)
+    print("b_wl\n",b_wl)
 
-    q0 = np.histogram( wl[0] , bins )
-    q1 = np.histogram( wl[1] , bins )
-    q2 = np.histogram( wl[2] , bins )
+    _COMP = os.environ.get("COMP","012")
+    COMP = list(map(int,list(_COMP)))
 
-    u0 = np.histogram( u4wl[0] , bins )
-    u1 = np.histogram( u4wl[1] , bins )
-    u2 = np.histogram( u4wl[2] , bins )
+    #bins_ = "80:800:4"
+    bins_ = "200:800:1"
+    #bins_ = "300:600:1"
+    #bins_ = "300:640:1"
+    #bins_ = "300:540:1"  # avoid 550
 
+    BINS_ = os.environ.get("BINS", bins_)
+    BINS = tuple(map(int,BINS_.split(":")))
+    bins = np.arange(*BINS)
 
     threshold = 100
-    mask0 = (q0[0] > threshold) & (u0[0] > threshold)
-    mask1 = (q1[0] > threshold) & (u1[0] > threshold)
-    mask2 = (q2[0] > threshold) & (u2[0] > threshold)
+    a = {}
+    b = {}
+    mask = {}
+    ratio = {}
+    cc = {}
+    metric = {}
+    title = f"QScintThree_test.sh HD:{HD} COMP:{_COMP} BINS:{BINS} : Chi2/ndf "
+    names = ["LAB","PPO","bisMSB"]
+    color = ["r","g","b"]
 
-    # --- Bottom Plot (The Ratio or Difference) ---
-    # Avoid division by zero by using where mask
-    ratio0 = np.divide(q0[0]-u0[0], u0[0], out=np.ones_like(q0[0], dtype=float), where=mask0)
-    ratio1 = np.divide(q1[0]-u1[0], u1[0], out=np.ones_like(q1[0], dtype=float), where=mask1)
-    ratio2 = np.divide(q2[0]-u2[0], u2[0], out=np.ones_like(q2[0], dtype=float), where=mask2)
+    for i in range(3):
+        if not i in COMP: continue
 
+        a_wl_r = (a_wl[i].min(), a_wl[i].max())
+        b_wl_r = (b_wl[i].min(), b_wl[i].max())
+        print(f"i {i} a_wl_r:{a_wl_r} b_wl_r:{b_wl_r} ")
 
-    # Usage
-    c2_0, ndf_0, c2p_0 = chi2(q0[0], u0[0], threshold=threshold)
-    c2_1, ndf_1, c2p_1 = chi2(q1[0], u1[0], threshold=threshold)
-    c2_2, ndf_2, c2p_2 = chi2(q2[0], u2[0], threshold=threshold)
-    print(f"Chi2/NDF: {c2_0:.4f} (NDF: {ndf_0})  {c2p_0} ")
-    print(f"Chi2/NDF: {c2_1:.4f} (NDF: {ndf_1})  {c2p_1} ")
-    print(f"Chi2/NDF: {c2_2:.4f} (NDF: {ndf_2})  {c2p_2} ")
+        a[i] = np.histogram( a_wl[i] , bins )
+        b[i] = np.histogram( b_wl[i] , bins )
+        mask[i] = (a[i][0] > threshold) & (b[i][0] > threshold)
+        ratio[i] = np.divide(a[i][0]-b[i][0], b[i][0], out=np.ones_like(a[i][0], dtype=float), where=mask[i])
+        cc[i] = Chi2(a[i][0],b[i][0],mask[i])
+        title += " (" + names[i] + " " + str(cc[i]) + ")"
+        metric[i] = cc[i].a
+    pass
+    print(title)
+
+    print("wavelength ranges of the 9 texture layers")
+
+    ww = { 0:[], 1:[], 2:[] }  # collect edge wavelengths
+    for j in range(3):
+        for i in range(3):
+            mx = f.U4ScintThree.icdf[i,j,0,0]
+            mn = f.U4ScintThree.icdf[i,j,-1,0]
+            ww[i].append(mn)
+            ww[i].append(mx)
+            print(f" i-species-{i} j-zoom-{j}  0:{mx} -1:{mn} ")
+        pass
+    pass
 
 
     if MODE == 2:
@@ -94,13 +170,11 @@ if __name__ == '__main__':
 
         ax.set_aspect('auto')
 
-        ax.plot( bins[:-1], q0[0], drawstyle="steps-post", label="qs3_0", c="r" )
-        ax.plot( bins[:-1], q1[0], drawstyle="steps-post", label="qs3_1", c="g" )
-        ax.plot( bins[:-1], q2[0], drawstyle="steps-post", label="qs3_2", c="b" )
-
-        ax.plot( bins[:-1], u0[0], drawstyle="steps-post", label="u4_0", c="r" )
-        ax.plot( bins[:-1], u1[0], drawstyle="steps-post", label="u4_1", c="g" )
-        ax.plot( bins[:-1], u2[0], drawstyle="steps-post", label="u4_2", c="b" )
+        for i in range(3):
+            if not i in COMP: continue
+            ax.plot( bins[:-1], a[i][0], drawstyle="steps-post", label=f"a[{i}]", c=color[i] )
+            ax.plot( bins[:-1], b[i][0], drawstyle="steps-post", label="b[{i}]", c=color[i] )
+        pass
 
         ylim = ax.get_ylim()
         #for w in [320,340,360,380,400,420,440,460,480,500,520,540]: ax.plot( [w,w], ylim )
@@ -110,44 +184,38 @@ if __name__ == '__main__':
 
     elif MODE == -2:
 
-        fig, (ax, ax_ratio) = plt.subplots(2, 1, sharex=True,
-                                           gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.05})
+        fig, (ax, ax_metric) = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.05})
 
-        if A:
-            ax.plot(bins[:-1], q0[0], drawstyle="steps-post", label="qs3_0", c="r")
-            ax.plot(bins[:-1], u0[0], drawstyle="steps-post", label="u4_0", c="r", linestyle="--")
-        pass
-        if B:
-            ax.plot(bins[:-1], q1[0], drawstyle="steps-post", label="qs3_1", c="g")
-            ax.plot(bins[:-1], u1[0], drawstyle="steps-post", label="u4_1", c="g", linestyle="--")
-        pass
-        if C:
-            ax.plot(bins[:-1], q2[0], drawstyle="steps-post", label="qs3_2", c="b")
-            ax.plot(bins[:-1], u2[0], drawstyle="steps-post", label="u4_2", c="b", linestyle="--")
+        for i in range(3):
+            if not i in COMP: continue
+            ax.plot(bins[:-1], a[i][0], drawstyle="steps-post", label=f"a[{i}]", c=color[i])
+            ax.plot(bins[:-1], b[i][0], drawstyle="steps-post", label=f"b[{i}]", c=color[i], linestyle="--", marker="o", markersize=4)
+            ylim = ax.get_ylim()
+
+            if "EDGE" in os.environ:
+                for w in ww[i]: ax.plot( [w,w], ylim, c=color[i], linestyle="--" )
+            pass
+            ax_metric.plot(bins[:-1][mask[i]], metric[i], drawstyle="steps-post", c=color[i])
         pass
 
+        ax.set_title(title)
         ax.set_ylabel("Counts")
-        ax.set_yscale('log')
+        if "LOGY" in os.environ: ax.set_yscale('log')
         ax.legend()
 
-        if A: ax_ratio.plot(bins[:-1][mask0], ratio0[mask0], drawstyle="steps-post", c="r")
-        if B: ax_ratio.plot(bins[:-1][mask1], ratio1[mask1], drawstyle="steps-post", c="g")
-        if C: ax_ratio.plot(bins[:-1][mask2], ratio2[mask2], drawstyle="steps-post", c="b")
-
         # Reference line at 1.0 (for ratio) or 0.0 (for difference)
-        ax_ratio.axhline(1.0, color='black', lw=0.5, linestyle=':')
-        ax_ratio.set_ylabel(" (OK-G4)/G4")
+        ax_metric.axhline(1.0, color='black', lw=0.5, linestyle=':')
+        ax_metric.set_ylabel(" (A-B)(A-B)/(A+B)")
 
-        center = 0.0
-        delta = 0.10
-        ax_ratio.set_ylim(center-delta, center+delta)  # Tight zoom for high-stat agreement
+        center = 1.0
+        delta = 1.0
+        #ax_metric.set_ylim(center-delta, center+delta)  # Tight zoom for high-stat agreement
         plt.xlabel("Wavelength [nm]")
 
         plt.show()
+        pass
+    elif MODE == -4:
+        print("TBD")
     pass
-
-
-
-
 
 

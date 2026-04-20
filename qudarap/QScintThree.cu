@@ -25,8 +25,13 @@ __global__ void _QScintThree_wavelength(qscint_three* scint, float* wavelength, 
     }
     int species = iy;
     float u0 = curand_uniform(&rng);
-    float wl = hd ? scint->wavelength_hd20(species, u0) : scint->wavelength_sd(species, u0) ;
-    if(ix % 100000 == 0) printf("//_QScintThree_wavelength ix %d iy %d  w %10.4f    \n", ix, iy, wl);
+    float wl = scint->wavelength_hd20(species, u0) ;
+
+    //bool dump = ix % 100000 == 0 ;
+    //bool dump = wl < 200.f ;
+    //bool dump = u0 == 1.f ;
+    bool dump = u0 > 0.99999f ;
+    if(dump) printf("//_QScintThree_wavelength ix %d iy %d nx %d ny %d  u0 %10.8f wl %10.4f\n", ix, iy, nx, ny, u0, wl);
     wavelength[index] = wl;
 }
 

@@ -40,9 +40,11 @@
 #endif
 
 
+
 #ifdef WITH_CUDA
 #include <vector_functions.h>
 #include <vector_types.h>
+
 #else
 
 #if defined(__CUDACC__)
@@ -102,6 +104,33 @@
 #endif
 
 
+
+/**
+lerp
+----
+
+For C++20 compilation have adopted the suggestion from Nicola Mori, although
+I did not succeed to reproduce the issue.
+
+notes/issues/cpp20_nicolamori_scuda_curand_math_lerp_conflict.rst
+
+Had to adapt this as scalar lerp was missing from device code
+
+**/
+
+#if __cplusplus > 201703L && !defined(__CUDACC__)
+   // For host-side C++20, use the standard library
+   using std::lerp;
+#else
+   // Fallback for older C++, and ALWAYS for NVCC device code
+   SUTIL_INLINE SUTIL_HOSTDEVICE float lerp(float a, float b, float t)
+   {
+       return a + t * (b - a);
+   }
+#endif
+
+
+
 #if !defined(__CUDACC__)
 
 SUTIL_INLINE SUTIL_HOSTDEVICE int max(int a, int b)
@@ -146,27 +175,6 @@ SUTIL_INLINE SUTIL_HOSTDEVICE unsigned long long min(unsigned long long a, unsig
 
 
 
-
-
-/**
-lerp
-----
-
-For C++20 compilation have adopted the suggestion from Nicola Mori, although
-I did not succeed to reproduce the issue.
-
-notes/issues/cpp20_nicolamori_scuda_curand_math_lerp_conflict.rst
-
-**/
-
-#if __cplusplus <= 201703L
-SUTIL_INLINE SUTIL_HOSTDEVICE float lerp(const float a, const float b, const float t)
-{
-  return a + t*(b-a);
-}
-#else
-using std::lerp;
-#endif
 
 
 
@@ -862,6 +870,7 @@ SUTIL_INLINE SUTIL_HOSTDEVICE float4 lerp(const float4& a, const float4& b, cons
 {
   return a + t*(b-a);
 }
+
 
 /** bilerp */
 SUTIL_INLINE SUTIL_HOSTDEVICE float4 bilerp(const float4& x00, const float4& x10, const float4& x01, const float4& x11,

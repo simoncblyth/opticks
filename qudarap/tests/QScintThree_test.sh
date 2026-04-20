@@ -6,6 +6,13 @@ QScintThree_test.sh
 
 ~/o/qudarap/tests/QScintThree_test.sh
 
+LAB with HD
+
+
+f.U4ScintThree.icdf[0,0]
+
+
+
 
 EOU
 }
@@ -19,9 +26,34 @@ cd $(dirname $(realpath $BASH_SOURCE))
 defarg="info_nvcc_gcc_run_pdb"
 arg=${1:-$defarg}
 
+unset Q4ScintThree__SD
+
+if [ -n "$SD" ]; then
+    export Q4ScintThree__SD=1
+    HD=0
+else
+    HD=1
+fi
+
+if [ -n "$Q4ScintThree__SD" ]; then
+   printf " $BASH_SOURCE ===== WARNING HD20 HAS BEEN DISABLED VIA Q4ScintThree__SD \n"
+fi
+
+
+
+unset QSCINTTHREE_DISABLE_INTERPOLATION
+#export QSCINTTHREE_DISABLE_INTERPOLATION=1
+
+if [ -n "$QSCINTTHREE_DISABLE_INTERPOLATION" ]; then
+   printf " $BASH_SOURCE ====== WARNING TEXTURE INTERPOLATION DISABLED \n"
+fi
+
+
+
+
 tmp=/tmp/$USER/opticks
 export TMP=${TMP:-$tmp}
-export FOLD=$TMP/$name
+export FOLD=$TMP/${name}_HD$HD
 mkdir -p $FOLD
 
 cuo=$FOLD/QScintThree_cu.o
@@ -43,13 +75,6 @@ spec=M100
 export U4ScintThree__num_wlsamp=$spec
 export Q4ScintThree__num_wlsamp=$spec
 
-unset Q4ScintThree__SD
-export Q4ScintThree__SD=1   
-if [ -n "$Q4ScintThree__SD" ]; then
-   printf " ===== WARNING HD20 HAS BEEN DISABLED VIA Q4ScintThree__SD \n"
-fi
-
-
 
 
 vars="BASH_SOURCE PWD name defarg arg tmp TMP FOLD cuo bin GEOM CUDA_PREFIX CLHEP_PREFIX GEANT4_PREFIX U4ScintThree__num_wlsamp Q4ScintThree__num_wlsamp"
@@ -57,6 +82,14 @@ vars="BASH_SOURCE PWD name defarg arg tmp TMP FOLD cuo bin GEOM CUDA_PREFIX CLHE
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done
 fi
+
+if [ "${arg/du}" != "$arg" ]; then
+   du -h $FOLD/*
+   du -h $FOLD/U4ScintThree/*
+fi
+
+
+
 
 if [ "${arg/nvcc}" != "$arg" ]; then
    echo nvcc

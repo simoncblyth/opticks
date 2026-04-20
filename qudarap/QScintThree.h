@@ -1,4 +1,12 @@
 #pragma once
+/**
+QScintThree.h
+==============
+
+Prepare a layered texture atlas for the generation of scintillation wavelengths
+in a 3 species liquid scintillator model : LAB, PPO, bisMSB
+
+**/
 
 #include <string>
 struct NP ;

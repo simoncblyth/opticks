@@ -216,10 +216,6 @@ inline NPFold* U4ScintThree::make_fold() const
     fold->add("bis_cmp_icdf", bis_cmp_icdf) ;
 
     fold->add("icdf", icdf) ;
-
-    fold->add("lab_wls", lab_wls );
-    fold->add("ppo_wls", ppo_wls );
-    fold->add("bis_wls", bis_wls );
     fold->add("wls", wls );
 
     return fold ;

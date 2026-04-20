@@ -183,6 +183,7 @@ void QTexLayered<T>::init_createTextureObject()
 
     cudaTextureDesc texDesc = {};
     texDesc.addressMode[0] = cudaAddressModeClamp;
+    texDesc.addressMode[1] = cudaAddressModeClamp;
 
 
     switch(filterMode)
