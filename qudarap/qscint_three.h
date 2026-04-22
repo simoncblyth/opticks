@@ -156,12 +156,10 @@ inline QSCINT_METHOD float qscint_three::wavelength_hd20(int species_idx, float 
         float t = (u0 - (1.0f - e - m)) / (2.0f * m);   // fraction into MID/RHS overlap band
         return lerp(v_mid, v_rhs, t);                   // Blend MID+RHS
     }
-
     // Pure MID Zone
     return tex2DLayered<float>(scint_tex_layered, BinCentered(x_mid,N), 0.5f, (species_idx * 3) + 0);
 }
 #else
-
 inline QSCINT_METHOD float qscint_three::wavelength_hd20(int species_idx, float u0_) const
 {
     float u0 = fminf(0.999999f, fmaxf(0.000000f, u0_));
@@ -170,15 +168,24 @@ inline QSCINT_METHOD float qscint_three::wavelength_hd20(int species_idx, float 
     const float m = 0.005f;
     const float N = 4096.f ;
 
-    bool is_lhs = u0 < e ;
-    bool is_rhs = u0 > (1.f - e) ;
+    float x ;
+    int zone_idx ;
 
-    float x_lhs = u0 / (e + m);
-    float x_rhs = (u0 - (1.0f - e - m)) / (e + m);
-    float x_mid = (u0 - (e - m)) / ( 1.0f - 2.0f * (e - m) );
-
-    float x = is_lhs ? x_lhs : (  is_rhs ? x_rhs : x_mid ) ;
-    int zone_idx = is_lhs ? 1 : ( is_rhs ? 2 : 0 )  ;
+    if( u0 < e ) // LHS
+    {
+        x = u0 / (e + m);
+        zone_idx = 1;
+    }
+    else if( u0 > 1.f - e)  // RHS
+    {
+        x = (u0 - (1.0f - e - m)) / (e + m);
+        zone_idx = 2;
+    }
+    else  // MID
+    {
+        x = (u0 - (e - m)) / ( 1.0f - 2.0f * (e - m) );
+        zone_idx = 0;
+    }
 
     return tex2DLayered<float>(scint_tex_layered, BinCentered(x,N), 0.5f, (species_idx * 3) + zone_idx );
 }
@@ -204,6 +211,8 @@ BinCentered
                               N                    N
 
 
+    x = fmaxf(x , 0.5f / N) ;              // prevent going below 1st texel
+    x = fminf( x, ( N - 0.5f )/N ) ;       // prevent going above last texel
 
 
 **/
@@ -211,9 +220,9 @@ BinCentered
 
 inline QSCINT_METHOD float qscint_three::BinCentered(float x, float N)  // static
 {
-    x = fmaxf(x , 0.5f / N) ;              // prevent going below 1st texel
-    x = fminf( x, ( N - 0.5f )/N ) ;       // prevent going above last texel
-    return (x*(N - 1.f) + 0.5f)/N ;
+    x = fmaxf(0.f, fminf(1.f, x)); // clamp logical x to [0,1] domain
+    return (x*(N - 1.f) + 0.5f)/N ; // map logical [0,1] to texel coordinate [0.5/N,(N-0.5)/N]
+    // this arranges for logical x=0(1) to hit center of texel 0(N-1)
 }
 
 

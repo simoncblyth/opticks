@@ -438,6 +438,9 @@ struct NP
     static NP* MakePConst( T dl, T dr, T vc );
 
 
+    static NP* MakePCopyStripZeroPadding(const NP* a);
+
+
     template<typename T> T    plhs(unsigned column ) const ;
     template<typename T> T    prhs(unsigned column ) const ;
     template<typename T> INT  pfindbin(const T value, unsigned column, bool& in_range ) const ;
@@ -4609,7 +4612,18 @@ template<typename T> inline T NP::ifind2D(T ivalue, INT jcol, INT jret ) const
 }
 
 
+/**
+NP::is_pshaped
+---------------
 
+Returns true for an array shaped like property values at multiple domain points,
+such as at energies/wavelengths.  For example a property with shape (N, 2)
+where N > 1 eg (2,2) or (4096,2). In NumPy the domain and values are accessed with::
+
+      a[:,0]   ## property domain
+      a[:,1]   ## property values
+
+**/
 
 inline bool NP::is_pshaped() const
 {
@@ -4690,6 +4704,48 @@ inline NP* NP::MakePConst( T dl, T dr, T vc ) // static
     pp[1*nj+1] = vc ;
 
     return p ;
+}
+
+
+inline NP* NP::MakePCopyStripZeroPadding(const NP* a) // static
+{
+    assert( a->ebyte == 4 || a->ebyte == 8  );
+    assert( a && a->is_pshaped() );
+    INT ni = a->shape[0] ;
+    INT nj = a->shape[1] ;
+    assert( nj == 2 && ni > 1 );
+
+    // Find first and last index with non-zero value
+    INT first = 0;
+    INT last = ni - 1;
+
+    if( a->ebyte == 4 )
+    {
+        const float* aa = a->cvalues<float>();
+        while(first < ni && aa[2*first + 1] == 0.f) first++;
+        while(last >= first && aa[2*last + 1] == 0.f) last--;
+    }
+    else if ( a->ebyte == 8 )
+    {
+        const double* aa = a->cvalues<double>();
+        while(first < ni && aa[2*first + 1] == 0.) first++;
+        while(last >= first && aa[2*last + 1] == 0.) last--;
+    }
+
+    bool all_zero = first > last ;
+    INT num = all_zero ? 0 : last - first + 1 ;
+    assert( num <= ni );
+
+    // HMM: a single non-zero value would yield a non-pshaped result
+    NP* b = new NP(a->dtype, num, 2);
+    if(num > 0)
+    {
+        size_t row_bytes = 2 * a->ebyte;
+        const char* src_ptr = reinterpret_cast<const char*>(a->bytes()) + (first * row_bytes);
+        char* dst_ptr = reinterpret_cast<char*>(b->bytes());
+        memcpy(dst_ptr, src_ptr, num * row_bytes);
+    }
+    return b;
 }
 
 

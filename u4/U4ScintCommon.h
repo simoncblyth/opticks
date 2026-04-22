@@ -16,7 +16,8 @@ struct U4ScintCommon
     template<typename T>
     static NP* CreateWavelengthSamples(
         const G4MaterialPropertyVector* ScintillatorIntegral,
-        size_t num_samples
+        size_t num_samples,
+        long seed = -1
         );
 
     static NP* CreateGeant4InterpolatedInverseCDF(
@@ -109,9 +110,23 @@ U4ScintCommon::CreateWavelengthSamples
 template<typename T>
 inline NP* U4ScintCommon::CreateWavelengthSamples(
     const G4MaterialPropertyVector* ScintillatorIntegral_cdf_,
-    size_t num_samples )
+    size_t num_samples,
+    long seed )
 {
     if(num_samples == 0) return nullptr ;
+
+    if( seed < 1 )
+    {
+       std::cerr
+           << "U4ScintCommon::CreateWavelengthSamples seed [" << seed << "] is too small"
+           << " NOT SETTING SEED "
+           << "\n"
+           ;
+    }
+    else
+    {
+       CLHEP::HepRandom::setTheSeed(seed);
+    }
 
     G4MaterialPropertyVector* ScintillatorIntegral_cdf = const_cast<G4MaterialPropertyVector*>(ScintillatorIntegral_cdf_) ;
 

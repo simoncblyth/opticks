@@ -144,6 +144,9 @@ void QScintThree::ConfigureLaunch( dim3& numBlocks, dim3& threadsPerBlock, size_
 
 
 extern "C" void QScintThree_wavelength(  dim3 numBlocks, dim3 threadsPerBlock, qscint_three* scint, float* wavelength, size_t width, size_t height, bool hd );
+extern "C" int QScintThree_wavelength_WITH_LERP();
+
+
 
 inline NP* QScintThree::wavelength(size_t num_species, size_t num_wavelength, bool hd ) const
 {
@@ -160,6 +163,7 @@ inline NP* QScintThree::wavelength(size_t num_species, size_t num_wavelength, bo
     QScintThree_wavelength(numBlocks, threadsPerBlock, d_scint, d_wavelength, width, height, hd ) ;
 
     NP* wl = NP::Make<float>(num_species, num_wavelength) ;
+    wl->set_meta<int>("WITH_LERP", QScintThree_wavelength_WITH_LERP() );
 
     QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( wl->bytes() ), d_wavelength , size, cudaMemcpyDeviceToHost ));
     QUDA_CHECK( cudaFree(d_wavelength) );

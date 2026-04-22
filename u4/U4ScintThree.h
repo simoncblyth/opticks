@@ -73,6 +73,11 @@ struct U4ScintThree
     const NP* ppo_rem ;
     const NP* bis_rem ;
 
+    const NP* padded_lab_cmp ;
+    const NP* padded_lab_cmp_2 ;
+    const NP* padded_ppo_cmp ;
+    const NP* padded_bis_cmp ;
+
     const NP* lab_cmp ;
     const NP* lab_cmp_2 ;
     const NP* ppo_cmp ;
@@ -92,6 +97,7 @@ struct U4ScintThree
 
     const NP* icdf ;
 
+    const long seed ;
     const NP* lab_wls ;
     const NP* ppo_wls ;
     const NP* bis_wls ;
@@ -143,10 +149,14 @@ inline U4ScintThree::U4ScintThree(const NPFold* scint_, const char* name_)
     lab_rem(scint->get("REEMISSIONPROB")),
     ppo_rem(scint->get("PPOREEMISSIONPROB")),
     bis_rem(scint->get("bisMSBREEMISSIONPROB")),
-    lab_cmp(scint->get("FASTCOMPONENT")),
-    lab_cmp_2(scint->get("SLOWCOMPONENT")),
-    ppo_cmp(scint->get("PPOCOMPONENT")),
-    bis_cmp(scint->get("bisMSBCOMPONENT")),
+    padded_lab_cmp(scint->get("FASTCOMPONENT")),
+    padded_lab_cmp_2(scint->get("SLOWCOMPONENT")),
+    padded_ppo_cmp(scint->get("PPOCOMPONENT")),
+    padded_bis_cmp(scint->get("bisMSBCOMPONENT")),
+    lab_cmp(NP::MakePCopyStripZeroPadding(padded_lab_cmp)),
+    lab_cmp_2(NP::MakePCopyStripZeroPadding(padded_lab_cmp_2)),
+    ppo_cmp(NP::MakePCopyStripZeroPadding(padded_ppo_cmp)),
+    bis_cmp(NP::MakePCopyStripZeroPadding(padded_bis_cmp)),
     lab_cmp_vec(U4MaterialPropertyVector::FromArray(lab_cmp)),
     ppo_cmp_vec(U4MaterialPropertyVector::FromArray(ppo_cmp)),
     bis_cmp_vec(U4MaterialPropertyVector::FromArray(bis_cmp)),
@@ -157,9 +167,10 @@ inline U4ScintThree::U4ScintThree(const NPFold* scint_, const char* name_)
     ppo_cmp_icdf(U4ScintCommon::CreateGeant4InterpolatedInverseCDF(ppo_cmp_cdf,num_bins,hd_factor,name,energy_not_wavelength)),
     bis_cmp_icdf(U4ScintCommon::CreateGeant4InterpolatedInverseCDF(bis_cmp_cdf,num_bins,hd_factor,name,energy_not_wavelength)),
     icdf(NP::Stack_(lab_cmp_icdf,ppo_cmp_icdf,bis_cmp_icdf)),
-    lab_wls(U4ScintCommon::CreateWavelengthSamples<float>(lab_cmp_cdf, num_wlsamp )),
-    ppo_wls(U4ScintCommon::CreateWavelengthSamples<float>(ppo_cmp_cdf, num_wlsamp )),
-    bis_wls(U4ScintCommon::CreateWavelengthSamples<float>(bis_cmp_cdf, num_wlsamp )),
+    seed(42),
+    lab_wls(U4ScintCommon::CreateWavelengthSamples<float>(lab_cmp_cdf, num_wlsamp, seed )),
+    ppo_wls(U4ScintCommon::CreateWavelengthSamples<float>(ppo_cmp_cdf, num_wlsamp, seed )),
+    bis_wls(U4ScintCommon::CreateWavelengthSamples<float>(bis_cmp_cdf, num_wlsamp, seed )),
     wls(NP::Stack_(lab_wls,ppo_wls,bis_wls))
 {
 }
@@ -175,6 +186,10 @@ inline std::string U4ScintThree::desc() const
        << " lab_rem " << ( lab_rem ? lab_rem->sstr() : "-" )
        << " ppo_rem " << ( ppo_rem ? ppo_rem->sstr() : "-" )
        << " bis_rem " << ( bis_rem ? bis_rem->sstr() : "-" )
+       << " padded_lab_cmp " << ( padded_lab_cmp ? padded_lab_cmp->sstr() : "-" )
+       << " padded_lab_cmp_2 " << ( padded_lab_cmp_2 ? padded_lab_cmp_2->sstr() : "-" )
+       << " padded_ppo_cmp " << ( padded_ppo_cmp ? padded_ppo_cmp->sstr() : "-" )
+       << " padded_bis_cmp " << ( padded_bis_cmp ? padded_bis_cmp->sstr() : "-" )
        << " lab_cmp " << ( lab_cmp ? lab_cmp->sstr() : "-" )
        << " lab_cmp_2 " << ( lab_cmp_2 ? lab_cmp_2->sstr() : "-" )
        << " ppo_cmp " << ( ppo_cmp ? ppo_cmp->sstr() : "-" )
@@ -182,7 +197,8 @@ inline std::string U4ScintThree::desc() const
        << " lab_cmp_icdf " << ( lab_cmp_icdf ? lab_cmp_icdf->sstr() : "-" )
        << " ppo_cmp_icdf " << ( ppo_cmp_icdf ? ppo_cmp_icdf->sstr() : "-" )
        << " bis_cmp_icdf " << ( bis_cmp_icdf ? bis_cmp_icdf->sstr() : "-" )
-       << " icdf "    << ( icdf ? icdf->sstr() : "-" )
+       << " icdf " << ( icdf ? icdf->sstr() : "-" )
+       << " seed " << seed
        << " lab_wls " << ( lab_wls ? lab_wls->sstr() : "-" )
        << " ppo_wls " << ( ppo_wls ? ppo_wls->sstr() : "-" )
        << " bis_wls " << ( bis_wls ? bis_wls->sstr() : "-" )
@@ -205,6 +221,11 @@ inline NPFold* U4ScintThree::make_fold() const
     fold->add("lab_rem", lab_rem) ;
     fold->add("ppo_rem", ppo_rem) ;
     fold->add("bis_rem", bis_rem) ;
+
+    fold->add("padded_lab_cmp", padded_lab_cmp) ;
+    fold->add("padded_lab_cmp_2", padded_lab_cmp_2) ;
+    fold->add("padded_ppo_cmp", padded_ppo_cmp) ;
+    fold->add("padded_bis_cmp", padded_bis_cmp) ;
 
     fold->add("lab_cmp", lab_cmp) ;
     fold->add("lab_cmp_2", lab_cmp_2) ;

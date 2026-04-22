@@ -4,13 +4,46 @@ usage(){ cat << EOU
 QScintThree_test.sh
 =====================
 
-~/o/qudarap/tests/QScintThree_test.sh
 
-LAB with HD
+::
+
+   ~/o/qudarap/tests/QScintThree_test.sh
+
+    COMP=0 LOGY=1 EDGE=1 BINS=329:601:1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+    COMP=1 LOGY=1 EDGE=1 BINS=308:549:1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+    COMP=2 LOGY=1 EDGE=1 BINS=329:601:1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+
+    COMP=012 LOGY=1 EDGE=1 BINS=308:601:1 ~/o/qudarap/tests/QScintThree_test.sh pdb
 
 
-f.U4ScintThree.icdf[0,0]
+Removing the zero padding avoids the unexpected wavelengths from ICDF lookups::
 
+    QScintThree_test.sh HD:1 COMP:012 BINS:(308, 601, 1) : Chi2/ndf  (LAB  1.0778 (NDF: 269) ) (PPO  0.9357 (NDF: 239) ) (bisMSB  1.1954 (NDF: 269) )
+    QScintThree_test.sh HD:1 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.0815 (NDF: 269) ) (PPO  0.9363 (NDF: 239) ) (bisMSB  1.1989 (NDF: 269) )
+    WITH_LERP of the overlap, makes almost no difference - slightly larger Chi2
+
+
+::
+
+    QScintThree_test.sh HD:1 WITH_LERP:1 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.0093 (NDF: 269) ) (PPO  0.8849 (NDF: 239) ) (bisMSB  1.0093 (NDF: 269) )
+    QScintThree_test.sh HD:1 WITH_LERP:0 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.0071 (NDF: 269) ) (PPO  0.8847 (NDF: 239) ) (bisMSB  1.0071 (NDF: 269) )
+
+
+After BinCentered fix::
+
+    QScintThree_test.sh HD:1 WITH_LERP:1 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.0089 (NDF: 269) ) (PPO  0.8847 (NDF: 239) ) (bisMSB  1.0089 (NDF: 269) ):w
+    QScintThree_test.sh HD:1 WITH_LERP:0 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.0067 (NDF: 269) ) (PPO  0.8847 (NDF: 239) ) (bisMSB  1.0067 (NDF: 269) )
+
+
+Push the stats to a billion::
+
+    QScintThree_test.sh HD:1 WITH_LERP:0 COMP:012 BINS:(200, 800, 1) : Chi2/ndf  (LAB  1.0002 (NDF: 269) ) (PPO  0.9487 (NDF: 239) ) (bisMSB  1.0002 (NDF: 269) )
+
+
+
+Presentation::
+
+    COMP=012 YLIM=1e4,2e7 LOGY=1 EDGE=1 BINS=305:605:0.5 ~/o/qudarap/tests/QScintThree_test.sh pdb
 
 
 
@@ -70,7 +103,8 @@ CLHEP_PREFIX=$(get-cmake-prefix CLHEP)
 GEANT4_PREFIX=$(get-cmake-prefix Geant4)
 
 #spec=M10
-spec=M100
+#spec=M100
+spec=G1
 
 export U4ScintThree__num_wlsamp=$spec
 export Q4ScintThree__num_wlsamp=$spec
@@ -90,9 +124,9 @@ fi
 
 
 
-
 if [ "${arg/nvcc}" != "$arg" ]; then
    echo nvcc
+   #    -DWITH_LERP \
    nvcc \
        -c \
        ../QScintThree.cu \

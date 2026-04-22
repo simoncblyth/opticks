@@ -29,8 +29,9 @@ __global__ void _QScintThree_wavelength(qscint_three* scint, float* wavelength, 
 
     //bool dump = ix % 100000 == 0 ;
     //bool dump = wl < 200.f ;
-    //bool dump = u0 == 1.f ;
-    bool dump = u0 > 0.99999f ;
+    bool dump = u0 == 1.f || u0 == 0.f ;
+    //bool dump = u0 > 0.99999f ;
+
     if(dump) printf("//_QScintThree_wavelength ix %d iy %d nx %d ny %d  u0 %10.8f wl %10.4f\n", ix, iy, nx, ny, u0, wl);
     wavelength[index] = wl;
 }
@@ -40,5 +41,18 @@ extern "C" void QScintThree_wavelength(dim3 numBlocks, dim3 threadsPerBlock, qsc
     printf("//QScintThree_wavelength width %d height %d hd %d \n", width, height, hd);
     _QScintThree_wavelength<<<numBlocks, threadsPerBlock>>>(scint, wavelength, width, height, hd);
 }
+
+extern "C" int QScintThree_wavelength_WITH_LERP()
+{
+#ifdef WITH_LERP
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+
+
+
 
 
