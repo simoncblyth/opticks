@@ -34,19 +34,26 @@ export OPTICKS_HIT_MASK=EC
 
 
 
-defarg="info_venv_run"
+defarg="info_check_venv_run"
 arg=${1:-$defarg}
 
 if [ "${arg/clean}" != "$arg" ]; then
-
    rm -rf __pycache__
    rm -rf .venv
 fi
 
-
 if [ "${arg/info}" != "$arg" ]; then
     vv="BASH_SOURCE PWD defarg arg GEOM"
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
+fi
+
+if [ "${arg/check}" != "$arg" ]; then
+    if command -v fastapi >/dev/null 2>&1; then
+        echo "$BASH_SOURCE - fastapi CLI is installed at $(command -v fastapi)"
+    else
+        echo "$BASH_SOURCE - fastapi CLI not found - try base environment with ipython such as \"lo\" "
+        exit 1
+    fi
 fi
 
 if [ "${arg/venv}" != "$arg" ]; then
@@ -67,7 +74,6 @@ if [ -f .venv/bin/activate ]; then
 else
    echo $BASH_SOURCE - no .venv - EXIT HERE && exit 0
 fi
-
 
 if [ "${arg/run}" != "$arg" ]; then
     which fastapi

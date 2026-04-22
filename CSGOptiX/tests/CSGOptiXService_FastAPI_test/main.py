@@ -3,10 +3,13 @@ main.py
 ========
 
 make_response
-    returns fastapi.Response containing array and meta string
+   returns fastapi.Response containing array and meta string
 
 make_numpy_array_from_magic_bytes
-    so far metadata not extracted
+   so far metadata not extracted
+
+make_numpy_array_from_magic_bytes_with_meta
+   metadata is assumed to be stuffed into the buffer after header and array data
 
 make_numpy_array_from_raw_bytes
 
@@ -108,16 +111,13 @@ def make_numpy_array_from_magic_bytes_with_meta(data:bytes, level:int=0):
     meta_nbytes = buf_nbytes - hdr_nbytes - arr_nbytes
 
     buffer.seek( hdr_nbytes + arr_nbytes )
-    _meta:Optional[bytes] = buffer.read(meta_nbytes) if meta_nbytes>0 else None
-    meta = _meta.decode("utf-8")
+    _meta = buffer.read(meta_nbytes) if meta_nbytes>0 else b""
+    meta = _meta.decode("utf-8") if _meta else ""
 
     if level > 0:print(f"-make_numpy_array_from_magic_bytes_with_meta buf_nbytes:{buf_nbytes} hdr_nbytes:{hdr_nbytes} arr_nbytes:{arr_nbytes} meta_nbytes:{meta_nbytes} meta:{meta} ")
     if level > 0:print(f"]make_numpy_array_from_magic_bytes_with_meta")
 
     return arr, meta
-
-
-
 
 
 def make_numpy_array_from_raw_bytes(data:bytes, dtype_:str, shape_:str, level:int=0 ):
@@ -134,7 +134,6 @@ def make_numpy_array_from_raw_bytes(data:bytes, dtype_:str, shape_:str, level:in
     shape = tuple(map(int,filter(None,map(str.strip,shape_.replace("(","").replace(")","").split(",")))))
     a0 = np.frombuffer(data, dtype=dtype ).reshape(*shape)
     return a0
-
 
 
 async def parse_request(request: Request):
