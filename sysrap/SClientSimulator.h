@@ -40,7 +40,7 @@ struct SClientSimulator : public SSimulator
 };
 
 
-inline SClientSimulator::SClientSimulator(const stree* _tr)
+inline SClientSimulator::SClientSimulator(const stree* _tree)
    :
    tree(_tree)
 {

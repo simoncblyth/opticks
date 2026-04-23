@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 set(name OKConf)
 
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
+option(BUILD_WITH_CURL "${name} Build with LibCURL support" OFF)  # default:ON/OFF
 #[=[
-See opticks-build-with-cuda-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
+See opticks-config-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
 #]=]
 
 project(${name} VERSION 0.1.0)

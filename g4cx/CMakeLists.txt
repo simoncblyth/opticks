@@ -3,8 +3,9 @@ set(name G4CX)
 set(desc "Top Level")
 
 option(BUILD_WITH_CUDA "${name} Build with CUDA support" ON)  # default:ON/OFF
+option(BUILD_WITH_CURL "${name} Build with LibCURL support" OFF)  # default:ON/OFF
 #[=[
-See opticks-build-with-cuda-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
+See opticks-config-notes re:rebuilding after flipping CUDA ON->OFF/OFF->ON
 #]=]
 
 set(LANGUAGES CXX)
@@ -32,6 +33,48 @@ else()
    message(STATUS "${CMAKE_CURRENT_LIST_FILE} : NOT-BUILD_WITH_CUDA so no CSGOptiX")
 endif()
 
+
+
+
+
+list(APPEND CMAKE_PREFIX_PATH $ENV{CMAKE_PREFIX_PATH})
+
+message("${name}.ENV{CMAKE_PREFIX_PATH} contents:")
+foreach(p $ENV{CMAKE_PREFIX_PATH})
+    message("   → ${p}")
+endforeach()
+
+message("${name}.CMAKE_PREFIX_PATH contents:")
+foreach(p ${CMAKE_PREFIX_PATH})
+    message("   → ${p}")
+endforeach()
+
+
+
+set(CURL_FOUND NO)
+if(BUILD_WITH_CURL)
+    find_package(CURL 8.12.1 REQUIRED)   # QUIET = don’t print "not found" yet
+    if(CURL_FOUND)
+        message(STATUS "Found suitable libcurl ${CURL_VERSION} (${CURL_LIBRARIES})")
+        message(STATUS "CURL_FOUND:        ${CURL_FOUND}")
+        message(STATUS "CURL_VERSION:      ${CURL_VERSION}")
+        message(STATUS "CURL_VERSION_STRING: ${CURL_VERSION_STRING}")
+        message(STATUS "CURL_INCLUDE_DIRS: ${CURL_INCLUDE_DIRS}")
+
+        if(CURL_INCLUDE_DIRS)
+            file(STRINGS "${CURL_INCLUDE_DIRS}/curl/curl.h" _curl_version_str
+                 REGEX "^#define[\t ]+LIBCURL_VERSION[\t ]+\".*\"")
+            string(REGEX REPLACE ".*\"(.*)\"" "\\1" CURL_VERSION_FROM_HEADER "${_curl_version_str}")
+            message(STATUS "libcurl version from curl.h: ${CURL_VERSION_FROM_HEADER}")
+        endif()
+    else()
+        message(STATUS "No suitable libcurl ≥ 8.12.1 found in default paths ...")
+    endif()
+endif()
+
+
+
+
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_FOUND      : ${Custom4_FOUND}")
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : Custom4_VERSION    : ${Custom4_VERSION}")
 
@@ -55,6 +98,13 @@ if(BUILD_WITH_CUDA)
    target_compile_definitions( ${name} PUBLIC WITH_CUDA )
    target_link_libraries(      ${name} PUBLIC Opticks::CSGOptiX)
 endif()
+
+if(CURL_FOUND)
+   target_compile_definitions( ${name} PUBLIC WITH_CURL )
+   target_link_libraries(      ${name} PUBLIC CURL::libcurl)
+endif()
+
+
 
 target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>

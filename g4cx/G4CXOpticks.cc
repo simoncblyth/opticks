@@ -410,6 +410,10 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
 G4CXOpticks::CreateSimulator
 ----------------------------
 
+The client simulator provides the same API, just it
+does not so the simulation itself it defers to the
+server over the network.
+
 **/
 
 

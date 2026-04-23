@@ -318,10 +318,10 @@ om-bdir-trim-tests()
 
 om-bdir(){
    : TODO separate bdir depending on Release/Debug so its faster to switch
+   : /data1/blyth/local/opticks_Debug
    local gen=$(om-cmake-generator)
    case $gen in
       "Unix Makefiles") echo $(om-prefix)/build/$1 ;;
-               "Xcode") echo $(om-prefix)/build_xcode/$1 ;;
    esac
 }
 om-sdir(){
@@ -535,9 +535,9 @@ om-subs--()
          alt)     om-subs--alt ;;
        esac
    else
-       if [ "$(opticks-build-with-cuda)" == "ON" ]; then
+       if [[ "$(opticks-config)" =~ Debug|Release ]]; then
             om-subs--all
-       elif [ "$(opticks-build-with-cuda)" == "OFF" ]; then
+       elif [[ "$(opticks-config)" =~ Client ]]; then
             om-subs--nocuda
        fi
    fi
@@ -920,12 +920,19 @@ om-pkg-opt()
 
     local name=$1
     local opt=""
+    local pkgopt=""
+
+    case $(opticks-config) in
+        Debug|Release) pkgopt="-DBUILD_WITH_CUDA=ON -DBUILD_WITH_CURL=OFF" ;;
+               Client) pkgopt="-DBUILD_WITH_CUDA=OFF -DBUILD_WITH_CURL=ON" ;;
+    esac
+
     case $name in
-       okconf) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
-       sysrap) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
-          CSG) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
-           u4) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
-         g4cx) opt="-DBUILD_WITH_CUDA=$(opticks-build-with-cuda)" ;;
+       okconf) opt="$pkgopt" ;;
+       sysrap) opt="$pkgopt" ;;
+          CSG) opt="$pkgopt" ;;
+           u4) opt="$pkgopt" ;;
+         g4cx) opt="$pkgopt" ;;
     esac
     echo $opt
 }
@@ -999,8 +1006,9 @@ om-cmake-okconf()
        -DOptiX_INSTALL_DIR=$(opticks-optix-prefix) \
        -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
        -DCOMPUTE_ARCHITECTURES=$(opticks-compute-architectures) \
-        $opt
+       $opt
 
+    # -DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF \
     # TODO: arrange for this and om-cmake to merge
     # NB not pinning CMAKE_PREFIX_PATH so can find foreigners, see oe-
 
@@ -1029,13 +1037,20 @@ om-cmake()
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
        $opt
 
+    # -DCMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH=OFF \
     #echo $BASH_SOURCE ] name $name
 
     rc=$?
     return $rc
 }
 
-om-cmake-dump(){ local sdir=${1:-sdir} ; cat << EOD
+om-cmake-dump()
+{
+    local sdir=${1:-sdir}
+    local name=$(basename $sdir)
+    local opt=$(om-pkg-opt $name)
+
+    cat << EOD
 
     cmake $sdir \\
        -G "$(om-cmake-generator)" \\
@@ -1043,9 +1058,10 @@ om-cmake-dump(){ local sdir=${1:-sdir} ; cat << EOD
        -DOPTICKS_PREFIX=$(om-prefix) \\
        -DCMAKE_INSTALL_PREFIX=$(om-prefix) \\
        -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \\
-       -DBUILD_WITH_CUDA=$(opticks-build-with-cuda)
+       $opt
 
     om-cmake-generator : $(om-cmake-generator)
+    opticks-config     : $(opticks-config)
     opticks-buildtype  : $(opticks-buildtype)
     om-prefix          : $(om-prefix)
     om-home            : $(om-home)
@@ -1071,8 +1087,8 @@ $FUNCNAME
    OPTICKS_OPTIX_PREFIX       : $OPTICKS_OPTIX_PREFIX
    opticks-optix-prefix       : $(opticks-optix-prefix)
 
-   opticks-build-with-cuda    : $(opticks-build-with-cuda)
-   OPTICKS_BUILK_WITH_CUDA    : $OPTICKS_BUILD_WITH_CUDA
+   opticks-config             : $(opticks-config)
+   OPTICKS_CONFIG             : $OPTICKS_CONFIG
 
    opticks-compute-capability : $(opticks-compute-capability)
    OPTICKS_COMPUTE_CAPABILITY : $OPTICKS_COMPUTE_CAPABILITY

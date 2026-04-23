@@ -25,6 +25,11 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
+
+name=CSGOptiXService_FastAPI_test
+main_script=$(realpath main.py)
+check_script=$(realpath check.py)
+
 source $HOME/.opticks/GEOM/GEOM.sh
 
 
@@ -32,6 +37,11 @@ source $HOME/.opticks/GEOM/GEOM.sh
 export OPTICKS_EVENT_MODE=Hit
 export OPTICKS_HIT_MASK=EC
 
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+LOGDIR=$TMP/$name
+mkdir -p $LOGDIR
 
 
 defarg="info_check_venv_run"
@@ -43,7 +53,7 @@ if [ "${arg/clean}" != "$arg" ]; then
 fi
 
 if [ "${arg/info}" != "$arg" ]; then
-    vv="BASH_SOURCE PWD defarg arg GEOM"
+    vv="BASH_SOURCE PWD defarg arg GEOM main_script check_script tmp TMP LOGDIR"
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
 fi
 
@@ -76,14 +86,17 @@ else
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-    which fastapi
-    fastapi dev main.py
+    (
+        cd $LOGDIR  || exit 1
+        which fastapi
+        fastapi dev $main_script
+    )
     [ $? -ne 0 ] && echo $BASH_SOURCE - failed to fastapi dev && exit 2
 fi
 
 if [ "${arg/pdb}" != "$arg" ]; then
     which ipython
-    ipython -i check.py
+    ${IPYTHON:-ipython} -i --pdb $check_script
     [ $? -ne 0 ] && echo $BASH_SOURCE - failed to pdb && exit 3
 fi
 

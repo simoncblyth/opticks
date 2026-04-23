@@ -1365,21 +1365,26 @@ opticks-acd(){  cd $(opticks-adir)/$1 ; }
 
 opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
 opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
-opticks-build-with-cuda(){ echo ${OPTICKS_BUILD_WITH_CUDA:-ON}  ; }  # ON or OFF
+opticks-config(){          echo ${OPTICKS_CONFIG:-Debug}  ; }
 
-opticks-build-with-cuda-notes(){ cat << EON
-How to build Opticks packages without CUDA, in fresh tab::
 
-     lo ## env setup
+opticks-config-notes(){ cat << EON
+How to build Opticks packages without CUDA and with newish libcurl in fresh tab::
+
+     lo_client              ## env setup
+     env | grep OPTICKS     ## check OPTICKS_CONFIG is Client and OPTICKS_PREFIX contains Client 
      o
-     export OPTICKS_BUILD_WITH_CUDA=OFF
-     om-cleaninstall
-     opticks-t        ## expect 0/~149 FAILs
+
+     opticks-full           ## as externals like bcm,glm,imgui and the setup generation are within OPTICKS_PREFIX have to opticks-full
+     opticks-t          ## expect 0/~149 FAILs
 
 Return to default build with CUDA, in fresh tab::
 
      lo ## env setup
      o
+
+
+
      om-cleaninstall
      opticks-t        ## expect 0/~221 FAILs
 
