@@ -1426,6 +1426,8 @@ inline std::string NP::HexDump(const char* buffer, size_t size)  // static
 NP::ReadToBufferCallback
 --------------------------
 
+This is used from NP_CURL::prepare_upload
+
 Need to handle any size and nitems the
 caller throws at us. That means the
 number of bytes read could be as small
@@ -1508,7 +1510,7 @@ inline size_t NP::ReadToBufferCallback(char* buffer, size_t size, size_t nitems,
             memcpy( dest, arr->_hdr.data() + hdr_offset, hdr_copy );
             arr->position    += hdr_copy ;
             total_copy       += hdr_copy ;
-            dest             += hdr_copy ;  // move target
+            dest             += hdr_copy ;  // advance target destination pointer
             remaining        -= hdr_copy ;
         }
 
@@ -1733,6 +1735,8 @@ inline NP* NP::CreateFromBuffer( const std::vector<char>& buf, size_t size, size
 /**
 NP::WriteToArrayCallback
 -------------------------
+
+Invoked from NP_CURL::prepare_download
 
 This callback is called multiple times with non-zero size*nitems bytes
 which must be copied from the src into the array.

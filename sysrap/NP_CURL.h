@@ -5,20 +5,38 @@ NP_CURL.h : Remote array transformation over HTTP using libcurl
 
 libcurl based upload/download of NP.hh arrays to a remote HTTP API service.
 
-
 Start FastAPI endpoint::
 
-   /usr/local/env/fastapi_check/dev.sh
+   ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
+   (NOT THIS OLD ONE ANYMORE: /usr/local/env/fastapi_check/dev.sh)
 
 Make requests::
 
     ~/np/tests/np_curl_test/np_curl_test.sh
-    LEVEL=1 ~/np/tests/np_curl_test/np_curl_test.sh    ## more verbosity
+    LEVEL=1 ~/np/tests/np_curl_test/np_curl_test.sh    ## LEVEL controls verbosity
+
+
+default NOT:WITHOUT_MAGIC "WITH_MAGIC"
+   dtype+shape+data+meta are serialized together and travel together
+   in the message body, only some optional(?) key value pairs travel
+   in the HTTP headers
+
+WITHOUT_MAGIC
+   dtype and shape strings travel in HTTP headers,
+   only the array data travel in the message body
+
 
 TODO
 ----
 
-1. avoid duplication of memory for the download
+1. investigate if duplication of memory can be avoided for the download
+
+   * part of problem is need to decode part of the message body in order to know how
+     much memory to allocate
+
+   * HMM: could duplicate the small shape+dtype+meta in headers
+     to make it easier to know sizes before allocating for the body?
+
 2. stress test with large arrays to find memory leaks
 
 **/
@@ -30,6 +48,22 @@ TODO
 #include <cstring>
 
 #include <curl/curl.h>
+
+/**
+libcurl version requirement 8.12.1   (HexVersion: 0x080c01)
+
+Major: 8  (08 in hex)
+Minor: 12 (0c in hex)
+Patch: 1  (01 in hex)
+
+**/
+
+#if LIBCURL_VERSION_NUM < 0x080c01
+#error "NP_CURL.h libcurl version too old! NP_CURL requires 8.12.1 or higher. Check CMAKE_PREFIX_PATH."
+#endif
+
+
+
 
 #include "NP_CURL_Header.h"
 
@@ -204,16 +238,17 @@ inline void NP_CURL::prepare_upload( NP* a, int index )
     long upload_size = 0 ;
 
 #ifdef WITHOUT_MAGIC
+    // DTYPE and SHAPE travel in headers NOT:BODY
     upload->size = a->arr_bytes();
     upload->buffer = (char*)a->bytes();
     upload->position = 0 ;
-    upload_size = upload->size ;     // just arr data in old approach
+    upload_size = upload->size ;          // just arr data in old approach
     std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
     std::string shape = a->sstr();        // eg "(10, 4, 4, )"
     uhdr.prepare_upload( token, index, level, dtype.c_str(), shape.c_str() );
 #else
+    // default MAGIC approach tranports serialized array including both hdr and arr data
     a->update_headers();
-
     upload_size = a->serialize_bytes() ;  // both hdr and arr data
     uhdr.prepare_upload( token, index, level );
 #endif
