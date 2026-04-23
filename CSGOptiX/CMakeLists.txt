@@ -215,11 +215,33 @@ if(BUILD_WITH_NANOBIND)
     message(STATUS "${name} nanobind_FOUND : ${nanobind_FOUND} ")
 
     set(py_ext opticks_${name})
+
     if(nanobind_FOUND)
        nanobind_add_module(${py_ext} NB_STATIC ${py_ext}.cc)
        target_link_libraries(${py_ext} PUBLIC ${name})
 
-       nanobind_add_stub(${py_ext}_stub MODULE ${py_ext} OUTPUT ${py_ext}.pyi PYTHON_PATH ${CMAKE_CURRENT_BINARY_DIR})
+       # 1. Force order: lib -> python module -> stub
+       add_dependencies(${py_ext} ${name})
+
+       # 2. Add the stub generation
+       nanobind_add_stub(
+            ${py_ext}_stub
+            MODULE ${py_ext}
+            OUTPUT ${py_ext}.pyi
+            PYTHON_PATH ${CMAKE_CURRENT_BINARY_DIR}
+       )
+
+
+       # 3. Explicitly link the stub target to the module to help order
+       add_dependencies(${py_ext}_stub ${py_ext})
+
+       # 4. CRITICAL: Tell the dynamic linker where to find libCSGOptiX.so during stubgen
+       # This environment variable is used by the execute_process inside nanobind_add_stub
+       set_property(TARGET ${py_ext}_stub PROPERTY
+            ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_CURRENT_BINARY_DIR}:$ENV{LD_LIBRARY_PATH}"
+       )
+
+
        install(TARGETS ${py_ext} LIBRARY DESTINATION py)
        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${py_ext}.pyi DESTINATION py)
     endif()
