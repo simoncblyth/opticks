@@ -50,7 +50,6 @@ foreach(p ${CMAKE_PREFIX_PATH})
 endforeach()
 
 
-
 set(CURL_FOUND NO)
 if(BUILD_WITH_CURL)
     find_package(CURL 8.12.1 REQUIRED)   # QUIET = don’t print "not found" yet
@@ -69,6 +68,9 @@ if(BUILD_WITH_CURL)
         endif()
     else()
         message(STATUS "No suitable libcurl ≥ 8.12.1 found in default paths ...")
+        message(STATUS "WHEN FIXING CMAKE FINDING A TOO OLD SYSTEM LIBCURL HAVE")
+        message(STATUS "TO MANUALLY CLEAN THE Client OPTICKS_PREFIX TO PREVENT CMAKE FROM JUST STICKING WITH")
+        message(STATUS "THE OLD LIBCURL IT FOUND FIRST")
     endif()
 endif()
 

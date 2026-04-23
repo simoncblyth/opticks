@@ -170,6 +170,18 @@ set(CUDART_TEST_SOURCES
 )
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 set(RETIRED_TEST_SOURCES
    SProcTest.cc
    SRngSpecTest.cc
@@ -192,6 +204,41 @@ set(BASH_RUN_TEST_SOURCES
 
     SSceneLoadTest.cc
 )
+
+
+set(CURL_TEST_SOURCES
+)
+
+
+set(CURL_FOUND NO)
+if(BUILD_WITH_CURL)
+    find_package(CURL 8.12.1 REQUIRED)
+    if(CURL_FOUND)
+        message(STATUS "Found suitable libcurl ${CURL_VERSION} (${CURL_LIBRARIES})")
+        message(STATUS "CURL_FOUND:        ${CURL_FOUND}")
+        message(STATUS "CURL_VERSION:      ${CURL_VERSION}")
+        message(STATUS "CURL_VERSION_STRING: ${CURL_VERSION_STRING}")
+        message(STATUS "CURL_INCLUDE_DIRS: ${CURL_INCLUDE_DIRS}")
+
+        if(CURL_INCLUDE_DIRS)
+            file(STRINGS "${CURL_INCLUDE_DIRS}/curl/curl.h" _curl_version_str
+                 REGEX "^#define[\t ]+LIBCURL_VERSION[\t ]+\".*\"")
+            string(REGEX REPLACE ".*\"(.*)\"" "\\1" CURL_VERSION_FROM_HEADER "${_curl_version_str}")
+            message(STATUS "libcurl version from curl.h: ${CURL_VERSION_FROM_HEADER}")
+        endif()
+    else()
+        message(STATUS "No suitable libcurl ≥ 8.12.1 found in default paths ...")
+        message(STATUS "WHEN FIXING CMAKE FINDING A TOO OLD SYSTEM LIBCURL HAVE")
+        message(STATUS "TO MANUALLY CLEAN THE Client OPTICKS_PREFIX TO PREVENT CMAKE FROM JUST STICKING WITH")
+        message(STATUS "THE OLD LIBCURL IT FOUND FIRST")
+    endif()
+endif()
+
+
+if(CURL_FOUND)
+   list(APPEND CURL_TEST_SOURCES SClientSimulatorTest.cc)
+endif()
+
 
 if(NLJSON_FOUND)
    list(APPEND TEST_SOURCES SMetaTest.cc)
@@ -239,6 +286,24 @@ foreach(SRC ${TEST_SOURCES})
     add_test(${name}.${TGT} ${TGT})
 endforeach()
 
+if(CURL_FOUND)
+foreach(SRC ${CURL_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+    target_link_libraries(${TGT} PUBLIC SysRap)
+
+    target_link_libraries(      ${TGT} PUBLIC CURL::libcurl)
+    target_compile_definitions( ${TGT} PUBLIC WITH_CURL )
+
+    target_include_directories( ${TGT} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
+    )
+
+    install(TARGETS ${TGT} DESTINATION lib)
+    add_test(${name}.${TGT} ${TGT})
+endforeach()
+endif()
 
 if(BUILD_WITH_CUDA)
 foreach(SRC ${CUDA_TEST_SOURCES})

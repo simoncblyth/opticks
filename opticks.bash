@@ -922,7 +922,11 @@ GEOM(){
 
 f(){ f.sh $* ; : opticks.bash load .npy from PWD or argument fold ; }
 
-o(){ opticks- ; cd $(opticks-home) ; git status  ; : opticks.bash ;  }
+oid(){
+   local vv="BASH_SOURCE FUNCNAME OPTICKS_ENVNOTE OPTICKS_CONFIG OPTICKS_PREFIX"
+   for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done ;
+}
+o(){ opticks- ; cd $(opticks-home) ; git status  ; oid ; : opticks.bash ;  }
 oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 
@@ -1372,20 +1376,17 @@ opticks-config-notes(){ cat << EON
 How to build Opticks packages without CUDA and with newish libcurl in fresh tab::
 
      lo_client              ## env setup
-     env | grep OPTICKS     ## check OPTICKS_CONFIG is Client and OPTICKS_PREFIX contains Client 
+     env | grep OPTICKS     ## check OPTICKS_CONFIG is Client and OPTICKS_PREFIX contains Client
      o
 
-     opticks-full           ## as externals like bcm,glm,imgui and the setup generation are within OPTICKS_PREFIX have to opticks-full
-     opticks-t          ## expect 0/~149 FAILs
+     opticks-full     ## as externals like bcm,glm,imgui and the setup generation are within OPTICKS_PREFIX have to opticks-full
+     opticks-t        ## expect 0/~149 FAILs
 
 Return to default build with CUDA, in fresh tab::
 
      lo ## env setup
      o
-
-
-
-     om-cleaninstall
+     oo               ## update build should be fine, as the default Debug prefix has not been touched
      opticks-t        ## expect 0/~221 FAILs
 
 

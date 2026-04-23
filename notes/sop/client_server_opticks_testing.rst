@@ -5,6 +5,12 @@ client_server_opticks_testing
 TODO
 ------
 
+* WIP: iteration on NP_CURL.h usage from client
+
+  * ~/o/sysrap/tests/SClientSimulator_test.sh standalone test
+  * ~/o/sysrap/tests/SClientSimulatorTest.sh integrated test
+
+
 * build and test JUNOSW against "client" Opticks (NOT:WITH_CUDA but WITH_CURL, subset of packages + partial packages)
 * should be almost no change on JUNOSW side, maintain same interface
 

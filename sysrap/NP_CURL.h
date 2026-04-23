@@ -81,7 +81,7 @@ struct NP_CURL
     static NP_CURL* INSTANCE ;
 
     static constexpr const char* NP_CURL_API_URL = "NP_CURL_API_URL" ;
-    static constexpr const char* NP_CURL_API_URL_DEFAULT = "http://127.0.0.1:8000/array_transform" ;
+    static constexpr const char* NP_CURL_API_URL_DEFAULT = "http://127.0.0.1:8000/simulate" ;
 
     static constexpr const char* NP_CURL_API_TOKEN = "NP_CURL_API_TOKEN" ;
     static constexpr const char* NP_CURL_API_TOKEN_DEFAULT = "secret" ;
@@ -308,6 +308,7 @@ inline void NP_CURL::perform()
     if (curl_code != CURLE_OK)
     {
         fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_code));
+        std::cerr << desc() << "\n" ;
         rc = 1 ;
     }
 
@@ -404,8 +405,9 @@ inline std::string NP_CURL::desc() const
     std::stringstream ss ;
     ss
        << "[NP_CURL::desc\n"
+       << " url [" << ( url ? url : "-" ) << "]\n"
 #ifdef WITHOUT_MAGIC
-       << " download " << download->desc() << "\n"
+       << " download " << ( download ? download->desc() : "-" ) << "\n"
 #else
        << " download " << ( download ? download->sstr() : "-" ) << "\n"
 #endif
