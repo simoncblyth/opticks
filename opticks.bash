@@ -3386,10 +3386,24 @@ EON
 }
 
 
+
+
+opticks-vram-now(){   nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits ; }
+opticks-vram-free(){  echo ${OPTICKS_VRAM_FREE:-15000} ; }  # eg 12274(31497) with(without) server running
+
 opticks-t-()
 {
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
+
+   local free=$(opticks-vram-free)
+   local now=$(opticks-vram-now)
+   if [ $now -lt $free ]; then
+       echo $BASH_SOURCE - $FUNCNAME - $LINENO - vram now $now is less than OPTICKS_VRAM_FREE $free
+       return 1
+   else
+       echo $BASH_SOURCE - $FUNCNAME - $LINENO - vram now $now is more than  OPTICKS_VRAM_FREE $free
+   fi
 
    local rc=0
    opticks-check-installation

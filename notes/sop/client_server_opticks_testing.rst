@@ -29,6 +29,82 @@ junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
 
 
 
+TODO: geometry consistency check via metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* need to pass root hash from client with gensteps and return root hash from server with hits
+
+  * discrepancy should kill the client, not the server
+
+
+
+
+will localization work in client ? LOOKS SO JUST DEPENDS ON stree transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------------------------
+
+::
+
+    437 void junoSD_PMT_v2_Opticks::EndOfEvent_CollectFullHits_premerged(int eventID, const SEvt* sev, const sphoton* hit, size_t num_hit )
+    438 {
+    439     SProf::Add("junoSD_PMT_v2_Opticks__EndOfEvent_CollectFullHits_premerged_HEAD");
+    440     junoHit_PMT_Collection* hitCollection = m_jpmt->getHitCollection() ;
+    441     assert( hitCollection );
+    442
+    443     for(size_t i=0 ; i < num_hit ; i++)
+    444     {
+    445         const sphoton& p = hit[i];
+    446         sphoton l = p ;
+    447         sev->localize_photon_inplace(l);
+    448
+    449         junoHit_PMT* hit = new junoHit_PMT();
+    450         PopulateFullHit(hit, l, p );
+    451         hitCollection->insert(hit);
+    452     }
+    453     std::string anno = SProf::Annotation("hit",num_hit);
+    454     SProf::Add("junoSD_PMT_v2_Opticks__EndOfEvent_CollectFullHits_premerged_TAIL", anno.c_str());
+    455 }
+
+    5222 void SEvt::localize_photon_inplace( sphoton& p ) const
+    5223 {
+    5224     assert(tree);
+    5225     tree->localize_photon_inplace(p);
+    5226 }
+
+
+    7929 inline void stree::localize_photon_inplace( sphoton& p ) const
+    7930 {
+    7931     unsigned iindex   = p.iindex() ;
+    7932     assert( iindex != 0xffffffffu );
+    7933     const glm::tmat4x4<double>* tr = get_iinst(iindex) ;
+    7934     assert( tr );
+    7935
+    7936     bool normalize = true ;
+    7937     p.transform( *tr, normalize );   // inplace transforms l (pos, mom, pol) into local frame
+    7938
+    7939 #ifdef NDEBUG
+    7940 #else
+    7941     unsigned sensor_identifier = p.pmtid() ;
+    7942
+    7943     glm::tvec4<int64_t> col3 = {} ;
+    7944     strid::Decode( *tr, col3 );
+    7945
+    7946     sphit ht = {};
+    7947     ht.iindex            = col3[0] ;
+    7948     ht.sensor_identifier = col3[2] ;
+    7949     ht.sensor_index      = col3[3] ;
+    7950
+    7951     assert( ht.iindex == iindex );
+    7952     assert( ht.sensor_identifier == sensor_identifier );
+    7953 #endif
+    7954
+    7955 }
+
+
+
+
+
+
+
 
 
 server-client testing in brief

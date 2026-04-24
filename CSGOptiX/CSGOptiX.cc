@@ -358,19 +358,19 @@ CSGOptiX::Create
 Canonical invokation from G4CXOpticks::setGeometry_ when a GPU is detected
 
 
-WIP: static methods cannot be enforced in a protocol, so perhaps just do the below
-within the ctor ?
+SEventConfig::SetDevice is only invoked at first SEvt instanciation,
+so cannot assume HasDevice is set as some tests do not use SEvt
 
 **/
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 {
-    bool hasDevice = SEventConfig::HasDevice()
-    if(!hasDevice)
-    {
-        LOG(fatal) << "SEventConfig::HasDevice " << ( hasDevice ? "YES" : "NO " );
-        return nullptr ;
-    }
+    //bool hasDevice = SEventConfig::HasDevice();
+    //if(!hasDevice)
+    //{
+    //    LOG(fatal) << "SEventConfig::HasDevice " << ( hasDevice ? "YES" : "NO " );
+    //    return nullptr ;
+    //}
 
     SProf::Add("CSGOptiX__Create_HEAD");
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ;

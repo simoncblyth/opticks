@@ -391,24 +391,20 @@ The client simulator provides the same API, just it
 does not do the simulation itself it defers that
 to the server over the network.
 
-**/
+In principal a build with both CUDA and CURL
+might need to choose the type of simulator
+via SEventConfig::ModeClient(). But for now keep it simple.
 
+**/
 
 SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
 {
-    stree* tr = fd->getTree();
-    assert(tr);
-
     SSimulator* cx = nullptr ;
 
 #if defined(WITH_CUDA)
-    int64_t mode_client = SEventConfig::ModeClient();
-    switch(mode_client)
-    {
-        case 0: cx = CSGOptiX::Create(fd)         ; break ;
-        case 1: cx = SClientSimulator::Create(tr) ; break ;
-    }
+    cx = CSGOptiX::Create(fd);
 #elif defined(WITH_CURL)
+    stree* tr = fd->getTree();
     cx = SClientSimulator::Create(tr);
 #endif
 

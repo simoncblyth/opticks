@@ -1,5 +1,13 @@
 #!/bin/bash
 
+usage(){ cat << EOU
+
+~/o/CSGOptiX/tests/CSGOptiXRenderTest.sh
+
+
+EOU
+}
+
 
 bin=CSGOptiXRenderTest
 source $HOME/.opticks/GEOM/GEOM.sh

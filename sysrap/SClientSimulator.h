@@ -3,6 +3,9 @@
 SClientSimulator.h
 ===================
 
+SClientSimulator.h can only be used from inside WITH_CURL guards,
+which ensures libcurl of at least 8.12.1 is available as required by NP_CURL.h
+
 **/
 
 #include <cassert>

@@ -77,7 +77,6 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-source dbg__.sh
 
 defarg=info_run_ana
 arg=${1:-$defarg}
