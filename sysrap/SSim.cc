@@ -215,7 +215,7 @@ void SSim::AnnotateFrame( sframe& fr, const SBitSet* elv, const char* caller ) /
 }
 
 
-
+const char* SSim::get_tree_digest() const { return tree ? tree->get_tree_digest() : nullptr ; }
 stree* SSim::get_tree() const { return tree ; }
 SScene* SSim::get_scene() const { return scene ; }
 

@@ -48,6 +48,7 @@ struct SClientSimulator : public SSimulator
 
 
     const stree* tree ;
+    const char*  tree_digest ;
 
 #ifdef WITH_SEVT_MOCK
     SEvtMock*    sev ;
@@ -91,6 +92,7 @@ SClientSimulator* SClientSimulator::Create(const stree* tree) // static
 inline SClientSimulator::SClientSimulator(const stree* _tree)
     :
     tree(_tree),
+    tree_digest(tree ? tree->get_tree_digest() : nullptr),
 #ifdef WITH_SEVT_MOCK
     sev(SEvtMock::Get_EGPU()),
 #else
@@ -134,6 +136,13 @@ pulls genstep array from the gensteps vector::
 HMM: thinking about client server settings consistency, could just use settings from server
 and give warnings on client when inconsistent ?
 
+Methods on the server at the other end of the NP_CURL::TransformRemote call are::
+
+    CSGOptiXService::simulate
+    CSGOptiX::simulate  (accepting gs)
+    QSim::simulate  (accepting gs)
+
+
 **/
 
 
@@ -155,7 +164,9 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
 #ifdef WITH_SEVT_MOCK
 #else
     std::string client_settings = SEventConfig::Settings();
+    std::string client_digest = tree_digest ;
     gs->set_meta<std::string>("Settings",client_settings);
+    gs->set_meta<std::string>("TreeDigest",client_digest);
 #endif
 
     NP* hc = NP_CURL::TransformRemote(gs,eventID);  // "hc" hit-component one of : hit/hitlite/hitlitemerged/hitmerged
@@ -177,12 +188,19 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
 #else
     std::string server_settings = hc->get_meta<std::string>("Settings");
     bool match_settings = SEventConfig::SettingsMatch(client_settings,server_settings);
+
+    std::string server_digest = hc->get_meta<std::string>("TreeDigest");
+    bool match_digest = 0 == strcmp( server_digest.c_str(), client_digest.c_str() );
+
     std::cout
           << "SClientSimulator::simulate "
           << " eventID " << eventID
           << " match_settings " << ( match_settings ? "YES" : "NO " )
           << " client_settings [" << client_settings << "]"
           << " server_settings [" << server_settings << "]"
+          << " match_digest " << ( match_digest ? "YES" : "NO " )
+          << " client_digest [" << client_digest << "]"
+          << " server_digest [" << server_digest << "]"
           << "\n"
           ;
 #endif

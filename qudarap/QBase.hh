@@ -16,7 +16,12 @@ struct QUDARAP_API QBase
 
     QBase();  
     void init(); 
+
+    void        setTreeDigest(const char* td);
+    const char* getTreeDigest() const;
+
     std::string desc() const ; 
+    const char* tree_digest ;
 
     qbase*  base ; 
     qbase*  d_base ; 

@@ -122,6 +122,8 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     LOG(LEVEL) << "[ new QBase" ;
     QBase* base = new QBase ;
+    base->setTreeDigest(ssim->get_tree_digest());
+
     LOG(LEVEL) << "] new QBase : latency here of about 0.3s from first device access, if latency of >1s need to start nvidia-persistenced " ;
     LOG(LEVEL) << base->desc();
 
@@ -725,7 +727,10 @@ NP* QSim::simulate(const NP* gs, int eventID )
     ht->set_meta<double>("QSim__simulate_tot_dt", tot_dt);
 
     std::string server_settings = SEventConfig::Settings();
+    std::string tree_digest = base->getTreeDigest() ;
+
     ht->set_meta<std::string>("Settings", server_settings);
+    ht->set_meta<std::string>("TreeDigest", tree_digest );
 
 
     LOG(info)
@@ -734,6 +739,7 @@ NP* QSim::simulate(const NP* gs, int eventID )
         << " ht " << ( ht ? ht->sstr() : "-" )
         << " tot_dt " << std::fixed << std::setw(10) << std::setprecision(6) << tot_dt
         << " server_settings " << server_settings
+        << " tree_digest " << tree_digest
         ;
     reset(eventID);
 

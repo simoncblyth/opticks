@@ -30,11 +30,24 @@ qbase* QBase::MakeInstance() // static
 
 QBase::QBase()
     :
+    tree_digest(nullptr),
     base(MakeInstance()),
     d_base(nullptr)
 {
     init();
 }
+
+
+void QBase::setTreeDigest(const char* td)
+{
+    tree_digest = td ? strdup(td) : nullptr ;
+}
+const char* QBase::getTreeDigest() const
+{
+    return tree_digest ;
+}
+
+
 
 /**
 QBase::init
@@ -73,9 +86,10 @@ std::string QBase::desc() const
        << " base " << base
        << " d_base " << d_base
        << " base.desc " << base->desc()
+       << " tree_digest " << ( tree_digest ? tree_digest : "-" )
        ;
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
 
 

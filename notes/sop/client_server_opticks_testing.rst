@@ -25,12 +25,41 @@ JUNOSW + OpticksClient + OpticksServer
 junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
     high level use of G4CXOpticks::simulate so should need no change other the Client switch
 
-    * HMM: THE INSTALL SHOULD KNOW IT IS A Client build : SO NO NEED FOR MANUAL CONTROL
+    * DONE : INSTALL USES THE MACROS TO AVOID NEED FOR CLIENT SWITCH
 
 
 
-TODO: geometry consistency check via metadata
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO: build JUNOSW + OpticksClient on workstation - local.sh function "ljbb_client" ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Prime change is prefix::
+
+    #export JUNO_OPTICKS_PREFIX=/data1/blyth/local/opticks_Debug
+    export JUNO_OPTICKS_PREFIX=/data1/blyth/local/opticks_Client
+
+
+
+TODO : how to make OpticksClient release onto cvmfs ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* decide on naming and layout of OpticksClient tarball and cvmfs folders
+
+
+TODO : how to make JUNOSW+OpticksClient release onto cvmfs ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+DONE: geometry consistency check via tree digest
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    stree::get_tree_digest()
+
 
 * need to pass root hash from client with gensteps and return root hash from server with hits
 
@@ -38,9 +67,8 @@ TODO: geometry consistency check via metadata
 
 
 
-
-will localization work in client ? LOOKS SO JUST DEPENDS ON stree transforms
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-------------------------------------------
+LOOKS OK : will localization work in client ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 

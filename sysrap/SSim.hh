@@ -76,6 +76,7 @@ private:
 public:
     static void AnnotateFrame( sframe& fr, const SBitSet* elv, const char* caller );
 
+    const char* get_tree_digest() const ;
     stree* get_tree() const ;
     SScene* get_scene() const ;
     void set_override_scene(SScene* _scene);

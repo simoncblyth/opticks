@@ -834,7 +834,7 @@ High level interface used by CSGOptiXService::simulate
 
 NP* CSGOptiX::simulate(const NP* gs, int eventID)
 {
-    return sim->simulate(gs, eventID);
+    return sim->simulate(gs, eventID);  // (QSim)
 }
 
 
