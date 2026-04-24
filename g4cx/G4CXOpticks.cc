@@ -9,7 +9,6 @@ G4CXOpticks.cc
 #include <csignal>
 #include "SLOG.hh"
 
-
 #include "spath.h"
 #include "ssys.h"
 
@@ -110,7 +109,7 @@ G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const
 
 
     int opticksMode = SEventConfig::IntegrationMode();
-    if(opticksMode == 0 || opticksMode == 2) SetNoGPU() ;
+    if(opticksMode == 0 || opticksMode == 2) SetNoSim() ;
 
     LOG(info) << " opticksMode " << opticksMode << " sd " << sd  ;
 
@@ -130,32 +129,14 @@ G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void G4CXOpticks::Finalize() // static
 {
     LOG(LEVEL);
 }
 
-#ifdef __APPLE__
-bool G4CXOpticks::NoGPU = true ;
-#else
-bool G4CXOpticks::NoGPU = false ;
-#endif
-void G4CXOpticks::SetNoGPU(bool no_gpu){ NoGPU = no_gpu ; }
-bool G4CXOpticks::IsNoGPU(){  return NoGPU ; }
+bool G4CXOpticks::NoSim = false ;
+void G4CXOpticks::SetNoSim(bool no_sim){ NoSim = no_sim ; }
+bool G4CXOpticks::IsNoSim(){  return NoSim ; }
 
 
 /**
@@ -376,9 +357,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     fd = fd_ ;
     LOG(LEVEL) << "[ fd " << fd ;
 
-    bool hasDevice = SEventConfig::HasDevice();
-
-    if(NoGPU == false && hasDevice == true)
+    if(!NoSim)
     {
         LOG(LEVEL) << "[ CreateSimulator " ;
         cx = CreateSimulator(fd);
@@ -387,12 +366,10 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     else
     {
         LOG(info)
-            << " skip CSGOptiX::Create as NoGPU set OR failed to detect CUDA capable device "
-            << " NoGPU " << NoGPU
-            << " hasDevice " << ( hasDevice ? "YES" : "NO " )
+            << " skip CSGOptiX::Create as NoSim set "
+            << " NoSim " << NoSim
             ;
     }
-
     LOG(LEVEL) << "] fd " << fd ;
 
 
@@ -411,35 +388,33 @@ G4CXOpticks::CreateSimulator
 ----------------------------
 
 The client simulator provides the same API, just it
-does not so the simulation itself it defers to the
-server over the network.
+does not do the simulation itself it defers that
+to the server over the network.
 
 **/
 
 
 SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
 {
-    int64_t mode_client = SEventConfig::ModeClient();
+    stree* tr = fd->getTree();
+    assert(tr);
+
     SSimulator* cx = nullptr ;
-    if( mode_client == 0 )
+
+#if defined(WITH_CUDA)
+    int64_t mode_client = SEventConfig::ModeClient();
+    switch(mode_client)
     {
-#ifdef WITH_CUDA
-        cx = CSGOptiX::Create(fd);
-#endif
+        case 0: cx = CSGOptiX::Create(fd)         ; break ;
+        case 1: cx = SClientSimulator::Create(tr) ; break ;
     }
-    else if (mode_client == 1 )
-    {
-#ifdef WITH_CURL
-         stree* tr = fd->getTree();
-         cx = new SClientSimulator(tr);
-#else
-         LOG(fatal) << "ModeClient requires compilation WITH_CURL of at least 8.12" ;
+#elif defined(WITH_CURL)
+    cx = SClientSimulator::Create(tr);
 #endif
-    }
+
     assert(cx);
     return cx ;
 }
-
 
 
 
@@ -471,8 +446,8 @@ into the SEvt.
 
 void G4CXOpticks::simulate(int eventID, bool reset_ )
 {
-    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ;
-    if(NoGPU) return ;
+    LOG_IF(fatal, NoSim) << "NoSim SKIP" ;
+    if(NoSim) return ;
 
     LOG(LEVEL) << "[ "  << eventID;
     LOG(LEVEL) << desc() ;
@@ -499,8 +474,8 @@ the reset.
 
 void G4CXOpticks::reset(int eventID)
 {
-    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ;
-    if(NoGPU) return ;
+    LOG_IF(fatal, NoSim) << "NoSim SKIP" ;
+    if(NoSim) return ;
 
     assert( SEventConfig::IsRGModeSimulate() );
 
@@ -518,8 +493,8 @@ void G4CXOpticks::reset(int eventID)
 
 void G4CXOpticks::simtrace(int eventID)
 {
-    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ;
-    if(NoGPU) return ;
+    LOG_IF(fatal, NoSim) << "NoSim SKIP" ;
+    if(NoSim) return ;
 
     LOG(LEVEL) << "[" ;
 
@@ -530,8 +505,8 @@ void G4CXOpticks::simtrace(int eventID)
 
 void G4CXOpticks::render()
 {
-    LOG_IF(fatal, NoGPU) << "NoGPU SKIP" ;
-    if(NoGPU) return ;
+    LOG_IF(fatal, NoSim) << "NoSim SKIP" ;
+    if(NoSim) return ;
 
     bool nocx = cx == nullptr ;
     LOG_IF(fatal, nocx ) << "NOCX cannot render" ;

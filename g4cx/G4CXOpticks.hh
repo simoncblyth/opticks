@@ -41,9 +41,9 @@ struct G4CX_API G4CXOpticks
     static void SaveGeometry();
     static void Finalize();
 
-    static bool NoGPU ;
-    static void SetNoGPU(bool no_gpu=true) ; // exercise everything other than CSGOptiX
-    static bool IsNoGPU() ;
+    static bool NoSim ;
+    static void SetNoSim(bool no_sim=true) ; // exercise everything other than CSGOptiX
+    static bool IsNoSim() ;
 
 
     SSim*                    sim ;
