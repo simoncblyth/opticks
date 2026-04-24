@@ -4949,6 +4949,24 @@ size_t    SEvt::getNumPhoton() const { return topfold->get_num(SEventConfig::Pho
 const NP* SEvt::getHit() const {       return topfold->get(    SEventConfig::HitCompOneName()) ; }
 size_t    SEvt::getNumHit() const {    return topfold->get_num(SEventConfig::HitCompOneName()) ; }
 
+
+/**
+SEvt::setHit
+-------------
+
+SEvt::setHit is used from SClientSimulator::simulate by the client
+which gets the hc array via a NP_CURL.h request.
+What the hc array contains (hit/hitmerged/hitlitemerged/hitlite)
+depends on settings.
+
+**/
+
+void SEvt::setHit( const NP* hc )
+{
+    const char* hcn = SEventConfig::HitCompOneName() ;
+    topfold->set( hcn, hc );
+}
+
 const NP* SEvt::getAux() const {     return topfold->get(SComp::AUX_) ; }
 const NP* SEvt::getSup() const {     return topfold->get(SComp::SUP_) ; }
 const NP* SEvt::getPho() const {     return topfold->get(SComp::PHO_) ; }

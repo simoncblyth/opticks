@@ -13,6 +13,7 @@ SClientSimulator.h
 #include "SEvtMock.h"
 #else
 #include "SEvt.hh"
+#include "SEventConfig.hh"
 #endif
 
 #include "NP.hh"
@@ -24,8 +25,8 @@ struct SClientSimulator : public SSimulator
     virtual ~SClientSimulator() = default ;
 
     static SClientSimulator* Create(const char* path="$CFBaseFromGEOM/CSGFoundry/SSim");
+    static SClientSimulator* Create(const stree* tree);
     SClientSimulator(const stree* tr);
-    void init();
 
     const char* desc() const ;
 
@@ -72,10 +73,15 @@ SClientSimulator* SClientSimulator::Create(const char* path) // static
         std::cerr << "SClientSimulator::Create - FAILED TO LOAD TREE FROM " << ( ss ? ss : "-" ) << "\n" ;
         return nullptr ;
     }
+    return Create(tree);
+}
 
+SClientSimulator* SClientSimulator::Create(const stree* tree) // static
+{
     SClientSimulator* client = new SClientSimulator(tree); ;
     return client ;
 }
+
 
 
 
@@ -83,21 +89,14 @@ inline SClientSimulator::SClientSimulator(const stree* _tree)
     :
     tree(_tree),
 #ifdef WITH_SEVT_MOCK
-    sev(new SEvtMock),
+    sev(SEvtMock::Get_EGPU()),
 #else
     sev(SEvt::Get_EGPU()),
 #endif
     placeholder(0)
 {
-    init();
 }
 
-inline void SClientSimulator::init()
-{
-#ifdef WITH_SEVT_MOCK
-    sev->load_genstep("$FOLD/gs.npy");
-#endif
-}
 
 
 
@@ -123,37 +122,69 @@ inline double SClientSimulator::render(const char*)
 SClientSimulator::simulate
 ---------------------------
 
-TODO: implement this using NP_CURL.h
-get gensteps from SEvt, then populate SEvt hits
-
-
 In normal running u4 collects into SEvt::gensteps vector and at endOfEvent QSim::simulate
 pulls genstep array from the gensteps vector::
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
     NP* igs = sev->makeGenstepArrayFromVector();
 
-
+HMM: thinking about client server settings consistency, could just use settings from server
+and give warnings on client when inconsistent ?
 
 **/
 
 
 inline double SClientSimulator::simulate(int eventID, bool reset )
 {
-    assert(eventID > -1);
-    assert(reset == false);
-
     sev->beginOfEvent(eventID);
-    NP* igs = sev->makeGenstepArrayFromVector();
+    NP* gs = sev->makeGenstepArrayFromVector();
+    if(gs == nullptr)
+    {
+        std::cerr
+            << "SClientSimulator::simulate"
+            << " eventID " << eventID
+            << " NO GENSTEPS - NOTHING TO DO "
+            << "\n"
+            ;
+        return 0;
+    }
 
-    NP* hit = NP_CURL::TransformRemote(igs,eventID);
+#ifdef WITH_SEVT_MOCK
+#else
+    std::string client_settings = SEventConfig::Settings();
+    gs->set_meta<std::string>("Settings",client_settings);
+#endif
 
-    // TODO: PLACE HIT INTO CLIENT SEvt SO IT LOOKS THE SAME AS MONO-RUNNING
+    NP* hc = NP_CURL::TransformRemote(gs,eventID);  // "hc" hit-component one of : hit/hitlite/hitlitemerged/hitmerged
+    sev->setHit(hc);
 
-    std::cout << "SClientSimulator::simulate " << eventID << " hit " << ( hit ? hit->sstr() : "-" ) << "\n" ;
+    double dt = hc->get_meta<double>("QSim__simulate_tot_dt", 0. );
 
 
-    return 0. ;
+    std::cout
+          << "SClientSimulator::simulate "
+          << " eventID " << eventID
+          << " reset " << reset
+          << " hc " << ( hc ? hc->sstr() : "-" )
+          << " dt " << dt
+          << "\n"
+          ;
+
+#ifdef WITH_SEVT_MOCK
+#else
+    std::string server_settings = hc->get_meta<std::string>("Settings");
+    bool match_settings = SEventConfig::SettingsMatch(client_settings,server_settings);
+    std::cout
+          << "SClientSimulator::simulate "
+          << " eventID " << eventID
+          << " match_settings " << ( match_settings ? "YES" : "NO " )
+          << " client_settings [" << client_settings << "]"
+          << " server_settings [" << server_settings << "]"
+          << "\n"
+          ;
+#endif
+
+    return dt ;
 }
 inline void SClientSimulator::reset(int eventID)
 {

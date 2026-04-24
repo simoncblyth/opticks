@@ -689,7 +689,7 @@ void QSim::simulate_final_merge(int64_t tot_ph, cudaStream_t stream)
 QSim::simulate
 ----------------
 
-High level API intending to be used from CSGOptiXService
+High level API used from CSGOptiXService
 
 1. access eventID from genstep metadata
 2. add the genstep to the EGPU SEvt
@@ -717,18 +717,23 @@ NP* QSim::simulate(const NP* gs, int eventID )
     assert( sev == SEvt::Get_EGPU() );
     sev->addGenstep(gs);
 
-    bool reset_ = false ;
+    bool reset_ = false ; // defer reset in order to copy ht first
     double tot_dt = simulate(eventID, reset_);
 
     const NP* _ht = sev->getHit();
     NP* ht = _ht ? _ht->copy() : nullptr ;  // copy global hits from SEvt before reset
     ht->set_meta<double>("QSim__simulate_tot_dt", tot_dt);
 
+    std::string server_settings = SEventConfig::Settings();
+    ht->set_meta<std::string>("Settings", server_settings);
+
+
     LOG(info)
         << " eventID " << std::setw(6) << eventID
         << " gs " << ( gs ? gs->sstr() : "-" )
         << " ht " << ( ht ? ht->sstr() : "-" )
         << " tot_dt " << std::fixed << std::setw(10) << std::setprecision(6) << tot_dt
+        << " server_settings " << server_settings
         ;
     reset(eventID);
 

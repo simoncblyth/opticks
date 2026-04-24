@@ -769,6 +769,8 @@ public:
     const NP* getHit() const ;    // uses SEventConfig::HitCompOneName    depending on ModeLite ModeMerge
     size_t    getNumHit() const ;
 
+    void setHit( const NP* hc );
+
 
     const NP* getAux() const ;
     const NP* getSup() const ;

@@ -73,6 +73,17 @@ inline CSGOptiXService::CSGOptiXService()
 }
 
 
+/**
+CSGOptiXService::simulate
+--------------------------
+
+This method is invoked via the nanobind python binding shadow instance method::
+
+    _CSGOptiXService::simulate_with_meta
+
+**/
+
+
 inline NP* CSGOptiXService::simulate( NP* gs, int eventID )
 {
     if(level > 0) std::cout << "[CSGOptiXService::simulate gs " << ( gs ? gs->sstr() : "-" ) << "\n" ;

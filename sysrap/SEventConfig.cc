@@ -1507,10 +1507,32 @@ const char* SEventConfig::HitCompOneName() // static
 }
 
 
+/**
+SEventConfig::Settings
+-----------------------
 
+This is used to check consistency of relevant settings between
+client and server instances.
 
+**/
 
+std::string SEventConfig::Settings() // static
+{
+    std::stringstream ss ;
+    ss
+        << "HitCompOneName:" << HitCompOneName()
+        << ","
+        << "PhotonCompOneName:" << PhotonCompOneName()
+        ;
 
+    std::string str = ss.str() ;
+    return str ;
+}
+
+bool SEventConfig::SettingsMatch(const std::string& a, const std::string& b) // static
+{
+    return 0 == strcmp(a.c_str(), b.c_str()) ;
+}
 
 
 

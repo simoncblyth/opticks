@@ -11,6 +11,7 @@ This requires the *uv* python package+venv tool::
 Build and start the FastAPI HTTP server, on first run dependencies
 are downloaded from pypi into the virtual env .venv directory::
 
+    lo   ## full opticks environment - "lo_client" is not sufficient
     ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
 
 Make HTTP POST requests to the endpoint::
@@ -18,6 +19,39 @@ Make HTTP POST requests to the endpoint::
      ~/np/tests/np_curl_test/np_curl_test.sh
      LEVEL=1 MULTIPART=0  ~/np/tests/np_curl_test/np_curl_test.sh
      LEVEL=1 MULTIPART=1  ~/np/tests/np_curl_test/np_curl_test.sh
+
+
+CAUTION : the server consumes significant VRAM
+-----------------------------------------------
+
+Some opticks-t tests FAIL with VRAM OOM if they are run
+while the server is running.
+
+
+subcommands
+------------
+
+clean
+   delete __pycache__ and .venv from source directory
+
+info
+   dump variables
+
+check
+   check fastapi is in environment
+
+venv
+   use uv to initialize the virtual environment and write .gitignore
+
+activate
+   source the venv setup
+
+run
+   start the server
+
+pdb
+   invoke check script under ipython
+
 
 EOU
 }
@@ -43,30 +77,33 @@ TMP=${TMP:-$tmp}
 LOGDIR=$TMP/$name
 mkdir -p $LOGDIR
 
+WHICH_FASTAPI=$(which fastapi 2>/dev/null)
 
-defarg="info_check_venv_run"
+defarg="info_check_venv_activate_run"
 arg=${1:-$defarg}
 
-if [ "${arg/clean}" != "$arg" ]; then
+vv="BASH_SOURCE PWD defarg arg GEOM main_script check_script tmp TMP LOGDIR WHICH_FASTAPI"
+
+
+if [[ "$arg" =~ clean ]]; then
    rm -rf __pycache__
    rm -rf .venv
 fi
 
-if [ "${arg/info}" != "$arg" ]; then
-    vv="BASH_SOURCE PWD defarg arg GEOM main_script check_script tmp TMP LOGDIR"
+if [[ "$arg" =~ info ]]; then
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
 fi
 
-if [ "${arg/check}" != "$arg" ]; then
+if [[ "$arg" =~ check ]]; then
     if command -v fastapi >/dev/null 2>&1; then
-        echo "$BASH_SOURCE - fastapi CLI is installed at $(command -v fastapi)"
+        echo "$BASH_SOURCE - check - fastapi CLI is installed at $(command -v fastapi)"
     else
-        echo "$BASH_SOURCE - fastapi CLI not found - try base environment with ipython such as \"lo\" "
+        echo "$BASH_SOURCE - check - fastapi CLI not found - try base environment with ipython such as \"lo\" "
         exit 1
     fi
 fi
 
-if [ "${arg/venv}" != "$arg" ]; then
+if [[ "$arg" =~ venv ]]; then
     if [ ! -d ".venv" ]; then
         echo $BASH_SOURCE - installing dependencies
         echo .venv > .gitignore
@@ -78,14 +115,16 @@ if [ "${arg/venv}" != "$arg" ]; then
     fi
 fi
 
-if [ -f .venv/bin/activate ]; then
-   source .venv/bin/activate
-   [ $? -ne 0 ] && echo $BASH_SOURCE - failed to activate venv && exit 1
-else
-   echo $BASH_SOURCE - no .venv - EXIT HERE && exit 0
+if [[ "$arg" =~ activate ]]; then
+    if [ -f .venv/bin/activate ]; then
+       source .venv/bin/activate
+       [ $? -ne 0 ] && echo $BASH_SOURCE - failed to activate venv && exit 1
+    else
+       echo $BASH_SOURCE - no .venv - EXIT HERE && exit 0
+    fi
 fi
 
-if [ "${arg/run}" != "$arg" ]; then
+if [[ "$arg" =~ run ]]; then
     (
         cd $LOGDIR  || exit 1
         which fastapi
@@ -94,11 +133,10 @@ if [ "${arg/run}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE - failed to fastapi dev && exit 2
 fi
 
-if [ "${arg/pdb}" != "$arg" ]; then
+if [[ "$arg" =~ pdb ]]; then
     which ipython
     ${IPYTHON:-ipython} -i --pdb $check_script
     [ $? -ne 0 ] && echo $BASH_SOURCE - failed to pdb && exit 3
 fi
-
 
 exit 0

@@ -365,6 +365,13 @@ within the ctor ?
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 {
+    bool hasDevice = SEventConfig::HasDevice()
+    if(!hasDevice)
+    {
+        LOG(fatal) << "SEventConfig::HasDevice " << ( hasDevice ? "YES" : "NO " );
+        return nullptr ;
+    }
+
     SProf::Add("CSGOptiX__Create_HEAD");
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ;
 
@@ -821,7 +828,7 @@ void CSGOptiX::reset(int eventID)
 CSGOptiX::simulate
 -------------------
 
-High level interface used by CSGOptiXService.h
+High level interface used by CSGOptiXService::simulate
 
 **/
 

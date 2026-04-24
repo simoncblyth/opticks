@@ -12,7 +12,8 @@ Build and start the endpoint "server" on GPU node::
 
 Run this test, not necessarily on GPU node::
 
-    lo_client
+    lo_client  ## NB "Client" config is required for the libcurl version needed by NP_CURL.h
+    oid        ## check are within "Client" config
     ~/o/sysrap/tests/SClientSimulatorTest.sh
 
 
@@ -36,7 +37,9 @@ tmp=/tmp/$USER/opticks
 export TMP=${TMP:-$tmp}
 export FOLD=$TMP/SEvt__createInputGenstep_configuredTest
 
-vv="$vv GEOM ${GEOM}_CFBaseFromGEOM tmp TMP FOLD"
+export OPTICKS_INPUT_GENSTEP=$FOLD/gs.npy
+
+vv="$vv GEOM ${GEOM}_CFBaseFromGEOM tmp TMP FOLD OPTICKS_INPUT_GENSTEP"
 
 if [[ $arg =~ info ]]; then
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done

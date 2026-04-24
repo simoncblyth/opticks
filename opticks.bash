@@ -923,7 +923,7 @@ GEOM(){
 f(){ f.sh $* ; : opticks.bash load .npy from PWD or argument fold ; }
 
 oid(){
-   local vv="BASH_SOURCE FUNCNAME OPTICKS_ENVNOTE OPTICKS_CONFIG OPTICKS_PREFIX"
+   local vv="BASH_SOURCE FUNCNAME PWD OPTICKS_ENVNOTE OPTICKS_CONFIG OPTICKS_PREFIX"
    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done ;
 }
 o(){ opticks- ; cd $(opticks-home) ; git status  ; oid ; : opticks.bash ;  }

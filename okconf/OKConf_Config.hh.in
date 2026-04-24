@@ -1,15 +1,19 @@
 #pragma once
 
 //
-// First subproj OKConf CMakeLists.txt writes ${CMAKE_BINARY_DIR}/inc/OpticksCMakeConfig.hh 
-// at configure time, based on version defines parsed from package headers 
+// First subproj OKConf CMakeLists.txt writes ${CMAKE_BINARY_DIR}/inc/OpticksCMakeConfig.hh
+// at configure time, based on version defines parsed from package headers
 // in for example optixrap/CMakeLists.txt
 //
-// OpticksCMakeConfig.hh.in  -> OpticksCMakeConfig.hh 
+// OpticksCMakeConfig.hh.in  -> OpticksCMakeConfig.hh
 //
-// This means that package versions become globally available for all 
+// This means that package versions become globally available for all
 // Opticks projects at all levels, without having to include package headers.
 //
+
+
+
+
 
 #cmakedefine OKCONF_CUDA_API_VERSION_INTEGER @OKCONF_CUDA_API_VERSION_INTEGER@
 #cmakedefine OKCONF_OPTIX_VERSION_INTEGER @OKCONF_OPTIX_VERSION_INTEGER@
@@ -23,5 +27,19 @@
 
 
 
+
+
+
+
+#cmakedefine01 OKCONF_WITH_CUDA @OKCONF_WITH_CUDA@
+#cmakedefine01 OKCONF_WITH_CURL @OKCONF_WITH_CURL@
+
+
+// derived macro
+#if (BUILD_WITH_CURL == 1) && (BUILD_WITH_CUDA == 0)
+    #define OKCONF_CURL_CLIENT 1
+#else
+    #undef OKCONF_CURL_CLIENT
+#endif
 
 

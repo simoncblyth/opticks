@@ -55,12 +55,14 @@ fi
 if [ "${arg/chk}" != "$arg" ]; then
 
     checkfor="8.12.1"
-    which curl-config
 
-    curl-config --libs
-    curl-config --cflags
-    curl-config --vernum
-    curl-config --version
+    if [ -n "$VERBOSE" ]; then
+        which curl-config
+        curl-config --libs
+        curl-config --cflags
+        curl-config --vernum
+        curl-config --version
+    fi
 
     if curl-config --checkfor "$checkfor" >/dev/null 2>&1; then
         echo "$BASH_SOURCE - OK - $(curl-config --version) meets requirements."
@@ -71,10 +73,22 @@ if [ "${arg/chk}" != "$arg" ]; then
     fi
 fi
 
+
+
+
+if [ "${arg/inc}" != "${arg}" ]; then
+    echo $BASH_SOURCE - inc - dump headers with curl.h in name actually used by compiler
+    gcc -std=c++17 -I.. -DWITH_SEVT_MOCK $(curl-config --cflags) -E -H SClientSimulator_test.cc 2>&1 | grep curl.h
+    # -E : just preprocessing
+    # -H : print header paths
+fi
+
 if [ "${arg/gcc}" != "${arg}" ]; then
+
+
     gcc $name.cc ../s_pa.cc ../s_tv.cc ../s_bb.cc ../sn.cc ../s_csg.cc \
         -o $bin \
-        -std=c++17 -lstdc++ -lm \
+        -std=c++17 -lstdc++ -lm -g \
         -I.. \
         -DWITH_CHILD \
         -DWITH_SEVT_MOCK \
@@ -88,6 +102,16 @@ if [ "${arg/run}" != "${arg}" ]; then
     $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 fi
+
+if [[ "$arg" =~ dbg ]]; then
+    source dbg__.sh
+    dbg__ $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
+fi
+
+
+
+
 
 exit 0
 

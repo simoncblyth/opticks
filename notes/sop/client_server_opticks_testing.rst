@@ -10,9 +10,25 @@ TODO
   * ~/o/sysrap/tests/SClientSimulator_test.sh standalone test
   * ~/o/sysrap/tests/SClientSimulatorTest.sh integrated test
 
+  * what about reset : same requirements as current JS runing ?
 
-* build and test JUNOSW against "client" Opticks (NOT:WITH_CUDA but WITH_CURL, subset of packages + partial packages)
-* should be almost no change on JUNOSW side, maintain same interface
+
+* build and test JUNOSW against the OPTICKS_CONFIG:Client build "lo_client" (NOT:WITH_CUDA but WITH_CURL, subset of packages + partial packages)
+
+  * should be almost no change on JUNOSW side, maintain same interface
+
+
+JUNOSW + OpticksClient + OpticksServer
+----------------------------------------
+
+
+junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
+    high level use of G4CXOpticks::simulate so should need no change other the Client switch
+
+    * HMM: THE INSTALL SHOULD KNOW IT IS A Client build : SO NO NEED FOR MANUAL CONTROL
+
+
+
 
 
 server-client testing in brief
@@ -22,7 +38,7 @@ server-client testing in brief
 
 Build and start the server::
 
-    lo  ## hookup newer curl-config that system one
+    lo  ## (NOT lo_client) - full Opticks env and newer libcurl than system
     ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
 
 
@@ -31,7 +47,7 @@ Build and start the server::
 
 Build and invoke both client tests::
 
-    lo  ## hookup newer curl-config that system one
+    lo  ## OR "lo_client" - hookup newer curl-config than system one
     ~/np/tests/np_curl_test/np_curl_test.sh
 
 
@@ -151,6 +167,48 @@ gx G4CXOpticks WITH_CURL
     436     return cx ;
     437 }
     438
+
+
+
+SEvt::setHit ? hit/hitmerged/hitlite/hitlitemerged
+---------------------------------------------------
+
+::
+
+    4949 const NP* SEvt::getHit() const {       return topfold->get(    SEventConfig::HitCompOneName()) ; }
+    4950 size_t    SEvt::getNumHit() const {    return topfold->get_num(SEventConfig::HitCompOneName()) ; }
+
+
+::
+
+    1441 /**
+    1442 SEventConfig::HitCompOne
+    1443 -------------------------
+    1444
+    1445 Canonical usage from::
+    1446
+    1447     SEvt::getHit
+    1448     SEvt::getNumHit
+    1449
+    1450
+    1451 +-----------------------------------------------+--------------------------+---------------------+------------------+
+    1452 |   Mode                                        |   HitCompOne             |   HitCompOneName    |  Note            |
+    1453 +===============================================+==========================+=====================+==================+
+    1454 |    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=0   |  SCOMP_HIT               |   hit               |                  |
+    1455 +-----------------------------------------------+--------------------------+---------------------+------------------+
+    1456 |    OPTICKS_MODE_LITE=0 OPTICKS_MODE_MERGE=1   |  SCOMP_HITMERGED         |   hitmerged         |                  |
+    1457 +-----------------------------------------------+--------------------------+---------------------+------------------+
+    1458 |    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=0   |  SCOMP_HITLITE           |   hitlite           |                  |
+    1459 +-----------------------------------------------+--------------------------+---------------------+------------------+
+    1460 |    OPTICKS_MODE_LITE=1 OPTICKS_MODE_MERGE=1   |  SCOMP_HITLITEMERGED     |   hitlitemerged     |                  |
+    1461 +-----------------------------------------------+--------------------------+---------------------+------------------+
+    1462
+    1463 **/
+    1464
+    1465 unsigned SEventConfig::HitCompOne() // static
+    1466 {
+
+
 
 
 

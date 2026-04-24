@@ -690,6 +690,9 @@ struct SYSRAP_API SEventConfig
     static unsigned HitCompOne();          // single bit hit comp : the canonical one decided by ModeLite ModeMerge
     static const char* HitCompOneName();
 
+    static std::string Settings();
+    static bool        SettingsMatch(const std::string& a, const std::string& b);
+
 
     static void  Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& save_mask );
     static void  Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& save_mask );
@@ -706,6 +709,7 @@ struct SYSRAP_API SEventConfig
     static size_t HeuristicMaxSlot(         size_t totalGlobalMem_bytes, int lite, int merge );
     static size_t HeuristicMaxSlot_Rounded( size_t totalGlobalMem_bytes, int lite, int merge );
     static std::string DescDevice(size_t totalGlobalMem_bytes, std::string name );
+
 
 #ifdef WITH_CUDA
     static salloc*   AllocEstimate(int _max_slot=0);

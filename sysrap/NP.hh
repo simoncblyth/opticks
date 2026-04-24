@@ -516,8 +516,9 @@ struct NP
 
     template<typename T> static T    GetMeta( const std::string& mt, const char* key, T fallback );
 
-    template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback=0) ;  // for T=std::string must set fallback to ""
-    template<typename T> T    get_meta(const char* key, T fallback=0) const ;  // for T=std::string must set fallback to ""
+    template<typename T> static T    get_meta_(const char* metadata, const char* key, T fallback={}) ;
+    template<typename T> T    get_meta(const char* key, T fallback={}) const ;
+    // FORMERLY USED fallback=0 with comment for T=std::string must set fallback to ""
 
     template<typename T> static void SetMeta(       std::string& mt, const char* key, T value );
     template<typename T> void set_meta(const char* key, T value ) ;
