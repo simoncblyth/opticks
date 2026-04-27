@@ -3399,7 +3399,7 @@ opticks-t-()
    local free=$(opticks-vram-free)
    local now=$(opticks-vram-now)
    if [ $now -lt $free ]; then
-       echo $BASH_SOURCE - $FUNCNAME - $LINENO - vram now $now is less than OPTICKS_VRAM_FREE $free
+       echo $BASH_SOURCE - $FUNCNAME - $LINENO - vram now $now is less than OPTICKS_VRAM_FREE $free - is OpticksServer running ?
        return 1
    else
        echo $BASH_SOURCE - $FUNCNAME - $LINENO - vram now $now is more than  OPTICKS_VRAM_FREE $free

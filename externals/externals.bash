@@ -27,6 +27,8 @@ glm-(){              . $(externals-dir)/glm.bash               && glm-env $* ; }
 plog-(){             . $(externals-dir)/plog.bash              && plog-env $* ; }
 gleq-(){             . $(externals-dir)/gleq.bash              && gleq-env $* ; }
 glfw-(){             . $(externals-dir)/glfw.bash              && glfw-env $* ; }
+libcurl-(){          . $(externals-dir)/libcurl.bash           && libcurl-env $* ; }
+openssl-(){          . $(externals-dir)/openssl.bash           && openssl-env $* ; }
 glew-(){             . $(externals-dir)/glew.bash              && glew-env $* ; }
 imgui-(){            . $(externals-dir)/imgui.bash             && imgui-env $* ; }
 #assimp-(){           . $(externals-dir)/assimp.bash            && assimp-env $* ; }

@@ -18,6 +18,23 @@ TODO
   * should be almost no change on JUNOSW side, maintain same interface
 
 
+
+
+
+openssl libcurl externals to OpticksClient and JUNOSW
+-------------------------------------------------------
+
+::
+
+    lob   # careful to not env with conda
+    source /tmp/blyth/opticks/externals/openssl/openssl-3.2.0/bashrc
+    source /tmp/blyth/opticks/externals/libcurl/curl-8.12.1/bashrc
+
+
+
+
+
+
 JUNOSW + OpticksClient + OpticksServer
 ----------------------------------------
 
@@ -30,7 +47,7 @@ junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
 
 
 
-TODO: build JUNOSW + OpticksClient on workstation - local.sh function "ljbb_client" ?
+WIP: build JUNOSW + OpticksClient on workstation - local.sh function "client ljbb" ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Prime change is prefix::
@@ -38,12 +55,14 @@ Prime change is prefix::
     #export JUNO_OPTICKS_PREFIX=/data1/blyth/local/opticks_Debug
     export JUNO_OPTICKS_PREFIX=/data1/blyth/local/opticks_Client
 
+Plus build and install folders.
+
 
 
 TODO : how to make OpticksClient release onto cvmfs ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* decide on naming and layout of OpticksClient tarball and cvmfs folders
+* decide on naming and layout of OpticksClient tarball and cvmfs folders and extend okdist-- to do that
 
 
 TODO : how to make JUNOSW+OpticksClient release onto cvmfs ?

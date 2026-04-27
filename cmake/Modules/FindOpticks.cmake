@@ -7,7 +7,6 @@ the flexibility to access other "COMPONENTS" currently.
 
 Testing this from ~/opticks/examples/UseOpticks/go.sh 
 
-
 opticks/cmake/Modules/FindOpticks.cmake used from offline/cmake/JUNODependencies.cmake::
 
     ## Opticks
@@ -45,8 +44,8 @@ if(Opticks_VERBOSE)
     endforeach() 
 endif()
 
-#find_package(G4OK CONFIG QUIET)
-find_package(G4CX CONFIG QUIET)
+#find_package(G4CX CONFIG QUIET)
+find_package(G4CX CONFIG)   ## NOT QUIET AS INTENDED TO BE INVOKED ONLY WHEN OPTICKS_PREFIX DEFINED - SO NOT FINDING IS AN ERROR
 
 if(G4CX_FOUND)
     add_compile_definitions(WITH_G4CXOPTICKS)

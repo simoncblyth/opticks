@@ -396,6 +396,7 @@ gdxml
 u4
 CSGOptiX
 g4cx
+cmake
 EOS
 }
 
@@ -411,6 +412,7 @@ CSG
 gdxml
 u4
 g4cx
+cmake
 EOS
 }
 
@@ -444,9 +446,6 @@ EON
 om-subs--minimal(){ cat << EOS
 okconf
 sysrap
-boostrap
-npy
-optickscore
 CSG
 qudarap
 CSGOptiX
@@ -456,17 +455,11 @@ EOS
 om-subs-thoughts(){ cat << EOS
 okconf      # not enough functionality, TODO: merge into sysrap
 sysrap
-boostrap      # REMOVE
-npy           # REMOVE
-optickscore   # REMOVE
-ggeo          # REMOVE
 extg4         # REMOVE
 ana
 analytic
 bin
 CSG
-CSG_GGeo      # REMOVE
-GeoChain      # REMOVE
 qudarap
 gdxml
 u4

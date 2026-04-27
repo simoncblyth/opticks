@@ -18,9 +18,9 @@ set(MODS
     Modules/FindG4.cmake
     Modules/FindGLM.cmake
     Modules/FindImGui.cmake
-    Modules/FindOpenMesh.cmake
+    Modules/FindNLJSON.cmake
     Modules/FindOptiX.cmake
-    Modules/FindOpticksAssimp.cmake
+    Modules/FindOpticks.cmake
     Modules/FindOpticksCUDA.cmake
     Modules/FindOpticksGLEW.cmake
     Modules/FindOpticksGLFW.cmake
@@ -30,6 +30,12 @@ set(MODS
     Modules/OpticksCUDAFlags.cmake
     Modules/OpticksCXXFlags.cmake
 )
+
+set(OBSOLETE_MODS
+    Modules/FindOpenMesh.cmake
+    Modules/FindOpticksAssimp.cmake
+)
+
 
 install(FILES ${MODS} DESTINATION cmake/Modules)
 add_subdirectory(tests)
