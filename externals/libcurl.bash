@@ -1,19 +1,66 @@
-libcurl-env(){      opticks- ;  }
+libcurl-env(){      echo -n ;  }
 libcurl-vi(){       vi $BASH_SOURCE ; }
 libcurl-usage(){ cat << EOU
+libcurl
+=======
+
+libcurl requires openssl
+
+This script assumes sourcing by the libcurl- precursor defined by
+sourcing externals/externals.bash which means externals- bash
+functions such as externals-base and externals-curl are available
+
+Usage, from a clean environment::
+
+    source ~/opticks/externals/externals.bash
+    openssl-
+    openssl-info
+    openssl--
+
+    libcurl-
+    libcurl-info
+    libcurl--
+
+During development update the bash functions with the precursor::
+
+    libcurl-
+
+If suffering from slow network place the tarball into the cache directory::
+
+    scp \$(libcurl-srcball) O:
+    # open cvmfs transaction and copy srcball into the download cache etc..
+
+And define envvar pointing to the directory::
+
+    export EXTERNALS_DOWNLOAD_CACHE=/cvmfs/opticks.ihep.ac.cn/opticks_download_cache
 
 
 
+As libcurl is widely used it would not be useful to treat
+it as an Opticks managed external with prefix OPTICKS_PREFIX/externals
+because that would cause version inconsistency issues with other
+versions of libcurl that are in use by the tree of all packages
+and externals being used.
 
+Hence access to the libcurl lib must be managed
+as a "basis" external to the entire tree of packages
+being built together, eg JUNOSW+Opticks.
+
+Checking usage::
+
+    ## careful to use clean env without "lco" conda, as that brings in another libcurl
+    source /usr/local/ExternalLibs/openssl/openssl-3.2.0/bashrc
+    source /usr/local/ExternalLibs/libcurl/curl-8.12.1/bashrc
+    env | grep JUNO
+    ldd $JUNO_EXTLIB_libcurl_HOME/lib64/libcurl.so
 
 EOU
 }
 
 libcurl-deps(){
    : check that all deps other than libz and libc are controlled
-   local externals=/tmp/$USER/opticks/externals
-   source $externals/openssl/openssl-3.2.0/bashrc
-   source $externals/libcurl/curl-8.12.1/bashrc
+   source $(externals-base)/openssl/openssl-3.2.0/bashrc
+   source $(externals-base)/libcurl/curl-8.12.1/bashrc
    env | grep JUNO
    ldd $JUNO_EXTLIB_libcurl_HOME/lib64/libcurl.so
 }
@@ -21,33 +68,35 @@ libcurl-deps(){
 
 libcurl-info(){ cat << EOI
 
-   libcurl-dir    : $(libcurl-dir)
-   libcurl-bdir   : $(libcurl-bdir)
-   libcurl-idir   : $(libcurl-idir)
-   libcurl-prefix : $(libcurl-prefix)
+   libcurl-name    : $(libcurl-name)    # NB no lib
+   libcurl-reldir  : $(libcurl-reldir)
+   externals-base  : $(externals-base)
+   libcurl-dir     : $(libcurl-dir)
+   libcurl-bdir    : $(libcurl-bdir)
+   libcurl-idir    : $(libcurl-idir)
+   libcurl-prefix  : $(libcurl-prefix)
+   libcurl-url     : $(libcurl-url)
+   libcurl-srcball : $(libcurl-srcball)
+   libcurl-binball : $(libcurl-binball)
 
 EOI
 }
 
-libcurl-dir(){  echo $(opticks-prefix)/externals/libcurl/$(libcurl-name) ; }
+libcurl-version(){ echo 8.12.1 ; }
+libcurl-name(){    echo curl-$(libcurl-version) ; }  # NB no lib
+libcurl-url(){     echo https://curl.se/download/$(libcurl-name).tar.gz ; }
+libcurl-reldir(){ echo libcurl/$(libcurl-name)  ; }
+libcurl-dir(){  echo $(externals-base)/build/$(libcurl-reldir) ; }
 libcurl-bdir(){ echo $(libcurl-dir).build ; }
-
-#libcurl-idir(){ echo $(opticks-prefix)/externals ; }
-libcurl-idir(){ echo /tmp/$USER/opticks/externals/libcurl/$(libcurl-name) ; }
-
-libcurl-prefix(){ echo $(libcurl-idir) ; }
+libcurl-prefix(){ echo $(externals-base)/$(libcurl-reldir) ; }
+libcurl-idir(){   echo $(libcurl-prefix) ; }
 
 libcurl-cd(){  cd $(libcurl-dir); }
 libcurl-bcd(){ cd $(libcurl-bdir); }
 libcurl-icd(){ cd $(libcurl-idir); }
 
-libcurl-version(){ echo 8.12.1 ; }
-libcurl-name(){ echo curl-$(libcurl-version) ; }  # NB no lib
-libcurl-url(){
-   case $(libcurl-version) in
-      8.12.1) echo https://curl.se/download/curl-8.12.1.tar.gz ;;
-   esac
-}
+libcurl-srcball(){ echo $(dirname $(libcurl-dir))/$(libcurl-name).tar.gz ; }
+libcurl-binball(){ echo $(externals-base)/dist/$(libcurl-name).tar.xz ; }
 
 
 libcurl-get(){
@@ -59,7 +108,7 @@ libcurl-get(){
    local opt=$( [ -n "${VERBOSE}" ] && echo "-xzf" || echo "-xzvf" )
 
    local nam=${tgz/.tar.gz}
-   [ ! -f "$tgz" ] && opticks-curl $url
+   [ ! -f "$tgz" ] && externals-curl $url
    [ ! -d "$nam" ] && tar $opt $tgz
    [ ! -d "$nam" ] && rc=1
 
@@ -91,7 +140,7 @@ libcurl-build()
     -DCURL_DISABLE_LDAP=ON \
     -DCURL_DISABLE_LDAPS=ON \
     -DCURL_USE_OPENSSL=ON \
-    -DBUILD_CURL_EXE=OFF \
+    -DBUILD_CURL_EXE=ON \
     -DBUILD_TESTING=OFF \
     -DCMAKE_SKIP_INSTALL_RPATH=ON \
     -DCMAKE_SKIP_RPATH=ON
@@ -109,6 +158,31 @@ libcurl-build()
 }
 
 
+libcurl-dist()
+{
+    local prefix=$(libcurl-prefix)
+    local name=$(basename $prefix)
+    local fold=$(dirname $prefix)
+    local binball=$(libcurl-binball)
+
+    echo $BASH_SOURCE $FUNCNAME creating binball $binball from prefix $prefix name $name fold $fold
+    if [ -f "$binball" ]; then
+        echo BASH_SOURCE $FUNCNAME binball exists already
+    else
+        mkdir -p $(dirname $binball)
+        tar -cvJf $binball -C $fold $name
+        : J creates xz compressed tarball
+    fi
+}
+
+libcurl-dist-tvf()
+{
+    local binball=$(libcurl-binball)
+    tar tvf $binball
+}
+
+
+
 libcurl--()
 {
    local msg="=== $FUNCNAME :"
@@ -121,17 +195,18 @@ libcurl--()
    libcurl-bashrc
    [ $? -ne 0 ] && echo $msg bashrc FAIL && return 2
 
+   libcurl-dist
+   [ $? -ne 0 ] && echo $msg dist FAIL && return 2
+
    return 0
 }
 
 
 libcurl-bashrc()
 {
-   if [ "$(libcurl-prefix)" != "$(opticks-prefix)/externals" ]; then
-       local path=$(libcurl-prefix)/bashrc
-       echo $BASH_SOURCE $FUNCNAME - writing $path - prefix needs to be named and versioned for this to make sense
-       libcurl-bashrc- > $path
-   fi
+   local path=$(libcurl-prefix)/bashrc
+   echo $BASH_SOURCE $FUNCNAME - writing $path - prefix needs to be named and versioned for this to make sense
+   libcurl-bashrc- > $path
 }
 
 
@@ -178,61 +253,53 @@ EOS
 }
 
 
-libcurl-wipe(){
-  local bdir=$(libcurl-bdir)
-  rm -rf $bdir
-
-  libcurl-wipe-manifest
-}
-
-
-libcurl-wipe-manifest()
+libcurl-wipe()
 {
-    local prefix=$(libcurl-prefix)
-    [ ! -d "$prefix" ] && echo "Prefix $prefix does not exist." && return
-
-    echo "Wiping libcurl from $prefix..."
-
-    # 1. Disable literal string treatment, allow globbing
-    # 2. Iterate through the manifest
-    libcurl-manifest | while read -r rel; do
-        # Use an array to handle glob expansion
-        local paths=( ${prefix}/${rel} )
-
-        for path in "${paths[@]}"; do
-            if [ -e "$path" ] || [ -L "$path" ]; then
-                echo "Removing $path"
-                rm -rf "$path"
-            fi
-        done
-    done
-
-    # Cleanup empty leaf directories
-    find "$prefix" -type d -empty -delete 2>/dev/null
+   libcurl-wipe-build
+   libcurl-wipe-prefix
 }
 
+libcurl-wipe-build()
+{
+   local dir=$(libcurl-dir)
+   [ ! -d "$dir" ] && echo "$BASH_SOURCE $FUNCNAME dir $dir does not exist." && return
 
-libcurl-manifest(){ cat << EOM
-share/man/man3/curl*
-share/man/man3/libcurl*
-share/man/man3/CURL*
-share/man/man1/curl-config.1
-share/man/man1/mk-ca-bundle.1
-lib64/libcurl.*
-bin/curl-config
-lib64/pkgconfig/libcurl.pc
-include/curl
-lib64/cmake/CURL
-lib64/cmake/CURL
-lib64/cmake/CURL
-lib64/cmake/CURL
-bin/mk-ca-bundle.pl
-EOM
+
+   local fold=$(dirname $dir)
+   local name=$(basename $dir)
+
+    pushd $fold
+    if [ -d "$name" ]; then
+        echo $BASH_SOURCE $FUNCNAME - removing name $name from fold $fold
+        rm -rf "$name"
+    else
+        echo $BASH_SOURCE $FUNCNAME - NON-EXISTING name $name from fold $fold
+    fi
+    popd
 }
 
+libcurl-wipe-prefix()
+{
+   local prefix=$(libcurl-prefix)
+   [ ! -d "$prefix" ] && echo "$BASH_SOURCE $FUNCNAME prefix $prefix does not exist." && return
 
+   local fold=$(dirname $prefix)
+   local name=$(basename $prefix)
 
+   pushd $fold
+   if [ -d "$name" ]; then
+       echo $BASH_SOURCE $FUNCNAME - removing name $name from fold $fold
+       rm -rf "$name"
+   else
+       echo $BASH_SOURCE $FUNCNAME - NON-EXISTING name $name from fold $fold
+   fi
+   popd
+}
 
+libcurl-find()
+{
+   find $(libcurl-prefix) -type f
+}
 
 
 
