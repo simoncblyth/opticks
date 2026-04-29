@@ -15,6 +15,8 @@
 #include "srec.h"
 #include "sseq.h"
 #include "ssys.h"
+#include "smeta.h"
+#include "ssys.h"
 #include "sstate.h"
 #include "stag.h"
 #include "sevent.h"
@@ -107,7 +109,13 @@ Now using SProf for profile stamps, previously included with run_meta.txt::
 NP* SEvt::Init_RUN_META() // static
 {
     NP* run_meta = NP::Make<float>(1);
-    SProf::Add("SEvt__Init_RUN_META");
+
+    const char* label = "SEvt__Init_RUN_META" ;
+    SProf::Add(label);
+
+    bool stamp = true ;
+    smeta::Collect(run_meta->meta, label, stamp );
+
     return run_meta ;
 }
 
@@ -838,6 +846,12 @@ void SEvt::setFr(const sfr& _fr )
     transformInputPhoton();
 }
 
+void SEvt::SetFr(const sfr& fr )
+{
+    if(Exists(0)) Get(0)->setFr(fr);
+    if(Exists(1)) Get(1)->setFr(fr);
+}
+
 void SEvt::setFramePlaceholder()
 {
     sfr fr = sfr::MakeFromTranslateExtent<float>(0.f,0.f,0.f,1000.f);
@@ -1122,10 +1136,11 @@ SEvt::setTree
 --------------
 
 The SEvt needs to hold a tree pointer to provide geometry
-and material information. Specifically:
+and material information. Specifically for:
 
 1. stree::lookup_matline from SEvt::addGenstep
 2. stree::get_frame_inst from SEvt::setFrame
+3. localization of photons requires global to local transform obtained from the tree
 
 **/
 
@@ -1134,6 +1149,16 @@ void SEvt::setTree(const stree* tree_)
 {
     tree = tree_ ;
 }
+
+void SEvt::SetTree(const stree* tree_ )  // static
+{
+    if(Exists(0)) Get(0)->setTree(tree_);
+    if(Exists(1)) Get(1)->setTree(tree_);
+}
+
+
+
+
 
 /**
 SEvt::setFrame
@@ -1401,10 +1426,11 @@ Creates 0, 1 OR 2 SEvt depending on SEventConfig::IntegrationMode()::
 **/
 
 
-void SEvt::CreateOrReuse()
+int SEvt::CreateOrReuse()
 {
     int integrationMode = SEventConfig::IntegrationMode() ;
     LOG(LEVEL) << " integrationMode " << integrationMode  ;
+
 
     if( integrationMode == 0 )
     {
@@ -1425,19 +1451,19 @@ void SEvt::CreateOrReuse()
     }
     else
     {
+        std::cerr << " NOT CREATING SEvt : unexpected integrationMode " << integrationMode << "\n" ;
         LOG(LEVEL) << " NOT CREATING SEvt : unexpected integrationMode " << integrationMode ;
         //std::raise(SIGINT);
         //assert(0);
     }
     LOG(LEVEL) << DescINSTANCE()  ;
+    return 0 ;
 }
 
 
-void SEvt::SetFr(const sfr& fr )
-{
-    if(Exists(0)) Get(0)->setFr(fr);
-    if(Exists(1)) Get(1)->setFr(fr);
-}
+
+
+
 
 
 void SEvt::Check(int idx)

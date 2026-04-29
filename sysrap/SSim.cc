@@ -8,7 +8,7 @@
 #include "stree.h"
 
 #include "SLOG.hh"
-#include "SStr.hh"
+#include "sstr.h"
 #include "ssys.h"
 #include "spath.h"
 #include "sstamp.h"
@@ -126,6 +126,13 @@ SSim* SSim::Load_(const char* base_)
     return sim ;
 }
 
+const NP* SSim::LoadBnd() // static
+{
+    const char* path = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/stree/standard/bnd.npy") ;
+    return NP::Load(path);
+}
+
+
 
 /**
 SSim::Load
@@ -160,9 +167,11 @@ SSim::SSim
 
 Invoked from SSim::Create OR SSim::Load
 
+2026-04-29
+   try to simplify plumbing for tests and for passing the tree to the SEvt
+   by invoking SEvt::CreateOrReuse from SSim ctor
+
 **/
-
-
 
 SSim::SSim()
     :
@@ -171,14 +180,18 @@ SSim::SSim()
     extra(nullptr),
     tree(new stree),
     scene(new SScene),
+    sev_rc(SEvt::CreateOrReuse()),
     toploadtime(0)
 {
-    init(); // just sets tree level
+    init();
 }
 
 /**
 SSim::init
 ------------
+
+1. set tree level
+2. share tree pointer with the SEvt instances
 
 **/
 
@@ -186,6 +199,9 @@ void SSim::init()
 {
     INSTANCE = this ;
     tree->set_level(stree_level);
+
+    assert( sev_rc == 0 );
+    SEvt::SetTree(tree);
 }
 
 /**
@@ -794,9 +810,9 @@ NP* SSim::AddOptical(
 
     for(unsigned b=0 ; b < num_add ; b++)
     {
-        const char* spec = SStr::Trim(specs[b].c_str());
+        const char* spec = sstr::Trim(specs[b].c_str());
         std::vector<std::string> elem ;
-        SStr::Split(spec, '/', elem );
+        sstr::Split(spec, '/', elem );
 
         bool four_elem = elem.size() == 4 ;
         LOG_IF(fatal, four_elem == false) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;
@@ -923,11 +939,11 @@ NP* SSim::AddBoundary( const NP* dsrc, const std::vector<std::string>& specs ) /
 
     for(unsigned b=0 ; b < specs.size() ; b++)
     {
-        const char* spec = SStr::Trim(specs[b].c_str());
+        const char* spec = sstr::Trim(specs[b].c_str());
         dst_names.push_back(spec);
 
         std::vector<std::string> elem ;
-        SStr::Split(spec, '/', elem );
+        sstr::Split(spec, '/', elem );
 
         bool four_elem = elem.size() == 4 ;
         LOG_IF(fatal, four_elem == false) << " expecting four elem spec [" << spec << "] elem.size " << elem.size() ;
@@ -1099,7 +1115,7 @@ std::string SSim::DescOptical(const NP* optical, const NP* bnd )
         {
             elem.clear();
             const std::string& spec = bnd->names[b] ;
-            SStr::Split( spec.c_str(), '/', elem );
+            sstr::Split( spec.c_str(), '/', elem );
             ss << std::setw(4) << b << " " << spec<< std::endl ;
         }
 
@@ -1144,9 +1160,5 @@ bool SSim::findName( int& i, int& j, const char* qname ) const
     const NP* bnd = get_bnd();
     return bnd ? SBnd::FindName(i, j, qname, bnd->names) : false ;
 }
-
-
-
-
 
 

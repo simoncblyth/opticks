@@ -1,14 +1,14 @@
 
 #include "NPFold.h"
 #include "SBnd.h"
+#include "spath.h"
 #include "ssys.h"
 
 
 int main(int argc, char** argv)
 {
-    const char* base = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ;
-
-    //const char* relp = "extra/GGeo" ;    
+    //const char* base = "$HOME/.opticks/GEOM/$GEOM/CSGFoundry/SSim" ;
+    const char* base = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim") ;
     const char* relp = "stree/standard" ; 
     const NP* bnd     = NP::Load(base, relp, "bnd.npy"); 
     const NP* optical = NP::Load(base, relp, "optical.npy"); 
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
     const char* bnd_sequence = ssys::getenvvar("BND_SEQUENCE", bnd_fallback );
     std::cout << " bnd_sequence " << bnd_sequence << std::endl ;
 
-    std::vector<unsigned> bnd_idx ;
+    std::vector<int> bnd_idx ;
     sb.getBoundaryIndices( bnd_idx, bnd_sequence, '\n' );
     std::cout << "sb.descBoundaryIndices" << std::endl << sb.descBoundaryIndices( bnd_idx ) << std::endl ;
 

@@ -64,6 +64,7 @@ struct SPrd
 
     std::vector<quad2>  prd ;
 
+    static SPrd* Load(const char* base="$CFBaseFromGEOM/CSGFoundry/SSim", const char* relp="stree/standard");
     SPrd(const NP* bnd);
     void init();
     void init_evec();
@@ -83,6 +84,14 @@ struct SPrd
 #include "squad.h"
 #include "NP.hh"
 #include "SBnd.h"
+
+
+inline SPrd* SPrd::Load(const char* base_, const char* relp)
+{
+    const char* base = spath::Resolve(base_) ;
+    const NP* bnd     = NP::Load(base, relp, "bnd.npy");
+    return bnd ? new SPrd(bnd) : nullptr ;
+}
 
 
 inline SPrd::SPrd(const NP* bnd_)

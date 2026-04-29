@@ -72,7 +72,6 @@ private:
     void setGeometry(CSGFoundry* fd);
     void setGeometry_(CSGFoundry* fd);
     static SSimulator* CreateSimulator(CSGFoundry* fd);
-    static void InitEvt(const stree* tree);
 public:
     std::string descSimulate() const ;
 

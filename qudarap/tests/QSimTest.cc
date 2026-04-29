@@ -774,6 +774,9 @@ void QSimTest::main()
 
 
 
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -787,6 +790,17 @@ int main(int argc, char** argv)
 
     unsigned num = QSimTest::Num(argc, argv);
 
+
+    // although bnd is loaded with SSim::Load it is needed
+    // earlier because QSimTest::EventConfig must be done before
+    // any SEvt are instanciated - which now happens with SSim::SSim
+    const SPrd* prd = SPrd::Load() ;
+    if(!prd) std::cerr << "SPrd::Load FAILED \n";
+    if(!prd) return 1 ;
+    QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
+
+
+
     LOG(info) << "[SSim::Load" ;
     SSim* sim = SSim::Load();
     LOG(info) << "]SSim::Load" ;
@@ -794,7 +808,7 @@ int main(int argc, char** argv)
 
 
     QSim::UploadComponents(sim);   // instanciates things like QBnd : NORMALLY FIRST GPU ACCESS
-    const SPrd* prd = sim->get_sprd() ;
+    //const SPrd* prd = sim->get_sprd() ;
 
     LOG_IF(error, prd->rc != 0 )
         << " SPrd::rc NON-ZERO " << prd->rc
@@ -807,9 +821,8 @@ int main(int argc, char** argv)
     if(prd->rc != 0 ) return 0 ; // avoid test fail when using geometry without expected boundaries
 
 
-    QSimTest::EventConfig(type, prd );  // must be after QBnd instanciation and before SEvt instanciation
-
-    [[maybe_unused]] SEvt* ev = SEvt::Create_EGPU() ;
+    //[[maybe_unused]] SEvt* ev = SEvt::Create_EGPU() ;
+    [[maybe_unused]] SEvt* ev = SEvt::Get_EGPU() ;
     assert(ev);
 
 

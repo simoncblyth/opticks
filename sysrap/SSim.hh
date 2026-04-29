@@ -46,6 +46,7 @@ struct SYSRAP_API SSim
     NPFold*   extra ;
     stree*    tree ;    // instanciated with SSim::SSim
     SScene*   scene ;
+    int       sev_rc ;
     int64_t   toploadtime ;
 
     static const plog::Severity LEVEL ;
@@ -69,6 +70,8 @@ struct SYSRAP_API SSim
     static SSim* Load();
     static SSim* Load_(const char* dir);
     static SSim* Load(const char* base, const char* reldir=RELDIR );
+    static const NP* LoadBnd();
+
 
 private:
     SSim();

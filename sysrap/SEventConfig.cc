@@ -35,7 +35,7 @@
 
 const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ;
 
-int         SEventConfig::_IntegrationModeDefault = -1 ;
+int         SEventConfig::_IntegrationModeDefault = 1 ;  // change -1 => 1, so SEvt::CreateOrReuse defaults to creating EGPU SEvt
 const char* SEventConfig::_EventModeDefault = Minimal ;
 const char* SEventConfig::_EventNameDefault = nullptr ;
 const char* SEventConfig::_RunningModeDefault = "SRM_DEFAULT" ;  // TODO: rename SRM_DEFAULT to something more descriptive

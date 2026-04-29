@@ -383,7 +383,9 @@ public:
     NP* gatherG4State() const ;
     const NP* getG4State() const ;
 
-    void setFr(const sfr& _fr );
+    void        setFr( const sfr& fr_ );
+    static void SetFr( const sfr& fr_ );
+
     void setFramePlaceholder();
 
     static const bool transformInputPhoton_VERBOSE ;
@@ -406,7 +408,9 @@ public:
 
     void setFrame_HostsideSimtrace() ;
 
-    void setTree(const stree* tree);
+    void        setTree(const stree* tree_ );
+    static void SetTree(const stree* tree_ );
+
     void setFrame(unsigned ins_idx);
 
     //// below decl order matches impl order : KEEP IT THAT WAY
@@ -435,8 +439,7 @@ public:
 
     static SEvt* CreateOrReuse_EGPU();
     static SEvt* CreateOrReuse_ECPU();
-    static void CreateOrReuse();
-    static void SetFr(   const sfr& fr );
+    static int CreateOrReuse();
 
 
     bool isEGPU() const ;
