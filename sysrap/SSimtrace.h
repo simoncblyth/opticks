@@ -39,12 +39,7 @@ That runs something like the below with ipython::
 **/
 #include <cstring>
 #include "plog/Severity.h"
-
-#ifdef WITH_OLD_FRAME
-#include "sframe.h"
-#else
 #include "sfr.h"
-#endif
 
 class G4VSolid ;
 struct SEvt ;
@@ -56,11 +51,7 @@ struct SSimtrace
 
     const G4VSolid* solid ;
     SEvt* sev ;
-#ifdef WITH_OLD_FRAME
-    sframe frame = {} ;
-#else
     sfr fr = {} ;
-#endif
 
     SSimtrace();
     ~SSimtrace();
@@ -110,13 +101,8 @@ inline void SSimtrace::setSolid(const G4VSolid* solid_)
 
     ssolid::GetCenterExtent(ce, solid );
 
-#ifdef WITH_OLD_FRAME
-    frame.ce = ce ;
-    LOG(LEVEL) << " frame.ce.w " << frame.ce.w ;
-#else
     fr.set_ce( &ce.x );
     LOG(LEVEL) << " fr.ce.w " << fr.ce.w ;
-#endif
 
 }
 
@@ -149,12 +135,7 @@ inline void SSimtrace::simtrace()
 {
     SEventConfig::SetRGModeSimtrace();
 
-
-#ifdef WITH_OLD_FRAME
-    frame.set_hostside_simtrace();
-#else
     fr.set_hostside_simtrace();
-#endif
 
     // set_hostside_simtrace into frame which
     // influences the action of SEvt::setFrame
@@ -162,12 +143,7 @@ inline void SSimtrace::simtrace()
     // generates simtrace photons
 
     sev = SEvt::Create_ECPU() ;
-
-#ifdef WITH_OLD_FRAME
-    sev->setFrame(frame);
-#else
     sev->setFr(fr);
-#endif
 
     int eventID = 0 ;
 

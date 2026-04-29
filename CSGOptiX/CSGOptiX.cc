@@ -463,11 +463,6 @@ void CSGOptiX::init()
     initParams();
     initGeometry();
     initSimulate();
-
-#ifdef WITH_OLD_FRAME
-    initFrame();
-#endif
-
     initRender();
     initPIDXYZ();
 
@@ -643,52 +638,8 @@ void CSGOptiX::initSimulate()
     params->tmin = SEventConfig::PropagateEpsilon() ;  // eg 0.1 0.05 to avoid self-intersection off boundaries
     params->tmax = 1000000.f ;
     params->max_time = SEventConfig::MaxTime() ;
-
-
 }
 
-
-
-
-
-
-
-
-#ifdef WITH_OLD_FRAME
-
-/**
-CSGOptiX::initFrame (formerly G4CXOpticks::setupFrame)
----------------------------------------------------------
-
-The frame used depends on envvars INST, MOI, OPTICKS_INPUT_PHOTON_FRAME
-it comprises : fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame
-
-Q: why is the frame needed ?
-A: cx rendering viewpoint, input photon frame and the simtrace genstep grid
-   are all based on the frame center, extent and transforms
-
-Q: Given the sframe and SEvt are from sysrap it feels too high level to do this here,
-   should be at CSG or sysrap level perhaps ?
-   And then CSGOptix could grab the SEvt frame at its initialization.
-
-TODO: see CSGFoundry::AfterLoadOrCreate for maybe auto frame hookup
-
-**/
-
-void CSGOptiX::initFrame()
-{
-    assert(0);
-
-    sframe _fr = foundry->getFrameE() ;   // TODO: migrate to lighweight sfr from stree level
-    LOG(LEVEL) << _fr ;
-
-    SEvt::SetFrame(_fr) ;
-
-    sfr _lfr = _fr.spawn_lite();
-    setFrame(_lfr);
-}
-
-#endif
 
 
 

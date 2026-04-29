@@ -110,6 +110,8 @@ public:
     const NPFold* get_spmt_f() const ; // fold with summarized PMT info
 public:
     void add_extra_subfold(const char* k, NPFold* f );
+    void add_extra_array(  const char* k, const NP* a );
+
 
 public:
     void save(const char* base, const char* reldir=RELDIR) ;  // not const as may serialize
@@ -166,9 +168,9 @@ public:
     static std::string GetItemDigest( const NP* bnd, int i, int j, int w );
     bool   findName( int& i, int& j, const char* qname ) const ;
 public:
-    void set_extra(const char * k , const NP* f );
+    //void set_extra(const char * k , const NP* f );
     const NP* get_extra(const char * k ) const;
-    static void AddMultiFilm(const char* k, const NP* f);
+    static void AddExtraArray(const char* k, const NP* a);  // formerly AddMultiFilm
 };
 
 

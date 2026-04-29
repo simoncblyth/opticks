@@ -36,13 +36,8 @@ int main(int argc, char** argv)
 
     evt->random = rnd  ;  // so can use getFlatPrior within SEvt::addTag
 
-#ifdef WITH_OLD_FRAME
-    sframe fr = sframe::Load_("$A_FOLD/sframe.npy");
-    evt->setFrame(fr);   // setFrame tees up Gensteps
-#else
     sfr fr = sfr::Load_("$A_FOLD/sfr.npy");
     evt->setFr(fr);
-#endif
 
 
     // NB: dependency on A_FOLD means that when changing GEOM is is necessary

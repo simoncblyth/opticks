@@ -445,25 +445,41 @@ void SSim::add_extra_subfold(const char* k, NPFold* f )
     extra->add_subfold(k,f);
 }
 
+
 /**
-SSim::AddMultiFilm
-
-*/
-
-void SSim::AddMultiFilm(const char*k, const NP* f){
+SSim::add_extra_array
+----------------------
 
 
+**/
+
+void SSim::add_extra_array(const char* k, const NP* a )
+{
+    assert(k);
+    LOG_IF(LEVEL, a == nullptr) << "k:" << k  << " a null " ;
+    if(a == nullptr) return ;
+
+    if( extra == nullptr ) extra = new NPFold ;
+    extra->add(k,a);
+}
+
+
+/**
+SSim::AddExtraArray   (formerly SSim::AddMultiFilm)
+-----------------------------------------------------
+
+**/
+
+
+void SSim::AddExtraArray(const char*k, const NP* a)
+{
     SSim* ss = CreateOrReuse();
     LOG_IF(error, ss == nullptr ) << " SSim::INSTANCE not instanciated yet " ;
     if(ss == nullptr) return ;
-    ss->set_extra(k, f);
+    ss->add_extra_array(k, a);
 }
-void SSim::set_extra(const char* k,  const NP* f){
-    assert(f);
-    if( extra == nullptr ) extra = new NPFold ;
-    extra->add(k, f);
 
-}
+
 
 const NP* SSim::get_extra(const char* k) const{
 

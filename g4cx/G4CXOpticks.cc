@@ -104,14 +104,12 @@ G4CXOpticks* G4CXOpticks::SetGeometry_JUNO(const G4VPhysicalVolume* world, const
 
     SSim::CreateOrReuse();
     SSim::AddExtraSubfold("jpmt", jpmt );
-    SSim::AddMultiFilm(snam::MULTIFILM, jlut);
-
+    SSim::AddExtraArray(snam::MULTIFILM, jlut);
     SEvt::CreateOrReuse() ;  // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE (which via above assert matches opticksMode)
 
 
     int opticksMode = SEventConfig::IntegrationMode();
     if(opticksMode == 0 || opticksMode == 2) SetNoSim() ;
-
     LOG(info) << " opticksMode " << opticksMode << " sd " << sd  ;
 
     G4CXOpticks* gx = nullptr ;
@@ -429,7 +427,7 @@ gets used when adding gensteps
 Q: Why the SEvt geometry connection ?
 A: Needed for global to local transform conversion
 
-Q: What uses SEVt::setGeo (SGeo) ?
+Q: What uses SEvt::setTree ?
 A: Essential set_matline of Cerenkov Genstep
 
 **/

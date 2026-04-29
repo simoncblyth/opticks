@@ -399,7 +399,6 @@ struct CSG_API CSGFoundry
 
     static constexpr const char* getFrameE_VERBOSE = "CSGFoundry__getFrameE_VERBOSE" ;
     sframe getFrameE() const ;
-    static void AfterLoadOrCreate();
 
     // target
     int getCenterExtent(float4& ce, int midx, int mord, int gord=-1, qat4* m2w=nullptr, qat4* w2m=nullptr ) const ;

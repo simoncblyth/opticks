@@ -11,13 +11,7 @@ CSG/tests/CSGFoundry_getFrame_Test.cc
 #include "scuda.h"
 #include "squad.h"
 #include "sqat4.h"
-
-#ifdef WITH_OLD_FRAME
-#include "sframe.h"
-#else
 #include "sfr.h"
-#endif
-
 #include "stree.h"
 #include "ssys.h"
 #include "SSim.hh"
@@ -29,12 +23,7 @@ struct CSGFoundry_getFrame_Test
 {
     const CSGFoundry* fd ;
     const stree* tree ;
-
-#ifdef WITH_OLD_FRAME
-    sframe fr = {} ;
-#else
     sfr fr = {} ;
-#endif
 
     CSGFoundry_getFrame_Test();
 
@@ -55,14 +44,9 @@ inline CSGFoundry_getFrame_Test::CSGFoundry_getFrame_Test()
 
 inline int CSGFoundry_getFrame_Test::getFrameE()
 {
-    std::cout << "[ fd->getFrameE " << std::endl ;
-
-#ifdef WITH_OLD_FRAME
-    fr = fd->getFrameE() ;  // via INST, MOI, OPTICKS_INPUT_PHOTON_FRAME "ipf"
-#else
+    std::cout << "[ tree->get_frame_moi " << std::endl ;
     fr = tree->get_frame_moi();
-#endif
-    std::cout << "] fd->getFrameE " << std::endl ;
+    std::cout << "] fd->get_frame_moi " << std::endl ;
 
     int INST = ssys::getenvint("INST",-1) ;
     if(INST > -1) std::cout <<  "INST" << INST << std::endl << fd->descInstance(INST) << std::endl ;
@@ -77,13 +61,6 @@ inline int CSGFoundry_getFrame_Test::save()
     std::cout << " [ fr.save " << std::endl ;
     fr.save("$FOLD");
     std::cout << " ] fr.save " << std::endl ;
-
-#ifdef WITH_OLD_FRAME
-    std::cout << " [ fr.save_extras " << std::endl ;
-    fr.save_extras("$FOLD");
-    std::cout << " ] fr.save_extras " << std::endl ;
-#endif
-
     return 0 ;
 }
 
@@ -106,12 +83,7 @@ inline int CSGFoundry_getFrame_Test::InputPhoton()
     ipt0->save("$FOLD/ipt0.npy");
     ipt1->save("$FOLD/ipt1.npy");
 
-#ifdef WITH_OLD_FRAME
-    evt->setFrame(fr);
-#else
     evt->setFr(fr);
-#endif
-
 
     NP* ipt2 = evt->getInputPhoton() ;
     ipt2->save("$FOLD/ipt2.npy");

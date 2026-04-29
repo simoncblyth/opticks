@@ -100,12 +100,7 @@ inline U4HitTest::U4HitTest()
 
 inline void U4HitTest::init()
 {
-#ifdef WITH_OLD_FRAME
-    sev->setGeo(fd);
-#else
-    //sev->setSim(sim);
     sev->setTree(tree);
-#endif
 
     assert( sev->hasInstance() );  // check that the instance is persisted and retrieved (via domain metadata)
     assert( sev == SEvt::Get(sev->instance) );  // check the loaded SEvt got slotted in expected slot

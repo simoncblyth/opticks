@@ -795,8 +795,13 @@ const NP* SEvt::getG4State() const {  return topfold->get(SComp::Name(SCOMP_G4ST
 
 
 /**
-SEvt::setFrame
-------------------
+SEvt::setFr
+------------
+
+Q: why is the frame needed ?
+A: cx rendering viewpoint, input photon frame and the simtrace genstep grid
+   are all based on the frame center, extent and transforms
+
 
 As it is necessary to have the geometry to provide the frame this
 is now split from eg initInputPhotons.
@@ -814,9 +819,10 @@ but now that the genstep setup is moved to SEvt::beginOfEvent it is only needed
 to call this for each frame, usually once only.
 
 
+
 simtrace stack::
 
-    SEvt::setFrame
+    SEvt::setFr
     SEvt::SetFrame
     CSGFoundry::AfterLoadOrCreate
     CSGFoundry::Load
@@ -826,37 +832,16 @@ simtrace stack::
 **/
 
 
-#ifdef WITH_OLD_FRAME
-void SEvt::setFrame(const sframe& fr )
-{
-    const char* name = fr.get_name() ;
-    LOG_IF(info, FRAME)
-        << " [" << SEvt__FRAME << "]"
-        << " fr.get_name " << ( name ? name : "-" ) << "\n"
-        << " fr.desc\n"
-        << fr.desc()
-        ;
-    frame = fr ;
-    transformInputPhoton();
-}
-#else
 void SEvt::setFr(const sfr& _fr )
 {
     fr = _fr ;
     transformInputPhoton();
 }
-#endif
-
 
 void SEvt::setFramePlaceholder()
 {
-#ifdef WITH_OLD_FRAME
-    sframe fr = sframe::Fabricate(0.f,0.f,0.f);
-    setFrame(fr);
-#else
     sfr fr = sfr::MakeFromTranslateExtent<float>(0.f,0.f,0.f,1000.f);
     setFr(fr);
-#endif
 }
 
 
@@ -883,11 +868,7 @@ void SEvt::transformInputPhoton()
         << " hasInputPhoton " <<  hasInputPhoton()
         << " proceed " << ( proceed ? "YES" : "NO " )
         << "\n"
-#ifdef WITH_OLD_FRAME
-        << frame.desc()
-#else
         << fr.desc()
-#endif
         << "\n"
         ;
 
@@ -895,11 +876,7 @@ void SEvt::transformInputPhoton()
 
     bool normalize = true ;  // normalize mom and pol after doing the transform
 
-#ifdef WITH_OLD_FRAME
-    NP* ipt = frame.transform_photon_m2w( input_photon, normalize );
-#else
     NP* ipt = fr.transform_photon_m2w( input_photon, normalize );
-#endif
 
     if(transformInputPhoton_WIDE)  // see notes/issues/G4ParticleChange_CheckIt_warnings.rst
     {
@@ -948,12 +925,7 @@ NP* SEvt::createInputGenstep_simtrace()
 
     if(with_CEGS)
     {
-#ifdef WITH_OLD_FRAME
-        igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(frame);
-#else
         igs = SFrameGenstep::MakeCenterExtentGenstep_FromFrame(fr);
-#endif
-
         LOG_IF(info, SIMTRACE)
             << "[" << SEvt__SIMTRACE << "] "
             << " simtrace igs " << ( igs ? igs->sstr() : "-" )
@@ -1014,11 +986,7 @@ NP* SEvt::createInputGenstep_simulate()
         }
         else if( hasInputPhoton())
         {
-#ifdef WITH_OLD_FRAME
-            igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &frame) ;
-#else
             igs = SEvent::MakeInputPhotonGenstep(input_photon, OpticksGenstep_INPUT_PHOTON, &fr) ;
-#endif
         }
         else if( has_torch )
         {
@@ -1107,19 +1075,11 @@ void SEvt::assertZeroGenstep()
 
 const char* SEvt::getFrameId() const
 {
-#ifdef WITH_OLD_FRAME
-    return frame.getFrameId() ;
-#else
     return fr.get_id();
-#endif
 }
 const NP*   SEvt::getFrameArray() const
 {
-#ifdef WITH_OLD_FRAME
-    return frame.getFrameArray() ;
-#else
     return fr.serialize();
-#endif
 }
 
 const char* SEvt::GetFrameId(int idx){    return Exists(idx) ? Get(idx)->getFrameId() : nullptr ; }
@@ -1157,95 +1117,38 @@ void SEvt::setFrame_HostsideSimtrace()
 }
 
 
-
-#ifdef WITH_OLD_FRAME
 /**
-SEvt::setGeo
--------------
+SEvt::setTree
+--------------
 
-SGeo is a protocol for geometry access fulfilled by CSGFoundry (and formerly by GGeo)
+The SEvt needs to hold a tree pointer to provide geometry
+and material information. Specifically:
 
-This connection between the SGeo geometry and SEvt is what allows
-the appropriate instance frame to be accessed. That is vital for
-looking up the sensor_identifier and sensor_index.
-
-TODO: replace this with stree.h based approach
-
-
-Invoked with stack::
-
-    SEvt::setGeo
-    CSGOptiX::InitEvt
-    CSGOptiX::Create
-    CSGOptiX::SimtraceMain () at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:156
-    main
-
+1. stree::lookup_matline from SEvt::addGenstep
+2. stree::get_frame_inst from SEvt::setFrame
 
 **/
 
-void SEvt::setGeo(const SGeo* cf_)
-{
-    assert(cf_);
-    cf = cf_ ;
-    tree = cf->getTree();
-}
-
-#else
-/**
-SEvt::setSim
--------------
-
-Invoked from::
-
-    CSGOptiX::InitEvt
-    CSGOptiX::Create
-    G4CXOpticks::CreateSimulator
-    G4CXOpticks::setGeometry_
-
-**/
-
-//void SEvt::setSim(const SSim* sim_)
-//{
-//    assert(sim_);
-//    sim = sim_ ;
-//    tree = sim->get_tree();
-//}
 
 void SEvt::setTree(const stree* tree_)
 {
     tree = tree_ ;
 }
 
-#endif
-
-
 /**
 SEvt::setFrame
 -----------------
 
-This method asserts that SEvt::setGeo has been called
-as that is needed to provide access to sframe via
-the SGeo protocol base of either GGeo OR CSGFoundry
-
-TODO: replace this with stree.h based approach
+This method requires that SEvt::setTree has been called
+as the tree is needed to provide access to the sfr frame
+corresponding to the instance.
 
 **/
 void SEvt::setFrame(unsigned ins_idx)
 {
-#ifdef WITH_OLD_FRAME
-    LOG_IF(fatal, cf == nullptr) << "must SEvt::setGeo before being can access frames " ;
-    assert(cf);
-    sframe fr ;
-    int rc = cf->getFrame(fr, ins_idx) ;
-    if(rc!=0) std::raise(SIGINT);
-    assert( rc == 0 );
-    fr.prepare();
-    setFrame(fr);
-#else
     assert(tree);
     sfr f = tree->get_frame_inst( ins_idx );
     setFr(f);
-#endif
 }
 
 
@@ -1275,14 +1178,8 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     assert(prior);
     if(prior == nullptr ) return nullptr ;
 
-#ifdef WITH_OLD_FRAME
-    sframe& pfr = prior->frame ;
-    pfr.set_hostside_simtrace();
-#else
     sfr& pfr = prior->fr ;
     pfr.set_hostside_simtrace();
-#endif
-
 
     if( pfr.ce.w == 0.f )
     {
@@ -1304,11 +1201,7 @@ SEvt* SEvt::CreateSimtraceEvent()  // static
     LOG_IF(info, SIMTRACE) << " SWITCH : SEventConfig::SetRGModeSimtrace " ;
     SEvt* ste = new SEvt ;
 
-#ifdef WITH_OLD_FRAME
-    ste->setFrame(pfr);
-#else
     ste->setFr(pfr);
-#endif
 
     LOG_IF(info, SIMTRACE) << "] ste.simtrace.size " << ste->simtrace.size() ;
 
@@ -1540,24 +1433,11 @@ void SEvt::CreateOrReuse()
 }
 
 
-
-#ifdef WITH_OLD_FRAME
-void SEvt::SetFrame(const sframe& fr )
-{
-    assert(0 && "DONT USE THIS - USE SEvt::SetFr");
-    if(Exists(0)) Get(0)->setFrame(fr);
-    if(Exists(1)) Get(1)->setFrame(fr);
-}
-#else
 void SEvt::SetFr(const sfr& fr )
 {
     if(Exists(0)) Get(0)->setFr(fr);
     if(Exists(1)) Get(1)->setFr(fr);
 }
-#endif
-
-
-
 
 
 void SEvt::Check(int idx)
@@ -2441,12 +2321,7 @@ sgs SEvt::addGenstep(const NP* a)
 
     if(SEventConfig::IsRGModeSimtrace() && SFrameGenstep::HasConfigEnv()) // CEGS running
     {
-#ifdef WITH_OLD_FRAME
-        if(frame.is_hostside_simtrace()) setFrame_HostsideSimtrace();
-#else
         if(fr.is_hostside_simtrace()) setFrame_HostsideSimtrace();
-#endif
-
     }
 
     return s ;
@@ -2496,17 +2371,9 @@ sgs SEvt::addGenstep(const quad6& q_)
     if(matline_ >= G4_INDEX_OFFSET  )
     {
         unsigned mtindex = matline_ - G4_INDEX_OFFSET ;
-#ifdef WITH_OLD_FRAME
-        assert(cf);
-        matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
-#else
         // omitting this caused ~/o/notes/issues/qcerenkov_dumping_following_WITH_OLD_FRAME_due_to_matline_0.rst
-        //assert(sim);
-        //matline = sim ? sim->lookup_mtline(mtindex) : 0 ;
-
         assert(tree);
         matline = tree ? tree->lookup_mtline(mtindex) : 0 ;
-#endif
 
         bool bad_ck = is_cerenkov_gs && matline == -1 ;
 
@@ -4798,11 +4665,7 @@ void SEvt::saveExtra(const char* base, const char* name, const NP* a ) const
 void SEvt::saveFrame(const char* dir) const
 {
     LOG(LEVEL) << "[ dir " << dir ;
-#ifdef WITH_OLD_FRAME
-    frame.save(dir);
-#else
     fr.save(dir);
-#endif
     LOG(LEVEL) << "] dir " << dir ;
 }
 
@@ -5058,17 +4921,9 @@ from (SGeo*)cf which is used to transform the photon
 void SEvt::getLocalPhoton(sphoton& lp, unsigned idx) const
 {
     getPhoton(lp, idx);
-
-#ifdef WITH_OLD_FRAME
-    sframe fr ;
-    getPhotonFrame(fr, lp);   // HMM: this is just using lp.iindex
-    fr.transform_w2m(lp);
-#else
     sfr fr ;
     getPhotonFrame(fr, lp);   // HMM: this is just using lp.iindex
     fr.transform_w2m(lp);
-#endif
-
 }
 
 
@@ -5128,22 +4983,12 @@ void SEvt::getLocalHit_LEAKY(sphit& ht, sphoton& lp, unsigned idx) const
 {
     getHit(lp, idx);   // copy *idx* hit from NP array into sphoton& lp struct
 
-#ifdef WITH_OLD_FRAME
-    sframe fr = {} ;
-    getPhotonFrame(fr, lp);
-    fr.transform_w2m(lp);
-    ht.iindex = fr.inst() ;
-    ht.sensor_identifier = fr.sensor_identifier() - 1 ;  // THIS IS OLD, UNUSED AND NOW WRONG
-    ht.sensor_index = fr.sensor_index();
-#else
     sfr fr = {} ;
     getPhotonFrame(fr, lp);
     fr.transform_w2m(lp);
     ht.iindex = fr.get_inst() ;
     ht.sensor_identifier = fr.get_sensorid() ; // NO -1 BUT UNUSED ANYHOW
     ht.sensor_index = fr.get_sensorix();
-#endif
-
 }
 
 /**
@@ -5250,30 +5095,15 @@ It should always be set for photons ending on PMTs
 assuming properly instanced geometry.
 
 The use of geometry information from this low level
-struct is accomplished using the SGeo(cf) instance
-that is fullfilled from higher level CSGFoundry
-instance
-
-TODO: move to getting frame from stree
-
+struct is accomplished using the stree.
 
 **/
 
-#ifdef WITH_OLD_FRAME
-void SEvt::getPhotonFrame( sframe& fr, const sphoton& p ) const
-{
-    assert(cf);
-    cf->getFrame(fr, p.iindex() );
-    fr.prepare();
-}
-#else
 void SEvt::getPhotonFrame( sfr& fr, const sphoton& p ) const
 {
     assert(tree);
     fr = tree->get_frame_inst( p.iindex() );
 }
-#endif
-
 
 
 std::string SEvt::descNum() const
@@ -5360,12 +5190,7 @@ std::string SEvt::descFramePhoton(unsigned max_print) const
 {
     unsigned num_photon = getNumPhoton();
     unsigned num_print = std::min(max_print, num_photon) ;
-
-#ifdef WITH_OLD_FRAME
-    bool zero_frame = frame.is_zero() ;
-#else
     bool zero_frame = fr.is_zero() ;
-#endif
 
     std::stringstream ss ;
     ss << "SEvt::descFramePhoton"
@@ -5485,24 +5310,13 @@ void SEvt::getFrameHit(sphoton& lp, unsigned idx) const
 }
 void SEvt::applyFrameTransform(sphoton& lp) const
 {
-#ifdef WITH_OLD_FRAME
-    bool zero_frame = frame.is_zero() ;
-#else
     bool zero_frame = fr.is_zero() ;
-#endif
-
     LOG_IF(fatal, zero_frame) << " must setFrame before can applyFrameTransform " ;
     assert(!zero_frame);
 
-#ifdef WITH_OLD_FRAME
-    frame.transform_w2m(lp);
-#else
     bool normalize = true ;
     bool inverse = true ; // w2m ? IS THAT CORRECT
     fr.transform(lp, normalize, inverse);
-#endif
-
-
 }
 
 /**

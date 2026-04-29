@@ -3886,49 +3886,6 @@ sframe CSGFoundry::getFrameE() const
 
 
 
-/**
-CSGFoundry::AfterLoadOrCreate
--------------------------------
-
-Called from CSGFoundry::Load
-
-The idea behind this is to auto connect SEvt with the frame
-from the geometry.
-
-HMM: not called after Create, see CSGOptiX::initFrame
-
-
-Formerly frame mechanics had to be done up here at CSGFoundry level
-due to the need for geometry info to form the frame from envvar config.
-But after stree.h improvements there is no reason not to do within SSim+stree
-
-TODO: reposition SEvt prep into SSim::AfterLoadOrCreate and sframe/sfr prep into stree::AfterLoadOrCreate ?
-
-
-
-Trying to progress with FRAME_TRANSITION by replacing the old
-CSGFoundry::AfterLoadOrCreate with SSim::afterLoadOrCreate
-
-
-**/
-
-void CSGFoundry::AfterLoadOrCreate() // static
-{
-    assert(0 && "DONT USE THIS : THIS PREP DONE BY SSim::afterLoadOrCreate " );
-
-    CSGFoundry* fd = CSGFoundry::Get();
-    if(!fd) return ;
-
-#ifdef WITH_OLD_FRAME
-    SEvt::CreateOrReuse() ;   // creates 1/2 SEvt depending on OPTICKS_INTEGRATION_MODE
-
-    sframe fr = fd->getFrameE() ;
-    LOG(LEVEL) << fr ;
-    SEvt::SetFrame(fr); // now only needs to be done once to transform input photons
-#endif
-
-}
-
 
 
 /**

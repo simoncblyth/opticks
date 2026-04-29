@@ -44,15 +44,9 @@ void CSGSimtrace::init()
     float4 ce = q->select_prim_ce ;
     LOG(LEVEL) << " ce " << ce  ;
 
-#ifdef WITH_OLD_FRAME
-    frame.set_hostside_simtrace();
-    frame.ce = ce ;
-    sev->setFrame(frame);
-#else
     fr.set_hostside_simtrace();
     fr.set_ce( &ce.x );
     sev->setFr(fr);
-#endif
 
     LOG(LEVEL) << " SELECTION " << SELECTION << " num_selection " << num_selection << " outdir " << outdir ;
     if(selection_simtrace)

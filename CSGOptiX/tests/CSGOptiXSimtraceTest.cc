@@ -30,14 +30,8 @@ TODO:
 
 #include "scuda.h"
 #include "sqat4.h"
-
-#ifdef WITH_OLD_FRAME
-#include "sframe.h"
-#else
 #include "sfr.h"
 #include "stree.h"
-#endif
-
 
 #include "SSim.hh"
 #include "SOpticks.hh"
@@ -66,15 +60,8 @@ int main(int argc, char** argv)
 
     CSGFoundry* fd = CSGFoundry::Load();
     stree* tree = fd->getTree();
-
-#ifdef WITH_OLD_FRAME
-    sframe fr = fd->getFrame() ;  // depends on MOI, fr.ce fr.m2w fr.w2m set by CSGTarget::getFrame
-    std::cout << "[ main fr" << std::endl << fr << std::endl << "] main fr" << std::endl  ;
-    evt->setFrame(fr);   // formerly this added CE gensteps, now need to SEvt::BeginOfEvent ?
-#else
     sfr fr = tree->get_frame_moi();
     evt->setFr(fr);
-#endif
 
 
     CSGOptiX* cx = CSGOptiX::Create(fd);
