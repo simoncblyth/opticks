@@ -114,7 +114,7 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
 
 private:
     static Params* InitParams( int raygenmode, const SGLM* sglm  ) ;
-    static void InitEvt(  CSGFoundry* fd  );
+    //static void InitEvt(  CSGFoundry* fd  );
     static void InitMeta();
     static void InitSim(  SSim* ssim );
     static void InitGeo(  CSGFoundry* fd );

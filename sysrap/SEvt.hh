@@ -97,7 +97,7 @@ struct SGeo ;
 struct S4RandomArray ;
 struct stimer ;
 struct stree ;
-struct SSim ;
+//struct SSim ;
 
 #include "SYSRAP_API_EXPORT.hh"
 
@@ -240,8 +240,8 @@ struct SYSRAP_API SEvt : public SCompProvider
     NPFold*               fold ;
     NPFold*               extrafold ;
 
-    const SGeo*           cf ;
-    const SSim*           sim ;
+    //const SGeo*           cf ;
+    //const SSim*           sim ;
     const stree*          tree ;
 
     bool              hostside_running_resize_done ; // only ever becomes true for non-GPU running
@@ -428,7 +428,8 @@ public:
 #ifdef WITH_OLD_FRAME
     void setGeo(const SGeo* cf);
 #else
-    void setSim(const SSim* sim);
+    //void setSim(const SSim* sim);
+    void setTree(const stree* tree);
 #endif
     void setFrame(unsigned ins_idx);
 

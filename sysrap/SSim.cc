@@ -154,6 +154,14 @@ SSim* SSim::Load(const char* base, const char* reldir)
 
 
 
+/**
+SSim::SSim
+----------
+
+Invoked from SSim::Create OR SSim::Load
+
+**/
+
 
 
 SSim::SSim()

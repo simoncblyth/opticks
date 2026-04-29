@@ -31,6 +31,62 @@ openssl libcurl externals to OpticksClient and JUNOSW
     source /tmp/blyth/opticks/externals/libcurl/curl-8.12.1/bashrc
 
 
+Check lo_client build ldd
+----------------------------
+
+::
+
+    lo_client
+    oo
+
+    [lo_client] A[blyth@localhost opticks]$ which SClientSimulatorTest
+    /data1/blyth/local/opticks_Client/lib/SClientSimulatorTest
+    [lo_client] A[blyth@localhost opticks]$ ldd $(which SClientSimulatorTest)
+        linux-vdso.so.1 (0x00007ffcdd3d7000)
+        libSysRap.so => /data1/blyth/local/opticks_Client/lib/../lib64/libSysRap.so (0x00007f3621c00000)
+        libcurl.so.4 => /usr/local/ExternalLibs/libcurl/curl-8.12.1/lib64/libcurl.so.4 (0x00007f3621b3f000)
+        libOKConf.so => /data1/blyth/local/opticks_Client/lib/../lib64/libOKConf.so (0x00007f3621ecf000)
+        libssl.so.3 => /usr/local/ExternalLibs/openssl/openssl-3.2.0/lib64/libssl.so.3 (0x00007f3621a4b000)
+        libcrypto.so.3 => /usr/local/ExternalLibs/openssl/openssl-3.2.0/lib64/libcrypto.so.3 (0x00007f3621400000)
+        libstdc++.so.6 => /lib64/libstdc++.so.6 (0x00007f3621000000)
+        libm.so.6 => /lib64/libm.so.6 (0x00007f3621970000)
+        libgcc_s.so.1 => /lib64/libgcc_s.so.1 (0x00007f3621956000)
+        libc.so.6 => /lib64/libc.so.6 (0x00007f3620c00000)
+        libz.so.1 => /lib64/libz.so.1 (0x00007f36213e6000)
+        /lib64/ld-linux-x86-64.so.2 (0x00007f3621ed8000)
+
+
+::
+
+    ~/o/sysrap/tests/SClientSimulatorTest.sh
+
+
+Environment setup by "lo_client" which invokes::
+
+    local_ok_externals()
+    {
+       : ~/j/local.sh
+       : Xercesc + CLHEP + Geant4 + custom4 + Python + python-numpy versions matching JUNOSW
+       : NB versions need to match those used by gitlab-ci build when using the gitlab cvmfs release
+
+       local_unset
+
+       source /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.4.0/ExternalLibs/Python/3.11.10/bashrc
+       source /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.4.0/ExternalLibs/python-numpy/1.26.4/bashrc
+
+       if [ "$OPTICKS_CONFIG" == "Client" ]; then
+           source /usr/local/ExternalLibs/openssl/openssl-3.2.0/bashrc
+           source /usr/local/ExternalLibs/libcurl/curl-8.12.1/bashrc
+       fi
+
+       local_c4_build  # setup c4 externals : Xercesc + CLHEP + Geant4
+       source $(local_c4_prefix)/bashrc
+
+       export VIP_MODE=ok_externals
+       export VIP_DESC="Opticks JUNOSW externals in common manually setup from cvmfs : Xercesc + CLHEP + Geant4 + custom4 + Python + python-numpy"
+       PS1_LABEL=$FUNCNAME  # do last to override other funcs that set the label
+    }
+
 
 
 
@@ -47,8 +103,8 @@ junoSD_PMT_v2_Opticks::EndOfEvent_Simulate
 
 
 
-WIP: build JUNOSW + OpticksClient on workstation - local.sh function "client ljbb" ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DONE: build JUNOSW + OpticksClient on workstation - local.sh function "ljclient ljbb" ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Prime change is prefix::
 
@@ -59,15 +115,133 @@ Plus build and install folders.
 
 
 
+HMM: what about runtime env ?
+-------------------------------
+
+
+::
+
+    A[blyth@localhost junosw]$ cat InstallArea/Client_blyth-revive-opticksMode-zero-fixing-cleanup-SIGSEGV/envset.sh 
+    #!/bin/bash
+    # generated from .gitlab-ci.yml of 
+    # .gitlab-ci/oj_helper.sh EMIT_ENVSET
+
+    HERE=$(dirname $(realpath $BASH_SOURCE))
+    DEFAULT_PREFIX=$HERE
+    PREFIX=${OJ_PREFIX:-$DEFAULT_PREFIX}
+
+    source $PREFIX/ENV.bash             ## define JUNOTOP and JUNO_OPTICKS_PREFIX 
+    source $JUNOTOP/setup.sh            ## hookup many JUNOSW externals excluding Opticks
+    source $JUNO_OPTICKS_PREFIX/bashrc  ## hookup for Opticks and its externals
+
+    source $PREFIX/bin/opticks_juno.sh  ## oj bash functions 
+    oj_geomsetup
+
+    export CMAKE_PREFIX_PATH=$PREFIX:${CMAKE_PREFIX_PATH}
+    export PATH=$PREFIX/bin:${PATH}
+    export LD_LIBRARY_PATH=$PREFIX/lib64:${LD_LIBRARY_PATH}
+    export PYTHONPATH=$PREFIX/lib64:${PYTHONPATH}
+    export PYTHONPATH=$PREFIX/python:${PYTHONPATH}
+
+
+
+* adding source lines to ~/j/local.sh funcs succeeds to get the build to work::
+
+    local_JUNOTOP_client()
+    {
+        : see ~/opticks/externals/openssl.bash ~/opticks/externals/libcurl.bash
+        source /usr/local/ExternalLibs/openssl/openssl-3.2.0/bashrc
+        source /usr/local/ExternalLibs/libcurl/curl-8.12.1/bashrc
+    }
+
+
+* but that setup needs to be repeated to add to runtime
+
+
+
+~/.opticks/GEOM/ENVSET.sh::
+
+    #envset_name=OJ_56
+    #envset_name=OJ_NOW
+    envset_name=OJ_Client
+
+    case $envset_name in
+      OJ_56)     envset=/cvmfs/opticks.ihep.ac.cn/oj/releases/J25.4.0_Opticks-v0.5.6/el9_amd64_gcc11/2025_10_29/envset.sh ;;
+      OJ_Client) envset=$HOME/junosw/InstallArea/Client_blyth-revive-opticksMode-zero-fixing-cleanup-SIGSEGV/envset.sh ;;
+      OJ_NOW)    envset=$HOME/junosw/InstallArea/envset.sh ; envset_name=OJ_$(date +%b%d) ;;
+    esac
+
+    export ENVSET=$envset
+    export ENVSET_NAME=$envset_name
+
+
+
+
+KLUDGE addition to envset.sh
+-------------------------------
+
+::
+
+    #!/bin/bash
+    # generated from .gitlab-ci.yml of 
+    # .gitlab-ci/oj_helper.sh EMIT_ENVSET
+
+    HERE=$(dirname $(realpath $BASH_SOURCE))
+    DEFAULT_PREFIX=$HERE
+    PREFIX=${OJ_PREFIX:-$DEFAULT_PREFIX}
+
+    source $PREFIX/ENV.bash             ## define JUNOTOP and JUNO_OPTICKS_PREFIX 
+    source $JUNOTOP/setup.sh            ## hookup many JUNOSW externals excluding Opticks
+
+    ### [KLUDGE MANUAL ADDITION
+    source /usr/local/ExternalLibs/openssl/openssl-3.2.0/bashrc
+    source /usr/local/ExternalLibs/libcurl/curl-8.12.1/bashrc
+    ### ]KLUDGE MANUAL ADDITION
+
+
+    source $JUNO_OPTICKS_PREFIX/bashrc  ## hookup for Opticks and its externals
+
+    source $PREFIX/bin/opticks_juno.sh  ## oj bash functions 
+    oj_geomsetup
+
+    export CMAKE_PREFIX_PATH=$PREFIX:${CMAKE_PREFIX_PATH}
+    export PATH=$PREFIX/bin:${PATH}
+    export LD_LIBRARY_PATH=$PREFIX/lib64:${LD_LIBRARY_PATH}
+    export PYTHONPATH=$PREFIX/lib64:${PYTHONPATH}
+    export PYTHONPATH=$PREFIX/python:${PYTHONPATH}
+
+
+
+After that kludge and setting envset to use the Client install::
+
+     24 #envset_name=OJ_56
+     25 #envset_name=OJ_NOW
+     26 envset_name=OJ_Client
+     27 
+     28 case $envset_name in
+     29   OJ_56)     envset=/cvmfs/opticks.ihep.ac.cn/oj/releases/J25.4.0_Opticks-v0.5.6/el9_amd64_gcc11/2025_10_29/envset.sh ;;
+     30   OJ_Client) envset=$HOME/junosw/InstallArea/Client_blyth-revive-opticksMode-zero-fixing-cleanup-SIGSEGV/envset.sh ;;
+     31   OJ_NOW)    envset=$HOME/junosw/InstallArea/envset.sh ; envset_name=OJ_$(date +%b%d) ;;
+     32 esac
+     33 
+
+
+Can test with::
+
+    ljrt
+
+
+
+
 TODO : how to make OpticksClient release onto cvmfs ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* first need to get externals : openssl and libcurl into the standard externals
 * decide on naming and layout of OpticksClient tarball and cvmfs folders and extend okdist-- to do that
 
 
 TODO : how to make JUNOSW+OpticksClient release onto cvmfs ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
 
 

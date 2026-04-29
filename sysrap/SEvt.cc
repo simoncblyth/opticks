@@ -215,7 +215,9 @@ SEvt::SEvt()
     topfold(new NPFold),
     fold(nullptr),
     extrafold(new NPFold),
-    cf(nullptr),
+    //cf(nullptr),
+    //sim(nullptr),
+    tree(nullptr),
     hostside_running_resize_done(false),
     gather_done(false),
     is_loaded(false),
@@ -1195,16 +1197,23 @@ SEvt::setSim
 
 Invoked from::
 
-    CSGOptiX::Create
     CSGOptiX::InitEvt
+    CSGOptiX::Create
+    G4CXOpticks::CreateSimulator
+    G4CXOpticks::setGeometry_
 
 **/
 
-void SEvt::setSim(const SSim* sim_)
+//void SEvt::setSim(const SSim* sim_)
+//{
+//    assert(sim_);
+//    sim = sim_ ;
+//    tree = sim->get_tree();
+//}
+
+void SEvt::setTree(const stree* tree_)
 {
-    assert(sim_);
-    sim = sim_ ;
-    tree = sim->get_tree();
+    tree = tree_ ;
 }
 
 #endif
@@ -2492,24 +2501,24 @@ sgs SEvt::addGenstep(const quad6& q_)
         matline = cf ? cf->lookup_mtline(mtindex) : 0 ;
 #else
         // omitting this caused ~/o/notes/issues/qcerenkov_dumping_following_WITH_OLD_FRAME_due_to_matline_0.rst
-        assert(sim);
-        matline = sim ? sim->lookup_mtline(mtindex) : 0 ;
+        //assert(sim);
+        //matline = sim ? sim->lookup_mtline(mtindex) : 0 ;
+
+        assert(tree);
+        matline = tree ? tree->lookup_mtline(mtindex) : 0 ;
 #endif
 
         bool bad_ck = is_cerenkov_gs && matline == -1 ;
 
         LOG_IF(info, bad_ck )
             << " is_cerenkov_gs " << ( is_cerenkov_gs ? "YES" : "NO " )
-            << " cf " << ( cf ? "YES" : "NO " )
+            << " tree " << ( tree ? "YES" : "NO " )
             << " bad_ck "
             << " matline_ " << matline_
             << " matline " << matline
             << " gentype " << gentype
             << " mtindex " << mtindex
             << " G4_INDEX_OFFSET " << G4_INDEX_OFFSET
-            << " desc_mt "
-            << std::endl
-            << ( cf ? cf->desc_mt() : "no-cf" )
             << std::endl
             ;
 
@@ -5438,7 +5447,7 @@ std::string SEvt::descFull(unsigned max_print) const
 {
     std::stringstream ss ;
     ss << "[ SEvt::descFull "  << std::endl ;
-    ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ;
+    //ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ;
     ss << descDir() << std::endl ;
     ss << descNum() << std::endl ;
     ss << descComponent() << std::endl ;
@@ -5448,7 +5457,7 @@ std::string SEvt::descFull(unsigned max_print) const
     ss << descLocalPhoton(max_print) << std::endl ;
     ss << descFramePhoton(max_print) << std::endl ;
 
-    ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ;
+    //ss << ( cf ? cf->descBase() : "no-cf" ) << std::endl ;
     ss << ( topfold ? topfold->desc() : "no-topfold" ) << std::endl ;
     ss << "] SEvt::descFull "  << std::endl ;
     std::string s = ss.str();

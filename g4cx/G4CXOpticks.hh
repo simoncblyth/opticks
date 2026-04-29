@@ -17,6 +17,7 @@ class G4VPhysicalVolume ;
 struct CSGFoundry ;
 struct SSimulator ;
 struct SSim ;
+struct stree ;
 
 #include "schrono.h"
 #include "plog/Severity.h"
@@ -71,6 +72,7 @@ private:
     void setGeometry(CSGFoundry* fd);
     void setGeometry_(CSGFoundry* fd);
     static SSimulator* CreateSimulator(CSGFoundry* fd);
+    static void InitEvt(const stree* tree);
 public:
     std::string descSimulate() const ;
 

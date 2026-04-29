@@ -120,14 +120,15 @@ struct NP_CURL
     virtual ~NP_CURL();
 
     NP* transformRemote( NP* a, int index );
+    std::string desc() const ;
 
+private:
+    // internal methods invoked by transformRemote
     void prepare_upload(   NP* a, int index );
     void prepare_download();
     void perform();
     NP*  collect_download();
 
-
-    std::string desc() const ;
 };
 
 inline NP_CURL* NP_CURL::INSTANCE = nullptr ;
@@ -407,9 +408,9 @@ inline std::string NP_CURL::desc() const
        << "[NP_CURL::desc\n"
        << " url [" << ( url ? url : "-" ) << "]\n"
 #ifdef WITHOUT_MAGIC
-       << " download " << ( download ? download->desc() : "-" ) << "\n"
+       << " WITHOUT_MAGIC.download " << ( download ? download->desc() : "-" ) << "\n"
 #else
-       << " download " << ( download ? download->sstr() : "-" ) << "\n"
+       << " NOT:WITHOUT_MAGIC.download " << ( download ? download->sstr() : "-" ) << "\n"
 #endif
        << dhdr.desc() << "\n"
        << "]NP_CURL::desc\n"

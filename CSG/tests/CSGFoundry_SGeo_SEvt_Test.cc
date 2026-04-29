@@ -33,6 +33,7 @@ int main(int argc, char** argv)
 
 
     SSim* sim = SSim::Create();
+    stree* tree = sim->get_tree();
 
 #ifdef WITH_OLD_FRAME
     // search up dir tree starting from loaddir for dir with CSGFoundry/solid.npy
@@ -40,7 +41,8 @@ int main(int argc, char** argv)
     const CSGFoundry* fd = CSGFoundry::Load(cfbase);
     sev->setGeo(fd);
 #else
-    sev->setSim(sim);
+    //sev->setSim(sim);
+    sev->setTree(tree);
 #endif
 
 

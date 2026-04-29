@@ -7,7 +7,8 @@ See also the standalone version of this SClientSimulator_test.sh
 
 Build and start the endpoint "server" on GPU node::
 
-   lo  ## using full opticks env (NOT lo_client)
+   lo   ## full opticks env (NOT lo_client)
+   lco  ## needs miniconda env for fastapi
    ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
 
 Run this test, not necessarily on GPU node::

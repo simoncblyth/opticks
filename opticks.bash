@@ -2027,6 +2027,7 @@ opticks-setup-generate-(){
     [ ! $rc -eq 0 ] && return $rc
 
     opticks-setup-prefix-
+    opticks-setup-config-
     #opticks-setup-consistency-check-  CMAKE_PREFIX_PATH
     #opticks-setup-consistency-check-  PKG_CONFIG_PATH
     opticks-setup-misc-
@@ -2046,6 +2047,7 @@ opticks-bashrc-generate-(){
     [ ! $rc -eq 0 ] && return $rc
 
     opticks-bashrc-prefix-
+    opticks-bashrc-config-
 
     opticks-setup-identifier-
     opticks-setup-misc-
@@ -2089,6 +2091,10 @@ opticks-setup-check-mandatory-buildenv()
 {
     local msg="=== $FUNCNAME MISSING mandatory envvar in buildenv :"
 
+    if [ -z "$OPTICKS_CONFIG" ]; then
+        echo $msg OPTICKS_CONFIG - expecting one of - Debug/Release/Client - this is higher level control than the build type 
+        return 1
+    fi
     if [ -z "$OPTICKS_PREFIX" ]; then
         echo $msg OPTICKS_PREFIX
         return 1
@@ -2375,12 +2381,30 @@ HERE_OPTICKS_PREFIX=\$(dirname \$BASH_SOURCE)
 export OPTICKS_PREFIX=\$HERE_OPTICKS_PREFIX
 export OPTICKS_CUDA_PREFIX=\${OPTICKS_CUDA_PREFIX:-$OPTICKS_CUDA_PREFIX}
 export OPTICKS_OPTIX_PREFIX=\${OPTICKS_OPTIX_PREFIX:-$OPTICKS_OPTIX_PREFIX}
-#
 
 EHEAD
 }
 
 
+opticks-setup-config-(){ cat << EHEAD
+# $FUNCNAME
+
+# pass value when this bash function is run during buildtime into a file for later runtime use
+# subsequent changes do not make sense as a build has a specific config which never changes
+export OPTICKS_CONFIG=$OPTICKS_CONFIG
+
+EHEAD
+}
+
+opticks-bashrc-config-(){ cat << EHEAD
+# $FUNCNAME
+
+# pass value when this bash function is run during buildtime into a file for later runtime use
+# subsequent changes do not make sense as a build has a specific config which never changes
+export OPTICKS_CONFIG=$OPTICKS_CONFIG
+
+EHEAD
+}
 
 
 

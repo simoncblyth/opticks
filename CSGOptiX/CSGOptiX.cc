@@ -233,37 +233,12 @@ const char* CSGOptiX::desc() const
 
 
 /**
-CSGOptiX::InitEvt  TODO : THIS DOES NOT USE GPU : SO SHOULD BE ELSEWHERE
---------------------------------------------------------------------------
-
-Invoked from CSGOptiX::Create
-
-
-Q: Why the SEvt geometry connection ?
-A: Needed for global to local transform conversion
-
-Q: What uses SEVt::setGeo (SGeo) ?
-A: Essential set_matline of Cerenkov Genstep
+CSGOptiX::InitEvt  FORMER METHOD RELOCATED TO G4CXOpticks::CreateSimulator
+---------------------------------------------------------------------------
 
 **/
 
-void CSGOptiX::InitEvt( CSGFoundry* fd  )
-{
-    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ;
 
-#ifdef WITH_OLD_FRAME
-    sev->setGeo((SGeo*)fd);
-#else
-    const SSim* ssim = fd->getSim();
-    sev->setSim(ssim);
-#endif
-
-    std::string* rms = SEvt::RunMetaString() ;
-    assert(rms);
-
-    bool stamp = false ;
-    smeta::Collect(*rms, "CSGOptiX__InitEvt", stamp );
-}
 
 /**
 CSGOptiX::InitSim
@@ -365,20 +340,13 @@ so cannot assume HasDevice is set as some tests do not use SEvt
 
 CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 {
-    //bool hasDevice = SEventConfig::HasDevice();
-    //if(!hasDevice)
-    //{
-    //    LOG(fatal) << "SEventConfig::HasDevice " << ( hasDevice ? "YES" : "NO " );
-    //    return nullptr ;
-    //}
-
     SProf::Add("CSGOptiX__Create_HEAD");
     LOG(LEVEL) << "[ fd.descBase " << ( fd ? fd->descBase() : "-" ) ;
 
     SSim* ssim = const_cast<SSim*>(fd->sim) ;
 
+    //InitEvt(fd);  // REPOSITIONED TO G4CXOpticks::CreateSimulator
 
-    InitEvt(fd);
     InitSim(ssim);    // QSim instanciation after uploading SSim arrays
     InitMeta();       // recording GPU, switches etc.. into run metadata
     InitGeo(fd);      // uploads geometry

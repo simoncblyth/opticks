@@ -11,6 +11,7 @@ G4CXOpticks.cc
 
 #include "spath.h"
 #include "ssys.h"
+#include "smeta.h"
 
 #include "SEvt.hh"
 #include "SSim.hh"
@@ -366,7 +367,7 @@ void G4CXOpticks::setGeometry_(CSGFoundry* fd_)
     else
     {
         LOG(info)
-            << " skip CSGOptiX::Create as NoSim set "
+            << " skip CreateSimulator as NoSim set "
             << " NoSim " << NoSim
             ;
     }
@@ -400,16 +401,50 @@ via SEventConfig::ModeClient(). But for now keep it simple.
 SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
 {
     SSimulator* cx = nullptr ;
+    const stree* tree = fd->getTree();
+    InitEvt(tree);
 
 #if defined(WITH_CUDA)
     cx = CSGOptiX::Create(fd);
 #elif defined(WITH_CURL)
-    stree* tr = fd->getTree();
-    cx = SClientSimulator::Create(tr);
+    cx = SClientSimulator::Create(tree);
 #endif
 
     assert(cx);
     return cx ;
+}
+
+/**
+G4CXOpticks::InitEvt
+----------------------
+
+This relocated here from former CSGOptiX::InitEvt
+
+TODO : REPOSITION YET AGAIN DOWN TO SSim LEVEL ?
+
+SEvt::setTree just sets the pointer, it only
+gets used when adding gensteps
+
+
+Q: Why the SEvt geometry connection ?
+A: Needed for global to local transform conversion
+
+Q: What uses SEVt::setGeo (SGeo) ?
+A: Essential set_matline of Cerenkov Genstep
+
+**/
+
+
+void G4CXOpticks::InitEvt(const stree* tree)  // static
+{
+    SEvt* sev = SEvt::CreateOrReuse(SEvt::EGPU) ;
+    sev->setTree(tree);
+
+    std::string* rms = SEvt::RunMetaString() ;
+    assert(rms);
+    bool stamp = false ;
+    const char* label = "G4CXOpticks__InitEvt" ;
+    smeta::Collect(*rms, label, stamp );
 }
 
 

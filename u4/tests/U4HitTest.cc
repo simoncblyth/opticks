@@ -33,6 +33,7 @@ struct U4HitTest
     const char* cfbase ;
     const CSGFoundry* fd ;
     const SSim* sim ;
+    const stree* tree ;
 
     sphoton global = {} ;
     sphit ht = {}  ;
@@ -89,6 +90,7 @@ inline U4HitTest::U4HitTest()
     cfbase(sev ? sev->getSearchCFBase() : nullptr),
     fd(cfbase ? CSGFoundry::Load(cfbase) : nullptr ),
     sim(fd ? fd->getSim() : nullptr ),
+    tree(sim ? sim->get_tree() : nullptr),
     delta_rs(0),
     range_rs(0),
     hit_idx(0)
@@ -101,7 +103,8 @@ inline void U4HitTest::init()
 #ifdef WITH_OLD_FRAME
     sev->setGeo(fd);
 #else
-    sev->setSim(sim);
+    //sev->setSim(sim);
+    sev->setTree(tree);
 #endif
 
     assert( sev->hasInstance() );  // check that the instance is persisted and retrieved (via domain metadata)

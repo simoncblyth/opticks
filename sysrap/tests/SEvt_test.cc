@@ -71,8 +71,10 @@ int SEvt_test::RUN_META()
 int SEvt_test::Main()
 {
     SSim* sim = SSim::CreateOrReuse();
+    stree* tree = sim->get_tree();
+
     SEvt* sev = SEvt::Create_EGPU() ;
-    sev->setSim(sim);  // NOW MANDATORY PRIOR TO AddGenstep
+    sev->setTree(tree);  // NOW MANDATORY PRIOR TO AddGenstep
 
     bool ALL = strcmp(TEST, "ALL") == 0 ;
 

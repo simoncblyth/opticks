@@ -66,6 +66,15 @@ inline NP_CURL_Header::NP_CURL_Header( const char* name_ )
 {
 }
 
+/**
+NP_CURL_Header::prepare_upload
+--------------------------------
+
+Populates headerlist with the non-nullptr arguments
+
+**/
+
+
 inline void NP_CURL_Header::prepare_upload(const char* token_, int index_, int level_, const char* dtype_, const char* shape_ )
 {
     std::string x_index = Format_INDEX(index_) ;
@@ -112,6 +121,23 @@ inline void NP_CURL_Header::clear()  // clears everything other than name
     curl_slist_free_all(headerlist);
     headerlist = nullptr ;
 }
+
+/**
+NP_CURL_Header::collect
+-------------------------
+
+Sets the below based on the field name provides::
+
+    level
+    index
+    token
+    dtype
+    shape and sh vector
+    c_length
+    c_type
+
+**/
+
 
 inline void NP_CURL_Header::collect( const char* name, const char* value )
 {
