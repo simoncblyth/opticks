@@ -119,6 +119,21 @@ template struct descr_<std::complex<double> > ;
 
 struct dtype_convert
 {
+   static bool expected_noncomplex_dtype(const char* dtype)
+   {
+       return  strcmp(dtype, "float32") == 0
+            || strcmp(dtype, "float64") == 0
+            || strcmp(dtype, "int64")   == 0
+            || strcmp(dtype, "int32")   == 0
+            || strcmp(dtype, "int16")   == 0
+            || strcmp(dtype, "int8")    == 0
+            || strcmp(dtype, "uint64")  == 0
+            || strcmp(dtype, "uint32")  == 0
+            || strcmp(dtype, "uint16")  == 0
+            || strcmp(dtype, "uint8")   == 0
+               ;
+    }
+
     static std::string from_name(const char* name)
     {
         std::stringstream ss ;

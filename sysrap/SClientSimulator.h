@@ -4,7 +4,7 @@ SClientSimulator.h
 ===================
 
 SClientSimulator.h can only be used from inside WITH_CURL guards,
-which ensures libcurl of at least 8.12.1 is available as required by NP_CURL.h
+which ensures libcurl of at least 7.76.1 is available as required by NP_CURL.h
 
 **/
 
@@ -62,7 +62,7 @@ struct SClientSimulator : public SSimulator
 
 
 
-SClientSimulator* SClientSimulator::Create(const char* path) // static
+inline SClientSimulator* SClientSimulator::Create(const char* path) // static
 {
     const char* ss = spath::Resolve(path) ;
     if(sstr::StartsWith(ss,"CFBaseFromGEOM"))
@@ -80,7 +80,7 @@ SClientSimulator* SClientSimulator::Create(const char* path) // static
     return Create(tree);
 }
 
-SClientSimulator* SClientSimulator::Create(const stree* tree) // static
+inline SClientSimulator* SClientSimulator::Create(const stree* tree) // static
 {
     SClientSimulator* client = new SClientSimulator(tree); ;
     return client ;
@@ -170,9 +170,16 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
 #endif
 
     NP* hc = NP_CURL::TransformRemote(gs,eventID);  // "hc" hit-component one of : hit/hitlite/hitlitemerged/hitmerged
-    sev->setHit(hc);
 
-    double dt = hc->get_meta<double>("QSim__simulate_tot_dt", 0. );
+    if(hc == nullptr)
+    {
+        std::cerr << "SClientSimulator::simulate  ERROR NP_CURL::TransformRemote gave hc (NP*)nullptr - IS THE SERVER RUNNING ?\n" ;
+        return -1. ;
+    }
+
+
+    sev->setHit(hc);
+    double dt = hc ? hc->get_meta<double>("QSim__simulate_tot_dt", 0. ) : -1. ;
 
 
     std::cout

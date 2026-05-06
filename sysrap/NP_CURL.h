@@ -8,7 +8,6 @@ libcurl based upload/download of NP.hh arrays to a remote HTTP API service.
 Start FastAPI endpoint::
 
    ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
-   (NOT THIS OLD ONE ANYMORE: /usr/local/env/fastapi_check/dev.sh)
 
 Make requests::
 
@@ -24,6 +23,26 @@ default NOT:WITHOUT_MAGIC "WITH_MAGIC"
 WITHOUT_MAGIC
    dtype and shape strings travel in HTTP headers,
    only the array data travel in the message body
+
+
+libcurl version of at least 7.76.1 (released April 14, 2021)
+-------------------------------------------------------------
+
+libcurl version requirement 7.76.1   (HexVersion: 0x072c01)
+
+Major: 7  (07 in hex)
+Minor: 76 (2c in hex)
+Patch: 1  (01 in hex)
+
+libcurl 7.61.1 is widely available in system distributions
+such as RHEL 9 / AlmaLinux 9 / Rocky Linux 9 / Oracle Linux 9
+
+When building with older libcurl (7.76.1 - 8.11.x) uses curl_easy_getinfo
+with CURLINFO_HEADER_LIST to iterate response headers.
+
+When building with newer libcurl (from 8.12.1) uses the simpler curl_easy_nextheader API.
+
+
 
 
 TODO
@@ -43,26 +62,21 @@ TODO
 
 #include <iomanip>
 #include <sstream>
-
 #include <cassert>
 #include <cstring>
 
 #include <curl/curl.h>
 
-/**
-libcurl version requirement 8.12.1   (HexVersion: 0x080c01)
-
-Major: 8  (08 in hex)
-Minor: 12 (0c in hex)
-Patch: 1  (01 in hex)
-
-**/
-
-#if LIBCURL_VERSION_NUM < 0x080c01
-#error "NP_CURL.h libcurl version too old! NP_CURL requires 8.12.1 or higher. Check CMAKE_PREFIX_PATH."
+#if LIBCURL_VERSION_NUM < 0x072c01
+#error "NP_CURL.h libcurl version too old! NP_CURL requires 7.76.1 or higher. Check CMAKE_PREFIX_PATH."
 #endif
 
-
+// Detect if curl_easy_nextheader is available (added in 8.12.1)
+#if LIBCURL_VERSION_NUM >= 0x080c01
+#define NP_CURL_HAVE_NEXTHEADER 1
+#else
+#define NP_CURL_HAVE_NEXTHEADER 0
+#endif
 
 
 #include "NP_CURL_Header.h"
@@ -89,13 +103,23 @@ struct NP_CURL
     static constexpr const char* NP_CURL_API_LEVEL = "NP_CURL_API_LEVEL" ;
     static constexpr int         NP_CURL_API_LEVEL_DEFAULT = 0 ;
 
+    static constexpr const char* NP_CURL_API_RETRY_MAX = "NP_CURL_API_RETRY_MAX" ;
+    static constexpr int         NP_CURL_API_RETRY_MAX_DEFAULT = 3 ;
+
+    static constexpr const char* NP_CURL_API_RETRY_WAIT = "NP_CURL_API_RETRY_WAIT" ;
+    static constexpr int         NP_CURL_API_RETRY_WAIT_DEFAULT = 2 ;  // seconds, fallback when no Retry-After header
+
 
     const char*       url ;
     const char*       token ;
     int               level ;
+    int               retry_max ;
+    int               retry_wait ;
+
 
     CURL*              session;
     curl_mime*         mime ;
+
 
 #ifdef WITHOUT_MAGIC
     NP_CURL_Upload_1*  upload ;
@@ -110,6 +134,7 @@ struct NP_CURL
     CURLcode           curl_code ;
     long               http_code ;
     int                rc ;
+
 
 
     static  NP_CURL* Get();
@@ -158,6 +183,8 @@ inline NP_CURL::NP_CURL()
     url(  U::GetEnv(NP_CURL_API_URL,   NP_CURL_API_URL_DEFAULT )),
     token(U::GetEnv(NP_CURL_API_TOKEN, NP_CURL_API_TOKEN_DEFAULT )),
     level(U::GetEnvInt(NP_CURL_API_LEVEL, NP_CURL_API_LEVEL_DEFAULT)),
+    retry_max(U::GetEnvInt(NP_CURL_API_RETRY_MAX, NP_CURL_API_RETRY_MAX_DEFAULT)),
+    retry_wait(U::GetEnvInt(NP_CURL_API_RETRY_WAIT, NP_CURL_API_RETRY_WAIT_DEFAULT)),
     session(nullptr),
     mime(nullptr),
 #ifdef WITHOUT_MAGIC
@@ -248,7 +275,7 @@ inline void NP_CURL::prepare_upload( NP* a, int index )
     std::string shape = a->sstr();        // eg "(10, 4, 4, )"
     uhdr.prepare_upload( token, index, level, dtype.c_str(), shape.c_str() );
 #else
-    // default MAGIC approach tranports serialized array including both hdr and arr data
+    // default MAGIC approach transports serialized array including both hdr and arr data
     a->update_headers();
     upload_size = a->serialize_bytes() ;  // both hdr and arr data
     uhdr.prepare_upload( token, index, level );
@@ -298,6 +325,12 @@ inline void NP_CURL::prepare_download()
     curl_easy_setopt(session, CURLOPT_WRITEDATA, download );
 #endif
 
+#if !NP_CURL_HAVE_NEXTHEADER
+    // For older libcurl, also capture headers via header callback (for fallback path)
+    curl_easy_setopt(session, CURLOPT_HEADERFUNCTION, NP_CURL_Header::CollectHeaderBytes );
+    curl_easy_setopt(session, CURLOPT_HEADERDATA, &dhdr);
+#endif
+
     if(level > 0) std::cout << "]NP_CURL::prepare_download\n" ;
 }
 
@@ -305,28 +338,69 @@ inline void NP_CURL::prepare_download()
 inline void NP_CURL::perform()
 {
     if(level > 0) std::cout << "[NP_CURL::perform\n" ;
-    curl_code = curl_easy_perform(session);
-    if (curl_code != CURLE_OK)
-    {
-        fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_code));
-        std::cerr << desc() << "\n" ;
-        rc = 1 ;
+
+    int retries_remaining = retry_max ;
+    bool retryable = false ;
+
+    do {
+        // Reset state for retry
+        http_code = 0;
+        dhdr.clear();  // Clear response headers from any previous attempt
+
+#if !NP_CURL_HAVE_NEXTHEADER
+        // Re-setup header capture for fallback path (clear resets it)
+        curl_easy_setopt(session, CURLOPT_HEADERFUNCTION, NP_CURL_Header::CollectHeaderBytes );
+        curl_easy_setopt(session, CURLOPT_HEADERDATA, &dhdr);
+#endif
+
+        curl_code = curl_easy_perform(session);
+
+        if (curl_code != CURLE_OK)
+        {
+            fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(curl_code));
+            std::cerr << desc() << "\n" ;
+            rc = 1 ;
+            // Network-level failure, not retryable via HTTP code
+            break;
+        }
+
+        if(mime)
+        {
+            curl_mime_free(mime);
+            mime = nullptr ;
+        }
+
+        curl_easy_getinfo(session, CURLINFO_RESPONSE_CODE, &http_code);
+        if(level > 0) std::cout << "-NP_CURL::perform http_code[" << http_code << "]\n" ;
+
+        // Check for retryable status
+        retryable = (http_code == 429 || http_code == 503);
+        if(retryable && retries_remaining > 0)
+        {
+            curl_off_t retry_after = 0;
+            curl_easy_getinfo(session, CURLINFO_RETRY_AFTER, &retry_after);
+            long wait_secs = (retry_after > 0) ? (long)retry_after : retry_wait;
+
+            if(level > 0) std::cout << "-NP_CURL::perform retryable, wait " << wait_secs << "s, retries " << retries_remaining << "\n" ;
+
+            // Sleep before retry (note: sleep takes unsigned int)
+            sleep((unsigned int)wait_secs);
+            retries_remaining--;
+            retryable = true;  // Signal we should loop
+            continue;  // Go around again
+        }
+
+        // Either success or non-retryable error
+        retryable = false;
     }
+    while(retryable && retries_remaining > 0);
 
-    if(mime)
-    {
-        curl_mime_free(mime);
-        mime = nullptr ;
-    }
-
-
-    curl_easy_getinfo(session, CURLINFO_RESPONSE_CODE, &http_code);
-    if(level > 0) std::cout << "-NP_CURL::perform http_code[" << http_code << "]\n" ;
-
-    if( http_code >= 400 ) std::cout
-        << "-NP_CURL::perform\n"
+    if( http_code >= 400 && !retryable ) std::cout
+        << "-NP_CURL::perform error\n"
         ;
 
+#if NP_CURL_HAVE_NEXTHEADER
+    // libcurl >= 8.12.1: use the simple curl_easy_nextheader API
     struct curl_header* h;
     struct curl_header* p = nullptr ;
     do
@@ -336,6 +410,10 @@ inline void NP_CURL::perform()
         p = h;
     }
     while(h);
+#else
+    // libcurl 7.76.1 - 8.11.x fallback: headers were collected via CURLOPT_HEADERFUNCTION in prepare_download()
+    dhdr.parse_response_headers();
+#endif
 
 #ifdef WITHOUT_MAGIC
     dhdr.collect_json_content(download->buffer, download->size );
@@ -407,6 +485,7 @@ inline std::string NP_CURL::desc() const
     ss
        << "[NP_CURL::desc\n"
        << " url [" << ( url ? url : "-" ) << "]\n"
+       << " libcurl [" << LIBCURL_VERSION << "]\n"
 #ifdef WITHOUT_MAGIC
        << " WITHOUT_MAGIC.download " << ( download ? download->desc() : "-" ) << "\n"
 #else

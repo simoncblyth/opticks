@@ -1653,6 +1653,14 @@ inline void NP::SaveBufferToFile(const std::vector<char>& buf, const char* path_
 }
 
 
+/**
+NP::prepareForStreamIn
+-----------------------
+
+This is used from NP_CURL::prepare_download
+
+**/
+
 
 inline void NP::prepareForStreamIn()
 {

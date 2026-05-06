@@ -1373,7 +1373,8 @@ opticks-config(){          echo ${OPTICKS_CONFIG:-Debug}  ; }
 
 
 opticks-config-notes(){ cat << EON
-How to build Opticks packages without CUDA and with newish libcurl in fresh tab::
+
+How to build Opticks packages without CUDA in fresh tab::
 
      lo_client              ## env setup
      env | grep OPTICKS     ## check OPTICKS_CONFIG is Client and OPTICKS_PREFIX contains Client
@@ -1381,6 +1382,11 @@ How to build Opticks packages without CUDA and with newish libcurl in fresh tab:
 
      opticks-full     ## as externals like bcm,glm,imgui and the setup generation are within OPTICKS_PREFIX have to opticks-full
      opticks-t        ## expect 0/~149 FAILs
+
+Formerly lo_client configured use of a newer libcurl 8.12.1,
+following NP_CURL.h additions older libcurl 7.76.1 commonly
+provided by system distributions is supported.
+
 
 Return to default build with CUDA, in fresh tab::
 
@@ -1863,6 +1869,9 @@ given and they are changed to the build time versions.
 Mandatory input envvars in build environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+OPTICKS_CONFIG
+   high level control of the type of build, eg: Debug/Release/Client
+
 OPTICKS_PREFIX
    determines where Opticks is installed, eg /usr/local/opticks
 
@@ -1879,6 +1888,7 @@ Note that reinstalling a different version of these externals
 into the same directory eg /usr/local/cuda or /usr/local/optix
 will break the installation.  To avoid this it is
 recommended to use input prefixes that incorporate the version number.
+
 
 
 Which envvars can be changed post setup ?
@@ -2092,7 +2102,7 @@ opticks-setup-check-mandatory-buildenv()
     local msg="=== $FUNCNAME MISSING mandatory envvar in buildenv :"
 
     if [ -z "$OPTICKS_CONFIG" ]; then
-        echo $msg OPTICKS_CONFIG - expecting one of - Debug/Release/Client - this is higher level control than the build type 
+        echo $msg OPTICKS_CONFIG - expecting one of - Debug/Release/Client - this is higher level control than the build type
         return 1
     fi
     if [ -z "$OPTICKS_PREFIX" ]; then

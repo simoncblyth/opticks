@@ -19,8 +19,10 @@ Run this test, not necessarily on GPU node::
     ~/o/sysrap/tests/SClientSimulator_test.sh
 
 
-NEXT: Add non-standalone SClientSimulatorTest.cc
-that can be used from Client build
+See also the integrated CMake built test::
+
+   ~/opticks/sysrap/tests/SClientSimulatorTest.sh
+
 
 EOU
 }
@@ -54,7 +56,8 @@ fi
 
 if [ "${arg/chk}" != "$arg" ]; then
 
-    checkfor="8.12.1"
+    #checkfor="8.12.1"
+    checkfor="7.76.1"
 
     if [ -n "$VERBOSE" ]; then
         which curl-config

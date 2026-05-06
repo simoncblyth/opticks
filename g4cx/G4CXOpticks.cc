@@ -389,23 +389,35 @@ The client simulator provides the same API, just it
 does not do the simulation itself it defers that
 to the server over the network.
 
-In principal a build with both CUDA and CURL
-might need to choose the type of simulator
-via SEventConfig::ModeClient(). But for now keep it simple.
+An Opticks build compiled both WITH_CUDA and WITH_CURL
+picks the type of simulator to create depending on SEventConfig::ModeClient()
+which can be controlled by envvar::
+
+    undef OPTICKS_MODE_CLIENT    # default CUDA based full Opticks build
+    export OPTICKS_MODE_CLIENT=1 # non-default CURL/libcurl based partial Opticks build
+
+Opticks compiled NOT:WITH_CUDA should be possible on non-CUDA machines without GPU.
 
 **/
 
 SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
 {
     SSimulator* cx = nullptr ;
-
-#if defined(WITH_CUDA)
+#if defined(WITH_CUDA) && defined(WITH_CURL)
+    int64_t mode_client = SEventConfig::ModeClient();
+    LOG(info) << "Both : WITH_CUDA and WITH_CURL are defined - decide Simulator type from OPTICKS_MODE_CLIENT " << mode_client ;
+    switch(mode_client)
+    {
+        case 0: cx = CSGOptiX::Create(fd)                      ; break ;
+        case 1: cx = SClientSimulator::Create(fd->getTree())   ; break ;
+    }
+#elif defined(WITH_CUDA) && !defined(WITH_CURL)
     cx = CSGOptiX::Create(fd);
-#elif defined(WITH_CURL)
-    const stree* tree = fd->getTree();
-    cx = SClientSimulator::Create(tree);
+#elif !defined(WITH_CUDA) && defined(WITH_CURL)
+    cx = SClientSimulator::Create(fd->getTree());
+#elif !defined(WITH_CUDA) && !defined(WITH_CURL)
+    LOG(fatal) << "Both : WITH_CUDA and WITH_CURL ARE NOT defined - CANNOT CreateSimulator" ;
 #endif
-
     assert(cx);
     return cx ;
 }

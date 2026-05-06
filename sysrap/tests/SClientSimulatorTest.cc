@@ -19,14 +19,18 @@ int main()
 #endif
 
     SClientSimulator* client = SClientSimulator::Create("$CFBaseFromGEOM/CSGFoundry/SSim"); ;
-    if(!client) 
+    if(!client)
     {
         std::cerr << "SClientSimulatorTest - FAILED TO CREATE CLIENT \n";
         return 0 ;
     }
     std::cout << " client.desc:[" << client->desc() << "]\n" ;
 
-    for(int i=0 ; i < 10 ; i++) client->simulate(i, false );
+    for(int i=0 ; i < 10 ; i++)
+    {
+        double dt = client->simulate(i, false );
+        if(dt < 0.) return 1 ;
+    }
 
     return 0 ;
 }

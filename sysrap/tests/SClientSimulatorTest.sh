@@ -3,19 +3,21 @@ usage(){ cat << EOU
 SClientSimulatorTest.sh
 =========================
 
-See also the standalone version of this SClientSimulator_test.sh
-
 Build and start the endpoint "server" on GPU node::
 
    lo   ## full opticks env (NOT lo_client)
-   lco  ## needs miniconda env for fastapi
+   lco  ## needs miniconda python virtual env with "fastapi"
    ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
 
 Run this test, not necessarily on GPU node::
 
-    lo_client  ## NB "Client" config is required for the libcurl version needed by NP_CURL.h
+    lo_client  ## "Client" config
     oid        ## check are within "Client" config
     ~/o/sysrap/tests/SClientSimulatorTest.sh
+
+See also the standalone version of this::
+
+   ~/opticks/sysrap/tests/SClientSimulator_test.sh
 
 
 EOU

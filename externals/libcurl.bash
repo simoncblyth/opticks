@@ -1,8 +1,15 @@
 libcurl-env(){      echo -n ;  }
 libcurl-vi(){       vi $BASH_SOURCE ; }
+libcurl-openssl-mode(){  echo system ; } # system or custom
 libcurl-usage(){ cat << EOU
 libcurl
 =======
+
+NB NP_CURL.h now has additions allowing it to build against libcurl 7.76.1,
+an older version commonly available in recent system distributions such
+as "AlmaLinux release 9.6 (Sage Margay)".
+To a large extent this removes the need for custom openssl and libcurl builds.
+
 
 libcurl requires openssl
 
@@ -10,7 +17,16 @@ This script assumes sourcing by the libcurl- precursor defined by
 sourcing externals/externals.bash which means externals- bash
 functions such as externals-base and externals-curl are available
 
-Usage, from a clean environment::
+
+Usage when libcurl-openssl-mode is system. From clean env::
+
+    source ~/opticks/externals/externals.bash
+    libcurl-
+    libcurl-wipe  # when changing modes wipe first
+    libcurl-info
+    libcurl--
+
+Usage when libcurl-openssl-mode is custom. From clean env::
 
     source ~/opticks/externals/externals.bash
     openssl-
@@ -20,6 +36,7 @@ Usage, from a clean environment::
     libcurl-
     libcurl-info
     libcurl--
+
 
 During development update the bash functions with the precursor::
 
@@ -57,9 +74,13 @@ Checking usage::
 EOU
 }
 
-libcurl-deps(){
-   : check that all deps other than libz and libc are controlled
-   source $(externals-base)/openssl/openssl-3.2.0/bashrc
+libcurl-use(){
+   : env path setup
+
+   local mode=$(libcurl-openssl-mode)
+   if [ "$mode" == "custom" ]; then
+      source $(externals-base)/openssl/openssl-3.2.0/bashrc
+   fi
    source $(externals-base)/libcurl/curl-8.12.1/bashrc
    env | grep JUNO
    ldd $JUNO_EXTLIB_libcurl_HOME/lib64/libcurl.so
@@ -68,16 +89,17 @@ libcurl-deps(){
 
 libcurl-info(){ cat << EOI
 
-   libcurl-name    : $(libcurl-name)    # NB no lib
-   libcurl-reldir  : $(libcurl-reldir)
-   externals-base  : $(externals-base)
-   libcurl-dir     : $(libcurl-dir)
-   libcurl-bdir    : $(libcurl-bdir)
-   libcurl-idir    : $(libcurl-idir)
-   libcurl-prefix  : $(libcurl-prefix)
-   libcurl-url     : $(libcurl-url)
-   libcurl-srcball : $(libcurl-srcball)
-   libcurl-binball : $(libcurl-binball)
+   libcurl-openssl-mode  : $(libcurl-openssl-mode)
+   libcurl-name          : $(libcurl-name)    # NB no lib
+   libcurl-reldir        : $(libcurl-reldir)
+   externals-base        : $(externals-base)
+   libcurl-dir           : $(libcurl-dir)
+   libcurl-bdir          : $(libcurl-bdir)
+   libcurl-idir          : $(libcurl-idir)
+   libcurl-prefix        : $(libcurl-prefix)
+   libcurl-url           : $(libcurl-url)
+   libcurl-srcball       : $(libcurl-srcball)
+   libcurl-binball       : $(libcurl-binball)
 
 EOI
 }
@@ -116,8 +138,61 @@ libcurl-get(){
 }
 
 
-
 libcurl-build()
+{
+   case $(libcurl-openssl-mode) in
+      system) libcurl-build-system-openssl ;;
+      custom) libcurl-build-custom-openssl ;;
+   esac
+}
+
+libcurl-build-system-openssl()
+{
+   : unused features are disabled to reduce dependencies
+   : linking against /usr/lib64/libssl.so.3 /usr/lib64/libcrypto.so.3
+   : creates a platform dependency
+
+   which openssl
+   openssl version
+   openssl version -a
+
+   local iwd=$PWD
+   local sdir=$(libcurl-dir)
+   local bdir=$(libcurl-bdir)
+   mkdir -p $bdir
+
+   cd $bdir
+   cmake $sdir \
+    -DCMAKE_INSTALL_PREFIX=$(libcurl-prefix) \
+    -DOPENSSL_ROOT_DIR=/usr \
+    -DCMAKE_PREFIX_PATH=/usr \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCURL_USE_LIBPSL=OFF \
+    -DCURL_ZSTD=OFF \
+    -DCURL_BROTLI=OFF \
+    -DUSE_LIBIDN2=OFF \
+    -DCURL_DISABLE_LDAP=ON \
+    -DCURL_DISABLE_LDAPS=ON \
+    -DCURL_USE_OPENSSL=ON \
+    -DBUILD_CURL_EXE=ON \
+    -DBUILD_TESTING=OFF \
+    -DCMAKE_SKIP_INSTALL_RPATH=ON \
+    -DCMAKE_SKIP_RPATH=ON
+
+   [ $? -ne 0 ] && echo $BASH_SOURCE $FUNCNAME - ERROR FROM cmake && return 1
+
+
+   make -j$(nproc)
+   [ $? -ne 0 ] && echo $BASH_SOURCE $FUNCNAME - ERROR FROM make && return 1
+
+   make install
+   [ $? -ne 0 ] && echo $BASH_SOURCE $FUNCNAME - ERROR FROM make install && return 1
+
+   return 0
+}
+
+
+libcurl-build-custom-openssl()
 {
    : unused features are disabled to reduce dependencies
 
@@ -158,6 +233,7 @@ libcurl-build()
 }
 
 
+
 libcurl-dist()
 {
     local prefix=$(libcurl-prefix)
@@ -179,6 +255,12 @@ libcurl-dist-tvf()
 {
     local binball=$(libcurl-binball)
     tar tvf $binball
+}
+
+libcurl-dist-wipe()
+{
+    local binball=$(libcurl-binball)
+    rm -f $binball
 }
 
 
@@ -257,6 +339,7 @@ libcurl-wipe()
 {
    libcurl-wipe-build
    libcurl-wipe-prefix
+   libcurl-dist-wipe
 }
 
 libcurl-wipe-build()
