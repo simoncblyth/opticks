@@ -1065,7 +1065,14 @@ void SEvt::addInputGenstep()
     LOG(LEVEL);
 
     NP* igs = createInputGenstep_configured();
-    addGenstep(igs);
+    if(igs == nullptr)
+    {
+        LOG(LEVEL) << "skip addGenstep as igs nullptr" ;
+    }
+    else
+    {
+        addGenstep(igs);
+    }
 }
 
 void SEvt::assertZeroGenstep()
@@ -2331,11 +2338,9 @@ sgs SEvt::addGenstep(const NP* a)
 {
     sgs s = {} ;
 
-    if( a == nullptr )
-    {
-        LOG(error) << " a null : low level simtrace tests like CSGSimtraceTest.sh can do this  " ;
-        return s ;
-    }
+    LOG_IF(fatal, a == nullptr) << " received nullptr genstep " ;
+    NP_FATAL_ASSERT(a);
+
 
     assert( addGenstep_array == 0 );
     addGenstep_array++ ;

@@ -36,6 +36,19 @@ other projects together with NP.hh
 #include <unistd.h>
 
 
+#define NP_FATAL_ASSERT(cond) \
+    do { \
+        if (!(cond)) { \
+            std::cerr << "NP_FATAL_ASSERT '" #cond "' failed at " \
+                      << __FILE__ << ":" << __LINE__ << std::endl; \
+            std::abort(); \
+        } \
+    } while (0)
+
+
+
+
+
 /**
 desc : type codes and sizes used by descr_
 ---------------------------------------------
