@@ -31,7 +31,7 @@ G4CXOpticks.cc
 #endif
 
 #ifdef WITH_CURL
-#include "SClientSimulator.h"
+#include "SOpticksClientSimulator.h"
 #endif
 
 #include "G4CXOpticks.hh"
@@ -409,12 +409,12 @@ SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
     switch(mode_client)
     {
         case 0: cx = CSGOptiX::Create(fd)                      ; break ;
-        case 1: cx = SClientSimulator::Create(fd->getTree())   ; break ;
+        case 1: cx = SOpticksClientSimulator::Create(fd->getTree())   ; break ;
     }
 #elif defined(WITH_CUDA) && !defined(WITH_CURL)
     cx = CSGOptiX::Create(fd);
 #elif !defined(WITH_CUDA) && defined(WITH_CURL)
-    cx = SClientSimulator::Create(fd->getTree());
+    cx = SOpticksClientSimulator::Create(fd->getTree());
 #elif !defined(WITH_CUDA) && !defined(WITH_CURL)
     LOG(fatal) << "Both : WITH_CUDA and WITH_CURL ARE NOT defined - CANNOT CreateSimulator" ;
 #endif

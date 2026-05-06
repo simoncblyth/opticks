@@ -1,7 +1,7 @@
 #!/bin/bash
 usage(){ cat << EOU
-SClientSimulator_test.sh
-=========================
+SOpticksClientSimulator_test.sh
+=================================
 
 HMM: cannot here depend on Geant4 - so simply load gensteps into SEvt
 and then access them and use them with NP_CURL.h
@@ -16,12 +16,12 @@ Build and start the endpoint "server" on GPU node::
 Run this test, not necessarily on GPU node::
 
     lo  ## OR lo_client
-    ~/o/sysrap/tests/SClientSimulator_test.sh
+    ~/o/sysrap/tests/SOpticksClientSimulator_test.sh
 
 
 See also the integrated CMake built test::
 
-   ~/opticks/sysrap/tests/SClientSimulatorTest.sh
+   ~/opticks/sysrap/tests/SOpticksClientSimulatorTest.sh
 
 
 EOU
@@ -29,7 +29,7 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=SClientSimulator_test
+name=SOpticksClientSimulator_test
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
@@ -81,7 +81,7 @@ fi
 
 if [ "${arg/inc}" != "${arg}" ]; then
     echo $BASH_SOURCE - inc - dump headers with curl.h in name actually used by compiler
-    gcc -std=c++17 -I.. -DWITH_SEVT_MOCK $(curl-config --cflags) -E -H SClientSimulator_test.cc 2>&1 | grep curl.h
+    gcc -std=c++17 -I.. -DWITH_SEVT_MOCK $(curl-config --cflags) -E -H $name.cc 2>&1 | grep curl.h
     # -E : just preprocessing
     # -H : print header paths
 fi
@@ -111,9 +111,6 @@ if [[ "$arg" =~ dbg ]]; then
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE dbg error && exit 3
 fi
-
-
-
 
 
 exit 0

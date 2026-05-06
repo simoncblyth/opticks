@@ -1,15 +1,15 @@
 /**
-SClientSimulator_test.cc
-========================
+SOpticksClientSimulator_test.cc
+=================================
 
 This is the standalone test, which uses SEvtMock.
-See also the CMake built SClientSimulatorTest.cc which
+See also the CMake built SOpticksClientSimulatorTest.cc which
 should be kept very similar.
 
 **/
 
 
-#include "SClientSimulator.h"
+#include "SOpticksClientSimulator.h"
 
 int main()
 {
@@ -20,7 +20,7 @@ int main()
     SEvt::Create(0);
 #endif
 
-    SClientSimulator* client = SClientSimulator::Create("$CFBaseFromGEOM/CSGFoundry/SSim"); ;
+    SOpticksClientSimulator* client = SOpticksClientSimulator::Create("$CFBaseFromGEOM/CSGFoundry/SSim"); ;
     if(!client) return 1 ;
     std::cout << " client.desc:[" << client->desc() << "]\n" ;
 

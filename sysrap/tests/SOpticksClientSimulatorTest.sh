@@ -1,7 +1,7 @@
 #!/bin/bash
 usage(){ cat << EOU
-SClientSimulatorTest.sh
-=========================
+SOpticksClientSimulatorTest.sh
+================================
 
 Build and start the endpoint "server" on GPU node::
 
@@ -13,11 +13,11 @@ Run this test, not necessarily on GPU node::
 
     lo_client  ## "Client" config
     oid        ## check are within "Client" config
-    ~/o/sysrap/tests/SClientSimulatorTest.sh
+    ~/o/sysrap/tests/SOpticksClientSimulatorTest.sh
 
 See also the standalone version of this::
 
-   ~/opticks/sysrap/tests/SClientSimulator_test.sh
+   ~/opticks/sysrap/tests/SOpticksClientSimulator_test.sh
 
 
 EOU
@@ -25,7 +25,7 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-name=SClientSimulatorTest
+name=SOpticksClientSimulatorTest
 bin=$name
 
 vv="BASH_SOURCE PWD name tmp TMP FOLD bin"

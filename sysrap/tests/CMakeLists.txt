@@ -238,7 +238,7 @@ endif()
 
 
 if(CURL_FOUND)
-   list(APPEND CURL_TEST_SOURCES SClientSimulatorTest.cc)
+   list(APPEND CURL_TEST_SOURCES SOpticksClientSimulatorTest.cc)
 endif()
 
 

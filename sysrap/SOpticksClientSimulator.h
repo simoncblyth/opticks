@@ -1,9 +1,9 @@
 #pragma once
 /**
-SClientSimulator.h
-===================
+SOpticksClientSimulator.h
+==========================
 
-SClientSimulator.h can only be used from inside WITH_CURL guards,
+SOpticksClientSimulator.h can only be used from inside WITH_CURL guards,
 which ensures libcurl of at least 7.76.1 is available as required by NP_CURL.h
 
 **/
@@ -22,14 +22,14 @@ which ensures libcurl of at least 7.76.1 is available as required by NP_CURL.h
 #include "NP.hh"
 #include "NP_CURL.h"
 
-struct SClientSimulator : public SSimulator
+struct SOpticksClientSimulator : public SSimulator
 {
-    static constexpr const char* NAME = "SClientSimulator" ;
-    virtual ~SClientSimulator() = default ;
+    static constexpr const char* NAME = "SOpticksClientSimulator" ;
+    virtual ~SOpticksClientSimulator() = default ;
 
-    static SClientSimulator* Create(const char* path="$CFBaseFromGEOM/CSGFoundry/SSim");
-    static SClientSimulator* Create(const stree* tree);
-    SClientSimulator(const stree* tr);
+    static SOpticksClientSimulator* Create(const char* path="$CFBaseFromGEOM/CSGFoundry/SSim");
+    static SOpticksClientSimulator* Create(const stree* tree);
+    SOpticksClientSimulator(const stree* tr);
 
     const char* desc() const ;
 
@@ -62,34 +62,34 @@ struct SClientSimulator : public SSimulator
 
 
 
-inline SClientSimulator* SClientSimulator::Create(const char* path) // static
+inline SOpticksClientSimulator* SOpticksClientSimulator::Create(const char* path) // static
 {
     const char* ss = spath::Resolve(path) ;
     if(sstr::StartsWith(ss,"CFBaseFromGEOM"))
     {
-         std::cerr << "SClientSimulator::Create - FAILED TO RESOLVE CFBaseFromGEOM \n";
+         std::cerr << "SOpticksClientSimulator::Create - FAILED TO RESOLVE CFBaseFromGEOM \n";
          return nullptr ;
     }
 
     stree* tree = stree::Load(ss);
     if(!tree)
     {
-        std::cerr << "SClientSimulator::Create - FAILED TO LOAD TREE FROM " << ( ss ? ss : "-" ) << "\n" ;
+        std::cerr << "SOpticksClientSimulator::Create - FAILED TO LOAD TREE FROM " << ( ss ? ss : "-" ) << "\n" ;
         return nullptr ;
     }
     return Create(tree);
 }
 
-inline SClientSimulator* SClientSimulator::Create(const stree* tree) // static
+inline SOpticksClientSimulator* SOpticksClientSimulator::Create(const stree* tree) // static
 {
-    SClientSimulator* client = new SClientSimulator(tree); ;
+    SOpticksClientSimulator* client = new SOpticksClientSimulator(tree); ;
     return client ;
 }
 
 
 
 
-inline SClientSimulator::SClientSimulator(const stree* _tree)
+inline SOpticksClientSimulator::SOpticksClientSimulator(const stree* _tree)
     :
     tree(_tree),
     tree_digest(tree ? tree->get_tree_digest() : nullptr),
@@ -106,26 +106,26 @@ inline SClientSimulator::SClientSimulator(const stree* _tree)
 
 
 // HMM: these are not relevant for Client
-inline double SClientSimulator::render_launch(){ return 0. ; }
-inline double SClientSimulator::simtrace_launch(){ return 0. ; }
-inline double SClientSimulator::simulate_launch(){ return 0. ; }
-inline double SClientSimulator::launch(){ return 0. ; }
+inline double SOpticksClientSimulator::render_launch(){ return 0. ; }
+inline double SOpticksClientSimulator::simtrace_launch(){ return 0. ; }
+inline double SOpticksClientSimulator::simulate_launch(){ return 0. ; }
+inline double SOpticksClientSimulator::launch(){ return 0. ; }
 
-inline const char* SClientSimulator::desc() const { return NAME ; }
+inline const char* SOpticksClientSimulator::desc() const { return NAME ; }
 
-inline double SClientSimulator::simtrace(int)
+inline double SOpticksClientSimulator::simtrace(int)
 {
     return 0 ;
 }
-inline double SClientSimulator::render(const char*)
+inline double SOpticksClientSimulator::render(const char*)
 {
     return 0 ;
 }
 
 
 /**
-SClientSimulator::simulate
----------------------------
+SOpticksClientSimulator::simulate
+-----------------------------------
 
 In normal running u4 collects into SEvt::gensteps vector and at endOfEvent QSim::simulate
 pulls genstep array from the gensteps vector::
@@ -146,14 +146,14 @@ Methods on the server at the other end of the NP_CURL::TransformRemote call are:
 **/
 
 
-inline double SClientSimulator::simulate(int eventID, bool reset )
+inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
 {
     sev->beginOfEvent(eventID);
     NP* gs = sev->makeGenstepArrayFromVector();
     if(gs == nullptr)
     {
         std::cerr
-            << "SClientSimulator::simulate"
+            << "SOpticksClientSimulator::simulate"
             << " eventID " << eventID
             << " NO GENSTEPS - NOTHING TO DO "
             << "\n"
@@ -173,7 +173,7 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
 
     if(hc == nullptr)
     {
-        std::cerr << "SClientSimulator::simulate  ERROR NP_CURL::TransformRemote gave hc (NP*)nullptr - IS THE SERVER RUNNING ?\n" ;
+        std::cerr << "SOpticksClientSimulator::simulate  ERROR NP_CURL::TransformRemote gave hc (NP*)nullptr - IS THE SERVER RUNNING ?\n" ;
         return -1. ;
     }
 
@@ -183,7 +183,7 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
 
 
     std::cout
-          << "SClientSimulator::simulate "
+          << "SOpticksClientSimulator::simulate "
           << " eventID " << eventID
           << " reset " << reset
           << " hc " << ( hc ? hc->sstr() : "-" )
@@ -200,7 +200,7 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
     bool match_digest = 0 == strcmp( server_digest.c_str(), client_digest.c_str() );
 
     std::cout
-          << "SClientSimulator::simulate "
+          << "SOpticksClientSimulator::simulate "
           << " eventID " << eventID
           << " match_settings " << ( match_settings ? "YES" : "NO " )
           << " client_settings [" << client_settings << "]"
@@ -214,7 +214,7 @@ inline double SClientSimulator::simulate(int eventID, bool reset )
 
     return dt ;
 }
-inline void SClientSimulator::reset(int eventID)
+inline void SOpticksClientSimulator::reset(int eventID)
 {
     assert(eventID > -1);
 }
