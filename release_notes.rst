@@ -8,7 +8,9 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
-| v0.6.3  |  63 | 2026/03/26 | operationally expedient release to mint new reference OJ build                                                                                                |
+| v0.6.4  | 64  | 2026/05/?? | start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown                                              |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| v0.6.3  | 63  | 2026/03/26 | operationally expedient release to mint new reference OJ build                                                                                                |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.2  | 62  | 2026/03/25 | improved conversion logging, notes on SProf.sh profiling                                                                                                      |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -95,6 +97,46 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
+
+
+v0.6.4 2026/05/?? : start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown
+--------------------------------------------------------------------------------------------------------------------------------------
+
+* 2026-05-06 326cfb3b4 - rename to SOpticksClientSimulator.h
+* 2026-05-06 f6e928aed - avoid SEvt::addGenstep nullptr warning from ordinary running without any input genstep testing configured
+* 2026-05-06 dac072493 - clarifications and annotations to NP_CURL.h support for libcurl 7.76.1, adjust NP_CURL.h usage accomodating the support for older libcurl
+* 2026-04-29 425416e4b - reposition old G4CXOpticks::InitEvt functionality into SEvt::Init_RUN_META and SSim::init requiring QSimTest rejig using added SPrd::Load to fix boot otdering
+* 2026-04-29 7550e745d - remove all WITH_OLD_FRAME blocks
+* 2026-04-29 0e671945c - rejig to lower level SEvt::setTree from SEvt::setSim - relocate CSGOptiX::InitEvt to G4CXOpticks::InitEvt as needed by Client build for SEvt::addGenstep, make OPTICKS_CONFIG mandatory envvar and pass it from buildtime to runtime env via opticks-setup-generate
+* 2026-04-28 ee3827d36 - simplify libcurl.bash openssl.bash by fixing on a directory layout that avoids the manifest, tested with ~/np/tests/np_curl_test/np_curl_cmake_test.sh etc
+* 2026-04-27 3ccdc677a - fix cmake NLJSON omissions revealed by attempts to build JUNOSW against the Client build of Opticks, including start at formalizing the openssl and libcurl dependency
+* 2026-04-24 3d1e92ec9 - add geometry consistency check between client and server using TreeDigest passed in metadata
+* 2026-04-24 00bee897f - fix a few test fails from client flexibility, add free vram check to opticks-t-
+* 2026-04-24 b13e2c186 - shakedown client running continued, including auto-detection using WITH_CURL WITH_CUDA macros in G4CXOpticks and server client settings consistency check via metadata
+* 2026-04-24 8500212f4 - use WITH_CUDA WITH_CURL macros to determine the type of simulator to create with G4CXOpticks
+* 2026-04-23 0f6f8f95d - start iteration on standalone SClientSimulator_test.sh and integrated SClientSimulatorTest.sh testing the Client OPTICKS_CONFIG build
+* 2026-04-23 e0ec1125a - shakedown bash/CMake machinery for OPTICKS_CONFIG:Client build under a separate OPTICKS_PREFIX - NOT:WITH_CUDA but WITH_CURL meaning a libcurl version sufficient for NP_CURL.h
+* 2026-04-23 883486245 - improve libcurl too old error message from NP_CURL.h
+* 2026-04-23 debe82ba4 - fix CSGOptiX nanobind python binding build order issue by being explicit with dependencies
+* 2026-04-22 b9ccc936a - review Opticks server, fix issue revealed by curl cli use of the server without metadata
+
+* 2026-04-22 195de9c89 - add NP::MakePCopyStripZeroPadding and use that from U4ScintThree.h to avoid padding zeros yielding unexpected wavelengths, switch off WITH_LERP as does not improve chi2 and more complicated, improve matplotlib presentation of the 9 layer icdf wavelength generation chi2 validation, which have reached bulletproof level
+* 2026-04-20 f29d00fe8 - iterate on the wavelength chi2, trying LHS/MID/RHS zones with margin and lerp-ed overlap, plus BinCentered shift all pushing chi2 down - still get wavelengths out-of-expected range ... may be the old placeholder arbitrary edge zeros issue again
+* 2026-04-17 ba2f6467b - add wavelength_hd20 generation to QScintThree.h using the 9 layer texture atlas approach, compare wavelength histograms to U4ScintThree
+* 2026-04-16 45cf98d42 - add QScintThree and QScintThree_test a starting point for three species scintillator model
+* 2026-04-16 13912eb1c - replace branchy qscint::wavelength_hd10,hd20 with ternary operator equivalent
+* 2026-04-16 7b4c9eb30 - revive QScintTest, QScint method const correct
+* 2026-04-15 04d015185 - add U4ScintThree.h to start investigating how to approach three species LS model
+* 2026-04-14 73319a904 - add QTexLayered.h that creates a layered 2D texture and QTexLayeredLookup and QTexLayeredLookupTest which roundtrip matches the input array with full texture lookups of all layers
+* 2026-04-14 a10b7f099 - revive and simplify QTexLookupTest QTexLookup QTex, regain QTexLookupTest match between origin and lookup
+
+* 2026-04-13 d03bde643 - metrics handling not provided by gitlab-ci free tier, so try junit - currently just from sseq_index_test.py
+* 2026-04-10 92b4551d1 - add metrics.txt writing to sseq_index_test.py in format needed by gitlab-ci
+
+* 2026-04-09 5276bb26d - fix inadvertant empty SEvt directory creation as described in notes/issues/fix_unexpected_empty_SEvt_dir_creation.rst
+* 2026-04-07 69ba24d58 - SSim::afterPopulated renamed and generalized from former SSim::initSceneFrom with addition of frame setup needed to honour OPTICKS_INPUT_PHOTON_FRAME
+
+
 v0.6.3 2026/03/26 : operationally expedient release to mint new reference OJ build
 -----------------------------------------------------------------------------------
 
@@ -139,7 +181,7 @@ v0.6.0 2026/03/20 : migrate to sfr.h from old sframe.h, add many alternative str
 v0.5.9 2026/01/26 : now that MPMT is merged into JUNOSW, can ordinarilly set WITH_MPMT
 ----------------------------------------------------------------------------------------
 
-* 2026-01-26 09756b2e3 - switch on WITH_MPMT in s_pmt.h now that MPMT has been merged in JUNOSW 
+* 2026-01-26 09756b2e3 - switch on WITH_MPMT in s_pmt.h now that MPMT has been merged in JUNOSW
 
 v0.5.8 2026/01/17 : add WITH_CUSTOM4_OLD to get u4 to work with default Custom4 v0.1.8 prior to removing C4TrackInfo template
 ------------------------------------------------------------------------------------------------------------------------------
@@ -156,20 +198,20 @@ v0.5.7 2026/01/15 : added "lite" photon and hit, implement GPU hit merging with 
 * 01/14 rejig ELV solid selection putting STARTING control into the elv input string to give flexible control of include/exclude, useful for geometry with lots of solid
 * 01/14 add assert exclusion sn__PhiCut_PACMAN_ALLOWED and control stree__is_auto_triangulate_NAMES changing default to torus,notsupported,cutcylinder,phicut,halfspace using new CSG::TypeCodeVec
 * 01/13 try sn::HalfSpace intersection with Polycone cylinder as a simpler impl than sn::PhiCut, still getting viewpoint dependent ray trace with cxr_min.sh that is so far not reproduced with XY scan of CSG/tests/csg_intersect_prim_test.sh
-* 01/12 investigate whats needed to get CSG_PHICUT working, heavy debug needed  
+* 01/12 investigate whats needed to get CSG_PHICUT working, heavy debug needed
 * 01/09 trying to handle the partial impl of MPMT in older branches like yupd_bottompipe_adjust
 * 01/09 try polycone neck for MPMT
 * 01/09 grokking R12860_PMTSolid by annotation of simtrace plots with lines and points at calulated positions like torus cross section circle centers
-* 2026/01/08 error reporting when attempt to triangulate a non-global prim, ie non-implemented instanced triangulated prim 
+* 2026/01/08 error reporting when attempt to triangulate a non-global prim, ie non-implemented instanced triangulated prim
 * 2026/12/19 back to MPMT 600 for working with newer branches, add NPYFILE loading of transform with extent metadata to stree::get_frame
-* 12/17 checking outer reflector subtraction of two cut tubes and finding way to uncoincide the subtracted shapes to avoid phantom boundary between them 
+* 12/17 checking outer reflector subtraction of two cut tubes and finding way to uncoincide the subtracted shapes to avoid phantom boundary between them
 * 12/16 add simtrace key notes loading from the ini file, which is handy when making sense of geometry
 * 12/15 fix bug in U4Transform::GetMultiUnionItemTransform that caused erroneous enormous bbox for multiunion with rotations and translations on the item transform, fix was to convert the transform in rotation-then-translation order
-* 12/15 improve CSGPrim and SMesh coordinate range desc, plus add comparison between them in CSGPrim. WaterDistributorPartIIIUnion which is pure multiunion list node with contorted transforms is exceptionally discrepant 
-* 12/12 fix for issue of erroneous sn/CSG transforms springing into existence on Import, with sn::PrepareToSerialize which ensures all sn nodes without transforms are given identity transforms before serialize, this caused the bad Waterdistributor bbox 
+* 12/15 improve CSGPrim and SMesh coordinate range desc, plus add comparison between them in CSGPrim. WaterDistributorPartIIIUnion which is pure multiunion list node with contorted transforms is exceptionally discrepant
+* 12/12 fix for issue of erroneous sn/CSG transforms springing into existence on Import, with sn::PrepareToSerialize which ensures all sn nodes without transforms are given identity transforms before serialize, this caused the bad Waterdistributor bbox
 * 12/10 debug unexpected offset CE and sframe sfr difference, see ~/j/WaterDistributor/cxr_min_ce_is_offset.rst : global nodelist implicated
 * 12/10 update stb headers to avoid clang warnings, plus other updates to quell clang pendantry, extend WITH_CUDA to skip optix dependency things in sysrap
-* 12/10 rejig flags setup to allow revival of partial clang build 
+* 12/10 rejig flags setup to allow revival of partial clang build
 * 12/10 add stree__get_frame_global_LVID control for collecting contrib_bb and saving them to NP array, for debug of unexpected bbox
 * 12/09 revert s_pmt.h NUM_WP_ATM_MPMT back to 0 to work with older branch : yupd_bottompipe_adjust
 * 12/09 review stran.h as hitmerge sphoton localization is costing 7 seconds, about a third of kernel time, with the reference double muon : see ~/j/zhenning_double_muon/SProf_table.rs
@@ -179,7 +221,7 @@ v0.5.7 2026/01/15 : added "lite" photon and hit, implement GPU hit merging with 
 * 11/28 add nested key/select/reduce functors to sphoton and sphotonlite to allow templated GPU hit merging, change sphoton layout to squeeze in 16 bits for hitcount, add notes for debuggging no hits
 * 11/27 get om bash machinery such as oo/om-conf/om-subs/om-visit to follow opticks-build-with-cuda OPTICKS_BUILD_WITH_CUDA ON/OFF, so CUDA-optional packages sysrap/CSG/g4cx can all now build without CUDA
 * 11/27 arrange for sysrap/CSG/g4cx to optionally build without CUDA
-* 11/26 start on SClientSimulator.h which fulfils the SSimulator.h interface and aims to be able to replace CSGOptiX within G4CXOpticks 
+* 11/26 start on SClientSimulator.h which fulfils the SSimulator.h interface and aims to be able to replace CSGOptiX within G4CXOpticks
 * 11/25 add SSimulator.h replacing SCSGOptiX.h and extend protocal interface to cover all of the CSGOptiX API used by G4CXOpticks to facilitate swapping to different impl for the client
 * 11/25 change STrackInfo to not be templated, and adapt for C4TrackInfo that does the same : as the templating forces static_cast which is unsafe for general use
 * 11/24 remove WITH_QS direct QSim use from G4CXOpticks, instead always go via CSGOptiX intermediary for easier swap out with a remote network calling variant

@@ -5,16 +5,16 @@
 # This file is part of Opticks
 # (see https://bitbucket.org/simoncblyth/opticks).
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -35,8 +35,8 @@ class Dependent(object):
         return "Dependent %s " % self.name
 
 class CMakeLists(object):
-   """  
-   Reads the content of CMakeLists.txt file and extracts 
+   """
+   Reads the content of CMakeLists.txt file and extracts
    metadata such as the name and find_package names
    """
    NAME = "CMakeLists.txt"
@@ -45,20 +45,20 @@ class CMakeLists(object):
    obo_txt = "include(OpticksBuildOptions"
 
    @classmethod
-   def HasOpticksBuildOptions(cls, lines): 
+   def HasOpticksBuildOptions(cls, lines):
        """
        :param lines: of the CMakeLists.txt file
        :return obo_found: True when a line including the OpticksBuildOptions is found
-       """ 
+       """
        obo_found = False
        for line in lines:
            if line.startswith(cls.obo_txt):
-               obo_found = True 
+               obo_found = True
            pass
        return obo_found
 
    def __init__(self, lines, reldir=None, path=None, tag=None, precursor=None):
-       self.lines = lines 
+       self.lines = lines
        self.reldir = reldir
        self.path = path
        self.tag = tag
@@ -67,28 +67,28 @@ class CMakeLists(object):
        self.deps = []
 
        self.parse()
-  
+
    def parse(self):
        """
-       Parse lines from a single CMakeLists.txt, extracting: 
+       Parse lines from a single CMakeLists.txt, extracting:
 
-       name 
+       name
           eg SysRap CSG U4 CSGOptiX CSGOptiXTest
-       deps 
-          list of find_package names   
+       deps
+          list of find_package names
 
        """
        obo_found = False
        for line in self.lines:
            if line.startswith(self.obo_txt):
-               obo_found = True 
-           pass 
+               obo_found = True
+           pass
            name_match = self.name_ptn.match(line)
            find_match = self.find_ptn.match(line)
            if name_match:
                self.name = name_match.groupdict()['name']
            elif find_match:
-               findargs = find_match.groupdict()['findargs']  
+               findargs = find_match.groupdict()['findargs']
                self.deps.append(Dependent(findargs))
            else:
                pass
@@ -98,13 +98,13 @@ class CMakeLists(object):
        if not obo_found:
            log.debug("no obo %s " % self.path)
        pass
-       assert obo_found, "missing obo for %s " % self.reldir  
+       assert obo_found, "missing obo for %s " % self.reldir
 
 
    FMT = "%13s : %13s : %13s : %13s : %s "
    @classmethod
    def columns(cls):
-       return cls.FMT % ( "API_TAG", "reldir", "bash-", "Proj.name", "dep Proj.names" ) 
+       return cls.FMT % ( "API_TAG", "reldir", "bash-", "Proj.name", "dep Proj.names" )
 
    def __repr__(self):
        return self.FMT  % (  self.tag, self.reldir, self.precursor, self.name, " ".join(map(lambda _:_.name, self.deps)) )
@@ -114,26 +114,26 @@ class CMakeLists(object):
    tree = property(_get_tree)
 
    def __str__(self):
-       return "\n".join(self.lines)  
+       return "\n".join(self.lines)
 
 
 class OpticksCMakeProj(object):
     """
-    NB the order keys must correspond to the names as defined by the 
+    NB the order keys must correspond to the names as defined by the
     line in the CMakeLists.txt of form::
 
-       set(name Integration)  
+       set(name Integration)
 
     """
 
     inactive = {
-             'BoostRap':-30, 
-             'NPY':-40, 
+             'BoostRap':-30,
+             'NPY':-40,
              'YoctoGLRap':-45,
-             'OpticksCore':-50, 
-             'GGeo':-60, 
+             'OpticksCore':-50,
+             'GGeo':-60,
              'AssimpRap':-70,
-             'OpenMeshRap':-80, 
+             'OpenMeshRap':-80,
              'OpticksGeo':-90,
              'CUDARap':-100,
              'ThrustRap':-110,
@@ -153,8 +153,8 @@ class OpticksCMakeProj(object):
              }
 
     order = {
-             'OKConf':100, 
-             'SysRap':200, 
+             'OKConf':100,
+             'SysRap':200,
              'CSG':300,
              'QUDARap':400,
              'GDXML':500,
@@ -169,19 +169,19 @@ class OpticksCMakeProj(object):
         """
         :param names: list of files within a directory
         :return tag: None or the prefix of TAG_API_EXPORT.hh file eg SYSRAP CSG CSGOPTIX
-        """ 
+        """
         tail = "_API_EXPORT.hh"
         names = list(filter(lambda _:_.endswith(tail), names))
         tag = names[0].replace(tail,"") if len(names) == 1 else None
-        return tag 
+        return tag
 
     @classmethod
     def find_bash_precursor(cls, names):
-        tail = ".bash" 
+        tail = ".bash"
         names = list(filter(lambda _:_.endswith(tail), names))
         stems = list(map(lambda _:_[:-len(tail)], names))
-        stems = list(filter(lambda _:not _.endswith("dev"),stems)) 
-        stems = list(filter(lambda _:not _.endswith("x4gen"),stems)) 
+        stems = list(filter(lambda _:not _.endswith("dev"),stems))
+        stems = list(filter(lambda _:not _.endswith("x4gen"),stems))
         precursor = stems[0] if len(stems) == 1 else None
         return precursor
 
@@ -195,14 +195,14 @@ class OpticksCMakeProj(object):
         if home is None:
             home = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         pass
-        log.info("home %s " % home)    
-        pkgs = {} 
+        log.info("home %s " % home)
+        pkgs = {}
         for dirpath, dirs, names in os.walk(home):
             if CMakeLists.NAME in names:
-                log.debug("proceed %s " % dirpath ) 
+                log.debug("proceed %s " % dirpath )
                 reldir = dirpath[len(home)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
-                tag = cls.find_export_tag(names)  ## eg SYSRAP CSG U4 CSGOPTIX 
+                tag = cls.find_export_tag(names)  ## eg SYSRAP CSG U4 CSGOPTIX
                 precursor = cls.find_bash_precursor(names)
                 lines = list(map(str.strip, open(path,"r").readlines() ))
 
@@ -226,30 +226,30 @@ class OpticksCMakeProj(object):
         """
         self.pkgs
               dict of CMakeLists objects keyed on pkg names
-        self.keys 
+        self.keys
               list of active package names
-        """ 
+        """
         pkgs = self.read_pkgs(home=home)
         keys = pkgs.keys()   ## CMakeLists.txt names eg SysRap
         log.debug(repr(keys))
         for k in keys:
             o = int(self.order.get(k,-2))
             log.debug(" o %3d k %s  " % (o,k))
-        pass     
+        pass
         self.pkgs = pkgs
         self.keys = sorted(filter(lambda k:self.order.get(k,-2) > -1,keys), key=lambda k:self.order.get(k,1000))
 
     def get(self, q):
-        out = [] 
+        out = []
         for k in self.keys:
             ls = self.pkgs[k]
             out.append(getattr(ls,q))
-        pass       
-        return out 
-    subdirs = property(lambda self:self.get('reldir'))   
+        pass
+        return out
+    subdirs = property(lambda self:self.get('reldir'))
 
     def write_testfile(self, path=None):
-        fp = sys.stdout if path is None else open(path, "w") 
+        fp = sys.stdout if path is None else open(path, "w")
         print("# Generated by %s " % sys.argv[0], file=fp)
         print("#", file=fp)
         print("# Outputs to stdout the form of a toplevel CTestTestfile.cmake ", file=fp)
@@ -286,7 +286,7 @@ class OpticksCMakeProj(object):
         pass
 
     def readstdin(self):
-        lines = map(str.strip, sys.stdin.readlines() ) 
+        lines = map(str.strip, sys.stdin.readlines() )
         ls = CMakeLists(lines)
         print(repr(ls))
     pass
@@ -301,19 +301,19 @@ if __name__ == '__main__':
     parser.add_argument(     "--subdirs",  action="store_true", help="Dump just the subdirs" )
     parser.add_argument(     "--tags",  action="store_true", help="Dump just the tags" )
     parser.add_argument(     "--subproj",  action="store_true", help="Dump just the subproj" )
-    parser.add_argument(     "--testfile", action="store_true", help="Generate to stdout a CTestTestfile.cmake with all subdirs" ) 
-    parser.add_argument(     "--testfilepath", default=None, help="Write testfile to path provided or stdout by default." ) 
-    parser.add_argument(     "--level", default="info", help="logging level" ) 
+    parser.add_argument(     "--testfile", action="store_true", help="Generate to stdout a CTestTestfile.cmake with all subdirs" )
+    parser.add_argument(     "--testfilepath", default=None, help="Write testfile to path provided or stdout by default." )
+    parser.add_argument(     "--level", default="info", help="logging level" )
     args = parser.parse_args()
 
     fmt = '[%(asctime)s] p%(process)s {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s'
     logging.basicConfig(level=getattr(logging,args.level.upper()), format=fmt)
 
     ok = OpticksCMakeProj(args.home)
-    
+
     if args.testfile:
-        ok.write_testfile(args.testfilepath) 
-    else: 
+        ok.write_testfile(args.testfilepath)
+    else:
         ok(args)
     pass
 

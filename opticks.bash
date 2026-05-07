@@ -1376,7 +1376,7 @@ opticks-config-notes(){ cat << EON
 
 How to build Opticks packages without CUDA in fresh tab::
 
-     lo_client              ## env setup
+     lo_client              ## env setup : HMM THAT WILL FAIL FROM LACK OF SETUP WITH FRESH PREFIX
      env | grep OPTICKS     ## check OPTICKS_CONFIG is Client and OPTICKS_PREFIX contains Client
      o
 
@@ -2837,8 +2837,16 @@ opticks-full-prepare
 EON
 }
 
+opticks-client-full()
+{
+    : opticks/opticks.bash
+    export OPTICKS_CONFIG=Client  ## HMM: IS THIS APPROPRIATE/SUFFICIENT APPROACH ? WHAT ABOUT opticks_config.sh ?
+    opticks-full
+}
+
 opticks-full()
 {
+    : opticks/opticks.bash
     local msg="=== $FUNCNAME :"
     local rc
 
