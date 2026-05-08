@@ -14,14 +14,22 @@ Note:
 #include "squad.h"
 #include "stdio.h"
 
-__global__ void _QCerenkov_check(unsigned width, unsigned height)
+#ifdef QCERENKOV_ICDF_OLD
+
+__global__ void _QCerenkov_old_tex_check(unsigned width, unsigned height)
 {
     unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
     unsigned iy = blockIdx.y*blockDim.y + threadIdx.y;
-    printf( "//_QCerenkov_check  ix %d iy %d width %d height %d \n", ix, iy, width, height );
+    printf( "//_QCerenkov_old_tex_check  ix %d iy %d width %d height %d \n", ix, iy, width, height );
 }
 
-__global__ void _QCerenkov_lookup(cudaTextureObject_t tex, quad4* d_meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height )
+extern "C" void QCerenkov_old_tex_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height )
+{
+    printf("//QCerenkov_old_tex_check width %d height %d \n", width, height );
+    _QCerenkov_old_tex_check<<<numBlocks,threadsPerBlock>>>( width, height  );
+}
+
+__global__ void _QCerenkov_old_lookup(cudaTextureObject_t tex, quad4* d_meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height )
 {
     unsigned ix = blockIdx.x*blockDim.x + threadIdx.x;
     unsigned iy = blockIdx.y*blockDim.y + threadIdx.y;
@@ -41,16 +49,12 @@ __global__ void _QCerenkov_lookup(cudaTextureObject_t tex, quad4* d_meta, float*
     lookup[index] = v ;
 }
 
-extern "C" void QCerenkov_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t tex, quad4* meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height )
+extern "C" void QCerenkov_old_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t tex, quad4* meta, float* lookup, unsigned num_lookup, unsigned width, unsigned height )
 {
-    printf("//QCerenkov_lookup num_lookup %d width %d height %d \n", num_lookup, width, height );
-    _QCerenkov_lookup<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height  );
+    printf("//QCerenkov_old_lookup num_lookup %d width %d height %d \n", num_lookup, width, height );
+    _QCerenkov_old_lookup<<<numBlocks,threadsPerBlock>>>( tex, meta, lookup, num_lookup, width, height  );
 }
 
-extern "C" void QCerenkov_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height )
-{
-    printf("//QCerenkov_check width %d height %d \n", width, height );
-    _QCerenkov_check<<<numBlocks,threadsPerBlock>>>( width, height  );
-}
+#endif
 
 

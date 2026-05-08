@@ -5,11 +5,11 @@ TODO
 ------
 
 * TODO : photon count logging
-* TODO : saving gensteps client slide for fast replay testing against server without any initialization cost
+* TODO : saving gensteps client side for fast replay testing against server without any initialization cost
 * TODO : client vs monolithic result comparison, SEvt array saving
-* TODO : investigate "//qcerenkov::wavelength_sampled_bndtex" logging on server - rare or significant ? photon count logging
+* WIP : investigate "//qcerenkov::wavelength_sampled_bndtex" logging on server
 
-  * ~/o/notes/issues/qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running.rst 
+  * ~/o/notes/issues/qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running.rst
 
 * TODO : verbosity control on client and server
 * TODO : optional optimization loading preexisting Opticks geometry instead of doing the translation ?
@@ -35,6 +35,8 @@ TODO
 DONE
 -----
 
+* DONE : simple client vs monolithic result comparison - shows issue same with both
+* DONE : CK issue not rare, looks like every CK photon afflicted suggesting bnd or matline issue
 * DONE : acting on reset in the client
 * DONE : added OPTICKS_CONFIG high level control ~/o/notes/issues/generalizing-build-install-dirs-with-OPTICKS_CONFIG.rst
 * DONE : build and test JUNOSW against the OPTICKS_CONFIG:Client build "lo_client" (NOT:WITH_CUDA but WITH_CURL, subset of packages + partial packages)
@@ -96,6 +98,26 @@ same source tree.
    cat ~/.opticks/GEOM/ENVSET.sh # check configured installation (OPTICKS_CONFIG and junosw branch in path to envset.sh)
 
    ljrt100  # or ljrt1000
+
+
+(A) For comparison of CK issue, mono build on A
+------------------------------------------------
+
+::
+
+    lo && oo     ## full opticks, update build
+    lo && ENVSET ## config prefix to use to be this non-client build
+
+    ljbb         ## (fresh tab) OJ : ljbb update build with geom init
+
+
+(A) GPU workstation mono running using the ENVSET configured envset.sh
+------------------------------------------------------------------------
+
+Before doing this, stop the server to avoid VRAM issues::
+
+    ljrt100  # or ljrt1000
+
 
 
 

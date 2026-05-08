@@ -325,7 +325,7 @@ void SSim::set(const char* k, const NP* a)
 
 const NP* SSim::get_bnd() const {      return get(snam::BND);  }
 const NP* SSim::get_optical() const {  return get(snam::OPTICAL);  }
-const NP* SSim::get_propcom() const {  return get(snam::PROPCOM);  }
+const NP* SSim::get_propcom() const {  return get(snam::PROPCOM);  } // ? no longer used ?
 const NP* SSim::get_icdf() const {     return get(snam::ICDF);  }
 
 /**

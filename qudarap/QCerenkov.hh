@@ -1,23 +1,30 @@
 #pragma once
 
 /**
-QCerenkov : using ICDF lookup
-=================================
+QCerenkov
+==========
 
-Normally Cerenkov is simulated using rejection sampling, BUT that 
-is problematic on GPU as the rejection sampling of RINDEX is 
-very sensitive to the use of float or double. 
+MAJOR CLEANUP IN PROGRESS - OLD ICDF IMPL MOVED BEHIND QCERENKOV_ICDF_OLD
 
-Lookup sampling from ICDF is less sensitive. 
 
-Loads icdf and creates GPU texture from it ready for energy sampling. 
+Notes from old icdf based impl that is not in use
+----------------------------------------------------
 
-See also:
+Normally Cerenkov is simulated using rejection sampling, BUT that
+is problematic on GPU as the rejection sampling of RINDEX is
+very sensitive to the use of float or double.
 
-QCerenkovIntegral 
+Lookup sampling from ICDF is less sensitive.
+
+Loads icdf and creates GPU texture from it ready for energy sampling.
+
+See also
+---------
+
+QCerenkovIntegral
     time consuming integration of RINDEX s2 to form the icdf, to be done pre-cache
 QCK
-    persisting QCerenkovIntegral results 
+    persisting QCerenkovIntegral results
 ana/rindex.py
     prototyping/experimentation
 
@@ -27,45 +34,50 @@ ana/rindex.py
 #include "QUDARAP_API_EXPORT.hh"
 #include "plog/Severity.h"
 
-struct float4 ; 
-struct qcerenkov ; 
+struct float4 ;
+struct qcerenkov ;
 
-struct NP ; 
-template <typename T> struct QTex ; 
-template <typename T> struct QTexLookup ; 
-struct dim3 ; 
+struct NP ;
+
+#ifdef QCERENKOV_ICDF_OLD
+template <typename T> struct QTex ;
+template <typename T> struct QTexLookup ;
+#endif
+
+struct dim3 ;
 
 struct QUDARAP_API QCerenkov
 {
-    static const plog::Severity LEVEL ; 
-    static const QCerenkov*     INSTANCE ; 
-    static const QCerenkov*     Get(); 
-    static const char*          DEFAULT_FOLD ; 
-    static NP*                  Load(const char* fold, const char* name) ; 
-    static QTex<float4>*        MakeTex(const NP* icdf, char filterMode, bool normalizedCoords) ; 
+    static const plog::Severity LEVEL ;
+    static const QCerenkov*     INSTANCE ;
+    static const QCerenkov*     Get();
+    static NP*                  Load(const char* fold, const char* name) ;
+    static qcerenkov* MakeInstance();
 
-    static qcerenkov* MakeInstance(); 
+#ifdef QCERENKOV_ICDF_OLD
+    static QTex<float4>*        MakeTex(const NP* icdf, char filterMode, bool normalizedCoords) ;
+    QCerenkov(const char* fold);
+    void old_init();
+    NP*  old_lookup();
+    void old_tex_check();
 
-    const char*             fold ; 
-    const NP*               icdf_ ; 
-    const NP*               icdf ; 
-    char                    filterMode ; 
-    bool                    normalizedCoords ; 
-    QTex<float4>*           tex ; 
-    QTexLookup<float4>*     look ; 
-    qcerenkov*              cerenkov ; 
-    qcerenkov*              d_cerenkov ; 
+    const char*             fold ;
+    const NP*               icdf_ ;
+    const NP*               icdf ;
+    char                    filterMode ;
+    bool                    normalizedCoords ;
+    QTex<float4>*           tex ;
+    QTexLookup<float4>*     look ;
+#else
+    QCerenkov();
+#endif
 
-    QCerenkov(); 
-    QCerenkov(const char* fold); 
-    void init(); 
-    std::string desc() const ; 
+    qcerenkov*              cerenkov ;
+    qcerenkov*              d_cerenkov ;
 
+    std::string desc() const ;
     void configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height );
-
-    void check();
-    NP* lookup();
-    void dump(   float* lookup, unsigned num_lookup, unsigned edgeitems=10 ); 
+    void dump(   float* lookup, unsigned num_lookup, unsigned edgeitems=10 );
 
 };
 

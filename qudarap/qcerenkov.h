@@ -38,7 +38,7 @@ struct qcerenkov
 {
     qbase* base ;
     qbnd*  bnd ;
-    qprop<float>*  prop ;
+    qprop<float>*  prop ;  // seems this was propcom experiment that is no longer used
 
 #if defined(__CUDACC__) || defined(__CUDABE__) || defined(MOCK_CURAND) || defined(MOCK_CUDA)
     QCERENKOV_METHOD void generate( sphoton& p,  RNG& rng, const quad6& gs, unsigned long long idx, int genstep_id ) const ;
@@ -333,6 +333,9 @@ qcerenkov::wavelength_sampled_enprop
 --------------------------------------
 
 template type controls the type used for the rejection sampling, not the return type
+
+THIS ENPROP APPROACH NOT CURRENTLY USED - prop is nullptr
+
 
 
 **/

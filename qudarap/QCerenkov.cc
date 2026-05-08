@@ -32,22 +32,19 @@ const QCerenkov* QCerenkov::INSTANCE = nullptr ;
 const QCerenkov* QCerenkov::Get(){ return INSTANCE ;  }
 
 
-const char* QCerenkov::DEFAULT_FOLD = "$TMP/QCerenkovIntegralTest/test_makeICDF_SplitBin" ;
+//const char* QCerenkov::DEFAULT_FOLD = "$TMP/QCerenkovIntegralTest/test_makeICDF_SplitBin" ;
 
 NP* QCerenkov::Load(const char* fold, const char* name)  // static
 {
-    const char* path = spath::Resolve(fold);
+    const char* path = spath::Resolve(fold, name);
     NP* a = NP::Load(path);
     LOG_IF(fatal, !a) << " failed to load array from path " << path ;
     return a ;
 }
 
-/**
-QCerenkov::MakeTex
---------------------
 
-**/
 
+#ifdef QCERENKOV_ICDF_OLD
 QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode, bool normalizedCoords ) // static
 {
     LOG(info) << " icdf " << icdf << " icdf.sstr " << icdf->sstr() << " filterMode " << filterMode ;
@@ -55,6 +52,8 @@ QTex<float4>* QCerenkov::MakeTex(const NP* icdf, char filterMode, bool normalize
     LOG(info) << " tex " << tex ;
     return tex ;
 }
+#endif
+
 
 /**
 QCerenkov::MakeInstance
@@ -67,32 +66,51 @@ HMM : FOR THIS TO WORK IT NEEDS TO DO PART OF WHAT QSim::UploadComponents DOES
 qcerenkov* QCerenkov::MakeInstance() // static
 {
     const QBase* base = QBase::Get();
-    assert( base );
+    LOG_IF(fatal, base == nullptr) << "QBase must be instanciated before QCerenkov - follow QSim::UploadComponents example" ;
+    NP_FATAL_ASSERT(base);
 
     const QBnd* bnd = QBnd::Get();
-    assert( bnd );
-
-    const QProp<float>* prop = QProp<float>::Get();
-    // assert(prop);
+    LOG_IF(fatal, bnd == nullptr) << "QBnd must be instanciated before QCerenkov - follow QSim::UploadComponents example" ;
+    NP_FATAL_ASSERT(bnd);
 
     qcerenkov* ck = new qcerenkov ;
     ck->base = base->d_base ;
     ck->bnd = bnd->d_qb ;
+
+#ifdef WITH_PROPCOM
+    const QProp<float>* prop = QProp<float>::Get();
+    assert(prop);
     ck->prop = prop ? prop->d_prop : nullptr ;
+#endif
+
     return ck ;
 }
-
 
 
 /**
 QCerenkov::QCerenkov
 ----------------------
 
-Currently relies on icdf created by QCerenkovIntegralTest
+HUH: no fold form in use from QSim::UploadComponents
 
-TODO: formalize icdf creation into the pre-cache geometry conversion and icdf location into geocache
+LOOKS LIKE MADE BIG CHANGE TO THE IMPL WITHOUT CLEANING
+UP THE OLD ICDF ONE ?
+OLD APPROACH used icdf created by QCerenkovIntegralTest
+
+
+ICDF NOT USED
+    qcerenkov.h confirms this
 
 **/
+
+#ifdef QCERENKOV_ICDF_OLD
+
+extern "C" void QCerenkov_old_tex_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  );
+
+template <typename T>
+extern void QCerenkov_old_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, T* lookup, unsigned num_lookup, unsigned width, unsigned height  );
+
+
 
 QCerenkov::QCerenkov(const char* fold_ )
     :
@@ -106,41 +124,13 @@ QCerenkov::QCerenkov(const char* fold_ )
     cerenkov(MakeInstance()),
     d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1, "QCerenkov::QCerenkov/d_cerenkov.1"))
 {
-    init();
+    old_init();
 }
 
-QCerenkov::QCerenkov()
-    :
-    fold(nullptr),  // HMM: whats the point of this with no fold ?
-    icdf_(nullptr),
-    icdf(nullptr),
-    filterMode('P'),
-    normalizedCoords(true),
-    tex(nullptr),
-    look(nullptr),
-    cerenkov(MakeInstance()),
-    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1,"QCerenkov::QCerenkov/d_cerenkov.0"))
-{
-    init();
-}
-
-
-
-/**
-QCerenkov::init
-----------------
-
-TODO: move most of this into statics
-
-TODO: treat icdf just like bnd, base, prop ?
-
-**/
-
-
-void QCerenkov::init()
+void QCerenkov::old_init()
 {
     INSTANCE = this ;
-    if(fold == nullptr) return ;
+    assert(fold);
 
     icdf_ = Load(fold, "icdf.npy");
     if( icdf_ == nullptr )
@@ -172,21 +162,62 @@ void QCerenkov::init()
     LOG(info) << " look " << look ;
 }
 
-
-NP* QCerenkov::lookup()
+NP* QCerenkov::old_lookup()
 {
     return look ? look->lookup() : nullptr ;
 }
+
+void QCerenkov::old_tex_check()
+{
+    unsigned width = tex->width ;
+    unsigned height = tex->height ;
+
+    LOG(LEVEL)
+        << " width " << width
+        << " height " << height
+        ;
+
+    dim3 numBlocks ;
+    dim3 threadsPerBlock ;
+    configureLaunch( numBlocks, threadsPerBlock, width, height );
+    QCerenkov_old_tex_check(numBlocks, threadsPerBlock, width, height );
+
+    cudaDeviceSynchronize();
+}
+
+
+
+
+
+
+#else
+QCerenkov::QCerenkov()
+    :
+    cerenkov(MakeInstance()),
+    d_cerenkov(QU::UploadArray<qcerenkov>(cerenkov, 1,"QCerenkov::QCerenkov/d_cerenkov.0"))
+{
+    INSTANCE = this ;
+}
+#endif
+
+
+
+
 
 
 std::string QCerenkov::desc() const
 {
     std::stringstream ss ;
     ss << "QCerenkov"
+#ifdef QCERENKOV_ICDF_OLD
+       << " QCERENKOV_ICDF_OLD "
        << " fold " << ( fold ? fold : "-" )
        << " icdf_ " << ( icdf_ ? icdf_->sstr() : "-" )
        << " icdf " << ( icdf ? icdf->sstr() : "-" )
        << " tex " << tex
+#else
+       << " NOT:QCERENKOV_ICDF_OLD "
+#endif
        ;
 
     std::string s = ss.str();
@@ -196,10 +227,6 @@ std::string QCerenkov::desc() const
 
 
 
-extern "C" void QCerenkov_check(dim3 numBlocks, dim3 threadsPerBlock, unsigned width, unsigned height  );
-
-template <typename T>
-extern void QCerenkov_lookup(dim3 numBlocks, dim3 threadsPerBlock, cudaTextureObject_t texObj, quad4* meta, T* lookup, unsigned num_lookup, unsigned width, unsigned height  );
 
 
 void QCerenkov::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigned width, unsigned height )
@@ -229,24 +256,6 @@ void QCerenkov::configureLaunch( dim3& numBlocks, dim3& threadsPerBlock, unsigne
         << std::setw(3) << numBlocks.z << " "
         << ")"
         ;
-}
-
-void QCerenkov::check()
-{
-    unsigned width = tex->width ;
-    unsigned height = tex->height ;
-
-    LOG(LEVEL)
-        << " width " << width
-        << " height " << height
-        ;
-
-    dim3 numBlocks ;
-    dim3 threadsPerBlock ;
-    configureLaunch( numBlocks, threadsPerBlock, width, height );
-    QCerenkov_check(numBlocks, threadsPerBlock, width, height );
-
-    cudaDeviceSynchronize();
 }
 
 

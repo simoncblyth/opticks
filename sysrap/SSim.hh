@@ -98,7 +98,7 @@ public:
 
     const NP* get_bnd() const ;
     const NP* get_optical() const ;
-    const NP* get_propcom() const ;
+    const NP* get_propcom() const ;  // no-longer-used? formerly for LS rindex lookup
     const NP* get_icdf() const ;
 
     const char* getBndName(unsigned bidx) const ;

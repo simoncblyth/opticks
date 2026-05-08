@@ -3,7 +3,6 @@ usage(){ cat << EOU
 
 ~/o/qudarap/tests/QCerenkovTest.sh info
 
-CURRENTLY FAILS FROM bnd assert in QCerenkov::MakeInstance
 
 EOU
 }
@@ -18,14 +17,17 @@ script=$name.py
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
-tmpdir=$TMP/$name
-mkdir -p $tmpdir
 
+export FOLD=$TMP/$name
+mkdir -p $FOLD
 
 defarg="info_run_pdb"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE name bin script tmp TMP tmpdir defarg arg"
+source ~/.opticks/GEOM/GEOM.sh
+
+
+vv="BASH_SOURCE name bin script tmp TMP FOLD defarg arg GEOM ${GEOM}_CFBaseFromGEOM"
 
 if [ "${arg/info}" != "$arg" ]; then
    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done

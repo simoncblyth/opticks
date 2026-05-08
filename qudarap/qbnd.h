@@ -71,6 +71,11 @@ inline QBND_METHOD float4 qbnd::boundary_lookup( unsigned ix, unsigned iy )
 qbnd::boundary_lookup nm line k
 ----------------------------------
 
+This is used from qcerenkov::wavelength_sampled_bndtex to provide
+wavelengths with sampled refractive index corresponding to
+Cerenkov physics.
+
+
 nm:    float wavelength
 line:  4*boundary_index + OMAT/OSUR/ISUR/IMAT   (0/1/2/3)
 k   :  property group index 0/1
