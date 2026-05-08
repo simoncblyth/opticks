@@ -740,6 +740,7 @@ NP* QSim::simulate(const NP* gs, int eventID )
         << " tot_dt " << std::fixed << std::setw(10) << std::setprecision(6) << tot_dt
         << " server_settings " << server_settings
         << " tree_digest " << tree_digest
+        << " " << SGenstep::Brief(gs)
         ;
     reset(eventID);
 
