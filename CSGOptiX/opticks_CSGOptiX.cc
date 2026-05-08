@@ -2,6 +2,11 @@
 opticks_CSGOptiX.cc
 =====================
 
+This nanobind enabled C++ provides a shadow _CSGOptiXService struct
+that houses the underlying non-nanobind aware CSGOptiXService and
+via shadowing of methods with appropriate nanobind parameters
+enables the pure C++ service to be used from python.
+
 **/
 
 #include <nanobind/nanobind.h>

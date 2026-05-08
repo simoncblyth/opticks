@@ -2,12 +2,43 @@ qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running
 ========================================================================
 
 
-* HMM: are all Cerenkov gs doing this ?
+HMM: looking like all photons from all CK gensteps afflicted ?
+-----------------------------------------------------------------
+
 
 ::
 
-    2026-05-08 13:57:41.192 INFO  [2387819] [QSim::simulate@736]  eventID     98 gs (101, 6, 4, ) ht (5, 4, 4, ) tot_dt   0.003156 server_settings HitCompOneName:hit,PhotonCompOneName:photon tree_digest 79f17049c1f5806abe058cf4449eb712
-          INFO   127.0.0.1:49950 - "POST /simulate HTTP/1.1" 200
+         INFO   127.0.0.1:43144 - "POST /simulate HTTP/1.1" 200
+    //qcerenkov::wavelength_sampled_bndtex idx   4764 sampledRI   1.263 cosTheta   0.991 sin2Theta   0.018 wavelength 259.443 count 62 gsid 47 gs.matline 39 gs.pos (-41.887,-12.734,-14.369)
+    //qcerenkov::wavelength_sampled_bndtex idx   4766 sampledRI   1.263 cosTheta   0.991 sin2Theta   0.018 wavelength 661.573 count 72 gsid 47 gs.matline 39 gs.pos (-41.887,-12.734,-14.369)
+    //qcerenkov::wavelength_sampled_bndtex idx   6424 sampledRI   1.263 cosTheta   1.178 sin2Theta   0.000 wavelength  92.415 count 100 gsid 57 gs.matline 39 gs.pos (-41.614,-13.295,-14.651)
+    //qcerenkov::wavelength_sampled_bndtex idx   6425 sampledRI   1.263 cosTheta   1.178 sin2Theta   0.000 wavelength 144.851 count 100 gsid 57 gs.matline 39 gs.pos (-41.614,-13.295,-14.651)
+    //qcerenkov::wavelength_sampled_bndtex idx   6426 sampledRI   1.263 cosTheta   1.178 sin2Theta   0.000 wavelength  92.003 count 100 gsid 57 gs.matline 39 gs.pos (-41.614,-13.295,-14.651)
+    //qcerenkov::wavelength_sampled_bndtex idx   5741 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength  80.203 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5742 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 433.072 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5743 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength  87.375 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5744 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 199.907 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5745 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 416.170 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5746 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength  89.006 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5747 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength  83.970 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5748 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 372.819 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5749 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 128.354 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5750 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 751.319 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5751 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength  89.601 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5752 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 644.427 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5753 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 139.740 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5754 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 184.056 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5755 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength  82.406 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5756 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 180.621 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5757 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 170.206 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    //qcerenkov::wavelength_sampled_bndtex idx   5758 sampledRI   1.263 cosTheta   1.061 sin2Theta   0.000 wavelength 193.193 count 100 gsid 52 gs.matline 39 gs.pos (-41.749,-13.080,-14.498)
+    SProf::Write DISABLED, enable[export SProf__WRITE=1] disable[unset SProf__WRITE]
+    2026-05-08 15:51:04.798 INFO  [2434302] [QSim::simulate@736]  eventID     98 gs (101, 6, 4, ) ht (5, 4, 4, ) tot_dt   0.002488 server_settings HitCompOneName:hit,PhotonCompOneName:photon tree_digest 79f17049c1f5806abe058cf4449eb712 SGenstep::Brief (101, 6, 4, )
+           DsG4Scintillation_r4695 : gs     95 ph       8990 idx 0 1 2 3 4 5 6 7 8 9 ... 
+               G4Cerenkov_modified : gs      6 ph        178 idx 28 33 42 47 52 57 
+     total_ph 9168
+
+          INFO   127.0.0.1:43144 - "POST /simulate HTTP/1.1" 200
     //qcerenkov::wavelength_sampled_bndtex idx   4387 sampledRI   1.263 cosTheta   1.195 sin2Theta   0.000 wavelength 179.010 count 100 gsid 58 gs.matline 39 gs.pos (-134.874, 79.721,202.973)
     //qcerenkov::wavelength_sampled_bndtex idx   1927 sampledRI   1.263 cosTheta   1.219 sin2Theta   0.000 wavelength 204.238 count 100 gsid 36 gs.matline 39 gs.pos (-142.892, 81.467,202.901)
     //qcerenkov::wavelength_sampled_bndtex idx   1928 sampledRI   1.263 cosTheta   1.219 sin2Theta   0.000 wavelength 382.924 count 100 gsid 36 gs.matline 39 gs.pos (-142.892, 81.467,202.901)
@@ -36,7 +67,16 @@ qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running
     //qcerenkov::wavelength_sampled_bndtex idx   3772 sampledRI   1.263 cosTheta   1.093 sin2Theta   0.000 wavelength 182.238 count 100 gsid 53 gs.matline 39 gs.pos (-134.891, 79.689,202.711)
     //qcerenkov::wavelength_sampled_bndtex idx   3773 sampledRI   1.263 cosTheta   1.093 sin2Theta   0.000 wavelength 130.365 count 100 gsid 53 gs.matline 39 gs.pos (-134.891, 79.689,202.711)
     SProf::Write DISABLED, enable[export SProf__WRITE=1] disable[unset SProf__WRITE]
-    2026-05-08 13:57:41.212 INFO  [2387819] [QSim::simulate@736]  eventID     99 gs (138, 6, 4, ) ht (5, 4, 4, ) tot_dt   0.001804 server_settings HitCompOneName:hit,PhotonCompOneName:photon tree_digest 79f17049c1f5806abe058cf4449eb712
+    2026-05-08 15:51:04.819 INFO  [2434302] [QSim::simulate@736]  eventID     99 gs (138, 6, 4, ) ht (5, 4, 4, ) tot_dt   0.001787 server_settings HitCompOneName:hit,PhotonCompOneName:photon tree_digest 79f17049c1f5806abe058cf4449eb712 SGenstep::Brief (138, 6, 4, )
+           DsG4Scintillation_r4695 : gs    134 ph       8988 idx 0 1 2 3 4 5 6 7 8 9 ... 
+               G4Cerenkov_modified : gs      4 ph         27 idx 36 53 58 95 
+     total_ph 9015
+
+          INFO   127.0.0.1:43144 - "POST /simulate HTTP/1.1" 200
+
+
+
+
 
 
 

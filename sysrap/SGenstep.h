@@ -517,23 +517,49 @@ inline std::string SGenstep::Desc(const NP* gs, int edgeitems) // static
 
 inline std::string SGenstep::Brief(const NP* gs) // static
 {
-    NP::INT num_genstep = gs ? gs->shape[0] : 0 ;
+    int num_genstep = gs ? gs->shape[0] : 0 ;
     const quad6* qq = gs ? (quad6*)gs->cvalues<float>() : nullptr ;
 
-    std::map<int, size_t> occurence ;
+    std::map<int, int> gs_count ;      // number of gensteps per type
+    std::map<int, size_t> ph_count ;   // number of photons per type
+    std::map<int, std::vector<int>> idx ;    // genstep indices per type
+    std::map<int, std::vector<size_t>> idx_ph ;  // photons for each genstep index
+    size_t tot_ph = 0 ;
 
-    for(NP::INT i=0 ; i < num_genstep ; i++)
+    for(int i=0 ; i < num_genstep ; i++)
     {
         const quad6& q = qq[i];
-        size_t num = GetNumPhoton(q)  ;
         int    gen = GetGencode(q) ;
-        occurence[gen] += num ;
-        // TODO: collect into std::map to count the different types
+        size_t num = GetNumPhoton(q) ;
+        gs_count[gen] += 1 ;
+        ph_count[gen] += num ;
+        idx[gen].push_back(i) ;
+        idx_ph[gen].push_back(num) ;
+        tot_ph += num ;
     }
 
-
     std::stringstream ss ;
-    ss << "SGenstep::Brief " << ( gs ? gs->sstr() : "-" ) ;
+    ss << "SGenstep::Brief " << ( gs ? gs->sstr() : "-" ) << "\n" ;
+
+    for(const auto& kv : gs_count)
+    {
+        int gen = kv.first ;
+        ss << std::setw(30) << OpticksGenstep_::Name(gen)
+           << " : gs " << std::setw(6) << kv.second
+           << " ph "  << std::setw(10) << ph_count[gen]
+           << " idx " ;
+
+        const std::vector<int>& ii = idx[gen] ;
+        const std::vector<size_t>& pp = idx_ph[gen] ;
+        size_t n_show = std::min(ii.size(), size_t(10)) ;
+        for(size_t j=0 ; j < n_show ; j++) ss << ii[j] << "/" << pp[j] << " " ;
+        if(ii.size() > 10) ss << "... " ;
+
+        ss << "\n"
+           ;
+    }
+    ss << " total_ph " << tot_ph << "\n" ;
+
     std::string str = ss.str();
     return str ;
 }

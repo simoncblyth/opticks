@@ -49,6 +49,18 @@ Test Scripts
 Workflow for client build and test from non-GPU node via reverse tunnel
 -------------------------------------------------------------------------
 
+Convenient to keep the four long running processes in separate window:
+
+1. (L) lxlogin soks proxy for github access
+2. (A) GPU workstation opticks server
+3. (A) "ssh LT" reverse tunnel from A to L, that gives access to A from client on L
+4. (L) lxlogin session for running client jobs eg: ljrt100
+
+For development changing client and server make sure to rebuild in appropriate
+"lo" or "lo_client" environment - as they have different prefix, despite using
+same source tree.
+
+
 1. Update client Opticks on lxlogin::
 
    ssh L

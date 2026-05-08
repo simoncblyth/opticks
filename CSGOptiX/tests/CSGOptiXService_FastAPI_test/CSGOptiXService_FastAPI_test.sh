@@ -25,7 +25,38 @@ CAUTION : the server consumes significant VRAM
 -----------------------------------------------
 
 Some opticks-t tests FAIL with VRAM OOM if they are run
-while the server is running.
+while the server is running. Due to this have added check
+before running tests for this does not run tests when
+VRAM is low.
+
+
+How to rebuild the server
+---------------------------
+
+::
+
+    lo
+    lco   ## need miniconda python env with nanobind
+    cx
+    om-cleaninstall
+
+
+Caution, using lco means the server will see the miniconda libcurl
+which may be different to the one used by the client build.
+
+
+
+Check the .so of the python module
+-----------------------------------
+
+::
+
+    (ok) [lo] A[blyth@localhost CSGOptiX]$ find $OPTICKS_PREFIX/py -name "opticks_CSGOptiX*.so" -exec ls -alst {} \;
+    3136 -rwxr-xr-x. 1 blyth blyth 3207576 May  8 15:32 /data1/blyth/local/opticks_Debug/py/opticks_CSGOptiX.cpython-313-x86_64-linux-gnu.so
+
+    (ok) [lo] A[blyth@localhost CSGOptiX]$ find $OPTICKS_PREFIX/build -name "opticks_CSGOptiX*.so" -exec ls -alst {} \;
+    3136 -rwxr-xr-x. 1 blyth blyth 3207576 May  8 15:32 /data1/blyth/local/opticks_Debug/build/CSGOptiX/opticks_CSGOptiX.cpython-313-x86_64-linux-gnu.so
+
 
 
 subcommands
@@ -51,6 +82,9 @@ run
 
 pdb
    invoke check script under ipython
+
+ldd
+   check dependencies of the python module
 
 
 EOU
@@ -98,7 +132,7 @@ if [[ "$arg" =~ check ]]; then
     if command -v fastapi >/dev/null 2>&1; then
         echo "$BASH_SOURCE - check - fastapi CLI is installed at $(command -v fastapi)"
     else
-        echo "$BASH_SOURCE - check - fastapi CLI not found - try base environment with ipython such as \"lo\" "
+        echo "$BASH_SOURCE - check - fastapi CLI not found - try miniconda python environment via bash function \"lco\" "
         exit 1
     fi
 fi
@@ -135,8 +169,19 @@ fi
 
 if [[ "$arg" =~ pdb ]]; then
     which ipython
-    ${IPYTHON:-ipython} -i --pdb $check_script
-    [ $? -ne 0 ] && echo $BASH_SOURCE - failed to pdb && exit 3
+    ${ipython:-ipython} -i --pdb $check_script
+    [ $? -ne 0 ] && echo $bash_source - failed to pdb && exit 3
 fi
+
+if [[ "$arg" =~ ldd ]]; then
+    lib=$(find $OPTICKS_PREFIX/py -name "opticks_CSGOptiX*.so")
+    ls -alst $lib
+    ldd $lib
+fi
+
+
+
+
+
 
 exit 0
