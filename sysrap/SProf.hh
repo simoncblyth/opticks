@@ -8,6 +8,16 @@ BUT: have to avoid only saving at end of run : as with jobs prone to run out of
 memory want to have at least some of the profile data even when the job fails
 
 
+C++17 "inline static" header-only SProf.h temptation
+------------------------------------------------------
+
+It is tempting to go header-only with this, but as the point
+of SProf is to collect labelled timestamps from across
+multiple shared libs. Hence keeping the SProf.cc is preferred
+to avoid having SProf::PROF vector instances in every shared lib
+and then not getting all the timestamps into SProf.txt
+
+
 Multiple calls to SProf::Write that overwrite and extend
 ----------------------------------------------------------
 
@@ -117,6 +127,7 @@ struct SYSRAP_API SProf
     static bool HasTag();
     static const char* Tag();
     static void UnsetTag();
+
 
     static std::vector<sprof>       PROF ;   // sprof struct of 3 integers
     static std::vector<std::string> NAME ;

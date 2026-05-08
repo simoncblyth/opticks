@@ -1907,7 +1907,7 @@ void SEvt::endOfEvent(int eventID)
 {
 
     setStage(SEvt__endOfEvent);
-    LOG_IF(info, LIFECYCLE) << id() ;
+    LOG_IF(info, LIFECYCLE) << " eventID[" << eventID << "] " << id() ;
     sprof::Stamp(p_SEvt__endOfEvent_0);
 
     endIndex(eventID);   // eventID is 0-based

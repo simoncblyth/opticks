@@ -15,10 +15,6 @@ Run this test, not necessarily on GPU node::
     oid        ## check are within "Client" config
     ~/o/sysrap/tests/SOpticksClientSimulatorTest.sh
 
-See also the standalone version of this::
-
-   ~/opticks/sysrap/tests/SOpticksClientSimulator_test.sh
-
 
 EOU
 }
@@ -42,14 +38,19 @@ export FOLD=$TMP/SEvt__createInputGenstep_configuredTest
 
 export OPTICKS_INPUT_GENSTEP=$FOLD/gs.npy
 
-vv="$vv GEOM ${GEOM}_CFBaseFromGEOM tmp TMP FOLD OPTICKS_INPUT_GENSTEP"
+vv="$vv GEOM ${GEOM}_CFBaseFromGEOM tmp TMP FOLD OPTICKS_INPUT_GENSTEP OPTICKS_CONFIG"
 
 if [[ $arg =~ info ]]; then
     for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done
 fi
 
 if [[ $arg =~ run ]]; then
-    $bin
+    if command -v $bin >/dev/null 2>&1; then
+        echo "$BASH_SOURCE - run - Binary $bin found - PROCEED"
+        $bin
+    else
+        echo "$BASH_SOURCE - run - Binary $bin NOT FOUND - OPTICKS_CONFIG $OPTICKS_CONFIG - Client build required"
+    fi
     [ $? -ne 0 ] && echo $BASH_SOURCE run error && exit 2
 fi
 

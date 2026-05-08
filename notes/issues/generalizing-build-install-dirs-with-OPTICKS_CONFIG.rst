@@ -14,7 +14,7 @@ The client build needs different config flags::
 Do not want to om-cleaninstall everytime switch between configs.
 
 So that means the build and install directories need to
-be separated by a config string beyond the current approach 
+be separated by a config string beyond the current approach
 of just dividing by CMAKE_BUILD_TYPE Debug Release
 
 Do I need 2-dimensions ? Debug/Release and CONFIG "Standard/Client/...".
@@ -32,7 +32,7 @@ when need to.
 +----------------------+------------------------+------------------------------------------+
 |     Client           |    Debug               |  -DWITH_CUDA=OFF -DWITH_CURL=ON          |
 +----------------------+------------------------+------------------------------------------+
-     
+
 
 * Q: Expand existing OPTICKS_BUILDTYPE OR rename to OPTICKS_CONFIG ?
 * A: Need OPTICKS_CONFIG to be a higher level control as opticks-buildtype directly feeds CMAKE_BUILD_TYPE
@@ -45,8 +45,8 @@ Current Approach on Workstation
 ::
 
     (ok) A[blyth@localhost opticks]$ t om-prefix
-    om-prefix () 
-    { 
+    om-prefix ()
+    {
         echo ${OPTICKS_PREFIX:-/usr/local/opticks}
     }
     (ok) A[blyth@localhost opticks]$ echo $OPTICKS_PREFIX
@@ -59,34 +59,34 @@ A: Done at input level in ~/.opticks_config
 OPTICKS_PREFIX is an input, 2nd setting from ~/.opticks_config that is sourced by local_ok_build (and hence "lo")::
 
      17 export OPTICKS_HOME=$HOME/opticks
-     18 
+     18
      19 #buildtype=Release
      20 buildtype=Debug
      21 export OPTICKS_BUILDTYPE=$buildtype
      22 export OPTICKS_PREFIX=/data1/blyth/local/opticks_${OPTICKS_BUILDTYPE}
-     23     
+     23
 
 
 Generalize putting OPTICKS_CONFIG at highest level::
 
      15 ### TOP CONFIG RELEVANT TO BOTH BUILD AND USAGE ###
-     16 
+     16
      17 export OPTICKS_HOME=$HOME/opticks
-     18 
+     18
      19 config=Debug
      20 export OPTICKS_CONFIG=${OPTICKS_CONFIG:-$config}
-     21 
+     21
      22 buildtype=Debug
      23 case $OPTICKS_CONFIG in
      24    Debug)    buildtype=Debug ;;
      25    Release)  buildtype=Release ;;
      26    Client)   buildtype=Debug  ;;
      27 esac
-     28 
+     28
      29 export OPTICKS_BUILDTYPE=$buildtype
      30 #export OPTICKS_PREFIX=/data1/blyth/local/opticks_${OPTICKS_BUILDTYPE}
      31 export OPTICKS_PREFIX=/data1/blyth/local/opticks_${OPTICKS_CONFIG}    # Apr23 2026 : Generalize to OPTICKS_CONFIG
-     32 
+     32
 
 
 
@@ -95,11 +95,11 @@ om-bdir needs no change as it is within the prefix::
     (ok) A[blyth@localhost opticks]$ om-bdir sysrap
     /data1/blyth/local/opticks_Debug/build/sysrap
     (ok) A[blyth@localhost opticks]$ t om-bdir
-    om-bdir () 
-    { 
+    om-bdir ()
+    {
         : TODO separate bdir depending on Release/Debug so its faster to switch;
         local gen=$(om-cmake-generator);
-        case $gen in 
+        case $gen in
             "Unix Makefiles")
                 echo $(om-prefix)/build/$1
             ;;
@@ -129,7 +129,7 @@ replace low level opticks-build-with-cuda/curl with high level opticks-config
     ./om.bash:   opticks-build-with-cuda    : $(opticks-build-with-cuda)
     ./opticks.bash:#opticks-build-with-cuda(){ echo ${OPTICKS_BUILD_WITH_CUDA:-ON}  ; }  # ON or OFF
     ./opticks.bash:#opticks-build-with-curl(){ echo ${OPTICKS_BUILD_WITH_CURL:-OFF}  ; } # ON or OFF
-    (ok) A[blyth@localhost opticks]$ 
+    (ok) A[blyth@localhost opticks]$
 
     vi CSG/CMakeLists.txt g4cx/CMakeLists.txt okconf/CMakeLists.txt sysrap/CMakeLists.txt u4/CMakeLists.txt om.bash opticks.bash
 
@@ -168,25 +168,25 @@ replace low level opticks-build-with-cuda/curl with high level opticks-config
      917     :
      918     : Other packages like QUDARap and CSGOptiX can only be built with CUDA so they have no such option
      919     :
-     920 
+     920
      921     local name=$1
      922     local opt=""
      923     local pkgopt=""
-     924 
+     924
      925     case $(opticks-config) in
      926         Debug|Release) pkgopt="-DBUILD_WITH_CUDA=ON -DBUILD_WITH_CURL=OFF" ;;
      927                Client) pkgopt="-DBUILD_WITH_CUDA=OFF -DBUILD_WITH_CURL=ON" ;;
      928     esac
-     929     
+     929
      930     case $name in
      931        okconf) opt="$pkgopt" ;;
      932        sysrap) opt="$pkgopt" ;;
      933           CSG) opt="$pkgopt" ;;
      934            u4) opt="$pkgopt" ;;
      935          g4cx) opt="$pkgopt" ;;
-     936     esac 
+     936     esac
      937     echo $opt
-     938 }   
+     938 }
 
 
 
@@ -227,7 +227,7 @@ Too much  use of OPTICKS_BUILDTYPE to change its meaning
     ./om.bash:   opticks-buildtype          : $(opticks-buildtype)
     ./om.bash:   #local libprefix=$LOCAL_BASE/opticks_$(opticks-buildtype)
     ./opticks.bash:opticks-buildtype(){       echo ${OPTICKS_BUILDTYPE:-Debug}  ; }
-    (ok) A[blyth@localhost opticks]$ 
+    (ok) A[blyth@localhost opticks]$
 
 
 
@@ -280,8 +280,8 @@ lo::
     plog
     nljson
     (ok) A[blyth@localhost opticks]$ t opticks-externals-install
-    opticks-externals-install () 
-    { 
+    opticks-externals-install ()
+    {
         opticks-installer- $(opticks-externals)
     }
 

@@ -11,13 +11,9 @@ which ensures libcurl of at least 7.76.1 is available as required by NP_CURL.h
 #include <cassert>
 #include "stree.h"
 #include "SSimulator.h"
-
-#ifdef WITH_SEVT_MOCK
-#include "SEvtMock.h"
-#else
 #include "SEvt.hh"
 #include "SEventConfig.hh"
-#endif
+#include "SProf.hh"
 
 #include "NP.hh"
 #include "NP_CURL.h"
@@ -25,10 +21,17 @@ which ensures libcurl of at least 7.76.1 is available as required by NP_CURL.h
 struct SOpticksClientSimulator : public SSimulator
 {
     static constexpr const char* NAME = "SOpticksClientSimulator" ;
+    static constexpr const char* Settings = "Settings" ;
+    static constexpr const char* TreeDigest = "TreeDigest" ;
+
     virtual ~SOpticksClientSimulator() = default ;
 
     static SOpticksClientSimulator* Create(const char* path="$CFBaseFromGEOM/CSGFoundry/SSim");
     static SOpticksClientSimulator* Create(const stree* tree);
+
+    static bool            Consistent( const NP* gs, const NP* hc, const char* key );
+    static std::string DescConsistent( const NP* gs, const NP* hc, const char* key );
+
     SOpticksClientSimulator(const stree* tr);
 
     const char* desc() const ;
@@ -43,19 +46,18 @@ struct SOpticksClientSimulator : public SSimulator
     double simtrace(int eventID);
     double render(const char* stem = nullptr);
 
+    void   annotate_genstep(NP* gs) const;
     double simulate(int eventID, bool reset = false);
+
+
+
     void reset(int eventID);
 
 
     const stree* tree ;
     const char*  tree_digest ;
 
-#ifdef WITH_SEVT_MOCK
-    SEvtMock*    sev ;
-#else
     SEvt*        sev ;
-#endif
-    int          placeholder ;
 
 };
 
@@ -86,6 +88,32 @@ inline SOpticksClientSimulator* SOpticksClientSimulator::Create(const stree* tre
     return client ;
 }
 
+inline bool SOpticksClientSimulator::Consistent( const NP* gs, const NP* hc, const char* key )
+{
+    std::string gs_value = gs->get_meta<std::string>(key);
+    std::string hc_value = hc->get_meta<std::string>(key);
+    bool match_value = strcmp( gs_value.c_str(), hc_value.c_str() ) == 0 ;
+    return match_value ;
+}
+
+inline std::string SOpticksClientSimulator::DescConsistent( const NP* gs, const NP* hc, const char* key )
+{
+    std::string gs_value = gs->get_meta<std::string>(key);
+    std::string hc_value = hc->get_meta<std::string>(key);
+    bool match_value = strcmp( gs_value.c_str(), hc_value.c_str() ) == 0 ;
+
+    std::stringstream ss ;
+    ss << "[SOpticksClientSimulator::DescConsistent "
+       << key
+       << " gs [" << gs_value << "]"
+       << " hc [" << hc_value << "]"
+       << " match " << ( match_value ? "YES" : "NO " )
+       << "]"
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
 
 
 
@@ -93,15 +121,9 @@ inline SOpticksClientSimulator::SOpticksClientSimulator(const stree* _tree)
     :
     tree(_tree),
     tree_digest(tree ? tree->get_tree_digest() : nullptr),
-#ifdef WITH_SEVT_MOCK
-    sev(SEvtMock::Get_EGPU()),
-#else
-    sev(SEvt::Get_EGPU()),
-#endif
-    placeholder(0)
+    sev(SEvt::Get_EGPU())
 {
 }
-
 
 
 
@@ -121,6 +143,17 @@ inline double SOpticksClientSimulator::render(const char*)
 {
     return 0 ;
 }
+
+
+inline void SOpticksClientSimulator::annotate_genstep(NP* gs) const
+{
+    std::string gs_Settings = SEventConfig::Settings();
+    std::string gs_TreeDigest = tree_digest ;
+    gs->set_meta<std::string>(Settings,  gs_Settings);
+    gs->set_meta<std::string>(TreeDigest,gs_TreeDigest);
+}
+
+
 
 
 /**
@@ -150,6 +183,7 @@ inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
 {
     sev->beginOfEvent(eventID);
     NP* gs = sev->makeGenstepArrayFromVector();
+
     if(gs == nullptr)
     {
         std::cerr
@@ -160,14 +194,7 @@ inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
             ;
         return 0;
     }
-
-#ifdef WITH_SEVT_MOCK
-#else
-    std::string client_settings = SEventConfig::Settings();
-    std::string client_digest = tree_digest ;
-    gs->set_meta<std::string>("Settings",client_settings);
-    gs->set_meta<std::string>("TreeDigest",client_digest);
-#endif
+    annotate_genstep(gs);
 
     NP* hc = NP_CURL::TransformRemote(gs,eventID);  // "hc" hit-component one of : hit/hitlite/hitlitemerged/hitmerged
 
@@ -179,44 +206,65 @@ inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
 
 
     sev->setHit(hc);
+
     double dt = hc ? hc->get_meta<double>("QSim__simulate_tot_dt", 0. ) : -1. ;
 
+    bool consistent_Settings = Consistent(gs, hc, Settings) ;
+    bool consistent_TreeDigest = Consistent(gs, hc, TreeDigest) ;
+    bool consistent = consistent_Settings && consistent_TreeDigest ;
 
     std::cout
           << "SOpticksClientSimulator::simulate "
           << " eventID " << eventID
           << " reset " << reset
+          << " gs " << ( gs ? gs->sstr() : "-" )
           << " hc " << ( hc ? hc->sstr() : "-" )
+          << " All/Settings/TreeDigest: "
+          << ( consistent            ? "Y" : "N" )
+          << ( consistent_Settings   ? "Y" : "N" )
+          << ( consistent_TreeDigest ? "Y" : "N" )
           << " dt " << dt
           << "\n"
           ;
 
-#ifdef WITH_SEVT_MOCK
-#else
-    std::string server_settings = hc->get_meta<std::string>("Settings");
-    bool match_settings = SEventConfig::SettingsMatch(client_settings,server_settings);
-
-    std::string server_digest = hc->get_meta<std::string>("TreeDigest");
-    bool match_digest = 0 == strcmp( server_digest.c_str(), client_digest.c_str() );
-
-    std::cout
-          << "SOpticksClientSimulator::simulate "
-          << " eventID " << eventID
-          << " match_settings " << ( match_settings ? "YES" : "NO " )
-          << " client_settings [" << client_settings << "]"
-          << " server_settings [" << server_settings << "]"
-          << " match_digest " << ( match_digest ? "YES" : "NO " )
-          << " client_digest [" << client_digest << "]"
-          << " server_digest [" << server_digest << "]"
-          << "\n"
-          ;
-#endif
+    if(!consistent) std::cerr
+        << "SOpticksClientSimulator::simulate "
+        << " consistent " << ( consistent ? "YES" : "NO " )
+        << " " << DescConsistent(gs, hc, Settings)
+        << " " << DescConsistent(gs, hc, TreeDigest)
+        << "\n"
+        ;
 
     return dt ;
 }
+
+
+
+
+
+
+
+/**
+SOpticksClientSimulator::reset
+--------------------------------
+
+Reset is vital in client running to clear the gensteps vector
+after each event simulation.
+
+
+Q: When should the client call SEvt::endOfEvent ?
+A: Need to follow full opticks pattern, invoke SEvt::endOfEvent via the reset chain of methods
+   that are invoked from the highest level. Moving to client Opticks switches
+   the CSGOptiX simulator to this SOpticksClientSimulator so this must obey the reset.
+
+**/
+
+
 inline void SOpticksClientSimulator::reset(int eventID)
 {
-    assert(eventID > -1);
+    SProf::Add("SOpticksClientSimulator__reset_HEAD");
+    sev->endOfEvent(eventID);
+    SProf::Add("SOpticksClientSimulator__reset_TAIL");
 }
 
 
