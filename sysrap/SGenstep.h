@@ -88,6 +88,7 @@ struct SYSRAP_API SGenstep
     static std::string DescNum(const std::vector<T>& num_ph);
 
     static std::string Desc(const NP* gs, int edgeitems);
+    static std::string Brief(const NP* gs);
 
 };
 
@@ -205,8 +206,6 @@ inline size_t SGenstep::GetNumPhoton( const quad6& gs )
 {
     return gs.q0.u.w ;
 }
-
-
 
 
 
@@ -494,15 +493,17 @@ inline std::string SGenstep::Desc(const NP* gs, int edgeitems) // static
 {
     int num_genstep = gs ? gs->shape[0] : 0 ;
 
-    quad6* gs_v = gs ? (quad6*)gs->cvalues<float>() : nullptr ;
+    quad6* qq = gs ? (quad6*)gs->cvalues<float>() : nullptr ;
     std::stringstream ss ;
     ss << "SGenstep::DescGensteps num_genstep " << num_genstep << " (" ;
 
     int total = 0 ;
     for(int i=0 ; i < num_genstep ; i++)
     {
-        const quad6& _gs = gs_v[i];
-        unsigned gs_pho = _gs.q0.u.w  ;
+        const quad6& q = qq[i];
+        size_t gs_pho = GetNumPhoton(q)  ;
+
+
 
         if( i < edgeitems || i > num_genstep - edgeitems ) ss << gs_pho << " " ;
         else if( i == edgeitems )  ss << "... " ;
@@ -510,8 +511,30 @@ inline std::string SGenstep::Desc(const NP* gs, int edgeitems) // static
         total += gs_pho ;
     }
     ss << ") total " << total  ;
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
 
+inline std::string SGenstep::Brief(const NP* gs) // static
+{
+    NP::INT num_genstep = gs ? gs->shape[0] : 0 ;
+    const quad6* qq = gs ? (quad6*)gs->cvalues<float>() : nullptr ;
+
+    std::map<int, size_t> occurence ;
+
+    for(NP::INT i=0 ; i < num_genstep ; i++)
+    {
+        const quad6& q = qq[i];
+        size_t num = GetNumPhoton(q)  ;
+        int    gen = GetGencode(q) ;
+        occurence[gen] += num ;
+        // TODO: collect into std::map to count the different types
+    }
+
+
+    std::stringstream ss ;
+    ss << "SGenstep::Brief " << ( gs ? gs->sstr() : "-" ) ;
+    std::string str = ss.str();
+    return str ;
+}
 

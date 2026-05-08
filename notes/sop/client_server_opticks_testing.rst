@@ -4,10 +4,22 @@ client_server_opticks_testing
 TODO
 ------
 
-* WIP : acting on reset in the client, verbosity control on client and server
+* TODO : photon count logging
+* TODO : saving gensteps client slide for fast replay testing against server without any initialization cost
+* TODO : client vs monolithic result comparison, SEvt array saving
+* TODO : investigate "//qcerenkov::wavelength_sampled_bndtex" logging on server - rare or significant ? photon count logging
+
+  * ~/o/notes/issues/qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running.rst 
+
+* TODO : verbosity control on client and server
+* TODO : optional optimization loading preexisting Opticks geometry instead of doing the translation ?
+
+  * dangerous as risks using stale Opticks geometry - but non-default-expert-only-option OK
 
 * TODO : loosen requirement for exact same hit flavor between client and server - need to signal from client to server
   via genstep metadata the hit flavor : hit/hitlite/hitlitemerged etc..
+
+* TODO : photon cost aware and VRAM protecting server, "Retry-After:?"  header response when server too busy
 
 * WIP : make OpticksClient release onto cvmfs ?
 
@@ -23,6 +35,7 @@ TODO
 DONE
 -----
 
+* DONE : acting on reset in the client
 * DONE : added OPTICKS_CONFIG high level control ~/o/notes/issues/generalizing-build-install-dirs-with-OPTICKS_CONFIG.rst
 * DONE : build and test JUNOSW against the OPTICKS_CONFIG:Client build "lo_client" (NOT:WITH_CUDA but WITH_CURL, subset of packages + partial packages)
 
@@ -31,6 +44,47 @@ Test Scripts
 ---------------
 
 * ~/o/sysrap/tests/SOpticksClientSimulatorTest.sh integrated test
+
+
+Workflow for client build and test from non-GPU node via reverse tunnel
+-------------------------------------------------------------------------
+
+1. Update client Opticks on lxlogin::
+
+   ssh L
+   o
+   git pull    ## remember to start ssh proxy on lxlogin first "soks-pw-bastion-do"
+   lo_client
+   oo
+
+2. Update OJ built against client Opticks on lxlogin (not needed when only internal Opticks changes)::
+
+   ssh L
+   js
+   git pull          # if changes in the junosw branch
+
+   ljclient ljbb0    # update build, no geom init    -- QUICKEST
+
+
+3. start server on GPU workstation::
+
+   lo   ## full opticks
+   lco  ## need "fastapi" from miniconda "ok" python virtual env
+   ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
+   ## AFTER MAKING SERVER CHANGES, REMEMBER TO BOUNCE THE SERVER
+
+4. open reverse tunnel from A (GPU workstation) to L (lxlogin)::
+
+   ssh LT
+   ## to avoid exiting this connection, create the reverse tunnel in separate window terminal tab next to the server
+
+5. run test on lxlogin::
+
+   ssh L
+   cat ~/.opticks/GEOM/ENVSET.sh # check configured installation (OPTICKS_CONFIG and junosw branch in path to envset.sh)
+
+   ljrt100  # or ljrt1000
+
 
 
 
