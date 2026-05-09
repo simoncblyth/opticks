@@ -167,6 +167,11 @@ __global__ void _QSim_dbg_gs_generate(qsim* sim, qdebug* dbg, sphoton* photon, u
 }
 
 
+/**
+Used from QSim::dbg_gs_generate
+**/
+
+
 extern void QSim_dbg_gs_generate(dim3 numBlocks, dim3 threadsPerBlock, qsim* sim, qdebug* dbg, sphoton* photon, unsigned num_photon, unsigned type )
 {
     printf("//QSim_dbg_gs_generate sim %p dbg %p photon %p num_photon %d type %d name %s \n", sim, dbg, photon, num_photon, type, QSimLaunch::Name(type) );

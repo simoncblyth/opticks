@@ -296,6 +296,7 @@ struct quad4
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
     std::string desc() const ;
+    std::string desc_tex_meta() const ;
     static NP* zeros(size_t num);
     static NP* select_prim( const NP* simtrace, unsigned globalPrimIdx );
 
@@ -870,9 +871,34 @@ inline std::string quad4::desc() const
         << " polw " << q2.f << std::endl
         << " flag " << q3.i << std::endl
         ;
-    std::string s = ss.str();
-    return s ;
+    std::string str = ss.str();
+    return str ;
 }
+
+
+inline std::string quad4::desc_tex_meta() const
+{
+    std::stringstream ss ;
+    ss
+        << "quad4::desc_tex_meta\n"
+        << " q0.i " << q0.i << "\n"
+        << " q1.f " << q1.f << "\n"
+        << " q2.f " << q2.f << "\n"
+        << " q3.f " << q3.f << "\n"
+        ;
+    std::string str = ss.str();
+    return str ;
+}
+
+
+
+
+
+
+
+
+
+
 
 inline NP* quad4::zeros(size_t num) // static
 {

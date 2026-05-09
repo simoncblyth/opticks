@@ -16,6 +16,13 @@ QSimTest.sh
     TEST=fill_state_cf ~/o/qudarap/tests/QSimTest.sh ana
         just invoke the analysis script for the named TEST
 
+
+    NUM=1 TEST=cerenkov_generate ~/o/qudarap/tests/QSimTest.sh
+
+    BP=QBnd::MakeBoundaryTex NUM=1  TEST=cerenkov_generate ~/o/qudarap/tests/QSimTest.sh
+
+
+
 EOU
 }
 
@@ -44,7 +51,7 @@ msg="=== $BASH_SOURCE :"
 #test=wavelength_cerenkov         ### non-active moved to QSim_dbg.cu
 
 #test=scint_generate
-#test=cerenkov_generate
+test=cerenkov_generate
 
 #test=fill_state_0
 #test=fill_state_1
@@ -71,17 +78,20 @@ msg="=== $BASH_SOURCE :"
 #test=propagate_at_surface
 #test=randgaussq_shoot
 
-test=fake_propagate
+#test=fake_propagate
 #test=gentorch
 
 #test=smear_normal_sigma_alpha
 
 export TEST=${TEST:-$test}
-export BASE=/tmp/QSimTest         ## BASE NEEDED BY QSimTest::photon_launch_mutate
+
+tmp=/tmp/$USER/opticks
+export TMP=${TMP:-$tmp}
+export BASE=$TMP/QSimTest         ## BASE NEEDED BY QSimTest::photon_launch_mutate
                                   ## AS U::Resolve DOES NOT YET SUPPORT "$FOLD/.."
                                   ## TODO:bring it over, done it elsewhere?
 
-export FOLD=/tmp/QSimTest/$TEST   ## CAUTION clean subcommand deletes this directory and contents
+export FOLD=$BASE/$TEST           ## CAUTION clean subcommand deletes this directory and contents
 mkdir -p $FOLD
 
 
@@ -103,7 +113,7 @@ fi
 arg=${1:-$defarg}
 
 
-
+K1=1000
 M1=1000000
 K2=100000
 
@@ -204,7 +214,6 @@ fi
 
 
 
-TMP=${TMP:-/tmp/$USER/opticks}
 export EBASE=$TMP/GEOM/$GEOM/QSimTest/ALL/p001
 
 vars="BASH_SOURCE arg TEST script NUM NRM FOLD GEOM TMP EBASE"

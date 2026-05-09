@@ -14,9 +14,17 @@
 #include <cuda_runtime.h>
 #include "cudaCheckErrors.h"
 #include "QUDA_CHECK.h"
+#include "SLOG.hh"
 #endif
 
 #include "QTex.hh"
+
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
+template<typename T>
+const plog::Severity QTex<T>::LEVEL = SLOG::EnvLevel("QTex", "DEBUG");
+#endif
 
 
 template<typename T>
@@ -35,8 +43,9 @@ QTex<T>::QTex(size_t width_, size_t height_ , const void* src_, char filterMode_
     channelDesc(cudaCreateChannelDesc<T>()),
 #endif
     texObj(0),
-    meta(new quad4),
-    d_meta(nullptr)
+    meta(new quad4 {}),
+    d_meta(nullptr),
+    meta_roundtrip(new quad4 {})
 {
     init();
 }
@@ -129,7 +138,18 @@ void QTex<T>::setMetaDomainY( const quad* domy )
 QTex:uploadMeta
 ------------------
 
-Not doing this automatically as will need to add some more meta
+This is invoked by higher level users, not automatically by QTex,
+for example see QBnd::MakeBoundaryTex.
+
+Having correct tex metadata device side is vital. To ensure that
+this method does a roundtrip test downloading the metadata and
+comparing with expection.
+
+Formerly a "sizeof(quad)" vs "sizeof(quad4)" typo here
+caused incorrect flat qcerenkov wavelength distribution
+and kernel warnings, see::
+
+  ~/o/notes/issues/qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running.rst
 
 **/
 
@@ -139,14 +159,24 @@ void QTex<T>::uploadMeta()
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
     d_meta = meta ;
 #else
-    size_t size = sizeof(quad);
+    size_t size = sizeof(*meta);
+
     d_meta = nullptr ;
     QUDA_CHECK( cudaMalloc(reinterpret_cast<void**>( &d_meta ), size ));
-    QUDA_CHECK( cudaMemcpy(reinterpret_cast<void*>( d_meta ), meta, size, cudaMemcpyHostToDevice ));
+
+    QUDA_CHECK( cudaMemcpy( d_meta         , meta   , size, cudaMemcpyHostToDevice ));
+    QUDA_CHECK( cudaMemcpy( meta_roundtrip , d_meta , size, cudaMemcpyDeviceToHost ));
+
+    bool roundtrip = 0 == memcmp(meta, meta_roundtrip, size );
+    LOG_IF(fatal, !roundtrip )
+        << " roundtrip " << ( roundtrip ? "YES" : "NO " ) << "\n"
+        << " meta.desc " << meta->desc_tex_meta()
+        << " meta_roundtrip.desc " << meta_roundtrip->desc_tex_meta()
+        ;
+
+    NP_FATAL_ASSERT(roundtrip);
 #endif
 }
-
-
 
 
 

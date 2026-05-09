@@ -369,6 +369,13 @@ void QSimTest::RandGaussQ_shoot()
 
 
 
+/**
+QSimTest::dbg_gs_generate
+--------------------------
+
+**/
+
+
 void QSimTest::dbg_gs_generate()
 {
     NP* p = qs->dbg_gs_generate(num, type);

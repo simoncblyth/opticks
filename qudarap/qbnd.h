@@ -114,6 +114,10 @@ inline QBND_METHOD float4 qbnd::boundary_lookup( float nm, unsigned line, unsign
     const float& nm0 = boundary_meta->q1.f.x ;
     const float& nms = boundary_meta->q1.f.z ;
 
+    //const float4& bmq1 = boundary_meta->q1.f ;
+    //printf("//qbnd.boundary_lookup nm %10.4f matline_Water %d matline_LS %d  bmeta.q1.f (%10.3f,%10.3f,%10.3f,%10.3f) \n", nm, boundary_tex_MaterialLine_Water, boundary_tex_MaterialLine_LS, bmq1.x, bmq1.y, bmq1.z, bmq1.w );
+
+
     float fx = (nm - nm0)/nms ;
     float x = (fx+0.5f)/float(nx) ;   // ?? +0.5f ??
 
@@ -123,8 +127,7 @@ inline QBND_METHOD float4 qbnd::boundary_lookup( float nm, unsigned line, unsign
 
     float4 props = tex2D<float4>( boundary_tex, x, y );
 
-    // printf("//qbnd.boundary_lookup nm %10.4f nm0 %10.4f nms %10.4f  x %10.4f nx %d ny %d y %10.4f props.x %10.4f %10.4f %10.4f %10.4f  \n",
-    //     nm, nm0, nms, x, nx, ny, y, props.x, props.y, props.z, props.w );
+    //printf("//qbnd.boundary_lookup nm %10.4f nm0 %10.4f nms %10.4f  x %10.4f nx %d ny %d y %10.4f props ( %10.4f %10.4f %10.4f %10.4f )  \n", nm, nm0, nms, x, nx, ny, y, props.x, props.y, props.z, props.w );
 
     return props ;
 }
@@ -215,6 +218,7 @@ inline QBND_METHOD void qbnd::fill_state(sstate& s, unsigned boundary, float wav
     }
 #endif
 
+    //printf("//qbnd::fill_state idx %7lld \n", idx );
 
 }
 

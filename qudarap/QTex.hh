@@ -12,61 +12,71 @@ QTex.hh
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
 #include <texture_types.h>
+#include "plog/Severity.h"
 #endif
 
-struct NP ; 
-struct quad4 ; 
-union quad ; 
+
+
+struct NP ;
+struct quad4 ;
+union quad ;
 
 #include "QUDARAP_API_EXPORT.hh"
 
 template<typename T>
 struct QUDARAP_API QTex
 {
-    size_t       width ; 
-    size_t       height ; 
+
+#if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
+#else
+    static const plog::Severity LEVEL ;
+#endif
+
+    size_t       width ;
+    size_t       height ;
     const void*  src ;
-    char         filterMode ;  // 'L':cudaFilterModeLinear OR 'P':cudaFilterModePoint 
-    bool         normalizedCoords ; 
-    const void*  origin ;  // typically an NP array 
-    const NP*    a ; 
+    char         filterMode ;  // 'L':cudaFilterModeLinear OR 'P':cudaFilterModePoint
+    bool         normalizedCoords ;
+    const void*  origin ;  // typically an NP array
+    const NP*    a ;
     // TODO: remove the duplication here, why not just use a ?
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
-    cudaArray*   cuArray ; 
+    cudaArray*   cuArray ;
     cudaChannelFormatDesc channelDesc ;
 #endif
     cudaTextureObject_t texObj ;
 
-    quad4*              meta ; 
-    quad4*              d_meta ; 
+    quad4*              meta ;
+    quad4*              d_meta ;
+    quad4*              meta_roundtrip ;
 
     QTex( size_t width, size_t height, const void* src, char filterMode, bool normalizedCoords, const NP* a   );
 
-    void     setMetaDomainX( const quad* domx ); 
-    void     setMetaDomainY( const quad* domy ); 
-    void     uploadMeta(); 
+    void     setMetaDomainX( const quad* domx );
+    void     setMetaDomainY( const quad* domy );
+    void     uploadMeta();
 
-    void           setOrigin(const void* origin_) ; 
-    const void*    getOrigin() const ; 
+    void           setOrigin(const void* origin_) ;
+    const void*    getOrigin() const ;
 
-    void     setHDFactor(unsigned hd_factor_) ; 
-    unsigned getHDFactor() const ; 
+    void     setHDFactor(unsigned hd_factor_) ;
+    unsigned getHDFactor() const ;
 
-    char     getFilterMode() const ; 
-    bool     getNormalizedCoords() const ; 
+    char     getFilterMode() const ;
+    bool     getNormalizedCoords() const ;
 
-    virtual ~QTex();  
+    virtual ~QTex();
 
-    void init(); 
-    std::string desc() const ; 
+    void init();
+    std::string desc() const ;
 
 #if defined(MOCK_TEXTURE) || defined(MOCK_CUDA)
 #else
-    void createArray(); 
-    void uploadToArray(); 
-    void createTextureObject(); 
+    void createArray();
+    void uploadToArray();
+    void createTextureObject();
 #endif
 
 };
