@@ -100,11 +100,15 @@ check_script=$(realpath check.py)
 
 source $HOME/.opticks/GEOM/GEOM.sh
 
-
-## TODO: MOVE THIS CONFIG INTO CODE ?
-export OPTICKS_EVENT_MODE=Hit
+## BELOW setting done by oj_geomsetup of Examples/Tutorial/share/opticks_juno.sh
 export OPTICKS_HIT_MASK=EC
 
+if [ -n "$SAVE" ]; then
+    ## SAVING IS APPROPRIATE ONLY DURING DEBUG/VALIDATION
+    echo $BASH_SOURCE - SAVE - CONFIG ARRAY SAVING
+    export OPTICKS_MODE_SAVE=SMS_RELATIVE
+    export OPTICKS_EVENT_MODE=Hit
+fi
 
 tmp=/tmp/$USER/opticks
 TMP=${TMP:-$tmp}
@@ -116,7 +120,7 @@ WHICH_FASTAPI=$(which fastapi 2>/dev/null)
 defarg="info_check_venv_activate_run"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE PWD defarg arg GEOM main_script check_script tmp TMP LOGDIR WHICH_FASTAPI"
+vv="BASH_SOURCE PWD defarg arg GEOM main_script check_script tmp TMP LOGDIR WHICH_FASTAPI SAVE"
 
 
 if [[ "$arg" =~ clean ]]; then

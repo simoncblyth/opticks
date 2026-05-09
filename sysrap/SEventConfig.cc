@@ -97,8 +97,6 @@ const char* SEventConfig::_MaxSimtraceDefault = NO_STATE_LIMIT ;
 const char* SEventConfig::_MaxCurandDefault = NO_STATE_LIMIT ;
 #endif
 
-
-// HUH: former default was ALL_
 const char* SEventConfig::_GatherCompDefault = SComp::NONE_ ;
 const char* SEventConfig::_SaveCompDefault = SComp::NONE_ ;
 
@@ -294,8 +292,14 @@ const char* SEventConfig::_EventReldir = ssys::getenvvar(kEventReldir, _EventRel
 int SEventConfig::_RGMode = SRG::Type(ssys::getenvvar(kRGMode, _RGModeDefault)) ;
 unsigned SEventConfig::_HitMask  = OpticksPhoton::GetFlagMask(ssys::getenvvar(kHitMask, _HitMaskDefault )) ;
 
+#ifdef WITH_COMP_OLD
 unsigned SEventConfig::_GatherComp  = SComp::Mask(ssys::getenvvar(kGatherComp, _GatherCompDefault )) ;
 unsigned SEventConfig::_SaveComp    = SComp::Mask(ssys::getenvvar(kSaveComp,   _SaveCompDefault )) ;
+#else
+// components are now controlled at higher level with OPTICKS_EVENT_MODE not directly with COMP envvars
+unsigned SEventConfig::_GatherComp  = SComp::Mask(SComp::NONE_) ;
+unsigned SEventConfig::_SaveComp    = SComp::Mask(SComp::NONE_) ;
+#endif
 
 
 float SEventConfig::_PropagateEpsilon = ssys::getenvfloat(kPropagateEpsilon, _PropagateEpsilonDefault ) ;
@@ -425,7 +429,6 @@ eg Debug_Philox.
 **/
 const char* SEventConfig::EventReldir(){   return _EventReldir ; }
 unsigned SEventConfig::HitMask(){     return _HitMask ; }
-
 unsigned SEventConfig::GatherComp(){  return _GatherComp ; }
 unsigned SEventConfig::SaveComp(){    return _SaveComp ; }
 
@@ -961,13 +964,21 @@ std::string SEventConfig::Desc()
        << std::setw(25) << ""
        << std::setw(20) << " RGModeLabel " << " : " << RGModeLabel()
        << std::endl
+#ifdef WITH_COMP_OLD
        << std::setw(25) << kGatherComp
+#else
+       << std::setw(25) << "~" << kEventMode
+#endif
        << std::setw(20) << " GatherComp " << " : " << GatherComp()
        << std::endl
        << std::setw(25) << ""
        << std::setw(20) << " DescGatherComp " << " : " << DescGatherComp()
        << std::endl
+#ifdef WITH_COMP_OLD
        << std::setw(25) << kSaveComp
+#else
+       << std::setw(25) << "~" << kEventMode
+#endif
        << std::setw(20) << " SaveComp " << " : " << SaveComp()
        << std::endl
        << std::setw(25) << ""
@@ -1589,7 +1600,7 @@ void SEventConfig::Initialize_Comp_Simulate_(unsigned& gather_mask, unsigned& sa
     }
     else if(IsMinimal())
     {
-        LOG(LEVEL) << "IsMinimal()" ;
+        LOG(LEVEL) << "IsMinimal() - default EventMode - hit gathered from device to host - BUT NOT SAVED" ;
 
         gather_mask = HitComp() ;
         save_mask = 0 ;

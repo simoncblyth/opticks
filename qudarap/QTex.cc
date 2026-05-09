@@ -143,7 +143,7 @@ for example see QBnd::MakeBoundaryTex.
 
 Having correct tex metadata device side is vital. To ensure that
 this method does a roundtrip test downloading the metadata and
-comparing with expection.
+comparing with expectation.
 
 Formerly a "sizeof(quad)" vs "sizeof(quad4)" typo here
 caused incorrect flat qcerenkov wavelength distribution

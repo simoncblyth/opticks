@@ -1895,11 +1895,24 @@ SEvt::endOfEvent
 
 Called for example from::
 
-   U4Recorder::EndOfEventAction
-   QSim::simulate
+   SOpticksClientSimulator::reset
+   QSim::reset
+   U4Recorder::EndOfEventAction_ ## opticksMode:3 NOT USED RECENTLY - WILL NEED REJIG
 
-Only SEventConfig::SaveComp OPTICKS_SAVE_COMP are actually saved,
-so can switch off all saving wuth that config.
+
+Use below envvar to configure absolute or relative directory saving of SEvt NumPy arrays and metadata.
+Absolute normally under $TMP and relative under the invoking directory::
+
+    export OPTICKS_MODE_SAVE=SMS_ABSOLUTE  ## default
+    export OPTICKS_MODE_SAVE=SMS_RELATIVE
+
+Configure what arrays are saved::
+
+    export OPTICKS_EVENT_MODE=Minimal  # default, nothing saved
+    export OPTICKS_EVENT_MODE=Hit      # Hit and Genstep
+    export OPTICKS_EVENT_MODE=DebugLite
+
+    ## see SEventConfig::Initialize_Comp_Simulate_ for details
 
 **/
 
@@ -4375,6 +4388,9 @@ void SEvt::save(const char* bas, const char* rel )
 /**
 SEvt::save
 --------------
+
+This argumentless SEvt::save is invoked from SEvt::endOfEvent normally from "reset" methods.
+
 
 The component arrays are gathered by SEvt::gather_components
 into the NPFold and then saved. Which components to gather and save

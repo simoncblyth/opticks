@@ -4,6 +4,20 @@
 SMS.h : Saving Mode
 =====================
 
+Configure absolute or relative directory saving of SEvt NumPy arrays and metadata.
+Absolute normally under $TMP and relative under the invoking directory::
+
+    export OPTICKS_MODE_SAVE=SMS_ABSOLUTE  ## default
+    export OPTICKS_MODE_SAVE=SMS_RELATIVE
+
+Configure what arrays are saved::
+
+    export OPTICKS_EVENT_MODE=Minimal  # default, nothing saved
+    export OPTICKS_EVENT_MODE=Hit      # Hit and Genstep
+    export OPTICKS_EVENT_MODE=DebugLite
+
+    ## see SEventConfig::Initialize_Comp_Simulate_ for details
+
 **/
 
 
