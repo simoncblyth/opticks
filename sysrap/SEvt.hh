@@ -98,6 +98,7 @@ struct SYSRAP_API SEvt : public SCompProvider
     static constexpr const int64_t M = 1000000 ;
     static constexpr const int64_t G = 1000000000 ;
     static constexpr const char* BLANK = "" ;
+    static constexpr const char* NumPhoton = "NumPhoton" ;
 
     static constexpr const char* SEvt__NPFOLD_VERBOSE = "SEvt__NPFOLD_VERBOSE" ;
     static bool NPFOLD_VERBOSE ;

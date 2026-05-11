@@ -183,6 +183,7 @@ inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
 {
     sev->beginOfEvent(eventID);
     NP* gs = sev->makeGenstepArrayFromVector();
+    size_t gsp = gs ? gs->get_meta<size_t>(SEvt::NumPhoton, 0) : 0 ;
 
     if(gs == nullptr)
     {
@@ -195,8 +196,11 @@ inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
         return 0;
     }
     annotate_genstep(gs);
+    NP_FATAL_ASSERT( gsp > 0 );
 
-    NP* hc = NP_CURL::TransformRemote(gs,eventID);  // "hc" hit-component one of : hit/hitlite/hitlitemerged/hitmerged
+    size_t index = eventID ;
+    size_t count = gsp ;
+    NP* hc = NP_CURL::TransformRemote(gs,index,count);  // "hc" hit-component one of : hit/hitlite/hitlitemerged/hitmerged
 
     if(hc == nullptr)
     {
@@ -217,6 +221,7 @@ inline double SOpticksClientSimulator::simulate(int eventID, bool reset )
           << "SOpticksClientSimulator::simulate "
           << " eventID " << eventID
           << " reset " << reset
+          << " gsp " << std::setw(10) << gsp
           << " gs " << ( gs ? gs->sstr() : "-" )
           << " hc " << ( hc ? hc->sstr() : "-" )
           << " All/Settings/TreeDigest: "

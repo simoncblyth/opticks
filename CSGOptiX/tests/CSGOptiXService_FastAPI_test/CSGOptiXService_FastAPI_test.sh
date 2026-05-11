@@ -11,7 +11,8 @@ This requires the *uv* python package+venv tool::
 Build and start the FastAPI HTTP server, on first run dependencies
 are downloaded from pypi into the virtual env .venv directory::
 
-    lo   ## full opticks environment - "lo_client" is not sufficient
+    lo    ## full opticks environment - "lo_client" is not sufficient
+    lco   ## "ok" miniconda virtual env with fastapi and nanobind
     ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/CSGOptiXService_FastAPI_test.sh
 
 Make HTTP POST requests to the endpoint::
@@ -126,6 +127,7 @@ vv="BASH_SOURCE PWD defarg arg GEOM main_script check_script tmp TMP LOGDIR WHIC
 if [[ "$arg" =~ clean ]]; then
    rm -rf __pycache__
    rm -rf .venv
+   #rm .gitignore
 fi
 
 if [[ "$arg" =~ info ]]; then
@@ -182,10 +184,5 @@ if [[ "$arg" =~ ldd ]]; then
     ls -alst $lib
     ldd $lib
 fi
-
-
-
-
-
 
 exit 0

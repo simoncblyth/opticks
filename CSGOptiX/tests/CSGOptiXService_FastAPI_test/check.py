@@ -2,8 +2,6 @@
 check.py
 =========
 
-Huh this works, but doing very simular from FastAPI does not work
-
 """
 import functools, operator, numpy as np
 import opticks_CSGOptiX as cx
@@ -35,6 +33,10 @@ def array_create_():
 
 
 def arange_check():
+    """
+    NB (_CSGOptiXService)_svc is wrapper around underlying (CSGOptiXService)svc
+    the wrapper handles conversion of python numpy arrays into Opticks NP arrays.
+    """
     print("cx\n", cx)
     _svc = cx._CSGOptiXService()
 
@@ -47,13 +49,22 @@ def arange_check():
     gs = np.arange(sz, dtype=np.float32).reshape(*shape)
     print("gs\n", gs)
 
-    hit = _svc.simulate(gs)   ## NB this is wrapper which handles numpy arrays
+    hit = _svc.simulate(gs)
 
     print("hit\n", hit)
 
 
 def check_with_non_owned_array():
     """
+    See runtime_incompatible_function_arguments_FastAPI_nanobind_issue_perhaps.rst
+
+    Python NumPy is lazy, many operations like slicing result in arrays that
+    do not own their data.  Have to make the array OWNDATA for it to
+    be converted across the language barrier.
+
+
+
+
     --------------------------------------------------------------------------
     TypeError                                 Traceback (most recent call last)
     File ~/opticks/CSGOptiX/tests/CSGOptiXService_FastAPI_test/check.py:64

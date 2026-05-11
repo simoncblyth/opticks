@@ -6,14 +6,17 @@
 
 struct NP_CURL_Header
 {
+    static std::string URL_Encode(const std::string& value);
     typedef std::int64_t INT ;
 
 
     std::string name ;
 
     std::string token ;
-    int         level ;
-    int         index ;
+    size_t      level ;
+    size_t      index ;
+    size_t      count ;
+    std::string meta  ;
 
     std::string dtype ;
     std::string shape ;
@@ -33,7 +36,15 @@ struct NP_CURL_Header
 
     NP_CURL_Header(const char* name);
 
-    void prepare_upload(const char* token_, int index_, int level_=0, const char* dtype_=nullptr, const char* shape_=nullptr );
+    void prepare_upload(
+         const std::string& token_,
+         size_t index_,
+         size_t level_,
+         size_t count_,
+         const std::string& dtype_,
+         const std::string& shape_,
+         const std::string& meta_ );
+
     void clear();
     void collect( const char* name, const char* value );
 
@@ -51,34 +62,71 @@ struct NP_CURL_Header
 
 
     static constexpr const char* x_opticks_token = "x-opticks-token" ;
-    static constexpr const char* x_opticks_level = "x-opticks-level" ; // debug level integer
-    static constexpr const char* x_opticks_index = "x-opticks-index" ;
+    static constexpr const char* x_opticks_index = "x-opticks-index" ;  // eg EventID
+    static constexpr const char* x_opticks_level = "x-opticks-level" ;  // debug level integer
+    static constexpr const char* x_opticks_count = "x-opticks-count" ;  // eg NumPhoton
 
     static constexpr const char* x_opticks_dtype = "x-opticks-dtype" ;
     static constexpr const char* x_opticks_shape = "x-opticks-shape" ;
+    static constexpr const char* x_opticks_meta = "x-opticks-meta" ;    // general metadata
 
     static constexpr const char* content_length = "content-length" ;
     static constexpr const char* content_type   = "content-type" ;
 
-    static  std::string Format(const char* prefix, int value);
-    static  std::string Format_LEVEL(int level);
-    static  std::string Format_INDEX(int index);
+    static  std::string Format(const char* prefix, size_t value);
+    static  std::string Format_INDEX(size_t index);
+    static  std::string Format_LEVEL(size_t level);
+    static  std::string Format_COUNT(size_t count);
 
-    static  std::string Format(const char* prefix, const char* value);
-    static  std::string Format_TOKEN(const char* token);
-    static  std::string Format_DTYPE(const char* dtype);
-    static  std::string Format_SHAPE(const char* shape);
+    static  std::string FormatString(const char* prefix, const std::string& value);
+    static  std::string Format_TOKEN(const std::string& token);
+    static  std::string Format_DTYPE(const std::string& dtype);
+    static  std::string Format_SHAPE(const std::string& shape);
+    static  std::string Format_META(const std::string& meta);
 
     static void Parse_SHAPE( std::vector<INT>& sh, const char* shape );
-    static bool Expected_DTYPE(const char* dtype);
+    static bool Expected_DTYPE(const std::string& dtype);
 
 };
+
+
+
+
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
+
+inline std::string NP_CURL_Header::URL_Encode(const std::string& value)
+{
+    std::ostringstream escaped;
+    escaped << std::hex << std::uppercase;
+
+    for (char c : value) {
+        // Keep alphanumeric and other safe characters
+        if (isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+            escaped << c;
+        } else {
+            // Any other character (including \n) becomes %XX
+            escaped << '%' << std::setw(2) << std::setfill('0') << (int)(unsigned char)c;
+        }
+    }
+    return escaped.str();
+}
+
+
+
+
+
+
+
 
 inline NP_CURL_Header::NP_CURL_Header( const char* name_ )
     :
     name(name_),
     level(0),
     index(0),
+    count(0),
     headerlist(nullptr)
 {
 }
@@ -92,35 +140,29 @@ Populates headerlist with the non-nullptr arguments
 **/
 
 
-inline void NP_CURL_Header::prepare_upload(const char* token_, int index_, int level_, const char* dtype_, const char* shape_ )
+inline void NP_CURL_Header::prepare_upload(const std::string& token_, size_t index_, size_t level_, size_t count_, const std::string& dtype_, const std::string& shape_, const std::string& meta_ )
 {
-    std::string x_index = Format_INDEX(index_) ;
+    bool expected_dtype = Expected_DTYPE(dtype_);
+    assert( expected_dtype );
+
     std::string x_level = Format_LEVEL(level_) ;
+    std::string x_index = Format_INDEX(index_) ;
+    std::string x_count = Format_COUNT(count_) ;
+
+    std::string x_token = Format_TOKEN(token_) ;
+    std::string x_dtype = Format_DTYPE(dtype_) ;
+    std::string x_shape = Format_SHAPE(shape_) ;
+    std::string x_meta  = Format_META(meta_) ;
 
     assert( headerlist == nullptr );  // should have been cleared
     headerlist = curl_slist_append(headerlist, x_index.c_str() );
     headerlist = curl_slist_append(headerlist, x_level.c_str() );
+    headerlist = curl_slist_append(headerlist, x_count.c_str() );
 
-
-    if( token_ )
-    {
-        std::string x_token = Format_TOKEN(token_) ;
-        headerlist = curl_slist_append(headerlist, x_token.c_str() );
-    }
-
-    if( dtype_ )
-    {
-        bool expected_dtype = Expected_DTYPE(dtype_);
-        assert( expected_dtype );
-        std::string x_dtype = Format_DTYPE(dtype_) ;
-        headerlist = curl_slist_append(headerlist, x_dtype.c_str() );
-    }
-
-    if( shape_ )
-    {
-        std::string x_shape = Format_SHAPE(shape_) ;
-        headerlist = curl_slist_append(headerlist, x_shape.c_str() );
-    }
+    headerlist = curl_slist_append(headerlist, x_token.c_str() );
+    headerlist = curl_slist_append(headerlist, x_dtype.c_str() );
+    headerlist = curl_slist_append(headerlist, x_shape.c_str() );
+    headerlist = curl_slist_append(headerlist, x_meta.c_str() );
 }
 
 inline void NP_CURL_Header::clear()  // clears everything other than name
@@ -128,8 +170,10 @@ inline void NP_CURL_Header::clear()  // clears everything other than name
     token.clear();
     level = 0 ;
     index = 0 ;
+    count = 0 ;
     dtype.clear();
     shape.clear();
+    meta.clear();
     sh.clear();
     c_length = 0 ;
     c_type.clear();
@@ -170,6 +214,11 @@ inline void NP_CURL_Header::collect( const char* name, const char* value )
         std::stringstream ss(value);
         ss >> index ;
     }
+    else if( 0==strcmp(name,x_opticks_count))
+    {
+        std::stringstream ss(value);
+        ss >> count ;
+    }
     else if( 0==strcmp(name,x_opticks_token))
     {
         token = value ;
@@ -177,6 +226,10 @@ inline void NP_CURL_Header::collect( const char* name, const char* value )
     else if( 0==strcmp(name,x_opticks_dtype))
     {
         dtype = value ;
+    }
+    else if( 0==strcmp(name,x_opticks_meta))
+    {
+        meta = value ;
     }
     else if( 0==strcmp(name,x_opticks_shape))
     {
@@ -365,9 +418,11 @@ inline std::string NP_CURL_Header::desc() const
     ss << std::setw(20) << x_opticks_token << " : " << token << "\n" ;
     ss << std::setw(20) << x_opticks_level << " : " << level << "\n" ;
     ss << std::setw(20) << x_opticks_index << " : " << index << "\n" ;
+    ss << std::setw(20) << x_opticks_count << " : " << count << "\n" ;
     ss << std::setw(20) << x_opticks_dtype << " : " << dtype << "\n" ;
     ss << std::setw(20) << x_opticks_shape << " : " << shape << "\n" ;
     ss << std::setw(20) << "sh.size"     << " : " << sh.size() << "\n" ;
+    ss << std::setw(20) << x_opticks_meta  << " : " << meta << "\n" ;
     ss << std::setw(20) << "sstr"        << " : " << sstr() << "\n" ;
     ss << std::setw(20) << content_length << " : " << c_length << "\n" ;
     ss << std::setw(20) << content_type   << " : " << c_type << "\n" ;
@@ -380,18 +435,19 @@ inline std::string NP_CURL_Header::desc() const
 
 
 
-inline std::string NP_CURL_Header::Format( const char* prefix, int value )
+inline std::string NP_CURL_Header::Format( const char* prefix, size_t value )
 {
     std::stringstream ss ;
     ss << prefix << ":" << value ;
     std::string str = ss.str();
     return str ;
 }
-inline std::string NP_CURL_Header::Format_LEVEL( int level ){  return Format(x_opticks_level, level ); }
-inline std::string NP_CURL_Header::Format_INDEX( int index ){  return Format(x_opticks_index, index ); }
+inline std::string NP_CURL_Header::Format_LEVEL( size_t level ){  return Format(x_opticks_level, level ); }
+inline std::string NP_CURL_Header::Format_INDEX( size_t index ){  return Format(x_opticks_index, index ); }
+inline std::string NP_CURL_Header::Format_COUNT( size_t count ){  return Format(x_opticks_count, count ); }
 
 
-inline std::string NP_CURL_Header::Format( const char* prefix, const char* value )
+inline std::string NP_CURL_Header::FormatString( const char* prefix, const std::string& value )
 {
     std::stringstream ss ;
     ss << prefix << ":" << value ;
@@ -399,9 +455,14 @@ inline std::string NP_CURL_Header::Format( const char* prefix, const char* value
     return str ;
 }
 
-inline std::string NP_CURL_Header::Format_TOKEN( const char* token ){ return Format(x_opticks_token, token ); }
-inline std::string NP_CURL_Header::Format_DTYPE( const char* dtype ){ return Format(x_opticks_dtype, dtype ); }
-inline std::string NP_CURL_Header::Format_SHAPE( const char* shape ){ return Format(x_opticks_shape, shape ); }
+inline std::string NP_CURL_Header::Format_TOKEN( const std::string& token ){ return FormatString(x_opticks_token, token ); }
+inline std::string NP_CURL_Header::Format_DTYPE( const std::string& dtype ){ return FormatString(x_opticks_dtype, dtype ); }
+inline std::string NP_CURL_Header::Format_SHAPE( const std::string& shape ){ return FormatString(x_opticks_shape, shape ); }
+inline std::string NP_CURL_Header::Format_META(  const std::string& meta_ )
+{
+    std::string meta = URL_Encode(meta_);
+    return FormatString(x_opticks_meta,  meta.c_str()  );
+}
 
 inline void NP_CURL_Header::Parse_SHAPE( std::vector<INT>& sh, const char* shape )
 {
@@ -411,10 +472,9 @@ inline void NP_CURL_Header::Parse_SHAPE( std::vector<INT>& sh, const char* shape
     while (ss >> num) sh.push_back(num);
 }
 
-inline bool NP_CURL_Header::Expected_DTYPE(const char* dtype)
+inline bool NP_CURL_Header::Expected_DTYPE(const std::string& dtype)
 {
-     return dtype_convert::expected_noncomplex_dtype(dtype);
+     return dtype_convert::expected_noncomplex_dtype(dtype.c_str());
 }
-
 
 

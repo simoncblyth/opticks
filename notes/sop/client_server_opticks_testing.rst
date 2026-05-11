@@ -4,9 +4,13 @@ client_server_opticks_testing
 TODO
 ------
 
-* TODO : photon count logging
+* TODO : photon cost aware and VRAM protecting server
+
+  * "Retry-After:?"  header response when server too busy to serve the client
+  * how to test this kinda thing ?
+
 * TODO : saving gensteps client side for fast replay testing against server without any initialization cost
-* TODO : verbosity control on client and server
+* TODO : more verbosity control on client and server
 * TODO : optional optimization loading preexisting Opticks geometry instead of doing the translation ?
 
   * dangerous as risks using stale Opticks geometry - but non-default-expert-only-option OK
@@ -14,11 +18,6 @@ TODO
 * TODO : loosen requirement for exact same hit flavor between client and server
 
   * need to signal from client to server via genstep metadata the hit flavor : hit/hitlite/hitlitemerged etc..
-
-* TODO : photon cost aware and VRAM protecting server
-
-  * "Retry-After:?"  header response when server too busy to serve the client
-  * how to test this kinda thing ?
 
 * WIP : make OpticksClient release onto cvmfs ?
 
@@ -34,20 +33,21 @@ TODO
 DONE
 -----
 
+* DONE : photon count needed for request cost aware server added via new header
 * DONE : client vs monolithic result comparison, SEvt array saving - EXACT SAME HIT DIGESTS
 * FIXED : ~/o/notes/issues/qcerenkov__wavelength_sampled_bndtex_logging_in_server_client_running.rst
 * DONE : simple client vs monolithic result comparison - shows issue same with both
-* DONE : CK issue not rare, looks like every CK photon afflicted suggesting bnd or matline issue
+* DONE : CK issue not rare, looks like every CK photon afflicted suggesting bnd or matline issue - WAS CAUSED BY INCOMPLETE QUAD/QUAD4 TEX METADATA
 * DONE : acting on reset in the client
 * DONE : added OPTICKS_CONFIG high level control ~/o/notes/issues/generalizing-build-install-dirs-with-OPTICKS_CONFIG.rst
 * DONE : build and test JUNOSW against the OPTICKS_CONFIG:Client build "lo_client" (NOT:WITH_CUDA but WITH_CURL, subset of packages + partial packages)
 
 
 
-SEvt array saving in server/client vs mono for debug ?
-----------------------------------------------------------
+DONE : SEvt array saving in server/client vs mono for debug ?
+--------------------------------------------------------------
 
-* doing this sever side makes sense as that will be almost same as mono runnning ?
+* doing this server side makes sense as that will be almost same as mono runnning ?
 
 Run server with::
 
@@ -115,6 +115,25 @@ same source tree.
    cat ~/.opticks/GEOM/ENVSET.sh # check configured installation (OPTICKS_CONFIG and junosw branch in path to envset.sh)
 
    ljrt100  # or ljrt1000
+
+
+
+Workstation only server-client test
+-------------------------------------
+
+
+1. start server after updating full opticks::
+
+   ~/j/bin/oj_server.sh
+
+
+
+
+
+
+
+
+
 
 
 

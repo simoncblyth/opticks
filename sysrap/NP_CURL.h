@@ -111,7 +111,7 @@ struct NP_CURL
 
 
     const char*       url ;
-    const char*       token ;
+    std::string       token ;
     int               level ;
     int               retry_max ;
     int               retry_wait ;
@@ -138,18 +138,18 @@ struct NP_CURL
 
 
     static  NP_CURL* Get();
-    static  NP* TransformRemote( NP* a, int index );
+    static  NP* TransformRemote( NP* a, size_t index, size_t count );
     static void Clear();
 
     NP_CURL();
     virtual ~NP_CURL();
 
-    NP* transformRemote( NP* a, int index );
+    NP* transformRemote( NP* a, size_t index, size_t count );
     std::string desc() const ;
 
 private:
     // internal methods invoked by transformRemote
-    void prepare_upload(   NP* a, int index );
+    void prepare_upload(   NP* a, size_t index, size_t count );
     void prepare_download();
     void perform();
     NP*  collect_download();
@@ -164,11 +164,11 @@ inline NP_CURL* NP_CURL::Get()
 }
 
 
-inline NP* NP_CURL::TransformRemote( NP* a, int index ) // static
+inline NP* NP_CURL::TransformRemote( NP* a, size_t index, size_t count ) // static
 {
     if(!a) return nullptr ;
     NP_CURL* nc = Get();
-    return nc->transformRemote( a, index )  ;
+    return nc->transformRemote( a, index, count )  ;
 }
 
 inline void NP_CURL::Clear()
@@ -219,11 +219,11 @@ inline NP_CURL::~NP_CURL()
 }
 
 
-inline NP* NP_CURL::transformRemote( NP* a, int index )
+inline NP* NP_CURL::transformRemote( NP* a, size_t index, size_t count )
 {
     if(!a) return nullptr ;
 
-    prepare_upload( a, index );
+    prepare_upload( a, index, count );
     prepare_download();
     perform();
 
@@ -259,27 +259,28 @@ TODO:
 
 **/
 
-inline void NP_CURL::prepare_upload( NP* a, int index )
+inline void NP_CURL::prepare_upload( NP* a, size_t index, size_t count )
 {
     if(level > 0) std::cout << "[NP_CURL::prepare_upload\n" ;
 
     long upload_size = 0 ;
 
 #ifdef WITHOUT_MAGIC
-    // DTYPE and SHAPE travel in headers NOT:BODY
+    // OLD APPROACH WHERE PAYLOAD JUST CARRIES ARRAY DATA
     upload->size = a->arr_bytes();
     upload->buffer = (char*)a->bytes();
     upload->position = 0 ;
-    upload_size = upload->size ;          // just arr data in old approach
-    std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
-    std::string shape = a->sstr();        // eg "(10, 4, 4, )"
-    uhdr.prepare_upload( token, index, level, dtype.c_str(), shape.c_str() );
+    upload_size = upload->size ;
 #else
     // default MAGIC approach transports serialized array including both hdr and arr data
     a->update_headers();
     upload_size = a->serialize_bytes() ;  // both hdr and arr data
-    uhdr.prepare_upload( token, index, level );
 #endif
+
+    std::string dtype = a->dtype_name() ; // eg float32 uint8 uint16 ..
+    std::string shape = a->sstr();        // eg "(10, 4, 4, )"
+    const std::string& meta = a->meta ;
+    uhdr.prepare_upload( token, index, level, count, dtype, shape, meta );
 
     if(level > 0) std::cout << "-NP_CURL::prepare_upload\n" ;
 

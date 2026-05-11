@@ -1470,6 +1470,11 @@ Reads the NP array serialized bytes into the buffer via multiple calls to this c
 so it could be serialized byte-by-byte if size*nitems = 1.
 Progress from call to call is stored in arr->position
 
+
+Q: Why append meta after the data in a non-standard manner ? Instead of using HTTP headers for that ?
+A: Unclear ? Perhaps to simplify testing from commandline with "curl" ? It keeps metadata under NP control ?
+
+
 **/
 
 inline size_t NP::ReadToBufferCallback(char* buffer, size_t size, size_t nitems, void* arg ) // static
@@ -1744,6 +1749,14 @@ inline NP* NP::CreateFromBuffer( const std::vector<char>& buf, size_t size, size
 /**
 NP::WriteToArrayCallback
 -------------------------
+
+NB the hdr referred to in this method is the internal NP array header
+in NPY format - this hdr encodes array type, shape and fortranOrder
+(that is not the same as the HTTP response headers).
+
+Note that once this hdr is complete the NP array is resized to fit,
+which avoids growing buffers/reallocations etc..
+
 
 Invoked from NP_CURL::prepare_download
 

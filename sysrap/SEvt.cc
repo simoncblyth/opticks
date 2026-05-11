@@ -3478,7 +3478,9 @@ Makes NP array from contents of genstep vector
 
 NP* SEvt::makeGenstepArrayFromVector() const
 {
-    return NPX::ArrayFromData<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ;
+    NP* gs = NPX::ArrayFromData<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ;
+    gs->set_meta<size_t>(NumPhoton,getNumPhotonCollected());
+    return gs ;
 }
 
 std::string SEvt::descGenstepArrayFromVector() const
