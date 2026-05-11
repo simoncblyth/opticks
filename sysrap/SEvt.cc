@@ -3473,13 +3473,13 @@ SEvt::makeGenstepArrayFromVector (formerly misnamed getGenstepArray)
 
 Makes NP array from contents of genstep vector
 
-**/
 
+**/
 
 NP* SEvt::makeGenstepArrayFromVector() const
 {
     NP* gs = NPX::ArrayFromData<float>( (float*)genstep.data(), int(genstep.size()), 6, 4 ) ;
-    gs->set_meta<size_t>(NumPhoton,getNumPhotonCollected());
+    if(gs) gs->set_meta<size_t>(NumPhoton,getNumPhotonCollected()); // check to avoid FAIL of ~/o/CSG/tests/CSGSimtraceTest.sh
     return gs ;
 }
 
