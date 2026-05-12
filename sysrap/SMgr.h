@@ -16,6 +16,10 @@ UNcompleted thoughts on evt level concurrency, from a top down viewpoint.
   need top down coordination
 
 
+See Gemini suggestions:
+
+* CSGOptiX/tests/CSGOptiXService_FastAPI_test/concurrent_requests.rst
+
 
 **/
 
@@ -48,9 +52,6 @@ inline void SLaunchContext::init()
     cudaEventCreate(&photons_done);
     cudaEventCreate(&hits_merged_done);
 }
-
-
-
 
 
 

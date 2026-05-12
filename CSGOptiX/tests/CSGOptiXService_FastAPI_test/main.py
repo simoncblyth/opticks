@@ -22,6 +22,22 @@ simulate
 array_create
     test endpoint
 
+
+
+HOW WILL CONCURRENT CALLS FAIL ?
+-----------------------------------
+
+See::
+
+   ~/np/tests/np_curl_test/np_curl_test.sh k6_load
+
+NOT FAILING. Presumably because launches are being serialized by use of stream zero.
+For thoughts on top-down and bottom-up concurrency see:
+
+* ~/o/sysrap/SMgr.h
+* ~/o/CSGOptiX/tests/CSGOptiXService_FastAPI_test/concurrent_requests.rs
+
+
 """
 
 
@@ -33,6 +49,8 @@ from urllib.parse import quote
 
 #from pydantic import BaseModel
 from fastapi import FastAPI, Request, Response, Header, Depends, HTTPException
+import asyncio
+
 
 import opticks_CSGOptiX as cx
 
@@ -40,6 +58,12 @@ _svc = cx._CSGOptiXService()
 
 app = FastAPI()
 
+
+lanes = {
+    "small":  asyncio.Semaphore(4),
+    "medium": asyncio.Semaphore(2),
+    "large":  asyncio.Semaphore(1)
+}
 
 def make_response( arr:np.ndarray, meta:str="", magic:bool=False, index:int=-1, level:int = 0):
     """
@@ -259,11 +283,15 @@ async def parse_request(request: Request):
     request.state.level = level
     request.state.magic = has_numpy_magic
 
+    return request
 
 
 
-@app.post('/simulate', response_class=Response, dependencies=[Depends(parse_request)])
-async def simulate(request: Request):
+
+
+
+@app.post('/simulate_simple', response_class=Response, dependencies=[Depends(parse_request)])
+async def simulate_simple(request: Request):
     """
     :param request: Request
     :return response: Response
@@ -288,6 +316,76 @@ async def simulate(request: Request):
     response = make_response(ht, ht_meta, magic, index, level)
 
     return response
+
+
+
+
+
+@app.post('/simulate', response_class=Response)
+async def simulate(request: Request):
+    """
+    :param request: Request
+    :return response: Response
+
+    Rejig compared to simulate_simple by deferring the parse_request
+    until a lane is available
+
+    1. parse_request dependency sets request.state values
+    2. call _svc with *gs* to give *ht*
+    3. return *ht* as FastAPI Response
+
+    Test this with::
+
+         ~/np/tests/np_curl_test/np_curl_test.sh
+         ~/np/tests/np_curl_test/np_curl_test.sh k6_load
+
+    """
+
+    try:
+       count = int(request.headers.get("x-opticks-count", 0))
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid count header")
+
+
+    if count <= 1_000_000:
+        lane = lanes["small"]
+    elif count <= 10_000_000:
+        lane = lanes["medium"]
+    else:
+        lane = lanes["large"]
+    pass
+
+    # 3. CHECK SEMAPHORE WITHOUT BLOCKING (Optional 429 logic)
+    # If you want to return 429 immediately instead of queuing:
+    # TODO: calculate Retry-After delay ?
+    if lane.locked():
+        return Response(
+            content="Server Busy",
+            status_code=429,
+            headers={"Retry-After": "5"}
+        )
+
+
+    async with lane:
+        await parse_request(request)
+
+    gs = request.state.array
+    gs_meta = request.state.meta
+    index = request.state.index
+    count = request.state.count
+    level = request.state.level
+    magic = request.state.magic
+
+    if level > -1: print("main.py:simulate index %d count %d gs.shape %s gs_meta[%s] " % ( index, count, str(gs.shape), gs_meta.replace("\n",",") ))
+
+    ht, ht_meta = _svc.simulate_with_meta(gs, gs_meta, index)
+
+    response = make_response(ht, ht_meta, magic, index, level)
+
+    return response
+
+
+
 
 
 
