@@ -315,3 +315,210 @@ greedy request from crashing the entire server.
 
 
 
+Requests that would exceed allowable VRAM are handled by slicing the input
+gensteps and doing multiple launches.  How would that fit into this pattern ?
+
+
+
+
+If you already have logic to slice gensteps and perform multiple launches, this
+fits perfectly into the **Tranche Pattern** as a "Virtual Lane." It allows you
+to process a workload that is physically larger than the pre-allocated VRAM
+"slot" by trading time for memory.
+
+In this scenario, your `SLaunchContext` acts as a **sliding window**.
+
+### 1. The "Sliding Window" Execution
+
+Instead of trying to fit 10 million photons into a 1 million photon tranche,
+you use the fixed buffer as a reusable workspace.
+
+* **Step 1:** Upload the first slice of gensteps to the pre-allocated `d_photons` buffer.
+* **Step 2:** Launch the OptiX propagation.
+* **Step 3:** Download hits (or accumulate them on-device in a separate, perhaps larger, hits buffer).
+* **Step 4:** Repeat until all slices are processed.
+
+### 2. Implementation in the `SMgr` Pattern
+
+You should update your `SLaunchContext` to handle the "Batching" logic
+internally. The FastAPI layer doesn't need to know about the slicing; it just
+knows it handed a large job to a specific lane.
+
+```cpp
+void SLaunchContext::process_large_job(const HostGensteps& all_gs) {
+    size_t offset = 0;
+    while (offset < all_gs.total_photons) {
+        // 1. Calculate slice size based on this tranche's max_photons
+        size_t slice_count = std::min(max_photons, all_gs.total_photons - offset);
+
+        // 2. Upload slice to the PRE-ALLOCATED buffer
+        cudaMemcpyAsync(d_photons, all_gs.data + offset, slice_count * sizeof(GS), stream);
+
+        // 3. Launch OptiX on this stream
+        optixLaunch(pipeline, stream, ..., d_photons, ...);
+
+        // 4. Record event to ensure hits are ready before next upload or download
+        cudaEventRecord(photons_done, stream);
+        
+        offset += slice_count;
+    }
+    // 5. Final Synchronize or download at the very end
+    cudaStreamSynchronize(stream);
+}
+
+```
+
+### 3. Impact on Server Resources
+
+This "Slicing inside a Tranche" approach creates a very interesting performance
+profile in your k6 reports:
+
+* **VRAM Stability:** Your VRAM usage will be a "flat line." Even if a user
+sends a gargantuan request, it never exceeds the tranche boundary because it’s
+being processed in pieces.
+
+* **Latency Linearity:** You will see `http_req_duration` scale linearly with
+the number of slices. A job that requires 4 slices will take almost exactly 4x
+longer than a job that fits in 1 slice.
+
+* **The "Slow Lane" Effect:** If you only have 1 "Large" lane, a sliced job
+will occupy that lane for a long time. This is where your **429: Too Many
+Requests** logic is critical—it prevents other large jobs from queueing up and
+timing out while the first one is busy slicing.
+
+### 4. Refining the Lane Logic
+
+To optimize this, you might decide that the "Small" lane never slices (it just
+rejects anything too big), while the "Large" lane is the only one equipped with
+the slicing logic.
+
+| Lane | Pre-allocated VRAM | Slicing Behavior |
+| --- | --- | --- |
+| **Small** | 512 MB | **None.** Reject if job > 512MB. |
+| **Large** | 4 GB | **Enabled.** If job is 12GB, do 3 passes. |
+
+### 5. What k6 will show you
+
+If you test this with k6, pay close attention to the **correlation between
+`x-opticks-count` and `http_req_duration**`.
+
+If slicing is working correctly, the graph of `Count vs. Duration` should be a
+series of "Steps." Every time the count exceeds a multiple of your tranche
+size, you'll see a jump in latency as the context moves from $N$ to $N+1$
+launches.
+
+This architecture is extremely robust because it treats VRAM as a **cached
+resource** rather than a **dynamic allocation**, ensuring your server remains
+responsive and never crashes due to an unexpectedly large input.
+
+
+
+
+Regarding the 429s how to calculate the "Retry-After" delay.  Need an estimate
+of current processing, but there will be other requests coming in too ?
+
+
+
+Calculating a meaningful `Retry-After` value is a balancing act. If the delay
+is too short, the client retries while the VRAM is still locked, wasting CPU
+cycles and network bandwidth. If it’s too long, your GPU sits idle while
+clients wait unnecessarily.
+
+To get a smart estimate, you need to combine **deterministic** data (how long a
+slice takes) with **probabilistic** data (how many slices are left in the
+queue).
+
+### 1. The "Cost Per Slice" Constant
+
+Since you are using fixed VRAM tranches and serialized slicing, the time to
+process one "chunk" is remarkably stable. You should benchmark your service to
+find the average time ($T_{slice}$) for a full tranche propagation.
+
+### 2. The Calculation Formula
+
+The estimated wait time for a new request depends on how many jobs are already
+ahead of it and how far along the *current* job is.
+
+$$RetryAfter = (N_{queued\_jobs} \times T_{job\_avg}) + T_{remaining\_current\_slices}$$
+
+However, since you are using **Semaphores** and **Lanes**, you can simplify
+this logic based on the specific lane's state.
+
+### 3. Implementation Strategy: The "Remaining Work" Counter
+
+The most accurate way is to have your `SLaunchContext` or `SMgr` track its progress.
+
+```python
+# Pseudo-logic for the FastAPI Layer
+@app.post("/simulate")
+async def simulate(request: Request):
+    count = int(request.headers.get("x-opticks-count", 0))
+    lane, tranche_size = select_lane(count)
+    
+    if lane.locked():
+        # 1. How many total slices does the currently running job have?
+        # 2. How many has it finished?
+        # You can store this in a global/shared dictionary updated by the C++ worker
+        remaining_slices = SMgr.get_remaining_slices(lane_id)
+        
+        # Calculate delay: (Remaining Slices * Time per Slice) + Buffer
+        # Example: 5 slices left * 0.2s per slice + 0.5s safety margin
+        delay = (remaining_slices * T_SLICE) + 0.5
+        
+        return Response(
+            status_code=429, 
+            headers={"Retry-After": str(int(delay))}
+        )
+
+```
+
+### 4. Accounting for "Incoming Traffic"
+
+You mentioned that other requests are coming in too. In a standard 429
+scenario, you **do not** account for requests that haven't arrived yet.
+
+* **Why?** Because a 429 tells the client when the *current* congestion is
+expected to clear. If you add time for "potential future requests," you
+artificially throttle your throughput.
+
+* **The "Thundering Herd":** If 10 clients receive `Retry-After: 5`, they will
+all hit your server at exactly $T+5$.
+
+* **The Fix:** Add **Jitter**. Instead of a flat estimate, return `delay +
+random.uniform(0.5, 2.0)`. This spreads the retries out so they don't all slam
+the semaphore at the same millisecond.
+
+
+
+### 5. Summary of Factors for your Estimate
+
+| Factor | Source | How to use it |
+| --- | --- | --- |
+| **Slices Remaining** | `SLaunchContext` | `num_slices - current_slice_index` |
+| **Slice Velocity** | Benchmark | The average seconds per `optixLaunch` + `Memcpy`. |
+| **Queue Depth** | Semaphore | If you allow a queue (instead of immediate 429), count the waiters. |
+| **Overhead** | Fixed Constant | Add ~200ms for FastAPI/Python overhead and networking. |
+
+### k6 Verification
+
+When you implement this, use your k6 script to monitor the **Wait Time**.
+
+* If your `Retry-After` is accurate, you should see the "Retried" requests in
+k6 succeeding on their second attempt with very high frequency.
+
+* If you see "Double 429s" (a retry that gets limited again), your estimate is
+too aggressive.
+
+* If your GPU utilization drops between requests, your estimate is too conservative.
+
+**Pro-Tip:** If your C++ `SMgr` can't easily communicate "remaining slices"
+back to Python, a simpler "exponential backoff" hint (e.g., 2s, 4s, 8s) is
+often sufficient, but for Opticks-level precision, the "Remaining Slices"
+method is the gold standard.
+
+
+
+
+
+
+
