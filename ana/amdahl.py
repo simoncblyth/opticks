@@ -54,9 +54,10 @@ if __name__ == '__main__':
      ax.legend()
      fig.show()
 
-     path = os.path.expandvars("$HOME/simoncblyth.github.io/env/presentation/figs/amdahl/amdahl.png")
+     path = os.path.expandvars("$HOME/simoncblyth.github.io/env/presentation/figs/amdahl/amdahl300.png")
      print(f"save fig to {path}")
-     plt.savefig(path)
+     #plt.savefig(path, dpi=300, bbox_inches='tight')
+     plt.savefig(path, dpi=300)
 
     
 
