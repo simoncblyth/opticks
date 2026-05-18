@@ -92,7 +92,7 @@ SPM_future<T> SPM::merge_partial_select_async(
 
     cudaEventCreateWithFlags(&result.ready, cudaEventDisableTiming);
     cudaEventRecord(result.ready, stream);
-    // Record event immediately after last operation
+    // Record event immediately after last operation - signalling that the merge is completed
 
     return result ;
 }

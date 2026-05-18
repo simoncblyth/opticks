@@ -1214,33 +1214,38 @@ template NP* QEvt::PerLaunchMerge<sphotonlite>(sevent* evt, cudaStream_t stream)
 QEvt::FinalMerge
 ----------------
 
-The canonical argument array this is used with is concat_hitlitemerged
-invoked from QSim::simulate_final_merge
+This is invoked from QSim::simulate_final_merge, that only gets called
+from QSim::simulate for very large events that require multiple kernel
+launches due to VRAM limits.
+The canonical argument array this accepts is simply multi-launch concatted:
+
+1. (sphotonlite)hitlitemerged
+2. (sphoton)hitmerged
+
 
 Conceptually the FinalMerge and PerLaunchMerge use the same processing
 with both flagmask selection and hit merging using (identity,timebucket) key
 with typical OPTICKS_MERGE_WINDOW of 1 (ns).  However the two cases differ
 in their inputs:
 
-+----------------+---------------------------------------+----------------------------------+
-| Method         |  Input                                |   Output                         |
-+================+=======================================+==================================+
-| PerLaunchMerge |  photonlite device array              |  hitlitemerged NP array on host  |
-+----------------+---------------------------------------+----------------------------------+
-| FinalMerge     |  concat hitlitemerge NP array on host |  ditto                           |
-+----------------+---------------------------------------+----------------------------------+
++----------------+-------------------------------------------------+-------------------------------------------+
+| Method         |  Input                                          |   Output                                  |
++================+=================================================+===========================================+
+| PerLaunchMerge |  photon/photonlite device array                 | hitmerged/hitlitemerged NP array on host  |
++----------------+-------------------------------------------------+-------------------------------------------+
+| FinalMerge     |  concat hitmerged/hitlitemerge NP array on host | ditto                                     |
++----------------+-------------------------------------------------+-------------------------------------------+
 
 **/
+
 
 template<typename T>
 NP* QEvt::FinalMerge(const NP* all, cudaStream_t stream ) // static
 {
     NP_future merge_result = FinalMerge_async<T>(all, stream );
 
-    cudaStream_t consumer ;
-    cudaStreamCreate(&consumer);
-
-    merge_result.wait(consumer);
+    // Force the CPU to halt until the GPU finishes the work on that event
+    cudaEventSynchronize(merge_result.ready);
 
     NP* out = merge_result.arr ;
 
@@ -1252,12 +1257,61 @@ template NP* QEvt::FinalMerge<sphotonlite>(const NP* all, cudaStream_t stream);
 
 
 
+/**
+QEvt::FinalMerge_problematic
+-----------------------------
+
+Issue: the wait does not wait on CPU it establishes dependency on GPU and returns immediately
+which likely means that an invalid arr is returned.
+
+Actually no, the array returned in valid due to T:zeros. However it is likely not 
+filled when this returns. But that would not matter so long as there is a sync
+on the stream before actually reading from the array.
+
+Although this explanation for non-crashing and giving the expected merged array may be the case, 
+it is still confusing and needs fixing. Also the consumer stream is created 
+and never destroyed or even used, just leaking.
+
+**/
+
+
+template<typename T>
+NP* QEvt::FinalMerge_problematic(const NP* all, cudaStream_t stream ) // static
+{
+    NP_future merge_result = FinalMerge_async<T>(all, stream );
+
+    cudaStream_t consumer ;
+    cudaStreamCreate(&consumer);   // co
+
+    merge_result.wait(consumer);
+    // HMM: Gemini says this does not wait on CPU, so its pointless
+
+    NP* out = merge_result.arr ;
+
+    return out ;
+}
+
+template NP* QEvt::FinalMerge_problematic<sphoton>(    const NP* all, cudaStream_t stream);
+template NP* QEvt::FinalMerge_problematic<sphotonlite>(const NP* all, cudaStream_t stream);
+
+
+
+
+
 
 
 
 /**
 QEvt::FinalMerge_async
 -----------------------
+
+Trying to async coordinate two actions:
+
+1. merge computation
+2. download of the results
+
+Potentially simpler way is to just use one stream ? 
+See ~/o/sysrap/simpler_async_cuda.rst
 
 **/
 
@@ -1293,6 +1347,10 @@ NP_future QEvt::FinalMerge_async(const NP* all, cudaStream_t stream ) // static
     // 4. use merge result to host alloc and download
 
     static cudaStream_t dl_stream = []{ cudaStream_t s; cudaStreamCreate(&s); return s; }();
+    // thanks to the static this lambda executes exactly once during program lifetime and sets dl_stream
+    // which gets reused for every invokation of this method
+    // .. this is a trick to avoid having to create and destroy streams on every call
+    // which would be expensive, the action is exactly the same
 
     NP_future result;
     result.arr = T::zeros( merge_result.count );
@@ -1300,10 +1358,18 @@ NP_future QEvt::FinalMerge_async(const NP* all, cudaStream_t stream ) // static
 
     if( merge_result.count > 0 && merge_result.ptr )
     {
+        // (Gemini) Record (cudaEvent_t)merge_result.ready on stream to mark that the merge kernel has finished
+        cudaEventRecord(merge_result.ready, stream);
+
         // normal path : work to do
         cudaStreamWaitEvent(dl_stream, merge_result.ready, 0);
+        // this does cause CPU (or GPU) to block - it just posts a marker into dl_stream
+        // which tells CUDA that (cudaEvent_t)merge_result.ready must complete before actions on dl_stream can proceed
+        // [this expresses dependency order : merge must complete before the download can start]
+
 
         SPM::copy_device_to_host_async<T>( (T*)result.arr->bytes(), merge_result.ptr, merge_result.count, dl_stream );
+        // thanks to the cudaStreamWaitEvent this copy will stall dl_stream until the merge completes and triggers merge_result.ready
 
         cudaFreeAsync(merge_result.ptr, dl_stream);
 
