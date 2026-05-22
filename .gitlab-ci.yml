@@ -1,0 +1,4 @@
+# A dummy job that does nothing and exits immediately
+placeholder_job:
+  script:
+    - echo "Skipping actual CI/CD execution"
