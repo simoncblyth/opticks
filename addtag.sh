@@ -35,25 +35,31 @@ Workflow for adding Opticks tags:
        git add okconf/OpticksVersionNumber.hh release_notes.rst
        git commit -m "Prepare to ./addtag.sh $vntag OPTICKS_VERSION_NUMBER $opticks_version_number "
 
-3. push code changes to BOTH bitbucket and github::
+3. push code changes to bitbucket, github and gitlab::
 
        cd ~/opticks
        git push
 
-       # if not done already add "bitbucket" and "github" remotes
+       # if not done already add "bitbucket", "github" and "gitlab" remotes
        git remote -v
        git remote add bitbucket git@bitbucket.org:simoncblyth/opticks.git
        git remote add github git@github.com:simoncblyth/opticks.git
+       git remote add gitlab git@code.ihep.ac.cn:blyth/opticks.git
        git remote -v
 
        # to change remote origin while proxying to others stop working
        git remote set-url origin  git@github.com:simoncblyth/opticks.git
        git remote set-url origin  git@bitbucket.org:simoncblyth/opticks.git
        git remote set-url origin  git@gitlab.com:simoncblyth/opticks.git
+       git remote set-url origin  git@code.ihep.ac.cn:blyth/opticks.git
+
 
        git push              ## to whichever is currently origin
        git push github
        git push bitbucket
+       git push gitlab
+
+       git push all          ## push to all three 
 
 
 4. run this tag add and pushing script, check output commands and run if correct::

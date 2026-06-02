@@ -596,11 +596,72 @@ during the very first file, simply drop it to `89,100`.
 
 
 
+Oops need to change to default C4 to make a tarball
+----------------------------------------------------------
+
+Oops, cannot make distribution with the non-default C4::
+
+    [lo] A[blyth@localhost opticks]$ okdist-
+    [lo] A[blyth@localhost opticks]$ okdist--
+    NON-STANDARD: /data1/blyth/local/custom4_Debug/0.1.9
+    /home/blyth/opticks/bin/okdist.bash : ABORT AS om-cmake-prefix-path-check SHOWS THAT CMAKE_PREFIX_PATH CONTAINS NON-DISTRIBUTABLE PATHS
+    [lo] A[blyth@localhost opticks]$ 
+
+
+Change to default C4 (vip bash func) and om-cleaninstall::
+
+    local_c4_prefix()
+    {
+        : function that enables switching to a non default c4 to check
+        : SEE NOTES IN local_c4 functions AT HEAD ABOUT THE ORDER OF BUILD OPERATIONS WHEN CHANGING C4 PREFIX
+
+        echo $(local_c4_prefix_default)
+        #echo $VIP_LOCAL_BASE/local/custom4_Debug/0.1.8
+        #echo $VIP_LOCAL_BASE/local/custom4_Debug/0.1.9    ## HAVE BEEN USING THIS RECENTLY UNTIL JUN 2 2026
+    }
+
+
+::
+
+    om-cleaninstall
+    opticks-t 
+
+
+Now make that tarball
+----------------------
+
+Oops, editing these notes probably messes up the check::
+
+    [lo] A[blyth@localhost opticks]$ okdist--
+    /home/blyth/opticks/bin/okdist.bash : ABORT AS tdel -18.2830050730 IS NEGATIVE : SHOWS THE BUILD IS STALE RELATIVE TO SOURCE
+                              tgit : 1780386980
+                              tsrc : 1780387926.4346497830
+                              tpfx : 1780387908.1516447100
+                              tdel : -18.2830050730
+                         tdel_note : -ve tdel (tpfx - tsrc) indicates last build is outdated - MUST REBUILD BEFORE RELEASE
+                              dgit : Tue 02 Jun 2026 03:56:20 PM CST
+                              dsrc : Tue 02 Jun 2026 04:12:06 PM CST
+                              dpfx : Tue 02 Jun 2026 04:11:48 PM CST
+    [lo] A[blyth@localhost opticks]$ 
 
 
 
+Hmm, the tarball naming is after the last release which was a while ago. Thats misleading::
+
+    === okdist-tarball-extract
+    [2026-06-02 16:13:33,264] p71077 {/home/blyth/opticks/bin/oktar.py:248} INFO - common prefix extraction dir exists already /data1/blyth/local/opticks_Debug/el9_amd64_gcc11/Opticks-v0.6.3 
+    [2026-06-02 16:13:33,264] p71077 {/home/blyth/opticks/bin/oktar.py:249} INFO - removing xdir /data1/blyth/local/opticks_Debug/el9_amd64_gcc11/Opticks-v0.6.3 
+    [2026-06-02 16:13:33,294] p71077 {/home/blyth/opticks/bin/oktar.py:252} INFO - extracting tarball with common prefix el9_amd64_gcc11/Opticks-v0.6.3 into base /data1/blyth/local/opticks_Debug 
+    /data1/blyth/local/opticks_Debug/el9_amd64_gcc11
+    total 124
+    4 drwxr-xr-x. 31 blyth blyth 4096 Jun  2 16:13 .
+    0 lrwxrwxrwx.  1 blyth blyth   14 Jun  2 16:13 Opticks-vLatest -> Opticks-v0.6.3
+    4 drwxr-xr-x. 13 blyth blyth 4096 Jun  2 16:13 Opticks-v0.6.3
+    4 drwxr-xr-x. 16 blyth blyth 4096 May  8 15:30 ..
+    4 drwxr-xr-x. 13 blyth blyth 4096 Mar 25 16:28 Opticks-v0.6.2
+    4 drwxr-xr-x. 13 blyth blyth 4096 Mar 20 17:41 Opticks-v0.6.1
+    4 drwxr-xr-x. 13 blyth blyth 4096 Mar 20 17:30 Opticks-v0.6.0
 
 
-
-
+Pragmatic solution without changing okdist is to just make a release v0.6.4
 

@@ -8,7 +8,7 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
-| v0.6.4  | 64  | 2026/05/?? | start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown                                              |
+| v0.6.4  | 64  | 2026/06/02 | start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown, compilation fixes for CUDA 13.1             |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.3  | 63  | 2026/03/26 | operationally expedient release to mint new reference OJ build                                                                                                |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -99,9 +99,22 @@ Snapshot Tags History
 
 
 
-v0.6.4 2026/05/?? : start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown
---------------------------------------------------------------------------------------------------------------------------------------
+v0.6.4 2026/06/02 : start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown, compilation fixes for CUDA 13.1
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+* 2026-06-02 91f339811 - (HEAD -> master, gitlab/master) updates for compilation with CUDA 13.1 - main change is CCCL grouping of thrust headers
+* 2026-05-22 3ce21fc60 - add placeholder gitlab-ci config in attempt to stop gitlab spam
+* 2026-05-21 8219142e0 - (origin/master, origin/HEAD) thinking about VRAM memory pool approaches for titan backend
+* 2026-05-18 6307f9e98 - discussing QEvt::FinalMerge_async and async CUDA with Gemini reveals bug and potential reason why it appears to work and give expected results
+* 2026-05-12 a7a86d1dd - thinking what is needed for concurrent launching
+* 2026-05-12 21315fdcd - prepare small/medium/large gensteps for k6 testing
+* 2026-05-11 3c18bdef6 - rejig server/client headers bringing the magic and non-magic approaches closer together, add count and meta headers, quote the meta to avoid newline issues, write all HTTP headers in both cases for simplicity - they are not big anyhow and having in HTTP header means can know that info sooner and more easily, also more verbosity control
+* 2026-05-09 748fcb9ae - clarify SEvt saving config, by removal of old low level COMP envvar
+* 2026-05-09 fc2fff81d - fix qcerenkov.h issue, typo caused uploading of first quad of the quad4 metadata : found by adding metadata roundtrip test to QTex::uploadMeta
+* 2026-05-08 867064c1b - investigating qcerenkov warnings reveals need for QCerenkov rejig, started that by splitting the old icdf impl from current within QCerenkov.cc
+* 2026-05-08 19804a07a - improve SGenstep::Brief to debug the server-client CK issue, looks like all CK photons may be afflicted - suggesting bnd or matline issue
+* 2026-05-08 2daa4c114 - invoke SEvt::endOfEvent from SOpticksClientSimulator::reset, remove the SEvtMock using SOpticksClientSimulator_test.sh
+* 2026-05-07 50f494c7c - try generalizing test copying done by opticks-full to Client build
 * 2026-05-06 326cfb3b4 - rename to SOpticksClientSimulator.h
 * 2026-05-06 f6e928aed - avoid SEvt::addGenstep nullptr warning from ordinary running without any input genstep testing configured
 * 2026-05-06 dac072493 - clarifications and annotations to NP_CURL.h support for libcurl 7.76.1, adjust NP_CURL.h usage accomodating the support for older libcurl
