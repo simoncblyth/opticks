@@ -207,6 +207,9 @@ public:
     static NP*       FinalMerge(      const NP* hitmerged_or_hitlitemerged, cudaStream_t stream);
 
     template<typename T>
+    static NP*       FinalMerge_problematic(const NP* all, cudaStream_t stream );
+
+    template<typename T>
     static NP_future FinalMerge_async(const NP* hitmerged_or_hitlitemerged, cudaStream_t stream);
 
 public:

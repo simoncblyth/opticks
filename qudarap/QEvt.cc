@@ -1261,15 +1261,15 @@ template NP* QEvt::FinalMerge<sphotonlite>(const NP* all, cudaStream_t stream);
 QEvt::FinalMerge_problematic
 -----------------------------
 
-Issue: the wait does not wait on CPU it establishes dependency on GPU and returns immediately
-which likely means that an invalid arr is returned.
+Issue: the wait does not wait on CPU, rather it establishes dependency on GPU
+and returns immediately which likely means that an invalid arr is returned.
 
-Actually no, the array returned in valid due to T:zeros. However it is likely not 
+Actually no, the array returned in valid due to T:zeros. However it is likely not
 filled when this returns. But that would not matter so long as there is a sync
 on the stream before actually reading from the array.
 
-Although this explanation for non-crashing and giving the expected merged array may be the case, 
-it is still confusing and needs fixing. Also the consumer stream is created 
+Although this explanation for non-crashing and giving the expected merged array may be the case,
+it is still confusing and needs fixing. Also the consumer stream is created
 and never destroyed or even used, just leaking.
 
 **/
@@ -1310,7 +1310,7 @@ Trying to async coordinate two actions:
 1. merge computation
 2. download of the results
 
-Potentially simpler way is to just use one stream ? 
+Potentially simpler way is to just use one stream ?
 See ~/o/sysrap/simpler_async_cuda.rst
 
 **/

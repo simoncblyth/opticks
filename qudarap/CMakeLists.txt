@@ -13,6 +13,8 @@ if(BUILD_WITH_CUDA)
     message(STATUS "${name}.CMAKE_CUDA_COMPILER_ID      = ${CMAKE_CUDA_COMPILER_ID}")
     message(STATUS "${name}.CMAKE_CUDA_COMPILER_VERSION = ${CMAKE_CUDA_COMPILER_VERSION}")
 
+    # NB see CCCL finding and use below after ${name} target creation
+
 else()
     message(STATUS "${name} HUH : ${name} MAKES NO SENSE WITHOUT CUDA")
 endif()
@@ -187,6 +189,36 @@ endif()
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS} )
 
+
+
+if(BUILD_WITH_CUDA)
+    # 1. Attempt to find the modern CUDA 13+ CCCL layout
+    find_package(CCCL QUIET PATHS "${CUDAToolkit_LIBRARY_DIR}/cmake/cccl")
+
+    if(TARGET CCCL::CCCL)
+        # CUDA 13.x+ path
+        target_link_libraries(${name} PRIVATE CCCL::CCCL)
+    else()
+        # CUDA 11/12 legacy fallback: Ensure the standard CUDA include directory is explicitly passed
+        # to host C++ compilers for files like QPMT.cc
+        if(TARGET CUDA::toolkit)
+            target_link_libraries(${name} PRIVATE CUDA::toolkit)
+        elseif(CUDAToolkit_INCLUDE_DIRS)
+            target_include_directories(${name} PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+        endif()
+    endif()
+
+
+    # avoid CUDA 13.1 warnings from compilation of cuda stub internals
+    # warning: ‘using maximum = struct cuda::__4::maximum<long int>’ is deprecated: Use cuda::maximum instead 
+    target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>)
+
+
+
+endif()
+
+
+
 string (REPLACE "," ";" COMPUTE_ARCHITECTURES_STR "${COMPUTE_ARCHITECTURES}")
 set_target_properties(${name} PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_ARCHITECTURES_STR}")
 # cmake --help-policy CMP0104
@@ -213,7 +245,7 @@ if(Custom4_FOUND)
 endif()
 
 
-target_link_libraries( ${name} ${LIBS})
+target_link_libraries( ${name} PRIVATE ${LIBS})
 target_compile_definitions( ${name} PUBLIC OPTICKS_QUDARAP )
 
 if(BUILD_WITH_CUDA)

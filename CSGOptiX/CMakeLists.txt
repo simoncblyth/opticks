@@ -7,6 +7,11 @@ set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
 
 find_package(CUDAToolkit REQUIRED)
+
+# 1. Attempt to find the modern CUDA 13+ CCCL layout
+find_package(CCCL QUIET PATHS "${CUDAToolkit_LIBRARY_DIR}/cmake/cccl")
+
+
 find_package(SysRap REQUIRED)
 find_package(QUDARap REQUIRED)
 find_package(CSG REQUIRED)
@@ -66,6 +71,22 @@ message(STATUS "OPTIX_SOURCES : ${OPTIX_SOURCES} ")
 
 add_library( ${name}_OPTIX OBJECT ${OPTIX_SOURCES} )
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 set_target_properties( ${name}_OPTIX
     PROPERTIES
          CUDA_PTX_COMPILATION ON
@@ -75,6 +96,17 @@ set_target_properties( ${name}_OPTIX
 
 add_library( ${name} SHARED ${SOURCES} ${HEADERS}     )
 add_dependencies( ${name} ${name}_OPTIX )
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## CAUTION : DUPLICATION BETWEEN HERE AND sysrap/CMakeLists.txt
@@ -199,6 +231,31 @@ target_link_libraries(${name}
          Opticks::CSG
          Opticks::QUDARap
 )
+
+
+# for CUDA 13.1 thrust header layout
+if(TARGET CCCL::CCCL)
+    target_link_libraries(${name} PRIVATE CCCL::CCCL)   # CUDA 13.x+ path
+else()
+    # CUDA 11/12 legacy fallback
+    if(TARGET CUDA::toolkit)
+        target_link_libraries(${name} PRIVATE CUDA::toolkit)
+    elseif(CUDAToolkit_INCLUDE_DIRS)
+        target_include_directories(${name} PRIVATE ${CUDAToolkit_INCLUDE_DIRS})
+    endif()
+endif()
+
+
+# avoid CUDA 13.1 warnings from compilation of cuda stub internals
+#target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>)
+
+
+
+
+
+
+
+
 
 
 #set(BUILD_WITH_NANOBIND OFF)

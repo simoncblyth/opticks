@@ -1174,14 +1174,6 @@ usercache-prefix
    runcache
 
 
-Changes to the cache prefix layouts or envvars names
-need to be done in triplicate in bash/py/C++ in::
-
-    opticks.bash
-    ana/geocache.bash
-    ana/key.py
-    boostrap/BOpticksResource.cc
-
 EON
 }
 
@@ -1439,7 +1431,6 @@ opticks-setup(){
 }
 
 opticks-setup-find-geant4-prefix(){ opticks-setup-find-config-prefix Geant4 ; }
-opticks-setup-find-boost-prefix(){  opticks-setup-find-config-prefix Boost ; }
 opticks-setup-find-config-prefix(){
    : mimick CMake "find_package name CONFIG" identifing the first prefix in the path
    local name=${1:-Geant4}
@@ -2770,21 +2761,6 @@ EOS
 }
 
 
-# for finding system boost
-opticks-boost-includedir(){ echo ${OPTICKS_BOOST_INCLUDEDIR:-/tmp} ; }
-opticks-boost-libdir(){     echo ${OPTICKS_BOOST_LIBDIR:-/tmp} ; }
-opticks-boost-info(){ cat << EOI
-$FUNCNAME
-===================
-
-NB have moved to a more flexible approach to control the version of
-Boost to use via CMAKE_PREFIX_PATH/PKG_CONFIG_PATH see oc.bash om.bash
-
-   opticks-boost-includedir : $(opticks-boost-includedir)
-   opticks-boost-libdir     : $(opticks-boost-libdir)
-
-EOI
-}
 
 opticks-cuda-capable()
 {
@@ -2894,7 +2870,7 @@ opticks-full-externals()
     rc=$?
     [ $rc -ne 0 ] && return $rc
 
-    echo $msg config-ing the foreign : eg boost clhep xercesc g4
+    echo $msg config-ing the foreign : eg clhep xercesc g4
     opticks-foreign
     #opticks-foreign-pc
     rc=$?
@@ -3996,17 +3972,8 @@ opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $
 okconf-(){          . $(opticks-home)/okconf/okconf.bash && okconf-env $* ; }
 sysrap-(){          . $(opticks-home)/sysrap/sysrap.bash && sysrap-env $* ; }
 
-#brap-(){            . $(opticks-home)/boostrap/brap.bash && brap-env $* ; }
-#npy-(){             . $(opticks-home)/npy/npy.bash && npy-env $* ; }
-#okc-(){             . $(opticks-home)/optickscore/okc.bash && okc-env $* ; }
 
-#ggeo-(){            . $(opticks-home)/ggeo/ggeo.bash && ggeo-env $* ; }
-#asirap-(){          . $(opticks-home)/assimprap/asirap.bash && asirap-env $* ; }
-#openmeshrap-(){     . $(opticks-home)/openmeshrap/openmeshrap.bash && openmeshrap-env $* ; }
-#okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
 
-#oglrap-(){          . $(opticks-home)/oglrap/oglrap.bash && oglrap-env $* ; }
-#cudarap-(){         . $(opticks-home)/cudarap/cudarap.bash && cudarap-env $* ; }
 
 qudarap-(){         . $(opticks-home)/qudarap/qudarap.bash && qudarap-env $* ; }
 
@@ -4016,14 +3983,11 @@ qudarap-(){         . $(opticks-home)/qudarap/qudarap.bash && qudarap-env $* ; }
 #okop-(){            . $(opticks-home)/okop/okop.bash && okop-env $* ; }
 #okgl-(){            . $(opticks-home)/opticksgl/okgl.bash && okgl-env $* ; }
 #ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
-#cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
-#okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
 
 #g4ok-(){            . $(opticks-home)/g4ok/g4ok.bash && g4ok-env $* ; }
 #x4-(){              . $(opticks-home)/extg4/x4.bash  && x4-env $* ; }
 #c4-(){              . $(opticks-home)/c4/c4.bash  && c4-env $* ; }
 #x4gen-(){           . $(opticks-home)/extg4/x4gen.bash  && x4gen-env $* ; }
-#yog-(){             . $(opticks-home)/yoctoglrap/yog.bash && yog-env $* ; }
 
 bin-(){             . $(opticks-home)/bin/bin.bash && bin-env $* ; }
 integration-(){     . $(opticks-home)/integration/integration.bash && integration-env $* ; }
