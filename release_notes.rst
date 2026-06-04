@@ -8,6 +8,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.6.5  | 65  | 2026/06/04 | simplifying testing of standalone Opticks release                                                                                                             |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.4  | 64  | 2026/06/02 | start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown, compilation fixes for CUDA 13.1             |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.3  | 63  | 2026/03/26 | operationally expedient release to mint new reference OJ build                                                                                                |
@@ -97,6 +99,12 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
+
+v0.6.5 2026/06/04 : simplifying testing of standalone Opticks release
+--------------------------------------------------------------------------
+
+* 2026-06-04 7b5308e15 - (HEAD -> master, origin/master, origin/HEAD) simplify use of standalone Opticks OK install with an optional top level envset.sh analogous to the OJ envset.sh
+* 2026-06-04 d162f86f4 - (all/master) reviving cxs_min.sh running and analysis
 
 
 v0.6.4 2026/06/02 : start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown, compilation fixes for CUDA 13.1
