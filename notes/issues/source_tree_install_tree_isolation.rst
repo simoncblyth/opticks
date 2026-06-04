@@ -89,17 +89,9 @@ BINGO::
 
 
 
-Server environment setup
---------------------------
+Next
+------
 
-HMM the below misses externals setup::
-
-    source /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-vLatest/bashrc
-
-Generate convenience envset.sh for standalone Opticks OK running just like have for OJ running,
-so can::
-
-    source /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-vLatest/envset.sh
-    cxs_min.sh
+* :doc:`6k_server_srun_shakedown`
 
 

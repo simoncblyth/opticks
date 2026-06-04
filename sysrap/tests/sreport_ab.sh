@@ -141,6 +141,9 @@ resolve(){
 
       N8) echo /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
       A8) echo    /data1/blyth/tmp/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
+
+     X9) echo /hpcfs/juno/junogpu/blyth/tmp/GEOM/J26_1_1_Opticks_v0_6_3/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
+
     esac
 }
 

@@ -418,7 +418,8 @@ elif [ "$TEST" == "medium_scan" ]; then
    opticks_num_genstep=1x12
    opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100  # duplication of M1 is to workaround lack of metadata
    opticks_running_mode=SRM_TORCH
-   #opticks_max_photon=M100
+   opticks_max_slot=M100
+   ## potentially need to set opticks_max_slot to avoid allocation of an enormous VRAM filling buffer
 
    # Remember multi-launch needs multiple gensteps in order to slice them up
    # such that each slice fits into VRAM.
@@ -620,12 +621,13 @@ export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}   # S
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}         # what arrays are saved eg Hit,HitPhoton,HitPhotonSeq
 
 export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}         # no needed much now with PHILOX and multi-launch
+export OPTICKS_MAX_SLOT=${OPTICKS_MAX_SLOT:-$opticks_max_slot}          ## SEventConfig::MaxSlot
 
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
 
-vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
+vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_MAX_SLOT OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
 
 export OPTICKS_MODE_LITE=${OPTICKS_MODE_LITE:-$opticks_mode_lite}
 
@@ -650,8 +652,7 @@ vars="$vars opticks_merge_window OPTICKS_MERGE_WINDOW"
 
 
 export OPTICKS_MAX_CURAND=$opticks_max_curand  ## SEventConfig::MaxCurand only relevant to XORWOW
-export OPTICKS_MAX_SLOT=$opticks_max_slot      ## SEventConfig::MaxSlot
-vars="$vars OPTICKS_MAX_CURAND OPTICKS_MAX_SLOT"
+vars="$vars OPTICKS_MAX_CURAND"
 
 
 
