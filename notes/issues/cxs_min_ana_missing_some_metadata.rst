@@ -288,4 +288,9 @@ FIXED : cxs_min.py Outdated use of sframe
 
 
 
+NEXT : get cxs_min.sh running and analysis to work from release without using source tree (on Workstation, then Server)
+-------------------------------------------------------------------------------------------------------------------------
+
+
+* :doc:`source_tree_install_tree_isolation`
 

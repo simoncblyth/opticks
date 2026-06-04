@@ -50,6 +50,7 @@ class OKTar(object):
     """
     PREFIX = "Opticks-0.0.1_alpha/i386-10.13.6-gcc4.2.1-geant4_10_04_p02-dbg"
     BINARY_BASES = filter(None,textwrap.dedent(r"""
+    envset.sh
     bashrc
     metadata
     bin

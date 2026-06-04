@@ -319,6 +319,7 @@ set(INSTALLED_SCRIPTS
    cxs_min.py
    cxs_min_AB.py
    cxs_min_lite.py
+   cxs_min_hlm.py
 )
 
 install( TARGETS ${name}_OPTIX OBJECTS DESTINATION optix )

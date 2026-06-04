@@ -136,8 +136,9 @@ export TEST=${TEST:-$test}
 
 vars=""
 SDIR=$(dirname $(realpath $BASH_SOURCE))
+SDIR_NOTE="Think of SDIR as sibling-dir not source-dir as this script is used from release bin dir too"
 
-vars="$vars BASH_SOURCE SDIR"
+vars="$vars BASH_SOURCE SDIR SDIR_NOTE"
 
 case $(uname) in
    Linux) defarg=run_report_info ;;
