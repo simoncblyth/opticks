@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-cxs_min_hlm.py
-==============
+cxs_min_hlm.py : hitlitemerged checks
+=======================================
 
 ~/o/CSGOptiX/cxs_min.sh hlm
 

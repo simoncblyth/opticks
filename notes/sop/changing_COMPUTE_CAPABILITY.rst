@@ -13,7 +13,7 @@ Have observed that to change the compute capability requires nuclear rebuild::
    oo
 
 OR::
-   
+
    o
    om-
    om-cleaninstall
@@ -29,8 +29,8 @@ Check it worked with::
 See :doc:`../../notes/issues/OPTIX_ERROR_INVALID_INPUT_with_optixModuleCreate_and_distributed_ptx`
 
 
- 
-What Compute Capability to target for the distributed PTX ? 
+
+What Compute Capability to target for the distributed PTX ?
 ---------------------------------------------------------------
 
 * https://forums.developer.nvidia.com/t/understanding-compute-capability/313577
@@ -42,7 +42,7 @@ dhart::
     capability for whatever the minimum GPU version you need to support is, and
     newer GPUs will work. For example, use 50 if you need Maxwell support, or 60
     for Pascal and beyond. This is detailed in the “Program Input” section of the
-    “Pipeline” chapter in the OptiX Programming Guide: 
+    “Pipeline” chapter in the OptiX Programming Guide:
 
 
 
@@ -64,6 +64,19 @@ type with --optix-ir or --ptx. Do not compile to obj or cubin.
 
 * https://raytracing-docs.nvidia.com/optix8/guide/index.html#program_pipeline_creation#program-input
 
+
+
+OPTICKS_COMPUTE_CAPABILITY and OPTICKS_COMPUTE_ARCHITECTURES
+----------------------------------------------------------------
+
+Example config::
+
+    ## Set to lowest CC that are supporting - which will depend on the CUDA version being used
+    export OPTICKS_COMPUTE_CAPABILITY=89    #  with CUDA 13.1 (13?) needs to be 89, formerly used 70 supporting old Volta GPUs with CUDA 12
+
+    ## Comma-delimited list of the CC of GPUs to build for - which will depend on CUDA version used
+    ## 70 (Volta), 89 (Ada), and 120 (Blackwell Pro 6000)
+    export OPTICKS_COMPUTE_ARCHITECTURES=89,120
 
 
 

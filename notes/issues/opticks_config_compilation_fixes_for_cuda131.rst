@@ -665,3 +665,17 @@ Hmm, the tarball naming is after the last release which was a while ago. Thats m
 
 Pragmatic solution without changing okdist is to just make a release v0.6.4
 
+
+Actually rather than some custom tarball easier just to use standard cvmfs OK release
+-----------------------------------------------------------------------------------------
+
+
+Using that for:
+
+* :doc:`opticks_ctest_shakedown_with_cuda131_on_rtx6000pro_server`
+
+
+
+
+
+

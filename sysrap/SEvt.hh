@@ -445,6 +445,14 @@ public:
 
     bool isEGPU() const ;
     bool isECPU() const ;
+    char getFlavor() const ;
+
+    static constexpr const char* AFMT = "A%0.3d_" ;
+    static constexpr const char* BFMT = "B%0.3d_" ;
+    static const char* GetFMT(int ins);
+    const char* getFMT() const ;
+
+
     bool isFirstEvtInstance() const ;  // within the event
     bool isLastEvtInstance() const ;   // within the event
 
@@ -508,8 +516,8 @@ public:
     void setMeta( const char* k, T v );
 
 
-    void beginOfEvent(int eventID);
-    void endOfEvent(int eventID);
+    void beginOfEvent(int eventID );
+    void endOfEvent(  int eventID );
     void reset_counter();
 
     void endMeta();
@@ -553,8 +561,8 @@ public:
     void clear_output() ;
     void clear_extra() ;
 
-    void setIndex(int index_arg) ;
-    void endIndex(int index_arg) ;
+    void setIndex(int index_arg ) ;
+    void endIndex(int index_arg ) ;
     int  getIndexArg() const ;
     int  getIndex() const ;
     int  getIndexPresentation() const ;

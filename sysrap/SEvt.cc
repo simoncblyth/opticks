@@ -1353,6 +1353,49 @@ SEvt* SEvt::Create(int ins)  // static
 bool SEvt::isEGPU() const { return instance == EGPU ; }
 bool SEvt::isECPU() const { return instance == ECPU ; }
 
+char SEvt::getFlavor() const
+{
+    char flavor = '?' ;
+    switch(instance)
+    {
+        case EGPU: flavor = 'A' ; break ;
+        case ECPU: flavor = 'B' ; break ;
+    }
+    return flavor ;
+}
+
+const char* SEvt::GetFMT(int ins) // static
+{
+    const char* fmt = nullptr ;
+    switch(ins)
+    {
+        case EGPU: fmt = AFMT ; break ;
+        case ECPU: fmt = BFMT ; break ;
+    }
+    return fmt ;
+}
+
+const char* SEvt::getFMT() const
+{
+    return GetFMT(instance);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /**
 SEvt::isFirstEvtInstance SEvt::isLastEvtInstance
 --------------------------------------------------
@@ -1849,10 +1892,16 @@ as still need to collect the gensteps.
 **/
 
 
-void SEvt::beginOfEvent(int eventID)
+void SEvt::beginOfEvent(int eventID )
 {
-    if(isFirstEvtInstance() && eventID == 0) BeginOfRun() ;
+    bool is_BeginOfRun = isFirstEvtInstance() && eventID == 0 ;
+    if(is_BeginOfRun)
+    {
+        BeginOfRun() ;
+    }
+
     if(eventID == 0) SProf::Add( isEGPU() ? "SEvt__beginOfEvent_FIRST_EGPU" : "SEvt__beginOfEvent_FIRST_ECPU" ) ;
+
 
     setStage(SEvt__beginOfEvent);
     sprof::Stamp(p_SEvt__beginOfEvent_0);
@@ -1947,7 +1996,11 @@ void SEvt::endOfEvent(int eventID)
             << " is_last_evt_instance " << ( is_last_evt_instance ? "YES" : "NO " )
             ;
 
-        if(is_last_evt_instance) SEvt::EndOfRun();   // invokes SaveRunMeta
+        if(is_last_evt_instance)
+        {
+            SProf::UnsetTag();
+            SEvt::EndOfRun();   // invokes SaveRunMeta
+        }
     }
 
 
@@ -2207,16 +2260,18 @@ index
 
 **/
 
-void SEvt::setIndex(int index_arg)
+void SEvt::setIndex(int index_arg )
 {
     assert( index_arg >= 0 );
     index = SEventConfig::EventIndex(index_arg) ;
     t_BeginOfEvent = sstamp::Now();                // moved here from the static
 
+    SProf::SetTag(index, getFMT() ) ;  // WIP: relocating from QSim::simulate
+
     //setRunProf_Annotated("SEvt__setIndex_" );
     SProf::Add("SEvt__setIndex");
 }
-void SEvt::endIndex(int index_arg)
+void SEvt::endIndex(int index_arg )
 {
     int index_expected = SEventConfig::EventIndex(index_arg) ;
     bool consistent = index_expected == index ;
@@ -2227,6 +2282,7 @@ void SEvt::endIndex(int index_arg)
          << " consistent " << ( consistent ? "YES" : "NO " )
          ;
     assert( consistent );
+
     t_EndOfEvent = sstamp::Now();
 
     //setRunProf_Annotated("SEvt__endIndex_" );
@@ -2275,6 +2331,8 @@ void SEvt::unsetIndex()
 {
     index = MISSING_INDEX ;
 }
+
+
 
 
 

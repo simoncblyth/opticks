@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 """
+cxs_min_AB.py
+================
 
-~/o/cxs_min.sh AB 
+::
+
+    ~/o/cxs_min.sh AB
+
+
+1. Loads SEvt a, b from AFOLD, BFOLD
+2. Does some simple EXPR checks looking at consistency of the two SEvt
 
 """
 
@@ -22,10 +30,10 @@ if __name__ == '__main__':
     a = SEvt.Load("$AFOLD", symbol="a")
     print(repr(a))
 
-    if "BFOLD" in os.environ:   
-        b = SEvt.Load("$BFOLD", symbol="b") 
+    if "BFOLD" in os.environ:
+        b = SEvt.Load("$BFOLD", symbol="b")
         print(repr(b))
-        ab = SAB(a,b) 
+        ab = SAB(a,b)
         print(repr(ab))
     pass
 
@@ -43,11 +51,11 @@ if __name__ == '__main__':
         print(fmt % (expr, val))
     pass
 
-    
 
-    e = a 
+
+    e = a
     qtab = e.minimal_qtab()
     print("qtab")
     print(qtab)
- 
+
 

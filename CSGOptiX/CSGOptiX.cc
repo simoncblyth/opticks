@@ -189,7 +189,7 @@ int CSGOptiX::SimulateMain() // static
     CSGOptiX* cx = CSGOptiX::Create(fd) ;
     bool reset = true ;
     for(int i=0 ; i < SEventConfig::NumEvent() ; i++) cx->simulate(i, reset);
-    SProf::UnsetTag();
+    //SProf::UnsetTag();  // WIP: RELOCATED TO SEvt::endOfEvent
     SProf::Add("CSGOptiX__SimulateMain_TAIL");
     SProf::Write();
     cx->write_Ctx_log();

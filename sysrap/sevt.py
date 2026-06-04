@@ -72,7 +72,7 @@ class SEvt(object):
 
     def __init__(self, f, **kwa):
         """
-        :param f: Fold instance
+        :param f: Fold instance for the persisted SEvt
         :param kwa: override param, only W2M accepted
         """
 
@@ -87,6 +87,7 @@ class SEvt(object):
         print("sevt.init W2M\n", self.W2M )
 
         self.init_run(f)
+        self.init_prof(f)
         self.init_meta(f)
         self.init_fold_meta_timestamp(f)
         self.init_fold_meta(f)
@@ -106,8 +107,20 @@ class SEvt(object):
     @classmethod
     def CommonRunBase(cls, f):
         """
-        :param f: Fold instance
+        :param f: Fold instance for persisted SEvt
         :return urun_base: str
+
+        HMM: this has handling for list f.base, that may be used for concatenated SEvt ?
+
+
+        For simple string f.base an example dir is::
+
+             /data1/blyth/tmp/GEOM/J26_1_1_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan/A000
+
+        Which would return urun_base to the directory above which contains run_meta.txt and SProf.txt::
+
+             /data1/blyth/tmp/GEOM/J26_1_1_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan
+
         """
         run_bases = []
         if type(f.base) is str:
@@ -128,37 +141,39 @@ class SEvt(object):
 
     def init_run(self, f):
         """
-        HMM the run meta should be same for all of concatenated SEvts
+        :param f: Fold instance of persisted SEvt
+
+        NOTE THAT the run meta should be same for all of concatenated SEvts
         """
         urun_base = self.CommonRunBase(f)
         urun_path = os.path.join( urun_base, "run.npy" )
-
-        # THIS WAS RECURSING AND LOADING THE n001 and p001 folders
-        #print("[ sevt.init_run Fold.Load urun_path %s loading urun_base %s " % (urun_path,urun_base) )
-        #fp = Fold.Load(urun_base) if os.path.exists(urun_path) else None
-        #print("] sevt.init_run Fold.Load ")
-        #run_meta = not fp is None and getattr(fp,'run_meta', None) != None
-        #self.fp = fp
-
         urun_meta = os.path.join( urun_base, "run_meta.txt" )
         run_meta = NPMeta.Load(urun_meta) if os.path.exists(urun_meta) else None
         has_run_meta = not run_meta is None
-
-        prof2stamp_ = lambda prof:prof.split(",")[0]
-
-        rr_ = [prof2stamp_(run_meta.SEvt__BeginOfRun),
-               prof2stamp_(run_meta.SEvt__EndOfRun  )] if has_run_meta else [0,0]
-
-        rr = np.array(rr_, dtype=np.uint64 )
-
-        self.rr = rr
-        self.run_meta = run_meta
 
         qwns = ["FAKES_SKIP",]
         for qwn in qwns:
             mval = list(map(int,getattr(run_meta, qwn, ["-1"] ) if has_run_meta else ["-2"]))
             setattr(self, qwn, mval[0] )
         pass
+        self.run_meta = run_meta
+
+    def init_prof(self, f):
+        """
+        :param f: Fold instance of persisted SEvt
+        """
+        prof_base = self.CommonRunBase(f)
+        prof_path = os.path.join(prof_base, "SProf.txt")
+        prof_meta = NPMeta.Load(prof_path) if os.path.exists(prof_path) else None
+        has_prof_meta = not prof_meta is None
+
+        prof2stamp_ = lambda prof:prof.split(",")[0]
+
+        rr_ = [prof2stamp_(prof_meta.SEvt__BeginOfRun),
+               prof2stamp_(prof_meta.SEvt__EndOfRun  )] if has_prof_meta else [0,0]
+
+        rr = np.array(rr_, dtype=np.uint64 )
+        self.rr = rr
 
 
     def init_env(self, f):

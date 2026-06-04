@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+"""
+cxs_min_lite.py : Checking sphotonlite array relationships to sphoton array
+================================================================================
+
+1. loads AFOLD to a(Fold)
+2. uses SPhoton.view recarray created from raw arrays : photon, photonlocal, hit, hitlocal, hitlite in the a(Fold)
+3. EVAL dumps shapes and expected relationships between the arrays
+
+"""
 
 import os, logging, textwrap, numpy as np
 import ast

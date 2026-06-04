@@ -429,8 +429,6 @@ bool QSim::KEEP_SUBFOLD = ssys::getenvbool(QSim__simulate_KEEP_SUBFOLD);
 
 double QSim::simulate(int eventID, bool reset_)
 {
-    SProf::SetTag(eventID, "A%0.3d_" ) ;
-
     assert( SEventConfig::IsRGModeSimulate() );
 
     //cudaStream_t stream ;  cudaStreamCreate(&stream);
@@ -444,13 +442,15 @@ double QSim::simulate(int eventID, bool reset_)
     int64_t tot_idt = 0 ;
     int64_t tot_gdt = 0 ;
 
-    int64_t t_HEAD = SProf::Add("QSim__simulate_HEAD");
 
     LOG_IF(info, SEvt::LIFECYCLE) << "[ eventID " << eventID ;
     if( qev == nullptr ) return -1. ;
 
 
     sev->beginOfEvent(eventID);  // set SEvt index and tees up frame gensteps for simtrace and input photon simulate running
+
+    int64_t t_HEAD = SProf::Add("QSim__simulate_HEAD");  // after SEvt::beginOfEvent as that does SProf::SetTag eg "A000"
+
 
     NP* igs = sev->makeGenstepArrayFromVector();
 
@@ -576,7 +576,7 @@ double QSim::simulate(int eventID, bool reset_)
     assert( tot_ph == tot_ph_0 );
 
     int64_t t_BRES  = SProf::Add("QSim__simulate_BRES", counts.c_str() );
-    if(reset_) reset(eventID) ;
+    if(reset_) reset(eventID) ;   // reset calles SEvt::endOfEvent
 
     int64_t t_TAIL  = SProf::Add("QSim__simulate_TAIL");
 

@@ -1,4 +1,12 @@
 #!/usr/bin/env python
+"""
+cxs_min.py
+===========
+
+1. Loads AFOLD => a, BFOLD => b  (BFOLD loading is optional)
+2. Uses pyvista (MODE:3) or matplotlib (MODE:2) to make plot depending on PLOT
+
+"""
 
 import os, logging, numpy as np
 log = logging.getLogger(__name__)
@@ -70,7 +78,7 @@ if __name__ == '__main__':
 
     gpos = np.ones( [len(pp), 4 ] )
     gpos[:,:3] = pp
-    lpos = np.dot( gpos, e.f.sframe.w2m )
+    lpos = np.dot( gpos, e.f.sfr.w2m )
     upos = gpos if GLOBAL else lpos
 
     if MODE in [0,1]:
@@ -96,7 +104,7 @@ if __name__ == '__main__':
         print(label)
         pl = pvplt_plotter(label)
         pvplt_viewpoint(pl)   # sensitive to EYE, LOOK, UP envvars
-        pvplt_frame(pl, e.f.sframe, local=not GLOBAL )
+        pvplt_frame(pl, e.f.sfr, local=not GLOBAL )
     pass
 
 

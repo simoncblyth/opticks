@@ -3,7 +3,7 @@ usage(){ cat << EOU
 cxs_min.sh : minimal executable and script for shakedown
 ============================================================
 
-Uses ~oneline main::
+Uses ~oneline main executable CSGOptiXSMTest::
 
      CSGOptiX::SimulateMain();
 
@@ -49,8 +49,8 @@ Check running from some non-standard directory using LOGOVER::
 
 Debug::
 
-    BP=SEvt::SEvt               ~/opticks/CSGOptiX/cxs_min.sh
-    BP=SEvent::MakeTorchGenstep ~/opticks/CSGOptiX/cxs_min.sh
+    BP=SEvt::SEvt               ~/o/cxs_min.sh
+    BP=SEvent::MakeTorchGenstep ~/o/cxs_min.sh
 
 Analysis/Plotting::
 
@@ -75,13 +75,21 @@ Monitor for GPU memory leaks::
     ~/o/sysrap/smonitor.sh ana   ## plot
 
 
-pdb1
-   ipython cxs_min.py
 
-pdb0
-   as pdb1 with MODE=0 for no pyvista or matplotlib usage
-   useful for loading/examining the SEvt with ipython
-   from anywhere
+scripts
+
++-------------------+--------------------+-------------------------------------------------------------------------------------------------+
+|  script           |  cxs_min.sh  args  |  notes                                                                                          |
++===================+====================+=================================================================================================+
+| cxs_min.py        |  ana,pdb,pdz       | pdz: interactive but with MODE:0 for no pyvista/matplotlib usage                                |
++-------------------+--------------------+-------------------------------------------------------------------------------------------------+
+| cxs_min_AB.py     |  AB                | simple EXPR np comparison between AFOLD, BFOLD sevt                                             |
++-------------------+--------------------+-------------------------------------------------------------------------------------------------+
+| cxs_min_lite.py   |  lite              | Checking sphotonlite array relationships to sphoton array, using SPhoton.view created recarray  |
++-------------------+--------------------+-------------------------------------------------------------------------------------------------+
+| cxs_min_hlm.py    |  hlm               | hitlitemerged checks comparing python merge with CUDA-Thrust merge (?)                          |
++-------------------+--------------------+-------------------------------------------------------------------------------------------------+
+
 
 EOU
 }
@@ -89,7 +97,7 @@ EOU
 #test=debug
 
 #test=merge_M1
-test=merge_M10
+#test=merge_M10
 
 #test=ref1
 #test=ref5
@@ -121,7 +129,7 @@ test=merge_M10
 #test=vvvvvvlarge_evt
 #test=vvvvvvlarge_evt_merge
 
-#test=medium_scan
+test=medium_scan
 
 export TEST=${TEST:-$test}
 
@@ -799,6 +807,7 @@ if [ "${arg/run}" != "$arg" -o "${arg/dbg}" != "$arg" ]; then
    fi
 fi
 
+# "meta" ARG MAY BE OUTDATED ? REVIEW THIS ON NEXT USE OF :  cxs_min_scan.sh
 if [ "${arg/meta}" != "$arg" ]; then
    if [ -f "run_meta.txt" -a -n "$OPTICKS_SCAN_INDEX"  -a -d "$OPTICKS_SCAN_INDEX" ] ; then
        cp run_meta.txt $OPTICKS_SCAN_INDEX/run_meta.txt
@@ -814,7 +823,7 @@ if [ "${arg/deport}" != "$arg" ]; then
 fi
 
 if [ "${arg/report}" != "$arg" ]; then
-   sreport
+   sreport   ## NB running from LOGDIR
    [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1
 fi
 
@@ -839,6 +848,12 @@ if [ "${arg/du}" != "$arg" ]; then
 fi
 
 
+
+
+if [ "${arg/ana}" != "$arg" ]; then
+    MODE=0 ${PYTHON:-python} $script
+fi
+
 if [ "${arg/pdb}" != "$arg" ]; then
     ${IPYTHON:-ipython} --pdb -i $script
 fi
@@ -847,13 +862,20 @@ if [ "${arg/pdz}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script
 fi
 
+
+
+
 if [ "${arg/AB}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script_AB
 fi
 
+
+
 if [ "${arg/lite}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script_lite
 fi
+
+
 
 if [ "${arg/hlm}" != "$arg" ]; then
     MODE=0 ${IPYTHON:-ipython} --pdb -i $script_hlm
@@ -861,10 +883,6 @@ fi
 
 
 
-
-if [ "${arg/ana}" != "$arg" ]; then
-    MODE=0 ${PYTHON:-python} $script
-fi
 
 
 

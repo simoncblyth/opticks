@@ -3,16 +3,16 @@
 import os, numpy as np
 from opticks.ana.fold import Fold
 from opticks.ana.npmeta import NPMeta
-from opticks.sysrap.tests.sreport import Substamp 
-from opticks.sysrap.tests.sreport import RUN_META 
+from opticks.sysrap.tests.sreport import Substamp
+from opticks.sysrap.tests.sreport import RUN_META
 
 MODE = 2
-PLOT =  os.environ.get("PLOT","?plot") 
+PLOT =  os.environ.get("PLOT","?plot")
 COMMANDLINE = os.environ.get("COMMANDLINE", "")
 
 
 if MODE != 0:
-    from opticks.ana.pvplt import * 
+    from opticks.ana.pvplt import *
 pass
 
 
@@ -22,34 +22,40 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
 
         af = a.substamp.a
         at = Substamp.ETime(af)
-        an = a.submeta_NumPhotonCollected.a  
+        an = a.submeta_NumPhotonCollected.a
         ah = Substamp.Subcount(af, "hit")
-
-        self.at = at 
-        self.an = an 
-        self.ah = ah 
-
 
         bf = b.substamp.a
         bt = Substamp.ETime(bf)
-        bn = b.submeta_NumPhotonCollected.a  
+        bn = b.submeta_NumPhotonCollected.a
         bh = Substamp.Subcount(bf, "hit")
 
-        self.bt = bt 
-        self.bn = bn 
-        self.bh = bh 
+        l = min(len(an),len(bn))   ## if one longer only compare up to the shorter
+        assert np.all( an[:l] == bn[:l] )
 
-        assert np.all( an == bn )
+
+        self.at = at
+        self.an = an
+        self.ah = ah
+
+
+        self.bt = bt
+        self.bn = bn
+        self.bh = bh
+
+
+
+
         photon = an[:,0]/1e6
 
 
         fontsize = 20
-        YSCALE_ = ["log", "linear" ] 
+        YSCALE_ = ["log", "linear" ]
         YSCALE = os.environ.get("YSCALE", YSCALE_[1])
         assert YSCALE in YSCALE_
- 
+
         SLICE = list(map(int, os.environ.get("SLICE", "3:12").split(":")))
- 
+
         YMIN = float(os.environ.get("YMIN", "1e-2"))
         YMAX = float(os.environ.get("YMAX", "45"))
 
@@ -61,7 +67,7 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
             #sli = slice(3,12)
             #sli = slice(None)
 
-            deg = 1  # 1:lin 2:par 
+            deg = 1  # 1:lin 2:par
             a_fit = np.poly1d(np.polyfit(photon[sli], at[sli], deg))
             a_fit_label = "%s : linefit( slope %10.3f  intercept %10.3f )" % (a.symbol, a_fit.coef[0], a_fit.coef[1])
             self.a_fit = a_fit
@@ -73,14 +79,14 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
             a_label = RUN_META.GPUMeta(a)
             b_label = RUN_META.GPUMeta(b)
 
-            ax.scatter( photon, at, label=a_label )
+            ax.scatter( photon[0:l], at[0:l], label=a_label )
             ax.plot( photon[sli], a_fit(photon[sli]), label=a_fit_label )
 
-            ax.scatter( photon, bt, label=b_label )
+            ax.scatter( photon[0:l], bt[0:l], label=b_label )
             ax.plot( photon[sli], b_fit(photon[sli]), label=b_fit_label )
 
             pass
-            ax.set_xlim( -5, 105 ); 
+            ax.set_xlim( -5, 105 );
             ax.set_ylim( YMIN, YMAX );  # 50*200 = 1e4
             ax.set_yscale(YSCALE)
             ax.set_ylabel("Event time (seconds)", fontsize=fontsize )
@@ -96,36 +102,36 @@ class AB_Substamp_ALL_Etime_vs_Photon(object):
 
 if __name__ == '__main__':
 
-    print("[sreport_ab.py:PLOT[%s]" % PLOT ) 
+    print("[sreport_ab.py:PLOT[%s]" % PLOT )
 
     asym = os.path.expandvars("$A")
-    print("[sreport_ab.py:fold = Fold.Load A_SREPORT_FOLD [%s]" % asym ) 
+    print("[sreport_ab.py:fold = Fold.Load A_SREPORT_FOLD [%s]" % asym )
     a = Fold.Load("$A_SREPORT_FOLD", symbol=asym )
-    print("]sreport_ab.py:a = Fold.Load" ) 
+    print("]sreport_ab.py:a = Fold.Load" )
 
-    print("[sreport_ab.py:repr(a)" ) 
+    print("[sreport_ab.py:repr(a)" )
     print(repr(a))
-    print("]sreport_ab.py:repr(a)" ) 
+    print("]sreport_ab.py:repr(a)" )
 
 
     bsym = os.path.expandvars("$B")
-    print("[sreport_ab.py:fold = Fold.Load B_SREPORT_FOLD [%s]" % bsym ) 
+    print("[sreport_ab.py:fold = Fold.Load B_SREPORT_FOLD [%s]" % bsym )
     b = Fold.Load("$B_SREPORT_FOLD", symbol=bsym )
-    print("]sreport_ab.py:b = Fold.Load" ) 
+    print("]sreport_ab.py:b = Fold.Load" )
 
-    print("[sreport_ab.py:repr(b)" ) 
+    print("[sreport_ab.py:repr(b)" )
     print(repr(b))
-    print("]sreport_ab.py:repr(b)" ) 
+    print("]sreport_ab.py:repr(b)" )
 
-    print("]sreport_ab.py:PLOT[%s]" % PLOT ) 
+    print("]sreport_ab.py:PLOT[%s]" % PLOT )
 
 
-    if PLOT.startswith("AB_Substamp_ALL_Etime_vs_Photon"): 
+    if PLOT.startswith("AB_Substamp_ALL_Etime_vs_Photon"):
         ab = AB_Substamp_ALL_Etime_vs_Photon(a,b)
     pass
 
 
-    
+
 
 
 
