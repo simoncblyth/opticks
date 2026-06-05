@@ -927,7 +927,7 @@ oid(){
    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done ;
 }
 o(){ opticks- ; cd $(opticks-home) ; git status  ; oid ; : opticks.bash ;  }
-oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; : opticks.bash ;  }
+oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; opticks-setup-generate ; : opticks.bash ;  }
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 
 on(){ cd $(opticks-home)/notes  ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/$(ls -t | head -1) ;  }

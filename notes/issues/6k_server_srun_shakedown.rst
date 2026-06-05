@@ -138,8 +138,14 @@ will cause VRAM filling photon buffer to be allocated.
 cxs_min.sh script was not sensitive to OPTICKS_MAX_SLOT
 
 
-TODO : revive Opticks build on lxlogin - so can test without release
-----------------------------------------------------------------------------
+
+Opticks build on compute node which has cuda-13.1
+----------------------------------------------------
+
+
+* :doc:`6k_server_opticks_build`
+
+
 
 
 TODO : simple text table of scan timings for debugging
