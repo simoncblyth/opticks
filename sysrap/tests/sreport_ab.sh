@@ -90,7 +90,8 @@ EOU
 }
 
 cd $(dirname $(realpath $BASH_SOURCE))
-RDIR=$(dirname $(dirname $PWD))
+IDIR=$PWD
+RDIR=$(dirname $(dirname $IDIR))
 
 
 defarg="info_ana"
@@ -175,7 +176,7 @@ export G_SREPORT_FOLD_NODE=$(remote_node $G_SREPORT_FOLD)
 
 export MODE=2                                 ## 2:matplotlib plotting
 
-vars="0 BASH_SOURCE PWD RDIR arg defarg A B G A_SREPORT_FOLD B_SREPORT_FOLD G_SREPORT_FOLD G_SREPORT_FOLD_NODE MODE PLOT script"
+vars="0 BASH_SOURCE PWD IDIR RDIR arg defarg A B G A_SREPORT_FOLD B_SREPORT_FOLD G_SREPORT_FOLD G_SREPORT_FOLD_NODE MODE PLOT script"
 
 if [ "${arg/info}" != "$arg" ]; then
     for var in $vars ; do printf "%25s : %s \n" "$var" "${!var}" ; done
@@ -191,7 +192,15 @@ if [ "${arg/grep}" != "$arg" ]; then
     read -p "$BASH_SOURCE : rsync G[$G] [$G_SREPORT_FOLD] from [$G_SREPORT_FOLD_NODE] : enter YES to proceed : " ans
 
     if [ "$ans" == "YES" ]; then
-        REMOTE=$G_SREPORT_FOLD_NODE source $RDIR/bin/rsync.sh $G_SREPORT_FOLD
+        helper=""
+        if [ -f "$IDIR/rsync.sh" ]; then
+            helper=rsync.sh             # when installed into release tree eg in bin dir
+        elif [ -f "$RDIR/bin/rsync.sh" ]; then
+            helper=$RDIR/bin/rsync.sh   # when used from source tree do ../../bin to find the helper
+        fi
+        if [ -f "$helper" ]; then
+             REMOTE=$G_SREPORT_FOLD_NODE source $helper $G_SREPORT_FOLD
+        fi
     fi
 fi
 

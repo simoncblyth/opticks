@@ -44,3 +44,17 @@ After fix can::
 
 
 
+HMM : grep fails in release
+------------------------------
+
+::
+
+    [lu] A[blyth@localhost opticks]$ G=B9 sreport_ab.sh grep
+    /data1/blyth/local/opticks_Debug/bin/sreport_ab.sh : rsync G[B9] [/hpcfs/juno/junogpu/blyth/tmp/GEOM/J26_1_1_Opticks_v0_6_3/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan_sreport] from [LD] : enter YES to proceed : YES
+    /data1/blyth/local/opticks_Debug/bin/sreport_ab.sh: line 195: /data1/blyth/local/bin/rsync.sh: No such file or directory
+    [lu] A[blyth@localhost opticks]$ 
+
+
+
+
+

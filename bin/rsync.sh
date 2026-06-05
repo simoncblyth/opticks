@@ -1,5 +1,5 @@
 #!/bin/bash
-usage(){ cat << EOU
+rsync_usage(){ cat << EOU
 rsync.sh
 ==========
 

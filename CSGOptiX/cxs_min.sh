@@ -615,22 +615,30 @@ opticks_integration_mode=1
 #opticks_hit_mask=SD
 opticks_hit_mask=EC
 export OPTICKS_HIT_MASK=${OPTICKS_HIT_MASK:-$opticks_hit_mask}
+vars="$vars OPTICKS_HIT_MASK"
 
 export OPTICKS_NUM_EVENT=${OPTICKS_NUM_EVENT:-$opticks_num_event}
 export OPTICKS_NUM_GENSTEP=${OPTICKS_NUM_GENSTEP:-$opticks_num_genstep}
 export OPTICKS_NUM_PHOTON=${OPTICKS_NUM_PHOTON:-$opticks_num_photon}
+vars="$vars OPTICKS_NUM_EVENT OPTICKS_NUM_GENSTEP OPTICKS_NUM_PHOTON"
+
 
 export OPTICKS_RUNNING_MODE=${OPTICKS_RUNNING_MODE:-$opticks_running_mode}   # SRM_TORCH/SRM_INPUT_PHOTON/SRM_INPUT_GENSTEP
 export OPTICKS_EVENT_MODE=${OPTICKS_EVENT_MODE:-$opticks_event_mode}         # what arrays are saved eg Hit,HitPhoton,HitPhotonSeq
+vars="$vars OPTICKS_RUNNING_MODE opticks_event_mode OPTICKS_EVENT_MODE"
 
 export OPTICKS_MAX_PHOTON=${OPTICKS_MAX_PHOTON:-$opticks_max_photon}         # no needed much now with PHILOX and multi-launch
 export OPTICKS_MAX_SLOT=${OPTICKS_MAX_SLOT:-$opticks_max_slot}          ## SEventConfig::MaxSlot
-
 export OPTICKS_MAX_BOUNCE=${OPTICKS_MAX_BOUNCE:-$opticks_max_bounce}
+vars="$vars OPTICKS_MAX_PHOTON opticks_max_slot OPTICKS_MAX_SLOT opticks_max_bounce OPTICKS_MAX_BOUNCE"
+
 export OPTICKS_START_INDEX=${OPTICKS_START_INDEX:-$opticks_start_index}
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$opticks_integration_mode}
+vars="$vars OPTICKS_START_INDEX OPTICKS_INTEGRATION_MODE"
 
-vars="$vars version VERSION opticks_event_mode OPTICKS_EVENT_MODE OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_MAX_PHOTON OPTICKS_MAX_SLOT OPTICKS_NUM_EVENT OPTICKS_RUNNING_MODE"
+
+
+
 
 export OPTICKS_MODE_LITE=${OPTICKS_MODE_LITE:-$opticks_mode_lite}
 
