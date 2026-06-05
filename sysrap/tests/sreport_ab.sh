@@ -1,5 +1,5 @@
 #!/bin/bash
-usage(){ cat << EOU
+sreport_ab_usage(){ cat << EOU
 sreport_ab.sh : comparison between two report folders
 ========================================================
 
@@ -75,6 +75,16 @@ Grab the historical _sreport folders to new macOS laptop for this
         A=N7 B=A7 ~/o/sreport_ab.sh ana
 
 
+Grab from lxlogin to workstation and plot comparison between workstation(Ada) and server(Blackwell)
+------------------------------------------------------------------------------------------------------
+
+::
+
+    G=B9 ~/o/sreport_ab.sh grep       ## grab Blackwell report from LD(lxlogin)
+
+    A=A9 B=B9 ~/o/sreport_ab.sh ana   ## plotting using source tree
+    A=A9 B=B9 sreport_ab.sh ana       ## plotting now also works from release tree
+
 
 EOU
 }
@@ -89,11 +99,14 @@ arg=${1:-$defarg}
 name=sreport_ab
 script=$name.py
 
-source $HOME/.opticks/GEOM/GEOM.sh
 
-a=N8
-b=A8
-g=N8
+#a=N8
+#b=A8
+#g=N8
+
+a=A9
+b=B9
+g=B9
 
 export A=${A:-$a}
 export B=${B:-$b}
@@ -107,6 +120,8 @@ anno(){
       S7) echo FAILED - NO SUCH DIRECTORY  ;;
       N8) echo  ;;
       A8) echo  ;;
+      A9) echo RTX 5000 ADA ;;
+      B9) echo RTX PRO 6000 BLACKWELL
    esac
 }
 
@@ -142,7 +157,8 @@ resolve(){
       N8) echo /data/blyth/opticks/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
       A8) echo    /data1/blyth/tmp/GEOM/J_2024nov27/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
 
-     X9) echo /hpcfs/juno/junogpu/blyth/tmp/GEOM/J26_1_1_Opticks_v0_6_3/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
+      A9) echo /data1/blyth/tmp/GEOM/J26_1_1_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan               ;;
+      B9) echo /hpcfs/juno/junogpu/blyth/tmp/GEOM/J26_1_1_Opticks_v0_6_3/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan ;;
 
     esac
 }
@@ -179,7 +195,9 @@ if [ "${arg/grep}" != "$arg" ]; then
     fi
 fi
 
-
+if [ "${arg/usage}" != "$arg" ]; then
+    sreport_ab_usage
+fi
 
 
 

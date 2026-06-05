@@ -1,5 +1,5 @@
 #!/bin/bash
-usage(){ cat << EOU
+cxs_min_usage(){ cat << EOU
 cxs_min.sh : minimal executable and script for shakedown
 ============================================================
 
@@ -416,7 +416,10 @@ elif [ "$TEST" == "medium_scan" ]; then
 
    opticks_num_event=12
    opticks_num_genstep=1x12
-   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100  # duplication of M1 is to workaround lack of metadata
+   opticks_num_photon=M1,1,10,20,30,40,50,60,70,80,90,100
+   # initially duplication of M1 was workaround for lack of metadata but subsequently
+   # it is a convenient way to avoid non-typical timings in the first event
+
    opticks_running_mode=SRM_TORCH
    opticks_max_slot=M100
    ## potentially need to set opticks_max_slot to avoid allocation of an enormous VRAM filling buffer
@@ -603,8 +606,8 @@ vars="$vars opticks_num_event opticks_num_genstep opticks_num_photon opticks_run
 
 
 opticks_start_index=0
-#opticks_max_bounce=31
-opticks_max_bounce=63
+opticks_max_bounce=31
+#opticks_max_bounce=63
 opticks_integration_mode=1
 
 
@@ -830,7 +833,7 @@ if [ "${arg/report}" != "$arg" ]; then
 fi
 
 if [ "${arg/usage}" != "$arg" ]; then
-   usage
+   cxs_min_usage
 fi
 
 

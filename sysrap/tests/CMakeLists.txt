@@ -10,6 +10,9 @@ set(INSTALLED_SCRIPTS
 
    SGLFW_SOPTIX_Scene_test.sh
    ssst.sh
+
+   sreport_ab.py
+   sreport_ab.sh
 )
 
 install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
@@ -17,6 +20,16 @@ install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
 set(DEAD_TEST_SOURCES
    SCFTest.cc
 )
+
+
+set( PY_SCRIPTS
+    __init__.py
+    sreport.py
+)
+
+install(PROGRAMS ${PY_SCRIPTS}  DESTINATION py/opticks/sysrap/tests)
+
+
 
 set(TEST_SOURCES
 
