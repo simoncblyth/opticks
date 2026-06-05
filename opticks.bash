@@ -2512,8 +2512,10 @@ opticks-setup-paths-(){ cat << EOS
 # AND EXTERNAL LIBS THAT THEY DEPEND UPON
 
 opticks-setup- append PATH \$OPTICKS_CUDA_PREFIX/bin   ## nvcc
-opticks-setup- append PATH \$OPTICKS_PREFIX/bin
-opticks-setup- append PATH \$OPTICKS_PREFIX/lib
+
+# need prepend for sreport
+opticks-setup- prepend PATH \$OPTICKS_PREFIX/bin
+opticks-setup- prepend PATH \$OPTICKS_PREFIX/lib
 
 opticks-setup- append PYTHONPATH \$OPTICKS_PREFIX/py
 
@@ -2539,8 +2541,9 @@ opticks-setup-libpaths-(){
 
 cat << EOS
 # $FUNCNAME
-opticks-setup- append $LIBRARY_PATH \$OPTICKS_PREFIX/lib
-opticks-setup- append $LIBRARY_PATH \$OPTICKS_PREFIX/lib64
+opticks-setup- prepend $LIBRARY_PATH \$OPTICKS_PREFIX/lib
+opticks-setup- prepend $LIBRARY_PATH \$OPTICKS_PREFIX/lib64
+
 opticks-setup- append $LIBRARY_PATH \$OPTICKS_PREFIX/externals/lib
 opticks-setup- append $LIBRARY_PATH \$OPTICKS_PREFIX/externals/lib64
 
