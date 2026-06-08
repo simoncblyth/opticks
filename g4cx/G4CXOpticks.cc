@@ -202,17 +202,20 @@ G4CXOpticks::setGeometryFromGDML
 void G4CXOpticks::setGeometryFromGDML()
 {
     LOG(LEVEL) << " argumentless " ;
-
-    if(spath::has_CFBaseFromGEOM())
+    const char* gdmlpath = nullptr ;
+    if(spath::has_GDMLPathFromGEOM())
     {
-        LOG(LEVEL) << " has_CFBaseFromGEOM " ;
-        setGeometry(spath::Resolve("$CFBaseFromGEOM/origin.gdml"));
+        gdmlpath = spath::GDMLPathFromGEOM();
+        LOG(LEVEL) << " has_GDMLPathFromGEOM gdmlpath[" << ( gdmlpath ? gdmlpath : "-" ) << "]" ;
     }
-    else
+    else if(spath::has_CFBaseFromGEOM())
     {
-        LOG(fatal) << " failed to setGeometryFromGDML " ;
-        assert(0);
+        gdmlpath = spath::Resolve("$CFBaseFromGEOM/origin.gdml");
+        LOG(LEVEL) << " has_CFBaseFromGEOM " << ( gdmlpath ? gdmlpath : "-" ) << "]" ;
     }
+    LOG_IF(fatal, !gdmlpath) << " failed to setGeometryFromGDML " ;
+    NP_FATAL_ASSERT(gdmlpath);
+    setGeometry(gdmlpath);
 }
 
 
@@ -227,6 +230,12 @@ void G4CXOpticks::setGeometry()
         LOG(LEVEL) << "[ setGeometry(cf)  " ;
         setGeometry(cf);
         LOG(LEVEL) << "] setGeometry(cf)  " ;
+    }
+    else if(spath::has_GDMLPathFromGEOM())
+    {
+        const char* gdmlpath = spath::GDMLPathFromGEOM();
+        LOG(LEVEL) << " has_GDMLPathFromGEOM gdmlpath[" << ( gdmlpath ? gdmlpath : "-" ) << "]" ;
+        setGeometry(gdmlpath);
     }
     else
     {

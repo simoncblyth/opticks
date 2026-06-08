@@ -81,12 +81,15 @@ cd $(dirname $(realpath $BASH_SOURCE))
 defarg=info_run_ana
 arg=${1:-$defarg}
 
-bin=G4CXOpticks_setGeometry_Test
-script=$bin.py
+name=G4CXOpticks_setGeometry_Test
+
+bin=$name
+script=$name.py
 
 source $HOME/.opticks/GEOM/GEOM.sh   # mini config script that only sets GEOM envvar
 [ -z "$GEOM" ] && echo $BASH_SOURCE : FATAL GEOM $GEOM MUST BE SET && exit 1
 
+origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml    # path to GDML
 
 case $GEOM in
    FewPMT) geomscript=../../u4/tests/FewPMT.sh ;;
@@ -102,7 +105,7 @@ fi
 
 
 
-vars="BASH_SOURCE arg SDIR GEOM savedir FOLD bin geomscript script origin"
+vars="BASH_SOURCE defarg arg SDIR GEOM savedir FOLD bin geomscript script origin"
 
 
 export GProperty_SIGINT=1
@@ -114,7 +117,6 @@ savedir=~/.opticks/GEOM/$GEOM
 
 export FOLD=$savedir
 export G4CXOpticks__setGeometry_saveGeometry=$savedir
-export G4CXOpticks__saveGeometry_saveGGeo=1
 
 #export NNodeNudger__DISABLE=1
 #export X4Solid__convertPolycone_nudge_mode=0 # 0:DISABLE
@@ -150,7 +152,6 @@ fi
 if [ "${arg/dbg}" != "$arg" ]; then
 
     source dbg__.sh
-    origin=$HOME/.opticks/GEOM/$GEOM/origin.gdml    # path to GDML
     if [ -f "$origin" ]; then
         export ${GEOM}_GDMLPathFromGEOM=$origin      # export path to GDML
     fi

@@ -135,6 +135,7 @@ public:
     static bool  has_CFBaseFromGEOM(const char* _geom=nullptr);
 
     static char* GDMLPathFromGEOM(const char* _geom=nullptr);
+    static bool  has_GDMLPathFromGEOM(const char* _geom=nullptr);
 
     static bool is_readable(const char* base, const char* name);
     static bool is_readable(const char* path );
@@ -1077,6 +1078,11 @@ inline char* spath::CFBaseFromGEOM(const char* _geom)
     return path  ;
 }
 
+
+
+
+
+
 inline bool spath::has_CFBaseFromGEOM(const char* _geom)
 {
     char* cfb = CFBaseFromGEOM(_geom);
@@ -1084,11 +1090,37 @@ inline bool spath::has_CFBaseFromGEOM(const char* _geom)
 }
 
 
+/**
 inline char* spath::GDMLPathFromGEOM(const char* _geom)
 {
     char* cfb = CFBaseFromGEOM(_geom);
     return cfb ? spath::Name_(cfb, "/origin.gdml") : nullptr ;
 }
+**/
+
+inline char* spath::GDMLPathFromGEOM(const char* _geom)
+{
+    const char* geom = GEOM(_geom);
+    char* name = spath::Name_(geom ? geom : "MISSING_GEOM", "_GDMLPathFromGEOM") ;
+    char* path = geom == nullptr ? nullptr : getenv(name) ;
+
+    if(VERBOSE) std::cout
+        << "spath::GDMLPathFromGEOM"
+        << " geom " << ( geom ? geom : "-" )
+        << " name " << ( name ? name : "-" )
+        << " path " << ( path ? path : "-" )
+        << "\n"
+        ;
+    return path  ;
+}
+
+
+inline bool spath::has_GDMLPathFromGEOM(const char* _geom)
+{
+    char* gdmlpath = GDMLPathFromGEOM(_geom);
+    return gdmlpath != nullptr ;
+}
+
 
 
 inline bool spath::is_readable(const char* base, const char* name)  // static

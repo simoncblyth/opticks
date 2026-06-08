@@ -11,6 +11,9 @@ set(INSTALLED_SCRIPTS
     G4CXTest_GEOM.sh
     G4CXTest_GEOM.py
     G4CXTest.py
+
+    G4CXOpticks_setGeometry_Test.sh
+    G4CXOpticks_setGeometry_Test.py
 )
 install(PROGRAMS ${INSTALLED_SCRIPTS} DESTINATION bin)
 
