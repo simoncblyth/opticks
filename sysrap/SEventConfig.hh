@@ -190,6 +190,10 @@ struct SYSRAP_API SEventConfig
     static const plog::Severity LEVEL ;
     static constexpr const int MISSING_INDEX = std::numeric_limits<int>::max() ;
 
+    static constexpr const char* SEventConfig__LIFECYCLE = "SEventConfig__LIFECYCLE" ;
+    static bool LIFECYCLE ;
+
+
     static int  RecordLimit(); // sseq::SLOTS typically 32
     static void LIMIT_Check();
     static void ORDER_Check();

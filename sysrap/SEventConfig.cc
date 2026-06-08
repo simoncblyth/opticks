@@ -34,6 +34,8 @@
 #include "SLOG.hh"
 
 const plog::Severity SEventConfig::LEVEL = SLOG::EnvLevel("SEventConfig", "DEBUG") ;
+bool                 SEventConfig::LIFECYCLE = ssys::getenvbool(SEventConfig__LIFECYCLE) ;
+
 
 int         SEventConfig::_IntegrationModeDefault = 1 ;  // change -1 => 1, so SEvt::CreateOrReuse defaults to creating EGPU SEvt
 const char* SEventConfig::_EventModeDefault = Minimal ;
@@ -1701,7 +1703,7 @@ void SEventConfig::Initialize_Comp_Simtrace_(unsigned& gather_mask, unsigned& sa
     if(MaxGenstep()>0){   gather_mask |= SCOMP_GENSTEP  ;  save_mask |= SCOMP_GENSTEP ;  }
     if(MaxSimtrace()>0){  gather_mask |= SCOMP_SIMTRACE ;  save_mask |= SCOMP_SIMTRACE ; }
 
-    LOG(info)
+    LOG_IF(info, LIFECYCLE)
         << " MaxGenstep " << MaxGenstep()
         << " MaxSimtrace " << MaxSimtrace()
         << " gather_mask " << gather_mask
@@ -1901,7 +1903,7 @@ of variability. Expect linear with some pedestal.
 void SEventConfig::SetDevice( size_t totalGlobalMem_bytes, std::string name )
 {
     SetDeviceName( name.empty() ? nullptr : name.c_str() ) ;
-    LOG(info) << DescDevice(totalGlobalMem_bytes, name) ;
+    LOG_IF(info, LIFECYCLE) << DescDevice(totalGlobalMem_bytes, name) ;
 
     size_t mxs0 = MaxSlot();
     int lite = ModeLite();
@@ -1916,7 +1918,7 @@ void SEventConfig::SetDevice( size_t totalGlobalMem_bytes, std::string name )
 
     bool changed = mxs1 != mxs0  ;
 
-    LOG(info)
+    LOG_IF(info, LIFECYCLE)
         << " Configured_MaxSlot/M " << mxs0/M
         << " Final_MaxSlot/M " << mxs1/M
         << " HeuristicMaxSlot_Rounded/M "  << hmxr/M

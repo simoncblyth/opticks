@@ -73,6 +73,9 @@ struct sreport
         A%0.3d_QSim__simulate_BRES:A%0.3d_QSim__simulate_TAIL         ## save arrays
        )" ;
 
+    static constexpr const char* sreport__LEVEL = "sreport__LEVEL" ;
+    static constexpr const char* sreport__VERBOSE = "sreport__VERBOSE" ;
+    int     LEVEL ;
     bool    VERBOSE ;
 
     NP*       run ;   // dummy array that exists just to hold metadata
@@ -104,7 +107,8 @@ struct sreport
 
 inline sreport::sreport()
     :
-    VERBOSE(getenv("sreport__VERBOSE") != nullptr),
+    LEVEL(U::GetEnvInt(sreport__LEVEL,0)),
+    VERBOSE(getenv(sreport__VERBOSE) != nullptr),
     run( nullptr ),
     runprof( nullptr ),
     ranges( nullptr ),

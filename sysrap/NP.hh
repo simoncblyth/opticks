@@ -2857,7 +2857,7 @@ inline std::string NP::descTable_(int wid,
   ) const
 {
     bool with_column_totals = true ;
-
+    bool with_timestamp_delta = true ;
 
 
     std::stringstream ss ;
@@ -2901,6 +2901,7 @@ inline std::string NP::descTable_(int wid,
 
         std::vector<T> column_totals(nj,0);
         int num_timestamp = 0 ;
+        std::vector<double> timestamps ;
 
         for(int i=0 ; i < ni ; i++)
         {
@@ -2909,8 +2910,13 @@ inline std::string NP::descTable_(int wid,
             {
                 T v = vv[i*nj+j] ;
                 bool timestamp = U::LooksLikeTimestamp<T>(v) ;
-                if(timestamp) num_timestamp += 1 ;
                 T pv = timestamp ? v - t0 : v  ;
+
+                if(timestamp)
+                {
+                    num_timestamp += 1 ;
+                    timestamps.push_back(v);
+                }
 
                 column_totals[j] += pv ;
 
@@ -2930,9 +2936,27 @@ inline std::string NP::descTable_(int wid,
                         << pv
                         ;
                 }
-                ss << ( j < nj-1 ? " " : "\n" ) ;
 
+                ss << ( j < nj-1 ? " " : " " ) ;
             }
+
+
+            if(timestamps.size() >= 2 && with_timestamp_delta )
+            {
+                T prev_v = timestamps[timestamps.size()-2] ;
+                T last_v = timestamps[timestamps.size()-1] ;
+                T dv = last_v - prev_v ;
+                ss
+                    << std::setw(cwid)
+                    << std::fixed
+                    << std::setprecision(6)
+                    << double(dv)/1000000
+                    ;
+            }
+
+            ss << "\n" ;
+
+
         }
 
         ss << "num_timestamp " << num_timestamp << " auto-offset from t0 " << t0 << std::endl ;

@@ -168,6 +168,7 @@ if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFro
     for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
 else
     ## development source tree usage : where need to often switch between geometries
+    echo $BASH_SOURCE - Internal GEOM setup detected
     source ~/.opticks/GEOM/GEOM.sh   # sets GEOM envvar, use GEOM bash function to setup/edit
     #export ${GEOM}_CFBaseFromGEOM=$HOME/.opticks/GEOM/$GEOM
 fi
@@ -772,9 +773,13 @@ logging(){
 [ -n "$RUNMETA"  ] && export SEvt__RUNMETA=1
 [ -n "$CRASH" ] && export CSGOptiX__optixpath=$OPTICKS_PREFIX/ptx/objects-Debug/CSGOptiXOPTIX/CSGOptiX7.ptx
 
-export QRng__init_VERBOSE=1
-export SEvt__MINIMAL=1  ## just output dir
-export SEvt__MINTIME=1  ## minimal timing info from QSim::simulate
+
+#export SEventConfig__LIFECYCLE=1
+#export QRng__LIFECYCLE=1
+#export SEvt__MINIMAL=1  ## just output dir
+#export SEvt__MINTIME=1  ## minimal timing info from QSim::simulate
+
+
 
 #export SEvt__DIRECTORY=1  ## getDir dumping
 #export SEvt__NPFOLD_VERBOSE=1

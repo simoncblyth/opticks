@@ -717,8 +717,9 @@ inline int SPMT::init_pmtNum_FAKE_WHEN_MISSING = ssys::getenvint(SPMT__init_pmtN
 
 inline void SPMT::init_pmtNum()
 {
-    std::cout
+    if(level > 0) std::cout
        << "SPMT::init_pmtNum"
+       << " level " << level
        << " pmtNum.sstr " <<  (pmtNum ? pmtNum->sstr() : "-"  )
        << " init_pmtNum_FAKE_WHEN_MISSING " << init_pmtNum_FAKE_WHEN_MISSING
        << "\n"
@@ -753,8 +754,9 @@ inline void SPMT::init_pmtNum()
     num.m_nums_wp_atm_mpmt  = pmtNum->get_named_value<int>("m_nums_wp_atm_mpmt", -1) ;
     num.ALL = num.SUM();
 
-    std::cout
+    if(level > 0) std::cout
         << "[SPMT::init_pmtNum\n"
+        << " level " << level
         << num.desc()
         << "]SPMT::init_pmtNum\n"
         ;
