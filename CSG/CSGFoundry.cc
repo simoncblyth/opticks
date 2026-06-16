@@ -3221,6 +3221,9 @@ CSGFoundry* CSGFoundry::CopySelect(const CSGFoundry* src, const SBitSet* elv )
 
 
 
+
+
+
 /**
 CSGFoundry::ResolveCFBase
 ---------------------------
@@ -3234,7 +3237,15 @@ const char* CSGFoundry::ResolveCFBase()
 {
     const char* cfbase = spath::CFBaseFromGEOM();
     bool readable = spath::is_readable(cfbase, "CSGFoundry" );
-    LOG_IF(fatal, !readable) << " cfbase/CSGFoundry directory [" << cfbase << "]/CSGFoundry" << " IS NOT READABLE " ;
+
+    const char* GEOM_NOTE = ssys::getenvvar("GEOM_NOTE", "no-GEOM_NOTE");
+
+    LOG_IF(fatal, !readable)
+        << " cfbase/CSGFoundry directory [" << ( cfbase ? cfbase : "-" ) << "]/CSGFoundry"
+        << " IS NOT READABLE " << "\n"
+        << " CHECK GEOM RELATED ENVVARS " << "\n"
+        << " GEOM_NOTE [" << ( GEOM_NOTE ? GEOM_NOTE : "-" ) << "] "
+        ;
     return readable ? cfbase : nullptr ;
 }
 
@@ -3266,6 +3277,9 @@ CSGFoundry* CSGFoundry::Load_() // static
 {
     const char* cfbase = ResolveCFBase() ;
     if(ssys::getenvbool(_Load_DUMP)) std::cout << "CSGFoundry::Load_[" << cfbase << "]\n" ;
+
+    LOG_IF(fatal, cfbase==nullptr ) << "ResolveCFBase FAILED - ABORT " ;
+    assert(cfbase);
 
     LOG(LEVEL) << "[ SSim::Load cfbase " << ( cfbase ? cfbase : "-" )  ;
     SSim* sim = SSim::Load(cfbase, "CSGFoundry/SSim");
