@@ -150,8 +150,14 @@ inline float sdevice::totalGlobalMem_GB() const
 
 inline int sdevice::DeviceCount() // static
 {
-    int devCount(0) ;  // TWAS A BUG TO NOT INITIALIZE THIS
-    cudaGetDeviceCount(&devCount);
+    int devCount = 0 ;
+    cudaError_t error = cudaGetDeviceCount(&devCount);
+    if (error != cudaSuccess)
+    {
+        // e.g., cudaErrorNoDevice (38) or cudaErrorInsufficientDriver (35)
+        //std::cerr << "sdevice::DeviceCount CUDA Error: [" << cudaGetErrorString(error) << "]\n" ;
+        return 0 ;
+    }
     return devCount ;
 }
 
@@ -315,19 +321,29 @@ inline void sdevice::Visible(std::vector<sdevice>& visible )
     bool ordinal_from_index = no_cvd  ;
     Collect(visible, ordinal_from_index);
 
-    int VISIBLE_COUNT = visible.size() ;
-    assert( sdevice::DeviceCount() == VISIBLE_COUNT );
+    int device_count = sdevice::DeviceCount();
+    int visible_count = visible.size() ;
+    bool consistent = device_count == visible_count ;
+    if(!consistent) std::cerr
+         << "sdevice::Visible"
+         << " device_count " << device_count
+         << " visible_count " << visible_count
+         << " consistent " << ( consistent ? "YES" : "NO " )
+         << "\n"
+         ;
+
+    assert( consistent );
 
     if(level > 0) std::cerr << "sdevice::Visible no_cvd:" << no_cvd << std::endl ;
 
 
     if( no_cvd )
     {
-        if(VISIBLE_COUNT > 0 && PERSIST == 1)
+        if(visible_count > 0 && PERSIST == 1)
         {
             if(level > 0) std::cerr
                 << "sdevice::Visible no_cvd save"
-                << " VISIBLE_COUNT " << VISIBLE_COUNT
+                << " visible_count " << visible_count
                 << " PERSIST " << PERSIST
                 << " level " << level
                 << "\n"

@@ -410,6 +410,7 @@ set(HEADERS
     SCSGOptiX.h
     SSimulator.h
     SOpticksClientSimulator.h
+    SOpticksDummySimulator.h
 
     SPMT.h
     s_pmt.h

@@ -25,7 +25,10 @@ G4CXOpticks.cc
 
 #include "CSGFoundry.h"
 
+#include "sdevice.h"
 #include "SSimulator.h"
+#include "SOpticksDummySimulator.h"
+
 #ifdef WITH_CUDA
 #include "CSGOptiX.h"
 #endif
@@ -421,7 +424,12 @@ SSimulator* G4CXOpticks::CreateSimulator(CSGFoundry* fd)  // static
         case 1: cx = SOpticksClientSimulator::Create(fd->getTree())   ; break ;
     }
 #elif defined(WITH_CUDA) && !defined(WITH_CURL)
-    cx = CSGOptiX::Create(fd);
+    int device_count = sdevice::DeviceCount();
+    switch(device_count)
+    {
+        case 0:    cx = SOpticksDummySimulator::Create(fd->getTree()); break ;
+        default:   cx = CSGOptiX::Create(fd);                          break ;
+    }
 #elif !defined(WITH_CUDA) && defined(WITH_CURL)
     cx = SOpticksClientSimulator::Create(fd->getTree());
 #elif !defined(WITH_CUDA) && !defined(WITH_CURL)

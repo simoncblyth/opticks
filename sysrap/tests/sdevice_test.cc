@@ -11,6 +11,15 @@ See notes in sdevice_test.sh
 
 int main(int argc, char** argv)
 {
+
+    int device_count = sdevice::DeviceCount();
+    std::cout
+        << " device_count " << device_count
+        << "\n"
+        ;
+
+
+
     std::vector<sdevice> visible ;
     sdevice::Visible(visible );
 
