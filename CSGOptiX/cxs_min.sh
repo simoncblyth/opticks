@@ -130,6 +130,7 @@ EOU
 #test=vvvvvvlarge_evt_merge
 
 test=medium_scan
+#test=medium_scan_first
 
 export TEST=${TEST:-$test}
 
@@ -162,7 +163,11 @@ vars="$vars bin script script_AB script_lite script_hlm"
 
 
 External_CFBaseFromGEOM=${GEOM}_CFBaseFromGEOM
-if [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
+
+if [ -n "$REPORT_GEOM" ]; then
+    echo $BASH_SOURCE - External REPORT_GEOM setup detected - THIS IS FOR re-report RUNNING ONLY
+    GEOM=$REPORT_GEOM
+elif [ -n "$GEOM" -a -n "${!External_CFBaseFromGEOM}" -a -d "${!External_CFBaseFromGEOM}" -a -f "${!External_CFBaseFromGEOM}/CSGFoundry/prim.npy" ]; then
     echo $BASH_SOURCE - External GEOM setup detected
     vv="External_CFBaseFromGEOM ${External_CFBaseFromGEOM}"
     for v in $vv ; do printf "%40s : %s \n" "$v" "${!v}" ; done
@@ -412,6 +417,14 @@ elif [ "$TEST" == "large_scan" ]; then
    opticks_num_photon=H1:10,M2,3,5,7,10,20,40,60,80,100
    opticks_running_mode=SRM_TORCH
    #opticks_max_photon=M100
+
+elif [ "$TEST" == "medium_scan_first" ]; then
+
+   opticks_num_event=2
+   opticks_num_genstep=1x2
+   opticks_num_photon=M1,1
+   opticks_running_mode=SRM_TORCH
+   opticks_max_slot=M100
 
 elif [ "$TEST" == "medium_scan" ]; then
 

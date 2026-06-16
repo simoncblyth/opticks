@@ -21,6 +21,7 @@ stree_load_test.cc
 **/
 
 #include "ssys.h"
+#include "sstr.h"
 #include "stree.h"
 #include "stra.h"
 #include "strid.h"
@@ -78,6 +79,8 @@ struct stree_load_test
 
     int desc_nodes_with_center_within_ce() const ;
     int desc_prim() const ;
+    int desc_sensor() const ;
+    int desc_named(const char* key) const ;
 
 
     int main();
@@ -826,6 +829,21 @@ inline int stree_load_test::desc_prim() const
      return 0 ;
 }
 
+inline int stree_load_test::desc_sensor() const
+{
+     std::cout << st->desc_sensor();
+     return 0 ;
+}
+
+
+inline int stree_load_test::desc_named(const char* key) const
+{
+     std::cout << st->desc_named(key);
+     return 0 ;
+}
+
+
+
 
 
 
@@ -878,6 +896,8 @@ inline int stree_load_test::main()
     if(ALL||strcmp(TEST, "make_tree_digest") == 0)                       rc += make_tree_digest();
     if(ALL||strcmp(TEST, "desc_nodes_with_center_within_ce") == 0)       rc += desc_nodes_with_center_within_ce();
     if(ALL||strcmp(TEST, "desc_prim") == 0)                              rc += desc_prim();
+    if(ALL||strcmp(TEST, "desc_sensor") == 0)                            rc += desc_sensor();
+    if(sstr::StartsWith(TEST, "desc_named:"))                            rc += desc_named(TEST+strlen("desc_named:"));
 
     return rc ;
 }
@@ -893,6 +913,8 @@ int main(int argc, char** argv)
     TEST=desc_solid LVID=43 ~/o/sysrap/tests/stree_load_test.sh  run
     TEST=desc_solid LVID=124 ~/o/sysrap/tests/stree_load_test.sh  run
     TEST=desc_solid LVID=32 ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc_sensor        ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc_named:sensor  ~/o/sysrap/tests/stree_load_test.sh
 
 
     TEST=desc_node_ELVID ELVID=43,44,45,46 ~/o/sysrap/tests/stree_load_test.sh

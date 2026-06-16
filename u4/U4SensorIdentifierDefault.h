@@ -25,6 +25,9 @@ implementation use G4CXOpticks::SetSensorIdentifier.
 
 struct U4SensorIdentifierDefault : public U4SensorIdentifier
 {
+    static constexpr const char* U4SensorIdentifierDefault__MODE = "U4SensorIdentifierDefault__MODE" ;
+    static const char* MODE ;
+
     static std::vector<std::string>* GLOBAL_SENSOR_BOUNDARY_LIST ;
 
     void setLevel(int _level);
@@ -41,6 +44,8 @@ struct U4SensorIdentifierDefault : public U4SensorIdentifier
 
 std::vector<std::string>*
 U4SensorIdentifierDefault::GLOBAL_SENSOR_BOUNDARY_LIST = ssys::getenv_vec<std::string>("U4SensorIdentifierDefault__GLOBAL_SENSOR_BOUNDARY_LIST", "", '\n' );
+
+const char* U4SensorIdentifierDefault::MODE = ssys::getenvvar(U4SensorIdentifierDefault__MODE, nullptr);
 
 
 inline void U4SensorIdentifierDefault::setLevel(int _level)
@@ -98,9 +103,17 @@ the copyno (aka "lpmtid") from the JUNO Geant4 PV of PMTs can be zero and
 is used for identification of sensors with (unfortunately)
 a non-contiguous set of values with some very large gaps.
 
-HMM: if were to switch to using the contiguous "lpmtidx"
-rather than the non-contiguous "lpmtid" this would likely
-be the place to do it.  HMM: but its too JUNO specific for here ?
+
+Ordinarily when running from a geometry recreated from GDML
+no sensors are found as "SD" status does not survive GDML.
+As a workaround for this have added the below control that
+skips the SD requirement::
+
+   export U4SensorIdentifierDefault__MODE=lax
+
+You might think that would yield more sensors that appropriate, but
+that is not the case as this method is invoked on all the
+instance_outer_pv of the factorized geometry, not every volume.
 
 **/
 
@@ -117,21 +130,19 @@ inline int U4SensorIdentifierDefault::getInstanceIdentity( const G4VPhysicalVolu
     FindSD_r(sdpv, instance_outer_pv, 0 );
 
     unsigned num_sd = sdpv.size() ;
-    bool is_sensor = num_sd > 0 && has_PMT_pvn  ;
+
+    bool is_lax = MODE && 0==strcmp(MODE, "lax");
+    bool is_sensor = is_lax ? has_PMT_pvn : ( num_sd > 0 && has_PMT_pvn )  ;
 
     int identifier = is_sensor ? copyno : -1  ;
 
-    //bool is_interesting_copyno = IsInterestingCopyNo(copyno) ;
-    //bool dump = is_sensor && is_interesting_copyno ;
-    //bool dump = false ;
-    //bool dump = true ;
-    //bool dump = num_sd > 0 ;
-
-    if(level > 0) std::cout
+    if(level > 0 || is_lax) std::cout
         << "U4SensorIdentifierDefault::getIdentity"
         << " level " << level
         << " copyno " << copyno
         << " num_sd " << num_sd
+        << " [" << U4SensorIdentifierDefault__MODE << "] "
+        << " is_lax " << is_lax
         << " is_sensor " << is_sensor
         << " pvn " << ( pvn ? pvn : "-" )
         << " has_PMT_pvn " << ( has_PMT_pvn ? "YES" : "NO " )

@@ -431,6 +431,8 @@ struct stree
     void save_desc(const char* base, const char* midl) const ;
     void save_desc(const char* base) const ;
     void save_desc_(const char* fold) const ;
+
+    std::string desc_named(const char* key) const ;
     void populate_descMap( std::map<std::string, std::function<std::string()>>& m ) const ;
 
 
@@ -466,6 +468,7 @@ struct stree
     void reorderSensors();
     void reorderSensors_r(int nidx);
     void get_sensor_id( std::vector<int>& arg_sensor_id ) const ;
+    const char* get_sensor_name( size_t sensor_name_idx ) const ;
 
     void find_nodes_with_sensor_id( std::vector<snode>& nodes, int q_sensor_id ) const ;
     int  get_ordinal_nidx_with_sensor_id( int q_sensor_id, int ordinal ) const ;
@@ -1022,6 +1025,7 @@ inline void stree::save_desc(const char* base) const
     save_desc_(fold);
 }
 
+
 inline void stree::save_desc_(const char* fold) const
 {
     std::cout << "[stree::save_desc_ fold [" << ( fold ? fold : "-" ) << "]\n" ;
@@ -1040,6 +1044,30 @@ inline void stree::save_desc_(const char* fold) const
     }
     std::cout << "]stree::save_desc_ fold [" << ( fold ? fold : "-" ) << "]\n" ;
 }
+
+
+inline std::string stree::desc_named(const char* key) const
+{
+    std::map<std::string, std::function<std::string()>> descMap ;
+    populate_descMap(descMap);
+    auto it = descMap.find(key);
+
+    std::stringstream ss ;
+    ss << "stree::desc_named key[" << ( key ? key : "-" ) << "]\n" ;
+
+
+    if(it != descMap.end()) \
+    {
+        ss << it->second();   // access function and call it
+    }
+    else
+    {
+        ss << " ERROR : key not found in descMap \n" ;
+    }
+    std::string str = ss.str();
+    return str ;
+}
+
 
 inline void stree::populate_descMap( std::map<std::string, std::function<std::string()>>& m ) const
 {
@@ -1629,6 +1657,12 @@ inline void stree::get_sensor_id( std::vector<int>& arg_sensor_id ) const
     }
 }
 
+inline const char* stree::get_sensor_name( size_t sensor_name_idx ) const
+{
+    size_t num_sensor_name = sensor_name.size();
+    return sensor_name_idx < num_sensor_name ? sensor_name[sensor_name_idx].c_str() : nullptr ;
+}
+
 
 /**
 stree::find_nodes_with_sensor_id
@@ -1704,24 +1738,42 @@ inline void stree::postcreate() const
     std::cout << "]stree::postcreate" << std::endl ;
 }
 
+
+/**
+stree::desc_sensor
+------------------
+
+When live running from an original Geant4 geometry
+volume names do not have pointers in them, so the
+number of unique sensor volume names is small, eg ~6 for JUNO.
+
+When running from a GDML "recreated" geometry the volume
+names include pointers causing every volume to have a
+unique name...
+
+**/
+
 inline std::string stree::desc_sensor() const
 {
-    int num_sensor = sensor_name.size() ;
+    int num_sensor_name = sensor_name.size() ;
     std::stringstream ss ;
     ss << "stree::desc_sensor" << std::endl
        << " sensor_id.size " << sensor_id.size() << std::endl
        << " sensor_count " << sensor_count << std::endl
-       << " sensor_name.size " << num_sensor << std::endl
+       << " num_sensor_name " << num_sensor_name << " (expect small number of unique names)"
+       << std::endl
        ;
 
     int edgeitems = 20 ;
 
     ss << "sensor_name[" << std::endl  ;
-    for(int i=0; i < num_sensor ; i++)
+    for(int i=0; i < num_sensor_name ; i++)
     {
-        if( i < edgeitems || i > num_sensor - edgeitems )
+        if( i < edgeitems || i > num_sensor_name - edgeitems )
         {
-            ss << sensor_name[i].c_str() << std::endl ;
+            size_t sensor_name_idx = i ;
+            const char* name = get_sensor_name(sensor_name_idx);
+            ss << ( name ? name : "-" ) << std::endl ;
         }
         else if( i == edgeitems )
         {
@@ -1749,6 +1801,8 @@ inline void stree::get_sensor_nidx( std::vector<int>& sensor_nidx ) const
             sensor_nidx.push_back(nidx) ;
 }
 
+
+
 /**
 stree::desc_sensor_nd
 -----------------------
@@ -1768,14 +1822,18 @@ inline std::string stree::desc_sensor_nd(int edge) const
     int num_sid = sensor_nidx.size() ;
     assert( num_sid == num_nd_sensor );
 
+    size_t num_sensor_name = sensor_name.size();
+
     std::stringstream ss ;
     ss << "[stree::desc_sensor_nd" << std::endl ;
     ss << " edge            " << edge << std::endl ;
     ss << " num_nd          " << num_nd << std::endl ;
     ss << " num_nd_sensor   " << num_nd_sensor << std::endl ;
     ss << " num_sid         " << num_sid << std::endl ;
+    ss << " num_sensor_name " << num_sensor_name << std::endl ;
 
     int offset = -1 ;
+
 
     for(int i=0 ; i < num_sid ; i++)
     {
@@ -1800,12 +1858,14 @@ inline std::string stree::desc_sensor_nd(int edge) const
 
         if(head || tail || tran || tran_post)
         {
+            const char* name = get_sensor_name(nd.sensor_name);
             ss
                 << " nidx " << std::setw(6) << nidx
                 << " i " << std::setw(6) << i
                 << " sensor_id " << std::setw(6) << nd.sensor_id
                 << " sensor_index " << std::setw(6) << nd.sensor_index
                 << " sensor_name " << std::setw(6) << nd.sensor_name
+                << " [" << ( name ? name : "-" ) << "]"
                 << std::endl
                 ;
         }

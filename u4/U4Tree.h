@@ -1036,7 +1036,7 @@ This is called from U4Tree::Create after U4Tree instanciation
 and stree::factorize is called, but before stree::add_inst.
 
 Initially tried to simply use lv->GetSensitiveDetector() to
-identify sensor nodes by that is problematic because
+identify sensor nodes but that is problematic because
 the SD is not on the volume with the copyNo and this
 use of copyNo is detector specific.  Also not all JUNO SD
 are actually sensitive.

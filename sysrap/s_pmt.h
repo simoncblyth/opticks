@@ -150,6 +150,7 @@ namespace s_pmt
         NUM_WP_ATM_MPMT        = 0,        // 0:older branches lack MPMT
 #endif
         NUM_WP_WAL_PMT         = 5,
+        NOT_A_SENSOR           = -1,
         OFFSET_CD_LPMT         = 0,
         OFFSET_CD_LPMT_END     = 17612,
         OFFSET_CD_SPMT         = 20000,

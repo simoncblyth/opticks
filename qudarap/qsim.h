@@ -1813,7 +1813,15 @@ inline QSIM_METHOD int qsim::propagate_at_surface_CustomART(unsigned& flag, RNG&
     // formerly excluded Custom4 hits onto WP PMTs see ~/j/issues/jok-tds-mu-running-NOT-A-SENSOR-warnings.rst
     //if(lpmtid < s_pmt::OFFSET_CD_LPMT || lpmtid >= s_pmt::OFFSET_WP_PMT_END )
     //if(lpmtid < s_pmt::OFFSET_CD_LPMT || lpmtid >= s_pmt::OFFSET_WP_ATM_LPMT_END )
-    if(lpmtid < s_pmt::OFFSET_CD_LPMT || lpmtid >=   s_pmt::OFFSET_WP_WAL_PMT_END )
+    if(lpmtid == s_pmt::NOT_A_SENSOR )
+    {
+        flag = NAN_ABORT ;
+#if !defined(PRODUCTION) && defined(DEBUG_PIDX)
+        printf("//qsim::propagate_at_surface_CustomART pidx %7lld lpmtid %d : ERROR lpmtid INVALID -1:NOT_A_SENSOR : NAN_ABORT \n", ctx.pidx, lpmtid );
+#endif
+        return BREAK ;
+    }
+    else if(lpmtid < s_pmt::OFFSET_CD_LPMT || lpmtid >=   s_pmt::OFFSET_WP_WAL_PMT_END )
     {
         flag = NAN_ABORT ;
 #if !defined(PRODUCTION) && defined(DEBUG_PIDX)

@@ -31,6 +31,9 @@ C++
     ~/o/sysrap/tests/stree_load_test.sh
     TEST=desc ~/o/sysrap/tests/stree_load_test.sh
 
+    TEST=desc_sensor       ~/o/sysrap/tests/stree_load_test.sh
+    TEST=desc_named:sensor ~/o/sysrap/tests/stree_load_test.sh
+
     LVID=124 TEST=desc_solid ~/o/sysrap/tests/stree_load_test.sh
 
 
@@ -157,7 +160,11 @@ logging(){
 
 
 if [ ! -f "$FOLD/nds.npy" ]; then
-    echo $BASH_SOURCE : GEOM $GEOM ${GEOM}_CFBaseFromGEOM ${!CFB}  FOLD $FOLD
+    echo $BASH_SOURCE : GEOM $GEOM
+    echo $BASH_SOURCE : \${GEOM}_CFBaseFromGEOM ${GEOM}_CFBaseFromGEOM
+    echo $BASH_SOURCE : CFB : $CFB
+    echo $BASH_SOURCE : \${!CFB} : ${!CFB}
+    echo $BASH_SOURCE : FOLD $FOLD
     echo $BASH_SOURCE : CFBaseFromGEOM directory MUST contain CSGFoundry/SSim/stree/nds.npy : THIS DOES NOT
     exit 1
 fi
