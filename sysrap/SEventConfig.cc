@@ -12,6 +12,7 @@
 #include "spath.h"
 #include "sdirectory.h"
 #include "salloc.h"
+#include "NPU.hh"
 
 #ifdef WITH_CUDA
 #include "scontext.h"
@@ -223,11 +224,26 @@ int SEventConfig::_GetNumEvent()
     int numEvent_fromPhotonList  = have_NumPhotonPerEvent ? _NumPhotonPerEvent->size() : 0 ;
     int numEvent_fromGenstepList = have_NumGenstepPerEvent ? _NumGenstepPerEvent->size() : 0 ;
     int numEvent_fromList = std::max(numEvent_fromPhotonList, numEvent_fromGenstepList);
+    bool numEvent_consistent = numEvent_fromPhotonList == numEvent_fromGenstepList ;
 
-    if( numEvent_fromPhotonList > 0 && numEvent_fromGenstepList > 0 )
-    {
-        assert( numEvent_fromPhotonList == numEvent_fromGenstepList );
-    }
+
+    LOG_IF(fatal, !numEvent_consistent )
+        << " NOT:numEvent_consistent  "
+        << "\n"
+        << "(" << kNumPhoton << ")"
+        << " numEvent_fromPhotonList " << numEvent_fromPhotonList
+        << "\n"
+        << "(" << kNumGenstep << ")"
+        << " numEvent_fromGenstepList " << numEvent_fromGenstepList
+        ;
+
+    NP_FATAL_ASSERT(numEvent_consistent);
+
+
+
+
+
+
 
     bool override_NumEvent = numEvent_fromList > 0  && numEvent_fromList != _NumEvent ;
 
@@ -243,6 +259,10 @@ int SEventConfig::_GetNumEvent()
         << "(" << kNumGenstep << ")"
         << " numEvent_fromGenstepList " << numEvent_fromGenstepList
         ;
+
+
+
+
     return override_NumEvent ? numEvent_fromList : _NumEvent ;
 }
 
