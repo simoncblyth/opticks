@@ -312,7 +312,7 @@ struct NP
 
 
     template<typename T>
-    std::string descTable(int wid=7) const ;
+    std::string descTable(int wid=7, const char* tag="") const ;
 
     template<typename T>
     T findMinimumTimestamp() const ;
@@ -321,7 +321,8 @@ struct NP
     std::string descTable_(
        int wid=7,
        const std::vector<std::string>* column_labels=nullptr,
-       const std::vector<std::string>* row_labels=nullptr
+       const std::vector<std::string>* row_labels=nullptr,
+       const char* tag=""
        ) const ;
 
     static NP* MakeLike(  const NP* src);
@@ -2818,9 +2819,9 @@ NP::descTable
 **/
 
 template<typename T>
-inline std::string NP::descTable(int wid) const
+inline std::string NP::descTable(int wid, const char* tag) const
 {
-    return descTable_<T>(wid, labels, &names );
+    return descTable_<T>(wid, labels, &names, tag );
 }
 
 
@@ -2853,7 +2854,8 @@ NP::descTable_
 template<typename T>
 inline std::string NP::descTable_(int wid,
     const std::vector<std::string>* column_labels,
-    const std::vector<std::string>* row_labels
+    const std::vector<std::string>* row_labels,
+    const char* tag
   ) const
 {
     bool with_column_totals = true ;
@@ -2861,7 +2863,7 @@ inline std::string NP::descTable_(int wid,
 
 
     std::stringstream ss ;
-    ss << "[NP::descTable_ " << sstr() << std::endl ;
+    ss << "[NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << sstr() << std::endl ;
     int ndim = shape.size() ;
     bool skip = ndim != 2 ;
     if(skip)
@@ -3005,7 +3007,7 @@ inline std::string NP::descTable_(int wid,
             }
         }
     }
-    ss << "]NP::descTable_ " << sstr() << std::endl ;
+    ss << "]NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << sstr() << std::endl ;
 
     std::string str = ss.str();
     return str ;

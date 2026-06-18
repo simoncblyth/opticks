@@ -35,32 +35,10 @@ Workflow for adding Opticks tags:
        git add okconf/OpticksVersionNumber.hh release_notes.rst
        git commit -m "Prepare to ./addtag.sh $vntag OPTICKS_VERSION_NUMBER $opticks_version_number "
 
-3. push code changes to bitbucket, github and gitlab::
+3. push code changes to bitbucket, github and gitlab (see below initial_setup_of_remotes)
 
-       cd ~/opticks
-       git push
-
-       # if not done already add "bitbucket", "github" and "gitlab" remotes
-       git remote -v
-       git remote add bitbucket git@bitbucket.org:simoncblyth/opticks.git
-       git remote add github git@github.com:simoncblyth/opticks.git
-       git remote add gitlab git@code.ihep.ac.cn:blyth/opticks.git
-       git remote -v
-
-       # to change remote origin while proxying to others stop working
-       git remote set-url origin  git@github.com:simoncblyth/opticks.git
-       git remote set-url origin  git@bitbucket.org:simoncblyth/opticks.git
-       git remote set-url origin  git@gitlab.com:simoncblyth/opticks.git
-       git remote set-url origin  git@code.ihep.ac.cn:blyth/opticks.git
-
-
-       git push              ## to whichever is currently origin
-       git push github
-       git push bitbucket
-       git push gitlab
-
-       git push all          ## push to all three 
-
+    cd ~/opticks
+    git push all ## push code changes to all three remotes
 
 4. run this tag add and pushing script, check output commands and run if correct::
 
@@ -102,6 +80,38 @@ NB this simple script assumes single digit 0-9 major/minor/patch version integer
 
 EOU
 }
+
+initial_setup(){ cat << EOS
+Initial setup of git remotes
+-------------------------------
+
+::
+
+   # if not done already add "bitbucket", "github" and "gitlab" remotes
+   git remote -v
+   git remote add bitbucket git@bitbucket.org:simoncblyth/opticks.git
+   git remote add github git@github.com:simoncblyth/opticks.git
+   git remote add gitlab git@code.ihep.ac.cn:blyth/opticks.git
+   git remote -v
+
+   # to change remote origin while proxying to others stop working
+   git remote set-url origin  git@github.com:simoncblyth/opticks.git
+   git remote set-url origin  git@bitbucket.org:simoncblyth/opticks.git
+   git remote set-url origin  git@gitlab.com:simoncblyth/opticks.git
+   git remote set-url origin  git@code.ihep.ac.cn:blyth/opticks.git
+
+
+To push to those individually use::
+
+       git push              ## to whichever is currently origin
+       git push github
+       git push bitbucket
+       git push gitlab
+
+EOS
+}
+
+
 
 sdir=$(cd $(dirname $BASH_SOURCE) && pwd)
 vctag=$(git tag | sed -n '$p') # same a tail -1 : pick the last listed tag
@@ -160,21 +170,15 @@ st=0
 [ $st -ne 0 ] && echo $err : ERROR CONDITIONS NOTED ABOVE PREVENT TAGGING BY COMMENTING THE BELOW COMMANDS
 [ $st -eq 0 ] && pfx="" || pfx="# "
 
+origin=$(git remote get-url origin)
 
 cat << EOC | sed "s/^/$pfx/"
 
 git tag -a $vntag -m "OPTICKS_VERSION_NUMBER ${ntag_num}"
-git push --tags
-EOC
+git push all --tags
 
-origin=$(git remote get-url origin)
-if [ "${origin/github}" != "$origin" -a -z "$SKIP_BITBUCKET" ]; then
-   echo ${pfx}git push bitbucket --tags  \# as origin looks to be github
-elif [ "${origin/bitbucket}" != "$origin" -a -z "$SKIP_GITHUB" ]; then
-   echo ${pfx}git push github --tags  \# as origin looks to be bitbucket
-else
-   echo \#\# failed to identify origin $origin or are skipping SKIP_BITBUCKET [$SKIP_BITBUCKET] SKIP_GITHUB [$SKIP_GITHUB]
-fi
-echo
+# origin looks to be $origin
+
+EOC
 
 exit 0

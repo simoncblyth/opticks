@@ -3835,6 +3835,8 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
 
     NP* boa = NPX::BOA<F,T>( a, b, a_column, b_column, out );
 
+    bool braces = false ;
+
     if(out) *out
        << "[NPFold::compare_subarray"
        << " key " << key
@@ -3848,26 +3850,22 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
        << " b_subcount " << ( b_subcount ? "YES" : "NO " )
        << " boa " << ( boa ? "YES" : "NO " )
        << "\n"
-       << "-[NPFold::compare_subarray.a_subcount" << "\n"
-       << ( a_subcount ? a_subcount->descTable<int>(8) : "-\n" )
-       << "-]NPFold::compare_subarray.a_subcount"
+       << ( braces ? "-[NPFold::compare_subarray.a_subcount\n" : "" )
+       << ( a_subcount ? a_subcount->descTable<int>(8,"a_subcount") : "-\n" )
+       << ( braces ? "-]NPFold::compare_subarray.a_subcount\n" : "" )
        << "\n"
-       << "-[NPFold::compare_subarray.b_subcount" << "\n"
-       << ( b_subcount ? b_subcount->descTable<int>(8) : "-\n" )
-       << "-]NPFold::compare_subarray.b_subcount"
-       << "\n"
-       << "-[NPFold::compare_subarray." << asym << "\n"
-       << ( a ? a->descTable<T>(8) : "-\n" )
-       << "-]NPFold::compare_subarray." << asym
-       << "\n"
-       << "-[NPFold::compare_subarray." << bsym << "\n"
-       << ( b ? b->descTable<T>(8) : "-\n" )
-       << "-]NPFold::compare_subarray." << bsym
-       << "\n"
-       << "-[NPFold::compare_subarray.boa " << "\n"
-       << ( boa ? boa->descTable<F>(12) : "-\n" )
-       << "-]NPFold::compare_subarray.boa "
-       << "\n"
+       << ( braces ? "-[NPFold::compare_subarray.b_subcount\n" : "" )
+       << ( b_subcount ? b_subcount->descTable<int>(8,"b_subcount") : "-\n" )
+       << ( braces ? "-]NPFold::compare_subarray.b_subcount\n" : "" )
+       << ( braces ? "-[NPFold::compare_subarray\n" : "" )
+       << ( a ? a->descTable<T>(8, asym) : "-\n" )
+       << ( braces ? "-]NPFold::compare_subarray\n" : "" )
+       << ( braces ? "-[NPFold::compare_subarray\n" : "" )
+       << ( b ? b->descTable<T>(8, bsym) : "-\n" )
+       << ( braces ? "-]NPFold::compare_subarray\n" : "" )
+       << ( braces ? "-[NPFold::compare_subarray.boa\n" : "" )
+       << ( boa ? boa->descTable<F>(12, "boa") : "-\n" )
+       << ( braces ? "-]NPFold::compare_subarray.boa\n" : "" )
        << "]NPFold::compare_subarray"
        << "\n"
        ;

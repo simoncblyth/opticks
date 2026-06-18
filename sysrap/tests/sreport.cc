@@ -75,8 +75,10 @@ struct sreport
 
     static constexpr const char* sreport__LEVEL = "sreport__LEVEL" ;
     static constexpr const char* sreport__VERBOSE = "sreport__VERBOSE" ;
+    static constexpr const char* sreport__CONFIG = "sreport__CONFIG" ;
     int     LEVEL ;
     bool    VERBOSE ;
+    const char* CONFIG ;
 
     NP*       run ;   // dummy array that exists just to hold metadata
     NP*       runprof ;
@@ -95,6 +97,7 @@ struct sreport
     void save(const char* dir) const ;
     static sreport* Load(const char* dir) ;
 
+    bool        desc_config(const char* method, char delim=',') const;
     std::string desc() const ;
     std::string desc_run() const ;
     std::string desc_runprof() const ;
@@ -109,6 +112,7 @@ inline sreport::sreport()
     :
     LEVEL(U::GetEnvInt(sreport__LEVEL,0)),
     VERBOSE(getenv(sreport__VERBOSE) != nullptr),
+    CONFIG(U::GetEnv(sreport__CONFIG,"")),
     run( nullptr ),
     runprof( nullptr ),
     ranges( nullptr ),
@@ -156,16 +160,49 @@ inline sreport* sreport::Load(const char* dir) // static
     return report ;
 }
 
+/**
+sreport::desc_config
+---------------------
+
+Returns true when CONFIG is blank OR the *method* is present in the CONFIG.
+This allows the output to be controlled eg::
+
+    export sreport__CONFIG=run,runprof,ranges,substamp,submeta,subcount
+    sreport
+
+OR::
+
+     sreport__CONFIG=substamp sreport
+
+**/
+
+
+inline bool sreport::desc_config(const char* method, char delim) const
+{
+    if( CONFIG == nullptr || 0 == strcmp(CONFIG,"") || method == nullptr ) return true ;
+
+    std::string target = method ;
+ 
+    std::vector<std::string> tokens;
+    std::stringstream ss(CONFIG);
+    std::string token;
+    while (std::getline(ss, token, delim)) tokens.push_back(token);
+
+    auto it = std::find(tokens.begin(), tokens.end(), target);
+    bool in_config = it != tokens.end() ;
+    return in_config ;
+}
+
 inline std::string sreport::desc() const
 {
     std::stringstream ss ;
-    ss << "[sreport.desc" << std::endl
-       << desc_run()
-       << desc_runprof()
-       << desc_ranges()
-       << desc_substamp()
-       << desc_submeta()
-       << desc_subcount()
+    ss << "[sreport.desc CONFIG[" << ( CONFIG ? CONFIG : "-" ) << "]\n"
+       << ( desc_config("run")      ? desc_run() : "" )
+       << ( desc_config("runprof")  ? desc_runprof() : "" )
+       << ( desc_config("ranges")   ? desc_ranges()  : "" )
+       << ( desc_config("substamp") ? desc_substamp() : "" )
+       << ( desc_config("submeta")  ? desc_submeta()  : "" )
+       << ( desc_config("subcount") ? desc_subcount() : "" )
        << "]sreport.desc" << std::endl
        ;
     std::string str = ss.str() ;
