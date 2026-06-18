@@ -201,6 +201,15 @@ inline const char* OPT::OptimizationLevel_( OptixCompileOptimizationLevel optLev
     return s ; 
 } 
 
+
+/**
+OPT::ExceptionFlags_
+----------------------
+
+https://raytracing-docs.nvidia.com/optix9/api/group__optix__types.html#ga95e8175699d1a23c5c1d5333c4468190
+
+**/
+
 inline OptixExceptionFlags OPT::ExceptionFlags_(const char* opt)
 {
     OptixExceptionFlags flag = OPTIX_EXCEPTION_FLAG_NONE ; 

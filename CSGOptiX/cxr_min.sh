@@ -130,6 +130,30 @@ logging(){
 [ -n "$LOG" ] && logging
 
 
+
+#OPTIX_KERNEL_DEBUG=1
+optix_kernel_debug()
+{
+    type $FUNCNAME
+    export PIP__CreateModule_optLevel=LEVEL_0
+    export PIP__CreateModule_debugLevel=FULL
+    export PIP__CreatePipelineOptions_exceptionFlags="TRACE_DEPTH|STACK_OVERFLOW"
+    export Ctx=INFO  # set Ctx::LEVEL to see optix kernel callback logging
+    export CSGOptiX__launch_DEBUG_PARAMS=1
+
+    export OPTIX_CACHE_MAXSIZE=0   ## DONT USE THE CACHE
+
+}
+[ -n "$OPTIX_KERNEL_DEBUG" ] && optix_kernel_debug
+
+
+
+
+
+
+
+
+
 anim()
 {
    type $FUNCNAME

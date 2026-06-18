@@ -42,6 +42,8 @@ struct PIP
 
 
     static const char*                 CreatePipelineOptions_exceptionFlags ; 
+
+    static constexpr const char* pipelineLaunchParamsVariableName = "params" ;
     static OptixPipelineCompileOptions CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues );
     static OptixProgramGroupOptions CreateProgramGroupOptions();
 

@@ -53,6 +53,9 @@ list(APPEND SOURCES
     SBT.cc
 )
 
+list(APPEND PRIVATE_HEADERS
+    Params.h
+)
 list(APPEND HEADERS
     CSGOptiX.h
     CSGOptiXService.h
@@ -151,13 +154,20 @@ set_target_properties(${name}_OPTIX PROPERTIES CUDA_ARCHITECTURES "${COMPUTE_CAP
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)  ## write compile_commands.json into build dir
 
+
+
 target_compile_options( ${name}_OPTIX
    PRIVATE
-        $<$<COMPILE_LANGUAGE:CUDA>:-O2 --use_fast_math -Xcompiler -fPIC>
+        $<$<COMPILE_LANGUAGE:CUDA>:--use_fast_math -Xcompiler -fPIC -lineinfo>
 )
 
 
 #[=[
+
+
+Have been using                :  -O2 --use_fast_math -Xcompiler -fPIC
+To help with launch fail debug :      --use_fast_math -Xcompiler -fPIC -lineinfo
+
 
 CUDA_ARCHITECTURES
 --------------------

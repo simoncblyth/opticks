@@ -372,10 +372,11 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
 
 
 
-Params* CSGOptiX::InitParams( int raygenmode, const SGLM* sglm  ) // static
+Params_Helper* CSGOptiX::InitParamsHelper( int raygenmode, const SGLM* sglm  ) // static
 {
     LOG(LEVEL) << "[" ;
-    return new Params(raygenmode, sglm->Width(), sglm->Height(), 1 ) ;
+    Params* params = new Params {} ;
+    return new Params_Helper(params, raygenmode, sglm->Width(), sglm->Height(), 1 ) ;
     LOG(LEVEL) << "]" ;
 }
 
@@ -423,7 +424,7 @@ CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
     tmin_model(ssys::getenvfloat("TMIN",0.1)),    // CAUTION: tmin very different in rendering and simulation
     kernel_count(0),
     raygenmode(SEventConfig::RGMode()),
-    params(InitParams(raygenmode,sglm)),
+    params_helper(InitParamsHelper(raygenmode,sglm)),
     ctx(nullptr),
     pip(nullptr),
     sbt(nullptr),
@@ -573,7 +574,7 @@ void CSGOptiX::initStack()
 
 void CSGOptiX::initParams()
 {
-    params->device_alloc();
+    params_helper->device_alloc();
 }
 
 /**
@@ -589,6 +590,8 @@ from the uploaded CSGFoundry with SBT::createGeom.
 void CSGOptiX::initGeometry()
 {
     LOG(LEVEL) << "[" ;
+    Params* params = params_helper->params ;
+
     params->node = foundry->d_node ;
     params->plan = foundry->d_plan ;
     params->tran = nullptr ;
@@ -626,6 +629,8 @@ TODO: eliminate params->evt to make more use of the qsim.h encapsulation
 void CSGOptiX::initSimulate()
 {
     LOG(LEVEL) ;
+    Params* params = params_helper->params ;
+
     params->sim = sim ? sim->getDevicePtr() : nullptr ;  // qsim<float>*
     params->evt = qev ? qev->getDevicePtr() : nullptr ;  // sevent*
 
@@ -657,6 +662,7 @@ internally allocated device pixels.
 void CSGOptiX::initRender()
 {
     LOG(LEVEL) << "[" ;
+    Params* params = params_helper->params ;
     framebuf = new Frame(params->width, params->height, params->depth, nullptr ) ;
     LOG(LEVEL) << "]" ;
 
@@ -677,6 +683,7 @@ void CSGOptiX::initRender()
 
 void CSGOptiX::initPIDXYZ()
 {
+    Params* params = params_helper->params ;
     qvals(params->pidxyz, "PIDXYZ", "-1:-1:-1", -1 ) ;
     const char* PIDXYZ = ssys::getenvvar("PIDXYZ") ;
     if(PIDXYZ && strcmp(PIDXYZ,"MIDDLE") == 0 )
@@ -693,6 +700,7 @@ void CSGOptiX::initPIDXYZ()
 
 void CSGOptiX::setExternalDevicePixels(uchar4* _d_pixel )
 {
+    Params* params = params_helper->params ;
     framebuf->setExternalDevicePixels(_d_pixel) ;
     params->pixels = framebuf->d_pixel ;
 }
@@ -962,12 +970,11 @@ void CSGOptiX::prepareParamRender()
         ;
 
 
+    params_helper->setView(eye, U, V, W, WNORM );
+    params_helper->setCamera(tmin, tmax, cameratype, traceyflip, rendertype, ZPROJ );
+    params_helper->setVizmask(vizmask);
 
-    params->setView(eye, U, V, W, WNORM );
-    params->setCamera(tmin, tmax, cameratype, traceyflip, rendertype, ZPROJ );
-    params->setVizmask(vizmask);
-
-    LOG(level) << std::endl << params->desc() ;
+    LOG(level) << std::endl << params_helper->desc() ;
 
     if(flight) return ;
 
@@ -992,7 +999,7 @@ QSim::get_photon_slot_offset/QEvt::get_photon_slot_offset returns
 void CSGOptiX::prepareParamSimulate()
 {
     LOG(LEVEL);
-    params->set_photon_slot_offset(sim->get_photon_slot_offset());
+    params_helper->set_photon_slot_offset(sim->get_photon_slot_offset());
 }
 
 
@@ -1014,7 +1021,7 @@ void CSGOptiX::prepareParam()
 {
     const glm::tvec4<double>& ce = sglm->fr.ce ;
 
-    params->setCenterExtent(ce.x, ce.y, ce.z, ce.w);
+    params_helper->setCenterExtent(ce.x, ce.y, ce.z, ce.w);
     switch(raygenmode)
     {
         case SRG_RENDER   : prepareParamRender()   ; break ;
@@ -1022,8 +1029,8 @@ void CSGOptiX::prepareParam()
         case SRG_SIMULATE : prepareParamSimulate() ; break ;
     }
 
-    params->upload();
-    LOG_IF(level, !flight) << params->detail();
+    params_helper->upload();
+    LOG_IF(level, !flight) << params_helper->detail();
 }
 
 
@@ -1053,9 +1060,12 @@ Presumably that means every launch uses the same single default stream.
 double CSGOptiX::launch()
 {
     bool DEBUG_SKIP_LAUNCH = ssys::getenvbool("CSGOptiX__launch_DEBUG_SKIP_LAUNCH") ;
+    bool DEBUG_PARAMS = ssys::getenvbool("CSGOptiX__launch_DEBUG_PARAMS") ;
 
     prepareParam();
     if(raygenmode != SRG_RENDER) assert(qev) ;
+
+    Params* params = params_helper->params ;
 
     unsigned width = 0 ;
     unsigned height = 0 ;
@@ -1095,12 +1105,28 @@ double CSGOptiX::launch()
 
     if(DEBUG_SKIP_LAUNCH == false)
     {
-        CUdeviceptr d_param = (CUdeviceptr)Params::d_param ; ;
-        assert( d_param && "must alloc and upload params before launch");
+        CUdeviceptr d_params = reinterpret_cast<CUdeviceptr>(params_helper->d_params);
+        assert( d_params && "must alloc and upload params before launch");
+
+        size_t sizeof_Params = sizeof( Params );
+
+        if(DEBUG_PARAMS) std::cout
+            << "LAUNCH: d_param address is "
+            << d_params
+            << " sizeof_Params " << sizeof_Params
+            << " width " << width
+            << " height " << height
+            << " depth " << depth
+            << "\n"
+            << " params_helper.detail\n"
+            << params_helper->detail()
+            ;
+
 
         //cudaStream_t stream = SMgr::Stream();
         cudaStream_t stream = 0 ; // default stream
-        OPTIX_CHECK( optixLaunch( pip->pipeline, (CUstream)stream, d_param, sizeof( Params ), &(sbt->sbt), width, height, depth ) );
+        OPTIX_CHECK( optixLaunch( pip->pipeline, (CUstream)stream, d_params, sizeof_Params , &(sbt->sbt), width, height, depth ) );
+
 
         CUDA_SYNC_CHECK();
         // see CSG/CUDA_CHECK.h the CUDA_SYNC_CHECK does cudaDeviceSyncronize

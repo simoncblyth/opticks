@@ -36,7 +36,9 @@ int main(int argc, char** argv)
     G4CXOpticks* gx = G4CXOpticks::SetGeometry() ;  // sensitive to SomGDMLPath, GEOM, CFBASE
     LOG(info) << "] SetGeometry " ;
 
+    LOG(info) << "[ gx->render " ;
     gx->render();       // sensitive to MOI, EYE, LOOK, UP
+    LOG(info) << "] gx->render " ;
 
     return 0 ;
 }

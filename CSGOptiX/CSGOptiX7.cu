@@ -83,7 +83,9 @@ __intersection__is
 #include "SOPTIX_getPRD.h"
 #endif
 
-extern "C" { __constant__ Params params ;  }
+//extern "C" { __constant__ Params params ;  }
+extern "C"  __constant__ Params params ;
+//extern "C" __device__ Params params ;   // DEBUG: Gemini debug suggestion
 
 /**
 trace : pure function, with no use of params, everything via args
@@ -239,6 +241,14 @@ __forceinline__ __device__ uchar4 make_zdepth_pixel( float depth )  // pure
 }
 
 
+static __forceinline__ __device__ float3 to_float3(const float4& v)
+{
+    return make_float3(v.x, v.y, v.z);
+}
+
+
+
+
 
 /**
 render : non-pure, uses params for viewpoint inputs and pixels output
@@ -253,7 +263,12 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 {
 
 #if defined(DEBUG_PIDX)
-    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render idx(%d,%d,%d) dim(%d,%d,%d) \n", idx.x, idx.y, idx.z, dim.x, dim.y, dim.z );
+    //if(idx.x == 10 && idx.y == 10)
+    //{
+    //    printf("//CSGOptiX7.cu:render idx(%d,%d,%d) dim(%d,%d,%d) params.cameratype:%d params.origin_x:%d params.U(%7.3f,%7.3f,%7.3f,%7.3f) params.V(%7.3f,%7.3f,%7.3f,%7.3f) params._pad(%lld,%d,%d) \n",
+    //       idx.x, idx.y, idx.z, dim.x, dim.y, dim.z, params.cameratype, params.origin_x, params.U.x, params.U.y, params.U.z, params.U.w, params.V.x, params.V.y, params.V.z, params.V.w, params._pad0, params._pad1, params._pad2 );
+    //
+    //}
 #endif
 
     float2 d = 2.0f * make_float2(
@@ -263,10 +278,19 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 
 
     const unsigned cameratype = params.cameratype ;
-    const float3 dxyUV = d.x * params.U + params.V * ( params.traceyflip ? -d.y : d.y ) ;
-    const float3 origin    = cameratype == 0u ? params.eye                     : params.eye + dxyUV    ;
-    const float3 direction = cameratype == 0u ? normalize( dxyUV + params.W )  : normalize( params.W ) ;
+    const float3 dxyUV = d.x * to_float3(params.U) + to_float3(params.V) * ( params.traceyflip ? -d.y : d.y ) ;
+    const float3 origin    = cameratype == 0u ? to_float3(params.eye)          : to_float3(params.eye) + dxyUV    ;
+    const float3 direction = cameratype == 0u ? normalize( dxyUV + to_float3(params.W) )  : normalize( to_float3(params.W) ) ;
     //                           cameratype 0u:perspective,                    1u:orthographic
+
+
+#if defined(DEBUG_PIDX)
+    //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render idx(%d,%d,%d) cameratype:%d params.U(%7.3f,%7.3f,%7.3f) params.V(%7.3f,%7.3f,%7.3f) direction(%7.3f,%7.3f,%7.3f) \n",
+    //     idx.x, idx.y, idx.z, cameratype, params.U.x, params.U.y, params.U.z, params.V.x, params.V.y, params.V.z, direction.x, direction.y, direction.z );
+#endif
+
+
+
 
     trace<false>(
         params.handle,
@@ -295,7 +319,7 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 
     float3 diddled_normal = normalize(*normal)*0.5f + 0.5f ; // diddling lightens the render, with mid-grey "pedestal"
 
-    float eye_z = -prd->distance()*dot(params.WNORM, direction) ;
+    float eye_z = -prd->distance()*dot(to_float3(params.WNORM), direction) ;
     const float& A = params.ZPROJ.z ;
     const float& B = params.ZPROJ.w ;
     float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1

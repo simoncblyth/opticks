@@ -23,24 +23,24 @@
 #include "PIP.h"
 #include "SLOG.hh"
 
-const plog::Severity PIP::LEVEL = SLOG::EnvLevel("PIP", "DEBUG"); 
+const plog::Severity PIP::LEVEL = SLOG::EnvLevel("PIP", "DEBUG");
 
 
 
 
 bool PIP::OptiXVersionIsSupported()  // static
 {
-    bool ok = false ; 
-#if OPTIX_VERSION == 70000 || OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600 
-    ok = true ; 
+    bool ok = false ;
+#if OPTIX_VERSION == 70000 || OPTIX_VERSION == 70500 || OPTIX_VERSION == 70600
+    ok = true ;
 #elif OPTIX_VERSION >= 80000
     ok = true ;
 #endif
-    return ok ; 
+    return ok ;
 }
 
 
-const char* PIP::CreatePipelineOptions_exceptionFlags  = ssys::getenvvar("PIP__CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" ); 
+const char* PIP::CreatePipelineOptions_exceptionFlags  = ssys::getenvvar("PIP__CreatePipelineOptions_exceptionFlags", "STACK_OVERFLOW" );
 
 /**
 PIP::CreatePipelineOptions
@@ -48,13 +48,19 @@ PIP::CreatePipelineOptions
 
 traversableGraphFlags
     OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_GAS : got no intersects with this
-    OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING  : works 
- 
+    OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING  : works
+
 usesPrimitiveTypeFlags
     from optix7-;optix7-types
     Setting to zero corresponds to enabling OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM and OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE.
 
-    Changed form unset 0 to OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM removing OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE
+    [unrecorded]
+         Changed from unset 0 to OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM removing OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE
+    2026/06/17
+         change to OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM|OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE
+
+         * this avoids launch exeption with optix 9.1
+         * ~/o/notes/issues/cxr_min_also_failing_with_optix910_with_UNSUPPORTED_PRIMITIVE_TYPE.rst
 
 **/
 
@@ -62,33 +68,35 @@ usesPrimitiveTypeFlags
 OptixPipelineCompileOptions PIP::CreatePipelineOptions(unsigned numPayloadValues, unsigned numAttributeValues ) // static
 {
     unsigned traversableGraphFlags=OPTIX_TRAVERSABLE_GRAPH_FLAG_ALLOW_SINGLE_LEVEL_INSTANCING ;
+    //unsigned usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM ; // <<< UNTIL 2026/06/17
+    unsigned usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM|OPTIX_PRIMITIVE_TYPE_FLAGS_TRIANGLE ;
 
     OptixPipelineCompileOptions pipeline_compile_options = {} ;
     pipeline_compile_options.usesMotionBlur        = false;
-    pipeline_compile_options.traversableGraphFlags = traversableGraphFlags ; 
+    pipeline_compile_options.traversableGraphFlags = traversableGraphFlags ;
     pipeline_compile_options.numPayloadValues      = numPayloadValues ;   // in optixTrace call
     pipeline_compile_options.numAttributeValues    = numAttributeValues ;
     pipeline_compile_options.exceptionFlags        = OPT::ExceptionFlags( CreatePipelineOptions_exceptionFlags )  ;
-    pipeline_compile_options.pipelineLaunchParamsVariableName = "params";
-    pipeline_compile_options.usesPrimitiveTypeFlags = OPTIX_PRIMITIVE_TYPE_FLAGS_CUSTOM ;  
+    pipeline_compile_options.pipelineLaunchParamsVariableName = pipelineLaunchParamsVariableName ;
+    pipeline_compile_options.usesPrimitiveTypeFlags = usesPrimitiveTypeFlags ;
 
-    return pipeline_compile_options ;  
+    return pipeline_compile_options ;
 }
 
 std::string PIP::Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& pipeline_compile_options )
 {
-    std::stringstream ss ; 
-    ss 
-       << "[PIP::Desc_PipelineCompileOptions" << std::endl 
-       << " pipeline_compile_options.numPayloadValues   " << pipeline_compile_options.numPayloadValues  << std::endl 
+    std::stringstream ss ;
+    ss
+       << "[PIP::Desc_PipelineCompileOptions" << std::endl
+       << " pipeline_compile_options.numPayloadValues   " << pipeline_compile_options.numPayloadValues  << std::endl
        << " pipeline_compile_options.numAttributeValues " << pipeline_compile_options.numAttributeValues << std::endl
-       << " pipeline_compile_options.exceptionFlags     " << pipeline_compile_options.exceptionFlags  
+       << " pipeline_compile_options.exceptionFlags     " << pipeline_compile_options.exceptionFlags
        << OPT::Desc_ExceptionFlags( pipeline_compile_options.exceptionFlags )
-       << std::endl 
-       << "]PIP::Desc_PipelineCompileOptions" << std::endl 
+       << std::endl
+       << "]PIP::Desc_PipelineCompileOptions" << std::endl
        ;
-    std::string str = ss.str() ; 
-    return str ; 
+    std::string str = ss.str() ;
+    return str ;
 }
 
 
@@ -99,30 +107,30 @@ std::string PIP::Desc_PipelineCompileOptions(const OptixPipelineCompileOptions& 
 OptixProgramGroupOptions PIP::CreateProgramGroupOptions() // static
 {
     OptixProgramGroupOptions program_group_options   = {}; // Initialize to zeros
-    return program_group_options ; 
+    return program_group_options ;
 }
 
 
 const char* PIP::desc() const
 {
-    std::stringstream ss ; 
-    ss << "PIP " 
-       << " td:" << max_trace_depth 
-       << " pv:" << num_payload_values 
-       << " av:" << num_attribute_values 
+    std::stringstream ss ;
+    ss << "PIP "
+       << " td:" << max_trace_depth
+       << " pv:" << num_payload_values
+       << " av:" << num_attribute_values
 #ifdef WITH_PRD
-       << " WITH_PRD " 
+       << " WITH_PRD "
 #else
-       << " NOT_WITH_PRD " 
-#endif    
-       << " " 
-       ; 
+       << " NOT_WITH_PRD "
+#endif
+       << " "
+       ;
 
-   std::string s = ss.str(); 
-   return strdup(s.c_str()); 
+   std::string s = ss.str();
+   return strdup(s.c_str());
 }
 
-const int PIP::MAX_TRACE_DEPTH = ssys::getenvint("PIP__max_trace_depth", 1 ) ;   // was 2 
+const int PIP::MAX_TRACE_DEPTH = ssys::getenvint("PIP__max_trace_depth", 1 ) ;   // was 2
 
 /**
 PIP::PIP
@@ -130,18 +138,18 @@ PIP::PIP
 
 PTX read from *ptx_path_* is used to CreateModule
 
-* num_payload_values and num_attribute_values MUST MATCH payload and attribute slots 
-  used in the PTX, see CSGOptiX7.cu  
+* num_payload_values and num_attribute_values MUST MATCH payload and attribute slots
+  used in the PTX, see CSGOptiX7.cu
 
 **/
-PIP::PIP(const char* ptx_path_, const Properties* properties_ ) 
+PIP::PIP(const char* ptx_path_, const Properties* properties_ )
     :
     max_trace_depth(MAX_TRACE_DEPTH),
 #ifdef WITH_PRD
     num_payload_values(2),     // see trace
     num_attribute_values(2),   // see __intersection__is
 #else
-    num_payload_values(8),     // see trace and setPayload 
+    num_payload_values(8),     // see trace and setPayload
     num_attribute_values(6),   // see __intersection__is
 #endif
     properties(properties_),
@@ -149,43 +157,43 @@ PIP::PIP(const char* ptx_path_, const Properties* properties_ )
     program_group_options(CreateProgramGroupOptions()),
     module(CreateModule(ptx_path_,pipeline_compile_options))
 {
-    init(); 
+    init();
 }
 
 
 PIP::~PIP()
 {
-    destroy(); 
+    destroy();
 }
 
 /**
 PIP::init
 -----------
 
-Names the programs to form the pipeline  
+Names the programs to form the pipeline
 
 **/
 
 void PIP::init()
 {
-    LOG(LEVEL)  << "[" ; 
+    LOG(LEVEL)  << "[" ;
 
     createRaygenPG();
-    createMissPG(); 
-    createHitgroupPG(); 
+    createMissPG();
+    createHitgroupPG();
     linkPipeline(max_trace_depth);
 
-    LOG(LEVEL)  << "]" ; 
+    LOG(LEVEL)  << "]" ;
 }
 
 
 void PIP::destroy()
 {
-    destroyPipeline(); 
+    destroyPipeline();
     destroyRaygenPG();
     destroyMissPG();
     destroyHitgroupPG();
-    destroyModule(); 
+    destroyModule();
 }
 
 
@@ -195,90 +203,96 @@ PIP::CreateModule
 
 PTX from file is read and compiled into the module
 
+For debugging use::
+
+    export PIP__CreateModule_optLevel=
+    export PIP__CreateModule_debugLevel=
+
+
 **/
 
-const char* PIP::CreateModule_optLevel   = ssys::getenvvar("PIP__CreateModule_optLevel", "DEFAULT" ) ; 
-const char* PIP::CreateModule_debugLevel = ssys::getenvvar("PIP__CreateModule_debugLevel", "DEFAULT" ) ; 
+const char* PIP::CreateModule_optLevel   = ssys::getenvvar("PIP__CreateModule_optLevel", "DEFAULT" ) ;
+const char* PIP::CreateModule_debugLevel = ssys::getenvvar("PIP__CreateModule_debugLevel", "DEFAULT" ) ;
 
 std::string PIP::Desc()
 {
-    std::stringstream ss ; 
-    ss 
-       << "[PIP::Desc" << std::endl 
-       << " PIP__CreateModule_optLevel    " << CreateModule_optLevel << std::endl 
-       << " PIP__CreateModule_debugLevel  " << CreateModule_debugLevel << std::endl 
-       << "]PIP::Desc" << std::endl 
+    std::stringstream ss ;
+    ss
+       << "[PIP::Desc" << std::endl
+       << " PIP__CreateModule_optLevel    " << CreateModule_optLevel << std::endl
+       << " PIP__CreateModule_debugLevel  " << CreateModule_debugLevel << std::endl
+       << "]PIP::Desc" << std::endl
        ;
 
-    std::string str = ss.str() ; 
-    return str ; 
+    std::string str = ss.str() ;
+    return str ;
 }
 
 
 std::string PIP::Desc_ModuleCompileOptions(const OptixModuleCompileOptions& module_compile_options )
 {
-    std::stringstream ss ; 
-    ss 
-       << "[PIP::Desc_ModuleCompileOptions" << std::endl 
-       << " module_compile_options.maxRegisterCount " << module_compile_options.maxRegisterCount  
+    std::stringstream ss ;
+    ss
+       << "[PIP::Desc_ModuleCompileOptions" << std::endl
+       << " module_compile_options.maxRegisterCount " << module_compile_options.maxRegisterCount
        << " OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT " << OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT
-       << std::endl 
-       << " module_compile_options.optLevel         " << module_compile_options.optLevel  
+       << std::endl
+       << " module_compile_options.optLevel         " << module_compile_options.optLevel
        << " " << OPT::OptimizationLevel_( module_compile_options.optLevel )
-       << std::endl 
-       << " module_compile_options.debugLevel       " << module_compile_options.debugLevel  
+       << std::endl
+       << " module_compile_options.debugLevel       " << module_compile_options.debugLevel
        << " " << OPT::DebugLevel_( module_compile_options.debugLevel )
-       << std::endl 
-       << "]PIP::Desc_ModuleCompileOptions" 
-       << std::endl 
+       << std::endl
+       << "]PIP::Desc_ModuleCompileOptions"
+       << std::endl
        ;
-    std::string str = ss.str() ; 
-    return str ; 
+    std::string str = ss.str() ;
+    return str ;
 }
 
-OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static 
+OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions& pipeline_compile_options ) // static
 {
-    std::string ptx ; 
-    bool ptx_ok = spath::Read(ptx, ptx_path ); 
+    std::string ptx ;
+    bool ptx_ok = spath::Read(ptx, ptx_path );
 
     LOG_IF(fatal, !ptx_ok)
-        << std::endl 
-        << " ptx_path " << ptx_path 
-        << std::endl 
-        << " ptx.size " << ptx.size() 
-        << std::endl 
-        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " ) 
-        << std::endl 
-        ; 
+        << std::endl
+        << " ptx_path " << ptx_path
+        << std::endl
+        << " ptx.size " << ptx.size()
+        << std::endl
+        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " )
+        << std::endl
+        ;
 
     LOG(LEVEL)
-        << std::endl 
-        << " ptx_path " << ptx_path 
-        << std::endl 
-        << " ptx.size " << ptx.size() 
-        << std::endl 
-        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " ) 
-        << std::endl 
-        ; 
-    assert(ptx_ok); 
+        << std::endl
+        << " ptx_path " << ptx_path
+        << std::endl
+        << " ptx.size " << ptx.size()
+        << std::endl
+        << " ptx_ok " << ( ptx_ok ? "YES" : "NO " )
+        << std::endl
+        ;
+    assert(ptx_ok);
 
-    int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ; 
-    OptixCompileOptimizationLevel optLevel = OPT::OptimizationLevel(CreateModule_optLevel) ; 
-    OptixCompileDebugLevel      debugLevel = OPT::DebugLevel(CreateModule_debugLevel) ; 
+    int maxRegisterCount = OPTIX_COMPILE_DEFAULT_MAX_REGISTER_COUNT ;
+    OptixCompileOptimizationLevel optLevel = OPT::OptimizationLevel(CreateModule_optLevel) ;
+    OptixCompileDebugLevel      debugLevel = OPT::DebugLevel(CreateModule_debugLevel) ;
 
     OptixModule module = nullptr ;
     OptixModuleCompileOptions module_compile_options = {};
     module_compile_options.maxRegisterCount     = maxRegisterCount ;
-    module_compile_options.optLevel             = optLevel ; 
+    module_compile_options.optLevel             = optLevel ;
     module_compile_options.debugLevel           = debugLevel ;
 
-    LOG(LEVEL) 
+    LOG(LEVEL)
         << Desc()
-        << Desc_ModuleCompileOptions( module_compile_options ) 
-        ; 
+        << Desc_ModuleCompileOptions( module_compile_options )
+        ;
 
 
-    size_t sizeof_log = 0 ; 
+    size_t sizeof_log = 0 ;
     char log[2048]; // For error reporting from OptiX creation functions
 
 #if OPTIX_VERSION <= 70600
@@ -306,7 +320,7 @@ OptixModule PIP::CreateModule(const char* ptx_path, OptixPipelineCompileOptions&
 
 #endif
 
-    return module ; 
+    return module ;
 }
 
 void PIP::destroyModule()
@@ -327,18 +341,18 @@ Creates member raygen_pg
 
 void PIP::createRaygenPG()
 {
-    bool DUMMY = ssys::getenvbool("PIP__createRaygenPG_DUMMY"); 
-    LOG(LEVEL) << " DUMMY " << ( DUMMY ? "YES" : "NO " ) ; 
+    bool DUMMY = ssys::getenvbool("PIP__createRaygenPG_DUMMY");
+    LOG(LEVEL) << " DUMMY " << ( DUMMY ? "YES" : "NO " ) ;
 
 
-    OptixProgramGroupDesc desc    = {}; 
+    OptixProgramGroupDesc desc    = {};
     desc.kind                     = OPTIX_PROGRAM_GROUP_KIND_RAYGEN;
     desc.raygen.module            = module;
     desc.raygen.entryFunctionName = DUMMY ? RG_DUMMY : RG ;
 
-    size_t sizeof_log = 0 ; 
-    char log[2048]; 
-    unsigned num_program_groups = 1 ; 
+    size_t sizeof_log = 0 ;
+    char log[2048];
+    unsigned num_program_groups = 1 ;
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
                 Ctx::context,
@@ -350,8 +364,8 @@ void PIP::createRaygenPG()
                 &raygen_pg
                 ) );
 
-    if(sizeof_log > 0) std::cout << log << std::endl ; 
-    assert( sizeof_log == 0); 
+    if(sizeof_log > 0) std::cout << log << std::endl ;
+    assert( sizeof_log == 0);
 }
 
 void PIP::destroyRaygenPG()
@@ -376,9 +390,9 @@ void PIP::createMissPG()
     desc.miss.module            = module;
     desc.miss.entryFunctionName = MS ;
 
-    size_t sizeof_log = 0 ; 
-    char log[2048]; 
-    unsigned num_program_groups = 1 ; 
+    size_t sizeof_log = 0 ;
+    char log[2048];
+    unsigned num_program_groups = 1 ;
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
                 Ctx::context,
@@ -390,8 +404,8 @@ void PIP::createMissPG()
                 &miss_pg
                 ) );
 
-    if(sizeof_log > 0) std::cout << log << std::endl ; 
-    assert( sizeof_log == 0); 
+    if(sizeof_log > 0) std::cout << log << std::endl ;
+    assert( sizeof_log == 0);
 }
 
 void PIP::destroyMissPG()
@@ -416,15 +430,15 @@ void PIP::createHitgroupPG()
     desc.hitgroup.moduleIS            = module ;
     desc.hitgroup.entryFunctionNameIS =  IS ;
 
-    desc.hitgroup.moduleCH            = module  ; 
+    desc.hitgroup.moduleCH            = module  ;
     desc.hitgroup.entryFunctionNameCH = CH ;
 
     desc.hitgroup.moduleAH            = nullptr ;
-    desc.hitgroup.entryFunctionNameAH = nullptr ; 
+    desc.hitgroup.entryFunctionNameAH = nullptr ;
 
-    size_t sizeof_log = 0 ; 
-    char log[2048]; 
-    unsigned num_program_groups = 1 ; 
+    size_t sizeof_log = 0 ;
+    char log[2048];
+    unsigned num_program_groups = 1 ;
 
 
     OPTIX_CHECK_LOG( optixProgramGroupCreate(
@@ -437,8 +451,8 @@ void PIP::createHitgroupPG()
                 &hitgroup_pg
                 ) );
 
-    if(sizeof_log > 0) std::cout << log << std::endl ; 
-    assert( sizeof_log == 0); 
+    if(sizeof_log > 0) std::cout << log << std::endl ;
+    assert( sizeof_log == 0);
 }
 
 void PIP::destroyHitgroupPG()
@@ -457,26 +471,26 @@ Create pipeline from the program_groups
 **/
 
 
-const char* PIP::linkPipeline_debugLevel = ssys::getenvvar("PIP__linkPipeline_debugLevel", "DEFAULT" ) ; 
+const char* PIP::linkPipeline_debugLevel = ssys::getenvvar("PIP__linkPipeline_debugLevel", "DEFAULT" ) ;
 
 
 std::string PIP::Desc_PipelineLinkOptions(const OptixPipelineLinkOptions& pipeline_link_options )
 {
-    std::stringstream ss ; 
-    ss 
-       << "[PIP::Desc_PipelineLinkOptions" << std::endl 
-       << " pipeline_link_options.maxTraceDepth " << pipeline_link_options.maxTraceDepth << std::endl 
+    std::stringstream ss ;
+    ss
+       << "[PIP::Desc_PipelineLinkOptions" << std::endl
+       << " pipeline_link_options.maxTraceDepth " << pipeline_link_options.maxTraceDepth << std::endl
 #if OPTIX_VERSION <= 70600
-       << " pipeline_link_options.debugLevel    " << pipeline_link_options.debugLevel 
-       << " " << OPT::DebugLevel_(pipeline_link_options.debugLevel ) 
+       << " pipeline_link_options.debugLevel    " << pipeline_link_options.debugLevel
+       << " " << OPT::DebugLevel_(pipeline_link_options.debugLevel )
        << std::endl
        << " PIP__linkPipeline_debugLevel " << linkPipeline_debugLevel
 #endif
        << std::endl
-       << "]PIP::Desc_PipelineLinkOptions" << std::endl 
+       << "]PIP::Desc_PipelineLinkOptions" << std::endl
        ;
-    std::string str = ss.str() ; 
-    return str ; 
+    std::string str = ss.str() ;
+    return str ;
 }
 
 
@@ -492,12 +506,12 @@ void PIP::linkPipeline(unsigned max_trace_depth)
 #endif
 
 #if OPTIX_VERSION <= 70600
-    OptixCompileDebugLevel debugLevel = OPT::DebugLevel(linkPipeline_debugLevel)  ; 
+    OptixCompileDebugLevel debugLevel = OPT::DebugLevel(linkPipeline_debugLevel)  ;
     pipeline_link_options.debugLevel = debugLevel;
 #endif
 
-    size_t sizeof_log = 0 ; 
-    char log[2048]; 
+    size_t sizeof_log = 0 ;
+    char log[2048];
 
     OPTIX_CHECK_LOG( optixPipelineCreate(
                 Ctx::context,
@@ -510,8 +524,8 @@ void PIP::linkPipeline(unsigned max_trace_depth)
                 &pipeline
                 ) );
 
-    if(sizeof_log > 0) std::cout << log << std::endl ; 
-    assert( sizeof_log == 0); 
+    if(sizeof_log > 0) std::cout << log << std::endl ;
+    assert( sizeof_log == 0);
 }
 
 void PIP::destroyPipeline()
@@ -530,7 +544,7 @@ https://on-demand.gputechconf.com/siggraph/2019/pdf/sig915-optix-performance-too
 https://sibr.gitlabpages.inria.fr/docs/0.9.6/OptixRaycaster_8cpp_source.html
 
 /Developer/OptiX_700/include/optix_stack_size.h
- 
+
 /Developer/OptiX_700/SDK/optixPathTracer/optixPathTracer.cpp
 
 In optix_stack_size.h:
@@ -540,7 +554,7 @@ In optix_stack_size.h:
    optixPipelineSetStackSize()
 These analyze your shaders. Source code included!
 Detailed control over stack size See optixPathTracer for example
- 
+
 
 **/
 void PIP::configureStack()
@@ -550,24 +564,24 @@ void PIP::configureStack()
     OptixStackSizes stackSizes = {};
 
 #if OPTIX_VERSION <= 70600
-    OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes ) ); 
-    OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes ) ); 
-    OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes ) );
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes ) );
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes ) );
 #else
-    OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes, pipeline ) ); 
-    OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes, pipeline ) ); 
-    OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes, pipeline ) ); 
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( raygen_pg,   &stackSizes, pipeline ) );
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( miss_pg,     &stackSizes, pipeline ) );
+    OPTIX_CHECK( optixUtilAccumulateStackSizes( hitgroup_pg, &stackSizes, pipeline ) );
 #endif
 
 
 
-    uint32_t max_trace_depth = 1;   // only RG invokes trace, no recursion   
-    uint32_t max_cc_depth = 0; 
-    uint32_t max_dc_depth = 0; 
+    uint32_t max_trace_depth = 1;   // only RG invokes trace, no recursion
+    uint32_t max_cc_depth = 0;
+    uint32_t max_dc_depth = 0;
 
-    LOG(LEVEL) 
-        << "(inputs to optixUtilComputeStackSizes)" 
-        << std::endl 
+    LOG(LEVEL)
+        << "(inputs to optixUtilComputeStackSizes)"
+        << std::endl
         << " max_trace_depth " << max_trace_depth
         << " max_cc_depth " << max_cc_depth
         << " max_dc_depth " << max_dc_depth
@@ -585,26 +599,26 @@ void PIP::configureStack()
                 &directCallableStackSizeFromTraversal,
                 &directCallableStackSizeFromState,
                 &continuationStackSize
-                ) ); 
+                ) );
 
     LOG(LEVEL)
-        << "(outputs from optixUtilComputeStackSizes) " 
-        << std::endl 
+        << "(outputs from optixUtilComputeStackSizes) "
+        << std::endl
         << " directCallableStackSizeFromTraversal " << directCallableStackSizeFromTraversal
-        << std::endl 
+        << std::endl
         << " directCallableStackSizeFromState " << directCallableStackSizeFromState
-        << std::endl 
+        << std::endl
         << " continuationStackSize " << continuationStackSize
         ;
 
-    // see optix7-;optix7-host : it states that IAS->GAS needs to be two  
-    unsigned maxTraversableGraphDepth = 2 ; 
+    // see optix7-;optix7-host : it states that IAS->GAS needs to be two
+    unsigned maxTraversableGraphDepth = 2 ;
 
-    LOG(LEVEL) 
+    LOG(LEVEL)
         << "(further inputs to optixPipelineSetStackSize)"
-        << std::endl 
+        << std::endl
         << " maxTraversableGraphDepth " << maxTraversableGraphDepth
-        ;  
+        ;
 
 
     //OPTIX_CHECK_LOG( optixProgramGroupGetStackSize(raygen_pg, OptixStackSizes* stackSizes ) );

@@ -9,14 +9,7 @@ Params.h
 **/
 
 #include <optix.h>
-// TODO: avoid need for optix.h just for OptixTraversableHandle which is "unsigned long long" typedef
-
 #include <vector_types.h>
-
-#ifndef __CUDACC__
-#include <glm/glm.hpp>
-#include <string>
-#endif
 
 struct CSGNode ;
 struct qat4 ;
@@ -26,76 +19,81 @@ struct qsim ;
 struct sevent ;
 
 
-struct Params
+struct __align__(16) Params // Force 16-byte structural alignment boundary
 {
-    // render/simtrace/simulate switch
-    int32_t    raygenmode ;
-
-    // geometry : from Foundry
-    // notice no CSGPrim here as that is just a sequence of CSGNode handled by
+    // 1. 64-bit (8 byte) pointers and handles : need pairs of them to stay 16-byte aligned
     CSGNode*   node ;
     float4*    plan ;
+
     qat4*      tran ;
     qat4*      itra ;
 
-#if OPTIX_VERSION < 70000
-    void*                   handle ;
-#else
-    OptixTraversableHandle  handle ;
-#endif
-
-    // frame rendering
     uchar4*    pixels ;
     float4*    isect ;
-    quad4*     fphoton ;
 
-    // render control
+    quad4*     fphoton ;
+    qsim*        sim ;
+
+    sevent*      evt ;
+    OptixTraversableHandle  handle ;
+
+    unsigned long long  photon_slot_offset ;
+    uint64_t   _pad0;
+
+
+    // 2. 16-byte Vector types (float4, uint4) : these are inherently 16 byte aligned
+    float4     center_extent ;
+    float4     ZPROJ ;
+    uint4      cegs ;
+    float4     eye;
+    float4     U ;
+    float4     V ;
+    float4     W ;
+    float4     WNORM ;
+    uint4      pidxyz ;
+
+    // 3. 32-bit (4 byte) types (ints, floats, unsigned) : need groups of four to stay 16-byte aligned
+    int32_t    raygenmode ;
     uint32_t   width;
     uint32_t   height;
     uint32_t   depth;
-    uint32_t   cameratype ;
 
+    uint32_t   cameratype ;
     int32_t    traceyflip ;
     int32_t    rendertype ;
     int32_t    origin_x;
+
     int32_t    origin_y;
-
-    float3     eye;
-    float3     U ;
-    float3     V ;
-    float3     W ;
-    float3     WNORM ;
+    int        event_index ;
     float      tmin ;
-
     float      tmin0 ;
-    unsigned   PropagateEpsilon0Mask ;   // default from SEventConfig TO,CK,SI,SC,RE
-    float      PropagateRefineDistance ;
-    bool       PropagateRefine ;
 
+    float      PropagateRefineDistance ;
     float      tmax ;
-    float4     ZPROJ ;
+    float      max_time ;
+    unsigned   PropagateEpsilon0Mask ;
 
     unsigned   vizmask ;
+    uint32_t   PropagateRefine ;
+    uint32_t   _pad1;
+    uint32_t   _pad2;
 
-    float4     center_extent ;
-    uint4      cegs ;
-
-    // simulation
-    qsim*        sim ;
-    sevent*      evt ;         // HMM: inside sim too ?
-    int  event_index ;
-    unsigned long long  photon_slot_offset ;   // for multi-launch to match single-launch
-    float max_time ;           // ns
-
-
-    // debug dumping : set from PIDXYZ envvar by CSGOptiX::initPIDXYZ default -1:-1:-1
-    uint3     pidxyz ;
+};
 
 
 #ifndef __CUDACC__
-    static Params* d_param ;
+#include <glm/glm.hpp>
+#include <string>
 
-    Params(int raygenmode, unsigned width, unsigned height, unsigned depth);
+struct Params_Helper
+{
+    Params* params   ;
+    Params* d_params ;
+    int     level ;
+
+    Params_Helper(Params* params, int raygenmode, unsigned width, unsigned height, unsigned depth);
+    void init();
+
     void device_alloc();
     void upload();
 
@@ -114,10 +112,11 @@ struct Params
     void setVizmask(unsigned vizmask_);
 
     void setCenterExtent(float x, float y, float z, float w);  // used for "simulation" planar rendering
-    void setPIDXYZ(unsigned x, unsigned y, unsigned z);
+    void setPIDXYZ(unsigned x, unsigned y, unsigned z, unsigned w);
     void set_photon_slot_offset(unsigned long long _photon_slot_offset);
 
+};
 #endif
 
-};
+
 

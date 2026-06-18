@@ -29,6 +29,7 @@ G4CXOpticks.cc
 #include "SSimulator.h"
 #include "SOpticksDummySimulator.h"
 
+
 #ifdef WITH_CUDA
 #include "CSGOptiX.h"
 #endif
@@ -230,7 +231,7 @@ void G4CXOpticks::setGeometry()
         CSGFoundry* cf = CSGFoundry::Load() ;
         LOG(LEVEL) << "] CSGFoundry::Load " ;
 
-        LOG(LEVEL) << "[ setGeometry(cf)  " ;
+        LOG(LEVEL) << "[ setGeometry(cf) cf.brief{" << ( cf ? cf->brief() : "-" ) << "}" ;
         setGeometry(cf);
         LOG(LEVEL) << "] setGeometry(cf)  " ;
     }

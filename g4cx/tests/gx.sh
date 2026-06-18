@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash
 usage(){ cat << EOU
 gx.sh : python examination of persisted CSGFoundry and stree geometry
 =========================================================================

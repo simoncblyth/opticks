@@ -4,9 +4,9 @@ G4CXRenderTest.sh
 ===================
 
 This is not currently expected to produce meaningful renders
-because it lacks all the environment setup of g4cx/gxr.sh 
+because it lacks all the environment setup of g4cx/gxr.sh
 
-TODO: arrange C++ defaults in a way to produce something visible 
+TODO: arrange C++ defaults in a way to produce something visible
 with most geometries
 
 ::
@@ -21,21 +21,39 @@ EOU
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-bin=G4CXRenderTest 
-source $HOME/.opticks/GEOM/GEOM.sh 
+bin=G4CXRenderTest
+source $HOME/.opticks/GEOM/GEOM.sh
 
 vars="BASH_SOURCE GEOM bin"
 
 defarg="info_run"
+[ -n "$BP" ] && defarg="dbg"
 arg=${1:-$defarg}
 
 
-logging(){ 
+logging(){
    type $FUNCNAME
    export G4CXOpticks=INFO
    export U4Tree=INFO
 }
-[ -n "$LOG" ] && logging 
+[ -n "$LOG" ] && logging
+
+
+OPTIX_KERNEL_DEBUG=1
+
+optix_kernel_debug()
+{
+    type $FUNCNAME
+    export PIP__CreateModule_optLevel=LEVEL_0
+    export PIP__CreateModule_debugLevel=FULL
+    export PIP__CreatePipelineOptions_exceptionFlags="TRACE_DEPTH|STACK_OVERFLOW"
+    export Ctx=INFO  # set Ctx::LEVEL to see optix kernel callback logging
+    export CSGOptiX__launch_DEBUG_PARAMS=1
+
+    export OPTIX_CACHE_MAXSIZE=0   ## DONT USE THE CACHE
+
+}
+[ -n "$OPTIX_KERNEL_DEBUG" ] && optix_kernel_debug
 
 
 
@@ -44,16 +62,16 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-   ./GXTestRunner.sh $bin 
+   ./GXTestRunner.sh $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 1
 fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
-   source ../../bin/dbg__.sh 
-   dbg__ $bin 
+   source ../../bin/dbg__.sh
+   dbg__ $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
 fi
 
 
-exit 0 
+exit 0
 

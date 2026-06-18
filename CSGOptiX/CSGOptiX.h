@@ -38,6 +38,8 @@ struct QSim ;
 struct QEvt ;
 
 struct Params ;
+struct Params_Helper ;
+
 class Opticks ;
 class Composition ;
 
@@ -89,7 +91,7 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     int                    kernel_count ;
 
     int               raygenmode ;
-    Params*           params  ;
+    Params_Helper*    params_helper  ;
 
 
 #if OPTIX_VERSION < 70000
@@ -113,8 +115,7 @@ struct CSGOPTIX_API CSGOptiX : public SSimulator
     const char* desc() const ;
 
 private:
-    static Params* InitParams( int raygenmode, const SGLM* sglm  ) ;
-    //static void InitEvt(  CSGFoundry* fd  );
+    static Params_Helper* InitParamsHelper( int raygenmode, const SGLM* sglm  ) ;
     static void InitMeta();
     static void InitSim(  SSim* ssim );
     static void InitGeo(  CSGFoundry* fd );
