@@ -8,6 +8,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.6.6  | 66  | 2026/06/18 | revive sreport for RTX PRO 6000 BW tests, try old geom recreat from GDML, fix several optix launch exceptions with optix 9.1 cuda 13.1 on Ada workstation     |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.5  | 65  | 2026/06/04 | simplifying testing of standalone Opticks release                                                                                                             |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.4  | 64  | 2026/06/02 | start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown, compilation fixes for CUDA 13.1             |
@@ -99,20 +101,37 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
+v0.6.6 2026/06/18 : revive sreport for RTX PRO 6000 Blackwell tests, try old geom recreation from GDML, fix several optix launch exceptions seen with optix 9.1 cuda 13.1 on Ada workstation
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* 2026-06-18 aaa0a2da9 - move SGLM hookup into CSGOptiX::initGLM rather than the indiviual test mains to avoid repetition and fix G4CXRenderTest fail from all view param zero due to no SGLM hookup
+* 2026-06-18 82d49c5fa - fix optix launch exception UNSUPPORTED_PRIMITIVE_TYPE seen with optix 9.1, cuda 13.1 - simplify Params.h making it fully 16 byte aligned while investigating G4CXRenderTest.sh
+                         launch exception that initially looked to be caused by the launch params being all zeroed
+* 2026-06-16 615010e87 - In G4CXOpticks::CreateSimulator handle having no CUDA-capable device using SOpticksDummySimulator.h
+* 2026-06-16 6b4364cfe - notes on old geometry running
+* 2026-06-16 7d5c7b3fd - enable OPTIX_DEVICE_CONTEXT_VALIDATION_MODE_ALL for non-PRODUCTION running whilst
+* 2026-06-16 80ff3ac9b - improve error reporting for inconsistent numEvent from PHOTON_LIST and GENSTEP_LIST
+* 2026-06-16 a7daabc4a - add U4SensorIdentifierDefault__MODE=lax workaround for GDML geometry lacking SD - in attempt to get recreated from GDML old geometries to be usable
+* 2026-06-08 967e1f230 - restore geometry conversion from gdml in g4cx/tests/G4CXOpticks_setGeometry_Test.sh, start trying to get that to work from release tree
+* 2026-06-05 204f7f127 - get sreport_ab.sh grep to work from source tree and release tree - add config dumping to cxs_min.sh for debug
+* 2026-06-05 98f9bd24d - get sreport_ab.sh plotting to work from release tree, comparing blackwell and ada
+* 2026-06-05 a543a0bfa - 6k server shakedown build and run notes, add opticks-setup-generate to oo
+
+
 
 v0.6.5 2026/06/04 : simplifying testing of standalone Opticks release
 --------------------------------------------------------------------------
 
-* 2026-06-04 7b5308e15 - (HEAD -> master, origin/master, origin/HEAD) simplify use of standalone Opticks OK install with an optional top level envset.sh analogous to the OJ envset.sh
-* 2026-06-04 d162f86f4 - (all/master) reviving cxs_min.sh running and analysis
+* 2026-06-04 7b5308e15 - simplify use of standalone Opticks OK install with an optional top level envset.sh analogous to the OJ envset.sh
+* 2026-06-04 d162f86f4 - reviving cxs_min.sh running and analysis
 
 
 v0.6.4 2026/06/02 : start QScintThree for 3 species LS model, look at gitlab-ci metrics+junit, libcurl based OpticksClient shakedown, compilation fixes for CUDA 13.1
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-* 2026-06-02 91f339811 - (HEAD -> master, gitlab/master) updates for compilation with CUDA 13.1 - main change is CCCL grouping of thrust headers
+* 2026-06-02 91f339811 - updates for compilation with CUDA 13.1 - main change is CCCL grouping of thrust headers
 * 2026-05-22 3ce21fc60 - add placeholder gitlab-ci config in attempt to stop gitlab spam
-* 2026-05-21 8219142e0 - (origin/master, origin/HEAD) thinking about VRAM memory pool approaches for titan backend
+* 2026-05-21 8219142e0 - thinking about VRAM memory pool approaches for titan backend
 * 2026-05-18 6307f9e98 - discussing QEvt::FinalMerge_async and async CUDA with Gemini reveals bug and potential reason why it appears to work and give expected results
 * 2026-05-12 a7a86d1dd - thinking what is needed for concurrent launching
 * 2026-05-12 21315fdcd - prepare small/medium/large gensteps for k6 testing
