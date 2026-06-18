@@ -462,6 +462,7 @@ void CSGOptiX::init()
     initCheckSim();
     initStack();
     initParams();
+    initGLM();
     initGeometry();
     initSimulate();
     initRender();
@@ -576,6 +577,12 @@ void CSGOptiX::initParams()
 {
     params_helper->device_alloc();
 }
+
+void CSGOptiX::initGLM()
+{
+    foundry->exportTreeSceneFrame(sglm);
+}
+
 
 /**
 CSGOptiX::initGeometry
@@ -890,8 +897,14 @@ void CSGOptiX::setFrame(const sfr& lfr )
 
 
 
+/**
+CSGOptiX::prepareParamRender
+----------------------------
 
+View parameters from the sglm instance are copied into Params
+using the Params_Helper.
 
+**/
 
 void CSGOptiX::prepareParamRender()
 {

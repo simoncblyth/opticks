@@ -72,7 +72,7 @@ struct CSGOptiXRenderInteractiveTest
     CSGOptiXRenderInteractiveTest();
 
     void init();
-    void initGeom();
+    //void initGLM();
     void initRecord();
     void initRender();
 
@@ -118,22 +118,19 @@ inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
 
 inline void CSGOptiXRenderInteractiveTest::init()
 {
-    initGeom();
+    assert( irc == 0 );
+    assert(fd);
+
+    //initGLM();
     initRecord();
     initRender();
 }
 
-inline void CSGOptiXRenderInteractiveTest::initGeom()
-{
-    assert( irc == 0 );
-    assert(fd);
-    stree* tree = fd->getTree();
-    assert(tree);
-    SScene* scene = fd->getScene() ;
-    assert(scene);
-    gm->setTreeScene(tree, scene);
-    gm->set_frame();   // MOI frame initially
-}
+// WIP : MOVED SGLM HOOKUP INTO CSGOptiX::initGLM TO AVOID REPETITION
+//inline void CSGOptiXRenderInteractiveTest::initGLM()
+//{
+//    fd->exportTreeSceneFrame(gm);
+//}
 
 inline void CSGOptiXRenderInteractiveTest::initRecord()
 {

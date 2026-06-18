@@ -16,6 +16,7 @@
 #include "ssys.h"
 #include "sproc.h"
 #include "SProf.hh"
+#include "SGLM.h"
 
 #include "smeta.h"
 #include "SSim.hh"
@@ -4009,7 +4010,21 @@ void CSGFoundry::kludgeScalePrimBBox( unsigned solidIdx, float dscale )
     }
 }
 
+/**
+CSGFoundry::exportTreeSceneFrame
+---------------------------------
 
 
 
+**/
 
+
+void CSGFoundry::exportTreeSceneFrame( SGLM* gm ) const
+{
+    stree* tree = getTree();
+    assert(tree);
+    SScene* scene = getScene() ;
+    assert(scene);
+    gm->setTreeScene(tree, scene);
+    gm->set_frame();   // MOI frame initially
+}

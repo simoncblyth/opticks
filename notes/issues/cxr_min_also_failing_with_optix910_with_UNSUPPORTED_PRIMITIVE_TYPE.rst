@@ -2,8 +2,8 @@ cxr_min_also_failing_with_optix910_with_UNSUPPORTED_PRIMITIVE_TYPE
 ===================================================================
 
 
-Overview
----------
+Overview : UNSUPPORTED_PRIMITIVE_TYPE launch exception FIXED by change to PIP::CreatePipelineOptions
+-------------------------------------------------------------------------------------------------------
 
 Seems that the optix9.1 CUDA 13.1  KMD Version: 610.43.02 (Driver?) is stricter.
 

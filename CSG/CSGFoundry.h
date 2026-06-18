@@ -10,6 +10,7 @@ struct NP ;
 struct SSim ;
 struct stree ;
 struct SScene ;
+struct SGLM ;
 struct SMeshGroup ;
 
 #include "scuda.h"
@@ -411,6 +412,8 @@ struct CSG_API CSGFoundry
 
     void kludgeScalePrimBBox( const char* label, float dscale );
     void kludgeScalePrimBBox( unsigned solidIdx, float dscale );
+
+    void exportTreeSceneFrame( SGLM* gm ) const ;
 
     unsigned getNumMeshName() const ;
     unsigned getNumSolidLabel() const ;

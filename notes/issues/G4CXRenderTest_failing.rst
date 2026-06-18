@@ -2,8 +2,8 @@ G4CXRenderTest_failing
 ========================
 
 
-Overview
------------
+Overview : FIXED BY REJIG OF SGLM HOOKUP
+-----------------------------------------
 
 Simplify Params.h and fixing 16 byte alignment makes no difference, still getting
 all params values to be zero within kernel.
@@ -21,6 +21,126 @@ HMM: that has the disclaimer::
 
   This is not currently expected to produce meaningful renders
   because it lacks all the environment setup of g4cx/gxr.sh
+
+Looks like this test did not receive updates since some SGLM
+overhaul long ago and somehow managed not to crash with optix before 9.1
+
+FIX review
+------------
+
+The problem with the parameters was not from optix it was due to
+SGLM not being hooked up with the geometry.
+
+Initially looked like all param zero, but looking more carefully it
+was the view parameters being zero, not ALL the parameters.
+The problem was with hostside param preparation not done as
+SGLM was not hooked up.
+
+
+
+FIXED :  BY MOVING GLM HOOKUP TO CSGOptix::initGLM
+---------------------------------------------------
+
+This means that G4CXRenderTest and  CSGOptiXRenderInteractiveTest
+both benefit from that without any repetition.
+
+
+Q: Where do the view params get set with cxr_min.sh ?
+------------------------------------------------------
+
+CSGOptiX::prepareParamRender
+    View parameters from the sglm instance are copied into Params using the Params_Helper.
+
+BP=CSGOptiX::prepareParamRender ~/o/g4cx/tests/G4CXRenderTest.sh
+
+
+
+Q: Where is sglm instanciated ? Are the defaults sane ?
+---------------------------------------------------------
+
+BP=SGLM::SGLM ~/o/g4cx/tests/G4CXRenderTest.sh::
+
+    (gdb) bt
+    #0  SGLM::SGLM (this=0x16ce13b0) at /data1/blyth/local/opticks_Debug/include/SysRap/SGLM.h:929
+    #1  0x00007ffff4887fcf in SGLM::Get () at /data1/blyth/local/opticks_Debug/include/SysRap/SGLM.h:770
+    #2  0x00007ffff489bfc8 in CSGOptiX::CSGOptiX (this=0x1543cfe0, foundry_=0x1543bdc0) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:412
+    #3  0x00007ffff489bbda in CSGOptiX::Create (fd=0x1543bdc0) at /home/blyth/opticks/CSGOptiX/CSGOptiX.cc:354
+    #4  0x00007ffff7ecf90d in G4CXOpticks::CreateSimulator (fd=0x1543bdc0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:432
+    #5  0x00007ffff7ecf3c9 in G4CXOpticks::setGeometry_ (this=0xf61b50, fd_=0x1543bdc0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:374
+    #6  0x00007ffff7ecf1d7 in G4CXOpticks::setGeometry (this=0xf61b50, fd_=0x1543bdc0) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:343
+    #7  0x00007ffff7ece19d in G4CXOpticks::setGeometry (this=0xf61b50) at /home/blyth/opticks/g4cx/G4CXOpticks.cc:235
+    #8  0x00007ffff7eccdfa in G4CXOpticks::SetGeometry () at /home/blyth/opticks/g4cx/G4CXOpticks.cc:66
+    #9  0x0000000000403a62 in main (argc=1, argv=0x7fffffffb858) at /home/blyth/opticks/g4cx/tests/G4CXRenderTest.cc:36
+
+
+::
+
+     410 CSGOptiX::CSGOptiX(const CSGFoundry* foundry_)
+     411     :
+     412     sglm(SGLM::Get()),
+     413     flight(SGeoConfig::FlightConfig()),
+     414     foundry(foundry_),
+     415     outdir(SEventConfig::OutFold()),
+
+     769 SGLM* SGLM::INSTANCE = nullptr ;
+     770 SGLM* SGLM::Get(){  return INSTANCE ? INSTANCE : new SGLM  ; }
+
+
+
+
+BP=SGLM::setTreeScene ~/o/g4cx/tests/G4CXRenderTest.sh
+    NOT CALLED - THIS WAS THE CAUSE
+
+BP=SGLM::setTreeScene cxr_min.sh::
+
+    (gdb) bt
+    #0  SGLM::setTreeScene (this=0x1bc23e60, _tree=0x564f60, _scene=0x10ba5590) at /data1/blyth/local/opticks_Debug/include/SysRap/SGLM.h:961
+    #1  0x000000000049aa80 in CSGOptiXRenderInteractiveTest::initGeom (this=0x7fffffffb170) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:134
+    #2  0x000000000049a97c in CSGOptiXRenderInteractiveTest::init (this=0x7fffffffb170) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:121
+    #3  0x000000000049a93e in CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest (this=0x7fffffffb170) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:116
+    #4  0x0000000000447911 in main (argc=1, argv=0x7fffffffb318) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:226
+    (gdb) 
+
+
+::
+
+    102 inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
+    103     :
+    104     level(ssys::getenvint(_level,0)),
+    105     ALLOW_REMOTE(ssys::getenvbool(_ALLOW_REMOTE)),
+    106     irc(Initialize(ALLOW_REMOTE)),
+    107     ar(SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE")),
+    108     br(SRecord::Load("$BFOLD", "$BFOLD_RECORD_SLICE")),
+    109     fd(CSGFoundry::Load()),
+    110     gm(new SGLM),
+    111     cx(nullptr),
+    112     gl(nullptr),
+    113     interop(nullptr),
+    114     glev(nullptr)
+    115 {
+    116     init();
+    117 }
+    118 
+    119 inline void CSGOptiXRenderInteractiveTest::init()
+    120 {
+    121     initGeom();
+    122     initRecord();
+    123     initRender();
+    124 }
+    125 
+    126 inline void CSGOptiXRenderInteractiveTest::initGeom()
+    127 {
+    128     assert( irc == 0 );
+    129     assert(fd);
+    130     stree* tree = fd->getTree();
+    131     assert(tree);
+    132     SScene* scene = fd->getScene() ;
+    133     assert(scene);
+    134     gm->setTreeScene(tree, scene);
+    135     gm->set_frame();   // MOI frame initially
+    136 }
+
+
 
 
 

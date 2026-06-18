@@ -136,6 +136,7 @@ private:
     void initCheckSim();
     void initStack();
     void initParams();
+    void initGLM();
     void initGeometry();
     void initSimulate();
     void initRender();
