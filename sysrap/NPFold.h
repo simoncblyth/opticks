@@ -397,7 +397,8 @@ public:
 
     std::string descMetaKV() const ;
     void getMetaKV(std::vector<std::string>* keys, std::vector<std::string>* vals, bool only_with_profile ) const ;
-    int  getMetaNumProfile() const ;
+    int  getMetaNumProfile() const ;  // number of meta (key,value) entries where the values contain timestamps
+
 
     void setMetaKV(const std::vector<std::string>& keys, const std::vector<std::string>& vals) ;
 
@@ -418,6 +419,7 @@ public:
     NP* subcount( const char* prefix ) const ;
     static constexpr const char* subcount_DUMP = "NPFold__subcount_DUMP" ;
 
+    static constexpr const char* _NPFold__submeta_level = "NPFold__submeta_level" ;
     NP* submeta(const char* prefix, const char* column=nullptr ) const ;
 
     // TIMESTAMP/PROFILE COMPARISON USING SUBFOLD METADATA
@@ -2949,7 +2951,7 @@ NPFold::getMetaKVS
 
 Parses the NPFold::meta string into keys, vals and stamps
 where stamp are defaulted to zero if the val do not look
-like microssecond timestamps.
+like microsecond timestamps.
 
 **/
 
@@ -3002,7 +3004,7 @@ inline void NPFold::getMetaKV(
 NPFold::getMetaNumProfile
 --------------------------
 
-Returns the number of meta (key,value) entries where the values contain timestamps.
+Returns the number of meta (key,value) entries where the values contain profile triplets
 
 **/
 
@@ -3278,18 +3280,23 @@ inline NP* NPFold::subcount( const char* prefix ) const
 
 
 /**
-NPFold::submeta
-------------------
+NPFold::submeta - creates metadata array extracted from NPFold_meta.txt from multiple folders 
+-----------------------------------------------------------------------------------------------
 
-1. find subfolders with prefix
-2. collect metadata (k,v) pairs with common values for all subs into ckey, cval and other keys into okey
-3. form an array of shape (num_sub, 1 when column_key provided OR num_okey when not )
+Effectively analyses eg A000/NPFold_meta.txt, A001/NPFold_meta.txt, ... from num_sub folders
+returning an array shaped (num_sub, num_okey) with metadata values from each folder. 
+
+1. find subfolders with prefix eg "//A"
+2. collect metadata (k,v) pairs with common values for all subs into ckey, cval and other keys with mixed values into okey
+3. form an array of shape (num_sub,num_okey) OR (num_sub,1) when column_key argument is provided
+4. return the array with names holding the subpaths and labels the okey
 
 **/
 
 inline NP* NPFold::submeta(const char* prefix, const char* column_key ) const
 {
     // 1. find subfolders with prefix
+    int level = U::GetEnvInt(_NPFold__submeta_level, 0 );
 
     std::vector<const NPFold*> subs ;
     std::vector<std::string> subpaths ;
@@ -3298,14 +3305,26 @@ inline NP* NPFold::submeta(const char* prefix, const char* column_key ) const
     find_subfold_with_prefix(subs, &subpaths,  prefix, maxdepth );
     assert( subs.size() == subpaths.size() );
 
+
     // 2. collect metadata (k,v) pairs with common values for all subs into ckey, cval and other keys into okey
     std::vector<std::string> okey ;
     std::vector<std::string> ckey ;
     std::vector<std::string> cval ;
     SubCommonKV(okey, ckey, cval, subs );
     assert( ckey.size() == cval.size() );
-    bool dump_common = false ;
-    if(dump_common) std::cout << DescCommonKV(okey, ckey, cval);
+    bool dump_common = level > 0 ;
+    if(dump_common) std::cout 
+        << "NPFold::submeta"
+        << " [" << _NPFold__submeta_level << "] "
+        << " level " << level
+        << " prefix [" << ( prefix ? prefix : "-" ) << "]"
+        << " subs.size " << subs.size()
+        << " subpaths.size " << subpaths.size()
+        << "\n"
+        << "DescCommonKV\n"
+        << DescCommonKV(okey, ckey, cval)
+        << "\n"
+        ;
 
     int column = std::distance( okey.begin(), std::find( okey.begin(), okey.end(), column_key ? column_key : "-" )) ;
     bool found_column = column < int(okey.size()) ;
@@ -3336,12 +3355,12 @@ inline NP* NPFold::submeta(const char* prefix, const char* column_key ) const
 
 
 /**
-NPFold::substamp
---------------------
+NPFold::substamp - USE ONLY FOR DEBUG : FOR PRODUCTION USE SProf.txt based APPROACHES
+---------------------------------------------------------------------------------------
 
 This provides metadata across multiple events, but as it relies on
-saving of arrays it is not useful for production running because
-SEvt are not saved because they are too big.
+saving of arrays it is only useful for debug running, not production running
+as SEvt arrays are not saved because they are too big.
 
 For metadata in production running the alternative SProf.hh
 low resource approach should be used.
@@ -3508,7 +3527,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
     t->labels = new std::vector<std::string>(comkeys.begin(), comkeys.end())  ;
 
 
-    // 3. derive *dt* DeltaColumn array, creating first-timestamp-within-each-event-relative-timestamps
+    // 3. derive *dt* DeltaColumn array, creating first-timestamp-within-each-event-relative-timestamps from epoch timestamps
 
     NP* dt = NP::DeltaColumn<int64_t>(t);
     dt->names = t->names ;
@@ -3551,6 +3570,8 @@ Collect profile metadata from subfold matching the prefix
 
 inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
 {
+    assert( 0==strcmp(keyname, "subprofile") ); // CHECKING
+
     // 1. find *subs* vector of subfold of this fold with path prefix, eg "//A" "//B"
 
     std::vector<const NPFold*> subs ;
@@ -3631,7 +3652,7 @@ inline NPFold* NPFold::subprofile(const char* prefix, const char* keyname) const
         {
             const char* v = vals[j].c_str();
             std::vector<int64_t> elem ;
-            U::MakeVec<int64_t>( elem, v, ',' );
+            U::MakeVec<int64_t>( elem, v, ',' ); // split profile triplet into three
             assert( int(elem.size()) == nk );
             for(int k=0 ; k < nk ; k++)  tt[i*nj*nk+j*nk+k] = elem[k] ;
         }

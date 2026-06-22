@@ -555,9 +555,12 @@ struct U
     static bool islower_(char c );
 
 
-    static void Summarize( std::vector<std::string>& smry_labels, const std::vector<std::string>* labels, int wid );
-    static const char* Summarize( const char* label, int wid );
-    static std::string Summarize_( const char* label, int wid );
+    static void Summarize( std::vector<std::string>& smry_labels, const std::vector<std::string>* labels, int wid, int mode );
+    static const char* Summarize( const char* label, int wid, int mode );
+    static std::string Summarize_( const char* label, int wid, int mode );
+    static std::string Summarize_0( const char* label, int wid );
+    static std::string Summarize_1( const char* label, int wid );
+    static std::string Squish( const char* label );
 
 
     static void LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX=nullptr );
@@ -1336,13 +1339,13 @@ inline bool U::isupper_(char c ) { return std::isupper(static_cast<unsigned char
 inline bool U::islower_(char c ) { return std::islower(static_cast<unsigned char>(c)) ; }
 
 
-inline void U::Summarize( std::vector<std::string>& smry_labels, const std::vector<std::string>* labels, int wid )
+inline void U::Summarize( std::vector<std::string>& smry_labels, const std::vector<std::string>* labels, int wid, int mode )
 {
     int num_labels = labels ? labels->size() : 0 ;
     for(int i=0 ; i < num_labels ; i++)
     {
         const char* label = (*labels)[i].c_str() ;
-        smry_labels.push_back( U::Summarize(label, wid) ) ;
+        smry_labels.push_back( U::Summarize(label, wid, mode) ) ;
     }
 }
 
@@ -1362,16 +1365,27 @@ C++ version of npmeta.py NPMeta::Summarize
 
 **/
 
-inline const char* U::Summarize( const char* label, int wid )  // static
+inline const char* U::Summarize( const char* label, int wid, int mode )  // static
 {
     if(label == nullptr) return nullptr ;
-    std::string smry = U::Summarize_(label, wid);
+    std::string smry = U::Summarize_(label, wid, mode);
     char* _smry = const_cast<char*>(smry.c_str()) ;
     int len = strlen(_smry) ;
     if(len > wid) _smry[wid+1] = '\0' ;
     return strdup(_smry) ;
 }
-inline std::string U::Summarize_( const char* label, int wid )  // static
+inline std::string U::Summarize_( const char* label, int wid, int mode )  // static
+{
+    switch(mode)
+    {
+       case 0: return Summarize_0(label, wid) ; break ;
+       case 1: return Summarize_1(label, wid) ; break ;
+    }
+    return "U::Summarize_ ERROR" ;
+}
+
+
+inline std::string U::Summarize_0( const char* label, int wid )  // static
 {
     int len = strlen(label) ;
     std::string str ;
@@ -1381,22 +1395,58 @@ inline std::string U::Summarize_( const char* label, int wid )  // static
     }
     else
     {
-        std::stringstream ss ;
-        char p = '\0' ;
-        for(int i=0 ; i < len ; i++)
-        {
-           char c = label[i] ;
-           bool take =  ( p == '\0' )
-                     || ( isalnum_(c) && p == '_' )
-                     || ( isalnum_(c) && p == '_' )
-                     || ( isupper_(c) && islower_(p) )
-                     || ( p == 'P' && ( c == 'r' || c == 'o' ) )
-                     ;
-           p = c ;
-           if(take) ss << c ;
-        }
-        str = ss.str();
+        str = Squish(label);
     }
+    return str ;
+}
+
+inline std::string U::Summarize_1( const char* label, int wid )  // static
+{
+    int len = strlen(label) ;
+    std::string str ;
+
+    std::vector<std::string> elem ;
+    U::Split( label, ':', elem );
+    size_t num_elem = elem.size();
+
+    if( num_elem == 3 )
+    {
+        str = elem[2].c_str() ;
+    }
+    else if( len <= wid )
+    {
+        str = label ;
+    }
+    else
+    {
+        str = Squish(label);
+        //std::string overlong = str ;
+        //str = overlong.substr(0,wid) ;
+    }
+    return str ;
+}
+
+
+
+
+inline std::string U::Squish( const char* label ) // static
+{
+    int len = strlen(label) ;
+    std::stringstream ss ;
+    char p = '\0' ;
+    for(int i=0 ; i < len ; i++)
+    {
+       char c = label[i] ;
+       bool take =  ( p == '\0' )
+                 || ( isalnum_(c) && p == '_' )
+                 || ( isalnum_(c) && p == '_' )
+                 || ( isupper_(c) && islower_(p) )
+                 || ( p == 'P' && ( c == 'r' || c == 'o' ) )
+                 ;
+       p = c ;
+       if(take) ss << c ;
+    }
+    std::string str = ss.str();
     return str ;
 }
 
@@ -2008,11 +2058,12 @@ inline bool U::LooksLikeTimestamp( T value )
 U::LooksLikeProfileTriplet
 -----------------------------
 
-Follows sprof::LooksLikeProf, repeated hear for convenience.
+Follows sprof::LooksLikeProf, repeated here for convenience.
 Returns true for comma delimited list of three integers where
 the first has 16 digits, eg::
 
     1111111111111111,2222,3333
+    1234567890123456,2222,3333
 
 **/
 

@@ -80,14 +80,14 @@ struct sreport
     bool    VERBOSE ;
     const char* CONFIG ;
 
-    NP*       run ;   // dummy array that exists just to hold metadata
-    NP*       runprof ;
-    NP*       ranges ;
+    NP*       run ;       // dummy array that exists just to hold metadata
+    NP*       runprof ;   // "prof" would be a better name now : but awkward to change
+    NP*       ranges ;    // detailed range timing extracted from SProf.txt
 
     NPFold*   substamp ;
     NPFold*   subprofile ;
-    NPFold*   submeta ;
-    NPFold*   submeta_NumPhotonCollected ;
+    NPFold*   submeta ;   // folder of arrays of metadata values extracted from folder metadata - NOW ONLY RELEVANT FOR NON-PROFILE INFO
+    NPFold*   submeta_NumPhotonCollected ; // RE-USE of submeta machinery with a single column - HMM THIS NEEDS TO BE REPLACED WITH SProf ANNOTATIONS
     NPFold*   subcount ;
 
     sreport();
@@ -97,7 +97,9 @@ struct sreport
     void save(const char* dir) const ;
     static sreport* Load(const char* dir) ;
 
-    bool        desc_config(const char* method, char delim=',') const;
+    bool        is_config(const char* method, char delim=',') const;
+    static bool IsConfig(const char* config, const char* label, char delim=',');
+
     std::string desc() const ;
     std::string desc_run() const ;
     std::string desc_runprof() const ;
@@ -161,30 +163,26 @@ inline sreport* sreport::Load(const char* dir) // static
 }
 
 /**
-sreport::desc_config
+sreport::is_config
 ---------------------
 
-Returns true when CONFIG is blank OR the *method* is present in the CONFIG.
+Returns true when CONFIG is blank OR the *label* is present in the CONFIG.
 This allows the output to be controlled eg::
 
-    export sreport__CONFIG=run,runprof,ranges,substamp,submeta,subcount
-    sreport
-
-OR::
-
-     sreport__CONFIG=substamp sreport
-
 **/
-
-
-inline bool sreport::desc_config(const char* method, char delim) const
+inline bool sreport::is_config(const char* label, char delim) const
 {
-    if( CONFIG == nullptr || 0 == strcmp(CONFIG,"") || method == nullptr ) return true ;
+    return IsConfig(CONFIG, label, delim);
+}
 
-    std::string target = method ;
- 
+inline bool sreport::IsConfig(const char* config, const char* label, char delim) // static
+{
+    if( config == nullptr || 0 == strcmp(config,"") || label == nullptr ) return true ;
+
+    std::string target = label ;
+
     std::vector<std::string> tokens;
-    std::stringstream ss(CONFIG);
+    std::stringstream ss(config);
     std::string token;
     while (std::getline(ss, token, delim)) tokens.push_back(token);
 
@@ -193,16 +191,37 @@ inline bool sreport::desc_config(const char* method, char delim) const
     return in_config ;
 }
 
+/**
+sreport::desc
+---------------
+
+Control what to include with::
+
+    export sreport__CONFIG=run,runprof,ranges,substamp,submeta,subcount
+    export sreport__CONFIG=substamp
+
+
+OR::
+
+    sreport__CONFIG=substamp sreport
+
+From cxs_min.sh level::
+
+    sreport__CONFIG=substamp cxs_min.sh report
+
+**/
+
+
 inline std::string sreport::desc() const
 {
     std::stringstream ss ;
     ss << "[sreport.desc CONFIG[" << ( CONFIG ? CONFIG : "-" ) << "]\n"
-       << ( desc_config("run")      ? desc_run() : "" )
-       << ( desc_config("runprof")  ? desc_runprof() : "" )
-       << ( desc_config("ranges")   ? desc_ranges()  : "" )
-       << ( desc_config("substamp") ? desc_substamp() : "" )
-       << ( desc_config("submeta")  ? desc_submeta()  : "" )
-       << ( desc_config("subcount") ? desc_subcount() : "" )
+       << ( is_config("run")      ? desc_run() : "" )
+       << ( is_config("runprof")  ? desc_runprof() : "" )
+       << ( is_config("ranges")   ? desc_ranges()  : "" )
+       << ( is_config("substamp") ? desc_substamp() : "" )
+       << ( is_config("submeta")  ? desc_submeta()  : "" )
+       << ( is_config("subcount") ? desc_subcount() : "" )
        << "]sreport.desc" << std::endl
        ;
     std::string str = ss.str() ;
@@ -228,7 +247,7 @@ inline std::string sreport::desc_run() const
 inline std::string sreport::desc_runprof() const
 {
     std::stringstream ss ;
-    ss << "[sreport.desc_runprof" << std::endl
+    ss << "[sreport.desc_prof" << std::endl
        << ( runprof ? runprof->sstr() : "-" ) << std::endl
        << ".sreport.desc_runprof.descTable " << std::endl
        << ( runprof ? runprof->descTable<int64_t>(17) : "-" ) << std::endl
@@ -238,13 +257,57 @@ inline std::string sreport::desc_runprof() const
     return str ;
 }
 
+/**
+sreport::desc_ranges
+---------------------
+
+::
+
+    sreport.desc_ranges ranges : (11, 5, )
+    .sreport.desc_ranges.descTable  ( ta,tb : range begin,end timestamps expressed as seconds from first timestamp, ab: (tb-ta) )
+    [NP::descTable_ {} (11, 5, )
+                                                      ta                tb                ab                ia                ib
+                                  init          0.000000          0.006884              6884                 0                 2          0.006884                              init
+                             load_geom          0.006884          1.169323           1162439                 2                 3          1.162439                         load_geom
+                           upload_geom          1.169364          1.557288            387924                 4                 5          0.387924                       upload_geom
+                         slice_genstep          1.557645          1.557688                43                 9                10          0.000043                     slice_genstep
+                  upload genstep slice          1.557695          1.571605             13910                11                12          0.013910              upload genstep slice
+                        simulate slice          1.571605          1.868877            297272                12                13          0.297272                    simulate slice
+                        download slice          1.868877          1.887110             18233                13                14          0.018233                    download slice
+                         slice_genstep          1.953854          1.953877                23                21                22          0.000023                     slice_genstep
+                  upload genstep slice          1.953884          1.954766               882                23                24          0.000882              upload genstep slice
+                        simulate slice          1.954766          2.247558            292792                24                25          0.292792                    simulate slice
+                        download slice          2.247558          2.268320             20762                25                26          0.020762                    download slice
+    num_timestamp 22 auto-offset from t0 1782097507944130
+                                TOTAL:          15842132          18043296           2201164               144               156
+
+                                  init : SEvt__Init_RUN_META:CSGFoundry__Load_HEAD:init
+                             load_geom : CSGFoundry__Load_HEAD:CSGFoundry__Load_TAIL:load_geom
+                           upload_geom : CSGOptiX__Create_HEAD:CSGOptiX__Create_TAIL:upload_geom
+                         slice_genstep : A000_QSim__simulate_HEAD:A000_QSim__simulate_LBEG:slice_genstep
+                  upload genstep slice : A000_QSim__simulate_PRUP:A000_QSim__simulate_PREL:upload genstep slice
+                        simulate slice : A000_QSim__simulate_PREL:A000_QSim__simulate_POST:simulate slice
+                        download slice : A000_QSim__simulate_POST:A000_QSim__simulate_DOWN:download slice
+                         slice_genstep : A001_QSim__simulate_HEAD:A001_QSim__simulate_LBEG:slice_genstep
+                  upload genstep slice : A001_QSim__simulate_PRUP:A001_QSim__simulate_PREL:upload genstep slice
+                        simulate slice : A001_QSim__simulate_PREL:A001_QSim__simulate_POST:simulate slice
+                        download slice : A001_QSim__simulate_POST:A001_QSim__simulate_DOWN:download slice
+    ]NP::descTable_ {} (11, 5, )
+
+
+Repetitions in ia/ib indices and ta/tb values are normal, that just shows the end of one tag range
+is the same as the start of the next range.
+
+**/
+
+
 inline std::string sreport::desc_ranges() const
 {
     std::stringstream ss ;
     ss << "[sreport.desc_ranges"
        << " ranges : " << ( ranges ? ranges->sstr() : "-" ) << std::endl
        << ".sreport.desc_ranges.descTable "
-       << " ( ta,tb : timestamps expressed as seconds from first timestamp, ab: (tb-ta) )"
+       << " ( ta,tb : range begin,end timestamps expressed as seconds from first timestamp, ab: (tb-ta) )"
        << "\n"
        << ( ranges ? ranges->descTable<int64_t>(17) : "-" ) << std::endl
        << "]sreport.desc_ranges" << std::endl
@@ -256,6 +319,11 @@ inline std::string sreport::desc_ranges() const
 /**
 report::desc_substamp
 -----------------------
+
+NB substamp is only useful for debugging (not production)
+as it relies on SEvt metadata - with are not saved in production
+as far too big.
+
 
 The substamp NPFold is created by::
 
@@ -310,11 +378,63 @@ inline std::string sreport::desc_subprofile() const
 }
 
 
+/**
+sreport::desc_submeta - FOR PROFILING INFO NOW REPLACED WITH SProf.txt BASED APPROACHES
+-------------------------------------------------------------------------------------------
+
+TODO: General NPFold::desc is acting as placeholder here - replace it with something more informative
+
+::
+
+    sreport__CONFIG=submeta cxs_min.sh report
+
+
+HMM int64_t can hold everything other than t_Launch::
+
+    A[blyth@localhost ALL1_Debug_Philox_medium_scan_first]$ cat A000/NPFold_meta.txt
+    NumPhotonCollected:1000000
+    NumGenstepCollected:1
+    MaxBounce:31
+    site:SEvt::endMeta
+    hitmask:8192
+    index:0
+    instance:0
+    SEvt__beginOfEvent_0:1782097509501642,8128336,1264128
+    SEvt__beginOfEvent_1:1782097509501767,8128336,1264128
+    SEvt__endOfEvent_0:1782097509831333,15481740,1283840
+    t_BeginOfEvent:1782097509501655
+    t_setGenstep_0:0
+    t_setGenstep_1:0
+    t_setGenstep_2:0
+    t_setGenstep_3:1782097509501835
+    t_setGenstep_4:1782097509502034
+    t_setGenstep_5:1782097509502050
+    t_setGenstep_6:1782097509502068
+    t_setGenstep_7:1782097509503254
+    t_setGenstep_8:1782097509515733
+    t_PreLaunch:1782097509515780
+    t_PostLaunch:1782097509813007
+    t_EndOfEvent:1782097509831341
+    t_Event:329686
+    t_Launch:0.297208
+
+
+**/
+
+
 inline std::string sreport::desc_submeta() const
 {
+    const NP* a = submeta ? submeta->get("a") : nullptr ;
+    const NP* b = submeta ? submeta->get("b") : nullptr ;
+
     std::stringstream ss ;
-    ss << "[sreport.desc_submeta" << std::endl
-       << ( submeta ? submeta->desc() : "-" )
+    ss << "[sreport.desc_submeta {submeta for profiling info is replaced by *ranges* which just needs SProf.txt - not full SEvt saving} " << std::endl
+       //<< ( submeta ? submeta->desc() : "-" )
+       << "\n"
+       << " a " << ( a ? a->sstr() : "-" ) << "\n"
+       << " b " << ( b ? b->sstr() : "-" ) << "\n"
+       << ( a ? a->descTable<int64_t>(9) : "-" ) << "\n"
+       << ( b ? b->descTable<int64_t>(9) : "-" ) << "\n"
        << "]sreport.desc_submeta" << std::endl
        ;
     std::string str = ss.str() ;
@@ -349,14 +469,17 @@ struct sreport_Creator
 
     bool VERBOSE ;
     const char* dirp ;
+    const char* CONFIG ;
+    bool _creator ;
+
     NPFold*    fold ;
     bool fold_valid ;
     const NP*  run ;
     sreport*   report ;
 
-    sreport_Creator(  const char* dirp_ );
+    sreport_Creator(  const char* dirp_, const char* CONFIG);
     void init();
-    void init_SProf();
+    void init_runprof_run_ranges_from_SProf();
     void init_substamp();
     void init_subprofile();
     void init_submeta();
@@ -368,23 +491,27 @@ struct sreport_Creator
     std::string desc_run() const ;
 };
 
-inline sreport_Creator::sreport_Creator( const char* dirp_ )
+inline sreport_Creator::sreport_Creator( const char* dirp_, const char* _CONFIG )
     :
     VERBOSE(getenv("sreport_Creator__VERBOSE") != nullptr),
     dirp(dirp_ ? strdup(dirp_) : nullptr),
+    CONFIG(_CONFIG),
+    _creator(sreport::IsConfig(CONFIG, "creator")),
     fold(NPFold::LoadNoData(dirp)),
     fold_valid(NPFold::IsValid(fold)),
     run(fold_valid ? fold->get("run") : nullptr),
     report(new sreport)
 {
-    std::cout
+    if(_creator) std::cout
         << "[sreport_Creator::sreport_Creator"
         << " fold_valid " << ( fold_valid ? "YES" : "NO " )
         << " run " << ( run ? "YES" : "NO " )
         << "\n"
         ;
+
     init();
-    std::cout << "]sreport_Creator::sreport_Creator" << std::endl ;
+
+    if(_creator) std::cout << "]sreport_Creator::sreport_Creator" << std::endl ;
 }
 
 
@@ -392,35 +519,71 @@ inline sreport_Creator::sreport_Creator( const char* dirp_ )
 sreport_Creator::init
 -----------------------
 
-1. construct SProf derived metadata arrays
-2. construct subfold derived arrays and fold
+1. construct SProf derived metadata arrays with init_runprof_run_ranges_from_SProf
+2. construct subfold derived arrays and fold using the *sub* methods
+
+
+Q: Are *sub* methods still relevant now that have init_runprof_run_ranges_from_SProf ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *sub* methods have a fundamental disadvantage over the SProf.txt based approach
+in that they require SEvt saving - so they are limited to tests with debug arrays enabled.
+This contrasts to the SProf approach which can work in production with only SProf.txt saved.
+
+However the *sub* methods provide richer information that SProf currently does.
+Although some of that *sub* functionality could be adapted to working from SProf.txt
+data, drawing on the *sub* methods.
+
+
+Q: Recall that SProf.txt includes annotations ? Are those yet used from sreport ? A: NO
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SProf.hh writes and reads the annotations into META vector of strings that are mostly blanks::
+
+    A000_QSim__simulate_DOWN:1782097509831240,15481740,1283840
+    A000_QSim__simulate_LEND:1782097509831276,15481740,1283840 # slice=1,max_slot_M=100
+    A000_QSim__simulate_PCAT:1782097509831298,15481740,1283840
+    A000_QSim__simulate_BRES:1782097509831315,15481740,1283840 # numGenstepCollected=1,numPhotonCollected=1000000,numHit=213947
+    A000_QSim__reset_HEAD:1782097509831323,15481740,1283840
+
 
 **/
 
 
 inline void sreport_Creator::init()
 {
-    std::cout << "[sreport_Creator::init\n" ;
+    if(_creator) std::cout << "[sreport_Creator::init\n" ;
 
-    init_SProf();
+    init_runprof_run_ranges_from_SProf();
 
     init_substamp();
     init_subprofile();
     init_submeta();
     init_subcount();
 
-    std::cout << "]sreport_Creator::init\n" ;
+    if(_creator) std::cout << "]sreport_Creator::init\n" ;
 }
 
 /**
-sreport_Creator::init_SProf
-----------------------------
+sreport_Creator::init_runprof_run_ranges_from_SProf
+----------------------------------------------------
+
+Creates three arrays:
+
+runprof
+    coarse event timings from SProf.txt, effectively "grep Index SProf.txt"
+run
+    dummy array that exists just to hold run_meta.txt
+ranges
+    detailed profile timings table obtained from SProf.txt
+
+
 
 The SProf has the advantage of almost always being available, as the SProf.txt is small
 unlike the full arrays.
 
 1. read SProf.txt into meta string
-2. create report->runprof array from the "Index" lines, shaped (2,3) for the below example
+2. create report->runprof array from the "Index" lines ("setIndex","endIndex") shaped (2,3) for the below example
 3. create report->run (dummy array with run metadata)
 4. create report->ranges. eg shaped (8,5) with the below example : this included time deltas between the keys
    that match the wildcard resolved sreport::RANGES
@@ -454,25 +617,34 @@ Analysis of the SProf.txt written by SProf.hh, eg::
     CSGOptiX__SimulateMain_TAIL:1760707887056235,8266716,1229000
     A[blyth@localhost ALL1_Debug_Philox_ref1]$
 
+
+Grepping Index lines from SProf.txt gives timing overview::
+
+    A[blyth@localhost ALL1_Debug_Philox_medium_scan_first]$ grep Index SProf.txt
+    A000_SEvt__setIndex:1782097509501661,8128336,1264128
+    A000_SEvt__endIndex:1782097509831341,15481740,1283840
+    A001_SEvt__setIndex:1782097509897933,15468368,1271048
+    A001_SEvt__endIndex:1782097510212520,15481680,1284040
+
+
 **/
 
-inline void sreport_Creator::init_SProf()
+inline void sreport_Creator::init_runprof_run_ranges_from_SProf()
 {
-    std::cout << "[sreport_Creator::init_SProf\n" ;
+    if(_creator) std::cout << "[sreport_Creator::init_runprof_run_ranges_from_SProf\n" ;
 
     std::string meta = U::ReadString2_("SProf.txt");
 
     report->runprof = NP::MakeMetaKVProfileArray(meta, "Index") ;
-    std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << std::endl ;
-    // report->runprof, should now be report->prof
+    if(_creator) std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << " {runprof effectively: grep Index SProf.txt}" << std::endl ;
 
     report->run     = run ? run->copy() : nullptr ;
-    std::cout << "-sreport_Creator::init_SProf.run       :" << ( report->run ? report->run->sstr() : "-" ) << std::endl ;
+    if(_creator) std::cout << "-sreport_Creator::init_SProf.run       :" << ( report->run ? report->run->sstr() : "-" ) << " {run is dummy array just for holding metadata} " << std::endl ;
 
     report->ranges = run ? NP::MakeMetaKVS_ranges2( meta, sreport::RANGES ) : nullptr ;
-    std::cout << "-sreport_Creator::init_SProf.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) <<  std::endl ;
+    if(_creator) std::cout << "-sreport_Creator::init_SProf.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) << " {ranges provides detailed timing info extracted from SProf.txt}" <<  std::endl ;
 
-    std::cout << "]sreport_Creator::init_SProf\n" ;
+    if(_creator) std::cout << "]sreport_Creator::init_runprof_run_ranges_from_SProf\n" ;
 }
 
 /**
@@ -486,30 +658,31 @@ sreport_Creator::init_substamp
 
 inline void sreport_Creator::init_substamp()
 {
-    std::cout << "[sreport_Creator::init_substamp\n" ;
-
-    std::cout << "-sreport_Creator::init_substamp fold_valid " << ( fold_valid ? "Y" : "N" ) << std::endl ;
+    if(_creator) std::cout << "[sreport_Creator::init_substamp\n" ;
+    if(_creator) std::cout << "-sreport_Creator::init_substamp fold_valid " << ( fold_valid ? "Y" : "N" ) << std::endl ;
 
     report->substamp   = fold_valid ? fold->subfold_summary("substamp",   ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init_substamp ((NPFold)report.substamp).stats [" << ( report->substamp ? report->substamp->stats() : "-" ) << "]\n" ;
 
-    std::cout << "]sreport_Creator::init_substamp\n" ;
+    if(_creator) std::cout << "-sreport_Creator::init_substamp ((NPFold)report.substamp).stats [" << ( report->substamp ? report->substamp->stats() : "-" ) << "]\n" ;
+    if(_creator) std::cout << "]sreport_Creator::init_substamp\n" ;
 }
 
 /**
 sreport_Creator::init_subprofile
 ----------------------------------
 
-1. create report->subprofile from profile metadata from the subfold
+1. create report->subprofile from profile triplet metadata from the NPFold_meta.txt of the specified subfolders
 
 **/
 
 inline void sreport_Creator::init_subprofile()
 {
-    std::cout << "[sreport_Creator::init_subprofile\n" ;
+    if(_creator) std::cout << "[sreport_Creator::init_subprofile\n" ;
+
     report->subprofile = fold_valid ? fold->subfold_summary("subprofile", ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init_subprofile :[" << ( report->subprofile ? report->subprofile->stats() : "-" )  << "]\n" ;
-    std::cout << "]sreport_Creator::init_subprofile\n" ;
+
+    if(_creator) std::cout << "-sreport_Creator::init_subprofile :[" << ( report->subprofile ? report->subprofile->stats() : "-" )  << "]\n" ;
+    if(_creator) std::cout << "]sreport_Creator::init_subprofile\n" ;
 }
 
 /**
@@ -519,26 +692,49 @@ sreport_Creator::init_submeta
 1. create report->submeta from subfold metadata
 2. report->submeta_NumPhotonCollected from subfold metadata
 
+This consolidates metadata from multiple persisted SEvt specified by "//A" OR "//B"
+corresponding to "/A000" "/A001" etc..::
+
+    A[blyth@localhost ALL1_Debug_Philox_medium_scan_first]$ cat A000/NPFold_meta.txt
+    NumPhotonCollected:1000000
+    NumGenstepCollected:1
+    MaxBounce:31
+    site:SEvt::endMeta
+    hitmask:8192
+    index:0
+    instance:0
+    SEvt__beginOfEvent_0:1782097509501642,8128336,1264128
+    SEvt__beginOfEvent_1:1782097509501767,8128336,1264128
+    SEvt__endOfEvent_0:1782097509831333,15481740,1283840
+    t_BeginOfEvent:1782097509501655
+    t_setGenstep_0:0
+    t_setGenstep_1:0
+    t_setGenstep_2:0
+    t_setGenstep_3:1782097509501835
+    t_setGenstep_4:1782097509502034
+    t_setGenstep_5:1782097509502050
+
 **/
 
 
 inline void sreport_Creator::init_submeta()
 {
-    std::cout << "[sreport_Creator::init_submeta\n" ;
+    if(_creator) std::cout << "[sreport_Creator::init_submeta\n" ;
 #ifdef WITH_SUBMETA
-    std::cout << "-sreport_Creator::init_submeta.WITH_SUBMETA\n" ;
+    if(_creator) std::cout << "-sreport_Creator::init_submeta.WITH_SUBMETA\n" ;
 
     report->submeta    = fold_valid ? fold->subfold_summary("submeta",    ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init_submeta :[" << ( report->submeta ? report->submeta->stats() : "-" )  << "]\n"  ;
+    if(_creator) std::cout << "-sreport_Creator::init_submeta :[" << ( report->submeta ? report->submeta->stats() : "-" )  << "]\n"  ;
 
     report->submeta_NumPhotonCollected = fold_valid ? fold->subfold_summary("submeta:NumPhotonCollected", ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init_submeta_NumPhotonCollected :[" << ( report->submeta_NumPhotonCollected ? report->submeta_NumPhotonCollected->stats() : "-" )  << "]\n" ;
+
+    if(_creator) std::cout << "-sreport_Creator::init_submeta_NumPhotonCollected :[" << ( report->submeta_NumPhotonCollected ? report->submeta_NumPhotonCollected->stats() : "-" )  << "]\n" ;
 
 #else
     std::cout << "-sreport_Creator::init_submeta.NOT:WITH_SUBMETA\n" ;
 
 #endif
-    std::cout << "]sreport_Creator::init_submeta\n" ;
+    if(_creator) std::cout << "]sreport_Creator::init_submeta\n" ;
 }
 
 /**
@@ -551,10 +747,12 @@ sreport_Creator::init_subcount
 
 inline void sreport_Creator::init_subcount()
 {
-    std::cout << "[sreport_Creator::init_subcount\n" ;
+    if(_creator) std::cout << "[sreport_Creator::init_subcount\n" ;
+
     report->subcount   = fold_valid ? fold->subfold_summary("subcount",   ASEL, BSEL) : nullptr ;
-    std::cout << "-sreport_Creator::init_subcount :[" << ( report->subcount ? report->subcount->stats() : "-" ) << "]\n" ;
-    std::cout << "]sreport_Creator::init_subcount\n" ;
+
+    if(_creator) std::cout << "-sreport_Creator::init_subcount :[" << ( report->subcount ? report->subcount->stats() : "-" ) << "]\n" ;
+    if(_creator) std::cout << "]sreport_Creator::init_subcount\n" ;
 }
 
 
@@ -614,6 +812,9 @@ inline std::string sreport_Creator::desc_run() const
 
 int main(int argc, char** argv)
 {
+    const char* CONFIG = U::GetEnv(sreport::sreport__CONFIG,"");
+    bool _main = sreport::IsConfig(CONFIG, "main") ;
+
     char* argv0 = argv[0] ;
     const char* dirp = argc > 1 ? argv[1] : U::PWD() ;
     if(dirp == nullptr) return 0 ;
@@ -621,7 +822,8 @@ int main(int argc, char** argv)
 
     std::cout
        << "[sreport.main"
-       << "  argv0 " << ( argv0 ? argv0 : "-" )
+       << " CONFIG [" << ( CONFIG ? CONFIG : "-" ) << "]"
+       << " argv0 " << ( argv0 ? argv0 : "-" )
        << " dirp " << ( dirp ? dirp : "-" )
        << " is_executable_sibling_path " << ( is_executable_sibling_path ? "YES" : "NO " )
        << std::endl
@@ -630,22 +832,22 @@ int main(int argc, char** argv)
     if( is_executable_sibling_path == false )  // not in eg ALL3_sreport directory
     {
         U::SetEnvDefaultExecutableSiblingPath("SREPORT_FOLD", argv0, dirp );
-        std::cout << "[sreport.main : CREATING REPORT " << std::endl ;
+        if(_main) std::cout << "[sreport.main : CREATING REPORT " << std::endl ;
 
-        std::cout << "[sreport.main : creator " << std::endl ;
-        sreport_Creator creator(dirp);
-        std::cout << "]sreport.main : creator " << std::endl ;
-        std::cout << "[sreport.main : creator.desc " << std::endl ;
+        if(_main) std::cout << "[sreport.main : creator " << std::endl ;
+        sreport_Creator creator(dirp, CONFIG);
+        if(_main) std::cout << "]sreport.main : creator " << std::endl ;
+        if(_main) std::cout << "[sreport.main : creator.desc " << std::endl ;
         std::cout << creator.desc() ;
-        std::cout << "]sreport.main : creator.desc " << std::endl ;
+        if(_main) std::cout << "]sreport.main : creator.desc " << std::endl ;
         if(!creator.fold_valid) return 1 ;
 
         sreport* report = creator.report ;
-        std::cout << "[sreport.main : report.desc " << std::endl ;
+        if(_main) std::cout << "[sreport.main : report.desc " << std::endl ;
         std::cout << report->desc() ;
-        std::cout << "]sreport.main : report.desc " << std::endl ;
+        if(_main) std::cout << "]sreport.main : report.desc " << std::endl ;
         report->save("$SREPORT_FOLD");
-        std::cout << "]sreport.main : CREATED REPORT " << std::endl ;
+        if(_main) std::cout << "]sreport.main : CREATED REPORT " << std::endl ;
 
         if(getenv("CHECK") != nullptr )
         {

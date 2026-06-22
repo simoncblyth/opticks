@@ -1032,7 +1032,8 @@ NP::DeltaColumn
 ------------------
 
 * for input array *a* of shape (ni,nj) returns array *b* of the same shape
-  with all columns subtracted from the *jcol* column which default to zero for first column,
+  with all columns subtracted from the *jcol* column.
+  *jcol* defaults to zero corresponding to the first column,
   this is useful to convert epoch-relative-timestamps to first-timestamp-within-each-event-relative-timestamps
 
 ::
@@ -2860,7 +2861,7 @@ inline std::string NP::descTable_(int wid,
 {
     bool with_column_totals = true ;
     bool with_timestamp_delta = true ;
-
+    bool row_label_rhs = true ;  // repeat label on the right
 
     std::stringstream ss ;
     ss << "[NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << sstr() << std::endl ;
@@ -2885,12 +2886,16 @@ inline std::string NP::descTable_(int wid,
         INT cwid = wid ;
         INT rwid = 2*wid ;
 
+        int column_mode = 0 ;
+        int row_mode = 1 ;
+
+
         std::vector<std::string> column_smry ;
-        if(column_labels) U::Summarize( column_smry, column_labels, cwid );
+        if(column_labels) U::Summarize( column_smry, column_labels, cwid, column_mode );
         bool with_column_labels = int(column_smry.size()) == nj ;
 
         std::vector<std::string> row_smry ;
-        if(row_labels) U::Summarize( row_smry, row_labels, rwid );
+        if(row_labels) U::Summarize( row_smry, row_labels, rwid, row_mode );
         bool with_row_labels = int(row_smry.size()) == ni ;
 
 
@@ -2956,6 +2961,7 @@ inline std::string NP::descTable_(int wid,
                     ;
             }
 
+            if(with_row_labels && row_label_rhs) ss << std::setw(rwid) << row_smry[i] << " " ;
             ss << "\n" ;
 
 
@@ -6397,6 +6403,19 @@ inline NP* NP::MakeMetaKVProfileArray(const std::string& meta, const char* ptn)
     return prof ;
 }
 
+
+/**
+NP::GetMetaKV_
+---------------
+
+* Reads metadata line by line
+* For lines "key:value" that contain ":" extract (key,value)
+* Depending on *only_with_profile* and whether value LooksLikeProfileTriplet "1234567890123456,2222,3333"
+  select the item and append to (keys,vals) vectors
+
+**/
+
+
 inline void NP::GetMetaKV_(
     const char* metadata,
     std::vector<std::string>* keys,
@@ -6430,6 +6449,7 @@ inline void NP::GetMetaKV_(
         }
     }
 }
+
 
 inline void NP::GetMetaKV(
     const std::string& meta,
@@ -6685,6 +6705,27 @@ inline NP* NP::MakeMetaKVS_ranges(const std::string& meta_, const char* ranges_ 
     return MakeMetaKVS_ranges(keys, tt, ranges_ , ss );
 }
 
+
+/**
+NP::MakeMetaKVS_ranges2
+-------------------------
+
+Used for example from sreport_Creator::init_SProf where the meta_ string
+is read from the "SProf.txt".
+
+This method parses the metadata string into vectors:
+
+1. keys : eg labels identifying code locations
+2. vals : eg string with comma delimited profile triplets of integers
+3. tt : eg int64_t time since epoch stamps
+
+Then invokes lower level NP::MakeMetaKVS_ranges2, note only (keys, tt)
+are passed to the lower level - timestamps from the vals having
+been extracted and passed in the tt vector.
+
+**/
+
+
 inline NP* NP::MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_ , std::ostream* ss) // static
 {
     std::vector<std::string> keys ;
@@ -6694,7 +6735,6 @@ inline NP* NP::MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_
     U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp );
     assert( keys.size() == vals.size() );
     assert( keys.size() == tt.size() );
-    assert( tt.size() == keys.size() );
     return MakeMetaKVS_ranges2(keys, tt, ranges_ , ss );
 }
 
@@ -6705,6 +6745,12 @@ inline NP* NP::MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_
 /**
 NP::Resolve_ranges
 -------------------
+
+Expands the index wildcarded ranges specifier into a simple *specs* vector of triplet
+strings without wildcards of form:
+
+    A000_QSim__simulate_HEAD:A000_QSim__simulate_PREL:upload_genstep
+
 
 Ranges are newline delimited with colon separated pairs of tags and mandatory annotation, eg::
 
@@ -6723,9 +6769,12 @@ based on the keys, wildcards and idx range.
 1. split the colon delimited range pair from the ## delimited annotation
 2. generate specs vector of wildcard resolved key ranges including the annotation
 
-The output specs are of form::
+The output specs are of triplet form::
 
     A000_QSim__simulate_HEAD:A000_QSim__simulate_PREL:upload_genstep
+
+Are effectively "unfolding" into simple tag ranges across a
+typical index range for testing of 0->30.
 
 **/
 
@@ -6922,11 +6971,34 @@ inline NP* NP::MakeMetaKVS_ranges_table(
 NP::MakeMetaKVS_ranges2_table
 ------------------------------
 
-1. For each range lookup the a and b key indices into keys vector.
-2. When the number of indices for a and b matches simply collect indices and time stamps for the range into the kpp tuple vector
-3. When one indice is found for b and more than one for a find the a index closest in absolute time difference to b
-4. Ditto for a and b situation reversed
-5. sort indices of the kpp tuple into ascending a(start) time order
+Invoked with args:
+
+* specs: string vector of simple tag triplets without index wildcards
+* keys: string vector of measured tags with same length as tt timestamps
+* tt : int64_t vector of timestamps
+
+
+1. For each range obtained from the specs lookup the A and B key indices into the keys vector.
+2. When the number of indices for A and B matches simply collect indices and time stamps for the range into the kpp tuple vector
+3. When one indice is found for B and more than one for A find the A index closest in absolute time difference to B
+4. Ditto for A and B situation reversed
+5. sort indices of the kpp tuple into ascending A(start) time order
+6. Create (num_kpp,5) _rr array holding *kpp* values in ascending start time order
+
+The 5 fields of the output _rr array are:
+
+ta
+   start time of range
+tb
+   end time of range
+ab
+   (tb-ta) deltatime for the range
+ia
+   index of A label into keys (debug)
+ib
+   index of B label into keys (debug)
+
+
 
 **/
 
@@ -6948,10 +7020,10 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
 
         const char* ak = elem[0].c_str();
         const char* bk = elem[1].c_str();
-        const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ;
+        const char* no = elem.size() > 2 ? elem[2].c_str() : nullptr ; // note or annotation of the range
         const char* uno = no ? strdup(no) : nullptr ;
 
-        std::vector<int> iia ;
+        std::vector<int> iia ;  // find all key indices of *ak* in keys
         U::KeyIndices(iia, keys, ak );
 
         std::vector<int> iib ;
@@ -6966,7 +7038,7 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
         }
         else if( na > 1 && nb == 1 )
         {
-            // pick smallest absolute delta between the multiple a and single b
+            // pick smallest absolute delta between the multiple A and single B
             std::vector<int64_t> att ;
             for(int a=0 ; a < na ; a++) att.push_back( std::abs( tt[iia[a]] - tt[iib[0]] ) );
             int ia = std::distance(std::begin(att), std::min_element(std::begin(att), std::end(att)));
@@ -6974,7 +7046,7 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
         }
         else if( nb > 1 && na == 1 )
         {
-            // pick smallest absolute delta between the multiple b and single a
+            // pick smallest absolute delta between the multiple B and single A
             std::vector<int64_t> btt ;
             for(int b=0 ; b < nb ; b++) btt.push_back( std::abs( tt[iib[b]] - tt[iia[0]] ) );
             int ib = std::distance(std::begin(btt), std::min_element(std::begin(btt), std::end(btt)));
@@ -6992,6 +7064,7 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
     std::sort(ikp.begin(), ikp.end(), kp_order );
 
 
+    // Create (num_kpp,5) _rr array holding *kpp* values in ascending start time order
     int dbg = 0 ;
     int ni = num_kpp ;
     int nj = 5 ;
@@ -7008,7 +7081,7 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
 
     for(int j=0 ; j < num_kpp ; j++)
     {
-        int i = ikp[j] ;
+        int i = ikp[j] ;  // ascending start time order
 
         const KP& kp = kpp[i];
         int ia = std::get<0>(kp) ;
@@ -7018,6 +7091,7 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
         const char* no = std::get<4>(kp) ;
         int ispec = std::get<5>(kp) ;    // when ispec stays the same its a repeated range
         const char* spec = specs[ispec].c_str();
+
         _rr->names.push_back(spec);
 
         int64_t ab = tb - ta ;
@@ -7130,10 +7204,23 @@ inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, const s
 NP::MakeMetaKVS_ranges2
 -------------------------
 
-HMM: with repeated keys which currently happens with multi-launch
-this code is unaware of that and just acts on the timestamp of
-the first key found. It would be more meaningful to find all the ranges
-and sum them, with reporting on how many were summed.
+Arguments:
+
+* keys : eg labels of code locations
+* tt   : eg int64_t timestamps when code locations reached
+* ranges : eg sreport::RANGES with wildcarded range specifiers
+
+
+Processing:
+
+1. Resolve_ranges : expand the wildcarded ranges specifier into a simple *specs* vector of triplet strings without wildcards eg::
+
+   A000_QSim__simulate_HEAD:A000_QSim__simulate_PREL:upload_genstep
+
+2. create *rr* array tabulating the ranges with MakeMetaKVS_ranges2_table and return that
+
+
+NB *specs* define the configured ranges to look for in the keys.
 
 **/
 

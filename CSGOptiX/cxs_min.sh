@@ -9,10 +9,14 @@ Uses ~oneline main executable CSGOptiXSMTest::
 
 Usage::
 
-    ~/o/cxs_min.sh
-    ~/o/cxs_min.sh info
-    ~/o/cxs_min.sh run       ## create SEvt
-    ~/o/cxs_min.sh report    ## summarize SEvt metadata
+    cxs_min.sh
+    cxs_min.sh info
+    cxs_min.sh run       ## create SEvt
+    cxs_min.sh report    ## summarize SEvt metadata
+
+Control report output::
+
+    sreport__CONFIG=subcount cxs_min.sh report
 
 
 
