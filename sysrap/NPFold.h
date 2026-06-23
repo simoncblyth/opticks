@@ -2512,9 +2512,9 @@ inline int NPFold::save_verbose(const char* base_)  // not const as calls _save
     const char* base = U::Resolve(base_);
     std::cerr
         << "NPFold::save(\"" << ( base_ ? base_ : "-" ) << "\")"
-        << std::endl
-        << " resolved to  [" << ( base ? base : "ERR-FAILED-TO-RESOLVE-TOKENS" ) << "]"
-        << std::endl
+        << " : "
+        << "[" << ( base ? base : "ERR-FAILED-TO-RESOLVE-TOKENS" ) << "]"
+        << "\n"
         ;
     if(base == nullptr) return 1 ;
     return _save(base) ;
@@ -3280,11 +3280,11 @@ inline NP* NPFold::subcount( const char* prefix ) const
 
 
 /**
-NPFold::submeta - creates metadata array extracted from NPFold_meta.txt from multiple folders 
+NPFold::submeta - creates metadata array extracted from NPFold_meta.txt from multiple folders
 -----------------------------------------------------------------------------------------------
 
 Effectively analyses eg A000/NPFold_meta.txt, A001/NPFold_meta.txt, ... from num_sub folders
-returning an array shaped (num_sub, num_okey) with metadata values from each folder. 
+returning an array shaped (num_sub, num_okey) with metadata values from each folder.
 
 1. find subfolders with prefix eg "//A"
 2. collect metadata (k,v) pairs with common values for all subs into ckey, cval and other keys with mixed values into okey
@@ -3313,7 +3313,7 @@ inline NP* NPFold::submeta(const char* prefix, const char* column_key ) const
     SubCommonKV(okey, ckey, cval, subs );
     assert( ckey.size() == cval.size() );
     bool dump_common = level > 0 ;
-    if(dump_common) std::cout 
+    if(dump_common) std::cout
         << "NPFold::submeta"
         << " [" << _NPFold__submeta_level << "] "
         << " level " << level
@@ -3837,6 +3837,10 @@ NPFold::compare_subarrays
 2. look for "subcount" summary arrays in the two folders,
    "subcount" sumaries contain array counts from multiple folders
 
+Usage from sreport::desc_substamp::
+
+    substamp->compare_subarrays_report<double, int64_t>( "delta_substamp", "a", "b" )
+
 
 **/
 
@@ -3872,26 +3876,35 @@ NP* NPFold::compare_subarrays(const char* key, const char* asym, const char* bsy
        << " boa " << ( boa ? "YES" : "NO " )
        << "\n"
        << ( braces ? "-[NPFold::compare_subarray.a_subcount\n" : "" )
-       << ( a_subcount ? a_subcount->descTable<int>(8,"a_subcount") : "-\n" )
+       << ( a_subcount && a_subcount->num_dim() == 2 ? a_subcount->descTable<int>(8,"a_subcount") : "-\n" )
        << ( braces ? "-]NPFold::compare_subarray.a_subcount\n" : "" )
        << "\n"
        << ( braces ? "-[NPFold::compare_subarray.b_subcount\n" : "" )
-       << ( b_subcount ? b_subcount->descTable<int>(8,"b_subcount") : "-\n" )
+       << ( b_subcount && b_subcount->num_dim() == 2 ? b_subcount->descTable<int>(8,"b_subcount") : "-\n" )
        << ( braces ? "-]NPFold::compare_subarray.b_subcount\n" : "" )
        << ( braces ? "-[NPFold::compare_subarray\n" : "" )
-       << ( a ? a->descTable<T>(8, asym) : "-\n" )
+       << ( a && a->num_dim() == 2 ? a->descTable<T>(8, asym) : "-\n" )
        << ( braces ? "-]NPFold::compare_subarray\n" : "" )
        << ( braces ? "-[NPFold::compare_subarray\n" : "" )
-       << ( b ? b->descTable<T>(8, bsym) : "-\n" )
+       << ( b && b->num_dim() == 2 ? b->descTable<T>(8, bsym) : "-\n" )
        << ( braces ? "-]NPFold::compare_subarray\n" : "" )
        << ( braces ? "-[NPFold::compare_subarray.boa\n" : "" )
-       << ( boa ? boa->descTable<F>(12, "boa") : "-\n" )
+       << ( boa && boa->num_dim() == 2 ? boa->descTable<F>(12, "boa") : "-\n" )
        << ( braces ? "-]NPFold::compare_subarray.boa\n" : "" )
        << "]NPFold::compare_subarray"
        << "\n"
        ;
     return boa ;
 }
+
+/**
+NPFold::compare_subarrays_report
+---------------------------------
+
+This is used from  sreport::desc_substamp
+
+**/
+
 
 template<typename F, typename T>
 std::string NPFold::compare_subarrays_report(const char* key, const char* asym, const char* bsym )

@@ -428,24 +428,32 @@ inline std::string sreport::desc_submeta() const
     const NP* b = submeta ? submeta->get("b") : nullptr ;
 
     std::stringstream ss ;
-    ss << "[sreport.desc_submeta {submeta for profiling info is replaced by *ranges* which just needs SProf.txt - not full SEvt saving} " << std::endl
+    ss << "[sreport.desc_submeta {submeta for profiling info is replaced by *ranges* which just needs SProf.txt - not SEvt NPFold_meta.txt} " << std::endl
        //<< ( submeta ? submeta->desc() : "-" )
        << "\n"
        << " a " << ( a ? a->sstr() : "-" ) << "\n"
        << " b " << ( b ? b->sstr() : "-" ) << "\n"
-       << ( a ? a->descTable<int64_t>(9) : "-" ) << "\n"
-       << ( b ? b->descTable<int64_t>(9) : "-" ) << "\n"
+       << ( a && a->num_dim() == 2 ? a->descTable<int64_t>(9,"submeta.a") : "-" ) << "\n"
+       << ( b && b->num_dim() == 2 ? b->descTable<int64_t>(9,"submeta.b") : "-" ) << "\n"
        << "]sreport.desc_submeta" << std::endl
        ;
     std::string str = ss.str() ;
     return str ;
 }
+
 inline std::string sreport::desc_subcount() const
 {
+    const NP* a = subcount ? subcount->get("a") : nullptr ;
+    const NP* b = subcount ? subcount->get("b") : nullptr ;
+
     std::stringstream ss ;
-    ss << "[sreport.desc_subcount" << std::endl
-       << ( subcount ? subcount->desc() : "-" )
-       << "]sreport.desc_subcount" << std::endl
+    ss << "[sreport.desc_subcount\n"
+       //<< ( subcount ? subcount->desc() : "-" ) << "\n"
+       //<< " a " << ( a ? a->sstr() : "-" ) << "\n"
+       //<< " b " << ( b ? b->sstr() : "-" ) << "\n"
+       << ( a && a->num_dim() == 2 ? a->descTable<int32_t>(9,"subcount.a") : "-" ) << "\n"
+       << ( b && b->num_dim() == 2 ? b->descTable<int32_t>(9,"subcount.b") : "-" ) << "\n"
+       << "]sreport.desc_subcount\n"
        ;
     std::string str = ss.str() ;
     return str ;
@@ -838,7 +846,7 @@ int main(int argc, char** argv)
         sreport_Creator creator(dirp, CONFIG);
         if(_main) std::cout << "]sreport.main : creator " << std::endl ;
         if(_main) std::cout << "[sreport.main : creator.desc " << std::endl ;
-        std::cout << creator.desc() ;
+        if(_main) std::cout << creator.desc() ;
         if(_main) std::cout << "]sreport.main : creator.desc " << std::endl ;
         if(!creator.fold_valid) return 1 ;
 

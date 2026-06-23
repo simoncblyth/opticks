@@ -194,6 +194,7 @@ struct NP
     INT hdr_bytes() const ;
     UINT uhdr_bytes() const ;
 
+    INT num_dim() const ;         // shape.size
     INT num_items() const ;       // shape[0]
     INT num_values() const ;      // all values, product of shape[0]*shape[1]*...
     INT num_itemvalues() const ;  // values after first dimension
@@ -1931,6 +1932,7 @@ inline char     NP::hdr_lastchar() const { return _hdr.length() > 0 ? _hdr[_hdr.
 inline NP::INT  NP::hdr_bytes() const { return _hdr.length() ; }
 inline NP::UINT NP::uhdr_bytes() const { return _hdr.length() ; }
 
+inline NP::INT NP::num_dim() const { return shape.size() ;  }
 inline NP::INT NP::num_items() const { return shape[0] ;  }
 inline NP::INT NP::num_values() const { return NPS::size(shape) ;  }
 inline NP::INT NP::num_itemvalues() const { return NPS::itemsize(shape) ;  }
@@ -2860,7 +2862,7 @@ inline std::string NP::descTable_(int wid,
   ) const
 {
     bool with_column_totals = true ;
-    bool with_timestamp_delta = true ;
+    bool with_timestamp_delta = sizeof(T) == sizeof(int64_t) ;   // timestamps require 8 bytes
     bool row_label_rhs = true ;  // repeat label on the right
 
     std::stringstream ss ;
@@ -2879,7 +2881,7 @@ inline std::string NP::descTable_(int wid,
     if(!skip)
     {
         const T* vv = cvalues<T>() ;
-        T t0 = findMinimumTimestamp<T>() ;
+        T t0 = findMinimumTimestamp<T>() ; // Minimum across all event rows A000 A001 ...
 
         INT ni = shape[0] ;
         INT nj = shape[1] ;
@@ -2898,26 +2900,38 @@ inline std::string NP::descTable_(int wid,
         if(row_labels) U::Summarize( row_smry, row_labels, rwid, row_mode );
         bool with_row_labels = int(row_smry.size()) == ni ;
 
+        if(with_column_labels)
+        {
+            for(int j=0 ; j < nj ; j++) ss
+                << U::Space( with_row_labels && j == 0  ? rwid+1 : 0 )
+                << std::setw(cwid)
+                << column_smry[j]
+                << " "
+                ;
 
-        if(with_column_labels) for(int j=0 ; j < nj ; j++) ss
-            << U::Space( with_row_labels && j == 0  ? rwid+1 : 0 )
-            << std::setw(cwid)
-            << column_smry[j]
-            << ( j < nj -1 ? " " : "\n" )
-            ;
+            if(with_timestamp_delta) ss << std::setw(cwid) << "TS_DELTA" ; // TIMESTAMP DIFF BETWEEN PRIOR TWO TIMESTAMPS
+            ss << "\n" ;
+        }
 
-        std::vector<T> column_totals(nj,0);
+
+        // looks a bit odd collecting timestamps across all rows
+        // until realise the rows //A000 //A001 ... are all from
+        // one executable run - so it make sense to compare
+        // timestamps between them
+
         int num_timestamp = 0 ;
         std::vector<double> timestamps ;
 
+        std::vector<T> column_totals(nj,0);
         for(int i=0 ; i < ni ; i++)
         {
             if(with_row_labels) ss << std::setw(rwid) << row_smry[i] << " " ;
+
             for(int j=0 ; j < nj ; j++)
             {
                 T v = vv[i*nj+j] ;
                 bool timestamp = U::LooksLikeTimestamp<T>(v) ;
-                T pv = timestamp ? v - t0 : v  ;
+                T pv = timestamp ? v - t0 : v  ;  // presented-value
 
                 if(timestamp)
                 {
@@ -2948,17 +2962,27 @@ inline std::string NP::descTable_(int wid,
             }
 
 
-            if(timestamps.size() >= 2 && with_timestamp_delta )
+            if(with_timestamp_delta)
             {
-                T prev_v = timestamps[timestamps.size()-2] ;
-                T last_v = timestamps[timestamps.size()-1] ;
-                T dv = last_v - prev_v ;
-                ss
-                    << std::setw(cwid)
-                    << std::fixed
-                    << std::setprecision(6)
-                    << double(dv)/1000000
-                    ;
+                if(timestamps.size() >= 2 )
+                {
+                    T prev_v = timestamps[timestamps.size()-2] ;
+                    T last_v = timestamps[timestamps.size()-1] ;
+                    T dv = last_v - prev_v ;
+                    ss
+                        << std::setw(cwid)
+                        << std::fixed
+                        << std::setprecision(6)
+                        << double(dv)/1000000
+                        ;
+                }
+                else
+                {
+                    ss
+                        << std::setw(cwid)
+                        << "-"
+                        ;
+                }
             }
 
             if(with_row_labels && row_label_rhs) ss << std::setw(rwid) << row_smry[i] << " " ;
@@ -2967,7 +2991,10 @@ inline std::string NP::descTable_(int wid,
 
         }
 
-        ss << "num_timestamp " << num_timestamp << " auto-offset from t0 " << t0 << std::endl ;
+        if(with_timestamp_delta)
+        {
+            ss << "num_timestamp " << num_timestamp << " auto-offset from t0 " << t0 << std::endl ;
+        }
 
         if(with_column_totals)
         {
@@ -2987,8 +3014,13 @@ inline std::string NP::descTable_(int wid,
         {
             for(int j=0 ; j < nj ; j++)
             {
-                if( strcmp(column_smry[j].c_str(), (*column_labels)[j].c_str()) != 0) ss
+                //bool smry_difference = strcmp(column_smry[j].c_str(), (*column_labels)[j].c_str()) != 0 ;
+                //if(smry_difference) ss  // dont skip columns - its disconcerting
+                ss
                     << ( j == 0 ? "\n" : "" )
+                    << std::setw(2)
+                    << j
+                    << " : "
                     << std::setw(cwid)
                     << column_smry[j]
                     << " : "
