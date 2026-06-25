@@ -522,6 +522,10 @@ set(HEADERS
     SGenstep.h
     sslice.h
 
+    sfilesystem.h
+    sreport.h
+    sreport_Creator.h
+
     SFrameGenstep.hh
 
     SThetaCut.hh
