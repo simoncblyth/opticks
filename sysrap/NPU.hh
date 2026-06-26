@@ -1127,6 +1127,22 @@ inline bool U::IsExecutableSiblingPath(const char* argv0,  const char* dirpath )
     return is_executable_sibling_path ;
 }
 
+/**
+U::SetEnvDefaultExecutableSiblingPath
+-------------------------------------
+
+This is used from sysrap/tests/sreport.cc:main::
+
+     U::SetEnvDefaultExecutableSiblingPath("SREPORT_FOLD", argv0, dirp );
+
+Setting envvar with the provided key to a value such as::
+
+     /data/blyth/opticks/GEOM/J23_1_0_rc3_ok0/CSGOptiXSMTest/ALL0_sreport
+
+The above example has executable name "sreport"
+**/
+
+
 inline int U::SetEnvDefaultExecutableSiblingPath(const char* ekey, char* argv0, const char* dirpath )
 {
     std::string _sibfold = FormExecutableSiblingPath(argv0, dirpath);
