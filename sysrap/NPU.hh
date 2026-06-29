@@ -562,6 +562,13 @@ struct U
     static std::string Summarize_1( const char* label, int wid );
     static std::string Squish( const char* label );
 
+    static void TrimLeftRight(std::string& str);
+    static void TrimLeft(std::string& str) ;
+    static void TrimRight(std::string& str);
+    static std::string ExtractAnno( const char* label_anno );
+
+
+
 
     static void LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX=nullptr );
 
@@ -684,8 +691,8 @@ struct U
     static char* FirstToLastDigit(const char* str);
 
 
-    static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp );
-    static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp );
+    static void GetMetaKVS_(const char* metadata,    VS* keys, VS* vals, VT* stamps, bool only_with_stamp, VS* anno, std::ostream* ss = nullptr );
+    static void GetMetaKVS( const std::string& meta, VS* keys, VS* vals, VT* stamps, bool only_with_stamp, VS* anno, std::ostream* ss = nullptr );
 
     static void KeyIndices( std::vector<int>& indices, const std::vector<std::string>& keys, const char* key );
     static int KeyIndex( const std::vector<std::string>& keys, const char* key );
@@ -1416,14 +1423,34 @@ inline std::string U::Summarize_0( const char* label, int wid )  // static
     return str ;
 }
 
-inline std::string U::Summarize_1( const char* label, int wid )  // static
+
+
+inline std::string U::Summarize_1( const char* label_anno, int wid )  // static
 {
-    int len = strlen(label) ;
-    std::string str ;
+    std::vector<std::string> top_elem ;
+    U::Split( label_anno, '#', top_elem );
+
+    size_t num_top_elem = top_elem.size();
+    assert( num_top_elem == 1 || num_top_elem == 2 );
+
+    const char* label = num_top_elem > 0 ? top_elem[0].c_str() : nullptr ;
+
+#ifdef NPU_ANNO_DEBUG
+    const char* anno  = num_top_elem > 1 ? top_elem[1].c_str() : nullptr ;
+    std::cout
+       << "U::Summarize_1"
+       << " label[" << ( label ? label : "-" ) << "]"
+       << "  anno[" << ( anno ?  anno  : "-" ) << "]"
+       << "\n"
+       ;
+#endif
 
     std::vector<std::string> elem ;
     U::Split( label, ':', elem );
     size_t num_elem = elem.size();
+
+    int len = strlen(label) ;
+    std::string str ;
 
     if( num_elem == 3 )
     {
@@ -1465,6 +1492,61 @@ inline std::string U::Squish( const char* label ) // static
     std::string str = ss.str();
     return str ;
 }
+
+
+
+
+inline void U::TrimLeftRight(std::string& str)
+{
+    TrimLeft(str);
+    TrimRight(str);
+}
+
+inline void U::TrimLeft(std::string& str)
+{
+    size_t start = str.find_first_not_of(" \t\n\r\f\v");
+    if (start != std::string::npos) {
+        str.erase(0, start);
+    } else {
+        str.clear(); // String is entirely whitespace
+    }
+}
+
+inline void U::TrimRight(std::string& str)
+{
+    size_t end = str.find_last_not_of(" \t\n\r\f\v");
+    if (end != std::string::npos) {
+        str.erase(end + 1);
+    } else {
+        str.clear(); // String is entirely whitespace
+    }
+}
+
+inline std::string U::ExtractAnno( const char* label_anno )  // static
+{
+    std::vector<std::string> top_elem ;
+    U::Split( label_anno, '#', top_elem );
+
+    size_t num_top_elem = top_elem.size();
+    assert( num_top_elem == 1 || num_top_elem == 2 );
+
+    const char* _anno  = num_top_elem > 1 ? top_elem[1].c_str() : "" ;
+
+    std::string anno = _anno ;
+    TrimLeftRight(anno);
+    return anno ;
+}
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
@@ -2081,6 +2163,9 @@ the first has 16 digits, eg::
     1111111111111111,2222,3333
     1234567890123456,2222,3333
 
+To simplify handlings lines with annotation, relax the
+test by making it ignore blank chars.
+
 **/
 
 inline bool U::LooksLikeProfileTriplet(const char* str) // static
@@ -2093,8 +2178,10 @@ inline bool U::LooksLikeProfileTriplet(const char* str) // static
     for(int i=0 ; i < len ; i++ )
     {
         char c = str[i] ;
+        bool is_blank = c == ' ' ;
         bool is_digit = c >= '0' && c <= '9' ;
         bool is_delim = c == ',' ;
+        if(is_blank) continue ;  // ignore blanks
         if(!is_digit) count_non_digit += 1 ;
         if(count_delim == 0 && is_digit ) first_field_digits += 1 ;
         if(is_delim) count_delim += 1 ;
@@ -2263,38 +2350,102 @@ inline void U::GetMetaKVS_(
     std::vector<std::string>* keys,
     std::vector<std::string>* vals,
     std::vector<int64_t>* stamps,
-    bool only_with_stamp ) // static
+    bool only_with_stamp,
+    std::vector<std::string>* anno,
+    std::ostream* oo
+         ) // static
 {
     if(metadata == nullptr) return ;
     std::stringstream ss;
     ss.str(metadata);
-    std::string s;
-    char delim = ':' ;
+    std::string str;
 
-    while (std::getline(ss, s))
+    char delim0 = ':' ;
+    char delim1 = '#' ;
+
+    while (std::getline(ss, str))
     {
-        size_t pos = s.find(delim);
-        if( pos != std::string::npos )
-        {
-            std::string _k = s.substr(0, pos);
-            std::string _v = s.substr(pos+1);
-            const char* k = _k.c_str();
-            const char* v = _v.c_str();
-            bool disqualify_key = strlen(k) > 0 && k[0] == '_' ;
-            bool looks_like_stamp = U::LooksLikeStampInt(v);
-            bool looks_like_prof  = U::LooksLikeProfileTriplet(v);
-            int64_t t = 0 ;
-            if(looks_like_stamp) t = U::To<int64_t>(v) ;
-            if(looks_like_prof)  t = strtoll(v, nullptr, 10);
-            bool select = only_with_stamp ? ( t > 0 && !disqualify_key )  : true ;
-            if(!select) continue ;
+        size_t pos0 = str.find(delim0);
+        size_t pos1 = str.find(delim1);
+        if( pos0 == std::string::npos ) continue ;
 
-            if(keys) keys->push_back(k);
-            if(vals) vals->push_back(v);
-            if(stamps) stamps->push_back(t);
+        bool with_hash  = pos1 != std::string::npos ;
+
+        std::string _k = str.substr(0, pos0);
+
+        // Value: Between ':' and '#' (if '#' exists), otherwise everything after ':'
+        // this annotation aware value handling fixes bug whereby lines with annotation
+        // are skipped for only_with_stamp because the time was giving zero
+        std::string _v = with_hash ? str.substr(pos0+1, pos1-pos0-1) : str.substr(pos0+1);
+
+
+        std::string _a = "";
+        if (with_hash)
+        {
+            // Check if there is a space after the '#' to safely skip 2 characters, otherwise skip 1
+            size_t skip = (pos1 + 1 < str.length() && str[pos1 + 1] == ' ') ? 2 : 1;
+            _a = str.substr(pos1 + skip);
         }
+
+        const char* k = _k.c_str();
+        const char* v = _v.c_str();
+        const char* a = _a.c_str();  // mostly blank
+
+        bool disqualify_key = strlen(k) > 0 && k[0] == '_' ;
+        bool looks_like_stamp = U::LooksLikeStampInt(v);
+        bool looks_like_prof  = U::LooksLikeProfileTriplet(v);
+        int64_t t = 0 ;
+        if(looks_like_stamp) t = U::To<int64_t>(v) ;
+        if(looks_like_prof)  t = strtoll(v, nullptr, 10);
+
+
+        bool select = only_with_stamp ? ( t > 0 && !disqualify_key )  : true ;
+
+        if(oo) (*oo)
+            << "U::GetMetaKVS_ str[" << str << "]"
+            << " v.looks_like_prof " << ( looks_like_prof ? "YES" : "NO " )
+            << " with_hash " << ( with_hash ? "YES" : "NO " )
+            << " select " << ( select ? "YES" : "NO " )
+            << " k [" << ( k ? k : "-" ) << "]"
+            << " v [" << ( v ? v : "-" ) << "]"
+            << " a [" << ( a ? a : "-" ) << "]"
+            << " t " << t
+            << "\n"
+            ;
+
+        if(!select) continue ;
+
+        if(keys) keys->push_back(k);
+        if(vals) vals->push_back(v);
+        if(stamps) stamps->push_back(t);
+        if(anno) anno->push_back(a);
     }
+
+#ifdef NPU_DEBUG_ANNO
+    if(oo && anno)
+    {
+        size_t num_anno = anno->size();
+        for(size_t i = 0 ; i < num_anno ; i++) (*oo)
+            << "U::GetMetaKVS_.tail "
+            << " i " << std::setw(3) << i
+            << " anno [" << (*anno)[i] << "]"
+            << "\n"
+            ;
+
+    }
+#endif
+
+
 }
+
+
+
+
+
+
+
+
+
 
 /**
 U::GetMetaKVS (formerly NP::GetMetaKVS)
@@ -2303,10 +2454,17 @@ U::GetMetaKVS (formerly NP::GetMetaKVS)
 **/
 
 
-inline void U::GetMetaKVS( const std::string& meta, std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp  )
+inline void U::GetMetaKVS(
+    const std::string& meta,
+    std::vector<std::string>* keys,
+    std::vector<std::string>* vals,
+    std::vector<int64_t>* stamps,
+    bool only_with_stamp,
+    std::vector<std::string>* anno,
+    std::ostream* ss  )
 {
     const char* metadata = meta.empty() ? nullptr : meta.c_str() ;
-    return GetMetaKVS_( metadata, keys, vals, stamps, only_with_stamp );
+    return GetMetaKVS_( metadata, keys, vals, stamps, only_with_stamp, anno, ss );
 }
 
 

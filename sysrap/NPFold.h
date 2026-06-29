@@ -392,7 +392,14 @@ public:
     std::string desc(int depth) const ;
 
     std::string descMetaKVS() const ;
-    void getMetaKVS(std::vector<std::string>* keys, std::vector<std::string>* vals, std::vector<int64_t>* stamps, bool only_with_stamp ) const ;
+    void getMetaKVS(
+        std::vector<std::string>* keys,
+        std::vector<std::string>* vals,
+        std::vector<int64_t>* stamps,
+        bool only_with_stamp,
+        std::vector<std::string>* anno
+        ) const ;
+
     int  getMetaNumStamp() const ;
 
     std::string descMetaKV() const ;
@@ -2960,9 +2967,11 @@ inline void NPFold::getMetaKVS(
     std::vector<std::string>* keys,
     std::vector<std::string>* vals,
     std::vector<int64_t>* stamps,
-    bool only_with_stamp ) const
+    bool only_with_stamp,
+    std::vector<std::string>* anno
+    ) const
 {
-    U::GetMetaKVS(meta, keys, vals, stamps, only_with_stamp );
+    U::GetMetaKVS(meta, keys, vals, stamps, only_with_stamp, anno );
 }
 
 
@@ -2977,7 +2986,8 @@ inline int NPFold::getMetaNumStamp() const
     std::vector<std::string> keys ;
     std::vector<int64_t>   stamps ;
     bool only_with_stamp = true ;
-    getMetaKVS(&keys, nullptr, &stamps, only_with_stamp );
+
+    getMetaKVS(&keys, nullptr, &stamps, only_with_stamp, nullptr );
     assert( keys.size() == stamps.size() );
     int count = 0 ;
     for(int i=0 ; i < int(keys.size()) ; i++) count += stamps[i] == 0 ? 0 : 1 ;
@@ -3499,7 +3509,7 @@ inline NPFold* NPFold::substamp(const char* prefix, const char* keyname) const
 
         // grab keys and stamps from the sub meta string
         bool only_with_stamps = true ;
-        sub->getMetaKVS(&keys, nullptr, &stamps, only_with_stamps );
+        sub->getMetaKVS(&keys, nullptr, &stamps, only_with_stamps, nullptr );
 
         int num_stamp = stamps.size() ;
         bool consistent_num_stamp = num_stamp == nj ;

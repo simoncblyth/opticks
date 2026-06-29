@@ -557,17 +557,39 @@ struct NP
         const std::vector<std::string>& specs,
         const std::vector<std::string>& keys,
         const std::vector<int64_t>& tt,
+        const std::vector<std::string>& anno,
         std::ostream* ss=nullptr ) ;
 
-    static NP* MakeMetaKVS_ranges(  const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss=nullptr );
-    static NP* MakeMetaKVS_ranges2( const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss=nullptr );
+    static NP* MakeMetaKVS_ranges(
+        const std::vector<std::string>& keys,
+        const std::vector<int64_t>& tt,
+        const std::vector<std::string>& anno,
+        const char* ranges_,
+        std::ostream* ss=nullptr );
+
+    static NP* MakeMetaKVS_ranges2(
+        const std::vector<std::string>& keys,
+        const std::vector<int64_t>& tt,
+        const std::vector<std::string>& anno,
+        const char* ranges_,
+        std::ostream* ss=nullptr );
 
 
 
     static std::string DescMetaKVS_kvs(      const std::vector<std::string>& keys, const std::vector<std::string>& vals, const std::vector<int64_t>& tt );
     static std::string DescMetaKVS_juncture( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* juncture_ );
-    static std::string DescMetaKVS_ranges(   const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) ;
-    static std::string DescMetaKVS_ranges2(  const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ ) ;
+
+    static std::string DescMetaKVS_ranges(
+        const std::vector<std::string>& keys,
+        std::vector<int64_t>& tt,
+        const std::vector<std::string>& anno,
+        const char* ranges_ ) ;
+
+    static std::string DescMetaKVS_ranges2(
+        const std::vector<std::string>& keys,
+        std::vector<int64_t>& tt,
+        const std::vector<std::string>& anno,
+        const char* ranges_ ) ;
 
     static std::string DescMetaKVS(const std::string& meta, const char* juncture = nullptr, const char* ranges=nullptr );
     std::string descMetaKVS(const char* juncture=nullptr, const char* ranges=nullptr) const ;
@@ -6728,13 +6750,14 @@ inline NP* NP::MakeMetaKVS_ranges(const std::string& meta_, const char* ranges_ 
 {
     std::vector<std::string> keys ;
     std::vector<std::string> vals ;
+    std::vector<std::string> anno ;
     std::vector<int64_t> tt ;
     bool only_with_stamp = true ;
-    U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp );
+    U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp, &anno );
     assert( keys.size() == vals.size() );
     assert( keys.size() == tt.size() );
-    assert( tt.size() == keys.size() );
-    return MakeMetaKVS_ranges(keys, tt, ranges_ , ss );
+    assert( keys.size() == anno.size() );
+    return MakeMetaKVS_ranges(keys, tt, anno, ranges_ , ss );
 }
 
 
@@ -6762,12 +6785,28 @@ inline NP* NP::MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_
 {
     std::vector<std::string> keys ;
     std::vector<std::string> vals ;
+    std::vector<std::string> anno ;
     std::vector<int64_t> tt ;
     bool only_with_stamp = true ;
-    U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp );
+
+    bool debug_GetMetaKVS = false ;
+    std::ostream* uss = debug_GetMetaKVS ? ss : nullptr ;
+
+    U::GetMetaKVS(meta_, &keys, &vals, &tt, only_with_stamp, &anno, uss );
     assert( keys.size() == vals.size() );
     assert( keys.size() == tt.size() );
-    return MakeMetaKVS_ranges2(keys, tt, ranges_ , ss );
+    assert( keys.size() == anno.size() );
+
+    NP* ranges2 = MakeMetaKVS_ranges2(keys, tt, anno, ranges_ , ss );
+
+    if(ss) (*ss)
+        << "[NP::MakeMetaKVS_ranges2\n"
+        << " ranges2 " << ( ranges2 ? ranges2->sstr() : "-" )
+        << "]NP::MakeMetaKVS_ranges2\n"
+        << "\n"
+        ;
+
+    return ranges2 ;
 }
 
 
@@ -6823,12 +6862,14 @@ inline void NP::Resolve_ranges( std::vector<std::string>& specs, const std::vect
 
     if(ss) ss->imbue(std::locale("")) ; // commas for thousands
 
+#ifdef NP_ANNO_DEBUG
     if(ss) (*ss)
        << "[NP::Resolve_ranges\n"
        << " num_keys :" << num_keys
        << " num_ranges :" << num_ranges
        << std::endl
        ;
+#endif
 
     // generate specs of wildcard resolved ranges
 
@@ -7034,12 +7075,43 @@ ib
 
 **/
 
-inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs, const std::vector<std::string>& keys, const std::vector<int64_t>& tt, std::ostream* ss )
+inline NP* NP::MakeMetaKVS_ranges2_table(
+    const std::vector<std::string>& specs,
+    const std::vector<std::string>& keys, const
+    std::vector<int64_t>& tt,
+    const std::vector<std::string>& anno,
+    std::ostream* ss )
 {
     int num_specs = specs.size();
-    if(ss) (*ss) << "[NP::MakeMetaKVS_ranges2_table num_specs " << num_specs << "\n";
+    int num_keys = keys.size();
+    int num_anno = anno.size();
+    assert( num_keys == num_anno );
+
+    if(ss) (*ss)
+       << "[NP::MakeMetaKVS_ranges2_table"
+       << " num_specs " << num_specs
+       << " num_keys " << num_keys
+       << " num_anno " << num_anno
+       << "\n"
+       << " (specs correspond to ranges - so will be smaller than keys which should be same as anno) "
+       << "\n"
+       ;
+
 
     using KP = std::tuple<int,int,int64_t,int64_t,const char*, int> ;
+
+#ifdef NP_ANNO_DEBUG
+    for(int k=0 ; k < num_keys ; k++)
+    {
+        if(ss) (*ss)
+            << "-ranges2_table "
+            << " k " << std::setw(3) << k
+            << " key " << std::setw(30) << keys[k]
+            << " anno [" << anno[k] << "]"
+            << "\n"
+            ;
+    }
+#endif
 
     std::vector<KP> kpp ;
 
@@ -7063,6 +7135,21 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
 
         int na = iia.size();
         int nb = iib.size();
+
+#ifdef NP_ANNO_DEBUG
+        int xa = na == 1 ? iia[0] : -1 ;
+        int xb = nb == 1 ? iib[0] : -1 ;
+        if(ss) (*ss)
+           << " i " << std::setw(3) << i
+           << " ak " << std::setw(30) << ak
+           << " bk " << std::setw(30) << bk
+           << " na " << std::setw(3) << na
+           << " nb " << std::setw(3) << nb
+           << " xa " << std::setw(3) << xa
+           << " xb " << std::setw(3) << xb
+           << "\n"
+           ;
+#endif
 
         if(na == nb)
         {
@@ -7123,8 +7210,31 @@ inline NP* NP::MakeMetaKVS_ranges2_table( const std::vector<std::string>& specs,
         const char* no = std::get<4>(kp) ;
         int ispec = std::get<5>(kp) ;    // when ispec stays the same its a repeated range
         const char* spec = specs[ispec].c_str();
+        // can collect annotation across the range and append it to the spec
 
-        _rr->names.push_back(spec);
+
+        // collect all annotations at key level within the key range
+        assert( ia <= ib ); // GUESS
+        std::vector<std::string> notes ;
+        for(int k=ia ; k <= ib ; k++)
+        {
+            const char* note = anno[k].c_str();
+            if(note && strlen(note) > 0) notes.push_back(note);
+        }
+
+        std::stringstream nn ;
+        nn << spec ;
+
+        bool add_range_anno = true ;
+        if(add_range_anno)
+        {
+            size_t num_notes = notes.size();
+            if(num_notes > 0) nn << " # " ;
+            for(size_t n=0 ; n < num_notes ; n++ ) nn << notes[n] << ( n < num_notes - 1 ? "," : "" ) ;
+        }
+
+        std::string name = nn.str();
+        _rr->names.push_back(name.c_str());
 
         int64_t ab = tb - ta ;
         abs.push_back( {ispec, ab } );
@@ -7212,7 +7322,12 @@ See ranges2 which attempts to fix that.
 
 **/
 
-inline NP* NP::MakeMetaKVS_ranges( const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss )
+inline NP* NP::MakeMetaKVS_ranges(
+    const std::vector<std::string>& keys,
+    const std::vector<int64_t>& tt,
+    const std::vector<std::string>& anno,
+    const char* ranges_,
+    std::ostream* ss )
 {
     std::vector<std::string> specs ;
     Resolve_ranges(specs, keys, ranges_, ss );
@@ -7256,17 +7371,25 @@ NB *specs* define the configured ranges to look for in the keys.
 
 **/
 
-inline NP* NP::MakeMetaKVS_ranges2( const std::vector<std::string>& keys, const std::vector<int64_t>& tt, const char* ranges_, std::ostream* ss )
+inline NP* NP::MakeMetaKVS_ranges2(
+    const std::vector<std::string>& keys,
+    const std::vector<int64_t>& tt,
+    const std::vector<std::string>& anno,
+    const char* ranges_,
+    std::ostream* ss )
 {
     if(ss) (*ss)
-       << "[NP::MakeMetaKVS_ranges2 num_keys:" << keys.size() << "\n"
+       << "[NP::MakeMetaKVS_ranges2"
+       << " num_keys:" << keys.size()
+       << " num_anno:" << anno.size()
+       << "\n"
        ;
 
     std::vector<std::string> specs ;
     Resolve_ranges(specs, keys, ranges_, ss );
     int num_specs = specs.size();
 
-    NP* rr = MakeMetaKVS_ranges2_table(specs, keys, tt, ss );
+    NP* rr = MakeMetaKVS_ranges2_table(specs, keys, tt, anno, ss );
 
     if(ss) (*ss)
        << "]NP::MakeMetaKVS_ranges2 num_specs:" << num_specs << " rr " << ( rr ? rr->sstr() : "-" ) << "\n"
@@ -7447,7 +7570,11 @@ This does not handle repeated keys, eg from multi-launch running.
 
 **/
 
-inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ )
+inline std::string NP::DescMetaKVS_ranges(
+     const std::vector<std::string>& keys,
+     std::vector<int64_t>& tt,
+     const std::vector<std::string>& anno,
+     const char* ranges_ )
 {
     std::stringstream ss ;
     ss << "[NP::DescMetaKVS_ranges\n"
@@ -7456,7 +7583,7 @@ inline std::string NP::DescMetaKVS_ranges( const std::vector<std::string>& keys,
        << "]ranges\n"
        ;
 
-    NP* a = MakeMetaKVS_ranges(keys, tt, ranges_ , &ss );
+    NP* a = MakeMetaKVS_ranges(keys, tt, anno, ranges_ , &ss );
 
     ss << "]NP::DescMetaKVS_ranges"
        << " a " << ( a ? a->sstr() : "-" )
@@ -7476,7 +7603,11 @@ This attempts to handle repeated keys reasonably, eg from multi-launch running.
 
 **/
 
-inline std::string NP::DescMetaKVS_ranges2( const std::vector<std::string>& keys, std::vector<int64_t>& tt, const char* ranges_ )
+inline std::string NP::DescMetaKVS_ranges2(
+    const std::vector<std::string>& keys,
+    std::vector<int64_t>& tt,
+    const std::vector<std::string>& anno,
+    const char* ranges_ )
 {
     std::stringstream ss ;
     ss << "[NP::DescMetaKVS_ranges2\n"
@@ -7485,7 +7616,7 @@ inline std::string NP::DescMetaKVS_ranges2( const std::vector<std::string>& keys
        << "]ranges\n"
        ;
 
-    NP* a = MakeMetaKVS_ranges2(keys, tt, ranges_ , &ss );
+    NP* a = MakeMetaKVS_ranges2(keys, tt, anno, ranges_ , &ss );
 
     ss << "]NP::DescMetaKVS_ranges2"
        << " a " << ( a ? a->sstr() : "-" )
@@ -7519,22 +7650,23 @@ inline std::string NP::DescMetaKVS(const std::string& meta, const char* juncture
 {
     VS keys ;
     VS vals ;
+    VS anno ;
     VT tt ;
 
     bool only_with_stamp = false ;
 
-    U::GetMetaKVS(meta, &keys, &vals, &tt, only_with_stamp );
+    U::GetMetaKVS(meta, &keys, &vals, &tt, only_with_stamp, &anno );
 
     assert( keys.size() == vals.size() );
     assert( keys.size() == tt.size() );
-    assert( tt.size() == keys.size() );
+    assert( keys.size() == anno.size() );
 
     std::stringstream ss ;
     ss << "[NP::DescMetaKVS only_with_stamp : " << ( only_with_stamp ? "YES" : "NO " ) << "\n" ;
 
     ss << DescMetaKVS_kvs( keys, vals, tt ) ;
     if(juncture_ && strlen(juncture_) > 0 ) ss << DescMetaKVS_juncture(keys, tt, juncture_ );
-    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges2(keys, tt, ranges_ );
+    if(ranges_ && strlen(ranges_) > 0 )     ss << DescMetaKVS_ranges2(keys, tt, anno, ranges_ );
 
     ss << "]NP::DescMetaKVS\n" ;
 

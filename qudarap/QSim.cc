@@ -580,6 +580,7 @@ double QSim::simulate(int eventID, bool reset_)
 
     int64_t t_TAIL  = SProf::Add("QSim__simulate_TAIL");
 
+    SProf::UnsetTag(); // WIP: relocated here - see ~/o/notes/issues/NP_SProf_annotation_parsing_bugfix_reveals_inconsistent_last_event_tagging.rst
     SProf::Write(); // per-event write, so have something in case of crash
 
     LOG_IF(info, SEvt::MINTIME) << "\n"

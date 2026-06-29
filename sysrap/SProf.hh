@@ -7,15 +7,67 @@ Collecting full process lifecycle into SProf is convenient
 BUT: have to avoid only saving at end of run : as with jobs prone to run out of
 memory want to have at least some of the profile data even when the job fails
 
+Users
+------
+
+::
+
+    [lo] A[blyth@localhost opticks]$ opticks-fl SProf.hh
+    ./CSG/CSGFoundry.cc
+    ./CSGOptiX/CSGOptiX.cc
+    ./qudarap/QSim.cc
+    ./sysrap/NPFold.h
+    ./sysrap/CMakeLists.txt
+    ./sysrap/SEvt.cc
+    ./sysrap/SProf.cc
+    ./sysrap/SProf.hh
+    ./sysrap/SProfile.h
+    ./sysrap/tests/sreport.py
+    ./sysrap/tests/SProfTest.cc
+    ./sysrap/SOpticksClientSimulator.h
+    ./sysrap/sreport_Creator.h
+    ./u4/tests/U4HitTest.cc
+
+
+Primary usage parses SProf.txt in sreport_Creator::init_runprof_run_ranges_from_SProf
+--------------------------------------------------------------------------------------
+
+::
+
+    180 inline void sreport_Creator::init_runprof_run_ranges_from_SProf()
+    181 {
+    182     if(_creator) std::cout << "[sreport_Creator::init_runprof_run_ranges_from_SProf\n" ;
+    183
+    184     std::string meta = U::ReadString2_("SProf.txt");
+    185
+    186     report->runprof = NP::MakeMetaKVProfileArray(meta, "Index") ;
+    187     if(_creator) std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << " {runprof effectively: grep Index SProf.txt}" << std::endl ;
+    188
+    189     report->ranges = NP::MakeMetaKVS_ranges2( meta, sreport::RANGES ) ;
+    190     if(_creator) std::cout << "-sreport_Creator::init_SProf.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) << " {ranges provides detailed timing info extracted from SProf.txt}" <<  std::endl ;
+    191
+    192
+    193     report->run     = run ? run->copy() : nullptr ;
+    194     if(_creator) std::cout << "-sreport_Creator::init_SProf.run       :" << ( report->run ? report->run->sstr() : "-" ) << " {run is dummy array just for holding metadata} " << std::endl ;
+    195
+    196     if(_creator) std::cout << "]sreport_Creator::init_runprof_run_ranges_from_SProf\n" ;
+    197 }
+
+
+* HMM: it would be easier to use SProf.hh to read in the file, then could operate from vectors ?
+* also NP could be used directly in SProf to yield the summary index and ranges arrays ?
+
+
 
 C++17 "inline static" header-only SProf.h temptation
 ------------------------------------------------------
 
 It is tempting to go header-only with this, but as the point
 of SProf is to collect labelled timestamps from across
-multiple shared libs. Hence keeping the SProf.cc is preferred
-to avoid having SProf::PROF vector instances in every shared lib
-and then not getting all the timestamps into SProf.txt
+multiple shared libs it is preferable to not use the "inline static"
+headeronly approach as that risks duplication of SProf::PROF vector
+instances in each shared lib - which would complicate getting all
+timestamps into SProf.txt
 
 
 Multiple calls to SProf::Write that overwrite and extend
@@ -147,6 +199,7 @@ struct SYSRAP_API SProf
     static const char* Path();
     static void Write(bool append=false);
     static void Read();
+    static void Read(const char* path);
 
     static std::string Annotation(const char* l0, size_t n0, const char* l1=nullptr, size_t n1=0, const char* l2=nullptr, size_t n2=0);
 };
@@ -311,6 +364,11 @@ inline void SProf::Read()
 {
     const char* path = Path();
     if(!path) return ;
+    Read(path);
+}
+
+inline void SProf::Read(const char* path)
+{
 
     Clear();
     bool dump = false ;

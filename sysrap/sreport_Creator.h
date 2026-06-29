@@ -8,6 +8,11 @@ sreport_Creator
 1. loads folder metadata with NPFold::LoadNoData
 2. instanciates and populates sreport instance
 
+Excercise with eg::
+
+   sreport__CONFIG=creator cxs_min.sh report
+
+
 **/
 
 struct sreport_Creator
@@ -18,7 +23,7 @@ struct sreport_Creator
     bool VERBOSE ;
     const char* dirp ;
     const char* CONFIG ;
-    bool _creator ;
+    bool _creator ;  // export sreport__CONFIG=creator
 
     NPFold*    fold ;
     bool fold_valid ;
@@ -186,11 +191,23 @@ inline void sreport_Creator::init_runprof_run_ranges_from_SProf()
     report->runprof = NP::MakeMetaKVProfileArray(meta, "Index") ;
     if(_creator) std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << " {runprof effectively: grep Index SProf.txt}" << std::endl ;
 
+    std::stringstream ss ;
+    report->ranges = NP::MakeMetaKVS_ranges2( meta, sreport::RANGES, &ss ) ;
+    std::string str = ss.str();
+    if(_creator)
+    {
+         std::cout
+             << "--sreport_Creator::init_runprof_run_ranges_from_SProf.ranges2[\n"
+             << str
+             << "--sreport_Creator::init_runprof_run_ranges_from_SProf.ranges2]\n"
+             ;
+    }
+
+    if(_creator) std::cout << "-sreport_Creator::init_SProf.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) << " {ranges provides detailed timing info extracted from SProf.txt}" <<  std::endl ;
+
+
     report->run     = run ? run->copy() : nullptr ;
     if(_creator) std::cout << "-sreport_Creator::init_SProf.run       :" << ( report->run ? report->run->sstr() : "-" ) << " {run is dummy array just for holding metadata} " << std::endl ;
-
-    report->ranges = run ? NP::MakeMetaKVS_ranges2( meta, sreport::RANGES ) : nullptr ;
-    if(_creator) std::cout << "-sreport_Creator::init_SProf.ranges2   :" << ( report->ranges ?  report->ranges->sstr() : "-" ) << " {ranges provides detailed timing info extracted from SProf.txt}" <<  std::endl ;
 
     if(_creator) std::cout << "]sreport_Creator::init_runprof_run_ranges_from_SProf\n" ;
 }

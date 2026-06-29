@@ -1998,12 +1998,22 @@ void SEvt::endOfEvent(int eventID)
 
         if(is_last_evt_instance)
         {
-            SProf::UnsetTag();
+            // SProf::UnsetTag();
+            //
+            //   LOOKS LIKE ITS TOO SOON TO DROP THE TAG OF LAST EVT HERE
+            //   AS IT CAUSES INCONSISTENT LAST EVENT SProf.hh TAGGING
+            //
+            //   Try relocating UnsetTag to just after QSim__simulate_TAIL
+            //   in attempt for last event tagging to be more consistent with other events
+            //
+            //   see ~/o/notes/issues/NP_SProf_annotation_parsing_bugfix_reveals_inconsistent_last_event_tagging.rst
+            //
+
             SEvt::EndOfRun();   // invokes SaveRunMeta
         }
     }
 
-
+   // tail of SEvt::endOfEvent
 }
 
 void SEvt::reset_counter()
