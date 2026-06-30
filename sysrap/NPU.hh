@@ -30,6 +30,7 @@ other projects together with NP.hh
 #include <locale>
 #include <tuple>
 
+
 #include <string_view>
 #include <map>
 #include <charconv> // std::from_chars
@@ -681,6 +682,9 @@ struct U
 
     static std::string ReadString2_( const char* path_ );
     static const char* ReadString2( const char* path );
+
+    static std::string ReadStringDirect(const char* path);
+
 
     static int64_t Now();
     static bool LooksLikeStampInt(   const char* str);
@@ -2212,6 +2216,35 @@ inline const char* U::ReadString2(const char* path_)  // static
     std::string str = ReadString2_(path_);
     return str.empty() ? nullptr : strdup(str.c_str()) ;
 }
+
+
+/**
+U::ReadStringDirect - avoiding copies
+--------------------------------------
+
+1. opening file at-the-end (std::ios::ate) to quickly get the size
+2. rewind to start (std::ios::beg)
+3. read directly into internal contiguous memory of the string
+
+**/
+
+std::string U::ReadStringDirect(const char* path)  // static
+{
+    std::ifstream ifs(path, std::ios::in | std::ios::binary | std::ios::ate);
+    if (!ifs.is_open()) return {};
+
+    std::ifstream::pos_type fileSize = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+
+    std::string str;
+    str.resize(static_cast<size_t>(fileSize));
+
+    ifs.read(str.data(), fileSize);
+
+    return str;
+}
+
+
 
 
 inline int64_t U::Now() // static

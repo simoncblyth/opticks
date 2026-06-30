@@ -23,6 +23,7 @@ Find the header::
 
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <stdio.h>
 #include <chrono>
 #include <sqlite3.h>
@@ -48,6 +49,7 @@ struct NSQLiteStmt
     ~NSQLiteStmt() { sqlite3_finalize(stmt); }
 
     void bind_param(int index, int val) { sqlite3_bind_int(stmt, index, val); }
+    void bind_param(int index, int64_t val) {       sqlite3_bind_int64(stmt, index, val); }
     void bind_param(int index, sqlite3_int64 val) { sqlite3_bind_int64(stmt, index, val); }
     void bind_param(int index, const char* val) { sqlite3_bind_text(stmt, index, val, -1, SQLITE_TRANSIENT); }
     void bind_param(int index, const std::string& val) { sqlite3_bind_text(stmt, index, val.c_str(), -1, SQLITE_TRANSIENT); }
@@ -99,6 +101,7 @@ struct NSQLite
     void queryColumns(const char* sql);
 
     static int callback(void *data, int count, char **argv, char **columnNames);
+    static std::string ReadStringDirect(const char* path);
 };
 
 inline int NSQLite::callback(void *data, int count, char **argv, char **columnNames) // static
@@ -107,6 +110,27 @@ inline int NSQLite::callback(void *data, int count, char **argv, char **columnNa
    printf("\n");
    return 0;
 }
+
+std::string NSQLite::ReadStringDirect(const char* path)  // static
+{
+    std::ifstream ifs(path, std::ios::in | std::ios::binary | std::ios::ate);
+    if (!ifs.is_open()) return {};
+
+    std::ifstream::pos_type fileSize = ifs.tellg();
+    ifs.seekg(0, std::ios::beg);
+
+    std::string str;
+    str.resize(static_cast<size_t>(fileSize));
+
+    ifs.read(str.data(), fileSize);
+
+    return str;
+}
+
+
+/**
+TODO: try using ":memory:" for filename when testing - for an in memory DB
+**/
 
 
 inline NSQLite::NSQLite(const char* filename)
