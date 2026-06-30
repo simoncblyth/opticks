@@ -46,6 +46,7 @@ but the headers are also copied into opticks/sysrap.
 #include <limits>
 #include <random>
 #include <map>
+#include <set>
 #include <functional>
 #include <locale>
 #include <optional>
@@ -313,17 +314,18 @@ struct NP
 
 
     template<typename T>
-    std::string descTable(int wid=7, const char* tag="") const ;
+    std::string descTable(int wid=7, const char* tag="", bool do_timestamp_delta = false ) const ;
 
-    template<typename T>
-    T findMinimumTimestamp() const ;
+    template<typename T> T findMinimumTimestamp() const ;
+    template<typename T> T findMaximumTimestamp() const ;
 
     template<typename T>
     std::string descTable_(
        int wid=7,
        const std::vector<std::string>* column_labels=nullptr,
        const std::vector<std::string>* row_labels=nullptr,
-       const char* tag=""
+       const char* tag="",
+       bool do_timestamp_delta = false
        ) const ;
 
     static NP* MakeLike(  const NP* src);
@@ -542,6 +544,8 @@ struct NP
 
     static NP* MakeMetaKVS_ranges( const std::string& meta_, const char* ranges_, std::ostream* ss=nullptr );
     static NP* MakeMetaKVS_ranges2(const std::string& meta_, const char* ranges_, std::ostream* ss=nullptr );
+    static inline NP* Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* ss=nullptr );
+
 
     static void Resolve_ranges( std::vector<std::string>& specs, const std::vector<std::string>& keys, const char* ranges_, std::ostream* ss=nullptr );
     static void TimeOrder_ranges( std::vector<int>& spec_order, const std::vector<std::string>& specs, const std::vector<std::string>& keys, const std::vector<int64_t>& tt, std::ostream* ss=nullptr );
@@ -2844,9 +2848,9 @@ NP::descTable
 **/
 
 template<typename T>
-inline std::string NP::descTable(int wid, const char* tag) const
+inline std::string NP::descTable(int wid, const char* tag, bool do_timestamp_delta ) const
 {
-    return descTable_<T>(wid, labels, &names, tag );
+    return descTable_<T>(wid, labels, &names, tag, do_timestamp_delta  );
 }
 
 
@@ -2857,17 +2861,43 @@ inline T NP::findMinimumTimestamp() const
     const T* vv = cvalues<T>() ;
 
     T MAX = std::numeric_limits<T>::max();
-    T t0 = MAX ;
+    T tmin = MAX ;
 
     INT nv = num_values() ;
     for(INT i=0 ; i < nv ; i++)
     {
         T t = vv[i] ;
         if(!U::LooksLikeTimestamp<T>(t)) continue ;
-        if( t < t0 ) t0 = t ;
+        if( t < tmin ) tmin = t ;
     }
-    return t0 == MAX ? 0 : t0 ;
+    return tmin == MAX ? 0 : tmin ;
 }
+
+template<typename T>
+inline T NP::findMaximumTimestamp() const
+{
+    const T* vv = cvalues<T>() ;
+
+    T MIN = std::numeric_limits<T>::min();
+    T tmax = MIN ;
+
+    INT nv = num_values() ;
+    for(INT i=0 ; i < nv ; i++)
+    {
+        T t = vv[i] ;
+        if(!U::LooksLikeTimestamp<T>(t)) continue ;
+        if( t > tmax ) tmax = t ;
+    }
+    return tmax == MIN ? 0 : tmax ;
+}
+
+
+
+
+
+
+
+
 
 
 /**
@@ -2880,7 +2910,8 @@ template<typename T>
 inline std::string NP::descTable_(int wid,
     const std::vector<std::string>* column_labels,
     const std::vector<std::string>* row_labels,
-    const char* tag
+    const char* tag,
+    bool do_timestamp_delta
   ) const
 {
     bool with_column_totals = true ;
@@ -2888,7 +2919,7 @@ inline std::string NP::descTable_(int wid,
     bool row_label_rhs = true ;  // repeat label on the right
 
     std::stringstream ss ;
-    ss << "[NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << sstr() << std::endl ;
+    ss << "[NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << ( do_timestamp_delta ? "DT " : "no-DT " ) << sstr() << std::endl ;
     int ndim = shape.size() ;
     bool skip = ndim != 2 ;
     if(skip)
@@ -2903,7 +2934,8 @@ inline std::string NP::descTable_(int wid,
     if(!skip)
     {
         const T* vv = cvalues<T>() ;
-        T t0 = findMinimumTimestamp<T>() ; // Minimum across all event rows A000 A001 ...
+        T tmin = findMinimumTimestamp<T>() ; // Minimum across entire array
+        T tmax = findMaximumTimestamp<T>() ; // Maximum across entire array
 
         INT ni = shape[0] ;
         INT nj = shape[1] ;
@@ -2953,7 +2985,7 @@ inline std::string NP::descTable_(int wid,
             {
                 T v = vv[i*nj+j] ;
                 bool timestamp = U::LooksLikeTimestamp<T>(v) ;
-                T pv = timestamp ? v - t0 : v  ;  // presented-value
+                T pv = timestamp && do_timestamp_delta ? v - tmin : v  ;  // presented-value
 
                 if(timestamp)
                 {
@@ -3015,7 +3047,7 @@ inline std::string NP::descTable_(int wid,
 
         if(with_timestamp_delta)
         {
-            ss << "num_timestamp " << num_timestamp << " auto-offset from t0 " << t0 << std::endl ;
+            ss << "num_timestamp " << num_timestamp << " auto-offset from tmin " << tmin << " " << U::Format(tmin) << std::endl ;
         }
 
         if(with_column_totals)
@@ -3066,9 +3098,16 @@ inline std::string NP::descTable_(int wid,
                     ;
             }
         }
-    }
-    ss << "]NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << sstr() << std::endl ;
 
+
+        int64_t delt = tmax - tmin ;
+        ss << " tmin " << std::setw(16) << tmin << " " << U::Format(tmin) << "\n" ;
+        ss << " tmax " << std::setw(16) << tmax << " " << U::Format(tmax) << "\n" ;
+        ss << " delt " << std::setw(16) << delt << " " << U::FormatDT(delt) << "\n" ;
+
+    }
+
+    ss << "]NP::descTable_ {" << ( tag ? tag : "-" ) << "} " << sstr() << std::endl ;
     std::string str = ss.str();
     return str ;
 }
@@ -7397,6 +7436,171 @@ inline NP* NP::MakeMetaKVS_ranges2(
 
     return rr ;
 }
+
+
+
+
+/**
+Summarize_ranges_to_evsmry
+---------------------------
+
+This converts range based array and metadata into
+the evsmry event based array containing summary
+counts and timings.
+
+1. use metadata names to extract event index
+2. handle multi-launch by accumulation to give totals for each event::
+
+   "upload genstep slice" => "upload"
+   "simulate slice" => "simulate"
+   "download slice" => "download"
+
+**/
+
+inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
+{
+    if(oo) (*oo) << "[NP::Summarize_ranges_to_evsmry\n" ;
+
+    assert( ranges->num_dim() == 2 );
+    size_t ni = ranges->shape[0] ;
+    size_t nj = ranges->shape[1] ;
+    assert( nj == 5 );
+
+    const std::vector<std::string>& names = ranges->names ;
+    size_t num_lines = names.size();
+    assert( num_lines == ni );
+
+    std::set<int> unique_index ;
+    for(size_t i=0 ; i < num_lines ; i++ )
+    {
+        const char* line = names[i].c_str();
+        int index = U::ExtractIndexFromPrefix_ADDD(line);
+        if(index > -1) unique_index.insert(index);
+    }
+
+    std::vector<std::string> labels = {
+         "index",
+         "timestamp",
+         "genstep",
+         "photon",
+         "hit",
+         "launch",
+         "dt_upload",
+         "dt_simulate",
+         "dt_download" };
+
+    size_t num_event = unique_index.size();
+    size_t num_field = labels.size() ;
+
+    size_t index_idx = std::find(labels.begin(), labels.end(), "index") - labels.begin() ;
+    size_t timestamp_idx = std::find(labels.begin(), labels.end(), "timestamp") - labels.begin() ;
+    size_t genstep_idx = std::find(labels.begin(), labels.end(), "genstep") - labels.begin() ;
+    size_t photon_idx = std::find(labels.begin(), labels.end(), "photon") - labels.begin() ;
+    size_t hit_idx = std::find(labels.begin(), labels.end(), "hit") - labels.begin() ;
+    size_t launch_idx = std::find(labels.begin(), labels.end(), "launch") - labels.begin() ;
+
+    size_t upload_idx = std::find(labels.begin(), labels.end(), "dt_upload") - labels.begin() ;
+    size_t simulate_idx = std::find(labels.begin(), labels.end(), "dt_simulate") - labels.begin() ;
+    size_t download_idx = std::find(labels.begin(), labels.end(), "dt_download") - labels.begin() ;
+
+    assert( index_idx == 0 );
+    assert( timestamp_idx == 1 );
+
+    assert( genstep_idx == 2 );
+    assert( photon_idx == 3 );
+    assert( hit_idx == 4 );
+
+    assert( launch_idx == 5 );
+
+    assert( upload_idx == 6 );
+    assert( simulate_idx == 7 );
+    assert( download_idx == 8 );
+
+    static const char* UPLOAD = "upload genstep slice";
+    static const char* SIMULATE = "simulate slice";
+    static const char* DOWNLOAD = "download slice";
+
+    static const char* GENSTEP = "numGenstepCollected" ;
+    static const char* PHOTON = "numPhotonCollected" ;
+    static const char* HIT = "numHit" ;
+
+    NP* evsmry = NP::Make<int64_t>(num_event, num_field) ;
+    evsmry->fill<int64_t>(0);
+    evsmry->labels = new std::vector<std::string>(labels);
+    int64_t* ee = evsmry->values<int64_t>();
+
+    const int64_t* rr = ranges->cvalues<int64_t>();
+
+
+    for(size_t i=0 ; i < num_lines ; i++ )
+    {
+        int64_t ta = rr[i*nj + 0];   // microsecond timestamps
+        int64_t tb = rr[i*nj + 1];
+        int64_t dt = rr[i*nj + 2];   // delta microsecond timestamps
+        assert( dt == tb - ta );
+
+        const char* line = names[i].c_str();
+        int evt_index = U::ExtractIndexFromPrefix_ADDD(line);
+        std::string_view brief = U::ExtractElement(line, 2, ':' );
+        std::map<std::string, int64_t> anno = U::ExtractAnnotationMap(line);
+
+        if( evt_index >= 0 )
+        {
+            int64_t& ee_index     = ee[evt_index*num_field + index_idx ];
+            int64_t& ee_timestamp = ee[evt_index*num_field + timestamp_idx ];
+
+            if( ee_timestamp == 0 )
+            {
+                 ee_timestamp = ta ;      // set event timestamp from first line for an index
+                 ee_index = evt_index ;
+            }
+
+            bool collect_time = brief == UPLOAD || brief == SIMULATE || brief == DOWNLOAD ;
+            if(collect_time)
+            {
+                size_t dt_idx = 0 ;
+                if(      brief == UPLOAD   ) dt_idx = upload_idx ;
+                else if( brief == SIMULATE ) dt_idx = simulate_idx ;
+                else if( brief == DOWNLOAD ) dt_idx = download_idx ;
+
+                ee[evt_index*num_field + dt_idx] += dt ;
+                if(brief == SIMULATE) ee[evt_index*num_field + launch_idx] += 1 ; // avoid this being 3
+            }
+
+            int64_t& ee_genstep = ee[evt_index*num_field + genstep_idx ];
+            int64_t& ee_photon  = ee[evt_index*num_field + photon_idx ];
+            int64_t& ee_hit     = ee[evt_index*num_field + hit_idx ];
+
+            if(anno.count(GENSTEP)) ee_genstep += anno[GENSTEP] ;
+            if(anno.count(PHOTON))  ee_photon  += anno[PHOTON] ;
+            if(anno.count(HIT))     ee_hit     += anno[HIT] ;
+        }
+
+        if(oo) (*oo)
+            << std::setw(3) << evt_index
+            << " {" << line << "}"
+            << " {" << brief << "}"
+            << " {" << dt << "}"
+            << " " << U::DescAnnotationMap(anno)
+            << "\n"
+            ;
+    }
+
+    if(oo) (*oo) << "]NP::Summarize_ranges_to_evsmry evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
+    return evsmry ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

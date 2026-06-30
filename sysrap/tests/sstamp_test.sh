@@ -18,7 +18,7 @@ bin=$FOLD/$name
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
-gcc $name.cc -std=c++11 -lstdc++ -I.. -o $bin
+gcc $name.cc -std=c++17 -lstdc++ -I.. -o $bin
 [ $? -ne 0 ] && echo $BASH_SOURCE build error && exit 1 
 
 $bin 

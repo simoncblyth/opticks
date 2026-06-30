@@ -30,6 +30,9 @@ other projects together with NP.hh
 #include <locale>
 #include <tuple>
 
+#include <string_view>
+#include <map>
+#include <charconv> // std::from_chars
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -568,6 +571,14 @@ struct U
     static std::string ExtractAnno( const char* label_anno );
 
 
+    // these are used from to convent ranges array with metadata into the evsmry array with counts and timings
+    static int ExtractIndexFromPrefix_ADDD(const char* line);
+    static std::map<std::string, int64_t> ExtractAnnotationMap(std::string_view line);
+    static std::string                    DescAnnotationMap( const std::map<std::string, int64_t>& annotations);
+    static std::string_view               ExtractElement(std::string_view line, size_t target_index, char delim);
+
+
+
 
 
     static void LineVector( std::vector<std::string>& lines, const char* LINES, const char* PREFIX=nullptr );
@@ -671,14 +682,16 @@ struct U
     static std::string ReadString2_( const char* path_ );
     static const char* ReadString2( const char* path );
 
-    static uint64_t Now();
+    static int64_t Now();
     static bool LooksLikeStampInt(   const char* str);
     template<typename T>
     static bool LooksLikeTimestamp( T value );
 
     static bool LooksLikeProfileTriplet(const char* str);
 
-    static std::string Format(uint64_t t=0, const char* fmt="%FT%T.", int _wsubsec=3 );
+    // eg U::Format(0,"%FT%T",3) : 2026-06-30T16:16:38.506
+    static std::string Format(int64_t t=0, const char* fmt="%FT%T", int _wsubsec=3 );
+    static std::string FormatDT(int64_t dt);
 
     static constexpr const char* LOG_FMT = "%Y-%m-%d %H:%M:%S" ;
     static std::string FormatLog(const char* msg=nullptr);
@@ -1541,6 +1554,100 @@ inline std::string U::ExtractAnno( const char* label_anno )  // static
 
 
 
+inline int U::ExtractIndexFromPrefix_ADDD(const char* name)
+{
+    int index = -1;
+    bool starts_with_ADDD = strlen(name) >= 4 && name[0] == 'A' && std::isdigit(name[1]) && std::isdigit(name[2]) && std::isdigit(name[3]) ;
+    if(starts_with_ADDD) std::from_chars(name + 1, name + 4, index);
+    return index ;
+}
+
+inline std::map<std::string, int64_t> U::ExtractAnnotationMap(std::string_view line)
+{
+    std::map<std::string, int64_t> result;
+
+    // 1. Locate the '#' character
+    size_t hash_pos = line.find('#');
+    if (hash_pos == std::string_view::npos) {
+        return result; // No annotations found
+    }
+
+    // Advance past the '#' and any leading space
+    std::string_view annotations = line.substr(hash_pos + 1);
+    if (!annotations.empty() && annotations[0] == ' ') {
+        annotations.remove_prefix(1);
+    }
+
+    // 2. Tokenize by comma ','
+    size_t start = 0;
+    while (start < annotations.size()) {
+        size_t comma_pos = annotations.find(',', start);
+        std::string_view pair = annotations.substr(start, comma_pos - start);
+
+        // 3. Tokenize the pair by '='
+        size_t eq_pos = pair.find('=');
+        if (eq_pos != std::string_view::npos) {
+            std::string_view key = pair.substr(0, eq_pos);
+            std::string_view value_str = pair.substr(eq_pos + 1);
+
+            // 4. Low-level parse value_str to int64_t
+            int64_t value = 0;
+            auto [ptr, ec] = std::from_chars(value_str.data(), value_str.data() + value_str.size(), value);
+
+            if (ec == std::errc{}) {
+                // Construct string key only when inserting into the map
+                result[std::string(key)] = value;
+            }
+        }
+
+        if (comma_pos == std::string_view::npos) break;
+        start = comma_pos + 1;
+    }
+
+    return result;
+}
+
+inline std::string U::DescAnnotationMap( const std::map<std::string, int64_t>& annotations)
+{
+    std::stringstream ss ;
+    ss << "[Anno " ;
+    for (const auto& [key, value] : annotations) ss << key << ":" << value << " ";
+    ss << "] " ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+// Extracts the N-th colon-delimited element (0-indexed), ignoring everything after '#'
+inline std::string_view U::ExtractElement(std::string_view line, size_t target_index, char delim)
+{
+    // 1. Strip off the '#' annotation block immediately if it exists
+    size_t hash_pos = line.find('#');
+    if (hash_pos != std::string_view::npos) line = line.substr(0, hash_pos);
+
+    // 2. Tokenize by ':' until we reach the target index
+    size_t current_index = 0;
+    size_t start = 0;
+
+    while (start < line.size())
+    {
+        size_t delim_pos = line.find(delim, start);
+        std::string_view element = line.substr(start, delim_pos - start);
+
+        if (current_index == target_index)
+        {
+            // Trim any trailing spaces (common right before a '#')
+            while (!element.empty() && element.back() == ' ') element.remove_suffix(1);
+            return element;
+        }
+
+        if (delim_pos == std::string_view::npos) break;
+        start = delim_pos + 1;
+        current_index++;
+    }
+    return {}; // Return empty view if index is out of bounds
+}
+
+
 
 
 
@@ -2107,7 +2214,7 @@ inline const char* U::ReadString2(const char* path_)  // static
 }
 
 
-inline uint64_t U::Now() // static
+inline int64_t U::Now() // static
 {
     // from opticks/sysrap/sstamp.h
     using Clock = std::chrono::system_clock;
@@ -2215,31 +2322,55 @@ inline std::string U::Log(const char* msg) // static
 
 
 
-inline std::string U::Format(uint64_t t, const char* fmt, int _wsubsec) // static
+inline std::string U::Format(int64_t t, const char* fmt, int wsubsec)
 {
     // from opticks/sysrap/sstamp.h
-    if(t == 0) t = Now() ;
+    if (t == 0) t = Now();
+
     using Clock = std::chrono::system_clock;
-    using Unit  = std::chrono::microseconds  ;
-    std::chrono::time_point<Clock> tp{Unit{t}} ;
+    using Unit  = std::chrono::microseconds;
+    std::chrono::time_point<Clock> tp{Unit{t}};
 
     std::time_t tt = Clock::to_time_t(tp);
+    std::tm* local_tm = std::localtime(&tt);
 
-    std::stringstream ss ;
-    ss << std::put_time(std::localtime(&tt), fmt ) ;
+    // 1. Format the main timestamp into a fast char buffer
+    char time_buf[128];
+    std::strftime(time_buf, sizeof(time_buf), fmt, local_tm);
+    std::string str(time_buf);
 
-    if(_wsubsec == 3 || _wsubsec == 6)
+    // 2. Extract and append subseconds directly without streams
+    if (wsubsec == 3 || wsubsec == 6)
     {
-        // extract the sub second part from the duration since epoch
         auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
-        auto count = subsec.count() ;
-        if( _wsubsec == 3 ) count /= 1000 ;
-        ss << "." << std::setfill('0') << std::setw(_wsubsec) << count ;
-    }
+        int64_t count = subsec.count();
+        if (wsubsec == 3) count /= 1000;
 
-    std::string str = ss.str();
+        // Efficiently append formatted subseconds (e.g., ".042")
+        char sub_buf[16];
+        std::snprintf(sub_buf, sizeof(sub_buf), ".%0*lld", wsubsec, static_cast<long long>(count));
+        str += sub_buf;
+    }
+    return str;
+}
+
+
+inline std::string U::FormatDT(int64_t dt)
+{
+    // present in seconds with 6 decimal places - so can see full microseconds
+    std::stringstream ss ;
+    ss << std::setw(16) << std::setprecision(6) << std::fixed << double(dt)/1000000 ;
+    std::string str = ss.str() ;
     return str ;
 }
+
+
+
+
+
+
+
+
 
 inline std::string U::FormatInt(int64_t t, int wid ) // static
 {

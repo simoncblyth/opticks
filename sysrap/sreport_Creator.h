@@ -1,4 +1,6 @@
 #pragma once
+
+
 #include "sreport.h"
 
 /**
@@ -33,6 +35,8 @@ struct sreport_Creator
     sreport_Creator(  const char* dirp_, const char* CONFIG);
     void init();
     void init_runprof_run_ranges_from_SProf();
+    void init_evsmry_from_ranges();
+
     void init_substamp();
     void init_subprofile();
     void init_submeta();
@@ -108,6 +112,7 @@ inline void sreport_Creator::init()
     if(_creator) std::cout << "[sreport_Creator::init\n" ;
 
     init_runprof_run_ranges_from_SProf();
+    init_evsmry_from_ranges();
 
     init_substamp();
     init_subprofile();
@@ -211,6 +216,34 @@ inline void sreport_Creator::init_runprof_run_ranges_from_SProf()
 
     if(_creator) std::cout << "]sreport_Creator::init_runprof_run_ranges_from_SProf\n" ;
 }
+
+
+
+inline void sreport_Creator::init_evsmry_from_ranges()
+{
+    if(_creator) std::cout << "[sreport_Creator::init_evsmry_from_ranges\n" ;
+
+    std::stringstream ss ;
+    report->evsmry = NP::Summarize_ranges_to_evsmry( report->ranges, &ss );
+    std::string str = ss.str();
+    if(_creator)
+    {
+         std::cout
+             << "-sreport_Creator::init_evsmry_from_ranges.Summarize_ranges_to_evsmry[\n"
+             << str
+             << "-sreport_Creator::init_evsmry_from_ranges.Summarize_ranges_to_evsmry]\n"
+             ;
+    }
+    if(_creator) std::cout << "]sreport_Creator::init_evsmry_from_ranges\n" ;
+}
+
+
+
+
+
+
+
+
 
 /**
 sreport_Creator::init_substamp

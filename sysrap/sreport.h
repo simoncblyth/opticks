@@ -39,6 +39,7 @@ struct sreport
     NP*       run ;       // dummy array that exists just to hold metadata
     NP*       runprof ;   // "prof" would be a better name now : but awkward to change
     NP*       ranges ;    // detailed range timing extracted from SProf.txt
+    NP*       evsmry ;    // evt summary derived from ranges
 
     NPFold*   substamp ;
     NPFold*   subprofile ;
@@ -68,6 +69,8 @@ struct sreport
     std::string desc_run() const ;
     std::string desc_runprof() const ;
     std::string desc_ranges() const ;
+    std::string desc_evsmry() const ;
+
     std::string desc_substamp() const ;
     std::string desc_subprofile() const ;
     std::string desc_submeta() const ;
@@ -82,6 +85,7 @@ inline sreport::sreport()
     run( nullptr ),
     runprof( nullptr ),
     ranges( nullptr ),
+    evsmry( nullptr ),
     substamp( nullptr),
     subprofile( nullptr ),
     submeta( nullptr ),
@@ -95,6 +99,7 @@ inline NPFold* sreport::serialize() const
     smry->add("run", run ) ;
     smry->add("runprof", runprof ) ;
     smry->add("ranges", ranges ) ;
+    smry->add("evsmry", evsmry ) ;
     smry->add_subfold("substamp", substamp ) ;
     smry->add_subfold("subprofile", subprofile ) ;
     smry->add_subfold("submeta", submeta ) ;
@@ -109,6 +114,7 @@ inline NPFold* sreport::serialize_copy() const
     smry->add("run", run->copy() ) ;
     smry->add("runprof", runprof->copy() ) ;
     smry->add("ranges", ranges->copy() ) ;
+    smry->add("evsmry", evsmry->copy() ) ;
 
     smry->add_subfold("substamp", substamp->deepcopy() ) ;
     smry->add_subfold("subprofile", subprofile->deepcopy() ) ;
@@ -124,6 +130,8 @@ inline void sreport::import(const NPFold* smry)
     run = smry->get("run")->copy() ;
     runprof = smry->get("runprof")->copy() ;
     ranges = smry->get("ranges")->copy() ;
+    evsmry = smry->get("evsmry")->copy() ;
+
     substamp = smry->get_subfold("substamp");
     subprofile = smry->get_subfold("subprofile");
     submeta = smry->get_subfold("submeta");
@@ -154,7 +162,7 @@ inline void sreport::save_into_archive(const char* archive_dir) const
 {
     NPFold* smry = serialize_copy();
     long long max_index = FindIndexOfMaxIndexedDirname(archive_dir);
-    long long next_index = max_index + 1 ; 
+    long long next_index = max_index + 1 ;
     std::string indexed_dirname = FormIndexedDirname(next_index);
     smry->save(archive_dir, indexed_dirname.c_str() );
 }
@@ -240,6 +248,7 @@ inline std::string sreport::desc() const
        << ( is_config("run")      ? desc_run() : "" )
        << ( is_config("runprof")  ? desc_runprof() : "" )
        << ( is_config("ranges")   ? desc_ranges()  : "" )
+       << ( is_config("evsmry")   ? desc_evsmry()  : "" )
        << ( is_config("substamp") ? desc_substamp() : "" )
        << ( is_config("submeta")  ? desc_submeta()  : "" )
        << ( is_config("subcount") ? desc_subcount() : "" )
@@ -271,7 +280,7 @@ inline std::string sreport::desc_runprof() const
     ss << "[sreport.desc_prof" << std::endl
        << ( runprof ? runprof->sstr() : "-" ) << std::endl
        << ".sreport.desc_runprof.descTable " << std::endl
-       << ( runprof ? runprof->descTable<int64_t>(17) : "-" ) << std::endl
+       << ( runprof ? runprof->descTable<int64_t>(17,"runprof") : "-" ) << std::endl
        << "]sreport.desc_runprof" << std::endl
        ;
     std::string str = ss.str() ;
@@ -330,12 +339,40 @@ inline std::string sreport::desc_ranges() const
        << ".sreport.desc_ranges.descTable "
        << " ( ta,tb : range begin,end timestamps expressed as seconds from first timestamp, ab: (tb-ta) )"
        << "\n"
-       << ( ranges ? ranges->descTable<int64_t>(17) : "-" ) << std::endl
+       << ( ranges ? ranges->descTable<int64_t>(17,"ranges") : "-" ) << std::endl
        << "]sreport.desc_ranges" << std::endl
        ;
     std::string str = ss.str() ;
     return str ;
 }
+
+
+inline std::string sreport::desc_evsmry() const
+{
+    std::stringstream ss ;
+    ss << "[sreport.desc_evsmry"
+       << " evsmry : " << ( evsmry ? evsmry->sstr() : "-" ) << std::endl
+       << ".sreport.desc_evsmry.descTable "
+       << " ( evsmry contains counts and times derived from ranges )"
+       << "\n"
+       << ( evsmry ? evsmry->descTable<int64_t>(17,"evsmry") : "-" ) << std::endl
+       << "]sreport.desc_evsmry" << std::endl
+       ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
 report::desc_substamp

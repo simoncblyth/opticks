@@ -1,4 +1,12 @@
 #pragma  once
+/**
+sstamp.h
+=========
+
+~/o/sysrap/tests/sstamp_test.sh
+
+
+**/
 
 #include <chrono>
 #include <thread>
@@ -6,13 +14,17 @@
 #include <sstream>
 #include <iomanip>
 #include <cstring>
+#include <ctime>
+#include <cstdio>
+
 
 struct sstamp
 {
     static int64_t Now();
 
     static std::string FormatLog();  // plog style timestamp
-    static std::string Format(int64_t t=0, const char* fmt="%FT%T.", int wsubsec=3);
+    static std::string Format0(int64_t t=0, const char* fmt="%FT%T.", int wsubsec=3);
+    static std::string Format( int64_t t=0, const char* fmt="%FT%T.", int wsubsec=3);
 
     static constexpr const char* LOG_FMT = "%Y-%m-%d %H:%M:%S" ;
     static constexpr const char* DEFAULT_TIME_FMT = "%Y%m%d_%H%M%S_" ;
@@ -56,7 +68,7 @@ wsubsec
 
 **/
 
-inline std::string sstamp::Format(int64_t t, const char* fmt, int wsubsec)
+inline std::string sstamp::Format0(int64_t t, const char* fmt, int wsubsec)
 {
     if(t == 0) t = Now() ;
     using Clock = std::chrono::system_clock;
@@ -79,6 +91,43 @@ inline std::string sstamp::Format(int64_t t, const char* fmt, int wsubsec)
     std::string str = ss.str();
     return str ;
 }
+
+
+inline std::string sstamp::Format(int64_t t, const char* fmt, int wsubsec)
+{
+    if (t == 0) t = Now();
+
+    using Clock = std::chrono::system_clock;
+    using Unit  = std::chrono::microseconds;
+    std::chrono::time_point<Clock> tp{Unit{t}};
+
+    std::time_t tt = Clock::to_time_t(tp);
+    std::tm* local_tm = std::localtime(&tt);
+
+    // 1. Format the main timestamp into a fast char buffer
+    char time_buf[128];
+    std::strftime(time_buf, sizeof(time_buf), fmt, local_tm);
+    std::string str(time_buf);
+
+    // 2. Extract and append subseconds directly without streams
+    if (wsubsec == 3 || wsubsec == 6)
+    {
+        auto subsec = std::chrono::duration_cast<Unit>(tp.time_since_epoch()) % std::chrono::seconds{1};
+        int64_t count = subsec.count();
+        if (wsubsec == 3) count /= 1000;
+
+        // Efficiently append formatted subseconds (e.g., ".042")
+        char sub_buf[16];
+        std::snprintf(sub_buf, sizeof(sub_buf), ".%0*lld", wsubsec, static_cast<long long>(count));
+        str += sub_buf;
+    }
+    return str;
+}
+
+
+
+
+
 
 
 /**
