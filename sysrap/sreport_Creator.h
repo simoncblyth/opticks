@@ -193,8 +193,8 @@ inline void sreport_Creator::init_runprof_run_ranges_from_SProf()
 
     std::string meta = U::ReadString2_("SProf.txt");
 
-    report->runprof = NP::MakeMetaKVProfileArray(meta, "Index") ;
-    if(_creator) std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << " {runprof effectively: grep Index SProf.txt}" << std::endl ;
+    report->runprof = NP::MakeMetaKVProfileArray(meta, "Index") ;  // NB: runprof seems much less featureful than ranges - BUT NEVERTHELESS KEEP RUNPROF AS runprof_meta.txt HOLDS THE FULL SProf.txt
+    if(_creator) std::cout << "-sreport_Creator::init.SProf:runprof   :" << ( report->runprof ? report->runprof->sstr() : "-" ) << " {runprof: grep Index SProf.txt, with full SProf.txt in runprof_meta.txt}" << std::endl ;
 
     std::stringstream ss ;
     report->ranges = NP::MakeMetaKVS_ranges2( meta, sreport::RANGES, &ss ) ;

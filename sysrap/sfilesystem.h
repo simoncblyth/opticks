@@ -17,6 +17,17 @@ sfilesystem.h
 #include <iomanip>
 #include <sstream>
 
+
+#if defined(_WIN32)
+#include <windows.h>
+#elif defined(__APPLE__)
+#include <mach-o/dyld.h>
+#else
+#include <unistd.h> // readlink on Linux
+#endif
+
+
+
 struct sfilesystem
 {
     static bool        all_digits(const char* str_);
@@ -26,6 +37,10 @@ struct sfilesystem
 
     static long long   find_index_of_max_indexed_dirname(const char* container_dir, const char* prefix_);
     static std::string form_indexed_dirname( long long index, const char* prefix, int num_digits=7 );
+
+    static std::string ExecutablePath();
+    static std::string ExecutablePathSibling(const char* name);
+
 };
 
 
@@ -114,4 +129,56 @@ inline std::string sfilesystem::form_indexed_dirname( long long index, const cha
     return str ;
 }
 
+
+
+
+/**
+sfilesystem::ExecutablePath
+----------------------------
+
+returns absolute path of the running executable
+
+**/
+
+std::string sfilesystem::ExecutablePath()
+{
+    namespace fs = std::filesystem;
+
+    char buffer[1024];
+#if defined(_WIN32)
+    GetModuleFileNameA(NULL, buffer, sizeof(buffer));
+    return fs::path(buffer).string() ;
+#elif defined(__APPLE__)
+    uint32_t size = sizeof(buffer);
+    if (_NSGetExecutablePath(buffer, &size) == 0) return fs::path(buffer).string() ;
+#else
+    // Linux standard
+    ssize_t len = readlink("/proc/self/exe", buffer, sizeof(buffer) - 1);
+    if (len != -1) {
+        buffer[len] = '\0';
+        return fs::path(buffer).string() ;
+    }
+#endif
+    return "";
+}
+
+
+/**
+sfilesystem::ExecutablePathSibling
+------------------------------------
+
+returns absolute path of sibling to the executable
+
+**/
+
+std::string sfilesystem::ExecutablePathSibling(const char* sibling_name)
+{
+    std::string _bin = ExecutablePath();
+    if (_bin.empty()) return "";
+
+    namespace fs = std::filesystem;
+    fs::path bin(_bin);
+    fs::path sib = bin.parent_path() / sibling_name  ;
+    return sib.string();
+}
 

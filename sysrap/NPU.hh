@@ -2228,7 +2228,7 @@ U::ReadStringDirect - avoiding copies
 
 **/
 
-std::string U::ReadStringDirect(const char* path)  // static
+inline std::string U::ReadStringDirect(const char* path)  // static
 {
     std::ifstream ifs(path, std::ios::in | std::ios::binary | std::ios::ate);
     if (!ifs.is_open()) return {};

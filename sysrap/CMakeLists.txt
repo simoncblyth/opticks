@@ -81,6 +81,10 @@ set(Custom4_VERBOSE ON)
 find_package(Custom4 CONFIG)
 message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
 
+find_package(SQLite3)
+message(STATUS "${name} SQLite3_FOUND:${SQLite3_FOUND}  " )
+
+
 set(WITH_SLOG YES)
 
 set(SYSRAP_GENERATED_HEADER  "sconfig.h")
@@ -606,7 +610,15 @@ set(RETIRED_HEADERS
 )
 
 
+if(SQLite3_FOUND)
 
+    list(APPEND HEADERS
+
+    NSQLite.h
+    sreportdb.h
+
+    )
+endif()
 
 
 

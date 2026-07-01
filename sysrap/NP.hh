@@ -6433,6 +6433,9 @@ inline std::string NP::get_meta_string(const std::string& meta, const char* key)
 NP::MakeMetaKVProfileArray
 ----------------------------
 
+This is used from sreport_Creator::init_runprof_run_ranges_from_SProf to create the sreport.h
+runprof array from the SProf.txt
+
 ::
 
     (ok) A[blyth@localhost ALL1_Debug_Philox_ref1]$ grep Index SProf.txt
@@ -6713,6 +6716,10 @@ inline void NP::SetMetaKV_(
     assert( keys.size() == vals.size() );
     for(INT i=0 ; i < INT(keys.size()); i++) SetMeta(meta, keys[i].c_str(), vals[i].c_str() );
 }
+
+
+
+
 
 inline void NP::setMetaKV_( const std::vector<std::string>& keys,  const std::vector<std::string>& vals )
 {
@@ -7455,6 +7462,11 @@ counts and timings.
    "simulate slice" => "simulate"
    "download slice" => "download"
 
+Initialization timings need to be stored at run level, but they
+are read from the ranges names coming from SProf.txt
+just like the evsmry info - so store them in evsmry metadata
+for subsequent ingestion into the run table.
+
 **/
 
 inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
@@ -7516,6 +7528,10 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
     assert( simulate_idx == 7 );
     assert( download_idx == 8 );
 
+    static const char* INIT = "init" ;
+    static const char* LOAD_GEOM = "load_geom" ;
+    static const char* UPLOAD_GEOM = "upload_geom" ;
+
     static const char* UPLOAD = "upload genstep slice";
     static const char* SIMULATE = "simulate slice";
     static const char* DOWNLOAD = "download slice";
@@ -7531,6 +7547,7 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
 
     const int64_t* rr = ranges->cvalues<int64_t>();
 
+    std::vector<std::pair<std::string, int64_t>> initialization_dt ;
 
     for(size_t i=0 ; i < num_lines ; i++ )
     {
@@ -7544,10 +7561,18 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
         std::string_view brief = U::ExtractElement(line, 2, ':' );
         std::map<std::string, int64_t> anno = U::ExtractAnnotationMap(line);
 
-        if( evt_index >= 0 )
+        if( evt_index == -1 )
         {
-            int64_t& ee_index     = ee[evt_index*num_field + index_idx ];
-            int64_t& ee_timestamp = ee[evt_index*num_field + timestamp_idx ];
+            if( brief == INIT || brief == LOAD_GEOM || brief == UPLOAD_GEOM)
+            {
+                initialization_dt.push_back({std::string(brief), dt}) ;
+            }
+        }
+        else if( evt_index >= 0 )
+        {
+            int64_t* row = ee + (evt_index * num_field);
+            int64_t& ee_index     = row[index_idx ];
+            int64_t& ee_timestamp = row[timestamp_idx ];
 
             if( ee_timestamp == 0 )
             {
@@ -7562,14 +7587,14 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
                 if(      brief == UPLOAD   ) dt_idx = upload_idx ;
                 else if( brief == SIMULATE ) dt_idx = simulate_idx ;
                 else if( brief == DOWNLOAD ) dt_idx = download_idx ;
+                row[dt_idx] += dt ;
 
-                ee[evt_index*num_field + dt_idx] += dt ;
-                if(brief == SIMULATE) ee[evt_index*num_field + launch_idx] += 1 ; // avoid this being 3
+                if(brief == SIMULATE) row[launch_idx] += 1 ; // avoid this being 3
             }
 
-            int64_t& ee_genstep = ee[evt_index*num_field + genstep_idx ];
-            int64_t& ee_photon  = ee[evt_index*num_field + photon_idx ];
-            int64_t& ee_hit     = ee[evt_index*num_field + hit_idx ];
+            int64_t& ee_genstep = row[genstep_idx ];
+            int64_t& ee_photon  = row[photon_idx ];
+            int64_t& ee_hit     = row[hit_idx ];
 
             if(anno.count(GENSTEP)) ee_genstep += anno[GENSTEP] ;
             if(anno.count(PHOTON))  ee_photon  += anno[PHOTON] ;
@@ -7585,6 +7610,7 @@ inline NP* NP::Summarize_ranges_to_evsmry(const NP* ranges, std::ostream* oo )
             << "\n"
             ;
     }
+    evsmry->set_meta_kv(initialization_dt);
 
     if(oo) (*oo) << "]NP::Summarize_ranges_to_evsmry evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
     return evsmry ;

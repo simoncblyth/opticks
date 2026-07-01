@@ -13,6 +13,8 @@ set(INSTALLED_SCRIPTS
 
    sreport_ab.py
    sreport_ab.sh
+
+   sreportdb.sh
 )
 
 install(PROGRAMS ${INSTALLED_SCRIPTS}   DESTINATION bin)
@@ -206,6 +208,13 @@ set(REPORT_SOURCES
    sreport.cc
 )
 
+set(SQLite3_TEST_SOURCES)
+
+if(SQLite3_FOUND)
+   list(APPEND SQLite3_TEST_SOURCES sreportdb.cc)
+endif()
+
+
 
 
 
@@ -219,8 +228,7 @@ set(BASH_RUN_TEST_SOURCES
 )
 
 
-set(CURL_TEST_SOURCES
-)
+set(CURL_TEST_SOURCES)
 
 
 set(CURL_FOUND NO)
@@ -300,6 +308,30 @@ foreach(SRC ${TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
     add_test(${name}.${TGT} ${TGT})
 endforeach()
+
+
+
+#[=[
+#]=]
+if(SQLite3_FOUND)
+    message(STATUS "Building SQLite dependent tests.")
+    foreach(SRC ${SQLite3_TEST_SOURCES})
+
+        get_filename_component(TGT ${SRC} NAME_WE)
+        add_executable(${TGT} ${SRC})
+        target_link_libraries(${TGT} PRIVATE SysRap SQLite::SQLite3)
+
+        target_include_directories( ${TGT} PRIVATE
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../inc>
+        )
+        install(TARGETS ${TGT} DESTINATION lib)
+    endforeach()
+    install(FILES ../sreportdb.sql DESTINATION lib)
+else()
+    message(STATUS "SQLite3 NOT FOUND - SKIP Building SQLite dependent tests.")
+endif()
+
 
 if(CURL_FOUND)
 foreach(SRC ${CURL_TEST_SOURCES})

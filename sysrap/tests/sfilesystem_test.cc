@@ -6,9 +6,34 @@ sfilesystem_test.cc
 
 **/
 
+#include "ssys.h"
 #include "sfilesystem.h"
 
-int main()
+
+struct sfilesystem_test
+{
+    static int find_index_of_max_indexed_dirname();
+    static int ExecutablePath();
+    static int ExecutablePathSibling();
+    static int Main();
+};
+
+
+inline int sfilesystem_test::Main()
+{
+    const char* TEST = ssys::getenvvar("TEST", "ALL");
+    bool ALL = strcmp(TEST, "ALL") == 0 ;
+    int rc = 0 ;
+
+    if(ALL||0==strcmp(TEST,"find_index_of_max_indexed_dirname")) rc += find_index_of_max_indexed_dirname();
+    if(ALL||0==strcmp(TEST,"ExecutablePath")) rc += ExecutablePath();
+    if(ALL||0==strcmp(TEST,"ExecutablePathSibling")) rc += ExecutablePathSibling();
+
+    return rc ;
+
+}
+
+inline int sfilesystem_test::find_index_of_max_indexed_dirname()
 {
     const char* container = "container_dir" ;
     const char* prefix = "sreport_" ;
@@ -29,4 +54,25 @@ int main()
          ;
 
     return 0;
+}
+
+inline int sfilesystem_test::ExecutablePath()
+{
+    std::string bin = sfilesystem::ExecutablePath();
+    std::cout << " bin " << bin << "\n" ;
+    return 0 ;
+}
+
+inline int sfilesystem_test::ExecutablePathSibling()
+{
+    const char* sibling = "sreportdb.sql" ;
+    std::string sib = sfilesystem::ExecutablePathSibling(sibling);
+    std::cout << " sib " << sib << "\n" ;
+    return 0 ;
+}
+
+
+int main()
+{
+    return sfilesystem_test::Main();
 }
