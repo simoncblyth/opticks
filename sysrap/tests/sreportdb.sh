@@ -10,16 +10,24 @@ EOU
 }
 
 name=sreportdb
-
 bin=$name
-db=/tmp/$name.sqlite3
+
+tmp=/tmp/$USER/opticks
+TMP=${TMP:-$tmp}
+FOLD=$TMP/$name
+mkdir -p $FOLD
+
+db=$FOLD/$name.sqlite3
+
 runfold=/data1/blyth/tmp/GEOM/J26_1_1_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan_first_sreport
+RUNFOLD=${RUNFOLD:-$runfold}
 
 
 defarg="info_run_check"
+allarg="info_clean_run_check_query"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE PWD name bin db sql runfold defarg arg"
+vv="BASH_SOURCE PWD name bin tmp TMP FOLD db runfold RUNFOLD defarg arg allarg"
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
@@ -32,11 +40,15 @@ if [ "${arg/clean}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-   $bin $db $runfold
+   $bin $db $RUNFOLD
    [ $? -ne 0 ] && echo $BASH_SOURCE - run error && exit 2
 fi
 
 if [ "${arg/check}" != "$arg" ]; then
+   echo "select * from opticks_versionset   ;" | sqlite3 -table $db
+   [ $? -ne 0 ] && echo $BASH_SOURCE - check error && exit 2
+   echo "select * from opticks_runs   ;" | sqlite3 -table $db
+   [ $? -ne 0 ] && echo $BASH_SOURCE - check error && exit 2
    echo "select * from opticks_events ;" | sqlite3 -table $db
    [ $? -ne 0 ] && echo $BASH_SOURCE - check error && exit 2
 fi

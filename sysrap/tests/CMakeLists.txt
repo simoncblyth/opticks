@@ -144,7 +144,6 @@ set(TEST_SOURCES
 
    SEvt_Lifecycle_Test.cc
    SEvt__HasInputPhoton_Test.cc
-   SEvt_AddEnvMeta_Test.cc
 
    SNameTest.cc
 
@@ -158,6 +157,7 @@ set(TEST_SOURCES
 
 
    SEvt__createInputGenstep_configuredTest.cc
+   SEvt_AddEnvMeta_Test.cc
 
 )
 
@@ -179,21 +179,23 @@ set(CUDA_TEST_SOURCES
 
 )
 
+
+#[=[
+CUDART_TEST_SOURCES
+--------------------
+
+Tests using CUDA API that must be be linked with CUDA::cudart lib. API exampled::
+
+   cudaDriverGetVersion
+   cudaGetErrorString
+
+#]=]
+
 set(CUDART_TEST_SOURCES
 
    scontext_test.cc
+
 )
-
-
-
-
-
-
-
-
-
-
-
 
 
 

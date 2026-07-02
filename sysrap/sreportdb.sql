@@ -2,22 +2,52 @@
 -- Drop child table first to avoid foreign key conflicts
 DROP TABLE IF EXISTS opticks_events;
 DROP TABLE IF EXISTS opticks_runs;
+DROP TABLE IF EXISTS opticks_versionset;
+
+
+-- 1. High-Level Version / Hardware Configurations
+CREATE TABLE opticks_versionset (
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+
+    opticks_version    INTEGER NOT NULL,
+    geant4_version     INTEGER NOT NULL,
+    optix_version      INTEGER NOT NULL,
+
+    compute_capability INTEGER NOT NULL,
+
+    cuda_version       INTEGER NOT NULL,
+    cuda_driver        INTEGER NOT NULL, -- Resolved at runtime
+    nvidia_driver      TEXT NOT NULL,    -- Resolved at runtime
+
+    -- This constraint guarantees uniqueness across the entire set
+    UNIQUE(opticks_version, geant4_version, optix_version,
+           compute_capability,
+           cuda_version, cuda_driver, nvidia_driver)
+) ;
+-- STRICT is a SQLite 3.37+ feature
+
 
 -- 1. THE PARENT TABLE: Core Run Metadata
 CREATE TABLE opticks_runs (
     id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+    versionset_id       INTEGER NOT NULL, -- Foreign Key to the configuration
     run_timestamp       INTEGER NOT NULL, -- When the run started
 
-    -- Software & Hardware Environment (Text Metadata)
-    software_version    TEXT NOT NULL,
-    command_line        TEXT NOT NULL,
-    gpu_type            TEXT NOT NULL,
-    geometry_name       TEXT NOT NULL,
-    geometry_digest     TEXT NOT NULL,
+    fold                TEXT NOT NULL,
+    script              TEXT NOT NULL,
+    executable          TEXT NOT NULL,
+    test                TEXT NOT NULL,
+    gpu                 TEXT NOT NULL,
+    geometry            TEXT NOT NULL,
+    tree_digest         TEXT NOT NULL,
 
-    -- Global Run Metrics / Initialization Timings
-    dt_geometry_upload  INTEGER NOT NULL, -- Init timing
-    total_events        INTEGER NOT NULL  -- Target total count expected
+    max_bounce          INTEGER NOT NULL,
+    dt_geometry_load    INTEGER NOT NULL,
+    dt_geometry_upload  INTEGER NOT NULL,
+    total_events        INTEGER NOT NULL,
+
+    FOREIGN KEY (versionset_id) REFERENCES opticks_versionset(id)
+
 );
 -- STRICT is a SQLite 3.37+ feature
 

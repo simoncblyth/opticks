@@ -40,6 +40,8 @@ HMM: looking like getting qudarap/qsim.h to work with OptiX < 7 is more effort t
 #endif
 
 #include <cuda_runtime.h>
+#include "OKConf_CUDART.h"
+
 #include <glm/glm.hpp>
 
 // sysrap
@@ -285,10 +287,13 @@ Invoked from CSGOptiX::Create prior to instanciation
 
 **/
 
-void CSGOptiX::InitMeta()
+void CSGOptiX::InitMeta( SSim* ssim )
 {
+    SEvt::SetRunMeta<int>("CUDADriver", OKConf_CUDART::CUDADriverInteger() );
+
     std::string gm = SEventConfig::GetGPUMeta() ;     // (QSim) scontext sdevice::brief
     SEvt::SetRunMetaString("GPUMeta", gm.c_str() );  // set CUDA_VISIBLE_DEVICES to control
+
 
     std::string switches = QSim::Switches() ;
     SEvt::SetRunMetaString("QSim__Switches", switches.c_str() );
@@ -299,6 +304,9 @@ void CSGOptiX::InitMeta()
 #else
     SEvt::SetRunMetaString("C4Version", "NOT-WITH_CUSTOM4" );
 #endif
+
+    const char* tree_digest = ssim ? ssim->get_tree_digest() : nullptr ;
+    SEvt::SetRunMetaString("TreeDigest",tree_digest ? tree_digest : "" );
 
 }
 
@@ -348,7 +356,7 @@ CSGOptiX* CSGOptiX::Create(CSGFoundry* fd )
     //InitEvt(fd);  // REPOSITIONED TO G4CXOpticks::CreateSimulator
 
     InitSim(ssim);    // QSim instanciation after uploading SSim arrays
-    InitMeta();       // recording GPU, switches etc.. into run metadata
+    InitMeta(ssim);   // recording GPU, switches etc.. into run metadata
     InitGeo(fd);      // uploads geometry
 
     CSGOptiX* cx = new CSGOptiX(fd) ;
@@ -492,6 +500,9 @@ void CSGOptiX::initMeta()
     SEvt::SetRunMeta<int64_t>("optixpath_mtime", mtime );
     SEvt::SetRunMeta<int64_t>("optixpath_age_secs", age_secs );
     SEvt::SetRunMeta<int64_t>("optixpath_age_days", age_days );
+
+
+
 }
 
 

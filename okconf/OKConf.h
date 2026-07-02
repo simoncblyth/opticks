@@ -1,4 +1,3 @@
-
 #pragma once
 /**
 OKConf.h : header only version of OKConf.hh that aims to replace OKConf.hh
@@ -10,11 +9,18 @@ version number integers of externals.
 
 **/
 
-#include "OKCONF_API_EXPORT.hh"
 
 #include "OKConf_Config.hh"
 
+
 #ifdef WITH_CUDA
+
+#include <fstream>
+#include <string>
+#include <iostream>
+#include <regex>
+
+
 #ifdef OKCONF_OPTIX_VERSION_INTEGER
 
 #define OKCONF_OPTIX_VERSION_MAJOR (OKCONF_OPTIX_VERSION_INTEGER / 10000)
@@ -32,35 +38,40 @@ version number integers of externals.
 #endif
 
 
-class OKCONF_API OKConf
+struct OKConf
 {
-    public:
-       static int Check();
-       static void Dump(const char* msg="OKConf::Dump");
-    public:
-       static const char* OpticksInstallPrefix();
-       static const char* CMAKE_CXX_FLAGS();
+    static int Check();
+    static void Dump(const char* msg="OKConf::Dump");
+    static const char* OpticksInstallPrefix();
+    static const char* OpticksGitHash();
+    static const char* CMAKE_CXX_FLAGS();
 
 #ifdef WITH_CUDA
-       static const char* OptiXInstallDir();
-       //static const char* CUDA_NVCC_FLAGS();
-       static unsigned ComputeCapabilityInteger();
+    // DESPITE APPEARING TO NEED CUDA THE BELOW ALL COME FROM MACROS AT CMake LEVEL
+    // THE CUDA API IS NOT USED
+    static const char* OptiXInstallDir();
+    //static const char* CUDA_NVCC_FLAGS();
+    static int ComputeCapabilityInteger();
+    static int OptiXVersionInteger() ;
 
-       static int OptiXVersionInteger() ;
-       static int OptiXVersionMajor() ;
-       static int OptiXVersionMinor() ;
-       static int OptiXVersionMicro() ;
-       static unsigned CUDAVersionInteger() ;
-       static const char* PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel=nullptr );
+    static int OptiXVersionMajor() ;
+    static int OptiXVersionMinor() ;
+    static int OptiXVersionMicro() ;
+    static int CUDAVersionInteger() ;
+    static const char* PTXPath( const char* cmake_target, const char* cu_name, const char* ptxrel=nullptr );
+
+    static const char* NvidiaDriverVersion();
+
 #endif
 
-       // static unsigned CLHEPVersionInteger();    see x4/tests/CLHEPVersionInteger.cc
-       static unsigned Geant4VersionInteger() ;
-       static unsigned OpticksVersionInteger();
+    // static unsigned CLHEPVersionInteger();    see x4/tests/CLHEPVersionInteger.cc
+    static int Geant4VersionInteger() ;
 
-       static const char* ShaderDir();
-       static const char* DefaultSTTFPath();
+    static int OpticksVersionInteger();
+    static int OpticksVersionInteger_Gymnastically();
 
+    static const char* ShaderDir();
+    static const char* DefaultSTTFPath();
 };
 
 
@@ -84,6 +95,11 @@ inline int OKConf::Check()
    {
        rc += 1 ;
    }
+   if(OpticksVersionInteger_Gymnastically() == 0)
+   {
+       rc += 1 ;
+   }
+
 
 
 #ifdef WITH_CUDA
@@ -115,6 +131,11 @@ inline int OKConf::Check()
 #endif
 
 
+   if(OpticksGitHash() == 0)
+   {
+       rc += 1 ;
+   }
+
    if(CMAKE_CXX_FLAGS() == 0)
    {
        rc += 1 ;
@@ -132,12 +153,15 @@ inline void OKConf::Dump(const char* msg)
 {
     std::cout << msg << std::endl ;
     std::cout << std::setw(50) << "OKConf::OpticksVersionInteger() "   << OKConf::OpticksVersionInteger() << std::endl ;
+    std::cout << std::setw(50) << "OKConf::OpticksVersionInteger_Gymnastically() "  << OKConf::OpticksVersionInteger_Gymnastically() << std::endl ;
     std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ;
+    std::cout << std::setw(50) << "OKConf::OpticksGitHash() "          << OKConf::OpticksGitHash() << std::endl ;
     std::cout << std::setw(50) << "OKConf::CMAKE_CXX_FLAGS() "         << OKConf::CMAKE_CXX_FLAGS() << std::endl ;
 
 
 #ifdef WITH_CUDA
     std::cout << std::setw(50) << "OKConf::CUDAVersionInteger() "      << OKConf::CUDAVersionInteger() << std::endl ;
+    std::cout << std::setw(50) << "OKConf::NvidiaDriverVersion() "     << OKConf::NvidiaDriverVersion() << std::endl ;
     std::cout << std::setw(50) << "OKConf::ComputeCapabilityInteger() "<< OKConf::ComputeCapabilityInteger() << std::endl ;
     //std::cout << std::setw(50) << "OKConf::CUDA_NVCC_FLAGS() "         << OKConf::CUDA_NVCC_FLAGS() << std::endl ;
 
@@ -161,9 +185,15 @@ inline void OKConf::Dump(const char* msg)
 
 
 
+
+
+
+
+
+
 #ifdef WITH_CUDA
 
-inline unsigned OKConf::CUDAVersionInteger()
+inline int OKConf::CUDAVersionInteger()
 {
 #ifdef OKCONF_CUDA_API_VERSION_INTEGER
    return OKCONF_CUDA_API_VERSION_INTEGER ;
@@ -205,7 +235,7 @@ inline int OKConf::OptiXVersionMicro()
 #endif
 }
 
-inline unsigned OKConf::ComputeCapabilityInteger()
+inline int OKConf::ComputeCapabilityInteger()
 {
 #ifdef OKCONF_COMPUTE_CAPABILITY_INTEGER
    return OKCONF_COMPUTE_CAPABILITY_INTEGER ;
@@ -286,11 +316,44 @@ inline const char* OKConf::PTXPath( const char* cmake_target, const char* cu_nam
     return strdup(ptxpath.c_str());
 }
 
+
+
+
+/**
+OKConf::NvidiaDriverVersion
+----------------------------
+
+Linux only parsing of /proc/driver/nvidia/version file::
+
+    NVRM version: NVIDIA UNIX Open Kernel Module for x86_64  610.43.02  Release Build  (root@localhost.localdomain)  Mon Jun  1 06:02:53 PM CST 2026
+    GCC version:  gcc version 11.5.0 20240719 (Red Hat 11.5.0-5) (GCC)
+
+That looks for double dotted version string on the first line.
+
+**/
+
+inline const char* OKConf::NvidiaDriverVersion()
+{
+    std::ifstream fp("/proc/driver/nvidia/version");
+    if (!fp.is_open()) return "unknown";
+
+    std::string firstline;
+    std::getline(fp, firstline);
+
+    // Match 1 or more digits, a literal dot, 1+ digits, a literal dot, 1+ digits
+    std::regex version_pattern(R"(\d+\.\d+\.\d+)");
+    std::smatch match;
+
+    bool found = std::regex_search(firstline, match, version_pattern); // equivalent to Python re.search()
+
+    std::string version = found ? match[0].str() : "unknown-pattern-mismatch" ;
+    return strdup(version.c_str());
+}
 #endif
 
 
 
-inline unsigned OKConf::Geant4VersionInteger()
+inline int OKConf::Geant4VersionInteger()
 {
 #ifdef OKCONF_GEANT4_VERSION_INTEGER
    return OKCONF_GEANT4_VERSION_INTEGER ;
@@ -308,6 +371,16 @@ inline const char* OKConf::OpticksInstallPrefix()
    return "MISSING" ;
 #endif
 }
+
+inline const char* OKConf::OpticksGitHash()
+{
+#ifdef OKCONF_OPTICKS_GIT_HASH
+   return OKCONF_OPTICKS_GIT_HASH ;
+#else
+   return "OPTICKS_GIT_HASH_MISSING" ;
+#endif
+}
+
 
 inline const char* OKConf::CMAKE_CXX_FLAGS()
 {
@@ -341,18 +414,35 @@ inline const char* OKConf::DefaultSTTFPath()  // static
 }
 
 
-
-
-// converts preprocessor macro into a string
-#define xstr(s) str(s)
-#define str(s) #s
-
-inline unsigned OKConf::OpticksVersionInteger()
+inline int OKConf::OpticksVersionInteger()
 {
-    const char* s_version = xstr(OPTICKS_VERSION_NUMBER);
+#ifdef OPTICKS_VERSION_NUMBER
+    return OPTICKS_VERSION_NUMBER;
+#else
+    return 0;
+#endif
+}
+
+
+
+// ------------ WHY THE GYMNASTICS ?
+// Actually no need for handling an integer macro - but there is potential utility
+// for manipulation of macros containing strings that want to pass from preprocessor
+// macro into strings.
+//
+// converts preprocessor macro into a string
+#define OK_XSTR(s) OK_STR(s)  // Layer 1: Forces argument expansion
+#define OK_STR(s) #s          // Layer 2: Stringifies the result - the hash is stringification operator
+
+inline int OKConf::OpticksVersionInteger_Gymnastically()
+{
+    const char* s_version = OK_XSTR(OPTICKS_VERSION_NUMBER);
     int i_version = atoi(s_version);
     return i_version ;
 }
+
+#undef OK_XSTR
+#undef OK_STR
 
 
 

@@ -44,6 +44,33 @@ running one is a bad one.  So paths need to be overridden.
 #]=]
 
 
+
+# 1. Find the Git package on the system
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    # 2. Execute git log to get the latest short SHA-1 hash
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} log -1 --format=%h
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE OKCONF_OPTICKS_GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_QUIET
+    )
+else()
+    set(OKCONF_OPTICKS_GIT_HASH "unknown-DID-NOT-FIND-GIT")
+endif()
+
+# Fallback check if not inside a git repo
+if(NOT OKCONF_OPTICKS_GIT_HASH)
+    set(OKCONF_OPTICKS_GIT_HASH "unknown-NO-HASH")
+endif()
+
+message(STATUS "Opticks Build Git Hash: ${OKCONF_OPTICKS_GIT_HASH}")
+
+
+
+
 if(BUILD_WITH_CUDA)
 
     set(OpticksCUDA_VERBOSE YES)
@@ -118,7 +145,10 @@ set(SOURCES
 
 set(HEADERS
     OKConf.hh
+
     OKConf.h
+    OKConf_CUDART.h
+
     OpticksVersionNumber.hh
     OKCONF_API_EXPORT.hh
 )
