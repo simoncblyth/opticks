@@ -19,15 +19,20 @@ mkdir -p $FOLD
 
 db=$FOLD/$name.sqlite3
 
-runfold=/data1/blyth/tmp/GEOM/J26_1_1_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan_first_sreport
-RUNFOLD=${RUNFOLD:-$runfold}
+repfold=/data1/blyth/tmp/GEOM/J26_1_1_opticks_Debug/CSGOptiXSMTest/ALL1_Debug_Philox_medium_scan_first_sreport
+REPFOLD=${REPFOLD:-$repfold}
+
+archive=/tmp/blyth/opticks/sreport_archive_dir
+ARCHIVE=${ARCHIVE:-$archive}
+
+INFOLD=$ARCHIVE
 
 
 defarg="info_run_check"
 allarg="info_clean_run_check_query"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE PWD name bin tmp TMP FOLD db runfold RUNFOLD defarg arg allarg"
+vv="BASH_SOURCE PWD name bin tmp TMP FOLD db REPFOLD ARCHIVE INFOLD defarg arg allarg"
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
@@ -40,7 +45,7 @@ if [ "${arg/clean}" != "$arg" ]; then
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-   $bin $db $RUNFOLD
+   $bin $db $INFOLD
    [ $? -ne 0 ] && echo $BASH_SOURCE - run error && exit 2
 fi
 

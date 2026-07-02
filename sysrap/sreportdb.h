@@ -13,6 +13,10 @@ sreportdb.h
 
 struct sreportdb
 {
+    static constexpr const char* Archive_marker = "sreport_0000000" ;
+    static bool IsArchiveDir(const char* _dir);
+    static bool IsReportDir( const char* _dir);
+
     static constexpr const char* _level = "sreportdb__level" ;
     static constexpr const char* SCHEMA = "sreportdb.sql" ;
 
@@ -25,13 +29,48 @@ struct sreportdb
     sreportdb(const char* dbpath);
     std::string desc() const;
 
-    int  import_run(const char* fold);
+    int  import_auto(   const char* dir);
+    int  import_archive(const char* archive_dir);
+    int  import_report( const char* report_dir);
 
     int64_t _import_versionset(const NP* run);
     int64_t _import_run(const char* fold, const NP* run, const NP* evsmry, int64_t versionset_id );
     int64_t _import_evsmry(const NP* evsmry, int64_t run_id);
 
 };
+
+
+bool sreportdb::IsArchiveDir(const char* _dir)  // static
+{
+    namespace fs = std::filesystem;
+    fs::path dir(_dir);
+
+    if (!fs::exists(dir) || !fs::is_directory(dir)) {
+        return false;
+    }
+
+    fs::path rep0_dir = dir / Archive_marker ;
+    return fs::exists(rep0_dir) && fs::is_directory(rep0_dir);
+}
+
+bool sreportdb::IsReportDir(const char* _dir) // static
+{
+    namespace fs = std::filesystem;
+    fs::path dir(_dir);
+
+    if (!fs::exists(dir) || !fs::is_directory(dir)) {
+        return false;
+    }
+
+    fs::path run_file = dir / "run.npy";
+    fs::path evsmry_file = dir / "evsmry.npy";
+
+    bool has_run = fs::exists(run_file) && fs::is_regular_file(run_file);
+    bool has_evsmry = fs::exists(evsmry_file) && fs::is_regular_file(evsmry_file);
+
+    return has_run && has_evsmry;
+}
+
 
 
 /**
@@ -69,45 +108,94 @@ inline std::string sreportdb::desc() const
     return str ;
 }
 
+inline int sreportdb::import_auto(const char* _dir)
+{
+    int rc = 0 ;
+    if(IsArchiveDir(_dir))
+    {
+        rc = import_archive(_dir);
+    }
+    else if(IsReportDir(_dir))
+    {
+        rc = import_report(_dir);
+    }
+    return rc ;
+}
+
+
+inline int sreportdb::import_archive(const char* _archive_dir)
+{
+    std::cout << "[sreportdb::import_archive _archive_dir " << ( _archive_dir ? _archive_dir : "-" ) << "\n";
+    namespace fs = std::filesystem;
+
+    fs::path archive_dir(_archive_dir);
+
+    if (!fs::exists(archive_dir) || !fs::is_directory(archive_dir)) {
+        std::cerr << "-sreportdb::import_archive ERROR : Provided path is not a valid directory.\n";
+        return -1 ;
+    }
+
+    std::cout << "-sreportdb::import_archive scan subdirs within: " << archive_dir << "\n---\n";
+
+    int rc = 0 ;
+    for (const auto& entry : fs::directory_iterator(archive_dir))  // "." and ".." skipped
+    {
+        if(!fs::is_directory(entry.path())) continue ;
+        std::string report_dir = entry.path().string();
+        const char* _report_dir = report_dir.c_str();
+
+        int irc = import_report( _report_dir );
+        rc += irc ;
+
+        if( irc != 0 )
+        {
+            std::cout << "-sreportdb::import_archive FAIL for _report_dir " << ( _report_dir ? _report_dir : "-" ) << "\n";
+            return rc ;
+        }
+    }
+    std::cout << "]sreportdb::import_archive _archive_dir " << ( _archive_dir ? _archive_dir : "-" ) << "\n";
+    return rc ;
+}
+
 
 /**
-sreportdb::import_run
------------------------
+sreportdb::import_report
+--------------------------
 
 Most of the run metadata comes from smeta::Collect
 
 **/
 
 
-inline int sreportdb::import_run(const char* _fold)
+inline int sreportdb::import_report(const char* _fold)
 {
-    std::cout << "[sreportdb::import_run " << ( _fold ? _fold : "-" ) << "\n";
+    std::cout << "[sreportdb::import_report " << ( _fold ? _fold : "-" ) << "\n";
     const NP* run = NP::Load(_fold, "run.npy");
     if (!run) {
-        std::cerr << "sreportdb::import_run Error: Failed to load run.npy array from " << ( _fold ? _fold : "-" ) << "\n";
+        std::cerr << "sreportdb::import_report Error: Failed to load run.npy array from " << ( _fold ? _fold : "-" ) << "\n";
         return -1;
     }
 
     const NP* evsmry = NP::Load(_fold, "evsmry.npy");
     if (!evsmry) {
-        std::cerr << "sreportdb::import_run Error: Failed to load evsmry.npy array from " << ( _fold ? _fold : "-" ) << "\n";
+        std::cerr << "sreportdb::import_report Error: Failed to load evsmry.npy array from " << ( _fold ? _fold : "-" ) << "\n";
         return -1;
     }
 
-    std::cout << "-sreportdb::import_run run    " << ( run    ? run->sstr() : "-" ) << "\n" ;
-    std::cout << "-sreportdb::import_run evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
+    std::cout << "-sreportdb::import_report run    " << ( run    ? run->sstr() : "-" ) << "\n" ;
+    std::cout << "-sreportdb::import_report evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
 
 
     int64_t versionset_id = _import_versionset(run);
-    std::cout << "-sreportdb::import_run versionset_id " << versionset_id << "\n" ;
+    std::cout << "-sreportdb::import_report versionset_id " << versionset_id << "\n" ;
     assert( versionset_id > 0 );
 
     int64_t run_id        = _import_run(_fold, run, evsmry, versionset_id );
 
-    int rc                = _import_evsmry( evsmry, run_id );
+    int64_t last_evt_id   = _import_evsmry( evsmry, run_id );
 
-    std::cout << "]sreportdb::import_run " << ( _fold ? _fold : "-" ) << " rc {" << rc << "} " << "\n";
-    return rc ;
+    std::cout << "]sreportdb::import_report " << ( _fold ? _fold : "-" ) << " last_evt_id {" << last_evt_id << "} " << "\n";
+    return 0 ;
 }
 
 

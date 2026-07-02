@@ -133,8 +133,8 @@ EOU
 #test=vvvvvvlarge_evt
 #test=vvvvvvlarge_evt_merge
 
-#test=medium_scan
-test=medium_scan_first
+test=medium_scan
+#test=medium_scan_first
 
 export TEST=${TEST:-$test}
 
@@ -854,13 +854,27 @@ fi
 if [ "${arg/deport}" != "$arg" ]; then
    source dbg__.sh
    dbg__ sreport
-   [ $? -ne 0 ] && echo $BASH_SOURCE dreport error && exit 1
+   [ $? -ne 0 ] && echo $BASH_SOURCE deport error && exit 1
 fi
 
 if [ "${arg/report}" != "$arg" ]; then
    sreport   ## NB running from LOGDIR
-   [ $? -ne 0 ] && echo $BASH_SOURCE sreport error && exit 1
+   [ $? -ne 0 ] && echo $BASH_SOURCE report error && exit 1
 fi
+
+if [ "${arg/loport}" != "$arg" ]; then
+   ( cd ${LOGDIR}_sreport ; sreport )  ## NB running from ${LOGDIR}_sreport
+   [ $? -ne 0 ] && echo $BASH_SOURCE loport error && exit 1
+fi
+
+if [ "${arg/archive}" != "$arg" ]; then
+   archive=/tmp/$USER/opticks/sreport_archive_dir
+   mkdir -p $archive
+
+   ( cd ${LOGDIR}_sreport ; SREPORT_ARCHIVE_DIR=$archive sreport )  ## NB running from ${LOGDIR}_sreport
+   [ $? -ne 0 ] && echo $BASH_SOURCE archive error && exit 1
+fi
+
 
 if [ "${arg/usage}" != "$arg" ]; then
    cxs_min_usage

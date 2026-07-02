@@ -34,7 +34,7 @@ Usage from source "run" directory creates the report saving into eg ../ALL3_srep
     epsilon:ALL3 blyth$ sreport
     epsilon:ALL3 blyth$ ls -alst ../ALL3_sreport
 
-Usage from report directory loads and presents the report::
+Usage from \${LOGDIR}_sreport directory loads and presents the report::
 
     epsilon:ALL3 blyth$ cd ../ALL3_sreport/
     epsilon:ALL3_sreport blyth$ sreport
@@ -113,12 +113,12 @@ int main(int argc, char** argv)
         report->save("$SREPORT_FOLD");
         if(_main) std::cout << "]sreport.main : CREATED REPORT " << std::endl ;
 
-        const char* SREPORT_ARCHIVE = U::GetEnv("SREPORT_ARCHIVE", nullptr);
-        if(SREPORT_ARCHIVE)
+        const char* SREPORT_ARCHIVE_DIR = U::GetEnv("SREPORT_ARCHIVE_DIR", nullptr);
+        if(SREPORT_ARCHIVE_DIR)
         {
-            std::cout << "[sreport.main : save_into_archive [" << SREPORT_ARCHIVE << "]\n" ;
-            report->save_into_archive(SREPORT_ARCHIVE);
-            std::cout << "]sreport.main : save_into_archive [" << SREPORT_ARCHIVE << "]\n" ;
+            std::cout << "[sreport.main : save_into_archive [" << SREPORT_ARCHIVE_DIR << "]\n" ;
+            report->save_into_archive(SREPORT_ARCHIVE_DIR);
+            std::cout << "]sreport.main : save_into_archive [" << SREPORT_ARCHIVE_DIR << "]\n" ;
         }
 
 
@@ -137,6 +137,15 @@ int main(int argc, char** argv)
         sreport* report = sreport::Load(dirp) ;
         std::cout << report->desc() ;
         std::cout << "]sreport.main : LOADED REPORT " << std::endl ;
+
+        const char* SREPORT_ARCHIVE_DIR = U::GetEnv("SREPORT_ARCHIVE_DIR", nullptr);
+        if(SREPORT_ARCHIVE_DIR)
+        {
+            std::cout << "[sreport.main : save_into_archive [" << SREPORT_ARCHIVE_DIR << "]\n" ;
+            report->save_into_archive(SREPORT_ARCHIVE_DIR);
+            std::cout << "]sreport.main : save_into_archive [" << SREPORT_ARCHIVE_DIR << "]\n" ;
+        }
+
     }
 
     std::cout
