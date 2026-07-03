@@ -51,6 +51,10 @@ but the headers are also copied into opticks/sysrap.
 #include <locale>
 #include <optional>
 
+#include <sstream>
+#include <cstring>
+#include <algorithm>
+
 #include "NPU.hh"
 
 
@@ -507,7 +511,9 @@ struct NP
     template<typename T> T  get_named_value( const char* qname, T fallback ) const ;
 
     bool has_meta() const ;
+    static std::string               get_meta_string_0(const char* metadata, const char* key);
     static std::string               get_meta_string_(const char* metadata, const char* key);
+
     static std::string               get_meta_string( const std::string& meta, const char* key) ;
 
     typedef std::vector<std::string> VS ;
@@ -6382,7 +6388,7 @@ delimited by a colon.
 
 **/
 
-inline std::string NP::get_meta_string_(const char* metadata, const char* key) // static
+inline std::string NP::get_meta_string_0(const char* metadata, const char* key) // static
 {
     std::string value ;
 
@@ -6422,6 +6428,101 @@ inline std::string NP::get_meta_string_(const char* metadata, const char* key) /
     }
     return value ;
 }
+
+
+/**
+NP::get_meta_string_
+----------------------
+
+Accepts "|" delimited keys such as "TESTSCRIPT|SCRIPT" which returns
+the "TESTSCRIPT" value if present otherwise the "SCRIPT" value.
+If neither are present an empty string is returned.
+
+~/np/tests/NP_get_meta_string_test.sh
+
+**/
+
+
+inline std::string NP::get_meta_string_(const char* metadata, const char* key) // static
+{
+    std::string value;
+    size_t highest_priority = std::string::npos; // Keeps track of the best match priority found so far
+
+    // 1. Parse the 'key' argument into fallback choices based on '|'
+    std::vector<std::string> keys;
+    std::stringstream key_ss(key);
+    std::string k_part;
+    while (std::getline(key_ss, k_part, '|')) keys.push_back(k_part);
+
+    std::stringstream ss;
+    ss.str(metadata);
+    std::string s;
+    char delim = ':';
+
+    while (std::getline(ss, s))
+    {
+        size_t pos = s.find(delim);
+        if (pos != std::string::npos)
+        {
+            std::string k = s.substr(0, pos);
+            std::string v = s.substr(pos + 1);
+
+            // 2. Check if the line's key matches any of our requested fallbacks
+            auto it = std::find(keys.begin(), keys.end(), k);
+            if (it != keys.end())
+            {
+                // Priority is determined by its index in the 'keys' vector (0 is highest)
+                size_t current_priority = std::distance(keys.begin(), it);
+
+                // Update value if this key is a higher or equal priority to what we've seen so far
+                // (Using <= ensures later lines with the same high-priority key can still update the value)
+                if (current_priority <= highest_priority)
+                {
+                    value = v;
+                    highest_priority = current_priority;
+                }
+            }
+
+#ifdef DEBUG
+            std::cout
+                << "NP::get_meta_string "
+                << " s[" << s << "]"
+                << " k[" << k << "]"
+                << " v[" << v << "]"
+                << std::endl;
+#endif
+        }
+#ifdef DEBUG
+        else
+        {
+            std::cout
+                << "NP::get_meta_string "
+                << "s[" << s << "] SKIP "
+                << std::endl;
+        }
+#endif
+    }
+    return value;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 inline std::string NP::get_meta_string(const std::string& meta, const char* key)  // static
 {
@@ -6564,12 +6665,12 @@ inline void NP::GetMetaKV(
 template<typename T> inline T NP::GetMeta(const std::string& mt, const char* key, T fallback) // static
 {
     if(mt.empty()) return fallback ;
-    std::string s = get_meta_string( mt, key);
+    std::string str = get_meta_string( mt, key);
 #ifdef DEBUG
-    std::cout << "NP::GetMeta[" << s << "]" << std::endl ;
+    std::cout << "NP::GetMeta[" << str << "]" << std::endl ;
 #endif
-    if(s.empty()) return fallback ;
-    return U::To<T>(s.c_str()) ;
+    if(str.empty()) return fallback ;
+    return U::To<T>(str.c_str()) ;
 }
 
 

@@ -337,7 +337,8 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
     int64_t     run_timestamp      = run->get_meta<int64_t>("InitTimestamp",0);   // formerly _init_stamp
 
     std::string fold               = _fold ;
-    std::string script             = run->get_meta<std::string>("SCRIPT","");
+    std::string script             = run->get_meta<std::string>("TESTSCRIPT|SCRIPT","");
+    std::string script_arg         = run->get_meta<std::string>("TESTSCRIPT_ARG|SCRIPT_ARG","");
     std::string executable         = run->get_meta<std::string>("ExecutableName","");
     std::string test               = run->get_meta<std::string>("TEST","");
     std::string gpu                = run->get_meta<std::string>("GPUMeta","");
@@ -349,22 +350,34 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
     int64_t     dt_geometry_upload = evsmry->get_meta<int64_t>("upload_geom", 0);
     int64_t     total_events       = evsmry->num_items();
 
+    std::string ci_pipeline_source = run->get_meta<std::string>("CI_PIPELINE_SOURCE","");
+    int64_t ci_pipeline_id         = run->get_meta<int64_t>("CI_PIPELINE_ID",-1);
+    int64_t ci_job_id              = run->get_meta<int64_t>("CI_JOB_ID",-1);
+
+    // HMM: MAYBE A JSON BLOB TOO - FOR CHANGE ISOLATION
+
     const char* sql = "INSERT OR REPLACE INTO opticks_runs ("
                       "versionset_id, run_timestamp,"
-                      "fold, script, executable, test, gpu, geometry, tree_digest,"
-                      "max_bounce, dt_geometry_load, dt_geometry_upload, total_events"
+                      "fold, script, script_arg, executable,"
+                      "test, gpu, geometry, tree_digest,"
+                      "max_bounce, dt_geometry_load, dt_geometry_upload, total_events,"
+                      "ci_pipeline_source, ci_pipeline_id, ci_job_id"
                       ") "
                       "VALUES ("
                       "?,?,"
-                      "?, ?, ?, ?, ?, ?, ?,"
-                      "?, ?, ?, ?"
+                      "?, ?, ?, ?, "
+                      "?, ?, ?, ?, "
+                      "?, ?, ?, ?, "
+                      "?, ?, ?"
                       ");";
 
     NSQLiteStmt inserter(db->db, sql);
     bool success = inserter.execute(
                       versionset_id, run_timestamp,
-                      fold, script, executable, test, gpu, geometry, tree_digest,
-                      max_bounce, dt_geometry_load, dt_geometry_upload, total_events);
+                      fold, script, script_arg, executable,
+                      test, gpu, geometry, tree_digest,
+                      max_bounce, dt_geometry_load, dt_geometry_upload, total_events,
+                      ci_pipeline_source, ci_pipeline_id, ci_job_id);
 
     assert(success);
 

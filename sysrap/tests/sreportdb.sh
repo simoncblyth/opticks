@@ -25,7 +25,8 @@ REPFOLD=${REPFOLD:-$repfold}
 archive=/tmp/blyth/opticks/sreport_archive_dir
 ARCHIVE=${ARCHIVE:-$archive}
 
-INFOLD=$ARCHIVE
+INFOLD=$REPFOLD
+#INFOLD=$ARCHIVE
 
 
 defarg="info_run_check"

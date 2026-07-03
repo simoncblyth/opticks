@@ -85,16 +85,18 @@ struct smeta
 {
     static constexpr const char* PREFIX = "OPTICKS_" ;
     static constexpr const char* VARS = R"(
-CVD
 CUDA_VISIBLE_DEVICES
 HOME
 USER
 SCRIPT
+SCRIPT_ARG
 PWD
 CMDLINE
 CHECK
 LAYOUT
 TEST
+TESTSCRIPT      # see oj/TEST.sh
+TESTSCRIPT_ARG  # see oj/TEST.sh
 VERSION
 GEOM
 EXECUTABLE
@@ -102,6 +104,14 @@ COMMANDLINE
 DIRECTORY
 ${GEOM}_GEOMList
 )" ;
+
+    static constexpr const char* CI_VARS = R"(
+CI_PIPELINE_ID      # The primary key/unique identifier for the overall run execution.
+CI_JOB_ID	        # Each job within pipeline has unique CI_JOB_ID.
+CI_PIPELINE_SOURCE	# Why the test ran: schedule, push, web
+)" ;
+
+
 // HIGHER ORDER KEYS WITH TOKENS ARE HANDLED IN ssys::_getenv
     static void Collect(std::string& meta, const char* source=nullptr, bool stamp=false) ;
     static void CollectEnv(std::string& meta ) ;
@@ -149,7 +159,6 @@ inline void smeta::Collect(std::string& meta, const char* source, bool stamp )
     NP::SetMeta<int>(meta, "Geant4Version", OKConf::Geant4VersionInteger() );
     NP::SetMeta<int>(meta, "OpticksVersion", OKConf::OpticksVersionInteger() );
 
-
     CollectEnv(meta);
 }
 
@@ -164,13 +173,18 @@ TODO: collect all envvars starting with prefix OPTICKS_
 inline void smeta::CollectEnv(std::string& meta )
 {
     typedef std::pair<std::string, std::string> KV ;
+
     std::vector<KV> kvs0 ;
     ssys::getenv_(kvs0, VARS);
     NP::SetMetaKV(meta, kvs0);
 
     std::vector<KV> kvs1 ;
-    ssys::getenv_with_prefix(kvs1, PREFIX);
+    ssys::getenv_(kvs1, CI_VARS);
     NP::SetMetaKV(meta, kvs1);
+
+    std::vector<KV> kvs2 ;
+    ssys::getenv_with_prefix(kvs2, PREFIX);
+    NP::SetMetaKV(meta, kvs2);
 }
 
 

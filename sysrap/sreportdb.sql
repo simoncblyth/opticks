@@ -35,7 +35,9 @@ CREATE TABLE opticks_runs (
 
     fold                TEXT NOT NULL,
     script              TEXT NOT NULL,
+    script_arg          TEXT NOT NULL,
     executable          TEXT NOT NULL,
+
     test                TEXT NOT NULL,
     gpu                 TEXT NOT NULL,
     geometry            TEXT NOT NULL,
@@ -45,6 +47,10 @@ CREATE TABLE opticks_runs (
     dt_geometry_load    INTEGER NOT NULL,
     dt_geometry_upload  INTEGER NOT NULL,
     total_events        INTEGER NOT NULL,
+
+    ci_pipeline_source  TEXT NOT NULL,
+    ci_pipeline_id      INTEGER NOT NULL,
+    ci_job_id           INTEGER NOT NULL,
 
     FOREIGN KEY (versionset_id) REFERENCES opticks_versionset(id)
 

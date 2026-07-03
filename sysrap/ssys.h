@@ -96,6 +96,10 @@ struct ssys
     template<typename T>
     static void getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector<std::string>& kk );
 
+
+    template<typename T>
+    static void getenv_0(std::vector<std::pair<std::string, T>>& kv, const char* kk );
+
     template<typename T>
     static void getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk );
 
@@ -694,7 +698,7 @@ void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const std::vector
 }
 
 template<typename T>
-void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
+void ssys::getenv_0(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
 {
     std::vector<std::string> kk ;
     std::stringstream ss(kk_) ;
@@ -708,6 +712,45 @@ void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
     }
     getenv_(kv, kk );
 }
+
+
+/**
+ssys::getenv_
+---------------
+
+Collects environment (key,value) pairs into the kv vector for each k read from
+the newline delimited kk_ string. Hash comments in the kk_ string are ignored, eg::
+
+        static constexpr const char* CI_VARS = R"(
+    CI_PIPELINE_ID      # The primary key/unique identifier for the overall run execution.
+    CI_JOB_ID	        # Each job within pipeline has unique CI_JOB_ID.
+    CI_PIPELINE_SOURCE	# Why the test ran: schedule, push, web
+    )" ;
+
+**/
+
+template<typename T>
+void ssys::getenv_(std::vector<std::pair<std::string, T>>& kv, const char* kk_ )
+{
+    std::vector<std::string> kk ;
+    std::stringstream ss(kk_) ;
+    std::string line ;
+    while (std::getline(ss, line))
+    {
+        if(line.empty()) continue ;
+
+        // 1. Strip out comments (#...) and any whitespace right before the comment
+        line = std::regex_replace(line, std::regex(R"(\s*#.*$)"), "");
+
+        // 2. Clean up any remaining leading/trailing whitespace around the key name
+        line = std::regex_replace(line, std::regex(R"(^\s+|\s+$)"), "");
+
+        if(line.empty()) continue ;
+        kk.push_back(line);
+    }
+    getenv_(kv, kk );
+}
+
 
 
 
