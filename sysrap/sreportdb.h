@@ -7,14 +7,24 @@ sreportdb.h
 
 **/
 
+
+#include <iostream>
+#include <filesystem>
+#include <string>
+#include <regex>
+
 #include "ssys.h"
 #include "sreport.h"
 #include "NSQLite.h"
 
 struct sreportdb
 {
-    static constexpr const char* Archive_marker = "sreport_0000000" ;
-    static bool IsArchiveDir(const char* _dir);
+    static bool IsExistingDir(const char* _dir);
+
+    template<typename ... Args> static bool IsExistingDirWith_0(const char* _dir, const Args&... names_ );
+    template<typename ... Args> static bool IsExistingDirWith_1(const char* _dir, const Args&... names_ );
+    template<typename ... Args> static bool IsExistingDirWith(  const char* _dir, const Args&... names_ );
+
     static bool IsReportDir( const char* _dir);
 
     static constexpr const char* _level = "sreportdb__level" ;
@@ -40,36 +50,71 @@ struct sreportdb
 };
 
 
-bool sreportdb::IsArchiveDir(const char* _dir)  // static
+
+bool sreportdb::IsExistingDir(const char* _dir) // static
 {
     namespace fs = std::filesystem;
     fs::path dir(_dir);
-
-    if (!fs::exists(dir) || !fs::is_directory(dir)) {
-        return false;
-    }
-
-    fs::path rep0_dir = dir / Archive_marker ;
-    return fs::exists(rep0_dir) && fs::is_directory(rep0_dir);
+    return fs::exists(dir) && fs::is_directory(dir);
 }
+
+
+template<typename ... Args>
+bool sreportdb::IsExistingDirWith_0(const char* _dir,  const Args&... names_ ) // static
+{
+    namespace fs = std::filesystem;
+    fs::path dir(_dir);
+    if (!fs::exists(dir) || !fs::is_directory(dir)) return false;
+
+    std::vector<std::string_view> names = { names_... };
+
+    for (const auto& name : names)
+    {
+        fs::path name_file = dir / name;
+        if (!fs::exists(name_file) || !fs::is_regular_file(name_file)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+template<typename ... Args>
+bool sreportdb::IsExistingDirWith_1(const char* _dir, const Args&... names)
+{
+    namespace fs = std::filesystem;
+    fs::path dir(_dir);
+    if (!fs::exists(dir) || !fs::is_directory(dir)) return false;
+
+    // C++17 Fold Expression: Short-circuiting verification loop
+    return ( (fs::exists(dir / names) && fs::is_regular_file(dir / names)) && ... );
+}
+
+
+template<typename ... Args>
+bool sreportdb::IsExistingDirWith(const char* _dir, const Args&... names)
+{
+    namespace fs = std::filesystem;
+    fs::path dir(_dir);
+    if (!fs::exists(dir) || !fs::is_directory(dir)) return false;
+
+    auto check_file = [&dir](const auto& name) {
+        fs::path target_path = dir / name;
+        return fs::exists(target_path) && fs::is_regular_file(target_path);
+    };
+
+    // C++17 fold expression
+    return (check_file(names) && ...);
+}
+
 
 bool sreportdb::IsReportDir(const char* _dir) // static
 {
-    namespace fs = std::filesystem;
-    fs::path dir(_dir);
-
-    if (!fs::exists(dir) || !fs::is_directory(dir)) {
-        return false;
-    }
-
-    fs::path run_file = dir / "run.npy";
-    fs::path evsmry_file = dir / "evsmry.npy";
-
-    bool has_run = fs::exists(run_file) && fs::is_regular_file(run_file);
-    bool has_evsmry = fs::exists(evsmry_file) && fs::is_regular_file(evsmry_file);
-
-    return has_run && has_evsmry;
+    return IsExistingDirWith(_dir, "run.npy", "evsmry.npy" );
 }
+
+
+
+
 
 
 
@@ -108,54 +153,64 @@ inline std::string sreportdb::desc() const
     return str ;
 }
 
+/**
+sreportdb::import_auto
+------------------------
+
+If the argument directory is a report dir (ie it contains "run.npy" and "evsmry.npy")
+then invoke import_report on it, otherwise invoke import_archive which does a recursive
+traverse of the directory tree, looking for directories with names like "sreport_000"
+that contain the expected report files. When found invoke import_report.
+
+HMM: note that the directory name check is not done when the argument dir is a report dir...
+
+**/
+
 inline int sreportdb::import_auto(const char* _dir)
 {
-    int rc = 0 ;
-    if(IsArchiveDir(_dir))
-    {
-        rc = import_archive(_dir);
-    }
-    else if(IsReportDir(_dir))
-    {
-        rc = import_report(_dir);
-    }
-    return rc ;
+    return IsReportDir(_dir) ? import_report(_dir) : import_archive(_dir);
 }
 
 
 inline int sreportdb::import_archive(const char* _archive_dir)
 {
     std::cout << "[sreportdb::import_archive _archive_dir " << ( _archive_dir ? _archive_dir : "-" ) << "\n";
-    namespace fs = std::filesystem;
 
-    fs::path archive_dir(_archive_dir);
-
-    if (!fs::exists(archive_dir) || !fs::is_directory(archive_dir)) {
-        std::cerr << "-sreportdb::import_archive ERROR : Provided path is not a valid directory.\n";
+    if(!IsExistingDir(_archive_dir))
+    {
+        std::cerr << "-sreportdb::import_archive ERROR : Provided path is not an existing directory.\n";
         return -1 ;
     }
 
-    std::cout << "-sreportdb::import_archive scan subdirs within: " << archive_dir << "\n---\n";
+    namespace fs = std::filesystem;
+    fs::path archive_dir(_archive_dir);
 
+    std::regex sreport_pattern(R"(^sreport_\d+$)"); // HMM: could skip this name check
+    auto iterator_options = fs::directory_options::skip_permission_denied;
     int rc = 0 ;
-    for (const auto& entry : fs::directory_iterator(archive_dir))  // "." and ".." skipped
+    for (const auto& entry : fs::recursive_directory_iterator(archive_dir, iterator_options))
     {
-        if(!fs::is_directory(entry.path())) continue ;
-        std::string report_dir = entry.path().string();
-        const char* _report_dir = report_dir.c_str();
+        if (!fs::is_directory(entry.path())) continue ;
+        if (!std::regex_match(entry.path().filename().string(), sreport_pattern)) continue ;
 
-        int irc = import_report( _report_dir );
+        std::string entry_dir = entry.path().string();
+        const char* _entry_dir = entry_dir.c_str();
+
+        bool is_report_dir = IsReportDir(_entry_dir);
+        if(!is_report_dir) continue ;
+
+        int irc = import_report( _entry_dir );
         rc += irc ;
 
         if( irc != 0 )
         {
-            std::cout << "-sreportdb::import_archive FAIL for _report_dir " << ( _report_dir ? _report_dir : "-" ) << "\n";
+            std::cout << "-sreportdb::import_archive FAIL for dir [" << ( _entry_dir ? _entry_dir : "-" ) << "]\n";
             return rc ;
         }
     }
-    std::cout << "]sreportdb::import_archive _archive_dir " << ( _archive_dir ? _archive_dir : "-" ) << "\n";
     return rc ;
 }
+
 
 
 /**
