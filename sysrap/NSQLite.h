@@ -22,10 +22,13 @@ Find the header::
 **/
 
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <fstream>
 #include <stdio.h>
 #include <chrono>
+#include <optional>
+
 #include <sqlite3.h>
 
 struct OLD_NSQLiteStmt
@@ -141,16 +144,20 @@ TODO: add exec of sql from file, eg for defining schema of collection of tables
 
 struct NSQLite
 {
+    std::string dbpath ;
     char* err ;
     sqlite3* db;
-    NSQLite(const char* filename);
+
+    static int callback(void *data, int count, char **argv, char **columnNames);
+    static std::string ReadStringDirect(const char* path);
+    static std::string FormName(const char* dbfold, const char* dbname);
+
+    NSQLite(const char* dbfold, const char* dbname);
 
     void exec(const char* sql );
     void exec_cb(const char* sql );
     void queryColumns(const char* sql);
 
-    static int callback(void *data, int count, char **argv, char **columnNames);
-    static std::string ReadStringDirect(const char* path);
 };
 
 inline int NSQLite::callback(void *data, int count, char **argv, char **columnNames) // static
@@ -176,19 +183,28 @@ std::string NSQLite::ReadStringDirect(const char* path)  // static
     return str;
 }
 
+std::string NSQLite::FormName(const char* dbfold, const char* dbname) // static
+{
+    std::stringstream ss ;
+    ss << dbfold << "/" << dbname ;
+    std::string str = ss.str() ;
+    return str ;
+}
 
 /**
 TODO: try using ":memory:" for filename when testing - for an in memory DB
 **/
 
 
-inline NSQLite::NSQLite(const char* filename)
+inline NSQLite::NSQLite(const char* dbfold, const char* dbname)
     :
+    dbpath(FormName(dbfold,dbname)),
     err(nullptr),
     db(nullptr)
 {
+
     sqlite3* database = nullptr ;
-    int rc = sqlite3_open(filename, &database);
+    int rc = sqlite3_open(dbpath.c_str(), &database);
     if(rc != SQLITE_OK) {
         printf("NSQLite::NSQLite  could not be opened %s \n", sqlite3_errmsg(database));
     }

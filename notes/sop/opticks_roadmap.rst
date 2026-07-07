@@ -67,7 +67,7 @@ Aim for all testing to use the same recording pipeline.
 
 
 * grafana+sqlite3-plugin : restricted to local file sqlite3 db (convenient for initial development)
-* grafana+postgresql : potential future is local file restriction becomes a problem
+* grafana+postgresql : potential future if local file restriction becomes a problem
 
 
 OpticksMonitoring : integration with gitlab-ci nightly tests
@@ -84,7 +84,7 @@ On gitlab-runner workstation (Ada)::
 Web UI:
 
 * https://code.ihep.ac.cn/blyth/oj/                 ## gitlab OJ repository
-* https://code.ihep.ac.cn/blyth/oj/-/settings/ci_cd ## click "Runners" to see configured Project runners and their tags)
+* https://code.ihep.ac.cn/blyth/oj/-/settings/ci_cd ## click "Runners" to see configured Project runners and their tags
 * https://code.ihep.ac.cn/blyth/oj/-/runners/1647   ## details of config for one runner, including tags like "opticks-gpu"
 
 

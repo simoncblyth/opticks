@@ -3,6 +3,8 @@
 sreportdb.h
 ============
 
+This is included by: sysrap/tests/sreportdb.cc
+
 
 
 **/
@@ -31,12 +33,13 @@ struct sreportdb
     static constexpr const char* SCHEMA = "sreportdb.sql" ;
 
     int level ;
-    std::string db_path ;
+    const char* dbfold ;
     std::string schema_path ;
     std::string schema_sql ;
     NSQLite* db ;
 
-    sreportdb(const char* dbpath);
+    static constexpr const char* DBNAME="sreportdb.sqlite3" ;
+    sreportdb(const char* dbfold);
     std::string desc() const;
 
     int  import_auto(   const char* dir);
@@ -114,27 +117,30 @@ bool sreportdb::IsReportDir(const char* _dir) // static
 
 
 
-
-
-
-
 /**
 sreportdb::sreportdb
 ----------------------
 
-THIS CTOR EXECUTES SCHEMA SQL THAT DROPS PREEXISTING TABLES
+Constructor:
+
+1. loads sql string from .sql file that is sibling to the executable path
+2. instanciates NSQLite with provided dbpath
+3. executes the schema sql creating tables
+
+   * CURRENTLY THE SCHEMA SQL DROPS PREEXISTING TABLES
+   * THIS IS APPROPRIATE WHILE THE SCHEMA IS IN DEVELOPMENT
+   * DB REGARDED AS TRANSIENT CACHE OF THE persisted report folders
 
 **/
 
 
-
-inline sreportdb::sreportdb(const char* dbpath)
+inline sreportdb::sreportdb(const char* dbfold_)
     :
     level(ssys::getenvint(_level, 0)),
-    db_path(dbpath),
+    dbfold(dbfold_ ? strdup(dbfold_) : nullptr),
     schema_path(sfilesystem::ExecutablePathSibling(SCHEMA)),
     schema_sql(U::ReadStringDirect(schema_path.c_str())),
-    db(new NSQLite(db_path.c_str()))
+    db(new NSQLite(dbfold,DBNAME))
 {
     db->exec(schema_sql.c_str());
 }
@@ -145,7 +151,7 @@ inline std::string sreportdb::desc() const
     std::stringstream ss ;
     ss << "[sreportdb::desc\n" ;
     ss << " level       " << level << "\n" ;
-    ss << " db_path     " << db_path << "\n" ;
+    ss << " dbfold      " << ( dbfold ? dbfold : "-" ) << "\n" ;
     ss << " schema_path " << schema_path << "\n" ;
     ss << " schema_sql\n" << schema_sql << "\n" ;
     ss << "]sreportdb::desc\n" ;
@@ -172,6 +178,17 @@ inline int sreportdb::import_auto(const char* _dir)
 }
 
 
+/**
+sreportdb::import_archive
+-------------------------
+
+Recursively iterate over subdirectories of  _archive_dir looking
+for directories with name and contents of a report directory.
+When found invoke sreportdb::import_report populating the sqlite3 database.
+
+**/
+
+
 inline int sreportdb::import_archive(const char* _archive_dir)
 {
     std::cout << "[sreportdb::import_archive _archive_dir " << ( _archive_dir ? _archive_dir : "-" ) << "\n";
@@ -185,7 +202,10 @@ inline int sreportdb::import_archive(const char* _archive_dir)
     namespace fs = std::filesystem;
     fs::path archive_dir(_archive_dir);
 
-    std::regex sreport_pattern(R"(^sreport_\d+$)"); // HMM: could skip this name check
+    //const char* pattern = "" ; // empty pattern yields regex that matches any folder name
+    const char* pattern = R"(^sreport_\d+$)" ;  // R means raw string - so no escaping of backslashes
+    std::regex sreport_pattern(pattern);
+
     auto iterator_options = fs::directory_options::skip_permission_denied;
     int rc = 0 ;
     for (const auto& entry : fs::recursive_directory_iterator(archive_dir, iterator_options))
@@ -217,10 +237,12 @@ inline int sreportdb::import_archive(const char* _archive_dir)
 sreportdb::import_report
 --------------------------
 
+1. loads run and evsmry arrays from fold directory
+2. invokes the various _import methods converting array data and metadata into sqlite3 tables
+
 Most of the run metadata comes from smeta::Collect
 
 **/
-
 
 inline int sreportdb::import_report(const char* _fold)
 {
@@ -256,18 +278,26 @@ inline int sreportdb::import_report(const char* _fold)
 
 
 /**
+sreportdb::_import_versionset
+------------------------------
 
+Invoked from sreportdb::import_report
 
-querying with join
+1. inserts or ignores version information obtained from run array metadata into the versionset table,
+   the "or ignore" means that a row is added to the table only for a new versionset
+2. queries the versionset table to yield versionset_id
+3. returns the versionset id
 
-SELECT
-    r.run_timestamp / 1000000 AS time,
-    v.nvidia_driver AS "Driver",
-    v.opticks_version AS "Opticks Ver",
-    r.dt_geometry_upload AS "Upload Duration"
-FROM opticks_runs r
-JOIN opticks_versionset v ON r.versionset_id = v.id
-ORDER BY r.run_timestamp ASC;
+Querying with join::
+
+    SELECT
+        r.run_timestamp / 1000000 AS time,
+        v.nvidia_driver AS "Driver",
+        v.opticks_version AS "Opticks Ver",
+        r.dt_geometry_upload AS "Upload Duration"
+    FROM opticks_runs r
+    JOIN opticks_versionset v ON r.versionset_id = v.id
+    ORDER BY r.run_timestamp ASC;
 
 **/
 
@@ -330,6 +360,19 @@ inline int64_t sreportdb::_import_versionset(const NP* run)
     return versionset_id ;
 }
 
+/**
+sreportdb::_import_run
+-----------------------
+
+Invoked from sreportdb::import_report
+Inserts inserts into opticks_runs table metadata obtained from:
+
+1. run array metadata
+2. evsmry array metadata initialization times
+3. fold and versionset_id from arguments
+
+Returns run_id of the single added row.
+**/
 
 inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP* evsmry, int64_t versionset_id )
 {
@@ -389,6 +432,12 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
 /**
 sreportdb::_import_evsmry
 --------------------------
+
+Invoked from sreportdb::import_report
+
+Inserts one row for each event with counts and timings plus
+the run_id reference from the argument. Returns the last_evt_id
+from the last row added.
 
 **/
 
