@@ -5,6 +5,9 @@ sreportdb.h
 
 This is included by: sysrap/tests/sreportdb.cc
 
+For tips on development of Grafana queries against the sreportdb database see:
+
+* ~/o/sysrap/sreportdb_grafana.rst
 
 
 **/
@@ -421,16 +424,6 @@ Invoked from sreportdb::import_report
 2. queries the versionset table to yield versionset_id
 3. returns the versionset id
 
-Querying with join::
-
-    SELECT
-        r.run_timestamp / 1000000 AS time,
-        v.nvidia_driver AS "Driver",
-        v.opticks_version AS "Opticks Ver",
-        r.dt_geometry_upload AS "Upload Duration"
-    FROM opticks_runs r
-    JOIN opticks_versionset v ON r.versionset_id = v.id
-    ORDER BY r.run_timestamp ASC;
 
 **/
 
