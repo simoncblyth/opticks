@@ -48,14 +48,35 @@ CREATE TABLE opticks_runs (
     dt_geometry_upload  INTEGER NOT NULL,
     total_events        INTEGER NOT NULL,
 
-    ci_pipeline_source  TEXT NOT NULL,
-    ci_pipeline_id      INTEGER NOT NULL,
-    ci_job_id           INTEGER NOT NULL,
+    ci_pipeline_source  TEXT NOT NULL,           -- blank when not ci
+    ci_pipeline_id      INTEGER NOT NULL,        -- -1 when not ci
+    ci_job_id           INTEGER NOT NULL,        -- -1 when not ci
 
     FOREIGN KEY (versionset_id) REFERENCES opticks_versionset(id)
 
+    -- UNIQUE (ci_pipeline_id, ci_job_id)  -- NULL is never equal to another NULL, but when using -1 this will prevent INSERT
+
 );
 -- STRICT is a SQLite 3.37+ feature
+
+DROP INDEX IF EXISTS idx_runs_timestamp;
+CREATE INDEX IF NOT EXISTS idx_runs_timestamp ON opticks_runs(run_timestamp);
+
+-- 2. Protects local standalone runs from duplicating their timestamps
+DROP INDEX IF EXISTS uid_opticks_runs_local_timestamp;
+CREATE UNIQUE INDEX IF NOT EXISTS uid_opticks_runs_local_timestamp
+ON opticks_runs (run_timestamp)
+WHERE ci_pipeline_id = -1;
+
+-- 1. Protects GitLab CI runs from duplicating
+DROP INDEX IF EXISTS uid_opticks_runs_ci;
+CREATE UNIQUE INDEX IF NOT EXISTS uid_opticks_runs_ci
+ON opticks_runs (ci_pipeline_id, ci_job_id)
+WHERE ci_pipeline_id != -1;
+
+
+
+
 
 -- 2. THE CHILD TABLE: Granular Per-Event Metrics
 CREATE TABLE opticks_events (
@@ -82,6 +103,13 @@ CREATE TABLE opticks_events (
 
 -- Performance Indexes
 CREATE INDEX idx_events_run_id ON opticks_events(run_id);
-CREATE INDEX idx_runs_timestamp ON opticks_runs(run_timestamp);
+
+
+
+
+
+
+
+
 
 

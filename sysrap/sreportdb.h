@@ -46,8 +46,18 @@ struct sreportdb
     int  import_archive(const char* archive_dir);
     int  import_report( const char* report_dir);
 
+    bool is_imported( const NP* run );
+
+    bool is_imported_combi( int64_t ci_pipeline_id, int64_t ci_job_id, int64_t run_timestamp );
+    bool is_imported_nonci( int64_t run_timestamp );
+    bool is_imported_ci( int64_t ci_pipeline_id, int64_t ci_job_id );
+
+
+
     int64_t _import_versionset(const NP* run);
     int64_t _import_run(const char* fold, const NP* run, const NP* evsmry, int64_t versionset_id );
+    std::string desc_runs() const ;
+
     int64_t _import_evsmry(const NP* evsmry, int64_t run_id);
 
 };
@@ -259,21 +269,144 @@ inline int sreportdb::import_report(const char* _fold)
         return -1;
     }
 
-    std::cout << "-sreportdb::import_report run    " << ( run    ? run->sstr() : "-" ) << "\n" ;
-    std::cout << "-sreportdb::import_report evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
+    if(level > 1) std::cout << "-sreportdb::import_report run    " << ( run    ? run->sstr() : "-" ) << "\n" ;
+    if(level > 1) std::cout << "-sreportdb::import_report evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
+
+    bool skip_import = is_imported(run);
 
 
-    int64_t versionset_id = _import_versionset(run);
-    std::cout << "-sreportdb::import_report versionset_id " << versionset_id << "\n" ;
-    assert( versionset_id > 0 );
+    if(skip_import)
+    {
+        std::cout <<  "-sreportdb::import_report - SKIP AS ALREADY IMPORTED\n";
+    }
+    else
+    {
+        int64_t versionset_id = _import_versionset(run);
 
-    int64_t run_id        = _import_run(_fold, run, evsmry, versionset_id );
 
-    int64_t last_evt_id   = _import_evsmry( evsmry, run_id );
+        int64_t run_id        = _import_run(_fold, run, evsmry, versionset_id );
 
-    std::cout << "]sreportdb::import_report " << ( _fold ? _fold : "-" ) << " last_evt_id {" << last_evt_id << "} " << "\n";
+        int64_t last_evt_id   = _import_evsmry( evsmry, run_id );
+
+        std::cout
+            << "-sreportdb::import_report"
+            << " versionset_id " << versionset_id
+            << " run_id " << run_id
+            << " last_evt_id " << last_evt_id
+            << "\n"
+            ;
+
+    }
+
+    std::cout
+        << "]sreportdb::import_report "
+        << ( _fold ? _fold : "-" )
+        << " skip_import " << ( skip_import ? "YES" : "NO ")
+        << "\n\n"
+        ;
+
     return 0 ;
 }
+
+
+inline bool sreportdb::is_imported( const NP* run )
+{
+    //std::string ci_pipeline_source = run->get_meta<std::string>("CI_PIPELINE_SOURCE","");
+    int64_t ci_pipeline_id         = run->get_meta<int64_t>("CI_PIPELINE_ID",-1);
+    int64_t ci_job_id              = run->get_meta<int64_t>("CI_JOB_ID",-1);
+    int64_t run_timestamp          = run->get_meta<int64_t>("InitTimestamp",0);   // formerly _init_stamp
+
+
+    bool already = is_imported_combi(ci_pipeline_id, ci_job_id, run_timestamp );
+    //bool already = ci_pipeline_id > -1 ? is_imported_ci(ci_pipeline_id, ci_job_id) : is_imported_nonci( run_timestamp );
+
+    return already ;
+}
+
+
+/**
+sreportdb::is_imported_combi
+-----------------------------
+
+Combi approach avoids separate methods for ci and nonci but with
+the expense of more complicated sql.
+
+**/
+
+inline bool sreportdb::is_imported_combi( int64_t ci_pipeline_id, int64_t ci_job_id, int64_t run_timestamp )
+{
+    // A single query that adapts seamlessly based on the value of ci_pipeline_id
+    const char* check_sql =
+        "SELECT EXISTS("
+        "    SELECT 1 FROM opticks_runs "
+        "    WHERE (? != -1 AND ci_pipeline_id = ? AND ci_job_id = ?) " // CI path
+        "       OR (? = -1  AND run_timestamp = ?)"                    // Local path
+        ");";
+
+    NSQLiteStmt selector(db->db, check_sql);
+
+    // Bind the variables matching the order of the '?' placeholders
+    auto _result = selector.query_scalar<int64_t>(
+        ci_pipeline_id, ci_pipeline_id, ci_job_id, // CI parameters
+        ci_pipeline_id, run_timestamp              // Local parameters
+    );
+
+    int64_t result = _result.has_value() ? _result.value() : -1 ;
+    bool already = (result == 1);
+
+    std::cout << "-sreportdb::is_imported_ "
+              << " ci_pipeline_id " << ci_pipeline_id
+              << " ci_job_id " << ci_job_id
+              << " run_timestamp " << run_timestamp
+              << " result " << result << "\n" ;
+
+    return already ;
+}
+
+inline bool sreportdb::is_imported_nonci( int64_t run_timestamp )
+{
+    const char* check_sql =
+        "SELECT EXISTS("
+        "    SELECT 1 FROM opticks_runs "
+        "    WHERE ( run_timestamp = ? ) "
+        ");";
+
+    NSQLiteStmt selector(db->db, check_sql);
+
+    auto _result = selector.query_scalar<int64_t>( run_timestamp );
+    int64_t result = _result.has_value() ? _result.value() : -1 ;
+    bool already = (result == 1);
+
+    std::cout << "-sreportdb::is_imported_nonci "
+              << " run_timestamp " << run_timestamp
+              << " result " << result << "\n" ;
+
+    return already ;
+}
+
+inline bool sreportdb::is_imported_ci( int64_t ci_pipeline_id, int64_t ci_job_id )
+{
+    const char* check_sql =
+        "SELECT EXISTS("
+        "    SELECT 1 FROM opticks_runs "
+        "    WHERE ( ci_pipeline_id = ? AND ci_job_id = ? ) "
+        ");";
+
+    NSQLiteStmt selector(db->db, check_sql);
+
+    auto _result = selector.query_scalar<int64_t>( ci_pipeline_id, ci_job_id );
+    int64_t result = _result.has_value() ? _result.value() : -1 ;
+    bool already = (result == 1);
+
+    std::cout << "-sreportdb::is_imported_ci "
+              << " ci_pipeline_id " << ci_pipeline_id
+              << " ci_job_id " << ci_job_id
+              << " result " << result << "\n"
+              ;
+
+    return already ;
+}
+
 
 
 
@@ -372,11 +505,16 @@ Inserts inserts into opticks_runs table metadata obtained from:
 3. fold and versionset_id from arguments
 
 Returns run_id of the single added row.
+
+    // HMM: MAYBE A JSON BLOB TOO - FOR CHANGE ISOLATION
+
 **/
 
 inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP* evsmry, int64_t versionset_id )
 {
     std::cout << "[sreportdb::_import_run versionset_id " << versionset_id << "\n";
+    assert( versionset_id > 0 );
+
     int64_t     run_timestamp      = run->get_meta<int64_t>("InitTimestamp",0);   // formerly _init_stamp
 
     std::string fold               = _fold ;
@@ -397,9 +535,8 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
     int64_t ci_pipeline_id         = run->get_meta<int64_t>("CI_PIPELINE_ID",-1);
     int64_t ci_job_id              = run->get_meta<int64_t>("CI_JOB_ID",-1);
 
-    // HMM: MAYBE A JSON BLOB TOO - FOR CHANGE ISOLATION
-
-    const char* sql = "INSERT OR REPLACE INTO opticks_runs ("
+    // OR IGNORE
+    const char* sql = "INSERT INTO opticks_runs ("
                       "versionset_id, run_timestamp,"
                       "fold, script, script_arg, executable,"
                       "test, gpu, geometry, tree_digest,"
@@ -414,6 +551,9 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
                       "?, ?, ?"
                       ");";
 
+    // NULLIF in the SQL the fallback ci values yields NULL in the table
+    // "NULLIF(?,''), NULLIF(?,-1), NULLIF(?,-1)"
+
     NSQLiteStmt inserter(db->db, sql);
     bool success = inserter.execute(
                       versionset_id, run_timestamp,
@@ -427,6 +567,31 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
     int64_t run_id = sqlite3_last_insert_rowid(db->db);
     std::cout << "]sreportdb::_import_run run_id " << run_id << "\n";
     return run_id ;
+}
+
+inline std::string sreportdb::desc_runs() const
+{
+    const char* desc_sql = "SELECT id, run_timestamp, ci_pipeline_id, ci_job_id FROM opticks_runs;";
+    NSQLiteStmt desc(db->db, desc_sql);
+    std::stringstream ss;
+
+    int64_t id = 0;
+    int64_t run_timestamp = 0;
+    int64_t ci_pipeline_id = 0;
+    int64_t ci_job_id = 0;
+
+    // Beautifully elegant unpacking directly into variables
+    while (desc.fetch(id, run_timestamp, ci_pipeline_id, ci_job_id))
+    {
+        ss << "(opticks_runs)"
+           << " id: "             << std::setw(10) << id
+           << " run_timestamp: "  << std::setw(16) << run_timestamp
+           << " ci_pipeline_id: " << std::setw(10) << (ci_pipeline_id == -1 ? "LOCAL" : std::to_string(ci_pipeline_id))
+           << " ci_job_id: "      << std::setw(10) << (ci_job_id      == -1 ? "LOCAL" : std::to_string(ci_job_id)     )
+           << "\n";
+    }
+    std::string str = ss.str() ;
+    return str ;
 }
 
 /**

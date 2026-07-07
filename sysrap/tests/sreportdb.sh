@@ -5,7 +5,9 @@ sreportdb.sh
 
 ~/o/sysrap/tests/sreportdb.sh
 
-* creates sqlite3 db, loads schema, populates using run.npy and evsmry.npy from *runfold*
+1. creates sqlite3 db
+2. loads schema defining tables versionset, runs, events
+3. populates the tables from run.npy and evsmry.npy arrays from one or more *runfold*
 
 EOU
 }
@@ -15,12 +17,19 @@ bin=$name
 
 DBNAME=$name.sqlite3
 
+#export sreportdb__dupe_import=1  ## uncomment to test dupe prevention
+#export SREPORT_ARCHIVE_DIR=/tmp/blyth/opticks/sreport_archive_dir
+
 
 if [ -n "$SREPORT_ARCHIVE_DIR" ]; then
+
    mkdir -p $SREPORT_ARCHIVE_DIR
    DBFOLD=${SREPORT_ARCHIVE_DIR}
    INFOLD=${SREPORT_ARCHIVE_DIR}
+
+   printf "$BASH_SOURCE - import from SREPORT_ARCHIVE_DIR : $SREPORT_ARCHIVE_DIR \n"
 else
+
    tmp=/tmp/$USER/opticks
    TMP=${TMP:-$tmp}
    FOLD=$TMP/$name
@@ -36,6 +45,9 @@ else
 
    #INFOLD=$REPFOLD
    INFOLD=$ARCHIVE
+
+   printf "$BASH_SOURCE - test import from INFOLD $INFOLD \n"
+
 fi
 
 DBPATH=$DBFOLD/$DBNAME
@@ -46,7 +58,7 @@ defarg="info_run_check"
 allarg="info_clean_run_check_query"
 arg=${1:-$defarg}
 
-vv="BASH_SOURCE PWD name bin tmp TMP FOLD DBFOLD DBNAME DBPATH REPFOLD ARCHIVE INFOLD defarg arg allarg SREPORT_ARCHIVE_DIR"
+vv="BASH_SOURCE PWD name bin tmp TMP FOLD DBFOLD DBNAME DBPATH REPFOLD ARCHIVE INFOLD defarg arg allarg SREPORT_ARCHIVE_DIR sreportdb__dupe_import"
 
 cd $(dirname $(realpath $BASH_SOURCE))
 
@@ -75,4 +87,11 @@ fi
 if [ "${arg/query}" != "$arg" ]; then
    sqlite3 $DBPATH
 fi
+
+if [ "${arg/ls}" != "$arg" ]; then
+   ls -alst $DBPATH
+fi
+
+
+
 

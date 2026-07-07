@@ -131,6 +131,31 @@ struct NSQLiteStmt
     }
 
 
+    template<typename... Args>
+    bool fetch(Args&... args) {
+        // 1. Step the statement to check for a row
+        int rc = sqlite3_step(stmt);
+        if (rc != SQLITE_ROW) {
+            if (rc != SQLITE_DONE) {
+                std::cerr << "NSQLiteStmt::fetch error: " << sqlite3_errmsg(db_ptr) << std::endl;
+            }
+            return false; // Retuns false when done or on error
+        }
+
+        // 2. Unpack and assign each column sequentially using a fold expression
+        int col = 0;
+        ((args = get_column(col++, static_cast<Args*>(nullptr))), ...);
+
+        // * get_column helpers use dummy pointer types (int*, int64_t*) to resolve function overloading.
+        //
+        // * casting nullptr to Args* inside the loop, allows the compiler to match
+        //   the type of each variadic parameter to the specific get_column overload
+        //   without any instance allocations.
+
+        return true;
+    }
+
+
 };
 
 
@@ -138,7 +163,6 @@ struct NSQLiteStmt
 NSQLite
 ========
 
-TODO: add exec of sql from file, eg for defining schema of collection of tables
 
 **/
 
