@@ -95,28 +95,33 @@ directories with the provided *prefix* that are of the below form::
 
 When such directories are found the higest index integer found
 is returned or -1 if no such directory is present.
+If the container_dir does not yet exist -1 is also returned.
 
 **/
 
 inline long long sfilesystem::find_index_of_max_indexed_dirname(const char* container_dir_, const char* prefix)
 {
-    namespace fs = std::filesystem;
+    long long max_index = -1; // Returns -1 if the container_dir does not exist OR no matching directories are found
 
+    namespace fs = std::filesystem;
     fs::path container_dir = container_dir_ ;
 
-    if (!fs::exists(container_dir) || !fs::is_directory(container_dir)) {
-        throw std::runtime_error("Target directory does not exist or is not a directory.");
-    }
-
-    long long max_index = -1; // Returns -1 if no matching directories are found
-    for (const auto& entry : fs::directory_iterator(container_dir))
+    if(fs::exists(container_dir) && fs::is_directory(container_dir))
     {
-        if (!entry.is_directory()) continue ;
-        std::string dir_name = entry.path().filename().string();
-        const char* dirname = dir_name.c_str();
-        if(!is_indexed_dirname(dirname, prefix)) continue ;
-        long long parsed_index = get_index_from_indexed_dirname(dirname, prefix);
-        max_index = std::max(max_index, parsed_index);
+        for (const auto& entry : fs::directory_iterator(container_dir))
+        {
+            if (!entry.is_directory()) continue ;
+            std::string dir_name = entry.path().filename().string();
+            const char* dirname = dir_name.c_str();
+            if(!is_indexed_dirname(dirname, prefix)) continue ;
+            long long parsed_index = get_index_from_indexed_dirname(dirname, prefix);
+            max_index = std::max(max_index, parsed_index);
+        }
+    }
+    else
+    {
+        std::cout << "sfilesystem::find_index_of_max_indexed_dirname container_dir_ does not exist yet {" << ( container_dir_ ? container_dir_ : "-" ) << "}\n" ;
+        //throw std::runtime_error("sfilesystem::find_index_of_max_indexed_dirname - Target directory does not exist or is not a directory.");
     }
     return max_index;
 }

@@ -156,15 +156,28 @@ for example::
      collection_dir/sreport_0000001/
      collection_dir/sreport_0000101/
 
+When collection_dir does not exist then a next_index of zero
+is obtained and the container_dir is created together with
+the report_dir by NPFold::save. More specifically NPFold::_save_arrays
+calls NP::save which does U::MakeDirsForFile before saving
+array data and metadata.
+
 **/
 
 inline void sreport::save_into_archive(const char* archive_dir) const
 {
+    std::cout << "[sreport::save_into_archive {" << ( archive_dir ? archive_dir : "-" ) << "}\n" ;
     NPFold* smry = serialize_copy();
     long long max_index = FindIndexOfMaxIndexedDirname(archive_dir);
     long long next_index = max_index + 1 ;
+
+    // Get max_index of -1 when container_dir does not exist
+    // or no indexed subdir is found within the container_dir,
+    // so in these cases the next_index is zero.
+    //
     std::string indexed_dirname = FormIndexedDirname(next_index);
     smry->save(archive_dir, indexed_dirname.c_str() );
+    std::cout << "]sreport::save_into_archive {" << ( archive_dir ? archive_dir : "-" ) << "}\n" ;
 }
 
 
@@ -178,7 +191,7 @@ inline std::string sreport::FormIndexedDirname(long long index)
 }
 inline bool sreport::IsIndexedDirname(const char* dirname)  // static
 {
-    return sfilesystem::is_indexed_dirname( dirname, COLLECTION_PREFIX );  
+    return sfilesystem::is_indexed_dirname( dirname, COLLECTION_PREFIX );
 }
 
 

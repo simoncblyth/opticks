@@ -2639,7 +2639,13 @@ inline int NPFold::_save(const char* base)  // not const as sets savedir
     return 0 ;
 }
 
+/**
+NPFold::_save_arrays
+----------------------
 
+NB NP::save will create the directory if it does not exist
+
+**/
 
 
 inline int NPFold::_save_arrays(const char* base) // using the keys with .npy ext as filenames

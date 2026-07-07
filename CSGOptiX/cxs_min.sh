@@ -858,6 +858,7 @@ if [ "${arg/deport}" != "$arg" ]; then
 fi
 
 if [ "${arg/report}" != "$arg" ]; then
+   echo $BASH_SOURCE - RUNNING FROM LOGDIR $LOGDIR - PWD $PWD
    sreport   ## NB running from LOGDIR
    [ $? -ne 0 ] && echo $BASH_SOURCE report error && exit 1
 fi
