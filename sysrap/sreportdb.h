@@ -17,6 +17,10 @@ For tips on development of Grafana queries against the sreportdb database see:
 #include <filesystem>
 #include <string>
 #include <regex>
+#include <vector>
+#include <algorithm>
+
+
 
 #include "ssys.h"
 #include "sreport.h"
@@ -219,6 +223,7 @@ inline int sreportdb::import_archive(const char* _archive_dir)
     const char* pattern = R"(^sreport_\d+$)" ;  // R means raw string - so no escaping of backslashes
     std::regex sreport_pattern(pattern);
 
+    std::vector<fs::path> paths;
     auto iterator_options = fs::directory_options::skip_permission_denied;
     int rc = 0 ;
     for (const auto& entry : fs::recursive_directory_iterator(archive_dir, iterator_options))
@@ -228,19 +233,31 @@ inline int sreportdb::import_archive(const char* _archive_dir)
 
         std::string entry_dir = entry.path().string();
         const char* _entry_dir = entry_dir.c_str();
-
         bool is_report_dir = IsReportDir(_entry_dir);
-        if(!is_report_dir) continue ;
+        if(is_report_dir) paths.push_back(entry.path());
+    }
 
-        int irc = import_report( _entry_dir );
+    std::sort(paths.begin(), paths.end());
+    for (const auto& path : paths)
+    {
+        std::cout  << "-sreportdb::import_archive [" << path.string().c_str() << "]\n" ;
+    }
+
+    for (const auto& path : paths)
+    {
+        std::string report_dir = path.string();
+        const char* _report_dir = report_dir.c_str();
+        //const char* _report_dir = path.string().c_str(); LEADS TO FUNNY CHARS IN DIR - AS GETS POINTER FROM A TEMPORARY
+        int irc = import_report( _report_dir );
         rc += irc ;
 
         if( irc != 0 )
         {
-            std::cout << "-sreportdb::import_archive FAIL for dir [" << ( _entry_dir ? _entry_dir : "-" ) << "]\n";
+            std::cout << "-sreportdb::import_archive FAIL for dir [" << ( _report_dir ? _report_dir : "-" ) << "]\n";
             return rc ;
         }
     }
+
     return rc ;
 }
 

@@ -133,8 +133,8 @@ EOU
 #test=vvvvvvlarge_evt
 #test=vvvvvvlarge_evt_merge
 
-#test=medium_scan
-test=medium_scan_first
+test=medium_scan
+#test=medium_scan_first
 
 export TEST=${TEST:-$test}
 

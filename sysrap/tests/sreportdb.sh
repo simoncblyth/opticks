@@ -55,7 +55,7 @@ DBPATH=$DBFOLD/$DBNAME
 
 
 defarg="info_run_check"
-allarg="info_clean_run_check_query"
+allarg="info_clean_run_check_query_report"
 arg=${1:-$defarg}
 
 vv="BASH_SOURCE PWD name bin tmp TMP FOLD DBFOLD DBNAME DBPATH REPFOLD ARCHIVE INFOLD defarg arg allarg SREPORT_ARCHIVE_DIR sreportdb__dupe_import"
@@ -91,6 +91,14 @@ fi
 if [ "${arg/ls}" != "$arg" ]; then
    ls -alst $DBPATH
 fi
+
+if [[ "$arg" == "report" ]]; then
+    BIN=$(which sreportdb)
+    DIR=/data1/gitlab-runner/sreport_archive
+    echo $BASH_SOURCE - ACT LIKE THE GITLAB-CI REPORT STAGE - RECREATING DB FROM REPORTS
+    sudo -u gitlab-runner bash -c "$BIN $DIR $DIR"
+fi
+
 
 
 
