@@ -5,9 +5,32 @@ sreportdb.sh
 
 ~/o/sysrap/tests/sreportdb.sh
 
-1. creates sqlite3 db
-2. loads schema defining tables versionset, runs, events
-3. populates the tables from run.npy and evsmry.npy arrays from one or more *runfold*
+1. creates sreportdb.sqlite3
+2. loads schema sql defining tables : opticks_versionset, opticks_runs, opticks_events
+3. populates the tables from report folders containing run.npy and evsmry.npy arrays
+
+
+info
+   dump variables
+
+clean
+   delete DBPATH
+
+run
+   invoke sreportdb with DBFOLD and INFOLD arguments
+
+check
+   invoke few simple queries against DBPATH using sqlite3 tool
+
+query
+   interactive use of sqlite3 commandline tool
+
+ls
+   list the configured DBPATH
+
+report
+   requires sudoer privilege - acting as gitlab-runner user recreate the gitlab-ci reports database
+
 
 EOU
 }
@@ -23,12 +46,15 @@ DBNAME=$name.sqlite3
 
 if [ -n "$SREPORT_ARCHIVE_DIR" ]; then
 
+   printf "$BASH_SOURCE - standard route used by ~/oj/.gitlab-ci.yml report job"
    mkdir -p $SREPORT_ARCHIVE_DIR
    DBFOLD=${SREPORT_ARCHIVE_DIR}
    INFOLD=${SREPORT_ARCHIVE_DIR}
 
    printf "$BASH_SOURCE - import from SREPORT_ARCHIVE_DIR : $SREPORT_ARCHIVE_DIR \n"
 else
+
+   printf "$BASH_SOURCE - development route used to check DB creation machinery"
 
    tmp=/tmp/$USER/opticks
    TMP=${TMP:-$tmp}
@@ -55,7 +81,7 @@ DBPATH=$DBFOLD/$DBNAME
 
 
 defarg="info_run_check"
-allarg="info_clean_run_check_query_report"
+allarg="info_clean_run_check_query_ls_report"
 arg=${1:-$defarg}
 
 vv="BASH_SOURCE PWD name bin tmp TMP FOLD DBFOLD DBNAME DBPATH REPFOLD ARCHIVE INFOLD defarg arg allarg SREPORT_ARCHIVE_DIR sreportdb__dupe_import"
@@ -85,7 +111,7 @@ if [ "${arg/check}" != "$arg" ]; then
 fi
 
 if [ "${arg/query}" != "$arg" ]; then
-   sqlite3 $DBPATH
+   sqlite3 -readonly -box $DBPATH
 fi
 
 if [ "${arg/ls}" != "$arg" ]; then
@@ -99,7 +125,5 @@ if [[ "$arg" == "report" ]]; then
     sudo -u gitlab-runner bash -c "$BIN $DIR $DIR"
 fi
 
-
-
-
+exit 0
 

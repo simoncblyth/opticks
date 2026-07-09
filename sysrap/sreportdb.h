@@ -1,7 +1,7 @@
 #pragma once
 /**
-sreportdb.h
-============
+sreportdb.h - extracts info from run and evsmry arrays and metadata to populate sqlite3 database
+================================================================================================
 
 This is included by: sysrap/tests/sreportdb.cc
 
@@ -303,7 +303,6 @@ inline int sreportdb::import_report(const char* _fold)
     {
         int64_t versionset_id = _import_versionset(run);
 
-
         int64_t run_id        = _import_run(_fold, run, evsmry, versionset_id );
 
         int64_t last_evt_id   = _import_evsmry( evsmry, run_id );
@@ -315,7 +314,6 @@ inline int sreportdb::import_report(const char* _fold)
             << " last_evt_id " << last_evt_id
             << "\n"
             ;
-
     }
 
     std::cout

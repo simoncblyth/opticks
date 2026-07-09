@@ -13,6 +13,18 @@ To follow how the sreportdb database is created see::
     ~/o/sysrap/tests/sreportdb.sh
 
 
+Grafana Sharing Links
+----------------------
+
+* http://localhost:3000/d/ad25xw2/cxs-timings?orgId=1&from=now-6h&to=now&timezone=browser&var-TargetRun=5
+* http://localhost:3000/public-dashboards/95767c3162484335822e588daf057a5a
+
+Exporting dashboard as json/yaml
+-----------------------------------
+
+Right hand narrow pane, click on downarrow icon.
+
+
 
 References for Grafana panel visualizations
 --------------------------------------------
@@ -191,6 +203,13 @@ browser's URL query string.
 
    * Name: pipeline_id (This must match what you want to use in your SQL code).
    * Type: Query or Text box (Choose Text box if you just want to pass it natively via URL without querying the DB for values).
+
+::
+
+   select ci_pipeline_id from opticks_runs ;
+   select ci_job_id from opticks_runs ;
+
+
    * Label: Pipeline ID
 
 4. Repeat the process to create a second variable named job_id as a Text box.
@@ -201,6 +220,35 @@ browser's URL query string.
 automatically maps URL parameters matching var-variable_name. If your URL
 contains ?var-pipeline_id=12345&var-job_id=67890, Grafana will automatically
 intercept these values and assign them to your variables.
+
+But they are not independent ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Treating ci_pipeline_id and ci_job_id as independent is an oversimplification.
+Is there a better way of handling these togerther when using query parameters ?
+
+
+Chained variables::
+
+    SELECT DISTINCT ci_pipeline_id FROM opticks_runs ORDER BY run_timestamp DESC;
+
+    SELECT ci_job_id FROM opticks_runs WHERE ci_pipeline_id = '$ci_pipeline_id' ORDER BY run_timestamp DESC;
+
+
+Combine them::
+
+    SELECT  ci_pipeline_id || ':' || ci_job_id AS value, 'Pipeline #' || ci_pipeline_id || ' -> Job #' || ci_job_id AS text
+    FROM opticks_runs ORDER BY run_timestamp DESC LIMIT 20;
+
+
+
+
+
+
+
+
+
+
 
 
 Step 2: Use the Variables in Your SQLite Query
@@ -493,6 +541,140 @@ Source Variable in your Dashboard Settings.
 3. This adds a clean dropdown menu to the very top of your dashboard, allowing
    users to instantly flip the entire dashboard's context between Database A,
    Database B, or Database C with a single click.
+
+
+
+
+Realistic Grafana cxs query
+-------------------------------
+
+
+Abuse of time series using the auto metric grouping::
+
+    SELECT
+      (e.photon_count * 1.0) / 1000000 AS time, -- Using photon count as the X-Axis scale
+      (e.dt_simulate * 1.0) / 1000000 AS value,  -- Using duration as the Y-Axis
+      'Run ID: ' || e.run_id AS metric           // This splits the lines automatically
+    FROM
+      opticks_events e
+    WHERE
+      e.run_id IN (
+        SELECT id FROM opticks_runs ORDER BY run_timestamp DESC LIMIT 5
+      )
+    ORDER BY
+      e.photon_count ASC;
+
+
+
+Aggregation to sec_per_photon - better for showing more runs::
+
+    SELECT
+      'Run ' || r.id || ' (' || strftime('%m-%d', r.run_timestamp / 1000, 'unixepoch', 'localtime') || ')' AS run_label,
+      SUM(e.dt_simulate * 1.0) / SUM(e.photon_count) AS sec_per_photon
+    FROM
+      opticks_events e
+    JOIN
+      opticks_runs r ON e.run_id = r.id
+    WHERE
+      r.id IN (SELECT id FROM opticks_runs ORDER BY run_timestamp DESC LIMIT 10)
+    GROUP BY
+      r.id
+    ORDER BY
+      r.run_timestamp ASC;
+
+
+XY Chart approach::
+
+    SELECT
+      (photon_count * 1.0) / 1000000 AS photon_M,
+      (dt_simulate * 1.0) / 1000000 AS dt_sim_sec,
+      'Run #' || run_id AS run_label
+    FROM
+      opticks_events
+    WHERE
+      run_id IN (
+        SELECT id FROM opticks_runs ORDER BY run_timestamp DESC LIMIT 5
+      )
+    ORDER BY
+      photon_M ASC;
+
+
+
+
+Try adapt for TargetRun
+------------------------
+
+::
+
+    SELECT
+      (photon_count * 1.0) / 1000000 AS photon_M,
+      (dt_simulate * 1.0) / 1000000 AS dt_sim_sec
+    FROM
+      opticks_events
+    WHERE
+      run_id = $TargetRun
+    ORDER BY
+      photon_M ASC;
+
+
+
+
+
+
+External linking from gitlab-ci job outputs to corresponding grafana dashboard
+-------------------------------------------------------------------------------
+
+::
+
+    SELECT
+      event_index,
+      (photon_count * 1.0) / 1000000 AS photon_M,
+      (dt_simulate * 1.0) / 1000000 AS dt_sim_sec
+    FROM
+      opticks_events
+    WHERE
+      run_id = (
+        SELECT id
+        FROM opticks_runs
+        WHERE ci_pipeline_id = '$ci_pipeline_id' AND ci_job_id = '$ci_job_id'
+        LIMIT 1
+      )
+    ORDER BY
+      photon_M ASC;
+
+
+
+Annotation Query
+-----------------
+
+::
+
+    SELECT
+                  r.run_timestamp / 1000000 AS time,
+                  'Pipeline #' || r.ci_pipeline_id AS title,
+                  'Job ID: ' || r.ci_job_id || ' | Total Events: ' || r.total_events AS text,
+                  'gitlab-run,opticks' AS tags
+                FROM opticks_runs r
+                WHERE r.run_timestamp >= $__from * 1000 AND r.run_timestamp <= $__to * 1000
+                ORDER BY r.run_timestamp ASC;
+
+
+sqlite json_extract to reduce how often need to change tables
+----------------------------------------------------------------
+
+::
+
+    -- Example query extracting nested photon source positions and kernel times
+    SELECT
+        gpu_type,
+        opticks_version,
+        CAST(json_extract(metrics, '$.photon_counts.total') AS INT) AS total_photons,
+        CAST(json_extract(metrics, '$.kernels.raytrace_time') AS REAL) AS raytrace_time
+    FROM simulation_runs
+    WHERE gpu_type LIKE '%RTX%'
+      AND json_extract(metrics, '$.source_position.z') = 0.0;
+
+
 
 
 

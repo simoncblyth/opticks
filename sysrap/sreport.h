@@ -3,8 +3,27 @@
 sreport.h
 ==========
 
+For an overview of how this fits into the monitoring pipeline see:
+
+* ~/o/sysrap/sreportdb_monitoring_workflow.rst
 
 
+Q: Lots of sreport creation and persisting handles "sub" NPFold data,
+   but those are only relevant when full SEvt saving is configured,
+   can they be removed ?
+
+A: NO, full array saving and reporting remains useful debug functionality.
+   However the "sub" processing could be made optional to more clearly
+   show that the "sub-approach" with NPFold::LoadNoData is no longer
+   the preferred approach for most things.
+
+   Some things like "submeta_NumPhotonCollected" probably can be removed
+   as the SProf-ranges-evsmry route does the same thing more generally.
+   As the SProf approach, avoids needing full SEvt saving to be configured
+   it is much more generally useful as is can be used even in production.
+
+   * TODO: review, compare and simplify/remove where possible
+     when next in this context
 
 **/
 

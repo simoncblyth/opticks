@@ -1,12 +1,12 @@
 /**
-sreportdb.cc
-=============
+sreportdb.cc - creates sqlite3 DB and populates tables from persisted sreport folders
+======================================================================================
 
 ~/o/sysrap/tests/sreportdb.sh
 
-HMM: for archive dir argument does it makes sense to create db inside the archive ?
+For how this fits into the monitoring workflow see:
 
-* need to consider gitlab-ci practicalities
+~/o/sysrap/sreportdb_monitoring_workflow.rst
 
 **/
 
