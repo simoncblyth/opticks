@@ -96,6 +96,7 @@ int OKConf::Check()
 
 void OKConf::Dump(const char* msg)
 {
+    std::cout << " INSTEAD OF OKConfTest use OKConf_test  \n" ;
     std::cout << msg << std::endl ;
     std::cout << std::setw(50) << "OKConf::OpticksVersionInteger() "   << OKConf::OpticksVersionInteger() << std::endl ;
     std::cout << std::setw(50) << "OKConf::OpticksInstallPrefix() "    << OKConf::OpticksInstallPrefix() << std::endl ;

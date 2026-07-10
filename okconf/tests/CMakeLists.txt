@@ -6,6 +6,7 @@ include(OpticksBuildOptions)
 
 set(TEST_SOURCES
     OKConfTest.cc
+    OKConf_test.cc
     OpticksVersionNumberTest.cc
     Geant4VersionInteger.cc
     CPPVersionInteger.cc

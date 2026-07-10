@@ -97,15 +97,38 @@ endif()
 
 
 find_package(G4          MODULE QUIET)
-#find_package(Custom4     MODULE QUIET)
+
+set(Custom4_VERBOSE ON)
+find_package(Custom4 CONFIG)
+message(STATUS "${name} Custom4_FOUND:${Custom4_FOUND}  " )
+
+if(Custom4_FOUND)
+    # Split the string into a list using the dot as a delimiter
+    string(REPLACE "." ";" Custom4_VERSION_LIST ${Custom4_VERSION})
+
+    # Extract the individual components
+    list(GET Custom4_VERSION_LIST 0 Custom4_VERSION_MAJOR)
+    list(GET Custom4_VERSION_LIST 1 Custom4_VERSION_MINOR)
+    list(GET Custom4_VERSION_LIST 2 Custom4_VERSION_PATCH)
+
+    # Calculate the final integer version
+    # 0 * 10000 + 1 * 100 + 9 = 109
+    math(EXPR Custom4_VERSION_INTEGER "${Custom4_VERSION_MAJOR} * 10000 + ${Custom4_VERSION_MINOR} * 100 + ${Custom4_VERSION_PATCH}")
+
+    message(STATUS "Custom4_VERSION         : ${Custom4_VERSION}")
+    message(STATUS "Custom4_VERSION_INTEGER : ${Custom4_VERSION_INTEGER}")
+else()
+    set(Custom4_VERSION_INTEGER -1)
+endif()
+
 
 message(STATUS "OKCONF_OPTIX_INSTALL_DIR : ${OKCONF_OPTIX_INSTALL_DIR}")
 message(STATUS "OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
 message(STATUS "CUDAToolkit_VERSION_INTEGER : ${CUDAToolkit_VERSION_INTEGER}")
 message(STATUS "G4_VERSION_INTEGER      : ${G4_VERSION_INTEGER}")
+message(STATUS "Custom4_VERSION_INTEGER : ${Custom4_VERSION_INTEGER}")
 message(STATUS "COMPUTE_CAPABILITY      : ${COMPUTE_CAPABILITY}")
 message(STATUS "COMPUTE_ARCHITECTURES   : ${COMPUTE_ARCHITECTURES}")
-
 
 
 # generate define header for hardcoding in the library
@@ -120,6 +143,7 @@ set(OKCONF_CUDA_API_VERSION_INTEGER "${CUDAToolkit_VERSION_INTEGER}")
 set(OKCONF_OPTIX_VERSION_INTEGER  "${OptiX_VERSION_INTEGER}")
 set(OKCONF_OPTIX_INSTALL_DIR      "${OptiX_INSTALL_DIR}")
 set(OKCONF_GEANT4_VERSION_INTEGER "${G4_VERSION_INTEGER}")
+set(OKCONF_CUSTOM4_VERSION_INTEGER "${Custom4_VERSION_INTEGER}")
 
 set(OKCONF_OPTICKS_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

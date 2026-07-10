@@ -66,6 +66,7 @@ struct OKConf
 
     // static unsigned CLHEPVersionInteger();    see x4/tests/CLHEPVersionInteger.cc
     static int Geant4VersionInteger() ;
+    static int Custom4VersionInteger() ;
 
     static int OpticksVersionInteger();
     static int OpticksVersionInteger_Gymnastically();
@@ -145,6 +146,13 @@ inline int OKConf::Check()
    {
        rc += 1 ;
    }
+
+   if(Custom4VersionInteger() == 0)
+   {
+       rc += 1 ;
+   }
+
+
    return rc ;
 }
 
@@ -178,6 +186,7 @@ inline void OKConf::Dump(const char* msg)
 
 
     std::cout << std::setw(50) << "OKConf::Geant4VersionInteger() "    << OKConf::Geant4VersionInteger() << std::endl ;
+    std::cout << std::setw(50) << "OKConf::Custom4VersionInteger() "   << OKConf::Custom4VersionInteger() << std::endl ;
     std::cout << std::setw(50) << "OKConf::ShaderDir()            "    << OKConf::ShaderDir() << std::endl ;
     std::cout << std::setw(50) << "OKConf::DefaultSTTFPath()      "    << OKConf::DefaultSTTFPath() << std::endl ;
     std::cout << std::endl ;
@@ -361,6 +370,16 @@ inline int OKConf::Geant4VersionInteger()
    return 0 ;
 #endif
 }
+
+inline int OKConf::Custom4VersionInteger()
+{
+#ifdef OKCONF_CUSTOM4_VERSION_INTEGER
+   return OKCONF_CUSTOM4_VERSION_INTEGER ;
+#else
+   return 0 ;
+#endif
+}
+
 
 inline const char* OKConf::OpticksInstallPrefix()
 {
