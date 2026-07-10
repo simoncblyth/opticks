@@ -157,6 +157,7 @@ inline void smeta::Collect(std::string& meta, const char* source, bool stamp )
     NP::SetMeta<std::string>(meta, "NvidiaDriverVersion", OKConf::NvidiaDriverVersion() );
 #endif
     NP::SetMeta<int>(meta, "Geant4Version", OKConf::Geant4VersionInteger() );
+    NP::SetMeta<int>(meta, "Custom4Version", OKConf::Custom4VersionInteger() );
     NP::SetMeta<int>(meta, "OpticksVersion", OKConf::OpticksVersionInteger() );
 
     CollectEnv(meta);

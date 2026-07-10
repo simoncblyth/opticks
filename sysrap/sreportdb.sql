@@ -11,6 +11,7 @@ CREATE TABLE opticks_versionset (
 
     opticks_version    INTEGER NOT NULL,
     geant4_version     INTEGER NOT NULL,
+    custom4_version    INTEGER NOT NULL,
     optix_version      INTEGER NOT NULL,
 
     compute_capability INTEGER NOT NULL,
@@ -20,7 +21,7 @@ CREATE TABLE opticks_versionset (
     nvidia_driver      TEXT NOT NULL,    -- Resolved at runtime
 
     -- This constraint guarantees uniqueness across the entire set
-    UNIQUE(opticks_version, geant4_version, optix_version,
+    UNIQUE(opticks_version, geant4_version, custom4_version, optix_version,
            compute_capability,
            cuda_version, cuda_driver, nvidia_driver)
 ) ;

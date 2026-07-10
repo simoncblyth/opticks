@@ -440,6 +440,16 @@ Invoked from sreportdb::import_report
 3. returns the versionset id
 
 
+The below script is an example of using inplace sed editing to add a line
+to multiple run_meta.txt in report archive as the "gitlab-runner" user
+(SREPORT_ARCHIVE_DIR: /data1/gitlab-runner/sreport_archive)::
+
+
+    #!/bin/bash
+    ## sudo -u gitlab-runner bash -c "$PWD/add_Custom4Version_line.sh"
+    find . -name "run_meta.txt"
+    find . -name "run_meta.txt" -exec sed -i '/Geant4/a Custom4Version:108' {} +
+
 **/
 
 
@@ -448,6 +458,7 @@ inline int64_t sreportdb::_import_versionset(const NP* run)
     std::cout << "[sreportdb::import_versionset run " << ( run ? run->sstr() : "-" ) << "\n";
     int64_t opticks_version    = run->get_meta<int64_t>("OpticksVersion",0);
     int64_t geant4_version     = run->get_meta<int64_t>("Geant4Version",0);
+    int64_t custom4_version    = run->get_meta<int64_t>("Custom4Version",0);
     int64_t optix_version      = run->get_meta<int64_t>("OptiXVersion",0);
     int64_t compute_capability = run->get_meta<int64_t>("ComputeCapability",0);
     int64_t cuda_version       = run->get_meta<int64_t>("CUDAVersion",0);
@@ -456,13 +467,19 @@ inline int64_t sreportdb::_import_versionset(const NP* run)
 
    const char* insert_or_ignore_sql =
         "INSERT OR IGNORE INTO opticks_versionset ("
-        "opticks_version, geant4_version, optix_version, compute_capability, "
+        "opticks_version, geant4_version, custom4_version, optix_version, "
+        "compute_capability, "
         "cuda_version, cuda_driver, nvidia_driver "
-        ") VALUES (?, ?, ?,  ?,  ?, ?, ?);";
+        ") VALUES ("
+        "?,?,?,?,"
+        "?,"
+        "?,?,?"
+        ");";
 
     NSQLiteStmt insertor(db->db, insert_or_ignore_sql);
     bool insertor_success = insertor.execute(
-                      opticks_version, geant4_version, optix_version, compute_capability,
+                      opticks_version, geant4_version, custom4_version, optix_version,
+                      compute_capability,
                       cuda_version, cuda_driver, nvidia_driver
                      );
     assert(insertor_success);
@@ -471,26 +488,22 @@ inline int64_t sreportdb::_import_versionset(const NP* run)
     // 3. Query the ID (Whether newly created or pre-existing)
     const char* select_sql =
         "SELECT id FROM opticks_versionset WHERE"
-        " opticks_version = ?"
-        " AND"
-        " geant4_version = ?"
-        " AND"
-        " optix_version = ?"
-        " AND"
-        " compute_capability = ?"
-        " AND"
-        " cuda_version = ?"
-        " AND"
-        " cuda_driver = ?"
-        " AND"
-        " nvidia_driver = ?"
+        " opticks_version    = ? AND"
+        " geant4_version     = ? AND"
+        " custom4_version    = ? AND"
+        " optix_version      = ? AND"
+        " compute_capability = ? AND"
+        " cuda_version       = ? AND"
+        " cuda_driver        = ? AND"
+        " nvidia_driver      = ?"
         ";"
         ;
 
     NSQLiteStmt selector(db->db, select_sql);
 
     auto result = selector.query_scalar<int64_t>(
-                      opticks_version, geant4_version, optix_version, compute_capability,
+                      opticks_version, geant4_version, custom4_version, optix_version,
+                      compute_capability,
                       cuda_version, cuda_driver, nvidia_driver
                       );
 
@@ -515,6 +528,8 @@ Inserts inserts into opticks_runs table metadata obtained from:
 Returns run_id of the single added row.
 
     // HMM: MAYBE A JSON BLOB TOO - FOR CHANGE ISOLATION
+
+
 
 **/
 
