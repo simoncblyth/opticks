@@ -35,9 +35,11 @@ struct sreportdb
     template<typename ... Args> static bool IsExistingDirWith(  const char* _dir, const Args&... names_ );
 
     static bool IsReportDir( const char* _dir);
+    static std::string LoadMetadata(const char* _fold, const char* name );
 
     static constexpr const char* _level = "sreportdb__level" ;
     static constexpr const char* SCHEMA = "sreportdb.sql" ;
+    static constexpr const char* METADATA = "metadata.json" ;
 
     int level ;
     const char* dbfold ;
@@ -62,7 +64,7 @@ struct sreportdb
 
 
     int64_t _import_versionset(const NP* run);
-    int64_t _import_run(const char* fold, const NP* run, const NP* evsmry, int64_t versionset_id );
+    int64_t _import_run(const char* fold, const NP* run, const NP* evsmry, int64_t versionset_id, const std::string& metadata );
     std::string desc_runs() const ;
 
     int64_t _import_evsmry(const NP* evsmry, int64_t run_id);
@@ -131,6 +133,31 @@ bool sreportdb::IsReportDir(const char* _dir) // static
 {
     return IsExistingDirWith(_dir, "run.npy", "evsmry.npy" );
 }
+
+
+inline std::string sreportdb::LoadMetadata(const char* _fold, const char* name ) // static
+{
+    namespace fs = std::filesystem;
+    fs::path dir(_fold);
+    fs::path path = dir / name ;
+    std::string metadata = "{}" ;
+    if (fs::exists(path) && fs::is_regular_file(path))
+    {
+        std::string _path = path.string();
+        std::string content = U::ReadStringDirect( _path.c_str()) ;
+        bool looks_like_json = !content.empty() && content.front() == '{' && ( content.back() == '}' || content.back() == '\n' ) ;
+        if(looks_like_json) metadata = content;
+        if(!looks_like_json) std::cerr
+            << "sreportdb::LoadMetadata"
+            << " WARNING - malformed json read from [" << _path << "]"
+            << " content(" << content << ")"
+            << " looks_like_json:" << ( looks_like_json ? "YES" : "NO " )
+            << "\n"
+            ;
+    }
+    return metadata ;
+}
+
 
 
 
@@ -262,7 +289,6 @@ inline int sreportdb::import_archive(const char* _archive_dir)
 }
 
 
-
 /**
 sreportdb::import_report
 --------------------------
@@ -289,6 +315,9 @@ inline int sreportdb::import_report(const char* _fold)
         return -1;
     }
 
+    std::string metadata = LoadMetadata(_fold, METADATA );
+
+
     if(level > 1) std::cout << "-sreportdb::import_report run    " << ( run    ? run->sstr() : "-" ) << "\n" ;
     if(level > 1) std::cout << "-sreportdb::import_report evsmry " << ( evsmry ? evsmry->sstr() : "-" ) << "\n" ;
 
@@ -301,9 +330,10 @@ inline int sreportdb::import_report(const char* _fold)
     }
     else
     {
+
         int64_t versionset_id = _import_versionset(run);
 
-        int64_t run_id        = _import_run(_fold, run, evsmry, versionset_id );
+        int64_t run_id        = _import_run(_fold, run, evsmry, versionset_id, metadata );
 
         int64_t last_evt_id   = _import_evsmry( evsmry, run_id );
 
@@ -533,9 +563,15 @@ Returns run_id of the single added row.
 
 **/
 
-inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP* evsmry, int64_t versionset_id )
+inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP* evsmry, int64_t versionset_id, const std::string& metadata )
 {
-    std::cout << "[sreportdb::_import_run versionset_id " << versionset_id << "\n";
+    std::cout
+       << "[sreportdb::_import_run"
+       << " versionset_id " << versionset_id
+       << " metadata " << metadata
+       << "\n"
+       ;
+
     assert( versionset_id > 0 );
 
     int64_t     run_timestamp      = run->get_meta<int64_t>("InitTimestamp",0);   // formerly _init_stamp
@@ -564,14 +600,16 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
                       "fold, script, script_arg, executable,"
                       "test, gpu, geometry, tree_digest,"
                       "max_bounce, dt_geometry_load, dt_geometry_upload, total_events,"
-                      "ci_pipeline_source, ci_pipeline_id, ci_job_id"
+                      "ci_pipeline_source, ci_pipeline_id, ci_job_id,"
+                      "metadata"
                       ") "
                       "VALUES ("
                       "?,?,"
                       "?, ?, ?, ?, "
                       "?, ?, ?, ?, "
                       "?, ?, ?, ?, "
-                      "?, ?, ?"
+                      "?, ?, ?, "
+                      "?"
                       ");";
 
     // NULLIF in the SQL the fallback ci values yields NULL in the table
@@ -583,7 +621,8 @@ inline int64_t sreportdb::_import_run(const char* _fold, const NP* run, const NP
                       fold, script, script_arg, executable,
                       test, gpu, geometry, tree_digest,
                       max_bounce, dt_geometry_load, dt_geometry_upload, total_events,
-                      ci_pipeline_source, ci_pipeline_id, ci_job_id);
+                      ci_pipeline_source, ci_pipeline_id, ci_job_id,
+                      metadata);
 
     assert(success);
 

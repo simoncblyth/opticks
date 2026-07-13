@@ -108,6 +108,8 @@ if [ "${arg/check}" != "$arg" ]; then
    [ $? -ne 0 ] && echo $BASH_SOURCE - check error && exit 2
    echo "select * from opticks_events ;" | sqlite3 -table $DBPATH
    [ $? -ne 0 ] && echo $BASH_SOURCE - check error && exit 2
+   echo "SELECT json_extract('{\"framework\":\"Opticks\"}', '$.framework');" | sqlite3 :memory:
+   [ $? -ne 0 ] && echo $BASH_SOURCE - check json_extract error && exit 2
 fi
 
 if [ "${arg/query}" != "$arg" ]; then

@@ -52,6 +52,7 @@ CREATE TABLE opticks_runs (
     ci_pipeline_source  TEXT NOT NULL,           -- blank when not ci
     ci_pipeline_id      INTEGER NOT NULL,        -- -1 when not ci
     ci_job_id           INTEGER NOT NULL,        -- -1 when not ci
+    metadata            TEXT NOT NULL,           -- may contain metadata.json
 
     FOREIGN KEY (versionset_id) REFERENCES opticks_versionset(id)
 
