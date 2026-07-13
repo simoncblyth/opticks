@@ -98,7 +98,7 @@ inline int CSGOptiXRenderInteractiveTest::Initialize(bool allow_remote)
     return 0 ;
 }
 
-
+// CTOR
 inline CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest()
     :
     level(ssys::getenvint(_level,0)),

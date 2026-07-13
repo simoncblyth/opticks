@@ -34,7 +34,7 @@ CLHEP_PREFIX=$(get-cmake-prefix CLHEP)
 GEANT4_PREFIX=$(get-cmake-prefix Geant4)
 
 
-vars="BASH_SOURCE PWD name defarg arg FOLD GEOM CUDA_PREFIX CLHEP_PREFIX GEANT4_PREFIX"
+vars="BASH_SOURCE PWD name defarg arg FOLD GEOM CUDA_PREFIX CLHEP_PREFIX GEANT4_PREFIX bin"
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s \n" "$var" "${!var}" ; done

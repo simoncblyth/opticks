@@ -49,6 +49,10 @@ Q: reimplementation of ~/opticks/ana/qcf.py:QCF ?
 
 **/
 
+
+#include <iostream>
+
+
 #include "ssys.h"
 #include "sseq.h"
 #include "NPX.h"
@@ -172,7 +176,11 @@ sseq_index::sseq_index
 
 1. load array into q vector of sseq
 2. populate std::map<sseq, sseq_index_count>
-3.
+3. populate std::vector<sseq_unique> with map contents, and sort into descending count order
+
+Upshot it that a potentially very large seq.npy array of per photon step histories
+is summarized into a vector holding photon histories together
+with photon counts and first indices.
 
 **/
 
@@ -267,8 +275,9 @@ struct sseq_index_ab_chi2
     double sum ;
     double ndf ;
     double absum_min ;
-    double spare ;
+    double pvalue ;
 
+    void calc_pvalue();
     NP* serialize() const ;
     void save(const char* dir) const ;
 
@@ -279,6 +288,14 @@ struct sseq_index_ab_chi2
 };
 
 
+
+inline void sseq_index_ab_chi2::calc_pvalue()
+{
+    //pvalue = schi2::PValue(sum, ndf);  // see ~/o/sysrap/tests/schi2_test.sh MORE TESTS NEEDED
+    pvalue = 0. ;
+}
+
+
 inline NP* sseq_index_ab_chi2::serialize() const
 {
     NP* a = NP::Make<double>(4) ;
@@ -286,7 +303,7 @@ inline NP* sseq_index_ab_chi2::serialize() const
     aa[0] = sum ;
     aa[1] = ndf ;
     aa[2] = absum_min ;
-    aa[3] = spare ;
+    aa[3] = pvalue ;
     return a ;
 }
 inline void sseq_index_ab_chi2::save(const char* dir) const
@@ -302,7 +319,7 @@ inline void sseq_index_ab_chi2::init()
     sum = 0 ;
     ndf = 0 ;
     absum_min = ssys::getenvint(EKEY,DEFAULT_ABSUM_MIN) ;
-    spare = 0 ;
+    pvalue = 0 ;
 }
 
 std::string sseq_index_ab_chi2::desc() const
@@ -316,6 +333,7 @@ std::string sseq_index_ab_chi2::desc_rst() const
        << " sum " << std::fixed << std::setw(10) << std::setprecision(4) << sum
        << " ndf " << std::setw(7) << ndf
        << " sum/ndf " << std::fixed << std::setw(10) << std::setprecision(4) << sum/ndf
+       << " pvalue " << std::fixed << std::setw(10) << std::setprecision(4) << pvalue
        << " " << EKEY
        << ":"
        << absum_min
@@ -333,6 +351,7 @@ std::string sseq_index_ab_chi2::desc_html() const
        << " sum " << std::fixed << std::setw(10) << std::setprecision(4) << sum
        << " ndf " << std::setw(7) << ndf
        << " sum/ndf " << std::fixed << std::setw(10) << std::setprecision(4) << sum/ndf
+       << " pvalue " << std::fixed << std::setw(10) << std::setprecision(4) << pvalue
        << " </span> "
        << "]"
        ;
@@ -483,6 +502,7 @@ inline void sseq_index_ab::calc_chi2()
             chi2.ndf +=  1 ;
         }
     }
+    chi2.calc_pvalue();
 }
 
 

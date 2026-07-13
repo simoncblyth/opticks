@@ -37,14 +37,24 @@ if __name__ == '__main__':
     c2sum = c2[0]
     c2n   = c2[1]
     c2cut = c2[2]
+    c2pv_native = c2[3]
 
     c2per = c2sum/c2n
+
+
+
 
     c2pv = chi2_pvalue( c2sum, int(c2n) )
     c2pvm = "> 0.05 : null-hyp " if c2pv > 0.05 else "< 0.05 : NOT:null-hyp "
     c2pvd = "pv[%4.3f,%s] " % (c2pv, c2pvm)
 
+    c2pvm_native = "> 0.05 : null-hyp " if c2pv_native > 0.05 else "< 0.05 : NOT:null-hyp "
+    c2pvd_native = "pv_native[%4.3f,%s] " % (c2pv_native, c2pvm_native)
+
+
     c2desc = "c2sum/c2n:c2per(C2CUT)  %5.2f/%d:%5.3f (%2d) %s" % ( c2sum, int(c2n), c2per, c2cut, c2pvd )
+    c2desc += " %s " % c2pvd_native
+
     c2label = "c2sum : %10.4f c2n : %10.4f c2per: %10.4f  C2CUT: %4d " % ( c2sum, c2n, c2per, c2cut )
 
     print(c2desc)
