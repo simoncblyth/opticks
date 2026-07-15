@@ -39,6 +39,18 @@ inline void QScintThree_test::save(const char* base) const
     f->save(base);
 }
 
+
+/**
+QScintThree_test.cc:main
+--------------------------
+
+1. load material properties from Opticks geometry
+2. invoke U4ScintThree::Create which does standard Geant4 wavelength generation and prepares ICDF - save to $FOLD/U4ScintThree
+3. instanciate QScintThree from the ICDF obtained from Geant4
+4. instanciate QScintThree_test doing GPU wavelength generation - save to $FOLD
+
+**/
+
 int main()
 {
     const char* material_dir = spath::Resolve("$CFBaseFromGEOM/CSGFoundry/SSim/stree/material");

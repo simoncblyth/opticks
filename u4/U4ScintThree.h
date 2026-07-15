@@ -138,6 +138,27 @@ inline U4ScintThree* U4ScintThree::Create(const NPFold* materials ) // static
 }
 
 
+/**
+U4ScintThree::U4ScintThree
+---------------------------
+
+Do everything CTOR that operates in triplicate:
+
+1. access scint material props from argument NPFold
+2. remove property zero padding with NP::MakePCopyStripZeroPadding
+3. convert arrays into Geant4 material property vector with U4MaterialPropertyVector::FromArray
+4. integrate to form CDF with U4ScintCommon::Integral
+5. invert CDF with U4ScintCommon::CreateGeant4InterpolatedInverseCDF
+6. create wavelength samples with U4ScintCommon::CreateWavelengthSamples
+
+   * U4ScintCommon::CreateWavelengthSamples is the standard Geant4 way to generate wavelength sample from the CDF
+   * wls samples stacked below are compared with Opticks GPU samples in ~/o/qudarap/tests/QScintThree_test.sh
+
+TODO: clarify dependency ordering (wls does not depend on icfd) by changing field order - move icdf to last
+
+
+**/
+
 inline U4ScintThree::U4ScintThree(const NPFold* scint_, const char* name_)
     :
     num_wlsamp(ssys::getenvsizespec("U4ScintThree__num_wlsamp", "M1")),

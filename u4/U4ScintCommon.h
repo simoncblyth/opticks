@@ -105,6 +105,9 @@ inline G4MaterialPropertyVector* U4ScintCommon::Integral( const G4MaterialProper
 U4ScintCommon::CreateWavelengthSamples
 ---------------------------------------
 
+This is the standard Geant4 way to generate wavelength samples
+for the scintillator.
+
 **/
 
 template<typename T>

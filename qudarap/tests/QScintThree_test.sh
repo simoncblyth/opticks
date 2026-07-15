@@ -4,6 +4,16 @@ usage(){ cat << EOU
 QScintThree_test.sh
 =====================
 
+Some presentation plots were copied into::
+
+   ~/simoncblyth.github.io/env/presentation/qudarap/QScintThree
+
+See also::
+
+   ~/o/u4/U4ScintThree.h   ## standard Geant4 wavelength samples + ICDF preparation
+
+
+
 
 ::
 
@@ -46,6 +56,21 @@ Presentation::
     COMP=012 YLIM=1e4,2e7 LOGY=1 EDGE=1 BINS=305:605:0.5 ~/o/qudarap/tests/QScintThree_test.sh pdb
 
 
+
+info
+    dump config variables
+du
+    show outputs
+nvcc
+    build kernel object
+gcc
+    build executable linking with the kernel object
+run
+    run executable
+dbg
+    run executable under debugger
+pdb
+    run python script
 
 EOU
 }
@@ -104,7 +129,7 @@ GEANT4_PREFIX=$(get-cmake-prefix Geant4)
 
 #spec=M10
 #spec=M100
-spec=G1
+spec=G1    ## one billion
 
 export U4ScintThree__num_wlsamp=$spec
 export Q4ScintThree__num_wlsamp=$spec

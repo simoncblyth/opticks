@@ -118,6 +118,17 @@ HD20  e = 0.05
 
     u0 [e-m -> e+m] : LHS+MID overlap region
 
+
+
+
+
+
+
+
+
+
+
+
 **/
 
 
@@ -160,6 +171,37 @@ inline QSCINT_METHOD float qscint_three::wavelength_hd20(int species_idx, float 
     return tex2DLayered<float>(scint_tex_layered, BinCentered(x_mid,N), 0.5f, (species_idx * 3) + 0);
 }
 #else
+
+
+/**
+qscint_three::wavelength_hd20
+-------------------------------
+
+HD20  edge = 0.05   margin = 0.005    4096 bins
+
+
+         0               e-m   e   e+m                                  1-e-m 1-e 1-e+m                    1
+         |                |    |    |                                     |    |    |                      |
+
+         +-------LHS----------------+                                     +----------RHS-------------------+
+                          +---------------------MID---------------------------------+
+
+                          |   (1-e+m) - (e-m)  = 1 - 2*e + 2m  =  1 - 2*(e-m)       |
+
+
+    u0 < e  : LHS zone
+       x = u0 / (e+m )
+
+    u0 > 1.f - e : RHS zone
+       x = ( u0 - (1.f - e - m)) / (e+m)
+
+    otherwise : MID zone
+       x = (u0 - (e - m)) / ( 1.0f - 2.0f * (e - m) );
+
+**/
+
+
+
 inline QSCINT_METHOD float qscint_three::wavelength_hd20(int species_idx, float u0_) const
 {
     float u0 = fminf(0.999999f, fmaxf(0.000000f, u0_));

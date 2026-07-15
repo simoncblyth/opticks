@@ -101,18 +101,50 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
+v0.6.7 2026/07/?? : extend cxs_min.sh reporting to populate summary sqlite3 database tables for grafana visualization
+------------------------------------------------------------------------------------------------------------------------
+
+* 2026-07-13 ce7bb66b1 - add metadata field to the opticks_runs table which is populated when metadata.json is present in the report dir
+* 2026-07-13 421c8c597 - check native chi2 p_value - as currently sseq_index_test.sh needs to use python just for scipy.stat.chi2
+* 2026-07-10 37cfa5439 - add Custom4Version to run metadata and a corresponding field to the versionset table
+* 2026-07-10 5729af69e - include Custom4_VERSION_INTEGER into OKConf.h OKConf_test
+* 2026-07-09 9d9c1dcf6 - review the monitoring workflow running-reporting-reportdb-presenting and grafana notes
+* 2026-07-08 7759acad2 - sort report paths before ingestion to give natural time ordered importing, notes on grafana web ui usage and query development tips
+* 2026-07-07 f7eb4269a - notes on getting some grafana queries against sreportdb to work
+
+* 2026-07-03 fcd64e04b - integrating the sreportdb+sqlite3 pipeline with gitlab-ci scheduled running requires schema additions of CI variables
+* 2026-07-03 fc40df584 - generalize sreportdb.sh to ingest reports from directory tree
+* 2026-07-02 aa2f6ebf1 - add CUDA versions metadata to run_meta.txt, add keep cuda API use separate in OKConf_CUDART.h, add opticks_versionset table to sreportdb.sql schema to avoid repetition in opticks_runs table
+* 2026-07-01 89d011a3d - relocate opticks monitoring sqlite3 DB setup dev testing into sreportdb.sh
+* 2026-06-30 bee20ffc4 - add evsmry array to sreport.h that is derived from ranges array which in turn is derived from the SProf.txt alone - without SEvt saving
+* 2026-06-29 5fa78e9f0 - handle SProf.txt annotations within NP NPU metadata machinery passing the annotations into sreport ranges_names.txt, fix bug where SProf.txt lines with annotations were skipped due to the annotation preventing profile triplet detection
+* 2026-06-26 9f3fb8d38 - NSQLite.h wrapper copied over from np repo to be used for monitoring aggregation
+* 2026-06-25 cf4933a12 - pull sreport.h sreport_Creator.h out of tests/sreport.cc, add sfilesystem.h providing indexed directory sreport archive
+* 2026-06-22 878638e42 - review NP/NPFold metadata reporting used by sreport, improve sreport output clarity
+
+
+
 v0.6.6 2026/06/18 : revive sreport for RTX PRO 6000 Blackwell tests, try old geom recreation from GDML, fix several optix launch exceptions seen with optix 9.1 cuda 13.1 on Ada workstation
 -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Fix issues revealed while getting to work with CUDA 13.1 OptiX 8.1 -- allowing to run on Blackwell
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * 2026-06-18 aaa0a2da9 - move SGLM hookup into CSGOptiX::initGLM rather than the indiviual test mains to avoid repetition and fix G4CXRenderTest fail from all view param zero due to no SGLM hookup
 * 2026-06-18 82d49c5fa - fix optix launch exception UNSUPPORTED_PRIMITIVE_TYPE seen with optix 9.1, cuda 13.1 - simplify Params.h making it fully 16 byte aligned while investigating G4CXRenderTest.sh
                          launch exception that initially looked to be caused by the launch params being all zeroed
 * 2026-06-16 615010e87 - In G4CXOpticks::CreateSimulator handle having no CUDA-capable device using SOpticksDummySimulator.h
+
 * 2026-06-16 6b4364cfe - notes on old geometry running
 * 2026-06-16 7d5c7b3fd - enable OPTIX_DEVICE_CONTEXT_VALIDATION_MODE_ALL for non-PRODUCTION running whilst
 * 2026-06-16 80ff3ac9b - improve error reporting for inconsistent numEvent from PHOTON_LIST and GENSTEP_LIST
 * 2026-06-16 a7daabc4a - add U4SensorIdentifierDefault__MODE=lax workaround for GDML geometry lacking SD - in attempt to get recreated from GDML old geometries to be usable
 * 2026-06-08 967e1f230 - restore geometry conversion from gdml in g4cx/tests/G4CXOpticks_setGeometry_Test.sh, start trying to get that to work from release tree
+
+Getting test into release tree for monitoring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * 2026-06-05 204f7f127 - get sreport_ab.sh grep to work from source tree and release tree - add config dumping to cxs_min.sh for debug
 * 2026-06-05 98f9bd24d - get sreport_ab.sh plotting to work from release tree, comparing blackwell and ada
 * 2026-06-05 a543a0bfa - 6k server shakedown build and run notes, add opticks-setup-generate to oo
@@ -134,19 +166,34 @@ v0.6.4 2026/06/02 : start QScintThree for 3 species LS model, look at gitlab-ci 
 * 2026-05-21 8219142e0 - thinking about VRAM memory pool approaches for titan backend
 * 2026-05-18 6307f9e98 - discussing QEvt::FinalMerge_async and async CUDA with Gemini reveals bug and potential reason why it appears to work and give expected results
 * 2026-05-12 a7a86d1dd - thinking what is needed for concurrent launching
+
+Server/Client testing
+~~~~~~~~~~~~~~~~~~~~~~
+
 * 2026-05-12 21315fdcd - prepare small/medium/large gensteps for k6 testing
 * 2026-05-11 3c18bdef6 - rejig server/client headers bringing the magic and non-magic approaches closer together, add count and meta headers, quote the meta to avoid newline issues, write all HTTP headers in both cases for simplicity - they are not big anyhow and having in HTTP header means can know that info sooner and more easily, also more verbosity control
 * 2026-05-09 748fcb9ae - clarify SEvt saving config, by removal of old low level COMP envvar
+
+Fix for Cerenkov bug that was found while checking server/client equivalence to monolithic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * 2026-05-09 fc2fff81d - fix qcerenkov.h issue, typo caused uploading of first quad of the quad4 metadata : found by adding metadata roundtrip test to QTex::uploadMeta
 * 2026-05-08 867064c1b - investigating qcerenkov warnings reveals need for QCerenkov rejig, started that by splitting the old icdf impl from current within QCerenkov.cc
 * 2026-05-08 19804a07a - improve SGenstep::Brief to debug the server-client CK issue, looks like all CK photons may be afflicted - suggesting bnd or matline issue
+
+
+Server/Client impl - chop Opticks into two parts joined by network communication
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * 2026-05-08 2daa4c114 - invoke SEvt::endOfEvent from SOpticksClientSimulator::reset, remove the SEvtMock using SOpticksClientSimulator_test.sh
 * 2026-05-07 50f494c7c - try generalizing test copying done by opticks-full to Client build
 * 2026-05-06 326cfb3b4 - rename to SOpticksClientSimulator.h
 * 2026-05-06 f6e928aed - avoid SEvt::addGenstep nullptr warning from ordinary running without any input genstep testing configured
 * 2026-05-06 dac072493 - clarifications and annotations to NP_CURL.h support for libcurl 7.76.1, adjust NP_CURL.h usage accomodating the support for older libcurl
+
 * 2026-04-29 425416e4b - reposition old G4CXOpticks::InitEvt functionality into SEvt::Init_RUN_META and SSim::init requiring QSimTest rejig using added SPrd::Load to fix boot otdering
 * 2026-04-29 7550e745d - remove all WITH_OLD_FRAME blocks
+
 * 2026-04-29 0e671945c - rejig to lower level SEvt::setTree from SEvt::setSim - relocate CSGOptiX::InitEvt to G4CXOpticks::InitEvt as needed by Client build for SEvt::addGenstep, make OPTICKS_CONFIG mandatory envvar and pass it from buildtime to runtime env via opticks-setup-generate
 * 2026-04-28 ee3827d36 - simplify libcurl.bash openssl.bash by fixing on a directory layout that avoids the manifest, tested with ~/np/tests/np_curl_test/np_curl_cmake_test.sh etc
 * 2026-04-27 3ccdc677a - fix cmake NLJSON omissions revealed by attempts to build JUNOSW against the Client build of Opticks, including start at formalizing the openssl and libcurl dependency
@@ -160,6 +207,9 @@ v0.6.4 2026/06/02 : start QScintThree for 3 species LS model, look at gitlab-ci 
 * 2026-04-23 debe82ba4 - fix CSGOptiX nanobind python binding build order issue by being explicit with dependencies
 * 2026-04-22 b9ccc936a - review Opticks server, fix issue revealed by curl cli use of the server without metadata
 
+Three Species LS model preparations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * 2026-04-22 195de9c89 - add NP::MakePCopyStripZeroPadding and use that from U4ScintThree.h to avoid padding zeros yielding unexpected wavelengths, switch off WITH_LERP as does not improve chi2 and more complicated, improve matplotlib presentation of the 9 layer icdf wavelength generation chi2 validation, which have reached bulletproof level
 * 2026-04-20 f29d00fe8 - iterate on the wavelength chi2, trying LHS/MID/RHS zones with margin and lerp-ed overlap, plus BinCentered shift all pushing chi2 down - still get wavelengths out-of-expected range ... may be the old placeholder arbitrary edge zeros issue again
 * 2026-04-17 ba2f6467b - add wavelength_hd20 generation to QScintThree.h using the 9 layer texture atlas approach, compare wavelength histograms to U4ScintThree
@@ -170,8 +220,15 @@ v0.6.4 2026/06/02 : start QScintThree for 3 species LS model, look at gitlab-ci 
 * 2026-04-14 73319a904 - add QTexLayered.h that creates a layered 2D texture and QTexLayeredLookup and QTexLayeredLookupTest which roundtrip matches the input array with full texture lookups of all layers
 * 2026-04-14 a10b7f099 - revive and simplify QTexLookupTest QTexLookup QTex, regain QTexLookupTest match between origin and lookup
 
+
+Look into gitlab-ci metrics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * 2026-04-13 d03bde643 - metrics handling not provided by gitlab-ci free tier, so try junit - currently just from sseq_index_test.py
 * 2026-04-10 92b4551d1 - add metrics.txt writing to sseq_index_test.py in format needed by gitlab-ci
+
+Debug
+~~~~~
 
 * 2026-04-09 5276bb26d - fix inadvertant empty SEvt directory creation as described in notes/issues/fix_unexpected_empty_SEvt_dir_creation.rst
 * 2026-04-07 69ba24d58 - SSim::afterPopulated renamed and generalized from former SSim::initSceneFrom with addition of frame setup needed to honour OPTICKS_INPUT_PHOTON_FRAME
@@ -202,6 +259,8 @@ v0.6.0 2026/03/20 : migrate to sfr.h from old sframe.h, add many alternative str
 * 2026-03-20 53ab33cc5 - move SProf.txt profile and log parsing into opticks for easier reuse, reduce some initialization logging
 * 2026-03-18 d292d8bf0 - fix omission that failed to set genstep matline since WITH_OLD_FRAME change on 2026-02-06 : the effect is verbose qcerenkov kernel logging and flat cerenkov wavelength
 * 2026-03-01 e7ac3269a - add SGLM_InterpolatedView.h usage to SGLM.h configured via VIEW .npy array and controlled with J key
+
+
 * 2026-02-11 0c6d2f965 - start revival of interpolated views using Catmull-rom splines and quaternion slerp
 * 2026-02-10 6328f6a8c - add sfr::MakeFromAxisQuat using quaternions to avoid degeneracy handling eg theta=0, revive animated world rotation
 * 2026-02-10 363c83733 - add lvid_copyno addressing to stree::get_frame as that is easier to relate to Geant4 geometry code eg MOI=LVID_COPYNO:s_EMF_bar_box_810mm/3305 cxr_min.sh
@@ -225,6 +284,18 @@ v0.5.9 2026/01/26 : now that MPMT is merged into JUNOSW, can ordinarilly set WIT
 
 v0.5.8 2026/01/17 : add WITH_CUSTOM4_OLD to get u4 to work with default Custom4 v0.1.8 prior to removing C4TrackInfo template
 ------------------------------------------------------------------------------------------------------------------------------
+
+Adopt the below pattern everywhere track info is used::
+
+    #ifdef WITH_CUSTOM4_OLD
+        C4TrackInfo<C4Pho>::Set(aSecondaryTrack, secondary );
+    #elif WITH_CUSTOM4
+        C4TrackInfo::Set(aSecondaryTrack, secondary );
+    #else
+        STrackInfo::Set(aSecondaryTrack, secondary );
+    #endif
+
+
 
 * 2026-01-17 a678c41c2 - add to u4 WITH_CUSTOM4_OLD that is defined for version less that or equal to 0.1.8 ie with the templated C4TrackInfo, this allows Opticks to again work with the 0.1.8 prior to the move to non-templated C4TrackInfo
 * 2026-01-17 9bc1aca64 - add om-cmake-prefix-path-check used from okdist-- to prevent creating distrib tarballs that reference non-distributed external paths

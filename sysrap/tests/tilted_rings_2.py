@@ -14,13 +14,21 @@ Use the ELU flight paths to control ifly animations::
     VIEW=/tmp/tilted_rings_2_horizontals.npy cxr_min.sh
 
 
-Length units in the below. 
+Length units in the below.
 --------------------------
 
 * scaling by 1000 converts distances in m to standard unit of mm
 * division by 20000 is done assuming a MOI extent setting like::
 
    0,0,0,20000
+
+
+Visualization Fly Around
+--------------------------
+
+::
+
+     VIEW=/tmp/tilted_rings_2.npy VIEWSLICE=[:] SGLM_InterpolatedView__STEPS=1000 MOI=0,0,0,20000 cxr_min.sh
 
 
 """
@@ -57,7 +65,7 @@ def get_tilt_rotation():
     ax = np.array([st * cp, st * sp, ct])
 
     # 2. pick rotation axis k from cross product of +Z "up" [0,0,1] and the tilt axis
-       
+
     k = np.array([ax[1], -ax[0], 0])
     k = k / np.linalg.norm(k)
 
@@ -150,7 +158,7 @@ for i in range(num):
         tangent_untilted = np.array([-rr[i] * np.sin(angle),rr[i] * np.cos(angle),  0])
         tangent_untilted = tangent_untilted / np.linalg.norm(tangent_untilted)
 
-        look_untilted = eye_untilted + tangent_untilted/20.  # look point ahead along tangent 
+        look_untilted = eye_untilted + tangent_untilted/20.  # look point ahead along tangent
 
         radial_untilted = eye_untilted - axis_point
         radial_untilted = radial_untilted /  np.linalg.norm(radial_untilted)
@@ -159,9 +167,9 @@ for i in range(num):
         if do_offset_after_tilt == False: # offset for better visiability, by not being ontop of what want to see
             eye_untilted += up_untilted/20. + axis_dir/20.
             look_untilted += up_untilted/20.
-        pass 
+        pass
 
- 
+
         eye = eye_untilted @ R
         look = look_untilted @ R
         up = up_untilted @ R
@@ -210,7 +218,7 @@ outpath = os.path.join(os.environ.get("OUTDIR","/tmp"),outname)
 np.save(outpath, fp)
 
 print(f"saved to {outpath} example commandline below")
-cmdline=f"FULLSCREEN=0 VIEW={outpath} VIEWSLICE=[:] SGLM_InterpolatedView__STEPS=1000 cxr_min.sh"
+cmdline=f"FULLSCREEN=0 VIEW={outpath} VIEWSLICE=[:] SGLM_InterpolatedView__STEPS=1000 MOI=0,0,0,20000 cxr_min.sh"
 print(cmdline)
 
 

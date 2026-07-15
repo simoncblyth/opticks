@@ -42,17 +42,17 @@ An "OpticksWeekly" is also possible for longer tests.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Validation and testing must become a continuous activity with metrics
-recording and historical monitoring, eg to identify:
+recording and historical monitoring, eg to identify changes
 
-0. validation failures in comparison with Geant4
-1. performance degradation
-2. VRAM usage increases
+0. correctness in comparison with Geant4
+1. performance
+2. resource use (memory,  VRAM)
 
 * investigating SQLite3 + Grafana, are they the most appropriate open source tools for the task
 * investigate how to integrate the reporting tool with gitlab-ci coordination
 
 
-OpticksMonitoting : scratch developments on monitor pipeline
+OpticksMonitoring : scratch developments on monitor pipeline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Aim for all testing to use the same recording pipeline.

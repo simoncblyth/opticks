@@ -1,7 +1,18 @@
 #!/usr/bin/env python
 """
+QScintThree_test.py : compare wavelength histograms from A:Opticks GPU qscint_three and B:U4ScintThree(Geant4 standard approach)
+==================================================================================================================================
 
-~/o/qudarap/tests/QScintThree_test.sh pdb
+::
+
+    ~/o/qudarap/tests/QScintThree_test.sh pdb
+
+
+MODE=2
+    simple wavelength histogram comparison
+MODE=-2
+    more involved wavelength histogram comparison - with Chi2 metric subplot sharing the axis
+
 
 
 Observe Chi2 spikes at the edges of the HD zoom regions.
@@ -14,9 +25,10 @@ COMP=012 BINS=200:800:1 ~/o/qudarap/tests/QScintThree_test.sh pdb
 With HD:0 LAB has big chi2 deviation at about 330 nm close to a step in the distribution.
 
 
+::
 
-COMP=0 BINS=201:800:1 LOGY=1 ~/o/qudarap/tests/QScintThree_test.sh pdb
-COMP=1 BINS=310:545:1 LOGY=1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+    COMP=0 BINS=201:800:1 LOGY=1 ~/o/qudarap/tests/QScintThree_test.sh pdb
+    COMP=1 BINS=310:545:1 LOGY=1 ~/o/qudarap/tests/QScintThree_test.sh pdb
 
 
 
@@ -102,9 +114,10 @@ if __name__ == '__main__':
     print(repr(f))
 
     HD = int(f.NPFold_meta.HD)
-    a_wl = f.wl
-    b_wl = f.U4ScintThree.wls
-    icdf = f.U4ScintThree.icdf
+    a_wl = f.wl                 ## A: Opticks 9 layer ICDF texture atlas wavelength generation
+    b_wl = f.U4ScintThree.wls   ## B: standard Geant4 way to generate wavelengths from CDF
+
+    icdf = f.U4ScintThree.icdf  ## icdf obtained from Geant4 - which is the input to the GPU texture atlas
 
     WITH_LERP = f.wl_meta.WITH_LERP
 
@@ -174,6 +187,7 @@ if __name__ == '__main__':
 
 
     if MODE == 2:
+        # simple plotting using mpplt_plotted
         pl = mpplt_plotter(label=label)
         fig, axs = pl
         assert len(axs) == 1
@@ -201,7 +215,7 @@ if __name__ == '__main__':
 
     elif MODE == -2:
 
-
+        # standard plotting with ax_metric for shared x to show histo diff
         fig, (ax, ax_metric) = plt.subplots(2, 1, figsize=SIZE*2/100, sharex=True, gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.05})
 
         for i in range(3):
