@@ -218,10 +218,13 @@ if __name__ == '__main__':
         # standard plotting with ax_metric for shared x to show histo diff
         fig, (ax, ax_metric) = plt.subplots(2, 1, figsize=SIZE*2/100, sharex=True, gridspec_kw={'height_ratios': [3, 1], 'hspace': 0.05})
 
+        BOFFSET=float(os.environ.get("BOFFSET","0.0"))
+        print(f"BOFFSET {BOFFSET}")
+
         for i in range(3):
             if not i in COMP: continue
             ax.plot(bins[:-1], a[i][0], drawstyle="steps-post", label=f"a[{i}]", c=color[i])
-            ax.plot(bins[:-1], b[i][0], drawstyle="steps-post", label=f"b[{i}]", c=color[i], linestyle="--", marker="o", markersize=1 )
+            ax.plot(bins[:-1], b[i][0]+BOFFSET, drawstyle="steps-post", label=f"b[{i}]", c=color[i], linestyle="--", marker="o", markersize=1 )
             ylim = ax.get_ylim()
 
             if EDGE:
