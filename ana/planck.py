@@ -5,16 +5,16 @@
 # This file is part of Opticks
 # (see https://bitbucket.org/simoncblyth/opticks).
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License.  
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #   http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
-# See the License for the specific language governing permissions and 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 
@@ -22,20 +22,20 @@
 env/graphics/ciexyz/planck.py
 ==================================
 
-Generated photons feature a plateau from 80nm to 205nm followed 
-by step up to join the curve.  
+Generated photons feature a plateau from 80nm to 205nm followed
+by step up to join the curve.
 
 * pushing out generation to 10M, 100M doesnt change this feature
   other than scaling the plateau level
 
-* low bins of pk.pdf feature very small numbers..., 
-  attempt to avoid numerical issues using arbitrary scaling moves the cut 
-  to 210nm, also a step structure in the generated distribution is 
-  apparent 
+* low bins of pk.pdf feature very small numbers...,
+  attempt to avoid numerical issues using arbitrary scaling moves the cut
+  to 210nm, also a step structure in the generated distribution is
+  apparent
 
-* problem presumably from too great a probability range... so that 
-  never get to generate any at lower bins somehow convolved with 
-  numerical precision to cause steps ? 
+* problem presumably from too great a probability range... so that
+  never get to generate any at lower bins somehow convolved with
+  numerical precision to cause steps ?
 
 ::
 
@@ -72,11 +72,11 @@ Moving the low wavelength up from 80nm to 200nm avoids the objectionable plateau
 but there is still a stepping structure though.
 
 
-**RESOLVED** 
+**RESOLVED**
 
-    The interpolation was using too coarse a binning that 
-    worked fine for most of the distribution, but not good enough 
-    for the low wavelength turn on 
+    The interpolation was using too coarse a binning that
+    worked fine for most of the distribution, but not good enough
+    for the low wavelength turn on
 
 
 
@@ -96,11 +96,11 @@ but there is still a stepping structure though.
               w
 
 
-Where e^(beta) >> 1  (Wien approximation) Plank tends to 
+Where e^(beta) >> 1  (Wien approximation) Plank tends to
 
 
    Bw(T) = 2hc^2 w^-5 e^(-beta)
-             
+
 
 
 
@@ -109,7 +109,7 @@ Need inverse CDF of Planck to put into texture
 follow ggeo-/GProperty<T>::createInverseCDF
 
 * even domain on 0:1 (needed for quick texture lookup)
-* sample the CDF across this domain  
+* sample the CDF across this domain
 
 * env/geant4/geometry/collada/g4daeview/sample_cdf.py
 
@@ -132,7 +132,7 @@ def planck(nm, K=6500., arbitrary=True):
        wav = nm
        a = np.power(200,5)
     else:
-       wav = nm/1e9 
+       wav = nm/1e9
        a = 2.0*h*c*c
     pass
 
@@ -140,28 +140,28 @@ def planck(nm, K=6500., arbitrary=True):
 
     b = hc_over_kT*1e9/nm
 
-    return a/(np.power(wav,5) * np.expm1(b))  
+    return a/(np.power(wav,5) * np.expm1(b))
 
 
 def planck_plot():
     w = np.arange(100,1000,1)
     for temp in np.arange(4000,10000,500):
         intensity = planck(w, temp)
-        plt.plot(w, intensity, '-') 
+        plt.plot(w, intensity, '-')
 
 
 
 def construct_inverse_cdf_0( bva, bdo,  N ):
     """
     :param bva: basis values normalized to unity
-    :param bdo: basis domain 
+    :param bdo: basis domain
     :param N: number of bins to use across 0:1 range
 
     Note the np.interp xp<->fp inversion,
-    
-    (x)    ido: freshly minted 0:1 domain  
-    (xp)  cbva: monotonic CDF in range 0:1, 
-    (fp)   bdo: basis domain  
+
+    (x)    ido: freshly minted 0:1 domain
+    (xp)  cbva: monotonic CDF in range 0:1,
+    (fp)   bdo: basis domain
 
     """
     assert np.allclose( bva.sum(), 1.0 )
@@ -169,11 +169,11 @@ def construct_inverse_cdf_0( bva, bdo,  N ):
 
     cbva = np.cumsum(bva)   # NB no careful mid bin handling yet
 
-    ido = np.linspace(0,1,N)  
-    
-    iva = np.interp( ido, cbva, bdo )  
-  
-    return iva, ido 
+    ido = np.linspace(0,1,N)
+
+    iva = np.interp( ido, cbva, bdo )
+
+    return iva, ido
 
 
 
@@ -193,13 +193,13 @@ class Planck(object):
 
         dom = w
         cdf = np.empty(len(dom))
-        cdf[0] = 0.                        # lay down zero probability 1st bin 
+        cdf[0] = 0.                        # lay down zero probability 1st bin
         np.cumsum(pdf, out=cdf[1:])
-        
-        idom = np.linspace(0,1, N_idom)  
-        icdf = np.interp( idom, cdf, dom )  
 
- 
+        idom = np.linspace(0,1, N_idom)
+        icdf = np.interp( idom, cdf, dom )
+
+
         self.avg = avg
         self.wid = wid
         self.mid = mid
@@ -213,9 +213,9 @@ class Planck(object):
 
 
     def __call__(self, u ):
-        gen = np.interp( u, self.idom, self.icdf )   
+        gen = np.interp( u, self.idom, self.icdf )
         self.u = u
-        self.gen = gen 
+        self.gen = gen
         return gen
 
 
@@ -224,7 +224,7 @@ def cf_gsrclib():
     p = os.path.expandvars("$TMP/ggeo/GSourceLibTest/gsrclib.npy")
     sl = np.load(p)
     return sl[0,:,0]
-    
+
 
 
 if __name__ == '__main__':
@@ -237,14 +237,14 @@ if __name__ == '__main__':
 
     u = np.random.rand(1000000)
 
-    gen = pk(u)    
- 
+    gen = pk(u)
+
 
     nm = 100
     wb = w[::nm]
     hn, hd = np.histogram(gen, wb)
     assert np.all(hd == wb)
-    assert len(hn) == len(wb) - 1   # looses one bin 
+    assert len(hn) == len(wb) - 1   # looses one bin
 
     s_avg = pk.pdf * hn.sum() * nm
 
@@ -253,7 +253,7 @@ if __name__ == '__main__':
 
     plt.plot( hd[:-1], hn , drawstyle="steps-post")  # -pre -mid -post
 
-    plt.plot( pk.mid, s_avg ) 
+    plt.plot( pk.mid, s_avg )
 
     plt.axis([w.min()-100, w.max()+100, 0, s_avg.max()*1.1])
 
