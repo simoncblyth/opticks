@@ -4,16 +4,25 @@
 #include <iomanip>
 
 #include "NPX.h"
+#include "NPFold.h"
+
+
 #include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
 #include "smath.h"
+#include "smath_test.h"
 
 struct smath_test
 {
     static int count_nibbles();
     static int rotateUz();
     static int erfcinvf();
+    static int log();
+
+    template<typename T>
+    static int log_cu();
+
     static int main();
 };
 
@@ -144,6 +153,46 @@ int smath_test::erfcinvf()
     return 0;
 }
 
+int smath_test::log()
+{
+    float v = 0.5f ;
+    float l = smath::log(v);
+    std::cout
+        << " v " << std::setw(10) << std::setprecision(5) << std::fixed << v
+        << " l " << std::setw(10) << std::setprecision(5) << std::fixed << l
+        << "\n"
+        ;
+
+    return 0;
+}
+
+
+template<typename T>
+int smath_test::log_cu()
+{
+    size_t num_values = 1'000'000 ;
+    NP* val = NP::Make<T>(num_values);
+    NP* dom = NP::Make<T>(num_values);
+
+    T x0 = 0.1 ;
+    T x1 = 1000.0 ;
+
+    launch_log_kernel<T>(val->values<T>(), dom->values<T>(), num_values, x0, x1 );
+
+    NPFold* f = new NPFold ;
+    f->add("val", val);
+    f->add("dom", dom);
+
+    std::stringstream ss ;
+    ss << "$FOLD/log_cu_" << U::TypeName<T>() ;
+    std::string str = ss.str();
+    f->save(str.c_str());
+
+    return 0;
+}
+
+
+
 int smath_test::main()
 {
     const char* TEST = ssys::getenvvar("TEST","rotateUz");
@@ -153,6 +202,9 @@ int smath_test::main()
     if(ALL||0==strcmp(TEST,"count_nibbles")) rc += count_nibbles();
     if(ALL||0==strcmp(TEST,"rotateUz")) rc += rotateUz();
     if(ALL||0==strcmp(TEST,"erfcinvf")) rc += erfcinvf();
+    if(ALL||0==strcmp(TEST,"log")) rc += log();
+    if(ALL||0==strcmp(TEST,"log_cu_float"))  rc += log_cu<float>();
+    if(ALL||0==strcmp(TEST,"log_cu_double")) rc += log_cu<double>();
 
     return rc;
 }

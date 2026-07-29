@@ -15,7 +15,25 @@ struct smath
     SMATH_METHOD static void rotateUz(float3& d, const float3& u ); 
     SMATH_METHOD static int count_nibbles( unsigned long long ); 
     SMATH_METHOD static float erfcinvf(float u2); 
+
+    template <typename T>
+    SMATH_METHOD static T log(T val);
 }; 
+
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+template <>
+SMATH_METHOD inline float smath::log<float>(float val) {return ::logf(val); } // Explicit FP32 single-precision intrinsic
+template <>
+SMATH_METHOD inline double smath::log<double>(double val) { return ::log(val); }  // Explicit FP64 double-precision intrinsic
+
+#else
+template <>
+SMATH_METHOD inline float smath::log<float>(float val) {return std::log(val); }
+template <>
+SMATH_METHOD inline double smath::log<double>(double val) { return std::log(val); }
+#endif
+
 
 
 /**
