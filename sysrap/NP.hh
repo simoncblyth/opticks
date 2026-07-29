@@ -1280,6 +1280,8 @@ inline NP* NP::Incremented( const NP* a, INT offset ) // static
 NP::MakeDiv
 -------------
 
+Uses linear interpolation to increase values of a property
+
 When applied to a 1d array the contents are assummed to be domain edges
 that are divided by an integer multiple *mul*. For a src array of length ni
 the output array length is::

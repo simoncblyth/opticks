@@ -29,6 +29,7 @@ other projects together with NP.hh
 #include <cctype>
 #include <locale>
 #include <tuple>
+#include <type_traits>
 
 
 #include <string_view>
@@ -716,8 +717,18 @@ struct U
     static int FormattedKeyIndex( std::string& fkey,  const std::vector<std::string>& keys, const char* key, int idx0, int idx1  );
 
     static void SplitTuple( std::vector<std::string>& keys, std::vector<int64_t>& tt, const std::vector<std::tuple<std::string,  int64_t>>& kt );
-};
 
+
+    template<typename T>
+    static constexpr const char* TypeName()
+    {
+        if constexpr (std::is_same_v<T, float>)  return "float";
+        if constexpr (std::is_same_v<T, double>) return "double";
+        return "unknown";
+    }
+
+
+};
 
 
 inline void U::sizeof_check() // static
@@ -2692,8 +2703,6 @@ inline void U::SplitTuple( std::vector<std::string>& keys, std::vector<int64_t>&
         tt.push_back(std::get<1>(kt[i]));
     }
 }
-
-
 
 
 

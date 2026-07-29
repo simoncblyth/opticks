@@ -133,7 +133,16 @@ inline std::string srngcpu::demo(int n)
 inline float  curand_uniform(srngcpu* state ){         return state->generate_float() ; }
 inline double curand_uniform_double(srngcpu* state ){ return state->generate_double() ; }
 
+/**
+srngcpu::sample_icdf
+---------------------
 
+Given than an icdf (inverse CDF) has known domain from 0->1 this
+generates num_sample uniform randoms in 0->1 and does interp lookups
+into the icdf_prop.
+
+For example this is used to generate wavelengths from sblackbody_test.sh
+**/
 
 template<typename T>
 inline NP* srngcpu::sample_icdf(const NP* icdf_prop, size_t num_sample )

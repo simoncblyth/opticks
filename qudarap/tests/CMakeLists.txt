@@ -44,6 +44,10 @@ set(CUDART_TEST_SOURCES
    QEvtTest.cc
    QPMTTest.cc
 
+   QPlanckTest.cc
+
+
+
 )
 
 

@@ -83,6 +83,8 @@ set(SOURCES
 
     QTexLayeredLookup.cu
 
+
+
     QBase.cc
     QBnd.cc
     QBnd.cu
@@ -93,6 +95,9 @@ set(SOURCES
 
     QScint.cc
     QScint.cu
+
+    QPlanck.cc
+    QPlanck_test.cu
 
     QCerenkovIntegral.cc
     QCerenkov.cc
@@ -150,6 +155,9 @@ SET(HEADERS
     QTexLookup.hh
     QTexLayeredLookup.h
 
+
+
+
     QState.hh
 
     qmultifilm.h
@@ -166,6 +174,11 @@ SET(HEADERS
 
     QScint.hh
     qscint.h
+
+    QPlanck.hh
+    QPlanck_test.h
+    qplanck.h
+
 
     QCerenkovIntegral.hh
     QCerenkov.hh
@@ -210,7 +223,7 @@ if(BUILD_WITH_CUDA)
 
 
     # avoid CUDA 13.1 warnings from compilation of cuda stub internals
-    # warning: ‘using maximum = struct cuda::__4::maximum<long int>’ is deprecated: Use cuda::maximum instead 
+    # warning: ‘using maximum = struct cuda::__4::maximum<long int>’ is deprecated: Use cuda::maximum instead
     target_compile_options(${name} PRIVATE $<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=-Wno-deprecated-declarations>)
 
 

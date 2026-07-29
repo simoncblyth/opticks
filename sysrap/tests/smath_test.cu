@@ -37,3 +37,5 @@ extern "C" {
 void launch_log_kernel_float(  float* values, float* domain,  size_t num_values, float x0, float x1) {     _launch_log_kernel<float>(values, domain,  num_values, x0, x1); }
 void launch_log_kernel_double(double* values, double* domain, size_t num_values, double x0, double x1) {   _launch_log_kernel<double>(values, domain, num_values, x0, x1); }
 } // extern "C"
+
+
