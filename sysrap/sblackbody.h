@@ -56,6 +56,8 @@ struct sblackbody
 
     sblackbody(int ni, int nu, T temp_K, T nm0, T nm1, size_t num_wl);
     NP* generate_sample(size_t num_wl = 1'000'000 ) const ;
+    T icdf_wavelength(T u) const ;
+
 
     NPFold* serialize() const ;
     void    save(const char* fold) const ;
@@ -177,6 +179,24 @@ inline NP* sblackbody<T>::generate_sample(size_t num_wl ) const
     NP* wavelength = rng.sample_icdf<T>( icdf_prop, num_wl );
     return wavelength ;
 }
+
+
+/**
+sblackbody::icdf_wavelength
+--------------------------------
+
+Note that the interpolation must be done using the same type as icdf_prop
+
+**/
+
+template<typename T>
+T sblackbody<T>::icdf_wavelength(T u) const
+{
+    T w = icdf_prop->interp<T>(u);
+    return w ;
+}
+
+
 
 template<typename T>
 inline NPFold* sblackbody<T>::serialize() const

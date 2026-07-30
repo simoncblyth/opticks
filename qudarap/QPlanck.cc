@@ -54,13 +54,6 @@ qplanck* QPlanck::MakeInstance(const QTex<float>* tex) // static
     return planck ;
 }
 
-float QPlanck::icdf_wavelength(float _u) const
-{
-    // As using sblackbody<double> must do interpolation using double matching the icdf_prop array type
-    double u = _u ;
-    double w = blackbody.icdf_prop->interp<double>(u);
-    return w ;
-}
 
 size_t QPlanck::setPhotonWavelength(NP* ph) const
 {
@@ -75,7 +68,7 @@ size_t QPlanck::setPhotonWavelength(NP* ph) const
         sphoton& p = pp[i];
         if(p.wavelength > 0.f) continue ;
         float u = rng.generate_float();
-        float w = icdf_wavelength(u);
+        float w = blackbody.icdf_wavelength(u);
         LOG(LEVEL)
             << " i " << i
             << " count " << count
