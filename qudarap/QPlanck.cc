@@ -6,7 +6,7 @@
 #include "ssys.h"
 #include "scuda.h"
 #include "squad.h"
-
+#include "sphoton.h"
 
 #include "NP.hh"
 #include "QUDA_CHECK.h"
@@ -52,6 +52,40 @@ qplanck* QPlanck::MakeInstance(const QTex<float>* tex) // static
     qplanck* planck = new qplanck ;
     planck->tex = tex->texObj ;
     return planck ;
+}
+
+float QPlanck::icdf_wavelength(float _u) const
+{
+    // As using sblackbody<double> must do interpolation using double matching the icdf_prop array type
+    double u = _u ;
+    double w = blackbody.icdf_prop->interp<double>(u);
+    return w ;
+}
+
+size_t QPlanck::setPhotonWavelength(NP* ph) const
+{
+    blackbody.icdf_prop->save("/tmp/icdf_prop.npy");
+
+    srngcpu rng ;
+    sphoton* pp = (sphoton*)ph->bytes();
+    size_t num_ph = ph->shape[0] ;
+    size_t count = 0 ;
+    for(size_t i=0 ; i < num_ph ; i++)
+    {
+        sphoton& p = pp[i];
+        if(p.wavelength > 0.f) continue ;
+        float u = rng.generate_float();
+        float w = icdf_wavelength(u);
+        LOG(LEVEL)
+            << " i " << i
+            << " count " << count
+            << " u " << std::setw(10) << std::fixed << std::setprecision(4) << u
+            << " w " << std::setw(10) << std::fixed << std::setprecision(4) << w
+            ;
+        p.wavelength = w ;
+        count += 1;
+    }
+    return count ;
 }
 
 

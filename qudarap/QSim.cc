@@ -45,6 +45,7 @@
 #include "QSimLaunch.hh"
 #include "QDebug.hh"
 #include "QPMT.hh"
+#include "QPlanck.hh"
 
 #include "QSim.hh"
 
@@ -126,6 +127,9 @@ void QSim::UploadComponents( const SSim* ssim  )
 
     LOG(LEVEL) << "] new QBase : latency here of about 0.3s from first device access, if latency of >1s need to start nvidia-persistenced " ;
     LOG(LEVEL) << base->desc();
+
+    QPlanck* planck = new QPlanck ;
+    LOG(LEVEL) << planck->desc();
 
 
     unsigned skipahead_event_offset = SEventConfig::EventSkipahead()  ;
@@ -272,6 +276,7 @@ QSim::QSim()
     cerenkov(QCerenkov::Get()),
     bnd(QBnd::Get()),
     debug_(QDebug::Get()),
+    planck(QPlanck::Get()),
     prop(QProp<float>::Get()),
     pmt(QPMT<float>::Get()),
     multifilm(QMultiFilm::Get()),
@@ -319,6 +324,7 @@ void QSim::init()
     sim->cerenkov = cerenkov ? cerenkov->d_cerenkov : nullptr ;
     sim->scint = scint ? scint->d_scint : nullptr ;
     sim->pmt = pmt ? pmt->d_pmt : nullptr ;
+    sim->planck = planck ? planck->d_planck : nullptr ;
 
 
     bool has_PMT = pmt != nullptr && sim->pmt != nullptr ;

@@ -40,6 +40,8 @@ Geometry setup in G4CXApp::Construct is done by U4VolumeMaker::PV which is contr
 #include "SGenerate.h"
 #include "SEvent.hh"
 
+#include "QPlanck.hh"
+
 
 #include "U4Material.hh"
 #include "U4VolumeMaker.hh"
@@ -79,6 +81,8 @@ struct G4CXApp
     void EndOfRunAction(const G4Run*);
 
     void GeneratePrimaries(G4Event* evt);
+    static void SetTorchPlanckWavelength(NP* ph);
+
     void BeginOfEventAction(const G4Event*);
     void EndOfEventAction(const G4Event*);
 
@@ -242,6 +246,7 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
         int idx_arg = eventID ;
         NP* gs = SEvent::MakeTorchGenstep(idx_arg) ;  // idx_arg > -1 implies comma delimited num_gs num_ph envvars
         NP* ph = SGenerate::GeneratePhotons(gs);
+        SetTorchPlanckWavelength(ph);
         U4VPrimaryGenerator::GeneratePrimaries_From_Photons(event, ph);
         delete ph ;
 
@@ -259,6 +264,17 @@ void G4CXApp::GeneratePrimaries(G4Event* event)
     }
     LOG(LEVEL) << "] " << " eventID " << eventID  ;
 }
+
+
+void G4CXApp::SetTorchPlanckWavelength(NP* ph) // static
+{
+    const QPlanck* planck = QPlanck::Get();
+    LOG_IF(fatal, planck==nullptr) << "NO QPlanck ?" ;
+    if(!planck) return ;
+    planck->setPhotonWavelength(ph);
+}
+
+
 
 /**
 G4CXApp::BeginOfEventAction

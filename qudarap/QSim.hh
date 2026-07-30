@@ -27,12 +27,14 @@ struct NP ;
 struct SSim ;
 struct SEvt ;
 
+
 template <typename T> struct QTex ;
 template <typename T> struct QBuf ;
 template <typename T> struct QProp ;
 template <typename T> struct QPMT ;
 
 struct qsim ;
+struct qplanck ;
 
 struct QBase ;
 struct QEvt ;
@@ -44,6 +46,7 @@ struct QMultiFilm;
 struct QOptical ;
 struct QEvt ;
 struct QDebug ;
+struct QPlanck ;
 
 struct qdebug ;
 struct sstate ;
@@ -78,6 +81,7 @@ struct QUDARAP_API QSim
     const QBnd*      bnd ;
     const QOptical*  optical ;
     const QDebug*    debug_ ;
+    const QPlanck*   planck ;
 
     const QProp<float>*  prop ;
     const QPMT<float>*   pmt ;

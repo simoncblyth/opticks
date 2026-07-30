@@ -132,6 +132,12 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
         export storch_FillGenstep_pos=0,0,50
         export storch_FillGenstep_azimuth=0.5,1
     fi
+
+    if [ -n "$WHITE" ]; then
+        echo $BASH_SOURCE WHITE - WARNING - setting negative wavelength to signal use of blackbody wavelengths from qplanck.h
+        export storch_FillGenstep_wavelength=-1
+    fi
+
     vars="$vars src"
 fi
 

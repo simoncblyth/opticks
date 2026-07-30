@@ -63,7 +63,7 @@ template<> inline double scurand<double>::uniform( RNG* rng )
 
 
 template<typename T>
-inline T scurand<T>::shoot_exponential( RNG* rng )
+inline SCURAND_METHOD T scurand<T>::shoot_exponential( RNG* rng )
 {
     T u = scurand<T>::uniform(rng);
     return -smath::log(u);

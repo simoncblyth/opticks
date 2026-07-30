@@ -64,6 +64,7 @@ TODO:
 #include "qcerenkov.h"
 #include "qpmt.h"
 #include "tcomplex.h"
+#include "qplanck.h"
 
 
 struct qcerenkov ;
@@ -78,6 +79,7 @@ struct qsim
     qcerenkov*          cerenkov ;
     qscint*             scint ;
     qpmt<float>*        pmt ;
+    qplanck*            planck ;
 
 #if defined(__CUDACC__) || defined(__CUDABE__)
 #else
@@ -148,7 +150,8 @@ inline qsim::qsim()    // instanciated on CPU (see QSim::init_sim) and copied to
         multifilm(nullptr),
         cerenkov(nullptr),
         scint(nullptr),
-        pmt(nullptr)
+        pmt(nullptr),
+        planck(nullptr)
     {
     }
 #endif
@@ -2532,7 +2535,16 @@ inline QSIM_METHOD void qsim::generate_photon(sphoton& p, RNG& rng, const quad6&
     switch(gencode)
     {
         case OpticksGenstep_CARRIER:         scarrier::generate(     p, rng, gs, photon_id, genstep_id)  ; break ;
-        case OpticksGenstep_TORCH:           storch::generate(       p, rng, gs, photon_id, genstep_id ) ; break ;
+        case OpticksGenstep_TORCH:
+                {
+                    storch::generate(       p, rng, gs, photon_id, genstep_id ) ;
+                    if(p.wavelength <= 0.f)
+                    {
+                        float u = curand_uniform(&rng);
+                        p.wavelength = planck->wavelength(u);
+                    }
+                };
+                break ;
 
         case OpticksGenstep_G4Cerenkov_modified:
         case OpticksGenstep_CERENKOV:

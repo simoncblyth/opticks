@@ -31,6 +31,10 @@ struct QUDARAP_API QPlanck
 
     QPlanck();
     void init();
+    float icdf_wavelength(float u) const;
+    size_t setPhotonWavelength(NP* ph) const;
+
+
     std::string desc() const ;
 
 /**
