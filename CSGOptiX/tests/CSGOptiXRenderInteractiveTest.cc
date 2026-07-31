@@ -72,7 +72,6 @@ struct CSGOptiXRenderInteractiveTest
     CSGOptiXRenderInteractiveTest();
 
     void init();
-    //void initGLM();
     void initRecord();
     void initRender();
 
@@ -121,16 +120,25 @@ inline void CSGOptiXRenderInteractiveTest::init()
     assert( irc == 0 );
     assert(fd);
 
-    //initGLM();
     initRecord();
     initRender();
 }
 
-// WIP : MOVED SGLM HOOKUP INTO CSGOptiX::initGLM TO AVOID REPETITION
-//inline void CSGOptiXRenderInteractiveTest::initGLM()
-//{
-//    fd->exportTreeSceneFrame(gm);
-//}
+
+/**
+CSGOptiXRenderInteractiveTest::initRecord
+-------------------------------------------
+
+Two photon step records *ar* *br* that may have been loaded
+if AFOLD/BFOLD are set and pointing to folders containing record.npy
+are passed to the SGLM instance.
+
+AFOLD_RECORD_SLICE/BFOLD_RECORD_SLICE enable very large records
+to be partially loaded/visualized. See SRecord::LoadArray for various forms
+of slice specification that are handled.
+
+**/
+
 
 inline void CSGOptiXRenderInteractiveTest::initRecord()
 {

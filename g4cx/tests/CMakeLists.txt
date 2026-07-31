@@ -7,6 +7,7 @@ set(INSTALLED_SCRIPTS
     GXTestRunner.sh 
     G4CXTest_raindrop.sh
     G4CXTest_raindrop.py
+    G4CXTest_raindrop_rainbow.py
 
     G4CXTest_GEOM.sh
     G4CXTest_GEOM.py

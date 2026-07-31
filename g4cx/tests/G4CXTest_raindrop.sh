@@ -36,6 +36,7 @@ DIR=$(pwd)
 bin=G4CXTest
 script=G4CXTest_raindrop.py
 simtrace_script=G4CXTest_raindrop_simtrace.py
+rainbow_script=G4CXTest_raindrop_rainbow.py
 
 
 geom=RaindropRockAirWater
@@ -56,7 +57,7 @@ vars="$vars BASH_SOURCE PWD DIR bin script GEOM"
 export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,0,1,1.333
 export U4VolumeMaker_RaindropRockAirWater_MATS=VACUUM,G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=90
-export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Box  # default:Orb  (Box also impl)
+export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Orb  # default:Orb  (Box also impl)
 
 if [ -n "$KLUDGE" ]; then
     export U4Recorder__PreUserTrackingAction_Optical_UseGivenVelocity_KLUDGE=1
@@ -111,8 +112,8 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
     #export SEvent_MakeGenstep_num_ph=$NUM   ## NO LONGER USED ?
 
     #src="rectangle"
-    #src="disc"
-    src="circle_inwards_hemi"
+    src="disc"
+    #src="circle_inwards_hemi"
 
     if [ "$src" == "rectangle" ]; then
         export storch_FillGenstep_pos=0,0,0
@@ -269,6 +270,10 @@ if [ "${arg/tra}" != "$arg" ]; then
     [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with simtrace_script $simtrace_script && exit 4
 fi
 
+if [[ "$arg" =~ rainbow ]]; then
+    ${IPYTHON:-ipython} --pdb -i $rainbow_script
+    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with rainbow_script $rainbow_script && exit 4
+fi
 
 
 

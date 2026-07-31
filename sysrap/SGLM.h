@@ -337,10 +337,10 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kLEVEL = "SGLM_LEVEL" ;
     static constexpr const char* kTIMESCALE = "TIMESCALE" ;
 
-    static constexpr const char* kT0 = "T0" ;
-    static constexpr const char* kT1 = "T1" ;
-    static constexpr const char* kTT = "TT" ;
-    static constexpr const char* kTN = "TN" ;  // int:number of render loop time bumps to go from T0 to T1
+    static constexpr const char* kT0 = "T0" ;  // record animation start time (ns), eg 0
+    static constexpr const char* kT1 = "T1" ;  // record animation end time (ns), eg 100
+    static constexpr const char* kTT = "TT" ;  // jump time (ns) - used by SGLM::reset_time_TT
+    static constexpr const char* kTN = "TN" ;  // int:number of render loop time bumps to go from T0 to T1, eg 5000
 
 
 

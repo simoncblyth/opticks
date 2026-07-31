@@ -15,13 +15,32 @@ NVIDIA
 #include "scuda.h"
 #include <cmath>
 
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#    define SCIE_METHOD __host__ __device__
+#else
+#    define SCIE_METHOD
+#endif
+
+
+
 struct scie
 {
-    static float xFit_1931( float wave );
-    static float yFit_1931( float wave );
-    static float zFit_1931( float wave );
-    static float3 xyzFit_1931(float wave);
+    static SCIE_METHOD float xFit_1931( float wave );
+    static SCIE_METHOD float yFit_1931( float wave );
+    static SCIE_METHOD float zFit_1931( float wave );
+    static SCIE_METHOD float3 xyzFit_1931(float wave);
 };
+
+
+
+
+
+
+
+
+
+
+
 
 inline float scie::xFit_1931( float wave )
 {
