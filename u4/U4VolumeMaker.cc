@@ -1046,6 +1046,17 @@ void U4VolumeMaker::RaindropRockAirWater_Configure(
     drop_radius = halfside/2. ;                  // water : G4_WATER
 }
 
+
+std::string U4VolumeMaker::RaindropRockAirWater_RINDEX_OVERRIDE(const char* matname) // static
+{
+    std::stringstream ss ;
+    ss << U4VolumeMaker_RaindropRockAirWater_RINDEX_OVERRIDE_ << matname ;
+    std::string str = ss.str() ;
+    return str ;
+}
+
+
+
 /**
 U4VolumeMaker::RaindropRockAirWater
 ------------------------------------
@@ -1117,11 +1128,25 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
     {
         G4Material* mat = materials[i] ;
         assert(mat);
+        if(U4Material::HasMPT(mat)) continue ;
 
-        if(rindex[i] > 0. && !U4Material::HasMPT(mat) )
+        G4MaterialPropertiesTable* mpt = nullptr ;
+
+        const char* matname = mats[i].c_str() ;
+        std::string _rindex_override = RaindropRockAirWater_RINDEX_OVERRIDE(matname);
+        const char* rindex_override = ssys::getenvvar(_rindex_override.c_str(), nullptr) ;
+
+        if(rindex_override)
         {
-            U4Material::SetMPT(mat,U4MaterialPropertiesTable::Create("RINDEX", rindex[i])) ;
+            std::cerr << "U4VolumeMaker::RaindropRockAirWater rindex_override [" << rindex_override << "]\n" ;
+            mpt = U4MaterialPropertiesTable::Create("RINDEX", rindex_override);
         }
+        else if(rindex[i] > 0. )
+        {
+            mpt = U4MaterialPropertiesTable::Create("RINDEX", rindex[i]);
+        }
+
+        if(mpt) U4Material::SetMPT(mat,mpt) ;
     }
 
 
@@ -1162,7 +1187,6 @@ const G4VPhysicalVolume* U4VolumeMaker::RaindropRockAirWater(bool sd)
     }
     return universe_pv ;
 }
-
 
 
 const G4VPhysicalVolume* U4VolumeMaker::BigWaterPool()

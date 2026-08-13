@@ -567,6 +567,8 @@ struct U
     static std::string Summarize_1( const char* label, int wid );
     static std::string Squish( const char* label );
 
+    static std::string_view Trim(std::string_view str);
+
     static void TrimLeftRight(std::string& str);
     static void TrimLeft(std::string& str) ;
     static void TrimRight(std::string& str);
@@ -1523,6 +1525,14 @@ inline std::string U::Squish( const char* label ) // static
 
 
 
+
+inline std::string_view U::Trim(std::string_view str)
+{
+    const auto start = str.find_first_not_of(" \t\r\n");
+    if (start == std::string_view::npos) return {};
+    const auto end = str.find_last_not_of(" \t\r\n");
+    return str.substr(start, end - start + 1);
+}
 
 inline void U::TrimLeftRight(std::string& str)
 {

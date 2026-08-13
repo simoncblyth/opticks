@@ -460,6 +460,8 @@ set(HEADERS
 
     SOpticks.hh
     sdomain.h
+    swater_RINDEX.h
+
 
     SDBG.h
 
@@ -1008,8 +1010,15 @@ set( SH_SCRIPTS
     SABTest.py
 )
 
+set( TXTS
+    RINDEX_Water_Hale_K.txt
+    RINDEX_Water_Hale_N.txt
+)
+
+
 install(PROGRAMS ${PY_SCRIPTS}  DESTINATION py/opticks/sysrap)
 install(PROGRAMS ${SH_SCRIPTS}  DESTINATION bin)
+install( FILES ${TXTS} DESTINATION include/SysRap )
 
 install(FILES ${CURANDLITE_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/curandlite)
 install(DIRECTORY gl/ DESTINATION gl)

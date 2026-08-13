@@ -40,6 +40,10 @@ struct NPX
     template<typename T> static NP* FromString(const char* str, char delim=' ') ;
 
 
+    template<typename T> static NP* PLoad(const char* base, const char* relp);
+    template<typename T> static NP* PLoad(const char* path);
+
+
     static NP* Holder( const std::vector<std::string>& names );
 
 
@@ -293,6 +297,71 @@ inline NP* NPX::FromString(const char* str, char delim)  // static
     return a ;
 }
 
+template<typename T>
+inline NP* NPX::PLoad(const char* base, const char* name)
+{
+    std::string path = U::form_path(base, name);
+    return NPX::PLoad<T>(path.c_str());
+}
+
+/**
+NPX::PLoad
+-----------
+
+The format of the input file is assumed to be similar to ~/opticks/sysrap/RINDEX_Water_Hale_n.txt
+with domain and value on each line::
+
+    # https://refractiveindex.info/tmp/database/data/main/H2O/nk/Hale.txt
+    # below obtained by splitting n from above url
+    # wl domain units are um micrometers
+    # wl    n
+    0.200   1.396
+    0.225   1.373
+    0.250   1.362
+    0.275   1.354
+    0.300   1.349
+    0.325   1.346
+    0.350   1.343
+    0.375   1.341
+    0.400   1.339
+    0.425   1.338
+
+**/
+
+template<typename T>
+inline NP* NPX::PLoad(const char* path_)
+{
+    const char* path = U::Resolve(path_);
+
+    std::ifstream fp(path);
+    if (!fp.is_open()){
+        std::cerr << "NPX::PLoad could not open [" << ( path ? path : "-" ) << "]\n" ;
+        return nullptr ;
+    }
+
+    std::vector<T> dom_val ;
+
+    std::string line;
+    while (std::getline(fp, line))
+    {
+        std::string_view trimmed = U::Trim(line);
+        if(trimmed.rfind('#',0) == 0 || trimmed.empty()) continue ;
+
+        // Parse numerical values from non-comment lines
+        std::stringstream ss((std::string(trimmed)));
+        T dom = 0.0;
+        T val = 0.0;
+
+        if (ss >> dom >> val)
+        {
+            dom_val.push_back(dom);
+            dom_val.push_back(val);
+        }
+    }
+    NP* prop = NPX::Make<T>(dom_val);
+    prop->change_shape(-1,2);
+    return prop ;
+}
 
 
 

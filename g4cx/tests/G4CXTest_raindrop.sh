@@ -27,6 +27,11 @@ see storch::FillGenstep for how to customize that.
 
     NUM=1000000 PICK=B MODE=3 SELECT="TO BT BR BR BR BR BT SA" ~/opticks/g4cx/tests/G4CXTest_raindrop.sh
 
+For making rainbows::
+
+    WHITE=1 G4CXTest_raindrop.sh info_run_rainbow
+
+
 EOU
 }
 
@@ -53,9 +58,9 @@ export GEOM=$geom  # GEOM is identifier for a geometry
 
 vars="$vars BASH_SOURCE PWD DIR bin script GEOM"
 
-# THESE ARE NOW THE DEFAULTS
-# TODO: revive something similar to the old "MainH2OHale" as need that to make rainbows
+# DONE: added RINDEX_OVERRIDE_G4_WATER=swater_RINDEX__N handling to enable creating rainbows
 export U4VolumeMaker_RaindropRockAirWater_RINDEX=0,0,1,1.333
+export U4VolumeMaker_RaindropRockAirWater_RINDEX_OVERRIDE_G4_WATER=swater_RINDEX__N
 export U4VolumeMaker_RaindropRockAirWater_MATS=VACUUM,G4_Pb,G4_AIR,G4_WATER
 export U4VolumeMaker_RaindropRockAirWater_HALFSIDE=100
 export U4VolumeMaker_RaindropRockAirWater_DROPSHAPE=Orb  # default:Orb  (Box also impl)
