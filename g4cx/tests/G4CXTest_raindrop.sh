@@ -32,6 +32,19 @@ For making rainbows::
     WHITE=1 G4CXTest_raindrop.sh info_run_rainbow
 
 
+
+TODO: investigate cryptic memory error when pushing to M3
+----------------------------------------------------------
+
+::
+
+    corrupted size vs. prev_size
+
+* Curiously the error goes away when running under debugger ?
+* HMM: seems flakey - not getting error currently after rebuild
+
+
+
 EOU
 }
 
@@ -41,7 +54,13 @@ DIR=$(pwd)
 bin=G4CXTest
 script=G4CXTest_raindrop.py
 simtrace_script=G4CXTest_raindrop_simtrace.py
+
+
 rainbow_script=G4CXTest_raindrop_rainbow.py
+RAINBOW_SCRIPT=${RAINBOW_SCRIPT:-$rainbow_script}
+
+raindev_script=G4CXTest_raindrop_raindev.py
+RAINDEV_SCRIPT=${RAINDEV_SCRIPT:-$raindev_script}
 
 
 geom=RaindropRockAirWater
@@ -98,7 +117,9 @@ export G4CXOpticks__SaveGeometry_DIR=$HOME/.opticks/GEOM/$GEOM
 #num=1000
 #num=5000
 #num=H1
-num=M1
+#num=M1
+num=M3
+#num=M10  ## HUH: get cryptic error with M10 "corrupted size vs. prev_size"
 NUM=${NUM:-$num}
 
 ## For torch running MUST NOW configure OPTICKS_NUM_PHOTON and OPTICKS_NUM_GENSTEP
@@ -108,7 +129,7 @@ export OPTICKS_NUM_PHOTON=$NUM
 export OPTICKS_NUM_GENSTEP=1
 
 export OPTICKS_RUNNING_MODE="SRM_TORCH"
-export OPTICKS_MAX_SLOT=M1
+export OPTICKS_MAX_SLOT=$NUM
 
 
 vars="$vars OPTICKS_NUM_PHOTON OPTICKS_NUM_GENSTEP OPTICKS_RUNNING_MODE"
@@ -149,6 +170,7 @@ if [ "$OPTICKS_RUNNING_MODE" == "SRM_TORCH" ]; then
 fi
 
 
+#oim=1  # GPU only  TODO: SHAKEDOWN ? ACTUALLY NO - BETTER TO DO IN CSGOptiX/tests WITHOUT G4 COMPLICATIONS
 #oim=2  # CPU only
 oim=3  # GPU and CPU optical simulation
 export OPTICKS_INTEGRATION_MODE=${OPTICKS_INTEGRATION_MODE:-$oim}
@@ -218,6 +240,9 @@ if [ -n "$BP" ]; then
 fi
 
 
+
+
+
 vars="$vars CUDA_VISIBLE_DEVICES BP defarg arg"
 
 
@@ -235,6 +260,12 @@ if [ "${arg/dbg}" != "$arg" ]; then
     source dbg__.sh
     dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : dbg error && exit 2
+fi
+
+if [[ "$arg" =~ mem ]]; then
+    echo $BASH_SOURCE - mem - gdb running with glibc strict heap checking and corresponding breakpoints defined
+    MALLOC_CHECK_=3 gdb -ex "b __libc_message" -ex "b malloc_printerr" -ex "b abort" -ex "run" --args $bin
+    [ $? -ne 0 ] && echo $BASH_SOURCE : mem error && exit 2
 fi
 
 if [ "${arg/grab}" != "$arg" ]; then
@@ -277,8 +308,13 @@ if [ "${arg/tra}" != "$arg" ]; then
 fi
 
 if [[ "$arg" =~ rainbow ]]; then
-    ${IPYTHON:-ipython} --pdb -i $rainbow_script
-    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with rainbow_script $rainbow_script && exit 4
+    ${IPYTHON:-ipython} --pdb -i $RAINBOW_SCRIPT
+    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with RAINBOW_SCRIPT $RAINBOW_SCRIPT && exit 4
+fi
+
+if [[ "$arg" =~ raindev ]]; then
+    ${IPYTHON:-ipython} --pdb -i $RAINDEV_SCRIPT
+    [ $? -ne 0 ] && echo $BASH_SOURCE : pdb error with RAINDEV_SCRIPT $RAINDEV_SCRIPT && exit 4
 fi
 
 

@@ -8,6 +8,7 @@ set(INSTALLED_SCRIPTS
     G4CXTest_raindrop.sh
     G4CXTest_raindrop.py
     G4CXTest_raindrop_rainbow.py
+    G4CXTest_raindrop_raindev.py
 
     G4CXTest_GEOM.sh
     G4CXTest_GEOM.py

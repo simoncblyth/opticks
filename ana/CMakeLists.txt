@@ -63,6 +63,7 @@ set(SCRIPTS
    nload.py
    num.py
    metrics.py
+   cie_xyz.py
 )
 
 

@@ -182,6 +182,10 @@ the photon_id and genstep_id inputs are informational only.
 
 Old workflow equivalent ~/opticks/optixrap/cu/torchstep.h
 
+TODO for rainbow revival following torchstep.h approach::
+
+   T_DISC_INTERSECT_SPHERE_S_POL
+   T_DISC_INTERSECT_SPHERE_P_POL
 
 **/
 
