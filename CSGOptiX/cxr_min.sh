@@ -154,12 +154,14 @@ optix_kernel_debug()
 
 
 
-anim()
+anim_debug()
 {
    type $FUNCNAME
    export SGLM__init_time_DUMP=1
+   export SRecord__level=1  # dump record.desc
+
 }
-[ -n "$ANIM" ] && anim
+[ -n "$ANIM" ] && anim_debug
 
 
 
@@ -183,6 +185,7 @@ for src in $srcs ; do
    script=$srcd/$src #2>/dev/null
    [ -f "$script" ] && source $script
    [ $? -ne 0 ] && echo $BASH_SOURCE ERROR SOURCING $script && exit 1
+   [ -f "$script" ] && printf "%40s : %s\n" "$src" "$script"
 done
 
 # EVT.sh : optionally sets EVT name and corresponding AFOLD BFOLD where event arrays are loaded from
@@ -343,6 +346,11 @@ _CUR=GEOM/$GEOM/$SCRIPT/$EVT
 
 if [ "${arg/info}" != "$arg" ]; then
    for v in $vv ; do printf "%20s : %s \n" "$v" "${!v}" ; done
+fi
+
+ff="${GEOM}_CFBaseFromGEOM AFOLD BFOLD"
+if [[ "$arg" =~ ls ]]; then
+    for f in $ff ; do printf "ls -alst %s\n" "$f" && ls -alst ${!f} ; done
 fi
 
 

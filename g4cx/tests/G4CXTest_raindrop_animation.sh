@@ -3,13 +3,43 @@ usage(){ cat << EOU
 G4CXTest_raindrop_animation.sh
 ================================
 
-TODO: revive record animation
+* DONE: revived record animation
+
+  * checked ~/o/examples/UseGeometryShader - nothing wrong with machinery - need to debug time ranges etc
+  * issue was overlarge (20G) record array without record slicing configured
+
+* TODO: debug why compositing of ray trace geom and event record not fully working,
+  see many more photon records when switch off geometry render with alt+O
+
+
 
 
 alt-A
    enable photon record aimimation rendering of AFOLD/record.npy
 alt-B
    enable photon record aimimation rendering of BFOLD/record.npy
+
+
+opt-T
+   reset time back to T0
+
+ctrl-T
+   toggle animation
+
+
+O
+   toggle orthographic/perspective projection
+
+W/S
+   forward backwards viewpoint control, does nothing in orthographic mode
+
+Z
+   toggle zoom control - then drag mouse up/down to adjust,
+   zoon often needed in orthographic mode to make all geom visible
+
+alt-O
+   toggle rendering of geometry - very useful to make record points more visible
+   (seems some bug with compositing)
 
 
 
@@ -19,27 +49,28 @@ EOU
 
 source /data1/blyth/local/opticks_Debug/envset.sh
 
-export MOI=0
-
-export AFOLD=/data1/blyth/tmp/GEOM/RaindropRockAirWater/G4CXTest/ALL0_Debug_Philox/A000
-export BFOLD=/data1/blyth/tmp/GEOM/RaindropRockAirWater/G4CXTest/ALL0_Debug_Philox/B000
-
-export GEOM=RaindropRockAirWater
-export _CFB=/home/blyth/.opticks/GEOM/$GEOM
-export ${GEOM}_CFBaseFromGEOM=/home/blyth/.opticks/GEOM/$GEOM
-
-export T0=0
-export T1=4
-export TT=0
-export TN=1000
+# NB the below standard scripts which are sourced by cxr_min.sh control crucial config settings
+# so it does not make sense setting most things here
+#
+#
+# ~/.opticks/GEOM/GEOM.sh  # geometry to load
+# ~/.opticks/GEOM/MOI.sh   # viewpoint within geometry
+# ~/.opticks/GEOM/EVT.sh   # record arrays to load - setting AFOLD, BFOLD and slicing
 
 
-defarg=info_ls_render
+## HMM: POTENTIALLY THESE SHOULD LIVE IN EVT.sh ?
+
+export ANIM=1 # enable debug output regarding SRecord arrays and time cuts
+export T0=0      ## ns
+export T1=3      ## ns
+export TT=1.5    ## ns - alt reference time
+
+export TN=5000   ## larger slows down animation
+
+defarg=info_render
 arg=${1:-$defarg}
 
-
-vv="BASH_SOURCE GEOM ${GEOM}_CFBaseFromGEOM _CFB AFOLD BFOLD"
-ff="${GEOM}_CFBaseFromGEOM AFOLD BFOLD"
+vv="ANIM T0 T1 TT TN"
 
 if [[ "$arg" =~ help ]]; then
     usage
@@ -47,10 +78,6 @@ fi
 
 if [[ "$arg" =~ info ]]; then
     for v in $vv ; do printf "%50s : %s\n" "$v" "${!v}" ; done
-fi
-
-if [[ "$arg" =~ ls ]]; then
-    for f in $ff ; do printf "ls -alst %s\n" "$f" && ls -alst ${!f} ; done
 fi
 
 if [[ "$arg" =~ render ]]; then

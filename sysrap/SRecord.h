@@ -26,6 +26,7 @@ struct SRecord
     static constexpr const char* _level = "SRecord__level" ;
     static int level ;
 
+    float dt ;
     NP* record;
     int record_first ;
     int record_count ;  // all step points across all photon
@@ -35,9 +36,9 @@ struct SRecord
     float4 ce = {} ;
 
     static NP*      LoadArray( const char* _fold, const char* _slice );
-    static SRecord* Load(      const char* _fold, const char* _slice=nullptr );
+    static SRecord* Load(      const char* _fold, const char* _slice=nullptr, const char* _dt=nullptr );
 
-    SRecord(NP* record);
+    SRecord(NP* record, float dt );
     void init() ;
 
     const float* get_mn() const ;
@@ -140,18 +141,41 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
     return a ;
 }
 
+/**
+SRecord::Load
+--------------
 
-inline SRecord* SRecord::Load(const char* _fold, const char* _slice )
+Used from only::
+
+    CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest
+
+**/
+
+
+inline SRecord* SRecord::Load(const char* _fold, const char* _slice, const char* _dt )
 {
     NP* _record = LoadArray(_fold, _slice);
-    return _record ? new SRecord(_record) : nullptr ;
+    float dt = ssys::getenvfloat(_dt, 0.f);
+    SRecord* record =  _record ? new SRecord(_record, dt) : nullptr ;
+
+    if(level > 0) std::cout
+         << "[SRecord::Load\n"
+         << " level " << level << "\n"
+         << " _dt " << ( _dt ? _dt : "-" ) << "\n"
+         << " dt " << dt << "\n"
+         << " record.desc " << ( record ? record->desc() : "-" ) << "\n"
+         << "]SRecord::Load\n"
+         ;
+
+    return record ;
 }
 
 
 
 
-inline SRecord::SRecord(NP* _record)
+inline SRecord::SRecord(NP* _record, float _dt)
     :
+    dt(_dt),
     record(_record),
     record_first(0),
     record_count(0)
@@ -177,9 +201,13 @@ inline void SRecord::init()
     record_first = 0 ;
     record_count = record->shape[0]*record->shape[1] ;   // all step points across all photon
 
+    sphoton::NudgeTime(record, dt );
+
     bool skip_flagmask_zero = true ;
     sphoton::MinMaxPost(&mn.x, &mx.x, record, skip_flagmask_zero );
     ce = scuda::center_extent( mn, mx );
+
+    record->set_meta<float>("dt", dt );     // debug time nudge
 
     record->set_meta<float>("x0", mn.x );
     record->set_meta<float>("x1", mx.x );
@@ -237,6 +265,8 @@ inline std::string SRecord::desc() const
         << std::setw(20) << " mx " << mx
         << std::endl
         << std::setw(20) << " ce " << ce
+        << std::endl
+        << std::setw(20) << " dt " << dt
         << std::endl
         << std::setw(20) << " record.sstr " << record->sstr()
         << std::endl

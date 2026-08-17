@@ -360,6 +360,8 @@ struct sphoton
     SPHOTON_METHOD static void Get( std::vector<sphoton>& pp, const NP* a );
 
     SPHOTON_METHOD static void MinMaxPost( float* mn, float* mx, const NP* a, bool skip_flagmask_zero );
+    SPHOTON_METHOD static void NudgeTime( NP* a, float dt=0.f );
+
     SPHOTON_METHOD static std::string DescMinMaxPost( const NP* _a, bool skip_flagmask_zero );
     SPHOTON_METHOD static std::string Desc(const NP* a, size_t edge=20);
     SPHOTON_METHOD static NP* MockupForMergeTest(size_t ni);
@@ -412,8 +414,8 @@ struct sphotond
    SPHOTON_METHOD static void Get( sphotond& p, const NP* a, unsigned idx );
    SPHOTON_METHOD void transform_float( const glm::tmat4x4<float>& tr,  bool normalize=true );
    SPHOTON_METHOD void transform(       const glm::tmat4x4<double>& tr, bool normalize=true );
+   SPHOTON_METHOD double* data() {               return &pos.x ; }
    SPHOTON_METHOD const double* cdata() const {  return &pos.x ; }
-
 
 };
 
@@ -878,11 +880,11 @@ SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a, boo
     assert(expect);
     if(!expect) std::raise(SIGINT);
 
-    int ni = a->num_items() ;
-    int nj = 4 ;
+    size_t ni = a->num_items() ;
+    size_t nj = 4 ;
     float MAX = std::numeric_limits<float>::max() ;
 
-    for(int j=0 ; j < nj ; j++)
+    for(size_t j=0 ; j < nj ; j++)
     {
         mn[j] = MAX ;
         mx[j] = -MAX ;
@@ -890,14 +892,14 @@ SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a, boo
     // float limits are big enough as output is in float anyhow
 
 
-    for(int i=0 ; i < ni ; i++)
+    for(size_t i=0 ; i < ni ; i++)
     {
         if( is_f )
         {
             sphoton* p = reinterpret_cast<sphoton*>(a->bytes() + i*a->item_bytes());
             if(skip_flagmask_zero && p->flagmask == 0u) continue ;
             const float* xyzt = p->cdata();
-            for(int j=0 ; j < nj ; j++)
+            for(size_t j=0 ; j < nj ; j++)
             {
                 float vj = xyzt[j] ;
                 if( vj < mn[j] ) mn[j] = vj ;
@@ -910,7 +912,7 @@ SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a, boo
             if(skip_flagmask_zero && p->flagmask == 0u) continue ;
             const double* xyzt = p->cdata();
 
-            for(int j=0 ; j < nj ; j++)
+            for(size_t j=0 ; j < nj ; j++)
             {
                 double vj = xyzt[j] ;
                 if( vj < double(mn[j]) ) mn[j] = vj ;
@@ -920,6 +922,42 @@ SPHOTON_METHOD void sphoton::MinMaxPost( float* mn, float* mx, const NP* _a, boo
     }
     a->reshape(sh);
 }
+
+
+SPHOTON_METHOD void sphoton::NudgeTime( NP* a, float dt )
+{
+    if(dt == 0.f) return ;
+    std::vector<NP::INT> sh = a->shape ;
+    a->change_shape(-1,4,4);
+    size_t ni = a->num_items() ;
+    bool skip_flagmask_zero = true ;
+    bool is_f = IsPhotonArray<float>(a);
+    bool is_d = IsPhotonArray<double>(a);
+
+    for(size_t i=0 ; i < ni ; i++)
+    {
+        if( is_f )
+        {
+            sphoton* p = reinterpret_cast<sphoton*>(a->bytes() + i*a->item_bytes());
+            if(skip_flagmask_zero && p->flagmask == 0u) continue ;
+            float* xyzt = p->data();
+            float& t = xyzt[3];
+            t += dt ;
+        }
+        else if( is_d )
+        {
+            sphotond* p = reinterpret_cast<sphotond*>(a->bytes() + i*a->item_bytes());
+            if(skip_flagmask_zero && p->flagmask == 0u) continue ;
+            double* xyzt = p->data();
+            double& t = xyzt[3];
+            t += dt ;
+        }
+    }
+    a->reshape(sh);
+}
+
+
+
 
 SPHOTON_METHOD std::string sphoton::DescMinMaxPost( const NP* _a, bool skip_flagmask_zero )
 {

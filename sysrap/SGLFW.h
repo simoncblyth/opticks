@@ -195,6 +195,7 @@ O
 
 alt+O
    option.O toggle display of optix ray traced geometry
+   (useful when debugging record points to make the geometry disappear)
 
 P
    invokes SGLM::desc describing view parameters [--desc]
