@@ -250,11 +250,26 @@ struct sphoton
        orient_boundary_flag = 0u ; identity = 0u ; index = 0u ; flagmask = 0u ;
     }
 
-#ifdef WITH_LOCALIZE
+
+#if defined(__CUDACC__) || defined(__CUDABE__)
+#else
+   /**
+   sphoton::localize
+   ------------------
+
+   Previously hid the localize method behind WITH_LOCALIZE preprocessor macro as this
+   is the only on device potential use of glm - instead of fiddling with yet another macro
+   use the standard ones to make this method only present in CPU code where using glm
+   is fine.
+
+   Note how the templated type T (float OR double) is used for
+   doing the transforms, but float is used for storage of the results.
+
+   **/
+
     template<typename T>
     SPHOTON_METHOD void localize(sphoton& l, const glm::tmat4x4<T>& tr, bool normalize) const
     {
-        // promote float->T for transform then T->float for storage
         glm::tvec4<T> p_pos(pos.x, pos.y, pos.z, T(1.f));
         glm::tvec4<T> l_pos = tr * p_pos;
         l.pos = make_float3(l_pos.x, l_pos.y, l_pos.z);

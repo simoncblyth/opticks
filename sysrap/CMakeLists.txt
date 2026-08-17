@@ -1003,6 +1003,7 @@ set( PY_SCRIPTS
     sevt.py
     smath.py
     OpticksCSG.py
+    sphoton.py
 )
 
 set( SH_SCRIPTS

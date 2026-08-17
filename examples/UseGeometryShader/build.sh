@@ -149,7 +149,9 @@ if [ "${arg/build}" != "$arg" ]; then
         -I../../sysrap \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/include \
+        -I$OPTICKS_PREFIX/externals/plog/include \
         -I$CUDA_PREFIX/include \
+        -DWITH_CHILD \
         -lstdc++ \
         -L$OPTICKS_PREFIX/externals/lib -lGLEW -lglfw \
         -framework Cocoa \
@@ -179,7 +181,9 @@ if [ "${arg/build}" != "$arg" ]; then
         -I../../sysrap \
         -I$OPTICKS_PREFIX/externals/glm/glm \
         -I$OPTICKS_PREFIX/externals/include \
+        -I$OPTICKS_PREFIX/externals/plog/include \
         -I$CUDA_PREFIX/include \
+        -DWITH_CHILD \
         -lstdc++ \
         -lm \
         -L$OPTICKS_PREFIX/externals/lib -lGLEW \
