@@ -12,19 +12,17 @@ G4CXTest_raindrop_animation.sh
   see many more photon records when switch off geometry render with alt+O
 
 
-
-
 alt-A
    enable photon record aimimation rendering of AFOLD/record.npy
 alt-B
    enable photon record aimimation rendering of BFOLD/record.npy
 
 
-opt-T
+alt-T
    reset time back to T0
 
 ctrl-T
-   toggle animation
+   toggle animation time progression - ie stop/start time
 
 
 O
@@ -60,10 +58,25 @@ source /data1/blyth/local/opticks_Debug/envset.sh
 
 ## HMM: POTENTIALLY THESE SHOULD LIVE IN EVT.sh ?
 
-export ANIM=1 # enable debug output regarding SRecord arrays and time cuts
+export SGLM_Option="A"  #  AMO ABGMO
+export CAM=orthographic
+#export CAM=perspective
+export ZOOMHOME=0.2
+export SGLM__renderloop_exit_DUMP=1
+
+
+rec_shader_name=rec_flying_point_persist  # default
+#rec_shader_name=rec_flying_point
+#rec_shader_name=rec_line_strip      # all those tightly packed lines mean need to reduce stats to be useful
+
+export SGLFW_Evt__rec_shader_name=$rec_shader_name
+
+
+export FULLSCREEN=0   # useful to see the incrementing sim time in window title
+export ANIM=1         # enable debug output regarding SRecord arrays and time cuts
 export T0=0      ## ns
-export T1=3      ## ns
-export TT=1.5    ## ns - alt reference time
+export T1=1.5    ## ns
+export TT=0.5    ## ns - alt reference time
 
 export TN=5000   ## larger slows down animation
 

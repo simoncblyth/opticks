@@ -73,6 +73,7 @@ that yield a selection string or direct such strings.
 
 0. seqhis history string, eg::
 
+    TO BT BR BT SA  # first rainbow reflection
     TO BT BT BT BT BR BT BT BT BT BT BT SC BT BT BT BT SD
 
 1. "where" selection, eg pick photon records with y coordinate

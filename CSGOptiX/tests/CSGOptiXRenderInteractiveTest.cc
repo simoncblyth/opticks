@@ -91,7 +91,7 @@ inline int CSGOptiXRenderInteractiveTest::Initialize(bool allow_remote)
     if(is_remote_session && allow_remote == false )
     {
         std::cout << "CSGOptiXRenderInteractiveTest::Initialize : ABORTING : as detected remote session from SSH_TTY SSH_CLIENT \n";
-        std::cout << "to override : export " << _ALLOW_REMOTE << "=1  ## warning have see gnome-shell crash with Wayland \n" ;
+        std::cout << "to override : export " << _ALLOW_REMOTE << "=1  ## warning have seen gnome-shell crash with Wayland when doing this\n" ;
         return 1 ;
     }
     return 0 ;

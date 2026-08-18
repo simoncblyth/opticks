@@ -230,13 +230,13 @@ __forceinline__ __device__ uchar4 make_normal_pixel( const float3& normal, float
             );
 }
 
-__forceinline__ __device__ uchar4 make_zdepth_pixel( float depth )  // pure
+__forceinline__ __device__ uchar4 make_zdepth_pixel( float normal_depth, float depth_depth )  // pure
 {
     return make_uchar4(
-            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
-            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
-            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f ),
-            static_cast<uint8_t>( clamp( depth   , 0.0f, 1.0f ) *255.0f )
+            static_cast<uint8_t>( clamp( normal_depth   , 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( normal_depth   , 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( normal_depth   , 0.0f, 1.0f ) *255.0f ),
+            static_cast<uint8_t>( clamp( depth_depth    , 0.0f, 1.0f ) *255.0f )
             );
 }
 
@@ -278,10 +278,10 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 
 
     const unsigned cameratype = params.cameratype ;
-    const float3 dxyUV = d.x * to_float3(params.U) + to_float3(params.V) * ( params.traceyflip ? -d.y : d.y ) ;
-    const float3 origin    = cameratype == 0u ? to_float3(params.eye)          : to_float3(params.eye) + dxyUV    ;
+    const float3 dxyUV = d.x * to_float3(params.U) + to_float3(params.V) * ( params.traceyflip ? -d.y : d.y ) ;  // offset from eye position within pixel plane
+    const float3 origin    = cameratype == 0u ? to_float3(params.eye)                     : to_float3(params.eye) + dxyUV    ;
     const float3 direction = cameratype == 0u ? normalize( dxyUV + to_float3(params.W) )  : normalize( to_float3(params.W) ) ;
-    //                           cameratype 0u:perspective,                    1u:orthographic
+    //                                          cameratype 0u:perspective,                  1u:orthographic
 
 
 #if defined(DEBUG_PIDX)
@@ -322,9 +322,11 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
     float eye_z = -prd->distance()*dot(to_float3(params.WNORM), direction) ;
     const float& A = params.ZPROJ.z ;
     const float& B = params.ZPROJ.w ;
-    float zdepth = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1
 
-    if( prd->is_boundary_miss() ) zdepth = 0.999f ;
+    float zdepth_ndc  = cameratype == 0u ? -(A + B/eye_z) : A*eye_z + B  ;  // cf SGLM::zdepth1
+    float zdepth_clip = 0.5f*(zdepth_ndc + 1.f);
+
+    if( prd->is_boundary_miss() ) zdepth_clip = 0.999f ;
     // setting miss zdepth to 1.f give black miss pixels, 0.999f gives expected mid-grey from normal of (0.f,0.f,0.f)
     // previously with zdepth of zero for miss pixels found that OpenGL record rendering did not
     // appear infront of the grey miss pixels : because they were behind them (zdepth > 0.f ) presumably
@@ -336,7 +338,8 @@ static __forceinline__ __device__ void render( const uint3& idx, const uint3& di
 #if defined(DEBUG_PIDX)
         //if(idx.x == 10 && idx.y == 10) printf("//CSGOptiX7.cu:render/params.pixels diddled_normal(%7.3f,%7.3f,%7.3f)  \n", diddled_normal.x, diddled_normal.y, diddled_normal.z );
 #endif
-        params.pixels[index] = params.rendertype == 0 ? make_normal_pixel( diddled_normal, zdepth ) : make_zdepth_pixel( zdepth ) ;
+        //params.pixels[index] = params.rendertype == 0 ? make_normal_pixel( diddled_normal, zdepth_clip ) : make_zdepth_pixel( zdepth_clip, params.DEBUG_zdepth == 0.f ? zdepth_clip : params.DEBUG_zdepth ) ;
+        params.pixels[index] = params.rendertype == 0 ? make_normal_pixel( diddled_normal, zdepth_clip ) : make_zdepth_pixel( zdepth_clip, zdepth_clip ) ;
     }
     if(params.isect)
     {

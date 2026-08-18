@@ -129,6 +129,7 @@ A
 
 alt+A
    toggle gm.option.A controlling rendering of SRecord A
+   (define initial options with: export SGLM_Option="AMO"  # default "MO")
    (use T0 T1 and TN to control time range and animation speed)
 
 B
@@ -136,6 +137,7 @@ B
 
 alt+B
    toggle gm.option.B controlling rendering of SRecord B
+   (define initial options with: export SGLM_Option="BMO"  # default "MO")
    (use T0 T1 and TN to control time range and animation speed)
 
 C
@@ -151,6 +153,7 @@ G
    -
 alt+G
    toggle gm.option.G controlling rendering of SGen
+   (define initial options with: export SGLM_Option="GMO"  # default "MO")
 
 H
    invokes SGLM::home returning to initial position with no lookrotation or eyeshift [--home]
@@ -187,6 +190,7 @@ M
 
 alt+M
    toggle gm.option.M controlling rendering of mesh geometry
+   (define initial options with: export SGLM_Option="MO"  # default "MO")
 
 N
    gm.toggle.tmin : then change near by moving cursor vertically
@@ -196,6 +200,7 @@ O
 alt+O
    option.O toggle display of optix ray traced geometry
    (useful when debugging record points to make the geometry disappear)
+   (define initial options with: export SGLM_Option="MO"  # default "MO")
 
 P
    invokes SGLM::desc describing view parameters [--desc]
@@ -411,6 +416,9 @@ inline bool SGLFW::renderloop_proceed()
 inline void SGLFW::renderloop_exit()
 {
     if(level > 0) std::cout << "SGLFW::renderloop_exit" << std::endl;
+
+    gm.renderloop_exit();
+
     glfwSetWindowShouldClose(window, true);
 }
 

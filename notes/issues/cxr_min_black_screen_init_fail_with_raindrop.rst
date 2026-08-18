@@ -6,7 +6,11 @@ Issue
 ------
 
 cxr_min.sh works fine with JUNO geom but failing with the very simple
-raindrop geometry ? FIXED initial issue - but further problems remain.
+raindrop geometry ? FIXED initial issue - but further compositing problems remain.
+
+Moved those compositing issues over to:
+
+* ~/o/notes/issues/cxr_min_compositing_of_ray_trace_geometry_together_with_photon_record_point_animation_stopped_working.rst
 
 
 Overview
@@ -14,6 +18,7 @@ Overview
 
 * disabling AFOLD, BFOLD in EVT.sh for RaindropRockAirWater enables geometry render to work,
   by switching off the attempted upload of 20G record.npy from AFOLD
+
 * then config slicing gets animation to work
 
 
@@ -21,11 +26,12 @@ Nowever, notice issues with the viz:
 
 * points do not appear until after hitting the droplet - recall some viz problem with sim time starting at exactly zero ?
 
-  * confirmed that setting AFOLD_RECORD_TNUDGE=0.1 enables viz of records prior to hitting the droplet
+  * fixed by setting AFOLD_RECORD_TNUDGE=0.0001 enables viz of records prior to hitting the droplet
 
 * compositing with the geometry looses most of the record animation - zdepth consistency from view math perhaps ?
 
-  * looks like making the containers invisible avoids this issue to some extent
+  * making the containers invisible helps, but not real solution
+
 
 
 Try making container volumes invisible to see if changes record viz issue
@@ -100,6 +106,7 @@ Symptom : init crash
     #14 0x0000000000446831 in main (argc=1, argv=0x7fffffffb698) at /home/blyth/opticks/CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc:231
     (gdb)
 
+This crash found to be due to trying to upload 2x20G = 40G of record arrays with OpenGL - larger than VRAM
 
 
 ::
@@ -239,7 +246,6 @@ Slicing the 20G record arrays, gets the record animation to run::
     279
     280
     "~/.opticks/GEOM/EVT.sh" 280L, 11572B
-
 
 
 

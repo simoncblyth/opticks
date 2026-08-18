@@ -912,6 +912,8 @@ void CSGOptiX::setFrame(const sfr& lfr )
 CSGOptiX::prepareParamRender
 ----------------------------
 
+Called from CSGOptiX::prepareParam just before param upload and optix launch
+
 View parameters from the sglm instance are copied into Params
 using the Params_Helper.
 
@@ -936,6 +938,9 @@ void CSGOptiX::prepareParamRender()
     int traceyflip = sglm->traceyflip ;
     int rendertype = sglm->rendertype ;
     float length = 0.f ;
+
+    float DEBUG_zdepth = ssys::getenvfloat(_prepareParamRender_DEBUG_zdepth, 0.f);
+
 
     LOG_IF(info, prepareParamRender_DEBUG > 0 && kernel_count == 0)
         << _prepareParamRender_DEBUG << ":" << prepareParamRender_DEBUG
@@ -997,6 +1002,8 @@ void CSGOptiX::prepareParamRender()
     params_helper->setView(eye, U, V, W, WNORM );
     params_helper->setCamera(tmin, tmax, cameratype, traceyflip, rendertype, ZPROJ );
     params_helper->setVizmask(vizmask);
+    params_helper->setDEBUG_zdepth(DEBUG_zdepth);
+
 
     LOG(level) << std::endl << params_helper->desc() ;
 

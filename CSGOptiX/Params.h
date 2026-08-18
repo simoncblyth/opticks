@@ -75,7 +75,7 @@ struct __align__(16) Params // Force 16-byte structural alignment boundary
 
     unsigned   vizmask ;
     uint32_t   PropagateRefine ;
-    uint32_t   _pad1;
+    float      DEBUG_zdepth ;
     uint32_t   _pad2;
 
 };
@@ -107,6 +107,7 @@ struct Params_Helper
                  const glm::vec3& WNORM_ );
 
     void setCamera(float tmin_, float tmax_, unsigned cameratype_, int traceyflip_, int rendertype_, const glm::vec4& ZPROJ_ ) ;
+    void setDEBUG_zdepth(float DEBUG_zdepth);
     void setRaygenMode(int raygenmode_ );
     void setSize(unsigned width_, unsigned height_, unsigned depth_ );
     void setVizmask(unsigned vizmask_);

@@ -22,44 +22,58 @@ Params_Helper::Params_Helper( Params* _params, int raygenmode_, unsigned width, 
    setRaygenMode(raygenmode_);
    setSize(width, height, depth);
    setPIDXYZ(-1,-1,-1,0);     // disabled dumping (which WITH_PIDX enabled via setting to high unsigned:-1 values)
+   setDEBUG_zdepth(0.f);
 }
 
 void Params_Helper::init()
 {
     params->node = nullptr ;
     params->plan = nullptr ;
+
     params->tran = nullptr ;
     params->itra = nullptr ;
+
     params->pixels = nullptr ;
     params->isect = nullptr ;
+
     params->fphoton = nullptr ;
     params->sim = nullptr ;
+
     params->evt = nullptr ;
 #if OPTIX_VERSION < 70000
     params->handle = nullptr ;
 #else
     params->handle = 0 ;
 #endif
+
     params->photon_slot_offset = 0ull ;
+    params->_pad0 = 0 ;
+
     params->raygenmode = SRG_RENDER ;
     params->width = 0 ;
     params->height = 0 ;
     params->depth = 0 ;
+
     params->cameratype = 0 ;
     params->traceyflip = 0 ;
+    params->rendertype = 0 ;
     params->origin_x = 0 ;
+
     params->origin_y = 0 ;
     params->event_index = 0 ;
     params->tmin = 0.f;
     params->tmin0 = 0.f;
+
     params->PropagateRefineDistance = 0.f;
     params->tmax = 0.f ;
     params->max_time = 1.e27f;
     params->PropagateEpsilon0Mask = 0u;
+
     params->vizmask = 0xff ;
     params->PropagateRefine = 0u ;
+    params->DEBUG_zdepth = 0.f ;
+    params->_pad2 = 0 ;
 }
-
 
 void Params_Helper::setCenterExtent(float x, float y, float z, float w)  // used for "simulation" planar rendering
 {
@@ -83,6 +97,10 @@ Params_Helper::setView
 -----------------
 
 Canonical invokation from CSGOptiX::prepareParamRender
+
+void CSGOptiX::prepareParamRender()
+
+
 
 **/
 
@@ -136,6 +154,12 @@ void Params_Helper::setCamera(
     params->ZPROJ.w = ZPROJ_.w ;
 }
 
+
+void Params_Helper::setDEBUG_zdepth(float DEBUG_zdepth)
+{
+    params->DEBUG_zdepth = DEBUG_zdepth ;
+}
+
 std::string Params_Helper::desc() const
 {
     std::stringstream ss ;
@@ -153,6 +177,7 @@ std::string Params_Helper::desc() const
        << std::setw(20) << " origin_y " << std::setw(10) << params->origin_y  << std::endl
        << std::setw(20) << " tmin " << std::setw(10) << params->tmin  << std::endl
        << std::setw(20) << " tmax " << std::setw(10) << params->tmax  << std::endl
+       << std::setw(20) << " DEBUG_zdepth " << std::setw(10) << params->DEBUG_zdepth  << std::endl
        << std::setw(20) << " eye("
        << std::setw(10) << std::fixed << std::setprecision(6) << params->eye.x
        << std::setw(10) << std::fixed << std::setprecision(6) << params->eye.y
@@ -188,6 +213,10 @@ std::string Params_Helper::desc() const
     std::string str = ss.str();
     return str ;
 }
+
+
+
+
 
 std::string Params_Helper::detail() const
 {

@@ -278,18 +278,39 @@ inline std::string SGLM_Toggle::desc() const
 
 struct SYSRAP_API SGLM_Option
 {
-    bool A = false ;
-    bool B = false ;
-    bool G = false ;
-    bool M = true ;
-    bool O = true ;
+    static constexpr const char* kSGLM_Option = "SGLM_Option" ;
+    static constexpr const char* kDEFAULT = "MO" ;
+
+    const char* option ;
+    bool A ; // [default false] enable display of SRecord.h A
+    bool B ; // [default false] enable display of SRecord.h B
+    bool G ; // [default false] enable display of SGen.h (gensteps) [TODO: SHAKEDOWN SGen rendering]
+    bool M ; // [default true ] enable display of triangulated mesh geometry [TODO: CHECK]
+    bool O ; // [default true ] enable display of OptiX ray traced geometry
+
+    SGLM_Option();
     std::string desc() const ;
 };
+
+inline SGLM_Option::SGLM_Option()
+    :
+    option(ssys::getenvvar(kSGLM_Option,kDEFAULT)),
+    A(strchr(option,'A')),
+    B(strchr(option,'B')),
+    G(strchr(option,'G')),
+    M(strchr(option,'M')),
+    O(strchr(option,'O'))
+{
+}
+
+
 
 inline std::string SGLM_Option::desc() const
 {
     std::stringstream ss ;
     ss << "SGLM_Option::desc"
+       << " kDEFAULT " << kDEFAULT
+       << " option: " << ( option ? option : "-" )
        << " A:" << ( A ? "Y" : "N" )
        << " B:" << ( B ? "Y" : "N" )
        << " G:" << ( G ? "Y" : "N" )
@@ -323,9 +344,10 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* kVIEWSLICE = "VIEWSLICE" ;
 
     static constexpr const char* kZOOM = "ZOOM" ;
+    static constexpr const char* kZOOMHOME = "ZOOMHOME" ;
     static constexpr const char* kTMIN = "TMIN" ;
     static constexpr const char* kTMAX = "TMAX" ;
-    static constexpr const char* kCAM = "CAM" ;
+    static constexpr const char* kCAM = "CAM" ;     // CAM=perspective/orthographic/equirectangular
     static constexpr const char* kNEARFAR = "NEARFAR" ;
     static constexpr const char* kFOCAL = "FOCAL" ;
     static constexpr const char* kFULLSCREEN = "FULLSCREEN" ;
@@ -348,6 +370,7 @@ struct SYSRAP_API SGLM : public SCMD
     static constexpr const char* _SGLM_DESC = "SGLM_DESC" ;
     static constexpr const char* __setTreeScene_DUMP = "SGLM__setTreeScene_DUMP" ;
     static constexpr const char* __init_time_DUMP = "SGLM__init_time_DUMP" ;
+    static constexpr const char* __renderloop_exit_DUMP = "SGLM__renderloop_exit_DUMP" ;
 
 
     // static defaults, some can be overridden in the instance
@@ -365,6 +388,7 @@ struct SYSRAP_API SGLM : public SCMD
 
 
     static float ZOOM ;
+    static float ZOOMHOME ;
     static float TMIN ;
     static float TMAX ;
     static int   CAM ;
@@ -684,6 +708,7 @@ struct SYSRAP_API SGLM : public SCMD
     std::string desc() const ;
 
 
+    void renderloop_exit() const ;
     void dump() const ;
     void update();
     void constrain() const ;
@@ -745,14 +770,17 @@ struct SYSRAP_API SGLM : public SCMD
     void toggle_time_halt();
 
     std::string desc_time() const ;
+    std::string briefTime() const ;
+
 
     float get_t0() const ;
     float get_t1() const ;
-    float get_ts() const ;
-    int get_tn() const ;
-
-
     float get_time() const ;
+    float get_ts() const ;
+
+    float get_tf() const ;
+    int   get_tn() const ;
+
     bool in_timerange(float t) const ;
     void set_time( float t );
     void time_bump();
@@ -784,6 +812,7 @@ const char* SGLM::VIEWSLICE = ssys::getenvvar(kVIEWSLICE, nullptr);
 
 
 float      SGLM::ZOOM = EValue<float>(kZOOM, "1");
+float      SGLM::ZOOMHOME = EValue<float>(kZOOMHOME, "1");
 float      SGLM::TMIN = EValue<float>(kTMIN, "0.1");
 float      SGLM::TMAX = EValue<float>(kTMAX, "100.0");
 int        SGLM::CAM  = SCAM::EGet(kCAM, "perspective") ;
@@ -1122,7 +1151,8 @@ void SGLM::home()
     q_lookrot = SGLM_Arcball::Identity();
     q_eyerot = SGLM_Arcball::Identity();
 
-    SetZOOM(1.f);
+    //SetZOOM(1.0);
+    SetZOOM(ZOOMHOME);
 }
 
 std::string SGLM::descEyeShift() const
@@ -1358,13 +1388,31 @@ std::string SGLM::desc() const
     ss << descProj() << std::endl ;
     ss << descProjection() << std::endl ;
     ss << descBasis() << std::endl ;
-    ss << descLog() << std::endl ;
+    //ss << descLog() << std::endl ;  // too verbose
     ss << desc_MVP() << std::endl ;
     ss << desc_MVP_ce_corners() << std::endl ;
     ss << desc_MVP_ce_midface() << std::endl ;
     std::string s = ss.str();
     return s ;
 }
+
+void SGLM::renderloop_exit() const
+{
+    bool DUMP = ssys::getenvbool(__renderloop_exit_DUMP) ;
+
+    if(DUMP) std::cout
+         << "[SGLM::renderloop_exit"
+         << " [" << __renderloop_exit_DUMP << "] "
+         << " " << ( DUMP ? "YES" : "NO " )
+         << "\n"
+         << desc()
+         << "]SGLM::renderloop_exit"
+         << "\n"
+         ;
+}
+
+
+
 void SGLM::dump() const
 {
     std::cout << desc() << std::endl ;
@@ -2105,9 +2153,9 @@ SGLM::updateTitle
 
 The *title* is set as the cxr_min.sh OpenGL window title by SGLFW::renderloop_tail
 
+To see this title run the renderer with FULLSCREEN=0
+
 **/
-
-
 
 void SGLM::updateTitle()
 {
@@ -2117,6 +2165,7 @@ void SGLM::updateTitle()
        << " "
        << fr.desc_ce()
        << " sglm.e(c2w*ori) [" << Present(e) << "]"
+       << " " << briefTime()
        << " " << TITLE
        ;
 
@@ -2124,6 +2173,15 @@ void SGLM::updateTitle()
 
     title = ss.str();
 }
+
+
+/**
+SGLM::left_right_bottom_top_near_far
+-------------------------------------
+
+Fills lrbtnf struct using transverse scale, zoom, aspect, near, far
+
+**/
 
 
 void SGLM::left_right_bottom_top_near_far(lrbtnf& p) const
@@ -2157,7 +2215,7 @@ glm::frustum
 
 void SGLM::updateProjection()
 {
-    left_right_bottom_top_near_far(proj);
+    left_right_bottom_top_near_far(proj); // fills (lrbtnf)proj struct
     assert( cam == CAM_PERSPECTIVE || cam == CAM_ORTHOGRAPHIC );
     switch(cam)
     {
@@ -2204,6 +2262,8 @@ void SGLM::updateProjection()
 /**
 SGLM::FillZProjection
 -----------------------
+
+This is used from SGLM::updateProjection
 
 After the ancient okc Camera::fillZProjection
 
@@ -2320,8 +2380,11 @@ void SGLM::FillAltProjection(glm::vec4& _AProj, const glm::mat4& _Proj) // stati
 }
 
 
+//
 inline float lrbtnf::A_frustum() const { return -(far+near)/(far-near) ; }
 inline float lrbtnf::B_frustum() const { return -2.f*far*near/(far-near) ; }
+
+
 inline float lrbtnf::A_ortho() const   { return -2.f/(far-near) ; }
 inline float lrbtnf::B_ortho() const   { return -(far+near)/(far-near) ; }
 
@@ -2899,7 +2962,7 @@ SGLM::desc_MV_P_MVP_ce_corners
 
 Used as testing ground for the zdepth calc, see:
 
-* notes/issues/impl_composited_rendering_in_7plus_workflow.rst
+* ~/o/notes/issues/impl_composited_rendering_in_7plus_workflow.rst
 * http://www.songho.ca/opengl/gl_projectionmatrix.html
 
 **/
@@ -3588,9 +3651,26 @@ std::string SGLM::desc_time() const
 
     std::string str = ss.str();
     return str ;
-
 }
 
+std::string SGLM::briefTime() const
+{
+    float t = get_time();
+    float t0 = get_t0();
+    float t1 = get_t1();
+    float tf = get_tf();
+
+    std::stringstream ss ;
+    ss << "[SGLM::briefTime "
+       << " t  " << std::fixed << std::setw(7) << std::setprecision(3) << t
+       << " t0  " << std::fixed << std::setw(7) << std::setprecision(3) << t0
+       << " t1  " << std::fixed << std::setw(7) << std::setprecision(3) << t1
+       << " tf  " << std::fixed << std::setw(7) << std::setprecision(3) << tf
+       << "]"
+       ;
+    std::string str = ss.str();
+    return str ;
+}
 
 
 inline float SGLM::get_t0() const
@@ -3605,6 +3685,19 @@ inline float SGLM::get_ts() const
 {
     return timeparam.z ;
 }
+inline float SGLM::get_time() const
+{
+    return timeparam.w ;
+}
+
+inline float SGLM::get_tf() const
+{
+    float t = get_time();
+    float t0 = get_t0();
+    float t1 = get_t1();
+    float tf = (t1-t0) > 0.f ? (t-t0)/(t1-t0) : -1.f ;
+    return tf ;
+}
 inline int SGLM::get_tn() const
 {
     float t0 = get_t0();
@@ -3614,11 +3707,6 @@ inline int SGLM::get_tn() const
 }
 
 
-
-inline float SGLM::get_time() const
-{
-    return timeparam.w ;
-}
 inline bool SGLM::in_timerange(float t) const
 {
     return t >= timeparam.x && t <= timeparam.y ;
