@@ -150,9 +150,16 @@ NB record arrays can be enormous - so using slicing is highly recommended
 
 TODO: check sizes and give warnings when very big
 
-Used from only::
+Used from::
 
-    CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest
+    [lo] A[blyth@localhost opticks]$ opticks-fl SRecord::Load
+    ./CSGOptiX/tests/CSGOptiXRenderInteractiveTest.cc
+    ./sysrap/SEvt.cc
+    ./sysrap/tests/SGLFW_Evt_test.cc
+    ./sysrap/tests/SGLFW_SOPTIX_Scene_test.cc
+    ./sysrap/tests/SRecord_test.cc
+    ./sysrap/SRecord.h
+    ./sysrap/sseq_record.h
 
 **/
 

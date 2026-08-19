@@ -34,35 +34,65 @@ DONE: view maths for raytrace and rasterized now match each other quite closely
 #include "SGLFW_SOPTIX.h"
 
 
+struct SGLFW_SOPTIX_Scene_test
+{
+    bool DUMP ;
+    stree* tree ;
+    SScene* scene ;
+    bool loaded ;
+    SRecord* ar ;
+    SRecord* br ;
+    SGen* gs ;
+
+   static bool LoadedGeom(const stree* t, const SScene* s)
+   {
+        if( t == nullptr || s == nullptr ) std::cerr
+             << "SGLFW_SOPTIX_Scene_test::LoadedGEOM"
+             << " LOAD FAIL "
+             << " tree " << ( t ? "YES" : "NO " )
+             << " scene " << ( s ? "YES" : "NO " )
+             << "\n"
+             ;
+
+        //if (!t || !s) throw std::runtime_error("Failed to load tree or scene");
+        if (!t || !s) return false ;
+        return true;
+    }
+
+    SGLFW_SOPTIX_Scene_test();
+};
+
+
+/**
+HMM: ELV selection can now reduce what is loaded into SScene
+BUT there is no such functionality for stree ?
+Is there potential for the inconsistency to cause issues ?
+**/
+
+SGLFW_SOPTIX_Scene_test::SGLFW_SOPTIX_Scene_test()
+    :
+    DUMP(ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP")),
+    tree(stree::Load()),
+    scene(SScene::Load()),
+    loaded(LoadedGeom(tree,scene)),
+    ar(loaded ? SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE", "AFOLD_RECORD_TNUDGE") : nullptr),
+    br(loaded ? SRecord::Load("$BFOLD", "$BFOLD_RECORD_SLICE", "BFOLD_RECORD_TNUDGE") : nullptr),
+    gs(loaded ? SGen::Load("$AFOLD", "$AFOLD_GENSTEP_SLICE" ) : nullptr)
+{
+    if(DUMP && loaded) std::cout << scene->desc() ;
+}
+
+
 int main(int argc, char** argv)
 {
-    bool DUMP = ssys::getenvbool("SGLFW_SOPTIX_Scene_test_DUMP");
 
-    stree* tree = stree::Load();
-    SScene* scene = SScene::Load() ;
-    // HMM: ELV selection can now reduce what is loaded into SScene
-    // BUT there is no such functionality for stree ?
-    // There is potential for the inconsistency to cause issues ?
-    if( tree == nullptr || scene == nullptr ) std::cerr
-         << "SGLFW_SOPTIX_Scene_test.main"
-         << " LOAD FAIL "
-         << " tree " << ( tree ? "YES" : "NO " )
-         << " scene " << ( scene ? "YES" : "NO " )
-         << "\n"
-         ;
-
-    if( tree == nullptr || scene == nullptr ) return 0;
-
-    if(DUMP) std::cout << scene->desc() ;
-
-    SRecord* ar = SRecord::Load("$AFOLD", "$AFOLD_RECORD_SLICE" ) ;
-    SRecord* br = SRecord::Load("$BFOLD", "$BFOLD_RECORD_SLICE" ) ;
-    SGen* gs = SGen::Load("$AFOLD", "$AFOLD_GENSTEP_SLICE" );
+    SGLFW_SOPTIX_Scene_test t ;
+    if(!t.loaded) return 0;
 
     SGLM gm ;
-    gm.setTreeScene(tree, scene);
-    gm.setRecord( ar, br );
-    gm.setGenstep( gs );
+    gm.setTreeScene(t.tree, t.scene);
+    gm.setRecord( t.ar, t.br );
+    gm.setGenstep( t.gs );
 
 
     if(ssys::is_under_ctest())

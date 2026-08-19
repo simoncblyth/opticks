@@ -259,7 +259,7 @@ is returned.::
 
 
 If the string value of the envvar starts with GETENVVAR_PATH_PREFIX "filepath:"
-then the remainder of the string is intepreted as a file path which is loaded
+then the remainder of the string is interpreted as a file path which is loaded
 to replace the value or nullptr when no file is found.
 
 **/
@@ -661,10 +661,21 @@ template float    ssys::parse(const char*);
 template double   ssys::parse(const char*);
 
 
+/**
+ssys::getenv_
+--------------
+
+When nullptr envvar key is provided the fallback is returned.
+If an envvar key is given and getenv yields a non-zero length string
+it is parsed to provide a value, otherwise the fallback is returned.
+
+**/
+
 
 template<typename T>
 inline T ssys::getenv_(const char* ekey, T fallback)
 {
+    if(!ekey) return fallback ;
     char* v = getenv(ekey);
     int len = v ? strlen(v) : 0 ;
     return len == 0  ? fallback : parse<T>(v) ;

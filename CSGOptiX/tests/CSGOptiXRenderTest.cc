@@ -78,6 +78,15 @@ struct CSGOptiXRenderTest
 
 };
 
+/**
+CSGOptiXRenderTest::CSGOptiXRenderTest
+---------------------------------------
+
+Note that using default_arg of "sWorld:0:0" is a poor default as it will be invalid for geometries without an "sWorld" volume.
+Using a blank string "" which means the top volume is a better default, see stree::get_frame
+
+**/
+
 
 CSGOptiXRenderTest::CSGOptiXRenderTest()
     :
@@ -87,7 +96,7 @@ CSGOptiXRenderTest::CSGOptiXRenderTest()
     cx(CSGOptiX::Create(fd)),   // uploads fd and then instanciates
     flight(SGeoConfig::FlightConfig()),
     ce(make_float4(0.f, 0.f, 0.f, 1000.f )),
-    default_arg(ssys::getenvvar("MOI", "sWorld:0:0"))
+    default_arg(ssys::getenvvar("MOI",""))
 {
     init();
 }

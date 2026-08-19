@@ -3496,7 +3496,20 @@ opticks-t-()
    cd $bdir
 
    om-
+
+   local t0=$(date +"%Y-%m-%d %H:%M:%S")
+
    om-test
+
+   local t1=$(date +"%Y-%m-%d %H:%M:%S")
+   local s0=$(date -d "$t0" +%s)
+   local s1=$(date -d "$t1" +%s)
+   local seconds=$(( s1 - s0 ))
+
+   printf "test_secs  :  %s                       ## small GEOM like RaindropRockAirWater are ~5x faster that full ones \n" "$seconds"
+   printf "test_start :  %s \n" "$t0"
+   printf "test_end   :  %s \n\n" "$t1"
+
    om-test-help
 
    cd $iwd

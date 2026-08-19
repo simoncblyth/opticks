@@ -7,7 +7,8 @@ Assuming the scene folder exists already::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test.sh
 
-As this uses GL interop it may be necessary to select the display GPU, eg with::
+As this uses GL interop it may be necessary to select the display GPU when
+you have more than one GPU to choose from eg with::
 
     export CUDA_VISIBLE_DEVICES=1
 
@@ -66,7 +67,7 @@ SOPTIX_Options__LEVEL
 Non-CMake local build for development
 --------------------------------------
 
-This script used the CMake built binary.
+This script uses the CMake built binary.
 For a separate non-CMake built binary see::
 
     ~/o/sysrap/tests/SGLFW_SOPTIX_Scene_test_local.sh
@@ -89,6 +90,44 @@ if [ ! -d "${!_CFB}/CSGFoundry/SSim/scene" ]; then
    echo $BASH_SOURCE : FATAL GEOM $GEOM ${_CFB} ${!_CFB}
    exit 1
 fi
+
+
+
+
+if [ "$GEOM" == "RaindropRockAirWater" ]; then
+
+    raindrop_anim(){
+        : TODO - REPOSITION TO INSTALLED .bash TO AVOID DUPLICATION WITH EG g4cx/tests/G4CXTest_raindrop_animation.sh
+        type $FUNCNAME
+        export SGLM_Option="A"  #  MO ABGMO
+        export CAM=orthographic
+        #export CAM=perspective
+        export ZOOMHOME=0.2
+        export SGLM__renderloop_exit_DUMP=1
+
+        #local rec_shader_name=rec_flying_point_persist  # default
+        local rec_shader_name=rec_flying_point
+        #local rec_shader_name=rec_line_strip      # all those tightly packed lines mean need to reduce stats to be useful
+        export SGLFW_Evt__rec_shader_name=$rec_shader_name
+
+
+        export FULLSCREEN=0   # useful to see the incrementing sim time in window title
+        export ANIM=1         # enable debug output regarding SRecord arrays and time cuts
+        export T0=0      ## ns
+        export T1=1.5    ## ns
+        export TT=0.5    ## ns - alt reference time
+
+        export TN=5000   ## larger slows down animation
+    }
+    raindrop_anim
+
+fi
+
+
+
+
+
+
 
 source $HOME/.opticks/GEOM/EVT.sh 2>/dev/null  ## optionally sets EVT name and corresponding AFOLD BFOLD where event arrays are loaded from
 source $HOME/.opticks/GEOM/MOI.sh 2>/dev/null  ## optionally sets MOI envvar controlling initial viewpoint

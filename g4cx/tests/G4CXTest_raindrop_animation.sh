@@ -56,29 +56,33 @@ source /data1/blyth/local/opticks_Debug/envset.sh
 # ~/.opticks/GEOM/EVT.sh   # record arrays to load - setting AFOLD, BFOLD and slicing
 
 
-## HMM: POTENTIALLY THESE SHOULD LIVE IN EVT.sh ?
 
-export SGLM_Option="A"  #  AMO ABGMO
-export CAM=orthographic
-#export CAM=perspective
-export ZOOMHOME=0.2
-export SGLM__renderloop_exit_DUMP=1
-
-
-rec_shader_name=rec_flying_point_persist  # default
-#rec_shader_name=rec_flying_point
-#rec_shader_name=rec_line_strip      # all those tightly packed lines mean need to reduce stats to be useful
-
-export SGLFW_Evt__rec_shader_name=$rec_shader_name
+raindrop_anim(){
+    : TODO - MOVE THIS FUNC TO COMMON LOCATION IN REPO THAT GETS INSTALLED - TO AVOID DUPLICATION WITH sysrap ssst.sh
+    type $FUNCNAME
+    export SGLM_Option="A"  #  MO ABGMO
+    export CAM=orthographic
+    #export CAM=perspective
+    export ZOOMHOME=0.2
+    export SGLM__renderloop_exit_DUMP=1
 
 
-export FULLSCREEN=0   # useful to see the incrementing sim time in window title
-export ANIM=1         # enable debug output regarding SRecord arrays and time cuts
-export T0=0      ## ns
-export T1=1.5    ## ns
-export TT=0.5    ## ns - alt reference time
+    rec_shader_name=rec_flying_point_persist  # default
+    #rec_shader_name=rec_flying_point
+    #rec_shader_name=rec_line_strip      # all those tightly packed lines mean need to reduce stats to be useful
+    export SGLFW_Evt__rec_shader_name=$rec_shader_name
 
-export TN=5000   ## larger slows down animation
+
+    export FULLSCREEN=0   # useful to see the incrementing sim time in window title
+    export ANIM=1         # enable debug output regarding SRecord arrays and time cuts
+    export T0=0      ## ns
+    export T1=1.5    ## ns
+    export TT=0.5    ## ns - alt reference time
+
+    export TN=5000   ## larger slows down animation
+}
+raindrop_anim
+
 
 defarg=info_render
 arg=${1:-$defarg}
