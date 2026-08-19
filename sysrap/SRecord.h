@@ -146,6 +146,10 @@ inline NP* SRecord::LoadArray(const char* _fold, const char* _slice )
 SRecord::Load
 --------------
 
+NB record arrays can be enormous - so using slicing is highly recommended
+
+TODO: check sizes and give warnings when very big
+
 Used from only::
 
     CSGOptiXRenderInteractiveTest::CSGOptiXRenderInteractiveTest

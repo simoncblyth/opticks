@@ -40,7 +40,7 @@ if [ "${arg/info}" != "$arg" ]; then
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
-   gcc $name.cc -std=c++11 -lstdc++ -I.. -I$CUDA_PREFIX/include -o $bin
+   gcc $name.cc -std=c++17 -lstdc++ -I.. -I$CUDA_PREFIX/include -o $bin
    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
 fi
 

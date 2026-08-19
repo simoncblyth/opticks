@@ -18,8 +18,11 @@ This is used from::
 struct sseq_array
 {
     std::vector<sseq> qq ;
+    std::vector<int64_t> selection_indices ;
+
     sseq_array( const NP* seq );
-    NP* create_selection(const char* q_startswith);
+    void find_selection_indices(const char* q_startswith);
+    NP*  create_selection(const char* q_startswith);
     std::string desc() const ;
 };
 
@@ -42,32 +45,73 @@ A comma can be used to delimit multiple histories that are
 individually used with the OR over all histories selection
 being returned.
 
+Slice suffix can be used to restrict entries eg::
+
+   "TO BT BR BT SA[::10]"
+   "TO BT BR BT SA[:1000]"
+
 **/
 
 
-inline NP* sseq_array::create_selection(const char* q_startswith)
+inline NP* sseq_array::create_selection(const char* q_spec)
 {
+    find_selection_indices(q_spec);
+    NP* sel = NPX::Make<int64_t>(selection_indices);
+    return sel ;
+}
+inline void sseq_array::find_selection_indices(const char* q_spec)
+{
+    selection_indices.clear();
+
+    // split eg "TO BT BR BT SA,TO BT BR BR BT SA[:1000000]"  into "TO BT BR BT SA,TO BT BR BR BT SA" and "[:1000000]"
+    char* q_startswith = nullptr ;
+    char* sli = nullptr ;
+    bool has_slice = sstr::prefix_suffix(&q_startswith, &sli, "[", q_spec );
+
+    NP_slice<int64_t>* slice = nullptr ;
+    if(has_slice)
+    {
+        slice = new NP_slice<int64_t>();
+        int rc = slice->parse(sli, true);
+        if(rc!=0) std::cerr
+            << "sseq_array::find_selection_indices"
+            << " FAILED TO PARSE sli {" << ( sli ? sli : "-" ) << "}\n"
+            ;
+        assert(rc == 0);
+    }
+
     std::vector<std::string> q_sws ;
     sstr::Split(q_startswith, ',', q_sws );
 
-    std::vector<int64_t> vv ;
-    int nqq = int(qq.size());
-    for(int i=0 ; i < nqq ; i++)
+    size_t nqq = qq.size(); // number of seq histories
+
+    int64_t sliced_count = 0 ;
+    int64_t unsliced_count = 0 ;
+
+    for(size_t i=0 ; i < nqq ; i++)
     {
         const sseq& q = qq[i] ;
         std::string his = q.seqhis_();
 
-        int match = 0 ;
+        int match = 0 ; // supports an OR of comma delimited selections
         for(int j=0 ; j < int(q_sws.size()) ; j++)
         {
             const char* q_sw = q_sws[j].c_str();
             bool startswith = 0==strncmp(his.c_str(), q_sw, strlen(q_sw));
             if(startswith) match += 1;
         }
-        if(match > 0) vv.push_back(i);
+        if(match > 0)
+        {
+            bool select = slice ? slice->contains(unsliced_count) : true ;
+            unsliced_count += 1 ;
+
+            if(select)
+            {
+                sliced_count += 1 ;
+                selection_indices.push_back(i);
+            }
+        }
     }
-    NP* sel = NPX::Make<int64_t>(vv);
-    return sel ;
 }
 
 /**
