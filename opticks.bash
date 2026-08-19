@@ -927,7 +927,30 @@ oid(){
    for v in $vv ; do printf "%30s : %s\n" "$v" "${!v}" ; done ;
 }
 o(){ opticks- ; cd $(opticks-home) ; git status  ; oid ; : opticks.bash ;  }
-oo(){ opticks- ; cd $(opticks-home) ; om- ; om-- ; opticks-setup-generate ; : opticks.bash ;  }
+oo(){
+   opticks-
+   cd $(opticks-home)
+   om-
+
+   local t0=$(date +"%Y-%m-%d %H:%M:%S")
+   om--
+   local t1=$(date +"%Y-%m-%d %H:%M:%S")
+
+   opticks-setup-generate
+
+   local s0=$(date -d "$t0" +%s)
+   local s1=$(date -d "$t1" +%s)
+   local seconds=$(( s1 - s0 ))
+
+   printf "\noo secs  :  %s \n" "$seconds"
+   printf   "oo start :  %s \n" "$t0"
+   printf   "oo end   :  %s \n\n" "$t1"
+
+   : opticks.bash
+}
+
+
+
 os(){ opticks- ; cd $(opticks-home) ; ls -alst *.sh ; : opticks.bash ;  }
 
 on(){ cd $(opticks-home)/notes  ; ls -lt | head -10 ; echo https://bitbucket.org/simoncblyth/opticks/src/master/notes/$(ls -t | head -1) ;  }
