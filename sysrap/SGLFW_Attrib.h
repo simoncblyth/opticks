@@ -134,14 +134,14 @@ struct SGLFW_Attrib
     const char* spec ;
     std::vector<std::string> field ;
 
-    GLuint index ;                 // set externally to the result of SGLFW_Program::getAttribLocation(name)
+    GLint index ;                  // set externally to the result of SGLFW_Program::getAttribLocation(name) : -1 when not found
 
     GLint size ;                   // field 0 : number of components of the attribute (aka item), must be one of : 1,2,3,4
     GLenum type ;                  // field 1 : normally GL_FLOAT
-    GLboolean normalized ;         // field 2 : normalized means in range 0->1
+    GLboolean normalized ;         // field 2 : normally GL_FALSE, when GL_TRUE scale into range 0->1
     GLsizei stride ;               // field 3 : in bytes eg for 4,4 float photon/record struct stride is 4*4*4=64
-    size_t   byte_offset ;         // field 4 : allows access to different parts of array of structs
-    bool     integer_attribute ;   // field 5
+    size_t   byte_offset ;         // field 4 : allows access to different parts of array of structs, typically (0/1/2/3)*4*4 = 0/16/32/48
+    bool     integer_attribute ;   // field 5 : normally false
 
     void*    byte_offset_pointer ; // derived from byte_offset
 

@@ -56,7 +56,8 @@ struct SGLFW_Program
     void enableVertexAttribArray( const char* name, const char* spec, bool dump=false ) const ;
     void enableVertexAttribArray_OfTransforms( const char* name ) const ;
 
-    static void Print_shader_info_log(unsigned id);
+    void print_shader_info_log(unsigned id, const char* label);
+    static void Print_shader_info_log(unsigned id, const char* label, const char* dir);
 
     template<typename T>
     static std::string Desc(const T* tt, int num);
@@ -219,7 +220,7 @@ inline void SGLFW_Program::createFromText(const char* vertex_shader_text, const 
     glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                SGLFW__check(__FILE__, __LINE__);
     glCompileShader(vertex_shader);                                             SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) Print_shader_info_log(vertex_shader) ;
+    if (GL_TRUE != params) print_shader_info_log(vertex_shader, "vertex_shader") ;
 
     GLuint geometry_shader = 0 ;
     if( geometry_shader_text )
@@ -228,14 +229,14 @@ inline void SGLFW_Program::createFromText(const char* vertex_shader_text, const 
         glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
         glCompileShader(geometry_shader);                                           SGLFW__check(__FILE__, __LINE__);
         glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
-        if (GL_TRUE != params) Print_shader_info_log(geometry_shader) ;
+        if (GL_TRUE != params) print_shader_info_log(geometry_shader, "geometry_shader") ;
     }
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                SGLFW__check(__FILE__, __LINE__);
     glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
     glCompileShader(fragment_shader);                                           SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
-    if (GL_TRUE != params) Print_shader_info_log(fragment_shader) ;
+    if (GL_TRUE != params) print_shader_info_log(fragment_shader, "fragment_shader") ;
 
     program = glCreateProgram();               SGLFW__check(__FILE__, __LINE__);
     glAttachShader(program, vertex_shader);    SGLFW__check(__FILE__, __LINE__);
@@ -391,11 +392,14 @@ inline void SGLFW_Program::enableVertexAttribArray( const char* name, const char
 
     if(dump) std::cout << "SGLFW_Program::enableVertexAttribArray att.desc [" << att.desc() << "]" <<  std::endl ;
 
-    glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__, name, att.index, "glEnableVertexAttribArray" );
+    if(att.index > -1)  // detects the attrib within the active shader
+    {
+        glEnableVertexAttribArray(att.index);      SGLFW__check(__FILE__, __LINE__, name, att.index, "glEnableVertexAttribArray" );
 
-    assert( att.integer_attribute == false );
+        assert( att.integer_attribute == false );
 
-    glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__, name, att.index, "glVertexAttribPointer" );
+        glVertexAttribPointer(att.index, att.size, att.type, att.normalized, att.stride, att.byte_offset_pointer );     SGLFW__check(__FILE__, __LINE__, name, att.index, "glVertexAttribPointer" );
+    }
 }
 
 
@@ -433,7 +437,12 @@ inline void SGLFW_Program::enableVertexAttribArray_OfTransforms( const char* nam
     glVertexAttribDivisor(att.index+3, divisor);                                                  SGLFW__check(__FILE__, __LINE__,name,att.index+3, "glVertexAttribDivisor");
 }
 
-inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static
+inline void SGLFW_Program::print_shader_info_log(unsigned id, const char* label)
+{
+    Print_shader_info_log(id, label, dir);
+}
+
+inline void SGLFW_Program::Print_shader_info_log(unsigned id, const char* label, const char* dir)  // static
 {
     int max_length = 2048;
     int actual_length = 0;
@@ -442,7 +451,7 @@ inline void SGLFW_Program::Print_shader_info_log(unsigned id)  // static
     glGetShaderInfoLog(id, max_length, &actual_length, log);
     SGLFW__check(__FILE__, __LINE__ );
 
-    printf("SGLFW_Program::Print_shader_info_log GL index %u:\n%s\n", id, log);
+    printf("SGLFW_Program::Print_shader_info_log GL index %u label %s dir %s\n%s\n", id, label, dir, log);
     assert(0);
 }
 

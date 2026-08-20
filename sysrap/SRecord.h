@@ -22,7 +22,17 @@ Used from SGLFW_Evt.h
 struct SRecord
 {
     static constexpr const char* NAME = "record.npy" ;
-    static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false";
+
+    static constexpr const char* RPOS      = "rpos" ; // name in shaders like gl/rec_flying_vec/vert.glsl
+    static constexpr const char* RPOS_SPEC = "4,GL_FLOAT,GL_FALSE,64,0,false"; // used from SGLFW_Record::render
+
+    static constexpr const char* RMOM      = "rmom" ;
+    static constexpr const char* RMOM_SPEC = "4,GL_FLOAT,GL_FALSE,64,16,false";
+
+    static constexpr const char* RPOL      = "rpol" ;
+    static constexpr const char* RPOL_SPEC = "4,GL_FLOAT,GL_FALSE,64,32,false";
+
+
     static constexpr const char* _level = "SRecord__level" ;
     static int level ;
 

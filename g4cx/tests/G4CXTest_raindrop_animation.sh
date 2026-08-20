@@ -67,10 +67,10 @@ raindrop_anim(){
     export SGLM__renderloop_exit_DUMP=1
 
 
-   # rec_shader_name=rec_flying_point_persist  # default
-    #rec_shader_name=rec_flying_point
+    #rec_shader_name=rec_flying_point_persist  # default
+    rec_shader_name=rec_flying_point
     #rec_shader_name=rec_line_strip      # all those tightly packed lines mean need to reduce stats to be useful
-    rec_shader_name=rec_flying_vec
+    #rec_shader_name=rec_flying_vec
     export SGLFW_Evt__rec_shader_name=$rec_shader_name
 
     export SGLM__init_auxil=0.01,0,0,0  # Auxil uniform in rec geom.glsl

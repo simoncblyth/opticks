@@ -4,6 +4,8 @@ uniform mat4 ModelViewProjection ;
 uniform vec4 Param ;
 uniform vec4 Auxil ;
 
+in vec4 polarization[];
+
 layout (lines) in;
 layout (line_strip, max_vertices = 2) out;
 
@@ -31,7 +33,8 @@ void main ()
     uint valid_select = valid & select ;
     // bitwise combination
 
-    fcolor = vec4(1.0,1.0,1.0,1.0) ; ;
+    //fcolor = vec4(1.0,1.0,1.0,1.0) ;
+    fcolor = vec4(vec3(polarization[0]), 1.0);
 
     if(valid_select == 0x7) // both points valid and with tc inbetween the points, so can mix to get position
     {

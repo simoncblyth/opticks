@@ -81,7 +81,7 @@ inline void SGLFW_Record::init()
 SGLFW_Record::render
 ---------------------
 
-Called from renderloop.
+Called from renderloop, see SGLFW_Evt::render
 
 **/
 
@@ -93,7 +93,8 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     vao->bind();
 
     buf->bind();
-    prog->enableVertexAttribArray("rpos", SRecord::RPOS_SPEC );
+    prog->enableVertexAttribArray(SRecord::RPOS, SRecord::RPOS_SPEC );
+    prog->enableVertexAttribArray(SRecord::RPOL, SRecord::RPOL_SPEC );  // omitting this colors the photons black when using rpol coloring
 
     if(param_location > -1 ) prog->Uniform4fv(param_location, timeparam_ptr, false );
     if(auxil_location > -1 ) prog->Uniform4fv(auxil_location, auxil_ptr, false );
