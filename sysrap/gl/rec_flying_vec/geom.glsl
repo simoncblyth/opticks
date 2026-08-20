@@ -2,9 +2,10 @@
 
 uniform mat4 ModelViewProjection ;
 uniform vec4 Param ;
+uniform vec4 Auxil ;
 
 layout (lines) in;
-layout (points, max_vertices = 1) out;
+layout (line_strip, max_vertices = 2) out;
 
 out vec4 fcolor ;
 
@@ -34,19 +35,36 @@ void main ()
 
     if(valid_select == 0x7) // both points valid and with tc inbetween the points, so can mix to get position
     {
-        vec3 pt = mix( vec3(p0), vec3(p1), (tc - p0.w)/(p1.w - p0.w) );
-        gl_Position = ModelViewProjection * vec4( pt, 1.0 ) ;
+        float frac0 = (tc - p0.w)/(p1.w - p0.w);
+        vec3 pt0 = mix( vec3(p0), vec3(p1), frac0 );
+        gl_Position = ModelViewProjection * vec4( pt0, 1.0 ) ;
         gl_PointSize = 2. ;
         EmitVertex();
+
+        float frac1 = (Auxil.x + tc - p0.w)/(p1.w - p0.w);
+        vec3 pt1 = mix( vec3(p0), vec3(p1), frac1 );
+        gl_Position = ModelViewProjection * vec4( pt1, 1.0 ) ;
+        gl_PointSize = 2. ;
+        EmitVertex();
+
         EndPrimitive();
     }
 #ifdef PERSIST
     else if( valid == 0x7 && select == 0x5 )  // both points valid, but time is beyond them both
     {
-        vec3 pt = vec3(p1) ;
-        gl_Position = ModelViewProjection * vec4( pt, 1.0 ) ;
+        // First vertex at p1
+        vec3 pt0 = vec3(p1) ;
+        gl_Position = ModelViewProjection * vec4( pt0, 1.0 ) ;
         gl_PointSize = 2. ;
         EmitVertex();
+
+        // Second vertex extrapolates 0.1 ns past p1 (fraction = 1.0 + 0.1 / dt)
+        float frac1 = 1.0 + (Auxil.x / (p1.w - p0.w));
+        vec3 pt1 = mix( vec3(p0), vec3(p1), frac1 );
+        gl_Position = ModelViewProjection * vec4( pt1, 1.0 );
+        gl_PointSize = 2.0;
+        EmitVertex();
+
         EndPrimitive();
     }
 #endif

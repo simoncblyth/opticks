@@ -3,7 +3,6 @@
 SGLFW_Record.h
 ===============
 
-
 **/
 
 
@@ -12,35 +11,49 @@ struct SRecord ;
 
 struct SGLFW_Record
 {
-    static SGLFW_Record* Create(const SRecord* _record, const float* _timeparam_ptr  );
+    static SGLFW_Record* Create(const SRecord* _record, const float* _timeparam_ptr, const float* _auxil_ptr );
 
     const SRecord*      record ;
     const float*        timeparam_ptr ;
+    const float*        auxil_ptr ;
+
 
     SGLFW_Buffer*       buf ;
     SGLFW_VAO*          vao ;
     GLint               param_location;
+    GLint               auxil_location;
 
-    SGLFW_Record(const SRecord* _record, const float* _timeparam_ptr  ) ;
+    SGLFW_Record(const SRecord* _record, const float* _timeparam_ptr, const float* _auxil_ptr ) ;
     void init();
 
     void render(const SGLFW_Program* prog);
 };
 
 
-inline SGLFW_Record* SGLFW_Record::Create(const SRecord* _record, const float* _timeparam_ptr )
+/**
+SGLFW_Record::Create
+----------------------
+
+Used from SGLFW_Evt.h
+
+**/
+
+
+inline SGLFW_Record* SGLFW_Record::Create(const SRecord* _record, const float* _timeparam_ptr, const float* _auxil_ptr )
 {
-    return _record ? new SGLFW_Record(_record, _timeparam_ptr) : nullptr ;
+    return _record ? new SGLFW_Record(_record, _timeparam_ptr, _auxil_ptr ) : nullptr ;
 }
 
 
-inline SGLFW_Record::SGLFW_Record(const SRecord* _record, const float* _timeparam_ptr )
+inline SGLFW_Record::SGLFW_Record(const SRecord* _record, const float* _timeparam_ptr, const float* _auxil_ptr )
     :
     record(_record),
     timeparam_ptr(_timeparam_ptr),
+    auxil_ptr(_auxil_ptr),
     buf(nullptr),
     vao(nullptr),
-    param_location(0)
+    param_location(0),
+    auxil_location(0)
 {
     init();
 }
@@ -75,6 +88,7 @@ Called from renderloop.
 inline void SGLFW_Record::render(const SGLFW_Program* prog)
 {
     param_location = prog->getUniformLocation("Param");
+    auxil_location = prog->getUniformLocation("Auxil");
     prog->use();
     vao->bind();
 
@@ -82,6 +96,7 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     prog->enableVertexAttribArray("rpos", SRecord::RPOS_SPEC );
 
     if(param_location > -1 ) prog->Uniform4fv(param_location, timeparam_ptr, false );
+    if(auxil_location > -1 ) prog->Uniform4fv(auxil_location, auxil_ptr, false );
     prog->updateMVP();  // ?
 
     GLenum mode = prog->geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;

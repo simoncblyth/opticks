@@ -31,7 +31,7 @@ void main ()
 
     fcolor = vec4(1.0,1.0,1.0,1.0) ; ;
 
-    if(valid_select == 0x7) // both points valid and with tc inbetween the points, so can mix to get position
+    if(valid_select == 0x7) // both points valid and with tc inbetween the points - so mix to get current position to draw line to
     {
         gl_Position = ModelViewProjection * vec4(vec3(p0), 1.0) ;
         EmitVertex();
@@ -39,16 +39,19 @@ void main ()
         vec3 pt = mix( vec3(p0), vec3(p1), (tc - p0.w)/(p1.w - p0.w) );
         gl_Position = ModelViewProjection * vec4( pt, 1.0 ) ;
         EmitVertex();
+
+        EndPrimitive();
     }
-    else if( valid == 0x7 && select == 0x5 )  // both points valid, but time is beyond them both
+    else if( valid == 0x7 && select == 0x5 )  // both points valid, but time is beyond them both - so just join the points
     {
         gl_Position = ModelViewProjection * vec4( vec3(p0), 1.0 ) ;
         EmitVertex();
 
         gl_Position = ModelViewProjection * vec4( vec3(p1), 1.0 ) ;
         EmitVertex();
+
+        EndPrimitive();
     }
-    EndPrimitive();   // MAYBE DO THIS INSIDE THE BRACKET ? 
 }
 
 

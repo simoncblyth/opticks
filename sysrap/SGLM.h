@@ -760,10 +760,17 @@ struct SYSRAP_API SGLM : public SCMD
 
     bool enabled_time_bump = true ;
     bool enabled_time_halt = false ;
-    glm::vec4 timeparam = {} ;
+
+    glm::vec4 timeparam = {} ;   // mapped to OpenGL rec geom shaders "Param" uniform, see SGLFW_Evt::SGLFW_Evt
     const float* timeparam_ptr ;
 
+    glm::vec4 auxil = {} ;   // mapped to OpenGL rec geom shaders "Auxil" uniform, see SGLFW_Evt::SGLFW_Evt
+    const float* auxil_ptr ;
 
+
+    static constexpr const char* SGLM__init_auxil_default = "0.025,0,0,0" ;
+    static constexpr const char* SGLM__init_auxil = "SGLM__init_auxil" ;
+    void init_auxil();
     void init_time();
     void reset_time();
     void reset_time_TT();
@@ -955,7 +962,8 @@ inline SGLM::SGLM()
     gs(nullptr),
     enabled_time_bump(true),
     enabled_time_halt(false),
-    timeparam_ptr(glm::value_ptr(timeparam))
+    timeparam_ptr(glm::value_ptr(timeparam)),
+    auxil_ptr(glm::value_ptr(auxil))
 {
     init();
 }
@@ -3508,6 +3516,7 @@ inline void SGLM::setRecord( SRecord* _ar, SRecord* _br )
     ar = _ar ;
     br = _br ;
 
+    init_auxil();
     init_time();
 }
 
@@ -3516,6 +3525,25 @@ inline void SGLM::setGenstep( SGen* _gs )
     gs = _gs ;
 }
 
+
+/**
+SGLM::init_auxil
+----------------
+
+Set values that are uploaded to the Auxil uniform of the sysrap/gl/rec_flying_vec/geom.glsl
+
+**/
+
+inline void SGLM::init_auxil()
+{
+    std::vector<float>* vec = ssys::getenvfloatvec(SGLM__init_auxil, SGLM__init_auxil_default, ',');
+    size_t sz = vec ? vec->size() : 0 ;
+
+    auxil.x = sz > 0 ? (*vec)[0] : 0.05f ;
+    auxil.y = sz > 1 ? (*vec)[1] : 0.f ;
+    auxil.z = sz > 2 ? (*vec)[2] : 0.f ;
+    auxil.w = sz > 3 ? (*vec)[3] : 0.f ;
+}
 
 
 /**

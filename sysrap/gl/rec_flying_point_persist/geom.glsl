@@ -2,8 +2,6 @@
 
 uniform mat4 ModelViewProjection ;
 uniform vec4 Param ;
-//uniform vec4 post_center ;
-//uniform vec4 post_extent ;
 
 layout (lines) in;
 layout (points, max_vertices = 1) out;
@@ -16,11 +14,6 @@ out vec4 fcolor ;
 
 void main ()
 {
-    //vec4 p0 = gl_in[0].gl_Position*post_extent + post_center ;
-    //vec4 p1 = gl_in[1].gl_Position*post_extent + post_center ;
-    // HMM: this scaling only needed if the record array were
-    //      scaled into ce already : which it is not
-
     vec4 p0 = gl_in[0].gl_Position ;
     vec4 p1 = gl_in[1].gl_Position ;
     // two consequtive record positions with propagation times in .w
