@@ -46,10 +46,19 @@ Choosing what is an appropriate truncation is a compromise between resource usag
 Introspecting the maxima within your running environment with SEventConfigTest binary
 --------------------------------------------------------------------------------------
 
-::
+After sourcing your $ENVSET to get into the environment:: 
 
-    [lo] A[blyth@localhost sysrap]$ SEventConfigTest
-    2026-08-21 10:52:40.043 INFO  [1195130] [SEventConfigTest::Desc@28] 
+    A[blyth@localhost ~]$ echo $ENVSET
+    /cvmfs/opticks.ihep.ac.cn/oj/releases/LatestRelease/el9_amd64_gcc11/LastRef/envset.sh
+    A[blyth@localhost ~]$ 
+    A[blyth@localhost ~]$ realpath $ENVSET
+    /cvmfs/opticks.ihep.ac.cn/oj/releases/J26.4.1_Opticks-v0.6.6/el9_amd64_gcc11/2026_08_14/envset.sh
+    A[blyth@localhost ~]$ 
+    A[blyth@localhost ~]$ which SEventConfigTest
+    /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.6.6/lib/SEventConfigTest
+    A[blyth@localhost ~]$ 
+    A[blyth@localhost ~]$ SEventConfigTest
+    2026-08-21 11:22:00.158 INFO  [1198293] [SEventConfigTest::Desc@28] 
     [SEventConfig::Desc
      OPTICKS_INTEGRATION_MODE    IntegrationMode  : 1
            OPTICKS_EVENT_MODE          EventMode  : Minimal
@@ -74,9 +83,6 @@ Introspecting the maxima within your running environment with SEventConfigTest b
                                     MaxTimeNotes  : NB time limit(ns) can truncate simulation together with bounce limit, default timer limit is so high to be unlimited 
            OPTICKS_MAX_RECORD          MaxRecord  : 0
               OPTICKS_MAX_REC             MaxRec  : 0
-              OPTICKS_MAX_AUX             MaxAux  : 0
-              OPTICKS_MAX_SUP             MaxSup  : 0
-              OPTICKS_MAX_SEQ             MaxSeq  : 0
 
 
 
