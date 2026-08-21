@@ -238,8 +238,10 @@ inline void SGLFW_Program::createFromText()
     int params = -1;
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);               SGLFW__check(__FILE__, __LINE__);
 
+    const char* vertex_sources[] = { vertex_source }; // demo can pass multiple sources for compilation
+    GLsizei num_vertex_sources = 1;
 
-    glShaderSource(vertex_shader, 1, &vertex_source, NULL);                SGLFW__check(__FILE__, __LINE__);
+    glShaderSource(vertex_shader, num_vertex_sources, vertex_sources, NULL);                SGLFW__check(__FILE__, __LINE__);
     glCompileShader(vertex_shader);                                        SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(vertex_shader, "vertex_shader") ;
