@@ -100,7 +100,7 @@ inline void SGLFW_Record::render(const SGLFW_Program* prog)
     if(auxil_location > -1 ) prog->Uniform4fv(auxil_location, auxil_ptr, false );
     prog->updateMVP();  // ?
 
-    GLenum mode = prog->geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;
+    GLenum mode = prog->has_geometry_shader() ? GL_LINE_STRIP : GL_POINTS ;
     glDrawArrays(mode, record->record_first,  record->record_count);
 }
 

@@ -86,7 +86,7 @@ inline void SGLFW_Gen::render(const SGLFW_Program* prog)
     if(param_location > -1 ) prog->Uniform4fv(param_location, timeparam_ptr, false );
     prog->updateMVP();  // ?
 
-    GLenum mode = prog->geometry_shader_text ? GL_LINE_STRIP : GL_POINTS ;
+    GLenum mode = prog->has_geometry_shader() ? GL_LINE_STRIP : GL_POINTS ;
     glDrawArrays(mode, genstep->genstep_first,  genstep->genstep_count);
 }
 

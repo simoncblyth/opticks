@@ -10,7 +10,9 @@ import numpy as np
 # 1. Analytic Fit for CIE 1931 CMFs (Wyman et al. / scie.h)
 # -------------------------------------------------------------
 def cie_xyz_cmf(wave):
-    """Returns (x, y, z) CMFs for input wavelength in nm."""
+    """
+    Returns (x, y, z) CMFs for input wavelength in nm.
+    """
     # xFit
     t1 = (wave - 442.0) * np.where(wave < 442.0, 0.0624, 0.0374)
     t2 = (wave - 599.8) * np.where(wave < 599.8, 0.0264, 0.0323)

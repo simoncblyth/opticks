@@ -245,6 +245,7 @@ set(HEADERS
 
     sstr.h
     SStr.hh
+    scode.h
 
     schrono.h
     stimer.h

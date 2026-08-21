@@ -6,6 +6,8 @@ SGLFW_Program.h : compile and link OpenGL pipeline using shader sources loaded f
 
 **/
 #include "ssys.h"
+#include "spath.h"
+#include "scode.h"
 
 
 struct SGLFW_Program
@@ -20,9 +22,14 @@ struct SGLFW_Program
     const char* ins_attname ;
     const char* mvp_uniname ;
 
-    const char* vertex_shader_text ;
-    const char* geometry_shader_text ;
-    const char* fragment_shader_text ;
+    std::string vertex_shader_text ;
+    std::string geometry_shader_text ;
+    std::string fragment_shader_text ;
+
+    bool have_vertex_shader_text ;
+    bool have_geometry_shader_text ;
+    bool have_fragment_shader_text ;
+    bool has_geometry_shader() const { return have_geometry_shader_text ; }
 
     GLuint program ;
     GLint  mvp_location ;
@@ -39,8 +46,9 @@ struct SGLFW_Program
         );
     void init();
 
+
     void createFromDir(const char* _dir);
-    void createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text );
+    void createFromText();
     void use() const ;
 
     GLint getUniformLocation(const char* name) const ;
@@ -79,9 +87,12 @@ inline SGLFW_Program::SGLFW_Program(
     nrm_attname( _nrm_attname ? strdup(_nrm_attname) : nullptr ),
     ins_attname( _ins_attname ? strdup(_ins_attname) : nullptr ),
     mvp_uniname( _mvp_uniname ? strdup(_mvp_uniname) : nullptr ),
-    vertex_shader_text(nullptr),
-    geometry_shader_text(nullptr),
-    fragment_shader_text(nullptr),
+    vertex_shader_text(),
+    geometry_shader_text(),
+    fragment_shader_text(),
+    have_vertex_shader_text(false),
+    have_geometry_shader_text(false),
+    have_fragment_shader_text(false),
     program(0),
     mvp_location(-1),
     mvp(_mvp),
@@ -156,7 +167,7 @@ and invokes createFromText
 
 inline void SGLFW_Program::createFromDir(const char* _dir)
 {
-    const char* dir = U::Resolve(_dir);
+    const char* dir = spath::Resolve(_dir);
 
     if(level > 0) std::cout
         << "SGLFW_Program::createFromDir"
@@ -166,21 +177,26 @@ inline void SGLFW_Program::createFromDir(const char* _dir)
         ;
 
 
-    vertex_shader_text = U::ReadString(dir, "vert.glsl");
-    geometry_shader_text = U::ReadString(dir, "geom.glsl");
-    fragment_shader_text = U::ReadString(dir, "frag.glsl");
+    vertex_shader_text = scode::load(dir, "vert.glsl");
+    geometry_shader_text = scode::load(dir, "geom.glsl");
+    fragment_shader_text = scode::load(dir, "frag.glsl");
+
+    have_vertex_shader_text   = !vertex_shader_text.empty() ;
+    have_geometry_shader_text = !geometry_shader_text.empty() ;
+    have_fragment_shader_text = !fragment_shader_text.empty() ;
+
 
     if(level > 0) std::cout
         << "SGLFW_Program::createFromDir"
         << " _dir " << ( _dir ? _dir : "-" )
         << " dir "  << (  dir ?  dir : "-" )
-        << " vertex_shader_text " << ( vertex_shader_text ? "YES" : "NO" )
-        << " geometry_shader_text " << ( geometry_shader_text ? "YES" : "NO" )
-        << " fragment_shader_text " << ( fragment_shader_text ? "YES" : "NO" )
+        << " have_vertex_shader_text "   << ( have_vertex_shader_text   ? "YES" : "NO" )
+        << " have_geometry_shader_text " << ( have_geometry_shader_text ? "YES" : "NO" )
+        << " have_fragment_shader_text " << ( have_fragment_shader_text ? "YES" : "NO" )
         << std::endl
         ;
 
-    createFromText( vertex_shader_text, geometry_shader_text, fragment_shader_text );
+    createFromText();
 }
 
 
@@ -203,38 +219,44 @@ that did not see on Linux with "#version 460 core"
 
 **/
 
-inline void SGLFW_Program::createFromText(const char* vertex_shader_text, const char* geometry_shader_text, const char* fragment_shader_text )
+inline void SGLFW_Program::createFromText()
 {
-    if(level > 0) std::cout << "[SGLFW_Program::createFromText level " << level << std::endl ;
-    if(level > 1) std::cout << " vertex_shader_text " << std::endl << ( vertex_shader_text ? vertex_shader_text : "-" ) << std::endl ;
-    if(level > 1) std::cout << " geometry_shader_text " << std::endl << ( geometry_shader_text ? geometry_shader_text : "-" )  << std::endl ;
-    if(level > 1) std::cout << " fragment_shader_text " << std::endl << ( fragment_shader_text ? fragment_shader_text : "-" ) << std::endl ;
+    const char* vertex_source   = have_vertex_shader_text   ? vertex_shader_text.c_str()   : nullptr ;
+    const char* geometry_source = have_geometry_shader_text ? geometry_shader_text.c_str() : nullptr ;
+    const char* fragment_source = have_fragment_shader_text ? fragment_shader_text.c_str() : nullptr ;
 
-    bool expect = vertex_shader_text && fragment_shader_text ;
+    if(level > 0) std::cout << "[SGLFW_Program::createFromText level " << level << "\n" ;
+    if(level > 1) std::cout << " vertex_source\n"   << (   vertex_source ? vertex_source   : "-" ) << "\n" ;
+    if(level > 1) std::cout << " geometry_source\n" << ( geometry_source ? geometry_source : "-" ) << "\n" ;
+    if(level > 1) std::cout << " fragment_source\n" << ( fragment_source ? fragment_source : "-" ) << "\n" ;
+
+    bool expect = vertex_source && fragment_source ;
     assert( expect );
     if(!expect) std::raise(SIGINT);
 
 
     int params = -1;
-    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);                    SGLFW__check(__FILE__, __LINE__);
-    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);                SGLFW__check(__FILE__, __LINE__);
-    glCompileShader(vertex_shader);                                             SGLFW__check(__FILE__, __LINE__);
+    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);               SGLFW__check(__FILE__, __LINE__);
+
+
+    glShaderSource(vertex_shader, 1, &vertex_source, NULL);                SGLFW__check(__FILE__, __LINE__);
+    glCompileShader(vertex_shader);                                        SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (vertex_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(vertex_shader, "vertex_shader") ;
 
     GLuint geometry_shader = 0 ;
-    if( geometry_shader_text )
+    if( geometry_source )
     {
-        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);                       SGLFW__check(__FILE__, __LINE__);
-        glShaderSource(geometry_shader, 1, &geometry_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
-        glCompileShader(geometry_shader);                                           SGLFW__check(__FILE__, __LINE__);
+        geometry_shader = glCreateShader(GL_GEOMETRY_SHADER);               SGLFW__check(__FILE__, __LINE__);
+        glShaderSource(geometry_shader, 1, &geometry_source, NULL);         SGLFW__check(__FILE__, __LINE__);
+        glCompileShader(geometry_shader);                                   SGLFW__check(__FILE__, __LINE__);
         glGetShaderiv (geometry_shader, GL_COMPILE_STATUS, &params);
         if (GL_TRUE != params) print_shader_info_log(geometry_shader, "geometry_shader") ;
     }
 
-    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);                SGLFW__check(__FILE__, __LINE__);
-    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);            SGLFW__check(__FILE__, __LINE__);
-    glCompileShader(fragment_shader);                                           SGLFW__check(__FILE__, __LINE__);
+    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);            SGLFW__check(__FILE__, __LINE__);
+    glShaderSource(fragment_shader, 1, &fragment_source, NULL);             SGLFW__check(__FILE__, __LINE__);
+    glCompileShader(fragment_shader);                                       SGLFW__check(__FILE__, __LINE__);
     glGetShaderiv (fragment_shader, GL_COMPILE_STATUS, &params);
     if (GL_TRUE != params) print_shader_info_log(fragment_shader, "fragment_shader") ;
 
@@ -454,5 +476,10 @@ inline void SGLFW_Program::Print_shader_info_log(unsigned id, const char* label,
     printf("SGLFW_Program::Print_shader_info_log GL index %u label %s dir %s\n%s\n", id, label, dir, log);
     assert(0);
 }
+
+
+
+
+
 
 
