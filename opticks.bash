@@ -1446,6 +1446,8 @@ opticks-bashrc-path(){  echo $(opticks-prefix)/bashrc ; }
 opticks-envset-path(){  echo $(opticks-prefix)/envset.sh ; }
 opticks-utils-path(){   echo $(opticks-prefix)/bin/opticks-utils.sh ; }
 
+opticks-setup-path-exists(){ test -f $(opticks-setup-path) ; }
+
 opticks-setup(){
    local msg="=== $FUNCNAME :"
    local setup=$(opticks-setup-path)
@@ -1507,7 +1509,17 @@ opticks-optix-prefix(){
    echo ${OPTICKS_OPTIX_PREFIX:-$(opticks-prefix)/externals/OptiX}
 }
 
-opticks-cuda-prefix(){ echo ${OPTICKS_CUDA_PREFIX:-/usr/local/cuda} ; }
+
+opticks-cuda-prefix-notes(){ cat << EON
+
+~/j/local.sh machinery defines OPTICKS_CUDA_PREFIX by sourcing ~/j/opticks_config.sh
+
+EON
+}
+
+opticks-cuda-prefix(){ echo ${OPTICKS_CUDA_PREFIX:-/usr/local/cuda} ; }  # eg /usr/local/cuda-13.1
+opticks-cuda-prefix-version(){  echo $(opticks-cuda-prefix) | sed -E 's/.*cuda-([0-9.]*).*/\1/' ; }  # eg 13.1
+opticks-cuda-prefix-major(){    echo $(opticks-cuda-prefix) | sed -E 's/.*cuda-([0-9]+)\..*/\1/' ; }  # eg 13
 
 
 opticks-compute-notes(){ cat << EON
@@ -3855,6 +3867,10 @@ opticks-okdist-dirlabel-notes
 
 Examples::
 
+   el9_amd64_gcc11
+
+Messy ancient version of the dirlabel, before following simple JUNOSW approach::
+
    x86_64-centos7-gcc48-geant4_10_04_p02-dbg
 
 The label is used by okdist- for naming directories that contain
@@ -3866,6 +3882,7 @@ they are encompassed by the Opticks version.
 * OptiX version
 * CUDA Version
 * NVIDIA Driver Version
+* Geant4 version
 
 
 CUDA is treated separately and lib access is from LD_LIBRARY_PATH
@@ -3876,9 +3893,15 @@ junosw releases::
     /cvmfs/juno.ihep.ac.cn/el9_amd64_gcc11/Release/J25.2.3/
 
 
-HMM better to start from junosw pattern, but with cuda version::
+HMM Perhaps CUDA and Geant4 major versions belongs in this name ?::
 
-    /cvmfs/opticks.ihep.ac.cn/el9_amd64_gcc11_cuda12.4/Release/v0.0.1/
+    el9_amd64_gcc15_cuda13_g411
+
+
+Changes
+~~~~~~~~
+
+2026/08/24 - add appending of "_g411" to the dirlabel when g411 is present in OPTICKS_CONFIG
 
 
 EON
@@ -3886,9 +3909,15 @@ EON
 
 opticks-okdist-mode(){ echo dbg ; }
 opticks-okdist-dirlabel(){
-    #g4-
+
+    local config=$(opticks-config)  ## eg Debug Debug_g411
     #local label=$(arch)-$(opticks-os-release)-$(opticks-compiler-version)-$(g4-nom)-$(opticks-okdist-mode)
     local label=$(opticks-os-release)_$(opticks-os-arch)_$(opticks-compiler-version)
+
+    if [[ "$config" =~ g411 ]]; then
+        label=${label}_g411
+    fi
+
     local ulabel=${label//\//}
     : remove all slashes from the label
     echo $ulabel

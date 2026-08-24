@@ -186,11 +186,11 @@ okdist-cd(){      cd $(okdist-tmp) ; }
 okdist-revision(){  echo $(cd $(opticks-home) && git rev-parse HEAD) ; }
 
 #okdist-release-dir-default(){ echo $(opticks-dir)_release ; }
-okdist-release-dir-default(){ echo $(opticks-dir) ; }
+okdist-release-dir-default(){ echo $(opticks-dir) ; }  # opticks-prefix $OPTICKS_PREFIX
 okdist-release-dir(){         echo ${OKDIST_RELEASE_DIR:-$(okdist-release-dir-default)} ; }
 
 okdist-title(){   echo Opticks ; }
-okdist-version(){ opticks-tag ; }
+okdist-version(){ opticks-tag ; }   # eg "v0.6.6"
 okdist-ext(){     echo .tar ; }  # .tar.gz is slow to create and only half the size : .tar better while testing
 okdist-prefix-old(){ echo $(okdist-title)-$(okdist-version)/$(opticks-okdist-dirlabel) ; }
 okdist-prefix(){ echo $(opticks-okdist-dirlabel)/$(okdist-stem) ; }
@@ -238,6 +238,9 @@ $FUNCNAME
 
    okdist-release-prefix : $(okdist-release-prefix)
         Absolute path to exploded release distribution
+
+   opticks-okdist-dirlabel : $(opticks-okdist-dirlabel)
+        Container folder of the okdist-prefix eg "el9_amd64_gcc11" OR "el9_amd64_gcc15_g411"
 
    okdist--
        From the installation directory, creates tarball with

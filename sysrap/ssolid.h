@@ -3,6 +3,20 @@
 ssolid.h
 ===========
 
+
+::
+
+    [lo] A[blyth@localhost opticks]$ opticks-fl ssolid.h
+    ./sysrap/SIntersect.h
+    ./sysrap/SSimtrace.h
+    ./sysrap/ssolid.h
+    ./sysrap/CMakeLists.txt
+    ./u4/tests/G4Orb_Test.cc
+    ./u4/tests/G4VSolid_Test.cc
+    ./u4/U4Recorder.cc
+
+
+
 **/
 
 #include <cassert>
@@ -18,44 +32,52 @@ ssolid.h
 #include "G4MultiUnion.hh"
 #include "G4ThreeVector.hh"
 
+#include "G4Version.hh"
+
+
+
 struct ssolid
 {
-    static void GetCenterExtent( float4& ce,             const G4VSolid* solid );  
-    static void GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid );  
-    static G4double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in, 
-             G4ThreeVector* isect=nullptr  
-         ); 
-    static G4double DistanceMultiUnionNoVoxels_(
-                          const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ); 
+    static void GetCenterExtent( float4& ce,             const G4VSolid* solid );
+    static void GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid );
+    static G4double Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in,
+             G4ThreeVector* isect=nullptr
+         );
 
-    static G4double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ); 
-    static void Simtrace( quad4& p, const G4VSolid* solid, bool dump=false); 
-}; 
+#if G4VERSION_NUMBER < 1100
+    static G4double DistanceMultiUnionNoVoxels_(
+                          const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in );
+#endif
+
+
+    static G4double Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump );
+    static void Simtrace( quad4& p, const G4VSolid* solid, bool dump=false);
+};
 
 inline void ssolid::GetCenterExtent( glm::tvec4<double>& ce, const G4VSolid* solid ) // static
 {
-    G4ThreeVector pMin ; 
-    G4ThreeVector pMax ; 
-    solid->BoundingLimits(pMin, pMax); 
-    G4ThreeVector center = ( pMin + pMax )/2. ;   
-    G4ThreeVector fulldiag = pMax - pMin ; 
-    G4ThreeVector halfdiag = fulldiag/2.  ;   
-    G4double extent = std::max( std::max( halfdiag.x(), halfdiag.y() ), halfdiag.z() ) ;   
+    G4ThreeVector pMin ;
+    G4ThreeVector pMax ;
+    solid->BoundingLimits(pMin, pMax);
+    G4ThreeVector center = ( pMin + pMax )/2. ;
+    G4ThreeVector fulldiag = pMax - pMin ;
+    G4ThreeVector halfdiag = fulldiag/2.  ;
+    G4double extent = std::max( std::max( halfdiag.x(), halfdiag.y() ), halfdiag.z() ) ;
 
-    ce.x = center.x() ; 
-    ce.y = center.y() ; 
-    ce.z = center.z() ; 
-    ce.w = extent ; 
+    ce.x = center.x() ;
+    ce.y = center.y() ;
+    ce.z = center.z() ;
+    ce.w = extent ;
 }
 
 inline void ssolid::GetCenterExtent( float4& ce, const G4VSolid* solid ) // static
 {
-    glm::tvec4<double> ce_ ; 
-    GetCenterExtent(ce_, solid ); 
-    ce.x = ce_.x ;  
-    ce.y = ce_.y ;  
-    ce.z = ce_.z ;  
-    ce.w = ce_.w ;  
+    glm::tvec4<double> ce_ ;
+    GetCenterExtent(ce_, solid );
+    ce.x = ce_.x ;
+    ce.y = ce_.y ;
+    ce.z = ce_.z ;
+    ce.w = ce_.w ;
 }
 
 
@@ -67,87 +89,108 @@ See u4/tests/G4Orb_Test.cc
 
 **/
 
-inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in, 
+inline G4double ssolid::Distance_(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in,
         G4ThreeVector* isect
      ) // static
 {
-    in =  solid->Inside(pos) ; 
-    G4double t = kInfinity ; 
+    in =  solid->Inside(pos) ;
+    G4double t = kInfinity ;
     switch( in )
     {
-        case kInside:  t = solid->DistanceToOut( pos, dir ) ; break ; 
-        case kSurface: t = solid->DistanceToOut( pos, dir ) ; break ; 
-        case kOutside: t = solid->DistanceToIn(  pos, dir ) ; break ; 
-        default:  assert(0) ; 
+        case kInside:  t = solid->DistanceToOut( pos, dir ) ; break ;
+        case kSurface: t = solid->DistanceToOut( pos, dir ) ; break ;
+        case kOutside: t = solid->DistanceToIn(  pos, dir ) ; break ;
+        default:  assert(0) ;
     }
-    if( t != kInfinity && isect != nullptr ) *isect = pos+t*dir ; 
-    return t ; 
+    if( t != kInfinity && isect != nullptr ) *isect = pos+t*dir ;
+    return t ;
 }
 
 
 
+#if G4VERSION_NUMBER < 1100
 inline G4double ssolid::DistanceMultiUnionNoVoxels_(const G4MultiUnion* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, EInside& in ) // static
 {
-    in =  solid->InsideNoVoxels(pos) ; 
-    G4double t = kInfinity ; 
+    in =  solid->InsideNoVoxels(pos) ;
+    G4double t = kInfinity ;
     switch( in )
     {
-        case kInside:  t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ; 
-        case kSurface: t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ; 
-        case kOutside: t = solid->DistanceToInNoVoxels(  pos, dir ) ; break ; 
-        default:  assert(0) ; 
+        case kInside:  t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ;
+        case kSurface: t = solid->DistanceToOutNoVoxels( pos, dir, nullptr ) ; break ;
+        case kOutside: t = solid->DistanceToInNoVoxels(  pos, dir ) ; break ;
+        default:  assert(0) ;
     }
-    return t ; 
+    return t ;
 }
+#endif
+
+/**
+ssolid::Distance
+----------------
+
+Formerly found a need to use the NoVoxels distance for G4MultiUnion ? Presumably to avoid some crash ?
+But the NoVoxels distances have been made private within Geant4 11.
+As this code was used for Geant4 intersect testing comparisons with Opticks presumably it is non-critical.
+
+**/
 
 
 inline G4double ssolid::Distance(const G4VSolid* solid, const G4ThreeVector& pos, const G4ThreeVector& dir, bool dump ) // static
 {
-    EInside in ; 
-    const G4MultiUnion* m = dynamic_cast<const G4MultiUnion*>(solid) ; 
-    G4double t = m ? DistanceMultiUnionNoVoxels_(m, pos, dir, in ) : Distance_( solid, pos, dir, in  );  
+    EInside in ;
+    const G4MultiUnion* m = dynamic_cast<const G4MultiUnion*>(solid) ;
+    bool is_G4MultiUnion = m != nullptr ;
+
+#if G4VERSION_NUMBER < 1100
+    G4double t = is_G4MultiUnion ? DistanceMultiUnionNoVoxels_(m, pos, dir, in ) : Distance_( solid, pos, dir, in  );
+#else
+    G4double t = Distance_( solid, pos, dir, in  );
+#endif
 
     if(dump && t != kInfinity)
     {
-        std::cout 
-            << " pos " 
-            << "(" 
+        std::cout
+            << " pos "
+            << "("
             << std::fixed << std::setw(10) << std::setprecision(3) << pos.x() << " "
             << std::fixed << std::setw(10) << std::setprecision(3) << pos.y() << " "
-            << std::fixed << std::setw(10) << std::setprecision(3) << pos.z() 
+            << std::fixed << std::setw(10) << std::setprecision(3) << pos.z()
             << ")"
-            << " dir " 
-            << "(" 
+            << " dir "
+            << "("
             << std::fixed << std::setw(10) << std::setprecision(3) << dir.x() << " "
             << std::fixed << std::setw(10) << std::setprecision(3) << dir.y() << " "
-            << std::fixed << std::setw(10) << std::setprecision(3) << dir.z() 
+            << std::fixed << std::setw(10) << std::setprecision(3) << dir.z()
             << ")"
-            << " in " << sgeomdefs::EInside_(in ) 
+            << " in " << sgeomdefs::EInside_(in )
+            << " " << ( is_G4MultiUnion ? " (G4MultiUnion) " : "" )
             ;
 
        if( t == kInfinity)
-       {  
-            std::cout 
-                << " t " << std::setw(10) << "kInfinity" 
-                << std::endl 
-                ; 
+       {
+            std::cout
+                << " t " << std::setw(10) << "kInfinity"
+                << " " << ( is_G4MultiUnion ? " (G4MultiUnion) " : "" )
+                << std::endl
+                ;
        }
        else
        {
-           G4ThreeVector ipos = pos + dir*t ;  
-           std::cout 
-                << " t " << std::fixed << std::setw(10) << std::setprecision(3) << t 
-                << " ipos " 
-                << "(" 
+           G4ThreeVector ipos = pos + dir*t ;
+           std::cout
+                << " t " << std::fixed << std::setw(10) << std::setprecision(3) << t
+                << " ipos "
+                << "("
                 << std::fixed << std::setw(10) << std::setprecision(3) << ipos.x() << " "
                 << std::fixed << std::setw(10) << std::setprecision(3) << ipos.y() << " "
-                << std::fixed << std::setw(10) << std::setprecision(3) << ipos.z() 
+                << std::fixed << std::setw(10) << std::setprecision(3) << ipos.z()
                 << ")"
-                << std::endl 
-                ; 
+                << " " << ( is_G4MultiUnion ? " (G4MultiUnion) " : "" )
+                << std::endl
+                ;
        }
     }
-    return t ; 
+    return t ;
 }
 
 
@@ -155,7 +198,7 @@ inline G4double ssolid::Distance(const G4VSolid* solid, const G4ThreeVector& pos
 ssolid::Simtrace
 -------------------
 
-Updates quad4& p in simtrace layout with intersect position onto the solid. 
+Updates quad4& p in simtrace layout with intersect position onto the solid.
 
 p.q0.f.xyz,w
     surface normal at intersect (UNCHECKED) and intersect distance *t*
@@ -173,27 +216,27 @@ p.q3.f.xyz
 
 inline void ssolid::Simtrace(quad4& p, const G4VSolid* solid, bool dump) // static
 {
-    G4ThreeVector ori(p.q2.f.x, p.q2.f.y, p.q2.f.z); 
-    G4ThreeVector dir(p.q3.f.x, p.q3.f.y, p.q3.f.z); 
- 
-    G4double t = Distance( solid, ori, dir, dump );  
-    //std::cout << "ssolid::Simtrace " << t << std::endl ; 
+    G4ThreeVector ori(p.q2.f.x, p.q2.f.y, p.q2.f.z);
+    G4ThreeVector dir(p.q3.f.x, p.q3.f.y, p.q3.f.z);
+
+    G4double t = Distance( solid, ori, dir, dump );
+    //std::cout << "ssolid::Simtrace " << t << std::endl ;
 
     if( t == kInfinity ) return ;   // hmm: perhaps set ipos to ori for MISS ? Currently gets left at origin
 
-    G4ThreeVector ipos = ori + dir*t ; 
-    float tmin = 0.f ; 
+    G4ThreeVector ipos = ori + dir*t ;
+    float tmin = 0.f ;
 
     G4ThreeVector inrm = solid->SurfaceNormal(ipos) ; // UNCHECKED
-    p.q0.f.x = float(inrm.x()) ; 
+    p.q0.f.x = float(inrm.x()) ;
     p.q0.f.y = float(inrm.y()) ;
     p.q0.f.z = float(inrm.z()) ;
-    p.q0.f.w = t ; 
+    p.q0.f.w = t ;
 
-    p.q1.f.x = float(ipos.x()) ; 
-    p.q1.f.y = float(ipos.y()) ; 
-    p.q1.f.z = float(ipos.z()) ; 
-    p.q1.f.w = tmin  ; 
+    p.q1.f.x = float(ipos.x()) ;
+    p.q1.f.y = float(ipos.y()) ;
+    p.q1.f.z = float(ipos.z()) ;
+    p.q1.f.w = tmin  ;
 }
 
 

@@ -46,6 +46,8 @@ include(OpticksBuildOptions NO_POLICY_SCOPE)
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 0 ======= find SysRap, G4  ")
 
 find_package(SysRap REQUIRED CONFIG)
+
+#set(G4_VERBOSE YES)
 find_package(G4 REQUIRED MODULE)
 
 message(STATUS "${CMAKE_CURRENT_LIST_FILE} : ====== 1 ======= find GDXML CLHEP OpticksXercesC ")
