@@ -2,14 +2,14 @@ Geant4_1140_g411_okdist_and_ok_cvmfs_release_shakedown
 ========================================================
 
 
-NEXT : okdist shakedown with gcc + geant4 version flexibility
---------------------------------------------------------------
+DONE : okdist-deploy-to-cvmfs generalization for gcc + geant4 version flexibility
+-----------------------------------------------------------------------------------
 
-1. g4 1042 release v0.6.7 "/cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.6.7"
-2. g4 1140 release v0.6.7 "/cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7" SHAKEDOWN
+1. DONE : g4 1042 release v0.6.7 "/cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/Opticks-v0.6.7"
+2. DONE : g4 1140 release v0.6.7 "/cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc15_g411/Opticks-v0.6.7" SHAKEDOWN
 
-   * same Opticks release built against different gcc, Geant4 and installed to different cvmfs path
-   * review okdist tarball creation on workstation and tarball exploder script on stratum0
+   * DONE : same Opticks release built against different gcc, Geant4 and installed to different cvmfs path
+   * DONE : review okdist tarball creation on workstation and tarball exploder script on stratum0
 
 
 cvmfs stratum0
