@@ -14,6 +14,9 @@
 
 struct U4MaterialPropertiesTable
 {
+    static void AddProperty(G4MaterialPropertiesTable* mpt, const char* name, G4MaterialPropertyVector* vec);
+    static void AddConstProperty(G4MaterialPropertiesTable* mpt, const char* name, double val);
+
     static std::string Detail(const G4MaterialPropertiesTable* mpt );
     static std::string DescMaterialPropertyNames(const G4MaterialPropertiesTable* mpt);
     static std::string DescPropertyMap(const G4MaterialPropertiesTable* mpt );
@@ -27,7 +30,49 @@ struct U4MaterialPropertiesTable
     static G4MaterialPropertiesTable* Create(std::vector<std::string>& keys, std::vector<double>& vals );
     static G4MaterialPropertiesTable* Create(const char* key, double val );
     static G4MaterialPropertiesTable* Create(const char* key, const char* val );
+
 };
+
+
+/**
+U4MaterialPropertiesTable::AddProperty,AddConstProperty
+--------------------------------------------------------
+
+These methods avoid API differences between Geant4 10.x and 11.x
+
+In Geant4 11.x trying to add non-standard custom property names throws a fatal G4Exception::
+
+   *** G4Exception : mat207
+          issued by : G4MaterialPropertiesTable::AddProperty()
+    Attempting to create a new material constant property key LAB2PPO_PROB without setting
+    createNewKey parameter of AddProperty to true.
+
+To avoid this need to set "G4bool createNewKey = true" the added argument of
+G4MaterialPropertiesTable::AddProperty,AddConstProperty
+
+**/
+
+inline void U4MaterialPropertiesTable::AddProperty(G4MaterialPropertiesTable* mpt, const char* name, G4MaterialPropertyVector* vec) // static
+{
+#if G4VERSION_NUMBER >= 1100
+    mpt->AddProperty(name, vec, true);
+#else
+    mpt->AddProperty(name, vec);
+#endif
+}
+
+inline void U4MaterialPropertiesTable::AddConstProperty(G4MaterialPropertiesTable* mpt, const char* name, double val) // static
+{
+#if G4VERSION_NUMBER >= 1100
+    mpt->AddConstProperty(name, val, true);
+#else
+    mpt->AddConstProperty(name, val);
+#endif
+}
+
+
+
+
 
 /**
 U4MaterialPropertiesTable::DescMaterialPropertyNames

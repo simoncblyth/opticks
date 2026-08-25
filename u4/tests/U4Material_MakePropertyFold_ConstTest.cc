@@ -2,13 +2,15 @@
 U4Material_MakePropertyFold_ConstTest.cc
 =========================================
 
-cd $TMP/U4Material_MakePropertyFold_ConstTest
-and use f to check files.
+Below script creates material folder and opens that into ipython for inspection::
+
+    ~/o/u4/tests/U4Material_MakePropertyFold_ConstTest.sh
+
 **/
 
-#include "OPTICKS_LOG.hh"
 #include "spath.h"
 #include "U4Material.hh"
+#include "U4MaterialPropertiesTable.h"
 #include "NPFold.h"
 
 #include "G4Material.hh"
@@ -44,7 +46,8 @@ G4Material* MakeMaterial()
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     mpt->AddProperty("RINDEX", MakeVectorProperty());
 
-    for(int i=0 ; i < NUM_CONST ; i++) mpt->AddConstProperty(CONSTS[i].name, CONSTS[i].value);
+    for(int i=0 ; i < NUM_CONST ; i++) U4MaterialPropertiesTable::AddConstProperty(mpt, CONSTS[i].name, CONSTS[i].value);
+    // need to use compat method to avoid API difference between 10.x and 11.x
     mat->SetMaterialPropertiesTable(mpt);
     return mat;
 }
@@ -53,10 +56,8 @@ G4Material* MakeMaterial()
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG(argc, argv);
-
     G4Material* mat = MakeMaterial();
-    LOG(info) << " mat " << mat->GetName();
+    std::cout << " mat " << mat->GetName() << "\n" ;
 
     NPFold* fold = U4Material::MakePropertyFold(mat);
 
@@ -66,3 +67,29 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+/**
+Note that adding the dummy RINDEX results in the creation of GROUPVEL.
+
+In [1]: f.RINDEX
+Out[1]:
+array([[1. , 1.3],
+       [2. , 1.5],
+       [3. , 1.7],
+       [4. , 1.6],
+       [5. , 1.4],
+       [6. , 1.2]])
+
+In [2]: f.GROUPVEL
+Out[2]:
+array([[  1.   , 188.722],
+       [  1.5  , 177.545],
+       [  2.5  , 143.218],
+       [  3.5  , 181.692],
+       [  4.5  , 199.862],
+       [  6.   , 249.827]])
+
+
+**/
+
+
