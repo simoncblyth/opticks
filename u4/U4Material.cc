@@ -19,6 +19,7 @@
 
 #include "NPFold.h"
 #include "NP.hh"
+#include "NPX.h"
 #include "SLOG.hh"
 
 #include "G4Material.hh"
@@ -395,6 +396,26 @@ NPFold* U4Material::MakePropertyFold(const G4Material* mat )
         NP* a = U4MaterialPropertyVector::ConvertToArray(prop);
         fold->add( propname, a );
     }
+
+    // collect mpt const properties into a single keys/vals array
+    // "MaterialConstProperty": NPX::MakeValues stores the const property
+    // names in the NP names txt, the values in the (N,) array.
+    // GetMaterialConstPropertyNames()/GetConstProperty() exist in G4 10.4 .. 11.x
+    // NB G4 10.4 GetMaterialConstPropertyNames() returns ALL known const property
+    // names (the full G4MaterialConstPropertyName list), not just the ones set on
+    // this material. Must check ConstPropertyExists before GetConstProperty.
+    G4MaterialPropertiesTable* mpt = mat->GetMaterialPropertiesTable();
+    if(mpt) {
+        NPX::KV<double> kv;
+        for(const G4String& key : mpt->GetMaterialConstPropertyNames()) {
+            if(mpt->ConstPropertyExists(key.c_str())) {
+                kv.add(key.c_str(), mpt->GetConstProperty(key.c_str()));
+            }
+        }
+        NP* cpa = kv.values();
+        if(cpa) fold->add("MaterialConstProperty", cpa);
+    }
+
     return fold ;
 }
 
