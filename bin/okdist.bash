@@ -473,24 +473,52 @@ okdist-deploy-opticks-site()
 }
 
 
+
+okdist-path-prefix-notes(){ cat << EON
+
+Examples of path prefix::
+
+    ok/releases/el9_amd64_gcc11
+    ok/releases/el9_amd64_gcc15_g411
+
+The prefix distinguish builds with different configs
+such as against different Geant4 versions.
+
+EON
+}
+
+okdist-path-prefix()
+{
+    local dist=$(okdist-path)
+    [ ! -f "$dist" ] && echo "$FUNCNAME - File not found: $dist" && return 1
+    local dirlabel=$(tar tf "$dist" | head -n 1 | sed 's|^\./||' | cut -d'/' -f1)
+
+    if [ -z "$dirlabel" ]; then
+        echo "$FUNCNAME - FAILED to determine dirlabel from tarball $dist"
+        return 1
+    fi
+    local prefix="ok/releases/$dirlabel"
+    echo $prefix
+}
+
 okdist-deploy-to-cvmfs()
 {
-   local dist=$(okdist-path)
-   local name=$(basename $dist)
+    local dist=$(okdist-path)
+    local name=$(basename "$dist")
+    local prefix=$(okdist-path-prefix)
+    [ $? -ne 0 ] && echo $FUNCNAME FAILED TO GET prefix FROM dist && return 1
 
-   local cmd0="scp $dist O:"
-   local cmd1="ssh O \"./ok_deploy_to_cvmfs.sh $name\""
-   local ii="0 1"
+    echo "$FUNCNAME === Deploying dist $dist to $prefix ==="
+    [ -n "$DRY" ] && echo $FUNCNAME - DRY RUN && return 0
 
-   for i in $ii
-   do
-      _cmd="cmd$i"
-      echo ${_cmd}
-      echo ${!_cmd}
-      eval ${!_cmd}
-      [ $? -ne 0 ] && echo $FUNCNAME - FAILED
-   done
-
+    if ssh O "mkdir -p $prefix" && \
+       scp "$dist" "O:$prefix/" && \
+       ssh O "./ok_deploy_to_cvmfs.sh $prefix/$name"; then
+        echo "$FUNCNAME - SUCCESS"
+    else
+        echo "$FUNCNAME - FAILED"
+        return 1
+    fi
 }
 
 

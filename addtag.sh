@@ -29,6 +29,10 @@ Workflow for adding Opticks tags:
    might be appropriate to jump to a new minor version, changing OPTICKS_VERSION_NUMBER
    to 20 and tag to v0.2.0
 
+   NB this simple script assumes single digit 0-9 major/minor/patch version integers,
+   so stick to that convention
+
+
 2. commit changes including okconf/OpticksVersionNumber.hh::
 
        git status
@@ -47,21 +51,37 @@ Workflow for adding Opticks tags:
        ./addtag.sh | sh      # run those commands
        open https://github.com/simoncblyth/opticks/tags # check web interface
 
-5. create distribution tarball for the release::
+5. after all code changes and tagging do a final build to avoid stale build compared to code
+   error from okdist--::
 
-       okdist-;okdist--
+   vip       ## check/set OPTICKS_CONFIG in ~/j/opticks_config.sh
+   lo        ## get into env
+   oid       ## check env
+   oo        ## update build - OPTICKS_PREFIX should be specific to the OPTICKS_CONFIG
+   opticks-t ## final test
 
-6. scp the okdist tarball to O and deploy to eg /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/
+6. create distribution tarball for the build::
+
+   okdist-;okdist--
+
+7. scp the okdist tarball to eg O:ok/releases/el9_amd64_gcc11/ and deploy that
+   to eg /cvmfs/opticks.ihep.ac.cn/ok/releases/el9_amd64_gcc11/
    and update the Opticks-vLatest link::
 
        okdist-;okdist-deploy-to-cvmfs
 
-   OR do that manually replacing the appropriate version in the below::
+If there are multiple OPTICKS_PREFIX builds to be installed, eg different Geant4 or other config
+repeat the above steps 5 and 6 from different sessions after getting into
+the corresponding environment.
 
-       A> scp /data1/blyth/local/opticks_Debug/Opticks-v0.3.2.tar O:
-       A> ssh O
-       O> ./ok_deploy_to_cvmfs.sh Opticks-v0.3.2.tar   ## cvmfs details in hcvmfs-
 
+EOU
+}
+
+
+former_chore_now_automated(){ cat << EOC
+
+The below manual chore is now automated::
 
 7. [JUNOSW+Opticks release] After the "day name" automatic ~/.gitlab-ci.yml
    deployment to CVMFS of the OJ tarball has been checked, add a dated reference release
@@ -69,17 +89,16 @@ Workflow for adding Opticks tags:
 
    *  SSH into the OJ machine "ssh O" and invoke ./oj_reference_deploy_to_cvmfs.sh
 
-   * sheduled OJ build kicks off at 17:00 each day, so do the OK release
+   * scheduled OJ build kicks off at 17:00 each day, so do the OK release
      before 16:50 to be sure of the scheduled OJ build picking up the latest release
 
    * follow in gitlab "Pipeline schedules" by clicking on "Last Pipeline" icon to get
      to the builds page where can see the logs
 
 
-NB this simple script assumes single digit 0-9 major/minor/patch version integers
-
-EOU
+EOC
 }
+
 
 initial_setup(){ cat << EOS
 Initial setup of git remotes
