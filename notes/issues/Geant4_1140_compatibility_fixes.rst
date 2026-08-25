@@ -326,3 +326,33 @@ fixed test fail - gcc15 gives error when setting value beyond vector bounds that
 
 
 
+
+Test Geant4 1140 and gcc15 compatible Opticks changes building against with old Geant4 1042 libs and gcc11
+-----------------------------------------------------------------------------------------------------------
+
+1. change the config ~/j/opticks_config.sh::
+
+     20 export OPTICKS_HOME=$HOME/opticks
+     21
+     22 config=Debug
+     23 #config=Debug_g411
+     24 export OPTICKS_CONFIG=${OPTICKS_CONFIG:-$config}
+
+2. clean build::
+
+    lobbc
+
+3. test::
+
+    SLOW: tests taking longer that 15.0 seconds
+
+    FAILS:  0   / 223   :  Mon Aug 24 18:35:35 2026  :  GEOM RaindropRockAirWater
+
+    test_secs  :  19                       ## small GEOM like RaindropRockAirWater are ~5x faster that full ones
+    test_start :  2026-08-24 18:35:16
+    test_end   :  2026-08-24 18:35:35
+
+
+
+
+

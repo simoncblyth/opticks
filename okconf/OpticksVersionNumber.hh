@@ -29,7 +29,7 @@ Definition of version integer
 **/
 
 
-#define OPTICKS_VERSION_NUMBER 66
+#define OPTICKS_VERSION_NUMBER 67
 
 
 #include "OKCONF_API_EXPORT.hh"

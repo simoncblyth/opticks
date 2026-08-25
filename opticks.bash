@@ -3924,7 +3924,10 @@ opticks-okdist-dirlabel(){
 }
 
 opticks-compiler-version(){  echo gcc$(opticks-gcc-version) ; }
-opticks-gcc-version(){ gcc -dumpversion | perl -pe 's/\.//g' - ; } # 4.2.1 clang compatibility with gcc ?
+
+opticks-gcc-version-old(){ gcc -dumpversion | perl -pe 's/\.//g' - ; } # remove all dots - which is confusing
+opticks-gcc-version(){     gcc -dumpversion | sed 's/\..*//' ; }       # remove from first dot - giving major version eg "11" or "15"
+
 
 opticks-os-arch(){
    case $(uname -m) in

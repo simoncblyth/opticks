@@ -8,6 +8,8 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | tag     | OVN | date       | Notes                                                                                                                                                         |
 +=========+=====+============+===============================================================================================================================================================+
+| v0.6.7  | 67  | 2026/08/25 | monitoring machinery, new LS model prep, rainbow example, shader revisit, Geant4 1140, collect MaterialConstProperty                                          |
++---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.6  | 66  | 2026/06/18 | revive sreport for RTX PRO 6000 BW tests, try old geom recreat from GDML, fix several optix launch exceptions with optix 9.1 cuda 13.1 on Ada workstation     |
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | v0.6.5  | 65  | 2026/06/04 | simplifying testing of standalone Opticks release                                                                                                             |
@@ -101,8 +103,49 @@ Snapshot Tags History
 +---------+-----+------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
 
-v0.6.7 2026/07/?? : extend cxs_min.sh reporting to populate summary sqlite3 database tables for grafana visualization
-------------------------------------------------------------------------------------------------------------------------
+v0.6.7 2026/08/25 : monitoring machinery, new LS model prep, rainbow example, shader revisit, Geant4 1140, collect MaterialConstProperty
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+Changes for Geant4 1140 as well as 1042 compatibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-08-25 ef97158ba - add Geant4 11.4 fix avoiding runtime difference between 10 and 11 regards adding non-standard props to U4Material_MakePropertyFold_ConstTest and corresponding bash + python scripts
+* 2026-08-25 ddb63bc7f - incorporate patch from Dingyong adding collection of a MaterialConstProperty array by U4Material::MakePropertyFold
+* 2026-08-24 dc3363e28 - get build against Geant4 1140 to work and pass all tests, fixes mainly to FindG4.cmake, change opticks-okdist-dirlabel to append _g411 when g411 present in OPTICKS_CONFIG
+
+OpenGL shader revisted : fixed compositing, NP::LoadSelection, scode::load with include functionality
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-08-21 346581c87 - add scode::load providing simple #include functionality - used from sysrap/SGLFW_Program.h to incorporate common util/wavelengthToSRGB.glsl into rec_flying_vec/geom.glsl shader
+* 2026-08-20 5a4fd6a24 - setup rpol vertex attribute, use rpol for photon coloring in rec_flying_vec shader
+* 2026-08-20 577638076 - add sysrap/gl/rec_flying_vec shader using new Auxil uniform to control vec ns "length"
+* 2026-08-19 4ad7191c8 - avoid 2/223 opticks-t test fails when simple geometry is configured
+* 2026-08-19 fbea87f42 - enable visualization of enormous, eg 20G, record arrays using NP::LoadSelection to apply seq selection plus NumPy like slicing using file seeking to load just selected records - avoiding memory issues
+* 2026-08-18 76e00b092 - potential fix for longstanding compositing issue - was conflating zdepth_ndc -1:1 and zdepth_clip 0:1 in CSGOptiX7.cu
+* 2026-08-17 0a05b06dc - add sphoton::NudgeTime used from SRecord.h to workaround missing viz of record steps that start at preciselu zero ns, using raindrop geom to shakedown animation viz
+* 2026-08-17 5487f5cc3 - make examples/UseGeometryShader/build.sh work again using photon record array prepared by sphoton_test, replace sphoton.h WITH_LOCALIZE macro with the normal CPU only macros
+
+White light and rainbow example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-08-14 a9d965ba5 - rainbow revival
+* 2026-08-13 d2c7e1688 - add RINDEX_OVERRIDE handling to G4CXTest_raindrop.sh and swater_RINDEX.h that loads H2O Hale values using NPX::PLoad
+* 2026-07-31 39f5e5a38 - drop radius is set to halfside/2 so arrange for that to match the default disc radius - to avoid lots of photons missing the drop and giving zero deviation angle
+* 2026-07-31 07c2ac010 - start trying to revive the rainbow plot
+* 2026-07-30 79592e1be - add scie.h with CIE XYZ color matching observation fits to Human eye perception - enabling wavelength to be converted to XYZ color triplet
+* 2026-07-30 0834bc1c4 - avoid the potential for interp with inconsistent float/double by doing the NP::interp within the templated sblackbody
+* 2026-07-30 f59976a16 - add Planck blackbody wavelength generation capabilities to torch running both on GPU and CPU when using g4cx/tests/G4CXTest_raindrop.sh
+* 2026-07-29 50aca9148 - add QPlanck that uses icdf from sblackbody.h to populate texture yielding blackbody wavelengths on device
+* 2026-07-28 e519a4ce5 - revive sblackbody_test.sh adding icdf_prop sampling using NP.hh to do in C++ roughly the same that ana/planck.py does using NumPy
+
+Prep for new LS model
+~~~~~~~~~~~~~~~~~~~~~~
+
+* 2026-07-28 d1b65a464 - preparation for CUDA equivalent of G4RandExponential::shoot(tau_nr)
+* 2026-07-15 e74e6be2b - review and annotate preparations for three species LS model
+
+Monitoring infrastructure : extend cxs_min.sh reporting to populate summary sqlite3 database tables for grafana visualization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * 2026-07-13 ce7bb66b1 - add metadata field to the opticks_runs table which is populated when metadata.json is present in the report dir
 * 2026-07-13 421c8c597 - check native chi2 p_value - as currently sseq_index_test.sh needs to use python just for scipy.stat.chi2
@@ -111,17 +154,12 @@ v0.6.7 2026/07/?? : extend cxs_min.sh reporting to populate summary sqlite3 data
 * 2026-07-09 9d9c1dcf6 - review the monitoring workflow running-reporting-reportdb-presenting and grafana notes
 * 2026-07-08 7759acad2 - sort report paths before ingestion to give natural time ordered importing, notes on grafana web ui usage and query development tips
 * 2026-07-07 f7eb4269a - notes on getting some grafana queries against sreportdb to work
-
 * 2026-07-03 fcd64e04b - integrating the sreportdb+sqlite3 pipeline with gitlab-ci scheduled running requires schema additions of CI variables
 * 2026-07-03 fc40df584 - generalize sreportdb.sh to ingest reports from directory tree
-* 2026-07-02 aa2f6ebf1 - add CUDA versions metadata to run_meta.txt, add keep cuda API use separate in OKConf_CUDART.h, add opticks_versionset table to sreportdb.sql schema to avoid repetition in opticks_runs table
-* 2026-07-01 89d011a3d - relocate opticks monitoring sqlite3 DB setup dev testing into sreportdb.sh
 * 2026-06-30 bee20ffc4 - add evsmry array to sreport.h that is derived from ranges array which in turn is derived from the SProf.txt alone - without SEvt saving
-* 2026-06-29 5fa78e9f0 - handle SProf.txt annotations within NP NPU metadata machinery passing the annotations into sreport ranges_names.txt, fix bug where SProf.txt lines with annotations were skipped due to the annotation preventing profile triplet detection
 * 2026-06-26 9f3fb8d38 - NSQLite.h wrapper copied over from np repo to be used for monitoring aggregation
 * 2026-06-25 cf4933a12 - pull sreport.h sreport_Creator.h out of tests/sreport.cc, add sfilesystem.h providing indexed directory sreport archive
 * 2026-06-22 878638e42 - review NP/NPFold metadata reporting used by sreport, improve sreport output clarity
-
 
 
 v0.6.6 2026/06/18 : revive sreport for RTX PRO 6000 Blackwell tests, try old geom recreation from GDML, fix several optix launch exceptions seen with optix 9.1 cuda 13.1 on Ada workstation
