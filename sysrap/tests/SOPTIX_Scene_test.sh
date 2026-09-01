@@ -10,10 +10,10 @@ SOPTIX_Scene_test.sh
 
 Preqs::
 
-    ~/o/sysrap/tests/SScene_test.sh 
+    ~/o/sysrap/tests/SScene_test.sh
         ## create and persist SScene.h from loaded stree.h
-  
-    ~/o/sysrap/tests/SScene_test.sh 
+
+    ~/o/sysrap/tests/SScene_test.sh
         ## create and persist stree.h (eg from loaded gdml via GEOM config)
 
 EOU
@@ -32,19 +32,19 @@ export PPM_PATH=$FOLD/$name.ppm
 
 cu=../SOPTIX.cu
 ptx=$FOLD/SOPTIX.ptx
-export SOPTIX_PTX=$ptx 
+export SOPTIX_PTX=$ptx
 
 
 cuda_prefix=/usr/local/cuda
 CUDA_PREFIX=${CUDA_PREFIX:-$cuda_prefix}
-for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done 
+for l in lib lib64 ; do [ -d "$CUDA_PREFIX/$l" ] && cuda_l=$l ; done
 
 optix_prefix=${OPTICKS_OPTIX_PREFIX}
 OPTIX_PREFIX=${OPTIX_PREFIX:-$optix_prefix}
 
-if [ -z "$OPTIX_PREFIX" ]; then 
-   echo $0 - MISSING OPTIX_PREFIX && exit 1 
-fi 
+if [ -z "$OPTIX_PREFIX" ]; then
+   echo $0 - MISSING OPTIX_PREFIX && exit 1
+fi
 
 
 sysrap_dir=..
@@ -70,7 +70,7 @@ look=0,0,0
 cam=perspective
 #cam=orthographic
 
-tmin=0.1    
+tmin=0.1
 #escale=asis
 escale=extent
 
@@ -84,7 +84,7 @@ export ESCALE=${ESCALE:-$escale}
 export CAM=${CAM:-$cam}
 
 
-handle=-1 # -1:IAS 0...8 GAS indices 
+handle=-1 # -1:IAS 0...8 GAS indices
 export HANDLE=${HANDLE:-$handle}
 
 
@@ -99,7 +99,7 @@ vars="BASH_SOURCE CUDA_PREFIX OPTIX_PREFIX OPTICKS_PREFIX cuda_l SCENE_FOLD FOLD
 
 if [ "${arg/info}" != "$arg" ]; then
    for var in $vars ; do printf "%20s : %s\n" "$var" "${!var}" ; done
-fi 
+fi
 
 if [ "${arg/ptx}" != "$arg" ]; then
    nvcc $cu \
@@ -111,7 +111,7 @@ if [ "${arg/ptx}" != "$arg" ]; then
         -I$CUDA_PREFIX/include  \
         -I$OPTIX_PREFIX/include  \
         -o $ptx
-   [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1 
+   [ $? -ne 0 ] && echo $BASH_SOURCE : ptx build error && exit 1
 fi
 
 if [ "${arg/build}" != "$arg" ]; then
@@ -124,25 +124,25 @@ if [ "${arg/build}" != "$arg" ]; then
          -DWITH_CHILD \
         -L$CUDA_PREFIX/$cuda_l -lcudart \
         -o $bin
-    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1 
-fi 
+    [ $? -ne 0 ] && echo $BASH_SOURCE : build error && exit 1
+fi
 
 if [ "${arg/dbg}" != "$arg" ]; then
-    dbg__ $bin 
+    dbg__ $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 2
 fi
 
 if [ "${arg/run}" != "$arg" ]; then
-    $bin 
+    $bin
     [ $? -ne 0 ] && echo $BASH_SOURCE : run error && exit 3
 fi
 
 if [ "${arg/open}" != "$arg" ]; then
-    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0 
+    [ -z "$DISPLAY" ] && echo $BASH_SOURCE adhoc setting DISPLAY && export DISPLAY=:0
     open $PPM_PATH
     [ $? -ne 0 ] && echo $BASH_SOURCE : open error && exit 4
 fi
 
 
-exit 0 
+exit 0
 

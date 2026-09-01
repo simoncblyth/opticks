@@ -621,6 +621,12 @@ TMP(){
 }
 
 
+
+MOI_source(){
+  : opticks/opticks.bash
+  source $HOME/.opticks/GEOM/MOI.sh
+}
+
 MOI(){
   : opticks/opticks.bash
 
@@ -636,6 +642,12 @@ MOI(){
   fi
   echo $cmd
   eval $cmd
+}
+
+
+EVT_source(){
+  : opticks/opticks.bash
+  source $HOME/.opticks/GEOM/EVT.sh
 }
 
 EVT(){
@@ -655,6 +667,10 @@ EVT(){
   eval $cmd
 }
 
+ELV_source(){
+  : opticks/opticks.bash
+  source $HOME/.opticks/GEOM/ELV.sh
+}
 ELV(){
   : opticks/opticks.bash
 
@@ -671,6 +687,7 @@ ELV(){
   echo $cmd
   eval $cmd
 }
+
 
 
 ENVSET(){
@@ -828,6 +845,12 @@ TEST(){
 
 }
 
+
+
+GEOM_source(){
+  : opticks/opticks.bash
+  source $HOME/.opticks/GEOM/GEOM.sh
+}
 
 GEOM(){
   : opticks/opticks.bash GEOM vi/grab/scp
@@ -1457,15 +1480,15 @@ opticks-setup(){
 }
 
 opticks-setup-find-geant4-prefix(){ opticks-setup-find-config-prefix Geant4 ; }
-opticks-setup-find-config-prefix(){
+opticks-setup-find-config-prefix-OLD(){
    : mimick CMake "find_package name CONFIG" identifing the first prefix in the path
    local name=${1:-Geant4}
    local prefix=""
    local rc=0
-   local ifs=$IFS
-   IFS=:
-   for pfx in $CMAKE_PREFIX_PATH ; do
 
+   local -a pfxs=()
+   IFS=: read -ra pfxs <<< "${CMAKE_PREFIX_PATH:-}"
+   for pfx in "${pfxs[@]}"; do
       : protect cmds that can give non-zero rc from "set -e" via pipeline but catch the rc
       rc=1
       ls -1 $pfx/lib*/$name-*/${name}Config.cmake 2>/dev/null 1>&2 && rc=$?
@@ -1479,9 +1502,45 @@ opticks-setup-find-config-prefix(){
 
       # NB not general, doesnt find the lowercased form : but works for Geant4 and Boost
    done
-   IFS=$ifs
    echo $prefix
 }
+
+
+
+opticks-setup-find-config-prefix() {
+    # Mimic CMake "find_package name CONFIG" identifying the first prefix in path
+    local name="${1:-Geant4}"
+    local prefix=""
+
+    # Safely convert CMAKE_PREFIX_PATH into an array without modifying global IFS
+    local -a prefixes=()
+    IFS=: read -ra prefixes <<< "${CMAKE_PREFIX_PATH:-}"
+
+    for pfx in "${prefixes[@]}"; do
+        [ -z "$pfx" ] && continue
+
+        # Use nullglob-safe pattern expansion to test file existence without 'ls'
+        if compgen -G "$pfx/lib*/$name-*/${name}Config.cmake" >/dev/null || \
+           compgen -G "$pfx/lib*/cmake/$name-*/${name}Config.cmake" >/dev/null || \
+           compgen -G "$pfx/lib*/cmake/$name/${name}Config.cmake" >/dev/null; then
+            prefix="$pfx"
+            break
+        fi
+      # NB not fully general, doesnt find the lowercased form : but works for Geant4 and Boost
+    done
+
+    echo "$prefix"
+}
+
+
+
+
+
+
+
+
+
+
 
 opticks-setup-find-geant4-prefix-notes(){ cat << EON
 Hans reports that the path to Geant4Config.cmake changed with v11.1.1::
@@ -1959,6 +2018,14 @@ opticks-setup-cat(){ cat $(opticks-setup-path) ; }
 opticks-setup-vi(){  vi $(opticks-setup-path)  ; }
 opticks-setup--(){   source $(opticks-setup-path) ; }
 #opticks-release-- MAKES NO SENSE AS THE release script relies on sourced path to give prefix
+
+opticks-setup-update()
+{
+   : avoid stale funcs being generated into bashrc
+   opticks-
+   opticks-setup-generate
+}
+
 
 opticks-setup-generate-notes(){ cat << EON
 
@@ -2519,7 +2586,7 @@ opticks-setup-()
     else
         st="nodir"
     fi
-    if [ -n "$OPTICKS_SETUP_VERBOSE" ];  then printf "=== %s %10s %10s %20s %s\n" $FUNCNAME $st $mode $var $dir ; fi
+    if [ -n "${OPTICKS_SETUP_VERBOSE:-}" ];  then printf "=== %s %10s %10s %20s %s\n" $FUNCNAME $st $mode $var $dir ; fi
 }
 
 opticks-setup-info-()
@@ -2818,18 +2885,20 @@ opticks-setup-geant4-(){ cat << EOS
 ## FINDING PREFIX TAKES ALMOST 10 SECONDS WITH LARGE CMAKE_PREFIX_PATH
 ## SO AVOID DOING THAT WHEN DETECT GEANT4 ENV ALREADY SETUP
 
-if [ -n "\$G4LEDATA" ]; then
+echo "[ $FUNCNAME "
 
-    if [ -n "\$OPTICKS_SETUP_VERBOSE" ]; then
+if [ -n "\${G4LEDATA:-}" ]; then
+
+    if [ -n "\${OPTICKS_SETUP_VERBOSE:-}" ]; then
         echo \$BASH_SOURCE - USE DETECTED GEANT4 ENVIRONMENT
     fi
     export OPTICKS_GEANT4_PREFIX=\$(dirname \$(dirname \$(dirname \$(dirname \$G4LEDATA))))
 else
     export OPTICKS_GEANT4_PREFIX=\$(opticks-setup-find-geant4-prefix)
-    if [ -n "\$OPTICKS_GEANT4_PREFIX" ]; then
+    if [ -n "\${OPTICKS_GEANT4_PREFIX:-}" ]; then
         if [ -f "\$OPTICKS_GEANT4_PREFIX/bin/geant4.sh" ]; then
 
-            if [ -n "\$OPTICKS_SETUP_VERBOSE" ]; then
+            if [ -n "\${OPTICKS_SETUP_VERBOSE:-}" ]; then
                 echo === $FUNCNAME : sourcing \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
             fi
             source \$OPTICKS_GEANT4_PREFIX/bin/geant4.sh
@@ -2841,6 +2910,10 @@ else
         echo === $FUNCNAME : WARNING no OPTICKS_GEANT4_PREFIX : Geant4 will need be setup by other means
     fi
 fi
+
+echo "] $FUNCNAME "
+
+
 
 EOS
 }
